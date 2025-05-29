@@ -17,6 +17,10 @@ function getMoonPhase(lunarDay) {
 // 文字逐句顯示動畫
 function typeLines(lines, targetId, callback) {
   const el = document.getElementById(targetId);
+  if (!el) {
+    console.error("❌ 無法找到 #" + targetId);
+    return;
+  }
   el.innerHTML = "";
   let index = 0;
 
@@ -30,6 +34,7 @@ function typeLines(lines, targetId, callback) {
       callback();
     }
   }
+
   showLine();
 }
 
@@ -42,19 +47,25 @@ function startDivination() {
   const lunarDay = getLunarDay();
   const realPhase = getMoonPhase(lunarDay);
 
+  if (!description || !image || !cardArea || !orientation) {
+    console.error("❌ DOM 元素找不到");
+    return;
+  }
+
   // 更新圖片與屬性
   image.src = "images/42_憶.png";
   cardArea.style.pointerEvents = "none";
   orientation.textContent = "正位";
   description.innerHTML = "";
 
- const lines = [
-  "占卜中請稍後",
-  "別急，這還不是占卜結果.請等待一下，畫面會自動跳轉。",
-  "為了能讓占卜更準確，需要充分的洗牌時間。",
-  "微弱的月光，會在一片漆黑的夜裡，帶領你找到方向。",
-  "來了！抓到命運絲線的軌跡了！現在呈現。"
- ];
+  const lines = [
+    "占卜中請稍後",
+    "別急，這還不是占卜結果.請等待一下，畫面會自動跳轉。",
+    "為了能讓占卜更準確，需要充分的洗牌時間。",
+    "微弱的月光，會在一片漆黑的夜裡，帶領你找到方向。",
+    "來了！抓到命運絲線的軌跡了！現在呈現。"
+  ];
+
   // 顯示文字後執行占卜流程
   typeLines(lines, "description", () => {
     setTimeout(() => {
@@ -64,18 +75,21 @@ function startDivination() {
 }
 
 function performDivination(realPhase) {
-  // 生成洗牌陣列
   let fateArray = Array.from({ length: 40 }, (_, i) => i + 1);
   for (let i = 0; i < 3; i++) fateArray.sort(() => Math.random() - 0.5);
   const runeId = fateArray[Math.floor(Math.random() * 40)];
   const facingIndex = Math.floor(Math.random() * 4);
   const facingText = ["正位", "半正位", "半逆位", "逆位"][facingIndex];
 
-  // 導向占卜結果頁（未來會補上）
   window.location.href = `result.html?rune=${runeId}&facing=${facingText}&phase=${realPhase}`;
 }
 
-// 綁定事件
+// ✅ 最重要：綁定點擊事件一定要等 DOM 載入後才做
 window.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("card-area").addEventListener("click", startDivination);
+  const area = document.getElementById("card-area");
+  if (area) {
+    area.addEventListener("click", startDivination);
+  } else {
+    console.error("❌ 無法綁定卡片區塊 click");
+  }
 });
