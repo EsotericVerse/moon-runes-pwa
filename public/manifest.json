@@ -1,7 +1,7 @@
 {
   "name": "月之符文占卜",
   "short_name": "月之符文",
-  "start_url": "./index.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#0d0d0d",
   "theme_color": "#0d0d0d",
