@@ -40,15 +40,16 @@ fetch("data/runes.json")
     image.src = `images/${runeData.符文圖檔}`;
     image.alt = runeData.名稱;
 
-    // 設定屬性區
+    // 設定屬性區（加上重新占卜按鈕）
     property.innerHTML = `
       <p>卡牌面向：<strong>${facing}</strong></p>
       <p>介紹：${runeData.圖騰}、「${runeData.名稱}」、${runeData.顯化形式}</p>
       <p>所屬分組：${runeData.所屬分組}</p>
       <p>月相：${runeData.月相} / 真實月相：${phase}</p>
+      <button id="retry-btn">🔁 重新占卜</button>
     `;
 
-    // 設定說明區（以換行段落方式顯示完整內容）
+    // 設定說明區
     description.innerHTML = `
       <p>${meaningText}</p>
       <p>${runeData.靈魂咒語}</p>
@@ -60,11 +61,21 @@ fetch("data/runes.json")
       <p>配套儀式：${runeData.配套儀式建議}</p>
       <p>能量調和：${runeData.能量調和建議}</p>
     `;
-  });
 
-// 重新占卜按鈕功能
-retryBtn.addEventListener("click", () => {
-  setTimeout(() => {
-    window.location.href = "index.html";
-  }, 1000);
-});
+    // 綁定重新占卜按鈕
+    document.getElementById("retry-btn").addEventListener("click", () => {
+      // 視覺效果過渡
+      image.src = "images/41_語.png";
+      property.innerHTML = `
+        <p>卡牌面向：<strong>正位</strong></p>
+        <p>介紹：「語」，月之符文所述說</p>
+        <p>所屬分組：它就是全部</p>
+        <p>月相：無 / 真實月相：探測中</p>
+      `;
+      description.innerHTML = "";
+
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 1500);
+    });
+  });
