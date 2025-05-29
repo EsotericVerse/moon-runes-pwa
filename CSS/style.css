@@ -26,6 +26,8 @@ body {
   background-color: #f0f0f0;
   overflow: hidden;
   border-radius: 0.5rem;
+  max-width: 320px;
+  margin: auto;
 }
 
 .card-area img {
