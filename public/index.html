@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>月之符文占卜</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="images/41_語.png">
+  <meta name="theme-color" content="#0d0d0d">
   <style>
     body {
       margin: 0;
@@ -65,6 +68,12 @@
   </div>
 
   <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('Service Worker 註冊成功:', reg))
+        .catch(err => console.log('Service Worker 註冊失敗:', err));
+    }
+
     const splash = document.getElementById('splash');
     const start = document.getElementById('start');
     const loading = document.getElementById('loading');
