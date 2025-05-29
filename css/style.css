@@ -66,6 +66,7 @@ button#retry-btn {
   font-size: 0.75rem;
   color: #999;
 }
+<<<<<<< HEAD
 
 #rune-image,
 #description {
@@ -84,3 +85,5 @@ button#retry-btn {
 * {
   outline: 1px dashed rgba(0,0,0,0.3);
 }
+=======
+>>>>>>> parent of 0fa427d (Update style.css)
