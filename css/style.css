@@ -66,3 +66,14 @@ button#retry-btn {
   font-size: 0.75rem;
   color: #999;
 }
+
+#rune-image,
+#description {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+#rune-image.show,
+#description.show {
+  opacity: 1;
+}
