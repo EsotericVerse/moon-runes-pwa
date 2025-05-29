@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>月之符文占卜</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0d0d0d;
+      color: #f0f0f0;
+      font-family: "Noto Sans TC", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #start, #drawResult, #againBtn {
+      display: none;
+    }
+    .fade-in {
+      animation: fadeIn 2s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    img {
+      max-height: 200px;
+      margin-bottom: 1rem;
+    }
+    .footer {
+      position: absolute;
+      bottom: 1rem;
+      font-size: 0.75rem;
+      color: #888;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="splash">
+    <img src="images/41_語.png" class="fade-in" />
+  </div>
+  <div id="start">
+    <p>請先靜心思考你此刻真正想問的問題。</p>
+    <button onclick="beginDivination()">開始占卜</button>
+  </div>
+  <div id="loading">
+    <img src="images/42_憶.png" />
+    <p>命運記憶正在為你整理訊息…</p>
+  </div>
+  <div id="drawResult">
+    <img id="runeImg" src="" />
+    <h2 id="runeName"></h2>
+    <p id="runeSpell"></p>
+    <p id="runeStory"></p>
+    <button id="againBtn" onclick="resetApp()">再次占卜</button>
+  </div>
+  <div class="footer">
+    此系統由月語者 Oscar（EsotericVerse）創作並靈感導引<br>
+    © 2025 月語之境工作室
+  </div>
+
+  <script>
+    const splash = document.getElementById('splash');
+    const start = document.getElementById('start');
+    const loading = document.getElementById('loading');
+    const drawResult = document.getElementById('drawResult');
+
+    setTimeout(() => {
+      splash.style.display = 'none';
+      start.style.display = 'block';
+    }, 1500);
+
+    async function beginDivination() {
+      start.style.display = 'none';
+      loading.style.display = 'block';
+
+      await new Promise(resolve => setTimeout(resolve, 3000)); // 等待3秒
+
+      const response = await fetch('data/runes.json');
+      const runes = await response.json();
+      const rune = runes[Math.floor(Math.random() * runes.length)];
+
+      loading.style.display = 'none';
+      drawResult.style.display = 'block';
+      document.getElementById('runeImg').src = rune.image;
+      document.getElementById('runeName').textContent = rune.name + ' ‧ ' + rune.symbol;
+      document.getElementById('runeSpell').textContent = rune.spell;
+      document.getElementById('runeStory').textContent = rune.soul_lesson;
+
+      setTimeout(() => {
+        document.getElementById('againBtn').style.display = 'block';
+      }, 1000);
+    }
+
+    function resetApp() {
+      drawResult.style.display = 'none';
+      document.getElementById('againBtn').style.display = 'none';
+      start.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
