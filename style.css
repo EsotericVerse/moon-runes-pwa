@@ -1,12 +1,59 @@
+
 body {
   margin: 0;
-  background: #0d0d0d;
-  color: #f0f0f0;
   font-family: "Noto Sans TC", sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+  background-color: #fdfdfd;
+  color: #222;
+}
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+.card-area {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto 1rem;
   overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  transition: opacity 1s ease;
+}
+
+.card-area img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.property-area {
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.description-area {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  text-align: left;
+  margin-top: 1rem;
+}
+
+button#retry-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #222;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.author {
+  margin-top: 2rem;
+  font-size: 0.75rem;
+  color: #999;
 }
