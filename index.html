@@ -13,174 +13,147 @@
       background: #0d0d0d;
       color: #f0f0f0;
       font-family: "Noto Sans TC", sans-serif;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      height: 100vh;
-      overflow: hidden;
+      align-items: center;
     }
-    #start, #drawResult, #againBtn, #loading {
-      display: none;
+    .container {
+      display: flex;
+      width: 90vw;
+      max-width: 960px;
+      height: 90vh;
     }
-    .fade-in {
-      animation: fadeIn 2s ease forwards;
+    .left-panel {
+      width: 33%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    #runeImg {
-      max-width: 80vw;
+    .left-panel img {
+      max-width: 100%;
       max-height: 80vh;
-	  width: auto;
-      height: auto;
-	  display: block;
-      margin: 0 auto 1rem auto;
       object-fit: contain;
-      object-position: center center;
     }
-    #drawResult p {
+    .right-panel {
+      width: 67%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1rem;
+    }
+    .right-panel p {
       text-align: left;
-      max-width: 90vw;
-      margin: 0.5rem auto;
+      line-height: 1.6;
+    }
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    button {
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 0.8rem 1.2rem;
+      font-size: 1rem;
+      cursor: pointer;
     }
     .footer {
-      position: absolute;
-      bottom: 1rem;
       font-size: 0.75rem;
       color: #888;
       text-align: center;
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <div id="splash">
-    <img src="images/41_語.png" class="fade-in" />
-  </div>
-  <div id="start">
-    <p>請先靜心思考你此刻真正想問的問題。</p>
-    <button onclick="beginDivination()">開始占卜</button>
-  </div>
-  <div id="loading">
-    <img src="images/42_憶.png" />
-    <p>命運記憶正在為你整理訊息…</p>
-  </div>
-  <div id="drawResult">
-    <img id="runeImg" src="" />
-    <h2 id="runeName"></h2>
-    <p id="runeSpell"></p>
-    <p id="runeStory"></p>
-    <p id="moonPhase"></p>
-    <p id="moonDesc"></p>
-    <p id="cardDirection"></p>
-    <p id="directionDesc"></p>
-    <button id="againBtn" onclick="resetApp()">再次占卜</button>
+  <div class="container">
+    <div class="left-panel">
+      <img src="images/41_語.png" id="runeImage" alt="語符文">
+    </div>
+    <div class="right-panel">
+      <div>
+        <p id="introText">
+          歡迎來到月之符文系統。請先心中想好問題，再按下開始占卜。<br>
+          月之符文以月為底，卡片有自己的月相，現在環境有現有月相。<br>
+          月之符文，卡片為正方形，所以有四種方向：正位、半正、逆位、半逆。<br>
+        </p>
+        <p id="repeatWarning" style="display:none; color:#ff8080">
+          建議您，重複問題，短時間之內，不要問第二次，否則占卜結果容易失準。
+        </p>
+      </div>
+      <div class="button-group">
+        <button id="startButton">開始占卜</button>
+        <button id="feedbackButton" style="display:none;">感謝您使用月之符文來觀看命運的軌跡。<br>
+          <a href="mailto:esotericverse.xy@gmail.com" style="color:#80d0ff">若有建議歡迎討論</a>
+        </button>
+      </div>
+    </div>
   </div>
   <div class="footer">
-    此系統由月語者 Oscar（EsotericVerse）創作並靈感導引<br>
-    © 2025 月語之境工作室
+    月語之境工作室 原作製作
   </div>
+
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(reg => console.log('Service Worker 註冊成功:', reg))
-        .catch(err => console.log('Service Worker 註冊失敗:', err));
+    const runeImage = document.getElementById("runeImage");
+    const introText = document.getElementById("introText");
+    const repeatWarning = document.getElementById("repeatWarning");
+    const startButton = document.getElementById("startButton");
+    const feedbackButton = document.getElementById("feedbackButton");
+
+    let hasDrawn = false;
+
+    function getMoonPhaseText(date) {
+      const lunarDay = date.getDate(); // 模擬農曆轉換
+      if (lunarDay >= 1 && lunarDay <= 7) return "新月";
+      if (lunarDay >= 8 && lunarDay <= 14) return "上弦";
+      if (lunarDay >= 15 && lunarDay <= 21) return "滿月";
+      if (lunarDay >= 22 && lunarDay <= 28) return "下弦";
+      return "空亡";
     }
 
-    const splash = document.getElementById('splash');
-    const start = document.getElementById('start');
-    const loading = document.getElementById('loading');
-    const drawResult = document.getElementById('drawResult');
-    const directions = [
-      { name: '正位', desc: '能量順行。主題自然流動、力量顯現、外顯無礙。' },
-      { name: '半正位', desc: '初生漸顯。潛能正在凝聚、尚未完全流動，代表準備與正開始啟動。' },
-      { name: '半逆位', desc: '能量阻滯。主題反向顯現、力量扭曲、潛藏或危機感浮現。' },
-      { name: '逆位', desc: '釋放收束。能量正在退潮、進入整合期，是轉化與療癒階段。' }
-    ];
+    function getRandomDirection() {
+      const directions = ["正位", "半正", "逆位", "半逆"];
+      return directions[Math.floor(Math.random() * directions.length)];
+    }
 
-    setTimeout(() => {
-      splash.style.display = 'none';
-      start.style.display = 'block';
-    }, 1500);
-
-    async function beginDivination() {
-      start.style.display = 'none';
-      loading.style.display = 'block';
-      await new Promise(resolve => setTimeout(resolve, 3000));
+    function startDivination() {
+      // 切換語 -> 憶
+      runeImage.src = "images/42_憶.png";
 
       const now = new Date();
-      const response = await fetch('data/runes.json');
-      const runes = await response.json();
-      const rune = runes[Math.floor(Math.random() * runes.length)];
-      const moon = getMoonPhase(now, rune.group);
-      const direction = directions[Math.floor(Math.random() * directions.length)];
+      const moonText = getMoonPhaseText(now);
+      const notice = `\u76ee\u524d\u6708\u76f8\u70ba：${moonText}`;
+      const explain = "正在嘗試為您觀看命運的痕跡，快好了。請稍後...";
 
-      loading.style.display = 'none';
-      drawResult.style.display = 'block';
-
-      document.getElementById('runeImg').src = rune.image;
-      document.getElementById('runeName').textContent = rune.name + ' ‧ ' + rune.symbol;
-      document.getElementById('runeSpell').textContent = rune.spell;
-      document.getElementById('runeStory').textContent = rune.soul_lesson;
-      document.getElementById('moonPhase').textContent = '當前月相：' + moon.phase;
-      document.getElementById('moonDesc').textContent = moon.description;
-      document.getElementById('cardDirection').textContent = '卡片方向：' + direction.name;
-      document.getElementById('directionDesc').textContent = direction.desc;
+      introText.innerHTML = `${notice}<br>
+      月之符文以月為底，卡片有自己的月相，現在環境有現有月相。<br>
+      月之符文，卡片為正方形，所以有四種方向：正位、半正、逆位、半逆。<br><br>${explain}`;
 
       setTimeout(() => {
-        document.getElementById('againBtn').style.display = 'block';
-      }, 1000);
+        showResult();
+      }, 5000);
     }
 
-    function resetApp() {
-      drawResult.style.display = 'none';
-      document.getElementById('againBtn').style.display = 'none';
-      start.style.display = 'block';
+    function showResult() {
+      const drawnRune = "images/01_\u9748.png"; // 之後改為隨機
+      const direction = getRandomDirection();
+
+      runeImage.src = drawnRune;
+      introText.innerHTML = `相位為：${direction}<br><br>
+        （這裡是抽出的卡片說明文字，未來將根據 json 資料載入）`;
+
+      feedbackButton.style.display = "block";
+      startButton.textContent = "重新占卜";
+      repeatWarning.style.display = hasDrawn ? "block" : "none";
+      hasDrawn = true;
     }
 
-    function getMoonPhase(date, group) {
-      const lunarDay = new Intl.DateTimeFormat('zh-TW-u-ca-chinese', { day: 'numeric' }).format(date);
-      const day = parseInt(lunarDay);
-      const isEclipse = group === '宇宙無常';
-
-      if (day >= 1 && day <= 7) {
-        return {
-          phase: '🌑 新月期',
-          description: isEclipse
-            ? '意圖遮蔽。你試圖重啟某項願望，卻被潛意識未解的恐懼所干擾。蝕象能量讓你看不見真正的動機。'
-            : '適合立下意圖、啟動新計畫，是播種的時刻。'
-        };
-      } else if (day >= 8 && day <= 14) {
-        return {
-          phase: '🌓 上弦期',
-          description: isEclipse
-            ? '動遮蔽。你正在採取行動，但能量軌道錯置，部分努力將遭遇失效或偏離原意的結果。請重新聚焦初衷。'
-            : '考驗與行動的階段，需克服障礙持續前進。'
-        };
-      } else if (day >= 15 && day <= 21) {
-        return {
-          phase: '🌕 滿月期',
-          description: isEclipse
-            ? '光影錯位。看似顯化的成果中，潛藏未顯的變因。你可能誤以為事情「圓滿」，實則重要轉折才剛開始。'
-            : '能量最強之時，適合收割、覺察與釋放。'
-        };
-      } else if (day >= 22 && day <= 28) {
-        return {
-          phase: '🌗 下弦期',
-          description: isEclipse
-            ? '清理受阻。你正在釋放某些事物，但深層未解的牽絆正在回流。情緒重現、記憶浮現，提醒你未竟的課題仍在。'
-            : '整理與反思的時期，釋放不再需要的事物。'
-        };
-      } else {
-        return {
-          phase: '🌘 空亡期',
-          description: isEclipse
-            ? '此時的訊息來自高維靈魂或宇宙潛意識，是重要的轉化召喚。'
-            : '能量退潮、儀式閉幕期，適合冥想與直覺作業。'
-        };
-      }
-    }
+    startButton.onclick = startDivination;
   </script>
 </body>
 </html>
