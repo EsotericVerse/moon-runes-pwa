@@ -51,7 +51,7 @@ fetch("data/runes.json")
 
     // 設定說明區
     description.innerHTML = `
-      <p>${meaningText}</p>
+      <p>${facing}：${meaningText}</p>
       <p>${runeData.靈魂咒語}</p>
       <p>${runeData.分組說明}</p>
       <p>靈魂課題：${runeData.靈魂課題}</p>
