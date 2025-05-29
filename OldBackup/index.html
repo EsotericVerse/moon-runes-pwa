@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>月之符文占卜</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body {
+      font-family: 'Noto Sans TC'， sans-serif;
+      text-align: center;
+      background-color: #f9f9f9;
+      padding: 1em;
+    }
+    h1 {
+      color: #444;
+    }
+    。card-img {
+      max-width: 80vw;
+      max-height: 50vh;
+      margin: 1em auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0，0，0，0.1);
+    }
+    。result {
+      margin-top: 1em;
+      text-align: left;
+      padding: 1em;
+      background: #fff;
+      border-radius: 12px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 2px 8px rgba(0，0，0，0.1);
+    }
+    。result h2 {
+      font-size: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    。result p {
+      margin: 0.4em 0;
+    }
+    button {
+      padding: 1em 2em;
+      font-size: 1em;
+      background-color: #333;
+      color: white;
+      border: 無;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌙 月之符文占卜</h1>
+  <button onclick="drawCard()">抽一張符文卡</button>
+  <div id="cardArea"></div>
+  <script src="main.js"></script>
+  Edit by EsotericVerse, MoonResonant.
+</body>
+</html>
