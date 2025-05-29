@@ -48,18 +48,21 @@ fetch("data/runes.json")
       <p>月相：${runeData.月相} / 真實月相：${phase}</p>
     `;
 
-    // 設定說明區（含方向意義）
+    // 設定說明區（以換行段落方式顯示完整內容）
     description.innerHTML = `
-      <p><strong>${facing}</strong>：${meaningText}</p>
+      <p>${meaningText}</p>
       <p>${runeData.靈魂咒語}</p>
       <p>${runeData.分組說明}</p>
-      <p>${runeData.靈魂課題}</p>
-      <p>${runeData.實踐挑戰}</p>
-      <p>${runeData.符文變化歷史}</p>
+      <p>靈魂課題：${runeData.靈魂課題}</p>
+      <p>實踐挑戰：${runeData.實踐挑戰}</p>
+      <p>歷史：${runeData.符文變化歷史}</p>
+      <p>故事：${runeData.神話風格背景故事}</p>
+      <p>配套儀式：${runeData.配套儀式建議}</p>
+      <p>能量調和：${runeData.能量調和建議}</p>
     `;
   });
 
-// 重新占卜
+// 重新占卜按鈕功能
 retryBtn.addEventListener("click", () => {
   setTimeout(() => {
     window.location.href = "index.html";
