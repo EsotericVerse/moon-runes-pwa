@@ -18,3 +18,33 @@
 .footer:hover {
   opacity: 1;
 }
+
+/* RWD 響應式樣式 */
+@media (max-width: 768px) {
+  .container {
+    padding: 1em;
+  }
+  .card-area img {
+    width: 100% !important;
+    height: auto;
+    max-width: 90vw;
+    display: block;
+    margin: 0 auto;
+  }
+  .property-area, .description-area {
+    padding: 1em;
+    font-size: 1em;
+    text-align: center;
+  }
+  .property-area p, .description-area p {
+    margin: 0.5em 0;
+  }
+  .author, .footer {
+    font-size: 0.75em;
+    text-align: center;
+  }
+  button {
+    font-size: 1em;
+    padding: 0.5em 1em;
+  }
+}
