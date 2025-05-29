@@ -1,50 +1,59 @@
 
-.fade {
-  opacity: 0;
-  transition: opacity 1s ease-in-out;
-}
-.fade.show {
-  opacity: 1;
-}
-
-.footer {
-  margin-top: 3em;
-  padding: 1em 0;
-  font-family: 'Noto Serif TC', serif;
-  border-top: 1px solid #eee;
-  opacity: 0.6;
-  transition: opacity 0.5s ease;
-}
-.footer:hover {
-  opacity: 1;
+body {
+  margin: 0;
+  font-family: "Noto Sans TC", sans-serif;
+  background-color: #fdfdfd;
+  color: #222;
 }
 
-/* RWD 響應式樣式 */
-@media (max-width: 768px) {
-  .container {
-    padding: 1em;
-  }
-  .card-area img {
-    width: 100% !important;
-    height: auto;
-    max-width: 90vw;
-    display: block;
-    margin: 0 auto;
-  }
-  .property-area, .description-area {
-    padding: 1em;
-    font-size: 1em;
-    text-align: center;
-  }
-  .property-area p, .description-area p {
-    margin: 0.5em 0;
-  }
-  .author, .footer {
-    font-size: 0.75em;
-    text-align: center;
-  }
-  button {
-    font-size: 1em;
-    padding: 0.5em 1em;
-  }
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+.card-area {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto 1rem;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  transition: opacity 1s ease;
+}
+
+.card-area img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.property-area {
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.description-area {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  text-align: left;
+  margin-top: 1rem;
+}
+
+button#retry-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #222;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.author {
+  margin-top: 2rem;
+  font-size: 0.75rem;
+  color: #999;
 }
