@@ -1,13 +1,8 @@
-
 window.addEventListener("DOMContentLoaded", () => {
   const image = document.getElementById("rune-image");
-  const description = document.getElementById("description");
+  const card = document.getElementById("rune-card");
 
-  setTimeout(() => {
-    image.classList.add("show");
-  }, 300);
-
-  setTimeout(() => {
-    description.classList.add("show");
-  }, 1300);
+  card.addEventListener("click", () => {
+    window.location.href = "result.html"; // 之後要實作的占卜畫面
+  });
 });

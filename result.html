@@ -1,25 +1,27 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>月之符文占卜結果</title>
+  <title>占卜進行中</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <div class="container">
-    <div class="card-area">
-      <img id="rune-image" src="" alt="占卜結果" class="fade" />
+    <div class="card-display">
+      <img src="images/41_憶.png" alt="憶之符文" />
     </div>
-    <div class="property-area fade show" id="property"></div>
-    <div class="description-area fade" id="description"></div>
-  
-    <footer class="footer" style="font-size: 0.75em; color: #bbb; text-align: center;">
-      ☽ by Esoteric Verse · 月語之境｜<a href="mailto:esotericverse.xy@gmail.com">✉︎</a>
+    <div class="card-attributes">
+      <p>卡牌面向：正位</p>
+      <p>介紹：「憶」，所有人的回憶</p>
+      <p>所屬分組：它不屬於全部</p>
+      <p id="moon-phase">月相：無 / 真實月相：計算中...</p>
+    </div>
+    <div class="description" id="description"></div>
+    <footer>
+      <p><strong>By</strong> 月語之境工作室 ｜ <a href="mailto:esotericverse.xy@gmail.com">聯絡我們</a></p>
     </footer>
   </div>
   <script src="js/result.js"></script>
-
 </body>
 </html>
