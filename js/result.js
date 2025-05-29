@@ -1,3 +1,4 @@
+
 // 工具：解析 URL 參數
 function getQueryParams() {
   const params = new URLSearchParams(window.location.search);
@@ -12,7 +13,6 @@ function getQueryParams() {
 const image = document.getElementById("rune-image");
 const property = document.getElementById("property");
 const description = document.getElementById("description");
-const retryBtn = document.getElementById("retry-btn");
 
 // 牌面方向意義對照表
 const facingMeaningMap = {
@@ -37,10 +37,14 @@ fetch("data/runes.json")
     const meaningText = facingMeaningMap[facing] || "（無法解讀的牌面方向）";
 
     // 設定圖片
-    image.src = `images/${runeData.符文圖檔}`;
-    image.alt = runeData.名稱;
+    image.classList.remove("show");
+    setTimeout(() => {
+      image.src = `images/${runeData.符文圖檔}`;
+      image.alt = runeData.名稱;
+      image.classList.add("show");
+    }, 500);
 
-    // 設定屬性區（加上重新占卜按鈕）
+    // 設定屬性區
     property.innerHTML = `
       <p>卡牌面向：<strong>${facing}</strong></p>
       <p>介紹：${runeData.圖騰}、「${runeData.名稱}」、${runeData.顯化形式}</p>
@@ -62,20 +66,23 @@ fetch("data/runes.json")
       <p>能量調和：${runeData.能量調和建議}</p>
     `;
 
-    // 綁定重新占卜按鈕
     document.getElementById("retry-btn").addEventListener("click", () => {
-      // 視覺效果過渡
-      image.src = "images/41_語.png";
-      property.innerHTML = `
-        <p>卡牌面向：<strong>正位</strong></p>
-        <p>介紹：「語」，月之符文所述說</p>
-        <p>所屬分組：它就是全部</p>
-        <p>月相：無 / 真實月相：探測中</p>
-      `;
-      description.innerHTML = "";
-
+      image.classList.remove("show");
       setTimeout(() => {
-        window.location.href = "index.html";
-      }, 1500);
+        image.src = "images/41_語.png";
+        image.classList.add("show");
+
+        property.innerHTML = `
+          <p>卡牌面向：<strong>正位</strong></p>
+          <p>介紹：「語」，月之符文所述說</p>
+          <p>所屬分組：它就是全部</p>
+          <p>月相：無 / 真實月相：探測中</p>
+        `;
+        description.innerHTML = "";
+
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1000);
+      }, 1000);
     });
   });
