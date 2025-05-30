@@ -39,7 +39,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   img.src = "images/" + rune.符文圖檔;
   attr.innerHTML = `
     <p>卡牌面向：${direction}</p>
-    <p>介紹：${rune.圖騰}、「${rune.名稱}”、${rune.顯化形式}</p>
+    <p>介紹：${rune.符文名稱}”、${rune.顯化形式}</p>
     <p>所屬分組：${rune.所屬分組}</p>
     <p>月相：${rune.月相}</p>
   `;
