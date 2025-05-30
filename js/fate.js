@@ -46,13 +46,12 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // 顯示解釋
   desc.innerHTML = `
-    <p>${directionText}</p>
+    <p><strong>歷史：</strong>${rune.符文變化歷史}</p>
+    <p><strong>故事：</strong>${rune.神話故事}</p>
     <p>${rune.靈魂咒語}</p>
     <p>${rune.分組說明}</p>
     <p><strong>靈魂課題：</strong>${rune.靈魂課題}</p>
     <p><strong>實踐挑戰：</strong>${rune.實踐挑戰}</p>
-    <p><strong>歷史：</strong>${rune.符文變化歷史}</p>
-    <p><strong>故事：</strong>${rune.神話故事}</p>
     <p><strong>配套儀式：</strong>${rune.配套儀式建議}</p>
     <p><strong>能量調和：</strong>${rune.能量調和建議}</p>
   `;
