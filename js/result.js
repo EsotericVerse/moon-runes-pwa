@@ -1,4 +1,4 @@
-window.addEventListener("DOMContentLoaded", async () => {
+window.addEventListener("load", async () => {
   const img = document.getElementById("result-image");
   const description = document.getElementById("description");
   const moonText = document.getElementById("moon-phase");
