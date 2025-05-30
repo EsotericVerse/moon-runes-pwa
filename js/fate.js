@@ -54,6 +54,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p><strong>實踐挑戰：</strong>${rune.實踐挑戰}</p>
     <p><strong>配套儀式：</strong>${rune.配套儀式建議}</p>
     <p><strong>能量調和：</strong>${rune.能量調和建議}</p>
+	<HR><p>占卜結論： ${rune.符文名稱} ，${direction} 表示，</p><HR>
+	
   `;
 
   // 重新占卜
