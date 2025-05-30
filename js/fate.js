@@ -31,7 +31,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     "半逆位": "釋放收束。能量正在退潮、進入整合期，是轉化與療癒階段。",
     "逆位": "能量阻滯。主題反向顯現、力量扭曲、潛藏或危機感浮現。"
   };
-
+  
   const direction = directions[directionIndex];
   const directionText = directionMeanings[direction];
 
@@ -39,7 +39,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   img.src = "images/" + rune.符文圖檔;
   attr.innerHTML = `
     <p>卡牌面向：${direction}</p>
-    <p>介紹：${rune.符文名稱}”、${rune.顯化形式}</p>
+    <p>介紹："${rune.符文名稱}"之符文。${rune.顯化形式}</p>
     <p>所屬分組：${rune.所屬分組}</p>
     <p>月相：${rune.月相}</p>
   `;
