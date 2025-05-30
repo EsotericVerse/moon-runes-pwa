@@ -40,11 +40,28 @@ body {
   text-align: left;
   font-size: 0.95rem;
 }
+/* 默認桌面版設置 */
+.main-layout {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* 手機和平板設置 */
+@media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column;
+  }
+  .left-panel, .right-panel {
+    width: 100%;
+  }
+}
+
 footer {
   margin-top: 2rem;
   text-align: center;
   font-size: 0.9rem;
 }
+
 
 /* 小於 600px 仍維持左右結構但壓縮比例 */
 @media screen and (max-width: 600px) {
