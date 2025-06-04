@@ -9,6 +9,7 @@ body {
   margin: 0 auto;
   padding: 1rem;
   box-sizing: border-box;
+  background-color: #ffffff;
 }
 .main-layout {
   display: flex;
