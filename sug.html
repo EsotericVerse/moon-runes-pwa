@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>月之符文建議生成器</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f7f7ff; }
+    #llm-suggestion { margin-top: 1rem; white-space: pre-line; background: #fff; padding: 1rem; border-radius: 8px; box-shadow: 0 0 8px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <h1>🌙 月之符文 LLM 詩意建議</h1>
+  <div id="llm-suggestion">載入中，請稍候...</div>
+
+  <script type="module">
+    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.0';
+
+    const generator = await pipeline('text-generation', 'Xenova/distilgpt2');
+
+    const prompt = `我正在準備盛開，內在逐漸成熟。
+請分別提出三段不超過30字的建議：
+生活建議：
+情緒建議：
+健康建議：`;
+
+    const output = await generator(prompt, { max_new_tokens: 100 });
+    const fullText = output[0]?.generated_text ?? '';
+    const resultText = fullText.replace(prompt, '').trim();
+
+    document.getElementById('llm-suggestion').textContent = resultText || '生成失敗，請稍後再試。';
+  </script>
+</body>
+</html>
