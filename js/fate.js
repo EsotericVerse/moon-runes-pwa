@@ -21,8 +21,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   // 從 JSON 獲取符文資料
   const response = await fetch("data/runes.json");
   const runes = await response.json();
+  const dirResponse = await fetch("data/direction.json");
+  const dirData = await dirResponse.json();
 
   const rune = Object.values(runes).find(r => r.編號 === selectedIndex);
+  const dirInfo = dirData.find(d => d.編號 === selectedIndex);
   const directionIndex = Math.floor(Math.random() * 4);
   const directions = ["正位", "半正位", "半逆位", "逆位"];
   const directionMeanings = {
@@ -34,6 +37,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   
   const direction = directions[directionIndex];
   const directionText = directionMeanings[direction];
+  const orientationFieldMap = {
+    "正位": "正向表示",
+    "半正位": "半正向表示",
+    "半逆位": "半逆向表示",
+    "逆位": "逆向表示"
+  };
+  const directionResult = dirInfo ? dirInfo[orientationFieldMap[direction]] : "";
 
   // 顯示符文圖片與屬性
   img.src = "images/" + rune.圖檔名稱;
@@ -54,7 +64,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p><strong>實踐挑戰：</strong>${rune.實踐挑戰}</p>
     <p><strong>配套儀式：</strong>${rune.配套儀式建議}</p>
     <p><strong>能量調和：</strong>${rune.能量調和建議}</p>
-	<HR><p>占卜結論： ${rune.符文名稱} ，${direction} 表示，</p><HR>
+        <HR><p>占卜結論： ${rune.符文名稱} ，${direction} 表示，${directionResult}</p><HR>
 	
   `;
 
