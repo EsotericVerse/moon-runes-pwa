@@ -38,8 +38,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   // 顯示符文圖片與屬性
   img.src = "images/" + rune.圖檔名稱;
   attr.innerHTML = `
-    <p>介紹："${rune.符文名稱}"之符文。${rune.顯化形式}</p>
-    <p>卡牌面向：${direction}：${directionText}。</p> 
+    <p>介紹：${rune.符文名稱}</p>
+    <p>卡牌面向：${direction}</p>
     <p>所屬分組：${rune.所屬分組}</p>
     <p>月相：${rune.月相}</p>
   `;
