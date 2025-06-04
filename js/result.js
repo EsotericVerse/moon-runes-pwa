@@ -11,6 +11,7 @@ window.addEventListener("load", async () => {
   const lunarDay = today.getDate(); // 取農曆日
   const realPhase = getLunarPhase(lunarDay); // 獲取月相
   moonText.textContent = "月相：無 / 真實月相：" + realPhase;
+  sessionStorage.setItem("realPhase", realPhase);
 
   const messages = [
 	"占卜中，請稍等................",
