@@ -6,6 +6,12 @@ function shuffleArray(array) {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
+  const realPhase = sessionStorage.getItem("realPhase");
+  if (!realPhase) {
+    window.location.href = "index.html";
+    return;
+  }
+  sessionStorage.removeItem("realPhase");
   const img = document.getElementById("result-image");
   const attr = document.getElementById("result-attributes");
   const desc = document.getElementById("result-description");
@@ -26,6 +32,17 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const rune = Object.values(runes).find(r => r.編號 === selectedIndex);
   const dirInfo = dirData.find(d => d.編號 === selectedIndex);
+
+  // 根據所屬分組設定背景顏色
+  const groupColorMap = {
+    "靈魂連結": "#00008B",
+    "自然生命": "#006400",
+    "元素力量": "#8B7500",
+    "時空循環": "#8B0000",
+    "宇宙無常": "#2F2F2F",
+  };
+  const bgColor = groupColorMap[rune.所屬分組] || "#ffffff";
+  document.body.style.backgroundColor = bgColor;
   const directionIndex = Math.floor(Math.random() * 4);
   const directions = ["正位", "半正位", "半逆位", "逆位"];
   const directionMeanings = {
@@ -45,6 +62,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   };
   const directionResult = dirInfo ? dirInfo[orientationFieldMap[direction]] : "";
 
+  // 產生建議文字的佔位
+  let llmSuggestion = "建議生成中...";
+
   // 顯示符文圖片與屬性
   img.src = "images/" + rune.圖檔名稱;
   attr.innerHTML = `
@@ -52,6 +72,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>卡牌面向：${direction}</p>
     <p>所屬分組：${rune.所屬分組}</p>
     <p>月相：${rune.月相}</p>
+    <p>真實月相：${realPhase}</p>
   `;
 
   // 顯示解釋
@@ -64,9 +85,26 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p><strong>實踐挑戰：</strong>${rune.實踐挑戰}</p>
     <p><strong>配套儀式：</strong>${rune.配套儀式建議}</p>
     <p><strong>能量調和：</strong>${rune.能量調和建議}</p>
-        <HR><p>占卜結論： ${rune.符文名稱} ，${direction} 表示，${directionResult}</p><HR>
-	
+        <HR><p>占卜結論： ${rune.符文名稱} ，${direction} 表示，${directionResult}</p>
+        <p id="llm-suggestion">${llmSuggestion}</p><HR>
+
   `;
+
+  // 透過 Transformers.js 取得建議文字
+  try {
+    if (!window.transformers) {
+      await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.0/dist/transformers.min.js');
+    }
+    const { pipeline } = window.transformers;
+    const generator = await pipeline('text-generation', 'Xenova/distilgpt2');
+    const prompt = `${directionResult}，請針對這個狀況提出30字的生活建議、30字的情緒建議跟30字的健康建議`;
+    const output = await generator(prompt, { max_new_tokens: 120 });
+    const resultText = output[0]?.generated_text ?? '';
+    llmSuggestion = resultText.replace(prompt, '').trim();
+  } catch (e) {
+    llmSuggestion = '建議產生失敗，請稍後再試。';
+  }
+  document.getElementById('llm-suggestion').textContent = llmSuggestion;
 
   // 重新占卜
   retry.addEventListener("click", () => {

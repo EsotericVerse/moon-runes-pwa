@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: "Noto Sans TC", sans-serif;
-  background-color: #fdfdfd;
+  background-color: #ffffff;
   color: #222;
 }
 .container {
@@ -9,6 +9,7 @@ body {
   margin: 0 auto;
   padding: 1rem;
   box-sizing: border-box;
+  background-color: #ffffff;
 }
 .main-layout {
   display: flex;
