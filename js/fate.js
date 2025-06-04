@@ -32,6 +32,17 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const rune = Object.values(runes).find(r => r.編號 === selectedIndex);
   const dirInfo = dirData.find(d => d.編號 === selectedIndex);
+
+  // 根據所屬分組設定背景顏色
+  const groupColorMap = {
+    "靈魂連結": "#00008B",
+    "自然生命": "#006400",
+    "元素力量": "#8B7500",
+    "時空循環": "#8B0000",
+    "宇宙無常": "#2F2F2F",
+  };
+  const bgColor = groupColorMap[rune.所屬分組] || "#ffffff";
+  document.body.style.backgroundColor = bgColor;
   const directionIndex = Math.floor(Math.random() * 4);
   const directions = ["正位", "半正位", "半逆位", "逆位"];
   const directionMeanings = {
