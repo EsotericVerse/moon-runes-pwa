@@ -5,26 +5,61 @@
   <title>月之符文建議生成器</title>
   <style>
     body { font-family: sans-serif; padding: 2rem; background: #f7f7ff; }
-    #llm-suggestion { margin-top: 1rem; white-space: pre-line; background: #fff; padding: 1rem; border-radius: 8px; box-shadow: 0 0 8px rgba(0,0,0,0.1); }
+    .suggestion-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .suggestion-box h3 {
+      margin-bottom: 0.5rem;
+      color: #5a4a91;
+    }
   </style>
 </head>
 <body>
   <h1>🌙 月之符文 LLM 詩意建議</h1>
-  <div id="llm-suggestion">Loading...</div>
+
+  <div class="suggestion-box">
+    <h3>生活建議</h3>
+    <div id="suggest-life">Loading...</div>
+  </div>
+
+  <div class="suggestion-box">
+    <h3>情緒建議</h3>
+    <div id="suggest-emotion">Loading...</div>
+  </div>
+
+  <div class="suggestion-box">
+    <h3>健康建議</h3>
+    <div id="suggest-health">Loading...</div>
+  </div>
 
   <script type="module">
     import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.0';
 
-    const generator = await pipeline('text-generation', 'Xenova/distilgpt2');
+    async function generateSuggestions() {
+      const generator = await pipeline('text-generation', 'Xenova/gpt2');
+      const prompt = `I am getting ready to bloom, and I am maturing on the inside.
+Please give me three suggestions for:
+1. Life
+2. Emotion
+3. Health`;
 
-    const prompt = `I am getting ready to bloom, and I am maturing on the inside.
- Please give me three suggestions for life, emotion, and health.`;
+      const output = await generator(prompt, { max_new_tokens: 80 });
+      const fullText = output[0]?.generated_text ?? '';
+      const resultText = fullText.replace(prompt, '').trim();
 
-    const output = await generator(prompt, { max_new_tokens: 30 });
-    const fullText = output[0]?.generated_text ?? '';
-    const resultText = fullText.replace(prompt, '').trim();
+      // 嘗試將建議切成三段
+      const lines = resultText.split(/\d\.\s*|\n|(?=Life:|Emotion:|Health:)/).filter(x => x.trim());
 
-    document.getElementById('llm-suggestion').textContent = resultText || '生成失敗，請稍後再試。';
+      document.getElementById('suggest-life').textContent = lines[0]?.trim() || '尚未取得建議';
+      document.getElementById('suggest-emotion').textContent = lines[1]?.trim() || '尚未取得建議';
+      document.getElementById('suggest-health').textContent = lines[2]?.trim() || '尚未取得建議';
+    }
+
+    generateSuggestions();
   </script>
 </body>
 </html>
