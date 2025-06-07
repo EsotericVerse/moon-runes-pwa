@@ -2,28 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Moon Rune Suggestion</title>
+  <title>🌙 Moon Rune Suggestion</title>
   <style>
     body {
       font-family: sans-serif;
       padding: 2rem;
-      background: #f4f4fa;
-      color: #333;
+      background: #f7f7ff;
     }
     #llm-suggestion {
       margin-top: 2rem;
-      padding: 1.5rem;
+      padding: 1rem;
       background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
       white-space: pre-line;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
     }
   </style>
 </head>
 <body>
-  <h1>🌙 Moon Rune – Gentle Advice Generator</h1>
-  <div id="llm-suggestion">Generating suggestion...</div>
+  <h1>🌕 Moon Rune – Gentle Suggestion</h1>
+  <div id="llm-suggestion">Loading suggestion...</div>
 
   <script type="module">
     import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.0';
@@ -33,14 +32,13 @@
     try {
       const generator = await pipeline('text-generation', 'Xenova/phi2');
       const output = await generator(prompt, { max_new_tokens: 40 });
-
       const fullText = output[0]?.generated_text ?? '';
       const result = fullText.replace(prompt, '').trim();
 
-      document.getElementById('llm-suggestion').textContent = result || '⚠️ Generation failed. Please try again.';
-    } catch (e) {
-      document.getElementById('llm-suggestion').textContent = '⚠️ Error during generation. Please check your connection or model.';
-      console.error(e);
+      document.getElementById('llm-suggestion').textContent = result || '⚠️ No response. Try refreshing.';
+    } catch (err) {
+      document.getElementById('llm-suggestion').textContent = '⚠️ Failed to generate suggestion.';
+      console.error(err);
     }
   </script>
 </body>
