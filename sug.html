@@ -18,9 +18,9 @@
     const generator = await pipeline('text-generation', 'Xenova/distilgpt2');
 
     const prompt = `I am getting ready to bloom, and I am maturing on the inside.
- Please give three suggestions for life, emotion, and health.`;
+ Please give me three suggestions for life, emotion, and health.`;
 
-    const output = await generator(prompt, { max_new_tokens: 100 });
+    const output = await generator(prompt, { max_new_tokens: 30 });
     const fullText = output[0]?.generated_text ?? '';
     const resultText = fullText.replace(prompt, '').trim();
 
