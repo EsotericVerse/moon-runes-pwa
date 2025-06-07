@@ -10,14 +10,14 @@
 </head>
 <body>
   <h1>🌙 月之符文 LLM 詩意建議</h1>
-  <div id="llm-suggestion">載入中，請稍候...</div>
+  <div id="llm-suggestion">Loading...</div>
 
   <script type="module">
     import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.0';
 
     const generator = await pipeline('text-generation', 'Xenova/distilgpt2');
 
-    const prompt = `「I am getting ready to bloom, and I am maturing on the inside.」
+    const prompt = `I am getting ready to bloom, and I am maturing on the inside.
  Please give three suggestions for life, emotion, and health.`;
 
     const output = await generator(prompt, { max_new_tokens: 100 });
