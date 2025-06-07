@@ -30,7 +30,7 @@
     const prompt = `I am preparing to bloom, and growing mature inside.\nGive me one gentle piece of advice (max 20 words).`;
 
     try {
-      const generator = await pipeline('text-generation', 'Xenova/phi2');
+      const generator = await pipeline('text-generation', 'Xenova/distilgpt2');
       const output = await generator(prompt, { max_new_tokens: 40 });
       const fullText = output[0]?.generated_text ?? '';
       const result = fullText.replace(prompt, '').trim();
