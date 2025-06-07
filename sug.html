@@ -1,65 +1,86 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>月之符文建議生成器</title>
   <style>
-    body { font-family: sans-serif; padding: 2rem; background: #f7f7ff; }
-    .suggestion-box {
-      margin-top: 1rem;
-      padding: 1rem;
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #f0f4f8;
+    }
+    .input-box, .suggestion-box {
       background: #fff;
+      padding: 1rem;
       border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
-    .suggestion-box h3 {
-      margin-bottom: 0.5rem;
-      color: #5a4a91;
-    }
+    h1 { color: #4a3e91; }
+    .suggestion-box h3 { margin: 0.5rem 0 0.2rem; color: #5a4a91; }
   </style>
 </head>
 <body>
-  <h1>🌙 月之符文 LLM 詩意建議</h1>
+  <h1>🌙 月之符文 LLM 建議生成器</h1>
+
+  <div class="input-box">
+    <label for="input-prompt">輸入目前的狀態句：</label><br />
+    <input id="input-prompt" style="width:100%; padding:0.5rem;" value="我正在準備盛開，內在逐漸成熟。" />
+    <button onclick="generate()">🔮 生成建議</button>
+  </div>
 
   <div class="suggestion-box">
     <h3>生活建議</h3>
-    <div id="suggest-life">Loading...</div>
+    <div id="suggest-life">尚未生成</div>
   </div>
 
   <div class="suggestion-box">
     <h3>情緒建議</h3>
-    <div id="suggest-emotion">Loading...</div>
+    <div id="suggest-emotion">尚未生成</div>
   </div>
 
   <div class="suggestion-box">
     <h3>健康建議</h3>
-    <div id="suggest-health">Loading...</div>
+    <div id="suggest-health">尚未生成</div>
   </div>
 
+  <!-- WebLLM -->
   <script type="module">
-    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.0';
+    import { ChatWorkerClient } from 'https://esm.sh/@mlc-ai/web-llm';
 
-    async function generateSuggestions() {
-      const generator = await pipeline('text-generation', 'Xenova/gpt2');
-      const prompt = `I am getting ready to bloom, and I am maturing on the inside.
-Please give me three suggestions for:
-1. Life
-2. Emotion
-3. Health`;
+    let client;
+    let isReady = false;
 
-      const output = await generator(prompt, { max_new_tokens: 80 });
-      const fullText = output[0]?.generated_text ?? '';
-      const resultText = fullText.replace(prompt, '').trim();
-
-      // 嘗試將建議切成三段
-      const lines = resultText.split(/\d\.\s*|\n|(?=Life:|Emotion:|Health:)/).filter(x => x.trim());
-
-      document.getElementById('suggest-life').textContent = lines[0]?.trim() || '尚未取得建議';
-      document.getElementById('suggest-emotion').textContent = lines[1]?.trim() || '尚未取得建議';
-      document.getElementById('suggest-health').textContent = lines[2]?.trim() || '尚未取得建議';
+    async function initLLM() {
+      client = new ChatWorkerClient();
+      await client.reload('phi-2', undefined);
+      isReady = true;
     }
 
-    generateSuggestions();
+    async function generate() {
+      if (!isReady) {
+        alert("模型尚未加載完成，請稍候幾秒再試");
+        return;
+      }
+
+      const input = document.getElementById("input-prompt").value.trim();
+      const systemPrompt = `你是一位溫柔的建議者。請針對使用者輸入的中文語句，給出三條簡短建議（每條建議不超過30個中文字），包含：
+1. 生活建議
+2. 情緒建議
+3. 健康建議`;
+
+      const finalPrompt = `使用者說：「${input}」\n請給出三條具體建議（生活、情緒、健康），每條30字內。`;
+
+      const reply = await client.generate(systemPrompt, finalPrompt);
+
+      const lines = reply.split(/\n|\d\.|\•/).map(l => l.trim()).filter(x => x.length > 5);
+
+      document.getElementById("suggest-life").textContent = lines[0] || "無法取得";
+      document.getElementById("suggest-emotion").textContent = lines[1] || "無法取得";
+      document.getElementById("suggest-health").textContent = lines[2] || "無法取得";
+    }
+
+    initLLM(); // 預先載入
   </script>
 </body>
 </html>
