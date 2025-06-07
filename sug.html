@@ -17,11 +17,8 @@
 
     const generator = await pipeline('text-generation', 'Xenova/distilgpt2');
 
-    const prompt = `「我正在準備盛開，內在逐漸成熟。」
-請針對這句話，分別提出三段不超過30字的建議：
-生活建議：
-情緒建議：
-健康建議：`;
+    const prompt = `「I am getting ready to bloom, and I am maturing on the inside.」
+ Please give three suggestions for life, emotion, and health.`;
 
     const output = await generator(prompt, { max_new_tokens: 100 });
     const fullText = output[0]?.generated_text ?? '';
