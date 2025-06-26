@@ -18,7 +18,7 @@ window.addEventListener("load", async () => {
 
   moonText.textContent = "月相：無 / 真實月相：" + realPhase;
   sessionStorage.setItem("realPhase", realPhase);
-
+console.log("農曆日：", lunar.day);
   const messages = [
     "占卜中，請稍等................",
     "循著回憶，找尋那命運的規則。",
