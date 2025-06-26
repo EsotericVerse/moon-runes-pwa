@@ -68,7 +68,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   // 顯示符文圖片與屬性
   img.src = "64images/" + rune.圖檔名稱;
   attr.innerHTML = `
-    <p>介紹：${rune.符文名稱}</p>
+    <p>介紹：${rune.名稱}</p>
     <p>卡牌面向：${direction}</p>
     <p>所屬分組：${rune.所屬分組}</p>
     <p>月相：${rune.月相}</p>
@@ -85,7 +85,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p><strong>實踐挑戰：</strong>${rune.實踐挑戰}</p>
     <p><strong>配套儀式：</strong>${rune.配套儀式建議}</p>
     <p><strong>能量調和：</strong>${rune.能量調和建議}</p>
-        <HR><p>占卜結論： ${rune.符文名稱} ，${direction} 表示，${directionResult}</p>
+        <HR><p>占卜結論： ${rune.名稱} ，${direction} 表示，${directionResult}</p>
         <p id="llm-suggestion">${llmSuggestion}</p><HR>
 
   `;
