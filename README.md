@@ -19,9 +19,9 @@ moon-runes-pwa/
 │   ├── main.js         # 首頁邏輯（啟動占卜）
 │   └── result.js       # 占卜結果處理邏輯
 ├── data/
-│   └── runes.json      # 符文資料總表（由 Excel 匯出）
-├── images/
-│   └── 01_靈.png ～ 42_憶.png
+│   └── runes64.json    # 符文資料總表（由 Excel 匯出）
+├── 64images/
+│   └── 01_靈.png ～ 66_命.png
 └── README.md           # 本說明文件
 ```
 
@@ -30,8 +30,8 @@ moon-runes-pwa/
 ## 🚀 功能說明
 
 ### 1️⃣ 首頁 index.html
-- 顯示語之符文（語.png）
-- 點擊圖卡進入占卜流程（切換為憶.png）
+- 顯示玄之符文（玄.png）
+- 點擊圖卡進入占卜流程（切換為命.png）
 - 顯示洗牌動畫與說明文字
 - 根據農曆日自動推算月相
 - 模擬洗牌 → 抽出一張符文編號與方向 → 導向 result.html
@@ -57,7 +57,7 @@ moon-runes-pwa/
 
 ## 📦 資料來源
 
-`data/runes.json` 是由 `LunaRune40.xlsx` 匯出整合而成，整合以下欄位：
+`data/runes64.json` 是由 `LunaRune64.xlsx` 匯出整合而成，整合以下欄位：
 - 編號、名稱、圖騰、顯化形式、分組、月相、靈魂咒語
 - 靈魂課題、實踐挑戰、分組說明、符文變化歷史、圖片檔案名
 
