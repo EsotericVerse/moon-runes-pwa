@@ -26,6 +26,7 @@ window.addEventListener("load", async () => {
   const lunar = solarlunar.solar2lunar(solarYear, solarMonth, solarDay);
 console.log("完整農曆轉換結果：", lunar);
   console.log("判定月相為：", realPhase);
+console.log("取得的 lunar.day 資料型別與值：", typeof lunar.day, lunar.day);
   moonText.textContent = "月相：無 / 真實月相：" + realPhase;
   sessionStorage.setItem("realPhase", realPhase);
 
