@@ -3,8 +3,8 @@ window.addEventListener("load", async () => {
   const description = document.getElementById("description");
   const moonText = document.getElementById("moon-phase");
 
-  // 假設選擇的符文是 "憶"
-  img.src = "images/42_憶.png"; // 設置圖片為憶符文
+  // 假設選擇的符文是 "命"
+  img.src = "64images/66_命.png"; // 設置圖片為命符文
 
   // 假設月相計算（簡化為根據當前日期）
   const today = new Date();
