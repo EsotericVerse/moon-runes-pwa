@@ -3,26 +3,25 @@ window.addEventListener("load", async () => {
   const description = document.getElementById("description");
   const moonText = document.getElementById("moon-phase");
 
-  img.src = "64images/66_命.png"; // 設置圖片為命符文
+  // 設置圖片為命符文
+  img.src = "64images/66_命.png";
 
-  // ✅ 1. 計算今日西曆日期
+  // 西曆日期
   const today = new Date();
   const solarYear = today.getFullYear();
   const solarMonth = today.getMonth() + 1;
   const solarDay = today.getDate();
 
-  // ✅ 2. 農曆轉換
-  const lunar = solarlunar.solar2lunar(solarYear, solarMonth, solarDay);
-  const lunarDay = lunar.day;
+  // 使用 solarlunar 轉換為農曆資訊
+  const lunarInfo = solarlunar.solar2lunar(solarYear, solarMonth, solarDay);
+  const lunarDay = lunarInfo.lDay; // 農曆數字日期（1～30）
 
-  // ✅ 3. debug 輸出
+  // 除錯資訊
   console.log(`今日西曆：${solarYear}/${solarMonth}/${solarDay}`);
-  console.log(`轉換農曆：${lunar.lYear}年${lunar.lMonth}月${lunar.day}日`);
+  console.log("農曆轉換資訊：", lunarInfo);
   console.log("農曆日數：", lunarDay);
 
   const realPhase = getLunarPhase(lunarDay);
-
-  // ✅ 4. 月相輸出
   console.log("判定月相為：", realPhase);
 
   moonText.textContent = "月相：無 / 真實月相：" + realPhase;
@@ -53,11 +52,11 @@ window.addEventListener("load", async () => {
   showNext();
 });
 
-// ✅ 修正後月相邏輯
+// 根據農曆日判斷月相
 function getLunarPhase(day) {
   if (day >= 1 && day <= 7) return "新月";
   if (day >= 8 && day <= 14) return "上弦";
   if (day >= 15 && day <= 21) return "滿月";
-  if (day >= 22 && day <= 30) return "下弦"; // 修正此處
+  if (day >= 22 && day <= 30) return "下弦";
   return "未知";
 }
