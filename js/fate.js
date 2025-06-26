@@ -18,16 +18,16 @@ window.addEventListener("DOMContentLoaded", async () => {
   const retry = document.getElementById("retry-button");
 
   // 隨機抽取符文
-  let fateArray = Array.from({ length: 40 }, (_, i) => i + 1);
+  let fateArray = Array.from({ length: 64 }, (_, i) => i + 1);
   shuffleArray(fateArray);
   shuffleArray(fateArray);
   shuffleArray(fateArray);
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
 
   // 從 JSON 獲取符文資料
-  const response = await fetch("data/runes.json");
+  const response = await fetch("data/runes64.json");
   const runes = await response.json();
-  const dirResponse = await fetch("data/direction.json");
+  const dirResponse = await fetch("data/direction64.json");
   const dirData = await dirResponse.json();
 
   const rune = Object.values(runes).find(r => r.編號 === selectedIndex);
@@ -66,7 +66,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   let llmSuggestion = "建議生成中...";
 
   // 顯示符文圖片與屬性
-  img.src = "images/" + rune.圖檔名稱;
+  img.src = "64images/" + rune.圖檔名稱;
   attr.innerHTML = `
     <p>介紹：${rune.符文名稱}</p>
     <p>卡牌面向：${direction}</p>
