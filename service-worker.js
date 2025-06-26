@@ -6,7 +6,7 @@ self.addEventListener('install', (event) => {
         '/index.html',
         '/style.css',
         '/js/main.js',
-        '/images/41_語.png',
+        '/64images/65_玄.png',
         // 更多需要快取的檔案
       ]);
     })
