@@ -3,22 +3,30 @@ window.addEventListener("load", async () => {
   const description = document.getElementById("description");
   const moonText = document.getElementById("moon-phase");
 
-  // 假設選擇的符文是 "命"
   img.src = "64images/66_命.png"; // 設置圖片為命符文
 
-  // 使用 solarlunar 取得農曆日
+  // ✅ 1. 計算今日西曆日期
   const today = new Date();
   const solarYear = today.getFullYear();
-  const solarMonth = today.getMonth() + 1; // 月份從 0 開始，要加 1
+  const solarMonth = today.getMonth() + 1;
   const solarDay = today.getDate();
 
+  // ✅ 2. 農曆轉換
   const lunar = solarlunar.solar2lunar(solarYear, solarMonth, solarDay);
-  const lunarDay = lunar.day; // 真正的農曆日
-  const realPhase = getLunarPhase(lunarDay); // 判斷月相
+  const lunarDay = lunar.day;
 
+  // ✅ 3. debug 輸出
+  console.log(`今日西曆：${solarYear}/${solarMonth}/${solarDay}`);
+  console.log(`轉換農曆：${lunar.lYear}年${lunar.lMonth}月${lunar.day}日`);
+  console.log("農曆日數：", lunarDay);
+
+  const realPhase = getLunarPhase(lunarDay);
+
+  // ✅ 4. 月相輸出
+  console.log("判定月相為：", realPhase);
   moonText.textContent = "月相：無 / 真實月相：" + realPhase;
   sessionStorage.setItem("realPhase", realPhase);
-console.log("農曆日：", lunar.day);
+
   const messages = [
     "占卜中，請稍等................",
     "循著回憶，找尋那命運的規則。",
@@ -36,7 +44,7 @@ console.log("農曆日：", lunar.day);
       setTimeout(showNext, 2000);
     } else {
       setTimeout(() => {
-        window.location.href = "fate.html"; // 等待過場後跳轉到占卜結果頁面
+        window.location.href = "fate.html";
       }, 1000);
     }
   }
@@ -44,11 +52,11 @@ console.log("農曆日：", lunar.day);
   showNext();
 });
 
-// 月相計算：依據農曆日判斷
+// ✅ 修正後月相邏輯
 function getLunarPhase(day) {
   if (day >= 1 && day <= 7) return "新月";
   if (day >= 8 && day <= 14) return "上弦";
   if (day >= 15 && day <= 21) return "滿月";
-  if (day >= 22 && day <= 28) return "下弦";
-  return "空亡";
+  if (day >= 22 && day <= 30) return "下弦"; // 修正此處
+  return "未知";
 }
