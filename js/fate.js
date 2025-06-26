@@ -68,7 +68,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   // 顯示符文圖片與屬性
   img.src = "64images/" + rune.圖檔名稱;
   attr.innerHTML = `
-    <p>介紹：${rune.名稱}</p>
+    <p>介紹：${rune.符文名稱}</p>
     <p>卡牌面向：${direction}</p>
     <p>所屬分組：${rune.所屬分組}</p>
     <p>月相：${rune.月相}</p>
@@ -85,26 +85,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p><strong>實踐挑戰：</strong>${rune.實踐挑戰}</p>
     <p><strong>配套儀式：</strong>${rune.配套儀式建議}</p>
     <p><strong>能量調和：</strong>${rune.能量調和建議}</p>
-        <HR><p>占卜結論： ${rune.名稱} ，${direction} 表示，${directionResult}</p>
-        <p id="llm-suggestion">${llmSuggestion}</p><HR>
+        <HR><p>占卜結論： ${rune.符文名稱} ，${direction} 表示，${directionResult}</p>
+        <HR>
 
   `;
-
-  // 透過 Transformers.js 取得建議文字
-  try {
-    if (!window.transformers) {
-      await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.0/dist/transformers.min.js');
-    }
-    const { pipeline } = window.transformers;
-    const generator = await pipeline('text-generation', 'Xenova/distilgpt2');
-    const prompt = `${directionResult}，請針對這個狀況提出30字的生活建議、30字的情緒建議跟30字的健康建議`;
-    const output = await generator(prompt, { max_new_tokens: 120 });
-    const resultText = output[0]?.generated_text ?? '';
-    llmSuggestion = resultText.replace(prompt, '').trim();
-  } catch (e) {
-    llmSuggestion = '建議產生失敗，請稍後再試。';
-  }
-  document.getElementById('llm-suggestion').textContent = llmSuggestion;
 
   // 重新占卜
   retry.addEventListener("click", () => {
