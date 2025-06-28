@@ -71,7 +71,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>介紹：${rune.符文名稱}</p>
     <p>卡牌面向：${direction}</p>
     <p>所屬分組：${rune.所屬分組}</p>
-    <p>月相：${rune.月相}</p>
+    <p>符文月相：${rune.月相}</p>
     <p>真實月相：${realPhase}</p>
   `;
 
