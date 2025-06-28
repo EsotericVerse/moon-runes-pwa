@@ -12,6 +12,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     return;
   }
   sessionStorage.removeItem("realPhase");
+  // 清除舊的占卜結果編號
+  sessionStorage.removeItem("selectedRune");
 
   const img = document.getElementById("result-image");
   const attr = document.getElementById("result-attributes");
@@ -24,6 +26,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   shuffleArray(fateArray);
   shuffleArray(fateArray);
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
+  // 儲存新的符文編號供後續使用
+  sessionStorage.setItem("selectedRune", selectedIndex.toString());
   const runeKey = selectedIndex.toString().padStart(2, "0");
 
   // 載入符文資料
