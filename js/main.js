@@ -6,22 +6,23 @@ function getLunarPhase(day) {
   return "未知";
 }
 
+function detectRealPhase() {
+  const today = new Date();
+  const solarYear = today.getFullYear();
+  const solarMonth = today.getMonth() + 1;
+  const solarDay = today.getDate();
+  const lunarInfo = solarlunar.solar2lunar(solarYear, solarMonth, solarDay);
+  const lunarDay = lunarInfo.lDay;
+  return getLunarPhase(lunarDay);
+}
+
+const realPhase = detectRealPhase();
+sessionStorage.setItem("realPhase", realPhase);
+
 window.addEventListener("DOMContentLoaded", () => {
   const image = document.getElementById("rune-image");
   const card = document.getElementById("rune-card");
   const moonText = document.getElementById("moon-phase-index");
-
-  let realPhase = sessionStorage.getItem("realPhase");
-  if (!realPhase) {
-    const today = new Date();
-    const solarYear = today.getFullYear();
-    const solarMonth = today.getMonth() + 1;
-    const solarDay = today.getDate();
-    const lunarInfo = solarlunar.solar2lunar(solarYear, solarMonth, solarDay);
-    const lunarDay = lunarInfo.lDay;
-    realPhase = getLunarPhase(lunarDay);
-    sessionStorage.setItem("realPhase", realPhase);
-  }
 
   if (moonText) {
     moonText.textContent = `月相：無 / 真實月相：${realPhase}`;
