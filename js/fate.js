@@ -74,10 +74,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   // 根據方向旋轉圖片
   switch (orientationNumber) {
     case 2:
-      img.style.transform = "rotate(-90deg)"; // 半正位：向左轉 90 度
+      img.style.transform = "rotate(90deg)"; // 半正位：向右轉 90 度
       break;
     case 3:
-      img.style.transform = "rotate(90deg)"; // 半逆位：向右轉 90 度
+      img.style.transform = "rotate(-90deg)"; // 半逆位：向左轉 90 度
       break;
     case 4:
       img.style.transform = "rotate(180deg)"; // 逆位：轉 180 度
