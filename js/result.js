@@ -6,23 +6,19 @@ window.addEventListener("load", async () => {
   // 設置圖片為命符文
   img.src = "64images/66_命.png";
 
-  // 西曆日期
-  const today = new Date();
-  const solarYear = today.getFullYear();
-  const solarMonth = today.getMonth() + 1;
-  const solarDay = today.getDate();
-
-  // 使用 solarlunar 轉換為農曆資訊
-  const lunarInfo = solarlunar.solar2lunar(solarYear, solarMonth, solarDay);
-  const lunarDay = lunarInfo.lDay; // 農曆數字日期（1～30）
-
-  // 除錯資訊
-  console.log(`今日西曆：${solarYear}/${solarMonth}/${solarDay}`);
-  console.log("農曆轉換資訊：", lunarInfo);
-  console.log("農曆日數：", lunarDay);
-
-  const realPhase = getLunarPhase(lunarDay);
-  console.log("判定月相為：", realPhase);
+  let realPhase = sessionStorage.getItem("realPhase");
+  if (!realPhase) {
+    const today = new Date();
+    const solarYear = today.getFullYear();
+    const solarMonth = today.getMonth() + 1;
+    const solarDay = today.getDate();
+    const lunarInfo = solarlunar.solar2lunar(solarYear, solarMonth, solarDay);
+    const lunarDay = lunarInfo.lDay;
+    console.log(`今日西曆：${solarYear}/${solarMonth}/${solarDay}`);
+    console.log("農曆轉換資訊：", lunarInfo);
+    console.log("農曆日數：", lunarDay);
+    realPhase = getLunarPhase(lunarDay);
+  }
 
   moonText.textContent = "月相：無 / 真實月相：" + realPhase;
   sessionStorage.setItem("realPhase", realPhase);
