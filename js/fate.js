@@ -57,7 +57,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     "逆位": "逆向表示"
   };
 
+  // 隨機方向 (1: 正位, 2: 半正位, 3: 半逆位, 4: 逆位)
   const directionIndex = Math.floor(Math.random() * 4);
+  const orientationNumber = directionIndex + 1;
   const direction = directions[directionIndex];
   const directionText = directionMeanings[direction];
 
@@ -69,6 +71,20 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // 顯示圖片
   img.src = "64images/" + rune.圖檔名稱;
+  // 根據方向旋轉圖片
+  switch (orientationNumber) {
+    case 2:
+      img.style.transform = "rotate(-90deg)"; // 半正位：向左轉 90 度
+      break;
+    case 3:
+      img.style.transform = "rotate(90deg)"; // 半逆位：向右轉 90 度
+      break;
+    case 4:
+      img.style.transform = "rotate(180deg)"; // 逆位：轉 180 度
+      break;
+    default:
+      img.style.transform = "rotate(0deg)"; // 正位：不旋轉
+  }
 
   // 顯示屬性
   attr.innerHTML = `
