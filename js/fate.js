@@ -31,6 +31,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   const runes = await runeResponse.json();
   const dirResponse = await fetch("data/direction64.json");
   const dirData = await dirResponse.json();
+  const moonResponse = await fetch("data/moon.json");
+  const moonData = await moonResponse.json();
 
   const rune = runes[runeKey];
 
@@ -55,16 +57,34 @@ window.addEventListener("DOMContentLoaded", async () => {
     "逆位": "逆向表示"
   };
 
+  // 隨機方向 (1: 正位, 2: 半正位, 3: 半逆位, 4: 逆位)
   const directionIndex = Math.floor(Math.random() * 4);
+  const orientationNumber = directionIndex + 1;
   const direction = directions[directionIndex];
   const directionText = directionMeanings[direction];
 
   // 取得對應方向描述
   const dirInfo = dirData.find(d => d.編號 === rune.編號);
   const directionResult = dirInfo ? dirInfo[orientationFieldMap[direction]] : "無對應解釋";
+  const moonComparison =
+    (moonData[realPhase] && moonData[realPhase][rune.月相]) || "無比對結果";
 
   // 顯示圖片
   img.src = "64images/" + rune.圖檔名稱;
+  // 根據方向旋轉圖片
+  switch (orientationNumber) {
+    case 2:
+      img.style.transform = "rotate(90deg)"; // 半正位：向右轉 90 度
+      break;
+    case 3:
+      img.style.transform = "rotate(-90deg)"; // 半逆位：向左轉 90 度
+      break;
+    case 4:
+      img.style.transform = "rotate(180deg)"; // 逆位：轉 180 度
+      break;
+    default:
+      img.style.transform = "rotate(0deg)"; // 正位：不旋轉
+  }
 
   // 顯示屬性
   attr.innerHTML = `
@@ -86,6 +106,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p><strong>配套儀式：</strong>${rune.配套儀式建議}</p>
     <p><strong>能量調和：</strong>${rune.能量調和建議}</p>
     <hr>
+    <p>月相比對趨勢：${moonComparison}</p>
     <p>占卜結論：${rune.符文名稱}，${direction} 表示，${directionResult}</p>
     <hr>
   `;
