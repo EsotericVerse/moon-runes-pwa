@@ -3,7 +3,7 @@ from flask_cors import CORS
 from fortune_engine import generate_fortune
 
 app = Flask(__name__)
-CORS(app)  # 允許所有來源的跨域請求（GitHub Pages 可用）
+CORS(app, origins=["https://esotericverse.github.io"])  # 允許 GitHub Pages 來源
 
 @app.route("/api/fortune", methods=["POST"])
 def get_fortune():
@@ -19,4 +19,4 @@ def get_fortune():
         return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=10000)  # 可指定 port 讓 Render 用
+    app.run(debug=True, host="0.0.0.0", port=10000)
