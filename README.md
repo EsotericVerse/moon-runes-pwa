@@ -9,13 +9,13 @@
 - 🎯 **多種占卜模式**：支援兩種不同的占卜界面和流程
 - 🌙 **月相計算**：基於農曆自動計算當日月相並融入占卜結果
 - 🤖 **AI 建議生成**：整合 AI 模型提供個人化建議
-- � **PWA 支援**：支援離線使用和安裝到桌面
+- 📱 **PWA 支援**：支援離線使用和安裝到桌面
 - 🎨 **響應式設計**：適配各種裝置螢幕尺寸
 - 🎲 **豐富符文庫**：包含64張精美符文圖像及詳細解釋
 
 ---
 
-## �📁 專案結構
+## 📁 專案結構
 
 ```
 moon-runes-pwa/
@@ -102,7 +102,7 @@ moon-runes-pwa/
 
 ---
 
-## � 數據資源
+## 📊 數據資源
 
 ### 核心數據檔案
 
@@ -208,11 +208,17 @@ php -S localhost:8000
 - **自定義月相算法**：擴展 `moon.json` 資料結構
 
 ---
+## 🙌 貢獻指南
+
+歡迎任何形式的貢獻！若有新的想法或改進，請按照以下流程：
+1. Fork 此倉庫並建立新的分支
+2. 提交修改後發送 Pull Request
+3. 共同討論並完成合併 🎉
 
 ## 📞 聯絡資訊
 
 **月語之境工作室**
-- � Email：[esotericverse.xy@gmail.com](mailto:esotericverse.xy@gmail.com)
+- ✉️ Email：[esotericverse.xy@gmail.com](mailto:esotericverse.xy@gmail.com)
 - 🌐 專案首頁：透過 GitHub Pages 部署網址訪問
 
 ---
