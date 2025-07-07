@@ -3,7 +3,7 @@ services:
     name: fortune-api
     env: python
     buildCommand: "cd fortune_api && pip install -r requirements.txt"
-    startCommand: "cd fortune_api && python fortune_api.py"
+    startCommand: "cd fortune_api && python api.py"
     envVars:
       - key: FLASK_ENV
         value: production
