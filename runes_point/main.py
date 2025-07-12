@@ -1,105 +1,95 @@
 import pandas as pd
 import networkx as nx
 import plotly.graph_objects as go
-import os
+from sklearn.manifold import MDS
 
-# === 讀取符文資料 ===
-df = pd.read_excel("LunaRune64.xlsx", sheet_name="Basic")
+# 讀取 Excel 資料
+excel_path = "LunaRune64.xlsx"
+df = pd.read_excel(excel_path, sheet_name="Basic")
 df.rename(columns=lambda x: x.strip(), inplace=True)
 
-# === 構建圖形資料 ===
+# 建立符文圖
 G = nx.DiGraph()
 
+# 加入節點（符文名稱、所屬分組、圖騰）
 for _, row in df.iterrows():
     rune = row['符文名稱']
-    group = row.get("所屬分組", "未分類")
-    icon = row.get("圖騰", "")
-    born = row.get("相生", "無")
-    block = row.get("相剋", "無")
-    G.add_node(rune, group=group, icon=icon, 相生=born, 相剋=block)
+    group = row.get('所屬分組', '未分類')
+    icon = row.get('圖騰', '')
+    G.add_node(rune, group=group, icon=icon)
 
-    for target in str(born).split("/"):
+# 加入相生與相剋的邊
+for _, row in df.iterrows():
+    source = row['符文名稱']
+    for target in str(row.get('相生', '')).split("/"):
         target = target.strip()
-        if target and target in df['符文名稱'].values:
-            G.add_edge(rune, target, type="生")
-    for target in str(block).split("/"):
+        if target in G.nodes:
+            G.add_edge(source, target, type="生")
+    for target in str(row.get('相剋', '')).split("/"):
         target = target.strip()
-        if target and target in df['符文名稱'].values:
-            G.add_edge(rune, target, type="剋")
+        if target in G.nodes:
+            G.add_edge(source, target, type="剋")
 
-# === 定位節點位置 ===
-pos = nx.spring_layout(G, seed=42, k=2.2)
+# 使用 MDS 計算節點位置（避免擁擠）
+pos = nx.spring_layout(G, seed=42, k=1.5, iterations=300)
+x_vals = [pos[node][0] for node in G.nodes]
+y_vals = [pos[node][1] for node in G.nodes]
 
-# === 建立 Plotly 圖表資料 ===
-node_x, node_y, node_text, node_color, node_hover_text = [], [], [], [], []
-group_colors = {}
+# 分組上色
 groups = list(set(nx.get_node_attributes(G, 'group').values()))
-for i, group in enumerate(groups):
-    group_colors[group] = f"hsl({(i / len(groups)) * 360},70%,70%)"
+group_color_map = {g: f"hsl({i * 360 / len(groups)},70%,60%)" for i, g in enumerate(groups)}
+node_colors = [group_color_map[G.nodes[node]['group']] for node in G.nodes]
 
-for node in G.nodes():
-    x, y = pos[node]
-    node_x.append(x)
-    node_y.append(y)
-    data = G.nodes[node]
-    node_text.append(f"{data['icon']} {node}")
-    node_color.append(group_colors[data['group']])
-    node_hover_text.append(
-        f"<b>{data['icon']} {node}</b><br>分組：{data['group']}<br>相生：{data['相生']}<br>相剋：{data['相剋']}"
-    )
-
-edge_x, edge_y = [], []
-for u, v, d in G.edges(data=True):
-    x0, y0 = pos[u]
-    x1, y1 = pos[v]
-    edge_x += [x0, x1, None]
-    edge_y += [y0, y1, None]
-
-# === 畫邊線 ===
-edge_trace = go.Scatter(
-    x=edge_x, y=edge_y,
-    line=dict(width=1, color="gray"),
-    hoverinfo='none',
-    mode='lines')
-
-# === 畫節點 ===
+# 建立節點圖層（含圖騰與符文名稱）
 node_trace = go.Scatter(
-    x=node_x, y=node_y,
+    x=x_vals,
+    y=y_vals,
     mode='markers+text',
-    text=node_text,
-    textposition="top center",
-    hoverinfo='text',
+    text=[f"{G.nodes[node]['icon']}<br>{node}" for node in G.nodes],
+    textposition='bottom center',
     marker=dict(
-        color=node_color,
-        size=28,
-        line=dict(width=1, color='black')
+        size=24,
+        color=node_colors,
+        line=dict(width=2, color='DarkSlateGrey')
     ),
-    hovertext=node_hover_text
+    hoverinfo='text'
 )
 
-# === 插入額外說明與互動 ===
-help_html = open("template_parts/help_block.html", encoding="utf-8").read()
-dropdown_html = open("template_parts/dropdown_filter.html", encoding="utf-8").read()
+# 建立邊圖層（分生與剋）
+edge_traces = []
+for u, v, data in G.edges(data=True):
+    x0, y0 = pos[u]
+    x1, y1 = pos[v]
+    color = 'green' if data['type'] == '生' else 'red'
+    dash = 'solid' if data['type'] == '生' else 'dot'
+    edge_traces.append(
+        go.Scatter(
+            x=[x0, x1, None],
+            y=[y0, y1, None],
+            mode='lines',
+            line=dict(width=1.5, color=color, dash=dash),
+            hoverinfo='none'
+        )
+    )
 
-# === 匯出互動式 HTML ===
-fig = go.Figure(data=[edge_trace, node_trace],
-                layout=go.Layout(
-                    title='月之符文・互動網絡圖',
-                    titlefont_size=22,
-                    showlegend=False,
-                    hovermode='closest',
-                    margin=dict(b=20,l=5,r=5,t=60),
-                    xaxis=dict(showgrid=False, zeroline=False),
-                    yaxis=dict(showgrid=False, zeroline=False)
-                ))
+# 繪製互動圖
+fig = go.Figure(
+    data=edge_traces + [node_trace],
+    layout=go.Layout(
+        title=dict(
+            text="月之符文互動網絡圖",
+            font=dict(size=28),
+            x=0.5
+        ),
+        showlegend=False,
+        hovermode='closest',
+        margin=dict(b=20, l=20, r=20, t=60),
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        height=1000
+    )
+)
 
-plot_html = fig.to_html(include_plotlyjs='cdn', full_html=False)
-
-with open("output/luna_rune_interactive_graph.html", "w", encoding="utf-8") as f:
-    f.write("<html><head><meta charset='utf-8'><title>月之符文網絡圖</title></head><body>")
-    f.write(help_html)
-    f.write(dropdown_html)
-    f.write(plot_html)
-    f.write("</body></html>")
-
-print("✅ 完成輸出：output/luna_rune_interactive_graph.html")
+# 匯出 HTML
+fig.write_html("luna_rune_interactive.html")
+print("完成：已產出 luna_rune_interactive.html")
