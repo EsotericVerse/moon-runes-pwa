@@ -95,8 +95,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>真實月相：${realPhase}</p>
   `;
 
-  // 顯示完整解釋
-  desc.innerHTML = `
+  // 詳細解釋 HTML 內容
+  const detailHTML = `
     <p><strong>歷史：</strong>${rune.符文變化歷史}</p>
     <p><strong>故事：</strong>${rune.神話故事}</p>
     <p><strong>靈魂咒語：</strong>${rune.靈魂咒語}</p>
@@ -110,6 +110,25 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>占卜結論：${rune.符文名稱}，${direction} 表示，${directionResult}</p>
     <hr>
   `;
+
+  // 初始只顯示按鈕
+  desc.innerHTML = `
+    <button id="toggle-details">符文詳細資料</button>
+    <div id="detail-content" style="display:none;">${detailHTML}</div>
+  `;
+
+  // 展開與收合功能
+  const toggleBtn = document.getElementById("toggle-details");
+  const detailDiv = document.getElementById("detail-content");
+  toggleBtn.addEventListener("click", () => {
+    if (detailDiv.style.display === "none") {
+      detailDiv.style.display = "block";
+      toggleBtn.textContent = "收起詳細資料";
+    } else {
+      detailDiv.style.display = "none";
+      toggleBtn.textContent = "符文詳細資料";
+    }
+  });
 
   // 重新占卜按鈕
   retry.addEventListener("click", () => {
