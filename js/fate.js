@@ -111,24 +111,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     <hr>
   `;
 
-  // 初始只顯示按鈕
-  desc.innerHTML = `
-    <button id="toggle-details">符文詳細資料</button>
-    <div id="detail-content" style="display:none;">${detailHTML}</div>
-  `;
-
-  // 展開與收合功能
-  const toggleBtn = document.getElementById("toggle-details");
-  const detailDiv = document.getElementById("detail-content");
-  toggleBtn.addEventListener("click", () => {
-    if (detailDiv.style.display === "none") {
-      detailDiv.style.display = "block";
-      toggleBtn.textContent = "收起詳細資料";
-    } else {
-      detailDiv.style.display = "none";
-      toggleBtn.textContent = "符文詳細資料";
-    }
-  });
+  // 顯示完整解釋
+  desc.innerHTML = detailHTML;
 
   // 重新占卜按鈕
   retry.addEventListener("click", () => {
