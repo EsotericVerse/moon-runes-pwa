@@ -84,11 +84,11 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   if (info) {
     desc.innerHTML = `
-      <p><strong>狀況形容：</strong>${info.狀況形容}</p>
-      <p><strong>狀況表達：</strong>${info.狀況表達}</p>
-      <p><strong>每日占卜提醒：</strong>${info.每日占卜提醒}</p>
-      <p><strong>每日占卜引導：</strong>${info.每日占卜引導}</p>
-      <p><strong>每日占卜祝福：</strong>${info.每日占卜祝福}</p>
+      <p><strong>狀況形容：<BR></strong>${info.狀況形容}</p>
+      <p><strong>狀況表達：<BR></strong>${info.狀況表達}</p>
+      <p><strong>每日占卜提醒：<BR></strong>${info.每日占卜提醒}</p>
+      <p><strong>每日占卜引導：<BR></strong>${info.每日占卜引導}</p>
+      <p><strong>每日占卜祝福：<BR></strong>${info.每日占卜祝福}</p>
     `;
   } else {
     desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
