@@ -95,8 +95,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>真實月相：${realPhase}</p>
   `;
 
-  // 顯示完整解釋
-  desc.innerHTML = `
+  // 詳細解釋 HTML 內容
+  const detailHTML = `
     <p><strong>歷史：</strong>${rune.符文變化歷史}</p>
     <p><strong>故事：</strong>${rune.神話故事}</p>
     <p><strong>靈魂咒語：</strong>${rune.靈魂咒語}</p>
@@ -110,6 +110,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>占卜結論：${rune.符文名稱}，${direction} 表示，${directionResult}</p>
     <hr>
   `;
+
+  // 顯示完整解釋
+  desc.innerHTML = detailHTML;
 
   // 重新占卜按鈕
   retry.addEventListener("click", () => {
