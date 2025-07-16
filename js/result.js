@@ -1,4 +1,7 @@
 window.addEventListener("load", async () => {
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get("mode");
+
   const img = document.getElementById("result-image");
   const description = document.getElementById("description");
   const moonText = document.getElementById("moon-phase");
@@ -39,8 +42,9 @@ window.addEventListener("load", async () => {
       index++;
       setTimeout(showNext, 2000);
     } else {
+      const target = mode === "daily" ? "daily.html" : "fate.html";
       setTimeout(() => {
-        window.location.href = "fate.html";
+        window.location.href = target;
       }, 1000);
     }
   }
