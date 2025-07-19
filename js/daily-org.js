@@ -27,7 +27,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const runeResponse = await fetch("data/runes64.json");
   const runes = await runeResponse.json();
-  const rune = runes.find(r => r.編號.toString().padStart(2, "0") === runeKey);
+  const rune = runes[runeKey];
 
   if (!rune) {
     attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
@@ -62,23 +62,26 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>真實月相：${realPhase}</p>
   `;
 
-  const allDataResponse = await fetch("data/runes_all_data.json");
-  const allData = await allDataResponse.json();
-  const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
-  
-  if (!runeData) {
-    desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
-    return;
+  const groupMap = {
+    "靈魂": "01",
+    "連結": "02",
+    "生命": "03",
+    "自然": "04",
+    "礦物": "05",
+    "元素": "06",
+    "秩序": "07",
+    "無序": "08",
+  };
+
+  const fileId = groupMap[rune.所屬分組];
+  let info;
+  if (fileId) {
+    const groupData = await fetch(`data/group/${fileId}.json`).then(r => r.json());
+    info = groupData.find(
+      d => d.符文名稱 === rune.符文名稱 && d.卡牌方向 === direction && d.現在月相 === realPhase
+    );
   }
 
-  const directionData = runeData.卡牌方向.find(d => d.方向 === direction);
-  if (!directionData) {
-    desc.innerHTML = "<p>⚠️ 無法載入卡牌方向資料</p>";
-    return;
-  }
-
-  const info = directionData.現況.find(p => p.現在月相 === realPhase);
-  
   if (info) {
     desc.innerHTML = `
       <p><strong>狀況形容：<BR></strong>${info.狀況形容}</p>
