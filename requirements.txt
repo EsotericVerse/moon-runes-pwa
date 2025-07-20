@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+transformers
+thulac
+zhdate
+torch  # T5 需要
+mangum
