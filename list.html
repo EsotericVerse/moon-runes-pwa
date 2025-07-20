@@ -51,6 +51,12 @@
   <h1>月語之境 - 符文查詢</h1>
   
   <div>
+    <img id="result-image" src="" alt="符文圖片">
+  </div>
+
+  <div id="result-attributes"></div>
+  
+  <div id="select-container">
     <label for="group-select">選擇分組：</label>
     <select id="group-select">
       <option value="">請選擇分組</option>
@@ -63,20 +69,13 @@
       <option value="秩序">秩序</option>
       <option value="無序">無序</option>
     </select>
-  </div>
 
-  <div>
-    <label for="rune-select">選擇符文編號：</label>
+    <label for="rune-select">選擇符文：</label>
     <select id="rune-select" disabled>
       <option value="">請先選擇分組</option>
     </select>
   </div>
 
-  <div>
-    <img id="result-image" src="" alt="符文圖片">
-  </div>
-
-  <div id="result-attributes"></div>
   <div id="result-description"></div>
 
   <footer>
