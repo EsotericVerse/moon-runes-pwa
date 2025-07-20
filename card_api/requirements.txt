@@ -1,8 +1,8 @@
-fastapi
-uvicorn
-pydantic
-transformers
-thulac
-zhdate
-torch  # T5 需要
-mangum
+fastapi==0.111.1
+uvicorn==0.30.3
+pydantic==2.8.2
+transformers==4.42.4
+thulac==0.2.2
+zhdate==0.2.0
+torch==2.3.1+cpu
+mangum==0.17.0

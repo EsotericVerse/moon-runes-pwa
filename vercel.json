@@ -16,7 +16,8 @@
       "headers": { "Cache-Control": "public, max-age=0, must-revalidate" },
       "dest": "manifest.json"
     }
-  ]
+  ],
+  "installCommand": "pip install -r card_api/requirements.txt"
 }
 
 
