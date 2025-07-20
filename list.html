@@ -1,46 +1,50 @@
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
+  <base href="/moon-runes-pwa/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>月語之境 - 符文查詢</title>
+  <title>符文查詢</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
-  <h1>月語之境 - 符文查詢</h1>
-  
-  <div>
-    <img id="result-image" src="" alt="符文圖片">
+  <div class="container">
+    <h1>符文查詢</h1>
+    <div class="main-layout">
+      <div class="left-panel">
+        <div class="card-display">
+          <img id="result-image" src="" alt="符文圖片">
+        </div>
+      </div>
+      <div class="right-panel">
+        <div class="card-attributes" id="result-attributes"></div>
+        <div id="select-container">
+          <label for="group-select">選擇分組：</label>
+          <select id="group-select">
+            <option value="">請選擇分組</option>
+            <option value="靈魂">靈魂</option>
+            <option value="連結">連結</option>
+            <option value="生命">生命</option>
+            <option value="自然">自然</option>
+            <option value="礦物">礦物</option>
+            <option value="元素">元素</option>
+            <option value="秩序">秩序</option>
+            <option value="無序">無序</option>
+          </select>
+
+          <label for="rune-select">選擇符文：</label>
+          <select id="rune-select" disabled>
+            <option value="">請先選擇分組</option>
+          </select>
+        </div>
+        <div class="description" id="result-description"></div>
+      </div>
+    </div>
+    <footer>
+      By 月語之境工作室 | <a href="mailto:contact@yueyuzhijing.com">聯絡我們</a>
+    </footer>
   </div>
-
-  <div id="result-attributes"></div>
-  
-  <div id="select-container">
-    <label for="group-select">選擇分組：</label>
-    <select id="group-select">
-      <option value="">請選擇分組</option>
-      <option value="靈魂">靈魂</option>
-      <option value="連結">連結</option>
-      <option value="生命">生命</option>
-      <option value="自然">自然</option>
-      <option value="礦物">礦物</option>
-      <option value="元素">元素</option>
-      <option value="秩序">秩序</option>
-      <option value="無序">無序</option>
-    </select>
-
-    <label for="rune-select">選擇符文：</label>
-    <select id="rune-select" disabled>
-      <option value="">請先選擇分組</option>
-    </select>
-  </div>
-
-  <div id="result-description"></div>
-
-  <footer>
-    By 月語之境工作室 | <a href="mailto:contact@yueyuzhijing.com">聯絡我們</a>
-  </footer>
-
   <script src="js/list.js"></script>
 </body>
 </html>
