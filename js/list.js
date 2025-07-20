@@ -1,4 +1,4 @@
-```javascript
+
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("list.js 開始執行，時間：", new Date().toISOString());
 
@@ -164,4 +164,3 @@ document.addEventListener("DOMContentLoaded", async () => {
     `;
   }
 });
-```
