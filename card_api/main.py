@@ -258,7 +258,10 @@ def adjust_direction_combination(rune1_dir, rune2_dir):
 
 # FastAPI 應用
 app = FastAPI()
-
+# Vercel 入口
+def handler(event, context):
+    from mangum import Mangum
+    return Mangum(app)(event, context)
 # 定義輸入模型
 class RuneInput(BaseModel):
     mode: str
@@ -294,3 +297,5 @@ def divination(input: RuneInput):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+    
+    
