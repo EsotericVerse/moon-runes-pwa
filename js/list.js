@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var desc = document.getElementById("result-description");
   var groupSelect = document.getElementById("group-select");
   var runeSelect = document.getElementById("rune-select");
+  var homeButton = document.getElementById("home-button");
 
   // 硬編碼符文名稱（編號 1-64）
   var runesData = {
@@ -87,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
   img.addEventListener("click", function () {
     let countdown = 5;
     const originalSrc = img.src;
-    img.src = "path/to/countdown.gif"; // 可選：顯示倒數動畫（需自行提供圖片）
+    // img.src = "path/to/countdown.gif"; // 可選：顯示倒數動畫（需自行提供圖片）
     const countdownInterval = setInterval(() => {
       countdown--;
       if (countdown <= 0) {
@@ -101,6 +102,11 @@ document.addEventListener("DOMContentLoaded", function () {
       img.src = originalSrc;
       img.removeEventListener("click", cancelCountdown);
     }, { once: true });
+  });
+
+  // 回到首頁按鈕
+  homeButton.addEventListener("click", () => {
+    window.location.href = "index.html";
   });
 
   // 顯示符文資訊的函數

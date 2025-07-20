@@ -14,26 +14,29 @@
         <div class="card-display">
           <img id="result-image" src="" alt="符文圖片" />
         </div>
+        <div class="left-bottom">
+          <div>
+            <select id="group-select">
+              <option value="">請選擇分組</option>
+              <option value="靈魂">靈魂</option>
+              <option value="連結">連結</option>
+              <option value="生命">生命</option>
+              <option value="自然">自然</option>
+              <option value="礦物">礦物</option>
+              <option value="元素">元素</option>
+              <option value="秩序">秩序</option>
+              <option value="無序">無序</option>
+            </select>
+            <select id="rune-select" disabled>
+              <option value="">請先選擇分組</option>
+            </select>
+          </div>
+          <div id="result-attributes" class="card-attributes"></div>
+        </div>
       </div>
       <div class="right-panel">
-        <div>
-          <select id="group-select">
-            <option value="">請選擇分組</option>
-            <option value="靈魂">靈魂</option>
-            <option value="連結">連結</option>
-            <option value="生命">生命</option>
-            <option value="自然">自然</option>
-            <option value="礦物">礦物</option>
-            <option value="元素">元素</option>
-            <option value="秩序">秩序</option>
-            <option value="無序">無序</option>
-          </select>
-          <select id="rune-select" disabled>
-            <option value="">請先選擇分組</option>
-          </select>
-        </div>
-        <div id="result-attributes" class="card-attributes"></div>
         <div id="result-description" class="description"></div>
+        <button id="home-button">回到首頁</button>
       </div>
     </div>
     <footer>
