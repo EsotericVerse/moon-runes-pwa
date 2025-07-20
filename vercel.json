@@ -6,7 +6,19 @@
       "use": "@vercel/python"
     },
     {
-      "src": "public/**",
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.json",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "sw.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "icons/*",
       "use": "@vercel/static"
     }
   ],
@@ -18,20 +30,27 @@
     {
       "src": "/manifest.json",
       "headers": { "Cache-Control": "public, max-age=0, must-revalidate" },
-      "dest": "public/manifest.json"
+      "dest": "manifest.json"
     },
     {
       "src": "/sw.js",
       "headers": { "Cache-Control": "public, max-age=0, must-revalidate" },
-      "dest": "public/sw.js"
+      "dest": "sw.js"
     },
     {
       "src": "/icons/(.*)",
-      "dest": "public/icons/$1"
+      "dest": "icons/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "public/index.html"
+      "headers": { "Cache-Control": "no-cache" },
+      "dest": "index.html"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
