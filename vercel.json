@@ -4,53 +4,19 @@
     {
       "src": "card_api/main.py",
       "use": "@vercel/python"
-    },
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.json",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "sw.js",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "icons/*",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/divination",
+      "src": "/(.*)",
       "dest": "card_api/main.py"
     },
-    {
+	{
       "src": "/manifest.json",
       "headers": { "Cache-Control": "public, max-age=0, must-revalidate" },
       "dest": "manifest.json"
-    },
-    {
-      "src": "/sw.js",
-      "headers": { "Cache-Control": "public, max-age=0, must-revalidate" },
-      "dest": "sw.js"
-    },
-    {
-      "src": "/icons/(.*)",
-      "dest": "icons/$1"
-    },
-    {
-      "src": "/(.*)",
-      "headers": { "Cache-Control": "no-cache" },
-      "dest": "index.html"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ]
 }
+
+
