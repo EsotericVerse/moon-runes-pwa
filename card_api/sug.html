@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Moon Rune Suggestion</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f4f4f4; }
+    #llm-suggestion {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      white-space: pre-line;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌙 Gentle Suggestion Generator</h1>
+  <div id="llm-suggestion">Loading...</div>
+
+  <script type="module">
+    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.0';
+
+    async function run() {
+      try {
+        const generator = await pipeline('text-generation', 'Xenova/distilgpt2');
+        const prompt = `I am preparing to bloom, and growing mature inside.\nGive me one gentle piece of advice (max 20 words).`;
+        const output = await generator(prompt, { max_new_tokens: 40 });
+        const fullText = output[0]?.generated_text ?? '';
+        const result = fullText.replace(prompt, '').trim();
+        document.getElementById('llm-suggestion').textContent = result || '⚠️ Empty response';
+      } catch (err) {
+        console.error(err);
+        document.getElementById('llm-suggestion').textContent = '⚠️ Failed to generate suggestion.';
+      }
+    }
+
+    run();
+  </script>
+</body>
+</html>
