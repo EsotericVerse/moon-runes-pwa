@@ -1,26 +1,22 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <base href="/moon-runes-pwa/">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>符文查詢</title>
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/list.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>符文查詢</h1>
     <div class="main-layout">
       <div class="left-panel">
         <div class="card-display">
-          <img id="result-image" src="" alt="符文圖片">
+          <img id="result-image" src="" alt="符文圖片" />
         </div>
       </div>
       <div class="right-panel">
-        <div class="card-attributes" id="result-attributes"></div>
-        <div id="select-container">
-          <label for="group-select">選擇分組：</label>
+        <div>
           <select id="group-select">
             <option value="">請選擇分組</option>
             <option value="靈魂">靈魂</option>
@@ -32,18 +28,17 @@
             <option value="秩序">秩序</option>
             <option value="無序">無序</option>
           </select>
-          <label for="rune-select">選擇符文：</label>
           <select id="rune-select" disabled>
             <option value="">請先選擇分組</option>
           </select>
         </div>
-        <div class="description" id="result-description"></div>
+        <div id="result-attributes" class="card-attributes"></div>
+        <div id="result-description" class="description"></div>
       </div>
     </div>
     <footer>
-      <p><strong>By</strong> 月語之境工作室 ｜ <a href="mailto:esotericverse.xy@gmail.com">聯絡我們</a></p>
+      By 月語之境工作室 ｜ <a href="mailto:contact@esotericverse.studio">聯絡我們</a>
     </footer>
   </div>
-  <script src="js/list.js"></script>
 </body>
 </html>

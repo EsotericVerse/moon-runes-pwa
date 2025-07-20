@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", function () {
   var img = document.getElementById("result-image");
   var attr = document.getElementById("result-attributes");
@@ -82,6 +81,26 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       displayRune(rune);
     }
+  });
+
+  // 點擊圖片後倒數五秒跳轉到 fate.html
+  img.addEventListener("click", function () {
+    let countdown = 5;
+    const originalSrc = img.src;
+    img.src = "path/to/countdown.gif"; // 可選：顯示倒數動畫（需自行提供圖片）
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) {
+        clearInterval(countdownInterval);
+        window.location.href = "fate.html";
+      }
+    }, 1000);
+    // 如果中途再次點擊，恢復原圖並取消倒數
+    img.addEventListener("click", function cancelCountdown() {
+      clearInterval(countdownInterval);
+      img.src = originalSrc;
+      img.removeEventListener("click", cancelCountdown);
+    }, { once: true });
   });
 
   // 顯示符文資訊的函數
