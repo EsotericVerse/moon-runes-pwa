@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("正在載入 data/runes64.json");
     const runeResponse = await fetch("data/runes64.json");
     if (!runeResponse.ok) {
-      throw new Error(`無法載入符文資料，狀態碼：${runeResponse.status}`);
+      throw new Error("無法載入符文資料，狀態碼：${runeResponse.status}");
     }
     const runes = await runeResponse.json();
     console.log("符文資料載入成功，總數：", runes.length);
