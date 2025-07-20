@@ -40,37 +40,75 @@
         </script><!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>月語之境 | 符文清單</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="js/list.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>月語之境 - 符文查詢</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    select {
+      padding: 8px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    #result-image {
+      max-width: 200px;
+      margin: 20px 0;
+    }
+    #result-attributes, #result-description {
+      margin: 20px 0;
+      line-height: 1.6;
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="rune-container">
-      <img id="result-image" src="64images/66_命.png" alt="符文圖片" />
-      <div class="dropdown-container">
-        <select id="group-select">
-          <option value="">選擇分組</option>
-          <option value="靈魂">靈魂</option>
-          <option value="連結">連結</option>
-          <option value="生命">生命</option>
-          <option value="自然">自然</option>
-          <option value="礦物">礦物</option>
-          <option value="元素">元素</option>
-          <option value="秩序">秩序</option>
-          <option value="無序">無序</option>
-          <option value="個人">個人</option>
-        </select>
-        <select id="rune-select" disabled>
-          <option value="">請先選擇分組</option>
-        </select>
-      </div>
-      <div id="result-attributes"></div>
-      <div id="result-description"></div>
-    </div>
+  <h1>月語之境 - 符文查詢</h1>
+  
+  <div>
+    <label for="group-select">選擇分組：</label>
+    <select id="group-select">
+      <option value="">請選擇分組</option>
+      <option value="靈魂">靈魂</option>
+      <option value="連結">連結</option>
+      <option value="生命">生命</option>
+      <option value="自然">自然</option>
+      <option value="礦物">礦物</option>
+      <option value="元素">元素</option>
+      <option value="秩序">秩序</option>
+      <option value="無序">無序</option>
+      <option value="個人">個人</option>
+    </select>
   </div>
-  <footer>By 月語之境工作室 ｜ <a href="contact.html">聯絡我們</a></footer>
+
+  <div>
+    <label for="rune-select">選擇符文編號：</label>
+    <select id="rune-select" disabled>
+      <option value="">請先選擇分組</option>
+    </select>
+  </div>
+
+  <div>
+    <img id="result-image" src="" alt="符文圖片">
+  </div>
+
+  <div id="result-attributes"></div>
+  <div id="result-description"></div>
+
+  <footer>
+    By 月語之境工作室 ｜ <a href="mailto:contact@yueyuzhijing.com">聯絡我們</a>
+  </footer>
+
+  <script src="js/list.js"></script>
 </body>
 </html>
