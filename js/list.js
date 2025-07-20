@@ -1,6 +1,6 @@
-```javascript
+
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("list.js 開始執行");
+  console.log("list.js 開始執行，時間：", new Date().toISOString());
 
   const img = document.getElementById("result-image");
   const attr = document.getElementById("result-attributes");
@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // 定義分組與對應編號
+  // 定義分組與對應編號（移除個人分組）
   const groupRanges = {
     靈魂: [1, 8],
     連結: [9, 16],
@@ -116,4 +116,3 @@ document.addEventListener("DOMContentLoaded", async () => {
     img.src = "";
   }
 });
-```
