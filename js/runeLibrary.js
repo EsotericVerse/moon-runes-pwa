@@ -38,7 +38,7 @@ async function getData(cacheKey, url, validator) {
 
 // 特定 functions
 async function getRunes64() {
-    return getData('runes64', 'https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl', (data) => Object.keys(data).length >= 64);
+    return getData('runes64', 'https://moon-runes-pwa.onrender.com/get-runes64', (data) => Object.keys(data).length >= 64);
 }
 
 async function getAllData() {

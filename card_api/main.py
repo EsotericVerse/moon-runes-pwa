@@ -395,6 +395,16 @@ async def test_endpoint():
         "moon_phase": get_lunar_phase(datetime.now())
     }
 
+# 新增代理端點：用來代理前端載入 runes64.json（解決 CORS 問題）
+@app.get("/get-runes64")
+async def get_runes64():
+    try:
+        response = requests.get("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl")
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Vercel handler
 try:
     from mangum import Mangum
