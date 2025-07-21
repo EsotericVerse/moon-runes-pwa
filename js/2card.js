@@ -1,7 +1,9 @@
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [mediator: {
+      [array[i], array[j]] = [array[j], array[i]];
+    }
   }
 }
 
@@ -15,21 +17,29 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const img1 = document.getElementById("result-image1");
   const img2 = document.getElementById("result-image2");
-  const attr1 = document.getElementById("result-attributes"); // 第一張屬性
-  const desc2 = document.getElementById("result-description"); // 第二張屬性
-  const apiResultDiv = document.getElementById("api-result"); // API 結果 + 重新占卜
+  const attr1 = document.getElementById("result-attributes");
+  const desc2 = document.getElementById("result-description");
+  const apiResultDiv = document.getElementById("api-result");
 
   // 生成兩個隨機且不同的符文編號（1～64）
   let fateArray = Array.from({ length: 64 }, (_, i) => i + 1);
   shuffleArray(fateArray);
   const rune1Index = fateArray[0];
-  const rune2Index = fateArray[1]; // 保證不同
+  const rune2Index = fateArray[1];
   const rune1Key = rune1Index.toString().padStart(2, "0");
   const rune2Key = rune2Index.toString().padStart(2, "0");
 
-  // 載入符文資料
-  const runeResponse = await fetch("data/runes64.json");
-  const runes = await runeResponse.json();
+  // 載入符文資料（從 Google Drive）
+  let runes;
+  try {
+    const runeResponse = await fetch("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl");
+    if (!runeResponse.ok) throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
+    runes = await runeResponse.json();
+  } catch (error) {
+    console.error("載入符文資料失敗：", error);
+    attr1.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+    return;
+  }
 
   const rune1 = runes[rune1Key];
   const rune2 = runes[rune2Key];
@@ -67,7 +77,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     default: img2.style.transform = "rotate(0deg)";
   }
 
-  // 第一張屬性 (innerHTML)
+  // 第一張屬性
   attr1.innerHTML = `
     <p>介紹：${rune1.符文名稱}</p>
     <p>卡牌面向：${direction1}</p>
@@ -76,7 +86,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>真實月相：${realPhase}</p>
   `;
 
-  // 第二張屬性 (inner2HTML)
+  // 第二張屬性
   desc2.innerHTML = `
     <p>介紹：${rune2.符文名稱}</p>
     <p>卡牌面向：${direction2}</p>
@@ -85,7 +95,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>真實月相：${realPhase}</p>
   `;
 
-  // 呼叫 API 並顯示在 api-result div
+  // 呼叫 API
   let apiHtml = '';
   try {
     const apiResponse = await fetch("https://moon-runes-pwa.onrender.com/divination", {
@@ -117,7 +127,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     apiHtml = "<p>⚠️ API 連線錯誤</p>";
   }
 
-  // 添加 API 結果和重新占卜按鈕到 api-result
+  // 添加 API 結果和重新占卜按鈕
   apiResultDiv.innerHTML = apiHtml + '<button id="retry-button">重新占卜</button>';
 
   // 重新占卜按鈕事件

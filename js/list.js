@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", function () {
   var runeSelect = document.getElementById("rune-select");
   var homeButton = document.getElementById("home-button");
 
-  // 硬編碼符文名稱（編號 1-64）
   var runesData = {
     "靈魂": ["靈", "魂", "彩", "憶", "界", "域", "鏡", "核"],
     "連結": ["向", "斷", "封", "鍊", "啟", "分", "悟", "誤"],
@@ -18,7 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
     "無序": ["福", "禍", "無", "夢", "幻", "緣", "虛", "果"]
   };
 
-  // 硬編碼符文編號映射（用於選擇時對應 JSON）
   var runeNumberMap = {
     "靈": 1, "魂": 2, "彩": 3, "憶": 4, "界": 5, "域": 6, "鏡": 7, "核": 8,
     "向": 9, "斷": 10, "封": 11, "鍊": 12, "啟": 13, "分": 14, "悟": 15, "誤": 16,
@@ -30,7 +28,6 @@ document.addEventListener("DOMContentLoaded", function () {
     "福": 57, "禍": 58, "無": 59, "夢": 60, "幻": 61, "緣": 62, "虛": 63, "果": 64
   };
 
-  // 硬編碼編號 66 的完整資料（預設顯示）
   var defaultRune = {
     編號: 66,
     符文名稱: "命",
@@ -51,10 +48,8 @@ document.addEventListener("DOMContentLoaded", function () {
     圖檔名稱: "66_命.png"
   };
 
-  // 顯示預設符文（編號 66）
   displayRune(defaultRune);
 
-  // 當選擇分組時，動態更新第二層選單（顯示符文名稱）
   groupSelect.addEventListener("change", function () {
     var selectedGroup = groupSelect.value;
     runeSelect.innerHTML = "<option value=\"\">請選擇符文</option>";
@@ -71,24 +66,30 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // 當選擇符文時，載入並顯示對應符文詳細資訊
   runeSelect.addEventListener("change", async function () {
     var selectedRune = parseInt(runeSelect.value);
     if (selectedRune) {
-      var runeResponse = await fetch("data/runes64.json");
-      var runes = await runeResponse.json();
-      var rune = runes.find(function (r) {
+      let runes;
+      try {
+        const runeResponse = await fetch("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl");
+        if (!runeResponse.ok) throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
+        runes = await runeResponse.json();
+      } catch (error) {
+        console.error("載入符文資料失敗：", error);
+        attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+        return;
+      }
+
+      const rune = runes.find(function (r) {
         return r.編號 === selectedRune;
       });
       displayRune(rune);
     }
   });
 
-  // 點擊圖片後倒數五秒跳轉到 fate.html
   img.addEventListener("click", function () {
     let countdown = 5;
     const originalSrc = img.src;
-    // img.src = "path/to/countdown.gif"; // 可選：顯示倒數動畫（需自行提供圖片）
     const countdownInterval = setInterval(() => {
       countdown--;
       if (countdown <= 0) {
@@ -96,7 +97,6 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "fate.html";
       }
     }, 1000);
-    // 如果中途再次點擊，恢復原圖並取消倒數
     img.addEventListener("click", function cancelCountdown() {
       clearInterval(countdownInterval);
       img.src = originalSrc;
@@ -104,17 +104,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }, { once: true });
   });
 
-  // 回到首頁按鈕
   homeButton.addEventListener("click", () => {
     window.location.href = "index.html";
   });
 
-  // 顯示符文資訊的函數
   function displayRune(rune) {
     img.src = "64images/" + rune.圖檔名稱;
     img.style.transform = "rotate(0deg)";
 
-    // 顯示屬性
     attr.innerHTML = [
       "<p><strong>符文名稱：</strong>" + rune.符文名稱 + "</p>",
       "<p><strong>英文：</strong>" + rune.英文 + "</p>",
@@ -125,7 +122,6 @@ document.addEventListener("DOMContentLoaded", function () {
       "<p><strong>月相輔助說明：</strong>" + rune.月相輔助說明 + "</p>"
     ].join("");
 
-    // 詳細解釋
     desc.innerHTML = [
       "<p><strong>靈魂咒語：</strong>" + rune.靈魂咒語 + "</p>",
       "<p><strong>靈魂課題：</strong>" + rune.靈魂課題 + "</p>",

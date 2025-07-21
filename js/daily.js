@@ -1,4 +1,3 @@
-
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -26,8 +25,17 @@ window.addEventListener("DOMContentLoaded", async () => {
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
   const runeKey = selectedIndex.toString().padStart(2, "0");
 
-  const runeResponse = await fetch("data/runes64.json");
-  const runes = await runeResponse.json();
+  let runes;
+  try {
+    const runeResponse = await fetch("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl");
+    if (!runeResponse.ok) throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
+    runes = await runeResponse.json();
+  } catch (error) {
+    console.error("載入符文資料失敗：", error);
+    attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+    return;
+  }
+
   const rune = runes.find(r => r.編號.toString().padStart(2, "0") === runeKey);
 
   if (!rune) {
@@ -63,8 +71,17 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>真實月相：${realPhase}</p>
   `;
 
-  const allDataResponse = await fetch("data/runes_all_data.json");
-  const allData = await allDataResponse.json();
+  let allData;
+  try {
+    const allDataResponse = await fetch("https://drive.google.com/uc?export=download&id=15DUYevg1DAfvr9NIf8xHTzkuBiNK8k73");
+    if (!allDataResponse.ok) throw new Error(`無法載入 runes_all_data.json，狀態碼：${allDataResponse.status}`);
+    allData = await allDataResponse.json();
+  } catch (error) {
+    console.error("載入每日占卜資料失敗：", error);
+    desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
+    return;
+  }
+
   const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
   
   if (!runeData) {

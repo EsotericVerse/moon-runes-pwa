@@ -1,7 +1,7 @@
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+    [array[i], array[j]] = [array[j], array[i]];
   }
 }
 
@@ -27,12 +27,36 @@ window.addEventListener("DOMContentLoaded", async () => {
   const runeKey = selectedIndex.toString().padStart(2, "0");
 
   // 載入符文資料
-  const runeResponse = await fetch("data/runes64.json");
-  const runes = await runeResponse.json();
-  const dirResponse = await fetch("data/direction64.json");
-  const dirData = await dirResponse.json();
-  const moonResponse = await fetch("data/moon.json");
-  const moonData = await moonResponse.json();
+  let runes, dirData, moonData;
+  try {
+    const runeResponse = await fetch("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl");
+    if (!runeResponse.ok) throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
+    runes = await runeResponse.json();
+  } catch (error) {
+    console.error("載入符文資料失敗：", error);
+    attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+    return;
+  }
+
+  try {
+    const dirResponse = await fetch("https://drive.google.com/uc?export=download&id=1x5fXncux8F_55NpJgXqJgOjD2U0-ENuo");
+    if (!dirResponse.ok) throw new Error(`無法載入 direction64.json，狀態碼：${dirResponse.status}`);
+    dirData = await dirResponse.json();
+  } catch (error) {
+    console.error("載入方向資料失敗：", error);
+    attr.innerHTML = "<p>⚠️ 無法載入方向資料</p>";
+    return;
+  }
+
+  try {
+    const moonResponse = await fetch("https://drive.google.com/uc?export=download&id=1s0QfpW4H9H3MpBR9SPaMBinYaPINhSJm");
+    if (!moonResponse.ok) throw new Error(`無法載入 moon.json，狀態碼：${moonResponse.status}`);
+    moonData = await moonResponse.json();
+  } catch (error) {
+    console.error("載入月相資料失敗：", error);
+    attr.innerHTML = "<p>⚠️ 無法載入月相資料</p>";
+    return;
+  }
 
   const rune = runes[runeKey];
 
@@ -57,36 +81,31 @@ window.addEventListener("DOMContentLoaded", async () => {
     "逆位": "逆向表示"
   };
 
-  // 隨機方向 (1: 正位, 2: 半正位, 3: 半逆位, 4: 逆位)
   const directionIndex = Math.floor(Math.random() * 4);
   const orientationNumber = directionIndex + 1;
   const direction = directions[directionIndex];
   const directionText = directionMeanings[direction];
 
-  // 取得對應方向描述
   const dirInfo = dirData.find(d => d.編號 === rune.編號);
   const directionResult = dirInfo ? dirInfo[orientationFieldMap[direction]] : "無對應解釋";
   const moonComparison =
     (moonData[realPhase] && moonData[realPhase][rune.月相]) || "無比對結果";
 
-  // 顯示圖片
   img.src = "64images/" + rune.圖檔名稱;
-  // 根據方向旋轉圖片
   switch (orientationNumber) {
     case 2:
-      img.style.transform = "rotate(90deg)"; // 半正位：向右轉 90 度
+      img.style.transform = "rotate(90deg)";
       break;
     case 3:
-      img.style.transform = "rotate(-90deg)"; // 半逆位：向左轉 90 度
+      img.style.transform = "rotate(-90deg)";
       break;
     case 4:
-      img.style.transform = "rotate(180deg)"; // 逆位：轉 180 度
+      img.style.transform = "rotate(180deg)";
       break;
     default:
-      img.style.transform = "rotate(0deg)"; // 正位：不旋轉
+      img.style.transform = "rotate(0deg)";
   }
 
-  // 顯示屬性
   attr.innerHTML = `
     <p>介紹：${rune.符文名稱}</p>
     <p>卡牌面向：${direction}</p>
@@ -95,7 +114,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>真實月相：${realPhase}</p>
   `;
 
-  // 詳細解釋 HTML 內容
   const detailHTML = `
     <p><strong>歷史：</strong>${rune.符文變化歷史}</p>
     <p><strong>故事：</strong>${rune.神話故事}</p>
@@ -111,10 +129,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     <hr>
   `;
 
-  // 顯示完整解釋
   desc.innerHTML = detailHTML;
 
-  // 重新占卜按鈕
   retry.addEventListener("click", () => {
     setTimeout(() => {
       window.location.href = "index.html";
