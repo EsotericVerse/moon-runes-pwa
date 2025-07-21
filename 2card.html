@@ -4,22 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>月之符文雙牌占卜結果</title>
-  <link rel="stylesheet" href="css/style.css"> <!-- 修正為 style.css，如果是 styles.css 請調整 -->
+  <link rel="stylesheet" href="css/style.css"> <!-- 假設使用現有 PWA 的 style.css -->
   <script src="js/2card.js" defer></script>
 </head>
 <body>
-  <div class="container" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;"> <!-- 添加 flex-wrap 以防螢幕小 -->
-    <div id="rune-card1" style="flex: 1; max-width: 45%;">
-      <img id="result-image1" alt="符文圖片1"> <!-- 移除預設 src 以避免 404 -->
-      <div id="result-attributes"></div> <!-- 第一張符文屬性 -->
+  <div class="container">
+    <div class="main-layout">
+      <div class="left-panel">
+        <div class="card-display">
+          <img id="result-image1" alt="符文圖片1"> <!-- 移除預設 src 避免 404 -->
+        </div>
+        <div class="card-attributes" id="result-attributes"></div> <!-- 第一張符文屬性 -->
+      </div>
+      <div class="right-panel">
+        <div class="description" id="result-description"></div> <!-- 第二張符文屬性 -->
+      </div>
     </div>
-    <div id="api-result" style="flex: 1; max-width: 45%;"> <!-- 新 div：API 結果 + 重新占卜 -->
-      <!-- API 結果將由 JS 動態填充 -->
-    </div>
-    <div id="rune-card2" style="flex: 1; max-width: 45%;">
-      <img id="result-image2" alt="符文圖片2"> <!-- 移除預設 src 以避免 404 -->
-      <div id="result-description"></div> <!-- 第二張符文屬性（不含 API） -->
-    </div>
+    <div id="api-result"></div> <!-- API 結果和重新占卜按鈕 -->
+	   <footer>
+      <p><strong>By</strong> 月語之境工作室 ｜ <a href="mailto:esotericverse.xy@gmail.com">聯絡我們</a></p>
+    </footer>
   </div>
 </body>
 </html>

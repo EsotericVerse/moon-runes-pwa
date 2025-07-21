@@ -15,9 +15,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const img1 = document.getElementById("result-image1");
   const img2 = document.getElementById("result-image2");
-  const attr1 = document.getElementById("result-attributes"); // 第一張屬性 (innerHTML)
-  const desc2 = document.getElementById("result-description"); // 第二張屬性 (inner2HTML)
-  const apiResultDiv = document.getElementById("api-result"); // 新 div：API 結果 + 重新占卜
+  const attr1 = document.getElementById("result-attributes"); // 第一張屬性
+  const desc2 = document.getElementById("result-description"); // 第二張屬性
+  const apiResultDiv = document.getElementById("api-result"); // API 結果 + 重新占卜
 
   // 生成兩個隨機且不同的符文編號（1～64）
   let fateArray = Array.from({ length: 64 }, (_, i) => i + 1);
@@ -76,7 +76,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>真實月相：${realPhase}</p>
   `;
 
-  // 第二張屬性 (inner2HTML，無 API)
+  // 第二張屬性 (inner2HTML)
   desc2.innerHTML = `
     <p>介紹：${rune2.符文名稱}</p>
     <p>卡牌面向：${direction2}</p>
