@@ -45,10 +45,10 @@ export function getRunes64() {
   return rune; // 同步返回陣列
 }
 
-// 特定 functions
+import { allData } from './runes_all_data.js';
 
-async function getAllData() {
-    return getData('runes_all_data', 'https://moon-runes-pwa-1.onrender.com/data/runes_all_data.json', (data) => Array.isArray(data) && data.length >= 64);
+export function getAllData() {
+  return allData;
 }
 
 

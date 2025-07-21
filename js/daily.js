@@ -25,21 +25,22 @@ window.addEventListener("DOMContentLoaded", async () => {
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
   const runeKey = selectedIndex.toString().padStart(2, "0");
 
-   let runes, allData;
-    try {
-        runes = await getRunes64();
-    } catch (error) {
-        console.error("載入符文資料失敗：", error);
-        attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-        return;
-    }
+ const runes = getRunes64(); // 同步
+const allData = getAllData(); // 同步
 
-    const rune = runes.find(r => r.編號.toString().padStart(2, "0") === runeKey);
+const rune = runes[selectedIndex] || { /* 預設值 */ };
 
-    if (!rune) {
-        attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-        return;
-    }
+if (!rune) {
+  attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+  return;
+}
+
+const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
+
+if (!runeData) {
+  desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
+  return;
+}
 
   const directions = ["正位", "半正位", "半逆位", "逆位"];
   const directionIndex = Math.floor(Math.random() * 4);
