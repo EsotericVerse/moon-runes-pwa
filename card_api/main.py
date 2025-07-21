@@ -1,5 +1,6 @@
 import json
 import random
+import requests
 from zhdate import ZhDate
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
@@ -25,24 +26,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Google Drive 公開連結
+NEW_RUNES_URL = "https://drive.google.com/uc?export=download&id=1Y27s4XKOAUXe_e6NKupOYOnxuaWLRER4"
+RUNES_ALL_DATA_URL = "https://drive.google.com/uc?export=download&id=15DUYevg1DAfvr9NIf8xHTzkuBiNK8k73"
+THREE_CARD_COMBINATIONS_URL = "https://drive.google.com/uc?export=download&id=17-tsWQBwrQ8N1Eo3ZQ2loaGP6u8cP0Kj"
+
 # 載入資料（全局，一次載入）
 try:
-    with open('new_runes.json', 'r', encoding='utf-8') as f:
-        RUNES = json.load(f)
-    with open('runes_all_data.json', 'r', encoding='utf-8') as f:
-        RUNE_SINGLE = json.load(f)
-except FileNotFoundError:
+    response = requests.get(NEW_RUNES_URL)
+    response.raise_for_status()
+    RUNES = response.json()
+except Exception as e:
     RUNES = {"runes": []}
-    RUNE_SINGLE = []
-    print("Warning: JSON files not found, using empty data")
+    print(f"Warning: Failed to load new_runes.json from Google Drive: {e}")
 
-# 載入三卡組合表（從同目錄的 JSON 檔案）
 try:
-    with open('three_card_combinations.json', 'r', encoding='utf-8') as f:
-        THREE_CARD_COMBINATIONS = json.load(f)
-except FileNotFoundError:
+    response = requests.get(RUNES_ALL_DATA_URL)
+    response.raise_for_status()
+    RUNE_SINGLE = response.json()
+except Exception as e:
+    RUNE_SINGLE = []
+    print(f"Warning: Failed to load runes_all_data.json from Google Drive: {e}")
+
+# 載入三卡組合表（從 Google Drive）
+try:
+    response = requests.get(THREE_CARD_COMBINATIONS_URL)
+    response.raise_for_status()
+    THREE_CARD_COMBINATIONS = response.json()
+except Exception as e:
     THREE_CARD_COMBINATIONS = {}
-    print("Warning: three_card_combinations.json not found, using empty data")
+    print(f"Warning: Failed to load three_card_combinations.json from Google Drive: {e}")
 
 # 建立符文編號到資料的映射
 RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES.get("runes", []), 1)}
@@ -194,7 +207,6 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
     )
 
     if mode in ["2", "2d"]:
-        # 原雙卡邏輯
         rune1_keywords = (
             rune1.get("顯化形式", "").split("・") + rune1.get("關鍵詞", "").split("・")
         ) if rune1_dir in [1, 2] else (
@@ -240,7 +252,6 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
         return result
 
     elif mode in ["3", "3d"]:
-        # 三卡邏輯
         if rune3_id is None or rune3_dir is None:
             raise ValueError("模式 3 需要三張符文")
         
@@ -248,13 +259,11 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
         rune3_name = rune3.get("名稱", "未知")
         rune3_moon = rune3.get("月相", "未知")
         
-        # 月相交互：以第一張為主
         moon_interaction = MOON_INTERACTIONS.get(
             (real_moon, rune1_moon), 
             {"語氣": "中性", "前綴": "請平和地面對"}
         )
         
-        # 關鍵詞來源
         rune1_keywords = (
             rune1.get("顯化形式", "").split("・") + rune1.get("關鍵詞", "").split("・")
         ) if rune1_dir in [1, 2] else (
@@ -283,7 +292,6 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
         target2 = select_reverse_meaning(rune2_id, rune2_dir) if rune2_dir in [3, 4] else ACTION_KEYWORDS['goal'][0]
         target3 = select_reverse_meaning(rune3_id, rune3_dir) if rune3_dir in [3, 4] else ACTION_KEYWORDS['goal'][0]
         
-        # 三卡方向組合
         direction_comb = adjust_three_direction_combination(rune1_dir, rune2_dir, rune3_dir)
         explanation = f"你正處於{source}，經歷{transition}，將{effect}。"
         

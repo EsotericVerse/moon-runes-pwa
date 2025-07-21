@@ -21,7 +21,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     const desc3 = document.getElementById("result-description");
     const apiResultDiv = document.getElementById("api-result");
 
-    // 檢查 DOM 元素
     if (!img1 || !img2 || !img3 || !attr1 || !attr2 || !desc3 || !apiResultDiv) {
         console.error("DOM 元素缺失");
         if (attr1) attr1.innerHTML = "<p>⚠️ 頁面結構錯誤</p>";
@@ -38,28 +37,27 @@ window.addEventListener("DOMContentLoaded", async () => {
     const rune2Key = rune2Index.toString().padStart(2, "0");
     const rune3Key = rune3Index.toString().padStart(2, "0");
 
-    // 載入符文資料
-    let runes;
-    try {
-        const runeResponse = await fetch("data/runes64.json");
-        if (!runeResponse.ok) {
-            throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
+    // 載入符文資料（從 Google Drive）
+    let runes = JSON.parse(localStorage.getItem('runes64'));
+    if (!runes) {
+        try {
+            const runeResponse = await fetch("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl");
+            if (!runeResponse.ok) throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
+            runes = await runeResponse.json();
+            localStorage.setItem('runes64', JSON.stringify(runes));
+        } catch (error) {
+            console.error("載入符文資料失敗：", error);
+            attr1.innerHTML = `<p>⚠️ 無法載入符文資料：${error.message}</p>`;
+            return;
         }
-        runes = await runeResponse.json();
-    } catch (error) {
-        console.error("載入符文資料失敗：", error);
-        attr1.innerHTML = `<p>⚠️ 無法載入符文資料：${error.message}</p>`;
-        return;
     }
 
-    const rune1 = runes[rune1Key];
-    const rune2 = runes[rune2Key];
-    const rune3 = runes[rune3Key];
+    const rune1 = runes[rune1Key] || { "符文名稱": "未知", "月相": "未知", "所屬分組": "未知", "圖檔名稱": "default.png", "顯化形式": "", "關鍵詞": "", "陰暗面": "", "反向關鍵詞": "" };
+    const rune2 = runes[rune2Key] || { "符文名稱": "未知", "月相": "未知", "所屬分組": "未知", "圖檔名稱": "default.png", "顯化形式": "", "關鍵詞": "", "陰暗面": "", "反向關鍵詞": "" };
+    const rune3 = runes[rune3Key] || { "符文名稱": "未知", "月相": "未知", "所屬分組": "未知", "圖檔名稱": "default.png", "顯化形式": "", "關鍵詞": "", "陰暗面": "", "反向關鍵詞": "" };
 
-    if (!rune1 || !rune2 || !rune3) {
-        console.error(`找不到符文資料，鍵：${rune1Key}, ${rune2Key}, ${rune3Key}`);
-        attr1.innerHTML = "<p>⚠️ 符文資料不存在於 runes64.json</p>";
-        return;
+    if (!runes[rune1Key] || !runes[rune2Key] || !runes[rune3Key]) {
+        console.warn(`缺少符文資料，鍵：${rune1Key}, ${rune2Key}, ${rune3Key} - 使用預設值`);
     }
 
     // 方向設定
@@ -75,21 +73,28 @@ window.addEventListener("DOMContentLoaded", async () => {
     const direction3 = directions[directionIndex3];
 
     // 顯示圖片並旋轉
-    img1.src = "64images/" + rune1.圖檔名稱;
+    try {
+        img1.src = "64images/" + rune1.圖檔名稱;
+        img2.src = "64images/" + rune2.圖檔名稱;
+        img3.src = "64images/" + rune3.圖檔名稱;
+    } catch (error) {
+        console.error("圖片載入失敗：", error);
+        attr1.innerHTML = "<p>⚠️ 圖片檔案缺失</p>";
+        return;
+    }
+
     switch (orientationNumber1) {
         case 2: img1.style.transform = "rotate(90deg)"; break;
         case 3: img1.style.transform = "rotate(-90deg)"; break;
         case 4: img1.style.transform = "rotate(180deg)"; break;
         default: img1.style.transform = "rotate(0deg)";
     }
-    img2.src = "64images/" + rune2.圖檔名稱;
     switch (orientationNumber2) {
         case 2: img2.style.transform = "rotate(90deg)"; break;
         case 3: img2.style.transform = "rotate(-90deg)"; break;
         case 4: img2.style.transform = "rotate(180deg)"; break;
         default: img2.style.transform = "rotate(0deg)";
     }
-    img3.src = "64images/" + rune3.圖檔名稱;
     switch (orientationNumber3) {
         case 2: img3.style.transform = "rotate(90deg)"; break;
         case 3: img3.style.transform = "rotate(-90deg)"; break;
