@@ -21,6 +21,13 @@ window.addEventListener("DOMContentLoaded", async () => {
     const desc3 = document.getElementById("result-description");
     const apiResultDiv = document.getElementById("api-result");
 
+    // 檢查 DOM 元素
+    if (!img1 || !img2 || !img3 || !attr1 || !attr2 || !desc3 || !apiResultDiv) {
+        console.error("DOM 元素缺失");
+        if (attr1) attr1.innerHTML = "<p>⚠️ 頁面結構錯誤</p>";
+        return;
+    }
+
     // 生成三個隨機且不同符文編號（1～64）
     let fateArray = Array.from({ length: 64 }, (_, i) => i + 1);
     shuffleArray(fateArray);
@@ -32,16 +39,26 @@ window.addEventListener("DOMContentLoaded", async () => {
     const rune3Key = rune3Index.toString().padStart(2, "0");
 
     // 載入符文資料
-    const runeResponse = await fetch("data/runes64.json");
-    const runes = await runeResponse.json();
+    let runes;
+    try {
+        const runeResponse = await fetch("data/runes64.json");
+        if (!runeResponse.ok) {
+            throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
+        }
+        runes = await runeResponse.json();
+    } catch (error) {
+        console.error("載入符文資料失敗：", error);
+        attr1.innerHTML = `<p>⚠️ 無法載入符文資料：${error.message}</p>`;
+        return;
+    }
 
     const rune1 = runes[rune1Key];
     const rune2 = runes[rune2Key];
     const rune3 = runes[rune3Key];
 
     if (!rune1 || !rune2 || !rune3) {
-        console.error("找不到符文資料");
-        attr1.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+        console.error(`找不到符文資料，鍵：${rune1Key}, ${rune2Key}, ${rune3Key}`);
+        attr1.innerHTML = "<p>⚠️ 符文資料不存在於 runes64.json</p>";
         return;
     }
 
@@ -124,6 +141,9 @@ window.addEventListener("DOMContentLoaded", async () => {
                 debug: false
             })
         });
+        if (!apiResponse.ok) {
+            throw new Error(`API 呼叫失敗，狀態碼：${apiResponse.status}`);
+        }
         const apiResult = await apiResponse.json();
         if (apiResult.success) {
             const data = apiResult.data;
@@ -134,11 +154,11 @@ window.addEventListener("DOMContentLoaded", async () => {
                 <hr>
             `;
         } else {
-            apiHtml = "<p>⚠️ API 呼叫失敗</p>";
+            apiHtml = "<p>⚠️ API 回應失敗</p>";
         }
     } catch (error) {
         console.error("API 錯誤：", error);
-        apiHtml = "<p>⚠️ API 連線錯誤</p>";
+        apiHtml = `<p>⚠️ API 連線錯誤：${error.message}</p>`;
     }
 
     // 添加 API 結果和重新占卜
