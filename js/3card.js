@@ -5,7 +5,7 @@ function shuffleArray(array) {
     }
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
+window.addEventListener("DOMContentLoaded", () => {
     const realPhase = sessionStorage.getItem("realPhase");
     if (!realPhase) {
         window.location.href = "index.html";
@@ -33,18 +33,43 @@ window.addEventListener("DOMContentLoaded", async () => {
     const rune1Index = fateArray[0];
     const rune2Index = fateArray[1];
     const rune3Index = fateArray[2];
-    const rune1Key = rune1Index.toString().padStart(2, "0");
-    const rune2Key = rune2Index.toString().padStart(2, "0");
-    const rune3Key = rune3Index.toString().padStart(2, "0");
 
-  const runes = getRunes64(); // 同步呼叫
+    const runes = getRunes64(); // 同步呼叫
 
-    const rune1 = runes[rune1Key] || { "符文名稱": "未知", "月相": "未知", "所屬分組": "未知", "圖檔名稱": "default.png", "顯化形式": "", "關鍵詞": "", "陰暗面": "", "反向關鍵詞": "" };
-    const rune2 = runes[rune2Key] || { "符文名稱": "未知", "月相": "未知", "所屬分組": "未知", "圖檔名稱": "default.png", "顯化形式": "", "關鍵詞": "", "陰暗面": "", "反向關鍵詞": "" };
-    const rune3 = runes[rune3Key] || { "符文名稱": "未知", "月相": "未知", "所屬分組": "未知", "圖檔名稱": "default.png", "顯化形式": "", "關鍵詞": "", "陰暗面": "", "反向關鍵詞": "" };
+    // Use numerical indices directly
+    const rune1 = runes[rune1Index] || {
+        "符文名稱": "未知",
+        "月相": "未知",
+        "所屬分組": "未知",
+        "圖檔名稱": "default.png",
+        "顯化形式": "",
+        "關鍵詞": "",
+        "陰暗面": "",
+        "反向關鍵詞": ""
+    };
+    const rune2 = runes[rune2Index] || {
+        "符文名稱": "未知",
+        "月相": "未知",
+        "所屬分組": "未知",
+        "圖檔名稱": "default.png",
+        "顯化形式": "",
+        "關鍵詞": "",
+        "陰暗面": "",
+        "反向關鍵詞": ""
+    };
+    const rune3 = runes[rune3Index] || {
+        "符文名稱": "未知",
+        "月相": "未知",
+        "所屬分組": "未知",
+        "圖檔名稱": "default.png",
+        "顯化形式": "",
+        "關鍵詞": "",
+        "陰暗面": "",
+        "反向關鍵詞": ""
+    };
 
-    if (!runes[rune1Key] || !runes[rune2Key] || !runes[rune3Key]) {
-        console.warn(`缺少符文資料，鍵：${rune1Key}, ${rune2Key}, ${rune3Key} - 使用預設值`);
+    if (!runes[rune1Index] || !runes[rune2Index] || !runes[rune3Index]) {
+        console.warn(`缺少符文資料，索引：${rune1Index}, ${rune2Index}, ${rune3Index} - 使用預設值`);
     }
 
     // 方向設定
@@ -54,7 +79,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const directionIndex3 = Math.floor(Math.random() * 4);
     const orientationNumber1 = directionIndex1 + 1;
     const orientationNumber2 = directionIndex2 + 1;
-	const orientationNumber3 = directionIndex3 + 1;
+    const orientationNumber3 = directionIndex3 + 1;
     const direction1 = directions[directionIndex1];
     const direction2 = directions[directionIndex2];
     const direction3 = directions[directionIndex3];
@@ -119,7 +144,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     // 呼叫 API
     let apiHtml = '';
     try {
-        const apiResponse = await fetch("https://moon-runes-pwa.onrender.com/divination", {
+        const apiResponse = fetch("https://moon-runes-pwa.onrender.com/divination", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -133,16 +158,16 @@ window.addEventListener("DOMContentLoaded", async () => {
                 debug: false
             })
         });
-        if (!apiResponse.ok) {
-            throw new Error(`API 呼叫失敗，狀態碼：${apiResponse.status}`);
+        const apiResult = await apiResponse;
+        if (!apiResult.ok) {
+            throw new Error(`API 呼叫失敗，狀態碼：${apiResult.status}`);
         }
-        const apiResult = await apiResponse.json();
-        if (apiResult.success) {
-            const data = apiResult.data;
+        const data = await apiResult.json();
+        if (data.success) {
             apiHtml = `
-                <p><strong>完整現況：</strong>${data["完整現況"]}</p>
-                <p><strong>牌面解說：</strong>${data["牌面解說"]}</p>
-                <p><strong>占卜結論：</strong>${data["占卜結論"]}</p>
+                <p><strong>完整現況：</strong>${data.data["完整現況"]}</p>
+                <p><strong>牌面解說：</strong>${data.data["牌面解說"]}</p>
+                <p><strong>占卜結論：</strong>${data.data["占卜結論"]}</p>
                 <hr>
             `;
         } else {

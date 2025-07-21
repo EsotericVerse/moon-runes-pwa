@@ -24,13 +24,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   shuffleArray(fateArray);
   const rune1Index = fateArray[0];
   const rune2Index = fateArray[1];
-  const rune1Key = rune1Index.toString().padStart(2, "0");
-  const rune2Key = rune2Index.toString().padStart(2, "0");
 
   const runes = getRunes64(); // 同步呼叫
 
-  const rune1 = runes[rune1Key];
-  const rune2 = runes[rune2Key];
+  const rune1 = runes[rune1Index];
+  const rune2 = runes[rune2Index];
 
   if (!rune1 || !rune2) {
     console.error("找不到符文資料");
