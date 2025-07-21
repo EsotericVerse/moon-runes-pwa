@@ -47,6 +47,8 @@ window.addEventListener("load", async () => {
         target = "daily.html";
       } else if (mode === "2card") {
         target = "2card.html";
+	  } else if (mode === "3card") {
+        target = "3card.html";
       }
       setTimeout(() => {
         window.location.href = target;
