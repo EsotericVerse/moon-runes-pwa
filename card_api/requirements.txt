@@ -1,5 +1,6 @@
 fastapi
-pydantic
 uvicorn
-mangum
 zhdate
+pydantic
+requests
+mangum
