@@ -5,7 +5,7 @@ function shuffleArray(array) {
   }
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
+window.addEventListener("DOMContentLoaded", () => {
   const realPhase = sessionStorage.getItem("realPhase");
   if (!realPhase) {
     window.location.href = "index.html";
@@ -25,22 +25,22 @@ window.addEventListener("DOMContentLoaded", async () => {
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
   const runeKey = selectedIndex.toString().padStart(2, "0");
 
- const runes = getRunes64(); // 同步
-const allData = getAllData(); // 同步
+  const runes = getRunes64(); // 同步
+  const allData = getAllData(); // 同步
 
-const rune = runes[selectedIndex] || { /* 預設值 */ };
+  const rune = runes[selectedIndex] || { /* 預設值 */ };
 
-if (!rune) {
-  attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-  return;
-}
+  if (!rune) {
+    attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+    return;
+  }
 
-const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
+  const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
 
-if (!runeData) {
-  desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
-  return;
-}
+  if (!runeData) {
+    desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
+    return;
+  }
 
   const directions = ["正位", "半正位", "半逆位", "逆位"];
   const directionIndex = Math.floor(Math.random() * 4);
@@ -69,13 +69,6 @@ if (!runeData) {
     <p>符文月相：${rune.月相}</p>
     <p>真實月相：${realPhase}</p>
   `;
-
-    const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
-  
-    if (!runeData) {
-        desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
-        return;
-    }
 
   const directionData = runeData.卡牌方向.find(d => d.方向 === direction);
   if (!directionData) {
