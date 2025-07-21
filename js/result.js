@@ -41,8 +41,13 @@ window.addEventListener("load", async () => {
       description.appendChild(p);
       index++;
       setTimeout(showNext, 2000);
-    } else {
-      const target = mode === "daily" ? "daily.html" : "fate.html";
+    } else {// 修改這裡：根據 mode 決定 target
+      let target = "fate.html"; // 預設
+      if (mode === "daily") {
+        target = "daily.html";
+      } else if (mode === "2card") {
+        target = "2card.html";
+      }
       setTimeout(() => {
         window.location.href = target;
       }, 1000);

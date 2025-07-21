@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>月之符文雙牌占卜結果</title>
+  <link rel="stylesheet" href="css/styles.css"> <!-- 假設有共用 CSS -->
+  <script src="js/solarlunar.js"></script> <!-- 如果需要月相計算 -->
+  <script src="js/2card.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <div id="rune-card1">
+      <img id="result-image1" src="64images/default.png" alt="符文圖片1">
+      <div id="result-attributes"></div> <!-- 第一張符文屬性 -->
+    </div>
+    <div id="rune-card2">
+      <img id="result-image2" src="64images/default.png" alt="符文圖片2">
+      <div id="result-description"></div> <!-- 第二張符文屬性 + API 結果 -->
+    </div>
+    <button id="retry-button">重新占卜</button>
+  </div>
+</body>
+</html>
