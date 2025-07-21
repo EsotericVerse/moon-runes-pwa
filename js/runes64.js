@@ -1,4 +1,4 @@
-export const rune = [NULL,
+export const rune = [null,
   {
     "編號": 1,
     "符文名稱": "靈",
