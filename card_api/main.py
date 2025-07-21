@@ -3,32 +3,63 @@ import random
 from zhdate import ZhDate
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import os
 
-# 載入資料（全局，一次載入）
-with open('new_runes.json', 'r', encoding='utf-8') as f:
-    RUNES = json.load(f)
-with open('runes_all_data.json', 'r', encoding='utf-8') as f:
-    RUNE_SINGLE = json.load(f)
+# 建立 FastAPI 應用
+app = FastAPI(
+    title="Rune Divination API",
+    description="符文占卜 API",
+    version="1.0.0",
+    docs_url="/docs",  # 確保文檔可訪問
+    redoc_url="/redoc"
+)
+
+# 添加 CORS 中間件
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 載入資料（全局，一次載入）- 添加錯誤處理
+try:
+    # 嘗試從當前目錄載入
+    with open('new_runes.json', 'r', encoding='utf-8') as f:
+        RUNES = json.load(f)
+    with open('runes_all_data.json', 'r', encoding='utf-8') as f:
+        RUNE_SINGLE = json.load(f)
+except FileNotFoundError:
+    # 如果檔案不存在，創建示例資料
+    RUNES = {"runes": []}
+    RUNE_SINGLE = []
+    print("Warning: JSON files not found, using empty data")
 
 # 建立符文編號到資料的映射
-RUNES_MAP = {r["編號"]: r for r in RUNES["runes"]}
-RUNE_SINGLE_MAP = {r["符文名稱"]: r for r in RUNE_SINGLE}
+RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES.get("runes", []), 1)}
+RUNE_SINGLE_MAP = {r.get("符文名稱", f"rune_{i}"): r for i, r in enumerate(RUNE_SINGLE)}
 
 # 月相計算
 def get_lunar_phase(date):
-    zh_date = ZhDate.from_datetime(date)
-    lunar_day = zh_date.lunar_day
-    if lunar_day in range(1, 8):
+    try:
+        zh_date = ZhDate.from_datetime(date)
+        lunar_day = zh_date.lunar_day
+        if lunar_day in range(1, 8):
+            return "新月"
+        elif lunar_day in range(8, 15):
+            return "上弦"
+        elif lunar_day in range(15, 22):
+            return "滿月"
+        elif lunar_day in range(22, 29):
+            return "下弦"
+        else:
+            return "空亡"
+    except Exception:
+        # 如果中國曆法轉換失敗，返回預設值
         return "新月"
-    elif lunar_day in range(8, 15):
-        return "上弦"
-    elif lunar_day in range(15, 22):
-        return "滿月"
-    elif lunar_day in range(22, 29):
-        return "下弦"
-    else:
-        return "空亡"
 
 # 月相交互表
 MOON_INTERACTIONS = {
@@ -59,7 +90,7 @@ ACTION_KEYWORDS = {
     "goal": ["成長", "進展", "實現"]
 }
 
-# 語氣評分系統 (替代AI模型)
+# 語氣評分系統
 TONE_KEYWORDS = {
     "啟發性積極": ["創造", "啟動", "新生", "機會", "突破"],
     "謹慎引導": ["平衡", "調和", "穩定", "保護", "引導"],
@@ -80,14 +111,11 @@ TONE_KEYWORDS = {
     "中性": ["平衡", "中庸", "和諧", "適度", "穩定"]
 }
 
-# 關鍵詞選擇邏輯（不使用AI模型）
 def select_keyword_by_tone(rune_keywords, tone):
     if not rune_keywords:
         return "未知"
     
     tone_preferred = TONE_KEYWORDS.get(tone, [])
-    
-    # 計算每個關鍵詞的匹配分數
     best_keyword = rune_keywords[0]
     best_score = 0
     
@@ -105,7 +133,6 @@ def select_keyword_by_tone(rune_keywords, tone):
     
     return best_keyword
 
-# 關鍵詞選擇邏輯（使用基於規則的方法替代T5模型）
 def select_keyword(rune_id, direction, rune_keywords, tone):
     if not rune_keywords:
         return "未知"
@@ -118,7 +145,19 @@ def select_keyword(rune_id, direction, rune_keywords, tone):
         return f"過度{base_keyword}"
     return base_keyword
 
-# 語句生成（雙卡，模式 2 或 2d）
+def select_reverse_meaning(rune_id, direction):
+    rune = RUNES_MAP.get(rune_id, {})
+    return rune.get("反向含義", "內在的阻滯需要溫柔面對")
+
+def adjust_direction_combination(rune1_dir, rune2_dir):
+    if rune1_dir == 1 and rune2_dir == 4:
+        return {"結構": "你的{因}，引導{果}顯現", "語氣": "矛盾修正"}
+    elif rune1_dir == 2 and rune2_dir == 3:
+        return {"結構": "你的{因}，逐漸顯現需審慎面對{果}", "語氣": "平衡調整"}
+    elif rune1_dir == 4 and rune2_dir == 4:
+        return {"結構": "你的{因}，與{果}皆受阻需深度清理", "語氣": "深度療癒"}
+    return {"結構": "你的{因}，引導{果}顯現", "語氣": "標準因果"}
+
 def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, debug=False):
     if mode not in ["2", "2d"]:
         raise ValueError("僅支援模式 2 或 2d")
@@ -136,11 +175,25 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, debug=Fa
     dir_map = {1: "正位", 2: "半正位", 3: "半逆位", 4: "逆位"}
     
     real_moon = get_lunar_phase(datetime.now())
-    moon_interaction = MOON_INTERACTIONS.get((real_moon, rune1_moon), MOON_INTERACTIONS.get((real_moon, rune2_moon), {"語氣": "中性", "前綴": "請平和地面對"}))
+    moon_interaction = MOON_INTERACTIONS.get(
+        (real_moon, rune1_moon), 
+        MOON_INTERACTIONS.get(
+            (real_moon, rune2_moon), 
+            {"語氣": "中性", "前綴": "請平和地面對"}
+        )
+    )
     
     # 修正關鍵詞來源
-    rune1_keywords = (rune1.get("顯化形式", "").split("・") + rune1.get("關鍵詞", "").split("・")) if rune1_dir in [1, 2] else (rune1.get("陰暗面", "").split("・") + rune1.get("反向關鍵詞", "").split("・"))
-    rune2_keywords = (rune2.get("顯化形式", "").split("・") + rune2.get("關鍵詞", "").split("・")) if rune2_dir in [1, 2] else (rune2.get("陰暗面", "").split("・") + rune2.get("反向關鍵詞", "").split("・"))
+    rune1_keywords = (
+        rune1.get("顯化形式", "").split("・") + rune1.get("關鍵詞", "").split("・")
+    ) if rune1_dir in [1, 2] else (
+        rune1.get("陰暗面", "").split("・") + rune1.get("反向關鍵詞", "").split("・")
+    )
+    rune2_keywords = (
+        rune2.get("顯化形式", "").split("・") + rune2.get("關鍵詞", "").split("・")
+    ) if rune2_dir in [1, 2] else (
+        rune2.get("陰暗面", "").split("・") + rune2.get("反向關鍵詞", "").split("・")
+    )
     
     # 清理空字符串
     rune1_keywords = [k for k in rune1_keywords if k.strip()]
@@ -179,24 +232,6 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, debug=Fa
     
     return result
 
-# 反向含義選擇
-def select_reverse_meaning(rune_id, direction):
-    rune = RUNES_MAP.get(rune_id, {})
-    return rune.get("反向含義", "內在的阻滯需要溫柔面對")
-
-# 方向組合調整
-def adjust_direction_combination(rune1_dir, rune2_dir):
-    if rune1_dir == 1 and rune2_dir == 4:
-        return {"結構": "你的{因}，引導{果}顯現", "語氣": "矛盾修正"}
-    elif rune1_dir == 2 and rune2_dir == 3:
-        return {"結構": "你的{因}，逐漸顯現需審慎面對{果}", "語氣": "平衡調整"}
-    elif rune1_dir == 4 and rune2_dir == 4:
-        return {"結構": "你的{因}，與{果}皆受阻需深度清理", "語氣": "深度療癒"}
-    return {"結構": "你的{因}，引導{果}顯現", "語氣": "標準因果"}
-
-# FastAPI 應用
-app = FastAPI()
-
 # 定義輸入模型
 class RuneInput(BaseModel):
     mode: str
@@ -206,9 +241,33 @@ class RuneInput(BaseModel):
     rune2_dir: int
     debug: bool = False
 
-# API 端點
+# 根路由 - 健康檢查
+@app.get("/")
+async def root():
+    return {
+        "status": "healthy", 
+        "message": "Rune Divination API",
+        "version": "1.0.0",
+        "endpoints": {
+            "divination": "/divination",
+            "health": "/health",
+            "docs": "/docs"
+        }
+    }
+
+# 健康檢查端點
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "runes_loaded": len(RUNES_MAP),
+        "single_runes_loaded": len(RUNE_SINGLE_MAP)
+    }
+
+# API 端點 - 添加 async
 @app.post("/divination")
-def divination(input: RuneInput):
+async def divination(input: RuneInput):
     try:
         # 驗證輸入
         if input.mode not in ["2", "2d"]:
@@ -221,18 +280,46 @@ def divination(input: RuneInput):
             raise ValueError("無效的方向")
         
         # 呼叫生成函數
-        result = generate_divination(input.mode, input.rune1_id, input.rune1_dir, input.rune2_id, input.rune2_dir, input.debug)
-        return result
+        result = generate_divination(
+            input.mode, 
+            input.rune1_id, 
+            input.rune1_dir, 
+            input.rune2_id, 
+            input.rune2_dir, 
+            input.debug
+        )
+        return {
+            "success": True,
+            "data": result,
+            "timestamp": datetime.now().isoformat()
+        }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"內部錯誤: {str(e)}")
 
-# 健康檢查端點
-@app.get("/")
-def health_check():
-    return {"status": "healthy", "message": "Rune Divination API"}
+# 測試端點
+@app.get("/test")
+async def test_endpoint():
+    return {
+        "message": "API 測試成功",
+        "current_time": datetime.now().isoformat(),
+        "moon_phase": get_lunar_phase(datetime.now())
+    }
 
-# Vercel handler
-from mangum import Mangum
-handler = Mangum(app)
+# Vercel handler - 確保在文件底部
+try:
+    from mangum import Mangum
+    handler = Mangum(app)
+except ImportError:
+    # 如果沒有安裝 mangum，創建一個簡單的 handler
+    def handler(event, context):
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"error": "Mangum not installed"})
+        }
+
+# 添加這個用於本地開發
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
