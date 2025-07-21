@@ -70,14 +70,6 @@ if (!runeData) {
     <p>真實月相：${realPhase}</p>
   `;
 
- try {
-        allData = await getAllData();
-    } catch (error) {
-        console.error("載入每日占卜資料失敗：", error);
-        desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
-        return;
-    }
-
     const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
   
     if (!runeData) {
