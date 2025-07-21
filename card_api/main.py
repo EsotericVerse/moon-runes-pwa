@@ -16,10 +16,10 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# 添加 CORS 中間件
+# 添加 CORS 中間件 (限制只允許來自 https://esotericverse.github.io 的請求)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://esotericverse.github.io"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,6 +35,14 @@ except FileNotFoundError:
     RUNES = {"runes": []}
     RUNE_SINGLE = []
     print("Warning: JSON files not found, using empty data")
+
+# 載入三卡組合表（從同目錄的 JSON 檔案）
+try:
+    with open('three_card_combinations.json', 'r', encoding='utf-8') as f:
+        THREE_CARD_COMBINATIONS = json.load(f)
+except FileNotFoundError:
+    THREE_CARD_COMBINATIONS = {}
+    print("Warning: three_card_combinations.json not found, using empty data")
 
 # 建立符文編號到資料的映射
 RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES.get("runes", []), 1)}
@@ -108,16 +116,6 @@ TONE_KEYWORDS = {
     "中性": ["平衡", "中庸", "和諧", "適度", "穩定"]
 }
 
-# 三卡組合表（從文件第四章）
-THREE_CARD_COMBINATIONS = {
-    "正 + 正 + 正": {"能量模式": "順行顯化", "圖景意涵": "內外三位一致，強烈顯化循環，是展現與實現的命運契機"},
-    "正 + 正 + 半正": {"能量模式": "穩定激活", "圖景意涵": "行動穩定推進中，結果仍在醞釀與調整階段，提醒你保持耐心與信任"},
-    "正 + 正 + 半逆": {"能量模式": "尚未完成", "圖景意涵": "內外一致但結尾偏弱，表示需要補強或延伸支持系統"},
-    "正 + 正 + 逆": {"能量模式": "明顯受阻", "圖景意涵": "儘管起步順利，中後段力量突然斷裂，可能遭遇突發干擾或未察覺的內在抗拒"},
-    # ... 其他組合（已省略，完整表包含 64 種組合，參考文件第四章）
-    "逆 + 逆 + 逆": {"能量模式": "雙重阻滯", "圖景意涵": "兩個主題都處於逆流，建議停下腳步，進行深度清理與自我審視"}
-}
-
 def select_keyword_by_tone(rune_keywords, tone):
     if not rune_keywords:
         return "未知"
@@ -168,7 +166,7 @@ def adjust_direction_combination(rune1_dir, rune2_dir):
 def adjust_three_direction_combination(rune1_dir, rune2_dir, rune3_dir):
     dir_map = {1: "正", 2: "半正", 3: "半逆", 4: "逆"}
     key = f"{dir_map[rune1_dir]} + {dir_map[rune2_dir]} + {dir_map[rune3_dir]}"
-    return THREE_CARD_COMBINATIONS.get(key, {"能量模式": "中性", "圖景意涵": "標準三卡融合"})
+    return THREE_CARD_COMBINATIONS.get(key, {"能量模式": "中性", "圖景意涵": ""})
 
 def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id=None, rune3_dir=None, debug=False):
     if mode not in ["2", "2d", "3", "3d"]:
@@ -287,7 +285,7 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
         
         # 三卡方向組合
         direction_comb = adjust_three_direction_combination(rune1_dir, rune2_dir, rune3_dir)
-        explanation = f"你正處於{source}，經歷{transition}，將{effect}。{direction_comb['圖景意涵']}"
+        explanation = f"你正處於{source}，經歷{transition}，將{effect}。"
         
         conclusion = f"{moon_interaction['前綴']}：{target3 if rune3_dir in [3, 4] else ACTION_KEYWORDS['goal'][0]}。"
         
