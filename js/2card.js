@@ -27,11 +27,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   const rune1Key = rune1Index.toString().padStart(2, "0");
   const rune2Key = rune2Index.toString().padStart(2, "0");
 
-  // 載入符文資料
+  // 載入符文資料（移除 moon.json，因為不再需要月相比對）
   const runeResponse = await fetch("data/runes64.json");
   const runes = await runeResponse.json();
-  const moonResponse = await fetch("data/moon.json");
-  const moonData = await moonResponse.json();
 
   const rune1 = runes[rune1Key];
   const rune2 = runes[rune2Key];
@@ -51,10 +49,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   const direction1 = directions[directionIndex1];
   const direction2 = directions[directionIndex2];
 
-  // 月相比對
-  const moonComparison1 = (moonData[realPhase] && moonData[realPhase][rune1.月相]) || "無比對結果";
-  const moonComparison2 = (moonData[realPhase] && moonData[realPhase][rune2.月相]) || "無比對結果";
-
   // 顯示第一張圖片並旋轉
   img1.src = "64images/" + rune1.圖檔名稱;
   switch (orientationNumber1) {
@@ -73,24 +67,22 @@ window.addEventListener("DOMContentLoaded", async () => {
     default: img2.style.transform = "rotate(0deg)";
   }
 
-  // 第一張屬性 (innerHTML)
+  // 第一張屬性 (innerHTML，移除月相比對)
   attr1.innerHTML = `
     <p>介紹：${rune1.符文名稱}</p>
     <p>卡牌面向：${direction1}</p>
     <p>所屬分組：${rune1.所屬分組}</p>
     <p>符文月相：${rune1.月相}</p>
     <p>真實月相：${realPhase}</p>
-    <p>月相比對趨勢：${moonComparison1}</p>
   `;
 
-  // 第二張屬性 (inner2HTML，初始)
+  // 第二張屬性 (inner2HTML，初始，移除月相比對)
   desc2.innerHTML = `
     <p>介紹：${rune2.符文名稱}</p>
     <p>卡牌面向：${direction2}</p>
     <p>所屬分組：${rune2.所屬分組}</p>
     <p>符文月相：${rune2.月相}</p>
     <p>真實月相：${realPhase}</p>
-    <p>月相比對趨勢：${moonComparison2}</p>
     <hr>
   `;
 
