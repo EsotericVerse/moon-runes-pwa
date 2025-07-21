@@ -66,26 +66,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  runeSelect.addEventListener("change", async function () {
+ runeSelect.addEventListener("change", async function () {
     var selectedRune = parseInt(runeSelect.value);
     if (selectedRune) {
-      let runes;
-      try {
-        const runeResponse = await fetch("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl");
-        if (!runeResponse.ok) throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
-        runes = await runeResponse.json();
-      } catch (error) {
-        console.error("載入符文資料失敗：", error);
-        attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-        return;
-      }
+        let runes;
+        try {
+            runes = await getRunes64();
+        } catch (error) {
+            console.error("載入符文資料失敗：", error);
+            attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+            return;
+        }
 
-      const rune = runes.find(function (r) {
-        return r.編號 === selectedRune;
-      });
-      displayRune(rune);
+        const rune = runes.find(function (r) {
+            return r.編號 === selectedRune;
+        });
+        displayRune(rune);
     }
-  });
+});
 
   img.addEventListener("click", function () {
     let countdown = 5;

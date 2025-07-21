@@ -27,44 +27,38 @@ window.addEventListener("DOMContentLoaded", async () => {
   const runeKey = selectedIndex.toString().padStart(2, "0");
 
   // 載入符文資料
-  let runes, dirData, moonData;
-  try {
-    const runeResponse = await fetch("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl");
-    if (!runeResponse.ok) throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
-    runes = await runeResponse.json();
-  } catch (error) {
-    console.error("載入符文資料失敗：", error);
-    attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-    return;
-  }
+    let runes, dirData, moonData;
+    try {
+        runes = await getRunes64();
+    } catch (error) {
+        console.error("載入符文資料失敗：", error);
+        attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+        return;
+    }
 
-  try {
-    const dirResponse = await fetch("https://drive.google.com/uc?export=download&id=1x5fXncux8F_55NpJgXqJgOjD2U0-ENuo");
-    if (!dirResponse.ok) throw new Error(`無法載入 direction64.json，狀態碼：${dirResponse.status}`);
-    dirData = await dirResponse.json();
-  } catch (error) {
-    console.error("載入方向資料失敗：", error);
-    attr.innerHTML = "<p>⚠️ 無法載入方向資料</p>";
-    return;
-  }
+    try {
+        dirData = await getDirection64();
+    } catch (error) {
+        console.error("載入方向資料失敗：", error);
+        attr.innerHTML = "<p>⚠️ 無法載入方向資料</p>";
+        return;
+    }
 
-  try {
-    const moonResponse = await fetch("https://drive.google.com/uc?export=download&id=1s0QfpW4H9H3MpBR9SPaMBinYaPINhSJm");
-    if (!moonResponse.ok) throw new Error(`無法載入 moon.json，狀態碼：${moonResponse.status}`);
-    moonData = await moonResponse.json();
-  } catch (error) {
-    console.error("載入月相資料失敗：", error);
-    attr.innerHTML = "<p>⚠️ 無法載入月相資料</p>";
-    return;
-  }
+    try {
+        moonData = await getMoonData();
+    } catch (error) {
+        console.error("載入月相資料失敗：", error);
+        attr.innerHTML = "<p>⚠️ 無法載入月相資料</p>";
+        return;
+    }
 
-  const rune = runes[runeKey];
+    const rune = runes[runeKey];
 
-  if (!rune) {
-    console.error("找不到符文資料，編號：", runeKey);
-    attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-    return;
-  }
+    if (!rune) {
+        console.error("找不到符文資料，編號：", runeKey);
+        attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+        return;
+    }
 
   // 方向設定
   const directions = ["正位", "半正位", "半逆位", "逆位"];

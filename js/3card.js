@@ -37,20 +37,15 @@ window.addEventListener("DOMContentLoaded", async () => {
     const rune2Key = rune2Index.toString().padStart(2, "0");
     const rune3Key = rune3Index.toString().padStart(2, "0");
 
-    // 載入符文資料（從 Google Drive）
-    let runes = JSON.parse(localStorage.getItem('runes64'));
-    if (!runes) {
-        try {
-            const runeResponse = await fetch("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl");
-            if (!runeResponse.ok) throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
-            runes = await runeResponse.json();
-            localStorage.setItem('runes64', JSON.stringify(runes));
-        } catch (error) {
-            console.error("載入符文資料失敗：", error);
-            attr1.innerHTML = `<p>⚠️ 無法載入符文資料：${error.message}</p>`;
-            return;
-        }
-    }
+    // 檢查快取並驗證有效性
+let runes;
+try {
+    runes = await getRunes64();
+} catch (error) {
+    console.error("載入符文資料失敗：", error);
+    attr1.innerHTML = `<p>⚠️ 無法載入符文資料：${error.message}</p>`;
+    return;
+}
 
     const rune1 = runes[rune1Key] || { "符文名稱": "未知", "月相": "未知", "所屬分組": "未知", "圖檔名稱": "default.png", "顯化形式": "", "關鍵詞": "", "陰暗面": "", "反向關鍵詞": "" };
     const rune2 = runes[rune2Key] || { "符文名稱": "未知", "月相": "未知", "所屬分組": "未知", "圖檔名稱": "default.png", "顯化形式": "", "關鍵詞": "", "陰暗面": "", "反向關鍵詞": "" };
@@ -67,7 +62,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     const directionIndex3 = Math.floor(Math.random() * 4);
     const orientationNumber1 = directionIndex1 + 1;
     const orientationNumber2 = directionIndex2 + 1;
-    const orientationNumber3 = directionIndex3 + 1;
     const direction1 = directions[directionIndex1];
     const direction2 = directions[directionIndex2];
     const direction3 = directions[directionIndex3];

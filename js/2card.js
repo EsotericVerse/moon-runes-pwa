@@ -28,16 +28,14 @@ window.addEventListener("DOMContentLoaded", async () => {
   const rune2Key = rune2Index.toString().padStart(2, "0");
 
   // 載入符文資料（從 Google Drive）
-  let runes;
-  try {
-    const runeResponse = await fetch("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl");
-    if (!runeResponse.ok) throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
-    runes = await runeResponse.json();
-  } catch (error) {
+let runes;
+try {
+    runes = await getRunes64();
+} catch (error) {
     console.error("載入符文資料失敗：", error);
     attr1.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
     return;
-  }
+}
 
   const rune1 = runes[rune1Key];
   const rune2 = runes[rune2Key];

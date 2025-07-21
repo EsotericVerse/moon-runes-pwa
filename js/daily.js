@@ -25,23 +25,21 @@ window.addEventListener("DOMContentLoaded", async () => {
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
   const runeKey = selectedIndex.toString().padStart(2, "0");
 
-  let runes;
-  try {
-    const runeResponse = await fetch("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl");
-    if (!runeResponse.ok) throw new Error(`無法載入 runes64.json，狀態碼：${runeResponse.status}`);
-    runes = await runeResponse.json();
-  } catch (error) {
-    console.error("載入符文資料失敗：", error);
-    attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-    return;
-  }
+   let runes, allData;
+    try {
+        runes = await getRunes64();
+    } catch (error) {
+        console.error("載入符文資料失敗：", error);
+        attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+        return;
+    }
 
-  const rune = runes.find(r => r.編號.toString().padStart(2, "0") === runeKey);
+    const rune = runes.find(r => r.編號.toString().padStart(2, "0") === runeKey);
 
-  if (!rune) {
-    attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-    return;
-  }
+    if (!rune) {
+        attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
+        return;
+    }
 
   const directions = ["正位", "半正位", "半逆位", "逆位"];
   const directionIndex = Math.floor(Math.random() * 4);
@@ -71,23 +69,20 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>真實月相：${realPhase}</p>
   `;
 
-  let allData;
-  try {
-    const allDataResponse = await fetch("https://drive.google.com/uc?export=download&id=15DUYevg1DAfvr9NIf8xHTzkuBiNK8k73");
-    if (!allDataResponse.ok) throw new Error(`無法載入 runes_all_data.json，狀態碼：${allDataResponse.status}`);
-    allData = await allDataResponse.json();
-  } catch (error) {
-    console.error("載入每日占卜資料失敗：", error);
-    desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
-    return;
-  }
+ try {
+        allData = await getAllData();
+    } catch (error) {
+        console.error("載入每日占卜資料失敗：", error);
+        desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
+        return;
+    }
 
-  const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
+    const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
   
-  if (!runeData) {
-    desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
-    return;
-  }
+    if (!runeData) {
+        desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
+        return;
+    }
 
   const directionData = runeData.卡牌方向.find(d => d.方向 === direction);
   if (!directionData) {
