@@ -42,7 +42,7 @@ async function getRunes64() {
 }
 
 async function getAllData() {
-    return getData('runes_all_data', 'https://drive.google.com/uc?export=download&id=15DUYevg1DAfvr9NIf8xHTzkuBiNK8k73', (data) => Array.isArray(data) && data.length >= 64);
+    return getData('runes_all_data', 'https://moon-runes-pwa-1.onrender.com/data/runes_all_data.json', (data) => Array.isArray(data) && data.length >= 64);
 }
 
 async function getDirection64() {
