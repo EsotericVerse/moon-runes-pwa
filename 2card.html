@@ -8,16 +8,18 @@
   <script src="js/2card.js" defer></script>
 </head>
 <body>
-  <div class="container" style="display: flex; gap: 20px; justify-content: center;"> <!-- 添加 flex 讓兩卡並排 -->
+  <div class="container" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;"> <!-- 添加 flex-wrap 以防螢幕小 -->
     <div id="rune-card1" style="flex: 1; max-width: 45%;">
       <img id="result-image1" alt="符文圖片1"> <!-- 移除預設 src 以避免 404 -->
       <div id="result-attributes"></div> <!-- 第一張符文屬性 -->
     </div>
+    <div id="api-result" style="flex: 1; max-width: 45%;"> <!-- 新 div：API 結果 + 重新占卜 -->
+      <!-- API 結果將由 JS 動態填充 -->
+    </div>
     <div id="rune-card2" style="flex: 1; max-width: 45%;">
       <img id="result-image2" alt="符文圖片2"> <!-- 移除預設 src 以避免 404 -->
-      <div id="result-description"></div> <!-- 第二張符文屬性 + API 結果（原本 detailHTML 位置） -->
+      <div id="result-description"></div> <!-- 第二張符文屬性（不含 API） -->
     </div>
   </div>
-  <button id="retry-button">重新占卜</button>
 </body>
 </html>

@@ -16,8 +16,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   const img1 = document.getElementById("result-image1");
   const img2 = document.getElementById("result-image2");
   const attr1 = document.getElementById("result-attributes"); // 第一張屬性 (innerHTML)
-  const desc2 = document.getElementById("result-description"); // 第二張屬性 + API (inner2HTML)
-  const retry = document.getElementById("retry-button");
+  const desc2 = document.getElementById("result-description"); // 第二張屬性 (inner2HTML)
+  const apiResultDiv = document.getElementById("api-result"); // 新 div：API 結果 + 重新占卜
 
   // 生成兩個隨機且不同的符文編號（1～64）
   let fateArray = Array.from({ length: 64 }, (_, i) => i + 1);
@@ -27,7 +27,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const rune1Key = rune1Index.toString().padStart(2, "0");
   const rune2Key = rune2Index.toString().padStart(2, "0");
 
-  // 載入符文資料（移除 moon.json，因為不再需要月相比對）
+  // 載入符文資料
   const runeResponse = await fetch("data/runes64.json");
   const runes = await runeResponse.json();
 
@@ -67,7 +67,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     default: img2.style.transform = "rotate(0deg)";
   }
 
-  // 第一張屬性 (innerHTML，移除月相比對)
+  // 第一張屬性 (innerHTML)
   attr1.innerHTML = `
     <p>介紹：${rune1.符文名稱}</p>
     <p>卡牌面向：${direction1}</p>
@@ -76,17 +76,17 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>真實月相：${realPhase}</p>
   `;
 
-  // 第二張屬性 (inner2HTML，初始，移除月相比對)
+  // 第二張屬性 (inner2HTML，無 API)
   desc2.innerHTML = `
     <p>介紹：${rune2.符文名稱}</p>
     <p>卡牌面向：${direction2}</p>
     <p>所屬分組：${rune2.所屬分組}</p>
     <p>符文月相：${rune2.月相}</p>
     <p>真實月相：${realPhase}</p>
-    <hr>
   `;
 
-  // 呼叫 API
+  // 呼叫 API 並顯示在 api-result div
+  let apiHtml = '';
   try {
     const apiResponse = await fetch("https://moon-runes-pwa.onrender.com/divination", {
       method: "POST",
@@ -103,23 +103,30 @@ window.addEventListener("DOMContentLoaded", async () => {
     const apiResult = await apiResponse.json();
     if (apiResult.success) {
       const data = apiResult.data;
-      desc2.innerHTML += `
+      apiHtml = `
         <p><strong>完整現況：</strong>${data["完整現況"]}</p>
         <p><strong>牌面解說：</strong>${data["牌面解說"]}</p>
         <p><strong>占卜結論：</strong>${data["占卜結論"]}</p>
+        <hr>
       `;
     } else {
-      desc2.innerHTML += "<p>⚠️ API 呼叫失敗</p>";
+      apiHtml = "<p>⚠️ API 呼叫失敗</p>";
     }
   } catch (error) {
     console.error("API 錯誤：", error);
-    desc2.innerHTML += "<p>⚠️ API 連線錯誤</p>";
+    apiHtml = "<p>⚠️ API 連線錯誤</p>";
   }
 
-  // 重新占卜按鈕
-  retry.addEventListener("click", () => {
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 1000);
-  });
+  // 添加 API 結果和重新占卜按鈕到 api-result
+  apiResultDiv.innerHTML = apiHtml + '<button id="retry-button">重新占卜</button>';
+
+  // 重新占卜按鈕事件
+  const retry = document.getElementById("retry-button");
+  if (retry) {
+    retry.addEventListener("click", () => {
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 1000);
+    });
+  }
 });
