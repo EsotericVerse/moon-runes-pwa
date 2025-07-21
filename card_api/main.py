@@ -26,36 +26,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Google Drive 公開連結
-NEW_RUNES_URL = "https://drive.google.com/uc?export=download&id=1Y27s4XKOAUXe_e6NKupOYOnxuaWLRER4"
-RUNES_ALL_DATA_URL = "https://drive.google.com/uc?export=download&id=15DUYevg1DAfvr9NIf8xHTzkuBiNK8k73"
-THREE_CARD_COMBINATIONS_URL = "https://drive.google.com/uc?export=download&id=17-tsWQBwrQ8N1Eo3ZQ2loaGP6u8cP0Kj"
-
 # 載入資料（全局，一次載入）
 try:
-    response = requests.get(NEW_RUNES_URL)
-    response.raise_for_status()
-    RUNES = response.json()
+    with open('new_runes.json', 'r', encoding='utf-8') as f:
+        RUNES = json.load(f)
 except Exception as e:
     RUNES = {"runes": []}
-    print(f"Warning: Failed to load new_runes.json from Google Drive: {e}")
+    print(f"Warning: Failed to load new_runes.json: {e}")
 
 try:
-    response = requests.get(RUNES_ALL_DATA_URL)
-    response.raise_for_status()
-    RUNE_SINGLE = response.json()
+    with open('runes_all_data.json', 'r', encoding='utf-8') as f:
+        RUNE_SINGLE = json.load(f)
 except Exception as e:
     RUNE_SINGLE = []
-    print(f"Warning: Failed to load runes_all_data.json from Google Drive: {e}")
+    print(f"Warning: Failed to load runes_all_data.json: {e}")
 
-# 載入三卡組合表（從 Google Drive）
+# 載入三卡組合表
 try:
-    response = requests.get(THREE_CARD_COMBINATIONS_URL)
-    response.raise_for_status()
-    THREE_CARD_COMBINATIONS = response.json()
+    with open('three_card_combinations.json', 'r', encoding='utf-8') as f:
+        THREE_CARD_COMBINATIONS = json.load(f)
 except Exception as e:
     THREE_CARD_COMBINATIONS = {}
-    print(f"Warning: Failed to load three_card_combinations.json from Google Drive: {e}")
+    print(f"Warning: Failed to load three_card_combinations.json: {e}")
 
 # 建立符文編號到資料的映射
 RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES.get("runes", []), 1)}
@@ -399,9 +391,8 @@ async def test_endpoint():
 @app.get("/get-runes64")
 async def get_runes64():
     try:
-        response = requests.get("https://drive.google.com/uc?export=download&id=1S65r02D9yEc41euzW2RPwwYfmyZW_YSl")
-        response.raise_for_status()
-        return response.json()
+        with open('runes64.json', 'r', encoding='utf-8') as f:
+            return json.load(f)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
