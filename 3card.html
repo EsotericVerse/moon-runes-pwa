@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>月之符文三卡占卜結果</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/3card.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <div class="main-layout">
+      <div class="left-panel">
+        <div class="card-display">
+          <img id="result-image1" alt="符文圖片1">
+        </div>
+        <div class="card-attributes" id="result-attributes1"></div> <!-- 第一張屬性 -->
+      </div>
+      <div class="center-panel"> <!-- 新增中間 panel 為第二張 -->
+        <div class="card-display">
+          <img id="result-image2" alt="符文圖片2">
+        </div>
+        <div class="card-attributes" id="result-attributes2"></div> <!-- 第二張屬性 -->
+      </div>
+      <div class="right-panel">
+        <div class="card-display">
+          <img id="result-image3" alt="符文圖片3">
+        </div>
+        <div class="description" id="result-description"></div> <!-- 第三張屬性 -->
+      </div>
+    </div>
+    <div id="api-result"></div> <!-- API/綜合結果 + 重新占卜 -->
+  </div>
+</body>
+</html>
