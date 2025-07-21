@@ -27,15 +27,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const rune1Key = rune1Index.toString().padStart(2, "0");
   const rune2Key = rune2Index.toString().padStart(2, "0");
 
-  // 載入符文資料（從 Google Drive）
-let runes;
-try {
-    runes = await getRunes64();
-} catch (error) {
-    console.error("載入符文資料失敗：", error);
-    attr1.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-    return;
-}
+  const runes = getRunes64(); // 同步呼叫
 
   const rune1 = runes[rune1Key];
   const rune2 = runes[rune2Key];

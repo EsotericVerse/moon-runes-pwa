@@ -37,15 +37,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const rune2Key = rune2Index.toString().padStart(2, "0");
     const rune3Key = rune3Index.toString().padStart(2, "0");
 
-    // 檢查快取並驗證有效性
-let runes;
-try {
-    runes = await getRunes64();
-} catch (error) {
-    console.error("載入符文資料失敗：", error);
-    attr1.innerHTML = `<p>⚠️ 無法載入符文資料：${error.message}</p>`;
-    return;
-}
+  const runes = getRunes64(); // 同步呼叫
 
     const rune1 = runes[rune1Key] || { "符文名稱": "未知", "月相": "未知", "所屬分組": "未知", "圖檔名稱": "default.png", "顯化形式": "", "關鍵詞": "", "陰暗面": "", "反向關鍵詞": "" };
     const rune2 = runes[rune2Key] || { "符文名稱": "未知", "月相": "未知", "所屬分組": "未知", "圖檔名稱": "default.png", "顯化形式": "", "關鍵詞": "", "陰暗面": "", "反向關鍵詞": "" };

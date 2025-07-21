@@ -1,5 +1,8 @@
 // runeLibrary.js - 統一 fetch 和 cache 邏輯
 
+
+import { rune } from './runes64.js';
+
 async function getData(cacheKey, url, validator) {
     const cacheTimestampKey = `${cacheKey}_timestamp`;
     const cacheDuration = 24 * 60 * 60 * 1000; // 24 小時
@@ -36,10 +39,13 @@ async function getData(cacheKey, url, validator) {
     }
 }
 
-// 特定 functions
-async function getRunes64() {
-    return getData('runes64', 'https://moon-runes-pwa.onrender.com/get-runes64', (data) => Object.keys(data).length >= 64);
+import { rune } from './runes64.js';
+
+export function getRunes64() {
+  return rune; // 同步返回陣列
 }
+
+// 特定 functions
 
 async function getAllData() {
     return getData('runes_all_data', 'https://moon-runes-pwa-1.onrender.com/data/runes_all_data.json', (data) => Array.isArray(data) && data.length >= 64);
