@@ -62,6 +62,7 @@ try {
     const directionIndex3 = Math.floor(Math.random() * 4);
     const orientationNumber1 = directionIndex1 + 1;
     const orientationNumber2 = directionIndex2 + 1;
+	const orientationNumber3 = directionIndex3 + 1;
     const direction1 = directions[directionIndex1];
     const direction2 = directions[directionIndex2];
     const direction3 = directions[directionIndex3];
