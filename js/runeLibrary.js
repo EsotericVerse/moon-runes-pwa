@@ -51,16 +51,7 @@ async function getAllData() {
     return getData('runes_all_data', 'https://moon-runes-pwa-1.onrender.com/data/runes_all_data.json', (data) => Array.isArray(data) && data.length >= 64);
 }
 
-async function getDirection64() {
-    return getData('direction64', 'https://drive.google.com/uc?export=download&id=1x5fXncux8F_55NpJgXqJgOjD2U0-ENuo', (data) => Array.isArray(data) && data.length >= 64);
-}
-
-async function getMoonData() {
-    return getData('moon', 'https://drive.google.com/uc?export=download&id=1s0QfpW4H9H3MpBR9SPaMBinYaPINhSJm', (data) => typeof data === 'object' && Object.keys(data).length > 0);
-}
 
 // 暴露到 window，讓其他 JS 用
 window.getRunes64 = getRunes64;
 window.getAllData = getAllData;
-window.getDirection64 = getDirection64;
-window.getMoonData = getMoonData;

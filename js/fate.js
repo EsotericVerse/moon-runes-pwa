@@ -1,3 +1,6 @@
+import { rune } from './runes64.js';
+import { direction } from './direction64.js';
+
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -5,7 +8,7 @@ function shuffleArray(array) {
   }
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
+window.addEventListener("DOMContentLoaded", () => {
   const realPhase = sessionStorage.getItem("realPhase");
   if (!realPhase) {
     window.location.href = "index.html";
@@ -24,41 +27,22 @@ window.addEventListener("DOMContentLoaded", async () => {
   shuffleArray(fateArray);
   shuffleArray(fateArray);
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
-  const runeKey = selectedIndex.toString().padStart(2, "0");
 
-  // 載入符文資料
-    let runes, dirData, moonData;
-    try {
-        runes = await getRunes64();
-    } catch (error) {
-        console.error("載入符文資料失敗：", error);
-        attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-        return;
-    }
-
-    try {
-        dirData = await getDirection64();
-    } catch (error) {
-        console.error("載入方向資料失敗：", error);
-        attr.innerHTML = "<p>⚠️ 無法載入方向資料</p>";
-        return;
-    }
-
-    try {
-        moonData = await getMoonData();
-    } catch (error) {
-        console.error("載入月相資料失敗：", error);
-        attr.innerHTML = "<p>⚠️ 無法載入月相資料</p>";
-        return;
-    }
-
-    const rune = runes[runeKey];
-
-    if (!rune) {
-        console.error("找不到符文資料，編號：", runeKey);
-        attr.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-        return;
-    }
+  // 取得符文資料
+  const selectedRune = rune[selectedIndex] || {
+    "符文名稱": "未知",
+    "月相": "未知",
+    "所屬分組": "未知",
+    "圖檔名稱": "default.png",
+    "符文變化歷史": "",
+    "神話故事": "",
+    "靈魂咒語": "",
+    "分組說明": "",
+    "靈魂課題": "",
+    "實踐挑戰": "",
+    "配套儀式建議": "",
+    "能量調和建議": ""
+  };
 
   // 方向設定
   const directions = ["正位", "半正位", "半逆位", "逆位"];
@@ -80,12 +64,46 @@ window.addEventListener("DOMContentLoaded", async () => {
   const direction = directions[directionIndex];
   const directionText = directionMeanings[direction];
 
-  const dirInfo = dirData.find(d => d.編號 === rune.編號);
-  const directionResult = dirInfo ? dirInfo[orientationFieldMap[direction]] : "無對應解釋";
-  const moonComparison =
-    (moonData[realPhase] && moonData[realPhase][rune.月相]) || "無比對結果";
+  const dirInfo = direction[selectedIndex] || { "正向表示": "無對應解釋", "半正向表示": "無對應解釋", "半逆向表示": "無對應解釋", "逆向表示": "無對應解釋" };
+  const directionResult = dirInfo[orientationFieldMap[direction]] || "無對應解釋";
 
-  img.src = "64images/" + rune.圖檔名稱;
+  // 硬編碼 moon.json
+  const moonData = {
+    "新月": {
+      "新月": "當新月遇上新月卡，萬象初生，一切由零開始。",
+      "上弦": "新月時抽到上弦卡，代表你準備行動，但基礎尚未穩固。",
+      "滿月": "新月遇滿月卡，顯示你渴望結果，但時機未至。",
+      "下弦": "新月對下弦卡，代表回顧與整頓之間的矛盾。"
+    },
+    "上弦": {
+      "新月": "上弦時抽到新月卡，象徵需要重新檢視起點。",
+      "上弦": "上弦時遇上弦卡，雙倍的行動力與挑戰！",
+      "滿月": "上弦遇滿月卡，事情開始進展，請保持專注。",
+      "下弦": "上弦對下弦卡，有一種左右為難的拉扯感。"
+    },
+    "滿月": {
+      "新月": "滿月時抽到新月卡，代表收穫中隱藏著新的開始。",
+      "上弦": "滿月時遇上弦卡，事情發展迅速，但你可能忽略了某些細節。",
+      "滿月": "滿月遇滿月卡，情緒與能量達到頂峰，小心過度膨脹。",
+      "下弦": "滿月對下弦卡，顯示該收手或整理階段已經來臨。"
+    },
+    "下弦": {
+      "新月": "下弦時抽到新月卡，你可能忽略了結束所帶來的禮物。",
+      "上弦": "下弦時遇上弦卡，是來自過去與未來的對話。",
+      "滿月": "下弦遇滿月卡，象徵你還沉浸在過去的情緒中。",
+      "下弦": "下弦遇下弦卡，是讓步、反省、與轉化的重疊時刻。"
+    },
+    "空亡": {
+      "新月": "空亡遇新月卡，萬象沉靜，等待真正的開始。",
+      "上弦": "空亡時遇上弦卡，努力或許無法馬上見效。",
+      "滿月": "空亡對滿月卡，顯示成果難以預期，須靜待時機。",
+      "下弦": "空亡對下弦卡，象徵你在無聲中學會放手與釋懷。"
+    }
+  };
+
+  const moonComparison = (moonData[realPhase] && moonData[realPhase][selectedRune.月相]) || "無比對結果";
+
+  img.src = "64images/" + selectedRune.圖檔名稱;
   switch (orientationNumber) {
     case 2:
       img.style.transform = "rotate(90deg)";
@@ -101,25 +119,25 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   attr.innerHTML = `
-    <p>介紹：${rune.符文名稱}</p>
+    <p>介紹：${selectedRune.符文名稱}</p>
     <p>卡牌面向：${direction}</p>
-    <p>所屬分組：${rune.所屬分組}</p>
-    <p>符文月相：${rune.月相}</p>
+    <p>所屬分組：${selectedRune.所屬分組}</p>
+    <p>符文月相：${selectedRune.月相}</p>
     <p>真實月相：${realPhase}</p>
   `;
 
   const detailHTML = `
-    <p><strong>歷史：</strong>${rune.符文變化歷史}</p>
-    <p><strong>故事：</strong>${rune.神話故事}</p>
-    <p><strong>靈魂咒語：</strong>${rune.靈魂咒語}</p>
-    <p><strong>分組說明：</strong>${rune.分組說明}</p>
-    <p><strong>靈魂課題：</strong>${rune.靈魂課題}</p>
-    <p><strong>實踐挑戰：</strong>${rune.實踐挑戰}</p>
-    <p><strong>配套儀式：</strong>${rune.配套儀式建議}</p>
-    <p><strong>能量調和：</strong>${rune.能量調和建議}</p>
+    <p><strong>歷史：</strong>${selectedRune.符文變化歷史}</p>
+    <p><strong>故事：</strong>${selectedRune.神話故事}</p>
+    <p><strong>靈魂咒語：</strong>${selectedRune.靈魂咒語}</p>
+    <p><strong>分組說明：</strong>${selectedRune.分組說明}</p>
+    <p><strong>靈魂課題：</strong>${selectedRune.靈魂課題}</p>
+    <p><strong>實踐挑戰：</strong>${selectedRune.實踐挑戰}</p>
+    <p><strong>配套儀式：</strong>${selectedRune.配套儀式建議}</p>
+    <p><strong>能量調和：</strong>${selectedRune.能量調和建議}</p>
     <hr>
     <p>月相比對趨勢：${moonComparison}</p>
-    <p>占卜結論：${rune.符文名稱}，${direction} 表示，${directionResult}</p>
+    <p>占卜結論：${selectedRune.符文名稱}，${direction} 表示，${directionResult}</p>
     <hr>
   `;
 
