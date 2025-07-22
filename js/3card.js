@@ -5,7 +5,7 @@ function shuffleArray(array) {
     }
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
     const realPhase = sessionStorage.getItem("realPhase");
     if (!realPhase) {
         window.location.href = "index.html";
@@ -36,7 +36,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const runes = getRunes64(); // 同步呼叫
 
-    // Use numerical indices directly
+    // 使用數字索引直接訪問符文資料
     const rune1 = runes[rune1Index] || {
         "符文名稱": "未知",
         "月相": "未知",
@@ -141,10 +141,13 @@ window.addEventListener("DOMContentLoaded", () => {
         <p>真實月相：${realPhase}</p>
     `;
 
+    // 先顯示載入訊息
+    apiResultDiv.innerHTML = '<p>占卜結果分析中...</p>';
+
     // 呼叫 API
     let apiHtml = '';
     try {
-        const apiResponse = fetch("https://moon-runes-pwa.onrender.com/divination", {
+        const apiResponse = await fetch("https://moon-runes-pwa.onrender.com/divination", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -158,11 +161,10 @@ window.addEventListener("DOMContentLoaded", () => {
                 debug: false
             })
         });
-        const apiResult = await apiResponse;
-        if (!apiResult.ok) {
-            throw new Error(`API 呼叫失敗，狀態碼：${apiResult.status}`);
+        if (!apiResponse.ok) {
+            throw new Error(`API 呼叫失敗，狀態碼：${apiResponse.status}`);
         }
-        const data = await apiResult.json();
+        const data = await apiResponse.json();
         if (data.success) {
             apiHtml = `
                 <p><strong>完整現況：</strong>${data.data["完整現況"]}</p>
