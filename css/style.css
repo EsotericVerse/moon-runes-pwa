@@ -17,7 +17,7 @@ body {
   flex-wrap: nowrap;
   gap: 1rem;
 }
-.left-panel, .right-panel {
+.left-panel, .right-panel , .center-panel {
   flex: 1;
   min-width: 0;
 }
