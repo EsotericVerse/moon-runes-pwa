@@ -19,16 +19,40 @@ window.addEventListener("DOMContentLoaded", async () => {
   const desc2 = document.getElementById("result-description");
   const apiResultDiv = document.getElementById("api-result");
 
+  if (!img1 || !img2 || !attr1 || !desc2 || !apiResultDiv) {
+    console.error("DOM 元素缺失");
+    if (attr1) attr1.innerHTML = "<p>⚠️ 頁面結構錯誤</p>";
+    return;
+  }
+
   // 生成兩個隨機且不同的符文編號（1～64）
-  let fateArray = Array.from({ length: 64 }, (_, i) => i + 1);
+  let fateArray =住在廣告中，無法顯示此圖片Array.from({ length: 64 }, (_, i) => i + 1);
   shuffleArray(fateArray);
   const rune1Index = fateArray[0];
   const rune2Index = fateArray[1];
 
   const runes = getRunes64(); // 同步呼叫
 
-  const rune1 = runes[rune1Index];
-  const rune2 = runes[rune2Index];
+  const rune1 = runes[rune1Index] || {
+    "符文名稱": "未知",
+    "月相": "未知",
+    "所屬分組": "未知",
+    "圖檔名稱": "default.png",
+    "顯化形式": "",
+    "關鍵詞": "",
+    "陰暗面": "",
+    "反向關鍵詞": ""
+  };
+  const rune2 = runes[rune2Index] || {
+    "符文名稱": "未知",
+    "月相": "未知",
+    "所屬分組": "未知",
+    "圖檔名稱": "default.png",
+    "顯化形式": "",
+    "關鍵詞": "",
+    "陰暗面": "",
+    "反向關鍵詞": ""
+  };
 
   if (!rune1 || !rune2) {
     console.error("找不到符文資料");
@@ -46,21 +70,27 @@ window.addEventListener("DOMContentLoaded", async () => {
   const direction2 = directions[directionIndex2];
 
   // 顯示第一張圖片並旋轉
-  img1.src = "64images/" + rune1.圖檔名稱;
-  switch (orientationNumber1) {
-    case 2: img1.style.transform = "rotate(90deg)"; break;
-    case 3: img1.style.transform = "rotate(-90deg)"; break;
-    case 4: img1.style.transform = "rotate(180deg)"; break;
-    default: img1.style.transform = "rotate(0deg)";
-  }
+  try {
+    img1.src = "64images/" + rune1.圖檔名稱;
+    switch (orientationNumber1) {
+      case 2: img1.style.transform = "rotate(90deg)"; break;
+      case 3: img1.style.transform = "rotate(-90deg)"; break;
+      case 4: img1.style.transform = "rotate(180deg)"; break;
+      default: img1.style.transform = "rotate(0deg)";
+    }
 
-  // 顯示第二張圖片並旋轉
-  img2.src = "64images/" + rune2.圖檔名稱;
-  switch (orientationNumber2) {
-    case 2: img2.style.transform = "rotate(90deg)"; break;
-    case 3: img2.style.transform = "rotate(-90deg)"; break;
-    case 4: img2.style.transform = "rotate(180deg)"; break;
-    default: img2.style.transform = "rotate(0deg)";
+    // 顯示第二張圖片並旋轉
+    img2.src = "64images/" + rune2.圖檔名稱;
+    switch (orientationNumber2) {
+      case 2: img2.style.transform = "rotate(90deg)"; break;
+      case 3: img2.style.transform = "rotate(-90deg)"; break;
+      case 4: img2.style.transform = "rotate(180deg)"; break;
+      default: img2.style.transform = "rotate(0deg)";
+    }
+  } catch (error) {
+    console.error("圖片載入失敗：", error);
+    attr1.innerHTML = "<p>⚠️ 圖片檔案缺失</p>";
+    return;
   }
 
   // 第一張屬性
@@ -81,6 +111,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     <p>真實月相：${realPhase}</p>
   `;
 
+  // 先顯示載入訊息
+  apiResultDiv.innerHTML = '<p>占卜結果分析中...</p>';
+
   // 呼叫 API
   let apiHtml = '';
   try {
@@ -96,6 +129,9 @@ window.addEventListener("DOMContentLoaded", async () => {
         debug: false
       })
     });
+    if (!apiResponse.ok) {
+      throw new Error(`API 呼叫失敗，狀態碼：${apiResponse.status}`);
+    }
     const apiResult = await apiResponse.json();
     if (apiResult.success) {
       const data = apiResult.data;
@@ -110,7 +146,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   } catch (error) {
     console.error("API 錯誤：", error);
-    apiHtml = "<p>⚠️ API 連線錯誤</p>";
+    apiHtml = `<p>⚠️ API 連線錯誤：${error.message}</p>`;
   }
 
   // 添加 API 結果和重新占卜按鈕
