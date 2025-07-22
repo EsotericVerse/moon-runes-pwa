@@ -26,7 +26,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   // 生成兩個隨機且不同的符文編號（1～64）
-  let fateArray =住在廣告中，無法顯示此圖片Array.from({ length: 64 }, (_, i) => i + 1);
+  let fateArray = Array.from({ length: 64 }, (_, i) => i + 1);
   shuffleArray(fateArray);
   const rune1Index = fateArray[0];
   const rune2Index = fateArray[1];
