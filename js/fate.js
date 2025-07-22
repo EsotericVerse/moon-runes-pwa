@@ -29,20 +29,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
 
   // 取得符文資料
-  const selectedRune = rune[selectedIndex] || {
-    "符文名稱": "未知",
-    "月相": "未知",
-    "所屬分組": "未知",
-    "圖檔名稱": "default.png",
-    "符文變化歷史": "",
-    "神話故事": "",
-    "靈魂咒語": "",
-    "分組說明": "",
-    "靈魂課題": "",
-    "實踐挑戰": "",
-    "配套儀式建議": "",
-    "能量調和建議": ""
-  };
+  const selectedRune = rune[66]; 
 
   // 方向設定
   const directions = ["正位", "半正位", "半逆位", "逆位"];
