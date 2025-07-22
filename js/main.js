@@ -2,7 +2,8 @@ function getLunarPhase(day) {
   if (day >= 1 && day <= 7) return "新月";
   if (day >= 8 && day <= 14) return "上弦";
   if (day >= 15 && day <= 21) return "滿月";
-  if (day >= 22 && day <= 30) return "下弦";
+  if (day >= 22 && day <= 28) return "下弦";
+   if (day >= 29 && day <= 30) return "空亡";
   return "未知";
 }
 
