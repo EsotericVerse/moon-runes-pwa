@@ -54,10 +54,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     "反向關鍵詞": ""
   };
 
-  if (!rune1 || !rune2) {
-    console.error("找不到符文資料");
-    attr1.innerHTML = "<p>⚠️ 無法載入符文資料</p>";
-    return;
+  if (!runes[rune1Index] || !runes[rune2Index]) {
+    console.warn(`缺少符文資料，索引：${rune1Index}, ${rune2Index} - 使用預設值`);
   }
 
   // 方向設定
@@ -78,8 +76,14 @@ window.addEventListener("DOMContentLoaded", async () => {
       case 4: img1.style.transform = "rotate(180deg)"; break;
       default: img1.style.transform = "rotate(0deg)";
     }
+  } catch (error) {
+    console.error("第一張圖片載入失敗：", error);
+    attr1.innerHTML = "<p>⚠️ 圖片檔案缺失</p>";
+    return;
+  }
 
-    // 顯示第二張圖片並旋轉
+  // 顯示第二張圖片並旋轉
+  try {
     img2.src = "64images/" + rune2.圖檔名稱;
     switch (orientationNumber2) {
       case 2: img2.style.transform = "rotate(90deg)"; break;
@@ -88,7 +92,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       default: img2.style.transform = "rotate(0deg)";
     }
   } catch (error) {
-    console.error("圖片載入失敗：", error);
+    console.error("第二張圖片載入失敗：", error);
     attr1.innerHTML = "<p>⚠️ 圖片檔案缺失</p>";
     return;
   }
@@ -142,7 +146,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         <hr>
       `;
     } else {
-      apiHtml = "<p>⚠️ API 呼叫失敗</p>";
+      apiHtml = "<p>⚠️ API 回應失敗</p>";
     }
   } catch (error) {
     console.error("API 錯誤：", error);
