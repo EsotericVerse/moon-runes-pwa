@@ -213,8 +213,8 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
         
         result = {
             "完整現況": f"您抽的符文有五張：{rune1_name}之符文（{dir_map[rune1_dir]}）、{rune2_name}之符文（{dir_map[rune2_dir]}）、{rune3_name}之符文（{dir_map[rune3_dir]}）、{rune4_name}之符文（{dir_map[rune4_dir]}）和{rune5_name}之符文（{dir_map[rune5_dir]}）。",
-            "牌面解說": f"{three_result['牌面解說']}。而你的周圍環境會使，{two_result['牌面解說']}",
-            "占卜結論": f"{three_result['占卜結論']}。而你的周圍環境會使，{two_result['占卜結論']}"
+            "牌面解說": f"{three_result['牌面解說']}而你的周圍環境會使，{two_result['牌面解說']}",
+            "占卜結論": f"{three_result['占卜結論']}{two_result['占卜結論']}"
         }
         
         if debug:
