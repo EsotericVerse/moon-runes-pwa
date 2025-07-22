@@ -11,12 +11,6 @@ body {
   box-sizing: border-box;
   background-color: #ffffff;
 }
-.main-layout {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-  gap: 1rem;
-}
 .main-layout2 {
   display: flex;
   justify-content: space-between;
