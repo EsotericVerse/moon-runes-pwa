@@ -50,7 +50,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const orientationNumber = directionIndex + 1;
   
   const directionStr = directions[directionIndex];
-  const directionText = directionMeanings[direction];
+  const directionText = directionMeanings[directionStr];
 
   const dirInfo = direction[selectedIndex] || { "正向表示": "無對應解釋1", "半正向表示": "無對應解釋2", "半逆向表示": "無對應解釋3", "逆向表示": "無對應解釋4" };
   const directionResult = dirInfo[orientationFieldMap[direction]] || "無對應解釋5";
