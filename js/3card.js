@@ -37,40 +37,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     const runes = getRunes64(); // 同步呼叫
 
     // 使用數字索引直接訪問符文資料
-    const rune1 = runes[rune1Index] || {
-        "符文名稱": "未知",
-        "月相": "未知",
-        "所屬分組": "未知",
-        "圖檔名稱": "default.png",
-        "顯化形式": "",
-        "關鍵詞": "",
-        "陰暗面": "",
-        "反向關鍵詞": ""
-    };
-    const rune2 = runes[rune2Index] || {
-        "符文名稱": "未知",
-        "月相": "未知",
-        "所屬分組": "未知",
-        "圖檔名稱": "default.png",
-        "顯化形式": "",
-        "關鍵詞": "",
-        "陰暗面": "",
-        "反向關鍵詞": ""
-    };
-    const rune3 = runes[rune3Index] || {
-        "符文名稱": "未知",
-        "月相": "未知",
-        "所屬分組": "未知",
-        "圖檔名稱": "default.png",
-        "顯化形式": "",
-        "關鍵詞": "",
-        "陰暗面": "",
-        "反向關鍵詞": ""
-    };
-
-    if (!runes[rune1Index] || !runes[rune2Index] || !runes[rune3Index]) {
-        console.warn(`缺少符文資料，索引：${rune1Index}, ${rune2Index}, ${rune3Index} - 使用預設值`);
-    }
+    const rune1 = runes[rune1Index];
+    const rune2 = runes[rune2Index];
+    const rune3 = runes[rune3Index];
 
     // 方向設定
     const directions = ["正位", "半正位", "半逆位", "逆位"];

@@ -33,30 +33,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const runes = getRunes64(); // 同步呼叫
 
-  const rune1 = runes[rune1Index] || {
-    "符文名稱": "未知",
-    "月相": "未知",
-    "所屬分組": "未知",
-    "圖檔名稱": "default.png",
-    "顯化形式": "",
-    "關鍵詞": "",
-    "陰暗面": "",
-    "反向關鍵詞": ""
-  };
-  const rune2 = runes[rune2Index] || {
-    "符文名稱": "未知",
-    "月相": "未知",
-    "所屬分組": "未知",
-    "圖檔名稱": "default.png",
-    "顯化形式": "",
-    "關鍵詞": "",
-    "陰暗面": "",
-    "反向關鍵詞": ""
-  };
+  const rune1 = runes[rune1Index];
+  const rune2 = runes[rune2Index];
 
-  if (!runes[rune1Index] || !runes[rune2Index]) {
-    console.warn(`缺少符文資料，索引：${rune1Index}, ${rune2Index} - 使用預設值`);
-  }
 
   // 方向設定
   const directions = ["正位", "半正位", "半逆位", "逆位"];
