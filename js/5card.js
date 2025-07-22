@@ -74,7 +74,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         img3.src = "64images/" + rune3.圖檔名稱;
         img4.src = "64images/" + rune4.圖檔名稱;
         img5.src = "64images/" + rune5.圖檔名稱;
-		img1.width=img2.width=img3.width=img4.width=img5.width=200;
     } catch (error) {
         console.error("圖片載入失敗：", error);
         attr1.innerHTML = "<p>⚠️ 圖片檔案缺失</p>";
