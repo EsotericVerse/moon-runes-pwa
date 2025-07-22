@@ -55,7 +55,7 @@ window.addEventListener("load", async () => {
     "微弱的月光，會在漆黑的夜裡，帶領你找到方向。",
     "抓到命運絲線的軌跡了，現在呈現。"
   ];
-  const fiveMessages = [
+  const fiveCardMessages = [
 	"您目前使用的是 「五卡占卜模式」",
 	"占卜中，請稍等片刻，馬上就好...... ",
     "抽到的第一張為「源」，第二張為「轉」，第三張為「合」。",
