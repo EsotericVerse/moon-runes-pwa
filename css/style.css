@@ -17,6 +17,12 @@ body {
   flex-wrap: nowrap;
   gap: 1rem;
 }
+.main-layout2 {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 1rem;
+}
 .left-panel, .right-panel {
   flex: 1;
   min-width: 0;
