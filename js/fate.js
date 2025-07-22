@@ -29,7 +29,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
 
   // 取得符文資料
-  const selectedRune = rune[66]; 
+  const selectedRune = rune[selectedIndex]; 
 
   // 方向設定
   const directions = ["正位", "半正位", "半逆位", "逆位"];
