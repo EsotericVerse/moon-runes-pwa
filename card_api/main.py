@@ -1,6 +1,4 @@
 import json
-import random
-import requests
 from zhdate import ZhDate
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
@@ -173,12 +171,12 @@ def adjust_three_direction_combination(rune1_dir, rune2_dir, rune3_dir):
     key = f"{dir_map[rune1_dir]} + {dir_map[rune2_dir]} + {dir_map[rune3_dir]}"
     return THREE_CARD_COMBINATIONS.get(key, {"能量模式": "中性", "圖景意涵": ""})
 
-def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id=None, rune3_dir=None, debug=False):
-    if mode not in ["2", "2d", "3", "3d"]:
-        raise ValueError("僅支援模式 2, 2d, 3 或 3d")
-    if rune1_id == rune2_id or (mode in ["3", "3d"] and (rune1_id == rune3_id or rune2_id == rune3_id)):
+def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id=None, rune3_dir=None, rune4_id=None, rune4_dir=None, rune5_id=None, rune5_dir=None, debug=False):
+    if mode not in ["2", "2d", "3", "3d", "5", "5d"]:
+        raise ValueError("僅支援模式 2, 2d, 3, 3d, 5 或 5d")
+    if rune1_id == rune2_id or (mode in ["3", "3d", "5", "5d"] and (rune1_id == rune3_id or rune2_id == rune3_id)) or (mode in ["5", "5d"] and (rune1_id in [rune4_id, rune5_id] or rune2_id in [rune4_id, rune5_id] or rune3_id in [rune4_id, rune5_id] or rune4_id == rune5_id)):
         raise ValueError("符文不可重複")
-    if rune1_id not in range(1, 65) or rune2_id not in range(1, 65) or (mode in ["3", "3d"] and rune3_id not in range(1, 65)):
+    if rune1_id not in range(1, 65) or rune2_id not in range(1, 65) or (mode in ["3", "3d", "5", "5d"] and rune3_id not in range(1, 65)) or (mode in ["5", "5d"] and (rune4_id not in range(1, 65) or rune5_id not in range(1, 65))):
         raise ValueError("符文編號必須在 1-64 之間")
 
     rune1 = RUNES_MAP.get(rune1_id, {})
@@ -197,6 +195,35 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
             {"語氣": "中性", "前綴": "請平和地面對"}
         )
     )
+
+    if mode in ["5", "5d"]:
+        if rune3_id is None or rune3_dir is None or rune4_id is None or rune4_dir is None or rune5_id is None or rune5_dir is None:
+            raise ValueError("模式 5 需要五張符文")
+        rune3 = RUNES_MAP.get(rune3_id, {})
+        rune4 = RUNES_MAP.get(rune4_id, {})
+        rune5 = RUNES_MAP.get(rune5_id, {})
+        rune3_name = rune3.get("名稱", "未知")
+        rune4_name = rune4.get("名稱", "未知")
+        rune5_name = rune5.get("名稱", "未知")
+
+        three_mode = "3" if mode == "5" else "3d"
+        two_mode = "2" if mode == "5" else "2d"
+        three_result = generate_divination(three_mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id, rune3_dir, debug=debug)
+        two_result = generate_divination(two_mode, rune4_id, rune4_dir, rune5_id, rune5_dir, debug=debug)
+        
+        result = {
+            "完整現況": f"您抽的符文有五張：{rune1_name}之符文（{dir_map[rune1_dir]}）、{rune2_name}之符文（{dir_map[rune2_dir]}）、{rune3_name}之符文（{dir_map[rune3_dir]}）、{rune4_name}之符文（{dir_map[rune4_dir]}）和{rune5_name}之符文（{dir_map[rune5_dir]}）。",
+            "牌面解說": f"{three_result['牌面解說']}。而你的周圍環境會使，{two_result['牌面解說']}",
+            "占卜結論": f"{three_result['占卜結論']}。而你的周圍環境會使，{two_result['占卜結論']}"
+        }
+        
+        if debug:
+            three_debug = {k: v for k, v in three_result.items() if k not in ["完整現況", "牌面解說", "占卜結論"]}
+            two_debug = {k: v for k, v in two_result.items() if k not in ["完整現況", "牌面解說", "占卜結論"]}
+            result["三張_debug"] = three_debug
+            result["兩張_debug"] = two_debug
+        
+        return result
 
     if mode in ["2", "2d"]:
         rune1_keywords = (
@@ -314,6 +341,10 @@ class RuneInput(BaseModel):
     rune2_dir: int
     rune3_id: int | None = None
     rune3_dir: int | None = None
+    rune4_id: int | None = None
+    rune4_dir: int | None = None
+    rune5_id: int | None = None
+    rune5_dir: int | None = None
     debug: bool = False
 
 # 根路由 - 健康檢查
@@ -344,8 +375,8 @@ async def health_check():
 @app.post("/divination")
 async def divination(input: RuneInput):
     try:
-        if input.mode not in ["2", "2d", "3", "3d"]:
-            raise ValueError("僅支援模式 2, 2d, 3 或 3d")
+        if input.mode not in ["2", "2d", "3", "3d", "5", "5d"]:
+            raise ValueError("僅支援模式 2, 2d, 3, 3d, 5 或 5d")
         if input.rune1_id == input.rune2_id:
             raise ValueError("符文不可重複")
         if input.mode in ["3", "3d"]:
@@ -353,9 +384,15 @@ async def divination(input: RuneInput):
                 raise ValueError("模式 3 需要三張符文")
             if input.rune1_id == input.rune3_id or input.rune2_id == input.rune3_id:
                 raise ValueError("符文不可重複")
-        if input.rune1_id not in range(1, 65) or input.rune2_id not in range(1, 65) or (input.mode in ["3", "3d"] and input.rune3_id not in range(1, 65)):
+        if input.mode in ["5", "5d"]:
+            if input.rune3_id is None or input.rune3_dir is None or input.rune4_id is None or input.rune4_dir is None or input.rune5_id is None or input.rune5_dir is None:
+                raise ValueError("模式 5 需要五張符文")
+            all_runes = {input.rune1_id, input.rune2_id, input.rune3_id, input.rune4_id, input.rune5_id}
+            if len(all_runes) != 5:
+                raise ValueError("符文不可重複")
+        if input.rune1_id not in range(1, 65) or input.rune2_id not in range(1, 65) or (input.mode in ["3", "3d", "5", "5d"] and input.rune3_id not in range(1, 65)) or (input.mode in ["5", "5d"] and (input.rune4_id not in range(1, 65) or input.rune5_id not in range(1, 65))):
             raise ValueError("符文編號必須在 1-64 之間")
-        if input.rune1_dir not in [1, 2, 3, 4] or input.rune2_dir not in [1, 2, 3, 4] or (input.mode in ["3", "3d"] and input.rune3_dir not in [1, 2, 3, 4]):
+        if input.rune1_dir not in [1, 2, 3, 4] or input.rune2_dir not in [1, 2, 3, 4] or (input.mode in ["3", "3d", "5", "5d"] and input.rune3_dir not in [1, 2, 3, 4]) or (input.mode in ["5", "5d"] and (input.rune4_dir not in [1, 2, 3, 4] or input.rune5_dir not in [1, 2, 3, 4])):
             raise ValueError("無效的方向")
         
         result = generate_divination(
@@ -366,6 +403,10 @@ async def divination(input: RuneInput):
             input.rune2_dir,
             input.rune3_id,
             input.rune3_dir,
+            input.rune4_id,
+            input.rune4_dir,
+            input.rune5_id,
+            input.rune5_dir,
             input.debug
         )
         return {
@@ -386,26 +427,6 @@ async def test_endpoint():
         "current_time": datetime.now().isoformat(),
         "moon_phase": get_lunar_phase(datetime.now())
     }
-
-# 新增代理端點：用來代理前端載入 runes64.json（解決 CORS 問題）
-@app.get("/get-runes64")
-async def get_runes64():
-    try:
-        with open('runes64.json', 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# Vercel handler
-try:
-    from mangum import Mangum
-    handler = Mangum(app)
-except ImportError:
-    def handler(event, context):
-        return {
-            "statusCode": 200,
-            "body": json.dumps({"error": "Mangum not installed"})
-        }
 
 if __name__ == "__main__":
     import uvicorn
