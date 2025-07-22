@@ -26,12 +26,51 @@ window.addEventListener("load", async () => {
   moonText.textContent = "月相：無 / 真實月相：" + realPhase;
   sessionStorage.setItem("realPhase", realPhase);
 
-  const messages = [
-    "占卜中，請稍等片刻，馬上就好...... ",
+  // 根據 mode 選擇不同的提示訊息
+  const defaultMessages = [
+	"您目前使用的是 <font color="#FF0000">單卡占卜模式</font>",
+	"占卜中，請稍等片刻，馬上就好...... ",
     "正在找尋那命運之線..... ",
     "微弱的月光，會在漆黑的夜裡，帶領你找到方向。",
     "抓到命運絲線的軌跡了，現在呈現。"
   ];
+  const dailyMessages = [
+ 	"您目前使用的是 <font color="#FF0000">單卡每日抽牌模式</font>",
+	"抽牌中，請稍等片刻，馬上就好...... ",
+    "這是抽取隔日命運的指引牌。",
+    "微弱的月光，會在漆黑的夜裡，帶領你找到方向。",
+    "抓到命運絲線的軌跡了，現在呈現。"
+  ];
+  const twoCardMessages = [
+	"您目前使用的是 <font color="#FF0000">雙卡占卜模式</font>",
+	"占卜中，請稍等片刻，馬上就好...... ",
+    "抽到的第一張卡牌為「因」，第二張卡牌為「果」。",
+    "微弱的月光，會在漆黑的夜裡，帶領你找到方向。",
+    "抓到命運絲線的軌跡了，現在呈現。"
+  ];
+  const threeCardMessages = [
+	"您目前使用的是 <font color="#FF0000">三卡占卜模式</font>",
+	"占卜中，請稍等片刻，馬上就好...... ",
+    "抽到的第一張卡牌為「源」，第二章卡牌為「轉」，第三張卡牌為「合」。",
+    "微弱的月光，會在漆黑的夜裡，帶領你找到方向。",
+    "抓到命運絲線的軌跡了，現在呈現。"
+  ];
+
+  // 根據 mode 選擇訊息數組
+  let messages;
+  switch (mode) {
+    case "daily":
+      messages = dailyMessages;
+      break;
+    case "2card":
+      messages = twoCardMessages;
+      break;
+    case "3card":
+      messages = threeCardMessages;
+      break;
+    default:
+      messages = defaultMessages;
+  }
 
   let index = 0;
   function showNext() {
@@ -41,13 +80,13 @@ window.addEventListener("load", async () => {
       description.appendChild(p);
       index++;
       setTimeout(showNext, 2000);
-    } else {// 修改這裡：根據 mode 決定 target
+    } else {
       let target = "fate.html"; // 預設
       if (mode === "daily") {
         target = "daily.html";
       } else if (mode === "2card") {
         target = "2card.html";
-	  } else if (mode === "3card") {
+      } else if (mode === "3card") {
         target = "3card.html";
       }
       setTimeout(() => {
