@@ -125,7 +125,7 @@ window.addEventListener("DOMContentLoaded", () => {
     <p><strong>能量調和：</strong>${selectedRune.能量調和建議}</p>
     <hr>
     <p>月相比對趨勢：${moonComparison}</p>
-    <p>占卜結論：${selectedRune.符文名稱}，${direction} 表示，${directionResult}</p>
+    <p>占卜結論：${selectedRune.符文名稱}，${directionStr} 表示，${directionResult}</p>
     <hr>
   `;
 
