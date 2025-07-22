@@ -51,10 +51,18 @@ window.addEventListener("load", async () => {
   const threeCardMessages = [
 	"您目前使用的是 「三卡占卜模式」",
 	"占卜中，請稍等片刻，馬上就好...... ",
-    "抽到的第一張卡牌為「源」，第二章卡牌為「轉」，第三張卡牌為「合」。",
+    "抽到的第一張為「源」，第二張為「轉」，第三張為「合」。",
     "微弱的月光，會在漆黑的夜裡，帶領你找到方向。",
     "抓到命運絲線的軌跡了，現在呈現。"
   ];
+  const fiveMessages = [
+	"您目前使用的是 「五卡占卜模式」",
+	"占卜中，請稍等片刻，馬上就好...... ",
+    "抽到的第一張為「源」，第二張為「轉」，第三張為「合」。",
+	"第四張跟第五張，表示周圍環境的影響。",
+    "抓到命運絲線的軌跡了，現在呈現。"
+  ];
+
 
   // 根據 mode 選擇訊息數組
   let messages;
@@ -67,6 +75,9 @@ window.addEventListener("load", async () => {
       break;
     case "3card":
       messages = threeCardMessages;
+      break;
+	case "5card":
+      messages = fiveCardMessages;
       break;
     default:
       messages = defaultMessages;
@@ -88,6 +99,8 @@ window.addEventListener("load", async () => {
         target = "2card.html";
       } else if (mode === "3card") {
         target = "3card.html";
+      } else if (mode === "5card") {
+        target = "5card.html";
       }
       setTimeout(() => {
         window.location.href = target;
