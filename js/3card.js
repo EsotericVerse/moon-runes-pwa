@@ -85,29 +85,23 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     // 第一張屬性 (源)
     attr1.innerHTML = `
-        <p>介紹：${rune1.符文名稱}</p>
-        <p>卡牌面向：${direction1}</p>
-        <p>所屬分組：${rune1.所屬分組}</p>
-        <p>符文月相：${rune1.月相}</p>
-        <p>真實月相：${realPhase}</p>
+	<p>介紹：「${rune1.符文名稱}」之符文，為 ${rune1.所屬分組} 組。</p>
+	<p>卡牌面向：${direction1} 。第一張為「源」。</p>
+    <p>符文為「${rune1.月相}」卡 、現在為 ${realPhase}</p>
     `;
 
     // 第二張屬性 (轉)
     attr2.innerHTML = `
-        <p>介紹：${rune2.符文名稱}</p>
-        <p>卡牌面向：${direction2}</p>
-        <p>所屬分組：${rune2.所屬分組}</p>
-        <p>符文月相：${rune2.月相}</p>
-        <p>真實月相：${realPhase}</p>
+	<p>介紹：「${rune2.符文名稱}」之符文，為 ${rune2.所屬分組} 組。</p>
+	<p>卡牌面向：${direction2}。第二張為「轉」。</p>
+    <p>符文為「${rune2.月相}」卡，現在為 ${realPhase}</p>
     `;
 
     // 第三張屬性 (合)
     desc3.innerHTML = `
-        <p>介紹：${rune3.符文名稱}</p>
-        <p>卡牌面向：${direction3}</p>
-        <p>所屬分組：${rune3.所屬分組}</p>
-        <p>符文月相：${rune3.月相}</p>
-        <p>真實月相：${realPhase}</p>
+	<p>介紹：「${rune3.符文名稱}」之符文，為 ${rune3.所屬分組} 組。</p>
+	<p>卡牌面向：${direction3}。第三張為「合」。</p>
+    <p>符文為「${rune3.月相}」卡，現在為 ${realPhase}</p>
     `;
 
     // 先顯示載入訊息
