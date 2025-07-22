@@ -49,13 +49,11 @@ window.addEventListener("DOMContentLoaded", () => {
   const directionIndex = Math.floor(Math.random() * 4);
   const orientationNumber = directionIndex + 1;
   
-  //const direction = directions[directionIndex];
-  //const directionText = directionMeanings[direction];
-  const selectedDirection = directions[directionIndex];  // 改用 selectedDirection，避免衝突
-  const directionText = directionMeanings[selectedDirection];  // 更新引用
+  const direction = directions[directionIndex];
+  const directionText = directionMeanings[direction];
 
-  const dirInfo = direction[selectedIndex] || { "正向表示": "無對應解釋", "半正向表示": "無對應解釋", "半逆向表示": "無對應解釋", "逆向表示": "無對應解釋" };
-  const directionResult = dirInfo[orientationFieldMap[direction]] || "無對應解釋";
+  const dirInfo = direction[selectedIndex] || { "正向表示": "無對應解釋1", "半正向表示": "無對應解釋2", "半逆向表示": "無對應解釋3", "逆向表示": "無對應解釋4" };
+  const directionResult = dirInfo[orientationFieldMap[direction]] || "無對應解釋5";
 
   // 硬編碼 moon.json
   const moonData = {
@@ -107,10 +105,10 @@ window.addEventListener("DOMContentLoaded", () => {
     default:
       img.style.transform = "rotate(0deg)";
   }
-//     <p>卡牌面向：${direction}</p>
+
   attr.innerHTML = `
     <p>介紹：${selectedRune.符文名稱}</p>
-	<p>卡牌面向：${selectedDirection}</p>  // 改這裡
+    <p>卡牌面向：${direction}</p>
     <p>所屬分組：${selectedRune.所屬分組}</p>
     <p>符文月相：${selectedRune.月相}</p>
     <p>真實月相：${realPhase}</p>
@@ -127,10 +125,10 @@ window.addEventListener("DOMContentLoaded", () => {
     <p><strong>能量調和：</strong>${selectedRune.能量調和建議}</p>
     <hr>
     <p>月相比對趨勢：${moonComparison}</p>
-    <p>占卜結論：${selectedRune.符文名稱}，${selectedDirection} 表示，${directionResult}</p>
+    <p>占卜結論：${selectedRune.符文名稱}，${direction} 表示，${directionResult}</p>
     <hr>
   `;
-//<p>占卜結論：${selectedRune.符文名稱}，${direction} 表示，${directionResult}</p>
+
   desc.innerHTML = detailHTML;
 
   retry.addEventListener("click", () => {
