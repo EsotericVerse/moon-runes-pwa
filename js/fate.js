@@ -95,7 +95,7 @@ const moonComparison = (moonData[realPhase] ? moonData[realPhase][selectedRune.�
     }
   };
 
-  const moonComparison = (moonData[realPhase] && moonData[realPhase][selectedRune.月相]) || "無比對結果";
+  moonComparison = (moonData[realPhase] && moonData[realPhase][selectedRune.月相]) || "無比對結果";
 
   img.src = "64images/" + selectedRune.圖檔名稱;
   switch (orientationNumber) {
