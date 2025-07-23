@@ -1,5 +1,6 @@
 import { rune } from './runes64.js';
 import { direction } from './direction64.js';
+import { allData } from './rune_all_data_all.js';
 
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -7,6 +8,7 @@ function shuffleArray(array) {
     [array[i], array[j]] = [array[j], array[i]];
   }
 }
+
 
 window.addEventListener("DOMContentLoaded", () => {
   const realPhase = sessionStorage.getItem("realPhase");
@@ -30,7 +32,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // 取得符文資料
   const selectedRune = rune[selectedIndex]; 
-
+const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
   // 方向設定
   const directions = ["正位", "半正位", "半逆位", "逆位"];
   const directionMeanings = {
@@ -114,6 +116,15 @@ window.addEventListener("DOMContentLoaded", () => {
     <p>真實月相：${realPhase}</p>
   `;
 
+  const directionData = runeData.卡牌方向.find(d => d.方向 === direction);
+  if (!directionData) {
+    desc.innerHTML = "<p>⚠️ 無法載入卡牌方向資料</p>";
+    return;
+  }
+
+  const info = directionData.現況.find(p => p.現在月相 === realPhase);
+
+
   const detailHTML = `
     <p><strong>歷史：</strong>${selectedRune.符文變化歷史}</p>
     <p><strong>故事：</strong>${selectedRune.神話故事}</p>
@@ -127,6 +138,12 @@ window.addEventListener("DOMContentLoaded", () => {
     <p>月相比對趨勢：${moonComparison}</p>
     <p>占卜結論：${selectedRune.符文名稱}，${directionStr} 表示，${directionResult}</p>
     <hr>
+		  <p><strong>愛情建議：<BR></strong>${info.愛情建議}</p>
+	  <p><strong>事業建議：<BR></strong>${info.事業建議}</p>
+	  <p><strong>健康建議：<BR></strong>${info.健康建議}</p>
+      <p><strong>心理建議：<BR></strong>${info.心理建議}</p>
+	  <p><strong>生活建議：<BR></strong>${info.生活建議}</p>
+	  <HR>
   `;
 
   desc.innerHTML = detailHTML;
