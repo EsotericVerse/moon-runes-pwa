@@ -35,8 +35,8 @@ window.addEventListener("DOMContentLoaded", () => {
 const selectedRune = rune[selectedIndex];
 const runeData = allData.find(d => d.符文名稱 === selectedRune.符文名稱);  // 修正：用 selectedRune
   // moonComparison 無變，但可優化：
+//const moonComparison = (moonData[realPhase] ? moonData[realPhase][selectedRune.月相] : null) || "無比對結果";
 const moonComparison = (moonData[realPhase] ? moonData[realPhase][selectedRune.月相] : null) || "無比對結果";
-
   // 方向設定
   const directions = ["正位", "半正位", "半逆位", "逆位"];
   const directionMeanings = {
