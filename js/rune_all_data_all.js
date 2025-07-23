@@ -1,4 +1,4 @@
-export const allData = [
+export const allData = [null,
   {
     "符文名稱": "靈",
     "符文月相": "新月",

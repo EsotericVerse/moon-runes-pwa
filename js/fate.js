@@ -31,8 +31,12 @@ window.addEventListener("DOMContentLoaded", () => {
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
 
   // 取得符文資料
-  const selectedRune = rune[selectedIndex]; 
-const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
+
+const selectedRune = rune[selectedIndex];
+const runeData = allData.find(d => d.符文名稱 === selectedRune.符文名稱);  // 修正：用 selectedRune
+  // moonComparison 無變，但可優化：
+const moonComparison = (moonData[realPhase] ? moonData[realPhase][selectedRune.月相] : null) || "無比對結果";
+
   // 方向設定
   const directions = ["正位", "半正位", "半逆位", "逆位"];
   const directionMeanings = {
@@ -122,9 +126,25 @@ const runeData = allData.find(d => d.符文名稱 === rune.符文名稱);
     return;
   }
 
-  const info = directionData.現況.find(p => p.現在月相 === realPhase);
+  //const info = directionData.現況.find(p => p.現在月相 === realPhase);
 
+const directionData = runeData.卡牌方向.find(d => d.方向 === directionStr);  // 修正：用 directionStr
+if (!directionData) {
+  desc.innerHTML = "<p>⚠️ 無法載入卡牌方向資料</p>";
+  return;
+}
 
+const info = directionData.現況.find(p => p.現在月相 === realPhase);
+if (!info) {  // 新增：處理 info undefined
+  desc.innerHTML = "<p>⚠️ 無法載入月相建議資料</p>";
+  return;
+}
+
+// detailHTML 加入 directionText（如果需要）：
+const detailHTML = `
+  <p><strong>方向解釋：</strong>${directionText}</p>  // 新增，如果不需要刪除
+  // ... (其他無變)
+`;
   const detailHTML = `
     <p><strong>歷史：</strong>${selectedRune.符文變化歷史}</p>
     <p><strong>故事：</strong>${selectedRune.神話故事}</p>
