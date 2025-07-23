@@ -26,7 +26,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const runeKey = selectedIndex.toString().padStart(2, "0");
 
   const runes = getRunes64(); // 同步
-  const allData = getAllData(); // 同步
+  const v = getAllData(); // 同步
 
   const rune = runes[selectedIndex] || { /* 預設值 */ };
 

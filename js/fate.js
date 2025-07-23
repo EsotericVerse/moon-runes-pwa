@@ -15,7 +15,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (!realPhase) {
     window.location.href = "index.html";
     return;
-  }
+  } 
   sessionStorage.removeItem("realPhase");
 
   const img = document.getElementById("result-image");
