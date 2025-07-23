@@ -2,7 +2,7 @@
 
 
 import { rune } from './runes64.js';
-import { allData } from './runes_all_data.js';
+import { allData } from './runes_all_data_all.js';
 
 export function getRunes64() {
   return rune; // 同步返回陣列
