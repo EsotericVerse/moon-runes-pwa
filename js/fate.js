@@ -158,6 +158,11 @@ window.addEventListener("DOMContentLoaded", () => {
       <hr>
       <p>月相比對趨勢：${moonComparison}</p>
       <p>占卜結論：${selectedRune.符文名稱}，${directionStr} 表示，${directionResult}</p>
+	  <p>愛情建議：</p>
+	  <P>事業建議：</p>
+	  <P>心理建議：</p>
+	  <P>健康建議：</p>
+	  <P>生活建議：</p>
       <hr>
     `;
 
