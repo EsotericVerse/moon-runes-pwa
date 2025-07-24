@@ -167,6 +167,6 @@ if (!info) {  // 新增：處理 info undefined
   retry.addEventListener("click", () => {
     setTimeout(() => {
       window.location.href = "index.html";
-    }, 1000);
+      }, 1000);
   });
 });
