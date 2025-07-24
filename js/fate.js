@@ -31,6 +31,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Get rune data
   const selectedRune = rune[selectedIndex];
+if (!selectedRune) {
+  console.error(`Rune at index ${selectedIndex} is null or undefined.`);
+  desc.innerHTML = "<p>⚠️ 符文資料載入失敗，請重試。</p>";
+  return;
+}
+
   const runeData = allData.find(d => d.符文名稱 === selectedRune.符文名稱);
 
   // Moon phase comparison
