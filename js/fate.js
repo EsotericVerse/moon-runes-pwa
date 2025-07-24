@@ -141,10 +141,8 @@ if (!info) {  // 新增：處理 info undefined
 }
 
 // detailHTML 加入 directionText（如果需要）：
-
   // ... (其他無變)
-  const detailHTML = `
-    <p><strong>歷史：</strong>${selectedRune.符文變化歷史}</p>
+  const detailHTML = `<p><strong>歷史：</strong>${selectedRune.符文變化歷史}</p>
     <p><strong>故事：</strong>${selectedRune.神話故事}</p>
     <p><strong>靈魂咒語：</strong>${selectedRune.靈魂咒語}</p>
     <p><strong>分組說明：</strong>${selectedRune.分組說明}</p>
@@ -155,13 +153,14 @@ if (!info) {  // 新增：處理 info undefined
     <hr>
     <p>月相比對趨勢：${moonComparison}</p>
     <p>占卜結論：${selectedRune.符文名稱}，${directionStr} 表示，${directionResult}</p>
-    <hr>
-     <p><strong>愛情建議：<BR> </strong>${info.愛情建議}</p>
-	  <p><strong>事業建議：<BR></strong>${info.事業建議}</p>
-	  <p><strong>健康建議：<BR></strong>${info.健康建議}</p>
-      <p><strong>心理建議：<BR></strong>${info.心理建議}</p>
-	  <p><strong>生活建議：<BR></strong>${info.生活建議}</p>
-	  <HR>';
+    <hr>';
+	
+    // <p><strong>愛情建議：<BR> </strong>${info.愛情建議}</p>
+	//  <p><strong>事業建議：<BR></strong>${info.事業建議}</p>
+	 // <p><strong>健康建議：<BR></strong>${info.健康建議}</p>
+    //  <p><strong>心理建議：<BR></strong>${info.心理建議}</p>
+	//  <p><strong>生活建議：<BR></strong>${info.生活建議}</p>
+	//  <HR>';
 
   desc.innerHTML = detailHTML;
 
