@@ -141,9 +141,7 @@ if (!info) {  // 新增：處理 info undefined
 }
 
 // detailHTML 加入 directionText（如果需要）：
-//const detailHTML = `
- //defailhtml <p><strong>方向解釋：</strong>${directionText}</p>  // 新增，如果不需要刪除
- // <p><strong>方向解釋：</strong>${directionText}</p>  // 新增，如果不需要刪除
+
   // ... (其他無變)
   const detailHTML = `
     <p><strong>歷史：</strong>${selectedRune.符文變化歷史}</p>
