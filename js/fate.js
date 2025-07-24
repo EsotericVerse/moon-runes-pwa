@@ -162,7 +162,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	  <P><strong>事業建議：</strong>${info.事業建議}</p>
 	  <P><strong>心理建議：</strong>${info.心理建議}</p>
 	  <P><strong>健康建議：</strong>${info.健康建議}</p>
-	  <P><strong>生活建議：</strong>${info.生理建議}</p>
+	  <P><strong>生活建議：</strong>${info.生活建議}</p>
       <hr>
     `;
 
