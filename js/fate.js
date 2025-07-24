@@ -119,8 +119,8 @@ const moonComparison = (moonData[realPhase] ? moonData[realPhase][selectedRune.�
     <p>符文月相：${selectedRune.月相}</p>
     <p>真實月相：${realPhase}</p>
   `;
-
-  const directionData = runeData.卡牌方向.find(d => d.方向 === direction);
+const directionData = runeData.卡牌方向.find(d => d.方向 === directionStr);  // 修正：用 directionStr
+ // const directionData = runeData.卡牌方向.find(d => d.方向 === direction);
   if (!directionData) {
     desc.innerHTML = "<p>⚠️ 無法載入卡牌方向資料</p>";
     return;
