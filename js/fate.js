@@ -156,13 +156,13 @@ window.addEventListener("DOMContentLoaded", () => {
       <p><strong>配套儀式：</strong>${selectedRune.配套儀式建議}</p>
       <p><strong>能量調和：</strong>${selectedRune.能量調和建議}</p>
       <hr>
-      <p>月相比對趨勢：${moonComparison}</p>
-      <p>占卜結論：${selectedRune.符文名稱}，${directionStr} 表示，${directionResult}</p>
-	  <p>愛情建議：</p>
-	  <P>事業建議：</p>
-	  <P>心理建議：</p>
-	  <P>健康建議：</p>
-	  <P>生活建議：</p>
+      <p><strong>月相比對趨勢：${moonComparison}</p>
+      <p><strong>占卜結論：${selectedRune.符文名稱}，${directionStr} 表示，${directionResult}</p>
+	  <p><strong>愛情建議：</strong>runeData.愛情建議</p>
+	  <P><strong>事業建議：</strong>runeData.事業建議</p>
+	  <P><strong>心理建議：</strong>runeData.心理建議</p>
+	  <P><strong>健康建議：</strong>runeData.健康建議</p>
+	  <P><strong>生活建議：</strong>runeData.生理建議</p>
       <hr>
     `;
 
