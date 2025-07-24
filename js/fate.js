@@ -163,7 +163,7 @@ const detailHTML = `
 	  <p><strong>健康建議：<BR></strong>${info.健康建議}</p>
       <p><strong>心理建議：<BR></strong>${info.心理建議}</p>
 	  <p><strong>生活建議：<BR></strong>${info.生活建議}</p>
-	  <HR>
+	  <HR>'
   `;
 
   desc.innerHTML = detailHTML;
