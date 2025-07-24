@@ -26,7 +26,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const runeKey = selectedIndex.toString().padStart(2, "0");
 
   const runes = getRunes64(); // 同步
-  const v = getAllData(); // 同步
+  const allData = getAllData(); // 改成 allData 以匹配後續使用
 
   const rune = runes[selectedIndex] || { /* 預設值 */ };
 
@@ -85,12 +85,11 @@ window.addEventListener("DOMContentLoaded", () => {
       <p><strong>每日占卜提醒：<BR></strong>${info.每日占卜提醒}</p>
       <p><strong>每日占卜引導：<BR></strong>${info.每日占卜引導}</p>
       <p><strong>每日占卜祝福：<BR></strong>${info.每日占卜祝福}</p>
-	  <p><strong>每日占卜提醒：<BR></strong>${info.每日占卜提醒}</p>
-	  <p><strong>愛情建議：<BR></strong>${info.愛情建議}</p>
-	  <p><strong>事業建議：<BR></strong>${info.事業建議}</p>
-	  <p><strong>健康建議：<BR></strong>${info.健康建議}</p>
+      <p><strong>愛情建議：<BR></strong>${info.愛情建議}</p>
+      <p><strong>事業建議：<BR></strong>${info.事業建議}</p>
+      <p><strong>健康建議：<BR></strong>${info.健康建議}</p>
       <p><strong>心理建議：<BR></strong>${info.心理建議}</p>
-	  <p><strong>生活建議：<BR></strong>${info.生活建議}</p>
+      <p><strong>生活建議：<BR></strong>${info.生活建議}</p>
     `;
   } else {
     desc.innerHTML = "<p>⚠️ 無法載入每日占卜資料</p>";
