@@ -128,7 +128,7 @@ const directionData = runeData.卡牌方向.find(d => d.方向 === directionStr)
 
   //const info = directionData.現況.find(p => p.現在月相 === realPhase);
 
-const directionData = runeData.卡牌方向.find(d => d.方向 === directionStr);  // 修正：用 directionStr
+//const directionData = runeData.卡牌方向.find(d => d.方向 === directionStr);  // 修正：用 directionStr
 if (!directionData) {
   desc.innerHTML = "<p>⚠️ 無法載入卡牌方向資料</p>";
   return;
