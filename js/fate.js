@@ -158,7 +158,7 @@ if (!info) {  // 新增：處理 info undefined
     <p>月相比對趨勢：${moonComparison}</p>
     <p>占卜結論：${selectedRune.符文名稱}，${directionStr} 表示，${directionResult}</p>
     <hr>
-     <p><strong>愛情建議：<BR></strong>${info.愛情建議}</p>
+     <p><strong>愛情建議：<BR> </strong>${info.愛情建議}</p>
 	  <p><strong>事業建議：<BR></strong>${info.事業建議}</p>
 	  <p><strong>健康建議：<BR></strong>${info.健康建議}</p>
       <p><strong>心理建議：<BR></strong>${info.心理建議}</p>
