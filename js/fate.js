@@ -9,7 +9,6 @@ function shuffleArray(array) {
   }
 }
 
-
 window.addEventListener("DOMContentLoaded", () => {
   const realPhase = sessionStorage.getItem("realPhase");
   if (!realPhase) {
@@ -23,45 +22,18 @@ window.addEventListener("DOMContentLoaded", () => {
   const desc = document.getElementById("result-description");
   const retry = document.getElementById("retry-button");
 
-  // 生成隨機符文編號（1～64）
+  // Generate random rune index (1–64)
   let fateArray = Array.from({ length: 64 }, (_, i) => i + 1);
   shuffleArray(fateArray);
   shuffleArray(fateArray);
   shuffleArray(fateArray);
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
 
-  // 取得符文資料
+  // Get rune data
+  const selectedRune = rune[selectedIndex];
+  const runeData = allData.find(d => d.符文名稱 === selectedRune.符文名稱);
 
-const selectedRune = rune[selectedIndex];
-const runeData = allData.find(d => d.符文名稱 === selectedRune.符文名稱);  // 修正：用 selectedRune
-  // moonComparison 無變，但可優化：
-//const moonComparison = (moonData[realPhase] ? moonData[realPhase][selectedRune.月相] : null) || "無比對結果";
-const moonComparison = (moonData[realPhase] ? moonData[realPhase][selectedRune.月相] : null) || "無比對結果";
-  // 方向設定
-  const directions = ["正位", "半正位", "半逆位", "逆位"];
-  const directionMeanings = {
-    "正位": "能量順行。主題自然流動、力量顯現、外顯無礙。",
-    "半正位": "初生漸顯。潛能正在凝聚、尚未完全流動，代表準備與開始。",
-    "半逆位": "釋放收束。能量正在退潮、進入整合期，是轉化與療癒階段。",
-    "逆位": "能量阻滯。主題反向顯現、力量扭曲、潛藏或危機感浮現。"
-  };
-  const orientationFieldMap = {
-    "正位": "正向表示",
-    "半正位": "半正向表示",
-    "半逆位": "半逆向表示",
-    "逆位": "逆向表示"
-  };
-
-  const directionIndex = Math.floor(Math.random() * 4);
-  const orientationNumber = directionIndex + 1;
-  
-  const directionStr = directions[directionIndex];
-  const directionText = directionMeanings[directionStr];
-
-  const dirInfo = direction[selectedIndex] || { "正向表示": "無對應解釋1", "半正向表示": "無對應解釋2", "半逆向表示": "無對應解釋3", "逆向表示": "無對應解釋4" };
-  const directionResult = dirInfo[orientationFieldMap[directionStr]] || "無對應解釋5";
-
-  // 硬編碼 moon.json
+  // Moon phase comparison
   const moonData = {
     "新月": {
       "新月": "當新月遇上新月卡，萬象初生，一切由零開始。",
@@ -95,10 +67,33 @@ const moonComparison = (moonData[realPhase] ? moonData[realPhase][selectedRune.�
     }
   };
 
-  moonComparison = (moonData[realPhase] && moonData[realPhase][selectedRune.月相]) || "無比對結果";
+  let moonComparison = (moonData[realPhase] && moonData[realPhase][selectedRune.月相]) || "無比對結果";
 
+  // Direction settings
+  const directions = ["正位", "半正位", "半逆位", "逆位"];
+  const directionMeanings = {
+    "正位": "能量順行。主題自然流動、力量顯現、外顯無礙。",
+    "半正位": "初生漸顯。潛能正在凝聚、尚未完全流動，代表準備與開始。",
+    "半逆位": "釋放收束。能量正在退潮、進入整合期，是轉化與療癒階段。",
+    "逆位": "能量阻滯。主題反向顯現、力量扭曲、潛藏或危機感浮現。"
+  };
+  const orientationFieldMap = {
+    "正位": "正向表示",
+    "半正位": "半正向表示",
+    "半逆位": "半逆向表示",
+    "逆位": "逆向表示"
+  };
+
+  const directionIndex = Math.floor(Math.random() * 4);
+  const directionStr = directions[directionIndex];
+  const directionText = directionMeanings[directionStr];
+
+  const dirInfo = direction[selectedIndex] || { "正向表示": "無對應解釋1", "半正向表示": "無對應解釋2", "半逆向表示": "無對應解釋3", "逆向表示": "無對應解釋4" };
+  const directionResult = dirInfo[orientationFieldMap[directionStr]] || "無對應解釋5";
+
+  // Set image rotation based on orientation
   img.src = "64images/" + selectedRune.圖檔名稱;
-  switch (orientationNumber) {
+  switch (directionIndex + 1) {
     case 2:
       img.style.transform = "rotate(90deg)";
       break;
@@ -112,6 +107,7 @@ const moonComparison = (moonData[realPhase] ? moonData[realPhase][selectedRune.�
       img.style.transform = "rotate(0deg)";
   }
 
+  // Set attributes display
   attr.innerHTML = `
     <p>介紹：${selectedRune.符文名稱}</p>
     <p>卡牌面向：${directionStr}</p>
@@ -119,30 +115,23 @@ const moonComparison = (moonData[realPhase] ? moonData[realPhase][selectedRune.�
     <p>符文月相：${selectedRune.月相}</p>
     <p>真實月相：${realPhase}</p>
   `;
-const directionData = runeData.卡牌方向.find(d => d.方向 === directionStr);  // 修正：用 directionStr
- // const directionData = runeData.卡牌方向.find(d => d.方向 === direction);
+
+  // Get direction data
+  const directionData = runeData.卡牌方向.find(d => d.方向 === directionStr);
   if (!directionData) {
     desc.innerHTML = "<p>⚠️ 無法載入卡牌方向資料</p>";
     return;
   }
 
-  //const info = directionData.現況.find(p => p.現在月相 === realPhase);
+  const info = directionData.現況.find(p => p.現在月相 === realPhase);
+  if (!info) {
+    desc.innerHTML = "<p>⚠️ 無法載入月相建議資料</p>";
+    return;
+  }
 
-//const directionData = runeData.卡牌方向.find(d => d.方向 === directionStr);  // 修正：用 directionStr
-if (!directionData) {
-  desc.innerHTML = "<p>⚠️ 無法載入卡牌方向資料</p>";
-  return;
-}
-
-const info = directionData.現況.find(p => p.現在月相 === realPhase);
-if (!info) {  // 新增：處理 info undefined
-  desc.innerHTML = "<p>⚠️ 無法載入月相建議資料</p>";
-  return;
-}
-
-// detailHTML 加入 directionText（如果需要）：
-  // ... (其他無變)
-  const detailHTML = `<p><strong>歷史：</strong>${selectedRune.符文變化歷史}</p>
+  // Set description display
+  const detailHTML = `
+    <p><strong>歷史：</strong>${selectedRune.符文變化歷史}</p>
     <p><strong>故事：</strong>${selectedRune.神話故事}</p>
     <p><strong>靈魂咒語：</strong>${selectedRune.靈魂咒語}</p>
     <p><strong>分組說明：</strong>${selectedRune.分組說明}</p>
@@ -153,20 +142,15 @@ if (!info) {  // 新增：處理 info undefined
     <hr>
     <p>月相比對趨勢：${moonComparison}</p>
     <p>占卜結論：${selectedRune.符文名稱}，${directionStr} 表示，${directionResult}</p>
-    <hr>';
-	
-    // <p><strong>愛情建議：<BR> </strong>${info.愛情建議}</p>
-	//  <p><strong>事業建議：<BR></strong>${info.事業建議}</p>
-	 // <p><strong>健康建議：<BR></strong>${info.健康建議}</p>
-    //  <p><strong>心理建議：<BR></strong>${info.心理建議}</p>
-	//  <p><strong>生活建議：<BR></strong>${info.生活建議}</p>
-	//  <HR>';
+    <hr>
+  `;
 
   desc.innerHTML = detailHTML;
 
+  // Retry button handler
   retry.addEventListener("click", () => {
     setTimeout(() => {
       window.location.href = "index.html";
-      }, 1000);
+    }, 1000);
   });
-});
+}); // Added missing closing braces
