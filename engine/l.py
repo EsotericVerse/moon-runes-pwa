@@ -1,34 +1,31 @@
-import numpy as np
 import json
+import numpy as np
 from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 
-# 1. 載入語意向量、meta、語句
+# 載入語意向量、meta、語句
 embeddings = np.load('combined_embeddings.npy')
 with open('combined_meta.json', 'r', encoding='utf-8') as f:
     meta = json.load(f)
 with open('sentences.json', 'r', encoding='utf-8') as f:
     sentences = json.load(f)
 
-# 2. 載入 runes64_alldata.json
+# 載入要補全的檔案
 with open('runes64_alldata.json', 'r', encoding='utf-8') as f:
-    alldata = json.load(f)
+    runes = json.load(f)
 
-# 3. 初始化模型
 model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
 
-# 4. 自動填補空白建議
-for item in alldata:
-    if not item.get("建議", ""):
-        # 組合查詢語句（可依你的資料結構調整）
-        query = f"{item.get('符文名稱', '')} {item.get('方向', '')} {item.get('主題', '')}"
-        query_vec = model.encode([query])
-        sims = cosine_similarity(query_vec, embeddings)[0]
-        best_idx = sims.argmax()
-        item['建議'] = sentences[best_idx]
+for rune in runes:
+    # 假設要補「建議」欄位，且它是 array
+    if not rune.get('愛情建議') or len(rune['愛情建議']) == 0:
+        query = f"{rune['符文名稱']} {rune.get('關鍵詞', '')}"
+        query_emb = model.encode([query])[0]
+        sims = np.dot(embeddings, query_emb) / (np.linalg.norm(embeddings, axis=1) * np.linalg.norm(query_emb))
+        # 取前3名
+        topk = 3
+        best_indices = np.argsort(sims)[-topk:][::-1]
+        rune['愛情建議'] = [sentences[i] for i in best_indices]
 
-# 5. 儲存新檔案
-with open('runes64_alldata_filled.json', 'w', encoding='utf-8') as f:
-    json.dump(alldata, f, ensure_ascii=False, indent=2)
-
-print("自動填補完成，已儲存為 runes64_alldata_filled.json")
+# 儲存補全後的檔案
+with open('data_filled.json', 'w', encoding='utf-8') as f:
+    json.dump(runes, f, ensure_ascii=False, indent=2)

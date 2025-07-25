@@ -41,33 +41,32 @@ for r in runes07:
             })
 
 # 2. 擷取 runes_all_data.json 的語句
-import os
-
 filename = 'runes_all_data.json'
 if not os.path.exists(filename):
     print(f"檔案不存在：{filename}")
+    all_data = []
 else:
     with open(filename, 'r', encoding='utf-8') as f:
         content = f.read()
         print("檔案前100字：", content[:100])
-        # 再嘗試解析
-        import json
-        data = json.loads(content)
+        all_data = json.loads(content)
 
 def flatten_value(value):
     if isinstance(value, list):
-        # 將 list 裡的 dict 轉成字串
         new_list = []
         for v in value:
             if isinstance(v, dict):
-                # 假設你要取 'text' 欄位
-                new_list.append(str(v.get('text', '')))
+                # 取 dict 的第一個 value
+                if v:
+                    new_list.append(str(list(v.values())[0]))
             else:
                 new_list.append(str(v))
         return " ".join([s for s in new_list if s])
     elif isinstance(value, dict):
-        # 如果直接是 dict，也取 'text'
-        return str(value.get('text', ''))
+        if value:
+            return str(list(value.values())[0])
+        else:
+            return ""
     elif value is None:
         return ""
     else:
@@ -103,9 +102,7 @@ embeddings = model.encode(sentences, show_progress_bar=True)
 np.save('combined_embeddings.npy', embeddings)
 with open('combined_meta.json', 'w', encoding='utf-8') as f:
     json.dump(meta, f, ensure_ascii=False, indent=2)
-with open('sentences.json', 'r', encoding='utf-8') as f:
-    sentences = json.load(f)
-# ...
-item['建議'] = sentences[best_idx]
+with open('sentences.json', 'w', encoding='utf-8') as f:
+    json.dump(sentences, f, ensure_ascii=False, indent=2)
 
 print("語意向量與 meta 已儲存完成！")
