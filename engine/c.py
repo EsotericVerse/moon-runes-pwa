@@ -5,5 +5,5 @@ tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm3-6b", trust_remote_code
 model = AutoModelForCausalLM.from_pretrained("THUDM/chatglm3-6b", trust_remote_code=True)
 
 # 若有 NVIDIA 顯卡可加上 .half().cuda()，否則用 .float() 跑在 CPU
-# model = model.half().cuda()
-model = model.float()  # CPU 跑會比較慢
+model = model.half().cuda()
+#model = model.float()  # CPU 跑會比較慢
