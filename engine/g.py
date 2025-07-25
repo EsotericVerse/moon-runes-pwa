@@ -53,5 +53,9 @@ embeddings = model.encode(sentences, show_progress_bar=True)
 np.save('combined_embeddings.npy', embeddings)
 with open('combined_meta.json', 'w', encoding='utf-8') as f:
     json.dump(meta, f, ensure_ascii=False, indent=2)
+with open('sentences.json', 'r', encoding='utf-8') as f:
+    sentences = json.load(f)
+# ...
+item['建議'] = sentences[best_idx]
 
 print("語意向量與 meta 已儲存完成！")
