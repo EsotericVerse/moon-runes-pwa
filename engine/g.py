@@ -1,93 +1,57 @@
+import os
 import json
+import numpy as np
 from sentence_transformers import SentenceTransformer
 
-
-groupTones = [ {
-  "靈魂": "以深邃、內觀、詩意語調生成回應，融入狀況形容、每日占卜提醒，產生自然生動的建議，避免固定句型，強調意識層次和內在覺知。",
-  "連結": "以關係洞察、溫柔指引語調生成回應，融入狀況形容、每日占卜提醒，產生自然生動的建議，強調人際連結和溫和行動。",
-  "生命": "以情感充沛、感性體驗語調生成回應，融入狀況形容、每日占卜提醒，產生自然生動的建議，強調身心感受和實用指引。",
-  "自然": "以詩意自然觀、象徵語調生成回應，融入狀況形容、每日占卜提醒，產生自然生動的建議，避免固定句型，強調自然循環和有機流動。",
-  "礦物": "以實用導向、象徵語調生成回應，融入狀況形容、每日占卜提醒，產生自然生動的建議，避免固定句型，強調物質價值和邏輯穩固。",
-  "元素": "以詩意型、感官體驗語調生成回應，融入狀況形容、每日占卜提醒，產生自然生動的建議，避免固定句型，強調能量轉化和熱情動感。",
-  "秩序": "以哲學、命運導向語調生成回應，融入狀況形容、每日占卜提醒，產生自然生動的建議，避免固定句型，強調因果規律和宇宙時序。",
-  "無序": "以詩意型、混沌哲學語調生成回應，融入狀況形容、每日占卜提醒，產生自然生動的建議，避免固定句型，強調神秘未知和開放提問。"
-  }
-];
-
-moonInteractions = [{
-  "新月": {
-    "新月": "當新月遇上新月卡，萬象初生，一切由零開始。",
-    "上弦": "新月時抽到上弦卡，代表你準備行動，但基礎尚未穩固。",
-    "滿月": "新月遇滿月卡，顯示你渴望結果，但時機未至。",
-    "下弦": "新月對下弦卡，代表回顧與整頓之間的矛盾。"
-  },
-  "上弦": {
-    "新月": "上弦時抽到新月卡，象徵需要重新檢視起點。",
-    "上弦": "上弦時遇上弦卡，雙倍的行動力與挑戰！",
-    "滿月": "上弦遇滿月卡，事情開始進展，請保持專注。",
-    "下弦": "上弦對下弦卡，有一種左右為難的拉扯感。"
-  },
-  "滿月": {
-    "新月": "滿月時抽到新月卡，代表收穫中隱藏著新的開始。",
-    "上弦": "滿月時遇上弦卡，事情發展迅速，但你可能忽略了某些細節。",
-    "滿月": "滿月遇滿月卡，情緒與能量達到頂峰，小心過度膨脹。",
-    "下弦": "滿月對下弦卡，顯示該收手或整理階段已經來臨。"
-  },
-  "下弦": {
-    "新月": "下弦時抽到新月卡，你可能忽略了結束所帶來的禮物。",
-    "上弦": "下弦時遇上弦卡，是來自過去與未來的對話。",
-    "滿月": "下弦遇滿月卡，象徵你還沉浸在過去的情緒中。",
-    "下弦": "下弦遇下弦卡，是讓步、反省、與轉化的重疊時刻。"
-  },
-  "空亡": {
-    "新月": "空亡遇新月卡，萬象沉靜，等待真正的開始。",
-    "上弦": "空亡時遇上弦卡，努力或許無法馬上見效。",
-    "滿月": "空亡對滿月卡，顯示成果難以預期，須靜待時機。",
-    "下弦": "空亡對下弦卡，象徵你在無聲中學會放手與釋懷。"
-  }
- }
-];
-
-runeGroups = [{
-  "靈魂": ["靈", "魂", "彩", "憶", "界", "域", "鏡", "核"],
-  "連結": ["向", "斷", "封", "鍊", "啟", "分", "悟", "誤"],
-  "生命": ["生", "老", "病", "死", "心", "愛", "語", "韻"],
-  "自然": ["樹", "花", "葉", "草", "根", "種", "實", "枝"],
-  "礦物": ["金", "玉", "晶", "地", "石", "鑽", "礦", "塵"],
-  "元素": ["光", "暗", "水", "火", "風", "土", "雷", "氣"],
-  "秩序": ["日", "月", "星", "辰", "明", "時", "空", "因"],
-  "無序": ["福", "禍", "無", "夢", "幻", "緣", "虛", "果"]
-}];
-
-
-
-# 載入模型（可用 'paraphrase-multilingual-MiniLM-L12-v2' 或 Huggingface 上的中文SBERT）
-model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
-
-# 讀取建議語料
+# 1. 擷取 runes07.json 的語句
 with open('runes07.json', 'r', encoding='utf-8') as f:
-    data = json.load(f)
+    runes07 = json.load(f)
 
-# 假設你要對所有「愛情建議」做語意向量
 sentences = []
 meta = []
-for rune in data:
-    for direction in rune["卡牌方向"]:
-        for status in direction["現況"]:
-            advice = status.get("愛情建議", "")
-            if advice:
-                sentences.append(advice)
-                meta.append({
-                    "符文名稱": rune["符文名稱"],
-                    "方向": direction["方向"],
-                    "月相": status["現在月相"]
-                })
 
-# 產生語意向量
+for r in runes07:
+    for direction, field in [
+        ("正位", "正向表示"),
+        ("半正位", "半正向表示"),
+        ("半逆位", "半逆向表示"),
+        ("逆位", "逆向表示")
+    ]:
+        text = r.get(field, "")
+        if text:
+            sentences.append(text)
+            meta.append({
+                "來源": "runes07",
+                "符文名稱": r.get("名稱"),
+                "方向": direction,
+                "欄位": field
+            })
+
+# 2. 擷取 runes_all_data.json 的語句
+with open('runes_all_data.json', 'r', encoding='utf-8') as f:
+    all_data = json.load(f)
+
+for item in all_data:
+    # 這裡以 "建議" 欄位為例，若有多個欄位可自行擴充
+    advice = item.get("建議", "")
+    if advice:
+        sentences.append(advice)
+        meta.append({
+            "來源": "runes_all_data",
+            "符文名稱": item.get("符文名稱"),
+            "符文月相": item.get("符文月相"),
+            "真實月相": item.get("真實月相"),
+            "方向": item.get("方向"),
+            "主題": item.get("主題")
+        })
+
+# 3. 產生語意向量
+model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
 embeddings = model.encode(sentences, show_progress_bar=True)
 
-# 儲存語意向量與對應meta
-import numpy as np
-np.save('advice_embeddings.npy', embeddings)
-with open('advice_meta.json', 'w', encoding='utf-8') as f:
+# 4. 儲存
+np.save('combined_embeddings.npy', embeddings)
+with open('combined_meta.json', 'w', encoding='utf-8') as f:
     json.dump(meta, f, ensure_ascii=False, indent=2)
+
+print("語意向量與 meta 已儲存完成！")
