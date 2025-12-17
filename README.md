@@ -183,7 +183,10 @@ iOS Safari 12+
 
 Android Chrome 60+
 
-🎨 自定義與擴展
+---
+
+## 🎨 自定義與擴展
+
 新增符文（1–64 範圍）
 
 新增圖像至 64images/
@@ -198,7 +201,9 @@ Android Chrome 60+
 
 建議遵循既有語義與方向規則
 
-🙌 貢獻指南
+---
+
+## 🙌 貢獻指南
 
 歡迎任何形式的貢獻：
 
@@ -210,12 +215,14 @@ Fork 本倉庫
 
 討論後合併
 
-📞 聯絡資訊
+---
+
+## 📞 聯絡資訊
 
 月語之境工作室（EsotericVerse）
 📧 Email：esotericverse.xy@gmail.com
 
-🌐 專案首頁：透過 GitHub Pages 部署
+## 🌐 專案首頁：透過 GitHub Pages 部署
 
 
 本專案採 Copyleft 精神 發布。
