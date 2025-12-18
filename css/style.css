@@ -67,3 +67,40 @@ footer {
     font-size: 0.85rem;
   }
 }
+/* 文字頁面佈局 */
+.text-page {
+  line-height: 1.8;
+}
+
+.tagline {
+  color: #555;
+  font-style: italic;
+  margin-top: -0.5rem;
+}
+
+.info-section {
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #2c2c2c;
+}
+
+.info-section h2 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.definition-list p {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.text-page a {
+  color: #004080;
+  text-decoration: none;
+}
+
+.text-page a:hover {
+  text-decoration: underline;
+}
