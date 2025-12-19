@@ -73,7 +73,8 @@
 - │ ├── service-worker.js # 離線快取邏輯
 - │ └── favicon.ico # 網站圖示
 - └── 📚 文檔
-- └── README.md # 專案說明文件
+-     ├── README.md # 專案說明文件
+-     └── ow3gs.html # OW3gs 方法框架說明頁
 
 
 ---
