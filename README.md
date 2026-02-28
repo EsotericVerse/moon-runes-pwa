@@ -1,184 +1,128 @@
-# 🌕 月之符文占卜系統（Moon Runes / Lunar Codex）PWA
+# LOC — Luna Codex
 
-由 **月語之境工作室（EsotericVerse）** 製作的月之符文占卜系統。  
-本專案為一套可部署於 GitHub Pages 的漸進式網頁應用程式（PWA），  
-同時也是「月之符文（Moon Runes / Lunar Codex）」語義系統的實作載體之一。
+## A Symbolic Language Governance Architecture
 
----
-
-## ✨ 主要特色
-
-- 🎯 **多種占卜模式**：支援不同占卜流程與結果呈現方式  
-- 🌙 **完整月相系統**：結合真實月相與符文固定月相  
-- 🧩 **64 張符文語義庫**：每張符文皆具備固定語義、分組與月相  
-- 🤖 **AI 輔助解讀**：以語法與結構為基礎的輔助生成（非隨機生成）  
-- 📱 **PWA 支援**：可離線使用、可安裝至桌面  
-- 🎨 **響應式設計**：支援桌機與行動裝置  
+**by Lucas Oscar Wang 政德**
 
 ---
 
-## 🌙 月之符文系統（Moon Runes / Lunar Codex）
+## Overview
 
-「月之符文」並非單純卡牌占卜，而是一套**具備語義結構與生成規則的符文系統**。
+LOC (Luna Codex) is a structured symbolic language system that integrates:
 
-### 系統核心概念
+- Rune-based semantic architecture
+- Generative divination logic (66-card OW3gs system)
+- Distribution-based creative scaling
+- Language governance and self-evolution modeling
 
-- **64 張核心符文（1–64）**
-  - 每張符文皆具備：
-    - 固定語義主題
-    - 固定月相（新月／上弦／滿月／下弦）
-    - 所屬符文分組（靈魂、連結、生命、自然、礦物、元素、時序、亂序）
-- **四向能量狀態**
-  - 正位（↑）／半正位（＋）／半逆位（—）／逆位（↓）
-  - 方向僅影響「能量狀態」，不改變符文本體語義
-- **命運語法（Destiny Syntax）**
-  - 符文 × 月相 × 方向可組合為結構化語句
-  - 支援單卡、雙卡、三卡與多卡占卜模型
+LOC is not a mystical product.  
+It is a governance framework for meaning generation.
 
-> 本倉庫所實作之占卜流程，皆遵循上述語義與語法規則。
+It operates on three core principles:
 
-### 個人擴展層（說明性標註）
+- Fixed semantic core
+- Orientation-based polarity transformation
+- Controlled randomness as a structural rule
 
-- **65：命**
-- **66：玄**
-- **0：無**
+## Core Structure
 
-上述符文屬於作者個人系統層，不影響 1–64 核心符文的一致性，  
-僅於特定占卜規則或個人研究中使用。
+### LOC Core (Immutable Layer)
 
----
+- 64 foundational runes
+- 8 symbolic groups
+- 4 orientations per rune
+- Lunar phase mapping system
+- Semantic polarity inversion logic
 
-## 🕰 系統時間歷程與結構演化  
-（Moon Runes × LOC × OW3gs）
+**Total directional semantic states:**
 
-本系統並非一次性設計完成，而是隨時間逐步驗證、擴展與收斂而成。  
-以下時間線依據**專案內對話紀錄與實際設計歷史**整理，  
-作為系統結構的歷史定位（location）說明。
+64 runes × 4 orientations = **256 semantic vectors**
 
-### 24 符文初生期（2025.05）
+This forms the stable symbolic kernel.
 
-在 **24 張符文首次成立時**，即已完成以下原生設計：
+### OW3gs System (Divination Engine)
 
-- **正方形卡牌結構**
-- **四種卡片方向**：正位／半正位／半逆位／逆位
-- **每張符文皆綁定固定月相**
+LOC operates using the OW3gs rule:
 
-上述結構並非後期補加，而是符文語言的原生維度。
+- 66 cards total
+- Draw 11 cards
+- No repetition
+- Each card has 4 orientations
 
----
+**Combinatorial scale:**
 
-### 符文擴展與占卜原型期（32 → 42）
+C(66,11) × (4^11)
 
-隨符文數量擴展至 32、36、40、42 張：
+This produces a massive structured probability space with fixed semantic roles.
 
-- 符文分組與角色逐步成形
-- 符文間開始形成可運行的占卜結構
-- 至 42 張時，已能實際運作完整占卜原型
+**OW3gs Principle:**
 
----
+Random is the rule.  
+Structure defines meaning.
 
-### 42 → 64 階段：群組調整與月相重校
+## Eight Rune Groups
 
-在符文擴展至 **64 張** 並進行群組結構重整後：
+- Soul
+- Connection
+- Life
+- Nature
+- Mineral
+- Element
+- Order
+- Chaos
 
-- 部分符文出現月相語義重疊度過高的情況
-- 因此於 42 → 64 階段，對**部分符文的月相配置進行重新校準**
-- 一符文一月相的原則維持不變  
-- 調整僅為提升整體可讀性與系統穩定性
+Each group represents a semantic domain and governance layer.
 
----
+## Distribution Model
 
-### 結構定型與封存（2025.06）
+LOC evolves through distribution layers, not version numbers.
 
-- **64 張核心符文（1–64）定稿**
-- 同步確認：
-  - **65：命**
-  - **66：玄**
-- 系統正式封存於 **66 張結構**
-- 不再新增或刪減符文
+- LOC1 — Rune divination & lot system
+- LOC2 — Card professions & archetype modeling
+- LOC3 — Language-to-music distribution
+- LOC4 — Narrative documentation layer
+- LOC5 — Visual integration layer
+- LOC6 — Governance & negotiation logic
+- LOC7 — UI/UX system modeling
+- LOC8 — Integrated life application
 
-`rune64.js` 被確立為唯一的 **Vocabulary Layer（詞彙層）權威來源**。
+There is no LOC9.  
+Eight is the structural boundary.
 
----
+## Governance Philosophy
 
-### OW3gs 方法論確立
+LOC is built on:
 
-符文結構穩定後，專案確立唯一方法論：
+- Dynamic equilibrium
+- Auto-fix loops
+- Value-exchange clarity
+- Semantic precision over emotional coercion
 
-**OW3gs**
+**Core axioms:**
 
-其三個不可刪除的地基為：
+- Value defines structure
+- Structure defines interaction
+- Interaction defines outcome
 
-- **德（0）**：系統是否可成立的承載前提  
-- **命（65）**：先天之名，用於定錨與識別  
-- **玄（66）**：Random is the rule  
+## Technical Implementation
 
-同時確立時間觀：
+- Structured JSON rune definitions
+- Directional semantic mapping
+- Lunar phase tagging
+- Deterministic + random hybrid logic
+- Designed for LLM-compatible expansion
 
-- 歷史為 append-only
-- 發生不可回寫
-- 意義允許後續重新詮釋
+## Applications
 
----
+- Creative writing
+- Music structure design
+- Symbolic modeling
+- Negotiation frameworks
+- Governance systems
+- Personal evolution architecture
 
-### Zero-Prime（0′）與 LOC
+## Author
 
-- **0′（Zero-Prime／德′）**：  
-  攜帶全部歷史的再起點，非 reset
-- 系統運行模型正式命名為：
-
-**LOC — Language Oscillating Codex**
-
-- Luna Codex：內容與符文譜系  
-- OW3gs：方法論  
-- LOC：語言系統的實際運行模型  
-
----
-
-### 個人規則層｜7–11 原則
-
-於系統穩定運行後，於實際使用中提出：
-
-- **第 1–6 張**：狀況分析  
-- **第 7–11 張（共五張）**：命運核心判定  
-
-此原則屬於**個人規則層**，  
-不構成 LOC 語法，亦非 OW3gs 公理。
-
----
-
-## 📁 專案結構
-
-- moon-runes-pwa/
-- ├── index.html
-- ├── result.html
-- ├── fate.html
-- ├── js/
-- ├── css/
-- ├── 64images/
-- ├── manifest.json
-- ├── service-worker.js
-- └── README.md
-
----
-
-## 🌙 月相系統
-
-- 農曆 1–7 日 → 新月 🌑  
-- 農曆 8–14 日 → 上弦 🌓  
-- 農曆 15–21 日 → 滿月 🌕  
-- 農曆 22–28 日 → 下弦 🌗  
-
-月相將與符文固定月相產生交互，用於解讀能量狀態。
-
----
-
-## 📜 授權說明
-
-本專案採 **Copyleft 精神** 發布。  
-符文系統、語義結構與實作內容可自由研究、使用與修改，  
-但請保留來源標註並遵循相同共享原則。
-
----
-
-用月之頻率，與命運共鳴。
+**Lucas Oscar Wang 政德**  
+Language Systems Governance Architect  
+Wordsmith
