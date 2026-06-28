@@ -1,4 +1,4 @@
-const CACHE_NAME = 'moon-runes-pwa-v5';
+const CACHE_NAME = 'moon-runes-pwa-v6';
 const ASSETS_TO_CACHE = [
   '/',
   'index.html',
@@ -38,20 +38,39 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) =>
-      Promise.all(
-        cacheNames
-          .filter((cacheName) => cacheName !== CACHE_NAME)
-          .map((cacheName) => caches.delete(cacheName))
-      )
+      Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)))
     )
   );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
+
+  if (request.method !== 'GET') {
+    return;
+  }
+
+  if (url.origin !== self.location.origin) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  if (url.pathname.endsWith('.js') || url.pathname.endsWith('.html') || url.pathname.endsWith('/')) {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          return networkResponse;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    caches.match(request).then((cachedResponse) => cachedResponse || fetch(request))
   );
 });
