@@ -1,12 +1,22 @@
-const CACHE_NAME = 'moon-runes-pwa-v2';
+const CACHE_NAME = 'moon-runes-pwa-v3';
 const ASSETS_TO_CACHE = [
   '/',
   'index.html',
   'result.html',
+  'fate.html',
+  'daily.html',
+  '2card.html',
+  '3card.html',
+  '5card.html',
   'list.html',
   'css/style.css',
   'js/main.js',
   'js/result.js',
+  'js/fate.js',
+  'js/daily.js',
+  'js/2card.js',
+  'js/3card.js',
+  'js/5card.js',
   'js/runeLibrary.js',
   'js/list.js',
   '64images/65_玄.png',
