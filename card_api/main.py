@@ -18,7 +18,11 @@ app = FastAPI(
 # 添加 CORS 中間件 (限制只允許來自 https://esotericverse.github.io 的請求)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://esotericverse.github.io"],
+    allow_origins=[
+        "https://esotericverse.github.io",
+        "https://loc.lo3rwang.cc",
+        "https://moon-runes-pwa.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
