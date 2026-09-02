@@ -179,7 +179,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC4 | 已建立文字分類，並完成以其為文本結構的七大篇長篇小說，全文約 22 萬字；另有其他小說與文字創作。 |
 | LOC5 | 已完成部分系統圖形與視覺素材；LOC1 的 66 張獨立符文圖卡亦屬相關成果。目前已有基礎，後續著重跨媒體整合。 |
 | LOC6 | 已形成政德風語錄、價值觀、語氣與風格內容，並作為 LOC3 政德風音樂及其他創作分發的風格來源。 |
-| LOC7 | 目前完成第一套新手入門文字建築學「Hello World!：起承轉合」；因其他方向尚未齊全，仍屬較早期成果。後續預計整合各分發的語意向量，建立關係化結構並發展 Graph RAG。 |
+| LOC7 | 已完成第一套新手入門文字建築學「Hello World!：起承轉合」，並建立 FAQ v0.1：40 題公開 FAQ、62 個原子化檢索片段及可部署的語意檢索 API。後續再整合各分發的語意向量、關係化結構與 Graph RAG。 |
 | LOC8 | 已用於趨勢分析及其他跨域項目的統合，持續收斂分析方法、輸入資料與呈現方式。 |
 
 LOC 目前不是只停留在概念層：LOC1–4 已有明確可展示成果，LOC5–8 也各自具備素材、方法或應用方向，並處於不同的具現化階段。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
@@ -271,6 +271,7 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 
 - 農曆日期及時間窗計算
 - 單卡與多卡組合資料
 - 占卜結果與建議規則處理
+- LOC7 FAQ 語意檢索與依據式回答（`/faq/search`、`/faq/ask`）
 
 ### 語意引擎實驗
 
@@ -324,7 +325,7 @@ LOC3 現行 demo 主要採用：
 資料 → Embedding → FAISS → 語意搜尋結果
 ```
 
-RAG／LLM 屬於延伸解釋與整合方向，不代表已全面部署。Graph RAG 仍是研究或後續評估方向，不作為現行完成度宣稱。
+LOC7 FAQ v0.1 已將 40 題公開 FAQ 切分為 62 個檢索片段，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。現行線上模組採不需外部金鑰的中文 n-gram TF-IDF、別名與關鍵詞混合檢索，以及保留 FAQ Chunk ID 的原文式回答。LLM 生成與 Graph RAG 仍是後續方向，不作為現行完成度宣稱。
 
 ---
 
@@ -365,7 +366,12 @@ moon-runes-pwa/
 ├── 🐍 實際作用 API
 │   └── card_api/
 │       ├── main.py
+│       ├── faq_rag.py
+│       ├── FAQ_API.md
 │       ├── requirements.txt
+│       ├── data/
+│       │   ├── LOC_FAQ_v0.1.json
+│       │   └── LOC_FAQ_RAG_v0.1.json
 │       ├── new_runes.json
 │       ├── runes_all_data.json
 │       └── three_card_combinations.json
@@ -418,6 +424,7 @@ Render Blueprint 已指向 `card_api/`，使用 `uvicorn main:app` 啟動 FastAP
 - Pydantic
 - `zhdate`
 - JSON 結構化資料
+- LOC7 FAQ 中文混合檢索（Python 標準函式庫）
 
 ### 實驗引擎（`engine/`）
 
