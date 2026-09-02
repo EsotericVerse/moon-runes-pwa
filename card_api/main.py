@@ -8,12 +8,13 @@ from pydantic import BaseModel
 import os
 
 from faq_rag import FAQSearchEngine
+from loc3_search import LOC3SearchEngine
 
 # 建立 FastAPI 應用
 app = FastAPI(
     title="LOC API",
-    description="LOC 月典符文占卜與 FAQ 檢索 API",
-    version="1.1.0",
+    description="LOC 月典符文占卜、FAQ 與 LOC3 歌詞檢索 API",
+    version="1.2.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -67,6 +68,16 @@ except Exception as e:
     FAQ_SEARCHER = None
     FAQ_LOAD_ERROR = str(e)
     print(f"Warning: Failed to load LOC FAQ dataset: {e}")
+
+# LOC3 歌詞作品層索引（同詞的旋律版本只在結果內分組）
+LOC3_DATA_PATH = Path(__file__).resolve().parent / "data" / "LOC3_LYRICS_SEARCH_v0.1.json"
+try:
+    LOC3_SEARCHER = LOC3SearchEngine(LOC3_DATA_PATH)
+    LOC3_LOAD_ERROR = None
+except Exception as e:
+    LOC3_SEARCHER = None
+    LOC3_LOAD_ERROR = str(e)
+    print(f"Warning: Failed to load LOC3 lyrics dataset: {e}")
 
 # 月相計算
 def get_lunar_phase(date):
@@ -375,6 +386,16 @@ class FAQAskInput(BaseModel):
     top_k: int = 5
 
 
+class LOC3SearchInput(BaseModel):
+    query: str
+    top_k: int = 8
+    period: str = ""
+    era: str = ""
+    playlist: str = ""
+    category: str = ""
+    style: str = ""
+
+
 def get_faq_searcher():
     if FAQ_SEARCHER is None:
         raise HTTPException(
@@ -394,17 +415,39 @@ def validate_faq_input(query: str, top_k: int):
         raise HTTPException(status_code=400, detail="top_k必須介於1到10之間")
     return query
 
+
+def get_loc3_searcher():
+    if LOC3_SEARCHER is None:
+        raise HTTPException(
+            status_code=503,
+            detail=f"LOC3歌詞資料尚未就緒: {LOC3_LOAD_ERROR or 'unknown error'}"
+        )
+    return LOC3_SEARCHER
+
+
+def validate_loc3_input(query: str, top_k: int):
+    query = query.strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="query不可為空白")
+    if len(query) > 500:
+        raise HTTPException(status_code=400, detail="query不可超過500字元")
+    if top_k < 1 or top_k > 12:
+        raise HTTPException(status_code=400, detail="top_k必須介於1到12之間")
+    return query
+
 # 根路由 - 健康檢查
 @app.get("/")
 async def root():
     return {
         "status": "healthy",
         "message": "LOC API",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "endpoints": {
             "divination": "/divination",
             "faq_search": "/faq/search",
             "faq_ask": "/faq/ask",
+            "loc3_search": "/loc3/search",
+            "loc3_facets": "/loc3/facets",
             "health": "/health",
             "docs": "/docs"
         }
@@ -419,7 +462,9 @@ async def health_check():
         "runes_loaded": len(RUNES_MAP),
         "single_runes_loaded": len(RUNE_SINGLE_MAP),
         "faq_ready": FAQ_SEARCHER is not None,
-        "faq_chunks_loaded": len(FAQ_SEARCHER.chunks) if FAQ_SEARCHER else 0
+        "faq_chunks_loaded": len(FAQ_SEARCHER.chunks) if FAQ_SEARCHER else 0,
+        "loc3_ready": LOC3_SEARCHER is not None,
+        "loc3_works_loaded": len(LOC3_SEARCHER.works) if LOC3_SEARCHER else 0
     }
 
 
@@ -450,6 +495,41 @@ async def faq_ask(input: FAQAskInput):
             "success": True,
             "query": query,
             **result,
+            "timestamp": datetime.now().isoformat()
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/loc3/facets")
+async def loc3_facets():
+    searcher = get_loc3_searcher()
+    return {
+        "success": True,
+        "dataset": searcher.dataset,
+        "facets": searcher.facets(),
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.post("/loc3/search")
+async def loc3_search(input: LOC3SearchInput):
+    query = validate_loc3_input(input.query, input.top_k)
+    searcher = get_loc3_searcher()
+    filters = {
+        "period": input.period,
+        "era": input.era,
+        "playlist": input.playlist,
+        "category": input.category,
+        "style": input.style,
+    }
+    try:
+        results = searcher.search(query, top_k=input.top_k, filters=filters)
+        return {
+            "success": True,
+            "query": query,
+            "count": len(results),
+            "results": [result.as_dict() for result in results],
             "timestamp": datetime.now().isoformat()
         }
     except ValueError as e:

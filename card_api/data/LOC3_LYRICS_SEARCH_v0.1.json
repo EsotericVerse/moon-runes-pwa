@@ -1,0 +1,1 @@
+{"dataset":{"name":"LOC3 Lyrics Search","version":"0.1.0","source":"Suno_500_公開歌詞作品主資料庫_繁中語意與留白v0.3.2.xlsx","language_scope":"zh-Hant","unit":"unique_lyrics_work","excluded":["P1","non_zh_Hant","script_pending","not_searchable"],"work_count":400,"version_count":527},"shards":["LOC3_LYRICS_SEARCH_v0.1.part1.json","LOC3_LYRICS_SEARCH_v0.1.part2.json"]}
