@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from zhdate import ZhDate
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
@@ -6,11 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 
+from faq_rag import FAQSearchEngine
+
 # 建立 FastAPI 應用
 app = FastAPI(
-    title="Rune Divination API",
-    description="符文占卜 API",
-    version="1.0.0",
+    title="LOC API",
+    description="LOC 月典符文占卜與 FAQ 檢索 API",
+    version="1.1.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -54,6 +57,16 @@ except Exception as e:
 # 建立符文編號到資料的映射
 RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES.get("runes", []), 1)}
 RUNE_SINGLE_MAP = {r.get("符文名稱", f"rune_{i}"): r for i, r in enumerate(RUNE_SINGLE)}
+
+# LOC7 FAQ 資料（全局，一次載入）
+FAQ_DATA_PATH = Path(__file__).resolve().parent / "data" / "LOC_FAQ_RAG_v0.1.json"
+try:
+    FAQ_SEARCHER = FAQSearchEngine(FAQ_DATA_PATH)
+    FAQ_LOAD_ERROR = None
+except Exception as e:
+    FAQ_SEARCHER = None
+    FAQ_LOAD_ERROR = str(e)
+    print(f"Warning: Failed to load LOC FAQ dataset: {e}")
 
 # 月相計算
 def get_lunar_phase(date):
@@ -351,15 +364,47 @@ class RuneInput(BaseModel):
     rune5_dir: int | None = None
     debug: bool = False
 
+
+class FAQSearchInput(BaseModel):
+    query: str
+    top_k: int = 5
+
+
+class FAQAskInput(BaseModel):
+    query: str
+    top_k: int = 5
+
+
+def get_faq_searcher():
+    if FAQ_SEARCHER is None:
+        raise HTTPException(
+            status_code=503,
+            detail=f"FAQ資料尚未就緒: {FAQ_LOAD_ERROR or 'unknown error'}"
+        )
+    return FAQ_SEARCHER
+
+
+def validate_faq_input(query: str, top_k: int):
+    query = query.strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="query不可為空白")
+    if len(query) > 500:
+        raise HTTPException(status_code=400, detail="query不可超過500字元")
+    if top_k < 1 or top_k > 10:
+        raise HTTPException(status_code=400, detail="top_k必須介於1到10之間")
+    return query
+
 # 根路由 - 健康檢查
 @app.get("/")
 async def root():
     return {
         "status": "healthy",
-        "message": "Rune Divination API",
-        "version": "1.0.0",
+        "message": "LOC API",
+        "version": "1.1.0",
         "endpoints": {
             "divination": "/divination",
+            "faq_search": "/faq/search",
+            "faq_ask": "/faq/ask",
             "health": "/health",
             "docs": "/docs"
         }
@@ -372,8 +417,43 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
         "runes_loaded": len(RUNES_MAP),
-        "single_runes_loaded": len(RUNE_SINGLE_MAP)
+        "single_runes_loaded": len(RUNE_SINGLE_MAP),
+        "faq_ready": FAQ_SEARCHER is not None,
+        "faq_chunks_loaded": len(FAQ_SEARCHER.chunks) if FAQ_SEARCHER else 0
     }
+
+
+@app.post("/faq/search")
+async def faq_search(input: FAQSearchInput):
+    query = validate_faq_input(input.query, input.top_k)
+    searcher = get_faq_searcher()
+    try:
+        results = searcher.search(query, top_k=input.top_k)
+        return {
+            "success": True,
+            "query": query,
+            "count": len(results),
+            "results": [result.as_dict() for result in results],
+            "timestamp": datetime.now().isoformat()
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/faq/ask")
+async def faq_ask(input: FAQAskInput):
+    query = validate_faq_input(input.query, input.top_k)
+    searcher = get_faq_searcher()
+    try:
+        result = searcher.answer(query, top_k=input.top_k)
+        return {
+            "success": True,
+            "query": query,
+            **result,
+            "timestamp": datetime.now().isoformat()
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 # API 端點
 @app.post("/divination")
