@@ -209,7 +209,8 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 PWA 與 RWD 架構已於 2025 年 5 月完成，現行版本包含：
 
 - 首頁載入後主動註冊 Service Worker
-- 透過 `moon-runes-pwa-v7` 快取關鍵資源
+- 透過 `moon-runes-pwa-v8` 預先快取應用程式資源與完整 66 張符文圖像
+- 農曆計算函式庫已改為本地載入，不依賴外部 CDN
 - 更新時保留現行快取並清除舊版快取
 - 支援新增至桌面／主畫面
 - 提供 192×192、512×512 與 Apple Touch Icon
@@ -334,7 +335,7 @@ moon-runes-pwa/
 - CSS3
 - 原生 JavaScript
 - PWA：Service Worker＋Web App Manifest
-- 農曆計算：`solarlunar`
+- 農曆計算：本地版 `solarlunar@2.0.7`
 
 ### 作用中 API（`card_api/`）
 
