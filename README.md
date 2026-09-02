@@ -262,6 +262,7 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 
 - `daily.html`：每日抽取頁面
 - `fate.html`：替代風格的單卡／命運結果呈現
 - `list.html`：依群組及符文查詢完整資料
+- [`faq.html`](https://loc.lo3rwang.cc/faq.html)：LOC7 FAQ 語意查詢介面
 
 ### Python／FastAPI API
 
@@ -282,7 +283,7 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 
 PWA 與 RWD 架構已於 2025 年 5 月完成，現行版本包含：
 
 - 首頁載入後主動註冊 Service Worker
-- 透過 `moon-runes-pwa-v7` 快取關鍵資源
+- 透過 `moon-runes-pwa-v8` 快取關鍵資源（包含FAQ查詢頁）
 - 更新時保留現行快取並清除舊版快取
 - 支援新增至桌面／主畫面
 - 提供 192×192、512×512 與 Apple Touch Icon
@@ -325,7 +326,7 @@ LOC3 現行 demo 主要採用：
 資料 → Embedding → FAISS → 語意搜尋結果
 ```
 
-LOC7 FAQ v0.1 已將 40 題公開 FAQ 切分為 62 個檢索片段，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。現行線上模組採不需外部金鑰的中文 n-gram TF-IDF、別名與關鍵詞混合檢索，以及保留 FAQ Chunk ID 的原文式回答。LLM 生成與 Graph RAG 仍是後續方向，不作為現行完成度宣稱。
+LOC7 FAQ v0.1 已將 40 題公開 FAQ 切分為 62 個檢索片段，提供 [`faq.html`](https://loc.lo3rwang.cc/faq.html) 作為公開查詢介面，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。現行線上模組採不需外部金鑰的中文 n-gram TF-IDF、別名與關鍵詞混合檢索，以及保留 FAQ Chunk ID 的原文式回答。LLM 生成與 Graph RAG 仍是後續方向，不作為現行完成度宣稱。
 
 ---
 
@@ -335,6 +336,7 @@ LOC7 FAQ v0.1 已將 40 題公開 FAQ 切分為 62 個檢索片段，並在 `car
 moon-runes-pwa/
 ├── 🏠 前端頁面
 │   ├── index.html
+│   ├── faq.html
 │   ├── list.html
 │   ├── daily.html
 │   ├── 2card.html
