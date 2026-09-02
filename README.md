@@ -191,16 +191,18 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 - `fate.html`：替代風格的單卡／命運結果呈現
 - `list.html`：依群組及符文查詢完整資料
 
-### Python／FastAPI 測試
+### Python／FastAPI API
 
-`card_api/` 目前包含 FastAPI 測試程式與相關 JSON 資料，用於：
+`card_api/` 是目前實際作用的 API 目錄，包含 FastAPI 主程式及應用所需的 JSON 資料，用於：
 
 - 符文資料讀取
 - 農曆日期及時間窗計算
 - 單卡與多卡組合資料
-- 語氣、關鍵字及建議規則實驗
+- 占卜結果與建議規則處理
 
-此區屬於測試與實驗性實作，不代表完整 LLM 或 RAG 功能已正式部署。
+### 語意引擎實驗
+
+`engine/` 是獨立的實驗目錄，保存語意向量、訓練資料、測試腳本與相關中間資料。其內容用於研究及驗證，不等同於 `card_api/` 的正式作用流程，也不代表完整 LLM、RAG 或 Graph RAG 已正式部署。
 
 ### PWA 功能
 
@@ -284,19 +286,21 @@ moon-runes-pwa/
 │       ├── direction64.js
 │       ├── runeLibrary.js
 │       └── 符文衍生資料檔
-├── 🐍 Python／API 實驗
-│   ├── card_api/
-│   │   ├── main.py
-│   │   ├── new_runes.json
-│   │   ├── runes_all_data.json
-│   │   └── three_card_combinations.json
-│   ├── engine/
-│   │   ├── combined_embeddings.npy
-│   │   ├── combined_meta.json
-│   │   ├── training_data.json
-│   │   └── 其他實驗與資料檔
-│   ├── requirements.txt
-│   └── render.yaml
+├── 🐍 實際作用 API
+│   └── card_api/
+│       ├── main.py
+│       ├── requirements.txt
+│       ├── new_runes.json
+│       ├── runes_all_data.json
+│       └── three_card_combinations.json
+├── 🧪 語意引擎實驗
+│   └── engine/
+│       ├── combined_embeddings.npy
+│       ├── combined_meta.json
+│       ├── training_data.json
+│       └── 其他測試腳本與實驗資料
+├── requirements.txt
+├── render.yaml
 ├── 📚 Canon、語法與母資料
 │   ├── LOC_Canon_0.5r.docx
 │   ├── 64LunaRune.docx
@@ -321,7 +325,7 @@ moon-runes-pwa/
 - PWA：Service Worker＋Web App Manifest
 - 農曆計算：`solarlunar`
 
-### 後端／實驗
+### 作用中 API（`card_api/`）
 
 - Python
 - FastAPI
@@ -329,6 +333,13 @@ moon-runes-pwa/
 - Pydantic
 - `zhdate`
 - JSON 結構化資料
+
+### 實驗引擎（`engine/`）
+
+- 語意向量與 Embedding 資料
+- 訓練及測試資料
+- Python 實驗腳本
+- 尚未納入正式 API 流程的研究內容
 
 ### 瀏覽器
 
