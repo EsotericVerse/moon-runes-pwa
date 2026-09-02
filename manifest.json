@@ -1,22 +1,22 @@
 {
-  "id": "/",
+  "id": "/moon-runes-pwa/",
   "name": "LOC｜月典｜月之符文",
   "short_name": "LOC 月典",
   "description": "以66符文、四向語意與月相結構提供符文查詢及抽取功能。",
   "lang": "zh-Hant",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/moon-runes-pwa/",
+  "scope": "/moon-runes-pwa/",
   "display": "standalone",
   "background_color": "#07182d",
   "theme_color": "#07182d",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/moon-runes-pwa/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/moon-runes-pwa/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
