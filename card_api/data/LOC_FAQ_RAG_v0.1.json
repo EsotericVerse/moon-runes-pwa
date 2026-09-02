@@ -1,0 +1,1849 @@
+{
+  "schema_version": "1.0",
+  "dataset": {
+    "id": "loc-faq-rag-v0.1",
+    "title": "LOC FAQ RAG v0.1",
+    "language": "zh-Hant-TW",
+    "canon_version": "0.5r",
+    "created_at": "2026-09-02",
+    "author": "Lucas Oscar Wang 政德",
+    "studio": "秘藝文域（EsotericVerse Studio）",
+    "description": "由LOC FAQ v0.1的40題公開FAQ依單一檢索意圖切分而成，供LOC7 FAQ語意搜尋、Embedding、FAISS與RAG使用。",
+    "source_dataset": "LOC_FAQ_v0.1.json",
+    "parent_entry_count": 40,
+    "chunk_count": 62,
+    "chunking_strategy": "atomic_semantic_intent",
+    "overlap": false,
+    "embedding_field": "retrieval_text",
+    "return_fields": [
+      "answer",
+      "parent_id",
+      "category",
+      "related_ids",
+      "source_refs",
+      "canon_version",
+      "status"
+    ],
+    "answer_policy": "檢索系統應回傳已確認的標準答案；AI只負責檢索與整合，不得改寫66符文Canon。",
+    "system_invariants": {
+      "reference_rune": "0：德（De）",
+      "reference_rune_in_deck": false,
+      "reference_rune_drawable": false,
+      "playable_rune_range": "1–66",
+      "playable_rune_count": 66,
+      "special_runes": [
+        "65：玄（Chaos）",
+        "66：命（Fate）"
+      ],
+      "rule_note": "第0符「德」只作為系統基準，不列入66張實際牌組，也不參與任何抽牌。"
+    }
+  },
+  "chunks": [
+    {
+      "id": "FAQ-001-A",
+      "parent_id": "FAQ-001",
+      "category": "基本定位",
+      "intent": "LOC是什麼",
+      "question": "LOC是什麼？",
+      "aliases": [
+        "什麼是LOC？",
+        "月典是什麼？",
+        "LOC到底在做什麼？",
+        "可以簡單介紹LOC嗎？"
+      ],
+      "answer": "LOC的中文名稱是「月典」。簡單來說，它是一套語言系統框架，用來整理語意、敘事及不同概念之間的關係。",
+      "keywords": [
+        "LOC",
+        "月典",
+        "語言系統",
+        "語意",
+        "敘事"
+      ],
+      "retrieval_text": "LOC是什麼？ 什麼是LOC？ 月典是什麼？ LOC到底在做什麼？ 可以簡單介紹LOC嗎？ LOC 月典 語言系統 語意 敘事 LOC的中文名稱是「月典」。簡單來說，它是一套語言系統框架，用來整理語意、敘事及不同概念之間的關係。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-002-A",
+      "parent_id": "FAQ-002",
+      "category": "基本定位",
+      "intent": "LOC和Luna Codex（月之符文）有什麼關係",
+      "question": "LOC和Luna Codex（月之符文）有什麼關係？",
+      "aliases": [
+        "LOC就是月之符文嗎？",
+        "月典和月之符文一樣嗎？",
+        "Luna Codex與LOC有什麼差別？",
+        "LOC從哪套系統延伸而來？"
+      ],
+      "answer": "LOC是月之符文的延伸。它以月之符文的籤詩與符文語意為基底，再向外發展成涵蓋敘事、遊戲、音樂、圖像及文字建築等應用的語言系統框架。",
+      "keywords": [
+        "Luna Codex",
+        "月之符文",
+        "月典",
+        "延伸",
+        "籤詩"
+      ],
+      "retrieval_text": "LOC和Luna Codex（月之符文）有什麼關係？ LOC就是月之符文嗎？ 月典和月之符文一樣嗎？ Luna Codex與LOC有什麼差別？ LOC從哪套系統延伸而來？ Luna Codex 月之符文 月典 延伸 籤詩 LOC是月之符文的延伸。它以月之符文的籤詩與符文語意為基底，再向外發展成涵蓋敘事、遊戲、音樂、圖像及文字建築等應用的語言系統框架。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-003-A",
+      "parent_id": "FAQ-003",
+      "category": "創作背景",
+      "intent": "為什麼會創作LOC",
+      "question": "為什麼會創作LOC？",
+      "aliases": [
+        "LOC是怎麼誕生的？",
+        "月之符文最早從哪裡來？",
+        "LOC原本是做什麼的？",
+        "創作LOC的起點是什麼？"
+      ],
+      "answer": "月之符文最早源自小說創作，後來才被獨立整理，逐步發展成包含66符文的完整系統。它最初被設計為占卜及抽籤工具，之後才延伸出現在的LOC語言框架。",
+      "keywords": [
+        "起源",
+        "小說",
+        "占卜",
+        "抽籤",
+        "66符文"
+      ],
+      "retrieval_text": "為什麼會創作LOC？ LOC是怎麼誕生的？ 月之符文最早從哪裡來？ LOC原本是做什麼的？ 創作LOC的起點是什麼？ 起源 小說 占卜 抽籤 66符文 月之符文最早源自小說創作，後來才被獨立整理，逐步發展成包含66符文的完整系統。它最初被設計為占卜及抽籤工具，之後才延伸出現在的LOC語言框架。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-004-A",
+      "parent_id": "FAQ-004",
+      "category": "適用對象",
+      "intent": "LOC適合哪些人",
+      "question": "LOC適合哪些人？",
+      "aliases": [
+        "誰適合使用LOC？",
+        "不懂占卜也能使用嗎？",
+        "沒有符文經驗可以學LOC嗎？",
+        "一定要相信神秘學才能使用嗎？"
+      ],
+      "answer": "LOC適合對敘事、文字、語意關係或語言系統感興趣的人。它不涉及神秘學，也不要求使用者相信任何特定信仰；即使不相信占卜，也能將它作為語言系統與敘事結構的學習工具。",
+      "keywords": [
+        "適用對象",
+        "初學者",
+        "敘事",
+        "語言系統",
+        "非神秘學"
+      ],
+      "retrieval_text": "LOC適合哪些人？ 誰適合使用LOC？ 不懂占卜也能使用嗎？ 沒有符文經驗可以學LOC嗎？ 一定要相信神秘學才能使用嗎？ 適用對象 初學者 敘事 語言系統 非神秘學 LOC適合對敘事、文字、語意關係或語言系統感興趣的人。它不涉及神秘學，也不要求使用者相信任何特定信仰；即使不相信占卜，也能將它作為語言系統與敘事結構的學習工具。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-005-A",
+      "parent_id": "FAQ-005",
+      "category": "基本定位",
+      "intent": "LOC是占卜、語言系統，還是桌遊",
+      "question": "LOC是占卜、語言系統，還是桌遊？",
+      "aliases": [
+        "LOC究竟是哪一類系統？",
+        "LOC只是一套占卜工具嗎？",
+        "LOC和桌遊有什麼關係？",
+        "LOC有哪些應用面向？"
+      ],
+      "answer": "LOC具有許多不同面向。抽籤、桌遊、音樂、小說、圖像及語意技術，都是建立在月之符文基礎上的不同延伸；LOC本身則是統整這些應用的語言系統框架。",
+      "keywords": [
+        "占卜",
+        "桌遊",
+        "音樂",
+        "小說",
+        "圖像",
+        "語意技術"
+      ],
+      "retrieval_text": "LOC是占卜、語言系統，還是桌遊？ LOC究竟是哪一類系統？ LOC只是一套占卜工具嗎？ LOC和桌遊有什麼關係？ LOC有哪些應用面向？ 占卜 桌遊 音樂 小說 圖像 語意技術 LOC具有許多不同面向。抽籤、桌遊、音樂、小說、圖像及語意技術，都是建立在月之符文基礎上的不同延伸；LOC本身則是統整這些應用的語言系統框架。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-006-A",
+      "parent_id": "FAQ-006",
+      "category": "符文結構",
+      "intent": "66符文的組成",
+      "question": "66符文是怎麼組成的？",
+      "aliases": [
+        "為什麼是66張符文？",
+        "核心符文有幾個？",
+        "玄和命算在66符文裡嗎？"
+      ],
+      "answer": "66符文由八組、每組八個的64個核心符文，加上第65符「玄」與第66符「命」兩個特殊符文組成。",
+      "keywords": [
+        "66符文",
+        "64核心符文",
+        "八組",
+        "玄",
+        "命"
+      ],
+      "retrieval_text": "66符文是怎麼組成的？ 為什麼是66張符文？ 核心符文有幾個？ 玄和命算在66符文裡嗎？ 66符文 64核心符文 八組 玄 命 66符文由八組、每組八個的64個核心符文，加上第65符「玄」與第66符「命」兩個特殊符文組成。",
+      "related_ids": [
+        "FAQ-006-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-006-B",
+      "parent_id": "FAQ-006",
+      "category": "符文結構",
+      "intent": "八組符文的卡片月相配置",
+      "question": "八組符文的卡片月相如何配置？",
+      "aliases": [
+        "每組符文有幾種卡片月相？",
+        "卡片月相在每組怎麼分配？",
+        "八張符文如何平衡四種月相？"
+      ],
+      "answer": "每組八張核心符文對應四種卡片月相，每種月相各出現兩次，使八組符文維持一致且平衡的結構。",
+      "keywords": [
+        "八組符文",
+        "卡片月相",
+        "每種兩張",
+        "平衡配置"
+      ],
+      "retrieval_text": "八組符文的卡片月相如何配置？ 每組符文有幾種卡片月相？ 卡片月相在每組怎麼分配？ 八張符文如何平衡四種月相？ 八組符文 卡片月相 每種兩張 平衡配置 每組八張核心符文對應四種卡片月相，每種月相各出現兩次，使八組符文維持一致且平衡的結構。",
+      "related_ids": [
+        "FAQ-006-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-007-A",
+      "parent_id": "FAQ-007",
+      "category": "特殊符文",
+      "intent": "第0符德的定義",
+      "question": "第0符「德」代表什麼？",
+      "aliases": [
+        "德是什麼？",
+        "第零符有什麼作用？",
+        "德為什麼是系統基準？"
+      ],
+      "answer": "「德」取自《道德經》中「德為道之體現」的概念，類似數學方程式等號之後呈現的結果，是LOC的系統基準。",
+      "keywords": [
+        "第0符",
+        "德",
+        "De",
+        "系統基準",
+        "道之體現"
+      ],
+      "retrieval_text": "第0符「德」代表什麼？ 德是什麼？ 第零符有什麼作用？ 德為什麼是系統基準？ 第0符 德 De 系統基準 道之體現 「德」取自《道德經》中「德為道之體現」的概念，類似數學方程式等號之後呈現的結果，是LOC的系統基準。",
+      "related_ids": [
+        "FAQ-007-B",
+        "FAQ-007-C",
+        "FAQ-007-D"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-007-B",
+      "parent_id": "FAQ-007",
+      "category": "特殊符文",
+      "intent": "第0符德的抽牌規則",
+      "question": "第0符「德」會參與抽牌嗎？",
+      "aliases": [
+        "抽牌會抽到德嗎？",
+        "德有放進66張牌組嗎？",
+        "第零符是否可以被抽出？"
+      ],
+      "answer": "不會。第0符「德」只作為系統基準，不列入66張實際牌組，也不參與任何抽牌。",
+      "keywords": [
+        "第0符",
+        "德",
+        "不列入牌組",
+        "不參與抽牌"
+      ],
+      "retrieval_text": "第0符「德」會參與抽牌嗎？ 抽牌會抽到德嗎？ 德有放進66張牌組嗎？ 第零符是否可以被抽出？ 第0符 德 不列入牌組 不參與抽牌 不會。第0符「德」只作為系統基準，不列入66張實際牌組，也不參與任何抽牌。",
+      "related_ids": [
+        "FAQ-007-A",
+        "FAQ-007-C",
+        "FAQ-007-D"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-007-C",
+      "parent_id": "FAQ-007",
+      "category": "特殊符文",
+      "intent": "第65符玄的定義",
+      "question": "第65符「玄」代表什麼？",
+      "aliases": [
+        "玄是什麼？",
+        "Chaos在LOC中代表什麼？",
+        "玄是不是不可控制的混亂？"
+      ],
+      "answer": "第65符「玄」代表穩定與不穩定之間仍可管理的意外與風險。",
+      "keywords": [
+        "第65符",
+        "玄",
+        "Chaos",
+        "可管理風險",
+        "意外"
+      ],
+      "retrieval_text": "第65符「玄」代表什麼？ 玄是什麼？ Chaos在LOC中代表什麼？ 玄是不是不可控制的混亂？ 第65符 玄 Chaos 可管理風險 意外 第65符「玄」代表穩定與不穩定之間仍可管理的意外與風險。",
+      "related_ids": [
+        "FAQ-007-A",
+        "FAQ-007-B",
+        "FAQ-007-D"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-007-D",
+      "parent_id": "FAQ-007",
+      "category": "特殊符文",
+      "intent": "第66符命的定義",
+      "question": "第66符「命」代表什麼？",
+      "aliases": [
+        "命是什麼？",
+        "Fate在LOC中代表什麼？",
+        "第66張符文的意思是什麼？"
+      ],
+      "answer": "第66符「命」代表每個人的命運及其既有條件。",
+      "keywords": [
+        "第66符",
+        "命",
+        "Fate",
+        "命運",
+        "既有條件"
+      ],
+      "retrieval_text": "第66符「命」代表什麼？ 命是什麼？ Fate在LOC中代表什麼？ 第66張符文的意思是什麼？ 第66符 命 Fate 命運 既有條件 第66符「命」代表每個人的命運及其既有條件。",
+      "related_ids": [
+        "FAQ-007-A",
+        "FAQ-007-B",
+        "FAQ-007-C"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-008-A",
+      "parent_id": "FAQ-008",
+      "category": "符文結構",
+      "intent": "四向的形成原因",
+      "question": "為什麼月之符文會有四個方向？",
+      "aliases": [
+        "四向是怎麼產生的？",
+        "正方形卡牌和四向有什麼關係？",
+        "為什麼不是只有正位與逆位？"
+      ],
+      "answer": "因為月之符文採用正方形卡牌，抽取後自然會產生正位、半正位、半逆位與逆位四種方向。",
+      "keywords": [
+        "四向",
+        "正方形卡牌",
+        "正位",
+        "半正位",
+        "半逆位",
+        "逆位"
+      ],
+      "retrieval_text": "為什麼月之符文會有四個方向？ 四向是怎麼產生的？ 正方形卡牌和四向有什麼關係？ 為什麼不是只有正位與逆位？ 四向 正方形卡牌 正位 半正位 半逆位 逆位 因為月之符文採用正方形卡牌，抽取後自然會產生正位、半正位、半逆位與逆位四種方向。",
+      "related_ids": [
+        "FAQ-008-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-008-B",
+      "parent_id": "FAQ-008",
+      "category": "符文結構",
+      "intent": "四向對核心語意的作用",
+      "question": "方向會改變符文本來的意思嗎？",
+      "aliases": [
+        "逆位會把符文意思變相反嗎？",
+        "四向如何影響解讀？",
+        "方向表示增強還是減弱嗎？"
+      ],
+      "answer": "方向不會改變符文的核心意義，而是表現語意狀態，例如逐漸增強、慢慢減弱、尚未完整形成或正在消退。",
+      "keywords": [
+        "方向",
+        "核心語意不變",
+        "增強",
+        "減弱",
+        "語意狀態"
+      ],
+      "retrieval_text": "方向會改變符文本來的意思嗎？ 逆位會把符文意思變相反嗎？ 四向如何影響解讀？ 方向表示增強還是減弱嗎？ 方向 核心語意不變 增強 減弱 語意狀態 方向不會改變符文的核心意義，而是表現語意狀態，例如逐漸增強、慢慢減弱、尚未完整形成或正在消退。",
+      "related_ids": [
+        "FAQ-008-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-009-A",
+      "parent_id": "FAQ-009",
+      "category": "使用方法",
+      "intent": "第一次抽牌時，應該怎麼解讀",
+      "question": "第一次抽牌時，應該怎麼解讀？",
+      "aliases": [
+        "抽到符文後要怎麼看？",
+        "新手如何解牌？",
+        "看到卡片後第一步是什麼？",
+        "一定要背完所有符文定義嗎？"
+      ],
+      "answer": "抽牌後，當你看見卡片上的文字時，腦中最先出現的想法，往往就是解讀的關鍵。符文定義與方向說明可以提供參考，但使用者當下產生的聯想，也是理解自己為何抽到這張牌的重要部分。",
+      "keywords": [
+        "抽牌",
+        "解牌",
+        "初學者",
+        "直覺",
+        "聯想",
+        "符文定義"
+      ],
+      "retrieval_text": "第一次抽牌時，應該怎麼解讀？ 抽到符文後要怎麼看？ 新手如何解牌？ 看到卡片後第一步是什麼？ 一定要背完所有符文定義嗎？ 抽牌 解牌 初學者 直覺 聯想 符文定義 抽牌後，當你看見卡片上的文字時，腦中最先出現的想法，往往就是解讀的關鍵。符文定義與方向說明可以提供參考，但使用者當下產生的聯想，也是理解自己為何抽到這張牌的重要部分。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-010-A",
+      "parent_id": "FAQ-010",
+      "category": "使用方法",
+      "intent": "抽牌張數的選擇",
+      "question": "問題應該抽幾張符文？",
+      "aliases": [
+        "新手應該抽幾張？",
+        "什麼問題適合多張抽牌？",
+        "想知道前因後果要抽幾張？"
+      ],
+      "answer": "不同張數代表不同程度的語意複雜度。問題越需要精密回答，或越想理解事情的前因後果，就越適合使用多張符文；初次使用可以先從單張或較少張數開始。",
+      "keywords": [
+        "抽牌張數",
+        "單張",
+        "多張",
+        "前因後果",
+        "初學者"
+      ],
+      "retrieval_text": "問題應該抽幾張符文？ 新手應該抽幾張？ 什麼問題適合多張抽牌？ 想知道前因後果要抽幾張？ 抽牌張數 單張 多張 前因後果 初學者 不同張數代表不同程度的語意複雜度。問題越需要精密回答，或越想理解事情的前因後果，就越適合使用多張符文；初次使用可以先從單張或較少張數開始。",
+      "related_ids": [
+        "FAQ-010-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-010-B",
+      "parent_id": "FAQ-010",
+      "category": "使用方法",
+      "intent": "多張抽牌的解讀難度",
+      "question": "為什麼抽越多張符文越難解讀？",
+      "aliases": [
+        "多符文為什麼複雜？",
+        "抽越多張會越準嗎？",
+        "符文張數增加有什麼代價？"
+      ],
+      "answer": "張數增加後，符文之間需要判斷的順序與關係會快速變得複雜，因此解讀難度也會提高；抽得更多不等於答案必然更準。",
+      "keywords": [
+        "多符文",
+        "解讀難度",
+        "順序",
+        "關係",
+        "複雜度"
+      ],
+      "retrieval_text": "為什麼抽越多張符文越難解讀？ 多符文為什麼複雜？ 抽越多張會越準嗎？ 符文張數增加有什麼代價？ 多符文 解讀難度 順序 關係 複雜度 張數增加後，符文之間需要判斷的順序與關係會快速變得複雜，因此解讀難度也會提高；抽得更多不等於答案必然更準。",
+      "related_ids": [
+        "FAQ-010-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-011-A",
+      "parent_id": "FAQ-011",
+      "category": "使用原則",
+      "intent": "LOC能否預測未來",
+      "question": "LOC能夠預測未來嗎？",
+      "aliases": [
+        "LOC可以算命嗎？",
+        "月之符文會告訴我未來嗎？",
+        "抽籤結果一定會發生嗎？"
+      ],
+      "answer": "不能。LOC只呈現當下可能的方向與條件，不宣稱未來一定會發生什麼，最後仍由使用者自行判斷與選擇。",
+      "keywords": [
+        "不能預測未來",
+        "可能方向",
+        "當下條件",
+        "自行選擇"
+      ],
+      "retrieval_text": "LOC能夠預測未來嗎？ LOC可以算命嗎？ 月之符文會告訴我未來嗎？ 抽籤結果一定會發生嗎？ 不能預測未來 可能方向 當下條件 自行選擇 不能。LOC只呈現當下可能的方向與條件，不宣稱未來一定會發生什麼，最後仍由使用者自行判斷與選擇。",
+      "related_ids": [
+        "FAQ-011-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-011-B",
+      "parent_id": "FAQ-011",
+      "category": "使用原則",
+      "intent": "LOC的非神秘學定位",
+      "question": "LOC屬於神秘學嗎？",
+      "aliases": [
+        "一定要相信占卜才能使用LOC嗎？",
+        "LOC和神秘學有關嗎？",
+        "不相信算命可以使用月之符文嗎？"
+      ],
+      "answer": "LOC不涉及神秘學。抽籤與籤詩是在使用者迷惘時提供提示，協助看見問題中的未知與盲點。",
+      "keywords": [
+        "非神秘學",
+        "籤詩",
+        "提示",
+        "迷惘",
+        "盲點"
+      ],
+      "retrieval_text": "LOC屬於神秘學嗎？ 一定要相信占卜才能使用LOC嗎？ LOC和神秘學有關嗎？ 不相信算命可以使用月之符文嗎？ 非神秘學 籤詩 提示 迷惘 盲點 LOC不涉及神秘學。抽籤與籤詩是在使用者迷惘時提供提示，協助看見問題中的未知與盲點。",
+      "related_ids": [
+        "FAQ-011-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-012-A",
+      "parent_id": "FAQ-012",
+      "category": "使用原則",
+      "intent": "不喜歡抽牌結果，可以重新抽嗎",
+      "question": "不喜歡抽牌結果，可以重新抽嗎？",
+      "aliases": [
+        "可以一直抽到喜歡的答案嗎？",
+        "同一個問題能問很多次嗎？",
+        "什麼時候可以重新抽牌？",
+        "抽到不好的符文怎麼辦？"
+      ],
+      "answer": "同一件事情如果持續抽牌，直到得到自己喜歡的答案，對理解問題並沒有實際幫助。原則上，同一個問題以詢問一次為基準；若情況、條件或時間已經產生明確變化，才適合重新提出問題。",
+      "keywords": [
+        "重新抽牌",
+        "重複提問",
+        "抽牌原則",
+        "不喜歡結果",
+        "條件變化"
+      ],
+      "retrieval_text": "不喜歡抽牌結果，可以重新抽嗎？ 可以一直抽到喜歡的答案嗎？ 同一個問題能問很多次嗎？ 什麼時候可以重新抽牌？ 抽到不好的符文怎麼辦？ 重新抽牌 重複提問 抽牌原則 不喜歡結果 條件變化 同一件事情如果持續抽牌，直到得到自己喜歡的答案，對理解問題並沒有實際幫助。原則上，同一個問題以詢問一次為基準；若情況、條件或時間已經產生明確變化，才適合重新提出問題。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-013-A",
+      "parent_id": "FAQ-013",
+      "category": "使用形式",
+      "intent": "LOC1的使用形式",
+      "question": "LOC1有哪些使用形式？",
+      "aliases": [
+        "LOC有實體卡牌嗎？",
+        "可以在線上抽月之符文嗎？",
+        "LOC1要用卡片還是網站？"
+      ],
+      "answer": "LOC1目前提供實體卡牌與線上系統兩種形式，兩者都採用相同的66符文系統。",
+      "keywords": [
+        "LOC1",
+        "實體卡牌",
+        "線上系統",
+        "66符文"
+      ],
+      "retrieval_text": "LOC1有哪些使用形式？ LOC有實體卡牌嗎？ 可以在線上抽月之符文嗎？ LOC1要用卡片還是網站？ LOC1 實體卡牌 線上系統 66符文 LOC1目前提供實體卡牌與線上系統兩種形式，兩者都採用相同的66符文系統。",
+      "related_ids": [
+        "FAQ-013-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-013-B",
+      "parent_id": "FAQ-013",
+      "category": "使用形式",
+      "intent": "實體卡牌與線上系統的差異",
+      "question": "LOC1實體卡牌和線上系統有什麼差別？",
+      "aliases": [
+        "實體版和PWA有什麼不同？",
+        "線上抽牌只是模擬嗎？",
+        "為什麼要使用實體符文卡？"
+      ],
+      "answer": "實體卡牌能讓使用者實際觸摸、洗牌與抽取；線上系統則模擬抽牌流程，適合隨時使用。",
+      "keywords": [
+        "實體卡牌",
+        "線上系統",
+        "PWA",
+        "模擬抽牌",
+        "洗牌"
+      ],
+      "retrieval_text": "LOC1實體卡牌和線上系統有什麼差別？ 實體版和PWA有什麼不同？ 線上抽牌只是模擬嗎？ 為什麼要使用實體符文卡？ 實體卡牌 線上系統 PWA 模擬抽牌 洗牌 實體卡牌能讓使用者實際觸摸、洗牌與抽取；線上系統則模擬抽牌流程，適合隨時使用。",
+      "related_ids": [
+        "FAQ-013-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-014-A",
+      "parent_id": "FAQ-014",
+      "category": "取得方式",
+      "intent": "要到哪裡體驗LOC",
+      "question": "要到哪裡體驗LOC？",
+      "aliases": [
+        "LOC網站在哪裡？",
+        "月之符文線上版網址是什麼？",
+        "哪裡可以線上抽牌？",
+        "我要怎麼開始使用LOC？"
+      ],
+      "answer": "可以前往LOC線上系統：https://loc.lo3rwang.cc/。網站提供線上抽牌與符文解讀功能。",
+      "keywords": [
+        "LOC網站",
+        "線上體驗",
+        "PWA",
+        "網址",
+        "loc.lo3rwang.cc"
+      ],
+      "retrieval_text": "要到哪裡體驗LOC？ LOC網站在哪裡？ 月之符文線上版網址是什麼？ 哪裡可以線上抽牌？ 我要怎麼開始使用LOC？ LOC網站 線上體驗 PWA 網址 loc.lo3rwang.cc 可以前往LOC線上系統：https://loc.lo3rwang.cc/。網站提供線上抽牌與符文解讀功能。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02",
+        "https://loc.lo3rwang.cc/"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-015-A",
+      "parent_id": "FAQ-015",
+      "category": "LOC2桌遊",
+      "intent": "同一副符文可以同時用於LOC1與LOC2嗎",
+      "question": "同一副符文可以同時用於LOC1與LOC2嗎？",
+      "aliases": [
+        "抽牌用的卡可以直接拿來玩桌遊嗎？",
+        "LOC2需要另外買一套符文嗎？",
+        "LOC1卡牌和LOC2卡牌相容嗎？",
+        "一副月之符文能玩兩種模式嗎？"
+      ],
+      "answer": "可以。LOC1與LOC2都以同一套66符文為基礎。完成LOC1的抽牌或解讀後，同一副實體符文卡可以直接用於LOC2桌遊，不必另外更換符文牌組。",
+      "keywords": [
+        "LOC1",
+        "LOC2",
+        "共用牌組",
+        "實體符文",
+        "桌遊"
+      ],
+      "retrieval_text": "同一副符文可以同時用於LOC1與LOC2嗎？ 抽牌用的卡可以直接拿來玩桌遊嗎？ LOC2需要另外買一套符文嗎？ LOC1卡牌和LOC2卡牌相容嗎？ 一副月之符文能玩兩種模式嗎？ LOC1 LOC2 共用牌組 實體符文 桌遊 可以。LOC1與LOC2都以同一套66符文為基礎。完成LOC1的抽牌或解讀後，同一副實體符文卡可以直接用於LOC2桌遊，不必另外更換符文牌組。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-016-A",
+      "parent_id": "FAQ-016",
+      "category": "LOC2桌遊",
+      "intent": "LOC2的桌遊定位",
+      "question": "LOC2是什麼？",
+      "aliases": [
+        "Semantic Playground是什麼？",
+        "LOC2是不是桌遊？",
+        "LOC2主要在玩什麼？"
+      ],
+      "answer": "LOC2是一款以66符文為基礎的語意桌遊。事件先提出問題，玩家使用符文組成回答，再讓不同答案彼此比較與共振。",
+      "keywords": [
+        "LOC2",
+        "Semantic Playground",
+        "語意桌遊",
+        "事件",
+        "回答",
+        "共振"
+      ],
+      "retrieval_text": "LOC2是什麼？ Semantic Playground是什麼？ LOC2是不是桌遊？ LOC2主要在玩什麼？ LOC2 Semantic Playground 語意桌遊 事件 回答 共振 LOC2是一款以66符文為基礎的語意桌遊。事件先提出問題，玩家使用符文組成回答，再讓不同答案彼此比較與共振。",
+      "related_ids": [
+        "FAQ-016-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-016-B",
+      "parent_id": "FAQ-016",
+      "category": "LOC2桌遊",
+      "intent": "LOC2與語意搜尋RAG的關係",
+      "question": "LOC2和語意搜尋或RAG有什麼關係？",
+      "aliases": [
+        "RAG怎麼變成桌遊？",
+        "LOC2需要懂程式才能玩嗎？",
+        "LOC2如何把語意搜尋做成娛樂？"
+      ],
+      "answer": "LOC2將語意搜尋及RAG的概念轉化為娛樂形式，但實際遊玩仍是一款一般桌遊，不需要玩家先理解RAG或程式技術。",
+      "keywords": [
+        "LOC2",
+        "RAG",
+        "語意搜尋",
+        "娛樂形式",
+        "不需程式知識"
+      ],
+      "retrieval_text": "LOC2和語意搜尋或RAG有什麼關係？ RAG怎麼變成桌遊？ LOC2需要懂程式才能玩嗎？ LOC2如何把語意搜尋做成娛樂？ LOC2 RAG 語意搜尋 娛樂形式 不需程式知識 LOC2將語意搜尋及RAG的概念轉化為娛樂形式，但實際遊玩仍是一款一般桌遊，不需要玩家先理解RAG或程式技術。",
+      "related_ids": [
+        "FAQ-016-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-017-A",
+      "parent_id": "FAQ-017",
+      "category": "LOC2桌遊",
+      "intent": "LOC2目前完成到什麼階段",
+      "question": "LOC2目前完成到什麼階段？",
+      "aliases": [
+        "LOC2現在可以玩了嗎？",
+        "LOC2開發進度如何？",
+        "事件卡做好了嗎？",
+        "LOC2什麼時候能實體測試？"
+      ],
+      "answer": "LOC2目前已經完成Alpha版的主要規則、32張事件卡內容及八職業設定，現階段正在準備事件卡美術與實體印製。完成實體卡片後，便能進行面對面的實際遊玩測試，再依測試結果調整規則。",
+      "keywords": [
+        "LOC2 Alpha",
+        "開發進度",
+        "32張事件卡",
+        "八職業",
+        "實體印製",
+        "遊玩測試"
+      ],
+      "retrieval_text": "LOC2目前完成到什麼階段？ LOC2現在可以玩了嗎？ LOC2開發進度如何？ 事件卡做好了嗎？ LOC2什麼時候能實體測試？ LOC2 Alpha 開發進度 32張事件卡 八職業 實體印製 遊玩測試 LOC2目前已經完成Alpha版的主要規則、32張事件卡內容及八職業設定，現階段正在準備事件卡美術與實體印製。完成實體卡片後，便能進行面對面的實際遊玩測試，再依測試結果調整規則。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-018-A",
+      "parent_id": "FAQ-018",
+      "category": "系統架構",
+      "intent": "LOC1至LOC8的架構關係",
+      "question": "LOC1至LOC8是什麼關係？",
+      "aliases": [
+        "LOC為什麼分成1到8？",
+        "LOC1到LOC8是版本順序嗎？",
+        "八個LOC哪一個比較高階？"
+      ],
+      "answer": "LOC1至LOC8是建立在共同語言骨架上的八個獨立延伸方向，不代表版本先後或高低等級。",
+      "keywords": [
+        "LOC1至LOC8",
+        "獨立延伸",
+        "共同骨架",
+        "非版本",
+        "無高低"
+      ],
+      "retrieval_text": "LOC1至LOC8是什麼關係？ LOC為什麼分成1到8？ LOC1到LOC8是版本順序嗎？ 八個LOC哪一個比較高階？ LOC1至LOC8 獨立延伸 共同骨架 非版本 無高低 LOC1至LOC8是建立在共同語言骨架上的八個獨立延伸方向，不代表版本先後或高低等級。",
+      "related_ids": [
+        "FAQ-018-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-018-B",
+      "parent_id": "FAQ-018",
+      "category": "系統架構",
+      "intent": "LOC的建議入門順序",
+      "question": "第一次接觸LOC應該從哪裡開始？",
+      "aliases": [
+        "LOC新手先學哪一個分發？",
+        "要先從LOC1開始嗎？",
+        "理解LOC的第一步是什麼？"
+      ],
+      "answer": "第一次接觸LOC的人，建議先從LOC1抽卡開始，理解單張符文及符文組合後，再接觸桌遊、音樂、文字、圖像及其他應用。",
+      "keywords": [
+        "LOC入門",
+        "LOC1",
+        "抽卡",
+        "單張符文",
+        "符文組合"
+      ],
+      "retrieval_text": "第一次接觸LOC應該從哪裡開始？ LOC新手先學哪一個分發？ 要先從LOC1開始嗎？ 理解LOC的第一步是什麼？ LOC入門 LOC1 抽卡 單張符文 符文組合 第一次接觸LOC的人，建議先從LOC1抽卡開始，理解單張符文及符文組合後，再接觸桌遊、音樂、文字、圖像及其他應用。",
+      "related_ids": [
+        "FAQ-018-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-019-A",
+      "parent_id": "FAQ-019",
+      "category": "語意技術",
+      "intent": "OW3gs組合規模與SQL限制",
+      "question": "為什麼OW3gs不適合用SQL窮舉所有結果？",
+      "aliases": [
+        "LOC為什麼不能只用SQL？",
+        "11張符文的組合有多複雜？",
+        "OW3gs為什麼無法預先列完所有答案？"
+      ],
+      "answer": "OW3gs一次抽取11張不重複符文，還要考慮順序、方向及符文關係，可能組合數量極大，因此不適合預先使用SQL窮舉所有結果。",
+      "keywords": [
+        "OW3gs",
+        "SQL",
+        "11張抽牌",
+        "組合爆炸",
+        "不適合窮舉"
+      ],
+      "retrieval_text": "為什麼OW3gs不適合用SQL窮舉所有結果？ LOC為什麼不能只用SQL？ 11張符文的組合有多複雜？ OW3gs為什麼無法預先列完所有答案？ OW3gs SQL 11張抽牌 組合爆炸 不適合窮舉 OW3gs一次抽取11張不重複符文，還要考慮順序、方向及符文關係，可能組合數量極大，因此不適合預先使用SQL窮舉所有結果。",
+      "related_ids": [
+        "FAQ-019-B",
+        "FAQ-019-C"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-019-B",
+      "parent_id": "FAQ-019",
+      "category": "語意技術",
+      "intent": "語意向量與RAG的用途",
+      "question": "LOC為什麼需要語意向量與RAG？",
+      "aliases": [
+        "RAG在LOC中負責什麼？",
+        "LOC如何搜尋多符文概念？",
+        "語意向量如何協助解牌？"
+      ],
+      "answer": "LOC使用語意向量與RAG進行概念搜尋，先找出與問題及符文組合最相關的內容，再協助完成解讀。",
+      "keywords": [
+        "語意向量",
+        "RAG",
+        "概念搜尋",
+        "符文組合",
+        "解讀"
+      ],
+      "retrieval_text": "LOC為什麼需要語意向量與RAG？ RAG在LOC中負責什麼？ LOC如何搜尋多符文概念？ 語意向量如何協助解牌？ 語意向量 RAG 概念搜尋 符文組合 解讀 LOC使用語意向量與RAG進行概念搜尋，先找出與問題及符文組合最相關的內容，再協助完成解讀。",
+      "related_ids": [
+        "FAQ-019-A",
+        "FAQ-019-C"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-019-C",
+      "parent_id": "FAQ-019",
+      "category": "語意技術",
+      "intent": "AI與符文Canon的權限邊界",
+      "question": "AI會改寫66符文的核心定義嗎？",
+      "aliases": [
+        "RAG會自己修改Canon嗎？",
+        "AI在LOC裡可以創造新符文嗎？",
+        "AI產生的答案會改變母資料嗎？"
+      ],
+      "answer": "不會。66符文的核心定義已經固定，AI只負責檢索與整合，不得自行改寫符文Canon。",
+      "keywords": [
+        "AI權限",
+        "固定Canon",
+        "不可改寫",
+        "檢索",
+        "整合"
+      ],
+      "retrieval_text": "AI會改寫66符文的核心定義嗎？ RAG會自己修改Canon嗎？ AI在LOC裡可以創造新符文嗎？ AI產生的答案會改變母資料嗎？ AI權限 固定Canon 不可改寫 檢索 整合 不會。66符文的核心定義已經固定，AI只負責檢索與整合，不得自行改寫符文Canon。",
+      "related_ids": [
+        "FAQ-019-A",
+        "FAQ-019-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-020-A",
+      "parent_id": "FAQ-020",
+      "category": "專案參與",
+      "intent": "LOC專案與資源位置",
+      "question": "要到哪裡查看LOC專案與下載資源？",
+      "aliases": [
+        "LOC的GitHub在哪裡？",
+        "哪裡可以看LOC原始碼？",
+        "哪裡可以查看LOC文件？"
+      ],
+      "answer": "可以前往EsotericVerse的GitHub專案查看程式、文件及可下載資源：https://github.com/EsotericVerse/moon-runes-pwa。",
+      "keywords": [
+        "GitHub",
+        "EsotericVerse",
+        "moon-runes-pwa",
+        "原始碼",
+        "下載資源"
+      ],
+      "retrieval_text": "要到哪裡查看LOC專案與下載資源？ LOC的GitHub在哪裡？ 哪裡可以看LOC原始碼？ 哪裡可以查看LOC文件？ GitHub EsotericVerse moon-runes-pwa 原始碼 下載資源 可以前往EsotericVerse的GitHub專案查看程式、文件及可下載資源：https://github.com/EsotericVerse/moon-runes-pwa。",
+      "related_ids": [
+        "FAQ-020-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02",
+        "https://github.com/EsotericVerse/moon-runes-pwa"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-020-B",
+      "parent_id": "FAQ-020",
+      "category": "專案參與",
+      "intent": "LOC測試回饋方式",
+      "question": "要怎麼提供LOC測試回饋？",
+      "aliases": [
+        "如何參與LOC專案？",
+        "LOC問題要到哪裡回報？",
+        "可以透過GitHub提供意見嗎？"
+      ],
+      "answer": "使用者可以透過EsotericVerse的GitHub專案提出問題、提供測試回饋或了解LOC目前的開發進度。",
+      "keywords": [
+        "測試回饋",
+        "GitHub",
+        "提出問題",
+        "參與專案",
+        "開發進度"
+      ],
+      "retrieval_text": "要怎麼提供LOC測試回饋？ 如何參與LOC專案？ LOC問題要到哪裡回報？ 可以透過GitHub提供意見嗎？ 測試回饋 GitHub 提出問題 參與專案 開發進度 使用者可以透過EsotericVerse的GitHub專案提出問題、提供測試回饋或了解LOC目前的開發進度。",
+      "related_ids": [
+        "FAQ-020-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02",
+        "https://github.com/EsotericVerse/moon-runes-pwa"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-021-A",
+      "parent_id": "FAQ-021",
+      "category": "符文結構",
+      "intent": "月之符文的八個組別分別是什麼",
+      "question": "月之符文的八個組別分別是什麼？",
+      "aliases": [
+        "66符文分成哪些組？",
+        "月之符文有哪八組？",
+        "八組符文的名稱是什麼？",
+        "核心64符文如何分組？"
+      ],
+      "answer": "月之符文依現行編號順序分為靈魂組、連結組、生命組、自然組、礦物組、元素組、秩序組與無序組。每組包含八個核心符文，合計64個核心符文。",
+      "keywords": [
+        "八組符文",
+        "靈魂組",
+        "連結組",
+        "生命組",
+        "自然組",
+        "礦物組",
+        "元素組",
+        "秩序組",
+        "無序組"
+      ],
+      "retrieval_text": "月之符文的八個組別分別是什麼？ 66符文分成哪些組？ 月之符文有哪八組？ 八組符文的名稱是什麼？ 核心64符文如何分組？ 八組符文 靈魂組 連結組 生命組 自然組 礦物組 元素組 秩序組 無序組 月之符文依現行編號順序分為靈魂組、連結組、生命組、自然組、礦物組、元素組、秩序組與無序組。每組包含八個核心符文，合計64個核心符文。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-022-A",
+      "parent_id": "FAQ-022",
+      "category": "月相系統",
+      "intent": "卡片月相與時間窗的差異",
+      "question": "卡片月相和LOC時間窗是同一套系統嗎？",
+      "aliases": [
+        "卡片月相等於實際天文月相嗎？",
+        "符文月相和日期月相有什麼不同？",
+        "LOC為什麼有兩種月相標記？"
+      ],
+      "answer": "不是。符文的卡片月相是卡片本身的固定屬性；LOC時間窗則是將複雜的實際月相規範成依農曆日期使用的解讀範圍。",
+      "keywords": [
+        "卡片月相",
+        "時間窗",
+        "固定屬性",
+        "農曆日期",
+        "不同系統"
+      ],
+      "retrieval_text": "卡片月相和LOC時間窗是同一套系統嗎？ 卡片月相等於實際天文月相嗎？ 符文月相和日期月相有什麼不同？ LOC為什麼有兩種月相標記？ 卡片月相 時間窗 固定屬性 農曆日期 不同系統 不是。符文的卡片月相是卡片本身的固定屬性；LOC時間窗則是將複雜的實際月相規範成依農曆日期使用的解讀範圍。",
+      "related_ids": [
+        "FAQ-022-B",
+        "FAQ-022-C"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02",
+        "64LunaRune.docx#第七章"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-022-B",
+      "parent_id": "FAQ-022",
+      "category": "月相系統",
+      "intent": "LOC時間窗的日期規則",
+      "question": "LOC的月相時間窗如何劃分？",
+      "aliases": [
+        "農曆幾日算新月？",
+        "上弦滿月下弦的日期怎麼分？",
+        "LOC如何規範實際月相？"
+      ],
+      "answer": "LOC將時間窗規範為：農曆1–7日新月、8–14日上弦、15–21日滿月、22–28日下弦、29–30日空亡。",
+      "keywords": [
+        "時間窗",
+        "農曆",
+        "新月",
+        "上弦",
+        "滿月",
+        "下弦",
+        "空亡"
+      ],
+      "retrieval_text": "LOC的月相時間窗如何劃分？ 農曆幾日算新月？ 上弦滿月下弦的日期怎麼分？ LOC如何規範實際月相？ 時間窗 農曆 新月 上弦 滿月 下弦 空亡 LOC將時間窗規範為：農曆1–7日新月、8–14日上弦、15–21日滿月、22–28日下弦、29–30日空亡。",
+      "related_ids": [
+        "FAQ-022-A",
+        "FAQ-022-C"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02",
+        "64LunaRune.docx#第七章"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-022-C",
+      "parent_id": "FAQ-022",
+      "category": "月相系統",
+      "intent": "空亡與卡片月相的關係",
+      "question": "空亡是一種卡片月相嗎？",
+      "aliases": [
+        "符文卡片上會有空亡嗎？",
+        "為什麼卡片月相沒有空亡？",
+        "空亡只屬於時間窗嗎？"
+      ],
+      "answer": "不是。空亡只出現在農曆29–30日的時間窗；符文卡片本身只有新月、上弦、滿月與下弦四種卡片月相。詳細規則記載於《64LunaRune命運句語法圖鑑》第七章。",
+      "keywords": [
+        "空亡",
+        "卡片月相",
+        "時間窗",
+        "農曆29至30日",
+        "第七章"
+      ],
+      "retrieval_text": "空亡是一種卡片月相嗎？ 符文卡片上會有空亡嗎？ 為什麼卡片月相沒有空亡？ 空亡只屬於時間窗嗎？ 空亡 卡片月相 時間窗 農曆29至30日 第七章 不是。空亡只出現在農曆29–30日的時間窗；符文卡片本身只有新月、上弦、滿月與下弦四種卡片月相。詳細規則記載於《64LunaRune命運句語法圖鑑》第七章。",
+      "related_ids": [
+        "FAQ-022-A",
+        "FAQ-022-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02",
+        "64LunaRune.docx#第七章"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-023-A",
+      "parent_id": "FAQ-023",
+      "category": "使用方法",
+      "intent": "抽牌前，應該怎麼提出一個合適的問題",
+      "question": "抽牌前，應該怎麼提出一個合適的問題？",
+      "aliases": [
+        "LOC要怎麼問問題？",
+        "抽牌前問題要怎麼寫？",
+        "提問有固定句型嗎？",
+        "使用月之符文要先說什麼？"
+      ],
+      "answer": "LOC沒有規定唯一的提問句型，使用者可以依自己的情況拿捏。提問範圍以平常占卜及生活困惑為主，重點是讓自己知道這次想理解什麼。",
+      "keywords": [
+        "提問方式",
+        "抽牌問題",
+        "占卜",
+        "生活困惑",
+        "使用方法"
+      ],
+      "retrieval_text": "抽牌前，應該怎麼提出一個合適的問題？ LOC要怎麼問問題？ 抽牌前問題要怎麼寫？ 提問有固定句型嗎？ 使用月之符文要先說什麼？ 提問方式 抽牌問題 占卜 生活困惑 使用方法 LOC沒有規定唯一的提問句型，使用者可以依自己的情況拿捏。提問範圍以平常占卜及生活困惑為主，重點是讓自己知道這次想理解什麼。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-024-A",
+      "parent_id": "FAQ-024",
+      "category": "使用邊界",
+      "intent": "哪些問題不適合使用LOC詢問",
+      "question": "哪些問題不適合使用LOC詢問？",
+      "aliases": [
+        "LOC可以用來診斷疾病嗎？",
+        "可以抽牌判斷有沒有生病嗎？",
+        "月之符文能代替醫生嗎？",
+        "健康問題可以只靠LOC判斷嗎？"
+      ],
+      "answer": "需要專業判斷的問題不適合只依賴LOC，例如是否生病、疾病診斷及治療方式，都應由專業醫師判斷。LOC可以協助使用者整理想法，但不能取代醫療診斷。",
+      "keywords": [
+        "使用邊界",
+        "健康問題",
+        "疾病診斷",
+        "專業醫師",
+        "不能取代醫療"
+      ],
+      "retrieval_text": "哪些問題不適合使用LOC詢問？ LOC可以用來診斷疾病嗎？ 可以抽牌判斷有沒有生病嗎？ 月之符文能代替醫生嗎？ 健康問題可以只靠LOC判斷嗎？ 使用邊界 健康問題 疾病診斷 專業醫師 不能取代醫療 需要專業判斷的問題不適合只依賴LOC，例如是否生病、疾病診斷及治療方式，都應由專業醫師判斷。LOC可以協助使用者整理想法，但不能取代醫療診斷。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-025-A",
+      "parent_id": "FAQ-025",
+      "category": "多符文解讀",
+      "intent": "多符文語意衝突的處理",
+      "question": "多張符文的意思互相衝突時怎麼辦？",
+      "aliases": [
+        "抽到矛盾的符文怎麼解？",
+        "多張牌不能直接相加嗎？",
+        "符文語意打架時先看什麼？"
+      ],
+      "answer": "應先回到每張符文的核心定義，辨認每張牌在整體問題中扮演的角色，不能只將所有單張解釋直接相加。",
+      "keywords": [
+        "多符文",
+        "語意衝突",
+        "核心定義",
+        "整體角色",
+        "不能直接相加"
+      ],
+      "retrieval_text": "多張符文的意思互相衝突時怎麼辦？ 抽到矛盾的符文怎麼解？ 多張牌不能直接相加嗎？ 符文語意打架時先看什麼？ 多符文 語意衝突 核心定義 整體角色 不能直接相加 應先回到每張符文的核心定義，辨認每張牌在整體問題中扮演的角色，不能只將所有單張解釋直接相加。",
+      "related_ids": [
+        "FAQ-025-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-025-B",
+      "parent_id": "FAQ-025",
+      "category": "多符文解讀",
+      "intent": "抽取順序對多符文解讀的影響",
+      "question": "符文的抽取順序會影響解讀嗎？",
+      "aliases": [
+        "同一組符文換順序會不同嗎？",
+        "前後次序如何改變牌義？",
+        "多張牌為什麼要看排列？"
+      ],
+      "answer": "會。相同符文如果排列順序不同，可能形成不同的原因、轉折及結果，因此需要觀察符文被抽出的前後次序。",
+      "keywords": [
+        "抽取順序",
+        "排列",
+        "原因",
+        "轉折",
+        "結果"
+      ],
+      "retrieval_text": "符文的抽取順序會影響解讀嗎？ 同一組符文換順序會不同嗎？ 前後次序如何改變牌義？ 多張牌為什麼要看排列？ 抽取順序 排列 原因 轉折 結果 會。相同符文如果排列順序不同，可能形成不同的原因、轉折及結果，因此需要觀察符文被抽出的前後次序。",
+      "related_ids": [
+        "FAQ-025-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-026-A",
+      "parent_id": "FAQ-026",
+      "category": "OW3gs",
+      "intent": "OW3gs是什麼",
+      "question": "OW3gs是什麼？",
+      "aliases": [
+        "什麼是OW3gs？",
+        "OW3gs是牌陣嗎？",
+        "LOC的11張抽牌叫什麼？",
+        "OW3gs屬於哪一種抽牌方式？"
+      ],
+      "answer": "OW3gs是LOC1中的特殊11張抽牌演算法，用於處理需要較完整原因分析與行動建議的問題。",
+      "keywords": [
+        "OW3gs",
+        "LOC1",
+        "11張抽牌",
+        "特殊演算法",
+        "原因分析",
+        "行動建議"
+      ],
+      "retrieval_text": "OW3gs是什麼？ 什麼是OW3gs？ OW3gs是牌陣嗎？ LOC的11張抽牌叫什麼？ OW3gs屬於哪一種抽牌方式？ OW3gs LOC1 11張抽牌 特殊演算法 原因分析 行動建議 OW3gs是LOC1中的特殊11張抽牌演算法，用於處理需要較完整原因分析與行動建議的問題。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-027-A",
+      "parent_id": "FAQ-027",
+      "category": "OW3gs",
+      "intent": "OW3gs第1至6張的功能",
+      "question": "OW3gs第1至6張符文代表什麼？",
+      "aliases": [
+        "OW3gs的原因區在哪裡？",
+        "11張牌的前六張怎麼看？",
+        "第1到6張負責分析什麼？"
+      ],
+      "answer": "OW3gs的第1–6張符文呈現事件的原因及相關條件。",
+      "keywords": [
+        "OW3gs",
+        "第1至6張",
+        "原因",
+        "相關條件"
+      ],
+      "retrieval_text": "OW3gs第1至6張符文代表什麼？ OW3gs的原因區在哪裡？ 11張牌的前六張怎麼看？ 第1到6張負責分析什麼？ OW3gs 第1至6張 原因 相關條件 OW3gs的第1–6張符文呈現事件的原因及相關條件。",
+      "related_ids": [
+        "FAQ-027-B",
+        "FAQ-027-C"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-027-B",
+      "parent_id": "FAQ-027",
+      "category": "OW3gs",
+      "intent": "OW3gs第7至11張的功能",
+      "question": "OW3gs第7至11張符文代表什麼？",
+      "aliases": [
+        "OW3gs的建議區在哪裡？",
+        "11張牌的最後五張怎麼看？",
+        "第7到11張負責提供什麼？",
+        "第七張到第十一張是在看什麼？"
+      ],
+      "answer": "OW3gs的第7–11張符文呈現調整方向與建議。",
+      "keywords": [
+        "OW3gs",
+        "第7至11張",
+        "調整方向",
+        "建議"
+      ],
+      "retrieval_text": "OW3gs第7至11張符文代表什麼？ OW3gs的建議區在哪裡？ 11張牌的最後五張怎麼看？ 第7到11張負責提供什麼？ 第七張到第十一張是在看什麼？ OW3gs 第7至11張 調整方向 建議 OW3gs的第7–11張符文呈現調整方向與建議。",
+      "related_ids": [
+        "FAQ-027-A",
+        "FAQ-027-C"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-027-C",
+      "parent_id": "FAQ-027",
+      "category": "OW3gs",
+      "intent": "OW3gs不重複抽取規則",
+      "question": "OW3gs會抽到重複符文嗎？",
+      "aliases": [
+        "11張牌可以出現同一張兩次嗎？",
+        "OW3gs為什麼要求不重複？",
+        "OW3gs抽牌後會放回牌組嗎？"
+      ],
+      "answer": "不會。OW3gs整次抽取使用11張不重複符文，避免同一符文在同一組結果中反覆出現。",
+      "keywords": [
+        "OW3gs",
+        "11張不重複",
+        "不放回",
+        "避免重複"
+      ],
+      "retrieval_text": "OW3gs會抽到重複符文嗎？ 11張牌可以出現同一張兩次嗎？ OW3gs為什麼要求不重複？ OW3gs抽牌後會放回牌組嗎？ OW3gs 11張不重複 不放回 避免重複 不會。OW3gs整次抽取使用11張不重複符文，避免同一符文在同一組結果中反覆出現。",
+      "related_ids": [
+        "FAQ-027-A",
+        "FAQ-027-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-028-A",
+      "parent_id": "FAQ-028",
+      "category": "資料治理",
+      "intent": "66符文最高優先母資料",
+      "question": "66符文的正式定義以哪一份資料為準？",
+      "aliases": [
+        "LOC的母資料是哪一份？",
+        "符文資料衝突時要相信哪個檔案？",
+        "哪份文件是最高優先來源？"
+      ],
+      "answer": "66符文以LunaRune64.xlsx為最高優先母資料。符文名稱、編號、組別及其他正式定義，都應以這份資料為基準。",
+      "keywords": [
+        "LunaRune64.xlsx",
+        "母資料",
+        "最高優先來源",
+        "符文定義"
+      ],
+      "retrieval_text": "66符文的正式定義以哪一份資料為準？ LOC的母資料是哪一份？ 符文資料衝突時要相信哪個檔案？ 哪份文件是最高優先來源？ LunaRune64.xlsx 母資料 最高優先來源 符文定義 66符文以LunaRune64.xlsx為最高優先母資料。符文名稱、編號、組別及其他正式定義，都應以這份資料為基準。",
+      "related_ids": [
+        "FAQ-028-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02",
+        "LunaRune64.xlsx"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-028-B",
+      "parent_id": "FAQ-028",
+      "category": "資料治理",
+      "intent": "衍生資料與母資料的同步規則",
+      "question": "LOC的文件與程式資料如何和母資料同步？",
+      "aliases": [
+        "JavaScript符文資料要以什麼為準？",
+        "其他文件和Excel不一致怎麼辦？",
+        "應用程式資料由哪裡產生？"
+      ],
+      "answer": "其他文件、JavaScript資料及應用程式內容，應由LunaRune64.xlsx母資料同步，或依母資料內容修正。",
+      "keywords": [
+        "資料同步",
+        "JavaScript",
+        "文件",
+        "應用程式",
+        "LunaRune64.xlsx"
+      ],
+      "retrieval_text": "LOC的文件與程式資料如何和母資料同步？ JavaScript符文資料要以什麼為準？ 其他文件和Excel不一致怎麼辦？ 應用程式資料由哪裡產生？ 資料同步 JavaScript 文件 應用程式 LunaRune64.xlsx 其他文件、JavaScript資料及應用程式內容，應由LunaRune64.xlsx母資料同步，或依母資料內容修正。",
+      "related_ids": [
+        "FAQ-028-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02",
+        "LunaRune64.xlsx"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-029-A",
+      "parent_id": "FAQ-029",
+      "category": "Canon治理",
+      "intent": "66符文Canon的固定範圍",
+      "question": "使用者可以新增、刪除或改寫正式符文嗎？",
+      "aliases": [
+        "可以增加第67個符文嗎？",
+        "66符文還會再變動嗎？",
+        "月之符文允許刪除或換位嗎？"
+      ],
+      "answer": "不行。月之符文已固定為66個，符文數量、位置及核心定義均屬於封存Canon，不得自行新增、刪除或改寫。",
+      "keywords": [
+        "固定66符文",
+        "封存Canon",
+        "不可新增",
+        "不可刪除",
+        "不可改寫"
+      ],
+      "retrieval_text": "使用者可以新增、刪除或改寫正式符文嗎？ 可以增加第67個符文嗎？ 66符文還會再變動嗎？ 月之符文允許刪除或換位嗎？ 固定66符文 封存Canon 不可新增 不可刪除 不可改寫 不行。月之符文已固定為66個，符文數量、位置及核心定義均屬於封存Canon，不得自行新增、刪除或改寫。",
+      "related_ids": [
+        "FAQ-029-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-029-B",
+      "parent_id": "FAQ-029",
+      "category": "Canon治理",
+      "intent": "個人解讀與正式Canon的邊界",
+      "question": "使用者可以發展自己的符文解讀方式嗎？",
+      "aliases": [
+        "可以建立個人牌陣嗎？",
+        "個人解讀會改變Canon嗎？",
+        "能不能自行延伸月之符文的使用方法？"
+      ],
+      "answer": "可以發展個人的解讀與應用方式，但這些延伸不能改變66符文的正式數量、位置及核心定義。",
+      "keywords": [
+        "個人解讀",
+        "應用延伸",
+        "個人牌陣",
+        "不改變Canon"
+      ],
+      "retrieval_text": "使用者可以發展自己的符文解讀方式嗎？ 可以建立個人牌陣嗎？ 個人解讀會改變Canon嗎？ 能不能自行延伸月之符文的使用方法？ 個人解讀 應用延伸 個人牌陣 不改變Canon 可以發展個人的解讀與應用方式，但這些延伸不能改變66符文的正式數量、位置及核心定義。",
+      "related_ids": [
+        "FAQ-029-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-030-A",
+      "parent_id": "FAQ-030",
+      "category": "LOC2桌遊",
+      "intent": "LOC2使用個人牌組的原因",
+      "question": "為什麼LOC2每位玩家都使用自己的符文牌組？",
+      "aliases": [
+        "LOC2可以把大家的牌混在一起嗎？",
+        "為什麼每位玩家都要有一副66符文？",
+        "玩家可以從別人的牌庫抽牌嗎？"
+      ],
+      "answer": "每位玩家只從自己的66符文牌組抽牌，主要是為了避免洗牌、回收及辨認牌卡時產生混亂，並讓每位玩家始終保有完整的選擇空間。",
+      "keywords": [
+        "LOC2",
+        "個人牌組",
+        "避免混牌",
+        "完整選擇",
+        "自己抽牌"
+      ],
+      "retrieval_text": "為什麼LOC2每位玩家都使用自己的符文牌組？ LOC2可以把大家的牌混在一起嗎？ 為什麼每位玩家都要有一副66符文？ 玩家可以從別人的牌庫抽牌嗎？ LOC2 個人牌組 避免混牌 完整選擇 自己抽牌 每位玩家只從自己的66符文牌組抽牌，主要是為了避免洗牌、回收及辨認牌卡時產生混亂，並讓每位玩家始終保有完整的選擇空間。",
+      "related_ids": [
+        "FAQ-030-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-030-B",
+      "parent_id": "FAQ-030",
+      "category": "LOC2桌遊",
+      "intent": "LOC2的牌卡所有權規則",
+      "question": "LOC2的符文卡會永久轉移所有權嗎？",
+      "aliases": [
+        "LOC2可以永久偷走別人的牌嗎？",
+        "遊戲中自己的牌會變少嗎？",
+        "符文可以被封印或暫時失效嗎？"
+      ],
+      "answer": "不會。符文可以受到查看、棄置、封印或暫時失效等影響，但不會永久轉移所有權，以免玩家牌組持續減少而降低遊戲樂趣。",
+      "keywords": [
+        "牌卡所有權",
+        "不可永久奪取",
+        "封印",
+        "暫時失效",
+        "遊戲樂趣"
+      ],
+      "retrieval_text": "LOC2的符文卡會永久轉移所有權嗎？ LOC2可以永久偷走別人的牌嗎？ 遊戲中自己的牌會變少嗎？ 符文可以被封印或暫時失效嗎？ 牌卡所有權 不可永久奪取 封印 暫時失效 遊戲樂趣 不會。符文可以受到查看、棄置、封印或暫時失效等影響，但不會永久轉移所有權，以免玩家牌組持續減少而降低遊戲樂趣。",
+      "related_ids": [
+        "FAQ-030-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-031-A",
+      "parent_id": "FAQ-031",
+      "category": "LOC3音樂",
+      "intent": "LOC3是什麼",
+      "question": "LOC3是什麼？",
+      "aliases": [
+        "LOC3主要做什麼？",
+        "LOC3是不是音樂創作？",
+        "Music Distribution是什麼？",
+        "LOC有哪些歌曲內容？"
+      ],
+      "answer": "LOC3是以中文歌曲為主的多媒體個人創作分發，將文字、情緒與音樂結合，形成LOC的音樂應用。",
+      "keywords": [
+        "LOC3",
+        "Music Distribution",
+        "中文歌曲",
+        "個人創作",
+        "多媒體",
+        "音樂"
+      ],
+      "retrieval_text": "LOC3是什麼？ LOC3主要做什麼？ LOC3是不是音樂創作？ Music Distribution是什麼？ LOC有哪些歌曲內容？ LOC3 Music Distribution 中文歌曲 個人創作 多媒體 音樂 LOC3是以中文歌曲為主的多媒體個人創作分發，將文字、情緒與音樂結合，形成LOC的音樂應用。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-032-A",
+      "parent_id": "FAQ-032",
+      "category": "LOC3音樂",
+      "intent": "LOC3如何將66符文運用在音樂創作中",
+      "question": "LOC3如何將66符文運用在音樂創作中？",
+      "aliases": [
+        "符文和歌曲有什麼關係？",
+        "抽到符文後為什麼要聽歌？",
+        "LOC3如何用音樂舒緩情緒？",
+        "66符文怎麼連結到音樂？"
+      ],
+      "answer": "當使用者抽到某些符文時，可以透過符合符文語意及當下情緒的歌曲，協助整理或舒緩情緒。LOC3最初便是由這項想法發展而來。",
+      "keywords": [
+        "66符文",
+        "音樂推薦",
+        "符文語意",
+        "情緒舒緩",
+        "歌曲"
+      ],
+      "retrieval_text": "LOC3如何將66符文運用在音樂創作中？ 符文和歌曲有什麼關係？ 抽到符文後為什麼要聽歌？ LOC3如何用音樂舒緩情緒？ 66符文怎麼連結到音樂？ 66符文 音樂推薦 符文語意 情緒舒緩 歌曲 當使用者抽到某些符文時，可以透過符合符文語意及當下情緒的歌曲，協助整理或舒緩情緒。LOC3最初便是由這項想法發展而來。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-033-A",
+      "parent_id": "FAQ-033",
+      "category": "LOC3音樂",
+      "intent": "抽卡歌曲的創作方式",
+      "question": "什麼是LOC3的抽卡歌曲？",
+      "aliases": [
+        "抽卡歌曲是怎麼創作的？",
+        "可以把抽牌結果寫成歌嗎？",
+        "符文寫歌是什麼？"
+      ],
+      "answer": "抽卡歌曲是以實際抽牌結果作為歌曲主題，先解讀符文呈現的情況，再創作符合該情境的歌詞。",
+      "keywords": [
+        "LOC3",
+        "抽卡歌曲",
+        "符文寫歌",
+        "抽牌結果",
+        "歌詞"
+      ],
+      "retrieval_text": "什麼是LOC3的抽卡歌曲？ 抽卡歌曲是怎麼創作的？ 可以把抽牌結果寫成歌嗎？ 符文寫歌是什麼？ LOC3 抽卡歌曲 符文寫歌 抽牌結果 歌詞 抽卡歌曲是以實際抽牌結果作為歌曲主題，先解讀符文呈現的情況，再創作符合該情境的歌詞。",
+      "related_ids": [
+        "FAQ-033-B"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-033-B",
+      "parent_id": "FAQ-033",
+      "category": "LOC3音樂",
+      "intent": "抽卡歌曲在解讀中的作用",
+      "question": "抽卡歌曲會取代符文解讀嗎？",
+      "aliases": [
+        "歌曲就是抽牌答案嗎？",
+        "抽卡歌曲如何佐證解牌？",
+        "為什麼要用音樂詮釋抽牌結果？"
+      ],
+      "answer": "不會。抽卡歌曲是在完成符文解讀後，透過音樂與歌詞對抽牌結果提供另一種詮釋與佐證。",
+      "keywords": [
+        "抽卡歌曲",
+        "不取代解牌",
+        "音樂詮釋",
+        "歌詞",
+        "佐證"
+      ],
+      "retrieval_text": "抽卡歌曲會取代符文解讀嗎？ 歌曲就是抽牌答案嗎？ 抽卡歌曲如何佐證解牌？ 為什麼要用音樂詮釋抽牌結果？ 抽卡歌曲 不取代解牌 音樂詮釋 歌詞 佐證 不會。抽卡歌曲是在完成符文解讀後，透過音樂與歌詞對抽牌結果提供另一種詮釋與佐證。",
+      "related_ids": [
+        "FAQ-033-A"
+      ],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-034-A",
+      "parent_id": "FAQ-034",
+      "category": "LOC3音樂",
+      "intent": "LOC3的所有歌曲都是抽符文創作的嗎",
+      "question": "LOC3的所有歌曲都是抽符文創作的嗎？",
+      "aliases": [
+        "每一首LOC3歌曲都有抽牌嗎？",
+        "LOC3只有抽卡歌曲嗎？",
+        "LOC3歌曲還有哪些創作來源？",
+        "沒有抽符文也能創作LOC3歌曲嗎？"
+      ],
+      "answer": "不是。只有少部分歌曲直接以抽牌結果作為創作條件，其他歌曲則來自個人經驗、情緒、人生階段及不同創作主題。",
+      "keywords": [
+        "抽卡歌曲",
+        "個人經驗",
+        "情緒",
+        "人生階段",
+        "創作主題"
+      ],
+      "retrieval_text": "LOC3的所有歌曲都是抽符文創作的嗎？ 每一首LOC3歌曲都有抽牌嗎？ LOC3只有抽卡歌曲嗎？ LOC3歌曲還有哪些創作來源？ 沒有抽符文也能創作LOC3歌曲嗎？ 抽卡歌曲 個人經驗 情緒 人生階段 創作主題 不是。只有少部分歌曲直接以抽牌結果作為創作條件，其他歌曲則來自個人經驗、情緒、人生階段及不同創作主題。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-035-A",
+      "parent_id": "FAQ-035",
+      "category": "LOC3音樂",
+      "intent": "LOC3目前已經完成多少音樂作品",
+      "question": "LOC3目前已經完成多少音樂作品？",
+      "aliases": [
+        "LOC3現在有幾首歌？",
+        "LOC3累積多少不重複歌詞？",
+        "LOC3還會繼續更新嗎？",
+        "目前的LOC3音樂規模多大？"
+      ],
+      "answer": "LOC3目前約有500首歌詞內容不重複的歌曲，並且仍持續創作與更新。",
+      "keywords": [
+        "500首",
+        "不重複歌詞",
+        "作品數量",
+        "持續更新",
+        "LOC3進度"
+      ],
+      "retrieval_text": "LOC3目前已經完成多少音樂作品？ LOC3現在有幾首歌？ LOC3累積多少不重複歌詞？ LOC3還會繼續更新嗎？ 目前的LOC3音樂規模多大？ 500首 不重複歌詞 作品數量 持續更新 LOC3進度 LOC3目前約有500首歌詞內容不重複的歌曲，並且仍持續創作與更新。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-036-A",
+      "parent_id": "FAQ-036",
+      "category": "LOC4文字",
+      "intent": "LOC4是什麼",
+      "question": "LOC4是什麼？",
+      "aliases": [
+        "LOC4主要做什麼？",
+        "Writing Distribution是什麼？",
+        "LOC的文字基底在哪裡？",
+        "LOC4是不是小說分發？"
+      ],
+      "answer": "LOC4是LOC的文字與敘事基底，承接小說、生活隨筆及其他文字創作，也是月之符文語意最早形成的來源之一。",
+      "keywords": [
+        "LOC4",
+        "Writing Distribution",
+        "文字基底",
+        "敘事",
+        "小說",
+        "生活隨筆"
+      ],
+      "retrieval_text": "LOC4是什麼？ LOC4主要做什麼？ Writing Distribution是什麼？ LOC的文字基底在哪裡？ LOC4是不是小說分發？ LOC4 Writing Distribution 文字基底 敘事 小說 生活隨筆 LOC4是LOC的文字與敘事基底，承接小說、生活隨筆及其他文字創作，也是月之符文語意最早形成的來源之一。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-037-A",
+      "parent_id": "FAQ-037",
+      "category": "LOC4文字",
+      "intent": "LOC4目前包含哪些文字作品",
+      "question": "LOC4目前包含哪些文字作品？",
+      "aliases": [
+        "LOC4有哪些小說？",
+        "月語者是什麼作品？",
+        "LOC4除了小說還有什麼？",
+        "LOC4的文字內容有哪些？"
+      ],
+      "answer": "LOC4包含約22萬字的長篇小說《月語者》，月之符文以其文字與敘事內容為早期基底。此外，LOC4也包含數篇個人創作小說及生活隨筆。",
+      "keywords": [
+        "月語者",
+        "22萬字",
+        "長篇小說",
+        "個人小說",
+        "生活隨筆"
+      ],
+      "retrieval_text": "LOC4目前包含哪些文字作品？ LOC4有哪些小說？ 月語者是什麼作品？ LOC4除了小說還有什麼？ LOC4的文字內容有哪些？ 月語者 22萬字 長篇小說 個人小說 生活隨筆 LOC4包含約22萬字的長篇小說《月語者》，月之符文以其文字與敘事內容為早期基底。此外，LOC4也包含數篇個人創作小說及生活隨筆。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-038-A",
+      "parent_id": "FAQ-038",
+      "category": "LOC4文字",
+      "intent": "LOC4的小說與LOC語言系統有什麼關係",
+      "question": "LOC4的小說與LOC語言系統有什麼關係？",
+      "aliases": [
+        "小說如何協助解釋符文？",
+        "月語者和月之符文有什麼關係？",
+        "LOC4文字能用來解牌嗎？",
+        "為什麼符文需要敘事情境？"
+      ],
+      "answer": "LOC的符文並非只有簡短定義。當抽到某些符文時，LOC4中的小說與其他文字可以提供相應的敘事情境，協助使用者理解牌面所呈現的狀態。",
+      "keywords": [
+        "小說",
+        "符文解釋",
+        "敘事情境",
+        "牌面",
+        "月語者"
+      ],
+      "retrieval_text": "LOC4的小說與LOC語言系統有什麼關係？ 小說如何協助解釋符文？ 月語者和月之符文有什麼關係？ LOC4文字能用來解牌嗎？ 為什麼符文需要敘事情境？ 小說 符文解釋 敘事情境 牌面 月語者 LOC的符文並非只有簡短定義。當抽到某些符文時，LOC4中的小說與其他文字可以提供相應的敘事情境，協助使用者理解牌面所呈現的狀態。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-039-A",
+      "parent_id": "FAQ-039",
+      "category": "LOC4文字",
+      "intent": "66符文如何運用在小說與文字創作中",
+      "question": "66符文如何運用在小說與文字創作中？",
+      "aliases": [
+        "月語者如何使用符文？",
+        "小說章節會先抽牌嗎？",
+        "三張符文如何變成小說主題？",
+        "符文可以用來規劃故事情節嗎？"
+      ],
+      "answer": "《月語者》的每一個章節都會抽取三張符文，作為該章的創作主題。符文提供語意方向，再由小說將三張符文之間的關係發展成情節與文字。",
+      "keywords": [
+        "月語者",
+        "每章三張符文",
+        "創作主題",
+        "語意方向",
+        "故事情節"
+      ],
+      "retrieval_text": "66符文如何運用在小說與文字創作中？ 月語者如何使用符文？ 小說章節會先抽牌嗎？ 三張符文如何變成小說主題？ 符文可以用來規劃故事情節嗎？ 月語者 每章三張符文 創作主題 語意方向 故事情節 《月語者》的每一個章節都會抽取三張符文，作為該章的創作主題。符文提供語意方向，再由小說將三張符文之間的關係發展成情節與文字。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-040-A",
+      "parent_id": "FAQ-040",
+      "category": "LOC4文字",
+      "intent": "沒有讀過小說的人，也能理解和使用LOC嗎",
+      "question": "沒有讀過小說的人，也能理解和使用LOC嗎？",
+      "aliases": [
+        "使用LOC前一定要讀月語者嗎？",
+        "沒看過小說能抽月之符文嗎？",
+        "月語者是LOC的必讀教材嗎？",
+        "不理解小說會影響使用LOC嗎？"
+      ],
+      "answer": "可以。LOC最早從小說及文字創作中發展出來，但目前已經整理成可獨立使用的語言系統。小說能提供更完整的敘事背景，但不是使用LOC的必要條件。",
+      "keywords": [
+        "月語者",
+        "不必先讀小說",
+        "獨立使用",
+        "敘事背景",
+        "初學者"
+      ],
+      "retrieval_text": "沒有讀過小說的人，也能理解和使用LOC嗎？ 使用LOC前一定要讀月語者嗎？ 沒看過小說能抽月之符文嗎？ 月語者是LOC的必讀教材嗎？ 不理解小說會影響使用LOC嗎？ 月語者 不必先讀小說 獨立使用 敘事背景 初學者 可以。LOC最早從小說及文字創作中發展出來，但目前已經整理成可獨立使用的語言系統。小說能提供更完整的敘事背景，但不是使用LOC的必要條件。",
+      "related_ids": [],
+      "source_refs": [
+        "creator-confirmed:2026-09-02"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    }
+  ]
+}
