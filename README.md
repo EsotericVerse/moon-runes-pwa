@@ -23,7 +23,7 @@ LOC 最初以正方形符文紙牌呈現，後來逐步發展為管理符文、�
 - 🧩 **66 符文固定骨架**：1–64 核心符文，加上 65「玄」與 66「命」
 - 🔎 **符文資料查詢**：依群組與符文名稱瀏覽卡面及相關資料
 - 🧠 **結構化建議實驗**：Python／FastAPI 測試符文資料、組合及規則式建議
-- 📱 **PWA 支援**：可安裝至桌面或行動裝置，並提供離線快取
+- 📱 **PWA 已完成**：自 2025 年 5 月起具備安裝、桌面／主畫面啟動與離線快取
 - 🎨 **響應式設計**：支援桌機與行動裝置顯示
 - 📚 **Canon 與母資料治理**：文件、資料庫、衍生資料與應用分層管理
 
@@ -206,9 +206,13 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 
 ### PWA 功能
 
-- 透過 Service Worker 快取關鍵資源
+PWA 與 RWD 架構已於 2025 年 5 月完成，現行版本包含：
+
+- 首頁載入後主動註冊 Service Worker
+- 透過 `moon-runes-pwa-v7` 快取關鍵資源
+- 更新時保留現行快取並清除舊版快取
 - 支援新增至桌面／主畫面
-- 提供 192×192 與 512×512 圖示
+- 提供 192×192、512×512 與 Apple Touch Icon
 - 以 standalone 模式顯示
 - 支援響應式桌機與行動版介面
 
@@ -300,16 +304,23 @@ moon-runes-pwa/
 │       ├── training_data.json
 │       └── 其他測試腳本與實驗資料
 ├── requirements.txt
-├── render.yaml
+├── render.yaml                  # 指向 card_api/ 的 Render Blueprint
 ├── 📚 Canon、語法與母資料
 │   ├── LOC_Canon_0.5r.docx
 │   ├── 64LunaRune.docx
 │   ├── LunarRunesCardCut.pdf
 │   └── LunaRune64.xlsx
-├── 📱 PWA 配置
+├── 📱 PWA 與部署配置
 │   ├── manifest.json
 │   ├── service-worker.js
-│   └── favicon.ico
+│   ├── favicon.ico
+│   ├── apple-touch-icon.png
+│   └── CNAME
+├── 🗂️ 其他現存資料（待個別整理）
+│   ├── LOC_2026.docx
+│   ├── all.xlsx
+│   ├── temp.json
+│   └── mp3/
 └── README.md
 ```
 
@@ -326,6 +337,8 @@ moon-runes-pwa/
 - 農曆計算：`solarlunar`
 
 ### 作用中 API（`card_api/`）
+
+Render Blueprint 已指向 `card_api/`，使用 `uvicorn main:app` 啟動 FastAPI。
 
 - Python
 - FastAPI

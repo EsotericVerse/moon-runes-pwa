@@ -1,9 +1,7 @@
 services:
   - type: web
     name: fortune-api
-    env: python
-    buildCommand: "cd fortune_api && pip install -r requirements.txt"
-    startCommand: "cd fortune_api && python api.py"
-    envVars:
-      - key: FLASK_ENV
-        value: production
+    runtime: python
+    rootDir: card_api
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
