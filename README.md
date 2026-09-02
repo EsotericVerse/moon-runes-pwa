@@ -1,6 +1,6 @@
 # 🌕 LOC｜月典（Luna Codex｜月之符文）PWA
 
-由 [月語之境工作室（EsotericVerse）](mailto:esotericverse.xy@gmail.com) 建立的月之符文語言系統與 PWA 實作。
+由 [秘藝文域（EsotericVerse Studio）](mailto:esotericverse.xy@gmail.com) 建立的月之符文語言系統與 PWA 實作。
 
 本專案以 HTML、CSS、原生 JavaScript 與 Python／FastAPI 組成，可透過 GitHub Pages 提供前端服務，並支援漸進式網頁應用程式（PWA）。
 
@@ -459,11 +459,12 @@ OW3gs 是作者的方法論與個人規則層，不等同於 LOC 的全部 Canon
 
 ## 📞 聯絡資訊
 
-**月語之境工作室（EsotericVerse）**
+**秘藝文域（EsotericVerse Studio）**
 
 - Email：[esotericverse.xy@gmail.com](mailto:esotericverse.xy@gmail.com)
 - LOC：<https://loc.lo3rwang.cc/>
 - 作者網站：<https://lo3rwang.cc/>
+- 社群帳號：[@lo3rwang](https://lo3rwang.cc/)
 - GitHub：[@EsotericVerse](https://github.com/EsotericVerse)
 
 ---
@@ -474,7 +475,8 @@ OW3gs 是作者的方法論與個人規則層，不等同於 LOC 的全部 Canon
 
 **OW3gs made by OscarWang / LunarCodex / 王政德**
 
-唯一作者：**Lucas Oscar Wang 政德**
+唯一作者：**Lucas Oscar Wang 政德**  
+**Language Systems Governance Architect (LOC) · Wordsmith · Moon Resonator**
 
 ---
 
