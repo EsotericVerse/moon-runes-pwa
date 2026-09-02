@@ -413,7 +413,7 @@ OW3gs 是作者的方法論與個人規則層，不等同於 LOC 的全部 Canon
 - Email：[esotericverse.xy@gmail.com](mailto:esotericverse.xy@gmail.com)
 - LOC：<https://loc.lo3rwang.cc/>
 - 作者網站：<https://lo3rwang.cc/>
-- GitHub：[@lo3rwang](https://github.com/lo3rwang)
+- GitHub：[@EsotericVerse](https://github.com/EsotericVerse)
 
 ---
 
