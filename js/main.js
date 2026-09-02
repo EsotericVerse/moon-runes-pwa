@@ -3,7 +3,7 @@ function getLunarPhase(day) {
   if (day >= 8 && day <= 14) return "上弦";
   if (day >= 15 && day <= 21) return "滿月";
   if (day >= 22 && day <= 28) return "下弦";
-   if (day >= 29 && day <= 30) return "空亡";
+  if (day >= 29 && day <= 30) return "空亡";
   return "未知";
 }
 
@@ -21,7 +21,6 @@ const realPhase = detectRealPhase();
 sessionStorage.setItem("realPhase", realPhase);
 
 window.addEventListener("DOMContentLoaded", () => {
-  const image = document.getElementById("rune-image");
   const card = document.getElementById("rune-card");
   const moonText = document.getElementById("moon-phase-index");
 
@@ -29,8 +28,20 @@ window.addEventListener("DOMContentLoaded", () => {
     moonText.textContent = `月相：無 / 真實月相：${realPhase}`;
   }
 
-  // 點擊事件：跳轉到占卜結果頁面
-  card.addEventListener("click", () => {
-    window.location.href = "result.html"; // 當前頁面跳轉到 result.html
-  });
+  if (card) {
+    card.addEventListener("click", () => {
+      window.location.href = "result.html";
+    });
+  }
 });
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("/service-worker.js");
+      console.info("Service Worker registered:", registration.scope);
+    } catch (error) {
+      console.error("Service Worker registration failed:", error);
+    }
+  });
+}
