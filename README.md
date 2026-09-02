@@ -22,6 +22,24 @@ LOC 的核心不是預言未來，而是讓語言、作品與人生選擇擁有�
 
 ---
 
+## 核心文件與資料檔案
+
+| 檔案 | 定位與用途 |
+|---|---|
+| [`64LunaRune.docx`](./64LunaRune.docx) | **命運句語法圖鑑**：整理符文四向語意、命運句與相關語法資料 |
+| [`LOC_Canon_0.5r.docx`](./LOC_Canon_0.5r.docx) | **LOC Canon 0.5r**：現行系統定義、固定骨架與治理規則 |
+| [`LunarRunesCardCut.pdf`](./LunarRunesCardCut.pdf) | **實際紙本卡片列印檔案**：供月之符文正方形卡牌輸出與裁切使用 |
+| [`LunaRune64.xlsx`](./LunaRune64.xlsx) | **符文資料庫／最高優先母資料**：符文名稱、分類、定義、月相與四向語意的 Single Source of Truth |
+
+文件彼此分工如下：
+
+- `LOC_Canon_0.5r.docx` 定義系統規則
+- `LunaRune64.xlsx` 保存結構化符文母資料
+- `64LunaRune.docx` 說明命運句與語法內容
+- `LunarRunesCardCut.pdf` 將系統輸出為可實際使用的紙本卡牌
+
+---
+
 ## 66 符文固定骨架
 
 LOC 的正式符文骨架共 66 符文，數量、編號與位置固定，不再新增、刪除或調換。
@@ -159,6 +177,11 @@ OW3gs 是作者的方法論與個人規則層，不等同於 LOC 的全部 Canon
 
 ```text
 moon-runes-pwa/
+├── README.md
+├── LOC_Canon_0.5r.docx
+├── 64LunaRune.docx
+├── LunarRunesCardCut.pdf
+├── LunaRune64.xlsx
 ├── index.html
 ├── list.html
 ├── daily.html
@@ -167,15 +190,13 @@ moon-runes-pwa/
 ├── 5card.html
 ├── result.html
 ├── fate.html
-├── LunaRune64.xlsx
 ├── 64images/
 ├── card_api/
 ├── engine/
 ├── js/
 ├── css/
 ├── manifest.json
-├── service-worker.js
-└── README.md
+└── service-worker.js
 ```
 
 ---
