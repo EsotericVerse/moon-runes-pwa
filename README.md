@@ -7,8 +7,8 @@
 - **LOC＝月典**
 - **Luna Codex＝月之符文**
 - **現行 Canon：0.5r**
-- **公開網站：<https://esotericverse.github.io/moon-runes-pwa/>**
-- **符文查詢：<https://esotericverse.github.io/moon-runes-pwa/list.html>**
+- **公開網站：<https://loc.lo3rwang.cc/>**
+- **符文查詢：<https://loc.lo3rwang.cc/list.html>**
 
 LOC 最初以正方形符文紙牌呈現，後來逐步發展為管理符文、創作、跨媒體表達、治理與文字結構的語言系統。
 
@@ -92,7 +92,7 @@ LOC 的正式符文骨架共 66 符文，數量、編號與位置固定，不再
 - 不構成 LOC0
 - 可保留於 Canon、索引與作者方法論說明中
 
-完整符文內容可於 [LOC 符文查詢](https://esotericverse.github.io/moon-runes-pwa/list.html) 瀏覽。
+完整符文內容可於 [LOC 符文查詢](https://loc.lo3rwang.cc/list.html) 瀏覽。
 
 ---
 
@@ -314,7 +314,8 @@ moon-runes-pwa/
 │   ├── manifest.json
 │   ├── service-worker.js
 │   ├── favicon.ico
-│   └── apple-touch-icon.png
+│   ├── apple-touch-icon.png
+│   └── CNAME
 ├── 🗂️ 其他現存資料（待個別整理）
 │   ├── LOC_2026.docx
 │   ├── all.xlsx
@@ -410,8 +411,9 @@ OW3gs 是作者的方法論與個人規則層，不等同於 LOC 的全部 Canon
 **月語之境工作室（EsotericVerse）**
 
 - Email：[esotericverse.xy@gmail.com](mailto:esotericverse.xy@gmail.com)
-- LOC：<https://esotericverse.github.io/moon-runes-pwa/>
-- GitHub：[EsotericVerse/moon-runes-pwa](https://github.com/EsotericVerse/moon-runes-pwa)
+- LOC：<https://loc.lo3rwang.cc/>
+- 作者網站：<https://lo3rwang.cc/>
+- GitHub：[@lo3rwang](https://github.com/lo3rwang)
 
 ---
 

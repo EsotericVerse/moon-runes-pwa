@@ -1,5 +1,4 @@
 const CACHE_NAME = "moon-runes-pwa-v7";
-const APP_BASE = "/moon-runes-pwa";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -31,7 +30,7 @@ const ASSETS_TO_CACHE = [
   "/apple-touch-icon.png",
   "/manifest.json",
   "/favicon.ico"
-].map((path) => `${APP_BASE}${path}`);
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
