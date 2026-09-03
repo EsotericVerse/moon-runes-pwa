@@ -118,6 +118,18 @@ class LOC3SearchEngine:
                 works.extend(shard.get("works", []))
         if not isinstance(works, list) or not works:
             raise ValueError("LOC3 dataset must contain a non-empty works array")
+
+        # Media channels are a version-level overlay, not lyric-vector content.
+        media_path = dataset_path.parent / "LOC3_MEDIA_LINKS_v0.1.json"
+        if media_path.exists():
+            media = json.loads(media_path.read_text(encoding="utf-8"))
+            by_song_id = {item["song_id"]: item for item in media.get("items", [])}
+            for work in works:
+                for version in work.get("versions", []):
+                    item = by_song_id.get(version.get("song_id"))
+                    if item:
+                        version["ig_preview_url"] = item.get("ig_preview_url", "")
+                        version["suno_share_url"] = item.get("suno_share_url", "")
         ids = [work.get("work_id") for work in works]
         hashes = [work.get("lyrics_hash") for work in works]
         if len(ids) != len(set(ids)) or len(hashes) != len(set(hashes)):

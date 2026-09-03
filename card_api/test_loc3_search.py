@@ -7,6 +7,7 @@ from loc3_search import LOC3SearchEngine
 
 ROOT = Path(__file__).resolve().parent
 DATASET = ROOT / "data" / "LOC3_LYRICS_SEARCH_v0.1.json"
+MEDIA_DATASET = ROOT / "data" / "LOC3_MEDIA_LINKS_v0.1.json"
 
 
 class LOC3DatasetTests(unittest.TestCase):
@@ -18,9 +19,9 @@ class LOC3DatasetTests(unittest.TestCase):
 
     def test_dataset_is_unique_lyrics_work_layer(self):
         works = self.works
-        self.assertEqual(402, len(works))
-        self.assertEqual(402, len({work["lyrics_hash"] for work in works}))
-        self.assertEqual(529, sum(len(work["versions"]) for work in works))
+        self.assertEqual(403, len(works))
+        self.assertEqual(403, len({work["lyrics_hash"] for work in works}))
+        self.assertEqual(530, sum(len(work["versions"]) for work in works))
 
     def test_excluded_period_and_languages_are_absent(self):
         self.assertNotIn("P1", {work["period"] for work in self.works})
@@ -73,6 +74,31 @@ class LOC3DatasetTests(unittest.TestCase):
         self.assertTrue(all(work["period"] == "P8" for work in new_works))
         self.assertTrue(all(work["era_name"] == "治理自己" for work in new_works))
         self.assertTrue(all("6.治理自己" in work["playlists"] for work in new_works))
+
+    def test_reels_catalog_is_version_specific_and_metrics_are_separate(self):
+        media = json.loads(MEDIA_DATASET.read_text(encoding="utf-8"))
+        self.assertEqual(19, media["dataset"]["reels_count"])
+        self.assertEqual(16, media["dataset"]["linked_count"])
+        self.assertEqual(3, media["dataset"]["pending_count"])
+        self.assertTrue(all(item["ig_plays"] is None for item in media["items"]))
+        linked_ids = {
+            version["song_id"]
+            for work in self.works
+            for version in work["versions"]
+            if version.get("ig_preview_url")
+        }
+        expected_ids = {
+            item["song_id"] for item in media["items"]
+            if item["linked_to_semantic_index"]
+        }
+        self.assertEqual(expected_ids, linked_ids)
+
+    def test_life_platform_song_is_searchable_and_has_reels_preview(self):
+        results = self.engine.search("人生像月台，還不知道下一班車要往哪裡", top_k=5)
+        life_platform = next(item for item in results if item.work["title"] == "人生月台")
+        self.assertEqual("P5", life_platform.work["period"])
+        self.assertEqual("人生月台", life_platform.work["era_name"])
+        self.assertTrue(life_platform.work["versions"][0]["ig_preview_url"])
 
 
 if __name__ == "__main__":
