@@ -263,6 +263,7 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 
 - `fate.html`：替代風格的單卡／命運結果呈現
 - `list.html`：依群組及符文查詢完整資料
 - [`faq.html`](https://loc.lo3rwang.cc/faq.html)：LOC7 FAQ 語意查詢介面
+- [`loc3.html`](https://loc.lo3rwang.cc/loc3.html)：LOC3 歌詞語意搜尋；同詞旋律合併於同一作品結果
 
 ### Python／FastAPI API
 
@@ -273,6 +274,7 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 
 - 單卡與多卡組合資料
 - 占卜結果與建議規則處理
 - LOC7 FAQ 語意檢索與依據式回答（`/faq/search`、`/faq/ask`）
+- LOC3 歌詞作品層檢索與同詞版本推薦（`/loc3/search`、`/loc3/facets`）
 
 ### 語意引擎實驗
 
