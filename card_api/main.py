@@ -60,7 +60,7 @@ RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES.get("runes", []),
 RUNE_SINGLE_MAP = {r.get("符文名稱", f"rune_{i}"): r for i, r in enumerate(RUNE_SINGLE)}
 
 # LOC7 FAQ 資料（全局，一次載入）
-FAQ_DATA_PATH = Path(__file__).resolve().parent / "data" / "LOC_FAQ_RAG_v0.1.json"
+FAQ_DATA_PATH = Path(__file__).resolve().parent / "data" / "LOC_FAQ_RAG_v0.2.json"
 try:
     FAQ_SEARCHER = FAQSearchEngine(FAQ_DATA_PATH)
     FAQ_LOAD_ERROR = None
