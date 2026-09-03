@@ -18,9 +18,9 @@ class LOC3DatasetTests(unittest.TestCase):
 
     def test_dataset_is_unique_lyrics_work_layer(self):
         works = self.works
-        self.assertEqual(400, len(works))
-        self.assertEqual(400, len({work["lyrics_hash"] for work in works}))
-        self.assertEqual(527, sum(len(work["versions"]) for work in works))
+        self.assertEqual(402, len(works))
+        self.assertEqual(402, len({work["lyrics_hash"] for work in works}))
+        self.assertEqual(529, sum(len(work["versions"]) for work in works))
 
     def test_excluded_period_and_languages_are_absent(self):
         self.assertNotIn("P1", {work["period"] for work in self.works})
@@ -65,6 +65,14 @@ class LOC3DatasetTests(unittest.TestCase):
         facets = self.engine.facets()
         self.assertTrue(facets["periods"])
         self.assertIn("playlists", facets)
+
+    def test_self_governance_era_and_two_new_songs_are_loaded(self):
+        titles = {work["title"] for work in self.works}
+        self.assertTrue({"白晝也有月光", "清空舊航線"}.issubset(titles))
+        new_works = [work for work in self.works if work["title"] in titles & {"白晝也有月光", "清空舊航線"}]
+        self.assertTrue(all(work["period"] == "P8" for work in new_works))
+        self.assertTrue(all(work["era_name"] == "治理自己" for work in new_works))
+        self.assertTrue(all("6.治理自己" in work["playlists"] for work in new_works))
 
 
 if __name__ == "__main__":
