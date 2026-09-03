@@ -11,6 +11,17 @@ from typing import Any
 from openpyxl import load_workbook
 
 
+ACTIVE_ERA = {
+    "period": "P8",
+    "code": "ERA_SELF_GOVERNANCE",
+    "name": "治理自己",
+    "start_date": "2026-09-01",
+    "end_date": None,
+    "playlist": "6.治理自己",
+    "description": "自由之後的自我治理：清點未竟之事、建立界線、完成取捨與收尾，並主動選擇下一段航向。",
+}
+
+
 def text(value: Any) -> str:
     return "" if value is None else str(value).strip()
 
@@ -157,13 +168,14 @@ def build(source: Path) -> dict[str, Any]:
     return {
         "dataset": {
             "name": "LOC3 Lyrics Search",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "source": source.name,
             "language_scope": "zh-Hant",
             "unit": "unique_lyrics_work",
             "excluded": ["P1", "non_zh_Hant", "script_pending", "not_searchable"],
             "work_count": len(output_works),
             "version_count": sum(len(item["versions"]) for item in output_works),
+            "active_era": ACTIVE_ERA,
         },
         "works": output_works,
     }
