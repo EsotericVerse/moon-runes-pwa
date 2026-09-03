@@ -21,6 +21,26 @@ ACTIVE_ERA = {
     "description": "自由之後的自我治理：清點未竟之事、建立界線、完成取捨與收尾，並主動選擇下一段航向。",
 }
 
+PERIOD_DEFINITIONS = [
+    {"code": "P2", "label": "P2｜重啟與格式形成", "order": 2},
+    {"code": "P3", "label": "P3｜微月光與關係敘事", "order": 3},
+    {"code": "P4", "label": "P4｜現實壓力與轉折", "order": 4},
+    {"code": "P5", "label": "P5｜人生月台語重建", "order": 5},
+    {"code": "P6", "label": "P6｜順其自然與界線整合", "order": 6},
+    {"code": "P7", "label": "P7｜自由的風", "order": 7},
+    {"code": "P8", "label": "P8｜治理自己", "order": 8},
+]
+
+PLAYLIST_DEFINITIONS = {
+    "潮汐浪潮系列": {
+        "type": "arrangement_experiment",
+        "era_context": "微月光",
+        "themes": ["空壓編排", "升Key", "降Key", "調性推進", "YOASOBI式升降Key測試"],
+        "use_for_lyric_theme": False,
+        "description": "微月光時期用於測試升降 Key 與空壓操作的編曲技術清單，不代表歌詞主題或獨立 ERA。",
+    }
+}
+
 
 def text(value: Any) -> str:
     return "" if value is None else str(value).strip()
@@ -176,6 +196,8 @@ def build(source: Path) -> dict[str, Any]:
             "work_count": len(output_works),
             "version_count": sum(len(item["versions"]) for item in output_works),
             "active_era": ACTIVE_ERA,
+            "period_definitions": PERIOD_DEFINITIONS,
+            "playlist_definitions": PLAYLIST_DEFINITIONS,
         },
         "works": output_works,
     }

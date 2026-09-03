@@ -236,4 +236,19 @@ class LOC3SearchEngine:
             for work in self.works:
                 counts.update(_values(work.get(field)))
             output[name] = [{"value": value, "count": count} for value, count in counts.most_common() if value]
+        period_definitions = {
+            _normalize(item.get("code", "")): item
+            for item in self.dataset.get("period_definitions", [])
+        }
+        output["periods"] = sorted(
+            [
+                {
+                    **item,
+                    "label": period_definitions.get(item["value"], {}).get("label", item["value"].upper()),
+                    "order": period_definitions.get(item["value"], {}).get("order", 999),
+                }
+                for item in output["periods"]
+            ],
+            key=lambda item: item["order"],
+        )
         return output

@@ -66,6 +66,17 @@ class LOC3DatasetTests(unittest.TestCase):
         facets = self.engine.facets()
         self.assertTrue(facets["periods"])
         self.assertIn("playlists", facets)
+        self.assertEqual(
+            ["p2", "p3", "p4", "p5", "p6", "p7", "p8"],
+            [item["value"] for item in facets["periods"]],
+        )
+        self.assertTrue(all("｜" in item["label"] for item in facets["periods"]))
+
+    def test_tidal_playlist_is_an_arrangement_experiment_not_lyric_theme(self):
+        definition = self.payload["dataset"]["playlist_definitions"]["潮汐浪潮系列"]
+        self.assertEqual("arrangement_experiment", definition["type"])
+        self.assertFalse(definition["use_for_lyric_theme"])
+        self.assertIn("升Key", definition["themes"])
 
     def test_self_governance_era_and_two_new_songs_are_loaded(self):
         titles = {work["title"] for work in self.works}
