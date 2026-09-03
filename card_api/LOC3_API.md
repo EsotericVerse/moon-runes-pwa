@@ -23,6 +23,10 @@ Suno 播放數與喜歡數只用於同詞版本內的推薦順序。
 完整歌詞、末段原句及檢索文字不會寫入部署資料，也不會由 API 回傳。公開 JSON
 只保存分析後的摘要、標籤、轉折欄位、分類與版本資料。
 
+媒體連結另存於 `card_api/data/LOC3_MEDIA_LINKS_v0.1.json`。Instagram Reels
+只作為版本層的 30 秒預覽；IG 點閱、Suno 播放與未來 YouTube MV 觀看數
+維持為三套獨立指標，不會寫進歌詞語意向量。
+
 ## 篩選值
 
 `GET /loc3/facets`

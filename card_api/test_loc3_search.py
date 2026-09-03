@@ -7,6 +7,7 @@ from loc3_search import LOC3SearchEngine
 
 ROOT = Path(__file__).resolve().parent
 DATASET = ROOT / "data" / "LOC3_LYRICS_SEARCH_v0.1.json"
+MEDIA_DATASET = ROOT / "data" / "LOC3_MEDIA_LINKS_v0.1.json"
 
 
 class LOC3DatasetTests(unittest.TestCase):
@@ -73,6 +74,24 @@ class LOC3DatasetTests(unittest.TestCase):
         self.assertTrue(all(work["period"] == "P8" for work in new_works))
         self.assertTrue(all(work["era_name"] == "治理自己" for work in new_works))
         self.assertTrue(all("6.治理自己" in work["playlists"] for work in new_works))
+
+    def test_reels_catalog_is_version_specific_and_metrics_are_separate(self):
+        media = json.loads(MEDIA_DATASET.read_text(encoding="utf-8"))
+        self.assertEqual(19, media["dataset"]["reels_count"])
+        self.assertEqual(15, media["dataset"]["linked_count"])
+        self.assertEqual(4, media["dataset"]["pending_count"])
+        self.assertTrue(all(item["ig_plays"] is None for item in media["items"]))
+        linked_ids = {
+            version["song_id"]
+            for work in self.works
+            for version in work["versions"]
+            if version.get("ig_preview_url")
+        }
+        expected_ids = {
+            item["song_id"] for item in media["items"]
+            if item["linked_to_semantic_index"]
+        }
+        self.assertEqual(expected_ids, linked_ids)
 
 
 if __name__ == "__main__":
