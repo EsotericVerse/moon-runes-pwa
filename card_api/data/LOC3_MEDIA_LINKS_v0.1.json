@@ -4,8 +4,8 @@
     "version": "0.1.0",
     "updated_at": "2026-09-03",
     "reels_count": 19,
-    "linked_count": 15,
-    "pending_count": 4,
+    "linked_count": 16,
+    "pending_count": 3,
     "notes": "IG Reels is a preview channel; its metrics remain separate from Suno plays."
   },
   "items": [
@@ -29,7 +29,7 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": false
+      "linked_to_semantic_index": true
     },
     {
       "title": "月光把影子拉長",
