@@ -380,18 +380,24 @@
 
     .rune-layout {
       display: grid;
-      grid-template-columns: minmax(230px, 0.75fr) minmax(0, 1.25fr);
-      gap: 24px;
-      align-items: start;
+      grid-template-columns: minmax(340px, 0.82fr) minmax(0, 1.18fr);
+      gap: 26px;
+      align-items: stretch;
     }
 
     .left-panel,
-    .right-panel { min-width: 0; }
+    .right-panel {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .right-panel { height: 100%; }
 
     #rune-card.card-display {
       display: grid;
       place-items: center;
-      min-height: 310px;
+      min-height: 300px;
       padding: 18px;
       border: 1px solid var(--loc-border);
       border-radius: 22px;
@@ -404,9 +410,9 @@
 
     #rune-image {
       display: block;
-      width: min(100%, 300px);
+      width: min(100%, 286px);
       height: auto;
-      max-height: 390px;
+      max-height: 360px;
       object-fit: contain;
       filter: drop-shadow(0 18px 28px rgba(0,0,0,.3));
     }
@@ -430,9 +436,25 @@
     #description strong,
     #attributes strong { color: var(--loc-text); }
 
+    .right-panel #description {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .right-panel #description .draw-mode-grid {
+      flex: 1;
+      align-content: stretch;
+    }
+
+
     .rune-intro {
-      margin-bottom: 14px;
+      padding: 18px 20px;
+      border: 1px solid var(--loc-border);
+      border-radius: 18px;
+      background: rgba(23, 43, 72, 0.42);
       color: var(--loc-muted);
+      line-height: 1.75;
     }
 
     .rune-intro strong { color: var(--loc-text); }
@@ -568,14 +590,14 @@
 
     .draw-mode-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
       margin-top: 16px;
     }
 
     .draw-mode {
       display: flex;
-      min-height: 132px;
+      min-height: 116px;
       padding: 16px;
       border: 1px solid var(--loc-border);
       border-radius: 18px;
@@ -632,15 +654,27 @@
 
     footer p { margin: 6px 0; }
 
+    @media (max-width: 1080px) {
+      .rune-layout {
+        grid-template-columns: minmax(310px, .9fr) minmax(0, 1.1fr);
+        gap: 20px;
+      }
+      .draw-mode { min-height: 108px; padding: 14px; }
+    }
+
     @media (max-width: 900px) {
       .hero,
       .rune-layout { grid-template-columns: 1fr; }
       .hero-note { min-height: auto; }
       .action-grid { grid-template-columns: 1fr; }
-      .draw-mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
+      .draw-mode-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .right-panel #description { flex: none; }
       .works-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .framework { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      .draw-mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 600px) {
