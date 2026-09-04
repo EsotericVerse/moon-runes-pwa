@@ -10,16 +10,23 @@ from typing import Any
 
 from openpyxl import load_workbook
 
+SYSTEM_ID = "lo3rwang"
+PRIMARY_LOC = "LOC3"
 
-ACTIVE_ERA = {
-    "period": "P8",
-    "code": "ERA_SELF_GOVERNANCE",
-    "name": "治理自己",
-    "start_date": "2026-09-01",
-    "end_date": None,
-    "playlist": "6.治理自己",
-    "description": "自由之後的自我治理：清點未竟之事、建立界線、完成取捨與收尾，並主動選擇下一段航向。",
-}
+
+def shared_registry_path(name: str) -> Path:
+    return Path(__file__).resolve().parents[2] / "data" / "shared" / name
+
+
+def load_era_registry() -> tuple[dict[str, dict[str, Any]], dict[str, Any] | None]:
+    path = shared_registry_path("LOC_ERA_REGISTRY.json")
+    if not path.exists():
+        return {}, None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    eras = payload.get("eras", [])
+    by_period = {text(item.get("period")): item for item in eras if text(item.get("period"))}
+    current = next((item for item in eras if text(item.get("status")) == "current"), None)
+    return by_period, current
 
 
 def text(value: Any) -> str:
@@ -85,6 +92,7 @@ def build(source: Path) -> dict[str, Any]:
     works = sheet_rows(workbook, "500公開作品主表")
     versions = sheet_rows(workbook, "663公開版本")
     preferences = sheet_rows(workbook, "版本偏好")
+    era_by_period, active_era = load_era_registry()
 
     versions_by_work: dict[str, list[dict[str, Any]]] = {}
     for version in versions:
@@ -141,15 +149,21 @@ def build(source: Path) -> dict[str, Any]:
             text(representative.get("結尾結構")), text(representative.get("留白意圖")),
             *tags,
         ]
+        period = text(representative.get("統計時期代碼"))
+        era = era_by_period.get(period, {})
         output_works.append({
+            "system_id": SYSTEM_ID,
+            "primary_loc": PRIMARY_LOC,
+            "related_locs": ["LOC6", "LOC7", "LOC8"],
             "work_id": f"LW{index:04d}",
             "lyrics_hash": digest,
             "source_work_ids": [text(row.get("作品ID")) for row in rows],
             "title": text(representative.get("代表歌名")),
             "created_date": text(representative.get("建立日期")),
-            "period": text(representative.get("統計時期代碼")),
-            "era": text(representative.get("ERA代碼")),
-            "era_name": text(representative.get("ERA名稱")),
+            "period": period,
+            "era_id": text(era.get("era_id")) or None,
+            "era": text(era.get("era_id")) or text(representative.get("ERA代碼")),
+            "era_name": text(era.get("name")) or text(representative.get("ERA名稱")),
             "playlists": split_values(representative.get("播放清單")),
             "style": text(representative.get("曲風分類")),
             "summary": text(representative.get("AI摘要")),
@@ -175,7 +189,10 @@ def build(source: Path) -> dict[str, Any]:
             "excluded": ["P1", "non_zh_Hant", "script_pending", "not_searchable"],
             "work_count": len(output_works),
             "version_count": sum(len(item["versions"]) for item in output_works),
-            "active_era": ACTIVE_ERA,
+            "system_id": SYSTEM_ID,
+            "primary_loc": PRIMARY_LOC,
+            "era_registry": "data/shared/LOC_ERA_REGISTRY.json",
+            "active_era": active_era,
         },
         "works": output_works,
     }
