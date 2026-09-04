@@ -63,6 +63,18 @@
       "path": "data/shared/LOC_ANALYSIS_TYPE_REGISTRY.json",
       "authority": "LOC8",
       "purpose": "Shared routing vocabulary for LOC6/LOC7 mixed analyses."
+    },
+    {
+      "id": "content_types",
+      "path": "data/shared/LOC_CONTENT_TYPE_REGISTRY.json",
+      "authority": "LOC8",
+      "purpose": "Shared content/asset vocabulary for routing and unified search."
+    },
+    {
+      "id": "source_types",
+      "path": "data/shared/LOC_SOURCE_TYPE_REGISTRY.json",
+      "authority": "LOC8",
+      "purpose": "Shared provenance/source vocabulary for source_refs across LOC1-8."
     }
   ],
   "integration_status": {
@@ -94,8 +106,24 @@
       "shared_schema": "connected",
       "governance_registry": "connected",
       "reference_model": "connected",
-      "analysis_router": "connected"
+      "analysis_router": "connected",
+      "event_shared_refs": "connected",
+      "google_sheet_schema": "loc8-mvp-0.3",
+      "apps_script_code": "updated_in_github_redeploy_required"
     }
   },
-  "rule": "Finish shared registry/reference adoption before merging user-facing search interfaces."
+  "rule": "Shared foundation is frozen at schema v0.1 for the next integration stage; extend by backward-compatible fields where possible before breaking existing IDs/references.",
+  "foundation_status": {
+    "shared_identity": "complete",
+    "era_registry": "complete",
+    "shared_schema": "complete",
+    "data_governance": "complete",
+    "reference_model": "complete",
+    "content_types": "complete",
+    "source_types": "complete",
+    "analysis_types": "complete",
+    "media_registry": "complete",
+    "loc8_event_shared_refs": "complete",
+    "note": "Shared foundation is complete enough to begin corpus migration and later interface consolidation. Domain corpora may still be pending without changing the shared schema."
+  }
 }
