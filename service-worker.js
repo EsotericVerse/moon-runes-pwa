@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v21";
+const CACHE_NAME = "moon-runes-pwa-v22";
 
 const ASSETS_TO_CACHE = [
   "/",
