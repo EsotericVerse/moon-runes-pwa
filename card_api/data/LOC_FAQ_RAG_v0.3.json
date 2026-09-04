@@ -12,7 +12,19 @@
     "source_dataset": "LOC_FAQ_v0.3.json",
     "parent_entry_count": 80,
     "chunk_count": 80,
-    "chunk_policy": "v0.3每一FAQ條目先作為一個完整Semantic Chunk；後續LOC7_KM可依需要再拆Knowledge Object與多意圖子chunk。"
+    "chunk_policy": "v0.3每一FAQ條目先作為一個完整Semantic Chunk；後續LOC7_KM可依需要再拆Knowledge Object與多意圖子chunk。",
+    "system_id": "lo3rwang",
+    "primary_loc": "LOC7",
+    "related_locs": [
+      "LOC6",
+      "LOC8"
+    ],
+    "shared_registries": {
+      "language_system": "data/shared/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+      "era": "data/shared/LOC_ERA_REGISTRY.json",
+      "analysis_types": "data/shared/LOC_ANALYSIS_TYPE_REGISTRY.json",
+      "loc7_analysis": "data/shared/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json"
+    }
   },
   "chunks": [
     {
