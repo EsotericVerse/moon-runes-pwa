@@ -9,12 +9,13 @@ import os
 
 from faq_rag import FAQSearchEngine
 from loc3_search import LOC3SearchEngine
+from unified_search import UnifiedSearchEngine
 
 # 建立 FastAPI 應用
 app = FastAPI(
     title="LOC API",
-    description="LOC 月典符文占卜、FAQ 與 LOC3 歌詞檢索 API",
-    version="1.2.0",
+    description="LOC 月典符文、作品、知識、媒體與時間語意 Unified Search API",
+    version="1.3.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -78,6 +79,22 @@ except Exception as e:
     LOC3_SEARCHER = None
     LOC3_LOAD_ERROR = str(e)
     print(f"Warning: Failed to load LOC3 lyrics dataset: {e}")
+
+
+# Unified Search：保留各 LOC 的 canonical ownership，只統一查詢與結果 envelope
+REPO_ROOT = Path(__file__).resolve().parent.parent
+try:
+    UNIFIED_SEARCHER = UnifiedSearchEngine(
+        faq_searcher=FAQ_SEARCHER,
+        loc3_searcher=LOC3_SEARCHER,
+        runes=RUNES.get("runes", []),
+        repo_root=REPO_ROOT,
+    )
+    UNIFIED_LOAD_ERROR = None
+except Exception as e:
+    UNIFIED_SEARCHER = None
+    UNIFIED_LOAD_ERROR = str(e)
+    print(f"Warning: Failed to initialize unified search: {e}")
 
 # 月相計算
 def get_lunar_phase(date):
@@ -396,6 +413,17 @@ class LOC3SearchInput(BaseModel):
     style: str = ""
 
 
+class UnifiedSearchInput(BaseModel):
+    query: str
+    top_k: int = 6
+    content_type: str = ""
+    period: str = ""
+    era: str = ""
+    playlist: str = ""
+    category: str = ""
+    style: str = ""
+
+
 def get_faq_searcher():
     if FAQ_SEARCHER is None:
         raise HTTPException(
@@ -423,6 +451,15 @@ def get_loc3_searcher():
             detail=f"LOC3歌詞資料尚未就緒: {LOC3_LOAD_ERROR or 'unknown error'}"
         )
     return LOC3_SEARCHER
+
+
+def get_unified_searcher():
+    if UNIFIED_SEARCHER is None:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Unified Search尚未就緒: {UNIFIED_LOAD_ERROR or 'unknown error'}"
+        )
+    return UNIFIED_SEARCHER
 
 
 def validate_loc3_input(query: str, top_k: int):
@@ -466,6 +503,64 @@ async def health_check():
         "loc3_ready": LOC3_SEARCHER is not None,
         "loc3_works_loaded": len(LOC3_SEARCHER.works) if LOC3_SEARCHER else 0
     }
+
+
+@app.get("/search/facets")
+async def unified_search_facets():
+    searcher = get_unified_searcher()
+    content_types = searcher.content_types.get("types", [])
+    eras = searcher.eras.get("eras", [])
+    loc3_facets = get_loc3_searcher().facets() if LOC3_SEARCHER is not None else {}
+    return {
+        "success": True,
+        "system_id": "lo3rwang",
+        "content_types": content_types,
+        "eras": [
+            {
+                "era_id": era.get("era_id"),
+                "period": era.get("period"),
+                "label": era.get("display_label") or era.get("name"),
+                "status": era.get("status"),
+            }
+            for era in eras
+        ],
+        "loc3": loc3_facets,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+@app.post("/search")
+async def unified_search(input: UnifiedSearchInput):
+    query = input.query.strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="query不可為空白")
+    if len(query) > 500:
+        raise HTTPException(status_code=400, detail="query不可超過500字元")
+    if input.top_k < 1 or input.top_k > 10:
+        raise HTTPException(status_code=400, detail="top_k必須介於1到10之間")
+
+    searcher = get_unified_searcher()
+    filters = {
+        "period": input.period,
+        "era": input.era,
+        "playlist": input.playlist,
+        "category": input.category,
+        "style": input.style,
+    }
+    try:
+        result = searcher.search(
+            query,
+            top_k=input.top_k,
+            content_type=input.content_type,
+            filters=filters,
+        )
+        return {
+            "success": True,
+            **result,
+            "timestamp": datetime.now().isoformat(),
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/faq/search")
