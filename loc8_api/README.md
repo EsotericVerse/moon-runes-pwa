@@ -1,5 +1,13 @@
 # LOC8 Google Sheet API (Apps Script)
 
+## 目前部署資訊
+
+- Deployment ID: `AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei`
+- Web App: `https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec`
+- Apps Script Library: `https://script.google.com/macros/library/d/1Cx8KjqchTriYNa4fkwtuJDP4C-u22U0sPGOIhLdhgzT_MN9Xo_8TPytm/6`
+
+> 注意：Library URL 是 Apps Script 程式庫版本連結，不是 LOC8 的 Google Sheet 資料庫網址。實際資料仍在 LOC8 Google Sheet 的 `User` / `Event` 分頁。
+
 這個 Apps Script 將 `life.html` 與 LOC8 Google Sheet 的 `User` / `Event` 分頁連起來。
 
 ## 部署
