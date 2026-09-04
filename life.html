@@ -288,7 +288,7 @@
     @media (max-width: 1100px) {
       .app { grid-template-columns: 1fr; }
       .sidebar { position: static; min-height: auto; }
-      .nav { grid-template-columns: repeat(5, 1fr); }
+      .nav { grid-template-columns: repeat(6, 1fr); }
       .nav a { text-align: center; padding: 9px 6px; font-size: 12px; }
       .sidebar-foot { display: none; }
       .grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
@@ -323,10 +323,12 @@
         <a href="#timeline">時間線</a>
         <a href="#trajectory">軌跡</a>
         <a href="#trend">趨勢</a>
+        <a href="https://docs.google.com/spreadsheets/d/1v2Sl4a1x9AvQgxdwrfxyhox8pHxmhbqhBL6YstH_ekg/edit" target="_blank" rel="noopener noreferrer">Google Sheet</a>
       </nav>
       <div class="sidebar-foot">
         LOC8 目前作為測試介面。<br />
-        儲存層先接 Google Sheet；未來可替換為正式資料庫而不改前端資料模型。
+        儲存層先接 Google Sheet；未來可替換為正式資料庫而不改前端資料模型。<br />
+        <a href="https://docs.google.com/spreadsheets/d/1v2Sl4a1x9AvQgxdwrfxyhox8pHxmhbqhBL6YstH_ekg/edit" target="_blank" rel="noopener noreferrer">開啟 LOC8 Google Sheet ↗</a>
       </div>
     </aside>
 
@@ -355,6 +357,7 @@
           </div>
           <div class="body">
             <form id="eventForm">
+              <input type="hidden" id="userId" name="user_id" value="lucas" />
               <div class="form-grid">
                 <div class="field"><label for="date">日期</label><input id="date" name="date" type="date" required /></div>
                 <div class="field"><label for="objectType">對象類型</label>
@@ -435,7 +438,7 @@
         </div>
       </section>
 
-      <div class="footer">LOC8 MVP · life.html · Google Sheet-ready prototype</div>
+      <div class="footer">LOC8 MVP · life.html · User / Event split · Google Sheet prototype</div>
     </main>
   </div>
 
@@ -525,11 +528,13 @@
     function normalizeEvent(raw) {
       return {
         id: raw.id || uid(),
+        user_id: raw.user_id || 'lucas',
         date: raw.date || new Date().toISOString().slice(0,10),
         object_type: raw.object_type || 'person',
         object_id: raw.object_id || '',
         event_type: raw.event_type || 'transition',
-        event_title: raw.event_title || '',
+        event_title: raw.event_title || raw.title || '',
+        title: raw.title || raw.event_title || '',
         description: raw.description || '',
         state_before: raw.state_before || '',
         state_after: raw.state_after || '',
