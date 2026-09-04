@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#07182d" />
-  <meta name="description" content="LOC（月典）FAQ語意查詢，從已確認的公開資料尋找答案。" />
-  <title>LOC FAQ｜月典語意查詢</title>
+  <meta name="description" content="LOC7（月典）Knowledge Base／KM語意查詢入口，從已確認的知識庫與FAQ資料尋找答案。" />
+  <title>LOC7 Knowledge Base｜月典知識庫</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -72,6 +72,31 @@
     .home-link:focus-visible { color: var(--text); }
 
     .hero { margin-bottom: 28px; }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .badge,
+    .doc-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface-soft);
+      font-size: 0.78rem;
+      text-decoration: none;
+    }
+
+    .badge { color: var(--purple); }
+    .doc-link { color: var(--gold); }
+    .doc-link:hover,
+    .doc-link:focus-visible { border-color: var(--gold); color: var(--text); }
 
     .eyebrow {
       margin: 0 0 8px;
@@ -292,19 +317,25 @@
   <main class="page">
     <nav class="topbar" aria-label="主要導覽">
       <a class="brand" href="index.html">LOC · 月典</a>
-      <a class="home-link" href="index.html">返回月之符文</a>
+      <a class="home-link" href="index.html">返回月典首頁</a>
     </nav>
 
     <header class="hero">
-      <p class="eyebrow">LOC7 · Text Architecture</p>
-      <h1>向月典提問</h1>
-      <p class="intro">輸入你想了解的內容，系統會從已確認的LOC公開FAQ中尋找最接近的答案與依據。</p>
+      <p class="eyebrow">LOC7 · Text Architecture · Knowledge Management</p>
+      <h1>月典知識庫</h1>
+      <p class="intro">這裡是 LOC7_KM 的查詢入口。輸入你想了解的內容，系統會從已確認的 LOC 知識與 FAQ 語意資料中，尋找最接近的答案與依據。FAQ 是知識庫的一種問答視圖；後續會逐步延伸到 Knowledge Objects、關係與 Graph RAG。</p>
+      <div class="meta-row" aria-label="知識庫版本與文件">
+        <span class="badge">FAQ v0.3</span>
+        <span class="badge">RAG v0.3</span>
+        <span class="badge">LOC7_KM 0.1</span>
+        <a class="doc-link" href="docs/LOC7_KM.docx">LOC7_KM 總文件 ↗</a>
+      </div>
     </header>
 
     <section class="panel" aria-labelledby="query-label">
       <form id="faq-form">
         <label id="query-label" for="query">你的問題</label>
-        <textarea id="query" name="query" maxlength="500" required placeholder="例如：LOC是什麼？第零符會參與抽牌嗎？"></textarea>
+        <textarea id="query" name="query" maxlength="500" required placeholder="例如：LOC是什麼？月符和月典有什麼關係？LOC7_KM是什麼？"></textarea>
         <div class="form-footer">
           <p class="hint">可一次詢問一至兩個相關問題</p>
           <button class="submit" id="submit" type="submit">尋找答案</button>
@@ -313,9 +344,10 @@
 
       <div class="examples" aria-label="問題範例">
         <button class="example" type="button">LOC是什麼？</button>
-        <button class="example" type="button">第零符會抽到嗎？</button>
-        <button class="example" type="button">LOC2怎麼玩？</button>
-        <button class="example" type="button">LOC3和LOC4有什麼內容？</button>
+        <button class="example" type="button">月符和月典有什麼關係？</button>
+        <button class="example" type="button">LOC1為什麼是語言演化？</button>
+        <button class="example" type="button">LOC7_KM是什麼？</button>
+        <button class="example" type="button">LOC8為什麼要記錄事件與時間？</button>
       </div>
 
       <p class="status" id="status" role="status" aria-live="polite"></p>
@@ -326,12 +358,12 @@
       <p class="answer" id="answer"></p>
       <div class="citations" id="citations" aria-label="答案依據"></div>
       <details>
-        <summary>查看相關FAQ</summary>
+        <summary>查看相關知識條目</summary>
         <ol class="sources" id="sources"></ol>
       </details>
     </section>
 
-    <p class="footnote">答案來自LOC FAQ v0.1；資料不足時，系統不自行補寫Canon。</p>
+    <p class="footnote">目前查詢核心：LOC FAQ v0.3／RAG v0.3／LOC7_KM 0.1。資料不足時，系統不自行補寫 Canon；原始資料、解析結果與推論應保持可追溯。</p>
   </main>
 
   <script>
@@ -387,7 +419,7 @@
       clearResults();
       setBusy(true);
       status.className = "status";
-      status.textContent = "正在喚醒知識庫並尋找答案；若Render休眠，第一次可能稍久。";
+      status.textContent = "正在喚醒 LOC7_KM 知識庫並尋找答案；若 Render 休眠，第一次可能稍久。";
 
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 45000);
