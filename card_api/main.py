@@ -478,13 +478,15 @@ async def root():
     return {
         "status": "healthy",
         "message": "LOC API",
-        "version": "1.2.0",
+        "version": "1.3.0",
         "endpoints": {
             "divination": "/divination",
             "faq_search": "/faq/search",
             "faq_ask": "/faq/ask",
             "loc3_search": "/loc3/search",
             "loc3_facets": "/loc3/facets",
+            "unified_search": "/search",
+            "unified_facets": "/search/facets",
             "health": "/health",
             "docs": "/docs"
         }
@@ -501,7 +503,9 @@ async def health_check():
         "faq_ready": FAQ_SEARCHER is not None,
         "faq_chunks_loaded": len(FAQ_SEARCHER.chunks) if FAQ_SEARCHER else 0,
         "loc3_ready": LOC3_SEARCHER is not None,
-        "loc3_works_loaded": len(LOC3_SEARCHER.works) if LOC3_SEARCHER else 0
+        "loc3_works_loaded": len(LOC3_SEARCHER.works) if LOC3_SEARCHER else 0,
+        "unified_search_ready": UNIFIED_SEARCHER is not None,
+        "shared_era_count": len(UNIFIED_SEARCHER.eras.get("eras", [])) if UNIFIED_SEARCHER else 0
     }
 
 
