@@ -39,6 +39,30 @@
       "path": "data/shared/LOC_REFERENCE_MODEL.json",
       "authority": "LOC8",
       "purpose": "Stable ID types and cross-LOC relationship vocabulary."
+    },
+    {
+      "id": "loc4_writing",
+      "path": "data/shared/LOC4_WRITING_REGISTRY.json",
+      "authority": "LOC4",
+      "purpose": "Canonical writing-work catalog entry point and shared cross-LOC references."
+    },
+    {
+      "id": "loc6_governance",
+      "path": "data/shared/LOC6_GOVERNANCE_REGISTRY.json",
+      "authority": "LOC6",
+      "purpose": "Canonical governance, meaning, style-state and stage-interpretation records."
+    },
+    {
+      "id": "loc7_linguistic_analysis",
+      "path": "data/shared/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json",
+      "authority": "LOC7",
+      "purpose": "Canonical grammar, syntax, Text Architecture and retrieval-analysis records."
+    },
+    {
+      "id": "analysis_types",
+      "path": "data/shared/LOC_ANALYSIS_TYPE_REGISTRY.json",
+      "authority": "LOC8",
+      "purpose": "Shared routing vocabulary for LOC6/LOC7 mixed analyses."
     }
   ],
   "integration_status": {
@@ -48,11 +72,30 @@
       "media_registry": "connected",
       "shared_result_refs": "connected"
     },
-    "LOC4": "pending",
+    "LOC4": {
+      "writing_registry": "schema-ready",
+      "corpus_import": "pending"
+    },
     "LOC5": "media-authority-established",
-    "LOC6": "pending",
-    "LOC7": "pending",
-    "LOC8": "authority-source-established"
+    "LOC6": {
+      "governance_registry": "schema-ready",
+      "analysis_types": "connected",
+      "corpus_import": "pending"
+    },
+    "LOC7": {
+      "linguistic_analysis_registry": "schema-ready",
+      "analysis_types": "connected",
+      "faq_v0_3": "connected",
+      "faq_rag_v0_3": "connected"
+    },
+    "LOC8": {
+      "authority_source": "established",
+      "era_registry": "connected",
+      "shared_schema": "connected",
+      "governance_registry": "connected",
+      "reference_model": "connected",
+      "analysis_router": "connected"
+    }
   },
   "rule": "Finish shared registry/reference adoption before merging user-facing search interfaces."
 }
