@@ -1,0 +1,43 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC4_WRITING_REGISTRY",
+  "authority": "LOC4",
+  "language_system_id": "lo3rwang",
+  "purpose": "Canonical catalog entry point for personal writing works. Full text may remain in source documents; this registry provides stable references for cross-LOC search and analysis.",
+  "work_schema": {
+    "required": [
+      "work_id",
+      "system_id",
+      "primary_loc",
+      "title",
+      "content_type"
+    ],
+    "fields": {
+      "work_id": "stable LOC4 work identifier",
+      "system_id": "language-system reference",
+      "primary_loc": "LOC4",
+      "related_locs": "cross-LOC consumers/analyses",
+      "title": "display title",
+      "content_type": [
+        "novel",
+        "article",
+        "essay",
+        "journal",
+        "lyrics_draft",
+        "rune_text",
+        "worldbuilding",
+        "other"
+      ],
+      "created_date": "ISO date or null",
+      "era_id": "LOC8 ERA reference or null",
+      "source_refs": "source document/file references",
+      "summary": "searchable summary or null",
+      "tags": "semantic tags",
+      "provenance": "shared provenance object",
+      "rights": "shared rights object",
+      "lifecycle": "shared lifecycle object"
+    }
+  },
+  "works": [],
+  "migration_note": "Registry reserved now to avoid schema migration after the LOC4 corpus is imported. Existing writing corpus is not silently reconstructed here."
+}
