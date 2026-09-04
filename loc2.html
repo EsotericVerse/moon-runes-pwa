@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07182d" />
+  <meta name="description" content="LOC2：以 Luna Codex 符文為基底的語意互動卡牌遊戲文件與原型入口。" />
+  <title>LOC2｜Game｜語意互動卡牌</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <style>
+    :root{color-scheme:dark;--bg:#07182d;--surface:rgba(13,31,56,.9);--soft:rgba(23,43,72,.72);--border:rgba(180,158,255,.22);--text:#f5f1ff;--muted:#b9bfd0;--purple:#b49eff;--gold:#e7c27d;--shadow:0 24px 70px rgba(0,0,0,.32)}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(circle at 10% 8%,rgba(103,75,171,.24),transparent 30rem),linear-gradient(180deg,#07182d,#06111f);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.75}
+    a{color:var(--gold)}.page{width:min(980px,calc(100% - 32px));margin:0 auto;padding:24px 0 56px}.top{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:12px 0 28px}.top a{text-decoration:none}.brand{font-weight:800;color:var(--text)}
+    .hero,.section{border:1px solid var(--border);background:var(--surface);border-radius:26px;box-shadow:var(--shadow)}.hero{padding:clamp(28px,5vw,52px)}.section{margin-top:24px;padding:clamp(22px,4vw,34px)}
+    .eyebrow{margin:0 0 8px;color:var(--purple);font-size:.78rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.hero h1,.section h2{margin:0;letter-spacing:-.03em}.hero h1{font-size:clamp(2.2rem,6vw,4.4rem);line-height:1.08}.hero p,.section p,.section li{color:var(--muted)}
+    .lead{font-size:1.08rem;max-width:760px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}.card{padding:18px;border:1px solid var(--border);border-radius:16px;background:var(--soft)}.card strong{display:block;color:var(--gold);margin-bottom:6px}.status{display:inline-block;margin-top:18px;padding:6px 11px;border:1px solid var(--border);border-radius:999px;color:var(--purple);font-size:.8rem}
+    .doclist{display:grid;gap:10px;padding:0;list-style:none}.doclist li{padding:14px 16px;border:1px solid var(--border);border-radius:14px;background:var(--soft)}.note{padding:16px 18px;border-left:3px solid var(--gold);border-radius:10px;background:rgba(231,194,125,.07)}footer{text-align:center;color:var(--muted);font-size:.85rem;padding:28px 0 6px}
+    @media(max-width:700px){.top{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <nav class="top"><a class="brand" href="index.html">← LOC · 月典</a><a href="result.html?mode=daily">回到抽牌</a></nav>
+
+    <header class="hero">
+      <p class="eyebrow">LOC2 · Game</p>
+      <h1>如果符文不只被解讀，<br>也可以被拿來玩？</h1>
+      <p class="lead">LOC2 是以 Luna Codex 符文為基底的語意互動卡牌原型。世界提出問題，玩家用符文回答；答案彼此碰撞、干預、共振，最後形成一個暫時成立的定義。</p>
+      <span class="status">目前狀態：文件／MVP／Alpha 原型</span>
+    </header>
+
+    <section class="section">
+      <p class="eyebrow">Core Idea</p>
+      <h2>不是傳統戰鬥卡，而是 Semantic Playground</h2>
+      <p>LOC2 不把符文硬塞進攻擊、防禦、血量這一套傳統卡牌邏輯。它關心的是：同一個事件，玩家會選什麼符文回答？不同回答放在一起時，語意會互補、衝突，還是重新改寫情境？</p>
+      <div class="grid">
+        <div class="card"><strong>世界提出問題</strong><span>事件卡建立一個需要被回應的情境。</span></div>
+        <div class="card"><strong>玩家用符文回答</strong><span>符文不是技能，而是對問題的語意回應。</span></div>
+        <div class="card"><strong>答案彼此共振</strong><span>玩家之間的選擇會互相干預、補強或改變解讀。</span></div>
+        <div class="card"><strong>形成暫時定義</strong><span>一輪結束後，得到的是當下高度自洽的答案，而不是永久真理。</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">MVP Snapshot</p>
+      <h2>目前已經有什麼？</h2>
+      <ul>
+        <li>事件解謎 + PvP 干預的 MVP 玩法骨架。</li>
+        <li>核心數值：德（De）；現行 MVP 勝利條件為 De 達 16。</li>
+        <li>每位玩家各自使用一套 1–64 符文牌庫，不共用牌庫。</li>
+        <li>事件卡範例、八職業定位、RP 語意互驗與 0′／16★ 等 Alpha 概念。</li>
+        <li>實體卡測試與後續電子化仍在整理中。</li>
+      </ul>
+      <p class="note"><strong>這一頁先作為 LOC2 的公開文件入口。</strong> 遊戲網頁還沒完成之前，先讓規則、設計目的與測試狀態有地方可以被理解，而不是首頁只放一個沒有內容的名稱。</p>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Documents</p>
+      <h2>LOC2 文件</h2>
+      <ul class="doclist">
+        <li><strong>LOC2 MVP 規則書</strong><br>核心流程、De、勝利條件與基本遊戲結構。</li>
+        <li><strong>符文卡效果與語意規則</strong><br>各符文在遊戲語境中的使用方式與限制。</li>
+        <li><strong>事件卡</strong><br>用來建立情境、問題與語意互動的事件設計。</li>
+        <li><strong>八職業／介入姿態</strong><br>不是能力值或人格，而是面對世界失序時的八種回應方式。</li>
+        <li><strong>測試與版本紀錄</strong><br>MVP、Alpha 調整、實體測試與後續電子化規劃。</li>
+      </ul>
+      <p>目前部分文件仍在整理與拆分中，之後可再把實際 PDF、DOCX 或規則頁面連結補到這裡。</p>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Back to LOC</p>
+      <h2>LOC2 只是其中一種延伸。</h2>
+      <p>同一套符文還可以進入音樂、文字、多媒體、治理與生活系統。回到首頁，可以繼續往 LOC3–8 看下去。</p>
+      <p><a href="index.html#extensions-title">回到 LOC3–8 延伸介紹 →</a></p>
+    </section>
+
+    <footer>LOC · Luna Codex · 月典 ｜ Lucas Oscar Wang 政德</footer>
+  </main>
+</body>
+</html>
