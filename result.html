@@ -3,32 +3,214 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>占卜進行中</title>
+  <meta name="theme-color" content="#07182d" />
+  <title>LOC1｜月符抽牌</title>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07182d;
+      --surface: rgba(13, 31, 56, .92);
+      --soft: rgba(23, 43, 72, .72);
+      --border: rgba(180, 158, 255, .22);
+      --text: #f5f1ff;
+      --muted: #b9bfd0;
+      --purple: #b49eff;
+      --gold: #e7c27d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 8%, rgba(103,75,171,.24), transparent 30rem),
+        radial-gradient(circle at 88% 88%, rgba(35,105,135,.18), transparent 30rem),
+        linear-gradient(180deg,#07182d 0%,#091729 62%,#06111f 100%);
+      font-family: "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    }
+    a { color: var(--gold); }
+    .page {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 52px;
+    }
+    .topbar {
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding: 12px 0 20px;
+    }
+    .brand { color:var(--text); text-decoration:none; font-weight:800; letter-spacing:.08em; }
+    .back { color:var(--muted); text-decoration:none; font-size:.88rem; }
+    .panel {
+      border:1px solid var(--border);
+      border-radius:26px;
+      background:var(--surface);
+      padding:clamp(20px,4vw,34px);
+      box-shadow:0 24px 70px rgba(0,0,0,.28);
+    }
+    .head {
+      display:flex; justify-content:space-between; align-items:end; gap:20px;
+      margin-bottom:22px;
+    }
+    .eyebrow {
+      margin:0 0 7px; color:var(--purple); font-size:.76rem;
+      font-weight:800; letter-spacing:.15em; text-transform:uppercase;
+    }
+    h1 { margin:0; font-size:clamp(1.7rem,4vw,2.7rem); line-height:1.15; }
+    .phase {
+      color:var(--muted); font-size:.86rem; text-align:right;
+    }
+    .ritual {
+      min-height:420px;
+      display:grid;
+      place-items:center;
+      text-align:center;
+    }
+    .ritual-inner { max-width:560px; }
+    .ritual-rune {
+      width:148px; height:148px; margin:0 auto 22px; border-radius:50%;
+      display:grid; place-items:center;
+      border:1px solid rgba(231,194,125,.38);
+      box-shadow:0 0 70px rgba(180,158,255,.16);
+      font-size:3.2rem; color:var(--gold);
+      background:radial-gradient(circle,rgba(231,194,125,.12),rgba(23,43,72,.55));
+    }
+    .ritual-message { min-height:56px; color:var(--muted); line-height:1.8; }
+    .cards-grid {
+      display:grid;
+      gap:16px;
+      align-items:start;
+    }
+    .cards-grid[data-count="1"] { grid-template-columns:minmax(260px,420px); justify-content:center; }
+    .cards-grid[data-count="2"] { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .cards-grid[data-count="3"] { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .cards-grid[data-count="5"] { grid-template-columns:repeat(6,minmax(0,1fr)); }
+    .cards-grid[data-count="5"] .rune-card { grid-column:span 2; }
+    .cards-grid[data-count="5"] .rune-card:nth-child(4) { grid-column:2 / span 2; }
+    .cards-grid[data-count="5"] .rune-card:nth-child(5) { grid-column:4 / span 2; }
+    .rune-card {
+      min-width:0;
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:14px;
+      background:var(--soft);
+    }
+    .position {
+      display:inline-flex;
+      margin-bottom:10px;
+      padding:4px 9px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      color:var(--gold);
+      font-size:.72rem;
+      font-weight:800;
+    }
+    .card-image {
+      aspect-ratio:1/1;
+      display:grid; place-items:center;
+      border-radius:16px;
+      background:rgba(3,13,28,.5);
+      overflow:hidden;
+    }
+    .card-image img { width:100%; height:100%; object-fit:contain; }
+    .card-meta { margin-top:12px; color:var(--muted); font-size:.82rem; line-height:1.65; }
+    .card-meta strong { color:var(--text); font-size:1rem; }
+    .reading {
+      margin-top:20px;
+      padding:20px;
+      border:1px solid var(--border);
+      border-radius:20px;
+      background:rgba(9,24,45,.72);
+      color:var(--muted);
+      line-height:1.8;
+    }
+    .reading strong { color:var(--text); }
+    .reading h2 { margin:0 0 12px; color:var(--text); font-size:1.15rem; }
+    .actions {
+      display:flex; flex-wrap:wrap; gap:10px; margin-top:18px;
+    }
+    .button {
+      display:inline-flex; align-items:center; justify-content:center;
+      min-height:44px; padding:10px 16px;
+      border:1px solid var(--border); border-radius:999px;
+      background:var(--soft); color:var(--text);
+      text-decoration:none; cursor:pointer; font:inherit; font-weight:800;
+    }
+    .button.primary {
+      border-color:transparent; color:#160f26;
+      background:linear-gradient(135deg,#c7b7ff,#e8c57f);
+    }
+    .note {
+      margin-top:14px;
+      color:var(--muted);
+      font-size:.78rem;
+    }
+    [hidden] { display:none !important; }
+    footer { margin-top:24px; text-align:center; color:var(--muted); font-size:.82rem; }
+
+    @media (max-width: 900px) {
+      .cards-grid[data-count="3"] { grid-template-columns:repeat(3,minmax(0,1fr)); }
+      .cards-grid[data-count="5"] { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .cards-grid[data-count="5"] .rune-card,
+      .cards-grid[data-count="5"] .rune-card:nth-child(4),
+      .cards-grid[data-count="5"] .rune-card:nth-child(5) { grid-column:auto; }
+      .cards-grid[data-count="5"] .rune-card:nth-child(5) { grid-column:1 / -1; width:min(50%,360px); justify-self:center; }
+    }
+    @media (max-width: 680px) {
+      .page { width:min(100% - 18px,1180px); padding-top:10px; }
+      .panel { padding:18px 12px; border-radius:20px; }
+      .head { align-items:start; flex-direction:column; }
+      .phase { text-align:left; }
+      .cards-grid[data-count="2"],
+      .cards-grid[data-count="3"],
+      .cards-grid[data-count="5"] { grid-template-columns:1fr; }
+      .cards-grid[data-count="5"] .rune-card:nth-child(5) { grid-column:auto; width:auto; justify-self:stretch; }
+      .rune-card { display:grid; grid-template-columns:minmax(120px,42%) 1fr; gap:12px; align-items:center; }
+      .position { grid-column:1/-1; margin-bottom:0; justify-self:start; }
+      .card-meta { margin-top:0; }
+      .ritual { min-height:360px; }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="main-layout">
-      <div class="left-panel">
-        <div class="card-display">
-          <img src="64images/66_命.png" alt="命之符文" id="result-image" />
-        </div>
-        <div class="card-attributes">
-          <p>卡牌面向：正位</p>
-          <p>介紹：「命」，所有人的軌跡</p>
-          <p>所屬分組：它不屬於全部</p>
-          <p id="moon-phase">月相：無 / 真實月相：計算中...</p>
-        </div>
-      </div>
-      <div class="right-panel">
-        <div class="description" id="description"></div>
-      </div>
+  <main class="page">
+    <div class="topbar">
+      <a class="brand" href="index.html">LOC · Luna Codex</a>
+      <a class="back" href="index.html">← 回到 LOC1</a>
     </div>
-    <footer>
-      <p><strong>By</strong> 月語之境工作室 ｜ <a href="mailto:esotericverse.xy@gmail.com">聯絡我們</a></p>
-    </footer>
-  </div>
+
+    <section class="panel">
+      <div class="head">
+        <div>
+          <p class="eyebrow" id="mode-kicker">LOC1 · Rune Draw</p>
+          <h1 id="mode-title">月符抽牌</h1>
+        </div>
+        <div class="phase" id="moon-phase">真實月相：計算中...</div>
+      </div>
+
+      <div class="ritual" id="ritual-view">
+        <div class="ritual-inner">
+          <div class="ritual-rune">命</div>
+          <div class="ritual-message" id="ritual-message">正在準備抽牌……</div>
+        </div>
+      </div>
+
+      <div id="result-view" hidden>
+        <div class="cards-grid" id="cards-grid"></div>
+        <div class="reading" id="reading"></div>
+        <p class="note" id="mode-note"></p>
+        <div class="actions">
+          <button class="button primary" id="retry-button" type="button">重新抽牌</button>
+          <a class="button" href="list.html">查看月符資料</a>
+          <a class="button" href="index.html#rune-entry">切換抽牌模式</a>
+        </div>
+      </div>
+    </section>
+
+    <footer>LOC · Luna Codex · 月典 ｜ Lucas Oscar Wang 政德</footer>
+  </main>
+
   <script src="js/locMoonPhase.js"></script>
-  <script src="js/result.js"></script>
+  <script type="module" src="js/result.js"></script>
 </body>
 </html>
