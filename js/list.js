@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "生命": {
       style: "感官體驗／實用",
       tone: "身心感受、日常節奏",
-      note: "記錄生老病語的軌跡，是身心存在的呼吸與節奏。",
+      note: "記錄生老病死的軌跡，是身心存在的呼吸與節奏。",
       vector: "emotive / somatic_self"
     },
     "自然": {
