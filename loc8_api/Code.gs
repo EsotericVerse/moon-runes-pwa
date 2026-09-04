@@ -35,9 +35,12 @@ function doPost(e) {
     }
 
     if (action === 'update_event') {
-      const event = normalizeEvent_(body.event || body);
-      if (!event.id) throw new Error('Missing event id');
-      const updated = updateObjectById_(EVENT_SHEET, event.id, event, event.user_id);
+      const raw = body.event || body;
+      const id = String(raw.id || '').trim();
+      if (!id) throw new Error('Missing event id');
+      const event = normalizeEvent_(raw);
+      event.id = id;
+      const updated = updateObjectById_(EVENT_SHEET, id, event, event.user_id);
       return json_({ ok: true, event: updated, action: 'update_event' });
     }
 
@@ -187,7 +190,11 @@ function normalizeEvent_(raw) {
     status: raw.status || 'current',
     source: raw.source || '',
     confidence: raw.confidence || 'recorded',
-    created_at: raw.created_at || createdAt
+    created_at: raw.created_at || createdAt,
+    system_id: raw.system_id || 'lo3rwang',
+    primary_loc: raw.primary_loc || 'LOC8',
+    related_locs: Array.isArray(raw.related_locs) ? raw.related_locs.join(', ') : (raw.related_locs || ''),
+    era_id: raw.era_id || ''
   };
 }
 
