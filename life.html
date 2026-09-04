@@ -249,6 +249,9 @@
     .event .title { font-weight: 650; margin-bottom: 4px; }
     .event .meta { color: var(--muted); font-size: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
     .event .desc { color: #d8e4f7; margin-top: 8px; line-height: 1.6; font-size: 14px; }
+    .event-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .event-tools .btn { padding: 6px 10px; font-size: 12px; }
+    .editing-note { color: var(--warn); font-size: 12px; margin-top: 6px; }
 
     .trajectory {
       display: flex;
@@ -371,12 +374,13 @@
       <section class="grid cols-2" style="margin-top:16px;" id="event-form">
         <div class="card">
           <div class="head">
-            <div><h3>新增事件</h3><p>先記錄事實，再描述狀態變化。</p></div>
+            <div><h3 id="eventFormTitle">新增事件</h3><p>先記錄事實，再描述狀態變化。</p><div class="editing-note" id="editingNote" hidden>正在編輯既有事件；儲存後會更新原資料列，不會新增重複事件。</div></div>
             <span class="badge">Event</span>
           </div>
           <div class="body">
             <form id="eventForm">
               <input type="hidden" id="userId" name="user_id" value="lucas" />
+              <input type="hidden" id="editingEventId" name="id" value="" />
               <div class="form-grid">
                 <div class="field"><label for="date">日期</label><input id="date" name="date" type="date" required /></div>
                 <div class="field"><label for="objectType">對象類型</label>
@@ -422,7 +426,8 @@
                 <div class="field full"><label for="source">來源 / Evidence</label><input id="source" name="source" placeholder="文件、網址、對話、作品名稱、commit 等" /></div>
               </div>
               <div class="actions">
-                <button class="btn primary" type="submit">儲存事件</button>
+                <button class="btn primary" id="submitEventBtn" type="submit">儲存事件</button>
+                <button class="btn ghost" id="cancelEditBtn" type="button" hidden>取消編輯</button>
                 <button class="btn ghost" type="reset">清除</button>
               </div>
             </form>
@@ -489,9 +494,15 @@
       mRelease: $('#metricRelease'),
       mRecent: $('#metricRecent'),
       apiInput: $('#sheetApiUrl'),
+      formTitle: $('#eventFormTitle'),
+      editingNote: $('#editingNote'),
+      editingId: $('#editingEventId'),
+      submitBtn: $('#submitEventBtn'),
+      cancelEditBtn: $('#cancelEditBtn'),
     };
 
     let events = [];
+    let editingId = '';
 
     function uid() {
       return 'EV-' + new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0,14) + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
