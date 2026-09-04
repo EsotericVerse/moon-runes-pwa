@@ -119,10 +119,23 @@ class LOC3SearchEngine:
         if not isinstance(works, list) or not works:
             raise ValueError("LOC3 dataset must contain a non-empty works array")
 
-        # Media channels are a version-level overlay, not lyric-vector content.
-        media_path = dataset_path.parent / "LOC3_MEDIA_LINKS_v0.1.json"
-        if media_path.exists():
-            media = json.loads(media_path.read_text(encoding="utf-8"))
+        # Media is owned by LOC5 and referenced by LOC3.
+        # Prefer the shared registry; keep the legacy LOC3 overlay as a compatibility fallback.
+        shared_media_path = dataset_path.parents[2] / "data" / "shared" / "LOC_MEDIA_REGISTRY.json"
+        legacy_media_path = dataset_path.parent / "LOC3_MEDIA_LINKS_v0.1.json"
+        if shared_media_path.exists():
+            media = json.loads(shared_media_path.read_text(encoding="utf-8"))
+            by_song_id = {item.get("linked_song_id"): item for item in media.get("items", []) if item.get("linked_song_id")}
+            for work in works:
+                for version in work.get("versions", []):
+                    item = by_song_id.get(version.get("song_id"))
+                    if item:
+                        version["media_id"] = item.get("media_id")
+                        version["ig_preview_url"] = item.get("url", "")
+                        version["media_type"] = item.get("media_type")
+                        version["media_source_refs"] = item.get("source_refs", [])
+        elif legacy_media_path.exists():
+            media = json.loads(legacy_media_path.read_text(encoding="utf-8"))
             by_song_id = {item["song_id"]: item for item in media.get("items", [])}
             for work in works:
                 for version in work.get("versions", []):
