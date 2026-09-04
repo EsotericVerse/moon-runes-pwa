@@ -258,8 +258,21 @@
       align-items: center;
       gap: 10px;
       overflow-x: auto;
-      padding-bottom: 4px;
+      overflow-y: hidden;
+      padding: 4px 2px 10px;
+      scroll-behavior: smooth;
+      scrollbar-width: auto;
+      scrollbar-color: rgba(169,199,255,.55) rgba(255,255,255,.06);
+      cursor: grab;
+      user-select: none;
+      touch-action: pan-x;
+      -webkit-overflow-scrolling: touch;
     }
+    .trajectory:active { cursor: grabbing; }
+    .trajectory::-webkit-scrollbar { height: 10px; }
+    .trajectory::-webkit-scrollbar-track { background: rgba(255,255,255,.06); border-radius: 999px; }
+    .trajectory::-webkit-scrollbar-thumb { background: rgba(169,199,255,.55); border-radius: 999px; }
+    .trajectory-controls { display:flex; gap:8px; }
     .step {
       min-width: 180px;
       border: 1px solid var(--line);
@@ -452,7 +465,14 @@
 
       <section class="grid cols-2" style="margin-top:16px;">
         <div class="card" id="trajectory">
-          <div class="head"><div><h3>Trajectory</h3><p>不是看單點，而是看狀態怎麼一路轉變。</p></div><span class="badge">軌跡</span></div>
+          <div class="head">
+            <div><h3>Trajectory</h3><p>不是看單點，而是看狀態怎麼一路轉變。</p></div>
+            <div class="trajectory-controls">
+              <button class="btn ghost" id="trajPrevBtn" type="button" aria-label="向前捲動軌跡">←</button>
+              <button class="btn ghost" id="trajNextBtn" type="button" aria-label="向後捲動軌跡">→</button>
+              <span class="badge">軌跡</span>
+            </div>
+          </div>
           <div class="body"><div class="trajectory" id="trajectoryList"><div class="empty" style="min-width:100%">需要至少兩筆具有 State After 的事件才能形成軌跡。</div></div></div>
         </div>
 
@@ -775,6 +795,41 @@
           alert('封存失敗，請確認 Apps Script 已部署新版。');
         }
       }
+    });
+
+    const trajectoryEl = $('#trajectoryList');
+    let trajDragging = false;
+    let trajStartX = 0;
+    let trajStartScroll = 0;
+
+    trajectoryEl.addEventListener('pointerdown', (ev) => {
+      trajDragging = true;
+      trajStartX = ev.clientX;
+      trajStartScroll = trajectoryEl.scrollLeft;
+      trajectoryEl.setPointerCapture?.(ev.pointerId);
+    });
+
+    trajectoryEl.addEventListener('pointermove', (ev) => {
+      if (!trajDragging) return;
+      trajectoryEl.scrollLeft = trajStartScroll - (ev.clientX - trajStartX);
+    });
+
+    const stopTrajectoryDrag = (ev) => {
+      trajDragging = false;
+      if (ev && trajectoryEl.hasPointerCapture?.(ev.pointerId)) {
+        trajectoryEl.releasePointerCapture(ev.pointerId);
+      }
+    };
+    trajectoryEl.addEventListener('pointerup', stopTrajectoryDrag);
+    trajectoryEl.addEventListener('pointercancel', stopTrajectoryDrag);
+    trajectoryEl.addEventListener('pointerleave', () => { trajDragging = false; });
+
+    $('#trajPrevBtn').addEventListener('click', () => {
+      trajectoryEl.scrollBy({ left: -Math.max(260, trajectoryEl.clientWidth * 0.75), behavior: 'smooth' });
+    });
+
+    $('#trajNextBtn').addEventListener('click', () => {
+      trajectoryEl.scrollBy({ left: Math.max(260, trajectoryEl.clientWidth * 0.75), behavior: 'smooth' });
     });
 
     $('#refreshBtn').addEventListener('click', loadEvents);
