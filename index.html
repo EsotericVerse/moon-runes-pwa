@@ -566,6 +566,62 @@
       box-shadow: var(--loc-shadow);
     }
 
+    .draw-mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .draw-mode {
+      display: flex;
+      min-height: 132px;
+      padding: 16px;
+      border: 1px solid var(--loc-border);
+      border-radius: 18px;
+      background: var(--loc-surface-soft);
+      color: var(--loc-text);
+      text-decoration: none;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    a.draw-mode:hover {
+      transform: translateY(-2px);
+      border-color: rgba(218, 188, 116, .65);
+      background: rgba(255,255,255,.06);
+    }
+
+    .draw-mode .mode-kicker {
+      color: var(--loc-gold);
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .draw-mode strong {
+      display: block;
+      margin: 7px 0 5px;
+      font-size: 1rem;
+    }
+
+    .draw-mode p {
+      margin: 0;
+      color: var(--loc-muted);
+      font-size: .82rem;
+      line-height: 1.55;
+    }
+
+    .draw-mode.disabled {
+      border-style: dashed;
+      opacity: .65;
+      cursor: default;
+    }
+
+    .draw-mode.disabled .mode-kicker { color: var(--loc-muted); }
+
     footer {
       margin-top: 30px;
       padding: 24px 0 10px;
@@ -581,6 +637,8 @@
       .rune-layout { grid-template-columns: 1fr; }
       .hero-note { min-height: auto; }
       .action-grid { grid-template-columns: 1fr; }
+      .draw-mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
       .works-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .framework { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -592,6 +650,7 @@
       .section-heading { align-items: flex-start; flex-direction: column; }
       .works-list { grid-template-columns: 1fr; }
       .framework { grid-template-columns: 1fr; }
+      .draw-mode-grid { grid-template-columns: 1fr; }
       .hero-actions { align-items: stretch; flex-direction: column; }
       .cta { width: 100%; }
       .image-modal { padding: 10px; }
@@ -859,17 +918,58 @@
           </div>
 
           <div class="description" id="description">
-            <p><strong>使用方式</strong></p>
-            <p>若要問事，先把問題放在心裡，再點擊左側月符卡開始抽取。</p>
-            <p>若只是想看看今天的提示，可以直接前往每日抽牌。</p>
-            <p>目前可使用雙卡、三卡與五卡模式；OW3gs 11 抽已預留入口，後續持續整合。</p>
-            <hr />
-            <p>
-              牌組入口：
-              <a href="result.html?mode=2card">雙卡</a>、
-              <a href="result.html?mode=3card">三卡</a>、
-              <a href="result.html?mode=5card">五卡</a>
-            </p>
+            <p><strong>選擇抽牌方式</strong></p>
+            <p>從單一卡片到多卡組合，依問題需要選擇不同的語意結構。OW3gs 11 張模式目前保留位置，暫不開放連結。</p>
+
+            <div class="draw-mode-grid" aria-label="LOC1 抽牌模式">
+              <a class="draw-mode" href="result.html">
+                <span class="mode-kicker">Single Rune</span>
+                <div>
+                  <strong>單卡</strong>
+                  <p>一個問題，一個語意起點。</p>
+                </div>
+              </a>
+
+              <a class="draw-mode" href="result.html?mode=daily">
+                <span class="mode-kicker">Daily Rune</span>
+                <div>
+                  <strong>每日</strong>
+                  <p>一天一張，觀看當日提示。</p>
+                </div>
+              </a>
+
+              <a class="draw-mode" href="result.html?mode=2card">
+                <span class="mode-kicker">2 Cards</span>
+                <div>
+                  <strong>雙卡</strong>
+                  <p>以「因 → 果」觀看兩者關係。</p>
+                </div>
+              </a>
+
+              <a class="draw-mode" href="result.html?mode=3card">
+                <span class="mode-kicker">3 Cards</span>
+                <div>
+                  <strong>三卡</strong>
+                  <p>以「源 → 轉 → 合」形成語意路徑。</p>
+                </div>
+              </a>
+
+              <a class="draw-mode" href="result.html?mode=5card">
+                <span class="mode-kicker">5 Cards</span>
+                <div>
+                  <strong>五卡</strong>
+                  <p>加入內外情境，觀看更完整的問題結構。</p>
+                </div>
+              </a>
+
+              <div class="draw-mode disabled" aria-disabled="true">
+                <span class="mode-kicker">OW3gs · Reserved</span>
+                <div>
+                  <strong>11 張</strong>
+                  <p>OW3gs 模式預留；目前不提供連結。</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
