@@ -109,6 +109,21 @@
         "created_at": "string|null",
         "updated_at": "string|null"
       }
+    },
+    "content_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "registry": "data/shared/LOC_CONTENT_TYPE_REGISTRY.json",
+      "description": "Shared routing/display type describing what the record is, independent from primary LOC ownership."
+    },
+    "entity_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional stable domain entity identifier when a record is not primarily a work/media/event."
     }
   },
   "governance_rules": [
