@@ -3,46 +3,152 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>符文查詢</title>
+  <meta name="theme-color" content="#07182d" />
+  <title>LOC1 · 66 月符圖鑑</title>
+  <meta name="description" content="LOC1 月符 66 符文圖鑑。瀏覽全部符文，點擊查看卡面、分組、月相與完整基礎資料。" />
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#07182d;--surface:rgba(13,31,56,.88);--surface2:rgba(23,43,72,.72);
+      --line:rgba(180,158,255,.22);--text:#f5f1ff;--muted:#b9bfd0;
+      --purple:#b49eff;--gold:#e7c27d;--shadow:0 24px 70px rgba(0,0,0,.32);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;color:var(--text);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+      background:radial-gradient(circle at 10% 8%,rgba(103,75,171,.24),transparent 30rem),
+      radial-gradient(circle at 88% 88%,rgba(35,105,135,.18),transparent 30rem),
+      linear-gradient(180deg,#07182d 0%,#091729 62%,#06111f 100%);line-height:1.65}
+    a{color:var(--gold)}
+    .page{width:min(1180px,calc(100% - 28px));margin:auto;padding:18px 0 54px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0 20px}
+    .brand{color:var(--text);font-weight:800;letter-spacing:.08em;text-decoration:none}
+    .nav{display:flex;gap:12px;flex-wrap:wrap}.nav a{color:var(--muted);text-decoration:none;font-size:.88rem}.nav a:hover,.nav a[aria-current="page"]{color:var(--text)}
+    .hero{padding:26px 0 20px}.eyebrow{margin:0;color:var(--purple);font-size:.76rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    h1{margin:7px 0 10px;font-size:clamp(2rem,5vw,4rem);line-height:1.1}.lead{margin:0;max-width:820px;color:var(--muted)}
+    .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:24px 0 16px}
+    .search{flex:1 1 260px;min-height:44px;padding:10px 14px;border:1px solid var(--line);border-radius:13px;color:var(--text);background:var(--surface2);outline:none}
+    .search:focus{border-color:rgba(231,194,125,.58)}
+    .filter{min-height:44px;padding:9px 12px;border:1px solid var(--line);border-radius:13px;color:var(--text);background:#10233f}
+    .count{margin-left:auto;color:var(--muted);font-size:.84rem}
+    .rune-grid{display:grid;gap:16px}
+    .rune-group{border:1px solid var(--line);border-radius:18px;background:rgba(11,27,49,.56);overflow:hidden}
+    .group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:13px 14px;border-bottom:1px solid var(--line);background:rgba(23,43,72,.62)}
+    .group-title{min-width:0}.group-head strong{display:block;color:var(--gold);font-size:.98rem}.group-count{color:var(--muted);font-size:.75rem;white-space:nowrap}
+    .group-tone{margin-top:5px;color:#d8e4f7;font-size:.79rem;line-height:1.5}.group-tone b{color:var(--purple);font-weight:800}
+    .group-note{display:block;margin-top:3px;color:var(--muted);font-size:.74rem}
+    .group-row{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;padding:10px}
+    .rune-tile{position:relative;padding:10px;border:1px solid var(--line);border-radius:17px;color:var(--text);background:var(--surface2);transition:.16s ease}
+    .rune-tile:hover{transform:translateY(-3px);border-color:rgba(231,194,125,.55);background:rgba(28,50,83,.9)}
+    .rune-image-button{display:block;width:100%;padding:0;border:0;border-radius:13px;overflow:hidden;background:rgba(2,8,18,.5);cursor:pointer}
+    .rune-image-button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+    .rune-thumb{display:block;width:100%;aspect-ratio:1/1;object-fit:contain;background:#07101f}
+    .rune-info{padding:10px 3px 2px}
+    .num{color:var(--purple);font-size:.72rem;font-weight:800}
+    .name{display:block;margin-top:3px;font-size:1.05rem;font-weight:800}
+    .en{display:block;color:var(--muted);font-size:.74rem;margin-top:1px}
+    .meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.pill{padding:2px 7px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:.67rem}
+    .special{border-color:rgba(231,194,125,.42);background:linear-gradient(180deg,rgba(73,55,79,.68),rgba(19,35,59,.76))}
+    .empty{grid-column:1/-1;padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px}
+    .rune-basics{margin:18px 0;padding:20px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+    .rune-basics h2{margin:0 0 8px;font-size:1.2rem}.rune-basics>p{margin:0;color:var(--muted)}
+    .basic-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}
+    .basic-item{padding:14px;border:1px solid var(--line);border-radius:15px;background:var(--surface2)}
+    .basic-item strong{display:block;margin-bottom:5px;color:var(--gold);font-size:.9rem}
+    .basic-item span{color:var(--muted);font-size:.8rem;line-height:1.55}
+    .learn-more{display:inline-flex;margin-top:14px;color:var(--gold);font-size:.86rem;font-weight:800;text-decoration:none}
+    .learn-more:hover{text-decoration:underline}
+    .physical-card-download{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;margin:18px 0 8px;padding:18px 20px;border:1px solid rgba(231,194,125,.34);border-radius:18px;background:linear-gradient(135deg,rgba(63,47,80,.62),rgba(18,38,66,.78))}
+    .physical-card-download h2{margin:0 0 6px;font-size:1.08rem}
+    .physical-card-download p{margin:0;color:var(--muted);font-size:.88rem}
+    .download-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border:1px solid rgba(231,194,125,.48);border-radius:999px;color:#160f26;background:linear-gradient(135deg,#c7b7ff,#e8c57f);font-weight:800;text-decoration:none;white-space:nowrap}
+    .download-btn:hover,.download-btn:focus-visible{filter:brightness(1.05);outline:none}
+    dialog{width:min(980px,calc(100% - 24px));max-height:90vh;padding:0;border:1px solid var(--line);border-radius:24px;color:var(--text);background:#0a1729;box-shadow:var(--shadow)}
+    dialog::backdrop{background:rgba(2,8,18,.82);backdrop-filter:blur(8px)}
+    .modal-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(10,23,41,.96)}
+    .modal-title{margin:0;font-size:1.08rem}.close{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;color:var(--text);background:var(--surface2);font-size:1.35rem;cursor:pointer}
+    .modal-body{display:grid;grid-template-columns:minmax(220px,.7fr) minmax(0,1.3fr);gap:20px;padding:20px}
+    .card-side{position:sticky;top:76px;align-self:start}.card-image{display:block;width:min(100%,420px);aspect-ratio:1/1;margin:auto;object-fit:contain;filter:drop-shadow(0 18px 28px rgba(0,0,0,.35))}
+    .data-side{min-width:0}.summary{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+    .field{padding:12px 0;border-bottom:1px solid var(--line)}.field:last-child{border-bottom:0}.field dt{color:var(--gold);font-size:.78rem;font-weight:800}.field dd{margin:4px 0 0;color:#dce6f7;white-space:pre-wrap}
+    footer{padding:28px 0 0;color:var(--muted);font-size:.82rem;text-align:center}
+    @media(max-width:980px){.group-row{grid-template-columns:repeat(4,minmax(0,1fr))}.basic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:700px){.group-row{grid-template-columns:repeat(3,minmax(0,1fr))}.modal-body{grid-template-columns:1fr}.card-side{position:static}.count{width:100%;margin-left:0}.physical-card-download{grid-template-columns:1fr}.download-btn{width:100%}}
+    @media(max-width:470px){.group-row{grid-template-columns:repeat(2,minmax(0,1fr))}.basic-grid{grid-template-columns:1fr}.page{width:min(100% - 18px,1180px)}}
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="main-layout">
-      <div class="left-panel">
-        <div class="card-display">
-          <img id="result-image" src="" alt="符文圖片" />
-        </div>
-        <div class="left-bottom">
-          <div>
-            <select id="group-select">
-              <option value="">請選擇分組</option>
-              <option value="靈魂">靈魂</option>
-              <option value="連結">連結</option>
-              <option value="生命">生命</option>
-              <option value="自然">自然</option>
-              <option value="礦物">礦物</option>
-              <option value="元素">元素</option>
-              <option value="秩序">秩序</option>
-              <option value="無序">無序</option>
-            </select>
-            <select id="rune-select" disabled>
-              <option value="">請先選擇分組</option>
-            </select>
-          </div>
-          <div id="result-attributes" class="card-attributes"></div>
-        </div>
+  <main class="page">
+    <nav class="topbar" aria-label="主要導覽">
+      <a class="brand" href="index.html">LOC · 月典</a>
+      <div class="nav">
+        <a href="result.html?mode=daily">每日抽牌</a>
+        <a href="list.html" aria-current="page">月符資料</a>
+        <a href="faq.html">知識庫</a>
+        <a href="loc3.html">作品搜尋</a>
+        <a href="life.html">LOC8 · Life</a>
       </div>
-      <div class="right-panel">
-        <div id="result-description" class="description"></div>
-        <button id="home-button">回到首頁</button>
+    </nav>
+
+    <header class="hero">
+      <p class="eyebrow">LOC1 · Rune Library</p>
+      <h1>66 月符圖鑑</h1>
+      <p class="lead">這裡是符文資料展示，不是抽牌。1–64 依八個組別排列成 8×8；65「玄」與 66「命」另列為特殊符文。點擊卡片圖片即可浮出完整卡面與符文基礎資料。</p>
+    </header>
+
+    <section class="rune-basics" aria-labelledby="rune-basics-title">
+      <h2 id="rune-basics-title">月符卡是什麼？</h2>
+      <p>月符是一套把概念、狀態與變化整理成可抽取語言的符文卡。你可以把它當成抽籤、語意提示或創作起點；重點不是先接受某種神秘學立場，而是從抽到的文字重新觀看正在思考的事情。</p>
+      <div class="basic-grid">
+        <div class="basic-item"><strong>66 個符文</strong><span>1–64 為主要符文；65「玄」與 66「命」是特殊符文，共同構成目前固定的 66 符文系統。</span></div>
+        <div class="basic-item"><strong>每張都有自己的語意</strong><span>卡片包含名稱、英文、圖騰、分組、月相、顯化形式，以及延伸的課題、咒語與實踐提示。</span></div>
+        <div class="basic-item"><strong>四種方向</strong><span>實際抽牌時可出現正位、半正位、半逆位與逆位；方向會改變同一符文在當下語境中的表現方式。</span></div>
+        <div class="basic-item"><strong>圖鑑與抽牌分開</strong><span>這一頁用來認識卡片本身；真正的單卡、雙卡、三卡、五卡與 OW3gs，則由抽牌頁處理組合與語意。</span></div>
+      </div>
+      <a class="learn-more" href="https://vocus.cc/article/6865ee2dfd89780001156a59" target="_blank" rel="noopener noreferrer">閱讀方格子上的月符概論文章 ↗</a>
+    </section>
+
+    <section class="physical-card-download" aria-labelledby="physical-card-title">
+      <div>
+        <h2 id="physical-card-title">想把月符變成實體卡片？</h2>
+        <p>可下載完整實體卡片 PDF，自行列印、裁切並護貝，就能做成一套可實際使用的月符卡牌。</p>
+      </div>
+      <a class="download-btn" href="docs/LunarRunesCardCut.pdf" download>下載全符文實體卡片 PDF ↓</a>
+    </section>
+
+    <section aria-label="符文清單">
+      <p style="margin:0 0 12px;color:var(--muted);font-size:.86rem;">八個組別不只分類符文主題，也會影響解讀時的語氣與敘述方向。以下每一列都標示其主要語氣特徵。</p>
+      <div class="toolbar">
+        <input class="search" id="rune-search" type="search" placeholder="搜尋符文名稱、英文或編號…" autocomplete="off" />
+        <select class="filter" id="group-filter" aria-label="依分組篩選">
+          <option value="">全部分組</option>
+          <option value="靈魂">靈魂</option><option value="連結">連結</option><option value="生命">生命</option><option value="自然">自然</option>
+          <option value="礦物">礦物</option><option value="元素">元素</option><option value="秩序">秩序</option><option value="無序">無序</option>
+          <option value="個人">特殊符文</option>
+        </select>
+        <span class="count" id="rune-count">66 / 66</span>
+      </div>
+      <div class="rune-grid" id="rune-grid" aria-live="polite"></div>
+    </section>
+
+    <footer>LOC · Luna Codex · 月典 ｜ By 秘藝文域（EsotericVerse Studio）</footer>
+  </main>
+
+  <dialog id="rune-modal" aria-labelledby="modal-title">
+    <div class="modal-head">
+      <h2 class="modal-title" id="modal-title">符文資料</h2>
+      <button class="close" id="modal-close" type="button" aria-label="關閉">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="card-side"><img class="card-image" id="modal-image" src="" alt="" /></div>
+      <div class="data-side">
+        <div class="summary" id="modal-summary"></div>
+        <dl id="modal-data"></dl>
       </div>
     </div>
-    <footer>
-      By 月語之境工作室 ｜ <a href="mailto:esotericverse.xy@gmail.com">聯絡我們</a>
-    </footer>
-  </div>
-    <script type="module" src="js/runeLibrary.js"></script>
+  </dialog>
+
+  <script type="module" src="js/runeLibrary.js"></script>
   <script type="module" src="js/list.js"></script>
 </body>
 </html>
