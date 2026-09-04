@@ -36,4 +36,4 @@ LOC7 的第一個公開模組，以 40 題已確認 FAQ 切分為 62 個檢索�
 - 服務啟動時載入一次資料與索引
 - 僅使用 Python 標準函式庫，不增加 Render 建置負擔
 
-資料來源：`data/LOC_FAQ_RAG_v0.1.json`
+資料來源：`data/LOC_FAQ_RAG_v0.3.json`
