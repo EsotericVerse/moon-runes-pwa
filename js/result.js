@@ -111,22 +111,40 @@ function buildSingleReading(card, realPhase, daily = false) {
   const directionText = getDirectionText(card);
   const info = getPhaseInfo(card, realPhase);
 
-  if (daily && info) {
+  if (daily) {
+    if (!info) {
+      return `
+        <h2>每日抽牌</h2>
+        <p>目前無法載入今日月相對應資料。</p>
+      `;
+    }
+
     return `
-      <h2>今日語意</h2>
-      <p><strong>狀況：</strong>${info.狀況形容}</p>
-      <p><strong>提醒：</strong>${info.每日占卜提醒}</p>
-      <p><strong>引導：</strong>${info.每日占卜引導}</p>
-      <p><strong>祝福：</strong>${info.每日占卜祝福}</p>
+      <h2>每日抽牌</h2>
+      <p><strong>狀況形容：</strong><br>${info.狀況形容}</p>
+      <p><strong>狀況表達：</strong><br>${info.狀況表達}</p>
+      <p><strong>每日占卜提醒：</strong><br>${info.每日占卜提醒}</p>
+      <p><strong>每日占卜引導：</strong><br>${info.每日占卜引導}</p>
+      <p><strong>每日占卜祝福：</strong><br>${info.每日占卜祝福}</p>
     `;
   }
 
   return `
-    <h2>單卡解讀</h2>
-    <p><strong>占卜結論：</strong>${card.rune.符文名稱}・${card.direction}：${directionText}</p>
+    <h2>單卡占卜</h2>
+    <p><strong>歷史：</strong>${card.rune.符文變化歷史 || "—"}</p>
+    <p><strong>故事：</strong>${card.rune.神話故事 || "—"}</p>
+    <p><strong>靈魂咒語：</strong>${card.rune.靈魂咒語 || "—"}</p>
+    <p><strong>分組說明：</strong>${card.rune.分組說明 || "—"}</p>
     <p><strong>靈魂課題：</strong>${card.rune.靈魂課題 || "—"}</p>
     <p><strong>實踐挑戰：</strong>${card.rune.實踐挑戰 || "—"}</p>
-    ${info ? `<p><strong>當下提醒：</strong>${info.狀況形容}</p>` : ""}
+    <p><strong>占卜結論：</strong>${card.rune.符文名稱}・${card.direction}：${directionText}</p>
+    ${info ? `
+      <p><strong>愛情建議：</strong>${info.愛情建議}</p>
+      <p><strong>事業建議：</strong>${info.事業建議}</p>
+      <p><strong>心理建議：</strong>${info.心理建議}</p>
+      <p><strong>健康建議：</strong>${info.健康建議}</p>
+      <p><strong>生活建議：</strong>${info.生活建議}</p>
+    ` : ""}
   `;
 }
 
@@ -155,19 +173,50 @@ function buildMultiReading(cards, labels, realPhase) {
   `;
 }
 
-async function runRitual(config) {
-  const messages = [
-    `目前使用「${config.title}」模式。`,
-    "請把注意力放在現在真正想問的事情。",
-    "月符正在建立這次抽取的語意位置。",
-    "讓答案先出現，再決定要怎麼理解。",
-    "抽取完成。"
-  ];
+async function runRitual(mode, config) {
+  const messagesByMode = {
+    single: [
+      "您目前使用的是「單卡占卜模式」。",
+      "占卜中，請稍等片刻，馬上就好……",
+      "正在找尋那命運之線……",
+      "微弱的月光，會在漆黑的夜裡，帶領你找到方向。",
+      "抓到命運絲線的軌跡了，現在呈現。"
+    ],
+    daily: [
+      "您目前使用的是「單卡每日抽牌模式」。",
+      "抽牌中，請稍等片刻，馬上就好……",
+      "這是一張屬於今日節奏與提醒的指引牌。",
+      "微弱的月光，會在漆黑的夜裡，帶領你找到方向。",
+      "今日月符已經抽取完成。"
+    ],
+    "2card": [
+      "您目前使用的是「雙卡占卜模式」。",
+      "占卜中，請稍等片刻，馬上就好……",
+      "第一張卡牌為「因」，第二張卡牌為「果」。",
+      "正在整理兩張牌之間的前後關係。",
+      "抓到命運絲線的軌跡了，現在呈現。"
+    ],
+    "3card": [
+      "您目前使用的是「三卡占卜模式」。",
+      "占卜中，請稍等片刻，馬上就好……",
+      "第一張為「源」，第二張為「轉」，第三張為「合」。",
+      "正在整理這次抽取的變化路徑。",
+      "抓到命運絲線的軌跡了，現在呈現。"
+    ],
+    "5card": [
+      "您目前使用的是「五卡占卜模式」。",
+      "占卜中，請稍等片刻，馬上就好……",
+      "前三張依序觀看過去、現在與未來。",
+      "第四、第五張補充周圍環境與外在影響。",
+      "五張牌已經完成排列，現在呈現。"
+    ]
+  };
 
+  const messages = messagesByMode[mode] || messagesByMode.single;
   const message = document.getElementById("ritual-message");
   for (const text of messages) {
     message.textContent = text;
-    await new Promise(resolve => setTimeout(resolve, 900));
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 }
 
@@ -202,7 +251,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("mode-kicker").textContent = config.kicker;
   document.getElementById("moon-phase").textContent = `真實月相：${realPhase}`;
 
-  await runRitual(config);
+  await runRitual(mode, config);
   renderResult(mode, config, realPhase);
 
   document.getElementById("retry-button").addEventListener("click", () => {
