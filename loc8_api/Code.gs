@@ -8,7 +8,7 @@ function doGet(e) {
     const userId = String((e && e.parameter && e.parameter.user_id) || '').trim();
 
     if (action === 'health') {
-      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.2' });
+      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.3' });
     }
 
     if (action === 'users') {
@@ -19,7 +19,7 @@ function doGet(e) {
     if (userId) events = events.filter(row => String(row.user_id || '') === userId);
     return json_({ ok: true, events: events });
   } catch (err) {
-    return json_({ ok: false, error: String(err && err.message ? err.message : err) });
+    return json_({ ok: false, error: errorText_(err) });
   }
 }
 
@@ -34,11 +34,27 @@ function doPost(e) {
       return json_({ ok: true, user: user });
     }
 
+    if (action === 'update_event') {
+      const event = normalizeEvent_(body.event || body);
+      if (!event.id) throw new Error('Missing event id');
+      const updated = updateObjectById_(EVENT_SHEET, event.id, event, event.user_id);
+      return json_({ ok: true, event: updated, action: 'update_event' });
+    }
+
+    if (action === 'archive_event') {
+      const raw = body.event || body;
+      const id = String(raw.id || body.id || '').trim();
+      const userId = String(raw.user_id || body.user_id || '').trim();
+      if (!id) throw new Error('Missing event id');
+      const updated = updateObjectById_(EVENT_SHEET, id, { status: 'archived' }, userId);
+      return json_({ ok: true, event: updated, action: 'archive_event' });
+    }
+
     const event = normalizeEvent_(body.event || body);
     appendObject_(EVENT_SHEET, event);
-    return json_({ ok: true, event: event });
+    return json_({ ok: true, event: event, action: 'event' });
   } catch (err) {
-    return json_({ ok: false, error: String(err && err.message ? err.message : err) });
+    return json_({ ok: false, error: errorText_(err) });
   }
 }
 
@@ -81,22 +97,68 @@ function appendObject_(sheetName, object) {
   lock.waitLock(10000);
   try {
     const sheet = getSheet_(sheetName);
-    const lastColumn = Math.max(sheet.getLastColumn(), 1);
-    const headers = sheet.getRange(1, 1, 1, lastColumn).getDisplayValues()[0]
-      .map(v => String(v).trim())
-      .filter(Boolean);
-
+    const headers = getHeaders_(sheet);
     if (!headers.length) throw new Error(sheetName + ' has no headers');
-
-    const row = headers.map(h => {
-      const value = object[h];
-      if (Array.isArray(value)) return value.join(', ');
-      return value == null ? '' : value;
-    });
+    const row = headers.map(h => serializeCell_(object[h]));
     sheet.appendRow(row);
   } finally {
     lock.releaseLock();
   }
+}
+
+function updateObjectById_(sheetName, id, patch, expectedUserId) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getSheet_(sheetName);
+    const headers = getHeaders_(sheet);
+    const idCol = headers.indexOf('id');
+    if (idCol < 0) throw new Error(sheetName + ' has no id column');
+
+    const values = sheet.getDataRange().getDisplayValues();
+    let targetRow = -1;
+
+    for (let r = 1; r < values.length; r++) {
+      if (String(values[r][idCol] || '').trim() !== String(id).trim()) continue;
+
+      if (expectedUserId) {
+        const userCol = headers.indexOf('user_id');
+        if (userCol >= 0 && String(values[r][userCol] || '').trim() !== String(expectedUserId).trim()) {
+          throw new Error('Event owner mismatch');
+        }
+      }
+
+      targetRow = r + 1;
+      break;
+    }
+
+    if (targetRow < 0) throw new Error('Event not found: ' + id);
+
+    const existing = {};
+    headers.forEach((h, i) => existing[h] = values[targetRow - 1][i] == null ? '' : values[targetRow - 1][i]);
+    const merged = Object.assign({}, existing, patch, { id: id });
+
+    const row = headers.map(h => serializeCell_(merged[h]));
+    sheet.getRange(targetRow, 1, 1, headers.length).setValues([row]);
+
+    const result = {};
+    headers.forEach((h, i) => result[h] = row[i]);
+    return result;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function getHeaders_(sheet) {
+  const lastColumn = Math.max(sheet.getLastColumn(), 1);
+  return sheet.getRange(1, 1, 1, lastColumn).getDisplayValues()[0]
+    .map(v => String(v).trim())
+    .filter(Boolean);
+}
+
+function serializeCell_(value) {
+  if (Array.isArray(value)) return value.join(', ');
+  return value == null ? '' : value;
 }
 
 function normalizeEvent_(raw) {
@@ -149,6 +211,10 @@ function getSheet_(name) {
   const sheet = ss.getSheetByName(name);
   if (!sheet) throw new Error('Missing sheet: ' + name);
   return sheet;
+}
+
+function errorText_(err) {
+  return String(err && err.message ? err.message : err);
 }
 
 function json_(payload) {
