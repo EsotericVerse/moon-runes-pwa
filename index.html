@@ -290,6 +290,55 @@
       font-weight: 800;
     }
 
+    .works-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .work-item {
+      padding: 16px 18px;
+      border: 1px solid var(--loc-border);
+      border-radius: 16px;
+      background: var(--loc-surface-soft);
+    }
+
+    .work-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .work-title {
+      margin: 0;
+      color: var(--loc-text);
+      font-size: 1.05rem;
+    }
+
+    .work-meta {
+      color: var(--loc-purple);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .work-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      margin-top: 8px;
+      font-size: 0.86rem;
+    }
+
+    .work-links a {
+      text-decoration: none;
+    }
+
+    .work-links a:hover,
+    .work-links a:focus-visible {
+      text-decoration: underline;
+    }
+
     .visual-card {
       overflow: hidden;
       border: 1px solid var(--loc-border);
@@ -632,6 +681,121 @@
           <p>FAQ v0.3／RAG v0.3 已接入 LOC7_KM，從月符到文字建築都可以查詢。</p>
           <span class="arrow">向月典提問 →</span>
         </a>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="works-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">LOC4 · Writing × LOC3 · Music</p>
+          <h2 id="works-title">文字作品與跨媒介作品列表</h2>
+        </div>
+        <p>LOC4 的小說與文章作為文字 Corpus；部分作品已與 LOC3 主題曲、OP 或角色曲形成直接關聯。</p>
+      </div>
+
+      <div class="works-list">
+        <article class="work-item">
+          <div class="work-head">
+            <h3 class="work-title">月語者</h3>
+            <span class="work-meta">7 大篇 × 每篇 26 章 · 共 182 章</span>
+          </div>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/6829d52cfd8978000109b281" target="_blank" rel="noopener noreferrer">第一篇〈現在，下弦之卷〉序章：織命之始 →</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <div class="work-head">
+            <h3 class="work-title">一日情人</h3>
+            <span class="work-meta">全 5 章</span>
+          </div>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/683721cefd897800012c2488" target="_blank" rel="noopener noreferrer">第一章：味道 →</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <div class="work-head">
+            <h3 class="work-title">已讀不回</h3>
+            <span class="work-meta">全 6 章 · 2 首主題曲</span>
+          </div>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/6a4f6d82fd89780001ec1c93" target="_blank" rel="noopener noreferrer">第一章：等待情緒權威 →</a>
+            <a href="https://suno.com/s/Zj1837rqBXeo0vxI" target="_blank" rel="noopener noreferrer">主題曲〈已讀不回〉</a>
+            <a href="https://suno.com/s/6LXfO3EvECZUgEnu" target="_blank" rel="noopener noreferrer">〈在已讀不回〉</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <div class="work-head">
+            <h3 class="work-title">在你之前，在你之後</h3>
+            <span class="work-meta">全 20 章 · OP／求婚歌／6 首角色曲</span>
+          </div>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/682f0e65fd89780001c7b708" target="_blank" rel="noopener noreferrer">第一章：在你之前，阿珠篇 →</a>
+            <a href="https://suno.com/s/doXe7ALt4MVs0tXK" target="_blank" rel="noopener noreferrer">OP</a>
+            <a href="https://suno.com/s/YvP6Wi5lPHZywCrX" target="_blank" rel="noopener noreferrer">求婚歌</a>
+            <a href="https://suno.com/s/OIX6l1eFUJ7IYOBz" target="_blank" rel="noopener noreferrer">德興</a>
+            <a href="https://suno.com/s/4nHz2DJlyK1mGIeM" target="_blank" rel="noopener noreferrer">小瑤</a>
+            <a href="https://suno.com/s/C9YWrn9xn19hoQhV" target="_blank" rel="noopener noreferrer">阿珠</a>
+            <a href="https://suno.com/s/a8tUvkKBIbojDGsp" target="_blank" rel="noopener noreferrer">阿文</a>
+            <a href="https://suno.com/s/JJ0rs9I78FXHas5A" target="_blank" rel="noopener noreferrer">小維</a>
+            <a href="https://suno.com/s/4Wx3tCqM7BmmzTI4" target="_blank" rel="noopener noreferrer">阿鎧</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <div class="work-head">
+            <h3 class="work-title">男男男關係</h3>
+            <span class="work-meta">全 20 章 · 特色曲</span>
+          </div>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/6834920afd89780001aed68d" target="_blank" rel="noopener noreferrer">第一章：關於喜歡 →</a>
+            <a href="https://suno.com/s/eSXeSYxVmSZqSNyy" target="_blank" rel="noopener noreferrer">〈布丁是宇宙的真理〉</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <div class="work-head">
+            <h3 class="work-title">錯的人：命運的錯位者</h3>
+            <span class="work-meta">單篇</span>
+          </div>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/682a22c1fd89780001197ac6" target="_blank" rel="noopener noreferrer">閱讀作品 →</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <div class="work-head">
+            <h3 class="work-title">牛奶，紙船，還有你</h3>
+            <span class="work-meta">單篇 · OP</span>
+          </div>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/697b4b5dfd897800011eb9e1" target="_blank" rel="noopener noreferrer">閱讀作品 →</a>
+            <a href="https://suno.com/s/IGGefOeWWSZ6FbWv" target="_blank" rel="noopener noreferrer">OP</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <div class="work-head">
+            <h3 class="work-title">灰色關係</h3>
+            <span class="work-meta">單篇 · LOC3 同名歌曲</span>
+          </div>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/694c23a7fd897800012c191d" target="_blank" rel="noopener noreferrer">閱讀作品 →</a>
+            <a href="https://suno.com/s/LMsmefoFEMXIt6yr" target="_blank" rel="noopener noreferrer">LOC3 歌曲</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <div class="work-head">
+            <h3 class="work-title">被認為是「先知」的人</h3>
+            <span class="work-meta">連載中</span>
+          </div>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/69477e66fd8978000193ca4d" target="_blank" rel="noopener noreferrer">前言 →</a>
+          </div>
+        </article>
       </div>
     </section>
 
