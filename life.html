@@ -546,21 +546,33 @@
       renderAll();
     }
 
-    async function saveEvent(event) {
+    async function saveEvent(event, action = 'event') {
       if (sheetApiUrl) {
         const res = await fetch(sheetApiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'event', event }),
+          body: JSON.stringify({ action, event }),
           redirect: 'follow'
         });
         if (!res.ok) throw new Error('POST failed');
         const data = await res.json();
         if (data && data.ok === false) throw new Error(data.error || 'API error');
+        return data;
+      }
+
+      if (action === 'update_event') {
+        const index = events.findIndex(e => e.id === event.id);
+        if (index < 0) throw new Error('Event not found');
+        events[index] = normalizeEvent({ ...events[index], ...event });
+      } else if (action === 'archive_event') {
+        const index = events.findIndex(e => e.id === event.id);
+        if (index < 0) throw new Error('Event not found');
+        events[index] = normalizeEvent({ ...events[index], status: 'archived' });
       } else {
         events.push(event);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
       }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+      return { ok: true };
     }
 
     function normalizeEvent(raw) {
