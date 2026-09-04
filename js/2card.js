@@ -51,12 +51,15 @@ async function requestApiOrFallback(payload, fallbackHtml) {
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
-  const realPhase = sessionStorage.getItem('realPhase');
+  let realPhase = sessionStorage.getItem("realPhase");
+
   if (!realPhase) {
-    window.location.href = 'index.html';
-    return;
+
+    realPhase = window.LOCMoonPhase?.getRealPhase() || "未知";
+
   }
-  sessionStorage.removeItem('realPhase');
+
+  sessionStorage.removeItem("realPhase");
 
   const img1 = document.getElementById('result-image1');
   const img2 = document.getElementById('result-image2');
