@@ -17,8 +17,16 @@
 - `GET ?action=health`：健康檢查
 - `GET ?action=events&user_id=lucas`：取得指定使用者事件
 - `GET ?action=users`：取得使用者
-- `POST`：以 JSON / text/plain body 寫入事件（預設）或使用者
+- `POST action=event`：新增事件
+- `POST action=update_event`：依 `id` 更新既有事件
+- `POST action=archive_event`：依 `id` 將事件標記為 `archived`
+- `POST action=user`：新增使用者
 
 事件會依 `Event` 第一列欄位寫入；使用者依 `User` 第一列欄位寫入。
 
 > 目前是單人 MVP。OAuth 與正式權限邊界之後再接；在此之前，不要把 Web App URL 當成安全授權機制。
+
+
+## v0.3 編輯流程
+
+`life.html` 的 Timeline 每筆事件都有「編輯」與「封存」。編輯會把既有 Event 帶回表單，儲存時使用 `update_event` 覆寫同一筆 `id`；封存只更新 `status=archived`，不刪除歷史。
