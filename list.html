@@ -44,6 +44,14 @@
     .meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.pill{padding:2px 7px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:.67rem}
     .special{border-color:rgba(231,194,125,.42);background:linear-gradient(180deg,rgba(73,55,79,.68),rgba(19,35,59,.76))}
     .empty{grid-column:1/-1;padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px}
+    .rune-basics{margin:18px 0;padding:20px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+    .rune-basics h2{margin:0 0 8px;font-size:1.2rem}.rune-basics>p{margin:0;color:var(--muted)}
+    .basic-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}
+    .basic-item{padding:14px;border:1px solid var(--line);border-radius:15px;background:var(--surface2)}
+    .basic-item strong{display:block;margin-bottom:5px;color:var(--gold);font-size:.9rem}
+    .basic-item span{color:var(--muted);font-size:.8rem;line-height:1.55}
+    .learn-more{display:inline-flex;margin-top:14px;color:var(--gold);font-size:.86rem;font-weight:800;text-decoration:none}
+    .learn-more:hover{text-decoration:underline}
     .physical-card-download{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;margin:18px 0 8px;padding:18px 20px;border:1px solid rgba(231,194,125,.34);border-radius:18px;background:linear-gradient(135deg,rgba(63,47,80,.62),rgba(18,38,66,.78))}
     .physical-card-download h2{margin:0 0 6px;font-size:1.08rem}
     .physical-card-download p{margin:0;color:var(--muted);font-size:.88rem}
@@ -58,9 +66,9 @@
     .data-side{min-width:0}.summary{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
     .field{padding:12px 0;border-bottom:1px solid var(--line)}.field:last-child{border-bottom:0}.field dt{color:var(--gold);font-size:.78rem;font-weight:800}.field dd{margin:4px 0 0;color:#dce6f7;white-space:pre-wrap}
     footer{padding:28px 0 0;color:var(--muted);font-size:.82rem;text-align:center}
-    @media(max-width:980px){.rune-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    @media(max-width:980px){.rune-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.basic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:700px){.rune-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.modal-body{grid-template-columns:1fr}.card-side{position:static}.count{width:100%;margin-left:0}.physical-card-download{grid-template-columns:1fr}.download-btn{width:100%}}
-    @media(max-width:470px){.rune-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.page{width:min(100% - 18px,1180px)}}
+    @media(max-width:470px){.rune-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.basic-grid{grid-template-columns:1fr}.page{width:min(100% - 18px,1180px)}}
   </style>
 </head>
 <body>
@@ -81,6 +89,18 @@
       <h1>66 月符圖鑑</h1>
       <p class="lead">這裡是符文資料展示，不是抽牌。直接瀏覽全部 66 符文；點擊卡片圖片即可浮出完整卡面與符文基礎資料。</p>
     </header>
+
+    <section class="rune-basics" aria-labelledby="rune-basics-title">
+      <h2 id="rune-basics-title">月符卡是什麼？</h2>
+      <p>月符是一套把概念、狀態與變化整理成可抽取語言的符文卡。你可以把它當成抽籤、語意提示或創作起點；重點不是先接受某種神秘學立場，而是從抽到的文字重新觀看正在思考的事情。</p>
+      <div class="basic-grid">
+        <div class="basic-item"><strong>66 個符文</strong><span>1–64 為主要符文；65「玄」與 66「命」是特殊符文，共同構成目前固定的 66 符文系統。</span></div>
+        <div class="basic-item"><strong>每張都有自己的語意</strong><span>卡片包含名稱、英文、圖騰、分組、月相、顯化形式，以及延伸的課題、咒語與實踐提示。</span></div>
+        <div class="basic-item"><strong>四種方向</strong><span>實際抽牌時可出現正位、半正位、半逆位與逆位；方向會改變同一符文在當下語境中的表現方式。</span></div>
+        <div class="basic-item"><strong>圖鑑與抽牌分開</strong><span>這一頁用來認識卡片本身；真正的單卡、雙卡、三卡、五卡與 OW3gs，則由抽牌頁處理組合與語意。</span></div>
+      </div>
+      <a class="learn-more" href="https://vocus.cc/article/6865ee2dfd89780001156a59" target="_blank" rel="noopener noreferrer">閱讀方格子上的月符概論文章 ↗</a>
+    </section>
 
     <section class="physical-card-download" aria-labelledby="physical-card-title">
       <div>
