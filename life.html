@@ -428,7 +428,7 @@
               <div class="actions">
                 <button class="btn primary" id="submitEventBtn" type="submit">儲存事件</button>
                 <button class="btn ghost" id="cancelEditBtn" type="button" hidden>取消編輯</button>
-                <button class="btn ghost" type="reset">清除</button>
+                <button class="btn ghost" id="clearFormBtn" type="button">清除</button>
               </div>
             </form>
           </div>
@@ -749,6 +749,7 @@
     });
 
     els.cancelEditBtn.addEventListener('click', resetEventForm);
+    $('#clearFormBtn').addEventListener('click', resetEventForm);
 
     els.timeline.addEventListener('click', async (ev) => {
       const btn = ev.target.closest('button[data-action]');
@@ -838,7 +839,7 @@
 
     els.apiInput.value = sheetApiUrl;
     if (!localStorage.getItem(API_URL_KEY)) localStorage.setItem(API_URL_KEY, sheetApiUrl);
-    $('#date').value = new Date().toISOString().slice(0,10);
+    resetEventForm();
     loadEvents();
   </script>
 </body>
