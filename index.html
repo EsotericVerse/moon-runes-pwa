@@ -436,6 +436,43 @@
     #description strong,
     #attributes strong { color: var(--loc-text); }
 
+    .rune-data-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 16px;
+      padding: 15px 16px;
+      border: 1px solid rgba(218, 188, 116, .42);
+      border-radius: 16px;
+      background: rgba(218, 188, 116, .08);
+      color: var(--loc-text);
+      text-decoration: none;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .rune-data-cta:hover,
+    .rune-data-cta:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(218, 188, 116, .72);
+      background: rgba(218, 188, 116, .13);
+    }
+
+    .rune-data-cta strong {
+      display: block;
+      color: var(--loc-gold);
+      font-size: .96rem;
+    }
+
+    .rune-data-cta small {
+      display: block;
+      margin-top: 3px;
+      color: var(--loc-muted);
+      font-size: .76rem;
+      line-height: 1.45;
+    }
+
+
     .right-panel #description {
       flex: 1;
       display: flex;
@@ -938,10 +975,13 @@
             <p>介紹：「玄」，月符所揭示</p>
             <p>所屬分組：它就是全部</p>
             <p id="moon-phase-index">月相：無 / 真實月相：計算中...</p>
-            <p>
-              <a href="result.html?mode=daily">每日抽牌</a> /
-              <a href="list.html">月符資料查詢</a>
-            </p>
+            <a class="rune-data-cta" href="list.html">
+              <span>
+                <strong>查看完整月符資料</strong>
+                <small>66 月符圖鑑 · 八組分類 · 卡片詳細說明</small>
+              </span>
+              <span aria-hidden="true">→</span>
+            </a>
           </div>
         </div>
 
