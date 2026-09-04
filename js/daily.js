@@ -6,11 +6,14 @@ function shuffleArray(array) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  const realPhase = sessionStorage.getItem("realPhase");
+  let realPhase = sessionStorage.getItem("realPhase");
+
   if (!realPhase) {
-    window.location.href = "index.html";
-    return;
+
+    realPhase = window.LOCMoonPhase?.getRealPhase() || "未知";
+
   }
+
   sessionStorage.removeItem("realPhase");
 
   const img = document.getElementById("daily-image");
