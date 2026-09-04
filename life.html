@@ -693,18 +693,84 @@
       renderTrend(sorted);
     }
 
+    function resetEventForm() {
+      editingId = '';
+      els.editingId.value = '';
+      els.formTitle.textContent = '新增事件';
+      els.editingNote.hidden = true;
+      els.cancelEditBtn.hidden = true;
+      els.submitBtn.textContent = '儲存事件';
+      els.form.reset();
+      $('#userId').value = 'lucas';
+      $('#date').value = new Date().toISOString().slice(0,10);
+    }
+
+    function editEvent(id) {
+      const event = events.find(e => e.id === id);
+      if (!event) return;
+      editingId = id;
+      els.editingId.value = id;
+      els.formTitle.textContent = '編輯事件';
+      els.editingNote.hidden = false;
+      els.cancelEditBtn.hidden = false;
+      els.submitBtn.textContent = '更新事件';
+
+      $('#userId').value = event.user_id || 'lucas';
+      $('#date').value = event.date || '';
+      $('#objectType').value = event.object_type || 'person';
+      $('#objectId').value = event.object_id || '';
+      $('#eventType').value = event.event_type || 'transition';
+      $('#title').value = event.event_title || event.title || '';
+      $('#description').value = event.description || '';
+      $('#before').value = event.state_before || '';
+      $('#after').value = event.state_after || '';
+      $('#era').value = event.era || '';
+      $('#status').value = event.status || 'current';
+      $('#confidence').value = event.confidence || 'recorded';
+      $('#tags').value = (event.tags || []).join(', ');
+      $('#source').value = event.source || '';
+      document.querySelector('#event-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     els.form.addEventListener('submit', async (ev) => {
       ev.preventDefault();
       const form = new FormData(els.form);
-      const event = normalizeEvent(Object.fromEntries(form.entries()));
+      const raw = Object.fromEntries(form.entries());
+      if (editingId) raw.id = editingId;
+      const event = normalizeEvent(raw);
       try {
-        await saveEvent(event);
+        await saveEvent(event, editingId ? 'update_event' : 'event');
         if (sheetApiUrl) await loadEvents(); else renderAll();
-        els.form.reset();
-        $('#date').value = new Date().toISOString().slice(0,10);
+        resetEventForm();
       } catch (err) {
         console.error(err);
-        alert('儲存失敗，請檢查 Google Apps Script 端點或網路狀態。');
+        alert('儲存失敗，請檢查 Google Apps Script 端點、部署版本或網路狀態。');
+      }
+    });
+
+    els.cancelEditBtn.addEventListener('click', resetEventForm);
+
+    els.timeline.addEventListener('click', async (ev) => {
+      const btn = ev.target.closest('button[data-action]');
+      if (!btn) return;
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+
+      if (action === 'edit') {
+        editEvent(id);
+        return;
+      }
+
+      if (action === 'archive') {
+        if (!confirm('將這筆事件標記為 Archived？原資料不會刪除。')) return;
+        try {
+          await saveEvent({ id, user_id: 'lucas' }, 'archive_event');
+          if (sheetApiUrl) await loadEvents(); else renderAll();
+          if (editingId === id) resetEventForm();
+        } catch (err) {
+          console.error(err);
+          alert('封存失敗，請確認 Apps Script 已部署新版。');
+        }
       }
     });
 
