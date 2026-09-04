@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC_LANGUAGE_SYSTEM_REGISTRY",
+  "authority": "LOC8",
+  "systems": [
+    {
+      "system_id": "lo3rwang",
+      "system_name": "政德風",
+      "display_label": "lo3rwang",
+      "system_type": "personal_language_system",
+      "owner_type": "person",
+      "status": "active",
+      "rights": {
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned"
+      },
+      "provenance": {
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "provenance_note": "預留協作、共享、影響與來源欄位；目前系統以單一個人語言系統為基準。"
+      }
+    }
+  ]
+}
