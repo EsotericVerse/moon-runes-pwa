@@ -1,0 +1,69 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC_SOURCE_TYPE_REGISTRY",
+  "authority": "LOC8",
+  "purpose": "Normalize source_refs/provenance source types across LOC1-8.",
+  "types": [
+    {
+      "id": "file",
+      "label": "檔案"
+    },
+    {
+      "id": "document",
+      "label": "文件"
+    },
+    {
+      "id": "spreadsheet",
+      "label": "試算表"
+    },
+    {
+      "id": "event",
+      "label": "LOC8 Event"
+    },
+    {
+      "id": "work",
+      "label": "作品"
+    },
+    {
+      "id": "media",
+      "label": "媒體資產"
+    },
+    {
+      "id": "registry",
+      "label": "共用 Registry"
+    },
+    {
+      "id": "url",
+      "label": "網址"
+    },
+    {
+      "id": "commit",
+      "label": "版本提交"
+    },
+    {
+      "id": "conversation",
+      "label": "對話紀錄"
+    },
+    {
+      "id": "external_platform",
+      "label": "外部平台"
+    },
+    {
+      "id": "suno_song",
+      "label": "Suno Song"
+    },
+    {
+      "id": "suno_share",
+      "label": "Suno Share"
+    },
+    {
+      "id": "instagram",
+      "label": "Instagram"
+    },
+    {
+      "id": "youtube",
+      "label": "YouTube"
+    }
+  ],
+  "rule": "source_type identifies provenance channel only; it does not determine authorship, ownership, or trust by itself."
+}
