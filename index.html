@@ -290,6 +290,55 @@
       font-weight: 800;
     }
 
+    .works-list {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .work-item {
+      min-height: 170px;
+      padding: 15px;
+      border: 1px solid var(--loc-border);
+      border-radius: 16px;
+      background: var(--loc-surface-soft);
+    }
+
+    .work-title {
+      margin: 0;
+      color: var(--loc-text);
+      font-size: 1rem;
+      line-height: 1.35;
+    }
+
+    .work-meta {
+      display: block;
+      margin-top: 6px;
+      color: var(--loc-purple);
+      font-size: 0.73rem;
+      font-weight: 700;
+    }
+
+    .work-desc {
+      margin: 9px 0 0;
+      color: var(--loc-muted);
+      font-size: 0.78rem;
+      line-height: 1.55;
+    }
+
+    .work-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px 9px;
+      margin-top: 10px;
+      font-size: 0.74rem;
+    }
+
+    .work-links a { text-decoration: none; }
+
+    .work-links a:hover,
+    .work-links a:focus-visible { text-decoration: underline; }
+
     .visual-card {
       overflow: hidden;
       border: 1px solid var(--loc-border);
@@ -532,6 +581,7 @@
       .rune-layout { grid-template-columns: 1fr; }
       .hero-note { min-height: auto; }
       .action-grid { grid-template-columns: 1fr; }
+      .works-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .framework { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
@@ -540,6 +590,7 @@
       .topbar { align-items: flex-start; flex-direction: column; }
       .nav-links { justify-content: flex-start; }
       .section-heading { align-items: flex-start; flex-direction: column; }
+      .works-list { grid-template-columns: 1fr; }
       .framework { grid-template-columns: 1fr; }
       .hero-actions { align-items: stretch; flex-direction: column; }
       .cta { width: 100%; }
@@ -553,63 +604,6 @@
         transition: none !important;
       }
     }
-<<<<<<< HEAD
-=======
-    *{box-sizing:border-box} html{scroll-behavior:smooth}
-    body{margin:0;min-height:100vh;color:var(--text);background:
-      radial-gradient(circle at 10% 8%,rgba(103,75,171,.24),transparent 30rem),
-      radial-gradient(circle at 88% 88%,rgba(35,105,135,.18),transparent 30rem),
-      linear-gradient(180deg,#07182d 0%,#091729 62%,#06111f 100%);
-      font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
-    a{color:var(--gold)} .loc-page{width:min(1160px,calc(100% - 32px));margin:0 auto;padding:24px 0 56px}
-    .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 0;
-      background:linear-gradient(180deg,rgba(7,24,45,.96),rgba(7,24,45,.72),transparent);backdrop-filter:blur(14px)}
-    .brand{color:var(--text);font-weight:800;letter-spacing:.08em;text-decoration:none}
-    .nav-links{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:12px;font-size:.88rem}.nav-links a{color:var(--muted);text-decoration:none}
-    .nav-links a:hover,.nav-links a:focus-visible{color:var(--text)}
-    .hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:28px;align-items:center;padding:clamp(36px,7vw,82px) 0 38px}
-    .eyebrow{margin:0 0 10px;color:var(--purple);font-size:.78rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
-    .hero h1{margin:0;max-width:760px;font-size:clamp(2.65rem,7vw,5.2rem);line-height:1.05;letter-spacing:-.045em}.hero h1 span{color:var(--gold)}
-    .hero-copy{max-width:760px;margin:20px 0 0;color:var(--muted);font-size:clamp(1rem,2vw,1.15rem)}
-    .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}.cta{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 18px;
-      border:1px solid var(--border);border-radius:999px;text-decoration:none;font-weight:800}
-    .cta.primary{color:#160f26;border-color:transparent;background:linear-gradient(135deg,#c7b7ff,#e8c57f);box-shadow:0 10px 28px rgba(180,158,255,.2)}
-    .cta.secondary{color:var(--text);background:var(--soft)}
-    .hero-note{position:relative;min-height:230px;padding:28px;border:1px solid var(--border);border-radius:28px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
-    .moon{position:absolute;width:108px;height:108px;top:22px;right:26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff9e8 0 10%,#e9d9b2 38%,#bda978 68%,#7f6d49 100%);
-      box-shadow:0 0 32px rgba(231,194,125,.12),0 0 70px rgba(180,158,255,.08);opacity:.2}
-    .hero-note strong,.hero-note p{position:relative;z-index:1}.hero-note strong{display:block;margin-bottom:8px;color:var(--gold)}
-    .hero-note p{margin:0;color:var(--muted)}
-    .section{margin-top:34px;padding:clamp(22px,4vw,36px);border:1px solid var(--border);border-radius:26px;background:var(--surface);box-shadow:var(--shadow);backdrop-filter:blur(18px)}
-    .visual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-    .visual-card{margin:0;border:1px solid var(--border);border-radius:18px;overflow:hidden;background:rgba(3,13,28,.52)}
-    .visual-card img{display:block;width:100%;height:auto;aspect-ratio:650/460;object-fit:cover}
-    .visual-card figcaption{padding:12px 14px;color:var(--muted);font-size:.84rem}
-    .visual-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
-    .visual-link{display:inline-flex;align-items:center;min-height:38px;padding:7px 12px;border:1px solid var(--border);border-radius:999px;
-      color:var(--gold);background:var(--soft);font-size:.84rem;font-weight:800;text-decoration:none}
-    .visual-link:hover,.visual-link:focus-visible{color:var(--text);border-color:var(--gold)}
-    .image-modal[hidden]{display:none}.image-modal{position:fixed;inset:0;z-index:999;padding:20px;overflow:auto;background:rgba(2,8,18,.94);backdrop-filter:blur(14px)}
-    .modal-shell{width:min(1500px,100%);margin:36px auto}.modal-head{position:sticky;top:8px;z-index:2;display:flex;align-items:center;justify-content:space-between;
-      gap:16px;margin-bottom:12px;padding:10px 12px;border:1px solid var(--border);border-radius:16px;background:rgba(7,24,45,.94)}
-    .modal-title{margin:0;color:var(--text);font-size:.96rem}.modal-close{width:42px;height:42px;flex:0 0 42px;border:1px solid var(--border);border-radius:50%;
-      color:var(--text);background:var(--soft);font-size:1.55rem;cursor:pointer}.modal-image{display:block;width:100%;height:auto;border:1px solid var(--border);
-      border-radius:18px;box-shadow:var(--shadow)}
-    .section-heading{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px}.section-heading h2{margin:0;font-size:clamp(1.45rem,3vw,2.2rem);letter-spacing:-.025em}
-    .section-heading p{max-width:620px;margin:0;color:var(--muted);font-size:.92rem}
-    #description{margin-top:14px;padding:18px;border:1px solid var(--border);border-radius:18px;background:var(--soft);color:var(--muted)}
-    #description strong{color:var(--text)} .rune-intro{color:var(--muted)}.rune-intro strong{color:var(--text)}
-    .action-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.action-card{min-height:174px;padding:20px;border:1px solid var(--border);border-radius:18px;background:var(--soft);text-decoration:none;transition:.16s ease}
-    .action-card:hover,.action-card:focus-visible{transform:translateY(-3px);border-color:rgba(231,194,125,.55);background:rgba(28,50,83,.88)}
-    .action-card .kicker{color:var(--purple);font-size:.74rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase}
-    .action-card h3{margin:10px 0 6px;color:var(--text);font-size:1.12rem}.action-card p{margin:0;color:var(--muted);font-size:.9rem}
-    .action-card .arrow{display:inline-block;margin-top:14px;color:var(--gold);font-weight:800}.action-card.reserved{cursor:default;opacity:.68;border-style:dashed}
-    .action-card.reserved:hover{transform:none;border-color:var(--border);background:var(--soft)}
-    .loc-note{margin:16px 0 0;padding:16px 18px;border-left:3px solid var(--gold);border-radius:10px;background:rgba(231,194,125,.07);color:var(--muted)}.loc-note strong{color:var(--text)}
-    footer{margin-top:30px;padding:24px 0 10px;color:var(--muted);font-size:.85rem;text-align:center}footer p{margin:6px 0}
-    @media(max-width:900px){.hero{grid-template-columns:1fr}.action-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.visual-grid{grid-template-columns:1fr}}
-    @media(max-width:600px){.loc-page{width:min(100% - 22px,1160px)}.topbar,.section-heading{align-items:flex-start;flex-direction:column}.nav-links{justify-content:flex-start}.action-grid{grid-template-columns:1fr}.hero-actions{align-items:stretch;flex-direction:column}.cta{width:100%}}
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
   </style>
 </head>
 
@@ -622,6 +616,7 @@
         <a href="list.html">月符資料</a>
         <a href="faq.html">知識庫</a>
         <a href="loc3.html">作品搜尋</a>
+        <a href="life.html">LOC8 · Life</a>
       </div>
     </nav>
 
@@ -651,19 +646,11 @@
 
       <aside class="hero-note" aria-label="月典核心概念">
         <div class="moon" aria-hidden="true"></div>
-<<<<<<< HEAD
         <strong>月符是根，但不是使用門檻。</strong>
         <p>
           不必先學會全部符文、句型文法或 Graph RAG。
           你可以先抽牌、看籤詩、找作品；想深入時，月典再把底層結構展開給你。
         </p>
-=======
-        <strong>先使用，再理解。</strong>
-        <p>一般使用者不需要先理解全部月符、四方位或語意架構。想研究原理時，再進入月符資料與知識庫即可。</p>
-<<<<<<< HEAD
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
-=======
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
       </aside>
     </header>
 
@@ -698,14 +685,106 @@
           <span class="arrow">向月典提問 →</span>
         </a>
       </div>
-      <div class="visual-links" aria-label="大型系統視覺圖">
-        <a href="pics/loc-runes-66-overview.jpg" class="visual-link js-open-visual"
-           data-image="pics/loc-runes-66-overview.jpg" data-title="月符 66 符文完整總覽圖">
-          查看 66 符文完整總覽圖 →
-        </a>
+    </section>
+
+    <section class="section" aria-labelledby="works-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">LOC4 · Writing × LOC3 · Music</p>
+          <h2 id="works-title">文字作品與跨媒介作品</h2>
+        </div>
+        <p>從小說、文章到歌曲，這裡展示文字如何延伸成跨媒介作品。</p>
       </div>
-      <p class="loc-note"><strong>月符是月典的根。</strong> 66 符文完整圖資訊量較大，因此預設不展開；需要時點擊上方文字即可觀看，不佔首頁版面。</p>
-<<<<<<< HEAD
+
+      <div class="works-list">
+        <article class="work-item">
+          <h3 class="work-title">月語者</h3>
+          <span class="work-meta">7 大篇 × 26 章 · 182 章</span>
+          <p class="work-desc">大型長篇敘事 Corpus，也是符文參與章節創作的重要實驗。</p>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/6829d52cfd8978000109b281" target="_blank" rel="noopener noreferrer">開始閱讀 →</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <h3 class="work-title">一日情人</h3>
+          <span class="work-meta">全 5 章</span>
+          <p class="work-desc">短篇關係敘事，以味道與短暫相遇切入情感經驗。</p>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/683721cefd897800012c2488" target="_blank" rel="noopener noreferrer">開始閱讀 →</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <h3 class="work-title">已讀不回</h3>
+          <span class="work-meta">全 6 章 · 2 首主題曲</span>
+          <p class="work-desc">文字與歌曲共同描寫等待、訊息與情緒權威。</p>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/6a4f6d82fd89780001ec1c93" target="_blank" rel="noopener noreferrer">小說</a>
+            <a href="https://suno.com/s/Zj1837rqBXeo0vxI" target="_blank" rel="noopener noreferrer">主題曲</a>
+            <a href="https://suno.com/s/6LXfO3EvECZUgEnu" target="_blank" rel="noopener noreferrer">延伸曲</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <h3 class="work-title">在你之前，在你之後</h3>
+          <span class="work-meta">全 20 章 · OP／求婚歌／6 角色曲</span>
+          <p class="work-desc">目前跨 LOC3／LOC4 關係最完整的小說與角色歌曲群。</p>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/682f0e65fd89780001c7b708" target="_blank" rel="noopener noreferrer">小說</a>
+            <a href="https://suno.com/s/doXe7ALt4MVs0tXK" target="_blank" rel="noopener noreferrer">OP</a>
+            <a href="https://suno.com/s/YvP6Wi5lPHZywCrX" target="_blank" rel="noopener noreferrer">求婚歌</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <h3 class="work-title">男男男關係</h3>
+          <span class="work-meta">全 20 章 · 特色曲</span>
+          <p class="work-desc">以喜歡與關係互動為核心，另有特色曲延伸作品語氣。</p>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/6834920afd89780001aed68d" target="_blank" rel="noopener noreferrer">小說</a>
+            <a href="https://suno.com/s/eSXeSYxVmSZqSNyy" target="_blank" rel="noopener noreferrer">布丁是宇宙的真理</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <h3 class="work-title">錯的人：命運的錯位者</h3>
+          <span class="work-meta">單篇</span>
+          <p class="work-desc">以命運錯位與關係選擇為題的單篇作品。</p>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/682a22c1fd89780001197ac6" target="_blank" rel="noopener noreferrer">閱讀 →</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <h3 class="work-title">牛奶，紙船，還有你</h3>
+          <span class="work-meta">單篇 · OP</span>
+          <p class="work-desc">短篇文字與可愛系歌曲形成直接的跨媒介對應。</p>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/697b4b5dfd897800011eb9e1" target="_blank" rel="noopener noreferrer">小說</a>
+            <a href="https://suno.com/s/IGGefOeWWSZ6FbWv" target="_blank" rel="noopener noreferrer">OP</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <h3 class="work-title">灰色關係</h3>
+          <span class="work-meta">單篇 · LOC3 同名歌曲</span>
+          <p class="work-desc">同一主題分別以文字與歌曲兩種媒介表達。</p>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/694c23a7fd897800012c191d" target="_blank" rel="noopener noreferrer">小說</a>
+            <a href="https://suno.com/s/LMsmefoFEMXIt6yr" target="_blank" rel="noopener noreferrer">歌曲</a>
+          </div>
+        </article>
+
+        <article class="work-item">
+          <h3 class="work-title">被認為是「先知」的人</h3>
+          <span class="work-meta">連載中</span>
+          <p class="work-desc">目前仍在發展中的新作，已公開前言與作品骨架。</p>
+          <div class="work-links">
+            <a href="https://vocus.cc/article/69477e66fd8978000193ca4d" target="_blank" rel="noopener noreferrer">前言 →</a>
+          </div>
+        </article>
+      </div>
     </section>
 
     <section class="section" aria-labelledby="framework-image-title">
@@ -742,10 +821,8 @@
       </div>
 
       <p class="visual-caption">
-        兩張大型資訊圖預設不展開，點擊後才以燈箱顯示，保留首頁節奏，也保留完整視覺知識資產。
+        可開啟完整資訊圖，進一步查看月符與 LOC 系統細節。
       </p>
-=======
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
     </section>
 
     <section class="section" id="rune-entry" aria-labelledby="rune-title">
@@ -754,7 +831,7 @@
           <p class="eyebrow">LOC1 · Rune-guided Language Evolution</p>
           <h2 id="rune-title">問一件事，或讓語言自己長出來</h2>
         </div>
-        <p>原有抽牌程式所需要的 DOM ID 保留，不更動既有 `js/main.js` 接點。</p>
+        <p>可以直接從一個問題開始，選擇適合的抽取方式，讓月符提供一個新的語言起點。</p>
       </div>
 
       <div class="rune-layout">
@@ -785,13 +862,13 @@
             <p><strong>使用方式</strong></p>
             <p>若要問事，先把問題放在心裡，再點擊左側月符卡開始抽取。</p>
             <p>若只是想看看今天的提示，可以直接前往每日抽牌。</p>
-            <p>目前 LOC1 的三抽 PWA 已可運作；五抽仍是 2+3 過渡實作，OW3gs 11 抽尚待完成。</p>
+            <p>目前可使用雙卡、三卡與五卡模式；OW3gs 11 抽已預留入口，後續持續整合。</p>
             <hr />
             <p>
               牌組入口：
               <a href="result.html?mode=2card">雙卡</a>、
               <a href="result.html?mode=3card">三卡</a>、
-              <a href="result.html?mode=5card">五卡（過渡版）</a>
+              <a href="result.html?mode=5card">五卡</a>
             </p>
           </div>
         </div>
@@ -826,7 +903,6 @@
         </div>
         <p>文字、圖片、PDF、DOCX、PPTX 與影片都可以成為 LOC7_KM 的 Knowledge Assets。</p>
       </div>
-<<<<<<< HEAD
 
       <ul class="link-list">
         <li>
@@ -860,17 +936,6 @@
           </a>
         </li>
       </ul>
-=======
-      <div class="action-grid">
-        <a class="action-card" href="loc3.html"><span class="kicker">LOC3 · Music</span><h3>如果結果不是解釋，而是一首歌？</h3><p>把文字、情緒與人生經驗轉成音樂，並可用語意搜尋直接找到作品。</p><span class="arrow">進入 LOC3 →</span></a>
-        <div class="action-card"><span class="kicker">LOC4 · Writing</span><h3>如果一枚符文，長成一句話或一個世界？</h3><p>小說、連載、人生書寫與符文衍生文本都在這裡；已有多部實際作品，完整文章主要發布於方格子。</p><span class="arrow">作品連結整理中</span></div>
-        <div class="action-card"><span class="kicker">LOC5 · Resonance</span><h3>同一概念，換成聲音與影像會怎樣？</h3><p>把 LOC3 音樂與 LOC4 文字延伸成 MV、Reels、概念影像與視覺化；搜尋結果中的 Reels 就是 LOC5 的直接展示。</p><span class="arrow">在搜尋結果中觀看 Reels</span></div>
-        <div class="action-card"><span class="kicker">LOC6 · Grammar & Style</span><h3>同一個人，在不同時期會怎麼說話？</h3><p>解析句型、文法、語氣、修辭與風格；政德風則是作者個人語言紀錄的重要案例。</p><span class="arrow">句型與風格資料持續整理中</span></div>
-        <a class="action-card" href="search.html"><span class="kicker">LOC7 · Text Architecture</span><h3>如果散落的文字，可以重新被找到與關聯？</h3><p>承接 Knowledge Management、語意檢索、Knowledge Graph 與 Graph RAG；Unified Search 與知識庫是目前的實際展示入口。</p><span class="arrow">開啟 Unified Search →</span></a>
-        <a class="action-card" href="life.html"><span class="kicker">LOC8 · Life Event & Temporal Semantics</span><h3>最後，語言回到事件與時間。</h3><p>記錄事情何時發生、當時如何被理解，以及作品、語句與觀點之後如何改變；整合介面是其自然延伸。</p><span class="arrow">進入 LOC8 →</span></a>
-      </div>
-      <p class="loc-note">你可以只抽一張卡，也可以沿著這些分支繼續往下。想深入原理時，再進入月符資料、知識庫與文字建築的技術層。</p>
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
     </section>
 
     <section class="section" aria-labelledby="framework-title">
@@ -879,9 +944,8 @@
           <p class="eyebrow">One Language · Eight Frameworks</p>
           <h2 id="framework-title">LOC1–8 的現行分工</h2>
         </div>
-        <p>文字版維持最新版定義；舊版漂亮視覺稿先保留於 `pics/`，等文字重製後再作正式展示。</p>
+        <p>八個框架各自處理不同類型的語言與資料，但共同回到同一套 LOC 系統。</p>
       </div>
-<<<<<<< HEAD
 
       <div class="framework">
         <div class="framework-item"><strong>LOC1</strong><span>月符導引 · 語言演化</span></div>
@@ -891,7 +955,7 @@
         <div class="framework-item"><strong>LOC5</strong><span>多媒體作品 · Reels / YouTube</span></div>
         <div class="framework-item"><strong>LOC6</strong><span>句型 · 文法 · 風格解析</span></div>
         <div class="framework-item"><strong>LOC7</strong><span>文字建築 · KM · Graph RAG</span></div>
-        <div class="framework-item"><strong>LOC8</strong><span>Life Event · Temporal Semantics</span></div>
+        <a class="framework-item" href="life.html" style="text-decoration:none;"><strong>LOC8</strong><span>Life Event · Temporal Semantics · 進入 Life →</span></a>
       </div>
 
       <div class="flow" aria-label="LOC核心循環">
@@ -900,20 +964,6 @@
         <strong>關聯</strong><i>→</i>
         <strong>時間化</strong><i>→</i>
         <strong>演化</strong>
-=======
-      <div class="action-grid">
-        <div class="action-card"><span class="kicker">LOC1</span><h3>Playable</h3><p>抽牌流程可操作；OW3gs 十一卡預留。</p></div>
-        <div class="action-card"><span class="kicker">LOC2</span><h3>Playable Alpha</h3><p>規則、事件資料與雙人 Web Alpha 已上線。</p></div>
-        <div class="action-card"><span class="kicker">LOC3</span><h3>Searchable</h3><p>歌詞語意搜尋與作品播放已可使用。</p></div>
-        <div class="action-card"><span class="kicker">LOC4</span><h3>Works Available</h3><p>已有實際文字作品，站內索引持續補齊。</p></div>
-        <div class="action-card"><span class="kicker">LOC5</span><h3>Media Available</h3><p>已有 Reels／MV，可由搜尋結果直接觀看。</p></div>
-        <div class="action-card"><span class="kicker">LOC6</span><h3>Existing Corpus</h3><p>句型、風格、ERA 與政德風已有現成資料。</p></div>
-        <div class="action-card"><span class="kicker">LOC7</span><h3>Working Demo</h3><p>KM／FAQ RAG／Unified Search 已有展示。</p></div>
-        <div class="action-card"><span class="kicker">LOC8</span><h3>Temporal Layer</h3><p>Life Event 與時間語意已有整合入口與介面方向。</p></div>
-<<<<<<< HEAD
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
-=======
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
       </div>
     </section>
 
@@ -947,15 +997,7 @@
     </footer>
   </main>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   <div class="image-modal" id="visual-modal" hidden aria-modal="true" role="dialog" aria-labelledby="visual-modal-title">
-=======
-  <div class="image-modal" id="visual-modal" hidden role="dialog" aria-modal="true" aria-labelledby="visual-modal-title">
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
-=======
-  <div class="image-modal" id="visual-modal" hidden role="dialog" aria-modal="true" aria-labelledby="visual-modal-title">
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
     <div class="modal-shell">
       <div class="modal-head">
         <h2 class="modal-title" id="visual-modal-title">圖片總覽</h2>
@@ -967,49 +1009,23 @@
 
   <script src="https://cdn.jsdelivr.net/npm/solarlunar@2.0.7/lib/solarlunar.min.js"></script>
   <script src="js/main.js"></script>
-<<<<<<< HEAD
-<<<<<<< HEAD
 
   <script>
     (() => {
       const modal = document.querySelector("#visual-modal");
       const modalImage = document.querySelector("#visual-modal-image");
       const modalTitle = document.querySelector("#visual-modal-title");
-=======
-=======
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
-  <script>
-    (() => {
-      const modal = document.querySelector("#visual-modal");
-      const image = document.querySelector("#visual-modal-image");
-      const title = document.querySelector("#visual-modal-title");
-<<<<<<< HEAD
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
-=======
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
       const closeButton = document.querySelector("#visual-modal-close");
       let lastTrigger = null;
 
       function openVisual(trigger) {
         lastTrigger = trigger;
-<<<<<<< HEAD
-<<<<<<< HEAD
         const src = trigger.dataset.image || trigger.getAttribute("href");
         const title = trigger.dataset.title || "圖片總覽";
 
         modalImage.src = src;
         modalImage.alt = title;
         modalTitle.textContent = title;
-=======
-        image.src = trigger.dataset.image || trigger.href;
-        image.alt = trigger.dataset.title || "LOC 圖片總覽";
-        title.textContent = image.alt;
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
-=======
-        image.src = trigger.dataset.image || trigger.href;
-        image.alt = trigger.dataset.title || "LOC 圖片總覽";
-        title.textContent = image.alt;
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
         modal.hidden = false;
         document.body.style.overflow = "hidden";
         closeButton.focus();
@@ -1017,15 +1033,7 @@
 
       function closeVisual() {
         modal.hidden = true;
-<<<<<<< HEAD
-<<<<<<< HEAD
         modalImage.src = "";
-=======
-        image.src = "";
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
-=======
-        image.src = "";
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
         document.body.style.overflow = "";
         if (lastTrigger) lastTrigger.focus();
       }
@@ -1038,23 +1046,11 @@
       });
 
       closeButton.addEventListener("click", closeVisual);
-<<<<<<< HEAD
-<<<<<<< HEAD
 
       modal.addEventListener("click", (event) => {
         if (event.target === modal) closeVisual();
       });
 
-=======
-      modal.addEventListener("click", (event) => {
-        if (event.target === modal) closeVisual();
-      });
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
-=======
-      modal.addEventListener("click", (event) => {
-        if (event.target === modal) closeVisual();
-      });
->>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && !modal.hidden) closeVisual();
       });
