@@ -36,6 +36,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const groupOrder = ["靈魂","連結","生命","自然","礦物","元素","秩序","無序"];
 
+  const groupProfiles = {
+    "靈魂": {
+      style: "哲學抽象／詩意",
+      tone: "深邃、內觀、意識層次",
+      note: "偏向自我、意識與內在觀照。",
+      vector: "meta_self / consciousness"
+    },
+    "連結": {
+      style: "詩意人際／原型導向",
+      tone: "關係轉折、連結態度、自我映照",
+      note: "偏向人際、橋樑、互動與關係洞察。",
+      vector: "relation / bridge"
+    },
+    "生命": {
+      style: "感官體驗／實用",
+      tone: "身心感受、日常節奏、情緒共鳴",
+      note: "偏向身體、情緒與生活中的實際感受。",
+      vector: "emotive / somatic_self"
+    },
+    "自然": {
+      style: "詩意自然觀／象徵",
+      tone: "山林隱喻、季節循環、自然節奏",
+      note: "偏向成長、循環與有機變化。",
+      vector: "nature_cycle / organic_flow"
+    },
+    "礦物": {
+      style: "實用導向／象徵",
+      tone: "現實、建議性、穩固踏實、價值判斷",
+      note: "偏向現實利害、資源、結構與價值。",
+      vector: "materiality / value_logic"
+    },
+    "元素": {
+      style: "詩意型／感官體驗",
+      tone: "情緒、能量、轉化、力量感",
+      note: "偏向能量流動、轉化與推進。",
+      vector: "power_flux / transformation"
+    },
+    "秩序": {
+      style: "哲學／命運導向",
+      tone: "因果、宿命、天體規律",
+      note: "偏向時間、規律、因果與秩序結構。",
+      vector: "order_time / causal_cosmos"
+    },
+    "無序": {
+      style: "詩意型／混沌哲學",
+      tone: "開放式問題、神秘敘述、無邊界",
+      note: "偏向未知、模糊、可能性與未定義狀態。",
+      vector: "mystery / ambiguity_query"
+    }
+  };
+
   function render(){
     const q = search.value.trim().toLowerCase();
     const g = group.value;
@@ -55,8 +106,16 @@ document.addEventListener("DOMContentLoaded", () => {
     groupOrder.forEach(name => {
       const items = filtered.filter(r => r.所屬分組 === name && Number(r.編號) <= 64);
       if(items.length){
-        sections.push(`<section class="rune-group" aria-label="${esc(name)}組">
-          <div class="group-head"><strong>${esc(name)}組</strong><span>${items.length} 張</span></div>
+        const profile = groupProfiles[name];
+        sections.push(`<section class="rune-group" aria-label="${esc(name)}組" data-vector="${esc(profile?.vector || "")}">
+          <div class="group-head">
+            <div class="group-title">
+              <strong>${esc(name)}組</strong>
+              <div class="group-tone"><b>${esc(profile?.style || "")}</b> · ${esc(profile?.tone || "")}</div>
+              <span class="group-note">${esc(profile?.note || "")}</span>
+            </div>
+            <span class="group-count">${items.length} 張</span>
+          </div>
           <div class="group-row">${items.map(tile).join("")}</div>
         </section>`);
       }
