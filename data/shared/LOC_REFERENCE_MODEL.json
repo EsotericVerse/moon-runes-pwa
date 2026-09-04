@@ -1,0 +1,61 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC_REFERENCE_MODEL",
+  "purpose": "Reserve stable cross-LOC identifiers before data volume grows.",
+  "id_types": {
+    "system_id": {
+      "example": "lo3rwang",
+      "owner": "LOC8",
+      "description": "Language-system canonical ID."
+    },
+    "era_id": {
+      "pattern": "ERA-P{n}",
+      "example": "ERA-P8",
+      "owner": "LOC8"
+    },
+    "work_id": {
+      "pattern": "implementation-defined stable ID",
+      "example": "LW0001",
+      "owner_rule": "Owned by the LOC where the canonical work originates."
+    },
+    "media_id": {
+      "pattern": "MEDIA-{stable-id}",
+      "example": "MEDIA-0001",
+      "owner": "LOC5"
+    },
+    "event_id": {
+      "pattern": "EV-{domain}-{stable-id}",
+      "example": "EV-ERA-P8",
+      "owner": "LOC8"
+    },
+    "fragment_id": {
+      "pattern": "GF-{stable-id}",
+      "example": "GF-P8-001",
+      "owner": "LOC6",
+      "description": "Reserved governance/interpretation fragment ID."
+    },
+    "analysis_id": {
+      "pattern": "LA-{stable-id}",
+      "example": "LA-0001",
+      "owner": "LOC7",
+      "description": "Reserved linguistic-analysis record ID."
+    }
+  },
+  "relationship_types": [
+    "belongs_to_system",
+    "belongs_to_era",
+    "derived_from",
+    "references",
+    "extends",
+    "represented_by",
+    "analyzed_by",
+    "influenced_by",
+    "contributed_by",
+    "shared_with"
+  ],
+  "rules": [
+    "IDs are stable machine references and should not be renamed when display text changes.",
+    "Display names may change through their authority registry without changing linked IDs.",
+    "A record may have one primary owner and multiple related LOC references."
+  ]
+}
