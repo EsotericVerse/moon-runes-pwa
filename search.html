@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#081522" />
+  <meta name="description" content="LOC Unified Search｜從符文、作品、媒體、知識與時間語意中，以同一個入口搜尋 lo3rwang／政德風語言系統。" />
+  <title>LOC Unified Search｜lo3rwang</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="favicon.ico" />
+  <style>
+    :root{color-scheme:dark;--bg:#07131f;--panel:rgba(12,29,43,.88);--soft:rgba(19,43,58,.72);--line:rgba(160,214,220,.18);--text:#f2f7f6;--muted:#aebfc1;--moon:#d9f0e8;--mint:#7ed8c5;--gold:#e5c17b;--danger:#ffb4ad;--shadow:0 24px 70px rgba(0,0,0,.34)}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(circle at 15% 5%,rgba(74,143,145,.23),transparent 31rem),radial-gradient(circle at 88% 82%,rgba(84,74,151,.18),transparent 28rem),var(--bg);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.65}
+    a{color:inherit}.page{width:min(1120px,calc(100% - 30px));margin:auto;padding:28px 0 60px}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:34px}.brand{font-weight:850;letter-spacing:.12em;text-decoration:none}.navs{display:flex;gap:14px;flex-wrap:wrap}.nav{color:var(--muted);font-size:.86rem;text-decoration:none}.hero{margin-bottom:24px}.eyebrow{margin:0 0 8px;color:var(--mint);font-weight:800;font-size:.76rem;letter-spacing:.18em}.hero h1{margin:0;font-size:clamp(2.4rem,7vw,5rem);line-height:1.02;letter-spacing:-.045em}.intro{margin:15px 0 0;color:var(--muted);max-width:760px}
+    .search-panel{padding:clamp(18px,4vw,32px);border:1px solid var(--line);border-radius:24px;background:var(--panel);box-shadow:var(--shadow);backdrop-filter:blur(16px)}label{display:block;margin-bottom:9px;font-weight:750}textarea{width:100%;min-height:104px;padding:16px 18px;color:var(--text);font:inherit;resize:vertical;border:1px solid rgba(255,255,255,.16);border-radius:15px;background:rgba(0,0,0,.18);outline:none}textarea:focus{border-color:var(--mint);box-shadow:0 0 0 3px rgba(126,216,197,.12)}
+    .quick{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0 18px}.chip{padding:7px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--soft);font:inherit;font-size:.82rem;cursor:pointer}.chip:hover{color:var(--text);border-color:var(--mint)}.filters{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:10px;margin-bottom:15px}select{width:100%;padding:10px 12px;color:var(--text);border:1px solid var(--line);border-radius:11px;background:#102535;font:inherit}.actions{display:flex;gap:12px;align-items:center}.submit{padding:12px 24px;border:0;border-radius:12px;color:#07131f;background:linear-gradient(135deg,var(--moon),var(--mint));font:inherit;font-weight:850;cursor:pointer}.submit:disabled{opacity:.55}.hint{color:var(--muted);font-size:.82rem}
+    .status{min-height:30px;margin:22px 2px 8px;color:var(--muted)}.status.error{color:var(--danger)}.groups{display:grid;gap:22px}.group{border-top:1px solid var(--line);padding-top:18px}.grouphead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:11px}.grouphead h2{margin:0;font-size:1.05rem;letter-spacing:.03em}.grouphead span{color:var(--muted);font-size:.8rem}.cards{display:grid;gap:12px}.card{padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 12px 35px rgba(0,0,0,.18)}.card h3{margin:0 0 8px;font-size:1.2rem}.meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}.pill{padding:3px 8px;border-radius:999px;color:var(--muted);background:var(--soft);font-size:.75rem}.summary{margin:8px 0;color:#d6e0df}.links{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.play{display:inline-flex;padding:8px 12px;border-radius:10px;text-decoration:none;background:var(--mint);color:#07131f;font-weight:820}.secondary{display:inline-flex;padding:8px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--muted)}.empty{padding:26px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
+    @media(max-width:720px){.filters{grid-template-columns:1fr}.actions{align-items:flex-start;flex-direction:column}.submit{width:100%}.topbar{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topbar">
+      <a class="brand" href="index.html">LOC · UNIFIED</a>
+      <div class="navs"><a class="nav" href="list.html">符文查詢</a><a class="nav" href="loc3.html">歌曲專頁</a><a class="nav" href="faq.html">知識庫專頁</a><a class="nav" href="life.html">時間線</a></div>
+    </nav>
+    <header class="hero">
+      <p class="eyebrow">LO3RWANG · PERSONAL LANGUAGE SYSTEM</p>
+      <h1>從一句話，<br />走進整個語言系統。</h1>
+      <p class="intro">同一個入口搜尋月符、歌曲、Reels、知識與 ERA。LOC1–8 是內部責任分工；搜尋時不需要先知道內容屬於哪一個 LOC。</p>
+    </header>
+    <section class="search-panel">
+      <form id="searchForm">
+        <label for="query">你想找什麼？</label>
+        <textarea id="query" maxlength="500" placeholder="例如：自我治理、自由之後怎麼選方向、人生月台、界線、月光……" required></textarea>
+        <div class="quick" id="quick"></div>
+        <div class="filters">
+          <select id="contentType">
+            <option value="">全部內容</option>
+            <option value="rune_record">月符</option>
+            <option value="lyrics_work">歌曲／歌詞</option>
+            <option value="reel">Reels／影片</option>
+            <option value="faq">知識／FAQ</option>
+            <option value="era">ERA／時間</option>
+          </select>
+          <select id="period"><option value="">所有 ERA／創作時期</option></select>
+          <select id="category"><option value="">所有歌曲類型</option></select>
+        </div>
+        <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><span class="hint">結果依來源分組，不把不同引擎的分數硬湊成同一排名。</span></div>
+      </form>
+    </section>
+    <div class="status" id="status" aria-live="polite"></div>
+    <section class="groups" id="groups"></section>
+    <footer>LOC Unified Search · system_id: lo3rwang · 政德風 personal language system</footer>
+  </main>
+  <script>
+    const API='https://moon-runes-pwa.onrender.com';
+    const prompts=['自我治理','人生月台','自由之後不知道往哪裡','界線與拒絕','微月光','月符的語言系統'];
+    const labels={runes:'月符',works:'歌曲／文字作品',media:'影音／Reels',knowledge:'知識／分析',timeline:'ERA／時間'};
+    const locLabels={LOC1:'LOC1 · Lots',LOC3:'LOC3 · Music',LOC5:'LOC5 · Resonance',LOC7:'LOC7 · Text Architecture',LOC8:'LOC8 · Integration'};
+    const el=id=>document.getElementById(id);
+    const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    function quick(){el('quick').innerHTML=prompts.map(x=>`<button type="button" class="chip" data-q="${esc(x)}">${esc(x)}</button>`).join('');document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{el('query').value=b.dataset.q;el('query').focus()})}
+    function fill(select,items,valueKey,labelKey){for(const item of items||[]){const o=document.createElement('option');o.value=item[valueKey]??item.value??'';o.textContent=item[labelKey]??item.label??item.value??o.value;select.appendChild(o)}}
+    async function facets(){try{const r=await fetch(`${API}/search/facets`);if(!r.ok)throw 0;const d=await r.json();fill(el('period'),d.eras,'period','label');fill(el('category'),d.loc3?.categories||[],'value','value')}catch(_){}}
+    function linksFor(r){
+      const p=r.payload||{}; const out=[];
+      if(r.content_type==='rune_record'){const n=String(r.result_id||'').replace('RUNE-','');out.push(`<a class="secondary" href="list.html#${esc(n)}">查看符文資料</a>`)}
+      if(r.content_type==='lyrics_work'){const v=p.recommended_version||{};if(v.suno_url)out.push(`<a class="play" href="${esc(v.suno_url)}" target="_blank" rel="noopener">Suno 播放 ↗</a>`);if(v.ig_preview_url)out.push(`<a class="secondary" href="${esc(v.ig_preview_url)}" target="_blank" rel="noopener">Reel ↗</a>`)}
+      if(r.content_type==='reel'&&p.url)out.push(`<a class="play" href="${esc(p.url)}" target="_blank" rel="noopener">播放 Reel ↗</a>`);
+      if(r.content_type==='faq')out.push('<a class="secondary" href="faq.html">知識庫專頁</a>');
+      if(r.content_type==='era')out.push('<a class="secondary" href="life.html">時間線專頁</a>');
+      return out.length?`<div class="links">${out.join('')}</div>`:'';
+    }
+    function card(r){const score=Number(r.score||0);return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels[r.primary_loc]||r.primary_loc||'LOC')}</span><span class="pill">${esc(r.content_type||'record')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${linksFor(r)}</article>`}
+    function render(groups){const order=['runes','works','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(card).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
+    el('contentType').addEventListener('change',()=>{const music=['','lyrics_work','reel'].includes(el('contentType').value);el('period').disabled=!music;el('category').disabled=!music});
+    el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時間……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value,category:el('category').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
+    quick();facets();
+    if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'));
+  </script>
+</body>
+</html>
