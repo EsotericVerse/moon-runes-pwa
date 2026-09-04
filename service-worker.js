@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v17";
+const CACHE_NAME = "moon-runes-pwa-v18";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -33,6 +33,10 @@ const ASSETS_TO_CACHE = [
   "/icons/icon-512x512.png",
   "/apple-touch-icon.png",
   "/manifest.json",
+  "/pics/loc_framework_map.jpg",
+  "/pics/loc_operation_cycle.jpg",
+  "/pics/loc_system_overview.jpg",
+  "/pics/loc_runes_66_overview.jpg",
   "/favicon.ico"
 ];
 
