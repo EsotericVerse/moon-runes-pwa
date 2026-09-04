@@ -23,7 +23,7 @@
 ## API
 
 - `GET ?action=health`：健康檢查
-- `GET ?action=events&user_id=lucas`：取得指定使用者事件
+- `GET ?action=events&user_id=lo3rwang`：取得指定使用者事件
 - `GET ?action=users`：取得使用者
 - `POST action=event`：新增事件
 - `POST action=update_event`：依 `id` 更新既有事件
