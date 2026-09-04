@@ -31,7 +31,11 @@
     .search:focus{border-color:rgba(231,194,125,.58)}
     .filter{min-height:44px;padding:9px 12px;border:1px solid var(--line);border-radius:13px;color:var(--text);background:#10233f}
     .count{margin-left:auto;color:var(--muted);font-size:.84rem}
-    .rune-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:11px}
+    .rune-grid{display:grid;gap:16px}
+    .rune-group{border:1px solid var(--line);border-radius:18px;background:rgba(11,27,49,.56);overflow:hidden}
+    .group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);background:rgba(23,43,72,.62)}
+    .group-head strong{color:var(--gold);font-size:.95rem}.group-head span{color:var(--muted);font-size:.75rem}
+    .group-row{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;padding:10px}
     .rune-tile{position:relative;padding:10px;border:1px solid var(--line);border-radius:17px;color:var(--text);background:var(--surface2);transition:.16s ease}
     .rune-tile:hover{transform:translateY(-3px);border-color:rgba(231,194,125,.55);background:rgba(28,50,83,.9)}
     .rune-image-button{display:block;width:100%;padding:0;border:0;border-radius:13px;overflow:hidden;background:rgba(2,8,18,.5);cursor:pointer}
@@ -66,9 +70,9 @@
     .data-side{min-width:0}.summary{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
     .field{padding:12px 0;border-bottom:1px solid var(--line)}.field:last-child{border-bottom:0}.field dt{color:var(--gold);font-size:.78rem;font-weight:800}.field dd{margin:4px 0 0;color:#dce6f7;white-space:pre-wrap}
     footer{padding:28px 0 0;color:var(--muted);font-size:.82rem;text-align:center}
-    @media(max-width:980px){.rune-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.basic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:700px){.rune-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.modal-body{grid-template-columns:1fr}.card-side{position:static}.count{width:100%;margin-left:0}.physical-card-download{grid-template-columns:1fr}.download-btn{width:100%}}
-    @media(max-width:470px){.rune-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.basic-grid{grid-template-columns:1fr}.page{width:min(100% - 18px,1180px)}}
+    @media(max-width:980px){.group-row{grid-template-columns:repeat(4,minmax(0,1fr))}.basic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:700px){.group-row{grid-template-columns:repeat(3,minmax(0,1fr))}.modal-body{grid-template-columns:1fr}.card-side{position:static}.count{width:100%;margin-left:0}.physical-card-download{grid-template-columns:1fr}.download-btn{width:100%}}
+    @media(max-width:470px){.group-row{grid-template-columns:repeat(2,minmax(0,1fr))}.basic-grid{grid-template-columns:1fr}.page{width:min(100% - 18px,1180px)}}
   </style>
 </head>
 <body>
@@ -87,7 +91,7 @@
     <header class="hero">
       <p class="eyebrow">LOC1 · Rune Library</p>
       <h1>66 月符圖鑑</h1>
-      <p class="lead">這裡是符文資料展示，不是抽牌。直接瀏覽全部 66 符文；點擊卡片圖片即可浮出完整卡面與符文基礎資料。</p>
+      <p class="lead">這裡是符文資料展示，不是抽牌。1–64 依八個組別排列成 8×8；65「玄」與 66「命」另列為特殊符文。點擊卡片圖片即可浮出完整卡面與符文基礎資料。</p>
     </header>
 
     <section class="rune-basics" aria-labelledby="rune-basics-title">
