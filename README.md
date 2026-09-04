@@ -262,8 +262,9 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 
 - `daily.html`：每日抽取頁面
 - `fate.html`：替代風格的單卡／命運結果呈現
 - `list.html`：依群組及符文查詢完整資料
-- [`faq.html`](https://loc.lo3rwang.cc/faq.html)：LOC7 FAQ 語意查詢介面
-- [`loc3.html`](https://loc.lo3rwang.cc/loc3.html)：LOC3 歌詞語意搜尋；同詞旋律合併於同一作品結果
+- [`search.html`](https://loc.lo3rwang.cc/search.html)：**Unified Search 主入口**；同時查詢符文、歌曲、Reels、知識與 ERA，使用者不必先選 LOC 編號
+- [`faq.html`](https://loc.lo3rwang.cc/faq.html)：LOC7 Knowledge Base 專門查詢介面（保留作進階／單域 View）
+- [`loc3.html`](https://loc.lo3rwang.cc/loc3.html)：LOC3 歌詞語意專門搜尋介面；同詞旋律合併於同一作品結果
 
 ### Python／FastAPI API
 
@@ -273,8 +274,30 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 
 - 農曆日期及時間窗計算
 - 單卡與多卡組合資料
 - 占卜結果與建議規則處理
+- Unified Search 跨 LOC 查詢與 facets（`/search`、`/search/facets`）
 - LOC7 FAQ 語意檢索與依據式回答（`/faq/search`、`/faq/ask`）
 - LOC3 歌詞作品層檢索與同詞版本推薦（`/loc3/search`、`/loc3/facets`）
+
+### Unified Search
+
+現行整合採 **「共用查詢層，不合併 Canon ownership」** 的方式：
+
+```text
+自然語言 Query
+      ↓
+Unified Search
+      ├─ LOC1  月符資料
+      ├─ LOC3  歌曲／歌詞
+      ├─ LOC5  Reels／媒體 reference
+      ├─ LOC7  FAQ／Knowledge View
+      └─ LOC8  ERA／時間語意
+      ↓
+Shared Result Envelope
+```
+
+LOC4 與 LOC6 已建立共用 Registry 與 schema，但正式 corpus 尚未匯入，因此 Unified Search 不會虛構這兩域的內容結果。LOC2 目前則可由 LOC7 知識庫查到規則與系統說明；待獨立遊戲 corpus 建立後再直接接入。
+
+不同來源的搜尋分數維持各自尺度，前端依資料類型分組呈現，不把不同引擎的 score 強制混成單一排行榜。舊有 `faq.html`、`loc3.html` 保留為專門 View，`search.html` 作為整合入口。
 
 ### 語意引擎實驗
 
