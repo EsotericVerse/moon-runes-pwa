@@ -660,6 +660,9 @@
 =======
         <strong>先使用，再理解。</strong>
         <p>一般使用者不需要先理解全部月符、四方位或語意架構。想研究原理時，再進入月符資料與知識庫即可。</p>
+<<<<<<< HEAD
+>>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
+=======
 >>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
       </aside>
     </header>
@@ -702,6 +705,7 @@
         </a>
       </div>
       <p class="loc-note"><strong>月符是月典的根。</strong> 66 符文完整圖資訊量較大，因此預設不展開；需要時點擊上方文字即可觀看，不佔首頁版面。</p>
+<<<<<<< HEAD
     </section>
 
     <section class="section" aria-labelledby="framework-image-title">
@@ -740,6 +744,8 @@
       <p class="visual-caption">
         兩張大型資訊圖預設不展開，點擊後才以燈箱顯示，保留首頁節奏，也保留完整視覺知識資產。
       </p>
+=======
+>>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
     </section>
 
     <section class="section" id="rune-entry" aria-labelledby="rune-title">
@@ -904,6 +910,9 @@
         <div class="action-card"><span class="kicker">LOC6</span><h3>Existing Corpus</h3><p>句型、風格、ERA 與政德風已有現成資料。</p></div>
         <div class="action-card"><span class="kicker">LOC7</span><h3>Working Demo</h3><p>KM／FAQ RAG／Unified Search 已有展示。</p></div>
         <div class="action-card"><span class="kicker">LOC8</span><h3>Temporal Layer</h3><p>Life Event 與時間語意已有整合入口與介面方向。</p></div>
+<<<<<<< HEAD
+>>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
+=======
 >>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
       </div>
     </section>
@@ -939,7 +948,11 @@
   </main>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   <div class="image-modal" id="visual-modal" hidden aria-modal="true" role="dialog" aria-labelledby="visual-modal-title">
+=======
+  <div class="image-modal" id="visual-modal" hidden role="dialog" aria-modal="true" aria-labelledby="visual-modal-title">
+>>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
 =======
   <div class="image-modal" id="visual-modal" hidden role="dialog" aria-modal="true" aria-labelledby="visual-modal-title">
 >>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
@@ -955,6 +968,7 @@
   <script src="https://cdn.jsdelivr.net/npm/solarlunar@2.0.7/lib/solarlunar.min.js"></script>
   <script src="js/main.js"></script>
 <<<<<<< HEAD
+<<<<<<< HEAD
 
   <script>
     (() => {
@@ -962,11 +976,16 @@
       const modalImage = document.querySelector("#visual-modal-image");
       const modalTitle = document.querySelector("#visual-modal-title");
 =======
+=======
+>>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
   <script>
     (() => {
       const modal = document.querySelector("#visual-modal");
       const image = document.querySelector("#visual-modal-image");
       const title = document.querySelector("#visual-modal-title");
+<<<<<<< HEAD
+>>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
+=======
 >>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
       const closeButton = document.querySelector("#visual-modal-close");
       let lastTrigger = null;
@@ -974,12 +993,18 @@
       function openVisual(trigger) {
         lastTrigger = trigger;
 <<<<<<< HEAD
+<<<<<<< HEAD
         const src = trigger.dataset.image || trigger.getAttribute("href");
         const title = trigger.dataset.title || "圖片總覽";
 
         modalImage.src = src;
         modalImage.alt = title;
         modalTitle.textContent = title;
+=======
+        image.src = trigger.dataset.image || trigger.href;
+        image.alt = trigger.dataset.title || "LOC 圖片總覽";
+        title.textContent = image.alt;
+>>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
 =======
         image.src = trigger.dataset.image || trigger.href;
         image.alt = trigger.dataset.title || "LOC 圖片總覽";
@@ -993,7 +1018,11 @@
       function closeVisual() {
         modal.hidden = true;
 <<<<<<< HEAD
+<<<<<<< HEAD
         modalImage.src = "";
+=======
+        image.src = "";
+>>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
 =======
         image.src = "";
 >>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
@@ -1010,11 +1039,17 @@
 
       closeButton.addEventListener("click", closeVisual);
 <<<<<<< HEAD
+<<<<<<< HEAD
 
       modal.addEventListener("click", (event) => {
         if (event.target === modal) closeVisual();
       });
 
+=======
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) closeVisual();
+      });
+>>>>>>> daa5b74f2e4ad251e81d81cc7cc497c4b8c87c99
 =======
       modal.addEventListener("click", (event) => {
         if (event.target === modal) closeVisual();
