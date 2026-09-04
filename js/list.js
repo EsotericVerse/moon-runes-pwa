@@ -34,6 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
     </article>`;
   }
 
+  const groupOrder = ["靈魂","連結","生命","自然","礦物","元素","秩序","無序"];
+
   function render(){
     const q = search.value.trim().toLowerCase();
     const g = group.value;
@@ -41,8 +43,34 @@ document.addEventListener("DOMContentLoaded", () => {
       const hay = [r.編號,r.符文名稱,r.英文,r.所屬分組,r.月相].join(" ").toLowerCase();
       return (!q || hay.includes(q)) && (!g || r.所屬分組 === g);
     });
+
     count.textContent = `${filtered.length} / ${all.length}`;
-    grid.innerHTML = filtered.length ? filtered.map(tile).join("") : '<div class="empty">沒有符合條件的符文。</div>';
+
+    if(!filtered.length){
+      grid.innerHTML = '<div class="empty">沒有符合條件的符文。</div>';
+      return;
+    }
+
+    const sections = [];
+    groupOrder.forEach(name => {
+      const items = filtered.filter(r => r.所屬分組 === name && Number(r.編號) <= 64);
+      if(items.length){
+        sections.push(`<section class="rune-group" aria-label="${esc(name)}組">
+          <div class="group-head"><strong>${esc(name)}組</strong><span>${items.length} 張</span></div>
+          <div class="group-row">${items.map(tile).join("")}</div>
+        </section>`);
+      }
+    });
+
+    const special = filtered.filter(r => Number(r.編號) >= 65);
+    if(special.length){
+      sections.push(`<section class="rune-group" aria-label="特殊符文">
+        <div class="group-head"><strong>特殊符文</strong><span>${special.length} 張</span></div>
+        <div class="group-row">${special.map(tile).join("")}</div>
+      </section>`);
+    }
+
+    grid.innerHTML = sections.join("");
   }
 
   const fields = [
