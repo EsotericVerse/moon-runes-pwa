@@ -32,45 +32,54 @@ window.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  const unifiedEntry = document.createElement("a");
-  unifiedEntry.href = "search.html";
-  unifiedEntry.setAttribute("aria-label", "開啟 LOC Unified Search");
-  unifiedEntry.innerHTML = "<strong>Unified Search</strong><span>搜尋符文、作品、媒體、知識與 ERA</span>";
-  Object.assign(unifiedEntry.style, {
-    position: "fixed",
-    top: "18px",
-    right: "18px",
-    zIndex: "9999",
-    display: "grid",
-    gap: "2px",
-    padding: "11px 14px",
-    borderRadius: "14px",
-    border: "1px solid rgba(255,255,255,.22)",
-    background: "rgba(7,19,31,.88)",
-    color: "#f2f7f6",
-    textDecoration: "none",
-    boxShadow: "0 12px 34px rgba(0,0,0,.28)",
-    backdropFilter: "blur(14px)",
-    WebkitBackdropFilter: "blur(14px)",
-    fontFamily: '"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif',
-    lineHeight: "1.35",
-    maxWidth: "230px"
-  });
-  const label = unifiedEntry.querySelector("strong");
-  const sub = unifiedEntry.querySelector("span");
-  if (label) {
-    Object.assign(label.style, {fontSize:"14px", letterSpacing:".04em"});
+  // Keep Unified Search inside the normal navigation flow.
+  const navLinks = document.querySelector(".nav-links");
+  if (navLinks && !navLinks.querySelector('a[href="search.html"]')) {
+    const unifiedNav = document.createElement("a");
+    unifiedNav.href = "search.html";
+    unifiedNav.textContent = "Unified Search";
+    unifiedNav.setAttribute("aria-label", "開啟 LOC Unified Search");
+    navLinks.appendChild(unifiedNav);
   }
-  if (sub) {
-    Object.assign(sub.style, {fontSize:"11px", color:"#aebfc1"});
+
+  // The hero's third CTA now points to the integrated search instead of only FAQ.
+  const knowledgeCta = document.querySelector('.hero-actions a[href="faq.html"]');
+  if (knowledgeCta) {
+    knowledgeCta.href = "search.html";
+    knowledgeCta.textContent = "Unified Search";
   }
-  unifiedEntry.addEventListener("mouseenter", () => {
-    unifiedEntry.style.borderColor = "rgba(126,216,197,.72)";
-  });
-  unifiedEntry.addEventListener("mouseleave", () => {
-    unifiedEntry.style.borderColor = "rgba(255,255,255,.22)";
-  });
-  document.body.appendChild(unifiedEntry);
+
+  // Option B: retain the moon motif, but demote it to a subtle background element.
+  const heroNote = document.querySelector(".hero-note");
+  const decorativeMoon = heroNote?.querySelector(".moon");
+  if (heroNote) {
+    Object.assign(heroNote.style, {
+      minHeight: "230px",
+      display: "grid",
+      alignContent: "end",
+      position: "relative"
+    });
+    heroNote.querySelectorAll("strong, p").forEach(node => {
+      Object.assign(node.style, {
+        position: "relative",
+        zIndex: "1"
+      });
+    });
+  }
+  if (decorativeMoon) {
+    Object.assign(decorativeMoon.style, {
+      position: "absolute",
+      width: "108px",
+      height: "108px",
+      top: "22px",
+      right: "26px",
+      margin: "0",
+      opacity: "0.2",
+      pointerEvents: "none",
+      zIndex: "0",
+      boxShadow: "0 0 32px rgba(231,194,125,.12), 0 0 70px rgba(180,158,255,.08)"
+    });
+  }
 
   const card = document.getElementById("rune-card");
   const moonText = document.getElementById("moon-phase-index");
