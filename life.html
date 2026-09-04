@@ -613,7 +613,11 @@
         source: raw.source || '',
         status: raw.status || 'current',
         confidence: raw.confidence || 'recorded',
-        created_at: raw.created_at || new Date().toISOString()
+        created_at: raw.created_at || new Date().toISOString(),
+        system_id: raw.system_id || 'lo3rwang',
+        primary_loc: raw.primary_loc || 'LOC8',
+        related_locs: Array.isArray(raw.related_locs) ? raw.related_locs : parseTags(raw.related_locs),
+        era_id: raw.era_id || ''
       };
     }
 
