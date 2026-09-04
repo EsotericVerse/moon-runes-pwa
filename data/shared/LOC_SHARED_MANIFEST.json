@@ -1,0 +1,58 @@
+{
+  "schema_version": "0.1",
+  "manifest": "LOC_SHARED_REGISTRIES",
+  "root": "data/shared",
+  "language_system_id": "lo3rwang",
+  "registries": [
+    {
+      "id": "language_system",
+      "path": "data/shared/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+      "authority": "LOC8",
+      "purpose": "Canonical language-system identity, IP, rights and provenance defaults."
+    },
+    {
+      "id": "era",
+      "path": "data/shared/LOC_ERA_REGISTRY.json",
+      "authority": "LOC8",
+      "purpose": "Canonical ERA labels, temporal state and source Event references."
+    },
+    {
+      "id": "media",
+      "path": "data/shared/LOC_MEDIA_REGISTRY.json",
+      "authority": "LOC5",
+      "purpose": "Canonical media assets and cross-links to works/songs."
+    },
+    {
+      "id": "shared_schema",
+      "path": "data/shared/LOC_SHARED_SCHEMA.json",
+      "authority": "LOC8",
+      "purpose": "Shared cross-LOC fields and lifecycle/provenance/rights shapes."
+    },
+    {
+      "id": "data_governance",
+      "path": "data/shared/LOC_DATA_GOVERNANCE.json",
+      "authority": "LOC8",
+      "purpose": "Authority and consumer rules across LOC1-8."
+    },
+    {
+      "id": "reference_model",
+      "path": "data/shared/LOC_REFERENCE_MODEL.json",
+      "authority": "LOC8",
+      "purpose": "Stable ID types and cross-LOC relationship vocabulary."
+    }
+  ],
+  "integration_status": {
+    "LOC3": {
+      "era_registry": "connected",
+      "language_system_registry": "schema-ready",
+      "media_registry": "connected",
+      "shared_result_refs": "connected"
+    },
+    "LOC4": "pending",
+    "LOC5": "media-authority-established",
+    "LOC6": "pending",
+    "LOC7": "pending",
+    "LOC8": "authority-source-established"
+  },
+  "rule": "Finish shared registry/reference adoption before merging user-facing search interfaces."
+}
