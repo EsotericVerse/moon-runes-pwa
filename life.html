@@ -739,6 +739,7 @@
       if (editingId) raw.id = editingId;
       const event = normalizeEvent(raw);
       try {
+        if (editingId && sheetApiUrl) await testApi();
         await saveEvent(event, editingId ? 'update_event' : 'event');
         if (sheetApiUrl) await loadEvents(); else renderAll();
         resetEventForm();
@@ -765,6 +766,7 @@
       if (action === 'archive') {
         if (!confirm('將這筆事件標記為 Archived？原資料不會刪除。')) return;
         try {
+          if (sheetApiUrl) await testApi();
           await saveEvent({ id, user_id: 'lo3rwang' }, 'archive_event');
           if (sheetApiUrl) await loadEvents(); else renderAll();
           if (editingId === id) resetEventForm();
@@ -800,7 +802,10 @@
       if (!res.ok) throw new Error('Health check failed');
       const data = await res.json();
       if (!data || data.ok !== true) throw new Error(data && data.error ? data.error : 'API not ready');
-      setSync(true, 'Google Sheet API 已連線');
+      if (data.schema !== 'loc8-mvp-0.3') {
+        throw new Error('API schema mismatch: ' + (data.schema || 'unknown'));
+      }
+      setSync(true, 'Google Sheet API 已連線 · v0.3');
       return true;
     }
 
