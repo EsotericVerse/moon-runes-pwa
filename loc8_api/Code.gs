@@ -50,9 +50,13 @@ function doPost(e) {
       return json_({ ok: true, event: updated, action: 'archive_event' });
     }
 
-    const event = normalizeEvent_(body.event || body);
-    appendObject_(EVENT_SHEET, event);
-    return json_({ ok: true, event: event, action: 'event' });
+    if (action === 'event') {
+      const event = normalizeEvent_(body.event || body);
+      appendObject_(EVENT_SHEET, event);
+      return json_({ ok: true, event: event, action: 'event' });
+    }
+
+    throw new Error('Unsupported action: ' + action);
   } catch (err) {
     return json_({ ok: false, error: errorText_(err) });
   }
