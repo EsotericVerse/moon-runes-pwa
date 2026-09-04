@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LOC8 · Life / Event Timeline</title>
+  <meta name="description" content="LOC8 — 事件、時間、軌跡與趨勢的簡易測試頁面" />
+  <style>
+    :root {
+      --bg: #07101f;
+      --panel: rgba(15, 28, 48, .78);
+      --panel-2: rgba(22, 39, 65, .78);
+      --line: rgba(196, 216, 255, .14);
+      --line-strong: rgba(196, 216, 255, .28);
+      --text: #edf4ff;
+      --muted: #9fb1ca;
+      --accent: #a9c7ff;
+      --accent-2: #d9e6ff;
+      --ok: #bfe9d0;
+      --warn: #f1ddb0;
+      --danger: #ffc5c5;
+      --shadow: 0 18px 50px rgba(0,0,0,.25);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(90,130,210,.18), transparent 30%),
+        radial-gradient(circle at 90% 15%, rgba(133,166,233,.10), transparent 26%),
+        linear-gradient(180deg, #081222 0%, #060d18 100%);
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      width: min(1500px, 100%);
+      margin: 0 auto;
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 20px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 22px;
+      align-self: start;
+      min-height: calc(100vh - 44px);
+      padding: 20px 16px;
+      border: 1px solid var(--line);
+      background: rgba(6, 15, 28, .75);
+      backdrop-filter: blur(18px);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 4px 6px 18px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 16px;
+    }
+    .moon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--line-strong);
+      background:
+        radial-gradient(circle at 35% 35%, #ffffff 0 13%, #cbdcff 14% 34%, #89aeea 35% 48%, transparent 49%),
+        rgba(255,255,255,.04);
+      box-shadow: 0 0 32px rgba(165,195,255,.18);
+      flex: 0 0 auto;
+    }
+    .brand h1 { font-size: 18px; margin: 0; letter-spacing: .04em; }
+    .brand p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+
+    .nav { display: grid; gap: 8px; }
+    .nav a {
+      text-decoration: none;
+      color: var(--muted);
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      transition: .18s ease;
+    }
+    .nav a:hover, .nav a.active {
+      color: var(--text);
+      border-color: var(--line);
+      background: rgba(168, 198, 255, .08);
+    }
+
+    .sidebar-foot {
+      margin-top: 18px;
+      padding: 14px 8px 2px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    main { min-width: 0; }
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 18px;
+      margin: 6px 0 18px;
+    }
+    .eyebrow { color: var(--accent); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; }
+    .hero h2 { margin: 7px 0 7px; font-size: clamp(28px, 4vw, 46px); font-weight: 700; letter-spacing: -.03em; }
+    .hero p { margin: 0; color: var(--muted); max-width: 850px; line-height: 1.7; }
+
+    .sync {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 15px rgba(241,221,176,.35); }
+    .dot.ok { background: var(--ok); box-shadow: 0 0 15px rgba(191,233,208,.35); }
+
+    .grid { display: grid; gap: 16px; }
+    .grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid.cols-2 { grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); }
+
+    .card {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(18,33,56,.82), rgba(10,21,37,.78));
+      backdrop-filter: blur(16px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card .head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 17px 18px 13px;
+      border-bottom: 1px solid var(--line);
+    }
+    .card .head h3 { margin: 0; font-size: 16px; }
+    .card .head p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .card .body { padding: 18px; }
+
+    .metric { padding: 16px 18px; }
+    .metric .label { color: var(--muted); font-size: 12px; }
+    .metric .value { margin-top: 8px; font-size: 28px; font-weight: 700; }
+    .metric .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line-strong);
+      background: rgba(169,199,255,.08);
+      color: var(--accent-2);
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .field { display: grid; gap: 7px; }
+    .field.full { grid-column: 1 / -1; }
+    label { color: var(--muted); font-size: 12px; }
+    input, select, textarea {
+      width: 100%;
+      color: var(--text);
+      background: rgba(4, 12, 23, .72);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      padding: 11px 12px;
+      transition: .16s ease;
+    }
+    input:focus, select:focus, textarea:focus { border-color: rgba(169,199,255,.55); box-shadow: 0 0 0 3px rgba(169,199,255,.08); }
+    textarea { min-height: 96px; resize: vertical; }
+
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .btn {
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: var(--text);
+      background: rgba(169,199,255,.08);
+    }
+    .btn.primary { background: linear-gradient(180deg, rgba(171,201,255,.26), rgba(116,154,219,.18)); }
+    .btn.ghost { background: transparent; color: var(--muted); }
+
+    .state-box {
+      min-height: 100%;
+      display: grid;
+      gap: 14px;
+    }
+    .state-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .state-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .state-row .k { color: var(--muted); font-size: 12px; }
+    .state-row .v { line-height: 1.55; }
+
+    .timeline { position: relative; display: grid; gap: 0; }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 10px;
+      bottom: 10px;
+      width: 1px;
+      background: var(--line-strong);
+    }
+    .event {
+      position: relative;
+      display: grid;
+      grid-template-columns: 38px 110px 1fr;
+      gap: 12px;
+      padding: 12px 0;
+    }
+    .event .node {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      margin: 7px 0 0 13px;
+      border: 2px solid #8fb7f5;
+      background: #0b1628;
+      z-index: 1;
+    }
+    .event .date { color: var(--muted); font-size: 12px; padding-top: 4px; }
+    .event .content { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: rgba(255,255,255,.025); }
+    .event .title { font-weight: 650; margin-bottom: 4px; }
+    .event .meta { color: var(--muted); font-size: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .event .desc { color: #d8e4f7; margin-top: 8px; line-height: 1.6; font-size: 14px; }
+
+    .trajectory {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .step {
+      min-width: 180px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,.025);
+    }
+    .step .t { font-weight: 650; }
+    .step .s { color: var(--muted); font-size: 12px; margin-top: 5px; }
+    .arrow { color: var(--accent); font-size: 22px; flex: 0 0 auto; }
+
+    .trend-list { display: grid; gap: 10px; }
+    .trend-item { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .bar { height: 7px; border-radius: 999px; background: rgba(255,255,255,.06); overflow: hidden; margin-top: 7px; }
+    .bar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, rgba(169,199,255,.55), rgba(217,230,255,.9)); }
+    .trend-item small { color: var(--muted); }
+
+    .empty {
+      border: 1px dashed var(--line-strong);
+      border-radius: 14px;
+      padding: 24px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .footer { color: var(--muted); font-size: 12px; text-align: center; padding: 22px 0 4px; }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: static; min-height: auto; }
+      .nav { grid-template-columns: repeat(5, 1fr); }
+      .nav a { text-align: center; padding: 9px 6px; font-size: 12px; }
+      .sidebar-foot { display: none; }
+      .grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 760px) {
+      .app { padding: 12px; }
+      .hero { align-items: start; flex-direction: column; }
+      .grid.cols-4, .grid.cols-2, .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .event { grid-template-columns: 30px 1fr; }
+      .event .date { grid-column: 2; order: 0; }
+      .event .content { grid-column: 2; }
+      .timeline::before { left: 14px; }
+      .event .node { margin-left: 9px; }
+      .nav { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="moon" aria-hidden="true"></div>
+        <div>
+          <h1>LOC8 · Life</h1>
+          <p>Event / Time / Trajectory / Trend</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <a class="active" href="#overview">概覽</a>
+        <a href="#event-form">事件</a>
+        <a href="#timeline">時間線</a>
+        <a href="#trajectory">軌跡</a>
+        <a href="#trend">趨勢</a>
+      </nav>
+      <div class="sidebar-foot">
+        LOC8 目前作為測試介面。<br />
+        儲存層先接 Google Sheet；未來可替換為正式資料庫而不改前端資料模型。
+      </div>
+    </aside>
+
+    <main>
+      <section class="hero" id="overview">
+        <div>
+          <div class="eyebrow">Luna Codex · Distribution 8</div>
+          <h2>生活不是紀錄，是軌跡。</h2>
+          <p>以事件與時間為基底，保存狀態改變，觀察一個人、一個符文、一件作品或整個系統如何一路演變，以及目前正在形成什麼趨勢。</p>
+        </div>
+        <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">本機測試模式</span></div>
+      </section>
+
+      <section class="grid cols-4" aria-label="摘要">
+        <div class="card metric"><div class="label">事件總數</div><div class="value" id="metricEvents">0</div><div class="hint">目前載入的 Event</div></div>
+        <div class="card metric"><div class="label">Current</div><div class="value" id="metricCurrent">0</div><div class="hint">目前有效狀態</div></div>
+        <div class="card metric"><div class="label">Release</div><div class="value" id="metricRelease">0</div><div class="hint">已封存版本</div></div>
+        <div class="card metric"><div class="label">最近 30 天</div><div class="value" id="metricRecent">0</div><div class="hint">可用於趨勢觀察</div></div>
+      </section>
+
+      <section class="grid cols-2" style="margin-top:16px;" id="event-form">
+        <div class="card">
+          <div class="head">
+            <div><h3>新增事件</h3><p>先記錄事實，再描述狀態變化。</p></div>
+            <span class="badge">Event</span>
+          </div>
+          <div class="body">
+            <form id="eventForm">
+              <div class="form-grid">
+                <div class="field"><label for="date">日期</label><input id="date" name="date" type="date" required /></div>
+                <div class="field"><label for="objectType">對象類型</label>
+                  <select id="objectType" name="object_type">
+                    <option value="person">Person / 人</option>
+                    <option value="rune">Rune / 符文</option>
+                    <option value="work">Work / 作品</option>
+                    <option value="system">System / 系統</option>
+                  </select>
+                </div>
+                <div class="field"><label for="objectId">對象名稱</label><input id="objectId" name="object_id" placeholder="例如：政德風、玄、LOC" /></div>
+                <div class="field"><label for="eventType">事件類型</label>
+                  <select id="eventType" name="event_type">
+                    <option value="creation">Creation</option>
+                    <option value="definition">Definition</option>
+                    <option value="application">Application</option>
+                    <option value="interpretation">Interpretation</option>
+                    <option value="external_trigger">External Trigger</option>
+                    <option value="transition">Transition</option>
+                  </select>
+                </div>
+                <div class="field full"><label for="title">事件標題</label><input id="title" name="event_title" required placeholder="一句話說明發生了什麼" /></div>
+                <div class="field full"><label for="description">事件描述</label><textarea id="description" name="description" placeholder="只寫可確認的內容；推論可放在狀態變化或備註。"></textarea></div>
+                <div class="field"><label for="before">State Before</label><textarea id="before" name="state_before" placeholder="事件前"></textarea></div>
+                <div class="field"><label for="after">State After</label><textarea id="after" name="state_after" placeholder="事件後"></textarea></div>
+                <div class="field"><label for="era">ERA / 時期</label><input id="era" name="era" placeholder="可留白" /></div>
+                <div class="field"><label for="status">版本狀態</label>
+                  <select id="status" name="status">
+                    <option value="current">Current</option>
+                    <option value="released">Release</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+                <div class="field"><label for="confidence">資料可信度</label>
+                  <select id="confidence" name="confidence">
+                    <option value="recorded">Recorded / 原始紀錄</option>
+                    <option value="reconstructed">Reconstructed / 重建</option>
+                    <option value="inferred">Inferred / 推論</option>
+                    <option value="unknown">Unknown</option>
+                  </select>
+                </div>
+                <div class="field"><label for="tags">Tags</label><input id="tags" name="tags" placeholder="例如：治理, 邊界, LOC6" /></div>
+                <div class="field full"><label for="source">來源 / Evidence</label><input id="source" name="source" placeholder="文件、網址、對話、作品名稱、commit 等" /></div>
+              </div>
+              <div class="actions">
+                <button class="btn primary" type="submit">儲存事件</button>
+                <button class="btn ghost" type="reset">清除</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="head"><div><h3>Current State</h3><p>目前所處的狀態，不覆寫歷史。</p></div><span class="badge">Current</span></div>
+          <div class="body state-box" id="currentState">
+            <div class="empty">新增或載入事件後，這裡會依最新 Current 記錄顯示目前狀態。</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top:16px;" id="timeline">
+        <div class="head">
+          <div><h3>Event Timeline</h3><p>事件是原因；時間線保存它發生的順序。</p></div>
+          <div class="actions" style="margin:0"><button class="btn ghost" id="refreshBtn" type="button">重新載入</button><button class="btn ghost" id="clearBtn" type="button">清除測試資料</button></div>
+        </div>
+        <div class="body"><div class="timeline" id="timelineList"><div class="empty">尚無事件。</div></div></div>
+      </section>
+
+      <section class="grid cols-2" style="margin-top:16px;">
+        <div class="card" id="trajectory">
+          <div class="head"><div><h3>Trajectory</h3><p>不是看單點，而是看狀態怎麼一路轉變。</p></div><span class="badge">軌跡</span></div>
+          <div class="body"><div class="trajectory" id="trajectoryList"><div class="empty" style="min-width:100%">需要至少兩筆具有 State After 的事件才能形成軌跡。</div></div></div>
+        </div>
+
+        <div class="card" id="trend">
+          <div class="head"><div><h3>Trend</h3><p>以最近 30 天 tags 粗略觀察目前方向。</p></div><span class="badge">趨勢</span></div>
+          <div class="body"><div class="trend-list" id="trendList"><div class="empty">近期資料不足。</div></div></div>
+        </div>
+      </section>
+
+      <div class="footer">LOC8 MVP · life.html · Google Sheet-ready prototype</div>
+    </main>
+  </div>
+
+  <script>
+    /**
+     * Google Sheet 暫存層：
+     * 1) 建立 Google Apps Script Web App。
+     * 2) 將部署後 URL 填入 SHEET_API_URL。
+     * 3) 預期 GET 回傳 JSON array；POST 接收 JSON event。
+     *
+     * URL 留白時，本頁使用 localStorage 作為純前端測試。
+     */
+    const SHEET_API_URL = "";
+    const STORAGE_KEY = "loc8-life-events-v1";
+
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => [...document.querySelectorAll(s)];
+
+    const els = {
+      form: $('#eventForm'),
+      timeline: $('#timelineList'),
+      trajectory: $('#trajectoryList'),
+      trend: $('#trendList'),
+      current: $('#currentState'),
+      syncText: $('#syncText'),
+      syncDot: $('#syncDot'),
+      mEvents: $('#metricEvents'),
+      mCurrent: $('#metricCurrent'),
+      mRelease: $('#metricRelease'),
+      mRecent: $('#metricRecent'),
+    };
+
+    let events = [];
+
+    function uid() {
+      return 'EV-' + new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0,14) + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
+    }
+
+    function parseTags(value) {
+      return String(value || '').split(',').map(v => v.trim()).filter(Boolean);
+    }
+
+    function esc(value='') {
+      return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    }
+
+    function setSync(ok, text) {
+      els.syncText.textContent = text;
+      els.syncDot.classList.toggle('ok', !!ok);
+    }
+
+    async function loadEvents() {
+      try {
+        if (SHEET_API_URL) {
+          setSync(false, '同步 Google Sheet…');
+          const res = await fetch(SHEET_API_URL, { method: 'GET', cache: 'no-store' });
+          if (!res.ok) throw new Error('GET failed');
+          const data = await res.json();
+          events = Array.isArray(data) ? data : (data.events || []);
+          setSync(true, 'Google Sheet 已同步');
+        } else {
+          events = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          setSync(false, '本機測試模式');
+        }
+      } catch (err) {
+        console.error(err);
+        events = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        setSync(false, 'Sheet 連線失敗；改用本機資料');
+      }
+      renderAll();
+    }
+
+    async function saveEvent(event) {
+      if (SHEET_API_URL) {
+        const res = await fetch(SHEET_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(event)
+        });
+        if (!res.ok) throw new Error('POST failed');
+      } else {
+        events.push(event);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+      }
+    }
+
+    function normalizeEvent(raw) {
+      return {
+        id: raw.id || uid(),
+        date: raw.date || new Date().toISOString().slice(0,10),
+        object_type: raw.object_type || 'person',
+        object_id: raw.object_id || '',
+        event_type: raw.event_type || 'transition',
+        event_title: raw.event_title || '',
+        description: raw.description || '',
+        state_before: raw.state_before || '',
+        state_after: raw.state_after || '',
+        era: raw.era || '',
+        tags: Array.isArray(raw.tags) ? raw.tags : parseTags(raw.tags),
+        source: raw.source || '',
+        status: raw.status || 'current',
+        confidence: raw.confidence || 'recorded',
+        created_at: raw.created_at || new Date().toISOString()
+      };
+    }
+
+    function renderMetrics(sorted) {
+      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
+      els.mEvents.textContent = sorted.length;
+      els.mCurrent.textContent = sorted.filter(e => e.status === 'current').length;
+      els.mRelease.textContent = sorted.filter(e => e.status === 'released').length;
+      els.mRecent.textContent = sorted.filter(e => new Date(e.date) >= cutoff).length;
+    }
+
+    function renderCurrent(sorted) {
+      const current = [...sorted].reverse().find(e => e.status === 'current');
+      if (!current) {
+        els.current.innerHTML = '<div class="empty">新增或載入事件後，這裡會依最新 Current 記錄顯示目前狀態。</div>';
+        return;
+      }
+      els.current.innerHTML = `
+        <div class="state-row"><div class="k">對象</div><div class="v">${esc(current.object_id || current.object_type)}</div></div>
+        <div class="state-row"><div class="k">目前狀態</div><div class="v">${esc(current.state_after || current.description || '未填寫')}</div></div>
+        <div class="state-row"><div class="k">ERA</div><div class="v">${esc(current.era || '—')}</div></div>
+        <div class="state-row"><div class="k">最後事件</div><div class="v">${esc(current.event_title)} <span style="color:var(--muted)">· ${esc(current.date)}</span></div></div>
+        <div class="state-row"><div class="k">Tags</div><div class="v">${(current.tags||[]).map(t => `<span class="badge" style="margin:0 5px 5px 0">${esc(t)}</span>`).join('') || '—'}</div></div>
+      `;
+    }
+
+    function renderTimeline(sorted) {
+      if (!sorted.length) {
+        els.timeline.innerHTML = '<div class="empty">尚無事件。</div>';
+        return;
+      }
+      els.timeline.innerHTML = sorted.map(e => `
+        <article class="event">
+          <div class="node"></div>
+          <div class="date">${esc(e.date)}</div>
+          <div class="content">
+            <div class="title">${esc(e.event_title)}</div>
+            <div class="meta">
+              <span>${esc(e.object_type)}${e.object_id ? ' · ' + esc(e.object_id) : ''}</span>
+              <span>${esc(e.event_type)}</span>
+              <span>${esc(e.status)}</span>
+              <span>${esc(e.confidence)}</span>
+              ${e.era ? `<span>ERA · ${esc(e.era)}</span>` : ''}
+            </div>
+            ${e.description ? `<div class="desc">${esc(e.description)}</div>` : ''}
+            ${e.state_after ? `<div class="desc"><strong>State →</strong> ${esc(e.state_after)}</div>` : ''}
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function renderTrajectory(sorted) {
+      const points = sorted.filter(e => e.state_after).slice(-8);
+      if (points.length < 2) {
+        els.trajectory.innerHTML = '<div class="empty" style="min-width:100%">需要至少兩筆具有 State After 的事件才能形成軌跡。</div>';
+        return;
+      }
+      els.trajectory.innerHTML = points.map((e, i) => `
+        ${i ? '<div class="arrow">→</div>' : ''}
+        <div class="step">
+          <div class="t">${esc(e.state_after)}</div>
+          <div class="s">${esc(e.date)} · ${esc(e.event_title)}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderTrend(sorted) {
+      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
+      const recent = sorted.filter(e => new Date(e.date) >= cutoff);
+      const counts = new Map();
+      recent.flatMap(e => e.tags || []).forEach(tag => counts.set(tag, (counts.get(tag) || 0) + 1));
+      const top = [...counts.entries()].sort((a,b) => b[1]-a[1]).slice(0,6);
+      if (!top.length) {
+        els.trend.innerHTML = '<div class="empty">近期資料不足。</div>';
+        return;
+      }
+      const max = top[0][1] || 1;
+      els.trend.innerHTML = top.map(([tag,count]) => `
+        <div class="trend-item">
+          <div><div>${esc(tag)}</div><div class="bar"><i style="width:${Math.max(12, count/max*100)}%"></i></div></div>
+          <small>${count}</small>
+        </div>
+      `).join('');
+    }
+
+    function renderAll() {
+      const sorted = events.map(normalizeEvent).sort((a,b) => new Date(a.date) - new Date(b.date));
+      events = sorted;
+      renderMetrics(sorted);
+      renderCurrent(sorted);
+      renderTimeline(sorted);
+      renderTrajectory(sorted);
+      renderTrend(sorted);
+    }
+
+    els.form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const form = new FormData(els.form);
+      const event = normalizeEvent(Object.fromEntries(form.entries()));
+      try {
+        await saveEvent(event);
+        if (SHEET_API_URL) await loadEvents(); else renderAll();
+        els.form.reset();
+        $('#date').value = new Date().toISOString().slice(0,10);
+      } catch (err) {
+        console.error(err);
+        alert('儲存失敗，請檢查 Google Apps Script 端點或網路狀態。');
+      }
+    });
+
+    $('#refreshBtn').addEventListener('click', loadEvents);
+    $('#clearBtn').addEventListener('click', () => {
+      if (SHEET_API_URL) {
+        alert('目前接的是 Google Sheet，為避免誤刪資料，清除功能只作用於本機測試模式。');
+        return;
+      }
+      if (confirm('清除 life.html 的本機測試資料？')) {
+        localStorage.removeItem(STORAGE_KEY);
+        events = [];
+        renderAll();
+      }
+    });
+
+    $$('.nav a').forEach(a => a.addEventListener('click', () => {
+      $$('.nav a').forEach(x => x.classList.remove('active'));
+      a.classList.add('active');
+    }));
+
+    $('#date').value = new Date().toISOString().slice(0,10);
+    loadEvents();
+  </script>
+</body>
+</html>
