@@ -47,6 +47,16 @@
     .visual-card{margin:0;border:1px solid var(--border);border-radius:18px;overflow:hidden;background:rgba(3,13,28,.52)}
     .visual-card img{display:block;width:100%;height:auto;aspect-ratio:650/460;object-fit:cover}
     .visual-card figcaption{padding:12px 14px;color:var(--muted);font-size:.84rem}
+    .visual-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+    .visual-link{display:inline-flex;align-items:center;min-height:38px;padding:7px 12px;border:1px solid var(--border);border-radius:999px;
+      color:var(--gold);background:var(--soft);font-size:.84rem;font-weight:800;text-decoration:none}
+    .visual-link:hover,.visual-link:focus-visible{color:var(--text);border-color:var(--gold)}
+    .image-modal[hidden]{display:none}.image-modal{position:fixed;inset:0;z-index:999;padding:20px;overflow:auto;background:rgba(2,8,18,.94);backdrop-filter:blur(14px)}
+    .modal-shell{width:min(1500px,100%);margin:36px auto}.modal-head{position:sticky;top:8px;z-index:2;display:flex;align-items:center;justify-content:space-between;
+      gap:16px;margin-bottom:12px;padding:10px 12px;border:1px solid var(--border);border-radius:16px;background:rgba(7,24,45,.94)}
+    .modal-title{margin:0;color:var(--text);font-size:.96rem}.modal-close{width:42px;height:42px;flex:0 0 42px;border:1px solid var(--border);border-radius:50%;
+      color:var(--text);background:var(--soft);font-size:1.55rem;cursor:pointer}.modal-image{display:block;width:100%;height:auto;border:1px solid var(--border);
+      border-radius:18px;box-shadow:var(--shadow)}
     .section-heading{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px}.section-heading h2{margin:0;font-size:clamp(1.45rem,3vw,2.2rem);letter-spacing:-.025em}
     .section-heading p{max-width:620px;margin:0;color:var(--muted);font-size:.92rem}
     #description{margin-top:14px;padding:18px;border:1px solid var(--border);border-radius:18px;background:var(--soft);color:var(--muted)}
@@ -92,7 +102,7 @@
       <aside class="hero-note">
         <div class="moon" aria-hidden="true"></div>
         <strong>先使用，再理解。</strong>
-        <p>一般使用者不需要先學 66 符、四方位或語意架構。想研究原理時，再進入月符資料與知識庫即可。</p>
+        <p>一般使用者不需要先理解全部月符、四方位或語意架構。想研究原理時，再進入月符資料與知識庫即可。</p>
       </aside>
     </header>
 
@@ -111,6 +121,13 @@
           <figcaption>月典運作循環：未知／感受 → 月符抽取 → 語言演化 → 作品形成 → 解析 → 文字建築 → 事件與時間 → 重新理解。</figcaption>
         </figure>
       </div>
+      <div class="visual-links" aria-label="大型系統視覺圖">
+        <a href="pics/loc-runes-66-overview.jpg" class="visual-link js-open-visual"
+           data-image="pics/loc-runes-66-overview.jpg" data-title="月符 66 符文完整總覽圖">
+          查看 66 符文完整總覽圖 →
+        </a>
+      </div>
+      <p class="loc-note"><strong>月符是月典的根。</strong> 66 符文完整圖資訊量較大，因此預設不展開；需要時點擊上方文字即可觀看，不佔首頁版面。</p>
     </section>
 
     <section class="section" id="rune-entry" aria-labelledby="rune-title">
@@ -161,9 +178,9 @@
         <a class="action-card" href="loc3.html"><span class="kicker">LOC3 · Music</span><h3>如果結果不是解釋，而是一首歌？</h3><p>把文字、情緒與人生經驗轉成音樂，並可用語意搜尋直接找到作品。</p><span class="arrow">進入 LOC3 →</span></a>
         <div class="action-card"><span class="kicker">LOC4 · Writing</span><h3>如果一枚符文，長成一句話或一個世界？</h3><p>小說、連載、人生書寫與符文衍生文本都在這裡；已有多部實際作品，完整文章主要發布於方格子。</p><span class="arrow">作品連結整理中</span></div>
         <div class="action-card"><span class="kicker">LOC5 · Resonance</span><h3>同一概念，換成聲音與影像會怎樣？</h3><p>把 LOC3 音樂與 LOC4 文字延伸成 MV、Reels、概念影像與視覺化；搜尋結果中的 Reels 就是 LOC5 的直接展示。</p><span class="arrow">在搜尋結果中觀看 Reels</span></div>
-        <div class="action-card"><span class="kicker">LOC6 · Governance</span><h3>同一個人，在不同時期會怎麼說話？</h3><p>用 ERA、政德風、價值觀與治理語句記錄語氣、判斷與自我治理如何隨時間改變。</p><span class="arrow">ERA 與風格說明持續整理中</span></div>
-        <a class="action-card" href="search.html"><span class="kicker">LOC7 · Text Architecture</span><h3>如果散落的文字，可以重新被找到與關聯？</h3><p>承接 KM、語意搜尋、向量檢索與跨 LOC 關聯；Unified Search 就是目前的實際展示入口。</p><span class="arrow">開啟 Unified Search →</span></a>
-        <a class="action-card" href="life.html"><span class="kicker">LOC8 · Life</span><h3>最後，所有東西都回到生活。</h3><p>把事件、時間、創作、治理與工具重新放回日常軌跡，作為整合入口。</p><span class="arrow">進入 LOC8 →</span></a>
+        <div class="action-card"><span class="kicker">LOC6 · Grammar & Style</span><h3>同一個人，在不同時期會怎麼說話？</h3><p>解析句型、文法、語氣、修辭與風格；政德風則是作者個人語言紀錄的重要案例。</p><span class="arrow">句型與風格資料持續整理中</span></div>
+        <a class="action-card" href="search.html"><span class="kicker">LOC7 · Text Architecture</span><h3>如果散落的文字，可以重新被找到與關聯？</h3><p>承接 Knowledge Management、語意檢索、Knowledge Graph 與 Graph RAG；Unified Search 與知識庫是目前的實際展示入口。</p><span class="arrow">開啟 Unified Search →</span></a>
+        <a class="action-card" href="life.html"><span class="kicker">LOC8 · Life Event & Temporal Semantics</span><h3>最後，語言回到事件與時間。</h3><p>記錄事情何時發生、當時如何被理解，以及作品、語句與觀點之後如何改變；整合介面是其自然延伸。</p><span class="arrow">進入 LOC8 →</span></a>
       </div>
       <p class="loc-note">你可以只抽一張卡，也可以沿著這些分支繼續往下。想深入原理時，再進入月符資料、知識庫與文字建築的技術層。</p>
     </section>
@@ -179,9 +196,9 @@
         <div class="action-card"><span class="kicker">LOC3</span><h3>Searchable</h3><p>歌詞語意搜尋與作品播放已可使用。</p></div>
         <div class="action-card"><span class="kicker">LOC4</span><h3>Works Available</h3><p>已有實際文字作品，站內索引持續補齊。</p></div>
         <div class="action-card"><span class="kicker">LOC5</span><h3>Media Available</h3><p>已有 Reels／MV，可由搜尋結果直接觀看。</p></div>
-        <div class="action-card"><span class="kicker">LOC6</span><h3>Existing Corpus</h3><p>ERA、政德風與治理語句已有現成資料。</p></div>
-        <div class="action-card"><span class="kicker">LOC7</span><h3>Working Demo</h3><p>Unified Search／KM／語意檢索已有展示。</p></div>
-        <div class="action-card"><span class="kicker">LOC8</span><h3>Integration</h3><p>生活與事件時間整合入口已存在。</p></div>
+        <div class="action-card"><span class="kicker">LOC6</span><h3>Existing Corpus</h3><p>句型、風格、ERA 與政德風已有現成資料。</p></div>
+        <div class="action-card"><span class="kicker">LOC7</span><h3>Working Demo</h3><p>KM／FAQ RAG／Unified Search 已有展示。</p></div>
+        <div class="action-card"><span class="kicker">LOC8</span><h3>Temporal Layer</h3><p>Life Event 與時間語意已有整合入口與介面方向。</p></div>
       </div>
       <p class="loc-note"><strong>目前定位：LOC Web Demo Alpha。</strong> 重點是已有實際內容可以看、可以搜、可以玩；後續再持續補資料、連結與互動品質。</p>
     </section>
@@ -193,7 +210,59 @@
 
     <footer><p><strong>LOC · Luna Codex · 月典</strong></p><p>By 秘藝文域（EsotericVerse Studio） · Lucas Oscar Wang 政德 ｜ <a href="mailto:esotericverse.xy@gmail.com">聯絡</a></p></footer>
   </main>
+
+  <div class="image-modal" id="visual-modal" hidden role="dialog" aria-modal="true" aria-labelledby="visual-modal-title">
+    <div class="modal-shell">
+      <div class="modal-head">
+        <h2 class="modal-title" id="visual-modal-title">圖片總覽</h2>
+        <button class="modal-close" id="visual-modal-close" type="button" aria-label="關閉圖片">×</button>
+      </div>
+      <img class="modal-image" id="visual-modal-image" src="" alt="" />
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/solarlunar@2.0.7/lib/solarlunar.min.js"></script>
   <script src="js/main.js"></script>
+  <script>
+    (() => {
+      const modal = document.querySelector("#visual-modal");
+      const image = document.querySelector("#visual-modal-image");
+      const title = document.querySelector("#visual-modal-title");
+      const closeButton = document.querySelector("#visual-modal-close");
+      let lastTrigger = null;
+
+      function openVisual(trigger) {
+        lastTrigger = trigger;
+        image.src = trigger.dataset.image || trigger.href;
+        image.alt = trigger.dataset.title || "LOC 圖片總覽";
+        title.textContent = image.alt;
+        modal.hidden = false;
+        document.body.style.overflow = "hidden";
+        closeButton.focus();
+      }
+
+      function closeVisual() {
+        modal.hidden = true;
+        image.src = "";
+        document.body.style.overflow = "";
+        if (lastTrigger) lastTrigger.focus();
+      }
+
+      document.querySelectorAll(".js-open-visual").forEach((trigger) => {
+        trigger.addEventListener("click", (event) => {
+          event.preventDefault();
+          openVisual(trigger);
+        });
+      });
+
+      closeButton.addEventListener("click", closeVisual);
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) closeVisual();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !modal.hidden) closeVisual();
+      });
+    })();
+  </script>
 </body>
 </html>
