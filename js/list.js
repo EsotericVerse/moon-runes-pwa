@@ -21,13 +21,17 @@ document.addEventListener("DOMContentLoaded", () => {
   function tile(r){
     const special = Number(r.編號) >= 65 ? " special" : "";
     const n = String(r.編號).padStart(2,"0");
-    return `<button class="rune-tile${special}" type="button" data-rune="${r.編號}" aria-label="查看 ${esc(r.符文名稱)} 符文資料">
-      <span class="num">#${n}</span>
-      <span class="glyph">${esc(r.圖騰 || "◌")}</span>
-      <span class="name">${esc(r.符文名稱)}</span>
-      <span class="en">${esc(r.英文)}</span>
-      <span class="meta"><span class="pill">${esc(r.所屬分組)}</span><span class="pill">${esc(r.月相)}</span></span>
-    </button>`;
+    return `<article class="rune-tile${special}">
+      <button class="rune-image-button" type="button" data-rune="${r.編號}" aria-label="查看 ${esc(r.符文名稱)} 符文資料">
+        <img class="rune-thumb" src="64images/${encodeURIComponent(r.圖檔名稱)}" alt="${esc(r.符文名稱)}符文卡面縮圖" loading="lazy" decoding="async" />
+      </button>
+      <div class="rune-info">
+        <span class="num">#${n}</span>
+        <span class="name">${esc(r.符文名稱)}</span>
+        <span class="en">${esc(r.英文)}</span>
+        <span class="meta"><span class="pill">${esc(r.所屬分組)}</span><span class="pill">${esc(r.月相)}</span></span>
+      </div>
+    </article>`;
   }
 
   function render(){
@@ -50,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function openRune(r){
     modalTitle.textContent = `#${String(r.編號).padStart(2,"0")} · ${r.符文名稱}`;
-    modalImage.src = "64images/" + r.圖檔名稱;
+    modalImage.src = "64images/" + encodeURIComponent(r.圖檔名稱);
     modalImage.alt = `${r.符文名稱}符文卡面`;
     modalSummary.innerHTML = [
       `<span class="pill">${esc(r.所屬分組)}</span>`,
