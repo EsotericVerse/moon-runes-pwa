@@ -33,8 +33,10 @@
     .count{margin-left:auto;color:var(--muted);font-size:.84rem}
     .rune-grid{display:grid;gap:16px}
     .rune-group{border:1px solid var(--line);border-radius:18px;background:rgba(11,27,49,.56);overflow:hidden}
-    .group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);background:rgba(23,43,72,.62)}
-    .group-head strong{color:var(--gold);font-size:.95rem}.group-head span{color:var(--muted);font-size:.75rem}
+    .group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:13px 14px;border-bottom:1px solid var(--line);background:rgba(23,43,72,.62)}
+    .group-title{min-width:0}.group-head strong{display:block;color:var(--gold);font-size:.98rem}.group-count{color:var(--muted);font-size:.75rem;white-space:nowrap}
+    .group-tone{margin-top:5px;color:#d8e4f7;font-size:.79rem;line-height:1.5}.group-tone b{color:var(--purple);font-weight:800}
+    .group-note{display:block;margin-top:3px;color:var(--muted);font-size:.74rem}
     .group-row{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;padding:10px}
     .rune-tile{position:relative;padding:10px;border:1px solid var(--line);border-radius:17px;color:var(--text);background:var(--surface2);transition:.16s ease}
     .rune-tile:hover{transform:translateY(-3px);border-color:rgba(231,194,125,.55);background:rgba(28,50,83,.9)}
@@ -115,6 +117,7 @@
     </section>
 
     <section aria-label="符文清單">
+      <p style="margin:0 0 12px;color:var(--muted);font-size:.86rem;">八個組別不只分類符文主題，也會影響解讀時的語氣與敘述方向。以下每一列都標示其主要語氣特徵。</p>
       <div class="toolbar">
         <input class="search" id="rune-search" type="search" placeholder="搜尋符文名稱、英文或編號…" autocomplete="off" />
         <select class="filter" id="group-filter" aria-label="依分組篩選">
