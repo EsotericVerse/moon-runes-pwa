@@ -640,6 +640,10 @@
             </div>
             ${e.description ? `<div class="desc">${esc(e.description)}</div>` : ''}
             ${e.state_after ? `<div class="desc"><strong>State →</strong> ${esc(e.state_after)}</div>` : ''}
+            <div class="event-tools">
+              <button class="btn ghost" type="button" data-action="edit" data-id="${esc(e.id)}">編輯</button>
+              ${e.status !== 'archived' ? `<button class="btn ghost" type="button" data-action="archive" data-id="${esc(e.id)}">封存</button>` : ''}
+            </div>
           </div>
         </article>
       `).join('');
