@@ -1,0 +1,55 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC6_GOVERNANCE_REGISTRY",
+  "authority": "LOC6",
+  "language_system_id": "lo3rwang",
+  "purpose": "Canonical registry for meaning, values, governance interpretation, style-state interpretation, and stage comparison.",
+  "fragment_schema": {
+    "required": [
+      "fragment_id",
+      "system_id",
+      "primary_loc",
+      "analysis_type"
+    ],
+    "fields": {
+      "fragment_id": "GF-{stable-id}",
+      "system_id": "language-system reference",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": "LOC8 ERA reference or null",
+      "topic": "governance/meaning topic",
+      "statement": "source statement or null",
+      "interpretation": "what the statement or stage means",
+      "governance_principle": "derived/confirmed governance principle or null",
+      "style_features": "style-state observations",
+      "analysis_type": [
+        "meaning",
+        "value",
+        "governance",
+        "style_state",
+        "stage_comparison",
+        "rights_governance"
+      ],
+      "source_refs": "evidence/source references",
+      "confidence": [
+        "recorded",
+        "reconstructed",
+        "inferred",
+        "unknown"
+      ],
+      "lifecycle": "shared lifecycle object"
+    }
+  },
+  "fragments": [],
+  "rights_governance_scope": [
+    "authorship principles",
+    "attribution principles",
+    "sharing principles",
+    "licensing principles",
+    "collaboration principles"
+  ],
+  "boundary_note": "LOC6 interprets meaning and governance. It does not own grammar/syntax engineering or temporal event storage."
+}
