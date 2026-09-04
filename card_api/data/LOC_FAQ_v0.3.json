@@ -44,6 +44,18 @@
         "derived": "由多份現行資料整理出的對外標準答案，未新增Canon規則"
       },
       "answer_policy": "檢索系統應優先回傳已確認或可追溯的標準答案。AI可檢索、排序與整合，但不得自行改寫66符文Canon、LOC1–8固定骨架，亦不得補造缺失歷史資料。"
+    },
+    "system_id": "lo3rwang",
+    "primary_loc": "LOC7",
+    "related_locs": [
+      "LOC6",
+      "LOC8"
+    ],
+    "shared_registries": {
+      "language_system": "data/shared/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+      "era": "data/shared/LOC_ERA_REGISTRY.json",
+      "analysis_types": "data/shared/LOC_ANALYSIS_TYPE_REGISTRY.json",
+      "loc7_analysis": "data/shared/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json"
     }
   },
   "faq": [
