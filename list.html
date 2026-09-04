@@ -36,7 +36,7 @@
     .rune-tile:hover{transform:translateY(-3px);border-color:rgba(231,194,125,.55);background:rgba(28,50,83,.9)}
     .rune-image-button{display:block;width:100%;padding:0;border:0;border-radius:13px;overflow:hidden;background:rgba(2,8,18,.5);cursor:pointer}
     .rune-image-button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
-    .rune-thumb{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;background:#07101f}
+    .rune-thumb{display:block;width:100%;aspect-ratio:1/1;object-fit:contain;background:#07101f}
     .rune-info{padding:10px 3px 2px}
     .num{color:var(--purple);font-size:.72rem;font-weight:800}
     .name{display:block;margin-top:3px;font-size:1.05rem;font-weight:800}
@@ -44,17 +44,22 @@
     .meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.pill{padding:2px 7px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:.67rem}
     .special{border-color:rgba(231,194,125,.42);background:linear-gradient(180deg,rgba(73,55,79,.68),rgba(19,35,59,.76))}
     .empty{grid-column:1/-1;padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px}
+    .physical-card-download{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;margin:18px 0 8px;padding:18px 20px;border:1px solid rgba(231,194,125,.34);border-radius:18px;background:linear-gradient(135deg,rgba(63,47,80,.62),rgba(18,38,66,.78))}
+    .physical-card-download h2{margin:0 0 6px;font-size:1.08rem}
+    .physical-card-download p{margin:0;color:var(--muted);font-size:.88rem}
+    .download-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border:1px solid rgba(231,194,125,.48);border-radius:999px;color:#160f26;background:linear-gradient(135deg,#c7b7ff,#e8c57f);font-weight:800;text-decoration:none;white-space:nowrap}
+    .download-btn:hover,.download-btn:focus-visible{filter:brightness(1.05);outline:none}
     dialog{width:min(980px,calc(100% - 24px));max-height:90vh;padding:0;border:1px solid var(--line);border-radius:24px;color:var(--text);background:#0a1729;box-shadow:var(--shadow)}
     dialog::backdrop{background:rgba(2,8,18,.82);backdrop-filter:blur(8px)}
     .modal-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(10,23,41,.96)}
     .modal-title{margin:0;font-size:1.08rem}.close{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;color:var(--text);background:var(--surface2);font-size:1.35rem;cursor:pointer}
     .modal-body{display:grid;grid-template-columns:minmax(220px,.7fr) minmax(0,1.3fr);gap:20px;padding:20px}
-    .card-side{position:sticky;top:76px;align-self:start}.card-image{display:block;width:min(100%,340px);margin:auto;max-height:540px;object-fit:contain;filter:drop-shadow(0 18px 28px rgba(0,0,0,.35))}
+    .card-side{position:sticky;top:76px;align-self:start}.card-image{display:block;width:min(100%,420px);aspect-ratio:1/1;margin:auto;object-fit:contain;filter:drop-shadow(0 18px 28px rgba(0,0,0,.35))}
     .data-side{min-width:0}.summary{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
     .field{padding:12px 0;border-bottom:1px solid var(--line)}.field:last-child{border-bottom:0}.field dt{color:var(--gold);font-size:.78rem;font-weight:800}.field dd{margin:4px 0 0;color:#dce6f7;white-space:pre-wrap}
     footer{padding:28px 0 0;color:var(--muted);font-size:.82rem;text-align:center}
     @media(max-width:980px){.rune-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    @media(max-width:700px){.rune-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.modal-body{grid-template-columns:1fr}.card-side{position:static}.count{width:100%;margin-left:0}}
+    @media(max-width:700px){.rune-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.modal-body{grid-template-columns:1fr}.card-side{position:static}.count{width:100%;margin-left:0}.physical-card-download{grid-template-columns:1fr}.download-btn{width:100%}}
     @media(max-width:470px){.rune-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.page{width:min(100% - 18px,1180px)}}
   </style>
 </head>
@@ -76,6 +81,14 @@
       <h1>66 月符圖鑑</h1>
       <p class="lead">這裡是符文資料展示，不是抽牌。直接瀏覽全部 66 符文；點擊卡片圖片即可浮出完整卡面與符文基礎資料。</p>
     </header>
+
+    <section class="physical-card-download" aria-labelledby="physical-card-title">
+      <div>
+        <h2 id="physical-card-title">想把月符變成實體卡片？</h2>
+        <p>可下載完整實體卡片 PDF，自行列印、裁切並護貝，就能做成一套可實際使用的月符卡牌。</p>
+      </div>
+      <a class="download-btn" href="docs/LunarRunesCardCut.pdf" download>下載全符文實體卡片 PDF ↓</a>
+    </section>
 
     <section aria-label="符文清單">
       <div class="toolbar">
