@@ -90,7 +90,7 @@ window.addEventListener("load", async () => {
       p.textContent = messages[index];
       description.appendChild(p);
       index++;
-      setTimeout(showNext, 2000);
+      setTimeout(showNext, 1000);
     } else {
       let target = "fate.html"; // 預設
       if (mode === "daily") {
@@ -102,9 +102,7 @@ window.addEventListener("load", async () => {
       } else if (mode === "5card") {
         target = "5card.html";
       }
-      setTimeout(() => {
-        window.location.href = target;
-      }, 1000);
+      window.location.href = target;
     }
   }
 
