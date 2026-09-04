@@ -37,6 +37,13 @@
     .group-title{min-width:0}.group-head strong{display:block;color:var(--gold);font-size:.98rem}.group-count{color:var(--muted);font-size:.75rem;white-space:nowrap}
     .group-tone{margin-top:5px;color:#d8e4f7;font-size:.79rem;line-height:1.5}.group-tone b{color:var(--purple);font-weight:800}
     .group-note{display:block;margin-top:3px;color:var(--muted);font-size:.74rem}
+    .rune-overview{margin:28px 0 32px;padding:20px;border:1px solid var(--line);border-radius:22px;background:rgba(11,27,49,.52)}
+    .rune-overview-head{text-align:center;max-width:760px;margin:0 auto 16px}
+    .rune-overview-head h2{margin:0 0 8px;font-size:clamp(1.35rem,2.5vw,1.85rem)}
+    .rune-overview-head p{margin:0;color:var(--muted);line-height:1.7}
+    .overview-image-link{display:block;width:min(100%,1000px);margin:0 auto;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.03);box-shadow:var(--shadow)}
+    .overview-image{display:block;width:100%;height:auto}
+
     .group-row{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;padding:10px}
     .rune-tile{position:relative;padding:10px;border:1px solid var(--line);border-radius:17px;color:var(--text);background:var(--surface2);transition:.16s ease}
     .rune-tile:hover{transform:translateY(-3px);border-color:rgba(231,194,125,.55);background:rgba(28,50,83,.9)}
@@ -108,6 +115,16 @@
       <a class="learn-more" href="https://vocus.cc/article/6865ee2dfd89780001156a59" target="_blank" rel="noopener noreferrer">閱讀方格子上的月符概論文章 ↗</a>
     </section>
 
+    <section class="rune-overview" aria-labelledby="rune-overview-title">
+      <div class="rune-overview-head">
+        <h2 id="rune-overview-title">66 月符全符文總覽</h2>
+        <p>完整觀看目前固定的 66 張月符卡面。下方圖鑑再依八個組別逐列展示，方便比較同組符文的視覺與語意差異。</p>
+      </div>
+      <a class="overview-image-link" href="pics/loc_runes_66_overview.jpg" target="_blank" rel="noopener" aria-label="開啟 66 月符全符文總覽原圖">
+        <img class="overview-image" src="pics/loc_runes_66_overview.jpg" alt="LOC 月符 66 張全符文總覽" loading="lazy" decoding="async" />
+      </a>
+    </section>
+
     <section class="physical-card-download" aria-labelledby="physical-card-title">
       <div>
         <h2 id="physical-card-title">想把月符變成實體卡片？</h2>
@@ -149,6 +166,6 @@
   </dialog>
 
   <script type="module" src="js/runeLibrary.js?v=20260905-3"></script>
-  <script type="module" src="js/list.js?v=20260905-4"></script>
+  <script type="module" src="js/list.js?v=20260905-5"></script>
 </body>
 </html>
