@@ -38,3 +38,17 @@
 ## v0.3 編輯流程
 
 `life.html` 的 Timeline 每筆事件都有「編輯」與「封存」。編輯會把既有 Event 帶回表單，儲存時使用 `update_event` 覆寫同一筆 `id`；封存只更新 `status=archived`，不刪除歷史。
+
+
+## Shared reference fields
+
+The `Event` sheet now includes four shared cross-LOC reference columns:
+
+- `system_id`: canonical language-system ID. Current default: `lo3rwang`.
+- `primary_loc`: canonical owner of the record. LOC8 Events default to `LOC8`.
+- `related_locs`: other LOC domains that consume or interpret the event.
+- `era_id`: stable ERA reference such as `ERA-P8`.
+
+These fields follow `data/shared/LOC_SHARED_SCHEMA.json` and should remain references rather than duplicated canonical definitions.
+
+The current shared-registry foundation is tracked in `data/shared/LOC_SHARED_MANIFEST.json`.
