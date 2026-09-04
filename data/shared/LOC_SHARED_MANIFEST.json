@@ -112,7 +112,7 @@
       "apps_script_code": "updated_in_github_redeploy_required"
     }
   },
-  "rule": "Shared foundation is frozen at schema v0.1 for the next integration stage; extend by backward-compatible fields where possible before breaking existing IDs/references.",
+  "rule": "Shared foundation is frozen at schema v0.1. Unified Search consumes shared references while each LOC retains canonical ownership; future corpus imports extend coverage without changing stable IDs.",
   "foundation_status": {
     "shared_identity": "complete",
     "era_registry": "complete",
@@ -125,5 +125,34 @@
     "media_registry": "complete",
     "loc8_event_shared_refs": "complete",
     "note": "Shared foundation is complete enough to begin corpus migration and later interface consolidation. Domain corpora may still be pending without changing the shared schema."
+  },
+  "integration_stage": {
+    "name": "unified-search-v0.1",
+    "status": "implemented",
+    "api": {
+      "endpoint": "/search",
+      "facets": "/search/facets",
+      "orchestrator": "card_api/unified_search.py"
+    },
+    "ui": {
+      "primary_search": "search.html",
+      "specialist_views": [
+        "loc3.html",
+        "faq.html",
+        "list.html",
+        "life.html"
+      ]
+    },
+    "live_coverage": {
+      "LOC1": "rune retrieval",
+      "LOC2": "knowledge view through LOC7; direct game corpus pending",
+      "LOC3": "lyrics/music retrieval",
+      "LOC4": "registry ready; corpus import pending",
+      "LOC5": "media retrieval through shared media registry",
+      "LOC6": "registry ready; direct corpus pending; knowledge references may appear through LOC7",
+      "LOC7": "FAQ/KM retrieval",
+      "LOC8": "ERA retrieval"
+    },
+    "ranking_rule": "Results are grouped by authority/content type; heterogeneous engine scores are not forced onto one global ranking scale."
   }
 }
