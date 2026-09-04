@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "LOC｜月典｜月之符文",
+  "name": "LOC｜月典｜Unified Search × 月之符文",
   "short_name": "LOC 月典",
-  "description": "以66符文、四向語意與月相結構提供符文查詢及抽取功能。",
+  "description": "以 lo3rwang／政德風語言系統為基礎，整合月符、作品、媒體、知識與時間語意搜尋。",
   "lang": "zh-Hant",
   "start_url": "/",
   "scope": "/",
