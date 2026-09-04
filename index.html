@@ -292,52 +292,52 @@
 
     .works-list {
       display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
     }
 
     .work-item {
-      padding: 16px 18px;
+      min-height: 170px;
+      padding: 15px;
       border: 1px solid var(--loc-border);
       border-radius: 16px;
       background: var(--loc-surface-soft);
     }
 
-    .work-head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
     .work-title {
       margin: 0;
       color: var(--loc-text);
-      font-size: 1.05rem;
+      font-size: 1rem;
+      line-height: 1.35;
     }
 
     .work-meta {
+      display: block;
+      margin-top: 6px;
       color: var(--loc-purple);
-      font-size: 0.78rem;
+      font-size: 0.73rem;
       font-weight: 700;
+    }
+
+    .work-desc {
+      margin: 9px 0 0;
+      color: var(--loc-muted);
+      font-size: 0.78rem;
+      line-height: 1.55;
     }
 
     .work-links {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px 12px;
-      margin-top: 8px;
-      font-size: 0.86rem;
+      gap: 5px 9px;
+      margin-top: 10px;
+      font-size: 0.74rem;
     }
 
-    .work-links a {
-      text-decoration: none;
-    }
+    .work-links a { text-decoration: none; }
 
     .work-links a:hover,
-    .work-links a:focus-visible {
-      text-decoration: underline;
-    }
+    .work-links a:focus-visible { text-decoration: underline; }
 
     .visual-card {
       overflow: hidden;
@@ -581,6 +581,7 @@
       .rune-layout { grid-template-columns: 1fr; }
       .hero-note { min-height: auto; }
       .action-grid { grid-template-columns: 1fr; }
+      .works-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .framework { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
@@ -589,6 +590,7 @@
       .topbar { align-items: flex-start; flex-direction: column; }
       .nav-links { justify-content: flex-start; }
       .section-heading { align-items: flex-start; flex-direction: column; }
+      .works-list { grid-template-columns: 1fr; }
       .framework { grid-template-columns: 1fr; }
       .hero-actions { align-items: stretch; flex-direction: column; }
       .cta { width: 100%; }
@@ -688,110 +690,95 @@
       <div class="section-heading">
         <div>
           <p class="eyebrow">LOC4 · Writing × LOC3 · Music</p>
-          <h2 id="works-title">文字作品與跨媒介作品列表</h2>
+          <h2 id="works-title">文字作品與跨媒介作品</h2>
         </div>
-        <p>LOC4 的小說與文章作為文字 Corpus；部分作品已與 LOC3 主題曲、OP 或角色曲形成直接關聯。</p>
+        <p>首頁只保留作品入口與一句摘要；完整章節與歌曲關係之後交給 LOC7_KM 管理。</p>
       </div>
 
       <div class="works-list">
         <article class="work-item">
-          <div class="work-head">
-            <h3 class="work-title">月語者</h3>
-            <span class="work-meta">7 大篇 × 每篇 26 章 · 共 182 章</span>
-          </div>
+          <h3 class="work-title">月語者</h3>
+          <span class="work-meta">7 大篇 × 26 章 · 182 章</span>
+          <p class="work-desc">大型長篇敘事 Corpus，也是符文參與章節創作的重要實驗。</p>
           <div class="work-links">
-            <a href="https://vocus.cc/article/6829d52cfd8978000109b281" target="_blank" rel="noopener noreferrer">第一篇〈現在，下弦之卷〉序章：織命之始 →</a>
+            <a href="https://vocus.cc/article/6829d52cfd8978000109b281" target="_blank" rel="noopener noreferrer">開始閱讀 →</a>
           </div>
         </article>
 
         <article class="work-item">
-          <div class="work-head">
-            <h3 class="work-title">一日情人</h3>
-            <span class="work-meta">全 5 章</span>
-          </div>
+          <h3 class="work-title">一日情人</h3>
+          <span class="work-meta">全 5 章</span>
+          <p class="work-desc">短篇關係敘事，以味道與短暫相遇切入情感經驗。</p>
           <div class="work-links">
-            <a href="https://vocus.cc/article/683721cefd897800012c2488" target="_blank" rel="noopener noreferrer">第一章：味道 →</a>
+            <a href="https://vocus.cc/article/683721cefd897800012c2488" target="_blank" rel="noopener noreferrer">開始閱讀 →</a>
           </div>
         </article>
 
         <article class="work-item">
-          <div class="work-head">
-            <h3 class="work-title">已讀不回</h3>
-            <span class="work-meta">全 6 章 · 2 首主題曲</span>
-          </div>
+          <h3 class="work-title">已讀不回</h3>
+          <span class="work-meta">全 6 章 · 2 首主題曲</span>
+          <p class="work-desc">文字與歌曲共同描寫等待、訊息與情緒權威。</p>
           <div class="work-links">
-            <a href="https://vocus.cc/article/6a4f6d82fd89780001ec1c93" target="_blank" rel="noopener noreferrer">第一章：等待情緒權威 →</a>
-            <a href="https://suno.com/s/Zj1837rqBXeo0vxI" target="_blank" rel="noopener noreferrer">主題曲〈已讀不回〉</a>
-            <a href="https://suno.com/s/6LXfO3EvECZUgEnu" target="_blank" rel="noopener noreferrer">〈在已讀不回〉</a>
+            <a href="https://vocus.cc/article/6a4f6d82fd89780001ec1c93" target="_blank" rel="noopener noreferrer">小說</a>
+            <a href="https://suno.com/s/Zj1837rqBXeo0vxI" target="_blank" rel="noopener noreferrer">主題曲</a>
+            <a href="https://suno.com/s/6LXfO3EvECZUgEnu" target="_blank" rel="noopener noreferrer">延伸曲</a>
           </div>
         </article>
 
         <article class="work-item">
-          <div class="work-head">
-            <h3 class="work-title">在你之前，在你之後</h3>
-            <span class="work-meta">全 20 章 · OP／求婚歌／6 首角色曲</span>
-          </div>
+          <h3 class="work-title">在你之前，在你之後</h3>
+          <span class="work-meta">全 20 章 · OP／求婚歌／6 角色曲</span>
+          <p class="work-desc">目前跨 LOC3／LOC4 關係最完整的小說與角色歌曲群。</p>
           <div class="work-links">
-            <a href="https://vocus.cc/article/682f0e65fd89780001c7b708" target="_blank" rel="noopener noreferrer">第一章：在你之前，阿珠篇 →</a>
+            <a href="https://vocus.cc/article/682f0e65fd89780001c7b708" target="_blank" rel="noopener noreferrer">小說</a>
             <a href="https://suno.com/s/doXe7ALt4MVs0tXK" target="_blank" rel="noopener noreferrer">OP</a>
             <a href="https://suno.com/s/YvP6Wi5lPHZywCrX" target="_blank" rel="noopener noreferrer">求婚歌</a>
-            <a href="https://suno.com/s/OIX6l1eFUJ7IYOBz" target="_blank" rel="noopener noreferrer">德興</a>
-            <a href="https://suno.com/s/4nHz2DJlyK1mGIeM" target="_blank" rel="noopener noreferrer">小瑤</a>
-            <a href="https://suno.com/s/C9YWrn9xn19hoQhV" target="_blank" rel="noopener noreferrer">阿珠</a>
-            <a href="https://suno.com/s/a8tUvkKBIbojDGsp" target="_blank" rel="noopener noreferrer">阿文</a>
-            <a href="https://suno.com/s/JJ0rs9I78FXHas5A" target="_blank" rel="noopener noreferrer">小維</a>
-            <a href="https://suno.com/s/4Wx3tCqM7BmmzTI4" target="_blank" rel="noopener noreferrer">阿鎧</a>
           </div>
         </article>
 
         <article class="work-item">
-          <div class="work-head">
-            <h3 class="work-title">男男男關係</h3>
-            <span class="work-meta">全 20 章 · 特色曲</span>
-          </div>
+          <h3 class="work-title">男男男關係</h3>
+          <span class="work-meta">全 20 章 · 特色曲</span>
+          <p class="work-desc">以喜歡與關係互動為核心，另有特色曲延伸作品語氣。</p>
           <div class="work-links">
-            <a href="https://vocus.cc/article/6834920afd89780001aed68d" target="_blank" rel="noopener noreferrer">第一章：關於喜歡 →</a>
-            <a href="https://suno.com/s/eSXeSYxVmSZqSNyy" target="_blank" rel="noopener noreferrer">〈布丁是宇宙的真理〉</a>
+            <a href="https://vocus.cc/article/6834920afd89780001aed68d" target="_blank" rel="noopener noreferrer">小說</a>
+            <a href="https://suno.com/s/eSXeSYxVmSZqSNyy" target="_blank" rel="noopener noreferrer">布丁是宇宙的真理</a>
           </div>
         </article>
 
         <article class="work-item">
-          <div class="work-head">
-            <h3 class="work-title">錯的人：命運的錯位者</h3>
-            <span class="work-meta">單篇</span>
-          </div>
+          <h3 class="work-title">錯的人：命運的錯位者</h3>
+          <span class="work-meta">單篇</span>
+          <p class="work-desc">以命運錯位與關係選擇為題的單篇作品。</p>
           <div class="work-links">
-            <a href="https://vocus.cc/article/682a22c1fd89780001197ac6" target="_blank" rel="noopener noreferrer">閱讀作品 →</a>
+            <a href="https://vocus.cc/article/682a22c1fd89780001197ac6" target="_blank" rel="noopener noreferrer">閱讀 →</a>
           </div>
         </article>
 
         <article class="work-item">
-          <div class="work-head">
-            <h3 class="work-title">牛奶，紙船，還有你</h3>
-            <span class="work-meta">單篇 · OP</span>
-          </div>
+          <h3 class="work-title">牛奶，紙船，還有你</h3>
+          <span class="work-meta">單篇 · OP</span>
+          <p class="work-desc">短篇文字與可愛系歌曲形成直接的跨媒介對應。</p>
           <div class="work-links">
-            <a href="https://vocus.cc/article/697b4b5dfd897800011eb9e1" target="_blank" rel="noopener noreferrer">閱讀作品 →</a>
+            <a href="https://vocus.cc/article/697b4b5dfd897800011eb9e1" target="_blank" rel="noopener noreferrer">小說</a>
             <a href="https://suno.com/s/IGGefOeWWSZ6FbWv" target="_blank" rel="noopener noreferrer">OP</a>
           </div>
         </article>
 
         <article class="work-item">
-          <div class="work-head">
-            <h3 class="work-title">灰色關係</h3>
-            <span class="work-meta">單篇 · LOC3 同名歌曲</span>
-          </div>
+          <h3 class="work-title">灰色關係</h3>
+          <span class="work-meta">單篇 · LOC3 同名歌曲</span>
+          <p class="work-desc">同一主題分別以文字與歌曲兩種媒介表達。</p>
           <div class="work-links">
-            <a href="https://vocus.cc/article/694c23a7fd897800012c191d" target="_blank" rel="noopener noreferrer">閱讀作品 →</a>
-            <a href="https://suno.com/s/LMsmefoFEMXIt6yr" target="_blank" rel="noopener noreferrer">LOC3 歌曲</a>
+            <a href="https://vocus.cc/article/694c23a7fd897800012c191d" target="_blank" rel="noopener noreferrer">小說</a>
+            <a href="https://suno.com/s/LMsmefoFEMXIt6yr" target="_blank" rel="noopener noreferrer">歌曲</a>
           </div>
         </article>
 
         <article class="work-item">
-          <div class="work-head">
-            <h3 class="work-title">被認為是「先知」的人</h3>
-            <span class="work-meta">連載中</span>
-          </div>
+          <h3 class="work-title">被認為是「先知」的人</h3>
+          <span class="work-meta">連載中</span>
+          <p class="work-desc">目前仍在發展中的新作，已公開前言與作品骨架。</p>
           <div class="work-links">
             <a href="https://vocus.cc/article/69477e66fd8978000193ca4d" target="_blank" rel="noopener noreferrer">前言 →</a>
           </div>
