@@ -169,7 +169,7 @@ function normalizeEvent_(raw) {
 
   return {
     id: raw.id || makeId_('EV'),
-    user_id: raw.user_id || 'lucas',
+    user_id: raw.user_id || 'lo3rwang',
     date: date,
     object_type: raw.object_type || 'person',
     object_id: raw.object_id || '',
