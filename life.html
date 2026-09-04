@@ -379,7 +379,7 @@
           </div>
           <div class="body">
             <form id="eventForm">
-              <input type="hidden" id="userId" name="user_id" value="lucas" />
+              <input type="hidden" id="userId" name="user_id" value="lo3rwang" />
               <input type="hidden" id="editingEventId" name="id" value="" />
               <div class="form-grid">
                 <div class="field"><label for="date">日期</label><input id="date" name="date" type="date" required /></div>
@@ -527,7 +527,7 @@
           setSync(false, '同步 Google Sheet…');
           const url = new URL(sheetApiUrl);
           url.searchParams.set('action', 'events');
-          url.searchParams.set('user_id', 'lucas');
+          url.searchParams.set('user_id', 'lo3rwang');
           const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store', redirect: 'follow' });
           if (!res.ok) throw new Error('GET failed');
           const data = await res.json();
@@ -578,7 +578,7 @@
     function normalizeEvent(raw) {
       return {
         id: raw.id || uid(),
-        user_id: raw.user_id || 'lucas',
+        user_id: raw.user_id || 'lo3rwang',
         date: raw.date || new Date().toISOString().slice(0,10),
         object_type: raw.object_type || 'person',
         object_id: raw.object_id || '',
@@ -701,7 +701,7 @@
       els.cancelEditBtn.hidden = true;
       els.submitBtn.textContent = '儲存事件';
       els.form.reset();
-      $('#userId').value = 'lucas';
+      $('#userId').value = 'lo3rwang';
       $('#date').value = new Date().toISOString().slice(0,10);
     }
 
@@ -715,7 +715,7 @@
       els.cancelEditBtn.hidden = false;
       els.submitBtn.textContent = '更新事件';
 
-      $('#userId').value = event.user_id || 'lucas';
+      $('#userId').value = event.user_id || 'lo3rwang';
       $('#date').value = event.date || '';
       $('#objectType').value = event.object_type || 'person';
       $('#objectId').value = event.object_id || '';
@@ -765,7 +765,7 @@
       if (action === 'archive') {
         if (!confirm('將這筆事件標記為 Archived？原資料不會刪除。')) return;
         try {
-          await saveEvent({ id, user_id: 'lucas' }, 'archive_event');
+          await saveEvent({ id, user_id: 'lo3rwang' }, 'archive_event');
           if (sheetApiUrl) await loadEvents(); else renderAll();
           if (editingId === id) resetEventForm();
         } catch (err) {
