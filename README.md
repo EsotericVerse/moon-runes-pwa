@@ -179,7 +179,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC4 | 已建立文字分類，並完成以其為文本結構的七大篇長篇小說，全文約 22 萬字；另有其他小說與文字創作。 |
 | LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
 | LOC6 | 已形成政德風語錄、價值觀、語氣與風格內容，並作為 LOC3 政德風音樂及其他創作分發的風格來源。 |
-| LOC7 | 已完成第一套新手入門文字建築學「Hello World!：起承轉合」，並建立 FAQ v0.1：40 題公開 FAQ、62 個原子化檢索片段及可部署的語意檢索 API。後續再整合各分發的語意向量、關係化結構與 Graph RAG。 |
+| LOC7 | 已完成第一套新手入門文字建築學「Hello World!：起承轉合」，並已更新至 FAQ v0.3：80 題公開 FAQ 與對應原子化 RAG 檢索資料，提供可部署的語意檢索 API；LOC7_KM 亦改採 Markdown-first 文件治理。完整 Relation Schema／Knowledge Graph expansion／Graph RAG 仍屬後續階段。 |
 | LOC8 | 已用於趨勢分析及其他跨域項目的統合，持續收斂分析方法、輸入資料與呈現方式。 |
 
 LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；其中 LOC5 已確認存在實際影片與公開 Reels，而非僅有視覺概念。LOC6–8 也各自具備內容、方法或應用方向，並處於不同的具現化階段。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
@@ -317,6 +317,21 @@ PWA 與 RWD 架構已於 2025 年 5 月完成，現行版本包含：
 
 ---
 
+## 🧠 KM 文件治理
+
+LOC7_KM 採 **Markdown-first, structured-data-native**：
+
+- `docs/LOC7_KM.md`：repository 內可維護 KM 主文件
+- `docs/JSON_DATA_MAP.md`：JSON 角色與同步方向
+- `docs/LOC7_KM.docx`：發布／交換 snapshot
+- `data/shared/*.json`：跨 LOC 結構化 registry
+- FAQ v0.3 為 KM 問答 View；RAG v0.3 為其檢索衍生資料
+- 下游 JSON／索引／UI／AI 推論不得反向覆寫 Canon、母資料或原始作品
+
+詳見 [docs 文件索引](./docs/README.md)。
+
+---
+
 ## 🗃️ 母資料治理
 
 `LunaRune64.xlsx` 是 LOC 符文母資料與最高優先資料來源（Single Source of Truth）。
@@ -351,7 +366,7 @@ LOC3 現行 demo 主要採用：
 資料 → Embedding → FAISS → 語意搜尋結果
 ```
 
-LOC7 FAQ v0.1 已將 40 題公開 FAQ 切分為 62 個檢索片段，提供 [`faq.html`](https://loc.lo3rwang.cc/faq.html) 作為公開查詢介面，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。現行線上模組採不需外部金鑰的中文 n-gram TF-IDF、別名與關鍵詞混合檢索，以及保留 FAQ Chunk ID 的原文式回答。LLM 生成與 Graph RAG 仍是後續方向，不作為現行完成度宣稱。
+LOC7 FAQ v0.3 已整理 80 題公開 FAQ，並建立對應的原子化 RAG 檢索資料，提供 [`faq.html`](https://loc.lo3rwang.cc/faq.html) 作為公開查詢介面，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。現行線上模組採不需外部金鑰的中文 n-gram TF-IDF、別名與關鍵詞混合檢索，以及保留 FAQ Chunk ID 的原文式回答。LLM 生成與 Graph RAG 仍是後續方向，不作為現行完成度宣稱。
 
 ---
 
@@ -397,8 +412,8 @@ moon-runes-pwa/
 │       ├── FAQ_API.md
 │       ├── requirements.txt
 │       ├── data/
-│       │   ├── LOC_FAQ_v0.1.json
-│       │   └── LOC_FAQ_RAG_v0.1.json
+│       │   ├── LOC_FAQ_v0.1.json … LOC_FAQ_v0.3.json
+│       │   └── LOC_FAQ_RAG_v0.1.json … LOC_FAQ_RAG_v0.3.json
 │       ├── new_runes.json
 │       ├── runes_all_data.json
 │       └── three_card_combinations.json
@@ -410,6 +425,13 @@ moon-runes-pwa/
 │       └── 其他測試腳本與實驗資料
 ├── requirements.txt
 ├── render.yaml                  # 指向 card_api/ 的 Render Blueprint
+├── 📚 KM 與文件
+│   └── docs/
+│       ├── README.md
+│       ├── LOC7_KM.md
+│       ├── JSON_DATA_MAP.md
+│       ├── LOC7_KM.docx
+│       └── 其他發布文件
 ├── 📚 Canon、語法與母資料
 │   ├── LOC_Canon_0.5r.docx
 │   ├── 64LunaRune.docx
