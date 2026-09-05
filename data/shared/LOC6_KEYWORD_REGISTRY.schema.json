@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LOC6 Keyword Registry",
+  "version": "0.1",
+  "description": "API-minimal LOC6 keyword/concept registry.",
+  "type": "object",
+  "required": ["version", "generated_at", "items"],
+  "properties": {
+    "version": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "source": {"type": "string"},
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["term", "status"],
+        "properties": {
+          "term": {"type": "string"},
+          "score": {"type": "number"},
+          "term_frequency": {"type": "integer"},
+          "document_frequency": {"type": "integer"},
+          "era_distribution": {"type": "object", "additionalProperties": {"type": "integer"}},
+          "source_type": {"type": "string"},
+          "examples": {"type": "array", "items": {"type": "object"}},
+          "status": {"enum": ["candidate", "accepted", "rejected", "merged"]},
+          "canonical_concept": {"type": ["string", "null"]},
+          "confidence": {"enum": ["recorded", "reviewed", "inferred", "unknown"]},
+          "review_note": {"type": "string"}
+        }
+      }
+    }
+  }
+}
