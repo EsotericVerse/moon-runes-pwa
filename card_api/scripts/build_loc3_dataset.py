@@ -136,6 +136,12 @@ def version_score(version: dict[str, Any], preference: dict[str, Any]) -> float:
         score += 60
     if text(version.get("是否代表版本")) == "是":
         score += 20
+    # Cross-media completion boosts recommendation priority without altering lyric semantics.
+    # Reels is a lighter preview asset; a full YouTube MV carries a larger completion bonus.
+    if text(version.get("IG短片網址")):
+        score += 20
+    if text(version.get("YouTube_MV網址")):
+        score += 30
     return score
 
 
@@ -252,7 +258,7 @@ def build(source: Path) -> dict[str, Any]:
     return {
         "dataset": {
             "name": "LOC3 Lyrics Search",
-            "version": "0.1.3",
+            "version": "0.1.4",
             "source": source.name,
             "language_scope": "zh-Hant",
             "unit": "unique_lyrics_work",
