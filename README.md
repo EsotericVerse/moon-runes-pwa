@@ -312,7 +312,7 @@ LOC4 已可直接搜尋 Writing Registry，LOC5 可搜尋 Media Registry，LOC6 
 PWA 與 RWD 架構已於 2025 年 5 月完成，現行版本包含：
 
 - 首頁載入後主動註冊 Service Worker
-- 透過 `moon-runes-pwa-v104` 快取關鍵資源（包含FAQ查詢頁）
+- 透過 `moon-runes-pwa-v105` 快取關鍵資源（包含FAQ查詢頁）
 - 更新時保留現行快取並清除舊版快取
 - 支援新增至桌面／主畫面
 - 提供 192×192、512×512 與 Apple Touch Icon
