@@ -11,7 +11,7 @@ function doGet(e) {
     const userId = String((e && e.parameter && e.parameter.user_id) || '').trim();
 
     if (action === 'health') {
-      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.8' });
+      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.9' });
     }
 
     if (action === 'users') {
