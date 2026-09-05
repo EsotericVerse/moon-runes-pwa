@@ -7,6 +7,7 @@
   <meta name="description" content="LOC（月典）是一套由月符自然生長出的個人語言系統框架。從每日抽牌、作品、句型、文字建築到生命事件與時間語意，讓語言可以被記錄、理解、關聯與演化。" />
   <title>LOC｜月典｜個人語言系統</title>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/loc-nav.css" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -959,16 +960,7 @@
 
 <body>
   <main class="loc-page">
-    <nav class="topbar" aria-label="主要導覽">
-      <a class="brand" href="index.html">LOC · 月典</a>
-      <div class="nav-links">
-        <a href="result.html?mode=daily">每日抽牌</a>
-        <a href="list.html">月符資料</a>
-        <a href="faq.html">知識庫</a>
-        <a href="loc3.html">作品搜尋</a>
-        <a href="life.html">LOC8 · Life</a>
-      </div>
-    </nav>
+    <nav class="loc-global-nav" data-loc-nav data-page="home" aria-label="全站導覽"></nav>
 
     <header class="hero">
       <div>
@@ -1523,6 +1515,7 @@
       <img class="modal-image" id="visual-modal-image" src="" alt="" />
     </div>
   </div>
+  <script src="js/loc-nav.js"></script>
   <script src="js/locMoonPhase.js"></script>
   <script src="js/main.js"></script>
 
