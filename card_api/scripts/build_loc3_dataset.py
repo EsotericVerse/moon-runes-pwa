@@ -19,6 +19,18 @@ def shared_registry_path(name: str) -> Path:
     return Path(__file__).resolve().parents[2] / "data" / "shared" / name
 
 
+def load_loc3_author_annotations() -> dict[str, dict[str, Any]]:
+    path = shared_registry_path("LOC3_AUTHOR_ANNOTATION_REGISTRY.json")
+    if not path.exists():
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return {
+        text(item.get("work_id")): item
+        for item in payload.get("records", [])
+        if text(item.get("work_id"))
+    }
+
+
 def load_era_registry() -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]], dict[str, Any] | None]:
     path = shared_registry_path("LOC_ERA_REGISTRY.json")
     if not path.exists():
@@ -159,6 +171,9 @@ def is_loc3_analysis_exception(row: dict[str, Any]) -> bool:
 def normalized_lyrics(value: Any) -> str:
     value = unicodedata.normalize("NFKC", text(value)).lower()
     value = re.sub(r"\[[^\]]*\]|【[^】]*】", "", value)
+    # Some historical lyrics were saved with spaces between CJK characters.
+    # Remove those spaces before semantic/keyword normalization to avoid false misses.
+    value = re.sub(r"(?<=[\u3400-\u9fff])\s+(?=[\u3400-\u9fff])", "", value)
     value = re.sub(r"[^\w\u3400-\u9fff]+", "", value, flags=re.UNICODE)
     return value
 
@@ -211,6 +226,7 @@ def build(source: Path) -> dict[str, Any]:
     versions = sheet_rows(workbook, "663公開版本")
     preferences = sheet_rows(workbook, "版本偏好")
     eras, era_by_period, active_era = load_era_registry()
+    author_annotations = load_loc3_author_annotations()
 
     versions_by_work: dict[str, list[dict[str, Any]]] = {}
     for version in versions:
@@ -221,9 +237,16 @@ def build(source: Path) -> dict[str, Any]:
 
     groups: dict[str, list[dict[str, Any]]] = {}
     for row in works:
+        work_id = text(row.get("作品ID"))
+        annotation = author_annotations.get(work_id, {})
         search_flag = first_nonempty(row, "向量索引資格", "搜尋資格")
         display_policy = text(row.get("展示政策"))
-        if search_flag != "是" or display_policy.startswith("hidden") or is_loc3_analysis_exception(row):
+        if (
+            search_flag != "是"
+            or display_policy.startswith("hidden")
+            or is_loc3_analysis_exception(row)
+            or text(annotation.get("analysis_policy")) == "exception_excluded"
+        ):
             continue
         lyrics_key = normalized_lyrics(row.get("歌詞"))
         if not lyrics_key:
@@ -269,10 +292,13 @@ def build(source: Path) -> dict[str, Any]:
             text(representative.get("AI摘要")), category, start, turn, final,
             emotion_function, text(representative.get("希望延伸")),
             text(representative.get("結尾結構")), text(representative.get("留白意圖")),
+            *annotation.get("reasoning_tags", []),
+            text(annotation.get("author_note")),
             *tags,
         ]
         period = text(representative.get("統計時期代碼"))
         era = resolve_era(representative.get("建立日期"), period, eras, era_by_period)
+        annotation = author_annotations.get(text(representative.get("作品ID")), {})
         output_works.append({
             "system_id": SYSTEM_ID,
             "primary_loc": PRIMARY_LOC,
@@ -298,6 +324,15 @@ def build(source: Path) -> dict[str, Any]:
             "turn_method": turn,
             "final_state": final,
             "emotion_function": emotion_function,
+            "discourse_mode": text(annotation.get("discourse_mode")) or None,
+            "emotion_applicability": text(annotation.get("emotion_applicability")) or "required",
+            "reasoning_tags": annotation.get("reasoning_tags", []),
+            "author_semantic_note": text(annotation.get("author_note")) or None,
+            "semantic_completion": (
+                "complete_without_emotion"
+                if text(annotation.get("emotion_applicability")) in {"not_primary", "not_required"}
+                else "standard"
+            ),
             "ending_structure": text(representative.get("結尾結構")),
             "hope_extension": text(representative.get("希望延伸")),
             "tags": tags,
@@ -313,7 +348,7 @@ def build(source: Path) -> dict[str, Any]:
     return {
         "dataset": {
             "name": "LOC3 Lyrics Search",
-            "version": "0.1.7",
+            "version": "0.1.8",
             "source": source.name,
             "language_scope": "zh-Hant",
             "unit": "unique_lyrics_work",
