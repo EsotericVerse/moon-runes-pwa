@@ -61,14 +61,21 @@
       "analysis_policy": "include",
       "discourse_mode": "poetic_experiment",
       "emotion_applicability": "not_required",
-      "author_note": "對「藉口」兩個字的無限延伸。"
+      "author_note": "對「藉口」兩個字的無限延伸。",
+      "reasoning_tags": [
+        "語義延伸",
+        "概念重框"
+      ]
     },
     {
       "work_id": "E0080",
       "title": "柴米油鹽醬醋茶",
       "analysis_policy": "include",
       "discourse_mode": "general_song",
-      "author_note": "當幸福化作日常。"
+      "author_note": "當幸福化作日常。",
+      "reasoning_tags": [
+        "幸福化為日常"
+      ]
     },
     {
       "work_id": "E0086",
@@ -76,7 +83,11 @@
       "analysis_policy": "include",
       "discourse_mode": "self_encouragement",
       "emotion_applicability": "optional",
-      "author_note": "自我勉勵要往前走。"
+      "author_note": "自我勉勵要往前走。",
+      "reasoning_tags": [
+        "自我勉勵",
+        "重新前進"
+      ]
     },
     {
       "work_id": "E0087",
@@ -84,7 +95,11 @@
       "analysis_policy": "include",
       "discourse_mode": "rational_reflection",
       "emotion_applicability": "optional",
-      "author_note": "看到曙光的瞬間。一天夜晚又過了，白天又來了。時間匆匆的感嘆。"
+      "author_note": "看到曙光的瞬間。一天夜晚又過了，白天又來了。時間匆匆的感嘆。",
+      "reasoning_tags": [
+        "時間流逝",
+        "黑夜之後仍有白晝"
+      ]
     },
     {
       "work_id": "E0088",
@@ -92,7 +107,11 @@
       "analysis_policy": "include",
       "discourse_mode": "rational_discourse",
       "emotion_applicability": "not_primary",
-      "author_note": "檯面上的沉默，檯面下的默契。不可多言但彼此有默契。這是寫我的家庭關係。"
+      "author_note": "檯面上的沉默，檯面下的默契。不可多言但彼此有默契。這是寫我的家庭關係。",
+      "reasoning_tags": [
+        "沉默也能形成默契",
+        "家庭關係的隱性協調"
+      ]
     },
     {
       "work_id": "E0091",
@@ -100,7 +119,10 @@
       "analysis_policy": "include",
       "discourse_mode": "rational_reflection",
       "emotion_applicability": "optional",
-      "author_note": "等待一個未知的可能。"
+      "author_note": "等待一個未知的可能。",
+      "reasoning_tags": [
+        "等待保留未知可能性"
+      ]
     },
     {
       "work_id": "E0098",
@@ -123,7 +145,11 @@
       "analysis_policy": "include",
       "discourse_mode": "poetic_experiment",
       "emotion_applicability": "optional",
-      "author_note": "文言文的嘗試。微月光的等待。等待過客到來。"
+      "author_note": "文言文的嘗試。微月光的等待。等待過客到來。",
+      "reasoning_tags": [
+        "等待過客",
+        "等待不是停止"
+      ]
     },
     {
       "work_id": "E0128",
@@ -131,7 +157,11 @@
       "analysis_policy": "include",
       "discourse_mode": "rational_reflection",
       "emotion_applicability": "not_primary",
-      "author_note": "退到最後已經沒有退路，為了不想成為無名屍只能勇往前進。早期微月光時期，邊界感的建立。"
+      "author_note": "退到最後已經沒有退路，為了不想成為無名屍只能勇往前進。早期微月光時期，邊界感的建立。",
+      "reasoning_tags": [
+        "退無可退時必須前進",
+        "建立邊界"
+      ]
     },
     {
       "work_id": "E0131",
@@ -139,7 +169,11 @@
       "analysis_policy": "include",
       "discourse_mode": "rational_discourse",
       "emotion_applicability": "not_primary",
-      "author_note": "不管怎樣的罵我都承受，也是探討邊界感。"
+      "author_note": "不管怎樣的罵我都承受，也是探討邊界感。",
+      "reasoning_tags": [
+        "承受與界線",
+        "界線不等於拒絕一切"
+      ]
     },
     {
       "work_id": "E0133",
@@ -162,6 +196,10 @@
       "emotion_hint": [
         "平靜",
         "覺悟"
+      ],
+      "reasoning_tags": [
+        "逃避也是一種面對",
+        "平靜接受自己的選擇"
       ]
     },
     {
@@ -170,7 +208,10 @@
       "analysis_policy": "include",
       "discourse_mode": "rational_discourse",
       "emotion_applicability": "not_primary",
-      "author_note": "理性的開始說著，不管過去怎樣，現在你在我身旁。"
+      "author_note": "理性的開始說著，不管過去怎樣，現在你在我身旁。",
+      "reasoning_tags": [
+        "過去不否定當下關係"
+      ]
     },
     {
       "work_id": "E0147",
@@ -178,7 +219,10 @@
       "analysis_policy": "include",
       "discourse_mode": "rational_discourse",
       "emotion_applicability": "not_required",
-      "author_note": "也是理性的開始說，不管過去怎樣，現在你在我身旁。"
+      "author_note": "也是理性的開始說，不管過去怎樣，現在你在我身旁。",
+      "reasoning_tags": [
+        "過去不否定當下關係"
+      ]
     },
     {
       "work_id": "E0190",
@@ -186,7 +230,11 @@
       "analysis_policy": "include",
       "discourse_mode": "system_observation",
       "emotion_applicability": "not_required",
-      "author_note": "歌詞內沒有任何你我他的主詞。以一種系統特別的理性角度來看待。"
+      "author_note": "歌詞內沒有任何你我他的主詞。以一種系統特別的理性角度來看待。",
+      "reasoning_tags": [
+        "去人稱化觀察",
+        "系統視角"
+      ]
     },
     {
       "work_id": "E0211",
@@ -215,7 +263,10 @@
       "analysis_policy": "include",
       "discourse_mode": "rational_discourse",
       "emotion_applicability": "not_required",
-      "author_note": "對於關係的理性探討。不管有沒有關係，我都站在這裡。"
+      "author_note": "對於關係的理性探討。不管有沒有關係，我都站在這裡。",
+      "reasoning_tags": [
+        "關係有無不改變自我站位"
+      ]
     },
     {
       "work_id": "E0217",
@@ -229,14 +280,22 @@
       "title": "獨角戲",
       "analysis_policy": "include",
       "discourse_mode": "rational_reflection",
-      "author_note": "感情需要互動。所以一個人只能孤單演獨角戲。"
+      "author_note": "感情需要互動。所以一個人只能孤單演獨角戲。",
+      "reasoning_tags": [
+        "感情需要互動",
+        "單方投入只能形成獨角戲"
+      ]
     },
     {
       "work_id": "E0221",
       "title": "獨角戲",
       "analysis_policy": "include",
       "discourse_mode": "rational_reflection",
-      "author_note": "歌詞同上。"
+      "author_note": "歌詞同上。",
+      "reasoning_tags": [
+        "感情需要互動",
+        "單方投入只能形成獨角戲"
+      ]
     },
     {
       "work_id": "E0224",
@@ -244,7 +303,11 @@
       "analysis_policy": "include",
       "discourse_mode": "rational_discourse",
       "emotion_applicability": "not_required",
-      "author_note": "理性的說，相處要兩個人彼此互相配合。講道理的理性情緒。"
+      "author_note": "理性的說，相處要兩個人彼此互相配合。講道理的理性情緒。",
+      "reasoning_tags": [
+        "相處需要雙方對齊",
+        "關係需要互相配合"
+      ]
     },
     {
       "work_id": "E0226",
@@ -252,7 +315,11 @@
       "analysis_policy": "include",
       "discourse_mode": "rational_discourse",
       "emotion_applicability": "not_required",
-      "author_note": "理性的說，過去值得回味，所以嘗試複合如何？"
+      "author_note": "理性的說，過去值得回味，所以嘗試複合如何？",
+      "reasoning_tags": [
+        "過去值得回味",
+        "複合可以被理性評估"
+      ]
     },
     {
       "work_id": "E0260",
@@ -272,7 +339,10 @@
       "analysis_policy": "include",
       "discourse_mode": "rational_reflection",
       "emotion_applicability": "not_required",
-      "author_note": "進化的過程。理性情緒。"
+      "author_note": "進化的過程。理性情緒。",
+      "reasoning_tags": [
+        "進化是持續調整的過程"
+      ]
     }
   ]
 }
