@@ -59,11 +59,13 @@
     "work": "月語者",
     "chapter_slots": 182,
     "usable_records": 180,
-    "missing_source_records": [
+    "missing_source_records": [],
+    "role": "Primary historical evidence for how rune combinations were translated into narrative meaning in actual LOC writing practice.",
+    "ownership": "LOC6 interpretation; LOC1 rune semantics; LOC4 work container; LOC8 trajectory integration",
+    "intentional_no_draw_records": [
       "MR-V03-CH05",
       "MR-V03-CH06"
     ],
-    "role": "Primary historical evidence for how rune combinations were translated into narrative meaning in actual LOC writing practice.",
-    "ownership": "LOC6 interpretation; LOC1 rune semantics; LOC4 work container; LOC8 trajectory integration"
+    "note": "V3 Ch5 and Ch6 are confirmed workflow exceptions: combat outlines were written first, then expanded by AI without chapter rune draws."
   }
 }
