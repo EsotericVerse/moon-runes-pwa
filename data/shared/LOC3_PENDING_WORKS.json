@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC3_PENDING_WORKS",
+  "authority": "LOC3",
+  "purpose": "New LOC3 works known by title/date but not yet fully synchronized with lyrics/Suno metadata. Pending works are catalogued but excluded from searchable lyrics corpus until complete.",
+  "works": [
+    {
+      "pending_id": "PENDING-20260905-01",
+      "title": "把過去整理成光",
+      "created_date": "2026-09-05",
+      "period": "P8",
+      "era_id": "ERA-P8",
+      "era_name": "自我治理與未來展望期",
+      "creative_stage": "治理自己",
+      "playlist": "6.治理自己",
+      "status": "metadata_pending",
+      "lyrics_status": "pending",
+      "suno_status": "pending",
+      "search_status": "excluded_until_lyrics_sync",
+      "source": "author_confirmed_title"
+    }
+  ],
+  "updated_at": "2026-09-05"
+}
