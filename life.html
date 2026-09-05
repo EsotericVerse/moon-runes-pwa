@@ -541,9 +541,7 @@
         </div>
       </div>
       <nav class="nav" aria-label="LOC8 功能">
-        <a class="nav-home" href="index.html">← 回到 LOC 首頁</a>
-
-        <div class="nav-group">
+<div class="nav-group">
           <div class="nav-group-label">01 · 符文</div>
           <button class="view-switch active" id="dailyDrawViewBtn" type="button" data-view="daily">
             <span class="nav-title">每日符文</span>
@@ -577,7 +575,7 @@
         </div>
       </nav>
       <div class="sidebar-foot">
-        脈絡分析不是單一時間線：先看每日符文的近期訊號，再看 ERA 的時期聚合，最後回到 Event 的具體事件與狀態轉移。
+        每日符文 → ERA → Event。全站返回首頁請使用右上方導覽；左側只保留 LOC8 工作區。
       </div>
     </aside>
 
@@ -762,7 +760,7 @@
 
         <section class="card daily-analysis-card">
           <div class="head">
-            <div><h3>每日符文趨勢</h3><p>以主抽為核心計算；補抽另外標示，不混入主趨勢權重。</p></div>
+            <div><h3>每日符文趨勢</h3><p>以主抽為核心計算；補抽只作脈絡補充。即時資料不可用時，仍顯示最近一次同步的趨勢快照。</p></div>
             <div class="actions" style="margin:0">
               <select id="drawTrendWindow" aria-label="趨勢期間" style="width:auto;padding:7px 10px">
                 <option value="7">最近 7 日</option>
@@ -793,7 +791,7 @@
               </section>
               <section class="analysis-panel">
                 <div class="analysis-title">趨勢摘要</div>
-                <div id="drawTrendSummary" class="analysis-summary">載入每日符文紀錄中…</div>
+                <div id="drawTrendSummary" class="analysis-summary">正在整理最近的每日符文趨勢…</div>
               </section>
             </div>
           </div>
@@ -1462,6 +1460,18 @@
       renderDailyRuneAnalysis();
     }
 
+    async function loadDailyDrawSnapshot() {
+      try {
+        const res = await fetch('data/shared/LOC8_DAILY_RUNE_SNAPSHOT.json', { cache: 'no-store' });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return Array.isArray(data.daily_draws) ? data.daily_draws : [];
+      } catch (err) {
+        console.warn('Daily rune snapshot unavailable', err);
+        return [];
+      }
+    }
+
     function readDailyDrawCache() {
       const cached = readJsonCache(DAILY_DRAW_CACHE_KEY, null);
       return cached?.schema_version === CACHE_SCHEMA_VERSION && Array.isArray(cached.items) ? cached.items : [];
@@ -1479,9 +1489,20 @@
 
     async function loadDailyDraws() {
       const cached = readDailyDrawCache();
+      let fallback = [];
+
       if (cached.length) {
         dailyDraws = cached;
         renderDailyDraws(dailyDraws);
+      } else {
+        fallback = await loadDailyDrawSnapshot();
+        if (fallback.length) {
+          dailyDraws = fallback;
+          renderDailyDraws(dailyDraws);
+          if (els.drawSyncText) els.drawSyncText.textContent = '顯示最近同步的每日符文趨勢';
+        } else {
+          renderDailyRuneAnalysis();
+        }
       }
 
       try {
@@ -1492,13 +1513,29 @@
         if (!res.ok) throw new Error('Daily draw GET failed');
         const data = await res.json();
         if (data && data.ok === false) throw new Error(data.error || 'API error');
-        dailyDraws = Array.isArray(data.daily_draws) ? data.daily_draws : [];
-        writeDailyDrawCache(dailyDraws);
-        renderDailyDraws(dailyDraws);
+
+        const live = Array.isArray(data.daily_draws) ? data.daily_draws : [];
+        if (live.length) {
+          dailyDraws = live;
+          writeDailyDrawCache(dailyDraws);
+          renderDailyDraws(dailyDraws);
+          if (els.drawSyncText) els.drawSyncText.textContent = '每日符文資料已同步';
+          if (els.drawSyncDot) els.drawSyncDot.classList.add('ok');
+        } else if (!dailyDraws.length) {
+          dailyDraws = fallback;
+          renderDailyDraws(dailyDraws);
+        }
       } catch (err) {
         console.error(err);
-        dailyDraws = cached;
-        renderDailyDraws(dailyDraws);
+        if (!dailyDraws.length) {
+          dailyDraws = fallback.length ? fallback : cached;
+          renderDailyDraws(dailyDraws);
+        }
+        if (els.drawSyncText) {
+          els.drawSyncText.textContent = dailyDraws.length
+            ? '即時 API 未回應，顯示最近同步趨勢'
+            : '每日符文資料暫時無法載入';
+        }
       }
     }
 
