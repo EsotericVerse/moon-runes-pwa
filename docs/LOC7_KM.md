@@ -186,6 +186,10 @@ LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/shared/
 
 《界線之內》保留作者的 title-level 確認，但目前 Excel／repo 的同名作品都落在 P5／P6，與「只有 P2–P4 才可能」的硬規則衝突，因此 work ID 暫不確認。
 
+現行數量口徑：**4 首 work-level confirmed rune songs + 1 首 title-level confirmed / work unresolved**。首頁「語言進化」欄採此口徑顯示，不把 unresolved title 灌入 work-level confirmed 數。
+
+LOC3 版本推薦分數另外納入跨媒介完成度：IG Reels +20、YouTube MV +30，兩者可累加。這些 bonus 只影響同詞版本的推薦順序，不進歌詞語意向量，也不改變 rune_song provenance 判定。
+
 LOC5 媒體稽核：目前 Suno 500 workbook、`LOC3_MEDIA_LINKS_v0.1.json` 與 shared `LOC_MEDIA_REGISTRY.json` 均未找到上述四首 confirmed rune songs 的 Reels／MV 對應。未找到不等於不存在；在實際媒體來源回收前，不建立 LOC5 假連結。
 
 ## 10. FAQ / RAG 現況
