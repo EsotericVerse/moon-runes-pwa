@@ -35,6 +35,7 @@
         <div class="filters">
           <select id="contentType">
             <option value="">全部內容</option>
+            <option value="oracle">籤詩模式（測試）</option>
             <option value="rune_record">基本符文</option>
             <option value="suno_song">Suno 歌曲</option>
             <option value="lyrics_work">歌詞</option>
@@ -47,7 +48,7 @@
           <select id="category"><option value="">所有歌曲類型</option></select>
           <select id="playlist"><option value="">所有主題播放清單</option></select>
         </div>
-        <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><span class="hint">結果依來源分組，不把不同引擎的分數硬湊成同一排名。</span></div>
+        <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><span class="hint">籤詩模式先讀 Lots，再以關鍵字展開相關歌詞、文字、多媒體、文件與 ERA；一般搜尋則依來源分組。</span></div>
       </form>
     </section>
     <div class="status" id="status" aria-live="polite"></div>
@@ -67,7 +68,7 @@
       const q=p.get('q')||'';
       if(type&&[...el('contentType').options].some(o=>o.value===type)) el('contentType').value=type;
       if(q) el('query').value=q;
-      const music=['','suno_song','lyrics_work','multimedia'].includes(el('contentType').value);
+      const music=['','oracle','suno_song','lyrics_work','multimedia'].includes(el('contentType').value);
       el('period').disabled=!music;el('category').disabled=!music;el('playlist').disabled=!music;
       if(q) el('searchForm').requestSubmit();
     }
@@ -100,7 +101,7 @@
     }
 
     function render(groups){const order=['oracle','runes','works','textworks','relationships','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='oracle'?oracleCard:(key==='relationships'?relationshipCard:(key==='works'?musicCard:card));html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
-    el('contentType').addEventListener('change',()=>{const music=['','suno_song','lyrics_work','multimedia'].includes(el('contentType').value);el('period').disabled=!music;el('category').disabled=!music;el('playlist').disabled=!music});
+    el('contentType').addEventListener('change',()=>{const music=['','oracle','suno_song','lyrics_work','multimedia'].includes(el('contentType').value);el('period').disabled=!music;el('category').disabled=!music;el('playlist').disabled=!music});
     el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時間……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value,category:el('category').value,playlist:el('playlist').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
     quick();facets();bootFromUrl();
     if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'));
