@@ -115,8 +115,8 @@
    .loc-header-copy     = optional supporting paragraph */
 .loc-header,
 .loc-page-hero{
-  margin:0 0 24px;
-  padding:28px 0 0;
+  margin-block:0 24px;
+  padding-block:28px 0;
 }
 .loc-header .loc-header-meta{
   margin:0 0 9px;
