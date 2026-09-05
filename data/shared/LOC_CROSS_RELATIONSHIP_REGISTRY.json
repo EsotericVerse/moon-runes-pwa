@@ -1,0 +1,84 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC_CROSS_RELATIONSHIP_REGISTRY",
+  "authority": "LOC7",
+  "purpose": "Directional cross-LOC work relationships consumed by LOC3 specialist search, Unified Search, LOC6 interpretation and graph retrieval.",
+  "relationship_schema": {
+    "required": [
+      "relationship_id",
+      "canonical_key",
+      "source",
+      "targets",
+      "relation_type",
+      "direction"
+    ],
+    "relation_types": [
+      "song_to_article_expansion",
+      "article_to_theme_song",
+      "novel_to_character_song",
+      "novel_to_op",
+      "scene_to_song",
+      "cross_media_adaptation"
+    ]
+  },
+  "relationships": [
+    {
+      "relationship_id": "REL-LOC3-LOC4-READ-RECEIPT",
+      "canonical_key": "已讀不回",
+      "aliases": [
+        "已讀不回"
+      ],
+      "source": {
+        "primary_loc": "LOC3",
+        "work_ref": "E0189",
+        "title": "已讀不回",
+        "content_type": "lyrics_work"
+      },
+      "targets": [
+        {
+          "primary_loc": "LOC4",
+          "work_ref": "LOC4-READ-RECEIPT",
+          "title": "已讀不回",
+          "content_type": "article_series",
+          "chapter_count": 6,
+          "relation_label": "歌曲延伸為六章文章"
+        },
+        {
+          "primary_loc": "LOC5",
+          "work_ref": "LOC5-READ-RECEIPT-REELS",
+          "title": "已讀不回 Reels",
+          "content_type": "reel_collection",
+          "media_status": "link_pending",
+          "relation_label": "跨媒介 Reels 展開"
+        }
+      ],
+      "relation_type": "song_to_article_expansion",
+      "direction": "LOC3_to_LOC4_with_LOC5_media",
+      "relation_summary": "《已讀不回》先以歌曲形成核心語意，再延伸為 LOC4 六章文章，並有 LOC5 Reels 跨媒介呈現。",
+      "keywords": [
+        "已讀不回",
+        "等待",
+        "訊息",
+        "關係",
+        "回應",
+        "沉默",
+        "情緒權威"
+      ],
+      "loc6_interpretation": {
+        "type": "cross_media_language_evolution",
+        "label": "跨媒介語言演化案例",
+        "note": "同一語意核心由歌曲擴寫成六章文章，再透過 Reels 形成視聽表達，可用來觀察政德風跨媒介與長短文本的轉化。"
+      },
+      "search_policy": {
+        "expand_on_alias_match": true,
+        "show_source": true,
+        "show_targets": true,
+        "show_keywords": true,
+        "show_relation_summary": true,
+        "show_loc6_interpretation": true
+      },
+      "evidence_status": "author_confirmed",
+      "updated_at": "2026-09-05"
+    }
+  ]
+}
