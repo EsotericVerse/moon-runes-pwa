@@ -15,12 +15,17 @@
       "name": "Suno原型探索期",
       "display_label": "P1｜Suno原型探索期",
       "start_date": "2025-02-21",
-      "end_date": "2025-06-24",
+      "end_date": "2025-10-15",
       "status": "released",
       "source_event_id": "EV-ERA-P1",
-      "description": "期間：2025-02-21～2025-06-24。Suno新手上路；只備份，不搜尋。",
+      "description": "系統時期：2025-02-21～2025-10-15。Suno 原始活躍範圍：2025-02-21～2025-06-24。Suno新手上路；只備份，不搜尋。",
       "state_before": "尚未形成穩定 ERA 分期",
-      "state_after": "原型探索：創作與語言仍在嘗試、累積與辨識階段"
+      "state_after": "原型探索：創作與語言仍在嘗試、累積與辨識階段",
+      "source_active_range": {
+        "start": "2025-02-21",
+        "end": "2025-06-24",
+        "source": "Suno / original ERA segmentation"
+      }
     },
     {
       "era_id": "ERA-P2",
@@ -29,12 +34,17 @@
       "name": "重啟與格式形成期",
       "display_label": "P2｜重啟與格式形成期",
       "start_date": "2025-10-16",
-      "end_date": "2025-12-28",
+      "end_date": "2026-01-14",
       "status": "released",
       "source_event_id": "EV-ERA-P2",
-      "description": "期間：2025-10-16～2025-12-28。掙扎轉變期。在嘗試各種不一樣的方式，整理自己的過往。跌跌撞撞學步期。",
+      "description": "系統時期：2025-10-16～2026-01-14。Suno 原始活躍範圍：2025-10-16～2025-12-28。掙扎轉變期。在嘗試各種不一樣的方式，整理自己的過往。跌跌撞撞學步期。",
       "state_before": "P1 原型探索期",
-      "state_after": "重啟與格式形成：開始形成較穩定的創作格式與表達方式"
+      "state_after": "重啟與格式形成：開始形成較穩定的創作格式與表達方式",
+      "source_active_range": {
+        "start": "2025-10-16",
+        "end": "2025-12-28",
+        "source": "Suno / original ERA segmentation"
+      }
     },
     {
       "era_id": "ERA-P3",
@@ -43,12 +53,17 @@
       "name": "微月光與關係敘事期",
       "display_label": "P3｜微月光與關係敘事期",
       "start_date": "2026-01-15",
-      "end_date": "2026-02-28",
+      "end_date": "2026-03-08",
       "status": "released",
       "source_event_id": "EV-ERA-P3",
-      "description": "期間：2026-01-15～2026-02-28。自我認知；跨越 01/30 正名界線。正在適應姓名轉變帶來的自我認知轉變。",
+      "description": "系統時期：2026-01-15～2026-03-08。Suno 原始活躍範圍：2026-01-15～2026-02-28。自我認知；跨越 01/30 正名界線。正在適應姓名轉變帶來的自我認知轉變。",
       "state_before": "P2 重啟與格式形成期",
-      "state_after": "微月光與關係敘事：自我認知提高，關係與陪伴成為主要敘事"
+      "state_after": "微月光與關係敘事：自我認知提高，關係與陪伴成為主要敘事",
+      "source_active_range": {
+        "start": "2026-01-15",
+        "end": "2026-02-28",
+        "source": "Suno / original ERA segmentation"
+      }
     },
     {
       "era_id": "ERA-P4",
@@ -57,12 +72,17 @@
       "name": "現實壓力與治理轉折期",
       "display_label": "P4｜現實壓力與治理轉折期",
       "start_date": "2026-03-09",
-      "end_date": "2026-04-13",
+      "end_date": "2026-06-09",
       "status": "released",
       "source_event_id": "EV-ERA-P4",
-      "description": "期間：2026-03-09～2026-04-13。治理關係的開始（正名後發展）。",
+      "description": "系統時期：2026-03-09～2026-06-09。Suno 原始活躍範圍：2026-03-09～2026-04-13。治理關係的開始（正名後發展）。",
       "state_before": "P3 微月光與關係敘事期",
-      "state_after": "現實壓力進入敘事，開始從情緒與關係轉向治理、界線與現實處理"
+      "state_after": "現實壓力進入敘事，開始從情緒與關係轉向治理、界線與現實處理",
+      "source_active_range": {
+        "start": "2026-03-09",
+        "end": "2026-04-13",
+        "source": "Suno / original ERA segmentation"
+      }
     },
     {
       "era_id": "ERA-P5",
@@ -76,7 +96,12 @@
       "source_event_id": "EV-ERA-P5",
       "description": "期間：2026-06-10～2026-06-30。人生月台的觀望。對於事物的等待無力感。盡力而為，靜觀其變。",
       "state_before": "P4 現實壓力與治理轉折期",
-      "state_after": "人生月台與語言重建：進入觀望與重新整理語言、生活結構的階段"
+      "state_after": "人生月台與語言重建：進入觀望與重新整理語言、生活結構的階段",
+      "source_active_range": {
+        "start": "2026-06-10",
+        "end": "2026-06-30",
+        "source": "Suno / original ERA segmentation"
+      }
     },
     {
       "era_id": "ERA-P6",
@@ -90,7 +115,12 @@
       "source_event_id": "EV-ERA-P6",
       "description": "期間：2026-07-01～2026-07-31。等待的關係空窗期。我允許一切未定義，很多事物不用一定要知道前因後果，保留未知的欄位是最好的。",
       "state_before": "P5 人生月台與語言重建期",
-      "state_after": "順其自然與界線整合：降低對結果的強迫，開始把等待、界線與生活節奏整合"
+      "state_after": "順其自然與界線整合：降低對結果的強迫，開始把等待、界線與生活節奏整合",
+      "source_active_range": {
+        "start": "2026-07-01",
+        "end": "2026-07-31",
+        "source": "Suno / original ERA segmentation"
+      }
     },
     {
       "era_id": "ERA-P7",
@@ -104,7 +134,12 @@
       "source_event_id": "EV-ERA-P7",
       "description": "期間：2026-08-01～2026-08-31。當一切慢慢實現。所有事情已經盡力，只能在計畫內的等待。",
       "state_before": "P6 順其自然與界線整合期",
-      "state_after": "自由的風：生活條件逐步落定，語言轉向自由、前行、選擇與新的可能"
+      "state_after": "自由的風：生活條件逐步落定，語言轉向自由、前行、選擇與新的可能",
+      "source_active_range": {
+        "start": "2026-08-01",
+        "end": "2026-08-31",
+        "source": "Suno / original ERA segmentation"
+      }
     },
     {
       "era_id": "ERA-P8",
@@ -118,7 +153,18 @@
       "source_event_id": "EV-ERA-P8",
       "description": "期間：2026-09-01～？。理想與期望。首先由自我治理開始。自我治理是將以前的事物經過整理跟反思，進而得到進化的方式。",
       "state_before": "P7 自由的風期",
-      "state_after": "自我治理與未來展望：自由之後進入主動管理生活、選擇、邊界與航向的 Current 階段"
+      "state_after": "自我治理與未來展望：自由之後進入主動管理生活、選擇、邊界與航向的 Current 階段",
+      "source_active_range": {
+        "start": "2026-09-01",
+        "end": null,
+        "source": "Suno / original ERA segmentation"
+      }
     }
-  ]
+  ],
+  "periodization_rule": {
+    "label": "連續時期",
+    "rule": "每個時期保留既定 start_date；若下一時期已知，end_date 延伸至下一時期 start_date 的前一天，使全系統時間軸連續。Suno 原始活躍範圍另存 source_active_range，不作為全系統時期邊界。",
+    "scope": "LOC-wide",
+    "display_term": "時期"
+  }
 }
