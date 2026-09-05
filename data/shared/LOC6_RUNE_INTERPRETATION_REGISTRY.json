@@ -43,7 +43,7 @@
     "expected_chapter_slots": 182,
     "extracted_chapter_slots": 182,
     "usable_rune_interpretation_records": 180,
-    "records_missing_rune_draw": 2,
+    "records_missing_rune_draw": 0,
     "records_by_volume": {
       "1": 26,
       "2": 26,
@@ -149,7 +149,9 @@
         11
       ]
     ],
-    "review_required_records": 46
+    "review_required_records": 46,
+    "intentional_no_draw_records": 2,
+    "coverage_note": "180/182 chapter slots contain explicit rune interpretation records; V3 Ch5 and Ch6 are confirmed intentional no-draw combat-writing exceptions, not missing data."
   },
   "review_queue": [
     {
@@ -419,20 +421,6 @@
       "record_id": "MR-V03-CH02",
       "flags": [
         "contains_normalized_or_legacy_notation"
-      ]
-    },
-    {
-      "record_id": "MR-V03-CH05",
-      "flags": [
-        "missing_rune_record_in_source",
-        "moon_phase_not_recorded"
-      ]
-    },
-    {
-      "record_id": "MR-V03-CH06",
-      "flags": [
-        "missing_rune_record_in_source",
-        "moon_phase_not_recorded"
       ]
     }
   ],
@@ -3901,12 +3889,12 @@
       "chapter_number": 5,
       "chapter_title": null,
       "record_type": "chapter_rune_interpretation",
-      "record_status": "source_outline_without_rune_record",
+      "record_status": "intentional_no_draw",
       "runes": [],
       "real_moon_phase": null,
       "raw_rune_record": null,
       "outline_evidence": "請寫出文字數超過一千五百字的文章，成為第五章。 大綱如下： 朔端對上望敦之影。 朔端先動。 他的身形如一條緊繃的弓弦，一腳落地，氣脈已循脊椎逆行而上，雙拳一握，脈紋如藤般自手臂躍出， 拳套「情脈」在此刻釋放出一聲溫熱的脈鳴。 他不喝聲，也不預告。他的每一拳，都是心念所向，沒有殺意，卻絕不容被輕忽。 拳未至，氣先破。 那是內力壓縮後在空氣中爆裂的微鳴，一記上挑直拳，宛如赤陽破雲，直指望敦黑影面門。 望敦黑影左劍「歲月」橫掃，右劍「終暮」直刺。兩劍如一，劍光如潮，一瞬之間與拳風交疊成風牆。 轟！ 兩人齊步後退，各自落地後再次前衝。 望敦黑影步法極簡，一步一距，劍不斷揮，但從不亂出。劍尖直指朔端膝、肘、胸，每一劍皆封住對方發力節點。 朔端則以圓破直，拳意不斷，步如躍鹿，貼地飛旋。他不只是攻擊，而是融合攻守於一體，每一次迴轉都是新的角度，每一次擋拆都牽動對方節奏。 兩人就此陷入無聲的舞鬥。 本章大綱到此為止，不須要做任何延伸。 ---",
-      "loc6_role": "narrative realization present, but rune draw record is absent from the supplied source; do not infer",
+      "loc6_role": "intentional exception: combat chapter outline was completed, then narrative expansion was delegated directly to AI without a rune draw",
       "primary_loc": "LOC6",
       "related_locs": [
         "LOC1",
@@ -3915,8 +3903,9 @@
       ],
       "confidence": "recorded",
       "review_flags": [
-        "missing_rune_record_in_source",
-        "moon_phase_not_recorded"
+        "intentional_no_draw",
+        "combat_writing_exception",
+        "ai_expansion_after_outline"
       ],
       "provenance": {
         "source_type": "original_outline",
@@ -3924,6 +3913,11 @@
         "source_line": 146,
         "extraction": "mechanical_from_uploaded_text",
         "source_preserved": true
+      },
+      "exception_context": {
+        "reason": "武打段落難度高；章節大綱先完成，後續交由 AI 自動展開，因此未進行章節抽牌。",
+        "interpretation": "This is a workflow exception, not missing data.",
+        "user_confirmed": true
       }
     },
     {
@@ -3935,12 +3929,12 @@
       "chapter_number": 6,
       "chapter_title": null,
       "record_type": "chapter_rune_interpretation",
-      "record_status": "source_outline_without_rune_record",
+      "record_status": "intentional_no_draw",
       "runes": [],
       "real_moon_phase": null,
       "raw_rune_record": null,
       "outline_evidence": "請寫出文字數超過一千五百字的文章，成為第六章。 大綱如下： 望敦對上碩端之影。 望敦先攻。他橫劍如翼，一步四招，快得如影隨形。終暮劍走破斬之勢，歲月劍行流年之道。兩劍合時，像是將朔端黑影分裂為過往與未來，要將他的意志斬碎在當下。 朔端之影未閃。 他迎劍而上，右拳沉如山，左拳疾如電，內力循筋而走，雙拳竟強行擋下雙劍連擊！雖退三步，氣未散，拳風回繞，竟將望敦逼退。 劍與拳再交。 一次、十次、數十次。 拳崩、劍折、步裂、氣旋。 朔端黑影的拳雖無鋒，但能破鋒；望敦的劍雖無毒，但能封路。 兩人就此陷入無聲的舞鬥。 本章大綱到此為止，不須要做任何延伸。 ---",
-      "loc6_role": "narrative realization present, but rune draw record is absent from the supplied source; do not infer",
+      "loc6_role": "intentional exception: combat chapter outline was completed, then narrative expansion was delegated directly to AI without a rune draw",
       "primary_loc": "LOC6",
       "related_locs": [
         "LOC1",
@@ -3949,8 +3943,9 @@
       ],
       "confidence": "recorded",
       "review_flags": [
-        "missing_rune_record_in_source",
-        "moon_phase_not_recorded"
+        "intentional_no_draw",
+        "combat_writing_exception",
+        "ai_expansion_after_outline"
       ],
       "provenance": {
         "source_type": "original_outline",
@@ -3958,6 +3953,11 @@
         "source_line": 172,
         "extraction": "mechanical_from_uploaded_text",
         "source_preserved": true
+      },
+      "exception_context": {
+        "reason": "武打段落難度高；章節大綱先完成，後續交由 AI 自動展開，因此未進行章節抽牌。",
+        "interpretation": "This is a workflow exception, not missing data.",
+        "user_confirmed": true
       }
     },
     {
