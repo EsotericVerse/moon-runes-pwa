@@ -125,6 +125,12 @@
       "label": "治理片段"
     },
     {
+      "id": "dual_rune_relation",
+      "primary_loc": "LOC6",
+      "kind": "grammar_relation",
+      "label": "雙符文關係"
+    },
+    {
       "id": "rune_interpretation",
       "primary_loc": "LOC6",
       "kind": "analysis_record",
