@@ -16,7 +16,8 @@
     "Do not classify a song as rune_song solely because its title or lyrics contain rune, moon, fate, shadow, light or similar motifs.",
     "Do not classify by semantic similarity alone.",
     "Confirmed records require an explicit draw-to-song provenance source.",
-    "Candidates remain separate from confirmed rune songs."
+    "Candidates remain separate from confirmed rune songs.",
+    "For the 福／禍 recovery clue, match either token independently; do not require both in the same song."
   ],
   "confirmed_records": [
     {
@@ -214,5 +215,19 @@
     "expected_total": "more_than_3",
     "exact_total": "unknown",
     "note": "Do not treat the current three confirmed records as the full rune-song corpus."
-  }
+  },
+  "recovery_clues": [
+    {
+      "clue_id": "CLUE-FU-HUO",
+      "type": "lyrics_token",
+      "tokens": [
+        "福",
+        "禍"
+      ],
+      "match_logic": "OR",
+      "meaning": "A rune-song candidate may contain either 「福」 or 「禍」 in the lyrics; simultaneous occurrence is not required.",
+      "source": "author clarification",
+      "status": "confirmed clue"
+    }
+  ]
 }
