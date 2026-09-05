@@ -158,11 +158,8 @@
       justify-content: space-between;
       align-items: end;
       gap: 18px;
-      margin: 6px 0 18px;
+      margin: 0 0 18px;
     }
-    .eyebrow { color: var(--accent); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; }
-    .hero h2 { margin: 7px 0 7px; font-size: clamp(28px, 4vw, 46px); font-weight: 700; letter-spacing: -.03em; }
-    .hero p { margin: 0; color: var(--muted); max-width: 850px; line-height: 1.7; }
 
     .sync {
       display: flex;
@@ -589,10 +586,10 @@
     <main>
       <div class="life-view" id="lifeView" hidden>
       <section class="hero" id="overview">
-        <div>
-          <div class="eyebrow">Luna Codex · Distribution 8</div>
-          <h2>把分散的紀錄，放回同一段脈絡。</h2>
-          <p>LOC8 以每日符文、ERA 與 Event 三種尺度整理生活資料：每日符文觀察近期訊號，ERA 聚合一段時期的關鍵字與狀態，Event 保存具體發生的事件與轉折。</p>
+        <div class="loc-page-hero">
+          <h1 class="loc-page-title">LOC8 <span class="loc-page-kind">脈絡分析</span></h1>
+          <h2 class="loc-page-subtitle">把分散的紀錄，放回同一段脈絡。</h2>
+          <p class="loc-page-intro">LOC8 以每日符文、時期與事件三種尺度整理生活資料：每日符文觀察近期訊號，時期聚合一段時間的關鍵字與狀態，事件保存具體發生的事情與轉折。</p>
         </div>
         <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">載入中…</span></div>
       </section>
