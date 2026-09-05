@@ -105,6 +105,7 @@
       "primary_loc": "LOC7",
       "related_locs": [
         "LOC1",
+        "LOC2",
         "LOC3",
         "LOC5",
         "LOC8"
@@ -144,7 +145,60 @@
         "maintained_in_repo": true,
         "source_corpus": "seven uploaded 月語者 outline files"
       },
-      "notes": "182 chapter slots. 180 contain explicit three-rune records; V3 Ch5 and Ch6 have narrative outlines but no rune draw recorded in the supplied source, so they remain unfilled."
+      "notes": "182 chapter slots. 180 contain explicit three-rune records; V3 Ch5 and Ch6 are confirmed intentional no-draw combat-writing workflow exceptions, not missing data."
+    },
+    {
+      "asset_id": "KA-LOC2-EVENT-001",
+      "title": "LOC2 Scenario Event Registry",
+      "path": "data/shared/LOC2_EVENT_REGISTRY.json",
+      "source_type": "structured_registry",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "real_life_scenario_event_corpus",
+      "status": "working",
+      "authority_level": "primary-derived-structure",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-05",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "source": "loc2.html Alpha Event 32"
+      },
+      "notes": "Preserves the 32 current Alpha Event titles, requirement signatures and descriptions as scenario prototypes. Requirement signatures are not silently converted into fixed rune-pair mappings."
+    },
+    {
+      "asset_id": "KA-LOC2-SCENARIO-001",
+      "title": "LOC2 Scenario Model",
+      "path": "docs/LOC2_SCENARIO_MODEL.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "scenario_model_definition",
+      "status": "working",
+      "authority_level": "governance_document",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "2026-09-05",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      }
     }
   ]
 }
