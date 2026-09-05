@@ -826,7 +826,7 @@
     },
     {
       "asset_id": "KA-LOC3-PERIOD-KW-001",
-      "title": "LOC3 時期關鍵字分析 v0.1",
+      "title": "LOC3 時期關鍵字分析 v0.2",
       "path": "data/shared/LOC3_PERIOD_KEYWORD_ANALYSIS.json",
       "source_type": "derived_analysis",
       "content_type": "linguistic_analysis",
@@ -840,7 +840,7 @@
       "authority_level": "derived_analysis",
       "searchable": true,
       "index_priority": "high",
-      "version": "0.1",
+      "version": "0.2",
       "updated_at": "2026-09-06",
       "provenance": {
         "repository": "EsotericVerse/moon-runes-pwa",
@@ -848,7 +848,7 @@
         "source_corpus": "card_api/data/LOC3_LYRICS_SEARCH_v0.1.json",
         "period_registry": "data/shared/LOC_ERA_REGISTRY.json"
       },
-      "notes": "LOC3 owns keyword evidence; LOC8 owns period boundaries; LOC7 may index this derived analysis for retrieval."
+      "notes": "LOC3 owns keyword evidence; LOC8 owns period boundaries; LOC7 may index this normalized period analysis. v0.2 adds document-frequency normalization and adjacent-period emergence/rise/persistence/decline signals."
     }
   ]
 }
