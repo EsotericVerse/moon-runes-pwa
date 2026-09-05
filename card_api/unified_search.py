@@ -15,6 +15,18 @@ def _compact(value: Any) -> str:
     return re.sub(r"\s+", "", _normalize(value))
 
 
+def _keyword_score(terms: list[str], parts: list[Any]) -> tuple[float, list[str]]:
+    haystack = _normalize(" ".join(str(part or "") for part in parts))
+    matched = []
+    for term in terms:
+        t = _normalize(term)
+        if t and t in haystack and term not in matched:
+            matched.append(term)
+    if not matched:
+        return 0.0, []
+    return min(1.0, len(matched) / max(3, min(len(terms), 8))), matched
+
+
 def _text_score(query: str, parts: list[Any]) -> float:
     q = _compact(query)
     if not q:
@@ -74,7 +86,7 @@ class UnifiedSearchEngine:
     def _allowed(content_type: str, wanted: str) -> bool:
         return not wanted or wanted == "all" or content_type == wanted
 
-    def _oracle_result(self, query: str) -> tuple[list[dict[str, Any]], str]:
+    def _oracle_result(self, query: str) -> tuple[list[dict[str, Any]], list[str]]:
         """Parse natural-language single-rune queries such as 愛情 + 心半正 and return Lots first."""
         q = _normalize(query)
         category_aliases = {
@@ -104,13 +116,14 @@ class UnifiedSearchEngine:
                 break
 
         if not (category and direction and rune):
-            return [], query
+            return [], []
 
         name = rune.get("名稱") or rune.get("符文名稱")
         lots_item = next((item for item in self.lots.get("items", []) if item.get("名稱") == name), None)
-        poem = (((lots_item or {}).get("方向") or {}).get(direction) or {}).get(category)
+        advice_by_category = (((lots_item or {}).get("方向") or {}).get(direction) or {})
+        poem = advice_by_category.get(category)
         if not poem:
-            return [], query
+            return [], []
 
         direction_field = {
             "正位": "正向表示",
@@ -122,13 +135,13 @@ class UnifiedSearchEngine:
 
         raw_terms = [
             name,
-            category,
             direction,
-            poem,
+            category,
+            *advice_by_category.keys(),
+            *advice_by_category.values(),
             rune.get("顯化形式"),
             rune.get("關鍵詞"),
             direction_text,
-            self.lots.get("categories", {}).get(category),
         ]
         extension_terms = []
         for value in raw_terms:
@@ -156,17 +169,17 @@ class UnifiedSearchEngine:
                 "direction": direction,
                 "question_category": category,
                 "lot": poem,
+                "all_advice": advice_by_category,
                 "direction_text": direction_text,
                 "rune_moon": rune.get("月相") or rune.get("符文月相"),
                 "manifestation": rune.get("顯化形式"),
                 "keywords": rune.get("關鍵詞"),
                 "extension_terms": extension_terms[:16],
-                "display_order": ["lot", "direction_text", "extension_terms"],
+                "display_order": ["lot", "all_advice", "direction_text", "extension_terms"],
             },
         }
 
-        expansion_query = " ".join(extension_terms[:10])
-        return [result], expansion_query or query
+        return [result], extension_terms[:20]
 
     def _knowledge_asset_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "knowledge", "knowledge_document"}:
@@ -229,6 +242,82 @@ class UnifiedSearchEngine:
                 "payload": row,
             })
         return results
+
+    def _music_keyword_results(
+        self,
+        terms: list[str],
+        top_k: int,
+        wanted: str,
+        filters: dict[str, str],
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        if not self.loc3_searcher or wanted not in {"", "all", "lyrics_work", "suno_song", "multimedia", "reel", "video"}:
+            return [], []
+        wants_music = wanted in {"", "all", "lyrics_work", "suno_song"}
+        wants_media = wanted in {"", "all", "multimedia", "reel", "video"}
+        scored = []
+        for work in getattr(self.loc3_searcher, "works", []):
+            if filters.get("period") and work.get("period") != filters["period"]:
+                continue
+            if filters.get("category") and (work.get("lyric_type") or work.get("category")) != filters["category"]:
+                continue
+            if filters.get("playlist") and work.get("playlist") != filters["playlist"]:
+                continue
+            score, matched = _keyword_score(terms, [
+                work.get("title"),
+                work.get("lyrics"),
+                work.get("summary"),
+                " ".join(work.get("tags", [])),
+                " ".join(work.get("semantic_keywords", [])),
+                " ".join(work.get("reasoning_tags", [])),
+                " ".join(work.get("key_propositions", [])),
+            ])
+            if score <= 0:
+                continue
+            scored.append((score, matched, work))
+        scored.sort(key=lambda row: (-row[0], str(row[2].get("work_id", ""))))
+
+        music, media = [], []
+        for score, matched, work in scored[:top_k]:
+            versions = work.get("versions", [])
+            recommended = versions[0] if versions else {}
+            payload = dict(work)
+            payload["matched_terms"] = matched
+            payload["recommended_version"] = recommended
+            payload["alternate_versions"] = versions[1:]
+            payload["keyword_match_only"] = True
+            if wants_music:
+                music.append({
+                    "result_id": work.get("work_id"),
+                    "system_id": work.get("system_id") or "lo3rwang",
+                    "primary_loc": "LOC3",
+                    "related_locs": work.get("related_locs", ["LOC5", "LOC6", "LOC7", "LOC8"]),
+                    "content_type": "suno_song" if wanted == "suno_song" else "lyrics_work",
+                    "group": "works",
+                    "title": work.get("title"),
+                    "summary": work.get("summary"),
+                    "score": round(score, 6),
+                    "era_id": work.get("era_id"),
+                    "period": work.get("period"),
+                    "source_refs": [],
+                    "payload": payload,
+                })
+            media_id = recommended.get("media_id")
+            media_url = recommended.get("ig_preview_url")
+            if wants_media and media_id and media_url:
+                media.append({
+                    "result_id": media_id,
+                    "system_id": work.get("system_id") or "lo3rwang",
+                    "primary_loc": "LOC5",
+                    "related_locs": ["LOC3"],
+                    "content_type": "multimedia",
+                    "group": "media",
+                    "title": f"{work.get('title', '')} · Reel",
+                    "summary": work.get("summary"),
+                    "score": round(score, 6),
+                    "source_refs": recommended.get("media_source_refs", []),
+                    "payload": {"url": media_url, "matched_terms": matched, "linked_work_id": work.get("work_id")},
+                })
+        return music, media
 
     def _music_results(
         self,
@@ -356,6 +445,57 @@ class UnifiedSearchEngine:
             "payload": item,
         } for score, item in scored[:top_k]]
 
+    def _keyword_cross_results(self, terms: list[str], top_k: int, wanted: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+        textworks, media_results, knowledge, eras = [], [], [], []
+
+        if wanted in {"", "all", "text_work", "article"}:
+            scored = []
+            for work in self.loc4.get("works", []):
+                score, matched = _keyword_score(terms, [work.get("title"), work.get("summary"), " ".join(work.get("tags", []))])
+                if score > 0:
+                    scored.append((score, matched, work))
+            for score, matched, work in sorted(scored, key=lambda r: (-r[0], str(r[2].get("work_id",""))))[:top_k]:
+                payload = dict(work); payload["matched_terms"] = matched; payload["keyword_match_only"] = True
+                textworks.append({"result_id":work.get("work_id"),"system_id":work.get("system_id") or "lo3rwang","primary_loc":"LOC4","related_locs":work.get("related_locs",[]),"content_type":"text_work","group":"textworks","title":work.get("title"),"summary":work.get("summary"),"score":round(score,6),"source_refs":work.get("source_refs",[]),"payload":payload})
+
+        if wanted in {"", "all", "multimedia", "reel", "video"}:
+            scored = []
+            for item in self.media.get("items", []):
+                semantic = item.get("semantic_descriptor") or {}
+                score, matched = _keyword_score(terms, [item.get("title"),item.get("purpose"),semantic.get("visual_summary")," ".join(semantic.get("scene_keywords",[]))," ".join(semantic.get("manual_tags",[]))])
+                if score > 0:
+                    scored.append((score, matched, item))
+            for score, matched, item in sorted(scored, key=lambda r: (-r[0], str(r[2].get("media_id",""))))[:top_k]:
+                payload=dict(item);payload["matched_terms"]=matched;payload["keyword_match_only"]=True
+                media_results.append({"result_id":item.get("media_id"),"system_id":item.get("system_id") or "lo3rwang","primary_loc":"LOC5","related_locs":item.get("related_locs",[]),"content_type":"multimedia","group":"media","title":item.get("title"),"summary":(item.get("semantic_descriptor") or {}).get("visual_summary") or item.get("purpose") or "","score":round(score,6),"source_refs":item.get("source_refs",[]),"payload":payload})
+
+        if wanted in {"", "all", "knowledge", "knowledge_document"}:
+            scored = []
+            for asset in self.knowledge_assets.get("assets", []):
+                if not asset.get("searchable"): continue
+                content=""
+                rel_path=asset.get("path")
+                if rel_path:
+                    p=self.repo_root/rel_path
+                    if p.exists() and p.suffix.lower() in {".md",".txt"}:
+                        try: content=p.read_text(encoding="utf-8")
+                        except Exception: content=""
+                score, matched = _keyword_score(terms,[asset.get("title"),asset.get("role")," ".join(asset.get("keywords",[])),asset.get("notes"),content])
+                if score > 0: scored.append((score,matched,asset))
+            for score, matched, asset in sorted(scored,key=lambda r:(-r[0],str(r[2].get("asset_id",""))))[:top_k]:
+                payload=dict(asset);payload["matched_terms"]=matched;payload["keyword_match_only"]=True
+                knowledge.append({"result_id":asset.get("asset_id"),"system_id":"lo3rwang","primary_loc":asset.get("primary_loc") or "LOC7","related_locs":asset.get("related_locs",[]),"content_type":"knowledge_document","group":"knowledge","title":asset.get("title"),"summary":asset.get("notes") or asset.get("role") or "","score":round(score,6),"source_refs":[{"source_type":asset.get("source_type"),"source_id":asset.get("path"),"note":asset.get("authority_level")}],"payload":payload})
+
+        if wanted in {"", "all", "era"}:
+            scored=[]
+            for era in self.eras.get("eras",[]):
+                score, matched=_keyword_score(terms,[era.get("period"),era.get("name"),era.get("display_label"),era.get("description"),era.get("state_before"),era.get("state_after")])
+                if score>0: scored.append((score,matched,era))
+            for score,matched,era in sorted(scored,key=lambda r:(-r[0],r[2].get("order",999)))[:top_k]:
+                payload=dict(era);payload["matched_terms"]=matched;payload["keyword_match_only"]=True
+                eras.append({"result_id":era.get("era_id"),"system_id":self.eras.get("language_system_id") or "lo3rwang","primary_loc":"LOC8","related_locs":["LOC3","LOC4","LOC5","LOC6","LOC7"],"content_type":"era","group":"timeline","title":era.get("display_label") or era.get("name"),"summary":era.get("description") or era.get("state_after"),"score":round(score,6),"era_id":era.get("era_id"),"period":era.get("period"),"source_refs":[],"payload":payload})
+        return textworks, media_results, knowledge, eras
+
     def _relationship_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "relationship", "article", "text_work", "reel", "video", "multimedia", "lyrics_work", "suno_song"}:
             return []
@@ -475,20 +615,30 @@ class UnifiedSearchEngine:
         filters = filters or {}
         wanted = (content_type or "").strip().lower()
 
-        oracle, expanded_query = self._oracle_result(query)
-        retrieval_query = expanded_query if oracle else query
-        faq = self._faq_results(retrieval_query, top_k, wanted)
-        documents = self._knowledge_asset_results(retrieval_query, top_k, wanted)
-        music, linked_media = self._music_results(retrieval_query, top_k, wanted, filters)
-        textworks = self._loc4_results(retrieval_query, top_k, wanted)
-        direct_media = self._media_registry_results(retrieval_query, top_k, wanted)
-        media_by_id = {}
-        for item in [*direct_media, *linked_media]:
-            media_by_id[item.get("result_id")] = item
-        media = list(media_by_id.values())[:top_k]
-        relationships = self._relationship_results(retrieval_query, top_k, wanted)
-        runes = self._rune_results(retrieval_query, top_k, wanted)
-        eras = self._era_results(retrieval_query, top_k, wanted)
+        oracle, oracle_terms = self._oracle_result(query)
+        if oracle:
+            faq = []
+            music, linked_media = self._music_keyword_results(oracle_terms, top_k, wanted, filters)
+            textworks, direct_media, documents, eras = self._keyword_cross_results(oracle_terms, top_k, wanted)
+            media_by_id = {}
+            for item in [*direct_media, *linked_media]:
+                media_by_id[item.get("result_id")] = item
+            media = list(media_by_id.values())[:top_k]
+            relationships = []
+            runes = self._rune_results(oracle[0]["payload"].get("rune_name", ""), top_k, wanted)
+        else:
+            faq = self._faq_results(query, top_k, wanted)
+            documents = self._knowledge_asset_results(query, top_k, wanted)
+            music, linked_media = self._music_results(query, top_k, wanted, filters)
+            textworks = self._loc4_results(query, top_k, wanted)
+            direct_media = self._media_registry_results(query, top_k, wanted)
+            media_by_id = {}
+            for item in [*direct_media, *linked_media]:
+                media_by_id[item.get("result_id")] = item
+            media = list(media_by_id.values())[:top_k]
+            relationships = self._relationship_results(query, top_k, wanted)
+            runes = self._rune_results(query, top_k, wanted)
+            eras = self._era_results(query, top_k, wanted)
 
         groups = {
             "oracle": oracle,
@@ -504,6 +654,7 @@ class UnifiedSearchEngine:
             "system_id": "lo3rwang",
             "query": query,
             "content_type": wanted or "all",
+            "retrieval_mode": "oracle_keyword" if oracle else "standard",
             "groups": groups,
             "counts": {key: len(value) for key, value in groups.items()},
             "total_count": sum(len(value) for value in groups.values()),
