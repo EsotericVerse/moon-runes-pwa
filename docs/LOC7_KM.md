@@ -38,6 +38,7 @@ Tier B  Original works / primary records
 Tier C  Maintained knowledge documents
         ├─ docs/*.md
         ├─ system explanations
+        ├─ published tutorials（例如 LOC_Tutorial_01_語言系統框架入門.pdf）
         └─ governance / architecture notes
 
 Tier D  Structured registries
@@ -266,6 +267,10 @@ Unified Search 已有實作；完整 Relation Schema、Knowledge Graph expansion
 ## 14. 文件格式
 
 `docs/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件。
+
+新手教學 PDF 屬於 **Published Tutorial / Derived Knowledge Asset**。它可以被 KM 索引、引用與提供下載，但不因發布為 PDF 而升格為 Canon。現行第一份：
+
+- `docs/LOC_Tutorial_01_語言系統框架入門.pdf` — 新手教學 01：LOC 語言系統框架入門。
 
 若未來需要 DOCX／PDF，應由 Markdown 內容輸出為發布版本；發布檔不回頭作為 KM 維護來源。
 
