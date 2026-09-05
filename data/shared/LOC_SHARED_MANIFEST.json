@@ -59,6 +59,12 @@
       "purpose": "Canonical governance, meaning, style-state and stage-interpretation records."
     },
     {
+      "id": "loc6_dual_rune_relations",
+      "path": "data/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
+      "authority": "LOC6",
+      "purpose": "Neutral two-rune semantic relation registry, separated from cause/effect draw projection."
+    },
+    {
       "id": "loc6_rune_interpretation",
       "path": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
       "authority": "LOC6",
@@ -106,7 +112,9 @@
       "rune_interpretation_corpus": "connected",
       "rune_interpretation_records": "180 usable / 182 chapter slots",
       "analysis_types": "connected",
-      "corpus_import": "partial-primary-corpus-connected"
+      "corpus_import": "partial-primary-corpus-connected",
+      "dual_rune_relation_registry": "connected",
+      "dual_rune_relation_model": "neutral pair → draw cause/effect projection → directions/context"
     },
     "LOC7": {
       "linguistic_analysis_registry": "schema-ready",
