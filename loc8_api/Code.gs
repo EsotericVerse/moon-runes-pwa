@@ -124,6 +124,15 @@ function doPost(e) {
       return json_({ ok: true, event: updated, action: 'archive_event' });
     }
 
+    if (action === 'delete_event') {
+      const raw = body.event || body;
+      const id = String(raw.id || body.id || '').trim();
+      const userId = String(raw.user_id || body.user_id || '').trim();
+      if (!id) throw new Error('Missing event id');
+      deleteObjectById_(EVENT_SHEET, id, userId);
+      return json_({ ok: true, id: id, action: 'delete_event' });
+    }
+
     if (action === 'event') {
       const raw = body.event || body;
       if (isDailyDrawRecord_(raw)) {
@@ -338,7 +347,7 @@ function deleteObjectsByIds_(sheetName, ids, expectedUserId) {
       const id = String(values[r][idCol] || '').trim();
       if (!wanted[id]) continue;
       if (expectedUserId && userCol >= 0 && String(values[r][userCol] || '').trim() !== String(expectedUserId).trim()) {
-        throw new Error('Daily draw owner mismatch');
+        throw new Error(sheetName + ' owner mismatch');
       }
       rows.push(r + 1);
     }
@@ -369,7 +378,7 @@ function deleteObjectById_(sheetName, id, expectedUserId) {
       sheet.deleteRow(r + 1);
       return true;
     }
-    throw new Error('Daily draw not found: ' + id);
+    throw new Error(sheetName + ' record not found: ' + id);
   } finally {
     lock.releaseLock();
   }
