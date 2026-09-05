@@ -61,35 +61,76 @@
       color:var(--muted); font-size:.86rem; text-align:right;
     }
     .ritual {
-      min-height:420px;
-      display:grid;
-      place-items:center;
-      text-align:center;
+      min-height: 420px;
     }
-    .ritual-inner { max-width:560px; }
+
+    .ritual-layout {
+      display: grid;
+      grid-template-columns: minmax(340px, .82fr) minmax(0, 1.18fr);
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .ritual-left,
+    .ritual-right {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
     .ritual-rune {
-      width:min(360px,78vw);
-      aspect-ratio:1/1;
-      margin:0 auto 22px;
-      display:grid;
-      place-items:center;
-      border:1px solid var(--border);
-      border-radius:22px;
-      overflow:hidden;
-      background:rgba(3,13,28,.55);
-      box-shadow:0 18px 48px rgba(0,0,0,.28), 0 0 70px rgba(180,158,255,.10);
+      display: grid;
+      place-items: center;
+      min-height: 300px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 32%, rgba(180,158,255,.14), transparent 15rem),
+        rgba(3,13,28,.62);
     }
+
     .ritual-rune img {
-      display:block;
-      width:100%;
-      height:100%;
-      object-fit:contain;
+      display: block;
+      width: min(100%, 286px);
+      height: auto;
+      max-height: 360px;
+      object-fit: contain;
+      filter: drop-shadow(0 18px 28px rgba(0,0,0,.3));
     }
-    .ritual-message { min-height:56px; color:var(--muted); line-height:1.8; }
+
+    .ritual-phase-box,
+    .ritual-text-box {
+      margin-top: 14px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--soft);
+      color: var(--muted);
+    }
+
+    .ritual-phase-box p,
+    .ritual-text-box p {
+      margin: 0 0 10px;
+    }
+
+    .ritual-phase-box p:last-child,
+    .ritual-text-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    .ritual-text-box {
+      margin-top: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      line-height: 1.8;
+    }
 
     .wait-notice {
-      margin: 0 auto 20px;
-      max-width: 720px;
+      margin: 0 0 18px;
       padding: 14px 16px;
       border: 1px solid rgba(231,194,125,.42);
       border-radius: 16px;
@@ -97,7 +138,6 @@
       color: var(--muted);
       line-height: 1.65;
       font-size: .88rem;
-      text-align: left;
     }
 
     .wait-notice strong {
@@ -105,6 +145,12 @@
       margin-bottom: 4px;
       color: var(--gold);
       font-size: .95rem;
+    }
+
+    .ritual-message {
+      min-height: 56px;
+      color: var(--muted);
+      line-height: 1.8;
     }
     .cards-grid {
       display:grid;
@@ -232,6 +278,7 @@
     footer { margin-top:24px; text-align:center; color:var(--muted); font-size:.82rem; }
 
     @media (max-width: 900px) {
+      .ritual-layout { grid-template-columns: 1fr; }
       .cards-grid[data-count="3"] { grid-template-columns:repeat(3,minmax(0,1fr)); }
       .cards-grid[data-count="5"] { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .cards-grid[data-count="5"] .rune-card,
@@ -273,15 +320,26 @@
       </div>
 
       <div class="ritual" id="ritual-view">
-        <div class="ritual-inner">
-          <div class="wait-notice" role="status" aria-live="polite">
-            <strong>請靜心等待至少五秒，請不要重複點擊。</strong>
-            抽牌會在等待後自動完成。若此模式需要首次喚醒遠端服務，當天第一次使用可能需要更久，最長約 30 秒，請讓頁面繼續等待。
+        <div class="ritual-layout">
+          <div class="ritual-left">
+            <div class="ritual-rune">
+              <img src="64images/66_命.png" alt="命之符文" />
+            </div>
+            <div class="ritual-phase-box">
+              <p><strong>命之符文</strong></p>
+              <p id="ritual-phase">真實月相：計算中...</p>
+            </div>
           </div>
-          <div class="ritual-rune">
-            <img src="64images/66_命.png" alt="命之符文" />
+
+          <div class="ritual-right">
+            <div class="ritual-text-box">
+              <div class="wait-notice" role="status" aria-live="polite">
+                <strong>請靜心等待至少五秒，請不要重複點擊。</strong>
+                抽牌會在等待後自動完成。若此模式需要首次喚醒遠端服務，當天第一次使用可能需要更久，最長約 30 秒，請讓頁面繼續等待。
+              </div>
+              <div class="ritual-message" id="ritual-message">正在準備抽牌……</div>
+            </div>
           </div>
-          <div class="ritual-message" id="ritual-message">正在準備抽牌……</div>
         </div>
       </div>
 
