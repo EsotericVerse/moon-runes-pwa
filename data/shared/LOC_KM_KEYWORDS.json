@@ -1,13 +1,13 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_KM_KEYWORDS",
-  "source": "docs/LOC7_KM.docx",
-  "source_version": "LOC7_KM 0.1r",
+  "source": "docs/LOC7_KM.md",
+  "source_version": "LOC7_KM 0.2",
   "updated_at": "2026-09-05",
   "purpose": "Shared keyword and alias registry for LOC7 Knowledge Management, FAQ/RAG retrieval, Unified Search, and future Knowledge Object alignment.",
   "governance": {
     "authority": "LOC7_KM",
-    "note": "Keywords are retrieval aids, not Canon definitions. Canon, Stable, Working, Reserved, Historical and other states must remain distinguishable.",
+    "note": "Keywords are retrieval aids, not Canon definitions. Canon, Stable, Working, Proposed, Reserved and Historical states must remain distinguishable. Repository KM documentation is Markdown-first.",
     "controlled_logic": [
       "LOC1 真實月相判定規則",
       "真實月相 × 卡片月相交互規則"
@@ -249,6 +249,20 @@
           ],
           "status": "Stable",
           "note": "README 為 LOC7_KM 的可檢索 Knowledge Asset，承載現行系統總覽、實作入口與進度摘要；屬衍生總覽，不取代 Canon 或母資料。"
+        },
+        {
+          "term": "Markdown-first",
+          "aliases": [
+            "Markdown first",
+            "MD-first",
+            "可維護主文件"
+          ],
+          "loc_scope": [
+            "LOC7",
+            "global"
+          ],
+          "status": "Stable",
+          "note": "KM knowledge documents use Markdown as the repository-maintained source; structured data remains in native JSON/XLSX formats."
         }
       ]
     },
