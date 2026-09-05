@@ -83,27 +83,66 @@
     .brand h1 { font-size: 18px; margin: 0; letter-spacing: .04em; }
     .brand p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
 
-    .nav { display: grid; gap: 8px; }
-    .nav a, .nav button {
-      text-decoration: none;
-      color: var(--muted);
-      padding: 11px 12px;
-      border-radius: 12px;
-      border: 1px solid transparent;
-      transition: .18s ease;
+    .nav { display:grid; gap:14px; }
+    .nav-home {
+      display:block;
+      text-decoration:none;
+      color:var(--muted);
+      padding:8px 10px;
+      border-radius:10px;
+      font-size:12px;
+      transition:.18s ease;
     }
-    .nav a:hover, .nav a.active, .nav button:hover {
-      color: var(--text);
-      border-color: var(--line);
-      background: rgba(168, 198, 255, .08);
+    .nav-home:hover { color:var(--text); background:rgba(168,198,255,.06); }
+    .nav-group { display:grid; gap:6px; }
+    .nav-group-label {
+      padding:0 9px;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:700;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      opacity:.72;
     }
-    .nav button{
+    .nav .view-switch {
+      width:100%;
+      display:grid;
+      gap:3px;
+      text-align:left;
+      cursor:pointer;
+      padding:10px 11px;
+      border-radius:12px;
+      border:1px solid transparent;
+      background:transparent;
+      color:var(--muted);
+      font:inherit;
+      transition:.18s ease;
+    }
+    .nav .view-switch:hover,
+    .nav .view-switch.active {
+      color:var(--text);
+      border-color:var(--line);
+      background:rgba(168,198,255,.08);
+    }
+    .nav .view-switch.active {
+      box-shadow:inset 2px 0 0 var(--accent);
+    }
+    .nav-title { font-size:13px; font-weight:650; }
+    .nav-sub { color:var(--muted); font-size:10px; line-height:1.35; font-weight:400; }
+    .nav .view-switch.active .nav-sub { color:#c7d5e8; }
+    .nav-utility {
       width:100%;
       text-align:left;
-      font:inherit;
       cursor:pointer;
+      border:0;
       background:transparent;
+      color:var(--muted);
+      padding:8px 10px;
+      border-radius:10px;
+      font:inherit;
+      font-size:11px;
     }
+    .nav-utility:hover { color:var(--text); background:rgba(168,198,255,.06); }
 
     .sidebar-foot {
       margin-top: 18px;
@@ -348,16 +387,6 @@
     }
 
     .life-view[hidden] { display: none !important; }
-    .nav-divider {
-      height: 1px;
-      margin: 5px 8px;
-      background: var(--line);
-    }
-    .nav .view-switch.active {
-      color: var(--text);
-      border-color: var(--line);
-      background: rgba(168, 198, 255, .08);
-    }
 
     .daily-layout {
       display: grid;
@@ -464,8 +493,8 @@
     @media (max-width: 1100px) {
       .app { grid-template-columns: 1fr; }
       .sidebar { position: static; min-height: auto; }
-      .nav { grid-template-columns: repeat(6, 1fr); }
-      .nav a { text-align: center; padding: 9px 6px; font-size: 12px; }
+      .nav { grid-template-columns:1fr; gap:12px; }
+      .nav-home { text-align:left; }
       .sidebar-foot { display: none; }
       .grid.cols-4 { grid-template-columns: repeat(3, 1fr); }
     }
@@ -480,7 +509,7 @@
       .event .content { grid-column: 2; }
       .timeline::before { left: 14px; }
       .event .node { margin-left: 9px; }
-      .nav { grid-template-columns: repeat(3, 1fr); }
+      .nav { grid-template-columns:1fr; }
     }
   </style>
   <link rel="stylesheet" href="css/loc-nav.css" />
@@ -493,21 +522,47 @@
         <div class="moon" aria-hidden="true"></div>
         <div>
           <h1>LOC8 · Life</h1>
-          <p>Event / Time / Trajectory / Trend</p>
+          <p>Record · Time · Era · Rune</p>
         </div>
       </div>
-      <nav class="nav">
-        <a href="index.html">← 回到首頁</a>
-        <button class="view-switch active" id="overviewViewBtn" type="button" data-view="overview">概覽 / 事件紀錄</button>
-        <button class="view-switch" id="eventTimeViewBtn" type="button" data-view="event-time">Event Time</button>
-        <button class="view-switch" id="eraTrendViewBtn" type="button" data-view="era-trend">ERA 趨勢</button>
-        <div class="nav-divider" aria-hidden="true"></div>
-        <button class="view-switch" id="dailyDrawViewBtn" type="button" data-view="daily">每日抽牌紀錄</button>
-        <button id="themePreviewBtn" type="button">介面預覽</button>
+      <nav class="nav" aria-label="LOC8 功能">
+        <a class="nav-home" href="index.html">← 回到 LOC 首頁</a>
+
+        <div class="nav-group">
+          <div class="nav-group-label">生活資料</div>
+          <button class="view-switch active" id="overviewViewBtn" type="button" data-view="overview">
+            <span class="nav-title">生活總覽</span>
+            <span class="nav-sub">新增事件 · Current State</span>
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">時間分析</div>
+          <button class="view-switch" id="eventTimeViewBtn" type="button" data-view="event-time">
+            <span class="nav-title">事件軌跡</span>
+            <span class="nav-sub">Event Timeline · Trajectory</span>
+          </button>
+          <button class="view-switch" id="eraTrendViewBtn" type="button" data-view="era-trend">
+            <span class="nav-title">ERA 趨勢</span>
+            <span class="nav-sub">連續時期 · Event 關鍵字</span>
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">符文紀錄</div>
+          <button class="view-switch" id="dailyDrawViewBtn" type="button" data-view="daily">
+            <span class="nav-title">每日抽牌</span>
+            <span class="nav-sub">紀錄 · 批次維護 · 趨勢分析</span>
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">工具</div>
+          <button class="nav-utility" id="themePreviewBtn" type="button">介面預覽</button>
+        </div>
       </nav>
       <div class="sidebar-foot">
-        LOC8 · Life<br />
-        事件、時間、狀態與生活軌跡的統合介面。
+        四個工作區，各自處理一種資料責任；分析不再混進紀錄入口。
       </div>
     </aside>
 
