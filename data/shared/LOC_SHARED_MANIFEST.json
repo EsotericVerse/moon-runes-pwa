@@ -47,10 +47,22 @@
       "purpose": "Scenario Corpus / Event Corpus for real-life situation modeling and LOC2 Alpha events."
     },
     {
+      "id": "loc3_rune_songs",
+      "path": "data/shared/LOC3_RUNE_SONG_REGISTRY.json",
+      "authority": "LOC3",
+      "purpose": "Evidence-based registry for songs actually derived from real rune draws; separates confirmed provenance from candidates."
+    },
+    {
       "id": "loc4_writing",
       "path": "data/shared/LOC4_WRITING_REGISTRY.json",
       "authority": "LOC4",
       "purpose": "Canonical writing-work catalog entry point and shared cross-LOC references."
+    },
+    {
+      "id": "loc6_era_style_evidence",
+      "path": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json",
+      "authority": "LOC6",
+      "purpose": "LOC3 metadata aggregates linked back to ERA-based Zhengde Style analysis."
     },
     {
       "id": "loc6_governance",
@@ -100,7 +112,8 @@
       "era_registry": "connected",
       "language_system_registry": "schema-ready",
       "media_registry": "connected",
-      "shared_result_refs": "connected"
+      "shared_result_refs": "connected",
+      "rune_song_registry": "connected; confirmed provenance records currently pending"
     },
     "LOC4": {
       "writing_registry": "schema-ready",
@@ -114,7 +127,8 @@
       "analysis_types": "connected",
       "corpus_import": "partial-primary-corpus-connected",
       "dual_rune_relation_registry": "connected",
-      "dual_rune_relation_model": "neutral pair → draw cause/effect projection → directions/context"
+      "dual_rune_relation_model": "neutral pair → draw cause/effect projection → directions/context",
+      "era_style_evidence": "403 indexed LOC3 works linked by ERA"
     },
     "LOC7": {
       "linguistic_analysis_registry": "schema-ready",
