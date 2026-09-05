@@ -5,81 +5,28 @@
   "language_system_id": "lo3rwang",
   "status": "Working",
   "updated_at": "2026-09-06",
-  "purpose": "LOC1-facing KM derivative of the 月語者 chapter corpus. It preserves the three drawn runes, directions, real moon phase and chapter provenance so LOC1 can learn from observed rune-to-narrative realizations without rewriting rune Canon.",
+  "purpose": "LOC1-facing KM derivative of 月語者 chapter-level three-rune draw evidence.",
   "governance": {
     "source_work_authority": "LOC4",
     "interpretation_evidence_authority": "LOC6",
     "rune_semantic_authority": "LOC1",
     "retrieval_structure": "LOC7",
     "rules": [
-      "This registry is evidence, not Canon. It must never overwrite LunaRune64.xlsx or fixed rune definitions.",
-      "Rune order is preserved exactly as recorded, but semantic roles are unassigned unless the source explicitly states them.",
-      "Do not silently force chapter draws into 源／轉／合 roles.",
-      "Legacy rune names/direction spellings stay in raw fields; normalized fields are derivatives with provenance.",
-      "Intentional no-draw chapters remain explicit exceptions rather than missing data."
+      "Evidence only; never overwrite LunaRune64.xlsx or fixed rune definitions.",
+      "Preserve rune order exactly as recorded; do not silently assign 源／轉／合 roles.",
+      "Legacy rune names and direction spellings stay in raw fields.",
+      "Intentional no-draw chapters remain explicit workflow exceptions."
     ]
   },
   "corpus_summary": {
     "chapter_slots": 182,
     "usable_three_rune_records": 180,
     "intentional_no_draw_records": 2,
-    "unresolved_or_legacy_rune_tokens": 7,
     "intentional_no_draw_ids": [
       "MR-V03-CH05",
       "MR-V03-CH06"
     ]
   },
-  "planned_loc1_km_uses": [
-    "three-rune combination evidence lookup",
-    "direction-pattern evidence",
-    "rune-combination → narrative realization examples",
-    "future comparison with LOC1 three-card grammar",
-    "future training/evaluation corpus for multi-rune semantic interpretation"
-  ],
-  "unresolved_rune_tokens": [
-    {
-      "evidence_id": "LOC1-MR-V01-PROLOGUE",
-      "raw": "線逆位",
-      "name_raw": "線",
-      "status": "legacy_symbol"
-    },
-    {
-      "evidence_id": "LOC1-MR-V01-CH03",
-      "raw": "意逆位",
-      "name_raw": "意",
-      "status": "legacy_symbol"
-    },
-    {
-      "evidence_id": "LOC1-MR-V01-CH04",
-      "raw": "意半正位",
-      "name_raw": "意",
-      "status": "legacy_symbol"
-    },
-    {
-      "evidence_id": "LOC1-MR-V01-CH09",
-      "raw": "意正位",
-      "name_raw": "意",
-      "status": "legacy_symbol"
-    },
-    {
-      "evidence_id": "LOC1-MR-V01-CH11",
-      "raw": "線半逆",
-      "name_raw": "線",
-      "status": "legacy_symbol+normalized_variant"
-    },
-    {
-      "evidence_id": "LOC1-MR-V01-CH15",
-      "raw": "線正位",
-      "name_raw": "線",
-      "status": "legacy_symbol"
-    },
-    {
-      "evidence_id": "LOC1-MR-V01-CH17",
-      "raw": "線半逆",
-      "name_raw": "線",
-      "status": "legacy_symbol+normalized_variant"
-    }
-  ],
   "records": [
     {
       "evidence_id": "LOC1-MR-V01-PROLOGUE",
@@ -125,15 +72,12 @@
       ],
       "real_moon_phase": "滿月",
       "raw_rune_record": "線逆位，愛逆位，空正位，在滿月。",
-      "narrative_evidence_excerpt": "從小時候開始，做了好多種不一樣但種類很像的夢境。 樣貌是，一輪明月在夜空， 在月亮周圍，圍繞著各種不一樣的白色圖騰符號。 不知道為什麼，在夢境中也沒人告訴我， 但我知道這些圖騰符號，叫做「月之符文」。 它們常常一個又一個圍繞在我身邊， 像是在歡欣鼓舞的感覺。 並且熱烈的，跟我介紹他們是什麼。 其實我也記不清楚，它們具體說過做過什麼。 只大概知道，最後總會有幾個字出現。 這些字，我從未學過。 但它們就這樣浮現在腦海，像熟悉卻遺忘許久的語言。 有個聲音跟我說， 知道這些符文的人， 稱做，月語者。 還有幾個常常看到的夢境樣子。 像是一片白花飄揚，充滿白花的原野。 原野之上，好像還有一座古老祭壇。 或是，在一條河旁，開滿紅花。 我好像在那條河畔，期待著什麼。 或是，像在狂列暴風之中， 周圍好像有一堆，各種材質的人像， 如玉，如金，如石，好多。 或是，一道身穿白袍的女性身影。 他自稱為月之大祭司。 或是，一堆奇怪各式各樣的機器，旁邊有光點",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 82,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 82
       },
       "confidence": "recorded",
       "review_flags": [
@@ -185,15 +129,12 @@
       ],
       "real_moon_phase": "滿月",
       "raw_rune_record": "以下為第一章大綱。抽到符文 ：草正位，火正半位，地負半位，在滿月。",
-      "narrative_evidence_excerpt": "在花了一點時間整理出一個可以睡覺的床位，主角就這樣睡去，一夜無夢。 一早，拿著詭異的綠色葫蘆，主角本打算離開舊倉庫，前往學校報到，卻發現早晨的教堂，周圍一片霧氣。他找不到來時的路，迷失在教堂旁的叢林裡。 從小在鄉下長大的主角其實並不害怕，反而享受著屬於早晨的沉靜。始終都找不到路離開，只好就沿原路返回，到達倉庫旁邊的教堂尋求幫助。 在教堂門口，背著雙劍的望新之子，正等帶著主角的接近。他非常討厭這些沒有家世血脈，什麼都不懂的普通人，竟然還敢來到這個月之神教的儀式器具放置所。 要不是那個該死朔言之子的廢話，月之神教正在進行的祕密儀式可能會被發現。他不能讓這樣的風險發生，反正這裡是荒無人煙之處，一個普通人死了，不會引起任何人注意。 藉由家傳的項鍊「月痕」，使用後可以讓任何人在一定距離內失去方向感，把主角堵在這邊，只要在教堂前等待，人就會出現。 而主角也確實來了，發現有人殺意騰騰的往他跑來，又剛好是昨天那位惡人，急忙性命為重的趕快逃走。 ",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH01",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 167,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 167
       },
       "confidence": "recorded",
       "review_flags": [
@@ -244,15 +185,12 @@
       ],
       "real_moon_phase": "滿月",
       "raw_rune_record": "以下為第二章大綱，抽到符文:星正位，生半逆，樹半逆，在滿月 。",
-      "narrative_evidence_excerpt": "此時本應該被望新之子收回的「青縷」，以及周圍散著黑色霧氣的項鍊「月痕」，隨著葫蘆吐出的綠色顆粒，變成透明樣貌，在沒有任何人察覺的狀況下，這兩個物品的符文，慢慢的收進葫蘆內。 主角只有感應到，獲得草之符文跟暗之符文，卻不知道這兩符文從何而來。 一襲白色祭司袍的白衣女子，拿著上面似乎可以看到火焰流動的短杖「陽月」。他是月之聖女小月。月之教主早年因病去世，教主權柄「陽月」為教主女兒小月代管。 月之神教內雖尊稱小月為「月之聖女」，但因為年紀太小實力不足，而被不少資深教眾看輕。 小月一方面是看不慣望新之子的作為，一方面也是為了提振月之聖女的威嚴。告知主角這裡是月之神教禁區，非相關人不得進入，並且主角也非故意惹事之徒，略為口頭警告，就任其離開。 但不知為何，樹林內霧氣隨著望新之子的離開，卻越來越濃。主角想離開但完全迷失方向，直到看到樹林的一個小型隕石坑。 此時主角終於發現，葫蘆緩慢的吐出綠色顆粒，到隕石上一個特定區域。隕石之上開始閃亮一個，",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH02",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 186,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 186
       },
       "confidence": "recorded",
       "review_flags": [
@@ -303,15 +241,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第三章大綱，抽到符文：意逆位、種半正、根正位，在下弦的月相。",
-      "narrative_evidence_excerpt": "碰觸隕石以後，主角獲得了星之符文。主角本不想節外生枝，但為了離開此處，主角別無選擇，只能選擇進行月語者的魂之傳承儀式，進入魂之密境，完成試煉。 魂之密境如同彼岸，有條長河，河旁開滿了彼岸花，還有很多依依不捨離開自己生之家園，度過冥河，前往未知彼岸的破碎靈魂。 旁邊會有一道淡淡的身影，自稱為初代月語者，並一直強調，希望發生過的悲劇不再發生(但對於是何種悲劇則未講)，而設置此魂之試煉， 來確保月語者資格跟知識的傳承，以及月語者品德的考驗。 打開試煉的基本資格，是福運之爐，並持有初代月語者知識內的靈魂本源系統中，其三道符文，試煉自會顯現。 有些靈魂本源符文仍有不確定性，但初代月語者以自己的知識作為補強。 試煉總共有三道，符文試煉、和諧試煉、融合試煉。 有了符文基本知識，才能控制符文組合成各樣事物，但符文彼此存在相生相剋，即使是新月符文跟滿月符文，也可以和諧達到共處。而如何調和全部，則是融合試煉的主軸。 第一道試驗，為初代月語者掌握的2",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH03",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 200,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 200
       },
       "confidence": "recorded",
       "review_flags": [
@@ -362,15 +297,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第四章大綱，抽到符文：意半正位、暗半逆、星正位，在下弦的月相。",
-      "narrative_evidence_excerpt": "第二道試煉開始，這兩個守衛分別為，雙劍之望跟拳腳之朔。 主角先進行觀察，發現兩者個性上望思慮過深，而朔思慮太淺。 兩者個性偏向兩個極端，但本心不壞且互相愛慕。配合的好則攻守無敵。 因此主角建議，兩者須合心之一，互相配合。遇到需要心機之時，望會自己幫朔處理。若需要體力之時，朔會自己幫望代勞。 第二道試煉最後以主角同時獲得朔跟望之虛影宣示，對月語者效忠為結束。 第三道試煉開始，以福報之爐測量主角之善業跟惡業。初代月語者在彼岸招喚星之天秤虛影，主角持福報之爐在秤中心。 從主角進入輪迴開始至今，尚未了結的惡因會在一端產生紅色惡果之虛影。反之則會在另一端產生綠色善果之虛影。 初代月語者想要的並不是完全的惡或完全的善，而是不想讓之後的月語者背負著太多人的因果。 經過一段時間，天秤為平衡。主角仍有當世該了結之善與惡，但並不多，而且是天秤處於平衡狀態。 初代月語者見星之天秤平衡，便宣佈試驗通過。同時幫忙主角，將織命給實體化成一條線，掛在主角脖子",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH04",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 222,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 222
       },
       "confidence": "recorded",
       "review_flags": [
@@ -421,15 +353,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第五章大綱，抽到符文為：混沌正位、火半正、葉逆位。在下弦的月相。",
-      "narrative_evidence_excerpt": "初代月語者身影消散之時，福報之爐突然自我運作，將之前青縷跟月痕的投影影像，搭配剛剛的星之天秤，三者合成為生之息。 本應該回主角本體的善果跟惡果，結合成業果，在生之息的催化下，長出花朵，之後花朵花瓣掉落，化成外型有三片布料合一的披風，名稱為「墨香」。 同時主角獲得花之符文。這三片布料上各有一個符文插槽，插槽內畫著是意、樹、愛三個樣式的符文。 披風拿在手上，主角心中自動跳出關於披風三個符文槽的此用方法。 收拾好心情，穿上墨香披風，帶著織命，將隨身攜帶之筆芯，向天空書寫「回」，放入意符文插槽處。 意之符文虛影沒入織命，且此時墨香發動效果，回到剛剛隕石坑之前。 本來應該存在的隕石，已經完全消失，連帶著霧氣也完全消散。 主角找到原路，在即將離開森林的路口，撞見了正在跟月之聖女交手的，望新之子。 原來望新之子不滿小月中途插手，準備趁小月從神教聖地回歸之時偷襲，卻被小月發現並擋下。 望新之子早對小月不滿已久，拔出望月雙劍仿製版，跟小月戰鬥起來",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH05",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 244,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 244
       },
       "confidence": "recorded",
       "review_flags": [
@@ -480,15 +409,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第六章大綱。抽到符文為：花半正、靈半正、種逆位。在下弦的月相。",
-      "narrative_evidence_excerpt": "三方暫歇。 小月無法相信，剛剛差點被望新之子殺死，手無縛雞之力的平凡人，竟然可以使用樹符文了。 小月甚至覺得，主角闖入神教禁地，根本就只是為了取得這些符文，根本就是月之神教的敵人。 但剛剛救了小月的也是這些樹之符文，對於主角，他到底是敵是友，小月仍然不敢大意。 望新之子更是感到驚訝。從第一次看到他，如同喪家之犬，本能感到厭惡。第二次在受到青縷之束縛時，能從他劍下逃開。 第三次竟然能夠使用樹之符文抵禦了，前後也才幾個小時的時間，為什麼這個賤民越來越讓人看不透。 主角對小月感到歉意為多，小月之前還救了他一命，對於救命之恩還沒報答，小月持有裝備的符文還被主角複製走。 先是大聲對小月說，「感謝剛剛的救命之恩，現在換我報答了」。 之後轉向望新之子：「我並不認識你，你卻三番兩次找我麻煩，甚至要置我於死地。我不懂為何對我要有如此深仇大恨。」 望新之子回應：「沒有任何家族血統的賤民，不配出現在此。你活著的意義，就是成為我劍下亡魂之一。 剛剛放過",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH06",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 271,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 271
       },
       "confidence": "recorded",
       "review_flags": [
@@ -539,15 +465,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第七章大綱。抽到符文為：種逆位、生半正、空半正。在下弦的月相。",
-      "narrative_evidence_excerpt": "不久後，樹之符文消失，所有環境恢復原來的樣子。 小月：「你知道對於望家來說，雙劍已斷代表什麼嗎？從此以後他失去競爭護法的機會，他成為失敗者。」 主角：「如果我沒記錯，你叫做小月是吧。他要取我性命，你也看到了，為何我就非要成為他註定的劍下亡魂，難道我沒有活著的權利嗎？他成為失敗者，都是他自找的。」 小月：「所以你到底是誰？為什麼會使用月之符文？為何要進入月神教禁地？」小月握緊手中的陽月。 主角：「如果這一切不是夢境的話，我剛剛通過了月語者試煉。那個老人說，以後我就是月語者了。 到底為何會這樣，我自己也不知道。我會來這裡，是自稱朔言之子的人帶過來的，我根本不知道這是哪裡。 但一切就好像是自己的本能一般，這些符文我常常在夢裡看過，所以非常熟悉。只是第一次用還沒有這麼熟練。」 小月：「朔家。好，姑且相信你。但目前神教內有另外一個月語者啊？那位用符文的方式，完全不能跟你相比啊？」 小月環顧主角上下一周，終於發現了，他脖子上的「織命」以及背",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH07",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 304,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 304
       },
       "confidence": "recorded",
       "review_flags": [
@@ -598,15 +521,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第八章大綱。抽到符文為：火正位、種半正、靈正位。在下弦的月相。",
-      "narrative_evidence_excerpt": "也是要感謝小月，主角終於有個能夠生活的房間住了。不同的是，小月就住在他隔壁的房間。 間接得知小月身世，他的父親，上任月之教主，因不明原因死亡。也剛好還就是當代月語者進神教之時。 陽月、幽輪、跟月嬰，都是從上任月之教主傳承而來。 小月也派人找過當代月語者，但其住處大門深鎖，沒有任何人進入的痕跡。 那位望家子弟，小月也請現任左護法望新幫忙，盡量不要再有類似的事情發生。但左護法敷衍之意明顯。 神教中最支持小月的，也是小月的老師，右護法朔言得知此事，只能嘆了口氣。 此事過後不久，風波平息。此時主角提出，想要回剛到學校住過的那間倉庫，似乎有東西遺忘在那邊要去拿。 小月怕節外生枝，也就跟著去了。 但此時主角身上已經具備三個自然生命系列符文：「樹」、「花」、「草」。 並且還有「墨香」，已經滿足打開自然密境的條件。 本來的隕石坑不知為何消失，只剩下盤根錯節的古樹。 主角並未讓任何人知道福報之爐的存在，因此物太過神秘，怕引起其他人覬覦。 但藉由福",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH08",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 330,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 330
       },
       "confidence": "recorded",
       "review_flags": [
@@ -657,15 +577,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第九章大綱。意正位、暗正位、空正位，抽到符文為：。在下弦的月相。",
-      "narrative_evidence_excerpt": "一陣強烈的陽光照過，眼前出現一大片，滿天遍野的花。 雖然小月為月之聖女，但本質上也就只是一個剛滿成年的女生，看到滿坑滿谷的花，立刻激動的往前飛奔。 主角發現時已來不急阻止，便跟著上去。 在小月採滿滿手的花束以後，旁邊突然出現一個身穿白色祭祀袍的老婦身影。 老婦：「歡迎來到老身的月田，身繫織命且帶有墨香的月語者。」 看到老婦虛影出現時，小月忍不住熱淚盈框：「奶奶！」 「咦？這不是小月嗎？為什麼你會出現在月語者試煉中？」老婦疑惑的問。 小月：「奶奶！你不是已經往生了嗎？為什麼會在這裡？」 老婦對小月說：「這是我身為上代月之聖女的記憶影像投影體。我並不知道主體在之後狀況如何。 我是主體對事物的所有感情承載投影體，主體擔心這些花沒人照料，讓我存在於此。 若你已經成長，還帶有陽月權杖跟月嬰披風，表示主體已經隕落了。這也表示我生命將終。 你能答應我，幫我跟主體，照顧這片，存在於月嬰披風當中的夢之花園嗎？」 小月含著眼淚點頭答應。 老婦嘆了一",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH09",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 354,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 354
       },
       "confidence": "recorded",
       "review_flags": [
@@ -716,15 +633,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十章大綱。時逆位、光逆位、生半逆，抽到符文為：。在下弦的月相。",
-      "narrative_evidence_excerpt": "老婦隨手用手指了下腳旁的一朵盛開之花，花開始倒退生長，回到種子階段，回到老婦手上。並向旁輕輕吹了一口氣，氣息呈現虛幻的葉之符文。 老婦：「此為元華，夢花之種。另一個為綠息，夢花生長之氣息。以你之心意親手栽下，讓我們來看看，最後的結果為何。」 語畢，老婦將元華跟綠息，交到主角手上。福運之爐突然開始運作，在小月沒發現的狀況下，往織命收進元華的「種」符文跟綠息的「葉」符文。 主角將「元華」種入土地中。拿出筆芯，在空中寫出「心」，放入墨香的意之符文插槽。 此時天空中出現毛毛細雨，「元華」開始成長，先長出根，之後以「綠息」催生，長出枝葉，並化為本來的夢之花。 老婦有點感嘆的惋惜：「當年我的成果只有這樣。初代月語者說這還不夠，請我等待機緣到來，並授予我夢之花園進出權柄。」 話未畢，只見花開始凋落。老婦臉色微變：「這！？怎麼可能？」 只見花凋落，於原來花之處，形成果實。掉落於地。 老婦：「原來這就是我等待已久的時機。若夢之果讓有心人士操縱，變",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH10",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 383,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 383
       },
       "confidence": "recorded",
       "review_flags": [
@@ -775,15 +689,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十一章大綱。草半逆、線半逆、水正位，在下弦的月相。",
-      "narrative_evidence_excerpt": "拿到蘊生法杖的同時，主角也知道其用法，也得到法杖本身的，根之符文。 蘊生可以把三種，主角已知月之符文，作為攻擊手段，無視當時月相，都可以將符文攻擊為極致化。極致的大或是極致的小。 主角本想把法杖交給小月，因其為小月奶奶之靈所化，但小月拒絕接受，此法杖的緣份屬於主角而非小月。 小月也對主角表達感謝，相信主角本身不是月之神教的敵人，不是惡人，否則夢之實不會成為月相法杖，會成為夢靨怪，腐化善良之人的心靈。 同時，望新之子醒來，在「月痕」項鍊暗之符文影響，性格黑化。先是偷走朔言之子的朔家之靴，並栽贓到主角身上。 朔言之子因間接造成望新之子雙劍斷碎心生內疚，選擇相信望新之子。 得知主角與小月前往禁地門口取物，在禁地門口等待主角前來，向主角討回自己的物品。 主角跟小月在拿完法杖之後，由小月使用「月嬰」，離開夢之花園。但回到禁地門口時，碰到失去理智的朔言之子。 小月勸告無用，但也想看蘊生法杖的效用，為主角打掩護。戰況一觸即發。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH11",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 401,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 401
       },
       "confidence": "recorded",
       "review_flags": [
@@ -834,15 +745,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十二章大綱。風正位、葉逆位、愛正位，在下弦的月相。",
-      "narrative_evidence_excerpt": "主角先告知，感謝朔言之子那天的指引，讓他能獲得符文傳承。自己絕對不會做出對不起恩人之事。但朔言之子不聽，對主角擺開朔家拳腳架式，準備襲來。 主角無奈之下，先首先使用身邊的三樣裝備，織命、墨香、蘊生。背後出現，花符文、根符文、線符文。 在蘊生的運作之下，先出現纏繞於朔言之子腳的樹根，樹根之上出現纏繞之蛛絲，蛛絲上開著幾朵鮮艷的花。 同時再警告朔言之子，有話可以好好說，無須戰鬥，如果願意好好講，都可以說。 朔言之子仍執迷不悟，腳掙脫根之糾纏。主角無奈，發動第二重蛛絲纏結，配合使人酥軟之花香，朔言之子很快綑成一團繭，只剩下眼睛在外。 此時穿著朔家之靴的望新之子出現，先是對朔言之子罵了聲「廢物」，朝朔言之子丟了把短劍，對主角進行攻擊「賤民終究是該死的賤民！」。 當朔言之子看到望新之子穿著靴子的同時，神智清醒過來，但全身酸軟，再被望新之子丟的短劍攻擊，頓時失去神智昏迷過去。 主角此時結束蘊生的符文攻擊。對於仍想未受到足夠教訓的望新之子，主",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH12",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 417,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 417
       },
       "confidence": "recorded",
       "review_flags": []
@@ -891,15 +799,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十三章大綱。空逆位、種正位、水半正，在下弦的月相。",
-      "narrative_evidence_excerpt": "隕石雨動靜太大，此時左護法望新出現。看到望新之子體無完膚，望新頓時憤怒的朝向主角攻擊，小月現身擋住。 在衝突即將開始之前，右護法朔言出現。左護法看情況不妙便留下狠話，抱起望新之子離去。 朔言從小月處知道狀況後，對兩人感到抱歉。表示主角跟小月可以從神教藏寶庫內，每人各挑選一件物品當作補償。 此後主角與小月，跟隨朔言前往前往神教藏寶庫。藏寶庫內物品琳瑯滿目，主角跟小月一時之間不知道要選擇何種為好。 主角懷中福報之爐振動，只有主角看得見的綠色粒子飄散而出，環繞在兩顆玉石上。 主角選了一顆名為「月晷」之有裂痕的玉石，光之符文。小月選了一顆名為「浮翎」的劍玉，風之符文。此時光之符文以及風之符文，均被收入進織命。 傳聞「月晷」本為初代月之神教教主之物，但放置過久失了靈氣，產生裂痕。「浮翎」傳說本為鑲嵌在劍上之玉石，產生風裂效果。但武器已斷，只剩下劍玉。 拿完物品離開藏寶庫，福報之爐突有感應，將六符文：靈、意、星、光、暗、線，合併成為一個「靈",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH13",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 434,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 434
       },
       "confidence": "recorded",
       "review_flags": [
@@ -950,15 +855,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十四章大綱。火逆位、愛正位、星半逆，在下弦的月相。",
-      "narrative_evidence_excerpt": "到達湖畔共鳴之處，福報之爐開始飄出綠色粒子，一處湖面上出現漩窩，其中出現水之符文的印記，水之符文進入織命。 跟隨來的小月驚訝道：「為何這裡有水之符文？」詢問主角是否能夠一起進入，主角應允後，兩人便前往漩窩之中心。 突然一陣天昏地暗，兩人到達一片下著大雪的冰原極地。 這裡是元素密境。 兩人來不及驚訝，小月使用陽月的火焰之術，暫時取暖。主角則拿出蘊生，使用 花 草 光 三符文，形成防護罩同時護住兩人。 在沒有方向感的大雪中，兩人不知道走了多久，到達一個，在冰山內的洞窟。便進入暫緩休息。 洞窟內有無數冰柱，此時小月看往冰柱之下的水滴，突然大叫：「這是... 月凝 !只有傳說當中出現過的，永不凍結之水滴！」 於是拿出隨身攜帶的水壺收取。越往洞窟深處走， 在接近洞窟底部時，小月又發現冰山周圍的牆壁，冒出固定的人影， 小月大叫：「這是.. 寒魄！傳說中為凍死者不甘之魂魄所化！只有在書中有出現過！觸碰會聽到死者不甘的哀怨聲！」 小月驚嚇之餘，",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH14",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 450,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 450
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1009,15 +911,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十五章大綱。夢正位、線正位、根半逆，在下弦的月相。",
-      "narrative_evidence_excerpt": "鐵砧周圍出現六芒星法陣。法陣旁有著提示語：「證明你能夠完整運用你的力量！」 六芒星各有代表圖案，一邊為火之符文、風之符文跟水之符文。 另一邊是靈魂圖騰、自然圖騰，還有一片空白。 主角位於空白區塊，使用蘊生，在圖騰兩處，維持住靈魂圖騰跟自然圖騰的能量。 小月位於火之符文區，拿著陽月，浮翎位於風之符文區，冰語鋼放置於水之符文區。 只有主角能夠看到的，福報之爐的綠色粒子出現在六芒星各側。 首先是冰語鋼跟靈魂圖騰的結合。鍛造聲音響起。 過來是浮翎跟自然圖騰的結合。鍛造聲音響起第二次。 在小月還未反應過來的狀況下，陽月漂浮於空中，跟冰語鋼、浮翎結合， 在小月對於陽月消失的感傷之際，因陽月是父親留下來的教主之證，一方面是父親遺物，另一方面是教主權柄。 此時第三次鍛造聲音響起，三者合而為一，成為一把短劍。陽月的樣式出現在劍柄處。 小月大叫：「裁決！怎麼可能！初代月之聖女使用之短劍！在神教中，擁有比陽月更高的權柄！」 此時裁決漂浮於空中，漸漸落",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH15",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 470,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 470
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1068,15 +967,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十六章大綱。葉逆位、空半逆、暗半正，在下弦的月相。",
-      "narrative_evidence_excerpt": "拿到裁決的小月，突然失去意識。 小月的意識飄到一個未知名空間，手中握住裁決，握有飾品「幽輪」，披著披風「月嬰」，眼前出現的是，右護法朔言的黑色實體。 「證明你能夠使用！」靈魂之聲響遍整個空間。 此時朔言黑影，使用朔家拳腳招式，往小月攻擊而去。 小月習慣性以御使陽月的方式，來使用裁決，卻一點作用都沒有。只能苦苦躲避朔言黑影的攻勢。 「審判別人之前，自己要先審判自己」靈魂之聲又出現。 小月嘗試使用，曾經看過的，在月靈經中記載，關於雷符文的術式。 小月大喊：「雷，招來！」 一道雷光擊中朔言之影。對其影響，朔言之影速度漸慢。 數個回合之後，小月掌握主權。嘗試配合其他裝備使用符文組合。 「幽輪」的混沌符文，「月嬰」的夢之符文，「裁決」的雷之符文。三者合一。 突然靈魂之聲響徹整片空間：「裁決之怒！」 一道暗黑色，光芒有些模糊的雷影，劈落朔言之影。 朔言之影消散。 「你獲得了審判的資格！」靈魂之聲響徹整片空間說著。 語畢，小月甦醒，裁決則靜靜",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH16",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 490,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 490
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1127,15 +1023,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十七章大綱。抽到的符文為：渾沌半正、水半正、線半逆，在下弦的月相。",
-      "narrative_evidence_excerpt": "主角和小月回到湖畔，時間彷彿過去沒多久，小月拿著裁決回去找朔言，而我則回去自己的房間。 朔言驚訝的看著現在的裁決，這把武器自從初代月之聖女，神秘消失以後，只存在於傳說當中。 持有裁決者，除了教主的代行權以外，還可以命令左右護法。 聽小月說著，用裁決打敗朔言之影時，朔言張大嘴巴，久久不能言語。於是跟小月到主角房間來找主角。 到了主角房間，朔言先是親切的打招呼，以一個小月的長輩的身份，對主角的照顧表示感謝。 同時拿出自己的拳套「朔月之拳」跟項鍊「月虧」，想詢問一下主角知不知道，關於他的初代護法的事情。 此時福報之爐振動，從「朔月之拳」，獲得愛之符文。從朔言的項鍊「月虧」，獲得地之符文。 主角表示，初代月語者有繼承這項任務給後代合格的月語者。只可惜目前除了初代月語者外，除了主角並沒有其他的合格者。 初代月語者也在尋找初代護法，所以主角也不清楚。至於當代月語者，很可能是假冒者。 與朔言交流語畢，朔言告別。小月留下，跟主角繼續討論關於裁決",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH17",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 515,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 515
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1186,15 +1079,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十八章大綱。抽到的符文為：根半逆、靈正位、光半正，在下弦的月相。",
-      "narrative_evidence_excerpt": "與小月談論時，福報之爐振動，結合元素六符文水 火 風 地 雷 混沌，合成元素圖騰。 靈魂圖騰、自然圖騰、元素圖騰三者共鳴，本飄忽不定的時空密境入口，竟被強迫定位，突然出現一道傳送門，在房間內。 時之符文沒入織命。 小月驚訝於，憑空出現的時之符文傳送門。但經過剛剛元素密境的試煉，小月既興奮又期待接下來發生的事情。 於是與主角共同進入傳送門。 映入眼簾竟是一望無際的沙漠。周圍只有一個女性虛影。 「他說，這一切都是敵人使用神器造成的大規模破壞。我只想要知道確實是怎麼回事。」 突然畫面一改，沙漠遍地都是破碎的靈魂，一小塊一小塊的小光點。 主角拿出筆芯，書寫出「枝」，放入墨香的意之符文插槽。 同時配合法杖蘊生，拿出三枚自然符文「種」、「草」、「樹」符文，將整片沙漠包圍住。 沙漠上突然出現無數種子落地，落地後延伸根包住地下，同時種往上長成樹跟草，草織為網。樹上長出樹枝，樹枝交纏。 因配碎靈魂非常脆弱，只能用慢慢收束的方式集中。最後，集中成兩",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH18",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 532,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 532
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1245,15 +1135,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十九章大綱。抽到的符文為：地半正、混沌半正、空逆位，在下弦的月相。",
-      "narrative_evidence_excerpt": "「請月之聖女，持 裁決 出來一見」室外傳來左護法望新之聲。伴隨著朔言的對話勸導聲。 朔言告知望新，小月已獲得裁決，望新首先想見識傳說中「裁決」的真實樣貌。 同時，要對小月做月之聖女的戰鬥測試。否則望新難以接受，持有裁決者的命令。 見小月跟主角從屋內走出，小月手上短劍雷光陣陣，正是傳說中的裁決。 望新拿出望月雙劍，配合著脖子上帶的項鍊「月盈」，向小月敬了一禮，表達對裁決尊敬的同時，也表現出自己不服的挑戰。 望新本欲提劍沖向小月，使用望月劍法進行攻擊，朔言已準備起身進行抵擋。 卻不知為何，小月身旁的主角，發散出乳白色的強光，阻擋了在場所有人的視線。 福報之爐振動，綠色粒子再現，「月盈」之 空 符文 ，「望月雙劍」之 死 符文，沒入織命。 結合時空六符文，夢 時 空 生 死 愛，合成時空循環圖騰。 至此，24符文已滿。 四圖騰齊現，靈魂本源、自然生命、元素力量、時空循環，四圖騰分別佔據主角的四位，伴隨著綠色粒子的圍繞，「織命」發生變化",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH19",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 554,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 554
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1304,15 +1191,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第二十章大綱。抽到的符文為：星半逆、葉半正、水逆位，在下弦的月相。",
-      "narrative_evidence_excerpt": "得到蝕之手鍊的主角，拿起蘊生，以極快的速度發動防禦法陣，三符文 地 根 空，顯示於主角頭上。瞬間樹根從土地盤住主角，根的周圍空間，光線扭曲。 望新持望月雙劍，使用望月劍法，快速連續斬擊纏繞在主角周圍之根，根雖已可見速度慢慢消散， 但仍無法斬完所有之根，且有地之支援，根無窮無盡的生長，根附近的空間符文則會將斬擊進行扭曲。 主角見狀，繼續發動符文攻擊，瞬間 星 光 雷 三符文，出現在主角持杖之右側，瞬間出現行走痕跡如雷一般的流星，以光速向望新攻去。 望新持雙劍，發動望月劍法：月舞，瞬間將如光速襲來之流星，一一斬落。 同時發動項鍊「月盈」，無視空間的效果，想瞬間接近主角進行斬首作戰，但被根上的空間扭曲所抵銷。 一來一往，雙方打成平手。一時之間難分勝負。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH20",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 583,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 583
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1363,15 +1247,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第二十一章大綱。抽到的符文為：愛逆位、根半逆、混沌正位，在下弦的月相。",
-      "narrative_evidence_excerpt": "趁空檔之際，主角拿出筆芯，在空中書寫「幻」，放入「墨香」。同時在蝕的作用下，模擬出「樹」跟「愛」符文，連同墨香的「花」跟筆芯的「意」。同時，四符文於主角背側浮現。 「擬幻為意，顛倒父子連帶之愛！」 在以蘊生發動，夢 混沌 水 暗 種 五個符文，浮現於主角左側，同時9個符文出現在主角周圍環繞。 「扭曲的夢靨之種，成長為望新之子，出來吧！」 這，即是蝕之功效，無視符文祭品，以往同時最多只能發動三符文，若持有蝕，在不重複的原則下不限招喚數量， 加上蘊生之無視月相之功效，不存在符文與符文之間互斥的問題，這才是月語者，月之代言者的真正威力所在。 戰場頓時出現四顆圍繞著望新的楓樹，楓樹陣中出現幾個如同望新之子的影像，周圍散發扭曲的黑色光芒， 這些怪物對望新大喊：「父親，為了表達對您的愛，請您跟我一起前往彼岸吧！」 毫無次序的，蜂擁的向望新而去。 望新雙劍合一，發動望月劍法最大招「上弦輪轉」，往周圍散出衝擊波，望新之子被斬成兩半。但卻掉落於地",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH21",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 596,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 596
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1422,15 +1303,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第二十二章大綱。抽到的符文為：愛逆位、種半逆、光逆位，在下弦的月相。",
-      "narrative_evidence_excerpt": "「年輕人，不錯的本事。但會這些，並沒有什麼了不起的。」聲音從旁邊傳出。隨之而出現的是，拿著法杖的一個老人。 看到老人，望新立刻尊敬的對其敬禮：「月語者！您終於出現了！距離您上次的指示已經很多年了。」 老人淡淡的笑了笑。脖子上的命運絲線閃爍著符文。背後的披風閃爍著花符文，法杖上閃爍著根符文。 「那就來看看，誰是真的誰是假的吧？」語畢，月之24符文，纏繞於老人身邊循環著。 拿出毛筆，往天空中寫了一個「月」字，將其放入披風符文插槽。 「我想，再怎樣，月之符文，也就只是月之符文而已。」老人淡淡的說。 此時，天空中出現時空異象。雖然是夜晚，懸掛之月相卻一直在改變，從新月到滿月，在從滿月到新月，週而復始的循環著。 主角默默不語，一樣祭出三項神器。一樣的24符文在主角周圍閃耀。 老人的命運絲線，光芒明顯黯淡許多，但也只有24個符文珠串 不同的是，主角的手鍊「蝕」，上面有32顆串珠，而第31顆，隨著剛剛月亮循環的時空異象出現，剛剛才點亮而已。 ",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH22",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 611,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 611
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1481,15 +1359,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第二十三章大綱。抽到的符文為：生半逆、水半逆、死正位，在下弦的月相。",
-      "narrative_evidence_excerpt": "「沒想到我竟然有回到過去樣貌的一天，我本來以為，這輩子就這樣下去就好了。」小月的叔叔默默的說。 在場的望新跟朔言更是驚訝，誰都沒想到，本應是年輕早逝者的小月叔叔，卻以此樣出現。 這一切，與小月的母親有關。兄弟兩同時喜歡上一個女人，而這個女人最後選擇的是哥哥。 弟弟得知結果傷心之餘，在滿月之時，投湖自盡。 但命不該絕，竟在湖底發現初代月語者，前往彼岸前，留下的最後的筆記。 透過筆記得知四道試煉的內容。但不同的是，他並沒有通過魂之試煉。因為初代月語者認為他的因果沾染過深，天平雖是平衡，但予以拒絕。 他使用筆記上，前代月語者記載的秘法法術，以透支生命力為代價，模仿出通過四種試煉的圖騰，但產生的依然還是命運織線，並不是真正的「蝕」。 「月」之一字，是初代月語者，用其一生，最後的體悟。 只有魂之試煉是由初代月語者親自主持，其他則由命運織線自行決定試煉內容。而只有主角獲得初代月語者的認可，獲得完整的靈魂圖騰，才能打造出「蝕」。 初代之後以往",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH23",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 634,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 634
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1540,15 +1415,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第二十四章大綱。抽到的符文為：雷逆位、愛半逆、混沌正位，在下弦的月相。",
-      "narrative_evidence_excerpt": "雖說小月的叔叔殺了教主，但在教主神秘失蹤之後，卻也是為神教出了不少力氣，也暗中照拂過小月。 功過相抵，朔言跟望新皆認為，死亡只是一種慈悲，讓其繼續活著，為神教立下功勞，才是對神教真正的贖罪。 主角也認為，月語者就繼續是當代的月語者就好，他對神教本身的權力並無眷戀。 所以表面上一切維持原樣。 不同的是，教主之位雖依然空缺，卻暫時由朔言替代。小月仍然在月之聖女的職位。因持有裁決，要先完成月之聖女的職責。 小月選擇跟主角一起離開，因初代月之聖女，在時空試煉時，額外對小月有所交代。 為了完成初代月語者的託付，於是在某天夜晚是下弦時候，主角面對著極光，口中唸唸有詞「請帶我到朔望二魂的存在之處」。 出現了一道傳送門，主角與小月一起進入，朔望二魂的現今存在地，月球的陰暗面實驗室。 初代左右護法之魂，被初代月之聖女封印於此處，靜靜等待主角的到來。 主角拿出筆芯，對空書寫「果」，放入墨香。周圍32符文閃亮，揮舞著蘊生，唸唸有詞： 「朔望二人，請遵",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH24",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 651,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 651
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1599,15 +1471,12 @@
       ],
       "real_moon_phase": "滿月",
       "raw_rune_record": "抽到符文為：靈正位/星半正/風正位 都在滿月時",
-      "narrative_evidence_excerpt": "主角與小月來到月球陰暗面，喚醒沉睡萬年的朔望二魂。滿月之夜，靈星閃耀，風息低語，二魂重現於實驗遺跡，回應月語者的召喚。主角渴望探知初代月語者的真相，小月亦試圖理解聖女的使命。塵封的過往尚未揭曉，而命運的下一幕，即將開展。 ===列出本章一百字的簡介",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 669,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 669
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1658,15 +1527,12 @@
       ],
       "real_moon_phase": "滿月",
       "raw_rune_record": "花正位/種半逆/愛逆位 都在滿月時",
-      "narrative_evidence_excerpt": "主角透過「蝕」回溯三千年前，靈魂進入初代月語者的記憶之中。花海綻放，望敦與朔端於此立下誓言，卻因戰爭與信仰動搖，迎來命運裂解。初代月語者消失，月之聖女封印二魂，只為等待與他靈魂共鳴之人。主角即是那被等待者，真正的繼承者。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
-        "source_line": 678,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 678
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1718,15 +1584,12 @@
       ],
       "real_moon_phase": null,
       "raw_rune_record": "此章代表符文為：地半正、風正位、生逆位。請寫出文字數超過一千五百字的文章，成為第一章。",
-      "narrative_evidence_excerpt": "內容描寫：初代月語者跟初代月之神教教主，其實還真的是一對親生兄弟。 哥哥聚集了一堆志同道合的人組成神教，成為領導人教主。 弟弟只想要單純的學習學問，對神教不過問，但是很樂意教別人。 特別是當弟弟無意間獲得，古代月之大祭司所著的「月靈經」殘本以後，得到相關知識，變成神教之師。 朔端跟望敦是一對戰爭當中的孤兒，由弟弟收養，個性雖完全相反但一同長大。 月靈經內，本記載著多種月之守衛的武技，但由於年代久遠，相關章節只知道有兩個職業的武技：雙劍劍侍跟拳腳武僧。 月語者則由解譯月靈經內的弟弟，完成24符文解譯後，於夢中遇見月之大祭司，由月之大祭司冊封的名稱。 弟弟也將武技分別交給朔望兩人，此後朔端為拳腳武僧，望敦為雙劍劍侍。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH01",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 7,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 7
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1778,15 +1641,12 @@
       ],
       "real_moon_phase": null,
       "raw_rune_record": "第二章代表符文為：根半正、地半正、星半正。請寫出文字數超過一千五百字的文章，成為第二章。",
-      "narrative_evidence_excerpt": "其實為何是「月之神教」，倒是跟月本身無關。只因為弟弟得到月靈經後，對月之符文的癡迷。 但身為其兄，自然要大力給予幫助，於是乎將氏族名稱，跟著給為月之神教。也能吸引對月之符文了解的人進入。 在弟弟大力推廣下，神教內普遍使用的，是這些月之符文。 於是乎，哥哥成為了月之神教的實權領導者，教主。 弟弟成為了月之神教當中，雖無任何實權但人人皆給予尊敬的神師。完成24符文，神師稱號變改為月語者。而月語者身上繫與的命運之線，佈滿了24個月之符文圖騰珠串。 此時，一位對月之符文很有研究的女性現身於神教內。 對符文的了解，甚至於比二十四符文多了很多 教主便其封為月之聖女，方便月語者能夠學到更多的月之符文知識，增加神教內的知識普及跟團結。即是，初代的月之聖女。 但其他人所不知道的是，月之聖女懷中持有一個小葫蘆，福報之爐。 藉由福報之爐，月之聖女有一串，帶有月亮符文的耳環。這就是月之符文的總體「月種」，月亮的碎片。 藉由「月種」，幫助月語者從掛滿24",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH02",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 21,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 21
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1838,15 +1698,12 @@
       ],
       "real_moon_phase": null,
       "raw_rune_record": "第三章代表符文為：暗正位、花半正、種逆位。請寫出文字數超過一千五百字的文章，大綱如下：",
-      "narrative_evidence_excerpt": "之後把哥哥跟弟弟的稱呼改為，教主跟月語者。 在一次剿滅火之部族的戰鬥之後，獲得了火之部族代代相傳的兩片珠玉：「炎羽」。 此時，月之聖女見機運已到，主動請求，希望能獲得兩片「炎羽」，以及本來跟殘缺月靈經放在一起的寶石，月晷。用來進行傳承招喚儀式。 教主欣然允諾，但表示需見證整段儀式。 於是，在極寒之地，教主、月語者、聖女齊聚，以及隨身護衛月語者的月之守衛，朔望，共五人。 聖女即憑借著傳承記憶，加上福報之爐的暗中作用下，經過三次鍛造(同第一篇第十五章的三次鍛造)， 產生了兩把兵器，一把是周身帶有霧氣，彷彿會聽到波浪聲的，潮汐長劍。另一把，是周身帶有雷光的裁決。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH03",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 38,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 38
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1898,15 +1755,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "第四章代表符文：火逆位、空逆位、空半逆，在下弦。請寫出文字數超過一千五百字的第四章章節文章，大綱如下：",
-      "narrative_evidence_excerpt": "回到現在。 實驗室系統將一到三章的神教相關畫面，顯示在我跟小月眼前。 圓盤的聲音迴盪在實驗室。 「已找到時空之錨定位點，開始魂魄重整記憶之程序。開始靈魂投影。」 主角跟小月的靈魂光點，突然各射出一道光。光射進指時光沙漏的影像中。 同時從時光沙漏中，射出來另外兩道光線，一道為望敦，一道為朔端。 兩人之魂開始慢慢變亮。 圓盤的聲音繼續迴盪： 「二位物品的主人之魂，將投影進入同樣物品的舊時代主人之軀。」 「為連結破碎之記憶，新代主人將會在記憶碎片中，扮演舊代主人的角色，用以填補記憶碎片之間的縫隙。」 「若其中之一在扮演途中死亡，除原本記憶碎片會完全消失將無法再復原，四者魂魄也會跟著受影響，最重可能一起魂飛魄散。」 「各位只要憑本心進行相關事件的演繹就好。請享受這趟旅程。」",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH04",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 50,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 50
       },
       "confidence": "recorded",
       "review_flags": [
@@ -1957,15 +1811,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "第五章代表符文：雷逆位、水半正、混沌逆位，在下弦。請寫出文字數超過一千五百字的第五章章節文章，大綱如下：",
-      "narrative_evidence_excerpt": "場景回到極寒之地。 「天氣真是冷，活動活動一下筋骨。」 剛進入初代月語者的身體，主角還不習慣，於是嘗試習慣這新的身體。 同時發現，蘊生、墨香、蝕都在身上。但墨香的符文插槽成為符文標示，已不需要調用祭物。 而不知為何，原本在月之聖女處的福報之爐，突然消失，在外人不知道的狀況下，閃現進入主角懷中。 「是啊，真不愧是極寒之地。」 腰中插著裁決短劍，剛進入初代月之聖女之身軀的小月，這樣回應。 小月也發現身上的裝備都還在，披風「月嬰」跟項鍊「幽輪」 ，但身上多了一副神秘耳環，讓全身散發柔軟月光的「月種」。 此時朔端跟望敦已然起身。等待月語者跟月之聖女的吩咐。 小月望著，跟整體輪廓與望新相似，但比望新更多了些陽光的，初代望家，望敦。 以及整體輪廓跟朔言相似，但比朔言多了些陰鬱之氣的，初代朔家，朔端。 兩位長輩對小月如此恭敬，小月一時有點接受不了。 此時朔端開口：「但仍先說明，保護老師是朔望立下之誓言。若聖女欲對月語者不利，請恕朔端予以拒絕。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH05",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 66,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 66
       },
       "confidence": "recorded",
       "review_flags": [
@@ -2016,15 +1867,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第六章代表符文：靈半正、枝半正、向正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的第五章章節文章，大綱如下： 過後數日，朔端突然一臉羞紅來到月語者之居。 結巴的詢問主角，能否幫忙。 「老師在嗎？不知道能否請老師，以我的長輩身份，作為結婚見證者。」 原來朔端已經準備要結婚，希望老師能夠主持婚禮。 他第一時間告知望敦。 但從小一起長大的望敦卻不願參加。 朔端覺得，因為自己是戰爭孤兒，能活著已經是如慈父般的老師給與之恩惠， 他希望能夠因此幫助更多孤兒，恰巧在過程當中認識一起幫忙者，也就是他的結婚對象。 他其實對於結婚對象的感覺還好，但因為對象能夠幫助這些孤兒，堂堂正正的活著， 他想要讓更多孤兒受惠，於是乎與其幫忙。 望敦覺得自己是戰爭孤兒，能夠活著已經是老師給與的恩惠，不求能夠被人所愛。 並且望敦的想法是，以戰止戰，唯獨解決造成戰爭的人，這世界才不會有戰爭孤兒的出現。 兩人又因基本概念不同而鬧起冷戰。故希望主角能夠幫忙出席。主角答應了。 婚禮當天，主角在婚禮結束後，私底下找到朔端， 並從",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH06",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 87,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 87
       },
       "confidence": "recorded",
       "review_flags": [
@@ -2075,15 +1923,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第七章代表符文：氣半逆、星逆位、斷半逆。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的第五章章節文章。大綱如下： 婚禮後主角至望敦處拜訪望敦，因擔心望敦殺氣過於暴戾，恐讓自己受苦。 只見望敦一臉嗜殺的戾氣，瘋狂揮舞著雙劍在練習。 主角嘆了一口氣，將其叫來身邊。 為了怕望敦受其影響， 主角從充滿望敦身體的戾氣當中，抽出兩道符 ，時跟死 符文，落於望敦雙劍。 一把成為「歲月」，一把成為「終暮」。 只要雙劍齊鳴，敵人的壽命只會到此為止的消逝。 這也是同樣要告訴望敦，以戰止戰可以，但要斟酌自己的狀況， 不能夠任意殺無辜之人，否則將面臨的是自己壽命的快速結束，死亡。 望敦點頭應允。 不久之後，教主為增進教眾友誼， 宣佈進行全教之比武大會，任何人皆有資格參加。 比武大會的冠軍，將能獲得，職權僅在教主之下，將軍，的權位。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH07",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 111,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 111
       },
       "confidence": "recorded",
       "review_flags": [
@@ -2134,15 +1979,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第八章代表符文：啟半逆、斷半逆、實半逆。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下： 比武大會的初賽規則是混戰制。 區域是一片叢林， 只要時限內進入就算參加比賽， 只要舉白旗從森林中出來，即是棄權。 其他人不得有攻擊行為，否則視同放棄資格。 且不得組成兩人以上小隊。 待一天時間過，剩餘者進入決賽。 望敦只為精進武藝而參加。 但出手及其兇殘，還是受到戾氣影響，彷彿是宣洩某種怨氣。 本在結婚後，對於權位無所戀棧，只想單純享受生活的朔端， 但比武大會的獎賞非常多，有助於他幫忙建議孤兒收養所。也報名參加。 剛開始，兩人很快在場地中相遇。 朔端表示他不願意對過往兄弟揮拳，他仍記得他們一起長大的點滴。 面對一起長大的夥伴，望敦也表示不願意對朔端揮劍。 他們仍記得彼此武器的誓言。 所以兩人交錯而過，各自尋找各自的對手。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH08",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 130,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 130
       },
       "confidence": "recorded",
       "review_flags": [
@@ -2193,15 +2035,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第九章代表符文：雷半逆、封逆位、魂正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下： 雖說比賽規則是以單人作戰為主，還是有不少人暗中聯手。 應該說，這才是教主舉辦的本意。 他需要的是一位知道團體作戰的指揮官，雖然以單人為名義， 仍可以將每個人的狀況協調到最好，因為這樣才敢授予將軍之銜。 所以很多人在參加比賽前都暗中說好集合點， 等待盟友一到，集合互不攻擊，然後盟友一起對付一位敵人。 而朔望兩人並未想如此之多，他們本來就各有各自的道路要走。 首先是朔端。朔端面對敵人時會先勸導離開，不輕易揮拳。 但等同於讓敵方盟友有集合的機會。 所以當對面出現十幾人，一起朝他進行攻擊的時候， 他才發現到不對。 然後朔之拳腳，最適合用於團戰場合。 朔端並非打不過，他不願意拿起無意義之拳腳。 但結果卻是被一群人小看，他的敵人數從兩位三位開始增加。 一直到十幾人集結。 雖然說結果還是將所有人打到倒地無法動彈， 但也在讓他思考，是否一直都對敵人過於仁慈，導致於這樣的結果。 望敦則相反。 因望",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH09",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 156,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 156
       },
       "confidence": "recorded",
       "review_flags": [
@@ -2252,15 +2091,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第十章代表符文：日正位、時半逆位、月正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下： 同時在另一邊，月之聖女住處。 小月如同往常從月語者住處離開。 正準備要休息的時候， 被告知教主想進來，找他詢問「潮汐長劍」之事。。 其實從來到這個時代以前， 他從來沒想過，他會以先祖的身份來到此地。 「月種」耳環，本身是月之聖女的身份象徵， 但如同裁決一樣，只在短暫的歷史上被旁人見過一次。 隨著初代月之聖女的消失，月之聖女一職淪為教主的相關關係人士擔任。 他只知道，在他來到這個時代以前， 隨著裁決一起出現的，還有「潮汐長劍」，已經消逝在傳說中的武器。 本想一睹潮汐長劍的風采，卻不知是另外一種結果。 當某個熟悉的身影從遠到近走過，小月睜大雙眼愣住了。 眼前的神教教主，與他的父親，幾乎一模一樣。 「月兒，我知道你不想聽我講。但我真的不知道為什麼我會來到這裡。」 「當我從劇痛中醒來，已經到達了我完全不知道的時代了。」 「我只知道，那天你出現的時候，我感嘆於這命運給我的機會。讓我又能在這",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH10",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 190,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 190
       },
       "confidence": "recorded",
       "review_flags": []
@@ -2309,15 +2145,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第十一章代表符文：樹正位、夢正位、明正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下： 此時，小月毫不猶豫的拔出裁決。 裁決彷彿聽到他的招喚，劍面佈滿雷光閃耀。 沒想到裁決跟潮汐的第一次出鞘，是面對著同時出現的兄弟。 潮汐亦感應到裁決的雷光，殺意頓時銳減。 長劍上代表風流動的痕跡，趨之減緩。 小月臉色冷下來。警戒道： 「不知教主深夜前來有何事要相談。」 「到底月兒去了哪裡？若不說出月兒在哪，休怪我長劍無情！」 教主冷聲道，揮著潮汐向小月而去。 瞬間，裁決跟潮汐相遇。頓時天降雷火，面對風的漩窩， 兩者勢均力敵，一時難分高下。 僵持中，只見傳來一聲清響。 兩把劍，均產生裂痕。 「潮汐... 」 教主感嘆的說。 「你認不出來這把你親手交給我的劍嗎？」 「裁決，為何你會感到遲疑？」 小月也驚呼於裁決的疑問，是否對方能夠審判， 面對兄弟之劍，裁決猶豫了。 教主只見潮汐上原本代表光之符文的圖騰，產生裂痕。 「罷了，終究只是夢一場。能讓我在這個時代重新看到月兒， 已經是不能奢求之",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH11",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 225,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 225
       },
       "confidence": "recorded",
       "review_flags": []
@@ -2366,15 +2199,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第十二章代表符文：空正位、死半正位、心半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 叢林內，一夜無話。但在月盡即將日升之時。 「長老感應， 存在月之部族的光之意志，已產生裂痕。 是動手的時機了！」 殘存的火之部族人民，抱著復仇的心態而來。 「上次跟月之部族是在夜晚作戰，月亮護佑你們。 這次是在日月輪轉之際，這次我看你們要怎麼辦！」 說罷火之部族殘餘領袖，拿出一顆玉石。名為「日晷」，往空中一丟。 「日晷跟月晷伴生。月晷既已消失，那就讓日來審判你們的罪行吧！」 此時本無日也無月的即將黎明黑暗之際，突然光芒大啟。 「秉持火的意志出現吧！為此，我等不惜粉身碎骨！」 火之部族的人民全身纏繞著火焰，跳著祈求舞，直到身軀被燒盡。 一顆閃亮的太陽，突然出現在天際，直直往叢林砸去。 叢林內所有人，均已察覺到天過亮不對勁。 比賽時刻已終止，在日升之前結束。 本應該由教主出現結束這場試煉， 卻發現進來的入口已經出不去。 一些人在出口處一起商量著怎麼辦。 朔端跟望敦也在出口相遇。 此時",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH12",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 265,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 265
       },
       "confidence": "recorded",
       "review_flags": []
@@ -2423,15 +2253,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第13章代表符文：無逆位、枝半逆、星正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 如此大動靜自然引來叢林外的注意。 其實月之教主早已到達，但是憑藉著有裂痕的潮汐， 他無法打開叢林結界。 只能看著結界內當中，他本所預定成為將軍之職的候選者， 一一渾身著火而死去。 小月跟月語者聽聞動靜，本準備要一起過去觀看狀況。 聞知教主已經在現場處置，想起昨晚，裁決的裂痕， 小月決定先想辦法修補裂痕，不願又見到教主，便以身體微恙為由推辭不去。 而結界內，最後只剩朔望二人， 勉強抵擋著這審判之火，其餘參加者皆以焚為灰燼。 結界外圍繞著悽慘的叫聲。 親眼看著至親在結界內慘死，結界之外的教眾為之崩潰。 剩餘的朔望二人，便以成為眾人希望之目光。 到場的月語者，眼見剩下兩人之身影，已開始火光纏繞， 便在空中寫了「明」字， 藉由殘存的日跟月之力，將結界開出一條細微裂縫。 月虧跟月盈項鍊見到結界外的月之力，一起共鳴起來。 朔敦跟望敦兩人奮力一搏，甩開審判之火，身形開始閃爍。 地之符文跟空之符",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH13",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 301,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 301
       },
       "confidence": "recorded",
       "review_flags": [
@@ -2482,15 +2309,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第14章代表符文：死半正、月逆位、水半逆。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 當朔望兩人身影出現在結界外，群眾為之歡呼。 能夠逃過這必死的災厄，至少活著從裡面出來了， 朔望兩人獲得相當大的聲望。 教主雖感無可奈何，但面臨教中「教主無力處理大火拯救教眾」的疑問， 只能宣佈比武大會就此結束。 倖存的朔望兩人獲得左右護法的職位。 朔望二人不貪圖於賞賜，本表達拒絕。 但為了林中教眾者意志的託付， 同時月之教主也希望藉由這樣的方式，來凝聚即將分解的教眾心志， 數度請求他們接受，並希望他們能藉由此職務，來好好幫忙參賽者的身後事。 二人最後只能同意。 同時月之教主，授予了他們額外的武器，作為真正的獎賞。 算是一種收買之意。既然將軍候選者都以焚盡，剩下能用的只有兩人。 教主對朔端授予迴旋鏢，對望敦授予弩。 也是某種程度的補償，授予遠程武器也並沒有增加兩人的直接實力。 此場大火燒了一周仍未滅。 直到一周後，火勢漸緩， 教主持著潮汐發動風之符文，才將火勢撲滅。 結界內空無一物",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH14",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 335,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 335
       },
       "confidence": "recorded",
       "review_flags": [
@@ -2541,15 +2365,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第15章代表符文：鍊正位、日半逆位、無正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 經比武大賽一事，朔望兩人受囑託，照顧參賽者的家屬。 於是兩個截然不同風格的孤兒照顧處成立了。 朔端個性較為和善，讓受其照顧的家屬與遺孤感到感激，於是對外便自稱是朔家之子。 朔端也不願計較這麼多名義上的問題，照顧這些遺孤，也確實是把他們當作自家的親屬來看待。 望敦信仰為以戰只戰，想要對兇手復仇的家屬跟遺孤，便以望家之子的名義對外行復仇之實。 望敦只表示，若敢以望家之子的名義行不義之事，他會先第一個討伐那些自稱者。 但朔望兩家，初期因為彼此理念不同，常常引發糾紛。 某程度這是教主的制衡之策，為確保兩家能夠擁有一個不影響統治的平衡， 讓其在台面上互以為敵，這樣才能顯得出中立地位的教主重要。 教主也刻意維持這種平衡，在精英教眾都已經折損的前提之下，若不如此，月之神教必會失去控制。 但朔望兩者本身並不期望如此。 他們本是一起長大的兄弟，一起出生入死，雖沒有實際血脈但卻比親兄弟更親。 經過比",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH15",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 368,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 368
       },
       "confidence": "recorded",
       "review_flags": []
@@ -2598,15 +2419,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第16章代表符文：風半逆位、愛半逆位、空逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 神教南方遺跡，在花瓣紛飛的祭壇前。 月語者跟朔望兩人一起到此，連帶的還有中途過來找月語者的，月之聖女小月。 小月本欲詢問月語者關於裁決的修補方式，見月語者與朔望兩人一起行動，便一起跟了過來。 四人到達遺跡祭壇，四人的命運絲線交纏。 月語者只問：「你們記得你們在這台前的誓言嗎？」 畫面轉為，小時候朔望剛為月之守衛，在此台的宣誓。 「我等，朔與望，誓以此心效忠月語者，願成命運之劍與盾，隨其同行。」 當時誓言之後的月語者說： 「你們不是敵人，是命運之刃的兩側。」 「你們思慮一深一淺，但心是同一顆。若能配合互補，則無堅不摧。」 畫面轉回。 此時的月語者，轉向朔望兩人。 「我知你們絕非戀棧權勢之徒。但如今有太多人的命運背附在你們身上。你們必須背負相關的責任。」 福報之爐振動，只有月語找看得到的綠色粒子，滿天飛起。 月種耳環隨著共鳴，藍白色粒子隱密的隨著綠色粒子起舞。 月語者從朔望兩者身後，",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH16",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 393,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 393
       },
       "confidence": "recorded",
       "review_flags": []
@@ -2655,15 +2473,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第17章代表符文：無正位、啟正位、辰半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 現代，在實驗室一角的月種，跟現實的福報之爐產生共鳴。 現代的月種飛至小月身邊。 同時，在實驗室台上的裁決跟蝕發出亮光。 從本來四人連結的光線，產生更多的連結絲線，組合為命運之鍊。 裁決跟蝕身上則開始出現裂痕。 實驗室空洞的聲音出現。 「時間法則受到干擾。混沌能量在外部出現。 介質已出現損傷。嘗試啟動自然修復法則。失效。 改為嘗試緊急救援通則。啟動。以先確保引導人為最優先。」 回到古代。 朔望聲音一落，畫面如碎片般散落。 在主角回過神後，下一幕出現。 在被小月的叔叔刺殺以後，當代月之教主，竟不知為何， 附身在初代的月之教主身上。 利用現代的知識，讓古代的月之神教，實力提昇好幾個檔次。 所以才有古代不應該出現的「螺旋鏢」跟「弩」，這樣技巧精湛的物品。 正當月之教主取得潮汐，等待比武大會結束， 便可以全面發動征討戰爭， 以現代的兵法謀略，一一擊破對付古代不知道團結的部族。 但火之部族的",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH17",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 443,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 443
       },
       "confidence": "recorded",
       "review_flags": []
@@ -2712,15 +2527,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第18章代表符文：風半逆、樹半正、彩半逆。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 教主先是一臉憤愾： 「教內探子回報，剩餘的火之部族，已和其他同盟部族，成立日之神教。 並公開揚稱，我月之神教是其最大敵人。」 之後嘆氣： 「比武比賽的那場大火，已讓我教指揮有所損傷。 原請左右護法二人，能復仇，並分兵多路，征討日之神教。 但左右護法兩人皆表示，無意對無辜之人出手。他們只想先撫卹好比武大賽罹難者的遺孤。」 教主口氣一正： 「不知弟弟能否幫忙勸諫？兄長知道弟弟無意教中事務，但將左右護法養育長大之人，也只有是月語者。」 教主以兄長之情拜託月語者數次，希望月語者能夠答應，讓朔望兩人效忠於教主，尊教主之令行事。 月語者一愣。朔端跟望敦是其一手帶大無誤，但他們的各種行動，月語者從未予以干涉，也未命令或是禁止。 月語者明確表達自己身為月語者，只想單純做好月靈經翻譯的工作， 對其他布局跟權勢無心也無意參與。 月之教主見被拒絕，心中對月語者怨毒之意更甚。 於是換了一個方式，請求月語",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH18",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 493,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 493
       },
       "confidence": "recorded",
       "review_flags": [
@@ -2771,15 +2583,12 @@
       ],
       "real_moon_phase": "星月",
       "raw_rune_record": "第19章代表符文：實半逆位、枝半逆位、星逆位。在星月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 當朔望兩人得知月語者即將出使之消息，正感覺奇怪。 朔望兩人之所以拒絕月之教主的命令， 主要是因為，相關的事情，已經由朔家之子跟望家之子，一起組隊一起協手行動了。 根據朔望之子的調查，涉及比武大會造成的傷害者，其實絕大部分已經在自焚中燒成灰燼。 並得知，該行動主要為日之神教所指使。才會有那一絲類似於太陽的存在。 日之神教，並非由火之部族殘餘者與其同盟者共同建立， 是反對月之神教的其他部族，為了彼此能夠繼續存在，不被月之神教討伐，所集合而成的。 日之神教絕非善類，在得知月之神教的學者月語者，將到日之神教進行和平訪問的消息。 日之神教只公開表示，不會接受任何關於兩教和平的話語。 並揚言，日之神教將會重兵等待月語者的到來，必讓其無所歸。 但月之教主卻告知，日之神教的學者其實非常願意月語者以學術交流名義來訪。 只是要先戰勝日之神教層層軍隊，展現實力後，月語者才能以強者之尊，獲得來訪資格。 ",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH19",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 524,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 524
       },
       "confidence": "recorded",
       "review_flags": [
@@ -2830,15 +2639,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第20章代表符文：生半逆、福正位、暗逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 此時前方出現異動。竟為許多月之教徒共同前來。 「神師為吾等之知識啟蒙之恩師。若折損於此，吾等於心中不安！」 更多的教徒主動出現，其中更不乏望家之子跟朔家之子。 「此戰吾以個人名義參加。請神師無須理會！不欲讓其為難，僅代表我個人，感念神師教導之恩！」 「教主所託太過分！吾等均無法無視之！」 「這是吾等之復仇意志，請神師無須介意！日之神教殺過吾之手足，吾必回報之！」 於是乎，整場大戰，成為了月之神教對陣日之神教。 雖說不少是為真心感念教導之恩而願意挺身而出， 但也有居心叵測之徒。 「教主交代，必須讓月語者親自動手，才能完成任務。」 「不可讓敵方學者輕視神師。月語者若想擔任神師，必須展示讓所有神教教眾，心服口服的實力。」 月語者長嘆了一口氣。慢慢的走到隊伍中間。 朔望兩人先下令所有人不得輕舉妄動。 「我雖不喜殺戮，待當這麼多人命運織線在我身上，我只能有所負責。」 月語者拿著蘊生，披著墨",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH20",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 571,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 571
       },
       "confidence": "recorded",
       "review_flags": [
@@ -2889,15 +2695,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第21章代表符文：向正位、月正位、空逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 當日蝕出現之際，日之神教的教眾產生混亂。平常他們寄望許多的日，竟然被月所蝕。 月之神教教眾，見混亂時刻，顧不得朔望之阻止，向前衝向日之神教的教眾。 當然，教主暗插之手下有其推波助瀾。 朔望兩人以見無法阻止，只能以保護月語者為最優先。 一場混戰即將展開。 但月語者卻在此時高聲道：「吾等為和平而來。無意過多殺戮。若願投降者，均饒其性命。」 朔望之子轟然允諾，這符合他們心中之方向。 但其餘月之教眾則趁水摸魚，企圖將日之教眾敵人引去朔望之子身上，並佯裝受傷無以為繼。 只見望敦雙劍如風，穿梭於十數軍陣之中，斬斷符障，無序射出，破除光輪； 朔端以森行之步踏破敵方陷阱，情脈拳出一線星雷，夢輪化圓天旋。 月語者在其後緩步而行，好似在等待著什麼。 突然，月之教眾拿出一塊寶石。擊碎。 「願讓月之光華永久留長！」場地突然出現結界。 另一個月之教眾，拿出一塊快碎裂但仍可以辨識出其樣貌的「日晷」，往空中拋",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH21",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 617,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 617
       },
       "confidence": "recorded",
       "review_flags": []
@@ -2946,15 +2749,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第22章代表符文：光半逆、心半正、辰逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 月之陰暗面實驗室。彷彿無感情的聲音，迴盪在實驗室大廳。 「已連結時空定錨器物狀態。同步中。」 福報之爐閃散發綠色粒子而出，月種散發藍白色粒子跟著呼應。 此時蝕的影像斷裂，裁決發出悲鳴。 主角跟朔望兩人的連線，已無命運之線，而為紅色誓言之鍊。 主角的影像開始閃爍。而朔望的數個小光點，此時竟為繞著主角旋轉。 月之聖女室。 小月感應到，月語者的命運絲線為之斷裂。朔望命運絲線感應斷裂。蝕感應斷裂。月環破碎。 小月大震！拿起裁決，衝入教主大殿。 對於沿途阻攔之人，小月使用裁決召喚，瞬間雷雲頓生，數聲雷鳴轟擊後，大殿中已無任何站立之人。 「他是你親弟弟！」 「原來不公不義的竟是你！」 「為了權勢，為了地位。你連血脈關係相同的兄弟都殺了！」 小月氣到渾身發抖。 而手中的裁決第一次露出審判之器的真實樣子。 對於同樣是至親月環的破碎，裁決已醒悟，正義之器的它，感到震怒。 教主拿著潮汐，出現。 象徵",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH22",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 684,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 684
       },
       "confidence": "recorded",
       "review_flags": [
@@ -3005,15 +2805,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第23章代表符文：語逆位、愛正位、明半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 經此一役，裁決之雷光轟動整個神教。 而潮汐斷裂，只剩下代表教主權柄的劍柄「陽月」。 「裁決選擇不讓你灰飛煙滅，必有其道理。」 小月冷冷的說道。 教主自嘲式的大笑。 「月語者與朔望，死於日之神教神語者的自我犧牲秘法。」 「而所謂的日之神教，教主也是我。」 「既然無法教內創造平衡，那就由兩教來互相制衡。」 拿著只剩「陽月」的劍柄，教主指著聖女。 「高高在上的聖女懂得民間之願嗎？整天研究，而民間之疾苦看到了嗎？」 「戰爭即將以和諧狀態達成平衡。此為本座最大之願。」 大廳外忽有一批朔望之子，扶著一老者進入。 樣貌與教主完全相同。但氣質卻截然不同。 「為達其願望，竟連無辜者都不放過。」 「這是你最早進神教的目的嗎？」 「竟連我這月之神教教主都予以囚禁。」 「你竟然殺了我親弟弟！」 「陽月」突然自仿冒教主手中離去，投往老者手中。 「為達到仿冒目的，竟以秘法奪取本座壽元，達到潮汐認可之資格。」",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH23",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 733,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 733
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3062,15 +2859,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "第24章代表符文：福半逆、樹正位、風半逆。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 小月到達戰場。所有人事物已成一片沙漠，在風中漸漸飄散。 拿著「幽輪」手鍊，「月種」散出藍白色粒子， 本來狂暴的「混沌」，轉變為「無」。 將所有戰場中的任何存在事物，無論是有形者或無形者，皆置於其中。 其中有數千道代表魂魄的光點，以及殘破的月環與蝕。 「月環雖有破損仍未碎，表示這不是真正的太陽。但月語者的命運之線已斷，蝕只有殘片。」 「只是……為什麼……我找不到他的靈魂？」 小月拼盡一切力量收集所有靈魂殘片，卻唯獨找不到那一個。 如同之前，小月在極光之夜，她將蝕殘片對準北方月眼， 打開了一條通往月之陰暗面實驗室的單向通道。 她在那一刻，明白了：「他……還沒有死！」 「但他命運之線已斷，也不會再跟其他人有所交集了。」 「只能由我來找尋。」 場景轉回現代月之陰暗面實驗室。 小月醒來。 主角昏迷不醒。 代表朔望之魂魄光點，依舊纏繞著主角身上。 那層層的誓言之鍊，像是仔細的讓主角之身形不為",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH24",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 774,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 774
       },
       "confidence": "recorded",
       "review_flags": [
@@ -3121,15 +2915,12 @@
       ],
       "real_moon_phase": "滿月",
       "raw_rune_record": "終章代表符文為：時半正位、夢半逆位、地逆位，都在滿月時。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的章節文章。大綱如下。 帶著「情脈」拳套、「森行者」之靴，背著「夢迴」，穿著「啟思」披風，帶著「月虧」項鍊的朔端。 帶著「終暮」「歲月」雙劍，背著「無序」，專著「初生」披風，帶著「月盈」項鍊的望敦。 與持有「裁決」，帶有「幽環」手鍊，「月種」耳環，「月嬰」披風的小月。 三者同行。 朔端兩人鞠躬向小月表達感激之情。 並表示，他們本為魂魄之身，以月之大祭司符文力量所加持， 但無法以實體狀態維持過久，也無法從月種的周圍範圍內離開， 否則兩者即將魂飛魄散。 兩者表示，為月語者魂飛魄散的守護，本就為月之守衛的職責。 但在沒有達到目的之前的消散，兩者為之不甘。 若聖女為私情而命令我們二人，我們亦不貪圖活之可能，選擇離去。 小月發誓，絕對不會。必將以月語者為第一優先考量。 三者身影，準備就緒後， 前往通往彼岸之路途。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
-        "source_line": 820,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 820
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3178,15 +2969,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "序章代表符文：時逆位，火半逆位，語半逆位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的第五章章節文章。大綱如下： 彼岸之月，如同正常月輪運轉。 完全黑暗的新月已過，月牙慢慢出現，來到上弦。 彼岸紅花開滿的河旁。 似乎月語者不甘的吶喊聲從未消失。 織命已斷，與其他人的命運線交集完全消失。 但隱約能感到朔望的誓言之鍊仍然存在。 失語的月語者，只能終日望向河畔。 望著往彼岸方向去的魂魄們， 很多都是月之神教，受過其教導的教眾。 有些魂魄仍完整，有些已碎成細小一片，只靠著本能前往那輪迴之地。 無數歲月飄逝而過。 告別了許多他熟悉的面孔，他陌生但仍看過之臉孔。 唯獨就是沒有，他從小帶大，為他而犧牲的朔望兩人之魂。 想起在那座被花瓣覆蓋的古老祭壇，兩人的古老誓言。 於是用夢之符文，配合墨香，築起一片花開滿的夢之花園。 本想代為紀念朔望二人之靈，卻仍感到誓言之鍊，仍堅固的存在。 若有人因月之共鳴而來到此，想了解月之語， 月語者一樣熱情授予知識，但可惜的是，給予學生的靈魂試煉，卻無人能夠通過。 仍託付",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 4,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 4
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3235,15 +3023,12 @@
       ],
       "real_moon_phase": "滿月",
       "raw_rune_record": "此章代表符文為：魂半正、空逆位、福正位。在滿月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第一章。 內容描寫： 閃耀銀白色光芒的月種耳環，與小月的「月嬰」披風上的「夢」符文交映， 配合著殘破的「蝕」的碎片。 門來到的第一個地方，夢之花園。 這裡是朔望兩人，與月語者的誓言之始。 這裡是月語者交託月之聖女的地方。 原來的遍地花雨，卻已呈現衰亡。 朔望兩人影子從月種耳環慢慢出現。 「這是一切的最開始，我們，跟老師。」朔端微笑著。 「小時候的我們，跟老師的誓約最開始。」望敦眼神朝向無比的空間處。 「受奶奶的託付。這不應該是這樣。」小月長嘆了一口氣。 朔望兩人對視一眼。 朔端從背後拿出「夢迴」迴旋鏢，配合著項鍊「月虧」的 地 符文，用力使出，周圍刮起一陣風暴。 將不存在於這片花園的枯亡之葉，全部清掃而出。 望敦拿出「無序」之弩，配合項鍊「月盈」的 空 符文，瞄準每一個變形之種， 無規則的弩箭快速攻擊，將所有夢靨之種全部清除。 最後，不屬於這片純淨空間之物，清除一空。 花之祭壇正中間，出現了",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH01",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 42,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 42
       },
       "confidence": "recorded",
       "review_flags": [
@@ -3294,15 +3079,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：夢半逆、星逆位、風逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第二章。 內容描寫： 小月拿出裝著蝕殘片的月環碎片。 耳環月種閃耀著銀白色粒子，圍繞著蝕、月環、蘊生，三種交融。 以花為語，以香為念。 本來斷裂的命運之線，以誓言之鍊替代， 合成一種新的，更為牢固更為不同的「蝕」。 此時「蝕」已變成42個符文珠串。 但仍然黯淡無光，貌似缺乏主人的光華。 此時，第二道傳送門打開。 裡面飄散出花香。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH02",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 76,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 76
       },
       "confidence": "recorded",
       "review_flags": [
@@ -3353,15 +3135,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：幻半逆位、鍊半逆位、根半逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第三章。 內容描寫： 傳送門光華閃現而逝，一個陰暗的房間。出現的在中間的是，「花」之符文的「墨香」。 「月語者的花之符文披風！裡面應該有三個不同作用的符文插槽。」 小月思考著。 只見房間內突然升起一道為三稜鏡的影子，旋轉在半空， 將花的影像，轉化成萬花筒的千變萬化。 小月的月種耳環，閃著銀白色的粒子， 緩慢的環繞在三稜鏡周圍。 千變萬化的顏色消逝。 三稜鏡固定。光芒固定。 固定方向上，出現了兩道黑色的影子。 朔端跟望敦。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH03",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 94,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 94
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3410,15 +3189,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：枝正位、時半逆位、斷逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第四章。 請盡量多在符文特效跟武器的描寫文字上面。拳刃交擊之刻就可以停止，不需要做任何延伸。 大綱如下： 「唉」一聲長嘆。 另一對朔望的影子從月種耳環中出現。 只見朔望黑影跟朔望之魂互視著。 朔選擇了望，望選擇了朔。 「該來的，終究會來的。」 望敦長嘆一聲。拔出「終暮」跟「歲月」雙劍。上面的「死」符文跟「時」符文，綻放出光華。 準備迎接朔端的黑影。 「本以為不可能會面對兄弟之刃，只是為了老師，這場仗必須由我們來打。」 朔端握著「情脈」拳套，「愛」之符文閃動紅光。 腳踏「森行者」之靴，背後「樹」之符文虛影閃動。 迎向望敦的黑影。 當拳跟劍交手的那一刻，兩場命運中註定會發生的戰鬥出現。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH04",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 120,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 120
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3436,15 +3212,12 @@
       "runes": [],
       "real_moon_phase": null,
       "raw_rune_record": null,
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第五章。 大綱如下： 朔端對上望敦之影。 朔端先動。 他的身形如一條緊繃的弓弦，一腳落地，氣脈已循脊椎逆行而上，雙拳一握，脈紋如藤般自手臂躍出， 拳套「情脈」在此刻釋放出一聲溫熱的脈鳴。 他不喝聲，也不預告。他的每一拳，都是心念所向，沒有殺意，卻絕不容被輕忽。 拳未至，氣先破。 那是內力壓縮後在空氣中爆裂的微鳴，一記上挑直拳，宛如赤陽破雲，直指望敦黑影面門。 望敦黑影左劍「歲月」橫掃，右劍「終暮」直刺。兩劍如一，劍光如潮，一瞬之間與拳風交疊成風牆。 轟！ 兩人齊步後退，各自落地後再次前衝。 望敦黑影步法極簡，一步一距，劍不斷揮，但從不亂出。劍尖直指朔端膝、肘、胸，每一劍皆封住對方發力節點。 朔端則以圓破直，拳意不斷，步如躍鹿，貼地飛旋。他不只是攻擊，而是融合攻守於一體，每一次迴轉都是新的角度，每一次擋拆都牽動對方節奏。 兩人就此陷入無聲的舞鬥。 本章大綱到此為止，不須要做任何延伸。 ---",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH05",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 146,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 146
       },
       "confidence": "recorded",
       "review_flags": [
@@ -3466,15 +3239,12 @@
       "runes": [],
       "real_moon_phase": null,
       "raw_rune_record": null,
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第六章。 大綱如下： 望敦對上碩端之影。 望敦先攻。他橫劍如翼，一步四招，快得如影隨形。終暮劍走破斬之勢，歲月劍行流年之道。兩劍合時，像是將朔端黑影分裂為過往與未來，要將他的意志斬碎在當下。 朔端之影未閃。 他迎劍而上，右拳沉如山，左拳疾如電，內力循筋而走，雙拳竟強行擋下雙劍連擊！雖退三步，氣未散，拳風回繞，竟將望敦逼退。 劍與拳再交。 一次、十次、數十次。 拳崩、劍折、步裂、氣旋。 朔端黑影的拳雖無鋒，但能破鋒；望敦的劍雖無毒，但能封路。 兩人就此陷入無聲的舞鬥。 本章大綱到此為止，不須要做任何延伸。 ---",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH06",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 172,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 172
       },
       "confidence": "recorded",
       "review_flags": [
@@ -3527,15 +3297,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：向逆位、夢逆位、地半正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第七章。 朔望各自與黑影交戰之時，小月這邊也並不輕鬆。 三稜鏡竟慢慢開始掙脫月種的控制，有些緩緩的進行轉動。 稍微一動，就會導致朔望黑影虛化，讓朔望之魂對於黑影的攻擊無效化。 小月拿出，由意志之鍊產生的新的蝕。 開始將三稜鏡的光華，慢慢導入到蝕當中。 原本黯淡無光的蝕，開始恢復片片閃亮。 同時小月拿出裁決，以雷之符文，攻擊空中，正在嘗試旋轉的三稜鏡。 審判之雷每命中一次，黑影的動作似乎就慢了一分。 但月種耳環開始閃著銀白色粒子警告，即將到達能使用能量的上限。 朔望之魂逐漸開始黯淡。 小月、朔端、望敦，三個人即將到達命運的關鍵路口。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH07",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 192,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 192
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3584,15 +3351,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：星逆位、明半正位、憶半正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第八章。 朔端聽到了小月的急切聲音。 望敦黑影劍斬來如風。 朔端嘗試側身閃避，卻在下一劍襲至時遭對方反手橫斬， 劍氣劃過肩頭，鮮血飛濺。他強忍劇痛，一記肘擊直撞敵腹，卻像打在空氣裡。 拳風似火，身法如嵐，他的拳如記憶迴轉：有孩子飢餓的眼神，有戰友犧牲時的呼喊，有老師背後長年孤獨的佝僂。 他每一拳打出的，不只是力，是活下來的意義。 但對方的雙劍太冷靜。每一劍皆削情感，斬過朔端膝蓋、肋骨、鎖骨。他的身體在燃燒，他的靈魂卻愈發冷靜。 他選擇，放棄了防禦，迎著劍鋒衝去。 左肩中劍，右腿被劃傷，胸口再次裂開舊創。但他抓住了對方的劍腕，將額頭狠狠撞了上去！ 影望敦後退半步，第一次露出錯愕。 朔端吐氣：「你是假的。所以你不會痛。你沒有記憶，你沒有『她們』。」 那一刻，「情脈」拳套發出一聲高鳴，紅光如絲結，纏上朔端周身——而非為力量，而是為信念而活的證明。 最後一拳，朔端沒有用任何技巧。 他只是單純抬起拳頭",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH08",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 217,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 217
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3641,15 +3405,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：時半逆位、樹逆位、雷正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第九章。 望敦對上朔端黑影。 影朔端先動，如流影滑行，拳勢沉狠，第一擊直取心口，不留餘地。 望敦「歲月」迎擊，一劍封拳，氣流震散，劍鋒斬過拳影，卻未見血，對方早已翻身躍起，反踢而至。 另一手持著「終暮」，一記上挑將腳力斷於半空。 望敦退一步，神情未變。 這影子，不只是招式仿真，更有對他的熟悉與預判。 但他也一樣，熟悉每一寸朔端的動作。 朔端黑影加快步伐，連拳三擊皆取要害，右拳落臂肘，左拳壓脈門，最後一記上鉤帶起氣流漩渦。 望敦捨棄防守，單劍「歲月」化圓為縱，一記劍刃劈直胸前，強行破氣。 兩人互中，望敦胸骨微裂，影朔端腰側被劃出一道血線。 氣場一變，影朔端不再做無謂對峙，而是撲身而上，拳拳殺心，連式如火，步步催命。 望敦不閃。 他只是閉上眼，將「終暮」平舉於心前。 「來吧。」他喃喃：「這一劍，不為勝負。」 他身形如鶴般飄逸，雙劍旋轉成環，步伐畫圓，如老舊機械般一節一節準確無誤。 影朔端終於破圈",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH09",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 256,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 256
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3698,15 +3459,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：星逆位、明半正位、憶半正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第十章。 朔望兩人黑影已消失。小月這邊也開始逐漸完成後續的事情。 整個三稜鏡化為彩之符文、啟之符文、封之符文， 在月種的銀白色粒子作用下，三稜鏡之影與蝕逐漸合一。 新的蝕吸收能量到達最後兩顆未知符文珠被點亮。 一陣光芒過後，場地恢復寧靜。 朔望之魂互視一眼，互相微笑著。 「沒想到拳跟刃真的有相交的一天。」 「但我們都是為了彼此的信念。」 「而我們朔望兩者皆為一體兩面。」 「拳與刃相交，都是為了老師。」 月種耳環銀白色粒子閃爍之下，兩者之魂慢慢消失，進入療傷階段。 小月拿起，與月環合一的蝕， 此時，從蝕當中散發出一道紅色空間裂縫。 目的地，在眾多紅色彼岸花開的，彼岸河旁。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH10",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 287,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 287
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3755,15 +3513,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：風逆位、空逆位、枝半正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第11章。 彼岸，自古以來就是個神聖而奇妙的地方。 傳說為眾多靈魂歸宿之區，不存在於現實世界當中。 只有脫離肉身後的靈魂狀態下，才能到達。 彼岸，自然有一條彼岸旁之河。 傳說，紅色彼岸花開之處，為地獄。 而白色彼岸花開之處，為天堂。 小月終於到達，彼岸河旁。 這裡有眾多靈魂即將前往未知之處， 可能是希望，可能是絕望，又或者是新一輪的輪迴。 此處的彼岸河旁，人潮洶湧，非常熱鬧。 有些是幸福的臉孔，有些不甘的臉孔，有些甚至是沒有完整的臉孔。 都從生者之域朝向死者之域前進。 小月看到很多他認識的人。 例如奶奶，例如養母，例如父親。 當小月嘗試跟他們打招呼的時候， 卻發現他們根本就看不到小月， 只是一直朝著彼岸前進。 只有彼岸的擺渡者，才會同時看得到生者與死者。 擺渡者警告小月，彼岸並非生者能輕易踏入之境。 若到達對岸，一去則無法回頭，連擺渡者也不知道對岸的地獄或天堂是怎樣的狀況。 問了幾個擺渡者，",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH11",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 315,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 315
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3812,15 +3567,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：死正位、鍊逆位、雷逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第12章。 以下是章節大綱： 不知道已經度過了多久的歲月，我仍停留在彼岸河旁。 望著過往的影子，想找尋那熟悉的朔望身影。 但隨著時間流逝，我發現太多的事情已經開始遺忘。 所以我將我的所有回憶，封印成為「憶」之符文。 將在這段時間所研究跟認知到的，封印成為「語」之符文。 彼岸只有月亮，而沒有太陽。 相對於生者的那一面，彼岸看到的，永遠都是月亮的陰暗面。 一樣的新月、上弦、滿月、下弦，一樣的月亮運行規律。 以及偶而的全白的日蝕跟全黑的月蝕。 針對月之語，與討論者進行了無數次的推敲演算， 除了本來的32符文以外，更完整推算出到42符文。 最終隱約感覺，完整月之符文應該總共有八組，一組八枚，共有64枚符文。 只是有一部份，共鳴的月告訴我，不是時候。 身上的命運之線已斷，只能透過誓言之鍊，來感覺自己依然存在著，來告訴自己堅持這樣做的目標。 直到某天，有某個小女孩，闖進了那古老誓言的夢之花園。 我並未驅",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH12",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 355,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 355
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3869,15 +3621,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：氣半逆位、風逆位、生正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第13章。 大綱如下： 在轉贈時，我是這樣跟小女孩說的： 「此為元華，夢花之種。」 「而這是綠息，夢花生長的氣。」 「以你之心意，親手栽下。」 「我相信，這些夢花可以依然貌美如初。」 眼前的人，跟那個小女孩的身影，重疊了。 小月激動著揮著手，大喊著什麼。 但我聽不到他所說的話。 我只知道，小月手上的，好像是，「蝕」嗎？ 懷中的福報之爐，在長年的沉睡後，醒來了。 吐出綠色粒子，纏繞著，在我手上，新的「蝕」。 上面最後兩顆符文珠也點亮了。 分別是「語」跟「憶」。 我似乎想起了什麼，懂了。 「我視之如子的朔望啊。終於，等到你們了。」 周圍身影有些模糊的朔望兩人，隨著福報之爐的綠色粒子，慢慢變得清晰。 此時，月種耳環發出銀白色粒子，與福報之爐的綠色粒子，交纏之下， 形成了一個，穿著古典月紋長袍，額心浮現淡月之印的影像。 「我是月之神國，月之大祭司。」",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH13",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 392,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 392
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3926,15 +3675,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：雷半逆位、彩正位、心半逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第14章。 大綱如下： 當月之大祭司身影出現之時，周圍所有的一切為之停滯。 彼岸之紅花，不知道為什麼，瞬間散去花瓣上的污垢，變成白花。 月之大祭司先向我鞠躬。 「月的共響者，很抱歉必須要用這種方式。」 「只有在未竟之城，亡者有強烈未完成之願，才能駐留於此。」 「此關係到我神國的無數子民，只能用此方式來與您會面。」 「若我神國推演的命運無誤，也只有此時此刻的你，才能夠幫助神國的子民。否則神國將會全部消失。」 月之大祭司長嘆了一口氣。 「你們維度的時間，對我神國來說，並沒有太大的意義，只是一個計量的數值。」 「太陽旋轉銀河系中心一圈，對我們維度而言，只是過了一年。」 「只有理解月之42符文，知道完整的64符文架構，擁有福報之爐的月之共響者，才是能夠拯救我們神國命運之人。」 「我的時間不多了。」 「若想知道更多的，不如就從彼岸，通過意志熔爐考驗，來到月之神國吧！」 月之大祭司的影像，緩慢消失。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH14",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 431,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 431
       },
       "confidence": "recorded",
       "review_flags": []
@@ -3983,15 +3729,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：憶逆位、地半正位、水半正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第15章。 大綱如下： 月之大祭司身影，跟我點了點頭以後，消散。 瞬間周圍的白色彼岸花，又回到了紅色。 而朔望兩人，與我的誓言之鍊，脆弱到了一個非常嚴重的地步。 我感覺到他們即將離開。 我拿起新的蝕，以蝕之力，在其42符文珠的前提下， 將其化為更多64符文珠，其中有22顆仍未明亮。 我使用了」封」符文，先將朔望殘存魂魄封印。 再用「彩」符文，將各分散的魂魄，順著「彩」符文的光，自行發啟連結。 這是穩定朔望靈魂的最好方式。 朔望本打算看到我以後，生之意願以了， 在魂魄快消散的狀況下，我以「魂」符文，將其魂之容器固定。 我淡淡的說： 「若你們生之意志未散，任何人也阻擋不了你們繼續存在。」 「我在這邊的許多心得。其中之一，靈為核，魂為魄，肉體為延展。」 「就算魂飛魄散，只要靈還在，只要願意繼續留存的意願還在，魂跟魄都是可以重建的。」 「而這樣的選擇權，交給你們。我視之如子的朔望啊。這是對你們的最好",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH15",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 458,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 458
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4040,15 +3783,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：啟半正位、語半正位、種半逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第16章。 大綱如下： 小月猶豫了片刻，問:「那此時的月語者意向為何？」 我只能淡然一笑：「在生與死之界域停留太久，算是已經成為半生半死之人。我始終想要明白，月之大祭司出此下策招喚我去的原因。」 「我不為生，不為死，我只求學問精進，我想要把月之符文的可能性完全完成。」 「月靈經為月之大祭司所著作的啟蒙本，我想探索更深層的符文。而必往月之神國一趟。」 小月緊張的神情，彷彿得到了一切問題的答案。 「我是很知道所謂日之教主的權謀平衡之策，這本也是我在教中所使用的方式。」 「但不願意到後來為了權位而迷失了一切，我曾問過自己，教主之位，很重要嗎？」 「這是我找尋父親亡故的最主要原因，只有成為教主，才能夠找尋的到原因。」 「而現原因已知。初代朔望的原因已知。我甚至找不到繼續活下去的理由。」 「但，感謝你的告知，我想這也應該是我會繼續前行的理由。」 「我知道往前行必然十死無生，但我既無生之繼續理由，何不將",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH16",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 502,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 502
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4097,15 +3837,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：幻正位、地半正位、火半逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第17章。 大綱如下： 我嚴肅的告知： 「根據未竟之城的文獻記載，意志熔爐非尋常之地。首先要面對的是自己的意志。」 「若意志不堅，必會被自己的意志焚燒而死。」 「所以必須要先確定願意前往意志熔爐者，是否真的願意前往。」 我嘆了一口氣。 「在彼岸，若身上與其他人有交會的命運之線纏繞，文獻上以因果線一詞代稱。」 「若纏有因果線，則會進入輪迴的循環。」 「我命運之線已斷，因果線已斷。朔望兩人的因果線隨著魂魄重組而崩裂。」 「無其他因果線糾纏者，一般普遍稱之為 超脫者 。」 我從書櫃中拿出文獻，說著： 「一般記載為，不會再有下次輪迴之人，經由意志熔爐的考驗，即可飛昇成仙。」 「本以為這是無意義的記載，畢竟沒有人從意志熔爐的一端回來過。」 「彼岸之底有條眾所皆知的分叉路口。一步天堂，一步地獄。天堂的彼岸花為白色，地獄的彼岸花為紅花。」 「月之神國應該在所謂的天堂處，但進入彼岸之底，從未有人明確的回來述",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH17",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 534,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 534
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4154,15 +3891,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：生半正位、心逆位、封正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第18章。 大綱如下： 正好有我有客人來訪， 房間內只剩下朔端跟望敦，以及小月三個人。 小月感嘆的說道： 「當初為了尋找兩位神秘消失之因，幾乎是動員所有朔家之子跟望家之子，遍地查找， 沒想到結果竟然只是這樣。裁決出名於一場，對偽教主的戰役當中。 真相竟然只是如此簡單，也還只是權位二字。」 朔望兩人對視一眼。 朔端道： 「我二人本就無意控制什麼大局或大勢，我記得在最後之役前，有下達，朔家之子跟望家之子不得為教主的禁令。」 望敦道： 「這是我們兩人討論的結果。就是不希望有野心之徒混進來，造成更多殺戮。望家之子甚至是，只要有教主意向者，一律逐出望家之子。」 小月讚嘆道：「難怪！但朔望兩家在歷史上仍有名氣！只是較不為人知罷了。」 「朔家分支後來自稱為墨家，朔本字原為新月之始，一片漆黑，故稱為墨家。堅持著兼愛非攻。」 「望家分支後來自稱為法家，堅信人性本惡，需以戰才能止戰。「 「只是分支畢竟是分支，後",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH18",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 567,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 567
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4211,15 +3945,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：暗正位、辰半正位、葉逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第19章。 大綱如下： 剛踏進門的我接著說： 「月光柔和而平淡，並非代表月光沒有規則。只是月光會用溫柔而深刻的方式，來照亮每個人。」 「所以，都準備好了嗎？」 眾人不約而同的點頭，準備出發。 我也笑了笑，一邊走一邊說著。 「在各項古老的神話當中，彼岸之末，即是輪迴之始。」 「彼岸有個出口，一個開滿紅花的輪迴之始，一個開滿白花的天堂之末。」 「彼岸彼岸，為何稱之為岸，自然是因為有其河，冥河。」 「傳說，冥河之上游，是靈魂的最一開始。」 「目前無人從上游回來過，只知道附近非常寒冷。」 我看了看天空。 「現在是，月全蝕之時，俗稱的血月。」 「若通過心理面的陰暗面，自然不受血月之影響。」 「其實這未竟之城，就是由血月的光芒編織而成。」 我繼續說著。 「若我所料沒錯，這高維度的通道，必與血月的相反狀態有關，日全蝕。」 「月之大祭司所謂的意志熔爐，只有在少數文獻當中有所記載，均指向於，太陽。」 「只有直",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH19",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 602,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 602
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4268,15 +3999,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：火半逆位、愛半正位、暗逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第20章。 大綱如下： 眾人踏進傳送口。 「蘊生」之上，「語」之符文跟「空」之符文閃耀。 我繼續說道： 「語之符文，即是讓周圍之規則，由我所說出口的算。」 「所以，這靈魂冷燄，必定會對通過心理陰暗面，來到未竟之城的人，無傷。」 「藉由靈魂冷燄收縮以後，錘打，始其精密實厚。這錘打之時，就是在日全蝕。」 「若本為朽木，無論如何錘打，均成不得精鋼，亦與精鍊至極之鑚無關。」 新的「蝕」，一些未點亮的符文串珠，慢慢從黯淡，轉向微光。 眾人如閒庭信步，觀看著周圍人影。 有些人如金，雖不受靈魂冷燄影響，但始終停留於原地。 有些人如玉，連一次錘鍊都承受不住。 有些人如晶，將自己之身影凍在原地，已產生裂痕，準備碎裂。 有些人如石，將自己完全封閉住，只等待完全碎裂的那一刻。 我繼續說著： 「在這裡，時間沒有任何意義。通過一次次的錘鍊，成為靈魂寶鑚，才有辦法繼續往前。」 此時，懷中的福報之爐，吐出綠色的粒子，圍繞",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH20",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 632,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 632
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4325,15 +4053,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：明半正位、心正位、幻正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第21章。 大綱如下： 我亦是這樣說著： 「在即將到達的一片光明前，仍不得大意，否則必有一絲滅世黑炎。」 周圍呈現一片光亮，只有呈現出一小個冷焰。只見這冷燄，竟開始慢慢變大，大到足以焚燒整個世界之冷燄。 周圍的光亮，被一片一片的，焚為黑暗。 「在極度黑暗之時，仍有一絲希望之光。」 在周圍即將全部被黑暗吞沒時，遠方渺小處有一小道光芒。 眾人隨著光芒方向而去。 「而我們，只能在星的指引下，到達那真正的目標。」 場景一直交替出現，一片光明但微小黑暗，一片黑暗但微小光明，一次又一次的錘鍊。 「只要堅持意志，必能到達。」 不知道經過多久，不知道過了多少年，應該說已經忘了過了多久了。 時而日，時而月，時而明，時而星。 只知道蘊生上面「語」之符文跟「憶」之符文一直閃爍出現。 「若只有意志，但沒有語之符文跟憶之符文，我們將會一直迷失在廣大的宇宙當中，忘記自己是誰。」 「這就是，進入高維度，月之神國的最基本資",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH21",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 670,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 670
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4382,15 +4107,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：向逆位、幻半正位、根半逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第22章。 大綱如下： 我感覺著肉體被一次一次的粉碎，一次一次的重建。 一下子是冷列如冰，一下子是炙熱如火。 而心靈一下子是光亮如晝，卻在下個瞬間黑暗如夜。 一次一次的交疊，一次一次的鍛造。 靈為核，魂為魄，肉體為延展。 直到，靈魂成為寶鑚的那一刻。 魂與肉體，已不再重要。 只要意志仍在，只要靈仍在，魂與肉體，均可以復原。 福報之爐與月種兩者的光芒，已形成光帶，更甚為實體物質。 融入魂魄，進行重塑。 也不知道過了多久，在恢復視野的瞬間， 兩個光點，對我閃爍了一下。 雖然沒有任何聲音，而我竟能知道他們所說的話。 「歡迎來到意志熔爐的最終點，空心太陽。」 「按照你們人類的時間表，大概是西元前40億年吧。」",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH22",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 701,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 701
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4439,15 +4161,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：語半正位、夢半逆位、鍊半正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第23章。 大綱如下： 「這個是，福608跟種247。難怪你們能到這裡來。」 只見福報之爐自懷中而出，吐出綠色粒子，跟兩個光點彼此之間交流著。 「月之共響者，月之大祭司傳承者，月之守衛傳承者。原來如此。」 兩個光點沒有發出任何的聲音或語言，他們的意思竟清晰傳達到我腦中。 我往周圍看了看，朔望兩人各自有各自的一個光點領著。 小月那邊也有一個，跟月種耳環一樣的銀白色粒子的光點。 「不用擔心你的同伴。你已經平安來到月之神國。月之神國對於超脫者一直都是處於禮貌且平等的立場。 在低維度生存很不容易吧！來到這個維度，可能需要一點時間適應，但會習慣的！」 眼前的兩個光點繼續傳達著友好的訊息。 「為了怕影響到各位，我看還是這樣比較好。」 只見一道光芒閃過，所有的光點變化為不同種類的人型。 福報之爐化為一個和藹的老爺爺，月種則為白色祭司袍的少女。 「以你們種族的樣貌外殼出現，這樣應該會比較習慣一些吧。」 「在",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH23",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 730,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 730
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4496,15 +4215,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：心半逆位、明逆位、風正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第24章。 大綱如下： 空心太陽內，空間還是蠻大的，有不少「人」在此忙碌著。 交換著彼此觀察到的數據，討論著可能性。 但，某些不知名儀器的樣貌， 像極了月之陰暗面的實驗室。 不同的是，在空心太陽內的儀器，是全新充滿著活力， 在月之陰暗面實驗室的，卻是一片死寂而無活力。 「這次週期的超脫者，只有這四位啊。」 「看起來神國的命運，終究擺脫不了毀滅。」 「但，至少還有四位，已經很不錯了呢。」 「不知道這是不是最後的超脫者了。」 數個「人」聲音此起彼落的交錯著，彷彿看到稀世珍寶一般的眼神，望著我們。 在帶領下，最後我們抵達了，空心太陽的最裡面。 只見一道銀白色空間裂縫，從某個角落展開。 「對於初次使用傳送陣的低維度居民來說，可能會稍微不太舒服。「 「但神國對於超脫者是絕對的歡迎及禮遇，畢竟已經很久沒有看到這樣的人類出現了。」 帶領著我們的「人」這樣說著。 所有人踏入空間裂縫後， 一陣天旋地轉，視野彷",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH24",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 767,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 767
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4553,15 +4269,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：星逆位、心正位、死正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第三篇最後一章的終章。 大綱如下： 「解脫於命運之線的超脫者們，歡迎你們的前來。」 「特別是還有一位不同的月語者，月之共響者。」 「這裡是月之神國，我是大祭司。」 大祭司的聲音清亮而迴響於整個空間。 「依靠著月之符文的指示，來回了好幾個靈魂週期，終於找到一位月之共響者。」 「只有與月共鳴之共響者，才能夠清楚的了解月的意志。」 「月之神國，已經失去月之指引，有好一陣子了。」 「依靠著月之符文，月之神國勉強度過一次又一次的危難。」 「但這次，似乎躲不過了。」 大祭司長嘆了一口氣。 「觀察天象的月脈學家，預測將在這個週期內，會有另一枚巨大的天體往月之神國方向撞來。」 「若與神國產生撞擊，月之神國在此維度上的所有居民，將會慘遭毀滅。」 「我們以月之符文詢問過，但只得知，只有找到月之共響者，才能知道並處理這次的危機。」 大祭司將眼神轉向我。 「但不管如何，距離撞擊還有一些時間，請你們先適應一下高維度的",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
-        "source_line": 804,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 804
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4610,15 +4323,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "序章代表符文：鍊逆位，地半逆位，日半逆位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的第五章章節文章。大綱如下： 懷中的福報之爐，不知為何，吐著綠色的粒子，隨著大祭司的言語起舞，編織可能的畫面。 月種則閃亮著銀白色粒子，一同進入畫面的編織呈現。 先是月球遭到碰撞，化為一片灰塵。持續撞擊之勢未減，朝向地球，一聲大撞擊後，地球與撞擊而來的天體，粉碎成無數塊。 天空為之撕裂，大氣為之消失，所有環境捲入宇宙當中，最後是一片虛無，成為宇宙中的暗物質。 「接下來，神國人民的未來，就看各位的了。」 大祭司說完那一瞬間，所有人影消失，剩下來的只有或大或小的光點。 這即是月之神國人民的真正型態，意志光點。大祭司的光耀奪目，其他則亮度顏色皆有不同。 月之守衛偏向渾重厚實，大祭司則是像月光般，明亮但溫暖。 我們自己正中心則為我們的靈魂寶鑚，光芒還未完全散發出來。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 4,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 4
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4667,15 +4377,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：樹半逆位、向半正位、啟半逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第一章。 內容描寫： 我跟小月、朔望四人，分別先是互相看了看彼此。 從鏡中可以看到，我的靈魂寶鑽為銀白色中帶點綠色。 小月的靈魂寶鑚為完全的銀白色。朔望的靈魂寶鑚則為稍微溷濁的銀灰色。 懷裝的福報之爐，不知道為何的鑲嵌在我的靈魂寶鑚上。 我的靈魂寶鑚周圍圍繞著64個符文，以蝕的樣子來做中心點。 小月的靈魂寶鑚中心為雷之符文，也環繞著幾個符文在周圍，月種鑲嵌在小月的靈魂寶鑚上。 朔端的中心則是愛之符文，望敦的中心則是斷之符文。各自有各自的專屬符文圍繞在周圍。 四人意念一轉，化為人形，身上裝備著以往所使用過的所有裝備，相當齊全並且完整。 「原來，這就是所謂的念動力科技啊。」 我不由得感嘆一聲。 「怎麼會？但不可能啊？我跟夢之花園的聯繫中斷了。」 小月哀嘆了一聲。 「亦或是，念所產生之物，終究只是投影，而非本來之物呢？」 這是我們所討論出來的結果。 但無論如何，初次的「念動力科技」體驗， 確實是讓",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH01",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 26,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 26
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4724,15 +4431,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：水正位、愛正位、枝逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第二章。 內容描寫： 我嘗試發動「夢」之符文，只有傳來空蕩的回音。無夢。 將已知的42符文全數嘗試過一次， 確定的是，「魂」之符文無法發動，因為靈魂已經淬鍊為靈魂寶鑚，兩者合一。 「時」之符文跟「空」之符文無法發動，這裡已經完全處於另一處更狂大的時空範圍。 「幻」之符文稍微閃爍還可以作用，但微乎其微。 身旁的月之守衛好心的告知： 「在神國當中，是不存在強者欺負弱者之行為。」 「若強者欺凌弱者，兩者必支起因果之鍊。弱者藉由因果之鍊，可以從強者身上得到能力加強。 強者則要為這樣的欺凌付出代價。一直到雙方平等之時，因果之鍊才能解除。」 「若以多霸少，則在造成傷害的同時，就會進行因果之鍊的糾纏。」 「若雙方為友好練習，則因果之鍊兩者同意以後就會消除。」 「這是神國能夠延續的最關鍵，所有人都是和平並且平穩的上升。」 「因果之鍊正是月之意志所鑄成。目前仍可以正常運作當中。」 我好奇的問了一下： 「若一方",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH02",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 57,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 57
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4781,15 +4485,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：彩正位、靈半逆位、向正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第三章。 內容描寫： 聽到此處，我不由得好奇的問： 「所以在怎樣的情況下，神國的居民會到達真正的死亡？」 月之守衛回答： 「有的，第一種是，認為自己已經死亡。若沒有意志生存，自然也只能死亡。」 「第二種則是，自然的生老病死。若因老或病，靈魂寶鑚會出現裂痕，一直到壽命到達的那天，靈魂寶鑚熄滅燈光。」 「神國亦無法改變這些大規則，每個人終究有離去的一天，此為正常循環現象。總有生，也會有死。」 月之守衛長嘆了口氣： 「這就是為什麼會造成毀滅了。天體襲來，面對宇宙之威，人只能束手就縛。」 「無生之意志，自然也就只剩下自我湮滅。目前神國人民人心惶惶，大祭司正在穩定人民情緒當中。」 終於，我們的休息房間到了。 領導我們的月之守衛亮點，閃了閃，就離開了。 我這樣對大家說： 「既來之則安之。經過這麼辛苦的路，都過來了。總是要先開始慢慢習慣，才會知道未來的路該怎麼走。」 「各自試驗一下彼此的新狀況跟新環境，再",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH03",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 88,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 88
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4838,15 +4539,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：月逆位、魂半逆位、星正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第四章。 大綱如下： 回到休息區，我暗暗思索著： 「若是以心為鋼，以念為甲，那是否也可以取得其他人的裝備投影呢？」 此時，我手上的「蘊生」  ，突然變成「裁決」。 我試了一下。 「不行，徒有其表，就算上面有雷之符文，威力根本來的裁決完全不同。」 手上的「裁決」變回「蘊生」，再變成「潮汐」。我試著舞動一下。 「完全就只有樣子，其中所使用的樣貌，只有真正持有者知道感覺。」 「所以就只是物品的任何投影，而因為我並未完全獲得過，所以也無法想像得出使用之後的感覺跟威力。」 從「潮汐」再變回「蘊生」。發動風之符文。 「那如果是這樣呢？想像，我有翅膀，我能夠飛。以風之符文感受飛翔的感覺。在放開風之符文，以同樣的感覺，去想像。」 我從原地緩緩升起至半空。 「果然是感覺為重。相信能夠飛，也真實體驗過飛行的感覺，就能夠真正的飛。」 「可以在沒有真實符文的時候，使用符文的對應力量。」 「我想，符文是對月之意志的語",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH04",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 115,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 115
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4895,15 +4593,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：根逆位、日逆位、啟逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第五章。 大綱如下： 不，仔細一看，月之陰暗面實驗室， 是這一區一整片建築的一個小部份。 我不由得感嘆： 「這才是完整的實驗設施是嗎？在全部都充滿符文之力時，竟是如果壯觀。」 「所以我們到底是在哪裡？月之神國座落於某個異空間嗎？時跟空的規則在這邊無法生效。」 「但確實有太陽跟月亮，日、月跟明的符文依然可以正常運作。但辰跟星也是一切正常。」 「是當前的時空規則，不符合之前生活的時空規則嗎？」 我使用「辰」符文來校對時間。單一的時刻是沒錯的，但是時間流速不同。 把時符文的規則，每秒每分每時每日每月每年，重新定義以後， 時符文終於可以正常運作，而相對的空符文也恢復正常。 我得到的結論是： 「這個時代的時間流速不同。這個星球一個自轉日數，大約在25個小時左右。這邊的一年，大約是本來定義一年時間的三倍。」 「月相與之前的相同，但似乎沒有四季的太大差異。所以這到底是位於怎樣的地方？」 但為何夢符文完全沒",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH05",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 148,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 148
       },
       "confidence": "recorded",
       "review_flags": []
@@ -4952,15 +4647,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：地半逆位、福逆位、愛半正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第六章。 大綱如下： 與此同時，小月也在休息室，試驗一下相關的念動力。 小月疑惑道： 「這是裁決，是因為我想而生，這並不是投影，因為很清楚感覺裁決雷光的脈動。」 「那如果是這樣呢？」 小月手中的「裁決」，轉換為「陽月」。火之符文閃耀著。 小月不經感嘆： 「這也是真的陽月。所使用的狀況跟以前相同。」 藉由小月在月神教內，豐富的知識，裁決變化出了很多的外型樣貌。 甚至連「夢迴」跟「無序」也變化而出。 「符文是對的，但效用似乎沒有這麼強。」 但有一項是唯一的例外。 「蝕」。 小月想著。 「以意志之鍊，跟月環結合的蝕，是我親手拿給月語者的。」 「同樣外型的飾品，是沒有問題。但我手上的蝕，內部大部分都是空的符文珠串。」 「我知道的月之符文，與現今月語者知道的，已經有相當大的落差了。」 「但即使是這樣，蝕還是只隨著月語者而走。否則蝕就只是一串，擁有部份符文力量的飾品罷了。」 突然小月從月種耳環收到一個訊",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH06",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 188,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 188
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5009,15 +4701,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：福半正位、雷逆位、向半逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第七章。 同一時間，朔端跟望敦的休息區內。 怕打擾到小月跟主角休息， 望敦只能前來找朔端，聊著彼此的過往。 望敦感嘆的說： 「我從來沒有想過，自己能成為現在這個樣子。」 朔端一樣感嘆的回應： 「高維度，這真的好像夢境，卻又是現實。但不管如何，這一切都是因為老師。」 兩人一起更加堅定，要守護老師的意志。 朔端好奇的問：「你有嘗試過念動力的武器嗎？」 望敦從背後拔出終暮跟歲月：「這兩把跟我所知的，符文跟其他樣貌，都是一樣的。」 朔端此時，神情詭異的，從背後也拿出兩把長劍， 「你覺得這也是歲月跟終暮嗎？」 四把兩雙長劍。這四把，望敦感覺起來，真的就是一模一樣。 朔端此時大笑：「看起來這就是念動力啊，只要想，沒有什麼是不可能的。」 「我對你的雙劍，太熟悉了。畢竟我們是一起成長的兄弟。」 望敦想想也是，然後嘗試把雙劍，變成「情脈」跟「森行者」。 「這還真的是一樣。」朔端望著念動力出來的物品。 於是朔端",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH07",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 221,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 221
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5066,15 +4755,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：草半逆位、夢半逆位、啟正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第八章。 小月聽到大祭司私下的訊息，便前往剛剛與大祭司會面之處，那銀光月色殿堂。 等待的，依然是那明亮且溫暖的月光光點，大祭司。 大祭司嘆然說道： 「傳承者啊！你能來到此絕非偶然。你的靈魂寶鑚上面有我的祝福。你知道你的使命嗎？「 像似回應大祭司，散發銀白色粒子的月種， 遍佈小月的周圍。 小月對此感到有些陌生跟驚恐，但更多的則是，為什麼？ 大祭司接著說： 「月種耳環是在全黑之際的希望火種，故為月種。此火種在每千年內會傳遞一次，到適合的人身旁。」 「目的則是挑選，從未來的各種意外可能當中，能夠引導神國人民意志之人。」 「其實，大祭司，並非大祭司。大祭司只是神國萬民之願，顯化而成的代表顯影。」 「我們並不用特別挑選人選，也不用特別由多人進行討論，這即是神國萬民之意志集體本身。」 此時，那明亮且溫暖的月光，仔細一看，是由數以萬計的微小月光編織而成。 這一整個大的光點，也是由數個小光點互相輝映而成。 ",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH08",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 265,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 265
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5123,15 +4809,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：雷逆位、空半正位、暗半逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第九章。 此時的大祭司，感覺到我在招喚月之意志。 「這個是... 月之意志！在哭泣.... 」 「但又為何... 唉，果然是如此。月之意志對我們失望了嗎？」 「不！這不可能！我們對月之意志多麼崇敬！」 大祭司之光點，突然整體躁動了起來。 本來明亮且溫暖的月光，開始分裂。 一端是明亮但刺眼之亮光，一端是不明亮但溫暖的微光。 「還不都是你們！妄用月之意志來審判事物！導致月之意志反噬！月之意志本就是月之意志！不代表任何人！這才惹來暗物質降臨！」 「月之意志終究也只是工具的一部分！神國人民意志為最先！月之意志招來暗物質足以證明其該被消滅！讓月之符文真正規屬於人民之意！」 小月驚恐的看著這一幕。 兩個大祭司身影出現，一個哭泣並且懺悔，一個驕傲不可一世。彼此互相指責。 有另外一個聲音降臨而至。 「夠了！不管是哪種原因！我們都要面對這暗物質的降臨！」 此時月之大祭司身影合一，回到本來的樣子。 從大祭司身影",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH09",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 300,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 300
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5180,15 +4863,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：愛半正位、夢正位、風半正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第十章。 朔望談笑之間，突然皆收到一段訊息。 「請月之守衛超脫者，保護月之共響者，使其平安到達銀光殿堂。」 兩人臉色為之一變。 「老師有危險！」 立刻收起所有的笑容，以誓言之鍊，尋找月語者的方向，並盡快趕過去。 我仍在共鳴狀態中，只因月之哀傷無法停歇。 並非埋怨，並非厭惡，只是哀傷。月之意志還是會回應神國人民，但卻是這麼哀傷的情緒之下。 朔望兩人快要到達我位子的時候，發現了不對勁。 竟有一些紅色光點，表達攻擊性的態度，向無防備的我集中。 朔端立刻用「夢迴」回力鏢，想要將這些紅色攻擊光點分開。 本只期望能夠延緩集合攻勢，讓他們有時間到達月語者的所在地。 但奇怪的是，「夢迴」一出，周圍的紅色光點彷彿聽到什麼聲音，瞬間停滯下來，變成淡紅色光點。 「這是夢... 久違的夢... 」 望敦也拿出「無序」，希望能在到達前減緩攻勢。 只見無序之弩一出，上面黑色氣息一顯，所有紅色點瞬間不動，變成淡紅色。 「",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH10",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 334,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 334
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5237,15 +4917,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：魂半正位、福半逆位、語半逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第11章。 我正感到奇怪：「小月呢？」 朔望兩人表示，事出緊急，他們只知道小月已不在休息區內。 我使用風之符文，告訴朔望兩人訣竅後， 我們三人盡快的往銀光殿堂處飛去。 在殿堂入口，有個熟悉的身影，小月。 「月之共響者，你欺騙了我。你必須遭受制裁審判。」 「命運審判，裁決之怒！」 只見裁決的影像出現在半空，雷雲聚集，準備一時之間轟下。 朔望對視一眼，本來想以上次傳送的方式，讓我先離開。但我早有防備。 我淡然的說著： 「你們別急。首先，這次我不會這麼輕易讓你們將我傳送離開。」 「其次，真正要使用裁決者，必先審判自己。裁決並不是這麼輕易就可以被使用的。」 只見雷雲已聚集，雷電瞬間劈下。 朔望兩人本以打開最強防護，守在我身前。 但雷電的方向，卻急轉個彎，前往「小月」的身影而去。 「怎麼可能？為什麼是我先被審判？」 只見「小月」身影慢慢消失。 我只能嘆了一口氣： 「因為你根本就不是小月。僭越者想使用裁",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH11",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 373,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 373
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5294,15 +4971,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：光逆位、花逆位、生正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第12章。 以下是章節大綱： 在我前進到銀光殿堂的路上，銀光殿堂內。 月之神國國王，正在忙著對付進攻的眾多紅色光點們。 小月則正在迎戰「月語者」。 月語者以我的樣貌這樣說著： 「月之意志就是要你審判這些人死，為什麼你不做？」 小月： 「裁決並不會輕易審判。審判別人之前必須先審判自己。 在我尚未了解到事情全貌之前，任何人都不能影響我的想法。包括你，月語者。」 小月先將「裁決」變化為「陽月」，以火之符文進攻。 卻被「月語者」的水之符文熄滅。 此時，小月使用了手鍊「幽輪」。 虛如混沌的氣息一出，月語者面容呆滯。 「月語者」大喊了一聲： 「不可能！為何你會使用虛之力！」 其的面具破除，其靈魂寶鑚像似無防備一樣，被擊穿。 小月嘆了口氣： 「果然是假冒者。真正的月語者並不會強迫其他人做任何決定。」 見假冒月語者已消失，小月重新招喚出「裁決」，準備使用最大招。 「命運審判，裁決之怒！」 只見雷雲聚集在銀光",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH12",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 408,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 408
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5351,15 +5025,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：死半逆位、辰半逆位、愛逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第13章。 大綱如下： 小月先向神國國王敬了一禮。 「感謝您的幫忙，否則我沒有能力經歷這波攻勢。」 「同時裁決也覺得，您非奸邪之徒，故命運審判並未降臨到您身上。」 此時我跟朔望趕到銀光殿堂內，與小月跟國王會合。 本來大祭司的身影，已經消失無蹤。 國王詢問： 「這裡不是說話的地方。月之共響者，你的空之符文是否調整完畢了？」 我點點頭的回應： 「時之符文跟空之符文皆調整完畢，可以使用。只有夢之符文跟魂之符文還是異常狀態。」 國王的光點，以意念傳給我一個距離銀光殿堂不遠的位置。 我使用空之符文，向之符文，斷之符文，三者合一。 瞬間周圍空間被切斷，指向某處定位，空之符文傳送。 等傳送到達後，先以封之符文封印傳送路徑，再已斷之符文斷其傳送之途。 國王笑著說： 「這樣就夠了。可以避免他們藉由這條空間通道無止盡的傳送過來。」 「此事說來話長，大祭司招喚你們前來此處為真，因為這是所有神國人民所期待的。」 「",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH13",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 452,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 452
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5408,15 +5079,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：風逆位、火半逆位、雷半逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第14章。 大綱如下： 我不禁想到，所謂的天體襲來，或許是某些意圖者的手筆？ 「所以，被暗物質吞噬的結果，這是月之意志自己要求的，又或是想征服月之意志者，用於威脅的方式？」 神國國王長嘆了一口氣： 「其實，都有。月之意志已經感到厭倦，對於過多的要求跟傷害，月之意志已不想繼續。」 「這些暗物質，其實是來自於月之意志，對於奴役的掙扎所形成。所以現在月之意志完全拒絕任何回應。」 「征服者對外則稱，月之意志的陰暗面，是嗜血之月，月蝕形成的血月。」 「但實際上，月光本質為柔和且情感深刻，並非具有侵略性之月。」 「目前征服者以神國大主教為主。大祭司為萬民之意志所形成，故分裂為二，持續的爭鬥當中。」 「我這個神國國王倒是有些名不符實。當我發現大主教之意圖，為時已晚，只能帶領親信撤退以圖人民萬全。」 「已經有很多個靈魂週期沒有超脫者了。大主教並非超脫者，掌握之符文只為42符文。得知有64符文後非常期待。」 ",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH14",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 494,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 494
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5465,15 +5133,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：時逆位、日逆位、語半逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第15章。 大綱如下： 我另外有問題想請問： 「那又為什麼，夢之符文跟魂之符文會未生效呢？」 神國國王感嘆的說： 「當初月神做了因果鍊的戰鬥方式，最主要就是希望，盡可能減少強者對弱者造成欺負的機會。」 「之前的神國有太多舊有的貴族，經常以欺凌百姓為樂。是故當月神因憐憫基層人民，創造這條規則，最不滿的就數上層貴族。」 「而也就是這些上層貴族，動了要奴役月之意志的想法。規則已定但卻可以規避。於是擁有貴族身份的大主教，做了一件事情。」 「他將整個神國的夢之網路全部派遣重兵把守。現實的爭鬥，放在夢中則不一定成立。」 「所以大主教的計畫就是，讓這些人在夢中認為自己已經死去，現實也就真的死去了。」 「以各種幻象跟各種符文，在夢中創造各種無敵的樣式，來吸收控制更多的人加入他的行列。」 「目前夢之網路，已經全面中斷。為了避免受其催眠，我們只能下令把所以補夢網全部炸斷。」 聽到這邊，我反而不以為然。 「夢是屬",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH15",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 532,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 532
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5522,15 +5187,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：語半正位、生半逆位、靈逆位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第16章。 大綱如下： 我轉頭往向三人：「小月跟朔望，你們願意跟我去夢境看看嗎？」 小月欣然答應，朔望也表示沒有問題。 因為他們共同的夢境第一站，就是傳說中誓言締結之地，夢之花園。 我馬上使用夢之符文，配合啟之符文，跟彩之符文，進入夢之花園的黑暗空間。 試著在這空白黑暗的夢境當中找到一些蛛絲馬跡。 果不其然，發現了不少夢花枯萎的痕跡。 小月痛心的說： 「變成夢靨的夢果... 奶奶最早的擔心是對的。若這些夢果是有心人利用，就是更大的災難！」 瞬間，這些夢果以詭異形體爬行而出，大量且大批的往我們前進。 「這些錯誤的存在，全部老去以後像塵一樣飄散吧！」 我的蘊生上面飄出來空白符文，上面寫著「老」以及、「塵」符文。 全部夢靨之子，如同塵埃一般的消失。 我大聲的喊： 「小月，這片本就是你的夢之領土，第一朵夢花由你種下吧！」 我交給小月，夢花之種「元華」，跟生長之氣「綠息」。 「這片土地不應該這麼黑暗，",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH16",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 568,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 568
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5579,15 +5241,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：靈半逆位、幻半逆位、風正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第17章。 大綱如下： 我將數枚「夢迴」螺旋鏢，放置於夢之花園附近，成為永遠的旋轉狀態。 並將數具「無序」之弩，放置夢之花園的各險要之處。 意志科技的好處，自然就是，投影物數量可以無限。 雖然因為投影功能上不如原版，但對付一些簡單之人已夠。 而且是屬於自動性觸發機關， 若造成因果鍊鎖定，也無法鎖定規則目標。 我感嘆的說： 「我猜敵人已經知道了，這麼大的動靜沒道理沒人發現。 接下來，我們先找個地方躲起來，看看成效如何。 若不行，看問題在哪邊，重新佈置也可。 對方想要讓我們疲倦，面對自然科技永動機， 不知道最後是何者會疲倦。」 未避免打草驚蛇，我們四人離開夢境花園， 但我以「鏡」符文觀看夢境花園的戰場狀況。 在旁觀看的還有神國國王。國王雖不相信夢境可以這樣處置，但還是耐心的看了下去。 遠方幾位主教前來，拿著月符文之書。 首先是滿天的大風大雨，水之符文跟風之符文。 但對於夢境花園毫髮無傷。 接著招",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH17",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 611,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 611
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5636,15 +5295,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：靈半正位、月逆位、星正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第18章。 大綱如下： 我又做了一次加強，特別是針對敵方可能使用所有元素系列符文，以及所有秩序系列符文。 這次是全自動運轉系統，首先以「語」之符文為主體，當對方說出任何符文，就會吸收到語之符文， 之後再從吸收到的能量，做防禦系統的平均分配，分配後再以對應的元素反擊，例如吸收到火符文，轉換為水符文能量反擊。 等待單元素跟相對元素能量儲存滿五成，就自動分配給其他所有符文， 以這樣的方式防止能量超載，至少以40符文全部攻擊的狀況下，是可以毫髮無傷並進行反擊的。 夢境本來就為自我主場，同時可以佈置「幻」符文，讓敵方陷入混亂狀態，便可以用自動攻擊擊潰。 俘虜的聖騎士跟主教，特別是靈魂寶鑚破碎的聖騎士，均用「魂」符文給與再生，並給與生存的機會。 本以為必死之聖騎士，立刻倒戈，畢竟現在生死均拿捏在我手上。 有些不願投降之主教，就成為防禦系統的核心符文能量來源，直到他們把手中月之符文所有能量消耗完， 也就表",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH18",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 648,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 648
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5693,15 +5349,12 @@
       ],
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：死半逆位、月半逆位、啟正位。在下弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第19章。 大綱如下： 一個寧靜的夜晚，在眾多光點護衛之下，我開始了跟月之意志的共鳴。 與其說是確認月之意志，不如說也是誘導。 上次引發共鳴之時，敵人這麼快就到達所在地， 敵方陣營應該也有感覺月之意志的月語者存在。 或許應該就是這些月語者想要對月之符文進行完整的操控。 月之意志，從上次的悲傷哀愁情緒，這次變為心境平緩，無悲也無喜。 並沒有因為奪回夢境主導權，月之意志就有回應， 相對的，仍然拒絕任何回應，但已經從悲傷的狀態脫離。 當我準備脫離這樣的狀態時，忽然聽到月之意志嘆了一口氣。 突然之間，我就知道了什麼。 結束共鳴狀態。睜開眼睛，只看到場面一片混亂。 紅色光點與我軍防守的藍色光點正在進行遭遇戰。 早在共鳴之前，國王並以安排此處為最佳埋伏地點。 我飛上空中。先使用「幻」符文。 在夢境正常的狀況下，幻符文終於可以正常運作了。以幻符文進行整片的幻境模擬。 正所謂真真假假，假假真真， 接著使用「",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH19",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 669,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 669
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5750,15 +5403,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：樹正位、啟半正位、花半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第20章。 大綱如下： 月之意志的那聲嘆息，其實表達著，他並不期望會有衝突展開。 但若非如此，月之意志便可能遭受到更多的意志侵蝕， 最後導致成為敵方征服者的工具。 我感覺到月之意志無感情的同時， 就已經知道，他無法干預神國子民的任何動作。 子民的心願，到底征服者勝利還是解放者勝利， 就讓命運來決定，月之意志絕對不會有任何相關反應跟表態。 這場伏擊戰，由我方全勝告終。 我方近乎於無傷，敵方全數俘虜。 已有不少敵方，對於征服者的心態產生動搖。 但他們也選擇兩不相幫，以最後的結果來做推論。 大祭司已經完全分裂成兩位。 一個是征服者的血腥大祭司， 一個是解放者的自由大祭司。 兩派正互相爭奪對立當中。 我也知道，每當我使用42符文之外的64符文， 對方大主教也會跟著學會相對的符文。 當符文效果展現，敵方也會跟著精進。 這場仗其實並不一定會全勝，當大主教學會完整64符文， 近乎奴役月之意志的狀況下，可能",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH20",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 713,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 713
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5807,15 +5457,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：彩半正位、心半逆位、死逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第21章。 大綱如下： 隔天一道消息傳開，讓全神國人民人心惶惶。 消息為，月之神國國王已投靠暮光虛無勢力， 並稱，神國最後會被虛所吞噬，皆是因為國王操控月之意志讓虛無所吞噬。 並稱國王手下皆有虛之力，大主教為了民眾起身抗敵。 國王聽著部下稟報的消息，心中不禁五味雜陳。 我笑道： 「我想這應該就是大主教的真正目的了吧。」 「所謂的操控月之意志，其實是藉口。真正是將月之意志讓虛無所吞噬。」 「做賊的喊抓賊，原來月之意志已經滿足不了大主教的胃口。他想要的是更多的虛無。」 「難怪夢境會變成夢靨，都是受到混沌的虛之力所影響。」 「月語者會使用虛之符文很正常。但若過於靠近，長期以來被影響的機會也會變得很大。」 「要趁早做個絕斷了，否則虛之力會隨著月之意志抵抗增加而變強。」 此時在休息區外。「月語者」走進休息區。 朔望兩人正覺得奇怪，為何去找國王的「月語者」，竟會出現在此處。 月語者道： 「我視之如子的二",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH21",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 751,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 751
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5864,15 +5511,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：心正位、辰半正位、地逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第22章。 大綱如下： 瞬間，傍晚已至。 神國國王確認最後的準備，即將準備出發，前往銀光殿堂。 國王氣宇軒昂的說： 「我們沒有退路了。我們只有這一戰。若失敗則亡，若成功，月之意志將回歸自由！」 一路順利的到達銀光殿堂之底。 整座銀光殿堂，聖潔之銀白色光芒不再。 取而代之的是，一股灰黑色且流動的詭異氣息。 經過殿中，大祭司的身影，仍然是兩道。但其中一道身影已經逐漸染黑。 我嘆息了一聲： 「果然，真的是虛之力。」 此時的殿堂，樣貌竟開始扭曲。 明明是一群人一起上來，卻一個接著一個詭異的消失。 一直到只剩下我一個人。 正前方有一位雖穿著白色禮儀的祭袍之人，但渾身以被虛無之氣沾染，銀白色的月光變成扭曲的灰白色。 「歡迎啊，月之共響者。暮光大主教在此恭候已久。」 「終於，在你的幫助之下，我們終於將國王引出他的巢穴了。」 「月之意志也即將臣服於你之腳下了。」 「但這一切，都是獻給虛無之神的禮物！」 此時",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH22",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 799,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 799
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5921,15 +5565,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：向正位、空半正位、辰半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第23章。 大綱如下： 暮光大主教繼續大聲的說著： 「64符文是嗎？當你我的因果鍊已成，你的64符文也早就變成我的了。」 大主教招喚出「核」之符文，配合「火」之符文， 一個小小的，帶有熊熊火焰的核心從我身旁而去。 「轟」的一聲，蘑菇雲冒起，周圍灰塵飛揚。 我只能啟動「分」之符文跟「斷」之符文，將相關的威力切分在切分到達最小。 同時我招喚出「韻」之符文，配合「水」之符文跟「氣」之符文， 一道帶有聲音水球回敬給對手，一發聲波炸彈在大主教身旁爆發。 一來一往，皆是平局，沒有任何人佔上風，也沒有任何人落敗。 數個回合後還是如此。 「這就是月之意志導致的結果。平手到了最後，誰的意念維持到最後，誰就能獲勝！」 大主教幾乎囂張的大喊。 「而我不同。這付軀殼只是虛構成的微弱外表。虛之力的加持下，我必勝！」 此時我亦感到棘手。 這樣打下去，變成是體力意志的比較，但虛之力的加持確實是可以讓意志一直長存，直到破滅",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH23",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 842,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 842
       },
       "confidence": "recorded",
       "review_flags": []
@@ -5978,15 +5619,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：樹逆位、語逆位、葉半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第24章。 大綱如下： 同時月之意志，亦傳送一個字給我。 我感覺到以後，震驚數秒。 大主教看到我停滯之樣，更為張狂： 「不管這玄之符文為何，月之意志最後還不是只有投降的份！」 但我回過神來，我運轉所有64符文卡。以及新的「玄」之符文。 此時，以「無「之符文的空白卡，裡面在寫入一個字。 這66張符文卡齊聚，以共同力量發動。 這最後一個字就是，「命」。 我以月之意志命運作為賭注，發動的這最後一張卡。 若失敗，表示月之意志最後只能接受消散的命運。 「這就是月之意志最後的回應！祂以其命運作為賭注，只願其子民能夠安居樂業。 若月之神國子民選擇拋棄月，月之意志也只能接受結束的命運！」 此時正值滿月之夜，圓月突然發出強烈白光，將夜晚照明如白晝。 但這光芒，不刺眼，讓人感覺溫暖及深刻。 所有月之神國的子民，耳旁都響起這樣一句話： 「月之神國的子民們！你們願意接受月之意志的存在嗎？」 神國國王大喊： 「月光是",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH24",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 878,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 878
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6035,15 +5673,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：明半逆位、星半正位、語逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第四篇最後一章的終章。 大綱如下： 經此一役，月之神國國王終於回歸寶座。 大祭司身影合而為一，代表民心合一，無人願意月之意志消失。 但月脈學家表示，朝向神國的巨大天體移動的速度更快了。 本應該還有短暫些許靈魂週期，距離到達神國的時刻，只剩下短暫一些時間。 福報之爐跟月種繼續警告，神國與天體碰撞的結果， 除了月之意志粉碎，神國本身也終將為虛所吞沒。 但此次不同。 月之意志已然站在神國人民之側。 神國人民全體上下，皆期盼月之意志之領導， 只有在月之意志的呼喚下，神國人民才能逃過這必死之局。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
-        "source_line": 923,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 923
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6092,15 +5727,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "序章代表符文：水半正位，月半正位，語半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的第五章章節文章。大綱如下： 我進入了共鳴狀態，與月之意志同調。 此時，淚水止不住的不停落下。 並非哀嘆，並非悲傷，而是喜極而泣。 月之意志對於月之神國的居民還願意相信著，表達感謝。 神國萬民意志，身影合一的大祭司， 突然開始詠唱，月之66符文。 符文化為銀色圓圈光芒，從銀光殿堂中央，往外散去。 連接起萬民之意志，表達消滅虛之力的決心。 這些符文之力，成長為星球般的防護外層，並繼續往外延伸。 延伸到襲擊天體時，上面的虛之力瞬間瓦解。 天體移動速度為之減緩，但仍慢速朝向星球而來。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 4,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 4
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6149,15 +5781,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：愛逆位、辰半正位、水逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第一章。 內容描寫： 神國國王傳訊給空心太陽內的研究員： 「虛之引力已經消除。太陽能否用引力進行天體方向的控制？」 空心太陽研究室的研究人員表示，正在嘗試中。 於是，在滿月之夜晚， 神國人民看到疑似一個巨大天體的陰影，慢慢的將月亮之光芒暫時遮蔽。 遮蔽之時，幻象四起。 最開始的是，夢境防禦系統竟開始超載。 顯示虛之力雖在現實中消失，但卻從夢的通道中繼續前進。 夢之花竟開始退化成雜草，一旦夢境花園完全消失，夢境防線也將會被虛所再次佔領。 我跟小月對視一眼，小月立刻打開月嬰內的夢之通道， 眾人前往夢之花園，查看防禦系統超載的真正狀況。 本是一片漂亮的夢之花園， 現今不知道為何變成了叢林灌木一片， 現實虛幻早已混淆不清。 特別在月光暫時被遮蔽的狀況下， 虛之力集中在夢境當中做突破。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH01",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 27,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 27
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6206,15 +5835,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：憶正位、禍正位、幻半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第二章。 內容描寫： 我將「蘊生」插入夢之花園的土壤內。 「蘊生」本就是這片夢之花園所生之果實，本應該親近於這片生產出其之土地， 卻隱約遭到排斥。 我使用「地」之符文，「石」之符文，以及「土」之符文，試圖將原本的土壤進行還原。 卻引來一堆變異之根突出地表，試圖對我們發動攻擊。 小月切換為「陽月」，以火之符文進行攻擊。 對於植物非常的有效，焚燒一整片變異之根。 朔端身穿森行者之靴，叢林本就是最適合森行者發揮之處， 只見朔端身形四處閃爍，將前來進攻之藤蔓一一踢退。 望敦持有歲月跟終暮雙劍，將不合理的詭異樹枝，進行砍斷。 我發動「晶」之符文，將所有不合理產生的樹，結晶化。 並輔以「憶」之符文，將這些不合理的樹，進行歸本朔源，將其回覆到本來夢之花朵的樣子。 很快，夢之花園，又回復到本來花朵盛開的樣子。 我以蘊生為中心，發動「域」之符文，先維持這片夢境區域內的平衡。 讓眾人暫時歇息。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH02",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 54,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 54
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6263,15 +5889,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：根半逆位、夢半逆位、向逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第三章。 內容描寫： 趁著休息空檔，我趕緊檢查一下，為何夢之符文自動防禦系統，會超載的真正原因。 一看果然沒錯，虛之力突然暴漲，導致防禦系統無法即時轉換到其他符文，才會導致超載。 這次先改用「分」之符文跟「誤」之符文，將多餘的虛之力，先進行切割， 若整套符文系統呈現超載，且來不及宣洩，則會進行錯誤處理，視之為夢境錯誤之物，排除。 同時以「核」之符文，設定「悟」之符文當作系統核心。 若有其他意外狀況，則以「悟」之符文的判定決定為主。 並輔以「因」之符文跟「果」之符文，有其因則會造就其果，吞噬別人的虛之力，終究也會被自己所反噬吞噬乾淨。 修正完系統後，將「域」之符文收回。 夢境恢復正常運作狀況。 夢境的幻象獲得舒緩，並反向將虛之力排出，讓虛之力自己吞噬自己，最後消失。 神國的夢境系統，最後的幻象，終於在月蝕之際，月之意志受到干擾最大的情況下，完全消失。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH03",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 82,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 82
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6320,15 +5943,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：啟逆位、火半正位、樹正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第四章。 大綱如下： 「空心太陽研究室回報，目前以初步以引力完成天體捕捉。」 「但不確定性仍然很高。確定數日內不會造成直接撞擊，但按照捕捉後之運行軌跡，還是很有可能會有擦撞。」 神國國王聽聞，總算是鬆了一口氣。 最至少能夠延緩一些，還有時間尋找對應之策。 我們從夢境通道中回來，剛好聽聞研究室的回報消息。 神國國王先是對我們維持神國夢境正常的努力，表達感激。 「最至少不是直接撞擊。若是註定為直接撞擊，神國人民之意志會有不少會自己判定為必死。」 「連自我都否認自我的存在，以意志力為基礎的科技，自然只能倒塌。」 「擦撞，最至少能夠讓神國人民，有這樣一絲求生機會。只要有一絲機會，意志力變不會湮滅。」 但這到微小的希望之光，又要從何處而生。 眾人不禁陷入深思當中。 我便提議，因一連串的緊張事件，讓精神為之緊繃。 若已沒有燃眉之急，何嘗不暫時休整， 將手邊的資源跟計畫做統合整理， 以確保危機發生時的各種",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH04",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 104,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 104
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6377,15 +5997,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：彩正位、幻半正位、啟半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第五章。 大綱如下： 以念動力當作基本科技的發展，其實有優點也有缺點。 意志成為一切的主導，意志在足夠大的時候，能夠戰勝所謂的定律。 其實當初發現空心太陽，對神國來說，是個偶然。 當太陽撥去表面的高溫以後，竟發現其核心尚不穩定。 於是使用「核」之符文、「界」之符文、「域」之符文，將其內部集中穩定後， 在距離正中心旁的一小塊區域，建起小區域的觀察室。 同時利用其熱，作為研究站主要能量來源。 之所以其特別處，是在於只能用空間傳送才能到達。 正常普通方式皆無法通過表面高溫。 隨著研究方式的精進，越朝向核心裡面探索，最後才發現，太陽核心內部竟有額外的一片空間。 而且這還是眾多低維度超脫者，進行到高維度的關鍵。 神國歷年來也把空心太陽，當作靈魂寶鑚孕育區，有足夠意志通過這熔爐者，必會成就靈魂寶鑚。 這才是念動力之神國屹立於高維度而不倒的主要因素。 分裂的神國，脆弱的無法抵禦任何一種災難。 但只要所有神",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH05",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 131,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 131
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6434,15 +6051,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：實半正位、斷半逆位、空正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第六章。 大綱如下： 月之共響者，在眾多月語者當中，實為罕見。 主要之因，並非單純的，月之代言者，為月說話，以月之符文表示之。 也並完全只是，跟月之意志進行同調狀態，真實感受月之意志。 月之共響者主要在於，同調時與月共鳴，以月之符文，共同演奏月之交響曲。 這就是為什麼稱作「月之共響者」，因此時月之意志會跟共響者的意志互相影響。 共鳴時，我即是月之意志，月之意志也是我。 此時的我，在確認神國資源以後，發動共鳴狀態，詢問月之意志。 獲得神國所有子民信仰的月之意志，表達出前所未有的決心，將要拒絕這場災難的降臨。 為此，神國動員了所有子民跟所有資源， 決定發動意志煉金符文大陣，以月之意志為主導，進行最大化集中式攻擊手段， 希望能將天體的擦撞機率降到最低。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH06",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 161,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 161
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6491,15 +6105,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：封半逆位、靈半逆位、彩正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第七章。 其實神國子民意志之導向，應該由總代表者大祭司來瞄準方位。 但神國國王害怕又會像上次因虛之力，導致大祭司分裂，進而影響到精準度。 故私下請託我作為協助，我欣然應允。 以人之意志為底，以月之符文為輔助技術，這就是高維度月之神國科技發展的最關鍵。 時空已再次用「辰」之符文確認過，無誤。 也再用「誤」之符文，確保是否仍有其他存在不合理的錯誤之處。 以「向」之符文作為導向，「鑽」之符文跟「斷」之符文作為彈頭， 承載著各種水、火、雷、光、暗、氣符文之承載「核」， 藉由「空」之符文的空間跳躍，輔以「福」之符文的渺茫希望之光， 這顆符文之心，升空。 過不久，符文之心正中天體。 該天體如期預估的，分裂成數塊。 在空心太陽研究室的關注下， 天體之核心顯露出來。 卻是一塊實質如金屬的虛。 命中後，外殼雖分裂，但虛之力仍然將外殼僅僅抓回， 甚至將周圍其他小碎塊石頭也跟著抓回。 軌道仍然未變， 但在天體質量",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH07",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 184,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 184
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6548,15 +6159,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：明半正位、向半逆位、斷半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第八章。 我先提出疑問： 「先等一下。確定一下虛之核當中，是全部都充滿虛嗎？」 神國國王覺得很奇怪，但也用這樣的方式詢問空心太陽研究室。 「目前觀測到，虛之核當中，隱約有一絲細小光芒。如沒有特別注意，會被省略。」 空心太陽研究室回報。 此時，我發動福報之爐。 福報之爐吐出綠色粒子，朝向神國內某一空間而去。 我們幾人追上綠色粒子行進方向。 首先是纏繞在大祭司身影之旁。 大祭司身影的影子上，出現一道近乎看不見的影子。 只見那道影子口中一直說著： 「若暮光審判之日遲早都會到來，那還不如去信仰暮光教，在暮光審判之後，就能得其獎賞！」 神國國王所料沒錯， 還是有少許子民，祕密信仰暮光神教， 既然破滅結果早已註定，還不如盡快破滅，求取破滅之後的封賞。 接著福報之爐的綠色粒子，朝向銀光殿堂的地下室而去。 「符文之心」的「福」之符文，並非求取祝福這麼簡單，也可以將有心操作之人加以定位。 銀光殿堂的地下室，畫",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH08",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 221,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 221
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6605,15 +6213,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：彩半逆位、空正位、雷半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第九章。 神國國王馬上派遣其他光點，到銀光殿堂附近地下室，進行搜尋。 陸續回報，整座大陣周圍是半個神國國土以上，最核心是銀光殿堂。 以大祭司為正中心朝周圍一道一道佈置而成。 神國國王恍然大悟： 「難怪人民意志所向之大祭司，會出現分裂及虛化！」 「並且在虛之力幾乎完全去除的現在，仍有活動的痕跡！」 於是國王立刻下達公告，希望神國人民均能團結一心，才有可能勇於面臨強敵時。 若敵未來之前先行認輸，實不屬於我意志神國之風範。 而帶有虛之核謎之天體，仍然朝向月之神國的銀光殿堂而來。 連帶夢境系統也遭受攻擊，只是警報雖響，符文防禦系統已修正，並沒有在出現成功侵入夢境的跡象。 神國國王甚至發表了一篇公開演說： 「若吾之意志之火不滅，則神國不亡！」",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH09",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 258,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 258
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6662,15 +6267,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：火半正位、枝半正位、日正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第十章。 在銀光殿堂旁的科技實驗室。 小月坐在位子上。 這裡是他在月之陰暗面實驗室最喜歡的地方。 與月之陰暗面實驗室不同之處是，月之神國的實驗室充滿活力，各個光點頻繁的移動討論， 各儀器閃爍著不同的符文持續運作當中。 月種耳環已經一段時間沒有回應了。 朔望繼續擔任守護我的職責，這毋庸置疑。 我也因為月之國王委託的各種事情忙進忙出。 只有小月，仍還在想，所謂的大祭司傳承。 是要審判過往人的罪過？又或是為萬民指引方向？ 但自大祭司身影分裂以後，月種沈寂至此。 小月首次對自己的身份產生懷疑。 月之聖女，月之大祭司，這些職位到底是為何而生？ 監督？指引？又或者只是擔任輔助？ 他不禁有些想家，但也知道身處高維，已經回不去了。 但，等一下，回不去嗎？ 小月這樣想著，急忙的找我問個詳細。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH10",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 282,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 282
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6719,15 +6321,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：斷正位、心半正位、虛逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第11章。 小月在銀光殿堂找到我。我正忙於神國國王交付之事。 小月趁著空檔，便找我詢問他剛剛所疑慮之事。 「是否回不去了？到底月之大祭司傳承者指的是什麼？」 其實我也不知道該怎麼回答。 但此時福報之爐吐出綠色粒子，往月種身上，試圖喚醒月種。 月種確實醒來，在空中交織出一段畫面。 那是關於月神的過往。 月神之所以逝去，是因為憐憫其子民，故身化做彼岸， 讓神國子民能有機會，不會因為各種大災難而完全滅絕。 同時制定因果鍊，因果鍊並不會隨著魂魄消亡而消失，因果鍊是寄託在靈之上， 到達彼岸，隨著輪迴，靈魂進行轉世，在下一輩子就會要原來的債主付出代價。 月之大祭司，實則為月神之投影。 所謂大祭司的傳承，即是月神之傳承。 並非要成為空心之大祭司樣貌的民心容器， 而是要代替月神，監督神國的一切，是否有不合理或不公平之處。 月種，其實就是月神的靈魂碎片。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH11",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 314,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 314
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6776,15 +6375,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：玉半逆位、鏡逆位、光正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第12章。 以下是章節大綱： 作為旁觀者，看完後我道： 「所以彼岸可以當作為臨時避難所來用。這本是月神身軀的延伸。 彼岸只有月而無日，也是因為，彼岸之月即是真正的月神之所在。」 「若如此，擔心天體衝撞後，神國人民的存續， 即可以先一步將部份人民之靈魂，進入彼岸作為保留的暫緩區。」 「靈為核，魂魄為容器，身體為延伸。靈不滅，意志不滅，則魂魄長存。」 「月神已經給了，針對這場天體來襲之災難，最好的解答。」 我即刻傳訊告知神國國王。 神國國王猶豫了片刻： 「要退一個維度進入彼岸，也不是不行。但就會進入無窮的輪迴。意志不堅者，很容易因為一次又一次的苦痛，磨滅掉意志。」 我告知國王： 「天體襲擊危機已無法完全避免。虛之縛星大陣既佈下已久，一時之間要破解幾乎不可能。」 「意志堅定者也許可以度過這次危機，但仍屬於少數。神國子民本身仍處於動盪不安狀況中。否則不會有暮光再起的樣式出現。」 「所有的神國人民，是",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH12",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 344,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 344
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6833,15 +6429,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：分半正位、緣半逆位、韻正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第13章。 大綱如下： 此時國王屬下來通報。 上次捕獲的暮光教派主教及聖騎士，堅持不投降，甚至於希望趕快處死，讓他們可以回到虛的身邊。 我意念一轉，何不就從這些人身上的因果鍊開始。 我建議國王，這些暮光教派的主教跟騎士，手上應該都有不少人命，牽扯了不少的因果鍊。 與其這麼簡單讓其解脫，不然嘗試投入彼岸，讓他們進行輪迴，繼續償還這些因果鍊。 神國國王對此倒是贊成。教派對虛之力忠心耿耿，已這樣方式也可以先看一下，因果鍊在彼岸輪迴的狀況。 從神國回到彼岸，其實還是只有一條單行道，應該說是一座懸崖。 超脫者均可以來到神國，擁有合法的相對應權力。 從神國降維到達彼岸，為了不干擾低維度居民，只有進行輪迴一途。 接下來，我們將拒不投降的暮光主教跟聖騎士，剝奪靈魂寶鑚的外殼，只保留靈的基礎狀態， 投入彼岸深淵，進行輪迴。若不如此，當暮光主教跟聖騎士死亡，就又等於回到虛的懷抱，更增長敵人的勢力。 這也是對神國",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH13",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 371,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 371
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6890,15 +6483,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：枝正位、誤正位、金半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第14章。 大綱如下： 我先以共鳴狀態告知月之意志，並詢問其意見。 月之意志無悲無喜。若要為其愛護之子民，有何不可？ 但後續的影響可能會更加深遠。 我想了想： 「不如，我們將軌道攔截點，放在銀光殿堂跟月球的距離中間。」 「因為並不確定是否就一直往月而去，又或者是一種欺騙，實際上還是到銀光殿堂。」 「對了，既然空心太陽有研究室，月之上應該也有研究室吧！」 國王點了點頭。月脈學家就是常駐於月之實驗室的觀測研究學者。 我提出了要到月之上的研究室要求，國王立刻答應。若改變軌道朝向月，也會造成神國人民信仰崩潰。 我感嘆道： 「每次走空間傳送，總是會有種失重感。不過還好沒有持續多久。」 神國國王道： 「這是正常的。因為在各自地方的引力有所不同，時空規則都有小幅度不一樣。」 「初來月之陰暗面實驗室，可以先找尋確定時空之規則，對於行動會比較方便。」 一到實驗室，我們四人完全呆滯。 這跟我們那個時代的，月之陰",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH14",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 402,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 402
       },
       "confidence": "recorded",
       "review_flags": []
@@ -6947,15 +6537,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：愛半正位、地正位、老逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第15章。 大綱如下： 之後，神國國王跟我們，陸續發送了幾顆符文之心上去， 效果皆不如預想中的好，甚至於虛之核甚至於開始吸收符文的力量，進一步增大天體的規模。 「虛空既為吞噬一切之力，應該不可能沒有上限。」 「每次上升的符文之心，其中都帶有一些的福之符文力量。」 「那一絲渺小的希望之光已經越來越大。」 「但相對的也要更小心。福與禍只是一體兩面，在全黑之時的希望之光，在全亮之時的滅世黑炎。」 我如此想著。 隨著撞擊時間越來越接近，地上的神國居民越來越跟著恐慌起來。 我跟神國國王建言了預備撤退方案。 若月損毀，神國環境也會遭逢巨變，除了信仰之力消失，無意志之下只能隨人操控，這大環境也無法讓居民順利居住。 一旦神國子民遭受滅頂之災，剩下意志的神國子民，可以經由夢之通道前往彼岸，在彼岸進行輪迴的休整。 最至少能夠保留意志，最至少還有機會，再次變成超脫者重登神國。 忘記神國的一切並不重要，重要的是意志",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH15",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 440,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 440
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7004,15 +6591,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：幻正位、花正位、生正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第16章。 大綱如下： 我長嘆一口氣： 「這是最後了。」 目前最後的計畫， 由空心太陽先暫時放開引力牽引一陣，神國上升一枚符文之心，月之陰暗面研究室也上升一枚符文之心。 在三者交互作用之下，虛之核是否能一口氣吞噬這麼大的符文能量。 特別在月之陰暗面研究室的符文之心，將會使用跟神國上升的符文之心完全相剋的符文。 以正反向分別攻擊，以瞬間的意外營造機會。 在虛之核吞噬符文之力的同時，空心太陽進行引力牽引，看能不能一口氣將虛之核拉近太陽熔爐。 只要接近太陽熔爐，虛之核自然就沒有逃脫的可能，只能被太陽熔爐所熔煉，成為塵埃。 這也是最後的機會了。 由於神國資源已剩下不多，光是之前的縛星大陣，竟暗中用掉一半神國資源， 可見其嚴重程度，難怪會招來如此深厚的虛之核。 這也就只是用最後的資源，做的孤注一擲。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH16",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 467,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 467
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7061,15 +6645,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：果正位、魂半正位、死半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第17章。 大綱如下： 其實這個方式，還是小月建議的。 「若虛會讓人陷入瘋狂，那就以瘋狂對付瘋狂。」 「製造三方不平等狀況的條件，陷入三邊糾結而掙扎，看最後是誰會瘋狂。」 如預料所中，虛之核被慢慢拉出天體核心。 一步一步的靠近太陽熔爐。 一邊吞噬著剛嚐到的兩種截然不同的符文之心， 在消化之餘，還要應對來自太陽的引力拉扯。 虛之核最後裂解成三塊。 一塊被太陽熔爐拉入，連粉塵都不剩下。 一塊吸收了幻之符文，將連帶的隕石若有似無的，出現在夢境通道內。 最後一塊則變成生之符文，將神國人民生的希望泯滅。 後兩者變成不同種類的隕石雨，分別對夢境通道以及現實空間，進行攻擊。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH17",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 491,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 491
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7118,15 +6699,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：日半逆位、種半逆位、死半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第18章。 大綱如下： 結果比預期的還要好嗎？也不盡然。 預期的成果是，虛之核破碎，天體最後化為宇宙中的粉塵散去。 但虛之核破碎是事實，這些因虛之核合攏之隕石， 只會自由的朝向有引力的地方而去。 落點自然是朝向三方，空心太陽熔爐、神國表面、月之本身。 太陽熔爐連虛之核都能融化，對於這些隕石自然不過爾爾。 月之本身本就常承受來自太空中的隕石雨，更何況研究室位於月之陰暗面，被擊中的狀況有限。 最麻煩的就是落於神國表面的隕石雨。 以及落入夢境的幻之隕石。 虛之核雖已毀滅，但隕石本身仍帶有一些虛的屬性。 若落於夢境之幻隕石，隕石虛之力配合夢之環境， 夢靨又要四起。 我只能先跟神國國王告知， 與眾人再次進入夢境通道， 維持夢境通道的順暢，保持進入彼岸的通道順暢。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH18",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 517,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 517
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7175,15 +6753,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：實逆位、啟半逆位、老半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第19章。 大綱如下： 一進夢境通道，夢境防禦系統仍正常運作中， 但大量殘存意志的各種光點出現，不少神國子民選擇進入彼岸進行休整。 我只能高舉「蘊生」， 先以「水」之符文，將夢中的幻之隕石能量， 集中成為虛幻的一片湖泊，將所有虛之力集中為一塊區域。 再輔以「魂」之符文，將完全無法辨識的光點，進行部份修復，直到能夠移動為止。 接著使用「啟」之符文，將前往彼岸的橋開啟。 只見一隊又一隊的光點，只要是能夠前進的，不管是殘餘怎樣的型態， 都平穩且有秩序的，到通往彼岸的橋上，慢慢行進著。 他們正在找尋他們生的機會。 而我也穆然想起，這與我獲得符文力量前，常做之夢的清晰預兆，竟完全相符。 雖說是超脫者，始終還是擺脫不了，命運之網的安排。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH19",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 545,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 545
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7232,15 +6807,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：鑽正位、水逆位、果逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第20章。 大綱如下： 等待光點皆以消失在橋上，我解除「啟」之符文，改用「域」之符文， 將整片化做湖的虛之隕石，包圍住。 再用「封」之符文跟「斷」之符文，將虛之力封印後，斬斷為更小的粒子。 最後投入進夢境符文防禦系統的能量槽中，填滿防禦能量。 如此應該可以保證夢境之路順暢。 處理完夢之途，我們回頭往現實神國之境觀看，隕石之災難狀況。 一踏入銀光殿堂，只見神國國王憂心忡忡。 「這次隕石造成的災害太嚴重了。」 「人民傷亡其實還只是其次，連人民生之環境都將會跟著變動。」 「隕石有幾顆落入火山，即將引發地表上火山噴發，大地變動。」 「不久後火山灰將壟罩住整個地表。神國即將面臨無日之時。」 「到時候，神國不會毀於隕石，而是毀於這寒冷的冰凍環境。」 我只能淡然的說： 「留一部分研究員在空心太陽跟月之陰暗面研究室，觀察地表行動。 其餘的，都前往彼岸，尋求那一線生機吧！」 國王只能應允。 並準備動身，走夢之",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH20",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 570,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 570
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7289,15 +6861,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：實半逆位、心逆位、火正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第21章。 大綱如下： 神國國王是最後一批離去的人。 在確認地表上沒有其他子民以後，神國國王也踏上前往彼岸之路。 我本以為，神國時代的彼岸，會跟我印象當中的彼岸完全相同。 但事實卻是相差甚大。 一樣的河流，一樣的對岸，一樣的生與死的交界。 但神國時代的彼岸，卻是開滿白花。 彷彿是從夢之花園，延伸過來的夢之花一般。 神國時代的彼岸荒無人煙。 連過河都要想辦法找工具度過。 此時的彼岸並沒有擺渡人進行幫忙， 完全就是一片無人之地。 神國國王到達彼岸。 先是用手中剩餘的資源，大致建構了一間避難所的所在。 若殘存只有意志者，就以生命輪迴的方式，進行魂魄重整修補。 神國國王在建立臨時庇護所之後說： 「此處，就叫未竟之所吧。」 初聽聞這個詞，我遲疑了一陣子，但並未多說什麼。 彼岸的未竟，這就是未竟之城的最開始樣貌啊。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH21",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 599,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 599
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7346,15 +6915,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：心正位、愛正位、夢逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第22章。 大綱如下： 在神國時代的彼岸，我嘗試與月之意志共鳴。 月之意志一樣的無喜無悲，一樣的溫柔而深刻。 但我感到了感激之情。 同時嘗試看看能不能以月之意志，連通月之陰暗面的研究室，跟空心太陽研究室。 空心太陽研究室的通訊遭受到嚴重干擾，勉強可以聯繫但不穩定。 倒是月之陰暗面研究室的通訊非常順暢。 月之陰暗面研究室告訴我們，目前無人的神國地表，是完全無法觀測狀態。 厚厚的灰塵完全隴罩住地表，陽光無法照射進入，連赤道都開始飄雪。 所有地表生物滅絕，只是時間早晚，甚至於可能只要下一刻，表面進行全面冰封，所有生物蕩然無存。 神國國王望向來到彼岸的神國子民。 通知他們現在的消息。 同時也告知，神國已無回頭路。 神國存續並不重要，重要的是神國子民的意志能夠長存。 他們開始度往對岸，原本寂然無聲之河道，頓時人聲鼎沸。 重傷者去，能留且願意留在彼岸之側者留。 如同神國國王，依舊停留在未竟之所。 而其餘",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH22",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 633,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 633
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7403,15 +6969,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：時半正位、實逆位、愛逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第23章。 大綱如下： 月之大祭司的身影，隨著神國子民的撤離，隨之消失在銀光殿堂。 當我準備將通往彼岸的夢之通道關閉時， 「月之大祭司」身影出現。 「謝謝你給了我一個頓悟的機會。」 「月之大祭司本只是月神的投影空殼。代表萬民之意志。」 「若萬民消失，但意志仍在，月之大祭司仍舊會在。」 「只是，已經不再是萬民的意志所在，是守護夢境的意志所在。」 原來，眼前的「月之大祭司」，竟是由夢境符文守護系統的核心，藉由「悟」之符文， 並配合「月之大祭司」的投影空殼，演化而來的全新人種。 「之後我會負責夢境之守護。這條道路上，現已殘存太多的光點遺骸。」 「我會將其遺骸盡可能的修復，並送往彼岸，進行輪迴的修整。」 「夢境將會由我守護，請不用擔心任何虛之力的侵入。」 我跟眼前的「月之大祭司」身影，表達禮貌以後，道別。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH23",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 663,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 663
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7460,15 +7023,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：火半逆位、心逆位、明逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第24章。 大綱如下： 其實會想著，雖然號稱為超脫者，但仍並沒有從命運之網超脫， 應該說，這也許就是真正的命運吧。 最後在未竟之所，與神國國王道別後，我們動身前往，超脫一開始之處，彼岸河流的最上游。 本以為會是跟之前一樣，越接近越冰冷，但卻沒有任何的氣候變化。 當到達彼岸最上游之時，只有一小塊，如同宇宙暗物質之物。 靠近時，福報之爐跟月種，立刻響起非常緊急致命的警報， 警告我們，如果再往前靠進一步，我們將會灰飛煙滅。 無奈之下只能放棄。 往彼岸生之路已絕，上游超脫之路不可行， 只能往彼岸內部，觀看輪迴之奧秘了。 於是，我們一行四人，從彼岸之一方，跨到另外一方， 並持續向內走去。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH24",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 691,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 691
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7517,15 +7077,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：誤逆位、花逆位、病正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第五篇最後一章的終章。 大綱如下： 彼岸，只有月亮，沒有太陽。 我們一路往彼岸深處前進。 途中看到各樣形形色色的光點。 有暮光教派的主教、聖騎士，大喊著虛無之神拯救我，卻得不到半點回音。 無奈只能繼續往前走，並期望前方仍是虛無之境。 有步履蹣跚的光點，因靈魂寶鑚即將碎裂，一步一步慢慢向前走去。 有不太亮之光點，彷彿缺少了什麼部位，一樣緩慢的向前走去。 有光點殘餘，勉力的持續往光點閃爍之光芒，慢慢的往前走去。 目標，都是同一個，彼岸的對岸之深處，輪迴。 而我們也即將看到，輪迴的真正奧秘之處。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
-        "source_line": 718,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 718
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7574,15 +7131,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "序章代表符文：月半逆位，礦正位，空逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的第六篇章節文章。大綱如下： 在前往彼岸的路途上。 我問小月： 「你之前不是有問過我大祭司傳承者嗎？」 「但其實，我自己也並不知道為什麼會成為月語者。」 「並且還是月語者當中最稀有的月之共響者。」 我轉身對大家說： 「我們成為了名義上的超脫者。然而，我們真的超脫出命運了嗎？」 「當我們想要用符文觀看命運軌跡之時，卻發現身上始終纏繞著命運鎖鏈。」 「有太多的事情，似乎都已經像是註定好了的一樣。」 朔望回答： 「對我們而言，守護老師就是我們的職責所在。」 小月回答： 「月之大祭司傳承者，傳承的是精神，而非其他物質形體層面之物。」 我感嘆的說： 「所以，不管原因，不管命運會怎麼走。」 「擔任怎樣的位子，就應該要負起怎樣的責任。」 「我也尚未找到，月之共響者，應該要負起怎樣的責任。」 「特別是在這月神身化的彼岸，這裡無日只有月。」",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 4,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 4
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7631,15 +7185,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：氣半逆位、虛逆位、草半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第一章。 大綱描寫： 我示意大家停下。 與其這樣走著，不如先詢問月之意志，畢竟彼岸只有月而無日。 於是我進入了共鳴狀態。 月之意志依舊無悲無喜，只告訴我，在彼岸深處，有我們所要尋找的答案。 這一切的發生是偶然，還是必然？ 好像是很多的偶然，但卻又是一種必然？ 月之意志則沒有回應，只說， 他無權決定我們會碰到怎樣的事情，到了，就知道了。 這似乎也是我們唯一能前進的方向。 如果沒有停留在未竟之所，無法後退不想停留，只能前進。 我們跟著人潮一同前進。 其他人好像都看不到周圍的人一樣，只知道一直往前走，腳步也無法停下來。 辰之符文跟域之符文一直處於發動狀態，蝕微微發熱， 將我們周圍的空間總合成一塊，彼此貼近。 以現今66符文的總量狀態，維持常態一直使用已不是問題。 直到前方突然飄來一陣濃霧，濃到彼此都看不清楚， 但我們仍憑藉著誓言之鍊，知道彼此還在彼此的身邊。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH01",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 34,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 34
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7688,15 +7239,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：彩半正位、夢逆位、花半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第二章。 大綱如下： 突然一陣聲音，傳入小月的腦中。 「小月... 為什麼你要... 我好恨啊... ] 小月驚呼一聲： 「父親！為什麼？為什麼你在這邊？」 我嘗試警告小月不要走散。 卻發現，小月已經消失在「域」之符文內了。不見了。 接下來是朔端，誓言之鍊無法判定他的位子，消失。 再接下來是望敦，誓言之鍊無法知道所處地，消失。 皆不在域之符文中。 我們，走散了。 唯獨只剩下我自己還知道，我還在走著。 我仍感覺他們都還在，但距離忽進忽遠。 這一片茫茫白霧，到底是有怎樣的問題？",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH02",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 65,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 65
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7745,15 +7293,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：福逆位、心半正位、鍊半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第三章。 大綱如下： 霧越來越濃，已經到達深手不見五指的地步。 同時意識也似乎飄的越來越遠，越來越遠..... 好像要進入一個準備好的夢境一般... 「喂！要上課了你還在睡啊！」 我被人推醒。 當視野恢復，我所聽到的這句話，讓我感到訝異。 我不是還在神秘的彼岸白霧探索嗎？ 這裡是？教室？我是，學生？ 確實按照本來的生活，如果我沒有接受什麼月語者傳承， 我確實會是在倉庫住過一晚後，回到教室上課。 但，卻又彷彿不像一場夢。 我夢中的那66符文還在。 「同學們，上課了！」 「打開你們的符文課本！裡面是月之符文的課程！這個是必修學分！沒辦法及格是不能畢業的！」 眼前一見，書本教材竟換成月之符文！？ 我到底是墜入了幻境之中，或者之前發生的，都只是我的南柯一夢？",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH03",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 89,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 89
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7802,15 +7347,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：老逆位、悟半逆位、心半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第四章。 大綱如下： 就這樣度過了一天的課程。 其實一整天上了什麼，我都沒有什麼印象。 只因為，月之符文66已經存在我的頭腦中非常久， 根本不用刻意去背還要想配合，隨手即可做到。 甚至於上課版本的還是42符文，比我目前用的66符文還少一大片。 但看到同學愁眉苦臉的樣子，我也不想去多說什麼。 準備下課回家了。 突然有個同學擋在我面前。他說他看我漫不經心上課的態度讓人生氣。 於是提出使用月之符文來做對決。 他輸了他要拿出一塊玉珮做給我，而我輸了就要拿出我懷中的綠色葫蘆給他。 我淡淡的笑了一下。福報之爐豈是任何人都可以碰觸，遂便答應他的對決。 我只用手招出「氣」之符文，配合他們沒看過的「核」之符文， 一發氣之核心子彈，用風之符文的力量飛去。 本就存在威嚇之意，不想傷人，否則配合向之符文，對方必定重傷。 最後對方認輸。我得到了他的一塊玉珮。 此時福報之爐竟然劇烈的發燙。我把玉珮跟福報之爐放在一起。 ",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH04",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 120,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 120
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7859,15 +7401,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：啟半逆位、幻逆位、悟正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第五章。 大綱如下： 我嘗試發動「辰」之符文來校對時間跟空間， 卻發現這邊的時間跟空間，與我出來之地方無誤。 同時我自己年紀並未有任何前進的改變， 一切正如我在授予月語者封號之前的世界。 放學後，我一個人走著路，沿著記憶，找尋最早碰見福報之爐的倉庫。 在路途中，卻發現道路已經被明顯的「禁止通行」標誌所封鎖。 我嘗試回到在湖畔，當時月之聖女小月，為了監視我所讓我居住的房間， 果然我的私人物品一應俱全都在這邊。 我敲了敲隔壁房間的門，想看看小月是不是也在這邊。 只可惜什麼回應都沒有，小月房間內沒有任何聲音，似乎空無一人。 自己先洗漱完，把身上東西為之一放，躺在床上，想著這些日子的一切。 於是我嘗試招喚蝕。 蝕之手鍊成在我手上，漂亮整條的66顆小符文珠串渾然天成。 我嘗試招喚蘊生，只見地上突然冒出一根枝條，旗下根莖纏繞，蘊生法杖出現。 我嘗試招喚墨香，只見地上突然冒出一朵花，花瓣從未開到盛開到凋謝",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH05",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 157,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 157
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7916,15 +7455,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：明逆位、星半正位、實半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第六章。 大綱如下： 我發動誓言之鍊，看看朔望兩人的連結狀態。 誓言之鍊未斷，兩者仍存在，但似乎不在我所處之時間，我找不到定位所在。 只要誓言之鍊未斷，表示兩者均在，這樣就夠了。 夜晚已深，當我即將準備睡之時，突然聽到敲門聲。 緊急打開門一看，竟是滿臉疲憊的小月。 小月先是疑惑的這麼問著： 「月語者... 你還是那個月語者嗎？」 我跟著滿臉疑惑，其實我也不知道我到底是不是月語者，到底為何要成為月語者。 我只能兩著手攤開，表示不知道。 小月長嘆了一口氣： 「果然，還是這樣嗎？」 「今天我跟朔言還有望新說明，之前所發生的一切，他們全部表示驚訝跟意外。」 「他們說，如果初代發生這樣的事情，那很多狀況，都確實是得到了充分的解釋。」 我只是順手的這麼一提： 「所以你有看到朔端跟望敦嗎？」 小月眼睛為之一亮： 「你確實還是你，月語者，是我所知道，並且一起探險過這麼多日子的，那個月之共饗者。」 「時光好像",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH06",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 197,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 197
       },
       "confidence": "recorded",
       "review_flags": []
@@ -7973,15 +7509,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：語逆位、鍊逆位、愛正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第七章。 這次，換小月試圖招喚月種。 月種與之回應，散發出藍白色粒子，試圖想要展示一些什麼，但最後失敗告終。 月種只表示，需要更強的力量。 我只能說： 「最後還有意識的時候，是在何時？」 小月嘆了一口氣： 「最後我只記得在彼岸，我們正要往彼岸深處進發，突然一陣濃霧。之後就來到這裡了。」 我點點頭表示贊同，因為這跟我的印象是一樣的。 小月繼續說： 「我其實當初很擔心，超脫之前，在彼岸的訊息不知道有沒有送到現在的神教手上。」 「不過現在看起來，與其解釋太多之前的經歷，不如趁現在將這些經驗，告知朔望兩家。」 「當初抱著半信半疑之試，但朔言說，太多沒有辦法解釋的事情，都有了合理的方向。」 「今天一整天都在跟朔言與望新談論這些曾經經驗過得過往。」 「兩人皆稱感悟良多。與他們所了解的，對初代的印象如出一轍。」 「但至於日之神教教主，會是以我父親的姿態顯現，兩人都未給任何客觀意見，只說可能只是巧合。」 「",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH07",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 245,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 245
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8030,15 +7563,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：界逆位、福逆位、石半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第八章。 與小月聊到很晚，聊到這些日子的想法，聊起這些生活的感慨。 雖然還是找不到為何我會成為月語者，小月身為月之聖女本身的意義， 但這段時間經歷的所有一切，卻是真實難忘的生活回憶。 轉眼夜已深，我們互相告別， 反正只住在隔壁，想聊可以繼續聊，也非急於一時。 只是我仍覺得奇怪，朔望兩人消失在現在時間似乎也是沒錯。 但究竟是在何處，我只知道跨越時間空間的誓言之鍊仍在。 在這種懷疑的情緒下，我進入了夢鄉。 夢中，好像看到，朔端用心的照料他們收養的戰爭孤兒， 對任何事情親力親為，並教育其要給人仁愛但不能太過，而導致同情之心被濫用。 而望敦則嚴厲的對待他所收養的戰爭孤兒。 親自下場訓練，並嚴格要求，絕對不能殘殺無辜者，絕對不能將自己陷入殺戮之心當中。 而最好的方式，就是朔家之子跟望家之子，一起行動，一起互相配合，一起互補。 朔家之子傳承了仁愛之拳，望家之子傳承了殺戮之劍。 同時月盈鏡跟月虧儀，同樣傳",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH08",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 285,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 285
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8087,15 +7617,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：草正位、辰半逆位、病逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第九章。 這些夢，隨著清晨太陽光的照射，而消散無遺。 但卻又真實的像存在過，應該說，這些就是真正的事實。 起了一個大早。 我不經想著，所謂的輪迴，到底是什麼？ 完成過去所遺憾之事？ 完成過去未竟之果？ 然而，現在的我們，到底是處於幻象，還是處於真實生活當中？ 我始終找不清楚這些疑問。 但不管如何，日子還是要過，生活也還是要持續。 一早到達學校。 昨日被我輸掉玉珮的同學，竟找了另外一位同學前來報復。 並揚言，若我輸了，他的玉珮跟我的葫蘆就要歸他， 但同時，給的賭注，有對方的一對玉墜。 於是對決開始。 對方先攻，使用火之符文、向之符文跟雷之符文， 試圖以雷火混合攻擊對我造成傷害。 但我只用「鏡」之符文，將所有攻擊反彈回去。 對方落敗。 於是，一對玉墜又落入我手裡。 福報之爐竟又開始震動， 以迅雷不及掩耳之勢，將一對玉墜蠶食完畢。 我只感覺福報之爐，吐出的綠色粒子更為厚重， 似乎吐出的並非粒子，而",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH09",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 327,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 327
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8144,15 +7671,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：心正位、界正位、草正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第十章。 上課之前，那位輸掉玉墜的同學，又帶了另一個實力更為雄厚的人， 想為其討回公道。 這次與之前小打小鬧不同，對方拿出的是一個價值連城的玉鐲子。 我也只能拿出綠色的福報之爐。但此時的福報之爐，玉葫蘆外型，已經越來越晶瑩剔透。 我還是讓對方先攻，表示禮貌。 對方首先以「封」之符文跟「空」之符文，試圖將我所在空間的符文給封印。 之後發動「斷」之符文，試圖一次將封印的空間，連同我一起斬斷。 我只能先用「分」之符文跟「誤」之符文，將空間封印給分開，並導向錯誤之處。 對方的「斷」之符文，被我的「虛」之符文，吸收到虛無之境，無效。 我回之「晶」之符文跟「韻」之符文，將其動作跟心跳頻率固定住。 本想使用「鑽」之符文當作最後一擊，但我不願傷人， 只告知，接下來之一擊，用任何元素皆不能抵銷，若能防禦再說，不能防禦則投降。 對方不信，先以「氣」之符文、「空」之符文跟「風」之符文， 試圖將空間內所有空氣當作防",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH10",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 367,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 367
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8201,15 +7725,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：彩正位、老半逆位、心逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第11章。 福報之爐發出強光。試圖想要昭顯自己的存在一般。 突然，一個老人身影出現。 「月之共響者，我觀察你很久了。」 「從你一開始被命運之絲纏住，到被斬斷織命，以及用誓言之鍊變成命運之鍊，再到現在的命運之網。」 「我是福報之爐底部，最底端的月之神祇投影。」 「另一個稱呼為，彼岸化身，或是，月之意志。」 「引領你來到這裡，進行超越，再回來將彼岸殘缺部份收齊完整。」 「這才是真正的輪迴之道。之前的輪迴，都缺了很多。」 我突然自己進入了共鳴狀態。 月之意志出現在旁，竟已老人身影同步，並慢慢開始重疊。 「之前的月之意志有所殘缺。某些碎片，被掌握在數人之上。」 「靠著你的努力，終於將月之意志之殘片收集完畢。終於為完整的月之意志。」 月之意志感到欣慰，並頭一次在未被詢問前，主動表達說明。 「為何你會成為月語者？亦或是，月之共響者？」 「因為你就是月，月即是你。你的靈魂中有月之意志的殘片。這才吸引福報之",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH11",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 404,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 404
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8258,15 +7779,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：枝逆位、礦半逆位、石半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第12章。 以下是章節大綱： 此時我不禁想問： 「那些，我所經歷的一切，到底是什麼？」 月之意志淡淡的回答： 「那些，都是你。」 「你曾經是初代的月語者，在月之神教創建時，給與不少人希望的月光，教導不少人月之語。」 「你曾經是養大朔望之父，也是朔望之師。教導並給與他們兩人，勇氣以及智慧，並傳承下來。」 「你曾經是穿過彼岸超脫之路的超脫者。」 「你曾經是月之神國那位阻擋虛之力進攻的月語者。」 「你曾經是引領月之神國子民到彼岸避難所的月之共響者。」 「這些，都是你。只是屬於不同時代，不同時間點的前世罷了。」 「這些，都是你存在於靈魂當中的記憶。」 「這些，都是命運之網的其中一個部份。」 「而月之意志，一直都在你身旁。」 「因為，月之意志即是你，你即是月之意志。」 「不管屬於你的月光多麼渺小，它始終是月光，照亮著許多人前進的指引之光，引領著許多人生存的希望之光。」 我反射性的問了一個問題： 「那，",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH12",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 435,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 435
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8315,15 +7833,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：風正位、時正位、語逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第13章。 大綱如下： 月之意志繼續說著： 「按照你本來的命運軌跡，此時應該將會有朔望的人前來拜訪。」 「但命運之網，已經捕捉不到你了，本該你的位子只剩一片空白。」 「命運的分歧點已現，你的未來會如何，掌握在你自己手上。」 「屬於你的輪迴，受到誤之符文的影響，已經產生誤差。」 「福報之爐的碎片，只是命運之網內，所剩未圓滿之事。」 「當你已完成，月之意志出現，就代表你真正的超脫於命運之外了。」 「只有自由的月之意志，才能決定月之意志。」 「現已為無日之時，月神已為其子民身化輪迴，剩下的只有彼岸那輪月光。」 周圍的所有立體影像，突然如碎片一樣，碎落消失。 呈現出本來的白霧一片。 「受誓言之鍊影響，你還在本來的位子當中。」 「目前只有頭上的明月一盞。以及你肩上的誓言之鍊。」 「你可以選擇斬斷誓言之鍊，繼續前進完成命運之網的超脫。」 「又或是將誓言之鍊的相關者，一併進來前進，一同完成真正輪迴的超脫。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH13",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 469,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 469
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8372,15 +7887,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：石逆位、枝正位、光半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第14章。 大綱如下： 對於月之意志的提問，我的回答理所當然的選擇： 「誓言之鍊既起，怎麼輕易斬斷。就算是為了我自己，我也不願拋棄一起進行這麼多冒險的夥伴們。」 此時，白霧仍然一片，我嘗試已辰之符文定位時空。 加上界之符文，找尋誓言之鍊對象所在之界域，在以時之符文跟空之符文進行傳送。 這次特別的是，輔以緣之符文，來看我與朔望兩人是否仍還有緣份，能夠繼續走下去。 緣之符文跟時空符文的回應都是，有找到誓言之鍊的目標， 所以我舉起蘊生，展開「域」之符文，往朔望所在時空而去。 到達時，夜已深。 推算時間，應該是朔望即將要跟我去日之神教做講習之前。 朔望早已感知誓言之鍊的灼熱， 特地前往我所在的地方相會。 朔端：「老師。姑且你不管是哪一位，是當代月語者，或是另一位月之共響者。我們都稱呼其為老師。」 望敦：「老師從頭到尾就只有一位。誓言之鍊所指向的那一位。不管是當代視我們如子的老師，又或是月之共響者。都",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH14",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 498,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 498
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8429,15 +7941,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：光逆位、福半逆位、金半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第15章。 大綱如下： 由於我已經脫離命運之網，原本跟望新以及當代月語者之戰並未發生。 小月這時候正忙著處理教中事務。 這次小月選擇聯合朔言之子，在告知小月被望新之子打傷以後，請朔言之子，觀察望新之子的異動。 朔言之子知曉後，暗中跟蹤望新之子，得知殘殺平民的真相後，朔言之子怒了。 朔望兩家代代皆集中一起訓練，主要原因是為了互補，以及互相監視，怕彼此做出越軌之事。 這次望新之子的雙劍，斷於朔言之子的拳腳之下。 望新之子對朔言之子的偷襲跟竊取，朔言之子已經高度留意，故未讓其得逞。 而朔望兩家對於旗下管教，自然秉持互不插手。 望新得知此事，自然將此次的望新之子資格取消，讓另外一位來做繼承。 於是，可能讓月之神教分崩離析的事情，在小月的手腕之下，完美的處理好。 對於當代偽造的月語者，小月絲毫不擔心。因當代月語者極少出現，也極少干涉教務。 小月並跟朔言表示，無意之後再接受父親所留教主之位。 並告知，為",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH15",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 541,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 541
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8486,15 +7995,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：死逆位、因半正位、病逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第16章。 大綱如下： 我們已無牽掛，已無退路，已無任何停滯或是回頭的可能性。 剩下的，我們只能往前走，往未知的命運之網外而去。 瞬間，周圍圍繞的白霧消散。 我們只看著周圍在地上的人們。 有些開心，有些哭泣，有些氣憤，有些哀傷。 各種人有各種不同的樣貌跟情緒。 而那代表眾人，死之終點，也同樣是生之起點。 其他人受損之靈，隨著時間逐漸開始復原。 一旦復原完畢，就會自動踏入號稱輪迴的深淵內， 一同復原的，還有彼此纏繞的因果鍊。 於是乎，一段又一段身纏鎖鏈的靈魂，一個又一個，進入輪迴的深淵之中。 與其他人不同的是， 我們身上並未纏有任何的因果鍊， 只有閃閃發紅的誓言之鍊，互相連結。 這並不是承擔的責任，這只是單純關係的連結。 我們亦不欠彼此什麼，我們只想脫離命運之網，找尋屬於自己的一片自由天空。 在不受迷霧的影響之下， 我們小心翼翼，在不墜入輪迴深淵的前提下，沿著周圍，一直往前走。 原本灰暗的天空",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH16",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 574,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 574
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8543,15 +8049,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：枝半逆位、日半正位、老正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第17章。 大綱如下： 平靜的荒原上，渺無人煙，沒有任何人影，沒有任何聲音，沒有任何植物。 只有一片又一片的荒漠跟石壁。 我們走在沙漠之上，其實已然迷失了方向。 但我們秉持著，遵照月光指引的方向，來前進。 走了不知道多久，也不知道多遠。 遠方突然出現一道石頭做的牆壁。 這裡似乎就是輪迴的最底了。 已經無法往前走了。 我們不經感嘆， 原來努力了這麼久，還是終究逃不出命運之網的掌控嗎？ 或許只是從一張網，越到另一張網而已？ 當大家稍做休息之際， 我發動了共鳴，詢問月之意志，到底是不是已經到達了終點。 本無悲無喜的月之意志，此時竟充滿了笑容。 「我的子民們啊，也只有你們到達的了這裡了。」 「這裡是輪迴的最深處，月光所照耀的最底處。」 「循著陰影處，自會找到出路。但過了此處，月光將無法在護佑你們。」 「在這無日之時，竟有人能到達此處。已經有很久很久沒有人這樣做了。」 「進來找尋我吧。我是月神。我在超",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH17",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 609,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 609
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8600,15 +8103,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：心半逆位、魂半逆位、種逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第18章。 大綱如下： 陰影洞窟內沒有任何光源。 我嘗試發動界之符文，發現這裡並不屬於任何一界， 發動域之符文，也無法探除其內的區域狀況。 發動時之符文跟空之符文，完全沒有作用。 在火之符文會被陰影襲擊而滅的前提下， 我們別無選擇只能只用光之符文。 並且在周圍護上晶之符文，以防有萬一的突襲行動。 洞內陰森黑暗，分歧路非常多。 其實大部分都是隨著直覺選擇走哪邊。 有時候小月會跟朔望進行打鬧性的爭吵。 「早知到該走這左邊。走右邊怎麼感覺好像又怎回來了。」 「在月光沒照耀的地方，真的不知道要選擇走哪邊比較好。」 我只能在每個分叉口，啟動「悟」之符文跟「分」之符文， 將得到的結果反饋給大家做討論。 「有些地方往前還有更多的叉路。」 「有些地方似乎相對單純一些，但到底哪裡才是離開之路，我仍然不清楚。」 最後不得已，發動「土」之符文跟「地」之符文，還有「石」之符文， 看這整片的土地是延伸到哪邊去，這些石",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH18",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 643,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 643
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8657,15 +8157,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：石逆位、樹半正位、啟正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第19章。 大綱如下： 出口盡頭，為一間石室。 石室周圍點亮了蠟燭，將周圍照的一陣明亮。 看到明亮石室的們，我們迫不及待的走進去，想知道裡面有什麼。 但裡面只有一張祭祀桌，上面有一小塊圓球。 跟我們在彼岸上游看到的圓球相同， 裡面材質相當於宇宙中最危險的暗物質， 伸過去不知道會不會被泯滅。 之前福報之爐跟月種，碰到時瘋狂的鳴響警報， 告知周圍所有人需保持距離，不得靠近， 否則一旦被暗物質吸入，等同於進入黑洞，會被壓碎成粉塵。 但這次不同。 凝鍊的福報之爐，散發著綠色強光。 成為玉珍珠型態的月種，也散發的藍白色強光。 這兩道強光，分別相那一團暗物質而去。 只見暗物質開始旋轉，將兩道光都完全吸收。 等到了一個程度，暗物質竟分裂成兩塊。 同時，祭壇分成兩塊，出現大門，微微打開。 小月如此感嘆： 「所以。我們會成為超脫者，並不是沒有原因。」 「也許就是緣份吧，在對的時間對的事情集中在一起。」 「一起",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH19",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 688,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 688
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8714,15 +8211,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：土半逆位、鍊半正位、金正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第20章。 大綱如下： 一道亮光一過，周圍空間豁然開朗。 竟是一大片金碧輝煌的宮殿。 但，似乎已經很久都沒有人存在了。 宮殿上有著厚厚的灰塵。 雖然黃金裝飾品跟用品，仍顯得出其高貴奢華之風。 這些物品已經放置了太多年了。 有些甚至於清觸一下，就化為粉塵消逝。 「有客人來了啊！自從我來到這裡，還從未看見過任何一人。」 「一起進來來坐坐喝杯酒吧！」 遠方不知從何處傳來的聲音，示意我們往深處走去。 「究竟是多少個靈魂週期過去了，我也已經忘記了。」 「我這裡有人發現就已經是稀奇，沒想到一次竟然有四個人。」 「歐，月之共響者，月之監督者，兩個月之守衛。這陣容也太剛好了。」 月神拿著酒杯招待我們： 「請坐，遠道而來的貴賓們。」 「我是你們常提在嘴邊信樣的，月之意志，月神。」 「能來帶這輪迴底下的深處，非常的不簡單。」 「我的月之意志一直有在觀察你們，你們也不負所望的成為超脫命運之網，走到此處。 月神繼續",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH20",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 727,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 727
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8771,15 +8265,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：樹半正位、幻逆位、玉正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第21章。 大綱如下： 月神拿著酒杯說著。 「彼岸只有一輪月，月之意志看得到所有的彼岸全景，也包括你們。」 「從你們踏進彼岸，試圖超脫但仍回到超古代的輪迴，這一關是你們必須要過的輪迴一關。」 「也是最後纏繞著你們的命運之網。」 「其實我本是看好月之神國國王，但他竟不敢踏進輪迴區。」 「只在外圍放了未竟之所，他想要宣示，等時機一到，等彼岸通往神國現世打開，他必能在創神國之巔峰。」 「但可惜的是，神國的大嚴寒時代，會持續數個靈魂週期。」 「在輪迴內可以保持跟修復意志之靈，但他不願踏進輪迴，只待一日他的意志被時間磨滅，消失只是早晚之時。」 「跟他比較起來，你們聰明的多。」 「選擇無畏繼續前進，就算覺得還在命運之網內，你們仍嘗試在撞破一張。」 「這種精神，很久很久都沒有發生過了。特別你們四個都還是我的意志投影。」 「雖說是神的投影，但主體意志各有不同，側重方向也各有不同。」 我只是好奇的問： 「難道",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH21",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 766,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 766
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8828,15 +8319,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：靈半正位、愛半正位、塵正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第22章。 大綱如下： 我不禁提出一問： 「所以到達極樂天堂，又如何？又能過做什麼？」 月神拿著酒杯，緩然到： 「你們就不在是我的投影了，你們就是各自的自由意志了。」 「在無神的極樂天堂，是可以自己封神之處。」 「想要什麼神，自己封賞自己，自己就可以成為怎樣的神。就連我這個月神，也可以。」 小月淡淡的說： 「但我們無意成為什麼神。我們只想要脫離命運之網的糾纏，只想要自由的過自己的生活。」 月神笑了笑： 「除非你們成為神，不然命運之網會一直嘗試的纏繞你們，一直再讓你們踏入輪迴當中。」 朔端說： 「我們從沒有想過要當神的一天，也不會羨慕神的權柄。那只是一種身份上的束縛。」 望敦說： 「當神又如何？你身為月神，也還不是在這終於天日之地，獨自飲酒？」 我嘆了一口氣： 「我們真的不想要當什麼神。若成為神，則也要負起應進之職責。」 「我不認為我們需要用神的職責來束縛我們的自由。」 「月之意志不應該為任何",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH22",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 796,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 796
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8885,15 +8373,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：愛正位、韻逆位、土逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第23章。 大綱如下： 我淡然說道： 「我們並不畏懼命運之網的追捕。捉捕到又如何？不被追捕到又如何？」 「所謂極樂天堂，我們會上去觀看，但並不是為了封神。」 「只是以一個人類的身份，單純的看看風景，看看那些所謂神的神殿，長的如何。」 「我們不會成為任何神，我們只會是我們自己。」 「並非怕負起怎樣的責任，而是我們已經在承擔一些對於後來者的責任了。」 「從今而後，應該繼續延續這樣的無日之時，任何人公平自在的活著。」 「任何人都不用侍奉其他自稱為神明者。這是我們想要的公平。」 「若你非月神，弒神者又何必追殺於你？只是想貪圖你的權柄，又或是貪圖你的寶藏罷了。」 小月有感而發的說道： 「人只要有了足夠大的權力，就會變得貪而無厭。」 「別人會如何我並不知道，但我自己不喜歡我自己變成那樣。」 「為了權勢或是地位，兄弟親情皆可拋棄，我不願成為那樣無血無淚之人。」 月神長嘆了一口氣。 我順著話說： 「說實話，",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH23",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 828,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 828
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8942,15 +8427,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：域正位、空逆位、分半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第24章。 大綱如下： 月神，不，月神的投影最後表示： 「我會帶你們去極樂天堂。」 「不是因為我想成為真正的月神。」 「我也想知道，為何我會成為月神的投影。」 「而已身化輪迴的月神，其意志應該就是自由的月之意志。」 「這些月之意志不應該受任何人掌控，這是自由的月之意志。」 於是大家舉起杯，致敬。 「敬所有月神的投影。」 「敬我們自己。」 「敬所有的一切。」 我笑了笑。 「成為神，成為永恆，其實除了負擔神的職責，還需品嚐萬年孤寂的永恆。」 「成為超脫者，最主要是希望，我的命運由我安排，而非讓命運之網來做排列。」 「我亦不追求永恆，也不追求權位。我只想要知道的，只有更多的學問，更多的知識罷了。」 「為何成神就能擺脫命運之網？為何神終究也還是會隕落？這跟一般人有什麼不同？」 「我想探索的，是這樣的知識，這樣的原因跟不同。而非成神之果。」 「成神的強跟弱，一直都不是我的目的所在。我只想探尋，為何成神",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH24",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 859,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 859
       },
       "confidence": "recorded",
       "review_flags": []
@@ -8999,15 +8481,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：語半逆位、水半逆位、界半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第五篇最後一章的終章。 大綱如下： 修整完畢之後，月神之投影，帶領我們往黃金宮殿的上層而走。 月神投影長嘆： 「其實要小心的是那些弒神者。」 「大部分的弒神者都是無意識，為守護極樂天堂的守衛。」 「少部份的弒神者，會對經過之弱小神祇進行敲詐。並在得到財物之後，將弱小神祇刺死。」 「很多前往極樂天堂的人，都是為了搶奪財寶，又或是稀世珍寶。」 我聽到眼睛為之一亮： 「所以應該有古代智慧捲軸是嗎？」 月神投影邊走邊說： 「是一定有的。到目前為止，月之符文詳細記載數量跟相關文獻，仍然沒有很多。」 我淡然的說： 「我是已經確定總數為66個了，但仍有少數符文還是個謎，不知道怎麼配合使用比較好。」 「我想古代智慧捲軸裡面應該會有不少記載。」 朔端笑了笑： 「很難得會有老師感興趣的事情。既然老師這麼想看，我一定會保護好老師。」 望敦也微笑了一下： 「而且只要老師會的，都會教導給我們。所以也等於我們看過了古代",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
-        "source_line": 894,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 894
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9056,15 +8535,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "序章代表符文：葉逆位，水半正位，鏡半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的第六篇章節文章。 大綱如下： 越往極樂天堂，風景越更顯廣闊。 從黃金宮殿之階梯竟已穿透雲層，如同浮現在空中一般。 周圍浮現了很多長翅膀的弒神者， 準備隨時對階梯上，意圖想要登入眾人國境的人進行阻擊。 我先打開域之符文跟鏡之符文進行防禦。 我們無意登神位，但只想知道所謂神位之後的奧秘。 經過了不少的遭遇戰， 走上了不少的階梯， 最後我們終於到達這傳說中的天堂之門之前。 碩大的門扉，沈重的門鎖，莊嚴宏偉的氣派，昭示著一切都不是屬於人間的建築。 花了一點力氣推門而入。 發現裡面竟是一片灰暗的廢墟。 月神投影： 「這... 怎麼會？在諸神黃昏以後，以往燦爛無比的極樂天堂，怎會變成如此？」 但裡面，竟有一塊領地，其中開滿了夢之花。 小月大喊： 「這裡！這裡就是夢之花園的真正所在地！」 「所以所謂的極樂天堂，只是很多人想像當中的理想夢境！」 「很多在痛苦折磨生活中度過得人，在夢當中想像的天堂而已！」",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 15,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 15
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9113,15 +8589,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：塵正位、暗半正位、枝半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第一章。 大綱描寫： 既然這裡是夢的實體地域，我嘗試招喚了一下，夢境守護者。 果然，月之大祭司模樣的夢境守護者出現了。 夢境守護者： 「你怎麼會在這裡？這裡是夢境之地，而你並沒有使用任何夢之符文？」 「真的非常難見，未用夢之符文而前往到夢境中。」 「你們說這裡叫做極樂天堂？某程度來說確實是。」 「這是很多人心中的天堂之地，但只存在於夢境當中。」 月神之投影反而感到驚訝。 在諸神黃昏，諸神隕落之後， 天堂棲息地竟有一個有意識且清醒的管理者。 夢境守護者跟我說： 「當然，若你說你是月神之投影之一。我是你心理面，對於夢境守護的投影所成。」 「某種層次來說，也正因為如此，我也所以存在，也存在於守護這片夢境之地。」 「就是因為你曾用心守護，我也會遵照你之前的想法，用心守護這片夢境之域。」 「既然來了，就來參觀看看，這片你曾經用心守護之地。」 這下月神投影則愣住了，但夢境守護著引領著我們前進。 「夢境當",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH01",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 51,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 51
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9170,15 +8643,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：生逆位、福逆位、塵半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第二章。 大綱如下： 夢境守護者淡淡的說： 「既為守護者，不會去打亂任何夢境的持續跟進行。不管是任何光怪陸離的夢境，只要是正常的夢境，就不歸屬於守護者的職責範圍。」 「但若夢境受到外來之力所影響，這時守護者就會履行其守護職責，確保每個人夢境正常運行。」 「你說的，外面天空那些所謂的弒神者？其實只是某些外力產生的夢境碎片，被守護者驅逐之後所產生。」 「像之前所驅逐的大量虛之力，也間接造成這些你們所謂的弒神者產生。」 夢境守護者帶著我們前進。突然指著一處： 「這裡是神國國王的夢境。他尚未進入輪迴，意志仍存在於彼岸之側，未竟之所。」 「他的夢境永遠都是期望，神國子民能夠安然的生活在這片天地之間，而不用躲在這樣憋屈的地方。」 我們隨著守護者指的方向而看，果然是一片憑空冒出的影像。 影像中的神國國王，受到萬民愛戴，專注辛苦的進行各種國政，勸勉神國百姓子民努力。 夢境中突然出現之前的虛之核天體，卻看影像",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH02",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 82,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 82
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9227,15 +8697,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：啟正位、福逆位、花半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第三章。 大綱如下： 夢境守護者繼續往前走著。突然手指著一處枯萎之處。 「當然這裡也有已亡者的夢境。在死亡前所看到的各項虛影。」 「只要有意志之處，夢就會隨之而成。不管是虛幻的夢境，又或者是心中的夢想。」 枯萎之處冒出一片影像。 影像中央是暮光大主教。那位指導規劃縛星大陣的主要首腦。 先是集中以數年時間，以各種方式進行土地徵收，載運大陣所需材料，到達大陣所指定的地點。 再將相關知道者，當作大陣祭品，失去光芒的眾多光點，散落在大陣各陣角周圍。 最後暮光大主教，在大陣正中心，念出暮光教之禁咒，招喚無限時空外的虛之核來臨。 於是縛星大陣告成。虛之核的天體降臨。 眼見月之神國地表被擊穿，無任何爆炸之聲， 而是整片光景收縮成為一片虛無， 最後連暮光大主教都被虛無之心吸收，並高喊「為神犧牲是其光榮！」。 最後，暮光之日來臨。 整片星域，化為一片虛無，只剩下宇宙中的暗物質。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH03",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 105,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 105
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9284,15 +8751,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：土逆位、誤半逆位、老正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第四章。 大綱如下： 夢境守護者，指著旁邊另外一處，即將可能的枯萎處： 「當然，已亡者有夢境，意志弱小者，也有夢境。」 旁邊另一處，被枯萎傳染到的區域， 飄起另一片影像。 影像中央是暮光教的聖騎士跟主教。 這些人原本只是平凡簡單的平民， 受到虛之力感召，成為暮光教派的聖騎士跟主教。 他們所想的，其實就只是希望，能夠平安的度過末日。 若這個末日是一場審判，他們希望在認罪之後，繼續存活。 他們單純只是想要讓其他親戚子嗣，都能夠成功躲過這場末日之劫， 所以也希望其他相關人都投身進入暮光教派， 這樣在末日的最終審判前，就可以獲得存活的機會。 而在末日的審判之後，他們便可以獲得真正的自由。 他們本無意要去攻打或是進入其他人的領域當中。 只是受限於上級指令，甚至被要脅， 如果不這樣做，末日時會遭受更嚴重的審判。 但他們充其量也只是一個隨風倒的草罷了。 他們所為的，只是希望能夠生存而已。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH04",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 131,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 131
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9341,15 +8805,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：晶正位、金半正位、葉逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第五章。 大綱如下： 夢境守護者指著地下： 「當然，曾經的神祇，也有夢境。」 「但經過諸神之黃昏，諸神面臨末日，自我否認自己，還是跟著隕落。」 「所留下的，神之夢境，只有部份殘片而已。」 地上突然有很多殘破的影像。 一段又一段，好像缺少了什麼。 有些影像缺了一角，有些影像缺了一半，有些影像只剩下一個小碎角。 但無一深刻的播放著，曾經發生過的事情。 裡面有所謂的神祇：能力比平凡人較高者，自詡為神。 有些夢著一直參加宴會喝酒到大醉， 有些夢著周圍美女環繞，任其挑選， 有些作弄著其下所謂的「子民」，表達這些神的「憤怒」。 但到最後， 都是慌張的結束逃跑。 只見一顆災難之星即將到來， 所有理想中的「極樂天堂」，全部毀於一旦。 還跑出不少的夢靨變種生物，對所謂的「神祇」，進行反噬。 虛之核，侵襲的不只是普通人民的意志， 更多的，更是這些所謂神祇的思想，讓其認為必死而放棄意志。 當自我否定自己的存在，只",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH05",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 164,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 164
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9398,15 +8859,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：病正位、分正位、石正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第六章。 大綱如下： 夢境守護者指向一個非常獨特的地方，空中的月亮。 「至於月神，則非常不同。」 「月神的夢境，預知到了月神神國子民的災厄。」 「月神並不怕隕落，也不覺得諸神黃昏會對其造成影響。」 「月神只是憐憫其子民，希望神國子民之意志，能夠一直繼續傳承下去。」 「月神早在諸神黃昏之前，就已經預先知道結果。但他選擇的是，身化輪迴。」 「將子民意志進行修復的同時，根據因果，進行相對應的輪迴階段，也順著命運之網的道路走。」 頭上的月亮，似乎響應著夢境守護者的話，微微發亮。 半空中出現一段影像。 月神已在夢中夢見，現今「極樂天堂」之樣，以及眾生對於末日慌亂之景。 月神早已知破滅是必然，但仍不捨於子民意志的分崩離析， 故設定了因果的機制，將其意志用輪迴，傳承下去。 月神的投影驚呼一聲： 「那麼我，存在的意義到底為何？」 夢境守護者淡淡的說： 「月神所剩下來的投影，只是引導著，這些未在輪迴，超脫輪迴",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH06",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 203,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 203
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9455,15 +8913,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：根逆位、月正位、生半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第七章。 夢境守護者繼續走著。突然指著路邊的一朵正在盛開的鮮花。 「來看神國未進入彼岸的未亡者夢境吧！」 「神國的未亡者，目前只在兩個地方。一個在空心太陽研究室，一個在月之陰暗面研究室。」 「空心太陽研究室的研究員，其實本就是其他時代來的超脫者。」 「但他們不願意接受神國調令，只願意在空心太陽內，接引後續來的超脫者。」 「其意志分分秒秒都在接受太陽的侵襲。」 路邊的鮮花，花瓣旁冒出影像。 影像中則是，空心太陽研究室內，每個人都在對於太陽的照耀侵襲，每分每秒不停的抵抗。 有些人意志已經到達最底端，只能成為光，化為太陽的一部分。 但他們仍然堅持著，堅持著等待其他超脫者，並且接引。 「至於月之陰暗面研究室的研究員，則必須面對，必須被遺忘的命運。」 「月之陰暗面，將永遠看不到神國表面。承受的，只有永恆的孤獨。」 「意志消亡，都只是早晚而已。」 在路旁陰影之下的鮮花，平凡的綻放。 冒出影像則是，月之陰",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH07",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 234,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 234
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9512,15 +8967,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：封半正位、時逆位、地逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第八章。 夢境守護者，指著腳下的石頭。 其材質似石而非石，更像是水晶，其中好似有人影。 「至於想超脫而未能超脫者，其意志凝於半封印的型態當中。」 「可能為晶、可能為石、可能為玉。成不了靈魂寶鑚，只能將意志封印於其他魂之容器內，等待被歲月所磨碎。」 「又或者是成了靈魂寶鑚，卻迷失在這無窮的宇宙空間當中，最終只能化為虛空的一部分。」 地上的眾多石頭，旁邊冒出不少影像。 他們曾經是各個時代的傑出卓越者，受到各項稱讚跟表揚。 想要前往彼岸超脫之通道，為求超脫。 有些只有表面光亮，而無相對應的意志，很快便被通道之寒磨滅。 有些意志不足，抵禦不過每次錘鍊的敲打。 有些已經承受住每次的敲打，但卻不知道為何而行，迷失在廣闊的宇宙空間。 有些則是故步自封，自己不願意相信自己，寧願固守原地而不前進，消亡只是早晚。 「他們夢想著能夠超脫，夢想著遲早有一天可以脫離命運之網而自由的活著。」 「但是卻忘了自己生的目的，",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH08",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 265,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 265
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9569,15 +9021,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：根半正位、老半逆位、枝正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第九章。 朔望兩人忽然有所感悟，對視一眼。 朔端問道： 「我們是否能看到，在之前比武大會時候的未竟之志呢？」 望敦也跟著問道： 「為何他們的意志消失了，我們仍可以分成細小，最後組合而成現在的魂魄呢？」 夢境守護者笑了笑，便帶領著我們，前往一小片樹林，在林中有著各種梁柱，荒涼宮殿的地方。 「當然可以。這裡是這些比武時，懷有各種夢想者的一開始。」 從樹林的樹根上，冒出了不少光點。 這些光點，呈現出一片又一片的影像。 有些夢想著能夠獲得聲名，在眾人面前，公開得到教主的封賞。 有些夢想著能夠獲得權勢，經由比武大會的參選，得到將軍一職，號令月之神教軍隊橫掃天下。 有些夢想著聯合其他弱小者，一起聯手抵抗強大者，在決賽之時討論如何平分獎勵。 有些夢想著其技術能夠更為精進，希望能有與其實力匹敵者一較高下。 但這些人的夢想，全部都被突然來的幻日所擊碎。 只能將其意志，寄託在殘餘的朔望兩人身上，希望他們能夠代為",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH09",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 292,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 292
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9626,15 +9075,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：空半正位、福正位、死半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第十章。 以下是章節大綱： 夢境守護者道： 「所以你們的存在並非偶然。魂魄化為數個小光點，正是由於這些粉碎的意志保護而成。」 「所以你們才在命運之線也為之中斷的狀況下，仍有機會將魂魄進行非輪迴的復原。」 「但最根本其因，其實在於此。」 這些光點，突然從半空中拉出幾顆細小塵埃。 此時出現的是，月之神教教主的夢。 此夢中，畫面先為之一轉。變為火之部族的領袖，經由部下通報後，高舉著「日晷「之石。 「長老感應到了，月之部族的光之意志已出現裂痕，這就是我們動手的時機！」 「去吧，日晷！讓光明降下最後的審判！」 但通報的部下，轉瞬間換上月之神教的教服，回歸月之神教。 「按照教主所交代的。這樣才能夠確保，所有的反叛之徒都能自行消亡。」 「區區幻日，神教內部參賽人馬，已經做好萬全準備，必能撐到教主前來。」 此時背景幻日持續在比武場合的結界內持續焚燒著。 只見月之神教教主「及時」出現，「潮汐」一劍破開結界，將",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH10",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 319,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 319
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9683,15 +9129,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：實半正位、葉逆位、土半正位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第11章。 以下是章節大綱： 小月此時亦發現不對勁： 「那又為何，初代教主會是父親的身影？」 夢境守護者嘆了口氣： 「也不知道是幸還是不幸。他跟你們的狀況一樣。」 空中的畫面為之一轉。 轉到當代月語者，在對當代月之神教教主宣誓之前，拿出短劍刺教主。 當代教主，小月的父親，身軀為之一倒，意識隨之消失。 等待小月的父親醒來，已經回到古代，初代月之神教時期。 他變成了初代月之神教的一名底層信徒。 藉由現代科技之力以及各項兵法的優勢，很快從底層晉升成為，初代月之神教教主的最得力助手。 所以，他製作了，不屬於當代技術的，回力鏢跟弩箭。名之為「夢迴」跟「無序」。 在一個初代教主沒有防備的夜晚，綁架了初代教主，並軟禁在密室內。 最後自己裝扮為教主，但無法獲得「潮汐」的承認。 是故與小月對決時，潮汐出現裂痕。 當初代月之聖女出現之際，小月的父親為之嘆息。 那竟然跟他所愛的小月母親，樣貌完全相同。 於是在處理",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH11",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 358,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 358
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9740,15 +9183,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：無正位、福逆位、病逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第12章。 以下是章節大綱： 畫面再轉。 小月父親開始刻意製造朔望兩家的矛盾，意圖以平衡者之姿，建立第三勢力，確保自己權位不被架空。 但根據探子回報，朔望兩家的衝突，卻在初代月語者，將朔端跟望敦叫到祭壇前，單單以： 「朔望兩者，無需絕對合一，也不應彼此敵對。和平共處，理解互補，方為命運所望。」 這句話之後，讓朔望兩者信服，進而消失兩家彼此的心結。 他便意識到，月之神教本身體系跟之前一樣，朔望兩家仍然是龐大無比，無法動搖的兩大根柱。 他曾問過朔望兩人，關於其對月之神教的忠誠。 「我等守衛的，乃月之意志。」朔端如此回應。 「不是教主的榮光，而是聖女與語者的慈悲。」望敦如此補充。 朔望兩家完全不聽教主之權位調動。 而前世當代月語者那一劍，讓他完全無法忘懷於那背叛之刺，加上朔望兩家的態度，對初代月語者妒忌甚多。 最後，他用月之神教內，能組織的勢力，在勢力之外，祕密組建了另外一個針對月之神教的教派，日",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH12",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 394,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 394
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9797,15 +9237,12 @@
       ],
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：病半逆位、向半正位、空半逆位。在新月。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第13章。 大綱如下： 小月看到夢境，為之驚呼： 「我竟差點親手殺死自己的父親！」 夢境守護者道： 「某種意義上，他已不再是你的父親，他只是個想有權勢的野心家罷了。」 「而且最後裁決也留手了，交給真正的裁決者，初代月之神教教主為之審判。」 小月嘆息，感嘆命運之無常。 我也有疑問： 「為何當下朔端跟望敦的傳送，會將我傳送達彼岸？幻日之結界未破，傳送竟能生效？」 夢境守護者笑了笑。 「只因當下時空通道被幻日的結界所封鎖，所剩下的只有夢境一途。」 「命運之線已斷，但現實生存意志仍存者，最終也只能到達彼岸。」 「更正確的說，到達彼岸的，意志未竟之區。現在為未竟之所，之後成為未竟之城。」 「其實未竟之城，正是由神國國王未竟之意志，集結而成之區域。」",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH13",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 431,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 431
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9854,15 +9291,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：悟半逆位、風逆位、地半逆位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第14章。 大綱如下： 夢境守護者笑了笑： 「意志未竟之人，除了自卑者，亦有過度自尊者。」 「自以為其能力能通天，事實卻如井底之蛙。」 「整天沉醉於夢想當中，脆弱的無法面對現實。」 守護者指向路邊的雜草。 突然出現一段影像，那是望新之子。 望新之子的夢中，仍拿著雙劍，在持續砍向那些他所認為血統不純者。 但他嘴巴上說的是：「把你們這些賤民砍死，世界上就不再有賤民了！」 畫面一轉，來到孤兒院。 望家之子一直都是收養孤兒為主，望新本人也是從孤兒院出身的孤兒。 也因為如此，望新對於孤兒，總是特別給予關愛。 但這是望家之子歷代的傳統之一，教導孤兒自我生活的動力， 灌輸以戰止戰的概念，同時輔以仁愛之義，雙管齊下。 但望新之子卻不太一樣，他是被生父生母遺棄的貴族後代。 從小望新之子就感覺與其他孤兒不同，他雖是孤兒，知道生父家世顯赫， 但血統上他自以為比其他望家之子高貴，所以看不起那些身份平庸之人， 認為只",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH14",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 458,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 458
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9911,15 +9345,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：鏡正位、心正位、礦半逆位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第15章。 大綱如下： 夢境守護者終於停下腳步。 「好了，說完了別人，來說說我自己。」 「我秉持月之大祭司的形象而生，也是萬民夢境守護之代表。」 「我要守護的，自然也是月之大祭司的夢。」 夢境守護者往自己的頭上一指。 月之大祭司的影像出現了。 「月之大祭司，本就是神國萬民的意志整體所化。」 「要守護的，自然也就是自己這個意志整體。」 「我本是無心者，只有萬民意志為其心之所向。」 「承蒙月語者幫助，我悟了。」 「必須要有心，才能真正守護想要的事情。否則只是方向錯亂的夢境守護者，不知道該守護什麼。」 「夢境與現實不同。有人夢中夢見傷害別人，並不會真正的去傷害到其人。只是夢境而已。」 「並不會因為這個人夢見了要殺了對方，對方就夢見會有人要殺他。兩者本就不相干。」 「所以，夢境守護者的職責很簡單，一直都是抵抗外來的勢力，保護眾人之夢境，避免夢靨產生。」",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH15",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 502,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 502
       },
       "confidence": "recorded",
       "review_flags": []
@@ -9968,15 +9399,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：界正位、語逆位、悟半正位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第16章。 大綱如下： 夢境守護者慢慢的移動著： 「其實，為何月神能身化彼岸，因為彼岸就是月神的夢境。」 「月神只是提供了一個夢境的入口，提供靈魂不全跟因果未盡者前往。」 「並提供了一個修復靈魂的夢境，讓靈魂進入夢境中，進行自我復原。」 「而因果鍊未盡者，就會進入月神夢境中，依照命運之網，佈下的輪迴通道，繼續前往自身的命運，繼續的被命運之網所網住。」 「前往彼岸的條件其實也很簡單，意志未竟者，在彌留之際，會被吸引至未竟之處。未竟之處即在彼岸的入口附近。」 「若已然放下，但身纏因果鍊，則會進入彼岸深處，進行輪迴，踏入命運之網的入口，繼續被命運之網所捕捉。」 「其實構成命運之網的線，本身就是與其他人的因果鍊。」 「現實未死之人，偶有經由夢境到達彼岸者，仍可以在涉入未深時，離開。」 「而想要超脫者，就是由夢境前往彼岸的超脫處，進行超脫錘鍊的試煉。」 「但超脫錘鍊的試煉後，身上因果鍊的交纏，又是進入",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH16",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 525,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 525
       },
       "confidence": "recorded",
       "review_flags": []
@@ -10025,15 +9453,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：病正位、果逆位、樹逆位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第17章。 大綱如下： 夢境守護者最後在一道門扉之前停下。 「其實在繞過輪迴之際，你們就已經證明身上沒有任何因果鍊的束縛了。」 「否則只會踏入輪迴深淵，進行一次又一次的輪迴，直到因果鍊消失。」 「而真正的超脫者，離開輪迴的方式也很簡單，就是離開月神的夢境，離開眾人的夢境之所。」 「如果使用夢之符文，必會造成對其他人夢境的干擾，進而產生因果線。」 「離開命運之網，離開因果鍊的糾纏，其實就只是，在不使用夢之符文的前提下，徒步出眾人的夢境區。」 「如同你們正在這樣做。」 夢境守護者指向近處的這道銀白色大門： 「而這裡是眾人夢境的出口，也是當初你們進來夢境的入口。」 「平淡的離開，就不會影響任何人的既存夢境，也就不會造成任何的因果鍊來糾纏。」 月神的投影，知道離別時刻已到，一直跟我們道別。 「我知道我自己的職責所在。若有其他超脫者脫離輪迴來到月神夢境核心，我將帶領他們前往此處。」 「如果他們沒有沉迷",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH17",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 552,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 552
       },
       "confidence": "recorded",
       "review_flags": []
@@ -10082,15 +9507,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：時逆位、愛正位、界半逆位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第18章。 大綱如下： 周圍的銀光閃爍，我們回到了進入彼岸的最開始之處。 月之陰暗面實驗室。 此時現代的實驗室，仍是一片無人的孤寂狀態。 很難以想像，在月之神國強盛時期，月之陰暗面研究室全力運轉時的繁榮光景。 我們一行四人，只覺得渾身氣爽， 好像卸下了終於背負已盡的責任，混身感到輕鬆。 此時我告知朔望兩人， 如果真的想要真正的自由，他們可以不用顧慮那誓言之鍊， 我可以讓你們真正的達到超脫，誓言之鍊協調後可以放棄，真正的無任何束縛，真正的自由。 但朔望卻告知，他們以持有此誓言之鍊為榮。 朔端笑著說： 「因為只有這樣，我們才能夠明確知道，我們跟老師的關係，已經不是用任何言語可以形容。」 望敦甚至說： 「這是我們願意、也樂意守護的誓言。甚至於，我們就是為此誓言而生而活。」 朔端接著說： 「超脫與否，對我們來說，一直都不是最主要的。就算被命運之網網住又如何？」 「我們只求，跟在老師身邊，老師之所向，",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH18",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 581,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 581
       },
       "confidence": "recorded",
       "review_flags": []
@@ -10139,15 +9561,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：虛半正位、空半正位、塵逆位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第19章。 大綱如下： 我轉頭向著小月： 「小月，那你呢？其實你跟我們三個的誓言之鍊更為薄弱。也無必然的關係。你的想法是？」 小月遲疑了很久： 「我並未想過所謂超脫之事，也沒有特別期望受不受命運之網的束縛。」 「我們之間的誓言之鍊，其實在確認月語者本身的狀況以後，就已經非常細微。」 「但我仍對其命運之網，也就是因果鍊，存在著不小的疑問。」 「在其擺佈之下，我竟差點錯殺自己的父親。這實在另我難以忘懷。」 「身為月的裁決審判者，若自己心中之正義有所懷疑，亦無法擁有合格的審判資格。」 「我甚至到現在仍不敢過於觸碰裁決，深怕又有關係之人，被我錯斬而落。」 於是我跟小月說道： 「那為什麼我們不去探尋真正的真相呢？」 「與其在原地遲疑，不如以局外人的身份，探索真正的真相。」 「一來，我們已經是超脫者，不用在介入別人的因果當中。」 「二來，也只有以真正的旁觀者之角度，才能看到真正客觀的真實。」 小月為之贊",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH19",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 618,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 618
       },
       "confidence": "recorded",
       "review_flags": []
@@ -10196,15 +9615,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：實半逆位、鏡正位、緣逆位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第20章。 大綱如下： 周圍出現一片花園。 小月的母親正坐在花園正中間，愜意的休息。 突然有一位男子接近。 「月兒，這是你最喜歡的花朵。送給你。」 在旁邊觀看的小月，為之驚呼。 「不！他不是父親！雖然輪廓很像，但跟父親不一樣！」 「他，是叔叔！仿造成為當代月語者的叔叔！」 小月的母親，跟小月的叔叔， 親暱的走在一起，互相甜蜜的打鬧著。 但另外一旁，另一名男子，暗暗的對於小月的母親，充滿著愛慕的眼神。 而對小月的叔叔，充滿的厭惡跟鄙視。 畫面一轉，是結婚典禮。 新娘是小月的母親，而新郎，是小月的父親。 小月的母親面露不快，但卻又無可奈何。 小月的叔叔，則躲於角落，雖難過，但面對心愛之人出嫁，只能給予祝福。 此時小月的父親，走到小月母親身旁。 低頭說：「你若想要你的孩子活著，你就只能跟我結婚，跟他劃清界線。」 「我可以給你你所想要的，包括讓這孩子過著富裕的生活。但你必須忘了他。」 畫面落於一刻。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH20",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 656,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 656
       },
       "confidence": "recorded",
       "review_flags": []
@@ -10253,15 +9669,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：鏡半逆位、塵半正位、因半正位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第21章。 大綱如下： 小月的叔叔跌落湖中，奈何命不致死，在湖底發現了，初代月語者留下的筆記。 運用秘法，完成了月語者的試煉，雖然代價是以壽元為支付。 小月的叔叔本來想說，就這樣以月語者之姿，在小月母親旁，默默守護著就好。 在一次無意的狀況下，得知小月母親是由於被威脅，要保住肚裡的孩子，才與當代教主，其兄長結婚。 並且，那孩子，是他的。 小月的母親，得知小月叔叔投湖自盡以後，傷心欲絕。 由於身體本來就不好，心情鬱結之下，健康每況愈下。 最後在生產小月之時，難產而死。 小月叔叔得知，小月母親因難產而死的時候，已經是小月出生後的一個禮拜了。 他惋惜著命運的不公，更堅決要讓其兄長付出代價。 於是，在月語者宣示效忠之前一刻， 他毫不猶豫的舉起短劍，往那仇人身影刺去。 這一刺，他刺的相當愜意，終於為月兒報仇了。 望著其兄長身影倒下，他想著不能讓神教產生混亂， 便假以教主遠行之名義，進行偽裝。 但暗中照",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH21",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 698,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 698
       },
       "confidence": "recorded",
       "review_flags": []
@@ -10310,15 +9723,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：韻半逆位、水半正位、憶半逆位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第22章。 大綱如下： 小月默默的看完這一切，久久無法言語。 心中各種情緒翻湧。 這就是，這所有的，被潛藏的真相。 他真正的父親，一直以當代月語者的身份存在著。 他名義上的父親，只是一個貪戀權勢地位身份的野心家。 未滿足其私慾，連其弟之戀人也不放過。 知道所有的真相後，小月終於願意碰觸裁決。 裁決的給的正義審判，是對的。 他默默的對裁決進行道歉，裁決震動了一下表示無妨的回應。 他並未差點錯殺他名義上的父親， 而是這樣的野心家，確實不是他的親生父親。 小月從未向當代月語者試圖攻擊過。 他只覺得，那是一個和藹可敬的長者，常常教導他很多人生道理。 之前真假月語者一戰，當月語者的偽裝姿態退去後， 小月也仍未對其嗜殺兄長之罪，進行追討。 本想也是可憐可悲之人，沒想到後面竟如此深遠。 就算到了月語者偽裝姿態退去，他也依然不予承認跟小月有任何關係。 這是他所能也想給小月的，那無名父親的愛。",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH22",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 729,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 729
       },
       "confidence": "recorded",
       "review_flags": []
@@ -10367,15 +9777,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：鍊正位、封半逆位、果半逆位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第23章。 大綱如下： 小月心結終於已解，裁決也與之振奮。 「我已經想好我之後要走得路了。」 「我依然會貫徹心中的正義前進。」 「我依然會做好月之監督者的角色。」 「所以，還是要請你們多多指教了。」 「我會與大家一起行動，有錯誤或是有需要糾正之時，我會毫不猶豫的提出問題。」 「這不算是誓言之鍊，這是守護我心中的正義的誓言守護之鍊。」 本來淡薄紅色的誓言之鍊，也跟朔望兩者的守護之鍊一樣，變得更為深厚，顏色也變為深藍色。 小月決然的說： 「但，在此之前，我要用夢之符文，跟真正的父親，好好的做一次告別。」 在深夜，小月進入夢之花園。 並將小月叔叔，不，應該說是小月的親生父親，的夢境，進行連結。 夢之花園，依然花海繚繞。小月置身其中，拉著親生父親的手，在夢之原野中，奔跑。 「月兒，你終於來看我了嗎？」小月的親生父親熱淚盈框的說。 小月也同樣熱淚盈框。同時拿著一把，純白花束，交給親生父親。 他知道，這",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH23",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 762,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 762
       },
       "confidence": "recorded",
       "review_flags": []
@@ -10424,15 +9831,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：時半逆位、語半逆位、幻正位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為第24章。 大綱如下： 夢境結束。我們四人互相為之一笑。 我們都各自放下了各自所有的執念。 小月問： 「月語者，超脫一直都在你的計畫內嗎？」 我笑了笑。 「我從未特別計畫過太遠大的目標。超脫命運，並不在我的預期之內。」 「應該說，對我而言，我的想法跟作法很簡單。」 「朝著目標，堅持意志而行。不管命運之網是什麼，不管被網住與否，我都不在意。」 「我只在意的是，自己是否有盡力而為的去做。」 「不管最後結果為何，自己已經盡力去做，沒有遺憾，就夠了。」 「並且，月之意志，本身就應該是客觀而不具有任何主觀的。」 「與任何關係都無關，不會因為對方身世顯赫，就給與更多的寬恕。也不會因為對方可憐，就給與更多的慈悲。」 「月之意志，始終就是那個月之意志。」 「懸掛在夜空中，在眾多人於黑夜迷失之際，給與一小道希望指引的月光。」 「月光，總是溫柔但又深刻的。」 小月繼續追問： 「所以，真正的超脫以後，你最想做什麼",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH24",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 799,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 799
       },
       "confidence": "recorded",
       "review_flags": []
@@ -10481,15 +9885,12 @@
       ],
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：分半逆位、日正位、緣半正位。在上弦。",
-      "narrative_evidence_excerpt": "請寫出文字數超過一千五百字的文章，成為整部小說最後一章的終章。 大綱如下： 一輪明月掛於夜空中。 世上所有人不知道的是，有人仍在月亮的陰暗面，那孤獨的實驗室內，進行研究。 小月的周圍散發出64個月之符文。 我大聲喊：「不錯！小月，你也做的到的！掌握所有的月之符文，對你不存在難度！」 小月笑著說：「要不是月之符文中，有兩個是月語者專用符文，否則我應該都能全部掌握！」 我拿著裁決，嘗試喊著：「命運審判，裁決之怒！」 裁決有點愛理不理，象徵性的發射了一道小小雷光。 小月跟著大笑：「裁決還願意回應你，不錯了！」 一旁是朔端拿著雙劍，跟另一旁拿著拳套的望敦比試。 朔端笑著說： 「上次就試過了，真的覺得可行！以我們對彼此武器的熟悉度，兩者都精通也不難！」 望敦身形有些不太平衡，哀怨的說： 「但我還是不習慣用腳攻擊！用拳套還可以，用腳踢，真的需要把筋拉的開一點！」 朔端拿出夢迴，交給望敦。望敦同樣回敬以無序。 「這次，來看看迴旋鏢對弩箭！」 ",
       "provenance": {
         "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
-        "source_line": 837,
-        "extraction": "mechanical_from_uploaded_text",
-        "source_preserved": true
+        "source_line": 837
       },
       "confidence": "recorded",
       "review_flags": []
