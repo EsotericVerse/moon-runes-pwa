@@ -140,7 +140,33 @@ function getPhaseInfo(card, realPhase) {
   return directionData?.現況?.find(item => item.現在月相 === realPhase) || null;
 }
 
-function cardHtml(card, label, realPhase) {
+function getLotsHtml(card) {
+  const item = lotsMap.get(card.id);
+  const lots = item?.方向?.[card.direction];
+  if (!lots) return "";
+
+  const categories = ["愛情", "事業", "關係", "健康"];
+  const rows = categories
+    .filter(category => lots[category])
+    .map(category => `
+      <div class="rune-lots-item">
+        <span>${category}</span>
+        <strong>${lots[category]}</strong>
+      </div>
+    `)
+    .join("");
+
+  if (!rows) return "";
+
+  return `
+    <div class="rune-result-section lots">
+      <strong>籤詩分類</strong>
+      <div class="rune-lots-grid">${rows}</div>
+    </div>
+  `;
+}
+
+function cardHtml(card, label, realPhase, showLots = false) {
   const hint = runeHintMap.get(card.id) || {};
   const directionText =
     hint[DIRECTION_FIELDS[card.direction]] ||
@@ -209,6 +235,8 @@ function cardHtml(card, label, realPhase) {
           <strong>另一面／反向提醒</strong>
           ${reverseText}
         </div>
+
+        ${showLots ? getLotsHtml(card) : ""}
       </div>
     </article>
   `;
@@ -338,7 +366,7 @@ function renderResult(mode, config, realPhase) {
   const reading = document.getElementById("reading");
 
   grid.dataset.count = String(config.count);
-  grid.innerHTML = cards.map((card, i) => cardHtml(card, config.labels[i], realPhase)).join("");
+  grid.innerHTML = cards.map((card, i) => cardHtml(card, config.labels[i], realPhase, config.count === 1)).join("");
 
   reading.innerHTML = config.count === 1
     ? buildSingleReading(cards[0], realPhase, mode === "daily")
