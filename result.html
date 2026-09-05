@@ -187,6 +187,24 @@
       color: var(--muted);
       line-height: 1.8;
     }
+    .result-card-stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 220px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .result-side-card {
+      display: flex;
+      min-height: 100%;
+    }
+
+    .result-side-card .result-home-cta {
+      width: 100%;
+      margin-top: 0;
+      align-self: stretch;
+    }
+
     .cards-grid {
       display:grid;
       gap:16px;
@@ -352,6 +370,9 @@
 
     @media (max-width: 900px) {
       .ritual-layout { grid-template-columns: 1fr; }
+      .result-card-stage { grid-template-columns: 1fr; }
+      .result-side-card { min-height: auto; }
+      .result-side-card .result-home-cta { min-height: auto; }
       .cards-grid[data-count="3"] { grid-template-columns:repeat(3,minmax(0,1fr)); }
       .cards-grid[data-count="5"] { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .cards-grid[data-count="5"] .rune-card,
@@ -425,7 +446,20 @@
 
       <div id="result-view" hidden>
         <div class="result-phase-context" id="moon-phase">本次真實月相：計算中...</div>
-        <div class="cards-grid" id="cards-grid"></div>
+
+        <div class="result-card-stage">
+          <div class="cards-grid" id="cards-grid"></div>
+
+          <aside class="result-side-card" aria-label="結果頁導覽">
+            <a class="result-home-cta" href="index.html">
+              <span>
+                <strong>回到首頁</strong>
+                <small>返回 LOC 首頁與抽牌選單</small>
+              </span>
+              <span aria-hidden="true">→</span>
+            </a>
+          </aside>
+        </div>
         <div class="reading" id="reading"></div>
         <p class="note" id="mode-note"></p>
         <div class="actions">
