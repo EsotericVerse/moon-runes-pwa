@@ -20,42 +20,11 @@
     "For the 福／禍 recovery clue, match either token independently; do not require both in the same song.",
     "Rune-song recovery requires a minimum DISTINCT-rune threshold; two or three rune hits alone are insufficient.",
     "Explicit rune-chant / 禁咒 works are excluded from rune-song recovery, ranking, and threshold calibration.",
-    "Rune-song search should not specially surface 禁咒 works; they are treated as an exception corpus, not candidate evidence."
+    "Rune-song search should not specially surface 禁咒 works; they are treated as an exception corpus, not candidate evidence.",
+    "Rune-song scoring is based on DISTINCT rune names only; repeated occurrences of the same rune add no score.",
+    "Each distinct rune contributes its signal-tier weight at most once per song."
   ],
   "confirmed_records": [
-    {
-      "candidate_id": "RS-CAND-LW0001",
-      "work_id": "LW0001",
-      "title": "界",
-      "created_date": "2026-07-11",
-      "period": "P6",
-      "era_name": "順其自然",
-      "source_work_ids": [
-        "E0493"
-      ],
-      "match_basis": {
-        "same_date_as_recorded_draw": true,
-        "exact_title_matches_drawn_rune": true,
-        "matched_rune": "界",
-        "related_metadata_tags": [
-          "時間記憶",
-          "月亮月光"
-        ]
-      },
-      "confidence": "confirmed_by_author",
-      "status": "confirmed",
-      "note": "Same date as a recorded OW3gs spread and title exactly matches a rune in that spread. Original songwriting provenance is still required for confirmed rune_song status. Author later recalled that rune songs were consistently created from OW3gs 11-card draws and identified these songs as likely belonging to that process.",
-      "author_recollection": {
-        "statement": "符文歌曲都是以 OW3gs 11 抽來創作；這幾首應該就是。",
-        "recorded_in_current_review": true,
-        "certainty": "likely_not_absolute"
-      },
-      "confirmation": {
-        "type": "explicit_author_confirmation",
-        "statement": "如果只有三首，那就一定是。",
-        "confirmed_in_current_review": true
-      }
-    },
     {
       "candidate_id": "RS-CAND-LW0124",
       "work_id": "LW0124",
@@ -120,7 +89,7 @@
       },
       "confirmation": {
         "type": "explicit_author_confirmation",
-        "statement": "如果只有三首，那就一定是。",
+        "statement": "界線之內確定是。",
         "confirmed_in_current_review": true
       }
     },
@@ -161,7 +130,42 @@
       }
     }
   ],
-  "candidate_records": [],
+  "candidate_records": [
+    {
+      "candidate_id": "RS-CAND-LW0001",
+      "work_id": "LW0001",
+      "title": "界",
+      "created_date": "2026-07-11",
+      "period": "P6",
+      "era_name": "順其自然",
+      "source_work_ids": [
+        "E0493"
+      ],
+      "match_basis": {
+        "same_date_as_recorded_draw": true,
+        "exact_title_matches_drawn_rune": true,
+        "matched_rune": "界",
+        "related_metadata_tags": [
+          "時間記憶",
+          "月亮月光"
+        ]
+      },
+      "confidence": "author_uncertain",
+      "status": "candidate",
+      "note": "Same date as a recorded OW3gs spread and title exactly matches a rune in that spread. Original songwriting provenance is still required for confirmed rune_song status. Author later recalled that rune songs were consistently created from OW3gs 11-card draws and identified these songs as likely belonging to that process. Author later revised confidence and indicated 《界》 may not be a rune song.",
+      "author_recollection": {
+        "statement": "符文歌曲都是以 OW3gs 11 抽來創作；這幾首應該就是。",
+        "recorded_in_current_review": true,
+        "certainty": "likely_not_absolute"
+      },
+      "confirmation": {
+        "type": "author_revision",
+        "statement": "界好像不是。",
+        "confirmed_in_current_review": false
+      },
+      "role": null
+    }
+  ],
   "known_draw_contexts": [
     {
       "date": "2026-07-11",
@@ -220,7 +224,7 @@
     "same_date_candidates_2026_07_11": 3,
     "high_candidates": 1,
     "medium_candidates": 2,
-    "confirmed_rune_songs": 5,
+    "confirmed_rune_songs": 4,
     "known_minimum_total": 3,
     "total_status": "incomplete",
     "author_recollection": "符文歌曲數量不只三首；目前只回收到三首已確認作品。"
@@ -250,7 +254,7 @@
     "status": "confirmed_by_author"
   },
   "recovery_status": {
-    "confirmed_now": 5,
+    "confirmed_now": 4,
     "expected_total": "more_than_3",
     "exact_total": "unknown",
     "note": "Do not treat the current three confirmed records as the full rune-song corpus.",
@@ -259,7 +263,10 @@
     "threshold_value": null,
     "threshold_note": "Exact minimum distinct-rune count will be calibrated from confirmed rune songs once full lyrics are available.",
     "representative_rune_song": "E0285 在塵裡長出的光",
-    "exception_corpus": "禁咒／符文詠唱類 excluded"
+    "exception_corpus": "禁咒／符文詠唱類 excluded",
+    "demoted_from_confirmed": [
+      "LW0001 界"
+    ]
   },
   "recovery_clues": [
     {
@@ -680,6 +687,8 @@
       "high_signal": 3,
       "medium_signal": 2,
       "low_signal": 1,
+      "application": "Apply weight once per DISTINCT rune only.",
+      "repeated_occurrences": "0 additional points",
       "note": "Keyword score is only a recovery heuristic. It never proves rune_song status by itself."
     },
     "ambiguity_notes": {
@@ -708,6 +717,12 @@
       "status": "threshold_to_be_calibrated",
       "calibration_method": "Use confirmed rune songs as positive examples and ordinary LOC3 songs as controls when the private/full-lyrics Excel is available.",
       "note": "Two or three rune-name hits are explicitly insufficient by themselves."
+    },
+    "counting_policy": {
+      "unit": "distinct_rune_name",
+      "repetition_handling": "ignore_repeated_occurrences",
+      "rule": "Each rune contributes at most once per song, regardless of how many times the same rune token appears.",
+      "example": "月月月月月 = 1 distinct rune hit, not 5 hits"
     }
   },
   "exceptions": [
