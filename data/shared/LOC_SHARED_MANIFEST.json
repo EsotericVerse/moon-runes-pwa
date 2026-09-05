@@ -217,5 +217,12 @@
       "LOC8": "ERA retrieval"
     },
     "ranking_rule": "Results are grouped by authority/content type; heterogeneous engine scores are not forced onto one global ranking scale."
-  }
+  },
+  "assets": [
+    {
+      "path": "data/shared/LOC4_TEXT_ANALYSIS_REGISTRY.json",
+      "authority": "LOC4",
+      "purpose": "Structured semantic analysis of LOC4 writing works; short works first, long-form rune novel deferred."
+    }
+  ]
 }
