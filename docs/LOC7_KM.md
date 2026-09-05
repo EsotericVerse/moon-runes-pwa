@@ -123,11 +123,11 @@ LOC7 可以分析 LOC6／LOC8 的資料結構，但不取代它們的 canonical 
 
 Unified Search 已有實作；完整 Relation Schema、Knowledge Graph expansion 與 Graph RAG 仍屬下一階段。不得因已有 registry、related_ids 或 search view 就宣稱完整 Graph RAG 已部署。
 
-## 10. Markdown 與 DOCX 的關係
+## 10. 文件格式
 
-`docs/LOC7_KM.md` 自 0.2 起作為 repository 內可維護 KM 主文件。
+`docs/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件。
 
-`docs/LOC7_KM.docx` 保留為發布／交換 snapshot。若兩者未同步，以最新有 provenance、version、updated_at 的維護來源為準，並應在下次發布時重新同步 DOCX。
+若未來需要 DOCX／PDF，應由 Markdown 內容輸出為發布版本；發布檔不回頭作為 KM 維護來源。
 
 ---
 
