@@ -23,6 +23,7 @@
 - `LOC_ERA_REGISTRY.json`：ERA／時期 registry。
 - `LOC_CONTENT_TYPE_REGISTRY.json`：內容類型 registry。
 - `LOC_MEDIA_REGISTRY.json`：LOC5 媒體對應。
+- `LOC2_EVENT_REGISTRY.json`：LOC2 Scenario Corpus／Event Corpus；保存現行 Alpha Event 32 與情境語意角色。
 
 ### B. FAQ source view — 維護型問答資料
 
@@ -64,7 +65,18 @@
 
 媒體 canonical ownership 屬 LOC5；LOC3 可引用 media linkage。現行程式應優先 shared media registry，legacy overlay 僅作 compatibility fallback。
 
-### F. LOC6 rune interpretation evidence
+### F. LOC2 scenario / event corpus
+
+路徑：`data/shared/LOC2_EVENT_REGISTRY.json`
+
+- 來源：`loc2.html` 現行 Alpha Event 32。
+- 角色：把 LOC2 Event 作為真實生活狀況的結構化情境語料，而非只當作遊戲效果。
+- 雙卡 A → B 因果是 LOC2 的最小情境文法，可用於描述「狀況如何形成」。
+- 現行 Event 的 SL／ML／NE／OC requirement signature 是 Alpha 快速判定資料，不等於固定符文雙卡映射。
+- LOC2 保留 Event canonical ownership；LOC4／LOC6／LOC7／LOC8 可引用。
+- 未由來源固定的符文配對不得由 registry 或 AI 自動補造。
+
+### G. LOC6 rune interpretation evidence
 
 路徑：`data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json`
 
@@ -75,7 +87,7 @@
 - 原文中的舊符文名、異名或舊方位寫法保留於 raw 欄位，不靜默改寫。
 - 第三篇 Ch5、Ch6 為已確認的特殊流程例外：武打大綱完成後直接交由 AI 展開，當時刻意未進行章節抽牌；因此標記為 `intentional_no_draw`，不是資料缺漏。
 
-### G. Experimental / test JSON
+### H. Experimental / test JSON
 
 `engine/`、tests 或 temporary data 中的 JSON，除非另有 registry 與 authority 宣告，預設屬實驗／測試／中間產物，不升格為 Canon。
 
