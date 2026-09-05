@@ -1046,7 +1046,11 @@
         if (data && data.ok === false) throw new Error(data.error || 'ERA API error');
         const remote = Array.isArray(data.eras) ? data.eras : [];
         if (remote.length) {
-          eraRegistry = remote;
+          const staticByPeriod = new Map(eraRegistry.map(item => [String(item.period || ''), item]));
+          eraRegistry = remote.map(item => {
+            const canonical = staticByPeriod.get(String(item.period || ''));
+            return canonical ? { ...item, ...canonical } : item;
+          });
           renderEraTimeline();
         }
       } catch (err) {
