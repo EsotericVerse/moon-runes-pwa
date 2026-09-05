@@ -605,6 +605,10 @@
      * 3) URL 只存於目前瀏覽器 localStorage；未設定時退回本機測試資料。
      */
     const STORAGE_KEY = "loc8-life-events-v1";
+    const EVENT_CACHE_KEY = "loc8-life-events-cache-v1";
+    const TREND_CACHE_KEY = "loc8-life-trend-cache-v1";
+    const RUNE_CACHE_KEY = "loc8-rune-options-cache-v1";
+    const CACHE_SCHEMA_VERSION = "1";
     const API_URL_KEY = "loc8-sheet-api-url-v1";
     const DEFAULT_SHEET_API_URL = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
     let sheetApiUrl = localStorage.getItem(API_URL_KEY) || DEFAULT_SHEET_API_URL;
@@ -656,10 +660,41 @@
       els.syncDot.classList.toggle('ok', !!ok);
     }
 
+    function readJsonCache(key, fallback=null) {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+        return parsed ?? fallback;
+      } catch (_) { return fallback; }
+    }
+
+    function writeEventCache(rows) {
+      try {
+        localStorage.setItem(EVENT_CACHE_KEY, JSON.stringify({
+          schema_version: CACHE_SCHEMA_VERSION,
+          saved_at: Date.now(),
+          events: rows
+        }));
+      } catch (_) {}
+    }
+
+    function cachedEvents() {
+      const cached = readJsonCache(EVENT_CACHE_KEY, null);
+      if (cached?.schema_version === CACHE_SCHEMA_VERSION && Array.isArray(cached.events)) return cached.events;
+      return readJsonCache(STORAGE_KEY, []);
+    }
+
     async function loadEvents() {
+      // Cache-first: render the last successful state immediately, then refresh remotely.
+      const firstPaint = cachedEvents();
+      if (firstPaint.length) {
+        events = firstPaint;
+        setSync(false, '顯示快取；背景同步中…');
+        renderAll();
+      }
+
       try {
         if (sheetApiUrl) {
-          setSync(false, '同步 Google Sheet…');
+          setSync(false, firstPaint.length ? '快取已載入；同步 Google Sheet…' : '同步 Google Sheet…');
           const url = new URL(sheetApiUrl);
           url.searchParams.set('action', 'events');
           url.searchParams.set('user_id', 'lo3rwang');
@@ -668,15 +703,17 @@
           const data = await res.json();
           if (data && data.ok === false) throw new Error(data.error || 'API error');
           events = Array.isArray(data) ? data : (data.events || []);
-          setSync(true, 'Google Sheet 已同步');
+          writeEventCache(events);
+          setSync(true, 'Google Sheet 已同步 · 快取已更新');
         } else {
-          events = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-          setSync(false, '本機測試模式');
+          events = readJsonCache(STORAGE_KEY, []);
+          writeEventCache(events);
+          setSync(false, '本機測試模式 · 已快取');
         }
       } catch (err) {
         console.error(err);
-        events = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        setSync(false, 'Sheet 連線失敗；改用本機資料');
+        events = firstPaint.length ? firstPaint : cachedEvents();
+        setSync(false, events.length ? 'Sheet 連線失敗；顯示上次快取' : 'Sheet 連線失敗；目前無快取');
       }
       renderAll();
     }
@@ -707,6 +744,7 @@
         events.push(event);
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+      writeEventCache(events);
       return { ok: true };
     }
 
@@ -804,12 +842,23 @@
       `).join('');
     }
 
-    function renderTrend(sorted) {
-      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
-      const recent = sorted.filter(e => new Date(e.date) >= cutoff);
-      const counts = new Map();
-      recent.flatMap(e => e.tags || []).forEach(tag => counts.set(tag, (counts.get(tag) || 0) + 1));
-      const top = [...counts.entries()].sort((a,b) => b[1]-a[1]).slice(0,6);
+    function readTrendCache() {
+      const cached = readJsonCache(TREND_CACHE_KEY, null);
+      return cached?.schema_version === CACHE_SCHEMA_VERSION && Array.isArray(cached.items) ? cached : null;
+    }
+
+    function writeTrendCache(items) {
+      try {
+        localStorage.setItem(TREND_CACHE_KEY, JSON.stringify({
+          schema_version: CACHE_SCHEMA_VERSION,
+          saved_at: Date.now(),
+          window_days: 30,
+          items
+        }));
+      } catch (_) {}
+    }
+
+    function renderTrendItems(top, cached=false) {
       if (!top.length) {
         els.trend.innerHTML = '<div class="empty">近期資料不足。</div>';
         return;
@@ -820,7 +869,22 @@
           <div><div>${esc(tag)}</div><div class="bar"><i style="width:${Math.max(12, count/max*100)}%"></i></div></div>
           <small>${count}</small>
         </div>
-      `).join('');
+      `).join('') + (cached ? '<div class="editing-note">顯示上次成功計算的 30 天趨勢快取。</div>' : '');
+    }
+
+    function renderTrend(sorted) {
+      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
+      const recent = sorted.filter(e => new Date(e.date) >= cutoff);
+      const counts = new Map();
+      recent.flatMap(e => e.tags || []).forEach(tag => counts.set(tag, (counts.get(tag) || 0) + 1));
+      const top = [...counts.entries()].sort((a,b) => b[1]-a[1]).slice(0,6);
+      if (top.length) {
+        writeTrendCache(top);
+        renderTrendItems(top, false);
+        return;
+      }
+      const cached = readTrendCache();
+      renderTrendItems(cached?.items || [], !!cached);
     }
 
 
@@ -908,17 +972,23 @@
     async function loadDrawRunes() {
       const select = $('#drawRune');
       if (!select || select.options.length > 1) return;
+      const appendItems = (items) => {
+        items.forEach(item => {
+          const option = document.createElement('option');
+          option.value = String(item['名稱'] || item.name || '');
+          option.textContent = String(item['編號'] || item.id || '').padStart(2, '0') + ' · ' + String(item['名稱'] || item.name || '');
+          select.appendChild(option);
+        });
+      };
+      const cachedRuneData = readJsonCache(RUNE_CACHE_KEY, null);
+      if (Array.isArray(cachedRuneData?.items) && cachedRuneData.items.length) appendItems(cachedRuneData.items);
       try {
         const res = await fetch('data/shared/lots.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('Rune data unavailable');
         const data = await res.json();
         const items = Array.isArray(data.items) ? data.items : [];
-        items.forEach(item => {
-          const option = document.createElement('option');
-          option.value = String(item['名稱'] || '');
-          option.textContent = String(item['編號'] || '').padStart(2, '0') + ' · ' + String(item['名稱'] || '');
-          select.appendChild(option);
-        });
+        try { localStorage.setItem(RUNE_CACHE_KEY, JSON.stringify({schema_version:CACHE_SCHEMA_VERSION,saved_at:Date.now(),items})); } catch (_) {}
+        if (select.options.length <= 1) appendItems(items);
       } catch (err) {
         console.error(err);
         ['靈','魂','彩','憶','界','域','鏡','核','向','斷','封','鍊','啟','分','悟','誤','生','老','病','死','心','愛','語','韻','樹','花','葉','草','根','種','實','枝','金','玉','晶','地','石','鑽','礦','塵','光','暗','水','火','風','土','雷','氣','日','月','星','辰','明','時','空','因','福','禍','無','夢','幻','緣','虛','果','玄','命']
@@ -1076,6 +1146,8 @@
       }
       if (confirm('清除 life.html 的本機測試資料？')) {
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(EVENT_CACHE_KEY);
+        localStorage.removeItem(TREND_CACHE_KEY);
         events = [];
         renderAll();
       }
