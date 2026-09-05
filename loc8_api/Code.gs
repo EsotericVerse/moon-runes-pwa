@@ -1,7 +1,9 @@
 const LOC8_SPREADSHEET_ID = '1v2Sl4a1x9AvQgxdwrfxyhox8pHxmhbqhBL6YstH_ekg';
 const USER_SHEET = 'User';
 const EVENT_SHEET = 'Event';
-const DAILY_DRAW_SHEET = 'DailyDraw';
+const ERA_SHEET = 'Era';
+const RUNE_SHEET = 'Runes';
+const HISTORY_SHEET = 'History';
 
 function doGet(e) {
   try {
@@ -9,17 +11,29 @@ function doGet(e) {
     const userId = String((e && e.parameter && e.parameter.user_id) || '').trim();
 
     if (action === 'health') {
-      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.4' });
+      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.5' });
     }
 
     if (action === 'users') {
       return json_({ ok: true, users: readRows_(USER_SHEET) });
     }
 
-    if (action === 'daily_draws') {
-      let draws = readRowsSafe_(DAILY_DRAW_SHEET);
-      if (userId) draws = draws.filter(row => String(row.user_id || '') === userId);
-      return json_({ ok: true, daily_draws: draws });
+    if (action === 'eras') {
+      return json_({ ok: true, eras: readRowsSafe_(ERA_SHEET) });
+    }
+
+    if (action === 'runes') {
+      return json_({ ok: true, runes: readRowsSafe_(RUNE_SHEET) });
+    }
+
+    if (action === 'history' || action === 'daily_draws') {
+      let history = readRowsSafe_(HISTORY_SHEET);
+      if (userId) history = history.filter(row => String(row.user_id || '') === userId);
+      const draws = history.filter(row => {
+        const t = String(row.history_type || '').toLowerCase();
+        return t === 'daily_draw' || t === 'daily_draw_supplement';
+      });
+      return json_({ ok: true, history: history, daily_draws: draws });
     }
 
     let events = readRows_(EVENT_SHEET)
@@ -44,8 +58,7 @@ function doPost(e) {
 
     if (action === 'daily_draw') {
       const draw = normalizeDailyDraw_(body.daily_draw || body.event || body);
-      ensureDailyDrawSheet_();
-      appendObject_(DAILY_DRAW_SHEET, draw);
+      appendObject_(HISTORY_SHEET, draw);
       return json_({ ok: true, daily_draw: draw, action: 'daily_draw' });
     }
 
@@ -77,8 +90,7 @@ function doPost(e) {
       const raw = body.event || body;
       if (isDailyDrawRecord_(raw)) {
         const draw = normalizeDailyDraw_(raw);
-        ensureDailyDrawSheet_();
-        appendObject_(DAILY_DRAW_SHEET, draw);
+        appendObject_(HISTORY_SHEET, draw);
         return json_({ ok: true, daily_draw: draw, action: 'daily_draw' });
       }
       const event = normalizeEvent_(raw);
@@ -134,19 +146,6 @@ function isDailyDrawRecord_(raw) {
   );
 }
 
-function ensureDailyDrawSheet_() {
-  const ss = SpreadsheetApp.openById(LOC8_SPREADSHEET_ID);
-  let sheet = ss.getSheetByName(DAILY_DRAW_SHEET);
-  if (sheet) return sheet;
-
-  sheet = ss.insertSheet(DAILY_DRAW_SHEET);
-  sheet.getRange(1, 1, 1, 12).setValues([[
-    'id','user_id','date','draw_kind','rune','direction',
-    'note','tags','source','confidence','created_at','system_id'
-  ]]);
-  return sheet;
-}
-
 function normalizeDailyDraw_(raw) {
   const now = new Date();
   const tz = Session.getScriptTimeZone() || 'Asia/Taipei';
@@ -170,25 +169,30 @@ function normalizeDailyDraw_(raw) {
   }
 
   return {
-    id: raw.id || makeId_('DD'),
+    id: raw.id || makeId_('HIS'),
     user_id: raw.user_id || 'lo3rwang',
     date: raw.date || Utilities.formatDate(now, tz, 'yyyy-MM-dd'),
-    draw_kind: kind,
+    history_type: kind,
+    rune_id: raw.rune_id || '',
     rune: rune,
     direction: direction,
+    real_moon_phase: raw.real_moon_phase || '',
     note: raw.note || raw.description || '',
+    interpretation: raw.interpretation || '',
     tags: Array.isArray(raw.tags) ? raw.tags.join(', ') : (raw.tags || ''),
     source: raw.source || 'life.html#daily-draw',
     confidence: raw.confidence || 'recorded',
     created_at: raw.created_at || createdAt,
-    system_id: raw.system_id || 'lo3rwang'
+    system_id: raw.system_id || 'lo3rwang',
+    era_id: raw.era_id || '',
+    updated_at: raw.updated_at || createdAt,
+    visibility: raw.visibility || 'private'
   };
 }
 
 function migrateLegacyDailyDraws_() {
-  ensureDailyDrawSheet_();
   const legacy = readRows_(EVENT_SHEET).filter(isDailyDrawRecord_);
-  const existing = readRowsSafe_(DAILY_DRAW_SHEET);
+  const existing = readRowsSafe_(HISTORY_SHEET);
   const ids = {};
   existing.forEach(row => { if (row.id) ids[String(row.id)] = true; });
 
@@ -196,7 +200,7 @@ function migrateLegacyDailyDraws_() {
   legacy.forEach(row => {
     const draw = normalizeDailyDraw_(row);
     if (ids[String(draw.id)]) return;
-    appendObject_(DAILY_DRAW_SHEET, draw);
+    appendObject_(HISTORY_SHEET, draw);
     ids[String(draw.id)] = true;
     copied++;
   });
