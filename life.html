@@ -225,6 +225,21 @@
     .state-row .k { color: var(--muted); font-size: 12px; }
     .state-row .v { line-height: 1.55; }
 
+    .era-timeline { display:grid; gap:10px; }
+    .era-row {
+      display:grid;
+      grid-template-columns: 150px minmax(0,1fr);
+      gap:14px;
+      padding:12px 14px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.025);
+    }
+    .era-range { color:var(--accent); font-size:12px; line-height:1.5; }
+    .era-name { font-weight:700; }
+    .era-desc { margin-top:5px; color:var(--muted); font-size:12px; line-height:1.55; }
+    .era-source-note { margin-top:4px; color:var(--muted); font-size:10px; opacity:.78; }
+
     .timeline { position: relative; display: grid; gap: 0; }
     .timeline::before {
       content: "";
@@ -380,6 +395,7 @@
       .hero { align-items: start; flex-direction: column; }
       .grid.cols-4, .grid.cols-2, .form-grid, .daily-layout { grid-template-columns: 1fr; }
       .field.full { grid-column: auto; }
+      .era-row { grid-template-columns: 1fr; gap:6px; }
       .event { grid-template-columns: 30px 1fr; }
       .event .date { grid-column: 2; order: 0; }
       .event .content { grid-column: 2; }
@@ -405,7 +421,8 @@
         <a href="index.html">← 回到首頁</a>
         <a class="active view-switch" href="#overview" data-view="life">概覽</a>
         <a class="view-switch" href="#event-form" data-view="life">事件紀錄</a>
-        <a class="view-switch" href="#timeline" data-view="life">時間線</a>
+        <a class="view-switch" href="#era-timeline" data-view="life">時期時間線</a>
+        <a class="view-switch" href="#timeline" data-view="life">事件時間線</a>
         <a class="view-switch" href="#trajectory" data-view="life">狀態軌跡</a>
         <a class="view-switch" href="#trend" data-view="life">近期趨勢</a>
         <div class="nav-divider" aria-hidden="true"></div>
@@ -508,6 +525,14 @@
         </div>
       </section>
 
+      <section class="card" style="margin-top:16px;" id="era-timeline">
+        <div class="head">
+          <div><h3>時期時間線</h3><p>LOC8 的連續時期；空白區間已延伸至下一時期前一天。Suno 原始活躍範圍只保留為來源註記，不再當作時期邊界。</p></div>
+          <span class="badge">ERA · LOC8</span>
+        </div>
+        <div class="body"><div class="era-timeline" id="eraTimelineList"><div class="empty">載入時期資料中…</div></div></div>
+      </section>
+
       <section class="card" style="margin-top:16px;" id="timeline">
         <div class="head">
           <div><h3>Event Timeline</h3><p>事件是原因；時間線保存它發生的順序。</p></div>
@@ -606,6 +631,7 @@
     const els = {
       form: $('#eventForm'),
       timeline: $('#timelineList'),
+      eraTimeline: $('#eraTimelineList'),
       trajectory: $('#trajectoryList'),
       trend: $('#trendList'),
       current: $('#currentState'),
@@ -628,6 +654,7 @@
     };
 
     let events = [];
+    let eraRegistry = [];
     let editingId = '';
 
     function uid() {
@@ -670,6 +697,47 @@
       const cached = readJsonCache(EVENT_CACHE_KEY, null);
       if (cached?.schema_version === CACHE_SCHEMA_VERSION && Array.isArray(cached.events)) return cached.events;
       return readJsonCache(STORAGE_KEY, []);
+    }
+
+    async function loadEraRegistry() {
+      try {
+        const res = await fetch('data/shared/LOC_ERA_REGISTRY.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('ERA registry unavailable');
+        const data = await res.json();
+        eraRegistry = Array.isArray(data.eras) ? data.eras : [];
+        renderEraTimeline();
+      } catch (err) {
+        console.error(err);
+        if (els.eraTimeline) els.eraTimeline.innerHTML = '<div class="empty">時期資料載入失敗。</div>';
+      }
+    }
+
+    function renderEraTimeline() {
+      if (!els.eraTimeline) return;
+      if (!eraRegistry.length) {
+        els.eraTimeline.innerHTML = '<div class="empty">尚無時期資料。</div>';
+        return;
+      }
+
+      els.eraTimeline.innerHTML = eraRegistry
+        .slice()
+        .sort((a,b) => Number(a.order || 0) - Number(b.order || 0))
+        .map(era => {
+          const end = era.end_date || '現在';
+          const sourceRange = era.source_active_range
+            ? `${era.source_active_range.start || '—'}～${era.source_active_range.end || '現在'}`
+            : '';
+          return `
+            <article class="era-row">
+              <div class="era-range">${esc(era.start_date || '—')}<br>～ ${esc(end)}</div>
+              <div>
+                <div class="era-name">${esc(era.display_label || era.name || era.period || '')}</div>
+                <div class="era-desc">${esc(era.state_after || era.description || '')}</div>
+                ${sourceRange ? `<div class="era-source-note">Suno 原始活躍範圍（來源參考）：${esc(sourceRange)}</div>` : ''}
+              </div>
+            </article>
+          `;
+        }).join('');
     }
 
     async function loadEvents() {
@@ -945,7 +1013,7 @@
     function renderAll() {
       const sorted = events.map(normalizeEvent).sort((a,b) => new Date(a.date) - new Date(b.date));
       events = sorted;
-      const lifeEvents = sorted.filter(e => !isDailyDrawEvent(e));
+      const lifeEvents = sorted.filter(e => !isDailyDrawEvent(e) && !/^EV-ERA-P\d+$/i.test(String(e.id || '')));
       renderMetrics(lifeEvents);
       renderCurrent(lifeEvents);
       renderTimeline(lifeEvents);
@@ -1172,6 +1240,7 @@
     resetEventForm();
     resetDailyDrawForm();
     loadDrawRunes();
+    loadEraRegistry();
     loadEvents();
     if (location.hash === '#daily-draw') switchView('daily', $('#dailyDrawViewBtn'));
   </script>
