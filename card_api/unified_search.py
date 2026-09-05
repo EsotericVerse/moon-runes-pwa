@@ -616,16 +616,18 @@ class UnifiedSearchEngine:
         wanted = (content_type or "").strip().lower()
 
         oracle, oracle_terms = self._oracle_result(query)
+        oracle_mode = wanted == "oracle"
+        effective_wanted = "" if oracle_mode else wanted
         if oracle:
             faq = []
-            music, linked_media = self._music_keyword_results(oracle_terms, top_k, wanted, filters)
-            textworks, direct_media, documents, eras = self._keyword_cross_results(oracle_terms, top_k, wanted)
+            music, linked_media = self._music_keyword_results(oracle_terms, top_k, effective_wanted, filters)
+            textworks, direct_media, documents, eras = self._keyword_cross_results(oracle_terms, top_k, effective_wanted)
             media_by_id = {}
             for item in [*direct_media, *linked_media]:
                 media_by_id[item.get("result_id")] = item
             media = list(media_by_id.values())[:top_k]
             relationships = []
-            runes = self._rune_results(oracle[0]["payload"].get("rune_name", ""), top_k, wanted)
+            runes = self._rune_results(oracle[0]["payload"].get("rune_name", ""), top_k, effective_wanted)
         else:
             faq = self._faq_results(query, top_k, wanted)
             documents = self._knowledge_asset_results(query, top_k, wanted)
@@ -655,6 +657,7 @@ class UnifiedSearchEngine:
             "query": query,
             "content_type": wanted or "all",
             "retrieval_mode": "oracle_keyword" if oracle else "standard",
+            "oracle_mode": oracle_mode,
             "groups": groups,
             "counts": {key: len(value) for key, value in groups.items()},
             "total_count": sum(len(value) for value in groups.values()),
