@@ -339,6 +339,110 @@
     .work-links a:hover,
     .work-links a:focus-visible { text-decoration: underline; }
 
+
+    .loc5-showcase {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
+
+    .loc5-reel-card {
+      overflow:hidden;
+      border:1px solid var(--loc-border);
+      border-radius:20px;
+      background:var(--loc-surface-soft);
+    }
+
+    .loc5-reel-visual {
+      position:relative;
+      aspect-ratio:16/9;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 50% 36%,rgba(180,158,255,.18),transparent 14rem),
+        rgba(3,13,28,.68);
+    }
+
+    .loc5-reel-visual img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      opacity:.78;
+      transform:scale(1.02);
+    }
+
+    .loc5-reel-badge {
+      position:absolute;
+      left:14px;
+      top:14px;
+      padding:6px 9px;
+      border:1px solid rgba(229,193,123,.48);
+      border-radius:999px;
+      background:rgba(7,24,45,.82);
+      color:var(--loc-gold);
+      font-size:.7rem;
+      font-weight:800;
+      letter-spacing:.08em;
+    }
+
+    .loc5-reel-number {
+      position:absolute;
+      right:16px;
+      bottom:10px;
+      color:rgba(255,255,255,.88);
+      font-size:clamp(2.4rem,7vw,4.2rem);
+      font-weight:900;
+      line-height:1;
+      text-shadow:0 8px 26px rgba(0,0,0,.45);
+    }
+
+    .loc5-reel-body {
+      padding:17px;
+    }
+
+    .loc5-reel-body h3 {
+      margin:0;
+      color:var(--loc-text);
+      font-size:1.05rem;
+    }
+
+    .loc5-reel-meta {
+      display:block;
+      margin-top:5px;
+      color:var(--loc-purple);
+      font-size:.73rem;
+      font-weight:750;
+    }
+
+    .loc5-reel-body p {
+      margin:10px 0 0;
+      color:var(--loc-muted);
+      font-size:.84rem;
+      line-height:1.65;
+    }
+
+    .loc5-reel-link {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:14px;
+      padding:12px 13px;
+      border:1px solid rgba(229,193,123,.42);
+      border-radius:14px;
+      color:var(--loc-text);
+      background:rgba(229,193,123,.08);
+      text-decoration:none;
+    }
+
+    .loc5-reel-link strong { color:var(--loc-gold); font-size:.86rem; }
+    .loc5-reel-link small { display:block; margin-top:2px; color:var(--loc-muted); font-size:.7rem; }
+
+    .loc5-note {
+      margin:14px 0 0;
+      color:var(--loc-muted);
+      font-size:.82rem;
+    }
+
     .visual-card {
       overflow: hidden;
       border: 1px solid var(--loc-border);
@@ -711,6 +815,7 @@
     }
 
     @media (max-width: 720px) {
+      .loc5-showcase { grid-template-columns:1fr; }
       .draw-mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
@@ -915,6 +1020,55 @@
           </div>
         </article>
       </div>
+    </section>
+
+
+    <section class="section" id="loc5-showcase" aria-labelledby="loc5-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">LOC5 · Resonance × LOC1 · Luna Runes</p>
+          <h2 id="loc5-title">月之符文，已經有實際的影音作品。</h2>
+        </div>
+        <p>LOC5 不只是系統圖形或未來規劃。這兩支已公開發布的 Reels，直接把月之符文從卡牌與文字帶進影音表達。</p>
+      </div>
+
+      <div class="loc5-showcase">
+        <article class="loc5-reel-card">
+          <div class="loc5-reel-visual" aria-hidden="true">
+            <img src="pics/loc_runes_66_overview.jpg" alt="" loading="lazy" />
+            <span class="loc5-reel-badge">LOC5 · PUBLIC REEL</span>
+            <span class="loc5-reel-number">01</span>
+          </div>
+          <div class="loc5-reel-body">
+            <h3>月之符文宣傳影片 01</h3>
+            <span class="loc5-reel-meta">LOC1 × LOC5 · Luna Runes Promotion</span>
+            <p>以影音形式呈現月之符文，作為 LOC5 已完成實體作品的公開展示，也讓第一次接觸 LOC 的人可以先從畫面與節奏認識月符。</p>
+            <a class="loc5-reel-link" href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">
+              <span><strong>在 Instagram Reels 觀看</strong><small>開啟公開發布版本</small></span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="loc5-reel-card">
+          <div class="loc5-reel-visual" aria-hidden="true">
+            <img src="pics/loc_runes_66_overview.jpg" alt="" loading="lazy" />
+            <span class="loc5-reel-badge">LOC5 · PUBLIC REEL</span>
+            <span class="loc5-reel-number">02</span>
+          </div>
+          <div class="loc5-reel-body">
+            <h3>月之符文宣傳影片 02</h3>
+            <span class="loc5-reel-meta">LOC1 × LOC5 · Luna Runes Promotion</span>
+            <p>第二支公開宣傳作品延續同一個跨媒體方向：符文不只被閱讀，也能透過動態影像、聲音與節奏形成另一種入口。</p>
+            <a class="loc5-reel-link" href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">
+              <span><strong>在 Instagram Reels 觀看</strong><small>開啟公開發布版本</small></span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </article>
+      </div>
+
+      <p class="loc5-note">首頁只提供輕量預覽，不嵌入 Instagram 播放器，也不預先載入影片；點擊後直接前往 Reels 播放。</p>
     </section>
 
     <section class="section" aria-labelledby="framework-image-title">
