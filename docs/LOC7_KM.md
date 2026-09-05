@@ -189,6 +189,8 @@ LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/shared/
 
 LOC3 版本推薦分數另外納入跨媒介完成度：IG Reels +20、YouTube MV +30，兩者可累加。這些 bonus 只影響同詞版本的推薦順序，不進歌詞語意向量，也不改變 rune_song provenance 判定。
 
+LOC3 另有作品層治理：禁咒／符文詠唱類屬 `hidden_exception`，不展示、不推薦、不進一般搜尋；與 LOC4 有明確關聯的主題曲、角色曲、OP、求婚歌等保存 `loc4_relation`，現行作品推薦加權基準 +40。此加權只作 bounded recommendation prior，不取代歌詞語意相似度。
+
 LOC5 媒體稽核：目前 Suno 500 workbook、`LOC3_MEDIA_LINKS_v0.1.json` 與 shared `LOC_MEDIA_REGISTRY.json` 均未找到上述四首 confirmed rune songs 的 Reels／MV 對應。未找到不等於不存在；在實際媒體來源回收前，不建立 LOC5 假連結。
 
 ## 10. FAQ / RAG 現況
