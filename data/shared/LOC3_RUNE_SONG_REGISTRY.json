@@ -214,7 +214,8 @@
     "confirmed_now": 3,
     "expected_total": "more_than_3",
     "exact_total": "unknown",
-    "note": "Do not treat the current three confirmed records as the full rune-song corpus."
+    "note": "Do not treat the current three confirmed records as the full rune-song corpus.",
+    "keyword_scan_ready": true
   },
   "recovery_clues": [
     {
@@ -229,5 +230,430 @@
       "source": "author clarification",
       "status": "confirmed clue"
     }
-  ]
+  ],
+  "rune_keyword_dictionary": {
+    "purpose": "Use all 66 rune names as first-pass lexical clues when recovering rune songs from private/full-lyrics sources.",
+    "match_unit": "lyrics token occurrence",
+    "keywords": [
+      {
+        "rune_id": 1,
+        "rune": "靈",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 2,
+        "rune": "魂",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 3,
+        "rune": "彩",
+        "weight": 2,
+        "tier": "medium_signal"
+      },
+      {
+        "rune_id": 4,
+        "rune": "憶",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 5,
+        "rune": "界",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 6,
+        "rune": "域",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 7,
+        "rune": "鏡",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 8,
+        "rune": "核",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 9,
+        "rune": "向",
+        "weight": 2,
+        "tier": "medium_signal"
+      },
+      {
+        "rune_id": 10,
+        "rune": "斷",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 11,
+        "rune": "封",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 12,
+        "rune": "鍊",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 13,
+        "rune": "啟",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 14,
+        "rune": "分",
+        "weight": 2,
+        "tier": "medium_signal"
+      },
+      {
+        "rune_id": 15,
+        "rune": "悟",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 16,
+        "rune": "誤",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 17,
+        "rune": "生",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 18,
+        "rune": "老",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 19,
+        "rune": "病",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 20,
+        "rune": "死",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 21,
+        "rune": "心",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 22,
+        "rune": "愛",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 23,
+        "rune": "語",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 24,
+        "rune": "韻",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 25,
+        "rune": "樹",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 26,
+        "rune": "花",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 27,
+        "rune": "葉",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 28,
+        "rune": "草",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 29,
+        "rune": "根",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 30,
+        "rune": "種",
+        "weight": 2,
+        "tier": "medium_signal"
+      },
+      {
+        "rune_id": 31,
+        "rune": "實",
+        "weight": 2,
+        "tier": "medium_signal"
+      },
+      {
+        "rune_id": 32,
+        "rune": "枝",
+        "weight": 2,
+        "tier": "medium_signal"
+      },
+      {
+        "rune_id": 33,
+        "rune": "金",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 34,
+        "rune": "玉",
+        "weight": 2,
+        "tier": "medium_signal"
+      },
+      {
+        "rune_id": 35,
+        "rune": "晶",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 36,
+        "rune": "地",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 37,
+        "rune": "石",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 38,
+        "rune": "鑽",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 39,
+        "rune": "礦",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 40,
+        "rune": "塵",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 41,
+        "rune": "光",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 42,
+        "rune": "暗",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 43,
+        "rune": "水",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 44,
+        "rune": "火",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 45,
+        "rune": "風",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 46,
+        "rune": "土",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 47,
+        "rune": "雷",
+        "weight": 2,
+        "tier": "medium_signal"
+      },
+      {
+        "rune_id": 48,
+        "rune": "氣",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 49,
+        "rune": "日",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 50,
+        "rune": "月",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 51,
+        "rune": "星",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 52,
+        "rune": "辰",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 53,
+        "rune": "明",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 54,
+        "rune": "時",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 55,
+        "rune": "空",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 56,
+        "rune": "因",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 57,
+        "rune": "福",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 58,
+        "rune": "禍",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 59,
+        "rune": "無",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 60,
+        "rune": "夢",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 61,
+        "rune": "幻",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 62,
+        "rune": "緣",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 63,
+        "rune": "虛",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 64,
+        "rune": "果",
+        "weight": 1,
+        "tier": "low_signal"
+      },
+      {
+        "rune_id": 65,
+        "rune": "玄",
+        "weight": 3,
+        "tier": "high_signal"
+      },
+      {
+        "rune_id": 66,
+        "rune": "命",
+        "weight": 1,
+        "tier": "low_signal"
+      }
+    ],
+    "scoring_rule": {
+      "high_signal": 3,
+      "medium_signal": 2,
+      "low_signal": 1,
+      "note": "Keyword score is only a recovery heuristic. It never proves rune_song status by itself."
+    },
+    "ambiguity_notes": {
+      "月": "Very common motif in the author's music and project identity; must be treated as low-signal unless combined with other rune terms, OW3gs context, date evidence, or author confirmation.",
+      "日": "Common ordinary-language token; low-signal.",
+      "心": "Very common lyric token; low-signal.",
+      "愛": "Very common lyric token; low-signal.",
+      "夢": "Common lyric motif; low-signal.",
+      "風": "Very common motif across multiple ERAs; low-signal.",
+      "命": "Common in fate-related language; low-signal despite being a rune name."
+    },
+    "suggested_recovery_logic": [
+      "Scan full lyrics for all 66 rune names.",
+      "Count distinct rune-name hits, not only total repetitions.",
+      "Prefer multiple medium/high-signal rune hits over repeated low-signal hits.",
+      "Treat one occurrence of 月／心／愛／夢／風／日 alone as insufficient.",
+      "Boost candidates that also align with a known OW3gs date or author recollection.",
+      "Only author confirmation or preserved draw-to-song provenance can promote a candidate to confirmed."
+    ]
+  }
 }
