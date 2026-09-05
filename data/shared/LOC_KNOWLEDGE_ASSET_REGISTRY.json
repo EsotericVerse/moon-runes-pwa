@@ -70,34 +70,6 @@
       "notes": "Markdown-first maintainable KM source in the repository. DOCX is retained as a published snapshot."
     },
     {
-      "asset_id": "KA-KM-002",
-      "title": "LOC7_KM DOCX snapshot",
-      "path": "docs/LOC7_KM.docx",
-      "source_type": "document",
-      "content_type": "knowledge_document",
-      "primary_loc": "LOC7",
-      "related_locs": [
-        "LOC1",
-        "LOC2",
-        "LOC3",
-        "LOC4",
-        "LOC5",
-        "LOC6",
-        "LOC8"
-      ],
-      "role": "published_snapshot",
-      "status": "published",
-      "authority_level": "published_snapshot",
-      "searchable": true,
-      "index_priority": "medium",
-      "version": "0.1r",
-      "provenance": {
-        "repository": "EsotericVerse/moon-runes-pwa",
-        "maintained_in_repo": true
-      },
-      "notes": "Published/exchange snapshot retained for compatibility. The repository-maintained KM source is docs/LOC7_KM.md."
-    },
-    {
       "asset_id": "KA-DOCS-001",
       "title": "LOC Documentation Index",
       "path": "docs/README.md",
