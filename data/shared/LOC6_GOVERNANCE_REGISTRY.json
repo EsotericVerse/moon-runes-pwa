@@ -319,10 +319,10 @@
       "era_name": "Suno原型探索期",
       "time_range": {
         "start": "2025-02-21",
-        "end": "2025-06-24"
+        "end": "2025-10-15"
       },
       "source_event_id": "EV-ERA-P1",
-      "source_description": "期間：2025-02-21～2025-06-24。Suno新手上路；只備份，不搜尋。",
+      "source_description": "系統時期：2025-02-21～2025-10-15。Suno 原始活躍範圍：2025-02-21～2025-06-24。Suno新手上路；只備份，不搜尋。",
       "state_before": "尚未形成穩定 ERA 分期",
       "state_after": "原型探索：創作與語言仍在嘗試、累積與辨識階段",
       "governance_focus": [
@@ -357,6 +357,11 @@
         "top_turn_methods": [],
         "top_ending_structures": [],
         "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+      },
+      "source_active_range": {
+        "start": "2025-02-21",
+        "end": "2025-06-24",
+        "source": "LOC3 / Suno original activity"
       }
     },
     {
@@ -366,10 +371,10 @@
       "era_name": "重啟與格式形成期",
       "time_range": {
         "start": "2025-10-16",
-        "end": "2025-12-28"
+        "end": "2026-01-14"
       },
       "source_event_id": "EV-ERA-P2",
-      "source_description": "期間：2025-10-16～2025-12-28。掙扎轉變期。在嘗試各種不一樣的方式，整理自己的過往。跌跌撞撞學步期。",
+      "source_description": "系統時期：2025-10-16～2026-01-14。Suno 原始活躍範圍：2025-10-16～2025-12-28。掙扎轉變期。在嘗試各種不一樣的方式，整理自己的過往。跌跌撞撞學步期。",
       "state_before": "P1 原型探索期",
       "state_after": "重啟與格式形成：開始形成較穩定的創作格式與表達方式",
       "governance_focus": [
@@ -512,6 +517,11 @@
           }
         ],
         "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+      },
+      "source_active_range": {
+        "start": "2025-10-16",
+        "end": "2025-12-28",
+        "source": "LOC3 / Suno original activity"
       }
     },
     {
@@ -521,10 +531,10 @@
       "era_name": "微月光與關係敘事期",
       "time_range": {
         "start": "2026-01-15",
-        "end": "2026-02-28"
+        "end": "2026-03-08"
       },
       "source_event_id": "EV-ERA-P3",
-      "source_description": "期間：2026-01-15～2026-02-28。自我認知；跨越 01/30 正名界線。正在適應姓名轉變帶來的自我認知轉變。",
+      "source_description": "系統時期：2026-01-15～2026-03-08。Suno 原始活躍範圍：2026-01-15～2026-02-28。自我認知；跨越 01/30 正名界線。正在適應姓名轉變帶來的自我認知轉變。",
       "state_before": "P2 重啟與格式形成期",
       "state_after": "微月光與關係敘事：自我認知提高，關係與陪伴成為主要敘事",
       "governance_focus": [
@@ -667,6 +677,11 @@
           }
         ],
         "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+      },
+      "source_active_range": {
+        "start": "2026-01-15",
+        "end": "2026-02-28",
+        "source": "LOC3 / Suno original activity"
       }
     },
     {
@@ -676,10 +691,10 @@
       "era_name": "現實壓力與治理轉折期",
       "time_range": {
         "start": "2026-03-09",
-        "end": "2026-04-13"
+        "end": "2026-06-09"
       },
       "source_event_id": "EV-ERA-P4",
-      "source_description": "期間：2026-03-09～2026-04-13。治理關係的開始（正名後發展）。",
+      "source_description": "系統時期：2026-03-09～2026-06-09。Suno 原始活躍範圍：2026-03-09～2026-04-13。治理關係的開始（正名後發展）。",
       "state_before": "P3 微月光與關係敘事期",
       "state_after": "現實壓力進入敘事，開始從情緒與關係轉向治理、界線與現實處理",
       "governance_focus": [
@@ -822,6 +837,11 @@
           }
         ],
         "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+      },
+      "source_active_range": {
+        "start": "2026-03-09",
+        "end": "2026-04-13",
+        "source": "LOC3 / Suno original activity"
       }
     },
     {
@@ -977,6 +997,11 @@
           }
         ],
         "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+      },
+      "source_active_range": {
+        "start": "2026-06-10",
+        "end": "2026-06-30",
+        "source": "LOC3 / Suno original activity"
       }
     },
     {
@@ -1132,6 +1157,11 @@
           }
         ],
         "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+      },
+      "source_active_range": {
+        "start": "2026-07-01",
+        "end": "2026-07-31",
+        "source": "LOC3 / Suno original activity"
       }
     },
     {
@@ -1272,6 +1302,11 @@
           }
         ],
         "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+      },
+      "source_active_range": {
+        "start": "2026-08-01",
+        "end": "2026-08-31",
+        "source": "LOC3 / Suno original activity"
       }
     },
     {
@@ -1385,8 +1420,14 @@
           }
         ],
         "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+      },
+      "source_active_range": {
+        "start": "2026-09-01",
+        "end": null,
+        "source": "LOC3 / Suno original activity"
       }
     }
   ],
-  "era_style_evidence_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+  "era_style_evidence_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json",
+  "periodization_rule": "LOC6 stage profiles inherit continuous period boundaries from LOC8 ERA registry; LOC3/Suno activity ranges are evidence windows, not the system-wide period boundary."
 }
