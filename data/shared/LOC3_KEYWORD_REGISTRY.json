@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC3_KEYWORD_REGISTRY",
   "system_id": "lo3rwang",
   "primary_loc": "LOC3",
@@ -9,19 +9,16 @@
   ],
   "status": "Working",
   "updated_at": "2026-09-06",
-  "purpose": "Define LOC3 controlled keyword semantics so proper nouns, themes, emotions, actions and imagery are not conflated in period analysis.",
   "rules": [
-    "微月光 is a LOC3 proper noun / named creative concept. It must not be normalized to generic light imagery.",
-    "微光意象 is a generic imagery keyword for non-proper-noun references to faint light / glow.",
-    "微月光 and 微光意象 are not aliases.",
-    "A work receives 微月光 only when explicit source evidence exists, such as era_name, ERA_MOONLIGHT, playlist/title/tag references.",
-    "Period keyword analysis uses work-level tags and keeps proper nouns distinct from imagery."
+    "命名概念與一般語義／意象分層治理。",
+    "微月光與微光意象不是 aliases。",
+    "自我治理為 canonical term；治理自己為 alias / creative-stage label。",
+    "Named concepts are retained in period analysis even when they are not among the top generic semantic tags."
   ],
   "keywords": [
     {
       "term": "微月光",
-      "keyword_type": "proper_noun",
-      "status": "Canonical",
+      "keyword_type": "named_concept",
       "aliases": [
         "Micro Moonlight"
       ],
@@ -31,12 +28,33 @@
         "光芒",
         "月亮月光"
       ],
-      "note": "LOC3 專有名詞／創作語彙，不是一般光線意象。"
+      "status": "Canonical"
+    },
+    {
+      "term": "人生月台",
+      "keyword_type": "named_concept",
+      "aliases": [
+        "Life Platform"
+      ],
+      "status": "Canonical"
+    },
+    {
+      "term": "自我治理",
+      "keyword_type": "governance_concept",
+      "aliases": [
+        "治理自己"
+      ],
+      "status": "Canonical"
+    },
+    {
+      "term": "已讀不回",
+      "keyword_type": "cross_loc_concept",
+      "aliases": [],
+      "status": "Canonical"
     },
     {
       "term": "微光意象",
       "keyword_type": "imagery",
-      "status": "Stable",
       "aliases": [
         "微光",
         "微弱光線",
@@ -45,7 +63,7 @@
       "not_aliases": [
         "微月光"
       ],
-      "note": "一般性的微弱光線、光芒、亮點意象；不可替代專有名詞「微月光」。"
+      "status": "Stable"
     }
   ]
 }
