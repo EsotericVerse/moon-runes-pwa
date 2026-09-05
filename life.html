@@ -299,6 +299,43 @@
       line-height: 1.6;
     }
 
+    .daily-draw-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      gap: 16px;
+    }
+    .draw-history { display: grid; gap: 10px; }
+    .draw-entry {
+      display: grid;
+      grid-template-columns: 90px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.025);
+    }
+    .draw-entry .draw-date { color: var(--muted); font-size: 12px; }
+    .draw-entry .draw-main { min-width: 0; }
+    .draw-entry .draw-title { font-weight: 700; }
+    .draw-entry .draw-note { margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .draw-kind {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      color: var(--accent-2);
+      background: rgba(169,199,255,.07);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    @media (max-width: 900px) {
+      .daily-draw-grid { grid-template-columns: 1fr; }
+      .draw-entry { grid-template-columns: 76px 1fr; }
+      .draw-entry .draw-kind { grid-column: 2; justify-self: start; }
+    }
+
     .theme-showcase{margin:0 0 16px}.theme-showcase img{display:block;width:100%;max-height:360px;object-fit:cover;border-radius:16px}.theme-showcase .body p{margin:10px 0 0;color:var(--muted);line-height:1.6}.footer { color: var(--muted); font-size: 12px; text-align: center; padding: 22px 0 4px; }
 
     @media (max-width: 1100px) {
@@ -338,6 +375,7 @@
       <nav class="nav">
         <a href="index.html">← 回到首頁</a>
         <a class="active" href="#overview">概覽</a>
+        <a href="#daily-draw">每日抽牌</a>
         <a href="#event-form">事件</a>
         <a href="#timeline">時間線</a>
         <a href="#trajectory">軌跡</a>
@@ -391,6 +429,68 @@
         <div class="card metric"><div class="label">Current</div><div class="value" id="metricCurrent">0</div><div class="hint">目前有效狀態</div></div>
         <div class="card metric"><div class="label">Release</div><div class="value" id="metricRelease">0</div><div class="hint">已封存版本</div></div>
         <div class="card metric"><div class="label">最近 30 天</div><div class="value" id="metricRecent">0</div><div class="hint">可用於趨勢觀察</div></div>
+        <div class="card metric"><div class="label">每日抽牌</div><div class="value" id="metricDraws">0</div><div class="hint">主抽與補抽紀錄</div></div>
+      </section>
+
+
+      <section class="card" style="margin-top:16px;" id="daily-draw">
+        <div class="head">
+          <div>
+            <h3>每日抽牌紀錄</h3>
+            <p>把 LOC1 的每日主抽／補抽寫進 LOC8 時間線，供後續趨勢與語意分析。</p>
+          </div>
+          <span class="badge">LOC1 × LOC8</span>
+        </div>
+        <div class="body daily-draw-grid">
+          <form id="dailyDrawForm">
+            <div class="form-grid">
+              <div class="field">
+                <label for="drawDate">日期</label>
+                <input id="drawDate" type="date" required />
+              </div>
+              <div class="field">
+                <label for="drawKind">抽牌類型</label>
+                <select id="drawKind">
+                  <option value="daily_draw">每日主抽</option>
+                  <option value="daily_draw_supplement">補抽</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="drawRune">符文</label>
+                <select id="drawRune" required>
+                  <option value="">選擇符文</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="drawDirection">方位</label>
+                <select id="drawDirection" required>
+                  <option value="正位">正位</option>
+                  <option value="半正位">半正位</option>
+                  <option value="半逆位">半逆位</option>
+                  <option value="逆位">逆位</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="drawNote">備註／當日觀察</label>
+                <textarea id="drawNote" placeholder="可留白；記錄當日感受、事件或之後回看時的對照。"></textarea>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn primary" type="submit">儲存抽牌</button>
+              <button class="btn ghost" id="clearDrawBtn" type="button">清除</button>
+            </div>
+          </form>
+
+          <div>
+            <div class="head" style="padding:0 0 12px;border:0">
+              <div><h3>最近抽牌</h3><p>依日期由新到舊顯示。</p></div>
+              <span class="badge" id="drawCountBadge">0 筆</span>
+            </div>
+            <div class="draw-history" id="dailyDrawHistory">
+              <div class="empty">尚無每日抽牌紀錄。</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section class="grid cols-2" style="margin-top:16px;" id="event-form">
@@ -422,6 +522,8 @@
                     <option value="interpretation">Interpretation</option>
                     <option value="external_trigger">External Trigger</option>
                     <option value="transition">Transition</option>
+                    <option value="daily_draw">Daily Draw / 每日抽牌</option>
+                    <option value="daily_draw_supplement">Daily Draw Supplement / 補抽</option>
                   </select>
                 </div>
                 <div class="field full"><label for="title">事件標題</label><input id="title" name="event_title" required placeholder="一句話說明發生了什麼" /></div>
@@ -491,7 +593,7 @@
         </div>
       </section>
 
-      <div class="footer">LOC8 MVP · life.html · User / Event split · Google Sheet prototype</div>
+      <div class="footer">LOC8 MVP · Daily Draw / Event / Time / Trajectory / Trend · Google Sheet prototype</div>
     </main>
   </div>
 
@@ -522,6 +624,10 @@
       mCurrent: $('#metricCurrent'),
       mRelease: $('#metricRelease'),
       mRecent: $('#metricRecent'),
+      mDraws: $('#metricDraws'),
+      dailyDrawForm: $('#dailyDrawForm'),
+      dailyDrawHistory: $('#dailyDrawHistory'),
+      drawCountBadge: $('#drawCountBadge'),
       apiInput: $('#sheetApiUrl'),
       formTitle: $('#eventFormTitle'),
       editingNote: $('#editingNote'),
@@ -636,6 +742,7 @@
       els.mCurrent.textContent = sorted.filter(e => e.status === 'current').length;
       els.mRelease.textContent = sorted.filter(e => e.status === 'released').length;
       els.mRecent.textContent = sorted.filter(e => new Date(e.date) >= cutoff).length;
+      els.mDraws.textContent = sorted.filter(e => e.event_type === 'daily_draw' || e.event_type === 'daily_draw_supplement').length;
     }
 
     function renderCurrent(sorted) {
@@ -716,6 +823,37 @@
       `).join('');
     }
 
+
+    function renderDailyDraws(sorted) {
+      const draws = sorted
+        .filter(e => e.event_type === 'daily_draw' || e.event_type === 'daily_draw_supplement')
+        .sort((a,b) => {
+          const dateDiff = new Date(b.date) - new Date(a.date);
+          if (dateDiff) return dateDiff;
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        });
+
+      els.drawCountBadge.textContent = draws.length + ' 筆';
+      if (!draws.length) {
+        els.dailyDrawHistory.innerHTML = '<div class="empty">尚無每日抽牌紀錄。</div>';
+        return;
+      }
+
+      els.dailyDrawHistory.innerHTML = draws.slice(0, 30).map(e => {
+        const kind = e.event_type === 'daily_draw_supplement' ? '補抽' : '主抽';
+        return `
+          <div class="draw-entry">
+            <div class="draw-date">${esc(e.date)}</div>
+            <div class="draw-main">
+              <div class="draw-title">${esc(e.object_id || e.event_title)}</div>
+              ${e.description ? `<div class="draw-note">${esc(e.description)}</div>` : ''}
+            </div>
+            <span class="draw-kind">${kind}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
     function renderAll() {
       const sorted = events.map(normalizeEvent).sort((a,b) => new Date(a.date) - new Date(b.date));
       events = sorted;
@@ -724,6 +862,7 @@
       renderTimeline(sorted);
       renderTrajectory(sorted);
       renderTrend(sorted);
+      renderDailyDraws(sorted);
     }
 
     function resetEventForm() {
@@ -764,6 +903,90 @@
       $('#source').value = event.source || '';
       document.querySelector('#event-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+
+
+    async function loadDrawRunes() {
+      const select = $('#drawRune');
+      if (!select || select.options.length > 1) return;
+      try {
+        const res = await fetch('data/shared/lots.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Rune data unavailable');
+        const data = await res.json();
+        const items = Array.isArray(data.items) ? data.items : [];
+        items.forEach(item => {
+          const option = document.createElement('option');
+          option.value = String(item['名稱'] || '');
+          option.textContent = String(item['編號'] || '').padStart(2, '0') + ' · ' + String(item['名稱'] || '');
+          select.appendChild(option);
+        });
+      } catch (err) {
+        console.error(err);
+        ['靈','魂','彩','憶','界','域','鏡','核','向','斷','封','鍊','啟','分','悟','誤','生','老','病','死','心','愛','語','韻','樹','花','葉','草','根','種','實','枝','金','玉','晶','地','石','鑽','礦','塵','光','暗','水','火','風','土','雷','氣','日','月','星','辰','明','時','空','因','福','禍','無','夢','幻','緣','虛','果','玄','命']
+          .forEach((name, index) => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = String(index + 1).padStart(2, '0') + ' · ' + name;
+            select.appendChild(option);
+          });
+      }
+    }
+
+    function resetDailyDrawForm() {
+      els.dailyDrawForm.reset();
+      $('#drawDate').value = new Date().toISOString().slice(0,10);
+      $('#drawKind').value = 'daily_draw';
+      $('#drawDirection').value = '正位';
+    }
+
+    els.dailyDrawForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const date = $('#drawDate').value;
+      const rune = $('#drawRune').value;
+      const direction = $('#drawDirection').value;
+      const kind = $('#drawKind').value;
+      const note = String($('#drawNote').value || '').trim();
+
+      if (!date || !rune || !direction) return;
+
+      const duplicate = events.some(e =>
+        e.date === date &&
+        e.event_type === kind &&
+        e.object_id === rune &&
+        String(e.event_title || '').includes(direction)
+      );
+      if (duplicate && !confirm('這一天已有相同的抽牌紀錄，仍要再新增一筆嗎？')) return;
+
+      const kindLabel = kind === 'daily_draw_supplement' ? '補抽' : '每日抽牌';
+      const event = normalizeEvent({
+        user_id: 'lo3rwang',
+        date,
+        object_type: 'rune',
+        object_id: rune + direction,
+        event_type: kind,
+        event_title: kindLabel + '｜' + rune + direction,
+        description: note,
+        state_before: '',
+        state_after: '',
+        era: '',
+        tags: ['daily-draw', 'LOC1', kind === 'daily_draw_supplement' ? 'supplement' : 'primary', direction],
+        status: 'recorded',
+        source: 'life.html#daily-draw',
+        confidence: 'recorded',
+        primary_loc: 'LOC8',
+        related_locs: ['LOC1', 'LOC8']
+      });
+
+      try {
+        await saveEvent(event, 'event');
+        if (sheetApiUrl) await loadEvents(); else renderAll();
+        resetDailyDrawForm();
+      } catch (err) {
+        console.error(err);
+        alert('每日抽牌儲存失敗，請檢查 Google Sheet API 或網路狀態。');
+      }
+    });
+
+    $('#clearDrawBtn').addEventListener('click', resetDailyDrawForm);
 
     els.form.addEventListener('submit', async (ev) => {
       ev.preventDefault();
@@ -913,6 +1136,8 @@
     els.apiInput.value = sheetApiUrl;
     if (!localStorage.getItem(API_URL_KEY)) localStorage.setItem(API_URL_KEY, sheetApiUrl);
     resetEventForm();
+    loadDrawRunes();
+    resetDailyDrawForm();
     loadEvents();
   </script>
   <script src="js/loc-nav.js"></script>
