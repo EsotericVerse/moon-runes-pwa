@@ -59,6 +59,16 @@
     const locLabels={LOC1:'LOC1 · Lots',LOC3:'LOC3 · Music',LOC4:'LOC4 · Writing',LOC5:'LOC5 · Resonance',LOC6:'LOC6 · Governance',LOC7:'LOC7 · Text Architecture',LOC8:'LOC8 · Integration'};
     const el=id=>document.getElementById(id);
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    function bootFromUrl(){
+      const p=new URLSearchParams(location.search);
+      const type=p.get('content_type')||'';
+      const q=p.get('q')||'';
+      if(type&&[...el('contentType').options].some(o=>o.value===type)) el('contentType').value=type;
+      if(q) el('query').value=q;
+      const music=['','lyrics_work','reel'].includes(el('contentType').value);
+      el('period').disabled=!music;el('category').disabled=!music;el('playlist').disabled=!music;
+      if(q) el('searchForm').requestSubmit();
+    }
     function quick(){el('quick').innerHTML=prompts.map(x=>`<button type="button" class="chip" data-q="${esc(x)}">${esc(x)}</button>`).join('');document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{el('query').value=b.dataset.q;el('query').focus()})}
     function fill(select,items,valueKey,labelKey){for(const item of items||[]){const o=document.createElement('option');o.value=item[valueKey]??item.value??'';o.textContent=item[labelKey]??item.label??item.value??o.value;select.appendChild(o)}}
     async function facets(){try{const r=await fetch(`${API}/search/facets`);if(!r.ok)throw 0;const d=await r.json();fill(el('period'),d.eras,'period','label');fill(el('category'),d.loc3?.categories||[],'value','value');fill(el('playlist'),d.loc3?.playlists||[],'value','value')}catch(_){}}
@@ -86,7 +96,7 @@
     function render(groups){const order=['runes','works','relationships','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='relationships'?relationshipCard:(key==='works'?musicCard:card);html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
     el('contentType').addEventListener('change',()=>{const music=['','lyrics_work','reel'].includes(el('contentType').value);el('period').disabled=!music;el('category').disabled=!music;el('playlist').disabled=!music});
     el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時間……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value,category:el('category').value,playlist:el('playlist').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
-    quick();facets();
+    quick();facets();bootFromUrl();
     if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'));
   </script>
   <script src="js/loc-nav.js"></script>
