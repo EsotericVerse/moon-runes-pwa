@@ -35,41 +35,6 @@
   ],
   "confirmed_records": [
     {
-      "candidate_id": "RS-CAND-LW0228",
-      "work_id": "LW0228",
-      "title": "界線之內",
-      "created_date": "2026-07-11",
-      "period": "P6",
-      "era_name": "順其自然",
-      "source_work_ids": [
-        "E0494"
-      ],
-      "match_basis": {
-        "same_date_as_recorded_draw": true,
-        "exact_title_matches_drawn_rune": false,
-        "matched_rune": null,
-        "related_metadata_tags": [
-          "正義界線",
-          "命運因果",
-          "時間記憶",
-          "守護界線"
-        ]
-      },
-      "confidence": "confirmed_by_author",
-      "status": "confirmed",
-      "note": "Same date as a recorded OW3gs spread, but no direct rune-to-song provenance is stored in the current LOC3 metadata. Author later recalled that rune songs were consistently created from OW3gs 11-card draws and identified these songs as likely belonging to that process.",
-      "author_recollection": {
-        "statement": "符文歌曲都是以 OW3gs 11 抽來創作；這幾首應該就是。",
-        "recorded_in_current_review": true,
-        "certainty": "likely_not_absolute"
-      },
-      "confirmation": {
-        "type": "explicit_author_confirmation",
-        "statement": "界線之內確定是。",
-        "confirmed_in_current_review": true
-      }
-    },
-    {
       "work_id": "E0285",
       "title": "在塵裡長出的光",
       "status": "confirmed",
@@ -134,42 +99,7 @@
       }
     }
   ],
-  "candidate_records": [
-    {
-      "candidate_id": "RS-CAND-LW0001",
-      "work_id": "LW0001",
-      "title": "界",
-      "created_date": "2026-07-11",
-      "period": "P6",
-      "era_name": "順其自然",
-      "source_work_ids": [
-        "E0493"
-      ],
-      "match_basis": {
-        "same_date_as_recorded_draw": true,
-        "exact_title_matches_drawn_rune": true,
-        "matched_rune": "界",
-        "related_metadata_tags": [
-          "時間記憶",
-          "月亮月光"
-        ]
-      },
-      "confidence": "author_uncertain",
-      "status": "candidate",
-      "note": "Same date as a recorded OW3gs spread and title exactly matches a rune in that spread. Original songwriting provenance is still required for confirmed rune_song status. Author later recalled that rune songs were consistently created from OW3gs 11-card draws and identified these songs as likely belonging to that process. Author later revised confidence and indicated 《界》 may not be a rune song.",
-      "author_recollection": {
-        "statement": "符文歌曲都是以 OW3gs 11 抽來創作；這幾首應該就是。",
-        "recorded_in_current_review": true,
-        "certainty": "likely_not_absolute"
-      },
-      "confirmation": {
-        "type": "author_revision",
-        "statement": "界好像不是。",
-        "confirmed_in_current_review": false
-      },
-      "role": null
-    }
-  ],
+  "candidate_records": [],
   "known_draw_contexts": [
     {
       "date": "2026-07-11",
@@ -228,10 +158,10 @@
     "same_date_candidates_2026_07_11": 3,
     "high_candidates": 1,
     "medium_candidates": 2,
-    "confirmed_rune_songs": 5,
-    "known_minimum_total": 3,
+    "confirmed_rune_songs": 4,
+    "known_minimum_total": 4,
     "total_status": "incomplete",
-    "author_recollection": "符文歌曲數量不只三首；目前只回收到三首已確認作品。"
+    "author_recollection": "Rune songs existed only within P2–P4; current recovered confirmed work-level records are incomplete."
   },
   "dataset_pipeline": {
     "builder": "card_api/scripts/build_loc3_dataset.py",
@@ -258,7 +188,7 @@
     "status": "confirmed_by_author"
   },
   "recovery_status": {
-    "confirmed_now": 5,
+    "confirmed_now": 4,
     "expected_total": "more_than_3",
     "exact_total": "unknown",
     "note": "Do not treat the current three confirmed records as the full rune-song corpus.",
@@ -285,7 +215,22 @@
       "P2",
       "P3",
       "P4"
-    ]
+    ],
+    "unresolved_title_level_confirmation": [
+      "界線之內"
+    ],
+    "media_audit": {
+      "source": "Suno_500 workbook + current LOC3_MEDIA_LINKS_v0.1 / LOC_MEDIA_REGISTRY",
+      "current_confirmed_titles_checked": [
+        "日蝕之前的顯現",
+        "在塵裡長出的光",
+        "界內之風",
+        "界外誤差"
+      ],
+      "matching_reels_found": 0,
+      "status": "no_current_loc5_link_found",
+      "note": "Do not create LOC5 links until an actual matching Reel/MV record is recovered."
+    }
   },
   "recovery_clues": [
     {
@@ -852,6 +797,13 @@
         "statement": "不是符文歌曲。",
         "confirmed_in_current_review": true
       }
+    },
+    {
+      "work_id": "LW0001",
+      "title": "界",
+      "status": "rejected_period_scope",
+      "reason": "outside_P2_P4",
+      "note": "Excluded by author-confirmed period scope; no longer retained as rune_song candidate."
     }
   ],
   "period_exclusions": [
@@ -920,5 +872,30 @@
     "rule": "Only songs in P2, P3, or P4 can be considered rune-song candidates.",
     "source": "author clarification",
     "confidence": "confirmed"
-  }
+  },
+  "valid_period_scope": {
+    "allowed": [
+      "P2",
+      "P3",
+      "P4"
+    ],
+    "excluded": [
+      "P1",
+      "P5",
+      "P6",
+      "P7",
+      "P8"
+    ],
+    "authority": "explicit_author_confirmation",
+    "rule": "Only works in P2, P3, or P4 may be rune_song candidates or confirmed rune songs."
+  },
+  "unresolved_title_records": [
+    {
+      "title": "界線之內",
+      "status": "title_confirmed_work_unresolved",
+      "author_memory": "界線之內確定是。",
+      "conflict": "Current workbook/repo mappings for this title are P5/P6, while author later confirmed only P2-P4 can contain rune songs.",
+      "handling": "Do not attach rune_song status to E0414/E0494/LW0228 until a P2-P4 source work or corrected historical mapping is recovered."
+    }
+  ]
 }
