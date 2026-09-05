@@ -1611,11 +1611,14 @@
     function renderAll() {
       const sorted = events.map(normalizeEvent).sort((a,b) => new Date(a.date) - new Date(b.date));
       events = sorted;
-      const lifeEvents = sorted.filter(e => !isEraPseudoEvent(e));
-      renderMetrics(lifeEvents);
-      renderCurrent(lifeEvents);
-      renderTimeline(lifeEvents);
-      renderTrajectory(lifeEvents);
+
+      // Event views must show every Event row, including the P1–P8 period
+      // transition records. Only period-keyword statistics exclude those
+      // records to avoid counting the period definition itself as evidence.
+      renderMetrics(sorted);
+      renderCurrent(sorted);
+      renderTimeline(sorted);
+      renderTrajectory(sorted);
     }
 
     function resetEventForm() {
