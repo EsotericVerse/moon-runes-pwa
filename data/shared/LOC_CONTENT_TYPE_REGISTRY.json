@@ -119,6 +119,12 @@
       "label": "治理片段"
     },
     {
+      "id": "rune_interpretation",
+      "primary_loc": "LOC6",
+      "kind": "analysis_record",
+      "label": "符文解析實證"
+    },
+    {
       "id": "linguistic_analysis",
       "primary_loc": "LOC7",
       "kind": "analysis_record",
