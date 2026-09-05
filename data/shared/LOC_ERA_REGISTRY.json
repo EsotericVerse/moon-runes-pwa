@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_ERA_REGISTRY",
   "authority": {
     "loc": "LOC8",
@@ -12,15 +12,15 @@
       "era_id": "ERA-P1",
       "period": "P1",
       "order": 1,
-      "name": "Suno原型探索期",
-      "display_label": "P1｜Suno原型探索期",
-      "start_date": "2025-02-21",
+      "name": "月之符文形成期",
+      "display_label": "P1｜月之符文形成期",
+      "start_date": "2025-05-06",
       "end_date": "2025-10-15",
       "status": "released",
       "source_event_id": "EV-ERA-P1",
-      "description": "系統時期：2025-02-21～2025-10-15。Suno 原始活躍範圍：2025-02-21～2025-06-24。Suno新手上路；只備份，不搜尋。",
-      "state_before": "尚未形成穩定 ERA 分期",
-      "state_after": "原型探索：創作與語言仍在嘗試、累積與辨識階段",
+      "description": "系統時期：2025-05-06～2025-10-15。P1 起點改以月之符文出現為準；Suno 原始活躍範圍 2025-02-21～2025-06-24 保留為 P0／前史來源證據，不再決定 P1 邊界。",
+      "state_before": "P0 月符前史／Pre-LOC",
+      "state_after": "月之符文形成：月符開始出現，逐步形成符文語意、小說實作與後續 LOC 核心。",
       "source_active_range": {
         "start": "2025-02-21",
         "end": "2025-06-24",
@@ -163,7 +163,7 @@
   ],
   "periodization_rule": {
     "label": "連續時期",
-    "rule": "每個時期保留既定 start_date；若下一時期已知，end_date 延伸至下一時期 start_date 的前一天，使全系統時間軸連續。Suno 原始活躍範圍另存 source_active_range，不作為全系統時期邊界。",
+    "rule": "P1 自 2025-05-06（月之符文出現）起算；P1 以前歸入 P0／月符前史。其後每個時期保留既定 start_date；若下一時期已知，end_date 延伸至下一時期 start_date 的前一天，使全系統時間軸連續。Suno 原始活躍範圍另存 source_active_range，不作為全系統時期邊界。",
     "scope": "LOC-wide",
     "display_term": "時期"
   }
