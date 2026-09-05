@@ -86,6 +86,26 @@
       object-fit:contain;
     }
     .ritual-message { min-height:56px; color:var(--muted); line-height:1.8; }
+
+    .wait-notice {
+      margin: 0 auto 20px;
+      max-width: 720px;
+      padding: 14px 16px;
+      border: 1px solid rgba(231,194,125,.42);
+      border-radius: 16px;
+      background: rgba(231,194,125,.08);
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: .88rem;
+      text-align: left;
+    }
+
+    .wait-notice strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--gold);
+      font-size: .95rem;
+    }
     .cards-grid {
       display:grid;
       gap:16px;
@@ -200,6 +220,10 @@
 
       <div class="ritual" id="ritual-view">
         <div class="ritual-inner">
+          <div class="wait-notice" role="status" aria-live="polite">
+            <strong>請靜心等待至少五秒，請不要重複點擊。</strong>
+            抽牌會在等待後自動完成。若此模式需要首次喚醒遠端服務，當天第一次使用可能需要更久，最長約 30 秒，請讓頁面繼續等待。
+          </div>
           <div class="ritual-rune">
             <img src="64images/66_命.png" alt="命之符文" />
           </div>
