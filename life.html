@@ -845,7 +845,7 @@
           <div class="draw-entry">
             <div class="draw-date">${esc(e.date)}</div>
             <div class="draw-main">
-              <div class="draw-title">${esc(e.object_id || e.event_title)}</div>
+              <div class="draw-title">${esc((e.event_title || '').replace(/^每日抽牌｜|^補抽｜/, '') || e.object_id)}</div>
               ${e.description ? `<div class="draw-note">${esc(e.description)}</div>` : ''}
             </div>
             <span class="draw-kind">${kind}</span>
@@ -961,7 +961,7 @@
         user_id: 'lo3rwang',
         date,
         object_type: 'rune',
-        object_id: rune + direction,
+        object_id: rune,
         event_type: kind,
         event_title: kindLabel + '｜' + rune + direction,
         description: note,
