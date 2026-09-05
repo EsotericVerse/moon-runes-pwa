@@ -294,6 +294,52 @@
       line-height: 1.55;
     }
 
+    .evolution-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding: 5px 9px;
+      border: 1px solid var(--loc-border);
+      border-radius: 999px;
+      color: var(--loc-text);
+      background: rgba(255,255,255,.035);
+      font-size: .7rem;
+      font-weight: 800;
+    }
+
+    .evolution-status.complete { color: var(--loc-gold); }
+    .evolution-status.validated { color: #cfc2ff; }
+    .evolution-status.active { color: var(--loc-muted); }
+
+    .evolution-proof {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .evolution-proof-item {
+      padding: 14px 15px;
+      border: 1px solid var(--loc-border);
+      border-radius: 15px;
+      background: rgba(4,16,33,.34);
+    }
+
+    .evolution-proof-item strong {
+      display: block;
+      color: var(--loc-text);
+      font-size: .84rem;
+    }
+
+    .evolution-proof-item span {
+      display: block;
+      margin-top: 5px;
+      color: var(--loc-muted);
+      font-size: .75rem;
+      line-height: 1.5;
+    }
+
     .evolution-vision {
       margin-top: 16px;
       padding: 18px 20px;
@@ -1025,6 +1071,7 @@
       .works-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .framework { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .evolution-path { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .evolution-proof { grid-template-columns: 1fr; }
       .evolution-step::after { display:none; }
     }
 
@@ -1145,31 +1192,52 @@
           <small>LOC1 · Lexicon</small>
           <strong>符文語彙</strong>
           <p>單一符文、基本語意、方位與抽牌，建立最小可辨識的語言單元。</p>
+          <span class="evolution-status complete">已實作 · 66 符文＋多種抽牌模式</span>
         </article>
 
         <article class="evolution-step">
           <small>LOC6 · Grammar</small>
           <strong>符文文法</strong>
           <p>符文進入牌組後形成關係：因果、源轉合、五卡與 OW3gs 等組合語法。</p>
+          <span class="evolution-status validated">已有實驗 · 180 筆章節符文實證</span>
         </article>
 
         <article class="evolution-step">
           <small>LOC7 · Architecture</small>
           <strong>符文建築學</strong>
           <p>研究多組語法、位置、層次、群組與關係如何組成更高階的語意結構。</p>
+          <span class="evolution-status active">持續建構 · Text Architecture／RAG</span>
         </article>
 
         <article class="evolution-step">
           <small>LOC3–5 · Expression</small>
           <strong>跨媒介表達</strong>
           <p>語意可以被唱成歌、寫成小說、轉成圖像與影音；《月語者》是目前唯一的符文小說實驗。</p>
+          <span class="evolution-status validated">已驗證 · 符文小說／符文歌曲／影音</span>
         </article>
 
         <article class="evolution-step">
           <small>LOC8 · Context</small>
           <strong>進入現實與時間</strong>
           <p>把抽牌、作品、事件與生命軌跡放回時間脈絡，讓語言能被持續記錄、比較與演化。</p>
+          <span class="evolution-status complete">已實作 · 每日抽牌與事件紀錄</span>
         </article>
+      </div>
+
+
+      <div class="evolution-proof" aria-label="語言進化實作證據">
+        <div class="evolution-proof-item">
+          <strong>符文小說｜《月語者》</strong>
+          <span>7 篇 × 26 章，共 182 個章節槽位；其中 180 章保留明確三符文＋方位的創作紀錄，2 章為刻意不抽牌的武打例外。</span>
+        </div>
+        <div class="evolution-proof-item">
+          <strong>跨媒介實驗｜LOC3–5</strong>
+          <span>LOC3 已有少數由實際抽牌結果延伸的歌曲；LOC5 已有公開符文影音作品，驗證同一語意可轉成不同媒介。</span>
+        </div>
+        <div class="evolution-proof-item">
+          <strong>系統實作｜PWA／RAG／Life</strong>
+          <span>抽牌 PWA、FAQ／RAG、Unified Search 與 LOC8 每日抽牌／事件紀錄都已有可操作版本，不只停留在概念圖。</span>
+        </div>
       </div>
 
       <div class="evolution-vision">
