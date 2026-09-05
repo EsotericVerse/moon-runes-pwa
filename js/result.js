@@ -12,6 +12,41 @@ const DIRECTION_FIELDS = {
 };
 
 let runeHintMap = new Map();
+let lotsMap = new Map();
+
+async function loadLots() {
+  try {
+    const response = await fetch("data/shared/lots.json");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const items = Array.isArray(payload?.items) ? payload.items : [];
+    lotsMap = new Map(items.map(item => [Number(item.編號), item]));
+  } catch (error) {
+    console.warn("LOC1 Lots JSON unavailable; hiding Lots summary.", error);
+    lotsMap = new Map();
+  }
+}
+
+function lotsHtml(card) {
+  const item = lotsMap.get(card.id);
+  const lots = item?.方向?.[card.direction];
+  if (!lots) return "";
+
+  const categories = ["愛情", "事業", "關係", "健康"];
+  return `
+    <div class="rune-result-section lots">
+      <strong>籤詩分類</strong>
+      <div class="lots-grid">
+        ${categories.map(category => `
+          <div class="lots-item">
+            <span>${category}</span>
+            <b>${lots[category] || "有待觀察"}</b>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
 
 async function loadRuneHints() {
   try {
@@ -162,6 +197,8 @@ function cardHtml(card, label, realPhase) {
           <strong>提示句</strong>
           ${directionText}
         </div>
+
+        ${lotsHtml(card)}
 
         <div class="rune-result-section group">
           <strong>${card.rune.所屬分組}組</strong>
@@ -335,7 +372,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   await Promise.all([
     runRitual(mode, config),
-    loadRuneHints()
+    loadRuneHints(),
+    loadLots()
   ]);
   renderResult(mode, config, realPhase);
 
