@@ -97,7 +97,6 @@ API / UI
 - FAQ runtime source：`LOC_FAQ_RAG_v0.3.json`
 - FAQ parent view：`LOC_FAQ_v0.3.json`
 - KM maintainable core：`docs/LOC7_KM.md`
-- KM published snapshot：`docs/LOC7_KM.docx`
 - Rune mother data：`LunaRune64.xlsx`
 
 這些角色不可互相混寫。
