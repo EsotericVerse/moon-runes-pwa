@@ -211,6 +211,10 @@ Structured schema：`data/shared/LOC3_REASONING_SCHEMA.json`
 
 對理性論述型歌曲，`reasoning_tags` 與 `key_propositions` 在檢索上的重要性應至少等同、必要時高於情緒 tag。LOC3 保存歌曲語意，LOC6 可解讀其中的治理／政德風命題，LOC7 再處理命題結構、文字建築與向量檢索。
 
+另外，LOC3 的「完整」不等於所有欄位都必須有值：
+- 狀態／動作描述型歌曲可以 `final_state_applicability = not_required`，例如只描述等待、危險、停滯等過程而不給結論。
+- 文言文歌曲先列為 `classical_chinese` 例外，必須先做語意解釋／現代語意轉譯，再進關鍵字與 reasoning extraction；不能直接用現代中文詞庫判定缺失。
+
 LOC3 語系治理：**非中文歌曲暫不進行中文關鍵字／主題／情緒的補標與人工複查。** 英文、日文、韓文等作品保留語言、曲風、ERA、媒體資產與基本作品 metadata；待未來建立各語系詞庫後再進行語意 tag 分析。混合語言若主要語言判定為中文，仍可納入中文解析，但需保留 mixed-language 標記。
 
 LOC3 實驗例外治理：**代表歌名長度超過 16 字元的作品，視為早期／測試性生成例外，不納入正式 LOC3 分析、中文 tag 補標、一般搜尋、展示與推薦。** 這些作品保留原始檔與基本歷史 metadata，但不應被計入「LOC3 未完成分析」統計。另有作者明確指定的玩票例外也採相同處理；目前 E0216《啾咪十八歲》已列入此類。
