@@ -1,9 +1,9 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC4_WRITING_REGISTRY",
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
-  "purpose": "Canonical catalog entry point for personal writing works. Full text may remain in source documents; this registry provides stable references for cross-LOC search and analysis.",
+  "purpose": "Canonical catalog for LOC4 writing works with LOC8 period assignment based on the first chapter/prologue publication date. Supports cross-period analysis with LOC3 and LOC5.",
   "work_schema": {
     "required": [
       "work_id",
@@ -37,10 +37,105 @@
       "rights": "shared rights object",
       "lifecycle": "shared lifecycle object",
       "chapter_count": "number of chapters when work is a series",
-      "relationship_refs": "cross-LOC relationship IDs"
+      "relationship_refs": "cross-LOC relationship IDs",
+      "period": "LOC8 period code (P1–P8)",
+      "period_name": "LOC8 public period name",
+      "period_assignment": "mapping rule and evidence for temporal assignment"
     }
   },
   "works": [
+    {
+      "work_id": "LOC4-MOON-SPEAKER",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "title": "月語者",
+      "content_type": "novel",
+      "chapter_count": 182,
+      "created_date": "2025-05-18",
+      "period": "P1",
+      "era_id": "ERA-P1",
+      "period_name": "Suno原型探索期",
+      "period_assignment": {
+        "authority": "LOC8",
+        "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
+        "evidence": "author-confirmed Vocus publication date"
+      },
+      "summary": "《月語者》長篇系列；共七大篇，每篇 26 章。以第一篇序章在方格子的首次發布日期作為 LOC4 創作時間基準。",
+      "tags": [
+        "月語者",
+        "長篇小說",
+        "連載",
+        "月之符文",
+        "世界觀"
+      ],
+      "relationship_refs": [],
+      "source_refs": [
+        {
+          "source_type": "vocus_article",
+          "url": "https://vocus.cc/article/6829d52cfd8978000109b281",
+          "title": "月語者：第一篇 現在，下弦之卷 序章：織命之始",
+          "role": "first_chapter_or_prologue"
+        }
+      ],
+      "provenance": {
+        "source": "author-provided LOC4 catalog",
+        "date_basis": "first chapter/prologue Vocus publish date"
+      },
+      "lifecycle": {
+        "status": "catalogued",
+        "updated_at": "2026-09-06"
+      }
+    },
+    {
+      "work_id": "LOC4-ONE-DAY-LOVER",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "title": "一日情人",
+      "content_type": "novel",
+      "chapter_count": 5,
+      "created_date": "2025-05-28",
+      "period": "P1",
+      "era_id": "ERA-P1",
+      "period_name": "Suno原型探索期",
+      "period_assignment": {
+        "authority": "LOC8",
+        "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
+        "evidence": "author-confirmed Vocus publication date"
+      },
+      "summary": "《一日情人》五章作品；以第一章在方格子的首次發布日期作為 LOC4 創作時間基準。",
+      "tags": [
+        "一日情人",
+        "關係敘事",
+        "短篇小說"
+      ],
+      "relationship_refs": [],
+      "source_refs": [
+        {
+          "source_type": "vocus_article",
+          "url": "https://vocus.cc/article/683721cefd897800012c2488",
+          "title": "一日情人 第一章：味道",
+          "role": "first_chapter_or_prologue"
+        }
+      ],
+      "provenance": {
+        "source": "author-provided LOC4 catalog",
+        "date_basis": "first chapter/prologue Vocus publish date"
+      },
+      "lifecycle": {
+        "status": "catalogued",
+        "updated_at": "2026-09-06"
+      }
+    },
     {
       "work_id": "LOC4-READ-RECEIPT",
       "system_id": "lo3rwang",
@@ -54,6 +149,15 @@
       "title": "已讀不回",
       "content_type": "article",
       "chapter_count": 6,
+      "created_date": "2026-07-09",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "period_assignment": {
+        "authority": "LOC8",
+        "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
+        "evidence": "author-confirmed Vocus publication date"
+      },
       "summary": "由同名歌曲核心語意延伸成六章文章；文字與歌曲共同處理等待、訊息、回應與關係中的沉默。",
       "tags": [
         "已讀不回",
@@ -67,15 +171,407 @@
       "relationship_refs": [
         "REL-LOC3-LOC4-READ-RECEIPT"
       ],
-      "source_refs": [],
+      "source_refs": [
+        {
+          "source_type": "vocus_article",
+          "url": "https://vocus.cc/article/6a4f6d82fd89780001ec1c93",
+          "title": "已讀不回 第一章 等待情緒權威",
+          "role": "first_chapter_or_prologue"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "theme_song",
+          "title": "已讀不回",
+          "url": "https://suno.com/s/Zj1837rqBXeo0vxI"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "related_song",
+          "title": "在已讀不回",
+          "url": "https://suno.com/s/6LXfO3EvECZUgEnu"
+        }
+      ],
       "provenance": {
         "derived_from": "LOC3:E0189",
         "direction": "LOC3_to_LOC4"
       },
       "lifecycle": {
-        "status": "catalogued"
+        "status": "catalogued",
+        "updated_at": "2026-09-06"
+      }
+    },
+    {
+      "work_id": "LOC4-BEFORE-AFTER-YOU",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "title": "在你之前，在你之後",
+      "content_type": "novel",
+      "chapter_count": 20,
+      "created_date": "2025-05-22",
+      "period": "P1",
+      "era_id": "ERA-P1",
+      "period_name": "Suno原型探索期",
+      "period_assignment": {
+        "authority": "LOC8",
+        "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
+        "evidence": "author-confirmed Vocus publication date"
+      },
+      "summary": "20 章關係敘事系列；以第一章在方格子的首次發布日期作為 LOC4 創作時間基準。",
+      "tags": [
+        "在你之前，在你之後",
+        "關係敘事",
+        "角色群像",
+        "長篇小說"
+      ],
+      "relationship_refs": [],
+      "source_refs": [
+        {
+          "source_type": "vocus_article",
+          "url": "https://vocus.cc/article/682f0e65fd89780001c7b708",
+          "title": "在你之前，在你之後 第一章：在你之前，阿珠篇",
+          "role": "first_chapter_or_prologue"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "op",
+          "url": "https://suno.com/s/doXe7ALt4MVs0tXK"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "proposal_song",
+          "url": "https://suno.com/s/YvP6Wi5lPHZywCrX"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "character_theme",
+          "title": "德興",
+          "url": "https://suno.com/s/OIX6l1eFUJ7IYOBz"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "character_theme",
+          "title": "小瑤",
+          "url": "https://suno.com/s/4nHz2DJlyK1mGIeM"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "character_theme",
+          "title": "阿珠",
+          "url": "https://suno.com/s/C9YWrn9xn19hoQhV"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "character_theme",
+          "title": "阿文",
+          "url": "https://suno.com/s/a8tUvkKBIbojDGsp"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "character_theme",
+          "title": "小維",
+          "url": "https://suno.com/s/JJ0rs9I78FXHas5A"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "character_theme",
+          "title": "阿鎧",
+          "url": "https://suno.com/s/4Wx3tCqM7BmmzTI4"
+        }
+      ],
+      "provenance": {
+        "source": "author-provided LOC4 catalog",
+        "date_basis": "first chapter/prologue Vocus publish date"
+      },
+      "lifecycle": {
+        "status": "catalogued",
+        "updated_at": "2026-09-06"
+      }
+    },
+    {
+      "work_id": "LOC4-MMM-RELATIONSHIP",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "title": "男男男關係",
+      "content_type": "novel",
+      "chapter_count": 20,
+      "created_date": "2025-05-27",
+      "period": "P1",
+      "era_id": "ERA-P1",
+      "period_name": "Suno原型探索期",
+      "period_assignment": {
+        "authority": "LOC8",
+        "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
+        "evidence": "author-confirmed Vocus publication date"
+      },
+      "summary": "20 章關係敘事系列；以第一章在方格子的首次發布日期作為 LOC4 創作時間基準。",
+      "tags": [
+        "男男男關係",
+        "關係敘事",
+        "喜歡",
+        "角色群像"
+      ],
+      "relationship_refs": [],
+      "source_refs": [
+        {
+          "source_type": "vocus_article",
+          "url": "https://vocus.cc/article/6834920afd89780001aed68d",
+          "title": "男男男關係 第一章：關於喜歡",
+          "role": "first_chapter_or_prologue"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "featured_song",
+          "title": "布丁是宇宙的真理",
+          "url": "https://suno.com/s/eSXeSYxVmSZqSNyy"
+        }
+      ],
+      "provenance": {
+        "source": "author-provided LOC4 catalog",
+        "date_basis": "first chapter/prologue Vocus publish date"
+      },
+      "lifecycle": {
+        "status": "catalogued",
+        "updated_at": "2026-09-06"
+      }
+    },
+    {
+      "work_id": "LOC4-WRONG-PERSON",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "title": "錯的人：命運的錯位者",
+      "content_type": "novel",
+      "chapter_count": 1,
+      "created_date": "2025-05-19",
+      "period": "P1",
+      "era_id": "ERA-P1",
+      "period_name": "Suno原型探索期",
+      "period_assignment": {
+        "authority": "LOC8",
+        "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
+        "evidence": "author-confirmed Vocus publication date"
+      },
+      "summary": "單篇作品；以方格子首次發布日期作為 LOC4 創作時間基準。",
+      "tags": [
+        "錯的人",
+        "命運",
+        "錯位",
+        "關係敘事"
+      ],
+      "relationship_refs": [],
+      "source_refs": [
+        {
+          "source_type": "vocus_article",
+          "url": "https://vocus.cc/article/682a22c1fd89780001197ac6",
+          "title": "錯的人：命運的錯位者",
+          "role": "first_chapter_or_prologue"
+        }
+      ],
+      "provenance": {
+        "source": "author-provided LOC4 catalog",
+        "date_basis": "first chapter/prologue Vocus publish date"
+      },
+      "lifecycle": {
+        "status": "catalogued",
+        "updated_at": "2026-09-06"
+      }
+    },
+    {
+      "work_id": "LOC4-MILK-PAPER-BOAT",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "title": "牛奶，紙船，還有你",
+      "content_type": "novel",
+      "chapter_count": 1,
+      "created_date": "2026-01-29",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "period_assignment": {
+        "authority": "LOC8",
+        "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
+        "evidence": "author-confirmed Vocus publication date"
+      },
+      "summary": "單篇作品；以方格子首次發布日期作為 LOC4 創作時間基準。",
+      "tags": [
+        "牛奶",
+        "紙船",
+        "關係敘事",
+        "可愛"
+      ],
+      "relationship_refs": [],
+      "source_refs": [
+        {
+          "source_type": "vocus_article",
+          "url": "https://vocus.cc/article/697b4b5dfd897800011eb9e1",
+          "title": "牛奶，紙船，還有你",
+          "role": "first_chapter_or_prologue"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "op",
+          "url": "https://suno.com/s/IGGefOeWWSZ6FbWv"
+        }
+      ],
+      "provenance": {
+        "source": "author-provided LOC4 catalog",
+        "date_basis": "first chapter/prologue Vocus publish date"
+      },
+      "lifecycle": {
+        "status": "catalogued",
+        "updated_at": "2026-09-06"
+      }
+    },
+    {
+      "work_id": "LOC4-GRAY-RELATIONSHIP",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "title": "灰色關係",
+      "content_type": "novel",
+      "chapter_count": 1,
+      "created_date": "2025-12-25",
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_name": "重啟與格式形成期",
+      "period_assignment": {
+        "authority": "LOC8",
+        "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
+        "evidence": "author-confirmed Vocus publication date"
+      },
+      "summary": "單篇作品；與 LOC3 同名歌曲對應，以方格子首次發布日期作為 LOC4 創作時間基準。",
+      "tags": [
+        "灰色關係",
+        "關係敘事",
+        "LOC3對應"
+      ],
+      "relationship_refs": [],
+      "source_refs": [
+        {
+          "source_type": "vocus_article",
+          "url": "https://vocus.cc/article/694c23a7fd897800012c191d",
+          "title": "灰色關係",
+          "role": "first_chapter_or_prologue"
+        },
+        {
+          "source_type": "suno_share",
+          "role": "same_title_song",
+          "url": "https://suno.com/s/LMsmefoFEMXIt6yr"
+        }
+      ],
+      "provenance": {
+        "source": "author-provided LOC4 catalog",
+        "date_basis": "first chapter/prologue Vocus publish date"
+      },
+      "lifecycle": {
+        "status": "catalogued",
+        "updated_at": "2026-09-06"
+      }
+    },
+    {
+      "work_id": "LOC4-PROPHET-PERSON",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "title": "被認為是「先知」的人",
+      "content_type": "novel",
+      "chapter_count": null,
+      "created_date": "2026-01-29",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "period_assignment": {
+        "authority": "LOC8",
+        "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
+        "evidence": "author-confirmed Vocus publication date"
+      },
+      "summary": "連載中作品；以方格子前言首次發布日期作為 LOC4 創作時間基準。",
+      "tags": [
+        "先知",
+        "連載",
+        "觀察",
+        "人物"
+      ],
+      "relationship_refs": [],
+      "source_refs": [
+        {
+          "source_type": "vocus_article",
+          "url": "https://vocus.cc/article/69477e66fd8978000193ca4d",
+          "title": "被認為是「先知」的人 前言",
+          "role": "first_chapter_or_prologue"
+        }
+      ],
+      "provenance": {
+        "source": "author-provided LOC4 catalog",
+        "date_basis": "first chapter/prologue Vocus publish date"
+      },
+      "lifecycle": {
+        "status": "catalogued",
+        "updated_at": "2026-09-06"
       }
     }
   ],
-  "migration_note": "Registry reserved now to avoid schema migration after the LOC4 corpus is imported. Existing writing corpus is not silently reconstructed here."
+  "migration_note": "Registry reserved now to avoid schema migration after the LOC4 corpus is imported. Existing writing corpus is not silently reconstructed here.",
+  "period_summary": [
+    {
+      "period": "P1",
+      "work_count": 5,
+      "titles": [
+        "月語者",
+        "一日情人",
+        "在你之前，在你之後",
+        "男男男關係",
+        "錯的人：命運的錯位者"
+      ]
+    },
+    {
+      "period": "P2",
+      "work_count": 1,
+      "titles": [
+        "灰色關係"
+      ]
+    },
+    {
+      "period": "P3",
+      "work_count": 2,
+      "titles": [
+        "牛奶，紙船，還有你",
+        "被認為是「先知」的人"
+      ]
+    },
+    {
+      "period": "P6",
+      "work_count": 1,
+      "titles": [
+        "已讀不回"
+      ]
+    }
+  ]
 }
