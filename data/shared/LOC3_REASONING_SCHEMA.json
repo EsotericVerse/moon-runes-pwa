@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC3_REASONING_SCHEMA",
+  "authority": "LOC3",
+  "updated_at": "2026-09-05",
+  "purpose": "Analyze proposition-level meaning in songs whose primary value is reasoning, judgment, boundary-setting, governance, causality, or reflective statements rather than affect.",
+  "principle": "Emotion is not mandatory evidence. Rational songs may carry weak affect but strong propositions.",
+  "analysis_dimensions": [
+    {
+      "id": "claim",
+      "label": "主張／論點",
+      "description": "The sentence or idea the song asserts as true or worth adopting."
+    },
+    {
+      "id": "reason",
+      "label": "理由／依據",
+      "description": "Why the claim is made; supporting rationale."
+    },
+    {
+      "id": "cause_effect",
+      "label": "因果",
+      "description": "What leads to what; causal or consequence structure."
+    },
+    {
+      "id": "condition",
+      "label": "條件",
+      "description": "If/when/unless-style conditions that constrain the claim."
+    },
+    {
+      "id": "boundary",
+      "label": "界線",
+      "description": "Limits, rights, responsibilities, refusal, distance, or non-negotiables."
+    },
+    {
+      "id": "governance",
+      "label": "治理",
+      "description": "Self-management, choice, responsibility, closure, restraint, or direction-setting."
+    },
+    {
+      "id": "relationship_rule",
+      "label": "關係規則",
+      "description": "Mutuality, reciprocity, alignment, interaction, or relationship requirements."
+    },
+    {
+      "id": "judgment",
+      "label": "判斷",
+      "description": "A conclusion about a situation, person, behavior, or value."
+    },
+    {
+      "id": "paradox_reframe",
+      "label": "反轉／重框",
+      "description": "Reframes a familiar idea by inversion, contrast, pun, or semantic reversal."
+    },
+    {
+      "id": "conclusion",
+      "label": "結論",
+      "description": "The final distilled proposition reached by the song."
+    }
+  ],
+  "suggested_tags": [
+    "互動需要雙方",
+    "關係需要對齊",
+    "逃避也是面對",
+    "邊界不可無限退讓",
+    "等待保留可能性",
+    "幸福可以化為日常",
+    "過去可以回味但不等於停留",
+    "沉默也能形成默契",
+    "選擇必須承擔後果",
+    "自我勉勵",
+    "未知不等於停止",
+    "治理自己",
+    "重新前進"
+  ],
+  "extraction_rule": {
+    "unit": "proposition_or_reasoning_sentence",
+    "preserve_original_wording": true,
+    "allow_multiple_per_song": true,
+    "do_not_force_emotion_tag": true,
+    "store_as": [
+      "reasoning_tags",
+      "key_propositions",
+      "argument_structure"
+    ]
+  },
+  "retrieval_rule": "For rational-discourse songs, reasoning_tags and key_propositions should have equal or greater retrieval importance than emotion tags.",
+  "loc_relationship": {
+    "LOC3": "source song / lyric semantics",
+    "LOC6": "governance and Zhengde-style proposition interpretation",
+    "LOC7": "proposition structure, text architecture, retrieval and vectorization"
+  }
+}
