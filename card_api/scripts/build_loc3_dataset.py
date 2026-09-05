@@ -7,6 +7,7 @@ import re
 import unicodedata
 from pathlib import Path
 from typing import Any
+from datetime import date
 
 from openpyxl import load_workbook
 
@@ -18,15 +19,39 @@ def shared_registry_path(name: str) -> Path:
     return Path(__file__).resolve().parents[2] / "data" / "shared" / name
 
 
-def load_era_registry() -> tuple[dict[str, dict[str, Any]], dict[str, Any] | None]:
+def load_era_registry() -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]], dict[str, Any] | None]:
     path = shared_registry_path("LOC_ERA_REGISTRY.json")
     if not path.exists():
-        return {}, None
+        return [], {}, None
     payload = json.loads(path.read_text(encoding="utf-8"))
     eras = payload.get("eras", [])
     by_period = {text(item.get("period")): item for item in eras if text(item.get("period"))}
     current = next((item for item in eras if text(item.get("status")) == "current"), None)
-    return by_period, current
+    return eras, by_period, current
+
+
+def parse_iso_date(value: Any) -> date | None:
+    raw = text(value)
+    if not raw:
+        return None
+    try:
+        return date.fromisoformat(raw[:10])
+    except ValueError:
+        return None
+
+
+def resolve_era(created_date: Any, period: str, eras: list[dict[str, Any]], by_period: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """Resolve ERA from the work date first; period is only a fallback."""
+    d = parse_iso_date(created_date)
+    if d:
+        for item in eras:
+            start = parse_iso_date(item.get("start_date"))
+            end = parse_iso_date(item.get("end_date"))
+            if not start:
+                continue
+            if d >= start and (end is None or d <= end):
+                return item
+    return by_period.get(period, {})
 
 
 def text(value: Any) -> str:
@@ -167,7 +192,7 @@ def build(source: Path) -> dict[str, Any]:
     works = sheet_rows(workbook, "500公開作品主表")
     versions = sheet_rows(workbook, "663公開版本")
     preferences = sheet_rows(workbook, "版本偏好")
-    era_by_period, active_era = load_era_registry()
+    eras, era_by_period, active_era = load_era_registry()
 
     versions_by_work: dict[str, list[dict[str, Any]]] = {}
     for version in versions:
@@ -225,7 +250,7 @@ def build(source: Path) -> dict[str, Any]:
             *tags,
         ]
         period = text(representative.get("統計時期代碼"))
-        era = era_by_period.get(period, {})
+        era = resolve_era(representative.get("建立日期"), period, eras, era_by_period)
         output_works.append({
             "system_id": SYSTEM_ID,
             "primary_loc": PRIMARY_LOC,
@@ -258,7 +283,7 @@ def build(source: Path) -> dict[str, Any]:
     return {
         "dataset": {
             "name": "LOC3 Lyrics Search",
-            "version": "0.1.4",
+            "version": "0.1.5",
             "source": source.name,
             "language_scope": "zh-Hant",
             "unit": "unique_lyrics_work",
