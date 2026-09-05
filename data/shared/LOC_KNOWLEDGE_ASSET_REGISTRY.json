@@ -119,6 +119,32 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       }
+    },
+    {
+      "asset_id": "KA-LOC6-RUNE-001",
+      "title": "LOC6 Rune Interpretation Registry",
+      "path": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+      "source_type": "structured_registry",
+      "content_type": "rune_interpretation",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC8"
+      ],
+      "role": "recorded_rune_to_narrative_interpretation_corpus",
+      "status": "current",
+      "authority_level": "primary-derived-structure",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-05",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "source_corpus": "seven uploaded 月語者 outline files"
+      },
+      "notes": "182 chapter slots. 180 contain explicit three-rune records; V3 Ch5 and Ch6 have narrative outlines but no rune draw recorded in the supplied source, so they remain unfilled."
     }
   ]
 }
