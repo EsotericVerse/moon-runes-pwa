@@ -469,7 +469,7 @@ class UnifiedSearchEngine:
                 payload=dict(item);payload["matched_terms"]=matched;payload["keyword_match_only"]=True
                 media_results.append({"result_id":item.get("media_id"),"system_id":item.get("system_id") or "lo3rwang","primary_loc":"LOC5","related_locs":item.get("related_locs",[]),"content_type":"multimedia","group":"media","title":item.get("title"),"summary":(item.get("semantic_descriptor") or {}).get("visual_summary") or item.get("purpose") or "","score":round(score,6),"source_refs":item.get("source_refs",[]),"payload":payload})
 
-        if wanted in {"", "all", "knowledge", "knowledge_document"}:
+        if wanted in {"", "all", "knowledge", "knowledge_document", "knowledge_image"}:
             scored = []
             for asset in self.knowledge_assets.get("assets", []):
                 if not asset.get("searchable"): continue
