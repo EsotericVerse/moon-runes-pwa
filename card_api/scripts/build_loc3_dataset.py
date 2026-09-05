@@ -138,6 +138,24 @@ def build_rune_provenance(row: dict[str, Any]) -> dict[str, Any] | None:
     return values
 
 
+LOC3_EXPLICIT_EXCLUDED_WORK_IDS = {
+    "E0216",  # 啾咪十八歲 — author-confirmed playful/experimental exception
+}
+
+
+def is_loc3_analysis_exception(row: dict[str, Any]) -> bool:
+    """Exclude author-confirmed experiments from formal LOC3 analysis/search."""
+    work_id = text(row.get("作品ID"))
+    title = text(row.get("代表歌名"))
+    if work_id in LOC3_EXPLICIT_EXCLUDED_WORK_IDS:
+        return True
+    # Author governance rule: titles longer than 16 characters are experimental/problematic
+    # generation attempts and are not part of the formal analyzable LOC3 corpus.
+    if len(title) > 16:
+        return True
+    return False
+
+
 def normalized_lyrics(value: Any) -> str:
     value = unicodedata.normalize("NFKC", text(value)).lower()
     value = re.sub(r"\[[^\]]*\]|【[^】]*】", "", value)
@@ -205,7 +223,7 @@ def build(source: Path) -> dict[str, Any]:
     for row in works:
         search_flag = first_nonempty(row, "向量索引資格", "搜尋資格")
         display_policy = text(row.get("展示政策"))
-        if search_flag != "是" or display_policy.startswith("hidden"):
+        if search_flag != "是" or display_policy.startswith("hidden") or is_loc3_analysis_exception(row):
             continue
         lyrics_key = normalized_lyrics(row.get("歌詞"))
         if not lyrics_key:
@@ -295,11 +313,11 @@ def build(source: Path) -> dict[str, Any]:
     return {
         "dataset": {
             "name": "LOC3 Lyrics Search",
-            "version": "0.1.6",
+            "version": "0.1.7",
             "source": source.name,
             "language_scope": "zh-Hant",
             "unit": "unique_lyrics_work",
-            "excluded": ["P1", "non_zh_Hant", "script_pending", "not_searchable"],
+            "excluded": ["P1", "non_zh_Hant", "script_pending", "not_searchable", "title_length_gt_16_experiment", "explicit_playful_exceptions"],
             "work_count": len(output_works),
             "version_count": sum(len(item["versions"]) for item in output_works),
             "system_id": SYSTEM_ID,
