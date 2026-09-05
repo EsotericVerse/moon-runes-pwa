@@ -4,7 +4,7 @@ from pathlib import Path
 from faq_rag import FAQSearchEngine
 
 
-DATASET = Path(__file__).resolve().parent / "data" / "LOC_FAQ_RAG_v0.1.json"
+DATASET = Path(__file__).resolve().parent / "data" / "LOC_FAQ_RAG_v0.3.json"
 
 
 class FAQSearchEngineTest(unittest.TestCase):
