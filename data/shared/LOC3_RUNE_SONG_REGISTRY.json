@@ -26,7 +26,10 @@
     "Narrative songs can contain multiple rune-name tokens without being rune songs.",
     "Same-date overlap with an OW3gs draw is insufficient when the author identifies the song as narrative-only.",
     "All P1 songs are excluded from rune-song recovery because the author confirms the early-period songs were not rune-derived.",
-    "P1 must not be used to calibrate rune-song thresholds or rank candidates."
+    "P1 must not be used to calibrate rune-song thresholds or rank candidates.",
+    "Songs created on or after 2026-06-11 are excluded from rune-song recovery because the physical deck was unavailable for that workflow.",
+    "The 2026-06-10 boundary date is handled by explicit song-level confirmation, not blanket exclusion.",
+    "Explicit author rejection overrides keyword density, distinct-rune count, date overlap, and semantic similarity."
   ],
   "confirmed_records": [
     {
@@ -98,6 +101,34 @@
         "distinct_rune_hits": 20,
         "high_signal_rune_hits": 6,
         "contains_huo": true
+      }
+    },
+    {
+      "work_id": "E0354",
+      "title": "界內之風",
+      "created_date": "2026-04-07",
+      "period": "P4",
+      "status": "confirmed",
+      "confidence": "confirmed_by_author",
+      "role": "standard_rune_song",
+      "confirmation": {
+        "type": "explicit_author_confirmation",
+        "statement": "界內之風是標準的符文歌曲沒錯。",
+        "confirmed_in_current_review": true
+      }
+    },
+    {
+      "work_id": "E0364",
+      "title": "界外誤差",
+      "created_date": "2026-04-10",
+      "period": "P4",
+      "status": "confirmed",
+      "confidence": "confirmed_by_author",
+      "role": "confirmed_rune_song",
+      "confirmation": {
+        "type": "explicit_author_confirmation",
+        "statement": "界外誤差是符文歌曲沒錯。",
+        "confirmed_in_current_review": true
       }
     }
   ],
@@ -195,7 +226,7 @@
     "same_date_candidates_2026_07_11": 3,
     "high_candidates": 1,
     "medium_candidates": 2,
-    "confirmed_rune_songs": 3,
+    "confirmed_rune_songs": 5,
     "known_minimum_total": 3,
     "total_status": "incomplete",
     "author_recollection": "符文歌曲數量不只三首；目前只回收到三首已確認作品。"
@@ -225,7 +256,7 @@
     "status": "confirmed_by_author"
   },
   "recovery_status": {
-    "confirmed_now": 3,
+    "confirmed_now": 5,
     "expected_total": "more_than_3",
     "exact_total": "unknown",
     "note": "Do not treat the current three confirmed records as the full rune-song corpus.",
@@ -243,7 +274,11 @@
     ],
     "excluded_periods": [
       "P1"
-    ]
+    ],
+    "temporal_cutoff": {
+      "excluded_from": "2026-06-11",
+      "reason": "no physical rune deck for rune-song workflow"
+    }
   },
   "recovery_clues": [
     {
@@ -726,6 +761,90 @@
         "confirmed_in_current_review": true
       },
       "note": "Same-date/contextual overlap must not be treated as rune-song provenance."
+    },
+    {
+      "work_id": "E0234",
+      "title": "分身在場",
+      "created_date": "2026-02-18",
+      "period": "P3",
+      "status": "rejected_non_rune_song",
+      "reason": "dissociation_narrative",
+      "author_confirmation": {
+        "statement": "寫的是解離狀態，所以不是符文歌曲。",
+        "confirmed_in_current_review": true
+      }
+    },
+    {
+      "work_id": "E0398",
+      "title": "泡沫妄想",
+      "created_date": "2026-06-17",
+      "period": "P5",
+      "status": "rejected_non_rune_song",
+      "reason": "delusion_narrative",
+      "author_confirmation": {
+        "statement": "是妄想症，所以不是符文歌曲。",
+        "confirmed_in_current_review": true
+      }
+    },
+    {
+      "work_id": "E0369",
+      "title": "妄想之翼",
+      "created_date": "2026-06-10",
+      "period": "P5",
+      "status": "rejected_non_rune_song",
+      "reason": "delusion_narrative",
+      "author_confirmation": {
+        "statement": "也是寫妄想症，並不是符文歌曲。",
+        "confirmed_in_current_review": true
+      }
+    },
+    {
+      "work_id": "E0154",
+      "title": "醒在你的光裡",
+      "created_date": "2026-01-19",
+      "period": "P3",
+      "status": "rejected_non_rune_song",
+      "reason": "happiness_narrative",
+      "author_confirmation": {
+        "statement": "寫的是幸福，所以不是符文歌曲。",
+        "confirmed_in_current_review": true
+      }
+    },
+    {
+      "work_id": "E0422",
+      "title": "定錨之前",
+      "created_date": "2026-06-22",
+      "period": "P5",
+      "status": "rejected_non_rune_song",
+      "reason": "boundary_narrative",
+      "author_confirmation": {
+        "statement": "不是符文歌曲，寫的是邊界感。",
+        "confirmed_in_current_review": true
+      }
+    },
+    {
+      "work_id": "E0371",
+      "title": "戒痕",
+      "created_date": "2026-06-10",
+      "period": "P5",
+      "status": "rejected_non_rune_song",
+      "reason": "non_rune_song",
+      "author_confirmation": {
+        "statement": "不是符文歌曲。",
+        "confirmed_in_current_review": true
+      }
+    },
+    {
+      "work_id": "E0376",
+      "title": "戒痕",
+      "created_date": "2026-06-11",
+      "period": "P5",
+      "status": "rejected_non_rune_song",
+      "reason": "non_rune_song",
+      "author_confirmation": {
+        "statement": "不是符文歌曲。",
+        "confirmed_in_current_review": true
+      }
     }
   ],
   "period_exclusions": [
@@ -738,6 +857,23 @@
         "exclude_from_threshold_calibration",
         "exclude_from_positive_and_negative_training_mix_for_rune_song_recovery"
       ],
+      "source": "author clarification",
+      "confidence": "confirmed"
+    }
+  ],
+  "temporal_exclusions": [
+    {
+      "exclusion_id": "NO-PHYSICAL-DECK-AFTER-2026-06-10",
+      "start_date": "2026-06-11",
+      "end_date": "present",
+      "status": "excluded",
+      "reason": "Author confirms songs created after 2026-06-10 were not rune songs because the physical rune deck was no longer available for that songwriting workflow.",
+      "handling": [
+        "exclude_from_rune_song_candidates",
+        "exclude_from_threshold_calibration_as_positive_examples",
+        "exclude_from_rune_song_recovery_ranking"
+      ],
+      "boundary_note": "Songs dated 2026-06-10 are not excluded solely by this date rule; explicit song-level author confirmation governs that date.",
       "source": "author clarification",
       "confidence": "confirmed"
     }
