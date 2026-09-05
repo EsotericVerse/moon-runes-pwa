@@ -340,6 +340,108 @@
     .work-links a:focus-visible { text-decoration: underline; }
 
 
+
+    .loc6-panel{
+      display:grid;
+      grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);
+      gap:18px;
+      align-items:stretch;
+    }
+
+    .loc6-core,
+    .loc6-quotes{
+      padding:20px;
+      border:1px solid var(--loc-border);
+      border-radius:20px;
+      background:var(--loc-surface-soft);
+    }
+
+    .loc6-core h3{
+      margin:0;
+      color:var(--loc-text);
+      font-size:1.12rem;
+      line-height:1.4;
+    }
+
+    .loc6-lead{
+      margin:10px 0 0;
+      color:var(--loc-muted);
+      line-height:1.7;
+    }
+
+    .loc6-definition{
+      margin:16px 0 0;
+      padding:14px 16px;
+      border-left:3px solid var(--loc-gold);
+      border-radius:0 14px 14px 0;
+      background:rgba(229,193,123,.08);
+      color:var(--loc-text);
+      font-weight:800;
+      line-height:1.65;
+    }
+
+    .loc6-flow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+      margin-top:16px;
+      color:var(--loc-muted);
+      font-size:.82rem;
+    }
+
+    .loc6-flow span{
+      padding:7px 10px;
+      border:1px solid var(--loc-border);
+      border-radius:999px;
+      background:rgba(255,255,255,.025);
+    }
+
+    .loc6-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:16px;
+    }
+
+    .loc6-tags span{
+      color:var(--loc-purple);
+      font-size:.76rem;
+      font-weight:750;
+    }
+
+    .loc6-quotes{
+      display:grid;
+      gap:10px;
+      align-content:start;
+    }
+
+    .loc6-quote{
+      padding:12px 13px;
+      border:1px solid var(--loc-border);
+      border-radius:14px;
+      background:rgba(4,16,33,.42);
+      color:var(--loc-text);
+      font-size:.9rem;
+      line-height:1.55;
+    }
+
+    .loc6-more{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:16px;
+      padding:13px 14px;
+      border:1px solid rgba(229,193,123,.42);
+      border-radius:14px;
+      background:rgba(229,193,123,.08);
+      color:var(--loc-text);
+      text-decoration:none;
+    }
+
+    .loc6-more strong{color:var(--loc-gold);font-size:.86rem}
+    .loc6-more small{display:block;margin-top:2px;color:var(--loc-muted);font-size:.72rem}
+
     .loc5-showcase {
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
@@ -815,7 +917,8 @@
     }
 
     @media (max-width: 720px) {
-      .loc5-showcase { grid-template-columns:1fr; }
+      .loc5-showcase,
+      .loc6-panel { grid-template-columns:1fr; }
       .draw-mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
@@ -1069,6 +1172,44 @@
       </div>
 
       <p class="loc5-note">首頁只提供輕量預覽，不嵌入 Instagram 播放器，也不預先載入影片；點擊後直接前往 Reels 播放。</p>
+    </section>
+
+
+    <section class="section" id="loc6-governance" aria-labelledby="loc6-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">LOC6 · Governance · 政德風</p>
+          <h2 id="loc6-title">把經驗整理成可以再次使用的語言。</h2>
+        </div>
+        <p>LOC6 保存價值觀、判斷方式、邊界與語氣，並成為 LOC3 音樂、LOC4 文字作品及其他創作的風格來源。</p>
+      </div>
+
+      <div class="loc6-panel">
+        <div class="loc6-core">
+          <h3>政德風不是語錄集合，而是一套語言治理方式。</h3>
+          <p class="loc6-lead">它把過往經驗整理成可辨識、可重用的句型與價值判準，讓「怎麼回答、怎麼拒絕、怎麼保留選擇」成為可以被記錄與追溯的語言。</p>
+          <div class="loc6-definition">政德風＝長話短說的極限：拆權威、斷話術、守底線。</div>
+          <div class="loc6-flow" aria-label="政德風治理流程">
+            <span>拆劇本</span><span>斷頻率</span><span>反話術</span><span>回收主權</span><span>保持幽默</span><span>拒絕情緒勒索</span>
+          </div>
+          <div class="loc6-tags">
+            <span>核心哲學</span><span>主權與意志</span><span>邊界與防衛</span><span>幽默與反轉</span>
+          </div>
+          <a class="loc6-more" href="faq.html">
+            <span><strong>從知識庫理解 LOC6</strong><small>搜尋「政德風」、「LOC6」、「Governance」</small></span>
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <div class="loc6-quotes" aria-label="政德風代表句">
+          <div class="loc6-quote">「價值觀的價值。」</div>
+          <div class="loc6-quote">「免錢的最貴。」</div>
+          <div class="loc6-quote">「我允許錯誤發生，只要錯的有價值。」</div>
+          <div class="loc6-quote">「你在玩話術，我在改規則。」</div>
+          <div class="loc6-quote">「慈悲不是投降。」</div>
+          <div class="loc6-quote">「我不是要當王，我只要系統能跑。」</div>
+        </div>
+      </div>
     </section>
 
     <section class="section" aria-labelledby="framework-image-title">
