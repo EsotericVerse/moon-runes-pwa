@@ -117,6 +117,12 @@
       "path": "data/shared/LOC_SOURCE_TYPE_REGISTRY.json",
       "authority": "LOC8",
       "purpose": "Shared provenance/source vocabulary for source_refs across LOC1-8."
+    },
+    {
+      "id": "loc1_three_rune_narrative_evidence",
+      "path": "data/shared/LOC1_THREE_RUNE_NARRATIVE_EVIDENCE.json",
+      "authority": "LOC1",
+      "purpose": "LOC1 KM derivative of 月語者 chapter-level three-rune draws and narrative evidence."
     }
   ],
   "integration_status": {
@@ -171,6 +177,9 @@
       "alpha_events": "32 scenario prototypes",
       "dual_card_scenario_grammar": "A → B causal model",
       "direct_unified_search": "pending"
+    },
+    "LOC1": {
+      "three_rune_narrative_evidence": "180 usable / 182 chapter slots; sourced from LOC4 月語者 through LOC6 interpretation evidence"
     }
   },
   "rule": "Shared foundation is frozen at schema v0.1. Unified Search consumes shared references while each LOC retains canonical ownership; future corpus imports extend coverage without changing stable IDs.",
