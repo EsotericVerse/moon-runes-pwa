@@ -3,7 +3,7 @@
   "registry": "LOC_MEDIA_REGISTRY",
   "authority": "LOC5",
   "language_system_id": "lo3rwang",
-  "notes": "Media assets are owned by LOC5. LOC3/LOC4 reference media through stable media_id/source identifiers; media metrics remain separate from semantic work ranking.",
+  "notes": "Media assets are owned by LOC5. LOC3/LOC4/LOC1 reference media through stable media_id/source identifiers; media metrics remain separate from semantic work ranking. LOC5 includes concrete audiovisual works, not only conceptual visuals or external references.",
   "items": [
     {
       "media_id": "MEDIA-0001",
@@ -1210,6 +1210,146 @@
         "rights_holder_id": "lo3rwang",
         "copyright_status": "author_owned",
         "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-05"
+      }
+    },
+    {
+      "media_id": "MEDIA-0020",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC1"
+      ],
+      "media_type": "instagram_reel",
+      "title": "月之符文宣傳影片 01",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": "https://www.instagram.com/reel/DMA9yDAzeRK/",
+      "purpose": "Luna Runes promotion",
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_reel",
+          "source_id": "DMA9yDAzeRK",
+          "note": "Public Luna Runes promotional reel."
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "月之符文／LOC1 對外宣傳影音作品。",
+        "scene_keywords": [
+          "月之符文",
+          "Luna Runes",
+          "LOC1",
+          "宣傳"
+        ],
+        "mood": [],
+        "visual_motifs": [
+          "月符"
+        ],
+        "narrative_function": "promotion",
+        "manual_tags": [
+          "LOC5實體作品",
+          "月之符文宣傳",
+          "LOC1×LOC5"
+        ],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Existing public LOC5 audiovisual work; registered in KM/media registry on 2026-09-05 after rediscovery."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "Luna Runes / 月之符文",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-05"
+      }
+    },
+    {
+      "media_id": "MEDIA-0021",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC1"
+      ],
+      "media_type": "instagram_reel",
+      "title": "月之符文宣傳影片 02",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": "https://www.instagram.com/reel/DMA-ZxLTINw/",
+      "purpose": "Luna Runes promotion",
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_reel",
+          "source_id": "DMA-ZxLTINw",
+          "note": "Public Luna Runes promotional reel."
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "月之符文／LOC1 對外宣傳影音作品。",
+        "scene_keywords": [
+          "月之符文",
+          "Luna Runes",
+          "LOC1",
+          "宣傳"
+        ],
+        "mood": [],
+        "visual_motifs": [
+          "月符"
+        ],
+        "narrative_function": "promotion",
+        "manual_tags": [
+          "LOC5實體作品",
+          "月之符文宣傳",
+          "LOC1×LOC5"
+        ],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Existing public LOC5 audiovisual work; registered in KM/media registry on 2026-09-05 after rediscovery."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "Luna Runes / 月之符文",
         "ip_status": "personal_ip",
         "attribution_required": true,
         "license": null,
