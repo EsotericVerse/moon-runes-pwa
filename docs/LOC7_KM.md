@@ -176,7 +176,6 @@ LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/shared/
 - `confirmed`：作者明確確認或有直接 draw-to-song 來源。
 - `candidate`：僅限 P2–P4，且仍缺直接確認。
 - `rejected_non_rune_song` / `rejected_period_scope`：已排除。
-- `title_confirmed_original_work_unresolved`：作者記得歌名屬符文歌曲；ERA 可由日期正常判定，但目前尚未找到符合 P2–P4 的原始 work record，因此暫不綁定到現有同名作品 ID。
 
 現行已確認的 work-level rune songs：
 - `E0223`《日蝕之前的顯現》（P3）
@@ -184,9 +183,9 @@ LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/shared/
 - `E0354`《界內之風》（P4）
 - `E0364`《界外誤差》（P4）
 
-《界線之內》保留作者的 title-level 確認。現有 Excel／repo 同名作品可依日期正常判定為 P5／P6；問題不是 ERA 缺失，而是這兩筆都不符合「符文歌只可能在 P2–P4」的規則，因此尚未找到真正對應的原始 work ID。
+《界線之內》已由作者更正為**非符文歌曲**；先前 title-level 確認為輸入錯字，已撤銷，不再保留 unresolved 例外。
 
-現行數量口徑：**4 首 work-level confirmed rune songs + 1 首 title-level confirmed / original work unresolved**。首頁「語言進化」欄採此口徑顯示，不把 unresolved title 灌入 work-level confirmed 數。
+現行數量口徑：**4 首 work-level confirmed rune songs**。目前不另保留 title-level confirmed 例外。
 
 LOC3 版本推薦分數另外納入跨媒介完成度：IG Reels +20、YouTube MV +30，兩者可累加。這些 bonus 只影響同詞版本的推薦順序，不進歌詞語意向量，也不改變 rune_song provenance 判定。
 
