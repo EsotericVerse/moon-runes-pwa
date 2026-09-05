@@ -137,7 +137,7 @@
     .dot.ok { background: var(--ok); box-shadow: 0 0 15px rgba(191,233,208,.35); }
 
     .grid { display: grid; gap: 16px; }
-    .grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid.cols-4 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
     .grid.cols-2 { grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); }
 
     .card {
@@ -308,39 +308,73 @@
 
     .daily-draw-grid {
       display: grid;
-      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
-      gap: 16px;
+      grid-template-columns: minmax(260px, .72fr) minmax(0, 1.28fr);
+      gap: 14px;
+      align-items: start;
     }
-    .draw-history { display: grid; gap: 10px; }
-    .draw-entry {
-      display: grid;
-      grid-template-columns: 90px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 12px 14px;
+    .draw-form-shell {
       border: 1px solid var(--line);
       border-radius: 14px;
-      background: rgba(255,255,255,.025);
+      background: rgba(255,255,255,.018);
+      overflow: hidden;
     }
-    .draw-entry .draw-date { color: var(--muted); font-size: 12px; }
+    .draw-form-shell summary {
+      padding: 11px 13px;
+      color: var(--accent-2);
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+      list-style: none;
+    }
+    .draw-form-shell summary::-webkit-details-marker { display: none; }
+    .draw-form-shell summary::after { content: "＋"; float: right; color: var(--muted); }
+    .draw-form-shell[open] summary::after { content: "－"; }
+    .draw-form-inner { padding: 0 12px 12px; }
+    .draw-history {
+      display: grid;
+      gap: 7px;
+      max-height: 430px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .draw-entry {
+      display: grid;
+      grid-template-columns: 86px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.02);
+    }
+    .draw-entry .draw-date { color: var(--muted); font-size: 11px; padding-top: 2px; }
     .draw-entry .draw-main { min-width: 0; }
-    .draw-entry .draw-title { font-weight: 700; }
-    .draw-entry .draw-note { margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .draw-entry .draw-line { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .draw-entry .draw-title { font-weight: 680; font-size: 13px; }
+    .draw-entry .draw-note {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .draw-kind {
       display: inline-flex;
       align-items: center;
-      padding: 4px 8px;
+      padding: 2px 7px;
       border: 1px solid var(--line-strong);
       border-radius: 999px;
       color: var(--accent-2);
       background: rgba(169,199,255,.07);
-      font-size: 11px;
+      font-size: 10px;
       white-space: nowrap;
     }
+    .draw-history-note { color: var(--muted); font-size: 11px; margin-top: 8px; }
     @media (max-width: 900px) {
       .daily-draw-grid { grid-template-columns: 1fr; }
-      .draw-entry { grid-template-columns: 76px 1fr; }
-      .draw-entry .draw-kind { grid-column: 2; justify-self: start; }
+      .draw-history { max-height: 360px; }
     }
 
     .theme-dialog{width:min(980px,calc(100vw - 32px));max-height:90vh;padding:0;border:1px solid var(--line);border-radius:20px;background:#0b1728;color:var(--text);box-shadow:var(--shadow)}
@@ -359,7 +393,7 @@
       .nav { grid-template-columns: repeat(6, 1fr); }
       .nav a { text-align: center; padding: 9px 6px; font-size: 12px; }
       .sidebar-foot { display: none; }
-      .grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+      .grid.cols-4 { grid-template-columns: repeat(3, 1fr); }
     }
     @media (max-width: 760px) {
       .app { padding: 12px; }
@@ -426,12 +460,15 @@
         <div class="head">
           <div>
             <h3>每日抽牌紀錄</h3>
-            <p>把 LOC1 的每日主抽／補抽寫進 LOC8 時間線，供後續趨勢與語意分析。</p>
+            <p>每日主抽／補抽獨立保存；不再混入一般 Event Timeline，避免大量紀錄淹沒生活事件。</p>
           </div>
           <span class="badge">LOC1 × LOC8</span>
         </div>
         <div class="body daily-draw-grid">
-          <form id="dailyDrawForm">
+          <details class="draw-form-shell">
+            <summary>新增每日抽牌</summary>
+            <div class="draw-form-inner">
+            <form id="dailyDrawForm">
             <div class="form-grid">
               <div class="field">
                 <label for="drawDate">日期</label>
@@ -469,10 +506,12 @@
               <button class="btn ghost" id="clearDrawBtn" type="button">清除</button>
             </div>
           </form>
+          </div>
+          </details>
 
           <div>
             <div class="head" style="padding:0 0 12px;border:0">
-              <div><h3>最近抽牌</h3><p>依日期由新到舊顯示。</p></div>
+              <div><h3>最近抽牌</h3><p>同一天主抽與補抽合併顯示。</p></div>
               <span class="badge" id="drawCountBadge">0 筆</span>
             </div>
             <div class="draw-history" id="dailyDrawHistory">
@@ -748,13 +787,18 @@
       };
     }
 
+    function isDailyDrawEvent(e) {
+      return e.event_type === 'daily_draw' || e.event_type === 'daily_draw_supplement';
+    }
+
     function renderMetrics(sorted) {
       const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
-      els.mEvents.textContent = sorted.length;
-      els.mCurrent.textContent = sorted.filter(e => e.status === 'current').length;
-      els.mRelease.textContent = sorted.filter(e => e.status === 'released').length;
-      els.mRecent.textContent = sorted.filter(e => new Date(e.date) >= cutoff).length;
-      els.mDraws.textContent = sorted.filter(e => e.event_type === 'daily_draw' || e.event_type === 'daily_draw_supplement').length;
+      const lifeEvents = sorted.filter(e => !isDailyDrawEvent(e));
+      els.mEvents.textContent = lifeEvents.length;
+      els.mCurrent.textContent = lifeEvents.filter(e => e.status === 'current').length;
+      els.mRelease.textContent = lifeEvents.filter(e => e.status === 'released').length;
+      els.mRecent.textContent = lifeEvents.filter(e => new Date(e.date) >= cutoff).length;
+      els.mDraws.textContent = sorted.filter(isDailyDrawEvent).length;
     }
 
     function renderCurrent(sorted) {
@@ -864,7 +908,7 @@
 
     function renderDailyDraws(sorted) {
       const draws = sorted
-        .filter(e => e.event_type === 'daily_draw' || e.event_type === 'daily_draw_supplement')
+        .filter(isDailyDrawEvent)
         .sort((a,b) => {
           const dateDiff = new Date(b.date) - new Date(a.date);
           if (dateDiff) return dateDiff;
@@ -877,29 +921,41 @@
         return;
       }
 
-      els.dailyDrawHistory.innerHTML = draws.slice(0, 30).map(e => {
-        const kind = e.event_type === 'daily_draw_supplement' ? '補抽' : '主抽';
+      const byDate = new Map();
+      draws.forEach(e => {
+        if (!byDate.has(e.date)) byDate.set(e.date, []);
+        byDate.get(e.date).push(e);
+      });
+
+      const days = [...byDate.entries()].slice(0, 14);
+      els.dailyDrawHistory.innerHTML = days.map(([date, items]) => {
+        const lines = items.map(e => {
+          const kind = e.event_type === 'daily_draw_supplement' ? '補抽' : '主抽';
+          const title = (e.event_title || '').replace(/^每日抽牌｜|^補抽｜/, '') || e.object_id || '未命名';
+          return `<div class="draw-line"><span class="draw-kind">${kind}</span><span class="draw-title">${esc(title)}</span></div>`;
+        }).join('');
+        const note = items.find(e => e.description)?.description || '';
         return `
           <div class="draw-entry">
-            <div class="draw-date">${esc(e.date)}</div>
+            <div class="draw-date">${esc(date)}</div>
             <div class="draw-main">
-              <div class="draw-title">${esc((e.event_title || '').replace(/^每日抽牌｜|^補抽｜/, '') || e.object_id)}</div>
-              ${e.description ? `<div class="draw-note">${esc(e.description)}</div>` : ''}
+              ${lines}
+              ${note ? `<div class="draw-note" title="${esc(note)}">${esc(note)}</div>` : ''}
             </div>
-            <span class="draw-kind">${kind}</span>
           </div>
         `;
-      }).join('');
+      }).join('') + (byDate.size > 14 ? `<div class="draw-history-note">目前顯示最近 14 天；共 ${byDate.size} 天紀錄。</div>` : '');
     }
 
     function renderAll() {
       const sorted = events.map(normalizeEvent).sort((a,b) => new Date(a.date) - new Date(b.date));
       events = sorted;
+      const lifeEvents = sorted.filter(e => !isDailyDrawEvent(e));
       renderMetrics(sorted);
-      renderCurrent(sorted);
-      renderTimeline(sorted);
-      renderTrajectory(sorted);
-      renderTrend(sorted);
+      renderCurrent(lifeEvents);
+      renderTimeline(lifeEvents);
+      renderTrajectory(lifeEvents);
+      renderTrend(lifeEvents);
       renderDailyDraws(sorted);
     }
 
