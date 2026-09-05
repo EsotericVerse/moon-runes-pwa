@@ -106,3 +106,51 @@
     gap:10px 14px;
   }
 }
+
+
+/* Shared public-page title hierarchy */
+.loc-page-hero{
+  margin:0 0 24px;
+  padding:28px 0 0;
+}
+.loc-page-title{
+  margin:0;
+  color:var(--text,var(--loc-text,#f5f1ff));
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  font-size:clamp(3.2rem,8vw,5.6rem);
+  font-weight:800;
+  line-height:.98;
+  letter-spacing:-.05em;
+}
+.loc-page-title .loc-page-kind{
+  display:inline-block;
+  margin-left:.16em;
+  color:var(--muted,var(--loc-muted,#b9bfd0));
+  font-size:.42em;
+  font-weight:700;
+  letter-spacing:.02em;
+  vertical-align:.22em;
+}
+.loc-page-subtitle{
+  max-width:760px;
+  margin:18px 0 0;
+  color:var(--text,var(--loc-text,#f5f1ff));
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  font-size:clamp(1.55rem,3vw,2.25rem);
+  font-weight:700;
+  line-height:1.25;
+  letter-spacing:-.02em;
+}
+.loc-page-intro{
+  max-width:760px;
+  margin:12px 0 0;
+  color:var(--muted,var(--loc-muted,#b9bfd0));
+  font-size:1rem;
+  line-height:1.75;
+}
+@media(max-width:560px){
+  .loc-page-hero{padding-top:22px}
+  .loc-page-title{font-size:clamp(3rem,16vw,4.2rem)}
+  .loc-page-title .loc-page-kind{font-size:.38em}
+  .loc-page-subtitle{font-size:clamp(1.4rem,7vw,1.8rem)}
+}
