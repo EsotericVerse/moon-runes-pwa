@@ -14,7 +14,7 @@
     a{color:inherit}.page{width:min(1120px,calc(100% - 30px));margin:auto;padding:28px 0 60px}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:34px}.brand{font-weight:850;letter-spacing:.12em;text-decoration:none}.navs{display:flex;gap:14px;flex-wrap:wrap}.nav{color:var(--muted);font-size:.86rem;text-decoration:none}.hero{margin-bottom:24px}.eyebrow{margin:0 0 8px;color:var(--mint);font-weight:800;font-size:.76rem;letter-spacing:.18em}.hero h1{margin:0;font-size:clamp(2.4rem,7vw,5rem);line-height:1.02;letter-spacing:-.045em}.intro{margin:15px 0 0;color:var(--muted);max-width:760px}
     .search-panel{padding:clamp(18px,4vw,32px);border:1px solid var(--line);border-radius:24px;background:var(--panel);box-shadow:var(--shadow);backdrop-filter:blur(16px)}label{display:block;margin-bottom:9px;font-weight:750}textarea{width:100%;min-height:104px;padding:16px 18px;color:var(--text);font:inherit;resize:vertical;border:1px solid rgba(255,255,255,.16);border-radius:15px;background:rgba(0,0,0,.18);outline:none}textarea:focus{border-color:var(--mint);box-shadow:0 0 0 3px rgba(126,216,197,.12)}
     .quick{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0 18px}.chip{padding:7px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--soft);font:inherit;font-size:.82rem;cursor:pointer}.chip:hover{color:var(--text);border-color:var(--mint)}.filters{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr;gap:10px;margin-bottom:15px}select{width:100%;padding:10px 12px;color:var(--text);border:1px solid var(--line);border-radius:11px;background:#102535;font:inherit}.actions{display:flex;gap:12px;align-items:center}.submit{padding:12px 24px;border:0;border-radius:12px;color:#07131f;background:linear-gradient(135deg,var(--moon),var(--mint));font:inherit;font-weight:850;cursor:pointer}.submit:disabled{opacity:.55}.hint{color:var(--muted);font-size:.82rem}
-    .status{min-height:30px;margin:22px 2px 8px;color:var(--muted)}.status.error{color:var(--danger)}.groups{display:grid;gap:22px}.group{border-top:1px solid var(--line);padding-top:18px}.grouphead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:11px}.grouphead h2{margin:0;font-size:1.05rem;letter-spacing:.03em}.grouphead span{color:var(--muted);font-size:.8rem}.cards{display:grid;gap:12px}.card{padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 12px 35px rgba(0,0,0,.18)}.card h3{margin:0 0 8px;font-size:1.2rem}.meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}.pill{padding:3px 8px;border-radius:999px;color:var(--muted);background:var(--soft);font-size:.75rem}.summary{margin:8px 0;color:#d6e0df}.links{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.play{display:inline-flex;padding:8px 12px;border-radius:10px;text-decoration:none;background:var(--mint);color:#07131f;font-weight:820}.secondary{display:inline-flex;padding:8px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--muted)}.empty{padding:26px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
+    .status{min-height:30px;margin:22px 2px 8px;color:var(--muted)}.status.error{color:var(--danger)}.groups{display:grid;gap:22px}.group{border-top:1px solid var(--line);padding-top:18px}.grouphead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:11px}.grouphead h2{margin:0;font-size:1.05rem;letter-spacing:.03em}.grouphead span{color:var(--muted);font-size:.8rem}.cards{display:grid;gap:12px}.card{padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 12px 35px rgba(0,0,0,.18)}.card h3{margin:0 0 8px;font-size:1.2rem}.knowledge-image{display:block;width:min(100%,760px);max-height:430px;object-fit:contain;margin:12px 0;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.18)}.meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}.pill{padding:3px 8px;border-radius:999px;color:var(--muted);background:var(--soft);font-size:.75rem}.summary{margin:8px 0;color:#d6e0df}.links{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.play{display:inline-flex;padding:8px 12px;border-radius:10px;text-decoration:none;background:var(--mint);color:#07131f;font-weight:820}.secondary{display:inline-flex;padding:8px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--muted)}.empty{padding:26px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
     @media(max-width:720px){.filters{grid-template-columns:1fr}.actions{align-items:flex-start;flex-direction:column}.submit{width:100%}.topbar{align-items:flex-start;flex-direction:column}}
   </style>
   <link rel="stylesheet" href="css/loc-nav.css" />
@@ -42,6 +42,7 @@
             <option value="text_work">文字作品</option>
             <option value="multimedia">多媒體作品</option>
             <option value="knowledge">文件／知識庫</option>
+            <option value="knowledge_image">圖片／知識圖</option>
             <option value="era">ERA／時間</option>
           </select>
           <select id="period"><option value="">所有 ERA／創作時期</option></select>
@@ -73,14 +74,79 @@
       if(q) el('searchForm').requestSubmit();
     }
     function quick(){el('quick').innerHTML=prompts.map(x=>`<button type="button" class="chip" data-q="${esc(x)}">${esc(x)}</button>`).join('');document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{el('query').value=b.dataset.q;el('query').focus()})}
-    function fill(select,items,valueKey,labelKey){for(const item of items||[]){const o=document.createElement('option');o.value=item[valueKey]??item.value??'';o.textContent=item[labelKey]??item.label??item.value??o.value;select.appendChild(o)}}
-    async function facets(){try{const r=await fetch(`${API}/search/facets`);if(!r.ok)throw 0;const d=await r.json();fill(el('period'),d.eras,'period','label');fill(el('category'),d.loc3?.categories||[],'value','value');fill(el('playlist'),d.loc3?.playlists||[],'value','value')}catch(_){}}
+    const FACET_CACHE_KEY='loc-search-facets-v1';
+    const FACET_CACHE_TTL=24*60*60*1000;
+    const FACET_FALLBACK={
+      eras:[
+        {period:'P2',label:'P2'},{period:'P3',label:'P3'},{period:'P4',label:'P4'},
+        {period:'P5',label:'P5'},{period:'P6',label:'P6'},{period:'P7',label:'P7'},{period:'P8',label:'P8 · 治理自己'}
+      ],
+      loc3:{
+        categories:[
+          {value:'其他／待複查'},{value:'勸戒論述型'},{value:'幸福甜美型'},{value:'思辨論述型'},
+          {value:'治理宣言型'},{value:'祝福紀念型'},{value:'轉折型'},{value:'轉折型候選'}
+        ],
+        playlists:[
+          {value:'1.微月光剛開始的自創'},{value:'1.微月光的兩人爭執'},{value:'1.微月光的甜蜜'},
+          {value:'2.節奏王者'},{value:'3.單身很好'},{value:'3.白晝之月Daytime Moon'},
+          {value:'4.人生月台系列'},{value:'5.順其自然'},{value:'6.治理自己'},
+          {value:'微月光的暗影詩章'},{value:'生日快樂'}
+        ]
+      }
+    };
+    function resetDynamicOptions(select){while(select.options.length>1)select.remove(1)}
+    function fill(select,items,valueKey,labelKey){
+      const seen=new Set([...select.options].map(o=>o.value));
+      for(const item of items||[]){
+        const value=item?.[valueKey]??item?.value??'';
+        if(!value||seen.has(value))continue;
+        const o=document.createElement('option');
+        o.value=value;
+        const count=Number(item?.count||0);
+        const base=item?.[labelKey]??item?.label??item?.value??value;
+        o.textContent=count?base+`（${count}）`:base;
+        select.appendChild(o);seen.add(value);
+      }
+    }
+    function applyFacets(d){
+      resetDynamicOptions(el('period'));resetDynamicOptions(el('category'));resetDynamicOptions(el('playlist'));
+      fill(el('period'),d?.eras||[],'period','label');
+      fill(el('category'),d?.loc3?.categories||[],'value','value');
+      fill(el('playlist'),d?.loc3?.playlists||[],'value','value');
+    }
+    function readFacetCache(){
+      try{
+        const cached=JSON.parse(localStorage.getItem(FACET_CACHE_KEY)||'null');
+        if(!cached?.data)return null;
+        return cached;
+      }catch(_){return null}
+    }
+    function writeFacetCache(data){
+      try{localStorage.setItem(FACET_CACHE_KEY,JSON.stringify({saved_at:Date.now(),schema_version:'1',data}))}catch(_){}
+    }
+    async function facets(){
+      const cached=readFacetCache();
+      applyFacets(cached?.data||FACET_FALLBACK);
+      try{
+        const r=await fetch(`${API}/search/facets`,{cache:'no-store'});
+        if(!r.ok)throw new Error('facets unavailable');
+        const d=await r.json();
+        applyFacets(d);
+        writeFacetCache(d);
+      }catch(_){
+        if(cached&&Date.now()-cached.saved_at>FACET_CACHE_TTL){
+          // Stale cache is still preferable to an empty filter UI.
+          applyFacets(cached.data);
+        }
+      }
+    }
     function linksFor(r){
       const p=r.payload||{}; const out=[];
       if(r.content_type==='rune_record'){const n=String(r.result_id||'').replace('RUNE-','');out.push(`<a class="secondary" href="list.html#${esc(n)}">查看符文資料</a>`)}
       if(r.content_type==='lyrics_work'){const v=p.recommended_version||{};if(v.suno_url)out.push(`<a class="play" href="${esc(v.suno_url)}" target="_blank" rel="noopener">Suno 播放 ↗</a>`);if(v.ig_preview_url)out.push(`<a class="secondary" href="${esc(v.ig_preview_url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`)}
       if(r.content_type==='reel'&&p.url)out.push(`<a class="play" href="${esc(p.url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`);
       if(r.content_type==='knowledge_document'&&p.path)out.push(`<a class="secondary" href="${esc(p.path)}">閱讀文件</a>`);
+      if(r.content_type==='knowledge_image'&&p.path)out.push(`<a class="secondary" href="${esc(p.path)}" target="_blank" rel="noopener">查看原圖 ↗</a>`);
       if(r.content_type==='era')out.push('<a class="secondary" href="life.html">時間線專頁</a>');
       return out.length?`<div class="links">${out.join('')}</div>`:'';
     }
@@ -94,7 +160,7 @@
       const alternates=(p.alternate_versions||[]).length?`<details><summary>另外 ${p.alternate_versions.length} 個同詞旋律版本</summary></details>`:'';
       return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels.LOC3)}</span><span class="pill">作品類別：${esc(p.origin_label||'一般歌曲')}</span><span class="pill">歌詞類型：${esc(p.lyric_type||p.category||'待分類')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.era_name?`<span class="pill">${esc(p.era_name)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${keys.length?`<p class="summary"><strong>關鍵字／命題：</strong>${keys.map(esc).join(' · ')}</p>`:''}${p.start_state||p.turn_method||p.final_state?`<p class="summary"><strong>語意路徑：</strong>${esc(p.start_state||'—')} → ${esc(p.turn_method||'—')} → ${esc(p.final_state||'—')}</p>`:''}${linksFor(r)}${melody}${alternates}</article>`;
     }
-    function card(r){const score=Number(r.score||0);return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels[r.primary_loc]||r.primary_loc||'LOC')}</span><span class="pill">${esc(r.content_type||'record')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${linksFor(r)}</article>`}
+    function card(r){const score=Number(r.score||0),p=r.payload||{};const img=r.content_type==='knowledge_image'&&p.path?`<img class="knowledge-image" src="${esc(p.path)}" alt="${esc(r.title||'LOC 知識圖')}" loading="lazy" />`:'';return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels[r.primary_loc]||r.primary_loc||'LOC')}</span><span class="pill">${esc(r.content_type||'record')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${img}${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${linksFor(r)}</article>`}
     function relationshipCard(r){
       const p=r.payload||{},src=p.source||{},targets=p.targets||[],kw=p.keywords||[],loc6=p.loc6_interpretation||{};
       return `<article class="card"><div class="meta"><span class="pill">跨 LOC 關聯</span><span class="pill">${esc(p.direction||'')}</span></div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}<div class="meta"><span class="pill">${esc(src.primary_loc||'LOC3')}：${esc(src.title||'')}</span>${targets.map(t=>`<span class="pill">${esc(t.primary_loc||'')}：${esc(t.title||'')}${t.chapter_count?` · ${t.chapter_count}章`:''}</span>`).join('')}</div>${kw.length?`<p class="summary"><strong>關鍵字：</strong>${kw.map(esc).join(' · ')}</p>`:''}${loc6.label?`<p class="summary"><strong>LOC6：</strong>${esc(loc6.label)} — ${esc(loc6.note||'')}</p>`:''}</article>`}
