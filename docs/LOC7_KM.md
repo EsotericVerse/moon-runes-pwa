@@ -78,13 +78,28 @@ KM 的目標資料模型以 Knowledge Object 為基本單位。最小 metadata�
 
 ## 5. LOC 邊界
 
-- **LOC6**：意義、價值、治理原則、政德風語氣與生命哲學，以及符文組合被實際轉譯為文字／敘事時的解析實證。
-- **LOC7**：文字建築、句法／語意結構、知識管理、檢索與關係模型。
+- **LOC1**：符文本體、基本語意、方位與抽取。
+- **LOC2**：情境語意。雙卡因果是最小情境文法；Event Corpus 把真實生活狀況整理成可描述、可回應的語意問題。
+- **LOC6**：牌組本身的符文文法、組合關係與其實際解析證據。
+- **LOC7**：符文／文字建築、句法／語意結構、知識管理、檢索與關係模型。
 - **LOC8**：事件、時間、生活軌跡與跨分發統合。
 
-LOC7 可以分析 LOC6／LOC8 的資料結構，但不取代它們的 canonical ownership。
+LOC7 可以分析 LOC2／LOC6／LOC8 的資料結構，但不取代它們的 canonical ownership。
 
-## 6. FAQ / RAG 現況
+## 6. LOC2 Scenario Corpus
+
+LOC2 的事件資料在 KM 中不只視為遊戲規則。它同時是一批 **Scenario Corpus / Event Corpus**。
+
+- 雙卡採 A → B 因果，可用來描述狀況如何形成。
+- Alpha Event 32 已提供記憶、誤解、合作、切斷、等待、選擇、重建等真實生活情境原型。
+- 現行 Alpha Event 的 SL／ML／NE／OC 是快速判定需求，不等同於固定的雙符文配對。
+- KM 不得自行替 Event 補造未被來源定義的符文組合。
+- LOC2 情境可供 LOC4 敘事、LOC6 文法、LOC7 建築／關係分析與 LOC8 生活事件引用。
+
+維護文件：[LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md)  
+Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
+
+## 7. FAQ / RAG 現況
 
 現行作用資料：
 
@@ -96,18 +111,19 @@ LOC7 可以分析 LOC6／LOC8 的資料結構，但不取代它們的 canonical 
 
 - FAQ／RAG v0.1、v0.2 保留作 version history，不再視為 current runtime source。
 
-## 7. Shared Registry
+## 8. Shared Registry
 
 `data/shared/` 主要承接跨 LOC 的結構化 registry。KM 相關核心：
 
 - `LOC_KNOWLEDGE_ASSET_REGISTRY.json`
+- `LOC2_EVENT_REGISTRY.json`
 - `LOC_KM_KEYWORDS.json`
 - `LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json`
 - `LOC_SHARED_MANIFEST.json`
 
 詳細角色見 [JSON_DATA_MAP.md](./JSON_DATA_MAP.md)。
 
-## 8. 同步規則
+## 9. 同步規則
 
 任何知識更新依下列順序處理：
 
@@ -119,11 +135,11 @@ LOC7 可以分析 LOC6／LOC8 的資料結構，但不取代它們的 canonical 
 6. 驗證 API 與 UI。
 7. 保留歷史版，不以新版本內容覆寫舊版本號。
 
-## 9. Graph RAG 狀態
+## 10. Graph RAG 狀態
 
 Unified Search 已有實作；完整 Relation Schema、Knowledge Graph expansion 與 Graph RAG 仍屬下一階段。不得因已有 registry、related_ids 或 search view 就宣稱完整 Graph RAG 已部署。
 
-## 10. 文件格式
+## 11. 文件格式
 
 `docs/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件。
 
