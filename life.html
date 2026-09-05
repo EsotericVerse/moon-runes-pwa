@@ -225,6 +225,16 @@
     .state-row .k { color: var(--muted); font-size: 12px; }
     .state-row .v { line-height: 1.55; }
 
+    .era-keyword-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .era-keyword-card { border:1px solid var(--line); border-radius:14px; padding:12px 14px; background:rgba(255,255,255,.025); }
+    .era-keyword-head { display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
+    .era-keyword-head strong { font-size:13px; }
+    .era-keyword-head small { color:var(--muted); }
+    .era-keyword-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+    .era-keyword-chip { display:inline-flex; align-items:center; gap:5px; border:1px solid var(--line-strong); border-radius:999px; padding:4px 8px; font-size:10px; background:rgba(169,199,255,.06); }
+    .era-keyword-chip b { color:var(--accent); font-weight:700; }
+    @media (max-width:760px){ .era-keyword-grid { grid-template-columns:1fr; } }
+
     .era-trend-strip { display:flex; gap:8px; overflow-x:auto; padding:2px 2px 10px; }
     .era-trend-node {
       min-width:190px;
@@ -606,7 +616,15 @@
           <div class="card metric"><div class="label">時期總數</div><div class="value" id="eraMetricCount">0</div><div class="hint">目前 Registry</div></div>
           <div class="card metric"><div class="label">Current ERA</div><div class="value" id="eraMetricCurrent">—</div><div class="hint">目前所在時期</div></div>
           <div class="card metric"><div class="label">Current 起點</div><div class="value" id="eraMetricStart">—</div><div class="hint">本期開始日期</div></div>
-          <div class="card metric"><div class="label">前一時期</div><div class="value" id="eraMetricPrevious">—</div><div class="hint">最近一次轉折</div></div>
+          <div class="card metric"><div class="label">ERA 關鍵字</div><div class="value" id="eraMetricKeywords">0</div><div class="hint">依 Event 動態統計，不快取</div></div>
+        </section>
+
+        <section class="card" style="margin-top:16px;" id="era-keywords">
+          <div class="head">
+            <div><h3>ERA 關鍵字脈絡</h3><p>依 Event 日期自動歸入 ERA，直接統計 tags。數量隨 Event 更新即時計算，不寫入 cache。</p></div>
+            <span class="badge">Event → ERA</span>
+          </div>
+          <div class="body"><div class="era-keyword-grid" id="eraKeywordGrid"><div class="empty">載入 ERA 關鍵字中…</div></div></div>
         </section>
 
         <section class="card" style="margin-top:16px;" id="era-trend-summary">
@@ -632,7 +650,7 @@
           <div>
             <div class="eyebrow">LOC8 · Event Time</div>
             <h2>事件發生在時間裡，時間形成軌跡。</h2>
-            <p>Event Timeline 保留事件順序；Trajectory 看狀態轉移；Trend 則觀察最近 30 天事件標籤的集中方向。</p>
+            <p>Event Timeline 保留事件順序；Trajectory 只看事件造成的狀態轉移。Event 的 tags 不在這裡做獨立趨勢，而是回到 ERA 中形成時期關鍵字。</p>
           </div>
           <div class="sync"><span class="dot" id="eventSyncDot"></span><span id="eventSyncText">載入中…</span></div>
         </section>
@@ -645,8 +663,7 @@
         <div class="body"><div class="timeline" id="timelineList"><div class="empty">尚無事件。</div></div></div>
       </section>
 
-      <section class="grid cols-2" style="margin-top:16px;">
-        <div class="card" id="trajectory">
+      <section class="card" style="margin-top:16px;" id="trajectory">
           <div class="head">
             <div><h3>Trajectory</h3><p>不是看單點，而是看狀態怎麼一路轉變。</p></div>
             <div class="trajectory-controls">
@@ -671,7 +688,7 @@
           <div>
             <div class="eyebrow">LOC1 × LOC8 · Daily Draw Log</div>
             <h2>每日抽牌紀錄</h2>
-            <p>主抽與補抽作為獨立時間紀錄；與 Life Event 共用同一份資料來源，但不與事件、軌跡與趨勢混在同一個畫面。</p>
+            <p>主抽與補抽使用獨立 Runes table；符文定義直接讀 JSON。紀錄、批次維護與分析不再與 Event 資料混用。</p>
           </div>
           <div class="sync"><span class="dot" id="drawSyncDot"></span><span id="drawSyncText">載入中…</span></div>
         </section>
@@ -740,8 +757,6 @@
     const STORAGE_KEY = "loc8-life-events-v1";
     const EVENT_CACHE_KEY = "loc8-life-events-cache-v1";
     const DAILY_DRAW_CACHE_KEY = "loc8-daily-draw-cache-v1";
-    const TREND_CACHE_KEY = "loc8-life-trend-cache-v1";
-    const RUNE_CACHE_KEY = "loc8-rune-options-cache-v1";
     const CACHE_SCHEMA_VERSION = "1";
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
 
@@ -753,7 +768,6 @@
       timeline: $('#timelineList'),
       eraTimeline: $('#eraTimelineList'),
       trajectory: $('#trajectoryList'),
-      trend: $('#trendList'),
       current: $('#currentState'),
       syncText: $('#syncText'),
       syncDot: $('#syncDot'),
@@ -776,7 +790,8 @@
       eraMetricCount: $('#eraMetricCount'),
       eraMetricCurrent: $('#eraMetricCurrent'),
       eraMetricStart: $('#eraMetricStart'),
-      eraMetricPrevious: $('#eraMetricPrevious'),
+      eraMetricKeywords: $('#eraMetricKeywords'),
+      eraKeywordGrid: $('#eraKeywordGrid'),
       eraTrendStrip: $('#eraTrendStrip'),
       editingDrawId: $('#editingDrawId'),
       submitDrawBtn: $('#submitDrawBtn'),
@@ -858,55 +873,126 @@
       }
     }
 
+    function isEraPseudoEvent(e) {
+      return /^EV-ERA-P\d+$/i.test(String(e.id || '')) || String(e.event_type || '').toLowerCase() === 'era';
+    }
+
+    function eraForEvent(event, orderedEras) {
+      if (event.era_id) {
+        const exact = orderedEras.find(era => era.era_id === event.era_id);
+        if (exact) return exact;
+      }
+      const date = String(event.date || '');
+      if (!date) return null;
+      return orderedEras.find(era => {
+        const start = String(era.start_date || '');
+        const end = String(era.end_date || '9999-12-31');
+        return start && date >= start && date <= end;
+      }) || null;
+    }
+
+    function keywordStatsByEra(orderedEras) {
+      const stats = new Map(orderedEras.map(era => [era.era_id, new Map()]));
+      const sourceEvents = events
+        .map(normalizeEvent)
+        .filter(e => !isEraPseudoEvent(e) && e.status !== 'archived');
+
+      sourceEvents.forEach(event => {
+        const era = eraForEvent(event, orderedEras);
+        if (!era) return;
+        const bucket = stats.get(era.era_id);
+        (event.tags || []).forEach(tag => {
+          const key = String(tag || '').trim();
+          if (!key) return;
+          bucket.set(key, (bucket.get(key) || 0) + 1);
+        });
+      });
+
+      return { stats, sourceEvents };
+    }
+
     function renderEraTimeline() {
       if (!els.eraTimeline) return;
       if (!eraRegistry.length) {
         els.eraTimeline.innerHTML = '<div class="empty">尚無時期資料。</div>';
         if (els.eraTrendStrip) els.eraTrendStrip.innerHTML = '<div class="empty">尚無 ERA 趨勢資料。</div>';
+        if (els.eraKeywordGrid) els.eraKeywordGrid.innerHTML = '<div class="empty">尚無 ERA 關鍵字資料。</div>';
         return;
       }
 
-      const ordered = eraRegistry
-        .slice()
-        .sort((a,b) => Number(a.order || 0) - Number(b.order || 0));
-
+      const ordered = eraRegistry.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0));
       const current = ordered.find(e => e.status === 'current') || ordered[ordered.length - 1];
-      const currentIndex = ordered.findIndex(e => e.era_id === current?.era_id);
-      const previous = currentIndex > 0 ? ordered[currentIndex - 1] : null;
+      const { stats, sourceEvents } = keywordStatsByEra(ordered);
+      const totalKeywordOccurrences = [...stats.values()].reduce(
+        (sum, bucket) => sum + [...bucket.values()].reduce((a,b) => a+b, 0), 0
+      );
 
       if (els.eraMetricCount) els.eraMetricCount.textContent = ordered.length;
       if (els.eraMetricCurrent) els.eraMetricCurrent.textContent = current?.period || current?.name || '—';
       if (els.eraMetricStart) els.eraMetricStart.textContent = current?.start_date || '—';
-      if (els.eraMetricPrevious) els.eraMetricPrevious.textContent = previous?.period || previous?.name || '—';
+      if (els.eraMetricKeywords) els.eraMetricKeywords.textContent = totalKeywordOccurrences;
 
-      if (els.eraTrendStrip) {
-        els.eraTrendStrip.innerHTML = ordered.map((era, i) => `
-          ${i ? '<div class="era-trend-arrow">→</div>' : ''}
-          <article class="era-trend-node ${era.status === 'current' ? 'current' : ''}">
-            <div class="period">${esc(era.period || era.era_id || '')}</div>
-            <div class="name">${esc(era.name || era.display_label || '')}</div>
-            <div class="range">${esc(era.start_date || '—')} ～ ${esc(era.end_date || '現在')}</div>
-            <div class="state">${esc(era.state_after || era.description || '')}</div>
-          </article>
-        `).join('');
-      }
-
-      els.eraTimeline.innerHTML = ordered.map(era => {
-          const end = era.end_date || '現在';
-          const sourceRange = era.source_active_start
-            ? `${era.source_active_start || '—'}～${era.source_active_end || '現在'}`
-            : '';
+      if (els.eraKeywordGrid) {
+        els.eraKeywordGrid.innerHTML = ordered.map(era => {
+          const entries = [...(stats.get(era.era_id) || new Map()).entries()]
+            .sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0], 'zh-Hant'))
+            .slice(0,10);
+          const eventCount = sourceEvents.filter(e => eraForEvent(e, ordered)?.era_id === era.era_id).length;
           return `
-            <article class="era-row">
-              <div class="era-range">${esc(era.start_date || '—')}<br>～ ${esc(end)}</div>
-              <div>
-                <div class="era-name">${esc(era.display_label || era.name || era.period || '')}</div>
-                <div class="era-desc">${esc(era.state_after || era.description || '')}</div>
-                ${sourceRange ? `<div class="era-source-note">Suno 原始活躍範圍（來源參考）：${esc(sourceRange)}</div>` : ''}
+            <article class="era-keyword-card">
+              <div class="era-keyword-head">
+                <strong>${esc(era.period || era.era_id)} · ${esc(era.name || '')}</strong>
+                <small>${eventCount} events</small>
+              </div>
+              <div class="era-keyword-chips">
+                ${entries.length
+                  ? entries.map(([tag,count]) => `<span class="era-keyword-chip">${esc(tag)} <b>×${count}</b></span>`).join('')
+                  : '<span class="era-source-note">尚無一般 Event 關鍵字</span>'}
               </div>
             </article>
           `;
         }).join('');
+      }
+
+      if (els.eraTrendStrip) {
+        els.eraTrendStrip.innerHTML = ordered.map((era, i) => {
+          const topKeywords = [...(stats.get(era.era_id) || new Map()).entries()]
+            .sort((a,b) => b[1]-a[1])
+            .slice(0,4)
+            .map(([tag]) => tag);
+          return `
+            ${i ? '<div class="era-trend-arrow">→</div>' : ''}
+            <article class="era-trend-node ${era.status === 'current' ? 'current' : ''}">
+              <div class="period">${esc(era.period || era.era_id || '')}</div>
+              <div class="name">${esc(era.name || era.display_label || '')}</div>
+              <div class="range">${esc(era.start_date || '—')} ～ ${esc(era.end_date || '現在')}</div>
+              <div class="state">${esc(era.state_after || era.description || '')}</div>
+              ${topKeywords.length ? `<div class="era-keyword-chips">${topKeywords.map(tag => `<span class="era-keyword-chip">${esc(tag)}</span>`).join('')}</div>` : ''}
+            </article>
+          `;
+        }).join('');
+      }
+
+      els.eraTimeline.innerHTML = ordered.map(era => {
+        const end = era.end_date || '現在';
+        const sourceRange = era.source_active_start
+          ? `${era.source_active_start || '—'}～${era.source_active_end || '現在'}`
+          : '';
+        const entries = [...(stats.get(era.era_id) || new Map()).entries()]
+          .sort((a,b) => b[1]-a[1])
+          .slice(0,6);
+        return `
+          <article class="era-row">
+            <div class="era-range">${esc(era.start_date || '—')}<br>～ ${esc(end)}</div>
+            <div>
+              <div class="era-name">${esc(era.display_label || era.name || era.period || '')}</div>
+              <div class="era-desc">${esc(era.state_after || era.description || '')}</div>
+              ${entries.length ? `<div class="era-keyword-chips">${entries.map(([tag,count]) => `<span class="era-keyword-chip">${esc(tag)} <b>×${count}</b></span>`).join('')}</div>` : ''}
+              ${sourceRange ? `<div class="era-source-note">Suno 原始活躍範圍（來源參考）：${esc(sourceRange)}</div>` : ''}
+            </div>
+          </article>
+        `;
+      }).join('');
     }
 
     async function loadEvents() {
@@ -942,6 +1028,7 @@
         setSync(false, events.length ? 'Sheet 連線失敗；顯示上次快取' : 'Sheet 連線失敗；目前無快取');
       }
       renderAll();
+      renderEraTimeline();
     }
 
     async function saveEvent(event, action = 'event') {
@@ -1050,50 +1137,6 @@
       `).join('');
     }
 
-    function readTrendCache() {
-      const cached = readJsonCache(TREND_CACHE_KEY, null);
-      return cached?.schema_version === CACHE_SCHEMA_VERSION && Array.isArray(cached.items) ? cached : null;
-    }
-
-    function writeTrendCache(items) {
-      try {
-        localStorage.setItem(TREND_CACHE_KEY, JSON.stringify({
-          schema_version: CACHE_SCHEMA_VERSION,
-          saved_at: Date.now(),
-          window_days: 30,
-          items
-        }));
-      } catch (_) {}
-    }
-
-    function renderTrendItems(top, cached=false) {
-      if (!top.length) {
-        els.trend.innerHTML = '<div class="empty">近期資料不足。</div>';
-        return;
-      }
-      const max = top[0][1] || 1;
-      els.trend.innerHTML = top.map(([tag,count]) => `
-        <div class="trend-item">
-          <div><div>${esc(tag)}</div><div class="bar"><i style="width:${Math.max(12, count/max*100)}%"></i></div></div>
-          <small>${count}</small>
-        </div>
-      `).join('') + (cached ? '<div class="editing-note">顯示上次成功計算的 30 天趨勢快取。</div>' : '');
-    }
-
-    function renderTrend(sorted) {
-      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
-      const recent = sorted.filter(e => new Date(e.date) >= cutoff);
-      const counts = new Map();
-      recent.flatMap(e => e.tags || []).forEach(tag => counts.set(tag, (counts.get(tag) || 0) + 1));
-      const top = [...counts.entries()].sort((a,b) => b[1]-a[1]).slice(0,6);
-      if (top.length) {
-        writeTrendCache(top);
-        renderTrendItems(top, false);
-        return;
-      }
-      const cached = readTrendCache();
-      renderTrendItems(cached?.items || [], !!cached);
-    }
 
     function isDailyDrawEvent(e) {
       const type = String(e.event_type || '').toLowerCase();
@@ -1285,12 +1328,11 @@
     function renderAll() {
       const sorted = events.map(normalizeEvent).sort((a,b) => new Date(a.date) - new Date(b.date));
       events = sorted;
-      const lifeEvents = sorted.filter(e => !/^EV-ERA-P\d+$/i.test(String(e.id || '')));
+      const lifeEvents = sorted.filter(e => !isEraPseudoEvent(e));
       renderMetrics(lifeEvents);
       renderCurrent(lifeEvents);
       renderTimeline(lifeEvents);
       renderTrajectory(lifeEvents);
-      renderTrend(lifeEvents);
     }
 
     function resetEventForm() {
@@ -1599,7 +1641,6 @@
       if (confirm('清除這台裝置上的 LOC8 快取？Google Sheet 原始資料不會刪除。')) {
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem(EVENT_CACHE_KEY);
-        localStorage.removeItem(TREND_CACHE_KEY);
         events = [];
         renderAll();
         loadEvents();
@@ -1614,10 +1655,10 @@
       if (!res.ok) throw new Error('Health check failed');
       const data = await res.json();
       if (!data || data.ok !== true) throw new Error(data && data.error ? data.error : 'API not ready');
-      if (data.schema !== 'loc8-mvp-0.8') {
+      if (data.schema !== 'loc8-mvp-0.9') {
         throw new Error('API schema mismatch: ' + (data.schema || 'unknown'));
       }
-      setSync(true, 'Google Sheet API 已連線 · v0.8');
+      setSync(true, 'Google Sheet API 已連線 · v0.9');
       return true;
     }
 
