@@ -234,6 +234,9 @@ class LOC3SearchEngine:
             matched = self._matched_terms(query, work)
             score += min(len(matched) * 0.012, 0.048)
             score += self._intent_boost(query, work)
+            # Curated cross-work relevance (e.g. LOC4 theme/character songs) is a small
+            # bounded recommendation prior; it never replaces semantic similarity.
+            score += min(float(work.get("recommendation_bonus") or 0.0), 60.0) / 2000.0
             scored.append((score, index, work, matched))
         scored.sort(key=lambda item: (-item[0], item[1]))
         limit = max(1, min(top_k, 12))
