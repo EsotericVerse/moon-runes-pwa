@@ -9,7 +9,8 @@
     "confirmed": "Direct source record explicitly links a real draw to the song.",
     "high_candidate": "Strong multi-source match such as same date plus exact drawn-rune title, but missing explicit creation provenance.",
     "medium_candidate": "Temporal/contextual match to a known draw, but no direct rune linkage.",
-    "rejected_theme_only": "Rune/moon/fate imagery without draw provenance."
+    "rejected_theme_only": "Rune/moon/fate imagery without draw provenance.",
+    "author_recalled": "Author recalls that rune songs were created using OW3gs 11-card draws, and identifies these candidates as likely belonging to that process. Stronger than metadata inference, but still distinct from a preserved original draw-to-song record."
   },
   "rules": [
     "Do not classify a song as rune_song solely because its title or lyrics contain rune, moon, fate, shadow, light or similar motifs.",
@@ -38,9 +39,14 @@
           "月亮月光"
         ]
       },
-      "confidence": "high_candidate",
-      "status": "candidate",
-      "note": "Same date as a recorded OW3gs spread and title exactly matches a rune in that spread. Original songwriting provenance is still required for confirmed rune_song status."
+      "confidence": "reconstructed_high",
+      "status": "author_recalled",
+      "note": "Same date as a recorded OW3gs spread and title exactly matches a rune in that spread. Original songwriting provenance is still required for confirmed rune_song status. Author later recalled that rune songs were consistently created from OW3gs 11-card draws and identified these songs as likely belonging to that process.",
+      "author_recollection": {
+        "statement": "符文歌曲都是以 OW3gs 11 抽來創作；這幾首應該就是。",
+        "recorded_in_current_review": true,
+        "certainty": "likely_not_absolute"
+      }
     },
     {
       "candidate_id": "RS-CAND-LW0124",
@@ -61,9 +67,14 @@
           "月亮月光"
         ]
       },
-      "confidence": "medium_candidate",
-      "status": "candidate",
-      "note": "Same date as a recorded OW3gs spread, but no direct rune-to-song provenance is stored in the current LOC3 metadata."
+      "confidence": "reconstructed_high",
+      "status": "author_recalled",
+      "note": "Same date as a recorded OW3gs spread, but no direct rune-to-song provenance is stored in the current LOC3 metadata. Author later recalled that rune songs were consistently created from OW3gs 11-card draws and identified these songs as likely belonging to that process.",
+      "author_recollection": {
+        "statement": "符文歌曲都是以 OW3gs 11 抽來創作；這幾首應該就是。",
+        "recorded_in_current_review": true,
+        "certainty": "likely_not_absolute"
+      }
     },
     {
       "candidate_id": "RS-CAND-LW0228",
@@ -86,9 +97,14 @@
           "守護界線"
         ]
       },
-      "confidence": "medium_candidate",
-      "status": "candidate",
-      "note": "Same date as a recorded OW3gs spread, but no direct rune-to-song provenance is stored in the current LOC3 metadata."
+      "confidence": "reconstructed_high",
+      "status": "author_recalled",
+      "note": "Same date as a recorded OW3gs spread, but no direct rune-to-song provenance is stored in the current LOC3 metadata. Author later recalled that rune songs were consistently created from OW3gs 11-card draws and identified these songs as likely belonging to that process.",
+      "author_recollection": {
+        "statement": "符文歌曲都是以 OW3gs 11 抽來創作；這幾首應該就是。",
+        "recorded_in_current_review": true,
+        "certainty": "likely_not_absolute"
+      }
     }
   ],
   "known_draw_contexts": [
@@ -163,5 +179,15 @@
     ],
     "note": "Future dataset rebuilds preserve any explicit rune/draw provenance that actually exists in the source workbook instead of dropping it."
   },
-  "next_confirmation_rule": "When a rebuilt LOC3 work contains explicit rune_provenance linking a real draw to the song, promote the corresponding candidate to confirmed after source review."
+  "next_confirmation_rule": "When a rebuilt LOC3 work contains explicit rune_provenance linking a real draw to the song, promote the corresponding candidate to confirmed after source review.",
+  "confirmation_policy": {
+    "confirmed": "Explicit author confirmation or preserved original draw-to-song record.",
+    "author_recalled": "Author identifies the work as likely rune-song output from the known OW3gs workflow, but expresses uncertainty.",
+    "candidate": "Metadata/time/context match only."
+  },
+  "known_method": {
+    "rune_song_creation_method": "OW3gs 11-card draw → interpretation → lyrics/song",
+    "source": "author recollection in current review",
+    "status": "recorded_method"
+  }
 }
