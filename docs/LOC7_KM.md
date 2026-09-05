@@ -99,7 +99,43 @@ LOC2 的事件資料在 KM 中不只視為遊戲規則。它同時是一批 **Sc
 維護文件：[LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md)  
 Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 
-## 7. FAQ / RAG 現況
+## 7. 雙符文關係層
+
+雙卡資料必須拆成「關係」與「抽牌投影」兩層，不能混成同一筆解牌資料。
+
+### 7.1 Pair Relation — 中性關係
+
+`data/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json` 保存兩個符文放在一起時的基本語意關係。
+
+- pair key 不帶方向，固定以較小符文 ID 在前，例如 `09_16`。
+- A＋B 與 B＋A 查到同一個中性關係。
+- 關係層不指定誰是「因」、誰是「果」。
+- 可集中引用《命運句語法圖鑑》的明確雙卡例子、LOC2 可證明的情境案例，以及後續人工確認的實際案例。
+- LOC2 Event 的 SL／ML／NE／OC requirement 不得自動轉成特定符文 pair。
+
+### 7.2 Draw Projection — 抽牌因果投影
+
+真正進入 LOC1 雙卡抽牌時，才疊加：
+
+```text
+中性 A＋B 關係
+      ↓
+抽牌順序：第1張＝因、第2張＝果
+      ↓
+兩張四向狀態
+      ↓
+問題／情境
+      ↓
+月相等背景
+      ↓
+本次雙卡解讀
+```
+
+因此同一個 pair 可以支援 `A → B` 與 `B → A` 兩種因果投影；它們共享底層關係，但不是同一個抽牌答案。
+
+這個分層讓案例庫可被 LOC1 解牌重用，同時由 LOC6 保存牌組文法，不把歷史案例硬寫成固定命運句。
+
+## 8. FAQ / RAG 現況
 
 現行作用資料：
 
@@ -111,7 +147,7 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 
 - FAQ／RAG v0.1、v0.2 保留作 version history，不再視為 current runtime source。
 
-## 8. Shared Registry
+## 9. Shared Registry
 
 `data/shared/` 主要承接跨 LOC 的結構化 registry。KM 相關核心：
 
@@ -123,7 +159,7 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 
 詳細角色見 [JSON_DATA_MAP.md](./JSON_DATA_MAP.md)。
 
-## 9. 同步規則
+## 10. 同步規則
 
 任何知識更新依下列順序處理：
 
@@ -135,11 +171,11 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 6. 驗證 API 與 UI。
 7. 保留歷史版，不以新版本內容覆寫舊版本號。
 
-## 10. Graph RAG 狀態
+## 11. Graph RAG 狀態
 
 Unified Search 已有實作；完整 Relation Schema、Knowledge Graph expansion 與 Graph RAG 仍屬下一階段。不得因已有 registry、related_ids 或 search view 就宣稱完整 Graph RAG 已部署。
 
-## 11. 文件格式
+## 12. 文件格式
 
 `docs/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件。
 
