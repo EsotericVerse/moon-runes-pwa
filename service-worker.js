@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v38";
+const CACHE_NAME = "moon-runes-pwa-v39";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -27,6 +27,7 @@ const ASSETS_TO_CACHE = [
   "/js/runes64.js",
   "/js/direction64.js",
   "/js/rune_all_data_all.js",
+  "/engine/runes07.json",
   "/js/list.js",
   "/64images/65_玄.png",
   "/64images/66_命.png",
