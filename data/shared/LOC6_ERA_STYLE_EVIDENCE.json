@@ -37,7 +37,8 @@
       "top_reasoning_tags": [],
       "top_discourse_modes": [],
       "reasoning_annotated_work_count": 0,
-      "rational_mode_work_count": 0
+      "rational_mode_work_count": 0,
+      "reasoning_discourse_work_count": 0
     },
     {
       "period": "P2",
@@ -146,16 +147,20 @@
       ],
       "top_categories": [
         {
-          "value": "其他／待複查",
-          "count": 19
-        },
-        {
           "value": "轉折型",
           "count": 17
         },
         {
-          "value": "轉折型候選",
+          "value": "其他／待複查",
           "count": 14
+        },
+        {
+          "value": "轉折型候選",
+          "count": 13
+        },
+        {
+          "value": "思辨論述型",
+          "count": 6
         }
       ],
       "top_start_states": [
@@ -349,7 +354,8 @@
         }
       ],
       "reasoning_annotated_work_count": 10,
-      "rational_mode_work_count": 6
+      "rational_mode_work_count": 6,
+      "reasoning_discourse_work_count": 6
     },
     {
       "period": "P3",
@@ -540,7 +546,7 @@
         },
         {
           "value": "其他／待複查",
-          "count": 15
+          "count": 12
         },
         {
           "value": "幸福甜美型",
@@ -549,6 +555,10 @@
         {
           "value": "治理宣言型",
           "count": 5
+        },
+        {
+          "value": "思辨論述型",
+          "count": 3
         },
         {
           "value": "祝福紀念型",
@@ -738,7 +748,8 @@
         }
       ],
       "reasoning_annotated_work_count": 9,
-      "rational_mode_work_count": 9
+      "rational_mode_work_count": 9,
+      "reasoning_discourse_work_count": 3
     },
     {
       "period": "P4",
@@ -872,7 +883,7 @@
       "top_categories": [
         {
           "value": "轉折型候選",
-          "count": 26
+          "count": 25
         },
         {
           "value": "轉折型",
@@ -880,11 +891,15 @@
         },
         {
           "value": "其他／待複查",
-          "count": 16
+          "count": 15
         },
         {
           "value": "治理宣言型",
           "count": 15
+        },
+        {
+          "value": "思辨論述型",
+          "count": 2
         }
       ],
       "top_start_states": [
@@ -1054,7 +1069,8 @@
         }
       ],
       "reasoning_annotated_work_count": 3,
-      "rational_mode_work_count": 2
+      "rational_mode_work_count": 2,
+      "reasoning_discourse_work_count": 2
     },
     {
       "period": "P5",
@@ -1203,7 +1219,7 @@
         },
         {
           "value": "其他／待複查",
-          "count": 13
+          "count": 12
         },
         {
           "value": "祝福紀念型",
@@ -1212,6 +1228,10 @@
         {
           "value": "治理宣言型",
           "count": 2
+        },
+        {
+          "value": "思辨論述型",
+          "count": 1
         }
       ],
       "top_start_states": [
@@ -1349,7 +1369,8 @@
         }
       ],
       "reasoning_annotated_work_count": 1,
-      "rational_mode_work_count": 1
+      "rational_mode_work_count": 1,
+      "reasoning_discourse_work_count": 1
     },
     {
       "period": "P6",
@@ -1475,11 +1496,15 @@
         },
         {
           "value": "其他／待複查",
-          "count": 16
+          "count": 15
         },
         {
           "value": "治理宣言型",
           "count": 3
+        },
+        {
+          "value": "思辨論述型",
+          "count": 1
         }
       ],
       "top_start_states": [
@@ -1617,7 +1642,8 @@
         }
       ],
       "reasoning_annotated_work_count": 1,
-      "rational_mode_work_count": 1
+      "rational_mode_work_count": 1,
+      "reasoning_discourse_work_count": 1
     },
     {
       "period": "P7",
@@ -1796,7 +1822,8 @@
       "top_reasoning_tags": [],
       "top_discourse_modes": [],
       "reasoning_annotated_work_count": 0,
-      "rational_mode_work_count": 0
+      "rational_mode_work_count": 0,
+      "reasoning_discourse_work_count": 0
     },
     {
       "period": "P8",
@@ -1902,7 +1929,8 @@
       "top_reasoning_tags": [],
       "top_discourse_modes": [],
       "reasoning_annotated_work_count": 0,
-      "rational_mode_work_count": 0
+      "rational_mode_work_count": 0,
+      "reasoning_discourse_work_count": 0
     }
   ]
 }
