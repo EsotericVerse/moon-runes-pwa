@@ -1,0 +1,793 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC_KM_KEYWORDS",
+  "source": "docs/LOC7_KM.docx",
+  "source_version": "LOC7_KM 0.1r",
+  "updated_at": "2026-09-05",
+  "purpose": "Shared keyword and alias registry for LOC7 Knowledge Management, FAQ/RAG retrieval, Unified Search, and future Knowledge Object alignment.",
+  "governance": {
+    "authority": "LOC7_KM",
+    "note": "Keywords are retrieval aids, not Canon definitions. Canon, Stable, Working, Reserved, Historical and other states must remain distinguishable.",
+    "controlled_logic": [
+      "LOC1 真實月相判定規則",
+      "真實月相 × 卡片月相交互規則"
+    ]
+  },
+  "groups": [
+    {
+      "id": "core",
+      "label": "核心系統",
+      "keywords": [
+        {
+          "term": "LOC",
+          "aliases": [
+            "Luna Codex",
+            "月典",
+            "Personal Language System",
+            "個人語言系統"
+          ],
+          "loc_scope": [
+            "global"
+          ],
+          "status": "Canonical"
+        },
+        {
+          "term": "月符",
+          "aliases": [
+            "Luna Runes",
+            "月之符文",
+            "符文",
+            "Rune"
+          ],
+          "loc_scope": [
+            "LOC1",
+            "LOC2",
+            "LOC7"
+          ],
+          "status": "Canonical"
+        },
+        {
+          "term": "LOC1–8",
+          "aliases": [
+            "八分發",
+            "Eight Distributions",
+            "八個框架",
+            "語言處理責任"
+          ],
+          "loc_scope": [
+            "global"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "語言演化",
+          "aliases": [
+            "Language Evolution",
+            "Rune-guided Language Evolution"
+          ],
+          "loc_scope": [
+            "LOC1",
+            "LOC3",
+            "LOC4",
+            "LOC5",
+            "LOC6",
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "數位神秘學",
+          "aliases": [
+            "Digital Mysticism"
+          ],
+          "loc_scope": [
+            "global"
+          ],
+          "status": "Working"
+        },
+        {
+          "term": "語意錨點",
+          "aliases": [
+            "Semantic Anchor"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Working"
+        }
+      ]
+    },
+    {
+      "id": "loc7_km",
+      "label": "LOC7 Knowledge Management",
+      "keywords": [
+        {
+          "term": "LOC7_KM",
+          "aliases": [
+            "Knowledge Management",
+            "KM",
+            "知識管理",
+            "知識建築核心"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Knowledge Base",
+          "aliases": [
+            "知識庫",
+            "KB"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Knowledge Object",
+          "aliases": [
+            "知識物件",
+            "知識節點",
+            "KO"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Working"
+        },
+        {
+          "term": "Knowledge Graph",
+          "aliases": [
+            "知識圖譜",
+            "Graph"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Working"
+        },
+        {
+          "term": "Knowledge Relation",
+          "aliases": [
+            "Relation",
+            "關係",
+            "語意關係"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Working"
+        },
+        {
+          "term": "Knowledge Provenance",
+          "aliases": [
+            "來源追溯",
+            "Source Provenance",
+            "來源"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Knowledge Versioning",
+          "aliases": [
+            "版本治理",
+            "版本歷史",
+            "Knowledge Evolution"
+          ],
+          "loc_scope": [
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Knowledge Neighborhood",
+          "aliases": [
+            "Neighborhood",
+            "知識鄰域",
+            "語意鄰域"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Working"
+        },
+        {
+          "term": "Personal Graph",
+          "aliases": [
+            "個人圖譜",
+            "個人語言拓撲",
+            "Zhèngdé Graph"
+          ],
+          "loc_scope": [
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Working"
+        },
+        {
+          "term": "Interpersonal Graph",
+          "aliases": [
+            "多人圖譜",
+            "語言社區"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Proposed"
+        },
+        {
+          "term": "Life Philosophy Topology",
+          "aliases": [
+            "生命哲學拓撲",
+            "人生觀拓撲"
+          ],
+          "loc_scope": [
+            "LOC6",
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Working"
+        }
+      ]
+    },
+    {
+      "id": "text_architecture",
+      "label": "文字建築與檢索",
+      "keywords": [
+        {
+          "term": "Text Architecture",
+          "aliases": [
+            "文字建築學",
+            "文字建築",
+            "立體句型"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Semantic Chunk",
+          "aliases": [
+            "語意切塊",
+            "Chunk",
+            "FAQ Chunk"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Semantic Search",
+          "aliases": [
+            "語意搜尋",
+            "語意檢索"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Keyword Search",
+          "aliases": [
+            "關鍵字搜尋",
+            "精確術語搜尋"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Unified Search",
+          "aliases": [
+            "跨 LOC 搜尋",
+            "統一搜尋",
+            "search.html"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "RAG",
+          "aliases": [
+            "Retrieval-Augmented Generation",
+            "檢索增強生成"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Working"
+        },
+        {
+          "term": "Graph RAG",
+          "aliases": [
+            "Graph Expansion",
+            "圖譜 RAG",
+            "圖譜檢索"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Proposed"
+        },
+        {
+          "term": "Embedding",
+          "aliases": [
+            "語意向量",
+            "向量檢索"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Working"
+        }
+      ]
+    },
+    {
+      "id": "governance_style",
+      "label": "治理與政德風",
+      "keywords": [
+        {
+          "term": "政德風",
+          "aliases": [
+            "Zhengde Style",
+            "作者語言",
+            "個人語言風格"
+          ],
+          "loc_scope": [
+            "LOC6",
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "自我治理",
+          "aliases": [
+            "Self Governance",
+            "治理自己",
+            "治理已知"
+          ],
+          "loc_scope": [
+            "LOC6",
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Governance",
+          "aliases": [
+            "治理",
+            "語言治理",
+            "治理原則"
+          ],
+          "loc_scope": [
+            "LOC6"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "ERA",
+          "aliases": [
+            "時期",
+            "創作時期",
+            "風格演變"
+          ],
+          "loc_scope": [
+            "LOC3",
+            "LOC4",
+            "LOC5",
+            "LOC6",
+            "LOC8"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "自由的風",
+          "aliases": [
+            "P7",
+            "自由期"
+          ],
+          "loc_scope": [
+            "LOC6",
+            "LOC8"
+          ],
+          "status": "Historical"
+        },
+        {
+          "term": "自我治理與未來展望期",
+          "aliases": [
+            "P8",
+            "治理自己",
+            "自由的月"
+          ],
+          "loc_scope": [
+            "LOC6",
+            "LOC8"
+          ],
+          "status": "Working"
+        }
+      ]
+    },
+    {
+      "id": "loc8_temporal",
+      "label": "事件與時間",
+      "keywords": [
+        {
+          "term": "Life Event",
+          "aliases": [
+            "生活事件",
+            "事件節點",
+            "Event"
+          ],
+          "loc_scope": [
+            "LOC8",
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Temporal Semantics",
+          "aliases": [
+            "時間語意",
+            "時間語義",
+            "事件時間"
+          ],
+          "loc_scope": [
+            "LOC8",
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Trajectory",
+          "aliases": [
+            "軌跡",
+            "人生軌跡"
+          ],
+          "loc_scope": [
+            "LOC8"
+          ],
+          "status": "Working"
+        },
+        {
+          "term": "Trend",
+          "aliases": [
+            "趨勢",
+            "演變趨勢"
+          ],
+          "loc_scope": [
+            "LOC8"
+          ],
+          "status": "Working"
+        }
+      ]
+    },
+    {
+      "id": "media_work",
+      "label": "作品與媒體",
+      "keywords": [
+        {
+          "term": "LOC3",
+          "aliases": [
+            "Music Distribution",
+            "歌曲",
+            "歌詞",
+            "音樂作品"
+          ],
+          "loc_scope": [
+            "LOC3"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "LOC4",
+          "aliases": [
+            "Writing Distribution",
+            "文字創作",
+            "小說",
+            "文章"
+          ],
+          "loc_scope": [
+            "LOC4"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "LOC5",
+          "aliases": [
+            "Resonance Distribution",
+            "Reels",
+            "Media Link",
+            "多媒體",
+            "影音"
+          ],
+          "loc_scope": [
+            "LOC5"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Web Demo Alpha",
+          "aliases": [
+            "Web Demo",
+            "網站展示",
+            "Demo"
+          ],
+          "loc_scope": [
+            "global"
+          ],
+          "status": "Working"
+        }
+      ]
+    },
+    {
+      "id": "loc1_special_rules",
+      "label": "LOC1 特殊規則",
+      "keywords": [
+        {
+          "term": "真實月相",
+          "aliases": [
+            "Real Moon Phase",
+            "現實月相",
+            "當下月相"
+          ],
+          "loc_scope": [
+            "LOC1",
+            "LOC7"
+          ],
+          "status": "Stable / Special Rule",
+          "note": "LOC1 系統內部語意規則，不等同天文瞬時月相。"
+        },
+        {
+          "term": "新月",
+          "aliases": [
+            "Day 1–7"
+          ],
+          "loc_scope": [
+            "LOC1"
+          ],
+          "status": "Stable / Special Rule"
+        },
+        {
+          "term": "上弦",
+          "aliases": [
+            "Day 8–14"
+          ],
+          "loc_scope": [
+            "LOC1"
+          ],
+          "status": "Stable / Special Rule"
+        },
+        {
+          "term": "滿月",
+          "aliases": [
+            "Day 15–21"
+          ],
+          "loc_scope": [
+            "LOC1"
+          ],
+          "status": "Stable / Special Rule"
+        },
+        {
+          "term": "下弦",
+          "aliases": [
+            "Day 22–28"
+          ],
+          "loc_scope": [
+            "LOC1"
+          ],
+          "status": "Stable / Special Rule"
+        },
+        {
+          "term": "空亡",
+          "aliases": [
+            "Day 29–30",
+            "新月前 1–2 日"
+          ],
+          "loc_scope": [
+            "LOC1"
+          ],
+          "status": "Stable / Special Rule"
+        },
+        {
+          "term": "卡片月相",
+          "aliases": [
+            "Card Moon Phase",
+            "符文月相"
+          ],
+          "loc_scope": [
+            "LOC1"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "月相交互",
+          "aliases": [
+            "真實月相 × 卡片月相",
+            "moon phase interaction"
+          ],
+          "loc_scope": [
+            "LOC1",
+            "LOC7"
+          ],
+          "status": "Reserved / Controlled Logic",
+          "note": "保留既有規則；LOC1 RAG 完成前不擴張或重寫。"
+        }
+      ]
+    },
+    {
+      "id": "knowledge_status",
+      "label": "知識狀態與來源",
+      "keywords": [
+        {
+          "term": "Canonical",
+          "aliases": [
+            "Canon",
+            "正式定義"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Canonical"
+        },
+        {
+          "term": "Stable",
+          "aliases": [
+            "穩定知識"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Working",
+          "aliases": [
+            "Working Definition",
+            "工作定義"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Proposed",
+          "aliases": [
+            "提案",
+            "待討論"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Experimental",
+          "aliases": [
+            "實驗中"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Deprecated",
+          "aliases": [
+            "已淘汰"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Historical",
+          "aliases": [
+            "歷史版本"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Primary",
+          "aliases": [
+            "原始資料",
+            "第一手來源"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Derived",
+          "aliases": [
+            "解析所得",
+            "衍生資料"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Inferred",
+          "aliases": [
+            "推論所得"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "AI Generated",
+          "aliases": [
+            "LLM 生成",
+            "AI整理"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "External",
+          "aliases": [
+            "外部資料"
+          ],
+          "loc_scope": [
+            "LOC7"
+          ],
+          "status": "Stable"
+        }
+      ]
+    }
+  ],
+  "relation_keywords": [
+    "is_a",
+    "part_of",
+    "derived_from",
+    "related_to",
+    "contrasts_with",
+    "evolves_from",
+    "influences",
+    "expressed_in",
+    "represented_by",
+    "uses",
+    "generated_by",
+    "supports",
+    "contradicts",
+    "references",
+    "belongs_to",
+    "implemented_by"
+  ],
+  "principles": [
+    "KM-01 知識必須有來源",
+    "KM-02 原始資料與推論必須分離",
+    "KM-03 Canon 與 Working Definition 必須分離",
+    "KM-04 舊版本不得直接覆蓋",
+    "KM-05 矛盾可以存在",
+    "KM-06 Graph 關係必須可以追溯",
+    "KM-07 月符可以輔助分類，但不能限制語言",
+    "KM-08 每個使用者的 Personal Graph 必須隔離",
+    "KM-09 知識可以演化，但必須留下版本歷史",
+    "KM-10 FAQ 是 View，不是 Knowledge Base 本身"
+  ]
+}
