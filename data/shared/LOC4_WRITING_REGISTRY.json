@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC4_WRITING_REGISTRY",
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
@@ -290,6 +290,55 @@
       "lifecycle": {
         "status": "catalogued",
         "updated_at": "2026-09-06"
+      },
+      "music_map": {
+        "mapping_type": "work_and_character_theme_songs",
+        "source_loc": "LOC3",
+        "note": "歌曲作為 LOC4 作品／角色的跨 LOC 主題標記；不改變 LOC4 文字作品本身的時期歸屬。",
+        "work_level": [
+          {
+            "role": "op",
+            "label": "OP",
+            "url": "https://suno.com/s/doXe7ALt4MVs0tXK"
+          },
+          {
+            "role": "proposal_song",
+            "label": "求婚歌",
+            "url": "https://suno.com/s/YvP6Wi5lPHZywCrX"
+          }
+        ],
+        "character_themes": [
+          {
+            "character": "德興",
+            "role": "character_theme",
+            "url": "https://suno.com/s/OIX6l1eFUJ7IYOBz"
+          },
+          {
+            "character": "小瑤",
+            "role": "character_theme",
+            "url": "https://suno.com/s/4nHz2DJlyK1mGIeM"
+          },
+          {
+            "character": "阿珠",
+            "role": "character_theme",
+            "url": "https://suno.com/s/C9YWrn9xn19hoQhV"
+          },
+          {
+            "character": "阿文",
+            "role": "character_theme",
+            "url": "https://suno.com/s/a8tUvkKBIbojDGsp"
+          },
+          {
+            "character": "小維",
+            "role": "character_theme",
+            "url": "https://suno.com/s/JJ0rs9I78FXHas5A"
+          },
+          {
+            "character": "阿鎧",
+            "role": "character_theme",
+            "url": "https://suno.com/s/4Wx3tCqM7BmmzTI4"
+          }
+        ]
       }
     },
     {
