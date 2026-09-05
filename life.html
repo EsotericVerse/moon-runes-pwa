@@ -306,6 +306,57 @@
       line-height: 1.6;
     }
 
+    .life-view[hidden] { display: none !important; }
+    .nav-divider {
+      height: 1px;
+      margin: 5px 8px;
+      background: var(--line);
+    }
+    .nav .view-switch.active {
+      color: var(--text);
+      border-color: var(--line);
+      background: rgba(168, 198, 255, .08);
+    }
+
+    .daily-layout {
+      display: grid;
+      grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .draw-history {
+      display: grid;
+      gap: 7px;
+      max-height: 650px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .draw-entry {
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr);
+      gap: 10px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.02);
+    }
+    .draw-date { color: var(--muted); font-size: 11px; padding-top: 2px; }
+    .draw-line { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+    .draw-title { font-size: 13px; font-weight: 700; }
+    .draw-kind {
+      display: inline-flex;
+      padding: 2px 7px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      color: var(--accent-2);
+      background: rgba(169,199,255,.07);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .draw-note { margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .draw-count { color: var(--muted); font-size: 12px; }
+
+
     .theme-dialog{width:min(980px,calc(100vw - 32px));max-height:90vh;padding:0;border:1px solid var(--line);border-radius:20px;background:#0b1728;color:var(--text);box-shadow:var(--shadow)}
     .theme-dialog::backdrop{background:rgba(3,9,16,.78);backdrop-filter:blur(4px)}
     .theme-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
@@ -327,7 +378,7 @@
     @media (max-width: 760px) {
       .app { padding: 12px; }
       .hero { align-items: start; flex-direction: column; }
-      .grid.cols-4, .grid.cols-2, .form-grid { grid-template-columns: 1fr; }
+      .grid.cols-4, .grid.cols-2, .form-grid, .daily-layout { grid-template-columns: 1fr; }
       .field.full { grid-column: auto; }
       .event { grid-template-columns: 30px 1fr; }
       .event .date { grid-column: 2; order: 0; }
@@ -352,12 +403,13 @@
       </div>
       <nav class="nav">
         <a href="index.html">← 回到首頁</a>
-        <a class="active" href="#overview">概覽</a>
-        <a href="daily-draw.html">每日抽牌紀錄 ↗</a>
-        <a href="#event-form">事件紀錄</a>
-        <a href="#timeline">時間線</a>
-        <a href="#trajectory">狀態軌跡</a>
-        <a href="#trend">近期趨勢</a>
+        <a class="active view-switch" href="#overview" data-view="life">概覽</a>
+        <a class="view-switch" href="#event-form" data-view="life">事件紀錄</a>
+        <a class="view-switch" href="#timeline" data-view="life">時間線</a>
+        <a class="view-switch" href="#trajectory" data-view="life">狀態軌跡</a>
+        <a class="view-switch" href="#trend" data-view="life">近期趨勢</a>
+        <div class="nav-divider" aria-hidden="true"></div>
+        <button class="view-switch" id="dailyDrawViewBtn" type="button" data-view="daily">每日抽牌紀錄</button>
         <button id="themePreviewBtn" type="button">介面預覽</button>
       </nav>
       <div class="sidebar-foot">
@@ -367,6 +419,7 @@
     </aside>
 
     <main>
+      <div class="life-view" id="lifeView">
       <section class="hero" id="overview">
         <div>
           <div class="eyebrow">Luna Codex · Distribution 8</div>
@@ -483,6 +536,42 @@
       </section>
 
 
+      </div>
+
+      <div class="life-view" id="dailyDrawView" hidden>
+        <section class="hero">
+          <div>
+            <div class="eyebrow">LOC1 × LOC8 · Daily Draw Log</div>
+            <h2>每日抽牌紀錄</h2>
+            <p>主抽與補抽作為獨立時間紀錄；與 Life Event 共用同一份資料來源，但不與事件、軌跡與趨勢混在同一個畫面。</p>
+          </div>
+          <div class="sync"><span class="dot" id="drawSyncDot"></span><span id="drawSyncText">載入中…</span></div>
+        </section>
+
+        <div class="daily-layout">
+          <section class="card">
+            <div class="head"><div><h3>新增抽牌</h3><p>記錄日期、符文、方向與當日觀察。</p></div><span class="badge">LOC1</span></div>
+            <div class="body">
+              <form id="dailyDrawForm">
+                <div class="form-grid">
+                  <div class="field"><label for="drawDate">日期</label><input id="drawDate" type="date" required /></div>
+                  <div class="field"><label for="drawKind">抽牌類型</label><select id="drawKind"><option value="daily_draw">每日主抽</option><option value="daily_draw_supplement">補抽</option></select></div>
+                  <div class="field"><label for="drawRune">符文</label><select id="drawRune" required><option value="">選擇符文</option></select></div>
+                  <div class="field"><label for="drawDirection">方向</label><select id="drawDirection"><option value="正位">正位</option><option value="半正位">半正位</option><option value="半逆位">半逆位</option><option value="逆位">逆位</option></select></div>
+                  <div class="field full"><label for="drawNote">備註／當日觀察</label><textarea id="drawNote" placeholder="可留白；記錄當日感受、事件或後續對照。"></textarea></div>
+                </div>
+                <div class="actions"><button class="btn primary" type="submit">儲存抽牌</button><button class="btn ghost" id="clearDrawBtn" type="button">清除</button></div>
+              </form>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="head"><div><h3>抽牌歷史</h3><p>同一天的主抽與補抽合併顯示。</p></div><span class="badge" id="drawCountBadge">0 筆</span></div>
+            <div class="body"><div class="draw-history" id="dailyDrawHistory"><div class="empty">尚無每日抽牌紀錄。</div></div></div>
+          </section>
+        </div>
+      </div>
+
       <dialog class="theme-dialog" id="themePreviewDialog" aria-labelledby="theme-preview-title">
         <div class="theme-dialog-head">
           <h3 id="theme-preview-title">日間／夜間介面預覽</h3>
@@ -494,7 +583,7 @@
         </div>
       </dialog>
 
-      <div class="footer">LOC8 · Event / Time / Trajectory / Trend</div>
+      <div class="footer">LOC8 · Life Event / Daily Draw / Time / Trajectory / Trend</div>
     </main>
   </div>
 
@@ -531,6 +620,11 @@
       editingId: $('#editingEventId'),
       submitBtn: $('#submitEventBtn'),
       cancelEditBtn: $('#cancelEditBtn'),
+      dailyDrawForm: $('#dailyDrawForm'),
+      dailyDrawHistory: $('#dailyDrawHistory'),
+      drawCountBadge: $('#drawCountBadge'),
+      drawSyncText: $('#drawSyncText'),
+      drawSyncDot: $('#drawSyncDot'),
     };
 
     let events = [];
@@ -551,6 +645,8 @@
     function setSync(ok, text) {
       els.syncText.textContent = text;
       els.syncDot.classList.toggle('ok', !!ok);
+      if (els.drawSyncText) els.drawSyncText.textContent = text;
+      if (els.drawSyncDot) els.drawSyncDot.classList.toggle('ok', !!ok);
     }
 
     function readJsonCache(key, fallback=null) {
@@ -756,15 +852,83 @@
       renderTrendItems(cached?.items || [], !!cached);
     }
 
+    function isDailyDrawEvent(e) {
+      return e.event_type === 'daily_draw' || e.event_type === 'daily_draw_supplement';
+    }
+
+    function renderDailyDraws(sorted) {
+      const draws = sorted.filter(isDailyDrawEvent).sort((a,b) => {
+        const dateDiff = new Date(b.date) - new Date(a.date);
+        if (dateDiff) return dateDiff;
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      });
+
+      els.drawCountBadge.textContent = draws.length + ' 筆';
+      if (!draws.length) {
+        els.dailyDrawHistory.innerHTML = '<div class="empty">尚無每日抽牌紀錄。</div>';
+        return;
+      }
+
+      const byDate = new Map();
+      draws.forEach(e => {
+        if (!byDate.has(e.date)) byDate.set(e.date, []);
+        byDate.get(e.date).push(e);
+      });
+
+      els.dailyDrawHistory.innerHTML = [...byDate.entries()].map(([date, items]) => {
+        const rows = items.map(e => {
+          const kind = e.event_type === 'daily_draw_supplement' ? '補抽' : '主抽';
+          const title = (e.event_title || '').replace(/^每日抽牌｜|^補抽｜/, '') || e.object_id || '未命名';
+          return `<div class="draw-line"><span class="draw-kind">${kind}</span><span class="draw-title">${esc(title)}</span></div>`;
+        }).join('');
+        const note = items.find(e => e.description)?.description || '';
+        return `
+          <div class="draw-entry">
+            <div class="draw-date">${esc(date)}</div>
+            <div>
+              ${rows}
+              ${note ? `<div class="draw-note">${esc(note)}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadDrawRunes() {
+      const select = $('#drawRune');
+      if (!select || select.options.length > 1) return;
+      try {
+        const res = await fetch('data/shared/lots.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Rune data unavailable');
+        const data = await res.json();
+        (data.items || []).forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.名稱;
+          option.textContent = String(item.編號).padStart(2, '0') + ' · ' + item.名稱;
+          select.appendChild(option);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function resetDailyDrawForm() {
+      els.dailyDrawForm.reset();
+      $('#drawDate').value = new Date().toISOString().slice(0,10);
+      $('#drawKind').value = 'daily_draw';
+      $('#drawDirection').value = '正位';
+    }
+
     function renderAll() {
       const sorted = events.map(normalizeEvent).sort((a,b) => new Date(a.date) - new Date(b.date));
       events = sorted;
-      const lifeEvents = sorted.filter(e => e.event_type !== 'daily_draw' && e.event_type !== 'daily_draw_supplement');
+      const lifeEvents = sorted.filter(e => !isDailyDrawEvent(e));
       renderMetrics(lifeEvents);
       renderCurrent(lifeEvents);
       renderTimeline(lifeEvents);
       renderTrajectory(lifeEvents);
       renderTrend(lifeEvents);
+      renderDailyDraws(sorted);
     }
 
     function resetEventForm() {
@@ -805,6 +969,47 @@
       $('#source').value = event.source || '';
       document.querySelector('#event-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+
+    els.dailyDrawForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const date = $('#drawDate').value;
+      const rune = $('#drawRune').value;
+      const direction = $('#drawDirection').value;
+      const kind = $('#drawKind').value;
+      const note = String($('#drawNote').value || '').trim();
+      if (!date || !rune || !direction) return;
+
+      const kindLabel = kind === 'daily_draw_supplement' ? '補抽' : '每日抽牌';
+      const event = normalizeEvent({
+        user_id: 'lo3rwang',
+        date,
+        object_type: 'rune',
+        object_id: rune,
+        event_type: kind,
+        event_title: kindLabel + '｜' + rune + direction,
+        description: note,
+        state_before: '',
+        state_after: '',
+        era: '',
+        tags: ['daily-draw','LOC1',kind === 'daily_draw_supplement' ? 'supplement' : 'primary',direction],
+        status: 'recorded',
+        confidence: 'recorded',
+        source: 'life.html#daily-draw',
+        primary_loc: 'LOC8',
+        related_locs: ['LOC1','LOC8']
+      });
+
+      try {
+        await saveEvent(event, 'event');
+        await loadEvents();
+        resetDailyDrawForm();
+      } catch (err) {
+        console.error(err);
+        alert('每日抽牌儲存失敗，請檢查網路或 Google Sheet API。');
+      }
+    });
+
+    $('#clearDrawBtn').addEventListener('click', resetDailyDrawForm);
 
     els.form.addEventListener('submit', async (ev) => {
       ev.preventDefault();
@@ -921,14 +1126,31 @@
       if (event.target === themePreviewDialog) themePreviewDialog.close();
     });
 
-    document.querySelectorAll('.nav a').forEach(a => a.addEventListener('click', () => {
-      if (!a.getAttribute('href')?.startsWith('#')) return;
-      document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active'));
-      a.classList.add('active');
+    const lifeView = $('#lifeView');
+    const dailyDrawView = $('#dailyDrawView');
+
+    function switchView(view, trigger = null) {
+      const showDaily = view === 'daily';
+      lifeView.hidden = showDaily;
+      dailyDrawView.hidden = !showDaily;
+      document.querySelectorAll('.nav .view-switch').forEach(x => x.classList.remove('active'));
+      if (trigger) trigger.classList.add('active');
+      if (showDaily) {
+        history.replaceState(null, '', '#daily-draw');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    document.querySelectorAll('.nav a[data-view="life"]').forEach(a => a.addEventListener('click', () => {
+      switchView('life', a);
     }));
+    $('#dailyDrawViewBtn').addEventListener('click', () => switchView('daily', $('#dailyDrawViewBtn')));
 
     resetEventForm();
+    resetDailyDrawForm();
+    loadDrawRunes();
     loadEvents();
+    if (location.hash === '#daily-draw') switchView('daily', $('#dailyDrawViewBtn'));
   </script>
   <script src="js/loc-nav.js"></script>
 </body>
