@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.3",
+  "schema_version": "0.4",
   "registry": "LOC3_PERIOD_KEYWORD_ANALYSIS",
   "system_id": "lo3rwang",
   "primary_loc": "LOC3",
@@ -24,12 +24,14 @@
     "analyzed_work_count": 403,
     "excluded_periods": [
       "P1"
-    ]
+    ],
+    "semantic_family_registry": "data/shared/LOC_SEMANTIC_FAMILY_REGISTRY.json"
   },
   "purpose": "按 LOC8 固定時期比較 LOC3 關鍵字分佈；命名概念與一般語義／意象分開呈現，避免專有名詞被高頻泛用詞淹沒。",
   "keyword_layers": {
     "named_keywords": "命名概念／系列／跨 LOC 概念，例如微月光、人生月台、自我治理（治理自己）、已讀不回。",
-    "semantic_keywords": "作品內容的主題、情緒、意象、行動與治理語義。"
+    "semantic_keywords": "作品內容的主題、情緒、意象、行動與治理語義。",
+    "semantic_families": "Normalized comparison/display layer. Near-duplicate generic tags are grouped; named concepts remain separate."
   },
   "governance": {
     "rules": [
@@ -38,7 +40,8 @@
       "自我治理為 canonical term；治理自己為 LOC3 alias / creative-stage label。",
       "已讀不回是跨 LOC 命名概念；在 LOC3 時期分析只以 LOC3 歌曲／歌詞證據計數。",
       "Named concepts use explicit structured evidence (era, era_name, playlist, title, tag, summary where applicable).",
-      "LOC8 owns period boundaries; LOC3 owns keyword semantics; LOC7 may index the analysis."
+      "LOC8 owns period boundaries; LOC3 owns keyword semantics; LOC7 may index the analysis.",
+      "Generic 微光／月光／月亮 terms are displayed as 光月意象; 微月光 remains a separate named keyword."
     ]
   },
   "named_keyword_registry": [
@@ -327,6 +330,121 @@
           "term": "自由／解放",
           "count": 2
         }
+      ],
+      "normalized_semantic_families": [
+        {
+          "term": "光月意象",
+          "count": 26,
+          "frequency": 0.52,
+          "percent": 52,
+          "grouped_from": [
+            "微光意象",
+            "月亮月光"
+          ],
+          "frequency_method": "max_member_document_frequency_proxy"
+        },
+        {
+          "term": "夜晚",
+          "count": 24,
+          "frequency": 0.48,
+          "percent": 48
+        },
+        {
+          "term": "希望未來",
+          "count": 21,
+          "frequency": 0.42,
+          "percent": 42
+        },
+        {
+          "term": "黑暗影子",
+          "count": 16,
+          "frequency": 0.32,
+          "percent": 32
+        },
+        {
+          "term": "希望",
+          "count": 14,
+          "frequency": 0.28,
+          "percent": 28
+        },
+        {
+          "term": "孤獨陪伴",
+          "count": 13,
+          "frequency": 0.26,
+          "percent": 26
+        },
+        {
+          "term": "現實選擇",
+          "count": 13,
+          "frequency": 0.26,
+          "percent": 26
+        },
+        {
+          "term": "自我探索",
+          "count": 12,
+          "frequency": 0.24,
+          "percent": 24
+        },
+        {
+          "term": "道路旅途",
+          "count": 12,
+          "frequency": 0.24,
+          "percent": 24
+        },
+        {
+          "term": "孤獨",
+          "count": 11,
+          "frequency": 0.22,
+          "percent": 22
+        },
+        {
+          "term": "風",
+          "count": 11,
+          "frequency": 0.22,
+          "percent": 22
+        },
+        {
+          "term": "時間記憶",
+          "count": 11,
+          "frequency": 0.22,
+          "percent": 22
+        },
+        {
+          "term": "天空",
+          "count": 10,
+          "frequency": 0.2,
+          "percent": 20
+        },
+        {
+          "term": "平靜",
+          "count": 10,
+          "frequency": 0.2,
+          "percent": 20
+        },
+        {
+          "term": "重新出發",
+          "count": 10,
+          "frequency": 0.2,
+          "percent": 20
+        },
+        {
+          "term": "溫柔",
+          "count": 9,
+          "frequency": 0.18,
+          "percent": 18
+        },
+        {
+          "term": "夢想創作",
+          "count": 9,
+          "frequency": 0.18,
+          "percent": 18
+        },
+        {
+          "term": "離別放下",
+          "count": 9,
+          "frequency": 0.18,
+          "percent": 18
+        }
       ]
     },
     {
@@ -604,6 +722,121 @@
         {
           "term": "安心／安放",
           "count": 1
+        }
+      ],
+      "normalized_semantic_families": [
+        {
+          "term": "光月意象",
+          "count": 92,
+          "frequency": 0.748,
+          "percent": 74.8,
+          "grouped_from": [
+            "微光意象",
+            "月亮月光"
+          ],
+          "frequency_method": "max_member_document_frequency_proxy"
+        },
+        {
+          "term": "夜晚",
+          "count": 65,
+          "frequency": 0.5285,
+          "percent": 52.8
+        },
+        {
+          "term": "平靜",
+          "count": 61,
+          "frequency": 0.4959,
+          "percent": 49.6
+        },
+        {
+          "term": "愛與連結",
+          "count": 53,
+          "frequency": 0.4309,
+          "percent": 43.1
+        },
+        {
+          "term": "希望未來",
+          "count": 46,
+          "frequency": 0.374,
+          "percent": 37.4
+        },
+        {
+          "term": "現實選擇",
+          "count": 44,
+          "frequency": 0.3577,
+          "percent": 35.8
+        },
+        {
+          "term": "天空",
+          "count": 43,
+          "frequency": 0.3496,
+          "percent": 35
+        },
+        {
+          "term": "孤獨陪伴",
+          "count": 41,
+          "frequency": 0.3333,
+          "percent": 33.3
+        },
+        {
+          "term": "溫柔",
+          "count": 41,
+          "frequency": 0.3333,
+          "percent": 33.3
+        },
+        {
+          "term": "黑暗影子",
+          "count": 39,
+          "frequency": 0.3171,
+          "percent": 31.7
+        },
+        {
+          "term": "風",
+          "count": 38,
+          "frequency": 0.3089,
+          "percent": 30.9
+        },
+        {
+          "term": "孤獨",
+          "count": 37,
+          "frequency": 0.3008,
+          "percent": 30.1
+        },
+        {
+          "term": "道路旅途",
+          "count": 37,
+          "frequency": 0.3008,
+          "percent": 30.1
+        },
+        {
+          "term": "社會疏離",
+          "count": 36,
+          "frequency": 0.2927,
+          "percent": 29.3
+        },
+        {
+          "term": "正義界線",
+          "count": 34,
+          "frequency": 0.2764,
+          "percent": 27.6
+        },
+        {
+          "term": "時間記憶",
+          "count": 29,
+          "frequency": 0.2358,
+          "percent": 23.6
+        },
+        {
+          "term": "自我探索",
+          "count": 26,
+          "frequency": 0.2114,
+          "percent": 21.1
+        },
+        {
+          "term": "離別放下",
+          "count": 26,
+          "frequency": 0.2114,
+          "percent": 21.1
         }
       ]
     },
@@ -885,6 +1118,127 @@
           "term": "未辨識",
           "count": 1
         }
+      ],
+      "normalized_semantic_families": [
+        {
+          "term": "光月意象",
+          "count": 55,
+          "frequency": 0.7432,
+          "percent": 74.3,
+          "grouped_from": [
+            "微光意象",
+            "月亮月光"
+          ],
+          "frequency_method": "max_member_document_frequency_proxy"
+        },
+        {
+          "term": "現實選擇",
+          "count": 51,
+          "frequency": 0.6892,
+          "percent": 68.9
+        },
+        {
+          "term": "天空",
+          "count": 33,
+          "frequency": 0.4459,
+          "percent": 44.6
+        },
+        {
+          "term": "道路旅途",
+          "count": 33,
+          "frequency": 0.4459,
+          "percent": 44.6
+        },
+        {
+          "term": "正義界線",
+          "count": 32,
+          "frequency": 0.4324,
+          "percent": 43.2
+        },
+        {
+          "term": "風",
+          "count": 32,
+          "frequency": 0.4324,
+          "percent": 43.2
+        },
+        {
+          "term": "守護界線",
+          "count": 27,
+          "frequency": 0.3649,
+          "percent": 36.5
+        },
+        {
+          "term": "平靜",
+          "count": 26,
+          "frequency": 0.3514,
+          "percent": 35.1
+        },
+        {
+          "term": "時間記憶",
+          "count": 22,
+          "frequency": 0.2973,
+          "percent": 29.7
+        },
+        {
+          "term": "黑暗影子",
+          "count": 22,
+          "frequency": 0.2973,
+          "percent": 29.7
+        },
+        {
+          "term": "夜晚",
+          "count": 21,
+          "frequency": 0.2838,
+          "percent": 28.4
+        },
+        {
+          "term": "命運因果",
+          "count": 20,
+          "frequency": 0.2703,
+          "percent": 27
+        },
+        {
+          "term": "社會觀察",
+          "count": 20,
+          "frequency": 0.2703,
+          "percent": 27
+        },
+        {
+          "term": "希望未來",
+          "count": 19,
+          "frequency": 0.2568,
+          "percent": 25.7
+        },
+        {
+          "term": "離別放下",
+          "count": 19,
+          "frequency": 0.2568,
+          "percent": 25.7
+        },
+        {
+          "term": "自由自主",
+          "count": 16,
+          "frequency": 0.2162,
+          "percent": 21.6
+        },
+        {
+          "term": "自我探索",
+          "count": 15,
+          "frequency": 0.2027,
+          "percent": 20.3
+        },
+        {
+          "term": "希望",
+          "count": 15,
+          "frequency": 0.2027,
+          "percent": 20.3
+        },
+        {
+          "term": "愛與連結",
+          "count": 15,
+          "frequency": 0.2027,
+          "percent": 20.3
+        }
       ]
     },
     {
@@ -1164,6 +1518,127 @@
         {
           "term": "平靜等待／接納未知／仍願繼續前進",
           "count": 1
+        }
+      ],
+      "normalized_semantic_families": [
+        {
+          "term": "風",
+          "count": 69,
+          "frequency": 0.8519,
+          "percent": 85.2
+        },
+        {
+          "term": "希望未來",
+          "count": 53,
+          "frequency": 0.6543,
+          "percent": 65.4
+        },
+        {
+          "term": "道路旅途",
+          "count": 50,
+          "frequency": 0.6173,
+          "percent": 61.7
+        },
+        {
+          "term": "光月意象",
+          "count": 49,
+          "frequency": 0.6049,
+          "percent": 60.5,
+          "grouped_from": [
+            "微光意象",
+            "月亮月光"
+          ],
+          "frequency_method": "max_member_document_frequency_proxy"
+        },
+        {
+          "term": "平靜",
+          "count": 46,
+          "frequency": 0.5679,
+          "percent": 56.8
+        },
+        {
+          "term": "時間記憶",
+          "count": 34,
+          "frequency": 0.4198,
+          "percent": 42
+        },
+        {
+          "term": "未知探索",
+          "count": 33,
+          "frequency": 0.4074,
+          "percent": 40.7
+        },
+        {
+          "term": "希望",
+          "count": 32,
+          "frequency": 0.3951,
+          "percent": 39.5
+        },
+        {
+          "term": "等待時機",
+          "count": 28,
+          "frequency": 0.3457,
+          "percent": 34.6
+        },
+        {
+          "term": "天空",
+          "count": 27,
+          "frequency": 0.3333,
+          "percent": 33.3
+        },
+        {
+          "term": "旅程歸屬",
+          "count": 26,
+          "frequency": 0.321,
+          "percent": 32.1
+        },
+        {
+          "term": "孤獨",
+          "count": 22,
+          "frequency": 0.2716,
+          "percent": 27.2
+        },
+        {
+          "term": "自由自主",
+          "count": 21,
+          "frequency": 0.2593,
+          "percent": 25.9
+        },
+        {
+          "term": "夜晚",
+          "count": 20,
+          "frequency": 0.2469,
+          "percent": 24.7
+        },
+        {
+          "term": "夢想創作",
+          "count": 17,
+          "frequency": 0.2099,
+          "percent": 21
+        },
+        {
+          "term": "溫柔",
+          "count": 16,
+          "frequency": 0.1975,
+          "percent": 19.8
+        },
+        {
+          "term": "成長蛻變",
+          "count": 15,
+          "frequency": 0.1852,
+          "percent": 18.5
+        },
+        {
+          "term": "孤獨陪伴",
+          "count": 15,
+          "frequency": 0.1852,
+          "percent": 18.5
+        },
+        {
+          "term": "命運因果",
+          "count": 14,
+          "frequency": 0.1728,
+          "percent": 17.3
         }
       ]
     },
@@ -1449,6 +1924,127 @@
           "term": "釋然／放下",
           "count": 1
         }
+      ],
+      "normalized_semantic_families": [
+        {
+          "term": "風",
+          "count": 52,
+          "frequency": 0.8966,
+          "percent": 89.7
+        },
+        {
+          "term": "希望未來",
+          "count": 38,
+          "frequency": 0.6552,
+          "percent": 65.5
+        },
+        {
+          "term": "道路旅途",
+          "count": 36,
+          "frequency": 0.6207,
+          "percent": 62.1
+        },
+        {
+          "term": "光月意象",
+          "count": 32,
+          "frequency": 0.5517,
+          "percent": 55.2,
+          "grouped_from": [
+            "微光意象",
+            "月亮月光"
+          ],
+          "frequency_method": "max_member_document_frequency_proxy"
+        },
+        {
+          "term": "希望",
+          "count": 29,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "天空",
+          "count": 28,
+          "frequency": 0.4828,
+          "percent": 48.3
+        },
+        {
+          "term": "等待時機",
+          "count": 23,
+          "frequency": 0.3966,
+          "percent": 39.7
+        },
+        {
+          "term": "時間記憶",
+          "count": 20,
+          "frequency": 0.3448,
+          "percent": 34.5
+        },
+        {
+          "term": "平靜",
+          "count": 19,
+          "frequency": 0.3276,
+          "percent": 32.8
+        },
+        {
+          "term": "自由自主",
+          "count": 19,
+          "frequency": 0.3276,
+          "percent": 32.8
+        },
+        {
+          "term": "旅程歸屬",
+          "count": 16,
+          "frequency": 0.2759,
+          "percent": 27.6
+        },
+        {
+          "term": "夜晚",
+          "count": 14,
+          "frequency": 0.2414,
+          "percent": 24.1
+        },
+        {
+          "term": "雨",
+          "count": 12,
+          "frequency": 0.2069,
+          "percent": 20.7
+        },
+        {
+          "term": "現實選擇",
+          "count": 11,
+          "frequency": 0.1897,
+          "percent": 19
+        },
+        {
+          "term": "溫柔",
+          "count": 11,
+          "frequency": 0.1897,
+          "percent": 19
+        },
+        {
+          "term": "夢想創作",
+          "count": 11,
+          "frequency": 0.1897,
+          "percent": 19
+        },
+        {
+          "term": "未知探索",
+          "count": 10,
+          "frequency": 0.1724,
+          "percent": 17.2
+        },
+        {
+          "term": "正義界線",
+          "count": 10,
+          "frequency": 0.1724,
+          "percent": 17.2
+        },
+        {
+          "term": "命運因果",
+          "count": 10,
+          "frequency": 0.1724,
+          "percent": 17.2
+        }
       ]
     },
     {
@@ -1671,6 +2267,127 @@
           "term": "完整／整合",
           "count": 1
         }
+      ],
+      "normalized_semantic_families": [
+        {
+          "term": "光月意象",
+          "count": 13,
+          "frequency": 0.8667,
+          "percent": 86.7,
+          "grouped_from": [
+            "月亮月光",
+            "微光意象"
+          ],
+          "frequency_method": "max_member_document_frequency_proxy"
+        },
+        {
+          "term": "風",
+          "count": 11,
+          "frequency": 0.7333,
+          "percent": 73.3
+        },
+        {
+          "term": "自由自主",
+          "count": 10,
+          "frequency": 0.6667,
+          "percent": 66.7
+        },
+        {
+          "term": "平靜",
+          "count": 9,
+          "frequency": 0.6,
+          "percent": 60
+        },
+        {
+          "term": "希望",
+          "count": 9,
+          "frequency": 0.6,
+          "percent": 60
+        },
+        {
+          "term": "希望未來",
+          "count": 9,
+          "frequency": 0.6,
+          "percent": 60
+        },
+        {
+          "term": "天空",
+          "count": 8,
+          "frequency": 0.5333,
+          "percent": 53.3
+        },
+        {
+          "term": "正義界線",
+          "count": 7,
+          "frequency": 0.4667,
+          "percent": 46.7
+        },
+        {
+          "term": "命運因果",
+          "count": 7,
+          "frequency": 0.4667,
+          "percent": 46.7
+        },
+        {
+          "term": "道路旅途",
+          "count": 7,
+          "frequency": 0.4667,
+          "percent": 46.7
+        },
+        {
+          "term": "守護界線",
+          "count": 5,
+          "frequency": 0.3333,
+          "percent": 33.3
+        },
+        {
+          "term": "孤獨",
+          "count": 5,
+          "frequency": 0.3333,
+          "percent": 33.3
+        },
+        {
+          "term": "孤獨陪伴",
+          "count": 5,
+          "frequency": 0.3333,
+          "percent": 33.3
+        },
+        {
+          "term": "旅途移動",
+          "count": 5,
+          "frequency": 0.3333,
+          "percent": 33.3
+        },
+        {
+          "term": "等待時機",
+          "count": 5,
+          "frequency": 0.3333,
+          "percent": 33.3
+        },
+        {
+          "term": "重新出發",
+          "count": 4,
+          "frequency": 0.2667,
+          "percent": 26.7
+        },
+        {
+          "term": "旅程歸屬",
+          "count": 4,
+          "frequency": 0.2667,
+          "percent": 26.7
+        },
+        {
+          "term": "愛與連結",
+          "count": 4,
+          "frequency": 0.2667,
+          "percent": 26.7
+        },
+        {
+          "term": "飛行翅膀",
+          "count": 3,
+          "frequency": 0.2,
+          "percent": 20
+        }
       ]
     },
     {
@@ -1855,7 +2572,128 @@
           "term": "自我治理／選擇新航向／迎向未知",
           "count": 1
         }
+      ],
+      "normalized_semantic_families": [
+        {
+          "term": "未知探索",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "未竟之事",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "白晝之月",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "光月意象",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50,
+          "grouped_from": [
+            "月光"
+          ],
+          "frequency_method": "max_member_document_frequency_proxy"
+        },
+        {
+          "term": "收尾",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "自由",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "自我照亮",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "自我價值",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "行李",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "孤獨",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "底線",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "承諾",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "界線",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "重新出發",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "風",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "飛行翅膀",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "航向",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "停止內耗",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        },
+        {
+          "term": "責任",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50
+        }
       ]
     }
-  ]
+  ],
+  "normalization_note": "v0.4 UI/display layer removes named concepts from generic semantic lists and collapses near-duplicate light/moon imagery under 光月意象. Raw source tags remain unchanged."
 }
