@@ -307,7 +307,9 @@
     ],
     "historical_stage_profiles": "ERA profiles established from LOC8 descriptions; text-level evidence import pending",
     "primary_evolution_axis": "ERA-P1 through ERA-P8 from LOC8 ERA registry",
-    "age_projection": "secondary derived view; not primary style segmentation"
+    "age_projection": "secondary derived view; not primary style segmentation",
+    "loc3_corpus_linked": true,
+    "loc3_indexed_work_count": 403
   },
   "era_style_profiles": [
     {
@@ -348,6 +350,13 @@
       "confidence": "inferred",
       "lifecycle": {
         "status": "historical"
+      },
+      "loc3_evidence": {
+        "work_count": 0,
+        "top_tags": [],
+        "top_turn_methods": [],
+        "top_ending_structures": [],
+        "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
       }
     },
     {
@@ -383,11 +392,126 @@
         "data/shared/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
-        "era_event"
+        "era_event",
+        "loc3_metadata_aggregate"
       ],
       "confidence": "inferred",
       "lifecycle": {
         "status": "historical"
+      },
+      "loc3_evidence": {
+        "work_count": 50,
+        "top_tags": [
+          {
+            "value": "微光光芒",
+            "count": 26
+          },
+          {
+            "value": "夜晚",
+            "count": 24
+          },
+          {
+            "value": "希望未來",
+            "count": 21
+          },
+          {
+            "value": "月亮月光",
+            "count": 16
+          },
+          {
+            "value": "黑暗影子",
+            "count": 16
+          },
+          {
+            "value": "希望",
+            "count": 14
+          },
+          {
+            "value": "孤獨陪伴",
+            "count": 13
+          },
+          {
+            "value": "現實選擇",
+            "count": 13
+          },
+          {
+            "value": "自我探索",
+            "count": 12
+          },
+          {
+            "value": "道路旅途",
+            "count": 12
+          },
+          {
+            "value": "風",
+            "count": 11
+          },
+          {
+            "value": "時間記憶",
+            "count": 11
+          }
+        ],
+        "top_turn_methods": [
+          {
+            "value": "未辨識",
+            "count": 21
+          },
+          {
+            "value": "重新前進／啟程",
+            "count": 9
+          },
+          {
+            "value": "放下／離開",
+            "count": 5
+          },
+          {
+            "value": "重新理解／看清現實",
+            "count": 5
+          },
+          {
+            "value": "建立界線",
+            "count": 4
+          },
+          {
+            "value": "重拾選擇權",
+            "count": 3
+          },
+          {
+            "value": "接受未知／順其自然",
+            "count": 2
+          },
+          {
+            "value": "自我接納",
+            "count": 1
+          }
+        ],
+        "top_ending_structures": [
+          {
+            "value": "希望延伸",
+            "count": 22
+          },
+          {
+            "value": "情緒收束",
+            "count": 14
+          },
+          {
+            "value": "純描述／未收束",
+            "count": 7
+          },
+          {
+            "value": "治理落點",
+            "count": 5
+          },
+          {
+            "value": "幸福停留",
+            "count": 1
+          },
+          {
+            "value": "開放式留白",
+            "count": 1
+          }
+        ],
+        "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
       }
     },
     {
@@ -423,11 +547,126 @@
         "data/shared/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
-        "era_event"
+        "era_event",
+        "loc3_metadata_aggregate"
       ],
       "confidence": "inferred",
       "lifecycle": {
         "status": "historical"
+      },
+      "loc3_evidence": {
+        "work_count": 123,
+        "top_tags": [
+          {
+            "value": "微光光芒",
+            "count": 92
+          },
+          {
+            "value": "月亮月光",
+            "count": 72
+          },
+          {
+            "value": "夜晚",
+            "count": 65
+          },
+          {
+            "value": "平靜",
+            "count": 61
+          },
+          {
+            "value": "愛與連結",
+            "count": 53
+          },
+          {
+            "value": "希望未來",
+            "count": 46
+          },
+          {
+            "value": "現實選擇",
+            "count": 44
+          },
+          {
+            "value": "天空",
+            "count": 43
+          },
+          {
+            "value": "孤獨陪伴",
+            "count": 41
+          },
+          {
+            "value": "溫柔",
+            "count": 41
+          },
+          {
+            "value": "黑暗影子",
+            "count": 39
+          },
+          {
+            "value": "風",
+            "count": 38
+          }
+        ],
+        "top_turn_methods": [
+          {
+            "value": "未辨識",
+            "count": 31
+          },
+          {
+            "value": "建立界線",
+            "count": 30
+          },
+          {
+            "value": "重新理解／看清現實",
+            "count": 17
+          },
+          {
+            "value": "放下／離開",
+            "count": 11
+          },
+          {
+            "value": "允許暫停／等待時機",
+            "count": 10
+          },
+          {
+            "value": "重拾選擇權",
+            "count": 8
+          },
+          {
+            "value": "重新前進／啟程",
+            "count": 5
+          },
+          {
+            "value": "接受未知／順其自然",
+            "count": 3
+          }
+        ],
+        "top_ending_structures": [
+          {
+            "value": "情緒收束",
+            "count": 54
+          },
+          {
+            "value": "希望延伸",
+            "count": 17
+          },
+          {
+            "value": "開放式留白",
+            "count": 16
+          },
+          {
+            "value": "治理落點",
+            "count": 14
+          },
+          {
+            "value": "幸福停留",
+            "count": 11
+          },
+          {
+            "value": "祝福收束",
+            "count": 6
+          }
+        ],
+        "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
       }
     },
     {
@@ -463,11 +702,126 @@
         "data/shared/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
-        "era_event"
+        "era_event",
+        "loc3_metadata_aggregate"
       ],
       "confidence": "inferred",
       "lifecycle": {
         "status": "historical"
+      },
+      "loc3_evidence": {
+        "work_count": 74,
+        "top_tags": [
+          {
+            "value": "微光光芒",
+            "count": 55
+          },
+          {
+            "value": "現實選擇",
+            "count": 51
+          },
+          {
+            "value": "天空",
+            "count": 33
+          },
+          {
+            "value": "道路旅途",
+            "count": 33
+          },
+          {
+            "value": "風",
+            "count": 32
+          },
+          {
+            "value": "正義界線",
+            "count": 32
+          },
+          {
+            "value": "守護界線",
+            "count": 27
+          },
+          {
+            "value": "平靜",
+            "count": 26
+          },
+          {
+            "value": "黑暗影子",
+            "count": 22
+          },
+          {
+            "value": "時間記憶",
+            "count": 22
+          },
+          {
+            "value": "夜晚",
+            "count": 21
+          },
+          {
+            "value": "社會觀察",
+            "count": 20
+          }
+        ],
+        "top_turn_methods": [
+          {
+            "value": "建立界線",
+            "count": 27
+          },
+          {
+            "value": "未辨識",
+            "count": 15
+          },
+          {
+            "value": "重拾選擇權",
+            "count": 9
+          },
+          {
+            "value": "重新理解／看清現實",
+            "count": 8
+          },
+          {
+            "value": "放下／離開",
+            "count": 3
+          },
+          {
+            "value": "允許暫停／等待時機",
+            "count": 3
+          },
+          {
+            "value": "自我整合",
+            "count": 2
+          },
+          {
+            "value": "保存幸福",
+            "count": 2
+          }
+        ],
+        "top_ending_structures": [
+          {
+            "value": "情緒收束",
+            "count": 25
+          },
+          {
+            "value": "開放式留白",
+            "count": 17
+          },
+          {
+            "value": "治理落點",
+            "count": 16
+          },
+          {
+            "value": "希望延伸",
+            "count": 14
+          },
+          {
+            "value": "純描述／未收束",
+            "count": 1
+          },
+          {
+            "value": "警醒收束",
+            "count": 1
+          }
+        ],
+        "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
       }
     },
     {
@@ -503,11 +857,126 @@
         "data/shared/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
-        "era_event"
+        "era_event",
+        "loc3_metadata_aggregate"
       ],
       "confidence": "inferred",
       "lifecycle": {
         "status": "historical"
+      },
+      "loc3_evidence": {
+        "work_count": 81,
+        "top_tags": [
+          {
+            "value": "風",
+            "count": 69
+          },
+          {
+            "value": "希望未來",
+            "count": 53
+          },
+          {
+            "value": "道路旅途",
+            "count": 50
+          },
+          {
+            "value": "微光光芒",
+            "count": 49
+          },
+          {
+            "value": "平靜",
+            "count": 46
+          },
+          {
+            "value": "月亮月光",
+            "count": 41
+          },
+          {
+            "value": "時間記憶",
+            "count": 34
+          },
+          {
+            "value": "未知探索",
+            "count": 33
+          },
+          {
+            "value": "希望",
+            "count": 32
+          },
+          {
+            "value": "等待時機",
+            "count": 28
+          },
+          {
+            "value": "天空",
+            "count": 27
+          },
+          {
+            "value": "旅程歸屬",
+            "count": 26
+          }
+        ],
+        "top_turn_methods": [
+          {
+            "value": "重新理解／看清現實",
+            "count": 15
+          },
+          {
+            "value": "接受未知／順其自然",
+            "count": 15
+          },
+          {
+            "value": "放下／離開",
+            "count": 10
+          },
+          {
+            "value": "允許暫停／等待時機",
+            "count": 9
+          },
+          {
+            "value": "重新前進／啟程",
+            "count": 9
+          },
+          {
+            "value": "未辨識",
+            "count": 8
+          },
+          {
+            "value": "自我接納",
+            "count": 6
+          },
+          {
+            "value": "建立界線",
+            "count": 3
+          }
+        ],
+        "top_ending_structures": [
+          {
+            "value": "希望延伸",
+            "count": 35
+          },
+          {
+            "value": "情緒收束",
+            "count": 24
+          },
+          {
+            "value": "開放式留白",
+            "count": 12
+          },
+          {
+            "value": "祝福收束",
+            "count": 3
+          },
+          {
+            "value": "幸福停留",
+            "count": 2
+          },
+          {
+            "value": "警醒收束",
+            "count": 2
+          }
+        ],
+        "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
       }
     },
     {
@@ -543,11 +1012,126 @@
         "data/shared/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
-        "era_event"
+        "era_event",
+        "loc3_metadata_aggregate"
       ],
       "confidence": "inferred",
       "lifecycle": {
         "status": "historical"
+      },
+      "loc3_evidence": {
+        "work_count": 58,
+        "top_tags": [
+          {
+            "value": "風",
+            "count": 52
+          },
+          {
+            "value": "希望未來",
+            "count": 38
+          },
+          {
+            "value": "道路旅途",
+            "count": 36
+          },
+          {
+            "value": "微光光芒",
+            "count": 32
+          },
+          {
+            "value": "希望",
+            "count": 29
+          },
+          {
+            "value": "天空",
+            "count": 28
+          },
+          {
+            "value": "等待時機",
+            "count": 23
+          },
+          {
+            "value": "時間記憶",
+            "count": 20
+          },
+          {
+            "value": "平靜",
+            "count": 19
+          },
+          {
+            "value": "月亮月光",
+            "count": 19
+          },
+          {
+            "value": "自由自主",
+            "count": 19
+          },
+          {
+            "value": "旅程歸屬",
+            "count": 16
+          }
+        ],
+        "top_turn_methods": [
+          {
+            "value": "重新理解／看清現實",
+            "count": 13
+          },
+          {
+            "value": "未辨識",
+            "count": 11
+          },
+          {
+            "value": "允許暫停／等待時機",
+            "count": 8
+          },
+          {
+            "value": "建立界線",
+            "count": 8
+          },
+          {
+            "value": "重新前進／啟程",
+            "count": 5
+          },
+          {
+            "value": "放下／離開",
+            "count": 5
+          },
+          {
+            "value": "接受未知／順其自然",
+            "count": 4
+          },
+          {
+            "value": "回歸自我／自持",
+            "count": 2
+          }
+        ],
+        "top_ending_structures": [
+          {
+            "value": "情緒收束",
+            "count": 23
+          },
+          {
+            "value": "希望延伸",
+            "count": 15
+          },
+          {
+            "value": "刻意留白",
+            "count": 7
+          },
+          {
+            "value": "幸福停留",
+            "count": 6
+          },
+          {
+            "value": "祝福收束",
+            "count": 3
+          },
+          {
+            "value": "警醒收束",
+            "count": 2
+          }
+        ],
+        "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
       }
     },
     {
@@ -584,11 +1168,110 @@
         "data/shared/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
-        "era_event"
+        "era_event",
+        "loc3_metadata_aggregate"
       ],
       "confidence": "inferred",
       "lifecycle": {
         "status": "historical"
+      },
+      "loc3_evidence": {
+        "work_count": 15,
+        "top_tags": [
+          {
+            "value": "月亮月光",
+            "count": 13
+          },
+          {
+            "value": "風",
+            "count": 11
+          },
+          {
+            "value": "微光光芒",
+            "count": 10
+          },
+          {
+            "value": "自由自主",
+            "count": 10
+          },
+          {
+            "value": "希望未來",
+            "count": 9
+          },
+          {
+            "value": "平靜",
+            "count": 9
+          },
+          {
+            "value": "希望",
+            "count": 9
+          },
+          {
+            "value": "天空",
+            "count": 8
+          },
+          {
+            "value": "命運因果",
+            "count": 7
+          },
+          {
+            "value": "道路旅途",
+            "count": 7
+          },
+          {
+            "value": "正義界線",
+            "count": 7
+          },
+          {
+            "value": "旅途移動",
+            "count": 5
+          }
+        ],
+        "top_turn_methods": [
+          {
+            "value": "建立界線",
+            "count": 6
+          },
+          {
+            "value": "重新前進／啟程",
+            "count": 4
+          },
+          {
+            "value": "放下／離開",
+            "count": 1
+          },
+          {
+            "value": "重拾選擇權",
+            "count": 1
+          },
+          {
+            "value": "允許暫停／等待時機",
+            "count": 1
+          },
+          {
+            "value": "未辨識",
+            "count": 1
+          },
+          {
+            "value": "接受未知／順其自然",
+            "count": 1
+          }
+        ],
+        "top_ending_structures": [
+          {
+            "value": "希望延伸",
+            "count": 6
+          },
+          {
+            "value": "情緒收束",
+            "count": 5
+          },
+          {
+            "value": "刻意留白",
+            "count": 4
+          }
+        ],
+        "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
       }
     },
     {
@@ -626,12 +1309,84 @@
         "data/shared/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
-        "era_event"
+        "era_event",
+        "loc3_metadata_aggregate"
       ],
       "confidence": "inferred",
       "lifecycle": {
         "status": "current"
+      },
+      "loc3_evidence": {
+        "work_count": 2,
+        "top_tags": [
+          {
+            "value": "自我治理",
+            "count": 2
+          },
+          {
+            "value": "界線",
+            "count": 1
+          },
+          {
+            "value": "底線",
+            "count": 1
+          },
+          {
+            "value": "尊重",
+            "count": 1
+          },
+          {
+            "value": "責任邊界",
+            "count": 1
+          },
+          {
+            "value": "停止內耗",
+            "count": 1
+          },
+          {
+            "value": "自我價值",
+            "count": 1
+          },
+          {
+            "value": "無愧於心",
+            "count": 1
+          },
+          {
+            "value": "自我照亮",
+            "count": 1
+          },
+          {
+            "value": "離別放下",
+            "count": 1
+          },
+          {
+            "value": "微月光",
+            "count": 1
+          },
+          {
+            "value": "白晝之月",
+            "count": 1
+          }
+        ],
+        "top_turn_methods": [
+          {
+            "value": "確認位置與責任／建立界線／停止勉強維繫",
+            "count": 1
+          },
+          {
+            "value": "清點收尾／完成承諾／斷捨離與重新歸檔",
+            "count": 1
+          }
+        ],
+        "top_ending_structures": [
+          {
+            "value": "治理落點",
+            "count": 2
+          }
+        ],
+        "source_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
       }
     }
-  ]
+  ],
+  "era_style_evidence_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json"
 }
