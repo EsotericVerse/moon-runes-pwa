@@ -281,6 +281,57 @@
         "maintained_in_repo": true
       },
       "notes": "Authoritative ERA timeline. LOC6 references this registry to compare Zhengde Style evolution; LOC6 does not redefine ERA dates or names."
+    },
+    {
+      "asset_id": "KA-LOC3-RUNE-SONG-001",
+      "title": "LOC3 Rune Song Registry",
+      "path": "data/shared/LOC3_RUNE_SONG_REGISTRY.json",
+      "source_type": "structured_registry",
+      "content_type": "rune_song",
+      "primary_loc": "LOC3",
+      "related_locs": [
+        "LOC1",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "draw_to_song_provenance_registry",
+      "status": "working",
+      "authority_level": "provenance_registry",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-05",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Only explicit real-draw-derived songs may become confirmed rune_song records. Current candidates are kept separate until original songwriting provenance is located."
+    },
+    {
+      "asset_id": "KA-LOC6-ERA-EVIDENCE-001",
+      "title": "LOC6 ERA Style Evidence",
+      "path": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json",
+      "source_type": "structured_registry",
+      "content_type": "linguistic_analysis",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC3",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "era_based_style_evidence_from_loc3_corpus",
+      "status": "current",
+      "authority_level": "recorded_metadata_aggregate",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-05",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "source": "LOC3 403-work indexed corpus"
+      }
     }
   ]
 }
