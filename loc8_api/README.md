@@ -18,7 +18,7 @@
 4. 「部署 → 新增部署作業 → 網頁應用程式」。
 5. 執行身分選「我」；測試階段存取權限選可從網頁呼叫此 Web App 的範圍。
 6. 複製部署後的 `/exec` URL。
-7. 打開 `life.html`，在「Google Sheet API」設定欄貼入 URL，按儲存並測試。
+7. 將正式部署的 `/exec` URL 寫入 `life.html` 的 `SHEET_API_URL`。前端使用者不需要設定或輸入後端網址。
 
 ## API
 
@@ -52,3 +52,12 @@ The `Event` sheet now includes four shared cross-LOC reference columns:
 These fields follow `data/shared/LOC_SHARED_SCHEMA.json` and should remain references rather than duplicated canonical definitions.
 
 The current shared-registry foundation is tracked in `data/shared/LOC_SHARED_MANIFEST.json`.
+
+
+## Frontend endpoint policy
+
+`life.html` uses one application-owned Apps Script Web App endpoint. The endpoint is infrastructure configuration, not user data, so it is not exposed as an editable field in the UI.
+
+Multiple users or language systems should share the same application endpoint and be separated by record identifiers such as `user_id` and `system_id` (with proper authentication/authorization added before multi-user production use). A separate Google Sheet per user is not the intended client-side configuration model.
+
+Browser `localStorage` is used only as a cache/fallback for recently loaded records; it no longer chooses or stores the backend endpoint.
