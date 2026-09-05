@@ -27,27 +27,6 @@ async function loadLots() {
   }
 }
 
-function lotsHtml(card) {
-  const item = lotsMap.get(card.id);
-  const lots = item?.方向?.[card.direction];
-  if (!lots) return "";
-
-  const categories = ["愛情", "事業", "關係", "健康"];
-  return `
-    <div class="rune-result-section lots">
-      <strong>籤詩分類</strong>
-      <div class="lots-grid">
-        ${categories.map(category => `
-          <div class="lots-item">
-            <span>${category}</span>
-            <b>${lots[category] || "有待觀察"}</b>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-  `;
-}
-
 async function loadRuneHints() {
   try {
     const response = await fetch("engine/runes07.json");
@@ -93,8 +72,8 @@ const MODE_CONFIG = {
     title: "五卡 · 情境展開",
     kicker: "LOC1 · Five Cards",
     count: 5,
-    labels: ["過去", "現在", "未來", "環境一", "環境二"],
-    note: "五卡目前先使用既有的過去／現在／未來＋兩張環境牌排列；完整五卡 RAG 完成後再更新語意模型。"
+    labels: ["過去", "現在", "未來", "外在", "內在"],
+    note: "五卡以「過去 → 現在 → 未來」為時間主線，外在與內在作為同時作用的兩個條件層。"
   }
 };
 
@@ -224,8 +203,6 @@ function cardHtml(card, label, realPhase, showLots = false) {
           ${directionText}
         </div>
 
-        ${lotsHtml(card)}
-
         <div class="rune-result-section group">
           <strong>${card.rune.所屬分組}組</strong>
           ${groupText}
@@ -283,6 +260,75 @@ function buildSingleReading(card, realPhase, daily = false) {
   `;
 }
 
+function toNarrativeCore(card) {
+  const raw = getDirectionText(card)
+    .replace(/[。！？]+$/g, "")
+    .trim();
+
+  return raw
+    .replace(/^我(?=與|在|正|開始|逐漸|感|看|聽|覺|願|能|會|已|仍|將|對|被|把|讓|從|以|失|逃|拒|壓|忽|迷|清|珍|擁|接|學|勇|專|持|面|承|順|相|回|找|守|展|放|斬|保|選|領|接納)/, "")
+    .replace(/我的/g, "自身的")
+    .replace(/我自己/g, "自身")
+    .replace(/自己/g, "自身")
+    .replace(/讓我/g, "讓自身")
+    .replace(/^正在/, "正處於")
+    .replace(/^開始/, "開始")
+    .replace(/^逐漸/, "逐漸");
+}
+
+function fiveCardPositionClause(card, position) {
+  const name = card.rune.符文名稱;
+  const core = toNarrativeCore(card);
+
+  switch (position) {
+    case "過去":
+      return `過去以「${name}」${card.direction}為背景，曾呈現出「${core}」的狀態；它構成了現在局勢的一部分前因。`;
+    case "現在":
+      return `現在的核心落在「${name}」${card.direction}：${core}。這是此刻最需要辨認與處理的主題。`;
+    case "未來":
+      return `若目前走勢延續，「${name}」${card.direction}顯示接下來可能朝「${core}」的方向發展；它描述的是趨勢，而不是固定結果。`;
+    case "外在":
+      return `外在條件由「${name}」${card.direction}呈現：${core}。這股力量來自環境、他人或現實條件，會影響時間主線如何展開。`;
+    case "內在":
+      return `內在狀態由「${name}」${card.direction}呈現：${core}。它反映自身目前的態度、需求或心理位置，也會改變對外在局勢的回應方式。`;
+    default:
+      return `「${name}」${card.direction}：${core}。`;
+  }
+}
+
+function buildFiveCardReading(cards, realPhase) {
+  const [past, present, future, external, internal] = cards;
+  const pastCore = toNarrativeCore(past);
+  const presentCore = toNarrativeCore(present);
+  const futureCore = toNarrativeCore(future);
+  const externalCore = toNarrativeCore(external);
+  const internalCore = toNarrativeCore(internal);
+
+  return `
+    <h2>五卡牌面解讀</h2>
+    <p><strong>時間主線：</strong>
+      過去的「${past.rune.符文名稱}」${past.direction}指出，曾有「${pastCore}」的背景；
+      到了現在，「${present.rune.符文名稱}」${present.direction}把重點帶到「${presentCore}」。
+      若目前走勢延續，未來的「${future.rune.符文名稱}」${future.direction}則顯示局勢可能朝「${futureCore}」發展。
+    </p>
+    <p><strong>內外作用：</strong>
+      外在的「${external.rune.符文名稱}」${external.direction}顯示「${externalCore}」；
+      內在的「${internal.rune.符文名稱}」${internal.direction}則顯示「${internalCore}」。
+      前者描述環境與他人的作用，後者描述自身如何承接與回應，因此兩者會共同改變前三張時間主線的實際走向。
+    </p>
+    <p><strong>閱讀原則：</strong>
+      先處理現在牌所指出的核心，再觀察外在與內在是否彼此拉扯或互相支持；未來牌視為延續目前條件後的趨勢，不作絕對斷定。本次真實月相為${realPhase}。
+    </p>
+    <div class="five-card-details">
+      <p><strong>過去：</strong>${fiveCardPositionClause(past, "過去")}</p>
+      <p><strong>現在：</strong>${fiveCardPositionClause(present, "現在")}</p>
+      <p><strong>未來：</strong>${fiveCardPositionClause(future, "未來")}</p>
+      <p><strong>外在：</strong>${fiveCardPositionClause(external, "外在")}</p>
+      <p><strong>內在：</strong>${fiveCardPositionClause(internal, "內在")}</p>
+    </div>
+  `;
+}
+
 function buildMultiReading(cards, labels, realPhase) {
   const count = cards.length;
   const names = cards.map((card, i) => `${labels[i]}「${card.rune.符文名稱}」${card.direction}`).join("、");
@@ -297,7 +343,7 @@ function buildMultiReading(cards, labels, realPhase) {
   } else if (count === 3) {
     structure = "依序閱讀「源 → 轉 → 合」，先找起點，再看轉化，最後看收束。";
   } else {
-    structure = "目前先以「過去／現在／未來」作主線，再由兩張環境牌補充外部影響；此版先求排列清楚，不做新的五卡 RAG 推論。";
+    structure = "多卡依既定位置閱讀。";
   }
 
   return `
@@ -344,8 +390,8 @@ async function runRitual(mode, config) {
       "您目前使用的是「五卡占卜模式」。",
       "占卜中，請稍等片刻，馬上就好……",
       "前三張依序觀看過去、現在與未來。",
-      "第四、第五張補充周圍環境與外在影響。",
-      "五張牌已經完成排列，現在呈現。"
+      "第四張看外在條件，第五張看內在狀態。",
+      "正在把時間主線與內外條件整合成完整解讀。"
     ]
   };
 
@@ -370,7 +416,9 @@ function renderResult(mode, config, realPhase) {
 
   reading.innerHTML = config.count === 1
     ? buildSingleReading(cards[0], realPhase, mode === "daily")
-    : buildMultiReading(cards, config.labels, realPhase);
+    : config.count === 5
+      ? buildFiveCardReading(cards, realPhase)
+      : buildMultiReading(cards, config.labels, realPhase);
 
   document.getElementById("mode-note").textContent = config.note;
   document.getElementById("ritual-view").hidden = true;
