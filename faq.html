@@ -312,14 +312,11 @@
       *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; }
     }
   </style>
+  <link rel="stylesheet" href="css/loc-nav.css" />
 </head>
 <body>
+  <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="knowledge" aria-label="全站導覽"></nav></div>
   <main class="page">
-    <nav class="topbar" aria-label="主要導覽">
-      <a class="brand" href="index.html">LOC · 月典</a>
-      <a class="home-link" href="search.html">Unified Search →</a>
-    </nav>
-
     <header class="hero">
       <p class="eyebrow">LOC7 · Text Architecture · Knowledge Management</p>
       <h1>月典知識庫</h1>
@@ -478,5 +475,6 @@
       window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker.js"));
     }
   </script>
+  <script src="js/loc-nav.js"></script>
 </body>
 </html>
