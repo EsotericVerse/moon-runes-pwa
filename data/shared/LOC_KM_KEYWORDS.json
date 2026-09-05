@@ -511,12 +511,16 @@
             "Reels",
             "Media Link",
             "多媒體",
-            "影音"
+            "影音",
+            "實體影片作品",
+            "宣傳影片",
+            "跨媒體共振"
           ],
           "loc_scope": [
             "LOC5"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "note": "LOC5 已有實際影音作品與公開發布紀錄；至少兩支月之符文宣傳 Reels 可作為 LOC1×LOC5 的公開實體成果證據，另有既有 LOC3 關聯 Reels 與正在回收整理的本地影片資產。"
         },
         {
           "term": "Web Demo Alpha",
@@ -529,6 +533,36 @@
             "global"
           ],
           "status": "Working"
+        },
+        {
+          "term": "LOC5 實體影音作品",
+          "aliases": [
+            "LOC5影片",
+            "實際影片",
+            "影音作品",
+            "Reels作品",
+            "本地影片資產"
+          ],
+          "loc_scope": [
+            "LOC5"
+          ],
+          "status": "Stable",
+          "note": "指已實際製作完成或公開發布的影音作品，不等同於未來規劃或概念 mockup。"
+        },
+        {
+          "term": "LOC1×LOC5",
+          "aliases": [
+            "月之符文宣傳影片",
+            "Luna Runes promotion",
+            "月符影音",
+            "符文宣傳Reels"
+          ],
+          "loc_scope": [
+            "LOC1",
+            "LOC5"
+          ],
+          "status": "Stable",
+          "note": "月之符文內容透過 LOC5 影音形式對外呈現；目前已有兩支公開 Instagram Reels 可驗證。"
         }
       ]
     },
