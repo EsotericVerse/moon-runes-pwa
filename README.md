@@ -59,14 +59,14 @@ LOC 用於釐清問題、提供方向及協助理解結構，而不是替使用�
 
 | 檔案 | 定位與用途 |
 |---|---|
-| [`64LunaRune.docx`](./64LunaRune.docx) | **命運句語法圖鑑**：整理符文四向語意、命運句與相關語法資料 |
-| [`LOC_Canon_0.5r.docx`](./LOC_Canon_0.5r.docx) | **LOC Canon 0.5r**：現行系統定義、固定骨架與治理規則 |
-| [`LunarRunesCardCut.pdf`](./LunarRunesCardCut.pdf) | **實際紙本卡片列印檔案**：供正方形月之符文卡牌輸出與裁切使用 |
+| [`64LunaRune.docx`](./docs/64LunaRune.docx) | **命運句語法圖鑑**：整理符文四向語意、命運句與相關語法資料 |
+| [`LOC_Canon.docx`](./docs/LOC_Canon.docx) | **LOC Canon 0.5r**：現行系統定義、固定骨架與治理規則 |
+| [`LunarRunesCardCut.pdf`](./docs/LunarRunesCardCut.pdf) | **實際紙本卡片列印檔案**：供正方形月之符文卡牌輸出與裁切使用 |
 | [`LunaRune64.xlsx`](./LunaRune64.xlsx) | **符文資料庫／最高優先母資料**：符文名稱、分類、定義、月相與四向語意的 Single Source of Truth |
 
 文件分工：
 
-- `LOC_Canon_0.5r.docx` 定義系統規則
+- `docs/LOC_Canon.docx` 定義系統規則
 - `LunaRune64.xlsx` 保存結構化符文母資料
 - `64LunaRune.docx` 說明命運句與語法內容
 - `LunarRunesCardCut.pdf` 將系統輸出為可實際使用的紙本卡牌
@@ -323,7 +323,6 @@ LOC7_KM 採 **Markdown-first, structured-data-native**：
 
 - `docs/LOC7_KM.md`：repository 內可維護 KM 主文件
 - `docs/JSON_DATA_MAP.md`：JSON 角色與同步方向
-- `docs/LOC7_KM.docx`：發布／交換 snapshot
 - `data/shared/*.json`：跨 LOC 結構化 registry
 - FAQ v0.3 為 KM 問答 View；RAG v0.3 為其檢索衍生資料
 - 下游 JSON／索引／UI／AI 推論不得反向覆寫 Canon、母資料或原始作品
@@ -430,7 +429,6 @@ moon-runes-pwa/
 │       ├── README.md
 │       ├── LOC7_KM.md
 │       ├── JSON_DATA_MAP.md
-│       ├── LOC7_KM.docx
 │       └── 其他發布文件
 ├── 📚 Canon、語法與母資料
 │   ├── LOC_Canon_0.5r.docx
@@ -443,11 +441,6 @@ moon-runes-pwa/
 │   ├── favicon.ico
 │   ├── apple-touch-icon.png
 │   └── CNAME
-├── 🗂️ 其他現存資料（待個別整理）
-│   ├── LOC_2026.docx
-│   ├── all.xlsx
-│   ├── temp.json
-│   └── mp3/
 └── README.md
 ```
 
