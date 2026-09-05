@@ -64,7 +64,18 @@
 
 媒體 canonical ownership 屬 LOC5；LOC3 可引用 media linkage。現行程式應優先 shared media registry，legacy overlay 僅作 compatibility fallback。
 
-### F. Experimental / test JSON
+### F. LOC6 rune interpretation evidence
+
+路徑：`data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json`
+
+- 來源：七篇《月語者》原始章節大綱。
+- 規模：182 個章節槽位，其中 180 筆有明確三符文＋方位紀錄。
+- 角色：保存「符文組合／方位／月相 → 實際章節敘事」的歷史實證，作為 LOC6 符文解析語料。
+- LOC1 保留符文本體語意權威；LOC4 保留小說作品權威；LOC6 負責解析與意義實證；LOC8 可引用其作為創作軌跡。
+- 原文中的舊符文名、異名或舊方位寫法保留於 raw 欄位，不靜默改寫。
+- 第三篇 Ch5、Ch6 原始大綱未記載代表符文，因此保留缺值，不推測補齊。
+
+### G. Experimental / test JSON
 
 `engine/`、tests 或 temporary data 中的 JSON，除非另有 registry 與 authority 宣告，預設屬實驗／測試／中間產物，不升格為 Canon。
 
