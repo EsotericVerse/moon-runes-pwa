@@ -340,12 +340,62 @@
       align-items: start;
     }
     .draw-history {
-      display: grid;
-      gap: 7px;
       max-height: 650px;
       overflow: auto;
       padding-right: 4px;
     }
+    .draw-batch-bar {
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+      padding:9px 10px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(255,255,255,.02);
+    }
+    .draw-batch-bar .spacer { flex:1 1 auto; }
+    .draw-batch-bar small { color:var(--muted); }
+    .draw-table { width:100%; border-collapse:separate; border-spacing:0 6px; }
+    .draw-table th {
+      position:sticky;
+      top:0;
+      z-index:2;
+      padding:7px 8px;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:600;
+      text-align:left;
+      background:#0b1728;
+    }
+    .draw-table td {
+      padding:7px 8px;
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      background:rgba(255,255,255,.02);
+      font-size:12px;
+      vertical-align:middle;
+    }
+    .draw-table td:first-child { border-left:1px solid var(--line); border-radius:10px 0 0 10px; }
+    .draw-table td:last-child { border-right:1px solid var(--line); border-radius:0 10px 10px 0; }
+    .draw-table input[type="checkbox"] { width:auto; }
+    .draw-table input[type="date"], .draw-table select, .draw-table input[type="text"] {
+      min-width:0;
+      padding:6px 7px;
+      border-radius:8px;
+      font-size:11px;
+    }
+    .draw-table .date-col { width:104px; }
+    .draw-table .kind-col { width:72px; }
+    .draw-table .rune-col { width:86px; }
+    .draw-table .direction-col { width:78px; }
+    .draw-table .note-col { min-width:120px; }
+    .draw-table .row-actions { white-space:nowrap; }
+    .draw-table .row-actions .btn { padding:4px 7px; font-size:10px; }
+    .draw-table tr.selected td { background:rgba(169,199,255,.07); }
+    .draw-table tr.dirty td { border-color:rgba(241,221,176,.5); }
+
     .draw-entry {
       display: grid;
       grid-template-columns: 88px minmax(0, 1fr);
@@ -600,8 +650,18 @@
           </section>
 
           <section class="card">
-            <div class="head"><div><h3>抽牌歷史</h3><p>同一天的主抽與補抽合併顯示。</p></div><span class="badge" id="drawCountBadge">0 筆</span></div>
-            <div class="body"><div class="draw-history" id="dailyDrawHistory"><div class="empty">尚無每日抽牌紀錄。</div></div></div>
+            <div class="head"><div><h3>抽牌歷史</h3><p>預設精簡列表；可切換大量編輯，勾選多筆後一次更新或刪除。</p></div><span class="badge" id="drawCountBadge">0 筆</span></div>
+            <div class="body">
+              <div class="draw-batch-bar">
+                <button class="btn ghost" id="toggleBatchDrawBtn" type="button">大量編輯</button>
+                <button class="btn ghost" id="selectAllDrawBtn" type="button" hidden>全選</button>
+                <button class="btn primary" id="saveBatchDrawBtn" type="button" hidden disabled>儲存變更</button>
+                <button class="btn ghost" id="deleteBatchDrawBtn" type="button" hidden disabled>刪除所選</button>
+                <span class="spacer"></span>
+                <small id="drawSelectionStatus">未選取</small>
+              </div>
+              <div class="draw-history" id="dailyDrawHistory"><div class="empty">尚無每日抽牌紀錄。</div></div>
+            </div>
           </section>
         </div>
       </div>
@@ -665,11 +725,19 @@
       submitDrawBtn: $('#submitDrawBtn'),
       cancelDrawEditBtn: $('#cancelDrawEditBtn'),
       drawEditingNote: $('#drawEditingNote'),
+      toggleBatchDrawBtn: $('#toggleBatchDrawBtn'),
+      selectAllDrawBtn: $('#selectAllDrawBtn'),
+      saveBatchDrawBtn: $('#saveBatchDrawBtn'),
+      deleteBatchDrawBtn: $('#deleteBatchDrawBtn'),
+      drawSelectionStatus: $('#drawSelectionStatus'),
     };
 
     let events = [];
     let dailyDraws = [];
     let editingDrawId = '';
+    let drawBatchMode = false;
+    const selectedDrawIds = new Set();
+    const dirtyDrawIds = new Set();
     let eraRegistry = [];
     let editingId = '';
 
@@ -964,6 +1032,24 @@
       );
     }
 
+    function drawRuneOptions(selected) {
+      const select = $('#drawRune');
+      if (!select) return '';
+      return [...select.options].filter(o => o.value).map(o =>
+        `<option value="${esc(o.value)}"${o.value === selected ? ' selected' : ''} data-rune-id="${esc(o.dataset.runeId || '')}">${esc(o.textContent)}</option>`
+      ).join('');
+    }
+
+    function updateDrawBatchToolbar() {
+      const selected = selectedDrawIds.size;
+      const dirty = dirtyDrawIds.size;
+      els.drawSelectionStatus.textContent = drawBatchMode
+        ? `已選 ${selected} 筆 · 已修改 ${dirty} 筆`
+        : '未選取';
+      els.saveBatchDrawBtn.disabled = dirty === 0;
+      els.deleteBatchDrawBtn.disabled = selected === 0;
+    }
+
     function renderDailyDraws(draws) {
       const sorted = draws.slice().sort((a,b) => {
         const dateDiff = new Date(b.date) - new Date(a.date);
@@ -974,38 +1060,57 @@
       els.drawCountBadge.textContent = sorted.length + ' 筆';
       if (!sorted.length) {
         els.dailyDrawHistory.innerHTML = '<div class="empty">尚無每日抽牌紀錄。</div>';
+        updateDrawBatchToolbar();
         return;
       }
 
-      const byDate = new Map();
-      sorted.forEach(d => {
-        if (!byDate.has(d.date)) byDate.set(d.date, []);
-        byDate.get(d.date).push(d);
-      });
-
-      els.dailyDrawHistory.innerHTML = [...byDate.entries()].map(([date, items]) => {
-        const rows = items.map(d => {
-          const kind = d.draw_kind === 'daily_draw_supplement' ? '補抽' : '主抽';
-          const title = (d.rune || '未命名') + (d.direction || '');
-          return `
-            <div class="draw-line"><span class="draw-kind">${kind}</span><span class="draw-title">${esc(title)}</span></div>
-            <div class="draw-tools">
-              <button class="btn ghost" type="button" data-draw-action="edit" data-id="${esc(d.id)}">編輯</button>
-              <button class="btn ghost" type="button" data-draw-action="delete" data-id="${esc(d.id)}">刪除</button>
-            </div>
-          `;
-        }).join('');
-        const note = items.find(d => d.note)?.note || '';
-        return `
-          <div class="draw-entry">
-            <div class="draw-date">${esc(date)}</div>
-            <div>
-              ${rows}
-              ${note ? `<div class="draw-note">${esc(note)}</div>` : ''}
-            </div>
-          </div>
-        `;
-      }).join('');
+      els.dailyDrawHistory.innerHTML = `
+        <table class="draw-table">
+          <thead><tr>
+            ${drawBatchMode ? '<th><input type="checkbox" id="drawSelectAllBox" aria-label="全選"></th>' : ''}
+            <th>日期</th><th>類型</th><th>符文</th><th>方向</th><th>備註</th>
+            ${drawBatchMode ? '' : '<th>操作</th>'}
+          </tr></thead>
+          <tbody>
+            ${sorted.map(d => {
+              const selected = selectedDrawIds.has(String(d.id));
+              const dirty = dirtyDrawIds.has(String(d.id));
+              if (drawBatchMode) {
+                return `
+                  <tr data-draw-id="${esc(d.id)}" class="${selected ? 'selected ' : ''}${dirty ? 'dirty' : ''}">
+                    <td><input type="checkbox" data-draw-select value="${esc(d.id)}"${selected ? ' checked' : ''}></td>
+                    <td class="date-col"><input type="date" data-field="date" value="${esc(d.date || '')}"></td>
+                    <td class="kind-col"><select data-field="draw_kind">
+                      <option value="daily_draw"${d.draw_kind !== 'daily_draw_supplement' ? ' selected' : ''}>主抽</option>
+                      <option value="daily_draw_supplement"${d.draw_kind === 'daily_draw_supplement' ? ' selected' : ''}>補抽</option>
+                    </select></td>
+                    <td class="rune-col"><select data-field="rune">${drawRuneOptions(d.rune || '')}</select></td>
+                    <td class="direction-col"><select data-field="direction">
+                      ${['正位','半正位','半逆位','逆位'].map(v => `<option value="${v}"${v === d.direction ? ' selected' : ''}>${v}</option>`).join('')}
+                    </select></td>
+                    <td class="note-col"><input type="text" data-field="note" value="${esc(d.note || '')}" placeholder="備註"></td>
+                  </tr>
+                `;
+              }
+              const kind = d.draw_kind === 'daily_draw_supplement' ? '補抽' : '主抽';
+              return `
+                <tr data-draw-id="${esc(d.id)}">
+                  <td class="date-col">${esc(d.date || '')}</td>
+                  <td class="kind-col"><span class="draw-kind">${kind}</span></td>
+                  <td class="rune-col"><strong>${esc(d.rune || '—')}</strong></td>
+                  <td class="direction-col">${esc(d.direction || '—')}</td>
+                  <td class="note-col">${esc(d.note || '—')}</td>
+                  <td class="row-actions">
+                    <button class="btn ghost" type="button" data-draw-action="edit" data-id="${esc(d.id)}">編輯</button>
+                    <button class="btn ghost" type="button" data-draw-action="delete" data-id="${esc(d.id)}">刪除</button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+      updateDrawBatchToolbar();
     }
 
     function readDailyDrawCache() {
@@ -1194,6 +1299,107 @@
     $('#clearDrawBtn').addEventListener('click', resetDailyDrawForm);
     els.cancelDrawEditBtn.addEventListener('click', resetDailyDrawForm);
 
+    els.toggleBatchDrawBtn.addEventListener('click', () => {
+      drawBatchMode = !drawBatchMode;
+      selectedDrawIds.clear();
+      dirtyDrawIds.clear();
+      els.toggleBatchDrawBtn.textContent = drawBatchMode ? '結束大量編輯' : '大量編輯';
+      els.selectAllDrawBtn.hidden = !drawBatchMode;
+      els.saveBatchDrawBtn.hidden = !drawBatchMode;
+      els.deleteBatchDrawBtn.hidden = !drawBatchMode;
+      renderDailyDraws(dailyDraws);
+    });
+
+    els.selectAllDrawBtn.addEventListener('click', () => {
+      const allSelected = selectedDrawIds.size === dailyDraws.length && dailyDraws.length > 0;
+      selectedDrawIds.clear();
+      if (!allSelected) dailyDraws.forEach(d => selectedDrawIds.add(String(d.id)));
+      renderDailyDraws(dailyDraws);
+    });
+
+    els.dailyDrawHistory.addEventListener('change', (ev) => {
+      if (!drawBatchMode) return;
+      const row = ev.target.closest('tr[data-draw-id]');
+      if (!row) return;
+      const id = String(row.dataset.drawId);
+
+      if (ev.target.matches('[data-draw-select]')) {
+        if (ev.target.checked) selectedDrawIds.add(id); else selectedDrawIds.delete(id);
+        row.classList.toggle('selected', ev.target.checked);
+        updateDrawBatchToolbar();
+        return;
+      }
+
+      if (ev.target.matches('[data-field]')) {
+        dirtyDrawIds.add(id);
+        row.classList.add('dirty');
+        updateDrawBatchToolbar();
+      }
+    });
+
+    els.saveBatchDrawBtn.addEventListener('click', async () => {
+      if (!dirtyDrawIds.size) return;
+      const updates = [...dirtyDrawIds].map(id => {
+        const row = els.dailyDrawHistory.querySelector(`tr[data-draw-id="${CSS.escape(id)}"]`);
+        const original = dailyDraws.find(d => String(d.id) === id);
+        if (!row || !original) return null;
+        const runeSelect = row.querySelector('[data-field="rune"]');
+        const runeOption = runeSelect?.selectedOptions?.[0];
+        return {
+          ...original,
+          id,
+          user_id:'lo3rwang',
+          date:row.querySelector('[data-field="date"]').value,
+          draw_kind:row.querySelector('[data-field="draw_kind"]').value,
+          rune:runeSelect.value,
+          rune_id:runeOption?.dataset?.runeId || original.rune_id || '',
+          direction:row.querySelector('[data-field="direction"]').value,
+          note:row.querySelector('[data-field="note"]').value.trim()
+        };
+      }).filter(Boolean);
+
+      if (!updates.length) return;
+      try {
+        const res = await fetch(SHEET_API_URL, {
+          method:'POST',
+          headers:{'Content-Type':'text/plain;charset=utf-8'},
+          body:JSON.stringify({action:'batch_update_daily_draws', daily_draws:updates}),
+          redirect:'follow'
+        });
+        if (!res.ok) throw new Error('Batch update failed');
+        const data = await res.json();
+        if (data && data.ok === false) throw new Error(data.error || 'API error');
+        dirtyDrawIds.clear();
+        await loadDailyDraws();
+      } catch (err) {
+        console.error(err);
+        alert('大量更新失敗，請檢查 API 部署版本。');
+      }
+    });
+
+    els.deleteBatchDrawBtn.addEventListener('click', async () => {
+      const ids = [...selectedDrawIds];
+      if (!ids.length) return;
+      if (!confirm(`確定刪除所選的 ${ids.length} 筆每日抽牌紀錄？此動作會直接從 Sheet 移除。`)) return;
+      try {
+        const res = await fetch(SHEET_API_URL, {
+          method:'POST',
+          headers:{'Content-Type':'text/plain;charset=utf-8'},
+          body:JSON.stringify({action:'batch_delete_daily_draws', ids, user_id:'lo3rwang'}),
+          redirect:'follow'
+        });
+        if (!res.ok) throw new Error('Batch delete failed');
+        const data = await res.json();
+        if (data && data.ok === false) throw new Error(data.error || 'API error');
+        selectedDrawIds.clear();
+        dirtyDrawIds.clear();
+        await loadDailyDraws();
+      } catch (err) {
+        console.error(err);
+        alert('大量刪除失敗，請檢查 API 部署版本。');
+      }
+    });
+
     els.dailyDrawHistory.addEventListener('click', async (ev) => {
       const btn = ev.target.closest('button[data-draw-action]');
       if (!btn) return;
@@ -1326,10 +1532,10 @@
       if (!res.ok) throw new Error('Health check failed');
       const data = await res.json();
       if (!data || data.ok !== true) throw new Error(data && data.error ? data.error : 'API not ready');
-      if (data.schema !== 'loc8-mvp-0.7') {
+      if (data.schema !== 'loc8-mvp-0.8') {
         throw new Error('API schema mismatch: ' + (data.schema || 'unknown'));
       }
-      setSync(true, 'Google Sheet API 已連線 · v0.3');
+      setSync(true, 'Google Sheet API 已連線 · v0.8');
       return true;
     }
 
