@@ -162,13 +162,31 @@ LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/shared/
 
 `data/shared/LOC3_RUNE_SONG_REGISTRY.json` 專門判定真正的符文歌曲。
 
-只有具有「實際抽牌 → 解讀 → 歌詞／歌曲」provenance 的作品才可標成 `rune_song`。月光、命運、符文等意象本身不足以成立。
+只有具有「實際抽牌 → 解讀 → 歌詞／歌曲」provenance，或作者明確確認為該流程產物的作品，才可標成 `rune_song`。月光、命運、符文等意象本身不足以成立。
 
-目前資料層分成：
-- `confirmed`：有直接 draw-to-song 來源證據。
-- `high_candidate`：多重來源高度吻合，但仍缺創作 provenance。
-- `medium_candidate`：時間／情境吻合，但缺直接符文連結。
-- theme-only：不得列為符文歌曲。
+回收規則已收斂為：
+
+- **時間範圍硬限制：只有 P2、P3、P4 可能存在符文歌曲。** P1 與 P5–P8 全部排除。
+- 66 個符文名稱可作完整歌詞的第一層 recovery keywords，但只計 **distinct rune names**；同一符文重複出現不累加。
+- 低辨識度詞（例如月、日、心、愛、夢、風）只能作弱訊號。
+- 禁咒／符文詠唱類屬顯式符文文本例外，不進 rune_song 候選、排序或 threshold 校準。
+- 關鍵字密度與同日抽牌都只能找候選；作者否認或作品 provenance 可直接覆蓋推論。
+
+目前工作層級：
+- `confirmed`：作者明確確認或有直接 draw-to-song 來源。
+- `candidate`：僅限 P2–P4，且仍缺直接確認。
+- `rejected_non_rune_song` / `rejected_period_scope`：已排除。
+- `title_confirmed_work_unresolved`：作者記得歌名屬符文歌曲，但現有 work mapping 與時期規則衝突，暫不綁定到特定作品 ID。
+
+現行已確認的 work-level rune songs：
+- `E0223`《日蝕之前的顯現》（P3）
+- `E0285`《在塵裡長出的光》（P4，代表作）
+- `E0354`《界內之風》（P4）
+- `E0364`《界外誤差》（P4）
+
+《界線之內》保留作者的 title-level 確認，但目前 Excel／repo 的同名作品都落在 P5／P6，與「只有 P2–P4 才可能」的硬規則衝突，因此 work ID 暫不確認。
+
+LOC5 媒體稽核：目前 Suno 500 workbook、`LOC3_MEDIA_LINKS_v0.1.json` 與 shared `LOC_MEDIA_REGISTRY.json` 均未找到上述四首 confirmed rune songs 的 Reels／MV 對應。未找到不等於不存在；在實際媒體來源回收前，不建立 LOC5 假連結。
 
 ## 10. FAQ / RAG 現況
 
