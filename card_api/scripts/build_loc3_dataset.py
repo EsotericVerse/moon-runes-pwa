@@ -44,6 +44,75 @@ def split_values(value: Any) -> list[str]:
     return [part.strip() for part in re.split(r"[｜|;\n]+", text(value)) if part.strip()]
 
 
+def first_nonempty(row: dict[str, Any], *fields: str) -> str:
+    """Return the first non-empty source field without inventing missing provenance."""
+    for field in fields:
+        value = text(row.get(field))
+        if value:
+            return value
+    return ""
+
+
+def build_rune_provenance(row: dict[str, Any]) -> dict[str, Any] | None:
+    """Preserve rune/draw creation provenance when the source workbook actually records it."""
+    origin = first_nonempty(
+        row,
+        "創作來源",
+        "作品來源",
+        "歌曲來源",
+        "生成來源",
+        "靈感來源",
+        "創作方式",
+    )
+    rune_song_flag = first_nonempty(
+        row,
+        "符文歌曲",
+        "是否符文歌曲",
+        "抽卡歌曲",
+        "是否抽卡歌曲",
+    )
+    draw_mode = first_nonempty(
+        row,
+        "抽牌模式",
+        "抽卡模式",
+        "牌陣",
+        "Spread",
+    )
+    draw_date = first_nonempty(
+        row,
+        "抽牌日期",
+        "抽卡日期",
+        "占卜日期",
+    )
+    draw_result = first_nonempty(
+        row,
+        "抽牌結果",
+        "抽卡結果",
+        "符文結果",
+        "符文組合",
+        "OW3gs結果",
+    )
+    source_note = first_nonempty(
+        row,
+        "創作註記",
+        "來源註記",
+        "備註",
+        "Notes",
+    )
+
+    values = {
+        "source_origin": origin or None,
+        "rune_song_flag": rune_song_flag or None,
+        "draw_mode": draw_mode or None,
+        "draw_date": draw_date or None,
+        "draw_result": draw_result or None,
+        "source_note": source_note or None,
+    }
+    if not any(values.values()):
+        return None
+    return values
+
+
 def normalized_lyrics(value: Any) -> str:
     value = unicodedata.normalize("NFKC", text(value)).lower()
     value = re.sub(r"\[[^\]]*\]|【[^】]*】", "", value)
@@ -175,6 +244,7 @@ def build(source: Path) -> dict[str, Any]:
             "ending_structure": text(representative.get("結尾結構")),
             "hope_extension": text(representative.get("希望延伸")),
             "tags": tags,
+            "rune_provenance": build_rune_provenance(representative),
             "retrieval_text": "\n".join(part for part in retrieval_parts if part),
             "versions": merged_versions,
         })
@@ -182,7 +252,7 @@ def build(source: Path) -> dict[str, Any]:
     return {
         "dataset": {
             "name": "LOC3 Lyrics Search",
-            "version": "0.1.1",
+            "version": "0.1.3",
             "source": source.name,
             "language_scope": "zh-Hant",
             "unit": "unique_lyrics_work",
