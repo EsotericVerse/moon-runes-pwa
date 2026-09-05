@@ -1,9 +1,9 @@
 # LOC7_KM — Knowledge Management
 
-**Version:** 0.2  
+**Version:** 0.3  
 **Status:** Current  
 **Owner:** LOC7 — Text Architecture  
-**Updated:** 2026-09-05
+**Updated:** 2026-09-06
 
 ## 1. 定位
 
@@ -228,13 +228,15 @@ LOC5 媒體稽核：目前 Suno 500 workbook、`LOC3_MEDIA_LINKS_v0.1.json` 與 
 
 現行作用資料：
 
-- `card_api/data/LOC_FAQ_v0.3.json`：80 題 FAQ source view。
-- `card_api/data/LOC_FAQ_RAG_v0.3.json`：由 FAQ v0.3 衍生的原子化檢索資料。
-- `card_api/main.py`：目前載入 RAG v0.3。
+- `card_api/data/LOC_FAQ_v0.4.json`：80 題 FAQ source view。
+- `card_api/data/LOC_FAQ_RAG_v0.4.json`：由 FAQ v0.4 同步衍生的檢索資料。
+- `card_api/main.py`：目前載入 RAG v0.4。
+
+v0.4 對齊 2026-09-06 的 LOC6／LOC7／LOC8 權責、Unified Search 實作、公開「時期」用語與既有功能狀態。FAQ 是 KM 的問答 View；RAG 是 retrieval derivative，兩者都不是 Canon。
 
 歷史資料：
 
-- FAQ／RAG v0.1、v0.2 保留作 version history，不再視為 current runtime source。
+- FAQ／RAG v0.1、v0.2、v0.3 保留作 version history，不再視為 current runtime source。
 
 ## 11. Shared Registry
 
@@ -260,13 +262,15 @@ LOC5 媒體稽核：目前 Suno 500 workbook、`LOC3_MEDIA_LINKS_v0.1.json` 與 
 6. 驗證 API 與 UI。
 7. 保留歷史版，不以新版本內容覆寫舊版本號。
 
-## 13. Graph RAG 狀態
+## 13. Unified Search / Graph RAG 狀態
 
-Unified Search 已有實作；完整 Relation Schema、Knowledge Graph expansion 與 Graph RAG 仍屬下一階段。不得因已有 registry、related_ids 或 search view 就宣稱完整 Graph RAG 已部署。
+Unified Search 已是現行公開檢索入口，後端目前可直接取得 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7 與 LOC8 的不同資料來源；LOC2 目前仍以 Knowledge View 為主。搜尋層只負責 routing、retrieval、ranking 與結果 envelope，不改變各 LOC 的 canonical ownership。
+
+完整 Relation Schema、Knowledge Graph expansion 與 Graph RAG 仍屬後續階段。不得因已有 Shared Registry、related_ids、cross-relationship registry 或 search view 就宣稱完整 Graph RAG 已部署。
 
 ## 14. 文件格式
 
-`docs/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件。
+`docs/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件；0.3 起同步記錄 Unified Search、FAQ/RAG v0.4 與目前跨 LOC 檢索責任。
 
 新手教學 PDF 屬於 **Published Tutorial / Derived Knowledge Asset**。它可以被 KM 索引、引用與提供下載，但不因發布為 PDF 而升格為 Canon。現行第一份：
 
@@ -277,3 +281,24 @@ Unified Search 已有實作；完整 Relation Schema、Knowledge Graph expansion
 ---
 
 **LOC KM principle:** Knowledge is governed upstream, structured downstream, and exposed through views.
+
+
+## 15. 2026-09-06 現行版本矩陣
+
+| 層級 | 現行版本 | 角色 |
+|---|---:|---|
+| LOC Canon | 0.5r | Canon／核心規則基準 |
+| Shared Schema | 0.1 | 跨 LOC 共用欄位與 reference contract |
+| Unified Search | 0.1 | 跨 LOC 查詢與結果整合層 |
+| LOC7_KM | 0.3 | 維護中的知識管理主文件 |
+| FAQ View | 0.4 | KM 對外問答 View |
+| FAQ RAG | 0.4 | FAQ 衍生 retrieval dataset |
+
+首頁只顯示前四個系統層級版本；FAQ／RAG 屬 LOC7 下游檢索資料，保留在 KM／技術文件，不與 Canon 並列為同一層級。
+
+### 公開用語與 machine ID
+
+- 公開介面：使用「時期」。
+- Stable machine ID：仍可保留 `ERA-P1`～`ERA-P8`。
+- 公開功能名稱與右上導覽一致；技術分類放在 `loc-header-meta`。
+- LOC6 擁有治理／意義語義；LOC7 擁有 KM、檢索與結構；LOC8 擁有事件、時期與時間統合。
