@@ -51,11 +51,19 @@
             <option value="relationship">跨 LOC 關係</option>
             <option value="era">ERA／時間</option>
           </select>
-          <select id="period" aria-label="ERA">
-            <option value="">全部 ERA</option>
+          <select id="period" aria-label="時期">
+            <option value="">全部時期</option>
+            <option value="P1">P1｜Suno原型探索期</option>
+            <option value="P2">P2｜重啟與格式形成期</option>
+            <option value="P3">P3｜微月光與關係敘事期</option>
+            <option value="P4">P4｜現實壓力與治理轉折期</option>
+            <option value="P5">P5｜人生月台與語言重建期</option>
+            <option value="P6">P6｜順其自然與界線整合期</option>
+            <option value="P7">P7｜自由的風期</option>
+            <option value="P8">P8｜自我治理與未來展望期</option>
           </select>
         </div>
-        <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><span class="hint">資料種類決定要搜尋哪一種語言資產；ERA 是跨作品的時間維度。籤詩模式仍先讀 Lots，再向其他資料展開。</span></div>
+        <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><span class="hint">資料種類決定要搜尋哪一種語言資產；時期是跨作品與紀錄的時間維度。籤詩模式仍先讀 Lots，再向其他資料展開。</span></div>
       </form>
     </section>
     <div class="status" id="status" aria-live="polite"></div>
@@ -65,14 +73,14 @@
   <script>
     const API='https://moon-runes-pwa.onrender.com';
     const prompts=[
-      {q:'自我治理',title:'自我治理',desc:'治理原則 · 政德風 · ERA'},
+      {q:'自我治理',title:'自我治理',desc:'治理原則 · 政德風 · 時期'},
       {q:'界線',title:'界線',desc:'符文 · 文章 · 治理 · 多媒體'},
       {q:'月之符文怎麼演化',title:'月之符文怎麼演化',desc:'種子 · 作品 · Graph 關係'},
       {q:'LOC2 怎麼玩',title:'LOC2 怎麼玩',desc:'Semantic Playground · Event'},
       {q:'已讀不回',title:'已讀不回',desc:'歌曲 · 文章 · Reels · 關係'},
       {q:'心半正 愛情',title:'心半正＋愛情',desc:'籤詩 · Lots · 延伸檢索'}
     ];
-    const labels={oracle:'籤詩結果',runes:'月符',works:'Suno 歌曲／歌詞',textworks:'文字作品',relationships:'跨 LOC 關聯',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'ERA／時間'};
+    const labels={oracle:'籤詩結果',runes:'月符',works:'Suno 歌曲／歌詞',textworks:'文字作品',relationships:'跨 LOC 關聯',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
     const locLabels={LOC1:'LOC1 · Lots',LOC3:'LOC3 · Music',LOC4:'LOC4 · Writing',LOC5:'LOC5 · Resonance',LOC6:'LOC6 · Governance',LOC7:'LOC7 · Text Architecture',LOC8:'LOC8 · Integration'};
     const el=id=>document.getElementById(id);
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -109,7 +117,7 @@
     ];
     function applyEras(eras){
       const select=el('period'),current=select.value;
-      select.innerHTML='<option value="">全部 ERA</option>';
+      select.innerHTML='<option value="">全部時期</option>';
       for(const era of eras||[]){
         const value=era.period||'';
         if(!value)continue;
@@ -171,7 +179,7 @@
     }
 
     function render(groups){const order=['oracle','runes','works','textworks','relationships','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='oracle'?oracleCard:(key==='relationships'?relationshipCard:(key==='works'?musicCard:card));html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
-    el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時間……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
+    el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時期資料……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
     quick();
     facets().finally(bootFromUrl);
     if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'));
