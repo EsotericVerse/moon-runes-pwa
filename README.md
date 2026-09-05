@@ -266,7 +266,7 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 
 - `list.html`：依群組及符文查詢完整資料
 - [`search.html`](https://loc.lo3rwang.cc/search.html)：**Unified Search 主入口**；同時查詢符文、歌曲、Reels、知識與 ERA，使用者不必先選 LOC 編號
 - [`faq.html`](https://loc.lo3rwang.cc/faq.html)：LOC7 Knowledge Base 專門查詢介面（保留作進階／單域 View）
-- [`loc3.html`](https://loc.lo3rwang.cc/loc3.html)：LOC3 歌詞語意專門搜尋介面；同詞旋律合併於同一作品結果
+- `loc3.html`：相容導向頁；LOC3 歌詞、作品類別、歌詞類型、ERA、Reels 與跨 LOC 關聯搜尋已整合進 [`search.html`](https://loc.lo3rwang.cc/search.html?content_type=lyrics_work)
 
 ### Python／FastAPI API
 
