@@ -25,7 +25,7 @@
     <header class="hero">
       <p class="eyebrow">LOC RAG · SEMANTIC VECTOR SEARCH</p>
       <h1>從一句話，<br />走進整個語言系統。</h1>
-      <p class="intro">LOC 搜尋引擎是「LOC RAG 語意向量搜尋」的介面簡稱。LOC1 的符文與籤詩是種子語料，LOC2–8 的情境、作品、媒體、治理、知識與時間資料由同一個檢索入口統整。</p>
+      <p class="intro">LOC 搜尋引擎是「LOC RAG 語意向量搜尋」的介面簡稱。月之符文是語意種子；LOC1–8 的籤詩、情境、作品、媒體、治理、知識與關係／時間資料由同一個檢索入口統整。</p>
     </header>
     <section class="search-panel">
       <form id="searchForm">
@@ -46,7 +46,7 @@
             <option value="era">ERA／時間</option>
           </select>
           <select id="period"><option value="">所有 ERA／創作時期</option></select>
-          <select id="category"><option value="">所有歌曲類型</option></select>
+          <select id="category"><option value="">所有內容類型／風格</option></select>
           
         </div>
         <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><span class="hint">籤詩模式先讀 Lots，再以關鍵字展開相關歌詞、文字、多媒體、文件與 ERA；一般搜尋則依來源分組。</span></div>
@@ -120,51 +120,51 @@
     };
     function resetOptions(select,placeholder){select.innerHTML=`<option value="">${placeholder}</option>`}
     function fill(select,items,valueKey,labelKey){
-      const seen=new Set([...select.options].map(o=>o.value));
+      const existing=new Set([...select.options].map(o=>o.value));
       for(const item of items||[]){
         const value=item?.[valueKey]??item?.value??'';
-        if(!value||seen.has(String(value)))continue;
+        const label=item?.[labelKey]??item?.label??item?.value??value;
+        if(!value||existing.has(String(value))) continue;
         const o=document.createElement('option');
-        o.value=value;
-        o.textContent=item?.[labelKey]??item?.label??item?.value??o.value;
-        select.appendChild(o);
-        seen.add(String(value));
+        o.value=value;o.textContent=label;select.appendChild(o);existing.add(String(value));
       }
     }
-    function normalizeFacets(d){
-      return {
-        eras:(d?.eras?.length?d.eras:FALLBACK_FACETS.eras),
-        categories:(d?.loc3?.categories?.length?d.loc3.categories:(d?.categories?.length?d.categories:FALLBACK_FACETS.categories))
-      };
-    }
-    function applyFacets(d){
-      const n=normalizeFacets(d);
-      resetOptions(el('period'),'所有 ERA／創作時期');
-      resetOptions(el('category'),'所有歌曲類型');
-      fill(el('period'),n.eras,'period','label');
-      fill(el('category'),n.categories,'value','value');
+    const FACET_CACHE_KEY='loc-search-facets-v1';
+    const FACET_CACHE_TTL=24*60*60*1000;
+    const FALLBACK_FACETS={
+      eras:[
+        {period:'P2',label:'P2'},{period:'P3',label:'P3'},{period:'P4',label:'P4'},
+        {period:'P5',label:'P5'},{period:'P6',label:'P6'},{period:'P7',label:'P7'},
+        {period:'P8',label:'P8 · 治理自己'}
+      ],
+      categories:[
+        {value:'其他／待複查'},{value:'勸戒論述型'},{value:'幸福甜美型'},
+        {value:'思辨論述型'},{value:'治理宣言型'},{value:'祝福紀念型'},
+        {value:'轉折型'},{value:'轉折型候選'}
+      ]
+    };
+    function applyFacets(data){
+      fill(el('period'),data?.eras||[],'period','label');
+      fill(el('category'),data?.loc3?.categories||data?.categories||[],'value','value');
     }
     function readFacetCache(){
       try{
-        const raw=localStorage.getItem(FACET_CACHE_KEY);
-        if(!raw)return null;
-        const cached=JSON.parse(raw);
-        return cached?.data?cached:null;
+        const cached=JSON.parse(localStorage.getItem(FACET_CACHE_KEY)||'null');
+        if(cached?.data) applyFacets(cached.data);
+        return cached;
       }catch(_){return null}
     }
     async function facets(){
+      applyFacets(FALLBACK_FACETS);
       const cached=readFacetCache();
-      applyFacets(cached?.data||FALLBACK_FACETS);
+      if(cached&&Date.now()-Number(cached.saved_at||0)<FACET_CACHE_TTL)return;
       try{
         const r=await fetch(`${API}/search/facets`,{cache:'no-store'});
-        if(!r.ok)throw 0;
+        if(!r.ok)throw new Error('facets unavailable');
         const d=await r.json();
-        const data=normalizeFacets(d);
-        localStorage.setItem(FACET_CACHE_KEY,JSON.stringify({saved_at:Date.now(),data}));
-        applyFacets(data);
-      }catch(_){
-        if(!cached||Date.now()-(cached.saved_at||0)>FACET_CACHE_TTL)applyFacets(FALLBACK_FACETS);
-      }
+        applyFacets(d);
+        localStorage.setItem(FACET_CACHE_KEY,JSON.stringify({saved_at:Date.now(),data:d}));
+      }catch(_){}
     }
     function linksFor(r){
       const p=r.payload||{}; const out=[];
