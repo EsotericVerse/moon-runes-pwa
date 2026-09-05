@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LOC Tutorial 01｜語言系統框架入門</title>
+  <meta name="description" content="LOC／月典新手教學 01：從月之符文開始，理解 LOC 作為語言系統框架，以及 LOC1–8 的功能責任區。" />
+  <link rel="stylesheet" href="css/loc-nav.css" />
+  <style>
+    :root{
+      --bg:#061426;--surface:#0b2039;--surface-2:#102a49;--text:#f3f7ff;
+      --muted:#b7c4d8;--line:rgba(178,205,241,.18);--accent:#4cc4ff;--gold:#e7c27d;
+      --shadow:0 18px 54px rgba(0,0,0,.28);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;
+      background:
+        radial-gradient(circle at 82% 8%,rgba(94,170,255,.16),transparent 28%),
+        radial-gradient(circle at 12% 34%,rgba(122,88,255,.10),transparent 30%),
+        linear-gradient(180deg,#071729 0%,#05101d 100%);
+    }
+    a{color:inherit}
+    .wrap{width:min(1120px,calc(100% - 32px));margin:0 auto}
+    .hero{
+      min-height:72vh;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);
+      gap:34px;align-items:center;padding:72px 0 56px;
+    }
+    .eyebrow{margin:0 0 12px;color:var(--accent);font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800}
+    h1{font-size:clamp(2.7rem,7vw,5.8rem);line-height:.96;letter-spacing:-.04em;margin:0 0 20px}
+    .lead{max-width:760px;color:var(--muted);font-size:clamp(1rem,2vw,1.22rem);line-height:1.8}
+    .hero-actions,.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 15px;border-radius:12px;
+      border:1px solid var(--line);text-decoration:none;font-weight:800;font-size:.88rem;background:rgba(255,255,255,.035)
+    }
+    .btn.primary{background:var(--accent);color:#041321;border-color:transparent}
+    .btn:hover,.btn:focus-visible{border-color:rgba(231,194,125,.72);outline:none}
+    .hero-art{
+      position:relative;overflow:hidden;border-radius:28px;border:1px solid var(--line);box-shadow:var(--shadow);
+      background:linear-gradient(180deg,rgba(13,40,70,.96),rgba(6,20,38,.94));aspect-ratio:4/5;
+    }
+    .hero-art img{width:100%;height:100%;object-fit:cover;display:block;opacity:.9}
+    .hero-art::after{content:"Language System Framework";position:absolute;left:18px;bottom:18px;padding:8px 11px;border-radius:999px;background:rgba(5,17,32,.78);color:var(--gold);font-size:.72rem;font-weight:900}
+    .jump{
+      position:sticky;top:64px;z-index:30;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+      background:rgba(5,17,31,.88);backdrop-filter:blur(14px)
+    }
+    .jump-inner{display:flex;gap:8px;overflow:auto;padding:10px 0}
+    .jump a{white-space:nowrap;text-decoration:none;color:var(--muted);font-size:.78rem;padding:7px 10px;border-radius:999px;border:1px solid transparent}
+    .jump a:hover{color:var(--text);border-color:var(--line)}
+    section.content{padding:72px 0;border-bottom:1px solid rgba(178,205,241,.10)}
+    .section-head{display:grid;grid-template-columns:.65fr 1.35fr;gap:30px;align-items:start;margin-bottom:28px}
+    .section-head h2{margin:0;font-size:clamp(1.8rem,4vw,3.2rem);letter-spacing:-.03em}
+    .section-head p{margin:0;color:var(--muted);line-height:1.8}
+    .quote{font-size:clamp(1.7rem,4vw,3.4rem);line-height:1.22;font-weight:900;letter-spacing:-.035em;max-width:820px}
+    .grid{display:grid;gap:14px}
+    .cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .card{
+      border:1px solid var(--line);border-radius:18px;padding:18px;background:linear-gradient(180deg,rgba(15,42,72,.8),rgba(8,25,45,.78));
+      box-shadow:var(--shadow)
+    }
+    .card strong{display:block;font-size:1.02rem;margin-bottom:7px}
+    .card p{margin:0;color:var(--muted);font-size:.9rem;line-height:1.65}
+    .flow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:22px}
+    .flow span{padding:10px 13px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.03);font-weight:800;font-size:.82rem}
+    .flow i{font-style:normal;color:var(--gold)}
+    .visual{margin-top:24px;border-radius:22px;overflow:hidden;border:1px solid var(--line);background:#081728}
+    .visual img{display:block;width:100%;height:auto}
+    .loc-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .loc-card{border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(255,255,255,.025)}
+    .loc-card .n{color:var(--accent);font-size:.72rem;font-weight:900;letter-spacing:.08em}
+    .loc-card h3{margin:6px 0 7px;font-size:1rem}
+    .loc-card p{margin:0;color:var(--muted);font-size:.8rem;line-height:1.55}
+    .km-note{margin-top:28px;padding:18px;border-left:3px solid var(--gold);background:rgba(231,194,125,.06);color:var(--muted);line-height:1.7}
+    .km-note strong{color:var(--text)}
+    .end{padding:90px 0 110px;text-align:center}
+    .end h2{font-size:clamp(2.2rem,6vw,5rem);line-height:1.05;margin:0 auto 18px;max-width:900px;letter-spacing:-.04em}
+    .end p{color:var(--muted);max-width:760px;margin:0 auto;line-height:1.8}
+    footer{padding:24px 0 40px;color:var(--muted);font-size:.75rem;text-align:center}
+    @media(max-width:860px){
+      .hero{grid-template-columns:1fr;min-height:auto;padding-top:48px}.hero-art{max-height:520px}
+      .section-head{grid-template-columns:1fr}.cols-4,.loc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media(max-width:560px){
+      .wrap{width:min(100% - 22px,1120px)}.cols-4,.cols-2,.loc-grid{grid-template-columns:1fr}
+      section.content{padding:54px 0}.jump{top:0}
+    }
+  </style>
+</head>
+<body>
+  <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="tutorial01" aria-label="全站導覽"></nav></div>
+
+  <main>
+    <div class="wrap">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">LOC Tutorial 01 · Beginner Guide · KM Published View</p>
+          <h1>LOC｜月典<br>語言系統框架入門</h1>
+          <p class="lead">LOC 是一套語言系統框架，用來承接與整理符文、情境、作品、媒介、治理、知識與生活脈絡。第一次接觸，不必先理解全部；從一張月之符文開始即可。</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="result.html?mode=daily">先抽一張</a>
+            <a class="btn" href="docs/LOC_Tutorial_01_語言系統框架入門.pdf" target="_blank" rel="noopener">下載 PDF 教材</a>
+            <a class="btn" href="search.html?content_type=knowledge&q=LOC%20語言系統框架">用 LOC Search 延伸查詢</a>
+          </div>
+        </div>
+        <div class="hero-art">
+          <img src="pics/loc_framework_map.jpg" alt="LOC1–8 語言系統框架總覽圖" />
+        </div>
+      </header>
+    </div>
+
+    <nav class="jump" aria-label="本頁章節">
+      <div class="wrap jump-inner">
+        <a href="#what">LOC 是什麼</a><a href="#start">從一張符文開始</a><a href="#loc1">LOC1</a>
+        <a href="#evolution">符文演化</a><a href="#loc2">LOC2</a><a href="#loc3-7">LOC3–7</a>
+        <a href="#loc8">LOC8</a><a href="#overview">LOC1–8</a>
+      </div>
+    </nav>
+
+    <div class="wrap">
+      <section class="content" id="what">
+        <div class="section-head">
+          <div><p class="eyebrow">01 · 一句話介紹</p><h2>LOC 是框架，不是答案本身。</h2></div>
+          <p>LOC 本體是「語言系統框架」，不等同於占卜或宗教。它提供一套責任分工，讓不同形式的語意資料可以被整理、追蹤、搜尋與再次使用。</p>
+        </div>
+        <div class="grid cols-4">
+          <div class="card"><strong>符文</strong><p>提供最小語意單元與抽取入口。</p></div>
+          <div class="card"><strong>作品</strong><p>音樂、文字與多媒體承接語意表達。</p></div>
+          <div class="card"><strong>治理／知識</strong><p>整理價值、句型、文字建築與知識資產。</p></div>
+          <div class="card"><strong>生活脈絡</strong><p>把每日符文、ERA 與 Event 放回時間。</p></div>
+        </div>
+      </section>
+
+      <section class="content" id="start">
+        <p class="eyebrow">02 · 啟動行為</p>
+        <div class="quote">「不知道怎麼說，就先抽一張。」</div>
+        <p class="lead">月之符文是進入 LOC 語言系統框架的入口。抽牌不只用於問事，也可以提供第一個語意錨點，讓使用者從尚未成形的感受或問題開始整理脈絡。</p>
+      </section>
+
+      <section class="content" id="loc1">
+        <div class="section-head">
+          <div><p class="eyebrow">03 · LOC1</p><h2>月之符文</h2></div>
+          <p>66 個符文構成語彙基礎；四方向提供不同語意狀態。多卡不是單純增加張數，而是加入不同的結構關係。</p>
+        </div>
+        <div class="grid cols-4">
+          <div class="card"><strong>66 符文語彙</strong><p>每張符文是一個可被重用的語意單元。</p></div>
+          <div class="card"><strong>四方向</strong><p>正位／半正位／半逆位／逆位，各自是獨立語意方向。</p></div>
+          <div class="card"><strong>雙卡／三卡</strong><p>雙卡＝因果；三卡＝源－轉－合。</p></div>
+          <div class="card"><strong>五卡</strong><p>過去／現在／未來／外在／內在。</p></div>
+        </div>
+        <div class="visual"><img src="pics/loc_runes_66_overview.jpg" alt="月之符文 66 符文總覽圖" loading="lazy" /></div>
+        <div class="actions"><a class="btn primary" href="result.html">開始 LOC1 抽牌</a><a class="btn" href="list.html">查看 66 月符圖鑑</a></div>
+      </section>
+
+      <section class="content" id="evolution">
+        <div class="section-head">
+          <div><p class="eyebrow">04 · Language Evolution</p><h2>符文如何演化</h2></div>
+          <p>符文語彙不是靜態符號，而是 LOC 語言系統框架的語意起點。從一個符文出發，語意逐步擴展到情境、作品、治理語句、知識架構與生活脈絡。</p>
+        </div>
+        <div class="flow" aria-label="符文演化流程">
+          <span>符文語彙</span><i>→</i><span>情境</span><i>→</i><span>作品</span><i>→</i>
+          <span>治理語句</span><i>→</i><span>知識架構</span><i>→</i><span>生活脈絡</span>
+        </div>
+      </section>
+
+      <section class="content" id="loc2">
+        <div class="section-head">
+          <div><p class="eyebrow">05 · LOC2</p><h2>Semantic Playground</h2></div>
+          <p>LOC2 把符文帶進事件情境與玩家互動。符文在這裡不只被「解讀」，還會被使用、回應、干預與共構，形成暫時可用的語意定義。</p>
+        </div>
+        <div class="flow"><span>Question</span><i>→</i><span>Response</span><i>→</i><span>Resonance</span><i>→</i><span>Definition</span></div>
+        <div class="actions"><a class="btn" href="loc2.html">查看 LOC2 系統說明</a><a class="btn" href="loc2-game.html">開始 Web Alpha</a></div>
+      </section>
+
+      <section class="content" id="loc3-7">
+        <div class="section-head">
+          <div><p class="eyebrow">06 · LOC3–7</p><h2>從創作走到知識架構</h2></div>
+          <p>LOC3–5 承接音樂、文字與多媒體作品；LOC6 保存治理與政德風；LOC7 處理文字建築、知識管理與檢索。它們目前共用 LOC Search 作為主要檢索入口。</p>
+        </div>
+        <div class="loc-grid">
+          <div class="loc-card"><span class="n">LOC3</span><h3>音樂</h3><p>歌曲、歌詞、ERA 與主題語意。</p></div>
+          <div class="loc-card"><span class="n">LOC4</span><h3>文字</h3><p>小說、文章與書寫作品。</p></div>
+          <div class="loc-card"><span class="n">LOC5</span><h3>多媒體共振</h3><p>圖像、影音與跨媒介作品。</p></div>
+          <div class="loc-card"><span class="n">LOC6</span><h3>治理與政德風</h3><p>價值觀、治理語句與風格演變。</p></div>
+          <div class="loc-card"><span class="n">LOC7</span><h3>文字建築與知識</h3><p>Text Architecture、KM、FAQ、RAG 與檢索結構。</p></div>
+        </div>
+        <div class="actions"><a class="btn primary" href="search.html">進入 LOC Search</a><a class="btn" href="docs/LOC7_KM.md">查看 LOC7_KM</a></div>
+      </section>
+
+      <section class="content" id="loc8">
+        <div class="section-head">
+          <div><p class="eyebrow">07 · LOC8</p><h2>脈絡分析</h2></div>
+          <p>每日符文不只是靈感起點，也可以成為時間軸上的語意標記。LOC8 依「每日符文 → ERA → Event」整理近期訊號、階段與具體事件。</p>
+        </div>
+        <div class="flow"><span>每日符文</span><i>→</i><span>ERA（階段／時期）</span><i>→</i><span>Event（事件）</span></div>
+        <div class="actions"><a class="btn" href="life.html">進入 LOC8 脈絡分析</a></div>
+      </section>
+
+      <section class="content" id="overview">
+        <div class="section-head">
+          <div><p class="eyebrow">08 · Framework Overview</p><h2>LOC1–8 是八個功能責任區。</h2></div>
+          <p>它們不是版本先後，也不是八個彼此無關的產品，而是 LOC 這套語言系統框架依不同責任切分出的八個功能區。</p>
+        </div>
+        <div class="loc-grid">
+          <div class="loc-card"><span class="n">LOC1</span><h3>符文抽籤</h3><p>語彙與抽取。</p></div>
+          <div class="loc-card"><span class="n">LOC2</span><h3>語意遊戲</h3><p>情境與互動。</p></div>
+          <div class="loc-card"><span class="n">LOC3</span><h3>音樂</h3><p>聲音與歌詞。</p></div>
+          <div class="loc-card"><span class="n">LOC4</span><h3>文字</h3><p>書寫與敘事。</p></div>
+          <div class="loc-card"><span class="n">LOC5</span><h3>多媒體共振</h3><p>跨媒介表達。</p></div>
+          <div class="loc-card"><span class="n">LOC6</span><h3>治理與政德風</h3><p>價值與治理語句。</p></div>
+          <div class="loc-card"><span class="n">LOC7</span><h3>文字建築與知識</h3><p>結構、KM 與檢索。</p></div>
+          <div class="loc-card"><span class="n">LOC8</span><h3>脈絡分析</h3><p>Rune → ERA → Event。</p></div>
+        </div>
+        <div class="visual"><img src="pics/loc_framework_map.jpg" alt="LOC1–8 框架總覽圖" loading="lazy" /></div>
+        <div class="km-note"><strong>這個網頁本身也是 KM 的實際成果。</strong> PDF 教材作為 Published Tutorial 保存；本頁則是可搜尋、可連結、可更新的 Application View。兩者都由 LOC7_KM 登錄，但都不取代 Canon 或母資料。</div>
+      </section>
+
+      <section class="end">
+        <p class="eyebrow">Tutorial 01 · End</p>
+        <h2>先抽一張，再理解整套語言框架。</h2>
+        <p>LOC 不是答案本身，而是讓答案能被整理、追蹤與再次使用的框架。從符文開始，需要深入時，再沿著 LOC1–8 展開。</p>
+        <div class="actions" style="justify-content:center"><a class="btn primary" href="result.html?mode=daily">今日抽一張</a><a class="btn" href="index.html">回到 LOC 首頁</a></div>
+      </section>
+    </div>
+  </main>
+
+  <footer>LOC Tutorial 01 · 語言系統框架入門 · Published Tutorial / KM Application View</footer>
+  <script src="js/loc-nav.js"></script>
+</body>
+</html>
