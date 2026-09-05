@@ -293,7 +293,8 @@
         "LOC1",
         "LOC6",
         "LOC7",
-        "LOC8"
+        "LOC8",
+        "LOC5"
       ],
       "role": "draw_to_song_provenance_registry",
       "status": "working",
@@ -306,7 +307,7 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "notes": "Only explicit real-draw-derived songs may become confirmed rune_song records. Current candidates are kept separate until original songwriting provenance is located."
+      "notes": "Rune-song provenance registry. Candidate generation is restricted to P2–P4; keyword recovery uses distinct rune-name hits only. Current confirmed work-level records: E0223, E0285, E0354, E0364. 《界線之內》 remains title-confirmed but work-ID unresolved because current P5/P6 mappings conflict with the period rule. Current LOC5 media audit found no matching Reels/MV for the four confirmed work-level records."
     },
     {
       "asset_id": "KA-LOC6-ERA-EVIDENCE-001",
