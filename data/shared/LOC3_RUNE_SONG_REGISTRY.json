@@ -149,5 +149,19 @@
     "same_date_candidates_2026_07_11": 3,
     "high_candidates": 1,
     "medium_candidates": 2
-  }
+  },
+  "dataset_pipeline": {
+    "builder": "card_api/scripts/build_loc3_dataset.py",
+    "builder_version": "0.1.3",
+    "provenance_fields_preserved": [
+      "source_origin",
+      "rune_song_flag",
+      "draw_mode",
+      "draw_date",
+      "draw_result",
+      "source_note"
+    ],
+    "note": "Future dataset rebuilds preserve any explicit rune/draw provenance that actually exists in the source workbook instead of dropping it."
+  },
+  "next_confirmation_rule": "When a rebuilt LOC3 work contains explicit rune_provenance linking a real draw to the song, promote the corresponding candidate to confirmed after source review."
 }
