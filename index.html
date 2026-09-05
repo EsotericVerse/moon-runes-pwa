@@ -119,6 +119,8 @@
       font-size: clamp(1rem, 2vw, 1.15rem);
     }
 
+    .start-actions { margin-top:0; }
+
     .hero-actions {
       display: flex;
       flex-wrap: wrap;
@@ -1345,36 +1347,18 @@
       </aside>
     </header>
 
-    <section class="section" aria-labelledby="start-title">
+        <section class="section" aria-labelledby="start-title">
       <div class="section-heading">
         <div>
           <p class="eyebrow">Start Here</p>
           <h2 id="start-title">今天想從哪裡開始？</h2>
         </div>
-        <p>先使用，再理解。先從月符開始，再進入 LOC2；LOC3–8 的詳細說明收進框架圖，需要時再展開。</p>
+        <p>首頁先讓你直接使用月符，再理解符文如何演化、進入 LOC2，最後用框架圖展開 LOC1–8。LOC3–7 的詳細功能與入口都收進框架圖，不再另外佔首頁版面。</p>
       </div>
 
-      <div class="action-grid">
-        <a class="action-card" href="result.html?mode=daily">
-          <span class="kicker">LOC1 · Daily Rune</span>
-          <h3>面對未知，抽一張</h3>
-          <p>每天一張月符與籤詩，先給模糊的心情或問題一個語言起點。</p>
-          <span class="arrow">開始抽牌 →</span>
-        </a>
-
-        <a class="action-card" href="search.html?content_type=lyrics_work">
-          <span class="kicker">Works · Semantic Search</span>
-          <h3>不知道歌名，也可以找</h3>
-          <p>描述情緒、處境或想去的方向，從作品語意中找出最接近的內容。</p>
-          <span class="arrow">搜尋作品 →</span>
-        </a>
-
-        <a class="action-card" href="search.html?content_type=knowledge">
-          <span class="kicker">LOC7 · Knowledge Base</span>
-          <h3>想理解月典，就直接搜尋</h3>
-          <p>FAQ v0.3／RAG v0.3 已接入 LOC7_KM，從月符到文字建築都可以查詢。</p>
-          <span class="arrow">搜尋知識 →</span>
-        </a>
+      <div class="hero-actions start-actions">
+        <a class="cta primary" href="#rune-entry">從月之符文開始</a>
+        <a class="cta secondary" href="#framework-map">查看 LOC1–8 框架圖</a>
       </div>
     </section>
 
