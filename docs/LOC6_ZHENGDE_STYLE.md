@@ -126,17 +126,46 @@
 
 兩者不能混為一談：價值可能延續，但說法會隨人生階段演變。
 
-## 6. 時期投影模型
+## 6. ERA 是政德風演變的主時間軸
 
-未來要做到「30 歲的政德會怎麼說／46 歲的政德會怎麼說」，應以真實歷史文字建立 **Stage Profile**，而不是由 AI 猜一個年齡人格。
+政德風的風格轉變應優先依 **ERA** 觀察，而不是直接依年齡切分。
 
-建議資料欄位：
+ERA 本身已經記錄：
+- 當時主要處理的生活／創作課題
+- 前一階段與下一階段的狀態差
+- 語言重心如何改變
+- 作品與事件如何落在同一段時間
+
+因此「30 歲的政德會怎麼說／46 歲的政德會怎麼說」仍可存在，但應視為 ERA／歷史語料之上的次級投影。
+
+### 6.1 現行 P1–P8 演變骨架
+
+| ERA | 時期 | 核心狀態 | 可觀察的語言轉向 |
+|---|---|---|---|
+| P1 | Suno 原型探索期 | 嘗試、累積、辨識 | 語言尚未穩定，偏探索與試錯 |
+| P2 | 重啟與格式形成期 | 掙扎、整理過往、學步 | 開始形成固定格式與可辨識表達 |
+| P3 | 微月光與關係敘事期 | 自我認知、姓名轉變、關係 | 感性、自省、陪伴與關係敘事變強 |
+| P4 | 現實壓力與治理轉折期 | 現實壓力、治理關係 | 從感受轉向界線、現實處理與治理 |
+| P5 | 人生月台與語言重建期 | 等待、無力、盡力而為 | 語氣轉向觀望、收束、接受暫停 |
+| P6 | 順其自然與界線整合期 | 保留未知、不強求結果 | 克制度提高，開始允許未定義 |
+| P7 | 自由的風期 | 條件逐步落定、前行 | 語言轉向自由、選擇、可能性與起飛 |
+| P8 | 自我治理與未來展望期 | 整理、反思、治理自己 | 從外部拆解轉向內部秩序、責任、收尾與航向 |
+
+以上「語言轉向」是依 `LOC_ERA_REGISTRY.json` 的 ERA 描述做的 **inferred / working interpretation**，不是歷史原文摘錄。
+
+### 6.2 ERA Profile
+
+建議以 `era_id` 作為 Stage Profile 的主鍵：
 
 ```json
 {
-  "stage_id": "ZS-...",
-  "time_range": "",
-  "age_range": "",
+  "profile_id": "ZS-ERA-P8",
+  "era_id": "ERA-P8",
+  "time_range": {
+    "start": "2026-09-01",
+    "end": null
+  },
+  "age_range": "optional derived field",
   "source_refs": [],
   "governance_focus": [],
   "style_features": {
@@ -145,14 +174,32 @@
     "emotional_distance": "",
     "directness": "",
     "boundary_strength": "",
-    "humor": ""
+    "humor": "",
+    "primary_mode": ""
   },
   "representative_statements": [],
-  "status": "recorded | reconstructed | proposed"
+  "evidence_types": [
+    "era_event",
+    "lyrics",
+    "article",
+    "conversation_record",
+    "quote"
+  ],
+  "confidence": "recorded | reconstructed | inferred | unknown"
 }
 ```
 
-只有找到足夠歷史原文後，才建立 recorded profile。
+### 6.3 年齡投影
+
+年齡不是主分類，而是可以從日期衍生的 View。
+
+```text
+ERA → 當時真實語料 → 風格特徵
+                       ↓
+                  年齡投影
+```
+
+只有找到足夠歷史原文後，才把某個 ERA Profile 升格為 `recorded`。
 
 ## 7. 與其他 LOC 的關係
 
@@ -160,7 +207,7 @@
 - **LOC4**：文章、小說、散文保存長篇文字與敘事表達。
 - **LOC6**：保存治理原則、代表句、風格狀態與階段比較。
 - **LOC7**：分析句法、結構、向量特徵與可檢索關係。
-- **LOC8**：保存時期、事件與人生軌跡，使風格演變可以被時間化。
+- **LOC8**：保存 ERA、事件與人生軌跡；ERA 是政德風風格演變的主要時間索引。
 
 ## 8. 治理規則
 
