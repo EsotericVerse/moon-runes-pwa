@@ -484,7 +484,7 @@ class UnifiedSearchEngine:
                 if score > 0: scored.append((score,matched,asset))
             for score, matched, asset in sorted(scored,key=lambda r:(-r[0],str(r[2].get("asset_id",""))))[:top_k]:
                 payload=dict(asset);payload["matched_terms"]=matched;payload["keyword_match_only"]=True
-                knowledge.append({"result_id":asset.get("asset_id"),"system_id":"lo3rwang","primary_loc":asset.get("primary_loc") or "LOC7","related_locs":asset.get("related_locs",[]),"content_type":"knowledge_document","group":"knowledge","title":asset.get("title"),"summary":asset.get("notes") or asset.get("role") or "","score":round(score,6),"source_refs":[{"source_type":asset.get("source_type"),"source_id":asset.get("path"),"note":asset.get("authority_level")}],"payload":payload})
+                knowledge.append({"result_id":asset.get("asset_id"),"system_id":"lo3rwang","primary_loc":asset.get("primary_loc") or "LOC7","related_locs":asset.get("related_locs",[]),"content_type":asset.get("content_type") or "knowledge_document","group":"knowledge","title":asset.get("title"),"summary":asset.get("notes") or asset.get("role") or "","score":round(score,6),"source_refs":[{"source_type":asset.get("source_type"),"source_id":asset.get("path"),"note":asset.get("authority_level")}],"payload":payload})
 
         if wanted in {"", "all", "era"}:
             scored=[]
