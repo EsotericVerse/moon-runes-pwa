@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "component": "LOC_GLOBAL_NAV",
+  "brand": {
+    "label": "LOC · 月典",
+    "href": "index.html",
+    "subtitle": "Luna Codex"
+  },
+  "items": [
+    {
+      "id": "home",
+      "label": "首頁",
+      "href": "index.html",
+      "description": "回到 LOC 首頁"
+    },
+    {
+      "id": "runes",
+      "label": "月符資料",
+      "href": "list.html",
+      "description": "66 月符圖鑑"
+    },
+    {
+      "id": "search",
+      "label": "Unified Search",
+      "href": "search.html",
+      "description": "跨 LOC 搜尋"
+    },
+    {
+      "id": "music",
+      "label": "LOC3 歌曲",
+      "href": "loc3.html",
+      "description": "歌詞語意搜尋"
+    },
+    {
+      "id": "knowledge",
+      "label": "知識庫",
+      "href": "faq.html",
+      "description": "LOC7 Knowledge Base"
+    },
+    {
+      "id": "life",
+      "label": "時間線",
+      "href": "life.html",
+      "description": "LOC8 Life"
+    }
+  ]
+}
