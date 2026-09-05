@@ -17,7 +17,8 @@
     "Do not classify by semantic similarity alone.",
     "Confirmed records require an explicit draw-to-song provenance source.",
     "Candidates remain separate from confirmed rune songs.",
-    "For the 福／禍 recovery clue, match either token independently; do not require both in the same song."
+    "For the 福／禍 recovery clue, match either token independently; do not require both in the same song.",
+    "Rune-song recovery requires a minimum DISTINCT-rune threshold; two or three rune hits alone are insufficient."
   ],
   "confirmed_records": [
     {
@@ -215,7 +216,10 @@
     "expected_total": "more_than_3",
     "exact_total": "unknown",
     "note": "Do not treat the current three confirmed records as the full rune-song corpus.",
-    "keyword_scan_ready": true
+    "keyword_scan_ready": true,
+    "threshold_based_scan": true,
+    "threshold_value": null,
+    "threshold_note": "Exact minimum distinct-rune count will be calibrated from confirmed rune songs once full lyrics are available."
   },
   "recovery_clues": [
     {
@@ -649,11 +653,21 @@
     },
     "suggested_recovery_logic": [
       "Scan full lyrics for all 66 rune names.",
-      "Count distinct rune-name hits, not only total repetitions.",
-      "Prefer multiple medium/high-signal rune hits over repeated low-signal hits.",
-      "Treat one occurrence of 月／心／愛／夢／風／日 alone as insufficient.",
-      "Boost candidates that also align with a known OW3gs date or author recollection.",
+      "Count DISTINCT rune-name hits; repeated mentions of the same rune do not increase distinct-rune count.",
+      "Reject songs with only two or three rune-name hits as insufficient.",
+      "Only songs exceeding the configured distinct-rune threshold enter the rune-song candidate pool.",
+      "After threshold filtering, apply weighted signal tiers to prioritize candidates.",
+      "Treat 月／心／愛／夢／風／日 and similar common words as low-signal even when they contribute to the distinct count.",
+      "Boost candidates that align with a known OW3gs date, 11-card context, or author recollection.",
       "Only author confirmation or preserved draw-to-song provenance can promote a candidate to confirmed."
-    ]
+    ],
+    "threshold_policy": {
+      "metric": "distinct_rune_hits",
+      "rule": "A song must exceed a minimum count of distinct rune-name hits before it can enter the rune-song candidate pool.",
+      "minimum_distinct_runes": null,
+      "status": "threshold_to_be_calibrated",
+      "calibration_method": "Use confirmed rune songs as positive examples and ordinary LOC3 songs as controls when the private/full-lyrics Excel is available.",
+      "note": "Two or three rune-name hits are explicitly insufficient by themselves."
+    }
   }
 }
