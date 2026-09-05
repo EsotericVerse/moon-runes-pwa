@@ -20,7 +20,7 @@
 
 | 文件 | 用途 | 狀態 |
 |---|---|---|
-| [LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md](./LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md) | LOC 現行基本定義、Demo 架構、LOC1–8 責任、LOC8 關係／趨勢定位與下一步 | Current / Working |
+| [LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md](./LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md) | LOC 現行基本定義、Demo 架構、LOC1–8 責任、LOC8 時期／事件／時間統合與下一步 | Current / Working |
 | [LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md) | LOC2 真實情境／雙卡因果與 Event Corpus 定位 | Working |
 | [LOC6_ZHENGDE_STYLE.md](./LOC6_ZHENGDE_STYLE.md) | 政德風治理核心、代表句、風格演變與 Stage Profile 規則 | Current / Working |
 | [LOC7_KM.md](./LOC7_KM.md) | LOC7 Knowledge Management 核心治理文件 | Current |
@@ -52,4 +52,4 @@ UI / API / AI answer
 - **Proposed**：提案中，未視為現行規格。
 - **Historical**：保留歷史追溯，不作現行來源。
 
-最後同步：2026-09-05
+最後同步：2026-09-06
