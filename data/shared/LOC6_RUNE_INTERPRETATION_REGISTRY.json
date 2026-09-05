@@ -41,31 +41,31 @@
     "work": "月語者",
     "volumes": 7,
     "expected_chapter_slots": 182,
-    "extracted_chapter_slots": 177,
-    "usable_rune_interpretation_records": 175,
+    "extracted_chapter_slots": 182,
+    "usable_rune_interpretation_records": 180,
     "records_missing_rune_draw": 2,
     "records_by_volume": {
       "1": 26,
       "2": 26,
-      "3": 25,
-      "4": 25,
-      "5": 25,
-      "6": 25,
-      "7": 25
+      "3": 26,
+      "4": 26,
+      "5": 26,
+      "6": 26,
+      "7": 26
     },
     "moon_phase_counts": {
       "滿月": 7,
-      "下弦": 63,
+      "下弦": 64,
       "未記錄": 5,
-      "新月": 88,
+      "新月": 91,
       "星月": 1,
-      "上弦": 13
+      "上弦": 14
     },
     "direction_counts": {
-      "逆位": 138,
-      "正位": 130,
-      "半正位": 122,
-      "半逆位": 135
+      "逆位": 142,
+      "正位": 134,
+      "半正位": 124,
+      "半逆位": 140
     },
     "top_runes": [
       [
@@ -78,10 +78,14 @@
       ],
       [
         "心",
-        18
+        19
       ],
       [
         "星",
+        17
+      ],
+      [
+        "水",
         15
       ],
       [
@@ -89,11 +93,11 @@
         15
       ],
       [
-        "地",
-        14
+        "語",
+        15
       ],
       [
-        "水",
+        "地",
         14
       ],
       [
@@ -117,15 +121,15 @@
         13
       ],
       [
-        "語",
-        13
-      ],
-      [
         "樹",
         12
       ],
       [
         "時",
+        12
+      ],
+      [
+        "死",
         12
       ],
       [
@@ -142,10 +146,6 @@
       ],
       [
         "夢",
-        11
-      ],
-      [
-        "死",
         11
       ]
     ],
@@ -5023,6 +5023,65 @@
       }
     },
     {
+      "record_id": "MR-V03-EPILOGUE",
+      "work": "月語者",
+      "volume": 3,
+      "volume_title": "近未來，上弦之卷",
+      "chapter_type": "epilogue",
+      "chapter_number": null,
+      "chapter_title": null,
+      "record_type": "chapter_rune_interpretation",
+      "record_status": "recorded",
+      "runes": [
+        {
+          "raw": "星逆位",
+          "name_raw": "星",
+          "direction_raw": "逆位",
+          "name": "星",
+          "direction": "逆位",
+          "normalization_status": "exact"
+        },
+        {
+          "raw": "心正位",
+          "name_raw": "心",
+          "direction_raw": "正位",
+          "name": "心",
+          "direction": "正位",
+          "normalization_status": "exact"
+        },
+        {
+          "raw": "死正位",
+          "name_raw": "死",
+          "direction_raw": "正位",
+          "name": "死",
+          "direction": "正位",
+          "normalization_status": "exact"
+        }
+      ],
+      "real_moon_phase": "下弦",
+      "raw_rune_record": "此章代表符文為：星逆位、心正位、死正位。在下弦。",
+      "outline_evidence": "請寫出文字數超過一千五百字的文章，成為第三篇最後一章的終章。 大綱如下： 「解脫於命運之線的超脫者們，歡迎你們的前來。」 「特別是還有一位不同的月語者，月之共響者。」 「這裡是月之神國，我是大祭司。」 大祭司的聲音清亮而迴響於整個空間。 「依靠著月之符文的指示，來回了好幾個靈魂週期，終於找到一位月之共響者。」 「只有與月共鳴之共響者，才能夠清楚的了解月的意志。」 「月之神國，已經失去月之指引，有好一陣子了。」 「依靠著月之符文，月之神國勉強度過一次又一次的危難。」 「但這次，似乎躲不過了。」 大祭司長嘆了一口氣。 「觀察天象的月脈學家，預測將在這個週期內，會有另一枚巨大的天體往月之神國方向撞來。」 「若與神國產生撞擊，月之神國在此維度上的所有居民，將會慘遭毀滅。」 「我們以月之符文詢問過，但只得知，只有找到月之共響者，才能知道並處理這次的危機。」 大祭司將眼神轉向我。 「但不管如何，距離撞擊還有一些時間，請你們先適應一下高維度的環境， 若有什麼發現跟心得，歡迎告知。這很有可能是破解此死局的方式。」 「這裡是維度比你們之前所居住空間還高的神國。這裡的科技主要是以意志為主。」 「只要想，想的到，意志力夠強，就可成真。即為意念為主…",
+      "outline_evidence_truncated": true,
+      "loc6_role": "recorded interpretation example: rune combination -> narrative realization",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC8"
+      ],
+      "confidence": "recorded",
+      "review_flags": [],
+      "provenance": {
+        "source_type": "original_outline",
+        "source_file": "三篇大綱.txt",
+        "source_line": 804,
+        "outline_start_line": 805,
+        "outline_end_line": 832,
+        "extraction": "mechanical_from_uploaded_text",
+        "source_preserved": true
+      }
+    },
+    {
       "record_id": "MR-V04-PROLOGUE",
       "work": "月語者",
       "volume": 4,
@@ -6493,6 +6552,65 @@
         "source_line": 878,
         "outline_start_line": 879,
         "outline_end_line": 917,
+        "extraction": "mechanical_from_uploaded_text",
+        "source_preserved": true
+      }
+    },
+    {
+      "record_id": "MR-V04-EPILOGUE",
+      "work": "月語者",
+      "volume": 4,
+      "volume_title": "超古代，滿月之卷",
+      "chapter_type": "epilogue",
+      "chapter_number": null,
+      "chapter_title": null,
+      "record_type": "chapter_rune_interpretation",
+      "record_status": "recorded",
+      "runes": [
+        {
+          "raw": "明半逆位",
+          "name_raw": "明",
+          "direction_raw": "半逆位",
+          "name": "明",
+          "direction": "半逆位",
+          "normalization_status": "exact"
+        },
+        {
+          "raw": "星半正位",
+          "name_raw": "星",
+          "direction_raw": "半正位",
+          "name": "星",
+          "direction": "半正位",
+          "normalization_status": "exact"
+        },
+        {
+          "raw": "語逆位",
+          "name_raw": "語",
+          "direction_raw": "逆位",
+          "name": "語",
+          "direction": "逆位",
+          "normalization_status": "exact"
+        }
+      ],
+      "real_moon_phase": "新月",
+      "raw_rune_record": "此章代表符文為：明半逆位、星半正位、語逆位。在新月。",
+      "outline_evidence": "請寫出文字數超過一千五百字的文章，成為第四篇最後一章的終章。 大綱如下： 經此一役，月之神國國王終於回歸寶座。 大祭司身影合而為一，代表民心合一，無人願意月之意志消失。 但月脈學家表示，朝向神國的巨大天體移動的速度更快了。 本應該還有短暫些許靈魂週期，距離到達神國的時刻，只剩下短暫一些時間。 福報之爐跟月種繼續警告，神國與天體碰撞的結果， 除了月之意志粉碎，神國本身也終將為虛所吞沒。 但此次不同。 月之意志已然站在神國人民之側。 神國人民全體上下，皆期盼月之意志之領導， 只有在月之意志的呼喚下，神國人民才能逃過這必死之局。",
+      "outline_evidence_truncated": false,
+      "loc6_role": "recorded interpretation example: rune combination -> narrative realization",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC8"
+      ],
+      "confidence": "recorded",
+      "review_flags": [],
+      "provenance": {
+        "source_type": "original_outline",
+        "source_file": "四篇大綱.txt",
+        "source_line": 923,
+        "outline_start_line": 924,
+        "outline_end_line": 940,
         "extraction": "mechanical_from_uploaded_text",
         "source_preserved": true
       }
@@ -7973,6 +8091,65 @@
       }
     },
     {
+      "record_id": "MR-V05-EPILOGUE",
+      "work": "月語者",
+      "volume": 5,
+      "volume_title": "也許．幻蝕之卷",
+      "chapter_type": "epilogue",
+      "chapter_number": null,
+      "chapter_title": null,
+      "record_type": "chapter_rune_interpretation",
+      "record_status": "recorded",
+      "runes": [
+        {
+          "raw": "誤逆位",
+          "name_raw": "誤",
+          "direction_raw": "逆位",
+          "name": "誤",
+          "direction": "逆位",
+          "normalization_status": "exact"
+        },
+        {
+          "raw": "花逆位",
+          "name_raw": "花",
+          "direction_raw": "逆位",
+          "name": "花",
+          "direction": "逆位",
+          "normalization_status": "exact"
+        },
+        {
+          "raw": "病正位",
+          "name_raw": "病",
+          "direction_raw": "正位",
+          "name": "病",
+          "direction": "正位",
+          "normalization_status": "exact"
+        }
+      ],
+      "real_moon_phase": "新月",
+      "raw_rune_record": "此章代表符文為：誤逆位、花逆位、病正位。在新月。",
+      "outline_evidence": "請寫出文字數超過一千五百字的文章，成為第五篇最後一章的終章。 大綱如下： 彼岸，只有月亮，沒有太陽。 我們一路往彼岸深處前進。 途中看到各樣形形色色的光點。 有暮光教派的主教、聖騎士，大喊著虛無之神拯救我，卻得不到半點回音。 無奈只能繼續往前走，並期望前方仍是虛無之境。 有步履蹣跚的光點，因靈魂寶鑚即將碎裂，一步一步慢慢向前走去。 有不太亮之光點，彷彿缺少了什麼部位，一樣緩慢的向前走去。 有光點殘餘，勉力的持續往光點閃爍之光芒，慢慢的往前走去。 目標，都是同一個，彼岸的對岸之深處，輪迴。 而我們也即將看到，輪迴的真正奧秘之處。",
+      "outline_evidence_truncated": false,
+      "loc6_role": "recorded interpretation example: rune combination -> narrative realization",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC8"
+      ],
+      "confidence": "recorded",
+      "review_flags": [],
+      "provenance": {
+        "source_type": "original_outline",
+        "source_file": "五篇大綱.txt",
+        "source_line": 718,
+        "outline_start_line": 719,
+        "outline_end_line": 735,
+        "extraction": "mechanical_from_uploaded_text",
+        "source_preserved": true
+      }
+    },
+    {
       "record_id": "MR-V06-PROLOGUE",
       "work": "月語者",
       "volume": 6,
@@ -9448,6 +9625,65 @@
       }
     },
     {
+      "record_id": "MR-V06-EPILOGUE",
+      "work": "月語者",
+      "volume": 6,
+      "volume_title": "註定．無日之卷",
+      "chapter_type": "epilogue",
+      "chapter_number": null,
+      "chapter_title": null,
+      "record_type": "chapter_rune_interpretation",
+      "record_status": "recorded",
+      "runes": [
+        {
+          "raw": "語半逆位",
+          "name_raw": "語",
+          "direction_raw": "半逆位",
+          "name": "語",
+          "direction": "半逆位",
+          "normalization_status": "exact"
+        },
+        {
+          "raw": "水半逆位",
+          "name_raw": "水",
+          "direction_raw": "半逆位",
+          "name": "水",
+          "direction": "半逆位",
+          "normalization_status": "exact"
+        },
+        {
+          "raw": "界半逆位",
+          "name_raw": "界",
+          "direction_raw": "半逆位",
+          "name": "界",
+          "direction": "半逆位",
+          "normalization_status": "exact"
+        }
+      ],
+      "real_moon_phase": "新月",
+      "raw_rune_record": "此章代表符文為：語半逆位、水半逆位、界半逆位。在新月。",
+      "outline_evidence": "請寫出文字數超過一千五百字的文章，成為第五篇最後一章的終章。 大綱如下： 修整完畢之後，月神之投影，帶領我們往黃金宮殿的上層而走。 月神投影長嘆： 「其實要小心的是那些弒神者。」 「大部分的弒神者都是無意識，為守護極樂天堂的守衛。」 「少部份的弒神者，會對經過之弱小神祇進行敲詐。並在得到財物之後，將弱小神祇刺死。」 「很多前往極樂天堂的人，都是為了搶奪財寶，又或是稀世珍寶。」 我聽到眼睛為之一亮： 「所以應該有古代智慧捲軸是嗎？」 月神投影邊走邊說： 「是一定有的。到目前為止，月之符文詳細記載數量跟相關文獻，仍然沒有很多。」 我淡然的說： 「我是已經確定總數為66個了，但仍有少數符文還是個謎，不知道怎麼配合使用比較好。」 「我想古代智慧捲軸裡面應該會有不少記載。」 朔端笑了笑： 「很難得會有老師感興趣的事情。既然老師這麼想看，我一定會保護好老師。」 望敦也微笑了一下： 「而且只要老師會的，都會教導給我們。所以也等於我們看過了古代智慧捲軸。」 「但不管如何，我們守護的誓言之鍊不變，不會隨著命運或是神祇影響而變。」 跟上的小月更加表達： 「探究知識真的比權位有趣的多！我對古代智慧捲軸也充滿著期望！」 一行人，即將踏往最終站，極樂…",
+      "outline_evidence_truncated": true,
+      "loc6_role": "recorded interpretation example: rune combination -> narrative realization",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC8"
+      ],
+      "confidence": "recorded",
+      "review_flags": [],
+      "provenance": {
+        "source_type": "original_outline",
+        "source_file": "六篇大綱.txt",
+        "source_line": 894,
+        "outline_start_line": 895,
+        "outline_end_line": 925,
+        "extraction": "mechanical_from_uploaded_text",
+        "source_preserved": true
+      }
+    },
+    {
       "record_id": "MR-V07-PROLOGUE",
       "work": "月語者",
       "volume": 7,
@@ -10918,6 +11154,65 @@
         "source_line": 799,
         "outline_start_line": 800,
         "outline_end_line": 831,
+        "extraction": "mechanical_from_uploaded_text",
+        "source_preserved": true
+      }
+    },
+    {
+      "record_id": "MR-V07-EPILOGUE",
+      "work": "月語者",
+      "volume": 7,
+      "volume_title": "無限．迴夢之卷",
+      "chapter_type": "epilogue",
+      "chapter_number": null,
+      "chapter_title": null,
+      "record_type": "chapter_rune_interpretation",
+      "record_status": "recorded",
+      "runes": [
+        {
+          "raw": "分半逆位",
+          "name_raw": "分",
+          "direction_raw": "半逆位",
+          "name": "分",
+          "direction": "半逆位",
+          "normalization_status": "exact"
+        },
+        {
+          "raw": "日正位",
+          "name_raw": "日",
+          "direction_raw": "正位",
+          "name": "日",
+          "direction": "正位",
+          "normalization_status": "exact"
+        },
+        {
+          "raw": "緣半正位",
+          "name_raw": "緣",
+          "direction_raw": "半正位",
+          "name": "緣",
+          "direction": "半正位",
+          "normalization_status": "exact"
+        }
+      ],
+      "real_moon_phase": "上弦",
+      "raw_rune_record": "此章代表符文為：分半逆位、日正位、緣半正位。在上弦。",
+      "outline_evidence": "請寫出文字數超過一千五百字的文章，成為整部小說最後一章的終章。 大綱如下： 一輪明月掛於夜空中。 世上所有人不知道的是，有人仍在月亮的陰暗面，那孤獨的實驗室內，進行研究。 小月的周圍散發出64個月之符文。 我大聲喊：「不錯！小月，你也做的到的！掌握所有的月之符文，對你不存在難度！」 小月笑著說：「要不是月之符文中，有兩個是月語者專用符文，否則我應該都能全部掌握！」 我拿著裁決，嘗試喊著：「命運審判，裁決之怒！」 裁決有點愛理不理，象徵性的發射了一道小小雷光。 小月跟著大笑：「裁決還願意回應你，不錯了！」 一旁是朔端拿著雙劍，跟另一旁拿著拳套的望敦比試。 朔端笑著說： 「上次就試過了，真的覺得可行！以我們對彼此武器的熟悉度，兩者都精通也不難！」 望敦身形有些不太平衡，哀怨的說： 「但我還是不習慣用腳攻擊！用拳套還可以，用腳踢，真的需要把筋拉的開一點！」 朔端拿出夢迴，交給望敦。望敦同樣回敬以無序。 「這次，來看看迴旋鏢對弩箭！」 只見朔端完全無法控制無序，因後座力太強大，無序反而變成往各方向的亂射。 望敦也還未掌握迴旋鏢的施力方式，丟出後常常接不住。 這是一個奇怪卻又正常無比的景象。 形象是相同，但人變了。 無論如何，大家臉上…",
+      "outline_evidence_truncated": true,
+      "loc6_role": "recorded interpretation example: rune combination -> narrative realization",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC8"
+      ],
+      "confidence": "recorded",
+      "review_flags": [],
+      "provenance": {
+        "source_type": "original_outline",
+        "source_file": "七篇大綱.txt",
+        "source_line": 837,
+        "outline_start_line": 838,
+        "outline_end_line": 871,
         "extraction": "mechanical_from_uploaded_text",
         "source_preserved": true
       }
