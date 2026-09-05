@@ -170,7 +170,7 @@
   },
   "dataset_pipeline": {
     "builder": "card_api/scripts/build_loc3_dataset.py",
-    "builder_version": "0.1.3",
+    "builder_version": "0.1.5",
     "provenance_fields_preserved": [
       "source_origin",
       "rune_song_flag",
@@ -179,7 +179,8 @@
       "draw_result",
       "source_note"
     ],
-    "note": "Future dataset rebuilds preserve any explicit rune/draw provenance that actually exists in the source workbook instead of dropping it."
+    "note": "Future dataset rebuilds preserve any explicit rune/draw provenance that actually exists in the source workbook instead of dropping it.",
+    "era_resolution": "created_date range first; period fallback"
   },
   "next_confirmation_rule": "When a rebuilt LOC3 work contains explicit rune_provenance linking a real draw to the song, promote the corresponding candidate to confirmed after source review.",
   "confirmation_policy": {
@@ -897,10 +898,10 @@
   "unresolved_title_records": [
     {
       "title": "界線之內",
-      "status": "title_confirmed_work_unresolved",
+      "status": "title_confirmed_original_work_unresolved",
       "author_memory": "界線之內確定是。",
-      "conflict": "Current workbook/repo mappings for this title are P5/P6, while author later confirmed only P2-P4 can contain rune songs.",
-      "handling": "Do not attach rune_song status to E0414/E0494/LW0228 until a P2-P4 source work or corrected historical mapping is recovered."
+      "conflict": "ERA is not unresolved: existing same-title records resolve by date to later periods. The unresolved issue is which historical work record corresponds to the author-confirmed rune song.",
+      "handling": "Resolve ERA from date normally. Do not attach rune_song status to the later same-title P5/P6 records; recover the original P2-P4 work record or corrected historical mapping."
     }
   ]
 }
