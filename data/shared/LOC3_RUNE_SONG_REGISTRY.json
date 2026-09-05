@@ -18,8 +18,7 @@
     "Confirmed records require an explicit draw-to-song provenance source.",
     "Candidates remain separate from confirmed rune songs."
   ],
-  "confirmed_records": [],
-  "candidate_records": [
+  "confirmed_records": [
     {
       "candidate_id": "RS-CAND-LW0001",
       "work_id": "LW0001",
@@ -39,13 +38,18 @@
           "月亮月光"
         ]
       },
-      "confidence": "reconstructed_high",
-      "status": "author_recalled",
+      "confidence": "confirmed_by_author",
+      "status": "confirmed",
       "note": "Same date as a recorded OW3gs spread and title exactly matches a rune in that spread. Original songwriting provenance is still required for confirmed rune_song status. Author later recalled that rune songs were consistently created from OW3gs 11-card draws and identified these songs as likely belonging to that process.",
       "author_recollection": {
         "statement": "符文歌曲都是以 OW3gs 11 抽來創作；這幾首應該就是。",
         "recorded_in_current_review": true,
         "certainty": "likely_not_absolute"
+      },
+      "confirmation": {
+        "type": "explicit_author_confirmation",
+        "statement": "如果只有三首，那就一定是。",
+        "confirmed_in_current_review": true
       }
     },
     {
@@ -67,13 +71,18 @@
           "月亮月光"
         ]
       },
-      "confidence": "reconstructed_high",
-      "status": "author_recalled",
+      "confidence": "confirmed_by_author",
+      "status": "confirmed",
       "note": "Same date as a recorded OW3gs spread, but no direct rune-to-song provenance is stored in the current LOC3 metadata. Author later recalled that rune songs were consistently created from OW3gs 11-card draws and identified these songs as likely belonging to that process.",
       "author_recollection": {
         "statement": "符文歌曲都是以 OW3gs 11 抽來創作；這幾首應該就是。",
         "recorded_in_current_review": true,
         "certainty": "likely_not_absolute"
+      },
+      "confirmation": {
+        "type": "explicit_author_confirmation",
+        "statement": "如果只有三首，那就一定是。",
+        "confirmed_in_current_review": true
       }
     },
     {
@@ -97,16 +106,22 @@
           "守護界線"
         ]
       },
-      "confidence": "reconstructed_high",
-      "status": "author_recalled",
+      "confidence": "confirmed_by_author",
+      "status": "confirmed",
       "note": "Same date as a recorded OW3gs spread, but no direct rune-to-song provenance is stored in the current LOC3 metadata. Author later recalled that rune songs were consistently created from OW3gs 11-card draws and identified these songs as likely belonging to that process.",
       "author_recollection": {
         "statement": "符文歌曲都是以 OW3gs 11 抽來創作；這幾首應該就是。",
         "recorded_in_current_review": true,
         "certainty": "likely_not_absolute"
+      },
+      "confirmation": {
+        "type": "explicit_author_confirmation",
+        "statement": "如果只有三首，那就一定是。",
+        "confirmed_in_current_review": true
       }
     }
   ],
+  "candidate_records": [],
   "known_draw_contexts": [
     {
       "date": "2026-07-11",
@@ -164,7 +179,11 @@
     "loc3_work_count": 403,
     "same_date_candidates_2026_07_11": 3,
     "high_candidates": 1,
-    "medium_candidates": 2
+    "medium_candidates": 2,
+    "confirmed_rune_songs": 3,
+    "known_minimum_total": 3,
+    "total_status": "incomplete",
+    "author_recollection": "符文歌曲數量不只三首；目前只回收到三首已確認作品。"
   },
   "dataset_pipeline": {
     "builder": "card_api/scripts/build_loc3_dataset.py",
@@ -188,6 +207,12 @@
   "known_method": {
     "rune_song_creation_method": "OW3gs 11-card draw → interpretation → lyrics/song",
     "source": "author recollection in current review",
-    "status": "recorded_method"
+    "status": "confirmed_by_author"
+  },
+  "recovery_status": {
+    "confirmed_now": 3,
+    "expected_total": "more_than_3",
+    "exact_total": "unknown",
+    "note": "Do not treat the current three confirmed records as the full rune-song corpus."
   }
 }
