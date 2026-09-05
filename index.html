@@ -362,7 +362,7 @@
 
     .loc8-grid {
       display:grid;
-      grid-template-columns:repeat(4,minmax(0,1fr));
+      grid-template-columns:repeat(3,minmax(0,1fr));
       gap:12px;
     }
 
@@ -1200,7 +1200,7 @@
           <a class="cta primary" href="result.html?mode=daily">今日抽一張</a>
           <a class="cta secondary" href="#rune-entry">開始問一件事</a>
           <a class="cta secondary" href="search.html?content_type=knowledge">搜尋文件／知識庫</a>
-          <a class="cta secondary" href="#loc1-8">LOC1–8 全覽</a>
+          <a class="cta secondary" href="#loc3-8">LOC3–8 全覽</a>
         </div>
 
         <div class="version-row" aria-label="目前系統版本">
@@ -1227,7 +1227,7 @@
           <p class="eyebrow">Start Here</p>
           <h2 id="start-title">今天想從哪裡開始？</h2>
         </div>
-        <p>先使用，再理解。LOC1–8 是系統框架，不是進站前必須讀完的說明書。</p>
+        <p>先使用，再理解。先從月符開始，再進入 LOC2；LOC3–8 的完整分工放在後面展開。</p>
       </div>
 
       <div class="action-grid">
@@ -1254,87 +1254,102 @@
       </div>
     </section>
 
-
-    <section class="section" id="loc1-8" aria-labelledby="loc1-8-title">
+<section class="section" id="rune-entry" aria-labelledby="rune-title">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">LOC 1–8 · Responsibility Map</p>
-          <h2 id="loc1-8-title">八個分發，各自處理一種語言責任。</h2>
+          <p class="eyebrow">LOC1 · Rune-guided Language Evolution</p>
+          <h2 id="rune-title">問一件事，或讓語言自己長出來</h2>
         </div>
-        <p>LOC1–8 不是版本先後，也不是成熟度高低；它們是同一套月典中的八個功能責任區。先看自己要處理的是符文、遊戲、音樂、文字、媒介、治理、文字建築，還是生活脈絡。</p>
+        <p>可以直接從一個問題開始，選擇適合的抽取方式，讓月符提供一個新的語言起點。</p>
       </div>
 
-      <div class="loc8-grid">
-        <a class="loc8-card" href="result.html?mode=daily">
-          <span class="num">LOC1 · LOTS</span>
-          <h3>符文抽籤</h3>
-          <span class="role">Rune / Lots</span>
-          <p>66 符文的基礎語意、方向與抽牌入口。單抽、雙抽、三抽、五抽與 OW3gs 都由這裡開始。</p>
-          <span class="entry">每日抽一張 →</span>
-        </a>
+      <div class="rune-layout">
+        <div class="left-panel">
+          <div class="card-display" id="rune-card">
+            <img src="64images/65_玄.png" alt="玄之符文" id="rune-image" />
+          </div>
 
-        <a class="loc8-card" href="loc2.html">
-          <span class="num">LOC2 · GAME</span>
-          <h3>語意遊戲</h3>
-          <span class="role">Semantic Playground</span>
-          <p>把符文放進事件、因果與玩家互動裡，測試語意如何被回答、共振、干預與暫時定義。</p>
-          <span class="entry">進入 LOC2 →</span>
-        </a>
+          <div class="card-attributes" id="attributes">
+            <p>卡牌面向：正位</p>
+            <p>介紹：「玄」，月符所揭示</p>
+            <p>所屬分組：它就是全部</p>
+            <p id="moon-phase-index">月相：無 / 真實月相：計算中...</p>
+            <a class="rune-data-cta" href="list.html">
+              <span>
+                <strong>查看完整月符資料</strong>
+                <small>66 月符圖鑑 · 八組分類 · 卡片詳細說明</small>
+              </span>
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
 
-        <a class="loc8-card" href="loc3.html">
-          <span class="num">LOC3 · MUSIC</span>
-          <h3>音樂分發</h3>
-          <span class="role">Music Distribution</span>
-          <p>保存歌曲、歌詞與創作脈絡，並以語意搜尋從情緒、主題與處境重新找到作品。</p>
-          <span class="entry">進入 LOC3 →</span>
-        </a>
+        <div class="right-panel">
+          <div class="rune-intro">
+            <strong>不知道怎麼說，也沒關係。</strong>
+            月符可以成為語意起點：問事、整理感受，或在沒有靈感時提供新的創作路徑。
+          </div>
 
-        <a class="loc8-card" href="#works-title">
-          <span class="num">LOC4 · WRITING</span>
-          <h3>文字創作</h3>
-          <span class="role">Writing Distribution</span>
-          <p>小說、文章與其他長短篇文字的創作層；文字本身是作品，不等同於治理或知識架構。</p>
-          <span class="entry">查看文字作品 ↓</span>
-        </a>
+          <div class="description" id="description">
+            <p><strong>選擇抽牌方式</strong></p>
+            <p>從單一卡片到多卡組合，依問題需要選擇不同的語意結構。OW3gs 11 張模式目前保留位置，暫不開放連結。</p>
 
-        <a class="loc8-card" href="#loc5-showcase">
-          <span class="num">LOC5 · RESONANCE</span>
-          <h3>多媒體共振</h3>
-          <span class="role">Image × Sound × Text</span>
-          <p>把文字、音樂、圖像與影音放在同一個表達層中，觀察同一概念跨媒介後如何改變。</p>
-          <span class="entry">查看 LOC5 ↓</span>
-        </a>
+            <div class="draw-mode-grid" aria-label="LOC1 抽牌模式">
+              <a class="draw-mode" href="result.html">
+                <span class="mode-kicker">Single Rune</span>
+                <div>
+                  <strong>單卡</strong>
+                  <p>一個問題，一個語意起點。</p>
+                </div>
+              </a>
 
-        <a class="loc8-card" href="#loc6-governance">
-          <span class="num">LOC6 · GOVERNANCE</span>
-          <h3>治理與政德風</h3>
-          <span class="role">Governance</span>
-          <p>保存價值觀、治理原則、代表句與政德風的階段變化，處理「如何定義、如何取捨、如何守界線」。</p>
-          <span class="entry">查看 LOC6 ↓</span>
-        </a>
+              <a class="draw-mode" href="result.html?mode=daily">
+                <span class="mode-kicker">Daily Rune</span>
+                <div>
+                  <strong>每日</strong>
+                  <p>一天一張，觀看當日提示。</p>
+                </div>
+              </a>
 
-        <a class="loc8-card" href="search.html?content_type=knowledge">
-          <span class="num">LOC7 · TEXT ARCHITECTURE</span>
-          <h3>文字建築與知識</h3>
-          <span class="role">Architecture / KM / Retrieval</span>
-          <p>研究文字結構、關係、知識管理與語意檢索；FAQ、KM 與 Unified Search 都屬於這個責任範圍。</p>
-          <span class="entry">搜尋 LOC 知識 →</span>
-        </a>
+              <a class="draw-mode" href="result.html?mode=2card">
+                <span class="mode-kicker">2 Cards</span>
+                <div>
+                  <strong>雙卡</strong>
+                  <p>以「因 → 果」觀看兩者關係。</p>
+                </div>
+              </a>
 
-        <a class="loc8-card" href="life.html">
-          <span class="num">LOC8 · CONTEXT ANALYSIS</span>
-          <h3>脈絡分析</h3>
-          <span class="role">Rune → ERA → Event</span>
-          <p>把每日符文、ERA 與 Event 放回生活脈絡中：先看近期訊號，再看時期聚合，最後回到具體事件與狀態轉移。</p>
-          <span class="entry">進入脈絡分析 →</span>
-        </a>
-      </div>
+              <a class="draw-mode" href="result.html?mode=3card">
+                <span class="mode-kicker">3 Cards</span>
+                <div>
+                  <strong>三卡</strong>
+                  <p>以「源 → 轉 → 合」形成語意路徑。</p>
+                </div>
+              </a>
 
-      <div class="loc8-summary">
-        <strong>一套系統，八種責任。</strong>
-        LOC1–7 分別承接符文、情境、音樂、文字、多媒體、治理與文字建築；LOC8 不取代前七者，而是把可被時間化的結果重新放回生活、ERA 與 Event 中觀察脈絡。
+              <a class="draw-mode" href="result.html?mode=5card">
+                <span class="mode-kicker">5 Cards</span>
+                <div>
+                  <strong>五卡</strong>
+                  <p>加入內外情境，觀看更完整的問題結構。</p>
+                </div>
+              </a>
+
+              <div class="draw-mode disabled" aria-disabled="true">
+                <span class="mode-kicker">OW3gs · Reserved</span>
+                <div>
+                  <strong>11 張</strong>
+                  <p>OW3gs 模式預留；目前不提供連結。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
+
+
+    
 
     <section class="section" id="language-evolution" aria-labelledby="language-evolution-title">
       <div class="section-heading">
@@ -1640,99 +1655,7 @@
       </p>
     </section>
 
-    <section class="section" id="rune-entry" aria-labelledby="rune-title">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">LOC1 · Rune-guided Language Evolution</p>
-          <h2 id="rune-title">問一件事，或讓語言自己長出來</h2>
-        </div>
-        <p>可以直接從一個問題開始，選擇適合的抽取方式，讓月符提供一個新的語言起點。</p>
-      </div>
-
-      <div class="rune-layout">
-        <div class="left-panel">
-          <div class="card-display" id="rune-card">
-            <img src="64images/65_玄.png" alt="玄之符文" id="rune-image" />
-          </div>
-
-          <div class="card-attributes" id="attributes">
-            <p>卡牌面向：正位</p>
-            <p>介紹：「玄」，月符所揭示</p>
-            <p>所屬分組：它就是全部</p>
-            <p id="moon-phase-index">月相：無 / 真實月相：計算中...</p>
-            <a class="rune-data-cta" href="list.html">
-              <span>
-                <strong>查看完整月符資料</strong>
-                <small>66 月符圖鑑 · 八組分類 · 卡片詳細說明</small>
-              </span>
-              <span aria-hidden="true">→</span>
-            </a>
-          </div>
-        </div>
-
-        <div class="right-panel">
-          <div class="rune-intro">
-            <strong>不知道怎麼說，也沒關係。</strong>
-            月符可以成為語意起點：問事、整理感受，或在沒有靈感時提供新的創作路徑。
-          </div>
-
-          <div class="description" id="description">
-            <p><strong>選擇抽牌方式</strong></p>
-            <p>從單一卡片到多卡組合，依問題需要選擇不同的語意結構。OW3gs 11 張模式目前保留位置，暫不開放連結。</p>
-
-            <div class="draw-mode-grid" aria-label="LOC1 抽牌模式">
-              <a class="draw-mode" href="result.html">
-                <span class="mode-kicker">Single Rune</span>
-                <div>
-                  <strong>單卡</strong>
-                  <p>一個問題，一個語意起點。</p>
-                </div>
-              </a>
-
-              <a class="draw-mode" href="result.html?mode=daily">
-                <span class="mode-kicker">Daily Rune</span>
-                <div>
-                  <strong>每日</strong>
-                  <p>一天一張，觀看當日提示。</p>
-                </div>
-              </a>
-
-              <a class="draw-mode" href="result.html?mode=2card">
-                <span class="mode-kicker">2 Cards</span>
-                <div>
-                  <strong>雙卡</strong>
-                  <p>以「因 → 果」觀看兩者關係。</p>
-                </div>
-              </a>
-
-              <a class="draw-mode" href="result.html?mode=3card">
-                <span class="mode-kicker">3 Cards</span>
-                <div>
-                  <strong>三卡</strong>
-                  <p>以「源 → 轉 → 合」形成語意路徑。</p>
-                </div>
-              </a>
-
-              <a class="draw-mode" href="result.html?mode=5card">
-                <span class="mode-kicker">5 Cards</span>
-                <div>
-                  <strong>五卡</strong>
-                  <p>加入內外情境，觀看更完整的問題結構。</p>
-                </div>
-              </a>
-
-              <div class="draw-mode disabled" aria-disabled="true">
-                <span class="mode-kicker">OW3gs · Reserved</span>
-                <div>
-                  <strong>11 張</strong>
-                  <p>OW3gs 模式預留；目前不提供連結。</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    
 
 
     <section class="section" id="loc2" aria-labelledby="loc2-title">
@@ -1768,6 +1691,72 @@
       </div>
 
       <p class="loc-note"><strong>LOC2 目前為 Alpha，但已具備完整可展示骨架。</strong> 核心規則、Alpha Event 32、1–64 符文行為效果、八職業資料與 Web Alpha 都已存在；因此 LOC2 現在應視為可 Demo 的實際成品，而不是僅有概念。</p>
+    </section>
+
+<section class="section" id="loc3-8" aria-labelledby="loc3-8-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">LOC3–8 · Responsibility Map</p>
+          <h2 id="loc3-8-title">從作品到脈絡：LOC3–8。</h2>
+        </div>
+        <p>LOC1 的月符與 LOC2 的語意遊戲已經在前面直接體驗；接下來是 LOC3–8，分別承接音樂、文字、多媒體、治理、文字建築與生活脈絡。</p>
+      </div>
+
+      <div class="loc8-grid">
+
+        <a class="loc8-card" href="loc3.html">
+          <span class="num">LOC3 · MUSIC</span>
+          <h3>音樂分發</h3>
+          <span class="role">Music Distribution</span>
+          <p>保存歌曲、歌詞與創作脈絡，並以語意搜尋從情緒、主題與處境重新找到作品。</p>
+          <span class="entry">進入 LOC3 →</span>
+        </a>
+
+        <a class="loc8-card" href="#works-title">
+          <span class="num">LOC4 · WRITING</span>
+          <h3>文字創作</h3>
+          <span class="role">Writing Distribution</span>
+          <p>小說、文章與其他長短篇文字的創作層；文字本身是作品，不等同於治理或知識架構。</p>
+          <span class="entry">查看文字作品 ↓</span>
+        </a>
+
+        <a class="loc8-card" href="#loc5-showcase">
+          <span class="num">LOC5 · RESONANCE</span>
+          <h3>多媒體共振</h3>
+          <span class="role">Image × Sound × Text</span>
+          <p>把文字、音樂、圖像與影音放在同一個表達層中，觀察同一概念跨媒介後如何改變。</p>
+          <span class="entry">查看 LOC5 ↓</span>
+        </a>
+
+        <a class="loc8-card" href="#loc6-governance">
+          <span class="num">LOC6 · GOVERNANCE</span>
+          <h3>治理與政德風</h3>
+          <span class="role">Governance</span>
+          <p>保存價值觀、治理原則、代表句與政德風的階段變化，處理「如何定義、如何取捨、如何守界線」。</p>
+          <span class="entry">查看 LOC6 ↓</span>
+        </a>
+
+        <a class="loc8-card" href="search.html?content_type=knowledge">
+          <span class="num">LOC7 · TEXT ARCHITECTURE</span>
+          <h3>文字建築與知識</h3>
+          <span class="role">Architecture / KM / Retrieval</span>
+          <p>研究文字結構、關係、知識管理與語意檢索；FAQ、KM 與 Unified Search 都屬於這個責任範圍。</p>
+          <span class="entry">搜尋 LOC 知識 →</span>
+        </a>
+
+        <a class="loc8-card" href="life.html">
+          <span class="num">LOC8 · CONTEXT ANALYSIS</span>
+          <h3>脈絡分析</h3>
+          <span class="role">Rune → ERA → Event</span>
+          <p>把每日符文、ERA 與 Event 放回生活脈絡中：先看近期訊號，再看時期聚合，最後回到具體事件與狀態轉移。</p>
+          <span class="entry">進入脈絡分析 →</span>
+        </a>
+      </div>
+
+      <div class="loc8-summary">
+        <strong>前兩步先使用，後六步再展開。</strong>
+        LOC1 提供月符與抽牌，LOC2 把符文帶進可玩的情境；LOC3–7 承接作品、媒介、治理與文字建築，LOC8 再把可被時間化的結果放回每日符文、ERA 與 Event 中觀察脈絡。
+      </div>
     </section>
 
     <section class="section" aria-labelledby="cycle-title">
