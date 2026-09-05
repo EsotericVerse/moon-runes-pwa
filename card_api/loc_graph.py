@@ -162,7 +162,8 @@ class LOCGraph:
             if not aid:
                 continue
             ploc = asset.get("primary_loc") or "LOC7"
-            self._node(aid, "knowledge_asset", asset.get("title") or aid, ploc, path=asset.get("path"))
+            node_type = "image" if asset.get("content_type") == "knowledge_image" else "knowledge_asset"
+            self._node(aid, node_type, asset.get("title") or aid, ploc, path=asset.get("path"), role=asset.get("role"))
             self._edge(aid, ploc, "owned_by_loc", "LOC_KNOWLEDGE_ASSET_REGISTRY")
 
         # LOC8 eras + deterministic temporal order
