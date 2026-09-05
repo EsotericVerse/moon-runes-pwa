@@ -620,6 +620,7 @@
      */
     const STORAGE_KEY = "loc8-life-events-v1";
     const EVENT_CACHE_KEY = "loc8-life-events-cache-v1";
+    const DAILY_DRAW_CACHE_KEY = "loc8-daily-draw-cache-v1";
     const TREND_CACHE_KEY = "loc8-life-trend-cache-v1";
     const RUNE_CACHE_KEY = "loc8-rune-options-cache-v1";
     const CACHE_SCHEMA_VERSION = "1";
@@ -654,6 +655,7 @@
     };
 
     let events = [];
+    let dailyDraws = [];
     let eraRegistry = [];
     let editingId = '';
 
@@ -945,34 +947,32 @@
       );
     }
 
-    function renderDailyDraws(sorted) {
-      const draws = sorted.filter(isDailyDrawEvent).sort((a,b) => {
+    function renderDailyDraws(draws) {
+      const sorted = draws.slice().sort((a,b) => {
         const dateDiff = new Date(b.date) - new Date(a.date);
         if (dateDiff) return dateDiff;
         return new Date(b.created_at || 0) - new Date(a.created_at || 0);
       });
 
-      els.drawCountBadge.textContent = draws.length + ' 筆';
-      if (!draws.length) {
+      els.drawCountBadge.textContent = sorted.length + ' 筆';
+      if (!sorted.length) {
         els.dailyDrawHistory.innerHTML = '<div class="empty">尚無每日抽牌紀錄。</div>';
         return;
       }
 
       const byDate = new Map();
-      draws.forEach(e => {
-        if (!byDate.has(e.date)) byDate.set(e.date, []);
-        byDate.get(e.date).push(e);
+      sorted.forEach(d => {
+        if (!byDate.has(d.date)) byDate.set(d.date, []);
+        byDate.get(d.date).push(d);
       });
 
       els.dailyDrawHistory.innerHTML = [...byDate.entries()].map(([date, items]) => {
-        const rows = items.map(e => {
-          const typeText = String(e.event_type || '').toLowerCase();
-          const titleText = String(e.event_title || e.title || '');
-          const kind = typeText.includes('supplement') || /^補抽[｜|]/.test(titleText) ? '補抽' : '主抽';
-          const title = (e.event_title || '').replace(/^每日抽牌｜|^補抽｜/, '') || e.object_id || '未命名';
+        const rows = items.map(d => {
+          const kind = d.draw_kind === 'daily_draw_supplement' ? '補抽' : '主抽';
+          const title = (d.rune || '未命名') + (d.direction || '');
           return `<div class="draw-line"><span class="draw-kind">${kind}</span><span class="draw-title">${esc(title)}</span></div>`;
         }).join('');
-        const note = items.find(e => e.description)?.description || '';
+        const note = items.find(d => d.note)?.note || '';
         return `
           <div class="draw-entry">
             <div class="draw-date">${esc(date)}</div>
@@ -983,6 +983,46 @@
           </div>
         `;
       }).join('');
+    }
+
+    function readDailyDrawCache() {
+      const cached = readJsonCache(DAILY_DRAW_CACHE_KEY, null);
+      return cached?.schema_version === CACHE_SCHEMA_VERSION && Array.isArray(cached.items) ? cached.items : [];
+    }
+
+    function writeDailyDrawCache(items) {
+      try {
+        localStorage.setItem(DAILY_DRAW_CACHE_KEY, JSON.stringify({
+          schema_version: CACHE_SCHEMA_VERSION,
+          saved_at: Date.now(),
+          items
+        }));
+      } catch (_) {}
+    }
+
+    async function loadDailyDraws() {
+      const cached = readDailyDrawCache();
+      if (cached.length) {
+        dailyDraws = cached;
+        renderDailyDraws(dailyDraws);
+      }
+
+      try {
+        const url = new URL(SHEET_API_URL);
+        url.searchParams.set('action', 'daily_draws');
+        url.searchParams.set('user_id', 'lo3rwang');
+        const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store', redirect: 'follow' });
+        if (!res.ok) throw new Error('Daily draw GET failed');
+        const data = await res.json();
+        if (data && data.ok === false) throw new Error(data.error || 'API error');
+        dailyDraws = Array.isArray(data.daily_draws) ? data.daily_draws : [];
+        writeDailyDrawCache(dailyDraws);
+        renderDailyDraws(dailyDraws);
+      } catch (err) {
+        console.error(err);
+        dailyDraws = cached;
+        renderDailyDraws(dailyDraws);
+      }
     }
 
     async function loadDrawRunes() {
@@ -1013,13 +1053,12 @@
     function renderAll() {
       const sorted = events.map(normalizeEvent).sort((a,b) => new Date(a.date) - new Date(b.date));
       events = sorted;
-      const lifeEvents = sorted.filter(e => !isDailyDrawEvent(e) && !/^EV-ERA-P\d+$/i.test(String(e.id || '')));
+      const lifeEvents = sorted.filter(e => !/^EV-ERA-P\d+$/i.test(String(e.id || '')));
       renderMetrics(lifeEvents);
       renderCurrent(lifeEvents);
       renderTimeline(lifeEvents);
       renderTrajectory(lifeEvents);
       renderTrend(lifeEvents);
-      renderDailyDraws(sorted);
     }
 
     function resetEventForm() {
@@ -1070,29 +1109,30 @@
       const note = String($('#drawNote').value || '').trim();
       if (!date || !rune || !direction) return;
 
-      const kindLabel = kind === 'daily_draw_supplement' ? '補抽' : '每日抽牌';
-      const event = normalizeEvent({
+      const draw = {
         user_id: 'lo3rwang',
         date,
-        object_type: 'rune',
-        object_id: rune,
-        event_type: kind,
-        event_title: kindLabel + '｜' + rune + direction,
-        description: note,
-        state_before: '',
-        state_after: '',
-        era: '',
+        draw_kind: kind,
+        rune,
+        direction,
+        note,
         tags: ['daily-draw','LOC1',kind === 'daily_draw_supplement' ? 'supplement' : 'primary',direction],
-        status: 'recorded',
-        confidence: 'recorded',
         source: 'life.html#daily-draw',
-        primary_loc: 'LOC8',
-        related_locs: ['LOC1','LOC8']
-      });
+        confidence: 'recorded',
+        system_id: 'lo3rwang'
+      };
 
       try {
-        await saveEvent(event, 'event');
-        await loadEvents();
+        const res = await fetch(SHEET_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'daily_draw', daily_draw: draw }),
+          redirect: 'follow'
+        });
+        if (!res.ok) throw new Error('Daily draw POST failed');
+        const data = await res.json();
+        if (data && data.ok === false) throw new Error(data.error || 'API error');
+        await loadDailyDraws();
         resetDailyDrawForm();
       } catch (err) {
         console.error(err);
@@ -1202,7 +1242,7 @@
       if (!res.ok) throw new Error('Health check failed');
       const data = await res.json();
       if (!data || data.ok !== true) throw new Error(data && data.error ? data.error : 'API not ready');
-      if (data.schema !== 'loc8-mvp-0.3') {
+      if (data.schema !== 'loc8-mvp-0.4') {
         throw new Error('API schema mismatch: ' + (data.schema || 'unknown'));
       }
       setSync(true, 'Google Sheet API 已連線 · v0.3');
@@ -1228,6 +1268,7 @@
       if (trigger) trigger.classList.add('active');
       if (showDaily) {
         history.replaceState(null, '', '#daily-draw');
+        loadDailyDraws();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
@@ -1242,6 +1283,7 @@
     loadDrawRunes();
     loadEraRegistry();
     loadEvents();
+    loadDailyDraws();
     if (location.hash === '#daily-draw') switchView('daily', $('#dailyDrawViewBtn'));
   </script>
   <script src="js/loc-nav.js"></script>
