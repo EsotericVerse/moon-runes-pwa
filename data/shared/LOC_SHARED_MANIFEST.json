@@ -127,7 +127,8 @@
       "shared_result_refs": "connected",
       "rune_song_registry": "connected; confirmed provenance records currently pending",
       "reasoning_proposition_layer": "connected",
-      "cross_relationship_registry": "connected"
+      "cross_relationship_registry": "connected",
+      "ui": "Unified Search only; loc3.html compatibility redirect"
     },
     "LOC4": {
       "writing_registry": "schema-ready",
@@ -196,10 +197,12 @@
     "ui": {
       "primary_search": "search.html",
       "specialist_views": [
-        "loc3.html",
         "faq.html",
         "list.html",
         "life.html"
+      ],
+      "redirected_views": [
+        "loc3.html → search.html?content_type=lyrics_work"
       ]
     },
     "live_coverage": {
