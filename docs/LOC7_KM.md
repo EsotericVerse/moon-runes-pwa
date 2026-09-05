@@ -207,7 +207,7 @@ Structured schema：`data/shared/LOC3_REASONING_SCHEMA.json`
 - 反轉／重框
 - 結論
 
-這類作品可使用 `discourse_mode = rational_discourse | rational_reflection | system_observation`，並允許 `emotion_applicability = not_primary | not_required`。當情緒不適用時，不得再把「沒有情緒 tag」計為未完成分析。
+這類作品可使用 `discourse_mode = rational_discourse | rational_reflection | system_observation`，並允許 `emotion_applicability = not_primary | not_required`。當情緒不適用時，不得再把「沒有情緒 tag」計為未完成分析。對這類作品，`reasoning_tags`／道理命題必須進入 retrieval text，讓「關係需要互動」「逃避也是面對」「邊界不可無限退讓」等命題本身成為可搜尋語意，而不是只依賴情緒詞。
 
 對理性論述型歌曲，`reasoning_tags` 與 `key_propositions` 在檢索上的重要性應至少等同、必要時高於情緒 tag。LOC3 保存歌曲語意，LOC6 可解讀其中的治理／政德風命題，LOC7 再處理命題結構、文字建築與向量檢索。
 
