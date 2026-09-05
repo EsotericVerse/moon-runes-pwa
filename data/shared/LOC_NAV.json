@@ -20,6 +20,12 @@
       "description": "66 月符圖鑑"
     },
     {
+      "id": "game",
+      "label": "LOC2 遊戲",
+      "href": "loc2.html",
+      "description": "Semantic Playground"
+    },
+    {
       "id": "search",
       "label": "Unified Search",
       "href": "search.html",

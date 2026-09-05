@@ -7,6 +7,7 @@
   <meta name="description" content="LOC（月典）是一套由月符自然生長出的個人語言系統框架。從每日抽牌、作品、句型、文字建築到生命事件與時間語意，讓語言可以被記錄、理解、關聯與演化。" />
   <title>LOC｜月典｜個人語言系統</title>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/loc-nav.css" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -290,6 +291,18 @@
       font-weight: 800;
     }
 
+    .loc-note {
+      margin:16px 0 0;
+      padding:16px 18px;
+      border-left:3px solid var(--loc-gold);
+      border-radius:10px;
+      background:rgba(231,194,125,.07);
+      color:var(--loc-muted);
+      line-height:1.7;
+    }
+
+    .loc-note strong { color:var(--loc-text); }
+
     .works-list {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -338,6 +351,212 @@
 
     .work-links a:hover,
     .work-links a:focus-visible { text-decoration: underline; }
+
+
+
+    .loc6-panel{
+      display:grid;
+      grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);
+      gap:18px;
+      align-items:stretch;
+    }
+
+    .loc6-core,
+    .loc6-quotes{
+      padding:20px;
+      border:1px solid var(--loc-border);
+      border-radius:20px;
+      background:var(--loc-surface-soft);
+    }
+
+    .loc6-core h3{
+      margin:0;
+      color:var(--loc-text);
+      font-size:1.12rem;
+      line-height:1.4;
+    }
+
+    .loc6-lead{
+      margin:10px 0 0;
+      color:var(--loc-muted);
+      line-height:1.7;
+    }
+
+    .loc6-definition{
+      margin:16px 0 0;
+      padding:14px 16px;
+      border-left:3px solid var(--loc-gold);
+      border-radius:0 14px 14px 0;
+      background:rgba(229,193,123,.08);
+      color:var(--loc-text);
+      font-weight:800;
+      line-height:1.65;
+    }
+
+    .loc6-flow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+      margin-top:16px;
+      color:var(--loc-muted);
+      font-size:.82rem;
+    }
+
+    .loc6-flow span{
+      padding:7px 10px;
+      border:1px solid var(--loc-border);
+      border-radius:999px;
+      background:rgba(255,255,255,.025);
+    }
+
+    .loc6-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:16px;
+    }
+
+    .loc6-tags span{
+      color:var(--loc-purple);
+      font-size:.76rem;
+      font-weight:750;
+    }
+
+    .loc6-quotes{
+      display:grid;
+      gap:10px;
+      align-content:start;
+    }
+
+    .loc6-quote{
+      padding:12px 13px;
+      border:1px solid var(--loc-border);
+      border-radius:14px;
+      background:rgba(4,16,33,.42);
+      color:var(--loc-text);
+      font-size:.9rem;
+      line-height:1.55;
+    }
+
+    .loc6-more{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:16px;
+      padding:13px 14px;
+      border:1px solid rgba(229,193,123,.42);
+      border-radius:14px;
+      background:rgba(229,193,123,.08);
+      color:var(--loc-text);
+      text-decoration:none;
+    }
+
+    .loc6-more strong{color:var(--loc-gold);font-size:.86rem}
+    .loc6-more small{display:block;margin-top:2px;color:var(--loc-muted);font-size:.72rem}
+
+    .loc5-showcase {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
+
+    .loc5-reel-card {
+      overflow:hidden;
+      border:1px solid var(--loc-border);
+      border-radius:20px;
+      background:var(--loc-surface-soft);
+    }
+
+    .loc5-reel-visual {
+      position:relative;
+      aspect-ratio:16/9;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 50% 36%,rgba(180,158,255,.18),transparent 14rem),
+        rgba(3,13,28,.68);
+    }
+
+    .loc5-reel-visual img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      opacity:.78;
+      transform:scale(1.02);
+    }
+
+    .loc5-reel-badge {
+      position:absolute;
+      left:14px;
+      top:14px;
+      padding:6px 9px;
+      border:1px solid rgba(229,193,123,.48);
+      border-radius:999px;
+      background:rgba(7,24,45,.82);
+      color:var(--loc-gold);
+      font-size:.7rem;
+      font-weight:800;
+      letter-spacing:.08em;
+    }
+
+    .loc5-reel-number {
+      position:absolute;
+      right:16px;
+      bottom:10px;
+      color:rgba(255,255,255,.88);
+      font-size:clamp(2.4rem,7vw,4.2rem);
+      font-weight:900;
+      line-height:1;
+      text-shadow:0 8px 26px rgba(0,0,0,.45);
+    }
+
+    .loc5-reel-body {
+      padding:17px;
+    }
+
+    .loc5-reel-body h3 {
+      margin:0;
+      color:var(--loc-text);
+      font-size:1.05rem;
+    }
+
+    .loc5-reel-meta {
+      display:block;
+      margin-top:5px;
+      color:var(--loc-purple);
+      font-size:.73rem;
+      font-weight:750;
+    }
+
+    .loc5-reel-body p {
+      margin:10px 0 0;
+      color:var(--loc-muted);
+      font-size:.84rem;
+      line-height:1.65;
+    }
+
+    .loc5-reel-link {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:14px;
+      padding:12px 13px;
+      border:1px solid rgba(229,193,123,.42);
+      border-radius:14px;
+      color:var(--loc-text);
+      background:rgba(229,193,123,.08);
+      text-decoration:none;
+    }
+
+    .loc5-reel-link strong { color:var(--loc-gold); font-size:.86rem; }
+    .loc5-reel-link small { display:block; margin-top:2px; color:var(--loc-muted); font-size:.7rem; }
+
+    .loc5-note {
+      margin:14px 0 0;
+      color:var(--loc-muted);
+      font-size:.82rem;
+    }
 
     .visual-card {
       overflow: hidden;
@@ -711,6 +930,8 @@
     }
 
     @media (max-width: 720px) {
+      .loc5-showcase,
+      .loc6-panel { grid-template-columns:1fr; }
       .draw-mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
@@ -739,16 +960,7 @@
 
 <body>
   <main class="loc-page">
-    <nav class="topbar" aria-label="主要導覽">
-      <a class="brand" href="index.html">LOC · 月典</a>
-      <div class="nav-links">
-        <a href="result.html?mode=daily">每日抽牌</a>
-        <a href="list.html">月符資料</a>
-        <a href="faq.html">知識庫</a>
-        <a href="loc3.html">作品搜尋</a>
-        <a href="life.html">LOC8 · Life</a>
-      </div>
-    </nav>
+    <nav class="loc-global-nav" data-loc-nav data-page="home" aria-label="全站導覽"></nav>
 
     <header class="hero">
       <div>
@@ -917,6 +1129,93 @@
       </div>
     </section>
 
+
+    <section class="section" id="loc5-showcase" aria-labelledby="loc5-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">LOC5 · Resonance × LOC1 · Luna Runes</p>
+          <h2 id="loc5-title">月之符文，已經有實際的影音作品。</h2>
+        </div>
+        <p>LOC5 不只是系統圖形或未來規劃。這兩支已公開發布的 Reels，直接把月之符文從卡牌與文字帶進影音表達。</p>
+      </div>
+
+      <div class="loc5-showcase">
+        <article class="loc5-reel-card">
+          <div class="loc5-reel-visual" aria-hidden="true">
+            <img src="pics/loc_runes_66_overview.jpg" alt="" loading="lazy" />
+            <span class="loc5-reel-badge">LOC5 · PUBLIC REEL</span>
+            <span class="loc5-reel-number">01</span>
+          </div>
+          <div class="loc5-reel-body">
+            <h3>月之符文宣傳影片 01</h3>
+            <span class="loc5-reel-meta">LOC1 × LOC5 · Luna Runes Promotion</span>
+            <p>以影音形式呈現月之符文，作為 LOC5 已完成實體作品的公開展示，也讓第一次接觸 LOC 的人可以先從畫面與節奏認識月符。</p>
+            <a class="loc5-reel-link" href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">
+              <span><strong>在 Instagram Reels 觀看</strong><small>開啟公開發布版本</small></span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="loc5-reel-card">
+          <div class="loc5-reel-visual" aria-hidden="true">
+            <img src="pics/loc_runes_66_overview.jpg" alt="" loading="lazy" />
+            <span class="loc5-reel-badge">LOC5 · PUBLIC REEL</span>
+            <span class="loc5-reel-number">02</span>
+          </div>
+          <div class="loc5-reel-body">
+            <h3>月之符文宣傳影片 02</h3>
+            <span class="loc5-reel-meta">LOC1 × LOC5 · Luna Runes Promotion</span>
+            <p>第二支公開宣傳作品延續同一個跨媒體方向：符文不只被閱讀，也能透過動態影像、聲音與節奏形成另一種入口。</p>
+            <a class="loc5-reel-link" href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">
+              <span><strong>在 Instagram Reels 觀看</strong><small>開啟公開發布版本</small></span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </article>
+      </div>
+
+      <p class="loc5-note">首頁只提供輕量預覽，不嵌入 Instagram 播放器，也不預先載入影片；點擊後直接前往 Reels 播放。</p>
+    </section>
+
+
+    <section class="section" id="loc6-governance" aria-labelledby="loc6-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">LOC6 · Governance · 政德風</p>
+          <h2 id="loc6-title">把經驗整理成可以再次使用的語言。</h2>
+        </div>
+        <p>LOC6 保存價值觀、判斷方式、邊界與語氣，並成為 LOC3 音樂、LOC4 文字作品及其他創作的風格來源。</p>
+      </div>
+
+      <div class="loc6-panel">
+        <div class="loc6-core">
+          <h3>政德風不是語錄集合，而是一套語言治理方式。</h3>
+          <p class="loc6-lead">它把過往經驗整理成可辨識、可重用的句型與價值判準，讓「怎麼回答、怎麼拒絕、怎麼保留選擇」成為可以被記錄與追溯的語言。</p>
+          <div class="loc6-definition">政德風＝長話短說的極限：拆權威、斷話術、守底線。</div>
+          <div class="loc6-flow" aria-label="政德風治理流程">
+            <span>拆劇本</span><span>斷頻率</span><span>反話術</span><span>回收主權</span><span>保持幽默</span><span>拒絕情緒勒索</span>
+          </div>
+          <div class="loc6-tags">
+            <span>核心哲學</span><span>主權與意志</span><span>邊界與防衛</span><span>幽默與反轉</span>
+          </div>
+          <a class="loc6-more" href="faq.html">
+            <span><strong>從知識庫理解 LOC6</strong><small>搜尋「政德風」、「LOC6」、「Governance」</small></span>
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <div class="loc6-quotes" aria-label="政德風代表句">
+          <div class="loc6-quote">「價值觀的價值。」</div>
+          <div class="loc6-quote">「免錢的最貴。」</div>
+          <div class="loc6-quote">「我允許錯誤發生，只要錯的有價值。」</div>
+          <div class="loc6-quote">「你在玩話術，我在改規則。」</div>
+          <div class="loc6-quote">「慈悲不是投降。」</div>
+          <div class="loc6-quote">「我不是要當王，我只要系統能跑。」</div>
+        </div>
+      </div>
+    </section>
+
     <section class="section" aria-labelledby="framework-image-title">
       <div class="section-heading">
         <div>
@@ -1047,6 +1346,42 @@
           </div>
         </div>
       </div>
+    </section>
+
+
+    <section class="section" id="loc2" aria-labelledby="loc2-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">LOC2 · Semantic Playground</p>
+          <h2 id="loc2-title">如果「理解語意」本身就能變成遊戲？</h2>
+        </div>
+        <p>LOC2 把月符從抽取與解讀，轉成玩家之間可以互動、干預、驗證與形成暫時定義的語意遊戲。</p>
+      </div>
+
+      <div class="action-grid">
+        <a class="action-card" href="loc2.html">
+          <span class="kicker">Playable Alpha</span>
+          <h3>世界提出問題，玩家用符文回答。</h3>
+          <p>事件解謎加上 PvP 干預；答案彼此共振，形成暫時定義。雙卡沿用因果，三卡沿用源－轉－合，並以「德（De）」作為核心進度與勝負判定。</p>
+          <span class="arrow">進入 LOC2 →</span>
+        </a>
+
+        <div class="action-card">
+          <span class="kicker">Current Build</span>
+          <h3>不是只有規則文件，已經有可操作版本。</h3>
+          <p>目前已有 Alpha 核心循環、事件卡、八職業、1–64 符文行為資料與單機雙人 Web Alpha；後續再持續調整正式語意判定與遊戲平衡。</p>
+          <span class="arrow">Semantic Playground · Alpha</span>
+        </div>
+
+        <div class="action-card">
+          <span class="kicker">LOC1 × LOC2</span>
+          <h3>同一副月符，從抽牌切換到遊戲。</h3>
+          <p>LOC1 提供符文與組合語意，LOC2 把這些語意轉成事件、回應與互動規則；它是月符從「被解讀」走向「被操作」的第一個遊戲化成果。</p>
+          <span class="arrow">66 月符 → Semantic Playground</span>
+        </div>
+      </div>
+
+      <p class="loc-note"><strong>LOC2 目前為 Alpha，但已具備完整可展示骨架。</strong> 核心規則、Alpha Event 32、1–64 符文行為效果、八職業資料與 Web Alpha 都已存在；因此 LOC2 現在應視為可 Demo 的實際成品，而不是僅有概念。</p>
     </section>
 
     <section class="section" aria-labelledby="cycle-title">
@@ -1180,6 +1515,7 @@
       <img class="modal-image" id="visual-modal-image" src="" alt="" />
     </div>
   </div>
+  <script src="js/loc-nav.js"></script>
   <script src="js/locMoonPhase.js"></script>
   <script src="js/main.js"></script>
 

@@ -131,6 +131,12 @@
       "label": "知識物件"
     },
     {
+      "id": "knowledge_document",
+      "primary_loc": "LOC7",
+      "kind": "knowledge",
+      "label": "知識文件"
+    },
+    {
       "id": "faq",
       "primary_loc": "LOC7",
       "kind": "knowledge_view",
@@ -158,6 +164,7 @@
   "rules": [
     "content_type describes what a record is; primary_loc describes who owns its canonical definition.",
     "A media representation of a LOC3/LOC4 work receives its own LOC5 media_id and references the source work_id.",
-    "Unified search may filter by content_type without exposing LOC numbers to the user."
+    "Unified search may filter by content_type without exposing LOC numbers to the user.",
+    "README.md and other overview documents may be indexed as knowledge_document while preserving their derived/provenance status."
   ]
 }
