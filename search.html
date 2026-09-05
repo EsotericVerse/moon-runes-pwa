@@ -38,7 +38,7 @@
             <option value="rune_record">月符</option>
             <option value="lyrics_work">歌曲／歌詞</option>
             <option value="reel">Reels／影片</option>
-            <option value="faq">知識／FAQ</option>
+            <option value="knowledge">文件／知識庫</option>
             <option value="era">ERA／時間</option>
           </select>
           <select id="period"><option value="">所有 ERA／創作時期</option></select>
@@ -77,7 +77,7 @@
       if(r.content_type==='rune_record'){const n=String(r.result_id||'').replace('RUNE-','');out.push(`<a class="secondary" href="list.html#${esc(n)}">查看符文資料</a>`)}
       if(r.content_type==='lyrics_work'){const v=p.recommended_version||{};if(v.suno_url)out.push(`<a class="play" href="${esc(v.suno_url)}" target="_blank" rel="noopener">Suno 播放 ↗</a>`);if(v.ig_preview_url)out.push(`<a class="secondary" href="${esc(v.ig_preview_url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`)}
       if(r.content_type==='reel'&&p.url)out.push(`<a class="play" href="${esc(p.url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`);
-      if(r.content_type==='faq')out.push('<a class="secondary" href="faq.html">知識庫專頁</a>');
+      if(r.content_type==='knowledge_document'&&p.path)out.push(`<a class="secondary" href="${esc(p.path)}">閱讀文件</a>`);
       if(r.content_type==='era')out.push('<a class="secondary" href="life.html">時間線專頁</a>');
       return out.length?`<div class="links">${out.join('')}</div>`:'';
     }
