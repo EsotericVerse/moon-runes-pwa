@@ -142,5 +142,29 @@
     "rational_discourse/rational_reflection/system_observation + self_to_question_or_world => 思辨論述型",
     "self-governance, self-regulation, boundary, responsibility, closure, choice => 治理宣言型",
     "warning, admonition, accountability, consequences directed at others => 勸戒論述型"
-  ]
+  ],
+  "taxonomy_axes": {
+    "provenance_axis": {
+      "examples": [
+        "normal_song",
+        "rune_song",
+        "narrative_song",
+        "explicit_rune_text"
+      ],
+      "rule": "Describes how/why the work was created. Rune-song status is provenance and must never be inferred from lyric type."
+    },
+    "lyric_type_axis": {
+      "examples": [
+        "感性情緒型",
+        "思辨論述型",
+        "治理宣言型",
+        "勸戒論述型",
+        "狀態紀錄型",
+        "敘事角色型",
+        "幸福宣告型"
+      ],
+      "rule": "Describes how the lyrics communicate meaning. It is independent from provenance."
+    },
+    "orthogonality_rule": "A rune_song may also be 思辨論述型、治理宣言型、感性情緒型等；the rune_song flag remains separately visible and searchable."
+  }
 }
