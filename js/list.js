@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
     .sort((a,b) => Number(a.編號) - Number(b.編號));
 
   const grid = document.querySelector("#rune-grid");
-  const search = document.querySelector("#rune-search");
   const group = document.querySelector("#group-filter");
   const count = document.querySelector("#rune-count");
   const modal = document.querySelector("#rune-modal");
@@ -88,12 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function render(){
-    const q = search.value.trim().toLowerCase();
     const g = group.value;
-    const filtered = all.filter(r => {
-      const hay = [r.編號,r.符文名稱,r.英文,r.所屬分組,r.月相].join(" ").toLowerCase();
-      return (!q || hay.includes(q)) && (!g || r.所屬分組 === g);
-    });
+    const filtered = all.filter(r => !g || r.所屬分組 === g);
 
     count.textContent = `${filtered.length} / ${all.length}`;
 
@@ -162,7 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if(r) openRune(r);
   });
 
-  search.addEventListener("input", render);
   group.addEventListener("change", render);
   closeBtn.addEventListener("click", () => modal.close());
   modal.addEventListener("click", e => {
