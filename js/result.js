@@ -91,7 +91,7 @@ function getPhaseInfo(card, realPhase) {
   return directionData?.現況?.find(item => item.現在月相 === realPhase) || null;
 }
 
-function cardHtml(card, label) {
+function cardHtml(card, label, realPhase) {
   return `
     <article class="rune-card">
       <span class="position">${label}</span>
@@ -100,8 +100,28 @@ function cardHtml(card, label) {
       </div>
       <div class="card-meta">
         <strong>${card.rune.符文名稱}</strong>
-        <div class="draw-result-strip">${card.direction} · ${card.rune.所屬分組}</div>
-        <div class="card-moon-strip">卡片月相｜${card.rune.月相}</div>
+
+        <div class="card-result-row">
+          <div class="card-result-cell">
+            卡片方向
+            <span>${card.direction}</span>
+          </div>
+          <div class="card-result-cell">
+            所屬分組
+            <span>${card.rune.所屬分組}組</span>
+          </div>
+        </div>
+
+        <div class="card-moon-row">
+          <div class="card-moon-cell">
+            卡片月相
+            <span>${card.rune.月相}</span>
+          </div>
+          <div class="card-moon-cell">
+            真實月相
+            <span>${realPhase}</span>
+          </div>
+        </div>
       </div>
     </article>
   `;
@@ -231,7 +251,7 @@ function renderResult(mode, config, realPhase) {
   const reading = document.getElementById("reading");
 
   grid.dataset.count = String(config.count);
-  grid.innerHTML = cards.map((card, i) => cardHtml(card, config.labels[i])).join("");
+  grid.innerHTML = cards.map((card, i) => cardHtml(card, config.labels[i], realPhase)).join("");
 
   reading.innerHTML = config.count === 1
     ? buildSingleReading(cards[0], realPhase, mode === "daily")
@@ -254,10 +274,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   document.title = `LOC1｜${config.title}`;
   document.getElementById("mode-title").textContent = config.title;
   document.getElementById("mode-kicker").textContent = config.kicker;
-  document.getElementById("moon-phase").textContent = `本次真實月相｜${realPhase}`;
+  const moonPhase = document.getElementById("moon-phase");
+  if (moonPhase) {
+    moonPhase.textContent = `本次真實月相｜${realPhase}`;
+  }
   const ritualPhase = document.getElementById("ritual-phase");
   if (ritualPhase) {
-    ritualPhase.textContent = `真實月相：${realPhase}`;
+    ritualPhase.textContent = `月相：無 / 真實月相：${realPhase}`;
   }
 
   await runRitual(mode, config);
