@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LOC8 · Life / Event Timeline</title>
-  <meta name="description" content="LOC8 — 事件、時間、軌跡與趨勢的簡易測試頁面" />
+  <title>LOC8 · 脈絡分析</title>
+  <meta name="description" content="LOC8 脈絡分析：以每日符文、ERA 與 Event 三條資料流觀察近期訊號、時期脈絡與事件軌跡。" />
   <style>
     :root {
       --bg: #07101f;
@@ -536,8 +536,8 @@
       <div class="brand">
         <div class="moon" aria-hidden="true"></div>
         <div>
-          <h1>LOC8 · Life</h1>
-          <p>Rune · Era · Event</p>
+          <h1>LOC8 · 脈絡分析</h1>
+          <p>Rune → ERA → Event</p>
         </div>
       </div>
       <nav class="nav" aria-label="LOC8 功能">
@@ -577,7 +577,7 @@
         </div>
       </nav>
       <div class="sidebar-foot">
-        使用順序：每日符文 → ERA → Event。先觀察每日訊號，再看時期脈絡，最後回到具體事件。
+        脈絡分析不是單一時間線：先看每日符文的近期訊號，再看 ERA 的時期聚合，最後回到 Event 的具體事件與狀態轉移。
       </div>
     </aside>
 
@@ -586,8 +586,8 @@
       <section class="hero" id="overview">
         <div>
           <div class="eyebrow">Luna Codex · Distribution 8</div>
-          <h2>生活不是紀錄，是軌跡。</h2>
-          <p>以事件與時間為基底，保存狀態改變，觀察一個人、一個符文、一件作品或整個系統如何一路演變，以及目前正在形成什麼趨勢。</p>
+          <h2>把分散的紀錄，放回同一段脈絡。</h2>
+          <p>LOC8 以每日符文、ERA 與 Event 三種尺度整理生活資料：每日符文觀察近期訊號，ERA 聚合一段時期的關鍵字與狀態，Event 保存具體發生的事件與轉折。</p>
         </div>
         <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">載入中…</span></div>
       </section>
@@ -676,7 +676,7 @@
       <div class="life-view" id="eraTrendView" hidden>
         <section class="hero">
           <div>
-            <div class="eyebrow">LOC8 · ERA Trend</div>
+            <div class="eyebrow">LOC8 · Context Analysis / ERA</div>
             <h2>時期不是標籤，是連續的變化。</h2>
             <p>用連續時期觀看每一段狀態如何接續、轉折，以及現在正在形成什麼方向。Suno 活躍期只保留為來源參考，不再取代 LOC8 的時期邊界。</p>
           </div>
@@ -718,7 +718,7 @@
       <div class="life-view" id="eventTimeView" hidden>
         <section class="hero">
           <div>
-            <div class="eyebrow">LOC8 · Event Time</div>
+            <div class="eyebrow">LOC8 · Context Analysis / Event</div>
             <h2>事件發生在時間裡，時間形成軌跡。</h2>
             <p>Event Timeline 保留事件順序；Trajectory 只看事件造成的狀態轉移。Event 的 tags 不在這裡做獨立趨勢，而是回到 ERA 中形成時期關鍵字。</p>
           </div>
@@ -753,7 +753,7 @@
       <div class="life-view" id="dailyDrawView" hidden>
         <section class="hero">
           <div>
-            <div class="eyebrow">LOC1 × LOC8 · Daily Rune</div>
+            <div class="eyebrow">LOC8 · Context Analysis / Daily Rune</div>
             <h2>每日符文</h2>
             <p>先看近期符文趨勢，再處理紀錄。主抽作為趨勢核心，補抽保留為當日脈絡；符文定義直接來自 JSON，不重複存進 Sheet。</p>
           </div>
@@ -850,7 +850,7 @@
         </div>
       </dialog>
 
-      <div class="footer">LOC8 · Life Event / Daily Draw / Time / Trajectory / Trend</div>
+      <div class="footer">LOC8 · 脈絡分析 · Rune → ERA → Event</div>
     </main>
   </div>
 
