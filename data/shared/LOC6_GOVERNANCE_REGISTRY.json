@@ -246,7 +246,7 @@
     "collaboration principles"
   ],
   "boundary_note": "LOC6 interprets meaning, governance, style-state, and recorded rune-to-text realization. It does not own rune mother definitions, grammar/syntax engineering, or temporal event storage.",
-  "updated_at": "2026-09-05",
+  "updated_at": "2026-09-06",
   "rune_interpretation_corpus": {
     "registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
     "work": "月語者",
@@ -316,15 +316,15 @@
       "profile_id": "ZS-ERA-P1",
       "era_id": "ERA-P1",
       "period": "P1",
-      "era_name": "Suno原型探索期",
+      "era_name": "月之符文形成期",
       "time_range": {
-        "start": "2025-02-21",
+        "start": "2025-05-06",
         "end": "2025-10-15"
       },
       "source_event_id": "EV-ERA-P1",
-      "source_description": "系統時期：2025-02-21～2025-10-15。Suno 原始活躍範圍：2025-02-21～2025-06-24。Suno新手上路；只備份，不搜尋。",
-      "state_before": "尚未形成穩定 ERA 分期",
-      "state_after": "原型探索：創作與語言仍在嘗試、累積與辨識階段",
+      "source_description": "系統時期：2025-05-06～2025-10-15。P1 起點改以月之符文出現為準；Suno 2025-02-21 起資料保留為 P0／前史證據。",
+      "state_before": "P0 月符前史／Pre-LOC",
+      "state_after": "月之符文形成：月符開始出現，逐步形成符文語意、小說實作與後續 LOC 核心。",
       "governance_focus": [
         "探索",
         "試錯",
