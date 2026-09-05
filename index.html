@@ -942,6 +942,33 @@
       border:0 !important;
     }
 
+    .framework-bridge {
+      display:flex;
+      align-items:flex-start;
+      gap:14px;
+      margin-top:34px;
+      padding:16px 18px;
+      border:1px solid var(--loc-border);
+      border-radius:16px;
+      background:rgba(23,43,72,.48);
+      box-shadow:var(--loc-shadow);
+    }
+    .framework-bridge strong {
+      flex:0 0 auto;
+      color:var(--loc-gold);
+      font-size:.9rem;
+      white-space:nowrap;
+    }
+    .framework-bridge span {
+      color:var(--loc-muted);
+      font-size:.86rem;
+      line-height:1.65;
+    }
+    @media (max-width:720px){
+      .framework-bridge { flex-direction:column; gap:6px; }
+      .framework-bridge strong { white-space:normal; }
+    }
+
     .framework-map-section {
       margin-top:34px;
     }
@@ -1594,7 +1621,12 @@
 
     
 
-        <section class="framework-map-section" id="framework-map" aria-labelledby="framework-image-title">
+        <div class="framework-bridge" aria-label="LOC1–8 系統概論">
+      <strong>LOC1–8 的本質，是一套語言系統框架。</strong>
+      <span>它們不是八個彼此獨立的產品，也不是版本先後；而是把同一套語言系統依照符文、情境、音樂、文字、多媒體、治理、文字建築與脈絡分析，分成八個不同的功能責任區。</span>
+    </div>
+
+    <section class="framework-map-section" id="framework-map" aria-labelledby="framework-image-title">
       <h2 id="framework-image-title" class="sr-only">LOC1–8 月典框架圖</h2>
       <div class="framework-map-stage" id="frameworkMapStage">
         <img
