@@ -118,7 +118,7 @@
   margin:0 0 24px;
   padding:28px 0 0;
 }
-.loc-header-meta{
+.loc-header .loc-header-meta{
   margin:0 0 9px;
   color:var(--accent,var(--mint,var(--loc-purple,#b49eff)));
   font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
@@ -127,7 +127,7 @@
   line-height:1.45;
   letter-spacing:.14em;
 }
-.loc-header-title,
+.loc-header .loc-header-title,
 .loc-page-title{
   margin:0;
   max-width:920px;
@@ -138,7 +138,7 @@
   line-height:1;
   letter-spacing:-.05em;
 }
-.loc-header-subtitle,
+.loc-header .loc-header-subtitle,
 .loc-page-subtitle{
   max-width:800px;
   margin:15px 0 0;
@@ -149,7 +149,7 @@
   line-height:1.35;
   letter-spacing:-.02em;
 }
-.loc-header-copy,
+.loc-header .loc-header-copy,
 .loc-page-intro{
   max-width:800px;
   margin:12px 0 0;
@@ -160,9 +160,9 @@
 @media(max-width:560px){
   .loc-header,
   .loc-page-hero{padding-top:20px}
-  .loc-header-meta{font-size:.7rem;letter-spacing:.11em}
-  .loc-header-title,
+  .loc-header .loc-header-meta{font-size:.7rem;letter-spacing:.11em}
+  .loc-header .loc-header-title,
   .loc-page-title{font-size:clamp(2.75rem,14vw,4rem)}
-  .loc-header-subtitle,
+  .loc-header .loc-header-subtitle,
   .loc-page-subtitle{font-size:clamp(1.25rem,6.4vw,1.7rem)}
 }
