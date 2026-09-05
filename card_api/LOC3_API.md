@@ -28,6 +28,14 @@ Suno 播放數與喜歡數只用於同詞版本內的推薦順序。
 IG Reels，版本推薦分數加 20；已有 YouTube MV，加 30。兩者可累加。IG 點閱、
 Suno 播放與 YouTube MV 觀看數仍維持為獨立指標。
 
+
+### 作品治理與推薦
+
+- 禁咒／符文詠唱類標記為 `hidden_exception`，不進一般 LOC3 搜尋、展示或推薦。
+- 與 LOC4 有明確作品關聯的主題曲、角色曲、OP／求婚歌等，保存 `loc4_relation`，並以工作層級 `recommendation_bonus` 作小幅推薦加權。
+- 現行 LOC4 關聯加權基準為 +40；搜尋端換算為有上限的小幅 prior，不會蓋過歌詞語意相似度。
+- Reels／YouTube MV 仍屬版本層加權；LOC4 關聯屬作品層加權，兩者分開治理。
+
 ## 篩選值
 
 `GET /loc3/facets`
