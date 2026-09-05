@@ -34,8 +34,8 @@
     {
       "id": "music",
       "label": "LOC3 歌曲",
-      "href": "loc3.html",
-      "description": "歌詞語意搜尋"
+      "href": "search.html?content_type=lyrics_work",
+      "description": "Unified Search 的 LOC3 音樂篩選"
     },
     {
       "id": "knowledge",
