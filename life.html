@@ -703,9 +703,12 @@
 
     async function loadEraRegistry() {
       try {
-        const res = await fetch('data/shared/LOC_ERA_REGISTRY.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error('ERA registry unavailable');
+        const url = new URL(SHEET_API_URL);
+        url.searchParams.set('action', 'eras');
+        const res = await fetch(url.toString(), { cache: 'no-store', redirect: 'follow' });
+        if (!res.ok) throw new Error('ERA table unavailable');
         const data = await res.json();
+        if (data && data.ok === false) throw new Error(data.error || 'ERA API error');
         eraRegistry = Array.isArray(data.eras) ? data.eras : [];
         renderEraTimeline();
       } catch (err) {
@@ -726,8 +729,8 @@
         .sort((a,b) => Number(a.order || 0) - Number(b.order || 0))
         .map(era => {
           const end = era.end_date || '現在';
-          const sourceRange = era.source_active_range
-            ? `${era.source_active_range.start || '—'}～${era.source_active_range.end || '現在'}`
+          const sourceRange = era.source_active_start
+            ? `${era.source_active_start || '—'}～${era.source_active_end || '現在'}`
             : '';
           return `
             <article class="era-row">
@@ -968,7 +971,7 @@
 
       els.dailyDrawHistory.innerHTML = [...byDate.entries()].map(([date, items]) => {
         const rows = items.map(d => {
-          const kind = d.draw_kind === 'daily_draw_supplement' ? '補抽' : '主抽';
+          const kind = d.history_type === 'daily_draw_supplement' ? '補抽' : '主抽';
           const title = (d.rune || '未命名') + (d.direction || '');
           return `<div class="draw-line"><span class="draw-kind">${kind}</span><span class="draw-title">${esc(title)}</span></div>`;
         }).join('');
@@ -1112,7 +1115,7 @@
       const draw = {
         user_id: 'lo3rwang',
         date,
-        draw_kind: kind,
+        history_type: kind,
         rune,
         direction,
         note,
@@ -1242,7 +1245,7 @@
       if (!res.ok) throw new Error('Health check failed');
       const data = await res.json();
       if (!data || data.ok !== true) throw new Error(data && data.error ? data.error : 'API not ready');
-      if (data.schema !== 'loc8-mvp-0.4') {
+      if (data.schema !== 'loc8-mvp-0.5') {
         throw new Error('API schema mismatch: ' + (data.schema || 'unknown'));
       }
       setSync(true, 'Google Sheet API 已連線 · v0.3');
