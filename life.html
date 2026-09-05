@@ -1121,17 +1121,36 @@
       }).join('');
     }
 
+    async function loadEventSnapshot() {
+      try {
+        const res = await fetch('data/shared/LOC8_EVENT_SNAPSHOT.json', { cache: 'no-store' });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return Array.isArray(data.events) ? data.events : [];
+      } catch (err) {
+        console.warn('LOC8 event snapshot unavailable', err);
+        return [];
+      }
+    }
+
     async function loadEvents() {
-      // Cache-first: render the last successful state immediately, then refresh remotely.
-      const firstPaint = cachedEvents();
+      // Cache-first, then repository snapshot, then live Sheet API.
+      // This guarantees that known LOC8 events remain visible even when
+      // Apps Script deployment or network refresh is temporarily behind.
+      let firstPaint = cachedEvents();
+
+      if (!firstPaint.length) {
+        firstPaint = await loadEventSnapshot();
+      }
+
       if (firstPaint.length) {
         events = firstPaint;
-        setSync(false, '顯示快取；背景同步中…');
+        setSync(false, '顯示最近同步事件；背景同步中…');
         renderAll();
       }
 
       try {
-        setSync(false, firstPaint.length ? '快取已載入；同步 LOC8…' : '同步 LOC8…');
+        setSync(false, firstPaint.length ? '事件已載入；同步 LOC8…' : '同步 LOC8…');
         const url = new URL(SHEET_API_URL);
         url.searchParams.set('action', 'events');
         url.searchParams.set('user_id', 'lo3rwang');
