@@ -1,0 +1,1649 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC6_ERA_STYLE_EVIDENCE",
+  "authority": "LOC6",
+  "updated_at": "2026-09-05",
+  "purpose": "Aggregate LOC3 work metadata back into LOC6 ERA style analysis. ERA dates/names remain owned by LOC8.",
+  "source_dataset": {
+    "manifest": "card_api/data/LOC3_LYRICS_SEARCH_v0.1.json",
+    "work_count": 403,
+    "source_shards": [
+      "card_api/data/LOC3_LYRICS_SEARCH_v0.1.part1.json",
+      "card_api/data/LOC3_LYRICS_SEARCH_v0.1.part2.json",
+      "card_api/data/LOC3_LYRICS_SEARCH_v0.1.manual-20260903.json",
+      "card_api/data/LOC3_LYRICS_SEARCH_v0.1.manual-life-platform.json"
+    ]
+  },
+  "rules": [
+    "These aggregates describe the indexed LOC3 corpus, not the entirety of all historical writing or speech.",
+    "P1 is currently excluded from the public LOC3 search corpus and therefore has no LOC3 aggregate evidence here.",
+    "Counts and tags are recorded metadata evidence; higher-level style interpretations remain LOC6 analysis.",
+    "ERA identity, dates and temporal state remain authoritative in data/shared/LOC_ERA_REGISTRY.json."
+  ],
+  "profiles": [
+    {
+      "period": "P1",
+      "work_count": 0,
+      "work_ids": [],
+      "top_tags": [],
+      "top_categories": [],
+      "top_start_states": [],
+      "top_turn_methods": [],
+      "top_final_states": [],
+      "top_ending_structures": [],
+      "evidence_source": "LOC3 lyrics search corpus",
+      "confidence": "no_loc3_search_corpus"
+    },
+    {
+      "period": "P2",
+      "work_count": 50,
+      "work_ids": [
+        "LW0005",
+        "LW0013",
+        "LW0044",
+        "LW0046",
+        "LW0072",
+        "LW0073",
+        "LW0080",
+        "LW0081",
+        "LW0084",
+        "LW0087",
+        "LW0091",
+        "LW0095",
+        "LW0096",
+        "LW0104",
+        "LW0132",
+        "LW0140",
+        "LW0159",
+        "LW0164",
+        "LW0166",
+        "LW0169",
+        "LW0173",
+        "LW0197",
+        "LW0204",
+        "LW0209",
+        "LW0213",
+        "LW0225",
+        "LW0227",
+        "LW0237",
+        "LW0239",
+        "LW0252",
+        "LW0254",
+        "LW0256",
+        "LW0266",
+        "LW0285",
+        "LW0286",
+        "LW0298",
+        "LW0300",
+        "LW0301",
+        "LW0321",
+        "LW0323",
+        "LW0331",
+        "LW0348",
+        "LW0350",
+        "LW0352",
+        "LW0374",
+        "LW0382",
+        "LW0384",
+        "LW0385",
+        "LW0389",
+        "LW0399"
+      ],
+      "top_tags": [
+        {
+          "value": "微光光芒",
+          "count": 26
+        },
+        {
+          "value": "夜晚",
+          "count": 24
+        },
+        {
+          "value": "希望未來",
+          "count": 21
+        },
+        {
+          "value": "月亮月光",
+          "count": 16
+        },
+        {
+          "value": "黑暗影子",
+          "count": 16
+        },
+        {
+          "value": "希望",
+          "count": 14
+        },
+        {
+          "value": "孤獨陪伴",
+          "count": 13
+        },
+        {
+          "value": "現實選擇",
+          "count": 13
+        },
+        {
+          "value": "自我探索",
+          "count": 12
+        },
+        {
+          "value": "道路旅途",
+          "count": 12
+        },
+        {
+          "value": "風",
+          "count": 11
+        },
+        {
+          "value": "時間記憶",
+          "count": 11
+        }
+      ],
+      "top_categories": [
+        {
+          "value": "其他／待複查",
+          "count": 19
+        },
+        {
+          "value": "轉折型",
+          "count": 17
+        },
+        {
+          "value": "轉折型候選",
+          "count": 14
+        }
+      ],
+      "top_start_states": [
+        {
+          "value": "孤獨／缺少連結",
+          "count": 8
+        },
+        {
+          "value": "等待／停滯",
+          "count": 8
+        },
+        {
+          "value": "未辨識",
+          "count": 7
+        },
+        {
+          "value": "幸福／平靜",
+          "count": 5
+        },
+        {
+          "value": "失落／離別",
+          "count": 4
+        },
+        {
+          "value": "焦慮不安",
+          "count": 4
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "value": "未辨識",
+          "count": 21
+        },
+        {
+          "value": "重新前進／啟程",
+          "count": 9
+        },
+        {
+          "value": "放下／離開",
+          "count": 5
+        },
+        {
+          "value": "重新理解／看清現實",
+          "count": 5
+        },
+        {
+          "value": "建立界線",
+          "count": 4
+        },
+        {
+          "value": "重拾選擇權",
+          "count": 3
+        },
+        {
+          "value": "接受未知／順其自然",
+          "count": 2
+        },
+        {
+          "value": "自我接納",
+          "count": 1
+        }
+      ],
+      "top_final_states": [
+        {
+          "value": "希望／可能性",
+          "count": 28
+        },
+        {
+          "value": "未辨識",
+          "count": 9
+        },
+        {
+          "value": "釋然／放下",
+          "count": 4
+        },
+        {
+          "value": "平靜／穩定",
+          "count": 3
+        },
+        {
+          "value": "前進／啟程",
+          "count": 2
+        },
+        {
+          "value": "幸福／甜蜜",
+          "count": 2
+        }
+      ],
+      "top_ending_structures": [
+        {
+          "value": "希望延伸",
+          "count": 22
+        },
+        {
+          "value": "情緒收束",
+          "count": 14
+        },
+        {
+          "value": "純描述／未收束",
+          "count": 7
+        },
+        {
+          "value": "治理落點",
+          "count": 5
+        },
+        {
+          "value": "幸福停留",
+          "count": 1
+        },
+        {
+          "value": "開放式留白",
+          "count": 1
+        }
+      ],
+      "evidence_source": "LOC3 lyrics search corpus",
+      "confidence": "recorded_metadata_aggregate"
+    },
+    {
+      "period": "P3",
+      "work_count": 123,
+      "work_ids": [
+        "LW0003",
+        "LW0004",
+        "LW0008",
+        "LW0009",
+        "LW0011",
+        "LW0017",
+        "LW0018",
+        "LW0019",
+        "LW0020",
+        "LW0022",
+        "LW0026",
+        "LW0032",
+        "LW0033",
+        "LW0034",
+        "LW0037",
+        "LW0042",
+        "LW0043",
+        "LW0047",
+        "LW0050",
+        "LW0056",
+        "LW0062",
+        "LW0065",
+        "LW0069",
+        "LW0070",
+        "LW0075",
+        "LW0076",
+        "LW0078",
+        "LW0093",
+        "LW0094",
+        "LW0099",
+        "LW0101",
+        "LW0102",
+        "LW0114",
+        "LW0115",
+        "LW0118",
+        "LW0120",
+        "LW0121",
+        "LW0129",
+        "LW0131",
+        "LW0134",
+        "LW0136",
+        "LW0137",
+        "LW0139",
+        "LW0141",
+        "LW0144",
+        "LW0145",
+        "LW0147",
+        "LW0149",
+        "LW0151",
+        "LW0156",
+        "LW0157",
+        "LW0163",
+        "LW0167",
+        "LW0170",
+        "LW0172",
+        "LW0179",
+        "LW0181",
+        "LW0182",
+        "LW0184",
+        "LW0187",
+        "LW0189",
+        "LW0192",
+        "LW0195",
+        "LW0200",
+        "LW0218",
+        "LW0223",
+        "LW0229",
+        "LW0232",
+        "LW0234",
+        "LW0236",
+        "LW0240",
+        "LW0241",
+        "LW0244",
+        "LW0248",
+        "LW0250",
+        "LW0257",
+        "LW0259",
+        "LW0260",
+        "LW0261",
+        "LW0262",
+        "LW0264",
+        "LW0270",
+        "LW0271",
+        "LW0273",
+        "LW0276",
+        "LW0279",
+        "LW0280",
+        "LW0292",
+        "LW0296",
+        "LW0299",
+        "LW0302",
+        "LW0305",
+        "LW0306",
+        "LW0307",
+        "LW0309",
+        "LW0311",
+        "LW0312",
+        "LW0317",
+        "LW0324",
+        "LW0325",
+        "LW0326",
+        "LW0327",
+        "LW0328",
+        "LW0330",
+        "LW0332",
+        "LW0334",
+        "LW0336",
+        "LW0338",
+        "LW0339",
+        "LW0341",
+        "LW0344",
+        "LW0349",
+        "LW0353",
+        "LW0357",
+        "LW0358",
+        "LW0359",
+        "LW0366",
+        "LW0372",
+        "LW0380",
+        "LW0386",
+        "LW0390",
+        "LW0394",
+        "LW0397"
+      ],
+      "top_tags": [
+        {
+          "value": "微光光芒",
+          "count": 92
+        },
+        {
+          "value": "月亮月光",
+          "count": 72
+        },
+        {
+          "value": "夜晚",
+          "count": 65
+        },
+        {
+          "value": "平靜",
+          "count": 61
+        },
+        {
+          "value": "愛與連結",
+          "count": 53
+        },
+        {
+          "value": "希望未來",
+          "count": 46
+        },
+        {
+          "value": "現實選擇",
+          "count": 44
+        },
+        {
+          "value": "天空",
+          "count": 43
+        },
+        {
+          "value": "孤獨陪伴",
+          "count": 41
+        },
+        {
+          "value": "溫柔",
+          "count": 41
+        },
+        {
+          "value": "黑暗影子",
+          "count": 39
+        },
+        {
+          "value": "風",
+          "count": 38
+        }
+      ],
+      "top_categories": [
+        {
+          "value": "轉折型候選",
+          "count": 51
+        },
+        {
+          "value": "轉折型",
+          "count": 45
+        },
+        {
+          "value": "其他／待複查",
+          "count": 15
+        },
+        {
+          "value": "幸福甜美型",
+          "count": 6
+        },
+        {
+          "value": "治理宣言型",
+          "count": 5
+        },
+        {
+          "value": "祝福紀念型",
+          "count": 1
+        }
+      ],
+      "top_start_states": [
+        {
+          "value": "失落／離別",
+          "count": 23
+        },
+        {
+          "value": "幸福／平靜",
+          "count": 22
+        },
+        {
+          "value": "孤獨／缺少連結",
+          "count": 18
+        },
+        {
+          "value": "現實壓力／生存負荷",
+          "count": 7
+        },
+        {
+          "value": "等待／停滯",
+          "count": 7
+        },
+        {
+          "value": "焦慮不安",
+          "count": 7
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "value": "未辨識",
+          "count": 31
+        },
+        {
+          "value": "建立界線",
+          "count": 30
+        },
+        {
+          "value": "重新理解／看清現實",
+          "count": 17
+        },
+        {
+          "value": "放下／離開",
+          "count": 11
+        },
+        {
+          "value": "允許暫停／等待時機",
+          "count": 10
+        },
+        {
+          "value": "重拾選擇權",
+          "count": 8
+        },
+        {
+          "value": "重新前進／啟程",
+          "count": 5
+        },
+        {
+          "value": "接受未知／順其自然",
+          "count": 3
+        }
+      ],
+      "top_final_states": [
+        {
+          "value": "希望／可能性",
+          "count": 77
+        },
+        {
+          "value": "幸福／甜蜜",
+          "count": 12
+        },
+        {
+          "value": "平靜／穩定",
+          "count": 10
+        },
+        {
+          "value": "自由／解放",
+          "count": 7
+        },
+        {
+          "value": "未辨識",
+          "count": 5
+        },
+        {
+          "value": "完整／整合",
+          "count": 4
+        }
+      ],
+      "top_ending_structures": [
+        {
+          "value": "情緒收束",
+          "count": 54
+        },
+        {
+          "value": "希望延伸",
+          "count": 17
+        },
+        {
+          "value": "開放式留白",
+          "count": 16
+        },
+        {
+          "value": "治理落點",
+          "count": 14
+        },
+        {
+          "value": "幸福停留",
+          "count": 11
+        },
+        {
+          "value": "祝福收束",
+          "count": 6
+        }
+      ],
+      "evidence_source": "LOC3 lyrics search corpus",
+      "confidence": "recorded_metadata_aggregate"
+    },
+    {
+      "period": "P4",
+      "work_count": 74,
+      "work_ids": [
+        "LW0007",
+        "LW0016",
+        "LW0021",
+        "LW0025",
+        "LW0027",
+        "LW0029",
+        "LW0036",
+        "LW0040",
+        "LW0049",
+        "LW0055",
+        "LW0057",
+        "LW0060",
+        "LW0061",
+        "LW0063",
+        "LW0064",
+        "LW0066",
+        "LW0067",
+        "LW0071",
+        "LW0074",
+        "LW0083",
+        "LW0089",
+        "LW0098",
+        "LW0105",
+        "LW0109",
+        "LW0112",
+        "LW0113",
+        "LW0116",
+        "LW0119",
+        "LW0122",
+        "LW0125",
+        "LW0127",
+        "LW0133",
+        "LW0142",
+        "LW0150",
+        "LW0154",
+        "LW0158",
+        "LW0160",
+        "LW0162",
+        "LW0165",
+        "LW0168",
+        "LW0175",
+        "LW0178",
+        "LW0188",
+        "LW0194",
+        "LW0196",
+        "LW0206",
+        "LW0207",
+        "LW0219",
+        "LW0222",
+        "LW0235",
+        "LW0238",
+        "LW0258",
+        "LW0263",
+        "LW0268",
+        "LW0272",
+        "LW0277",
+        "LW0282",
+        "LW0283",
+        "LW0284",
+        "LW0287",
+        "LW0293",
+        "LW0294",
+        "LW0303",
+        "LW0315",
+        "LW0318",
+        "LW0320",
+        "LW0337",
+        "LW0340",
+        "LW0345",
+        "LW0346",
+        "LW0363",
+        "LW0367",
+        "LW0381",
+        "LW0383"
+      ],
+      "top_tags": [
+        {
+          "value": "微光光芒",
+          "count": 55
+        },
+        {
+          "value": "現實選擇",
+          "count": 51
+        },
+        {
+          "value": "天空",
+          "count": 33
+        },
+        {
+          "value": "道路旅途",
+          "count": 33
+        },
+        {
+          "value": "風",
+          "count": 32
+        },
+        {
+          "value": "正義界線",
+          "count": 32
+        },
+        {
+          "value": "守護界線",
+          "count": 27
+        },
+        {
+          "value": "平靜",
+          "count": 26
+        },
+        {
+          "value": "黑暗影子",
+          "count": 22
+        },
+        {
+          "value": "時間記憶",
+          "count": 22
+        },
+        {
+          "value": "夜晚",
+          "count": 21
+        },
+        {
+          "value": "社會觀察",
+          "count": 20
+        }
+      ],
+      "top_categories": [
+        {
+          "value": "轉折型候選",
+          "count": 26
+        },
+        {
+          "value": "轉折型",
+          "count": 17
+        },
+        {
+          "value": "其他／待複查",
+          "count": 16
+        },
+        {
+          "value": "治理宣言型",
+          "count": 15
+        }
+      ],
+      "top_start_states": [
+        {
+          "value": "現實壓力／生存負荷",
+          "count": 13
+        },
+        {
+          "value": "失落／離別",
+          "count": 10
+        },
+        {
+          "value": "等待／停滯",
+          "count": 7
+        },
+        {
+          "value": "迷惘／未知",
+          "count": 7
+        },
+        {
+          "value": "孤獨／缺少連結",
+          "count": 5
+        },
+        {
+          "value": "關係失衡／勉強維繫",
+          "count": 4
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "value": "建立界線",
+          "count": 27
+        },
+        {
+          "value": "未辨識",
+          "count": 15
+        },
+        {
+          "value": "重拾選擇權",
+          "count": 9
+        },
+        {
+          "value": "重新理解／看清現實",
+          "count": 8
+        },
+        {
+          "value": "放下／離開",
+          "count": 3
+        },
+        {
+          "value": "允許暫停／等待時機",
+          "count": 3
+        },
+        {
+          "value": "自我整合",
+          "count": 2
+        },
+        {
+          "value": "保存幸福",
+          "count": 2
+        }
+      ],
+      "top_final_states": [
+        {
+          "value": "希望／可能性",
+          "count": 37
+        },
+        {
+          "value": "平靜／穩定",
+          "count": 10
+        },
+        {
+          "value": "自由／解放",
+          "count": 8
+        },
+        {
+          "value": "完整／整合",
+          "count": 6
+        },
+        {
+          "value": "未辨識",
+          "count": 3
+        },
+        {
+          "value": "釋然／放下",
+          "count": 3
+        }
+      ],
+      "top_ending_structures": [
+        {
+          "value": "情緒收束",
+          "count": 25
+        },
+        {
+          "value": "開放式留白",
+          "count": 17
+        },
+        {
+          "value": "治理落點",
+          "count": 16
+        },
+        {
+          "value": "希望延伸",
+          "count": 14
+        },
+        {
+          "value": "純描述／未收束",
+          "count": 1
+        },
+        {
+          "value": "警醒收束",
+          "count": 1
+        }
+      ],
+      "evidence_source": "LOC3 lyrics search corpus",
+      "confidence": "recorded_metadata_aggregate"
+    },
+    {
+      "period": "P5",
+      "work_count": 81,
+      "work_ids": [
+        "LW0002",
+        "LW0006",
+        "LW0010",
+        "LW0012",
+        "LW0024",
+        "LW0030",
+        "LW0035",
+        "LW0039",
+        "LW0041",
+        "LW0048",
+        "LW0051",
+        "LW0052",
+        "LW0059",
+        "LW0068",
+        "LW0079",
+        "LW0085",
+        "LW0088",
+        "LW0100",
+        "LW0103",
+        "LW0106",
+        "LW0111",
+        "LW0130",
+        "LW0138",
+        "LW0143",
+        "LW0155",
+        "LW0161",
+        "LW0171",
+        "LW0174",
+        "LW0176",
+        "LW0177",
+        "LW0180",
+        "LW0190",
+        "LW0201",
+        "LW0202",
+        "LW0203",
+        "LW0210",
+        "LW0211",
+        "LW0214",
+        "LW0216",
+        "LW0224",
+        "LW0226",
+        "LW0230",
+        "LW0233",
+        "LW0242",
+        "LW0243",
+        "LW0246",
+        "LW0247",
+        "LW0249",
+        "LW0255",
+        "LW0269",
+        "LW0275",
+        "LW0278",
+        "LW0281",
+        "LW0288",
+        "LW0289",
+        "LW0290",
+        "LW0291",
+        "LW0295",
+        "LW0304",
+        "LW0314",
+        "LW0316",
+        "LW0319",
+        "LW0333",
+        "LW0335",
+        "LW0342",
+        "LW0343",
+        "LW0351",
+        "LW0354",
+        "LW0355",
+        "LW0361",
+        "LW0365",
+        "LW0368",
+        "LW0369",
+        "LW0376",
+        "LW0377",
+        "LW0378",
+        "LW0379",
+        "LW0392",
+        "LW0398",
+        "LW0400",
+        "LW0403"
+      ],
+      "top_tags": [
+        {
+          "value": "風",
+          "count": 69
+        },
+        {
+          "value": "希望未來",
+          "count": 53
+        },
+        {
+          "value": "道路旅途",
+          "count": 50
+        },
+        {
+          "value": "微光光芒",
+          "count": 49
+        },
+        {
+          "value": "平靜",
+          "count": 46
+        },
+        {
+          "value": "月亮月光",
+          "count": 41
+        },
+        {
+          "value": "時間記憶",
+          "count": 34
+        },
+        {
+          "value": "未知探索",
+          "count": 33
+        },
+        {
+          "value": "希望",
+          "count": 32
+        },
+        {
+          "value": "等待時機",
+          "count": 28
+        },
+        {
+          "value": "天空",
+          "count": 27
+        },
+        {
+          "value": "旅程歸屬",
+          "count": 26
+        }
+      ],
+      "top_categories": [
+        {
+          "value": "轉折型",
+          "count": 42
+        },
+        {
+          "value": "轉折型候選",
+          "count": 20
+        },
+        {
+          "value": "其他／待複查",
+          "count": 13
+        },
+        {
+          "value": "祝福紀念型",
+          "count": 4
+        },
+        {
+          "value": "治理宣言型",
+          "count": 2
+        }
+      ],
+      "top_start_states": [
+        {
+          "value": "迷惘／未知",
+          "count": 17
+        },
+        {
+          "value": "幸福／平靜",
+          "count": 11
+        },
+        {
+          "value": "等待／停滯",
+          "count": 11
+        },
+        {
+          "value": "孤獨／缺少連結",
+          "count": 5
+        },
+        {
+          "value": "關係失衡／勉強維繫",
+          "count": 4
+        },
+        {
+          "value": "失落／離別",
+          "count": 4
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "value": "重新理解／看清現實",
+          "count": 15
+        },
+        {
+          "value": "接受未知／順其自然",
+          "count": 15
+        },
+        {
+          "value": "放下／離開",
+          "count": 10
+        },
+        {
+          "value": "允許暫停／等待時機",
+          "count": 9
+        },
+        {
+          "value": "重新前進／啟程",
+          "count": 9
+        },
+        {
+          "value": "未辨識",
+          "count": 8
+        },
+        {
+          "value": "自我接納",
+          "count": 6
+        },
+        {
+          "value": "建立界線",
+          "count": 3
+        }
+      ],
+      "top_final_states": [
+        {
+          "value": "希望／可能性",
+          "count": 51
+        },
+        {
+          "value": "自由／解放",
+          "count": 8
+        },
+        {
+          "value": "釋然／放下",
+          "count": 5
+        },
+        {
+          "value": "幸福／甜蜜",
+          "count": 5
+        },
+        {
+          "value": "平靜／穩定",
+          "count": 4
+        },
+        {
+          "value": "前進／啟程",
+          "count": 4
+        }
+      ],
+      "top_ending_structures": [
+        {
+          "value": "希望延伸",
+          "count": 35
+        },
+        {
+          "value": "情緒收束",
+          "count": 24
+        },
+        {
+          "value": "開放式留白",
+          "count": 12
+        },
+        {
+          "value": "祝福收束",
+          "count": 3
+        },
+        {
+          "value": "幸福停留",
+          "count": 2
+        },
+        {
+          "value": "警醒收束",
+          "count": 2
+        }
+      ],
+      "evidence_source": "LOC3 lyrics search corpus",
+      "confidence": "recorded_metadata_aggregate"
+    },
+    {
+      "period": "P6",
+      "work_count": 58,
+      "work_ids": [
+        "LW0001",
+        "LW0014",
+        "LW0038",
+        "LW0053",
+        "LW0082",
+        "LW0086",
+        "LW0090",
+        "LW0092",
+        "LW0097",
+        "LW0107",
+        "LW0108",
+        "LW0110",
+        "LW0117",
+        "LW0123",
+        "LW0124",
+        "LW0126",
+        "LW0128",
+        "LW0135",
+        "LW0146",
+        "LW0148",
+        "LW0152",
+        "LW0153",
+        "LW0183",
+        "LW0186",
+        "LW0193",
+        "LW0198",
+        "LW0205",
+        "LW0208",
+        "LW0212",
+        "LW0215",
+        "LW0217",
+        "LW0220",
+        "LW0221",
+        "LW0228",
+        "LW0231",
+        "LW0245",
+        "LW0251",
+        "LW0265",
+        "LW0267",
+        "LW0274",
+        "LW0308",
+        "LW0310",
+        "LW0313",
+        "LW0329",
+        "LW0347",
+        "LW0356",
+        "LW0360",
+        "LW0362",
+        "LW0364",
+        "LW0370",
+        "LW0371",
+        "LW0373",
+        "LW0375",
+        "LW0387",
+        "LW0388",
+        "LW0391",
+        "LW0393",
+        "LW0396"
+      ],
+      "top_tags": [
+        {
+          "value": "風",
+          "count": 52
+        },
+        {
+          "value": "希望未來",
+          "count": 38
+        },
+        {
+          "value": "道路旅途",
+          "count": 36
+        },
+        {
+          "value": "微光光芒",
+          "count": 32
+        },
+        {
+          "value": "希望",
+          "count": 29
+        },
+        {
+          "value": "天空",
+          "count": 28
+        },
+        {
+          "value": "等待時機",
+          "count": 23
+        },
+        {
+          "value": "時間記憶",
+          "count": 20
+        },
+        {
+          "value": "平靜",
+          "count": 19
+        },
+        {
+          "value": "月亮月光",
+          "count": 19
+        },
+        {
+          "value": "自由自主",
+          "count": 19
+        },
+        {
+          "value": "旅程歸屬",
+          "count": 16
+        }
+      ],
+      "top_categories": [
+        {
+          "value": "轉折型候選",
+          "count": 20
+        },
+        {
+          "value": "轉折型",
+          "count": 19
+        },
+        {
+          "value": "其他／待複查",
+          "count": 16
+        },
+        {
+          "value": "治理宣言型",
+          "count": 3
+        }
+      ],
+      "top_start_states": [
+        {
+          "value": "等待／停滯",
+          "count": 17
+        },
+        {
+          "value": "迷惘／未知",
+          "count": 8
+        },
+        {
+          "value": "關係失衡／勉強維繫",
+          "count": 6
+        },
+        {
+          "value": "失落／離別",
+          "count": 4
+        },
+        {
+          "value": "焦慮不安",
+          "count": 3
+        },
+        {
+          "value": "現實壓力／生存負荷",
+          "count": 3
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "value": "重新理解／看清現實",
+          "count": 13
+        },
+        {
+          "value": "未辨識",
+          "count": 11
+        },
+        {
+          "value": "允許暫停／等待時機",
+          "count": 8
+        },
+        {
+          "value": "建立界線",
+          "count": 8
+        },
+        {
+          "value": "重新前進／啟程",
+          "count": 5
+        },
+        {
+          "value": "放下／離開",
+          "count": 5
+        },
+        {
+          "value": "接受未知／順其自然",
+          "count": 4
+        },
+        {
+          "value": "回歸自我／自持",
+          "count": 2
+        }
+      ],
+      "top_final_states": [
+        {
+          "value": "希望／可能性",
+          "count": 27
+        },
+        {
+          "value": "自由／解放",
+          "count": 13
+        },
+        {
+          "value": "共鳴／同行",
+          "count": 11
+        },
+        {
+          "value": "完整／整合",
+          "count": 2
+        },
+        {
+          "value": "安心／安放",
+          "count": 1
+        },
+        {
+          "value": "前進／啟程",
+          "count": 1
+        }
+      ],
+      "top_ending_structures": [
+        {
+          "value": "情緒收束",
+          "count": 23
+        },
+        {
+          "value": "希望延伸",
+          "count": 15
+        },
+        {
+          "value": "刻意留白",
+          "count": 7
+        },
+        {
+          "value": "幸福停留",
+          "count": 6
+        },
+        {
+          "value": "祝福收束",
+          "count": 3
+        },
+        {
+          "value": "警醒收束",
+          "count": 2
+        }
+      ],
+      "evidence_source": "LOC3 lyrics search corpus",
+      "confidence": "recorded_metadata_aggregate"
+    },
+    {
+      "period": "P7",
+      "work_count": 15,
+      "work_ids": [
+        "LW0015",
+        "LW0023",
+        "LW0028",
+        "LW0031",
+        "LW0045",
+        "LW0054",
+        "LW0058",
+        "LW0077",
+        "LW0185",
+        "LW0191",
+        "LW0199",
+        "LW0253",
+        "LW0297",
+        "LW0322",
+        "LW0395"
+      ],
+      "top_tags": [
+        {
+          "value": "月亮月光",
+          "count": 13
+        },
+        {
+          "value": "風",
+          "count": 11
+        },
+        {
+          "value": "微光光芒",
+          "count": 10
+        },
+        {
+          "value": "自由自主",
+          "count": 10
+        },
+        {
+          "value": "希望未來",
+          "count": 9
+        },
+        {
+          "value": "平靜",
+          "count": 9
+        },
+        {
+          "value": "希望",
+          "count": 9
+        },
+        {
+          "value": "天空",
+          "count": 8
+        },
+        {
+          "value": "命運因果",
+          "count": 7
+        },
+        {
+          "value": "道路旅途",
+          "count": 7
+        },
+        {
+          "value": "正義界線",
+          "count": 7
+        },
+        {
+          "value": "旅途移動",
+          "count": 5
+        }
+      ],
+      "top_categories": [
+        {
+          "value": "轉折型",
+          "count": 7
+        },
+        {
+          "value": "轉折型候選",
+          "count": 7
+        },
+        {
+          "value": "其他／待複查",
+          "count": 1
+        }
+      ],
+      "top_start_states": [
+        {
+          "value": "孤獨／缺少連結",
+          "count": 4
+        },
+        {
+          "value": "幸福／平靜",
+          "count": 4
+        },
+        {
+          "value": "關係失衡／勉強維繫",
+          "count": 2
+        },
+        {
+          "value": "等待／停滯",
+          "count": 1
+        },
+        {
+          "value": "失落／離別",
+          "count": 1
+        },
+        {
+          "value": "幸福／平靜｜現實壓力／生存負荷",
+          "count": 1
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "value": "建立界線",
+          "count": 6
+        },
+        {
+          "value": "重新前進／啟程",
+          "count": 4
+        },
+        {
+          "value": "放下／離開",
+          "count": 1
+        },
+        {
+          "value": "重拾選擇權",
+          "count": 1
+        },
+        {
+          "value": "允許暫停／等待時機",
+          "count": 1
+        },
+        {
+          "value": "未辨識",
+          "count": 1
+        },
+        {
+          "value": "接受未知／順其自然",
+          "count": 1
+        }
+      ],
+      "top_final_states": [
+        {
+          "value": "自由／解放",
+          "count": 7
+        },
+        {
+          "value": "希望／可能性",
+          "count": 5
+        },
+        {
+          "value": "前進／啟程",
+          "count": 2
+        },
+        {
+          "value": "完整／整合",
+          "count": 1
+        }
+      ],
+      "top_ending_structures": [
+        {
+          "value": "希望延伸",
+          "count": 6
+        },
+        {
+          "value": "情緒收束",
+          "count": 5
+        },
+        {
+          "value": "刻意留白",
+          "count": 4
+        }
+      ],
+      "evidence_source": "LOC3 lyrics search corpus",
+      "confidence": "recorded_metadata_aggregate"
+    },
+    {
+      "period": "P8",
+      "work_count": 2,
+      "work_ids": [
+        "LW0401",
+        "LW0402"
+      ],
+      "top_tags": [
+        {
+          "value": "自我治理",
+          "count": 2
+        },
+        {
+          "value": "界線",
+          "count": 1
+        },
+        {
+          "value": "底線",
+          "count": 1
+        },
+        {
+          "value": "尊重",
+          "count": 1
+        },
+        {
+          "value": "責任邊界",
+          "count": 1
+        },
+        {
+          "value": "停止內耗",
+          "count": 1
+        },
+        {
+          "value": "自我價值",
+          "count": 1
+        },
+        {
+          "value": "無愧於心",
+          "count": 1
+        },
+        {
+          "value": "自我照亮",
+          "count": 1
+        },
+        {
+          "value": "離別放下",
+          "count": 1
+        },
+        {
+          "value": "微月光",
+          "count": 1
+        },
+        {
+          "value": "白晝之月",
+          "count": 1
+        }
+      ],
+      "top_categories": [
+        {
+          "value": "治理宣言型",
+          "count": 2
+        }
+      ],
+      "top_start_states": [
+        {
+          "value": "過度承擔／關係失衡／自我懷疑",
+          "count": 1
+        },
+        {
+          "value": "自由後迷惘／未竟事項纏繞／舊行李過重",
+          "count": 1
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "value": "確認位置與責任／建立界線／停止勉強維繫",
+          "count": 1
+        },
+        {
+          "value": "清點收尾／完成承諾／斷捨離與重新歸檔",
+          "count": 1
+        }
+      ],
+      "top_final_states": [
+        {
+          "value": "無愧於心／自我照亮／選擇離開",
+          "count": 1
+        },
+        {
+          "value": "自我治理／選擇新航向／迎向未知",
+          "count": 1
+        }
+      ],
+      "top_ending_structures": [
+        {
+          "value": "治理落點",
+          "count": 2
+        }
+      ],
+      "evidence_source": "LOC3 lyrics search corpus",
+      "confidence": "recorded_metadata_aggregate"
+    }
+  ]
+}
