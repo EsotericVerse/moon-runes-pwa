@@ -241,6 +241,79 @@
       font-size: 0.9rem;
     }
 
+
+    .evolution-path {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .evolution-step {
+      position: relative;
+      min-height: 150px;
+      padding: 17px;
+      border: 1px solid var(--loc-border);
+      border-radius: 18px;
+      background: var(--loc-surface-soft);
+    }
+
+    .evolution-step::after {
+      content: "→";
+      position: absolute;
+      right: -12px;
+      top: 50%;
+      z-index: 2;
+      transform: translateY(-50%);
+      color: var(--loc-gold);
+      font-weight: 900;
+    }
+
+    .evolution-step:last-child::after { display: none; }
+
+    .evolution-step strong {
+      display: block;
+      color: var(--loc-gold);
+      font-size: .95rem;
+    }
+
+    .evolution-step small {
+      display: block;
+      margin-top: 4px;
+      color: var(--loc-purple);
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .evolution-step p {
+      margin: 10px 0 0;
+      color: var(--loc-muted);
+      font-size: .8rem;
+      line-height: 1.55;
+    }
+
+    .evolution-vision {
+      margin-top: 16px;
+      padding: 18px 20px;
+      border: 1px solid rgba(231, 194, 125, .36);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 88% 20%, rgba(180,158,255,.12), transparent 12rem),
+        rgba(231,194,125,.055);
+    }
+
+    .evolution-vision strong {
+      color: var(--loc-text);
+    }
+
+    .evolution-vision p {
+      margin: 6px 0 0;
+      color: var(--loc-muted);
+      font-size: .9rem;
+    }
+
     .action-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -951,6 +1024,8 @@
       .right-panel #description { flex: none; }
       .works-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .framework { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .evolution-path { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .evolution-step::after { display:none; }
     }
 
     @media (max-width: 720px) {
@@ -966,6 +1041,7 @@
       .section-heading { align-items: flex-start; flex-direction: column; }
       .works-list { grid-template-columns: 1fr; }
       .framework { grid-template-columns: 1fr; }
+      .evolution-path { grid-template-columns: 1fr; }
       .loc7-links { grid-template-columns: 1fr; }
       .draw-mode-grid { grid-template-columns: 1fr; }
       .hero-actions { align-items: stretch; flex-direction: column; }
@@ -1051,6 +1127,54 @@
           <p>FAQ v0.3／RAG v0.3 已接入 LOC7_KM，從月符到文字建築都可以查詢。</p>
           <span class="arrow">向月典提問 →</span>
         </a>
+      </div>
+    </section>
+
+
+    <section class="section" id="language-evolution" aria-labelledby="language-evolution-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Language Evolution · Rune-Centric Vision</p>
+          <h2 id="language-evolution-title">語言進化：符文不只是一副牌。</h2>
+        </div>
+        <p>LOC 的遠景，是觀察一組有限符文如何從語彙開始，逐步形成文法、建築、作品與可持續演化的語言系統。</p>
+      </div>
+
+      <div class="evolution-path" aria-label="符文語言進化路徑">
+        <article class="evolution-step">
+          <small>LOC1 · Lexicon</small>
+          <strong>符文語彙</strong>
+          <p>單一符文、基本語意、方位與抽牌，建立最小可辨識的語言單元。</p>
+        </article>
+
+        <article class="evolution-step">
+          <small>LOC6 · Grammar</small>
+          <strong>符文文法</strong>
+          <p>符文進入牌組後形成關係：因果、源轉合、五卡與 OW3gs 等組合語法。</p>
+        </article>
+
+        <article class="evolution-step">
+          <small>LOC7 · Architecture</small>
+          <strong>符文建築學</strong>
+          <p>研究多組語法、位置、層次、群組與關係如何組成更高階的語意結構。</p>
+        </article>
+
+        <article class="evolution-step">
+          <small>LOC3–5 · Expression</small>
+          <strong>跨媒介表達</strong>
+          <p>語意可以被唱成歌、寫成小說、轉成圖像與影音；《月語者》是目前唯一的符文小說實驗。</p>
+        </article>
+
+        <article class="evolution-step">
+          <small>LOC8 · Context</small>
+          <strong>進入現實與時間</strong>
+          <p>把抽牌、作品、事件與生命軌跡放回時間脈絡，讓語言能被持續記錄、比較與演化。</p>
+        </article>
+      </div>
+
+      <div class="evolution-vision">
+        <strong>符文的潛力，不只在「解一張牌」，而在成為可組合、可驗證、可跨媒介、可累積歷史的語言。</strong>
+        <p>LOC1–8 的基本框架維持不變；「語言進化」只是用符文為本體重新觀看同一套架構，呈現它從語彙走向語言系統的可能性。</p>
       </div>
     </section>
 
