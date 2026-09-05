@@ -2,7 +2,7 @@
   "schema_version": "0.2",
   "registry": "LOC_KNOWLEDGE_ASSET_REGISTRY",
   "authority": "LOC7_KM",
-  "updated_at": "2026-09-05",
+  "updated_at": "2026-09-06",
   "purpose": "Register human-readable and structured knowledge assets that LOC7_KM may index, cite, version, and expose through knowledge/search views.",
   "rules": [
     "Registration as a knowledge asset does not make every statement Canon.",
@@ -65,9 +65,9 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "version": "0.2",
-      "updated_at": "2026-09-05",
-      "notes": "Markdown-first maintainable KM source in the repository. DOCX is retained as a published snapshot."
+      "version": "0.3",
+      "updated_at": "2026-09-06",
+      "notes": "Markdown-first maintainable KM source in the repository. v0.3 aligns current Unified Search, FAQ/RAG v0.4, LOC6/LOC7/LOC8 boundaries, and public period terminology."
     },
     {
       "asset_id": "KA-DOCS-001",
@@ -768,6 +768,61 @@
         ]
       },
       "notes": "Searchable web application view of Tutorial 01. Designed as a KM output: publication PDF remains the source tutorial asset, while this HTML view improves discoverability, linking and reuse without becoming Canon."
+    },
+    {
+      "asset_id": "KA-FAQ-004",
+      "title": "LOC FAQ v0.4",
+      "path": "card_api/data/LOC_FAQ_v0.4.json",
+      "source_type": "dataset",
+      "content_type": "knowledge_dataset",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "faq_source_view",
+      "status": "current",
+      "authority_level": "derived_knowledge_view",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.4",
+      "updated_at": "2026-09-06",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "revision_from": "card_api/data/LOC_FAQ_v0.3.json"
+      },
+      "notes": "Maintained FAQ view of current KM knowledge. It does not override Canon, mother data, or Shared Registry."
+    },
+    {
+      "asset_id": "KA-FAQ-RAG-004",
+      "title": "LOC FAQ RAG v0.4",
+      "path": "card_api/data/LOC_FAQ_RAG_v0.4.json",
+      "source_type": "dataset",
+      "content_type": "retrieval_dataset",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "faq_retrieval_derivative",
+      "status": "current",
+      "authority_level": "retrieval_derivative",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.4",
+      "updated_at": "2026-09-06",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "source_dataset": "card_api/data/LOC_FAQ_v0.4.json"
+      },
+      "notes": "Runtime FAQ retrieval dataset derived from FAQ v0.4; not a Canon source."
     }
   ]
 }
