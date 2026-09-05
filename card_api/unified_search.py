@@ -58,6 +58,7 @@ class UnifiedSearchEngine:
         self.relationships = self._load_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
+        self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
         path = self.shared_root / name
@@ -143,9 +144,9 @@ class UnifiedSearchEngine:
     ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         if not self.loc3_searcher:
             return [], []
-        wants_music = self._allowed("lyrics_work", wanted)
-        wants_media = self._allowed("reel", wanted) or self._allowed("video", wanted)
-        if wanted not in {"", "all", "lyrics_work", "reel", "video"}:
+        wants_music = wanted in {"", "all", "lyrics_work", "suno_song"}
+        wants_media = wanted in {"", "all", "multimedia", "reel", "video"}
+        if wanted not in {"", "all", "lyrics_work", "suno_song", "multimedia", "reel", "video"}:
             return [], []
 
         works = self.loc3_searcher.search(query, top_k=min(top_k, 10), filters=filters)
@@ -159,7 +160,7 @@ class UnifiedSearchEngine:
                     "system_id": row.get("system_id") or "lo3rwang",
                     "primary_loc": "LOC3",
                     "related_locs": row.get("related_locs", ["LOC5", "LOC6", "LOC7", "LOC8"]),
-                    "content_type": "lyrics_work",
+                    "content_type": "suno_song" if wanted == "suno_song" else "lyrics_work",
                     "group": "works",
                     "title": row.get("title"),
                     "summary": row.get("summary"),
@@ -197,8 +198,71 @@ class UnifiedSearchEngine:
                 })
         return music, media
 
+    def _loc4_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+        if wanted not in {"", "all", "text_work", "article"}:
+            return []
+        scored = []
+        for work in self.loc4.get("works", []):
+            score = _text_score(query, [
+                work.get("title"),
+                work.get("summary"),
+                " ".join(work.get("tags", [])),
+                work.get("content_type"),
+            ])
+            if score < 0.34:
+                continue
+            scored.append((score, work))
+        scored.sort(key=lambda row: (-row[0], str(row[1].get("work_id", ""))))
+        return [{
+            "result_id": work.get("work_id"),
+            "system_id": work.get("system_id") or "lo3rwang",
+            "primary_loc": "LOC4",
+            "related_locs": work.get("related_locs", []),
+            "content_type": "text_work",
+            "group": "textworks",
+            "title": work.get("title"),
+            "summary": work.get("summary"),
+            "score": round(score, 6),
+            "era_id": work.get("era_id"),
+            "source_refs": work.get("source_refs", []),
+            "payload": work,
+        } for score, work in scored[:top_k]]
+
+    def _media_registry_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+        if wanted not in {"", "all", "multimedia", "reel", "video"}:
+            return []
+        scored = []
+        for item in self.media.get("items", []):
+            semantic = item.get("semantic_descriptor") or {}
+            score = _text_score(query, [
+                item.get("title"),
+                item.get("purpose"),
+                semantic.get("visual_summary"),
+                " ".join(semantic.get("scene_keywords", [])),
+                " ".join(semantic.get("visual_motifs", [])),
+                " ".join(semantic.get("manual_tags", [])),
+                " ".join(semantic.get("generated_tags", [])),
+            ])
+            if score < 0.34:
+                continue
+            scored.append((score, item))
+        scored.sort(key=lambda row: (-row[0], str(row[1].get("media_id", ""))))
+        return [{
+            "result_id": item.get("media_id"),
+            "system_id": item.get("system_id") or "lo3rwang",
+            "primary_loc": "LOC5",
+            "related_locs": item.get("related_locs", []),
+            "content_type": "multimedia",
+            "group": "media",
+            "title": item.get("title"),
+            "summary": (item.get("semantic_descriptor") or {}).get("visual_summary") or item.get("purpose") or "",
+            "score": round(score, 6),
+            "source_refs": item.get("source_refs", []),
+            "payload": item,
+        } for score, item in scored[:top_k]]
+
     def _relationship_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
-        if wanted not in {"", "all", "relationship", "article", "reel", "lyrics_work"}:
+        if wanted not in {"", "all", "relationship", "article", "text_work", "reel", "video", "multimedia", "lyrics_work", "suno_song"}:
             return []
         q = _normalize(query)
         loc4_by_id = {item.get("work_id"): item for item in self.loc4.get("works", [])}
@@ -318,7 +382,13 @@ class UnifiedSearchEngine:
 
         faq = self._faq_results(query, top_k, wanted)
         documents = self._knowledge_asset_results(query, top_k, wanted)
-        music, media = self._music_results(query, top_k, wanted, filters)
+        music, linked_media = self._music_results(query, top_k, wanted, filters)
+        textworks = self._loc4_results(query, top_k, wanted)
+        direct_media = self._media_registry_results(query, top_k, wanted)
+        media_by_id = {}
+        for item in [*direct_media, *linked_media]:
+            media_by_id[item.get("result_id")] = item
+        media = list(media_by_id.values())[:top_k]
         relationships = self._relationship_results(query, top_k, wanted)
         runes = self._rune_results(query, top_k, wanted)
         eras = self._era_results(query, top_k, wanted)
@@ -326,6 +396,7 @@ class UnifiedSearchEngine:
         groups = {
             "runes": runes,
             "works": music,
+            "textworks": textworks,
             "relationships": relationships,
             "media": media,
             "knowledge": [*documents, *faq],
@@ -342,8 +413,8 @@ class UnifiedSearchEngine:
                 "LOC1": "live",
                 "LOC2": "knowledge-view-only",
                 "LOC3": "live",
-                "LOC4": "relationship-linked-catalog-live",
-                "LOC5": "live-via-media-registry",
+                "LOC4": "direct-work-search-live",
+                "LOC5": "direct-media-registry-search-live",
                 "LOC6": "relationship-interpretation-live",
                 "LOC7": "live",
                 "LOC8": "live-era",
