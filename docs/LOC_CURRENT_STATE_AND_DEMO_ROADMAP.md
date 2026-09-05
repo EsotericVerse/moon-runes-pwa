@@ -539,3 +539,35 @@ Edge 可包括：
 ## 14. 一句總結
 
 **LOC 不是八個功能的集合，而是一套以月之符文為語意種子、以框架方式統合不同型態語言資料、透過 RAG／Graph 建立關係，並由時間與趨勢觀察語言如何持續演化的系統。**
+
+
+---
+
+## 15. Cache-first UI policy
+
+為避免 Render／Google Apps Script 喚醒、網路延遲或短暫失敗造成統合介面空白，現行前端採：
+
+> **Cache first → immediate render → network refresh → cache update**
+
+### LOC Search
+
+- Facets（ERA、歌曲類型、播放清單）先讀 localStorage cache。
+- 無 cache 時使用版本內建 fallback。
+- `/search/facets` 成功後更新 UI 與 cache。
+- API 暫時失敗時仍保留上次可用分類。
+- Knowledge Image 已成為正式搜尋類型，可直接呈現系統統整圖。
+
+### LOC8 Life / Relation & Trend
+
+- Event / Daily Draw 先顯示上次成功同步的事件 cache。
+- Google Sheet 在背景刷新；成功後覆寫 cache。
+- 30 日 Trend 結果另存 trend cache。
+- 當即時資料暫時不可用或近期資料不足時，可顯示上次成功計算的趨勢並明確標示為快取。
+- Daily Draw 的 Luna Rune 選項亦保存 cache，避免 Lots 資料短暫讀取失敗時無法操作。
+
+### Cache 治理
+
+- cache 必須保存 `schema_version` 與 `saved_at`。
+- cache 是讀取加速與離線 fallback，不是 canonical source。
+- API／Registry／Google Sheet 成功取得的新資料優先於 cache。
+- Canon、mother data、Registry 不得由瀏覽器 cache 反向覆寫。
