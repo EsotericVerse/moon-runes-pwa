@@ -192,7 +192,7 @@ class UnifiedSearchEngine:
             content = ""
             if rel_path:
                 path = self.repo_root / rel_path
-                if path.exists() and path.suffix.lower() in {".md", ".txt"}:
+                if path.exists() and path.suffix.lower() in {".md", ".txt", ".json", ".js"}:
                     try:
                         content = path.read_text(encoding="utf-8")
                     except Exception:
