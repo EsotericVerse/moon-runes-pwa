@@ -95,7 +95,7 @@ LOC 不是一般資料倉庫；它關注的是**能承載語言、語意、敘�
 ├─ 文章
 ├─ Reels / 影片
 ├─ 治理語句
-├─ ERA 變化
+├─ 時期變化
 └─ 其他後續未知關係
 ```
 
@@ -192,30 +192,22 @@ LOC Framework 原則上不必綁死 66 月符。
 - Graph 結構與後續多跳擴展
 - **所有 LOC 的文字搜尋統一由 LOC Search / LOC RAG 管理**
 
-### LOC8｜Relation & Trend Analysis
-LOC8 的現行核心定位收斂為：
-
-> **關係與趨勢分析。**
-
-LOC8 不再以「Life 雜項」作主要定義。
+### LOC8｜Integration & Temporal Management
+LOC8 的現行核心是**事件、時期、時間與跨 LOC 統合**。
 
 其工作包括：
 
-- 跨 LOC 關係趨勢
-- ERA 比較
-- 時間序列
-- 狀態轉變
-- 語言演變
-- 作品演變
-- 事件之間的前後關係
-- 關係密度、變化與可能趨勢
-
-**時間線只是關係的一個維度。**
+- 每日符文紀錄與近期趨勢
+- 事件紀錄與 Current State
+- 連續時期（公開顯示為「時期」；stable machine ID 可保留 ERA-Px）
+- 事件時間線與狀態軌跡
+- 跨 LOC 的時間引用與統合
 
 因此：
 
-> LOC7 建立／管理關係網與檢索結構；  
-> LOC8 觀察關係如何隨時間與資料累積而變化。
+> LOC6 負責意義／治理判斷；  
+> LOC7 建立與管理知識／檢索結構；  
+> LOC8 記錄事情何時發生、如何沿時間改變，並把跨 LOC 資料放回同一段脈絡。
 
 ---
 
@@ -224,11 +216,11 @@ LOC8 不再以「Life 雜項」作主要定義。
 ### 5.1 名稱
 
 - 介面簡稱：**LOC 搜尋引擎**
-- 正式技術名稱：**LOC RAG 語意向量搜尋**
+- 技術層名稱：**LOC Unified Search / RAG retrieval layer**
 
 ### 5.2 原則
 
-**LOC1–8 都是知識來源；LOC RAG 是唯一文字檢索層。**
+**LOC1–8 保留各自資料權責；Unified Search 是共同的文字查詢與結果整合入口。**
 
 各 LOC 頁面可以保留：
 
@@ -290,13 +282,14 @@ Edge 可包括：
 
 ### 5.4 現況限制
 
-目前已有 Graph RAG 的資料模型與查詢形態，但完整 multi-hop graph traversal 尚未全部實作完成。
+目前已有 Shared Registry、cross-relationship 資料與 related_ids 等關係基礎，但完整 Relation Schema、Knowledge Graph expansion 與 multi-hop Graph RAG 尚未完成。
 
 因此現況稱呼：
 
 - **LOC Integrated Demo：成立**
-- **LOC Graph RAG Prototype：正在成形**
-- **Production-grade Graph RAG：尚未完成**
+- **Unified Search：已有實作**
+- **Graph relationship groundwork：已有部分資料基礎**
+- **完整 Graph RAG：尚未完成**
 
 ---
 
@@ -348,7 +341,7 @@ Edge 可包括：
 - LOC5 Media Registry 與已知 Reels
 - LOC6 政德風／治理／演變分析
 - LOC7 KM / RAG / Search
-- LOC8 ERA / 關係趨勢資料
+- LOC8 時期／事件／時間脈絡資料
 - Search-first 統一入口
 - FAQ 與 LOC3 specialist search 已整合／redirect
 - LOC1 Seed Corpus 已進 Knowledge Asset
@@ -379,7 +372,7 @@ Edge 可包括：
 
 #### C. LOC RAG / LOC7
 - 統一搜尋
-- 文件／歌詞／文字／多媒體／ERA
+- 籤詩／符文／歌詞／文字／多媒體／治理／知識／時期
 - Graph / Relation 展開
 - 作為整個 LOC 的知識入口
 
