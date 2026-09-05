@@ -1,6 +1,7 @@
 const LOC8_SPREADSHEET_ID = '1v2Sl4a1x9AvQgxdwrfxyhox8pHxmhbqhBL6YstH_ekg';
 const USER_SHEET = 'User';
 const EVENT_SHEET = 'Event';
+const DAILY_DRAW_SHEET = 'DailyDraw';
 
 function doGet(e) {
   try {
@@ -8,14 +9,21 @@ function doGet(e) {
     const userId = String((e && e.parameter && e.parameter.user_id) || '').trim();
 
     if (action === 'health') {
-      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.3' });
+      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.4' });
     }
 
     if (action === 'users') {
       return json_({ ok: true, users: readRows_(USER_SHEET) });
     }
 
-    let events = readRows_(EVENT_SHEET);
+    if (action === 'daily_draws') {
+      let draws = readRowsSafe_(DAILY_DRAW_SHEET);
+      if (userId) draws = draws.filter(row => String(row.user_id || '') === userId);
+      return json_({ ok: true, daily_draws: draws });
+    }
+
+    let events = readRows_(EVENT_SHEET)
+      .filter(row => !isDailyDrawRecord_(row));
     if (userId) events = events.filter(row => String(row.user_id || '') === userId);
     return json_({ ok: true, events: events });
   } catch (err) {
@@ -32,6 +40,18 @@ function doPost(e) {
       const user = normalizeUser_(body.user || body);
       appendObject_(USER_SHEET, user);
       return json_({ ok: true, user: user });
+    }
+
+    if (action === 'daily_draw') {
+      const draw = normalizeDailyDraw_(body.daily_draw || body.event || body);
+      ensureDailyDrawSheet_();
+      appendObject_(DAILY_DRAW_SHEET, draw);
+      return json_({ ok: true, daily_draw: draw, action: 'daily_draw' });
+    }
+
+    if (action === 'migrate_daily_draws') {
+      const result = migrateLegacyDailyDraws_();
+      return json_({ ok: true, action: 'migrate_daily_draws', result: result });
     }
 
     if (action === 'update_event') {
@@ -54,7 +74,14 @@ function doPost(e) {
     }
 
     if (action === 'event') {
-      const event = normalizeEvent_(body.event || body);
+      const raw = body.event || body;
+      if (isDailyDrawRecord_(raw)) {
+        const draw = normalizeDailyDraw_(raw);
+        ensureDailyDrawSheet_();
+        appendObject_(DAILY_DRAW_SHEET, draw);
+        return json_({ ok: true, daily_draw: draw, action: 'daily_draw' });
+      }
+      const event = normalizeEvent_(raw);
       appendObject_(EVENT_SHEET, event);
       return json_({ ok: true, event: event, action: 'event' });
     }
@@ -80,6 +107,101 @@ function parseBody_(e) {
     });
     return out;
   }
+}
+
+function readRowsSafe_(sheetName) {
+  const ss = SpreadsheetApp.openById(LOC8_SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return [];
+  return readRows_(sheetName);
+}
+
+function isDailyDrawRecord_(raw) {
+  const type = String(raw.event_type || raw.type || '').toLowerCase();
+  const title = String(raw.title || raw.event_title || '');
+  const tags = String(raw.tags || '').toLowerCase();
+  const source = String(raw.source || '').toLowerCase();
+  return (
+    type === 'daily_draw' ||
+    type === 'daily_draw_supplement' ||
+    type.indexOf('daily draw') >= 0 ||
+    type.indexOf('daily_draw') >= 0 ||
+    /^每日抽牌[｜|]/.test(title) ||
+    /^補抽[｜|]/.test(title) ||
+    tags.indexOf('daily-draw') >= 0 ||
+    tags.indexOf('daily_draw') >= 0 ||
+    source.indexOf('daily-draw') >= 0
+  );
+}
+
+function ensureDailyDrawSheet_() {
+  const ss = SpreadsheetApp.openById(LOC8_SPREADSHEET_ID);
+  let sheet = ss.getSheetByName(DAILY_DRAW_SHEET);
+  if (sheet) return sheet;
+
+  sheet = ss.insertSheet(DAILY_DRAW_SHEET);
+  sheet.getRange(1, 1, 1, 12).setValues([[
+    'id','user_id','date','draw_kind','rune','direction',
+    'note','tags','source','confidence','created_at','system_id'
+  ]]);
+  return sheet;
+}
+
+function normalizeDailyDraw_(raw) {
+  const now = new Date();
+  const tz = Session.getScriptTimeZone() || 'Asia/Taipei';
+  const createdAt = Utilities.formatDate(now, tz, "yyyy-MM-dd'T'HH:mm:ssXXX");
+  const title = String(raw.title || raw.event_title || '');
+  const eventType = String(raw.event_type || raw.draw_kind || 'daily_draw');
+  const kind = eventType.toLowerCase().indexOf('supplement') >= 0 || /^補抽[｜|]/.test(title)
+    ? 'daily_draw_supplement'
+    : 'daily_draw';
+
+  let rune = String(raw.rune || raw.object_id || '').trim();
+  let direction = String(raw.direction || '').trim();
+
+  if ((!rune || !direction) && title) {
+    const cleaned = title.replace(/^每日抽牌[｜|]/, '').replace(/^補抽[｜|]/, '');
+    const match = cleaned.match(/^(.+?)(正位|半正位|半逆位|逆位)$/);
+    if (match) {
+      if (!rune) rune = match[1];
+      if (!direction) direction = match[2];
+    }
+  }
+
+  return {
+    id: raw.id || makeId_('DD'),
+    user_id: raw.user_id || 'lo3rwang',
+    date: raw.date || Utilities.formatDate(now, tz, 'yyyy-MM-dd'),
+    draw_kind: kind,
+    rune: rune,
+    direction: direction,
+    note: raw.note || raw.description || '',
+    tags: Array.isArray(raw.tags) ? raw.tags.join(', ') : (raw.tags || ''),
+    source: raw.source || 'life.html#daily-draw',
+    confidence: raw.confidence || 'recorded',
+    created_at: raw.created_at || createdAt,
+    system_id: raw.system_id || 'lo3rwang'
+  };
+}
+
+function migrateLegacyDailyDraws_() {
+  ensureDailyDrawSheet_();
+  const legacy = readRows_(EVENT_SHEET).filter(isDailyDrawRecord_);
+  const existing = readRowsSafe_(DAILY_DRAW_SHEET);
+  const ids = {};
+  existing.forEach(row => { if (row.id) ids[String(row.id)] = true; });
+
+  let copied = 0;
+  legacy.forEach(row => {
+    const draw = normalizeDailyDraw_(row);
+    if (ids[String(draw.id)]) return;
+    appendObject_(DAILY_DRAW_SHEET, draw);
+    ids[String(draw.id)] = true;
+    copied++;
+  });
+
+  return { legacy_found: legacy.length, copied: copied, already_present: legacy.length - copied };
 }
 
 function readRows_(sheetName) {
