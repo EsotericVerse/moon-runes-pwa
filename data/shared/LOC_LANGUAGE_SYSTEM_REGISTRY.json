@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_LANGUAGE_SYSTEM_REGISTRY",
   "authority": "LOC8",
   "systems": [
@@ -23,7 +23,16 @@
         "influences": [],
         "source_references": [],
         "provenance_note": "預留協作、共享、影響與來源欄位；目前系統以單一個人語言系統為基準。"
-      }
+      },
+      "framework_definition": "LOC（Luna Codex／月典）是一套個人語言系統框架。它以框架角色統合不同型態的語言資料，例如符文與籤詩、創作文字、歌詞、文章／小說、多媒體影片、圖像、治理語句、知識文件，以及事件與 ERA 時間脈絡。LOC1–8各自保留資料權責，再透過共同檢索、關聯與時間結構，把異質語言資料整理成可理解、可追溯、可搜尋、可重用的整體。",
+      "framework_principles": [
+        "LOC1–8 是同一套語言系統的責任分工，不是八套獨立產品。",
+        "LOC 統合的是不同型態的語言資料，而不是任意資料集合。",
+        "不同資料型態保留各自 canonical ownership、來源與權責。",
+        "LOC 的框架功能是讓符文、文字、歌詞、多媒體、治理、知識與時間資料可以被共同檢索、建立關聯、回溯與延伸。",
+        "LOC1 的符文與 Lots 是種子語料；LOC2–8 持續加入情境、作品、媒體、治理、知識與時間脈絡。",
+        "介面統一，資料分責；搜尋統整，關係展開。"
+      ]
     }
   ]
 }
