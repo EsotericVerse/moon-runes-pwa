@@ -695,12 +695,12 @@
           <div class="card metric"><div class="label">時期總數</div><div class="value" id="eraMetricCount">0</div><div class="hint">目前 Registry</div></div>
           <div class="card metric"><div class="label">目前時期</div><div class="value" id="eraMetricCurrent">—</div><div class="hint">目前所在時期</div></div>
           <div class="card metric"><div class="label">Current 起點</div><div class="value" id="eraMetricStart">—</div><div class="hint">本期開始日期</div></div>
-          <div class="card metric"><div class="label">時期關鍵字</div><div class="value" id="eraMetricKeywords">0</div><div class="hint">LOC3 關鍵字強度</div></div>
+          <div class="card metric"><div class="label">已分析時期</div><div class="value" id="eraMetricKeywords">0</div><div class="hint">LOC3 P2–P8</div></div>
         </section>
 
         <section class="card" style="margin-top:16px;" id="era-keywords">
           <div class="head">
-            <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸，優先顯示 LOC3 已分析的 normalized keyword frequency；一般 Event tags 作為補充脈絡。</p></div>
+            <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸，直接顯示 LOC3 歌曲關鍵字的 normalized frequency。這裡不依賴 Event 數量。</p></div>
             <span class="badge">LOC3 × 時期</span>
           </div>
           <div class="body"><div class="era-keyword-grid" id="eraKeywordGrid"><div class="empty">載入 時期關鍵字中…</div></div></div>
@@ -997,6 +997,22 @@
 
     async function loadEraRegistry() {
       await loadLoc3PeriodKeywordAnalysis();
+
+      // Render from repository registries first. The period/keyword view must
+      // not depend on Event rows or on the Apps Script deployment being fresh.
+      try {
+        const res = await fetch('data/shared/LOC_ERA_REGISTRY.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Static period registry unavailable');
+        const data = await res.json();
+        eraRegistry = Array.isArray(data.eras) ? data.eras : [];
+      } catch (err) {
+        console.warn('Static period registry unavailable', err);
+        eraRegistry = [];
+      }
+
+      renderEraTimeline();
+
+      // Live Sheet refresh is optional and must never blank the LOC3 keyword view.
       try {
         const url = new URL(SHEET_API_URL);
         url.searchParams.set('action', 'eras');
@@ -1004,11 +1020,13 @@
         if (!res.ok) throw new Error('ERA table unavailable');
         const data = await res.json();
         if (data && data.ok === false) throw new Error(data.error || 'ERA API error');
-        eraRegistry = Array.isArray(data.eras) ? data.eras : [];
-        renderEraTimeline();
+        const remote = Array.isArray(data.eras) ? data.eras : [];
+        if (remote.length) {
+          eraRegistry = remote;
+          renderEraTimeline();
+        }
       } catch (err) {
-        console.error(err);
-        if (els.eraTimeline) els.eraTimeline.innerHTML = '<div class="empty">時期資料載入失敗。</div>';
+        console.warn('Live period registry unavailable; keeping repository registry', err);
       }
     }
 
@@ -1052,28 +1070,42 @@
 
     function renderEraTimeline() {
       if (!els.eraTimeline) return;
+      if (!eraRegistry.length && Array.isArray(loc3PeriodKeywordAnalysis?.periods)) {
+        eraRegistry = loc3PeriodKeywordAnalysis.periods.map((item, index) => ({
+          era_id: item.era_id || ('ERA-' + item.period),
+          period: item.period,
+          order: index + 2,
+          name: item.period_name || item.period,
+          display_label: `${item.period}｜${item.period_name || item.period}`,
+          start_date: item.start_date || '',
+          end_date: item.end_date || null,
+          status: item.end_date ? 'released' : 'current',
+          state_after: ''
+        }));
+      }
+
       if (!eraRegistry.length) {
         els.eraTimeline.innerHTML = '<div class="empty">尚無時期資料。</div>';
-        if (els.eraTrendStrip) els.eraTrendStrip.innerHTML = '<div class="empty">尚無 ERA 趨勢資料。</div>';
-        if (els.eraKeywordGrid) els.eraKeywordGrid.innerHTML = '<div class="empty">尚無 時期關鍵字資料。</div>';
+        if (els.eraTrendStrip) els.eraTrendStrip.innerHTML = '<div class="empty">尚無時期趨勢資料。</div>';
+        if (els.eraKeywordGrid) els.eraKeywordGrid.innerHTML = '<div class="empty">LOC3 時期關鍵字資料載入失敗。</div>';
         return;
       }
 
       const ordered = eraRegistry.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0));
       const current = ordered.find(e => e.status === 'current') || ordered[ordered.length - 1];
-      const { stats, sourceEvents } = keywordStatsByEra(ordered);
+      const { stats } = keywordStatsByEra(ordered);
       const loc3Periods = Array.isArray(loc3PeriodKeywordAnalysis?.periods)
         ? loc3PeriodKeywordAnalysis.periods
         : [];
       const loc3PeriodMap = new Map(loc3Periods.map(item => [String(item.period || ''), item]));
-      const totalKeywordOccurrences = loc3Periods.reduce(
-        (sum, item) => sum + (Array.isArray(item.normalized_top_keywords) ? item.normalized_top_keywords.length : 0), 0
-      );
+      const analyzedPeriodCount = loc3Periods.filter(
+        item => Array.isArray(item.normalized_top_keywords) && item.normalized_top_keywords.length
+      ).length;
 
       if (els.eraMetricCount) els.eraMetricCount.textContent = ordered.length;
       if (els.eraMetricCurrent) els.eraMetricCurrent.textContent = current?.period || current?.name || '—';
       if (els.eraMetricStart) els.eraMetricStart.textContent = current?.start_date || '—';
-      if (els.eraMetricKeywords) els.eraMetricKeywords.textContent = totalKeywordOccurrences;
+      if (els.eraMetricKeywords) els.eraMetricKeywords.textContent = analyzedPeriodCount;
 
       if (els.eraKeywordGrid) {
         els.eraKeywordGrid.innerHTML = ordered.map(era => {
@@ -1082,10 +1114,6 @@
           const loc3Keywords = Array.isArray(loc3?.normalized_top_keywords)
             ? loc3.normalized_top_keywords.slice(0,10)
             : [];
-          const eventEntries = [...(stats.get(era.era_id) || new Map()).entries()]
-            .sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0], 'zh-Hant'))
-            .slice(0,6);
-          const eventCount = sourceEvents.filter(e => eraForEvent(e, ordered)?.era_id === era.era_id).length;
           const loc3WorkCount = Number(loc3?.work_count || 0);
 
           return `
@@ -1099,12 +1127,6 @@
                   ? loc3Keywords.map(item => `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.percent)}%</b></span>`).join('')
                   : '<span class="era-source-note">此時期尚無 LOC3 關鍵字分析</span>'}
               </div>
-              ${eventEntries.length ? `
-                <div class="era-source-note" style="margin-top:8px">一般 Event 補充（${eventCount} 筆）</div>
-                <div class="era-keyword-chips">
-                  ${eventEntries.map(([tag,count]) => `<span class="era-keyword-chip">${esc(tag)} <b>×${count}</b></span>`).join('')}
-                </div>
-              ` : ''}
             </article>
           `;
         }).join('');
