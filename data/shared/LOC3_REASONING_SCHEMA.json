@@ -120,5 +120,27 @@
       "distinction_from_governance_declaration": "治理宣言型聚焦自我治理、界線與行動規範；思辨論述型可涵蓋更廣的關係、存在、價值與概念推理。",
       "completion_rule": "When an existing category is 其他／待複查 or 轉折型候選 and the work is author-confirmed as a rational reasoning mode, category may resolve to 思辨論述型."
     }
-  }
+  },
+  "lyric_categories": {
+    "reasoning_discourse": {
+      "label": "思辨論述型",
+      "direction": "self_to_question_or_world",
+      "definition": "歌曲主要以觀點、道理、判斷、因果、關係規則、存在體悟或價值推理來理解問題或世界；情緒可存在，但不是主要骨架。"
+    },
+    "governance_declaration": {
+      "label": "治理宣言型",
+      "direction": "self_to_self",
+      "definition": "歌曲主要對自己進行治理：自省、責任確認、界線、取捨、自我規範、收尾與接下來的行動方向。"
+    },
+    "admonition_discourse": {
+      "label": "勸戒論述型",
+      "direction": "self_to_others",
+      "definition": "歌曲主要對他人或群體提出提醒、勸告、警告、責任與後果判斷，核心是外向的規範性語言。"
+    }
+  },
+  "category_resolution_rules": [
+    "rational_discourse/rational_reflection/system_observation + self_to_question_or_world => 思辨論述型",
+    "self-governance, self-regulation, boundary, responsibility, closure, choice => 治理宣言型",
+    "warning, admonition, accountability, consequences directed at others => 勸戒論述型"
+  ]
 }
