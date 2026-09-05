@@ -245,29 +245,44 @@
     .card-meta { margin-top:12px; color:var(--muted); font-size:.82rem; line-height:1.65; }
     .card-meta > strong { color:var(--text); font-size:1rem; }
 
-    .draw-result-strip {
+    .card-result-row,
+    .card-moon-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
       margin-top: 10px;
-      padding: 10px 12px;
-      border: 1px solid rgba(180,158,255,.34);
-      border-radius: 13px;
-      background: rgba(180,158,255,.10);
-      color: var(--text);
-      font-size: .92rem;
-      font-weight: 800;
-      line-height: 1.45;
-      text-align: center;
     }
 
-    .card-moon-strip {
-      margin-top: 8px;
-      padding: 8px 10px;
+    .card-result-cell,
+    .card-moon-cell {
+      padding: 10px 11px;
+      border-radius: 13px;
+      line-height: 1.45;
+    }
+
+    .card-result-cell {
+      border: 1px solid rgba(180,158,255,.34);
+      background: rgba(180,158,255,.10);
+      color: var(--text);
+      font-size: .84rem;
+      font-weight: 800;
+    }
+
+    .card-moon-cell {
       border: 1px solid rgba(231,194,125,.32);
-      border-radius: 12px;
       background: rgba(231,194,125,.07);
       color: var(--gold);
       font-size: .78rem;
-      line-height: 1.45;
-      text-align: center;
+      font-weight: 800;
+    }
+
+    .card-result-cell span,
+    .card-moon-cell span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 500;
     }
 
     .result-phase-context {
@@ -419,8 +434,10 @@
               <img src="64images/66_命.png" alt="命之符文" />
             </div>
             <div class="ritual-phase-box">
-              <p><strong>命之符文</strong></p>
-              <p id="ritual-phase">真實月相：計算中...</p>
+              <p>卡牌面向：正位</p>
+              <p>介紹：「命」，月符所揭示</p>
+              <p>所屬分組：它就是全部</p>
+              <p id="ritual-phase">月相：無 / 真實月相：計算中...</p>
 
               <a class="result-home-cta" href="index.html">
                 <span>
@@ -445,8 +462,6 @@
       </div>
 
       <div id="result-view" hidden>
-        <div class="result-phase-context" id="moon-phase">本次真實月相：計算中...</div>
-
         <div class="result-card-stage">
           <div class="cards-grid" id="cards-grid"></div>
 
