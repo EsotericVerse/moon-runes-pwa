@@ -107,5 +107,18 @@
         "keyword/reasoning extraction"
       ]
     }
+  },
+  "lyric_category": {
+    "reasoning_discourse": {
+      "label": "思辨論述型",
+      "definition": "歌曲以觀點、道理、判斷、因果、關係規則、界線、存在體悟或治理命題為主要語意骨架；情緒可以存在，但不是主要組織方式。",
+      "applies_to_discourse_modes": [
+        "rational_discourse",
+        "rational_reflection",
+        "system_observation"
+      ],
+      "distinction_from_governance_declaration": "治理宣言型聚焦自我治理、界線與行動規範；思辨論述型可涵蓋更廣的關係、存在、價值與概念推理。",
+      "completion_rule": "When an existing category is 其他／待複查 or 轉折型候選 and the work is author-confirmed as a rational reasoning mode, category may resolve to 思辨論述型."
+    }
   }
 }
