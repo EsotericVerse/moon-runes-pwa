@@ -1,0 +1,177 @@
+{
+  "dataset": {
+    "work_count": 403
+  },
+  "facets": {
+    "periods": [
+      {
+        "value": "P3",
+        "count": 123
+      },
+      {
+        "value": "P5",
+        "count": 81
+      },
+      {
+        "value": "P4",
+        "count": 74
+      },
+      {
+        "value": "P6",
+        "count": 58
+      },
+      {
+        "value": "P2",
+        "count": 50
+      },
+      {
+        "value": "P7",
+        "count": 15
+      },
+      {
+        "value": "P8",
+        "count": 2
+      }
+    ],
+    "eras": [
+      {
+        "value": "微月光",
+        "count": 115
+      },
+      {
+        "value": "人生月台",
+        "count": 90
+      },
+      {
+        "value": "順其自然",
+        "count": 45
+      },
+      {
+        "value": "白晝之月",
+        "count": 9
+      },
+      {
+        "value": "治理自己",
+        "count": 2
+      }
+    ],
+    "playlists": [
+      {
+        "value": "1.微月光剛開始的自創",
+        "count": 115
+      },
+      {
+        "value": "4.人生月台系列",
+        "count": 91
+      },
+      {
+        "value": "5.順其自然",
+        "count": 45
+      },
+      {
+        "value": "2.節奏王者",
+        "count": 25
+      },
+      {
+        "value": "3.單身很好",
+        "count": 14
+      },
+      {
+        "value": "3.白晝之月Daytime Moon",
+        "count": 10
+      },
+      {
+        "value": "1.微月光的甜蜜",
+        "count": 6
+      },
+      {
+        "value": "1.微月光的兩人爭執",
+        "count": 4
+      },
+      {
+        "value": "生日快樂",
+        "count": 3
+      },
+      {
+        "value": "微月光的暗影詩章",
+        "count": 3
+      },
+      {
+        "value": "6.治理自己",
+        "count": 2
+      }
+    ],
+    "categories": [
+      {
+        "value": "轉折型",
+        "count": 147
+      },
+      {
+        "value": "轉折型候選",
+        "count": 138
+      },
+      {
+        "value": "其他／待複查",
+        "count": 80
+      },
+      {
+        "value": "治理宣言型",
+        "count": 27
+      },
+      {
+        "value": "幸福甜美型",
+        "count": 6
+      },
+      {
+        "value": "祝福紀念型",
+        "count": 5
+      }
+    ],
+    "styles": [
+      {
+        "value": "Mandopop／Pop Rock／Ballad",
+        "count": 135
+      },
+      {
+        "value": "Alternative／Art／Indie",
+        "count": 67
+      },
+      {
+        "value": "Synth／Electro／Industrial",
+        "count": 61
+      },
+      {
+        "value": "Anime／J-Pop／J-Rock",
+        "count": 52
+      },
+      {
+        "value": "Dream／Atmospheric Pop",
+        "count": 46
+      },
+      {
+        "value": "City Pop",
+        "count": 21
+      },
+      {
+        "value": "Rap／Hip-Hop／Soul",
+        "count": 13
+      },
+      {
+        "value": "其他／早期實驗",
+        "count": 5
+      },
+      {
+        "value": "Anime Pop Rock／J-Pop／Synth Rock",
+        "count": 1
+      },
+      {
+        "value": "Dream Pop Rock／Cinematic Synth Rock",
+        "count": 1
+      },
+      {
+        "value": "Dream Pop／City Pop／Mandopop",
+        "count": 1
+      }
+    ]
+  }
+}
