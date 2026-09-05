@@ -695,13 +695,13 @@
           <div class="card metric"><div class="label">時期總數</div><div class="value" id="eraMetricCount">0</div><div class="hint">目前 Registry</div></div>
           <div class="card metric"><div class="label">目前時期</div><div class="value" id="eraMetricCurrent">—</div><div class="hint">目前所在時期</div></div>
           <div class="card metric"><div class="label">Current 起點</div><div class="value" id="eraMetricStart">—</div><div class="hint">本期開始日期</div></div>
-          <div class="card metric"><div class="label">已分析時期</div><div class="value" id="eraMetricKeywords">0</div><div class="hint">LOC3 P2–P8</div></div>
+          <div class="card metric"><div class="label">已分析時期</div><div class="value" id="eraMetricKeywords">0</div><div class="hint">跨 LOC 時期分析</div></div>
         </section>
 
         <section class="card" style="margin-top:16px;" id="era-keywords">
           <div class="head">
-            <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸，同時顯示 LOC3 歌曲關鍵字分佈與 LOC4 作品；可直接比較不同時期的音樂與文字創作。</p></div>
-            <span class="badge">LOC3 + LOC4 × 時期</span>
+            <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸整合不同來源：P1 以 LOC4／LOC5 為主要關鍵字證據；P2–P8 再加入 LOC3 歌曲語義，避免把沒有正式 LOC3 分析的 P1 顯示成空白。</p></div>
+            <span class="badge">Cross-LOC × 時期</span>
           </div>
           <div class="body"><div class="era-keyword-grid" id="eraKeywordGrid"><div class="empty">載入 時期關鍵字中…</div></div></div>
         </section>
@@ -938,6 +938,7 @@
     let eraRegistry = [];
     let loc3PeriodKeywordAnalysis = null;
     let loc4WritingRegistry = null;
+    let loc5MediaRegistry = null;
     let runeMetaMap = new Map();
     let editingId = '';
 
@@ -985,6 +986,17 @@
       return readJsonCache(STORAGE_KEY, []);
     }
 
+    async function loadLoc5MediaRegistry() {
+      try {
+        const res = await fetch('data/shared/LOC_MEDIA_REGISTRY.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('LOC5 media registry unavailable');
+        loc5MediaRegistry = await res.json();
+      } catch (err) {
+        console.warn('LOC5 media registry unavailable', err);
+        loc5MediaRegistry = null;
+      }
+    }
+
     async function loadLoc4WritingRegistry() {
       try {
         const res = await fetch('data/shared/LOC4_WRITING_REGISTRY.json', { cache: 'no-store' });
@@ -1008,7 +1020,7 @@
     }
 
     async function loadEraRegistry() {
-      await Promise.all([loadLoc3PeriodKeywordAnalysis(), loadLoc4WritingRegistry()]);
+      await Promise.all([loadLoc3PeriodKeywordAnalysis(), loadLoc4WritingRegistry(), loadLoc5MediaRegistry()]);
 
       // Render from repository registries first. The period/keyword view must
       // not depend on Event rows or on the Apps Script deployment being fresh.
@@ -1080,6 +1092,59 @@
       return { stats, sourceEvents };
     }
 
+    function nonLoc3PeriodKeywords(period) {
+      const items = [];
+
+      const loc4Works = Array.isArray(loc4WritingRegistry?.works)
+        ? loc4WritingRegistry.works.filter(work => String(work.period || '') === String(period))
+        : [];
+      for (const work of loc4Works) {
+        const terms = new Set([work.title, ...(work.tags || [])].filter(Boolean));
+        items.push({ source: 'LOC4', id: work.work_id, terms });
+      }
+
+      const loc5Items = Array.isArray(loc5MediaRegistry?.items)
+        ? loc5MediaRegistry.items.filter(item => String(item.period || '') === String(period))
+        : [];
+      for (const media of loc5Items) {
+        const semantic = media.semantic_descriptor || {};
+        const terms = new Set([
+          media.title,
+          ...(semantic.scene_keywords || []),
+          ...(semantic.manual_tags || []),
+          ...(semantic.visual_motifs || [])
+        ].filter(Boolean));
+        items.push({ source: 'LOC5', id: media.media_id, terms });
+      }
+
+      const stop = new Set([
+        'LOC1','LOC4','LOC5','LOC1×LOC5','LOC5實體作品','公開影音作品',
+        'instagram','instagram_reel','宣傳','長篇小說','短篇小說','連載'
+      ]);
+      const counts = new Map();
+      for (const item of items) {
+        for (const term of item.terms) {
+          const key = String(term || '').trim();
+          if (!key || stop.has(key)) continue;
+          counts.set(key, (counts.get(key) || 0) + 1);
+        }
+      }
+
+      return {
+        itemCount: items.length,
+        loc4Count: loc4Works.length,
+        loc5Count: loc5Items.length,
+        keywords: [...counts.entries()]
+          .map(([term, count]) => ({
+            term,
+            count,
+            percent: items.length ? Number((count / items.length * 100).toFixed(1)) : 0
+          }))
+          .sort((a,b) => b.count - a.count || a.term.localeCompare(b.term, 'zh-Hant'))
+          .slice(0, 14)
+      };
+    }
+
     function renderEraTimeline() {
       if (!els.eraTimeline) return;
       if (!eraRegistry.length && Array.isArray(loc3PeriodKeywordAnalysis?.periods)) {
@@ -1133,25 +1198,41 @@
           const loc4Works = Array.isArray(loc4WritingRegistry?.works)
             ? loc4WritingRegistry.works.filter(work => String(work.period || '') === period)
             : [];
+          const nonLoc3 = nonLoc3PeriodKeywords(period);
+          const isP1 = period === 'P1';
 
           return `
             <article class="era-keyword-card">
               <div class="era-keyword-head">
                 <strong>${esc(period || era.era_id)} · ${esc(era.name || '')}</strong>
-                <small>${loc3WorkCount ? `LOC3 ${loc3WorkCount} 首` : 'LOC3 尚無正式分析'}</small>
+                <small>${isP1
+                  ? `非 LOC3 證據 ${nonLoc3.itemCount} 件（LOC4 ${nonLoc3.loc4Count}／LOC5 ${nonLoc3.loc5Count}）`
+                  : (loc3WorkCount ? `LOC3 ${loc3WorkCount} 首` : 'LOC3 尚無正式分析')}</small>
               </div>
-              ${namedKeywords.length ? `
-                <div class="era-source-note" style="margin-bottom:6px">命名關鍵字</div>
+
+              ${isP1 ? `
+                <div class="era-source-note" style="margin-bottom:6px">P1 關鍵字｜LOC4 + LOC5</div>
                 <div class="era-keyword-chips" style="margin-bottom:10px">
-                  ${namedKeywords.map(item => `<span class="era-keyword-chip">${esc(item.term)}${item.aliases?.length ? `（${esc(item.aliases.join('／'))}）` : ''} <b>${esc(item.percent)}%</b></span>`).join('')}
+                  ${nonLoc3.keywords.length
+                    ? nonLoc3.keywords.map(item => `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.percent)}%</b></span>`).join('')
+                    : '<span class="era-source-note">P1 尚無可統計的非 LOC3 關鍵字</span>'}
                 </div>
-              ` : ''}
-              <div class="era-source-note" style="margin-bottom:6px">LOC3 主要語義</div>
-              <div class="era-keyword-chips">
-                ${loc3Keywords.length
-                  ? loc3Keywords.map(item => `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.percent)}%</b></span>`).join('')
-                  : '<span class="era-source-note">此時期尚無 LOC3 關鍵字分析</span>'}
-              </div>
+                <div class="era-source-note">P1 不使用 LOC3 關鍵字；LOC3 在此期只備份、不作正式搜尋分析。</div>
+              ` : `
+                ${namedKeywords.length ? `
+                  <div class="era-source-note" style="margin-bottom:6px">命名關鍵字</div>
+                  <div class="era-keyword-chips" style="margin-bottom:10px">
+                    ${namedKeywords.map(item => `<span class="era-keyword-chip">${esc(item.term)}${item.aliases?.length ? `（${esc(item.aliases.join('／'))}）` : ''} <b>${esc(item.percent)}%</b></span>`).join('')}
+                  </div>
+                ` : ''}
+                <div class="era-source-note" style="margin-bottom:6px">LOC3 主要語義</div>
+                <div class="era-keyword-chips">
+                  ${loc3Keywords.length
+                    ? loc3Keywords.map(item => `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.percent)}%</b></span>`).join('')
+                    : '<span class="era-source-note">此時期尚無 LOC3 關鍵字分析</span>'}
+                </div>
+              `}
+
               <div class="era-source-note" style="margin-top:10px;margin-bottom:6px">LOC4 作品（${loc4Works.length}）</div>
               <div class="era-keyword-chips">
                 ${loc4Works.length
