@@ -44,7 +44,7 @@
 - 來源：`LOC_FAQ_v0.4.json`
 - 角色：原子化 retrieval chunks。
 - Runtime：目前 `card_api/main.py` 載入 v0.4。
-- v0.1、v0.2 為歷史版本。
+- v0.1、v0.2、v0.3 為歷史版本。
 - 更新 FAQ source 後，RAG 應重新產生／同步，不反向手改成新的 canonical source。
 
 ### D. LOC1 runtime / derived data
