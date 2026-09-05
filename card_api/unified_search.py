@@ -182,11 +182,13 @@ class UnifiedSearchEngine:
         return [result], extension_terms[:20]
 
     def _knowledge_asset_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
-        if wanted not in {"", "all", "knowledge", "knowledge_document"}:
+        if wanted not in {"", "all", "knowledge", "knowledge_document", "knowledge_image"}:
             return []
         scored = []
         for asset in self.knowledge_assets.get("assets", []):
             if not asset.get("searchable"):
+                continue
+            if wanted == "knowledge_image" and asset.get("content_type") != "knowledge_image":
                 continue
             rel_path = asset.get("path")
             content = ""
