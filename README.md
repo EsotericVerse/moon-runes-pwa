@@ -166,8 +166,8 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC4 | Writing | 文字分類、小說、角色、符文文本、世界觀與敘事創作 |
 | LOC5 | Resonance | 圖像、聲音、文字、MV、系統圖形與跨媒體概念視覺化 |
 | LOC6 | Governance / Interpretation | 人生觀、價值觀、治理原則、政德風，以及符文組合如何被轉譯為實際文字與敘事的解析實證 |
-| LOC7 | Text Architecture | 文字建築學、起承轉合、語意關係、知識結構與 Graph RAG 方向 |
-| LOC8 | Life | 趨勢分析、生活應用、跨分發整合及其他綜合項目 |
+| LOC7 | Text Architecture / KM | 文字建築學、知識管理、檢索、關係結構與 Graph RAG 後續方向 |
+| LOC8 | Integration / Temporal Management | 每日符文、事件、時期、時間線、狀態軌跡與跨分發統合 |
 
 ### 目前具現化成果
 
@@ -179,10 +179,10 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC4 | 已建立文字分類，並完成以其為文本結構的七大篇長篇小說，全文約 22 萬字；另有其他小說與文字創作。 |
 | LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
 | LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證，保存「符文組合／方位／月相 → 實際敘事」的歷史對照。 |
-| LOC7 | 已完成第一套新手入門文字建築學「Hello World!：起承轉合」，並已更新至 FAQ v0.3：80 題公開 FAQ 與對應原子化 RAG 檢索資料，提供可部署的語意檢索 API；LOC7_KM 亦改採 Markdown-first 文件治理。完整 Relation Schema／Knowledge Graph expansion／Graph RAG 仍屬後續階段。 |
-| LOC8 | 已用於趨勢分析及其他跨域項目的統合，持續收斂分析方法、輸入資料與呈現方式。 |
+| LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7、LOC8 的現有資料來源。完整 Knowledge Graph expansion／Graph RAG 仍屬後續階段。 |
+| LOC8 | Life 頁面已有每日符文、時期、事件紀錄與事件時間線／軌跡等可操作視圖；現階段重點為資料同步、身份／多使用者架構、分析呈現與跨 LOC 引用，而不是從零建立入口。 |
 
-LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；其中 LOC5 已確認存在實際影片與公開 Reels，而非僅有視覺概念。LOC6–8 也各自具備內容、方法或應用方向，並處於不同的具現化階段。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
+LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；LOC6 已有治理／政德風與符文解析資料，LOC7 已有 KM／FAQ／RAG／Unified Search，LOC8 已有可操作的事件、時期與每日符文介面。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
 
 ### LOC2｜Semantic Playground
 
@@ -264,7 +264,7 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 
 - `daily.html`：每日抽取頁面
 - `fate.html`：替代風格的單卡／命運結果呈現
 - `list.html`：依群組及符文查詢完整資料
-- [`search.html`](https://loc.lo3rwang.cc/search.html)：**Unified Search 主入口**；同時查詢符文、歌曲、Reels、知識與 ERA，使用者不必先選 LOC 編號
+- [`search.html`](https://loc.lo3rwang.cc/search.html)：**Unified Search 主入口**；同時查詢籤詩／符文、音樂、文字作品、媒體、治理／政德風、知識與時期資料，使用者不必先選 LOC 編號
 - [`faq.html`](https://loc.lo3rwang.cc/faq.html)：LOC7 Knowledge Base 專門查詢介面（保留作進階／單域 View）
 - `loc3.html`：相容導向頁；LOC3 歌詞、作品類別、歌詞類型、ERA、Reels 與跨 LOC 關聯搜尋已整合進 [`search.html`](https://loc.lo3rwang.cc/search.html?content_type=lyrics_work)
 
