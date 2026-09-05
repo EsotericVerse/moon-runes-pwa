@@ -721,7 +721,53 @@
         "maintained_in_repo": true,
         "source": "creator-reviewed Canva tutorial PDF"
       },
-      "notes": "First published beginner tutorial. Explains LOC as a language-system framework, starts from LOC1/Luna Runes, introduces semantic evolution, then summarizes LOC1–8 responsibility areas. Publication asset only; does not override Canon or mother data."
+      "notes": "First published beginner tutorial. Explains LOC as a language-system framework, starts from LOC1/Luna Runes, introduces semantic evolution, then summarizes LOC1–8 responsibility areas. Publication asset only; does not override Canon or mother data. Web application view: tutorial01.html.",
+      "related_views": [
+        "tutorial01.html"
+      ]
+    },
+    {
+      "asset_id": "KA-TUTORIAL-LOC-001-WEB",
+      "title": "LOC Tutorial 01 Web View：語言系統框架入門",
+      "path": "tutorial01.html",
+      "source_type": "application_view",
+      "content_type": "knowledge_view",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "beginner_tutorial_web_view",
+      "status": "current",
+      "authority_level": "derived_application_view",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "2026-09-05",
+      "updated_at": "2026-09-05",
+      "keywords": [
+        "LOC",
+        "月典",
+        "語言系統框架",
+        "新手教學",
+        "Web Tutorial",
+        "LOC1–8",
+        "月之符文",
+        "KM成果"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "derived_from": [
+          "docs/LOC_Tutorial_01_語言系統框架入門.pdf",
+          "docs/LOC7_KM.md"
+        ]
+      },
+      "notes": "Searchable web application view of Tutorial 01. Designed as a KM output: publication PDF remains the source tutorial asset, while this HTML view improves discoverability, linking and reuse without becoming Canon."
     }
   ]
 }
