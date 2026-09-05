@@ -57,6 +57,7 @@ class UnifiedSearchEngine:
         self.content_types = self._load_json("LOC_CONTENT_TYPE_REGISTRY.json")
         self.relationships = self._load_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
+        self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
         path = self.shared_root / name
@@ -71,8 +72,49 @@ class UnifiedSearchEngine:
     def _allowed(content_type: str, wanted: str) -> bool:
         return not wanted or wanted == "all" or content_type == wanted
 
+    def _knowledge_asset_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+        if wanted not in {"", "all", "knowledge", "knowledge_document"}:
+            return []
+        scored = []
+        for asset in self.knowledge_assets.get("assets", []):
+            if not asset.get("searchable"):
+                continue
+            rel_path = asset.get("path")
+            content = ""
+            if rel_path:
+                path = self.repo_root / rel_path
+                if path.exists() and path.suffix.lower() in {".md", ".txt"}:
+                    try:
+                        content = path.read_text(encoding="utf-8")
+                    except Exception:
+                        content = ""
+            score = _text_score(query, [
+                asset.get("title"),
+                asset.get("role"),
+                " ".join(asset.get("keywords", [])),
+                asset.get("notes"),
+                content,
+            ])
+            if score < 0.34:
+                continue
+            scored.append((score, asset))
+        scored.sort(key=lambda row: (-row[0], str(row[1].get("asset_id", ""))))
+        return [{
+            "result_id": asset.get("asset_id"),
+            "system_id": "lo3rwang",
+            "primary_loc": asset.get("primary_loc") or "LOC7",
+            "related_locs": asset.get("related_locs", []),
+            "content_type": "knowledge_document",
+            "group": "knowledge",
+            "title": asset.get("title"),
+            "summary": asset.get("notes") or asset.get("role") or "",
+            "score": round(score, 6),
+            "source_refs": [{"source_type": asset.get("source_type"), "source_id": asset.get("path"), "note": asset.get("authority_level")}],
+            "payload": asset,
+        } for score, asset in scored[:top_k]]
+
     def _faq_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
-        if not self.faq_searcher or not self._allowed("faq", wanted):
+        if not self.faq_searcher or wanted not in {"", "all", "faq", "knowledge"}:
             return []
         results = []
         for item in self.faq_searcher.search(query, top_k=min(top_k, 8)):
@@ -275,6 +317,7 @@ class UnifiedSearchEngine:
         wanted = (content_type or "").strip().lower()
 
         faq = self._faq_results(query, top_k, wanted)
+        documents = self._knowledge_asset_results(query, top_k, wanted)
         music, media = self._music_results(query, top_k, wanted, filters)
         relationships = self._relationship_results(query, top_k, wanted)
         runes = self._rune_results(query, top_k, wanted)
@@ -285,7 +328,7 @@ class UnifiedSearchEngine:
             "works": music,
             "relationships": relationships,
             "media": media,
-            "knowledge": faq,
+            "knowledge": [*documents, *faq],
             "timeline": eras,
         }
         return {
