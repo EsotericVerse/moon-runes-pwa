@@ -1,0 +1,75 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC6_DUAL_RUNE_RELATION_REGISTRY",
+  "authority": "LOC6",
+  "status": "working",
+  "updated_at": "2026-09-05",
+  "purpose": "Central registry for neutral two-rune semantic relationships. This layer records what rune A and rune B mean together before a draw assigns cause/effect positions or directions.",
+  "distinction": {
+    "pair_relation": "Unoriented semantic relationship between two runes. No cause/effect role is implied.",
+    "draw_interpretation": "A runtime projection that assigns first card = cause and second card = effect, then applies each card direction, question context, moon-phase context and other modifiers.",
+    "loc2_scenario": "Real-life scenario evidence that may support a pair relationship, but an Event is not automatically a fixed rune pair."
+  },
+  "pair_key_rule": "Use an order-neutral key based on ascending rune IDs: minID_maxID. The pair key must remain the same when draw order reverses.",
+  "source_policy": [
+    "Import only explicit two-rune examples supported by source material.",
+    "Do not infer a rune pair from an LOC2 Event requirement signature such as SL + ML.",
+    "Do not convert a neutral pair relationship into a fixed cause/effect statement.",
+    "Keep source provenance per example: syntax_atlas, loc2_scenario, observed_reading, or other verified source.",
+    "AI-generated candidate relationships remain proposed until human-confirmed."
+  ],
+  "runtime_projection": {
+    "neutral_pair_lookup": "pair_key = sort(rune1_id, rune2_id)",
+    "cause_effect_projection": "draw card 1 becomes cause; draw card 2 becomes effect",
+    "direction_projection": "apply both card directions after the neutral pair relationship is retrieved",
+    "context_projection": "apply question / scenario / moon-phase context after pair and direction layers"
+  },
+  "record_schema_example": {
+    "pair_key": "01_02",
+    "rune_ids": [
+      1,
+      2
+    ],
+    "rune_names": [
+      "示例A",
+      "示例B"
+    ],
+    "relation_summary": "Neutral relationship only; not a draw result.",
+    "relation_tags": [],
+    "examples": [
+      {
+        "example_id": "EX-...",
+        "text": "Source-supported relationship example.",
+        "source_type": "syntax_atlas | loc2_scenario | observed_reading",
+        "source_ref": "",
+        "status": "verified | working | proposed"
+      }
+    ],
+    "status": "working"
+  },
+  "corpus_summary": {
+    "verified_pair_records": 0,
+    "note": "Registry structure is active. Existing repo-searchable LOC2 Event 32 records are scenario prototypes rather than fixed rune pairs. The Destiny Sentence Syntax Atlas is a DOCX binary asset; its explicit pair examples must be extracted without inventing pair mappings."
+  },
+  "records": [],
+  "source_queue": [
+    {
+      "source_id": "SRC-SYNTAX-ATLAS",
+      "path": "docs/64LunaRune.docx",
+      "source_role": "explicit dual-rune grammar / example source",
+      "import_status": "pending_exact_extraction"
+    },
+    {
+      "source_id": "SRC-LOC2-EVENTS",
+      "path": "data/shared/LOC2_EVENT_REGISTRY.json",
+      "source_role": "scenario evidence / relationship context",
+      "import_status": "connected_but_not_fixed_pair_mapping"
+    },
+    {
+      "source_id": "SRC-LOC1-RUNTIME-GRAMMAR",
+      "path": "card_api/main.py",
+      "source_role": "cause/effect direction projection templates",
+      "import_status": "reference_only_not_pair_relation"
+    }
+  ]
+}
