@@ -94,6 +94,7 @@ class LOC3Result:
             "style": work.get("style"),
             "summary": work.get("summary"),
             "category": work.get("category"),
+            "lyric_type": work.get("lyric_type") or work.get("category"),
             "start_state": work.get("start_state"),
             "turn_method": work.get("turn_method"),
             "final_state": work.get("final_state"),
