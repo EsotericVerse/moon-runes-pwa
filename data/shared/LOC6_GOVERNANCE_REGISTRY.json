@@ -1,9 +1,9 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC6_GOVERNANCE_REGISTRY",
   "authority": "LOC6",
   "language_system_id": "lo3rwang",
-  "purpose": "Canonical registry for meaning, values, governance interpretation, style-state interpretation, and stage comparison.",
+  "purpose": "Registry for LOC6 governance corpus: Zhengde Style values/governance/style-state records plus rune grammar/interpretation references. These corpora remain distinct.",
   "fragment_schema": {
     "required": [
       "fragment_id",
@@ -44,7 +44,200 @@
       "lifecycle": "shared lifecycle object"
     }
   },
-  "fragments": [],
+  "fragments": [
+    {
+      "fragment_id": "GF-ZD-001",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC3",
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": null,
+      "topic": "價值判準",
+      "statement": "價值觀的價值。",
+      "interpretation": "以自己的價值尺度判斷事物，而不是只接受外部標準。",
+      "governance_principle": "value framework",
+      "style_features": [],
+      "analysis_type": "value",
+      "source_refs": [
+        "README.md"
+      ],
+      "confidence": "recorded",
+      "lifecycle": {
+        "status": "current"
+      }
+    },
+    {
+      "fragment_id": "GF-ZD-002",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC3",
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": null,
+      "topic": "錯誤與價值",
+      "statement": "我允許錯誤發生，只要錯的有價值。",
+      "interpretation": "錯誤可以被接受，但應轉化成可學習、可修正或可利用的價值。",
+      "governance_principle": "error governance",
+      "style_features": [],
+      "analysis_type": "governance",
+      "source_refs": [
+        "README.md"
+      ],
+      "confidence": "recorded",
+      "lifecycle": {
+        "status": "current"
+      }
+    },
+    {
+      "fragment_id": "GF-ZD-003",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC3",
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": null,
+      "topic": "交換與代價",
+      "statement": "免錢的最貴。",
+      "interpretation": "表面零成本不代表沒有隱性代價。",
+      "governance_principle": "cost awareness",
+      "style_features": [],
+      "analysis_type": "value",
+      "source_refs": [
+        "README.md"
+      ],
+      "confidence": "recorded",
+      "lifecycle": {
+        "status": "current"
+      }
+    },
+    {
+      "fragment_id": "GF-ZD-004",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC3",
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": null,
+      "topic": "劇本主權",
+      "statement": "我不跟你走劇本。",
+      "interpretation": "拒絕被他人預設的敘事或選項綁定。",
+      "governance_principle": "narrative sovereignty",
+      "style_features": [],
+      "analysis_type": "governance",
+      "source_refs": [
+        "README.md"
+      ],
+      "confidence": "recorded",
+      "lifecycle": {
+        "status": "current"
+      }
+    },
+    {
+      "fragment_id": "GF-ZD-005",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC3",
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": null,
+      "topic": "規則主權",
+      "statement": "你在玩話術，我在改規則。",
+      "interpretation": "遇到話術時，不只回應內容，而是重新檢查規則與框架。",
+      "governance_principle": "frame reset",
+      "style_features": [],
+      "analysis_type": "governance",
+      "source_refs": [
+        "README.md"
+      ],
+      "confidence": "recorded",
+      "lifecycle": {
+        "status": "current"
+      }
+    },
+    {
+      "fragment_id": "GF-ZD-006",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC3",
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": null,
+      "topic": "防衛邊界",
+      "statement": "慈悲不是投降。",
+      "interpretation": "善意與自我防衛可以同時成立。",
+      "governance_principle": "boundary defense",
+      "style_features": [],
+      "analysis_type": "governance",
+      "source_refs": [
+        "README.md"
+      ],
+      "confidence": "recorded",
+      "lifecycle": {
+        "status": "current"
+      }
+    },
+    {
+      "fragment_id": "GF-ZD-007",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC3",
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": null,
+      "topic": "系統優先",
+      "statement": "我不是要當王，我只要系統能跑。",
+      "interpretation": "重點不在掌控地位，而在讓結構可以持續運作。",
+      "governance_principle": "system operability",
+      "style_features": [],
+      "analysis_type": "governance",
+      "source_refs": [
+        "README.md"
+      ],
+      "confidence": "recorded",
+      "lifecycle": {
+        "status": "current"
+      }
+    },
+    {
+      "fragment_id": "GF-ZD-P8-001",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC3",
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": "ERA-P8",
+      "topic": "治理自己",
+      "statement": "治理已知，是為了把時間還給未知。",
+      "interpretation": "現行階段把整理、收尾與規則化視為釋放時間與注意力的方法。",
+      "governance_principle": "self governance",
+      "style_features": [],
+      "analysis_type": "style_state",
+      "source_refs": [
+        "index.html"
+      ],
+      "confidence": "recorded",
+      "lifecycle": {
+        "status": "current"
+      }
+    }
+  ],
   "rights_governance_scope": [
     "authorship principles",
     "attribution principles",
@@ -67,5 +260,45 @@
       "MR-V03-CH06"
     ],
     "note": "V3 Ch5 and Ch6 are confirmed workflow exceptions: combat outlines were written first, then expanded by AI without chapter rune draws."
+  },
+  "corpus_families": {
+    "zhengde_style": {
+      "role": "personal language governance / style evolution corpus",
+      "document": "docs/LOC6_ZHENGDE_STYLE.md"
+    },
+    "rune_grammar_interpretation": {
+      "role": "rune-pair / card-combination grammar and interpretation evidence",
+      "relation_registry": "data/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
+      "interpretation_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json"
+    }
+  },
+  "stage_profile_schema": {
+    "stage_id": "ZS-{stable-id}",
+    "time_range": "date range or null",
+    "age_range": "age range or null",
+    "source_refs": [],
+    "governance_focus": [],
+    "style_features": {
+      "sentence_length": null,
+      "imagery_density": null,
+      "emotional_distance": null,
+      "directness": null,
+      "boundary_strength": null,
+      "humor": null
+    },
+    "representative_statements": [],
+    "confidence": "recorded | reconstructed | inferred | unknown",
+    "lifecycle": "shared lifecycle object"
+  },
+  "zhengde_style_summary": {
+    "current_stage": "ERA-P8 / 治理自己",
+    "current_shift": "from external script-breaking toward self-governance, closure, boundaries and route selection",
+    "evidence_refs": [
+      "docs/LOC6_ZHENGDE_STYLE.md",
+      "card_api/data/LOC3_LYRICS_SEARCH_v0.1.manual-20260903.json",
+      "README.md",
+      "index.html"
+    ],
+    "historical_stage_profiles": "structure_ready; historical source import pending"
   }
 }
