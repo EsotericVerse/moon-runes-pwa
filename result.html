@@ -225,7 +225,45 @@
     }
     .card-image img { width:100%; height:100%; object-fit:contain; }
     .card-meta { margin-top:12px; color:var(--muted); font-size:.82rem; line-height:1.65; }
-    .card-meta strong { color:var(--text); font-size:1rem; }
+    .card-meta > strong { color:var(--text); font-size:1rem; }
+
+    .draw-result-strip {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(180,158,255,.34);
+      border-radius: 13px;
+      background: rgba(180,158,255,.10);
+      color: var(--text);
+      font-size: .92rem;
+      font-weight: 800;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .card-moon-strip {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border: 1px solid rgba(231,194,125,.32);
+      border-radius: 12px;
+      background: rgba(231,194,125,.07);
+      color: var(--gold);
+      font-size: .78rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .result-phase-context {
+      margin-bottom: 16px;
+      padding: 12px 15px;
+      border: 1px solid rgba(231,194,125,.38);
+      border-radius: 15px;
+      background: rgba(231,194,125,.08);
+      color: var(--gold);
+      font-size: .88rem;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: .02em;
+    }
     .reading {
       margin-top:20px;
       padding:20px;
@@ -350,7 +388,7 @@
           <p class="eyebrow" id="mode-kicker">LOC1 · Rune Draw</p>
           <h1 id="mode-title">月符抽牌</h1>
         </div>
-        <div class="phase" id="moon-phase">真實月相：計算中...</div>
+
       </div>
 
       <div class="ritual" id="ritual-view">
@@ -386,6 +424,7 @@
       </div>
 
       <div id="result-view" hidden>
+        <div class="result-phase-context" id="moon-phase">本次真實月相：計算中...</div>
         <div class="cards-grid" id="cards-grid"></div>
         <div class="reading" id="reading"></div>
         <p class="note" id="mode-note"></p>
