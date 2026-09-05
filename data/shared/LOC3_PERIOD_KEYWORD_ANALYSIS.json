@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC3_PERIOD_KEYWORD_ANALYSIS",
   "system_id": "lo3rwang",
   "primary_loc": "LOC3",
@@ -20,31 +20,30 @@
       "card_api/data/LOC3_LYRICS_SEARCH_v0.1.manual-life-platform.json"
     ],
     "period_registry": "data/shared/LOC_ERA_REGISTRY.json",
+    "keyword_registry": "data/shared/LOC3_KEYWORD_REGISTRY.json",
     "analyzed_work_count": 403,
     "excluded_periods": [
       "P1"
     ],
-    "note": "LOC3 正式分析自可搜尋 corpus 的 P2 起算；P1 依現行 corpus policy 為備份／不搜尋。"
+    "note": "P1 remains backup/non-search. v0.3 separates proper noun 微月光 from generic 微光意象."
   },
-  "purpose": "以 LOC8 已確定的連續時期為時間軸，使用 normalized document frequency 比較 LOC3 關鍵字強度，並標示相鄰時期的新生、上升、延續、衰退與消失訊號。時期是 temporal context，不等同 keyword tag。",
+  "purpose": "以 LOC8 固定時期比較 LOC3 關鍵字 document frequency，並嚴格區分專有名詞、一般意象與其他語義標籤。",
   "governance": {
     "period_authority": "LOC8",
     "keyword_content_authority": "LOC3",
     "retrieval_structure": "LOC7",
     "rules": [
-      "LOC8 owns period boundaries; LOC3 only references them.",
-      "LOC3 owns song/lyrics keyword evidence and period-level semantic analysis.",
-      "LOC7 may index this analysis for retrieval but must not redefine period boundaries or song meaning.",
-      "Legacy LOC3 era_name/playlists remain source evidence and are not automatically promoted to LOC-wide period names.",
-      "All keyword frequencies are based on existing tags; absent tags are not inferred as absent concepts.",
-      "P8 is low-sample and all P7→P8 differences are exploratory."
+      "微月光 is a canonical LOC3 proper noun and must not be conflated with generic light imagery.",
+      "微光意象 is generic imagery and is not an alias of 微月光.",
+      "A work receives 微月光 only from explicit source evidence such as ERA_MOONLIGHT, era_name, playlist, title or explicit tag.",
+      "LOC8 owns period boundaries; LOC3 owns keyword semantics; LOC7 may index the result."
     ]
   },
   "normalized_frequency_method": {
     "unit": "unique_lyrics_work",
-    "definition": "For each keyword and period, count each work at most once, then divide by the total works in that period.",
+    "definition": "Count each keyword at most once per work, divided by total works in that period.",
     "formula": "keyword_document_frequency = works_with_keyword / period_work_count",
-    "rationale": "Normalizes unequal corpus sizes across periods, so P3 (123 works) and P7 (15 works) can be compared as proportions rather than raw counts."
+    "rationale": "Normalizes unequal corpus sizes."
   },
   "transition_rules": {
     "metric": "document_frequency",
@@ -57,15 +56,7 @@
       "new_signal": "previous = 0 and current > 0; descriptive only",
       "disappeared": "previous > 0 and current = 0; descriptive only"
     },
-    "precedence": [
-      "emergence",
-      "rising",
-      "declining",
-      "persistent",
-      "new_signal",
-      "disappeared"
-    ],
-    "low_sample_note": "P8 currently has 2 works; transition labels involving P8 are exploratory and must not be treated as stable trends."
+    "low_sample_note": "P8 currently has 2 works; P7→P8 labels are exploratory."
   },
   "periods": [
     {
@@ -84,10 +75,18 @@
       "work_count": 50,
       "normalized_top_keywords": [
         {
-          "term": "微光光芒",
+          "term": "微月光",
+          "count": 28,
+          "frequency": 0.56,
+          "percent": 56,
+          "keyword_type": "proper_noun"
+        },
+        {
+          "term": "微光意象",
           "count": 26,
           "frequency": 0.52,
-          "percent": 52
+          "percent": 52,
+          "keyword_type": "imagery"
         },
         {
           "term": "夜晚",
@@ -196,12 +195,6 @@
           "count": 9,
           "frequency": 0.18,
           "percent": 18
-        },
-        {
-          "term": "愛與連結",
-          "count": 8,
-          "frequency": 0.16,
-          "percent": 16
         }
       ],
       "top_turn_methods": [
@@ -375,10 +368,18 @@
       "work_count": 123,
       "normalized_top_keywords": [
         {
-          "term": "微光光芒",
+          "term": "微光意象",
           "count": 92,
           "frequency": 0.748,
-          "percent": 74.8
+          "percent": 74.8,
+          "keyword_type": "imagery"
+        },
+        {
+          "term": "微月光",
+          "count": 90,
+          "frequency": 0.7317,
+          "percent": 73.2,
+          "keyword_type": "proper_noun"
         },
         {
           "term": "月亮月光",
@@ -487,12 +488,6 @@
           "count": 26,
           "frequency": 0.2114,
           "percent": 21.1
-        },
-        {
-          "term": "星辰",
-          "count": 25,
-          "frequency": 0.2033,
-          "percent": 20.3
         }
       ],
       "top_turn_methods": [
@@ -698,10 +693,11 @@
       "work_count": 74,
       "normalized_top_keywords": [
         {
-          "term": "微光光芒",
+          "term": "微光意象",
           "count": 55,
           "frequency": 0.7432,
-          "percent": 74.3
+          "percent": 74.3,
+          "keyword_type": "imagery"
         },
         {
           "term": "現實選擇",
@@ -1031,10 +1027,11 @@
           "percent": 61.7
         },
         {
-          "term": "微光光芒",
+          "term": "微光意象",
           "count": 49,
           "frequency": 0.6049,
-          "percent": 60.5
+          "percent": 60.5,
+          "keyword_type": "imagery"
         },
         {
           "term": "平靜",
@@ -1346,10 +1343,11 @@
           "percent": 62.1
         },
         {
-          "term": "微光光芒",
+          "term": "微光意象",
           "count": 32,
           "frequency": 0.5517,
-          "percent": 55.2
+          "percent": 55.2,
+          "keyword_type": "imagery"
         },
         {
           "term": "希望",
@@ -1649,10 +1647,11 @@
           "percent": 66.7
         },
         {
-          "term": "微光光芒",
+          "term": "微光意象",
           "count": 10,
           "frequency": 0.6667,
-          "percent": 66.7
+          "percent": 66.7,
+          "keyword_type": "imagery"
         },
         {
           "term": "平靜",
@@ -2103,11 +2102,12 @@
           "class": "rising"
         },
         {
-          "term": "微光光芒",
+          "term": "微光意象",
           "previous_frequency": 0.52,
           "current_frequency": 0.748,
           "delta": 0.228,
-          "class": "rising"
+          "class": "rising",
+          "keyword_type": "imagery"
         },
         {
           "term": "正義界線",
@@ -2122,6 +2122,14 @@
           "current_frequency": 0.2927,
           "delta": 0.1727,
           "class": "rising"
+        },
+        {
+          "term": "微月光",
+          "previous_frequency": 0.56,
+          "current_frequency": 0.7317,
+          "delta": 0.1717,
+          "class": "rising",
+          "keyword_type": "proper_noun"
         },
         {
           "term": "溫柔",
@@ -2319,6 +2327,14 @@
       ],
       "declining": [
         {
+          "term": "微月光",
+          "previous_frequency": 0.7317,
+          "current_frequency": 0.0135,
+          "delta": -0.7182,
+          "class": "declining",
+          "keyword_type": "proper_noun"
+        },
+        {
           "term": "月亮月光",
           "previous_frequency": 0.5854,
           "current_frequency": 0.2027,
@@ -2405,11 +2421,12 @@
           "class": "persistent"
         },
         {
-          "term": "微光光芒",
+          "term": "微光意象",
           "previous_frequency": 0.748,
           "current_frequency": 0.7432,
           "delta": -0.0047,
-          "class": "persistent"
+          "class": "persistent",
+          "keyword_type": "imagery"
         }
       ],
       "new_signal": [
@@ -2798,11 +2815,12 @@
           "class": "persistent"
         },
         {
-          "term": "微光光芒",
+          "term": "微光意象",
           "previous_frequency": 0.6049,
           "current_frequency": 0.5517,
           "delta": -0.0532,
-          "class": "persistent"
+          "class": "persistent",
+          "keyword_type": "imagery"
         },
         {
           "term": "等待時機",
@@ -3293,6 +3311,14 @@
       ],
       "rising": [
         {
+          "term": "微月光",
+          "previous_frequency": 0.0667,
+          "current_frequency": 0.5,
+          "delta": 0.4333,
+          "class": "rising",
+          "keyword_type": "proper_noun"
+        },
+        {
           "term": "未知探索",
           "previous_frequency": 0.1333,
           "current_frequency": 0.5,
@@ -3337,11 +3363,12 @@
           "class": "declining"
         },
         {
-          "term": "微光光芒",
+          "term": "微光意象",
           "previous_frequency": 0.6667,
           "current_frequency": 0,
           "delta": -0.6667,
-          "class": "declining"
+          "class": "declining",
+          "keyword_type": "imagery"
         },
         {
           "term": "平靜",
