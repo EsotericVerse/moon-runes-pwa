@@ -154,11 +154,16 @@
 
     main { min-width: 0; }
     .hero {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 18px;
-      margin: 0 0 18px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      align-items:end;
+      gap:18px;
+      margin:0 0 18px;
+    }
+    .hero .loc-header{margin-bottom:0;padding-top:12px;}
+    @media(max-width:760px){
+      .hero{grid-template-columns:1fr;align-items:start}
+      .sync{justify-self:start}
     }
 
     .sync {
@@ -579,17 +584,18 @@
         </div>
       </nav>
       <div class="sidebar-foot">
-        每日符文 → ERA → Event。全站返回首頁請使用右上方導覽；左側只保留 LOC8 工作區。
+        每日符文 → 時期 → 事件。全站返回首頁請使用右上方導覽；左側只保留 LOC8 工作區。
       </div>
     </aside>
 
     <main>
       <div class="life-view" id="lifeView" hidden>
       <section class="hero" id="overview">
-        <div class="loc-page-hero">
-          <h1 class="loc-page-title">LOC8 <span class="loc-page-kind">脈絡分析</span></h1>
-          <h2 class="loc-page-subtitle">把分散的紀錄，放回同一段脈絡。</h2>
-          <p class="loc-page-intro">LOC8 以每日符文、時期與事件三種尺度整理生活資料：每日符文觀察近期訊號，時期聚合一段時間的關鍵字與狀態，事件保存具體發生的事情與轉折。</p>
+        <div class="loc-header">
+          <p class="loc-header-meta">LOC8 · Event · Time · Trajectory</p>
+          <h1 class="loc-header-title">脈絡分析</h1>
+          <h2 class="loc-header-subtitle">把分散的紀錄，放回同一段脈絡。</h2>
+          <p class="loc-header-copy">以每日符文、時期與事件三種尺度整理生活資料：每日符文觀察近期訊號，時期聚合一段時間的關鍵字與狀態，事件保存具體發生的事情與轉折。</p>
         </div>
         <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">載入中…</span></div>
       </section>
