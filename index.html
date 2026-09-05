@@ -1708,12 +1708,22 @@
       const locInfo = {
         LOC1: {
           kicker:'LOC1 · Lots',
-          title:'符文抽籤',
-          copy:'66 符文的基礎語意、方向與抽牌入口。單卡、雙卡、三卡、五卡與每日符文都從 LOC1 開始。',
+          title:'月之符文／符文抽籤',
+          copy:'LOC1 是整套 LOC 的根。它保存月之符文的基礎語意、方向、抽牌規則與最小語言單元，讓使用者可以先從一張牌開始，再逐步進入因果、源－轉－合與更複雜的多卡語法。',
           route:'獨立功能入口：直接進入月之符文抽牌。',
           extra:[
-            '用途：問事、整理感受、取得語意起點。',
-            '目前：每日單卡、單卡、雙卡、三卡、五卡已可使用；OW3gs 11 張保留。'
+            '核心：66 符文是 LOC 的語意根；第 0 符「德」是系統基準，不參與實際抽牌。',
+            '抽牌：每日單卡、單卡、雙卡、三卡、五卡已可使用；OW3gs 11 張目前保留入口。',
+            '結構：雙卡看因果，三卡看「源 → 轉 → 合」，五卡加入過去／現在／未來／外在／內在。',
+            '方向：正位、半正位、半逆位、逆位是四種獨立語意方向，不等同於好／壞。',
+            '用途：問事、整理感受、建立創作起點，也作為 LOC2–8 後續語意系統的共同根基。'
+          ],
+          resources:[
+            {label:'開始每日符文',href:'result.html?mode=daily',meta:'Daily Rune · 一天一張'},
+            {label:'單卡抽牌',href:'result.html',meta:'Single Rune · 單一語意起點'},
+            {label:'查看 66 月符圖鑑',href:'list.html',meta:'八組分類 · 卡片詳細說明'},
+            {label:'命運句語法圖鑑',href:'docs/64LunaRune.docx',meta:'符文四向語意與命運句語法',download:true},
+            {label:'實體月符卡 PDF',href:'docs/LunarRunesCardCut.pdf',meta:'可列印牌組',download:true}
           ],
           href:'result.html?mode=daily',
           label:'進入 LOC1'
@@ -1721,11 +1731,21 @@
         LOC2: {
           kicker:'LOC2 · Game',
           title:'Semantic Playground',
-          copy:'把符文帶進事件、因果與玩家互動，讓語意不只被解讀，也能被操作、共振與形成暫時定義。',
-          route:'獨立功能入口：直接進入 LOC2。',
+          copy:'LOC2 把 LOC1 的符文語彙放進真實情境與玩家互動中。Event 提出問題，Rune 成為回答，回答彼此共振、干預與驗證，最後形成一個暫時可用的定義。',
+          route:'獨立功能入口：先看 LOC2 系統說明，再進入可玩的 Alpha。',
           extra:[
-            '玩法：事件解謎 + PvP 干預。',
-            '目前：Alpha 核心循環、事件卡、八職業與 Web Alpha 已可展示。'
+            '定位：不是傳統戰鬥卡牌，而是「事件解謎 + PvP 干預」的語意遊樂場。',
+            '核心循環：Question → Response → Resonance → Definition。',
+            '核心數值：De（德）；MVP 以 De 達 16 作為勝利資格，並需經 RP 驗證。',
+            '情境模型：雙卡 A → B 因果是最小情境文法；三卡沿用「源－轉－合」。',
+            '目前：MVP v1.3 Alpha、Alpha Event 32、八職業、1–64 第一代行為效果與單機雙人 Web Alpha 已可展示。',
+            '用途：把誤解、合作、切斷、等待、選擇、規則、偶然等真實狀況整理成可被符文描述與處理的 Scenario Corpus。'
+          ],
+          resources:[
+            {label:'LOC2 系統說明',href:'loc2.html',meta:'規則 · Event 32 · 八職業 · 64 卡效果'},
+            {label:'開始可玩 Alpha',href:'loc2-game.html',meta:'Web Alpha · 單機雙人'},
+            {label:'LOC2 Scenario Model',href:'docs/LOC2_SCENARIO_MODEL.md',meta:'真實情境 · 雙卡因果 · Event Corpus'},
+            {label:'LOC2 Event Registry',href:'data/shared/LOC2_EVENT_REGISTRY.json',meta:'Alpha Event 32 · Structured Registry'}
           ],
           href:'loc2.html',
           label:'進入 LOC2'
