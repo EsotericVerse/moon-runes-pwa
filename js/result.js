@@ -174,6 +174,8 @@ function buildMultiReading(cards, labels, realPhase) {
 }
 
 async function runRitual(mode, config) {
+  document.body.dataset.drawing = "true";
+
   const messagesByMode = {
     single: [
       "您目前使用的是「單卡占卜模式」。",
@@ -214,10 +216,13 @@ async function runRitual(mode, config) {
 
   const messages = messagesByMode[mode] || messagesByMode.single;
   const message = document.getElementById("ritual-message");
-  for (const text of messages) {
-    message.textContent = text;
+  for (let i = 0; i < messages.length; i++) {
+    const secondsLeft = Math.max(1, messages.length - i);
+    message.textContent = `${messages[i]}（約 ${secondsLeft} 秒）`;
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
+
+  document.body.dataset.drawing = "false";
 }
 
 function renderResult(mode, config, realPhase) {
