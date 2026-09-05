@@ -35,6 +35,12 @@
       "label": "歌曲"
     },
     {
+      "id": "rune_song",
+      "primary_loc": "LOC3",
+      "kind": "work_subtype",
+      "label": "符文歌曲"
+    },
+    {
       "id": "lyrics_work",
       "primary_loc": "LOC3",
       "kind": "work",
