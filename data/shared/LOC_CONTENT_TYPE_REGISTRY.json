@@ -11,6 +11,12 @@
       "label": "符文資料"
     },
     {
+      "id": "scenario_event",
+      "primary_loc": "LOC2",
+      "kind": "scenario_corpus",
+      "label": "情境事件"
+    },
+    {
       "id": "game_rule",
       "primary_loc": "LOC2",
       "kind": "interactive_system",
