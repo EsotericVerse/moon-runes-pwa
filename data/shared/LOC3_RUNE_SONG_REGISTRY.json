@@ -22,42 +22,11 @@
     "Explicit rune-chant / 禁咒 works are excluded from rune-song recovery, ranking, and threshold calibration.",
     "Rune-song search should not specially surface 禁咒 works; they are treated as an exception corpus, not candidate evidence.",
     "Rune-song scoring is based on DISTINCT rune names only; repeated occurrences of the same rune add no score.",
-    "Each distinct rune contributes its signal-tier weight at most once per song."
+    "Each distinct rune contributes its signal-tier weight at most once per song.",
+    "Narrative songs can contain multiple rune-name tokens without being rune songs.",
+    "Same-date overlap with an OW3gs draw is insufficient when the author identifies the song as narrative-only."
   ],
   "confirmed_records": [
-    {
-      "candidate_id": "RS-CAND-LW0124",
-      "work_id": "LW0124",
-      "title": "看見之後",
-      "created_date": "2026-07-11",
-      "period": "P6",
-      "era_name": "順其自然",
-      "source_work_ids": [
-        "E0492"
-      ],
-      "match_basis": {
-        "same_date_as_recorded_draw": true,
-        "exact_title_matches_drawn_rune": false,
-        "matched_rune": null,
-        "related_metadata_tags": [
-          "時間記憶",
-          "月亮月光"
-        ]
-      },
-      "confidence": "confirmed_by_author",
-      "status": "confirmed",
-      "note": "Same date as a recorded OW3gs spread, but no direct rune-to-song provenance is stored in the current LOC3 metadata. Author later recalled that rune songs were consistently created from OW3gs 11-card draws and identified these songs as likely belonging to that process.",
-      "author_recollection": {
-        "statement": "符文歌曲都是以 OW3gs 11 抽來創作；這幾首應該就是。",
-        "recorded_in_current_review": true,
-        "certainty": "likely_not_absolute"
-      },
-      "confirmation": {
-        "type": "explicit_author_confirmation",
-        "statement": "如果只有三首，那就一定是。",
-        "confirmed_in_current_review": true
-      }
-    },
     {
       "candidate_id": "RS-CAND-LW0228",
       "work_id": "LW0228",
@@ -224,7 +193,7 @@
     "same_date_candidates_2026_07_11": 3,
     "high_candidates": 1,
     "medium_candidates": 2,
-    "confirmed_rune_songs": 4,
+    "confirmed_rune_songs": 3,
     "known_minimum_total": 3,
     "total_status": "incomplete",
     "author_recollection": "符文歌曲數量不只三首；目前只回收到三首已確認作品。"
@@ -254,7 +223,7 @@
     "status": "confirmed_by_author"
   },
   "recovery_status": {
-    "confirmed_now": 4,
+    "confirmed_now": 3,
     "expected_total": "more_than_3",
     "exact_total": "unknown",
     "note": "Do not treat the current three confirmed records as the full rune-song corpus.",
@@ -266,6 +235,9 @@
     "exception_corpus": "禁咒／符文詠唱類 excluded",
     "demoted_from_confirmed": [
       "LW0001 界"
+    ],
+    "rejected_non_rune_songs": [
+      "LW0124 看見之後"
     ]
   },
   "recovery_clues": [
@@ -736,6 +708,19 @@
       "rationale": "These works deliberately enumerate or chant rune vocabulary as playful/explicit rune text; they are not OW3gs-derived rune songs and would distort keyword thresholds.",
       "source": "author clarification",
       "status": "confirmed"
+    }
+  ],
+  "rejected_records": [
+    {
+      "work_id": "LW0124",
+      "title": "看見之後",
+      "status": "rejected_non_rune_song",
+      "reason": "narrative_song_not_rune_derived",
+      "author_confirmation": {
+        "statement": "看見之後不是。這是敘事，跟符文無關。",
+        "confirmed_in_current_review": true
+      },
+      "note": "Same-date/contextual overlap must not be treated as rune-song provenance."
     }
   ]
 }
