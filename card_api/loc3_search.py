@@ -101,6 +101,11 @@ class LOC3Result:
             "ending_structure": work.get("ending_structure"),
             "hope_extension": work.get("hope_extension"),
             "tags": work.get("tags", []),
+            "reasoning_tags": work.get("reasoning_tags", []),
+            "semantic_keywords": work.get("semantic_keywords", work.get("tags", [])),
+            "discourse_mode": work.get("discourse_mode"),
+            "emotion_applicability": work.get("emotion_applicability"),
+            "semantic_completion": work.get("semantic_completion"),
             "matched_terms": self.matched_terms,
             "recommended_version": versions[0] if versions else None,
             "alternate_versions": versions[1:],
@@ -197,12 +202,19 @@ class LOC3SearchEngine:
             str(work.get("summary", "")), str(work.get("category", "")),
             str(work.get("start_state", "")), str(work.get("turn_method", "")),
             str(work.get("final_state", "")), " ".join(work.get("tags", [])),
+            " ".join(work.get("reasoning_tags", [])),
         ]))
+        normalized_query = _normalize(query)
         terms = []
         for group in _CONCEPTS:
-            if any(term in _normalize(query) for term in group):
+            if any(term in normalized_query for term in group):
                 terms.extend(term for term in group if term in haystack)
-        return list(dict.fromkeys(terms))[:5]
+        # Direct keyword/proposition matches are especially important for rational songs.
+        for term in work.get("semantic_keywords", work.get("tags", [])):
+            normalized_term = _normalize(str(term))
+            if normalized_term and (normalized_term in normalized_query or normalized_query in normalized_term):
+                terms.append(str(term))
+        return list(dict.fromkeys(terms))[:8]
 
     @staticmethod
     def _intent_boost(query: str, work: dict[str, Any]) -> float:
