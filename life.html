@@ -1111,6 +1111,9 @@
         els.eraKeywordGrid.innerHTML = ordered.map(era => {
           const period = String(era.period || '');
           const loc3 = loc3PeriodMap.get(period);
+          const namedKeywords = Array.isArray(loc3?.named_keywords)
+            ? loc3.named_keywords
+            : [];
           const loc3Keywords = Array.isArray(loc3?.normalized_top_keywords)
             ? loc3.normalized_top_keywords.slice(0,10)
             : [];
@@ -1122,6 +1125,13 @@
                 <strong>${esc(period || era.era_id)} · ${esc(era.name || '')}</strong>
                 <small>${loc3WorkCount ? `LOC3 ${loc3WorkCount} 首` : 'LOC3 尚無正式分析'}</small>
               </div>
+              ${namedKeywords.length ? `
+                <div class="era-source-note" style="margin-bottom:6px">命名關鍵字</div>
+                <div class="era-keyword-chips" style="margin-bottom:10px">
+                  ${namedKeywords.map(item => `<span class="era-keyword-chip">${esc(item.term)}${item.aliases?.length ? `（${esc(item.aliases.join('／'))}）` : ''} <b>${esc(item.percent)}%</b></span>`).join('')}
+                </div>
+              ` : ''}
+              <div class="era-source-note" style="margin-bottom:6px">主要語義</div>
               <div class="era-keyword-chips">
                 ${loc3Keywords.length
                   ? loc3Keywords.map(item => `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.percent)}%</b></span>`).join('')
