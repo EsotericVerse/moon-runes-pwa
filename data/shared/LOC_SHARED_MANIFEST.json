@@ -53,6 +53,12 @@
       "purpose": "Canonical governance, meaning, style-state and stage-interpretation records."
     },
     {
+      "id": "loc6_rune_interpretation",
+      "path": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+      "authority": "LOC6",
+      "purpose": "Recorded rune-combination interpretation evidence from the seven-volume 月語者 chapter-outline corpus."
+    },
+    {
       "id": "loc7_linguistic_analysis",
       "path": "data/shared/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json",
       "authority": "LOC7",
@@ -90,9 +96,11 @@
     },
     "LOC5": "media-authority-established",
     "LOC6": {
-      "governance_registry": "schema-ready",
+      "governance_registry": "connected",
+      "rune_interpretation_corpus": "connected",
+      "rune_interpretation_records": "180 usable / 182 chapter slots",
       "analysis_types": "connected",
-      "corpus_import": "pending"
+      "corpus_import": "partial-primary-corpus-connected"
     },
     "LOC7": {
       "linguistic_analysis_registry": "schema-ready",
@@ -149,7 +157,7 @@
       "LOC3": "lyrics/music retrieval",
       "LOC4": "registry ready; corpus import pending",
       "LOC5": "media retrieval through shared media registry",
-      "LOC6": "registry ready; direct corpus pending; knowledge references may appear through LOC7",
+      "LOC6": "direct rune-interpretation corpus connected; governance/style corpus continues to expand",
       "LOC7": "FAQ/KM retrieval",
       "LOC8": "ERA retrieval"
     },
