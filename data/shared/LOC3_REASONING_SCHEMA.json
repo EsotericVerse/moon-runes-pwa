@@ -88,5 +88,24 @@
     "LOC3": "source song / lyric semantics",
     "LOC6": "governance and Zhengde-style proposition interpretation",
     "LOC7": "proposition structure, text architecture, retrieval and vectorization"
+  },
+  "completion_rules": {
+    "final_state_optional": {
+      "rule": "A descriptive/process song may be semantically complete without a final state.",
+      "examples": [
+        "waiting/action description",
+        "ongoing condition",
+        "open-ended observation"
+      ]
+    },
+    "classical_chinese": {
+      "rule": "Classical Chinese lyrics require an interpretation layer before keyword tagging.",
+      "pipeline": [
+        "original_text",
+        "author/expert explanation",
+        "modern-semantic paraphrase",
+        "keyword/reasoning extraction"
+      ]
+    }
   }
 }
