@@ -14,7 +14,7 @@
 
 | 文件 | 用途 | 狀態 |
 |---|---|---|
-| [LOC_Tutorial_01_語言系統框架入門.pdf](./LOC_Tutorial_01_語言系統框架入門.pdf) | 新手教學 01：從 LOC 定位、LOC1 月之符文、符文演化到 LOC1–8 功能責任區的語言系統框架入門 | Published tutorial |
+| [LOC_Tutorial_01_語言系統框架入門.pdf](./LOC_Tutorial_01_語言系統框架入門.pdf) · [Web View](../tutorial01.html) | 新手教學 01：從 LOC 定位、LOC1 月之符文、符文演化到 LOC1–8 功能責任區的語言系統框架入門 | Published tutorial + Web view |
 
 ## 主要文件
 
