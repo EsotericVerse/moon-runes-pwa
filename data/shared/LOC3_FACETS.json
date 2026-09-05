@@ -104,7 +104,7 @@
     "categories": [
       {
         "value": "轉折型",
-        "count": 147
+        "count": 144
       },
       {
         "value": "轉折型候選",
@@ -112,23 +112,27 @@
       },
       {
         "value": "其他／待複查",
-        "count": 69
+        "count": 68
       },
       {
         "value": "治理宣言型",
-        "count": 27
+        "count": 28
       },
       {
         "value": "思辨論述型",
-        "count": 13
+        "count": 16
       },
       {
         "value": "幸福甜美型",
-        "count": 6
+        "count": 5
       },
       {
         "value": "祝福紀念型",
         "count": 5
+      },
+      {
+        "value": "勸戒論述型",
+        "count": 1
       }
     ],
     "styles": [
