@@ -199,6 +199,37 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       }
+    },
+    {
+      "asset_id": "KA-LOC6-DUAL-001",
+      "title": "LOC6 Dual Rune Relation Registry",
+      "path": "data/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
+      "source_type": "structured_registry",
+      "content_type": "dual_rune_relation",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC1",
+        "LOC2",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "neutral_two_rune_semantic_relation_corpus",
+      "status": "working",
+      "authority_level": "grammar_registry",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-05",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "planned_sources": [
+          "docs/64LunaRune.docx",
+          "data/shared/LOC2_EVENT_REGISTRY.json",
+          "verified observed readings"
+        ]
+      },
+      "notes": "Stores neutral A+B relationships only. Cause/effect order, directions and question context are applied later by the LOC1 two-card interpretation layer."
     }
   ]
 }
