@@ -41,6 +41,12 @@
       "purpose": "Stable ID types and cross-LOC relationship vocabulary."
     },
     {
+      "id": "loc2_events",
+      "path": "data/shared/LOC2_EVENT_REGISTRY.json",
+      "authority": "LOC2",
+      "purpose": "Scenario Corpus / Event Corpus for real-life situation modeling and LOC2 Alpha events."
+    },
+    {
       "id": "loc4_writing",
       "path": "data/shared/LOC4_WRITING_REGISTRY.json",
       "authority": "LOC4",
@@ -118,6 +124,12 @@
       "event_shared_refs": "connected",
       "google_sheet_schema": "loc8-mvp-0.3",
       "apps_script_code": "updated_in_github_redeploy_required"
+    },
+    "LOC2": {
+      "event_registry": "connected",
+      "alpha_events": "32 scenario prototypes",
+      "dual_card_scenario_grammar": "A → B causal model",
+      "direct_unified_search": "pending"
     }
   },
   "rule": "Shared foundation is frozen at schema v0.1. Unified Search consumes shared references while each LOC retains canonical ownership; future corpus imports extend coverage without changing stable IDs.",
@@ -153,7 +165,7 @@
     },
     "live_coverage": {
       "LOC1": "rune retrieval",
-      "LOC2": "knowledge view through LOC7; direct game corpus pending",
+      "LOC2": "Scenario/Event registry connected; direct Unified Search corpus integration pending",
       "LOC3": "lyrics/music retrieval",
       "LOC4": "registry ready; corpus import pending",
       "LOC5": "media retrieval through shared media registry",
