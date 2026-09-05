@@ -7,7 +7,7 @@
 - Markdown（`.md`）：可維護、可 diff、可搜尋、可被 KM／Agent 直接讀取的主要知識文件。
 - JSON：結構化 Registry、檢索資料、應用資料；依各自 authority 與 provenance 治理。
 - XLSX：結構化母資料；`LunaRune64.xlsx` 仍是符文資料的最高優先母資料。
-- DOCX／PDF：發布、交換、列印或封存格式，不因放在 `docs/` 就自動成為最高權威。
+- DOCX／PDF：僅保留仍有實際用途的 Canon、語法圖鑑、列印或交換文件；不因放在 `docs/` 就自動成為最高權威。
 - 應用輸出與 AI 推論不得反向覆寫 Canon 或母資料。
 
 ## 主要文件
@@ -16,7 +16,6 @@
 |---|---|---|
 | [LOC7_KM.md](./LOC7_KM.md) | LOC7 Knowledge Management 核心治理文件 | Current |
 | [JSON_DATA_MAP.md](./JSON_DATA_MAP.md) | JSON 資料角色、來源與同步規則 | Current |
-| `LOC7_KM.docx` | KM 發布／交換版本 | Published snapshot |
 | `LOC_Canon.docx` | Canon 文件版本之一 | Canon document |
 | `LunarRunesCardCut.pdf` | 月符實體卡列印檔 | Published artifact |
 
