@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC3_RUNE_SONG_REGISTRY",
+  "authority": "LOC3",
+  "updated_at": "2026-09-05",
+  "purpose": "Identify songs actually derived from real Luna Codex draws. Rune imagery alone is insufficient.",
+  "definition": "rune_song = a song whose creative provenance explicitly includes a real rune draw result that was interpreted and then extended into lyrics/song.",
+  "classification": {
+    "confirmed": "Direct source record explicitly links a real draw to the song.",
+    "high_candidate": "Strong multi-source match such as same date plus exact drawn-rune title, but missing explicit creation provenance.",
+    "medium_candidate": "Temporal/contextual match to a known draw, but no direct rune linkage.",
+    "rejected_theme_only": "Rune/moon/fate imagery without draw provenance."
+  },
+  "rules": [
+    "Do not classify a song as rune_song solely because its title or lyrics contain rune, moon, fate, shadow, light or similar motifs.",
+    "Do not classify by semantic similarity alone.",
+    "Confirmed records require an explicit draw-to-song provenance source.",
+    "Candidates remain separate from confirmed rune songs."
+  ],
+  "confirmed_records": [],
+  "candidate_records": [
+    {
+      "candidate_id": "RS-CAND-LW0001",
+      "work_id": "LW0001",
+      "title": "界",
+      "created_date": "2026-07-11",
+      "period": "P6",
+      "era_name": "順其自然",
+      "source_work_ids": [
+        "E0493"
+      ],
+      "match_basis": {
+        "same_date_as_recorded_draw": true,
+        "exact_title_matches_drawn_rune": true,
+        "matched_rune": "界",
+        "related_metadata_tags": [
+          "時間記憶",
+          "月亮月光"
+        ]
+      },
+      "confidence": "high_candidate",
+      "status": "candidate",
+      "note": "Same date as a recorded OW3gs spread and title exactly matches a rune in that spread. Original songwriting provenance is still required for confirmed rune_song status."
+    },
+    {
+      "candidate_id": "RS-CAND-LW0124",
+      "work_id": "LW0124",
+      "title": "看見之後",
+      "created_date": "2026-07-11",
+      "period": "P6",
+      "era_name": "順其自然",
+      "source_work_ids": [
+        "E0492"
+      ],
+      "match_basis": {
+        "same_date_as_recorded_draw": true,
+        "exact_title_matches_drawn_rune": false,
+        "matched_rune": null,
+        "related_metadata_tags": [
+          "時間記憶",
+          "月亮月光"
+        ]
+      },
+      "confidence": "medium_candidate",
+      "status": "candidate",
+      "note": "Same date as a recorded OW3gs spread, but no direct rune-to-song provenance is stored in the current LOC3 metadata."
+    },
+    {
+      "candidate_id": "RS-CAND-LW0228",
+      "work_id": "LW0228",
+      "title": "界線之內",
+      "created_date": "2026-07-11",
+      "period": "P6",
+      "era_name": "順其自然",
+      "source_work_ids": [
+        "E0494"
+      ],
+      "match_basis": {
+        "same_date_as_recorded_draw": true,
+        "exact_title_matches_drawn_rune": false,
+        "matched_rune": null,
+        "related_metadata_tags": [
+          "正義界線",
+          "命運因果",
+          "時間記憶",
+          "守護界線"
+        ]
+      },
+      "confidence": "medium_candidate",
+      "status": "candidate",
+      "note": "Same date as a recorded OW3gs spread, but no direct rune-to-song provenance is stored in the current LOC3 metadata."
+    }
+  ],
+  "known_draw_contexts": [
+    {
+      "date": "2026-07-11",
+      "spread_type": "OW3gs 11-card",
+      "cards": [
+        {
+          "rune": "啟",
+          "direction": "正位"
+        },
+        {
+          "rune": "地",
+          "direction": "半逆位"
+        },
+        {
+          "rune": "語",
+          "direction": "半正位"
+        },
+        {
+          "rune": "時",
+          "direction": "半逆位"
+        },
+        {
+          "rune": "心",
+          "direction": "正位"
+        },
+        {
+          "rune": "暗",
+          "direction": "半正位"
+        },
+        {
+          "rune": "命",
+          "direction": "正位"
+        },
+        {
+          "rune": "實",
+          "direction": "正位"
+        },
+        {
+          "rune": "日",
+          "direction": "半逆位"
+        },
+        {
+          "rune": "果",
+          "direction": "半正位"
+        },
+        {
+          "rune": "界",
+          "direction": "正位"
+        }
+      ],
+      "provenance": "recorded LOC history / user-confirmed draw record"
+    }
+  ],
+  "corpus_scan": {
+    "loc3_work_count": 403,
+    "same_date_candidates_2026_07_11": 3,
+    "high_candidates": 1,
+    "medium_candidates": 2
+  }
+}
