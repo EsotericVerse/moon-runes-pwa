@@ -27,15 +27,9 @@
     },
     {
       "id": "search",
-      "label": "Unified Search",
+      "label": "LOC 搜尋引擎",
       "href": "search.html",
-      "description": "跨 LOC 搜尋"
-    },
-    {
-      "id": "music",
-      "label": "LOC3 歌曲",
-      "href": "search.html?content_type=lyrics_work",
-      "description": "Unified Search 的 LOC3 音樂篩選"
+      "description": "跨 LOC 統整搜尋"
     },
     {
       "id": "knowledge",
