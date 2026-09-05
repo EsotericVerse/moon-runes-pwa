@@ -159,6 +159,59 @@
     .actions {
       display:flex; flex-wrap:wrap; gap:10px; margin-top:18px;
     }
+
+    .mode-switch {
+      margin-top: 26px;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
+    }
+
+    .mode-switch h2 {
+      margin: 0 0 12px;
+      color: var(--text);
+      font-size: 1.05rem;
+    }
+
+    .mode-switch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mode-link {
+      min-height: 92px;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--soft);
+      color: var(--text);
+      text-decoration: none;
+      transition: transform .16s ease, border-color .16s ease;
+    }
+
+    .mode-link:hover,
+    .mode-link:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(231,194,125,.55);
+    }
+
+    .mode-link strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--gold);
+    }
+
+    .mode-link span {
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.5;
+    }
+
+    .mode-link.reserved {
+      opacity: .48;
+      border-style: dashed;
+      cursor: default;
+    }
     .button {
       display:inline-flex; align-items:center; justify-content:center;
       min-height:44px; padding:10px 16px;
@@ -195,6 +248,7 @@
       .cards-grid[data-count="3"],
       .cards-grid[data-count="5"] { grid-template-columns:1fr; }
       .cards-grid[data-count="5"] .rune-card:nth-child(5) { grid-column:auto; width:auto; justify-self:stretch; }
+      .mode-switch-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
       .rune-card { display:grid; grid-template-columns:minmax(120px,42%) 1fr; gap:12px; align-items:center; }
       .position { grid-column:1/-1; margin-bottom:0; justify-self:start; }
       .card-meta { margin-top:0; }
@@ -238,8 +292,37 @@
         <div class="actions">
           <button class="button primary" id="retry-button" type="button">重新抽牌</button>
           <a class="button" href="list.html">查看月符資料</a>
-          <a class="button" href="index.html#rune-entry">切換抽牌模式</a>
         </div>
+
+        <section class="mode-switch" aria-label="切換抽牌模式">
+          <h2>切換抽牌模式</h2>
+          <div class="mode-switch-grid">
+            <a class="mode-link" href="result.html">
+              <strong>單卡</strong>
+              <span>一個問題，一個語意起點。</span>
+            </a>
+            <a class="mode-link" href="result.html?mode=daily">
+              <strong>每日</strong>
+              <span>一天一張，觀看今日提示。</span>
+            </a>
+            <a class="mode-link" href="result.html?mode=2card">
+              <strong>雙卡</strong>
+              <span>以「因 → 果」觀看兩者關係。</span>
+            </a>
+            <a class="mode-link" href="result.html?mode=3card">
+              <strong>三卡</strong>
+              <span>以「源 → 轉 → 合」形成語意路徑。</span>
+            </a>
+            <a class="mode-link" href="result.html?mode=5card">
+              <strong>五卡</strong>
+              <span>以既有五卡結構展開情境。</span>
+            </a>
+            <div class="mode-link reserved" aria-disabled="true">
+              <strong>11 張 · OW3gs</strong>
+              <span>Reserved · 尚未開放。</span>
+            </div>
+          </div>
+        </section>
       </div>
     </section>
 
