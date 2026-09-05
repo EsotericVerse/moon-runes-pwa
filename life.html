@@ -388,6 +388,13 @@
 
     .life-view[hidden] { display: none !important; }
 
+    /* First-paint safety: LOC8 always opens on Daily Rune.
+       JS removes this class as soon as switchView takes control. */
+    .life-initial-daily #dailyDrawView { display:block !important; }
+    .life-initial-daily #lifeView,
+    .life-initial-daily #eraTrendView,
+    .life-initial-daily #eventTimeView { display:none !important; }
+
     .daily-layout {
       display: grid;
       grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr);
@@ -529,7 +536,7 @@
   </style>
   <link rel="stylesheet" href="css/loc-nav.css" />
 </head>
-<body>
+<body class="life-initial-daily">
   <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="life" aria-label="全站導覽"></nav></div>
   <div class="app">
     <aside class="sidebar">
@@ -1947,6 +1954,7 @@
     const dailyDrawView = $('#dailyDrawView');
 
     function switchView(view, trigger = null) {
+      document.body.classList.remove('life-initial-daily');
       lifeView.hidden = view !== 'overview';
       eventTimeView.hidden = view !== 'event-time';
       eraTrendView.hidden = view !== 'era-trend';
@@ -1975,16 +1983,19 @@
     $('#eraTrendViewBtn').addEventListener('click', () => switchView('era-trend', $('#eraTrendViewBtn')));
     $('#dailyDrawViewBtn').addEventListener('click', () => switchView('daily', $('#dailyDrawViewBtn')));
 
-    resetEventForm();
-    resetDailyDrawForm();
-    loadDrawRunes();
-    loadEraRegistry();
-    loadEvents();
-    loadDailyDraws();
     if (location.hash === '#event-time') switchView('event-time', $('#eventTimeViewBtn'));
     else if (location.hash === '#era-trend') switchView('era-trend', $('#eraTrendViewBtn'));
     else if (location.hash === '#overview') switchView('overview', $('#overviewViewBtn'));
     else switchView('daily', $('#dailyDrawViewBtn'));
+
+    // Non-critical initialization happens after the visible view is established.
+    // A failure here must never produce a blank LOC8 screen.
+    try { resetEventForm(); } catch (err) { console.error('Event form init failed', err); }
+    try { resetDailyDrawForm(); } catch (err) { console.error('Daily form init failed', err); }
+    try { loadDrawRunes(); } catch (err) { console.error('Rune metadata init failed', err); }
+    try { loadEraRegistry(); } catch (err) { console.error('ERA init failed', err); }
+    try { loadEvents(); } catch (err) { console.error('Event init failed', err); }
+    try { loadDailyDraws(); } catch (err) { console.error('Daily draw init failed', err); }
   </script>
   <script src="js/loc-nav.js"></script>
 </body>
