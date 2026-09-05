@@ -288,16 +288,18 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 
 自然語言 Query
       ↓
 Unified Search
-      ├─ LOC1  月符資料
+      ├─ LOC1  籤詩／月符
       ├─ LOC3  歌曲／歌詞
-      ├─ LOC5  Reels／媒體 reference
-      ├─ LOC7  FAQ／Knowledge View
-      └─ LOC8  ERA／時間語意
+      ├─ LOC4  文字作品
+      ├─ LOC5  Reels／媒體 Registry
+      ├─ LOC6  治理／政德風
+      ├─ LOC7  FAQ／KM／Knowledge Assets
+      └─ LOC8  時期／時間脈絡
       ↓
 Shared Result Envelope
 ```
 
-LOC4 與 LOC6 已建立共用 Registry 與 schema，但正式 corpus 尚未匯入，因此 Unified Search 不會虛構這兩域的內容結果。LOC2 目前則可由 LOC7 知識庫查到規則與系統說明；待獨立遊戲 corpus 建立後再直接接入。
+LOC4 已可直接搜尋 Writing Registry，LOC5 可搜尋 Media Registry，LOC6 可直接搜尋 Governance／政德風 Registry，LOC7 讀取 FAQ／KM 與已登錄 Knowledge Assets，LOC8 讀取連續時期 Registry。LOC2 目前仍以 LOC7 Knowledge View 為主，尚未作為獨立結果群組直接路由。
 
 不同來源的搜尋分數維持各自尺度，前端依資料類型分組呈現，不把不同引擎的 score 強制混成單一排行榜。舊有 `faq.html`、`loc3.html` 保留為專門 View，`search.html` 作為整合入口。
 
@@ -310,7 +312,7 @@ LOC4 與 LOC6 已建立共用 Registry 與 schema，但正式 corpus 尚未匯�
 PWA 與 RWD 架構已於 2025 年 5 月完成，現行版本包含：
 
 - 首頁載入後主動註冊 Service Worker
-- 透過 `moon-runes-pwa-v8` 快取關鍵資源（包含FAQ查詢頁）
+- 透過 `moon-runes-pwa-v104` 快取關鍵資源（包含FAQ查詢頁）
 - 更新時保留現行快取並清除舊版快取
 - 支援新增至桌面／主畫面
 - 提供 192×192、512×512 與 Apple Touch Icon
@@ -326,7 +328,7 @@ LOC7_KM 採 **Markdown-first, structured-data-native**：
 - `docs/LOC7_KM.md`：repository 內可維護 KM 主文件
 - `docs/JSON_DATA_MAP.md`：JSON 角色與同步方向
 - `data/shared/*.json`：跨 LOC 結構化 registry
-- FAQ v0.3 為 KM 問答 View；RAG v0.3 為其檢索衍生資料
+- FAQ v0.4 為 KM 問答 View；RAG v0.4 為其檢索衍生資料
 - 下游 JSON／索引／UI／AI 推論不得反向覆寫 Canon、母資料或原始作品
 
 詳見 [docs 文件索引](./docs/README.md)。
@@ -367,7 +369,7 @@ LOC3 現行 demo 主要採用：
 資料 → Embedding → FAISS → 語意搜尋結果
 ```
 
-LOC7 FAQ v0.3 已整理 80 題公開 FAQ，並建立對應的原子化 RAG 檢索資料，提供 [`faq.html`](https://loc.lo3rwang.cc/faq.html) 作為公開查詢介面，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。現行線上模組採不需外部金鑰的中文 n-gram TF-IDF、別名與關鍵詞混合檢索，以及保留 FAQ Chunk ID 的原文式回答。LLM 生成與 Graph RAG 仍是後續方向，不作為現行完成度宣稱。
+LOC7 FAQ v0.4 已整理 80 題公開 FAQ，並同步產生 RAG v0.4 檢索資料，提供 [`faq.html`](https://loc.lo3rwang.cc/faq.html) 作為專門 Knowledge View，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。Unified Search 則把 FAQ／KM 與 LOC1、LOC3、LOC4、LOC5、LOC6、LOC8 的現有資料來源放進同一查詢入口。完整 Graph RAG 仍是後續方向，不作為現行完成度宣稱。
 
 ---
 
