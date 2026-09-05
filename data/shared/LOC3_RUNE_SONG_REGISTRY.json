@@ -51,7 +51,9 @@
         "contains_fu": true,
         "contains_huo": true,
         "note": "Highest-priority recovered candidate; author explicitly identifies it as a representative rune song."
-      }
+      },
+      "created_date": "2026-03-23",
+      "period": "P4"
     },
     {
       "work_id": "E0223",
@@ -68,7 +70,10 @@
         "distinct_rune_hits": 20,
         "high_signal_rune_hits": 6,
         "contains_huo": true
-      }
+      },
+      "created_date": "2026-02-15",
+      "period": "P3",
+      "era_name": "微月光"
     },
     {
       "work_id": "E0354",
