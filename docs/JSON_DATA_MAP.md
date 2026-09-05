@@ -24,6 +24,7 @@
 - `LOC_CONTENT_TYPE_REGISTRY.json`：內容類型 registry。
 - `LOC_MEDIA_REGISTRY.json`：LOC5 媒體對應。
 - `LOC2_EVENT_REGISTRY.json`：LOC2 Scenario Corpus／Event Corpus；保存現行 Alpha Event 32 與情境語意角色。
+- `LOC6_DUAL_RUNE_RELATION_REGISTRY.json`：雙符文中性關係庫；不含抽牌因／果角色與四向結果。
 
 ### B. FAQ source view — 維護型問答資料
 
@@ -76,7 +77,18 @@
 - LOC2 保留 Event canonical ownership；LOC4／LOC6／LOC7／LOC8 可引用。
 - 未由來源固定的符文配對不得由 registry 或 AI 自動補造。
 
-### G. LOC6 rune interpretation evidence
+### G. LOC6 dual-rune relation registry
+
+路徑：`data/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json`
+
+- 角色：集中保存兩個符文之間的**中性語意關係**與來源案例。
+- pair key 為無方向鍵；A＋B 與 B＋A 使用同一筆底層關係。
+- 不保存「第 1 張＝因／第 2 張＝果」的抽牌角色；因果角色由 LOC1 雙卡抽牌 runtime 另外投影。
+- 不在此層加入正位／半正／半逆／逆位；四向屬抽牌 interpretation layer。
+- 可引用《命運句語法圖鑑》明確案例、LOC2 情境證據與實際解牌紀錄，但需逐筆保留 provenance。
+- LOC2 的 group requirement 不是 rune pair，不得自動映射。
+
+### H. LOC6 rune interpretation evidence
 
 路徑：`data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json`
 
@@ -87,7 +99,7 @@
 - 原文中的舊符文名、異名或舊方位寫法保留於 raw 欄位，不靜默改寫。
 - 第三篇 Ch5、Ch6 為已確認的特殊流程例外：武打大綱完成後直接交由 AI 展開，當時刻意未進行章節抽牌；因此標記為 `intentional_no_draw`，不是資料缺漏。
 
-### H. Experimental / test JSON
+### I. Experimental / test JSON
 
 `engine/`、tests 或 temporary data 中的 JSON，除非另有 registry 與 authority 宣告，預設屬實驗／測試／中間產物，不升格為 Canon。
 
