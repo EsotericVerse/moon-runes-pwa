@@ -690,9 +690,15 @@
         if (!res.ok) throw new Error('GET failed');
         const data = await res.json();
         if (data && data.ok === false) throw new Error(data.error || 'API error');
-        events = Array.isArray(data) ? data : (data.events || []);
-        writeEventCache(events);
-        setSync(true, 'LOC8 已同步 · 快取已更新');
+        const remoteEvents = Array.isArray(data) ? data : (data.events || []);
+        if (!remoteEvents.length && firstPaint.length) {
+          events = firstPaint;
+          setSync(false, '遠端回傳空資料；保留本機快取');
+        } else {
+          events = remoteEvents;
+          writeEventCache(events);
+          setSync(true, 'LOC8 已同步 · 快取已更新');
+        }
       } catch (err) {
         console.error(err);
         events = firstPaint.length ? firstPaint : cachedEvents();
@@ -853,7 +859,22 @@
     }
 
     function isDailyDrawEvent(e) {
-      return e.event_type === 'daily_draw' || e.event_type === 'daily_draw_supplement';
+      const type = String(e.event_type || '').toLowerCase();
+      const title = String(e.event_title || e.title || '');
+      const source = String(e.source || '').toLowerCase();
+      const tags = Array.isArray(e.tags) ? e.tags.map(v => String(v).toLowerCase()) : parseTags(e.tags).map(v => v.toLowerCase());
+
+      return (
+        type === 'daily_draw' ||
+        type === 'daily_draw_supplement' ||
+        type.includes('daily draw') ||
+        type.includes('daily_draw') ||
+        /^每日抽牌[｜|]/.test(title) ||
+        /^補抽[｜|]/.test(title) ||
+        tags.includes('daily-draw') ||
+        tags.includes('daily_draw') ||
+        source.includes('daily-draw')
+      );
     }
 
     function renderDailyDraws(sorted) {
@@ -877,7 +898,9 @@
 
       els.dailyDrawHistory.innerHTML = [...byDate.entries()].map(([date, items]) => {
         const rows = items.map(e => {
-          const kind = e.event_type === 'daily_draw_supplement' ? '補抽' : '主抽';
+          const typeText = String(e.event_type || '').toLowerCase();
+          const titleText = String(e.event_title || e.title || '');
+          const kind = typeText.includes('supplement') || /^補抽[｜|]/.test(titleText) ? '補抽' : '主抽';
           const title = (e.event_title || '').replace(/^每日抽牌｜|^補抽｜/, '') || e.object_id || '未命名';
           return `<div class="draw-line"><span class="draw-kind">${kind}</span><span class="draw-title">${esc(title)}</span></div>`;
         }).join('');
