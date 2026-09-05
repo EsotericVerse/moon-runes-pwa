@@ -152,7 +152,8 @@
       "analysis_types": "connected",
       "faq_v0_3": "connected",
       "faq_rag_v0_3": "connected",
-      "cross_relationship_registry": "connected"
+      "cross_relationship_registry": "connected",
+      "ui": "LOC Search knowledge category; faq.html compatibility redirect"
     },
     "LOC8": {
       "authority_source": "established",
@@ -197,12 +198,12 @@
     "ui": {
       "primary_search": "search.html",
       "specialist_views": [
-        "faq.html",
         "list.html",
         "life.html"
       ],
       "redirected_views": [
-        "loc3.html → search.html?content_type=lyrics_work"
+        "loc3.html → search.html?content_type=lyrics_work",
+        "faq.html → search.html?content_type=knowledge"
       ]
     },
     "live_coverage": {
