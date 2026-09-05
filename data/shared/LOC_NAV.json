@@ -32,12 +32,6 @@
       "description": "跨 LOC 統整搜尋"
     },
     {
-      "id": "knowledge",
-      "label": "知識庫",
-      "href": "faq.html",
-      "description": "LOC7 Knowledge Base"
-    },
-    {
       "id": "life",
       "label": "時間線",
       "href": "life.html",
