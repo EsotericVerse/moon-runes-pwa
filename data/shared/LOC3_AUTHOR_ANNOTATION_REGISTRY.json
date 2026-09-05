@@ -343,6 +343,111 @@
       "reasoning_tags": [
         "進化是持續調整的過程"
       ]
+    },
+    {
+      "work_id": "E0279",
+      "title": "現在之光",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_discourse",
+      "emotion_applicability": "optional",
+      "start_state_hint": "勸世／勸導",
+      "performance_mode": "choral",
+      "author_note": "勸世歌，合唱曲。"
+    },
+    {
+      "work_id": "E0304",
+      "title": "空域回瀾",
+      "analysis_policy": "exception_deferred",
+      "exception_type": "classical_chinese",
+      "preprocessing_override": "classical_chinese_explanation_before_keyword_analysis",
+      "display_policy": "record_only_until_explained",
+      "author_note": "文言文。需先獨立做語意解釋，再進關鍵字分析；暫列例外紀錄。"
+    },
+    {
+      "work_id": "E0306",
+      "title": "等的界線",
+      "analysis_policy": "include",
+      "discourse_mode": "state_description",
+      "emotion_applicability": "optional",
+      "final_state_applicability": "not_required",
+      "reasoning_tags": [
+        "等待具有風險",
+        "再等下去可能變得危險",
+        "描述等待本身而非結論"
+      ],
+      "author_note": "描述「等」的急迫，就是「再等下去就很危險」。沒有最終，只是在描述等這個動作。"
+    },
+    {
+      "work_id": "E0324",
+      "title": "雨落無辜",
+      "analysis_policy": "include",
+      "discourse_mode": "narrative_scene",
+      "final_state_hint": "療癒完成",
+      "reasoning_tags": [
+        "以雨洗清傷痛",
+        "雨停象徵療癒完成"
+      ],
+      "author_note": "用這場雨洗清我的傷痛，所以雨下完了，療癒好了。"
+    },
+    {
+      "work_id": "E0349",
+      "title": "如空氣之真",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_reflection",
+      "emotion_applicability": "not_primary",
+      "final_state_hint": "體悟／允許未知存在",
+      "reasoning_tags": [
+        "存在就是理由",
+        "無須辯解",
+        "允許未知的存在"
+      ],
+      "author_note": "存在就是理由，無須辯解。這是一段新的體悟，延伸為「我允許未知的存在」。"
+    },
+    {
+      "work_id": "E0429",
+      "title": "盡力而為",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_discourse",
+      "emotion_applicability": "not_required",
+      "topic_hint": [
+        "邊界感"
+      ],
+      "start_state_hint": "邊界議題／理性論述",
+      "final_state_applicability": "not_required",
+      "reasoning_tags": [
+        "盡力與界線",
+        "邊界感",
+        "責任有其限度"
+      ],
+      "author_note": "描述邊界感，也是講道理的歌曲。"
+    },
+    {
+      "work_id": "E0480",
+      "title": "留空以後",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_reflection",
+      "emotion_applicability": "not_primary",
+      "start_state_hint": "對空白存在的思考",
+      "reasoning_tags": [
+        "空白也是存在的一種型態",
+        "存在無須辯解",
+        "允許未知的存在"
+      ],
+      "author_note": "空白也是世上物質存在的型態，無須辯解。這是一段新的體悟，延伸為「我允許未知的存在」。"
     }
-  ]
+  ],
+  "semantic_rules": {
+    "final_state": {
+      "rule": "Final state is optional for songs whose purpose is to describe an action, condition, process, or unresolved state rather than reach a conclusion.",
+      "applicability": [
+        "required",
+        "optional",
+        "not_required"
+      ]
+    },
+    "classical_chinese": {
+      "rule": "Classical Chinese works must be interpreted/paraphrased before modern Chinese keyword analysis.",
+      "handling": "defer_keyword_analysis_until_explained"
+    }
+  }
 }
