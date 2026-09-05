@@ -255,7 +255,32 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "notes": "Separates governance content from style state and defines evidence-based Stage Profiles for historical Zhengde Style evolution."
+      "notes": "Uses LOC8 ERA-P1 through ERA-P8 as the primary evolution axis for Zhengde Style. Governance content and style state remain separate; age-based views are secondary projections. Text-level historical evidence is added per ERA with provenance."
+    },
+    {
+      "asset_id": "KA-ERA-001",
+      "title": "LOC ERA Registry",
+      "path": "data/shared/LOC_ERA_REGISTRY.json",
+      "source_type": "structured_registry",
+      "content_type": "era",
+      "primary_loc": "LOC8",
+      "related_locs": [
+        "LOC3",
+        "LOC6",
+        "LOC7"
+      ],
+      "role": "primary_temporal_axis_for_style_and_work_evolution",
+      "status": "current",
+      "authority_level": "temporal_authority",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-05",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Authoritative ERA timeline. LOC6 references this registry to compare Zhengde Style evolution; LOC6 does not redefine ERA dates or names."
     }
   ]
 }
