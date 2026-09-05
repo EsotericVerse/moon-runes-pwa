@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.3",
+  "schema_version": "0.4",
   "registry": "LOC4_TEXT_ANALYSIS_REGISTRY",
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
@@ -301,7 +301,12 @@
           "axis": "阿珠",
           "before_chapter": 1,
           "after_chapter": 15,
-          "status": "paired"
+          "status": "paired",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/C9YWrn9xn19hoQhV"
+          }
         },
         {
           "pair_id": "BA-CHAR-DEXING",
@@ -309,7 +314,12 @@
           "axis": "德興",
           "before_chapter": 2,
           "after_chapter": 3,
-          "status": "paired"
+          "status": "paired",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/OIX6l1eFUJ7IYOBz"
+          }
         },
         {
           "pair_id": "BA-CHAR-AWEN",
@@ -317,7 +327,12 @@
           "axis": "阿文",
           "before_chapter": 4,
           "after_chapter": 9,
-          "status": "paired"
+          "status": "paired",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/a8tUvkKBIbojDGsp"
+          }
         },
         {
           "pair_id": "BA-THEME-COMMITMENT",
@@ -341,7 +356,12 @@
           "axis": "小維",
           "before_chapter": 10,
           "after_chapter": 14,
-          "status": "paired"
+          "status": "paired",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/JJ0rs9I78FXHas5A"
+          }
         },
         {
           "pair_id": "BA-CHAR-AKAI",
@@ -349,7 +369,12 @@
           "axis": "阿鎧",
           "before_chapter": 11,
           "after_chapter": 16,
-          "status": "paired"
+          "status": "paired",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/4Wx3tCqM7BmmzTI4"
+          }
         },
         {
           "pair_id": "BA-THEME-ETERNITY",
@@ -379,7 +404,12 @@
           "chapter": 13,
           "label": "在你之後，小瑤篇",
           "role": "asymmetric_character_node",
-          "note": "只有 After 章，形成刻意不對稱；補入關係系統中不同位置的角色視角。"
+          "note": "只有 After 章，形成刻意不對稱；補入關係系統中不同位置的角色視角。",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/4nHz2DJlyK1mGIeM"
+          }
         }
       ],
       "analysis_implications": [
@@ -388,7 +418,22 @@
         "角色與主題可共用同一 pair schema。",
         "特殊章節應保留 asymmetric/intersection 身分，不強行補成對稱 pair。"
       ],
-      "confidence": "recorded_from_chapter_titles"
+      "confidence": "recorded_from_chapter_titles",
+      "work_theme_songs": [
+        {
+          "role": "op",
+          "label": "OP",
+          "source_loc": "LOC3",
+          "url": "https://suno.com/s/doXe7ALt4MVs0tXK"
+        },
+        {
+          "role": "proposal_song",
+          "label": "求婚歌",
+          "source_loc": "LOC3",
+          "url": "https://suno.com/s/YvP6Wi5lPHZywCrX"
+        }
+      ],
+      "cross_loc_note": "角色／作品主題曲屬 LOC3 音樂證據，透過角色或作品節點連到 LOC4 章節結構；不把歌曲當成 LOC4 章節內容。"
     }
   }
 }
