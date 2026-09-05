@@ -170,7 +170,7 @@ def version_score(version: dict[str, Any], preference: dict[str, Any]) -> float:
     return score
 
 
-def public_version(version: dict[str, Any], preference: dict[str, Any]) -> dict[str, Any]:
+def public_version(version: dict[str, Any], preference: dict[str, Any], work_bonus: float = 0.0) -> dict[str, Any]:
     return {
         "song_id": text(version.get("歌曲ID")),
         "title": text(version.get("歌名")),
@@ -183,7 +183,7 @@ def public_version(version: dict[str, Any], preference: dict[str, Any]) -> dict[
         "youtube_mv_url": text(version.get("YouTube_MV網址")),
         "author_score": number(preference.get("作者版本分數")),
         "recommendation": text(preference.get("版本推薦狀態")),
-        "selection_score": round(version_score(version, preference), 3),
+        "selection_score": round(version_score(version, preference) + work_bonus, 3),
     }
 
 
@@ -203,7 +203,9 @@ def build(source: Path) -> dict[str, Any]:
 
     groups: dict[str, list[dict[str, Any]]] = {}
     for row in works:
-        if text(row.get("向量索引資格")) != "是":
+        search_flag = first_nonempty(row, "向量索引資格", "搜尋資格")
+        display_policy = text(row.get("展示政策"))
+        if search_flag != "是" or display_policy.startswith("hidden"):
             continue
         lyrics_key = normalized_lyrics(row.get("歌詞"))
         if not lyrics_key:
@@ -221,6 +223,8 @@ def build(source: Path) -> dict[str, Any]:
                 text(row.get("作品ID")),
             ),
         )
+        work_bonus = number(representative.get("推薦加權"))
+        loc4_relation = text(representative.get("LOC4關聯"))
         merged_versions = []
         seen_songs = set()
         for row in rows:
@@ -229,7 +233,7 @@ def build(source: Path) -> dict[str, Any]:
                 if not song_id or song_id in seen_songs:
                     continue
                 seen_songs.add(song_id)
-                merged_versions.append(public_version(version, preference_by_song.get(song_id, {})))
+                merged_versions.append(public_version(version, preference_by_song.get(song_id, {}), work_bonus))
         merged_versions.sort(key=lambda item: (-item["selection_score"], -item["plays"], item["song_id"]))
 
         category = text(representative.get("自動建議主類別")) or text(representative.get("歌曲主類別"))
@@ -254,7 +258,11 @@ def build(source: Path) -> dict[str, Any]:
         output_works.append({
             "system_id": SYSTEM_ID,
             "primary_loc": PRIMARY_LOC,
-            "related_locs": ["LOC6", "LOC7", "LOC8"],
+            "related_locs": list(dict.fromkeys(
+                ["LOC6", "LOC7", "LOC8"]
+                + (["LOC4"] if loc4_relation else [])
+                + split_values(representative.get("related_locs"))
+            )),
             "work_id": f"LW{index:04d}",
             "lyrics_hash": digest,
             "source_work_ids": [text(row.get("作品ID")) for row in rows],
@@ -275,6 +283,10 @@ def build(source: Path) -> dict[str, Any]:
             "ending_structure": text(representative.get("結尾結構")),
             "hope_extension": text(representative.get("希望延伸")),
             "tags": tags,
+            "content_origin": text(representative.get("content_origin")) or None,
+            "loc4_relation": loc4_relation or None,
+            "display_policy": text(representative.get("展示政策")) or "normal",
+            "recommendation_bonus": work_bonus,
             "rune_provenance": build_rune_provenance(representative),
             "retrieval_text": "\n".join(part for part in retrieval_parts if part),
             "versions": merged_versions,
@@ -283,7 +295,7 @@ def build(source: Path) -> dict[str, Any]:
     return {
         "dataset": {
             "name": "LOC3 Lyrics Search",
-            "version": "0.1.5",
+            "version": "0.1.6",
             "source": source.name,
             "language_scope": "zh-Hant",
             "unit": "unique_lyrics_work",
