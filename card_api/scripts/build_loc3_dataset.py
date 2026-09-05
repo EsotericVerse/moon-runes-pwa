@@ -220,6 +220,32 @@ def public_version(version: dict[str, Any], preference: dict[str, Any], work_bon
     }
 
 
+def resolve_lyric_type(row: dict[str, Any], annotation: dict[str, Any]) -> str:
+    explicit = text(annotation.get("lyric_category"))
+    if explicit:
+        return explicit
+
+    mode = text(annotation.get("discourse_mode"))
+    if mode == "state_description":
+        return "狀態紀錄型"
+    if mode == "narrative_scene":
+        return "敘事角色型"
+    if mode in {"rational_discourse", "rational_reflection", "system_observation"}:
+        return "思辨論述型"
+
+    loc4 = text(row.get("LOC4關聯"))
+    note = text(annotation.get("author_note"))
+    evidence = f"{loc4} {note}"
+    if loc4 and any(token in evidence for token in ("主題曲", "角色", "OP", "特色曲", "小說", "開場", "求婚歌")):
+        return "敘事角色型"
+
+    source_category = text(row.get("歌曲主類別"))
+    if source_category == "治理宣言型":
+        return "治理宣言型"
+
+    return "感性情緒型"
+
+
 def build(source: Path) -> dict[str, Any]:
     workbook = load_workbook(source, read_only=True, data_only=True)
     works = sheet_rows(workbook, "500公開作品主表")
@@ -322,6 +348,7 @@ def build(source: Path) -> dict[str, Any]:
             "style": text(representative.get("曲風分類")),
             "summary": text(representative.get("AI摘要")),
             "category": category,
+            "lyric_type": resolve_lyric_type(representative, annotation),
             "start_state": start,
             "turn_method": turn,
             "final_state": final,
@@ -351,7 +378,7 @@ def build(source: Path) -> dict[str, Any]:
     return {
         "dataset": {
             "name": "LOC3 Lyrics Search",
-            "version": "0.1.9",
+            "version": "0.2.0",
             "source": source.name,
             "language_scope": "zh-Hant",
             "unit": "unique_lyrics_work",
