@@ -24,7 +24,9 @@
     "Rune-song scoring is based on DISTINCT rune names only; repeated occurrences of the same rune add no score.",
     "Each distinct rune contributes its signal-tier weight at most once per song.",
     "Narrative songs can contain multiple rune-name tokens without being rune songs.",
-    "Same-date overlap with an OW3gs draw is insufficient when the author identifies the song as narrative-only."
+    "Same-date overlap with an OW3gs draw is insufficient when the author identifies the song as narrative-only.",
+    "All P1 songs are excluded from rune-song recovery because the author confirms the early-period songs were not rune-derived.",
+    "P1 must not be used to calibrate rune-song thresholds or rank candidates."
   ],
   "confirmed_records": [
     {
@@ -238,6 +240,9 @@
     ],
     "rejected_non_rune_songs": [
       "LW0124 看見之後"
+    ],
+    "excluded_periods": [
+      "P1"
     ]
   },
   "recovery_clues": [
@@ -721,6 +726,20 @@
         "confirmed_in_current_review": true
       },
       "note": "Same-date/contextual overlap must not be treated as rune-song provenance."
+    }
+  ],
+  "period_exclusions": [
+    {
+      "period": "P1",
+      "status": "excluded",
+      "reason": "Author confirms early P1 songs were not created through the rune-song / OW3gs process.",
+      "handling": [
+        "exclude_from_rune_song_candidates",
+        "exclude_from_threshold_calibration",
+        "exclude_from_positive_and_negative_training_mix_for_rune_song_recovery"
+      ],
+      "source": "author clarification",
+      "confidence": "confirmed"
     }
   ]
 }
