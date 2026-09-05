@@ -30,20 +30,20 @@
 
 ### B. FAQ source view — 維護型問答資料
 
-路徑：`card_api/data/LOC_FAQ_v0.3.json`
+路徑：`card_api/data/LOC_FAQ_v0.4.json`
 
-- 現行：v0.3，80 題。
+- 現行：v0.4，80 題。
 - 角色：KM 的 FAQ 問答 View。
 - 不得取代 Canon／母資料。
-- v0.1、v0.2 為歷史版本。
+- v0.1、v0.2、v0.3 為歷史版本。
 
 ### C. RAG retrieval derivative — 檢索衍生資料
 
-路徑：`card_api/data/LOC_FAQ_RAG_v0.3.json`
+路徑：`card_api/data/LOC_FAQ_RAG_v0.4.json`
 
-- 來源：`LOC_FAQ_v0.3.json`
+- 來源：`LOC_FAQ_v0.4.json`
 - 角色：原子化 retrieval chunks。
-- Runtime：目前 `card_api/main.py` 載入 v0.3。
+- Runtime：目前 `card_api/main.py` 載入 v0.4。
 - v0.1、v0.2 為歷史版本。
 - 更新 FAQ source 後，RAG 應重新產生／同步，不反向手改成新的 canonical source。
 
@@ -129,10 +129,10 @@ API / UI
 
 ## 4. Current runtime checkpoints
 
-截至 2026-09-05：
+截至 2026-09-06：
 
-- FAQ runtime source：`LOC_FAQ_RAG_v0.3.json`
-- FAQ parent view：`LOC_FAQ_v0.3.json`
+- FAQ runtime source：`LOC_FAQ_RAG_v0.4.json`
+- FAQ parent view：`LOC_FAQ_v0.4.json`
 - KM maintainable core：`docs/LOC7_KM.md`
 - Rune mother data：`LunaRune64.xlsx`
 
