@@ -53,6 +53,12 @@
       "purpose": "Evidence-based registry for songs actually derived from real rune draws; separates confirmed provenance from candidates."
     },
     {
+      "id": "loc3_reasoning",
+      "path": "data/shared/LOC3_REASONING_SCHEMA.json",
+      "authority": "LOC3",
+      "purpose": "Proposition/reasoning analysis schema for rational, explanatory, boundary, governance and judgment-oriented songs."
+    },
+    {
       "id": "loc4_writing",
       "path": "data/shared/LOC4_WRITING_REGISTRY.json",
       "authority": "LOC4",
@@ -113,7 +119,8 @@
       "language_system_registry": "schema-ready",
       "media_registry": "connected",
       "shared_result_refs": "connected",
-      "rune_song_registry": "connected; confirmed provenance records currently pending"
+      "rune_song_registry": "connected; confirmed provenance records currently pending",
+      "reasoning_proposition_layer": "connected"
     },
     "LOC4": {
       "writing_registry": "schema-ready",
