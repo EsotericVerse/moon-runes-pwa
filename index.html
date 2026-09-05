@@ -928,44 +928,48 @@
       border:0 !important;
     }
 
-    .framework-bridge {
-      display:flex;
-      align-items:flex-start;
-      gap:14px;
+    .framework-map-section {
       margin-top:34px;
-      padding:16px 18px;
       border:1px solid var(--loc-border);
-      border-radius:16px;
+      border-radius:20px;
+      overflow:hidden;
       background:rgba(23,43,72,.48);
       box-shadow:var(--loc-shadow);
     }
-    .framework-bridge strong {
-      flex:0 0 auto;
-      color:var(--loc-gold);
-      font-size:.9rem;
-      white-space:nowrap;
+
+    .framework-map-head {
+      display:grid;
+      grid-template-columns:minmax(180px,.34fr) minmax(0,1fr);
+      gap:22px;
+      align-items:start;
+      padding:18px 20px;
+      border-bottom:1px solid var(--loc-border);
     }
-    .framework-bridge span {
+    .framework-map-head h2 {
+      margin:0;
+      color:var(--loc-gold);
+      font-size:1rem;
+      line-height:1.45;
+    }
+    .framework-map-head p {
+      margin:0;
       color:var(--loc-muted);
       font-size:.86rem;
-      line-height:1.65;
-    }
-    @media (max-width:720px){
-      .framework-bridge { flex-direction:column; gap:6px; }
-      .framework-bridge strong { white-space:normal; }
-    }
-
-    .framework-map-section {
-      margin-top:34px;
+      line-height:1.7;
     }
 
     .framework-map-stage {
       position:relative;
       overflow:hidden;
-      border:1px solid var(--loc-border);
-      border-radius:22px;
-      box-shadow:var(--loc-shadow);
       background:var(--loc-surface);
+    }
+
+    @media (max-width:720px){
+      .framework-map-head {
+        grid-template-columns:1fr;
+        gap:7px;
+        padding:15px 16px;
+      }
     }
 
     .framework-map-stage img {
@@ -1608,13 +1612,12 @@
 
     
 
-        <div class="framework-bridge" aria-label="LOC1–8 系統概論">
-      <strong>LOC1–8 是 LOC 語言系統框架的八個功能責任區。</strong>
-      <span>它們不是八個彼此獨立的產品，也不是版本先後；而是 LOC 這個語言系統框架，依照符文、情境、音樂、文字、多媒體、治理、文字建築與脈絡分析所切分出的八個功能責任區。</span>
-    </div>
-
     <section class="framework-map-section" id="framework-map" aria-labelledby="framework-image-title">
-      <h2 id="framework-image-title" class="sr-only">LOC1–8 月典框架圖</h2>
+      <div class="framework-map-head">
+        <h2 id="framework-image-title">LOC框架圖</h2>
+        <p><strong>LOC1–8 是 LOC 語言系統框架的八個功能責任區。</strong><br>
+        它們不是八個彼此獨立的產品，也不是版本先後；而是 LOC 這個語言系統框架，依照符文、情境、音樂、文字、多媒體、治理、文字建築與脈絡分析所切分出的八個功能責任區。</p>
+      </div>
       <div class="framework-map-stage" id="frameworkMapStage">
         <img
           src="pics/loc_framework_map.jpg"
