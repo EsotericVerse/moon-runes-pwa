@@ -17,20 +17,11 @@
     .status{min-height:30px;margin:22px 2px 8px;color:var(--muted)}.status.error{color:var(--danger)}.groups{display:grid;gap:22px}.group{border-top:1px solid var(--line);padding-top:18px}.grouphead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:11px}.grouphead h2{margin:0;font-size:1.05rem;letter-spacing:.03em}.grouphead span{color:var(--muted);font-size:.8rem}.cards{display:grid;gap:12px}.card{padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 12px 35px rgba(0,0,0,.18)}.card h3{margin:0 0 8px;font-size:1.2rem}.meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}.pill{padding:3px 8px;border-radius:999px;color:var(--muted);background:var(--soft);font-size:.75rem}.summary{margin:8px 0;color:#d6e0df}.links{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.play{display:inline-flex;padding:8px 12px;border-radius:10px;text-decoration:none;background:var(--mint);color:#07131f;font-weight:820}.secondary{display:inline-flex;padding:8px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--muted)}.empty{padding:26px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
     @media(max-width:720px){.filters{grid-template-columns:1fr}.actions{align-items:flex-start;flex-direction:column}.submit{width:100%}.topbar{align-items:flex-start;flex-direction:column}}
   </style>
+  <link rel="stylesheet" href="css/loc-nav.css" />
 </head>
 <body>
+  <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="search" aria-label="全站導覽"></nav></div>
   <main class="page">
-    <nav class="topbar">
-      <a class="brand" href="index.html">LOC · SEARCH</a>
-      <div class="navs">
-        <a class="nav" href="index.html">回到首頁</a>
-        <a class="nav" href="list.html">月符資料</a>
-        <a class="nav" href="search.html">Unified Search</a>
-        <a class="nav" href="loc3.html">LOC3 歌曲</a>
-        <a class="nav" href="faq.html">知識庫</a>
-        <a class="nav" href="life.html">時間線</a>
-      </div>
-    </nav>
     <header class="hero">
       <p class="eyebrow">LO3RWANG · PERSONAL LANGUAGE SYSTEM</p>
       <h1>從一句話，<br />走進整個語言系統。</h1>
@@ -86,5 +77,6 @@
     quick();facets();
     if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'));
   </script>
+  <script src="js/loc-nav.js"></script>
 </body>
 </html>
