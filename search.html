@@ -13,7 +13,7 @@
     *{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(circle at 15% 5%,rgba(74,143,145,.23),transparent 31rem),radial-gradient(circle at 88% 82%,rgba(84,74,151,.18),transparent 28rem),var(--bg);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.65}
     a{color:inherit}.page{width:min(1120px,calc(100% - 30px));margin:auto;padding:28px 0 60px}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:34px}.brand{font-weight:850;letter-spacing:.12em;text-decoration:none}.navs{display:flex;gap:14px;flex-wrap:wrap}.nav{color:var(--muted);font-size:.86rem;text-decoration:none}.hero{margin-bottom:24px}.eyebrow{margin:0 0 8px;color:var(--mint);font-weight:800;font-size:.76rem;letter-spacing:.18em}.hero h1{margin:0;font-size:clamp(2.4rem,7vw,5rem);line-height:1.02;letter-spacing:-.045em}.intro{margin:15px 0 0;color:var(--muted);max-width:760px}
     .search-panel{padding:clamp(18px,4vw,32px);border:1px solid var(--line);border-radius:24px;background:var(--panel);box-shadow:var(--shadow);backdrop-filter:blur(16px)}label{display:block;margin-bottom:9px;font-weight:750}textarea{width:100%;min-height:104px;padding:16px 18px;color:var(--text);font:inherit;resize:vertical;border:1px solid rgba(255,255,255,.16);border-radius:15px;background:rgba(0,0,0,.18);outline:none}textarea:focus{border-color:var(--mint);box-shadow:0 0 0 3px rgba(126,216,197,.12)}
-    .quick{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0 18px}.chip{padding:7px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--soft);font:inherit;font-size:.82rem;cursor:pointer}.chip:hover{color:var(--text);border-color:var(--mint)}.filters{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:10px;margin-bottom:15px}select{width:100%;padding:10px 12px;color:var(--text);border:1px solid var(--line);border-radius:11px;background:#102535;font:inherit}.actions{display:flex;gap:12px;align-items:center}.submit{padding:12px 24px;border:0;border-radius:12px;color:#07131f;background:linear-gradient(135deg,var(--moon),var(--mint));font:inherit;font-weight:850;cursor:pointer}.submit:disabled{opacity:.55}.hint{color:var(--muted);font-size:.82rem}
+    .quick{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0 18px}.chip{padding:7px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--soft);font:inherit;font-size:.82rem;cursor:pointer}.chip:hover{color:var(--text);border-color:var(--mint)}.filters{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:10px;margin-bottom:15px}select{width:100%;padding:10px 12px;color:var(--text);border:1px solid var(--line);border-radius:11px;background:#102535;font:inherit}.actions{display:flex;gap:12px;align-items:center}.submit{padding:12px 24px;border:0;border-radius:12px;color:#07131f;background:linear-gradient(135deg,var(--moon),var(--mint));font:inherit;font-weight:850;cursor:pointer}.submit:disabled{opacity:.55}.hint{color:var(--muted);font-size:.82rem}
     .status{min-height:30px;margin:22px 2px 8px;color:var(--muted)}.status.error{color:var(--danger)}.groups{display:grid;gap:22px}.group{border-top:1px solid var(--line);padding-top:18px}.grouphead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:11px}.grouphead h2{margin:0;font-size:1.05rem;letter-spacing:.03em}.grouphead span{color:var(--muted);font-size:.8rem}.cards{display:grid;gap:12px}.card{padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 12px 35px rgba(0,0,0,.18)}.card h3{margin:0 0 8px;font-size:1.2rem}.knowledge-image{display:block;width:min(100%,760px);max-height:430px;object-fit:contain;margin:12px 0;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.18)}.meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}.pill{padding:3px 8px;border-radius:999px;color:var(--muted);background:var(--soft);font-size:.75rem}.summary{margin:8px 0;color:#d6e0df}.links{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.play{display:inline-flex;padding:8px 12px;border-radius:10px;text-decoration:none;background:var(--mint);color:#07131f;font-weight:820}.secondary{display:inline-flex;padding:8px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--muted)}.empty{padding:26px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
     @media(max-width:720px){.filters{grid-template-columns:1fr}.actions{align-items:flex-start;flex-direction:column}.submit{width:100%}.topbar{align-items:flex-start;flex-direction:column}}
   </style>
@@ -33,23 +33,23 @@
         <textarea id="query" maxlength="500" placeholder="例如：自我治理、自由之後怎麼選方向、人生月台、界線、月光……" required></textarea>
         <div class="quick" id="quick"></div>
         <div class="filters">
-          <select id="contentType">
-            <option value="">全部內容</option>
-            <option value="oracle">籤詩模式（測試）</option>
-            <option value="rune_record">基本符文</option>
-            <option value="suno_song">Suno 歌曲</option>
-            <option value="lyrics_work">歌詞</option>
+          <select id="contentType" aria-label="資料種類">
+            <option value="">全部資料種類</option>
+            <option value="oracle">籤詩／解牌</option>
+            <option value="rune_record">月之符文</option>
+            <option value="lyrics_work">音樂／歌詞</option>
             <option value="text_work">文字作品</option>
             <option value="multimedia">多媒體作品</option>
-            <option value="knowledge">文件／知識庫</option>
             <option value="knowledge_image">圖片／知識圖</option>
+            <option value="knowledge">文件／知識庫</option>
+            <option value="relationship">跨 LOC 關係</option>
             <option value="era">ERA／時間</option>
           </select>
-          <select id="period"><option value="">所有 ERA／創作時期</option></select>
-          <select id="category"><option value="">所有內容類型／風格</option></select>
-          
+          <select id="period" aria-label="ERA">
+            <option value="">全部 ERA</option>
+          </select>
         </div>
-        <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><span class="hint">籤詩模式先讀 Lots，再以關鍵字展開相關歌詞、文字、多媒體、文件與 ERA；一般搜尋則依來源分組。</span></div>
+        <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><span class="hint">資料種類決定要搜尋哪一種語言資產；ERA 是跨作品的時間維度。籤詩模式仍先讀 Lots，再向其他資料展開。</span></div>
       </form>
     </section>
     <div class="status" id="status" aria-live="polite"></div>
@@ -69,101 +69,55 @@
       const q=p.get('q')||'';
       if(type&&[...el('contentType').options].some(o=>o.value===type)) el('contentType').value=type;
       if(q) el('query').value=q;
-      const music=['','oracle','suno_song','lyrics_work','multimedia'].includes(el('contentType').value);
-      el('period').disabled=!music;el('category').disabled=!music;
       if(q) el('searchForm').requestSubmit();
     }
     function quick(){el('quick').innerHTML=prompts.map(x=>`<button type="button" class="chip" data-q="${esc(x)}">${esc(x)}</button>`).join('');document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{el('query').value=b.dataset.q;el('query').focus()})}
-    const FACET_CACHE_KEY='loc-search-facets-v1';
-    const FACET_CACHE_TTL=24*60*60*1000;
-    const FACET_FALLBACK={
-      eras:[
-        {period:'P2',label:'P2'},{period:'P3',label:'P3'},{period:'P4',label:'P4'},
-        {period:'P5',label:'P5'},{period:'P6',label:'P6'},{period:'P7',label:'P7'},{period:'P8',label:'P8 · 治理自己'}
-      ],
-      loc3:{
-        categories:[
-          {value:'其他／待複查'},{value:'勸戒論述型'},{value:'幸福甜美型'},{value:'思辨論述型'},
-          {value:'治理宣言型'},{value:'祝福紀念型'},{value:'轉折型'},{value:'轉折型候選'}
-        ],
-        playlists:[
-          {value:'1.微月光剛開始的自創'},{value:'1.微月光的兩人爭執'},{value:'1.微月光的甜蜜'},
-          {value:'2.節奏王者'},{value:'3.單身很好'},{value:'3.白晝之月Daytime Moon'},
-          {value:'4.人生月台系列'},{value:'5.順其自然'},{value:'6.治理自己'},
-          {value:'微月光的暗影詩章'},{value:'生日快樂'}
-        ]
-      }
-    };
-    function resetDynamicOptions(select){while(select.options.length>1)select.remove(1)}
-    const FACET_CACHE_KEY='loc-search-facets-v1';
-    const FACET_CACHE_TTL=24*60*60*1000;
-    const FALLBACK_FACETS={
-      eras:[
-        {period:'P2',label:'P2｜重啟與格式形成期'},
-        {period:'P3',label:'P3｜微月光與關係敘事期'},
-        {period:'P4',label:'P4｜現實壓力與治理轉折期'},
-        {period:'P5',label:'P5｜人生月台與語言重建期'},
-        {period:'P6',label:'P6｜順其自然與界線整合期'},
-        {period:'P7',label:'P7｜自由的風期'},
-        {period:'P8',label:'P8｜自我治理與未來展望期'}
-      ],
-      categories:[
-        {value:'其他／待複查'},
-        {value:'勸戒論述型'},
-        {value:'幸福甜美型'},
-        {value:'思辨論述型'},
-        {value:'治理宣言型'},
-        {value:'祝福紀念型'},
-        {value:'轉折型'},
-        {value:'轉折型候選'}
-      ]
-    };
-    function resetOptions(select,placeholder){select.innerHTML=`<option value="">${placeholder}</option>`}
-    function fill(select,items,valueKey,labelKey){
-      const existing=new Set([...select.options].map(o=>o.value));
-      for(const item of items||[]){
-        const value=item?.[valueKey]??item?.value??'';
-        const label=item?.[labelKey]??item?.label??item?.value??value;
-        if(!value||existing.has(String(value))) continue;
+    const ERA_CACHE_KEY='loc-search-era-registry-v1';
+    const ERA_CACHE_TTL=24*60*60*1000;
+    const ERA_FALLBACK=[
+      {period:'P1',display_label:'P1｜Suno原型探索期'},
+      {period:'P2',display_label:'P2｜重啟與格式形成期'},
+      {period:'P3',display_label:'P3｜微月光與關係敘事期'},
+      {period:'P4',display_label:'P4｜現實壓力與治理轉折期'},
+      {period:'P5',display_label:'P5｜人生月台與語言重建期'},
+      {period:'P6',display_label:'P6｜順其自然與界線整合期'},
+      {period:'P7',display_label:'P7｜自由的風期'},
+      {period:'P8',display_label:'P8｜自我治理與未來展望期'}
+    ];
+    function applyEras(eras){
+      const select=el('period'),current=select.value;
+      select.innerHTML='<option value="">全部 ERA</option>';
+      for(const era of eras||[]){
+        const value=era.period||'';
+        if(!value)continue;
         const o=document.createElement('option');
-        o.value=value;o.textContent=label;select.appendChild(o);existing.add(String(value));
+        o.value=value;
+        o.textContent=era.display_label||era.label||era.name||value;
+        select.appendChild(o);
       }
+      if([...select.options].some(o=>o.value===current))select.value=current;
     }
-    const FACET_CACHE_KEY='loc-search-facets-v1';
-    const FACET_CACHE_TTL=24*60*60*1000;
-    const FALLBACK_FACETS={
-      eras:[
-        {period:'P2',label:'P2'},{period:'P3',label:'P3'},{period:'P4',label:'P4'},
-        {period:'P5',label:'P5'},{period:'P6',label:'P6'},{period:'P7',label:'P7'},
-        {period:'P8',label:'P8 · 治理自己'}
-      ],
-      categories:[
-        {value:'其他／待複查'},{value:'勸戒論述型'},{value:'幸福甜美型'},
-        {value:'思辨論述型'},{value:'治理宣言型'},{value:'祝福紀念型'},
-        {value:'轉折型'},{value:'轉折型候選'}
-      ]
-    };
-    function applyFacets(data){
-      fill(el('period'),data?.eras||[],'period','label');
-      fill(el('category'),data?.loc3?.categories||data?.categories||[],'value','value');
-    }
-    function readFacetCache(){
-      try{
-        const cached=JSON.parse(localStorage.getItem(FACET_CACHE_KEY)||'null');
-        if(cached?.data) applyFacets(cached.data);
-        return cached;
-      }catch(_){return null}
+    function readEraCache(){
+      try{return JSON.parse(localStorage.getItem(ERA_CACHE_KEY)||'null')}catch(_){return null}
     }
     async function facets(){
-      applyFacets(FALLBACK_FACETS);
-      const cached=readFacetCache();
-      if(cached&&Date.now()-Number(cached.saved_at||0)<FACET_CACHE_TTL)return;
+      applyEras(ERA_FALLBACK);
+      const cached=readEraCache();
+      if(cached?.data?.eras)applyEras(cached.data.eras);
+      const fresh=cached&&Date.now()-Number(cached.saved_at||0)<ERA_CACHE_TTL;
+      if(fresh)return;
       try{
-        const r=await fetch(`${API}/search/facets`,{cache:'no-store'});
-        if(!r.ok)throw new Error('facets unavailable');
+        const r=await fetch('data/shared/LOC_ERA_REGISTRY.json',{cache:'no-store'});
+        if(!r.ok)throw new Error('ERA registry unavailable');
         const d=await r.json();
-        applyFacets(d);
-        localStorage.setItem(FACET_CACHE_KEY,JSON.stringify({saved_at:Date.now(),data:d}));
+        if(Array.isArray(d.eras)&&d.eras.length){
+          applyEras(d.eras);
+          localStorage.setItem(ERA_CACHE_KEY,JSON.stringify({
+            saved_at:Date.now(),
+            schema_version:d.schema_version||'0.1',
+            data:{eras:d.eras}
+          }));
+        }
       }catch(_){}
     }
     function linksFor(r){
@@ -193,8 +147,7 @@
     }
 
     function render(groups){const order=['oracle','runes','works','textworks','relationships','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='oracle'?oracleCard:(key==='relationships'?relationshipCard:(key==='works'?musicCard:card));html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
-    el('contentType').addEventListener('change',()=>{const music=['','oracle','suno_song','lyrics_work','multimedia'].includes(el('contentType').value);el('period').disabled=!music;el('category').disabled=!music});
-    el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時間……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value,category:el('category').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
+    el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時間……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
     quick();facets();bootFromUrl();
     if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'));
   </script>
