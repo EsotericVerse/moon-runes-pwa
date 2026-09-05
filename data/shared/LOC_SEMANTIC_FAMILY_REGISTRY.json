@@ -1,0 +1,34 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC_SEMANTIC_FAMILY_REGISTRY",
+  "authority": "LOC7",
+  "language_system_id": "lo3rwang",
+  "status": "Working",
+  "updated_at": "2026-09-06",
+  "purpose": "Normalize near-duplicate semantic tags across LOC3/LOC4/LOC5 for cross-period comparison while preserving named concepts as separate dimensions.",
+  "rules": [
+    "Named concepts are never collapsed into generic semantic families.",
+    "微月光 is a named concept and is explicitly excluded from 光月意象.",
+    "Raw source tags remain evidence; normalized families are the comparison/display layer.",
+    "LOC3/LOC4 own source semantics; LOC7 owns this normalization structure; LOC8 provides temporal grouping."
+  ],
+  "families": [
+    {
+      "family_id": "SEM-FAM-LIGHT-MOON",
+      "label": "光月意象",
+      "semantic_type": "imagery",
+      "members": [
+        "微光意象",
+        "月亮月光",
+        "月光",
+        "微光",
+        "光芒",
+        "月亮"
+      ],
+      "excludes": [
+        "微月光"
+      ],
+      "note": "泛指光、微光、月亮與月光的視覺意象；不包含 LOC3 專有名詞「微月光」。"
+    }
+  ]
+}
