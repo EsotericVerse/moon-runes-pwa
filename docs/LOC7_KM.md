@@ -135,7 +135,20 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 
 這個分層讓案例庫可被 LOC1 解牌重用，同時由 LOC6 保存牌組文法，不把歷史案例硬寫成固定命運句。
 
-## 8. FAQ / RAG 現況
+## 8. 政德風治理 Corpus
+
+政德風採「原始語句／治理原則／風格狀態／時期投影」分層保存，不再只以語錄集合處理。
+
+- 維護文件：`docs/LOC6_ZHENGDE_STYLE.md`
+- 結構化 registry：`data/shared/LOC6_GOVERNANCE_REGISTRY.json`
+- LOC3 可提供不同 ERA 的歌曲與歌詞證據。
+- LOC4 可提供長文、小說、文章中的文字證據。
+- LOC8 提供時間與人生階段。
+- LOC7 可做句型、向量、風格特徵與 stage comparison，但不得把 AI 重寫冒充歷史原文。
+
+「30 歲的政德會怎麼說／46 歲的政德會怎麼說」應建立在真實時期語料的 Stage Profile 上；在歷史原文尚未匯入前，只保留 schema，不自動生成 recorded profile。
+
+## 9. FAQ / RAG 現況
 
 現行作用資料：
 
@@ -147,7 +160,7 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 
 - FAQ／RAG v0.1、v0.2 保留作 version history，不再視為 current runtime source。
 
-## 9. Shared Registry
+## 10. Shared Registry
 
 `data/shared/` 主要承接跨 LOC 的結構化 registry。KM 相關核心：
 
@@ -159,7 +172,7 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 
 詳細角色見 [JSON_DATA_MAP.md](./JSON_DATA_MAP.md)。
 
-## 10. 同步規則
+## 11. 同步規則
 
 任何知識更新依下列順序處理：
 
@@ -171,11 +184,11 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 6. 驗證 API 與 UI。
 7. 保留歷史版，不以新版本內容覆寫舊版本號。
 
-## 11. Graph RAG 狀態
+## 12. Graph RAG 狀態
 
 Unified Search 已有實作；完整 Relation Schema、Knowledge Graph expansion 與 Graph RAG 仍屬下一階段。不得因已有 registry、related_ids 或 search view 就宣稱完整 Graph RAG 已部署。
 
-## 12. 文件格式
+## 13. 文件格式
 
 `docs/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件。
 
