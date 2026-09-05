@@ -1890,6 +1890,10 @@
       const action = btn.dataset.action;
 
       if (action === 'edit') {
+        // Event Timeline and Event Record share the same editor.
+        // When editing from the timeline view, switch to the record view first
+        // so the populated form is visible instead of remaining hidden.
+        switchView('overview', $('#overviewViewBtn'));
         editEvent(id);
         return;
       }
