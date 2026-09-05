@@ -24,39 +24,59 @@
     "analyzed_work_count": 403,
     "excluded_periods": [
       "P1"
-    ],
-    "note": "P1 remains backup/non-search. v0.3 separates proper noun 微月光 from generic 微光意象."
-  },
-  "purpose": "以 LOC8 固定時期比較 LOC3 關鍵字 document frequency，並嚴格區分專有名詞、一般意象與其他語義標籤。",
-  "governance": {
-    "period_authority": "LOC8",
-    "keyword_content_authority": "LOC3",
-    "retrieval_structure": "LOC7",
-    "rules": [
-      "微月光 is a canonical LOC3 proper noun and must not be conflated with generic light imagery.",
-      "微光意象 is generic imagery and is not an alias of 微月光.",
-      "A work receives 微月光 only from explicit source evidence such as ERA_MOONLIGHT, era_name, playlist, title or explicit tag.",
-      "LOC8 owns period boundaries; LOC3 owns keyword semantics; LOC7 may index the result."
     ]
   },
+  "purpose": "按 LOC8 固定時期比較 LOC3 關鍵字分佈；命名概念與一般語義／意象分開呈現，避免專有名詞被高頻泛用詞淹沒。",
+  "keyword_layers": {
+    "named_keywords": "命名概念／系列／跨 LOC 概念，例如微月光、人生月台、自我治理（治理自己）、已讀不回。",
+    "semantic_keywords": "作品內容的主題、情緒、意象、行動與治理語義。"
+  },
+  "governance": {
+    "rules": [
+      "微月光是專有名詞，不等於微光意象。",
+      "人生月台是命名創作概念，不只是一個作品標題。",
+      "自我治理為 canonical term；治理自己為 LOC3 alias / creative-stage label。",
+      "已讀不回是跨 LOC 命名概念；在 LOC3 時期分析只以 LOC3 歌曲／歌詞證據計數。",
+      "Named concepts use explicit structured evidence (era, era_name, playlist, title, tag, summary where applicable).",
+      "LOC8 owns period boundaries; LOC3 owns keyword semantics; LOC7 may index the analysis."
+    ]
+  },
+  "named_keyword_registry": [
+    {
+      "term": "微月光",
+      "keyword_type": "named_concept",
+      "aliases": [
+        "Micro Moonlight"
+      ],
+      "note": "LOC3 專有名詞／創作概念；不可與一般「微光意象」混同。"
+    },
+    {
+      "term": "人生月台",
+      "keyword_type": "named_concept",
+      "aliases": [
+        "Life Platform"
+      ],
+      "note": "LOC3 命名創作概念／系列語彙。"
+    },
+    {
+      "term": "自我治理",
+      "keyword_type": "governance_concept",
+      "aliases": [
+        "治理自己"
+      ],
+      "note": "Canonical term = 自我治理；「治理自己」是 LOC3 創作階段／播放清單用語與別名。"
+    },
+    {
+      "term": "已讀不回",
+      "keyword_type": "cross_loc_concept",
+      "aliases": [],
+      "note": "跨 LOC3/LOC4/LOC5 的命名概念；LOC3 端以歌曲／歌詞證據計入。"
+    }
+  ],
   "normalized_frequency_method": {
     "unit": "unique_lyrics_work",
-    "definition": "Count each keyword at most once per work, divided by total works in that period.",
-    "formula": "keyword_document_frequency = works_with_keyword / period_work_count",
-    "rationale": "Normalizes unequal corpus sizes."
-  },
-  "transition_rules": {
-    "metric": "document_frequency",
-    "formula": "works containing keyword / total works in period",
-    "thresholds": {
-      "emergence": "previous < 5% and current >= 15%",
-      "rising": "current - previous >= 15 percentage points",
-      "declining": "previous - current >= 15 percentage points",
-      "persistent": "previous >= 20% and current >= 20% and absolute change < 10 percentage points",
-      "new_signal": "previous = 0 and current > 0; descriptive only",
-      "disappeared": "previous > 0 and current = 0; descriptive only"
-    },
-    "low_sample_note": "P8 currently has 2 works; P7→P8 labels are exploratory."
+    "formula": "works_with_keyword / period_work_count",
+    "note": "同一作品同一關鍵字最多計一次。"
   },
   "periods": [
     {
@@ -65,28 +85,33 @@
       "period_name": "重啟與格式形成期",
       "start_date": "2025-10-16",
       "end_date": "2026-01-14",
-      "source_active_range": {
-        "start": "2025-10-16",
-        "end": "2025-12-28",
-        "source": "Suno / original ERA segmentation"
-      },
+      "work_count": 50,
       "corpus_date_min": "2025-10-16",
       "corpus_date_max": "2025-12-28",
-      "work_count": 50,
-      "normalized_top_keywords": [
+      "named_keywords": [
         {
           "term": "微月光",
           "count": 28,
           "frequency": 0.56,
           "percent": 56,
-          "keyword_type": "proper_noun"
+          "keyword_type": "named_concept",
+          "aliases": [
+            "Micro Moonlight"
+          ]
+        }
+      ],
+      "normalized_top_keywords": [
+        {
+          "term": "微月光",
+          "count": 28,
+          "frequency": 0.56,
+          "percent": 56
         },
         {
           "term": "微光意象",
           "count": 26,
           "frequency": 0.52,
-          "percent": 52,
-          "keyword_type": "imagery"
+          "percent": 52
         },
         {
           "term": "夜晚",
@@ -257,19 +282,19 @@
           "count": 2
         },
         {
+          "term": "提振",
+          "count": 1
+        },
+        {
           "term": "宣洩",
           "count": 1
         },
         {
-          "term": "宣洩｜前進",
+          "term": "提振｜前進",
           "count": 1
         },
         {
           "term": "陪伴｜重構",
-          "count": 1
-        },
-        {
-          "term": "提振",
           "count": 1
         }
       ],
@@ -291,7 +316,7 @@
           "count": 3
         },
         {
-          "term": "自由／解放",
+          "term": "前進／啟程",
           "count": 2
         },
         {
@@ -299,56 +324,8 @@
           "count": 2
         },
         {
-          "term": "前進／啟程",
+          "term": "自由／解放",
           "count": 2
-        }
-      ],
-      "top_categories": [
-        {
-          "term": "轉折型",
-          "count": 17
-        },
-        {
-          "term": "其他／待複查",
-          "count": 14
-        },
-        {
-          "term": "轉折型候選",
-          "count": 13
-        },
-        {
-          "term": "思辨論述型",
-          "count": 4
-        },
-        {
-          "term": "治理宣言型",
-          "count": 2
-        }
-      ],
-      "top_styles": [
-        {
-          "term": "Mandopop／Pop Rock／Ballad",
-          "count": 19
-        },
-        {
-          "term": "Alternative／Art／Indie",
-          "count": 12
-        },
-        {
-          "term": "Anime／J-Pop／J-Rock",
-          "count": 7
-        },
-        {
-          "term": "Rap／Hip-Hop／Soul",
-          "count": 6
-        },
-        {
-          "term": "其他／早期實驗",
-          "count": 5
-        },
-        {
-          "term": "Synth／Electro／Industrial",
-          "count": 1
         }
       ]
     },
@@ -358,28 +335,41 @@
       "period_name": "微月光與關係敘事期",
       "start_date": "2026-01-15",
       "end_date": "2026-03-08",
-      "source_active_range": {
-        "start": "2026-01-15",
-        "end": "2026-02-28",
-        "source": "Suno / original ERA segmentation"
-      },
+      "work_count": 123,
       "corpus_date_min": "2026-01-15",
       "corpus_date_max": "2026-02-28",
-      "work_count": 123,
-      "normalized_top_keywords": [
-        {
-          "term": "微光意象",
-          "count": 92,
-          "frequency": 0.748,
-          "percent": 74.8,
-          "keyword_type": "imagery"
-        },
+      "named_keywords": [
         {
           "term": "微月光",
           "count": 90,
           "frequency": 0.7317,
           "percent": 73.2,
-          "keyword_type": "proper_noun"
+          "keyword_type": "named_concept",
+          "aliases": [
+            "Micro Moonlight"
+          ]
+        },
+        {
+          "term": "已讀不回",
+          "count": 1,
+          "frequency": 0.0081,
+          "percent": 0.8,
+          "keyword_type": "cross_loc_concept",
+          "aliases": []
+        }
+      ],
+      "normalized_top_keywords": [
+        {
+          "term": "微光意象",
+          "count": 92,
+          "frequency": 0.748,
+          "percent": 74.8
+        },
+        {
+          "term": "微月光",
+          "count": 90,
+          "frequency": 0.7317,
+          "percent": 73.2
         },
         {
           "term": "月亮月光",
@@ -520,15 +510,15 @@
           "count": 5
         },
         {
-          "term": "回歸自我／自持",
-          "count": 3
-        },
-        {
           "term": "接受未知／順其自然",
           "count": 3
         },
         {
-          "term": "保存幸福",
+          "term": "回歸自我／自持",
+          "count": 3
+        },
+        {
+          "term": "給予祝福",
           "count": 2
         }
       ],
@@ -554,11 +544,11 @@
           "count": 9
         },
         {
-          "term": "前進",
+          "term": "祝福",
           "count": 7
         },
         {
-          "term": "祝福",
+          "term": "前進",
           "count": 7
         },
         {
@@ -608,72 +598,12 @@
           "count": 2
         },
         {
-          "term": "安心／安放",
-          "count": 1
-        },
-        {
           "term": "自我價值／配得感",
           "count": 1
-        }
-      ],
-      "top_categories": [
-        {
-          "term": "轉折型候選",
-          "count": 51
         },
         {
-          "term": "轉折型",
-          "count": 42
-        },
-        {
-          "term": "其他／待複查",
-          "count": 12
-        },
-        {
-          "term": "思辨論述型",
-          "count": 9
-        },
-        {
-          "term": "幸福甜美型",
-          "count": 5
-        },
-        {
-          "term": "治理宣言型",
-          "count": 3
-        },
-        {
-          "term": "祝福紀念型",
+          "term": "安心／安放",
           "count": 1
-        }
-      ],
-      "top_styles": [
-        {
-          "term": "Mandopop／Pop Rock／Ballad",
-          "count": 55
-        },
-        {
-          "term": "City Pop",
-          "count": 15
-        },
-        {
-          "term": "Dream／Atmospheric Pop",
-          "count": 15
-        },
-        {
-          "term": "Synth／Electro／Industrial",
-          "count": 14
-        },
-        {
-          "term": "Anime／J-Pop／J-Rock",
-          "count": 11
-        },
-        {
-          "term": "Alternative／Art／Indie",
-          "count": 7
-        },
-        {
-          "term": "Rap／Hip-Hop／Soul",
-          "count": 6
         }
       ]
     },
@@ -683,21 +613,37 @@
       "period_name": "現實壓力與治理轉折期",
       "start_date": "2026-03-09",
       "end_date": "2026-06-09",
-      "source_active_range": {
-        "start": "2026-03-09",
-        "end": "2026-04-13",
-        "source": "Suno / original ERA segmentation"
-      },
+      "work_count": 74,
       "corpus_date_min": "2026-03-09",
       "corpus_date_max": "2026-04-13",
-      "work_count": 74,
+      "named_keywords": [
+        {
+          "term": "人生月台",
+          "count": 6,
+          "frequency": 0.0811,
+          "percent": 8.1,
+          "keyword_type": "named_concept",
+          "aliases": [
+            "Life Platform"
+          ]
+        },
+        {
+          "term": "微月光",
+          "count": 1,
+          "frequency": 0.0135,
+          "percent": 1.4,
+          "keyword_type": "named_concept",
+          "aliases": [
+            "Micro Moonlight"
+          ]
+        }
+      ],
       "normalized_top_keywords": [
         {
           "term": "微光意象",
           "count": 55,
           "frequency": 0.7432,
-          "percent": 74.3,
-          "keyword_type": "imagery"
+          "percent": 74.3
         },
         {
           "term": "現實選擇",
@@ -832,11 +778,11 @@
           "count": 8
         },
         {
-          "term": "允許暫停／等待時機",
+          "term": "放下／離開",
           "count": 3
         },
         {
-          "term": "放下／離開",
+          "term": "允許暫停／等待時機",
           "count": 3
         },
         {
@@ -852,7 +798,7 @@
           "count": 2
         },
         {
-          "term": "回歸自我／自持",
+          "term": "接受未知／順其自然",
           "count": 1
         }
       ],
@@ -870,19 +816,19 @@
           "count": 8
         },
         {
-          "term": "重構",
-          "count": 6
-        },
-        {
           "term": "陪伴",
           "count": 6
         },
         {
-          "term": "宣洩",
-          "count": 2
+          "term": "重構",
+          "count": 6
         },
         {
           "term": "警醒／辨識風險",
+          "count": 2
+        },
+        {
+          "term": "宣洩",
           "count": 2
         },
         {
@@ -890,11 +836,11 @@
           "count": 1
         },
         {
-          "term": "治理｜宣洩",
+          "term": "甜蜜",
           "count": 1
         },
         {
-          "term": "治理｜重構",
+          "term": "陪伴｜治理",
           "count": 1
         }
       ],
@@ -916,11 +862,11 @@
           "count": 6
         },
         {
-          "term": "前進／啟程",
+          "term": "釋然／放下",
           "count": 3
         },
         {
-          "term": "釋然／放下",
+          "term": "前進／啟程",
           "count": 3
         },
         {
@@ -932,64 +878,12 @@
           "count": 2
         },
         {
+          "term": "體悟／允許未知存在",
+          "count": 1
+        },
+        {
           "term": "未辨識",
           "count": 1
-        },
-        {
-          "term": "療癒完成",
-          "count": 1
-        }
-      ],
-      "top_categories": [
-        {
-          "term": "轉折型候選",
-          "count": 25
-        },
-        {
-          "term": "轉折型",
-          "count": 17
-        },
-        {
-          "term": "治理宣言型",
-          "count": 15
-        },
-        {
-          "term": "其他／待複查",
-          "count": 14
-        },
-        {
-          "term": "思辨論述型",
-          "count": 2
-        },
-        {
-          "term": "勸戒論述型",
-          "count": 1
-        }
-      ],
-      "top_styles": [
-        {
-          "term": "Synth／Electro／Industrial",
-          "count": 29
-        },
-        {
-          "term": "Mandopop／Pop Rock／Ballad",
-          "count": 26
-        },
-        {
-          "term": "Dream／Atmospheric Pop",
-          "count": 9
-        },
-        {
-          "term": "Anime／J-Pop／J-Rock",
-          "count": 4
-        },
-        {
-          "term": "City Pop",
-          "count": 4
-        },
-        {
-          "term": "Alternative／Art／Indie",
-          "count": 2
         }
       ]
     },
@@ -999,14 +893,31 @@
       "period_name": "人生月台與語言重建期",
       "start_date": "2026-06-10",
       "end_date": "2026-06-30",
-      "source_active_range": {
-        "start": "2026-06-10",
-        "end": "2026-06-30",
-        "source": "Suno / original ERA segmentation"
-      },
+      "work_count": 81,
       "corpus_date_min": "2026-06-10",
       "corpus_date_max": "2026-06-30",
-      "work_count": 81,
+      "named_keywords": [
+        {
+          "term": "人生月台",
+          "count": 70,
+          "frequency": 0.8642,
+          "percent": 86.4,
+          "keyword_type": "named_concept",
+          "aliases": [
+            "Life Platform"
+          ]
+        },
+        {
+          "term": "微月光",
+          "count": 5,
+          "frequency": 0.0617,
+          "percent": 6.2,
+          "keyword_type": "named_concept",
+          "aliases": [
+            "Micro Moonlight"
+          ]
+        }
+      ],
       "normalized_top_keywords": [
         {
           "term": "風",
@@ -1030,8 +941,7 @@
           "term": "微光意象",
           "count": 49,
           "frequency": 0.6049,
-          "percent": 60.5,
-          "keyword_type": "imagery"
+          "percent": 60.5
         },
         {
           "term": "平靜",
@@ -1206,11 +1116,11 @@
           "count": 3
         },
         {
-          "term": "治理",
+          "term": "治理｜陪伴",
           "count": 2
         },
         {
-          "term": "治理｜陪伴",
+          "term": "警醒／辨識風險｜重構",
           "count": 2
         }
       ],
@@ -1224,11 +1134,11 @@
           "count": 8
         },
         {
-          "term": "幸福／甜蜜",
+          "term": "釋然／放下",
           "count": 5
         },
         {
-          "term": "釋然／放下",
+          "term": "幸福／甜蜜",
           "count": 5
         },
         {
@@ -1240,11 +1150,7 @@
           "count": 4
         },
         {
-          "term": "平靜等待／接納未知／仍願繼續前進",
-          "count": 1
-        },
-        {
-          "term": "未辨識",
+          "term": "安心／安放",
           "count": 1
         },
         {
@@ -1252,59 +1158,11 @@
           "count": 1
         },
         {
-          "term": "安心／安放",
-          "count": 1
-        }
-      ],
-      "top_categories": [
-        {
-          "term": "轉折型",
-          "count": 42
-        },
-        {
-          "term": "轉折型候選",
-          "count": 20
-        },
-        {
-          "term": "其他／待複查",
-          "count": 12
-        },
-        {
-          "term": "祝福紀念型",
-          "count": 4
-        },
-        {
-          "term": "治理宣言型",
-          "count": 3
-        }
-      ],
-      "top_styles": [
-        {
-          "term": "Alternative／Art／Indie",
-          "count": 21
-        },
-        {
-          "term": "Dream／Atmospheric Pop",
-          "count": 20
-        },
-        {
-          "term": "Mandopop／Pop Rock／Ballad",
-          "count": 17
-        },
-        {
-          "term": "Anime／J-Pop／J-Rock",
-          "count": 16
-        },
-        {
-          "term": "Synth／Electro／Industrial",
-          "count": 5
-        },
-        {
-          "term": "Dream Pop／City Pop／Mandopop",
+          "term": "未辨識",
           "count": 1
         },
         {
-          "term": "Rap／Hip-Hop／Soul",
+          "term": "平靜等待／接納未知／仍願繼續前進",
           "count": 1
         }
       ]
@@ -1315,14 +1173,39 @@
       "period_name": "順其自然與界線整合期",
       "start_date": "2026-07-01",
       "end_date": "2026-07-31",
-      "source_active_range": {
-        "start": "2026-07-01",
-        "end": "2026-07-31",
-        "source": "Suno / original ERA segmentation"
-      },
+      "work_count": 58,
       "corpus_date_min": "2026-07-01",
       "corpus_date_max": "2026-07-30",
-      "work_count": 58,
+      "named_keywords": [
+        {
+          "term": "人生月台",
+          "count": 15,
+          "frequency": 0.2586,
+          "percent": 25.9,
+          "keyword_type": "named_concept",
+          "aliases": [
+            "Life Platform"
+          ]
+        },
+        {
+          "term": "已讀不回",
+          "count": 1,
+          "frequency": 0.0172,
+          "percent": 1.7,
+          "keyword_type": "cross_loc_concept",
+          "aliases": []
+        },
+        {
+          "term": "微月光",
+          "count": 1,
+          "frequency": 0.0172,
+          "percent": 1.7,
+          "keyword_type": "named_concept",
+          "aliases": [
+            "Micro Moonlight"
+          ]
+        }
+      ],
       "normalized_top_keywords": [
         {
           "term": "風",
@@ -1346,8 +1229,7 @@
           "term": "微光意象",
           "count": 32,
           "frequency": 0.5517,
-          "percent": 55.2,
-          "keyword_type": "imagery"
+          "percent": 55.2
         },
         {
           "term": "希望",
@@ -1464,11 +1346,11 @@
           "count": 8
         },
         {
-          "term": "放下／離開",
+          "term": "重新前進／啟程",
           "count": 5
         },
         {
-          "term": "重新前進／啟程",
+          "term": "放下／離開",
           "count": 5
         },
         {
@@ -1480,11 +1362,11 @@
           "count": 2
         },
         {
-          "term": "重拾選擇權",
+          "term": "給予祝福",
           "count": 1
         },
         {
-          "term": "給予祝福",
+          "term": "重拾選擇權",
           "count": 1
         }
       ],
@@ -1502,11 +1384,11 @@
           "count": 7
         },
         {
-          "term": "安放",
+          "term": "重構",
           "count": 6
         },
         {
-          "term": "重構",
+          "term": "安放",
           "count": 6
         },
         {
@@ -1526,7 +1408,7 @@
           "count": 2
         },
         {
-          "term": "警醒／辨識風險",
+          "term": "警醒／辨識風險｜重構",
           "count": 2
         }
       ],
@@ -1548,15 +1430,7 @@
           "count": 2
         },
         {
-          "term": "平靜／穩定",
-          "count": 1
-        },
-        {
           "term": "安心／安放",
-          "count": 1
-        },
-        {
-          "term": "幸福／甜蜜",
           "count": 1
         },
         {
@@ -1564,52 +1438,16 @@
           "count": 1
         },
         {
+          "term": "平靜／穩定",
+          "count": 1
+        },
+        {
+          "term": "幸福／甜蜜",
+          "count": 1
+        },
+        {
           "term": "釋然／放下",
           "count": 1
-        }
-      ],
-      "top_categories": [
-        {
-          "term": "轉折型候選",
-          "count": 20
-        },
-        {
-          "term": "轉折型",
-          "count": 19
-        },
-        {
-          "term": "其他／待複查",
-          "count": 15
-        },
-        {
-          "term": "治理宣言型",
-          "count": 3
-        },
-        {
-          "term": "思辨論述型",
-          "count": 1
-        }
-      ],
-      "top_styles": [
-        {
-          "term": "Alternative／Art／Indie",
-          "count": 21
-        },
-        {
-          "term": "Anime／J-Pop／J-Rock",
-          "count": 12
-        },
-        {
-          "term": "Mandopop／Pop Rock／Ballad",
-          "count": 12
-        },
-        {
-          "term": "Synth／Electro／Industrial",
-          "count": 11
-        },
-        {
-          "term": "City Pop",
-          "count": 2
         }
       ]
     },
@@ -1619,14 +1457,21 @@
       "period_name": "自由的風期",
       "start_date": "2026-08-01",
       "end_date": "2026-08-31",
-      "source_active_range": {
-        "start": "2026-08-01",
-        "end": "2026-08-31",
-        "source": "Suno / original ERA segmentation"
-      },
+      "work_count": 15,
       "corpus_date_min": "2026-08-01",
       "corpus_date_max": "2026-08-29",
-      "work_count": 15,
+      "named_keywords": [
+        {
+          "term": "微月光",
+          "count": 1,
+          "frequency": 0.0667,
+          "percent": 6.7,
+          "keyword_type": "named_concept",
+          "aliases": [
+            "Micro Moonlight"
+          ]
+        }
+      ],
       "normalized_top_keywords": [
         {
           "term": "月亮月光",
@@ -1650,8 +1495,7 @@
           "term": "微光意象",
           "count": 10,
           "frequency": 0.6667,
-          "percent": 66.7,
-          "keyword_type": "imagery"
+          "percent": 66.7
         },
         {
           "term": "平靜",
@@ -1760,19 +1604,19 @@
           "count": 4
         },
         {
-          "term": "允許暫停／等待時機",
-          "count": 1
-        },
-        {
-          "term": "未辨識",
-          "count": 1
-        },
-        {
           "term": "放下／離開",
           "count": 1
         },
         {
           "term": "重拾選擇權",
+          "count": 1
+        },
+        {
+          "term": "允許暫停／等待時機",
+          "count": 1
+        },
+        {
+          "term": "未辨識",
           "count": 1
         },
         {
@@ -1782,11 +1626,11 @@
       ],
       "top_emotion_functions": [
         {
-          "term": "治理",
+          "term": "陪伴",
           "count": 4
         },
         {
-          "term": "陪伴",
+          "term": "治理",
           "count": 4
         },
         {
@@ -1798,15 +1642,15 @@
           "count": 1
         },
         {
+          "term": "警醒／辨識風險｜治理",
+          "count": 1
+        },
+        {
           "term": "治理｜前進",
           "count": 1
         },
         {
           "term": "陪伴｜治理",
-          "count": 1
-        },
-        {
-          "term": "警醒／辨識風險｜治理",
           "count": 1
         }
       ],
@@ -1827,42 +1671,6 @@
           "term": "完整／整合",
           "count": 1
         }
-      ],
-      "top_categories": [
-        {
-          "term": "轉折型",
-          "count": 7
-        },
-        {
-          "term": "轉折型候選",
-          "count": 7
-        },
-        {
-          "term": "其他／待複查",
-          "count": 1
-        }
-      ],
-      "top_styles": [
-        {
-          "term": "Mandopop／Pop Rock／Ballad",
-          "count": 6
-        },
-        {
-          "term": "Alternative／Art／Indie",
-          "count": 4
-        },
-        {
-          "term": "Anime／J-Pop／J-Rock",
-          "count": 2
-        },
-        {
-          "term": "Dream／Atmospheric Pop",
-          "count": 2
-        },
-        {
-          "term": "Synth／Electro／Industrial",
-          "count": 1
-        }
       ]
     },
     {
@@ -1871,14 +1679,31 @@
       "period_name": "自我治理與未來展望期",
       "start_date": "2026-09-01",
       "end_date": null,
-      "source_active_range": {
-        "start": "2026-09-01",
-        "end": null,
-        "source": "Suno / original ERA segmentation"
-      },
+      "work_count": 2,
       "corpus_date_min": "2026-09-03",
       "corpus_date_max": "2026-09-03",
-      "work_count": 2,
+      "named_keywords": [
+        {
+          "term": "自我治理",
+          "count": 2,
+          "frequency": 1,
+          "percent": 100,
+          "keyword_type": "governance_concept",
+          "aliases": [
+            "治理自己"
+          ]
+        },
+        {
+          "term": "微月光",
+          "count": 1,
+          "frequency": 0.5,
+          "percent": 50,
+          "keyword_type": "named_concept",
+          "aliases": [
+            "Micro Moonlight"
+          ]
+        }
+      ],
       "normalized_top_keywords": [
         {
           "term": "自我治理",
@@ -2003,1509 +1828,32 @@
       ],
       "top_turn_methods": [
         {
-          "term": "清點收尾／完成承諾／斷捨離與重新歸檔",
+          "term": "確認位置與責任／建立界線／停止勉強維繫",
           "count": 1
         },
         {
-          "term": "確認位置與責任／建立界線／停止勉強維繫",
+          "term": "清點收尾／完成承諾／斷捨離與重新歸檔",
           "count": 1
         }
       ],
       "top_emotion_functions": [
         {
-          "term": "收束舊事／恢復行動主權／為未來騰出空間",
+          "term": "恢復自尊／界線治理／停止內耗",
           "count": 1
         },
         {
-          "term": "恢復自尊／界線治理／停止內耗",
+          "term": "收束舊事／恢復行動主權／為未來騰出空間",
           "count": 1
         }
       ],
       "top_final_states": [
         {
-          "term": "自我治理／選擇新航向／迎向未知",
-          "count": 1
-        },
-        {
           "term": "無愧於心／自我照亮／選擇離開",
           "count": 1
-        }
-      ],
-      "top_categories": [
+        },
         {
-          "term": "治理宣言型",
-          "count": 2
-        }
-      ],
-      "top_styles": [
-        {
-          "term": "Anime Pop Rock／J-Pop／Synth Rock",
+          "term": "自我治理／選擇新航向／迎向未知",
           "count": 1
-        },
-        {
-          "term": "Dream Pop Rock／Cinematic Synth Rock",
-          "count": 1
-        }
-      ]
-    }
-  ],
-  "transitions": [
-    {
-      "from": "P2",
-      "to": "P3",
-      "from_work_count": 50,
-      "to_work_count": 123,
-      "confidence": "descriptive",
-      "emergence": [
-        {
-          "term": "星辰",
-          "previous_frequency": 0.04,
-          "current_frequency": 0.2033,
-          "delta": 0.1633,
-          "class": "emergence"
-        },
-        {
-          "term": "旅程歸屬",
-          "previous_frequency": 0.02,
-          "current_frequency": 0.1707,
-          "delta": 0.1507,
-          "class": "emergence"
-        },
-        {
-          "term": "守護界線",
-          "previous_frequency": 0.04,
-          "current_frequency": 0.187,
-          "delta": 0.147,
-          "class": "emergence"
-        }
-      ],
-      "rising": [
-        {
-          "term": "平靜",
-          "previous_frequency": 0.2,
-          "current_frequency": 0.4959,
-          "delta": 0.2959,
-          "class": "rising"
-        },
-        {
-          "term": "愛與連結",
-          "previous_frequency": 0.16,
-          "current_frequency": 0.4309,
-          "delta": 0.2709,
-          "class": "rising"
-        },
-        {
-          "term": "月亮月光",
-          "previous_frequency": 0.32,
-          "current_frequency": 0.5854,
-          "delta": 0.2654,
-          "class": "rising"
-        },
-        {
-          "term": "微光意象",
-          "previous_frequency": 0.52,
-          "current_frequency": 0.748,
-          "delta": 0.228,
-          "class": "rising",
-          "keyword_type": "imagery"
-        },
-        {
-          "term": "正義界線",
-          "previous_frequency": 0.1,
-          "current_frequency": 0.2764,
-          "delta": 0.1764,
-          "class": "rising"
-        },
-        {
-          "term": "社會疏離",
-          "previous_frequency": 0.12,
-          "current_frequency": 0.2927,
-          "delta": 0.1727,
-          "class": "rising"
-        },
-        {
-          "term": "微月光",
-          "previous_frequency": 0.56,
-          "current_frequency": 0.7317,
-          "delta": 0.1717,
-          "class": "rising",
-          "keyword_type": "proper_noun"
-        },
-        {
-          "term": "溫柔",
-          "previous_frequency": 0.18,
-          "current_frequency": 0.3333,
-          "delta": 0.1533,
-          "class": "rising"
-        }
-      ],
-      "declining": [],
-      "persistent": [
-        {
-          "term": "現實選擇",
-          "previous_frequency": 0.26,
-          "current_frequency": 0.3577,
-          "delta": 0.0977,
-          "class": "persistent"
-        },
-        {
-          "term": "風",
-          "previous_frequency": 0.22,
-          "current_frequency": 0.3089,
-          "delta": 0.0889,
-          "class": "persistent"
-        },
-        {
-          "term": "孤獨",
-          "previous_frequency": 0.22,
-          "current_frequency": 0.3008,
-          "delta": 0.0808,
-          "class": "persistent"
-        },
-        {
-          "term": "孤獨陪伴",
-          "previous_frequency": 0.26,
-          "current_frequency": 0.3333,
-          "delta": 0.0733,
-          "class": "persistent"
-        },
-        {
-          "term": "道路旅途",
-          "previous_frequency": 0.24,
-          "current_frequency": 0.3008,
-          "delta": 0.0608,
-          "class": "persistent"
-        },
-        {
-          "term": "夜晚",
-          "previous_frequency": 0.48,
-          "current_frequency": 0.5285,
-          "delta": 0.0485,
-          "class": "persistent"
-        },
-        {
-          "term": "希望未來",
-          "previous_frequency": 0.42,
-          "current_frequency": 0.374,
-          "delta": -0.046,
-          "class": "persistent"
-        },
-        {
-          "term": "自我探索",
-          "previous_frequency": 0.24,
-          "current_frequency": 0.2114,
-          "delta": -0.0286,
-          "class": "persistent"
-        },
-        {
-          "term": "時間記憶",
-          "previous_frequency": 0.22,
-          "current_frequency": 0.2358,
-          "delta": 0.0158,
-          "class": "persistent"
-        },
-        {
-          "term": "黑暗影子",
-          "previous_frequency": 0.32,
-          "current_frequency": 0.3171,
-          "delta": -0.0029,
-          "class": "persistent"
-        }
-      ],
-      "new_signal": [
-        {
-          "term": "告別離開",
-          "previous_frequency": 0,
-          "current_frequency": 0.0732,
-          "delta": 0.0732,
-          "class": "new_signal"
-        },
-        {
-          "term": "火焰",
-          "previous_frequency": 0,
-          "current_frequency": 0.0407,
-          "delta": 0.0407,
-          "class": "new_signal"
-        },
-        {
-          "term": "家與房間",
-          "previous_frequency": 0,
-          "current_frequency": 0.0325,
-          "delta": 0.0325,
-          "class": "new_signal"
-        },
-        {
-          "term": "鏡子",
-          "previous_frequency": 0,
-          "current_frequency": 0.0325,
-          "delta": 0.0325,
-          "class": "new_signal"
-        },
-        {
-          "term": "麻木",
-          "previous_frequency": 0,
-          "current_frequency": 0.0163,
-          "delta": 0.0163,
-          "class": "new_signal"
-        },
-        {
-          "term": "對未來喊話",
-          "previous_frequency": 0,
-          "current_frequency": 0.0081,
-          "delta": 0.0081,
-          "class": "new_signal"
-        },
-        {
-          "term": "釋然",
-          "previous_frequency": 0,
-          "current_frequency": 0.0081,
-          "delta": 0.0081,
-          "class": "new_signal"
-        }
-      ],
-      "disappeared": [
-        {
-          "term": "玻璃酒杯",
-          "previous_frequency": 0.02,
-          "current_frequency": 0,
-          "delta": -0.02,
-          "class": "disappeared"
-        },
-        {
-          "term": "植物花木",
-          "previous_frequency": 0.02,
-          "current_frequency": 0,
-          "delta": -0.02,
-          "class": "disappeared"
-        }
-      ]
-    },
-    {
-      "from": "P3",
-      "to": "P4",
-      "from_work_count": 123,
-      "to_work_count": 74,
-      "confidence": "descriptive",
-      "emergence": [
-        {
-          "term": "社會觀察",
-          "previous_frequency": 0.0488,
-          "current_frequency": 0.2703,
-          "delta": 0.2215,
-          "class": "emergence"
-        }
-      ],
-      "rising": [
-        {
-          "term": "現實選擇",
-          "previous_frequency": 0.3577,
-          "current_frequency": 0.6892,
-          "delta": 0.3315,
-          "class": "rising"
-        },
-        {
-          "term": "守護界線",
-          "previous_frequency": 0.187,
-          "current_frequency": 0.3649,
-          "delta": 0.1779,
-          "class": "rising"
-        },
-        {
-          "term": "命運因果",
-          "previous_frequency": 0.1057,
-          "current_frequency": 0.2703,
-          "delta": 0.1646,
-          "class": "rising"
-        },
-        {
-          "term": "正義界線",
-          "previous_frequency": 0.2764,
-          "current_frequency": 0.4324,
-          "delta": 0.156,
-          "class": "rising"
-        }
-      ],
-      "declining": [
-        {
-          "term": "微月光",
-          "previous_frequency": 0.7317,
-          "current_frequency": 0.0135,
-          "delta": -0.7182,
-          "class": "declining",
-          "keyword_type": "proper_noun"
-        },
-        {
-          "term": "月亮月光",
-          "previous_frequency": 0.5854,
-          "current_frequency": 0.2027,
-          "delta": -0.3827,
-          "class": "declining"
-        },
-        {
-          "term": "夜晚",
-          "previous_frequency": 0.5285,
-          "current_frequency": 0.2838,
-          "delta": -0.2447,
-          "class": "declining"
-        },
-        {
-          "term": "愛與連結",
-          "previous_frequency": 0.4309,
-          "current_frequency": 0.2027,
-          "delta": -0.2282,
-          "class": "declining"
-        },
-        {
-          "term": "孤獨陪伴",
-          "previous_frequency": 0.3333,
-          "current_frequency": 0.1351,
-          "delta": -0.1982,
-          "class": "declining"
-        },
-        {
-          "term": "星辰",
-          "previous_frequency": 0.2033,
-          "current_frequency": 0.027,
-          "delta": -0.1762,
-          "class": "declining"
-        },
-        {
-          "term": "關係靠近",
-          "previous_frequency": 0.2033,
-          "current_frequency": 0.027,
-          "delta": -0.1762,
-          "class": "declining"
-        },
-        {
-          "term": "孤獨",
-          "previous_frequency": 0.3008,
-          "current_frequency": 0.1486,
-          "delta": -0.1522,
-          "class": "declining"
-        }
-      ],
-      "persistent": [
-        {
-          "term": "天空",
-          "previous_frequency": 0.3496,
-          "current_frequency": 0.4459,
-          "delta": 0.0964,
-          "class": "persistent"
-        },
-        {
-          "term": "時間記憶",
-          "previous_frequency": 0.2358,
-          "current_frequency": 0.2973,
-          "delta": 0.0615,
-          "class": "persistent"
-        },
-        {
-          "term": "離別放下",
-          "previous_frequency": 0.2114,
-          "current_frequency": 0.2568,
-          "delta": 0.0454,
-          "class": "persistent"
-        },
-        {
-          "term": "黑暗影子",
-          "previous_frequency": 0.3171,
-          "current_frequency": 0.2973,
-          "delta": -0.0198,
-          "class": "persistent"
-        },
-        {
-          "term": "自我探索",
-          "previous_frequency": 0.2114,
-          "current_frequency": 0.2027,
-          "delta": -0.0087,
-          "class": "persistent"
-        },
-        {
-          "term": "微光意象",
-          "previous_frequency": 0.748,
-          "current_frequency": 0.7432,
-          "delta": -0.0047,
-          "class": "persistent",
-          "keyword_type": "imagery"
-        }
-      ],
-      "new_signal": [
-        {
-          "term": "植物花木",
-          "previous_frequency": 0,
-          "current_frequency": 0.0405,
-          "delta": 0.0405,
-          "class": "new_signal"
-        },
-        {
-          "term": "玻璃酒杯",
-          "previous_frequency": 0,
-          "current_frequency": 0.0135,
-          "delta": 0.0135,
-          "class": "new_signal"
-        },
-        {
-          "term": "無奈",
-          "previous_frequency": 0,
-          "current_frequency": 0.0135,
-          "delta": 0.0135,
-          "class": "new_signal"
-        }
-      ],
-      "disappeared": [
-        {
-          "term": "成長蛻變",
-          "previous_frequency": 0.0732,
-          "current_frequency": 0,
-          "delta": -0.0732,
-          "class": "disappeared"
-        },
-        {
-          "term": "告別離開",
-          "previous_frequency": 0.0732,
-          "current_frequency": 0,
-          "delta": -0.0732,
-          "class": "disappeared"
-        },
-        {
-          "term": "自信",
-          "previous_frequency": 0.0488,
-          "current_frequency": 0,
-          "delta": -0.0488,
-          "class": "disappeared"
-        },
-        {
-          "term": "鏡子",
-          "previous_frequency": 0.0325,
-          "current_frequency": 0,
-          "delta": -0.0325,
-          "class": "disappeared"
-        },
-        {
-          "term": "飛行翅膀",
-          "previous_frequency": 0.0244,
-          "current_frequency": 0,
-          "delta": -0.0244,
-          "class": "disappeared"
-        },
-        {
-          "term": "河流",
-          "previous_frequency": 0.0081,
-          "current_frequency": 0,
-          "delta": -0.0081,
-          "class": "disappeared"
-        },
-        {
-          "term": "對未來喊話",
-          "previous_frequency": 0.0081,
-          "current_frequency": 0,
-          "delta": -0.0081,
-          "class": "disappeared"
-        }
-      ]
-    },
-    {
-      "from": "P4",
-      "to": "P5",
-      "from_work_count": 74,
-      "to_work_count": 81,
-      "confidence": "descriptive",
-      "emergence": [
-        {
-          "term": "旅程歸屬",
-          "previous_frequency": 0.0405,
-          "current_frequency": 0.321,
-          "delta": 0.2804,
-          "class": "emergence"
-        },
-        {
-          "term": "成長蛻變",
-          "previous_frequency": 0,
-          "current_frequency": 0.1852,
-          "delta": 0.1852,
-          "class": "emergence"
-        },
-        {
-          "term": "關係靠近",
-          "previous_frequency": 0.027,
-          "current_frequency": 0.1728,
-          "delta": 0.1458,
-          "class": "emergence"
-        }
-      ],
-      "rising": [
-        {
-          "term": "風",
-          "previous_frequency": 0.4324,
-          "current_frequency": 0.8519,
-          "delta": 0.4194,
-          "class": "rising"
-        },
-        {
-          "term": "希望未來",
-          "previous_frequency": 0.2568,
-          "current_frequency": 0.6543,
-          "delta": 0.3976,
-          "class": "rising"
-        },
-        {
-          "term": "月亮月光",
-          "previous_frequency": 0.2027,
-          "current_frequency": 0.5062,
-          "delta": 0.3035,
-          "class": "rising"
-        },
-        {
-          "term": "未知探索",
-          "previous_frequency": 0.1757,
-          "current_frequency": 0.4074,
-          "delta": 0.2317,
-          "class": "rising"
-        },
-        {
-          "term": "平靜",
-          "previous_frequency": 0.3514,
-          "current_frequency": 0.5679,
-          "delta": 0.2165,
-          "class": "rising"
-        },
-        {
-          "term": "希望",
-          "previous_frequency": 0.2027,
-          "current_frequency": 0.3951,
-          "delta": 0.1924,
-          "class": "rising"
-        },
-        {
-          "term": "道路旅途",
-          "previous_frequency": 0.4459,
-          "current_frequency": 0.6173,
-          "delta": 0.1713,
-          "class": "rising"
-        },
-        {
-          "term": "等待時機",
-          "previous_frequency": 0.1757,
-          "current_frequency": 0.3457,
-          "delta": 0.17,
-          "class": "rising"
-        }
-      ],
-      "declining": [
-        {
-          "term": "現實選擇",
-          "previous_frequency": 0.6892,
-          "current_frequency": 0.1235,
-          "delta": -0.5657,
-          "class": "declining"
-        },
-        {
-          "term": "正義界線",
-          "previous_frequency": 0.4324,
-          "current_frequency": 0.0988,
-          "delta": -0.3337,
-          "class": "declining"
-        },
-        {
-          "term": "守護界線",
-          "previous_frequency": 0.3649,
-          "current_frequency": 0.0617,
-          "delta": -0.3031,
-          "class": "declining"
-        },
-        {
-          "term": "黑暗影子",
-          "previous_frequency": 0.2973,
-          "current_frequency": 0.0741,
-          "delta": -0.2232,
-          "class": "declining"
-        },
-        {
-          "term": "社會觀察",
-          "previous_frequency": 0.2703,
-          "current_frequency": 0.0494,
-          "delta": -0.2209,
-          "class": "declining"
-        },
-        {
-          "term": "城市人群",
-          "previous_frequency": 0.1757,
-          "current_frequency": 0.0123,
-          "delta": -0.1633,
-          "class": "declining"
-        }
-      ],
-      "persistent": [
-        {
-          "term": "自由自主",
-          "previous_frequency": 0.2162,
-          "current_frequency": 0.2593,
-          "delta": 0.043,
-          "class": "persistent"
-        },
-        {
-          "term": "夜晚",
-          "previous_frequency": 0.2838,
-          "current_frequency": 0.2469,
-          "delta": -0.0369,
-          "class": "persistent"
-        }
-      ],
-      "new_signal": [
-        {
-          "term": "飛行翅膀",
-          "previous_frequency": 0,
-          "current_frequency": 0.1235,
-          "delta": 0.1235,
-          "class": "new_signal"
-        },
-        {
-          "term": "自信",
-          "previous_frequency": 0,
-          "current_frequency": 0.0864,
-          "delta": 0.0864,
-          "class": "new_signal"
-        },
-        {
-          "term": "告別離開",
-          "previous_frequency": 0,
-          "current_frequency": 0.0494,
-          "delta": 0.0494,
-          "class": "new_signal"
-        },
-        {
-          "term": "月台車站",
-          "previous_frequency": 0,
-          "current_frequency": 0.0247,
-          "delta": 0.0247,
-          "class": "new_signal"
-        },
-        {
-          "term": "療癒照顧",
-          "previous_frequency": 0,
-          "current_frequency": 0.0247,
-          "delta": 0.0247,
-          "class": "new_signal"
-        },
-        {
-          "term": "人生月台",
-          "previous_frequency": 0,
-          "current_frequency": 0.0123,
-          "delta": 0.0123,
-          "class": "new_signal"
-        },
-        {
-          "term": "人生改道",
-          "previous_frequency": 0,
-          "current_frequency": 0.0123,
-          "delta": 0.0123,
-          "class": "new_signal"
-        },
-        {
-          "term": "月台",
-          "previous_frequency": 0,
-          "current_frequency": 0.0123,
-          "delta": 0.0123,
-          "class": "new_signal"
-        },
-        {
-          "term": "列車",
-          "previous_frequency": 0,
-          "current_frequency": 0.0123,
-          "delta": 0.0123,
-          "class": "new_signal"
-        },
-        {
-          "term": "行李",
-          "previous_frequency": 0,
-          "current_frequency": 0.0123,
-          "delta": 0.0123,
-          "class": "new_signal"
-        }
-      ],
-      "disappeared": [
-        {
-          "term": "猶豫",
-          "previous_frequency": 0.1081,
-          "current_frequency": 0,
-          "delta": -0.1081,
-          "class": "disappeared"
-        },
-        {
-          "term": "火焰",
-          "previous_frequency": 0.0676,
-          "current_frequency": 0,
-          "delta": -0.0676,
-          "class": "disappeared"
-        },
-        {
-          "term": "家與房間",
-          "previous_frequency": 0.027,
-          "current_frequency": 0,
-          "delta": -0.027,
-          "class": "disappeared"
-        },
-        {
-          "term": "玻璃酒杯",
-          "previous_frequency": 0.0135,
-          "current_frequency": 0,
-          "delta": -0.0135,
-          "class": "disappeared"
-        },
-        {
-          "term": "憤怒",
-          "previous_frequency": 0.0135,
-          "current_frequency": 0,
-          "delta": -0.0135,
-          "class": "disappeared"
-        }
-      ]
-    },
-    {
-      "from": "P5",
-      "to": "P6",
-      "from_work_count": 81,
-      "to_work_count": 58,
-      "confidence": "descriptive",
-      "emergence": [],
-      "rising": [],
-      "declining": [
-        {
-          "term": "平靜",
-          "previous_frequency": 0.5679,
-          "current_frequency": 0.3276,
-          "delta": -0.2403,
-          "class": "declining"
-        },
-        {
-          "term": "未知探索",
-          "previous_frequency": 0.4074,
-          "current_frequency": 0.1724,
-          "delta": -0.235,
-          "class": "declining"
-        },
-        {
-          "term": "孤獨",
-          "previous_frequency": 0.2716,
-          "current_frequency": 0.0862,
-          "delta": -0.1854,
-          "class": "declining"
-        },
-        {
-          "term": "月亮月光",
-          "previous_frequency": 0.5062,
-          "current_frequency": 0.3276,
-          "delta": -0.1786,
-          "class": "declining"
-        }
-      ],
-      "persistent": [
-        {
-          "term": "時間記憶",
-          "previous_frequency": 0.4198,
-          "current_frequency": 0.3448,
-          "delta": -0.0749,
-          "class": "persistent"
-        },
-        {
-          "term": "自由自主",
-          "previous_frequency": 0.2593,
-          "current_frequency": 0.3276,
-          "delta": 0.0683,
-          "class": "persistent"
-        },
-        {
-          "term": "微光意象",
-          "previous_frequency": 0.6049,
-          "current_frequency": 0.5517,
-          "delta": -0.0532,
-          "class": "persistent",
-          "keyword_type": "imagery"
-        },
-        {
-          "term": "等待時機",
-          "previous_frequency": 0.3457,
-          "current_frequency": 0.3966,
-          "delta": 0.0509,
-          "class": "persistent"
-        },
-        {
-          "term": "旅程歸屬",
-          "previous_frequency": 0.321,
-          "current_frequency": 0.2759,
-          "delta": -0.0451,
-          "class": "persistent"
-        },
-        {
-          "term": "風",
-          "previous_frequency": 0.8519,
-          "current_frequency": 0.8966,
-          "delta": 0.0447,
-          "class": "persistent"
-        },
-        {
-          "term": "夜晚",
-          "previous_frequency": 0.2469,
-          "current_frequency": 0.2414,
-          "delta": -0.0055,
-          "class": "persistent"
-        },
-        {
-          "term": "道路旅途",
-          "previous_frequency": 0.6173,
-          "current_frequency": 0.6207,
-          "delta": 0.0034,
-          "class": "persistent"
-        },
-        {
-          "term": "希望未來",
-          "previous_frequency": 0.6543,
-          "current_frequency": 0.6552,
-          "delta": 0.0009,
-          "class": "persistent"
-        }
-      ],
-      "new_signal": [
-        {
-          "term": "猶豫",
-          "previous_frequency": 0,
-          "current_frequency": 0.069,
-          "delta": 0.069,
-          "class": "new_signal"
-        },
-        {
-          "term": "河流",
-          "previous_frequency": 0,
-          "current_frequency": 0.0172,
-          "delta": 0.0172,
-          "class": "new_signal"
-        },
-        {
-          "term": "玻璃酒杯",
-          "previous_frequency": 0,
-          "current_frequency": 0.0172,
-          "delta": 0.0172,
-          "class": "new_signal"
-        },
-        {
-          "term": "追求夢想",
-          "previous_frequency": 0,
-          "current_frequency": 0.0172,
-          "delta": 0.0172,
-          "class": "new_signal"
-        }
-      ],
-      "disappeared": [
-        {
-          "term": "月台車站",
-          "previous_frequency": 0.0247,
-          "current_frequency": 0,
-          "delta": -0.0247,
-          "class": "disappeared"
-        },
-        {
-          "term": "思念",
-          "previous_frequency": 0.0247,
-          "current_frequency": 0,
-          "delta": -0.0247,
-          "class": "disappeared"
-        },
-        {
-          "term": "無奈",
-          "previous_frequency": 0.0247,
-          "current_frequency": 0,
-          "delta": -0.0247,
-          "class": "disappeared"
-        },
-        {
-          "term": "療癒照顧",
-          "previous_frequency": 0.0247,
-          "current_frequency": 0,
-          "delta": -0.0247,
-          "class": "disappeared"
-        },
-        {
-          "term": "人生月台",
-          "previous_frequency": 0.0123,
-          "current_frequency": 0,
-          "delta": -0.0123,
-          "class": "disappeared"
-        },
-        {
-          "term": "人生改道",
-          "previous_frequency": 0.0123,
-          "current_frequency": 0,
-          "delta": -0.0123,
-          "class": "disappeared"
-        },
-        {
-          "term": "月台",
-          "previous_frequency": 0.0123,
-          "current_frequency": 0,
-          "delta": -0.0123,
-          "class": "disappeared"
-        },
-        {
-          "term": "列車",
-          "previous_frequency": 0.0123,
-          "current_frequency": 0,
-          "delta": -0.0123,
-          "class": "disappeared"
-        },
-        {
-          "term": "行李",
-          "previous_frequency": 0.0123,
-          "current_frequency": 0,
-          "delta": -0.0123,
-          "class": "disappeared"
-        },
-        {
-          "term": "告別過往",
-          "previous_frequency": 0.0123,
-          "current_frequency": 0,
-          "delta": -0.0123,
-          "class": "disappeared"
-        }
-      ]
-    },
-    {
-      "from": "P6",
-      "to": "P7",
-      "from_work_count": 58,
-      "to_work_count": 15,
-      "confidence": "descriptive",
-      "emergence": [],
-      "rising": [
-        {
-          "term": "月亮月光",
-          "previous_frequency": 0.3276,
-          "current_frequency": 0.8667,
-          "delta": 0.5391,
-          "class": "rising"
-        },
-        {
-          "term": "自由自主",
-          "previous_frequency": 0.3276,
-          "current_frequency": 0.6667,
-          "delta": 0.3391,
-          "class": "rising"
-        },
-        {
-          "term": "正義界線",
-          "previous_frequency": 0.1724,
-          "current_frequency": 0.4667,
-          "delta": 0.2943,
-          "class": "rising"
-        },
-        {
-          "term": "命運因果",
-          "previous_frequency": 0.1724,
-          "current_frequency": 0.4667,
-          "delta": 0.2943,
-          "class": "rising"
-        },
-        {
-          "term": "平靜",
-          "previous_frequency": 0.3276,
-          "current_frequency": 0.6,
-          "delta": 0.2724,
-          "class": "rising"
-        },
-        {
-          "term": "守護界線",
-          "previous_frequency": 0.069,
-          "current_frequency": 0.3333,
-          "delta": 0.2644,
-          "class": "rising"
-        },
-        {
-          "term": "孤獨",
-          "previous_frequency": 0.0862,
-          "current_frequency": 0.3333,
-          "delta": 0.2471,
-          "class": "rising"
-        },
-        {
-          "term": "旅途移動",
-          "previous_frequency": 0.0862,
-          "current_frequency": 0.3333,
-          "delta": 0.2471,
-          "class": "rising"
-        },
-        {
-          "term": "孤獨陪伴",
-          "previous_frequency": 0.1379,
-          "current_frequency": 0.3333,
-          "delta": 0.1954,
-          "class": "rising"
-        }
-      ],
-      "declining": [
-        {
-          "term": "時間記憶",
-          "previous_frequency": 0.3448,
-          "current_frequency": 0.1333,
-          "delta": -0.2115,
-          "class": "declining"
-        },
-        {
-          "term": "夜晚",
-          "previous_frequency": 0.2414,
-          "current_frequency": 0.0667,
-          "delta": -0.1747,
-          "class": "declining"
-        },
-        {
-          "term": "風",
-          "previous_frequency": 0.8966,
-          "current_frequency": 0.7333,
-          "delta": -0.1632,
-          "class": "declining"
-        },
-        {
-          "term": "自我探索",
-          "previous_frequency": 0.1552,
-          "current_frequency": 0,
-          "delta": -0.1552,
-          "class": "declining"
-        },
-        {
-          "term": "離別放下",
-          "previous_frequency": 0.1552,
-          "current_frequency": 0,
-          "delta": -0.1552,
-          "class": "declining"
-        },
-        {
-          "term": "道路旅途",
-          "previous_frequency": 0.6207,
-          "current_frequency": 0.4667,
-          "delta": -0.154,
-          "class": "declining"
-        }
-      ],
-      "persistent": [
-        {
-          "term": "希望",
-          "previous_frequency": 0.5,
-          "current_frequency": 0.6,
-          "delta": 0.1,
-          "class": "persistent"
-        },
-        {
-          "term": "等待時機",
-          "previous_frequency": 0.3966,
-          "current_frequency": 0.3333,
-          "delta": -0.0632,
-          "class": "persistent"
-        },
-        {
-          "term": "希望未來",
-          "previous_frequency": 0.6552,
-          "current_frequency": 0.6,
-          "delta": -0.0552,
-          "class": "persistent"
-        },
-        {
-          "term": "天空",
-          "previous_frequency": 0.4828,
-          "current_frequency": 0.5333,
-          "delta": 0.0506,
-          "class": "persistent"
-        },
-        {
-          "term": "旅程歸屬",
-          "previous_frequency": 0.2759,
-          "current_frequency": 0.2667,
-          "delta": -0.0092,
-          "class": "persistent"
-        }
-      ],
-      "new_signal": [
-        {
-          "term": "星辰",
-          "previous_frequency": 0,
-          "current_frequency": 0.0667,
-          "delta": 0.0667,
-          "class": "new_signal"
-        },
-        {
-          "term": "麻木",
-          "previous_frequency": 0,
-          "current_frequency": 0.0667,
-          "delta": 0.0667,
-          "class": "new_signal"
-        },
-        {
-          "term": "雷電風暴",
-          "previous_frequency": 0,
-          "current_frequency": 0.0667,
-          "delta": 0.0667,
-          "class": "new_signal"
-        }
-      ],
-      "disappeared": [
-        {
-          "term": "植物花木",
-          "previous_frequency": 0.1034,
-          "current_frequency": 0,
-          "delta": -0.1034,
-          "class": "disappeared"
-        },
-        {
-          "term": "傷痛失落",
-          "previous_frequency": 0.0862,
-          "current_frequency": 0,
-          "delta": -0.0862,
-          "class": "disappeared"
-        },
-        {
-          "term": "海洋浪潮",
-          "previous_frequency": 0.069,
-          "current_frequency": 0,
-          "delta": -0.069,
-          "class": "disappeared"
-        },
-        {
-          "term": "焦慮",
-          "previous_frequency": 0.069,
-          "current_frequency": 0,
-          "delta": -0.069,
-          "class": "disappeared"
-        },
-        {
-          "term": "猶豫",
-          "previous_frequency": 0.069,
-          "current_frequency": 0,
-          "delta": -0.069,
-          "class": "disappeared"
-        },
-        {
-          "term": "回顧過去",
-          "previous_frequency": 0.0345,
-          "current_frequency": 0,
-          "delta": -0.0345,
-          "class": "disappeared"
-        },
-        {
-          "term": "自我對話",
-          "previous_frequency": 0.0345,
-          "current_frequency": 0,
-          "delta": -0.0345,
-          "class": "disappeared"
-        },
-        {
-          "term": "告別離開",
-          "previous_frequency": 0.0345,
-          "current_frequency": 0,
-          "delta": -0.0345,
-          "class": "disappeared"
-        },
-        {
-          "term": "自信",
-          "previous_frequency": 0.0172,
-          "current_frequency": 0,
-          "delta": -0.0172,
-          "class": "disappeared"
-        },
-        {
-          "term": "河流",
-          "previous_frequency": 0.0172,
-          "current_frequency": 0,
-          "delta": -0.0172,
-          "class": "disappeared"
-        }
-      ]
-    },
-    {
-      "from": "P7",
-      "to": "P8",
-      "from_work_count": 15,
-      "to_work_count": 2,
-      "confidence": "exploratory",
-      "emergence": [
-        {
-          "term": "自我治理",
-          "previous_frequency": 0,
-          "current_frequency": 1,
-          "delta": 1,
-          "class": "emergence"
-        },
-        {
-          "term": "月光",
-          "previous_frequency": 0,
-          "current_frequency": 0.5,
-          "delta": 0.5,
-          "class": "emergence"
-        },
-        {
-          "term": "未竟之事",
-          "previous_frequency": 0,
-          "current_frequency": 0.5,
-          "delta": 0.5,
-          "class": "emergence"
-        },
-        {
-          "term": "白晝之月",
-          "previous_frequency": 0,
-          "current_frequency": 0.5,
-          "delta": 0.5,
-          "class": "emergence"
-        },
-        {
-          "term": "收尾",
-          "previous_frequency": 0,
-          "current_frequency": 0.5,
-          "delta": 0.5,
-          "class": "emergence"
-        },
-        {
-          "term": "自由",
-          "previous_frequency": 0,
-          "current_frequency": 0.5,
-          "delta": 0.5,
-          "class": "emergence"
-        },
-        {
-          "term": "自我照亮",
-          "previous_frequency": 0,
-          "current_frequency": 0.5,
-          "delta": 0.5,
-          "class": "emergence"
-        },
-        {
-          "term": "自我價值",
-          "previous_frequency": 0,
-          "current_frequency": 0.5,
-          "delta": 0.5,
-          "class": "emergence"
-        },
-        {
-          "term": "行李",
-          "previous_frequency": 0,
-          "current_frequency": 0.5,
-          "delta": 0.5,
-          "class": "emergence"
-        },
-        {
-          "term": "底線",
-          "previous_frequency": 0,
-          "current_frequency": 0.5,
-          "delta": 0.5,
-          "class": "emergence"
-        },
-        {
-          "term": "承諾",
-          "previous_frequency": 0,
-          "current_frequency": 0.5,
-          "delta": 0.5,
-          "class": "emergence"
-        },
-        {
-          "term": "界線",
-          "previous_frequency": 0,
-          "current_frequency": 0.5,
-          "delta": 0.5,
-          "class": "emergence"
-        }
-      ],
-      "rising": [
-        {
-          "term": "微月光",
-          "previous_frequency": 0.0667,
-          "current_frequency": 0.5,
-          "delta": 0.4333,
-          "class": "rising",
-          "keyword_type": "proper_noun"
-        },
-        {
-          "term": "未知探索",
-          "previous_frequency": 0.1333,
-          "current_frequency": 0.5,
-          "delta": 0.3667,
-          "class": "rising"
-        },
-        {
-          "term": "飛行翅膀",
-          "previous_frequency": 0.2,
-          "current_frequency": 0.5,
-          "delta": 0.3,
-          "class": "rising"
-        },
-        {
-          "term": "重新出發",
-          "previous_frequency": 0.2667,
-          "current_frequency": 0.5,
-          "delta": 0.2333,
-          "class": "rising"
-        },
-        {
-          "term": "孤獨",
-          "previous_frequency": 0.3333,
-          "current_frequency": 0.5,
-          "delta": 0.1667,
-          "class": "rising"
-        }
-      ],
-      "declining": [
-        {
-          "term": "月亮月光",
-          "previous_frequency": 0.8667,
-          "current_frequency": 0,
-          "delta": -0.8667,
-          "class": "declining"
-        },
-        {
-          "term": "自由自主",
-          "previous_frequency": 0.6667,
-          "current_frequency": 0,
-          "delta": -0.6667,
-          "class": "declining"
-        },
-        {
-          "term": "微光意象",
-          "previous_frequency": 0.6667,
-          "current_frequency": 0,
-          "delta": -0.6667,
-          "class": "declining",
-          "keyword_type": "imagery"
-        },
-        {
-          "term": "平靜",
-          "previous_frequency": 0.6,
-          "current_frequency": 0,
-          "delta": -0.6,
-          "class": "declining"
-        },
-        {
-          "term": "希望",
-          "previous_frequency": 0.6,
-          "current_frequency": 0,
-          "delta": -0.6,
-          "class": "declining"
-        },
-        {
-          "term": "希望未來",
-          "previous_frequency": 0.6,
-          "current_frequency": 0,
-          "delta": -0.6,
-          "class": "declining"
-        },
-        {
-          "term": "天空",
-          "previous_frequency": 0.5333,
-          "current_frequency": 0,
-          "delta": -0.5333,
-          "class": "declining"
-        },
-        {
-          "term": "正義界線",
-          "previous_frequency": 0.4667,
-          "current_frequency": 0,
-          "delta": -0.4667,
-          "class": "declining"
-        },
-        {
-          "term": "命運因果",
-          "previous_frequency": 0.4667,
-          "current_frequency": 0,
-          "delta": -0.4667,
-          "class": "declining"
-        },
-        {
-          "term": "道路旅途",
-          "previous_frequency": 0.4667,
-          "current_frequency": 0,
-          "delta": -0.4667,
-          "class": "declining"
-        },
-        {
-          "term": "守護界線",
-          "previous_frequency": 0.3333,
-          "current_frequency": 0,
-          "delta": -0.3333,
-          "class": "declining"
-        },
-        {
-          "term": "孤獨陪伴",
-          "previous_frequency": 0.3333,
-          "current_frequency": 0,
-          "delta": -0.3333,
-          "class": "declining"
-        }
-      ],
-      "persistent": [],
-      "new_signal": [],
-      "disappeared": [
-        {
-          "term": "時間記憶",
-          "previous_frequency": 0.1333,
-          "current_frequency": 0,
-          "delta": -0.1333,
-          "class": "disappeared"
-        },
-        {
-          "term": "疲憊",
-          "previous_frequency": 0.1333,
-          "current_frequency": 0,
-          "delta": -0.1333,
-          "class": "disappeared"
-        },
-        {
-          "term": "現實選擇",
-          "previous_frequency": 0.1333,
-          "current_frequency": 0,
-          "delta": -0.1333,
-          "class": "disappeared"
-        },
-        {
-          "term": "喜悅",
-          "previous_frequency": 0.1333,
-          "current_frequency": 0,
-          "delta": -0.1333,
-          "class": "disappeared"
-        },
-        {
-          "term": "夢想創作",
-          "previous_frequency": 0.1333,
-          "current_frequency": 0,
-          "delta": -0.1333,
-          "class": "disappeared"
-        },
-        {
-          "term": "關係靠近",
-          "previous_frequency": 0.1333,
-          "current_frequency": 0,
-          "delta": -0.1333,
-          "class": "disappeared"
-        },
-        {
-          "term": "成長蛻變",
-          "previous_frequency": 0.0667,
-          "current_frequency": 0,
-          "delta": -0.0667,
-          "class": "disappeared"
-        },
-        {
-          "term": "夜晚",
-          "previous_frequency": 0.0667,
-          "current_frequency": 0,
-          "delta": -0.0667,
-          "class": "disappeared"
-        },
-        {
-          "term": "社會疏離",
-          "previous_frequency": 0.0667,
-          "current_frequency": 0,
-          "delta": -0.0667,
-          "class": "disappeared"
-        },
-        {
-          "term": "社會觀察",
-          "previous_frequency": 0.0667,
-          "current_frequency": 0,
-          "delta": -0.0667,
-          "class": "disappeared"
         }
       ]
     }
