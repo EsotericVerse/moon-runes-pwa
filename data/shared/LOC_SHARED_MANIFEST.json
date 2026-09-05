@@ -65,6 +65,12 @@
       "purpose": "Canonical writing-work catalog entry point and shared cross-LOC references."
     },
     {
+      "id": "cross_relationships",
+      "path": "data/shared/LOC_CROSS_RELATIONSHIP_REGISTRY.json",
+      "authority": "LOC7",
+      "purpose": "Directional cross-LOC work/media relationships for Unified Search and graph retrieval."
+    },
+    {
       "id": "loc6_era_style_evidence",
       "path": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json",
       "authority": "LOC6",
@@ -120,13 +126,15 @@
       "media_registry": "connected",
       "shared_result_refs": "connected",
       "rune_song_registry": "connected; confirmed provenance records currently pending",
-      "reasoning_proposition_layer": "connected"
+      "reasoning_proposition_layer": "connected",
+      "cross_relationship_registry": "connected"
     },
     "LOC4": {
       "writing_registry": "schema-ready",
-      "corpus_import": "pending"
+      "corpus_import": "pending",
+      "cross_relationship_registry": "connected"
     },
-    "LOC5": "media-authority-established",
+    "LOC5": "media-authority-established; cross-relationship-registry-connected",
     "LOC6": {
       "governance_registry": "connected",
       "rune_interpretation_corpus": "connected",
@@ -135,13 +143,15 @@
       "corpus_import": "partial-primary-corpus-connected",
       "dual_rune_relation_registry": "connected",
       "dual_rune_relation_model": "neutral pair → draw cause/effect projection → directions/context",
-      "era_style_evidence": "403 indexed LOC3 works linked by ERA"
+      "era_style_evidence": "403 indexed LOC3 works linked by ERA",
+      "cross_media_relationship_interpretation": "connected"
     },
     "LOC7": {
       "linguistic_analysis_registry": "schema-ready",
       "analysis_types": "connected",
       "faq_v0_3": "connected",
-      "faq_rag_v0_3": "connected"
+      "faq_rag_v0_3": "connected",
+      "cross_relationship_registry": "connected"
     },
     "LOC8": {
       "authority_source": "established",
