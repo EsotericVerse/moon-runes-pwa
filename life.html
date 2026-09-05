@@ -695,13 +695,13 @@
           <div class="card metric"><div class="label">時期總數</div><div class="value" id="eraMetricCount">0</div><div class="hint">目前 Registry</div></div>
           <div class="card metric"><div class="label">目前時期</div><div class="value" id="eraMetricCurrent">—</div><div class="hint">目前所在時期</div></div>
           <div class="card metric"><div class="label">Current 起點</div><div class="value" id="eraMetricStart">—</div><div class="hint">本期開始日期</div></div>
-          <div class="card metric"><div class="label">時期關鍵字</div><div class="value" id="eraMetricKeywords">0</div><div class="hint">依 Event 動態統計，不快取</div></div>
+          <div class="card metric"><div class="label">時期關鍵字</div><div class="value" id="eraMetricKeywords">0</div><div class="hint">LOC3 關鍵字強度</div></div>
         </section>
 
         <section class="card" style="margin-top:16px;" id="era-keywords">
           <div class="head">
-            <div><h3>時期關鍵字脈絡</h3><p>依 Event 日期自動歸入 ERA，直接統計 tags。數量隨 Event 更新即時計算，不寫入 cache。</p></div>
-            <span class="badge">事件 → 時期</span>
+            <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸，優先顯示 LOC3 已分析的 normalized keyword frequency；一般 Event tags 作為補充脈絡。</p></div>
+            <span class="badge">LOC3 × 時期</span>
           </div>
           <div class="body"><div class="era-keyword-grid" id="eraKeywordGrid"><div class="empty">載入 時期關鍵字中…</div></div></div>
         </section>
@@ -936,6 +936,7 @@
     const selectedDrawIds = new Set();
     const dirtyDrawIds = new Set();
     let eraRegistry = [];
+    let loc3PeriodKeywordAnalysis = null;
     let runeMetaMap = new Map();
     let editingId = '';
 
@@ -983,7 +984,19 @@
       return readJsonCache(STORAGE_KEY, []);
     }
 
+    async function loadLoc3PeriodKeywordAnalysis() {
+      try {
+        const res = await fetch('data/shared/LOC3_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('LOC3 period keyword analysis unavailable');
+        loc3PeriodKeywordAnalysis = await res.json();
+      } catch (err) {
+        console.warn('LOC3 period keyword analysis unavailable', err);
+        loc3PeriodKeywordAnalysis = null;
+      }
+    }
+
     async function loadEraRegistry() {
+      await loadLoc3PeriodKeywordAnalysis();
       try {
         const url = new URL(SHEET_API_URL);
         url.searchParams.set('action', 'eras');
@@ -1049,8 +1062,12 @@
       const ordered = eraRegistry.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0));
       const current = ordered.find(e => e.status === 'current') || ordered[ordered.length - 1];
       const { stats, sourceEvents } = keywordStatsByEra(ordered);
-      const totalKeywordOccurrences = [...stats.values()].reduce(
-        (sum, bucket) => sum + [...bucket.values()].reduce((a,b) => a+b, 0), 0
+      const loc3Periods = Array.isArray(loc3PeriodKeywordAnalysis?.periods)
+        ? loc3PeriodKeywordAnalysis.periods
+        : [];
+      const loc3PeriodMap = new Map(loc3Periods.map(item => [String(item.period || ''), item]));
+      const totalKeywordOccurrences = loc3Periods.reduce(
+        (sum, item) => sum + (Array.isArray(item.normalized_top_keywords) ? item.normalized_top_keywords.length : 0), 0
       );
 
       if (els.eraMetricCount) els.eraMetricCount.textContent = ordered.length;
@@ -1060,21 +1077,34 @@
 
       if (els.eraKeywordGrid) {
         els.eraKeywordGrid.innerHTML = ordered.map(era => {
-          const entries = [...(stats.get(era.era_id) || new Map()).entries()]
+          const period = String(era.period || '');
+          const loc3 = loc3PeriodMap.get(period);
+          const loc3Keywords = Array.isArray(loc3?.normalized_top_keywords)
+            ? loc3.normalized_top_keywords.slice(0,10)
+            : [];
+          const eventEntries = [...(stats.get(era.era_id) || new Map()).entries()]
             .sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0], 'zh-Hant'))
-            .slice(0,10);
+            .slice(0,6);
           const eventCount = sourceEvents.filter(e => eraForEvent(e, ordered)?.era_id === era.era_id).length;
+          const loc3WorkCount = Number(loc3?.work_count || 0);
+
           return `
             <article class="era-keyword-card">
               <div class="era-keyword-head">
-                <strong>${esc(era.period || era.era_id)} · ${esc(era.name || '')}</strong>
-                <small>${eventCount} events</small>
+                <strong>${esc(period || era.era_id)} · ${esc(era.name || '')}</strong>
+                <small>${loc3WorkCount ? `LOC3 ${loc3WorkCount} 首` : 'LOC3 尚無正式分析'}</small>
               </div>
               <div class="era-keyword-chips">
-                ${entries.length
-                  ? entries.map(([tag,count]) => `<span class="era-keyword-chip">${esc(tag)} <b>×${count}</b></span>`).join('')
-                  : '<span class="era-source-note">尚無一般 Event 關鍵字</span>'}
+                ${loc3Keywords.length
+                  ? loc3Keywords.map(item => `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.percent)}%</b></span>`).join('')
+                  : '<span class="era-source-note">此時期尚無 LOC3 關鍵字分析</span>'}
               </div>
+              ${eventEntries.length ? `
+                <div class="era-source-note" style="margin-top:8px">一般 Event 補充（${eventCount} 筆）</div>
+                <div class="era-keyword-chips">
+                  ${eventEntries.map(([tag,count]) => `<span class="era-keyword-chip">${esc(tag)} <b>×${count}</b></span>`).join('')}
+                </div>
+              ` : ''}
             </article>
           `;
         }).join('');
@@ -1082,10 +1112,14 @@
 
       if (els.eraTrendStrip) {
         els.eraTrendStrip.innerHTML = ordered.map((era, i) => {
-          const topKeywords = [...(stats.get(era.era_id) || new Map()).entries()]
-            .sort((a,b) => b[1]-a[1])
-            .slice(0,4)
-            .map(([tag]) => tag);
+          const period = String(era.period || '');
+          const loc3 = loc3PeriodMap.get(period);
+          const topKeywords = Array.isArray(loc3?.normalized_top_keywords)
+            ? loc3.normalized_top_keywords.slice(0,4).map(item => item.term)
+            : [...(stats.get(era.era_id) || new Map()).entries()]
+                .sort((a,b) => b[1]-a[1])
+                .slice(0,4)
+                .map(([tag]) => tag);
           return `
             ${i ? '<div class="era-trend-arrow">→</div>' : ''}
             <article class="era-trend-node ${era.status === 'current' ? 'current' : ''}">
@@ -1104,16 +1138,20 @@
         const sourceRange = era.source_active_start
           ? `${era.source_active_start || '—'}～${era.source_active_end || '現在'}`
           : '';
-        const entries = [...(stats.get(era.era_id) || new Map()).entries()]
-          .sort((a,b) => b[1]-a[1])
-          .slice(0,6);
+        const period = String(era.period || '');
+        const loc3 = loc3PeriodMap.get(period);
+        const entries = Array.isArray(loc3?.normalized_top_keywords)
+          ? loc3.normalized_top_keywords.slice(0,6).map(item => [item.term, item.percent + '%'])
+          : [...(stats.get(era.era_id) || new Map()).entries()]
+              .sort((a,b) => b[1]-a[1])
+              .slice(0,6);
         return `
           <article class="era-row">
             <div class="era-range">${esc(era.start_date || '—')}<br>～ ${esc(end)}</div>
             <div>
               <div class="era-name">${esc(era.display_label || era.name || era.period || '')}</div>
               <div class="era-desc">${esc(era.state_after || era.description || '')}</div>
-              ${entries.length ? `<div class="era-keyword-chips">${entries.map(([tag,count]) => `<span class="era-keyword-chip">${esc(tag)} <b>×${count}</b></span>`).join('')}</div>` : ''}
+              ${entries.length ? `<div class="era-keyword-chips">${entries.map(([tag,count]) => `<span class="era-keyword-chip">${esc(tag)} <b>${String(count).includes("%") ? esc(count) : "×" + esc(count)}</b></span>`).join('')}</div>` : ''}
               ${sourceRange ? `<div class="era-source-note">Suno 原始活躍範圍（來源參考）：${esc(sourceRange)}</div>` : ''}
             </div>
           </article>
