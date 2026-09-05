@@ -29,7 +29,9 @@
     "P1 must not be used to calibrate rune-song thresholds or rank candidates.",
     "Songs created on or after 2026-06-11 are excluded from rune-song recovery because the physical deck was unavailable for that workflow.",
     "The 2026-06-10 boundary date is handled by explicit song-level confirmation, not blanket exclusion.",
-    "Explicit author rejection overrides keyword density, distinct-rune count, date overlap, and semantic similarity."
+    "Explicit author rejection overrides keyword density, distinct-rune count, date overlap, and semantic similarity.",
+    "Rune-song recovery is limited to P2, P3, and P4.",
+    "P1 and P5–P8 are hard exclusions for rune-song candidate generation."
   ],
   "confirmed_records": [
     {
@@ -273,12 +275,17 @@
       "LW0124 看見之後"
     ],
     "excluded_periods": [
-      "P1"
+      "P1",
+      "P5",
+      "P6",
+      "P7",
+      "P8"
     ],
-    "temporal_cutoff": {
-      "excluded_from": "2026-06-11",
-      "reason": "no physical rune deck for rune-song workflow"
-    }
+    "allowed_candidate_periods": [
+      "P2",
+      "P3",
+      "P4"
+    ]
   },
   "recovery_clues": [
     {
@@ -851,11 +858,29 @@
     {
       "period": "P1",
       "status": "excluded",
-      "reason": "Author confirms early P1 songs were not created through the rune-song / OW3gs process.",
+      "reason": "Author confirms early P1 songs were not rune-derived.",
       "handling": [
         "exclude_from_rune_song_candidates",
         "exclude_from_threshold_calibration",
-        "exclude_from_positive_and_negative_training_mix_for_rune_song_recovery"
+        "exclude_from_rune_song_recovery_ranking"
+      ],
+      "source": "author clarification",
+      "confidence": "confirmed"
+    },
+    {
+      "period": "P5+",
+      "status": "excluded",
+      "covers": [
+        "P5",
+        "P6",
+        "P7",
+        "P8"
+      ],
+      "reason": "Author confirms rune-song creation only occurred during P2–P4; later periods are outside the rune-song workflow.",
+      "handling": [
+        "exclude_from_rune_song_candidates",
+        "exclude_from_threshold_calibration",
+        "exclude_from_rune_song_recovery_ranking"
       ],
       "source": "author clarification",
       "confidence": "confirmed"
@@ -866,7 +891,7 @@
       "exclusion_id": "NO-PHYSICAL-DECK-AFTER-2026-06-10",
       "start_date": "2026-06-11",
       "end_date": "present",
-      "status": "excluded",
+      "status": "superseded_by_period_scope",
       "reason": "Author confirms songs created after 2026-06-10 were not rune songs because the physical rune deck was no longer available for that songwriting workflow.",
       "handling": [
         "exclude_from_rune_song_candidates",
@@ -875,7 +900,25 @@
       ],
       "boundary_note": "Songs dated 2026-06-10 are not excluded solely by this date rule; explicit song-level author confirmation governs that date.",
       "source": "author clarification",
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "note": "Retained as historical context; authoritative recovery scope is P2–P4 only."
     }
-  ]
+  ],
+  "period_scope": {
+    "allowed_candidate_periods": [
+      "P2",
+      "P3",
+      "P4"
+    ],
+    "excluded_periods": [
+      "P1",
+      "P5",
+      "P6",
+      "P7",
+      "P8"
+    ],
+    "rule": "Only songs in P2, P3, or P4 can be considered rune-song candidates.",
+    "source": "author clarification",
+    "confidence": "confirmed"
+  }
 }
