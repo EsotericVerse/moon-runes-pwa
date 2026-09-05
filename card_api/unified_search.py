@@ -59,6 +59,7 @@ class UnifiedSearchEngine:
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
+        self.lots = self._load_json("lots.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
         path = self.shared_root / name
@@ -72,6 +73,100 @@ class UnifiedSearchEngine:
     @staticmethod
     def _allowed(content_type: str, wanted: str) -> bool:
         return not wanted or wanted == "all" or content_type == wanted
+
+    def _oracle_result(self, query: str) -> tuple[list[dict[str, Any]], str]:
+        """Parse natural-language single-rune queries such as 愛情 + 心半正 and return Lots first."""
+        q = _normalize(query)
+        category_aliases = {
+            "愛情": ["愛情", "感情", "戀愛", "曖昧", "伴侶"],
+            "事業": ["事業", "工作", "職涯", "職場", "創業"],
+            "關係": ["關係", "人際", "友情", "親情", "社交"],
+            "健康": ["健康", "身體", "身心", "壓力", "休息"],
+        }
+        category = next((name for name, aliases in category_aliases.items() if any(alias in q for alias in aliases)), None)
+
+        direction = None
+        for label, aliases in [
+            ("半正位", ["半正位", "半正"]),
+            ("半逆位", ["半逆位", "半逆"]),
+            ("正位", ["正位"]),
+            ("逆位", ["逆位"]),
+        ]:
+            if any(alias in q for alias in aliases):
+                direction = label
+                break
+
+        rune = None
+        for item in sorted(self.runes, key=lambda row: len(str(row.get("名稱") or row.get("符文名稱") or "")), reverse=True):
+            name = str(item.get("名稱") or item.get("符文名稱") or "")
+            if name and name in q:
+                rune = item
+                break
+
+        if not (category and direction and rune):
+            return [], query
+
+        name = rune.get("名稱") or rune.get("符文名稱")
+        lots_item = next((item for item in self.lots.get("items", []) if item.get("名稱") == name), None)
+        poem = (((lots_item or {}).get("方向") or {}).get(direction) or {}).get(category)
+        if not poem:
+            return [], query
+
+        direction_field = {
+            "正位": "正向表示",
+            "半正位": "半正向表示",
+            "半逆位": "半逆向表示",
+            "逆位": "逆向表示",
+        }.get(direction)
+        direction_text = rune.get(direction_field) if direction_field else None
+
+        raw_terms = [
+            name,
+            category,
+            direction,
+            poem,
+            rune.get("顯化形式"),
+            rune.get("關鍵詞"),
+            direction_text,
+            self.lots.get("categories", {}).get(category),
+        ]
+        extension_terms = []
+        for value in raw_terms:
+            if not value:
+                continue
+            for term in re.split(r"[・、，,；;／/\s]+", str(value)):
+                term = term.strip()
+                if term and term not in extension_terms:
+                    extension_terms.append(term)
+
+        result = {
+            "result_id": f"LOT-{lots_item.get('編號')}-{direction}-{category}",
+            "system_id": "lo3rwang",
+            "primary_loc": "LOC1",
+            "related_locs": ["LOC3", "LOC4", "LOC5", "LOC6", "LOC7", "LOC8"],
+            "content_type": "lot_result",
+            "group": "oracle",
+            "title": f"{name} · {direction} · {category}",
+            "summary": poem,
+            "score": 1.0,
+            "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune64.xlsx#Lots", "note": "via data/shared/lots.json"}],
+            "payload": {
+                "rune_number": lots_item.get("編號"),
+                "rune_name": name,
+                "direction": direction,
+                "question_category": category,
+                "lot": poem,
+                "direction_text": direction_text,
+                "rune_moon": rune.get("月相") or rune.get("符文月相"),
+                "manifestation": rune.get("顯化形式"),
+                "keywords": rune.get("關鍵詞"),
+                "extension_terms": extension_terms[:16],
+                "display_order": ["lot", "direction_text", "extension_terms"],
+            },
+        }
+
+        expansion_query = " ".join(extension_terms[:10])
+        return [result], expansion_query or query
 
     def _knowledge_asset_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "knowledge", "knowledge_document"}:
@@ -380,20 +475,23 @@ class UnifiedSearchEngine:
         filters = filters or {}
         wanted = (content_type or "").strip().lower()
 
-        faq = self._faq_results(query, top_k, wanted)
-        documents = self._knowledge_asset_results(query, top_k, wanted)
-        music, linked_media = self._music_results(query, top_k, wanted, filters)
-        textworks = self._loc4_results(query, top_k, wanted)
-        direct_media = self._media_registry_results(query, top_k, wanted)
+        oracle, expanded_query = self._oracle_result(query)
+        retrieval_query = expanded_query if oracle else query
+        faq = self._faq_results(retrieval_query, top_k, wanted)
+        documents = self._knowledge_asset_results(retrieval_query, top_k, wanted)
+        music, linked_media = self._music_results(retrieval_query, top_k, wanted, filters)
+        textworks = self._loc4_results(retrieval_query, top_k, wanted)
+        direct_media = self._media_registry_results(retrieval_query, top_k, wanted)
         media_by_id = {}
         for item in [*direct_media, *linked_media]:
             media_by_id[item.get("result_id")] = item
         media = list(media_by_id.values())[:top_k]
-        relationships = self._relationship_results(query, top_k, wanted)
-        runes = self._rune_results(query, top_k, wanted)
-        eras = self._era_results(query, top_k, wanted)
+        relationships = self._relationship_results(retrieval_query, top_k, wanted)
+        runes = self._rune_results(retrieval_query, top_k, wanted)
+        eras = self._era_results(retrieval_query, top_k, wanted)
 
         groups = {
+            "oracle": oracle,
             "runes": runes,
             "works": music,
             "textworks": textworks,
