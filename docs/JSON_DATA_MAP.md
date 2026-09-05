@@ -23,6 +23,8 @@
 - `LOC_ERA_REGISTRY.json`：ERA／時期 registry。
 - `LOC_CONTENT_TYPE_REGISTRY.json`：內容類型 registry。
 - `LOC_MEDIA_REGISTRY.json`：LOC5 媒體對應。
+- `LOC3_RUNE_SONG_REGISTRY.json`：真正符文歌曲的 provenance registry；confirmed 與 candidate 分開。
+- `LOC6_ERA_STYLE_EVIDENCE.json`：把 LOC3 metadata 依 ERA 聚合後回掛給 LOC6 的風格演變證據。
 - `LOC2_EVENT_REGISTRY.json`：LOC2 Scenario Corpus／Event Corpus；保存現行 Alpha Event 32 與情境語意角色。
 - `LOC6_DUAL_RUNE_RELATION_REGISTRY.json`：雙符文中性關係庫；不含抽牌因／果角色與四向結果。
 
