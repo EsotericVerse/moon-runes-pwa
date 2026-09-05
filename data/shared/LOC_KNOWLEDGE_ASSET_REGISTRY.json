@@ -230,6 +230,32 @@
         ]
       },
       "notes": "Stores neutral A+B relationships only. Cause/effect order, directions and question context are applied later by the LOC1 two-card interpretation layer."
+    },
+    {
+      "asset_id": "KA-LOC6-ZD-001",
+      "title": "LOC6 Zhengde Style Governance Guide",
+      "path": "docs/LOC6_ZHENGDE_STYLE.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC3",
+        "LOC4",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "zhengde_style_governance_and_style_evolution_guide",
+      "status": "current",
+      "authority_level": "governance_document",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "2026-09-05",
+      "updated_at": "2026-09-05",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Separates governance content from style state and defines evidence-based Stage Profiles for historical Zhengde Style evolution."
     }
   ]
 }
