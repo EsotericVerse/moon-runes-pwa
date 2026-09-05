@@ -928,43 +928,73 @@
       font-style: normal;
     }
 
-    .framework-map-button {
-      position:relative;
-      display:block;
-      width:100%;
-      padding:0;
-      overflow:hidden;
-      border:1px solid var(--loc-border);
-      border-radius:20px;
-      background:var(--loc-surface-soft);
-      color:var(--loc-text);
-      cursor:pointer;
-      box-shadow:var(--loc-shadow);
+    .sr-only {
+      position:absolute !important;
+      width:1px !important;
+      height:1px !important;
+      padding:0 !important;
+      margin:-1px !important;
+      overflow:hidden !important;
+      clip:rect(0,0,0,0) !important;
+      white-space:nowrap !important;
+      border:0 !important;
     }
 
-    .framework-map-button img {
+    .framework-map-section {
+      margin-top:34px;
+    }
+
+    .framework-map-stage {
+      position:relative;
+      overflow:hidden;
+      border:1px solid var(--loc-border);
+      border-radius:22px;
+      box-shadow:var(--loc-shadow);
+      background:var(--loc-surface);
+    }
+
+    .framework-map-stage img {
       display:block;
       width:100%;
       height:auto;
     }
 
-    .framework-map-button span {
+    .framework-hotspot {
       position:absolute;
-      left:14px;
-      bottom:14px;
-      padding:8px 12px;
-      border:1px solid rgba(255,255,255,.14);
+      min-width:54px;
+      padding:7px 10px;
+      border:1px solid rgba(255,255,255,.18);
       border-radius:999px;
-      background:rgba(4,12,26,.78);
+      background:rgba(5,15,30,.78);
       color:var(--loc-text);
-      font-size:.78rem;
-      font-weight:800;
+      font:inherit;
+      font-size:.72rem;
+      font-weight:900;
+      cursor:pointer;
       backdrop-filter:blur(8px);
+      box-shadow:0 6px 18px rgba(0,0,0,.22);
+      transform:translate(-50%,-50%);
+    }
+    .framework-hotspot:hover,
+    .framework-hotspot:focus-visible {
+      border-color:rgba(231,194,125,.8);
+      background:rgba(22,33,57,.94);
+      color:var(--loc-gold);
     }
 
-    .framework-map-button:hover,
-    .framework-map-button:focus-visible {
-      border-color:rgba(231,194,125,.62);
+    /* Eight stable click targets arranged around the framework image.
+       They act as the interactive layer even when the artwork itself changes. */
+    .framework-hotspot.h1 { left:18%; top:22%; }
+    .framework-hotspot.h2 { left:38%; top:18%; }
+    .framework-hotspot.h3 { left:62%; top:18%; }
+    .framework-hotspot.h4 { left:82%; top:22%; }
+    .framework-hotspot.h5 { left:18%; top:78%; }
+    .framework-hotspot.h6 { left:38%; top:82%; }
+    .framework-hotspot.h7 { left:62%; top:82%; }
+    .framework-hotspot.h8 { left:82%; top:78%; }
+
+    @media (max-width:720px){
+      .framework-hotspot { min-width:46px; padding:5px 7px; font-size:.64rem; }
     }
 
     .framework-modal[hidden] { display:none; }
@@ -1269,7 +1299,7 @@
           <a class="cta primary" href="result.html?mode=daily">今日抽一張</a>
           <a class="cta secondary" href="#rune-entry">開始問一件事</a>
           <a class="cta secondary" href="search.html?content_type=knowledge">搜尋文件／知識庫</a>
-          <a class="cta secondary" href="#framework-map">LOC1–8 框架圖</a>
+          <a class="cta secondary" href="#framework-map">查看 LOC1–8 框架圖</a>
         </div>
 
         <div class="version-row" aria-label="目前系統版本">
@@ -1726,38 +1756,22 @@
       <p class="loc-note"><strong>LOC2 目前為 Alpha，但已具備完整可展示骨架。</strong> 核心規則、Alpha Event 32、1–64 符文行為效果、八職業資料與 Web Alpha 都已存在；因此 LOC2 現在應視為可 Demo 的實際成品，而不是僅有概念。</p>
     </section>
 
-    <section class="section" id="framework-map" aria-labelledby="framework-image-title">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Framework Map · LOC1–8</p>
-          <h2 id="framework-image-title">一張圖，看懂月典的八個分發。</h2>
-        </div>
-        <p>首頁只保留完整框架圖。點圖開啟 LOC1–8 快速說明；LOC1／2 直接進入各自功能，LOC3–7 統一交給 LOC Search，LOC8 進入脈絡分析。</p>
-      </div>
-
-      <button class="framework-map-button" id="frameworkMapButton" type="button" aria-haspopup="dialog" aria-controls="framework-modal">
+        <section class="framework-map-section" id="framework-map" aria-labelledby="framework-image-title">
+      <h2 id="framework-image-title" class="sr-only">LOC1–8 月典框架圖</h2>
+      <div class="framework-map-stage" id="frameworkMapStage">
         <img
           src="pics/loc_framework_map.jpg"
-          alt="月典 LOC 架構圖：中央為月典與月符語意核心，周圍為 LOC1 到 LOC8 的不同分發。點擊可查看各分發說明。"
+          alt="月典 LOC1 到 LOC8 框架圖。圖上可點選 LOC1 到 LOC8 查看各分發說明。"
           loading="lazy"
         />
-        <span>點擊框架圖查看 LOC1–8 說明</span>
-      </button>
-
-      <div class="visual-links">
-        <a
-          href="pics/loc_runes_66_overview.jpg"
-          class="visual-link js-open-visual"
-          data-image="pics/loc_runes_66_overview.jpg"
-          data-title="月符 66 符文完整總覽圖"
-        >查看 66 符文完整總覽圖 →</a>
-
-        <a
-          href="pics/loc_system_overview.jpg"
-          class="visual-link js-open-visual"
-          data-image="pics/loc_system_overview.jpg"
-          data-title="LOC／月典全系統資訊圖"
-        >查看全系統資訊圖 →</a>
+        <button class="framework-hotspot h1" type="button" data-loc-open="LOC1">LOC1</button>
+        <button class="framework-hotspot h2" type="button" data-loc-open="LOC2">LOC2</button>
+        <button class="framework-hotspot h3" type="button" data-loc-open="LOC3">LOC3</button>
+        <button class="framework-hotspot h4" type="button" data-loc-open="LOC4">LOC4</button>
+        <button class="framework-hotspot h5" type="button" data-loc-open="LOC5">LOC5</button>
+        <button class="framework-hotspot h6" type="button" data-loc-open="LOC6">LOC6</button>
+        <button class="framework-hotspot h7" type="button" data-loc-open="LOC7">LOC7</button>
+        <button class="framework-hotspot h8" type="button" data-loc-open="LOC8">LOC8</button>
       </div>
     </section>
 
@@ -1900,7 +1914,7 @@
   <script>
     (() => {
       const modal = document.querySelector('#framework-modal');
-      const openButton = document.querySelector('#frameworkMapButton');
+      const openButtons = [...document.querySelectorAll('[data-loc-open]')];
       const closeButton = document.querySelector('#framework-modal-close');
       const kicker = document.querySelector('#framework-detail-kicker');
       const title = document.querySelector('#framework-detail-title');
@@ -1988,8 +2002,11 @@
         });
       }
 
-      function openModal(){
-        render('LOC1');
+      let lastFrameworkTrigger = null;
+
+      function openModal(key, trigger){
+        lastFrameworkTrigger = trigger || null;
+        render(key || 'LOC1');
         modal.hidden=false;
         document.body.style.overflow='hidden';
         closeButton.focus();
@@ -1998,10 +2015,12 @@
       function closeModal(){
         modal.hidden=true;
         document.body.style.overflow='';
-        openButton.focus();
+        lastFrameworkTrigger?.focus();
       }
 
-      openButton?.addEventListener('click',openModal);
+      openButtons.forEach(btn=>{
+        btn.addEventListener('click',()=>openModal(btn.dataset.locOpen,btn));
+      });
       closeButton?.addEventListener('click',closeModal);
       document.querySelectorAll('.framework-tab').forEach(btn=>{
         btn.addEventListener('click',()=>render(btn.dataset.locKey));
