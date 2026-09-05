@@ -111,7 +111,8 @@
       "reasoning_tags": [
         "沉默也能形成默契",
         "家庭關係的隱性協調"
-      ]
+      ],
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0091",
@@ -161,7 +162,8 @@
       "reasoning_tags": [
         "退無可退時必須前進",
         "建立邊界"
-      ]
+      ],
+      "lyric_category": "治理宣言型"
     },
     {
       "work_id": "E0131",
@@ -173,7 +175,8 @@
       "reasoning_tags": [
         "承受與界線",
         "界線不等於拒絕一切"
-      ]
+      ],
+      "lyric_category": "治理宣言型"
     },
     {
       "work_id": "E0133",
@@ -200,7 +203,8 @@
       "reasoning_tags": [
         "逃避也是一種面對",
         "平靜接受自己的選擇"
-      ]
+      ],
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0144",
@@ -211,7 +215,8 @@
       "author_note": "理性的開始說著，不管過去怎樣，現在你在我身旁。",
       "reasoning_tags": [
         "過去不否定當下關係"
-      ]
+      ],
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0147",
@@ -222,7 +227,8 @@
       "author_note": "也是理性的開始說，不管過去怎樣，現在你在我身旁。",
       "reasoning_tags": [
         "過去不否定當下關係"
-      ]
+      ],
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0190",
@@ -234,7 +240,8 @@
       "reasoning_tags": [
         "去人稱化觀察",
         "系統視角"
-      ]
+      ],
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0211",
@@ -266,7 +273,8 @@
       "author_note": "對於關係的理性探討。不管有沒有關係，我都站在這裡。",
       "reasoning_tags": [
         "關係有無不改變自我站位"
-      ]
+      ],
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0217",
@@ -284,7 +292,8 @@
       "reasoning_tags": [
         "感情需要互動",
         "單方投入只能形成獨角戲"
-      ]
+      ],
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0221",
@@ -295,7 +304,8 @@
       "reasoning_tags": [
         "感情需要互動",
         "單方投入只能形成獨角戲"
-      ]
+      ],
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0224",
@@ -307,7 +317,8 @@
       "reasoning_tags": [
         "相處需要雙方對齊",
         "關係需要互相配合"
-      ]
+      ],
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0226",
@@ -319,7 +330,8 @@
       "reasoning_tags": [
         "過去值得回味",
         "複合可以被理性評估"
-      ]
+      ],
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0260",
@@ -342,7 +354,8 @@
       "author_note": "進化的過程。理性情緒。",
       "reasoning_tags": [
         "進化是持續調整的過程"
-      ]
+      ],
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0279",
@@ -352,7 +365,8 @@
       "emotion_applicability": "optional",
       "start_state_hint": "勸世／勸導",
       "performance_mode": "choral",
-      "author_note": "勸世歌，合唱曲。"
+      "author_note": "勸世歌，合唱曲。",
+      "lyric_category": "勸戒論述型"
     },
     {
       "work_id": "E0304",
@@ -375,7 +389,8 @@
         "再等下去可能變得危險",
         "描述等待本身而非結論"
       ],
-      "author_note": "描述「等」的急迫，就是「再等下去就很危險」。沒有最終，只是在描述等這個動作。"
+      "author_note": "描述「等」的急迫，就是「再等下去就很危險」。沒有最終，只是在描述等這個動作。",
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0324",
@@ -401,7 +416,8 @@
         "無須辯解",
         "允許未知的存在"
       ],
-      "author_note": "存在就是理由，無須辯解。這是一段新的體悟，延伸為「我允許未知的存在」。"
+      "author_note": "存在就是理由，無須辯解。這是一段新的體悟，延伸為「我允許未知的存在」。",
+      "lyric_category": "思辨論述型"
     },
     {
       "work_id": "E0429",
@@ -419,7 +435,8 @@
         "邊界感",
         "責任有其限度"
       ],
-      "author_note": "描述邊界感，也是講道理的歌曲。"
+      "author_note": "描述邊界感，也是講道理的歌曲。",
+      "lyric_category": "治理宣言型"
     },
     {
       "work_id": "E0480",
@@ -433,7 +450,8 @@
         "存在無須辯解",
         "允許未知的存在"
       ],
-      "author_note": "空白也是世上物質存在的型態，無須辯解。這是一段新的體悟，延伸為「我允許未知的存在」。"
+      "author_note": "空白也是世上物質存在的型態，無須辯解。這是一段新的體悟，延伸為「我允許未知的存在」。",
+      "lyric_category": "思辨論述型"
     }
   ],
   "semantic_rules": {
