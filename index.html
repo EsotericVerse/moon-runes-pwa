@@ -740,6 +740,30 @@
 
     .link-list small { color: var(--loc-muted); }
 
+    .loc7-links {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .loc7-links a {
+      padding: 10px 12px;
+      border-radius: 12px;
+      align-items: center;
+      min-height: 54px;
+    }
+
+    .loc7-links span {
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+
+    .loc7-links small {
+      font-size: 0.7rem;
+      line-height: 1.25;
+      text-align: right;
+      white-space: nowrap;
+    }
+
     .framework {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -942,6 +966,7 @@
       .section-heading { align-items: flex-start; flex-direction: column; }
       .works-list { grid-template-columns: 1fr; }
       .framework { grid-template-columns: 1fr; }
+      .loc7-links { grid-template-columns: 1fr; }
       .draw-mode-grid { grid-template-columns: 1fr; }
       .hero-actions { align-items: stretch; flex-direction: column; }
       .cta { width: 100%; }
@@ -1413,7 +1438,7 @@
         <p>文字、圖片、PDF、DOCX、PPTX 與影片都可以成為 LOC7_KM 的 Knowledge Assets。</p>
       </div>
 
-      <ul class="link-list">
+      <ul class="link-list loc7-links">
         <li>
           <a href="faq.html">
             <span>LOC7 Knowledge Base 查詢</span>
