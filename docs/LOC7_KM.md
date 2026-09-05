@@ -146,7 +146,9 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 - LOC8 提供時間與人生階段。
 - LOC7 可做句型、向量、風格特徵與 stage comparison，但不得把 AI 重寫冒充歷史原文。
 
-「30 歲的政德會怎麼說／46 歲的政德會怎麼說」應建立在真實時期語料的 Stage Profile 上；在歷史原文尚未匯入前，只保留 schema，不自動生成 recorded profile。
+政德風的 Stage Profile 以 **ERA 為第一索引**。P1–P8 由 LOC8 的 `LOC_ERA_REGISTRY.json` 提供時間、階段描述與前後狀態；LOC6 再把歌曲、文章、語錄等文字證據掛回對應 ERA。年齡只作衍生 View。
+
+「30 歲的政德會怎麼說／46 歲的政德會怎麼說」應建立在 ERA＋真實歷史語料之上；在原文證據不足時，ERA description 只能產生 `inferred` profile，不得冒充 recorded style。
 
 ## 9. FAQ / RAG 現況
 
