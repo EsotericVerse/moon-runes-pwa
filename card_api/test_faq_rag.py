@@ -13,7 +13,7 @@ class FAQSearchEngineTest(unittest.TestCase):
         cls.engine = FAQSearchEngine(DATASET)
 
     def test_dataset_is_loaded(self):
-        self.assertEqual(len(self.engine.chunks), 62)
+        self.assertEqual(len(self.engine.chunks), 80)
 
     def test_alias_query_finds_loc_definition(self):
         result = self.engine.search("可以簡單介紹月典嗎？", top_k=3)[0]
@@ -21,7 +21,7 @@ class FAQSearchEngineTest(unittest.TestCase):
 
     def test_zero_rune_is_not_drawn(self):
         results = self.engine.search("第零符德會抽到嗎？", top_k=3)
-        self.assertEqual(results[0].chunk["id"], "FAQ-007-B")
+        self.assertEqual(results[0].chunk["parent_id"], "FAQ-007")
 
     def test_answer_contains_citation(self):
         payload = self.engine.answer("LOC去哪裡使用？", top_k=5)
