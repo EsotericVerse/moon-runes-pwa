@@ -102,22 +102,7 @@
       text-transform: uppercase;
     }
 
-    .hero h1 {
-      margin: 0;
-      max-width: 760px;
-      font-size: clamp(2.65rem, 7vw, 5.4rem);
-      line-height: 1.05;
-      letter-spacing: -0.045em;
-    }
-
-    .hero h1 span { color: var(--loc-gold); }
-
-    .hero-copy {
-      max-width: 760px;
-      margin: 20px 0 0;
-      color: var(--loc-muted);
-      font-size: clamp(1rem, 2vw, 1.15rem);
-    }
+    .hero > .loc-header { padding-top: 0; margin-bottom: 0; }
 
     .start-actions { margin-top:0; }
 
@@ -1381,10 +1366,11 @@
     <nav class="loc-global-nav" data-loc-nav data-page="home" aria-label="全站導覽"></nav>
 
     <header class="hero">
-      <div>
-        <p class="eyebrow">Luna Codex · Language System Framework</p>
-        <h1>不知道怎麼說，<br /><span>就先抽一張。</span></h1>
-        <p class="hero-copy">
+      <div class="loc-header">
+        <p class="loc-header-meta">LOC1–8 · Language System Framework · Luna Codex</p>
+        <h1 class="loc-header-title">LOC · 月典</h1>
+        <h2 class="loc-header-subtitle">不知道怎麼說，就先抽一張。</h2>
+        <p class="loc-header-copy">
           月典（LOC）是一套由月符自然生長出的語言系統框架。
           LOC1–8 分別承接符文、情境、音樂、文字、多媒體、治理、文字建築與脈絡分析，
           讓散落的語言可以被記錄、理解、關聯、搜尋，並持續演化。
