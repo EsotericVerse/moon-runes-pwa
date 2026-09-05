@@ -68,8 +68,8 @@ LOC 用於釐清問題、提供方向及協助理解結構，而不是替使用�
 
 - `docs/LOC_Canon.docx` 定義系統規則
 - `LunaRune64.xlsx` 保存結構化符文母資料
-- `64LunaRune.docx` 說明命運句與語法內容
-- `LunarRunesCardCut.pdf` 將系統輸出為可實際使用的紙本卡牌
+- `docs/64LunaRune.docx` 說明命運句與語法內容
+- `docs/LunarRunesCardCut.pdf` 將系統輸出為可實際使用的紙本卡牌
 
 ---
 
@@ -431,9 +431,9 @@ moon-runes-pwa/
 │       ├── JSON_DATA_MAP.md
 │       └── 其他發布文件
 ├── 📚 Canon、語法與母資料
-│   ├── LOC_Canon_0.5r.docx
-│   ├── 64LunaRune.docx
-│   ├── LunarRunesCardCut.pdf
+│   ├── docs/LOC_Canon.docx
+│   ├── docs/64LunaRune.docx
+│   ├── docs/LunarRunesCardCut.pdf
 │   └── LunaRune64.xlsx
 ├── 📱 PWA 與部署配置
 │   ├── manifest.json
