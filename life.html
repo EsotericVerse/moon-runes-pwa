@@ -1261,6 +1261,7 @@
             <div class="event-tools">
               <button class="btn ghost" type="button" data-action="edit" data-id="${esc(e.id)}">編輯</button>
               ${e.status !== 'archived' ? `<button class="btn ghost" type="button" data-action="archive" data-id="${esc(e.id)}">封存</button>` : ''}
+              <button class="btn ghost" type="button" data-action="delete" data-id="${esc(e.id)}">刪除</button>
             </div>
           </div>
         </article>
