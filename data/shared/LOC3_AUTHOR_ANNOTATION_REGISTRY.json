@@ -1,0 +1,278 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC3_AUTHOR_ANNOTATION_REGISTRY",
+  "authority": "LOC3",
+  "updated_at": "2026-09-05",
+  "purpose": "Author-confirmed overrides and semantic notes for LOC3 works. These records override heuristic missing-tag flags without inventing unsupported labels.",
+  "emotion_model": {
+    "rule": "Emotion is optional. Rational/expository/system-observation songs may be complete without an emotion tag.",
+    "applicability": [
+      "required",
+      "optional",
+      "not_primary",
+      "not_required"
+    ],
+    "discourse_modes": [
+      "rational_discourse",
+      "rational_reflection",
+      "system_observation",
+      "state_description",
+      "narrative_scene",
+      "self_encouragement",
+      "poetic_experiment",
+      "general_song"
+    ],
+    "completion_rule": "A work with emotion_applicability=not_primary or not_required must not be counted as unresolved merely because emotion tags are empty."
+  },
+  "records": [
+    {
+      "work_id": "E0068",
+      "title": "反",
+      "analysis_policy": "exception_excluded",
+      "author_note": "例外歌。"
+    },
+    {
+      "work_id": "E0070",
+      "title": "自私自利",
+      "analysis_policy": "exception_excluded",
+      "author_note": "例外歌。"
+    },
+    {
+      "work_id": "E0071",
+      "title": "白",
+      "analysis_policy": "exception_excluded",
+      "author_note": "例外歌。"
+    },
+    {
+      "work_id": "E0074",
+      "title": "討厭的感覺",
+      "analysis_policy": "exception_excluded",
+      "author_note": "例外歌。"
+    },
+    {
+      "work_id": "E0075",
+      "title": "脫去一切煩惱與憂愁",
+      "analysis_policy": "exception_excluded",
+      "author_note": "例外歌。"
+    },
+    {
+      "work_id": "E0079",
+      "title": "藉口",
+      "analysis_policy": "include",
+      "discourse_mode": "poetic_experiment",
+      "emotion_applicability": "not_required",
+      "author_note": "對「藉口」兩個字的無限延伸。"
+    },
+    {
+      "work_id": "E0080",
+      "title": "柴米油鹽醬醋茶",
+      "analysis_policy": "include",
+      "discourse_mode": "general_song",
+      "author_note": "當幸福化作日常。"
+    },
+    {
+      "work_id": "E0086",
+      "title": "原地的自己",
+      "analysis_policy": "include",
+      "discourse_mode": "self_encouragement",
+      "emotion_applicability": "optional",
+      "author_note": "自我勉勵要往前走。"
+    },
+    {
+      "work_id": "E0087",
+      "title": "曙光",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_reflection",
+      "emotion_applicability": "optional",
+      "author_note": "看到曙光的瞬間。一天夜晚又過了，白天又來了。時間匆匆的感嘆。"
+    },
+    {
+      "work_id": "E0088",
+      "title": "檯面上的沈默",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_discourse",
+      "emotion_applicability": "not_primary",
+      "author_note": "檯面上的沉默，檯面下的默契。不可多言但彼此有默契。這是寫我的家庭關係。"
+    },
+    {
+      "work_id": "E0091",
+      "title": "我等你",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_reflection",
+      "emotion_applicability": "optional",
+      "author_note": "等待一個未知的可能。"
+    },
+    {
+      "work_id": "E0098",
+      "title": "微月光(fin)",
+      "analysis_policy": "include",
+      "discourse_mode": "general_song",
+      "author_note": "祈求的微月光。若我是那道光，會在誰心上綻放？Fin 表示在 P2 時候的微月光系列，選擇這首為主角。",
+      "series_role": "P2 微月光系列主角曲"
+    },
+    {
+      "work_id": "E0108",
+      "title": "春日甦醒-refresh",
+      "analysis_policy": "include",
+      "discourse_mode": "general_song",
+      "author_note": "歌頌春天的到來。"
+    },
+    {
+      "work_id": "E0127",
+      "title": "行風未歇",
+      "analysis_policy": "include",
+      "discourse_mode": "poetic_experiment",
+      "emotion_applicability": "optional",
+      "author_note": "文言文的嘗試。微月光的等待。等待過客到來。"
+    },
+    {
+      "work_id": "E0128",
+      "title": "最後一線",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_reflection",
+      "emotion_applicability": "not_primary",
+      "author_note": "退到最後已經沒有退路，為了不想成為無名屍只能勇往前進。早期微月光時期，邊界感的建立。"
+    },
+    {
+      "work_id": "E0131",
+      "title": "概括承受",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_discourse",
+      "emotion_applicability": "not_primary",
+      "author_note": "不管怎樣的罵我都承受，也是探討邊界感。"
+    },
+    {
+      "work_id": "E0133",
+      "title": "未眠之歌",
+      "analysis_policy": "include",
+      "discourse_mode": "state_description",
+      "emotion_applicability": "required",
+      "author_note": "因為心事繁雜而失眠，心中煩悶。",
+      "emotion_hint": [
+        "煩悶"
+      ]
+    },
+    {
+      "work_id": "E0141",
+      "title": "為了逃避而逃避",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_reflection",
+      "emotion_applicability": "required",
+      "author_note": "逃避也是面對的一種。心中平靜的覺悟。",
+      "emotion_hint": [
+        "平靜",
+        "覺悟"
+      ]
+    },
+    {
+      "work_id": "E0144",
+      "title": "此刻的唯一",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_discourse",
+      "emotion_applicability": "not_primary",
+      "author_note": "理性的開始說著，不管過去怎樣，現在你在我身旁。"
+    },
+    {
+      "work_id": "E0147",
+      "title": "此刻唯一",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_discourse",
+      "emotion_applicability": "not_required",
+      "author_note": "也是理性的開始說，不管過去怎樣，現在你在我身旁。"
+    },
+    {
+      "work_id": "E0190",
+      "title": "微月光旁的結案星",
+      "analysis_policy": "include",
+      "discourse_mode": "system_observation",
+      "emotion_applicability": "not_required",
+      "author_note": "歌詞內沒有任何你我他的主詞。以一種系統特別的理性角度來看待。"
+    },
+    {
+      "work_id": "E0211",
+      "title": "意識退潮時",
+      "analysis_policy": "include",
+      "discourse_mode": "state_description",
+      "emotion_applicability": "not_primary",
+      "author_note": "幻聽的狀態。"
+    },
+    {
+      "work_id": "E0212",
+      "title": "百鬼夜行remixed",
+      "analysis_policy": "include",
+      "discourse_mode": "narrative_scene",
+      "emotion_applicability": "not_required",
+      "related_locs": [
+        "LOC4"
+      ],
+      "loc4_relation": "《月語者》開場場景／OP",
+      "recommendation_policy": "promote",
+      "author_note": "這是特色曲。小說月語者的一開始就是這一幕。算是 OP。"
+    },
+    {
+      "work_id": "E0213",
+      "title": "都不偏",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_discourse",
+      "emotion_applicability": "not_required",
+      "author_note": "對於關係的理性探討。不管有沒有關係，我都站在這裡。"
+    },
+    {
+      "work_id": "E0217",
+      "title": "不是你的劇本",
+      "analysis_policy": "include",
+      "preprocessing_override": "remove_intercharacter_whitespace_before_keyword_analysis",
+      "author_note": "歌詞中間要先去除空白，所以才找不到關鍵字。去除歌詞字跟字中間的空白就有了。"
+    },
+    {
+      "work_id": "E0220",
+      "title": "獨角戲",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_reflection",
+      "author_note": "感情需要互動。所以一個人只能孤單演獨角戲。"
+    },
+    {
+      "work_id": "E0221",
+      "title": "獨角戲",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_reflection",
+      "author_note": "歌詞同上。"
+    },
+    {
+      "work_id": "E0224",
+      "title": "對齊之前",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_discourse",
+      "emotion_applicability": "not_required",
+      "author_note": "理性的說，相處要兩個人彼此互相配合。講道理的理性情緒。"
+    },
+    {
+      "work_id": "E0226",
+      "title": "斷點之後",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_discourse",
+      "emotion_applicability": "not_required",
+      "author_note": "理性的說，過去值得回味，所以嘗試複合如何？"
+    },
+    {
+      "work_id": "E0260",
+      "title": "03:47",
+      "analysis_policy": "include",
+      "discourse_mode": "state_description",
+      "emotion_applicability": "required",
+      "author_note": "03:47 的昏厥。神經病系。恐慌症發作。情緒慌張。",
+      "emotion_hint": [
+        "慌張",
+        "恐慌"
+      ]
+    },
+    {
+      "work_id": "E0266",
+      "title": "高空壓縮",
+      "analysis_policy": "include",
+      "discourse_mode": "rational_reflection",
+      "emotion_applicability": "not_required",
+      "author_note": "進化的過程。理性情緒。"
+    }
+  ]
+}
