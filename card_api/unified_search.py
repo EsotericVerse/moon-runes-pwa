@@ -55,6 +55,8 @@ class UnifiedSearchEngine:
         self.system = self._load_json("LOC_LANGUAGE_SYSTEM_REGISTRY.json")
         self.eras = self._load_json("LOC_ERA_REGISTRY.json")
         self.content_types = self._load_json("LOC_CONTENT_TYPE_REGISTRY.json")
+        self.relationships = self._load_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
+        self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
         path = self.shared_root / name
@@ -153,6 +155,48 @@ class UnifiedSearchEngine:
                 })
         return music, media
 
+    def _relationship_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+        if wanted not in {"", "all", "relationship", "article", "reel", "lyrics_work"}:
+            return []
+        q = _normalize(query)
+        loc4_by_id = {item.get("work_id"): item for item in self.loc4.get("works", [])}
+        output = []
+        for rel in self.relationships.get("relationships", []):
+            aliases = [rel.get("canonical_key", ""), *rel.get("aliases", [])]
+            if not any(_normalize(alias) and _normalize(alias) in q for alias in aliases):
+                continue
+
+            targets = []
+            for target in rel.get("targets", []):
+                item = dict(target)
+                if target.get("primary_loc") == "LOC4":
+                    work = loc4_by_id.get(target.get("work_ref"), {})
+                    item["summary"] = work.get("summary")
+                    item["tags"] = work.get("tags", [])
+                targets.append(item)
+
+            output.append({
+                "result_id": rel.get("relationship_id"),
+                "system_id": "lo3rwang",
+                "primary_loc": "LOC7",
+                "related_locs": ["LOC3", "LOC4", "LOC5", "LOC6"],
+                "content_type": "relationship",
+                "group": "relationships",
+                "title": rel.get("canonical_key"),
+                "summary": rel.get("relation_summary"),
+                "score": 1.0,
+                "source_refs": [],
+                "payload": {
+                    "source": rel.get("source"),
+                    "targets": targets,
+                    "keywords": rel.get("keywords", []),
+                    "direction": rel.get("direction"),
+                    "relation_type": rel.get("relation_type"),
+                    "loc6_interpretation": rel.get("loc6_interpretation"),
+                },
+            })
+        return output[:top_k]
+
     def _rune_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if not self._allowed("rune_record", wanted):
             return []
@@ -232,12 +276,14 @@ class UnifiedSearchEngine:
 
         faq = self._faq_results(query, top_k, wanted)
         music, media = self._music_results(query, top_k, wanted, filters)
+        relationships = self._relationship_results(query, top_k, wanted)
         runes = self._rune_results(query, top_k, wanted)
         eras = self._era_results(query, top_k, wanted)
 
         groups = {
             "runes": runes,
             "works": music,
+            "relationships": relationships,
             "media": media,
             "knowledge": faq,
             "timeline": eras,
@@ -253,9 +299,9 @@ class UnifiedSearchEngine:
                 "LOC1": "live",
                 "LOC2": "knowledge-view-only",
                 "LOC3": "live",
-                "LOC4": "registry-ready-corpus-pending",
+                "LOC4": "relationship-linked-catalog-live",
                 "LOC5": "live-via-media-registry",
-                "LOC6": "knowledge-view-only-corpus-pending",
+                "LOC6": "relationship-interpretation-live",
                 "LOC7": "live",
                 "LOC8": "live-era",
             },
