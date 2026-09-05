@@ -42,7 +42,8 @@
     { date:'2026-09-04', kind:'主抽', rune:'玉', direction:'半正位' },
     { date:'2026-09-05', kind:'主抽', rune:'樹', direction:'半正位' },
     { date:'2026-09-05', kind:'補抽', rune:'病', direction:'逆位' },
-    { date:'2026-09-06', kind:'主抽', rune:'玄', direction:'半正位' }
+    { date:'2026-09-06', kind:'主抽', rune:'玄', direction:'半正位' },
+    { date:'2026-09-07', kind:'主抽', rune:'鍊', direction:'半正位' }
   ];
 
   function esc(value='') {
