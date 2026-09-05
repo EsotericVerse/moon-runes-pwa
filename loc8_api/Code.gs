@@ -11,7 +11,7 @@ function doGet(e) {
     const userId = String((e && e.parameter && e.parameter.user_id) || '').trim();
 
     if (action === 'health') {
-      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.7' });
+      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.8' });
     }
 
     if (action === 'users') {
@@ -77,6 +77,27 @@ function doPost(e) {
       if (!id) throw new Error('Missing daily draw id');
       deleteObjectById_(DAILY_DRAW_SHEET, id, userId);
       return json_({ ok: true, id: id, action: 'delete_daily_draw' });
+    }
+
+    if (action === 'batch_update_daily_draws') {
+      const items = Array.isArray(body.daily_draws) ? body.daily_draws : [];
+      if (!items.length) throw new Error('Missing daily draws');
+      const updated = items.map(raw => {
+        const id = String(raw.id || '').trim();
+        if (!id) throw new Error('Missing daily draw id');
+        const draw = normalizeDailyDraw_(raw);
+        draw.id = id;
+        return updateObjectById_(DAILY_DRAW_SHEET, id, draw, draw.user_id);
+      });
+      return json_({ ok: true, updated: updated.length, daily_draws: updated, action: 'batch_update_daily_draws' });
+    }
+
+    if (action === 'batch_delete_daily_draws') {
+      const ids = Array.isArray(body.ids) ? body.ids.map(v => String(v || '').trim()).filter(Boolean) : [];
+      const userId = String(body.user_id || '').trim();
+      if (!ids.length) throw new Error('Missing daily draw ids');
+      const deleted = deleteObjectsByIds_(DAILY_DRAW_SHEET, ids, userId);
+      return json_({ ok: true, deleted: deleted, action: 'batch_delete_daily_draws' });
     }
 
     if (action === 'migrate_daily_draws') {
@@ -293,6 +314,37 @@ function updateObjectById_(sheetName, id, patch, expectedUserId) {
     const result = {};
     headers.forEach((h, i) => result[h] = row[i]);
     return result;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function deleteObjectsByIds_(sheetName, ids, expectedUserId) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getSheet_(sheetName);
+    const headers = getHeaders_(sheet);
+    const idCol = headers.indexOf('id');
+    const userCol = headers.indexOf('user_id');
+    if (idCol < 0) throw new Error(sheetName + ' has no id column');
+
+    const wanted = {};
+    ids.forEach(id => wanted[String(id)] = true);
+    const values = sheet.getDataRange().getDisplayValues();
+    const rows = [];
+
+    for (let r = 1; r < values.length; r++) {
+      const id = String(values[r][idCol] || '').trim();
+      if (!wanted[id]) continue;
+      if (expectedUserId && userCol >= 0 && String(values[r][userCol] || '').trim() !== String(expectedUserId).trim()) {
+        throw new Error('Daily draw owner mismatch');
+      }
+      rows.push(r + 1);
+    }
+
+    rows.sort((a,b) => b-a).forEach(row => sheet.deleteRow(row));
+    return rows.length;
   } finally {
     lock.releaseLock();
   }
