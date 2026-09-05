@@ -546,6 +546,140 @@
         ]
       },
       "notes": "Maintained current-state knowledge asset. Separates Stable decisions, Working items, Pending gaps and Demo priorities so future changes do not require reconstructing architecture from chat history."
+    },
+    {
+      "asset_id": "KA-IMG-LOC-FRAMEWORK-001",
+      "title": "LOC／月典框架總覽圖",
+      "path": "pics/loc_framework_map.jpg",
+      "source_type": "image",
+      "content_type": "knowledge_image",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "loc_framework_overview_visual",
+      "status": "current",
+      "authority_level": "derived_overview",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "2026-09-05",
+      "updated_at": "2026-09-05",
+      "keywords": [
+        "LOC",
+        "月典",
+        "框架",
+        "語言系統框架",
+        "LOC1–8",
+        "月之符文",
+        "架構圖",
+        "系統架構"
+      ],
+      "notes": "月典整體框架視覺總覽；適合搜尋 LOC 架構、LOC1–8 與月之符文關係時直接顯示。"
+    },
+    {
+      "asset_id": "KA-IMG-LUNAR-RUNES-001",
+      "title": "月之符文 66 符文完整總覽圖",
+      "path": "pics/loc_runes_66_overview.jpg",
+      "source_type": "image",
+      "content_type": "knowledge_image",
+      "primary_loc": "LOC1",
+      "related_locs": [
+        "LOC5",
+        "LOC7"
+      ],
+      "role": "luna_runes_66_visual_overview",
+      "status": "current",
+      "authority_level": "derived_from_mother_data",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "2026-09-05",
+      "updated_at": "2026-09-05",
+      "keywords": [
+        "月之符文",
+        "Luna Runes",
+        "66符文",
+        "符文總覽",
+        "符文卡",
+        "LOC1",
+        "Seed Corpus"
+      ],
+      "notes": "66 月符的完整視覺總覽，作為 LOC Reference Seed System 的圖片型知識資產。"
+    },
+    {
+      "asset_id": "KA-IMG-LOC-SYSTEM-001",
+      "title": "LOC／月典全系統資訊圖",
+      "path": "pics/loc_system_overview.jpg",
+      "source_type": "image",
+      "content_type": "knowledge_image",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "loc_system_information_visual",
+      "status": "current",
+      "authority_level": "derived_overview",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "2026-09-05",
+      "updated_at": "2026-09-05",
+      "keywords": [
+        "LOC全系統",
+        "月典",
+        "系統總覽",
+        "語言系統",
+        "LOC1–8",
+        "知識圖",
+        "RAG"
+      ],
+      "notes": "LOC 全系統資訊圖，適合做整體系統介紹與搜尋結果中的視覺知識摘要。"
+    },
+    {
+      "asset_id": "KA-IMG-LOC-CYCLE-001",
+      "title": "LOC 語言演化運作循環圖",
+      "path": "pics/loc_operation_cycle.jpg",
+      "source_type": "image",
+      "content_type": "knowledge_image",
+      "primary_loc": "LOC8",
+      "related_locs": [
+        "LOC1",
+        "LOC3",
+        "LOC4",
+        "LOC6",
+        "LOC7"
+      ],
+      "role": "language_evolution_operation_cycle_visual",
+      "status": "current",
+      "authority_level": "derived_overview",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "2026-09-05",
+      "updated_at": "2026-09-05",
+      "keywords": [
+        "語言演化",
+        "運作循環",
+        "未知",
+        "月符抽取",
+        "作品形成",
+        "句型解析",
+        "文字建築",
+        "事件",
+        "時間",
+        "趨勢",
+        "關係"
+      ],
+      "notes": "以視覺方式呈現從未知、月符、作品、治理、知識到事件與時間再重新理解的循環；可作 LOC8 關係／趨勢分析的視覺知識資產。"
     }
   ]
 }
