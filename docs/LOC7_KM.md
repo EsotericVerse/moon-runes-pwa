@@ -189,6 +189,28 @@ LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/shared/
 
 LOC3 版本推薦分數另外納入跨媒介完成度：IG Reels +20、YouTube MV +30，兩者可累加。這些 bonus 只影響同詞版本的推薦順序，不進歌詞語意向量，也不改變 rune_song provenance 判定。
 
+### LOC3 道理／命題層
+
+LOC3 不把「情緒」視為每首歌曲的必填語意。部分政德風歌曲以理性論述、系統觀察、關係規則、界線判斷或治理命題為核心；對這類歌曲，真正可檢索的語意可能主要存在於「道理句」而非情緒詞。
+
+Structured schema：`data/shared/LOC3_REASONING_SCHEMA.json`
+
+分析至少可拆成：
+- 主張／論點
+- 理由／依據
+- 因果
+- 條件
+- 界線
+- 治理
+- 關係規則
+- 判斷
+- 反轉／重框
+- 結論
+
+這類作品可使用 `discourse_mode = rational_discourse | rational_reflection | system_observation`，並允許 `emotion_applicability = not_primary | not_required`。當情緒不適用時，不得再把「沒有情緒 tag」計為未完成分析。
+
+對理性論述型歌曲，`reasoning_tags` 與 `key_propositions` 在檢索上的重要性應至少等同、必要時高於情緒 tag。LOC3 保存歌曲語意，LOC6 可解讀其中的治理／政德風命題，LOC7 再處理命題結構、文字建築與向量檢索。
+
 LOC3 語系治理：**非中文歌曲暫不進行中文關鍵字／主題／情緒的補標與人工複查。** 英文、日文、韓文等作品保留語言、曲風、ERA、媒體資產與基本作品 metadata；待未來建立各語系詞庫後再進行語意 tag 分析。混合語言若主要語言判定為中文，仍可納入中文解析，但需保留 mixed-language 標記。
 
 LOC3 實驗例外治理：**代表歌名長度超過 16 字元的作品，視為早期／測試性生成例外，不納入正式 LOC3 分析、中文 tag 補標、一般搜尋、展示與推薦。** 這些作品保留原始檔與基本歷史 metadata，但不應被計入「LOC3 未完成分析」統計。另有作者明確指定的玩票例外也採相同處理；目前 E0216《啾咪十八歲》已列入此類。
