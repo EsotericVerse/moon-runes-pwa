@@ -24,8 +24,9 @@ Suno 播放數與喜歡數只用於同詞版本內的推薦順序。
 只保存分析後的摘要、標籤、轉折欄位、分類與版本資料。
 
 媒體連結另存於 `card_api/data/LOC3_MEDIA_LINKS_v0.1.json`。Instagram Reels
-只作為版本層的 30 秒預覽；IG 點閱、Suno 播放與未來 YouTube MV 觀看數
-維持為三套獨立指標，不會寫進歌詞語意向量。
+與 YouTube MV 都屬版本層的跨媒介完成度證據，不會寫進歌詞語意向量；但若版本已有
+IG Reels，版本推薦分數加 20；已有 YouTube MV，加 30。兩者可累加。IG 點閱、
+Suno 播放與 YouTube MV 觀看數仍維持為獨立指標。
 
 ## 篩選值
 
