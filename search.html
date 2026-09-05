@@ -35,9 +35,11 @@
         <div class="filters">
           <select id="contentType">
             <option value="">全部內容</option>
-            <option value="rune_record">月符</option>
-            <option value="lyrics_work">歌曲／歌詞</option>
-            <option value="reel">Reels／影片</option>
+            <option value="rune_record">基本符文</option>
+            <option value="suno_song">Suno 歌曲</option>
+            <option value="lyrics_work">歌詞</option>
+            <option value="text_work">文字作品</option>
+            <option value="multimedia">多媒體作品</option>
             <option value="knowledge">文件／知識庫</option>
             <option value="era">ERA／時間</option>
           </select>
@@ -55,7 +57,7 @@
   <script>
     const API='https://moon-runes-pwa.onrender.com';
     const prompts=['自我治理','人生月台','自由之後不知道往哪裡','界線與拒絕','微月光','月符的語言系統'];
-    const labels={runes:'月符',works:'歌曲／文字作品',relationships:'跨 LOC 關聯',media:'影音／Reels',knowledge:'知識／分析',timeline:'ERA／時間'};
+    const labels={oracle:'籤詩結果',runes:'月符',works:'Suno 歌曲／歌詞',textworks:'文字作品',relationships:'跨 LOC 關聯',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'ERA／時間'};
     const locLabels={LOC1:'LOC1 · Lots',LOC3:'LOC3 · Music',LOC4:'LOC4 · Writing',LOC5:'LOC5 · Resonance',LOC6:'LOC6 · Governance',LOC7:'LOC7 · Text Architecture',LOC8:'LOC8 · Integration'};
     const el=id=>document.getElementById(id);
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -65,7 +67,7 @@
       const q=p.get('q')||'';
       if(type&&[...el('contentType').options].some(o=>o.value===type)) el('contentType').value=type;
       if(q) el('query').value=q;
-      const music=['','lyrics_work','reel'].includes(el('contentType').value);
+      const music=['','suno_song','lyrics_work','multimedia'].includes(el('contentType').value);
       el('period').disabled=!music;el('category').disabled=!music;el('playlist').disabled=!music;
       if(q) el('searchForm').requestSubmit();
     }
@@ -81,6 +83,10 @@
       if(r.content_type==='era')out.push('<a class="secondary" href="life.html">時間線專頁</a>');
       return out.length?`<div class="links">${out.join('')}</div>`:'';
     }
+    function oracleCard(r){
+      const p=r.payload||{},terms=p.extension_terms||[];
+      return `<article class="card"><div class="meta"><span class="pill">LOC1 · Lots</span><span class="pill">${esc(p.rune_name||'')} · ${esc(p.direction||'')}</span><span class="pill">${esc(p.question_category||'')}</span></div><h3>籤詩：${esc(p.lot||r.summary||'')}</h3>${p.direction_text?`<p class="summary"><strong>方位語意：</strong>${esc(p.direction_text)}</p>`:''}${terms.length?`<p class="summary"><strong>延伸字樣：</strong>${terms.map(esc).join(' · ')}</p>`:''}</article>`;
+    }
     function musicCard(r){
       const p=r.payload||{},score=Number(r.score||0),v=p.recommended_version||{},keys=(p.matched_terms?.length?p.matched_terms:(p.semantic_keywords||p.tags||[])).slice(0,8);
       const melody=v.style_prompt?`<details><summary>旋律／編曲資訊</summary><p class="summary">${esc(v.style_prompt)}</p></details>`:'';
@@ -93,8 +99,8 @@
       return `<article class="card"><div class="meta"><span class="pill">跨 LOC 關聯</span><span class="pill">${esc(p.direction||'')}</span></div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}<div class="meta"><span class="pill">${esc(src.primary_loc||'LOC3')}：${esc(src.title||'')}</span>${targets.map(t=>`<span class="pill">${esc(t.primary_loc||'')}：${esc(t.title||'')}${t.chapter_count?` · ${t.chapter_count}章`:''}</span>`).join('')}</div>${kw.length?`<p class="summary"><strong>關鍵字：</strong>${kw.map(esc).join(' · ')}</p>`:''}${loc6.label?`<p class="summary"><strong>LOC6：</strong>${esc(loc6.label)} — ${esc(loc6.note||'')}</p>`:''}</article>`}
     }
 
-    function render(groups){const order=['runes','works','relationships','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='relationships'?relationshipCard:(key==='works'?musicCard:card);html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
-    el('contentType').addEventListener('change',()=>{const music=['','lyrics_work','reel'].includes(el('contentType').value);el('period').disabled=!music;el('category').disabled=!music;el('playlist').disabled=!music});
+    function render(groups){const order=['oracle','runes','works','textworks','relationships','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='oracle'?oracleCard:(key==='relationships'?relationshipCard:(key==='works'?musicCard:card));html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
+    el('contentType').addEventListener('change',()=>{const music=['','suno_song','lyrics_work','multimedia'].includes(el('contentType').value);el('period').disabled=!music;el('category').disabled=!music;el('playlist').disabled=!music});
     el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時間……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value,category:el('category').value,playlist:el('playlist').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
     quick();facets();bootFromUrl();
     if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'));
