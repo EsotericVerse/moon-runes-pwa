@@ -35,9 +35,47 @@
       "tags": "semantic tags",
       "provenance": "shared provenance object",
       "rights": "shared rights object",
-      "lifecycle": "shared lifecycle object"
+      "lifecycle": "shared lifecycle object",
+      "chapter_count": "number of chapters when work is a series",
+      "relationship_refs": "cross-LOC relationship IDs"
     }
   },
-  "works": [],
+  "works": [
+    {
+      "work_id": "LOC4-READ-RECEIPT",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC3",
+        "LOC5",
+        "LOC6",
+        "LOC7"
+      ],
+      "title": "已讀不回",
+      "content_type": "article",
+      "chapter_count": 6,
+      "summary": "由同名歌曲核心語意延伸成六章文章；文字與歌曲共同處理等待、訊息、回應與關係中的沉默。",
+      "tags": [
+        "已讀不回",
+        "等待",
+        "訊息",
+        "關係",
+        "回應",
+        "沉默",
+        "情緒權威"
+      ],
+      "relationship_refs": [
+        "REL-LOC3-LOC4-READ-RECEIPT"
+      ],
+      "source_refs": [],
+      "provenance": {
+        "derived_from": "LOC3:E0189",
+        "direction": "LOC3_to_LOC4"
+      },
+      "lifecycle": {
+        "status": "catalogued"
+      }
+    }
+  ],
   "migration_note": "Registry reserved now to avoid schema migration after the LOC4 corpus is imported. Existing writing corpus is not silently reconstructed here."
 }
