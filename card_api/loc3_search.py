@@ -165,6 +165,14 @@ class LOC3SearchEngine:
             raise ValueError("LOC3 work IDs and lyric hashes must be unique")
 
         self.dataset = payload.get("dataset", {})
+        relationship_path = dataset_path.parents[2] / "data" / "shared" / "LOC_CROSS_RELATIONSHIP_REGISTRY.json"
+        if relationship_path.exists():
+            try:
+                self.relationships = json.loads(relationship_path.read_text(encoding="utf-8")).get("relationships", [])
+            except Exception:
+                self.relationships = []
+        else:
+            self.relationships = []
         self.works = works
         self._features = [_features(str(work.get("retrieval_text", ""))) for work in works]
         document_frequency: Counter[str] = Counter()
@@ -266,6 +274,26 @@ class LOC3SearchEngine:
             for rank, (score, _, work, matched) in enumerate(scored[:limit], start=1)
             if score >= 0.018
         ]
+
+    def related_bundle(self, query: str) -> list[dict[str, Any]]:
+        normalized = _normalize(query)
+        bundles = []
+        for rel in self.relationships:
+            aliases = [rel.get("canonical_key", ""), *rel.get("aliases", [])]
+            if not any(_normalize(alias) and _normalize(alias) in normalized for alias in aliases):
+                continue
+            bundles.append({
+                "relationship_id": rel.get("relationship_id"),
+                "canonical_key": rel.get("canonical_key"),
+                "source": rel.get("source"),
+                "targets": rel.get("targets", []),
+                "relation_type": rel.get("relation_type"),
+                "direction": rel.get("direction"),
+                "relation_summary": rel.get("relation_summary"),
+                "keywords": rel.get("keywords", []),
+                "loc6_interpretation": rel.get("loc6_interpretation"),
+            })
+        return bundles
 
     def facets(self) -> dict[str, list[dict[str, Any]]]:
         fields = {"periods": "period", "eras": "era_name", "playlists": "playlists", "categories": "category", "styles": "style"}
