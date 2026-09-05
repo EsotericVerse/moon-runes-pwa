@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "LOC｜月典｜Unified Search × 月之符文",
+  "name": "LOC｜月典｜個人語言系統",
   "short_name": "LOC 月典",
-  "description": "以 lo3rwang／政德風語言系統為基礎，整合月符、作品、媒體、知識與時間語意搜尋。",
+  "description": "LOC（月典）是一套由月之符文自然生長出的個人語言系統框架，涵蓋符文、情境、音樂、文字、多媒體、治理、文字建築與脈絡分析。",
   "lang": "zh-Hant",
   "start_url": "/",
   "scope": "/",
