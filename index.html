@@ -1115,6 +1115,47 @@
       color:var(--loc-gold);
     }
 
+    .framework-resources {
+      display:grid;
+      gap:8px;
+      margin-top:14px;
+    }
+    .framework-resource-title {
+      color:var(--loc-text);
+      font-size:.76rem;
+      font-weight:900;
+      letter-spacing:.04em;
+    }
+    .framework-resource-link {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 12px;
+      border:1px solid var(--loc-border);
+      border-radius:12px;
+      background:rgba(255,255,255,.025);
+      color:var(--loc-text);
+      text-decoration:none;
+    }
+    .framework-resource-link:hover,
+    .framework-resource-link:focus-visible {
+      border-color:rgba(231,194,125,.62);
+      background:rgba(255,255,255,.045);
+    }
+    .framework-resource-link strong {
+      display:block;
+      color:var(--loc-gold);
+      font-size:.82rem;
+    }
+    .framework-resource-link small {
+      display:block;
+      margin-top:2px;
+      color:var(--loc-muted);
+      font-size:.7rem;
+      line-height:1.35;
+    }
+
     .framework-detail .route {
       margin-top:12px;
       padding:10px 12px;
@@ -1631,6 +1672,7 @@
         <h3 id="framework-detail-title">符文抽籤</h3>
         <p id="framework-detail-copy"></p>
         <ul class="framework-extra" id="framework-detail-extra"></ul>
+        <div class="framework-resources" id="framework-detail-resources"></div>
         <div class="route" id="framework-detail-route"></div>
         <a class="cta primary" id="framework-detail-link" href="result.html?mode=daily">進入 LOC1</a>
       </div>
@@ -1659,6 +1701,7 @@
       const title = document.querySelector('#framework-detail-title');
       const copy = document.querySelector('#framework-detail-copy');
       const extra = document.querySelector('#framework-detail-extra');
+      const resources = document.querySelector('#framework-detail-resources');
       const route = document.querySelector('#framework-detail-route');
       const link = document.querySelector('#framework-detail-link');
 
@@ -1710,6 +1753,11 @@
             '代表實驗：《月語者》與多篇短中篇作品。',
             '功能：從主題、情境與角色語意搜尋文字作品。'
           ],
+          resources:[
+            {label:'《月語者》',href:'https://vocus.cc/article/6829d52cfd8978000109b281',meta:'長篇小說 · 代表性符文創作實驗',external:true},
+            {label:'《一日情人》',href:'https://vocus.cc/article/683721cefd897800012c2488',meta:'短篇關係敘事',external:true},
+            {label:'《已讀不回》',href:'https://vocus.cc/article/6a4f6d82fd89780001ec1c93',meta:'六章文字作品 · 跨 LOC3/5',external:true}
+          ],
           href:'search.html?content_type=text_work&q=LOC4%20文字%20小說%20文章',
           label:'用 LOC Search 查看 LOC4'
         },
@@ -1723,6 +1771,10 @@
             '功能：連接 LOC3 音樂與 LOC4 文字，觀察視覺／聲音／文字的共振。',
             '目前：已有公開影音作品作為驗證。'
           ],
+          resources:[
+            {label:'月之符文宣傳 Reels 01',href:'https://www.instagram.com/reel/DMA9yDAzeRK/',meta:'LOC1 × LOC5 · 公開影音作品',external:true},
+            {label:'月之符文宣傳 Reels 02',href:'https://www.instagram.com/reel/DMA-ZxLTINw/',meta:'LOC1 × LOC5 · 公開影音作品',external:true}
+          ],
           href:'search.html?content_type=multimedia&q=LOC5%20多媒體%20圖像%20影音',
           label:'用 LOC Search 查看 LOC5'
         },
@@ -1734,7 +1786,12 @@
           extra:[
             '核心：人生觀、價值觀、治理語句與「政德風」演變。',
             '現階段：治理自己——自由之後的邊界、取捨、收尾與航向管理。',
-            '功能：將經驗整理成可再次使用的語言。'
+            '分析範例：同一句治理語句，可比較不同年齡／ERA 的語氣、邊界、取捨方式與句法變化。',
+            '代表句：「價值觀的價值。」「免錢的最貴。」「我允許錯誤發生，只要錯的有價值。」'
+          ],
+          resources:[
+            {label:'政德風：完整治理指南',href:'docs/LOC6_ZHENGDE_STYLE.md',meta:'治理核心 · Stage Profile · 風格演變'},
+            {label:'政德風：語言演變分析',href:'docs/LOC6_ZHENGDE_STYLE_ANALYSIS.md',meta:'從感性書寫到自我治理的分析範例'}
           ],
           href:'search.html?q=LOC6%20政德風%20治理%20自我治理',
           label:'用 LOC Search 查看 LOC6'
@@ -1748,6 +1805,13 @@
             '內容：Text Architecture、KM、FAQ、RAG、Unified Search。',
             '角色：管理可搜尋的知識資產與文字結構，而不是取代創作本身。',
             '目前：3–7 已由同一個 Search 入口統合，只用不同關鍵字與資料類型切入。'
+          ],
+          resources:[
+            {label:'LOC7_KM.md',href:'docs/LOC7_KM.md',meta:'KM 主文件 · Markdown-first'},
+            {label:'JSON_DATA_MAP.md',href:'docs/JSON_DATA_MAP.md',meta:'JSON 角色與同步方向'},
+            {label:'LOC Canon 0.5r',href:'docs/LOC_Canon.docx',meta:'核心定義與治理基準',download:true},
+            {label:'命運句語法圖鑑',href:'docs/64LunaRune.docx',meta:'符文四向語意與命運句語法',download:true},
+            {label:'實體月符卡 PDF',href:'docs/LunarRunesCardCut.pdf',meta:'可列印牌組',download:true}
           ],
           href:'search.html?content_type=knowledge&q=LOC7%20文字建築%20KM%20RAG',
           label:'用 LOC Search 查看 LOC7'
@@ -1771,6 +1835,18 @@
         title.textContent=item.title;
         copy.textContent=item.copy;
         extra.innerHTML=(item.extra||[]).map(text=>'<li>'+text+'</li>').join('');
+        resources.innerHTML=(item.resources||[]).length
+          ? '<div class="framework-resource-title">保留內容／直接連結</div>' +
+            (item.resources||[]).map(resource=>{
+              const attrs=[
+                resource.external ? 'target="_blank" rel="noopener noreferrer"' : '',
+                resource.download ? 'download' : ''
+              ].filter(Boolean).join(' ');
+              return '<a class="framework-resource-link" href="'+resource.href+'" '+attrs+'>'+
+                '<span><strong>'+resource.label+'</strong><small>'+resource.meta+'</small></span>'+
+                '<span aria-hidden="true">→</span></a>';
+            }).join('')
+          : '';
         route.textContent=item.route;
         link.href=item.href;
         link.textContent=item.label;
