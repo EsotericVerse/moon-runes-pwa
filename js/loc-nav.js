@@ -14,6 +14,18 @@
     return items.find(item => item.href === file)?.id || "";
   }
 
+  function loadPageEnhancements() {
+    const file = location.pathname.split("/").pop() || "index.html";
+    if (file !== "life.html") return;
+    if (document.querySelector('script[data-life-draw-history]')) return;
+
+    const script = document.createElement('script');
+    script.src = 'js/life-daily-draw-history.js';
+    script.defer = true;
+    script.dataset.lifeDrawHistory = 'true';
+    document.body.appendChild(script);
+  }
+
   async function renderNav(node) {
     try {
       const response = await fetch(NAV_URL, { cache: "no-store" });
@@ -45,5 +57,6 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("[data-loc-nav]").forEach(renderNav);
+    loadPageEnhancements();
   });
 })();
