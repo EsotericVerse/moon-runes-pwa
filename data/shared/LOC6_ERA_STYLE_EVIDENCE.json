@@ -18,7 +18,8 @@
     "These aggregates describe the indexed LOC3 corpus, not the entirety of all historical writing or speech.",
     "P1 is currently excluded from the public LOC3 search corpus and therefore has no LOC3 aggregate evidence here.",
     "Counts and tags are recorded metadata evidence; higher-level style interpretations remain LOC6 analysis.",
-    "ERA identity, dates and temporal state remain authoritative in data/shared/LOC_ERA_REGISTRY.json."
+    "ERA identity, dates and temporal state remain authoritative in data/shared/LOC_ERA_REGISTRY.json.",
+    "LOC3 reasoning_tags and discourse_mode are aggregated by ERA as recorded semantic evidence for LOC6 Zhengde Style analysis."
   ],
   "profiles": [
     {
@@ -32,7 +33,11 @@
       "top_final_states": [],
       "top_ending_structures": [],
       "evidence_source": "LOC3 lyrics search corpus",
-      "confidence": "no_loc3_search_corpus"
+      "confidence": "no_loc3_search_corpus",
+      "top_reasoning_tags": [],
+      "top_discourse_modes": [],
+      "reasoning_annotated_work_count": 0,
+      "rational_mode_work_count": 0
     },
     {
       "period": "P2",
@@ -266,7 +271,85 @@
         }
       ],
       "evidence_source": "LOC3 lyrics search corpus",
-      "confidence": "recorded_metadata_aggregate"
+      "confidence": "recorded_metadata_aggregate",
+      "top_reasoning_tags": [
+        {
+          "value": "家庭關係的隱性協調",
+          "count": 1
+        },
+        {
+          "value": "平靜接受自己的選擇",
+          "count": 1
+        },
+        {
+          "value": "幸福化為日常",
+          "count": 1
+        },
+        {
+          "value": "建立邊界",
+          "count": 1
+        },
+        {
+          "value": "承受與界線",
+          "count": 1
+        },
+        {
+          "value": "時間流逝",
+          "count": 1
+        },
+        {
+          "value": "概念重框",
+          "count": 1
+        },
+        {
+          "value": "沉默也能形成默契",
+          "count": 1
+        },
+        {
+          "value": "界線不等於拒絕一切",
+          "count": 1
+        },
+        {
+          "value": "等待不是停止",
+          "count": 1
+        },
+        {
+          "value": "等待保留未知可能性",
+          "count": 1
+        },
+        {
+          "value": "等待過客",
+          "count": 1
+        }
+      ],
+      "top_discourse_modes": [
+        {
+          "value": "rational_reflection",
+          "count": 4
+        },
+        {
+          "value": "general_song",
+          "count": 3
+        },
+        {
+          "value": "poetic_experiment",
+          "count": 2
+        },
+        {
+          "value": "rational_discourse",
+          "count": 2
+        },
+        {
+          "value": "self_encouragement",
+          "count": 1
+        },
+        {
+          "value": "state_description",
+          "count": 1
+        }
+      ],
+      "reasoning_annotated_work_count": 10,
+      "rational_mode_work_count": 6
     },
     {
       "period": "P3",
@@ -585,7 +668,77 @@
         }
       ],
       "evidence_source": "LOC3 lyrics search corpus",
-      "confidence": "recorded_metadata_aggregate"
+      "confidence": "recorded_metadata_aggregate",
+      "top_reasoning_tags": [
+        {
+          "value": "單方投入只能形成獨角戲",
+          "count": 2
+        },
+        {
+          "value": "感情需要互動",
+          "count": 2
+        },
+        {
+          "value": "過去不否定當下關係",
+          "count": 2
+        },
+        {
+          "value": "去人稱化觀察",
+          "count": 1
+        },
+        {
+          "value": "相處需要雙方對齊",
+          "count": 1
+        },
+        {
+          "value": "系統視角",
+          "count": 1
+        },
+        {
+          "value": "複合可以被理性評估",
+          "count": 1
+        },
+        {
+          "value": "進化是持續調整的過程",
+          "count": 1
+        },
+        {
+          "value": "過去值得回味",
+          "count": 1
+        },
+        {
+          "value": "關係有無不改變自我站位",
+          "count": 1
+        },
+        {
+          "value": "關係需要互相配合",
+          "count": 1
+        }
+      ],
+      "top_discourse_modes": [
+        {
+          "value": "rational_discourse",
+          "count": 5
+        },
+        {
+          "value": "rational_reflection",
+          "count": 3
+        },
+        {
+          "value": "state_description",
+          "count": 2
+        },
+        {
+          "value": "narrative_scene",
+          "count": 1
+        },
+        {
+          "value": "system_observation",
+          "count": 1
+        }
+      ],
+      "reasoning_annotated_work_count": 9,
+      "rational_mode_work_count": 9
     },
     {
       "period": "P4",
@@ -847,7 +1000,61 @@
         }
       ],
       "evidence_source": "LOC3 lyrics search corpus",
-      "confidence": "recorded_metadata_aggregate"
+      "confidence": "recorded_metadata_aggregate",
+      "top_reasoning_tags": [
+        {
+          "value": "以雨洗清傷痛",
+          "count": 1
+        },
+        {
+          "value": "允許未知的存在",
+          "count": 1
+        },
+        {
+          "value": "再等下去可能變得危險",
+          "count": 1
+        },
+        {
+          "value": "存在就是理由",
+          "count": 1
+        },
+        {
+          "value": "描述等待本身而非結論",
+          "count": 1
+        },
+        {
+          "value": "無須辯解",
+          "count": 1
+        },
+        {
+          "value": "等待具有風險",
+          "count": 1
+        },
+        {
+          "value": "雨停象徵療癒完成",
+          "count": 1
+        }
+      ],
+      "top_discourse_modes": [
+        {
+          "value": "narrative_scene",
+          "count": 1
+        },
+        {
+          "value": "rational_discourse",
+          "count": 1
+        },
+        {
+          "value": "rational_reflection",
+          "count": 1
+        },
+        {
+          "value": "state_description",
+          "count": 1
+        }
+      ],
+      "reasoning_annotated_work_count": 3,
+      "rational_mode_work_count": 2
     },
     {
       "period": "P5",
@@ -1120,7 +1327,29 @@
         }
       ],
       "evidence_source": "LOC3 lyrics search corpus",
-      "confidence": "recorded_metadata_aggregate"
+      "confidence": "recorded_metadata_aggregate",
+      "top_reasoning_tags": [
+        {
+          "value": "盡力與界線",
+          "count": 1
+        },
+        {
+          "value": "責任有其限度",
+          "count": 1
+        },
+        {
+          "value": "邊界感",
+          "count": 1
+        }
+      ],
+      "top_discourse_modes": [
+        {
+          "value": "rational_discourse",
+          "count": 1
+        }
+      ],
+      "reasoning_annotated_work_count": 1,
+      "rational_mode_work_count": 1
     },
     {
       "period": "P6",
@@ -1366,7 +1595,29 @@
         }
       ],
       "evidence_source": "LOC3 lyrics search corpus",
-      "confidence": "recorded_metadata_aggregate"
+      "confidence": "recorded_metadata_aggregate",
+      "top_reasoning_tags": [
+        {
+          "value": "允許未知的存在",
+          "count": 1
+        },
+        {
+          "value": "存在無須辯解",
+          "count": 1
+        },
+        {
+          "value": "空白也是存在的一種型態",
+          "count": 1
+        }
+      ],
+      "top_discourse_modes": [
+        {
+          "value": "rational_reflection",
+          "count": 1
+        }
+      ],
+      "reasoning_annotated_work_count": 1,
+      "rational_mode_work_count": 1
     },
     {
       "period": "P7",
@@ -1541,7 +1792,11 @@
         }
       ],
       "evidence_source": "LOC3 lyrics search corpus",
-      "confidence": "recorded_metadata_aggregate"
+      "confidence": "recorded_metadata_aggregate",
+      "top_reasoning_tags": [],
+      "top_discourse_modes": [],
+      "reasoning_annotated_work_count": 0,
+      "rational_mode_work_count": 0
     },
     {
       "period": "P8",
@@ -1643,7 +1898,11 @@
         }
       ],
       "evidence_source": "LOC3 lyrics search corpus",
-      "confidence": "recorded_metadata_aggregate"
+      "confidence": "recorded_metadata_aggregate",
+      "top_reasoning_tags": [],
+      "top_discourse_modes": [],
+      "reasoning_annotated_work_count": 0,
+      "rational_mode_work_count": 0
     }
   ]
 }
