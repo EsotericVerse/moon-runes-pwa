@@ -27,8 +27,6 @@
     .hero{padding:26px 0 20px}.eyebrow{margin:0;color:var(--purple);font-size:.76rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
     h1{margin:7px 0 10px;font-size:clamp(2rem,5vw,4rem);line-height:1.1}.lead{margin:0;max-width:820px;color:var(--muted)}
     .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:24px 0 16px}
-    .search{flex:1 1 260px;min-height:44px;padding:10px 14px;border:1px solid var(--line);border-radius:13px;color:var(--text);background:var(--surface2);outline:none}
-    .search:focus{border-color:rgba(231,194,125,.58)}
     .filter{min-height:44px;padding:9px 12px;border:1px solid var(--line);border-radius:13px;color:var(--text);background:#10233f}
     .count{margin-left:auto;color:var(--muted);font-size:.84rem}
     .rune-grid{display:grid;gap:16px}
@@ -127,8 +125,7 @@
     <section aria-label="符文清單">
       <p style="margin:0 0 12px;color:var(--muted);font-size:.86rem;">八個組別不只分類符文主題，也會影響解讀時的語氣與敘述方向。以下每一列都標示其主要語氣特徵。</p>
       <div class="toolbar">
-        <input class="search" id="rune-search" type="search" placeholder="搜尋符文名稱、英文或編號…" autocomplete="off" />
-        <select class="filter" id="group-filter" aria-label="依分組篩選">
+        <select class="filter" id="group-filter" aria-label="依分組瀏覽">
           <option value="">全部分組</option>
           <option value="靈魂">靈魂</option><option value="連結">連結</option><option value="生命">生命</option><option value="自然">自然</option>
           <option value="礦物">礦物</option><option value="元素">元素</option><option value="秩序">秩序</option><option value="無序">無序</option>
