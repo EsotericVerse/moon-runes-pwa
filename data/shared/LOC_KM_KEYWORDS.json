@@ -233,6 +233,22 @@
             "LOC8"
           ],
           "status": "Working"
+        },
+        {
+          "term": "README.md",
+          "aliases": [
+            "README",
+            "專案說明",
+            "系統總覽",
+            "進度總覽",
+            "repository documentation"
+          ],
+          "loc_scope": [
+            "LOC7",
+            "global"
+          ],
+          "status": "Stable",
+          "note": "README 為 LOC7_KM 的可檢索 Knowledge Asset，承載現行系統總覽、實作入口與進度摘要；屬衍生總覽，不取代 Canon 或母資料。"
         }
       ]
     },
@@ -823,5 +839,15 @@
     "KM-08 每個使用者的 Personal Graph 必須隔離",
     "KM-09 知識可以演化，但必須留下版本歷史",
     "KM-10 FAQ 是 View，不是 Knowledge Base 本身"
+  ],
+  "knowledge_assets": [
+    {
+      "asset_id": "KA-README-001",
+      "path": "README.md",
+      "role": "system_overview_and_progress_view",
+      "status": "current",
+      "authority_level": "derived_overview",
+      "note": "README is part of LOC7_KM retrieval scope but does not override Canon or mother data."
+    }
   ]
 }
