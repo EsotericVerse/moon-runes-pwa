@@ -87,7 +87,7 @@
 
     .hero {
       display: grid;
-      grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
       gap: 28px;
       align-items: center;
       padding: clamp(36px, 7vw, 84px) 0 42px;
@@ -139,7 +139,7 @@
 
     .hero-note {
       position: relative;
-      min-height: 300px;
+      min-height: clamp(260px, 28vw, 320px);
       padding: 28px;
       overflow: hidden;
       border: 1px solid var(--loc-border);
@@ -151,8 +151,9 @@
     }
 
     .moon {
-      width: 150px;
-      height: 150px;
+      width: clamp(118px, 12vw, 150px);
+      aspect-ratio: 1;
+      height: auto;
       margin: 6px auto 24px;
       border-radius: 50%;
       background:
