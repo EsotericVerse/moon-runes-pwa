@@ -1,7 +1,9 @@
-# LOC7 FAQ API v0.1
+# LOC7 FAQ API
 
-LOC7 的第一個公開模組，以 40 題已確認 FAQ 切分為 62 個檢索片段。
+LOC7 Knowledge View 的公開 API。現行 runtime 使用 FAQ/RAG v0.3：80 題 FAQ source view 與其原子化檢索資料。
 模組與既有 FastAPI 服務共同部署，不修改 `/divination` 的抽牌流程。
+
+KM 治理主文件：`../docs/LOC7_KM.md`。FAQ 是 KM 的問答 View，RAG JSON 是檢索衍生資料，不取代 Canon。
 
 ## `POST /faq/search`
 
