@@ -1,0 +1,573 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC2_EVENT_REGISTRY",
+  "authority": "LOC2",
+  "status": "working",
+  "updated_at": "2026-09-05",
+  "purpose": "Structured Scenario Corpus / Event Corpus for LOC2. Events model situations people can encounter and are not limited to game-effect semantics.",
+  "source_refs": [
+    "loc2.html",
+    "docs/LOC2_SCENARIO_MODEL.md"
+  ],
+  "grammar_note": {
+    "dual_card": "A → B causal structure is the minimal LOC2 scenario grammar.",
+    "alpha_requirement": "SL / ML / NE / OC requirement signatures are Alpha quick-evaluation data and must not be treated as fixed rune-pair mappings."
+  },
+  "rules": [
+    "Preserve Event titles, groups, requirement signatures and descriptions from the current Alpha source.",
+    "Do not invent rune pair mappings that are not explicitly defined upstream.",
+    "LOC2 owns scenario-event definitions; LOC4, LOC6, LOC7 and LOC8 may consume or analyze them.",
+    "Scenario handling is a semantic framing aid, not an automatic real-world decision."
+  ],
+  "corpus_summary": {
+    "event_count": 32,
+    "stage": "Alpha",
+    "semantic_role": "real_life_scenario_prototypes"
+  },
+  "records": [
+    {
+      "event_id": "E01",
+      "title": "記憶",
+      "event_group": "靈魂",
+      "requirement_signature": "SL + SL",
+      "description": "過去重新浮現。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E02",
+      "title": "自我懷疑",
+      "event_group": "靈魂",
+      "requirement_signature": "SL + OC",
+      "description": "你開始質疑自己的定義。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E03",
+      "title": "真實表達",
+      "event_group": "靈魂",
+      "requirement_signature": "SL + ML",
+      "description": "必須說出真正的想法。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E04",
+      "title": "內在映照",
+      "event_group": "靈魂",
+      "requirement_signature": "SL + NE",
+      "description": "環境反映出你的狀態。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E05",
+      "title": "誤解",
+      "event_group": "連結",
+      "requirement_signature": "SL + ML",
+      "description": "訊息產生偏差。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E06",
+      "title": "合作",
+      "event_group": "連結",
+      "requirement_signature": "ML + ML",
+      "description": "單獨完成變得困難。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E07",
+      "title": "切斷",
+      "event_group": "連結",
+      "requirement_signature": "ML + OC",
+      "description": "某條連結必須結束。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E08",
+      "title": "重建關係",
+      "event_group": "連結",
+      "requirement_signature": "ML + NE",
+      "description": "關係進入新階段。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E09",
+      "title": "疾病",
+      "event_group": "生命",
+      "requirement_signature": "SL + NE",
+      "description": "系統需要修復。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E10",
+      "title": "康復",
+      "event_group": "生命",
+      "requirement_signature": "SL + ML",
+      "description": "開始回到正常軌道。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E11",
+      "title": "愛",
+      "event_group": "生命",
+      "requirement_signature": "SL + OC",
+      "description": "接受某種無法控制的情感。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E12",
+      "title": "韻律",
+      "event_group": "生命",
+      "requirement_signature": "SL + NE + ML",
+      "description": "找回自己的節奏。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E13",
+      "title": "發芽",
+      "event_group": "自然",
+      "requirement_signature": "NE + NE",
+      "description": "成長開始。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E14",
+      "title": "修剪",
+      "event_group": "自然",
+      "requirement_signature": "NE + ML",
+      "description": "去除不必要部分。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E15",
+      "title": "等待",
+      "event_group": "自然",
+      "requirement_signature": "NE + OC",
+      "description": "時機尚未成熟。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E16",
+      "title": "豐收",
+      "event_group": "自然",
+      "requirement_signature": "NE + ML + OC",
+      "description": "長期累積開始回收。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E17",
+      "title": "建立基礎",
+      "event_group": "礦物",
+      "requirement_signature": "ML + ML",
+      "description": "穩定優先。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E18",
+      "title": "資源不足",
+      "event_group": "礦物",
+      "requirement_signature": "ML + NE",
+      "description": "必須重新分配。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E19",
+      "title": "重建",
+      "event_group": "礦物",
+      "requirement_signature": "ML + OC",
+      "description": "舊結構失效。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E20",
+      "title": "結晶",
+      "event_group": "礦物",
+      "requirement_signature": "ML + SL + OC",
+      "description": "經驗開始固化。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E21",
+      "title": "火花",
+      "event_group": "元素",
+      "requirement_signature": "NE + OC",
+      "description": "新變化出現。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E22",
+      "title": "風向改變",
+      "event_group": "元素",
+      "requirement_signature": "NE + ML",
+      "description": "環境開始轉向。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E23",
+      "title": "洪流",
+      "event_group": "元素",
+      "requirement_signature": "NE + NE + OC",
+      "description": "變化超出預期。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E24",
+      "title": "平衡",
+      "event_group": "元素",
+      "requirement_signature": "NE + SL + ML",
+      "description": "多種力量需要協調。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E25",
+      "title": "選擇",
+      "event_group": "秩序",
+      "requirement_signature": "OC + ML",
+      "description": "必須取捨。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E26",
+      "title": "時機",
+      "event_group": "秩序",
+      "requirement_signature": "OC + NE",
+      "description": "不是不能做，而是何時做。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E27",
+      "title": "規則",
+      "event_group": "秩序",
+      "requirement_signature": "OC + ML + SL",
+      "description": "建立新的邊界。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E28",
+      "title": "定錨",
+      "event_group": "秩序",
+      "requirement_signature": "OC + OC",
+      "description": "做出不可逆決定。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E29",
+      "title": "偶然",
+      "event_group": "無序",
+      "requirement_signature": "OC + NE",
+      "description": "預期外事件發生。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E30",
+      "title": "幻象",
+      "event_group": "無序",
+      "requirement_signature": "OC + SL",
+      "description": "真假難辨。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E31",
+      "title": "空窗",
+      "event_group": "無序",
+      "requirement_signature": "OC + ML",
+      "description": "沒有明顯答案。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    },
+    {
+      "event_id": "E32",
+      "title": "未知來信",
+      "event_group": "無序",
+      "requirement_signature": "SL + ML + NE + OC",
+      "description": "世界要求全面回應。",
+      "content_type": "scenario_event",
+      "primary_loc": "LOC2",
+      "related_locs": [
+        "LOC1",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "status": "working"
+    }
+  ]
+}
