@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC4_TEXT_ANALYSIS_REGISTRY",
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
@@ -112,7 +112,8 @@
       "created_date": "2025-05-28",
       "period": "P1",
       "era_id": "ERA-P1",
-      "period_name": "Suno原型探索期"
+      "period_name": "Suno原型探索期",
+      "semantic_families": []
     },
     {
       "analysis_id": "LOC4-A-WRONG-PERSON",
@@ -196,7 +197,8 @@
       "created_date": "2025-05-19",
       "period": "P1",
       "era_id": "ERA-P1",
-      "period_name": "Suno原型探索期"
+      "period_name": "Suno原型探索期",
+      "semantic_families": []
     },
     {
       "analysis_id": "LOC4-A-MILK-PAPER-BOAT",
@@ -278,7 +280,11 @@
       "created_date": "2026-01-29",
       "period": "P3",
       "era_id": "ERA-P3",
-      "period_name": "微月光與關係敘事期"
+      "period_name": "微月光與關係敘事期",
+      "semantic_families": [
+        "光月意象"
+      ]
     }
-  ]
+  ],
+  "semantic_family_registry": "data/shared/LOC_SEMANTIC_FAMILY_REGISTRY.json"
 }
