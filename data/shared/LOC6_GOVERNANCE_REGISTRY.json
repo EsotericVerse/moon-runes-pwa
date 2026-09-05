@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC6_GOVERNANCE_REGISTRY",
   "authority": "LOC6",
   "language_system_id": "lo3rwang",
@@ -31,7 +31,8 @@
         "governance",
         "style_state",
         "stage_comparison",
-        "rights_governance"
+        "rights_governance",
+        "rune_interpretation"
       ],
       "source_refs": "evidence/source references",
       "confidence": [
@@ -51,5 +52,18 @@
     "licensing principles",
     "collaboration principles"
   ],
-  "boundary_note": "LOC6 interprets meaning and governance. It does not own grammar/syntax engineering or temporal event storage."
+  "boundary_note": "LOC6 interprets meaning, governance, style-state, and recorded rune-to-text realization. It does not own rune mother definitions, grammar/syntax engineering, or temporal event storage.",
+  "updated_at": "2026-09-05",
+  "rune_interpretation_corpus": {
+    "registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+    "work": "月語者",
+    "chapter_slots": 182,
+    "usable_records": 180,
+    "missing_source_records": [
+      "MR-V03-CH05",
+      "MR-V03-CH06"
+    ],
+    "role": "Primary historical evidence for how rune combinations were translated into narrative meaning in actual LOC writing practice.",
+    "ownership": "LOC6 interpretation; LOC1 rune semantics; LOC4 work container; LOC8 trajectory integration"
+  }
 }
