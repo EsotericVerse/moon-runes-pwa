@@ -578,6 +578,7 @@ async def faq_search(input: FAQSearchInput):
             "query": query,
             "count": len(results),
             "results": [result.as_dict() for result in results],
+            "related_bundles": searcher.related_bundle(query),
             "timestamp": datetime.now().isoformat()
         }
     except ValueError as e:
