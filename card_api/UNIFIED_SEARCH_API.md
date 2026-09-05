@@ -23,23 +23,30 @@ Example request:
 }
 ```
 
-Supported public content filters in v0.1:
+Supported public content filters in v0.1 include:
 
-- `rune_record` — LOC1
-- `lyrics_work` — LOC3
-- `reel` / `video` — LOC5 media references
-- `faq` — LOC7 Knowledge View
-- `era` — LOC8 temporal registry
+- `oracle` — LOC1 籤詩／單符問事
+- `rune_record` — LOC1 月符資料
+- `lyrics_work` — LOC3 音樂／歌詞
+- `text_work` / `article` — LOC4 文字作品
+- `reel` / `video` / `multimedia` — LOC5 media registry
+- `governance_fragment` — LOC6 治理／政德風語料
+- `knowledge` / `faq` — LOC7 KM／FAQ
+- `era` — LOC8 時期 registry（公開顯示為「時期」，machine ID 仍可使用 ERA-Px）
 - blank / `all` — query all live sources
 
 Response groups:
 
 ```text
-groups.runes      LOC1
-groups.works      LOC3
-groups.media      LOC5
-groups.knowledge  LOC7
-groups.timeline   LOC8
+groups.oracle         LOC1 Lots / 問事
+groups.runes          LOC1 月符
+groups.works          LOC3 音樂
+groups.textworks      LOC4 文字
+groups.relationships  Cross-LOC relationships
+groups.governance     LOC6 治理／政德風
+groups.media          LOC5 媒體
+groups.knowledge      LOC7 KM / FAQ
+groups.timeline       LOC8 時期
 ```
 
 Each result uses shared reference fields where available:
@@ -63,22 +70,22 @@ Scores remain source-local. Do not compare a LOC3 score numerically against a LO
 
 ### `GET /search/facets`
 
-Returns shared content types, ERA labels and currently available LOC3 facets for the advanced search UI.
+Returns shared content types, period/ERA registry labels and currently available facets for the advanced search UI. Public UI uses「時期」；stable machine IDs may remain `ERA-Px`.
 
 ## Current coverage
 
 | LOC | Unified Search v0.1 |
 |---|---|
-| LOC1 | Direct rune retrieval |
-| LOC2 | Knowledge View only; direct game corpus pending |
-| LOC3 | Direct lyrics/music retrieval |
-| LOC4 | Shared registry ready; corpus import pending |
-| LOC5 | Direct media references through shared media registry |
-| LOC6 | Shared registry ready; direct corpus pending |
-| LOC7 | Direct FAQ/KM retrieval |
-| LOC8 | Direct ERA retrieval |
+| LOC1 | Live: Lots/oracle + direct rune retrieval |
+| LOC2 | Knowledge View only; direct game corpus not yet routed as its own result group |
+| LOC3 | Live: direct lyrics/music retrieval |
+| LOC4 | Live: direct work registry search |
+| LOC5 | Live: direct media registry search |
+| LOC6 | Live: direct governance/政德風 registry search |
+| LOC7 | Live: FAQ/KM and registered knowledge assets |
+| LOC8 | Live: continuous period registry retrieval |
 
-The system intentionally returns no fabricated LOC4/LOC6 corpus results until those corpora are imported.
+Current backend coverage is reflected by `unified_search.py`. Shared search does not change canonical ownership, and source-local scores are not globally normalized.
 
 ## UI
 
