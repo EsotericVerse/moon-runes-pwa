@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_KNOWLEDGE_ASSET_REGISTRY",
   "authority": "LOC7_KM",
   "updated_at": "2026-09-05",
@@ -8,7 +8,9 @@
     "Registration as a knowledge asset does not make every statement Canon.",
     "Each asset keeps its own authority, status, provenance, and version context.",
     "README.md is a maintained system overview and progress/documentation view; it is not the highest-priority Canon source.",
-    "Canonical definitions remain governed by their designated mother sources and Canon documents."
+    "Canonical definitions remain governed by their designated mother sources and Canon documents.",
+    "Repository knowledge documents are Markdown-first; DOCX/PDF are publication or exchange snapshots unless separately designated as Canon.",
+    "Derived JSON, retrieval indexes, application views, and AI inference must not overwrite upstream Canon, mother data, or primary records."
   ],
   "assets": [
     {
@@ -41,7 +43,7 @@
     {
       "asset_id": "KA-KM-001",
       "title": "LOC7_KM",
-      "path": "docs/LOC7_KM.docx",
+      "path": "docs/LOC7_KM.md",
       "source_type": "document",
       "content_type": "knowledge_document",
       "primary_loc": "LOC7",
@@ -59,6 +61,88 @@
       "authority_level": "governance_document",
       "searchable": true,
       "index_priority": "high",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "version": "0.2",
+      "updated_at": "2026-09-05",
+      "notes": "Markdown-first maintainable KM source in the repository. DOCX is retained as a published snapshot."
+    },
+    {
+      "asset_id": "KA-KM-002",
+      "title": "LOC7_KM DOCX snapshot",
+      "path": "docs/LOC7_KM.docx",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "published_snapshot",
+      "status": "published",
+      "authority_level": "published_snapshot",
+      "searchable": true,
+      "index_priority": "medium",
+      "version": "0.1r",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Published/exchange snapshot retained for compatibility. The repository-maintained KM source is docs/LOC7_KM.md."
+    },
+    {
+      "asset_id": "KA-DOCS-001",
+      "title": "LOC Documentation Index",
+      "path": "docs/README.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "documentation_index",
+      "status": "current",
+      "authority_level": "derived_overview",
+      "searchable": true,
+      "index_priority": "medium",
+      "version": "2026-09-05",
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      }
+    },
+    {
+      "asset_id": "KA-DATA-001",
+      "title": "LOC JSON Data Map",
+      "path": "docs/JSON_DATA_MAP.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC3",
+        "LOC5",
+        "LOC8"
+      ],
+      "role": "data_governance_map",
+      "status": "current",
+      "authority_level": "governance_document",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "2026-09-05",
       "provenance": {
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
