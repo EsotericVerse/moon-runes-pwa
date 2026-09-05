@@ -333,6 +333,51 @@
         "maintained_in_repo": true,
         "source": "LOC3 403-work indexed corpus"
       }
+    },
+    {
+      "asset_id": "KA-LOC6-ZD-ANALYSIS-001",
+      "title": "政德風：從感性書寫到自我治理的語言演變",
+      "path": "docs/LOC6_ZHENGDE_STYLE_ANALYSIS.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "zhengde_style_public_analysis",
+      "status": "current",
+      "authority_level": "analytical_knowledge_asset",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "2026-09-05",
+      "updated_at": "2026-09-05",
+      "keywords": [
+        "政德風",
+        "理性與感性",
+        "思辨論述",
+        "治理宣言",
+        "勸戒論述",
+        "狀態紀錄",
+        "自我治理",
+        "ERA",
+        "跨媒介",
+        "語言演變"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "derived_from": [
+          "LOC6_GOVERNANCE_REGISTRY",
+          "LOC6_ERA_STYLE_EVIDENCE",
+          "LOC3 corpus",
+          "LOC4/LOC5 cross relationships"
+        ]
+      },
+      "notes": "Public-facing analytical Knowledge Asset. LOC6 provides style/governance evidence; LOC7_KM indexes and exposes it through LOC Search."
     }
   ]
 }
