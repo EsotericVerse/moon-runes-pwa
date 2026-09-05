@@ -159,7 +159,7 @@
       if(r.content_type==='reel'&&p.url)out.push(`<a class="play" href="${esc(p.url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`);
       if(r.content_type==='knowledge_document'&&p.path)out.push(`<a class="secondary" href="${esc(p.path)}">閱讀文件</a>`);
       if(r.content_type==='knowledge_image'&&p.path)out.push(`<a class="secondary" href="${esc(p.path)}" target="_blank" rel="noopener">查看原圖 ↗</a>`);
-      if(r.content_type==='era')out.push('<a class="secondary" href="life.html">時間線專頁</a>');
+      if(r.content_type==='era')out.push('<a class="secondary" href="life.html#era-trend">脈絡分析</a>');
       return out.length?`<div class="links">${out.join('')}</div>`:'';
     }
     function oracleCard(r){
