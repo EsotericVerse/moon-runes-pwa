@@ -20,6 +20,7 @@
 
 | 文件 | 用途 | 狀態 |
 |---|---|---|
+| [LOC3_PERIOD_KEYWORD_ANALYSIS.md](./LOC3_PERIOD_KEYWORD_ANALYSIS.md) | LOC3 依 LOC8 連續時期統計歌曲關鍵字、轉折、情緒功能與結尾狀態 | Working |
 | [LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md](./LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md) | LOC 現行基本定義、Demo 架構、LOC1–8 責任、LOC8 時期／事件／時間統合與下一步 | Current / Working |
 | [LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md) | LOC2 真實情境／雙卡因果與 Event Corpus 定位 | Working |
 | [LOC6_ZHENGDE_STYLE.md](./LOC6_ZHENGDE_STYLE.md) | 政德風治理核心、代表句、風格演變與 Stage Profile 規則 | Current / Working |
