@@ -378,6 +378,125 @@
         ]
       },
       "notes": "Public-facing analytical Knowledge Asset. LOC6 provides style/governance evidence; LOC7_KM indexes and exposes it through LOC Search."
+    },
+    {
+      "asset_id": "KA-LOC1-RUNES-001",
+      "title": "LOC1 月符基本資料 Seed Corpus",
+      "path": "js/runes64.js",
+      "source_type": "structured_seed_corpus",
+      "content_type": "rune_seed_corpus",
+      "primary_loc": "LOC1",
+      "related_locs": [
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "rune_vocabulary_seed_corpus",
+      "status": "current",
+      "authority_level": "derived_from_mother_data",
+      "searchable": true,
+      "index_priority": "highest",
+      "version": "2026-09-05",
+      "updated_at": "2026-09-05",
+      "keywords": [
+        "月符",
+        "符文",
+        "66符文",
+        "名稱",
+        "英文",
+        "圖騰",
+        "分組",
+        "月相",
+        "顯化形式"
+      ],
+      "provenance": {
+        "mother_source": "LunaRune64.xlsx",
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "LOC1 is the seed vocabulary layer. This JS representation is searchable, but LunaRune64.xlsx remains the highest-priority mother source."
+    },
+    {
+      "asset_id": "KA-LOC1-DIRECTION-001",
+      "title": "LOC1 四向語意 Seed Corpus",
+      "path": "js/direction64.js",
+      "source_type": "structured_seed_corpus",
+      "content_type": "rune_direction_corpus",
+      "primary_loc": "LOC1",
+      "related_locs": [
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "four_direction_seed_corpus",
+      "status": "current",
+      "authority_level": "derived_from_mother_data",
+      "searchable": true,
+      "index_priority": "highest",
+      "version": "2026-09-05",
+      "updated_at": "2026-09-05",
+      "keywords": [
+        "正位",
+        "半正位",
+        "半逆位",
+        "逆位",
+        "四向",
+        "方向語意"
+      ],
+      "provenance": {
+        "mother_source": "LunaRune64.xlsx",
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Searchable four-direction wording for each rune; it remains subordinate to the canonical mother data."
+    },
+    {
+      "asset_id": "KA-LOC1-LOTS-001",
+      "title": "LOC1 Lots 籤詩 Seed Corpus",
+      "path": "data/shared/lots.json",
+      "source_type": "structured_seed_corpus",
+      "content_type": "lots_corpus",
+      "primary_loc": "LOC1",
+      "related_locs": [
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "structured_lots_seed_corpus",
+      "status": "current",
+      "authority_level": "derived_from_mother_data",
+      "searchable": true,
+      "index_priority": "highest",
+      "version": "0.1",
+      "updated_at": "2026-09-05",
+      "keywords": [
+        "籤詩",
+        "愛情",
+        "事業",
+        "關係",
+        "健康",
+        "正位",
+        "半正位",
+        "半逆位",
+        "逆位"
+      ],
+      "provenance": {
+        "mother_source": "LunaRune64.xlsx#Lots",
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Structured Lots answers used by oracle mode and normal LOC RAG retrieval. The spreadsheet mother source remains authoritative."
     }
   ]
 }
