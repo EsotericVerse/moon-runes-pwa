@@ -11,6 +11,20 @@ const DIRECTION_FIELDS = {
   "逆位": "逆向表示"
 };
 
+let runeHintMap = new Map();
+
+async function loadRuneHints() {
+  try {
+    const response = await fetch("engine/runes07.json");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const items = await response.json();
+    runeHintMap = new Map(items.map(item => [Number(item.編號), item]));
+  } catch (error) {
+    console.warn("LOC1 rune hint JSON unavailable; using local JS fallback.", error);
+    runeHintMap = new Map();
+  }
+}
+
 const MODE_CONFIG = {
   single: {
     title: "單卡",
@@ -92,35 +106,71 @@ function getPhaseInfo(card, realPhase) {
 }
 
 function cardHtml(card, label, realPhase) {
-  return `
-    <article class="rune-card">
-      <span class="position">${label}</span>
-      <div class="card-image">
-        <img src="64images/${card.rune.圖檔名稱}" alt="${card.rune.符文名稱}之符文" style="transform:${ROTATIONS[card.directionIndex]}" />
-      </div>
-      <div class="card-meta">
-        <strong>${card.rune.符文名稱}</strong>
+  const hint = runeHintMap.get(card.id) || {};
+  const directionText =
+    hint[DIRECTION_FIELDS[card.direction]] ||
+    getDirectionText(card);
 
-        <div class="card-result-row">
-          <div class="card-result-cell">
-            卡片方向
-            <span>${card.direction}</span>
+  const groupText =
+    card.rune.分組說明 ||
+    "此組目前沒有額外群組說明。";
+
+  const reverseText =
+    hint.反向含義 ||
+    "目前沒有額外的反向提醒。";
+
+  const english = hint.英文 || card.rune.英文 || "";
+
+  return `
+    <article class="rune-result-card">
+      <span class="rune-result-position">${label}</span>
+
+      <div class="rune-result-image">
+        <img
+          src="64images/${card.rune.圖檔名稱}"
+          alt="${card.rune.符文名稱}之符文"
+          style="transform:${ROTATIONS[card.directionIndex]}"
+        />
+      </div>
+
+      <div class="rune-result-body">
+        <h2 class="rune-result-name">
+          ${card.rune.符文名稱}
+          ${english ? `<small>${english}</small>` : ""}
+        </h2>
+
+        <div class="rune-result-grid">
+          <div class="rune-result-field">
+            <span class="rune-result-label">卡片方向</span>
+            <span class="rune-result-value">${card.direction}</span>
           </div>
-          <div class="card-result-cell">
-            所屬分組
-            <span>${card.rune.所屬分組}組</span>
+          <div class="rune-result-field">
+            <span class="rune-result-label">所屬分組</span>
+            <span class="rune-result-value">${card.rune.所屬分組}組</span>
+          </div>
+          <div class="rune-result-field moon">
+            <span class="rune-result-label">卡片月相</span>
+            <span class="rune-result-value">${card.rune.月相}</span>
+          </div>
+          <div class="rune-result-field moon">
+            <span class="rune-result-label">真實月相</span>
+            <span class="rune-result-value">${realPhase}</span>
           </div>
         </div>
 
-        <div class="card-moon-row">
-          <div class="card-moon-cell">
-            卡片月相
-            <span>${card.rune.月相}</span>
-          </div>
-          <div class="card-moon-cell">
-            真實月相
-            <span>${realPhase}</span>
-          </div>
+        <div class="rune-result-section">
+          <strong>提示句</strong>
+          ${directionText}
+        </div>
+
+        <div class="rune-result-section group">
+          <strong>${card.rune.所屬分組}組</strong>
+          ${groupText}
+        </div>
+
+        <div class="rune-result-section reverse">
+          <strong>另一面／反向提醒</strong>
+          ${reverseText}
         </div>
       </div>
     </article>
@@ -283,7 +333,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     ritualPhase.textContent = `月相：無 / 真實月相：${realPhase}`;
   }
 
-  await runRitual(mode, config);
+  await Promise.all([
+    runRitual(mode, config),
+    loadRuneHints()
+  ]);
   renderResult(mode, config, realPhase);
 
   document.getElementById("retry-button").addEventListener("click", () => {
