@@ -255,6 +255,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("mode-title").textContent = config.title;
   document.getElementById("mode-kicker").textContent = config.kicker;
   document.getElementById("moon-phase").textContent = `真實月相：${realPhase}`;
+  const ritualPhase = document.getElementById("ritual-phase");
+  if (ritualPhase) {
+    ritualPhase.textContent = `真實月相：${realPhase}`;
+  }
 
   await runRitual(mode, config);
   renderResult(mode, config, realPhase);
