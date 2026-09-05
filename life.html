@@ -478,6 +478,21 @@
     .draw-tools .btn { padding:4px 8px; font-size:10px; border-radius:9px; }
     .draw-editing-note { margin-top:8px; color:var(--warn); font-size:11px; }
     .draw-count { color: var(--muted); font-size: 12px; }
+    .daily-analysis-card { margin-bottom:16px; }
+    .draw-analysis-metrics { margin-bottom:16px; }
+    .draw-analysis-metrics .metric { border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.02); }
+    .draw-analysis-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .analysis-panel { border:1px solid var(--line); border-radius:14px; padding:14px; background:rgba(255,255,255,.02); min-width:0; }
+    .analysis-title { font-size:12px; font-weight:700; margin-bottom:10px; }
+    .analysis-bars { display:grid; gap:8px; }
+    .analysis-row { display:grid; grid-template-columns:76px minmax(0,1fr) 34px; gap:8px; align-items:center; font-size:11px; }
+    .analysis-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); }
+    .analysis-track { height:7px; border-radius:999px; background:rgba(255,255,255,.06); overflow:hidden; }
+    .analysis-fill { height:100%; border-radius:inherit; background:linear-gradient(90deg,rgba(169,199,255,.48),rgba(217,230,255,.9)); }
+    .analysis-count { text-align:right; color:var(--accent-2); }
+    .analysis-summary { color:#d8e4f7; font-size:12px; line-height:1.75; white-space:pre-line; }
+    .analysis-empty { color:var(--muted); font-size:11px; line-height:1.6; }
+    @media (max-width:760px){ .draw-analysis-grid { grid-template-columns:1fr; } }
 
 
     .theme-dialog{width:min(980px,calc(100vw - 32px));max-height:90vh;padding:0;border:1px solid var(--line);border-radius:20px;background:#0b1728;color:var(--text);box-shadow:var(--shadow)}
@@ -522,37 +537,37 @@
         <div class="moon" aria-hidden="true"></div>
         <div>
           <h1>LOC8 · Life</h1>
-          <p>Record · Time · Era · Rune</p>
+          <p>Rune · Era · Event</p>
         </div>
       </div>
       <nav class="nav" aria-label="LOC8 功能">
         <a class="nav-home" href="index.html">← 回到 LOC 首頁</a>
 
         <div class="nav-group">
-          <div class="nav-group-label">生活資料</div>
-          <button class="view-switch active" id="overviewViewBtn" type="button" data-view="overview">
-            <span class="nav-title">生活總覽</span>
-            <span class="nav-sub">新增事件 · Current State</span>
+          <div class="nav-group-label">01 · 符文</div>
+          <button class="view-switch active" id="dailyDrawViewBtn" type="button" data-view="daily">
+            <span class="nav-title">每日符文</span>
+            <span class="nav-sub">今日紀錄 · 歷史維護 · 趨勢分析</span>
           </button>
         </div>
 
         <div class="nav-group">
-          <div class="nav-group-label">時間分析</div>
-          <button class="view-switch" id="eventTimeViewBtn" type="button" data-view="event-time">
-            <span class="nav-title">事件軌跡</span>
-            <span class="nav-sub">Event Timeline · Trajectory</span>
-          </button>
+          <div class="nav-group-label">02 · 時期</div>
           <button class="view-switch" id="eraTrendViewBtn" type="button" data-view="era-trend">
-            <span class="nav-title">ERA 趨勢</span>
-            <span class="nav-sub">連續時期 · Event 關鍵字</span>
+            <span class="nav-title">ERA</span>
+            <span class="nav-sub">連續時期 · Event 關鍵字脈絡</span>
           </button>
         </div>
 
         <div class="nav-group">
-          <div class="nav-group-label">符文紀錄</div>
-          <button class="view-switch" id="dailyDrawViewBtn" type="button" data-view="daily">
-            <span class="nav-title">每日抽牌</span>
-            <span class="nav-sub">紀錄 · 批次維護 · 趨勢分析</span>
+          <div class="nav-group-label">03 · 事件</div>
+          <button class="view-switch" id="overviewViewBtn" type="button" data-view="overview">
+            <span class="nav-title">事件紀錄</span>
+            <span class="nav-sub">新增 / 更新 Event · Current State</span>
+          </button>
+          <button class="view-switch" id="eventTimeViewBtn" type="button" data-view="event-time">
+            <span class="nav-title">事件時間線</span>
+            <span class="nav-sub">Timeline · Trajectory</span>
           </button>
         </div>
 
@@ -562,7 +577,7 @@
         </div>
       </nav>
       <div class="sidebar-foot">
-        四個工作區，各自處理一種資料責任；分析不再混進紀錄入口。
+        使用順序：每日符文 → ERA → Event。先觀察每日訊號，再看時期脈絡，最後回到具體事件。
       </div>
     </aside>
 
@@ -730,10 +745,7 @@
           <div class="body"><div class="trajectory" id="trajectoryList"><div class="empty" style="min-width:100%">需要至少兩筆具有 State After 的事件才能形成軌跡。</div></div></div>
         </div>
 
-        <div class="card" id="trend">
-          <div class="head"><div><h3>Trend</h3><p>以最近 30 天 tags 粗略觀察目前方向。</p></div><span class="badge">趨勢</span></div>
-          <div class="body"><div class="trend-list" id="trendList"><div class="empty">近期資料不足。</div></div></div>
-        </div>
+
       </section>
 
       </div>
@@ -741,16 +753,55 @@
       <div class="life-view" id="dailyDrawView" hidden>
         <section class="hero">
           <div>
-            <div class="eyebrow">LOC1 × LOC8 · Daily Draw Log</div>
-            <h2>每日抽牌紀錄</h2>
-            <p>主抽與補抽使用獨立 Runes table；符文定義直接讀 JSON。紀錄、批次維護與分析不再與 Event 資料混用。</p>
+            <div class="eyebrow">LOC1 × LOC8 · Daily Rune</div>
+            <h2>每日符文</h2>
+            <p>先看近期符文趨勢，再處理紀錄。主抽作為趨勢核心，補抽保留為當日脈絡；符文定義直接來自 JSON，不重複存進 Sheet。</p>
           </div>
           <div class="sync"><span class="dot" id="drawSyncDot"></span><span id="drawSyncText">載入中…</span></div>
         </section>
 
+        <section class="card daily-analysis-card">
+          <div class="head">
+            <div><h3>每日符文趨勢</h3><p>以主抽為核心計算；補抽另外標示，不混入主趨勢權重。</p></div>
+            <div class="actions" style="margin:0">
+              <select id="drawTrendWindow" aria-label="趨勢期間" style="width:auto;padding:7px 10px">
+                <option value="7">最近 7 日</option>
+                <option value="30" selected>最近 30 日</option>
+                <option value="all">全部</option>
+              </select>
+            </div>
+          </div>
+          <div class="body">
+            <div class="grid cols-4 draw-analysis-metrics">
+              <div class="metric"><div class="label">主抽</div><div class="value" id="drawMetricPrimary">0</div><div class="hint">趨勢核心樣本</div></div>
+              <div class="metric"><div class="label">補抽</div><div class="value" id="drawMetricSupplement">0</div><div class="hint">脈絡補充</div></div>
+              <div class="metric"><div class="label">高頻符文</div><div class="value" id="drawMetricRune">—</div><div class="hint" id="drawMetricRuneHint">尚無資料</div></div>
+              <div class="metric"><div class="label">主導分組</div><div class="value" id="drawMetricGroup">—</div><div class="hint" id="drawMetricGroupHint">等待符文定義</div></div>
+            </div>
+            <div class="draw-analysis-grid">
+              <section class="analysis-panel">
+                <div class="analysis-title">方向分布</div>
+                <div id="drawDirectionAnalysis" class="analysis-bars"></div>
+              </section>
+              <section class="analysis-panel">
+                <div class="analysis-title">分組分布</div>
+                <div id="drawGroupAnalysis" class="analysis-bars"></div>
+              </section>
+              <section class="analysis-panel">
+                <div class="analysis-title">重複符文</div>
+                <div id="drawRuneAnalysis" class="analysis-bars"></div>
+              </section>
+              <section class="analysis-panel">
+                <div class="analysis-title">趨勢摘要</div>
+                <div id="drawTrendSummary" class="analysis-summary">載入每日符文紀錄中…</div>
+              </section>
+            </div>
+          </div>
+        </section>
+
         <div class="daily-layout">
           <section class="card">
-            <div class="head"><div><h3>新增抽牌</h3><p>記錄日期、符文、方向與當日觀察。</p></div><span class="badge">LOC1</span></div>
+            <div class="head"><div><h3>新增每日符文</h3><p>記錄日期、符文、方向與當日觀察。</p></div><span class="badge">Record</span></div>
             <div class="body">
               <form id="dailyDrawForm">
                 <input type="hidden" id="editingDrawId" value="" />
@@ -772,7 +823,7 @@
           </section>
 
           <section class="card">
-            <div class="head"><div><h3>抽牌歷史</h3><p>預設精簡列表；可切換大量編輯，勾選多筆後一次更新或刪除。</p></div><span class="badge" id="drawCountBadge">0 筆</span></div>
+            <div class="head"><div><h3>每日符文紀錄</h3><p>精簡列表；需要整理時再切換大量編輯。</p></div><span class="badge" id="drawCountBadge">0 筆</span></div>
             <div class="body">
               <div class="draw-batch-bar">
                 <button class="btn ghost" id="toggleBatchDrawBtn" type="button">大量編輯</button>
@@ -782,7 +833,7 @@
                 <span class="spacer"></span>
                 <small id="drawSelectionStatus">未選取</small>
               </div>
-              <div class="draw-history" id="dailyDrawHistory"><div class="empty">尚無每日抽牌紀錄。</div></div>
+              <div class="draw-history" id="dailyDrawHistory"><div class="empty">尚無每日符文紀錄。</div></div>
             </div>
           </section>
         </div>
@@ -857,6 +908,17 @@
       saveBatchDrawBtn: $('#saveBatchDrawBtn'),
       deleteBatchDrawBtn: $('#deleteBatchDrawBtn'),
       drawSelectionStatus: $('#drawSelectionStatus'),
+      drawTrendWindow: $('#drawTrendWindow'),
+      drawMetricPrimary: $('#drawMetricPrimary'),
+      drawMetricSupplement: $('#drawMetricSupplement'),
+      drawMetricRune: $('#drawMetricRune'),
+      drawMetricRuneHint: $('#drawMetricRuneHint'),
+      drawMetricGroup: $('#drawMetricGroup'),
+      drawMetricGroupHint: $('#drawMetricGroupHint'),
+      drawDirectionAnalysis: $('#drawDirectionAnalysis'),
+      drawGroupAnalysis: $('#drawGroupAnalysis'),
+      drawRuneAnalysis: $('#drawRuneAnalysis'),
+      drawTrendSummary: $('#drawTrendSummary'),
     };
 
     let events = [];
@@ -866,6 +928,7 @@
     const selectedDrawIds = new Set();
     const dirtyDrawIds = new Set();
     let eraRegistry = [];
+    let runeMetaMap = new Map();
     let editingId = '';
 
     function uid() {
@@ -1230,6 +1293,110 @@
       els.deleteBatchDrawBtn.disabled = selected === 0;
     }
 
+    function countPairs(items, getter) {
+      const counts = new Map();
+      items.forEach(item => {
+        const key = String(getter(item) || '').trim();
+        if (!key) return;
+        counts.set(key, (counts.get(key) || 0) + 1);
+      });
+      return [...counts.entries()].sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-Hant'));
+    }
+
+    function renderAnalysisBars(target, pairs, limit=8) {
+      if (!target) return;
+      const rows = pairs.slice(0, limit);
+      if (!rows.length) {
+        target.innerHTML = '<div class="analysis-empty">目前沒有可統計的資料。</div>';
+        return;
+      }
+      const max = rows[0][1] || 1;
+      target.innerHTML = rows.map(([label,count]) => `
+        <div class="analysis-row">
+          <div class="analysis-label" title="${esc(label)}">${esc(label)}</div>
+          <div class="analysis-track"><div class="analysis-fill" style="width:${Math.max(6, count/max*100)}%"></div></div>
+          <div class="analysis-count">${count}</div>
+        </div>
+      `).join('');
+    }
+
+    function drawWindowItems(draws) {
+      if (!draws.length) return [];
+      const mode = els.drawTrendWindow?.value || '30';
+      if (mode === 'all') return draws.slice();
+      const days = Number(mode || 30);
+      const latest = draws.reduce((max,d) => String(d.date || '') > max ? String(d.date || '') : max, '');
+      if (!latest) return draws.slice();
+      const end = new Date(latest + 'T12:00:00');
+      const start = new Date(end);
+      start.setDate(start.getDate() - days + 1);
+      return draws.filter(d => {
+        const dt = new Date(String(d.date || '') + 'T12:00:00');
+        return dt >= start && dt <= end;
+      });
+    }
+
+    function renderDailyRuneAnalysis() {
+      if (!els.drawTrendSummary) return;
+      const windowed = drawWindowItems(dailyDraws);
+      const primary = windowed.filter(d => d.draw_kind !== 'daily_draw_supplement');
+      const supplements = windowed.filter(d => d.draw_kind === 'daily_draw_supplement');
+
+      els.drawMetricPrimary.textContent = primary.length;
+      els.drawMetricSupplement.textContent = supplements.length;
+
+      if (!windowed.length) {
+        els.drawMetricRune.textContent = '—';
+        els.drawMetricRuneHint.textContent = '尚無每日符文紀錄';
+        els.drawMetricGroup.textContent = '—';
+        els.drawMetricGroupHint.textContent = runeMetaMap.size ? '尚無主抽樣本' : '等待符文定義';
+        renderAnalysisBars(els.drawDirectionAnalysis, []);
+        renderAnalysisBars(els.drawRuneAnalysis, []);
+        if (runeMetaMap.size) renderAnalysisBars(els.drawGroupAnalysis, []);
+        els.drawTrendSummary.textContent = '目前沒有每日符文紀錄可供分析。先新增主抽後，這裡會開始形成方向、分組與重複符文的趨勢。';
+        return;
+      }
+
+      const directionPairs = countPairs(primary, d => d.direction);
+      const runePairs = countPairs(primary, d => d.rune);
+      const groupPairs = runeMetaMap.size
+        ? countPairs(primary, d => runeMetaMap.get(String(d.rune || ''))?.所屬分組 || '')
+        : [];
+
+      const topRune = runePairs[0];
+      const topGroup = groupPairs[0];
+      const topDirection = directionPairs[0];
+
+      els.drawMetricRune.textContent = topRune ? topRune[0] : '—';
+      els.drawMetricRuneHint.textContent = topRune ? `主抽出現 ${topRune[1]} 次` : '尚無主抽樣本';
+      els.drawMetricGroup.textContent = topGroup ? topGroup[0] : '—';
+      els.drawMetricGroupHint.textContent = runeMetaMap.size
+        ? (topGroup ? `主抽 ${topGroup[1]} 次` : '尚無可辨識分組')
+        : '符文 JSON 尚未載入';
+
+      renderAnalysisBars(els.drawDirectionAnalysis, directionPairs, 4);
+      renderAnalysisBars(els.drawRuneAnalysis, runePairs, 8);
+      if (runeMetaMap.size) {
+        renderAnalysisBars(els.drawGroupAnalysis, groupPairs, 8);
+      } else {
+        els.drawGroupAnalysis.innerHTML = '<div class="analysis-empty">符文定義尚未載入；不影響其他趨勢。</div>';
+      }
+
+      const directionText = {
+        '正位':'近期主抽較集中在直接顯現與明確推進。',
+        '半正位':'近期主抽較集中在逐步形成、尚未完全定型。',
+        '半逆位':'近期主抽較集中在調整、卡點與過渡。',
+        '逆位':'近期主抽較集中在反向提醒、阻力或需要重新檢視。'
+      };
+      const lines = [
+        `本區間共有 ${primary.length} 筆主抽、${supplements.length} 筆補抽；趨勢只以主抽計權，補抽保留為脈絡。`,
+        topDirection ? `方向以「${topDirection[0]}」最多（${topDirection[1]} 次）。${directionText[topDirection[0]] || ''}` : '主抽方向樣本尚不足。',
+        topRune ? `重複度最高的符文是「${topRune[0]}」（${topRune[1]} 次）。` : '',
+        topGroup ? `分組上以「${topGroup[0]}」最集中（${topGroup[1]} 次）。` : (runeMetaMap.size ? '' : '分組資料等待符文 JSON 載入。')
+      ].filter(Boolean);
+      els.drawTrendSummary.textContent = lines.join('\n');
+    }
+
     function renderDailyDraws(draws) {
       const sorted = draws.slice().sort((a,b) => {
         const dateDiff = new Date(b.date) - new Date(a.date);
@@ -1239,8 +1406,9 @@
 
       els.drawCountBadge.textContent = sorted.length + ' 筆';
       if (!sorted.length) {
-        els.dailyDrawHistory.innerHTML = '<div class="empty">尚無每日抽牌紀錄。</div>';
+        els.dailyDrawHistory.innerHTML = '<div class="empty">尚無每日符文紀錄。</div>';
         updateDrawBatchToolbar();
+        renderDailyRuneAnalysis();
         return;
       }
 
@@ -1291,6 +1459,7 @@
         </table>
       `;
       updateDrawBatchToolbar();
+      renderDailyRuneAnalysis();
     }
 
     function readDailyDrawCache() {
@@ -1335,20 +1504,32 @@
 
     async function loadDrawRunes() {
       const select = $('#drawRune');
-      if (!select || select.options.length > 1) return;
       try {
         const res = await fetch('engine/runes07.json', { cache: 'force-cache' });
         if (!res.ok) throw new Error('Rune JSON unavailable');
         const items = await res.json();
+
+        runeMetaMap = new Map();
         (items || []).forEach(item => {
-          const option = document.createElement('option');
-          option.value = item.名稱;
-          option.dataset.runeId = item.編號;
-          option.textContent = String(item.編號).padStart(2, '0') + ' · ' + item.名稱;
-          select.appendChild(option);
+          runeMetaMap.set(String(item.名稱 || ''), item);
         });
+
+        if (select && select.options.length <= 1) {
+          (items || []).forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.名稱;
+            option.dataset.runeId = item.編號;
+            option.textContent = String(item.編號).padStart(2, '0') + ' · ' + item.名稱;
+            select.appendChild(option);
+          });
+        }
+        renderDailyRuneAnalysis();
       } catch (err) {
         console.error(err);
+        runeMetaMap = new Map();
+        if (els.drawMetricGroupHint) els.drawMetricGroupHint.textContent = '符文 JSON 載入失敗';
+        if (els.drawGroupAnalysis) els.drawGroupAnalysis.innerHTML = '<div class="analysis-empty">分組資訊暫時無法載入；方向與符文頻率仍可正常分析。</div>';
+        renderDailyRuneAnalysis();
       }
     }
 
@@ -1475,6 +1656,7 @@
       }
     });
 
+    els.drawTrendWindow?.addEventListener('change', renderDailyRuneAnalysis);
     $('#clearDrawBtn').addEventListener('click', resetDailyDrawForm);
     els.cancelDrawEditBtn.addEventListener('click', resetDailyDrawForm);
 
@@ -1559,7 +1741,7 @@
     els.deleteBatchDrawBtn.addEventListener('click', async () => {
       const ids = [...selectedDrawIds];
       if (!ids.length) return;
-      if (!confirm(`確定刪除所選的 ${ids.length} 筆每日抽牌紀錄？此動作會直接從 Sheet 移除。`)) return;
+      if (!confirm(`確定刪除所選的 ${ids.length} 筆每日符文紀錄？此動作會直接從 Sheet 移除。`)) return;
       try {
         const res = await fetch(SHEET_API_URL, {
           method:'POST',
@@ -1591,7 +1773,7 @@
       }
 
       if (action === 'delete') {
-        if (!confirm('刪除這筆每日抽牌紀錄？此動作會直接從 Sheet 移除。')) return;
+        if (!confirm('刪除這筆每日符文紀錄？此動作會直接從 Sheet 移除。')) return;
         try {
           const res = await fetch(SHEET_API_URL, {
             method: 'POST',
@@ -1765,10 +1947,10 @@
     loadEraRegistry();
     loadEvents();
     loadDailyDraws();
-    if (location.hash === '#daily-draw') switchView('daily', $('#dailyDrawViewBtn'));
-    else if (location.hash === '#event-time') switchView('event-time', $('#eventTimeViewBtn'));
+    if (location.hash === '#event-time') switchView('event-time', $('#eventTimeViewBtn'));
     else if (location.hash === '#era-trend') switchView('era-trend', $('#eraTrendViewBtn'));
-    else switchView('overview', $('#overviewViewBtn'));
+    else if (location.hash === '#overview') switchView('overview', $('#overviewViewBtn'));
+    else switchView('daily', $('#dailyDrawViewBtn'));
   </script>
   <script src="js/loc-nav.js"></script>
 </body>
