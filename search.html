@@ -95,7 +95,7 @@
         el('query').focus();
       });
     }
-    const ERA_CACHE_KEY='loc-search-era-registry-v1';
+    const ERA_CACHE_KEY='loc-search-era-registry-v2';
     const ERA_CACHE_TTL=24*60*60*1000;
     const ERA_FALLBACK=[
       {period:'P1',display_label:'P1｜Suno原型探索期'},
@@ -126,8 +126,9 @@
     async function facets(){
       applyEras(ERA_FALLBACK);
       const cached=readEraCache();
-      if(cached?.data?.eras)applyEras(cached.data.eras);
-      const fresh=cached&&Date.now()-Number(cached.saved_at||0)<ERA_CACHE_TTL;
+      const cachedEras=Array.isArray(cached?.data?.eras)?cached.data.eras:[];
+      if(cachedEras.length)applyEras(cachedEras);
+      const fresh=cachedEras.length>0&&Date.now()-Number(cached.saved_at||0)<ERA_CACHE_TTL;
       if(fresh)return;
       try{
         const r=await fetch('data/shared/LOC_ERA_REGISTRY.json',{cache:'no-store'});
@@ -171,7 +172,8 @@
 
     function render(groups){const order=['oracle','runes','works','textworks','relationships','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='oracle'?oracleCard:(key==='relationships'?relationshipCard:(key==='works'?musicCard:card));html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
     el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時間……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
-    quick();facets();bootFromUrl();
+    quick();
+    facets().finally(bootFromUrl);
     if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'));
   </script>
   <script src="js/loc-nav.js"></script>
