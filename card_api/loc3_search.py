@@ -107,6 +107,12 @@ class LOC3Result:
             "discourse_mode": work.get("discourse_mode"),
             "emotion_applicability": work.get("emotion_applicability"),
             "semantic_completion": work.get("semantic_completion"),
+            "content_origin": work.get("content_origin", "normal_song"),
+            "origin_label": (
+                "符文歌曲" if work.get("content_origin") == "rune_song"
+                else "敘事歌曲" if work.get("content_origin") == "narrative_song"
+                else "一般歌曲"
+            ),
             "matched_terms": self.matched_terms,
             "recommended_version": versions[0] if versions else None,
             "alternate_versions": versions[1:],
