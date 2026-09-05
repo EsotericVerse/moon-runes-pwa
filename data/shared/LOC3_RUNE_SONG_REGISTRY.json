@@ -222,9 +222,7 @@
       "P3",
       "P4"
     ],
-    "unresolved_title_level_confirmation": [
-      "界線之內"
-    ],
+    "unresolved_title_level_confirmation": [],
     "media_audit": {
       "source": "Suno_500 workbook + current LOC3_MEDIA_LINKS_v0.1 / LOC_MEDIA_REGISTRY",
       "current_confirmed_titles_checked": [
@@ -236,7 +234,8 @@
       "matching_reels_found": 0,
       "status": "no_current_loc5_link_found",
       "note": "Do not create LOC5 links until an actual matching Reel/MV record is recovered."
-    }
+    },
+    "exact_total_note": "Current confirmed work-level rune songs only; no additional title-level confirmed exception."
   },
   "recovery_clues": [
     {
@@ -810,6 +809,16 @@
       "status": "rejected_period_scope",
       "reason": "outside_P2_P4",
       "note": "Excluded by author-confirmed period scope; no longer retained as rune_song candidate."
+    },
+    {
+      "title": "界線之內",
+      "status": "rejected_non_rune_song",
+      "reason": "author_correction",
+      "author_confirmation": {
+        "statement": "界線之內就不是符文歌。剛剛打錯字。他不是符文歌。",
+        "confirmed_in_current_review": true
+      },
+      "note": "Prior title-level confirmation was a typo and is superseded."
     }
   ],
   "period_exclusions": [
@@ -895,13 +904,5 @@
     "authority": "explicit_author_confirmation",
     "rule": "Only works in P2, P3, or P4 may be rune_song candidates or confirmed rune songs."
   },
-  "unresolved_title_records": [
-    {
-      "title": "界線之內",
-      "status": "title_confirmed_original_work_unresolved",
-      "author_memory": "界線之內確定是。",
-      "conflict": "ERA is not unresolved: existing same-title records resolve by date to later periods. The unresolved issue is which historical work record corresponds to the author-confirmed rune song.",
-      "handling": "Resolve ERA from date normally. Do not attach rune_song status to the later same-title P5/P6 records; recover the original P2-P4 work record or corrected historical mapping."
-    }
-  ]
+  "unresolved_title_records": []
 }
