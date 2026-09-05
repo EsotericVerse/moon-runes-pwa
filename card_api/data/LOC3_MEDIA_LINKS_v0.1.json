@@ -1,12 +1,12 @@
 {
   "dataset": {
     "name": "LOC3 Media Links",
-    "version": "0.1.0",
-    "updated_at": "2026-09-03",
+    "version": "0.1.1",
+    "updated_at": "2026-09-06",
     "reels_count": 19,
     "linked_count": 16,
     "pending_count": 3,
-    "notes": "IG Reels is a preview channel; its metrics remain separate from Suno plays."
+    "notes": "IG Reels is a preview channel; temporal fields inherit LOC8 period from the linked LOC3 song/work record. Metrics remain separate from Suno plays."
   },
   "items": [
     {
@@ -18,7 +18,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-03",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "人生月台",
@@ -29,7 +34,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-12",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "月光把影子拉長",
@@ -40,7 +50,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-29",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "答案不用現在",
@@ -51,7 +66,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-27",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "微月光知道",
@@ -62,7 +82,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-05",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "自由的月",
@@ -73,7 +98,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-03",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "不預支以後",
@@ -84,7 +114,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-02",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "回到我的風",
@@ -95,7 +130,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-02",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "留一個位置",
@@ -106,7 +146,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-01",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "空隙之間",
@@ -117,7 +162,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-30",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "風起之後",
@@ -128,7 +178,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-30",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "問號的終點",
@@ -150,7 +205,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-28",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "風晴以前",
@@ -172,7 +232,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-25",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "等風也造風",
@@ -194,7 +259,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-18",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "用你喜歡的方式",
@@ -205,7 +275,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-15",
+      "period_source": "linked_LOC3_song"
     },
     {
       "title": "掌聲之外",
@@ -216,7 +291,12 @@
       "media_type": "instagram_reels_preview",
       "preview_duration_seconds": 30,
       "ig_plays": null,
-      "linked_to_semantic_index": true
+      "linked_to_semantic_index": true,
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-15",
+      "period_source": "linked_LOC3_song"
     }
   ]
 }
