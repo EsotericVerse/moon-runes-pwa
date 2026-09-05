@@ -40,7 +40,6 @@
       padding: 12px 0 20px;
     }
     .brand { color:var(--text); text-decoration:none; font-weight:800; letter-spacing:.08em; }
-    .back { color:var(--muted); text-decoration:none; font-size:.88rem; }
     .panel {
       border:1px solid var(--border);
       border-radius:26px;
@@ -118,6 +117,42 @@
     .ritual-phase-box p:last-child,
     .ritual-text-box p:last-child {
       margin-bottom: 0;
+    }
+
+    .result-home-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 16px;
+      padding: 15px 16px;
+      border: 1px solid rgba(231,194,125,.42);
+      border-radius: 16px;
+      background: rgba(231,194,125,.08);
+      color: var(--text);
+      text-decoration: none;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .result-home-cta:hover,
+    .result-home-cta:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(231,194,125,.72);
+      background: rgba(231,194,125,.13);
+    }
+
+    .result-home-cta strong {
+      display: block;
+      color: var(--gold);
+      font-size: .96rem;
+    }
+
+    .result-home-cta small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: .76rem;
+      line-height: 1.45;
     }
 
     .ritual-text-box {
@@ -307,7 +342,6 @@
   <main class="page">
     <div class="topbar">
       <a class="brand" href="index.html">LOC · Luna Codex</a>
-      <a class="back" href="index.html">← 回到首頁</a>
     </div>
 
     <section class="panel">
@@ -328,6 +362,14 @@
             <div class="ritual-phase-box">
               <p><strong>命之符文</strong></p>
               <p id="ritual-phase">真實月相：計算中...</p>
+
+              <a class="result-home-cta" href="index.html">
+                <span>
+                  <strong>回到首頁</strong>
+                  <small>返回 LOC 首頁與抽牌選單</small>
+                </span>
+                <span aria-hidden="true">→</span>
+              </a>
             </div>
           </div>
 
