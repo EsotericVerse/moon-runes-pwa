@@ -1,0 +1,1814 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC3_PERIOD_KEYWORD_ANALYSIS",
+  "system_id": "lo3rwang",
+  "primary_loc": "LOC3",
+  "related_locs": [
+    "LOC7",
+    "LOC8"
+  ],
+  "status": "Working",
+  "created_at": "2026-09-06",
+  "source": {
+    "corpus": "card_api/data/LOC3_LYRICS_SEARCH_v0.1.json",
+    "corpus_version": "0.1.9",
+    "source_shards": [
+      "card_api/data/LOC3_LYRICS_SEARCH_v0.1.part1.json",
+      "card_api/data/LOC3_LYRICS_SEARCH_v0.1.part2.json",
+      "card_api/data/LOC3_LYRICS_SEARCH_v0.1.manual-20260903.json",
+      "card_api/data/LOC3_LYRICS_SEARCH_v0.1.manual-life-platform.json"
+    ],
+    "period_registry": "data/shared/LOC_ERA_REGISTRY.json",
+    "analyzed_work_count": 403,
+    "excluded_periods": [
+      "P1"
+    ],
+    "note": "LOC3 正式分析自可搜尋 corpus 的 P2 起算；P1 依現行 corpus policy 為備份／不搜尋。"
+  },
+  "purpose": "以 LOC8 已確定的連續時期為時間軸，統計 LOC3 歌詞作品的語意關鍵字、轉折方法、情緒功能與結尾狀態，觀察創作語言如何隨時期改變。時期是 temporal context，不等同 keyword tag。",
+  "governance": {
+    "period_authority": "LOC8",
+    "keyword_content_authority": "LOC3",
+    "retrieval_structure": "LOC7",
+    "rules": [
+      "LOC8 owns period boundaries; LOC3 only references them.",
+      "LOC3 owns song/lyrics keyword evidence and period-level semantic summaries.",
+      "LOC7 may index this analysis for retrieval but must not redefine period boundaries or song meaning.",
+      "Legacy LOC3 era_name/playlists remain source evidence and are not automatically promoted to LOC-wide period names.",
+      "All counts are computed from existing LOC3 tags/metadata; no missing tag is inferred as present."
+    ]
+  },
+  "analytic_dimensions": [
+    "keywords",
+    "turn_method",
+    "emotion_function",
+    "final_state",
+    "category",
+    "style"
+  ],
+  "periods": [
+    {
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_name": "重啟與格式形成期",
+      "start_date": "2025-10-16",
+      "end_date": "2026-01-14",
+      "source_active_range": {
+        "start": "2025-10-16",
+        "end": "2025-12-28",
+        "source": "Suno / original ERA segmentation"
+      },
+      "corpus_date_min": "2025-10-16",
+      "corpus_date_max": "2025-12-28",
+      "work_count": 50,
+      "top_keywords": [
+        {
+          "term": "微光光芒",
+          "count": 26
+        },
+        {
+          "term": "夜晚",
+          "count": 24
+        },
+        {
+          "term": "希望未來",
+          "count": 21
+        },
+        {
+          "term": "月亮月光",
+          "count": 16
+        },
+        {
+          "term": "黑暗影子",
+          "count": 16
+        },
+        {
+          "term": "希望",
+          "count": 14
+        },
+        {
+          "term": "孤獨陪伴",
+          "count": 13
+        },
+        {
+          "term": "現實選擇",
+          "count": 13
+        },
+        {
+          "term": "自我探索",
+          "count": 12
+        },
+        {
+          "term": "道路旅途",
+          "count": 12
+        },
+        {
+          "term": "孤獨",
+          "count": 11
+        },
+        {
+          "term": "風",
+          "count": 11
+        },
+        {
+          "term": "時間記憶",
+          "count": 11
+        },
+        {
+          "term": "天空",
+          "count": 10
+        },
+        {
+          "term": "平靜",
+          "count": 10
+        },
+        {
+          "term": "重新出發",
+          "count": 10
+        },
+        {
+          "term": "溫柔",
+          "count": 9
+        },
+        {
+          "term": "夢想創作",
+          "count": 9
+        },
+        {
+          "term": "離別放下",
+          "count": 9
+        },
+        {
+          "term": "愛與連結",
+          "count": 8
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "term": "未辨識",
+          "count": 21
+        },
+        {
+          "term": "重新前進／啟程",
+          "count": 9
+        },
+        {
+          "term": "放下／離開",
+          "count": 5
+        },
+        {
+          "term": "重新理解／看清現實",
+          "count": 5
+        },
+        {
+          "term": "建立界線",
+          "count": 4
+        },
+        {
+          "term": "重拾選擇權",
+          "count": 3
+        },
+        {
+          "term": "接受未知／順其自然",
+          "count": 2
+        },
+        {
+          "term": "自我接納",
+          "count": 1
+        }
+      ],
+      "top_emotion_functions": [
+        {
+          "term": "未辨識",
+          "count": 18
+        },
+        {
+          "term": "前進",
+          "count": 9
+        },
+        {
+          "term": "陪伴",
+          "count": 7
+        },
+        {
+          "term": "治理",
+          "count": 6
+        },
+        {
+          "term": "重構",
+          "count": 3
+        },
+        {
+          "term": "甜蜜",
+          "count": 2
+        },
+        {
+          "term": "宣洩",
+          "count": 1
+        },
+        {
+          "term": "宣洩｜前進",
+          "count": 1
+        },
+        {
+          "term": "陪伴｜重構",
+          "count": 1
+        },
+        {
+          "term": "提振",
+          "count": 1
+        }
+      ],
+      "top_final_states": [
+        {
+          "term": "希望／可能性",
+          "count": 28
+        },
+        {
+          "term": "未辨識",
+          "count": 9
+        },
+        {
+          "term": "釋然／放下",
+          "count": 4
+        },
+        {
+          "term": "平靜／穩定",
+          "count": 3
+        },
+        {
+          "term": "自由／解放",
+          "count": 2
+        },
+        {
+          "term": "幸福／甜蜜",
+          "count": 2
+        },
+        {
+          "term": "前進／啟程",
+          "count": 2
+        }
+      ],
+      "top_categories": [
+        {
+          "term": "轉折型",
+          "count": 17
+        },
+        {
+          "term": "其他／待複查",
+          "count": 14
+        },
+        {
+          "term": "轉折型候選",
+          "count": 13
+        },
+        {
+          "term": "思辨論述型",
+          "count": 4
+        },
+        {
+          "term": "治理宣言型",
+          "count": 2
+        }
+      ],
+      "top_styles": [
+        {
+          "term": "Mandopop／Pop Rock／Ballad",
+          "count": 19
+        },
+        {
+          "term": "Alternative／Art／Indie",
+          "count": 12
+        },
+        {
+          "term": "Anime／J-Pop／J-Rock",
+          "count": 7
+        },
+        {
+          "term": "Rap／Hip-Hop／Soul",
+          "count": 6
+        },
+        {
+          "term": "其他／早期實驗",
+          "count": 5
+        },
+        {
+          "term": "Synth／Electro／Industrial",
+          "count": 1
+        }
+      ],
+      "legacy_era_labels_present": [
+        {
+          "term": "微月光",
+          "count": 27
+        }
+      ]
+    },
+    {
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "start_date": "2026-01-15",
+      "end_date": "2026-03-08",
+      "source_active_range": {
+        "start": "2026-01-15",
+        "end": "2026-02-28",
+        "source": "Suno / original ERA segmentation"
+      },
+      "corpus_date_min": "2026-01-15",
+      "corpus_date_max": "2026-02-28",
+      "work_count": 123,
+      "top_keywords": [
+        {
+          "term": "微光光芒",
+          "count": 92
+        },
+        {
+          "term": "月亮月光",
+          "count": 72
+        },
+        {
+          "term": "夜晚",
+          "count": 65
+        },
+        {
+          "term": "平靜",
+          "count": 61
+        },
+        {
+          "term": "愛與連結",
+          "count": 53
+        },
+        {
+          "term": "希望未來",
+          "count": 46
+        },
+        {
+          "term": "現實選擇",
+          "count": 44
+        },
+        {
+          "term": "天空",
+          "count": 43
+        },
+        {
+          "term": "孤獨陪伴",
+          "count": 41
+        },
+        {
+          "term": "溫柔",
+          "count": 41
+        },
+        {
+          "term": "黑暗影子",
+          "count": 39
+        },
+        {
+          "term": "風",
+          "count": 38
+        },
+        {
+          "term": "孤獨",
+          "count": 37
+        },
+        {
+          "term": "道路旅途",
+          "count": 37
+        },
+        {
+          "term": "社會疏離",
+          "count": 36
+        },
+        {
+          "term": "正義界線",
+          "count": 34
+        },
+        {
+          "term": "時間記憶",
+          "count": 29
+        },
+        {
+          "term": "自我探索",
+          "count": 26
+        },
+        {
+          "term": "離別放下",
+          "count": 26
+        },
+        {
+          "term": "星辰",
+          "count": 25
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "term": "未辨識",
+          "count": 31
+        },
+        {
+          "term": "建立界線",
+          "count": 30
+        },
+        {
+          "term": "重新理解／看清現實",
+          "count": 17
+        },
+        {
+          "term": "放下／離開",
+          "count": 11
+        },
+        {
+          "term": "允許暫停／等待時機",
+          "count": 10
+        },
+        {
+          "term": "重拾選擇權",
+          "count": 8
+        },
+        {
+          "term": "重新前進／啟程",
+          "count": 5
+        },
+        {
+          "term": "回歸自我／自持",
+          "count": 3
+        },
+        {
+          "term": "接受未知／順其自然",
+          "count": 3
+        },
+        {
+          "term": "保存幸福",
+          "count": 2
+        }
+      ],
+      "top_emotion_functions": [
+        {
+          "term": "治理",
+          "count": 29
+        },
+        {
+          "term": "未辨識",
+          "count": 19
+        },
+        {
+          "term": "陪伴",
+          "count": 14
+        },
+        {
+          "term": "甜蜜",
+          "count": 13
+        },
+        {
+          "term": "提振",
+          "count": 9
+        },
+        {
+          "term": "前進",
+          "count": 7
+        },
+        {
+          "term": "祝福",
+          "count": 7
+        },
+        {
+          "term": "安放",
+          "count": 4
+        },
+        {
+          "term": "宣洩",
+          "count": 3
+        },
+        {
+          "term": "重構",
+          "count": 3
+        }
+      ],
+      "top_final_states": [
+        {
+          "term": "希望／可能性",
+          "count": 77
+        },
+        {
+          "term": "幸福／甜蜜",
+          "count": 12
+        },
+        {
+          "term": "平靜／穩定",
+          "count": 10
+        },
+        {
+          "term": "自由／解放",
+          "count": 7
+        },
+        {
+          "term": "未辨識",
+          "count": 5
+        },
+        {
+          "term": "完整／整合",
+          "count": 4
+        },
+        {
+          "term": "釋然／放下",
+          "count": 3
+        },
+        {
+          "term": "共鳴／同行",
+          "count": 2
+        },
+        {
+          "term": "安心／安放",
+          "count": 1
+        },
+        {
+          "term": "自我價值／配得感",
+          "count": 1
+        }
+      ],
+      "top_categories": [
+        {
+          "term": "轉折型候選",
+          "count": 51
+        },
+        {
+          "term": "轉折型",
+          "count": 42
+        },
+        {
+          "term": "其他／待複查",
+          "count": 12
+        },
+        {
+          "term": "思辨論述型",
+          "count": 9
+        },
+        {
+          "term": "幸福甜美型",
+          "count": 5
+        },
+        {
+          "term": "治理宣言型",
+          "count": 3
+        },
+        {
+          "term": "祝福紀念型",
+          "count": 1
+        }
+      ],
+      "top_styles": [
+        {
+          "term": "Mandopop／Pop Rock／Ballad",
+          "count": 55
+        },
+        {
+          "term": "City Pop",
+          "count": 15
+        },
+        {
+          "term": "Dream／Atmospheric Pop",
+          "count": 15
+        },
+        {
+          "term": "Synth／Electro／Industrial",
+          "count": 14
+        },
+        {
+          "term": "Anime／J-Pop／J-Rock",
+          "count": 11
+        },
+        {
+          "term": "Alternative／Art／Indie",
+          "count": 7
+        },
+        {
+          "term": "Rap／Hip-Hop／Soul",
+          "count": 6
+        }
+      ],
+      "legacy_era_labels_present": [
+        {
+          "term": "微月光",
+          "count": 88
+        },
+        {
+          "term": "白晝之月",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "period": "P4",
+      "era_id": "ERA-P4",
+      "period_name": "現實壓力與治理轉折期",
+      "start_date": "2026-03-09",
+      "end_date": "2026-06-09",
+      "source_active_range": {
+        "start": "2026-03-09",
+        "end": "2026-04-13",
+        "source": "Suno / original ERA segmentation"
+      },
+      "corpus_date_min": "2026-03-09",
+      "corpus_date_max": "2026-04-13",
+      "work_count": 74,
+      "top_keywords": [
+        {
+          "term": "微光光芒",
+          "count": 55
+        },
+        {
+          "term": "現實選擇",
+          "count": 51
+        },
+        {
+          "term": "天空",
+          "count": 33
+        },
+        {
+          "term": "道路旅途",
+          "count": 33
+        },
+        {
+          "term": "正義界線",
+          "count": 32
+        },
+        {
+          "term": "風",
+          "count": 32
+        },
+        {
+          "term": "守護界線",
+          "count": 27
+        },
+        {
+          "term": "平靜",
+          "count": 26
+        },
+        {
+          "term": "時間記憶",
+          "count": 22
+        },
+        {
+          "term": "黑暗影子",
+          "count": 22
+        },
+        {
+          "term": "夜晚",
+          "count": 21
+        },
+        {
+          "term": "命運因果",
+          "count": 20
+        },
+        {
+          "term": "社會觀察",
+          "count": 20
+        },
+        {
+          "term": "希望未來",
+          "count": 19
+        },
+        {
+          "term": "離別放下",
+          "count": 19
+        },
+        {
+          "term": "自由自主",
+          "count": 16
+        },
+        {
+          "term": "月亮月光",
+          "count": 15
+        },
+        {
+          "term": "自我探索",
+          "count": 15
+        },
+        {
+          "term": "希望",
+          "count": 15
+        },
+        {
+          "term": "愛與連結",
+          "count": 15
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "term": "建立界線",
+          "count": 27
+        },
+        {
+          "term": "未辨識",
+          "count": 15
+        },
+        {
+          "term": "重拾選擇權",
+          "count": 9
+        },
+        {
+          "term": "重新理解／看清現實",
+          "count": 8
+        },
+        {
+          "term": "允許暫停／等待時機",
+          "count": 3
+        },
+        {
+          "term": "放下／離開",
+          "count": 3
+        },
+        {
+          "term": "自我整合",
+          "count": 2
+        },
+        {
+          "term": "保存幸福",
+          "count": 2
+        },
+        {
+          "term": "重新前進／啟程",
+          "count": 2
+        },
+        {
+          "term": "回歸自我／自持",
+          "count": 1
+        }
+      ],
+      "top_emotion_functions": [
+        {
+          "term": "治理",
+          "count": 33
+        },
+        {
+          "term": "未辨識",
+          "count": 10
+        },
+        {
+          "term": "前進",
+          "count": 8
+        },
+        {
+          "term": "重構",
+          "count": 6
+        },
+        {
+          "term": "陪伴",
+          "count": 6
+        },
+        {
+          "term": "宣洩",
+          "count": 2
+        },
+        {
+          "term": "警醒／辨識風險",
+          "count": 2
+        },
+        {
+          "term": "安放",
+          "count": 1
+        },
+        {
+          "term": "治理｜宣洩",
+          "count": 1
+        },
+        {
+          "term": "治理｜重構",
+          "count": 1
+        }
+      ],
+      "top_final_states": [
+        {
+          "term": "希望／可能性",
+          "count": 37
+        },
+        {
+          "term": "平靜／穩定",
+          "count": 10
+        },
+        {
+          "term": "自由／解放",
+          "count": 8
+        },
+        {
+          "term": "完整／整合",
+          "count": 6
+        },
+        {
+          "term": "前進／啟程",
+          "count": 3
+        },
+        {
+          "term": "釋然／放下",
+          "count": 3
+        },
+        {
+          "term": "共鳴／同行",
+          "count": 2
+        },
+        {
+          "term": "安心／安放",
+          "count": 2
+        },
+        {
+          "term": "未辨識",
+          "count": 1
+        },
+        {
+          "term": "療癒完成",
+          "count": 1
+        }
+      ],
+      "top_categories": [
+        {
+          "term": "轉折型候選",
+          "count": 25
+        },
+        {
+          "term": "轉折型",
+          "count": 17
+        },
+        {
+          "term": "治理宣言型",
+          "count": 15
+        },
+        {
+          "term": "其他／待複查",
+          "count": 14
+        },
+        {
+          "term": "思辨論述型",
+          "count": 2
+        },
+        {
+          "term": "勸戒論述型",
+          "count": 1
+        }
+      ],
+      "top_styles": [
+        {
+          "term": "Synth／Electro／Industrial",
+          "count": 29
+        },
+        {
+          "term": "Mandopop／Pop Rock／Ballad",
+          "count": 26
+        },
+        {
+          "term": "Dream／Atmospheric Pop",
+          "count": 9
+        },
+        {
+          "term": "Anime／J-Pop／J-Rock",
+          "count": 4
+        },
+        {
+          "term": "City Pop",
+          "count": 4
+        },
+        {
+          "term": "Alternative／Art／Indie",
+          "count": 2
+        }
+      ],
+      "legacy_era_labels_present": [
+        {
+          "term": "人生月台",
+          "count": 6
+        },
+        {
+          "term": "白晝之月",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "start_date": "2026-06-10",
+      "end_date": "2026-06-30",
+      "source_active_range": {
+        "start": "2026-06-10",
+        "end": "2026-06-30",
+        "source": "Suno / original ERA segmentation"
+      },
+      "corpus_date_min": "2026-06-10",
+      "corpus_date_max": "2026-06-30",
+      "work_count": 81,
+      "top_keywords": [
+        {
+          "term": "風",
+          "count": 69
+        },
+        {
+          "term": "希望未來",
+          "count": 53
+        },
+        {
+          "term": "道路旅途",
+          "count": 50
+        },
+        {
+          "term": "微光光芒",
+          "count": 49
+        },
+        {
+          "term": "平靜",
+          "count": 46
+        },
+        {
+          "term": "月亮月光",
+          "count": 41
+        },
+        {
+          "term": "時間記憶",
+          "count": 34
+        },
+        {
+          "term": "未知探索",
+          "count": 33
+        },
+        {
+          "term": "希望",
+          "count": 32
+        },
+        {
+          "term": "等待時機",
+          "count": 28
+        },
+        {
+          "term": "天空",
+          "count": 27
+        },
+        {
+          "term": "旅程歸屬",
+          "count": 26
+        },
+        {
+          "term": "孤獨",
+          "count": 22
+        },
+        {
+          "term": "自由自主",
+          "count": 21
+        },
+        {
+          "term": "夜晚",
+          "count": 20
+        },
+        {
+          "term": "夢想創作",
+          "count": 17
+        },
+        {
+          "term": "溫柔",
+          "count": 16
+        },
+        {
+          "term": "成長蛻變",
+          "count": 15
+        },
+        {
+          "term": "孤獨陪伴",
+          "count": 15
+        },
+        {
+          "term": "命運因果",
+          "count": 14
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "term": "重新理解／看清現實",
+          "count": 15
+        },
+        {
+          "term": "接受未知／順其自然",
+          "count": 15
+        },
+        {
+          "term": "放下／離開",
+          "count": 10
+        },
+        {
+          "term": "允許暫停／等待時機",
+          "count": 9
+        },
+        {
+          "term": "重新前進／啟程",
+          "count": 9
+        },
+        {
+          "term": "未辨識",
+          "count": 8
+        },
+        {
+          "term": "自我接納",
+          "count": 6
+        },
+        {
+          "term": "建立界線",
+          "count": 3
+        },
+        {
+          "term": "回歸自我／自持",
+          "count": 2
+        },
+        {
+          "term": "給予祝福",
+          "count": 2
+        }
+      ],
+      "top_emotion_functions": [
+        {
+          "term": "前進",
+          "count": 18
+        },
+        {
+          "term": "安放",
+          "count": 11
+        },
+        {
+          "term": "重構",
+          "count": 10
+        },
+        {
+          "term": "未辨識",
+          "count": 9
+        },
+        {
+          "term": "陪伴",
+          "count": 8
+        },
+        {
+          "term": "提振",
+          "count": 4
+        },
+        {
+          "term": "祝福",
+          "count": 3
+        },
+        {
+          "term": "陪伴｜前進",
+          "count": 3
+        },
+        {
+          "term": "治理",
+          "count": 2
+        },
+        {
+          "term": "治理｜陪伴",
+          "count": 2
+        }
+      ],
+      "top_final_states": [
+        {
+          "term": "希望／可能性",
+          "count": 51
+        },
+        {
+          "term": "自由／解放",
+          "count": 8
+        },
+        {
+          "term": "幸福／甜蜜",
+          "count": 5
+        },
+        {
+          "term": "釋然／放下",
+          "count": 5
+        },
+        {
+          "term": "平靜／穩定",
+          "count": 4
+        },
+        {
+          "term": "前進／啟程",
+          "count": 4
+        },
+        {
+          "term": "平靜等待／接納未知／仍願繼續前進",
+          "count": 1
+        },
+        {
+          "term": "未辨識",
+          "count": 1
+        },
+        {
+          "term": "共鳴／同行",
+          "count": 1
+        },
+        {
+          "term": "安心／安放",
+          "count": 1
+        }
+      ],
+      "top_categories": [
+        {
+          "term": "轉折型",
+          "count": 42
+        },
+        {
+          "term": "轉折型候選",
+          "count": 20
+        },
+        {
+          "term": "其他／待複查",
+          "count": 12
+        },
+        {
+          "term": "祝福紀念型",
+          "count": 4
+        },
+        {
+          "term": "治理宣言型",
+          "count": 3
+        }
+      ],
+      "top_styles": [
+        {
+          "term": "Alternative／Art／Indie",
+          "count": 21
+        },
+        {
+          "term": "Dream／Atmospheric Pop",
+          "count": 20
+        },
+        {
+          "term": "Mandopop／Pop Rock／Ballad",
+          "count": 17
+        },
+        {
+          "term": "Anime／J-Pop／J-Rock",
+          "count": 16
+        },
+        {
+          "term": "Synth／Electro／Industrial",
+          "count": 5
+        },
+        {
+          "term": "Dream Pop／City Pop／Mandopop",
+          "count": 1
+        },
+        {
+          "term": "Rap／Hip-Hop／Soul",
+          "count": 1
+        }
+      ],
+      "legacy_era_labels_present": [
+        {
+          "term": "人生月台",
+          "count": 70
+        },
+        {
+          "term": "白晝之月",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "start_date": "2026-07-01",
+      "end_date": "2026-07-31",
+      "source_active_range": {
+        "start": "2026-07-01",
+        "end": "2026-07-31",
+        "source": "Suno / original ERA segmentation"
+      },
+      "corpus_date_min": "2026-07-01",
+      "corpus_date_max": "2026-07-30",
+      "work_count": 58,
+      "top_keywords": [
+        {
+          "term": "風",
+          "count": 52
+        },
+        {
+          "term": "希望未來",
+          "count": 38
+        },
+        {
+          "term": "道路旅途",
+          "count": 36
+        },
+        {
+          "term": "微光光芒",
+          "count": 32
+        },
+        {
+          "term": "希望",
+          "count": 29
+        },
+        {
+          "term": "天空",
+          "count": 28
+        },
+        {
+          "term": "等待時機",
+          "count": 23
+        },
+        {
+          "term": "時間記憶",
+          "count": 20
+        },
+        {
+          "term": "月亮月光",
+          "count": 19
+        },
+        {
+          "term": "平靜",
+          "count": 19
+        },
+        {
+          "term": "自由自主",
+          "count": 19
+        },
+        {
+          "term": "旅程歸屬",
+          "count": 16
+        },
+        {
+          "term": "夜晚",
+          "count": 14
+        },
+        {
+          "term": "雨",
+          "count": 12
+        },
+        {
+          "term": "現實選擇",
+          "count": 11
+        },
+        {
+          "term": "溫柔",
+          "count": 11
+        },
+        {
+          "term": "夢想創作",
+          "count": 11
+        },
+        {
+          "term": "未知探索",
+          "count": 10
+        },
+        {
+          "term": "正義界線",
+          "count": 10
+        },
+        {
+          "term": "命運因果",
+          "count": 10
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "term": "重新理解／看清現實",
+          "count": 13
+        },
+        {
+          "term": "未辨識",
+          "count": 11
+        },
+        {
+          "term": "允許暫停／等待時機",
+          "count": 8
+        },
+        {
+          "term": "建立界線",
+          "count": 8
+        },
+        {
+          "term": "放下／離開",
+          "count": 5
+        },
+        {
+          "term": "重新前進／啟程",
+          "count": 5
+        },
+        {
+          "term": "接受未知／順其自然",
+          "count": 4
+        },
+        {
+          "term": "回歸自我／自持",
+          "count": 2
+        },
+        {
+          "term": "重拾選擇權",
+          "count": 1
+        },
+        {
+          "term": "給予祝福",
+          "count": 1
+        }
+      ],
+      "top_emotion_functions": [
+        {
+          "term": "陪伴",
+          "count": 12
+        },
+        {
+          "term": "未辨識",
+          "count": 9
+        },
+        {
+          "term": "前進",
+          "count": 7
+        },
+        {
+          "term": "安放",
+          "count": 6
+        },
+        {
+          "term": "重構",
+          "count": 6
+        },
+        {
+          "term": "治理",
+          "count": 4
+        },
+        {
+          "term": "祝福｜陪伴",
+          "count": 2
+        },
+        {
+          "term": "甜蜜",
+          "count": 2
+        },
+        {
+          "term": "提振",
+          "count": 2
+        },
+        {
+          "term": "警醒／辨識風險",
+          "count": 2
+        }
+      ],
+      "top_final_states": [
+        {
+          "term": "希望／可能性",
+          "count": 27
+        },
+        {
+          "term": "自由／解放",
+          "count": 13
+        },
+        {
+          "term": "共鳴／同行",
+          "count": 11
+        },
+        {
+          "term": "完整／整合",
+          "count": 2
+        },
+        {
+          "term": "平靜／穩定",
+          "count": 1
+        },
+        {
+          "term": "安心／安放",
+          "count": 1
+        },
+        {
+          "term": "幸福／甜蜜",
+          "count": 1
+        },
+        {
+          "term": "前進／啟程",
+          "count": 1
+        },
+        {
+          "term": "釋然／放下",
+          "count": 1
+        }
+      ],
+      "top_categories": [
+        {
+          "term": "轉折型候選",
+          "count": 20
+        },
+        {
+          "term": "轉折型",
+          "count": 19
+        },
+        {
+          "term": "其他／待複查",
+          "count": 15
+        },
+        {
+          "term": "治理宣言型",
+          "count": 3
+        },
+        {
+          "term": "思辨論述型",
+          "count": 1
+        }
+      ],
+      "top_styles": [
+        {
+          "term": "Alternative／Art／Indie",
+          "count": 21
+        },
+        {
+          "term": "Anime／J-Pop／J-Rock",
+          "count": 12
+        },
+        {
+          "term": "Mandopop／Pop Rock／Ballad",
+          "count": 12
+        },
+        {
+          "term": "Synth／Electro／Industrial",
+          "count": 11
+        },
+        {
+          "term": "City Pop",
+          "count": 2
+        }
+      ],
+      "legacy_era_labels_present": [
+        {
+          "term": "順其自然",
+          "count": 33
+        },
+        {
+          "term": "人生月台",
+          "count": 14
+        },
+        {
+          "term": "白晝之月",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "start_date": "2026-08-01",
+      "end_date": "2026-08-31",
+      "source_active_range": {
+        "start": "2026-08-01",
+        "end": "2026-08-31",
+        "source": "Suno / original ERA segmentation"
+      },
+      "corpus_date_min": "2026-08-01",
+      "corpus_date_max": "2026-08-29",
+      "work_count": 15,
+      "top_keywords": [
+        {
+          "term": "月亮月光",
+          "count": 13
+        },
+        {
+          "term": "風",
+          "count": 11
+        },
+        {
+          "term": "自由自主",
+          "count": 10
+        },
+        {
+          "term": "微光光芒",
+          "count": 10
+        },
+        {
+          "term": "平靜",
+          "count": 9
+        },
+        {
+          "term": "希望",
+          "count": 9
+        },
+        {
+          "term": "希望未來",
+          "count": 9
+        },
+        {
+          "term": "天空",
+          "count": 8
+        },
+        {
+          "term": "正義界線",
+          "count": 7
+        },
+        {
+          "term": "命運因果",
+          "count": 7
+        },
+        {
+          "term": "道路旅途",
+          "count": 7
+        },
+        {
+          "term": "守護界線",
+          "count": 5
+        },
+        {
+          "term": "孤獨",
+          "count": 5
+        },
+        {
+          "term": "孤獨陪伴",
+          "count": 5
+        },
+        {
+          "term": "旅途移動",
+          "count": 5
+        },
+        {
+          "term": "等待時機",
+          "count": 5
+        },
+        {
+          "term": "重新出發",
+          "count": 4
+        },
+        {
+          "term": "旅程歸屬",
+          "count": 4
+        },
+        {
+          "term": "愛與連結",
+          "count": 4
+        },
+        {
+          "term": "飛行翅膀",
+          "count": 3
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "term": "建立界線",
+          "count": 6
+        },
+        {
+          "term": "重新前進／啟程",
+          "count": 4
+        },
+        {
+          "term": "允許暫停／等待時機",
+          "count": 1
+        },
+        {
+          "term": "未辨識",
+          "count": 1
+        },
+        {
+          "term": "放下／離開",
+          "count": 1
+        },
+        {
+          "term": "重拾選擇權",
+          "count": 1
+        },
+        {
+          "term": "接受未知／順其自然",
+          "count": 1
+        }
+      ],
+      "top_emotion_functions": [
+        {
+          "term": "治理",
+          "count": 4
+        },
+        {
+          "term": "陪伴",
+          "count": 4
+        },
+        {
+          "term": "前進",
+          "count": 3
+        },
+        {
+          "term": "未辨識",
+          "count": 1
+        },
+        {
+          "term": "治理｜前進",
+          "count": 1
+        },
+        {
+          "term": "陪伴｜治理",
+          "count": 1
+        },
+        {
+          "term": "警醒／辨識風險｜治理",
+          "count": 1
+        }
+      ],
+      "top_final_states": [
+        {
+          "term": "自由／解放",
+          "count": 7
+        },
+        {
+          "term": "希望／可能性",
+          "count": 5
+        },
+        {
+          "term": "前進／啟程",
+          "count": 2
+        },
+        {
+          "term": "完整／整合",
+          "count": 1
+        }
+      ],
+      "top_categories": [
+        {
+          "term": "轉折型",
+          "count": 7
+        },
+        {
+          "term": "轉折型候選",
+          "count": 7
+        },
+        {
+          "term": "其他／待複查",
+          "count": 1
+        }
+      ],
+      "top_styles": [
+        {
+          "term": "Mandopop／Pop Rock／Ballad",
+          "count": 6
+        },
+        {
+          "term": "Alternative／Art／Indie",
+          "count": 4
+        },
+        {
+          "term": "Anime／J-Pop／J-Rock",
+          "count": 2
+        },
+        {
+          "term": "Dream／Atmospheric Pop",
+          "count": 2
+        },
+        {
+          "term": "Synth／Electro／Industrial",
+          "count": 1
+        }
+      ],
+      "legacy_era_labels_present": [
+        {
+          "term": "順其自然",
+          "count": 12
+        }
+      ]
+    },
+    {
+      "period": "P8",
+      "era_id": "ERA-P8",
+      "period_name": "自我治理與未來展望期",
+      "start_date": "2026-09-01",
+      "end_date": null,
+      "source_active_range": {
+        "start": "2026-09-01",
+        "end": null,
+        "source": "Suno / original ERA segmentation"
+      },
+      "corpus_date_min": "2026-09-03",
+      "corpus_date_max": "2026-09-03",
+      "work_count": 2,
+      "top_keywords": [
+        {
+          "term": "自我治理",
+          "count": 2
+        },
+        {
+          "term": "月光",
+          "count": 1
+        },
+        {
+          "term": "未知探索",
+          "count": 1
+        },
+        {
+          "term": "未竟之事",
+          "count": 1
+        },
+        {
+          "term": "白晝之月",
+          "count": 1
+        },
+        {
+          "term": "收尾",
+          "count": 1
+        },
+        {
+          "term": "自由",
+          "count": 1
+        },
+        {
+          "term": "自我照亮",
+          "count": 1
+        },
+        {
+          "term": "自我價值",
+          "count": 1
+        },
+        {
+          "term": "行李",
+          "count": 1
+        },
+        {
+          "term": "孤獨",
+          "count": 1
+        },
+        {
+          "term": "底線",
+          "count": 1
+        },
+        {
+          "term": "承諾",
+          "count": 1
+        },
+        {
+          "term": "界線",
+          "count": 1
+        },
+        {
+          "term": "重新出發",
+          "count": 1
+        },
+        {
+          "term": "風",
+          "count": 1
+        },
+        {
+          "term": "飛行翅膀",
+          "count": 1
+        },
+        {
+          "term": "航向",
+          "count": 1
+        },
+        {
+          "term": "停止內耗",
+          "count": 1
+        },
+        {
+          "term": "責任",
+          "count": 1
+        }
+      ],
+      "top_turn_methods": [
+        {
+          "term": "清點收尾／完成承諾／斷捨離與重新歸檔",
+          "count": 1
+        },
+        {
+          "term": "確認位置與責任／建立界線／停止勉強維繫",
+          "count": 1
+        }
+      ],
+      "top_emotion_functions": [
+        {
+          "term": "收束舊事／恢復行動主權／為未來騰出空間",
+          "count": 1
+        },
+        {
+          "term": "恢復自尊／界線治理／停止內耗",
+          "count": 1
+        }
+      ],
+      "top_final_states": [
+        {
+          "term": "自我治理／選擇新航向／迎向未知",
+          "count": 1
+        },
+        {
+          "term": "無愧於心／自我照亮／選擇離開",
+          "count": 1
+        }
+      ],
+      "top_categories": [
+        {
+          "term": "治理宣言型",
+          "count": 2
+        }
+      ],
+      "top_styles": [
+        {
+          "term": "Anime Pop Rock／J-Pop／Synth Rock",
+          "count": 1
+        },
+        {
+          "term": "Dream Pop Rock／Cinematic Synth Rock",
+          "count": 1
+        }
+      ],
+      "legacy_era_labels_present": [
+        {
+          "term": "治理自己",
+          "count": 2
+        }
+      ]
+    }
+  ]
+}
