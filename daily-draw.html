@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LOC1 × LOC8 · 每日抽牌紀錄</title>
+  <meta name="description" content="LOC 每日主抽與補抽的獨立紀錄介面" />
+  <link rel="stylesheet" href="css/loc-nav.css" />
+  <style>
+    :root{--bg:#07101f;--panel:rgba(15,28,48,.82);--line:rgba(196,216,255,.14);--line2:rgba(196,216,255,.28);--text:#edf4ff;--muted:#9fb1ca;--accent:#a9c7ff;--shadow:0 18px 50px rgba(0,0,0,.25)}
+    *{box-sizing:border-box} body{margin:0;min-height:100vh;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;background:radial-gradient(circle at 15% 10%,rgba(90,130,210,.18),transparent 30%),linear-gradient(180deg,#081222,#060d18)}
+    button,input,select,textarea{font:inherit}.page{width:min(1040px,calc(100% - 28px));margin:0 auto;padding:22px 0 48px}
+    .hero{display:flex;justify-content:space-between;gap:18px;align-items:end;margin:28px 0 18px}.eyebrow{font-size:12px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase}.hero h1{margin:6px 0 6px;font-size:clamp(28px,5vw,44px)}.hero p{margin:0;color:var(--muted);line-height:1.7}.sync{color:var(--muted);font-size:12px;white-space:nowrap}
+    .grid{display:grid;grid-template-columns:minmax(270px,.72fr) minmax(0,1.28fr);gap:16px;align-items:start}.card{border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:var(--shadow);overflow:hidden}.head{padding:15px 16px 12px;border-bottom:1px solid var(--line)}.head h2{margin:0;font-size:16px}.head p{margin:4px 0 0;color:var(--muted);font-size:12px}.body{padding:16px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}label{font-size:12px;color:var(--muted)}input,select,textarea{width:100%;padding:10px 11px;color:var(--text);background:rgba(4,12,23,.72);border:1px solid var(--line);border-radius:11px;outline:none}textarea{min-height:84px;resize:vertical}
+    .actions{display:flex;gap:8px;margin-top:12px}.btn{border:1px solid var(--line2);border-radius:11px;padding:9px 12px;color:var(--text);background:rgba(169,199,255,.08);cursor:pointer}.btn.primary{background:rgba(169,199,255,.18)}
+    .history{display:grid;gap:7px;max-height:620px;overflow:auto;padding-right:3px}.entry{display:grid;grid-template-columns:86px 1fr;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02)}.date{font-size:11px;color:var(--muted);padding-top:2px}.line{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.kind{font-size:10px;border:1px solid var(--line2);border-radius:999px;padding:2px 7px;color:var(--accent)}.title{font-size:13px;font-weight:700}.note{margin-top:4px;color:var(--muted);font-size:11px;line-height:1.45}.empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--line2);border-radius:12px}.count{font-size:12px;color:var(--muted)}
+    .back{display:inline-flex;margin-top:16px;color:var(--accent);text-decoration:none;font-size:13px}
+    @media(max-width:760px){.hero{align-items:start;flex-direction:column}.grid,.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.page{width:min(100% - 20px,1040px)}}
+  </style>
+</head>
+<body>
+  <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="life" aria-label="全站導覽"></nav></div>
+  <main class="page">
+    <section class="hero">
+      <div><div class="eyebrow">LOC1 × LOC8 · Daily Draw Log</div><h1>每日抽牌紀錄</h1><p>主抽與補抽是獨立的時間紀錄功能，不與 Life Event、Trajectory 或 Trend 混在同一個介面。</p></div>
+      <div class="sync" id="syncText">載入中…</div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="head"><h2>新增抽牌</h2><p>記錄日期、符文、方向與當日觀察。</p></div>
+        <div class="body">
+          <form id="drawForm">
+            <div class="form-grid">
+              <div class="field"><label for="drawDate">日期</label><input id="drawDate" type="date" required /></div>
+              <div class="field"><label for="drawKind">類型</label><select id="drawKind"><option value="daily_draw">每日主抽</option><option value="daily_draw_supplement">補抽</option></select></div>
+              <div class="field"><label for="drawRune">符文</label><select id="drawRune" required><option value="">選擇符文</option></select></div>
+              <div class="field"><label for="drawDirection">方向</label><select id="drawDirection"><option>正位</option><option>半正位</option><option>半逆位</option><option>逆位</option></select></div>
+              <div class="field full"><label for="drawNote">備註／當日觀察</label><textarea id="drawNote" placeholder="可留白"></textarea></div>
+            </div>
+            <div class="actions"><button class="btn primary" type="submit">儲存抽牌</button><button class="btn" id="clearBtn" type="button">清除</button></div>
+          </form>
+          <a class="back" href="life.html">← 回到 LOC8 Life</a>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="head"><h2>抽牌歷史</h2><p>同一天的主抽與補抽合併顯示。</p></div>
+        <div class="body"><div class="count" id="count">0 筆</div><div style="height:8px"></div><div class="history" id="history"><div class="empty">尚無紀錄。</div></div></div>
+      </section>
+    </div>
+  </main>
+  <script src="js/loc-nav.js"></script>
+  <script>
+    const API="https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
+    const $=s=>document.querySelector(s); let events=[];
+    const esc=(v='')=>String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    const isDraw=e=>e.event_type==='daily_draw'||e.event_type==='daily_draw_supplement';
+    const uid=()=> 'EV-'+new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14)+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+
+    async function loadRunes(){
+      const s=$('#drawRune');
+      try{
+        const r=await fetch('data/shared/lots.json',{cache:'no-store'}); const d=await r.json();
+        (d.items||[]).forEach(x=>{const o=document.createElement('option');o.value=x.名稱;o.textContent=String(x.編號).padStart(2,'0')+' · '+x.名稱;s.appendChild(o)});
+      }catch(e){console.error(e)}
+    }
+    async function load(){
+      $('#syncText').textContent='同步中…';
+      try{
+        const u=new URL(API);u.searchParams.set('action','events');u.searchParams.set('user_id','lo3rwang');
+        const r=await fetch(u,{cache:'no-store',redirect:'follow'});const d=await r.json();events=Array.isArray(d)?d:(d.events||[]);
+        $('#syncText').textContent='已同步';render();
+      }catch(e){console.error(e);$('#syncText').textContent='同步失敗'}
+    }
+    function render(){
+      const draws=events.filter(isDraw).sort((a,b)=>new Date(b.date)-new Date(a.date)||new Date(b.created_at||0)-new Date(a.created_at||0));
+      $('#count').textContent=draws.length+' 筆';
+      if(!draws.length){$('#history').innerHTML='<div class="empty">尚無紀錄。</div>';return}
+      const by=new Map();draws.forEach(e=>{if(!by.has(e.date))by.set(e.date,[]);by.get(e.date).push(e)});
+      $('#history').innerHTML=[...by.entries()].map(([date,items])=>`<div class="entry"><div class="date">${esc(date)}</div><div>${items.map(e=>{const k=e.event_type==='daily_draw_supplement'?'補抽':'主抽';const t=(e.event_title||'').replace(/^每日抽牌｜|^補抽｜/,'')||e.object_id;return `<div class="line"><span class="kind">${k}</span><span class="title">${esc(t)}</span></div>`}).join('')}${items.find(e=>e.description)?.description?`<div class="note">${esc(items.find(e=>e.description).description)}</div>`:''}</div></div>`).join('');
+    }
+    function reset(){ $('#drawForm').reset(); $('#drawDate').value=new Date().toISOString().slice(0,10); $('#drawDirection').value='正位'; }
+    $('#drawForm').addEventListener('submit',async ev=>{
+      ev.preventDefault();const date=$('#drawDate').value,rune=$('#drawRune').value,direction=$('#drawDirection').value,kind=$('#drawKind').value,note=$('#drawNote').value.trim();if(!date||!rune)return;
+      const label=kind==='daily_draw_supplement'?'補抽':'每日抽牌';
+      const event={id:uid(),user_id:'lo3rwang',date,object_type:'rune',object_id:rune,event_type:kind,event_title:label+'｜'+rune+direction,description:note,state_before:'',state_after:'',era:'',tags:['daily-draw','LOC1',kind==='daily_draw_supplement'?'supplement':'primary',direction],status:'recorded',confidence:'recorded',source:'daily-draw.html',created_at:new Date().toISOString(),system_id:'lo3rwang',primary_loc:'LOC8',related_locs:['LOC1','LOC8']};
+      try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'event',event}),redirect:'follow'});const d=await r.json();if(d&&d.ok===false)throw new Error(d.error||'API error');await load();reset()}catch(e){console.error(e);alert('儲存失敗，請檢查網路或 Sheet API。')}
+    });
+    $('#clearBtn').addEventListener('click',reset);
+    reset();loadRunes();load();
+  </script>
+</body>
+</html>
