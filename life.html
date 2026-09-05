@@ -1126,9 +1126,9 @@
           const namedKeywords = Array.isArray(loc3?.named_keywords)
             ? loc3.named_keywords
             : [];
-          const loc3Keywords = Array.isArray(loc3?.normalized_top_keywords)
-            ? loc3.normalized_top_keywords.slice(0,10)
-            : [];
+          const loc3Keywords = Array.isArray(loc3?.normalized_semantic_families)
+            ? loc3.normalized_semantic_families.slice(0,10)
+            : (Array.isArray(loc3?.normalized_top_keywords) ? loc3.normalized_top_keywords.slice(0,10) : []);
           const loc3WorkCount = Number(loc3?.work_count || 0);
           const loc4Works = Array.isArray(loc4WritingRegistry?.works)
             ? loc4WritingRegistry.works.filter(work => String(work.period || '') === period)
