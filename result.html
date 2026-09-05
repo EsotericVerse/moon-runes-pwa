@@ -188,21 +188,7 @@
       line-height: 1.8;
     }
     .result-card-stage {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 220px;
-      gap: 16px;
-      align-items: start;
-    }
-
-    .result-side-card {
-      display: flex;
-      min-height: 100%;
-    }
-
-    .result-side-card .result-home-cta {
-      width: 100%;
-      margin-top: 0;
-      align-self: stretch;
+      display: block;
     }
 
     .cards-grid {
@@ -346,7 +332,49 @@
     .reading strong { color:var(--text); }
     .reading h2 { margin:0 0 12px; color:var(--text); font-size:1.15rem; }
     .actions {
-      display:flex; flex-wrap:wrap; gap:10px; margin-top:18px;
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .action-card {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      min-height:92px;
+      padding:15px 16px;
+      border:1px solid rgba(231,194,125,.42);
+      border-radius:16px;
+      background:rgba(231,194,125,.08);
+      color:var(--text);
+      text-decoration:none;
+      text-align:left;
+      cursor:pointer;
+      font:inherit;
+      transition:transform .18s ease,border-color .18s ease,background .18s ease;
+    }
+
+    .action-card:hover,
+    .action-card:focus-visible {
+      transform:translateY(-2px);
+      border-color:rgba(231,194,125,.72);
+      background:rgba(231,194,125,.13);
+    }
+
+    .action-card strong {
+      display:block;
+      color:var(--gold);
+      font-size:.96rem;
+    }
+
+    .action-card small {
+      display:block;
+      margin-top:3px;
+      color:var(--muted);
+      font-size:.76rem;
+      line-height:1.45;
     }
 
     .mode-switch {
@@ -422,9 +450,7 @@
 
     @media (max-width: 900px) {
       .ritual-layout { grid-template-columns: 1fr; }
-      .result-card-stage { grid-template-columns: 1fr; }
-      .result-side-card { min-height: auto; }
-      .result-side-card .result-home-cta { min-height: auto; }
+      .actions { grid-template-columns:1fr; }
       .cards-grid[data-count="3"] { grid-template-columns:repeat(3,minmax(0,1fr)); }
       .cards-grid[data-count="5"] { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .cards-grid[data-count="5"] .rune-result-card,
@@ -503,22 +529,33 @@
       <div id="result-view" hidden>
         <div class="result-card-stage">
           <div class="cards-grid" id="cards-grid"></div>
-
-          <aside class="result-side-card" aria-label="結果頁導覽">
-            <a class="result-home-cta" href="index.html">
-              <span>
-                <strong>回到首頁</strong>
-                <small>返回 LOC 首頁與抽牌選單</small>
-              </span>
-              <span aria-hidden="true">→</span>
-            </a>
-          </aside>
         </div>
         <div class="reading" id="reading"></div>
         <p class="note" id="mode-note"></p>
-        <div class="actions">
-          <button class="button primary" id="retry-button" type="button">重新抽牌</button>
-          <a class="button" href="list.html">查看月符資料</a>
+        <div class="actions" aria-label="結果頁操作">
+          <button class="action-card" id="retry-button" type="button">
+            <span>
+              <strong>重新抽牌</strong>
+              <small>以相同模式重新抽取一次</small>
+            </span>
+            <span aria-hidden="true">↻</span>
+          </button>
+
+          <a class="action-card" href="list.html">
+            <span>
+              <strong>查看月符資料</strong>
+              <small>66 月符圖鑑 · 八組分類 · 卡片詳細說明</small>
+            </span>
+            <span aria-hidden="true">→</span>
+          </a>
+
+          <a class="action-card" href="index.html">
+            <span>
+              <strong>回到首頁</strong>
+              <small>返回 LOC 首頁與抽牌選單</small>
+            </span>
+            <span aria-hidden="true">→</span>
+          </a>
         </div>
 
         <section class="mode-switch" aria-label="切換抽牌模式">
