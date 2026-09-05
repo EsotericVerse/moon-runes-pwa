@@ -561,8 +561,8 @@
         <div class="nav-group">
           <div class="nav-group-label">02 · 時期</div>
           <button class="view-switch" id="eraTrendViewBtn" type="button" data-view="era-trend">
-            <span class="nav-title">ERA</span>
-            <span class="nav-sub">連續時期 · Event 關鍵字脈絡</span>
+            <span class="nav-title">時期</span>
+            <span class="nav-sub">連續時期 · 事件關鍵字脈絡</span>
           </button>
         </div>
 
@@ -592,10 +592,10 @@
       <div class="life-view" id="lifeView" hidden>
       <section class="hero" id="overview">
         <div class="loc-header">
-          <p class="loc-header-meta">LOC8 · Event · Time · Trajectory</p>
-          <h1 class="loc-header-title">脈絡分析</h1>
-          <h2 class="loc-header-subtitle">把分散的紀錄，放回同一段脈絡。</h2>
-          <p class="loc-header-copy">以每日符文、時期與事件三種尺度整理生活資料：每日符文觀察近期訊號，時期聚合一段時間的關鍵字與狀態，事件保存具體發生的事情與轉折。</p>
+          <p class="loc-header-meta">LOC8 · Event · Current State · Record</p>
+          <h1 class="loc-header-title">事件紀錄</h1>
+          <h2 class="loc-header-subtitle">把發生過的事情，記成可以持續追蹤的狀態。</h2>
+          <p class="loc-header-copy">新增或更新事件，記錄事件前後的狀態、標籤與所屬時期；這些資料會再被時間線與時期分析使用。</p>
         </div>
         <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">載入中…</span></div>
       </section>
@@ -683,31 +683,32 @@
 
       <div class="life-view" id="eraTrendView" hidden>
         <section class="hero">
-          <div>
-            <div class="eyebrow">LOC8 · Context Analysis / ERA</div>
-            <h2>時期不是標籤，是連續的變化。</h2>
-            <p>用連續時期觀看每一段狀態如何接續、轉折，以及現在正在形成什麼方向。Suno 活躍期只保留為來源參考，不再取代 LOC8 的時期邊界。</p>
+          <div class="loc-header">
+            <p class="loc-header-meta">LOC8 · Period · Timeline · Keywords</p>
+            <h1 class="loc-header-title">時期</h1>
+            <h2 class="loc-header-subtitle">時期不是標籤，而是一段連續的變化。</h2>
+            <p class="loc-header-copy">觀看每一段狀態如何接續、轉折，以及現在正在形成什麼方向；作品的活躍範圍保留為來源參考，不取代 LOC8 的連續時期邊界。</p>
           </div>
         </section>
 
         <section class="grid cols-4" aria-label="ERA 摘要">
           <div class="card metric"><div class="label">時期總數</div><div class="value" id="eraMetricCount">0</div><div class="hint">目前 Registry</div></div>
-          <div class="card metric"><div class="label">Current ERA</div><div class="value" id="eraMetricCurrent">—</div><div class="hint">目前所在時期</div></div>
+          <div class="card metric"><div class="label">目前時期</div><div class="value" id="eraMetricCurrent">—</div><div class="hint">目前所在時期</div></div>
           <div class="card metric"><div class="label">Current 起點</div><div class="value" id="eraMetricStart">—</div><div class="hint">本期開始日期</div></div>
-          <div class="card metric"><div class="label">ERA 關鍵字</div><div class="value" id="eraMetricKeywords">0</div><div class="hint">依 Event 動態統計，不快取</div></div>
+          <div class="card metric"><div class="label">時期關鍵字</div><div class="value" id="eraMetricKeywords">0</div><div class="hint">依 Event 動態統計，不快取</div></div>
         </section>
 
         <section class="card" style="margin-top:16px;" id="era-keywords">
           <div class="head">
-            <div><h3>ERA 關鍵字脈絡</h3><p>依 Event 日期自動歸入 ERA，直接統計 tags。數量隨 Event 更新即時計算，不寫入 cache。</p></div>
-            <span class="badge">Event → ERA</span>
+            <div><h3>時期關鍵字脈絡</h3><p>依 Event 日期自動歸入 ERA，直接統計 tags。數量隨 Event 更新即時計算，不寫入 cache。</p></div>
+            <span class="badge">事件 → 時期</span>
           </div>
-          <div class="body"><div class="era-keyword-grid" id="eraKeywordGrid"><div class="empty">載入 ERA 關鍵字中…</div></div></div>
+          <div class="body"><div class="era-keyword-grid" id="eraKeywordGrid"><div class="empty">載入 時期關鍵字中…</div></div></div>
         </section>
 
         <section class="card" style="margin-top:16px;" id="era-trend-summary">
           <div class="head">
-            <div><h3>ERA Trend</h3><p>把各時期連成一條軌跡，看名稱、期間與狀態變化。</p></div>
+            <div><h3>時期趨勢</h3><p>把各時期連成一條軌跡，看名稱、期間與狀態變化。</p></div>
             <span class="badge">趨勢</span>
           </div>
           <div class="body"><div class="era-trend-strip" id="eraTrendStrip"><div class="empty">載入 ERA 趨勢中…</div></div></div>
@@ -716,7 +717,7 @@
       <section class="card" style="margin-top:16px;" id="era-timeline">
         <div class="head">
           <div><h3>時期時間線</h3><p>LOC8 的連續時期；空白區間已延伸至下一時期前一天。Suno 原始活躍範圍只保留為來源註記，不再當作時期邊界。</p></div>
-          <span class="badge">ERA · LOC8</span>
+          <span class="badge">時期 · LOC8</span>
         </div>
         <div class="body"><div class="era-timeline" id="eraTimelineList"><div class="empty">載入時期資料中…</div></div></div>
       </section>
@@ -725,10 +726,11 @@
 
       <div class="life-view" id="eventTimeView" hidden>
         <section class="hero">
-          <div>
-            <div class="eyebrow">LOC8 · Context Analysis / Event</div>
-            <h2>事件發生在時間裡，時間形成軌跡。</h2>
-            <p>Event Timeline 保留事件順序；Trajectory 只看事件造成的狀態轉移。Event 的 tags 不在這裡做獨立趨勢，而是回到 ERA 中形成時期關鍵字。</p>
+          <div class="loc-header">
+            <p class="loc-header-meta">LOC8 · Event · Timeline · Trajectory</p>
+            <h1 class="loc-header-title">事件時間線</h1>
+            <h2 class="loc-header-subtitle">事件發生在時間裡，時間形成軌跡。</h2>
+            <p class="loc-header-copy">時間線保留事件發生的順序；軌跡則聚焦事件造成的狀態轉移。事件標籤會回到時期中形成關鍵字脈絡。</p>
           </div>
           <div class="sync"><span class="dot" id="eventSyncDot"></span><span id="eventSyncText">載入中…</span></div>
         </section>
@@ -757,10 +759,11 @@
 
       <div class="life-view" id="dailyDrawView">
         <section class="hero">
-          <div>
-            <div class="eyebrow">LOC8 · Context Analysis / Daily Rune</div>
-            <h2>每日符文</h2>
-            <p>先看近期符文趨勢，再處理紀錄。主抽作為趨勢核心，補抽保留為當日脈絡；符文定義直接來自 JSON，不重複存進 Sheet。</p>
+          <div class="loc-header">
+            <p class="loc-header-meta">LOC8 · Daily Rune · Trend · Record</p>
+            <h1 class="loc-header-title">每日符文</h1>
+            <h2 class="loc-header-subtitle">從每天的一張符文，看見近期正在形成的趨勢。</h2>
+            <p class="loc-header-copy">主抽作為趨勢核心，補抽保留為當日脈絡；可以先看近期分布與重複符文，再維護每天的紀錄。</p>
           </div>
           <div class="sync"><span class="dot" id="drawSyncDot"></span><span id="drawSyncText">載入中…</span></div>
         </section>
@@ -1039,7 +1042,7 @@
       if (!eraRegistry.length) {
         els.eraTimeline.innerHTML = '<div class="empty">尚無時期資料。</div>';
         if (els.eraTrendStrip) els.eraTrendStrip.innerHTML = '<div class="empty">尚無 ERA 趨勢資料。</div>';
-        if (els.eraKeywordGrid) els.eraKeywordGrid.innerHTML = '<div class="empty">尚無 ERA 關鍵字資料。</div>';
+        if (els.eraKeywordGrid) els.eraKeywordGrid.innerHTML = '<div class="empty">尚無 時期關鍵字資料。</div>';
         return;
       }
 
