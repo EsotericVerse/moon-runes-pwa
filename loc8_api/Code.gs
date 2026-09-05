@@ -11,7 +11,7 @@ function doGet(e) {
     const userId = String((e && e.parameter && e.parameter.user_id) || '').trim();
 
     if (action === 'health') {
-      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.6' });
+      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.7' });
     }
 
     if (action === 'users') {
@@ -58,6 +58,25 @@ function doPost(e) {
       const draw = normalizeDailyDraw_(body.daily_draw || body.event || body);
       appendObject_(DAILY_DRAW_SHEET, draw);
       return json_({ ok: true, daily_draw: draw, action: 'daily_draw' });
+    }
+
+    if (action === 'update_daily_draw') {
+      const raw = body.daily_draw || body.event || body;
+      const id = String(raw.id || '').trim();
+      if (!id) throw new Error('Missing daily draw id');
+      const draw = normalizeDailyDraw_(raw);
+      draw.id = id;
+      const updated = updateObjectById_(DAILY_DRAW_SHEET, id, draw, draw.user_id);
+      return json_({ ok: true, daily_draw: updated, action: 'update_daily_draw' });
+    }
+
+    if (action === 'delete_daily_draw') {
+      const raw = body.daily_draw || body.event || body;
+      const id = String(raw.id || body.id || '').trim();
+      const userId = String(raw.user_id || body.user_id || '').trim();
+      if (!id) throw new Error('Missing daily draw id');
+      deleteObjectById_(DAILY_DRAW_SHEET, id, userId);
+      return json_({ ok: true, id: id, action: 'delete_daily_draw' });
     }
 
     if (action === 'migrate_daily_draws') {
@@ -183,8 +202,7 @@ function normalizeDailyDraw_(raw) {
     created_at: raw.created_at || createdAt,
     system_id: raw.system_id || 'lo3rwang',
     era_id: raw.era_id || '',
-    updated_at: raw.updated_at || createdAt,
-    visibility: raw.visibility || 'private'
+    updated_at: createdAt
   };
 }
 
@@ -275,6 +293,31 @@ function updateObjectById_(sheetName, id, patch, expectedUserId) {
     const result = {};
     headers.forEach((h, i) => result[h] = row[i]);
     return result;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function deleteObjectById_(sheetName, id, expectedUserId) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getSheet_(sheetName);
+    const headers = getHeaders_(sheet);
+    const idCol = headers.indexOf('id');
+    if (idCol < 0) throw new Error(sheetName + ' has no id column');
+    const userCol = headers.indexOf('user_id');
+    const values = sheet.getDataRange().getDisplayValues();
+
+    for (let r = 1; r < values.length; r++) {
+      if (String(values[r][idCol] || '').trim() !== String(id).trim()) continue;
+      if (expectedUserId && userCol >= 0 && String(values[r][userCol] || '').trim() !== String(expectedUserId).trim()) {
+        throw new Error('Daily draw owner mismatch');
+      }
+      sheet.deleteRow(r + 1);
+      return true;
+    }
+    throw new Error('Daily draw not found: ' + id);
   } finally {
     lock.releaseLock();
   }
