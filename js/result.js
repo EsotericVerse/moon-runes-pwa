@@ -99,9 +99,9 @@ function cardHtml(card, label) {
         <img src="64images/${card.rune.圖檔名稱}" alt="${card.rune.符文名稱}之符文" style="transform:${ROTATIONS[card.directionIndex]}" />
       </div>
       <div class="card-meta">
-        <strong>${card.rune.符文名稱}</strong><br>
-        ${card.direction} · ${card.rune.所屬分組}<br>
-        卡片月相：${card.rune.月相}
+        <strong>${card.rune.符文名稱}</strong>
+        <div class="draw-result-strip">${card.direction} · ${card.rune.所屬分組}</div>
+        <div class="card-moon-strip">卡片月相｜${card.rune.月相}</div>
       </div>
     </article>
   `;
@@ -254,7 +254,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   document.title = `LOC1｜${config.title}`;
   document.getElementById("mode-title").textContent = config.title;
   document.getElementById("mode-kicker").textContent = config.kicker;
-  document.getElementById("moon-phase").textContent = `真實月相：${realPhase}`;
+  document.getElementById("moon-phase").textContent = `本次真實月相｜${realPhase}`;
   const ritualPhase = document.getElementById("ritual-phase");
   if (ritualPhase) {
     ritualPhase.textContent = `真實月相：${realPhase}`;
