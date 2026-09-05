@@ -700,8 +700,8 @@
 
         <section class="card" style="margin-top:16px;" id="era-keywords">
           <div class="head">
-            <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸，直接顯示 LOC3 歌曲關鍵字的 normalized frequency。這裡不依賴 Event 數量。</p></div>
-            <span class="badge">LOC3 × 時期</span>
+            <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸，同時顯示 LOC3 歌曲關鍵字分佈與 LOC4 作品；可直接比較不同時期的音樂與文字創作。</p></div>
+            <span class="badge">LOC3 + LOC4 × 時期</span>
           </div>
           <div class="body"><div class="era-keyword-grid" id="eraKeywordGrid"><div class="empty">載入 時期關鍵字中…</div></div></div>
         </section>
@@ -937,6 +937,7 @@
     const dirtyDrawIds = new Set();
     let eraRegistry = [];
     let loc3PeriodKeywordAnalysis = null;
+    let loc4WritingRegistry = null;
     let runeMetaMap = new Map();
     let editingId = '';
 
@@ -984,6 +985,17 @@
       return readJsonCache(STORAGE_KEY, []);
     }
 
+    async function loadLoc4WritingRegistry() {
+      try {
+        const res = await fetch('data/shared/LOC4_WRITING_REGISTRY.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('LOC4 writing registry unavailable');
+        loc4WritingRegistry = await res.json();
+      } catch (err) {
+        console.warn('LOC4 writing registry unavailable', err);
+        loc4WritingRegistry = null;
+      }
+    }
+
     async function loadLoc3PeriodKeywordAnalysis() {
       try {
         const res = await fetch('data/shared/LOC3_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
@@ -996,7 +1008,7 @@
     }
 
     async function loadEraRegistry() {
-      await loadLoc3PeriodKeywordAnalysis();
+      await Promise.all([loadLoc3PeriodKeywordAnalysis(), loadLoc4WritingRegistry()]);
 
       // Render from repository registries first. The period/keyword view must
       // not depend on Event rows or on the Apps Script deployment being fresh.
@@ -1118,6 +1130,9 @@
             ? loc3.normalized_top_keywords.slice(0,10)
             : [];
           const loc3WorkCount = Number(loc3?.work_count || 0);
+          const loc4Works = Array.isArray(loc4WritingRegistry?.works)
+            ? loc4WritingRegistry.works.filter(work => String(work.period || '') === period)
+            : [];
 
           return `
             <article class="era-keyword-card">
@@ -1131,11 +1146,17 @@
                   ${namedKeywords.map(item => `<span class="era-keyword-chip">${esc(item.term)}${item.aliases?.length ? `（${esc(item.aliases.join('／'))}）` : ''} <b>${esc(item.percent)}%</b></span>`).join('')}
                 </div>
               ` : ''}
-              <div class="era-source-note" style="margin-bottom:6px">主要語義</div>
+              <div class="era-source-note" style="margin-bottom:6px">LOC3 主要語義</div>
               <div class="era-keyword-chips">
                 ${loc3Keywords.length
                   ? loc3Keywords.map(item => `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.percent)}%</b></span>`).join('')
                   : '<span class="era-source-note">此時期尚無 LOC3 關鍵字分析</span>'}
+              </div>
+              <div class="era-source-note" style="margin-top:10px;margin-bottom:6px">LOC4 作品（${loc4Works.length}）</div>
+              <div class="era-keyword-chips">
+                ${loc4Works.length
+                  ? loc4Works.map(work => `<span class="era-keyword-chip">${esc(work.title)} <b>${esc(work.created_date || '')}</b></span>`).join('')
+                  : '<span class="era-source-note">此時期尚無 LOC4 作品</span>'}
               </div>
             </article>
           `;
