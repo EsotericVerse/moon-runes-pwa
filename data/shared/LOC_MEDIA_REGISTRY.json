@@ -1,9 +1,9 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_MEDIA_REGISTRY",
   "authority": "LOC5",
   "language_system_id": "lo3rwang",
-  "notes": "Media assets are owned by LOC5. LOC3/LOC4/LOC1 reference media through stable media_id/source identifiers; media metrics remain separate from semantic work ranking. LOC5 includes concrete audiovisual works, not only conceptual visuals or external references.",
+  "notes": "Media assets are owned by LOC5. Reels linked to LOC3 songs inherit LOC8 period/era_id from the linked LOC3 song/work record; this is temporal inheritance, not a separate LOC5 period definition. LOC3/LOC4/LOC1 reference media through stable media_id/source identifiers.",
   "items": [
     {
       "media_id": "MEDIA-0001",
@@ -66,7 +66,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-03",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0152",
+        "source_song_id": "7c466214-2cb9-4ea4-bc94-03e9741f52d0",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -130,7 +141,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-12",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0403",
+        "source_song_id": "9a56d555-d559-4402-8c17-47f8bfa6515f",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -194,7 +216,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-29",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0077",
+        "source_song_id": "b899100f-e2ec-4cbb-97f1-a1d598047297",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -258,7 +291,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-27",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0199",
+        "source_song_id": "7f913cd4-6d81-419f-81db-3c55548c1b8a",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -322,7 +366,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-05",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0028",
+        "source_song_id": "611c9156-2d03-4104-a44b-d6d776bcbc2c",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -386,7 +441,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-03",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0031",
+        "source_song_id": "d583b308-bf96-4f64-a583-f2f0492b90ad",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -450,7 +516,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-02",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0191",
+        "source_song_id": "92e5740d-3258-40ce-b8aa-afa19f8271ce",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -514,7 +591,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-02",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0058",
+        "source_song_id": "68586151-ba0e-4f72-830f-0c5251e818f8",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -578,7 +666,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P7",
+      "era_id": "ERA-P7",
+      "period_name": "自由的風期",
+      "source_created_date": "2026-08-01",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0322",
+        "source_song_id": "bf52b84c-74e6-4b94-87e2-b8dbff16b3f3",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -642,7 +741,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-30",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0387",
+        "source_song_id": "c3dfcdb3-bce2-4cc4-ab3f-34298e93ab4c",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -706,7 +816,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-30",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0371",
+        "source_song_id": "fb9cce47-9c4f-42e6-84e3-04df918931bf",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -834,7 +955,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-28",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0117",
+        "source_song_id": "ae02f7c0-92ae-4b03-a7c9-cb588045f003",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -962,7 +1094,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-25",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0183",
+        "source_song_id": "ddece632-8f69-492c-9779-48e212672bc7",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -1090,7 +1233,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-18",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0231",
+        "source_song_id": "0e890eb8-6be0-4549-99bc-469e409cc68d",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -1154,7 +1308,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0310",
+        "source_song_id": "a65a5a6c-ade3-4e5a-bd41-bb01641aba0d",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -1218,7 +1383,18 @@
       "lifecycle": {
         "status": "current",
         "created_at": null,
-        "updated_at": "2026-09-05"
+        "updated_at": "2026-09-06"
+      },
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_name": "順其自然與界線整合期",
+      "source_created_date": "2026-07-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0217",
+        "source_song_id": "692875f9-f93a-4680-a026-c7c5b9b7e56a",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-06"
       }
     },
     {
