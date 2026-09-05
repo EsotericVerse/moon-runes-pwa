@@ -497,6 +497,55 @@
         "maintained_in_repo": true
       },
       "notes": "Structured Lots answers used by oracle mode and normal LOC RAG retrieval. The spreadsheet mother source remains authoritative."
+    },
+    {
+      "asset_id": "KA-LOC-CURRENT-STATE-001",
+      "title": "LOC Current State & Demo Roadmap",
+      "path": "docs/LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "current_system_definition_demo_roadmap_and_decision_log",
+      "status": "current",
+      "authority_level": "working_governance_summary",
+      "searchable": true,
+      "index_priority": "highest",
+      "version": "2026-09-05",
+      "updated_at": "2026-09-05",
+      "keywords": [
+        "LOC基本定義",
+        "語言系統框架",
+        "月之符文",
+        "Seed Corpus",
+        "Semantic Playground",
+        "LOC RAG",
+        "Graph RAG",
+        "LOC8",
+        "關係分析",
+        "趨勢分析",
+        "Demo",
+        "Golden Query",
+        "資料治理",
+        "未知演化"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "derived_from": [
+          "creator-confirmed architecture decisions",
+          "current repository implementation"
+        ]
+      },
+      "notes": "Maintained current-state knowledge asset. Separates Stable decisions, Working items, Pending gaps and Demo priorities so future changes do not require reconstructing architecture from chat history."
     }
   ]
 }
