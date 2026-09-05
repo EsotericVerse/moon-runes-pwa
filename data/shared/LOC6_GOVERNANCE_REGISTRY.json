@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.3",
+  "schema_version": "0.4",
   "registry": "LOC6_GOVERNANCE_REGISTRY",
   "authority": "LOC6",
   "language_system_id": "lo3rwang",
@@ -273,9 +273,13 @@
     }
   },
   "stage_profile_schema": {
-    "stage_id": "ZS-{stable-id}",
-    "time_range": "date range or null",
-    "age_range": "age range or null",
+    "profile_id": "ZS-ERA-{period}",
+    "era_id": "required LOC8 ERA reference",
+    "time_range": {
+      "start": null,
+      "end": null
+    },
+    "age_range": "optional derived field; never primary key",
     "source_refs": [],
     "governance_focus": [],
     "style_features": {
@@ -284,9 +288,11 @@
       "emotional_distance": null,
       "directness": null,
       "boundary_strength": null,
-      "humor": null
+      "humor": null,
+      "primary_mode": null
     },
     "representative_statements": [],
+    "evidence_types": [],
     "confidence": "recorded | reconstructed | inferred | unknown",
     "lifecycle": "shared lifecycle object"
   },
@@ -299,6 +305,333 @@
       "README.md",
       "index.html"
     ],
-    "historical_stage_profiles": "structure_ready; historical source import pending"
-  }
+    "historical_stage_profiles": "ERA profiles established from LOC8 descriptions; text-level evidence import pending",
+    "primary_evolution_axis": "ERA-P1 through ERA-P8 from LOC8 ERA registry",
+    "age_projection": "secondary derived view; not primary style segmentation"
+  },
+  "era_style_profiles": [
+    {
+      "profile_id": "ZS-ERA-P1",
+      "era_id": "ERA-P1",
+      "period": "P1",
+      "era_name": "Suno原型探索期",
+      "time_range": {
+        "start": "2025-02-21",
+        "end": "2025-06-24"
+      },
+      "source_event_id": "EV-ERA-P1",
+      "source_description": "期間：2025-02-21～2025-06-24。Suno新手上路；只備份，不搜尋。",
+      "state_before": "尚未形成穩定 ERA 分期",
+      "state_after": "原型探索：創作與語言仍在嘗試、累積與辨識階段",
+      "governance_focus": [
+        "探索",
+        "試錯",
+        "累積"
+      ],
+      "style_features": {
+        "sentence_length": null,
+        "imagery_density": null,
+        "emotional_distance": null,
+        "directness": null,
+        "boundary_strength": null,
+        "humor": null,
+        "primary_mode": "prototype exploration"
+      },
+      "inferred_style_shift": "語言尚未穩定，偏探索與辨識",
+      "representative_statements": [],
+      "source_refs": [
+        "data/shared/LOC_ERA_REGISTRY.json"
+      ],
+      "evidence_types": [
+        "era_event"
+      ],
+      "confidence": "inferred",
+      "lifecycle": {
+        "status": "historical"
+      }
+    },
+    {
+      "profile_id": "ZS-ERA-P2",
+      "era_id": "ERA-P2",
+      "period": "P2",
+      "era_name": "重啟與格式形成期",
+      "time_range": {
+        "start": "2025-10-16",
+        "end": "2025-12-28"
+      },
+      "source_event_id": "EV-ERA-P2",
+      "source_description": "期間：2025-10-16～2025-12-28。掙扎轉變期。在嘗試各種不一樣的方式，整理自己的過往。跌跌撞撞學步期。",
+      "state_before": "P1 原型探索期",
+      "state_after": "重啟與格式形成：開始形成較穩定的創作格式與表達方式",
+      "governance_focus": [
+        "重啟",
+        "整理過往",
+        "格式形成"
+      ],
+      "style_features": {
+        "sentence_length": null,
+        "imagery_density": null,
+        "emotional_distance": null,
+        "directness": null,
+        "boundary_strength": null,
+        "humor": null,
+        "primary_mode": "format formation"
+      },
+      "inferred_style_shift": "開始形成較穩定格式與可辨識表達",
+      "representative_statements": [],
+      "source_refs": [
+        "data/shared/LOC_ERA_REGISTRY.json"
+      ],
+      "evidence_types": [
+        "era_event"
+      ],
+      "confidence": "inferred",
+      "lifecycle": {
+        "status": "historical"
+      }
+    },
+    {
+      "profile_id": "ZS-ERA-P3",
+      "era_id": "ERA-P3",
+      "period": "P3",
+      "era_name": "微月光與關係敘事期",
+      "time_range": {
+        "start": "2026-01-15",
+        "end": "2026-02-28"
+      },
+      "source_event_id": "EV-ERA-P3",
+      "source_description": "期間：2026-01-15～2026-02-28。自我認知；跨越 01/30 正名界線。正在適應姓名轉變帶來的自我認知轉變。",
+      "state_before": "P2 重啟與格式形成期",
+      "state_after": "微月光與關係敘事：自我認知提高，關係與陪伴成為主要敘事",
+      "governance_focus": [
+        "自我認知",
+        "關係",
+        "陪伴"
+      ],
+      "style_features": {
+        "sentence_length": null,
+        "imagery_density": null,
+        "emotional_distance": null,
+        "directness": null,
+        "boundary_strength": null,
+        "humor": null,
+        "primary_mode": "reflective relational"
+      },
+      "inferred_style_shift": "感性、自省與關係敘事提高",
+      "representative_statements": [],
+      "source_refs": [
+        "data/shared/LOC_ERA_REGISTRY.json"
+      ],
+      "evidence_types": [
+        "era_event"
+      ],
+      "confidence": "inferred",
+      "lifecycle": {
+        "status": "historical"
+      }
+    },
+    {
+      "profile_id": "ZS-ERA-P4",
+      "era_id": "ERA-P4",
+      "period": "P4",
+      "era_name": "現實壓力與治理轉折期",
+      "time_range": {
+        "start": "2026-03-09",
+        "end": "2026-04-13"
+      },
+      "source_event_id": "EV-ERA-P4",
+      "source_description": "期間：2026-03-09～2026-04-13。治理關係的開始（正名後發展）。",
+      "state_before": "P3 微月光與關係敘事期",
+      "state_after": "現實壓力進入敘事，開始從情緒與關係轉向治理、界線與現實處理",
+      "governance_focus": [
+        "現實壓力",
+        "界線",
+        "治理關係"
+      ],
+      "style_features": {
+        "sentence_length": null,
+        "imagery_density": null,
+        "emotional_distance": null,
+        "directness": null,
+        "boundary_strength": null,
+        "humor": null,
+        "primary_mode": "governance turn"
+      },
+      "inferred_style_shift": "從感受轉向現實處理與治理",
+      "representative_statements": [],
+      "source_refs": [
+        "data/shared/LOC_ERA_REGISTRY.json"
+      ],
+      "evidence_types": [
+        "era_event"
+      ],
+      "confidence": "inferred",
+      "lifecycle": {
+        "status": "historical"
+      }
+    },
+    {
+      "profile_id": "ZS-ERA-P5",
+      "era_id": "ERA-P5",
+      "period": "P5",
+      "era_name": "人生月台與語言重建期",
+      "time_range": {
+        "start": "2026-06-10",
+        "end": "2026-06-30"
+      },
+      "source_event_id": "EV-ERA-P5",
+      "source_description": "期間：2026-06-10～2026-06-30。人生月台的觀望。對於事物的等待無力感。盡力而為，靜觀其變。",
+      "state_before": "P4 現實壓力與治理轉折期",
+      "state_after": "人生月台與語言重建：進入觀望與重新整理語言、生活結構的階段",
+      "governance_focus": [
+        "等待",
+        "觀望",
+        "重建"
+      ],
+      "style_features": {
+        "sentence_length": null,
+        "imagery_density": null,
+        "emotional_distance": null,
+        "directness": null,
+        "boundary_strength": null,
+        "humor": null,
+        "primary_mode": "pause and reconstruction"
+      },
+      "inferred_style_shift": "語氣轉向收束、等待與重新整理",
+      "representative_statements": [],
+      "source_refs": [
+        "data/shared/LOC_ERA_REGISTRY.json"
+      ],
+      "evidence_types": [
+        "era_event"
+      ],
+      "confidence": "inferred",
+      "lifecycle": {
+        "status": "historical"
+      }
+    },
+    {
+      "profile_id": "ZS-ERA-P6",
+      "era_id": "ERA-P6",
+      "period": "P6",
+      "era_name": "順其自然與界線整合期",
+      "time_range": {
+        "start": "2026-07-01",
+        "end": "2026-07-31"
+      },
+      "source_event_id": "EV-ERA-P6",
+      "source_description": "期間：2026-07-01～2026-07-31。等待的關係空窗期。我允許一切未定義，很多事物不用一定要知道前因後果，保留未知的欄位是最好的。",
+      "state_before": "P5 人生月台與語言重建期",
+      "state_after": "順其自然與界線整合：降低對結果的強迫，開始把等待、界線與生活節奏整合",
+      "governance_focus": [
+        "順其自然",
+        "界線",
+        "保留未知"
+      ],
+      "style_features": {
+        "sentence_length": null,
+        "imagery_density": null,
+        "emotional_distance": null,
+        "directness": null,
+        "boundary_strength": null,
+        "humor": null,
+        "primary_mode": "bounded openness"
+      },
+      "inferred_style_shift": "克制度提高，降低對完整答案與結果的強求",
+      "representative_statements": [],
+      "source_refs": [
+        "data/shared/LOC_ERA_REGISTRY.json"
+      ],
+      "evidence_types": [
+        "era_event"
+      ],
+      "confidence": "inferred",
+      "lifecycle": {
+        "status": "historical"
+      }
+    },
+    {
+      "profile_id": "ZS-ERA-P7",
+      "era_id": "ERA-P7",
+      "period": "P7",
+      "era_name": "自由的風期",
+      "time_range": {
+        "start": "2026-08-01",
+        "end": "2026-08-31"
+      },
+      "source_event_id": "EV-ERA-P7",
+      "source_description": "期間：2026-08-01～2026-08-31。當一切慢慢實現。所有事情已經盡力，只能在計畫內的等待。",
+      "state_before": "P6 順其自然與界線整合期",
+      "state_after": "自由的風：生活條件逐步落定，語言轉向自由、前行、選擇與新的可能",
+      "governance_focus": [
+        "自由",
+        "前行",
+        "選擇",
+        "可能性"
+      ],
+      "style_features": {
+        "sentence_length": null,
+        "imagery_density": null,
+        "emotional_distance": null,
+        "directness": null,
+        "boundary_strength": null,
+        "humor": null,
+        "primary_mode": "freedom and movement"
+      },
+      "inferred_style_shift": "語言轉向起飛、自由與新的可能",
+      "representative_statements": [],
+      "source_refs": [
+        "data/shared/LOC_ERA_REGISTRY.json"
+      ],
+      "evidence_types": [
+        "era_event"
+      ],
+      "confidence": "inferred",
+      "lifecycle": {
+        "status": "historical"
+      }
+    },
+    {
+      "profile_id": "ZS-ERA-P8",
+      "era_id": "ERA-P8",
+      "period": "P8",
+      "era_name": "自我治理與未來展望期",
+      "time_range": {
+        "start": "2026-09-01",
+        "end": null
+      },
+      "source_event_id": "EV-ERA-P8",
+      "source_description": "期間：2026-09-01～？。理想與期望。首先由自我治理開始。自我治理是將以前的事物經過整理跟反思，進而得到進化的方式。",
+      "state_before": "P7 自由的風期",
+      "state_after": "自我治理與未來展望：自由之後進入主動管理生活、選擇、邊界與航向的 Current 階段",
+      "governance_focus": [
+        "自我治理",
+        "整理",
+        "收尾",
+        "責任",
+        "航向"
+      ],
+      "style_features": {
+        "sentence_length": null,
+        "imagery_density": null,
+        "emotional_distance": null,
+        "directness": null,
+        "boundary_strength": null,
+        "humor": null,
+        "primary_mode": "self governance"
+      },
+      "inferred_style_shift": "治理重心由外部拆解轉向內部秩序與未來選擇",
+      "representative_statements": [],
+      "source_refs": [
+        "data/shared/LOC_ERA_REGISTRY.json"
+      ],
+      "evidence_types": [
+        "era_event"
+      ],
+      "confidence": "inferred",
+      "lifecycle": {
+        "status": "current"
+      }
+    }
+  ]
 }
