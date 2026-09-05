@@ -1463,8 +1463,20 @@
       },
       "lifecycle": {
         "status": "current",
-        "created_at": null,
-        "updated_at": "2026-09-05"
+        "created_at": "2025-06-28",
+        "updated_at": "2026-09-06"
+      },
+      "period": "P1",
+      "era_id": "ERA-P1",
+      "period_name": "原型探索期",
+      "source_created_date": "2025-06-28",
+      "temporal_inheritance": {
+        "source_loc": "LOC5",
+        "source_work_id": null,
+        "source_song_id": null,
+        "rule": "direct assignment from author-confirmed Instagram Reel publish date, mapped to LOC8 period boundaries",
+        "evidence": "author-confirmed publish date",
+        "inherited_at": "2026-09-06"
       }
     },
     {
@@ -1533,8 +1545,20 @@
       },
       "lifecycle": {
         "status": "current",
-        "created_at": null,
-        "updated_at": "2026-09-05"
+        "created_at": "2025-07-13",
+        "updated_at": "2026-09-06"
+      },
+      "period": "P1",
+      "era_id": "ERA-P1",
+      "period_name": "原型探索期",
+      "source_created_date": "2025-07-13",
+      "temporal_inheritance": {
+        "source_loc": "LOC5",
+        "source_work_id": null,
+        "source_song_id": null,
+        "rule": "direct assignment from author-confirmed Instagram Reel publish date, mapped to LOC8 period boundaries",
+        "evidence": "author-confirmed publish date",
+        "inherited_at": "2026-09-06"
       }
     }
   ]
