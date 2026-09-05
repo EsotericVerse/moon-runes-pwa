@@ -1,0 +1,41 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC_GRAPH_SCHEMA",
+  "authority": "LOC7",
+  "purpose": "Shared node/edge contract for LOC Graph RAG. The graph is derived from authoritative LOC registries and does not replace canonical ownership.",
+  "node_types": [
+    "loc_domain",
+    "rune",
+    "lot",
+    "scenario_event",
+    "music_work",
+    "writing_work",
+    "media",
+    "governance_fragment",
+    "knowledge_asset",
+    "era"
+  ],
+  "edge_types": [
+    "owned_by_loc",
+    "has_lot",
+    "belongs_to_era",
+    "derived_from",
+    "expanded_to",
+    "adapted_to",
+    "represented_by",
+    "references",
+    "analyzed_by",
+    "related_to",
+    "temporal_before",
+    "temporal_after",
+    "source_of"
+  ],
+  "rules": [
+    "Graph nodes are references to authoritative records, not replacement copies.",
+    "Edges require explicit registry evidence or deterministic structural evidence.",
+    "Semantic similarity alone must not be stored as a canonical edge.",
+    "Search-time semantic similarity may be shown separately as retrieval evidence.",
+    "LOC7 manages graph structure and traversal; LOC8 analyzes relation/trend change over time.",
+    "Unknown future relations remain unfilled until evidence exists."
+  ]
+}
