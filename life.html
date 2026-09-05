@@ -322,8 +322,10 @@
       .nav { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
+  <link rel="stylesheet" href="css/loc-nav.css" />
 </head>
 <body>
+  <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="life" aria-label="全站導覽"></nav></div>
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
@@ -912,5 +914,6 @@
     resetEventForm();
     loadEvents();
   </script>
+  <script src="js/loc-nav.js"></script>
 </body>
 </html>
