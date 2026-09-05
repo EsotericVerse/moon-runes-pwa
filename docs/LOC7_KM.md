@@ -150,7 +150,27 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 
 「30 歲的政德會怎麼說／46 歲的政德會怎麼說」應建立在 ERA＋真實歷史語料之上；在原文證據不足時，ERA description 只能產生 `inferred` profile，不得冒充 recorded style。
 
-## 9. FAQ / RAG 現況
+## 9. LOC3 → ERA → LOC6 回掛
+
+LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/shared/LOC6_ERA_STYLE_EVIDENCE.json`，提供每個 ERA 的作品數、主要 tags、起始狀態、轉折方式、結尾結構等 recorded metadata aggregate。
+
+- P1 目前明確排除於公開 LOC3 搜尋，因此此層沒有 P1 歌曲 aggregate。
+- ERA 名稱與日期仍以 LOC8 `LOC_ERA_REGISTRY.json` 為權威。
+- LOC6 只負責從作品證據分析風格轉變，不重新定義 ERA。
+
+### 符文歌曲
+
+`data/shared/LOC3_RUNE_SONG_REGISTRY.json` 專門判定真正的符文歌曲。
+
+只有具有「實際抽牌 → 解讀 → 歌詞／歌曲」provenance 的作品才可標成 `rune_song`。月光、命運、符文等意象本身不足以成立。
+
+目前資料層分成：
+- `confirmed`：有直接 draw-to-song 來源證據。
+- `high_candidate`：多重來源高度吻合，但仍缺創作 provenance。
+- `medium_candidate`：時間／情境吻合，但缺直接符文連結。
+- theme-only：不得列為符文歌曲。
+
+## 10. FAQ / RAG 現況
 
 現行作用資料：
 
@@ -162,7 +182,7 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 
 - FAQ／RAG v0.1、v0.2 保留作 version history，不再視為 current runtime source。
 
-## 10. Shared Registry
+## 11. Shared Registry
 
 `data/shared/` 主要承接跨 LOC 的結構化 registry。KM 相關核心：
 
@@ -174,7 +194,7 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 
 詳細角色見 [JSON_DATA_MAP.md](./JSON_DATA_MAP.md)。
 
-## 11. 同步規則
+## 12. 同步規則
 
 任何知識更新依下列順序處理：
 
@@ -186,11 +206,11 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 6. 驗證 API 與 UI。
 7. 保留歷史版，不以新版本內容覆寫舊版本號。
 
-## 12. Graph RAG 狀態
+## 13. Graph RAG 狀態
 
 Unified Search 已有實作；完整 Relation Schema、Knowledge Graph expansion 與 Graph RAG 仍屬下一階段。不得因已有 registry、related_ids 或 search view 就宣稱完整 Graph RAG 已部署。
 
-## 13. 文件格式
+## 14. 文件格式
 
 `docs/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件。
 
