@@ -69,6 +69,7 @@ class UnifiedSearchEngine:
         self.content_types = self._load_json("LOC_CONTENT_TYPE_REGISTRY.json")
         self.relationships = self._load_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
+        self.loc6 = self._load_json("LOC6_GOVERNANCE_REGISTRY.json")
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
         self.lots = self._load_json("lots.json")
@@ -498,6 +499,38 @@ class UnifiedSearchEngine:
                 eras.append({"result_id":era.get("era_id"),"system_id":self.eras.get("language_system_id") or "lo3rwang","primary_loc":"LOC8","related_locs":["LOC3","LOC4","LOC5","LOC6","LOC7"],"content_type":"era","group":"timeline","title":era.get("display_label") or era.get("name"),"summary":era.get("description") or era.get("state_after"),"score":round(score,6),"era_id":era.get("era_id"),"period":era.get("period"),"source_refs":[],"payload":payload})
         return textworks, media_results, knowledge, eras
 
+    def _governance_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+        if wanted not in {"", "all", "governance_fragment"}:
+            return []
+        scored = []
+        for fragment in self.loc6.get("fragments", []):
+            score = _text_score(query, [
+                fragment.get("topic"),
+                fragment.get("statement"),
+                fragment.get("interpretation"),
+                fragment.get("governance_principle"),
+                " ".join(fragment.get("style_features", [])),
+                fragment.get("analysis_type"),
+            ])
+            if score < 0.34:
+                continue
+            scored.append((score, fragment))
+        scored.sort(key=lambda row: (-row[0], str(row[1].get("fragment_id", ""))))
+        return [{
+            "result_id": fragment.get("fragment_id"),
+            "system_id": fragment.get("system_id") or "lo3rwang",
+            "primary_loc": "LOC6",
+            "related_locs": fragment.get("related_locs", ["LOC3", "LOC4", "LOC7", "LOC8"]),
+            "content_type": "governance_fragment",
+            "group": "governance",
+            "title": fragment.get("statement") or fragment.get("topic") or fragment.get("fragment_id"),
+            "summary": fragment.get("interpretation") or fragment.get("governance_principle") or "",
+            "score": round(score, 6),
+            "era_id": fragment.get("era_id"),
+            "source_refs": fragment.get("source_refs", []),
+            "payload": fragment,
+        } for score, fragment in scored[:top_k]]
+
     def _relationship_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "relationship", "article", "text_work", "reel", "video", "multimedia", "lyrics_work", "suno_song"}:
             return []
@@ -629,6 +662,7 @@ class UnifiedSearchEngine:
                 media_by_id[item.get("result_id")] = item
             media = list(media_by_id.values())[:top_k]
             relationships = []
+            governance = self._governance_results(query, top_k, effective_wanted)
             runes = self._rune_results(oracle[0]["payload"].get("rune_name", ""), top_k, effective_wanted)
         else:
             faq = self._faq_results(query, top_k, wanted)
@@ -641,6 +675,7 @@ class UnifiedSearchEngine:
                 media_by_id[item.get("result_id")] = item
             media = list(media_by_id.values())[:top_k]
             relationships = self._relationship_results(query, top_k, wanted)
+            governance = self._governance_results(query, top_k, wanted)
             runes = self._rune_results(query, top_k, wanted)
             eras = self._era_results(query, top_k, wanted)
 
@@ -650,6 +685,7 @@ class UnifiedSearchEngine:
             "works": music,
             "textworks": textworks,
             "relationships": relationships,
+            "governance": governance,
             "media": media,
             "knowledge": [*documents, *faq],
             "timeline": eras,
@@ -669,7 +705,7 @@ class UnifiedSearchEngine:
                 "LOC3": "live",
                 "LOC4": "direct-work-search-live",
                 "LOC5": "direct-media-registry-search-live",
-                "LOC6": "relationship-interpretation-live",
+                "LOC6": "direct-governance-search-live",
                 "LOC7": "live",
                 "LOC8": "live-era",
             },
