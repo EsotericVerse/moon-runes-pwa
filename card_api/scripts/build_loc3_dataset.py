@@ -286,19 +286,21 @@ def build(source: Path) -> dict[str, Any]:
         for field in ("主題標籤", "情緒標籤", "意象標籤", "情境標籤"):
             tags.extend(split_values(representative.get(field)))
         tags = list(dict.fromkeys(tags))
+        annotation = author_annotations.get(text(representative.get("作品ID")), {})
+        reasoning_tags = list(dict.fromkeys(annotation.get("reasoning_tags", [])))
+        semantic_keywords = list(dict.fromkeys([*reasoning_tags, *tags]))
 
         retrieval_parts = [
             text(representative.get("代表歌名")), text(representative.get("所有歌名")),
             text(representative.get("AI摘要")), category, start, turn, final,
             emotion_function, text(representative.get("希望延伸")),
             text(representative.get("結尾結構")), text(representative.get("留白意圖")),
-            *annotation.get("reasoning_tags", []),
+            *reasoning_tags,
             text(annotation.get("author_note")),
             *tags,
         ]
         period = text(representative.get("統計時期代碼"))
         era = resolve_era(representative.get("建立日期"), period, eras, era_by_period)
-        annotation = author_annotations.get(text(representative.get("作品ID")), {})
         output_works.append({
             "system_id": SYSTEM_ID,
             "primary_loc": PRIMARY_LOC,
@@ -326,7 +328,8 @@ def build(source: Path) -> dict[str, Any]:
             "emotion_function": emotion_function,
             "discourse_mode": text(annotation.get("discourse_mode")) or None,
             "emotion_applicability": text(annotation.get("emotion_applicability")) or "required",
-            "reasoning_tags": annotation.get("reasoning_tags", []),
+            "reasoning_tags": reasoning_tags,
+            "semantic_keywords": semantic_keywords,
             "author_semantic_note": text(annotation.get("author_note")) or None,
             "semantic_completion": (
                 "complete_without_emotion"
@@ -348,7 +351,7 @@ def build(source: Path) -> dict[str, Any]:
     return {
         "dataset": {
             "name": "LOC3 Lyrics Search",
-            "version": "0.1.8",
+            "version": "0.1.9",
             "source": source.name,
             "language_scope": "zh-Hant",
             "unit": "unique_lyrics_work",
