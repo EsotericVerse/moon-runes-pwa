@@ -136,6 +136,16 @@
       "label": "勸戒論述型",
       "direction": "self_to_others",
       "definition": "歌曲主要對他人或群體提出提醒、勸告、警告、責任與後果判斷，核心是外向的規範性語言。"
+    },
+    "happy_sweet": {
+      "label": "幸福甜美型",
+      "direction": "self_to_affection",
+      "definition": "以甜美、溫柔、喜悅、陪伴、戀愛或日常幸福感為主要表達骨架。保留為獨立歌詞類型。"
+    },
+    "happy_declaration": {
+      "label": "幸福宣告型",
+      "direction": "self_to_relationship_future",
+      "definition": "以明確宣告選擇、承諾、關係確認、共同未來或幸福主權為主要骨架。與單純甜美抒情區分。"
     }
   },
   "category_resolution_rules": [
@@ -151,7 +161,13 @@
         "narrative_song",
         "explicit_rune_text"
       ],
-      "rule": "Describes how/why the work was created. Rune-song status is provenance and must never be inferred from lyric type."
+      "rule": "Describes how/why the work was created. Rune-song status is provenance and must never be inferred from lyric type.",
+      "display_labels": {
+        "normal_song": "一般歌曲",
+        "rune_song": "符文歌曲",
+        "narrative_song": "敘事歌曲",
+        "explicit_rune_text": "符文詠唱例外"
+      }
     },
     "lyric_type_axis": {
       "examples": [
