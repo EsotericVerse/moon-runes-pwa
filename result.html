@@ -199,34 +199,113 @@
     .cards-grid[data-count="1"] { grid-template-columns:minmax(280px,520px); justify-content:center; }
     .cards-grid[data-count="2"] { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .cards-grid[data-count="3"] { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .result-card-stage:has(.cards-grid[data-count="5"]) {
+      width:min(100%,980px);
+      margin:0 auto;
+    }
+
     .cards-grid[data-count="5"] {
       grid-template-columns:repeat(6,minmax(0,1fr));
-      gap:18px;
+      gap:18px 16px;
+      align-items:start;
     }
-    .cards-grid[data-count="5"] .rune-result-card { grid-column:span 2; }
+
+    .cards-grid[data-count="5"] .rune-result-card:nth-child(1) { grid-column:1 / span 2; }
+    .cards-grid[data-count="5"] .rune-result-card:nth-child(2) { grid-column:3 / span 2; }
+    .cards-grid[data-count="5"] .rune-result-card:nth-child(3) { grid-column:5 / span 2; }
     .cards-grid[data-count="5"] .rune-result-card:nth-child(4) { grid-column:2 / span 2; }
     .cards-grid[data-count="5"] .rune-result-card:nth-child(5) { grid-column:4 / span 2; }
+
     .cards-grid[data-count="5"] .rune-result-card {
-      background:linear-gradient(180deg,rgba(24,45,75,.86),rgba(14,31,54,.88));
+      background:linear-gradient(180deg,rgba(22,43,72,.92),rgba(11,26,46,.94));
+      border-radius:18px;
+      box-shadow:0 14px 34px rgba(0,0,0,.18);
     }
+
+    .cards-grid[data-count="5"] .rune-result-card:nth-child(2) {
+      border-color:rgba(231,194,125,.58);
+      box-shadow:
+        0 0 0 1px rgba(231,194,125,.12),
+        0 16px 38px rgba(0,0,0,.22);
+      transform:translateY(-4px);
+    }
+
+    .cards-grid[data-count="5"] .rune-result-card:nth-child(4),
+    .cards-grid[data-count="5"] .rune-result-card:nth-child(5) {
+      opacity:.92;
+    }
+
     .cards-grid[data-count="5"] .rune-result-position {
+      padding:8px 10px;
       text-align:center;
-      font-size:.8rem;
+      font-size:.78rem;
+      letter-spacing:.14em;
     }
+
+    .cards-grid[data-count="5"] .rune-result-card:nth-child(2) .rune-result-position {
+      color:#ffe2a5;
+      background:rgba(231,194,125,.08);
+    }
+
     .cards-grid[data-count="5"] .rune-result-image {
-      margin:12px;
+      width:min(calc(100% - 24px),220px);
+      aspect-ratio:1;
+      margin:12px auto 10px;
+      border-radius:14px;
     }
+
     .cards-grid[data-count="5"] .rune-result-body {
       padding:0 12px 12px;
       text-align:center;
     }
+
     .cards-grid[data-count="5"] .rune-result-name {
-      margin-bottom:8px;
+      margin:0 0 8px;
+      font-size:1rem;
     }
+
+    .cards-grid[data-count="5"] .rune-result-name small {
+      font-size:.68rem;
+    }
+
     .cards-grid[data-count="5"] .rune-result-grid {
-      grid-template-columns:1fr;
-      max-width:180px;
-      margin:8px auto 0;
+      display:block;
+      max-width:150px;
+      margin:0 auto;
+    }
+
+    .cards-grid[data-count="5"] .rune-result-field {
+      padding:7px 9px;
+      border-radius:999px;
+      background:rgba(180,158,255,.06);
+    }
+
+    .cards-grid[data-count="5"] .rune-result-label {
+      display:none;
+    }
+
+    .cards-grid[data-count="5"] .rune-result-value {
+      font-size:.78rem;
+    }
+
+    .five-card-schema {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:0 0 14px;
+      color:var(--muted);
+      font-size:.74rem;
+    }
+
+    .five-card-schema strong {
+      color:var(--gold);
+      font-weight:800;
+    }
+
+    .five-card-schema .arrow {
+      color:rgba(231,194,125,.62);
     }
 
     .rune-result-card {
@@ -634,11 +713,22 @@
       .actions { align-items:stretch; }
       .actions .action-card { flex:1 1 180px; }
       .cards-grid[data-count="3"] { grid-template-columns:repeat(3,minmax(0,1fr)); }
-      .cards-grid[data-count="5"] { grid-template-columns:repeat(2,minmax(0,1fr)); }
-      .cards-grid[data-count="5"] .rune-result-card,
+      .cards-grid[data-count="5"] {
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+      .cards-grid[data-count="5"] .rune-result-card:nth-child(1),
+      .cards-grid[data-count="5"] .rune-result-card:nth-child(2),
+      .cards-grid[data-count="5"] .rune-result-card:nth-child(3),
       .cards-grid[data-count="5"] .rune-result-card:nth-child(4),
-      .cards-grid[data-count="5"] .rune-result-card:nth-child(5) { grid-column:auto; }
-      .cards-grid[data-count="5"] .rune-result-card:nth-child(5) { grid-column:1 / -1; width:min(50%,360px); justify-self:center; }
+      .cards-grid[data-count="5"] .rune-result-card:nth-child(5) {
+        grid-column:auto;
+        transform:none;
+      }
+      .cards-grid[data-count="5"] .rune-result-card:nth-child(3) {
+        grid-column:1 / -1;
+        width:min(50%,340px);
+        justify-self:center;
+      }
     }
     @media (max-width: 680px) {
       .page { width:min(100% - 18px,1180px); padding-top:10px; }
@@ -648,7 +738,15 @@
       .cards-grid[data-count="2"],
       .cards-grid[data-count="3"],
       .cards-grid[data-count="5"] { grid-template-columns:1fr; }
-      .cards-grid[data-count="5"] .rune-result-card:nth-child(5) { grid-column:auto; width:auto; justify-self:stretch; }
+      .cards-grid[data-count="5"] .rune-result-card:nth-child(1),
+      .cards-grid[data-count="5"] .rune-result-card:nth-child(2),
+      .cards-grid[data-count="5"] .rune-result-card:nth-child(3),
+      .cards-grid[data-count="5"] .rune-result-card:nth-child(4),
+      .cards-grid[data-count="5"] .rune-result-card:nth-child(5) {
+        grid-column:auto;
+        width:auto;
+        justify-self:stretch;
+      }
       .mode-switch-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
       .advice-grid { grid-template-columns:1fr; }
       .result-section-head { align-items:start; flex-direction:column; }
@@ -719,6 +817,13 @@
               <span class="phase-chip" id="result-real-phase">真實月相｜計算中...</span>
               <p>先看牌面，再進入整體解讀。</p>
             </div>
+          </div>
+          <div class="five-card-schema" id="five-card-schema" hidden>
+            <strong>過去</strong><span class="arrow">→</span>
+            <strong>現在</strong><span class="arrow">→</span>
+            <strong>未來</strong>
+            <span>／</span>
+            <strong>外在</strong><span>・</span><strong>內在</strong>
           </div>
           <div class="result-card-stage">
             <div class="cards-grid" id="cards-grid"></div>
