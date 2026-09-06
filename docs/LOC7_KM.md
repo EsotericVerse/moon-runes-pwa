@@ -401,3 +401,27 @@ Corpus 匯入、匯出與公開展示必須先通過 Content Rights Gate。
 - 平台 export 可取得，不等於其中所有內容可再次公開。
 - 公開展示預設只允許 `self_authored + public + cleared`。
 - Import/export 提示與權利確認屬 P0 governance requirement；沒有 rights gate 的新 corpus import flow 不視為完成。
+
+
+## 19. Public Presentation Layer
+
+KM source 與公開閱讀 View 分離。
+
+```text
+Markdown / JSON / Registry
+        ↓
+     LOC7 KM
+        ↓
+   Search / Retrieval
+        ↓
+ Public HTML / Structured View
+```
+
+規則：
+
+- Markdown 是維護與知識管理格式，不直接作為一般使用者閱讀頁。
+- `presentation=public_article` 且具 `public_path` 的 Markdown asset，由 `tools/build_public_articles.py` 產生手機瀏覽器可讀的 HTML。
+- JSON／Registry 只作 structured source；公開時必須經對應的 structured view，不直接把 JSON 原文當文章顯示。
+- Search 可以讀取 Markdown／JSON 來做 retrieval，但 UI 只連到 `public_path`；沒有 public view 的內部 asset 不顯示「閱讀原始碼」連結。
+- 政德風公開介紹文章採 `exposure_policy=public_full_text`：完整風格描述可公開閱讀，不受 corpus preview-only 限制。
+- 原始作品 corpus、Threads 全文與其他大量第一方作品仍維持 anti-bulk-extraction 規則。
