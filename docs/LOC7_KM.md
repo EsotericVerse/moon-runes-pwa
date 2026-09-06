@@ -341,9 +341,9 @@ ChatGPT 對話不是預設第二套完整 corpus，而是 **gap-filling source**
 ### 現行資料層
 
 - 原始匯出：`threads_and_replies.json`
-- 去重基準：6907 筆
-- 主貼文：4491 筆，視為 primary evidence
-- Reply：2416 筆，視為 supplemental evidence
+- 去重基準：7008 筆
+- 主貼文：4578 筆，視為 primary evidence
+- Reply：2430 筆，視為 supplemental evidence
 - 搜尋索引：`data/shared/LOC6_THREADS_KM_INDEX.json`
 - Unified Search group：`governance`
 - Content type：`governance_fragment`
@@ -361,3 +361,8 @@ ChatGPT 對話不是預設第二套完整 corpus，而是 **gap-filling source**
 這一層是 **Primary-source-derived Search Index**，不是 Canon。搜尋結果可以作為 LOC6 概念形成、風格演變與治理語言的原始證據，但不得因高頻或搜尋命中就自動升格為 Canonical Concept。
 
 第一版採「先可搜尋，再持續擴充 corpus」策略。完整 6907 筆原文仍保留於原始 Threads export；repository 內的 searchable tranche 會逐步擴充，不需要等待全部 Concept clustering 完成才開始使用。
+
+
+### 2026-09-06 展示版進度
+
+目前 repo 已接入 21 篇主貼文文章作為可搜尋 LOC6 Article tranche，另保留 Reply 補充證據與關鍵字統計。搜尋頁已提供「LOC6 文章／Threads」篩選與獨立文章卡片；完整 corpus 採分批 migration，不阻塞展示版使用。
