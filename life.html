@@ -1091,6 +1091,7 @@
     const dirtyDrawIds = new Set();
     let eraRegistry = [];
     let loc3PeriodKeywordAnalysis = null;
+    let loc6PeriodKeywordAnalysis = null;
     let loc4WritingRegistry = null;
     let loc5MediaRegistry = null;
     let runeMetaMap = new Map();
@@ -1181,8 +1182,19 @@
       }
     }
 
+    async function loadLoc6PeriodKeywordAnalysis() {
+      try {
+        const res = await fetch('data/shared/LOC6_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('LOC6 period keyword analysis unavailable');
+        loc6PeriodKeywordAnalysis = await res.json();
+      } catch (err) {
+        console.warn('LOC6 period keyword analysis unavailable', err);
+        loc6PeriodKeywordAnalysis = null;
+      }
+    }
+
     async function loadEraRegistry() {
-      await Promise.all([loadLoc3PeriodKeywordAnalysis(), loadLoc4WritingRegistry(), loadLoc5MediaRegistry()]);
+      await Promise.all([loadLoc3PeriodKeywordAnalysis(), loadLoc6PeriodKeywordAnalysis(), loadLoc4WritingRegistry(), loadLoc5MediaRegistry()]);
 
       // Render from repository registries first. The period/keyword view must
       // not depend on Event rows or on the Apps Script deployment being fresh.
@@ -1419,9 +1431,14 @@
         ? loc3PeriodKeywordAnalysis.periods
         : [];
       const loc3PeriodMap = new Map(loc3Periods.map(item => [String(item.period || ''), item]));
-      const analyzedPeriodCount = loc3Periods.filter(
-        item => Array.isArray(item.normalized_top_keywords) && item.normalized_top_keywords.length
-      ).length;
+      const loc6Periods = Array.isArray(loc6PeriodKeywordAnalysis?.periods)
+        ? loc6PeriodKeywordAnalysis.periods
+        : [];
+      const loc6PeriodMap = new Map(loc6Periods.map(item => [String(item.period || ''), item]));
+      const analyzedPeriodCount = new Set([
+        ...loc3Periods.filter(item => Array.isArray(item.normalized_top_keywords) && item.normalized_top_keywords.length).map(item => String(item.period || '')),
+        ...loc6Periods.filter(item => Array.isArray(item.keywords) && item.keywords.length).map(item => String(item.period || ''))
+      ]).size;
 
       if (els.eraMetricCount) els.eraMetricCount.textContent = ordered.length;
       if (els.eraMetricCurrent) els.eraMetricCurrent.textContent = current?.period || current?.name || '—';
@@ -1432,6 +1449,9 @@
         els.eraKeywordGrid.innerHTML = ordered.map(era => {
           const period = String(era.period || '');
           const loc3 = loc3PeriodMap.get(period);
+          const loc6 = loc6PeriodMap.get(period);
+          const loc6Keywords = Array.isArray(loc6?.keywords) ? loc6.keywords.slice(0,10) : [];
+          const loc6DocCount = Number(loc6?.document_count || 0);
           const namedKeywords = Array.isArray(loc3?.named_keywords)
             ? loc3.named_keywords
             : [];
@@ -1449,10 +1469,20 @@
             <article class="era-keyword-card">
               <div class="era-keyword-head">
                 <strong>${esc(period || era.era_id)} · ${esc(era.name || '')}</strong>
-                <small>${isP1
-                  ? `非 LOC3 證據 ${nonLoc3.itemCount} 件（LOC4 ${nonLoc3.loc4Count}／LOC5 ${nonLoc3.loc5Count}）`
-                  : (loc3WorkCount ? `LOC3 ${loc3WorkCount} 首` : 'LOC3 尚無正式分析')}</small>
+                <small>${loc6DocCount
+                  ? `LOC6 Threads ${loc6DocCount} 篇`
+                  : (isP1
+                    ? `非 LOC3 證據 ${nonLoc3.itemCount} 件（LOC4 ${nonLoc3.loc4Count}／LOC5 ${nonLoc3.loc5Count}）`
+                    : (loc3WorkCount ? `LOC3 ${loc3WorkCount} 首` : '尚無正式分析'))}</small>
               </div>
+
+              ${loc6Keywords.length ? `
+                <div class="era-source-note" style="margin-bottom:6px">LOC6｜Threads 公開語言</div>
+                <div class="era-keyword-chips" style="margin-bottom:10px">
+                  ${loc6Keywords.map(item => `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.percent)}%</b></span>`).join('')}
+                </div>
+                <div class="era-source-note" style="margin-bottom:10px">主貼文 document frequency；高頻不等於 Canon。</div>
+              ` : ''}
 
               ${isP1 ? `
                 <div class="era-source-note" style="margin-bottom:6px">P1 關鍵字｜LOC4 + LOC5</div>
@@ -1492,12 +1522,15 @@
         els.eraTrendStrip.innerHTML = ordered.map((era, i) => {
           const period = String(era.period || '');
           const loc3 = loc3PeriodMap.get(period);
-          const topKeywords = Array.isArray(loc3?.normalized_top_keywords)
-            ? loc3.normalized_top_keywords.slice(0,4).map(item => item.term)
-            : [...(stats.get(era.era_id) || new Map()).entries()]
+          const loc6 = loc6PeriodMap.get(period);
+          const topKeywords = Array.isArray(loc6?.keywords) && loc6.keywords.length
+            ? loc6.keywords.slice(0,4).map(item => item.term)
+            : (Array.isArray(loc3?.normalized_top_keywords)
+              ? loc3.normalized_top_keywords.slice(0,4).map(item => item.term)
+              : [...(stats.get(era.era_id) || new Map()).entries()]
                 .sort((a,b) => b[1]-a[1])
                 .slice(0,4)
-                .map(([tag]) => tag);
+                .map(([tag]) => tag));
           return `
             ${i ? '<div class="era-trend-arrow">→</div>' : ''}
             <article class="era-trend-node ${era.status === 'current' ? 'current' : ''}">
