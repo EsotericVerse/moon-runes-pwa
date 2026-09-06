@@ -1,11 +1,11 @@
-# LOC × Luna Codex × OW3gs
+# LOC × LunaRunes × OW3gs
 ## 方法論與正名統整索引文件
 
 本文件整合以下來源：
 
 - 專案內歷史對話紀錄
 - 《正名.txt》之正名說明
-- Luna Codex → OW3gs → LOC 的演變歷程
+- LunaRunes → OW3gs → LOC 的演變歷程
 - 專案內符文資料結構（rune64.js）
 
 用途定位為：
@@ -18,9 +18,9 @@
 
 ---
 
-## 一、專案起源：Luna Codex（月之符文）
+## 一、專案起源：LunaRunes（月之符文）
 
-Luna Codex 起初被建立為一套**符文語言系統**，而非宗教或信仰工具。
+LunaRunes 起初被建立為一套**符文語言系統**，而非宗教或信仰工具。
 
 其設計目標為：
 - 使用有限符文作為語彙
@@ -32,7 +32,7 @@ Luna Codex 起初被建立為一套**符文語言系統**，而非宗教或信�
 - 不宣稱終極權威
 - 解釋允許因使用而修正
 
-Luna Codex 為**內容、資料與風格的譜系名稱**。
+LunaRunes 為**符文內容、資料與語意譜系名稱**。
 
 ---
 
@@ -138,11 +138,11 @@ auto-fix 僅可調整：
 
 ---
 
-## 七、LOC 的正式正名
+## 七、LOC 的歷史正名紀錄
 
-為避免內容與模型混淆，系統模型正式命名為：
+以下「Language Oscillating Codex」為歷史階段曾使用的展開方式，現行 Canon 不再以此作正式名稱；現行名稱固定為 **LOC = Luna Codex = 月典**。
 
-### LOC — Language Oscillating Codex
+### 歷史名稱：LOC — Language Oscillating Codex
 
 - **Language**：符文為語言單位
 - **Oscillating**：受約束的語義振盪
@@ -153,11 +153,13 @@ LOC 同時對應 **Location / Locus**：
 
 ---
 
-## 八、名稱分工確立
+## 八、現行名稱分工
 
-- **Luna Codex**：內容、資料、風格與譜系
-- **LOC**：語言系統運行模型
-- **OW3gs**：唯一方法論
+- **LOC = Luna Codex = 月典**：語言系統框架
+- **LunaRunes = 月之符文**：符文核心／Reference Seed System
+- **OW3gs**：方法論
+
+> 「Luna Codex = 月之符文」屬舊整理污染，不再作為現行定義。
 
 ---
 
