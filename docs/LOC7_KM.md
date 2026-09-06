@@ -228,8 +228,8 @@ LOC5 媒體稽核：目前 Suno 500 workbook、`LOC3_MEDIA_LINKS_v0.1.json` 與 
 
 現行作用資料：
 
-- `data/json/runtime/card_api/LOC_FAQ_v0.4.json`：80 題 FAQ source view。
-- `data/json/runtime/card_api/LOC_FAQ_RAG_v0.4.json`：由 FAQ v0.4 同步衍生的檢索資料。
+- `data/json/search/faq/LOC_FAQ_v0.4.json`：80 題 FAQ source view。
+- `data/json/search/faq/LOC_FAQ_RAG_v0.4.json`：由 FAQ v0.4 同步衍生的檢索資料。
 - `card_api/main.py`：目前載入 RAG v0.4。
 
 v0.4 對齊 2026-09-06 的 LOC6／LOC7／LOC8 權責、Unified Search 實作、公開「時期」用語與既有功能狀態。FAQ 是 KM 的問答 View；RAG 是 retrieval derivative，兩者都不是 Canon。
