@@ -99,9 +99,7 @@ Specialist views remain available where they still represent distinct workflows:
 - `/list.html`
 - `/life.html`
 
-`/loc3.html` is now a compatibility redirect to `/search.html?content_type=lyrics_work`. LOC3 remains the canonical music/lyrics data authority, but search presentation is consolidated into Unified Search.
-
-This preserves deep/specialized workflows while providing one default semantic entry point.
+LOC3 no longer keeps a compatibility HTML route. Music/lyrics search uses `/search.html?content_type=lyrics_work` directly. LOC3 remains the canonical music/lyrics data authority while presentation is consolidated into Unified Search.
 
 ## Graph RAG / Provenance
 
@@ -143,7 +141,7 @@ mean_edge_quality
 
 `provenance` 同步回傳 `graph_quality_bands` 與 `graph_quality`。Search Synthesis 的 confidence 也會納入 mean edge quality，而不再只看命中數與 edge 數。
 
-這套分數是 **治理權重**，不是模型主觀機率；權重定義以 `data/json/registries/LOC_GRAPH_SCHEMA.json` v0.4 為 contract。
+這套分數是 **治理權重**，不是模型主觀機率；權重定義以 `data/json/registries/LOC_GRAPH_SCHEMA.json` v0.5 為 contract。
 
 ## Public Graph endpoint
 
