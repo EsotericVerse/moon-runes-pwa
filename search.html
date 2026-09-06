@@ -77,6 +77,7 @@
       </form>
     </section>
     <div class="status" id="status" aria-live="polite"></div>
+    <div class="status" id="corpusStatus" aria-live="polite"></div>
     <section class="groups" id="groups"></section>
     <footer>LOC 搜尋引擎 · LOC RAG 語意向量搜尋 · system_id: lo3rwang</footer>
   </main>
@@ -179,6 +180,15 @@
       {period:'P7',display_label:'P7｜自由的風期'},
       {period:'P8',display_label:'P8｜自我治理與未來展望期'}
     ];
+    function renderCorpusStatus(corpus){
+      if(!corpus){return;}
+      const loc3=Number(corpus.loc3_searchable_works||0);
+      const indexed=Number(corpus.loc6_threads_indexed_posts||0);
+      const total=Number(corpus.loc6_threads_total_main_posts||4578);
+      const replies=Number(corpus.loc6_threads_total_replies||2430);
+      const full=!!corpus.loc6_threads_full_index_ready;
+      el('corpusStatus').textContent=`Corpus：LOC3 ${loc3} 首可搜尋作品 · LOC6 Threads ${indexed} / ${total} 篇主貼文已索引 · ${replies} 筆 Reply 補充證據${full?' · 全文索引已就緒':' · 全文索引持續擴充中'}`;
+    }
     function applyEras(eras){
       const select=el('period'),current=select.value;
       select.innerHTML='<option value="">全部時期</option>';
@@ -206,6 +216,7 @@
         const r=await fetch('data/shared/LOC_ERA_REGISTRY.json',{cache:'no-store'});
         if(!r.ok)throw new Error('ERA registry unavailable');
         const d=await r.json();
+        renderCorpusStatus(d.corpus);
         if(Array.isArray(d.eras)&&d.eras.length){
           applyEras(d.eras);
           localStorage.setItem(ERA_CACHE_KEY,JSON.stringify({
