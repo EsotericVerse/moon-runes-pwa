@@ -33,6 +33,9 @@ STALE_TOKENS = [
     "card_api/new_runes.json",
     "card_api/runes_all_data.json",
     "card_api/three_card_combinations.json",
+    "engine/runes07.json",
+    "engine/runes_all_data.json",
+    "engine/runes64_alldata.json",
 ]
 
 TEXT_SUFFIXES = {".py", ".js", ".html", ".md", ".json", ".yml", ".yaml", ".xml", ".txt"}
