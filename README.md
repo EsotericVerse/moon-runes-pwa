@@ -266,6 +266,21 @@ LOC6 現行新增一個可量化的公開語言 corpus：
 
 ---
 
+## 🧰 內建簡易文字解析 API
+
+LOC 現行提供一個不依賴外部 LLM／Embedding API Key 的基礎文字解析層，讓新的文字資料可以自動進入系統。
+
+- `POST /analyze/text`：單篇文字關鍵字抽取與使用者自訂規則式分類
+- `POST /analyze/corpus`：批次建立 keyword library、日期／來源索引、時期統計與 trajectories
+- 基礎流程：**Raw Data → Parse → Keyword / Category Library → Time Index → Trend**
+- LLM 摘要、embedding、cluster 命名與高階分類屬於 optional enrichment，由部署者自行決定
+
+這個 baseline API 的目的，是避免 LOC 只能靠作者手動整理資料。未來其他使用者匯入 Facebook、Threads、日記、作品或其他 corpus 時，基礎解析與趨勢資料必須可以自動建立；人工只負責校正與治理。
+
+完整規格：[LOC Simple Text Analysis API](./docs/LOC_SIMPLE_TEXT_ANALYSIS_API.md)
+
+---
+
 ## 🚀 功能詳解
 
 ### 主要入口（`index.html`）
