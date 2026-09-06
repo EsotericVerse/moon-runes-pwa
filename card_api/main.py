@@ -11,6 +11,7 @@ from faq_rag import FAQSearchEngine
 from loc3_search import LOC3SearchEngine
 from unified_search import UnifiedSearchEngine
 from paths import REPO_ROOT, core_json, search_json
+from corpus_analysis import analyze_corpus, classify_text
 
 # 建立 FastAPI 應用
 app = FastAPI(
@@ -434,6 +435,28 @@ class UnifiedBrowseInput(BaseModel):
     period: str = ""
 
 
+class TextAnalyzeInput(BaseModel):
+    text: str
+    categories: dict[str, list[str]] = {}
+    seed_keywords: list[str] = []
+    top_k: int = 12
+
+
+class CorpusDocumentInput(BaseModel):
+    id: str = ""
+    date: str = ""
+    source: str = ""
+    text: str
+
+
+class CorpusAnalyzeInput(BaseModel):
+    documents: list[CorpusDocumentInput]
+    seed_keywords: list[str] = []
+    top_k: int = 80
+    min_df: int = 2
+    granularity: str = "month"
+
+
 def get_faq_searcher():
     if FAQ_SEARCHER is None:
         raise HTTPException(
@@ -498,6 +521,8 @@ async def root():
             "unified_search": "/search",
             "unified_browse": "/search/browse",
             "unified_facets": "/search/facets",
+            "text_analyze": "/analyze/text",
+            "corpus_analyze": "/analyze/corpus",
             "health": "/health",
             "docs": "/docs"
         }
@@ -517,6 +542,63 @@ async def health_check():
         "loc3_works_loaded": len(LOC3_SEARCHER.works) if LOC3_SEARCHER else 0,
         "unified_search_ready": UNIFIED_SEARCHER is not None,
         "shared_era_count": len(UNIFIED_SEARCHER.eras.get("eras", [])) if UNIFIED_SEARCHER else 0
+    }
+
+
+@app.post("/analyze/text")
+async def analyze_text_endpoint(input: TextAnalyzeInput):
+    text = input.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="text不可為空白")
+    if len(text) > 200000:
+        raise HTTPException(status_code=400, detail="單篇文字不可超過200000字元")
+    if input.top_k < 1 or input.top_k > 50:
+        raise HTTPException(status_code=400, detail="top_k必須介於1到50之間")
+
+    result = classify_text(
+        text,
+        categories=input.categories,
+        seed_keywords=input.seed_keywords,
+        top_k=input.top_k,
+    )
+    return {
+        "success": True,
+        "mode": "local_rule_based",
+        "external_api_required": False,
+        **result,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+@app.post("/analyze/corpus")
+async def analyze_corpus_endpoint(input: CorpusAnalyzeInput):
+    if not input.documents:
+        raise HTTPException(status_code=400, detail="documents不可為空")
+    if len(input.documents) > 20000:
+        raise HTTPException(status_code=400, detail="單次最多20000筆文件")
+    if input.top_k < 1 or input.top_k > 500:
+        raise HTTPException(status_code=400, detail="top_k必須介於1到500之間")
+    if input.min_df < 1:
+        raise HTTPException(status_code=400, detail="min_df不可小於1")
+
+    documents = [doc.model_dump() for doc in input.documents]
+    try:
+        result = analyze_corpus(
+            documents,
+            seed_keywords=input.seed_keywords,
+            top_k=input.top_k,
+            min_df=input.min_df,
+            granularity=input.granularity,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {
+        "success": True,
+        "mode": "local_first",
+        "external_api_required": False,
+        **result,
+        "timestamp": datetime.now().isoformat(),
     }
 
 
