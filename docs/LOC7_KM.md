@@ -332,3 +332,32 @@ Canon / 維護中的 Markdown / Shared Registry
 ChatGPT 對話不是預設第二套完整 corpus，而是 **gap-filling source**。只有在需要補足概念形成、時間轉折、名稱修正或決策 provenance 時，才精準回收相關片段。
 
 這可避免把已整理完成的實作討論再次灌入 KM，降低重複、噪音與版本污染。
+
+
+## 17. LOC6 Threads KM 搜尋
+
+2026-09-06 起，Threads 不再只停留在離線分析來源；第一批 Threads evidence 已接入 LOC Unified Search。
+
+### 現行資料層
+
+- 原始匯出：`threads_and_replies.json`
+- 去重基準：6907 筆
+- 主貼文：4491 筆，視為 primary evidence
+- Reply：2416 筆，視為 supplemental evidence
+- 搜尋索引：`data/shared/LOC6_THREADS_KM_INDEX.json`
+- Unified Search group：`governance`
+- Content type：`governance_fragment`
+
+索引同時保存：
+
+- 可搜尋 Threads 原文摘錄
+- 日期與 P0–P8 時期
+- main / reply evidence role
+- 關鍵字 document frequency
+- main / reply 各自的 ERA distribution
+
+### 治理邊界
+
+這一層是 **Primary-source-derived Search Index**，不是 Canon。搜尋結果可以作為 LOC6 概念形成、風格演變與治理語言的原始證據，但不得因高頻或搜尋命中就自動升格為 Canonical Concept。
+
+第一版採「先可搜尋，再持續擴充 corpus」策略。完整 6907 筆原文仍保留於原始 Threads export；repository 內的 searchable tranche 會逐步擴充，不需要等待全部 Concept clustering 完成才開始使用。
