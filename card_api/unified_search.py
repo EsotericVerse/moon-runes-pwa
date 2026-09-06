@@ -64,7 +64,7 @@ class UnifiedSearchEngine:
         self.loc3_searcher = loc3_searcher
         self.runes = runes or []
         self.repo_root = repo_root
-        self.shared_root = repo_root / "data" / "shared"
+        self.shared_root = repo_root / "data" / "json" / "shared"
         self.system = self._load_json("LOC_LANGUAGE_SYSTEM_REGISTRY.json")
         self.eras = self._load_json("LOC_ERA_REGISTRY.json")
         self.content_types = self._load_json("LOC_CONTENT_TYPE_REGISTRY.json")
@@ -75,8 +75,8 @@ class UnifiedSearchEngine:
         self.loc6_threads = self._load_json("LOC6_THREADS_KM_INDEX.json")
         self.loc6_period_keywords = self._load_json("LOC6_PERIOD_KEYWORD_ANALYSIS.json")
         self.loc3_period_keywords = self._load_json("LOC3_PERIOD_KEYWORD_ANALYSIS.json")
-        self.loc6_thread_articles = self._load_repo_json("data/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json")
-        self.loc6_thread_manifest = self._load_repo_json("data/generated/loc6/threads/LOC6_THREADS_DOCUMENT_MANIFEST.json")
+        self.loc6_thread_articles = self._load_repo_json("data/json/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json")
+        self.loc6_thread_manifest = self._load_repo_json("data/json/generated/loc6/threads/LOC6_THREADS_DOCUMENT_MANIFEST.json")
         self.loc6_thread_full = self._load_loc6_thread_shards()
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
@@ -207,7 +207,7 @@ class UnifiedSearchEngine:
             "title": f"{name} · {direction} · {category}",
             "summary": poem,
             "score": 1.0,
-            "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune64.xlsx#Lots", "note": "via data/shared/lots.json"}],
+            "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune64.xlsx#Lots", "note": "via data/json/shared/lots.json"}],
             "payload": {
                 "rune_number": lots_item.get("編號"),
                 "rune_name": name,
