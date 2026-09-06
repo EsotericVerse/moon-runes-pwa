@@ -166,3 +166,21 @@ Any data-path migration is incomplete until code, HTML, Service Worker, workflow
 ---
 
 **Data governance principle:** a file should have one clear role, one authority chain and one reason to exist.
+
+## Browser Runtime Projection
+
+The JSON architecture in this document describes governed structured data. It does **not** require the browser to fetch those JSON files directly.
+
+For static browser data, the preferred chain is:
+
+~~~text
+mother / governed JSON
+→ generated JS module
+→ browser
+~~~
+
+Therefore data/json/core and data/json/registries may remain authoritative structured projections for backend/KM purposes while the PWA consumes synchronized js/data modules.
+
+The system must validate both layers together. A JS projection that no longer matches its upstream source is a repository-governance failure.
+
+See [FRONTEND_RUNTIME_DATA_POLICY.md](./FRONTEND_RUNTIME_DATA_POLICY.md).
