@@ -1249,6 +1249,7 @@
       }
 
       renderEraTimeline();
+      renderTrajectory(events.map(normalizeEvent).sort((a,b) => new Date(a.date) - new Date(b.date)));
       renderTrajectoryAnalysis();
 
       // Live Sheet refresh is optional and must never blank the LOC3 keyword view.
@@ -2141,6 +2142,44 @@
     }
 
     function renderTrajectory(sorted) {
+      // ERA Registry is the canonical continuous trajectory axis. Relation/Event
+      // data enriches each node, but must not replace P0/P0.5/P1 when those
+      // periods have fewer explicit Relation rows.
+      const orderedEras = Array.isArray(eraRegistry)
+        ? eraRegistry.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0))
+        : [];
+
+      if (orderedEras.length >= 2) {
+        els.trajectory.innerHTML = orderedEras.map((era, i) => {
+          const period = String(era.period || era.era_id || '');
+          const eventCount = sorted.filter(e => {
+            if (e.era_id && String(e.era_id) === String(era.era_id)) return true;
+            if (e.era && String(e.era) === period) return true;
+            const date = String(e.date || '');
+            if (!date || !era.start_date) return false;
+            const end = String(era.end_date || '9999-12-31');
+            return date >= String(era.start_date) && date <= end;
+          }).length;
+          const relationCount = relations.filter(r =>
+            String(r.era_id || '') === String(era.era_id || '') ||
+            String(r.era || '') === period ||
+            String(r.source_id || '') === String(era.era_id || '') ||
+            String(r.target_id || '') === String(era.era_id || '')
+          ).length;
+          const range = `${era.start_date || '—'} ～ ${era.end_date || '現在'}`;
+          return `
+            ${i ? '<div class="arrow">→</div>' : ''}
+            <button class="step" type="button" data-trajectory-node="${esc(era.era_id || period)}" data-node-type="era" data-era-period="${esc(period)}">
+              <div class="t">${esc(period)} · ${esc(era.name || '')}</div>
+              <div class="s">${esc(range)}</div>
+              <div class="s">Event ${eventCount} · Relation ${relationCount}</div>
+            </button>
+          `;
+        }).join('');
+        return;
+      }
+
+      // Fallback only when the ERA registry itself is unavailable.
       const activeRelations = relations.filter(r => r.status !== 'archived').slice(-16);
       if (activeRelations.length) {
         els.trajectory.innerHTML = activeRelations.map(r => `
@@ -2162,7 +2201,7 @@
 
       const points = sorted.filter(e => e.state_after).slice(-8);
       if (points.length < 2) {
-        els.trajectory.innerHTML = '<div class="empty" style="min-width:100%">尚無 Relation；舊 Event 需要至少兩筆 State After 才能形成暫時軌跡。</div>';
+        els.trajectory.innerHTML = '<div class="empty" style="min-width:100%">尚無可用的 ERA／Relation／State 軌跡資料。</div>';
         return;
       }
       els.trajectory.innerHTML = points.map((e, i) => `
@@ -2174,26 +2213,47 @@
       `).join('');
     }
 
-
     function renderTrajectoryInspector(nodeId, nodeType='state') {
       if (!els.trajectoryInspector) return;
       const key = String(nodeId || '').trim();
       if (!key) return;
 
+      const era = nodeType === 'era'
+        ? eraRegistry.find(x => String(x.era_id || '') === key || String(x.period || '') === key)
+        : null;
+      const period = String(era?.period || '');
+
       const connected = relations.filter(r =>
-        String(r.source_id || '') === key || String(r.target_id || '') === key
+        String(r.source_id || '') === key ||
+        String(r.target_id || '') === key ||
+        (era && (
+          String(r.era_id || '') === String(era.era_id || '') ||
+          String(r.era || '') === period
+        ))
       );
-      const linkedEvents = events.filter(e => [
-        e.id, e.object_id, e.event_title, e.title, e.state_before, e.state_after
-      ].some(value => String(value || '').includes(key))).slice(-8);
+
+      const linkedEvents = events.filter(e => {
+        if (era) {
+          if (e.era_id && String(e.era_id) === String(era.era_id || '')) return true;
+          if (e.era && String(e.era) === period) return true;
+          const date = String(e.date || '');
+          if (date && era.start_date) {
+            const end = String(era.end_date || '9999-12-31');
+            if (date >= String(era.start_date) && date <= end) return true;
+          }
+        }
+        return [e.id, e.object_id, e.event_title, e.title, e.state_before, e.state_after]
+          .some(value => String(value || '').includes(key));
+      }).slice(-12);
 
       const eraNames = new Set();
+      if (era) eraNames.add(period || era.name || era.era_id);
       connected.forEach(r => { if (r.era) eraNames.add(String(r.era)); });
       linkedEvents.forEach(e => {
         if (e.era) eraNames.add(String(e.era));
         if (e.era_id) {
-          const era = eraRegistry.find(x => String(x.era_id || '') === String(e.era_id));
-          if (era?.period) eraNames.add(String(era.period));
+          const match = eraRegistry.find(x => String(x.era_id || '') === String(e.era_id));
+          if (match?.period) eraNames.add(String(match.period));
         }
       });
 
@@ -2204,7 +2264,7 @@
             const arrow = outgoing ? '→' : '←';
             return `<div class="state-row">
               <div class="k">${esc(r.relation_type)}</div>
-              <div class="v">${arrow} ${esc(other)}${r.summary ? `<br><small>${esc(r.summary)}</small>` : ''}</div>
+              <div class="v">${arrow} ${esc(other || r.era || period || '關聯')}${r.summary ? `<br><small>${esc(r.summary)}</small>` : ''}</div>
             </div>`;
           }).join('')
         : '<div class="empty">目前沒有已儲存的 Relation edge。</div>';
@@ -2213,9 +2273,13 @@
         ? linkedEvents.map(e => `<div class="state-row"><div class="k">${esc(e.date || '—')}</div><div class="v">${esc(e.event_title || e.title || e.id)}${e.state_after ? `<br><small>State → ${esc(e.state_after)}</small>` : ''}</div></div>`).join('')
         : '<div class="empty">目前沒有直接命中的 Event。</div>';
 
-      const searchUrl = 'search.html?q=' + encodeURIComponent(key);
+      const displayKey = era ? (period || era.name || key) : key;
+      const searchUrl = 'search.html?q=' + encodeURIComponent(displayKey);
       els.trajectoryInspector.innerHTML = `
-        <div class="state-row"><div class="k">節點</div><div class="v"><strong>${esc(key)}</strong> · ${esc(nodeType)}</div></div>
+        <div class="state-row"><div class="k">節點</div><div class="v"><strong>${esc(displayKey)}</strong> · ${esc(nodeType)}</div></div>
+        ${era ? `<div class="state-row"><div class="k">名稱</div><div class="v">${esc(era.name || '—')}</div></div>
+        <div class="state-row"><div class="k">期間</div><div class="v">${esc(era.start_date || '—')} ～ ${esc(era.end_date || '現在')}</div></div>
+        <div class="state-row"><div class="k">State</div><div class="v">${esc(era.state_after || era.description || '—')}</div></div>` : ''}
         <div class="state-row"><div class="k">ERA</div><div class="v">${[...eraNames].map(esc).join(' · ') || '—'}</div></div>
         <div style="margin-top:10px"><strong>Relation</strong></div>
         ${relationHtml}
@@ -3042,7 +3106,10 @@
         loadEvents();
       } else if (view === 'context') {
         history.replaceState(null, '', '#context');
-        Promise.all([loadEvents(), loadRelations()]).then(renderTrajectoryAnalysis);
+        Promise.all([loadEraRegistry(), loadEvents(), loadRelations()]).then(() => {
+          renderAll();
+          renderTrajectoryAnalysis();
+        });
       } else if (view === 'era-trend') {
         history.replaceState(null, '', '#era-trend');
         loadEraRegistry();
