@@ -274,6 +274,16 @@
     .era-keyword-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
     .era-keyword-chip { display:inline-flex; align-items:center; gap:5px; border:1px solid var(--line-strong); border-radius:999px; padding:4px 8px; font-size:10px; background:rgba(169,199,255,.06); }
     .era-keyword-chip b { color:var(--accent); font-weight:700; }
+    a.era-keyword-chip { color:inherit; text-decoration:none; cursor:pointer; }
+    a.era-keyword-chip:hover, a.era-keyword-chip:focus-visible { border-color:rgba(169,199,255,.7); background:rgba(169,199,255,.12); outline:none; }
+    .keyword-ranking-list { display:grid; gap:8px; }
+    .keyword-rank-row { display:grid; grid-template-columns:42px minmax(120px,1fr) auto auto auto; gap:10px; align-items:center; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.025); }
+    .keyword-rank-row .rank { color:var(--muted); font-size:12px; text-align:center; }
+    .keyword-rank-row .term a { color:var(--text); font-weight:700; text-decoration:none; }
+    .keyword-rank-row .term a:hover { text-decoration:underline; }
+    .keyword-rank-row .metric { color:var(--muted); font-size:11px; white-space:nowrap; }
+    .keyword-rank-row .search { color:var(--accent); font-size:11px; text-decoration:none; white-space:nowrap; }
+    @media(max-width:760px){ .keyword-rank-row { grid-template-columns:36px minmax(0,1fr) auto; } .keyword-rank-row .metric.secondary { display:none; } }
     @media (max-width:760px){ .era-keyword-grid { grid-template-columns:1fr; } }
 
     .era-trend-strip { display:flex; gap:8px; overflow-x:auto; padding:2px 2px 10px; }
@@ -894,6 +904,16 @@
           <div class="card metric"><div class="label">已分析時期</div><div class="value" id="eraMetricKeywords">0</div><div class="hint">跨 LOC 時期分析</div></div>
         </section>
 
+        <section class="card" style="margin-top:16px;" id="keyword-ranking">
+          <div class="head">
+            <div><h3>關鍵字排行榜</h3><p>先看最常出現的詞，再點進搜尋結果查看實際命中的作品、文章與文字紀錄。篇數與總命中次數分開計算，避免單篇重複用詞造成誤判。</p></div>
+            <span class="badge">排行 → 搜尋 → 證據</span>
+          </div>
+          <div class="body">
+            <div class="keyword-ranking-list" id="keywordRankingList"><div class="empty">載入關鍵字排行榜中…</div></div>
+          </div>
+        </section>
+
         <section class="card" style="margin-top:16px;" id="era-keywords">
           <div class="head">
             <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸比較關鍵字的文件數、出現比例與相鄰時期變化；LOC6 使用 Threads 公開語言，LOC3／LOC4／LOC5 保留各自作品證據。</p></div>
@@ -1301,6 +1321,7 @@
       eraMetricStart: $('#eraMetricStart'),
       eraMetricKeywords: $('#eraMetricKeywords'),
       eraKeywordGrid: $('#eraKeywordGrid'),
+      keywordRankingList: $('#keywordRankingList'),
       eraTrendStrip: $('#eraTrendStrip'),
       graphStatus: $('#graphStatus'),
       graphRegistryNodes: $('#graphRegistryNodes'),
@@ -1760,6 +1781,70 @@
       };
     }
 
+    function searchHref(term, period='') {
+      const params = new URLSearchParams();
+      params.set('q', String(term || ''));
+      if (period) params.set('period', String(period));
+      return 'search.html?' + params.toString();
+    }
+
+    function renderKeywordRanking() {
+      if (!els.keywordRankingList) return;
+      const rows = new Map();
+
+      const add = (term, documentCount=0, hitCount=0, period='', percent=0, source='') => {
+        term = String(term || '').trim();
+        if (!term) return;
+        const row = rows.get(term) || { term, document_count:0, hit_count:0, periods:[], sources:new Set() };
+        row.document_count += Number(documentCount || 0);
+        row.hit_count += Number(hitCount || 0);
+        if (period) row.periods.push({ period:String(period), percent:Number(percent || 0), document_count:Number(documentCount || 0) });
+        if (source) row.sources.add(source);
+        rows.set(term,row);
+      };
+
+      for (const period of (Array.isArray(loc6PeriodKeywordAnalysis?.periods) ? loc6PeriodKeywordAnalysis.periods : [])) {
+        for (const item of (Array.isArray(period?.keywords) ? period.keywords : [])) {
+          add(item.term, item.document_count, item.hit_count, period.period, item.percent, '文字');
+        }
+      }
+
+      for (const period of (Array.isArray(loc3PeriodKeywordAnalysis?.periods) ? loc3PeriodKeywordAnalysis.periods : [])) {
+        const items = Array.isArray(period?.normalized_top_keywords)
+          ? period.normalized_top_keywords
+          : (Array.isArray(period?.normalized_semantic_families) ? period.normalized_semantic_families : []);
+        for (const item of items) {
+          const docs = Number(item.document_count ?? item.work_count ?? 0);
+          const hits = Number(item.hit_count ?? docs);
+          add(item.term, docs, hits, period.period, item.percent, '作品');
+        }
+      }
+
+      const ranked = [...rows.values()]
+        .sort((a,b) => b.document_count - a.document_count || b.hit_count - a.hit_count || a.term.localeCompare(b.term,'zh-Hant'))
+        .slice(0,30);
+
+      if (!ranked.length) {
+        els.keywordRankingList.innerHTML = '<div class="empty">目前沒有可建立排行榜的關鍵字資料。</div>';
+        return;
+      }
+
+      els.keywordRankingList.innerHTML = ranked.map((row,index) => {
+        const peak = row.periods.slice().sort((a,b) => b.percent - a.percent || b.document_count - a.document_count)[0];
+        const sourceText = [...row.sources].join('＋') || '資料';
+        return `
+          <div class="keyword-rank-row">
+            <div class="rank">#${index+1}</div>
+            <div class="term"><a href="${esc(searchHref(row.term))}" title="搜尋「${esc(row.term)}」的作品與文字">${esc(row.term)}</a></div>
+            <div class="metric">${esc(row.document_count)} 篇／件</div>
+            <div class="metric secondary">${esc(row.hit_count)} 次 · ${esc(sourceText)}</div>
+            <a class="search" href="${esc(searchHref(row.term))}">查看內容 →</a>
+          </div>
+          ${peak ? `<div class="era-source-note" style="margin:-4px 12px 4px 54px">高峰：<a href="${esc(searchHref(row.term, peak.period))}" style="color:var(--accent)">${esc(peak.period)}</a> · ${esc(peak.percent)}%</div>` : ''}
+        `;
+      }).join('');
+    }
+
     function renderEraTimeline() {
       if (!els.eraTimeline) return;
       if (!eraRegistry.length && Array.isArray(loc3PeriodKeywordAnalysis?.periods)) {
@@ -1843,7 +1928,7 @@
               ${loc6Keywords.length ? `
                 <div class="era-source-note" style="margin-bottom:6px">LOC6｜Threads 公開語言</div>
                 <div class="era-keyword-chips" style="margin-bottom:10px">
-                  ${loc6Keywords.map(item => { const prev=prevLoc6Percent.get(String(item.term||''))||0; const delta=Number((Number(item.percent||0)-prev).toFixed(1)); const deltaText=eraIndex===0?'':(delta>0?' ▲'+delta:(delta<0?' ▼'+Math.abs(delta):' ＝')); return `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.document_count||0)}篇 · ${esc(item.percent)}%${esc(deltaText)}</b></span>`; }).join('')}
+                  ${loc6Keywords.map(item => { const prev=prevLoc6Percent.get(String(item.term||''))||0; const delta=Number((Number(item.percent||0)-prev).toFixed(1)); const deltaText=eraIndex===0?'':(delta>0?' ▲'+delta:(delta<0?' ▼'+Math.abs(delta):' ＝')); return `<a class="era-keyword-chip" href="${esc(searchHref(item.term, period))}" title="搜尋 ${esc(item.term)} 的內容">${esc(item.term)} <b>${esc(item.document_count||0)}篇 · ${esc(item.percent)}%${esc(deltaText)}</b></a>`; }).join('')}
                 </div>
                 <div class="era-source-note" style="margin-bottom:10px">主貼文 document frequency；高頻不等於 Canon。</div>
               ` : ''}
@@ -1852,7 +1937,7 @@
                 <div class="era-source-note" style="margin-bottom:6px">P1 關鍵字｜LOC4 + LOC5</div>
                 <div class="era-keyword-chips" style="margin-bottom:10px">
                   ${nonLoc3.keywords.length
-                    ? nonLoc3.keywords.map(item => `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.percent)}%</b></span>`).join('')
+                    ? nonLoc3.keywords.map(item => `<a class="era-keyword-chip" href="${esc(searchHref(item.term, period))}" title="搜尋 ${esc(item.term)} 的內容">${esc(item.term)} <b>${esc(item.percent)}%</b></a>`).join('')
                     : '<span class="era-source-note">P1 尚無可統計的非 LOC3 關鍵字</span>'}
                 </div>
                 <div class="era-source-note">P1 不使用 LOC3 關鍵字；LOC3 在此期只備份、不作正式搜尋分析。</div>
@@ -1860,13 +1945,13 @@
                 ${namedKeywords.length ? `
                   <div class="era-source-note" style="margin-bottom:6px">命名關鍵字</div>
                   <div class="era-keyword-chips" style="margin-bottom:10px">
-                    ${namedKeywords.map(item => `<span class="era-keyword-chip">${esc(item.term)}${item.aliases?.length ? `（${esc(item.aliases.join('／'))}）` : ''} <b>${esc(item.percent)}%</b></span>`).join('')}
+                    ${namedKeywords.map(item => `<a class="era-keyword-chip" href="${esc(searchHref(item.term, period))}" title="搜尋 ${esc(item.term)} 的內容">${esc(item.term)}${item.aliases?.length ? `（${esc(item.aliases.join('／'))}）` : ''} <b>${esc(item.percent)}%</b></a>`).join('')}
                   </div>
                 ` : ''}
                 <div class="era-source-note" style="margin-bottom:6px">LOC3 主要語義</div>
                 <div class="era-keyword-chips">
                   ${loc3Keywords.length
-                    ? loc3Keywords.map(item => `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.percent)}%</b></span>`).join('')
+                    ? loc3Keywords.map(item => `<a class="era-keyword-chip" href="${esc(searchHref(item.term, period))}" title="搜尋 ${esc(item.term)} 的內容">${esc(item.term)} <b>${esc(item.percent)}%</b></a>`).join('')
                     : '<span class="era-source-note">此時期尚無 LOC3 關鍵字分析</span>'}
                 </div>
               `}
@@ -1881,6 +1966,8 @@
           `;
         }).join('');
       }
+
+      renderKeywordRanking();
 
       if (els.eraTrendStrip) {
         els.eraTrendStrip.innerHTML = ordered.map((era, i) => {
@@ -1902,7 +1989,7 @@
               <div class="name">${esc(era.name || era.display_label || '')}</div>
               <div class="range">${esc(era.start_date || '—')} ～ ${esc(era.end_date || '現在')}</div>
               <div class="state">${esc(era.state_after || era.description || '')}</div>
-              ${topKeywords.length ? `<div class="era-keyword-chips">${topKeywords.map(tag => `<span class="era-keyword-chip">${esc(tag)}</span>`).join('')}</div>` : ''}
+              ${topKeywords.length ? `<div class="era-keyword-chips">${topKeywords.map(tag => `<a class="era-keyword-chip" href="${esc(searchHref(tag, period))}">${esc(tag)}</a>`).join('')}</div>` : ''}
             </article>
           `;
         }).join('');
