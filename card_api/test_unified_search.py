@@ -137,6 +137,28 @@ class UnifiedSearchTests(unittest.TestCase):
         self.assertIn("graph_quality_bands", provenance)
         self.assertIn("graph_quality", provenance)
 
+
+    def test_graph_snapshot_without_center_is_metadata_only(self):
+        engine = self.make_engine()
+        snapshot = engine.graph_snapshot()
+        self.assertEqual("graph_metadata", snapshot["mode"])
+        self.assertEqual([], snapshot["nodes"])
+        self.assertEqual([], snapshot["edges"])
+        self.assertFalse(snapshot["bulk_export"])
+        self.assertTrue(snapshot["requires_node_id"])
+        self.assertGreater(snapshot["node_count"], 0)
+
+    def test_graph_snapshot_with_center_is_bounded_neighborhood(self):
+        engine = self.make_engine()
+        snapshot = engine.graph_snapshot("ERA-P8", depth=1)
+        self.assertEqual("graph_neighborhood", snapshot["mode"])
+        self.assertEqual("ERA-P8", snapshot["center"])
+        self.assertGreaterEqual(snapshot["node_count"], 1)
+        self.assertTrue(all(
+            edge.get("source") == "ERA-P8" or edge.get("target") == "ERA-P8"
+            for edge in snapshot["edges"]
+        ))
+
     def test_synthesis_confidence_uses_graph_quality(self):
         result = self.make_engine().search("自我治理", top_k=5)
         synthesis = result["synthesis"]
