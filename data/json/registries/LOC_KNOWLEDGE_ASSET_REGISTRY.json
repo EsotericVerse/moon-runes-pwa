@@ -529,7 +529,8 @@
         "圖騰",
         "分組",
         "月相",
-        "顯化形式"
+        "顯化形式",
+        "LunaRunes"
       ],
       "provenance": {
         "mother_source": "LunaRune64.xlsx",
@@ -656,7 +657,8 @@
         "Demo",
         "Golden Query",
         "資料治理",
-        "未知演化"
+        "未知演化",
+        "LunaRunes"
       ],
       "provenance": {
         "repository": "EsotericVerse/moon-runes-pwa",
@@ -700,7 +702,8 @@
         "LOC1–8",
         "月之符文",
         "架構圖",
-        "系統架構"
+        "系統架構",
+        "LunaRunes"
       ],
       "notes": "月典整體框架視覺總覽；適合搜尋 LOC 架構、LOC1–8 與月之符文關係時直接顯示。",
       "presentation": "internal_source"
@@ -840,7 +843,8 @@
         "符文演化",
         "LOC1–8",
         "Semantic Playground",
-        "脈絡分析"
+        "脈絡分析",
+        "LunaRunes"
       ],
       "provenance": {
         "repository": "EsotericVerse/moon-runes-pwa",
@@ -884,7 +888,8 @@
         "Web Tutorial",
         "LOC1–8",
         "月之符文",
-        "KM成果"
+        "KM成果",
+        "LunaRunes"
       ],
       "provenance": {
         "repository": "EsotericVerse/moon-runes-pwa",
@@ -1134,7 +1139,8 @@
         "悟",
         "平等使用",
         "治理式演化",
-        "自我治理"
+        "自我治理",
+        "LunaRunes"
       ],
       "provenance": {
         "repository": "EsotericVerse/moon-runes-pwa",
@@ -1280,12 +1286,12 @@
       "keywords": [
         "Copyleft",
         "月之符文",
-        "Luna Codex",
         "分享",
         "衍生",
         "attribution",
         "share alike",
-        "provenance"
+        "provenance",
+        "LunaRunes"
       ],
       "provenance": {
         "repository": "EsotericVerse/moon-runes-pwa",
