@@ -59,17 +59,17 @@ LOC 用於釐清問題、提供方向及協助理解結構，而不是替使用�
 
 | 檔案 | 定位與用途 |
 |---|---|
-| [`64LunaRune.docx`](./docs/64LunaRune.docx) | **命運句語法圖鑑**：整理符文四向語意、命運句與相關語法資料 |
-| [`LOC_Canon.docx`](./docs/LOC_Canon.docx) | **LOC Canon 0.5r**：現行系統定義、固定骨架與治理規則 |
-| [`LunarRunesCardCut.pdf`](./docs/LunarRunesCardCut.pdf) | **實際紙本卡片列印檔案**：供正方形月之符文卡牌輸出與裁切使用 |
+| [`64LunaRune.docx`](./km/64LunaRune.docx) | **命運句語法圖鑑**：整理符文四向語意、命運句與相關語法資料 |
+| [`LOC_Canon.docx`](./km/LOC_Canon.docx) | **LOC Canon 0.5r**：現行系統定義、固定骨架與治理規則 |
+| [`LunarRunesCardCut.pdf`](./km/LunarRunesCardCut.pdf) | **實際紙本卡片列印檔案**：供正方形月之符文卡牌輸出與裁切使用 |
 | [`LunaRune64.xlsx`](./LunaRune64.xlsx) | **符文資料庫／最高優先母資料**：符文名稱、分類、定義、月相與四向語意的 Single Source of Truth |
 
 文件分工：
 
-- `docs/LOC_Canon.docx` 定義系統規則
+- `km/LOC_Canon.docx` 定義系統規則
 - `LunaRune64.xlsx` 保存結構化符文母資料
-- `docs/64LunaRune.docx` 說明命運句與語法內容
-- `docs/LunarRunesCardCut.pdf` 將系統輸出為可實際使用的紙本卡牌
+- `km/64LunaRune.docx` 說明命運句與語法內容
+- `km/LunarRunesCardCut.pdf` 將系統輸出為可實際使用的紙本卡牌
 
 ---
 
@@ -340,13 +340,13 @@ PWA 與 RWD 架構已於 2025 年 5 月完成，現行版本包含：
 
 LOC7_KM 採 **Markdown-first, structured-data-native**：
 
-- `docs/LOC7_KM.md`：repository 內可維護 KM 主文件
-- `docs/JSON_DATA_MAP.md`：JSON 角色與同步方向
+- `km/LOC7_KM.md`：repository 內可維護 KM 主文件
+- `km/JSON_DATA_MAP.md`：JSON 角色與同步方向
 - `data/json/registries/*.json`：跨 LOC 結構化 registry
 - FAQ v0.4 為 KM 問答 View；RAG v0.4 為其檢索衍生資料
 - 下游 JSON／索引／UI／AI 推論不得反向覆寫 Canon、母資料或原始作品
 
-詳見 [docs 文件索引](./docs/README.md)、[Repository Governance](./docs/REPOSITORY_GOVERNANCE.md) 與 [Data Architecture](./docs/DATA_ARCHITECTURE.md)。
+詳見 [docs 文件索引](./km/README.md)、[Repository Governance](./km/REPOSITORY_GOVERNANCE.md) 與 [Data Architecture](./km/DATA_ARCHITECTURE.md)。
 
 ---
 
@@ -408,7 +408,7 @@ moon-runes-pwa/
 │       ├── archive/           # 歷史版本，不進 current runtime
 │       └── experimental/      # engine 實驗 JSON
 ├── engine/                    # 實驗程式與二進位向量；JSON 不再散放於此
-├── docs/
+├── km/
 │   ├── README.md
 │   ├── REPOSITORY_GOVERNANCE.md
 │   ├── methodology/
@@ -426,7 +426,7 @@ moon-runes-pwa/
 └── service-worker.js
 ```
 
-資料與目錄治理詳見 [Repository Governance](./docs/REPOSITORY_GOVERNANCE.md) 與 [Data Directory](./data/README.md)。
+資料與目錄治理詳見 [Repository Governance](./km/REPOSITORY_GOVERNANCE.md) 與 [Data Directory](./data/README.md)。
 
 ---
 
@@ -542,9 +542,9 @@ LOC 的功能骨架完成後，現行重點轉向 Governance Consolidation：把
 
 主要文件：
 
-- `docs/LOC_GOVERNANCE_CORE.md`
-- `docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`
-- `docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md`
-- `docs/LOC_CONTENT_RIGHTS_POLICY.md`
+- `km/LOC_GOVERNANCE_CORE.md`
+- `km/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`
+- `km/LUNA_RUNES_66_GOVERNANCE_DESIGN.md`
+- `km/LOC_CONTENT_RIGHTS_POLICY.md`
 
 核心原則是：**穩定的是框架，不是語言；保留歷史，允許修正；提供邊界，不要求思想服從。**
