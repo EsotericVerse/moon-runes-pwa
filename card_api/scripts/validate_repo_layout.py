@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
+import re
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -42,6 +43,27 @@ STALE_TOKENS = [
 ]
 
 TEXT_SUFFIXES = {".py", ".js", ".html", ".md", ".json", ".yml", ".yaml", ".xml", ".txt"}
+
+JSON_REFERENCE_PATTERNS = [
+    ("fetch", re.compile(r"""fetch\(\s*["'`]([^"'\`?#]+\.json)(?:\?[^"'\`]*)?["'`]""")),
+    ("core_json", re.compile(r"""core_json\(\s*["']([^"']+\.json)["']\s*\)""")),
+    ("registry_json", re.compile(r"""registry_json\(\s*["']([^"']+\.json)["']\s*\)""")),
+    ("search_json", re.compile(r"""search_json\(\s*["']([^"']+)["']\s*,\s*["']([^"']+\.json)["']\s*\)""")),
+]
+
+def json_reference_target(kind: str, match: re.Match[str], source: Path) -> Path:
+    if kind == "core_json":
+        return ROOT / "data" / "json" / "core" / match.group(1)
+    if kind == "registry_json":
+        return ROOT / "data" / "json" / "registries" / match.group(1)
+    if kind == "search_json":
+        return ROOT / "data" / "json" / "search" / match.group(1) / match.group(2)
+    raw = match.group(1).lstrip("/")
+    # Browser fetch paths in this repository are site-root relative even when
+    # the fetch call lives inside js/*.js modules.
+    return ROOT / raw
+
+
 SKIP_PREFIXES = (
     "data/json/archive/",
 )
@@ -88,6 +110,13 @@ def main() -> int:
         for token in STALE_TOKENS:
             if token in content:
                 failures.append(f"stale path token {token!r}: {rp}")
+        for kind, pattern in JSON_REFERENCE_PATTERNS:
+            for match in pattern.finditer(content):
+                target = json_reference_target(kind, match, path)
+                if not target.exists():
+                    failures.append(
+                        f"missing JSON reference via {kind}: {rp} -> {rel(target)}"
+                    )
 
         # Repository-relative JSON references are executable/data contracts.
         # Verify the referenced file actually exists after every path migration.
@@ -134,6 +163,7 @@ def main() -> int:
     print("- JSON roles: core / registries / search / generated / archive / experimental")
     print("- no forbidden legacy data paths")
     print("- no stale runtime/document references")
+    print("- all static JSON fetch/path-helper references resolve to existing files")
     print("- every repository-relative JSON reference resolves to an existing file")
     print("- every current HTML/JS route/module reference resolves to an existing file")
     return 0
