@@ -1822,7 +1822,7 @@
 
       const ranked = [...rows.values()]
         .sort((a,b) => b.document_count - a.document_count || b.hit_count - a.hit_count || a.term.localeCompare(b.term,'zh-Hant'))
-        .slice(0,30);
+        .slice(0,10);
 
       if (!ranked.length) {
         els.keywordRankingList.innerHTML = '<div class="empty">目前沒有可建立排行榜的關鍵字資料。</div>';
