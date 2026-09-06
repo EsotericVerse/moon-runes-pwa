@@ -531,6 +531,19 @@
     .footer { color: var(--muted); font-size: 12px; text-align: center; padding: 22px 0 4px; }
 
 
+    .trajectory-analysis-grid { display:grid; gap:12px; }
+    .transition-analysis-card { border:1px solid var(--line); border-radius:14px; padding:14px; background:rgba(255,255,255,.02); }
+    .transition-analysis-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:10px; }
+    .transition-analysis-head strong { font-size:13px; }
+    .transition-analysis-head small { color:var(--muted); font-size:10px; white-space:nowrap; }
+    .transition-delta-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:10px 0; }
+    .transition-delta-box { border:1px solid var(--line); border-radius:11px; padding:10px; background:rgba(255,255,255,.015); }
+    .transition-delta-box b { display:block; font-size:10px; color:var(--muted); margin-bottom:6px; }
+    .transition-delta-list { display:flex; gap:6px; flex-wrap:wrap; }
+    .transition-delta-chip { display:inline-flex; gap:4px; align-items:center; border:1px solid var(--line); border-radius:999px; padding:3px 7px; font-size:10px; }
+    .transition-analysis-summary { color:#d8e4f7; font-size:12px; line-height:1.7; }
+    .transition-analysis-evidence { margin-top:8px; color:var(--muted); font-size:10px; }
+
     .era-tools { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
     .era-tools .btn { padding:5px 8px; font-size:10px; }
     .era-editor { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; width:100%; }
@@ -805,6 +818,18 @@
           <div class="body"><div class="trajectory" id="trajectoryList"><div class="empty" style="min-width:100%">需要至少兩筆具有 State After 的事件才能形成軌跡。</div></div></div>
       </section>
 
+      <section class="card" style="margin-top:16px;" id="trajectory-analysis">
+        <div class="head">
+          <div><h3>趨勢分析 Analysis</h3><p>把軌跡的變化拆成可讀的證據：關鍵字比重怎麼升降，以及這個轉折代表什麼。</p></div>
+          <span class="badge">LOC3 → LOC8</span>
+        </div>
+        <div class="body">
+          <div class="trajectory-analysis-grid" id="trajectoryAnalysis">
+            <div class="empty">載入 LOC3 時期差異分析中…</div>
+          </div>
+        </div>
+      </section>
+
       <section class="card" style="margin-top:16px;" id="relation-library">
         <div class="head">
           <div><h3>Relation Library</h3><p>Relation 是一級資料：節點可以有多條關聯，時間線只是其中一種投影。</p></div>
@@ -1005,6 +1030,7 @@
       timeline: $('#timelineList'),
       eraTimeline: $('#eraTimelineList'),
       trajectory: $('#trajectoryList'),
+      trajectoryAnalysis: $('#trajectoryAnalysis'),
       current: $('#currentState'),
       syncText: $('#syncText'),
       syncDot: $('#syncDot'),
@@ -1171,6 +1197,7 @@
       }
 
       renderEraTimeline();
+      renderTrajectoryAnalysis();
 
       // Live Sheet refresh is optional and must never blank the LOC3 keyword view.
       try {
@@ -1597,6 +1624,116 @@
       return data;
     }
 
+    function keywordPercentMap(periodItem) {
+      const items = Array.isArray(periodItem?.normalized_semantic_families)
+        ? periodItem.normalized_semantic_families
+        : (Array.isArray(periodItem?.normalized_top_keywords) ? periodItem.normalized_top_keywords : []);
+      const map = new Map();
+      items.forEach(item => map.set(String(item.term || ''), Number(item.percent || 0)));
+      return map;
+    }
+
+    function namedKeywordPercentMap(periodItem) {
+      const map = new Map();
+      (Array.isArray(periodItem?.named_keywords) ? periodItem.named_keywords : [])
+        .forEach(item => map.set(String(item.term || ''), Number(item.percent || 0)));
+      return map;
+    }
+
+    function transitionDelta(fromItem, toItem) {
+      const from = keywordPercentMap(fromItem);
+      const to = keywordPercentMap(toItem);
+      const all = new Set([...from.keys(), ...to.keys()]);
+      const deltas = [...all].map(term => ({
+        term,
+        from: from.get(term) || 0,
+        to: to.get(term) || 0,
+        delta: Number(((to.get(term) || 0) - (from.get(term) || 0)).toFixed(1))
+      }));
+      const rising = deltas.filter(x => x.delta > 0).sort((a,b) => b.delta - a.delta).slice(0,4);
+      const falling = deltas.filter(x => x.delta < 0).sort((a,b) => a.delta - b.delta).slice(0,4);
+
+      const fromNamed = namedKeywordPercentMap(fromItem);
+      const toNamed = namedKeywordPercentMap(toItem);
+      const namedTerms = new Set([...fromNamed.keys(), ...toNamed.keys()]);
+      const named = [...namedTerms].map(term => ({
+        term,
+        from: fromNamed.get(term) || 0,
+        to: toNamed.get(term) || 0,
+        delta: Number(((toNamed.get(term) || 0) - (fromNamed.get(term) || 0)).toFixed(1))
+      })).filter(x => x.delta !== 0).sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0,3);
+
+      return { rising, falling, named };
+    }
+
+    function transitionRelationSummary(fromEraId, toEraId) {
+      const relation = relations.find(r =>
+        String(r.source_type) === 'era' &&
+        String(r.target_type) === 'era' &&
+        String(r.source_id) === String(fromEraId) &&
+        String(r.target_id) === String(toEraId) &&
+        r.summary
+      );
+      return relation?.summary || '';
+    }
+
+    function renderTrajectoryAnalysis() {
+      if (!els.trajectoryAnalysis) return;
+      const periods = Array.isArray(loc3PeriodKeywordAnalysis?.periods)
+        ? loc3PeriodKeywordAnalysis.periods.slice()
+        : [];
+      if (periods.length < 2) {
+        els.trajectoryAnalysis.innerHTML = '<div class="empty">目前沒有足夠的 LOC3 時期資料可比較。</div>';
+        return;
+      }
+
+      periods.sort((a,b) => String(a.start_date || '').localeCompare(String(b.start_date || '')));
+      const cards = [];
+      for (let i = 1; i < periods.length; i++) {
+        const from = periods[i - 1];
+        const to = periods[i];
+        const { rising, falling, named } = transitionDelta(from, to);
+        const relationSummary = transitionRelationSummary(from.era_id, to.era_id);
+
+        const fallbackSummary = [
+          rising.length ? '主要上升：' + rising.slice(0,3).map(x => `${x.term} +${x.delta}pt`).join('、') : '',
+          falling.length ? '主要下降：' + falling.slice(0,3).map(x => `${x.term} ${x.delta}pt`).join('、') : ''
+        ].filter(Boolean).join('；');
+
+        const deltaChips = (items, sign) => items.length
+          ? items.map(x => `<span class="transition-delta-chip">${esc(x.term)} <b>${sign === 'up' ? '+' : ''}${esc(x.delta)}pt</b> <small>${esc(x.from)}→${esc(x.to)}%</small></span>`).join('')
+          : '<span class="era-source-note">無明顯變化</span>';
+
+        const namedHtml = named.length
+          ? `<div class="transition-analysis-evidence">命名概念：${named.map(x => `${esc(x.term)} ${x.delta > 0 ? '+' : ''}${esc(x.delta)}pt（${esc(x.from)}→${esc(x.to)}%）`).join('、')}</div>`
+          : '';
+
+        cards.push(`
+          <article class="transition-analysis-card">
+            <div class="transition-analysis-head">
+              <strong>${esc(from.period)} → ${esc(to.period)}｜${esc(from.period_name || '')} → ${esc(to.period_name || '')}</strong>
+              <small>LOC3 ${esc(from.work_count || 0)} → ${esc(to.work_count || 0)} 首</small>
+            </div>
+            <div class="transition-delta-grid">
+              <div class="transition-delta-box">
+                <b>比重上升</b>
+                <div class="transition-delta-list">${deltaChips(rising, 'up')}</div>
+              </div>
+              <div class="transition-delta-box">
+                <b>比重下降</b>
+                <div class="transition-delta-list">${deltaChips(falling, 'down')}</div>
+              </div>
+            </div>
+            <div class="transition-analysis-summary">${esc(relationSummary || fallbackSummary || '目前只有數值差異，尚未建立文字轉折說明。')}</div>
+            ${namedHtml}
+            <div class="transition-analysis-evidence">比較單位：每期作品中命中該語義家族的作品比例；差值單位為 percentage points。</div>
+          </article>
+        `);
+      }
+
+      els.trajectoryAnalysis.innerHTML = cards.join('');
+    }
+
     function normalizeRelation(raw) {
       return {
         id: raw.id || relationUid(),
@@ -1657,6 +1794,7 @@
       }
       renderRelations();
       renderAll();
+      renderTrajectoryAnalysis();
     }
 
     function renderRelations() {
@@ -2604,7 +2742,7 @@
         loadEvents();
       } else if (view === 'context') {
         history.replaceState(null, '', '#context');
-        Promise.all([loadEvents(), loadRelations()]);
+        Promise.all([loadEvents(), loadRelations()]).then(renderTrajectoryAnalysis);
       } else if (view === 'era-trend') {
         history.replaceState(null, '', '#era-trend');
         loadEraRegistry();
