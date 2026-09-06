@@ -85,10 +85,14 @@ except Exception as e:
 
 
 # Optional private Facebook corpus. The dataset is never committed to the public repo.
-FB_DATA_PATH = Path(os.environ.get("LOC_FB_SEARCH_DATASET", "")).expanduser() if os.environ.get("LOC_FB_SEARCH_DATASET") else None
+FB_DATA_PATH = (
+    Path(os.environ.get("LOC_FB_SEARCH_DATASET", "")).expanduser()
+    if os.environ.get("LOC_FB_SEARCH_DATASET")
+    else Path(__file__).resolve().parents[1] / "data" / "json" / "facebook" / "manifest.json"
+)
 try:
-    FB_SEARCHER = FacebookSearchEngine(FB_DATA_PATH) if FB_DATA_PATH and FB_DATA_PATH.exists() else None
-    FB_LOAD_ERROR = None if FB_SEARCHER else "LOC_FB_SEARCH_DATASET not mounted"
+    FB_SEARCHER = FacebookSearchEngine(FB_DATA_PATH) if FB_DATA_PATH.exists() else None
+    FB_LOAD_ERROR = None if FB_SEARCHER else f"Facebook corpus not found: {FB_DATA_PATH}"
 except Exception as e:
     FB_SEARCHER = None
     FB_LOAD_ERROR = str(e)
@@ -532,7 +536,7 @@ async def root():
             "unified_search": "/search",
             "unified_browse": "/search/browse",
             "unified_facets": "/search/facets",
-            "facebook_search": "/search (content_type=facebook_post)",
+            "facebook_search": "/search (content_type=text_record, source=facebook)",
             "text_analyze": "/analyze/text",
             "corpus_analyze": "/analyze/corpus",
             "health": "/health",
