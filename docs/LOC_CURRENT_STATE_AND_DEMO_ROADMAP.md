@@ -570,3 +570,51 @@ Edge 可包括：
 - cache 是讀取加速與離線 fallback，不是 canonical source。
 - API／Registry／Google Sheet 成功取得的新資料優先於 cache。
 - Canon、mother data、Registry 不得由瀏覽器 cache 反向覆寫。
+
+
+## LOC6｜Threads Public Language Corpus 解析進度
+
+**Source window:** 2024-11-18 ～ 2026-09-06  
+**Current deduplicated corpus:** 7,008 text records  
+**Primary posts:** 4,578  
+**Replies:** 2,430
+
+### 現行完成
+
+- 原始 Threads export 已確認並保存。
+- 主貼文／Reply 已可區分。
+- 去重基準已建立。
+- 第一批 LOC6 Threads KM / Article 已接入 Unified Search。
+- Reply 已定義為 supplemental evidence，不與主貼文同權重。
+- 關鍵字 DF 與 ERA distribution 已可保存為統計證據。
+
+### 目前進行中：全文解析
+
+全文解析不以「把 7,008 筆一次送進 LLM」為方法，而採可重跑的 corpus pipeline：
+
+```text
+Threads raw
+→ encoding repair / normalize / dedupe
+→ document-level index
+→ Surface Terms / phrases
+→ Concept candidates
+→ ERA projection
+→ main vs reply support
+→ human governance
+→ Canonical Concept
+→ Unified Search / KM
+```
+
+優先保存 document-level analysis，ERA 只作 projection，避免未來時期邊界調整時必須重讀全部原文。
+
+### Showcase value
+
+LOC6 不再只以少量語錄或整理稿作為展示資料，而是有一個接近 22 個月、7,008 筆的公開語言 corpus。它可用來展示：
+
+- 長期公開語言的概念形成與變化
+- 主貼文與互動回覆中的治理語言差異
+- 同一概念跨 ERA 的頻率與語境變化
+- Threads 與 LOC3 Suno 創作 corpus 的跨來源對照
+- 從 primary-source corpus 到 KM / Search 的完整資料治理流程
+
+**進度判定：Searchable baseline 已成立；Full-corpus semantic parsing 進行中。**
