@@ -545,7 +545,8 @@ class UnifiedSearchEngine:
                 scored.append((score, row, "asset"))
 
         # Long-form Threads main posts are article-like primary evidence.
-        for doc in self.loc6_threads.get("documents", []):
+        article_docs = self.loc6_thread_articles.get("documents", []) or self.loc6_threads.get("documents", [])
+        for doc in article_docs:
             if filters.get("period") and doc.get("era") != filters["period"]:
                 continue
             text = str(doc.get("text") or "")
@@ -814,6 +815,124 @@ class UnifiedSearchEngine:
             "source_refs": [{"source_type": "event", "source_id": era.get("source_event_id"), "note": None}],
             "payload": era,
         } for score, era in scored[:top_k]]
+
+    def browse(
+        self,
+        content_type: str,
+        offset: int = 0,
+        limit: int = 24,
+        filters: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
+        """Browse corpus records without requiring a semantic query.
+
+        This is a catalog/list view, not a ranking view. It preserves full text
+        when the current authority source already contains it.
+        """
+        filters = filters or {}
+        wanted = (content_type or "").strip().lower()
+        offset = max(0, int(offset or 0))
+        limit = max(1, min(int(limit or 24), 100))
+        items: list[dict[str, Any]] = []
+
+        if wanted == "lyrics_work":
+            for work in getattr(self.loc3_searcher, "works", []) if self.loc3_searcher else []:
+                if filters.get("period") and work.get("period") != filters["period"]:
+                    continue
+                payload = dict(work)
+                versions = work.get("versions", [])
+                payload["recommended_version"] = versions[0] if versions else {}
+                payload["alternate_versions"] = versions[1:] if len(versions) > 1 else []
+                items.append({
+                    "result_id": work.get("work_id"),
+                    "system_id": work.get("system_id") or "lo3rwang",
+                    "primary_loc": "LOC3",
+                    "related_locs": work.get("related_locs", ["LOC5", "LOC6", "LOC7", "LOC8"]),
+                    "content_type": "lyrics_work",
+                    "group": "works",
+                    "title": work.get("title"),
+                    "summary": work.get("summary"),
+                    "period": work.get("period"),
+                    "era_id": work.get("era_id"),
+                    "source_refs": work.get("source_refs", []),
+                    "payload": payload,
+                })
+
+        elif wanted == "text_work":
+            for work in self.loc4.get("works", []):
+                if filters.get("period") and work.get("period") != filters["period"]:
+                    continue
+                items.append({
+                    "result_id": work.get("work_id"),
+                    "system_id": work.get("system_id") or "lo3rwang",
+                    "primary_loc": "LOC4",
+                    "related_locs": work.get("related_locs", []),
+                    "content_type": "text_work",
+                    "group": "textworks",
+                    "title": work.get("title"),
+                    "summary": work.get("summary"),
+                    "period": work.get("period"),
+                    "era_id": work.get("era_id"),
+                    "source_refs": work.get("source_refs", []),
+                    "payload": work,
+                })
+
+        elif wanted == "governance_article":
+            article_docs = self.loc6_thread_articles.get("documents", []) or self.loc6_threads.get("documents", [])
+            for doc in article_docs:
+                if doc.get("source_role") != "main_post":
+                    continue
+                if filters.get("period") and doc.get("era") != filters["period"]:
+                    continue
+                items.append({
+                    "result_id": doc.get("id"),
+                    "system_id": "lo3rwang",
+                    "primary_loc": "LOC6",
+                    "related_locs": ["LOC7", "LOC8"],
+                    "content_type": "governance_article",
+                    "group": "loc6_articles",
+                    "title": f"Threads 長文 · {doc.get('date') or 'undated'} · {doc.get('era') or 'ERA'}",
+                    "summary": doc.get("text") or "",
+                    "period": doc.get("era"),
+                    "era_id": f"ERA-{doc.get('era')}" if doc.get("era") else None,
+                    "source_refs": [{"source_type": "threads", "source_id": doc.get("source_id"), "note": "primary main-post evidence"}],
+                    "payload": {**doc, "km_source": "LOC6_THREADS_ARTICLE_INDEX_v0.2", "evidence_role": "primary"},
+                })
+            items.sort(key=lambda r: (str((r.get("payload") or {}).get("date") or ""), str(r.get("result_id") or "")), reverse=True)
+
+        elif wanted == "governance_fragment":
+            for fragment in self.loc6.get("fragments", []):
+                if filters.get("period") and fragment.get("period") != filters["period"] and fragment.get("era") != filters["period"]:
+                    continue
+                items.append({
+                    "result_id": fragment.get("fragment_id"),
+                    "system_id": fragment.get("system_id") or "lo3rwang",
+                    "primary_loc": "LOC6",
+                    "related_locs": fragment.get("related_locs", ["LOC3", "LOC4", "LOC7", "LOC8"]),
+                    "content_type": "governance_fragment",
+                    "group": "governance",
+                    "title": fragment.get("statement") or fragment.get("topic") or fragment.get("fragment_id"),
+                    "summary": fragment.get("interpretation") or fragment.get("governance_principle") or "",
+                    "era_id": fragment.get("era_id"),
+                    "source_refs": fragment.get("source_refs", []),
+                    "payload": fragment,
+                })
+
+        else:
+            raise ValueError("browse目前支援 lyrics_work、text_work、governance_article、governance_fragment")
+
+        total = len(items)
+        page = items[offset:offset + limit]
+        return {
+            "system_id": "lo3rwang",
+            "content_type": wanted,
+            "mode": "browse",
+            "offset": offset,
+            "limit": limit,
+            "total_count": total,
+            "has_more": offset + limit < total,
+            "items": page,
+        }
+
 
     def search(
         self,
