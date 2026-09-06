@@ -31,6 +31,7 @@
 | [LOC8_KM.md](./LOC8_KM.md) | LOC8 ERA／Event／Relation／Context 判定與治理邏輯 | Working |
 | [JSON_DATA_MAP.md](./JSON_DATA_MAP.md) | JSON 資料角色、來源與同步規則 | Current |
 | [DATA_ARCHITECTURE.md](./DATA_ARCHITECTURE.md) | core / registries / search / generated / archive / experimental 資料架構與月符 projection 規則 | Current |
+| [REPOSITORY_TREE.md](./REPOSITORY_TREE.md) | 現行檔案樹、模組責任、公開路由限制與商業化維護基準 | Current |
 | [REPOSITORY_GOVERNANCE.md](./REPOSITORY_GOVERNANCE.md) | Repository 模組化、路徑 migration、刪除／archive 與 CI 配置治理 | Current |
 | [Copyleft Policy](../COPYLEFT.md) | Luna Codex／LOC 的 Copyleft、衍生與 provenance 治理 | Current |
 | `LOC_Canon.docx` | Canon 文件版本之一 | Canon document |
