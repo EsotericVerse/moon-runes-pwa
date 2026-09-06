@@ -451,6 +451,78 @@ function serializeCell_(value) {
   return value == null ? '' : value;
 }
 
+function normalizeEra_(raw) {
+  const now = new Date();
+  const tz = Session.getScriptTimeZone() || 'Asia/Taipei';
+  const stamp = Utilities.formatDate(now, tz, "yyyy-MM-dd'T'HH:mm:ssXXX");
+  const period = String(raw.period || '').trim();
+  return {
+    era_id: raw.era_id || (period ? 'ERA-' + period : makeId_('ERA')),
+    period: period,
+    order: raw.order == null ? '' : raw.order,
+    name: raw.name || '',
+    display_label: raw.display_label || (period && raw.name ? period + '｜' + raw.name : (raw.name || period)),
+    start_date: raw.start_date || '',
+    end_date: raw.end_date || '',
+    status: raw.status || (raw.end_date ? 'released' : 'current'),
+    description: raw.description || '',
+    state_before: raw.state_before || '',
+    state_after: raw.state_after || '',
+    source_active_start: raw.source_active_start || '',
+    source_active_end: raw.source_active_end || '',
+    source_active_source: raw.source_active_source || '',
+    source_event_id: raw.source_event_id || '',
+    system_id: raw.system_id || 'lo3rwang',
+    updated_at: stamp
+  };
+}
+
+function updateEraById_(eraId, patch) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getSheet_(ERA_SHEET);
+    const headers = getHeaders_(sheet);
+    const idCol = headers.indexOf('era_id');
+    if (idCol < 0) throw new Error('Era has no era_id column');
+    const values = sheet.getDataRange().getDisplayValues();
+    for (let r = 1; r < values.length; r++) {
+      if (String(values[r][idCol] || '').trim() !== String(eraId).trim()) continue;
+      const existing = {};
+      headers.forEach((h, i) => existing[h] = values[r][i] == null ? '' : values[r][i]);
+      const merged = Object.assign({}, existing, patch, { era_id: eraId });
+      const row = headers.map(h => serializeCell_(merged[h]));
+      sheet.getRange(r + 1, 1, 1, headers.length).setValues([row]);
+      const result = {};
+      headers.forEach((h, i) => result[h] = row[i]);
+      return result;
+    }
+    throw new Error('Era not found: ' + eraId);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function deleteEraById_(eraId) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getSheet_(ERA_SHEET);
+    const headers = getHeaders_(sheet);
+    const idCol = headers.indexOf('era_id');
+    if (idCol < 0) throw new Error('Era has no era_id column');
+    const values = sheet.getDataRange().getDisplayValues();
+    for (let r = 1; r < values.length; r++) {
+      if (String(values[r][idCol] || '').trim() === String(eraId).trim()) {
+        sheet.deleteRow(r + 1);
+        return true;
+      }
+    }
+    throw new Error('Era not found: ' + eraId);
+  } finally {
+    lock.releaseLock();
+  }
+}
 function normalizeEvent_(raw) {
   const now = new Date();
   const tz = Session.getScriptTimeZone() || 'Asia/Taipei';
