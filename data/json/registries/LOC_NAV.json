@@ -33,9 +33,9 @@
     },
     {
       "id": "life",
-      "label": "脈絡分析",
+      "label": "LOC8 · Life",
       "href": "life.html",
-      "description": "LOC8 · Rune → ERA → Event"
+      "description": "Context · Relation · Trend"
     }
   ]
 }
