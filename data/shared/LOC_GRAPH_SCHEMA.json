@@ -1,8 +1,8 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_GRAPH_SCHEMA",
   "authority": "LOC7",
-  "purpose": "Shared node/edge contract for LOC Graph RAG. The graph is derived from authoritative LOC registries and does not replace canonical ownership.",
+  "purpose": "Shared node/edge contract for LOC Graph RAG and Search Synthesis. Search retrieval chooses graph seeds; governed edges aggregate related LOC, ERA, works, media and analysis without replacing canonical ownership.",
   "node_types": [
     "loc_domain",
     "rune",
@@ -32,10 +32,23 @@
   ],
   "rules": [
     "Graph nodes are references to authoritative records, not replacement copies.",
-    "Edges require explicit registry evidence or deterministic structural evidence.",
-    "Semantic similarity alone must not be stored as a canonical edge.",
-    "Search-time semantic similarity may be shown separately as retrieval evidence.",
-    "LOC7 manages graph structure and traversal; LOC8 analyzes relation/trend change over time.",
-    "Unknown future relations remain unfilled until evidence exists."
-  ]
+    "Canonical edges require explicit registry evidence, authoritative metadata, or deterministic structural evidence.",
+    "Semantic similarity may select seed nodes but must never create a canonical edge by itself.",
+    "ERA-P0 through current ERA form a deterministic temporal backbone from LOC_ERA_REGISTRY.",
+    "Search-time result nodes may receive transient owned_by_loc, belongs_to_era, and media/work linkage edges from their own recorded metadata.",
+    "Graph traversal is bounded and feeds Search Synthesis with connected LOCs, ERA paths, works, media and analysis nodes.",
+    "LOC7 manages graph structure/retrieval; LOC8 owns ERA/context authority and consumes graph projections for trend/context views."
+  ],
+  "search_synthesis": {
+    "seed_source": "Unified Search results + exact query-to-node matches",
+    "traversal_depth_default": 2,
+    "traversal_depth_max": 3,
+    "output": [
+      "era_path",
+      "loc_path",
+      "connected_results",
+      "paths"
+    ],
+    "edge_governance": "canonical-only"
+  }
 }
