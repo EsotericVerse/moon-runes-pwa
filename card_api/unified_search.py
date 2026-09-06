@@ -928,6 +928,16 @@ class UnifiedSearchEngine:
                     continue
                 if filters.get("period") and doc.get("era") != filters["period"]:
                     continue
+                full_text = str(doc.get("text") or "")
+                preview = full_text[:360] + ("…" if len(full_text) > 360 else "")
+                public_payload = {k: v for k, v in doc.items() if k != "text"}
+                public_payload.update({
+                    "km_source": "LOC6_THREADS_FULL_CORPUS",
+                    "evidence_role": "primary",
+                    "full_text_available": True,
+                    "public_browse_mode": "preview_only",
+                    "char_count": doc.get("char_count") or len(full_text),
+                })
                 items.append({
                     "result_id": doc.get("id"),
                     "system_id": "lo3rwang",
@@ -937,15 +947,15 @@ class UnifiedSearchEngine:
                     "group": "loc6_articles",
                     "title": (
                         f"Threads｜{doc.get('date') or 'undated'}｜{doc.get('era') or 'ERA'}｜"
-                        + ((re.split(r"[。！？!?\n]", str(doc.get("text") or ""), maxsplit=1)[0].strip()[:34] + "…")
-                           if len(re.split(r"[。！？!?\n]", str(doc.get("text") or ""), maxsplit=1)[0].strip()) > 34
-                           else re.split(r"[。！？!?\n]", str(doc.get("text") or ""), maxsplit=1)[0].strip())
+                        + ((re.split(r"[。！？!?\n]", full_text, maxsplit=1)[0].strip()[:34] + "…")
+                           if len(re.split(r"[。！？!?\n]", full_text, maxsplit=1)[0].strip()) > 34
+                           else re.split(r"[。！？!?\n]", full_text, maxsplit=1)[0].strip())
                     ),
-                    "summary": doc.get("text") or "",
+                    "summary": preview,
                     "period": doc.get("era"),
                     "era_id": f"ERA-{doc.get('era')}" if doc.get("era") else None,
                     "source_refs": [{"source_type": "threads", "source_id": doc.get("source_id"), "note": "primary main-post evidence"}],
-                    "payload": {**doc, "km_source": "LOC6_THREADS_FULL_CORPUS", "evidence_role": "primary"},
+                    "payload": public_payload,
                 })
             items.sort(key=lambda r: (str((r.get("payload") or {}).get("date") or ""), str(r.get("result_id") or "")), reverse=True)
 
