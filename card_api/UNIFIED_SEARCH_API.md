@@ -93,9 +93,8 @@ Primary integrated interface:
 
 - `/search.html`
 
-Specialist views remain available where they still represent distinct workflows:
+Specialist views remain available only where they still represent distinct workflows:
 
-- `/faq.html`
 - `/list.html`
 - `/life.html`
 
