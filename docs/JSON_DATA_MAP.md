@@ -19,6 +19,7 @@
 - `LOC_KM_KEYWORDS.json`：關鍵詞與 aliases；**檢索輔助，不是 Canon 定義本身**。
 - `LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json`：LOC7 語言結構分析 registry。
 - `LOC_SHARED_MANIFEST.json`：shared registry 索引。
+- `LOC_CONTENT_RIGHTS_POLICY.json`：corpus 匯入／匯出／公開展示的權利與隱私 gate；定義 ownership、visibility、rights status 與 UI 提示。
 - `LOC_LANGUAGE_SYSTEM_REGISTRY.json`：語言系統 registry。
 - `LOC_ERA_REGISTRY.json`：ERA／時期 registry。
 - `LOC_CONTENT_TYPE_REGISTRY.json`：內容類型 registry。
