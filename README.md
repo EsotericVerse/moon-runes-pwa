@@ -349,7 +349,7 @@ LOC7_KM 採 **Markdown-first, structured-data-native**：
 - FAQ v0.4 為 KM 問答 View；RAG v0.4 為其檢索衍生資料
 - 下游 JSON／索引／UI／AI 推論不得反向覆寫 Canon、母資料或原始作品
 
-詳見 [docs 文件索引](./docs/README.md)。
+詳見 [docs 文件索引](./docs/README.md)、[Repository Governance](./docs/REPOSITORY_GOVERNANCE.md) 與 [Data Architecture](./docs/DATA_ARCHITECTURE.md)。
 
 ---
 
@@ -528,7 +528,7 @@ OW3gs 是作者的方法論與個人規則層，不等同於 LOC 的全部 Canon
 
 ## 📄 授權與署名
 
-本專案以 Copyleft 精神發布。符文系統、語意結構與實作內容可供研究、使用與修改，但請保留來源標註並遵循相同共享精神。
+本專案以 **Copyleft** 原則發布；Luna Codex（月之符文）的原創符文系統、語意結構與相關實作鼓勵研究、使用、修改與衍生，並要求保留來源、變更歷史與相同／相容的共享精神。完整治理說明見 [`COPYLEFT.md`](./COPYLEFT.md)。
 
 **OW3gs made by OscarWang / LunarCodex / 王政德**
 
