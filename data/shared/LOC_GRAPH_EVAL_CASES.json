@@ -1,0 +1,99 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC_GRAPH_EVAL_CASES",
+  "authority": "LOC7",
+  "purpose": "Deterministic regression set for LOC Graph RAG. Cases assert governed graph reachability and provenance, not generative answer wording.",
+  "metrics": [
+    "seed_recall",
+    "expected_node_recall",
+    "expected_loc_recall",
+    "expected_era_recall",
+    "provenance_presence",
+    "forbidden_node_absence"
+  ],
+  "cases": [
+    {
+      "id": "GR-EVAL-001",
+      "query": "自我治理",
+      "expect": {
+        "eras": [
+          "ERA-P8"
+        ],
+        "locs": [
+          "LOC6",
+          "LOC7",
+          "LOC8"
+        ]
+      },
+      "note": "Current governance concept should stay anchored in P8 and cross governance/context/search."
+    },
+    {
+      "id": "GR-EVAL-002",
+      "query": "Luna Codex",
+      "expect": {
+        "nodes": [
+          "EV-HIST-LUNACODEX"
+        ],
+        "eras": [
+          "ERA-P2"
+        ],
+        "locs": [
+          "LOC8"
+        ]
+      },
+      "note": "Naming-history query should recover the recorded temporal event rather than infer a new origin."
+    },
+    {
+      "id": "GR-EVAL-003",
+      "query": "月語者",
+      "expect": {
+        "nodes": [
+          "EV-HIST-MOON-SPEAKER"
+        ],
+        "eras": [
+          "ERA-P1"
+        ],
+        "locs": [
+          "LOC4",
+          "LOC8"
+        ]
+      },
+      "note": "Work milestone should connect narrative work history to its governed ERA."
+    },
+    {
+      "id": "GR-EVAL-004",
+      "query": "心半正",
+      "expect": {
+        "nodes": [
+          "RUNE-1"
+        ],
+        "locs": [
+          "LOC1",
+          "LOC8"
+        ]
+      },
+      "note": "Rune query should reach LOC1 rune anchor and LOC8 observations where recorded."
+    },
+    {
+      "id": "GR-EVAL-005",
+      "query": "P8",
+      "expect": {
+        "nodes": [
+          "ERA-P8"
+        ],
+        "eras": [
+          "ERA-P8"
+        ],
+        "locs": [
+          "LOC8"
+        ]
+      },
+      "note": "Direct ERA query should stay on the governed temporal backbone."
+    }
+  ],
+  "governance": [
+    "Evaluation cases assert graph structure and provenance only; they do not promote semantic similarity into canonical edges.",
+    "A case may be updated only when the upstream registry/event/ERA authority changes.",
+    "Private live Google Sheet Relation rows must never be required by the public evaluation set."
+  ]
+}

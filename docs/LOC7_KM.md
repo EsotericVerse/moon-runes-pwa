@@ -270,6 +270,22 @@ Canonical Graph RAG 已進入現行 Unified Search：Search retrieval 先選 see
 
 現階段仍保留明確邊界：語意相似度只能選 seed，不能自行建立 canonical edge；LOC8 live Google Sheet 的 private Relation rows 不直接進公開 Search。公開 Graph 只接受 repository 中已治理的 registry／snapshot，並由 `provenance` 回傳來源與 edge evidence。後續重點是 Relation publish/governance pipeline、Graph View 與 retrieval evaluation，而不是重新建立 Graph RAG。
 
+## Graph RAG Evaluation
+
+Graph RAG 完成後，品質不以「有回傳 graph」判定，而使用固定 regression cases 檢查 governed reachability。
+
+- Evaluation registry：`data/shared/LOC_GRAPH_EVAL_CASES.json`
+- Evaluator：`card_api/scripts/evaluate_graph_rag.py`
+- 現行指標：expected node / LOC / ERA recall、provenance presence、forbidden-node absence。
+- 評測不比較生成文字；它只驗證 retrieval → seed → canonical traversal → provenance 是否維持治理邊界。
+- private LOC8 live Relation 不得成為公開 evaluation case 的必要依賴。
+
+執行：
+
+```bash
+cd card_api
+python scripts/evaluate_graph_rag.py
+```
 ## 14. 文件格式
 
 `docs/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件；0.3 起同步記錄 Unified Search、FAQ/RAG v0.4 與目前跨 LOC 檢索責任。

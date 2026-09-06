@@ -1004,6 +1004,12 @@ class UnifiedSearchEngine:
     def _result_source_platform(item: dict[str, Any]) -> str:
         payload = item.get("payload") or {}
         refs = item.get("source_refs") or []
+        ref_text = []
+        for ref in refs:
+            if isinstance(ref, dict):
+                ref_text.append(str(ref.get("source_type") or "") + " " + str(ref.get("source_id") or ""))
+            elif ref:
+                ref_text.append(str(ref))
         haystack = " ".join([
             str(item.get("primary_loc") or ""),
             str(item.get("content_type") or ""),
@@ -1011,7 +1017,7 @@ class UnifiedSearchEngine:
             str(payload.get("km_source") or ""),
             str(payload.get("url") or ""),
             str(payload.get("ig_preview_url") or ""),
-            " ".join(str(ref.get("source_type") or "") + " " + str(ref.get("source_id") or "") for ref in refs),
+            " ".join(ref_text),
         ]).lower()
         if "threads" in haystack:
             return "threads"
