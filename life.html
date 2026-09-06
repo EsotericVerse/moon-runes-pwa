@@ -628,6 +628,31 @@
     .analysis-count { text-align:right; color:var(--accent-2); }
     .analysis-summary { color:#d8e4f7; font-size:12px; line-height:1.75; white-space:pre-line; }
     .analysis-empty { color:var(--muted); font-size:11px; line-height:1.6; }
+    .draw-trend-movement { display:grid; gap:9px; }
+    .draw-trend-row {
+      display:grid;
+      grid-template-columns:72px minmax(0,1fr);
+      gap:10px;
+      padding:9px 10px;
+      border:1px solid var(--line);
+      border-radius:11px;
+      background:rgba(255,255,255,.015);
+    }
+    .draw-trend-row b { color:var(--accent-2); font-size:11px; }
+    .draw-trend-row span { color:#d8e4f7; font-size:11px; line-height:1.6; }
+    .draw-trend-timeline { display:flex; gap:7px; flex-wrap:wrap; align-items:stretch; }
+    .draw-trend-point {
+      min-width:72px;
+      flex:1 1 82px;
+      max-width:130px;
+      padding:8px 9px;
+      border:1px solid var(--line);
+      border-radius:11px;
+      background:rgba(169,199,255,.035);
+    }
+    .draw-trend-point small { display:block; color:var(--muted); font-size:9px; }
+    .draw-trend-point strong { display:block; margin:3px 0 2px; font-size:13px; }
+    .draw-trend-point span { display:block; color:var(--accent-2); font-size:10px; }
     @media (max-width:760px){ .draw-analysis-grid { grid-template-columns:1fr; } }
 
 
@@ -1150,6 +1175,14 @@
                 <div class="analysis-title">趨勢摘要</div>
                 <div id="drawTrendSummary" class="analysis-summary">正在整理最近的每日符文趨勢…</div>
               </section>
+              <section class="analysis-panel">
+                <div class="analysis-title">近期走勢</div>
+                <div id="drawTrendMovement" class="draw-trend-movement"><div class="analysis-empty">等待主抽資料。</div></div>
+              </section>
+              <section class="analysis-panel">
+                <div class="analysis-title">主抽時間線</div>
+                <div id="drawTrendTimeline" class="draw-trend-timeline"><div class="analysis-empty">等待主抽資料。</div></div>
+              </section>
             </div>
           </div>
         </section>
@@ -1300,6 +1333,8 @@
       drawGroupAnalysis: $('#drawGroupAnalysis'),
       drawRuneAnalysis: $('#drawRuneAnalysis'),
       drawTrendSummary: $('#drawTrendSummary'),
+      drawTrendMovement: $('#drawTrendMovement'),
+      drawTrendTimeline: $('#drawTrendTimeline'),
       relationForm: $('#relationForm'),
       relationList: $('#relationList'),
       editingRelationId: $('#editingRelationId'),
@@ -2723,6 +2758,114 @@
       });
     }
 
+    const DRAW_DIRECTION_SCORE = {
+      '正位': 2,
+      '半正位': 1,
+      '半逆位': -1,
+      '逆位': -2
+    };
+
+    function dailyTrendGroup(draw) {
+      return runeMetaMap.get(String(draw?.rune || ''))?.所屬分組 || '';
+    }
+
+    function dailyTrendChangeLabel(delta) {
+      if (delta >= 0.75) return '明顯轉向較直接／推進';
+      if (delta >= 0.25) return '略往形成／推進移動';
+      if (delta <= -0.75) return '明顯轉向調整／反向提醒';
+      if (delta <= -0.25) return '略往過渡／檢視移動';
+      return '方向大致持平';
+    }
+
+    function renderDailyTrendMovement(primary) {
+      if (!els.drawTrendMovement || !els.drawTrendTimeline) return;
+      const ordered = primary.slice().sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')));
+
+      if (!ordered.length) {
+        els.drawTrendMovement.innerHTML = '<div class="analysis-empty">目前沒有主抽資料可形成時間趨勢。</div>';
+        els.drawTrendTimeline.innerHTML = '<div class="analysis-empty">目前沒有主抽資料。</div>';
+        return;
+      }
+
+      const recentTimeline = ordered.slice(-7);
+      els.drawTrendTimeline.innerHTML = recentTimeline.map(d => `
+        <div class="draw-trend-point">
+          <small>${esc(String(d.date || '').slice(5) || '—')}</small>
+          <strong>${esc(d.rune || '—')}</strong>
+          <span>${esc(d.direction || '—')}</span>
+        </div>
+      `).join('');
+
+      if (ordered.length < 4) {
+        els.drawTrendMovement.innerHTML = `
+          <div class="draw-trend-row"><b>樣本</b><span>目前只有 ${ordered.length} 筆主抽；先顯示時間線，累積至少 4 筆後開始比較前後走勢。</span></div>
+        `;
+        return;
+      }
+
+      const split = Math.floor(ordered.length / 2);
+      const earlier = ordered.slice(0, split);
+      const later = ordered.slice(split);
+      const avgScore = rows => rows.length
+        ? rows.reduce((sum,d) => sum + (DRAW_DIRECTION_SCORE[d.direction] || 0), 0) / rows.length
+        : 0;
+      const directionDelta = avgScore(later) - avgScore(earlier);
+
+      const groupShare = rows => {
+        const map = new Map();
+        rows.forEach(d => {
+          const g = dailyTrendGroup(d);
+          if (!g) return;
+          map.set(g, (map.get(g) || 0) + 1);
+        });
+        return new Map([...map.entries()].map(([k,v]) => [k, v / Math.max(1, rows.length)]));
+      };
+      const oldGroups = groupShare(earlier);
+      const newGroups = groupShare(later);
+      const groupKeys = [...new Set([...oldGroups.keys(), ...newGroups.keys()])];
+      const groupDeltas = groupKeys
+        .map(g => [g, (newGroups.get(g) || 0) - (oldGroups.get(g) || 0)])
+        .sort((a,b) => Math.abs(b[1]) - Math.abs(a[1]));
+
+      const rising = groupDeltas.find(([,d]) => d > 0.08);
+      const falling = groupDeltas.find(([,d]) => d < -0.08);
+
+      let directionChanges = 0;
+      let groupChanges = 0;
+      for (let i=1;i<recentTimeline.length;i++) {
+        if (recentTimeline[i].direction !== recentTimeline[i-1].direction) directionChanges++;
+        const a = dailyTrendGroup(recentTimeline[i-1]);
+        const b = dailyTrendGroup(recentTimeline[i]);
+        if (a && b && a !== b) groupChanges++;
+      }
+      const transitions = Math.max(0, recentTimeline.length - 1);
+      const changeRatio = transitions ? (directionChanges + groupChanges) / (transitions * 2) : 0;
+      const patternLabel = changeRatio >= .65
+        ? '近期變化頻繁，屬於明顯震盪／轉折期。'
+        : changeRatio >= .35
+          ? '近期有交替變化，但仍保留部分延續性。'
+          : '近期相對連續，主題與方向較穩定。';
+
+      const latest = recentTimeline[recentTimeline.length - 1];
+      const previous = recentTimeline[recentTimeline.length - 2];
+      const latestRelation = previous
+        ? (latest.rune === previous.rune
+          ? `「${latest.rune}」連續出現，表示同一主題仍在延續。`
+          : dailyTrendGroup(latest) && dailyTrendGroup(latest) === dailyTrendGroup(previous)
+            ? `從「${previous.rune}」轉到「${latest.rune}」，但仍停留在「${dailyTrendGroup(latest)}」組，屬同一語意區域內的轉換。`
+            : `從「${previous.rune}」轉到「${latest.rune}」，語意焦點正在切換。`)
+        : '目前只有一個最新主抽。';
+
+      els.drawTrendMovement.innerHTML = [
+        ['方向', `${dailyTrendChangeLabel(directionDelta)}（前後半段差值 ${directionDelta >= 0 ? '+' : ''}${directionDelta.toFixed(2)}）。`],
+        ['分組', rising
+          ? `「${rising[0]}」近期占比上升${falling ? `；「${falling[0]}」下降` : ''}。`
+          : '目前沒有單一分組出現明顯升降。'],
+        ['節奏', patternLabel],
+        ['最新', latestRelation]
+      ].map(([k,v]) => `<div class="draw-trend-row"><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join('');
+    }
+
     function renderDailyRuneAnalysis() {
       if (!els.drawTrendSummary) return;
       const windowed = drawWindowItems(dailyDraws);
@@ -2740,7 +2883,8 @@
         renderAnalysisBars(els.drawDirectionAnalysis, []);
         renderAnalysisBars(els.drawRuneAnalysis, []);
         if (runeMetaMap.size) renderAnalysisBars(els.drawGroupAnalysis, []);
-        els.drawTrendSummary.textContent = '目前沒有每日符文紀錄可供分析。先新增主抽後，這裡會開始形成方向、分組與重複符文的趨勢。';
+        els.drawTrendSummary.textContent = '目前沒有每日符文紀錄可供分析。先新增主抽後，這裡會開始形成方向、分組、重複符文與時間走勢。';
+        renderDailyTrendMovement([]);
         return;
       }
 
@@ -2769,6 +2913,8 @@
         els.drawGroupAnalysis.innerHTML = '<div class="analysis-empty">符文定義尚未載入；不影響其他趨勢。</div>';
       }
 
+      renderDailyTrendMovement(primary);
+
       const directionText = {
         '正位':'近期主抽較集中在直接顯現與明確推進。',
         '半正位':'近期主抽較集中在逐步形成、尚未完全定型。',
@@ -2776,7 +2922,7 @@
         '逆位':'近期主抽較集中在反向提醒、阻力或需要重新檢視。'
       };
       const lines = [
-        `本區間共有 ${primary.length} 筆主抽、${supplements.length} 筆補抽；趨勢只以主抽計權，補抽保留為脈絡。`,
+        `本區間共有 ${primary.length} 筆主抽、${supplements.length} 筆補抽；統計與時間走勢都以主抽為核心，補抽只保留為脈絡。`,
         topDirection ? `方向以「${topDirection[0]}」最多（${topDirection[1]} 次）。${directionText[topDirection[0]] || ''}` : '主抽方向樣本尚不足。',
         topRune ? `重複度最高的符文是「${topRune[0]}」（${topRune[1]} 次）。` : '',
         topGroup ? `分組上以「${topGroup[0]}」最集中（${topGroup[1]} 次）。` : (runeMetaMap.size ? '' : '分組資料等待符文 JSON 載入。')
