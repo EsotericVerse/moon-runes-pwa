@@ -67,7 +67,7 @@
     },
     {
       "source_id": "SRC-LOC1-RUNTIME-GRAMMAR",
-      "path": "card_api/main.py",
+      "path": "api/main.py",
       "source_role": "cause/effect direction projection templates",
       "import_status": "reference_only_not_pair_relation"
     }
