@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v112";
+const CACHE_NAME = "moon-runes-pwa-v113";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -97,7 +97,7 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/")
   ) {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: "no-store" })
         .then((networkResponse) => {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
