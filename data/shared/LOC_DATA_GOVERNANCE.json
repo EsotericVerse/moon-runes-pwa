@@ -1,11 +1,17 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_DATA_GOVERNANCE",
   "language_system_id": "lo3rwang",
   "principles": {
     "model": "Authority -> Registry -> Reference -> Consumer",
     "ui_rule": "LOC1-8 are responsibility domains, not mandatory separate user-facing pages.",
-    "misc_rule": "New or unresolved cross-domain material may enter LOC8 temporarily and should move to a clearer primary owner when responsibility becomes stable."
+    "misc_rule": "New or unresolved cross-domain material may enter LOC8 temporarily and should move to a clearer primary owner when responsibility becomes stable.",
+    "governance_core": "docs/LOC_GOVERNANCE_CORE.md",
+    "governance_history": "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md",
+    "stable_framework_mutable_language": "Stable identities, schemas, responsibility domains and provenance rules govern a language layer whose meanings, relations and interpretations may evolve.",
+    "historical_integrity": "Original records are retained; later interpretations may supersede but must not silently rewrite historical evidence.",
+    "plurality": "Competing interpretations may coexist when provenance, context and lifecycle status remain explicit.",
+    "boundary_model": "Govern by domain/scope/ownership/permission boundaries rather than a single universal moral bottom-line vocabulary."
   },
   "authorities": {
     "language_system_identity": {
@@ -121,5 +127,60 @@
     "LOC6": "Defines governance principles for authorship, attribution, sharing, licensing, and collaboration.",
     "LOC8": "Maintains shared rights/provenance references and identity linkage.",
     "LOC3_LOC4_LOC5": "Attach concrete work/media rights and provenance values by reference."
+  },
+  "updated_at": "2026-09-07",
+  "governance_control_plane": {
+    "lifecycle": [
+      "proposed",
+      "under_review",
+      "active",
+      "disputed",
+      "restricted",
+      "amended",
+      "superseded",
+      "withdrawn",
+      "rejected",
+      "tombstoned"
+    ],
+    "required_audit_fields": [
+      "governance_id",
+      "object_type",
+      "object_id",
+      "action",
+      "before",
+      "after",
+      "reason",
+      "evidence_refs",
+      "submitted_at",
+      "review_status",
+      "replacement_id"
+    ],
+    "delete_strategy": "governed_tombstone_by_default",
+    "promotion_flow": [
+      "proposal",
+      "review",
+      "rights_check",
+      "evidence_check",
+      "accept_publish",
+      "active",
+      "dispute_or_change",
+      "re_review",
+      "keep_or_amend_or_supersede_or_tombstone"
+    ],
+    "rule": "A governance policy is not complete until Principle -> Policy -> Executable Control -> Evidence/Audit Trail can be demonstrated."
+  },
+  "cross_domain_rule": "A domain may reference, consume, analyze or propose changes to another domain's authoritative record, but must not overwrite that domain's canonical ownership.",
+  "self_governance_projection": {
+    "authority": "LOC8",
+    "interpretation_owner": "LOC6",
+    "structure_owner": "LOC7",
+    "loop": [
+      "historical language/events",
+      "search/graph/era",
+      "trend/style/relation analysis",
+      "contextual comparison",
+      "self-governance decision",
+      "new language/event"
+    ]
   }
 }
