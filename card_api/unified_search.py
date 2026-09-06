@@ -984,6 +984,64 @@ class UnifiedSearchEngine:
         }
 
 
+    @staticmethod
+    def _result_source_platform(item: dict[str, Any]) -> str:
+        payload = item.get("payload") or {}
+        refs = item.get("source_refs") or []
+        haystack = " ".join([
+            str(item.get("primary_loc") or ""),
+            str(item.get("content_type") or ""),
+            str(payload.get("source_platform") or ""),
+            str(payload.get("km_source") or ""),
+            str(payload.get("url") or ""),
+            str(payload.get("ig_preview_url") or ""),
+            " ".join(str(ref.get("source_type") or "") + " " + str(ref.get("source_id") or "") for ref in refs),
+        ]).lower()
+        if "threads" in haystack:
+            return "threads"
+        if "facebook" in haystack or "fb.com" in haystack:
+            return "facebook"
+        if "instagram" in haystack or "instagram_reel" in haystack or "ig_preview" in haystack:
+            return "instagram"
+        if item.get("primary_loc") == "LOC3" or "suno" in haystack:
+            return "suno"
+        return ""
+
+    @staticmethod
+    def _result_date(item: dict[str, Any]) -> str:
+        payload = item.get("payload") or {}
+        for key in ("date", "created_date", "creation_date", "published_date", "created_at"):
+            value = payload.get(key) or item.get(key)
+            if value:
+                return str(value)[:10]
+        return ""
+
+    def _apply_common_filters(self, groups: dict[str, list[dict[str, Any]]], filters: dict[str, str]) -> dict[str, list[dict[str, Any]]]:
+        source = str(filters.get("source") or "").strip().lower()
+        start_date = str(filters.get("start_date") or "").strip()
+        end_date = str(filters.get("end_date") or "").strip()
+        if not source and not start_date and not end_date:
+            return groups
+
+        filtered: dict[str, list[dict[str, Any]]] = {}
+        for group, items in groups.items():
+            keep = []
+            for item in items:
+                if source and self._result_source_platform(item) != source:
+                    continue
+                if start_date or end_date:
+                    date = self._result_date(item)
+                    if not date:
+                        continue
+                    if start_date and date < start_date:
+                        continue
+                    if end_date and date > end_date:
+                        continue
+                keep.append(item)
+            filtered[group] = keep
+        return filtered
+
+
     def search(
         self,
         query: str,
@@ -1037,6 +1095,7 @@ class UnifiedSearchEngine:
             "knowledge": [*documents, *faq],
             "timeline": eras,
         }
+        groups = self._apply_common_filters(groups, filters)
         return {
             "system_id": "lo3rwang",
             "query": query,
