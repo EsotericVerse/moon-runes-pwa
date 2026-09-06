@@ -102,3 +102,15 @@ Specialist views remain available where they still represent distinct workflows:
 `/loc3.html` is now a compatibility redirect to `/search.html?content_type=lyrics_work`. LOC3 remains the canonical music/lyrics data authority, but search presentation is consolidated into Unified Search.
 
 This preserves deep/specialized workflows while providing one default semantic entry point.
+
+## Graph RAG / Provenance
+
+`POST /search` 現行回傳 `graph` 與 `provenance`。
+
+- `graph`：Canonical Graph RAG 的 bounded traversal 結果，預設深度 2、最多 3 hop。
+- `provenance.source_refs`：搜尋命中資料的來源引用彙總。
+- `provenance.graph_evidence_kinds`：本次遍歷使用的 graph evidence 類型與數量。
+- `provenance.graph_evidence_status`：recorded / deterministic 等 evidence status 統計。
+- LOC8 的 repository Event／Daily Rune snapshot 可進公開時間圖；live Google Sheet `Relation` 的 private rows 不會由公開 Search API 直接輸出。
+
+這個界線確保 `life.html` 可以保有私人 Relation Library，同時讓公開 `search.html` 使用已治理、可追溯的 Graph RAG。

@@ -266,7 +266,9 @@ v0.4 對齊 2026-09-06 的 LOC6／LOC7／LOC8 權責、Unified Search 實作、�
 
 Unified Search 已是現行公開檢索入口，後端目前可直接取得 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7 與 LOC8 的不同資料來源；LOC2 目前仍以 Knowledge View 為主。搜尋層只負責 routing、retrieval、ranking 與結果 envelope，不改變各 LOC 的 canonical ownership。
 
-完整 Relation Schema、Knowledge Graph expansion 與 Graph RAG 仍屬後續階段。不得因已有 Shared Registry、related_ids、cross-relationship registry 或 search view 就宣稱完整 Graph RAG 已部署。
+Canonical Graph RAG 已進入現行 Unified Search：Search retrieval 先選 seed，再以受治理的 edge 做 bounded 1–3 hop traversal，並把 ERA、LOC、Work、Media、Knowledge 與 LOC8 temporal observation 聚合到 Search Synthesis。Graph Schema 現行為 v0.3。
+
+現階段仍保留明確邊界：語意相似度只能選 seed，不能自行建立 canonical edge；LOC8 live Google Sheet 的 private Relation rows 不直接進公開 Search。公開 Graph 只接受 repository 中已治理的 registry／snapshot，並由 `provenance` 回傳來源與 edge evidence。後續重點是 Relation publish/governance pipeline、Graph View 與 retrieval evaluation，而不是重新建立 Graph RAG。
 
 ## 14. 文件格式
 
