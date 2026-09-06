@@ -1399,6 +1399,43 @@
       },
       "notes": "Defines JS as the browser runtime projection while keeping JSON/backend sources governed; requires generation and CI drift validation so JS cannot silently become stale.",
       "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-REPO-TREE-001",
+      "title": "LOC Repository Tree & Module Contract",
+      "path": "docs/REPOSITORY_TREE.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "repository_tree_and_module_contract",
+      "status": "current",
+      "authority_level": "governance_document",
+      "searchable": true,
+      "index_priority": "highest",
+      "version": "0.1",
+      "updated_at": "2026-09-07",
+      "keywords": [
+        "repository tree",
+        "檔案樹",
+        "module contract",
+        "api",
+        "engine",
+        "data architecture",
+        "商業化維護",
+        "developer onboarding",
+        "repository maturity"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Current developer-facing repository tree, module ownership, public-route constraints, hygiene backlog and commercial-maintenance baseline.",
+      "presentation": "internal_source"
     }
   ]
 }
