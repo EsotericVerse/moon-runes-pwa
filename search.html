@@ -55,6 +55,7 @@
             <option value="text_work">文字作品</option>
             <option value="multimedia">多媒體作品</option>
             <option value="governance_fragment">治理／政德風</option>
+            <option value="governance_article">LOC6 文章</option>
             <option value="knowledge_image">圖片／知識圖</option>
             <option value="knowledge">文件／知識庫</option>
             <option value="relationship">跨 LOC 關係</option>
@@ -122,6 +123,14 @@
         {q:'慈悲不是投降',title:'慈悲不是投降',desc:'LOC6 · 防衛邊界'},
         {q:'錯誤',title:'錯誤',desc:'LOC6 · 錯誤治理'}
       ],
+      governance_article:[
+        {q:'自我治理',title:'自我治理',desc:'LOC6 · 治理文章'},
+        {q:'自由',title:'自由',desc:'LOC6 · Threads 長文'},
+        {q:'選擇',title:'選擇',desc:'LOC6 · 價值／決策'},
+        {q:'責任',title:'責任',desc:'LOC6 · 治理語言'},
+        {q:'尊重',title:'尊重',desc:'LOC6 · 關係／界線'},
+        {q:'政德風',title:'政德風',desc:'LOC6 · 風格演變'}
+      ],
       knowledge:[
         {q:'LOC 是什麼',title:'LOC 是什麼',desc:'LOC7 · 系統知識'},
         {q:'月之符文',title:'月之符文',desc:'LOC7 · 文件／FAQ'},
@@ -131,7 +140,7 @@
         {q:'自我治理',title:'自我治理',desc:'LOC7 · 跨文件知識'}
       ]
     };
-    const labels={oracle:'籤詩結果',runes:'月符',works:'Suno 歌曲／歌詞',textworks:'文字作品',relationships:'跨 LOC 關聯',governance:'治理／政德風',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
+    const labels={oracle:'籤詩結果',runes:'月符',works:'Suno 歌曲／歌詞',textworks:'文字作品',relationships:'跨 LOC 關聯',governance:'治理／政德風',loc6_articles:'LOC6 文章',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
     const locLabels={LOC1:'LOC1 · Lots',LOC3:'LOC3 · Music',LOC4:'LOC4 · Writing',LOC5:'LOC5 · Resonance',LOC6:'LOC6 · Governance',LOC7:'LOC7 · Text Architecture',LOC8:'LOC8 · Integration'};
     const el=id=>document.getElementById(id);
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -212,7 +221,7 @@
       if(r.content_type==='rune_record'){const n=String(r.result_id||'').replace('RUNE-','');out.push(`<a class="secondary" href="list.html#${esc(n)}">查看符文資料</a>`)}
       if(r.content_type==='lyrics_work'){const v=p.recommended_version||{};if(v.suno_url)out.push(`<a class="play" href="${esc(v.suno_url)}" target="_blank" rel="noopener">Suno 播放 ↗</a>`);if(v.ig_preview_url)out.push(`<a class="secondary" href="${esc(v.ig_preview_url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`)}
       if(r.content_type==='reel'&&p.url)out.push(`<a class="play" href="${esc(p.url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`);
-      if(r.content_type==='knowledge_document'&&p.path)out.push(`<a class="secondary" href="${esc(p.path)}">閱讀文件</a>`);
+      if((r.content_type==='knowledge_document'||r.content_type==='governance_article')&&p.path)out.push(`<a class="secondary" href="${esc(p.path)}">閱讀文章</a>`);
       if(r.content_type==='knowledge_image'&&p.path)out.push(`<a class="secondary" href="${esc(p.path)}" target="_blank" rel="noopener">查看原圖 ↗</a>`);
       if(r.content_type==='era')out.push('<a class="secondary" href="life.html#era-trend">脈絡分析</a>');
       return out.length?`<div class="links">${out.join('')}</div>`:'';
@@ -233,7 +242,7 @@
       return `<article class="card"><div class="meta"><span class="pill">跨 LOC 關聯</span><span class="pill">${esc(p.direction||'')}</span></div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}<div class="meta"><span class="pill">${esc(src.primary_loc||'LOC3')}：${esc(src.title||'')}</span>${targets.map(t=>`<span class="pill">${esc(t.primary_loc||'')}：${esc(t.title||'')}${t.chapter_count?` · ${t.chapter_count}章`:''}</span>`).join('')}</div>${kw.length?`<p class="summary"><strong>關鍵字：</strong>${kw.map(esc).join(' · ')}</p>`:''}${loc6.label?`<p class="summary"><strong>LOC6：</strong>${esc(loc6.label)} — ${esc(loc6.note||'')}</p>`:''}</article>`}
     }
 
-    function render(groups){const order=['oracle','runes','works','textworks','relationships','governance','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='oracle'?oracleCard:(key==='relationships'?relationshipCard:(key==='works'?musicCard:card));html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
+    function render(groups){const order=['oracle','runes','works','textworks','relationships','governance','loc6_articles','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='oracle'?oracleCard:(key==='relationships'?relationshipCard:(key==='works'?musicCard:card));html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
     el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時期資料……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
     el('contentType').addEventListener('change',quick);
     quick();
