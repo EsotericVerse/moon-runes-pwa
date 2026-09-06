@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.4",
+  "schema_version": "0.5",
   "registry": "LOC6_GOVERNANCE_REGISTRY",
   "authority": "LOC6",
   "language_system_id": "lo3rwang",
@@ -236,6 +236,102 @@
       "lifecycle": {
         "status": "current"
       }
+    },
+    {
+      "fragment_id": "GF-GOV-HIST-001",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": null,
+      "topic": "歷史不是教義",
+      "statement": "文件是當前歷史位置的整理，不構成教義或終極真理。",
+      "interpretation": "治理文件代表一個可版本化的當前位置；它可被新證據修正，而不應被視為永恆不可變。",
+      "governance_principle": "contextual validity",
+      "style_features": [],
+      "analysis_type": "governance",
+      "source_refs": [
+        "conversation-history:2026-02-22",
+        "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md"
+      ],
+      "confidence": "reconstructed",
+      "lifecycle": {
+        "status": "current"
+      }
+    },
+    {
+      "fragment_id": "GF-GOV-HIST-002",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": null,
+      "topic": "歷史完整性",
+      "statement": "事件不可回寫，但意義可以重新定義。",
+      "interpretation": "原始事件作為 evidence 保留；interpretation 透過新版本、relation、dispute 或 supersede 演化。",
+      "governance_principle": "append-only history / versioned meaning",
+      "style_features": [],
+      "analysis_type": "governance",
+      "source_refs": [
+        "conversation-history:2026-02-22",
+        "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md"
+      ],
+      "confidence": "reconstructed",
+      "lifecycle": {
+        "status": "current"
+      }
+    },
+    {
+      "fragment_id": "GF-GOV-CURRENT-001",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC1",
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": "ERA-P8",
+      "topic": "框架邊界",
+      "statement": "我可以沒有底線，但我有我自己的框架邊界。",
+      "interpretation": "現行治理由固定道德底線語彙轉向可明確定義的 framework/domain boundary；邊界可隨 context 調整，但不可不被描述。",
+      "governance_principle": "boundary-based governance",
+      "style_features": [],
+      "analysis_type": "governance",
+      "source_refs": [
+        "conversation-history:2026-09-07",
+        "docs/LOC_GOVERNANCE_CORE.md"
+      ],
+      "confidence": "recorded",
+      "lifecycle": {
+        "status": "current"
+      }
+    },
+    {
+      "fragment_id": "GF-GOV-CURRENT-002",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC7",
+        "LOC8"
+      ],
+      "era_id": "ERA-P8",
+      "topic": "自我治理版本化",
+      "statement": "拿過去的自己當資料，不拿過去的自己當枷鎖。",
+      "interpretation": "Search / Trend / Analysis 用來比較歷史版本並支持下一步選擇，不把後期版本升格成對早期版本的道德審判。",
+      "governance_principle": "self-governance as versioning",
+      "style_features": [],
+      "analysis_type": "governance",
+      "source_refs": [
+        "docs/LOC_GOVERNANCE_CORE.md"
+      ],
+      "confidence": "recorded",
+      "lifecycle": {
+        "status": "current"
+      }
     }
   ],
   "rights_governance_scope": [
@@ -246,7 +342,7 @@
     "collaboration principles"
   ],
   "boundary_note": "LOC6 interprets meaning, governance, style-state, and recorded rune-to-text realization. It does not own rune mother definitions, grammar/syntax engineering, or temporal event storage.",
-  "updated_at": "2026-09-06",
+  "updated_at": "2026-09-07",
   "rune_interpretation_corpus": {
     "registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
     "work": "月語者",
@@ -1429,5 +1525,26 @@
     }
   ],
   "era_style_evidence_registry": "data/shared/LOC6_ERA_STYLE_EVIDENCE.json",
-  "periodization_rule": "LOC6 stage profiles inherit continuous period boundaries from LOC8 ERA registry; LOC3/Suno activity ranges are evidence windows, not the system-wide period boundary."
+  "periodization_rule": "LOC6 stage profiles inherit continuous period boundaries from LOC8 ERA registry; LOC3/Suno activity ranges are evidence windows, not the system-wide period boundary.",
+  "governance_layers": {
+    "system_governance": "Neutral LOC-wide principles for authority, provenance, boundaries, lifecycle, dispute and publication.",
+    "personal_governance": "Zhengde Style / self-governance corpus: author's values, boundaries, choices and historical language evolution.",
+    "rule": "Personal governance may inform and demonstrate system design, but does not automatically become a mandatory system belief."
+  },
+  "current_boundary_vocabulary": {
+    "preferred": [
+      "界",
+      "域",
+      "boundary",
+      "domain",
+      "scope",
+      "ownership",
+      "permission",
+      "responsibility"
+    ],
+    "historical_term": [
+      "底線"
+    ],
+    "note": "底線 remains valid historical language where recorded, but current governance prefers framework/domain boundary because boundaries can be contextual without becoming moral absolutism."
+  }
 }
