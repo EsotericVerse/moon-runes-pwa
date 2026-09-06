@@ -126,7 +126,7 @@ def main() -> int:
     snapshot = validate_graph_snapshot(engine)
 
     schema = json.loads(registry_json("LOC_GRAPH_SCHEMA.json").read_text(encoding="utf-8"))
-    schema_ok = schema.get("schema_version") == "0.4" and bool(schema.get("quality_policy"))
+    schema_ok = schema.get("schema_version") == "0.5" and bool(schema.get("quality_policy"))
 
     passed = all(row["pass"] for row in query_results) and snapshot["pass"] and schema_ok
     summary = {
