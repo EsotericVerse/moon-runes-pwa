@@ -1086,6 +1086,7 @@
     };
 
     let events = [];
+    let governedEventIds = new Set();
     let dailyDraws = [];
     let editingDrawId = '';
     let drawBatchMode = false;
@@ -1613,11 +1614,17 @@
     async function loadEventSnapshot() {
       try {
         const res = await fetch('data/shared/LOC8_EVENT_SNAPSHOT.json', { cache: 'no-store' });
-        if (!res.ok) return [];
+        if (!res.ok) {
+          governedEventIds = new Set();
+          return [];
+        }
         const data = await res.json();
-        return Array.isArray(data.events) ? data.events : [];
+        const snapshot = Array.isArray(data.events) ? data.events : [];
+        governedEventIds = new Set(snapshot.map(item => String(item.id || '')).filter(Boolean));
+        return snapshot;
       } catch (err) {
         console.warn('LOC8 event snapshot unavailable', err);
+        governedEventIds = new Set();
         return [];
       }
     }
@@ -1997,9 +2004,13 @@
             ${e.description ? `<div class="desc">${esc(e.description)}</div>` : ''}
             ${e.state_after ? `<div class="desc"><strong>State →</strong> ${esc(e.state_after)}</div>` : ''}
             <div class="event-tools">
-              <button class="btn ghost" type="button" data-action="edit" data-id="${esc(e.id)}">編輯</button>
-              ${e.status !== 'archived' ? `<button class="btn ghost" type="button" data-action="archive" data-id="${esc(e.id)}">封存</button>` : ''}
-              <button class="btn ghost" type="button" data-action="delete" data-id="${esc(e.id)}">刪除</button>
+              ${governedEventIds.has(String(e.id))
+                ? '<span class="badge" title="此事件由 repository snapshot 治理；不直接寫回 Google Sheet。">歷史治理 · 唯讀</span>'
+                : `
+                  <button class="btn ghost" type="button" data-action="edit" data-id="${esc(e.id)}">編輯</button>
+                  ${e.status !== 'archived' ? `<button class="btn ghost" type="button" data-action="archive" data-id="${esc(e.id)}">封存</button>` : ''}
+                  <button class="btn ghost" type="button" data-action="delete" data-id="${esc(e.id)}">刪除</button>
+                `}
             </div>
           </div>
         </article>
@@ -2414,6 +2425,10 @@
     function editEvent(id) {
       const event = events.find(e => e.id === id);
       if (!event) return;
+      if (governedEventIds.has(String(id))) {
+        alert('這是 Repository 管理的歷史治理事件，目前為唯讀。若要修正 Canon 歷史，請更新治理資料來源，而不是 Google Sheet Event。');
+        return;
+      }
       editingId = id;
       els.editingId.value = id;
       els.formTitle.textContent = '編輯事件';
@@ -2628,13 +2643,20 @@
       if (editingId) raw.id = editingId;
       const event = normalizeEvent(raw);
       try {
+        if (editingId && governedEventIds.has(String(editingId))) {
+          throw new Error('Governed historical event is read-only');
+        }
         if (editingId && SHEET_API_URL) await testApi();
         await saveEvent(event, editingId ? 'update_event' : 'event');
         if (SHEET_API_URL) await loadEvents(); else renderAll();
         resetEventForm();
       } catch (err) {
         console.error(err);
-        alert('儲存失敗，請檢查 Google Apps Script 端點、部署版本或網路狀態。');
+        if (String(err?.message || '').includes('Governed historical event')) {
+          alert('這是 Repository 管理的歷史治理事件，目前為唯讀；不會送到 Google Sheet 更新。');
+        } else {
+          alert('儲存失敗，請檢查 Google Apps Script 端點、部署版本或網路狀態。');
+        }
       }
     });
 
@@ -2646,6 +2668,11 @@
       if (!btn) return;
       const id = btn.dataset.id;
       const action = btn.dataset.action;
+
+      if (governedEventIds.has(String(id))) {
+        alert('這是 Repository 管理的歷史治理事件，目前為唯讀；請從治理資料來源修正。');
+        return;
+      }
 
       if (action === 'edit') {
         // Event Timeline and Event Record share the same editor.
