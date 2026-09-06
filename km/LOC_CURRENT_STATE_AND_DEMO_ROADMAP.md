@@ -648,13 +648,13 @@ LOC 現在進入 **Governance Consolidation**：功能骨架不再是主要缺�
 
 ### 18.1 已形成的治理文件
 
-- `docs/LOC_GOVERNANCE_CORE.md`
-- `docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`
-- `docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md`
-- `docs/LOC_CONTENT_RIGHTS_POLICY.md`
-- `docs/LOC6_ZHENGDE_STYLE.md`
-- `docs/LOC7_KM.md`
-- `docs/LOC8_KM.md`
+- `km/LOC_GOVERNANCE_CORE.md`
+- `km/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`
+- `km/LUNA_RUNES_66_GOVERNANCE_DESIGN.md`
+- `km/LOC_CONTENT_RIGHTS_POLICY.md`
+- `km/LOC6_ZHENGDE_STYLE.md`
+- `km/LOC7_KM.md`
+- `km/LOC8_KM.md`
 
 ### 18.2 目前治理重點
 
