@@ -1895,7 +1895,7 @@ class UnifiedSearchEngine:
         period_trend = self._topic_period_trend(query, graph)
         confidence = self._synthesis_confidence(groups, graph)
 
-        loc_names = [row["loc"] for row in sorted(loc_counts.items(), key=lambda row: (-row[1], row[0]))]
+        loc_names = [loc for loc, _count in sorted(loc_counts.items(), key=lambda row: (-row[1], row[0]))]
         evidence_names = [row["label"] for row in evidence[:4]]
         introduction_parts = [
             lead_summary,
