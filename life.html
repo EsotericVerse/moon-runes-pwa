@@ -368,6 +368,19 @@
       border-radius: 14px;
       padding: 12px 14px;
       background: rgba(255,255,255,.025);
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+    .step:hover, .step:focus-visible {
+      border-color: var(--line-strong);
+      background: rgba(169,199,255,.08);
+      outline: none;
+    }
+    .step[aria-current="true"] {
+      border-color: var(--accent);
+      background: rgba(169,199,255,.12);
     }
     .step .t { font-weight: 650; }
     .step .s { color: var(--muted); font-size: 12px; margin-top: 5px; }
@@ -2994,6 +3007,13 @@
     let trajStartScroll = 0;
 
     trajectoryEl.addEventListener('pointerdown', (ev) => {
+      // Do not capture pointer events that start on a trajectory node.
+      // Pointer capture on the scroller changes the click target to the
+      // container and makes the node appear unresponsive.
+      if (ev.target.closest('[data-trajectory-node], button, a')) {
+        trajDragging = false;
+        return;
+      }
       trajDragging = true;
       trajStartX = ev.clientX;
       trajStartScroll = trajectoryEl.scrollLeft;
@@ -3019,6 +3039,11 @@
       const node = ev.target.closest('[data-trajectory-node]');
       if (!node) return;
       renderTrajectoryInspector(node.dataset.trajectoryNode, node.dataset.nodeType || 'state');
+      node.setAttribute('aria-current', 'true');
+      trajectoryEl.querySelectorAll('[data-trajectory-node]').forEach(item => {
+        if (item !== node) item.removeAttribute('aria-current');
+      });
+      els.trajectoryInspector?.scrollIntoView({ behavior:'smooth', block:'nearest' });
     });
 
     els.trajectoryInspector?.addEventListener('click', (ev) => {
