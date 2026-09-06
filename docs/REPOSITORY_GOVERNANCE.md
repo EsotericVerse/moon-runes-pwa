@@ -13,7 +13,7 @@ The repository must make file authority and lifecycle obvious from path alone. M
 
 ~~~text
 moon-runes-pwa/
-├─ card_api/                 # active FastAPI/Search application code
+├─ api/                 # active FastAPI/Search application code
 ├─ engine/                   # experimental engine code only
 ├─ data/
 │  └─ json/
@@ -78,7 +78,7 @@ The rule is **centralize data JSON**, not “move every .json extension blindly.
 
 ## 5. Path contract
 
-Python API code must use `card_api/paths.py` for current core/registry/search/generated paths rather than rebuilding path strings in each module.
+Python API code must use `api/paths.py` for current core/registry/search/generated paths rather than rebuilding path strings in each module.
 
 Browser-visible paths use the public repository path directly, e.g.:
 
@@ -125,7 +125,7 @@ They can be modularized later, but public URL compatibility/redirect/cache behav
 
 ## 8. CI enforcement
 
-`card_api/scripts/validate_repo_layout.py` rejects:
+`api/scripts/validate_repo_layout.py` rejects:
 
 - reintroduced legacy data directories,
 - required path loss,
