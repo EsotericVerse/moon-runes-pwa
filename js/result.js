@@ -146,7 +146,7 @@ function getLotsHtml(card) {
   `;
 }
 
-function cardHtml(card, label, realPhase, showLots = false) {
+function cardHtml(card, label, realPhase, density = "full", showLots = false) {
   const hint = runeHintMap.get(card.id) || {};
   const directionText =
     hint[DIRECTION_FIELDS[card.direction]] ||
@@ -161,9 +161,11 @@ function cardHtml(card, label, realPhase, showLots = false) {
     "目前沒有額外的反向提醒。";
 
   const english = hint.英文 || card.rune.英文 || "";
+  const minimal = density === "minimal";
+  const medium = density === "medium";
 
   return `
-    <article class="rune-result-card">
+    <article class="rune-result-card" data-density="${density}">
       <span class="rune-result-position">${label}</span>
 
       <div class="rune-result-image">
@@ -185,41 +187,43 @@ function cardHtml(card, label, realPhase, showLots = false) {
             <span class="rune-result-label">卡片方向</span>
             <span class="rune-result-value">${card.direction}</span>
           </div>
-          <div class="rune-result-field">
-            <span class="rune-result-label">所屬分組</span>
-            <span class="rune-result-value">${card.rune.所屬分組}組</span>
-          </div>
-          <div class="rune-result-field moon">
-            <span class="rune-result-label">卡片月相</span>
-            <span class="rune-result-value">${card.rune.月相}</span>
-          </div>
-          <div class="rune-result-field moon">
-            <span class="rune-result-label">真實月相</span>
-            <span class="rune-result-value">${realPhase}</span>
-          </div>
+          ${minimal ? "" : `
+            <div class="rune-result-field">
+              <span class="rune-result-label">所屬分組</span>
+              <span class="rune-result-value">${card.rune.所屬分組}組</span>
+            </div>
+            <div class="rune-result-field moon">
+              <span class="rune-result-label">卡片月相</span>
+              <span class="rune-result-value">${card.rune.月相}</span>
+            </div>
+          `}
         </div>
 
-        <div class="rune-result-section">
-          <strong>提示句</strong>
-          ${directionText}
-        </div>
-
-        <details class="card-details">
-          <summary>查看符文詳細資料</summary>
-          <div class="card-details-body">
-            <div class="rune-result-section group">
-              <strong>${card.rune.所屬分組}組</strong>
-              ${groupText}
-            </div>
-
-            <div class="rune-result-section reverse">
-              <strong>另一面／反向提醒</strong>
-              ${reverseText}
-            </div>
-
-            ${showLots ? getLotsHtml(card) : ""}
+        ${minimal ? "" : `
+          <div class="rune-result-section">
+            <strong>提示句</strong>
+            ${directionText}
           </div>
-        </details>
+        `}
+
+        ${density === "full" ? `
+          <details class="card-details">
+            <summary>查看符文詳細資料</summary>
+            <div class="card-details-body">
+              <div class="rune-result-section group">
+                <strong>${card.rune.所屬分組}組</strong>
+                ${groupText}
+              </div>
+
+              <div class="rune-result-section reverse">
+                <strong>另一面／反向提醒</strong>
+                ${reverseText}
+              </div>
+
+              ${showLots ? getLotsHtml(card) : ""}
+            </div>
+          </details>
+        ` : ""}
       </div>
     </article>
   `;
@@ -341,13 +345,16 @@ function buildFiveCardReading(cards, realPhase) {
     <p><strong>閱讀原則：</strong>
       先處理現在牌所指出的核心，再觀察外在與內在是否彼此拉扯或互相支持；未來牌視為延續目前條件後的趨勢，不作絕對斷定。本次真實月相為${realPhase}。
     </p>
-    <div class="five-card-details">
-      <p><strong>過去：</strong>${fiveCardPositionClause(past, "過去")}</p>
-      <p><strong>現在：</strong>${fiveCardPositionClause(present, "現在")}</p>
-      <p><strong>未來：</strong>${fiveCardPositionClause(future, "未來")}</p>
-      <p><strong>外在：</strong>${fiveCardPositionClause(external, "外在")}</p>
-      <p><strong>內在：</strong>${fiveCardPositionClause(internal, "內在")}</p>
-    </div>
+    <details class="reading-details">
+      <summary>查看五張牌逐張解讀</summary>
+      <div class="reading-details-body five-card-details">
+        <p><strong>過去：</strong>${fiveCardPositionClause(past, "過去")}</p>
+        <p><strong>現在：</strong>${fiveCardPositionClause(present, "現在")}</p>
+        <p><strong>未來：</strong>${fiveCardPositionClause(future, "未來")}</p>
+        <p><strong>外在：</strong>${fiveCardPositionClause(external, "外在")}</p>
+        <p><strong>內在：</strong>${fiveCardPositionClause(internal, "內在")}</p>
+      </div>
+    </details>
   `;
 }
 
@@ -434,7 +441,15 @@ function renderResult(mode, config, realPhase) {
   const reading = document.getElementById("reading");
 
   grid.dataset.count = String(config.count);
-  grid.innerHTML = cards.map((card, i) => cardHtml(card, config.labels[i], realPhase, config.count === 1)).join("");
+  const density = config.count === 1 ? "full" : (config.count === 5 ? "minimal" : "medium");
+  grid.innerHTML = cards.map((card, i) =>
+    cardHtml(card, config.labels[i], realPhase, density, config.count === 1)
+  ).join("");
+
+  const resultRealPhase = document.getElementById("result-real-phase");
+  if (resultRealPhase) {
+    resultRealPhase.textContent = `真實月相｜${realPhase}`;
+  }
 
   reading.innerHTML = config.count === 1
     ? buildSingleReading(cards[0], realPhase, mode === "daily")
