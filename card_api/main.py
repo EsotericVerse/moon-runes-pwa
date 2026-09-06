@@ -551,6 +551,20 @@ async def unified_search_facets():
     }
 
 
+@app.get("/search/graph")
+async def unified_search_graph(node_id: str = "", depth: int = 2):
+    """Return the governed LOC graph or a bounded neighborhood around one node."""
+    if depth < 1 or depth > 3:
+        raise HTTPException(status_code=400, detail="depth必須介於1到3之間")
+    searcher = get_unified_searcher()
+    result = searcher.graph_snapshot(node_id=node_id.strip(), depth=depth)
+    return {
+        "success": True,
+        **result,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
 @app.post("/search/browse")
 async def unified_browse(input: UnifiedBrowseInput):
     if input.offset < 0:
