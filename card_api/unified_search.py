@@ -1635,12 +1635,17 @@ class UnifiedSearchEngine:
                 seed_ids.add(rid)
 
         adjacency: dict[str, list[dict[str, Any]]] = {}
+        directional_relations = {"owned_by_loc", "belongs_to_era"}
         for edge in edges:
             source, target = str(edge.get("source") or ""), str(edge.get("target") or "")
             if not source or not target:
                 continue
             adjacency.setdefault(source, []).append(edge)
-            adjacency.setdefault(target, []).append(edge)
+            # Ownership and ERA membership are structural projections, not
+            # reverse discovery channels. Treating them as bidirectional turns
+            # LOC/ERA nodes into hubs that leak unrelated records into results.
+            if str(edge.get("relation_type") or "") not in directional_relations:
+                adjacency.setdefault(target, []).append(edge)
 
         visited = set(seed_ids)
         frontier = set(seed_ids)
