@@ -7,7 +7,7 @@
 - Markdown（`.md`）：可維護、可 diff、可搜尋、可被 KM／Agent 直接讀取的主要知識文件。
 - JSON：結構化 Registry、檢索資料、應用資料；依各自 authority 與 provenance 治理。
 - XLSX：結構化母資料；`LunaRune64.xlsx` 仍是符文資料的最高優先母資料。
-- DOCX／PDF：僅保留仍有實際用途的 Canon、語法圖鑑、列印或交換文件；不因放在 `docs/` 就自動成為最高權威。
+- DOCX／PDF：僅保留仍有實際用途的 Canon、語法圖鑑、列印或交換文件；不因放在 `km/` 就自動成為最高權威。
 - 應用輸出與 AI 推論不得反向覆寫 Canon 或母資料。
 
 ## 新手教學
