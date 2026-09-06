@@ -47,33 +47,49 @@
           </div>
         </div>
         <div class="filters">
-          <select id="contentType" aria-label="資料種類">
-            <option value="">全部資料種類</option>
-            <option value="oracle">籤詩／解牌</option>
-            <option value="rune_record">月之符文</option>
-            <option value="lyrics_work">音樂／歌詞</option>
-            <option value="text_work">文字作品</option>
-            <option value="multimedia">多媒體作品</option>
-            <option value="governance_fragment">治理／政德風</option>
-            <option value="governance_article">LOC6 文章／Threads</option>
-            <option value="knowledge_image">圖片／知識圖</option>
-            <option value="knowledge">文件／知識庫</option>
-            <option value="relationship">跨 LOC 關係</option>
-            <option value="era">ERA／時間</option>
+          <select id="source" aria-label="來源">
+            <option value="">全部來源</option>
+            <option value="suno">Suno</option>
+            <option value="threads">Threads</option>
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
           </select>
-          <select id="period" aria-label="時期">
-            <option value="">全部時期</option>
-            <option value="P1">P1｜Suno原型探索期</option>
-            <option value="P2">P2｜重啟與格式形成期</option>
-            <option value="P3">P3｜微月光與關係敘事期</option>
-            <option value="P4">P4｜現實壓力與治理轉折期</option>
-            <option value="P5">P5｜人生月台與語言重建期</option>
-            <option value="P6">P6｜順其自然與界線整合期</option>
-            <option value="P7">P7｜自由的風期</option>
-            <option value="P8">P8｜自我治理與未來展望期</option>
-          </select>
+          <input id="startDate" type="date" aria-label="開始日期" />
+          <input id="endDate" type="date" aria-label="結束日期" />
         </div>
-        <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><button class="submit" id="browse" type="button">瀏覽目前類型</button><span class="hint">資料種類決定要搜尋哪一種語言資產；時期是跨作品與紀錄的時間維度。籤詩模式仍先讀 Lots，再向其他資料展開。</span></div>
+        <details class="advanced-search">
+          <summary>進階搜尋</summary>
+          <div class="filters" style="margin-top:10px">
+            <select id="contentType" aria-label="資料種類">
+              <option value="">全部資料種類</option>
+              <option value="oracle">籤詩／解牌</option>
+              <option value="rune_record">月之符文</option>
+              <option value="lyrics_work">音樂／歌詞</option>
+              <option value="text_work">文字作品</option>
+              <option value="multimedia">多媒體作品</option>
+              <option value="governance_fragment">治理／政德風</option>
+              <option value="governance_article">LOC6 文章／Threads</option>
+              <option value="knowledge_image">圖片／知識圖</option>
+              <option value="knowledge">文件／知識庫</option>
+              <option value="relationship">跨 LOC 關係</option>
+              <option value="era">ERA／時間</option>
+            </select>
+            <select id="period" aria-label="ERA">
+              <option value="">全部 ERA</option>
+              <option value="P0">P0</option>
+              <option value="P0.5">P0.5</option>
+              <option value="P1">P1</option>
+              <option value="P2">P2</option>
+              <option value="P3">P3</option>
+              <option value="P4">P4</option>
+              <option value="P5">P5</option>
+              <option value="P6">P6</option>
+              <option value="P7">P7</option>
+              <option value="P8">P8</option>
+            </select>
+          </div>
+        </details>
+        <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><button class="submit" id="browse" type="button">瀏覽目前類型</button><span class="hint">普通搜尋可直接用來源與日期；進階搜尋再加入資料種類與 ERA。日期是原始紀錄，ERA 是分析投影。</span></div>
       </form>
     </section>
     <div class="status" id="status" aria-live="polite"></div>
@@ -300,7 +316,7 @@
     }
     el('browse').onclick=()=>browse(el('browse').dataset.more!=='1');
     el('contentType').addEventListener('change',()=>{browseOffset=0;el('browse').dataset.more='0';el('browse').textContent='瀏覽目前類型';});
-    el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時期資料……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
+    el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時期資料……';el('groups').innerHTML='';try{const body={query:q,top_k:6,source:el('source').value,start_date:el('startDate').value,end_date:el('endDate').value,content_type:el('contentType').value,period:el('period').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
     el('contentType').addEventListener('change',quick);
     quick();
     facets().finally(bootFromUrl);
