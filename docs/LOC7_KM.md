@@ -462,3 +462,42 @@ Markdown / JSON / Registry
 - Search 可以讀取 Markdown／JSON 來做 retrieval，但 UI 只連到 `public_path`；沒有 public view 的內部 asset 不顯示「閱讀原始碼」連結。
 - 政德風公開介紹文章採 `exposure_policy=public_full_text`：完整風格描述可公開閱讀，不受 corpus preview-only 限制。
 - 原始作品 corpus、Threads 全文與其他大量第一方作品仍維持 anti-bulk-extraction 規則。
+
+## 20. Governance Control Plane
+
+LOC7 負責把治理原則轉成可執行的 schema、relationship、validation、history 與 audit structure。共用原則見 [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md)。
+
+KM 中任何可治理 Knowledge Object／Relation／ERA／Rule／Schema，最終應支援：
+
+~~~text
+Create / Update / Delete
+        +
+before / after
+        +
+reason / evidence
+        +
+review / dispute
+        +
+publish / restrict
+        +
+supersede / tombstone
+~~~
+
+治理完整度不得只以「文件有寫規則」判定，而應檢查：
+
+1. **Principle**：有沒有明確治理原則。
+2. **Policy**：規則是否可被引用與版本化。
+3. **Executable Control**：程式／API 是否實際 enforce。
+4. **Evidence / Audit Trail**：變更是否可追溯。
+
+### Relation / Graph 治理要求
+
+- 不同 relation / interpretation 可以並存。
+- semantic similarity 不得自行創造 Canon。
+- 有異議時應建立 dispute/change record，而不是直接覆寫。
+- Delete 應優先採 tombstone / archived state。
+- private → public / canonical 必須是正式 publish governance。
+- Graph、Search、KM 的 public exposure 必須共用 rights / visibility gate。
+- governance history 應能回答「誰／何時／為何／依據什麼／改了什麼」。
+
+這些要求屬 LOC7 結構責任；價值與治理語義仍由 LOC6 管理，時間與人生版本則由 LOC8 管理。
