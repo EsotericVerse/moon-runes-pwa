@@ -229,7 +229,7 @@
     {
       "asset_id": "KA-LOC6-RUNE-001",
       "title": "LOC6 Rune Interpretation Registry",
-      "path": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+      "path": "data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
       "source_type": "structured_registry",
       "content_type": "rune_interpretation",
       "primary_loc": "LOC6",
@@ -256,7 +256,7 @@
     {
       "asset_id": "KA-LOC2-EVENT-001",
       "title": "LOC2 Scenario Event Registry",
-      "path": "data/json/shared/LOC2_EVENT_REGISTRY.json",
+      "path": "data/json/registries/LOC2_EVENT_REGISTRY.json",
       "source_type": "structured_registry",
       "content_type": "scenario_event",
       "primary_loc": "LOC2",
@@ -311,7 +311,7 @@
     {
       "asset_id": "KA-LOC6-DUAL-001",
       "title": "LOC6 Dual Rune Relation Registry",
-      "path": "data/json/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
+      "path": "data/json/registries/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
       "source_type": "structured_registry",
       "content_type": "dual_rune_relation",
       "primary_loc": "LOC6",
@@ -333,7 +333,7 @@
         "maintained_in_repo": true,
         "planned_sources": [
           "docs/64LunaRune.docx",
-          "data/json/shared/LOC2_EVENT_REGISTRY.json",
+          "data/json/registries/LOC2_EVENT_REGISTRY.json",
           "verified observed readings"
         ]
       },
@@ -370,7 +370,7 @@
     {
       "asset_id": "KA-ERA-001",
       "title": "LOC ERA Registry",
-      "path": "data/json/shared/LOC_ERA_REGISTRY.json",
+      "path": "data/json/registries/LOC_ERA_REGISTRY.json",
       "source_type": "structured_registry",
       "content_type": "era",
       "primary_loc": "LOC8",
@@ -396,7 +396,7 @@
     {
       "asset_id": "KA-LOC3-RUNE-SONG-001",
       "title": "LOC3 Rune Song Registry",
-      "path": "data/json/shared/LOC3_RUNE_SONG_REGISTRY.json",
+      "path": "data/json/registries/LOC3_RUNE_SONG_REGISTRY.json",
       "source_type": "structured_registry",
       "content_type": "rune_song",
       "primary_loc": "LOC3",
@@ -424,7 +424,7 @@
     {
       "asset_id": "KA-LOC6-ERA-EVIDENCE-001",
       "title": "LOC6 ERA Style Evidence",
-      "path": "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json",
+      "path": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json",
       "source_type": "structured_registry",
       "content_type": "linguistic_analysis",
       "primary_loc": "LOC6",
@@ -500,7 +500,7 @@
     {
       "asset_id": "KA-LOC1-RUNES-001",
       "title": "LOC1 月符基本資料 Seed Corpus",
-      "path": "js/runes64.js",
+      "path": "data/json/core/runes64.json",
       "source_type": "structured_seed_corpus",
       "content_type": "rune_seed_corpus",
       "primary_loc": "LOC1",
@@ -513,7 +513,7 @@
         "LOC7",
         "LOC8"
       ],
-      "role": "rune_vocabulary_seed_corpus",
+      "role": "rune_basic_runtime_projection",
       "status": "current",
       "authority_level": "derived_from_mother_data",
       "searchable": true,
@@ -536,7 +536,7 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "notes": "LOC1 is the seed vocabulary layer. This JS representation is searchable, but LunaRune64.xlsx remains the highest-priority mother source.",
+      "notes": "Single maintained basic rune lookup projection derived from LunaRune64.xlsx. Consumers that only need rune identity/keywords/group/moon phase/four orientations should use this file rather than clone the full rune dataset.",
       "presentation": "internal_source"
     },
     {
@@ -580,7 +580,7 @@
     {
       "asset_id": "KA-LOC1-LOTS-001",
       "title": "LOC1 Lots 籤詩 Seed Corpus",
-      "path": "data/json/shared/lots.json",
+      "path": "data/json/core/lots.json",
       "source_type": "structured_seed_corpus",
       "content_type": "lots_corpus",
       "primary_loc": "LOC1",
@@ -900,7 +900,7 @@
     {
       "asset_id": "KA-FAQ-004",
       "title": "LOC FAQ v0.4",
-      "path": "data/json/runtime/card_api/LOC_FAQ_v0.4.json",
+      "path": "data/json/search/faq/LOC_FAQ_v0.4.json",
       "source_type": "dataset",
       "content_type": "knowledge_dataset",
       "primary_loc": "LOC7",
@@ -923,7 +923,7 @@
       "provenance": {
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true,
-        "revision_from": "data/json/runtime/card_api/LOC_FAQ_v0.3.json"
+        "revision_from": "data/json/archive/faq/LOC_FAQ_v0.3.json"
       },
       "notes": "Maintained FAQ view of current KM knowledge. It does not override Canon, mother data, or Shared Registry.",
       "presentation": "internal_source"
@@ -931,7 +931,7 @@
     {
       "asset_id": "KA-FAQ-RAG-004",
       "title": "LOC FAQ RAG v0.4",
-      "path": "data/json/runtime/card_api/LOC_FAQ_RAG_v0.4.json",
+      "path": "data/json/search/faq/LOC_FAQ_RAG_v0.4.json",
       "source_type": "dataset",
       "content_type": "retrieval_dataset",
       "primary_loc": "LOC7",
@@ -949,7 +949,7 @@
       "provenance": {
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true,
-        "source_dataset": "data/json/runtime/card_api/LOC_FAQ_v0.4.json"
+        "source_dataset": "data/json/search/faq/LOC_FAQ_v0.4.json"
       },
       "notes": "Runtime FAQ retrieval dataset derived from FAQ v0.4; not a Canon source.",
       "presentation": "internal_source"
@@ -957,7 +957,7 @@
     {
       "asset_id": "KA-LOC3-PERIOD-KW-001",
       "title": "LOC3 時期關鍵字分析 v0.2",
-      "path": "data/json/shared/LOC3_PERIOD_KEYWORD_ANALYSIS.json",
+      "path": "data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json",
       "source_type": "derived_analysis",
       "content_type": "linguistic_analysis",
       "primary_loc": "LOC3",
@@ -975,8 +975,8 @@
       "provenance": {
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true,
-        "source_corpus": "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.json",
-        "period_registry": "data/json/shared/LOC_ERA_REGISTRY.json"
+        "source_corpus": "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json",
+        "period_registry": "data/json/registries/LOC_ERA_REGISTRY.json"
       },
       "notes": "LOC3 owns keyword evidence; LOC8 owns period boundaries; LOC7 may index this normalized period analysis. v0.2 adds document-frequency normalization and adjacent-period emergence/rise/persistence/decline signals.",
       "presentation": "internal_source"
@@ -1150,7 +1150,7 @@
     {
       "asset_id": "KA-LOC-GOV-TREND-001",
       "title": "LOC Governance Trend Registry",
-      "path": "data/json/shared/LOC_GOVERNANCE_TREND_REGISTRY.json",
+      "path": "data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json",
       "source_type": "structured_registry",
       "content_type": "analysis",
       "primary_loc": "LOC8",
@@ -1184,6 +1184,148 @@
         ]
       },
       "notes": "Trend projection only; does not automatically rank historical stages as progress/regression.",
+      "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-REPO-GOV-001",
+      "title": "Repository Governance",
+      "path": "docs/REPOSITORY_GOVERNANCE.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "repository_structure_governance",
+      "status": "current",
+      "authority_level": "governance_document",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "2026-09-07",
+      "updated_at": "2026-09-07",
+      "keywords": [
+        "repository governance",
+        "檔案架構",
+        "目錄治理",
+        "path migration",
+        "模組化",
+        "檔案配置",
+        "cleanup"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Defines repository directory roles, path-migration safety rules, delete/archive policy and CI layout enforcement.",
+      "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-DATA-ARCH-001",
+      "title": "LOC Data Architecture",
+      "path": "docs/DATA_ARCHITECTURE.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "data_architecture_and_projection_governance",
+      "status": "current",
+      "authority_level": "governance_document",
+      "searchable": true,
+      "index_priority": "highest",
+      "version": "0.1",
+      "updated_at": "2026-09-07",
+      "keywords": [
+        "data architecture",
+        "runes64.json",
+        "core",
+        "registries",
+        "search",
+        "generated",
+        "archive",
+        "experimental",
+        "Single Source of Truth",
+        "projection"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "mother_source": "LunaRune64.xlsx"
+      },
+      "notes": "Defines one-authority/many-purpose-specific-projections data model and normalized JSON directory responsibilities.",
+      "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-COPYLEFT-001",
+      "title": "Luna Codex / LOC Copyleft Policy",
+      "path": "COPYLEFT.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC1",
+        "LOC7"
+      ],
+      "role": "copyleft_and_derivative_governance",
+      "status": "current",
+      "authority_level": "creator_governance_policy",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-07",
+      "keywords": [
+        "Copyleft",
+        "月之符文",
+        "Luna Codex",
+        "分享",
+        "衍生",
+        "attribution",
+        "share alike",
+        "provenance"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Records the author's current copyleft/share-alike intent while keeping upstream Canon identity and third-party rights boundaries explicit.",
+      "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-LOC1-INTERPRET-001",
+      "title": "LOC1 Rune Interpretation Runtime Projection",
+      "path": "data/json/core/rune_interpretations.json",
+      "source_type": "structured_seed_corpus",
+      "content_type": "rune_interpretation_corpus",
+      "primary_loc": "LOC1",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "rune_orientation_moon_phase_runtime_projection",
+      "status": "current",
+      "authority_level": "derived_from_mother_data",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "2026-09-07",
+      "updated_at": "2026-09-07",
+      "keywords": [
+        "月符",
+        "四向",
+        "月相",
+        "每日占卜",
+        "rune interpretations"
+      ],
+      "provenance": {
+        "mother_source": "LunaRune64.xlsx",
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Single maintained expanded rune interpretation projection. The former engine full-copy dataset was removed as duplicate.",
       "presentation": "internal_source"
     }
   ]
