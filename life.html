@@ -1153,6 +1153,10 @@
                 <small id="drawSelectionStatus">未選取</small>
               </div>
               <div class="draw-history" id="dailyDrawHistory"><div class="empty">尚無每日符文紀錄。</div></div>
+              <div class="draw-pagination" id="drawPagination" hidden>
+                <div class="draw-pagination-info" id="drawPaginationInfo"></div>
+                <div class="draw-pagination-pages" id="drawPaginationPages"></div>
+              </div>
             </div>
           </section>
         </div>
@@ -1215,6 +1219,9 @@
       cancelEditBtn: $('#cancelEditBtn'),
       dailyDrawForm: $('#dailyDrawForm'),
       dailyDrawHistory: $('#dailyDrawHistory'),
+      drawPagination: $('#drawPagination'),
+      drawPaginationInfo: $('#drawPaginationInfo'),
+      drawPaginationPages: $('#drawPaginationPages'),
       drawCountBadge: $('#drawCountBadge'),
       drawSyncText: $('#drawSyncText'),
       drawSyncDot: $('#drawSyncDot'),
@@ -1269,6 +1276,8 @@
     let dailyDraws = [];
     let editingDrawId = '';
     let drawBatchMode = false;
+    const DAILY_DRAW_PAGE_SIZE = 10;
+    let dailyDrawPage = 1;
     const selectedDrawIds = new Set();
     const dirtyDrawIds = new Set();
     let eraRegistry = [];
@@ -2749,10 +2758,16 @@
       els.drawCountBadge.textContent = sorted.length + ' 筆';
       if (!sorted.length) {
         els.dailyDrawHistory.innerHTML = '<div class="empty">尚無每日符文紀錄。</div>';
+        if (els.drawPagination) els.drawPagination.hidden = true;
         updateDrawBatchToolbar();
         renderDailyRuneAnalysis();
         return;
       }
+
+      const totalPages = Math.max(1, Math.ceil(sorted.length / DAILY_DRAW_PAGE_SIZE));
+      dailyDrawPage = Math.min(Math.max(1, dailyDrawPage), totalPages);
+      const pageStart = (dailyDrawPage - 1) * DAILY_DRAW_PAGE_SIZE;
+      const pageRows = sorted.slice(pageStart, pageStart + DAILY_DRAW_PAGE_SIZE);
 
       els.dailyDrawHistory.innerHTML = `
         <table class="draw-table">
@@ -2762,7 +2777,7 @@
             ${drawBatchMode ? '' : '<th>操作</th>'}
           </tr></thead>
           <tbody>
-            ${sorted.map(d => {
+            ${pageRows.map(d => {
               const selected = selectedDrawIds.has(String(d.id));
               const dirty = dirtyDrawIds.has(String(d.id));
               if (drawBatchMode) {
@@ -2800,6 +2815,33 @@
           </tbody>
         </table>
       `;
+
+      if (els.drawPagination && els.drawPaginationInfo && els.drawPaginationPages) {
+        els.drawPagination.hidden = totalPages <= 1;
+        els.drawPaginationInfo.textContent = `第 ${pageStart + 1}–${Math.min(sorted.length, pageStart + DAILY_DRAW_PAGE_SIZE)} 筆，共 ${sorted.length} 筆 · 第 ${dailyDrawPage} / ${totalPages} 頁`;
+        const pages = [];
+        const start = Math.max(1, dailyDrawPage - 2);
+        const end = Math.min(totalPages, dailyDrawPage + 2);
+        pages.push(`<button type="button" class="draw-page-btn" data-draw-page="${dailyDrawPage - 1}" ${dailyDrawPage === 1 ? 'disabled' : ''}>上一頁</button>`);
+        if (start > 1) pages.push(`<button type="button" class="draw-page-btn" data-draw-page="1">1</button>`);
+        if (start > 2) pages.push('<span class="draw-pagination-info">…</span>');
+        for (let p = start; p <= end; p++) {
+          pages.push(`<button type="button" class="draw-page-btn ${p === dailyDrawPage ? 'active' : ''}" data-draw-page="${p}">${p}</button>`);
+        }
+        if (end < totalPages - 1) pages.push('<span class="draw-pagination-info">…</span>');
+        if (end < totalPages) pages.push(`<button type="button" class="draw-page-btn" data-draw-page="${totalPages}">${totalPages}</button>`);
+        pages.push(`<button type="button" class="draw-page-btn" data-draw-page="${dailyDrawPage + 1}" ${dailyDrawPage === totalPages ? 'disabled' : ''}>下一頁</button>`);
+        els.drawPaginationPages.innerHTML = pages.join('');
+        els.drawPaginationPages.querySelectorAll('[data-draw-page]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const next = Number(btn.dataset.drawPage || 1);
+            if (next < 1 || next > totalPages || next === dailyDrawPage) return;
+            dailyDrawPage = next;
+            renderDailyDraws(dailyDraws);
+          });
+        });
+      }
+
       updateDrawBatchToolbar();
       renderDailyRuneAnalysis();
     }
@@ -2837,11 +2879,13 @@
 
       if (cached.length) {
         dailyDraws = cached;
+        dailyDrawPage = 1;
         renderDailyDraws(dailyDraws);
       } else {
         fallback = await loadDailyDrawSnapshot();
         if (fallback.length) {
           dailyDraws = fallback;
+          dailyDrawPage = 1;
           renderDailyDraws(dailyDraws);
           if (els.drawSyncText) els.drawSyncText.textContent = '顯示最近同步的每日符文趨勢';
         } else {
@@ -2861,6 +2905,7 @@
         const live = Array.isArray(data.daily_draws) ? data.daily_draws : [];
         if (live.length) {
           dailyDraws = live;
+          dailyDrawPage = 1;
           writeDailyDrawCache(dailyDraws);
           renderDailyDraws(dailyDraws);
           if (els.drawSyncText) els.drawSyncText.textContent = '每日符文資料已同步';
