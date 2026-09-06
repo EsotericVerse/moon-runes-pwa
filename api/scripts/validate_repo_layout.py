@@ -9,7 +9,7 @@ FORBIDDEN_PATHS = [
     ROOT / "data" / "shared",
     ROOT / "data" / "generated",
     ROOT / "data" / "archive",
-    ROOT / "card_api" / "data",
+    ROOT / "card_api",
     ROOT / "temp.json",
     ROOT / "mp3" / "my.mp3",
     ROOT / "LOC_LOC_LunaCodex_OW3gs.md",
@@ -23,14 +23,15 @@ REQUIRED_PATHS = [
     ROOT / "data" / "json" / "registries" / "LOC_SHARED_MANIFEST.json",
     ROOT / "data" / "json" / "search" / "faq" / "LOC_FAQ_RAG_v0.4.json",
     ROOT / "data" / "json" / "search" / "loc3" / "LOC3_LYRICS_SEARCH_v0.1.json",
-    ROOT / "card_api" / "paths.py",
+    ROOT / "api" / "paths.py",
+    ROOT / "api" / "main.py",
 ]
 
 STALE_TOKENS = [
     "data/shared/",
     "data/generated/",
     "data/archive/",
-    "card_api/data/",
+    "card_api/",
     "card_api/new_runes.json",
     "card_api/runes_all_data.json",
     "card_api/three_card_combinations.json",
@@ -68,12 +69,12 @@ SKIP_PREFIXES = (
 )
 SKIP_FILES = {
     "docs/REPOSITORY_GOVERNANCE.md",
-    "card_api/scripts/validate_repo_layout.py",
+    "api/scripts/validate_repo_layout.py",
     "engine/README.md",
 }
 
 JSON_PATH_RE = re.compile(
-    r"""(?P<path>/?(?:data|card_api|engine|loc8_api)/[A-Za-z0-9_./-]+\.json(?:\.gz)?)"""
+    r"""(?P<path>/?(?:data|api|card_api|engine|loc8_api)/[A-Za-z0-9_./-]+\.json(?:\.gz)?)"""
 )
 
 HTML_JS_PATH_RE = re.compile(
