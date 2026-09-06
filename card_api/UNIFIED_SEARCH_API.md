@@ -143,4 +143,4 @@ mean_edge_quality
 
 `provenance` 同步回傳 `graph_quality_bands` 與 `graph_quality`。Search Synthesis 的 confidence 也會納入 mean edge quality，而不再只看命中數與 edge 數。
 
-這套分數是 **治理權重**，不是模型主觀機率；權重定義以 `data/shared/LOC_GRAPH_SCHEMA.json` v0.4 為 contract。
+這套分數是 **治理權重**，不是模型主觀機率；權重定義以 `data/json/shared/LOC_GRAPH_SCHEMA.json` v0.4 為 contract。
