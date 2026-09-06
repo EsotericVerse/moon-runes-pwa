@@ -590,7 +590,15 @@
           </button>
           <button class="view-switch" id="eventTimeViewBtn" type="button" data-view="event-time">
             <span class="nav-title">事件時間線</span>
-            <span class="nav-sub">Timeline · Trajectory</span>
+            <span class="nav-sub">Timeline · 事件順序</span>
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">04 · 脈絡</div>
+          <button class="view-switch" id="contextViewBtn" type="button" data-view="context">
+            <span class="nav-title">脈絡 Context</span>
+            <span class="nav-sub">Relation · Trajectory · Graph</span>
           </button>
         </div>
 
@@ -600,7 +608,7 @@
         </div>
       </nav>
       <div class="sidebar-foot">
-        每日符文 → 時期 → 事件。全站返回首頁請使用右上方導覽；左側只保留 LOC8 工作區。
+        每日符文 → 時期 → 事件 → 脈絡。時間線記順序，脈絡記關係；左側只保留 LOC8 工作區。
       </div>
     </aside>
 
@@ -743,10 +751,10 @@
       <div class="life-view" id="eventTimeView" hidden>
         <section class="hero">
           <div class="loc-header">
-            <p class="loc-header-meta">LOC8 · Event · Timeline · Trajectory</p>
+            <p class="loc-header-meta">LOC8 · Event · Timeline</p>
             <h1 class="loc-header-title">事件時間線</h1>
-            <h2 class="loc-header-subtitle">事件發生在時間裡，時間形成軌跡。</h2>
-            <p class="loc-header-copy">時間線保留事件發生的順序；軌跡則聚焦事件造成的狀態轉移。事件標籤會回到時期中形成關鍵字脈絡。</p>
+            <h2 class="loc-header-subtitle">把事件留在時間裡，先回答「什麼時候發生了什麼」。</h2>
+            <p class="loc-header-copy">這裡只保存 Event 的時間順序與紀錄維護；狀態如何演變、概念如何互相影響，移到獨立的「脈絡 Context」處理。</p>
           </div>
           <div class="sync"><span class="dot" id="eventSyncDot"></span><span id="eventSyncText">載入中…</span></div>
         </section>
@@ -758,6 +766,20 @@
         </div>
         <div class="body"><div class="timeline" id="timelineList"><div class="empty">尚無事件。</div></div></div>
       </section>
+
+
+      </div>
+
+      <div class="life-view" id="contextView" hidden>
+        <section class="hero">
+          <div class="loc-header">
+            <p class="loc-header-meta">LOC8 · Context · Relation · Trajectory</p>
+            <h1 class="loc-header-title">脈絡 Context</h1>
+            <h2 class="loc-header-subtitle">不只記先後，而是記「彼此怎麼連、怎麼變」。</h2>
+            <p class="loc-header-copy">Relation 是底層關聯資料；Trajectory 是有方向的演變投影；Graph 將在同一批關聯資料上建立網狀視圖。這裡承接 LOC6 與其他 LOC 模組整理出的跨事件、概念、作品與符文關係。</p>
+          </div>
+          <div class="sync"><span class="dot ok"></span><span>Relation Library · LOC8 v1.0</span></div>
+        </section>
 
       <section class="card" style="margin-top:16px;" id="trajectory">
           <div class="head">
@@ -834,6 +856,15 @@
         </div>
       </section>
 
+        <section class="card" style="margin-top:16px;" id="context-graph">
+          <div class="head">
+            <div><h3>Graph View</h3><p>使用同一份 Relation 資料建立網狀視圖；目前先保留為下一階段入口，不另造第二套資料。</p></div>
+            <span class="badge">Next</span>
+          </div>
+          <div class="body">
+            <div class="empty">Graph 視圖尚未啟用。Relation 與 Trajectory 已可使用；之後直接由 Relation edge 產生網狀圖。</div>
+          </div>
+        </section>
       </div>
 
       <div class="life-view" id="dailyDrawView">
@@ -1553,6 +1584,7 @@
     }
 
     function editRelation(id) {
+      switchView('context', $('#contextViewBtn'));
       const r = relations.find(x => x.id === id);
       if (!r || !els.relationForm) return;
       editingRelationId = id;
@@ -2439,6 +2471,7 @@
 
     const lifeView = $('#lifeView');
     const eventTimeView = $('#eventTimeView');
+    const contextView = $('#contextView');
     const eraTrendView = $('#eraTrendView');
     const dailyDrawView = $('#dailyDrawView');
 
@@ -2446,6 +2479,7 @@
       document.body.classList.remove('life-initial-daily');
       lifeView.hidden = view !== 'overview';
       eventTimeView.hidden = view !== 'event-time';
+      contextView.hidden = view !== 'context';
       eraTrendView.hidden = view !== 'era-trend';
       dailyDrawView.hidden = view !== 'daily';
 
@@ -2457,6 +2491,9 @@
         loadDailyDraws();
       } else if (view === 'event-time') {
         history.replaceState(null, '', '#event-time');
+        loadEvents();
+      } else if (view === 'context') {
+        history.replaceState(null, '', '#context');
         Promise.all([loadEvents(), loadRelations()]);
       } else if (view === 'era-trend') {
         history.replaceState(null, '', '#era-trend');
@@ -2469,10 +2506,12 @@
 
     $('#overviewViewBtn').addEventListener('click', () => switchView('overview', $('#overviewViewBtn')));
     $('#eventTimeViewBtn').addEventListener('click', () => switchView('event-time', $('#eventTimeViewBtn')));
+    $('#contextViewBtn').addEventListener('click', () => switchView('context', $('#contextViewBtn')));
     $('#eraTrendViewBtn').addEventListener('click', () => switchView('era-trend', $('#eraTrendViewBtn')));
     $('#dailyDrawViewBtn').addEventListener('click', () => switchView('daily', $('#dailyDrawViewBtn')));
 
     if (location.hash === '#event-time') switchView('event-time', $('#eventTimeViewBtn'));
+    else if (location.hash === '#context') switchView('context', $('#contextViewBtn'));
     else if (location.hash === '#era-trend') switchView('era-trend', $('#eraTrendViewBtn'));
     else if (location.hash === '#overview') switchView('overview', $('#overviewViewBtn'));
     else switchView('daily', $('#dailyDrawViewBtn'));
