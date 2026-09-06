@@ -96,27 +96,33 @@ def main() -> int:
             if not (ROOT / target).is_file():
                 failures.append(f"missing JSON target {target!r}: referenced by {rp}")
 
-        # HTML/JS routes and module references are also runtime contracts.
-        # Resolve relative JS imports against the source file directory.
-        for match in HTML_JS_PATH_RE.finditer(content):
-            raw = match.group("path")
-            if raw.startswith(("http://", "https://")):
-                continue
-            if raw.startswith("/"):
-                target = raw.lstrip("/")
-            elif raw.startswith("./") or raw.startswith("../"):
-                target = (Path(rp).parent / raw).resolve().relative_to(ROOT.resolve()).as_posix()
-            else:
-                # Browser paths in root HTML/docs are repository-root relative;
-                # JS bare relative module names resolve from their own directory.
-                if path.suffix.lower() == ".js" and "/" not in raw:
-                    target = (Path(rp).parent / raw).as_posix()
+        # HTML/JS routes and module references are runtime contracts.
+        # Keep this check to executable/configuration surfaces; Markdown may
+        # legitimately mention historical or external URLs.
+        if path.suffix.lower() in {".html", ".js", ".json", ".yml", ".yaml"}:
+            for match in HTML_JS_PATH_RE.finditer(content):
+                raw = match.group("path")
+                if "://" in raw:
+                    continue
+                if raw.startswith("/"):
+                    target = raw.lstrip("/")
+                elif raw.startswith("./") or raw.startswith("../"):
+                    candidate = (ROOT / Path(rp).parent / raw).resolve()
+                    try:
+                        target = candidate.relative_to(ROOT.resolve()).as_posix()
+                    except ValueError:
+                        failures.append(f"HTML/JS target escapes repository {raw!r}: referenced by {rp}")
+                        continue
                 else:
-                    target = raw
-            if target.startswith(("data/json/archive/", "docs/")):
-                continue
-            if not (ROOT / target).is_file():
-                failures.append(f"missing HTML/JS target {target!r}: referenced by {rp}")
+                    # Bare module names inside JS resolve beside that module.
+                    if path.suffix.lower() == ".js" and "/" not in raw:
+                        target = (Path(rp).parent / raw).as_posix()
+                    else:
+                        target = raw
+                if target.startswith("data/json/archive/"):
+                    continue
+                if not (ROOT / target).is_file():
+                    failures.append(f"missing HTML/JS target {target!r}: referenced by {rp}")
 
     if failures:
         print("Repository layout validation FAILED")
