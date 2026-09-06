@@ -29,7 +29,7 @@ moon-runes-pwa/
 ├─ js/                       # browser application logic
 ├─ css/                      # browser styles
 ├─ tools/                    # repository-wide builders / importers
-├─ loc8_api/                 # Apps Script integration module
+├─ integrations/google_apps_script/loc8/                 # Apps Script integration module
 ├─ 64images/                 # current rune-card images (public URL-sensitive)
 ├─ pics/                     # current presentation/visual assets; later media migration candidate
 ├─ reels/                    # current video assets; later media migration candidate
@@ -72,7 +72,7 @@ Not every JSON belongs under `data/json/`.
 Configuration stays with the component it configures:
 
 - root `manifest.json` → PWA configuration
-- `loc8_api/appsscript.json` → Google Apps Script project configuration
+- `integrations/google_apps_script/loc8/appsscript.json` → Google Apps Script project configuration
 
 The rule is **centralize data JSON**, not “move every .json extension blindly.”
 
