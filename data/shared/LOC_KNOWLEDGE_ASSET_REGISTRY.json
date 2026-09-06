@@ -392,7 +392,9 @@
       "notes": "Public-facing analytical Knowledge Asset. LOC6 provides style/governance evidence; LOC7_KM indexes and exposes it through LOC Search.",
       "public_path": "zhengde-style.html",
       "public_summary": "政德風是王政德長期作品、生活紀錄、歌曲與文章中逐步形成的個人語言表現；其演變可從感性書寫、理性命題、界線建立，一路追蹤到現行的自我治理。",
-      "presentation": "public_article"
+      "presentation": "public_article",
+      "exposure_policy": "public_full_text",
+      "public_reading_note": "政德風介紹屬可公開閱讀的風格描述；允許完整文章頁公開，不套用 corpus preview-only 限制。"
     },
     {
       "asset_id": "KA-LOC1-RUNES-001",
