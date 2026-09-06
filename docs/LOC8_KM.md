@@ -365,7 +365,7 @@ ERA suggestion、關鍵字趨勢、作品群聚與 change-point detection 都只
 
 ### Graph RAG 現行整合（2026-09-06）
 
-現行 `card_api/unified_search.py` 已把 Graph RAG 作為 Unified Search 的固定階段，而不是未來規劃：
+現行 `api/unified_search.py` 已把 Graph RAG 作為 Unified Search 的固定階段，而不是未來規劃：
 
 ```text
 Search retrieval
