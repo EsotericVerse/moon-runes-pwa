@@ -280,7 +280,7 @@ LOC6 現行新增一個可量化的公開語言 corpus：
 - `result.html`：單卡、每日、雙卡、三卡與五卡的統一結果入口（`?mode=` 切換模式）
 - `list.html`：依群組及符文查詢完整資料
 - [`search.html`](https://loc.lo3rwang.cc/search.html)：**Unified Search 主入口**；同時查詢籤詩／符文、音樂、文字作品、媒體、治理／政德風、知識與時期資料，使用者不必先選 LOC 編號
-- [`faq.html`](https://loc.lo3rwang.cc/faq.html)：LOC7 Knowledge Base 專門查詢介面（保留作進階／單域 View）
+- LOC7 Knowledge Search 已整合至 [`search.html`](https://loc.lo3rwang.cc/search.html?content_type=knowledge)，不再保留 FAQ 過渡頁。
 - LOC3 搜尋已完全整合至 [`search.html`](https://loc.lo3rwang.cc/search.html?content_type=lyrics_work)，不再保留過渡頁。
 
 ### Python／FastAPI API
@@ -316,7 +316,7 @@ Shared Result Envelope
 
 LOC4 已可直接搜尋 Writing Registry，LOC5 可搜尋 Media Registry，LOC6 可直接搜尋 Governance／政德風 Registry，並從 4,578 筆 Threads 主貼文全文 corpus 搜尋文章原文；LOC7 讀取 FAQ／KM 與已登錄 Knowledge Assets，LOC8 讀取連續時期 Registry。LOC2 目前仍以 LOC7 Knowledge View 為主，尚未作為獨立結果群組直接路由。
 
-不同來源的搜尋分數維持各自尺度，前端依資料類型分組呈現，不把不同引擎的 score 強制混成單一排行榜。`faq.html` 保留為 LOC7 專門 View；LOC3 使用 `search.html` 作為唯一搜尋入口。
+不同來源的搜尋分數維持各自尺度，前端依資料類型分組呈現，不把不同引擎的 score 強制混成單一排行榜。LOC7 Knowledge 與 LOC3 Music Search 均統一使用 `search.html` 的內容類型篩選。
 
 ### 語意引擎實驗
 
