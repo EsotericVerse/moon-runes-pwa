@@ -1052,6 +1052,229 @@ class UnifiedSearchEngine:
         return filtered
 
 
+    def _graph_enrichment(self, query: str, groups: dict[str, list[dict[str, Any]]], limit: int = 12) -> dict[str, Any]:
+        """Traverse explicit cross-LOC relationships from current retrieval seeds.
+
+        Only author-confirmed / registry-backed relationships become graph edges.
+        Semantic search results can seed traversal, but semantic similarity alone
+        is never promoted to a canonical edge.
+        """
+        seed_tokens: set[str] = set()
+        seed_ids: set[str] = set()
+        for items in groups.values():
+            for item in items:
+                rid = str(item.get("result_id") or "").strip()
+                title = str(item.get("title") or "").strip()
+                if rid:
+                    seed_ids.add(rid)
+                    seed_tokens.add(_compact(rid))
+                if title:
+                    seed_tokens.add(_compact(title))
+                payload = item.get("payload") or {}
+                for key in ("work_id", "media_id", "asset_id", "source_id", "canonical_key"):
+                    value = str(payload.get(key) or "").strip()
+                    if value:
+                        seed_ids.add(value)
+                        seed_tokens.add(_compact(value))
+
+        q = _compact(query)
+        nodes: dict[str, dict[str, Any]] = {}
+        edges: list[dict[str, Any]] = []
+        paths: list[dict[str, Any]] = []
+
+        def add_node(node_id: str, label: str, loc: str, node_type: str) -> None:
+            if not node_id:
+                return
+            nodes.setdefault(node_id, {
+                "id": node_id,
+                "label": label or node_id,
+                "primary_loc": loc,
+                "node_type": node_type,
+            })
+
+        for rel in self.relationships.get("relationships", []):
+            canonical = str(rel.get("canonical_key") or "")
+            aliases = [canonical, *rel.get("aliases", []), *rel.get("keywords", [])]
+            source = rel.get("source") or {}
+            targets = rel.get("targets", []) or []
+            relation_text = " ".join([
+                canonical,
+                *[str(x or "") for x in aliases],
+                str(source.get("work_ref") or ""),
+                str(source.get("title") or ""),
+                *[str(t.get("work_ref") or "") for t in targets],
+                *[str(t.get("title") or "") for t in targets],
+            ])
+            compact_relation = _compact(relation_text)
+            query_match = bool(q and q in compact_relation)
+            seed_match = any(token and token in compact_relation for token in seed_tokens)
+            if not (query_match or seed_match):
+                continue
+
+            source_id = str(source.get("work_ref") or rel.get("relationship_id") or canonical)
+            source_label = str(source.get("title") or canonical or source_id)
+            source_loc = str(source.get("primary_loc") or "")
+            source_type = str(source.get("content_type") or "work")
+            add_node(source_id, source_label, source_loc, source_type)
+
+            for target in targets:
+                target_id = str(target.get("work_ref") or "")
+                if not target_id:
+                    continue
+                target_label = str(target.get("title") or target_id)
+                target_loc = str(target.get("primary_loc") or "")
+                target_type = str(target.get("content_type") or "work")
+                add_node(target_id, target_label, target_loc, target_type)
+                edge = {
+                    "edge_id": f"{rel.get('relationship_id')}::{source_id}::{target_id}",
+                    "relationship_id": rel.get("relationship_id"),
+                    "source": source_id,
+                    "target": target_id,
+                    "relation_type": rel.get("relation_type") or "related_to",
+                    "direction": rel.get("direction"),
+                    "summary": rel.get("relation_summary") or target.get("relation_label") or "",
+                    "evidence_status": rel.get("evidence_status") or "registry",
+                    "evidence_kind": "explicit_registry_relation",
+                }
+                edges.append(edge)
+                paths.append({
+                    "from": {"id": source_id, "label": source_label, "primary_loc": source_loc},
+                    "relation": edge["relation_type"],
+                    "to": {"id": target_id, "label": target_label, "primary_loc": target_loc},
+                    "summary": edge["summary"],
+                })
+                if len(edges) >= limit:
+                    break
+            if len(edges) >= limit:
+                break
+
+        return {
+            "mode": "explicit_graph_traversal",
+            "canonical_edges_only": True,
+            "seed_result_ids": sorted(seed_ids)[:24],
+            "nodes": list(nodes.values()),
+            "edges": edges,
+            "paths": paths,
+            "node_count": len(nodes),
+            "edge_count": len(edges),
+        }
+
+    def _synthesize_search(
+        self,
+        query: str,
+        groups: dict[str, list[dict[str, Any]]],
+        graph: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        """Create a deterministic overview from maintained analysis + retrieved evidence."""
+        nonempty = {key: items for key, items in groups.items() if items}
+        if not nonempty:
+            return None
+
+        priority = {
+            "knowledge": 6,
+            "governance": 5,
+            "relationships": 4,
+            "timeline": 3,
+            "loc6_articles": 2,
+            "works": 1,
+            "textworks": 1,
+            "media": 1,
+            "runes": 1,
+            "oracle": 1,
+        }
+        candidates: list[tuple[int, float, str, dict[str, Any]]] = []
+        for group, items in nonempty.items():
+            for item in items:
+                candidates.append((
+                    priority.get(group, 0),
+                    float(item.get("score") or 0.0),
+                    group,
+                    item,
+                ))
+        candidates.sort(key=lambda row: (-row[0], -row[1], str(row[3].get("result_id") or "")))
+        lead_group = candidates[0][2]
+        lead = candidates[0][3]
+
+        loc_counts: dict[str, int] = {}
+        periods: list[str] = []
+        sources: set[str] = set()
+        for group, items in nonempty.items():
+            for item in items:
+                loc = str(item.get("primary_loc") or "").strip()
+                if loc:
+                    loc_counts[loc] = loc_counts.get(loc, 0) + 1
+                period = str(item.get("period") or (item.get("payload") or {}).get("period") or "").strip()
+                if period and period not in periods:
+                    periods.append(period)
+                src = self._result_source_platform(item)
+                if src:
+                    sources.add(src)
+
+        evidence_labels = {
+            "knowledge": "知識／分析",
+            "governance": "治理／政德風",
+            "relationships": "跨 LOC 關聯",
+            "timeline": "時期",
+            "loc6_articles": "Threads／LOC6 文章",
+            "works": "歌曲／歌詞",
+            "textworks": "文字作品",
+            "media": "多媒體",
+            "runes": "月符",
+            "oracle": "籤詩",
+        }
+        evidence = [
+            {"group": key, "label": evidence_labels.get(key, key), "count": len(items)}
+            for key, items in nonempty.items()
+        ]
+        evidence.sort(key=lambda row: (-row["count"], row["label"]))
+
+        supporting = []
+        seen: set[str] = set()
+        for _, _, group, item in candidates:
+            rid = str(item.get("result_id") or "")
+            if not rid or rid in seen:
+                continue
+            seen.add(rid)
+            supporting.append({
+                "result_id": rid,
+                "group": group,
+                "title": item.get("title"),
+                "primary_loc": item.get("primary_loc"),
+                "score": item.get("score"),
+            })
+            if len(supporting) >= 6:
+                break
+
+        lead_summary = str(lead.get("summary") or "").strip()
+        if not lead_summary:
+            lead_summary = f"「{query}」目前命中 {len(nonempty)} 類 LOC 資料，可從知識、作品、治理、時間與關聯證據交叉閱讀。"
+
+        return {
+            "analysis_type": "search_synthesis",
+            "query": query,
+            "title": f"{query}｜綜合結果",
+            "summary": lead_summary,
+            "lead_result_id": lead.get("result_id"),
+            "lead_group": lead_group,
+            "lead_title": lead.get("title"),
+            "loc_coverage": [
+                {"loc": loc, "count": count}
+                for loc, count in sorted(loc_counts.items(), key=lambda row: (-row[1], row[0]))
+            ],
+            "evidence": evidence,
+            "periods": periods[:12],
+            "sources": sorted(sources),
+            "supporting_results": supporting,
+            "graph": {
+                "mode": graph.get("mode"),
+                "node_count": graph.get("node_count", 0),
+                "edge_count": graph.get("edge_count", 0),
+                "paths": graph.get("paths", [])[:6],
+            },
+            "governance_note": "綜合結果優先引用既有知識／分析；Graph 只採明確 Registry 關聯。語意相似只作檢索證據，不自動寫成 Canon edge。",
+        }
+
+
     def search(
         self,
         query: str,
@@ -1106,12 +1329,16 @@ class UnifiedSearchEngine:
             "timeline": eras,
         }
         groups = self._apply_common_filters(groups, filters)
+        graph = self._graph_enrichment(query, groups)
+        synthesis = self._synthesize_search(query, groups, graph)
         return {
             "system_id": "lo3rwang",
             "query": query,
             "content_type": wanted or "all",
-            "retrieval_mode": "oracle_keyword" if oracle else "standard",
+            "retrieval_mode": "oracle_keyword_graph_enriched" if oracle else "graph_enriched",
             "oracle_mode": oracle_mode,
+            "synthesis": synthesis,
+            "graph": graph,
             "groups": groups,
             "counts": {key: len(value) for key, value in groups.items()},
             "total_count": sum(len(value) for value in groups.values()),
