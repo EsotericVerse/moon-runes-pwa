@@ -73,7 +73,7 @@
             <option value="P8">P8｜自我治理與未來展望期</option>
           </select>
         </div>
-        <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><span class="hint">資料種類決定要搜尋哪一種語言資產；時期是跨作品與紀錄的時間維度。籤詩模式仍先讀 Lots，再向其他資料展開。</span></div>
+        <div class="actions"><button class="submit" id="submit" type="submit">搜尋 LOC</button><button class="submit" id="browse" type="button">瀏覽目前類型</button><span class="hint">資料種類決定要搜尋哪一種語言資產；時期是跨作品與紀錄的時間維度。籤詩模式仍先讀 Lots，再向其他資料展開。</span></div>
       </form>
     </section>
     <div class="status" id="status" aria-live="polite"></div>
@@ -232,11 +232,11 @@
     }
     function musicCard(r){
       const p=r.payload||{},score=Number(r.score||0),v=p.recommended_version||{},keys=(p.matched_terms?.length?p.matched_terms:(p.semantic_keywords||p.tags||[])).slice(0,8);
-      const melody=v.style_prompt?`<details><summary>旋律／編曲資訊</summary><p class="summary">${esc(v.style_prompt)}</p></details>`:'';
+      const melody=v.style_prompt?`<details><summary>旋律／編曲資訊</summary><p class="summary">${esc(v.style_prompt)}</p></details>`:'';const lyrics=p.lyrics?`<details><summary>展開完整歌詞</summary><p class="summary">${esc(p.lyrics)}</p></details>`:'';
       const alternates=(p.alternate_versions||[]).length?`<details><summary>另外 ${p.alternate_versions.length} 個同詞旋律版本</summary></details>`:'';
-      return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels.LOC3)}</span><span class="pill">作品類別：${esc(p.origin_label||'一般歌曲')}</span><span class="pill">歌詞類型：${esc(p.lyric_type||p.category||'待分類')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.era_name?`<span class="pill">${esc(p.era_name)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${keys.length?`<p class="summary"><strong>關鍵字／命題：</strong>${keys.map(esc).join(' · ')}</p>`:''}${p.start_state||p.turn_method||p.final_state?`<p class="summary"><strong>語意路徑：</strong>${esc(p.start_state||'—')} → ${esc(p.turn_method||'—')} → ${esc(p.final_state||'—')}</p>`:''}${linksFor(r)}${melody}${alternates}</article>`;
+      return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels.LOC3)}</span><span class="pill">作品類別：${esc(p.origin_label||'一般歌曲')}</span><span class="pill">歌詞類型：${esc(p.lyric_type||p.category||'待分類')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.era_name?`<span class="pill">${esc(p.era_name)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${keys.length?`<p class="summary"><strong>關鍵字／命題：</strong>${keys.map(esc).join(' · ')}</p>`:''}${p.start_state||p.turn_method||p.final_state?`<p class="summary"><strong>語意路徑：</strong>${esc(p.start_state||'—')} → ${esc(p.turn_method||'—')} → ${esc(p.final_state||'—')}</p>`:''}${linksFor(r)}${lyrics}${melody}${alternates}</article>`;
     }
-    function card(r){const score=Number(r.score||0),p=r.payload||{};const img=r.content_type==='knowledge_image'&&p.path?`<img class="knowledge-image" src="${esc(p.path)}" alt="${esc(r.title||'LOC 知識圖')}" loading="lazy" />`:'';return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels[r.primary_loc]||r.primary_loc||'LOC')}</span><span class="pill">${esc(r.content_type||'record')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${img}${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${linksFor(r)}</article>`}
+    function card(r){const score=Number(r.score||0),p=r.payload||{};const fullText=p.text||p.content||p.body||p.full_text||'';const img=r.content_type==='knowledge_image'&&p.path?`<img class="knowledge-image" src="${esc(p.path)}" alt="${esc(r.title||'LOC 知識圖')}" loading="lazy" />`:'';return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels[r.primary_loc]||r.primary_loc||'LOC')}</span><span class="pill">${esc(r.content_type||'record')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${img}${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${fullText?`<details><summary>展開全文</summary><p class="summary">${esc(fullText)}</p></details>`:''}${linksFor(r)}</article>`}
     function loc6ArticleCard(r){
       const p=r.payload||{};
       const source=(p.source_role==='main_post'||p.evidence_role==='primary')?'Threads 主貼文':'LOC6 維護文章';
@@ -252,6 +252,42 @@
     }
 
     function render(groups){const order=['oracle','runes','works','textworks','relationships','governance','loc6_articles','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='oracle'?oracleCard:(key==='relationships'?relationshipCard:(key==='works'?musicCard:(key==='loc6_articles'?loc6ArticleCard:card)));html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
+    let browseOffset=0;
+    async function browse(reset=true){
+      const type=el('contentType').value;
+      if(!['lyrics_work','text_work','governance_article','governance_fragment'].includes(type)){
+        el('status').className='status error';
+        el('status').textContent='請先選擇可瀏覽的資料種類：音樂／歌詞、文字作品、LOC6 文章或治理／政德風。';
+        return;
+      }
+      if(reset){browseOffset=0;el('groups').innerHTML='';}
+      el('browse').disabled=true;
+      el('status').className='status';
+      el('status').textContent='正在載入作品列表與文字……';
+      try{
+        const body={content_type:type,offset:browseOffset,limit:24,period:el('period').value};
+        const r=await fetch(`${API}/search/browse`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        const d=await r.json();
+        if(!r.ok)throw new Error(d.detail||'瀏覽失敗');
+        const key=type==='lyrics_work'?'works':(type==='text_work'?'textworks':(type==='governance_article'?'loc6_articles':'governance'));
+        const existing=reset?[]:[...document.querySelectorAll('#groups .card')];
+        const groups={};groups[key]=d.items||[];
+        if(reset){render(groups);}else{
+          const wrap=el('groups').querySelector('.cards');
+          const renderer=key==='works'?musicCard:(key==='loc6_articles'?loc6ArticleCard:card);
+          if(wrap)wrap.insertAdjacentHTML('beforeend',(d.items||[]).map(renderer).join(''));
+        }
+        browseOffset+=d.items?.length||0;
+        el('status').textContent=`已載入 ${browseOffset} / ${d.total_count} 筆。${d.has_more?' 可繼續載入更多。':' 已到列表末端。'}`;
+        el('browse').textContent=d.has_more?'載入更多':'重新瀏覽';
+        el('browse').dataset.more=d.has_more?'1':'0';
+      }catch(err){
+        el('status').className='status error';
+        el('status').textContent=`暫時無法瀏覽：${err.message}`;
+      }finally{el('browse').disabled=false;}
+    }
+    el('browse').onclick=()=>browse(el('browse').dataset.more!=='1');
+    el('contentType').addEventListener('change',()=>{browseOffset=0;el('browse').dataset.more='0';el('browse').textContent='瀏覽目前類型';});
     el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時期資料……';el('groups').innerHTML='';try{const body={query:q,top_k:6,content_type:el('contentType').value,period:el('period').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
     el('contentType').addEventListener('change',quick);
     quick();
