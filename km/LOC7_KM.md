@@ -36,7 +36,7 @@ Tier B  Original works / primary records
         └─ life-event records
 
 Tier C  Maintained knowledge documents
-        ├─ docs/*.md
+        ├─ km/*.md
         ├─ system explanations
         ├─ published tutorials（例如 LOC_Tutorial_01_語言系統框架入門.pdf）
         └─ governance / architecture notes
@@ -140,7 +140,7 @@ Structured registry：`data/json/registries/LOC2_EVENT_REGISTRY.json`
 
 政德風採「原始語句／治理原則／風格狀態／時期投影」分層保存，不再只以語錄集合處理。
 
-- 維護文件：`docs/LOC6_ZHENGDE_STYLE.md`
+- 維護文件：`km/LOC6_ZHENGDE_STYLE.md`
 - 結構化 registry：`data/json/registries/LOC6_GOVERNANCE_REGISTRY.json`
 - LOC3 可提供不同 ERA 的歌曲與歌詞證據。
 - LOC4 可提供長文、小說、文章中的文字證據。
@@ -307,11 +307,11 @@ python scripts/evaluate_graph_rag.py
 ```
 ## 14. 文件格式
 
-`docs/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件；0.3 起同步記錄 Unified Search、FAQ/RAG v0.4 與目前跨 LOC 檢索責任。
+`km/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件；0.3 起同步記錄 Unified Search、FAQ/RAG v0.4 與目前跨 LOC 檢索責任。
 
 新手教學 PDF 屬於 **Published Tutorial / Derived Knowledge Asset**。它可以被 KM 索引、引用與提供下載，但不因發布為 PDF 而升格為 Canon。現行第一份：
 
-- `docs/LOC_Tutorial_01_語言系統框架入門.pdf` — 新手教學 01：LOC 語言系統框架入門。
+- `km/LOC_Tutorial_01_語言系統框架入門.pdf` — 新手教學 01：LOC 語言系統框架入門。
 
 若未來需要 DOCX／PDF，應由 Markdown 內容輸出為發布版本；發布檔不回頭作為 KM 維護來源。
 
@@ -433,7 +433,7 @@ P0 已由完整 Threads 主貼文索引取得 **1,049 筆 primary records**，�
 Corpus 匯入、匯出與公開展示必須先通過 Content Rights Gate。
 
 - Policy：`data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json`
-- Human-readable：`docs/LOC_CONTENT_RIGHTS_POLICY.md`
+- Human-readable：`km/LOC_CONTENT_RIGHTS_POLICY.md`
 - 私訊、MSN／Messenger 對話與其他私人通訊預設不匯入。
 - 平台 export 可取得，不等於其中所有內容可再次公開。
 - 公開展示預設只允許 `self_authored + public + cleared`。
