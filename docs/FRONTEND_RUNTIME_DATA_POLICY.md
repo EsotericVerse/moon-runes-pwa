@@ -1,143 +1,135 @@
 # Frontend Runtime Data Policy
 
 **Status:** Current  
-**Version:** 0.1  
+**Version:** 0.2  
 **Updated:** 2026-09-07
 
 ## 1. Principle
 
-Browser-facing LOC pages should prefer **static JavaScript data modules** over runtime JSON fetches for data that can be bundled or pre-generated.
+Frontend runtime format is selected by **data role, size, stability and reuse**, not by a blanket “JSON vs JS” rule.
 
-The purpose is to avoid unnecessary runtime data requests, API quota pressure and repeated network dependency for static datasets.
+The primary requirement is:
 
-~~~text
-Mother / governed source
-        ↓
-maintained JSON / registry / source data
-        ↓
-generated JS projection
-        ↓
-browser import / static asset
-~~~
+> **One governed source chain; no manually maintained duplicate truth.**
 
-The browser consumes the JS projection. JSON remains available to Python, Search, Graph, KM, generators and governance tooling.
+## 2. When a standalone JSON projection is appropriate
 
-## 2. JS is a runtime projection, not a second Canon
+A standalone JSON file is appropriate when the dataset is:
 
-A JS data file must never become an independently edited copy of the same governed data.
-
-Bad pattern:
-
-~~~text
-update JSON
-+ manually remember to update JS
-+ hope both still match
-~~~
-
-Required pattern:
-
-~~~text
-update authoritative source
-→ generate JSON projection where needed
-→ generate JS runtime projection
-→ validate drift
-→ commit both
-~~~
-
-If a JS file is manually maintained and no generator exists yet, it must be explicitly marked as manual_projection and treated as technical debt.
-
-## 3. Why this matters
-
-Static JS modules are useful for:
-
-- rune identity / lookup
-- orientation text
-- Lots text
-- stable navigation data
-- stable ERA / registry views needed directly by browser UI
-- other data that does not require live server computation
-
-Dynamic API calls remain appropriate for:
-
-- Unified Search
-- Graph RAG traversal
-- live LOC8 Google Sheets data
-- user-specific CRUD
-- conditional / server-side computation
-- data that must be rights-filtered at request time
-
-## 4. Sync risk
-
-The primary risk of JS runtime storage is **stale projection**.
+- relatively large,
+- semantically stable,
+- reused by multiple pages/modules,
+- independently meaningful,
+- expensive or error-prone to duplicate in source code,
+- and clearly governed by an upstream source.
 
 Examples:
 
-- LunaRune64.xlsx changes but js/runes64.js does not.
-- Registry JSON changes but browser JS projection still contains old labels.
-- a deprecated field remains in JS after the governed schema changes.
+- `data/json/core/runes64.json`
+- `data/json/core/rune_details.json`
+- `data/json/core/rune_interpretations.json`
+- `data/json/core/lots.json`
 
-Therefore every JS data module needs:
+These are stable reusable data projections and may be fetched directly by browser code where that is the simplest, clearest runtime contract.
 
-- an upstream source
-- a generation or synchronization method
-- a version / generated-at marker where practical
-- a CI drift check
-- a documented owner
+## 3. When data should stay inside a JS/module
 
-## 5. Current target architecture
+Do not create a new JSON file merely for structural symmetry.
+
+Small, strongly coupled, frequently changed UI data may remain in the module that owns it, for example:
+
+- UI-only constants,
+- short label maps,
+- component-local options,
+- temporary presentation mappings,
+- logic that has no independent data authority.
+
+Splitting small data into many JSON files can make governance worse by creating unnecessary path, version and synchronization overhead.
+
+## 4. Generated JS projections
+
+Generated JS projections are allowed when they provide a clear runtime benefit such as import-time bundling, offline/PWA packaging, eliminating repeated parse/fetch overhead, or module integration.
+
+A generated JS projection must be deterministic:
+
+~~~text
+governed source
+→ generator
+→ JS projection
+→ drift validation
+~~~
+
+It must never become a second manually edited Canon.
+
+## 5. Direct JSON fetch is allowed
+
+The browser may directly fetch a maintained JSON projection when:
+
+- it is a stable reusable data contract,
+- the path is part of repository governance,
+- Service Worker/cache behavior is known,
+- the JSON path is validated by CI,
+- and a second manually maintained JS copy is not required.
+
+Therefore direct use of `data/json/core/runes64.json` is valid.
+
+## 6. Dynamic API calls
+
+API requests remain appropriate for Unified Search, Graph traversal, live LOC8 data, user-specific CRUD, rights-filtered output, server-side computation, and dynamic or private data.
+
+## 7. Anti-duplication rule
+
+Bad:
+
+~~~text
+runes64.json
++ hand-maintained runes64.js
++ another full copy under engine/
+~~~
+
+Good:
 
 ~~~text
 LunaRune64.xlsx
-├─ data/json/core/runes64.json
-├─ data/json/core/rune_interpretations.json
-├─ data/json/core/lots.json
-└─ generated browser modules
-   ├─ js/data/runes64.js
-   ├─ js/data/rune_interpretations.js
-   └─ js/data/lots.js
+→ one maintained core projection
+→ consumers read it directly
 ~~~
 
-Registry projections follow the same pattern when the browser needs them.
+or, only when justified:
 
-## 6. Frontend rule
-
-New browser code should not directly fetch repository JSON merely to read static data.
-
-Prefer importing a generated JS module over fetching a static JSON file.
-
-This rule does not prohibit API requests whose purpose is dynamic computation or live user data.
-
-## 7. Service Worker
-
-Static JS data modules may be pre-cached together with application modules.
-
-The Service Worker should cache the JS projections the browser actually imports, rather than pre-cache redundant JSON files that the browser no longer consumes.
+~~~text
+LunaRune64.xlsx
+→ core projection
+→ deterministic generated browser module
+~~~
 
 ## 8. Migration requirement
 
-A migration from JSON runtime fetch to JS modules is incomplete until:
+A frontend data migration is complete only when:
 
-1. browser JSON fetch has been removed
-2. JS module exists
-3. upstream source is recorded
-4. generator/sync process exists
-5. CI detects stale projection
-6. Service Worker references are updated
-7. developer docs and KM asset paths are updated
+1. the upstream authority is explicit;
+2. the chosen runtime representation has a clear reason;
+3. all old paths are removed;
+4. Service Worker references are updated;
+5. CI validates static JSON/module paths;
+6. any generated projection has a reproducible generator;
+7. no manually maintained duplicate truth remains.
 
 ## 9. Governance boundary
 
-JSON is still valid and preferred for:
+This policy does not require every JSON to be centralized or every static dataset to be split into a dedicated file.
 
-- backend processing
-- structured governance
-- Graph / Search indexing
-- schema / policy / registry storage
-- generated analysis
-- archive / provenance
+The decision test is:
 
-The rule is specifically about **browser runtime consumption**, not about banning JSON from LOC.
+~~~text
+Is the dataset large / stable / reused / independent enough
+to deserve its own governed projection?
+~~~
+
+If **yes**, a standalone JSON/core projection is appropriate.
+
+If **no**, keep it with the owning module rather than creating another file merely to satisfy a directory pattern.
 
 ---
 
-**Runtime principle:** static data should reach the browser as generated JS modules; source data remains governed elsewhere, and CI prevents the JS projection from silently becoming stale.
+**Runtime principle:** choose the smallest maintainable representation that preserves one authority chain and avoids duplicate truth.
