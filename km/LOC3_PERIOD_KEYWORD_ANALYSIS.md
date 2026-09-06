@@ -59,4 +59,4 @@ LOC3 時期分析現在分成兩層：
 
 例如「界線」「責任」「自由」「自我治理」的比重變化，只能先說明作品語料中的語義重心改變；是否代表治理原則形成，仍需回查原文、事件與跨來源證據。
 
-對應治理歷史分析見 `docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`。
+對應治理歷史分析見 `km/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`。
