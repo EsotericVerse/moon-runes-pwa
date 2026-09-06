@@ -52,7 +52,7 @@ SKIP_FILES = {
 }
 
 JSON_PATH_RE = re.compile(
-    r"""(?P<path>/?(?:data|card_api|engine|loc8_api)/[A-Za-z0-9_./-]+\.json)"""
+    r"""(?P<path>/?(?:data|card_api|engine|loc8_api)/[A-Za-z0-9_./-]+\.json(?:\.gz)?)"""
 )
 
 
