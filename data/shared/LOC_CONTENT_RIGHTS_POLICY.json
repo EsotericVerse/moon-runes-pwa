@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_CONTENT_RIGHTS_POLICY",
   "status": "current",
   "authority": "LOC8",
@@ -54,7 +54,7 @@
   },
   "publication_gate": {
     "title": "公開展示權利檢查",
-    "rule": "Demo、履歷、公開搜尋與下載只顯示 self_authored + public + cleared 的紀錄。"
+    "rule": "Public display/search requires valid ownership or permission + visibility=public + rights_status=cleared."
   },
   "provenance_rule": "Platform export availability does not grant reuse rights to all contained content.",
   "historical_rule": "Historical records remain immutable evidence; rights metadata and interpretation may change without rewriting the original record.",
@@ -70,5 +70,21 @@
       "Owner/private export, if added later, must require an authenticated rights gate.",
       "robots.txt or copyright notices are advisory and do not replace access controls."
     ]
-  }
+  },
+  "updated_at": "2026-09-07",
+  "boundary_model": {
+    "principle": "Rights governance is a domain boundary, not a moral ranking of content.",
+    "domains": [
+      "private",
+      "restricted",
+      "review_required",
+      "public_cleared"
+    ],
+    "crossing_rule": "Moving data across a visibility/rights boundary requires an explicit governed action; import or storage alone never implies publication permission."
+  },
+  "governance_refs": [
+    "docs/LOC_GOVERNANCE_CORE.md",
+    "docs/LOC_CONTENT_RIGHTS_POLICY.md"
+  ],
+  "dispute_rule": "A rights or attribution objection creates a review/dispute state; disputed content should not be silently deleted or publicly promoted while unresolved."
 }
