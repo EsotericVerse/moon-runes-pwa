@@ -28,7 +28,7 @@
 <div class="card full"><h2>本機貼文搜尋</h2><p style="color:var(--muted)">載入 <code>Facebook_文字紀錄_整理.csv</code>。所有解析只在瀏覽器中執行，不會傳到伺服器。</p><div class="filebox"><input id="file" type="file" accept=".csv,text/csv"></div><div class="row" style="margin-top:12px"><input id="q" placeholder="例如：自由、工作、整理、月光…"><select id="year"><option value="">全部年份</option></select><button id="search">搜尋</button></div><div class="note" id="fileStatus">尚未載入本機 corpus。</div><div class="results" id="results"></div></div>
 </div></div>
 <script>
-const DATA_URL='data/json/fb-semantic-summary.json';let data,rows=[];const $=s=>document.querySelector(s);
+const DATA_URL='data/json/fb-semantic-summary.json',API='https://moon-runes-pwa.onrender.com';let data,rows=[];const $=s=>document.querySelector(s);
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function concepts(){return Object.keys(data.yearly_concepts[0]).filter(k=>k!=='年份')}
 async function init(){data=await fetch(DATA_URL).then(r=>r.json());const cs=concepts();$('#concept').innerHTML=cs.map(x=>`<option>${esc(x)}</option>`).join('');$('#conceptChips').innerHTML=cs.map((x,i)=>`<span class="chip ${i===0?'active':''}" data-c="${esc(x)}">${esc(x)}</span>`).join('');$('#year').innerHTML+=[...new Set(data.yearly_concepts.map(x=>x.年份))].map(y=>`<option>${y}</option>`).join('');$('#mTotal').textContent=Number(data.meta.records_total).toLocaleString();$('#mSearch').textContent=Number(data.meta.searchable_text_records).toLocaleString();render();document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{$('#concept').value=c.dataset.c;render()});$('#concept').onchange=render;$('#prev').onclick=()=>step(-1);$('#next').onclick=()=>step(1);$('#file').onchange=loadCSV;$('#search').onclick=searchLocal;$('#q').onkeydown=e=>{if(e.key==='Enter')searchLocal()}}
@@ -37,6 +37,24 @@ function render(){const c=$('#concept').value;$('#chartTitle').textContent=`「$
 function drawLine(points){const host=$('#chart'),W=760,H=270,p=36,max=Math.max(1,...points.map(d=>d.y)),sx=i=>p+i*(W-p*2)/(points.length-1||1),sy=v=>H-p-v*(H-p*2)/max;let grid='',labels='';for(let i=0;i<=4;i++){let y=p+i*(H-p*2)/4;grid+=`<line x1="${p}" y1="${y}" x2="${W-p}" y2="${y}" stroke="#263654"/><text x="4" y="${y+4}" fill="#8192ad" font-size="11">${Math.round(max*(1-i/4))}</text>`}points.forEach((d,i)=>{if(i%2===0||points.length<10)labels+=`<text x="${sx(i)}" y="${H-8}" text-anchor="middle" fill="#8192ad" font-size="11">${d.x}</text>`});const path=points.map((d,i)=>(i?'L':'M')+sx(i)+' '+sy(d.y)).join(' '),dots=points.map((d,i)=>`<circle cx="${sx(i)}" cy="${sy(d.y)}" r="4" fill="#8bb7ff"><title>${d.x}: ${d.y}</title></circle>`).join('');host.innerHTML=`<svg viewBox="0 0 ${W} ${H}">${grid}<path d="${path}" fill="none" stroke="#8bb7ff" stroke-width="3"/>${dots}${labels}</svg>`}
 function parseCSV(text){const out=[];let row=[],cell='',q=false;for(let i=0;i<text.length;i++){const ch=text[i],nx=text[i+1];if(ch==='"'){if(q&&nx==='"'){cell+='"';i++}else q=!q}else if(ch===','&&!q){row.push(cell);cell=''}else if((ch==='\n'||ch==='\r')&&!q){if(ch==='\r'&&nx==='\n')i++;row.push(cell);if(row.some(x=>x!==''))out.push(row);row=[];cell=''}else cell+=ch}row.push(cell);if(row.some(x=>x!==''))out.push(row);const head=out.shift()||[];return out.map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]??''])))}
 async function loadCSV(e){const f=e.target.files[0];if(!f)return;rows=parseCSV(await f.text());$('#fileStatus').textContent=`已載入 ${rows.length.toLocaleString()} 筆；資料只存在這個瀏覽器分頁。`}
-function searchLocal(){const q=$('#q').value.trim(),yr=$('#year').value;if(!rows.length){$('#results').innerHTML='<div class="note">請先載入 CSV。</div>';return}if(!q){$('#results').innerHTML='<div class="note">請輸入關鍵字。</div>';return}const terms=q.split(/\s+/).filter(Boolean),hit=rows.filter(r=>(!yr||String(r['年份'])===yr)&&terms.every(t=>String(r['原始文字']||'').includes(t))).slice(0,50);$('#results').innerHTML=hit.length?hit.map(r=>`<div class="result"><div class="meta">${esc(r['日期時間'])} · ${esc(r['內容型態'])}${r['媒體來源']?' · '+esc(r['媒體來源']):''}</div><p>${esc(String(r['原始文字']||'').slice(0,500))}${String(r['原始文字']||'').length>500?'…':''}</p></div>`).join(''):'<div class="note">沒有符合結果。</div>'}
+async function searchLocal(){
+  const q=$('#q').value.trim(),yr=$('#year').value;
+  if(!q){$('#results').innerHTML='<div class="note">請輸入關鍵字。</div>';return}
+  $('#results').innerHTML='<div class="note">正在查詢 LOC Facebook datasource…</div>';
+  try{
+    const body={query:q,top_k:10,content_type:'facebook_post',start_date:yr?yr+'-01-01':'',end_date:yr?yr+'-12-31':''};
+    const res=await fetch(API+'/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(res.ok){
+      const payload=await res.json(),hit=((payload.groups||{}).social_archive||payload.results||[]);
+      $('#fileStatus').textContent='目前使用 LOC API 私有 Facebook datasource。';
+      $('#results').innerHTML=hit.length?hit.map(r=>'<div class="result"><div class="meta">'+esc((r.payload||{}).date||'')+' · Facebook · score '+Number(r.score||0).toFixed(4)+'</div><p>'+esc(String(r.summary||'').slice(0,700))+(String(r.summary||'').length>700?'…':'')+'</p></div>').join(''):'<div class="note">沒有符合結果。</div>';
+      return;
+    }
+  }catch(err){}
+  if(!rows.length){$('#results').innerHTML='<div class="note">部署端尚未掛載私人 Facebook corpus。你仍可在上方載入本機 CSV 搜尋，資料不會上傳。</div>';return}
+  const terms=q.split(/\s+/).filter(Boolean),hit=rows.filter(r=>(!yr||String(r['年份'])===yr)&&terms.every(t=>String(r['原始文字']||'').includes(t))).slice(0,50);
+  $('#fileStatus').textContent='目前使用瀏覽器本機 CSV corpus。';
+  $('#results').innerHTML=hit.length?hit.map(r=>'<div class="result"><div class="meta">'+esc(r['日期時間'])+' · '+esc(r['內容型態'])+(r['媒體來源']?' · '+esc(r['媒體來源']):'')+'</div><p>'+esc(String(r['原始文字']||'').slice(0,500))+(String(r['原始文字']||'').length>500?'…':'')+'</p></div>').join(''):'<div class="note">沒有符合結果。</div>';
+}
 init().catch(err=>{$('#chart').innerHTML='<div class="note">資料載入失敗：'+esc(err.message)+'</div>'});
 </script></body></html>
