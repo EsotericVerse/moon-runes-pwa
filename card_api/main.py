@@ -752,6 +752,16 @@ async def unified_search(input: UnifiedSearchInput):
                 if items:
                     merged_groups.setdefault(group_name, []).extend(items)
                     total += len(items)
+        if not requested_source and FB_SEARCHER is not None:
+            fb_items = FB_SEARCHER.search(
+                query,
+                top_k=input.top_k,
+                start_date=input.start_date.strip(),
+                end_date=input.end_date.strip(),
+            )
+            if fb_items:
+                merged_groups.setdefault("text", []).extend(fb_items)
+                total += len(fb_items)
         return {
             "success": True,
             "system_id": "lo3rwang",
