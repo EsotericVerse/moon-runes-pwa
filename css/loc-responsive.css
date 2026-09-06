@@ -1,0 +1,379 @@
+/* LOC shared responsive layout
+   Applied to primary public surfaces: Home, Search, LOC2, LOC8 Life.
+   Page-specific CSS owns visual identity; this file owns viewport stability,
+   readable density, touch targets and mobile layout fallbacks. */
+
+:root{
+  --loc-mobile-gutter:12px;
+  --loc-tablet-gutter:18px;
+  --loc-touch-min:44px;
+}
+
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+  overflow-x:hidden;
+}
+body.loc-responsive-page{
+  overflow-x:hidden;
+}
+body.loc-responsive-page img,
+body.loc-responsive-page svg,
+body.loc-responsive-page video,
+body.loc-responsive-page canvas{
+  max-width:100%;
+  height:auto;
+}
+body.loc-responsive-page button,
+body.loc-responsive-page input,
+body.loc-responsive-page select,
+body.loc-responsive-page textarea{
+  max-width:100%;
+}
+body.loc-responsive-page button,
+body.loc-responsive-page a{
+  overflow-wrap:anywhere;
+}
+body.loc-responsive-page pre,
+body.loc-responsive-page code{
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
+body.loc-responsive-page .table{
+  max-width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+body.loc-responsive-page table{
+  max-width:100%;
+}
+
+/* Tablet: collapse oversized multi-column layouts before they become cramped. */
+@media(max-width:960px){
+  body.loc-page-home .hero,
+  body.loc-page-home .loc6-panel{
+    grid-template-columns:1fr;
+  }
+  body.loc-page-home .action-grid,
+  body.loc-page-home .works-list,
+  body.loc-page-home .evolution-proof{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  body.loc-page-life .app{
+    width:min(100% - 28px,1120px);
+    grid-template-columns:1fr;
+    padding:14px 0 28px;
+  }
+  body.loc-page-life .sidebar{
+    position:static;
+    min-height:auto;
+    padding:10px;
+    border-radius:16px;
+  }
+  body.loc-page-life .sidebar .brand,
+  body.loc-page-life .sidebar-foot,
+  body.loc-page-life .nav-group-label{
+    display:none;
+  }
+  body.loc-page-life .sidebar .nav{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:1px 0 3px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:thin;
+  }
+  body.loc-page-life .sidebar .nav-group{
+    display:contents;
+  }
+  body.loc-page-life .nav .view-switch,
+  body.loc-page-life .nav-utility{
+    flex:0 0 auto;
+    width:auto;
+    min-height:var(--loc-touch-min);
+    padding:9px 12px;
+    white-space:nowrap;
+  }
+  body.loc-page-life .nav-sub{
+    display:none;
+  }
+}
+
+/* Phone density. */
+@media(max-width:720px){
+  body.loc-responsive-page .loc-global-shell,
+  body.loc-page-search .page,
+  body.loc-page-home .loc-page,
+  body.loc-page-game .wrap,
+  body.loc-page-life .app{
+    width:calc(100% - (var(--loc-mobile-gutter) * 2));
+  }
+
+  body.loc-responsive-page .loc-global-nav{
+    gap:8px;
+  }
+  body.loc-responsive-page .loc-global-links{
+    gap:6px 12px;
+  }
+  body.loc-responsive-page .loc-global-link{
+    min-height:36px;
+  }
+
+  body.loc-responsive-page .loc-header,
+  body.loc-responsive-page .loc-page-hero{
+    margin-bottom:16px;
+    padding-top:12px;
+  }
+  body.loc-responsive-page .loc-header .loc-header-title,
+  body.loc-responsive-page .loc-page-title{
+    font-size:clamp(2.1rem,11vw,3.15rem);
+    line-height:1.04;
+    letter-spacing:-.04em;
+  }
+  body.loc-responsive-page .loc-header .loc-header-subtitle,
+  body.loc-responsive-page .loc-page-subtitle{
+    margin-top:10px;
+    font-size:clamp(1.08rem,5.2vw,1.4rem);
+    line-height:1.4;
+  }
+  body.loc-responsive-page .loc-header .loc-header-copy,
+  body.loc-responsive-page .loc-page-intro{
+    margin-top:8px;
+    font-size:.9rem;
+    line-height:1.62;
+  }
+
+  /* Search: reduce nested-card bulk on narrow phones. */
+  body.loc-page-search .page{
+    padding:12px 0 36px;
+  }
+  body.loc-page-search .search-panel{
+    padding:14px;
+    border-radius:16px;
+    box-shadow:none;
+  }
+  body.loc-page-search textarea{
+    min-height:82px;
+    padding:12px 13px;
+    border-radius:12px;
+  }
+  body.loc-page-search .primary-actions{
+    margin:9px 0 12px;
+    gap:8px;
+  }
+  body.loc-page-search .submit,
+  body.loc-page-search .clear-btn,
+  body.loc-page-search .browse-btn{
+    min-height:var(--loc-touch-min);
+    padding:10px 12px;
+  }
+  body.loc-page-search .filter-toggle{
+    min-height:var(--loc-touch-min);
+    padding:10px 12px;
+  }
+  body.loc-page-search .filter-panel{
+    border-radius:12px;
+  }
+  body.loc-page-search .filter-section{
+    padding:12px;
+  }
+  body.loc-page-search .suggestions{
+    margin:12px 0 8px;
+  }
+  body.loc-page-search .suggestions-head{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:2px;
+  }
+  body.loc-page-search .suggestion-grid{
+    gap:7px;
+  }
+  body.loc-page-search .suggestion-card{
+    min-height:62px;
+    padding:9px 10px;
+    border-radius:11px;
+  }
+  body.loc-page-search .groups{
+    gap:14px;
+  }
+  body.loc-page-search .group{
+    padding-top:12px;
+  }
+  body.loc-page-search .card{
+    padding:14px;
+    border-radius:14px;
+    box-shadow:none;
+  }
+  body.loc-page-search .card h3{
+    font-size:1.05rem;
+    line-height:1.45;
+  }
+  body.loc-page-search .meta{
+    gap:5px;
+    margin-bottom:8px;
+  }
+  body.loc-page-search .pill{
+    padding:2px 7px;
+    font-size:.69rem;
+  }
+  body.loc-page-search .summary{
+    font-size:.9rem;
+    line-height:1.58;
+  }
+
+  /* Home: preserve hierarchy without giant cards. */
+  body.loc-page-home .loc-page{
+    padding:10px 0 36px;
+  }
+  body.loc-page-home .hero{
+    gap:16px;
+    padding:18px 0 20px;
+  }
+  body.loc-page-home .hero-note{
+    min-height:auto;
+    padding:18px;
+    border-radius:18px;
+    box-shadow:none;
+  }
+  body.loc-page-home .hero-note .moon{
+    width:92px;
+    margin:0 auto 14px;
+  }
+  body.loc-page-home .section{
+    margin-top:18px;
+    padding:16px;
+    border-radius:18px;
+    box-shadow:none;
+  }
+  body.loc-page-home .section-heading{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:6px;
+    margin-bottom:14px;
+  }
+  body.loc-page-home .section-heading p{
+    font-size:.84rem;
+  }
+  body.loc-page-home .action-grid,
+  body.loc-page-home .works-list,
+  body.loc-page-home .evolution-proof,
+  body.loc-page-home .loc6-panel{
+    grid-template-columns:1fr;
+  }
+  body.loc-page-home .action-card,
+  body.loc-page-home .work-item,
+  body.loc-page-home .loc6-core,
+  body.loc-page-home .loc6-quotes{
+    min-height:0;
+    padding:14px;
+    border-radius:14px;
+  }
+  body.loc-page-home .version-row{
+    gap:6px;
+    margin-top:12px;
+  }
+  body.loc-page-home .badge{
+    min-height:26px;
+    padding:3px 8px;
+    font-size:.68rem;
+  }
+
+  /* LOC2: tables scroll, cards become compact, local nav stays usable. */
+  body.loc-page-game .loc2-local-header{
+    position:static;
+  }
+  body.loc-page-game .loc2-local-nav{
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:thin;
+  }
+  body.loc-page-game .loc2-local-nav a{
+    flex:0 0 auto;
+    min-height:38px;
+    display:inline-flex;
+    align-items:center;
+  }
+  body.loc-page-game section{
+    padding:28px 0;
+  }
+  body.loc-page-game .panel,
+  body.loc-page-game .card{
+    border-radius:14px;
+  }
+  body.loc-page-game .flow{
+    gap:5px;
+  }
+  body.loc-page-game .flow b{
+    opacity:.6;
+  }
+
+  /* LOC8 Life: cards/forms collapse early and stay touch-friendly. */
+  body.loc-page-life .app{
+    padding:8px 0 30px;
+    gap:12px;
+  }
+  body.loc-page-life .sidebar{
+    margin-bottom:2px;
+  }
+  body.loc-page-life .grid.cols-4,
+  body.loc-page-life .grid.cols-2,
+  body.loc-page-life .form-grid{
+    grid-template-columns:1fr;
+  }
+  body.loc-page-life .field.full{
+    grid-column:auto;
+  }
+  body.loc-page-life .card{
+    border-radius:14px;
+    box-shadow:none;
+  }
+  body.loc-page-life .card .head{
+    padding:13px 14px 10px;
+  }
+  body.loc-page-life .card .body,
+  body.loc-page-life .metric{
+    padding:14px;
+  }
+  body.loc-page-life .metric .value{
+    font-size:23px;
+  }
+  body.loc-page-life .event{
+    grid-template-columns:24px 1fr;
+    gap:8px;
+  }
+  body.loc-page-life .event .date{
+    grid-column:2;
+  }
+  body.loc-page-life .event .content{
+    grid-column:2;
+    padding:10px 11px;
+  }
+  body.loc-page-life .timeline::before{
+    left:11px;
+  }
+  body.loc-page-life .event .node{
+    margin-left:6px;
+  }
+}
+
+@media(max-width:420px){
+  body.loc-page-search .suggestion-grid{
+    grid-template-columns:1fr;
+  }
+  body.loc-page-search .primary-actions{
+    grid-template-columns:1fr 1fr;
+  }
+  body.loc-page-search .filter-tab{
+    font-size:.72rem;
+  }
+  body.loc-page-home .hero-actions{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  body.loc-page-home .cta{
+    width:100%;
+  }
+}
