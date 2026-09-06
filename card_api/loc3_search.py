@@ -8,7 +8,7 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
-from paths import shared_json, runtime_json
+from paths import registry_json, search_json
 from typing import Any
 
 
@@ -139,8 +139,8 @@ class LOC3SearchEngine:
 
         # Media is owned by LOC5 and referenced by LOC3.
         # Prefer the shared registry; keep the legacy LOC3 overlay as a compatibility fallback.
-        shared_media_path = shared_json("LOC_MEDIA_REGISTRY.json")
-        legacy_media_path = runtime_json("LOC3_MEDIA_LINKS_v0.1.json")
+        shared_media_path = registry_json("LOC_MEDIA_REGISTRY.json")
+        legacy_media_path = search_json("loc3", "LOC3_MEDIA_LINKS_v0.1.json")
         if shared_media_path.exists():
             media = json.loads(shared_media_path.read_text(encoding="utf-8"))
             by_song_id = {item.get("linked_song_id"): item for item in media.get("items", []) if item.get("linked_song_id")}
@@ -167,7 +167,7 @@ class LOC3SearchEngine:
             raise ValueError("LOC3 work IDs and lyric hashes must be unique")
 
         self.dataset = payload.get("dataset", {})
-        relationship_path = shared_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
+        relationship_path = registry_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
         if relationship_path.exists():
             try:
                 self.relationships = json.loads(relationship_path.read_text(encoding="utf-8")).get("relationships", [])
