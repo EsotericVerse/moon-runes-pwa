@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LOC Semantic Timeline｜Facebook</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2d;--text:#eef3ff;--muted:#9fb0ca;--line:#263654;--accent:#8bb7ff}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;background:linear-gradient(180deg,#0a0f1c,#10192b 55%,#0b1020);color:var(--text)}
+.wrap{max-width:1180px;margin:auto;padding:28px 20px 72px}.kicker{font-size:13px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}.title{font-size:clamp(32px,6vw,62px);line-height:1.02;margin:8px 0 12px;max-width:760px}.sub{color:var(--muted);max-width:760px;line-height:1.8}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.badge{padding:8px 11px;border:1px solid var(--line);border-radius:999px;color:#b8d2ff;background:#10182a}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:22px}.card{background:rgba(18,26,45,.94);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.18)}
+.metric{grid-column:span 3}.metric b{display:block;font-size:28px;margin-top:5px}.metric span{color:var(--muted);font-size:13px}.control,.full{grid-column:span 12}.chartCard{grid-column:span 8}.side{grid-column:span 4}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row input,.row select,.row button{background:#0d1424;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:11px 13px;font:inherit}.row input{min-width:220px;flex:1}.row button{cursor:pointer;background:#182a48}
+.chart{height:300px}.chart svg{width:100%;height:100%;overflow:visible}.legend{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.chip{border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:var(--muted);cursor:pointer}.chip.active{color:#fff;border-color:var(--accent);background:#172b4d}
+.contextList,.results{display:grid;gap:10px}.context,.result{padding:12px;border-radius:12px;background:#0e1627;border:1px solid var(--line)}.context strong{display:block;margin-bottom:5px}.context small,.note{color:var(--muted);font-size:13px}.filebox{border:1px dashed #42628f;border-radius:14px;padding:15px;background:#0d1627}.filebox input{width:100%}.result .meta{font-size:12px;color:#b8d2ff;margin-bottom:7px}.result p{margin:0;color:#dfe8f7;line-height:1.7}
+@media(max-width:820px){.metric{grid-column:span 6}.chartCard,.side{grid-column:span 12}}@media(max-width:520px){.metric{grid-column:span 12}.wrap{padding:20px 14px 56px}}
+</style></head>
+<body><div class="wrap">
+<div class="kicker">LOC · Semantic Timeline</div>
+<h1 class="title">15 年文字，變成可操作的語意時間線。</h1>
+<div class="sub">Facebook 2011–2026 歷史文字聚合分析。公開頁只放統計；若要檢索私人原文，可在瀏覽器本機載入整理後 CSV，資料不會上傳。</div>
+<div class="badges"><span class="badge">LOC6 · Governance</span><span class="badge">LOC7 · Text Architecture</span><span class="badge">LOC8 · Life</span></div>
+<div class="grid">
+<div class="card metric"><span>Facebook 紀錄</span><b id="mTotal">22,493</b></div><div class="card metric"><span>可搜尋文字</span><b id="mSearch">17,656</b></div><div class="card metric"><span>時間跨度</span><b>15 年+</b></div><div class="card metric"><span>資料起點</span><b style="font-size:22px">2011-04-15</b></div>
+<div class="card control"><h2>概念時間線</h2><div class="row"><select id="concept"></select><button id="prev">上一個</button><button id="next">下一個</button></div><div class="legend" id="conceptChips"></div></div>
+<div class="card chartCard"><h3 id="chartTitle">年度命中趨勢</h3><div class="chart" id="chart"></div><div class="note">數字是概念橋接詞在當年度命中的貼文數，不等同人工主題標註。</div></div>
+<div class="card side"><h3>四階段語境</h3><div class="contextList" id="contexts"></div></div>
+<div class="card full"><h2>本機貼文搜尋</h2><p style="color:var(--muted)">載入 <code>Facebook_文字紀錄_整理.csv</code>。所有解析只在瀏覽器中執行，不會傳到伺服器。</p><div class="filebox"><input id="file" type="file" accept=".csv,text/csv"></div><div class="row" style="margin-top:12px"><input id="q" placeholder="例如：自由、工作、整理、月光…"><select id="year"><option value="">全部年份</option></select><button id="search">搜尋</button></div><div class="note" id="fileStatus">尚未載入本機 corpus。</div><div class="results" id="results"></div></div>
+</div></div>
+<script>
+const DATA_URL='data/json/fb-semantic-summary.json';let data,rows=[];const $=s=>document.querySelector(s);
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function concepts(){return Object.keys(data.yearly_concepts[0]).filter(k=>k!=='年份')}
+async function init(){data=await fetch(DATA_URL).then(r=>r.json());const cs=concepts();$('#concept').innerHTML=cs.map(x=>`<option>${esc(x)}</option>`).join('');$('#conceptChips').innerHTML=cs.map((x,i)=>`<span class="chip ${i===0?'active':''}" data-c="${esc(x)}">${esc(x)}</span>`).join('');$('#year').innerHTML+=[...new Set(data.yearly_concepts.map(x=>x.年份))].map(y=>`<option>${y}</option>`).join('');$('#mTotal').textContent=Number(data.meta.records_total).toLocaleString();$('#mSearch').textContent=Number(data.meta.searchable_text_records).toLocaleString();render();document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{$('#concept').value=c.dataset.c;render()});$('#concept').onchange=render;$('#prev').onclick=()=>step(-1);$('#next').onclick=()=>step(1);$('#file').onchange=loadCSV;$('#search').onclick=searchLocal;$('#q').onkeydown=e=>{if(e.key==='Enter')searchLocal()}}
+function step(n){const s=$('#concept'),len=s.options.length;s.selectedIndex=(s.selectedIndex+n+len)%len;render()}
+function render(){const c=$('#concept').value;$('#chartTitle').textContent=`「${c}」年度命中趨勢`;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x.dataset.c===c));drawLine(data.yearly_concepts.map(r=>({x:String(r.年份),y:Number(r[c]||0)})));const ctx=data.period_context.filter(r=>r.關鍵詞===c);$('#contexts').innerHTML=ctx.length?ctx.map(r=>`<div class="context"><strong>${esc(r.時期)} · ${Number(r.命中貼文數).toLocaleString()} 篇</strong><small>${esc(r.主要語境||'—')}</small></div>`).join(''):'<div class="note">目前沒有分期語境資料。</div>'}
+function drawLine(points){const host=$('#chart'),W=760,H=270,p=36,max=Math.max(1,...points.map(d=>d.y)),sx=i=>p+i*(W-p*2)/(points.length-1||1),sy=v=>H-p-v*(H-p*2)/max;let grid='',labels='';for(let i=0;i<=4;i++){let y=p+i*(H-p*2)/4;grid+=`<line x1="${p}" y1="${y}" x2="${W-p}" y2="${y}" stroke="#263654"/><text x="4" y="${y+4}" fill="#8192ad" font-size="11">${Math.round(max*(1-i/4))}</text>`}points.forEach((d,i)=>{if(i%2===0||points.length<10)labels+=`<text x="${sx(i)}" y="${H-8}" text-anchor="middle" fill="#8192ad" font-size="11">${d.x}</text>`});const path=points.map((d,i)=>(i?'L':'M')+sx(i)+' '+sy(d.y)).join(' '),dots=points.map((d,i)=>`<circle cx="${sx(i)}" cy="${sy(d.y)}" r="4" fill="#8bb7ff"><title>${d.x}: ${d.y}</title></circle>`).join('');host.innerHTML=`<svg viewBox="0 0 ${W} ${H}">${grid}<path d="${path}" fill="none" stroke="#8bb7ff" stroke-width="3"/>${dots}${labels}</svg>`}
+function parseCSV(text){const out=[];let row=[],cell='',q=false;for(let i=0;i<text.length;i++){const ch=text[i],nx=text[i+1];if(ch==='"'){if(q&&nx==='"'){cell+='"';i++}else q=!q}else if(ch===','&&!q){row.push(cell);cell=''}else if((ch==='\n'||ch==='\r')&&!q){if(ch==='\r'&&nx==='\n')i++;row.push(cell);if(row.some(x=>x!==''))out.push(row);row=[];cell=''}else cell+=ch}row.push(cell);if(row.some(x=>x!==''))out.push(row);const head=out.shift()||[];return out.map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]??''])))}
+async function loadCSV(e){const f=e.target.files[0];if(!f)return;rows=parseCSV(await f.text());$('#fileStatus').textContent=`已載入 ${rows.length.toLocaleString()} 筆；資料只存在這個瀏覽器分頁。`}
+function searchLocal(){const q=$('#q').value.trim(),yr=$('#year').value;if(!rows.length){$('#results').innerHTML='<div class="note">請先載入 CSV。</div>';return}if(!q){$('#results').innerHTML='<div class="note">請輸入關鍵字。</div>';return}const terms=q.split(/\s+/).filter(Boolean),hit=rows.filter(r=>(!yr||String(r['年份'])===yr)&&terms.every(t=>String(r['原始文字']||'').includes(t))).slice(0,50);$('#results').innerHTML=hit.length?hit.map(r=>`<div class="result"><div class="meta">${esc(r['日期時間'])} · ${esc(r['內容型態'])}${r['媒體來源']?' · '+esc(r['媒體來源']):''}</div><p>${esc(String(r['原始文字']||'').slice(0,500))}${String(r['原始文字']||'').length>500?'…':''}</p></div>`).join(''):'<div class="note">沒有符合結果。</div>'}
+init().catch(err=>{$('#chart').innerHTML='<div class="note">資料載入失敗：'+esc(err.message)+'</div>'});
+</script></body></html>
