@@ -180,7 +180,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
 | LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；Threads 公開文字 corpus 自 2024-11-18 起至 2026-09-06，現行去重基準共 **7,008 筆文字紀錄**（4,578 主貼文＋2,430 Reply），已開始接入 KM／Unified Search，並進入全文概念、ERA 與治理語言解析。另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證。 |
 | LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7、LOC8 的現有資料來源。Graph RAG 核心已完成；後續重點為治理 runtime、Graph View 與持續品質驗證。 |
-| LOC8 | `life.html` 已具備每日符文、ERA 時期管理、Event 紀錄、Event Timeline、Relation Library、軌跡 Trajectory 與趨勢分析 Analysis。ERA 已可在顯示位置直接新增／修改／刪除，後端 Apps Script API 已升至 `loc8-mvp-1.1`；Context 目前可呈現跨時期 Relation 與 LOC3 關鍵字比重升降／文字轉折說明，Graph 視圖仍屬後續。 |
+| LOC8 | `life.html` 已具備每日符文、ERA 時期管理、Event 紀錄、Event Timeline、Relation Library、軌跡 Trajectory 與趨勢分析 Analysis。ERA 已可在顯示位置直接新增／修改／刪除，後端 Apps Script API 已升至 `loc8-mvp-1.1`；Context 目前可呈現跨時期 Relation 與 LOC3 關鍵字比重升降／文字轉折說明，Graph View 已新增為 LOC8 獨立功能區，以 query-driven bounded neighborhood 探索跨 LOC 關係。 |
 
 LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；LOC6 已有治理／政德風與符文解析資料，LOC7 已有 KM／FAQ／RAG／Unified Search，LOC8 已有可操作的事件、時期與每日符文介面。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
 
@@ -277,14 +277,11 @@ LOC6 現行新增一個可量化的公開語言 corpus：
 
 ### 抽取模式
 
-- `result.html`：單卡、每日、雙卡、三卡與五卡結果入口
-- `2card.html`／`3card.html`／`5card.html`：不同牌數的獨立頁面
-- `daily.html`：每日抽取頁面
-- `fate.html`：替代風格的單卡／命運結果呈現
+- `result.html`：單卡、每日、雙卡、三卡與五卡的統一結果入口（`?mode=` 切換模式）
 - `list.html`：依群組及符文查詢完整資料
 - [`search.html`](https://loc.lo3rwang.cc/search.html)：**Unified Search 主入口**；同時查詢籤詩／符文、音樂、文字作品、媒體、治理／政德風、知識與時期資料，使用者不必先選 LOC 編號
 - [`faq.html`](https://loc.lo3rwang.cc/faq.html)：LOC7 Knowledge Base 專門查詢介面（保留作進階／單域 View）
-- `loc3.html`：相容導向頁；LOC3 歌詞、作品類別、歌詞類型、ERA、Reels 與跨 LOC 關聯搜尋已整合進 [`search.html`](https://loc.lo3rwang.cc/search.html?content_type=lyrics_work)
+- LOC3 搜尋已完全整合至 [`search.html`](https://loc.lo3rwang.cc/search.html?content_type=lyrics_work)，不再保留過渡頁。
 
 ### Python／FastAPI API
 
@@ -319,7 +316,7 @@ Shared Result Envelope
 
 LOC4 已可直接搜尋 Writing Registry，LOC5 可搜尋 Media Registry，LOC6 可直接搜尋 Governance／政德風 Registry，並從 4,578 筆 Threads 主貼文全文 corpus 搜尋文章原文；LOC7 讀取 FAQ／KM 與已登錄 Knowledge Assets，LOC8 讀取連續時期 Registry。LOC2 目前仍以 LOC7 Knowledge View 為主，尚未作為獨立結果群組直接路由。
 
-不同來源的搜尋分數維持各自尺度，前端依資料類型分組呈現，不把不同引擎的 score 強制混成單一排行榜。舊有 `faq.html`、`loc3.html` 保留為專門 View，`search.html` 作為整合入口。
+不同來源的搜尋分數維持各自尺度，前端依資料類型分組呈現，不把不同引擎的 score 強制混成單一排行榜。`faq.html` 保留為 LOC7 專門 View；LOC3 使用 `search.html` 作為唯一搜尋入口。
 
 ### 語意引擎實驗
 
