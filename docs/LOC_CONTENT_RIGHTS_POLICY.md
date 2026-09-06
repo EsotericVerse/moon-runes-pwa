@@ -88,3 +88,28 @@ rights_status:
 ## 6. UX priority
 
 Import/export 權利提示屬 **P0 safety / governance requirement**，優先級高於新增 corpus、進階搜尋與自動分類。任何新增匯入流程在沒有 rights gate 前，不應視為完成。
+
+
+## 7. Public Search / Anti-bulk Extraction
+
+公開搜尋不等於完整 corpus 下載入口。
+
+治理規則：
+
+- Catalog / Browse 只回傳有限長度 preview，不回傳整篇全文。
+- Query Search 可以回傳少量與查詢直接相關的文本結果，但不得提供「一鍵取得全部原文」的公共 API。
+- 公開 bulk export 預設停用。
+- 若未來提供 Owner / Private Export，必須先有身分驗證與 Rights Gate。
+- `robots.txt`、著作權聲明與 UI 警語只能作為告知，不應被視為真正的存取控制。
+- 任何已在瀏覽器完整顯示的內容，技術上都可能被複製；因此真正需要保護的完整 corpus 不應透過匿名公開端點整批交付。
+
+現行折衷：
+
+```text
+Public Browse  → preview only
+Public Search  → 少量 query-driven results
+Bulk full text → disabled
+Private owner export → future authenticated flow
+```
+
+這一條的目的不是阻止正常閱讀，而是降低以分頁／爬蟲一次搬走整個個人創作 corpus 的風險。
