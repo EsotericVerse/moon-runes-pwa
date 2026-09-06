@@ -179,7 +179,7 @@
       "faq_v0_3": "connected",
       "faq_rag_v0_3": "connected",
       "cross_relationship_registry": "connected",
-      "ui": "LOC Search knowledge category; faq.html compatibility redirect"
+      "ui": "LOC Search knowledge category; no compatibility redirect"
     },
     "LOC8": {
       "authority_source": "established",
@@ -234,9 +234,7 @@
         "list.html",
         "life.html"
       ],
-      "redirected_views": [
-        "faq.html → search.html?content_type=knowledge"
-      ]
+      "redirected_views": []
     },
     "live_coverage": {
       "LOC1": "rune retrieval",
