@@ -2315,6 +2315,57 @@
           alert('封存失敗，請確認 Apps Script 已部署新版。');
         }
       }
+
+      if (action === 'delete') {
+        if (!confirm('刪除這筆 Event？此動作會直接從 Sheet 移除。')) return;
+        try {
+          if (SHEET_API_URL) await testApi();
+          await saveEvent({ id, user_id: 'lo3rwang' }, 'delete_event');
+          if (editingId === id) resetEventForm();
+          if (SHEET_API_URL) await loadEvents(); else renderAll();
+        } catch (err) {
+          console.error(err);
+          alert('刪除失敗，請確認 Apps Script 已部署新版。');
+        }
+      }
+    });
+
+    els.relationForm?.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const raw = Object.fromEntries(new FormData(els.relationForm).entries());
+      if (editingRelationId) raw.id = editingRelationId;
+      const relation = normalizeRelation(raw);
+      try {
+        await saveRelation(relation, editingRelationId ? 'update_relation' : 'relation');
+        await loadRelations();
+        resetRelationForm();
+      } catch (err) {
+        console.error(err);
+        alert('Relation 儲存失敗；請確認 Apps Script 已部署 LOC8 v1.0。');
+      }
+    });
+
+    els.cancelRelationEditBtn?.addEventListener('click', resetRelationForm);
+    $('#clearRelationBtn')?.addEventListener('click', resetRelationForm);
+    els.relationList?.addEventListener('click', async (ev) => {
+      const btn = ev.target.closest('button[data-relation-action]');
+      if (!btn) return;
+      const id = btn.dataset.id;
+      if (btn.dataset.relationAction === 'edit') {
+        editRelation(id);
+        return;
+      }
+      if (btn.dataset.relationAction === 'delete') {
+        if (!confirm('刪除這條 Relation？此動作會直接從 Sheet 移除。')) return;
+        try {
+          await saveRelation({id, user_id:'lo3rwang'}, 'delete_relation');
+          if (editingRelationId === id) resetRelationForm();
+          await loadRelations();
+        } catch (err) {
+          console.error(err);
+          alert('Relation 刪除失敗；請確認 Apps Script 已部署 LOC8 v1.0。');
+        }
+      }
     });
 
     const trajectoryEl = $('#trajectoryList');
