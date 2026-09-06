@@ -226,7 +226,7 @@
     "api": {
       "endpoint": "/search",
       "facets": "/search/facets",
-      "orchestrator": "card_api/unified_search.py"
+      "orchestrator": "api/unified_search.py"
     },
     "ui": {
       "primary_search": "search.html",
