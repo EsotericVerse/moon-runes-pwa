@@ -32,6 +32,7 @@ Supported public content filters in v0.1 include:
 - `reel` / `video` / `multimedia` — LOC5 media registry
 - `governance_fragment` — LOC6 治理／政德風語料
 - `knowledge` / `faq` — LOC7 KM／FAQ
+- `facebook_post` — LOC6/LOC8 私有 Facebook 歷史文字 datasource；僅在部署環境掛載 `LOC_FB_SEARCH_DATASET` 時可查全文
 - `era` — LOC8 時期 registry（公開顯示為「時期」，machine ID 仍可使用 ERA-Px）
 - blank / `all` — query all live sources
 
@@ -47,6 +48,7 @@ groups.governance     LOC6 治理／政德風
 groups.media          LOC5 媒體
 groups.knowledge      LOC7 KM / FAQ
 groups.timeline       LOC8 時期
+groups.social_archive Facebook 私有歷史文字
 ```
 
 Each result uses shared reference fields where available:
@@ -81,7 +83,7 @@ Returns shared content types, period/ERA registry labels and currently available
 | LOC3 | Live: direct lyrics/music retrieval |
 | LOC4 | Live: direct work registry search |
 | LOC5 | Live: direct media registry search |
-| LOC6 | Live: direct governance/政德風 registry search |
+| LOC6 | Live: direct governance/政德風 registry search；可選擇掛載私人 Facebook 歷史文字 corpus |
 | LOC7 | Live: FAQ/KM and registered knowledge assets |
 | LOC8 | Live: continuous period registry retrieval |
 
@@ -170,3 +172,27 @@ With `node_id`, the endpoint returns a bounded `graph_neighborhood` at depth 1�
 LOC8 `life.html#graph` uses this contract: natural-language queries first use `POST /search`, then clicking a node requests one bounded neighborhood.
 
 Graph ownership remains LOC7; LOC8 is a visualization/context consumer.
+
+## Optional private Facebook datasource
+
+Facebook archive text is intentionally **not stored in the public repository**.
+
+To enable full-text Facebook retrieval, mount the generated private dataset and set:
+
+```bash
+LOC_FB_SEARCH_DATASET=/absolute/private/path/LOC_FB_SEARCH_v0.1.json
+```
+
+Then query the normal Unified Search endpoint:
+
+```json
+{
+  "query": "自由",
+  "top_k": 10,
+  "content_type": "facebook_post",
+  "start_date": "2011-01-01",
+  "end_date": "2026-12-31"
+}
+```
+
+If the private corpus is not mounted, this request returns HTTP 503 rather than exposing or synthesizing archive text. Public aggregate trend data remains available to `facebook-timeline.html`.
