@@ -1,6 +1,6 @@
 # LOC7 FAQ API
 
-LOC7 Knowledge View 的公開 API。現行 runtime 使用 FAQ/RAG v0.3：80 題 FAQ source view 與其原子化檢索資料。
+LOC7 Knowledge View 的公開 API。現行 runtime 使用 FAQ/RAG v0.4：80 題 FAQ source view 與其原子化檢索資料。
 模組與既有 FastAPI 服務共同部署，不修改 `/divination` 的抽牌流程。
 
 KM 治理主文件：`../docs/LOC7_KM.md`。FAQ 是 KM 的問答 View，RAG JSON 是檢索衍生資料，不取代 Canon。
@@ -38,4 +38,4 @@ KM 治理主文件：`../docs/LOC7_KM.md`。FAQ 是 KM 的問答 View，RAG JSON
 - 服務啟動時載入一次資料與索引
 - 僅使用 Python 標準函式庫，不增加 Render 建置負擔
 
-資料來源：`data/LOC_FAQ_RAG_v0.3.json`
+資料來源：`../data/json/search/faq/LOC_FAQ_RAG_v0.4.json`
