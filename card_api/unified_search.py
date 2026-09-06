@@ -1898,22 +1898,40 @@ class UnifiedSearchEngine:
         }
 
     def graph_snapshot(self, node_id: str = "", depth: int = 2) -> dict[str, Any]:
-        """Expose the governed graph for diagnostics and external graph clients."""
+        """Expose graph metadata or one bounded governed neighborhood.
+
+        Public callers must never receive the whole canonical graph as a bulk
+        export merely by omitting node_id. The uncentered response is metadata
+        only; actual graph data requires a bounded center node.
+        """
         graph = self._canonical_graph()
         if not node_id:
+            node_types: dict[str, int] = {}
+            edge_types: dict[str, int] = {}
+            for node in graph.get("nodes", []) or []:
+                key = str(node.get("type") or "unknown")
+                node_types[key] = node_types.get(key, 0) + 1
+            for edge in graph.get("edges", []) or []:
+                key = str(edge.get("type") or edge.get("relation_type") or "unknown")
+                edge_types[key] = edge_types.get(key, 0) + 1
             return {
-                "mode": "canonical_graph",
-                "nodes": graph.get("nodes", []),
-                "edges": graph.get("edges", []),
+                "mode": "graph_metadata",
+                "nodes": [],
+                "edges": [],
                 "node_count": graph.get("node_count", 0),
                 "edge_count": graph.get("edge_count", 0),
+                "node_types": node_types,
+                "edge_types": edge_types,
+                "bulk_export": False,
+                "requires_node_id": True,
+                "public_access_policy": "bounded_neighborhood_only",
             }
 
         nodes = {str(node.get("id")): node for node in graph.get("nodes", [])}
         edges = graph.get("edges", [])
         if node_id not in nodes:
             return {
-                "mode": "canonical_graph",
+                "mode": "graph_neighborhood",
                 "center": node_id,
                 "nodes": [],
                 "edges": [],
@@ -1944,7 +1962,7 @@ class UnifiedSearchEngine:
 
         selected_edges = [edge for edge in edges if str(edge.get("edge_id")) in edge_ids]
         return {
-            "mode": "canonical_graph",
+            "mode": "graph_neighborhood",
             "center": node_id,
             "depth": depth,
             "nodes": [nodes[nid] for nid in visited if nid in nodes],
