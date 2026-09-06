@@ -68,7 +68,7 @@ A consumer that needs Lots text must load `lots.json`.
 
 Do not create another file containing all three datasets merely for convenience.
 
-Before this cleanup, equivalent copies of `runes_all_data.json` existed under both `card_api/` and `engine/`; their semantic contents were identical aside from whitespace formatting. The engine copy was removed.
+Before this cleanup, equivalent copies of `runes_all_data.json` existed under both `api/` and `engine/`; their semantic contents were identical aside from whitespace formatting. The engine copy was removed.
 
 ## 4. Data role directories
 
@@ -128,7 +128,7 @@ Centralization applies to data, not every file whose extension is `.json`.
 
 ## 6. Path API
 
-Python production code must use `card_api/paths.py`:
+Python production code must use `api/paths.py`:
 
 - `core_json(name)`
 - `registry_json(name)`
@@ -180,7 +180,7 @@ Archive:
 
 ## 9. Validation
 
-`card_api/scripts/validate_repo_layout.py` checks required paths and rejects legacy path reintroduction.
+`api/scripts/validate_repo_layout.py` checks required paths and rejects legacy path reintroduction.
 
 Any data-path migration is incomplete until code, HTML, Service Worker, workflow, JSON references and documentation all point to the same new location.
 
