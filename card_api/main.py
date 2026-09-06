@@ -696,7 +696,10 @@ async def unified_search(input: UnifiedSearchInput):
     if input.top_k < 1 or input.top_k > 10:
         raise HTTPException(status_code=400, detail="top_k必須介於1到10之間")
 
-    if input.content_type.strip().lower() == "facebook_post":
+    requested_type = input.content_type.strip().lower()
+    requested_source = input.source.strip().lower()
+
+    if requested_type in {"facebook_post"} or requested_source == "facebook":
         if FB_SEARCHER is None:
             raise HTTPException(
                 status_code=503,
@@ -713,9 +716,10 @@ async def unified_search(input: UnifiedSearchInput):
                 "success": True,
                 "system_id": "lo3rwang",
                 "query": query,
-                "content_type": "facebook_post",
+                "content_type": "text_record",
+                "source": "facebook",
                 "count": len(items),
-                "groups": {"social_archive": items},
+                "groups": {"text": items},
                 "results": items,
                 "private_runtime_source": True,
                 "timestamp": datetime.now().isoformat(),
@@ -724,6 +728,40 @@ async def unified_search(input: UnifiedSearchInput):
             raise HTTPException(status_code=400, detail=str(e))
 
     searcher = get_unified_searcher()
+
+    if requested_type == "text_record":
+        merged_groups = {}
+        total = 0
+        for text_type in ("text_work", "governance_article", "governance_fragment"):
+            partial = searcher.search(
+                query,
+                top_k=input.top_k,
+                content_type=text_type,
+                filters={
+                    "source": input.source,
+                    "start_date": input.start_date,
+                    "end_date": input.end_date,
+                    "period": input.period,
+                    "era": input.era,
+                    "playlist": input.playlist,
+                    "category": input.category,
+                    "style": input.style,
+                },
+            )
+            for group_name, items in (partial.get("groups") or {}).items():
+                if items:
+                    merged_groups.setdefault(group_name, []).extend(items)
+                    total += len(items)
+        return {
+            "success": True,
+            "system_id": "lo3rwang",
+            "query": query,
+            "content_type": "text_record",
+            "groups": merged_groups,
+            "total_count": total,
+            "timestamp": datetime.now().isoformat(),
+        }
+
     filters = {
         "source": input.source,
         "start_date": input.start_date,
