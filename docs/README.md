@@ -28,6 +28,7 @@
 | [LUNA_RUNES_66_GOVERNANCE_DESIGN.md](./LUNA_RUNES_66_GOVERNANCE_DESIGN.md) | 月之符文66的平等使用、界／域、礦物組、悟與演化治理設計觀點 | Current Design Interpretation |
 | [LOC6_ZHENGDE_STYLE.md](./LOC6_ZHENGDE_STYLE.md) | 政德風治理核心、代表句、風格演變與 Stage Profile 規則 | Current / Working |
 | [LOC7_KM.md](./LOC7_KM.md) | LOC7 Knowledge Management 核心治理文件 | Current |
+| [LOC_SIMPLE_TEXT_ANALYSIS_API.md](./LOC_SIMPLE_TEXT_ANALYSIS_API.md) | LOC 內建簡易文字解析／分類 API：Local First、無外部 API Key 依賴，建立關鍵字庫與趨勢資料 | Current |
 | [LOC8_KM.md](./LOC8_KM.md) | LOC8 ERA／Event／Relation／Context 判定與治理邏輯 | Working |
 | [JSON_DATA_MAP.md](./JSON_DATA_MAP.md) | JSON 資料角色、來源與同步規則 | Current |
 | [DATA_ARCHITECTURE.md](./DATA_ARCHITECTURE.md) | core / registries / search / generated / archive / experimental 資料架構與月符 projection 規則 | Current |
