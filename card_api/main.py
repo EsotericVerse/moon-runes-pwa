@@ -424,6 +424,13 @@ class UnifiedSearchInput(BaseModel):
     style: str = ""
 
 
+class UnifiedBrowseInput(BaseModel):
+    content_type: str
+    offset: int = 0
+    limit: int = 24
+    period: str = ""
+
+
 def get_faq_searcher():
     if FAQ_SEARCHER is None:
         raise HTTPException(
@@ -486,6 +493,7 @@ async def root():
             "loc3_search": "/loc3/search",
             "loc3_facets": "/loc3/facets",
             "unified_search": "/search",
+            "unified_browse": "/search/browse",
             "unified_facets": "/search/facets",
             "health": "/health",
             "docs": "/docs"
@@ -531,6 +539,29 @@ async def unified_search_facets():
         "loc3": loc3_facets,
         "timestamp": datetime.now().isoformat(),
     }
+
+
+@app.post("/search/browse")
+async def unified_browse(input: UnifiedBrowseInput):
+    if input.offset < 0:
+        raise HTTPException(status_code=400, detail="offset不可小於0")
+    if input.limit < 1 or input.limit > 100:
+        raise HTTPException(status_code=400, detail="limit必須介於1到100之間")
+    searcher = get_unified_searcher()
+    try:
+        result = searcher.browse(
+            input.content_type,
+            offset=input.offset,
+            limit=input.limit,
+            filters={"period": input.period},
+        )
+        return {
+            "success": True,
+            **result,
+            "timestamp": datetime.now().isoformat(),
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/search")
