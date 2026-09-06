@@ -129,7 +129,7 @@ Research data used by `engine/`. Experimental data cannot override `core/` or `r
 These remain next to the components they configure:
 
 - root `manifest.json`
-- `loc8_api/appsscript.json`
+- `integrations/google_apps_script/loc8/appsscript.json`
 
 Centralization applies to data, not every file whose extension is `.json`.
 
