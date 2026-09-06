@@ -529,3 +529,42 @@ LOC7 的責任是讓這些來源可被索引、引用、建立 governed relation
 治理資料同樣遵循：
 
 > **原始紀錄與後設治理解讀分離；Current View 不得抹掉 Historical View。**
+
+
+## 11. Simple Text Analysis / Corpus Intake
+
+LOC7／KM 必須承接「新 corpus 如何進入系統」這個最低必要流程。
+
+### Baseline requirement
+
+任何新使用者取得自己的文字資料後，應能不依賴外部模型完成：
+
+```text
+匯入 → 基礎解析 → 關鍵字／分類 → 日期／來源索引 → 時間比較 → 趨勢
+```
+
+因此 LOC API 現行提供：
+
+- `POST /analyze/text`
+- `POST /analyze/corpus`
+
+這兩個 endpoint 採 Local First，不要求外部 API Key。
+
+規則式分類表必須由使用者或部署者自行提供／調整，不把作者個人的工作、關係、創作、治理等分類硬寫成所有人的固定 ontology。
+
+### Human role
+
+作者目前仍會人工補做語意整理、關鍵詞治理與例外修正，但這些工作只應屬：
+
+- validation
+- correction
+- Canon / registry governance
+- exception handling
+
+未來一般使用者的主流程必須全自動完成；人工是校正層，不是執行層。
+
+### Advanced layer
+
+Embedding、LLM、Graph RAG 語意增強、高階主題／情緒／人格推論可由各部署自行選擇。這些功能不得成為 LOC 基礎 corpus intake 的硬性依賴。
+
+詳細規格： [LOC_SIMPLE_TEXT_ANALYSIS_API.md](./LOC_SIMPLE_TEXT_ANALYSIS_API.md)。
