@@ -132,3 +132,21 @@ They can be modularized later, but public URL compatibility/redirect/cache behav
 - stale legacy path references in current text/code/data.
 
 Repository organization is therefore part of governance, not only visual housekeeping.
+
+## Frontend Static Data Runtime
+
+Browser-facing pages should not use repository JSON as their primary runtime store for static datasets.
+
+Frontend rule:
+
+~~~text
+governed source / JSON
+→ generated JS projection
+→ browser import
+~~~
+
+This avoids repeated static-data fetches and keeps the runtime on normal static assets. The corresponding risk is stale JS projection, so JS data modules must have an upstream source, generation/sync method and CI drift validation.
+
+Do not solve a stale-JS problem by making the browser fetch JSON again. Solve it by making the projection reproducible.
+
+See [FRONTEND_RUNTIME_DATA_POLICY.md](./FRONTEND_RUNTIME_DATA_POLICY.md).
