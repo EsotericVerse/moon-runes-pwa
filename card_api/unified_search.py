@@ -1027,6 +1027,8 @@ class UnifiedSearchEngine:
             return "instagram"
         if item.get("primary_loc") == "LOC3" or "suno" in haystack:
             return "suno"
+        if item.get("primary_loc") or "registry" in haystack or "spreadsheet" in haystack or "knowledge" in haystack:
+            return "loc"
         return ""
 
     @staticmethod
