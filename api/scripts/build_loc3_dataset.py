@@ -15,10 +15,10 @@ from openpyxl import load_workbook
 SYSTEM_ID = "lo3rwang"
 PRIMARY_LOC = "LOC3"
 
-CARD_API = Path(__file__).resolve().parents[1]
-if str(CARD_API) not in sys.path:
-    sys.path.insert(0, str(CARD_API))
-from paths import shared_json, RUNTIME_JSON_DIR
+API_DIR = Path(__file__).resolve().parents[1]
+if str(API_DIR) not in sys.path:
+    sys.path.insert(0, str(API_DIR))
+from paths import registry_json, search_json
 
 
 def shared_registry_path(name: str) -> Path:
