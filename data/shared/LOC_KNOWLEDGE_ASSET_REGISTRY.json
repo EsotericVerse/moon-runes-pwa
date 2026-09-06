@@ -1146,6 +1146,45 @@
       },
       "notes": "Governance interpretation of the mature 66-rune design; does not override the rune mother source.",
       "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-LOC-GOV-TREND-001",
+      "title": "LOC Governance Trend Registry",
+      "path": "data/shared/LOC_GOVERNANCE_TREND_REGISTRY.json",
+      "source_type": "structured_registry",
+      "content_type": "analysis",
+      "primary_loc": "LOC8",
+      "related_locs": [
+        "LOC6",
+        "LOC7"
+      ],
+      "role": "governance_trend_registry",
+      "status": "working",
+      "authority_level": "structured_trend_projection",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-07",
+      "keywords": [
+        "治理趨勢",
+        "界線",
+        "domain boundary",
+        "自由",
+        "自我治理",
+        "版本化",
+        "歷史完整性"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "derived_from": [
+          "LOC6 governance corpus",
+          "LOC8 ERA",
+          "historical governance analysis"
+        ]
+      },
+      "notes": "Trend projection only; does not automatically rank historical stages as progress/regression.",
+      "presentation": "internal_source"
     }
   ]
 }
