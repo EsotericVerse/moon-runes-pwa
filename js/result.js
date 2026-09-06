@@ -451,6 +451,11 @@ function renderResult(mode, config, realPhase) {
     resultRealPhase.textContent = `真實月相｜${realPhase}`;
   }
 
+  const fiveCardSchema = document.getElementById("five-card-schema");
+  if (fiveCardSchema) {
+    fiveCardSchema.hidden = config.count !== 5;
+  }
+
   reading.innerHTML = config.count === 1
     ? buildSingleReading(cards[0], realPhase, mode === "daily")
     : config.count === 5
