@@ -2,10 +2,10 @@ import unittest
 from pathlib import Path
 
 from faq_rag import FAQSearchEngine
-from paths import runtime_json
+from paths import search_json
 
 
-DATASET = runtime_json("LOC_FAQ_RAG_v0.4.json")
+DATASET = search_json("faq", "LOC_FAQ_RAG_v0.4.json")
 
 
 class FAQSearchEngineTest(unittest.TestCase):
