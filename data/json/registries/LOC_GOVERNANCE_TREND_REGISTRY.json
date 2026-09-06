@@ -90,7 +90,7 @@
       "evidence_refs": [
         "docs/LOC6_ZHENGDE_STYLE.md",
         "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md",
-        "data/json/shared/LOC6_GOVERNANCE_REGISTRY.json"
+        "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json"
       ]
     },
     {
@@ -110,7 +110,7 @@
       "interpretation": "Freedom becomes a governed space for choice rather than the absence of all constraints.",
       "status": "working",
       "evidence_refs": [
-        "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json",
+        "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json",
         "docs/LOC6_ZHENGDE_STYLE.md"
       ]
     },
@@ -157,7 +157,7 @@
       "evidence_refs": [
         "docs/LOC_GOVERNANCE_CORE.md",
         "docs/LOC8_KM.md",
-        "data/json/shared/LOC6_GOVERNANCE_REGISTRY.json"
+        "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json"
       ]
     }
   ],
