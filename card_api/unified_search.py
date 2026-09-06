@@ -500,6 +500,87 @@ class UnifiedSearchEngine:
                 eras.append({"result_id":era.get("era_id"),"system_id":self.eras.get("language_system_id") or "lo3rwang","primary_loc":"LOC8","related_locs":["LOC3","LOC4","LOC5","LOC6","LOC7"],"content_type":"era","group":"timeline","title":era.get("display_label") or era.get("name"),"summary":era.get("description") or era.get("state_after"),"score":round(score,6),"era_id":era.get("era_id"),"period":era.get("period"),"source_refs":[],"payload":payload})
         return textworks, media_results, knowledge, eras
 
+    def _loc6_article_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+        if wanted not in {"", "all", "governance_article"}:
+            return []
+
+        scored: list[tuple[float, dict[str, Any], str]] = []
+
+        # Maintained LOC6 article assets.
+        for asset in self.knowledge_assets.get("assets", []):
+            if asset.get("primary_loc") != "LOC6" or asset.get("content_type") != "governance_article":
+                continue
+            if not asset.get("searchable"):
+                continue
+            content = ""
+            rel_path = asset.get("path")
+            if rel_path:
+                p = self.repo_root / rel_path
+                if p.exists() and p.suffix.lower() in {".md", ".txt"}:
+                    try:
+                        content = p.read_text(encoding="utf-8")
+                    except Exception:
+                        content = ""
+            score = _text_score(query, [
+                asset.get("title"),
+                asset.get("role"),
+                " ".join(asset.get("keywords", [])),
+                asset.get("notes"),
+                content,
+            ])
+            if score >= 0.34:
+                row = dict(asset)
+                row["_content"] = content
+                scored.append((score, row, "asset"))
+
+        # Long-form Threads main posts are article-like primary evidence.
+        for doc in self.loc6_threads.get("documents", []):
+            text = str(doc.get("text") or "")
+            if doc.get("source_role") != "main_post" or len(text) < 120:
+                continue
+            score = _text_score(query, [
+                text,
+                " ".join(doc.get("matched_terms", [])),
+                doc.get("era"),
+            ])
+            if score >= 0.34:
+                scored.append((score * 0.96, doc, "threads"))
+
+        scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("asset_id") or "")))
+        out = []
+        for score, item, source_kind in scored[:top_k]:
+            if source_kind == "asset":
+                out.append({
+                    "result_id": item.get("asset_id"),
+                    "system_id": "lo3rwang",
+                    "primary_loc": "LOC6",
+                    "related_locs": item.get("related_locs", ["LOC7", "LOC8"]),
+                    "content_type": "governance_article",
+                    "group": "loc6_articles",
+                    "title": item.get("title"),
+                    "summary": item.get("notes") or item.get("role") or "",
+                    "score": round(score, 6),
+                    "source_refs": [{"source_type": item.get("source_type"), "source_id": item.get("path"), "note": item.get("authority_level")}],
+                    "payload": item,
+                })
+            else:
+                out.append({
+                    "result_id": item.get("id"),
+                    "system_id": "lo3rwang",
+                    "primary_loc": "LOC6",
+                    "related_locs": ["LOC7", "LOC8"],
+                    "content_type": "governance_article",
+                    "group": "loc6_articles",
+                    "title": f"Threads 長文 · {item.get('date') or 'undated'} · {item.get('era') or 'ERA'}",
+                    "summary": item.get("text") or "",
+                    "score": round(score, 6),
+                    "era_id": f"ERA-{item.get('era')}" if item.get("era") else None,
+                    "period": item.get("era"),
+                    "source_refs": [{"source_type": "threads", "source_id": item.get("source_id"), "note": "primary main-post evidence"}],
+                    "payload": {**item, "km_source": "LOC6_THREADS_KM_INDEX", "evidence_role": "primary"},
+                })
+        return out
+
     def _governance_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "governance_fragment"}:
             return []
@@ -744,6 +825,7 @@ class UnifiedSearchEngine:
             media = list(media_by_id.values())[:top_k]
             relationships = []
             governance = self._governance_results(query, top_k, effective_wanted)
+            loc6_articles = self._loc6_article_results(query, top_k, effective_wanted)
             runes = self._rune_results(oracle[0]["payload"].get("rune_name", ""), top_k, effective_wanted)
         else:
             faq = self._faq_results(query, top_k, wanted)
@@ -757,6 +839,7 @@ class UnifiedSearchEngine:
             media = list(media_by_id.values())[:top_k]
             relationships = self._relationship_results(query, top_k, wanted)
             governance = self._governance_results(query, top_k, wanted)
+            loc6_articles = self._loc6_article_results(query, top_k, wanted)
             runes = self._rune_results(query, top_k, wanted)
             eras = self._era_results(query, top_k, wanted)
 
@@ -767,6 +850,7 @@ class UnifiedSearchEngine:
             "textworks": textworks,
             "relationships": relationships,
             "governance": governance,
+            "loc6_articles": loc6_articles,
             "media": media,
             "knowledge": [*documents, *faq],
             "timeline": eras,
