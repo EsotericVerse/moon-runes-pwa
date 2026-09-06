@@ -866,7 +866,7 @@
       "authority_level": "primary-source-derived-index",
       "searchable": true,
       "index_priority": "high",
-      "version": "0.1",
+      "version": "0.2",
       "updated_at": "2026-09-06",
       "keywords": [
         "Threads",
@@ -885,7 +885,7 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "notes": "First searchable tranche from the 6907-record deduplicated Threads corpus. Main posts are primary evidence; replies are supplemental. Term DF/ERA distributions are corpus-derived evidence and are not Canon. Full corpus migration remains pending."
+      "notes": "Searchable LOC6 Threads tranche is live in Unified Search. Current repo tranche contains 21 primary main-post article records plus supplemental reply evidence and term DF/ERA statistics. Source corpus baseline is 7008 deduplicated records (4578 main posts / 2430 replies). Full corpus migration continues incrementally."
     }
   ]
 }
