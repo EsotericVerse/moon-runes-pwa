@@ -199,10 +199,35 @@
     .cards-grid[data-count="1"] { grid-template-columns:minmax(280px,520px); justify-content:center; }
     .cards-grid[data-count="2"] { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .cards-grid[data-count="3"] { grid-template-columns:repeat(3,minmax(0,1fr)); }
-    .cards-grid[data-count="5"] { grid-template-columns:repeat(6,minmax(0,1fr)); }
+    .cards-grid[data-count="5"] {
+      grid-template-columns:repeat(6,minmax(0,1fr));
+      gap:18px;
+    }
     .cards-grid[data-count="5"] .rune-result-card { grid-column:span 2; }
     .cards-grid[data-count="5"] .rune-result-card:nth-child(4) { grid-column:2 / span 2; }
     .cards-grid[data-count="5"] .rune-result-card:nth-child(5) { grid-column:4 / span 2; }
+    .cards-grid[data-count="5"] .rune-result-card {
+      background:linear-gradient(180deg,rgba(24,45,75,.86),rgba(14,31,54,.88));
+    }
+    .cards-grid[data-count="5"] .rune-result-position {
+      text-align:center;
+      font-size:.8rem;
+    }
+    .cards-grid[data-count="5"] .rune-result-image {
+      margin:12px;
+    }
+    .cards-grid[data-count="5"] .rune-result-body {
+      padding:0 12px 12px;
+      text-align:center;
+    }
+    .cards-grid[data-count="5"] .rune-result-name {
+      margin-bottom:8px;
+    }
+    .cards-grid[data-count="5"] .rune-result-grid {
+      grid-template-columns:1fr;
+      max-width:180px;
+      margin:8px auto 0;
+    }
 
     .rune-result-card {
       min-width:0;
@@ -373,6 +398,26 @@
       font-size:.76rem;
       text-align:right;
     }
+    .result-section-meta {
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .phase-chip {
+      display:inline-flex;
+      align-items:center;
+      min-height:30px;
+      padding:5px 10px;
+      border:1px solid rgba(231,194,125,.34);
+      border-radius:999px;
+      background:rgba(231,194,125,.07);
+      color:var(--gold);
+      font-size:.72rem;
+      font-weight:800;
+      white-space:nowrap;
+    }
     .card-details,
     .reading-details {
       margin-top:12px;
@@ -451,10 +496,27 @@
     .reading strong { color:var(--text); }
     .reading h2 { margin:0 0 12px; color:var(--text); font-size:1.15rem; }
     .actions {
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
       margin-top:18px;
+      padding-top:16px;
+      border-top:1px solid var(--border);
+    }
+    .actions .action-card {
+      min-height:46px;
+      padding:10px 14px;
+      border-radius:999px;
+    }
+    .actions .action-card small { display:none; }
+    .actions .action-card.primary-action {
+      border-color:transparent;
+      color:#160f26;
+      background:linear-gradient(135deg,#c7b7ff,#e8c57f);
+    }
+    .actions .action-card.primary-action strong {
+      color:#160f26;
     }
 
     .action-card {
@@ -569,7 +631,8 @@
 
     @media (max-width: 900px) {
       .ritual-layout { grid-template-columns: 1fr; }
-      .actions { grid-template-columns:1fr; }
+      .actions { align-items:stretch; }
+      .actions .action-card { flex:1 1 180px; }
       .cards-grid[data-count="3"] { grid-template-columns:repeat(3,minmax(0,1fr)); }
       .cards-grid[data-count="5"] { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .cards-grid[data-count="5"] .rune-result-card,
@@ -652,7 +715,10 @@
         <section class="result-block" aria-labelledby="drawn-cards-title">
           <div class="result-section-head">
             <h2 id="drawn-cards-title">本次牌面</h2>
-            <p>先看符文、方向與月相，再進入整體解讀。</p>
+            <div class="result-section-meta">
+              <span class="phase-chip" id="result-real-phase">真實月相｜計算中...</span>
+              <p>先看牌面，再進入整體解讀。</p>
+            </div>
           </div>
           <div class="result-card-stage">
             <div class="cards-grid" id="cards-grid"></div>
@@ -667,27 +733,18 @@
           <div class="reading" id="reading"></div>
         </section>
         <div class="actions" aria-label="結果頁操作">
-          <button class="action-card" id="retry-button" type="button">
-            <span>
-              <strong>重新抽牌</strong>
-              <small>以相同模式重新抽取一次</small>
-            </span>
+          <button class="action-card primary-action" id="retry-button" type="button">
+            <span><strong>重新抽牌</strong></span>
             <span aria-hidden="true">↻</span>
           </button>
 
           <a class="action-card" href="list.html">
-            <span>
-              <strong>查看月符資料</strong>
-              <small>66 月符圖鑑 · 八組分類 · 卡片詳細說明</small>
-            </span>
+            <span><strong>月符資料</strong></span>
             <span aria-hidden="true">→</span>
           </a>
 
           <a class="action-card" href="index.html">
-            <span>
-              <strong>回到首頁</strong>
-              <small>返回 LOC 首頁與抽牌選單</small>
-            </span>
+            <span><strong>回首頁</strong></span>
             <span aria-hidden="true">→</span>
           </a>
         </div>
