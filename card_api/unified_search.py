@@ -69,6 +69,7 @@ class UnifiedSearchEngine:
         self.eras = self._load_json("LOC_ERA_REGISTRY.json")
         self.content_types = self._load_json("LOC_CONTENT_TYPE_REGISTRY.json")
         self.relationships = self._load_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
+        self.graph_schema = self._load_json("LOC_GRAPH_SCHEMA.json")
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.loc6 = self._load_json("LOC6_GOVERNANCE_REGISTRY.json")
         self.loc6_threads = self._load_json("LOC6_THREADS_KM_INDEX.json")
@@ -1052,111 +1053,445 @@ class UnifiedSearchEngine:
         return filtered
 
 
-    def _graph_enrichment(self, query: str, groups: dict[str, list[dict[str, Any]]], limit: int = 12) -> dict[str, Any]:
-        """Traverse explicit cross-LOC relationships from current retrieval seeds.
+    def _canonical_graph(self) -> dict[str, Any]:
+        """Build the governed cross-LOC graph from authoritative registries.
 
-        Only author-confirmed / registry-backed relationships become graph edges.
-        Semantic search results can seed traversal, but semantic similarity alone
-        is never promoted to a canonical edge.
+        The graph is a reference layer. It does not copy or replace canonical
+        records; it only stores stable node references and evidence-backed edges.
         """
-        seed_tokens: set[str] = set()
-        seed_ids: set[str] = set()
-        for items in groups.values():
-            for item in items:
-                rid = str(item.get("result_id") or "").strip()
-                title = str(item.get("title") or "").strip()
-                if rid:
-                    seed_ids.add(rid)
-                    seed_tokens.add(_compact(rid))
-                if title:
-                    seed_tokens.add(_compact(title))
-                payload = item.get("payload") or {}
-                for key in ("work_id", "media_id", "asset_id", "source_id", "canonical_key"):
-                    value = str(payload.get(key) or "").strip()
-                    if value:
-                        seed_ids.add(value)
-                        seed_tokens.add(_compact(value))
-
-        q = _compact(query)
         nodes: dict[str, dict[str, Any]] = {}
-        edges: list[dict[str, Any]] = []
-        paths: list[dict[str, Any]] = []
+        edges: dict[str, dict[str, Any]] = {}
 
-        def add_node(node_id: str, label: str, loc: str, node_type: str) -> None:
-            if not node_id:
+        def add_node(node_id: Any, label: Any, node_type: str, primary_loc: str = "", **extra: Any) -> None:
+            nid = str(node_id or "").strip()
+            if not nid:
                 return
-            nodes.setdefault(node_id, {
-                "id": node_id,
-                "label": label or node_id,
-                "primary_loc": loc,
-                "node_type": node_type,
-            })
+            current = nodes.get(nid, {})
+            nodes[nid] = {
+                **current,
+                "id": nid,
+                "label": str(label or current.get("label") or nid),
+                "node_type": node_type or current.get("node_type") or "record",
+                "primary_loc": primary_loc or current.get("primary_loc") or "",
+                **{k: v for k, v in extra.items() if v not in (None, "", [], {})},
+            }
 
-        for rel in self.relationships.get("relationships", []):
-            canonical = str(rel.get("canonical_key") or "")
-            aliases = [canonical, *rel.get("aliases", []), *rel.get("keywords", [])]
-            source = rel.get("source") or {}
-            targets = rel.get("targets", []) or []
-            relation_text = " ".join([
-                canonical,
-                *[str(x or "") for x in aliases],
-                str(source.get("work_ref") or ""),
-                str(source.get("title") or ""),
-                *[str(t.get("work_ref") or "") for t in targets],
-                *[str(t.get("title") or "") for t in targets],
-            ])
-            compact_relation = _compact(relation_text)
-            query_match = bool(q and q in compact_relation)
-            seed_match = any(token and token in compact_relation for token in seed_tokens)
-            if not (query_match or seed_match):
+        def add_edge(
+            edge_id: Any,
+            source: Any,
+            target: Any,
+            relation_type: str,
+            evidence_kind: str,
+            summary: str = "",
+            evidence_status: str = "recorded",
+            **extra: Any,
+        ) -> None:
+            sid, tid = str(source or "").strip(), str(target or "").strip()
+            eid = str(edge_id or "").strip()
+            if not eid or not sid or not tid:
+                return
+            edges[eid] = {
+                "edge_id": eid,
+                "source": sid,
+                "target": tid,
+                "relation_type": relation_type,
+                "summary": summary,
+                "evidence_kind": evidence_kind,
+                "evidence_status": evidence_status,
+                **{k: v for k, v in extra.items() if v not in (None, "", [], {})},
+            }
+
+        # LOC domains are stable graph anchors.
+        for n in range(1, 9):
+            loc = f"LOC{n}"
+            add_node(loc, loc, "loc_domain", loc)
+
+        # ERA is the governed temporal backbone.
+        eras = sorted(self.eras.get("eras", []), key=lambda x: float(x.get("order") or 0))
+        for era in eras:
+            era_id = era.get("era_id")
+            add_node(
+                era_id,
+                era.get("display_label") or era.get("name") or era_id,
+                "era",
+                "LOC8",
+                period=era.get("period"),
+                start_date=era.get("start_date"),
+                end_date=era.get("end_date"),
+            )
+            add_edge(
+                f"EDGE-{era_id}-OWNED",
+                era_id,
+                "LOC8",
+                "owned_by_loc",
+                "authority_registry",
+                "ERA temporal authority is LOC8.",
+            )
+        for left, right in zip(eras, eras[1:]):
+            add_edge(
+                f"EDGE-{left.get('era_id')}-{right.get('era_id')}-TEMPORAL",
+                left.get("era_id"),
+                right.get("era_id"),
+                "temporal_before",
+                "deterministic_structural_evidence",
+                f"{left.get('period')} precedes {right.get('period')} on the governed ERA axis.",
+            )
+
+        # Searchable KM assets form governed analysis/document nodes.
+        for asset in self.knowledge_assets.get("assets", []):
+            aid = asset.get("asset_id")
+            if not aid:
                 continue
+            primary = asset.get("primary_loc") or "LOC7"
+            add_node(
+                aid,
+                asset.get("title") or aid,
+                "knowledge_asset",
+                primary,
+                content_type=asset.get("content_type"),
+                role=asset.get("role"),
+            )
+            add_edge(
+                f"EDGE-{aid}-OWNED-{primary}",
+                aid,
+                primary,
+                "owned_by_loc",
+                "registry_structure",
+                f"{aid} is governed by {primary}.",
+            )
+            for related in asset.get("related_locs", []) or []:
+                if related and related != primary:
+                    add_edge(
+                        f"EDGE-{aid}-RELATED-{related}",
+                        aid,
+                        related,
+                        "related_to",
+                        "registry_structure",
+                        f"{aid} declares {related} as a related LOC.",
+                    )
 
-            source_id = str(source.get("work_ref") or rel.get("relationship_id") or canonical)
-            source_label = str(source.get("title") or canonical or source_id)
-            source_loc = str(source.get("primary_loc") or "")
-            source_type = str(source.get("content_type") or "work")
-            add_node(source_id, source_label, source_loc, source_type)
-
-            for target in targets:
-                target_id = str(target.get("work_ref") or "")
+        # Explicit author-confirmed cross-work relationships.
+        for rel in self.relationships.get("relationships", []):
+            source = rel.get("source") or {}
+            source_id = source.get("work_ref") or rel.get("relationship_id")
+            add_node(
+                source_id,
+                source.get("title") or rel.get("canonical_key") or source_id,
+                source.get("content_type") or "work",
+                source.get("primary_loc") or "",
+            )
+            for target in rel.get("targets", []) or []:
+                target_id = target.get("work_ref")
                 if not target_id:
                     continue
-                target_label = str(target.get("title") or target_id)
-                target_loc = str(target.get("primary_loc") or "")
-                target_type = str(target.get("content_type") or "work")
-                add_node(target_id, target_label, target_loc, target_type)
-                edge = {
-                    "edge_id": f"{rel.get('relationship_id')}::{source_id}::{target_id}",
-                    "relationship_id": rel.get("relationship_id"),
-                    "source": source_id,
-                    "target": target_id,
-                    "relation_type": rel.get("relation_type") or "related_to",
-                    "direction": rel.get("direction"),
-                    "summary": rel.get("relation_summary") or target.get("relation_label") or "",
-                    "evidence_status": rel.get("evidence_status") or "registry",
-                    "evidence_kind": "explicit_registry_relation",
-                }
-                edges.append(edge)
-                paths.append({
-                    "from": {"id": source_id, "label": source_label, "primary_loc": source_loc},
-                    "relation": edge["relation_type"],
-                    "to": {"id": target_id, "label": target_label, "primary_loc": target_loc},
-                    "summary": edge["summary"],
-                })
-                if len(edges) >= limit:
-                    break
-            if len(edges) >= limit:
-                break
+                add_node(
+                    target_id,
+                    target.get("title") or target_id,
+                    target.get("content_type") or "work",
+                    target.get("primary_loc") or "",
+                )
+                add_edge(
+                    f"EDGE-{rel.get('relationship_id')}-{source_id}-{target_id}",
+                    source_id,
+                    target_id,
+                    rel.get("relation_type") or "related_to",
+                    "explicit_registry_relation",
+                    rel.get("relation_summary") or target.get("relation_label") or "",
+                    rel.get("evidence_status") or "registry",
+                    relationship_id=rel.get("relationship_id"),
+                    direction=rel.get("direction"),
+                )
 
         return {
-            "mode": "explicit_graph_traversal",
-            "canonical_edges_only": True,
-            "seed_result_ids": sorted(seed_ids)[:24],
+            "schema_version": self.graph_schema.get("schema_version") or "0.2",
             "nodes": list(nodes.values()),
-            "edges": edges,
-            "paths": paths,
+            "edges": list(edges.values()),
             "node_count": len(nodes),
             "edge_count": len(edges),
+        }
+
+    @staticmethod
+    def _result_graph_aliases(item: dict[str, Any]) -> set[str]:
+        aliases: set[str] = set()
+        for value in [
+            item.get("result_id"),
+            item.get("title"),
+            item.get("era_id"),
+            item.get("period"),
+        ]:
+            if value:
+                aliases.add(_compact(value))
+        payload = item.get("payload") or {}
+        for key in ("work_id", "media_id", "asset_id", "source_id", "canonical_key", "era_id", "period"):
+            value = payload.get(key)
+            if value:
+                aliases.add(_compact(value))
+        return {x for x in aliases if x}
+
+    def _graph_enrichment(
+        self,
+        query: str,
+        groups: dict[str, list[dict[str, Any]]],
+        depth: int = 2,
+        limit: int = 40,
+    ) -> dict[str, Any]:
+        """Seed the canonical graph from retrieval results, then traverse it.
+
+        Retrieval similarity chooses seeds only. Every traversed edge must
+        already be registry-backed or deterministic structural evidence.
+        """
+        base = self._canonical_graph()
+        nodes = {str(node.get("id")): dict(node) for node in base.get("nodes", []) if node.get("id")}
+        edges = [dict(edge) for edge in base.get("edges", [])]
+
+        result_by_id: dict[str, dict[str, Any]] = {}
+        alias_to_result_ids: dict[str, set[str]] = {}
+        seed_ids: set[str] = set()
+        matched_periods: set[str] = set()
+
+        # Add current retrieval results as transient graph nodes with only
+        # deterministic ownership / ERA / media-work edges.
+        for group, items in groups.items():
+            for item in items:
+                rid = str(item.get("result_id") or "").strip()
+                if not rid:
+                    continue
+                result_by_id[rid] = item
+                aliases = self._result_graph_aliases(item)
+                for alias in aliases:
+                    alias_to_result_ids.setdefault(alias, set()).add(rid)
+
+                nodes.setdefault(rid, {
+                    "id": rid,
+                    "label": item.get("title") or rid,
+                    "node_type": item.get("content_type") or "search_result",
+                    "primary_loc": item.get("primary_loc") or "",
+                    "result_group": group,
+                    "transient": True,
+                })
+
+                loc = str(item.get("primary_loc") or "").strip()
+                if loc:
+                    edges.append({
+                        "edge_id": f"SEARCH-{rid}-OWNED-{loc}",
+                        "source": rid,
+                        "target": loc,
+                        "relation_type": "owned_by_loc",
+                        "summary": f"Search result belongs to {loc}.",
+                        "evidence_kind": "result_metadata",
+                        "evidence_status": "recorded",
+                    })
+
+                era_id = str(item.get("era_id") or (item.get("payload") or {}).get("era_id") or "").strip()
+                period = str(item.get("period") or (item.get("payload") or {}).get("period") or "").strip()
+                if not era_id and period:
+                    era = next((x for x in self.eras.get("eras", []) if str(x.get("period")) == period), None)
+                    era_id = str((era or {}).get("era_id") or "")
+                if era_id:
+                    matched_periods.add(period or era_id.replace("ERA-", ""))
+                    edges.append({
+                        "edge_id": f"SEARCH-{rid}-ERA-{era_id}",
+                        "source": rid,
+                        "target": era_id,
+                        "relation_type": "belongs_to_era",
+                        "summary": f"Search result is recorded in {period or era_id}.",
+                        "evidence_kind": "result_metadata",
+                        "evidence_status": "recorded",
+                    })
+
+                payload = item.get("payload") or {}
+                linked_work = str(payload.get("linked_work_id") or "").strip()
+                if linked_work:
+                    edges.append({
+                        "edge_id": f"SEARCH-{rid}-REPRESENTS-{linked_work}",
+                        "source": rid,
+                        "target": linked_work,
+                        "relation_type": "represented_by" if item.get("primary_loc") != "LOC5" else "adapted_to",
+                        "summary": "Media/work linkage supplied by registry metadata.",
+                        "evidence_kind": "result_metadata",
+                        "evidence_status": "recorded",
+                    })
+
+        # Seed from returned result IDs and exact graph/query aliases.
+        q = _compact(query)
+        for rid, item in result_by_id.items():
+            seed_ids.add(rid)
+            if q and any(q in alias or alias in q for alias in self._result_graph_aliases(item)):
+                seed_ids.add(rid)
+        for node_id, node in nodes.items():
+            hay = _compact(" ".join([
+                str(node.get("id") or ""),
+                str(node.get("label") or ""),
+                str(node.get("period") or ""),
+                str(node.get("role") or ""),
+            ]))
+            if q and q in hay:
+                seed_ids.add(node_id)
+
+        adjacency: dict[str, list[dict[str, Any]]] = {}
+        for edge in edges:
+            source, target = str(edge.get("source") or ""), str(edge.get("target") or "")
+            if not source or not target:
+                continue
+            adjacency.setdefault(source, []).append(edge)
+            adjacency.setdefault(target, []).append(edge)
+
+        visited = set(seed_ids)
+        frontier = set(seed_ids)
+        selected_edge_ids: set[str] = set()
+        levels: dict[str, int] = {sid: 0 for sid in seed_ids}
+
+        for level in range(1, max(1, min(depth, 3)) + 1):
+            nxt: set[str] = set()
+            for nid in frontier:
+                for edge in adjacency.get(nid, []):
+                    eid = str(edge.get("edge_id") or "")
+                    if eid:
+                        selected_edge_ids.add(eid)
+                    other = str(edge.get("target") if str(edge.get("source")) == nid else edge.get("source"))
+                    if other and other not in visited:
+                        visited.add(other)
+                        levels[other] = level
+                        nxt.add(other)
+                    if len(selected_edge_ids) >= limit:
+                        break
+                if len(selected_edge_ids) >= limit:
+                    break
+            frontier = nxt
+            if not frontier or len(selected_edge_ids) >= limit:
+                break
+
+        selected_edges = [edge for edge in edges if str(edge.get("edge_id") or "") in selected_edge_ids][:limit]
+        selected_node_ids = set(seed_ids)
+        for edge in selected_edges:
+            selected_node_ids.add(str(edge.get("source") or ""))
+            selected_node_ids.add(str(edge.get("target") or ""))
+        selected_nodes = [nodes[nid] for nid in selected_node_ids if nid in nodes]
+
+        paths = []
+        for edge in selected_edges:
+            source = nodes.get(str(edge.get("source")), {"id": edge.get("source")})
+            target = nodes.get(str(edge.get("target")), {"id": edge.get("target")})
+            paths.append({
+                "from": {
+                    "id": source.get("id"),
+                    "label": source.get("label"),
+                    "primary_loc": source.get("primary_loc"),
+                    "node_type": source.get("node_type"),
+                },
+                "relation": edge.get("relation_type"),
+                "to": {
+                    "id": target.get("id"),
+                    "label": target.get("label"),
+                    "primary_loc": target.get("primary_loc"),
+                    "node_type": target.get("node_type"),
+                },
+                "summary": edge.get("summary") or "",
+                "evidence_kind": edge.get("evidence_kind"),
+            })
+
+        # Convert traversed graph nodes back into a useful aggregation layer.
+        connected_result_ids = [
+            nid for nid in selected_node_ids
+            if nid in result_by_id and nid not in seed_ids
+        ]
+        connected_results = [{
+            "result_id": rid,
+            "title": result_by_id[rid].get("title"),
+            "primary_loc": result_by_id[rid].get("primary_loc"),
+            "group": result_by_id[rid].get("group"),
+        } for rid in connected_result_ids]
+
+        era_nodes = [node for node in selected_nodes if node.get("node_type") == "era"]
+        era_nodes.sort(key=lambda node: next(
+            (float(x.get("order") or 0) for x in self.eras.get("eras", []) if x.get("era_id") == node.get("id")),
+            999.0,
+        ))
+
+        loc_nodes = sorted({
+            str(node.get("id"))
+            for node in selected_nodes
+            if node.get("node_type") == "loc_domain"
+        })
+
+        return {
+            "mode": "canonical_graph_rag",
+            "canonical_edges_only": True,
+            "depth": max(levels.values()) if levels else 0,
+            "seed_result_ids": sorted(seed_ids)[:50],
+            "nodes": selected_nodes,
+            "edges": selected_edges,
+            "paths": paths,
+            "node_count": len(selected_nodes),
+            "edge_count": len(selected_edges),
+            "connected_result_ids": connected_result_ids,
+            "connected_results": connected_results,
+            "era_path": [{
+                "era_id": node.get("id"),
+                "period": node.get("period"),
+                "label": node.get("label"),
+            } for node in era_nodes],
+            "loc_path": loc_nodes,
+            "graph_registry_counts": {
+                "nodes": base.get("node_count", 0),
+                "edges": base.get("edge_count", 0),
+            },
+        }
+
+    def graph_snapshot(self, node_id: str = "", depth: int = 2) -> dict[str, Any]:
+        """Expose the governed graph for diagnostics and external graph clients."""
+        graph = self._canonical_graph()
+        if not node_id:
+            return {
+                "mode": "canonical_graph",
+                "nodes": graph.get("nodes", []),
+                "edges": graph.get("edges", []),
+                "node_count": graph.get("node_count", 0),
+                "edge_count": graph.get("edge_count", 0),
+            }
+
+        nodes = {str(node.get("id")): node for node in graph.get("nodes", [])}
+        edges = graph.get("edges", [])
+        if node_id not in nodes:
+            return {
+                "mode": "canonical_graph",
+                "center": node_id,
+                "nodes": [],
+                "edges": [],
+                "node_count": 0,
+                "edge_count": 0,
+            }
+
+        adjacency: dict[str, list[dict[str, Any]]] = {}
+        for edge in edges:
+            adjacency.setdefault(str(edge.get("source")), []).append(edge)
+            adjacency.setdefault(str(edge.get("target")), []).append(edge)
+
+        visited = {node_id}
+        frontier = {node_id}
+        edge_ids: set[str] = set()
+        for _ in range(max(1, min(int(depth or 2), 3))):
+            nxt: set[str] = set()
+            for nid in frontier:
+                for edge in adjacency.get(nid, []):
+                    edge_ids.add(str(edge.get("edge_id")))
+                    other = str(edge.get("target") if str(edge.get("source")) == nid else edge.get("source"))
+                    if other and other not in visited:
+                        visited.add(other)
+                        nxt.add(other)
+            frontier = nxt
+            if not frontier:
+                break
+
+        selected_edges = [edge for edge in edges if str(edge.get("edge_id")) in edge_ids]
+        return {
+            "mode": "canonical_graph",
+            "center": node_id,
+            "depth": depth,
+            "nodes": [nodes[nid] for nid in visited if nid in nodes],
+            "edges": selected_edges,
+            "node_count": len(visited),
+            "edge_count": len(selected_edges),
         }
 
     def _synthesize_search(
@@ -1269,9 +1604,13 @@ class UnifiedSearchEngine:
                 "mode": graph.get("mode"),
                 "node_count": graph.get("node_count", 0),
                 "edge_count": graph.get("edge_count", 0),
-                "paths": graph.get("paths", [])[:6],
+                "paths": graph.get("paths", [])[:10],
+                "era_path": graph.get("era_path", []),
+                "loc_path": graph.get("loc_path", []),
+                "connected_results": graph.get("connected_results", [])[:10],
+                "registry_counts": graph.get("graph_registry_counts", {}),
             },
-            "governance_note": "綜合結果優先引用既有知識／分析；Graph 只採明確 Registry 關聯。語意相似只作檢索證據，不自動寫成 Canon edge。",
+            "governance_note": "綜合結果先由 Search 取回證據，再以 Canonical Graph 聚合 LOC、ERA、作品與分析節點。語意相似只負責選 seed；Graph edge 僅採 Registry、權威欄位或可確定的結構關係。",
         }
 
 
@@ -1351,6 +1690,6 @@ class UnifiedSearchEngine:
                 "LOC6": "governance+threads-km-search-live",
                 "LOC6_threads_indexed": len(self._loc6_article_documents()),
                 "LOC7": "live",
-                "LOC8": "live-era",
+                "LOC8": "era+context-graph-live",
             },
         }
