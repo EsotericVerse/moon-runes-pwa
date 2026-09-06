@@ -114,3 +114,33 @@ This preserves deep/specialized workflows while providing one default semantic e
 - LOC8 的 repository Event／Daily Rune snapshot 可進公開時間圖；live Google Sheet `Relation` 的 private rows 不會由公開 Search API 直接輸出。
 
 這個界線確保 `life.html` 可以保有私人 Relation Library，同時讓公開 `search.html` 使用已治理、可追溯的 Graph RAG。
+
+## Graph Quality / Weighted Traversal
+
+Canonical Graph RAG 現行採 quality-weighted traversal。每條 edge 都包含：
+
+- `edge_quality`：由 relation type × evidence kind × evidence status 決定的治理分數（0–1）。
+- `quality_band`：`high` / `medium` / `low`。
+- `traversal_score`：沿目前 path 累積 edge quality 並套用 hop decay 後的實際遍歷分數。
+
+預設 policy：
+
+- `min_traversal_score = 0.25`
+- `hop_decay = 0.88`
+- `owned_by_loc` / `belongs_to_era` 為單向結構投影，不可反向作為 discovery hub。
+- 專名／歷史實體查詢可優先使用 canonical exclusive seeds；抽象概念查詢保留跨 LOC retrieval breadth。
+
+`graph.quality` 回傳本次遍歷的 quality summary：
+
+```text
+min_traversal_score
+hop_decay
+high_quality_edges
+medium_quality_edges
+low_quality_edges
+mean_edge_quality
+```
+
+`provenance` 同步回傳 `graph_quality_bands` 與 `graph_quality`。Search Synthesis 的 confidence 也會納入 mean edge quality，而不再只看命中數與 edge 數。
+
+這套分數是 **治理權重**，不是模型主觀機率；權重定義以 `data/shared/LOC_GRAPH_SCHEMA.json` v0.4 為 contract。

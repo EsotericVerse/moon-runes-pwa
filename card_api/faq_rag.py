@@ -165,16 +165,72 @@ class FAQSearchEngine:
         selected: list[SearchResult] = []
         seen_answers: set[str] = set()
         seen_parents: set[str] = set()
-        for result in relevant:
+
+        def add_result(result: SearchResult) -> bool:
             answer = result.chunk["answer"].strip()
             parent_id = result.chunk["parent_id"]
             if answer in seen_answers or parent_id in seen_parents:
-                continue
+                return False
             seen_answers.add(answer)
             seen_parents.add(parent_id)
             selected.append(result)
-            if len(selected) == intent_limit:
-                break
+            return True
+
+        # Multi-intent queries should retrieve each clause independently before
+        # global ranking. Otherwise one strong topic can occupy all top slots
+        # and hide the second requested source.
+        clauses = [
+            part.strip(" ，,。！？!?")
+            for part in re.split(r"(?:以及|還有|同時|或者|與|和)", query)
+            if part.strip(" ，,。！？!?")
+        ]
+        # Shared interrogative tails semantically apply to every coordinated
+        # clause: "A 和 B 是什麼？" means "A 是什麼？" + "B 是什麼？".
+        shared_tail = ""
+        tail_match = re.search(r"(是什麼|是甚麼|做什麼|有什麼|怎麼運作|怎麼使用|如何運作|如何使用)[？?]?$", query)
+        if tail_match:
+            shared_tail = tail_match.group(1)
+
+        if intent_limit > 1 and len(clauses) > 1:
+            for clause in clauses[:intent_limit]:
+                subquery = clause
+                if shared_tail and shared_tail not in subquery:
+                    subquery = f"{subquery}{shared_tail}"
+                clause_results = self.search(subquery, top_k=top_k)
+                clause_relevant = [result for result in clause_results if result.score >= 0.08]
+
+                # Prefer the concrete noun phrase requested by the clause over
+                # a generic module definition. Example: "LOC3的歌曲是什麼"
+                # should prefer a FAQ whose question is about 歌曲, not merely
+                # "LOC3是什麼".
+                focus = _normalize(subquery)
+                focus = re.sub(r"loc\s*\d+", "", focus, flags=re.I)
+                focus = re.sub(
+                    r"(是什麼|是甚麼|什麼|甚麼|怎麼運作|怎麼使用|如何運作|如何使用|怎麼|如何|的)",
+                    "",
+                    focus,
+                )
+                focus = focus.strip(" ，,。！？!?")
+                if len(focus) >= 2:
+                    focused = [
+                        result for result in clause_relevant
+                        if focus in _normalize(str(result.chunk.get("question") or ""))
+                    ]
+                    if focused:
+                        clause_relevant = focused
+
+                if clause_relevant:
+                    add_result(clause_relevant[0])
+                if len(selected) == intent_limit:
+                    break
+
+        # Fill remaining slots from the full-query ranking while preserving
+        # distinct source parents/answers.
+        if len(selected) < intent_limit:
+            for result in relevant:
+                add_result(result)
+                if len(selected) == intent_limit:
+                    break
 
         answer = "\n\n".join(
             f"{result.chunk['answer'].strip()} [{result.chunk['id']}]"

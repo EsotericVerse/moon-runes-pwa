@@ -397,6 +397,18 @@ LOC8 目前額外接入兩個 repository-governed fallback snapshot：
 3. Semantic similarity 只能選 seed，不能自行建立 canonical edge。
 4. Search API 必須回傳 provenance，讓結果可追溯至 source_refs、edge evidence kind 與 evidence status。
 5. Relation 公開化是治理動作，不是單純同步動作。
+### Relation confidence 與時間圖治理
+
+LOC8 進入 Graph 的 Event、Daily Rune、ERA 與 Relation 不應因「存在」就具有相同強度。現行 Search Core 使用 LOC7 Graph Schema 的 edge quality policy，將 evidence source、status 與 relation type 分開計權。
+
+LOC8 特別遵守：
+
+- live Google Sheet private Relation 不直接進公開 Graph。
+- repository snapshot 屬 recorded fallback evidence，權重低於 authority registry／直接 canonical metadata。
+- ERA membership 為 `record → ERA` 單向投影，不能由 ERA 反向展開整個時期的所有事件。
+- temporal query 應優先保持時間 precision；抽象概念 query 才允許跨 LOC 擴展。
+- traversal score 太低的路徑直接停止，不因 hop 增加而擴散。
+
 ### Graph RAG 品質控制
 
 LOC8 的 Event、ERA、Daily Rune 一旦進 Graph，不代表所有 traversal 都是正確的。現行加入固定 regression cases，至少驗證：

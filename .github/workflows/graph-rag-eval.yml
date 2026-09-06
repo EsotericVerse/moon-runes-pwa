@@ -30,5 +30,7 @@ jobs:
           cache: pip
           cache-dependency-path: card_api/requirements.txt
       - run: pip install -r requirements.txt
-      - run: python -m unittest test_unified_search.py
+      - run: python -m compileall -q .
+      - run: python -m unittest discover -p "test_*.py"
       - run: python scripts/evaluate_graph_rag.py
+      - run: python scripts/validate_search_core.py
