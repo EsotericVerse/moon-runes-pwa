@@ -46,7 +46,7 @@ moon-runes-pwa/
 │     └─ experimental/      # research-only JSON
 │
 ├─ engine/                  # research / embedding / training experiments only
-├─ docs/                    # maintained KM / architecture / governance docs
+├─ km/                    # maintained KM / architecture / governance docs
 ├─ js/                      # browser application logic
 ├─ css/                     # browser styles
 ├─ tools/                   # repository-wide builders/importers
@@ -168,7 +168,7 @@ Historical material only.
 
 Current runtime must never silently fall back to archive data.
 
-### docs/
+### km/
 
 Maintained knowledge and governance documents.
 
@@ -214,7 +214,7 @@ api/
 data/json/core/runes64.json
 data/json/registries/LOC_GRAPH_SCHEMA.json
 data/json/search/faq/LOC_FAQ_RAG_v0.4.json
-docs/REPOSITORY_GOVERNANCE.md
+km/REPOSITORY_GOVERNANCE.md
 ~~~
 
 Avoid:
