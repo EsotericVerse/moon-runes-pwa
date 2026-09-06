@@ -179,7 +179,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC4 | 已建立文字分類，並完成以其為文本結構的七大篇長篇小說，全文約 22 萬字；另有其他小說與文字創作。 |
 | LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
 | LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；Threads 公開文字 corpus 自 2024-11-18 起至 2026-09-06，現行去重基準共 **7,008 筆文字紀錄**（4,578 主貼文＋2,430 Reply），已開始接入 KM／Unified Search，並進入全文概念、ERA 與治理語言解析。另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證。 |
-| LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7、LOC8 的現有資料來源。完整 Knowledge Graph expansion／Graph RAG 仍屬後續階段。 |
+| LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7、LOC8 的現有資料來源。Graph RAG 核心已完成；後續重點為治理 runtime、Graph View 與持續品質驗證。 |
 | LOC8 | `life.html` 已具備每日符文、ERA 時期管理、Event 紀錄、Event Timeline、Relation Library、軌跡 Trajectory 與趨勢分析 Analysis。ERA 已可在顯示位置直接新增／修改／刪除，後端 Apps Script API 已升至 `loc8-mvp-1.1`；Context 目前可呈現跨時期 Relation 與 LOC3 關鍵字比重升降／文字轉折說明，Graph 視圖仍屬後續。 |
 
 LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；LOC6 已有治理／政德風與符文解析資料，LOC7 已有 KM／FAQ／RAG／Unified Search，LOC8 已有可操作的事件、時期與每日符文介面。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
@@ -288,7 +288,7 @@ LOC6 現行新增一個可量化的公開語言 corpus：
 
 ### Python／FastAPI API
 
-`card_api/` 是目前實際作用的 API 目錄，包含 FastAPI 主程式及應用所需的 JSON 資料，用於：
+`card_api/` 是目前實際作用的 API 程式目錄；資料已集中到 `data/json/`，並由 `card_api/paths.py` 統一解析路徑。API 用於：
 
 - 符文資料讀取
 - 農曆日期及時間窗計算
@@ -323,14 +323,14 @@ LOC4 已可直接搜尋 Writing Registry，LOC5 可搜尋 Media Registry，LOC6 
 
 ### 語意引擎實驗
 
-`engine/` 是獨立的實驗目錄，保存語意向量、訓練資料、測試腳本與相關中間資料。其內容用於研究及驗證，不等同於 `card_api/` 的正式作用流程，也不代表完整 LLM、RAG 或 Graph RAG 已正式部署。
+`engine/` 是獨立的實驗程式目錄；實驗 JSON 已集中到 `data/json/experimental/engine/`，二進位向量仍留在 engine／後續 binary data migration 處理。其內容用於研究及驗證，不等同於 `card_api/` 的正式作用流程，也不代表完整 LLM、RAG 或 Graph RAG 已正式部署。
 
 ### PWA 功能
 
 PWA 與 RWD 架構已於 2025 年 5 月完成，現行版本包含：
 
 - 首頁載入後主動註冊 Service Worker
-- 透過 `moon-runes-pwa-v105` 快取關鍵資源（包含FAQ查詢頁）
+- 透過 `moon-runes-pwa-v107` 快取關鍵資源（包含 FAQ 與集中式資料路徑）
 - 更新時保留現行快取並清除舊版快取
 - 支援新增至桌面／主畫面
 - 提供 192×192、512×512 與 Apple Touch Icon
@@ -345,7 +345,7 @@ LOC7_KM 採 **Markdown-first, structured-data-native**：
 
 - `docs/LOC7_KM.md`：repository 內可維護 KM 主文件
 - `docs/JSON_DATA_MAP.md`：JSON 角色與同步方向
-- `data/json/shared/*.json`：跨 LOC 結構化 registry
+- `data/json/registries/*.json`：跨 LOC 結構化 registry
 - FAQ v0.4 為 KM 問答 View；RAG v0.4 為其檢索衍生資料
 - 下游 JSON／索引／UI／AI 推論不得反向覆寫 Canon、母資料或原始作品
 
@@ -387,7 +387,7 @@ LOC3 現行 demo 主要採用：
 資料 → Embedding → FAISS → 語意搜尋結果
 ```
 
-LOC7 FAQ v0.4 已整理 80 題公開 FAQ，並同步產生 RAG v0.4 檢索資料，提供 [`faq.html`](https://loc.lo3rwang.cc/faq.html) 作為專門 Knowledge View，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。Unified Search 則把 FAQ／KM 與 LOC1、LOC3、LOC4、LOC5、LOC6、LOC8 的現有資料來源放進同一查詢入口。完整 Graph RAG 仍是後續方向，不作為現行完成度宣稱。
+LOC7 FAQ v0.4 已整理 80 題公開 FAQ，並同步產生 RAG v0.4 檢索資料，提供 [`faq.html`](https://loc.lo3rwang.cc/faq.html) 作為專門 Knowledge View，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。Unified Search 則把 FAQ／KM 與 LOC1、LOC3、LOC4、LOC5、LOC6、LOC8 的現有資料來源放進同一查詢入口。Graph RAG 核心已完成並具 temporal/provenance/precision/quality 與 regression/integration validation；後續重點為治理 runtime 與視覺化。
 
 ---
 
@@ -395,76 +395,41 @@ LOC7 FAQ v0.4 已整理 80 題公開 FAQ，並同步產生 RAG v0.4 檢索資料
 
 ```text
 moon-runes-pwa/
-├── 🏠 前端頁面
-│   ├── index.html
-│   ├── faq.html
-│   ├── list.html
-│   ├── daily.html
-│   ├── 2card.html
-│   ├── 3card.html
-│   ├── 5card.html
-│   ├── result.html
-│   └── fate.html
-├── 🎨 樣式與圖像
-│   ├── css/
-│   │   └── style.css
-│   ├── 64images/
-│   │   └── 01_靈.png … 66_命.png
-│   └── icons/
-│       ├── icon-192x192.png
-│       └── icon-512x512.png
-├── ⚙️ 前端邏輯
-│   └── js/
-│       ├── main.js
-│       ├── list.js
-│       ├── daily.js
-│       ├── 2card.js
-│       ├── 3card.js
-│       ├── 5card.js
-│       ├── result.js
-│       ├── fate.js
-│       ├── direction64.js
-│       ├── runeLibrary.js
-│       └── 符文衍生資料檔
-├── 🐍 實際作用 API
-│   └── card_api/
-│       ├── main.py
-│       ├── faq_rag.py
-│       ├── FAQ_API.md
-│       ├── requirements.txt
-│       ├── data/
-│       │   ├── LOC_FAQ_v0.1.json … LOC_FAQ_v0.3.json
-│       │   └── LOC_FAQ_RAG_v0.1.json … LOC_FAQ_RAG_v0.3.json
-│       ├── new_runes.json
-│       ├── runes_all_data.json
-│       └── three_card_combinations.json
-├── 🧪 語意引擎實驗
-│   └── engine/
-│       ├── combined_embeddings.npy
-│       ├── combined_meta.json
-│       ├── training_data.json
-│       └── 其他測試腳本與實驗資料
-├── requirements.txt
-├── render.yaml                  # 指向 card_api/ 的 Render Blueprint
-├── 📚 KM 與文件
-│   └── docs/
-│       ├── README.md
-│       ├── LOC7_KM.md
-│       ├── JSON_DATA_MAP.md
-│       └── 其他發布文件
-├── 📚 Canon、語法與母資料
-│   ├── docs/LOC_Canon.docx
-│   ├── docs/64LunaRune.docx
-│   ├── docs/LunarRunesCardCut.pdf
-│   └── LunaRune64.xlsx
-├── 📱 PWA 與部署配置
-│   ├── manifest.json
-│   ├── service-worker.js
-│   ├── favicon.ico
-│   ├── apple-touch-icon.png
-│   └── CNAME
-└── README.md
+├── card_api/                  # 作用中 FastAPI / Search 程式
+│   ├── main.py
+│   ├── paths.py               # Python 資料路徑 contract
+│   ├── faq_rag.py
+│   ├── loc3_search.py
+│   ├── unified_search.py
+│   └── scripts/
+├── data/
+│   └── json/
+│       ├── core/              # 穩定 runtime projection
+│       ├── registries/        # Registry / Schema / Policy
+│       ├── search/            # FAQ、LOC3 等檢索資料
+│       ├── generated/         # 可重建索引／分析／shards
+│       ├── archive/           # 歷史版本，不進 current runtime
+│       └── experimental/      # engine 實驗 JSON
+├── engine/                    # 實驗程式與二進位向量；JSON 不再散放於此
+├── docs/
+│   ├── README.md
+│   ├── REPOSITORY_GOVERNANCE.md
+│   ├── methodology/
+│   └── LOC／KM／Governance 文件
+├── js/                        # 前端邏輯
+├── css/                       # 前端樣式
+├── tools/                     # repo-wide builders / importers
+├── loc8_api/                  # Google Apps Script 模組
+├── 64images/                  # 公開 URL 敏感的月符卡圖
+├── pics/                      # 視覺資產（後續媒體治理）
+├── reels/                     # 影片資產（後續媒體治理）
+├── *.html                     # GitHub Pages 公開路由
+├── LunaRune64.xlsx            # 最高優先符文母資料
+├── manifest.json              # PWA config；不是 data JSON
+└── service-worker.js
 ```
+
+資料與目錄治理詳見 [Repository Governance](./docs/REPOSITORY_GOVERNANCE.md) 與 [Data Directory](./data/README.md)。
 
 ---
 
