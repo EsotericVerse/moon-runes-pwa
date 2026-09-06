@@ -750,7 +750,7 @@
 
         <section class="card" style="margin-top:16px;" id="era-keywords">
           <div class="head">
-            <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸整合不同來源：P1 以 LOC4／LOC5 為主要關鍵字證據；P2–P8 再加入 LOC3 歌曲語義，避免把沒有正式 LOC3 分析的 P1 顯示成空白。</p></div>
+            <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸比較關鍵字的文件數、出現比例與相鄰時期變化；LOC6 使用 Threads 公開語言，LOC3／LOC4／LOC5 保留各自作品證據。</p></div>
             <span class="badge">Cross-LOC × 時期</span>
           </div>
           <div class="body"><div class="era-keyword-grid" id="eraKeywordGrid"><div class="empty">載入 時期關鍵字中…</div></div></div>
@@ -1446,12 +1446,17 @@
       if (els.eraMetricKeywords) els.eraMetricKeywords.textContent = analyzedPeriodCount;
 
       if (els.eraKeywordGrid) {
-        els.eraKeywordGrid.innerHTML = ordered.map(era => {
+        els.eraKeywordGrid.innerHTML = ordered.map((era, eraIndex) => {
           const period = String(era.period || '');
           const loc3 = loc3PeriodMap.get(period);
           const loc6 = loc6PeriodMap.get(period);
           const loc6Keywords = Array.isArray(loc6?.keywords) ? loc6.keywords.slice(0,10) : [];
           const loc6DocCount = Number(loc6?.document_count || 0);
+          const prevPeriod = eraIndex > 0 ? String(ordered[eraIndex - 1]?.period || '') : '';
+          const prevLoc6 = loc6PeriodMap.get(prevPeriod);
+          const prevLoc6Percent = new Map(
+            (Array.isArray(prevLoc6?.keywords) ? prevLoc6.keywords : []).map(item => [String(item.term || ''), Number(item.percent || 0)])
+          );
           const namedKeywords = Array.isArray(loc3?.named_keywords)
             ? loc3.named_keywords
             : [];
@@ -1479,7 +1484,7 @@
               ${loc6Keywords.length ? `
                 <div class="era-source-note" style="margin-bottom:6px">LOC6｜Threads 公開語言</div>
                 <div class="era-keyword-chips" style="margin-bottom:10px">
-                  ${loc6Keywords.map(item => `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.percent)}%</b></span>`).join('')}
+                  ${loc6Keywords.map(item => { const prev=prevLoc6Percent.get(String(item.term||''))||0; const delta=Number((Number(item.percent||0)-prev).toFixed(1)); const deltaText=eraIndex===0?'':(delta>0?' ▲'+delta:(delta<0?' ▼'+Math.abs(delta):' ＝')); return `<span class="era-keyword-chip">${esc(item.term)} <b>${esc(item.document_count||0)}篇 · ${esc(item.percent)}%${esc(deltaText)}</b></span>`; }).join('')}
                 </div>
                 <div class="era-source-note" style="margin-bottom:10px">主貼文 document frequency；高頻不等於 Canon。</div>
               ` : ''}
