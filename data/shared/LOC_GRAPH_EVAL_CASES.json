@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_GRAPH_EVAL_CASES",
   "authority": "LOC7",
   "purpose": "Deterministic regression set for LOC Graph RAG. Cases assert governed graph reachability and provenance, not generative answer wording.",
@@ -9,7 +9,9 @@
     "expected_loc_recall",
     "expected_era_recall",
     "provenance_presence",
-    "forbidden_node_absence"
+    "forbidden_node_absence",
+    "forbidden_loc_absence",
+    "forbidden_era_absence"
   ],
   "cases": [
     {
@@ -89,6 +91,45 @@
         ]
       },
       "note": "Direct ERA query should stay on the governed temporal backbone."
+    },
+    {
+      "id": "GR-EVAL-006",
+      "query": "Luna Codex",
+      "expect": {
+        "forbidden_eras": [
+          "ERA-P8"
+        ],
+        "forbidden_nodes": [
+          "EV-ERA-P8"
+        ]
+      },
+      "note": "Naming-origin lookup must not collapse onto the current P8 governance era."
+    },
+    {
+      "id": "GR-EVAL-007",
+      "query": "月語者",
+      "expect": {
+        "forbidden_eras": [
+          "ERA-P8"
+        ],
+        "forbidden_locs": [
+          "LOC3"
+        ]
+      },
+      "note": "The recorded novel milestone belongs to LOC4/LOC8 history and must not be misrouted as music/current-era evidence."
+    },
+    {
+      "id": "GR-EVAL-008",
+      "query": "P1",
+      "expect": {
+        "eras": [
+          "ERA-P1"
+        ],
+        "forbidden_eras": [
+          "ERA-P8"
+        ]
+      },
+      "note": "Direct historical ERA lookup must preserve temporal precision instead of defaulting to current."
     }
   ],
   "governance": [
