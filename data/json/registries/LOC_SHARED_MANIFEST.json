@@ -1,7 +1,7 @@
 {
   "schema_version": "0.2",
   "manifest": "LOC_SHARED_REGISTRIES",
-  "root": "data/shared",
+  "root": "data/json/registries",
   "language_system_id": "lo3rwang",
   "registries": [
     {
@@ -152,7 +152,7 @@
       "rune_song_registry": "connected; confirmed provenance records currently pending",
       "reasoning_proposition_layer": "connected",
       "cross_relationship_registry": "connected",
-      "ui": "Unified Search only; loc3.html compatibility redirect"
+      "ui": "Unified Search only; no compatibility redirect"
     },
     "LOC4": {
       "writing_registry": "schema-ready",
@@ -235,7 +235,6 @@
         "life.html"
       ],
       "redirected_views": [
-        "loc3.html → search.html?content_type=lyrics_work",
         "faq.html → search.html?content_type=knowledge"
       ]
     },
