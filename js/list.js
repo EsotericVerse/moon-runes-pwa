@@ -1,6 +1,13 @@
-import { rune } from "./runes64.js";
-
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  let rune = [];
+  try {
+    const response = await fetch("data/json/core/rune_details.json");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    rune = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
+  } catch (error) {
+    console.error("LOC1 rune details unavailable.", error);
+  }
   const all = (rune || [])
     .filter(r => r && Number(r.編號) >= 1 && Number(r.編號) <= 66)
     .sort((a,b) => Number(a.編號) - Number(b.編號));
