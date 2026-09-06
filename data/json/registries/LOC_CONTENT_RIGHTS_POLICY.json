@@ -68,8 +68,11 @@
       "Return bounded previews for catalog browsing.",
       "Keep full-text result counts small and query-driven.",
       "Owner/private export, if added later, must require an authenticated rights gate.",
-      "robots.txt or copyright notices are advisory and do not replace access controls."
-    ]
+      "robots.txt or copyright notices are advisory and do not replace access controls.",
+      "Do not expose the complete canonical Graph by calling /search/graph without a center node."
+    ],
+    "graph_mode": "metadata_only_without_center",
+    "graph_neighborhood": "bounded_node_id_depth_1_to_3"
   },
   "updated_at": "2026-09-07",
   "boundary_model": {
