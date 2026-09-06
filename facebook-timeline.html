@@ -25,18 +25,52 @@
 <div class="card control"><h2>概念時間線</h2><div class="row"><select id="concept"></select><button id="prev">上一個</button><button id="next">下一個</button></div><div class="legend" id="conceptChips"></div></div>
 <div class="card chartCard"><h3 id="chartTitle">年度命中趨勢</h3><div class="chart" id="chart"></div><div class="note">數字是概念橋接詞在當年度命中的貼文數，不等同人工主題標註。</div></div>
 <div class="card side"><h3>四階段語境</h3><div class="contextList" id="contexts"></div></div>
-<div class="card full"><h2>本機貼文搜尋</h2><p style="color:var(--muted)">載入 <code>Facebook_文字紀錄_整理.csv</code>。所有解析只在瀏覽器中執行，不會傳到伺服器。</p><div class="filebox"><input id="file" type="file" accept=".csv,text/csv"></div><div class="row" style="margin-top:12px"><input id="q" placeholder="例如：自由、工作、整理、月光…"><select id="year"><option value="">全部年份</option></select><button id="search">搜尋</button></div><div class="note" id="fileStatus">尚未載入本機 corpus。</div><div class="results" id="results"></div></div>
+<div class="card full"><h2>Facebook 歷史文字搜尋</h2><p style="color:var(--muted)">首次匯入 <code>LOC_FB_SEARCH_v0.1.json</code>（建議）或 <code>Facebook_文字紀錄_整理.csv</code> 後，資料會保存在這台瀏覽器；之後重新開啟頁面仍可直接查。原文不會上傳。</p><div class="filebox"><input id="file" type="file" accept=".json,.csv,application/json,text/csv"><button id="clearLocal" style="margin-top:10px">清除這台瀏覽器的 corpus</button></div><div class="row" style="margin-top:12px"><input id="q" placeholder="例如：自由、工作、整理、月光…"><select id="year"><option value="">全部年份</option></select><button id="search">搜尋</button></div><div class="note" id="fileStatus">尚未載入本機 corpus。</div><div class="results" id="results"></div></div>
 </div></div>
+<script src="js/facebook-local-corpus.js"></script>
 <script>
-const DATA_URL='data/json/fb-semantic-summary.json',API='https://moon-runes-pwa.onrender.com';let data,rows=[];const $=s=>document.querySelector(s);
+const DATA_URL='data/json/fb-semantic-summary.json',API='https://moon-runes-pwa.onrender.com';let data;const $=s=>document.querySelector(s);
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function concepts(){return Object.keys(data.yearly_concepts[0]).filter(k=>k!=='年份')}
-async function init(){data=await fetch(DATA_URL).then(r=>r.json());const cs=concepts();$('#concept').innerHTML=cs.map(x=>`<option>${esc(x)}</option>`).join('');$('#conceptChips').innerHTML=cs.map((x,i)=>`<span class="chip ${i===0?'active':''}" data-c="${esc(x)}">${esc(x)}</span>`).join('');$('#year').innerHTML+=[...new Set(data.yearly_concepts.map(x=>x.年份))].map(y=>`<option>${y}</option>`).join('');$('#mTotal').textContent=Number(data.meta.records_total).toLocaleString();$('#mSearch').textContent=Number(data.meta.searchable_text_records).toLocaleString();render();document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{$('#concept').value=c.dataset.c;render()});$('#concept').onchange=render;$('#prev').onclick=()=>step(-1);$('#next').onclick=()=>step(1);$('#file').onchange=loadCSV;$('#search').onclick=searchLocal;$('#q').onkeydown=e=>{if(e.key==='Enter')searchLocal()}}
+async function init(){
+  data=await fetch(DATA_URL).then(r=>r.json());
+  const cs=concepts();
+  $('#concept').innerHTML=cs.map(x=>`<option>${esc(x)}</option>`).join('');
+  $('#conceptChips').innerHTML=cs.map((x,i)=>`<span class="chip ${i===0?'active':''}" data-c="${esc(x)}">${esc(x)}</span>`).join('');
+  $('#year').innerHTML+=[...new Set(data.yearly_concepts.map(x=>x.年份))].map(y=>`<option>${y}</option>`).join('');
+  $('#mTotal').textContent=Number(data.meta.records_total).toLocaleString();
+  $('#mSearch').textContent=Number(data.meta.searchable_text_records).toLocaleString();
+  render();
+  document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{$('#concept').value=c.dataset.c;render()});
+  $('#concept').onchange=render;$('#prev').onclick=()=>step(-1);$('#next').onclick=()=>step(1);
+  $('#file').onchange=loadCorpus;$('#clearLocal').onclick=clearCorpus;
+  $('#search').onclick=searchLocal;$('#q').onkeydown=e=>{if(e.key==='Enter')searchLocal()};
+  await refreshLocalStatus();
+}
 function step(n){const s=$('#concept'),len=s.options.length;s.selectedIndex=(s.selectedIndex+n+len)%len;render()}
 function render(){const c=$('#concept').value;$('#chartTitle').textContent=`「${c}」年度命中趨勢`;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x.dataset.c===c));drawLine(data.yearly_concepts.map(r=>({x:String(r.年份),y:Number(r[c]||0)})));const ctx=data.period_context.filter(r=>r.關鍵詞===c);$('#contexts').innerHTML=ctx.length?ctx.map(r=>`<div class="context"><strong>${esc(r.時期)} · ${Number(r.命中貼文數).toLocaleString()} 篇</strong><small>${esc(r.主要語境||'—')}</small></div>`).join(''):'<div class="note">目前沒有分期語境資料。</div>'}
 function drawLine(points){const host=$('#chart'),W=760,H=270,p=36,max=Math.max(1,...points.map(d=>d.y)),sx=i=>p+i*(W-p*2)/(points.length-1||1),sy=v=>H-p-v*(H-p*2)/max;let grid='',labels='';for(let i=0;i<=4;i++){let y=p+i*(H-p*2)/4;grid+=`<line x1="${p}" y1="${y}" x2="${W-p}" y2="${y}" stroke="#263654"/><text x="4" y="${y+4}" fill="#8192ad" font-size="11">${Math.round(max*(1-i/4))}</text>`}points.forEach((d,i)=>{if(i%2===0||points.length<10)labels+=`<text x="${sx(i)}" y="${H-8}" text-anchor="middle" fill="#8192ad" font-size="11">${d.x}</text>`});const path=points.map((d,i)=>(i?'L':'M')+sx(i)+' '+sy(d.y)).join(' '),dots=points.map((d,i)=>`<circle cx="${sx(i)}" cy="${sy(d.y)}" r="4" fill="#8bb7ff"><title>${d.x}: ${d.y}</title></circle>`).join('');host.innerHTML=`<svg viewBox="0 0 ${W} ${H}">${grid}<path d="${path}" fill="none" stroke="#8bb7ff" stroke-width="3"/>${dots}${labels}</svg>`}
-function parseCSV(text){const out=[];let row=[],cell='',q=false;for(let i=0;i<text.length;i++){const ch=text[i],nx=text[i+1];if(ch==='"'){if(q&&nx==='"'){cell+='"';i++}else q=!q}else if(ch===','&&!q){row.push(cell);cell=''}else if((ch==='\n'||ch==='\r')&&!q){if(ch==='\r'&&nx==='\n')i++;row.push(cell);if(row.some(x=>x!==''))out.push(row);row=[];cell=''}else cell+=ch}row.push(cell);if(row.some(x=>x!==''))out.push(row);const head=out.shift()||[];return out.map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]??''])))}
-async function loadCSV(e){const f=e.target.files[0];if(!f)return;rows=parseCSV(await f.text());$('#fileStatus').textContent=`已載入 ${rows.length.toLocaleString()} 筆；資料只存在這個瀏覽器分頁。`}
+async function refreshLocalStatus(){
+  try{
+    const info=await window.LOCFacebookLocal.info();
+    $('#fileStatus').textContent=info
+      ? `本機 corpus 已就緒：${Number(info.count||0).toLocaleString()} 筆 · ${info.file_name||''}`
+      : '尚未匯入本機 corpus；頁面會先嘗試 LOC 私有 API。';
+  }catch(err){$('#fileStatus').textContent='本機 corpus 狀態讀取失敗：'+err.message}
+}
+async function loadCorpus(e){
+  const f=e.target.files[0];if(!f)return;
+  $('#fileStatus').textContent='正在匯入本機 corpus…';
+  try{
+    const info=await window.LOCFacebookLocal.importFile(f);
+    $('#fileStatus').textContent=`匯入完成：${Number(info.count||0).toLocaleString()} 筆。之後重新開啟仍可直接搜尋。`;
+  }catch(err){$('#fileStatus').textContent='匯入失敗：'+err.message}
+}
+async function clearCorpus(){
+  await window.LOCFacebookLocal.clear();
+  $('#file').value='';
+  await refreshLocalStatus();
+}
 async function searchLocal(){
   const q=$('#q').value.trim(),yr=$('#year').value;
   if(!q){$('#results').innerHTML='<div class="note">請輸入關鍵字。</div>';return}
@@ -51,10 +85,11 @@ async function searchLocal(){
       return;
     }
   }catch(err){}
-  if(!rows.length){$('#results').innerHTML='<div class="note">部署端尚未掛載私人 Facebook corpus。你仍可在上方載入本機 CSV 搜尋，資料不會上傳。</div>';return}
-  const terms=q.split(/\s+/).filter(Boolean),hit=rows.filter(r=>(!yr||String(r['年份'])===yr)&&terms.every(t=>String(r['原始文字']||'').includes(t))).slice(0,50);
-  $('#fileStatus').textContent='目前使用瀏覽器本機 CSV corpus。';
-  $('#results').innerHTML=hit.length?hit.map(r=>'<div class="result"><div class="meta">'+esc(r['日期時間'])+' · '+esc(r['內容型態'])+(r['媒體來源']?' · '+esc(r['媒體來源']):'')+'</div><p>'+esc(String(r['原始文字']||'').slice(0,500))+(String(r['原始文字']||'').length>500?'…':'')+'</p></div>').join(''):'<div class="note">沒有符合結果。</div>';
+  const info=await window.LOCFacebookLocal.info();
+  if(!info){$('#results').innerHTML='<div class="note">部署端尚未掛載私人 Facebook corpus，這台瀏覽器也尚未匯入。請先選擇 JSON 或 CSV 匯入一次。</div>';return}
+  const hit=await window.LOCFacebookLocal.search(q,{year:yr?Number(yr):null,top_k:50});
+  $('#fileStatus').textContent=`目前使用這台瀏覽器保存的 Facebook corpus · ${Number(info.count||0).toLocaleString()} 筆。`;
+  $('#results').innerHTML=hit.length?hit.map(r=>'<div class="result"><div class="meta">'+esc((r.payload||{}).date||'')+' · Facebook · score '+Number(r.score||0).toFixed(4)+'</div><p>'+esc(String(r.summary||'').slice(0,700))+(String(r.summary||'').length>700?'…':'')+'</p></div>').join(''):'<div class="note">沒有符合結果。</div>';
 }
 init().catch(err=>{$('#chart').innerHTML='<div class="note">資料載入失敗：'+esc(err.message)+'</div>'});
 </script></body></html>
