@@ -1,10 +1,14 @@
 import os
 import json
 import numpy as np
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "json" / "experimental" / "engine"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 from sentence_transformers import SentenceTransformer
 
 # 1. 擷取 runes07.json 的語句
-with open('runes07.json', 'r', encoding='utf-8') as f:
+with open(str(DATA_DIR / str(DATA_DIR / "runes07.json")), 'r', encoding='utf-8') as f:
     runes07 = json.load(f)
 
 sentences = []
@@ -41,7 +45,7 @@ for r in runes07:
             })
 
 # 2. 擷取 runes_all_data.json 的語句
-filename = 'runes_all_data.json'
+filename = str(DATA_DIR / str(DATA_DIR / "runes_all_data.json"))
 if not os.path.exists(filename):
     print(f"檔案不存在：{filename}")
     all_data = []
@@ -100,9 +104,9 @@ embeddings = model.encode(sentences, show_progress_bar=True)
 
 # 4. 儲存
 np.save('combined_embeddings.npy', embeddings)
-with open('combined_meta.json', 'w', encoding='utf-8') as f:
+with open(str(DATA_DIR / str(DATA_DIR / "combined_meta.json")), 'w', encoding='utf-8') as f:
     json.dump(meta, f, ensure_ascii=False, indent=2)
-with open('sentences.json', 'w', encoding='utf-8') as f:
+with open(str(DATA_DIR / str(DATA_DIR / "sentences.json")), 'w', encoding='utf-8') as f:
     json.dump(sentences, f, ensure_ascii=False, indent=2)
 
 print("語意向量與 meta 已儲存完成！")
