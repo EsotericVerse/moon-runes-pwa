@@ -345,7 +345,7 @@ LOC7_KM 採 **Markdown-first, structured-data-native**：
 
 - `docs/LOC7_KM.md`：repository 內可維護 KM 主文件
 - `docs/JSON_DATA_MAP.md`：JSON 角色與同步方向
-- `data/shared/*.json`：跨 LOC 結構化 registry
+- `data/json/shared/*.json`：跨 LOC 結構化 registry
 - FAQ v0.4 為 KM 問答 View；RAG v0.4 為其檢索衍生資料
 - 下游 JSON／索引／UI／AI 推論不得反向覆寫 Canon、母資料或原始作品
 
