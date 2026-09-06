@@ -1,5 +1,3 @@
-import { rune } from "./runes64.js";
-
 const DIRECTIONS = ["正位", "半正位", "半逆位", "逆位"];
 const ROTATIONS = ["rotate(0deg)", "rotate(90deg)", "rotate(-90deg)", "rotate(180deg)"];
 const DIRECTION_FIELDS = {
@@ -9,9 +7,23 @@ const DIRECTION_FIELDS = {
   "逆位": "逆向表示"
 };
 
+let rune = [null];
 let runeHintMap = new Map();
 let lotsMap = new Map();
 let allData = [];
+
+async function loadRuneDetails() {
+  try {
+    const response = await fetch("data/json/core/rune_details.json");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
+    rune = [null, ...items.sort((a,b) => Number(a.編號) - Number(b.編號))];
+  } catch (error) {
+    console.error("LOC1 rune details JSON unavailable.", error);
+    rune = [null];
+  }
+}
 
 async function loadLots() {
   try {
@@ -460,6 +472,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   await Promise.all([
     runRitual(mode, config),
+    loadRuneDetails(),
     loadRuneHints(),
     loadRuneInterpretations(),
     loadLots()
