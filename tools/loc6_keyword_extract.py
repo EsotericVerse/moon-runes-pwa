@@ -197,25 +197,59 @@ def main():
     args = ap.parse_args()
 
     payload = json.loads(args.input.read_text(encoding="utf-8"))
-    docs = extract_threads(payload)
-    if not args.include_replies:
-        docs = [d for d in docs if not d["is_reply"]]
+    all_docs = extract_threads(payload)
+    main_docs = [d for d in all_docs if not d["is_reply"]]
+    reply_docs = [d for d in all_docs if d["is_reply"]]
+    docs = all_docs if args.include_replies else main_docs
 
     rows = score_candidates(docs, min_df=args.min_df)[:args.top]
+    reply_rows = score_candidates(reply_docs, min_df=max(2, args.min_df)) if reply_docs else []
+    reply_by_term = {row["term"]: row for row in reply_rows}
 
     args.out.mkdir(parents=True, exist_ok=True)
     registry_path = args.out / "LOC6_KEYWORD_CANDIDATES.json"
     csv_path = args.out / "LOC6_KEYWORD_CANDIDATES.csv"
+    reply_path = args.out / "LOC6_REPLY_SUPPORT.json"
+
+    reply_support = []
+    for row in rows:
+        rr = reply_by_term.get(row["term"])
+        if not rr:
+            continue
+        main_rate = row["document_frequency"] / max(1, len(main_docs))
+        reply_rate = rr["document_frequency"] / max(1, len(reply_docs))
+        reply_support.append({
+            "term": row["term"],
+            "main_document_frequency": row["document_frequency"],
+            "reply_document_frequency": rr["document_frequency"],
+            "reply_support_ratio": round(reply_rate / main_rate, 6) if main_rate else None,
+            "main_era_distribution": row["era_distribution"],
+            "reply_era_distribution": rr["era_distribution"],
+            "status": "supplemental_evidence",
+        })
+    reply_support.sort(key=lambda x: (-(x["reply_support_ratio"] or 0), -x["reply_document_frequency"], x["term"]))
 
     registry = {
-        "version": "0.1",
+        "version": "0.2",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source": str(args.input),
         "document_count": len(docs),
+        "main_document_count": len(main_docs),
+        "reply_document_count": len(reply_docs),
+        "reply_policy": "supplemental_only",
         "api_calls": 0,
         "items": rows,
     }
     registry_path.write_text(json.dumps(registry, ensure_ascii=False, indent=2), encoding="utf-8")
+    reply_path.write_text(json.dumps({
+        "version": "0.1",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "source": str(args.input),
+        "main_document_count": len(main_docs),
+        "reply_document_count": len(reply_docs),
+        "policy": "Replies support candidate review but do not replace main-post ranking.",
+        "items": reply_support[:args.top],
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     with csv_path.open("w", encoding="utf-8-sig", newline="") as f:
         w = csv.writer(f)
@@ -227,9 +261,10 @@ def main():
                 r["status"], "", "",
             ])
 
-    print(f"documents={len(docs)} candidates={len(rows)} api_calls=0")
+    print(f"documents={len(docs)} main={len(main_docs)} replies={len(reply_docs)} candidates={len(rows)} api_calls=0")
     print(registry_path)
     print(csv_path)
+    print(reply_path)
 
 
 if __name__ == "__main__":
