@@ -9,6 +9,8 @@ The repository must make file authority and lifecycle obvious from path alone. M
 
 > **A cleaner tree is not a successful refactor if runtime paths break.**
 
+The current maintained tree is recorded in [REPOSITORY_TREE.md](./REPOSITORY_TREE.md). That file is the developer-facing module map; this document defines the governance rules behind it.
+
 ## 2. Directory contract
 
 ~~~text
