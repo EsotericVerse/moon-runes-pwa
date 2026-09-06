@@ -19,7 +19,6 @@
     .filter-panel{margin-top:9px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.12);overflow:hidden}.filter-tabs{display:grid;grid-template-columns:repeat(2,1fr);border-bottom:1px solid var(--line)}.filter-tab{padding:11px 10px;border:0;border-right:1px solid var(--line);background:transparent;color:var(--muted);font:inherit;font-size:.82rem;font-weight:800;cursor:pointer}.filter-tab:last-child{border-right:0}.filter-tab.active{background:var(--soft);color:var(--text);box-shadow:inset 0 -2px 0 var(--mint)}
     .filter-section{padding:15px}.filter-section-head{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}.filter-section-head strong{font-size:.9rem}.filter-section-head span{color:var(--muted);font-size:.76rem}.field label{margin-bottom:6px;font-size:.8rem;color:var(--muted)}select,input[type="date"]{width:100%;padding:10px 12px;color:var(--text);border:1px solid var(--line);border-radius:11px;background:#102535;font:inherit}.browse-inline{display:flex;align-items:center;gap:10px;margin-top:10px}.browse-inline small{color:var(--muted);font-size:.74rem}.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.era-field{margin-top:10px}
     .status{min-height:30px;margin:22px 2px 8px;color:var(--muted)}.status.error{color:var(--danger)}.pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:22px 0 4px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.pagination[hidden]{display:none!important}.pagination-info{color:var(--muted);font-size:.8rem}.pagination-pages{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.page-btn{min-width:38px;min-height:38px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--soft);color:var(--text);font:inherit;font-weight:800;cursor:pointer}.page-btn:hover:not(:disabled){border-color:var(--mint)}.page-btn.active{background:var(--mint);color:#07131f;border-color:transparent}.page-btn:disabled{opacity:.38;cursor:not-allowed}.groups{display:grid;gap:22px}.group{border-top:1px solid var(--line);padding-top:18px}.grouphead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:11px}.grouphead h2{margin:0;font-size:1.05rem;letter-spacing:.03em}.grouphead span{color:var(--muted);font-size:.8rem}.cards{display:grid;gap:12px}.card{padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 12px 35px rgba(0,0,0,.18)}.card h3{margin:0 0 8px;font-size:1.2rem}.knowledge-image{display:block;width:min(100%,760px);max-height:430px;object-fit:contain;margin:12px 0;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.18)}.meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}.pill{padding:3px 8px;border-radius:999px;color:var(--muted);background:var(--soft);font-size:.75rem}.summary{margin:8px 0;color:#d6e0df}.links{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.play{display:inline-flex;padding:8px 12px;border-radius:10px;text-decoration:none;background:var(--mint);color:#07131f;font-weight:820}.secondary{display:inline-flex;padding:8px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--muted)}.empty{padding:26px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}
-    .fb-local-panel{display:none;margin-top:12px;padding:13px 14px;border:1px dashed var(--line);border-radius:13px;background:rgba(126,216,197,.05)}.fb-local-panel.active{display:block}.fb-local-panel input{width:100%;margin:8px 0}.fb-local-actions{display:flex;gap:8px;flex-wrap:wrap}.fb-local-actions button{padding:8px 11px;border:1px solid var(--line);border-radius:10px;background:var(--soft);color:var(--text);font:inherit;cursor:pointer}.fb-local-status{color:var(--muted);font-size:.78rem}
     .location-map{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
     .location-card{padding:14px;border:1px solid var(--line);border-radius:15px;background:var(--soft)}
     .location-card strong{display:block;font-size:.92rem}
@@ -98,35 +97,31 @@
               </div>
               <select id="contentType">
                 <option value="">全部資料種類</option>
-                <optgroup label="作品 / 媒體">
+                <optgroup label="內容">
+                  <option value="text_record">文字</option>
                   <option value="lyrics_work">音樂／歌詞</option>
-                  <option value="text_work">文字作品</option>
                   <option value="multimedia">影音／Reels</option>
                   <option value="knowledge_image">圖片／知識圖</option>
-                  <option value="facebook_post">Facebook 歷史文字</option>
                 </optgroup>
                 <optgroup label="LOC 系統資料">
                   <option value="oracle">籤詩／解牌</option>
                   <option value="rune_record">月之符文</option>
-                  <option value="governance_fragment">治理／政德風語句</option>
-                  <option value="governance_article">LOC6 文章</option>
                   <option value="knowledge">文件／知識庫</option>
                   <option value="relationship">跨 LOC 關係</option>
                   <option value="era">時期／時間</option>
                 </optgroup>
               </select>
-              <div class="fb-local-panel" id="fbLocalPanel">
-                <strong>Facebook 私有 corpus</strong>
-                <div class="fb-local-status" id="fbLocalStatus">正在檢查本機資料庫…</div>
-                <input id="fbLocalFile" type="file" accept=".json,.csv,application/json,text/csv" />
-                <div class="fb-local-actions">
-                  <button id="fbLocalImport" type="button">匯入／更新本機 corpus</button>
-                  <button id="fbLocalClear" type="button">清除本機 corpus</button>
-                  <a class="secondary" href="facebook-timeline.html">開啟趨勢圖</a>
-                </div>
-                <small>建議匯入 LOC_FB_SEARCH_v0.1.json；也支援 Facebook_文字紀錄_整理.csv。資料儲存在這台瀏覽器的 IndexedDB，不上傳。</small>
+              <div class="field" style="margin-top:10px">
+                <label for="sourceFilter">來源</label>
+                <select id="sourceFilter">
+                  <option value="">全部來源</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="threads">Threads</option>
+                  <option value="loc4">LOC4 文字作品</option>
+                  <option value="loc6">LOC6 治理／文章</option>
+                </select>
               </div>
-              <div class="browse-inline">
+                            <div class="browse-inline">
                 <button class="browse-btn" id="browse" type="button">依這個種類瀏覽</button>
                 <small>不輸入關鍵字也可以；先選資料種類，再直接瀏覽。</small>
               </div>
@@ -182,7 +177,7 @@
     </nav>
     <footer>LOC Search · 語言框架上的資料搜尋與關聯檢索 · system_id: lo3rwang</footer>
   </main>
-  <script src="js/facebook-local-corpus.js"></script>
+  <script src="js/facebook-repo-corpus.js"></script>
   <script>
     const API='https://moon-runes-pwa.onrender.com';
     const promptSets={
@@ -202,13 +197,13 @@
         {q:'界線',title:'界線',desc:'LOC3 · 歌詞命題'},
         {q:'自我治理',title:'自我治理',desc:'LOC3 · 現行創作'}
       ],
-      text_work:[
-        {q:'人生月台',title:'人生月台',desc:'LOC4 · 文字／敘事'},
-        {q:'界線',title:'界線',desc:'LOC4 · 文章／文字'},
-        {q:'月之符文',title:'月之符文',desc:'LOC4 · 符文文本'},
-        {q:'自由',title:'自由',desc:'LOC4 · 主題文字'},
-        {q:'未知',title:'未知',desc:'LOC4 · 敘事命題'},
-        {q:'自我治理',title:'自我治理',desc:'LOC4 · 文字表達'}
+      text_record:[
+        {q:'自由',title:'自由',desc:'文字 · 長期語境'},
+        {q:'工作',title:'工作',desc:'文字 · 長期語境'},
+        {q:'整理',title:'整理',desc:'文字 · 生活與治理'},
+        {q:'希望',title:'希望',desc:'文字 · 時間演變'},
+        {q:'系統',title:'系統',desc:'文字 · 技術到 LOC'},
+        {q:'感情',title:'感情',desc:'文字 · 歷史語境'}
       ],
       multimedia:[
         {q:'月之符文',title:'月之符文',desc:'LOC5 · 圖像／影音'},
@@ -234,14 +229,6 @@
         {q:'尊重',title:'尊重',desc:'LOC6 · 關係／界線'},
         {q:'政德風',title:'政德風',desc:'LOC6 · 風格演變'}
       ],
-      facebook_post:[
-        {q:'自由',title:'自由',desc:'Facebook · 歷史文字'},
-        {q:'工作',title:'工作',desc:'Facebook · 長期語境'},
-        {q:'整理',title:'整理',desc:'Facebook · 生活軌跡'},
-        {q:'希望',title:'希望',desc:'Facebook · 年度演變'},
-        {q:'系統',title:'系統',desc:'Facebook · 技術到 LOC'},
-        {q:'感情',title:'感情',desc:'Facebook · 歷史語境'}
-      ],
       knowledge:[
         {q:'LOC 是什麼',title:'LOC 是什麼',desc:'LOC7 · 系統知識'},
         {q:'月之符文',title:'月之符文',desc:'LOC7 · 文件／FAQ'},
@@ -251,7 +238,7 @@
         {q:'自我治理',title:'自我治理',desc:'LOC7 · 跨文件知識'}
       ]
     };
-    const labels={oracle:'籤詩結果',runes:'月符',works:'Suno 歌曲／歌詞',textworks:'文字作品',relationships:'跨 LOC 關聯',governance:'治理／政德風',loc6_articles:'LOC6 文章',media:'多媒體作品',social_archive:'Facebook 歷史文字',knowledge:'文件／知識庫',timeline:'時期／時間'};
+    const labels={oracle:'籤詩結果',runes:'月符',works:'Suno 歌曲／歌詞',textworks:'文字',relationships:'跨 LOC 關聯',governance:'文字',loc6_articles:'文字',text:'文字',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
     const locLabels={LOC1:'LOC1 · Lots',LOC3:'LOC3 · Music',LOC4:'LOC4 · Writing',LOC5:'LOC5 · Resonance',LOC6:'LOC6 · Governance',LOC7:'LOC7 · Text Architecture',LOC8:'LOC8 · Integration'};
     const el=id=>document.getElementById(id);
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -481,7 +468,7 @@
       knowledge:{loc:'LOC7',label:'知識庫／文件',desc:'KM、規格、文件與架構知識'},
       timeline:{loc:'LOC8',label:'ERA／趨勢',desc:'時間、關係與演變維度'},
       relationships:{loc:'跨 LOC',label:'關係',desc:'已建立的跨資料與跨媒介關係'},
-      social_archive:{loc:'LOC6 / LOC8',label:'Facebook 歷史文字',desc:'私人歷史語料與時間脈絡'}
+      text:{loc:'LOC4 / LOC6 / LOC8',label:'文字',desc:'跨來源文字資料與時間脈絡'}
     };
 
     function resultLocationOverview(groups){
@@ -507,7 +494,7 @@
     }
 
     const PAGE_SIZE=20;
-    const RESULT_ORDER=['oracle','runes','works','textworks','relationships','governance','loc6_articles','social_archive','media','knowledge','timeline'];
+    const RESULT_ORDER=['oracle','runes','works','textworks','relationships','governance','loc6_articles','text','media','knowledge','timeline'];
     let searchState={groups:{},synthesis:null,graph:null,page:1,total:0};
     let browseState={active:false,type:'',key:'',page:1,total:0,items:[]};
 
@@ -645,47 +632,9 @@
       }finally{el('browse').disabled=false;}
     }
 
-    async function updateFBLocalStatus(){
-      const panel=el('fbLocalPanel');
-      const active=el('contentType').value==='facebook_post';
-      panel?.classList.toggle('active',active);
-      if(!window.LOCFacebookLocal)return;
-      try{
-        const info=await window.LOCFacebookLocal.info();
-        el('fbLocalStatus').textContent=info
-          ? `本機 corpus 已就緒：${Number(info.count||0).toLocaleString()} 筆 · ${info.file_name||''}`
-          : '尚未匯入本機 Facebook corpus。若 Render 私有 datasource 尚未掛載，搜尋會需要這份本機資料。';
-      }catch(err){el('fbLocalStatus').textContent='無法讀取本機 corpus：'+err.message;}
-    }
-    async function importFBLocal(){
-      const file=el('fbLocalFile').files?.[0];
-      if(!file){el('fbLocalStatus').textContent='請先選擇 LOC_FB_SEARCH_v0.1.json 或 Facebook_文字紀錄_整理.csv。';return}
-      el('fbLocalImport').disabled=true;
-      el('fbLocalStatus').textContent='正在匯入本機 corpus…';
-      try{
-        const info=await window.LOCFacebookLocal.importFile(file);
-        el('fbLocalStatus').textContent=`匯入完成：${Number(info.count||0).toLocaleString()} 筆。之後重新開啟 LOC Search 仍可直接使用。`;
-      }catch(err){el('fbLocalStatus').textContent='匯入失敗：'+err.message}
-      finally{el('fbLocalImport').disabled=false}
-    }
-    async function clearFBLocal(){
-      if(!window.LOCFacebookLocal)return;
-      await window.LOCFacebookLocal.clear();
-      el('fbLocalFile').value='';
-      await updateFBLocalStatus();
-    }
-    async function searchFacebook(q){
-      const body={query:q,top_k:10,content_type:'facebook_post'};
-      try{
-        const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-        const d=await r.json();
-        if(r.ok)return {groups:d.groups||{social_archive:d.results||[]},source:'api'};
-      }catch(_){}
-      const info=window.LOCFacebookLocal?await window.LOCFacebookLocal.info():null;
-      if(!info)throw new Error('Facebook 私有 API 尚未掛載，且這台瀏覽器尚未匯入本機 corpus。請在「Facebook 私有 corpus」區塊匯入一次。');
-      const items=await window.LOCFacebookLocal.search(q,{top_k:50});
-      return {groups:{social_archive:items},source:'local'};
-    }
+
+
+
 
     function clearAllSearch(){
       el('searchForm').reset();
@@ -720,7 +669,9 @@
       const chips=[];
       const type=selectedText('contentType');
       const period=selectedText('period');
+      const source=selectedText('sourceFilter');
       if(el('contentType')?.value) chips.push(type);
+      if(el('sourceFilter')?.value) chips.push('來源：'+source);
       if(el('period')?.value) chips.push(period);
       el('activeFilters').innerHTML=chips.length
         ? chips.map(x=>`<span class="filter-chip">${esc(x)}</span>`).join('')
@@ -745,40 +696,68 @@
         sec.classList.toggle('active',active);
       });
     });
-    ['contentType','period'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
-    el('fbLocalImport').onclick=importFBLocal;
-    el('fbLocalClear').onclick=clearFBLocal;
+    ['contentType','sourceFilter','period'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
     updateFilterSummary();
     el('clearSearch').onclick=clearAllSearch;
     el('browse').onclick=()=>browse(1);
-    el('contentType').addEventListener('change',()=>{browseState={active:false,type:'',key:'',page:1,total:0,items:[]};if(el('pagination'))el('pagination').hidden=true;el('browse').textContent='瀏覽目前類型';updateFBLocalStatus();});
+    el('contentType').addEventListener('change',()=>{browseState={active:false,type:'',key:'',page:1,total:0,items:[]};if(el('pagination'))el('pagination').hidden=true;el('browse').textContent='瀏覽目前類型';});
     el('searchForm').onsubmit=async e=>{
-      e.preventDefault();const q=el('query').value.trim();if(!q)return;
-      el('submit').disabled=true;el('status').className='status';el('groups').innerHTML='';
+      e.preventDefault();
+      const q=el('query').value.trim(); if(!q)return;
       const type=el('contentType').value;
+      const source=el('sourceFilter').value;
+      el('submit').disabled=true;
+      el('status').className='status';
+      el('groups').innerHTML='';
       try{
-        if(type==='facebook_post'){
-          el('status').textContent='正在查詢 Facebook 歷史文字…';
-          const result=await searchFacebook(q);
-          const count=(result.groups.social_archive||[]).length;
-          el('status').textContent=count
-            ? `找到 ${count} 筆 Facebook 歷史文字結果 · ${result.source==='api'?'LOC 私有 API':'這台瀏覽器的本機 corpus'}。`
-            : '沒有找到足夠接近的 Facebook 歷史文字。';
-          render(result.groups,null,null);
+        if(type==='text_record' && source==='facebook'){
+          el('status').textContent='正在搜尋文字資料…';
+          let groups=null;
+          try{
+            const body={query:q,top_k:10,content_type:'text_record',source:'facebook',period:el('period').value};
+            const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            const d=await r.json();
+            if(r.ok) groups=d.groups||{text:d.results||[]};
+          }catch(_){}
+          if(!groups){
+            const items=await window.LOCFacebookCorpus.search(q,{top_k:50});
+            groups={text:items};
+          }
+          const count=Object.values(groups).reduce((n,items)=>n+(items?.length||0),0);
+          el('status').textContent=count?`找到 ${count} 筆文字結果。`:'沒有找到足夠接近的文字。';
+          render(groups,null,null);
           return;
         }
-        el('status').textContent='正在同時查詢符文、作品、媒體、知識與時期資料……';
-        const body={query:q,top_k:10,content_type:type,period:el('period').value};
+
+        el('status').textContent=type==='text_record'?'正在搜尋文字資料……':'正在同時查詢符文、作品、媒體、知識與時期資料……';
+        const body={query:q,top_k:10,content_type:type,source:source,period:el('period').value};
         const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-        const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');
-        el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 證據；已先整理資料分布、整合分析與 Graph 關係。`:'沒有找到足夠接近的內容。';
+        const d=await r.json();
+        if(!r.ok)throw new Error(d.detail||'搜尋失敗');
+
+        if(type==='text_record' && !source){
+          try{
+            const fb=await window.LOCFacebookCorpus.search(q,{top_k:20});
+            if(fb.length){
+              d.groups=d.groups||{};
+              d.groups.text=[...(d.groups.text||[]),...fb];
+            }
+          }catch(_){}
+        }
+
+        const total=Object.values(d.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
+        el('status').textContent=total?`找到 ${total} 筆相關結果。`:'沒有找到足夠接近的內容。';
         render(d.groups,d.synthesis,d.graph);
-      }catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}`}
-      finally{el('submit').disabled=false}
+      }catch(err){
+        el('status').className='status error';
+        el('status').textContent=`暫時無法搜尋：${err.message}`;
+      }finally{
+        el('submit').disabled=false;
+      }
     };
     el('contentType').addEventListener('change',quick);
     quick();
-    updateFBLocalStatus();
+    
     facets().finally(bootFromUrl);
     if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'));
   </script>

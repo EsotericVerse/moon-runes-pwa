@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1",
+  "dataset": "LOC Facebook historical text corpus",
+  "source": "Facebook export",
+  "records": 17656,
+  "shards": [
+    "facebook_posts_01.json",
+    "facebook_posts_02.json",
+    "facebook_posts_03.json",
+    "facebook_posts_04.json",
+    "facebook_posts_05.json",
+    "facebook_posts_06.json",
+    "facebook_posts_07.json",
+    "facebook_posts_08.json",
+    "facebook_posts_09.json"
+  ]
+}
