@@ -1,112 +1,76 @@
-import os
 import json
-import numpy as np
 from pathlib import Path
 
-DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "json" / "experimental" / "engine"
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+import numpy as np
 from sentence_transformers import SentenceTransformer
 
-# 1. 擷取 runes07.json 的語句
-with open(str(DATA_DIR / str(DATA_DIR / "runes07.json")), 'r', encoding='utf-8') as f:
-    runes07 = json.load(f)
+ROOT = Path(__file__).resolve().parents[1]
+CORE_DIR = ROOT / "data" / "json" / "core"
+EXP_DIR = ROOT / "data" / "json" / "experimental" / "engine"
+EXP_DIR.mkdir(parents=True, exist_ok=True)
 
-sentences = []
-meta = []
+RUNES_EXTENDED = EXP_DIR / "runes_extended.json"
+RUNE_INTERPRETATIONS = CORE_DIR / "rune_interpretations.json"
+EMBEDDINGS_PATH = ROOT / "engine" / "combined_embeddings.npy"
+META_PATH = EXP_DIR / "combined_meta.json"
+SENTENCES_PATH = EXP_DIR / "sentences.json"
 
-for r in runes07:
+sentences: list[str] = []
+meta: list[dict] = []
+
+# Experimental extended rune annotations.
+runes = json.loads(RUNES_EXTENDED.read_text(encoding="utf-8"))
+for rune in runes:
     for direction, field in [
         ("正位", "正向表示"),
         ("半正位", "半正向表示"),
         ("半逆位", "半逆向表示"),
-        ("逆位", "逆向表示")
+        ("逆位", "逆向表示"),
     ]:
-        text = r.get(field, "")
-        if text:
-            sentences.append(text)
-            meta.append({
-                "來源": "runes07",
-                "符文名稱": r.get("名稱"),
-                "英文": r.get("英文"),
-                "顯化形式": r.get("顯化形式"),
-                "關鍵詞": r.get("關鍵詞"),
-                "靈魂咒語": r.get("靈魂咒語"),
-                "靈魂課題": r.get("靈魂課題"),
-                "實踐挑戰": r.get("實踐挑戰"),
-                "所屬分組": r.get("所屬分組"),
-                "月相": r.get("月相"),
-                "陰暗面": r.get("陰暗面"),
-                "反向關鍵字": r.get("反向關鍵字"),
-                "反向含義": r.get("反向含義"),
-                "正位": r.get("正向表示"),
-                "半正位": r.get("半正向表示"),
-                "半逆位": r.get("半逆向表示"),
-                "逆位": r.get("逆向表示")
-            })
-
-# 2. 擷取 runes_all_data.json 的語句
-filename = str(DATA_DIR / str(DATA_DIR / "runes_all_data.json"))
-if not os.path.exists(filename):
-    print(f"檔案不存在：{filename}")
-    all_data = []
-else:
-    with open(filename, 'r', encoding='utf-8') as f:
-        content = f.read()
-        print("檔案前100字：", content[:100])
-        all_data = json.loads(content)
-
-def flatten_value(value):
-    if isinstance(value, list):
-        new_list = []
-        for v in value:
-            if isinstance(v, dict):
-                # 取 dict 的第一個 value
-                if v:
-                    new_list.append(str(list(v.values())[0]))
-            else:
-                new_list.append(str(v))
-        return " ".join([s for s in new_list if s])
-    elif isinstance(value, dict):
-        if value:
-            return str(list(value.values())[0])
-        else:
-            return ""
-    elif value is None:
-        return ""
-    else:
-        return str(value)
-
-advice_fields = ["符文名稱","符文月相","現在月相","卡牌方向","狀況形容", "狀況表達","每日占卜提醒","每日占卜引導","每日占卜祝福"]
-for item in all_data:
-    advice = []
-    for key in advice_fields:
-        value = item.get(key)
-        advice.append(flatten_value(value))
-    advice_text = " ".join([s for s in advice if s])
-    if advice_text:
-        sentences.append(advice_text)
+        value = str(rune.get(field) or "").strip()
+        if not value:
+            continue
+        sentences.append(value)
         meta.append({
-            "來源": "runes_all_data",
-            "符文名稱": item.get("符文名稱"),
-            "符文月相": item.get("符文月相"),
-            "真實月相": item.get("現在月相"),
-            "卡牌方向": item.get("卡牌方向"),
-            "狀況形容": item.get("狀況形容"),
-            "狀況表達": item.get("狀況表達"),
-            "每日占卜提醒": item.get("每日占卜提醒"),
-            "每日占卜引導": item.get("每日占卜引導"),
-            "每日占卜祝福": item.get("每日占卜祝福")
+            "來源": "runes_extended",
+            "符文名稱": rune.get("名稱"),
+            "方向": direction,
+            "所屬分組": rune.get("所屬分組"),
+            "月相": rune.get("月相"),
         })
 
-# 3. 產生語意向量
-model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+# Canon-governed runtime projection. Do not duplicate it under engine/.
+interpretations = json.loads(RUNE_INTERPRETATIONS.read_text(encoding="utf-8"))
+for rune in interpretations:
+    rune_name = rune.get("符文名稱")
+    rune_moon = rune.get("符文月相")
+    for direction in rune.get("卡牌方向", []):
+        direction_name = direction.get("方向")
+        for state in direction.get("現況", []):
+            parts = [
+                state.get("狀況形容"),
+                state.get("狀況表達"),
+                state.get("每日占卜提醒"),
+                state.get("每日占卜引導"),
+                state.get("每日占卜祝福"),
+            ]
+            value = " ".join(str(part).strip() for part in parts if str(part or "").strip())
+            if not value:
+                continue
+            sentences.append(value)
+            meta.append({
+                "來源": "rune_interpretations",
+                "符文名稱": rune_name,
+                "符文月相": rune_moon,
+                "方向": direction_name,
+                "現在月相": state.get("現在月相"),
+            })
+
+model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 embeddings = model.encode(sentences, show_progress_bar=True)
 
-# 4. 儲存
-np.save('combined_embeddings.npy', embeddings)
-with open(str(DATA_DIR / str(DATA_DIR / "combined_meta.json")), 'w', encoding='utf-8') as f:
-    json.dump(meta, f, ensure_ascii=False, indent=2)
-with open(str(DATA_DIR / str(DATA_DIR / "sentences.json")), 'w', encoding='utf-8') as f:
-    json.dump(sentences, f, ensure_ascii=False, indent=2)
+np.save(EMBEDDINGS_PATH, embeddings)
+META_PATH.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+SENTENCES_PATH.write_text(json.dumps(sentences, ensure_ascii=False, indent=2), encoding="utf-8")
 
-print("語意向量與 meta 已儲存完成！")
+print(f"generated {len(sentences)} experimental semantic records")
