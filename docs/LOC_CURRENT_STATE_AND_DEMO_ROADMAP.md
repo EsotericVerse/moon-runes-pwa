@@ -618,3 +618,21 @@ LOC6 不再只以少量語錄或整理稿作為展示資料，而是有一個接
 - 從 primary-source corpus 到 KM / Search 的完整資料治理流程
 
 **進度判定：Searchable baseline 已成立；Full-corpus semantic parsing 進行中。**
+
+
+## LOC6｜P0 baseline
+
+P0 現在已有可直接分析的原始 Threads 主貼文 corpus，不再是空白時期。
+
+- **期間：2024-11-18 ～ 2025-02-20**
+- **主貼文：1,049 筆**
+- **總文字量：約 161,458 字元**
+- 中位貼文長度：125 字元
+- P90：301 字元
+- 初步 literal probe 顯示高頻主題包含：工作、時間、愛、朋友、關係、生活、選擇、過去、感情、未來、經驗、離開等。
+- 這些統計只代表 P0 原文中實際出現頻率，不直接等同 Concept 或 Canon。
+
+Structured baseline：
+`data/generated/loc6/threads/analysis/LOC6_THREADS_P0_BASELINE_v0.1.json`
+
+下一步：建立 P0 Surface Terms → Concept candidates → 與 P1–P8 做 trajectory comparison。
