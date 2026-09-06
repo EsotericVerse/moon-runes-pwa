@@ -72,6 +72,8 @@ class UnifiedSearchEngine:
         self.loc6 = self._load_json("LOC6_GOVERNANCE_REGISTRY.json")
         self.loc6_threads = self._load_json("LOC6_THREADS_KM_INDEX.json")
         self.loc6_thread_articles = self._load_repo_json("data/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json")
+        self.loc6_thread_manifest = self._load_repo_json("data/generated/loc6/threads/LOC6_THREADS_DOCUMENT_MANIFEST.json")
+        self.loc6_thread_full = self._load_loc6_thread_shards()
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
         self.lots = self._load_json("lots.json")
@@ -93,6 +95,27 @@ class UnifiedSearchEngine:
             return json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             return {}
+
+    def _load_loc6_thread_shards(self) -> dict[str, Any]:
+        manifest = getattr(self, "loc6_thread_manifest", {}) or {}
+        documents: list[dict[str, Any]] = []
+        for shard in manifest.get("shards", []):
+            path = shard.get("path")
+            if not path:
+                continue
+            part = self._load_repo_json(path)
+            documents.extend(part.get("documents", []))
+        return {
+            "documents": documents,
+            "document_count": len(documents),
+            "manifest": manifest,
+        }
+
+    def _loc6_article_documents(self) -> list[dict[str, Any]]:
+        full_docs = (getattr(self, "loc6_thread_full", {}) or {}).get("documents", [])
+        if full_docs:
+            return full_docs
+        return self.loc6_thread_articles.get("documents", []) or self.loc6_threads.get("documents", [])
 
     @staticmethod
     def _allowed(content_type: str, wanted: str) -> bool:
@@ -877,8 +900,7 @@ class UnifiedSearchEngine:
                 })
 
         elif wanted == "governance_article":
-            article_docs = self.loc6_thread_articles.get("documents", []) or self.loc6_threads.get("documents", [])
-            for doc in article_docs:
+            for doc in self._loc6_article_documents():
                 if doc.get("source_role") != "main_post":
                     continue
                 if filters.get("period") and doc.get("era") != filters["period"]:
@@ -1003,6 +1025,7 @@ class UnifiedSearchEngine:
                 "LOC4": "direct-work-search-live",
                 "LOC5": "direct-media-registry-search-live",
                 "LOC6": "governance+threads-km-search-live",
+                "LOC6_threads_indexed": len(self._loc6_article_documents()),
                 "LOC7": "live",
                 "LOC8": "live-era",
             },
