@@ -168,7 +168,7 @@ A major observable trend is that personal governance language gradually became i
 
 This is the central transition from worldview to governance architecture.
 
-## 7. Luna Codex 66 as governance vocabulary
+## 7. LunaRunes 66 as governance vocabulary
 
 The 66-rune structure provides concrete vocabulary for this later governance model:
 
