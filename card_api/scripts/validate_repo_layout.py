@@ -55,6 +55,10 @@ JSON_PATH_RE = re.compile(
     r"""(?P<path>/?(?:data|card_api|engine|loc8_api)/[A-Za-z0-9_./-]+\.json(?:\.gz)?)"""
 )
 
+HTML_JS_PATH_RE = re.compile(
+    r"""(?P<path>(?:\./|/)?[A-Za-z0-9_./-]+\.(?:html|js))(?:[?#][^"'\s<]*)?"""
+)
+
 
 def rel(path: Path) -> str:
     return path.relative_to(ROOT).as_posix()
@@ -92,6 +96,28 @@ def main() -> int:
             if not (ROOT / target).is_file():
                 failures.append(f"missing JSON target {target!r}: referenced by {rp}")
 
+        # HTML/JS routes and module references are also runtime contracts.
+        # Resolve relative JS imports against the source file directory.
+        for match in HTML_JS_PATH_RE.finditer(content):
+            raw = match.group("path")
+            if raw.startswith(("http://", "https://")):
+                continue
+            if raw.startswith("/"):
+                target = raw.lstrip("/")
+            elif raw.startswith("./") or raw.startswith("../"):
+                target = (Path(rp).parent / raw).resolve().relative_to(ROOT.resolve()).as_posix()
+            else:
+                # Browser paths in root HTML/docs are repository-root relative;
+                # JS bare relative module names resolve from their own directory.
+                if path.suffix.lower() == ".js" and "/" not in raw:
+                    target = (Path(rp).parent / raw).as_posix()
+                else:
+                    target = raw
+            if target.startswith(("data/json/archive/", "docs/")):
+                continue
+            if not (ROOT / target).is_file():
+                failures.append(f"missing HTML/JS target {target!r}: referenced by {rp}")
+
     if failures:
         print("Repository layout validation FAILED")
         for item in failures:
@@ -103,6 +129,7 @@ def main() -> int:
     print("- no forbidden legacy data paths")
     print("- no stale runtime/document references")
     print("- every repository-relative JSON reference resolves to an existing file")
+    print("- every current HTML/JS route/module reference resolves to an existing file")
     return 0
 
 
