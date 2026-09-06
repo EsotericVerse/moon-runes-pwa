@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_REFERENCE_MODEL",
   "purpose": "Reserve stable cross-LOC identifiers before data volume grows.",
   "id_types": {
@@ -39,6 +39,12 @@
       "example": "LA-0001",
       "owner": "LOC7",
       "description": "Reserved linguistic-analysis record ID."
+    },
+    "governance_id": {
+      "pattern": "GOV-{stable-id}",
+      "example": "GOV-REL-0001",
+      "owner": "LOC7",
+      "description": "Stable governance-event identifier for create/update/delete/dispute/publish/supersede actions."
     }
   },
   "relationship_types": [
@@ -51,11 +57,19 @@
     "analyzed_by",
     "influenced_by",
     "contributed_by",
-    "shared_with"
+    "shared_with",
+    "disputes",
+    "supersedes",
+    "replaces",
+    "governed_by",
+    "published_from"
   ],
   "rules": [
     "IDs are stable machine references and should not be renamed when display text changes.",
     "Display names may change through their authority registry without changing linked IDs.",
-    "A record may have one primary owner and multiple related LOC references."
-  ]
+    "A record may have one primary owner and multiple related LOC references.",
+    "A governance event may change lifecycle or interpretation without changing the stable identity of the historical source record.",
+    "Superseded records keep their stable IDs and point to replacement/successor IDs rather than being silently renumbered."
+  ],
+  "updated_at": "2026-09-07"
 }
