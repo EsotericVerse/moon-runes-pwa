@@ -12,7 +12,7 @@ function doGet(e) {
     const userId = String((e && e.parameter && e.parameter.user_id) || '').trim();
 
     if (action === 'health') {
-      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-1.0' });
+      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-1.1' });
     }
 
     if (action === 'users') {
@@ -61,6 +61,29 @@ function doPost(e) {
       return json_({ ok: true, user: user });
     }
 
+    if (action === 'era') {
+      const era = normalizeEra_(body.era || body);
+      appendObject_(ERA_SHEET, era);
+      return json_({ ok: true, era: era, action: 'era' });
+    }
+
+    if (action === 'update_era') {
+      const raw = body.era || body;
+      const eraId = String(raw.era_id || '').trim();
+      if (!eraId) throw new Error('Missing era_id');
+      const era = normalizeEra_(raw);
+      era.era_id = eraId;
+      const updated = updateEraById_(eraId, era);
+      return json_({ ok: true, era: updated, action: 'update_era' });
+    }
+
+    if (action === 'delete_era') {
+      const raw = body.era || body;
+      const eraId = String(raw.era_id || body.era_id || '').trim();
+      if (!eraId) throw new Error('Missing era_id');
+      deleteEraById_(eraId);
+      return json_({ ok: true, era_id: eraId, action: 'delete_era' });
+    }
     if (action === 'daily_draw') {
       const draw = normalizeDailyDraw_(body.daily_draw || body.event || body);
       appendObject_(DAILY_DRAW_SHEET, draw);
