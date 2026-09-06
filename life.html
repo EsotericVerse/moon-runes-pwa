@@ -1578,6 +1578,10 @@
             <div>
               <div class="era-name">${esc(era.display_label || era.name || era.period || '')}</div>
               <div class="era-desc">${esc(era.state_after || era.description || '')}</div>
+              ${Array.isArray(era.milestones) && era.milestones.length ? `
+                <div class="era-source-note" style="margin-top:9px;margin-bottom:5px">重要日期</div>
+                <div class="era-keyword-chips">${era.milestones.map(item => `<span class="era-keyword-chip"><b>${esc(item.date || '')}</b> ${esc(item.title || '')}</span>`).join('')}</div>
+              ` : ''}
               ${entries.length ? `<div class="era-keyword-chips">${entries.map(([tag,count]) => `<span class="era-keyword-chip">${esc(tag)} <b>${String(count).includes("%") ? esc(count) : "×" + esc(count)}</b></span>`).join('')}</div>` : ''}
               ${sourceRange ? `<div class="era-source-note">Suno 原始活躍範圍（來源參考）：${esc(sourceRange)}</div>` : ''}
               <div class="era-tools">
