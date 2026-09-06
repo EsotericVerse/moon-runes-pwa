@@ -725,7 +725,7 @@
       "updated_at": "2026-09-05",
       "keywords": [
         "月之符文",
-        "Luna Runes",
+        "LunaRunes",
         "66符文",
         "符文總覽",
         "符文卡",
@@ -847,7 +847,7 @@
         "maintained_in_repo": true,
         "source": "creator-reviewed Canva tutorial PDF"
       },
-      "notes": "First published beginner tutorial. Explains LOC as a language-system framework, starts from LOC1/Luna Runes, introduces semantic evolution, then summarizes LOC1–8 responsibility areas. Publication asset only; does not override Canon or mother data. Web application view: tutorial01.html.",
+      "notes": "First published beginner tutorial. Explains LOC as a language-system framework, starts from LOC1/LunaRunes, introduces semantic evolution, then summarizes LOC1–8 responsibility areas. Publication asset only; does not override Canon or mother data. Web application view: tutorial01.html.",
       "related_views": [
         "tutorial01.html"
       ],
@@ -1108,7 +1108,7 @@
     },
     {
       "asset_id": "KA-LUNA66-GOV-001",
-      "title": "Luna Codex 66 — Governance Design Notes",
+      "title": "LunaRunes 66 — Governance Design Notes",
       "path": "docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md",
       "source_type": "document",
       "content_type": "knowledge_document",
@@ -1140,7 +1140,7 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true,
         "derived_from": [
-          "creator-confirmed Luna Codex 66 design rationale",
+          "creator-confirmed LunaRunes 66 design rationale",
           "LunaRune64.xlsx canonical structure"
         ]
       },
