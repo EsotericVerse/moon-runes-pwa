@@ -34,6 +34,23 @@ data/json/
 
 > 同一資料只保留一份正式 projection；不同需求讀不同專用檔，不再建立整套全包副本。
 
+### Core 不是所有 JSON 的固定區
+
+只有「資料量較大、來源權威明確、結構成熟、runtime 需要穩定讀取，而且不應由下游任意手改」的資料才進 `core/`。
+
+ERA、Governance、Rights、Graph Schema、KM Registry 等小型但會持續治理更新的 JSON，仍放在 `registries/`，透過版本與治理流程持續變動。
+
+因此：
+
+~~~text
+大型成熟穩定資料 → core projection
+小型持續治理資料 → registries
+檢索衍生資料     → search
+可重建結果       → generated
+歷史版本         → archive
+研究資料         → experimental
+~~~
+
 ## 3. Registries — 結構化治理與跨 LOC 關係
 
 路徑：`data/json/registries/`
