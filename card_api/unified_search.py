@@ -543,6 +543,10 @@ class UnifiedSearchEngine:
             return []
 
         scored: list[tuple[float, dict[str, Any], str]] = []
+        query_terms = [
+            term for term in re.split(r"[\s、，,；;：:／/｜|]+", _normalize(query))
+            if term
+        ]
 
         # Maintained LOC6 article assets.
         for asset in self.knowledge_assets.get("assets", []):
@@ -606,6 +610,20 @@ class UnifiedSearchEngine:
                     "payload": item,
                 })
             else:
+                text = str(item.get("text") or "")
+                headline = re.split(r"[。！？!?\n]", text, maxsplit=1)[0].strip()
+                if len(headline) > 34:
+                    headline = headline[:34] + "…"
+                matched_terms = list(dict.fromkeys([
+                    *item.get("matched_terms", []),
+                    *[term for term in query_terms if term in _normalize(text)],
+                ]))[:12]
+                payload = {
+                    **item,
+                    "matched_terms": matched_terms,
+                    "km_source": "LOC6_THREADS_FULL_CORPUS",
+                    "evidence_role": "primary",
+                }
                 out.append({
                     "result_id": item.get("id"),
                     "system_id": "lo3rwang",
@@ -613,13 +631,13 @@ class UnifiedSearchEngine:
                     "related_locs": ["LOC7", "LOC8"],
                     "content_type": "governance_article",
                     "group": "loc6_articles",
-                    "title": f"Threads 長文 · {item.get('date') or 'undated'} · {item.get('era') or 'ERA'}",
-                    "summary": item.get("text") or "",
+                    "title": f"Threads｜{item.get('date') or 'undated'}｜{item.get('era') or 'ERA'}" + (f"｜{headline}" if headline else ""),
+                    "summary": text,
                     "score": round(score, 6),
                     "era_id": f"ERA-{item.get('era')}" if item.get("era") else None,
                     "period": item.get("era"),
                     "source_refs": [{"source_type": "threads", "source_id": item.get("source_id"), "note": "primary main-post evidence"}],
-                    "payload": {**item, "km_source": "LOC6_THREADS_KM_INDEX", "evidence_role": "primary"},
+                    "payload": payload,
                 })
         return out
 
@@ -917,12 +935,17 @@ class UnifiedSearchEngine:
                     "related_locs": ["LOC7", "LOC8"],
                     "content_type": "governance_article",
                     "group": "loc6_articles",
-                    "title": f"Threads 長文 · {doc.get('date') or 'undated'} · {doc.get('era') or 'ERA'}",
+                    "title": (
+                        f"Threads｜{doc.get('date') or 'undated'}｜{doc.get('era') or 'ERA'}｜"
+                        + ((re.split(r"[。！？!?\n]", str(doc.get("text") or ""), maxsplit=1)[0].strip()[:34] + "…")
+                           if len(re.split(r"[。！？!?\n]", str(doc.get("text") or ""), maxsplit=1)[0].strip()) > 34
+                           else re.split(r"[。！？!?\n]", str(doc.get("text") or ""), maxsplit=1)[0].strip())
+                    ),
                     "summary": doc.get("text") or "",
                     "period": doc.get("era"),
                     "era_id": f"ERA-{doc.get('era')}" if doc.get("era") else None,
                     "source_refs": [{"source_type": "threads", "source_id": doc.get("source_id"), "note": "primary main-post evidence"}],
-                    "payload": {**doc, "km_source": "LOC6_THREADS_ARTICLE_INDEX_v0.2", "evidence_role": "primary"},
+                    "payload": {**doc, "km_source": "LOC6_THREADS_FULL_CORPUS", "evidence_role": "primary"},
                 })
             items.sort(key=lambda r: (str((r.get("payload") or {}).get("date") or ""), str(r.get("result_id") or "")), reverse=True)
 
