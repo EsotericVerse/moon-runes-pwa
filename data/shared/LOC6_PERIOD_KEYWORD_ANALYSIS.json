@@ -1,0 +1,97 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC6_PERIOD_KEYWORD_ANALYSIS",
+  "status": "working",
+  "source": "Threads main-post corpus",
+  "governance": "Literal document-frequency evidence only. High frequency does not automatically become a LOC6 Canon concept.",
+  "periods": [
+    {
+      "period": "P0",
+      "era_id": "ERA-P0",
+      "date_range": {
+        "start": "2024-11-18",
+        "end": "2025-02-20"
+      },
+      "document_count": 1049,
+      "source_type": "threads_main_post",
+      "evidence_role": "primary",
+      "keywords": [
+        {
+          "term": "工作",
+          "document_count": 180,
+          "percent": 17.2
+        },
+        {
+          "term": "時間",
+          "document_count": 164,
+          "percent": 15.6
+        },
+        {
+          "term": "愛",
+          "document_count": 129,
+          "percent": 12.3
+        },
+        {
+          "term": "朋友",
+          "document_count": 81,
+          "percent": 7.7
+        },
+        {
+          "term": "關係",
+          "document_count": 75,
+          "percent": 7.1
+        },
+        {
+          "term": "生活",
+          "document_count": 71,
+          "percent": 6.8
+        },
+        {
+          "term": "選擇",
+          "document_count": 49,
+          "percent": 4.7
+        },
+        {
+          "term": "過去",
+          "document_count": 40,
+          "percent": 3.8
+        },
+        {
+          "term": "感情",
+          "document_count": 33,
+          "percent": 3.1
+        },
+        {
+          "term": "未來",
+          "document_count": 33,
+          "percent": 3.1
+        },
+        {
+          "term": "經驗",
+          "document_count": 32,
+          "percent": 3.1
+        },
+        {
+          "term": "離開",
+          "document_count": 31,
+          "percent": 3
+        },
+        {
+          "term": "文字",
+          "document_count": 28,
+          "percent": 2.7
+        },
+        {
+          "term": "決定",
+          "document_count": 27,
+          "percent": 2.6
+        },
+        {
+          "term": "現實",
+          "document_count": 26,
+          "percent": 2.5
+        }
+      ]
+    }
+  ]
+}
