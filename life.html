@@ -1332,7 +1332,10 @@
     }
 
     async function cachedStaticJson(url, key, fallback=null) {
-      const cached = readStaticCache(key, fallback);
+      const envelope = readJsonCache(key, null);
+      const cached = envelope?.schema_version === CACHE_SCHEMA_VERSION ? (envelope.data ?? fallback) : fallback;
+      const fresh = cached != null && Date.now() - Number(envelope?.saved_at || 0) < STATIC_CACHE_TTL;
+      if (fresh) return cached;
       try {
         const res = await fetch(url, { cache: 'no-store' });
         if (!res.ok) throw new Error('static fetch failed');
