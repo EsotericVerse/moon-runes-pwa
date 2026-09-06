@@ -25,7 +25,7 @@ moon-runes-pwa/
 │     ├─ generated/          # reproducible generated indexes / analysis / shards
 │     ├─ archive/            # historical data not loaded by current runtime
 │     └─ experimental/       # experimental JSON datasets
-├─ docs/
+├─ km/
 │  ├─ methodology/           # historical methodology / naming documents
 │  └─ ...                    # current KM / Governance / tutorials / published docs
 ├─ js/                       # browser application logic
@@ -110,7 +110,7 @@ Examples from the first cleanup:
 - `temp.json` → delete: temporary/unreferenced duplicate-sized artifact.
 - `mp3/my.mp3` → delete: unreferenced test/media asset.
 - FAQ v0.1–v0.3 → archive: meaningful retrieval/data history.
-- old methodology document → move to `docs/methodology/`: historical knowledge, not root runtime content.
+- old methodology document → move to `km/methodology/`: historical knowledge, not root runtime content.
 
 ## 7. URL-sensitive modules
 
@@ -177,7 +177,7 @@ Chat history may be used as a source for reconstruction, but must not remain the
 Preferred forms:
 
 ~~~text
-docs/*.md
+km/*.md
 data/json/registries/*.json
 ~~~
 
