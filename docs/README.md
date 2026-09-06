@@ -61,3 +61,7 @@ UI / API / AI answer
 - **Historical**：保留歷史追溯，不作現行來源。
 
 最後同步：2026-09-07
+
+## Frontend Runtime Policy
+
+- [FRONTEND_RUNTIME_DATA_POLICY.md](./FRONTEND_RUNTIME_DATA_POLICY.md)：前端靜態資料以生成 JS module 為 runtime；JSON 留給後端／KM／治理，並要求 generator + CI drift check，避免 JS 未同步。
