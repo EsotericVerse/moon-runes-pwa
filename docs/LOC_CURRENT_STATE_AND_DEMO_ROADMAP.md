@@ -636,3 +636,56 @@ Structured baseline：
 `data/generated/loc6/threads/analysis/LOC6_THREADS_P0_BASELINE_v0.1.json`
 
 下一步：建立 P0 Surface Terms → Concept candidates → 與 P1–P8 做 trajectory comparison。
+
+## 18. Governance Consolidation Phase
+
+LOC 現在進入 **Governance Consolidation**：功能骨架不再是主要缺口，後續優先工作是把已存在的治理思想、資料權責與實際控制整理成一致的全系統治理層。
+
+### 18.1 已形成的治理文件
+
+- `docs/LOC_GOVERNANCE_CORE.md`
+- `docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`
+- `docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md`
+- `docs/LOC_CONTENT_RIGHTS_POLICY.md`
+- `docs/LOC6_ZHENGDE_STYLE.md`
+- `docs/LOC7_KM.md`
+- `docs/LOC8_KM.md`
+
+### 18.2 目前治理重點
+
+~~~text
+功能完整
+→ 治理語料回收
+→ 歷史趨勢分析
+→ 原則抽取
+→ Policy / Schema 對齊
+→ Runtime control
+→ Audit trail
+~~~
+
+### 18.3 現行治理缺口不是「沒有理論」
+
+目前缺口主要是 executable control，而不是治理思想不足：
+
+- common governance event / audit log
+- dispute / review workflow
+- governed delete / tombstone
+- relation publication pipeline
+- uniform rights runtime enforcement
+- candidate → review → publish / supersede lifecycle
+
+### 18.4 自我治理回饋
+
+治理 consolidation 本身就是 LOC 的使用案例：
+
+~~~text
+累積文字
+→ Search / Graph
+→ Trend / Analysis
+→ 找出不同時期的規則與語句
+→ 保留歷史差異
+→ 整理現行框架
+→ 再寫回 KM
+~~~
+
+這不是用現在版本覆蓋過去，而是把過去版本納入可追溯的現在。
