@@ -361,8 +361,65 @@ ERA suggestion、關鍵字趨勢、作品群聚與 change-point detection 都只
 | Analysis | Implemented (LOC3 baseline) | 比較相鄰時期的 LOC3 關鍵字／語義家族比重升降，並顯示 transition summary |
 | Context | Implemented | 整合 Relation、Trajectory 與 Analysis 的工作區 |
 | Graph View | Planned | 由既有 Relation edge 產生網狀視圖；目前未上線 |
-| Graph RAG | Planned | 待 corpus 與 relation 穩定後再實作 |
+| Graph RAG | Implemented | Unified Search 已以 Canonical Graph RAG 做 bounded traversal；LOC8 Event／Daily Rune snapshot 已接入時間圖，並輸出 provenance |
 
+### Graph RAG 現行整合（2026-09-06）
+
+現行 `card_api/unified_search.py` 已把 Graph RAG 作為 Unified Search 的固定階段，而不是未來規劃：
+
+```text
+Search retrieval
+      ↓
+seed nodes
+      ↓
+Canonical Graph (bounded 1–3 hop)
+      ↓
+ERA / LOC / Work / Media / Knowledge / LOC8 temporal nodes
+      ↓
+Search Synthesis + Provenance
+```
+
+LOC8 目前額外接入兩個 repository-governed fallback snapshot：
+
+- `LOC8_EVENT_SNAPSHOT.json`：Event／歷史里程碑與 ERA temporal evidence。
+- `LOC8_DAILY_RUNE_SNAPSHOT.json`：Daily Rune observation，建立 `LOC8 observation → LOC1 rune → LOC8 ERA` 的跨 LOC 時間橋。
+
+這兩份 snapshot 明確維持 **non-authoritative frontend fallback** 身分；Google Sheet 仍是 LOC8 live data source。
+
+### Relation Library 與公開 Search 的權限邊界
+
+`life.html` 的 Relation Library 目前直接使用 Google Sheet `Relation` 分頁，資料可標記 `visibility=private`。因此公開 `search.html` / Render Search API **不直接讀取 live Relation Sheet**。
+
+規則：
+
+1. private Relation 只供 LOC8 Life workspace 使用。
+2. 要進公開 Graph RAG 的 Relation，必須先經治理，成為 repository 中可公開的 registry／snapshot。
+3. Semantic similarity 只能選 seed，不能自行建立 canonical edge。
+4. Search API 必須回傳 provenance，讓結果可追溯至 source_refs、edge evidence kind 與 evidence status。
+5. Relation 公開化是治理動作，不是單純同步動作。
+### Relation confidence 與時間圖治理
+
+LOC8 進入 Graph 的 Event、Daily Rune、ERA 與 Relation 不應因「存在」就具有相同強度。現行 Search Core 使用 LOC7 Graph Schema 的 edge quality policy，將 evidence source、status 與 relation type 分開計權。
+
+LOC8 特別遵守：
+
+- live Google Sheet private Relation 不直接進公開 Graph。
+- repository snapshot 屬 recorded fallback evidence，權重低於 authority registry／直接 canonical metadata。
+- ERA membership 為 `record → ERA` 單向投影，不能由 ERA 反向展開整個時期的所有事件。
+- temporal query 應優先保持時間 precision；抽象概念 query 才允許跨 LOC 擴展。
+- traversal score 太低的路徑直接停止，不因 hop 增加而擴散。
+
+### Graph RAG 品質控制
+
+LOC8 的 Event、ERA、Daily Rune 一旦進 Graph，不代表所有 traversal 都是正確的。現行加入固定 regression cases，至少驗證：
+
+- 命名歷史能回到正確 Event 與 ERA。
+- Daily Rune 能形成 LOC8 observation → LOC1 rune → LOC8 ERA 的治理路徑。
+- ERA 查詢不應跳到無證據的時期。
+- 公開 Graph 不依賴 private live Relation。
+- 每次 Graph traversal 都保留 provenance。
+
+品質工作因此從「繼續增加 edge」轉為「控制 edge precision、temporal correctness 與 provenance completeness」。
 ### Analysis 與 Context 的分工
 
 - **Context**：回答「彼此怎麼連」。
@@ -380,3 +437,87 @@ ERA suggestion、關鍵字趨勢、作品群聚與 change-point detection 都只
 ---
 
 **LOC8 ERA principle:** Detect change, verify persistence, cross-check evidence, govern the boundary, and refine it when better evidence arrives.
+
+## 15. Self-Governance Feedback Loop
+
+LOC8 位於 LOC 的時間／人生末端，因此除 Timeline、ERA、Relation、Trajectory 與 Analysis 外，也承擔「把檢索結果送回使用者進行自我治理」的 feedback responsibility。
+
+~~~text
+歷史語言／作品／事件
+        ↓
+Search / Graph / ERA
+        ↓
+Trend / Style / Relation Analysis
+        ↓
+比較不同時間點
+        ↓
+理解當時脈絡
+        ↓
+自我檢討／重新治理
+        ↓
+新的選擇、語言與事件
+        ↓
+再次進入 LOC
+~~~
+
+這個迴路不是用後期版本審判早期版本，而是讓使用者看見語言如何演化。
+
+### Versioning, not moral ranking
+
+LOC8 不應輸出：
+
+~~~text
+30歲版本 = 錯
+46歲版本 = 對
+~~~
+
+而應輸出：
+
+~~~text
+當時 context / problem / style / boundary
+→ 後續哪些條件改變
+→ 哪些語言持續
+→ 哪些 relation / value / boundary 被修正
+→ 現在版本適合什麼情境
+~~~
+
+是否構成「進步」是使用者的治理判斷；系統本身只確認 change / continuity / divergence。
+
+### 治理實作缺口
+
+LOC8 功能核心目前已具備 Daily Rune、ERA、Event、Relation、Trajectory、Analysis、Context 與 Graph RAG。後續優先補的是治理控制，不再優先擴張功能：
+
+- Governance audit log（before/after/reason/evidence）
+- Dispute / Review
+- Governed Delete / tombstone
+- Relation publication pipeline
+- Rights runtime enforcement
+- ERA Candidate → Accept / Adjust / Split / Merge / Reject 的完整操作流
+
+共用治理基準見 [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md)。
+
+## 16. Governance Trend as Analysis Type
+
+LOC8 的 Analysis 不只比較歌曲關鍵字，也可以比較治理語言本身的時間變化。
+
+治理 trend 至少可觀察：
+
+- concept first appearance
+- prevalence / frequency
+- wording replacement
+- boundary-strength change
+- external-defense vs self-governance orientation
+- responsibility / choice / freedom / uncertainty themes
+- historical term → current term transitions
+
+例如「底線 → 界線 → domain boundary」應保留三個時期的文字證據，再由 LOC6 判讀治理意義；LOC8 負責時間位置與變化幅度，LOC7 負責檢索與關係結構。
+
+因此：
+
+~~~text
+LOC6：這個治理語句代表什麼
+LOC7：它如何被索引、建立關係與驗證
+LOC8：它什麼時候出現、如何變化、是否形成持續趨勢
+~~~
+
+治理趨勢本身也是自我治理的輸入，而不是自動產生「你變得更好／更壞」的價值判決。

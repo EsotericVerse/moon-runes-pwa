@@ -1,5 +1,5 @@
 (() => {
-  const NAV_URL = "data/shared/LOC_NAV.json";
+  const NAV_URL = "data/json/registries/LOC_NAV.json";
 
   function esc(value) {
     return String(value ?? "").replace(/[&<>"']/g, ch => ({

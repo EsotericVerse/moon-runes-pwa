@@ -51,13 +51,21 @@ class UnifiedSearchTests(unittest.TestCase):
         temp = TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         root = Path(temp.name)
-        (root / "data" / "shared").mkdir(parents=True)
-        (root / "data" / "shared" / "LOC_ERA_REGISTRY.json").write_text(
+        (root / "data" / "json" / "registries").mkdir(parents=True)
+        (root / "data" / "json" / "registries" / "LOC_ERA_REGISTRY.json").write_text(
             '{"language_system_id":"lo3rwang","eras":[{"era_id":"ERA-P8","period":"P8","order":8,"name":"自我治理與未來展望期","display_label":"P8｜自我治理與未來展望期","description":"自我治理","status":"current","source_event_id":"EV-ERA-P8"}]}',
             encoding="utf-8",
         )
-        (root / "data" / "shared" / "LOC_CONTENT_TYPE_REGISTRY.json").write_text(
+        (root / "data" / "json" / "registries" / "LOC_CONTENT_TYPE_REGISTRY.json").write_text(
             '{"types":[{"id":"lyrics_work","primary_loc":"LOC3"}]}',
+            encoding="utf-8",
+        )
+        (root / "data" / "json" / "registries" / "LOC8_EVENT_SNAPSHOT.json").write_text(
+            '{"role":"non-authoritative frontend fallback snapshot","events":[{"id":"EV-TEST","date":"2026-09-01","event_type":"transition","title":"進入自我治理","era":"P8 自我治理與未來展望期","confidence":"recorded","source":"test-event"}]}',
+            encoding="utf-8",
+        )
+        (root / "data" / "json" / "registries" / "LOC8_DAILY_RUNE_SNAPSHOT.json").write_text(
+            '{"role":"non-authoritative frontend fallback snapshot","daily_draws":[{"id":"DD-TEST","date":"2026-09-01","rune_id":"1","rune":"心","direction":"半正位","era_id":"ERA-P8","confidence":"recorded","source":"test-draw"}]}',
             encoding="utf-8",
         )
         return UnifiedSearchEngine(
@@ -82,6 +90,59 @@ class UnifiedSearchTests(unittest.TestCase):
         self.assertEqual(len(result["groups"]["knowledge"]), 1)
         self.assertEqual(len(result["groups"]["works"]), 0)
         self.assertEqual(result["groups"]["knowledge"][0]["primary_loc"], "LOC7")
+
+
+    def test_loc8_temporal_snapshots_enter_canonical_graph_without_live_private_relations(self):
+        graph = self.make_engine()._canonical_graph()
+        node_ids = {node["id"] for node in graph["nodes"]}
+        edge_kinds = {edge.get("evidence_kind") for edge in graph["edges"]}
+        self.assertIn("EV-TEST", node_ids)
+        self.assertIn("DD-TEST", node_ids)
+        self.assertIn("RUNE-1", node_ids)
+        self.assertIn("loc8_event_snapshot", edge_kinds)
+        self.assertIn("loc8_daily_rune_snapshot", edge_kinds)
+
+    def test_search_returns_provenance_envelope(self):
+        result = self.make_engine().search("自我治理", top_k=5)
+        provenance = result["provenance"]
+        self.assertIn("graph_evidence_kinds", provenance)
+        self.assertIn("loc8_live_relation_policy", provenance)
+        self.assertGreaterEqual(provenance["source_ref_count"], 1)
+
+
+    def test_graph_quality_weights_are_deterministic(self):
+        engine = self.make_engine()
+        self.assertEqual(
+            engine._graph_edge_quality("owned_by_loc", "authority_registry", "recorded"),
+            1.0,
+        )
+        self.assertLess(
+            engine._graph_edge_quality("related_to", "semantic_inference", "inferred"),
+            0.30,
+        )
+
+    def test_search_graph_exposes_quality_contract(self):
+        result = self.make_engine().search("自我治理", top_k=5)
+        graph = result["graph"]
+        self.assertIn("quality", graph)
+        self.assertIn("mean_edge_quality", graph["quality"])
+        self.assertGreaterEqual(graph["quality"]["mean_edge_quality"], 0.0)
+        for edge in graph["edges"]:
+            self.assertIn("edge_quality", edge)
+            self.assertIn("quality_band", edge)
+            self.assertIn("traversal_score", edge)
+            self.assertGreaterEqual(edge["traversal_score"], graph["quality"]["min_traversal_score"])
+
+        provenance = result["provenance"]
+        self.assertIn("graph_quality_bands", provenance)
+        self.assertIn("graph_quality", provenance)
+
+    def test_synthesis_confidence_uses_graph_quality(self):
+        result = self.make_engine().search("自我治理", top_k=5)
+        synthesis = result["synthesis"]
+        self.assertIsNotNone(synthesis)
+        self.assertIn("mean_edge_quality", synthesis["confidence"])
+        self.assertIn("quality", synthesis["graph"])
 
 
 if __name__ == "__main__":

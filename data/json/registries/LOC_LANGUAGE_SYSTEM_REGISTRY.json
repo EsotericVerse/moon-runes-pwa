@@ -1,0 +1,48 @@
+{
+  "schema_version": "0.3",
+  "registry": "LOC_LANGUAGE_SYSTEM_REGISTRY",
+  "authority": "LOC8",
+  "systems": [
+    {
+      "system_id": "lo3rwang",
+      "system_name": "政德風",
+      "display_label": "lo3rwang",
+      "system_type": "personal_language_system",
+      "owner_type": "person",
+      "status": "active",
+      "rights": {
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned"
+      },
+      "provenance": {
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "provenance_note": "預留協作、共享、影響與來源欄位；目前系統以單一個人語言系統為基準。"
+      },
+      "framework_definition": "LOC／月典是一套語言系統框架。它將符文與籤詩、情境、音樂、文字、多媒體、治理、文字建築／知識管理，以及事件與時間脈絡分配給 LOC1–8 各自的責任域，再透過共同搜尋、關聯、趨勢與時間結構形成可追溯、可版本化、可演化的整體。Luna Codex／月之符文是其成熟的 Reference Seed System。",
+      "framework_principles": [
+        "LOC1–8 是同一套語言系統的責任分工，不是八套獨立產品，也不是版本或成熟度排序。",
+        "穩定的是框架，不是語言：identity、schema、ownership、provenance 與治理流程可穩定，meaning、relation、context 與 interpretation 可演化。",
+        "不同資料型態保留各自 canonical ownership；跨 LOC 以 reference / consume / propose change 為原則，不直接覆寫。",
+        "LOC 對觀點保持中立，但對 domain、rights、privacy、permission、responsibility boundary 不保持中立。",
+        "歷史原始紀錄保留；後來的解釋可 version / supersede，但不得靜默回寫過去。",
+        "不同意見與 competing interpretation 可以並存；異議本身不是錯誤。",
+        "AI 推論、semantic similarity 與衍生 View 不得自動升格為 Canon。",
+        "LOC Search / Graph / Trend 的目的之一，是讓使用者看見語言如何改變，再自行決定如何治理下一個版本。"
+      ],
+      "governance": {
+        "core_document": "docs/LOC_GOVERNANCE_CORE.md",
+        "history_document": "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md",
+        "luna_runes_66_document": "docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md",
+        "rights_document": "docs/LOC_CONTENT_RIGHTS_POLICY.md",
+        "system_vs_personal": "LOC system governance defines representation, authority, boundary and lifecycle; Zhengde Style/self-governance remains a personal governance corpus and example, not a mandatory worldview.",
+        "stance": "share methods and language without requiring belief or obedience"
+      }
+    }
+  ]
+}

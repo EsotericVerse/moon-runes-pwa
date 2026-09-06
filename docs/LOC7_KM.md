@@ -42,7 +42,7 @@ Tier C  Maintained knowledge documents
         └─ governance / architecture notes
 
 Tier D  Structured registries
-        └─ data/shared/*.json
+        └─ data/json/shared/*.json
 
 Tier E  Retrieval derivatives
         ├─ LOC_FAQ_v*.json
@@ -98,7 +98,7 @@ LOC2 的事件資料在 KM 中不只視為遊戲規則。它同時是一批 **Sc
 - LOC2 情境可供 LOC4 敘事、LOC6 文法、LOC7 建築／關係分析與 LOC8 生活事件引用。
 
 維護文件：[LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md)  
-Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
+Structured registry：`data/json/shared/LOC2_EVENT_REGISTRY.json`
 
 ## 7. 雙符文關係層
 
@@ -106,7 +106,7 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 
 ### 7.1 Pair Relation — 中性關係
 
-`data/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json` 保存兩個符文放在一起時的基本語意關係。
+`data/json/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json` 保存兩個符文放在一起時的基本語意關係。
 
 - pair key 不帶方向，固定以較小符文 ID 在前，例如 `09_16`。
 - A＋B 與 B＋A 查到同一個中性關係。
@@ -141,7 +141,7 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 政德風採「原始語句／治理原則／風格狀態／時期投影」分層保存，不再只以語錄集合處理。
 
 - 維護文件：`docs/LOC6_ZHENGDE_STYLE.md`
-- 結構化 registry：`data/shared/LOC6_GOVERNANCE_REGISTRY.json`
+- 結構化 registry：`data/json/shared/LOC6_GOVERNANCE_REGISTRY.json`
 - LOC3 可提供不同 ERA 的歌曲與歌詞證據。
 - LOC4 可提供長文、小說、文章中的文字證據。
 - LOC8 提供時間與人生階段。
@@ -153,7 +153,7 @@ Structured registry：`data/shared/LOC2_EVENT_REGISTRY.json`
 
 ## 9. LOC3 → ERA → LOC6 回掛
 
-LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/shared/LOC6_ERA_STYLE_EVIDENCE.json`，提供每個 ERA 的作品數、主要 tags、起始狀態、轉折方式、結尾結構等 recorded metadata aggregate。
+LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json`，提供每個 ERA 的作品數、主要 tags、起始狀態、轉折方式、結尾結構等 recorded metadata aggregate。
 
 - P1 目前明確排除於公開 LOC3 搜尋，因此此層沒有 P1 歌曲 aggregate。
 - ERA 名稱與日期仍以 LOC8 `LOC_ERA_REGISTRY.json` 為權威。
@@ -161,7 +161,7 @@ LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/shared/
 
 ### 符文歌曲
 
-`data/shared/LOC3_RUNE_SONG_REGISTRY.json` 專門判定真正的符文歌曲。
+`data/json/shared/LOC3_RUNE_SONG_REGISTRY.json` 專門判定真正的符文歌曲。
 
 只有具有「實際抽牌 → 解讀 → 歌詞／歌曲」provenance，或作者明確確認為該流程產物的作品，才可標成 `rune_song`。月光、命運、符文等意象本身不足以成立。
 
@@ -194,7 +194,7 @@ LOC3 版本推薦分數另外納入跨媒介完成度：IG Reels +20、YouTube M
 
 LOC3 不把「情緒」視為每首歌曲的必填語意。部分政德風歌曲以理性論述、系統觀察、關係規則、界線判斷或治理命題為核心；對這類歌曲，真正可檢索的語意可能主要存在於「道理句」而非情緒詞。
 
-Structured schema：`data/shared/LOC3_REASONING_SCHEMA.json`
+Structured schema：`data/json/shared/LOC3_REASONING_SCHEMA.json`
 
 分析至少可拆成：
 - 主張／論點
@@ -228,8 +228,8 @@ LOC5 媒體稽核：目前 Suno 500 workbook、`LOC3_MEDIA_LINKS_v0.1.json` 與 
 
 現行作用資料：
 
-- `card_api/data/LOC_FAQ_v0.4.json`：80 題 FAQ source view。
-- `card_api/data/LOC_FAQ_RAG_v0.4.json`：由 FAQ v0.4 同步衍生的檢索資料。
+- `data/json/runtime/card_api/LOC_FAQ_v0.4.json`：80 題 FAQ source view。
+- `data/json/runtime/card_api/LOC_FAQ_RAG_v0.4.json`：由 FAQ v0.4 同步衍生的檢索資料。
 - `card_api/main.py`：目前載入 RAG v0.4。
 
 v0.4 對齊 2026-09-06 的 LOC6／LOC7／LOC8 權責、Unified Search 實作、公開「時期」用語與既有功能狀態。FAQ 是 KM 的問答 View；RAG 是 retrieval derivative，兩者都不是 Canon。
@@ -240,7 +240,7 @@ v0.4 對齊 2026-09-06 的 LOC6／LOC7／LOC8 權責、Unified Search 實作、�
 
 ## 11. Shared Registry
 
-`data/shared/` 主要承接跨 LOC 的結構化 registry。KM 相關核心：
+`data/json/shared/` 主要承接跨 LOC 的結構化 registry。KM 相關核心：
 
 - `LOC_KNOWLEDGE_ASSET_REGISTRY.json`
 - `LOC2_EVENT_REGISTRY.json`
@@ -266,8 +266,45 @@ v0.4 對齊 2026-09-06 的 LOC6／LOC7／LOC8 權責、Unified Search 實作、�
 
 Unified Search 已是現行公開檢索入口，後端目前可直接取得 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7 與 LOC8 的不同資料來源；LOC2 目前仍以 Knowledge View 為主。搜尋層只負責 routing、retrieval、ranking 與結果 envelope，不改變各 LOC 的 canonical ownership。
 
-完整 Relation Schema、Knowledge Graph expansion 與 Graph RAG 仍屬後續階段。不得因已有 Shared Registry、related_ids、cross-relationship registry 或 search view 就宣稱完整 Graph RAG 已部署。
+Canonical Graph RAG 已進入現行 Unified Search：Search retrieval 先選 seed，再以受治理的 edge 做 bounded 1–3 hop traversal，並把 ERA、LOC、Work、Media、Knowledge 與 LOC8 temporal observation 聚合到 Search Synthesis。Graph Schema 現行為 v0.3。
 
+現階段仍保留明確邊界：語意相似度只能選 seed，不能自行建立 canonical edge；LOC8 live Google Sheet 的 private Relation rows 不直接進公開 Search。公開 Graph 只接受 repository 中已治理的 registry／snapshot，並由 `provenance` 回傳來源與 edge evidence。後續重點是 Relation publish/governance pipeline、Graph View 與 retrieval evaluation，而不是重新建立 Graph RAG。
+
+## Graph RAG Quality Governance
+
+Graph edge 現行不再只有「存在／不存在」，而有 deterministic governance quality。分數用途是控制 traversal 優先序與最低可走門檻，不代表 AI 對真實世界的主觀信心。
+
+```text
+edge_quality = evidence_weight × status_weight × relation_weight
+traversal_score = parent_path_score × edge_quality × hop_decay^(hop-1)
+```
+
+現行預設：`min_traversal_score=0.25`、`hop_decay=0.88`。權重與 band 的唯一機器可讀 contract 為 `data/json/shared/LOC_GRAPH_SCHEMA.json` v0.4。
+
+治理原則：
+
+- Authority / explicit registry / deterministic structural evidence 優先。
+- recorded metadata 高於 snapshot；snapshot 高於 transient result metadata。
+- `semantic_inference` 若未經治理，只能保有低權重，不能藉 traversal 自動升格。
+- `owned_by_loc`、`belongs_to_era` 是方向性結構投影，禁止由 LOC／ERA 節點反向散射到所有成員。
+- Named/historical entity query 可收斂 seed；abstract concept query 必須保留跨 LOC evidence breadth。
+
+## Graph RAG Evaluation
+
+Graph RAG 完成後，品質不以「有回傳 graph」判定，而使用固定 regression cases 檢查 governed reachability。
+
+- Evaluation registry：`data/json/shared/LOC_GRAPH_EVAL_CASES.json`
+- Evaluator：`card_api/scripts/evaluate_graph_rag.py`
+- 現行指標：expected node / LOC / ERA recall、provenance presence、forbidden-node absence。
+- 評測不比較生成文字；它只驗證 retrieval → seed → canonical traversal → provenance 是否維持治理邊界。
+- private LOC8 live Relation 不得成為公開 evaluation case 的必要依賴。
+
+執行：
+
+```bash
+cd card_api
+python scripts/evaluate_graph_rag.py
+```
 ## 14. 文件格式
 
 `docs/LOC7_KM.md` 自 0.2 起是 repository 內唯一維護中的 KM 主文件；0.3 起同步記錄 Unified Search、FAQ/RAG v0.4 與目前跨 LOC 檢索責任。
@@ -344,7 +381,7 @@ ChatGPT 對話不是預設第二套完整 corpus，而是 **gap-filling source**
 - 去重基準：7008 筆
 - 主貼文：4578 筆，視為 primary evidence
 - Reply：2430 筆，視為 supplemental evidence
-- 搜尋索引：`data/shared/LOC6_THREADS_KM_INDEX.json`
+- 搜尋索引：`data/json/shared/LOC6_THREADS_KM_INDEX.json`
 - Unified Search group：`governance`
 - Content type：`governance_fragment`
 
@@ -385,7 +422,7 @@ LOC6 Threads corpus 現行完整解析目標為 **7,008 筆去重文字紀錄**�
 
 P0 已由完整 Threads 主貼文索引取得 **1,049 筆 primary records**，時間範圍為 **2024-11-18 ～ 2025-02-20**。現行 baseline 保存 document count、文字量與 literal probe term prevalence，作為後續跨 ERA 分析的起點。
 
-- Structured baseline：`data/generated/loc6/threads/analysis/LOC6_THREADS_P0_BASELINE_v0.1.json`
+- Structured baseline：`data/json/generated/loc6/threads/analysis/LOC6_THREADS_P0_BASELINE_v0.1.json`
 - P0 total characters：161,458
 - 主貼文只作 primary evidence；Reply 仍維持 supplemental evidence。
 - term frequency 不得直接升格 Concept；Concept 仍須由 phrase/context evidence 與人工治理確認。
@@ -395,7 +432,7 @@ P0 已由完整 Threads 主貼文索引取得 **1,049 筆 primary records**，�
 
 Corpus 匯入、匯出與公開展示必須先通過 Content Rights Gate。
 
-- Policy：`data/shared/LOC_CONTENT_RIGHTS_POLICY.json`
+- Policy：`data/json/shared/LOC_CONTENT_RIGHTS_POLICY.json`
 - Human-readable：`docs/LOC_CONTENT_RIGHTS_POLICY.md`
 - 私訊、MSN／Messenger 對話與其他私人通訊預設不匯入。
 - 平台 export 可取得，不等於其中所有內容可再次公開。
@@ -425,3 +462,59 @@ Markdown / JSON / Registry
 - Search 可以讀取 Markdown／JSON 來做 retrieval，但 UI 只連到 `public_path`；沒有 public view 的內部 asset 不顯示「閱讀原始碼」連結。
 - 政德風公開介紹文章採 `exposure_policy=public_full_text`：完整風格描述可公開閱讀，不受 corpus preview-only 限制。
 - 原始作品 corpus、Threads 全文與其他大量第一方作品仍維持 anti-bulk-extraction 規則。
+
+## 20. Governance Control Plane
+
+LOC7 負責把治理原則轉成可執行的 schema、relationship、validation、history 與 audit structure。共用原則見 [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md)。
+
+KM 中任何可治理 Knowledge Object／Relation／ERA／Rule／Schema，最終應支援：
+
+~~~text
+Create / Update / Delete
+        +
+before / after
+        +
+reason / evidence
+        +
+review / dispute
+        +
+publish / restrict
+        +
+supersede / tombstone
+~~~
+
+治理完整度不得只以「文件有寫規則」判定，而應檢查：
+
+1. **Principle**：有沒有明確治理原則。
+2. **Policy**：規則是否可被引用與版本化。
+3. **Executable Control**：程式／API 是否實際 enforce。
+4. **Evidence / Audit Trail**：變更是否可追溯。
+
+### Relation / Graph 治理要求
+
+- 不同 relation / interpretation 可以並存。
+- semantic similarity 不得自行創造 Canon。
+- 有異議時應建立 dispute/change record，而不是直接覆寫。
+- Delete 應優先採 tombstone / archived state。
+- private → public / canonical 必須是正式 publish governance。
+- Graph、Search、KM 的 public exposure 必須共用 rights / visibility gate。
+- governance history 應能回答「誰／何時／為何／依據什麼／改了什麼」。
+
+這些要求屬 LOC7 結構責任；價值與治理語義仍由 LOC6 管理，時間與人生版本則由 LOC8 管理。
+
+## 21. Governance Knowledge Sources
+
+治理層的 KM source-of-truth 分工：
+
+- `LOC_GOVERNANCE_CORE.md`：共用治理原則與 Audit baseline。
+- `LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`：治理語言歷史與趨勢。
+- `LUNA_RUNES_66_GOVERNANCE_DESIGN.md`：月之符文66治理設計解讀。
+- `LOC6_ZHENGDE_STYLE.md`：個人治理 corpus / 政德風。
+- `LOC_CONTENT_RIGHTS_POLICY.md`：rights/privacy/publication gate。
+- `LOC8_KM.md`：時間、ERA、Trend 與 self-governance feedback。
+
+LOC7 的責任是讓這些來源可被索引、引用、建立 governed relation 與 audit，而不是把它們融合成單一不可變文本。
+
+治理資料同樣遵循：
+
+> **原始紀錄與後設治理解讀分離；Current View 不得抹掉 Historical View。**

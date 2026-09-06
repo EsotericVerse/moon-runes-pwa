@@ -1,0 +1,126 @@
+{
+  "schema_version": "0.4",
+  "registry": "LOC_GRAPH_SCHEMA",
+  "authority": "LOC7",
+  "purpose": "Shared node/edge contract for LOC Graph RAG and Search Synthesis. Search retrieval chooses graph seeds; governed edges aggregate related LOC, ERA, works, media and analysis without replacing canonical ownership.",
+  "node_types": [
+    "loc_domain",
+    "rune",
+    "lot",
+    "scenario_event",
+    "music_work",
+    "writing_work",
+    "media",
+    "governance_fragment",
+    "knowledge_asset",
+    "era",
+    "life_event",
+    "daily_rune_draw"
+  ],
+  "edge_types": [
+    "owned_by_loc",
+    "has_lot",
+    "belongs_to_era",
+    "derived_from",
+    "expanded_to",
+    "adapted_to",
+    "represented_by",
+    "references",
+    "analyzed_by",
+    "related_to",
+    "temporal_before",
+    "temporal_after",
+    "source_of"
+  ],
+  "rules": [
+    "Graph nodes are references to authoritative records, not replacement copies.",
+    "Canonical edges require explicit registry evidence, authoritative metadata, or deterministic structural evidence.",
+    "Semantic similarity may select seed nodes but must never create a canonical edge by itself.",
+    "ERA-P0 through current ERA form a deterministic temporal backbone from LOC_ERA_REGISTRY.",
+    "Search-time result nodes may receive transient owned_by_loc, belongs_to_era, and media/work linkage edges from their own recorded metadata.",
+    "Graph traversal is bounded and feeds Search Synthesis with connected LOCs, ERA paths, works, media and analysis nodes.",
+    "LOC7 manages graph structure/retrieval; LOC8 owns ERA/context authority and consumes graph projections for trend/context views.",
+    "LOC8 repository snapshots may contribute public temporal/event observation nodes without replacing the live Google Sheet authority.",
+    "Private LOC8 Google Sheet Relation rows are never exposed through public Search unless they are explicitly governed into a public registry/snapshot.",
+    "Search responses expose a provenance envelope summarizing source_refs and graph evidence kinds/status.",
+    "Every traversable edge carries edge_quality and quality_band derived from relation type, evidence kind and evidence status.",
+    "Traversal priority is quality-weighted and decays by hop; paths below min_traversal_score are not expanded.",
+    "owned_by_loc and belongs_to_era are directional structural projections and must not be used as reverse-discovery hubs.",
+    "Named/historical entity queries may use exclusive canonical seeds; abstract concept queries retain cross-LOC retrieval breadth."
+  ],
+  "search_synthesis": {
+    "seed_source": "precision-aware Unified Search results + canonical exact entity matches",
+    "traversal_depth_default": 2,
+    "traversal_depth_max": 3,
+    "output": [
+      "era_path",
+      "loc_path",
+      "connected_results",
+      "paths",
+      "provenance"
+    ],
+    "edge_governance": "canonical-only + quality-weighted traversal"
+  },
+  "provenance": {
+    "source_contract": "result.source_refs",
+    "graph_contract": [
+      "edge.evidence_kind",
+      "edge.evidence_status",
+      "edge.source_ref",
+      "edge.edge_quality",
+      "edge.quality_band",
+      "edge.traversal_score"
+    ],
+    "public_relation_policy": "Only repository-governed public snapshots/registries are exposed. Live private LOC8 Relation rows remain in life.html / Google Sheet.",
+    "quality_contract": "graph.quality + provenance.graph_quality_bands"
+  },
+  "quality_policy": {
+    "model": "edge_quality = evidence_weight × status_weight × relation_weight; traversal_score = parent_path_score × edge_quality × hop_decay^(hop-1)",
+    "min_traversal_score": 0.25,
+    "hop_decay": 0.88,
+    "quality_bands": {
+      "high": ">=0.90",
+      "medium": "0.72-0.8999",
+      "low": "<0.72"
+    },
+    "evidence_weights": {
+      "authority_registry": 1,
+      "explicit_registry_relation": 1,
+      "deterministic_structural_evidence": 0.98,
+      "record_metadata": 0.95,
+      "registry_structure": 0.9,
+      "loc8_event_snapshot": 0.86,
+      "loc8_daily_rune_snapshot": 0.86,
+      "result_metadata": 0.8,
+      "semantic_inference": 0.55
+    },
+    "status_weights": {
+      "canonical": 1,
+      "confirmed": 1,
+      "recorded": 1,
+      "deterministic": 1,
+      "exact": 1,
+      "registry": 0.96,
+      "estimated": 0.82,
+      "provisional": 0.68,
+      "candidate": 0.6,
+      "inferred": 0.55,
+      "unknown": 0.5
+    },
+    "relation_weights": {
+      "owned_by_loc": 1,
+      "belongs_to_era": 1,
+      "temporal_before": 0.98,
+      "temporal_after": 0.98,
+      "source_of": 0.96,
+      "derived_from": 0.94,
+      "expanded_to": 0.92,
+      "represented_by": 0.92,
+      "adapted_to": 0.9,
+      "analyzed_by": 0.88,
+      "references": 0.86,
+      "has_lot": 0.86,
+      "related_to": 0.78
+    }
+  }
+}

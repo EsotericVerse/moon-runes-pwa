@@ -3,7 +3,7 @@
 
 Usage:
     python tools/loc6_threads_full_index.py threads_and_replies.json \
-      --out data/generated/loc6/threads
+      --out data/json/generated/loc6/threads
 
 The extractor preserves primary-source text and emits sharded JSON plus a manifest.
 Replies are counted but remain supplemental evidence and are not copied into the
@@ -115,7 +115,7 @@ def write_index(main: list[dict], replies: list[dict], out_dir: Path, shard_size
     for start in range(0, len(main), shard_size):
         number = start // shard_size + 1
         docs = main[start:start + shard_size]
-        rel = f"data/generated/loc6/threads/main/part-{number:03d}.json.gz"
+        rel = f"data/json/generated/loc6/threads/main/part-{number:03d}.json.gz"
         path = main_dir / f"part-{number:03d}.json.gz"
         payload = {
             "schema_version": "1.0",
@@ -170,7 +170,7 @@ def write_index(main: list[dict], replies: list[dict], out_dir: Path, shard_size
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source", type=Path)
-    parser.add_argument("--out", type=Path, default=Path("data/generated/loc6/threads"))
+    parser.add_argument("--out", type=Path, default=Path("data/json/generated/loc6/threads"))
     parser.add_argument("--shard-size", type=int, default=1200)
     parser.add_argument("--expect-main", type=int, default=4578)
     parser.add_argument("--expect-replies", type=int, default=2430)

@@ -1,0 +1,42 @@
+name: Repository Governance
+
+on:
+  pull_request:
+    paths:
+      - "card_api/**"
+      - "engine/**"
+      - "tools/**"
+      - "data/**"
+      - "docs/**"
+      - "js/**"
+      - "*.html"
+      - "service-worker.js"
+      - "README.md"
+      - ".github/workflows/repo-governance.yml"
+  push:
+    branches: [main]
+    paths:
+      - "card_api/**"
+      - "engine/**"
+      - "tools/**"
+      - "data/**"
+      - "docs/**"
+      - "js/**"
+      - "*.html"
+      - "service-worker.js"
+      - "README.md"
+      - ".github/workflows/repo-governance.yml"
+  workflow_dispatch:
+
+jobs:
+  repository-governance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate repository layout
+        run: python card_api/scripts/validate_repo_layout.py
+      - name: Compile active and experimental Python
+        run: python -m compileall -q card_api engine tools

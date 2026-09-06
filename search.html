@@ -296,7 +296,7 @@
       const fresh=cachedEras.length>0&&Date.now()-Number(cached.saved_at||0)<ERA_CACHE_TTL;
       if(fresh)return;
       try{
-        const r=await fetch('data/shared/LOC_ERA_REGISTRY.json',{cache:'no-store'});
+        const r=await fetch('data/json/registries/LOC_ERA_REGISTRY.json',{cache:'no-store'});
         if(!r.ok)throw new Error('ERA registry unavailable');
         const d=await r.json();
         renderCorpusStatus(d.corpus);
@@ -346,7 +346,50 @@
       return `<article class="card"><div class="meta"><span class="pill">跨 LOC 關聯</span><span class="pill">${esc(p.direction||'')}</span></div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}<div class="meta"><span class="pill">${esc(src.primary_loc||'LOC3')}：${esc(src.title||'')}</span>${targets.map(t=>`<span class="pill">${esc(t.primary_loc||'')}：${esc(t.title||'')}${t.chapter_count?` · ${t.chapter_count}章`:''}</span>`).join('')}</div>${kw.length?`<p class="summary"><strong>關鍵字：</strong>${kw.map(esc).join(' · ')}</p>`:''}${loc6.label?`<p class="summary"><strong>LOC6：</strong>${esc(loc6.label)} — ${esc(loc6.note||'')}</p>`:''}</article>`;
     }
 
-    function render(groups){const order=['oracle','runes','works','textworks','relationships','governance','loc6_articles','media','knowledge','timeline'];let html='';for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='oracle'?oracleCard:(key==='relationships'?relationshipCard:(key==='works'?musicCard:(key==='loc6_articles'?loc6ArticleCard:card)));html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
+    function synthesisCard(synthesis,graph){
+      if(!synthesis)return '';
+      const locs=(synthesis.loc_coverage||[]).map(x=>`<span class="pill">${esc(x.loc)} · ${esc(x.count)}</span>`).join('');
+      const ev=(synthesis.evidence||[]).slice(0,8).map(x=>`<span class="pill">${esc(x.label)} · ${esc(x.count)}</span>`).join('');
+      const periods=(synthesis.periods||[]).map(x=>`<span class="pill">${esc(x)}</span>`).join('');
+      const paths=((synthesis.graph||{}).paths||[]).slice(0,6);
+      const g=synthesis.graph||{};
+      const eraPath=(g.era_path||[]).map(x=>x.period||x.label||x.era_id).filter(Boolean);
+      const locPath=(g.loc_path||[]).filter(Boolean);
+      const connected=(g.connected_results||[]);
+      const graphHtml=(paths.length||eraPath.length||locPath.length)?`
+        <details open>
+          <summary>Graph RAG 聚合 · ${esc(g.node_count||0)} nodes / ${esc(g.edge_count||0)} edges</summary>
+          <div class="summary">
+            ${eraPath.length?`<p><strong>時期軌跡：</strong>${eraPath.map(esc).join(' → ')}</p>`:''}
+            ${locPath.length?`<p><strong>跨 LOC：</strong>${locPath.map(esc).join(' · ')}</p>`:''}
+            ${connected.length?`<p><strong>Graph 延伸結果：</strong>${connected.map(x=>`${esc(x.primary_loc||'')} ${esc(x.title||x.result_id||'')}`).join(' · ')}</p>`:''}
+            ${paths.map(p=>`<div style="margin:.45rem 0"><strong>${esc(p.from?.primary_loc||p.from?.node_type||'')}</strong> ${esc(p.from?.label||p.from?.id||'')} → <b>${esc(p.relation||'related_to')}</b> → <strong>${esc(p.to?.primary_loc||p.to?.node_type||'')}</strong> ${esc(p.to?.label||p.to?.id||'')}${p.summary?`<br><small>${esc(p.summary)}</small>`:''}${p.evidence_kind?`<br><small>evidence: ${esc(p.evidence_kind)}</small>`:''}</div>`).join('')}
+          </div>
+        </details>`:
+        '<p class="summary"><strong>Graph RAG：</strong>目前沒有可走訪的 Canonical edge；語意相似不會被硬寫成關聯。</p>';
+      return `<section class="group synthesis-group">
+        <div class="grouphead"><h2>綜合分析</h2><span>Search Synthesis · Graph Enriched</span></div>
+        <div class="cards">
+          <article class="card">
+            <div class="meta"><span class="pill">LOC7 · Analysis</span><span class="pill">自動彙整</span>${locs}</div>
+            <h3>${esc(synthesis.title||'綜合結果')}</h3>
+            <p class="summary"><strong>介紹：</strong>${esc(synthesis.introduction||synthesis.summary||'')}</p>
+            ${synthesis.analysis_summary?`<p class="summary"><strong>自動分析：</strong>${esc(synthesis.analysis_summary)}</p>`:''}
+            ${Array.isArray(synthesis.key_findings)&&synthesis.key_findings.length?`<div class="summary"><strong>重點：</strong><ul>${synthesis.key_findings.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+            ${Array.isArray(synthesis.topic_terms)&&synthesis.topic_terms.length?`<div class="meta">${synthesis.topic_terms.slice(0,8).map(x=>`<span class="pill">${esc(x.term)}</span>`).join('')}</div>`:''}
+            ${synthesis.period_trend?.summary?`<p class="summary"><strong>時期趨勢：</strong>${esc(synthesis.period_trend.summary)}</p>`:''}
+            ${synthesis.graph_summary?`<p class="summary"><strong>Graph 彙整：</strong>${esc(synthesis.graph_summary)}</p>`:''}
+            ${synthesis.confidence?`<p class="summary"><small>分析信心：${esc(synthesis.confidence.level)} · evidence groups ${esc(synthesis.confidence.evidence_group_count)} · graph edges ${esc(synthesis.confidence.graph_edge_count)}</small></p>`:''}
+            ${ev?`<p class="summary"><strong>證據分布：</strong></p><div class="meta">${ev}</div>`:''}
+            ${periods?`<p class="summary"><strong>時期：</strong></p><div class="meta">${periods}</div>`:''}
+            ${graphHtml}
+            <p class="summary"><small>${esc(synthesis.governance_note||'')}</small></p>
+          </article>
+        </div>
+      </section>`;
+    }
+
+    function render(groups,synthesis=null,graph=null){const order=['oracle','runes','works','textworks','relationships','governance','loc6_articles','media','knowledge','timeline'];let html=synthesisCard(synthesis,graph);for(const key of order){const items=groups?.[key]||[];if(!items.length)continue;const renderer=key==='oracle'?oracleCard:(key==='relationships'?relationshipCard:(key==='works'?musicCard:(key==='loc6_articles'?loc6ArticleCard:card)));html+=`<section class="group"><div class="grouphead"><h2>${labels[key]}</h2><span>${items.length} 筆</span></div><div class="cards">${items.map(renderer).join('')}</div></section>`}el('groups').innerHTML=html||'<div class="empty">目前沒有足夠接近的結果。可以換一種說法，或取消內容類型篩選。</div>'}
     let browseOffset=0;
     async function browse(reset=true){
       const type=el('contentType').value;
@@ -448,7 +491,7 @@
     el('clearSearch').onclick=clearAllSearch;
     el('browse').onclick=()=>browse(el('browse').dataset.more!=='1');
     el('contentType').addEventListener('change',()=>{browseOffset=0;el('browse').dataset.more='0';el('browse').textContent='瀏覽目前類型';});
-    el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時期資料……';el('groups').innerHTML='';try{const body={query:q,top_k:6,source:el('source').value,start_date:el('startDate').value,end_date:el('endDate').value,content_type:el('contentType').value,period:el('period').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果。不同來源分開排序，以避免把不同語意引擎的分數錯當成同一尺度。`:'沒有找到足夠接近的內容。';render(d.groups)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
+    el('searchForm').onsubmit=async e=>{e.preventDefault();const q=el('query').value.trim();if(!q)return;el('submit').disabled=true;el('status').className='status';el('status').textContent='正在同時查詢符文、作品、媒體、知識與時期資料……';el('groups').innerHTML='';try{const body={query:q,top_k:6,source:el('source').value,start_date:el('startDate').value,end_date:el('endDate').value,content_type:el('contentType').value,period:el('period').value};const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'搜尋失敗');el('status').textContent=d.total_count?`找到 ${d.total_count} 筆跨 LOC 結果，並完成綜合分析與 Graph 關聯檢索。`:'沒有找到足夠接近的內容。';render(d.groups,d.synthesis,d.graph)}catch(err){el('status').className='status error';el('status').textContent=`暫時無法搜尋：${err.message}。若 Render 剛喚醒，請稍候再試。`}finally{el('submit').disabled=false}};
     el('contentType').addEventListener('change',quick);
     quick();
     facets().finally(bootFromUrl);

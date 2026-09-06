@@ -5,6 +5,7 @@ import hashlib
 import json
 import re
 import unicodedata
+import sys
 from pathlib import Path
 from typing import Any
 from datetime import date
@@ -14,9 +15,14 @@ from openpyxl import load_workbook
 SYSTEM_ID = "lo3rwang"
 PRIMARY_LOC = "LOC3"
 
+CARD_API = Path(__file__).resolve().parents[1]
+if str(CARD_API) not in sys.path:
+    sys.path.insert(0, str(CARD_API))
+from paths import shared_json, RUNTIME_JSON_DIR
+
 
 def shared_registry_path(name: str) -> Path:
-    return Path(__file__).resolve().parents[2] / "data" / "shared" / name
+    return registry_json(name)
 
 
 def load_loc3_author_annotations() -> dict[str, dict[str, Any]]:
@@ -387,7 +393,7 @@ def build(source: Path) -> dict[str, Any]:
             "version_count": sum(len(item["versions"]) for item in output_works),
             "system_id": SYSTEM_ID,
             "primary_loc": PRIMARY_LOC,
-            "era_registry": "data/shared/LOC_ERA_REGISTRY.json",
+            "era_registry": "data/json/shared/LOC_ERA_REGISTRY.json",
             "active_era": active_era,
         },
         "works": output_works,

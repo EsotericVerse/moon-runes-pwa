@@ -3,11 +3,12 @@ import unittest
 from pathlib import Path
 
 from loc3_search import LOC3SearchEngine
+from paths import search_json
 
 
 ROOT = Path(__file__).resolve().parent
-DATASET = ROOT / "data" / "LOC3_LYRICS_SEARCH_v0.1.json"
-MEDIA_DATASET = ROOT / "data" / "LOC3_MEDIA_LINKS_v0.1.json"
+DATASET = search_json("loc3", "LOC3_LYRICS_SEARCH_v0.1.json")
+MEDIA_DATASET = search_json("loc3", "LOC3_MEDIA_LINKS_v0.1.json")
 
 
 class LOC3DatasetTests(unittest.TestCase):

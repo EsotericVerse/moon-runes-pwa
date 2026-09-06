@@ -1,0 +1,439 @@
+{
+  "schema_version": "0.4",
+  "registry": "LOC4_TEXT_ANALYSIS_REGISTRY",
+  "authority": "LOC4",
+  "language_system_id": "lo3rwang",
+  "status": "Working",
+  "updated_at": "2026-09-06",
+  "purpose": "Structured semantic analysis for LOC4 writing works. Short works are analyzed first; 月語者 is intentionally deferred because its long-form rune narrative requires a separate chapter/rune architecture.",
+  "scope_policy": {
+    "current": "short and medium LOC4 works",
+    "deferred": [
+      "LOC4-MOON-SPEAKER"
+    ],
+    "rule": "Do not infer missing chapters or unpublished text. Every analysis record must identify source scope and confidence."
+  },
+  "analysis_dimensions": [
+    "named_keywords",
+    "themes",
+    "relationship_model",
+    "start_state",
+    "turn_structure",
+    "final_state",
+    "imagery",
+    "semantic_keywords",
+    "governance_signals",
+    "period_relation"
+  ],
+  "analyses": [
+    {
+      "analysis_id": "LOC4-A-ONE-DAY-LOVER",
+      "work_id": "LOC4-ONE-DAY-LOVER",
+      "title": "一日情人",
+      "analysis_status": "initial_short_work_analysis",
+      "source_scope": "5 chapters",
+      "narrative_mode": "first_person_relationship_fiction",
+      "named_keywords": [
+        "一日情人",
+        "一日情人契約",
+        "生日"
+      ],
+      "themes": [
+        "失戀",
+        "孤獨陪伴",
+        "暫時關係",
+        "真實與扮演",
+        "重新靠近",
+        "離別",
+        "當下"
+      ],
+      "relationship_model": [
+        "限定期限的陪伴",
+        "以約定保護彼此",
+        "從扮演逐漸產生真實情感",
+        "明知結束仍選擇投入"
+      ],
+      "start_state": "失戀後的空缺與孤獨",
+      "turn_structure": [
+        "失戀／關係終止",
+        "提出一日情人約定",
+        "交換生活碎片並建立安全感",
+        "限定關係逐漸產生真實情感",
+        "在明知期限存在下完成一天的相處",
+        "結束而不把短暫關係硬改寫成永久承諾"
+      ],
+      "final_state": "接受短暫關係曾經真實存在，帶著情感離場",
+      "imagery": [
+        "味道",
+        "衣物",
+        "咖啡",
+        "生日蛋糕",
+        "舞會",
+        "午夜鐘聲",
+        "外套",
+        "燈光"
+      ],
+      "semantic_keywords": [
+        "失戀",
+        "等待",
+        "孤獨",
+        "陪伴",
+        "生日",
+        "約定",
+        "當下",
+        "真實",
+        "扮演",
+        "暫時",
+        "告別",
+        "不強求未來"
+      ],
+      "governance_signals": [
+        "預先定義關係邊界",
+        "不預支未來",
+        "尊重約定",
+        "承認短暫關係的真實價值"
+      ],
+      "period_relation": "P1 early relationship-language prototype",
+      "source_evidence": [
+        "https://vocus.cc/article/683721cefd897800012c2488",
+        "https://vocus.cc/article/68372588fd897800012d00ce",
+        "https://vocus.cc/article/6837271cfd897800012d4d80",
+        "https://vocus.cc/article/683727eafd897800012d756c",
+        "https://vocus.cc/article/683728d0fd897800012da41b"
+      ],
+      "confidence": "medium_high",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "created_date": "2025-05-28",
+      "period": "P1",
+      "era_id": "ERA-P1",
+      "period_name": "Suno原型探索期",
+      "semantic_families": []
+    },
+    {
+      "analysis_id": "LOC4-A-WRONG-PERSON",
+      "work_id": "LOC4-WRONG-PERSON",
+      "title": "錯的人：命運的錯位者",
+      "analysis_status": "initial_short_work_analysis",
+      "source_scope": "single published work",
+      "narrative_mode": "first_person_relationship_fiction_with_rune_polarity_structure",
+      "named_keywords": [
+        "錯的人",
+        "命運的錯位者",
+        "Sherry",
+        "Leo"
+      ],
+      "themes": [
+        "錯位關係",
+        "成熟",
+        "責任",
+        "守護",
+        "信任",
+        "婚姻形式",
+        "愛與陪伴",
+        "界線",
+        "命運"
+      ],
+      "relationship_model": [
+        "非愛情但高度親密的婚姻／家庭責任",
+        "工作關係轉為信任",
+        "伴侶關係與既有責任並存",
+        "愛不等同法律或制度位置"
+      ],
+      "start_state": "主角在關係真相尚未揭露時，先建立對 Sherry 與 Leo 的信任",
+      "turn_structure": [
+        "Sherry 正位：安全、紀律、邊界與成熟",
+        "Leo 正位：陪伴、責任與逐步建立信任",
+        "Sherry 逆位：婚姻與家庭真相揭露，重新定義既有關係",
+        "愛、責任、婚姻與位置被拆開重新理解"
+      ],
+      "final_state": "接受關係並非只由單一制度或標籤定義，而由責任、守護、選擇與界線共同構成",
+      "imagery": [
+        "船槳與靜湖",
+        "陽光",
+        "咖啡",
+        "地圖與方向盤",
+        "水",
+        "風暴",
+        "熱可可"
+      ],
+      "semantic_keywords": [
+        "信任",
+        "成熟",
+        "責任",
+        "守護",
+        "界線",
+        "婚姻",
+        "陪伴",
+        "選擇",
+        "真相",
+        "錯位",
+        "命運",
+        "位置"
+      ],
+      "governance_signals": [
+        "位置與責任分離",
+        "尊重既有關係責任",
+        "不以愛情標籤覆蓋全部關係",
+        "成熟來自分寸與穩定"
+      ],
+      "period_relation": "P1 relationship-system prototype with explicit polarity/rune-like structure",
+      "source_evidence": [
+        "https://vocus.cc/article/682a22c1fd89780001197ac6"
+      ],
+      "confidence": "high",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "created_date": "2025-05-19",
+      "period": "P1",
+      "era_id": "ERA-P1",
+      "period_name": "Suno原型探索期",
+      "semantic_families": []
+    },
+    {
+      "analysis_id": "LOC4-A-MILK-PAPER-BOAT",
+      "work_id": "LOC4-MILK-PAPER-BOAT",
+      "title": "牛奶，紙船，還有你",
+      "analysis_status": "initial_short_work_analysis",
+      "source_scope": "single published work",
+      "narrative_mode": "first_person_gentle_relationship_fiction",
+      "named_keywords": [
+        "牛奶",
+        "紙船",
+        "月亮"
+      ],
+      "themes": [
+        "孤獨陪伴",
+        "自我接納",
+        "慢慢靠近",
+        "不再責怪自己",
+        "安全感",
+        "溫柔",
+        "留下"
+      ],
+      "relationship_model": [
+        "兩個受傷的人以低壓互動建立安全感",
+        "從陌生陪伴轉為相互承認",
+        "關係不是急著定義而是允許彼此存在"
+      ],
+      "start_state": "兩個人各自帶著失落與自責，處於漂流感與低度存在感",
+      "turn_structure": [
+        "紙船作為放下與送走痛感的媒介",
+        "共享牛奶與折紙建立日常安全感",
+        "逐步交換傷口與身份經驗",
+        "從『放走』轉為『留下』",
+        "不再把關係建立在自責與逃離之上"
+      ],
+      "final_state": "選擇停留、陪伴與共同存在，不再急著把感情送走",
+      "imagery": [
+        "牛奶",
+        "紙船",
+        "河堤",
+        "月光",
+        "星星",
+        "風",
+        "玻璃杯",
+        "熱可可"
+      ],
+      "semantic_keywords": [
+        "紙船",
+        "牛奶",
+        "月光",
+        "陪伴",
+        "溫柔",
+        "孤獨",
+        "自我接納",
+        "慢慢來",
+        "停留",
+        "不責怪自己",
+        "安全感",
+        "存在"
+      ],
+      "governance_signals": [
+        "允許慢下來",
+        "停止自我責怪",
+        "安全感先於關係定義",
+        "不強迫關係立即承諾"
+      ],
+      "period_relation": "P3 gentle-companionship language, compatible with 微月光-era semantics but kept as LOC4 evidence",
+      "source_evidence": [
+        "https://vocus.cc/article/697b4b5dfd897800011eb9e1"
+      ],
+      "confidence": "high",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "created_date": "2026-01-29",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "semantic_families": [
+        "光月意象"
+      ]
+    }
+  ],
+  "semantic_family_registry": "data/json/shared/LOC_SEMANTIC_FAMILY_REGISTRY.json",
+  "chapter_architecture": {
+    "LOC4-BEFORE-AFTER-YOU": {
+      "work_id": "LOC4-BEFORE-AFTER-YOU",
+      "title": "在你之前，在你之後",
+      "architecture_type": "mirrored_before_after_pairs",
+      "source": "BeforeAfter_OOOO.txt chapter list",
+      "description": "以「在你之前／在你之後」形成鏡像章節結構。多數角色或主題各有一個 Before 與一個 After 章節，透過非線性排列讓讀者比較同一角色／主題在關係事件前後的狀態差異；少數章節刻意不完全對稱，作為交會與補足節點。",
+      "pairs": [
+        {
+          "pair_id": "BA-CHAR-AZHU",
+          "axis_type": "character",
+          "axis": "阿珠",
+          "before_chapter": 1,
+          "after_chapter": 15,
+          "status": "paired",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/C9YWrn9xn19hoQhV"
+          }
+        },
+        {
+          "pair_id": "BA-CHAR-DEXING",
+          "axis_type": "character",
+          "axis": "德興",
+          "before_chapter": 2,
+          "after_chapter": 3,
+          "status": "paired",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/OIX6l1eFUJ7IYOBz"
+          }
+        },
+        {
+          "pair_id": "BA-CHAR-AWEN",
+          "axis_type": "character",
+          "axis": "阿文",
+          "before_chapter": 4,
+          "after_chapter": 9,
+          "status": "paired",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/a8tUvkKBIbojDGsp"
+          }
+        },
+        {
+          "pair_id": "BA-THEME-COMMITMENT",
+          "axis_type": "theme",
+          "axis": "承諾",
+          "before_chapter": 6,
+          "after_chapter": 12,
+          "status": "paired"
+        },
+        {
+          "pair_id": "BA-THEME-GUARDING",
+          "axis_type": "theme",
+          "axis": "守護",
+          "before_chapter": 7,
+          "after_chapter": 8,
+          "status": "paired"
+        },
+        {
+          "pair_id": "BA-CHAR-XIAOWEI",
+          "axis_type": "character",
+          "axis": "小維",
+          "before_chapter": 10,
+          "after_chapter": 14,
+          "status": "paired",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/JJ0rs9I78FXHas5A"
+          }
+        },
+        {
+          "pair_id": "BA-CHAR-AKAI",
+          "axis_type": "character",
+          "axis": "阿鎧",
+          "before_chapter": 11,
+          "after_chapter": 16,
+          "status": "paired",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/4Wx3tCqM7BmmzTI4"
+          }
+        },
+        {
+          "pair_id": "BA-THEME-ETERNITY",
+          "axis_type": "theme",
+          "axis": "永恆",
+          "before_chapter": 17,
+          "after_chapter": 20,
+          "status": "paired"
+        },
+        {
+          "pair_id": "BA-THEME-HAPPINESS",
+          "axis_type": "theme",
+          "axis": "幸福",
+          "before_chapter": 18,
+          "after_chapter": 19,
+          "status": "paired"
+        }
+      ],
+      "special_chapters": [
+        {
+          "chapter": 5,
+          "label": "在你之前，交會篇",
+          "role": "intersection_node",
+          "note": "不是單一角色鏡像，而是多條人物線開始交會的結構節點。"
+        },
+        {
+          "chapter": 13,
+          "label": "在你之後，小瑤篇",
+          "role": "asymmetric_character_node",
+          "note": "只有 After 章，形成刻意不對稱；補入關係系統中不同位置的角色視角。",
+          "theme_song": {
+            "role": "character_theme",
+            "source_loc": "LOC3",
+            "url": "https://suno.com/s/4nHz2DJlyK1mGIeM"
+          }
+        }
+      ],
+      "analysis_implications": [
+        "章節排序不是單純時間順序，而是比較式／鏡像式敘事。",
+        "Before/After 可作為 LOC7 結構欄位，不應只當章名文字。",
+        "角色與主題可共用同一 pair schema。",
+        "特殊章節應保留 asymmetric/intersection 身分，不強行補成對稱 pair。"
+      ],
+      "confidence": "recorded_from_chapter_titles",
+      "work_theme_songs": [
+        {
+          "role": "op",
+          "label": "OP",
+          "source_loc": "LOC3",
+          "url": "https://suno.com/s/doXe7ALt4MVs0tXK"
+        },
+        {
+          "role": "proposal_song",
+          "label": "求婚歌",
+          "source_loc": "LOC3",
+          "url": "https://suno.com/s/YvP6Wi5lPHZywCrX"
+        }
+      ],
+      "cross_loc_note": "角色／作品主題曲屬 LOC3 音樂證據，透過角色或作品節點連到 LOC4 章節結構；不把歌曲當成 LOC4 章節內容。"
+    }
+  }
+}

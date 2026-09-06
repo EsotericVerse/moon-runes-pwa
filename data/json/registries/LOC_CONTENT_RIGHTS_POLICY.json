@@ -1,0 +1,90 @@
+{
+  "schema_version": "0.2",
+  "registry": "LOC_CONTENT_RIGHTS_POLICY",
+  "status": "current",
+  "authority": "LOC8",
+  "purpose": "Rights, privacy and publication gates for corpus import/export and public search.",
+  "default_policy": {
+    "import": "first-party-owned-content-only",
+    "private_messages": "deny",
+    "third_party_content": "review_required",
+    "public_export": "cleared_only"
+  },
+  "fields": {
+    "ownership_status": [
+      "self_authored",
+      "co_authored",
+      "third_party",
+      "unknown"
+    ],
+    "visibility": [
+      "public",
+      "private",
+      "restricted"
+    ],
+    "rights_status": [
+      "cleared",
+      "restricted",
+      "review_required"
+    ]
+  },
+  "import_gate": {
+    "title": "匯入前確認內容權利",
+    "message": "LOC 預設只匯入你本人創作、本人發表或你有明確權利處理的內容。請勿匯入私訊、MSN／Messenger 對話、第三方文章、未取得同意的共同創作，或其他涉及他人隱私與著作權的資料。",
+    "confirmations": [
+      "我確認主要內容由我本人創作，或我有權進行整理與索引。",
+      "我確認此資料不包含未經同意的私人通訊或第三方敏感內容。",
+      "若資料包含共同作者、引用或他人內容，我會標記為 review_required，而不是直接公開。"
+    ],
+    "deny_examples": [
+      "Messenger 私訊",
+      "MSN 對話",
+      "私人聊天紀錄",
+      "未授權第三方文章"
+    ]
+  },
+  "export_gate": {
+    "title": "匯出／公開前確認",
+    "message": "匯出檔可能包含原文、時間、來源與分析標籤。只有 rights_status=cleared 且允許公開的內容，才應進入公開下載、Demo 或對外搜尋結果。",
+    "confirmations": [
+      "我確認本次匯出不包含 private 或 restricted 內容。",
+      "我確認第三方內容已排除，或已完成權利審查。",
+      "我了解平台匯出檔可取得，不代表其中所有內容都可再次公開。"
+    ]
+  },
+  "publication_gate": {
+    "title": "公開展示權利檢查",
+    "rule": "Public display/search requires valid ownership or permission + visibility=public + rights_status=cleared."
+  },
+  "provenance_rule": "Platform export availability does not grant reuse rights to all contained content.",
+  "historical_rule": "Historical records remain immutable evidence; rights metadata and interpretation may change without rewriting the original record.",
+  "public_access_control": {
+    "principle": "Public search is not a bulk corpus export endpoint.",
+    "browse_mode": "preview_only",
+    "search_mode": "matched-result text only",
+    "bulk_export": "disabled_by_default",
+    "controls": [
+      "Do not expose full corpus text through sequential browse/list endpoints.",
+      "Return bounded previews for catalog browsing.",
+      "Keep full-text result counts small and query-driven.",
+      "Owner/private export, if added later, must require an authenticated rights gate.",
+      "robots.txt or copyright notices are advisory and do not replace access controls."
+    ]
+  },
+  "updated_at": "2026-09-07",
+  "boundary_model": {
+    "principle": "Rights governance is a domain boundary, not a moral ranking of content.",
+    "domains": [
+      "private",
+      "restricted",
+      "review_required",
+      "public_cleared"
+    ],
+    "crossing_rule": "Moving data across a visibility/rights boundary requires an explicit governed action; import or storage alone never implies publication permission."
+  },
+  "governance_refs": [
+    "docs/LOC_GOVERNANCE_CORE.md",
+    "docs/LOC_CONTENT_RIGHTS_POLICY.md"
+  ],
+  "dispute_rule": "A rights or attribution objection creates a review/dispute state; disputed content should not be silently deleted or publicly promoted while unresolved."
+}

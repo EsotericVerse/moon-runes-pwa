@@ -368,6 +368,19 @@
       border-radius: 14px;
       padding: 12px 14px;
       background: rgba(255,255,255,.025);
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+    .step:hover, .step:focus-visible {
+      border-color: var(--line-strong);
+      background: rgba(169,199,255,.08);
+      outline: none;
+    }
+    .step[aria-current="true"] {
+      border-color: var(--accent);
+      background: rgba(169,199,255,.12);
     }
     .step .t { font-weight: 650; }
     .step .s { color: var(--muted); font-size: 12px; margin-top: 5px; }
@@ -817,17 +830,22 @@
               <button class="btn ghost" id="trajNextBtn" type="button" aria-label="向後捲動軌跡">→</button>
             </div>
           </div>
-          <div class="body"><div class="trajectory" id="trajectoryList"><div class="empty" style="min-width:100%">需要至少兩筆具有 State After 的事件才能形成軌跡。</div></div></div>
+          <div class="body">
+            <div class="trajectory" id="trajectoryList"><div class="empty" style="min-width:100%">需要至少兩筆具有 State After 的事件才能形成軌跡。</div></div>
+            <div id="trajectoryInspector" class="state-box" style="margin-top:14px">
+              <div class="empty">點選軌跡節點，可查看它的 Relation、Event、ERA 與搜尋入口。</div>
+            </div>
+          </div>
       </section>
 
       <section class="card" style="margin-top:16px;" id="trajectory-analysis">
         <div class="head">
           <div><h3>趨勢分析 Analysis</h3><p>把軌跡的變化拆成可讀的證據：關鍵字比重怎麼升降，以及這個轉折代表什麼。</p></div>
-          <span class="badge">LOC3 → LOC8</span>
+          <span class="badge">Cross-LOC → LOC8</span>
         </div>
         <div class="body">
           <div class="trajectory-analysis-grid" id="trajectoryAnalysis">
-            <div class="empty">載入 LOC3 時期差異分析中…</div>
+            <div class="empty">載入跨 LOC 時期差異分析中…</div>
           </div>
         </div>
       </section>
@@ -897,11 +915,11 @@
 
         <section class="card" style="margin-top:16px;" id="context-graph">
           <div class="head">
-            <div><h3>Graph View</h3><p>使用同一份 Relation 資料建立網狀視圖；目前先保留為下一階段入口，不另造第二套資料。</p></div>
-            <span class="badge">Next</span>
+            <div><h3>Graph View</h3><p>以 ERA 連續時間軸與已確認 Relation edge 建立關聯圖；點 Trajectory 節點可切換成該節點的局部 Graph。</p></div>
+            <span class="badge">Graph-ready</span>
           </div>
           <div class="body">
-            <div class="empty">Graph 視圖尚未啟用。Relation 與 Trajectory 已可使用；之後直接由 Relation edge 產生網狀圖。</div>
+            <div class="empty">正在建立 ERA／Relation Graph…</div>
           </div>
         </section>
       </div>
@@ -1021,6 +1039,7 @@
     const EVENT_CACHE_KEY = "loc8-life-events-cache-v2";
     const DAILY_DRAW_CACHE_KEY = "loc8-daily-draw-cache-v1";
     const RELATION_CACHE_KEY = "loc8-relations-cache-v1";
+    const ERA_OVERRIDE_CACHE_KEY = "loc8-era-overrides-v1";
     const CACHE_SCHEMA_VERSION = "1";
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
 
@@ -1033,6 +1052,7 @@
       eraTimeline: $('#eraTimelineList'),
       trajectory: $('#trajectoryList'),
       trajectoryAnalysis: $('#trajectoryAnalysis'),
+      trajectoryInspector: $('#trajectoryInspector'),
       current: $('#currentState'),
       syncText: $('#syncText'),
       syncDot: $('#syncDot'),
@@ -1154,7 +1174,7 @@
 
     async function loadLoc5MediaRegistry() {
       try {
-        const res = await fetch('data/shared/LOC_MEDIA_REGISTRY.json', { cache: 'no-store' });
+        const res = await fetch('data/json/registries/LOC_MEDIA_REGISTRY.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('LOC5 media registry unavailable');
         loc5MediaRegistry = await res.json();
       } catch (err) {
@@ -1165,7 +1185,7 @@
 
     async function loadLoc4WritingRegistry() {
       try {
-        const res = await fetch('data/shared/LOC4_WRITING_REGISTRY.json', { cache: 'no-store' });
+        const res = await fetch('data/json/registries/LOC4_WRITING_REGISTRY.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('LOC4 writing registry unavailable');
         loc4WritingRegistry = await res.json();
       } catch (err) {
@@ -1176,7 +1196,7 @@
 
     async function loadLoc3PeriodKeywordAnalysis() {
       try {
-        const res = await fetch('data/shared/LOC3_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
+        const res = await fetch('data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('LOC3 period keyword analysis unavailable');
         loc3PeriodKeywordAnalysis = await res.json();
       } catch (err) {
@@ -1187,7 +1207,7 @@
 
     async function loadLoc6PeriodKeywordAnalysis() {
       try {
-        const res = await fetch('data/shared/LOC6_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
+        const res = await fetch('data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('LOC6 period keyword analysis unavailable');
         loc6PeriodKeywordAnalysis = await res.json();
       } catch (err) {
@@ -1196,22 +1216,53 @@
       }
     }
 
+    function readEraOverrides() {
+      const data = readJsonCache(ERA_OVERRIDE_CACHE_KEY, {});
+      return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+    }
+
+    function writeEraOverride(era) {
+      if (!era?.era_id) return;
+      const data = readEraOverrides();
+      data[String(era.era_id)] = { ...era, _local_override: true, _saved_at: Date.now() };
+      try { localStorage.setItem(ERA_OVERRIDE_CACHE_KEY, JSON.stringify(data)); } catch (_) {}
+    }
+
+    function deleteEraOverride(eraId) {
+      const data = readEraOverrides();
+      delete data[String(eraId)];
+      try { localStorage.setItem(ERA_OVERRIDE_CACHE_KEY, JSON.stringify(data)); } catch (_) {}
+    }
+
+    function mergeEraOverrides(base) {
+      const overrides = readEraOverrides();
+      return (Array.isArray(base) ? base : []).map(item => {
+        const override = overrides[String(item.era_id || '')];
+        return override ? { ...item, ...override } : item;
+      }).concat(
+        Object.values(overrides).filter(override =>
+          !(Array.isArray(base) ? base : []).some(item => String(item.era_id || '') === String(override.era_id || ''))
+        )
+      );
+    }
+
     async function loadEraRegistry() {
       await Promise.all([loadLoc3PeriodKeywordAnalysis(), loadLoc6PeriodKeywordAnalysis(), loadLoc4WritingRegistry(), loadLoc5MediaRegistry()]);
 
       // Render from repository registries first. The period/keyword view must
       // not depend on Event rows or on the Apps Script deployment being fresh.
       try {
-        const res = await fetch('data/shared/LOC_ERA_REGISTRY.json', { cache: 'no-store' });
+        const res = await fetch('data/json/registries/LOC_ERA_REGISTRY.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('Static period registry unavailable');
         const data = await res.json();
-        eraRegistry = Array.isArray(data.eras) ? data.eras : [];
+        eraRegistry = mergeEraOverrides(Array.isArray(data.eras) ? data.eras : []);
       } catch (err) {
         console.warn('Static period registry unavailable', err);
         eraRegistry = [];
       }
 
       renderEraTimeline();
+      renderTrajectory(events.map(normalizeEvent).sort((a,b) => new Date(a.date) - new Date(b.date)));
       renderTrajectoryAnalysis();
 
       // Live Sheet refresh is optional and must never blank the LOC3 keyword view.
@@ -1237,7 +1288,7 @@
           for (const item of remote) {
             if (!staticByPeriod.has(String(item.period || ''))) merged.push(item);
           }
-          eraRegistry = merged;
+          eraRegistry = mergeEraOverrides(merged);
           renderEraTimeline();
           renderTrajectoryAnalysis();
         }
@@ -1381,16 +1432,47 @@
     }
 
     async function saveEra(era, action='era') {
-      const res = await fetch(SHEET_API_URL, {
-        method:'POST',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify({ action, era }),
-        redirect:'follow'
-      });
-      if (!res.ok) throw new Error('ERA POST failed');
-      const data = await res.json();
-      if (data && data.ok === false) throw new Error(data.error || 'ERA API error');
-      return data;
+      const post = async (requestedAction) => {
+        const res = await fetch(SHEET_API_URL, {
+          method:'POST',
+          headers:{'Content-Type':'text/plain;charset=utf-8'},
+          body:JSON.stringify({ action: requestedAction, era }),
+          redirect:'follow'
+        });
+        if (!res.ok) throw new Error('ERA POST failed');
+        const data = await res.json();
+        if (data && data.ok === false) throw new Error(data.error || 'ERA API error');
+        return data;
+      };
+
+      try {
+        const data = await post(action);
+        if (action !== 'delete_era') writeEraOverride(data?.era || era);
+        else deleteEraOverride(era?.era_id);
+        return data;
+      } catch (err) {
+        const message = String(err?.message || '');
+
+        // Repository-defined ERAs may not exist as rows in the live Sheet yet.
+        // If update_era is supported but the row is missing, create it once.
+        if (action === 'update_era' && /not found|找不到/i.test(message)) {
+          const data = await post('era');
+          writeEraOverride(data?.era || era);
+          return { ...data, action: 'upsert_era' };
+        }
+
+        // Older deployed Apps Script versions do not implement update_era.
+        // Do not append a duplicate ERA row. Keep the governed edit as a
+        // browser override so the UI remains usable until the API deployment
+        // is upgraded.
+        if (action === 'update_era' && /unsupported action:\s*update_era/i.test(message)) {
+          writeEraOverride(era);
+          setSync(false, '時期修改已套用 · API 尚未支援 update_era，暫存於此裝置');
+          return { ok: true, era, action: 'local_override', persistence: 'browser' };
+        }
+
+        throw err;
+      }
     }
 
     function eraFormPayload(form, existing={}) {
@@ -1613,7 +1695,7 @@
 
     async function loadEventSnapshot() {
       try {
-        const res = await fetch('data/shared/LOC8_EVENT_SNAPSHOT.json', { cache: 'no-store' });
+        const res = await fetch('data/json/registries/LOC8_EVENT_SNAPSHOT.json', { cache: 'no-store' });
         if (!res.ok) {
           governedEventIds = new Set();
           return [];
@@ -1757,23 +1839,78 @@
       return relation?.summary || '';
     }
 
+    function transitionKeywordDelta(fromItems, toItems) {
+      const from = new Map((Array.isArray(fromItems) ? fromItems : []).map(item => [String(item.term || ''), Number(item.percent || 0)]));
+      const to = new Map((Array.isArray(toItems) ? toItems : []).map(item => [String(item.term || ''), Number(item.percent || 0)]));
+      const all = new Set([...from.keys(), ...to.keys()]);
+      const deltas = [...all].map(term => ({
+        term,
+        from: from.get(term) || 0,
+        to: to.get(term) || 0,
+        delta: Number(((to.get(term) || 0) - (from.get(term) || 0)).toFixed(1))
+      }));
+      return {
+        rising: deltas.filter(x => x.delta > 0).sort((a,b) => b.delta - a.delta).slice(0,4),
+        falling: deltas.filter(x => x.delta < 0).sort((a,b) => a.delta - b.delta).slice(0,4)
+      };
+    }
+
     function renderTrajectoryAnalysis() {
       if (!els.trajectoryAnalysis) return;
-      const periods = Array.isArray(loc3PeriodKeywordAnalysis?.periods)
-        ? loc3PeriodKeywordAnalysis.periods.slice()
+
+      // ERA is the continuous axis. LOC6 Threads provides a comparable P0–P8
+      // language series; LOC3 is supplemental from P2 onward and must not
+      // determine which transitions exist.
+      const orderedEras = Array.isArray(eraRegistry)
+        ? eraRegistry.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0))
         : [];
+      const loc6Periods = Array.isArray(loc6PeriodKeywordAnalysis?.periods)
+        ? loc6PeriodKeywordAnalysis.periods
+        : [];
+      const loc3Periods = Array.isArray(loc3PeriodKeywordAnalysis?.periods)
+        ? loc3PeriodKeywordAnalysis.periods
+        : [];
+      const loc6Map = new Map(loc6Periods.map(item => [String(item.period || ''), item]));
+      const loc3Map = new Map(loc3Periods.map(item => [String(item.period || ''), item]));
+
+      const periods = orderedEras
+        .map(era => {
+          const period = String(era.period || '');
+          const loc6 = loc6Map.get(period);
+          const loc3 = loc3Map.get(period);
+          return { era, period, loc6, loc3 };
+        })
+        .filter(item => item.loc6 || item.loc3);
+
       if (periods.length < 2) {
-        els.trajectoryAnalysis.innerHTML = '<div class="empty">目前沒有足夠的 LOC3 時期資料可比較。</div>';
+        els.trajectoryAnalysis.innerHTML = '<div class="empty">目前沒有足夠的跨時期資料可比較。</div>';
         return;
       }
 
-      periods.sort((a,b) => String(a.start_date || '').localeCompare(String(b.start_date || '')));
       const cards = [];
       for (let i = 1; i < periods.length; i++) {
         const from = periods[i - 1];
         const to = periods[i];
-        const { rising, falling, named } = transitionDelta(from, to);
-        const relationSummary = transitionRelationSummary(from.era_id, to.era_id);
+        const relationSummary = transitionRelationSummary(from.era.era_id, to.era.era_id);
+
+        let rising = [];
+        let falling = [];
+        let comparisonLabel = '';
+        let sampleLabel = '';
+
+        if (from.loc6 && to.loc6) {
+          ({ rising, falling } = transitionKeywordDelta(from.loc6.keywords, to.loc6.keywords));
+          comparisonLabel = 'LOC6 Threads 主貼文 document frequency';
+          sampleLabel = `LOC6 ${Number(from.loc6.document_count || 0)} → ${Number(to.loc6.document_count || 0)} 篇`;
+        } else if (from.loc3 && to.loc3) {
+          const delta = transitionDelta(from.loc3, to.loc3);
+          rising = delta.rising;
+          falling = delta.falling;
+          comparisonLabel = 'LOC3 作品語義家族比例';
+          sampleLabel = `LOC3 ${Number(from.loc3.work_count || 0)} → ${Number(to.loc3.work_count || 0)} 首`;
+        } else {
+          continue;
+        }
 
         const fallbackSummary = [
           rising.length ? '主要上升：' + rising.slice(0,3).map(x => `${x.term} +${x.delta}pt`).join('、') : '',
@@ -1784,15 +1921,15 @@
           ? items.map(x => `<span class="transition-delta-chip">${esc(x.term)} <b>${sign === 'up' ? '+' : ''}${esc(x.delta)}pt</b> <small>${esc(x.from)}→${esc(x.to)}%</small></span>`).join('')
           : '<span class="era-source-note">無明顯變化</span>';
 
-        const namedHtml = named.length
-          ? `<div class="transition-analysis-evidence">命名概念：${named.map(x => `${esc(x.term)} ${x.delta > 0 ? '+' : ''}${esc(x.delta)}pt（${esc(x.from)}→${esc(x.to)}%）`).join('、')}</div>`
+        const loc3Supplement = from.loc3 && to.loc3
+          ? `<div class="transition-analysis-evidence">LOC3 補充樣本：${esc(from.loc3.work_count || 0)} → ${esc(to.loc3.work_count || 0)} 首；不取代連續 ERA 的 LOC6 比較基準。</div>`
           : '';
 
         cards.push(`
           <article class="transition-analysis-card">
             <div class="transition-analysis-head">
-              <strong>${esc(from.period)} → ${esc(to.period)}｜${esc(from.period_name || '')} → ${esc(to.period_name || '')}</strong>
-              <small>LOC3 ${esc(from.work_count || 0)} → ${esc(to.work_count || 0)} 首</small>
+              <strong>${esc(from.period)} → ${esc(to.period)}｜${esc(from.era.name || '')} → ${esc(to.era.name || '')}</strong>
+              <small>${esc(sampleLabel)}</small>
             </div>
             <div class="transition-delta-grid">
               <div class="transition-delta-box">
@@ -1805,13 +1942,13 @@
               </div>
             </div>
             <div class="transition-analysis-summary">${esc(relationSummary || fallbackSummary || '目前只有數值差異，尚未建立文字轉折說明。')}</div>
-            ${namedHtml}
-            <div class="transition-analysis-evidence">比較單位：每期作品中命中該語義家族的作品比例；差值單位為 percentage points。</div>
+            <div class="transition-analysis-evidence">比較基準：${esc(comparisonLabel)}；差值單位為 percentage points。</div>
+            ${loc3Supplement}
           </article>
         `);
       }
 
-      els.trajectoryAnalysis.innerHTML = cards.join('');
+      els.trajectoryAnalysis.innerHTML = cards.join('') || '<div class="empty">目前沒有可連續比較的相鄰時期。</div>';
     }
 
     function normalizeRelation(raw) {
@@ -1875,6 +2012,7 @@
       renderRelations();
       renderAll();
       renderTrajectoryAnalysis();
+      renderGraphView();
     }
 
     function renderRelations() {
@@ -2018,39 +2156,263 @@
     }
 
     function renderTrajectory(sorted) {
+      // ERA Registry is the canonical continuous trajectory axis. Relation/Event
+      // data enriches each node, but must not replace P0/P0.5/P1 when those
+      // periods have fewer explicit Relation rows.
+      const orderedEras = Array.isArray(eraRegistry)
+        ? eraRegistry.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0))
+        : [];
+
+      if (orderedEras.length >= 2) {
+        els.trajectory.innerHTML = orderedEras.map((era, i) => {
+          const period = String(era.period || era.era_id || '');
+          const eventCount = sorted.filter(e => {
+            if (e.era_id && String(e.era_id) === String(era.era_id)) return true;
+            if (e.era && String(e.era) === period) return true;
+            const date = String(e.date || '');
+            if (!date || !era.start_date) return false;
+            const end = String(era.end_date || '9999-12-31');
+            return date >= String(era.start_date) && date <= end;
+          }).length;
+          const relationCount = relations.filter(r =>
+            String(r.era_id || '') === String(era.era_id || '') ||
+            String(r.era || '') === period ||
+            String(r.source_id || '') === String(era.era_id || '') ||
+            String(r.target_id || '') === String(era.era_id || '')
+          ).length;
+          const range = `${era.start_date || '—'} ～ ${era.end_date || '現在'}`;
+          return `
+            ${i ? '<div class="arrow">→</div>' : ''}
+            <button class="step" type="button" data-trajectory-node="${esc(era.era_id || period)}" data-node-type="era" data-era-period="${esc(period)}">
+              <div class="t">${esc(period)} · ${esc(era.name || '')}</div>
+              <div class="s">${esc(range)}</div>
+              <div class="s">Event ${eventCount} · Relation ${relationCount}</div>
+            </button>
+          `;
+        }).join('');
+        return;
+      }
+
+      // Fallback only when the ERA registry itself is unavailable.
       const activeRelations = relations.filter(r => r.status !== 'archived').slice(-16);
       if (activeRelations.length) {
         els.trajectory.innerHTML = activeRelations.map(r => `
-          <div class="step">
+          <button class="step" type="button" data-trajectory-node="${esc(r.source_id)}" data-node-type="${esc(r.source_type)}">
             <div class="t">${esc(r.source_id)}</div>
             <div class="s">${esc(r.source_type)} · ${esc(r.date)}</div>
-          </div>
+          </button>
           <div class="edge">
             <span class="edge-type">→ ${esc(r.relation_type)} →</span>
             ${r.summary ? `<div class="edge-summary">${esc(r.summary)}</div>` : ''}
           </div>
-          <div class="step">
+          <button class="step" type="button" data-trajectory-node="${esc(r.target_id)}" data-node-type="${esc(r.target_type)}">
             <div class="t">${esc(r.target_id)}</div>
             <div class="s">${esc(r.target_type)} · ${esc(r.era || 'ERA —')}</div>
-          </div>
+          </button>
         `).join('');
         return;
       }
 
       const points = sorted.filter(e => e.state_after).slice(-8);
       if (points.length < 2) {
-        els.trajectory.innerHTML = '<div class="empty" style="min-width:100%">尚無 Relation；舊 Event 需要至少兩筆 State After 才能形成暫時軌跡。</div>';
+        els.trajectory.innerHTML = '<div class="empty" style="min-width:100%">尚無可用的 ERA／Relation／State 軌跡資料。</div>';
         return;
       }
       els.trajectory.innerHTML = points.map((e, i) => `
         ${i ? '<div class="arrow">→</div>' : ''}
-        <div class="step">
+        <button class="step" type="button" data-trajectory-node="${esc(e.state_after)}" data-node-type="state">
           <div class="t">${esc(e.state_after)}</div>
           <div class="s">${esc(e.date)} · ${esc(e.event_title)}</div>
-        </div>
+        </button>
       `).join('');
     }
 
+    function canonicalGraphRelations() {
+      const out = [];
+
+      // 1) Continuous ERA axis is deterministic structural evidence.
+      const eras = Array.isArray(eraRegistry)
+        ? eraRegistry.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0))
+        : [];
+      for (let i = 1; i < eras.length; i++) {
+        const from = eras[i - 1];
+        const to = eras[i];
+        out.push({
+          id: `GRAPH-ERA-${from.era_id}-${to.era_id}`,
+          source_type: 'era',
+          source_id: from.era_id,
+          source_label: from.period || from.name || from.era_id,
+          target_type: 'era',
+          target_id: to.era_id,
+          target_label: to.period || to.name || to.era_id,
+          relation_type: 'temporal_after',
+          summary: `${from.period || from.era_id} 之後進入 ${to.period || to.era_id}`,
+          confidence: 'recorded',
+          evidence: 'LOC_ERA_REGISTRY'
+        });
+      }
+
+      // 2) User-maintained Relation rows from LOC8.
+      relations.filter(r => r.status !== 'archived').forEach(r => out.push({
+        id: r.id,
+        source_type: r.source_type,
+        source_id: r.source_id,
+        source_label: r.source_id,
+        target_type: r.target_type,
+        target_id: r.target_id,
+        target_label: r.target_id,
+        relation_type: r.relation_type,
+        summary: r.summary || '',
+        confidence: r.confidence || 'recorded',
+        evidence: r.evidence || 'LOC8 Relation'
+      }));
+
+      return out;
+    }
+
+    function graphLabel(id) {
+      const era = eraRegistry.find(x => String(x.era_id || '') === String(id || ''));
+      return era ? `${era.period || era.era_id} · ${era.name || ''}` : String(id || '');
+    }
+
+    function renderGraphView(centerId='') {
+      const graph = $('#context-graph');
+      if (!graph) return;
+      const body = graph.querySelector('.body');
+      if (!body) return;
+
+      const edges = canonicalGraphRelations();
+      if (!edges.length) {
+        body.innerHTML = '<div class="empty">目前沒有可用的 Graph edge。</div>';
+        return;
+      }
+
+      let selected = edges;
+      if (centerId) {
+        selected = edges.filter(edge =>
+          String(edge.source_id || '') === String(centerId) ||
+          String(edge.target_id || '') === String(centerId)
+        );
+      }
+
+      // If a non-ERA concept has no direct stored edge, keep the full ERA graph
+      // visible rather than showing an empty graph.
+      if (!selected.length) {
+        selected = edges.filter(edge => edge.evidence === 'LOC_ERA_REGISTRY');
+      }
+
+      const nodes = new Map();
+      selected.forEach(edge => {
+        nodes.set(String(edge.source_id), { id: edge.source_id, label: edge.source_label || graphLabel(edge.source_id), type: edge.source_type });
+        nodes.set(String(edge.target_id), { id: edge.target_id, label: edge.target_label || graphLabel(edge.target_id), type: edge.target_type });
+      });
+
+      body.innerHTML = `
+        <div class="state-box">
+          <div class="state-row">
+            <div class="k">Graph</div>
+            <div class="v">${centerId ? '中心節點：' + esc(graphLabel(centerId)) : '完整 ERA / Relation Graph'}</div>
+          </div>
+          <div class="state-row">
+            <div class="k">Nodes</div>
+            <div class="v">${nodes.size}</div>
+          </div>
+          <div class="state-row">
+            <div class="k">Edges</div>
+            <div class="v">${selected.length}</div>
+          </div>
+          <div style="margin-top:12px"><strong>關聯路徑</strong></div>
+          ${selected.map(edge => `
+            <div class="state-row">
+              <div class="k">${esc(edge.relation_type)}</div>
+              <div class="v"><strong>${esc(graphLabel(edge.source_id))}</strong> → <strong>${esc(graphLabel(edge.target_id))}</strong>
+                ${edge.summary ? `<br><small>${esc(edge.summary)}</small>` : ''}
+                <br><small>${esc(edge.evidence || '')} · ${esc(edge.confidence || '')}</small>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderTrajectoryInspector(nodeId, nodeType='state') {
+      if (!els.trajectoryInspector) return;
+      const key = String(nodeId || '').trim();
+      if (!key) return;
+
+      const era = nodeType === 'era'
+        ? eraRegistry.find(x => String(x.era_id || '') === key || String(x.period || '') === key)
+        : null;
+      const period = String(era?.period || '');
+
+      const connected = relations.filter(r =>
+        String(r.source_id || '') === key ||
+        String(r.target_id || '') === key ||
+        (era && (
+          String(r.era_id || '') === String(era.era_id || '') ||
+          String(r.era || '') === period
+        ))
+      );
+
+      const linkedEvents = events.filter(e => {
+        if (era) {
+          if (e.era_id && String(e.era_id) === String(era.era_id || '')) return true;
+          if (e.era && String(e.era) === period) return true;
+          const date = String(e.date || '');
+          if (date && era.start_date) {
+            const end = String(era.end_date || '9999-12-31');
+            if (date >= String(era.start_date) && date <= end) return true;
+          }
+        }
+        return [e.id, e.object_id, e.event_title, e.title, e.state_before, e.state_after]
+          .some(value => String(value || '').includes(key));
+      }).slice(-12);
+
+      const eraNames = new Set();
+      if (era) eraNames.add(period || era.name || era.era_id);
+      connected.forEach(r => { if (r.era) eraNames.add(String(r.era)); });
+      linkedEvents.forEach(e => {
+        if (e.era) eraNames.add(String(e.era));
+        if (e.era_id) {
+          const match = eraRegistry.find(x => String(x.era_id || '') === String(e.era_id));
+          if (match?.period) eraNames.add(String(match.period));
+        }
+      });
+
+      const relationHtml = connected.length
+        ? connected.map(r => {
+            const outgoing = String(r.source_id || '') === key;
+            const other = outgoing ? r.target_id : r.source_id;
+            const arrow = outgoing ? '→' : '←';
+            return `<div class="state-row">
+              <div class="k">${esc(r.relation_type)}</div>
+              <div class="v">${arrow} ${esc(other || r.era || period || '關聯')}${r.summary ? `<br><small>${esc(r.summary)}</small>` : ''}</div>
+            </div>`;
+          }).join('')
+        : '<div class="empty">目前沒有已儲存的 Relation edge。</div>';
+
+      const eventHtml = linkedEvents.length
+        ? linkedEvents.map(e => `<div class="state-row"><div class="k">${esc(e.date || '—')}</div><div class="v">${esc(e.event_title || e.title || e.id)}${e.state_after ? `<br><small>State → ${esc(e.state_after)}</small>` : ''}</div></div>`).join('')
+        : '<div class="empty">目前沒有直接命中的 Event。</div>';
+
+      const displayKey = era ? (period || era.name || key) : key;
+      const searchUrl = 'search.html?q=' + encodeURIComponent(displayKey);
+      els.trajectoryInspector.innerHTML = `
+        <div class="state-row"><div class="k">節點</div><div class="v"><strong>${esc(displayKey)}</strong> · ${esc(nodeType)}</div></div>
+        ${era ? `<div class="state-row"><div class="k">名稱</div><div class="v">${esc(era.name || '—')}</div></div>
+        <div class="state-row"><div class="k">期間</div><div class="v">${esc(era.start_date || '—')} ～ ${esc(era.end_date || '現在')}</div></div>
+        <div class="state-row"><div class="k">State</div><div class="v">${esc(era.state_after || era.description || '—')}</div></div>` : ''}
+        <div class="state-row"><div class="k">ERA</div><div class="v">${[...eraNames].map(esc).join(' · ') || '—'}</div></div>
+        <div style="margin-top:10px"><strong>Relation</strong></div>
+        ${relationHtml}
+        <div style="margin-top:12px"><strong>Event</strong></div>
+        ${eventHtml}
+        <div class="actions" style="margin-top:12px">
+          <a class="btn primary" href="${esc(searchUrl)}">搜尋這個節點</a>
+          <button class="btn ghost" type="button" data-node-graph="${esc(key)}">查看 Graph</button>
+        </div>
+      `;
+    }
 
     function isDailyDrawEvent(e) {
       const type = String(e.event_type || '').toLowerCase();
@@ -2260,7 +2622,7 @@
 
     async function loadDailyDrawSnapshot() {
       try {
-        const res = await fetch('data/shared/LOC8_DAILY_RUNE_SNAPSHOT.json', { cache: 'no-store' });
+        const res = await fetch('data/json/registries/LOC8_DAILY_RUNE_SNAPSHOT.json', { cache: 'no-store' });
         if (!res.ok) return [];
         const data = await res.json();
         return Array.isArray(data.daily_draws) ? data.daily_draws : [];
@@ -2754,6 +3116,13 @@
     let trajStartScroll = 0;
 
     trajectoryEl.addEventListener('pointerdown', (ev) => {
+      // Do not capture pointer events that start on a trajectory node.
+      // Pointer capture on the scroller changes the click target to the
+      // container and makes the node appear unresponsive.
+      if (ev.target.closest('[data-trajectory-node], button, a')) {
+        trajDragging = false;
+        return;
+      }
       trajDragging = true;
       trajStartX = ev.clientX;
       trajStartScroll = trajectoryEl.scrollLeft;
@@ -2774,6 +3143,25 @@
     trajectoryEl.addEventListener('pointerup', stopTrajectoryDrag);
     trajectoryEl.addEventListener('pointercancel', stopTrajectoryDrag);
     trajectoryEl.addEventListener('pointerleave', () => { trajDragging = false; });
+
+    trajectoryEl.addEventListener('click', (ev) => {
+      const node = ev.target.closest('[data-trajectory-node]');
+      if (!node) return;
+      renderTrajectoryInspector(node.dataset.trajectoryNode, node.dataset.nodeType || 'state');
+      node.setAttribute('aria-current', 'true');
+      trajectoryEl.querySelectorAll('[data-trajectory-node]').forEach(item => {
+        if (item !== node) item.removeAttribute('aria-current');
+      });
+      els.trajectoryInspector?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    });
+
+    els.trajectoryInspector?.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('[data-node-graph]');
+      if (!btn) return;
+      const key = btn.dataset.nodeGraph || '';
+      renderGraphView(key);
+      $('#context-graph')?.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
 
     $('#trajPrevBtn').addEventListener('click', () => {
       trajectoryEl.scrollBy({ left: -Math.max(260, trajectoryEl.clientWidth * 0.75), behavior: 'smooth' });
@@ -2842,7 +3230,11 @@
         loadEvents();
       } else if (view === 'context') {
         history.replaceState(null, '', '#context');
-        Promise.all([loadEvents(), loadRelations()]).then(renderTrajectoryAnalysis);
+        Promise.all([loadEraRegistry(), loadEvents(), loadRelations()]).then(() => {
+          renderAll();
+          renderTrajectoryAnalysis();
+          renderGraphView();
+        });
       } else if (view === 'era-trend') {
         history.replaceState(null, '', '#era-trend');
         loadEraRegistry();
@@ -2874,9 +3266,11 @@
       }
 
       if (action === 'cancel') {
+        writeEraOverride(era);
         editingEraId = '';
         addingEra = false;
         renderEraTimeline();
+        renderTrajectoryAnalysis();
         return;
       }
 
@@ -2887,7 +3281,9 @@
         try {
           await saveEra({ era_id: eraId }, 'delete_era');
           eraRegistry = eraRegistry.filter(x => x.era_id !== eraId);
+          deleteEraOverride(eraId);
           renderEraTimeline();
+          renderTrajectoryAnalysis();
         } catch (err) {
           alert('刪除時期失敗：' + err.message);
         }

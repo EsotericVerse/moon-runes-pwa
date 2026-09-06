@@ -64,23 +64,29 @@ class UnifiedSearchEngine:
         self.loc3_searcher = loc3_searcher
         self.runes = runes or []
         self.repo_root = repo_root
-        self.shared_root = repo_root / "data" / "shared"
+        self.registry_root = repo_root / "data" / "json" / "registries"
         self.system = self._load_json("LOC_LANGUAGE_SYSTEM_REGISTRY.json")
         self.eras = self._load_json("LOC_ERA_REGISTRY.json")
         self.content_types = self._load_json("LOC_CONTENT_TYPE_REGISTRY.json")
         self.relationships = self._load_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
+        self.graph_schema = self._load_json("LOC_GRAPH_SCHEMA.json")
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.loc6 = self._load_json("LOC6_GOVERNANCE_REGISTRY.json")
         self.loc6_threads = self._load_json("LOC6_THREADS_KM_INDEX.json")
-        self.loc6_thread_articles = self._load_repo_json("data/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json")
-        self.loc6_thread_manifest = self._load_repo_json("data/generated/loc6/threads/LOC6_THREADS_DOCUMENT_MANIFEST.json")
+        self.loc6_period_keywords = self._load_json("LOC6_PERIOD_KEYWORD_ANALYSIS.json")
+        self.loc3_period_keywords = self._load_json("LOC3_PERIOD_KEYWORD_ANALYSIS.json")
+        self.loc6_thread_articles = self._load_repo_json("data/json/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json")
+        self.loc6_thread_manifest = self._load_repo_json("data/json/generated/loc6/threads/LOC6_THREADS_DOCUMENT_MANIFEST.json")
         self.loc6_thread_full = self._load_loc6_thread_shards()
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
-        self.lots = self._load_json("lots.json")
+        self.lots = self._load_repo_json("data/json/core/lots.json")
+        self.loc8_relation_schema = self._load_json("LOC8_RELATION_SCHEMA.json")
+        self.loc8_events = self._load_json("LOC8_EVENT_SNAPSHOT.json")
+        self.loc8_daily_runes = self._load_json("LOC8_DAILY_RUNE_SNAPSHOT.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
-        path = self.shared_root / name
+        path = self.registry_root / name
         if not path.exists():
             return {}
         try:
@@ -201,7 +207,7 @@ class UnifiedSearchEngine:
             "title": f"{name} · {direction} · {category}",
             "summary": poem,
             "score": 1.0,
-            "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune64.xlsx#Lots", "note": "via data/shared/lots.json"}],
+            "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune64.xlsx#Lots", "note": "via data/json/shared/lots.json"}],
             "payload": {
                 "rune_number": lots_item.get("編號"),
                 "rune_name": name,
@@ -998,6 +1004,12 @@ class UnifiedSearchEngine:
     def _result_source_platform(item: dict[str, Any]) -> str:
         payload = item.get("payload") or {}
         refs = item.get("source_refs") or []
+        ref_text = []
+        for ref in refs:
+            if isinstance(ref, dict):
+                ref_text.append(str(ref.get("source_type") or "") + " " + str(ref.get("source_id") or ""))
+            elif ref:
+                ref_text.append(str(ref))
         haystack = " ".join([
             str(item.get("primary_loc") or ""),
             str(item.get("content_type") or ""),
@@ -1005,7 +1017,7 @@ class UnifiedSearchEngine:
             str(payload.get("km_source") or ""),
             str(payload.get("url") or ""),
             str(payload.get("ig_preview_url") or ""),
-            " ".join(str(ref.get("source_type") or "") + " " + str(ref.get("source_id") or "") for ref in refs),
+            " ".join(ref_text),
         ]).lower()
         if "threads" in haystack:
             return "threads"
@@ -1050,6 +1062,1294 @@ class UnifiedSearchEngine:
                 keep.append(item)
             filtered[group] = keep
         return filtered
+
+
+    @staticmethod
+    def _graph_evidence_weight(evidence_kind: str) -> float:
+        weights = {
+            "authority_registry": 1.00,
+            "explicit_registry_relation": 1.00,
+            "deterministic_structural_evidence": 0.98,
+            "record_metadata": 0.95,
+            "registry_structure": 0.90,
+            "loc8_event_snapshot": 0.86,
+            "loc8_daily_rune_snapshot": 0.86,
+            "result_metadata": 0.80,
+            "semantic_inference": 0.55,
+        }
+        return weights.get(str(evidence_kind or "").strip(), 0.70)
+
+    @staticmethod
+    def _graph_status_weight(evidence_status: str) -> float:
+        weights = {
+            "canonical": 1.00,
+            "confirmed": 1.00,
+            "recorded": 1.00,
+            "deterministic": 1.00,
+            "exact": 1.00,
+            "registry": 0.96,
+            "estimated": 0.82,
+            "provisional": 0.68,
+            "candidate": 0.60,
+            "inferred": 0.55,
+            "unknown": 0.50,
+        }
+        return weights.get(str(evidence_status or "").strip().lower(), 0.75)
+
+    @staticmethod
+    def _graph_relation_weight(relation_type: str) -> float:
+        weights = {
+            "owned_by_loc": 1.00,
+            "belongs_to_era": 1.00,
+            "temporal_before": 0.98,
+            "temporal_after": 0.98,
+            "source_of": 0.96,
+            "derived_from": 0.94,
+            "expanded_to": 0.92,
+            "represented_by": 0.92,
+            "adapted_to": 0.90,
+            "analyzed_by": 0.88,
+            "references": 0.86,
+            "has_lot": 0.86,
+            "related_to": 0.78,
+        }
+        return weights.get(str(relation_type or "").strip(), 0.75)
+
+    @classmethod
+    def _graph_edge_quality(
+        cls,
+        relation_type: str,
+        evidence_kind: str,
+        evidence_status: str = "recorded",
+    ) -> float:
+        score = (
+            cls._graph_evidence_weight(evidence_kind)
+            * cls._graph_status_weight(evidence_status)
+            * cls._graph_relation_weight(relation_type)
+        )
+        return round(max(0.0, min(1.0, score)), 4)
+
+    @staticmethod
+    def _graph_quality_band(score: float) -> str:
+        if score >= 0.90:
+            return "high"
+        if score >= 0.72:
+            return "medium"
+        return "low"
+
+    def _canonical_graph(self) -> dict[str, Any]:
+        """Build the governed cross-LOC graph from authoritative registries.
+
+        The graph is a reference layer. It does not copy or replace canonical
+        records; it only stores stable node references and evidence-backed edges.
+        """
+        nodes: dict[str, dict[str, Any]] = {}
+        edges: dict[str, dict[str, Any]] = {}
+
+        def add_node(node_id: Any, label: Any, node_type: str, primary_loc: str = "", **extra: Any) -> None:
+            nid = str(node_id or "").strip()
+            if not nid:
+                return
+            current = nodes.get(nid, {})
+            nodes[nid] = {
+                **current,
+                "id": nid,
+                "label": str(label or current.get("label") or nid),
+                "node_type": node_type or current.get("node_type") or "record",
+                "primary_loc": primary_loc or current.get("primary_loc") or "",
+                **{k: v for k, v in extra.items() if v not in (None, "", [], {})},
+            }
+
+        def add_edge(
+            edge_id: Any,
+            source: Any,
+            target: Any,
+            relation_type: str,
+            evidence_kind: str,
+            summary: str = "",
+            evidence_status: str = "recorded",
+            **extra: Any,
+        ) -> None:
+            sid, tid = str(source or "").strip(), str(target or "").strip()
+            eid = str(edge_id or "").strip()
+            if not eid or not sid or not tid:
+                return
+            quality = self._graph_edge_quality(relation_type, evidence_kind, evidence_status)
+            edges[eid] = {
+                "edge_id": eid,
+                "source": sid,
+                "target": tid,
+                "relation_type": relation_type,
+                "summary": summary,
+                "evidence_kind": evidence_kind,
+                "evidence_status": evidence_status,
+                "edge_quality": quality,
+                "quality_band": self._graph_quality_band(quality),
+                **{k: v for k, v in extra.items() if v not in (None, "", [], {})},
+            }
+
+        # LOC domains are stable graph anchors.
+        for n in range(1, 9):
+            loc = f"LOC{n}"
+            add_node(loc, loc, "loc_domain", loc)
+
+        # Canonical rune nodes provide a stable LOC1 anchor for LOC8 daily-rune
+        # observations and other cross-LOC references.
+        for index, rune in enumerate(self.runes, start=1):
+            number = rune.get("編號") or index
+            name = rune.get("名稱") or rune.get("符文名稱") or rune.get("name") or f"Rune {number}"
+            rune_id = f"RUNE-{number}"
+            add_node(
+                rune_id,
+                f"{number} · {name}",
+                "rune",
+                "LOC1",
+                rune_number=number,
+                rune_name=name,
+            )
+            add_edge(
+                f"EDGE-{rune_id}-OWNED-LOC1",
+                rune_id,
+                "LOC1",
+                "owned_by_loc",
+                "authority_registry",
+                f"{rune_id} is governed by LOC1.",
+            )
+
+        # ERA is the governed temporal backbone.
+        eras = sorted(self.eras.get("eras", []), key=lambda x: float(x.get("order") or 0))
+        for era in eras:
+            era_id = era.get("era_id")
+            add_node(
+                era_id,
+                era.get("display_label") or era.get("name") or era_id,
+                "era",
+                "LOC8",
+                period=era.get("period"),
+                start_date=era.get("start_date"),
+                end_date=era.get("end_date"),
+            )
+            add_edge(
+                f"EDGE-{era_id}-OWNED",
+                era_id,
+                "LOC8",
+                "owned_by_loc",
+                "authority_registry",
+                "ERA temporal authority is LOC8.",
+            )
+        for left, right in zip(eras, eras[1:]):
+            add_edge(
+                f"EDGE-{left.get('era_id')}-{right.get('era_id')}-TEMPORAL",
+                left.get("era_id"),
+                right.get("era_id"),
+                "temporal_before",
+                "deterministic_structural_evidence",
+                f"{left.get('period')} precedes {right.get('period')} on the governed ERA axis.",
+            )
+
+        # LOC8 event snapshot is an explicitly non-authoritative public fallback,
+        # so it may participate in retrieval/provenance without replacing the
+        # live Google Sheet. Only records already committed to the repository
+        # are exposed through the public Search graph.
+        era_by_period = {
+            str(era.get("period") or ""): str(era.get("era_id") or "")
+            for era in eras
+            if era.get("period") and era.get("era_id")
+        }
+        era_by_label = {
+            _compact(era.get("display_label") or era.get("name") or ""): str(era.get("era_id") or "")
+            for era in eras
+            if era.get("era_id")
+        }
+
+        for event in self.loc8_events.get("events", []):
+            eid = event.get("id")
+            if not eid:
+                continue
+            add_node(
+                eid,
+                event.get("title") or eid,
+                "life_event",
+                "LOC8",
+                date=event.get("date"),
+                event_type=event.get("event_type"),
+                object_type=event.get("object_type"),
+                object_id=event.get("object_id"),
+                confidence=event.get("confidence"),
+                snapshot_role=self.loc8_events.get("role"),
+            )
+            add_edge(
+                f"EDGE-{eid}-OWNED-LOC8",
+                eid,
+                "LOC8",
+                "owned_by_loc",
+                "loc8_event_snapshot",
+                "LOC8 event snapshot record.",
+                event.get("confidence") or "recorded",
+                source_ref=event.get("source"),
+            )
+            event_era = str(event.get("era_id") or "").strip()
+            if not event_era:
+                raw_era = str(event.get("era") or "").strip()
+                period_match = re.search(r"\b(P\d+(?:\.\d+)?)\b", raw_era, re.I)
+                if period_match:
+                    event_era = era_by_period.get(period_match.group(1).upper(), "")
+                if not event_era:
+                    event_era = era_by_label.get(_compact(raw_era), "")
+            if event_era:
+                add_edge(
+                    f"EDGE-{eid}-ERA-{event_era}",
+                    eid,
+                    event_era,
+                    "belongs_to_era",
+                    "loc8_event_snapshot",
+                    f"{eid} is recorded in {event_era}.",
+                    event.get("confidence") or "recorded",
+                )
+
+        # Daily Rune is a LOC8 observation of a LOC1 rune in time. This is the
+        # smallest concrete cross-LOC temporal bridge in the current system.
+        for draw in self.loc8_daily_runes.get("daily_draws", []):
+            did = draw.get("id")
+            if not did:
+                continue
+            add_node(
+                did,
+                f"{draw.get('date') or ''} · {draw.get('rune') or ''}{draw.get('direction') or ''}",
+                "daily_rune_draw",
+                "LOC8",
+                date=draw.get("date"),
+                draw_kind=draw.get("draw_kind"),
+                confidence=draw.get("confidence"),
+                snapshot_role=self.loc8_daily_runes.get("role"),
+            )
+            add_edge(
+                f"EDGE-{did}-OWNED-LOC8",
+                did,
+                "LOC8",
+                "owned_by_loc",
+                "loc8_daily_rune_snapshot",
+                "LOC8 daily-rune observation.",
+                draw.get("confidence") or "recorded",
+                source_ref=draw.get("source"),
+            )
+            rune_number = str(draw.get("rune_id") or "").strip()
+            if rune_number:
+                add_edge(
+                    f"EDGE-{did}-RUNE-{rune_number}",
+                    did,
+                    f"RUNE-{rune_number}",
+                    "references",
+                    "loc8_daily_rune_snapshot",
+                    f"{did} records a draw of rune {draw.get('rune') or rune_number}.",
+                    draw.get("confidence") or "recorded",
+                )
+            draw_era = str(draw.get("era_id") or "").strip()
+            if draw_era:
+                add_edge(
+                    f"EDGE-{did}-ERA-{draw_era}",
+                    did,
+                    draw_era,
+                    "belongs_to_era",
+                    "loc8_daily_rune_snapshot",
+                    f"{did} is recorded in {draw_era}.",
+                    draw.get("confidence") or "recorded",
+                )
+
+        # Searchable KM assets form governed analysis/document nodes.
+        for asset in self.knowledge_assets.get("assets", []):
+            aid = asset.get("asset_id")
+            if not aid:
+                continue
+            primary = asset.get("primary_loc") or "LOC7"
+            add_node(
+                aid,
+                asset.get("title") or aid,
+                "knowledge_asset",
+                primary,
+                content_type=asset.get("content_type"),
+                role=asset.get("role"),
+            )
+            add_edge(
+                f"EDGE-{aid}-OWNED-{primary}",
+                aid,
+                primary,
+                "owned_by_loc",
+                "registry_structure",
+                f"{aid} is governed by {primary}.",
+            )
+            for related in asset.get("related_locs", []) or []:
+                if related and related != primary:
+                    add_edge(
+                        f"EDGE-{aid}-RELATED-{related}",
+                        aid,
+                        related,
+                        "related_to",
+                        "registry_structure",
+                        f"{aid} declares {related} as a related LOC.",
+                    )
+
+        # LOC3 works: work ownership and ERA placement are recorded metadata.
+        for work in getattr(self.loc3_searcher, "works", []) if self.loc3_searcher else []:
+            wid = work.get("work_id")
+            if not wid:
+                continue
+            add_node(
+                wid,
+                work.get("title") or wid,
+                "music_work",
+                "LOC3",
+                period=work.get("period"),
+                era_id=work.get("era_id"),
+            )
+            add_edge(
+                f"EDGE-{wid}-OWNED-LOC3",
+                wid,
+                "LOC3",
+                "owned_by_loc",
+                "record_metadata",
+                f"{wid} is a LOC3 work.",
+            )
+            era_id = work.get("era_id")
+            if era_id:
+                add_edge(
+                    f"EDGE-{wid}-ERA-{era_id}",
+                    wid,
+                    era_id,
+                    "belongs_to_era",
+                    "record_metadata",
+                    f"{wid} is assigned to {work.get('period') or era_id}.",
+                )
+
+        # LOC4 works: writing catalog already carries canonical work/ERA fields.
+        for work in self.loc4.get("works", []):
+            wid = work.get("work_id")
+            if not wid:
+                continue
+            add_node(
+                wid,
+                work.get("title") or wid,
+                "writing_work",
+                "LOC4",
+                period=work.get("period"),
+                era_id=work.get("era_id"),
+            )
+            add_edge(
+                f"EDGE-{wid}-OWNED-LOC4",
+                wid,
+                "LOC4",
+                "owned_by_loc",
+                "record_metadata",
+                f"{wid} is a LOC4 work.",
+            )
+            if work.get("era_id"):
+                add_edge(
+                    f"EDGE-{wid}-ERA-{work.get('era_id')}",
+                    wid,
+                    work.get("era_id"),
+                    "belongs_to_era",
+                    "record_metadata",
+                    f"{wid} is assigned to {work.get('period') or work.get('era_id')}.",
+                )
+
+        # LOC5 media: registry gives stable media IDs, period inheritance and
+        # optional linked work/song references.
+        for media in self.media.get("items", []):
+            mid = media.get("media_id")
+            if not mid:
+                continue
+            add_node(
+                mid,
+                media.get("title") or mid,
+                "media",
+                "LOC5",
+                period=media.get("period"),
+                era_id=media.get("era_id"),
+                platform=media.get("platform"),
+            )
+            add_edge(
+                f"EDGE-{mid}-OWNED-LOC5",
+                mid,
+                "LOC5",
+                "owned_by_loc",
+                "record_metadata",
+                f"{mid} is a LOC5 media record.",
+            )
+            if media.get("era_id"):
+                add_edge(
+                    f"EDGE-{mid}-ERA-{media.get('era_id')}",
+                    mid,
+                    media.get("era_id"),
+                    "belongs_to_era",
+                    "record_metadata",
+                    f"{mid} inherits {media.get('period') or media.get('era_id')}.",
+                )
+            linked_work = media.get("linked_work_id") or (media.get("temporal_inheritance") or {}).get("source_work_id")
+            if linked_work:
+                add_edge(
+                    f"EDGE-{mid}-WORK-{linked_work}",
+                    linked_work,
+                    mid,
+                    "represented_by",
+                    "record_metadata",
+                    "LOC5 media represents or adapts the linked work.",
+                )
+
+        # LOC6 governance fragments are first-class analysis/governance nodes.
+        for fragment in self.loc6.get("fragments", []):
+            fid = fragment.get("fragment_id")
+            if not fid:
+                continue
+            label = fragment.get("statement") or fragment.get("topic") or fid
+            add_node(
+                fid,
+                label,
+                "governance_fragment",
+                "LOC6",
+                analysis_type=fragment.get("analysis_type"),
+                era_id=fragment.get("era_id"),
+            )
+            add_edge(
+                f"EDGE-{fid}-OWNED-LOC6",
+                fid,
+                "LOC6",
+                "owned_by_loc",
+                "record_metadata",
+                f"{fid} is governed by LOC6.",
+            )
+            if fragment.get("era_id"):
+                add_edge(
+                    f"EDGE-{fid}-ERA-{fragment.get('era_id')}",
+                    fid,
+                    fragment.get("era_id"),
+                    "belongs_to_era",
+                    "record_metadata",
+                    "Governance fragment carries an explicit ERA assignment.",
+                )
+
+        # Explicit author-confirmed cross-work relationships.
+        for rel in self.relationships.get("relationships", []):
+            source = rel.get("source") or {}
+            source_id = source.get("work_ref") or rel.get("relationship_id")
+            add_node(
+                source_id,
+                source.get("title") or rel.get("canonical_key") or source_id,
+                source.get("content_type") or "work",
+                source.get("primary_loc") or "",
+            )
+            for target in rel.get("targets", []) or []:
+                target_id = target.get("work_ref")
+                if not target_id:
+                    continue
+                add_node(
+                    target_id,
+                    target.get("title") or target_id,
+                    target.get("content_type") or "work",
+                    target.get("primary_loc") or "",
+                )
+                add_edge(
+                    f"EDGE-{rel.get('relationship_id')}-{source_id}-{target_id}",
+                    source_id,
+                    target_id,
+                    rel.get("relation_type") or "related_to",
+                    "explicit_registry_relation",
+                    rel.get("relation_summary") or target.get("relation_label") or "",
+                    rel.get("evidence_status") or "registry",
+                    relationship_id=rel.get("relationship_id"),
+                    direction=rel.get("direction"),
+                )
+
+        return {
+            "schema_version": self.graph_schema.get("schema_version") or "0.2",
+            "nodes": list(nodes.values()),
+            "edges": list(edges.values()),
+            "node_count": len(nodes),
+            "edge_count": len(edges),
+        }
+
+    @staticmethod
+    def _result_graph_aliases(item: dict[str, Any]) -> set[str]:
+        aliases: set[str] = set()
+        for value in [
+            item.get("result_id"),
+            item.get("title"),
+            item.get("era_id"),
+            item.get("period"),
+        ]:
+            if value:
+                aliases.add(_compact(value))
+        payload = item.get("payload") or {}
+        for key in ("work_id", "media_id", "asset_id", "source_id", "canonical_key", "era_id", "period"):
+            value = payload.get(key)
+            if value:
+                aliases.add(_compact(value))
+        return {x for x in aliases if x}
+
+    def _graph_enrichment(
+        self,
+        query: str,
+        groups: dict[str, list[dict[str, Any]]],
+        depth: int = 2,
+        limit: int = 40,
+    ) -> dict[str, Any]:
+        """Seed the canonical graph from retrieval results, then traverse it.
+
+        Retrieval similarity chooses seeds only. Every traversed edge must
+        already be registry-backed or deterministic structural evidence.
+        """
+        base = self._canonical_graph()
+        nodes = {str(node.get("id")): dict(node) for node in base.get("nodes", []) if node.get("id")}
+        edges = [dict(edge) for edge in base.get("edges", [])]
+
+        result_by_id: dict[str, dict[str, Any]] = {}
+        alias_to_result_ids: dict[str, set[str]] = {}
+        seed_ids: set[str] = set()
+        matched_periods: set[str] = set()
+
+        # Add current retrieval results as transient graph nodes with only
+        # deterministic ownership / ERA / media-work edges.
+        for group, items in groups.items():
+            for item in items:
+                rid = str(item.get("result_id") or "").strip()
+                if not rid:
+                    continue
+                result_by_id[rid] = item
+                aliases = self._result_graph_aliases(item)
+                for alias in aliases:
+                    alias_to_result_ids.setdefault(alias, set()).add(rid)
+
+                nodes.setdefault(rid, {
+                    "id": rid,
+                    "label": item.get("title") or rid,
+                    "node_type": item.get("content_type") or "search_result",
+                    "primary_loc": item.get("primary_loc") or "",
+                    "result_group": group,
+                    "transient": True,
+                })
+
+                loc = str(item.get("primary_loc") or "").strip()
+                if loc:
+                    edges.append({
+                        "edge_id": f"SEARCH-{rid}-OWNED-{loc}",
+                        "source": rid,
+                        "target": loc,
+                        "relation_type": "owned_by_loc",
+                        "summary": f"Search result belongs to {loc}.",
+                        "evidence_kind": "result_metadata",
+                        "evidence_status": "recorded",
+                    })
+
+                era_id = str(item.get("era_id") or (item.get("payload") or {}).get("era_id") or "").strip()
+                period = str(item.get("period") or (item.get("payload") or {}).get("period") or "").strip()
+                if not era_id and period:
+                    era = next((x for x in self.eras.get("eras", []) if str(x.get("period")) == period), None)
+                    era_id = str((era or {}).get("era_id") or "")
+                if era_id:
+                    matched_periods.add(period or era_id.replace("ERA-", ""))
+                    edges.append({
+                        "edge_id": f"SEARCH-{rid}-ERA-{era_id}",
+                        "source": rid,
+                        "target": era_id,
+                        "relation_type": "belongs_to_era",
+                        "summary": f"Search result is recorded in {period or era_id}.",
+                        "evidence_kind": "result_metadata",
+                        "evidence_status": "recorded",
+                    })
+
+                payload = item.get("payload") or {}
+                linked_work = str(payload.get("linked_work_id") or "").strip()
+                if linked_work:
+                    edges.append({
+                        "edge_id": f"SEARCH-{rid}-REPRESENTS-{linked_work}",
+                        "source": rid,
+                        "target": linked_work,
+                        "relation_type": "represented_by" if item.get("primary_loc") != "LOC5" else "adapted_to",
+                        "summary": "Media/work linkage supplied by registry metadata.",
+                        "evidence_kind": "result_metadata",
+                        "evidence_status": "recorded",
+                    })
+
+        # Canonical graph edges already carry quality. Search-time transient
+        # metadata edges are scored by the same governance policy.
+        for edge in edges:
+            if "edge_quality" not in edge:
+                quality = self._graph_edge_quality(
+                    str(edge.get("relation_type") or ""),
+                    str(edge.get("evidence_kind") or ""),
+                    str(edge.get("evidence_status") or "recorded"),
+                )
+                edge["edge_quality"] = quality
+                edge["quality_band"] = self._graph_quality_band(quality)
+
+        # Seed selection is precision-first. When the query has a strong
+        # canonical/exact hit, do not let every low-relevance retrieval result
+        # become a graph seed; that causes unrelated LOC/ERA over-traversal.
+        q = _compact(query)
+        strong_seed_ids: set[str] = set()
+        exclusive_seed_ids: set[str] = set()
+
+        for rid, item in result_by_id.items():
+            aliases = self._result_graph_aliases(item)
+            title = _compact(item.get("title") or "")
+            if q and (
+                q in aliases
+                or title == q
+                or (len(q) >= 3 and title.startswith(q))
+            ):
+                strong_seed_ids.add(rid)
+
+        for node_id, node in nodes.items():
+            label = _compact(node.get("label") or "")
+            period = _compact(node.get("period") or "")
+            node_type = str(node.get("node_type") or "")
+            object_type = str(node.get("object_type") or "")
+            strong = False
+            exclusive = False
+            if q:
+                if _compact(node.get("id") or "") == q or period == q or label == q:
+                    strong = True
+                elif node_type in {"life_event", "era", "rune", "work"} and len(q) >= 2:
+                    strong = label.startswith(q) or (len(q) >= 3 and q in label)
+
+                # Only named/historical entities monopolize the seed set.
+                # Generic governance concepts (e.g. 自我治理) must still keep
+                # cross-LOC retrieval seeds so LOC6/LOC7 evidence survives.
+                if strong:
+                    if node_type == "era" and period == q:
+                        exclusive = True
+                    elif node_type == "life_event" and object_type in {"system", "work"}:
+                        exclusive = True
+                    elif node_type == "rune" and label == q:
+                        exclusive = True
+
+            if strong:
+                strong_seed_ids.add(node_id)
+            if exclusive:
+                exclusive_seed_ids.add(node_id)
+
+        if exclusive_seed_ids:
+            seed_ids.update(exclusive_seed_ids)
+            # Exact retrieval aliases that name the same entity remain useful.
+            for rid, item in result_by_id.items():
+                if q and any(q == alias for alias in self._result_graph_aliases(item)):
+                    seed_ids.add(rid)
+        else:
+            # Concept queries retain retrieval breadth, plus any canonical hits.
+            seed_ids.update(result_by_id.keys())
+            seed_ids.update(strong_seed_ids)
+
+        adjacency: dict[str, list[dict[str, Any]]] = {}
+        directional_relations = {"owned_by_loc", "belongs_to_era"}
+        for edge in edges:
+            source, target = str(edge.get("source") or ""), str(edge.get("target") or "")
+            if not source or not target:
+                continue
+            adjacency.setdefault(source, []).append(edge)
+            # Ownership and ERA membership are structural projections, not
+            # reverse discovery channels. Treating them as bidirectional turns
+            # LOC/ERA nodes into hubs that leak unrelated records into results.
+            if str(edge.get("relation_type") or "") not in directional_relations:
+                adjacency.setdefault(target, []).append(edge)
+
+        visited = set(seed_ids)
+        frontier = set(seed_ids)
+        selected_edge_ids: set[str] = set()
+        levels: dict[str, int] = {sid: 0 for sid in seed_ids}
+        node_path_scores: dict[str, float] = {sid: 1.0 for sid in seed_ids}
+        edge_traversal_scores: dict[str, float] = {}
+        min_traversal_score = float((self.graph_schema.get("quality_policy") or {}).get("min_traversal_score") or 0.25)
+        hop_decay = float((self.graph_schema.get("quality_policy") or {}).get("hop_decay") or 0.88)
+
+        for level in range(1, max(1, min(depth, 3)) + 1):
+            nxt: set[str] = set()
+            ordered_frontier = sorted(frontier, key=lambda nid: (-node_path_scores.get(nid, 0.0), nid))
+            for nid in ordered_frontier:
+                candidate_edges = sorted(
+                    adjacency.get(nid, []),
+                    key=lambda edge: (-float(edge.get("edge_quality") or 0.0), str(edge.get("edge_id") or "")),
+                )
+                for edge in candidate_edges:
+                    eid = str(edge.get("edge_id") or "")
+                    other = str(edge.get("target") if str(edge.get("source")) == nid else edge.get("source"))
+                    if not eid or not other:
+                        continue
+                    parent_score = node_path_scores.get(nid, 1.0)
+                    traversal_score = round(
+                        parent_score * float(edge.get("edge_quality") or 0.0) * (hop_decay ** max(0, level - 1)),
+                        4,
+                    )
+                    if traversal_score < min_traversal_score:
+                        continue
+                    edge_traversal_scores[eid] = max(edge_traversal_scores.get(eid, 0.0), traversal_score)
+                    selected_edge_ids.add(eid)
+                    if traversal_score > node_path_scores.get(other, 0.0):
+                        node_path_scores[other] = traversal_score
+                    if other not in visited:
+                        visited.add(other)
+                        levels[other] = level
+                        nxt.add(other)
+                    if len(selected_edge_ids) >= limit:
+                        break
+                if len(selected_edge_ids) >= limit:
+                    break
+            frontier = nxt
+            if not frontier or len(selected_edge_ids) >= limit:
+                break
+
+        selected_edges = []
+        for edge in edges:
+            eid = str(edge.get("edge_id") or "")
+            if eid not in selected_edge_ids:
+                continue
+            row = dict(edge)
+            row["traversal_score"] = edge_traversal_scores.get(eid, 0.0)
+            selected_edges.append(row)
+        selected_edges.sort(key=lambda edge: (-float(edge.get("traversal_score") or 0.0), str(edge.get("edge_id") or "")))
+        selected_edges = selected_edges[:limit]
+        selected_node_ids = set(seed_ids)
+        for edge in selected_edges:
+            selected_node_ids.add(str(edge.get("source") or ""))
+            selected_node_ids.add(str(edge.get("target") or ""))
+        selected_nodes = [nodes[nid] for nid in selected_node_ids if nid in nodes]
+
+        paths = []
+        for edge in selected_edges:
+            source = nodes.get(str(edge.get("source")), {"id": edge.get("source")})
+            target = nodes.get(str(edge.get("target")), {"id": edge.get("target")})
+            paths.append({
+                "from": {
+                    "id": source.get("id"),
+                    "label": source.get("label"),
+                    "primary_loc": source.get("primary_loc"),
+                    "node_type": source.get("node_type"),
+                },
+                "relation": edge.get("relation_type"),
+                "to": {
+                    "id": target.get("id"),
+                    "label": target.get("label"),
+                    "primary_loc": target.get("primary_loc"),
+                    "node_type": target.get("node_type"),
+                },
+                "summary": edge.get("summary") or "",
+                "evidence_kind": edge.get("evidence_kind"),
+                "evidence_status": edge.get("evidence_status"),
+                "edge_quality": edge.get("edge_quality"),
+                "quality_band": edge.get("quality_band"),
+                "traversal_score": edge.get("traversal_score"),
+            })
+
+        # Convert traversed graph nodes back into a useful aggregation layer.
+        connected_result_ids = [
+            nid for nid in selected_node_ids
+            if nid in result_by_id and nid not in seed_ids
+        ]
+        connected_results = [{
+            "result_id": rid,
+            "title": result_by_id[rid].get("title"),
+            "primary_loc": result_by_id[rid].get("primary_loc"),
+            "group": result_by_id[rid].get("group"),
+        } for rid in connected_result_ids]
+
+        era_nodes = [node for node in selected_nodes if node.get("node_type") == "era"]
+        era_nodes.sort(key=lambda node: next(
+            (float(x.get("order") or 0) for x in self.eras.get("eras", []) if x.get("era_id") == node.get("id")),
+            999.0,
+        ))
+
+        loc_nodes = sorted({
+            str(node.get("id"))
+            for node in selected_nodes
+            if node.get("node_type") == "loc_domain"
+        })
+
+        return {
+            "mode": "canonical_graph_rag",
+            "canonical_edges_only": True,
+            "depth": max(levels.values()) if levels else 0,
+            "seed_result_ids": sorted(seed_ids)[:50],
+            "nodes": selected_nodes,
+            "edges": selected_edges,
+            "paths": paths,
+            "node_count": len(selected_nodes),
+            "edge_count": len(selected_edges),
+            "quality": {
+                "min_traversal_score": min_traversal_score,
+                "hop_decay": hop_decay,
+                "high_quality_edges": sum(1 for edge in selected_edges if edge.get("quality_band") == "high"),
+                "medium_quality_edges": sum(1 for edge in selected_edges if edge.get("quality_band") == "medium"),
+                "low_quality_edges": sum(1 for edge in selected_edges if edge.get("quality_band") == "low"),
+                "mean_edge_quality": round(
+                    sum(float(edge.get("edge_quality") or 0.0) for edge in selected_edges) / len(selected_edges),
+                    4,
+                ) if selected_edges else 0.0,
+            },
+            "connected_result_ids": connected_result_ids,
+            "connected_results": connected_results,
+            "era_path": [{
+                "era_id": node.get("id"),
+                "period": node.get("period"),
+                "label": node.get("label"),
+            } for node in era_nodes],
+            "loc_path": loc_nodes,
+            "graph_registry_counts": {
+                "nodes": base.get("node_count", 0),
+                "edges": base.get("edge_count", 0),
+            },
+        }
+
+    def graph_snapshot(self, node_id: str = "", depth: int = 2) -> dict[str, Any]:
+        """Expose the governed graph for diagnostics and external graph clients."""
+        graph = self._canonical_graph()
+        if not node_id:
+            return {
+                "mode": "canonical_graph",
+                "nodes": graph.get("nodes", []),
+                "edges": graph.get("edges", []),
+                "node_count": graph.get("node_count", 0),
+                "edge_count": graph.get("edge_count", 0),
+            }
+
+        nodes = {str(node.get("id")): node for node in graph.get("nodes", [])}
+        edges = graph.get("edges", [])
+        if node_id not in nodes:
+            return {
+                "mode": "canonical_graph",
+                "center": node_id,
+                "nodes": [],
+                "edges": [],
+                "node_count": 0,
+                "edge_count": 0,
+            }
+
+        adjacency: dict[str, list[dict[str, Any]]] = {}
+        for edge in edges:
+            adjacency.setdefault(str(edge.get("source")), []).append(edge)
+            adjacency.setdefault(str(edge.get("target")), []).append(edge)
+
+        visited = {node_id}
+        frontier = {node_id}
+        edge_ids: set[str] = set()
+        for _ in range(max(1, min(int(depth or 2), 3))):
+            nxt: set[str] = set()
+            for nid in frontier:
+                for edge in adjacency.get(nid, []):
+                    edge_ids.add(str(edge.get("edge_id")))
+                    other = str(edge.get("target") if str(edge.get("source")) == nid else edge.get("source"))
+                    if other and other not in visited:
+                        visited.add(other)
+                        nxt.add(other)
+            frontier = nxt
+            if not frontier:
+                break
+
+        selected_edges = [edge for edge in edges if str(edge.get("edge_id")) in edge_ids]
+        return {
+            "mode": "canonical_graph",
+            "center": node_id,
+            "depth": depth,
+            "nodes": [nodes[nid] for nid in visited if nid in nodes],
+            "edges": selected_edges,
+            "node_count": len(visited),
+            "edge_count": len(selected_edges),
+        }
+
+    @staticmethod
+    def _collect_topic_terms(query: str, groups: dict[str, list[dict[str, Any]]], limit: int = 10) -> list[dict[str, Any]]:
+        """Aggregate maintained tags/keywords from retrieved evidence.
+
+        These are descriptive retrieval terms, not new Canon definitions.
+        """
+        q = _compact(query)
+        counts: dict[str, int] = {}
+        source_groups: dict[str, set[str]] = {}
+        stop = {
+            "loc1","loc2","loc3","loc4","loc5","loc6","loc7","loc8",
+            "current","released","archived","recorded","threads","instagram","suno"
+        }
+
+        def add(term: Any, group: str) -> None:
+            value = str(term or "").strip()
+            key = _normalize(value)
+            if not value or len(value) > 40 or key in stop:
+                return
+            if q and _compact(value) == q:
+                weight = 3
+            else:
+                weight = 1
+            counts[value] = counts.get(value, 0) + weight
+            source_groups.setdefault(value, set()).add(group)
+
+        for group, items in groups.items():
+            for item in items:
+                payload = item.get("payload") or {}
+                for field in ("tags", "keywords", "semantic_keywords", "reasoning_tags", "key_propositions"):
+                    value = payload.get(field)
+                    if isinstance(value, list):
+                        for term in value:
+                            add(term, group)
+                    elif isinstance(value, str):
+                        for term in re.split(r"[、，,；;／/|]+", value):
+                            add(term, group)
+                for value in (
+                    payload.get("topic"),
+                    payload.get("governance_principle"),
+                    payload.get("analysis_type"),
+                    item.get("title"),
+                ):
+                    if value and len(str(value)) <= 24:
+                        add(value, group)
+
+        rows = [
+            {"term": term, "weight": weight, "groups": sorted(source_groups.get(term, set()))}
+            for term, weight in counts.items()
+        ]
+        rows.sort(key=lambda row: (-row["weight"], row["term"]))
+        return rows[:limit]
+
+    def _topic_period_trend(self, query: str, graph: dict[str, Any]) -> dict[str, Any]:
+        """Read query-topic prevalence across maintained period keyword analyses."""
+        q = _compact(query)
+        if not q:
+            return {"matches": [], "summary": ""}
+
+        era_order = {
+            str(era.get("period") or ""): float(era.get("order") or 0)
+            for era in self.eras.get("eras", [])
+        }
+        matches: list[dict[str, Any]] = []
+
+        for item in self.loc6_period_keywords.get("periods", []):
+            period = str(item.get("period") or "")
+            for kw in item.get("keywords", []) or []:
+                term = str(kw.get("term") or "")
+                compact = _compact(term)
+                if q in compact or compact in q:
+                    matches.append({
+                        "period": period,
+                        "source": "LOC6",
+                        "term": term,
+                        "percent": float(kw.get("percent") or 0),
+                        "count": int(kw.get("document_count") or 0),
+                        "sample_count": int(item.get("document_count") or 0),
+                    })
+
+        # LOC3 normalized semantic families are supplemental.
+        for item in self.loc3_period_keywords.get("periods", []):
+            period = str(item.get("period") or "")
+            pools = []
+            for field in ("normalized_semantic_families", "normalized_top_keywords", "named_keywords"):
+                pools.extend(item.get(field, []) or [])
+            for kw in pools:
+                term = str(kw.get("term") or "")
+                compact = _compact(term)
+                if q in compact or compact in q:
+                    matches.append({
+                        "period": period,
+                        "source": "LOC3",
+                        "term": term,
+                        "percent": float(kw.get("percent") or 0),
+                        "count": int(kw.get("count") or 0),
+                        "sample_count": int(item.get("work_count") or 0),
+                    })
+
+        matches.sort(key=lambda row: (era_order.get(row["period"], 999), row["source"]))
+        if not matches:
+            era_path = [
+                str(x.get("period") or "")
+                for x in graph.get("era_path", [])
+                if x.get("period")
+            ]
+            return {
+                "matches": [],
+                "summary": ("Graph 命中的時期為 " + " → ".join(era_path)) if era_path else "",
+                "basis": "graph_era_path",
+            }
+
+        by_source: dict[str, list[dict[str, Any]]] = {}
+        for row in matches:
+            by_source.setdefault(row["source"], []).append(row)
+
+        parts = []
+        for source, rows in sorted(by_source.items()):
+            series = " → ".join(f"{row['period']} {row['percent']:g}%" for row in rows)
+            parts.append(f"{source}：{series}")
+
+        return {
+            "matches": matches,
+            "summary": "；".join(parts),
+            "basis": "maintained_period_keyword_analysis",
+        }
+
+    @staticmethod
+    def _synthesis_confidence(groups: dict[str, list[dict[str, Any]]], graph: dict[str, Any]) -> dict[str, Any]:
+        strong_groups = sum(1 for key in ("knowledge", "governance", "relationships", "timeline") if groups.get(key))
+        evidence_groups = sum(1 for items in groups.values() if items)
+        graph_edges = int(graph.get("edge_count") or 0)
+        quality = graph.get("quality") or {}
+        mean_edge_quality = float(quality.get("mean_edge_quality") or 0.0)
+        high_quality_edges = int(quality.get("high_quality_edges") or 0)
+
+        if strong_groups >= 2 and graph_edges >= 2 and mean_edge_quality >= 0.80:
+            level = "high"
+        elif (evidence_groups >= 2 or graph_edges >= 1) and mean_edge_quality >= 0.60:
+            level = "medium"
+        else:
+            level = "limited"
+        return {
+            "level": level,
+            "evidence_group_count": evidence_groups,
+            "strong_group_count": strong_groups,
+            "graph_edge_count": graph_edges,
+            "mean_edge_quality": mean_edge_quality,
+            "high_quality_edge_count": high_quality_edges,
+        }
+
+    def _synthesize_search(
+        self,
+        query: str,
+        groups: dict[str, list[dict[str, Any]]],
+        graph: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        """Create a deterministic overview from maintained analysis + retrieved evidence."""
+        nonempty = {key: items for key, items in groups.items() if items}
+        if not nonempty:
+            return None
+
+        priority = {
+            "knowledge": 6,
+            "governance": 5,
+            "relationships": 4,
+            "timeline": 3,
+            "loc6_articles": 2,
+            "works": 1,
+            "textworks": 1,
+            "media": 1,
+            "runes": 1,
+            "oracle": 1,
+        }
+        candidates: list[tuple[int, float, str, dict[str, Any]]] = []
+        for group, items in nonempty.items():
+            for item in items:
+                candidates.append((
+                    priority.get(group, 0),
+                    float(item.get("score") or 0.0),
+                    group,
+                    item,
+                ))
+        candidates.sort(key=lambda row: (-row[0], -row[1], str(row[3].get("result_id") or "")))
+        lead_group = candidates[0][2]
+        lead = candidates[0][3]
+
+        loc_counts: dict[str, int] = {}
+        periods: list[str] = []
+        sources: set[str] = set()
+        for group, items in nonempty.items():
+            for item in items:
+                loc = str(item.get("primary_loc") or "").strip()
+                if loc:
+                    loc_counts[loc] = loc_counts.get(loc, 0) + 1
+                period = str(item.get("period") or (item.get("payload") or {}).get("period") or "").strip()
+                if period and period not in periods:
+                    periods.append(period)
+                src = self._result_source_platform(item)
+                if src:
+                    sources.add(src)
+
+        evidence_labels = {
+            "knowledge": "知識／分析",
+            "governance": "治理／政德風",
+            "relationships": "跨 LOC 關聯",
+            "timeline": "時期",
+            "loc6_articles": "Threads／LOC6 文章",
+            "works": "歌曲／歌詞",
+            "textworks": "文字作品",
+            "media": "多媒體",
+            "runes": "月符",
+            "oracle": "籤詩",
+        }
+        evidence = [
+            {"group": key, "label": evidence_labels.get(key, key), "count": len(items)}
+            for key, items in nonempty.items()
+        ]
+        evidence.sort(key=lambda row: (-row["count"], row["label"]))
+
+        supporting = []
+        seen: set[str] = set()
+        for _, _, group, item in candidates:
+            rid = str(item.get("result_id") or "")
+            if not rid or rid in seen:
+                continue
+            seen.add(rid)
+            supporting.append({
+                "result_id": rid,
+                "group": group,
+                "title": item.get("title"),
+                "primary_loc": item.get("primary_loc"),
+                "score": item.get("score"),
+            })
+            if len(supporting) >= 6:
+                break
+
+        lead_summary = str(lead.get("summary") or "").strip()
+        if not lead_summary:
+            lead_summary = f"「{query}」目前命中 {len(nonempty)} 類 LOC 資料，可從知識、作品、治理、時間與關聯證據交叉閱讀。"
+
+        era_path = [str(x.get("period") or x.get("label") or "") for x in graph.get("era_path", []) if x]
+        loc_path = [str(x) for x in graph.get("loc_path", []) if x]
+        graph_parts = []
+        if era_path:
+            graph_parts.append("時期：" + " → ".join(era_path))
+        if loc_path:
+            graph_parts.append("跨 LOC：" + "、".join(loc_path))
+        relation_paths = [
+            p for p in graph.get("paths", [])
+            if p.get("relation") not in {"owned_by_loc", "belongs_to_era", "temporal_before"}
+        ]
+        if relation_paths:
+            graph_parts.append(
+                "關聯：" + "；".join(
+                    f"{(p.get('from') or {}).get('label') or (p.get('from') or {}).get('id')} "
+                    f"→ {p.get('relation')} → "
+                    f"{(p.get('to') or {}).get('label') or (p.get('to') or {}).get('id')}"
+                    for p in relation_paths[:3]
+                )
+            )
+        graph_summary = "｜".join(graph_parts) if graph_parts else "目前沒有足夠的 Canonical Graph 關聯可形成額外彙整。"
+
+        topic_terms = self._collect_topic_terms(query, groups)
+        period_trend = self._topic_period_trend(query, graph)
+        confidence = self._synthesis_confidence(groups, graph)
+
+        loc_names = [loc for loc, _count in sorted(loc_counts.items(), key=lambda row: (-row[1], row[0]))]
+        evidence_names = [row["label"] for row in evidence[:4]]
+        introduction_parts = [
+            lead_summary,
+            (f"目前資料主要跨越 {'、'.join(loc_names[:5])}。" if loc_names else ""),
+            (f"可用證據包含 {'、'.join(evidence_names)}。" if evidence_names else ""),
+        ]
+        introduction = " ".join(part for part in introduction_parts if part).strip()
+
+        findings: list[str] = []
+        if topic_terms:
+            findings.append("核心相關詞：" + "、".join(row["term"] for row in topic_terms[:6]))
+        if period_trend.get("summary"):
+            findings.append("時期變化：" + period_trend["summary"])
+        if loc_path:
+            findings.append("跨 LOC 範圍：" + "、".join(loc_path))
+        if relation_paths:
+            findings.append(
+                "已確認關聯：" + "；".join(
+                    f"{(p.get('from') or {}).get('label') or (p.get('from') or {}).get('id')} "
+                    f"→ {p.get('relation')} → "
+                    f"{(p.get('to') or {}).get('label') or (p.get('to') or {}).get('id')}"
+                    for p in relation_paths[:3]
+                )
+            )
+        if not findings:
+            findings.append("目前以直接搜尋命中為主，尚不足以形成更強的跨資料結論。")
+
+        analysis_summary = " ".join(findings)
+
+        return {
+            "analysis_type": "search_synthesis",
+            "query": query,
+            "title": f"{query}｜綜合結果",
+            "summary": lead_summary,
+            "introduction": introduction,
+            "analysis_summary": analysis_summary,
+            "key_findings": findings,
+            "topic_terms": topic_terms,
+            "period_trend": period_trend,
+            "confidence": confidence,
+            "lead_result_id": lead.get("result_id"),
+            "lead_group": lead_group,
+            "lead_title": lead.get("title"),
+            "loc_coverage": [
+                {"loc": loc, "count": count}
+                for loc, count in sorted(loc_counts.items(), key=lambda row: (-row[1], row[0]))
+            ],
+            "evidence": evidence,
+            "periods": periods[:12],
+            "sources": sorted(sources),
+            "supporting_results": supporting,
+            "graph_summary": graph_summary,
+            "graph": {
+                "mode": graph.get("mode"),
+                "node_count": graph.get("node_count", 0),
+                "edge_count": graph.get("edge_count", 0),
+                "paths": graph.get("paths", [])[:10],
+                "era_path": graph.get("era_path", []),
+                "loc_path": graph.get("loc_path", []),
+                "connected_results": graph.get("connected_results", [])[:10],
+                "registry_counts": graph.get("graph_registry_counts", {}),
+                "quality": graph.get("quality", {}),
+            },
+            "governance_note": "綜合結果先由 Search 取回證據，再以 Canonical Graph 聚合 LOC、ERA、作品與分析節點。語意相似只負責選 seed；Graph edge 僅採 Registry、權威欄位或可確定的結構關係。",
+        }
+
+
+    @staticmethod
+    def _provenance_summary(
+        groups: dict[str, list[dict[str, Any]]],
+        graph: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Return one compact provenance envelope for Search consumers."""
+        refs: list[dict[str, Any]] = []
+        seen_refs: set[tuple[str, str, str]] = set()
+        result_sources: list[dict[str, Any]] = []
+
+        for group, items in groups.items():
+            for item in items:
+                rid = str(item.get("result_id") or "")
+                item_refs = item.get("source_refs") or []
+                normalized_refs = []
+                for ref in item_refs:
+                    if isinstance(ref, str):
+                        row = {"source_type": "reference", "source_id": ref, "note": ""}
+                    elif isinstance(ref, dict):
+                        row = {
+                            "source_type": str(ref.get("source_type") or ""),
+                            "source_id": str(ref.get("source_id") or ""),
+                            "note": str(ref.get("note") or ""),
+                        }
+                    else:
+                        continue
+                    key = (row["source_type"], row["source_id"], row["note"])
+                    if key not in seen_refs:
+                        seen_refs.add(key)
+                        refs.append(row)
+                    normalized_refs.append(row)
+
+                if normalized_refs:
+                    result_sources.append({
+                        "result_id": rid,
+                        "group": group,
+                        "primary_loc": item.get("primary_loc"),
+                        "sources": normalized_refs,
+                    })
+
+        graph_evidence: dict[str, int] = {}
+        graph_status: dict[str, int] = {}
+        graph_quality_bands: dict[str, int] = {}
+        for edge in graph.get("edges", []) or []:
+            kind = str(edge.get("evidence_kind") or "unspecified")
+            status = str(edge.get("evidence_status") or "unspecified")
+            band = str(edge.get("quality_band") or "unspecified")
+            graph_evidence[kind] = graph_evidence.get(kind, 0) + 1
+            graph_status[status] = graph_status.get(status, 0) + 1
+            graph_quality_bands[band] = graph_quality_bands.get(band, 0) + 1
+
+        return {
+            "source_ref_count": len(refs),
+            "source_refs": refs[:100],
+            "result_sources": result_sources[:50],
+            "graph_evidence_kinds": graph_evidence,
+            "graph_evidence_status": graph_status,
+            "graph_quality_bands": graph_quality_bands,
+            "graph_quality": graph.get("quality", {}),
+            "graph_policy": "semantic similarity selects seeds; governed edge quality controls traversal priority and minimum path score",
+            "loc8_live_relation_policy": "private Google Sheet Relation rows are not exposed by public Search; only repository-governed public snapshots/registries may enter the canonical graph",
+        }
 
 
     def search(
@@ -1106,12 +2406,18 @@ class UnifiedSearchEngine:
             "timeline": eras,
         }
         groups = self._apply_common_filters(groups, filters)
+        graph = self._graph_enrichment(query, groups)
+        synthesis = self._synthesize_search(query, groups, graph)
+        provenance = self._provenance_summary(groups, graph)
         return {
             "system_id": "lo3rwang",
             "query": query,
             "content_type": wanted or "all",
-            "retrieval_mode": "oracle_keyword" if oracle else "standard",
+            "retrieval_mode": "oracle_keyword_graph_enriched" if oracle else "graph_enriched",
             "oracle_mode": oracle_mode,
+            "synthesis": synthesis,
+            "graph": graph,
+            "provenance": provenance,
             "groups": groups,
             "counts": {key: len(value) for key, value in groups.items()},
             "total_count": sum(len(value) for value in groups.values()),
@@ -1124,6 +2430,6 @@ class UnifiedSearchEngine:
                 "LOC6": "governance+threads-km-search-live",
                 "LOC6_threads_indexed": len(self._loc6_article_documents()),
                 "LOC7": "live",
-                "LOC8": "live-era",
+                "LOC8": "era+context-graph-live",
             },
         }
