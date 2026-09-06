@@ -12,6 +12,7 @@ primary main-post shards.
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import json
 import re
@@ -114,8 +115,8 @@ def write_index(main: list[dict], replies: list[dict], out_dir: Path, shard_size
     for start in range(0, len(main), shard_size):
         number = start // shard_size + 1
         docs = main[start:start + shard_size]
-        rel = f"data/generated/loc6/threads/main/part-{number:03d}.json"
-        path = main_dir / f"part-{number:03d}.json"
+        rel = f"data/generated/loc6/threads/main/part-{number:03d}.json.gz"
+        path = main_dir / f"part-{number:03d}.json.gz"
         payload = {
             "schema_version": "1.0",
             "registry": "LOC6_THREADS_MAIN_POST_SHARD",
@@ -125,7 +126,8 @@ def write_index(main: list[dict], replies: list[dict], out_dir: Path, shard_size
             "document_count": len(docs),
             "documents": docs,
         }
-        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        with gzip.open(path, "wt", encoding="utf-8") as fh:
+            json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
         shard_rows.append({"shard": number, "path": rel, "document_count": len(docs)})
 
     era_counts: dict[str, int] = {}
@@ -153,6 +155,7 @@ def write_index(main: list[dict], replies: list[dict], out_dir: Path, shard_size
             "document_count": len(main),
             "shard_size": shard_size,
             "shard_count": len(shard_rows),
+            "compression": "gzip",
         },
         "era_distribution": era_counts,
         "shards": shard_rows,
@@ -168,7 +171,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source", type=Path)
     parser.add_argument("--out", type=Path, default=Path("data/generated/loc6/threads"))
-    parser.add_argument("--shard-size", type=int, default=400)
+    parser.add_argument("--shard-size", type=int, default=1200)
     parser.add_argument("--expect-main", type=int, default=4578)
     parser.add_argument("--expect-replies", type=int, default=2430)
     args = parser.parse_args()

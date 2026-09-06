@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gzip
 import json
 import re
 import unicodedata
@@ -92,6 +93,9 @@ class UnifiedSearchEngine:
         if not path.exists():
             return {}
         try:
+            if path.suffix.lower() == ".gz":
+                with gzip.open(path, "rt", encoding="utf-8") as fh:
+                    return json.load(fh)
             return json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             return {}

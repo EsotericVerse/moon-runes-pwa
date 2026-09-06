@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC6_THREADS_DOCUMENT_MANIFEST",
+  "status": "working",
+  "source": "threads_and_replies.json",
+  "source_window": {
+    "start": "2024-11-18",
+    "end": "2026-09-06",
+    "timezone": "Asia/Taipei"
+  },
+  "corpus_counts": {
+    "deduplicated": 7008,
+    "main_posts": 4578,
+    "replies": 2430
+  },
+  "indexed_layer": {
+    "role": "main_post_primary_evidence",
+    "document_count": 4578,
+    "shard_size": 1200,
+    "shard_count": 4,
+    "compression": "gzip"
+  },
+  "era_distribution": {
+    "P0": 1049,
+    "P0.5": 471,
+    "P1": 653,
+    "P2": 169,
+    "P3": 407,
+    "P4": 320,
+    "P5": 343,
+    "P6": 520,
+    "P7": 571,
+    "P8": 75
+  },
+  "shards": [
+    {
+      "shard": 1,
+      "path": "data/generated/loc6/threads/main/part-001.json.gz",
+      "document_count": 1200
+    },
+    {
+      "shard": 2,
+      "path": "data/generated/loc6/threads/main/part-002.json.gz",
+      "document_count": 1200
+    },
+    {
+      "shard": 3,
+      "path": "data/generated/loc6/threads/main/part-003.json.gz",
+      "document_count": 1200
+    },
+    {
+      "shard": 4,
+      "path": "data/generated/loc6/threads/main/part-004.json.gz",
+      "document_count": 978
+    }
+  ],
+  "reply_policy": "Replies remain supplemental evidence and are not included in the primary main-post shard set.",
+  "governance": "Document text is primary-source evidence. Search hits, frequency and clustering do not automatically become Canon."
+}
