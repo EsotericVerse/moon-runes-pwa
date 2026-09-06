@@ -152,3 +152,57 @@ This avoids repeated static-data fetches and keeps the runtime on normal static 
 Do not solve a stale-JS problem by making the browser fetch JSON again. Solve it by making the projection reproducible.
 
 See [FRONTEND_RUNTIME_DATA_POLICY.md](./FRONTEND_RUNTIME_DATA_POLICY.md).
+
+
+## 9. KM residency policy
+
+Important LOC knowledge must live in the repository.
+
+Repository-resident KM includes:
+
+- current architecture and responsibility boundaries,
+- governance principles and lifecycle rules,
+- API / Search / Graph contracts,
+- repository tree and data architecture,
+- Canon-adjacent design rationale,
+- LOC1–8 maintained KM,
+- rights / provenance / publication policies,
+- historical trend analyses that materially affect current interpretation,
+- structured registries used by Search / Graph / governance.
+
+Chat history may be used as a source for reconstruction, but must not remain the only place where a material project decision exists.
+
+### Required form
+
+Preferred forms:
+
+~~~text
+docs/*.md
+data/json/registries/*.json
+~~~
+
+A material decision discovered in conversation should follow:
+
+~~~text
+conversation / source evidence
+→ reviewed interpretation
+→ repository KM
+→ registry/index update where applicable
+→ Search / Graph visibility
+~~~
+
+### Non-repository material
+
+The following may remain outside the repo until promoted:
+
+- temporary brainstorms,
+- unresolved hypotheses,
+- personal notes with no project impact,
+- raw private corpus that is not cleared for repository storage,
+- ephemeral task discussion.
+
+### Commercial-maintenance rule
+
+If a new developer would need a piece of knowledge to safely modify or deploy LOC, that knowledge belongs in the repository.
+
+> **Important KM must be versioned with the system it governs.**
