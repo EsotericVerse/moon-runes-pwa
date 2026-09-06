@@ -1064,6 +1064,79 @@ class UnifiedSearchEngine:
         return filtered
 
 
+    @staticmethod
+    def _graph_evidence_weight(evidence_kind: str) -> float:
+        weights = {
+            "authority_registry": 1.00,
+            "explicit_registry_relation": 1.00,
+            "deterministic_structural_evidence": 0.98,
+            "record_metadata": 0.95,
+            "registry_structure": 0.90,
+            "loc8_event_snapshot": 0.86,
+            "loc8_daily_rune_snapshot": 0.86,
+            "result_metadata": 0.80,
+            "semantic_inference": 0.55,
+        }
+        return weights.get(str(evidence_kind or "").strip(), 0.70)
+
+    @staticmethod
+    def _graph_status_weight(evidence_status: str) -> float:
+        weights = {
+            "canonical": 1.00,
+            "confirmed": 1.00,
+            "recorded": 1.00,
+            "deterministic": 1.00,
+            "exact": 1.00,
+            "registry": 0.96,
+            "estimated": 0.82,
+            "provisional": 0.68,
+            "candidate": 0.60,
+            "inferred": 0.55,
+            "unknown": 0.50,
+        }
+        return weights.get(str(evidence_status or "").strip().lower(), 0.75)
+
+    @staticmethod
+    def _graph_relation_weight(relation_type: str) -> float:
+        weights = {
+            "owned_by_loc": 1.00,
+            "belongs_to_era": 1.00,
+            "temporal_before": 0.98,
+            "temporal_after": 0.98,
+            "source_of": 0.96,
+            "derived_from": 0.94,
+            "expanded_to": 0.92,
+            "represented_by": 0.92,
+            "adapted_to": 0.90,
+            "analyzed_by": 0.88,
+            "references": 0.86,
+            "has_lot": 0.86,
+            "related_to": 0.78,
+        }
+        return weights.get(str(relation_type or "").strip(), 0.75)
+
+    @classmethod
+    def _graph_edge_quality(
+        cls,
+        relation_type: str,
+        evidence_kind: str,
+        evidence_status: str = "recorded",
+    ) -> float:
+        score = (
+            cls._graph_evidence_weight(evidence_kind)
+            * cls._graph_status_weight(evidence_status)
+            * cls._graph_relation_weight(relation_type)
+        )
+        return round(max(0.0, min(1.0, score)), 4)
+
+    @staticmethod
+    def _graph_quality_band(score: float) -> str:
+        if score >= 0.90:
+            return "high"
+        if score >= 0.72:
+            return "medium"
+        return "low"
+
     def _canonical_graph(self) -> dict[str, Any]:
         """Build the governed cross-LOC graph from authoritative registries.
 
@@ -1101,6 +1174,7 @@ class UnifiedSearchEngine:
             eid = str(edge_id or "").strip()
             if not eid or not sid or not tid:
                 return
+            quality = self._graph_edge_quality(relation_type, evidence_kind, evidence_status)
             edges[eid] = {
                 "edge_id": eid,
                 "source": sid,
@@ -1109,6 +1183,8 @@ class UnifiedSearchEngine:
                 "summary": summary,
                 "evidence_kind": evidence_kind,
                 "evidence_status": evidence_status,
+                "edge_quality": quality,
+                "quality_band": self._graph_quality_band(quality),
                 **{k: v for k, v in extra.items() if v not in (None, "", [], {})},
             }
 
@@ -1593,6 +1669,18 @@ class UnifiedSearchEngine:
                         "evidence_status": "recorded",
                     })
 
+        # Canonical graph edges already carry quality. Search-time transient
+        # metadata edges are scored by the same governance policy.
+        for edge in edges:
+            if "edge_quality" not in edge:
+                quality = self._graph_edge_quality(
+                    str(edge.get("relation_type") or ""),
+                    str(edge.get("evidence_kind") or ""),
+                    str(edge.get("evidence_status") or "recorded"),
+                )
+                edge["edge_quality"] = quality
+                edge["quality_band"] = self._graph_quality_band(quality)
+
         # Seed selection is precision-first. When the query has a strong
         # canonical/exact hit, do not let every low-relevance retrieval result
         # become a graph seed; that causes unrelated LOC/ERA over-traversal.
@@ -1667,16 +1755,36 @@ class UnifiedSearchEngine:
         frontier = set(seed_ids)
         selected_edge_ids: set[str] = set()
         levels: dict[str, int] = {sid: 0 for sid in seed_ids}
+        node_path_scores: dict[str, float] = {sid: 1.0 for sid in seed_ids}
+        edge_traversal_scores: dict[str, float] = {}
+        min_traversal_score = float((self.graph_schema.get("quality_policy") or {}).get("min_traversal_score") or 0.25)
+        hop_decay = float((self.graph_schema.get("quality_policy") or {}).get("hop_decay") or 0.88)
 
         for level in range(1, max(1, min(depth, 3)) + 1):
             nxt: set[str] = set()
-            for nid in frontier:
-                for edge in adjacency.get(nid, []):
+            ordered_frontier = sorted(frontier, key=lambda nid: (-node_path_scores.get(nid, 0.0), nid))
+            for nid in ordered_frontier:
+                candidate_edges = sorted(
+                    adjacency.get(nid, []),
+                    key=lambda edge: (-float(edge.get("edge_quality") or 0.0), str(edge.get("edge_id") or "")),
+                )
+                for edge in candidate_edges:
                     eid = str(edge.get("edge_id") or "")
-                    if eid:
-                        selected_edge_ids.add(eid)
                     other = str(edge.get("target") if str(edge.get("source")) == nid else edge.get("source"))
-                    if other and other not in visited:
+                    if not eid or not other:
+                        continue
+                    parent_score = node_path_scores.get(nid, 1.0)
+                    traversal_score = round(
+                        parent_score * float(edge.get("edge_quality") or 0.0) * (hop_decay ** max(0, level - 1)),
+                        4,
+                    )
+                    if traversal_score < min_traversal_score:
+                        continue
+                    edge_traversal_scores[eid] = max(edge_traversal_scores.get(eid, 0.0), traversal_score)
+                    selected_edge_ids.add(eid)
+                    if traversal_score > node_path_scores.get(other, 0.0):
+                        node_path_scores[other] = traversal_score
+                    if other not in visited:
                         visited.add(other)
                         levels[other] = level
                         nxt.add(other)
@@ -1688,7 +1796,16 @@ class UnifiedSearchEngine:
             if not frontier or len(selected_edge_ids) >= limit:
                 break
 
-        selected_edges = [edge for edge in edges if str(edge.get("edge_id") or "") in selected_edge_ids][:limit]
+        selected_edges = []
+        for edge in edges:
+            eid = str(edge.get("edge_id") or "")
+            if eid not in selected_edge_ids:
+                continue
+            row = dict(edge)
+            row["traversal_score"] = edge_traversal_scores.get(eid, 0.0)
+            selected_edges.append(row)
+        selected_edges.sort(key=lambda edge: (-float(edge.get("traversal_score") or 0.0), str(edge.get("edge_id") or "")))
+        selected_edges = selected_edges[:limit]
         selected_node_ids = set(seed_ids)
         for edge in selected_edges:
             selected_node_ids.add(str(edge.get("source") or ""))
@@ -1715,6 +1832,10 @@ class UnifiedSearchEngine:
                 },
                 "summary": edge.get("summary") or "",
                 "evidence_kind": edge.get("evidence_kind"),
+                "evidence_status": edge.get("evidence_status"),
+                "edge_quality": edge.get("edge_quality"),
+                "quality_band": edge.get("quality_band"),
+                "traversal_score": edge.get("traversal_score"),
             })
 
         # Convert traversed graph nodes back into a useful aggregation layer.
@@ -1751,6 +1872,17 @@ class UnifiedSearchEngine:
             "paths": paths,
             "node_count": len(selected_nodes),
             "edge_count": len(selected_edges),
+            "quality": {
+                "min_traversal_score": min_traversal_score,
+                "hop_decay": hop_decay,
+                "high_quality_edges": sum(1 for edge in selected_edges if edge.get("quality_band") == "high"),
+                "medium_quality_edges": sum(1 for edge in selected_edges if edge.get("quality_band") == "medium"),
+                "low_quality_edges": sum(1 for edge in selected_edges if edge.get("quality_band") == "low"),
+                "mean_edge_quality": round(
+                    sum(float(edge.get("edge_quality") or 0.0) for edge in selected_edges) / len(selected_edges),
+                    4,
+                ) if selected_edges else 0.0,
+            },
             "connected_result_ids": connected_result_ids,
             "connected_results": connected_results,
             "era_path": [{
