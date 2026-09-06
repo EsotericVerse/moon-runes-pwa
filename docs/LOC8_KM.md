@@ -437,3 +437,61 @@ LOC8 的 Event、ERA、Daily Rune 一旦進 Graph，不代表所有 traversal �
 ---
 
 **LOC8 ERA principle:** Detect change, verify persistence, cross-check evidence, govern the boundary, and refine it when better evidence arrives.
+
+## 15. Self-Governance Feedback Loop
+
+LOC8 位於 LOC 的時間／人生末端，因此除 Timeline、ERA、Relation、Trajectory 與 Analysis 外，也承擔「把檢索結果送回使用者進行自我治理」的 feedback responsibility。
+
+~~~text
+歷史語言／作品／事件
+        ↓
+Search / Graph / ERA
+        ↓
+Trend / Style / Relation Analysis
+        ↓
+比較不同時間點
+        ↓
+理解當時脈絡
+        ↓
+自我檢討／重新治理
+        ↓
+新的選擇、語言與事件
+        ↓
+再次進入 LOC
+~~~
+
+這個迴路不是用後期版本審判早期版本，而是讓使用者看見語言如何演化。
+
+### Versioning, not moral ranking
+
+LOC8 不應輸出：
+
+~~~text
+30歲版本 = 錯
+46歲版本 = 對
+~~~
+
+而應輸出：
+
+~~~text
+當時 context / problem / style / boundary
+→ 後續哪些條件改變
+→ 哪些語言持續
+→ 哪些 relation / value / boundary 被修正
+→ 現在版本適合什麼情境
+~~~
+
+是否構成「進步」是使用者的治理判斷；系統本身只確認 change / continuity / divergence。
+
+### 治理實作缺口
+
+LOC8 功能核心目前已具備 Daily Rune、ERA、Event、Relation、Trajectory、Analysis、Context 與 Graph RAG。後續優先補的是治理控制，不再優先擴張功能：
+
+- Governance audit log（before/after/reason/evidence）
+- Dispute / Review
+- Governed Delete / tombstone
+- Relation publication pipeline
+- Rights runtime enforcement
+- ERA Candidate → Accept / Adjust / Split / Merge / Reject 的完整操作流
+
+共用治理基準見 [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md)。
