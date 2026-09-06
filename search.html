@@ -102,6 +102,7 @@
                   <option value="text_work">文字作品</option>
                   <option value="multimedia">影音／Reels</option>
                   <option value="knowledge_image">圖片／知識圖</option>
+                  <option value="facebook_post">Facebook 歷史文字</option>
                 </optgroup>
                 <optgroup label="LOC 系統資料">
                   <option value="oracle">籤詩／解牌</option>
@@ -220,6 +221,14 @@
         {q:'尊重',title:'尊重',desc:'LOC6 · 關係／界線'},
         {q:'政德風',title:'政德風',desc:'LOC6 · 風格演變'}
       ],
+      facebook_post:[
+        {q:'自由',title:'自由',desc:'Facebook · 歷史文字'},
+        {q:'工作',title:'工作',desc:'Facebook · 長期語境'},
+        {q:'整理',title:'整理',desc:'Facebook · 生活軌跡'},
+        {q:'希望',title:'希望',desc:'Facebook · 年度演變'},
+        {q:'系統',title:'系統',desc:'Facebook · 技術到 LOC'},
+        {q:'感情',title:'感情',desc:'Facebook · 歷史語境'}
+      ],
       knowledge:[
         {q:'LOC 是什麼',title:'LOC 是什麼',desc:'LOC7 · 系統知識'},
         {q:'月之符文',title:'月之符文',desc:'LOC7 · 文件／FAQ'},
@@ -229,7 +238,7 @@
         {q:'自我治理',title:'自我治理',desc:'LOC7 · 跨文件知識'}
       ]
     };
-    const labels={oracle:'籤詩結果',runes:'月符',works:'Suno 歌曲／歌詞',textworks:'文字作品',relationships:'跨 LOC 關聯',governance:'治理／政德風',loc6_articles:'LOC6 文章',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
+    const labels={oracle:'籤詩結果',runes:'月符',works:'Suno 歌曲／歌詞',textworks:'文字作品',relationships:'跨 LOC 關聯',governance:'治理／政德風',loc6_articles:'LOC6 文章',media:'多媒體作品',social_archive:'Facebook 歷史文字',knowledge:'文件／知識庫',timeline:'時期／時間'};
     const locLabels={LOC1:'LOC1 · Lots',LOC3:'LOC3 · Music',LOC4:'LOC4 · Writing',LOC5:'LOC5 · Resonance',LOC6:'LOC6 · Governance',LOC7:'LOC7 · Text Architecture',LOC8:'LOC8 · Integration'};
     const el=id=>document.getElementById(id);
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
