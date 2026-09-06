@@ -1,6 +1,5 @@
 import { rune } from "./runes64.js";
 import { direction } from "./direction64.js";
-import { allData } from "./rune_all_data_all.js";
 
 const DIRECTIONS = ["正位", "半正位", "半逆位", "逆位"];
 const ROTATIONS = ["rotate(0deg)", "rotate(90deg)", "rotate(-90deg)", "rotate(180deg)"];
@@ -13,6 +12,7 @@ const DIRECTION_FIELDS = {
 
 let runeHintMap = new Map();
 let lotsMap = new Map();
+let allData = [];
 
 async function loadLots() {
   try {
@@ -24,6 +24,18 @@ async function loadLots() {
   } catch (error) {
     console.warn("LOC1 Lots JSON unavailable; hiding Lots summary.", error);
     lotsMap = new Map();
+  }
+}
+
+async function loadRuneInterpretations() {
+  try {
+    const response = await fetch("data/json/core/rune_interpretations.json");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    allData = Array.isArray(payload) ? payload : [];
+  } catch (error) {
+    console.warn("LOC1 rune interpretation JSON unavailable.", error);
+    allData = [];
   }
 }
 
@@ -450,6 +462,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   await Promise.all([
     runRitual(mode, config),
     loadRuneHints(),
+    loadRuneInterpretations(),
     loadLots()
   ]);
   renderResult(mode, config, realPhase);
