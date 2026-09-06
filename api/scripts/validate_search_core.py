@@ -5,9 +5,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-CARD_API = ROOT / "card_api"
-if str(CARD_API) not in sys.path:
-    sys.path.insert(0, str(CARD_API))
+API_DIR = ROOT / "api"
+if str(API_DIR) not in sys.path:
+    sys.path.insert(0, str(API_DIR))
 
 from faq_rag import FAQSearchEngine
 from loc3_search import LOC3SearchEngine
