@@ -10,6 +10,7 @@ FORBIDDEN_PATHS = [
     ROOT / "data" / "generated",
     ROOT / "data" / "archive",
     ROOT / "card_api",
+    ROOT / "docs",
     ROOT / "temp.json",
     ROOT / "mp3" / "my.mp3",
     ROOT / "LOC_LOC_LunaCodex_OW3gs.md",
@@ -32,6 +33,7 @@ STALE_TOKENS = [
     "data/generated/",
     "data/archive/",
     "card_api/",
+    "docs/",
     "card_api/new_runes.json",
     "card_api/runes_all_data.json",
     "card_api/three_card_combinations.json",
@@ -68,8 +70,9 @@ SKIP_PREFIXES = (
     "data/json/archive/",
 )
 SKIP_FILES = {
-    "docs/REPOSITORY_GOVERNANCE.md",
+    "km/REPOSITORY_GOVERNANCE.md",
     "api/scripts/validate_repo_layout.py",
+    "km/REPOSITORY_GOVERNANCE.md",
     "engine/README.md",
 }
 
