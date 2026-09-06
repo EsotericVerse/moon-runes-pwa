@@ -1184,7 +1184,10 @@
     const DAILY_DRAW_CACHE_KEY = "loc8-daily-draw-cache-v1";
     const RELATION_CACHE_KEY = "loc8-relations-cache-v1";
     const ERA_OVERRIDE_CACHE_KEY = "loc8-era-overrides-v1";
-    const CACHE_SCHEMA_VERSION = "1";
+    const ERA_REGISTRY_CACHE_KEY = "loc8-era-registry-cache-v2";
+    const TREND_SOURCE_CACHE_PREFIX = "loc8-trend-source-cache-v2:";
+    const STATIC_CACHE_TTL = 24 * 60 * 60 * 1000;
+    const CACHE_SCHEMA_VERSION = "2";
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
     const LOC_API_URL = "https://moon-runes-pwa.onrender.com";
 
@@ -1312,6 +1315,36 @@
       } catch (_) { return fallback; }
     }
 
+    function writeStaticCache(key, data) {
+      try {
+        localStorage.setItem(key, JSON.stringify({
+          schema_version: CACHE_SCHEMA_VERSION,
+          saved_at: Date.now(),
+          data
+        }));
+      } catch (_) {}
+    }
+
+    function readStaticCache(key, fallback=null) {
+      const cached = readJsonCache(key, null);
+      if (cached?.schema_version !== CACHE_SCHEMA_VERSION) return fallback;
+      return cached?.data ?? fallback;
+    }
+
+    async function cachedStaticJson(url, key, fallback=null) {
+      const cached = readStaticCache(key, fallback);
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error('static fetch failed');
+        const data = await res.json();
+        writeStaticCache(key, data);
+        return data;
+      } catch (err) {
+        console.warn('Using cached static LOC8 data for', url, err);
+        return cached;
+      }
+    }
+
     function writeEventCache(rows) {
       try {
         localStorage.setItem(EVENT_CACHE_KEY, JSON.stringify({
@@ -1329,47 +1362,35 @@
     }
 
     async function loadLoc5MediaRegistry() {
-      try {
-        const res = await fetch('data/json/registries/LOC_MEDIA_REGISTRY.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error('LOC5 media registry unavailable');
-        loc5MediaRegistry = await res.json();
-      } catch (err) {
-        console.warn('LOC5 media registry unavailable', err);
-        loc5MediaRegistry = null;
-      }
+      loc5MediaRegistry = await cachedStaticJson(
+        'data/json/registries/LOC_MEDIA_REGISTRY.json',
+        TREND_SOURCE_CACHE_PREFIX + 'loc5-media',
+        loc5MediaRegistry
+      );
     }
 
     async function loadLoc4WritingRegistry() {
-      try {
-        const res = await fetch('data/json/registries/LOC4_WRITING_REGISTRY.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error('LOC4 writing registry unavailable');
-        loc4WritingRegistry = await res.json();
-      } catch (err) {
-        console.warn('LOC4 writing registry unavailable', err);
-        loc4WritingRegistry = null;
-      }
+      loc4WritingRegistry = await cachedStaticJson(
+        'data/json/registries/LOC4_WRITING_REGISTRY.json',
+        TREND_SOURCE_CACHE_PREFIX + 'loc4-writing',
+        loc4WritingRegistry
+      );
     }
 
     async function loadLoc3PeriodKeywordAnalysis() {
-      try {
-        const res = await fetch('data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error('LOC3 period keyword analysis unavailable');
-        loc3PeriodKeywordAnalysis = await res.json();
-      } catch (err) {
-        console.warn('LOC3 period keyword analysis unavailable', err);
-        loc3PeriodKeywordAnalysis = null;
-      }
+      loc3PeriodKeywordAnalysis = await cachedStaticJson(
+        'data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json',
+        TREND_SOURCE_CACHE_PREFIX + 'loc3-period-keywords',
+        loc3PeriodKeywordAnalysis
+      );
     }
 
     async function loadLoc6PeriodKeywordAnalysis() {
-      try {
-        const res = await fetch('data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error('LOC6 period keyword analysis unavailable');
-        loc6PeriodKeywordAnalysis = await res.json();
-      } catch (err) {
-        console.warn('LOC6 period keyword analysis unavailable', err);
-        loc6PeriodKeywordAnalysis = null;
-      }
+      loc6PeriodKeywordAnalysis = await cachedStaticJson(
+        'data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json',
+        TREND_SOURCE_CACHE_PREFIX + 'loc6-period-keywords',
+        loc6PeriodKeywordAnalysis
+      );
     }
 
     function readEraOverrides() {
@@ -1407,15 +1428,19 @@
 
       // Render from repository registries first. The period/keyword view must
       // not depend on Event rows or on the Apps Script deployment being fresh.
-      try {
-        const res = await fetch('data/json/registries/LOC_ERA_REGISTRY.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error('Static period registry unavailable');
-        const data = await res.json();
-        eraRegistry = mergeEraOverrides(Array.isArray(data.eras) ? data.eras : []);
-      } catch (err) {
-        console.warn('Static period registry unavailable', err);
-        eraRegistry = [];
+      const cachedEraDoc = readStaticCache(ERA_REGISTRY_CACHE_KEY, null);
+      if (Array.isArray(cachedEraDoc?.eras) && cachedEraDoc.eras.length) {
+        eraRegistry = mergeEraOverrides(cachedEraDoc.eras);
+        renderEraTimeline();
+        renderTrajectoryAnalysis();
       }
+
+      const data = await cachedStaticJson(
+        'data/json/registries/LOC_ERA_REGISTRY.json',
+        ERA_REGISTRY_CACHE_KEY,
+        cachedEraDoc
+      );
+      eraRegistry = mergeEraOverrides(Array.isArray(data?.eras) ? data.eras : (eraRegistry || []));
 
       renderEraTimeline();
       renderTrajectory(events.map(normalizeEvent).sort((a,b) => new Date(a.date) - new Date(b.date)));
