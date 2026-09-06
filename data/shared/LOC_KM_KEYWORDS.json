@@ -1,9 +1,9 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC_KM_KEYWORDS",
   "source": "docs/LOC7_KM.md",
-  "source_version": "LOC7_KM 0.2",
-  "updated_at": "2026-09-05",
+  "source_version": "LOC7_KM + LOC Governance Core 0.2",
+  "updated_at": "2026-09-07",
   "purpose": "Shared keyword and alias registry for LOC7 Knowledge Management, FAQ/RAG retrieval, Unified Search, and future Knowledge Object alignment.",
   "governance": {
     "authority": "LOC7_KM",
@@ -822,6 +822,148 @@
           "status": "Stable"
         }
       ]
+    },
+    {
+      "id": "governance_core",
+      "label": "治理核心",
+      "keywords": [
+        {
+          "term": "Boundary-based Governance",
+          "aliases": [
+            "邊界治理",
+            "框架邊界",
+            "Domain Governance",
+            "界／域治理"
+          ],
+          "loc_scope": [
+            "LOC6",
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Equal Standing",
+          "aliases": [
+            "身分平等",
+            "平等解釋權",
+            "身份不構成語意特權"
+          ],
+          "loc_scope": [
+            "LOC6",
+            "LOC7"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Contextual Validity",
+          "aliases": [
+            "脈絡適用",
+            "情境有效性",
+            "版本適用"
+          ],
+          "loc_scope": [
+            "LOC6",
+            "LOC8"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Governed Evolution",
+          "aliases": [
+            "治理式演化",
+            "有邊界的演化",
+            "允許變化但不失去結構"
+          ],
+          "loc_scope": [
+            "LOC1",
+            "LOC6",
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Self-Governance as Versioning",
+          "aliases": [
+            "自我治理版本化",
+            "版本管理不是道德審判",
+            "治理自己"
+          ],
+          "loc_scope": [
+            "LOC6",
+            "LOC8"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Historical Integrity",
+          "aliases": [
+            "歷史完整性",
+            "append-only history",
+            "原始紀錄不可回寫"
+          ],
+          "loc_scope": [
+            "LOC6",
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Governance Audit",
+          "aliases": [
+            "治理稽核",
+            "治理Audit",
+            "Principle Policy Control Evidence"
+          ],
+          "loc_scope": [
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Stable"
+        },
+        {
+          "term": "Dispute Review",
+          "aliases": [
+            "異議治理",
+            "爭議審查",
+            "review/dispute"
+          ],
+          "loc_scope": [
+            "LOC6",
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Working"
+        },
+        {
+          "term": "Tombstone",
+          "aliases": [
+            "治理式刪除",
+            "刪除留痕",
+            "軟刪除歷史"
+          ],
+          "loc_scope": [
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Working"
+        },
+        {
+          "term": "Publication Governance",
+          "aliases": [
+            "發布治理",
+            "private to public",
+            "Canon promotion"
+          ],
+          "loc_scope": [
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Working"
+        }
+      ]
     }
   ],
   "relation_keywords": [
@@ -852,7 +994,11 @@
     "KM-07 月符可以輔助分類，但不能限制語言",
     "KM-08 每個使用者的 Personal Graph 必須隔離",
     "KM-09 知識可以演化，但必須留下版本歷史",
-    "KM-10 FAQ 是 View，不是 Knowledge Base 本身"
+    "KM-10 FAQ 是 View，不是 Knowledge Base 本身",
+    "KM-11 治理文件代表當前歷史位置，不構成終極真理",
+    "KM-12 原始事件與原始語句不因後期解讀而回寫",
+    "KM-13 跨域資料以 reference / consume / propose change 為原則，不覆寫其他 domain authority",
+    "KM-14 個人治理語料可以示範系統，但不自動成為所有使用者的強制人生觀"
   ],
   "knowledge_assets": [
     {
