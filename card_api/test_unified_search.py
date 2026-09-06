@@ -60,6 +60,14 @@ class UnifiedSearchTests(unittest.TestCase):
             '{"types":[{"id":"lyrics_work","primary_loc":"LOC3"}]}',
             encoding="utf-8",
         )
+        (root / "data" / "shared" / "LOC8_EVENT_SNAPSHOT.json").write_text(
+            '{"role":"non-authoritative frontend fallback snapshot","events":[{"id":"EV-TEST","date":"2026-09-01","event_type":"transition","title":"進入自我治理","era":"P8 自我治理與未來展望期","confidence":"recorded","source":"test-event"}]}',
+            encoding="utf-8",
+        )
+        (root / "data" / "shared" / "LOC8_DAILY_RUNE_SNAPSHOT.json").write_text(
+            '{"role":"non-authoritative frontend fallback snapshot","daily_draws":[{"id":"DD-TEST","date":"2026-09-01","rune_id":"1","rune":"心","direction":"半正位","era_id":"ERA-P8","confidence":"recorded","source":"test-draw"}]}',
+            encoding="utf-8",
+        )
         return UnifiedSearchEngine(
             faq_searcher=FakeFAQ(),
             loc3_searcher=FakeLOC3(),
@@ -82,6 +90,23 @@ class UnifiedSearchTests(unittest.TestCase):
         self.assertEqual(len(result["groups"]["knowledge"]), 1)
         self.assertEqual(len(result["groups"]["works"]), 0)
         self.assertEqual(result["groups"]["knowledge"][0]["primary_loc"], "LOC7")
+
+
+    def test_loc8_temporal_snapshots_enter_graph_without_live_private_relations(self):
+        result = self.make_engine().search("自我治理", top_k=5)
+        node_ids = {node["id"] for node in result["graph"]["nodes"]}
+        edge_kinds = {edge.get("evidence_kind") for edge in result["graph"]["edges"]}
+        self.assertIn("EV-TEST", node_ids)
+        self.assertIn("DD-TEST", node_ids)
+        self.assertIn("RUNE-1", node_ids)
+        self.assertTrue({"loc8_event_snapshot", "loc8_daily_rune_snapshot"} & edge_kinds)
+
+    def test_search_returns_provenance_envelope(self):
+        result = self.make_engine().search("自我治理", top_k=5)
+        provenance = result["provenance"]
+        self.assertIn("graph_evidence_kinds", provenance)
+        self.assertIn("loc8_live_relation_policy", provenance)
+        self.assertGreaterEqual(provenance["source_ref_count"], 1)
 
 
 if __name__ == "__main__":
