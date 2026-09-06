@@ -14,6 +14,61 @@
   ],
   "assets": [
     {
+      "asset_id": "KA-LOC-OVERVIEW-001",
+      "title": "LOC／月典：語言系統框架介紹",
+      "path": "docs/LOC_OVERVIEW.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "loc_system_public_overview",
+      "status": "current",
+      "authority_level": "public_knowledge_overview",
+      "searchable": true,
+      "index_priority": "highest",
+      "version": "2026-09-06",
+      "updated_at": "2026-09-06",
+      "keywords": [
+        "LOC",
+        "月典",
+        "語言系統",
+        "語言框架",
+        "LOC1",
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC7",
+        "LOC8",
+        "Luna Codex"
+      ],
+      "public_path": "loc-overview.html",
+      "public_summary": "LOC／月典是一套把語言、作品、治理與時間脈絡整理成可搜尋、可關聯、可演化結構的語言系統框架。",
+      "presentation": "public_article",
+      "exposure_policy": "public_full_text",
+      "intent_aliases": [
+        "LOC",
+        "月典",
+        "LOC 是什麼",
+        "什麼是 LOC",
+        "Luna Codex"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Exact system-name queries should prefer this overview instead of expanding every work whose metadata contains LOC."
+    },
+    {
       "asset_id": "KA-README-001",
       "title": "moon-runes-pwa README",
       "path": "README.md",
