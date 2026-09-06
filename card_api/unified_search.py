@@ -1593,21 +1593,46 @@ class UnifiedSearchEngine:
                         "evidence_status": "recorded",
                     })
 
-        # Seed from returned result IDs and exact graph/query aliases.
+        # Seed selection is precision-first. When the query has a strong
+        # canonical/exact hit, do not let every low-relevance retrieval result
+        # become a graph seed; that causes unrelated LOC/ERA over-traversal.
         q = _compact(query)
+        strong_seed_ids: set[str] = set()
+
         for rid, item in result_by_id.items():
-            seed_ids.add(rid)
-            if q and any(q in alias or alias in q for alias in self._result_graph_aliases(item)):
-                seed_ids.add(rid)
+            aliases = self._result_graph_aliases(item)
+            title = _compact(item.get("title") or "")
+            if q and (
+                q in aliases
+                or title == q
+                or (len(q) >= 3 and title.startswith(q))
+            ):
+                strong_seed_ids.add(rid)
+
         for node_id, node in nodes.items():
-            hay = _compact(" ".join([
-                str(node.get("id") or ""),
-                str(node.get("label") or ""),
-                str(node.get("period") or ""),
-                str(node.get("role") or ""),
-            ]))
-            if q and q in hay:
-                seed_ids.add(node_id)
+            label = _compact(node.get("label") or "")
+            period = _compact(node.get("period") or "")
+            node_type = str(node.get("node_type") or "")
+            strong = False
+            if q:
+                if _compact(node.get("id") or "") == q or period == q or label == q:
+                    strong = True
+                elif node_type in {"life_event", "era", "rune", "work"} and len(q) >= 2:
+                    strong = label.startswith(q) or (len(q) >= 3 and q in label)
+            if strong:
+                strong_seed_ids.add(node_id)
+
+        if strong_seed_ids:
+            seed_ids.update(strong_seed_ids)
+        else:
+            # Broad semantic/concept queries may not have a canonical exact hit.
+            # In that case, fall back to retrieval results as seeds.
+            seed_ids.update(result_by_id.keys())
+
+        # Preserve direct query aliases even in broad mode.
+        for rid, item in result_by_id.items():
+            if q and any(q == alias for alias in self._result_graph_aliases(item)):
+                seed_ids.add(rid)
 
         adjacency: dict[str, list[dict[str, Any]]] = {}
         for edge in edges:
