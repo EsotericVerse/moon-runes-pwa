@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://loc.lo3rwang.cc/sitemap.xml

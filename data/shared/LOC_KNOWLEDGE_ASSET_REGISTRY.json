@@ -14,6 +14,52 @@
   ],
   "assets": [
     {
+      "asset_id": "KA-PERSON-LO3RWANG-001",
+      "title": "王政德（Lucas Oscar Wang / lo3rwang）",
+      "path": "docs/LO3RWANG_PROFILE.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC6",
+        "LOC8"
+      ],
+      "role": "official_public_identity_profile",
+      "status": "current",
+      "authority_level": "official_self_profile",
+      "searchable": true,
+      "index_priority": "highest",
+      "version": "2026-09-06",
+      "updated_at": "2026-09-06",
+      "keywords": [
+        "lo3rwang",
+        "王政德",
+        "Lucas Oscar Wang",
+        "LOC",
+        "月典",
+        "Luna Codex",
+        "Language Systems Governance Architect",
+        "Wordsmith"
+      ],
+      "public_path": "lo3rwang.html",
+      "public_summary": "lo3rwang 是王政德（Lucas Oscar Wang）的公開識別名稱，主要身份為 LOC／月典創作者與系統設計者、Language Systems Governance Architect 與 Wordsmith。",
+      "presentation": "public_article",
+      "exposure_policy": "public_full_text",
+      "intent_aliases": [
+        "lo3rwang",
+        "lo3rwang 是誰",
+        "王政德",
+        "王政德是誰",
+        "Lucas Oscar Wang",
+        "Lucas Oscar Wang 是誰"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Identity-intent queries should prefer this official profile over generic corpus matches."
+    },
+    {
       "asset_id": "KA-LOC-OVERVIEW-001",
       "title": "LOC／月典：語言系統框架介紹",
       "path": "docs/LOC_OVERVIEW.md",
