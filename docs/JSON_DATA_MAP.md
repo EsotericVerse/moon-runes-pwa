@@ -168,3 +168,15 @@ original evidence
 ~~~
 
 下游分析可以建立新版本與 relation，但不得反向覆寫原始 evidence 或其他 LOC 的 authoritative record。
+
+### Governance Trend Registry
+
+`data/shared/LOC_GOVERNANCE_TREND_REGISTRY.json` 將治理語言的演變轉成可檢索結構。
+
+分工：
+
+- LOC6：解讀治理意義。
+- LOC7：管理欄位、關係與 retrieval。
+- LOC8：管理 ERA／時間與 trend projection。
+
+目前主要 tracks：Boundary、Freedom、History/Versioning、Self-Governance。其輸出只描述 change / continuity / divergence，不自動判定進步或退步。
