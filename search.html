@@ -255,7 +255,8 @@
       const text=r.summary||'';
       const preview=text.length>220?text.slice(0,220)+'…':text;
       const canExpand=text.length>220;
-      return `<article class="card"><div class="meta"><span class="pill">LOC6 · Article</span><span class="pill">${esc(source)}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3><p class="summary">${esc(preview)}</p>${canExpand?`<details><summary>展開原文</summary><p class="summary">${esc(text)}</p></details>`:''}${terms.length?`<p class="summary"><strong>語意標籤：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
+      const chars=Number(p.char_count||text.length||0);
+      return `<article class="card"><div class="meta"><span class="pill">LOC6 · Article</span><span class="pill">${esc(source)}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}${chars?`<span class="pill">${chars} 字</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3><p class="summary">${esc(preview)}</p>${canExpand?`<details><summary>展開原文</summary><p class="summary">${esc(text)}</p></details>`:''}${terms.length?`<p class="summary"><strong>關鍵字／命中：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
     }
     function relationshipCard(r){
       const p=r.payload||{},src=p.source||{},targets=p.targets||[],kw=p.keywords||[],loc6=p.loc6_interpretation||{};
