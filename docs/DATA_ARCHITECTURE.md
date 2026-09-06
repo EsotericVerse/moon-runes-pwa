@@ -37,6 +37,34 @@ data/json/core/
 
 The filename `runes64.json` follows the historical mother-data naming convention. It currently contains the 66 drawable rune records used by the runtime (1–64 + 65 玄 + 66 命); rune 0 德 remains a non-drawable reference and is governed separately.
 
+## 2.1 Stable projection eligibility
+
+Not every JSON file belongs in `core/`, and not every JSON file should be treated as fixed.
+
+A dataset should enter `data/json/core/` only when most of these conditions are true:
+
+- it is relatively large or costly to duplicate,
+- its upstream authority is explicit,
+- its schema and semantic role are already mature,
+- multiple runtime consumers need a stable representation,
+- downstream code should read it but should not independently rewrite it,
+- changes are expected to originate from a governed upstream source.
+
+Typical examples are rune lookup, expanded rune interpretation, Lots projection, and stable combination grammar.
+
+By contrast, small and actively governed records must remain mutable and versioned in `registries/`, including:
+
+- ERA registry
+- Graph schema
+- Rights / privacy policy
+- Governance registry
+- KM asset registry
+- relationship / evidence registries
+
+So the governing rule is:
+
+> **Large, mature, stable data may become a maintained projection; governance metadata remains actively editable.**
+
 ## 3. Do not duplicate core rune data
 
 A consumer that only needs rune identity must load `runes64.json`.

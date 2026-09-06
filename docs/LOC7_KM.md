@@ -502,6 +502,17 @@ supersede / tombstone
 
 這些要求屬 LOC7 結構責任；價值與治理語義仍由 LOC6 管理，時間與人生版本則由 LOC8 管理。
 
+## 20.1 JSON lifecycle classification
+
+LOC7 不以「JSON 副檔名」判斷資料是否固定，而以 authority、size、maturity、mutability 與 runtime responsibility 判斷。
+
+- 大型、成熟、穩定、可由明確上游重建的 runtime data，可維護為 `data/json/core/` projection。
+- 小型且需要持續治理的 Registry / Policy / Schema / ERA / Evidence 資料，維持在 `data/json/registries/`，允許 version / review / update。
+- Search / Generated / Experimental 皆為衍生層，不得反向取代 Canon / authority。
+
+此分類規則可避免「為了集中 JSON 而把所有資料誤凍結」。
+
+
 ## 21. Governance Knowledge Sources
 
 治理層的 KM source-of-truth 分工：
