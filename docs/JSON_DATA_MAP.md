@@ -9,7 +9,7 @@
 
 ### A. Shared registries — 結構化治理層
 
-路徑：`data/shared/*.json`
+路徑：`data/json/shared/*.json`
 
 用途：跨 LOC 共用的 schema、registry、分類、媒體／ERA／KM 對應與 Unified Search metadata。
 
@@ -31,7 +31,7 @@
 
 ### B. FAQ source view — 維護型問答資料
 
-路徑：`card_api/data/LOC_FAQ_v0.4.json`
+路徑：`data/json/runtime/card_api/LOC_FAQ_v0.4.json`
 
 - 現行：v0.4，80 題。
 - 角色：KM 的 FAQ 問答 View。
@@ -40,7 +40,7 @@
 
 ### C. RAG retrieval derivative — 檢索衍生資料
 
-路徑：`card_api/data/LOC_FAQ_RAG_v0.4.json`
+路徑：`data/json/runtime/card_api/LOC_FAQ_RAG_v0.4.json`
 
 - 來源：`LOC_FAQ_v0.4.json`
 - 角色：原子化 retrieval chunks。
@@ -52,10 +52,10 @@
 
 例如：
 
-- `card_api/new_runes.json`
-- `card_api/runes_all_data.json`
-- `card_api/three_card_combinations.json`
-- `data/shared/lots.json`
+- `data/json/runtime/card_api/new_runes.json`
+- `data/json/runtime/card_api/runes_all_data.json`
+- `data/json/runtime/card_api/three_card_combinations.json`
+- `data/json/shared/lots.json`
 
 此類資料須依符文 Canon 與 `LunaRune64.xlsx` 的治理鏈判定。對符文核心定義而言，`LunaRune64.xlsx` 仍為最高優先母資料；runtime JSON 不得反向覆寫。
 
@@ -63,15 +63,15 @@
 
 例如：
 
-- `card_api/data/LOC3_LYRICS_SEARCH_v0.1.json`
+- `data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.json`
 - legacy `LOC3_MEDIA_LINKS_v0.1.json`
-- shared `data/shared/LOC_MEDIA_REGISTRY.json`
+- shared `data/json/shared/LOC_MEDIA_REGISTRY.json`
 
 媒體 canonical ownership 屬 LOC5；LOC3 可引用 media linkage。現行程式應優先 shared media registry，legacy overlay 僅作 compatibility fallback。
 
 ### F. LOC2 scenario / event corpus
 
-路徑：`data/shared/LOC2_EVENT_REGISTRY.json`
+路徑：`data/json/shared/LOC2_EVENT_REGISTRY.json`
 
 - 來源：`loc2.html` 現行 Alpha Event 32。
 - 角色：把 LOC2 Event 作為真實生活狀況的結構化情境語料，而非只當作遊戲效果。
@@ -82,7 +82,7 @@
 
 ### G. LOC6 dual-rune relation registry
 
-路徑：`data/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json`
+路徑：`data/json/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json`
 
 - 角色：集中保存兩個符文之間的**中性語意關係**與來源案例。
 - pair key 為無方向鍵；A＋B 與 B＋A 使用同一筆底層關係。
@@ -93,7 +93,7 @@
 
 ### H. LOC6 rune interpretation evidence
 
-路徑：`data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json`
+路徑：`data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json`
 
 - 來源：七篇《月語者》原始章節大綱。
 - 規模：182 個章節槽位，其中 180 筆有明確三符文＋方位紀錄。
@@ -171,7 +171,7 @@ original evidence
 
 ### Governance Trend Registry
 
-`data/shared/LOC_GOVERNANCE_TREND_REGISTRY.json` 將治理語言的演變轉成可檢索結構。
+`data/json/shared/LOC_GOVERNANCE_TREND_REGISTRY.json` 將治理語言的演變轉成可檢索結構。
 
 分工：
 
