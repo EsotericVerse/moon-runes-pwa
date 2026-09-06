@@ -1,6 +1,6 @@
-# LOC Documentation Index
+# LOC Knowledge Management Index
 
-> LOC／月典文件入口。此目錄採 **Markdown-first, structured-data-native** 原則。
+> LOC／月典 Knowledge Management（KM）入口。此目錄採 **Markdown-first, structured-data-native** 原則。
 
 ## 文件治理
 
