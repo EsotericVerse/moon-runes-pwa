@@ -155,7 +155,7 @@ Canonical / mother source / original evidence
 
 ## 10. Python Path Contract
 
-正式 Python 程式統一使用 `card_api/paths.py`：
+正式 Python 程式統一使用 `api/paths.py`：
 
 - `core_json(name)`
 - `registry_json(name)`
@@ -187,7 +187,7 @@ Canonical / mother source / original evidence
 7. docs / KM
 8. tests
 
-最後執行 `card_api/scripts/validate_repo_layout.py`，舊路徑引用必須為零。
+最後執行 `api/scripts/validate_repo_layout.py`，舊路徑引用必須為零。
 
 ---
 
