@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -36,6 +37,8 @@ STALE_TOKENS = [
     "engine/runes07.json",
     "engine/runes_all_data.json",
     "engine/runes64_alldata.json",
+    "data/json/shared/",
+    "data/json/runtime/card_api/",
 ]
 
 TEXT_SUFFIXES = {".py", ".js", ".html", ".md", ".json", ".yml", ".yaml", ".xml", ".txt"}
@@ -45,7 +48,12 @@ SKIP_PREFIXES = (
 SKIP_FILES = {
     "docs/REPOSITORY_GOVERNANCE.md",
     "card_api/scripts/validate_repo_layout.py",
+    "engine/README.md",
 }
+
+JSON_PATH_RE = re.compile(
+    r"""(?P<path>/?(?:data|card_api|engine|loc8_api)/[A-Za-z0-9_./-]+\.json)"""
+)
 
 
 def rel(path: Path) -> str:
@@ -77,6 +85,13 @@ def main() -> int:
             if token in content:
                 failures.append(f"stale path token {token!r}: {rp}")
 
+        # Repository-relative JSON references are executable/data contracts.
+        # Verify the referenced file actually exists after every path migration.
+        for match in JSON_PATH_RE.finditer(content):
+            target = match.group("path").lstrip("/")
+            if not (ROOT / target).is_file():
+                failures.append(f"missing JSON target {target!r}: referenced by {rp}")
+
     if failures:
         print("Repository layout validation FAILED")
         for item in failures:
@@ -87,6 +102,7 @@ def main() -> int:
     print("- JSON roles: core / registries / search / generated / archive / experimental")
     print("- no forbidden legacy data paths")
     print("- no stale runtime/document references")
+    print("- every repository-relative JSON reference resolves to an existing file")
     return 0
 
 
