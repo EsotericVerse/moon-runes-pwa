@@ -131,6 +131,12 @@
       "label": "治理片段"
     },
     {
+      "id": "governance_article",
+      "primary_loc": "LOC6",
+      "kind": "knowledge_work",
+      "label": "治理文章"
+    },
+    {
       "id": "dual_rune_relation",
       "primary_loc": "LOC6",
       "kind": "grammar_relation",
