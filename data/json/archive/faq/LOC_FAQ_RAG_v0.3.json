@@ -61,25 +61,25 @@
       "id": "FAQ-002-A",
       "parent_id": "FAQ-002",
       "category": "基本定位",
-      "intent": "月典（Luna Codex／LOC）和月符（Luna Runes）有什麼關係",
-      "question": "月典（Luna Codex／LOC）和月符（Luna Runes）有什麼關係？",
+      "intent": "月典（Luna Codex／LOC）和月符（LunaRunes）有什麼關係",
+      "question": "月典（Luna Codex／LOC）和月符（LunaRunes）有什麼關係？",
       "aliases": [
         "LOC和月符是同一件事嗎？",
         "月典和月符有什麼差別？",
-        "Luna Codex與Luna Runes有什麼差別？",
+        "Luna Codex與LunaRunes有什麼差別？",
         "月符在LOC裡是什麼位置？"
       ],
-      "answer": "月符（Luna Runes）是LOC的原生符文核心；月典（Luna Codex／LOC）則是為了記錄、解析、延伸與關聯月符及其作品而自然長出的語言系統框架。月符是根，月典是由這個根發展出的語言生態。",
+      "answer": "月符（LunaRunes）是LOC的原生符文核心；月典（Luna Codex／LOC）則是為了記錄、解析、延伸與關聯月符及其作品而自然長出的語言系統框架。月符是根，月典是由這個根發展出的語言生態。",
       "keywords": [
         "月典",
         "Luna Codex",
         "LOC",
         "月符",
-        "Luna Runes",
+        "LunaRunes",
         "原生核心",
         "語言生態"
       ],
-      "retrieval_text": "月典（Luna Codex／LOC）和月符（Luna Runes）有什麼關係？ LOC和月符是同一件事嗎？ 月典和月符有什麼差別？ Luna Codex與Luna Runes有什麼差別？ 月符在LOC裡是什麼位置？ 月典 Luna Codex LOC 月符 Luna Runes 原生核心 語言生態 月符（Luna Runes）是LOC的原生符文核心；月典（Luna Codex／LOC）則是為了記錄、解析、延伸與關聯月符及其作品而自然長出的語言系統框架。月符是根，月典是由這個根發展出的語言生態。",
+      "retrieval_text": "月典（Luna Codex／LOC）和月符（LunaRunes）有什麼關係？ LOC和月符是同一件事嗎？ 月典和月符有什麼差別？ Luna Codex與LunaRunes有什麼差別？ 月符在LOC裡是什麼位置？ 月典 Luna Codex LOC 月符 LunaRunes 原生核心 語言生態 月符（LunaRunes）是LOC的原生符文核心；月典（Luna Codex／LOC）則是為了記錄、解析、延伸與關聯月符及其作品而自然長出的語言系統框架。月符是根，月典是由這個根發展出的語言生態。",
       "related_ids": [],
       "source_refs": [
         "master-system:2026-09"
