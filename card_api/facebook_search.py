@@ -35,10 +35,24 @@ class FacebookSearchEngine:
 
     def __init__(self, dataset_path: Path):
         payload = json.loads(dataset_path.read_text(encoding="utf-8"))
-        posts = payload.get("posts")
-        if not isinstance(posts, list):
-            raise ValueError("Facebook dataset must contain a posts array")
-        self.dataset = payload.get("dataset", {})
+        if isinstance(payload, dict) and isinstance(payload.get("shards"), list):
+            posts = []
+            for shard_name in payload["shards"]:
+                shard_path = dataset_path.parent / str(shard_name)
+                shard = json.loads(shard_path.read_text(encoding="utf-8"))
+                if not isinstance(shard, list):
+                    raise ValueError(f"Facebook shard must be a list: {shard_name}")
+                posts.extend(shard)
+            self.dataset = {
+                "schema_version": payload.get("schema_version"),
+                "records": payload.get("records"),
+                "source": payload.get("source"),
+            }
+        else:
+            posts = payload.get("posts") if isinstance(payload, dict) else None
+            if not isinstance(posts, list):
+                raise ValueError("Facebook dataset must contain a posts array or shard manifest")
+            self.dataset = payload.get("dataset", {})
         self.posts = posts
         self.concepts = self.dataset.get("concept_bridge", {})
         self._features = [_features(str(p.get("retrieval_text", ""))) for p in posts]
