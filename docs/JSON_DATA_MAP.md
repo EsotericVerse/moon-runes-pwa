@@ -129,7 +129,7 @@ Generated output 應有 upstream provenance。可以重建的資料，不應因�
 以下是 configuration，不屬資料層：
 
 - root `manifest.json`：PWA configuration
-- `loc8_api/appsscript.json`：Apps Script configuration
+- `integrations/google_apps_script/loc8/appsscript.json`：Apps Script configuration
 
 因此規則是「集中 data JSON」，不是無差別搬移所有 `.json`。
 
