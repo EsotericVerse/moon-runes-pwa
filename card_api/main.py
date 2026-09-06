@@ -537,6 +537,13 @@ async def unified_search_facets():
             for era in eras
         ],
         "loc3": loc3_facets,
+        "corpus": {
+            "loc3_searchable_works": len(get_loc3_searcher().works) if LOC3_SEARCHER is not None else 0,
+            "loc6_threads_total_main_posts": 4578,
+            "loc6_threads_total_replies": 2430,
+            "loc6_threads_indexed_posts": len(searcher._loc6_article_documents()),
+            "loc6_threads_full_index_ready": bool((getattr(searcher, "loc6_thread_full", {}) or {}).get("documents")),
+        },
         "timestamp": datetime.now().isoformat(),
     }
 
