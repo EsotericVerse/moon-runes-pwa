@@ -194,3 +194,32 @@ Any data-path migration is incomplete until code, HTML, Service Worker, workflow
 ---
 
 **Data governance principle:** a file should have one clear role, one authority chain and one reason to exist.
+
+
+## 9. Local-first corpus analysis
+
+LOC 的資料入口不得要求使用者先自行準備外部 LLM／Embedding API Key。
+
+最小資料流程固定為：
+
+```text
+raw corpus
+→ local text cleaning
+→ keyword extraction
+→ rule-based classification
+→ date/source index
+→ keyword library
+→ period statistics / trajectories
+→ Search / Graph / Trend / RAG
+```
+
+現行 API：
+
+- `POST /analyze/text`：單篇文字的基礎關鍵字與規則式分類。
+- `POST /analyze/corpus`：批次 corpus 的 keyword library、時間分桶與 trajectory 產生。
+
+實作：`card_api/corpus_analysis.py`。
+
+以上屬於 LOC 必須提供的 baseline capability，且 `external_api_required = false`。LLM 摘要、embedding、cluster naming、高階分類等屬 optional enrichment；不得成為第一次匯入與建立趨勢的必要條件。
+
+完整規格見 [LOC_SIMPLE_TEXT_ANALYSIS_API.md](./LOC_SIMPLE_TEXT_ANALYSIS_API.md)。
