@@ -81,6 +81,9 @@ class UnifiedSearchEngine:
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
         self.lots = self._load_json("lots.json")
+        self.loc8_relation_schema = self._load_json("LOC8_RELATION_SCHEMA.json")
+        self.loc8_events = self._load_json("LOC8_EVENT_SNAPSHOT.json")
+        self.loc8_daily_runes = self._load_json("LOC8_DAILY_RUNE_SNAPSHOT.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
         path = self.shared_root / name
@@ -1108,6 +1111,29 @@ class UnifiedSearchEngine:
             loc = f"LOC{n}"
             add_node(loc, loc, "loc_domain", loc)
 
+        # Canonical rune nodes provide a stable LOC1 anchor for LOC8 daily-rune
+        # observations and other cross-LOC references.
+        for index, rune in enumerate(self.runes, start=1):
+            number = rune.get("編號") or index
+            name = rune.get("名稱") or rune.get("符文名稱") or rune.get("name") or f"Rune {number}"
+            rune_id = f"RUNE-{number}"
+            add_node(
+                rune_id,
+                f"{number} · {name}",
+                "rune",
+                "LOC1",
+                rune_number=number,
+                rune_name=name,
+            )
+            add_edge(
+                f"EDGE-{rune_id}-OWNED-LOC1",
+                rune_id,
+                "LOC1",
+                "owned_by_loc",
+                "authority_registry",
+                f"{rune_id} is governed by LOC1.",
+            )
+
         # ERA is the governed temporal backbone.
         eras = sorted(self.eras.get("eras", []), key=lambda x: float(x.get("order") or 0))
         for era in eras:
@@ -1138,6 +1164,115 @@ class UnifiedSearchEngine:
                 "deterministic_structural_evidence",
                 f"{left.get('period')} precedes {right.get('period')} on the governed ERA axis.",
             )
+
+        # LOC8 event snapshot is an explicitly non-authoritative public fallback,
+        # so it may participate in retrieval/provenance without replacing the
+        # live Google Sheet. Only records already committed to the repository
+        # are exposed through the public Search graph.
+        era_by_period = {
+            str(era.get("period") or ""): str(era.get("era_id") or "")
+            for era in eras
+            if era.get("period") and era.get("era_id")
+        }
+        era_by_label = {
+            _compact(era.get("display_label") or era.get("name") or ""): str(era.get("era_id") or "")
+            for era in eras
+            if era.get("era_id")
+        }
+
+        for event in self.loc8_events.get("events", []):
+            eid = event.get("id")
+            if not eid:
+                continue
+            add_node(
+                eid,
+                event.get("title") or eid,
+                "life_event",
+                "LOC8",
+                date=event.get("date"),
+                event_type=event.get("event_type"),
+                object_type=event.get("object_type"),
+                object_id=event.get("object_id"),
+                confidence=event.get("confidence"),
+                snapshot_role=self.loc8_events.get("role"),
+            )
+            add_edge(
+                f"EDGE-{eid}-OWNED-LOC8",
+                eid,
+                "LOC8",
+                "owned_by_loc",
+                "loc8_event_snapshot",
+                "LOC8 event snapshot record.",
+                event.get("confidence") or "recorded",
+                source_ref=event.get("source"),
+            )
+            event_era = str(event.get("era_id") or "").strip()
+            if not event_era:
+                raw_era = str(event.get("era") or "").strip()
+                period_match = re.search(r"\b(P\d+(?:\.\d+)?)\b", raw_era, re.I)
+                if period_match:
+                    event_era = era_by_period.get(period_match.group(1).upper(), "")
+                if not event_era:
+                    event_era = era_by_label.get(_compact(raw_era), "")
+            if event_era:
+                add_edge(
+                    f"EDGE-{eid}-ERA-{event_era}",
+                    eid,
+                    event_era,
+                    "belongs_to_era",
+                    "loc8_event_snapshot",
+                    f"{eid} is recorded in {event_era}.",
+                    event.get("confidence") or "recorded",
+                )
+
+        # Daily Rune is a LOC8 observation of a LOC1 rune in time. This is the
+        # smallest concrete cross-LOC temporal bridge in the current system.
+        for draw in self.loc8_daily_runes.get("daily_draws", []):
+            did = draw.get("id")
+            if not did:
+                continue
+            add_node(
+                did,
+                f"{draw.get('date') or ''} · {draw.get('rune') or ''}{draw.get('direction') or ''}",
+                "daily_rune_draw",
+                "LOC8",
+                date=draw.get("date"),
+                draw_kind=draw.get("draw_kind"),
+                confidence=draw.get("confidence"),
+                snapshot_role=self.loc8_daily_runes.get("role"),
+            )
+            add_edge(
+                f"EDGE-{did}-OWNED-LOC8",
+                did,
+                "LOC8",
+                "owned_by_loc",
+                "loc8_daily_rune_snapshot",
+                "LOC8 daily-rune observation.",
+                draw.get("confidence") or "recorded",
+                source_ref=draw.get("source"),
+            )
+            rune_number = str(draw.get("rune_id") or "").strip()
+            if rune_number:
+                add_edge(
+                    f"EDGE-{did}-RUNE-{rune_number}",
+                    did,
+                    f"RUNE-{rune_number}",
+                    "references",
+                    "loc8_daily_rune_snapshot",
+                    f"{did} records a draw of rune {draw.get('rune') or rune_number}.",
+                    draw.get("confidence") or "recorded",
+                )
+            draw_era = str(draw.get("era_id") or "").strip()
+            if draw_era:
+                add_edge(
+                    f"EDGE-{did}-ERA-{draw_era}",
+                    did,
+                    draw_era,
+                    "belongs_to_era",
+                    "loc8_daily_rune_snapshot",
+                    f"{did} is recorded in {draw_era}.",
+                    draw.get("confidence") or "recorded",
+                )
 
         # Searchable KM assets form governed analysis/document nodes.
         for asset in self.knowledge_assets.get("assets", []):
@@ -1962,6 +2097,65 @@ class UnifiedSearchEngine:
         }
 
 
+    @staticmethod
+    def _provenance_summary(
+        groups: dict[str, list[dict[str, Any]]],
+        graph: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Return one compact provenance envelope for Search consumers."""
+        refs: list[dict[str, Any]] = []
+        seen_refs: set[tuple[str, str, str]] = set()
+        result_sources: list[dict[str, Any]] = []
+
+        for group, items in groups.items():
+            for item in items:
+                rid = str(item.get("result_id") or "")
+                item_refs = item.get("source_refs") or []
+                normalized_refs = []
+                for ref in item_refs:
+                    if isinstance(ref, str):
+                        row = {"source_type": "reference", "source_id": ref, "note": ""}
+                    elif isinstance(ref, dict):
+                        row = {
+                            "source_type": str(ref.get("source_type") or ""),
+                            "source_id": str(ref.get("source_id") or ""),
+                            "note": str(ref.get("note") or ""),
+                        }
+                    else:
+                        continue
+                    key = (row["source_type"], row["source_id"], row["note"])
+                    if key not in seen_refs:
+                        seen_refs.add(key)
+                        refs.append(row)
+                    normalized_refs.append(row)
+
+                if normalized_refs:
+                    result_sources.append({
+                        "result_id": rid,
+                        "group": group,
+                        "primary_loc": item.get("primary_loc"),
+                        "sources": normalized_refs,
+                    })
+
+        graph_evidence: dict[str, int] = {}
+        graph_status: dict[str, int] = {}
+        for edge in graph.get("edges", []) or []:
+            kind = str(edge.get("evidence_kind") or "unspecified")
+            status = str(edge.get("evidence_status") or "unspecified")
+            graph_evidence[kind] = graph_evidence.get(kind, 0) + 1
+            graph_status[status] = graph_status.get(status, 0) + 1
+
+        return {
+            "source_ref_count": len(refs),
+            "source_refs": refs[:100],
+            "result_sources": result_sources[:50],
+            "graph_evidence_kinds": graph_evidence,
+            "graph_evidence_status": graph_status,
+            "graph_policy": "semantic similarity selects seeds; only recorded/deterministic governed edges are traversed",
+            "loc8_live_relation_policy": "private Google Sheet Relation rows are not exposed by public Search; only repository-governed public snapshots/registries may enter the canonical graph",
+        }
+
+
     def search(
         self,
         query: str,
@@ -2018,6 +2212,7 @@ class UnifiedSearchEngine:
         groups = self._apply_common_filters(groups, filters)
         graph = self._graph_enrichment(query, groups)
         synthesis = self._synthesize_search(query, groups, graph)
+        provenance = self._provenance_summary(groups, graph)
         return {
             "system_id": "lo3rwang",
             "query": query,
@@ -2026,6 +2221,7 @@ class UnifiedSearchEngine:
             "oracle_mode": oracle_mode,
             "synthesis": synthesis,
             "graph": graph,
+            "provenance": provenance,
             "groups": groups,
             "counts": {key: len(value) for key, value in groups.items()},
             "total_count": sum(len(value) for value in groups.values()),
