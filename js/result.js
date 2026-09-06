@@ -204,17 +204,22 @@ function cardHtml(card, label, realPhase, showLots = false) {
           ${directionText}
         </div>
 
-        <div class="rune-result-section group">
-          <strong>${card.rune.所屬分組}組</strong>
-          ${groupText}
-        </div>
+        <details class="card-details">
+          <summary>查看符文詳細資料</summary>
+          <div class="card-details-body">
+            <div class="rune-result-section group">
+              <strong>${card.rune.所屬分組}組</strong>
+              ${groupText}
+            </div>
 
-        <div class="rune-result-section reverse">
-          <strong>另一面／反向提醒</strong>
-          ${reverseText}
-        </div>
+            <div class="rune-result-section reverse">
+              <strong>另一面／反向提醒</strong>
+              ${reverseText}
+            </div>
 
-        ${showLots ? getLotsHtml(card) : ""}
+            ${showLots ? getLotsHtml(card) : ""}
+          </div>
+        </details>
       </div>
     </article>
   `;
@@ -227,37 +232,53 @@ function buildSingleReading(card, realPhase, daily = false) {
   if (daily) {
     if (!info) {
       return `
-        <h2>每日抽牌</h2>
-        <p>目前無法載入今日月相對應資料。</p>
+        <div class="reading-lead">
+          <strong>今日提示</strong>
+          目前無法載入今日月相對應資料。
+        </div>
       `;
     }
 
     return `
-      <h2>每日抽牌</h2>
-      <p><strong>狀況形容：</strong><br>${info.狀況形容}</p>
-      <p><strong>狀況表達：</strong><br>${info.狀況表達}</p>
-      <p><strong>每日占卜提醒：</strong><br>${info.每日占卜提醒}</p>
-      <p><strong>每日占卜引導：</strong><br>${info.每日占卜引導}</p>
-      <p><strong>每日占卜祝福：</strong><br>${info.每日占卜祝福}</p>
+      <div class="reading-lead">
+        <strong>今日核心</strong>
+        ${info.每日占卜提醒 || info.狀況表達 || info.狀況形容}
+      </div>
+      <div class="advice-grid">
+        <div class="advice-item"><strong>狀況</strong><span>${info.狀況形容}</span></div>
+        <div class="advice-item"><strong>表達</strong><span>${info.狀況表達}</span></div>
+        <div class="advice-item"><strong>引導</strong><span>${info.每日占卜引導}</span></div>
+        <div class="advice-item"><strong>祝福</strong><span>${info.每日占卜祝福}</span></div>
+      </div>
     `;
   }
 
   return `
-    <h2>單卡占卜</h2>
-    <p><strong>歷史：</strong>${card.rune.符文變化歷史 || "—"}</p>
-    <p><strong>故事：</strong>${card.rune.神話故事 || "—"}</p>
-    <p><strong>靈魂咒語：</strong>${card.rune.靈魂咒語 || "—"}</p>
-    <p><strong>分組說明：</strong>${card.rune.分組說明 || "—"}</p>
-    <p><strong>靈魂課題：</strong>${card.rune.靈魂課題 || "—"}</p>
-    <p><strong>實踐挑戰：</strong>${card.rune.實踐挑戰 || "—"}</p>
-    <p><strong>占卜結論：</strong>${card.rune.符文名稱}・${card.direction}：${directionText}</p>
+    <div class="reading-lead">
+      <strong>占卜結論｜${card.rune.符文名稱}・${card.direction}</strong>
+      ${directionText}
+    </div>
+
     ${info ? `
-      <p><strong>愛情建議：</strong>${info.愛情建議}</p>
-      <p><strong>事業建議：</strong>${info.事業建議}</p>
-      <p><strong>心理建議：</strong>${info.心理建議}</p>
-      <p><strong>健康建議：</strong>${info.健康建議}</p>
-      <p><strong>生活建議：</strong>${info.生活建議}</p>
+      <div class="advice-grid">
+        <div class="advice-item"><strong>愛情</strong><span>${info.愛情建議}</span></div>
+        <div class="advice-item"><strong>事業</strong><span>${info.事業建議}</span></div>
+        <div class="advice-item"><strong>心理</strong><span>${info.心理建議}</span></div>
+        <div class="advice-item"><strong>健康</strong><span>${info.健康建議}</span></div>
+        <div class="advice-item"><strong>生活</strong><span>${info.生活建議}</span></div>
+      </div>
     ` : ""}
+
+    <details class="reading-details">
+      <summary>查看符文背景資料</summary>
+      <div class="reading-details-body">
+        <p><strong>歷史：</strong>${card.rune.符文變化歷史 || "—"}</p>
+        <p><strong>故事：</strong>${card.rune.神話故事 || "—"}</p>
+        <p><strong>靈魂咒語：</strong>${card.rune.靈魂咒語 || "—"}</p>
+        <p><strong>靈魂課題：</strong>${card.rune.靈魂課題 || "—"}</p>
+        <p><strong>實踐挑戰：</strong>${card.rune.實踐挑戰 || "—"}</p>
+      </div>
+    </details>
   `;
 }
 
@@ -306,7 +327,7 @@ function buildFiveCardReading(cards, realPhase) {
   const internalCore = toNarrativeCore(internal);
 
   return `
-    <h2>五卡牌面解讀</h2>
+    
     <p><strong>時間主線：</strong>
       過去的「${past.rune.符文名稱}」${past.direction}指出，曾有「${pastCore}」的背景；
       到了現在，「${present.rune.符文名稱}」${present.direction}把重點帶到「${presentCore}」。
@@ -348,7 +369,7 @@ function buildMultiReading(cards, labels, realPhase) {
   }
 
   return `
-    <h2>牌面解讀</h2>
+    
     <p><strong>完整現況：</strong>${names}。目前真實月相為${realPhase}。</p>
     <p><strong>閱讀方式：</strong>${structure}</p>
     ${details}
