@@ -107,15 +107,15 @@
       "id": "FAQ-002-A",
       "parent_id": "FAQ-002",
       "category": "基本定位",
-      "intent": "LOC和Luna Codex（月之符文）有什麼關係",
-      "question": "LOC和Luna Codex（月之符文）有什麼關係？",
+      "intent": "LOC和LunaRunes（月之符文）有什麼關係",
+      "question": "LOC和LunaRunes（月之符文）有什麼關係？",
       "aliases": [
         "LOC就是月之符文嗎？",
         "月典和月之符文一樣嗎？",
-        "Luna Codex與LOC有什麼差別？",
+        "LunaRunes與LOC有什麼差別？",
         "LOC從哪套系統延伸而來？"
       ],
-      "answer": "Luna Codex／月之符文是LOC的核心符文語彙系統；LOC／月典則是承接這套語彙並向不同媒介與功能展開的整體語言框架。兩者相關，但不應把整個LOC等同於抽牌工具。",
+      "answer": "LunaRunes／月之符文是LOC的核心符文語彙系統；LOC／月典則是承接這套語彙並向不同媒介與功能展開的整體語言框架。兩者相關，但不應把整個LOC等同於抽牌工具。",
       "keywords": [
         "LOC",
         "月典",
@@ -123,7 +123,7 @@
         "月之符文",
         "核心語彙"
       ],
-      "retrieval_text": "LOC和Luna Codex（月之符文）有什麼關係？ LOC就是月之符文嗎？ 月典和月之符文一樣嗎？ Luna Codex與LOC有什麼差別？ LOC從哪套系統延伸而來？ LOC 月典 Luna Codex 月之符文 核心語彙 Luna Codex／月之符文是LOC的核心符文語彙系統；LOC／月典則是承接這套語彙並向不同媒介與功能展開的整體語言框架。兩者相關，但不應把整個LOC等同於抽牌工具。",
+      "retrieval_text": "LOC和LunaRunes（月之符文）有什麼關係？ LOC就是月之符文嗎？ 月典和月之符文一樣嗎？ LunaRunes與LOC有什麼差別？ LOC從哪套系統延伸而來？ LOC 月典 Luna Codex 月之符文 核心語彙 LunaRunes／月之符文是LOC的核心符文語彙系統；LOC／月典則是承接這套語彙並向不同媒介與功能展開的整體語言框架。兩者相關，但不應把整個LOC等同於抽牌工具。",
       "related_ids": [
         "FAQ-002-B"
       ],
@@ -143,7 +143,7 @@
         "月之符文是不是LOC",
         "Luna Codex等於LOC嗎"
       ],
-      "answer": "不是。Luna Codex／月之符文是核心符文語彙系統；LOC／月典是承接它並包含LOC1–8的整體框架。",
+      "answer": "不是。LunaRunes／月之符文是核心符文語彙系統；LOC／月典是承接它並包含LOC1–8的整體框架。",
       "keywords": [
         "LOC",
         "月典",
@@ -154,7 +154,7 @@
         "Codex",
         "是不是等於整個"
       ],
-      "retrieval_text": "Luna Codex是不是等於整個LOC？ 月之符文是不是LOC Luna Codex等於LOC嗎 LOC 月典 Luna Codex 月之符文 核心語彙 Luna Codex 是不是等於整個 不是。Luna Codex／月之符文是核心符文語彙系統；LOC／月典是承接它並包含LOC1–8的整體框架。",
+      "retrieval_text": "Luna Codex是不是等於整個LOC？ 月之符文是不是LOC Luna Codex等於LOC嗎 LOC 月典 Luna Codex 月之符文 核心語彙 Luna Codex 是不是等於整個 不是。LunaRunes／月之符文是核心符文語彙系統；LOC／月典是承接它並包含LOC1–8的整體框架。",
       "related_ids": [
         "FAQ-002-A"
       ],
