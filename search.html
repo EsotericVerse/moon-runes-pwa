@@ -374,6 +374,7 @@
             <div class="meta"><span class="pill">LOC7 · Analysis</span><span class="pill">自動彙整</span>${locs}</div>
             <h3>${esc(synthesis.title||'綜合結果')}</h3>
             <p class="summary">${esc(synthesis.summary||'')}</p>
+            ${synthesis.graph_summary?`<p class="summary"><strong>Graph 彙整：</strong>${esc(synthesis.graph_summary)}</p>`:''}
             ${ev?`<p class="summary"><strong>證據分布：</strong></p><div class="meta">${ev}</div>`:''}
             ${periods?`<p class="summary"><strong>時期：</strong></p><div class="meta">${periods}</div>`:''}
             ${graphHtml}
