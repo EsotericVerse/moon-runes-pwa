@@ -116,4 +116,4 @@ Timeline 是時間投影；Trajectory 讀取 Relation edge；未來 Graph View �
 
 ### 部署注意
 
-GitHub 中的 `loc8_api/Code.gs` 更新後，既有 Apps Script Web App 不會自動變更。必須將新版 Code.gs 同步到 Apps Script 並建立/更新 deployment，`life.html` 的 Relation CRUD 才會連到 v1.0 API。
+GitHub 中的 `integrations/google_apps_script/loc8/Code.gs` 更新後，既有 Apps Script Web App 不會自動變更。必須將新版 Code.gs 同步到 Apps Script 並建立/更新 deployment，`life.html` 的 Relation CRUD 才會連到 v1.0 API。
