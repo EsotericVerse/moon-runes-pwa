@@ -397,6 +397,17 @@ LOC8 目前額外接入兩個 repository-governed fallback snapshot：
 3. Semantic similarity 只能選 seed，不能自行建立 canonical edge。
 4. Search API 必須回傳 provenance，讓結果可追溯至 source_refs、edge evidence kind 與 evidence status。
 5. Relation 公開化是治理動作，不是單純同步動作。
+### Graph RAG 品質控制
+
+LOC8 的 Event、ERA、Daily Rune 一旦進 Graph，不代表所有 traversal 都是正確的。現行加入固定 regression cases，至少驗證：
+
+- 命名歷史能回到正確 Event 與 ERA。
+- Daily Rune 能形成 LOC8 observation → LOC1 rune → LOC8 ERA 的治理路徑。
+- ERA 查詢不應跳到無證據的時期。
+- 公開 Graph 不依賴 private live Relation。
+- 每次 Graph traversal 都保留 provenance。
+
+品質工作因此從「繼續增加 edge」轉為「控制 edge precision、temporal correctness 與 provenance completeness」。
 ### Analysis 與 Context 的分工
 
 - **Context**：回答「彼此怎麼連」。
