@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "component": "LOC_GLOBAL_NAV",
   "brand": {
     "label": "LOC · 月典",
@@ -8,12 +8,6 @@
   },
   "items": [
     {
-      "id": "home",
-      "label": "首頁",
-      "href": "index.html",
-      "description": "回到 LOC 首頁"
-    },
-    {
       "id": "runes",
       "label": "月符資料",
       "href": "list.html",
@@ -21,9 +15,9 @@
     },
     {
       "id": "game",
-      "label": "LOC2 遊戲",
+      "label": "月符沙盒遊戲",
       "href": "loc2.html",
-      "description": "Semantic Playground"
+      "description": "LOC2 · Semantic Playground"
     },
     {
       "id": "search",
@@ -33,9 +27,9 @@
     },
     {
       "id": "life",
-      "label": "脈絡分析",
+      "label": "LOC8 · Life",
       "href": "life.html",
-      "description": "LOC8 · Rune → ERA → Event"
+      "description": "Context · Relation · Trend"
     }
   ]
 }
