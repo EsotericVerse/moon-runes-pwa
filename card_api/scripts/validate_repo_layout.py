@@ -13,6 +13,7 @@ FORBIDDEN_PATHS = [
     ROOT / "temp.json",
     ROOT / "mp3" / "my.mp3",
     ROOT / "LOC_LOC_LunaCodex_OW3gs.md",
+    ROOT / "loc8_api",
 ]
 
 REQUIRED_PATHS = [
@@ -24,6 +25,8 @@ REQUIRED_PATHS = [
     ROOT / "data" / "json" / "search" / "faq" / "LOC_FAQ_RAG_v0.4.json",
     ROOT / "data" / "json" / "search" / "loc3" / "LOC3_LYRICS_SEARCH_v0.1.json",
     ROOT / "card_api" / "paths.py",
+    ROOT / "integrations" / "google_apps_script" / "loc8" / "Code.gs",
+    ROOT / "integrations" / "google_apps_script" / "loc8" / "appsscript.json",
 ]
 
 STALE_TOKENS = [
@@ -39,6 +42,7 @@ STALE_TOKENS = [
     "engine/runes64_alldata.json",
     "data/json/shared/",
     "data/json/runtime/card_api/",
+    "loc8_api/",
 ]
 
 TEXT_SUFFIXES = {".py", ".js", ".html", ".md", ".json", ".yml", ".yaml", ".xml", ".txt"}
@@ -52,7 +56,7 @@ SKIP_FILES = {
 }
 
 JSON_PATH_RE = re.compile(
-    r"""(?P<path>/?(?:data|card_api|engine|loc8_api)/[A-Za-z0-9_./-]+\.json(?:\.gz)?)"""
+    r"""(?P<path>/?(?:data|card_api|engine|integrations)/[A-Za-z0-9_./-]+\.json(?:\.gz)?)"""
 )
 
 
