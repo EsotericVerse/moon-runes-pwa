@@ -270,6 +270,25 @@ Canonical Graph RAG 已進入現行 Unified Search：Search retrieval 先選 see
 
 現階段仍保留明確邊界：語意相似度只能選 seed，不能自行建立 canonical edge；LOC8 live Google Sheet 的 private Relation rows 不直接進公開 Search。公開 Graph 只接受 repository 中已治理的 registry／snapshot，並由 `provenance` 回傳來源與 edge evidence。後續重點是 Relation publish/governance pipeline、Graph View 與 retrieval evaluation，而不是重新建立 Graph RAG。
 
+## Graph RAG Quality Governance
+
+Graph edge 現行不再只有「存在／不存在」，而有 deterministic governance quality。分數用途是控制 traversal 優先序與最低可走門檻，不代表 AI 對真實世界的主觀信心。
+
+```text
+edge_quality = evidence_weight × status_weight × relation_weight
+traversal_score = parent_path_score × edge_quality × hop_decay^(hop-1)
+```
+
+現行預設：`min_traversal_score=0.25`、`hop_decay=0.88`。權重與 band 的唯一機器可讀 contract 為 `data/shared/LOC_GRAPH_SCHEMA.json` v0.4。
+
+治理原則：
+
+- Authority / explicit registry / deterministic structural evidence 優先。
+- recorded metadata 高於 snapshot；snapshot 高於 transient result metadata。
+- `semantic_inference` 若未經治理，只能保有低權重，不能藉 traversal 自動升格。
+- `owned_by_loc`、`belongs_to_era` 是方向性結構投影，禁止由 LOC／ERA 節點反向散射到所有成員。
+- Named/historical entity query 可收斂 seed；abstract concept query 必須保留跨 LOC evidence breadth。
+
 ## Graph RAG Evaluation
 
 Graph RAG 完成後，品質不以「有回傳 graph」判定，而使用固定 regression cases 檢查 governed reachability。
