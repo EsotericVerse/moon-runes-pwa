@@ -478,6 +478,34 @@
     .graph-edge-type { color:var(--accent); text-align:center; font-size:11px; }
     .graph-edge-meta { margin-top:7px; color:var(--muted); font-size:10px; line-height:1.55; }
     .graph-status { color:var(--muted); font-size:12px; min-height:18px; margin-top:8px; }
+    .graph-pagination {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+      padding-top:10px;
+      border-top:1px solid var(--line);
+    }
+    .graph-pagination[hidden] { display:none!important; }
+    .graph-pagination-info { color:var(--muted); font-size:11px; }
+    .graph-pagination-pages { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .graph-page-btn {
+      min-width:34px;
+      min-height:34px;
+      padding:6px 9px;
+      border:1px solid var(--line);
+      border-radius:9px;
+      background:rgba(169,199,255,.04);
+      color:var(--text);
+      font:inherit;
+      font-size:11px;
+      cursor:pointer;
+    }
+    .graph-page-btn:hover:not(:disabled) { border-color:var(--line-strong); }
+    .graph-page-btn.active { background:var(--accent); color:#07131f; border-color:transparent; }
+    .graph-page-btn:disabled { opacity:.35; cursor:not-allowed; }
     @media(max-width:760px){
       .graph-toolbar { grid-template-columns:1fr; }
       .graph-meta-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -1058,10 +1086,18 @@
               <div class="graph-panel">
                 <h4>Nodes · 點擊後展開</h4>
                 <div class="graph-node-list" id="graphNodeList"><div class="empty">先搜尋一個概念。</div></div>
+                <div class="graph-pagination" id="graphNodePagination" hidden>
+                  <div class="graph-pagination-info" id="graphNodePaginationInfo"></div>
+                  <div class="graph-pagination-pages" id="graphNodePaginationPages"></div>
+                </div>
               </div>
               <div class="graph-panel">
                 <h4>Edges · Evidence / Quality</h4>
                 <div class="graph-edge-list" id="graphEdgeList"><div class="empty">尚無 edge。</div></div>
+                <div class="graph-pagination" id="graphEdgePagination" hidden>
+                  <div class="graph-pagination-info" id="graphEdgePaginationInfo"></div>
+                  <div class="graph-pagination-pages" id="graphEdgePaginationPages"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -3448,12 +3484,70 @@
       }
     }
 
-    function renderPublicGraph(payload, statusText='') {
-      publicGraphPayload = {
-        nodes: Array.isArray(payload?.nodes) ? payload.nodes : [],
-        edges: Array.isArray(payload?.edges) ? payload.edges : []
-      };
-      updateGraphFilters(publicGraphPayload.nodes, publicGraphPayload.edges);
+    const GRAPH_PAGE_SIZE = 40;
+    let graphNodePage = 1;
+    let graphEdgePage = 1;
+
+    function graphPageNumbers(current, totalPages) {
+      const out = [];
+      const start = Math.max(1, Math.min(current - 2, Math.max(1, totalPages - 4)));
+      const end = Math.min(totalPages, Math.max(5, current + 2));
+      for (let i = start; i <= end; i++) out.push(i);
+      return out;
+    }
+
+    function renderGraphPagination(kind, total, page, onPage) {
+      const isNode = kind === 'node';
+      const nav = $(isNode ? '#graphNodePagination' : '#graphEdgePagination');
+      const info = $(isNode ? '#graphNodePaginationInfo' : '#graphEdgePaginationInfo');
+      const pages = $(isNode ? '#graphNodePaginationPages' : '#graphEdgePaginationPages');
+      if (!nav || !info || !pages) return;
+
+      if (total <= GRAPH_PAGE_SIZE) {
+        nav.hidden = true;
+        pages.innerHTML = '';
+        return;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(total / GRAPH_PAGE_SIZE));
+      const safePage = Math.min(Math.max(1, page), totalPages);
+      const from = (safePage - 1) * GRAPH_PAGE_SIZE + 1;
+      const to = Math.min(total, safePage * GRAPH_PAGE_SIZE);
+      info.textContent = `第 ${from}–${to} 筆，共 ${total} 筆 · 第 ${safePage} / ${totalPages} 頁`;
+
+      const nums = graphPageNumbers(safePage, totalPages);
+      let html = `<button class="graph-page-btn" type="button" data-graph-page="${safePage - 1}" ${safePage === 1 ? 'disabled' : ''}>上一頁</button>`;
+      if (nums[0] > 1) {
+        html += '<button class="graph-page-btn" type="button" data-graph-page="1">1</button>';
+        if (nums[0] > 2) html += '<span class="graph-pagination-info">…</span>';
+      }
+      html += nums.map(n => `<button class="graph-page-btn ${n === safePage ? 'active' : ''}" type="button" data-graph-page="${n}" aria-current="${n === safePage ? 'page' : 'false'}">${n}</button>`).join('');
+      if (nums[nums.length - 1] < totalPages) {
+        if (nums[nums.length - 1] < totalPages - 1) html += '<span class="graph-pagination-info">…</span>';
+        html += `<button class="graph-page-btn" type="button" data-graph-page="${totalPages}">${totalPages}</button>`;
+      }
+      html += `<button class="graph-page-btn" type="button" data-graph-page="${safePage + 1}" ${safePage === totalPages ? 'disabled' : ''}>下一頁</button>`;
+
+      pages.innerHTML = html;
+      nav.hidden = false;
+      pages.querySelectorAll('[data-graph-page]').forEach(btn => btn.addEventListener('click', () => {
+        const next = Number(btn.dataset.graphPage || 1);
+        if (next < 1 || next > totalPages || next === safePage) return;
+        onPage(next);
+      }));
+    }
+
+    function renderPublicGraph(payload, statusText='', options={}) {
+      const preservePayload = options.preservePayload === true;
+      if (!preservePayload) {
+        publicGraphPayload = {
+          nodes: Array.isArray(payload?.nodes) ? payload.nodes : [],
+          edges: Array.isArray(payload?.edges) ? payload.edges : []
+        };
+        graphNodePage = 1;
+        graphEdgePage = 1;
+        updateGraphFilters(publicGraphPayload.nodes, publicGraphPayload.edges);
+      }
 
       const nodeFilter = els.graphNodeTypeFilter?.value || '';
       const edgeFilter = els.graphEdgeTypeFilter?.value || '';
@@ -3467,12 +3561,22 @@
         return true;
       });
 
+      const nodeTotalPages = Math.max(1, Math.ceil(visibleNodes.length / GRAPH_PAGE_SIZE));
+      const edgeTotalPages = Math.max(1, Math.ceil(visibleEdges.length / GRAPH_PAGE_SIZE));
+      graphNodePage = Math.min(Math.max(1, graphNodePage), nodeTotalPages);
+      graphEdgePage = Math.min(Math.max(1, graphEdgePage), edgeTotalPages);
+
+      const nodeStart = (graphNodePage - 1) * GRAPH_PAGE_SIZE;
+      const edgeStart = (graphEdgePage - 1) * GRAPH_PAGE_SIZE;
+      const pageNodes = visibleNodes.slice(nodeStart, nodeStart + GRAPH_PAGE_SIZE);
+      const pageEdges = visibleEdges.slice(edgeStart, edgeStart + GRAPH_PAGE_SIZE);
+
       if (els.graphVisibleNodes) els.graphVisibleNodes.textContent = String(visibleNodes.length);
       if (els.graphVisibleEdges) els.graphVisibleEdges.textContent = String(visibleEdges.length);
       if (els.graphStatus && statusText) els.graphStatus.textContent = statusText;
 
       if (els.graphNodeList) {
-        els.graphNodeList.innerHTML = visibleNodes.length ? visibleNodes.map(node => `
+        els.graphNodeList.innerHTML = pageNodes.length ? pageNodes.map(node => `
           <button type="button" class="graph-node-button" data-public-graph-node="${esc(graphNodeId(node))}">
             <small>${esc(graphNodeType(node))}</small>
             <strong>${esc(graphNodeLabel(node))}</strong>
@@ -3482,7 +3586,7 @@
       }
 
       if (els.graphEdgeList) {
-        els.graphEdgeList.innerHTML = visibleEdges.length ? visibleEdges.map(edge => `
+        els.graphEdgeList.innerHTML = pageEdges.length ? pageEdges.map(edge => `
           <article class="graph-edge-card">
             <div class="graph-edge-path">
               <span>${esc(String(edge.source || '—'))}</span>
@@ -3498,6 +3602,18 @@
           </article>
         `).join('') : '<div class="empty">目前篩選沒有 edge。</div>';
       }
+
+      renderGraphPagination('node', visibleNodes.length, graphNodePage, next => {
+        graphNodePage = next;
+        renderPublicGraph(publicGraphPayload, '', { preservePayload:true });
+        els.graphNodeList?.scrollIntoView({ behavior:'smooth', block:'start' });
+      });
+
+      renderGraphPagination('edge', visibleEdges.length, graphEdgePage, next => {
+        graphEdgePage = next;
+        renderPublicGraph(publicGraphPayload, '', { preservePayload:true });
+        els.graphEdgeList?.scrollIntoView({ behavior:'smooth', block:'start' });
+      });
     }
 
     async function loadGraphMetadata() {
@@ -3563,12 +3679,21 @@
       if (!node) return;
       loadGraphNeighborhood(node.dataset.publicGraphNode || '');
     });
-    els.graphNodeTypeFilter?.addEventListener('change', () => renderPublicGraph(publicGraphPayload));
-    els.graphEdgeTypeFilter?.addEventListener('change', () => renderPublicGraph(publicGraphPayload));
+    els.graphNodeTypeFilter?.addEventListener('change', () => {
+      graphNodePage = 1;
+      graphEdgePage = 1;
+      renderPublicGraph(publicGraphPayload, '', { preservePayload:true });
+    });
+    els.graphEdgeTypeFilter?.addEventListener('change', () => {
+      graphEdgePage = 1;
+      renderPublicGraph(publicGraphPayload, '', { preservePayload:true });
+    });
     $('#graphResetFilterBtn')?.addEventListener('click', () => {
       if (els.graphNodeTypeFilter) els.graphNodeTypeFilter.value = '';
       if (els.graphEdgeTypeFilter) els.graphEdgeTypeFilter.value = '';
-      renderPublicGraph(publicGraphPayload);
+      graphNodePage = 1;
+      graphEdgePage = 1;
+      renderPublicGraph(publicGraphPayload, '', { preservePayload:true });
     });
 
     async function testApi() {
