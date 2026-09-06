@@ -61,7 +61,7 @@
     },
     {
       "source_id": "SRC-LOC2-EVENTS",
-      "path": "data/json/shared/LOC2_EVENT_REGISTRY.json",
+      "path": "data/json/registries/LOC2_EVENT_REGISTRY.json",
       "source_role": "scenario evidence / relationship context",
       "import_status": "connected_but_not_fixed_pair_mapping"
     },
