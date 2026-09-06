@@ -9,17 +9,55 @@
   "language_system_id": "lo3rwang",
   "eras": [
     {
+      "era_id": "ERA-P0",
+      "period": "P0",
+      "order": 0,
+      "name": "月符前史",
+      "display_label": "P0｜月符前史",
+      "start_date": "2024-11-18",
+      "end_date": "2025-02-20",
+      "status": "released",
+      "source_event_id": "EV-ERA-P0",
+      "description": "目前可直接由 Threads corpus 驗證的前史區間為 2024-11-18～2025-02-20；它保存 LOC／月符形成前的公開語言基線。更早歷史資料日後可再向前補，不以現有 Threads 起點視為人生文字史的絕對起點。",
+      "state_before": "更早的 Pre-LOC 歷史資料／待補",
+      "state_after": "進入 P0.5 過渡期，月符與後續 LOC 的前置語言逐步靠近。",
+      "source_active_range": {
+        "start": "2024-11-18",
+        "end": "2025-02-20",
+        "source": "Threads / current verified public-language baseline"
+      }
+    },
+    {
+      "era_id": "ERA-P0.5",
+      "period": "P0.5",
+      "order": 0.5,
+      "name": "月符前史過渡期",
+      "display_label": "P0.5｜月符前史過渡期",
+      "start_date": "2025-02-21",
+      "end_date": "2025-05-06",
+      "status": "released",
+      "source_event_id": "EV-ERA-P0.5",
+      "description": "期間：2025-02-21～2025-05-06。介於一般前史與月之符文正式形成之間的過渡段；保留 Suno、Threads 與其他來源的早期創作／語言證據，不把後來的 LOC 定義反向覆寫到當時。",
+      "state_before": "P0 月符前史",
+      "state_after": "P1 月之符文形成期",
+      "source_active_range": {
+        "start": "2025-02-21",
+        "end": "2025-05-06",
+        "source": "Threads + Suno / transitional evidence"
+      }
+    },
+    {
       "era_id": "ERA-P1",
       "period": "P1",
       "order": 1,
       "name": "月之符文形成期",
       "display_label": "P1｜月之符文形成期",
-      "start_date": "2025-05-06",
+      "start_date": "2025-05-07",
       "end_date": "2025-10-15",
       "status": "released",
       "source_event_id": "EV-ERA-P1",
-      "description": "系統時期：2025-05-06～2025-10-15。P1 起點改以月之符文出現為準；Suno 原始活躍範圍 2025-02-21～2025-06-24 保留為 P0／前史來源證據，不再決定 P1 邊界。",
-      "state_before": "P0 月符前史／Pre-LOC",
+      "description": "系統時期：2025-05-07～2025-10-15。P1 以月之符文正式形成後的區間為準；2025-02-21～2025-05-06 保留為 P0.5／前史過渡證據，不再回寫為 P1。",
+      "state_before": "P0.5 月符前史過渡期",
       "state_after": "月之符文形成：月符開始出現，逐步形成符文語意、小說實作與後續 LOC 核心。",
       "source_active_range": {
         "start": "2025-02-21",
@@ -163,7 +201,7 @@
   ],
   "periodization_rule": {
     "label": "連續時期",
-    "rule": "P1 自 2025-05-06（月之符文出現）起算；P1 以前歸入 P0／月符前史。其後每個時期保留既定 start_date；若下一時期已知，end_date 延伸至下一時期 start_date 的前一天，使全系統時間軸連續。Suno 原始活躍範圍另存 source_active_range，不作為全系統時期邊界。",
+    "rule": "P0 保存目前可驗證的月符前史；P0.5 為 2025-02-21～2025-05-06 的過渡段；P1 自 2025-05-07 起。其後每個時期沿用既定 start_date，並以相鄰時期形成連續時間軸。原始來源活躍範圍另存 source_active_range，不反向覆寫歷史紀錄。",
     "scope": "LOC-wide",
     "display_term": "時期"
   }
