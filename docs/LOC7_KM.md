@@ -230,7 +230,7 @@ LOC5 媒體稽核：目前 Suno 500 workbook、`LOC3_MEDIA_LINKS_v0.1.json` 與 
 
 - `data/json/search/faq/LOC_FAQ_v0.4.json`：80 題 FAQ source view。
 - `data/json/search/faq/LOC_FAQ_RAG_v0.4.json`：由 FAQ v0.4 同步衍生的檢索資料。
-- `card_api/main.py`：目前載入 RAG v0.4。
+- `api/main.py`：目前載入 RAG v0.4。
 
 v0.4 對齊 2026-09-06 的 LOC6／LOC7／LOC8 權責、Unified Search 實作、公開「時期」用語與既有功能狀態。FAQ 是 KM 的問答 View；RAG 是 retrieval derivative，兩者都不是 Canon。
 
@@ -294,7 +294,7 @@ traversal_score = parent_path_score × edge_quality × hop_decay^(hop-1)
 Graph RAG 完成後，品質不以「有回傳 graph」判定，而使用固定 regression cases 檢查 governed reachability。
 
 - Evaluation registry：`data/json/registries/LOC_GRAPH_EVAL_CASES.json`
-- Evaluator：`card_api/scripts/evaluate_graph_rag.py`
+- Evaluator：`api/scripts/evaluate_graph_rag.py`
 - 現行指標：expected node / LOC / ERA recall、provenance presence、forbidden-node absence。
 - 評測不比較生成文字；它只驗證 retrieval → seed → canonical traversal → provenance 是否維持治理邊界。
 - private LOC8 live Relation 不得成為公開 evaluation case 的必要依賴。
@@ -302,7 +302,7 @@ Graph RAG 完成後，品質不以「有回傳 graph」判定，而使用固定 
 執行：
 
 ```bash
-cd card_api
+cd api
 python scripts/evaluate_graph_rag.py
 ```
 ## 14. 文件格式
