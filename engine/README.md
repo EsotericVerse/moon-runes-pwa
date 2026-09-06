@@ -1,6 +1,6 @@
 # Experimental Engine
 
-`engine/` contains research scripts only. Production runtime lives in `card_api/`.
+`engine/` contains research scripts only. Production API runtime lives in `api/`; `engine/` remains research-only.
 
 ## Data contract
 
