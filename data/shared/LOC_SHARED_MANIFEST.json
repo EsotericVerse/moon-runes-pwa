@@ -35,6 +35,12 @@
       "purpose": "Authority and consumer rules across LOC1-8."
     },
     {
+      "id": "content_rights_policy",
+      "path": "data/shared/LOC_CONTENT_RIGHTS_POLICY.json",
+      "authority": "LOC8",
+      "purpose": "P0 rights/privacy gates for corpus import, export, public search and publication."
+    },
+    {
       "id": "reference_model",
       "path": "data/shared/LOC_REFERENCE_MODEL.json",
       "authority": "LOC8",
@@ -178,7 +184,8 @@
       "analysis_router": "connected",
       "event_shared_refs": "connected",
       "google_sheet_schema": "loc8-mvp-0.3",
-      "apps_script_code": "updated_in_github_redeploy_required"
+      "apps_script_code": "updated_in_github_redeploy_required",
+      "content_rights_gate": "connected"
     },
     "LOC2": {
       "event_registry": "connected",
@@ -202,7 +209,8 @@
     "analysis_types": "complete",
     "media_registry": "complete",
     "loc8_event_shared_refs": "complete",
-    "note": "Shared foundation is complete enough to begin corpus migration and later interface consolidation. Domain corpora may still be pending without changing the shared schema."
+    "note": "Shared foundation is complete enough to begin corpus migration and later interface consolidation. Domain corpora may still be pending without changing the shared schema.",
+    "content_rights_policy": "complete"
   },
   "integration_stage": {
     "name": "unified-search-v0.1",
