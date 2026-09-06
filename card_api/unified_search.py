@@ -500,7 +500,8 @@ class UnifiedSearchEngine:
                 eras.append({"result_id":era.get("era_id"),"system_id":self.eras.get("language_system_id") or "lo3rwang","primary_loc":"LOC8","related_locs":["LOC3","LOC4","LOC5","LOC6","LOC7"],"content_type":"era","group":"timeline","title":era.get("display_label") or era.get("name"),"summary":era.get("description") or era.get("state_after"),"score":round(score,6),"era_id":era.get("era_id"),"period":era.get("period"),"source_refs":[],"payload":payload})
         return textworks, media_results, knowledge, eras
 
-    def _loc6_article_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+    def _loc6_article_results(self, query: str, top_k: int, wanted: str, filters: dict[str, str] | None = None) -> list[dict[str, Any]]:
+        filters = filters or {}
         if wanted not in {"", "all", "governance_article"}:
             return []
 
@@ -535,6 +536,8 @@ class UnifiedSearchEngine:
 
         # Long-form Threads main posts are article-like primary evidence.
         for doc in self.loc6_threads.get("documents", []):
+            if filters.get("period") and doc.get("era") != filters["period"]:
+                continue
             text = str(doc.get("text") or "")
             if doc.get("source_role") != "main_post" or len(text) < 120:
                 continue
@@ -825,7 +828,7 @@ class UnifiedSearchEngine:
             media = list(media_by_id.values())[:top_k]
             relationships = []
             governance = self._governance_results(query, top_k, effective_wanted)
-            loc6_articles = self._loc6_article_results(query, top_k, effective_wanted)
+            loc6_articles = self._loc6_article_results(query, top_k, effective_wanted, filters)
             runes = self._rune_results(oracle[0]["payload"].get("rune_name", ""), top_k, effective_wanted)
         else:
             faq = self._faq_results(query, top_k, wanted)
@@ -839,7 +842,7 @@ class UnifiedSearchEngine:
             media = list(media_by_id.values())[:top_k]
             relationships = self._relationship_results(query, top_k, wanted)
             governance = self._governance_results(query, top_k, wanted)
-            loc6_articles = self._loc6_article_results(query, top_k, wanted)
+            loc6_articles = self._loc6_article_results(query, top_k, wanted, filters)
             runes = self._rune_results(query, top_k, wanted)
             eras = self._era_results(query, top_k, wanted)
 
