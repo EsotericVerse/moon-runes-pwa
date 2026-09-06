@@ -1,15 +1,25 @@
-import { rune } from "./runes64.js";
-
 const EVENTS=[{"id":"E01","name":"記憶","req":["SL","SL"],"desc":"過去重新浮現。"},{"id":"E02","name":"自我懷疑","req":["SL","OC"],"desc":"你開始質疑自己的定義。"},{"id":"E03","name":"真實表達","req":["SL","ML"],"desc":"必須說出真正的想法。"},{"id":"E04","name":"內在映照","req":["SL","NE"],"desc":"環境反映出你的狀態。"},{"id":"E05","name":"誤解","req":["SL","ML"],"desc":"訊息產生偏差。"},{"id":"E06","name":"合作","req":["ML","ML"],"desc":"單獨完成變得困難。"},{"id":"E07","name":"切斷","req":["ML","OC"],"desc":"某條連結必須結束。"},{"id":"E08","name":"重建關係","req":["ML","NE"],"desc":"關係進入新階段。"},{"id":"E09","name":"疾病","req":["SL","NE"],"desc":"系統需要修復。"},{"id":"E10","name":"康復","req":["SL","ML"],"desc":"開始回到正常軌道。"},{"id":"E11","name":"愛","req":["SL","OC"],"desc":"接受某種無法控制的情感。"},{"id":"E12","name":"韻律","req":["SL","NE","ML"],"desc":"找回自己的節奏。"},{"id":"E13","name":"發芽","req":["NE","NE"],"desc":"成長開始。"},{"id":"E14","name":"修剪","req":["NE","ML"],"desc":"去除不必要部分。"},{"id":"E15","name":"等待","req":["NE","OC"],"desc":"時機尚未成熟。"},{"id":"E16","name":"豐收","req":["NE","ML","OC"],"desc":"長期累積開始回收。"},{"id":"E17","name":"建立基礎","req":["ML","ML"],"desc":"穩定優先。"},{"id":"E18","name":"資源不足","req":["ML","NE"],"desc":"必須重新分配。"},{"id":"E19","name":"重建","req":["ML","OC"],"desc":"舊結構失效。"},{"id":"E20","name":"結晶","req":["ML","SL","OC"],"desc":"經驗開始固化。"},{"id":"E21","name":"火花","req":["NE","OC"],"desc":"新變化出現。"},{"id":"E22","name":"風向改變","req":["NE","ML"],"desc":"環境開始轉向。"},{"id":"E23","name":"洪流","req":["NE","NE","OC"],"desc":"變化超出預期。"},{"id":"E24","name":"平衡","req":["NE","SL","ML"],"desc":"多種力量需要協調。"},{"id":"E25","name":"選擇","req":["OC","ML"],"desc":"必須取捨。"},{"id":"E26","name":"時機","req":["OC","NE"],"desc":"不是不能做，而是何時做。"},{"id":"E27","name":"規則","req":["OC","ML","SL"],"desc":"建立新的邊界。"},{"id":"E28","name":"定錨","req":["OC","OC"],"desc":"做出不可逆決定。"},{"id":"E29","name":"偶然","req":["OC","NE"],"desc":"預期外事件發生。"},{"id":"E30","name":"幻象","req":["OC","SL"],"desc":"真假難辨。"},{"id":"E31","name":"空窗","req":["OC","ML"],"desc":"沒有明顯答案。"},{"id":"E32","name":"未知來信","req":["SL","ML","NE","OC"],"desc":"世界要求全面回應。"}];
 
 const aspectOf=g=>({"靈魂":"SL","生命":"SL","連結":"ML","礦物":"ML","自然":"NE","元素":"NE","秩序":"OC","無序":"OC"}[g]||"OC");
-const cards=rune.slice(1,65).map(r=>({id:r["編號"],name:r["符文名稱"],group:r["所屬分組"],aspect:aspectOf(r["所屬分組"])}));
+let cards=[];
+
+async function ensureCards(){
+  if(cards.length) return;
+  const res=await fetch("data/json/core/runes64.json");
+  if(!res.ok) throw new Error("Rune JSON unavailable");
+  const payload=await res.json();
+  const items=Array.isArray(payload)?payload:(Array.isArray(payload?.runes)?payload.runes:[]);
+  cards=items
+    .filter(r=>Number(r["編號"])>=1&&Number(r["編號"])<=64)
+    .map(r=>({id:r["編號"],name:r["名稱"]||r["符文名稱"],group:r["所屬分組"],aspect:aspectOf(r["所屬分組"])}));
+}
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 let state=null;
 const $=id=>document.getElementById(id);
 function log(t){$("log").insertAdjacentHTML("afterbegin",`<p>${t}</p>`)}
 
-function newGame(){
+async function newGame(){
+ await ensureCards();
  state={players:[0,1].map(()=>({de:0,deck:shuffle(cards),hand:[],selected:[],acted:false})),eventDeck:shuffle(EVENTS),event:null,turn:0,resolved:[false,false],winner:null};
  state.players.forEach(p=>drawToFive(p)); nextEvent(true); log("<strong>新遊戲開始。</strong>"); render();
 }
