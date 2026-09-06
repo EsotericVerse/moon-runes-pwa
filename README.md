@@ -285,7 +285,7 @@ LOC6 現行新增一個可量化的公開語言 corpus：
 
 ### Python／FastAPI API
 
-`card_api/` 是目前實際作用的 API 程式目錄；資料已集中到 `data/json/`，並由 `card_api/paths.py` 統一解析路徑。API 用於：
+`api/` 是目前實際作用的 API 程式目錄；資料已集中到 `data/json/`，並由 `api/paths.py` 統一解析路徑。API 用於：
 
 - 符文資料讀取
 - 農曆日期及時間窗計算
@@ -320,7 +320,7 @@ LOC4 已可直接搜尋 Writing Registry，LOC5 可搜尋 Media Registry，LOC6 
 
 ### 語意引擎實驗
 
-`engine/` 是獨立的實驗程式目錄；實驗 JSON 已集中到 `data/json/experimental/engine/`，二進位向量仍留在 engine／後續 binary data migration 處理。其內容用於研究及驗證，不等同於 `card_api/` 的正式作用流程，也不代表完整 LLM、RAG 或 Graph RAG 已正式部署。
+`engine/` 是獨立的實驗程式目錄；實驗 JSON 已集中到 `data/json/experimental/engine/`，二進位向量仍留在 engine／後續 binary data migration 處理。其內容用於研究及驗證，不等同於 `api/` 的正式作用流程，也不代表完整 LLM、RAG 或 Graph RAG 已正式部署。
 
 ### PWA 功能
 
@@ -384,7 +384,7 @@ LOC3 現行 demo 主要採用：
 資料 → Embedding → FAISS → 語意搜尋結果
 ```
 
-LOC7 FAQ v0.4 已整理 80 題公開 FAQ，並同步產生 RAG v0.4 檢索資料，提供 [`faq.html`](https://loc.lo3rwang.cc/faq.html) 作為專門 Knowledge View，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。Unified Search 則把 FAQ／KM 與 LOC1、LOC3、LOC4、LOC5、LOC6、LOC8 的現有資料來源放進同一查詢入口。Graph RAG 核心已完成並具 temporal/provenance/precision/quality 與 regression/integration validation；後續重點為治理 runtime 與視覺化。
+LOC7 FAQ v0.4 已整理 80 題公開 FAQ，並同步產生 RAG v0.4 檢索資料，提供 [`faq.html`](https://loc.lo3rwang.cc/faq.html) 作為專門 Knowledge View，並在 `api/` 提供 `/faq/search` 與 `/faq/ask`。Unified Search 則把 FAQ／KM 與 LOC1、LOC3、LOC4、LOC5、LOC6、LOC8 的現有資料來源放進同一查詢入口。Graph RAG 核心已完成並具 temporal/provenance/precision/quality 與 regression/integration validation；後續重點為治理 runtime 與視覺化。
 
 ---
 
@@ -392,7 +392,7 @@ LOC7 FAQ v0.4 已整理 80 題公開 FAQ，並同步產生 RAG v0.4 檢索資料
 
 ```text
 moon-runes-pwa/
-├── card_api/                  # 作用中 FastAPI / Search 程式
+├── api/                  # 作用中 FastAPI / Search 程式
 │   ├── main.py
 │   ├── paths.py               # Python 資料路徑 contract
 │   ├── faq_rag.py
@@ -440,9 +440,9 @@ moon-runes-pwa/
 - PWA：Service Worker＋Web App Manifest
 - 農曆計算：`solarlunar`
 
-### 作用中 API（`card_api/`）
+### 作用中 API（`api/`）
 
-Render Blueprint 已指向 `card_api/`，使用 `uvicorn main:app` 啟動 FastAPI。
+Render Blueprint 已指向 `api/`，使用 `uvicorn main:app` 啟動 FastAPI。
 
 - Python
 - FastAPI
