@@ -3,7 +3,7 @@ name: Repository Governance
 on:
   pull_request:
     paths:
-      - "card_api/**"
+      - "api/**"
       - "engine/**"
       - "tools/**"
       - "data/**"
@@ -16,7 +16,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "card_api/**"
+      - "api/**"
       - "engine/**"
       - "tools/**"
       - "data/**"
@@ -37,6 +37,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Validate repository layout
-        run: python card_api/scripts/validate_repo_layout.py
+        run: python api/scripts/validate_repo_layout.py
       - name: Compile active and experimental Python
-        run: python -m compileall -q card_api engine tools
+        run: python -m compileall -q api engine tools
