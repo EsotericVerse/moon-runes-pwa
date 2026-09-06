@@ -145,7 +145,7 @@ LOC Framework 原則上不必綁死 66 月符。
 - 抽取與多卡語法入口
 - 是 RAG 的第一層 Seed Corpus，不是 Search 之外的例外
 
-### LOC2｜Semantic Playground / Simulation
+### LOC2｜月符沙盒遊戲 / Semantic Playground
 - 語意沙盒
 - Event / Scenario
 - 玩家用符文回答問題
