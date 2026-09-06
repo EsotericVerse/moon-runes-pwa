@@ -571,8 +571,9 @@ class UnifiedSearchEngine:
                 row["_content"] = content
                 scored.append((score, row, "asset"))
 
-        # Long-form Threads main posts are article-like primary evidence.
-        article_docs = self.loc6_thread_articles.get("documents", []) or self.loc6_threads.get("documents", [])
+        # Search the full LOC6 Threads main-post corpus when shards are available.
+        # Falls back to the smaller article tranche only when full shards are absent.
+        article_docs = self._loc6_article_documents()
         for doc in article_docs:
             if filters.get("period") and doc.get("era") != filters["period"]:
                 continue
