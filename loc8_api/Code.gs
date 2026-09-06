@@ -4,6 +4,7 @@ const EVENT_SHEET = 'Event';
 const ERA_SHEET = 'Era';
 const DAILY_DRAW_SHEET = 'Runes';
 const HISTORY_SHEET = 'History';
+const RELATION_SHEET = 'Relation';
 
 function doGet(e) {
   try {
@@ -11,7 +12,7 @@ function doGet(e) {
     const userId = String((e && e.parameter && e.parameter.user_id) || '').trim();
 
     if (action === 'health') {
-      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-0.9' });
+      return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-1.0' });
     }
 
     if (action === 'users') {
@@ -32,6 +33,12 @@ function doGet(e) {
       let history = readRowsSafe_(HISTORY_SHEET);
       if (userId) history = history.filter(row => String(row.user_id || '') === userId);
       return json_({ ok: true, history: history });
+    }
+
+    if (action === 'relations') {
+      let relations = readRowsSafe_(RELATION_SHEET);
+      if (userId) relations = relations.filter(row => String(row.user_id || '') === userId);
+      return json_({ ok: true, relations: relations });
     }
 
     let events = readRows_(EVENT_SHEET)
@@ -103,6 +110,31 @@ function doPost(e) {
     if (action === 'migrate_daily_draws') {
       const result = migrateLegacyDailyDraws_();
       return json_({ ok: true, action: 'migrate_daily_draws', result: result });
+    }
+
+    if (action === 'relation') {
+      const relation = normalizeRelation_(body.relation || body);
+      appendObject_(RELATION_SHEET, relation);
+      return json_({ ok: true, relation: relation, action: 'relation' });
+    }
+
+    if (action === 'update_relation') {
+      const raw = body.relation || body;
+      const id = String(raw.id || '').trim();
+      if (!id) throw new Error('Missing relation id');
+      const relation = normalizeRelation_(raw);
+      relation.id = id;
+      const updated = updateObjectById_(RELATION_SHEET, id, relation, relation.user_id);
+      return json_({ ok: true, relation: updated, action: 'update_relation' });
+    }
+
+    if (action === 'delete_relation') {
+      const raw = body.relation || body;
+      const id = String(raw.id || body.id || '').trim();
+      const userId = String(raw.user_id || body.user_id || '').trim();
+      if (!id) throw new Error('Missing relation id');
+      deleteObjectById_(RELATION_SHEET, id, userId);
+      return json_({ ok: true, id: id, action: 'delete_relation' });
     }
 
     if (action === 'update_event') {
@@ -423,6 +455,34 @@ function normalizeEvent_(raw) {
     primary_loc: raw.primary_loc || 'LOC8',
     related_locs: Array.isArray(raw.related_locs) ? raw.related_locs.join(', ') : (raw.related_locs || ''),
     era_id: raw.era_id || ''
+  };
+}
+
+function normalizeRelation_(raw) {
+  const now = new Date();
+  const tz = Session.getScriptTimeZone() || 'Asia/Taipei';
+  const stamp = Utilities.formatDate(now, tz, "yyyy-MM-dd'T'HH:mm:ssXXX");
+  return {
+    id: raw.id || makeId_('REL'),
+    user_id: raw.user_id || 'lo3rwang',
+    date: raw.date || Utilities.formatDate(now, tz, 'yyyy-MM-dd'),
+    source_type: raw.source_type || 'state',
+    source_id: raw.source_id || '',
+    target_type: raw.target_type || 'state',
+    target_id: raw.target_id || '',
+    relation_type: raw.relation_type || 'transitions_to',
+    direction: raw.direction || 'forward',
+    summary: raw.summary || '',
+    evidence: raw.evidence || '',
+    confidence: raw.confidence || 'recorded',
+    era: raw.era || '',
+    era_id: raw.era_id || '',
+    primary_loc: raw.primary_loc || 'LOC8',
+    related_locs: Array.isArray(raw.related_locs) ? raw.related_locs.join(', ') : (raw.related_locs || ''),
+    status: raw.status || 'current',
+    created_at: raw.created_at || stamp,
+    updated_at: stamp,
+    visibility: raw.visibility || 'private'
   };
 }
 
