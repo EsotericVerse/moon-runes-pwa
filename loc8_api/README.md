@@ -54,9 +54,9 @@ The `Event` sheet now includes four shared cross-LOC reference columns:
 - `related_locs`: other LOC domains that consume or interpret the event.
 - `era_id`: stable ERA reference such as `ERA-P8`.
 
-These fields follow `data/shared/LOC_SHARED_SCHEMA.json` and should remain references rather than duplicated canonical definitions.
+These fields follow `data/json/shared/LOC_SHARED_SCHEMA.json` and should remain references rather than duplicated canonical definitions.
 
-The current shared-registry foundation is tracked in `data/shared/LOC_SHARED_MANIFEST.json`.
+The current shared-registry foundation is tracked in `data/json/shared/LOC_SHARED_MANIFEST.json`.
 
 
 ## Frontend endpoint policy
