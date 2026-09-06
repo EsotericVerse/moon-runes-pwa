@@ -29,9 +29,10 @@ async function loadLots() {
 
 async function loadRuneHints() {
   try {
-    const response = await fetch("engine/runes07.json");
+    const response = await fetch("data/json/core/runes64.json");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const items = await response.json();
+    const payload = await response.json();
+    const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
     runeHintMap = new Map(items.map(item => [Number(item.編號), item]));
   } catch (error) {
     console.warn("LOC1 rune hint JSON unavailable; using local JS fallback.", error);

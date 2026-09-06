@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.4",
+  "schema_version": "0.5",
   "registry": "LOC_GRAPH_SCHEMA",
   "authority": "LOC7",
   "purpose": "Shared node/edge contract for LOC Graph RAG and Search Synthesis. Search retrieval chooses graph seeds; governed edges aggregate related LOC, ERA, works, media and analysis without replacing canonical ownership.",
@@ -46,7 +46,8 @@
     "Every traversable edge carries edge_quality and quality_band derived from relation type, evidence kind and evidence status.",
     "Traversal priority is quality-weighted and decays by hop; paths below min_traversal_score are not expanded.",
     "owned_by_loc and belongs_to_era are directional structural projections and must not be used as reverse-discovery hubs.",
-    "Named/historical entity queries may use exclusive canonical seeds; abstract concept queries retain cross-LOC retrieval breadth."
+    "Named/historical entity queries may use exclusive canonical seeds; abstract concept queries retain cross-LOC retrieval breadth.",
+    "Public Graph access is metadata-only by default; graph payload requires a bounded center or query-driven Search result."
   ],
   "search_synthesis": {
     "seed_source": "precision-aware Unified Search results + canonical exact entity matches",
@@ -122,5 +123,20 @@
       "has_lot": 0.86,
       "related_to": 0.78
     }
+  },
+  "public_access": {
+    "owner": "LOC7",
+    "consumer": "LOC8 Graph View",
+    "default_response": "metadata_only",
+    "bulk_export": false,
+    "neighborhood_requires_node_id": true,
+    "max_depth": 3,
+    "query_driven_search": true,
+    "rules": [
+      "GET /search/graph without node_id returns counts/type metadata only and never the canonical node/edge payload.",
+      "Actual graph payload is exposed only through bounded neighborhood lookup or query-driven Search Graph results.",
+      "LOC8 Graph View consumes the public bounded projection; it does not become the canonical graph authority.",
+      "Live private LOC8 Relation rows remain outside public Graph unless explicitly governed into a public registry/snapshot."
+    ]
   }
 }

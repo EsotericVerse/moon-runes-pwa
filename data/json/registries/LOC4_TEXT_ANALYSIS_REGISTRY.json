@@ -286,7 +286,7 @@
       ]
     }
   ],
-  "semantic_family_registry": "data/json/shared/LOC_SEMANTIC_FAMILY_REGISTRY.json",
+  "semantic_family_registry": "data/json/registries/LOC_SEMANTIC_FAMILY_REGISTRY.json",
   "chapter_architecture": {
     "LOC4-BEFORE-AFTER-YOU": {
       "work_id": "LOC4-BEFORE-AFTER-YOU",

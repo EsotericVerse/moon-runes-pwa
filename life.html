@@ -417,6 +417,75 @@
       line-height: 1.6;
     }
 
+    .graph-toolbar {
+      display:grid;
+      grid-template-columns:minmax(220px,1fr) 110px auto;
+      gap:10px;
+      align-items:end;
+    }
+    .graph-toolbar .field { min-width:0; }
+    .graph-meta-grid {
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .graph-meta-item {
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      background:rgba(255,255,255,.025);
+    }
+    .graph-meta-item small { color:var(--muted); display:block; }
+    .graph-meta-item strong { display:block; margin-top:4px; font-size:16px; }
+    .graph-filter-row { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+    .graph-filter-row select { width:auto; min-width:150px; padding:8px 10px; }
+    .graph-layout {
+      display:grid;
+      grid-template-columns:minmax(250px,.72fr) minmax(0,1.28fr);
+      gap:14px;
+      align-items:start;
+    }
+    .graph-panel {
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:13px;
+      background:rgba(255,255,255,.02);
+      min-width:0;
+    }
+    .graph-panel h4 { margin:0 0 10px; font-size:13px; }
+    .graph-node-list, .graph-edge-list { display:grid; gap:8px; }
+    .graph-node-button {
+      width:100%;
+      text-align:left;
+      border:1px solid var(--line);
+      border-radius:11px;
+      background:rgba(169,199,255,.04);
+      color:var(--text);
+      padding:9px 10px;
+    }
+    .graph-node-button:hover { border-color:var(--line-strong); background:rgba(169,199,255,.09); }
+    .graph-node-button strong { display:block; overflow-wrap:anywhere; }
+    .graph-node-button small { color:var(--muted); }
+    .graph-edge-card {
+      border:1px solid var(--line);
+      border-radius:11px;
+      padding:10px 11px;
+      background:rgba(255,255,255,.02);
+    }
+    .graph-edge-path { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:8px; align-items:center; }
+    .graph-edge-path span { overflow-wrap:anywhere; }
+    .graph-edge-type { color:var(--accent); text-align:center; font-size:11px; }
+    .graph-edge-meta { margin-top:7px; color:var(--muted); font-size:10px; line-height:1.55; }
+    .graph-status { color:var(--muted); font-size:12px; min-height:18px; margin-top:8px; }
+    @media(max-width:760px){
+      .graph-toolbar { grid-template-columns:1fr; }
+      .graph-meta-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .graph-layout { grid-template-columns:1fr; }
+      .graph-edge-path { grid-template-columns:1fr; }
+      .graph-edge-type { text-align:left; }
+    }
+
     .life-view[hidden] { display: none !important; }
 
     /* First-paint safety: LOC8 always opens on Daily Rune.
@@ -424,7 +493,8 @@
     .life-initial-daily #dailyDrawView { display:block !important; }
     .life-initial-daily #lifeView,
     .life-initial-daily #eraTrendView,
-    .life-initial-daily #eventTimeView { display:none !important; }
+    .life-initial-daily #eventTimeView,
+    .life-initial-daily #graphView { display:none !important; }
 
     .daily-layout {
       display: grid;
@@ -644,12 +714,20 @@
         </div>
 
         <div class="nav-group">
+          <div class="nav-group-label">05 · 關係圖</div>
+          <button class="view-switch" id="graphViewBtn" type="button" data-view="graph">
+            <span class="nav-title">關係圖 Graph</span>
+            <span class="nav-sub">Search seed · bounded neighborhood · provenance</span>
+          </button>
+        </div>
+
+        <div class="nav-group">
           <div class="nav-group-label">工具</div>
           <button class="nav-utility" id="themePreviewBtn" type="button">介面預覽</button>
         </div>
       </nav>
       <div class="sidebar-foot">
-        每日符文 → 時期 → 事件 → 脈絡。時間線記順序，脈絡記關係；左側只保留 LOC8 工作區。
+        每日符文 → 時期 → 事件 → 脈絡 → 關係圖。LOC7 建 Graph 結構，LOC8 用時間與脈絡觀看關係變化。
       </div>
     </aside>
 
@@ -915,11 +993,77 @@
 
         <section class="card" style="margin-top:16px;" id="context-graph">
           <div class="head">
-            <div><h3>Graph View</h3><p>以 ERA 連續時間軸與已確認 Relation edge 建立關聯圖；點 Trajectory 節點可切換成該節點的局部 Graph。</p></div>
+            <div><h3>Local Relation Graph</h3><p>這裡只呈現 LOC8 本地 ERA／Relation 工作資料；跨 LOC Graph RAG 請使用左側「關係圖 Graph」。</p></div>
             <span class="badge">Graph-ready</span>
           </div>
           <div class="body">
             <div class="empty">正在建立 ERA／Relation Graph…</div>
+          </div>
+        </section>
+      </div>
+
+      <div class="life-view" id="graphView" hidden>
+        <section class="hero">
+          <div class="loc-header">
+            <p class="loc-header-meta">LOC8 · Graph View · LOC7 Graph RAG</p>
+            <h1 class="loc-header-title">關係圖 Graph</h1>
+            <h2 class="loc-header-subtitle">從一個問題或節點出發，看它和哪些時期、事件、作品、符文與治理概念相連。</h2>
+            <p class="loc-header-copy">Graph 結構與 traversal 由 LOC7 管理；LOC8 只消費 bounded neighborhood，加入 ERA／時間脈絡。公開介面不提供整張 Graph 批次匯出。</p>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="head">
+            <div><h3>Graph Explorer</h3><p>先用自然語言找 seed；點節點後再取得 depth 1–3 的 bounded neighborhood。</p></div>
+            <span class="badge">Bounded</span>
+          </div>
+          <div class="body">
+            <form id="graphSearchForm" class="graph-toolbar">
+              <div class="field">
+                <label for="graphQuery">搜尋概念／作品／符文／時期</label>
+                <input id="graphQuery" value="自我治理" placeholder="例如：界、自我治理、人生月台、ERA-P8" />
+              </div>
+              <div class="field">
+                <label for="graphDepth">Depth</label>
+                <select id="graphDepth">
+                  <option value="1">1</option>
+                  <option value="2" selected>2</option>
+                  <option value="3">3</option>
+                </select>
+              </div>
+              <button class="btn primary" type="submit">搜尋關係</button>
+            </form>
+            <div class="graph-status" id="graphStatus">尚未查詢。</div>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top:16px;">
+          <div class="head">
+            <div><h3>Public Graph Contract</h3><p>Metadata 可公開；節點與 edges 只以 query-driven / bounded neighborhood 回傳。</p></div>
+            <span class="badge" id="graphAccessBadge">Loading</span>
+          </div>
+          <div class="body">
+            <div class="graph-meta-grid">
+              <div class="graph-meta-item"><small>Registry Nodes</small><strong id="graphRegistryNodes">—</strong></div>
+              <div class="graph-meta-item"><small>Registry Edges</small><strong id="graphRegistryEdges">—</strong></div>
+              <div class="graph-meta-item"><small>Visible Nodes</small><strong id="graphVisibleNodes">0</strong></div>
+              <div class="graph-meta-item"><small>Visible Edges</small><strong id="graphVisibleEdges">0</strong></div>
+            </div>
+            <div class="graph-filter-row">
+              <select id="graphNodeTypeFilter" aria-label="節點類型"><option value="">全部節點類型</option></select>
+              <select id="graphEdgeTypeFilter" aria-label="關係類型"><option value="">全部關係類型</option></select>
+              <button class="btn ghost" id="graphResetFilterBtn" type="button">清除篩選</button>
+            </div>
+            <div class="graph-layout">
+              <div class="graph-panel">
+                <h4>Nodes · 點擊後展開</h4>
+                <div class="graph-node-list" id="graphNodeList"><div class="empty">先搜尋一個概念。</div></div>
+              </div>
+              <div class="graph-panel">
+                <h4>Edges · Evidence / Quality</h4>
+                <div class="graph-edge-list" id="graphEdgeList"><div class="empty">尚無 edge。</div></div>
+              </div>
+            </div>
           </div>
         </section>
       </div>
@@ -1042,6 +1186,7 @@
     const ERA_OVERRIDE_CACHE_KEY = "loc8-era-overrides-v1";
     const CACHE_SCHEMA_VERSION = "1";
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
+    const LOC_API_URL = "https://moon-runes-pwa.onrender.com";
 
     const $ = (s) => document.querySelector(s);
     const $$ = (s) => [...document.querySelectorAll(s)];
@@ -1078,6 +1223,17 @@
       eraMetricKeywords: $('#eraMetricKeywords'),
       eraKeywordGrid: $('#eraKeywordGrid'),
       eraTrendStrip: $('#eraTrendStrip'),
+      graphStatus: $('#graphStatus'),
+      graphRegistryNodes: $('#graphRegistryNodes'),
+      graphRegistryEdges: $('#graphRegistryEdges'),
+      graphVisibleNodes: $('#graphVisibleNodes'),
+      graphVisibleEdges: $('#graphVisibleEdges'),
+      graphNodeList: $('#graphNodeList'),
+      graphEdgeList: $('#graphEdgeList'),
+      graphNodeTypeFilter: $('#graphNodeTypeFilter'),
+      graphEdgeTypeFilter: $('#graphEdgeTypeFilter'),
+      graphAccessBadge: $('#graphAccessBadge'),
+
       editingDrawId: $('#editingDrawId'),
       submitDrawBtn: $('#submitDrawBtn'),
       cancelDrawEditBtn: $('#cancelDrawEditBtn'),
@@ -2702,9 +2858,10 @@
     async function loadDrawRunes() {
       const select = $('#drawRune');
       try {
-        const res = await fetch('engine/runes07.json', { cache: 'force-cache' });
+        const res = await fetch('data/json/core/runes64.json', { cache: 'force-cache' });
         if (!res.ok) throw new Error('Rune JSON unavailable');
-        const items = await res.json();
+        const payload = await res.json();
+        const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
 
         runeMetaMap = new Map();
         (items || []).forEach(item => {
@@ -3182,6 +3339,165 @@
       }
     });
 
+    let publicGraphPayload = { nodes: [], edges: [] };
+    let publicGraphMetadata = null;
+
+    function graphNodeId(node) {
+      return String(node?.id || node?.node_id || '');
+    }
+
+    function graphNodeLabel(node) {
+      return String(node?.label || node?.title || node?.name || graphNodeId(node) || '—');
+    }
+
+    function graphNodeType(node) {
+      return String(node?.type || node?.node_type || 'unknown');
+    }
+
+    function graphEdgeType(edge) {
+      return String(edge?.type || edge?.relation_type || 'related_to');
+    }
+
+    function updateGraphFilters(nodes, edges) {
+      const currentNode = els.graphNodeTypeFilter?.value || '';
+      const currentEdge = els.graphEdgeTypeFilter?.value || '';
+      const nodeTypes = [...new Set(nodes.map(graphNodeType).filter(Boolean))].sort();
+      const edgeTypes = [...new Set(edges.map(graphEdgeType).filter(Boolean))].sort();
+      if (els.graphNodeTypeFilter) {
+        els.graphNodeTypeFilter.innerHTML = '<option value="">全部節點類型</option>' +
+          nodeTypes.map(type => `<option value="${esc(type)}">${esc(type)}</option>`).join('');
+        if (nodeTypes.includes(currentNode)) els.graphNodeTypeFilter.value = currentNode;
+      }
+      if (els.graphEdgeTypeFilter) {
+        els.graphEdgeTypeFilter.innerHTML = '<option value="">全部關係類型</option>' +
+          edgeTypes.map(type => `<option value="${esc(type)}">${esc(type)}</option>`).join('');
+        if (edgeTypes.includes(currentEdge)) els.graphEdgeTypeFilter.value = currentEdge;
+      }
+    }
+
+    function renderPublicGraph(payload, statusText='') {
+      publicGraphPayload = {
+        nodes: Array.isArray(payload?.nodes) ? payload.nodes : [],
+        edges: Array.isArray(payload?.edges) ? payload.edges : []
+      };
+      updateGraphFilters(publicGraphPayload.nodes, publicGraphPayload.edges);
+
+      const nodeFilter = els.graphNodeTypeFilter?.value || '';
+      const edgeFilter = els.graphEdgeTypeFilter?.value || '';
+      const visibleNodes = publicGraphPayload.nodes.filter(node => !nodeFilter || graphNodeType(node) === nodeFilter);
+      const visibleIds = new Set(visibleNodes.map(graphNodeId));
+      const visibleEdges = publicGraphPayload.edges.filter(edge => {
+        if (edgeFilter && graphEdgeType(edge) !== edgeFilter) return false;
+        if (nodeFilter) {
+          return visibleIds.has(String(edge.source || '')) || visibleIds.has(String(edge.target || ''));
+        }
+        return true;
+      });
+
+      if (els.graphVisibleNodes) els.graphVisibleNodes.textContent = String(visibleNodes.length);
+      if (els.graphVisibleEdges) els.graphVisibleEdges.textContent = String(visibleEdges.length);
+      if (els.graphStatus && statusText) els.graphStatus.textContent = statusText;
+
+      if (els.graphNodeList) {
+        els.graphNodeList.innerHTML = visibleNodes.length ? visibleNodes.map(node => `
+          <button type="button" class="graph-node-button" data-public-graph-node="${esc(graphNodeId(node))}">
+            <small>${esc(graphNodeType(node))}</small>
+            <strong>${esc(graphNodeLabel(node))}</strong>
+            <small>${esc(graphNodeId(node))}</small>
+          </button>
+        `).join('') : '<div class="empty">目前篩選沒有節點。</div>';
+      }
+
+      if (els.graphEdgeList) {
+        els.graphEdgeList.innerHTML = visibleEdges.length ? visibleEdges.map(edge => `
+          <article class="graph-edge-card">
+            <div class="graph-edge-path">
+              <span>${esc(String(edge.source || '—'))}</span>
+              <div class="graph-edge-type">→ ${esc(graphEdgeType(edge))} →</div>
+              <span>${esc(String(edge.target || '—'))}</span>
+            </div>
+            <div class="graph-edge-meta">
+              quality: ${esc(String(edge.edge_quality ?? '—'))} ·
+              band: ${esc(String(edge.quality_band || '—'))} ·
+              evidence: ${esc(String(edge.evidence_kind || edge.evidence_status || '—'))}
+              ${edge.source_ref ? ' · source: ' + esc(String(edge.source_ref)) : ''}
+            </div>
+          </article>
+        `).join('') : '<div class="empty">目前篩選沒有 edge。</div>';
+      }
+    }
+
+    async function loadGraphMetadata() {
+      try {
+        const res = await fetch(`${LOC_API_URL}/search/graph`, { cache:'no-store' });
+        if (!res.ok) throw new Error('Graph metadata unavailable');
+        const data = await res.json();
+        publicGraphMetadata = data;
+        if (els.graphRegistryNodes) els.graphRegistryNodes.textContent = String(data.node_count ?? '—');
+        if (els.graphRegistryEdges) els.graphRegistryEdges.textContent = String(data.edge_count ?? '—');
+        if (els.graphAccessBadge) els.graphAccessBadge.textContent = data.bulk_export === false ? 'Bounded only' : 'Check policy';
+      } catch (err) {
+        console.warn('Graph metadata unavailable', err);
+        if (els.graphAccessBadge) els.graphAccessBadge.textContent = 'Offline';
+      }
+    }
+
+    async function searchPublicGraph(query) {
+      const q = String(query || '').trim();
+      if (!q) return;
+      if (els.graphStatus) els.graphStatus.textContent = '搜尋 Graph seed…';
+      try {
+        const res = await fetch(`${LOC_API_URL}/search`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({ query:q, top_k:6 })
+        });
+        if (!res.ok) throw new Error('Graph search failed');
+        const data = await res.json();
+        const graph = data.graph || {};
+        renderPublicGraph(graph, `「${q}」· Search-driven Graph · ${graph.node_count || 0} nodes / ${graph.edge_count || 0} edges`);
+      } catch (err) {
+        console.error(err);
+        renderPublicGraph({nodes:[],edges:[]}, 'Graph Search 暫時無法取得資料。');
+      }
+    }
+
+    async function loadGraphNeighborhood(nodeId) {
+      const id = String(nodeId || '').trim();
+      if (!id) return;
+      const depth = Number($('#graphDepth')?.value || 2);
+      if (els.graphStatus) els.graphStatus.textContent = `展開 ${id} · depth ${depth}…`;
+      try {
+        const url = new URL(`${LOC_API_URL}/search/graph`);
+        url.searchParams.set('node_id', id);
+        url.searchParams.set('depth', String(depth));
+        const res = await fetch(url.toString(), { cache:'no-store' });
+        if (!res.ok) throw new Error('Graph neighborhood failed');
+        const data = await res.json();
+        renderPublicGraph(data, `中心節點：${id} · depth ${depth} · bounded neighborhood`);
+      } catch (err) {
+        console.error(err);
+        if (els.graphStatus) els.graphStatus.textContent = 'Neighborhood 暫時無法取得。';
+      }
+    }
+
+    $('#graphSearchForm')?.addEventListener('submit', event => {
+      event.preventDefault();
+      searchPublicGraph($('#graphQuery')?.value || '');
+    });
+    els.graphNodeList?.addEventListener('click', event => {
+      const node = event.target.closest('[data-public-graph-node]');
+      if (!node) return;
+      loadGraphNeighborhood(node.dataset.publicGraphNode || '');
+    });
+    els.graphNodeTypeFilter?.addEventListener('change', () => renderPublicGraph(publicGraphPayload));
+    els.graphEdgeTypeFilter?.addEventListener('change', () => renderPublicGraph(publicGraphPayload));
+    $('#graphResetFilterBtn')?.addEventListener('click', () => {
+      if (els.graphNodeTypeFilter) els.graphNodeTypeFilter.value = '';
+      if (els.graphEdgeTypeFilter) els.graphEdgeTypeFilter.value = '';
+      renderPublicGraph(publicGraphPayload);
+    });
+
     async function testApi() {
       setSync(false, '測試 LOC8 連線…');
       const url = new URL(SHEET_API_URL);
@@ -3210,6 +3526,7 @@
     const contextView = $('#contextView');
     const eraTrendView = $('#eraTrendView');
     const dailyDrawView = $('#dailyDrawView');
+    const graphView = $('#graphView');
 
     function switchView(view, trigger = null) {
       document.body.classList.remove('life-initial-daily');
@@ -3218,6 +3535,7 @@
       contextView.hidden = view !== 'context';
       eraTrendView.hidden = view !== 'era-trend';
       dailyDrawView.hidden = view !== 'daily';
+      graphView.hidden = view !== 'graph';
 
       document.querySelectorAll('.nav .view-switch').forEach(x => x.classList.remove('active'));
       if (trigger) trigger.classList.add('active');
@@ -3238,6 +3556,10 @@
       } else if (view === 'era-trend') {
         history.replaceState(null, '', '#era-trend');
         loadEraRegistry();
+      } else if (view === 'graph') {
+        history.replaceState(null, '', '#graph');
+        loadGraphMetadata();
+        if (!publicGraphPayload.nodes.length) searchPublicGraph($('#graphQuery')?.value || '自我治理');
       } else {
         history.replaceState(null, '', '#overview');
       }
@@ -3318,10 +3640,12 @@
     $('#contextViewBtn').addEventListener('click', () => switchView('context', $('#contextViewBtn')));
     $('#eraTrendViewBtn').addEventListener('click', () => switchView('era-trend', $('#eraTrendViewBtn')));
     $('#dailyDrawViewBtn').addEventListener('click', () => switchView('daily', $('#dailyDrawViewBtn')));
+    $('#graphViewBtn').addEventListener('click', () => switchView('graph', $('#graphViewBtn')));
 
     if (location.hash === '#event-time') switchView('event-time', $('#eventTimeViewBtn'));
     else if (location.hash === '#context') switchView('context', $('#contextViewBtn'));
     else if (location.hash === '#era-trend') switchView('era-trend', $('#eraTrendViewBtn'));
+    else if (location.hash === '#graph') switchView('graph', $('#graphViewBtn'));
     else if (location.hash === '#overview') switchView('overview', $('#overviewViewBtn'));
     else switchView('daily', $('#dailyDrawViewBtn'));
 

@@ -125,7 +125,7 @@
         "string",
         "null"
       ],
-      "registry": "data/json/shared/LOC_CONTENT_TYPE_REGISTRY.json",
+      "registry": "data/json/registries/LOC_CONTENT_TYPE_REGISTRY.json",
       "description": "Shared routing/display type describing what the record is, independent from primary LOC ownership."
     },
     "entity_id": {

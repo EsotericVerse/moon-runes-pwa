@@ -344,7 +344,7 @@
   "boundary_note": "LOC6 interprets meaning, governance, style-state, and recorded rune-to-text realization. It does not own rune mother definitions, grammar/syntax engineering, or temporal event storage.",
   "updated_at": "2026-09-07",
   "rune_interpretation_corpus": {
-    "registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+    "registry": "data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
     "work": "月語者",
     "chapter_slots": 182,
     "usable_records": 180,
@@ -364,8 +364,8 @@
     },
     "rune_grammar_interpretation": {
       "role": "rune-pair / card-combination grammar and interpretation evidence",
-      "relation_registry": "data/json/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
-      "interpretation_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json"
+      "relation_registry": "data/json/registries/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
+      "interpretation_registry": "data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json"
     }
   },
   "stage_profile_schema": {
@@ -397,7 +397,7 @@
     "current_shift": "from external script-breaking toward self-governance, closure, boundaries and route selection",
     "evidence_refs": [
       "docs/LOC6_ZHENGDE_STYLE.md",
-      "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.manual-20260903.json",
+      "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.manual-20260903.json",
       "README.md",
       "index.html"
     ],
@@ -438,7 +438,7 @@
       "inferred_style_shift": "語言尚未穩定，偏探索與辨識",
       "representative_statements": [],
       "source_refs": [
-        "data/json/shared/LOC_ERA_REGISTRY.json"
+        "data/json/registries/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
         "era_event"
@@ -452,7 +452,7 @@
         "top_tags": [],
         "top_turn_methods": [],
         "top_ending_structures": [],
-        "source_registry": "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2025-02-21",
@@ -490,7 +490,7 @@
       "inferred_style_shift": "開始形成較穩定格式與可辨識表達",
       "representative_statements": [],
       "source_refs": [
-        "data/json/shared/LOC_ERA_REGISTRY.json"
+        "data/json/registries/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
         "era_event",
@@ -612,7 +612,7 @@
             "count": 1
           }
         ],
-        "source_registry": "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2025-10-16",
@@ -650,7 +650,7 @@
       "inferred_style_shift": "感性、自省與關係敘事提高",
       "representative_statements": [],
       "source_refs": [
-        "data/json/shared/LOC_ERA_REGISTRY.json"
+        "data/json/registries/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
         "era_event",
@@ -772,7 +772,7 @@
             "count": 6
           }
         ],
-        "source_registry": "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-01-15",
@@ -810,7 +810,7 @@
       "inferred_style_shift": "從感受轉向現實處理與治理",
       "representative_statements": [],
       "source_refs": [
-        "data/json/shared/LOC_ERA_REGISTRY.json"
+        "data/json/registries/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
         "era_event",
@@ -932,7 +932,7 @@
             "count": 1
           }
         ],
-        "source_registry": "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-03-09",
@@ -970,7 +970,7 @@
       "inferred_style_shift": "語氣轉向收束、等待與重新整理",
       "representative_statements": [],
       "source_refs": [
-        "data/json/shared/LOC_ERA_REGISTRY.json"
+        "data/json/registries/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
         "era_event",
@@ -1092,7 +1092,7 @@
             "count": 2
           }
         ],
-        "source_registry": "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-06-10",
@@ -1130,7 +1130,7 @@
       "inferred_style_shift": "克制度提高，降低對完整答案與結果的強求",
       "representative_statements": [],
       "source_refs": [
-        "data/json/shared/LOC_ERA_REGISTRY.json"
+        "data/json/registries/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
         "era_event",
@@ -1252,7 +1252,7 @@
             "count": 2
           }
         ],
-        "source_registry": "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-07-01",
@@ -1291,7 +1291,7 @@
       "inferred_style_shift": "語言轉向起飛、自由與新的可能",
       "representative_statements": [],
       "source_refs": [
-        "data/json/shared/LOC_ERA_REGISTRY.json"
+        "data/json/registries/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
         "era_event",
@@ -1397,7 +1397,7 @@
             "count": 4
           }
         ],
-        "source_registry": "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-08-01",
@@ -1437,7 +1437,7 @@
       "inferred_style_shift": "治理重心由外部拆解轉向內部秩序與未來選擇",
       "representative_statements": [],
       "source_refs": [
-        "data/json/shared/LOC_ERA_REGISTRY.json"
+        "data/json/registries/LOC_ERA_REGISTRY.json"
       ],
       "evidence_types": [
         "era_event",
@@ -1515,7 +1515,7 @@
             "count": 2
           }
         ],
-        "source_registry": "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-09-01",
@@ -1524,7 +1524,7 @@
       }
     }
   ],
-  "era_style_evidence_registry": "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json",
+  "era_style_evidence_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json",
   "periodization_rule": "LOC6 stage profiles inherit continuous period boundaries from LOC8 ERA registry; LOC3/Suno activity ranges are evidence windows, not the system-wide period boundary.",
   "governance_layers": {
     "system_governance": "Neutral LOC-wide principles for authority, provenance, boundaries, lifecycle, dispute and publication.",

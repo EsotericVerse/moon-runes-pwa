@@ -5,20 +5,20 @@
   "updated_at": "2026-09-05",
   "purpose": "Aggregate LOC3 work metadata back into LOC6 ERA style analysis. ERA dates/names remain owned by LOC8.",
   "source_dataset": {
-    "manifest": "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.json",
+    "manifest": "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json",
     "work_count": 403,
     "source_shards": [
-      "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.part1.json",
-      "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.part2.json",
-      "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.manual-20260903.json",
-      "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.manual-life-platform.json"
+      "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.part1.json",
+      "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.part2.json",
+      "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.manual-20260903.json",
+      "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.manual-life-platform.json"
     ]
   },
   "rules": [
     "These aggregates describe the indexed LOC3 corpus, not the entirety of all historical writing or speech.",
     "P1 is currently excluded from the public LOC3 search corpus and therefore has no LOC3 aggregate evidence here.",
     "Counts and tags are recorded metadata evidence; higher-level style interpretations remain LOC6 analysis.",
-    "ERA identity, dates and temporal state remain authoritative in data/json/shared/LOC_ERA_REGISTRY.json.",
+    "ERA identity, dates and temporal state remain authoritative in data/json/registries/LOC_ERA_REGISTRY.json.",
     "LOC3 reasoning_tags and discourse_mode are aggregated by ERA as recorded semantic evidence for LOC6 Zhengde Style analysis.",
     "Lyric type is distinct from narrative category: 感性情緒型／思辨論述型／治理宣言型／勸戒論述型／狀態紀錄型／敘事角色型."
   ],

@@ -20,10 +20,10 @@
       "LOC8"
     ],
     "shared_registries": {
-      "language_system": "data/json/shared/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
-      "era": "data/json/shared/LOC_ERA_REGISTRY.json",
-      "analysis_types": "data/json/shared/LOC_ANALYSIS_TYPE_REGISTRY.json",
-      "loc7_analysis": "data/json/shared/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json"
+      "language_system": "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+      "era": "data/json/registries/LOC_ERA_REGISTRY.json",
+      "analysis_types": "data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json",
+      "loc7_analysis": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json"
     }
   },
   "chunks": [

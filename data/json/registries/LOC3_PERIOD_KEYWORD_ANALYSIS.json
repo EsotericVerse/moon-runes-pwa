@@ -11,21 +11,21 @@
   "created_at": "2026-09-06",
   "updated_at": "2026-09-06",
   "source": {
-    "corpus": "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.json",
+    "corpus": "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json",
     "corpus_version": "0.1.9",
     "source_shards": [
-      "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.part1.json",
-      "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.part2.json",
-      "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.manual-20260903.json",
-      "data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.manual-life-platform.json"
+      "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.part1.json",
+      "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.part2.json",
+      "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.manual-20260903.json",
+      "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.manual-life-platform.json"
     ],
-    "period_registry": "data/json/shared/LOC_ERA_REGISTRY.json",
-    "keyword_registry": "data/json/shared/LOC3_KEYWORD_REGISTRY.json",
+    "period_registry": "data/json/registries/LOC_ERA_REGISTRY.json",
+    "keyword_registry": "data/json/registries/LOC3_KEYWORD_REGISTRY.json",
     "analyzed_work_count": 403,
     "excluded_periods": [
       "P1"
     ],
-    "semantic_family_registry": "data/json/shared/LOC_SEMANTIC_FAMILY_REGISTRY.json"
+    "semantic_family_registry": "data/json/registries/LOC_SEMANTIC_FAMILY_REGISTRY.json"
   },
   "purpose": "按 LOC8 固定時期比較 LOC3 關鍵字分佈；命名概念與一般語義／意象分開呈現，避免專有名詞被高頻泛用詞淹沒。",
   "keyword_layers": {

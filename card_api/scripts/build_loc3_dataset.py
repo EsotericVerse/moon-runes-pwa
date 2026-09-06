@@ -393,7 +393,7 @@ def build(source: Path) -> dict[str, Any]:
             "version_count": sum(len(item["versions"]) for item in output_works),
             "system_id": SYSTEM_ID,
             "primary_loc": PRIMARY_LOC,
-            "era_registry": "data/json/shared/LOC_ERA_REGISTRY.json",
+            "era_registry": "data/json/registries/LOC_ERA_REGISTRY.json",
             "active_era": active_era,
         },
         "works": output_works,

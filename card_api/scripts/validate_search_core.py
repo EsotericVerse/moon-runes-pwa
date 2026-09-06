@@ -80,23 +80,42 @@ def validate_result(engine: UnifiedSearchEngine, query: str) -> dict:
 
 
 def validate_graph_snapshot(engine: UnifiedSearchEngine) -> dict:
-    snapshot = engine.graph_snapshot()
+    metadata = engine.graph_snapshot()
     failures = []
-    if snapshot.get("mode") != "canonical_graph":
-        failures.append("mode")
-    if int(snapshot.get("node_count") or 0) <= 0:
-        failures.append("node_count")
-    if int(snapshot.get("edge_count") or 0) <= 0:
-        failures.append("edge_count")
-    for edge in snapshot.get("edges", []) or []:
-        if "edge_quality" not in edge or "quality_band" not in edge:
-            failures.append(f"edge_contract:{edge.get('edge_id')}")
-            break
+    if metadata.get("mode") != "graph_metadata":
+        failures.append("metadata.mode")
+    if metadata.get("nodes") != [] or metadata.get("edges") != []:
+        failures.append("metadata.bulk_payload")
+    if metadata.get("bulk_export") is not False:
+        failures.append("metadata.bulk_export")
+    if not metadata.get("requires_node_id"):
+        failures.append("metadata.requires_node_id")
+    if int(metadata.get("node_count") or 0) <= 0:
+        failures.append("metadata.node_count")
+    if int(metadata.get("edge_count") or 0) <= 0:
+        failures.append("metadata.edge_count")
+
+    graph = engine._canonical_graph()
+    center = next((str(node.get("id")) for node in graph.get("nodes", []) if node.get("id")), "")
+    neighborhood = engine.graph_snapshot(center, depth=2) if center else {}
+    if center:
+        if neighborhood.get("mode") != "graph_neighborhood":
+            failures.append("neighborhood.mode")
+        if not neighborhood.get("nodes"):
+            failures.append("neighborhood.nodes")
+        for edge in neighborhood.get("edges", []) or []:
+            if "edge_quality" not in edge or "quality_band" not in edge:
+                failures.append(f"edge_contract:{edge.get('edge_id')}")
+                break
+
     return {
         "pass": not failures,
         "failures": failures,
-        "node_count": snapshot.get("node_count", 0),
-        "edge_count": snapshot.get("edge_count", 0),
+        "node_count": metadata.get("node_count", 0),
+        "edge_count": metadata.get("edge_count", 0),
+        "center": center,
+        "neighborhood_node_count": neighborhood.get("node_count", 0) if center else 0,
+        "neighborhood_edge_count": neighborhood.get("edge_count", 0) if center else 0,
     }
 
 
@@ -107,7 +126,7 @@ def main() -> int:
     snapshot = validate_graph_snapshot(engine)
 
     schema = json.loads(registry_json("LOC_GRAPH_SCHEMA.json").read_text(encoding="utf-8"))
-    schema_ok = schema.get("schema_version") == "0.4" and bool(schema.get("quality_policy"))
+    schema_ok = schema.get("schema_version") == "0.5" and bool(schema.get("quality_policy"))
 
     passed = all(row["pass"] for row in query_results) and snapshot["pass"] and schema_ok
     summary = {
