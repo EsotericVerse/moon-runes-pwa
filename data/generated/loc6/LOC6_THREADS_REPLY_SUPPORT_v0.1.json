@@ -1,0 +1,275 @@
+{
+  "version": "0.1",
+  "status": "Working",
+  "source": "threads_and_replies.json",
+  "analysis_role": "reply_supplement",
+  "notes": [
+    "Main posts remain the primary LOC6 statistical corpus.",
+    "Replies are supplemental interaction evidence and are not merged into the primary keyword ranking.",
+    "reply_support_ratio compares normalized document prevalence in replies versus main posts; it is not a semantic importance score."
+  ],
+  "document_counts": {
+    "main_posts": 4491,
+    "replies": 2416,
+    "total_deduplicated": 6907
+  },
+  "seeded_governance_probe": [
+    {
+      "term": "拒絕",
+      "main_document_frequency": 25,
+      "reply_document_frequency": 25,
+      "reply_support_ratio": 1.859,
+      "main_era_distribution": {
+        "P0": 7,
+        "P0.5": 4,
+        "P1": 6,
+        "P2": 1,
+        "P3": 3,
+        "P4": 2,
+        "P6": 2
+      },
+      "reply_era_distribution": {
+        "P0": 10,
+        "P0.5": 7,
+        "P1": 6,
+        "P5": 1,
+        "P6": 1
+      }
+    },
+    {
+      "term": "價值觀",
+      "main_document_frequency": 12,
+      "reply_document_frequency": 11,
+      "reply_support_ratio": 1.704,
+      "main_era_distribution": {
+        "P0": 4,
+        "P0.5": 1,
+        "P3": 5,
+        "P5": 1,
+        "P6": 1
+      },
+      "reply_era_distribution": {
+        "P0.5": 3,
+        "P1": 5,
+        "P2": 1,
+        "P3": 2
+      }
+    },
+    {
+      "term": "尊重",
+      "main_document_frequency": 89,
+      "reply_document_frequency": 61,
+      "reply_support_ratio": 1.274,
+      "main_era_distribution": {
+        "P0": 21,
+        "P0.5": 13,
+        "P1": 8,
+        "P2": 1,
+        "P3": 14,
+        "P4": 2,
+        "P5": 3,
+        "P6": 4,
+        "P7": 20,
+        "P8": 3
+      },
+      "reply_era_distribution": {
+        "P0": 20,
+        "P0.5": 17,
+        "P1": 23,
+        "P3": 1
+      }
+    },
+    {
+      "term": "選擇",
+      "main_document_frequency": 150,
+      "reply_document_frequency": 80,
+      "reply_support_ratio": 0.991,
+      "main_era_distribution": {
+        "P0": 49,
+        "P0.5": 38,
+        "P1": 23,
+        "P2": 8,
+        "P3": 13,
+        "P4": 4,
+        "P5": 2,
+        "P6": 5,
+        "P7": 6,
+        "P8": 2
+      },
+      "reply_era_distribution": {
+        "P0": 32,
+        "P0.5": 28,
+        "P1": 18,
+        "P6": 1,
+        "P8": 1
+      }
+    },
+    {
+      "term": "規則",
+      "main_document_frequency": 45,
+      "reply_document_frequency": 21,
+      "reply_support_ratio": 0.867,
+      "main_era_distribution": {
+        "P0": 2,
+        "P0.5": 16,
+        "P1": 13,
+        "P3": 6,
+        "P4": 6,
+        "P6": 1,
+        "P7": 1
+      },
+      "reply_era_distribution": {
+        "P0": 1,
+        "P0.5": 16,
+        "P1": 4
+      }
+    },
+    {
+      "term": "關係",
+      "main_document_frequency": 219,
+      "reply_document_frequency": 94,
+      "reply_support_ratio": 0.798,
+      "main_era_distribution": {
+        "P0": 75,
+        "P0.5": 33,
+        "P1": 26,
+        "P2": 3,
+        "P3": 23,
+        "P4": 20,
+        "P5": 3,
+        "P6": 8,
+        "P7": 25,
+        "P8": 3
+      },
+      "reply_era_distribution": {
+        "P0": 38,
+        "P0.5": 23,
+        "P1": 23,
+        "P2": 2,
+        "P3": 5,
+        "P4": 1,
+        "P6": 2
+      }
+    },
+    {
+      "term": "控制",
+      "main_document_frequency": 67,
+      "reply_document_frequency": 28,
+      "reply_support_ratio": 0.777,
+      "main_era_distribution": {
+        "P0": 15,
+        "P0.5": 23,
+        "P1": 12,
+        "P3": 2,
+        "P4": 5,
+        "P5": 1,
+        "P6": 3,
+        "P7": 4,
+        "P8": 2
+      },
+      "reply_era_distribution": {
+        "P0": 6,
+        "P0.5": 13,
+        "P1": 4,
+        "P2": 2,
+        "P3": 3
+      }
+    },
+    {
+      "term": "責任",
+      "main_document_frequency": 54,
+      "reply_document_frequency": 19,
+      "reply_support_ratio": 0.654,
+      "main_era_distribution": {
+        "P0": 5,
+        "P0.5": 12,
+        "P1": 5,
+        "P2": 6,
+        "P3": 9,
+        "P4": 12,
+        "P6": 2,
+        "P7": 3
+      },
+      "reply_era_distribution": {
+        "P0": 2,
+        "P0.5": 7,
+        "P1": 7,
+        "P3": 3
+      }
+    },
+    {
+      "term": "未知",
+      "main_document_frequency": 60,
+      "reply_document_frequency": 20,
+      "reply_support_ratio": 0.62,
+      "main_era_distribution": {
+        "P0": 11,
+        "P0.5": 12,
+        "P1": 6,
+        "P2": 4,
+        "P4": 2,
+        "P5": 14,
+        "P6": 3,
+        "P7": 6,
+        "P8": 2
+      },
+      "reply_era_distribution": {
+        "P0": 4,
+        "P0.5": 9,
+        "P1": 3,
+        "P2": 3,
+        "P3": 1
+      }
+    },
+    {
+      "term": "自由",
+      "main_document_frequency": 105,
+      "reply_document_frequency": 21,
+      "reply_support_ratio": 0.372,
+      "main_era_distribution": {
+        "P0": 18,
+        "P0.5": 5,
+        "P1": 4,
+        "P2": 2,
+        "P3": 1,
+        "P4": 4,
+        "P5": 11,
+        "P6": 31,
+        "P7": 28,
+        "P8": 1
+      },
+      "reply_era_distribution": {
+        "P0": 7,
+        "P0.5": 8,
+        "P1": 3,
+        "P6": 2,
+        "P7": 1
+      }
+    },
+    {
+      "term": "治理",
+      "main_document_frequency": 11,
+      "reply_document_frequency": 2,
+      "reply_support_ratio": 0.338,
+      "main_era_distribution": {
+        "P3": 4,
+        "P4": 6,
+        "P8": 1
+      },
+      "reply_era_distribution": {
+        "P3": 2
+      }
+    },
+    {
+      "term": "政德風",
+      "main_document_frequency": 10,
+      "reply_document_frequency": 0,
+      "reply_support_ratio": 0,
+      "main_era_distribution": {
+        "P3": 6,
+        "P4": 4
+      },
+      "reply_era_distribution": {}
+    }
+  ]
+}
