@@ -207,7 +207,7 @@ LOC8 的現行核心是**事件、時期、關係、軌跡與趨勢分析**，�
 - Context：統合 Relation、Trajectory、Analysis，作為 Graph-ready 的脈絡工作區
 - 跨 LOC 的時間、作品、概念與 Event 引用
 
-Graph View 視覺化仍可持續擴充，但 **Graph RAG 核心已完成並進入治理／品質維護階段**。現行已具 bounded multi-hop traversal、cross-LOC expansion、temporal nodes、provenance、precision control、edge quality weighting、regression tests 與 integration validation。
+Graph View 已完成第一版 query-driven bounded explorer，視覺化仍可持續擴充，但 **Graph RAG 核心已完成並進入治理／品質維護階段**。現行已具 bounded multi-hop traversal、cross-LOC expansion、temporal nodes、provenance、precision control、edge quality weighting、regression tests 與 integration validation。
 
 因此：
 
@@ -298,7 +298,7 @@ Graph RAG 已由「關係 groundwork」進入正式 Search Core：
 - **Precision-controlled / Quality-weighted：Implemented**
 - **Regression-tested / Integration-tested：Implemented**
 
-目前剩餘工作以治理為主：relation publication、rights runtime enforcement、governance audit/dispute，以及 Graph View 視覺化；不再把 Graph RAG 核心列為待完成功能。
+目前剩餘工作以治理為主：relation publication、rights runtime enforcement、governance audit/dispute，以及 Graph View 視覺化與互動；不再把 Graph RAG 核心列為待完成功能。
 
 ---
 
