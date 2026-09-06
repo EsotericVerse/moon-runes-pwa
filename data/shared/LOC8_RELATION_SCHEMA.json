@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC8_RELATION_SCHEMA",
+  "description": "Graph-ready relation edge schema for LOC8. Timeline and Trajectory are views over these relations.",
+  "required_fields": ["id","user_id","date","source_type","source_id","target_type","target_id","relation_type","direction","confidence","status"],
+  "node_types": ["state","event","era","concept","article","work","song","rune","person","system"],
+  "relation_types": [
+    "transitions_to","evolves_from","extends","reframes","contradicts","integrates",
+    "expresses","belongs_to","influences","references","corresponds_to","causes"
+  ],
+  "direction_values": ["forward","reverse","bidirectional"],
+  "confidence_values": ["recorded","reconstructed","inferred","unknown"],
+  "status_values": ["current","released","archived"],
+  "fields": {
+    "id": "Stable relation ID.",
+    "user_id": "Owner/user reference.",
+    "date": "Relation observation or effective date.",
+    "source_type": "Source node type.",
+    "source_id": "Source node stable ID or governed label.",
+    "target_type": "Target node type.",
+    "target_id": "Target node stable ID or governed label.",
+    "relation_type": "Semantic edge type.",
+    "direction": "Edge direction.",
+    "summary": "Human-readable explanation of how/why the transition or relation works.",
+    "evidence": "Source IDs, article IDs, event IDs, documents, works, or other evidence.",
+    "confidence": "Evidence confidence.",
+    "era": "Human-readable ERA label or period.",
+    "era_id": "Stable ERA reference.",
+    "primary_loc": "Owning LOC module.",
+    "related_locs": "Cross-LOC consumers/references.",
+    "status": "Lifecycle state.",
+    "created_at": "Creation timestamp.",
+    "updated_at": "Last update timestamp.",
+    "visibility": "Visibility policy."
+  }
+}
