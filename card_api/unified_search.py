@@ -1170,6 +1170,144 @@ class UnifiedSearchEngine:
                         f"{aid} declares {related} as a related LOC.",
                     )
 
+        # LOC3 works: work ownership and ERA placement are recorded metadata.
+        for work in getattr(self.loc3_searcher, "works", []) if self.loc3_searcher else []:
+            wid = work.get("work_id")
+            if not wid:
+                continue
+            add_node(
+                wid,
+                work.get("title") or wid,
+                "music_work",
+                "LOC3",
+                period=work.get("period"),
+                era_id=work.get("era_id"),
+            )
+            add_edge(
+                f"EDGE-{wid}-OWNED-LOC3",
+                wid,
+                "LOC3",
+                "owned_by_loc",
+                "record_metadata",
+                f"{wid} is a LOC3 work.",
+            )
+            era_id = work.get("era_id")
+            if era_id:
+                add_edge(
+                    f"EDGE-{wid}-ERA-{era_id}",
+                    wid,
+                    era_id,
+                    "belongs_to_era",
+                    "record_metadata",
+                    f"{wid} is assigned to {work.get('period') or era_id}.",
+                )
+
+        # LOC4 works: writing catalog already carries canonical work/ERA fields.
+        for work in self.loc4.get("works", []):
+            wid = work.get("work_id")
+            if not wid:
+                continue
+            add_node(
+                wid,
+                work.get("title") or wid,
+                "writing_work",
+                "LOC4",
+                period=work.get("period"),
+                era_id=work.get("era_id"),
+            )
+            add_edge(
+                f"EDGE-{wid}-OWNED-LOC4",
+                wid,
+                "LOC4",
+                "owned_by_loc",
+                "record_metadata",
+                f"{wid} is a LOC4 work.",
+            )
+            if work.get("era_id"):
+                add_edge(
+                    f"EDGE-{wid}-ERA-{work.get('era_id')}",
+                    wid,
+                    work.get("era_id"),
+                    "belongs_to_era",
+                    "record_metadata",
+                    f"{wid} is assigned to {work.get('period') or work.get('era_id')}.",
+                )
+
+        # LOC5 media: registry gives stable media IDs, period inheritance and
+        # optional linked work/song references.
+        for media in self.media.get("items", []):
+            mid = media.get("media_id")
+            if not mid:
+                continue
+            add_node(
+                mid,
+                media.get("title") or mid,
+                "media",
+                "LOC5",
+                period=media.get("period"),
+                era_id=media.get("era_id"),
+                platform=media.get("platform"),
+            )
+            add_edge(
+                f"EDGE-{mid}-OWNED-LOC5",
+                mid,
+                "LOC5",
+                "owned_by_loc",
+                "record_metadata",
+                f"{mid} is a LOC5 media record.",
+            )
+            if media.get("era_id"):
+                add_edge(
+                    f"EDGE-{mid}-ERA-{media.get('era_id')}",
+                    mid,
+                    media.get("era_id"),
+                    "belongs_to_era",
+                    "record_metadata",
+                    f"{mid} inherits {media.get('period') or media.get('era_id')}.",
+                )
+            linked_work = media.get("linked_work_id") or (media.get("temporal_inheritance") or {}).get("source_work_id")
+            if linked_work:
+                add_edge(
+                    f"EDGE-{mid}-WORK-{linked_work}",
+                    linked_work,
+                    mid,
+                    "represented_by",
+                    "record_metadata",
+                    "LOC5 media represents or adapts the linked work.",
+                )
+
+        # LOC6 governance fragments are first-class analysis/governance nodes.
+        for fragment in self.loc6.get("fragments", []):
+            fid = fragment.get("fragment_id")
+            if not fid:
+                continue
+            label = fragment.get("statement") or fragment.get("topic") or fid
+            add_node(
+                fid,
+                label,
+                "governance_fragment",
+                "LOC6",
+                analysis_type=fragment.get("analysis_type"),
+                era_id=fragment.get("era_id"),
+            )
+            add_edge(
+                f"EDGE-{fid}-OWNED-LOC6",
+                fid,
+                "LOC6",
+                "owned_by_loc",
+                "record_metadata",
+                f"{fid} is governed by LOC6.",
+            )
+            if fragment.get("era_id"):
+                add_edge(
+                    f"EDGE-{fid}-ERA-{fragment.get('era_id')}",
+                    fid,
+                    fragment.get("era_id"),
+                    "belongs_to_era",
+                    "record_metadata",
+                    "Governance fragment carries an explicit ERA assignment.",
+                )
+
         # Explicit author-confirmed cross-work relationships.
         for rel in self.relationships.get("relationships", []):
             source = rel.get("source") or {}
@@ -1584,6 +1722,28 @@ class UnifiedSearchEngine:
         if not lead_summary:
             lead_summary = f"「{query}」目前命中 {len(nonempty)} 類 LOC 資料，可從知識、作品、治理、時間與關聯證據交叉閱讀。"
 
+        era_path = [str(x.get("period") or x.get("label") or "") for x in graph.get("era_path", []) if x]
+        loc_path = [str(x) for x in graph.get("loc_path", []) if x]
+        graph_parts = []
+        if era_path:
+            graph_parts.append("時期：" + " → ".join(era_path))
+        if loc_path:
+            graph_parts.append("跨 LOC：" + "、".join(loc_path))
+        relation_paths = [
+            p for p in graph.get("paths", [])
+            if p.get("relation") not in {"owned_by_loc", "belongs_to_era", "temporal_before"}
+        ]
+        if relation_paths:
+            graph_parts.append(
+                "關聯：" + "；".join(
+                    f"{(p.get('from') or {}).get('label') or (p.get('from') or {}).get('id')} "
+                    f"→ {p.get('relation')} → "
+                    f"{(p.get('to') or {}).get('label') or (p.get('to') or {}).get('id')}"
+                    for p in relation_paths[:3]
+                )
+            )
+        graph_summary = "｜".join(graph_parts) if graph_parts else "目前沒有足夠的 Canonical Graph 關聯可形成額外彙整。"
+
         return {
             "analysis_type": "search_synthesis",
             "query": query,
@@ -1600,6 +1760,7 @@ class UnifiedSearchEngine:
             "periods": periods[:12],
             "sources": sorted(sources),
             "supporting_results": supporting,
+            "graph_summary": graph_summary,
             "graph": {
                 "mode": graph.get("mode"),
                 "node_count": graph.get("node_count", 0),
