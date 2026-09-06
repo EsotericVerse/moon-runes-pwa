@@ -521,3 +521,43 @@ LOC8：它什麼時候出現、如何變化、是否形成持續趨勢
 ~~~
 
 治理趨勢本身也是自我治理的輸入，而不是自動產生「你變得更好／更壞」的價值判決。
+
+## 17. Graph View — Implemented
+
+LOC8 現在有獨立的「關係圖 Graph」功能區。
+
+其責任不是重新建立 Graph，而是消費 LOC7 已治理的 Graph RAG：
+
+~~~text
+natural-language query
+→ Unified Search chooses seeds
+→ LOC7 bounded Graph traversal
+→ LOC8 Graph View
+→ ERA / Event / context reading
+~~~
+
+### UI contract
+
+- query-driven：先以自然語言查詢取得 graph seed。
+- bounded neighborhood：點節點後以 depth 1–3 展開。
+- client filters：可依 node type / edge type 過濾目前結果。
+- evidence-aware：edge 顯示 quality band、evidence kind 與 source ref。
+- public-safe：不提供整張 canonical Graph bulk dump。
+
+### Authority boundary
+
+~~~text
+LOC7
+Graph Schema / Canonical Graph / traversal / quality / provenance
+        ↓
+public bounded projection
+        ↓
+LOC8
+Graph View / ERA overlay / temporal context / exploration
+~~~
+
+因此仍維持：
+
+> **LOC7 建關係網；LOC8 看關係如何存在於時間與脈絡。**
+
+原 Context 工作區中的 Relation Graph 保留為 LOC8 本地／私人 Relation 的工作投影；新的獨立 Graph View 則讀取公開且已治理的跨 LOC Graph。
