@@ -84,9 +84,9 @@
     },
     {
       "id": "loc6_threads_km",
-      "path": "data/shared/LOC6_THREADS_KM_INDEX.json",
+      "path": "data/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json",
       "authority": "LOC6",
-      "purpose": "Searchable Threads evidence tranche for LOC6 KM; main posts primary, replies supplemental, with ERA document-frequency statistics."
+      "purpose": "Searchable 138-record LOC6 Threads article tranche; main posts primary evidence. Supplemental reply statistics remain in data/shared/LOC6_THREADS_KM_INDEX.json."
     },
     {
       "id": "loc6_dual_rune_relations",
@@ -158,7 +158,7 @@
       "dual_rune_relation_model": "neutral pair → draw cause/effect projection → directions/context",
       "era_style_evidence": "403 indexed LOC3 works linked by ERA",
       "cross_media_relationship_interpretation": "connected",
-      "threads_km_search": "connected-v0.1",
+      "threads_km_search": "connected-v0.2-138-articles",
       "threads_source_counts": "6907 deduplicated / 4491 main / 2416 replies"
     },
     "LOC7": {
