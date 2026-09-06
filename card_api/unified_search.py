@@ -1598,6 +1598,7 @@ class UnifiedSearchEngine:
         # become a graph seed; that causes unrelated LOC/ERA over-traversal.
         q = _compact(query)
         strong_seed_ids: set[str] = set()
+        exclusive_seed_ids: set[str] = set()
 
         for rid, item in result_by_id.items():
             aliases = self._result_graph_aliases(item)
@@ -1613,26 +1614,41 @@ class UnifiedSearchEngine:
             label = _compact(node.get("label") or "")
             period = _compact(node.get("period") or "")
             node_type = str(node.get("node_type") or "")
+            object_type = str(node.get("object_type") or "")
             strong = False
+            exclusive = False
             if q:
                 if _compact(node.get("id") or "") == q or period == q or label == q:
                     strong = True
                 elif node_type in {"life_event", "era", "rune", "work"} and len(q) >= 2:
                     strong = label.startswith(q) or (len(q) >= 3 and q in label)
+
+                # Only named/historical entities monopolize the seed set.
+                # Generic governance concepts (e.g. 自我治理) must still keep
+                # cross-LOC retrieval seeds so LOC6/LOC7 evidence survives.
+                if strong:
+                    if node_type == "era" and period == q:
+                        exclusive = True
+                    elif node_type == "life_event" and object_type in {"system", "work"}:
+                        exclusive = True
+                    elif node_type == "rune" and label == q:
+                        exclusive = True
+
             if strong:
                 strong_seed_ids.add(node_id)
+            if exclusive:
+                exclusive_seed_ids.add(node_id)
 
-        if strong_seed_ids:
-            seed_ids.update(strong_seed_ids)
+        if exclusive_seed_ids:
+            seed_ids.update(exclusive_seed_ids)
+            # Exact retrieval aliases that name the same entity remain useful.
+            for rid, item in result_by_id.items():
+                if q and any(q == alias for alias in self._result_graph_aliases(item)):
+                    seed_ids.add(rid)
         else:
-            # Broad semantic/concept queries may not have a canonical exact hit.
-            # In that case, fall back to retrieval results as seeds.
+            # Concept queries retain retrieval breadth, plus any canonical hits.
             seed_ids.update(result_by_id.keys())
-
-        # Preserve direct query aliases even in broad mode.
-        for rid, item in result_by_id.items():
-            if q and any(q == alias for alias in self._result_graph_aliases(item)):
-                seed_ids.add(rid)
+            seed_ids.update(strong_seed_ids)
 
         adjacency: dict[str, list[dict[str, Any]]] = {}
         directional_relations = {"owned_by_loc", "belongs_to_era"}
