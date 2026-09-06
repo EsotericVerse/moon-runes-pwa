@@ -1,11 +1,12 @@
-# 🌕 LOC｜月典（Luna Codex｜月之符文）PWA
+# 🌕 LOC｜月典（Luna Codex）PWA
 
-由 [秘藝文域（EsotericVerse Studio）](mailto:esotericverse.xy@gmail.com) 建立的月之符文語言系統與 PWA 實作。
+由 [秘藝文域（EsotericVerse Studio）](mailto:esotericverse.xy@gmail.com) 建立的 LOC（Luna Codex／月典）語言系統框架與 LunaRunes（月之符文）PWA 實作。
 
 本專案以 HTML、CSS、原生 JavaScript 與 Python／FastAPI 組成，可透過 GitHub Pages 提供前端服務，並支援漸進式網頁應用程式（PWA）。
 
-- **LOC＝月典**
-- **Luna Codex＝月之符文**
+- **LOC＝Luna Codex＝月典**
+- **LunaRunes＝月之符文**
+- **「月符」僅作歷史／口語簡稱，不作正式名稱對應**
 - **現行 Canon：0.5r**
 - **公開網站：<https://loc.lo3rwang.cc/>**
 - **符文查詢：<https://loc.lo3rwang.cc/list.html>**
@@ -186,7 +187,7 @@ LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實�
 
 ### LOC2｜Semantic Playground
 
-LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 符文為基礎，不是傳統戰鬥卡牌，也不只是抽牌解籤。
+LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 LunaRunes 66 符文為基礎，不是傳統戰鬥卡牌，也不只是抽牌解籤。
 
 > **世界提出問題 → 玩家用符文回答 → 不同答案彼此共振 → 形成暫時定義。**
 
@@ -528,7 +529,7 @@ OW3gs 是作者的方法論與個人規則層，不等同於 LOC 的全部 Canon
 
 ## 📄 授權與署名
 
-本專案以 **Copyleft** 原則發布；Luna Codex（月之符文）的原創符文系統、語意結構與相關實作鼓勵研究、使用、修改與衍生，並要求保留來源、變更歷史與相同／相容的共享精神。完整治理說明見 [`COPYLEFT.md`](./COPYLEFT.md)。
+本專案以 **Copyleft** 原則發布；LunaRunes（月之符文）的原創符文系統、語意結構與相關實作鼓勵研究、使用、修改與衍生，並要求保留來源、變更歷史與相同／相容的共享精神。完整治理說明見 [`COPYLEFT.md`](./COPYLEFT.md)。
 
 **OW3gs made by OscarWang / LunarCodex / 王政德**
 
