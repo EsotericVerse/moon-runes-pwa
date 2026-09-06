@@ -2858,9 +2858,10 @@
     async function loadDrawRunes() {
       const select = $('#drawRune');
       try {
-        const res = await fetch('engine/runes07.json', { cache: 'force-cache' });
+        const res = await fetch('data/json/core/runes64.json', { cache: 'force-cache' });
         if (!res.ok) throw new Error('Rune JSON unavailable');
-        const items = await res.json();
+        const payload = await res.json();
+        const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
 
         runeMetaMap = new Map();
         (items || []).forEach(item => {
