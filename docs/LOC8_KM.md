@@ -348,6 +348,31 @@ ERA suggestion、關鍵字趨勢、作品群聚與 change-point detection 都只
 - 作品、文章、聊天紀錄可能是事件前的預示，也可能是事件後的整理，不應把發布日直接等同人生轉折日。
 - 系統建議可供 Adjust / Accept / Reject，但不能覆寫使用者的第一人稱確認。
 
+## 14. 現行功能矩陣
+
+| 功能 | 現況 | 作用 |
+|---|---|---|
+| Daily Rune | Implemented | 記錄每日符文與近期訊號 |
+| ERA / 時期 | Implemented | 顯示、直接新增、修改、刪除時期；支援 boundary refinement |
+| Event | Implemented | 新增、修改、刪除事件與保存 Current State |
+| Event Timeline | Implemented | 依時間排序事件，回答「何時發生什麼」 |
+| Relation Library | Implemented | 保存跨 Event／ERA／Concept／Work 等節點關係 |
+| Trajectory | Implemented | 將 Relation／State 投影成有方向的演變軌跡 |
+| Analysis | Implemented (LOC3 baseline) | 比較相鄰時期的 LOC3 關鍵字／語義家族比重升降，並顯示 transition summary |
+| Context | Implemented | 整合 Relation、Trajectory 與 Analysis 的工作區 |
+| Graph View | Planned | 由既有 Relation edge 產生網狀視圖；目前未上線 |
+| Graph RAG | Planned | 待 corpus 與 relation 穩定後再實作 |
+
+### Analysis 與 Context 的分工
+
+- **Context**：回答「彼此怎麼連」。
+- **Trajectory**：回答「一路怎麼變」。
+- **Analysis**：回答「哪些語意比重變了、幅度多少、文字上如何解讀」。
+- **ERA**：回答「哪一段時間形成相對穩定的狀態」。
+- **Event Timeline**：回答「什麼時候發生了什麼」。
+
+目前 Analysis 的第一個正式 baseline 使用 LOC3 時期關鍵字資料；LOC6 Threads 完成後，可在不改變這個介面責任的前提下加入概念／治理語言變化。
+
 ## 13. 現行一句定義
 
 > **ERA 不是按時間切割，而是根據持續性的語意狀態變化，經多來源證據確認並由使用者治理後形成、且可隨新證據再細化的時間分段。**
