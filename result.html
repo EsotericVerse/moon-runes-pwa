@@ -351,8 +351,96 @@
     .rune-result-section.group strong { color:var(--purple); }
     .rune-result-section.reverse strong { color:var(--gold); }
 
+    .result-block {
+      margin-top: 20px;
+    }
+    .result-block:first-child { margin-top: 0; }
+    .result-section-head {
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:16px;
+      margin:0 0 12px;
+    }
+    .result-section-head h2 {
+      margin:0;
+      color:var(--text);
+      font-size:1.08rem;
+    }
+    .result-section-head p {
+      margin:0;
+      color:var(--muted);
+      font-size:.76rem;
+      text-align:right;
+    }
+    .card-details,
+    .reading-details {
+      margin-top:12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:rgba(3,13,28,.22);
+      overflow:hidden;
+    }
+    .card-details summary,
+    .reading-details summary {
+      cursor:pointer;
+      padding:11px 12px;
+      color:var(--gold);
+      font-size:.78rem;
+      font-weight:800;
+      list-style:none;
+    }
+    .card-details summary::-webkit-details-marker,
+    .reading-details summary::-webkit-details-marker { display:none; }
+    .card-details summary::after,
+    .reading-details summary::after {
+      content:"＋";
+      float:right;
+      color:var(--muted);
+    }
+    .card-details[open] summary::after,
+    .reading-details[open] summary::after { content:"－"; }
+    .card-details-body,
+    .reading-details-body {
+      padding:0 12px 12px;
+    }
+    .reading-lead {
+      padding:14px 15px;
+      border-left:3px solid var(--gold);
+      border-radius:0 12px 12px 0;
+      background:rgba(231,194,125,.07);
+      color:var(--text);
+    }
+    .reading-lead strong {
+      display:block;
+      margin-bottom:5px;
+      color:var(--gold);
+    }
+    .advice-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin-top:14px;
+    }
+    .advice-item {
+      padding:12px 13px;
+      border:1px solid var(--border);
+      border-radius:13px;
+      background:rgba(180,158,255,.06);
+    }
+    .advice-item strong {
+      display:block;
+      margin-bottom:4px;
+      color:var(--purple);
+      font-size:.76rem;
+    }
+    .advice-item span {
+      color:var(--muted);
+      font-size:.82rem;
+      line-height:1.6;
+    }
     .reading {
-      margin-top:20px;
+      margin-top:0;
       padding:20px;
       border:1px solid var(--border);
       border-radius:20px;
@@ -499,6 +587,9 @@
       .cards-grid[data-count="5"] { grid-template-columns:1fr; }
       .cards-grid[data-count="5"] .rune-result-card:nth-child(5) { grid-column:auto; width:auto; justify-self:stretch; }
       .mode-switch-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .advice-grid { grid-template-columns:1fr; }
+      .result-section-head { align-items:start; flex-direction:column; }
+      .result-section-head p { text-align:left; }
             .rune-result-card { display:block; }
       .rune-result-image { aspect-ratio:1/1; }
       .rune-result-grid { grid-template-columns:1fr 1fr; }
@@ -558,11 +649,23 @@
       </div>
 
       <div id="result-view" hidden>
-        <div class="result-card-stage">
-          <div class="cards-grid" id="cards-grid"></div>
-        </div>
-        <div class="reading" id="reading"></div>
-        <p class="note" id="mode-note"></p>
+        <section class="result-block" aria-labelledby="drawn-cards-title">
+          <div class="result-section-head">
+            <h2 id="drawn-cards-title">本次牌面</h2>
+            <p>先看符文、方向與月相，再進入整體解讀。</p>
+          </div>
+          <div class="result-card-stage">
+            <div class="cards-grid" id="cards-grid"></div>
+          </div>
+        </section>
+
+        <section class="result-block" aria-labelledby="reading-title">
+          <div class="result-section-head">
+            <h2 id="reading-title">本次解讀</h2>
+            <p id="mode-note"></p>
+          </div>
+          <div class="reading" id="reading"></div>
+        </section>
         <div class="actions" aria-label="結果頁操作">
           <button class="action-card" id="retry-button" type="button">
             <span>
