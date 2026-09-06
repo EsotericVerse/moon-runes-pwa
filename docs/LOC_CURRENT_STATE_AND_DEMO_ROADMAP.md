@@ -489,13 +489,15 @@ Graph RAG 已由「關係 groundwork」進入正式 Search Core：
 - Event 32
 - Semantic Playground
 
-### Priority D｜Graph RAG
-在 corpus 與 relationship registry 足夠後，再補：
-- relation expansion
-- multi-hop
-- provenance-aware traversal
-- temporal edge
-- trend aggregation
+### Priority D｜Governance Runtime
+Graph RAG 核心已完成；下一步優先補治理控制：
+- governance audit log
+- dispute / review
+- relation publication pipeline
+- uniform rights runtime enforcement
+- governed delete / tombstone
+- Canon / public promotion lifecycle
+- governance trend aggregation
 
 ---
 
