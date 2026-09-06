@@ -169,7 +169,7 @@
     "author_recollection": "Rune songs existed only within P2–P4; current recovered confirmed work-level records are incomplete."
   },
   "dataset_pipeline": {
-    "builder": "card_api/scripts/build_loc3_dataset.py",
+    "builder": "api/scripts/build_loc3_dataset.py",
     "builder_version": "0.1.5",
     "provenance_fields_preserved": [
       "source_origin",
