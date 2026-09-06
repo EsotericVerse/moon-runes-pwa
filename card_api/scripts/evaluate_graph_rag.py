@@ -43,12 +43,28 @@ def evaluate_case(engine: UnifiedSearchEngine, case: dict) -> dict:
             "pass": wanted <= actual,
         }
 
-    forbidden = set(expected.get("forbidden_nodes") or [])
-    forbidden_found = forbidden & node_ids
+    forbidden_nodes = set(expected.get("forbidden_nodes") or [])
+    forbidden_node_found = forbidden_nodes & node_ids
     checks["forbidden_nodes"] = {
-        "expected_absent": sorted(forbidden),
-        "found": sorted(forbidden_found),
-        "pass": not forbidden_found,
+        "expected_absent": sorted(forbidden_nodes),
+        "found": sorted(forbidden_node_found),
+        "pass": not forbidden_node_found,
+    }
+
+    forbidden_locs = set(expected.get("forbidden_locs") or [])
+    forbidden_loc_found = forbidden_locs & locs
+    checks["forbidden_locs"] = {
+        "expected_absent": sorted(forbidden_locs),
+        "found": sorted(forbidden_loc_found),
+        "pass": not forbidden_loc_found,
+    }
+
+    forbidden_eras = set(expected.get("forbidden_eras") or [])
+    forbidden_era_found = forbidden_eras & eras
+    checks["forbidden_eras"] = {
+        "expected_absent": sorted(forbidden_eras),
+        "found": sorted(forbidden_era_found),
+        "pass": not forbidden_era_found,
     }
 
     provenance = result.get("provenance") or {}
@@ -77,6 +93,15 @@ def main() -> int:
     engine = build_engine()
     rows = [evaluate_case(engine, case) for case in registry.get("cases", [])]
     passed = sum(1 for row in rows if row["pass"])
+    precision_checks = []
+    recall_checks = []
+    for row in rows:
+        for name, check in (row.get("checks") or {}).items():
+            if name.startswith("forbidden_"):
+                precision_checks.append(bool(check.get("pass")))
+            elif name in {"nodes", "locs", "eras"}:
+                recall_checks.append(bool(check.get("pass")))
+
     summary = {
         "registry": registry.get("registry"),
         "schema_version": registry.get("schema_version"),
@@ -84,6 +109,8 @@ def main() -> int:
         "passed": passed,
         "failed": len(rows) - passed,
         "pass_rate": round(passed / len(rows), 4) if rows else 0.0,
+        "recall_check_pass_rate": round(sum(recall_checks) / len(recall_checks), 4) if recall_checks else 1.0,
+        "precision_check_pass_rate": round(sum(precision_checks) / len(precision_checks), 4) if precision_checks else 1.0,
         "results": rows,
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2))

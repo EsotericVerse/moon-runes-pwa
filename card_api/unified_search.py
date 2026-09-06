@@ -1593,29 +1593,75 @@ class UnifiedSearchEngine:
                         "evidence_status": "recorded",
                     })
 
-        # Seed from returned result IDs and exact graph/query aliases.
+        # Seed selection is precision-first. When the query has a strong
+        # canonical/exact hit, do not let every low-relevance retrieval result
+        # become a graph seed; that causes unrelated LOC/ERA over-traversal.
         q = _compact(query)
+        strong_seed_ids: set[str] = set()
+        exclusive_seed_ids: set[str] = set()
+
         for rid, item in result_by_id.items():
-            seed_ids.add(rid)
-            if q and any(q in alias or alias in q for alias in self._result_graph_aliases(item)):
-                seed_ids.add(rid)
+            aliases = self._result_graph_aliases(item)
+            title = _compact(item.get("title") or "")
+            if q and (
+                q in aliases
+                or title == q
+                or (len(q) >= 3 and title.startswith(q))
+            ):
+                strong_seed_ids.add(rid)
+
         for node_id, node in nodes.items():
-            hay = _compact(" ".join([
-                str(node.get("id") or ""),
-                str(node.get("label") or ""),
-                str(node.get("period") or ""),
-                str(node.get("role") or ""),
-            ]))
-            if q and q in hay:
-                seed_ids.add(node_id)
+            label = _compact(node.get("label") or "")
+            period = _compact(node.get("period") or "")
+            node_type = str(node.get("node_type") or "")
+            object_type = str(node.get("object_type") or "")
+            strong = False
+            exclusive = False
+            if q:
+                if _compact(node.get("id") or "") == q or period == q or label == q:
+                    strong = True
+                elif node_type in {"life_event", "era", "rune", "work"} and len(q) >= 2:
+                    strong = label.startswith(q) or (len(q) >= 3 and q in label)
+
+                # Only named/historical entities monopolize the seed set.
+                # Generic governance concepts (e.g. 自我治理) must still keep
+                # cross-LOC retrieval seeds so LOC6/LOC7 evidence survives.
+                if strong:
+                    if node_type == "era" and period == q:
+                        exclusive = True
+                    elif node_type == "life_event" and object_type in {"system", "work"}:
+                        exclusive = True
+                    elif node_type == "rune" and label == q:
+                        exclusive = True
+
+            if strong:
+                strong_seed_ids.add(node_id)
+            if exclusive:
+                exclusive_seed_ids.add(node_id)
+
+        if exclusive_seed_ids:
+            seed_ids.update(exclusive_seed_ids)
+            # Exact retrieval aliases that name the same entity remain useful.
+            for rid, item in result_by_id.items():
+                if q and any(q == alias for alias in self._result_graph_aliases(item)):
+                    seed_ids.add(rid)
+        else:
+            # Concept queries retain retrieval breadth, plus any canonical hits.
+            seed_ids.update(result_by_id.keys())
+            seed_ids.update(strong_seed_ids)
 
         adjacency: dict[str, list[dict[str, Any]]] = {}
+        directional_relations = {"owned_by_loc", "belongs_to_era"}
         for edge in edges:
             source, target = str(edge.get("source") or ""), str(edge.get("target") or "")
             if not source or not target:
                 continue
             adjacency.setdefault(source, []).append(edge)
-            adjacency.setdefault(target, []).append(edge)
+            # Ownership and ERA membership are structural projections, not
+            # reverse discovery channels. Treating them as bidirectional turns
+            # LOC/ERA nodes into hubs that leak unrelated records into results.
+            if str(edge.get("relation_type") or "") not in directional_relations:
+                adjacency.setdefault(target, []).append(edge)
 
         visited = set(seed_ids)
         frontier = set(seed_ids)

@@ -92,14 +92,15 @@ class UnifiedSearchTests(unittest.TestCase):
         self.assertEqual(result["groups"]["knowledge"][0]["primary_loc"], "LOC7")
 
 
-    def test_loc8_temporal_snapshots_enter_graph_without_live_private_relations(self):
-        result = self.make_engine().search("自我治理", top_k=5)
-        node_ids = {node["id"] for node in result["graph"]["nodes"]}
-        edge_kinds = {edge.get("evidence_kind") for edge in result["graph"]["edges"]}
+    def test_loc8_temporal_snapshots_enter_canonical_graph_without_live_private_relations(self):
+        graph = self.make_engine()._canonical_graph()
+        node_ids = {node["id"] for node in graph["nodes"]}
+        edge_kinds = {edge.get("evidence_kind") for edge in graph["edges"]}
         self.assertIn("EV-TEST", node_ids)
         self.assertIn("DD-TEST", node_ids)
         self.assertIn("RUNE-1", node_ids)
-        self.assertTrue({"loc8_event_snapshot", "loc8_daily_rune_snapshot"} & edge_kinds)
+        self.assertIn("loc8_event_snapshot", edge_kinds)
+        self.assertIn("loc8_daily_rune_snapshot", edge_kinds)
 
     def test_search_returns_provenance_envelope(self):
         result = self.make_engine().search("自我治理", top_k=5)
