@@ -23,6 +23,8 @@
 | [LOC3_PERIOD_KEYWORD_ANALYSIS.md](./LOC3_PERIOD_KEYWORD_ANALYSIS.md) | LOC3 依 LOC8 連續時期統計歌曲關鍵字、轉折、情緒功能與結尾狀態 | Working |
 | [LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md](./LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md) | LOC 現行基本定義、Demo 架構、LOC1–8 責任、LOC8 時期／事件／時間統合與下一步 | Current / Working |
 | [LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md) | LOC2 真實情境／雙卡因果與 Event Corpus 定位 | Working |
+| [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md) | LOC 共用中立治理核心、CRUD／異議／邊界／版本與治理 Audit 基準 | Working / Governance Baseline |
+| [LUNA_RUNES_66_GOVERNANCE_DESIGN.md](./LUNA_RUNES_66_GOVERNANCE_DESIGN.md) | 月之符文66的平等使用、界／域、礦物組、悟與演化治理設計觀點 | Working Design Interpretation |
 | [LOC6_ZHENGDE_STYLE.md](./LOC6_ZHENGDE_STYLE.md) | 政德風治理核心、代表句、風格演變與 Stage Profile 規則 | Current / Working |
 | [LOC7_KM.md](./LOC7_KM.md) | LOC7 Knowledge Management 核心治理文件 | Current |
 | [LOC8_KM.md](./LOC8_KM.md) | LOC8 ERA／Event／Relation／Context 判定與治理邏輯 | Working |
@@ -54,4 +56,4 @@ UI / API / AI answer
 - **Proposed**：提案中，未視為現行規格。
 - **Historical**：保留歷史追溯，不作現行來源。
 
-最後同步：2026-09-06
+最後同步：2026-09-07
