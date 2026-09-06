@@ -83,6 +83,12 @@
       "purpose": "Canonical governance, meaning, style-state and stage-interpretation records."
     },
     {
+      "id": "loc6_threads_km",
+      "path": "data/shared/LOC6_THREADS_KM_INDEX.json",
+      "authority": "LOC6",
+      "purpose": "Searchable Threads evidence tranche for LOC6 KM; main posts primary, replies supplemental, with ERA document-frequency statistics."
+    },
+    {
       "id": "loc6_dual_rune_relations",
       "path": "data/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
       "authority": "LOC6",
@@ -151,7 +157,9 @@
       "dual_rune_relation_registry": "connected",
       "dual_rune_relation_model": "neutral pair → draw cause/effect projection → directions/context",
       "era_style_evidence": "403 indexed LOC3 works linked by ERA",
-      "cross_media_relationship_interpretation": "connected"
+      "cross_media_relationship_interpretation": "connected",
+      "threads_km_search": "connected-v0.1",
+      "threads_source_counts": "6907 deduplicated / 4491 main / 2416 replies"
     },
     "LOC7": {
       "linguistic_analysis_registry": "schema-ready",
@@ -221,7 +229,7 @@
       "LOC3": "lyrics/music retrieval",
       "LOC4": "registry ready; corpus import pending",
       "LOC5": "media retrieval through shared media registry",
-      "LOC6": "direct rune-interpretation corpus connected; governance/style corpus continues to expand",
+      "LOC6": "Governance registry + Threads KM evidence searchable through Unified Search",
       "LOC7": "FAQ/KM retrieval",
       "LOC8": "ERA retrieval"
     },
