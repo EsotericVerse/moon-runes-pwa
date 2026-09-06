@@ -1,5 +1,7 @@
+import { rune } from "./runes64.js";
+
 document.addEventListener("DOMContentLoaded", () => {
-  const all = (window.getRunes64?.() || [])
+  const all = (rune || [])
     .filter(r => r && Number(r.編號) >= 1 && Number(r.編號) <= 66)
     .sort((a,b) => Number(a.編號) - Number(b.編號));
 
