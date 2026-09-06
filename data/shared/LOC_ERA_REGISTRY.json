@@ -25,7 +25,15 @@
         "start": "2024-11-18",
         "end": "2025-02-20",
         "source": "Threads / current verified public-language baseline"
-      }
+      },
+      "milestones": [
+        {
+          "date": "2024-11-28",
+          "title": "開始使用 Threads",
+          "type": "platform_start",
+          "note": "公開短文與日常語言紀錄的重要來源開始使用；ERA 邊界不因平台啟用日改變。"
+        }
+      ]
     },
     {
       "era_id": "ERA-P0.5",
@@ -34,12 +42,12 @@
       "name": "月符前史過渡期",
       "display_label": "P0.5｜月符前史過渡期",
       "start_date": "2025-02-21",
-      "end_date": "2025-05-06",
+      "end_date": "2025-05-05",
       "status": "released",
       "source_event_id": "EV-ERA-P0.5",
-      "description": "期間：2025-02-21～2025-05-06。介於一般前史與月之符文正式形成之間的過渡段；保留 Suno、Threads 與其他來源的早期創作／語言證據，不把後來的 LOC 定義反向覆寫到當時。",
+      "description": "期間：2025-02-21～2025-05-05。介於一般前史與月之符文正式形成之間的過渡段；保留 Suno、Threads 與其他來源的早期創作／語言證據，不把後來的 LOC 定義反向覆寫到當時。",
       "state_before": "P0 月符前史",
-      "state_after": "P1 月之符文形成期",
+      "state_after": "2025-05-06 進入 P1：月之符文開始形成。",
       "source_active_range": {
         "start": "2025-02-21",
         "end": "2025-05-06",
@@ -50,20 +58,46 @@
       "era_id": "ERA-P1",
       "period": "P1",
       "order": 1,
-      "name": "月之符文形成期",
-      "display_label": "P1｜月之符文形成期",
-      "start_date": "2025-05-07",
+      "name": "月符到月典形成期",
+      "display_label": "P1｜月符到月典形成期",
+      "start_date": "2025-05-06",
       "end_date": "2025-10-15",
       "status": "released",
       "source_event_id": "EV-ERA-P1",
-      "description": "系統時期：2025-05-07～2025-10-15。P1 以月之符文正式形成後的區間為準；2025-02-21～2025-05-06 保留為 P0.5／前史過渡證據，不再回寫為 P1。",
+      "description": "期間：2025-05-06～2025-10-15。從月之符文開始形成，到月典／Luna Codex 概念即將出現前的形成區間。中間的重要完成日視為 Milestone／Event，不再額外切分 ERA。",
       "state_before": "P0.5 月符前史過渡期",
-      "state_after": "月之符文形成：月符開始出現，逐步形成符文語意、小說實作與後續 LOC 核心。",
+      "state_after": "月符從原型逐步完成為 66 符文，經《月語者》大型實作後，走到月典／Luna Codex 概念形成前夕。",
       "source_active_range": {
         "start": "2025-02-21",
         "end": "2025-06-24",
         "source": "Suno / original ERA segmentation"
-      }
+      },
+      "milestones": [
+        {
+          "date": "2025-05-06",
+          "title": "月之符文開始形成",
+          "type": "origin",
+          "note": "P1 起點。"
+        },
+        {
+          "date": "2025-06-28",
+          "title": "66 符文完成並正式投入使用",
+          "type": "system_milestone",
+          "note": "LOC66／66 符文完成，核心語彙進入實際使用。"
+        },
+        {
+          "date": "2025-07-25",
+          "title": "《月語者》完成",
+          "type": "work_milestone",
+          "note": "大型小說實作完成，成為月符發展中的明顯分水嶺。"
+        },
+        {
+          "date": "2025-10-15",
+          "title": "P1 結束",
+          "type": "era_boundary",
+          "note": "月符到月典形成區間結束；不視為 Luna Codex 首次文字出現日。"
+        }
+      ]
     },
     {
       "era_id": "ERA-P2",
@@ -75,14 +109,34 @@
       "end_date": "2026-01-14",
       "status": "released",
       "source_event_id": "EV-ERA-P2",
-      "description": "系統時期：2025-10-16～2026-01-14。Suno 原始活躍範圍：2025-10-16～2025-12-28。掙扎轉變期。在嘗試各種不一樣的方式，整理自己的過往。跌跌撞撞學步期。",
-      "state_before": "P1 原型探索期",
+      "description": "系統時期：2025-10-16～2026-01-14。重啟與格式形成持續進行；同時出現 Luna Codex → LunarCodex → LOC 的命名收斂。這些日期是名稱演化 Milestone，不另切 ERA。",
+      "state_before": "P1 月符到月典形成期",
       "state_after": "重啟與格式形成：開始形成較穩定的創作格式與表達方式",
       "source_active_range": {
         "start": "2025-10-16",
         "end": "2025-12-28",
         "source": "Suno / original ERA segmentation"
-      }
+      },
+      "milestones": [
+        {
+          "date": "2025-10-19",
+          "title": "Luna Codex 概念出現",
+          "type": "naming_milestone",
+          "note": "目前可確認的 LOC 概念史最早名稱證據。"
+        },
+        {
+          "date": "2025-12-19",
+          "title": "LunarCodex",
+          "type": "naming_milestone",
+          "note": "名稱演化紀錄。"
+        },
+        {
+          "date": "2025-12-21",
+          "title": "LOC",
+          "type": "naming_milestone",
+          "note": "LOC 縮寫名稱開始出現。"
+        }
+      ]
     },
     {
       "era_id": "ERA-P3",
@@ -94,14 +148,28 @@
       "end_date": "2026-03-08",
       "status": "released",
       "source_event_id": "EV-ERA-P3",
-      "description": "系統時期：2026-01-15～2026-03-08。Suno 原始活躍範圍：2026-01-15～2026-02-28。自我認知；跨越 01/30 正名界線。正在適應姓名轉變帶來的自我認知轉變。",
+      "description": "系統時期：2026-01-15～2026-03-08。自我認知與關係敘事持續發展；期間跨越 2026-01-30 正式改名，以及 2026-02-03「政德風 1.0」正式風格成立。兩者作為重要治理與風格 Milestone，不另切 ERA。",
       "state_before": "P2 重啟與格式形成期",
       "state_after": "微月光與關係敘事：自我認知提高，關係與陪伴成為主要敘事",
       "source_active_range": {
         "start": "2026-01-15",
         "end": "2026-02-28",
         "source": "Suno / original ERA segmentation"
-      }
+      },
+      "milestones": [
+        {
+          "date": "2026-01-30",
+          "title": "正式改名",
+          "type": "identity_governance",
+          "note": "名稱／身份治理的重要事件。"
+        },
+        {
+          "date": "2026-02-03",
+          "title": "政德風 1.0 正式風格成立",
+          "type": "style_milestone",
+          "note": "政德風正式風格版本的日期錨點。"
+        }
+      ]
     },
     {
       "era_id": "ERA-P4",
@@ -201,8 +269,9 @@
   ],
   "periodization_rule": {
     "label": "連續時期",
-    "rule": "P0 保存目前可驗證的月符前史；P0.5 為 2025-02-21～2025-05-06 的過渡段；P1 自 2025-05-07 起。其後每個時期沿用既定 start_date，並以相鄰時期形成連續時間軸。原始來源活躍範圍另存 source_active_range，不反向覆寫歷史紀錄。",
+    "rule": "ERA 邊界維持既有 P0、P0.5、P1–P8 架構；重要日期以 Milestone／Event 疊加，不因單一平台、作品完成、改名或命名事件自動新增 ERA。P1 為 2025-05-06～2025-10-15 的「月符到月典形成期」。原始來源活躍範圍另存 source_active_range，不反向覆寫歷史紀錄。",
     "scope": "LOC-wide",
-    "display_term": "時期"
+    "display_term": "時期",
+    "milestone_rule": "重要事件日期可落在 ERA 內部；ERA = 長期狀態階段，Milestone/Event = 階段內的重要事實日期。"
   }
 }
