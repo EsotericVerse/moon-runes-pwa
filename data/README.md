@@ -13,7 +13,7 @@ data/
    └─ experimental/
 ~~~
 
-See [Repository Governance](../docs/REPOSITORY_GOVERNANCE.md) and [JSON Data Map](../docs/JSON_DATA_MAP.md).
+See [Repository Governance](../km/REPOSITORY_GOVERNANCE.md) and [JSON Data Map](../km/JSON_DATA_MAP.md).
 
 Rules:
 
