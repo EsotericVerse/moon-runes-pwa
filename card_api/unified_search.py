@@ -71,12 +71,22 @@ class UnifiedSearchEngine:
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.loc6 = self._load_json("LOC6_GOVERNANCE_REGISTRY.json")
         self.loc6_threads = self._load_json("LOC6_THREADS_KM_INDEX.json")
+        self.loc6_thread_articles = self._load_repo_json("data/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json")
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
         self.lots = self._load_json("lots.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
         path = self.shared_root / name
+        if not path.exists():
+            return {}
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+
+    def _load_repo_json(self, rel_path: str) -> dict[str, Any]:
+        path = self.repo_root / rel_path
         if not path.exists():
             return {}
         try:
