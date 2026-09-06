@@ -231,3 +231,71 @@ def analyze_corpus(
         "trajectories": trajectories,
         "sources": dict(source_counts.most_common()),
     }
+
+
+def classify_text(
+    text: str,
+    *,
+    categories: dict[str, list[str]] | None = None,
+    seed_keywords: list[str] | None = None,
+    top_k: int = 12,
+) -> dict[str, Any]:
+    """Classify one text with deterministic keyword rules.
+
+    No external model/API is required.  Callers may provide their own category
+    dictionary, making this useful outside the author's personal corpus.
+    """
+    cleaned = _clean_text(text)
+    if not cleaned:
+        return {
+            "text_length": 0,
+            "keywords": [],
+            "categories": [],
+            "matched_terms": {},
+        }
+
+    seeds = [str(x).strip() for x in (seed_keywords or []) if str(x).strip()]
+    counts = _candidates(cleaned, 2, 4)
+    for term in seeds:
+        hit = cleaned.count(term)
+        if hit:
+            counts[term] = max(counts.get(term, 0), hit)
+
+    keywords = [
+        {"term": term, "hit_count": count}
+        for term, count in counts.most_common(max(1, min(top_k, 50)))
+    ]
+
+    category_rows = []
+    matched_terms: dict[str, list[dict[str, Any]]] = {}
+    for label, terms in (categories or {}).items():
+        label = str(label).strip()
+        if not label:
+            continue
+        hits = []
+        score = 0
+        for raw_term in terms or []:
+            term = str(raw_term).strip()
+            if not term:
+                continue
+            count = cleaned.count(term)
+            if count:
+                score += count
+                hits.append({"term": term, "hit_count": count})
+        if score:
+            hits.sort(key=lambda row: (-row["hit_count"], row["term"]))
+            matched_terms[label] = hits
+            category_rows.append({
+                "label": label,
+                "score": score,
+                "matched_term_count": len(hits),
+            })
+
+    category_rows.sort(key=lambda row: (-row["score"], -row["matched_term_count"], row["label"]))
+
+    return {
+        "text_length": len(cleaned),
+        "keywords": keywords,
+        "categories": category_rows,
+        "matched_terms": matched_terms,
+    }
