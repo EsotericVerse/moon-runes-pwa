@@ -21,9 +21,9 @@
     },
     {
       "id": "game",
-      "label": "LOC2 遊戲",
+      "label": "月符沙盒遊戲",
       "href": "loc2.html",
-      "description": "Semantic Playground"
+      "description": "LOC2 · Semantic Playground"
     },
     {
       "id": "search",
