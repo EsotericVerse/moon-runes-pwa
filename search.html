@@ -237,8 +237,10 @@
       const p=new URLSearchParams(location.search);
       const type=p.get('content_type')||'';
       const q=p.get('q')||'';
+      const period=p.get('period')||'';
       if(type&&[...el('contentType').options].some(o=>o.value===type)) el('contentType').value=type;
       if(q) el('query').value=q;
+      if(period&&[...el('period').options].some(o=>o.value===period)) el('period').value=period;
       if(q) el('searchForm').requestSubmit();
     }
     function quick(){
