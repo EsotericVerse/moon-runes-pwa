@@ -1,16 +1,19 @@
 import json
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "json" / "experimental" / "engine"
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
 # 載入語意向量、meta、語句
 embeddings = np.load('combined_embeddings.npy')
-with open('combined_meta.json', 'r', encoding='utf-8') as f:
+with open(str(DATA_DIR / str(DATA_DIR / "combined_meta.json")), 'r', encoding='utf-8') as f:
     meta = json.load(f)
-with open('sentences.json', 'r', encoding='utf-8') as f:
+with open(str(DATA_DIR / str(DATA_DIR / "sentences.json")), 'r', encoding='utf-8') as f:
     sentences = json.load(f)
 
 # 載入要補全的檔案
-with open('runes64_alldata.json', 'r', encoding='utf-8') as f:
+with open(str(DATA_DIR / str(DATA_DIR / "runes64_alldata.json")), 'r', encoding='utf-8') as f:
     runes = json.load(f)
 
 model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
@@ -27,5 +30,5 @@ for rune in runes:
         rune['愛情建議'] = [sentences[i] for i in best_indices]
 
 # 儲存補全後的檔案
-with open('data_filled.json', 'w', encoding='utf-8') as f:
+with open(str(DATA_DIR / str(DATA_DIR / "data_filled.json")), 'w', encoding='utf-8') as f:
     json.dump(runes, f, ensure_ascii=False, indent=2)
