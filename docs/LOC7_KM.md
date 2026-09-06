@@ -379,3 +379,13 @@ LOC6 Threads corpus 現行完整解析目標為 **7,008 筆去重文字紀錄**�
 3. **Projection layer**：ERA、trend、main/reply support、後續 Canon 關係。
 
 不得以 ERA 或 Canon 結果反向覆寫原始 document layer。全文 corpus 的規模與時序本身也屬 LOC6 的展示性指標。
+
+
+### P0 corpus baseline
+
+P0 已由完整 Threads 主貼文索引取得 **1,049 筆 primary records**，時間範圍為 **2024-11-18 ～ 2025-02-20**。現行 baseline 保存 document count、文字量與 literal probe term prevalence，作為後續跨 ERA 分析的起點。
+
+- Structured baseline：`data/generated/loc6/threads/analysis/LOC6_THREADS_P0_BASELINE_v0.1.json`
+- P0 total characters：161,458
+- 主貼文只作 primary evidence；Reply 仍維持 supplemental evidence。
+- term frequency 不得直接升格 Concept；Concept 仍須由 phrase/context evidence 與人工治理確認。
