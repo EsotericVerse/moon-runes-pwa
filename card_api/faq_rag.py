@@ -184,9 +184,19 @@ class FAQSearchEngine:
             for part in re.split(r"(?:以及|還有|同時|或者|與|和)", query)
             if part.strip(" ，,。！？!?")
         ]
+        # Shared interrogative tails semantically apply to every coordinated
+        # clause: "A 和 B 是什麼？" means "A 是什麼？" + "B 是什麼？".
+        shared_tail = ""
+        tail_match = re.search(r"(是什麼|是甚麼|做什麼|有什麼|怎麼運作|怎麼使用|如何運作|如何使用)[？?]?$", query)
+        if tail_match:
+            shared_tail = tail_match.group(1)
+
         if intent_limit > 1 and len(clauses) > 1:
             for clause in clauses[:intent_limit]:
-                clause_results = self.search(clause, top_k=top_k)
+                subquery = clause
+                if shared_tail and shared_tail not in subquery:
+                    subquery = f"{subquery}{shared_tail}"
+                clause_results = self.search(subquery, top_k=top_k)
                 clause_relevant = [result for result in clause_results if result.score >= 0.08]
                 if clause_relevant:
                     add_result(clause_relevant[0])
