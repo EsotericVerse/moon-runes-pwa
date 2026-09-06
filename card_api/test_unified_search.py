@@ -110,5 +110,40 @@ class UnifiedSearchTests(unittest.TestCase):
         self.assertGreaterEqual(provenance["source_ref_count"], 1)
 
 
+    def test_graph_quality_weights_are_deterministic(self):
+        engine = self.make_engine()
+        self.assertEqual(
+            engine._graph_edge_quality("owned_by_loc", "authority_registry", "recorded"),
+            1.0,
+        )
+        self.assertLess(
+            engine._graph_edge_quality("related_to", "semantic_inference", "inferred"),
+            0.30,
+        )
+
+    def test_search_graph_exposes_quality_contract(self):
+        result = self.make_engine().search("自我治理", top_k=5)
+        graph = result["graph"]
+        self.assertIn("quality", graph)
+        self.assertIn("mean_edge_quality", graph["quality"])
+        self.assertGreaterEqual(graph["quality"]["mean_edge_quality"], 0.0)
+        for edge in graph["edges"]:
+            self.assertIn("edge_quality", edge)
+            self.assertIn("quality_band", edge)
+            self.assertIn("traversal_score", edge)
+            self.assertGreaterEqual(edge["traversal_score"], graph["quality"]["min_traversal_score"])
+
+        provenance = result["provenance"]
+        self.assertIn("graph_quality_bands", provenance)
+        self.assertIn("graph_quality", provenance)
+
+    def test_synthesis_confidence_uses_graph_quality(self):
+        result = self.make_engine().search("自我治理", top_k=5)
+        synthesis = result["synthesis"]
+        self.assertIsNotNone(synthesis)
+        self.assertIn("mean_edge_quality", synthesis["confidence"])
+        self.assertIn("quality", synthesis["graph"])
+
+
 if __name__ == "__main__":
     unittest.main()
