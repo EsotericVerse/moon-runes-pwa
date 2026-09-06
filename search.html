@@ -31,6 +31,18 @@
     .evidence-section[open]>summary{border-bottom:1px solid var(--line);background:var(--soft)}
     .evidence-body{padding:14px}
     .result-logic-note{margin:10px 0 0;color:var(--muted);font-size:.78rem}
+    .synthesis-card{padding:24px}
+    .synthesis-card .meta{margin-bottom:14px}
+    .synthesis-lead{margin:0 0 18px;padding:14px 16px;border-left:3px solid var(--mint);border-radius:0 12px 12px 0;background:rgba(126,214,194,.06);color:#e3eceb;line-height:1.75}
+    .synthesis-findings{display:grid;gap:9px;margin:14px 0 16px;padding:0;list-style:none}
+    .synthesis-findings li{padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:#d6e0df;line-height:1.6}
+    .synthesis-findings li strong{color:var(--mint);margin-right:6px}
+    .synthesis-terms{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+    .synthesis-tech{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+    .synthesis-tech>summary{cursor:pointer;color:var(--muted);font-size:.82rem;font-weight:800}
+    .synthesis-tech[open]>summary{margin-bottom:12px;color:var(--text)}
+    .synthesis-tech-body{display:grid;gap:10px}
+    .synthesis-tech-body .summary{font-size:.82rem;color:var(--muted)}
     footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
     @media(max-width:900px){.location-map{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:720px){.pagination{align-items:stretch}.pagination-pages{width:100%;justify-content:center}.pagination-info{width:100%;text-align:center}.suggestion-grid{grid-template-columns:1fr 1fr}.primary-actions{display:grid;grid-template-columns:1fr 1fr}.submit,.clear-btn,.browse-btn{width:100%}.filter-tabs{grid-template-columns:1fr 1fr 1fr}.filter-tab{font-size:.78rem;padding:10px 6px}.time-grid{grid-template-columns:1fr}.browse-inline{align-items:stretch;flex-direction:column}.topbar{align-items:flex-start;flex-direction:column}}
@@ -343,42 +355,92 @@
 
     function synthesisCard(synthesis,graph){
       if(!synthesis)return '';
-      const locs=(synthesis.loc_coverage||[]).map(x=>`<span class="pill">${esc(x.loc)} · ${esc(x.count)}</span>`).join('');
+
+      const locCoverage=(synthesis.loc_coverage||[]);
+      const locs=locCoverage.slice(0,6).map(x=>`<span class="pill">${esc(x.loc)} · ${esc(x.count)}</span>`).join('');
       const ev=(synthesis.evidence||[]).slice(0,8).map(x=>`<span class="pill">${esc(x.label)} · ${esc(x.count)}</span>`).join('');
       const periods=(synthesis.periods||[]).map(x=>`<span class="pill">${esc(x)}</span>`).join('');
-      const paths=((synthesis.graph||{}).paths||[]).slice(0,6);
+
       const g=synthesis.graph||{};
+      const paths=(g.paths||[]).slice(0,6);
       const eraPath=(g.era_path||[]).map(x=>x.period||x.label||x.era_id).filter(Boolean);
       const locPath=(g.loc_path||[]).filter(Boolean);
       const connected=(g.connected_results||[]);
+
+      const isTechnicalText=(value)=>{
+        const s=String(value||'').trim();
+        if(!s)return true;
+        if(s.length>260)return true;
+        return /Authoritative|registry|related_to|evidence groups?|graph edges?|nodes?\b|edges?\b|\bP\d+(?:\.\d+)?\s*\d+(?:\.\d+)?%|→\s*P\d+/i.test(s);
+      };
+
+      const findings=(Array.isArray(synthesis.key_findings)?synthesis.key_findings:[])
+        .map(x=>String(x||'').trim())
+        .filter(Boolean);
+
+      const readableFindings=findings
+        .filter(x=>!isTechnicalText(x))
+        .filter((x,i,a)=>a.indexOf(x)===i)
+        .slice(0,3);
+
+      const summaryCandidates=[
+        synthesis.summary,
+        synthesis.introduction,
+        synthesis.analysis_summary,
+        ...readableFindings
+      ];
+      const readableSummary=summaryCandidates.find(x=>x&&!isTechnicalText(x))
+        || '已找到跨 LOC 的相關資料；以下先呈現可直接閱讀的重點，原始統計與 Graph 資訊收在技術細節中。';
+
+      const terms=(Array.isArray(synthesis.topic_terms)?synthesis.topic_terms:[])
+        .map(x=>x?.term)
+        .filter(Boolean)
+        .slice(0,6);
+
+      const findingHtml=readableFindings.length
+        ? `<ul class="synthesis-findings">${readableFindings.map((x,i)=>`<li><strong>${i+1}</strong>${esc(x)}</li>`).join('')}</ul>`
+        : '';
+
       const graphHtml=(paths.length||eraPath.length||locPath.length)?`
-        <details open>
-          <summary>Graph RAG 聚合 · ${esc(g.node_count||0)} nodes / ${esc(g.edge_count||0)} edges</summary>
+        <details>
+          <summary>Graph RAG 原始關聯 · ${esc(g.node_count||0)} nodes / ${esc(g.edge_count||0)} edges</summary>
           <div class="summary">
             ${eraPath.length?`<p><strong>時期軌跡：</strong>${eraPath.map(esc).join(' → ')}</p>`:''}
             ${locPath.length?`<p><strong>跨 LOC：</strong>${locPath.map(esc).join(' · ')}</p>`:''}
             ${connected.length?`<p><strong>Graph 延伸結果：</strong>${connected.map(x=>`${esc(x.primary_loc||'')} ${esc(x.title||x.result_id||'')}`).join(' · ')}</p>`:''}
             ${paths.map(p=>`<div style="margin:.45rem 0"><strong>${esc(p.from?.primary_loc||p.from?.node_type||'')}</strong> ${esc(p.from?.label||p.from?.id||'')} → <b>${esc(p.relation||'related_to')}</b> → <strong>${esc(p.to?.primary_loc||p.to?.node_type||'')}</strong> ${esc(p.to?.label||p.to?.id||'')}${p.summary?`<br><small>${esc(p.summary)}</small>`:''}${p.evidence_kind?`<br><small>evidence: ${esc(p.evidence_kind)}</small>`:''}</div>`).join('')}
           </div>
-        </details>`:
-        '<p class="summary"><strong>Graph RAG：</strong>目前沒有可走訪的 Canonical edge；語意相似不會被硬寫成關聯。</p>';
+        </details>`
+        : '<p class="summary"><strong>Graph RAG：</strong>目前沒有可走訪的 Canonical edge。</p>';
+
       return `<section class="group synthesis-group">
-        <div class="grouphead"><h2>綜合分析</h2><span>Search Synthesis · Graph Enriched</span></div>
+        <div class="grouphead"><h2>綜合分析</h2><span>先看結論，需要時再展開技術資料</span></div>
         <div class="cards">
-          <article class="card">
-            <div class="meta"><span class="pill">LOC7 · Analysis</span><span class="pill">自動彙整</span>${locs}</div>
+          <article class="card synthesis-card">
+            <div class="meta"><span class="pill">跨 LOC 綜合結果</span>${locs}</div>
             <h3>${esc(synthesis.title||'綜合結果')}</h3>
-            <p class="summary"><strong>介紹：</strong>${esc(synthesis.introduction||synthesis.summary||'')}</p>
-            ${synthesis.analysis_summary?`<p class="summary"><strong>自動分析：</strong>${esc(synthesis.analysis_summary)}</p>`:''}
-            ${Array.isArray(synthesis.key_findings)&&synthesis.key_findings.length?`<div class="summary"><strong>重點：</strong><ul>${synthesis.key_findings.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
-            ${Array.isArray(synthesis.topic_terms)&&synthesis.topic_terms.length?`<div class="meta">${synthesis.topic_terms.slice(0,8).map(x=>`<span class="pill">${esc(x.term)}</span>`).join('')}</div>`:''}
-            ${synthesis.period_trend?.summary?`<p class="summary"><strong>時期趨勢：</strong>${esc(synthesis.period_trend.summary)}</p>`:''}
-            ${synthesis.graph_summary?`<p class="summary"><strong>Graph 彙整：</strong>${esc(synthesis.graph_summary)}</p>`:''}
-            ${synthesis.confidence?`<p class="summary"><small>分析信心：${esc(synthesis.confidence.level)} · evidence groups ${esc(synthesis.confidence.evidence_group_count)} · graph edges ${esc(synthesis.confidence.graph_edge_count)}</small></p>`:''}
-            ${ev?`<p class="summary"><strong>證據分布：</strong></p><div class="meta">${ev}</div>`:''}
-            ${periods?`<p class="summary"><strong>時期：</strong></p><div class="meta">${periods}</div>`:''}
-            ${graphHtml}
-            <p class="summary"><small>${esc(synthesis.governance_note||'')}</small></p>
+
+            <p class="synthesis-lead">${esc(readableSummary)}</p>
+
+            ${findingHtml}
+
+            ${terms.length?`<div class="synthesis-terms">${terms.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}</div>`:''}
+
+            <details class="synthesis-tech">
+              <summary>技術細節與原始分析</summary>
+              <div class="synthesis-tech-body">
+                ${synthesis.introduction?`<p class="summary"><strong>來源說明：</strong>${esc(synthesis.introduction)}</p>`:''}
+                ${synthesis.analysis_summary?`<p class="summary"><strong>完整自動分析：</strong>${esc(synthesis.analysis_summary)}</p>`:''}
+                ${findings.length?`<div class="summary"><strong>完整重點：</strong><ul>${findings.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+                ${synthesis.period_trend?.summary?`<p class="summary"><strong>時期趨勢：</strong>${esc(synthesis.period_trend.summary)}</p>`:''}
+                ${synthesis.graph_summary?`<p class="summary"><strong>Graph 彙整：</strong>${esc(synthesis.graph_summary)}</p>`:''}
+                ${synthesis.confidence?`<p class="summary"><small>分析信心：${esc(synthesis.confidence.level)} · evidence groups ${esc(synthesis.confidence.evidence_group_count)} · graph edges ${esc(synthesis.confidence.graph_edge_count)}</small></p>`:''}
+                ${ev?`<div><p class="summary"><strong>證據分布：</strong></p><div class="meta">${ev}</div></div>`:''}
+                ${periods?`<div><p class="summary"><strong>時期：</strong></p><div class="meta">${periods}</div></div>`:''}
+                ${graphHtml}
+                ${synthesis.governance_note?`<p class="summary"><small>${esc(synthesis.governance_note)}</small></p>`:''}
+              </div>
+            </details>
           </article>
         </div>
       </section>`;
