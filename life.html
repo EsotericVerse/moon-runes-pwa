@@ -1174,7 +1174,7 @@
 
     async function loadLoc5MediaRegistry() {
       try {
-        const res = await fetch('data/shared/LOC_MEDIA_REGISTRY.json', { cache: 'no-store' });
+        const res = await fetch('data/json/shared/LOC_MEDIA_REGISTRY.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('LOC5 media registry unavailable');
         loc5MediaRegistry = await res.json();
       } catch (err) {
@@ -1185,7 +1185,7 @@
 
     async function loadLoc4WritingRegistry() {
       try {
-        const res = await fetch('data/shared/LOC4_WRITING_REGISTRY.json', { cache: 'no-store' });
+        const res = await fetch('data/json/shared/LOC4_WRITING_REGISTRY.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('LOC4 writing registry unavailable');
         loc4WritingRegistry = await res.json();
       } catch (err) {
@@ -1196,7 +1196,7 @@
 
     async function loadLoc3PeriodKeywordAnalysis() {
       try {
-        const res = await fetch('data/shared/LOC3_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
+        const res = await fetch('data/json/shared/LOC3_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('LOC3 period keyword analysis unavailable');
         loc3PeriodKeywordAnalysis = await res.json();
       } catch (err) {
@@ -1207,7 +1207,7 @@
 
     async function loadLoc6PeriodKeywordAnalysis() {
       try {
-        const res = await fetch('data/shared/LOC6_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
+        const res = await fetch('data/json/shared/LOC6_PERIOD_KEYWORD_ANALYSIS.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('LOC6 period keyword analysis unavailable');
         loc6PeriodKeywordAnalysis = await res.json();
       } catch (err) {
@@ -1252,7 +1252,7 @@
       // Render from repository registries first. The period/keyword view must
       // not depend on Event rows or on the Apps Script deployment being fresh.
       try {
-        const res = await fetch('data/shared/LOC_ERA_REGISTRY.json', { cache: 'no-store' });
+        const res = await fetch('data/json/shared/LOC_ERA_REGISTRY.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('Static period registry unavailable');
         const data = await res.json();
         eraRegistry = mergeEraOverrides(Array.isArray(data.eras) ? data.eras : []);
@@ -1695,7 +1695,7 @@
 
     async function loadEventSnapshot() {
       try {
-        const res = await fetch('data/shared/LOC8_EVENT_SNAPSHOT.json', { cache: 'no-store' });
+        const res = await fetch('data/json/shared/LOC8_EVENT_SNAPSHOT.json', { cache: 'no-store' });
         if (!res.ok) {
           governedEventIds = new Set();
           return [];
@@ -2622,7 +2622,7 @@
 
     async function loadDailyDrawSnapshot() {
       try {
-        const res = await fetch('data/shared/LOC8_DAILY_RUNE_SNAPSHOT.json', { cache: 'no-store' });
+        const res = await fetch('data/json/shared/LOC8_DAILY_RUNE_SNAPSHOT.json', { cache: 'no-store' });
         if (!res.ok) return [];
         const data = await res.json();
         return Array.isArray(data.daily_draws) ? data.daily_draws : [];
