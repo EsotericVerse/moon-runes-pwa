@@ -1,5 +1,9 @@
 import os
 import json
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "json" / "experimental" / "engine"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # 複製 g.py 的 flatten_value 函數
 def flatten_value(value):
@@ -23,7 +27,7 @@ train_data = []
 
 # 1. 處理 runes07.json
 try:
-    with open('runes07.json', 'r', encoding='utf-8') as f:
+    with open(str(DATA_DIR / str(DATA_DIR / "runes07.json")), 'r', encoding='utf-8') as f:
         runes07 = json.load(f)
     for r in runes07:
         rune = r if isinstance(r, dict) else r[0] if isinstance(r, list) and r else {}
@@ -52,7 +56,7 @@ except Exception as e:
 
 # 2. 處理 runes_all_data.json
 try:
-    with open('runes_all_data.json', 'r', encoding='utf-8') as f:
+    with open(str(DATA_DIR / str(DATA_DIR / "runes_all_data.json")), 'r', encoding='utf-8') as f:
         all_data = json.load(f)
     advice_fields = ["現在月相", "狀況形容", "狀況表達", "每日占卜提醒", "每日占卜祝福"]
     for item in all_data:
@@ -92,7 +96,7 @@ except Exception as e:
     print(f"處理 runes_all_data.json 時發生錯誤：{str(e)}")
 
 # 儲存訓練專用檔案
-with open('training_data.json', 'w', encoding='utf-8') as f:
+with open(str(DATA_DIR / str(DATA_DIR / "training_data.json")), 'w', encoding='utf-8') as f:
     json.dump(train_data, f, ensure_ascii=False, indent=2)
 
 print(f"訓練專用檔案 training_data.json 已生成，總筆數：{len(train_data)}")
