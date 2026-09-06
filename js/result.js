@@ -16,7 +16,7 @@ let lotsMap = new Map();
 
 async function loadLots() {
   try {
-    const response = await fetch("data/shared/lots.json");
+    const response = await fetch("data/json/shared/lots.json");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     const items = Array.isArray(payload?.items) ? payload.items : [];
