@@ -22,7 +22,7 @@ from paths import shared_json, RUNTIME_JSON_DIR
 
 
 def shared_registry_path(name: str) -> Path:
-    return shared_json(name)
+    return registry_json(name)
 
 
 def load_loc3_author_annotations() -> dict[str, dict[str, Any]]:
