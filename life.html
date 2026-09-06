@@ -915,11 +915,11 @@
 
         <section class="card" style="margin-top:16px;" id="context-graph">
           <div class="head">
-            <div><h3>Graph View</h3><p>使用同一份 Relation 資料顯示目前節點的鄰接關係；從 Trajectory 點「查看 Graph」即可展開。</p></div>
+            <div><h3>Graph View</h3><p>以 ERA 連續時間軸與已確認 Relation edge 建立關聯圖；點 Trajectory 節點可切換成該節點的局部 Graph。</p></div>
             <span class="badge">Graph-ready</span>
           </div>
           <div class="body">
-            <div class="empty">先在上方 Trajectory 點選節點，再按「查看 Graph」。只顯示已確認 Relation edge，不自動把語意相似寫成 Canon 關聯。</div>
+            <div class="empty">正在建立 ERA／Relation Graph…</div>
           </div>
         </section>
       </div>
@@ -2012,6 +2012,7 @@
       renderRelations();
       renderAll();
       renderTrajectoryAnalysis();
+      renderGraphView();
     }
 
     function renderRelations() {
@@ -2224,6 +2225,114 @@
           <div class="s">${esc(e.date)} · ${esc(e.event_title)}</div>
         </button>
       `).join('');
+    }
+
+    function canonicalGraphRelations() {
+      const out = [];
+
+      // 1) Continuous ERA axis is deterministic structural evidence.
+      const eras = Array.isArray(eraRegistry)
+        ? eraRegistry.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0))
+        : [];
+      for (let i = 1; i < eras.length; i++) {
+        const from = eras[i - 1];
+        const to = eras[i];
+        out.push({
+          id: `GRAPH-ERA-${from.era_id}-${to.era_id}`,
+          source_type: 'era',
+          source_id: from.era_id,
+          source_label: from.period || from.name || from.era_id,
+          target_type: 'era',
+          target_id: to.era_id,
+          target_label: to.period || to.name || to.era_id,
+          relation_type: 'temporal_after',
+          summary: `${from.period || from.era_id} 之後進入 ${to.period || to.era_id}`,
+          confidence: 'recorded',
+          evidence: 'LOC_ERA_REGISTRY'
+        });
+      }
+
+      // 2) User-maintained Relation rows from LOC8.
+      relations.filter(r => r.status !== 'archived').forEach(r => out.push({
+        id: r.id,
+        source_type: r.source_type,
+        source_id: r.source_id,
+        source_label: r.source_id,
+        target_type: r.target_type,
+        target_id: r.target_id,
+        target_label: r.target_id,
+        relation_type: r.relation_type,
+        summary: r.summary || '',
+        confidence: r.confidence || 'recorded',
+        evidence: r.evidence || 'LOC8 Relation'
+      }));
+
+      return out;
+    }
+
+    function graphLabel(id) {
+      const era = eraRegistry.find(x => String(x.era_id || '') === String(id || ''));
+      return era ? `${era.period || era.era_id} · ${era.name || ''}` : String(id || '');
+    }
+
+    function renderGraphView(centerId='') {
+      const graph = $('#context-graph');
+      if (!graph) return;
+      const body = graph.querySelector('.body');
+      if (!body) return;
+
+      const edges = canonicalGraphRelations();
+      if (!edges.length) {
+        body.innerHTML = '<div class="empty">目前沒有可用的 Graph edge。</div>';
+        return;
+      }
+
+      let selected = edges;
+      if (centerId) {
+        selected = edges.filter(edge =>
+          String(edge.source_id || '') === String(centerId) ||
+          String(edge.target_id || '') === String(centerId)
+        );
+      }
+
+      // If a non-ERA concept has no direct stored edge, keep the full ERA graph
+      // visible rather than showing an empty graph.
+      if (!selected.length) {
+        selected = edges.filter(edge => edge.evidence === 'LOC_ERA_REGISTRY');
+      }
+
+      const nodes = new Map();
+      selected.forEach(edge => {
+        nodes.set(String(edge.source_id), { id: edge.source_id, label: edge.source_label || graphLabel(edge.source_id), type: edge.source_type });
+        nodes.set(String(edge.target_id), { id: edge.target_id, label: edge.target_label || graphLabel(edge.target_id), type: edge.target_type });
+      });
+
+      body.innerHTML = `
+        <div class="state-box">
+          <div class="state-row">
+            <div class="k">Graph</div>
+            <div class="v">${centerId ? '中心節點：' + esc(graphLabel(centerId)) : '完整 ERA / Relation Graph'}</div>
+          </div>
+          <div class="state-row">
+            <div class="k">Nodes</div>
+            <div class="v">${nodes.size}</div>
+          </div>
+          <div class="state-row">
+            <div class="k">Edges</div>
+            <div class="v">${selected.length}</div>
+          </div>
+          <div style="margin-top:12px"><strong>關聯路徑</strong></div>
+          ${selected.map(edge => `
+            <div class="state-row">
+              <div class="k">${esc(edge.relation_type)}</div>
+              <div class="v"><strong>${esc(graphLabel(edge.source_id))}</strong> → <strong>${esc(graphLabel(edge.target_id))}</strong>
+                ${edge.summary ? `<br><small>${esc(edge.summary)}</small>` : ''}
+                <br><small>${esc(edge.evidence || '')} · ${esc(edge.confidence || '')}</small>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
     }
 
     function renderTrajectoryInspector(nodeId, nodeType='state') {
@@ -3050,18 +3159,8 @@
       const btn = ev.target.closest('[data-node-graph]');
       if (!btn) return;
       const key = btn.dataset.nodeGraph || '';
-      const graph = $('#context-graph');
-      const connected = relations.filter(r => String(r.source_id || '') === key || String(r.target_id || '') === key);
-      if (graph) {
-        const body = graph.querySelector('.body');
-        if (body) body.innerHTML = connected.length
-          ? `<div class="state-box">
-              <div class="state-row"><div class="k">中心節點</div><div class="v"><strong>${esc(key)}</strong></div></div>
-              ${connected.map(r => `<div class="state-row"><div class="k">${esc(r.relation_type)}</div><div class="v">${esc(r.source_id)} → ${esc(r.target_id)}${r.summary ? `<br><small>${esc(r.summary)}</small>` : ''}</div></div>`).join('')}
-            </div>`
-          : '<div class="empty">此節點目前沒有已確認的 Relation edge；不以語意相似自動建立 Canon Graph。</div>';
-        graph.scrollIntoView({ behavior:'smooth', block:'start' });
-      }
+      renderGraphView(key);
+      $('#context-graph')?.scrollIntoView({ behavior:'smooth', block:'start' });
     });
 
     $('#trajPrevBtn').addEventListener('click', () => {
@@ -3134,6 +3233,7 @@
         Promise.all([loadEraRegistry(), loadEvents(), loadRelations()]).then(() => {
           renderAll();
           renderTrajectoryAnalysis();
+          renderGraphView();
         });
       } else if (view === 'era-trend') {
         history.replaceState(null, '', '#era-trend');
