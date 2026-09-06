@@ -4,7 +4,7 @@ from zhdate import ZhDate
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import os
 
 from faq_rag import FAQSearchEngine
@@ -17,7 +17,7 @@ from corpus_analysis import analyze_corpus, classify_text
 app = FastAPI(
     title="LOC API",
     description="LOC 月典符文、作品、知識、媒體與時間語意 Unified Search API",
-    version="1.3.0",
+    version="1.4.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -437,8 +437,8 @@ class UnifiedBrowseInput(BaseModel):
 
 class TextAnalyzeInput(BaseModel):
     text: str
-    categories: dict[str, list[str]] = {}
-    seed_keywords: list[str] = []
+    categories: dict[str, list[str]] = Field(default_factory=dict)
+    seed_keywords: list[str] = Field(default_factory=list)
     top_k: int = 12
 
 
@@ -511,7 +511,7 @@ async def root():
     return {
         "status": "healthy",
         "message": "LOC API",
-        "version": "1.3.0",
+        "version": "1.4.0",
         "endpoints": {
             "divination": "/divination",
             "faq_search": "/faq/search",
