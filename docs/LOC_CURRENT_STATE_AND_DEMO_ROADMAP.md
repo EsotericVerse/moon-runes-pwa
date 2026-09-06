@@ -192,16 +192,22 @@ LOC Framework 原則上不必綁死 66 月符。
 - Graph 結構與後續多跳擴展
 - **所有 LOC 的文字搜尋統一由 LOC Search / LOC RAG 管理**
 
-### LOC8｜Integration & Temporal Management
-LOC8 的現行核心是**事件、時期、時間與跨 LOC 統合**。
+### LOC8｜Context / Relation & Trend
+LOC8 的現行核心是**事件、時期、關係、軌跡與趨勢分析**，時間只是其中一個投影維度。
 
-其工作包括：
+目前已實作：
 
 - 每日符文紀錄與近期趨勢
-- 事件紀錄與 Current State
-- 連續時期（公開顯示為「時期」；stable machine ID 可保留 ERA-Px）
-- 事件時間線與狀態軌跡
-- 跨 LOC 的時間引用與統合
+- Event 新增／修改／刪除與 Current State
+- ERA 時期直接新增／修改／刪除（顯示即管理）
+- Event Timeline：回答「什麼時候發生什麼」
+- Relation Library：保存節點與節點之間的關係
+- 軌跡 Trajectory：呈現狀態／時期如何一路轉變
+- 趨勢分析 Analysis：比較相鄰 LOC3 時期的關鍵字／語義家族比重升降，並搭配文字轉折說明
+- Context：統合 Relation、Trajectory、Analysis，作為 Graph-ready 的脈絡工作區
+- 跨 LOC 的時間、作品、概念與 Event 引用
+
+目前 Graph 視圖仍為後續，不應宣稱完整 Knowledge Graph / Graph RAG 已完成。
 
 因此：
 
@@ -341,7 +347,7 @@ Edge 可包括：
 - LOC5 Media Registry 與已知 Reels
 - LOC6 政德風／治理／演變分析
 - LOC7 KM / RAG / Search
-- LOC8 時期／事件／時間脈絡資料
+- LOC8 每日符文／ERA CRUD／Event Timeline／Relation／Trajectory／Analysis
 - Search-first 統一入口
 - FAQ 與 LOC3 specialist search 已整合／redirect
 - LOC1 Seed Corpus 已進 Knowledge Asset
@@ -396,8 +402,8 @@ Edge 可包括：
 6. LOC1 Seed Corpus 是 RAG 的正式一部分。
 7. LOC2 是 Semantic Playground / Simulation Layer。
 8. LOC7 管 KM、RAG、Graph structure 與全 LOC 文字檢索。
-9. LOC8 核心定位為 Relation & Trend Analysis。
-10. 時間線／ERA 是「關係」的一個維度。
+9. LOC8 核心定位為 Context / Relation & Trend Analysis。
+10. 時間線／ERA 是「關係」的一個維度；Trajectory 與 Analysis 分別負責演變投影與變化證據解讀。
 11. LOC Search 是唯一文字搜尋入口。
 12. Search 介面簡稱「LOC 搜尋引擎」，正式技術名「LOC RAG 語意向量搜尋」。
 13. 籤詩模式先 Lots、再多面向、再 keyword retrieval。

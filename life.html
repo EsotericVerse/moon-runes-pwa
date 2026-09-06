@@ -530,6 +530,32 @@
     .theme-dialog p{margin:12px 2px 0;color:var(--muted);line-height:1.65}
     .footer { color: var(--muted); font-size: 12px; text-align: center; padding: 22px 0 4px; }
 
+
+    .trajectory-analysis-grid { display:grid; gap:12px; }
+    .transition-analysis-card { border:1px solid var(--line); border-radius:14px; padding:14px; background:rgba(255,255,255,.02); }
+    .transition-analysis-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:10px; }
+    .transition-analysis-head strong { font-size:13px; }
+    .transition-analysis-head small { color:var(--muted); font-size:10px; white-space:nowrap; }
+    .transition-delta-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:10px 0; }
+    .transition-delta-box { border:1px solid var(--line); border-radius:11px; padding:10px; background:rgba(255,255,255,.015); }
+    .transition-delta-box b { display:block; font-size:10px; color:var(--muted); margin-bottom:6px; }
+    .transition-delta-list { display:flex; gap:6px; flex-wrap:wrap; }
+    .transition-delta-chip { display:inline-flex; gap:4px; align-items:center; border:1px solid var(--line); border-radius:999px; padding:3px 7px; font-size:10px; }
+    .transition-analysis-summary { color:#d8e4f7; font-size:12px; line-height:1.7; }
+    .transition-analysis-evidence { margin-top:8px; color:var(--muted); font-size:10px; }
+
+    .era-tools { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+    .era-tools .btn { padding:5px 8px; font-size:10px; }
+    .era-editor { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; width:100%; }
+    .era-editor .full { grid-column:1 / -1; }
+    .era-editor label { display:grid; gap:5px; color:var(--muted); font-size:10px; }
+    .era-editor input, .era-editor select, .era-editor textarea {
+      width:100%; min-width:0; padding:8px 9px; border:1px solid var(--line); border-radius:9px;
+      background:rgba(255,255,255,.03); color:var(--text); font:inherit;
+    }
+    .era-editor textarea { min-height:72px; resize:vertical; }
+    .era-add-row { border-style:dashed; }
+
     @media (max-width: 1100px) {
       .app { grid-template-columns: 1fr; }
       .sidebar { position: static; min-height: auto; }
@@ -590,7 +616,15 @@
           </button>
           <button class="view-switch" id="eventTimeViewBtn" type="button" data-view="event-time">
             <span class="nav-title">事件時間線</span>
-            <span class="nav-sub">Timeline · Trajectory</span>
+            <span class="nav-sub">Timeline · 事件順序</span>
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">04 · 脈絡</div>
+          <button class="view-switch" id="contextViewBtn" type="button" data-view="context">
+            <span class="nav-title">脈絡 Context</span>
+            <span class="nav-sub">Relation · Trajectory · Graph</span>
           </button>
         </div>
 
@@ -600,7 +634,7 @@
         </div>
       </nav>
       <div class="sidebar-foot">
-        每日符文 → 時期 → 事件。全站返回首頁請使用右上方導覽；左側只保留 LOC8 工作區。
+        每日符文 → 時期 → 事件 → 脈絡。時間線記順序，脈絡記關係；左側只保留 LOC8 工作區。
       </div>
     </aside>
 
@@ -732,8 +766,8 @@
 
       <section class="card" style="margin-top:16px;" id="era-timeline">
         <div class="head">
-          <div><h3>時期時間線</h3><p>LOC8 的連續時期；空白區間已延伸至下一時期前一天。Suno 原始活躍範圍只保留為來源註記，不再當作時期邊界。</p></div>
-          <span class="badge">時期 · LOC8</span>
+          <div><h3>時期時間線</h3><p>LOC8 的連續時期；可直接在顯示位置新增、修改、刪除。Suno 原始活躍範圍只保留為來源註記，不再當作時期邊界。</p></div>
+          <div class="actions" style="margin:0"><button class="btn primary" id="addEraBtn" type="button">新增時期</button><span class="badge">時期 · LOC8</span></div>
         </div>
         <div class="body"><div class="era-timeline" id="eraTimelineList"><div class="empty">載入時期資料中…</div></div></div>
       </section>
@@ -743,10 +777,10 @@
       <div class="life-view" id="eventTimeView" hidden>
         <section class="hero">
           <div class="loc-header">
-            <p class="loc-header-meta">LOC8 · Event · Timeline · Trajectory</p>
+            <p class="loc-header-meta">LOC8 · Event · Timeline</p>
             <h1 class="loc-header-title">事件時間線</h1>
-            <h2 class="loc-header-subtitle">事件發生在時間裡，時間形成軌跡。</h2>
-            <p class="loc-header-copy">時間線保留事件發生的順序；軌跡則聚焦事件造成的狀態轉移。事件標籤會回到時期中形成關鍵字脈絡。</p>
+            <h2 class="loc-header-subtitle">把事件留在時間裡，先回答「什麼時候發生了什麼」。</h2>
+            <p class="loc-header-copy">這裡只保存 Event 的時間順序與紀錄維護；狀態如何演變、概念如何互相影響，移到獨立的「脈絡 Context」處理。</p>
           </div>
           <div class="sync"><span class="dot" id="eventSyncDot"></span><span id="eventSyncText">載入中…</span></div>
         </section>
@@ -759,16 +793,41 @@
         <div class="body"><div class="timeline" id="timelineList"><div class="empty">尚無事件。</div></div></div>
       </section>
 
+
+      </div>
+
+      <div class="life-view" id="contextView" hidden>
+        <section class="hero">
+          <div class="loc-header">
+            <p class="loc-header-meta">LOC8 · Context · Relation · Trajectory</p>
+            <h1 class="loc-header-title">脈絡 Context</h1>
+            <h2 class="loc-header-subtitle">不只記先後，而是記「彼此怎麼連、怎麼變」。</h2>
+            <p class="loc-header-copy">Relation 是底層關聯資料；Trajectory 是有方向的演變投影；Graph 將在同一批關聯資料上建立網狀視圖。這裡承接 LOC6 與其他 LOC 模組整理出的跨事件、概念、作品與符文關係。</p>
+          </div>
+          <div class="sync"><span class="dot ok"></span><span>Relation Library · LOC8 v1.0</span></div>
+        </section>
+
       <section class="card" style="margin-top:16px;" id="trajectory">
           <div class="head">
-            <div><h3>Trajectory</h3><p>不是看單點，而是看狀態怎麼一路轉變。</p></div>
+            <div><h3>軌跡 Trajectory</h3><p>不是看單點，而是看狀態怎麼一路轉變。</p></div>
             <div class="trajectory-controls">
               <button class="btn ghost" id="trajPrevBtn" type="button" aria-label="向前捲動軌跡">←</button>
               <button class="btn ghost" id="trajNextBtn" type="button" aria-label="向後捲動軌跡">→</button>
-              <span class="badge">軌跡</span>
             </div>
           </div>
           <div class="body"><div class="trajectory" id="trajectoryList"><div class="empty" style="min-width:100%">需要至少兩筆具有 State After 的事件才能形成軌跡。</div></div></div>
+      </section>
+
+      <section class="card" style="margin-top:16px;" id="trajectory-analysis">
+        <div class="head">
+          <div><h3>趨勢分析 Analysis</h3><p>把軌跡的變化拆成可讀的證據：關鍵字比重怎麼升降，以及這個轉折代表什麼。</p></div>
+          <span class="badge">LOC3 → LOC8</span>
+        </div>
+        <div class="body">
+          <div class="trajectory-analysis-grid" id="trajectoryAnalysis">
+            <div class="empty">載入 LOC3 時期差異分析中…</div>
+          </div>
+        </div>
       </section>
 
       <section class="card" style="margin-top:16px;" id="relation-library">
@@ -834,6 +893,15 @@
         </div>
       </section>
 
+        <section class="card" style="margin-top:16px;" id="context-graph">
+          <div class="head">
+            <div><h3>Graph View</h3><p>使用同一份 Relation 資料建立網狀視圖；目前先保留為下一階段入口，不另造第二套資料。</p></div>
+            <span class="badge">Next</span>
+          </div>
+          <div class="body">
+            <div class="empty">Graph 視圖尚未啟用。Relation 與 Trajectory 已可使用；之後直接由 Relation edge 產生網狀圖。</div>
+          </div>
+        </section>
       </div>
 
       <div class="life-view" id="dailyDrawView">
@@ -962,6 +1030,7 @@
       timeline: $('#timelineList'),
       eraTimeline: $('#eraTimelineList'),
       trajectory: $('#trajectoryList'),
+      trajectoryAnalysis: $('#trajectoryAnalysis'),
       current: $('#currentState'),
       syncText: $('#syncText'),
       syncDot: $('#syncDot'),
@@ -1028,6 +1097,8 @@
     let editingId = '';
     let relations = [];
     let editingRelationId = '';
+    let editingEraId = '';
+    let addingEra = false;
 
     function uid() {
       return 'EV-' + new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0,14) + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
@@ -1126,6 +1197,7 @@
       }
 
       renderEraTimeline();
+      renderTrajectoryAnalysis();
 
       // Live Sheet refresh is optional and must never blank the LOC3 keyword view.
       try {
@@ -1140,7 +1212,7 @@
           const staticByPeriod = new Map(eraRegistry.map(item => [String(item.period || ''), item]));
           eraRegistry = remote.map(item => {
             const canonical = staticByPeriod.get(String(item.period || ''));
-            return canonical ? { ...item, ...canonical } : item;
+            return canonical ? { ...canonical, ...item } : item;
           });
           renderEraTimeline();
         }
@@ -1237,6 +1309,83 @@
           }))
           .sort((a,b) => b.count - a.count || a.term.localeCompare(b.term, 'zh-Hant'))
           .slice(0, 14)
+      };
+    }
+
+
+    function eraUid(period='') {
+      const safe = String(period || '').trim().replace(/\s+/g, '-');
+      return safe ? 'ERA-' + safe : 'ERA-' + new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0,14);
+    }
+
+    function eraEditorHtml(era={}, isNew=false) {
+      const draft = {
+        era_id: era.era_id || '',
+        period: era.period || '',
+        order: era.order ?? '',
+        name: era.name || '',
+        start_date: era.start_date || '',
+        end_date: era.end_date || '',
+        status: era.status || 'current',
+        description: era.description || '',
+        state_before: era.state_before || '',
+        state_after: era.state_after || ''
+      };
+      return `
+        <form class="era-editor" data-era-form="${isNew ? 'new' : esc(draft.era_id)}">
+          <label>代號 / Period<input name="period" value="${esc(draft.period)}" placeholder="例如 P8.1" required></label>
+          <label>排序<input name="order" type="number" step="0.1" value="${esc(draft.order)}" placeholder="例如 8.1"></label>
+          <label class="full">名稱<input name="name" value="${esc(draft.name)}" placeholder="時期名稱" required></label>
+          <label>開始日期<input name="start_date" type="date" value="${esc(draft.start_date)}"></label>
+          <label>結束日期<input name="end_date" type="date" value="${esc(draft.end_date)}"></label>
+          <label>狀態<select name="status">
+            <option value="current" ${draft.status === 'current' ? 'selected' : ''}>Current</option>
+            <option value="released" ${draft.status === 'released' ? 'selected' : ''}>Released</option>
+            <option value="archived" ${draft.status === 'archived' ? 'selected' : ''}>Archived</option>
+          </select></label>
+          <label>ERA ID<input name="era_id" value="${esc(draft.era_id)}" placeholder="新增時可留白，自動生成" ${isNew ? '' : 'readonly'}></label>
+          <label class="full">描述<textarea name="description">${esc(draft.description)}</textarea></label>
+          <label>State Before<textarea name="state_before">${esc(draft.state_before)}</textarea></label>
+          <label>State After<textarea name="state_after">${esc(draft.state_after)}</textarea></label>
+          <div class="era-tools full">
+            <button class="btn primary" type="submit">${isNew ? '新增' : '儲存修改'}</button>
+            <button class="btn ghost" type="button" data-era-action="cancel">取消</button>
+          </div>
+        </form>
+      `;
+    }
+
+    async function saveEra(era, action='era') {
+      const res = await fetch(SHEET_API_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({ action, era }),
+        redirect:'follow'
+      });
+      if (!res.ok) throw new Error('ERA POST failed');
+      const data = await res.json();
+      if (data && data.ok === false) throw new Error(data.error || 'ERA API error');
+      return data;
+    }
+
+    function eraFormPayload(form, existing={}) {
+      const fd = new FormData(form);
+      const period = String(fd.get('period') || '').trim();
+      const name = String(fd.get('name') || '').trim();
+      return {
+        ...existing,
+        era_id: String(fd.get('era_id') || '').trim() || eraUid(period),
+        period,
+        order: String(fd.get('order') || '').trim(),
+        name,
+        display_label: period && name ? period + '｜' + name : (name || period),
+        start_date: String(fd.get('start_date') || '').trim(),
+        end_date: String(fd.get('end_date') || '').trim(),
+        status: String(fd.get('status') || 'current'),
+        description: String(fd.get('description') || '').trim(),
+        state_before: String(fd.get('state_before') || '').trim(),
+        state_after: String(fd.get('state_after') || '').trim(),
+        system_id: existing.system_id || 'lo3rwang'
       };
     }
 
@@ -1362,7 +1511,16 @@
         }).join('');
       }
 
-      els.eraTimeline.innerHTML = ordered.map(era => {
+      const renderedRows = ordered.map(era => {
+        if (editingEraId === era.era_id) {
+          return `
+            <article class="era-row">
+              <div class="era-range">編輯</div>
+              <div>${eraEditorHtml(era, false)}</div>
+            </article>
+          `;
+        }
+
         const end = era.end_date || '現在';
         const sourceRange = era.source_active_start
           ? `${era.source_active_start || '—'}～${era.source_active_end || '現在'}`
@@ -1382,10 +1540,20 @@
               <div class="era-desc">${esc(era.state_after || era.description || '')}</div>
               ${entries.length ? `<div class="era-keyword-chips">${entries.map(([tag,count]) => `<span class="era-keyword-chip">${esc(tag)} <b>${String(count).includes("%") ? esc(count) : "×" + esc(count)}</b></span>`).join('')}</div>` : ''}
               ${sourceRange ? `<div class="era-source-note">Suno 原始活躍範圍（來源參考）：${esc(sourceRange)}</div>` : ''}
+              <div class="era-tools">
+                <button class="btn ghost" type="button" data-era-action="edit" data-era-id="${esc(era.era_id)}">修改</button>
+                <button class="btn ghost" type="button" data-era-action="delete" data-era-id="${esc(era.era_id)}">刪除</button>
+              </div>
             </div>
           </article>
         `;
       }).join('');
+
+      const addRow = addingEra
+        ? `<article class="era-row era-add-row"><div class="era-range">新增</div><div>${eraEditorHtml({}, true)}</div></article>`
+        : '';
+
+      els.eraTimeline.innerHTML = addRow + renderedRows;
     }
 
     async function loadEventSnapshot() {
@@ -1456,6 +1624,116 @@
       return data;
     }
 
+    function keywordPercentMap(periodItem) {
+      const items = Array.isArray(periodItem?.normalized_semantic_families)
+        ? periodItem.normalized_semantic_families
+        : (Array.isArray(periodItem?.normalized_top_keywords) ? periodItem.normalized_top_keywords : []);
+      const map = new Map();
+      items.forEach(item => map.set(String(item.term || ''), Number(item.percent || 0)));
+      return map;
+    }
+
+    function namedKeywordPercentMap(periodItem) {
+      const map = new Map();
+      (Array.isArray(periodItem?.named_keywords) ? periodItem.named_keywords : [])
+        .forEach(item => map.set(String(item.term || ''), Number(item.percent || 0)));
+      return map;
+    }
+
+    function transitionDelta(fromItem, toItem) {
+      const from = keywordPercentMap(fromItem);
+      const to = keywordPercentMap(toItem);
+      const all = new Set([...from.keys(), ...to.keys()]);
+      const deltas = [...all].map(term => ({
+        term,
+        from: from.get(term) || 0,
+        to: to.get(term) || 0,
+        delta: Number(((to.get(term) || 0) - (from.get(term) || 0)).toFixed(1))
+      }));
+      const rising = deltas.filter(x => x.delta > 0).sort((a,b) => b.delta - a.delta).slice(0,4);
+      const falling = deltas.filter(x => x.delta < 0).sort((a,b) => a.delta - b.delta).slice(0,4);
+
+      const fromNamed = namedKeywordPercentMap(fromItem);
+      const toNamed = namedKeywordPercentMap(toItem);
+      const namedTerms = new Set([...fromNamed.keys(), ...toNamed.keys()]);
+      const named = [...namedTerms].map(term => ({
+        term,
+        from: fromNamed.get(term) || 0,
+        to: toNamed.get(term) || 0,
+        delta: Number(((toNamed.get(term) || 0) - (fromNamed.get(term) || 0)).toFixed(1))
+      })).filter(x => x.delta !== 0).sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0,3);
+
+      return { rising, falling, named };
+    }
+
+    function transitionRelationSummary(fromEraId, toEraId) {
+      const relation = relations.find(r =>
+        String(r.source_type) === 'era' &&
+        String(r.target_type) === 'era' &&
+        String(r.source_id) === String(fromEraId) &&
+        String(r.target_id) === String(toEraId) &&
+        r.summary
+      );
+      return relation?.summary || '';
+    }
+
+    function renderTrajectoryAnalysis() {
+      if (!els.trajectoryAnalysis) return;
+      const periods = Array.isArray(loc3PeriodKeywordAnalysis?.periods)
+        ? loc3PeriodKeywordAnalysis.periods.slice()
+        : [];
+      if (periods.length < 2) {
+        els.trajectoryAnalysis.innerHTML = '<div class="empty">目前沒有足夠的 LOC3 時期資料可比較。</div>';
+        return;
+      }
+
+      periods.sort((a,b) => String(a.start_date || '').localeCompare(String(b.start_date || '')));
+      const cards = [];
+      for (let i = 1; i < periods.length; i++) {
+        const from = periods[i - 1];
+        const to = periods[i];
+        const { rising, falling, named } = transitionDelta(from, to);
+        const relationSummary = transitionRelationSummary(from.era_id, to.era_id);
+
+        const fallbackSummary = [
+          rising.length ? '主要上升：' + rising.slice(0,3).map(x => `${x.term} +${x.delta}pt`).join('、') : '',
+          falling.length ? '主要下降：' + falling.slice(0,3).map(x => `${x.term} ${x.delta}pt`).join('、') : ''
+        ].filter(Boolean).join('；');
+
+        const deltaChips = (items, sign) => items.length
+          ? items.map(x => `<span class="transition-delta-chip">${esc(x.term)} <b>${sign === 'up' ? '+' : ''}${esc(x.delta)}pt</b> <small>${esc(x.from)}→${esc(x.to)}%</small></span>`).join('')
+          : '<span class="era-source-note">無明顯變化</span>';
+
+        const namedHtml = named.length
+          ? `<div class="transition-analysis-evidence">命名概念：${named.map(x => `${esc(x.term)} ${x.delta > 0 ? '+' : ''}${esc(x.delta)}pt（${esc(x.from)}→${esc(x.to)}%）`).join('、')}</div>`
+          : '';
+
+        cards.push(`
+          <article class="transition-analysis-card">
+            <div class="transition-analysis-head">
+              <strong>${esc(from.period)} → ${esc(to.period)}｜${esc(from.period_name || '')} → ${esc(to.period_name || '')}</strong>
+              <small>LOC3 ${esc(from.work_count || 0)} → ${esc(to.work_count || 0)} 首</small>
+            </div>
+            <div class="transition-delta-grid">
+              <div class="transition-delta-box">
+                <b>比重上升</b>
+                <div class="transition-delta-list">${deltaChips(rising, 'up')}</div>
+              </div>
+              <div class="transition-delta-box">
+                <b>比重下降</b>
+                <div class="transition-delta-list">${deltaChips(falling, 'down')}</div>
+              </div>
+            </div>
+            <div class="transition-analysis-summary">${esc(relationSummary || fallbackSummary || '目前只有數值差異，尚未建立文字轉折說明。')}</div>
+            ${namedHtml}
+            <div class="transition-analysis-evidence">比較單位：每期作品中命中該語義家族的作品比例；差值單位為 percentage points。</div>
+          </article>
+        `);
+      }
+
+      els.trajectoryAnalysis.innerHTML = cards.join('');
+    }
+
     function normalizeRelation(raw) {
       return {
         id: raw.id || relationUid(),
@@ -1516,6 +1794,7 @@
       }
       renderRelations();
       renderAll();
+      renderTrajectoryAnalysis();
     }
 
     function renderRelations() {
@@ -1553,6 +1832,7 @@
     }
 
     function editRelation(id) {
+      switchView('context', $('#contextViewBtn'));
       const r = relations.find(x => x.id === id);
       if (!r || !els.relationForm) return;
       editingRelationId = id;
@@ -2422,10 +2702,10 @@
       if (!res.ok) throw new Error('Health check failed');
       const data = await res.json();
       if (!data || data.ok !== true) throw new Error(data && data.error ? data.error : 'API not ready');
-      if (data.schema !== 'loc8-mvp-1.0') {
+      if (data.schema !== 'loc8-mvp-1.1') {
         throw new Error('API schema mismatch: ' + (data.schema || 'unknown'));
       }
-      setSync(true, 'Google Sheet API 已連線 · v1.0');
+      setSync(true, 'Google Sheet API 已連線 · v1.1');
       return true;
     }
 
@@ -2439,6 +2719,7 @@
 
     const lifeView = $('#lifeView');
     const eventTimeView = $('#eventTimeView');
+    const contextView = $('#contextView');
     const eraTrendView = $('#eraTrendView');
     const dailyDrawView = $('#dailyDrawView');
 
@@ -2446,6 +2727,7 @@
       document.body.classList.remove('life-initial-daily');
       lifeView.hidden = view !== 'overview';
       eventTimeView.hidden = view !== 'event-time';
+      contextView.hidden = view !== 'context';
       eraTrendView.hidden = view !== 'era-trend';
       dailyDrawView.hidden = view !== 'daily';
 
@@ -2457,7 +2739,10 @@
         loadDailyDraws();
       } else if (view === 'event-time') {
         history.replaceState(null, '', '#event-time');
-        Promise.all([loadEvents(), loadRelations()]);
+        loadEvents();
+      } else if (view === 'context') {
+        history.replaceState(null, '', '#context');
+        Promise.all([loadEvents(), loadRelations()]).then(renderTrajectoryAnalysis);
       } else if (view === 'era-trend') {
         history.replaceState(null, '', '#era-trend');
         loadEraRegistry();
@@ -2467,12 +2752,79 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+
+    $('#addEraBtn')?.addEventListener('click', () => {
+      addingEra = true;
+      editingEraId = '';
+      renderEraTimeline();
+      $('#era-timeline')?.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+
+    els.eraTimeline?.addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-era-action]');
+      if (!button) return;
+      const action = button.dataset.eraAction;
+      const eraId = button.dataset.eraId || '';
+
+      if (action === 'edit') {
+        editingEraId = eraId;
+        addingEra = false;
+        renderEraTimeline();
+        return;
+      }
+
+      if (action === 'cancel') {
+        editingEraId = '';
+        addingEra = false;
+        renderEraTimeline();
+        return;
+      }
+
+      if (action === 'delete') {
+        const era = eraRegistry.find(x => x.era_id === eraId);
+        const label = era?.display_label || era?.name || eraId;
+        if (!confirm(`確定刪除時期「${label}」？這不會自動刪除既有 Event / Relation，只會移除 ERA 本身。`)) return;
+        try {
+          await saveEra({ era_id: eraId }, 'delete_era');
+          eraRegistry = eraRegistry.filter(x => x.era_id !== eraId);
+          renderEraTimeline();
+        } catch (err) {
+          alert('刪除時期失敗：' + err.message);
+        }
+      }
+    });
+
+    els.eraTimeline?.addEventListener('submit', async (event) => {
+      const form = event.target.closest('[data-era-form]');
+      if (!form) return;
+      event.preventDefault();
+      const token = form.dataset.eraForm;
+      const isNew = token === 'new';
+      const existing = isNew ? {} : (eraRegistry.find(x => x.era_id === token) || {});
+      const era = eraFormPayload(form, existing);
+      try {
+        await saveEra(era, isNew ? 'era' : 'update_era');
+        if (isNew) {
+          eraRegistry.push(era);
+        } else {
+          eraRegistry = eraRegistry.map(x => x.era_id === token ? { ...x, ...era } : x);
+        }
+        editingEraId = '';
+        addingEra = false;
+        renderEraTimeline();
+      } catch (err) {
+        alert((isNew ? '新增' : '修改') + '時期失敗：' + err.message);
+      }
+    });
+
     $('#overviewViewBtn').addEventListener('click', () => switchView('overview', $('#overviewViewBtn')));
     $('#eventTimeViewBtn').addEventListener('click', () => switchView('event-time', $('#eventTimeViewBtn')));
+    $('#contextViewBtn').addEventListener('click', () => switchView('context', $('#contextViewBtn')));
     $('#eraTrendViewBtn').addEventListener('click', () => switchView('era-trend', $('#eraTrendViewBtn')));
     $('#dailyDrawViewBtn').addEventListener('click', () => switchView('daily', $('#dailyDrawViewBtn')));
 
     if (location.hash === '#event-time') switchView('event-time', $('#eventTimeViewBtn'));
+    else if (location.hash === '#context') switchView('context', $('#contextViewBtn'));
     else if (location.hash === '#era-trend') switchView('era-trend', $('#eraTrendViewBtn'));
     else if (location.hash === '#overview') switchView('overview', $('#overviewViewBtn'));
     else switchView('daily', $('#dailyDrawViewBtn'));
