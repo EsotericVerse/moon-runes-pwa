@@ -144,3 +144,29 @@ mean_edge_quality
 `provenance` 同步回傳 `graph_quality_bands` 與 `graph_quality`。Search Synthesis 的 confidence 也會納入 mean edge quality，而不再只看命中數與 edge 數。
 
 這套分數是 **治理權重**，不是模型主觀機率；權重定義以 `data/json/shared/LOC_GRAPH_SCHEMA.json` v0.4 為 contract。
+
+## Public Graph endpoint
+
+### `GET /search/graph`
+
+Public access follows Graph Schema v0.5.
+
+Without `node_id` the endpoint returns **metadata only**:
+
+~~~text
+mode = graph_metadata
+node_count / edge_count
+node_types / edge_types
+nodes = []
+edges = []
+bulk_export = false
+requires_node_id = true
+~~~
+
+This prevents the endpoint from becoming a bulk corpus/Graph export surface.
+
+With `node_id`, the endpoint returns a bounded `graph_neighborhood` at depth 1–3.
+
+LOC8 `life.html#graph` uses this contract: natural-language queries first use `POST /search`, then clicking a node requests one bounded neighborhood.
+
+Graph ownership remains LOC7; LOC8 is a visualization/context consumer.
