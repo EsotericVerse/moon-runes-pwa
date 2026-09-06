@@ -360,9 +360,22 @@ ChatGPT 對話不是預設第二套完整 corpus，而是 **gap-filling source**
 
 這一層是 **Primary-source-derived Search Index**，不是 Canon。搜尋結果可以作為 LOC6 概念形成、風格演變與治理語言的原始證據，但不得因高頻或搜尋命中就自動升格為 Canonical Concept。
 
-第一版採「先可搜尋，再持續擴充 corpus」策略。完整 6907 筆原文仍保留於原始 Threads export；repository 內的 searchable tranche 會逐步擴充，不需要等待全部 Concept clustering 完成才開始使用。
+第一版採「先可搜尋，再持續擴充 corpus」策略。完整 7008 筆去重文字紀錄仍保留於原始 Threads export；repository 內的 searchable tranche 會逐步擴充，不需要等待全部 Concept clustering 完成才開始使用。
 
 
 ### 2026-09-06 展示版進度
 
 目前 repo 已接入 21 篇主貼文文章作為可搜尋 LOC6 Article tranche，另保留 Reply 補充證據與關鍵字統計。搜尋頁已提供「LOC6 文章／Threads」篩選與獨立文章卡片；完整 corpus 採分批 migration，不阻塞展示版使用。
+
+
+### 全文解析目標
+
+LOC6 Threads corpus 現行完整解析目標為 **7,008 筆去重文字紀錄**，時間範圍自 **2024-11-18 至 2026-09-06**。其中 **4,578 筆主貼文**作為 primary evidence，**2,430 筆 Reply** 作為 supplemental evidence。
+
+完整解析必須保留三個層次：
+
+1. **Document layer**：原文、日期、source role、stable source id。
+2. **Semantic layer**：Surface Term、phrase、Concept candidate、semantic role、support evidence。
+3. **Projection layer**：ERA、trend、main/reply support、後續 Canon 關係。
+
+不得以 ERA 或 Canon 結果反向覆寫原始 document layer。全文 corpus 的規模與時序本身也屬 LOC6 的展示性指標。
