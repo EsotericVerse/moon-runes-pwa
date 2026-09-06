@@ -42,7 +42,7 @@ Tier C  Maintained knowledge documents
         └─ governance / architecture notes
 
 Tier D  Structured registries
-        └─ data/json/shared/*.json
+        └─ data/json/registries/*.json
 
 Tier E  Retrieval derivatives
         ├─ LOC_FAQ_v*.json
@@ -98,7 +98,7 @@ LOC2 的事件資料在 KM 中不只視為遊戲規則。它同時是一批 **Sc
 - LOC2 情境可供 LOC4 敘事、LOC6 文法、LOC7 建築／關係分析與 LOC8 生活事件引用。
 
 維護文件：[LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md)  
-Structured registry：`data/json/shared/LOC2_EVENT_REGISTRY.json`
+Structured registry：`data/json/registries/LOC2_EVENT_REGISTRY.json`
 
 ## 7. 雙符文關係層
 
@@ -106,7 +106,7 @@ Structured registry：`data/json/shared/LOC2_EVENT_REGISTRY.json`
 
 ### 7.1 Pair Relation — 中性關係
 
-`data/json/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json` 保存兩個符文放在一起時的基本語意關係。
+`data/json/registries/LOC6_DUAL_RUNE_RELATION_REGISTRY.json` 保存兩個符文放在一起時的基本語意關係。
 
 - pair key 不帶方向，固定以較小符文 ID 在前，例如 `09_16`。
 - A＋B 與 B＋A 查到同一個中性關係。
@@ -141,7 +141,7 @@ Structured registry：`data/json/shared/LOC2_EVENT_REGISTRY.json`
 政德風採「原始語句／治理原則／風格狀態／時期投影」分層保存，不再只以語錄集合處理。
 
 - 維護文件：`docs/LOC6_ZHENGDE_STYLE.md`
-- 結構化 registry：`data/json/shared/LOC6_GOVERNANCE_REGISTRY.json`
+- 結構化 registry：`data/json/registries/LOC6_GOVERNANCE_REGISTRY.json`
 - LOC3 可提供不同 ERA 的歌曲與歌詞證據。
 - LOC4 可提供長文、小說、文章中的文字證據。
 - LOC8 提供時間與人生階段。
@@ -153,7 +153,7 @@ Structured registry：`data/json/shared/LOC2_EVENT_REGISTRY.json`
 
 ## 9. LOC3 → ERA → LOC6 回掛
 
-LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json`，提供每個 ERA 的作品數、主要 tags、起始狀態、轉折方式、結尾結構等 recorded metadata aggregate。
+LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json`，提供每個 ERA 的作品數、主要 tags、起始狀態、轉折方式、結尾結構等 recorded metadata aggregate。
 
 - P1 目前明確排除於公開 LOC3 搜尋，因此此層沒有 P1 歌曲 aggregate。
 - ERA 名稱與日期仍以 LOC8 `LOC_ERA_REGISTRY.json` 為權威。
@@ -161,7 +161,7 @@ LOC3 現行可搜尋 corpus 共 403 首，已依 P2–P8 回掛到 `data/json/sh
 
 ### 符文歌曲
 
-`data/json/shared/LOC3_RUNE_SONG_REGISTRY.json` 專門判定真正的符文歌曲。
+`data/json/registries/LOC3_RUNE_SONG_REGISTRY.json` 專門判定真正的符文歌曲。
 
 只有具有「實際抽牌 → 解讀 → 歌詞／歌曲」provenance，或作者明確確認為該流程產物的作品，才可標成 `rune_song`。月光、命運、符文等意象本身不足以成立。
 
@@ -194,7 +194,7 @@ LOC3 版本推薦分數另外納入跨媒介完成度：IG Reels +20、YouTube M
 
 LOC3 不把「情緒」視為每首歌曲的必填語意。部分政德風歌曲以理性論述、系統觀察、關係規則、界線判斷或治理命題為核心；對這類歌曲，真正可檢索的語意可能主要存在於「道理句」而非情緒詞。
 
-Structured schema：`data/json/shared/LOC3_REASONING_SCHEMA.json`
+Structured schema：`data/json/registries/LOC3_REASONING_SCHEMA.json`
 
 分析至少可拆成：
 - 主張／論點
@@ -240,7 +240,7 @@ v0.4 對齊 2026-09-06 的 LOC6／LOC7／LOC8 權責、Unified Search 實作、�
 
 ## 11. Shared Registry
 
-`data/json/shared/` 主要承接跨 LOC 的結構化 registry。KM 相關核心：
+`data/json/registries/` 主要承接跨 LOC 的結構化 registry。KM 相關核心：
 
 - `LOC_KNOWLEDGE_ASSET_REGISTRY.json`
 - `LOC2_EVENT_REGISTRY.json`
@@ -279,7 +279,7 @@ edge_quality = evidence_weight × status_weight × relation_weight
 traversal_score = parent_path_score × edge_quality × hop_decay^(hop-1)
 ```
 
-現行預設：`min_traversal_score=0.25`、`hop_decay=0.88`。權重與 band 的唯一機器可讀 contract 為 `data/json/shared/LOC_GRAPH_SCHEMA.json` v0.4。
+現行預設：`min_traversal_score=0.25`、`hop_decay=0.88`。權重與 band 的唯一機器可讀 contract 為 `data/json/registries/LOC_GRAPH_SCHEMA.json` v0.4。
 
 治理原則：
 
@@ -293,7 +293,7 @@ traversal_score = parent_path_score × edge_quality × hop_decay^(hop-1)
 
 Graph RAG 完成後，品質不以「有回傳 graph」判定，而使用固定 regression cases 檢查 governed reachability。
 
-- Evaluation registry：`data/json/shared/LOC_GRAPH_EVAL_CASES.json`
+- Evaluation registry：`data/json/registries/LOC_GRAPH_EVAL_CASES.json`
 - Evaluator：`card_api/scripts/evaluate_graph_rag.py`
 - 現行指標：expected node / LOC / ERA recall、provenance presence、forbidden-node absence。
 - 評測不比較生成文字；它只驗證 retrieval → seed → canonical traversal → provenance 是否維持治理邊界。
@@ -381,7 +381,7 @@ ChatGPT 對話不是預設第二套完整 corpus，而是 **gap-filling source**
 - 去重基準：7008 筆
 - 主貼文：4578 筆，視為 primary evidence
 - Reply：2430 筆，視為 supplemental evidence
-- 搜尋索引：`data/json/shared/LOC6_THREADS_KM_INDEX.json`
+- 搜尋索引：`data/json/registries/LOC6_THREADS_KM_INDEX.json`
 - Unified Search group：`governance`
 - Content type：`governance_fragment`
 
@@ -432,7 +432,7 @@ P0 已由完整 Threads 主貼文索引取得 **1,049 筆 primary records**，�
 
 Corpus 匯入、匯出與公開展示必須先通過 Content Rights Gate。
 
-- Policy：`data/json/shared/LOC_CONTENT_RIGHTS_POLICY.json`
+- Policy：`data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json`
 - Human-readable：`docs/LOC_CONTENT_RIGHTS_POLICY.md`
 - 私訊、MSN／Messenger 對話與其他私人通訊預設不匯入。
 - 平台 export 可取得，不等於其中所有內容可再次公開。
