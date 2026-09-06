@@ -66,20 +66,22 @@
     {
       "id": "FAQ-002",
       "category": "基本定位",
-      "question": "LOC和LunaRunes（月之符文）有什麼關係？",
+      "question": "LOC（Luna Codex／月典）和 LunaRunes（月之符文）有什麼關係？",
       "aliases": [
         "LOC就是月之符文嗎？",
         "月典和月之符文一樣嗎？",
         "LunaRunes與LOC有什麼差別？",
         "LOC從哪套系統延伸而來？"
       ],
-      "answer": "LOC是月之符文的延伸。它以月之符文的籤詩與符文語意為基底，再向外發展成涵蓋敘事、遊戲、音樂、圖像及文字建築等應用的語言系統框架。",
+      "answer": "LunaRunes（月之符文）是符文核心／Reference Seed System；LOC（Luna Codex／月典）是由這個根發展出的語言系統框架。兩者關聯緊密，但名稱與責任不同：Codex 指月典，Runes 指符文。",
       "keywords": [
-        "Luna Codex",
+        "LunaRunes",
         "月之符文",
         "月典",
         "延伸",
-        "籤詩"
+        "籤詩",
+        "LOC",
+        "Luna Codex"
       ],
       "source_refs": [
         "creator-confirmed:2026-09-02"
