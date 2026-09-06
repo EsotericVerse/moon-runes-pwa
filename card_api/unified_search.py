@@ -73,6 +73,8 @@ class UnifiedSearchEngine:
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.loc6 = self._load_json("LOC6_GOVERNANCE_REGISTRY.json")
         self.loc6_threads = self._load_json("LOC6_THREADS_KM_INDEX.json")
+        self.loc6_period_keywords = self._load_json("LOC6_PERIOD_KEYWORD_ANALYSIS.json")
+        self.loc3_period_keywords = self._load_json("LOC3_PERIOD_KEYWORD_ANALYSIS.json")
         self.loc6_thread_articles = self._load_repo_json("data/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json")
         self.loc6_thread_manifest = self._load_repo_json("data/generated/loc6/threads/LOC6_THREADS_DOCUMENT_MANIFEST.json")
         self.loc6_thread_full = self._load_loc6_thread_shards()
@@ -1632,6 +1634,151 @@ class UnifiedSearchEngine:
             "edge_count": len(selected_edges),
         }
 
+    @staticmethod
+    def _collect_topic_terms(query: str, groups: dict[str, list[dict[str, Any]]], limit: int = 10) -> list[dict[str, Any]]:
+        """Aggregate maintained tags/keywords from retrieved evidence.
+
+        These are descriptive retrieval terms, not new Canon definitions.
+        """
+        q = _compact(query)
+        counts: dict[str, int] = {}
+        source_groups: dict[str, set[str]] = {}
+        stop = {
+            "loc1","loc2","loc3","loc4","loc5","loc6","loc7","loc8",
+            "current","released","archived","recorded","threads","instagram","suno"
+        }
+
+        def add(term: Any, group: str) -> None:
+            value = str(term or "").strip()
+            key = _normalize(value)
+            if not value or len(value) > 40 or key in stop:
+                return
+            if q and _compact(value) == q:
+                weight = 3
+            else:
+                weight = 1
+            counts[value] = counts.get(value, 0) + weight
+            source_groups.setdefault(value, set()).add(group)
+
+        for group, items in groups.items():
+            for item in items:
+                payload = item.get("payload") or {}
+                for field in ("tags", "keywords", "semantic_keywords", "reasoning_tags", "key_propositions"):
+                    value = payload.get(field)
+                    if isinstance(value, list):
+                        for term in value:
+                            add(term, group)
+                    elif isinstance(value, str):
+                        for term in re.split(r"[、，,；;／/|]+", value):
+                            add(term, group)
+                for value in (
+                    payload.get("topic"),
+                    payload.get("governance_principle"),
+                    payload.get("analysis_type"),
+                    item.get("title"),
+                ):
+                    if value and len(str(value)) <= 24:
+                        add(value, group)
+
+        rows = [
+            {"term": term, "weight": weight, "groups": sorted(source_groups.get(term, set()))}
+            for term, weight in counts.items()
+        ]
+        rows.sort(key=lambda row: (-row["weight"], row["term"]))
+        return rows[:limit]
+
+    def _topic_period_trend(self, query: str, graph: dict[str, Any]) -> dict[str, Any]:
+        """Read query-topic prevalence across maintained period keyword analyses."""
+        q = _compact(query)
+        if not q:
+            return {"matches": [], "summary": ""}
+
+        era_order = {
+            str(era.get("period") or ""): float(era.get("order") or 0)
+            for era in self.eras.get("eras", [])
+        }
+        matches: list[dict[str, Any]] = []
+
+        for item in self.loc6_period_keywords.get("periods", []):
+            period = str(item.get("period") or "")
+            for kw in item.get("keywords", []) or []:
+                term = str(kw.get("term") or "")
+                compact = _compact(term)
+                if q in compact or compact in q:
+                    matches.append({
+                        "period": period,
+                        "source": "LOC6",
+                        "term": term,
+                        "percent": float(kw.get("percent") or 0),
+                        "count": int(kw.get("document_count") or 0),
+                        "sample_count": int(item.get("document_count") or 0),
+                    })
+
+        # LOC3 normalized semantic families are supplemental.
+        for item in self.loc3_period_keywords.get("periods", []):
+            period = str(item.get("period") or "")
+            pools = []
+            for field in ("normalized_semantic_families", "normalized_top_keywords", "named_keywords"):
+                pools.extend(item.get(field, []) or [])
+            for kw in pools:
+                term = str(kw.get("term") or "")
+                compact = _compact(term)
+                if q in compact or compact in q:
+                    matches.append({
+                        "period": period,
+                        "source": "LOC3",
+                        "term": term,
+                        "percent": float(kw.get("percent") or 0),
+                        "count": int(kw.get("count") or 0),
+                        "sample_count": int(item.get("work_count") or 0),
+                    })
+
+        matches.sort(key=lambda row: (era_order.get(row["period"], 999), row["source"]))
+        if not matches:
+            era_path = [
+                str(x.get("period") or "")
+                for x in graph.get("era_path", [])
+                if x.get("period")
+            ]
+            return {
+                "matches": [],
+                "summary": ("Graph 命中的時期為 " + " → ".join(era_path)) if era_path else "",
+                "basis": "graph_era_path",
+            }
+
+        by_source: dict[str, list[dict[str, Any]]] = {}
+        for row in matches:
+            by_source.setdefault(row["source"], []).append(row)
+
+        parts = []
+        for source, rows in sorted(by_source.items()):
+            series = " → ".join(f"{row['period']} {row['percent']:g}%" for row in rows)
+            parts.append(f"{source}：{series}")
+
+        return {
+            "matches": matches,
+            "summary": "；".join(parts),
+            "basis": "maintained_period_keyword_analysis",
+        }
+
+    @staticmethod
+    def _synthesis_confidence(groups: dict[str, list[dict[str, Any]]], graph: dict[str, Any]) -> dict[str, Any]:
+        strong_groups = sum(1 for key in ("knowledge", "governance", "relationships", "timeline") if groups.get(key))
+        evidence_groups = sum(1 for items in groups.values() if items)
+        graph_edges = int(graph.get("edge_count") or 0)
+        if strong_groups >= 2 and graph_edges >= 2:
+            level = "high"
+        elif evidence_groups >= 2 or graph_edges >= 1:
+            level = "medium"
+        else:
+            level = "limited"
+        return {
+            "level": level,
+            "evidence_group_count": evidence_groups,
+            "strong_group_count": strong_groups,
+            "graph_edge_count": graph_edges,
+        }
+
     def _synthesize_search(
         self,
         query: str,
@@ -1744,11 +1891,51 @@ class UnifiedSearchEngine:
             )
         graph_summary = "｜".join(graph_parts) if graph_parts else "目前沒有足夠的 Canonical Graph 關聯可形成額外彙整。"
 
+        topic_terms = self._collect_topic_terms(query, groups)
+        period_trend = self._topic_period_trend(query, graph)
+        confidence = self._synthesis_confidence(groups, graph)
+
+        loc_names = [row["loc"] for row in sorted(loc_counts.items(), key=lambda row: (-row[1], row[0]))]
+        evidence_names = [row["label"] for row in evidence[:4]]
+        introduction_parts = [
+            lead_summary,
+            (f"目前資料主要跨越 {'、'.join(loc_names[:5])}。" if loc_names else ""),
+            (f"可用證據包含 {'、'.join(evidence_names)}。" if evidence_names else ""),
+        ]
+        introduction = " ".join(part for part in introduction_parts if part).strip()
+
+        findings: list[str] = []
+        if topic_terms:
+            findings.append("核心相關詞：" + "、".join(row["term"] for row in topic_terms[:6]))
+        if period_trend.get("summary"):
+            findings.append("時期變化：" + period_trend["summary"])
+        if loc_path:
+            findings.append("跨 LOC 範圍：" + "、".join(loc_path))
+        if relation_paths:
+            findings.append(
+                "已確認關聯：" + "；".join(
+                    f"{(p.get('from') or {}).get('label') or (p.get('from') or {}).get('id')} "
+                    f"→ {p.get('relation')} → "
+                    f"{(p.get('to') or {}).get('label') or (p.get('to') or {}).get('id')}"
+                    for p in relation_paths[:3]
+                )
+            )
+        if not findings:
+            findings.append("目前以直接搜尋命中為主，尚不足以形成更強的跨資料結論。")
+
+        analysis_summary = " ".join(findings)
+
         return {
             "analysis_type": "search_synthesis",
             "query": query,
             "title": f"{query}｜綜合結果",
             "summary": lead_summary,
+            "introduction": introduction,
+            "analysis_summary": analysis_summary,
+            "key_findings": findings,
+            "topic_terms": topic_terms,
+            "period_trend": period_trend,
+            "confidence": confidence,
             "lead_result_id": lead.get("result_id"),
             "lead_group": lead_group,
             "lead_title": lead.get("title"),
