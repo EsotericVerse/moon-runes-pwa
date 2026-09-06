@@ -849,6 +849,43 @@
         "period_registry": "data/shared/LOC_ERA_REGISTRY.json"
       },
       "notes": "LOC3 owns keyword evidence; LOC8 owns period boundaries; LOC7 may index this normalized period analysis. v0.2 adds document-frequency normalization and adjacent-period emergence/rise/persistence/decline signals."
+    },
+    {
+      "asset_id": "KA-LOC6-THREADS-001",
+      "title": "LOC6 Threads KM Search Index",
+      "path": "data/shared/LOC6_THREADS_KM_INDEX.json",
+      "source_type": "structured_registry",
+      "content_type": "governance_fragment",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "threads_primary_and_reply_supplemental_search_evidence",
+      "status": "working",
+      "authority_level": "primary-source-derived-index",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-06",
+      "keywords": [
+        "Threads",
+        "政德風",
+        "治理",
+        "關係",
+        "選擇",
+        "自由",
+        "責任",
+        "尊重",
+        "ERA"
+      ],
+      "provenance": {
+        "source": "threads_and_replies.json",
+        "source_snapshot": "2026-09-05",
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "First searchable tranche from the 6907-record deduplicated Threads corpus. Main posts are primary evidence; replies are supplemental. Term DF/ERA distributions are corpus-derived evidence and are not Canon. Full corpus migration remains pending."
     }
   ]
 }
