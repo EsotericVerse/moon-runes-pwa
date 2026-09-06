@@ -1,8 +1,8 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC_KNOWLEDGE_ASSET_REGISTRY",
   "authority": "LOC7_KM",
-  "updated_at": "2026-09-06",
+  "updated_at": "2026-09-07",
   "purpose": "Register human-readable and structured knowledge assets that LOC7_KM may index, cite, version, and expose through knowledge/search views.",
   "rules": [
     "Registration as a knowledge asset does not make every statement Canon.",
@@ -1017,6 +1017,173 @@
         "maintained_in_repo": true
       },
       "notes": "Searchable LOC6 Threads article index expanded to 138 representative long-form main posts from the 7008-record deduplicated corpus. Main posts are primary evidence; replies remain supplemental in LOC6_THREADS_KM_INDEX.json. Full corpus migration remains in progress.",
+      "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-LOC-GOV-CORE-001",
+      "title": "LOC Governance Core — 中立語言治理核心",
+      "path": "docs/LOC_GOVERNANCE_CORE.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC1",
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "loc_governance_core",
+      "status": "current",
+      "authority_level": "working_governance_baseline",
+      "searchable": true,
+      "index_priority": "highest",
+      "version": "0.2",
+      "updated_at": "2026-09-07",
+      "keywords": [
+        "治理",
+        "中立",
+        "界",
+        "域",
+        "邊界",
+        "版本",
+        "異議",
+        "歷史完整性",
+        "自我治理",
+        "Governance Audit"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "derived_from": [
+          "creator-confirmed governance decisions",
+          "historical conversation records",
+          "LOC6/LOC7/LOC8 KM"
+        ]
+      },
+      "notes": "Common governance baseline. Separates system governance from personal worldview and defines boundary-based, versioned, auditable governance.",
+      "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-LOC-GOV-HISTORY-001",
+      "title": "LOC Governance History & Trend Analysis",
+      "path": "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md",
+      "source_type": "document",
+      "content_type": "analysis",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "governance_history_and_trend",
+      "status": "working",
+      "authority_level": "historical_analysis",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-07",
+      "keywords": [
+        "治理演變",
+        "政德風",
+        "歷史版本",
+        "底線",
+        "邊界",
+        "自我治理",
+        "趨勢",
+        "版本化"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "derived_from": [
+          "historical conversation records",
+          "LOC3/LOC6/LOC8 evidence",
+          "current governance core"
+        ]
+      },
+      "notes": "Describes governance evolution without ranking old/new versions as morally better or worse.",
+      "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-LUNA66-GOV-001",
+      "title": "Luna Codex 66 — Governance Design Notes",
+      "path": "docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md",
+      "source_type": "document",
+      "content_type": "knowledge_document",
+      "primary_loc": "LOC1",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "luna_runes_66_governance_design",
+      "status": "current",
+      "authority_level": "design_interpretation",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.2",
+      "updated_at": "2026-09-07",
+      "keywords": [
+        "月之符文",
+        "66符文",
+        "界",
+        "域",
+        "礦物組",
+        "悟",
+        "平等使用",
+        "治理式演化",
+        "自我治理"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "derived_from": [
+          "creator-confirmed Luna Codex 66 design rationale",
+          "LunaRune64.xlsx canonical structure"
+        ]
+      },
+      "notes": "Governance interpretation of the mature 66-rune design; does not override the rune mother source.",
+      "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-LOC-GOV-TREND-001",
+      "title": "LOC Governance Trend Registry",
+      "path": "data/shared/LOC_GOVERNANCE_TREND_REGISTRY.json",
+      "source_type": "structured_registry",
+      "content_type": "analysis",
+      "primary_loc": "LOC8",
+      "related_locs": [
+        "LOC6",
+        "LOC7"
+      ],
+      "role": "governance_trend_registry",
+      "status": "working",
+      "authority_level": "structured_trend_projection",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-07",
+      "keywords": [
+        "治理趨勢",
+        "界線",
+        "domain boundary",
+        "自由",
+        "自我治理",
+        "版本化",
+        "歷史完整性"
+      ],
+      "provenance": {
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true,
+        "derived_from": [
+          "LOC6 governance corpus",
+          "LOC8 ERA",
+          "historical governance analysis"
+        ]
+      },
+      "notes": "Trend projection only; does not automatically rank historical stages as progress/regression.",
       "presentation": "internal_source"
     }
   ]

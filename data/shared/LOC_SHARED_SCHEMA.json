@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "schema": "LOC_SHARED_SCHEMA",
   "authority": "LOC8",
   "purpose": "Define shared identifiers, references, provenance, rights, and cross-LOC linkage fields. Domain-specific content remains owned by its primary LOC.",
@@ -100,10 +100,20 @@
           "type": "string",
           "enum": [
             "draft",
+            "proposed",
+            "under_review",
             "current",
+            "active",
             "released",
+            "disputed",
+            "restricted",
+            "amended",
+            "superseded",
+            "withdrawn",
+            "rejected",
             "archived",
-            "deprecated"
+            "deprecated",
+            "tombstoned"
           ]
         },
         "created_at": "string|null",
@@ -124,6 +134,18 @@
         "null"
       ],
       "description": "Optional stable domain entity identifier when a record is not primarily a work/media/event."
+    },
+    "governance": {
+      "type": "object",
+      "fields": {
+        "governance_id": "string|null",
+        "review_status": "string|null",
+        "reason": "string|null",
+        "evidence_refs": "array",
+        "previous_version": "string|null",
+        "replacement_id": "string|null"
+      },
+      "description": "Optional shared governance envelope. Domain records may reference a separate governance-event log rather than embedding full history."
     }
   },
   "governance_rules": [
@@ -131,6 +153,10 @@
     "Do not duplicate canonical ERA names, time boundaries, or language-system identity in downstream modules when a registry reference is available.",
     "Influence, contribution, and rights are separate concepts and must not be inferred from one another.",
     "Mixed-domain records use primary_loc plus related_locs instead of forcing exclusive classification.",
-    "LOC8 owns integration, registry, temporal management, and unresolved misc placement; analysis remains owned by LOC6 or LOC7 according to analysis type."
-  ]
+    "LOC8 owns integration, registry, temporal management, and unresolved misc placement; analysis remains owned by LOC6 or LOC7 according to analysis type.",
+    "Original evidence and current interpretation are separate layers; later interpretation must not silently rewrite historical source records.",
+    "Cross-domain consumers may reference or propose changes but must not overwrite another domain's authoritative record.",
+    "Deletion from active use should preserve a tombstone/history record unless a stronger privacy/security deletion requirement applies."
+  ],
+  "updated_at": "2026-09-07"
 }

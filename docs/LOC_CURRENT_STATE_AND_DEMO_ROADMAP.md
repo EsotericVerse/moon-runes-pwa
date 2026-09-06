@@ -207,7 +207,7 @@ LOC8 的現行核心是**事件、時期、關係、軌跡與趨勢分析**，�
 - Context：統合 Relation、Trajectory、Analysis，作為 Graph-ready 的脈絡工作區
 - 跨 LOC 的時間、作品、概念與 Event 引用
 
-目前 Graph 視圖仍為後續，不應宣稱完整 Knowledge Graph / Graph RAG 已完成。
+Graph View 視覺化仍可持續擴充，但 **Graph RAG 核心已完成並進入治理／品質維護階段**。現行已具 bounded multi-hop traversal、cross-LOC expansion、temporal nodes、provenance、precision control、edge quality weighting、regression tests 與 integration validation。
 
 因此：
 
@@ -286,16 +286,19 @@ Edge 可包括：
 - temporal_before / after
 - cross_media_relation
 
-### 5.4 現況限制
+### 5.4 現況
 
-目前已有 Shared Registry、cross-relationship 資料與 related_ids 等關係基礎，但完整 Relation Schema、Knowledge Graph expansion 與 multi-hop Graph RAG 尚未完成。
-
-因此現況稱呼：
+Graph RAG 已由「關係 groundwork」進入正式 Search Core：
 
 - **LOC Integrated Demo：成立**
-- **Unified Search：已有實作**
-- **Graph relationship groundwork：已有部分資料基礎**
-- **完整 Graph RAG：尚未完成**
+- **Unified Search：Implemented**
+- **Canonical Graph：Implemented**
+- **bounded multi-hop Graph RAG：Implemented**
+- **Temporal-aware / Cross-LOC / Provenance-aware：Implemented**
+- **Precision-controlled / Quality-weighted：Implemented**
+- **Regression-tested / Integration-tested：Implemented**
+
+目前剩餘工作以治理為主：relation publication、rights runtime enforcement、governance audit/dispute，以及 Graph View 視覺化；不再把 Graph RAG 核心列為待完成功能。
 
 ---
 
@@ -486,13 +489,15 @@ Edge 可包括：
 - Event 32
 - Semantic Playground
 
-### Priority D｜Graph RAG
-在 corpus 與 relationship registry 足夠後，再補：
-- relation expansion
-- multi-hop
-- provenance-aware traversal
-- temporal edge
-- trend aggregation
+### Priority D｜Governance Runtime
+Graph RAG 核心已完成；下一步優先補治理控制：
+- governance audit log
+- dispute / review
+- relation publication pipeline
+- uniform rights runtime enforcement
+- governed delete / tombstone
+- Canon / public promotion lifecycle
+- governance trend aggregation
 
 ---
 
@@ -636,3 +641,56 @@ Structured baseline：
 `data/generated/loc6/threads/analysis/LOC6_THREADS_P0_BASELINE_v0.1.json`
 
 下一步：建立 P0 Surface Terms → Concept candidates → 與 P1–P8 做 trajectory comparison。
+
+## 18. Governance Consolidation Phase
+
+LOC 現在進入 **Governance Consolidation**：功能骨架不再是主要缺口，後續優先工作是把已存在的治理思想、資料權責與實際控制整理成一致的全系統治理層。
+
+### 18.1 已形成的治理文件
+
+- `docs/LOC_GOVERNANCE_CORE.md`
+- `docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`
+- `docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md`
+- `docs/LOC_CONTENT_RIGHTS_POLICY.md`
+- `docs/LOC6_ZHENGDE_STYLE.md`
+- `docs/LOC7_KM.md`
+- `docs/LOC8_KM.md`
+
+### 18.2 目前治理重點
+
+~~~text
+功能完整
+→ 治理語料回收
+→ 歷史趨勢分析
+→ 原則抽取
+→ Policy / Schema 對齊
+→ Runtime control
+→ Audit trail
+~~~
+
+### 18.3 現行治理缺口不是「沒有理論」
+
+目前缺口主要是 executable control，而不是治理思想不足：
+
+- common governance event / audit log
+- dispute / review workflow
+- governed delete / tombstone
+- relation publication pipeline
+- uniform rights runtime enforcement
+- candidate → review → publish / supersede lifecycle
+
+### 18.4 自我治理回饋
+
+治理 consolidation 本身就是 LOC 的使用案例：
+
+~~~text
+累積文字
+→ Search / Graph
+→ Trend / Analysis
+→ 找出不同時期的規則與語句
+→ 保留歷史差異
+→ 整理現行框架
+→ 再寫回 KM
+~~~
+
+這不是用現在版本覆蓋過去，而是把過去版本納入可追溯的現在。

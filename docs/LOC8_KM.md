@@ -495,3 +495,29 @@ LOC8 功能核心目前已具備 Daily Rune、ERA、Event、Relation、Trajector
 - ERA Candidate → Accept / Adjust / Split / Merge / Reject 的完整操作流
 
 共用治理基準見 [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md)。
+
+## 16. Governance Trend as Analysis Type
+
+LOC8 的 Analysis 不只比較歌曲關鍵字，也可以比較治理語言本身的時間變化。
+
+治理 trend 至少可觀察：
+
+- concept first appearance
+- prevalence / frequency
+- wording replacement
+- boundary-strength change
+- external-defense vs self-governance orientation
+- responsibility / choice / freedom / uncertainty themes
+- historical term → current term transitions
+
+例如「底線 → 界線 → domain boundary」應保留三個時期的文字證據，再由 LOC6 判讀治理意義；LOC8 負責時間位置與變化幅度，LOC7 負責檢索與關係結構。
+
+因此：
+
+~~~text
+LOC6：這個治理語句代表什麼
+LOC7：它如何被索引、建立關係與驗證
+LOC8：它什麼時候出現、如何變化、是否形成持續趨勢
+~~~
+
+治理趨勢本身也是自我治理的輸入，而不是自動產生「你變得更好／更壞」的價值判決。

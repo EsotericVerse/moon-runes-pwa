@@ -501,3 +501,20 @@ supersede / tombstone
 - governance history 應能回答「誰／何時／為何／依據什麼／改了什麼」。
 
 這些要求屬 LOC7 結構責任；價值與治理語義仍由 LOC6 管理，時間與人生版本則由 LOC8 管理。
+
+## 21. Governance Knowledge Sources
+
+治理層的 KM source-of-truth 分工：
+
+- `LOC_GOVERNANCE_CORE.md`：共用治理原則與 Audit baseline。
+- `LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`：治理語言歷史與趨勢。
+- `LUNA_RUNES_66_GOVERNANCE_DESIGN.md`：月之符文66治理設計解讀。
+- `LOC6_ZHENGDE_STYLE.md`：個人治理 corpus / 政德風。
+- `LOC_CONTENT_RIGHTS_POLICY.md`：rights/privacy/publication gate。
+- `LOC8_KM.md`：時間、ERA、Trend 與 self-governance feedback。
+
+LOC7 的責任是讓這些來源可被索引、引用、建立 governed relation 與 audit，而不是把它們融合成單一不可變文本。
+
+治理資料同樣遵循：
+
+> **原始紀錄與後設治理解讀分離；Current View 不得抹掉 Historical View。**

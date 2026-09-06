@@ -573,3 +573,16 @@ OW3gs 是作者的方法論與個人規則層，不等同於 LOC 的全部 Canon
 ---
 
 **用微月光，照亮當下可前行的一步。**
+
+## Governance / 治理層
+
+LOC 的功能骨架完成後，現行重點轉向 Governance Consolidation：把長期累積的治理語句、月之符文設計理由、資料權責、版本規則、Rights、Graph／Relation 與 ERA 趨勢整理成一致的治理層。
+
+主要文件：
+
+- `docs/LOC_GOVERNANCE_CORE.md`
+- `docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`
+- `docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md`
+- `docs/LOC_CONTENT_RIGHTS_POLICY.md`
+
+核心原則是：**穩定的是框架，不是語言；保留歷史，允許修正；提供邊界，不要求思想服從。**

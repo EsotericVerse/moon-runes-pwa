@@ -138,3 +138,45 @@ API / UI
 - Rune mother data：`LunaRune64.xlsx`
 
 這些角色不可互相混寫。
+
+## 5. Governance JSON Alignment
+
+Governance is now represented across several structured assets rather than one monolithic file:
+
+- `LOC_DATA_GOVERNANCE.json`：cross-LOC authority、common control plane、audit/lifecycle rules。
+- `LOC_SHARED_SCHEMA.json`：shared lifecycle/governance envelope。
+- `LOC_REFERENCE_MODEL.json`：stable IDs，包含 `governance_id` 與 supersede/dispute relations。
+- `LOC_CONTENT_RIGHTS_POLICY.json`：rights/privacy/publication domain gate。
+- `LOC6_GOVERNANCE_REGISTRY.json`：governance meaning、政德風與歷史治理語句。
+- `LOC_KM_KEYWORDS.json`：治理概念的 retrieval aliases。
+- `LOC_KNOWLEDGE_ASSET_REGISTRY.json`：治理文件的 KM indexing。
+
+文件層共同基準：
+
+- `docs/LOC_GOVERNANCE_CORE.md`
+- `docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`
+- `docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md`
+
+資料流原則：
+
+~~~text
+original evidence
+→ maintained governance interpretation
+→ shared registry / policy
+→ retrieval / graph
+→ UI / API
+~~~
+
+下游分析可以建立新版本與 relation，但不得反向覆寫原始 evidence 或其他 LOC 的 authoritative record。
+
+### Governance Trend Registry
+
+`data/shared/LOC_GOVERNANCE_TREND_REGISTRY.json` 將治理語言的演變轉成可檢索結構。
+
+分工：
+
+- LOC6：解讀治理意義。
+- LOC7：管理欄位、關係與 retrieval。
+- LOC8：管理 ERA／時間與 trend projection。
+
+目前主要 tracks：Boundary、Freedom、History/Versioning、Self-Governance。其輸出只描述 change / continuity / divergence，不自動判定進步或退步。

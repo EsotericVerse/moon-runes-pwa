@@ -310,3 +310,26 @@ ERA → 當時真實語料 → 風格特徵
 - 治理的是選擇、責任、域、界與可持續性，而不是把自己塑造成固定道德模板。
 
 > **自我治理是版本管理，不是道德審判。**
+
+## 11. 現行邊界語彙：從「底線」到「界／域」
+
+歷史語料中的「底線」保留，不回寫刪除；它可以代表某些時期較強烈的防衛與拒絕語氣。
+
+現行治理分析則優先使用：
+
+- 界
+- 域
+- framework boundary
+- domain
+- scope
+- ownership
+- permission
+- responsibility
+
+原因不是否定早期語句，而是現行人生觀更接近：
+
+> **我可以沒有固定底線，但我有自己的框架邊界。**
+
+因此 LOC6 做趨勢分析時，應把「底線 → 界線 → domain boundary」視為治理語彙演化，而不是同義詞直接合併。
+
+完整歷史趨勢見 [LOC_GOVERNANCE_HISTORY_AND_TRENDS.md](./LOC_GOVERNANCE_HISTORY_AND_TRENDS.md)。

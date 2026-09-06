@@ -1,0 +1,180 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC_GOVERNANCE_TREND_REGISTRY",
+  "status": "working",
+  "updated_at": "2026-09-07",
+  "authorities": {
+    "temporal": "LOC8",
+    "interpretation": "LOC6",
+    "structure": "LOC7"
+  },
+  "purpose": "Structured governance-language trend projection for Search/Analysis. Describes change without moral ranking.",
+  "evidence_policy": [
+    "Original text/event/work is primary evidence.",
+    "Frequency or keyword change alone does not prove a governance principle.",
+    "Historical wording is preserved even when current terminology changes.",
+    "Exact first-occurrence dates remain unresolved until the full source corpus is searched."
+  ],
+  "overall_axis": [
+    {
+      "order": 1,
+      "label": "external_script_defense",
+      "zh": "外部劇本／防衛",
+      "era_scope": [
+        "ERA-P1",
+        "ERA-P2",
+        "ERA-P3"
+      ],
+      "confidence": "reconstructed"
+    },
+    {
+      "order": 2,
+      "label": "responsibility_boundary",
+      "zh": "權責辨識／界線形成",
+      "era_scope": [
+        "ERA-P3",
+        "ERA-P4"
+      ],
+      "confidence": "reconstructed"
+    },
+    {
+      "order": 3,
+      "label": "reconstruction_uncertainty",
+      "zh": "等待、重建與接受未知",
+      "era_scope": [
+        "ERA-P5",
+        "ERA-P6"
+      ],
+      "confidence": "recorded_from_era_and_corpus"
+    },
+    {
+      "order": 4,
+      "label": "freedom_choice",
+      "zh": "自由與選擇",
+      "era_scope": [
+        "ERA-P7"
+      ],
+      "confidence": "recorded_from_era_and_corpus"
+    },
+    {
+      "order": 5,
+      "label": "self_governance",
+      "zh": "自我治理、收尾與航向",
+      "era_scope": [
+        "ERA-P8"
+      ],
+      "confidence": "recorded"
+    }
+  ],
+  "concept_tracks": [
+    {
+      "concept_id": "GT-BOUNDARY",
+      "concept": "boundary",
+      "current_terms": [
+        "界",
+        "域",
+        "framework boundary",
+        "domain",
+        "scope",
+        "ownership",
+        "permission",
+        "responsibility"
+      ],
+      "historical_terms": [
+        "底線",
+        "界線"
+      ],
+      "transition": "底線（較強防衛語彙） → 界線（關係邊界） → domain/framework boundary（結構治理）",
+      "interpretation": "Current governance prefers contextual domain boundaries over a single universal fixed bottom-line model.",
+      "status": "working",
+      "evidence_refs": [
+        "docs/LOC6_ZHENGDE_STYLE.md",
+        "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md",
+        "data/shared/LOC6_GOVERNANCE_REGISTRY.json"
+      ]
+    },
+    {
+      "concept_id": "GT-FREEDOM",
+      "concept": "freedom",
+      "current_terms": [
+        "自由",
+        "選擇",
+        "航向",
+        "責任"
+      ],
+      "historical_terms": [
+        "離開限制",
+        "不走別人的劇本"
+      ],
+      "transition": "逃離／拒絕外部劇本 → 保留選擇 → 自由之後管理收尾、責任與航向",
+      "interpretation": "Freedom becomes a governed space for choice rather than the absence of all constraints.",
+      "status": "working",
+      "evidence_refs": [
+        "data/shared/LOC6_ERA_STYLE_EVIDENCE.json",
+        "docs/LOC6_ZHENGDE_STYLE.md"
+      ]
+    },
+    {
+      "concept_id": "GT-HISTORY",
+      "concept": "history_versioning",
+      "current_terms": [
+        "歷史完整性",
+        "版本化",
+        "supersede",
+        "tombstone"
+      ],
+      "historical_terms": [
+        "事件不可回寫",
+        "意義可重新定義"
+      ],
+      "transition": "歷史保存原則 → versioned interpretation → executable governance lifecycle",
+      "interpretation": "Personal and system governance converge on keeping original evidence while allowing interpretation to evolve.",
+      "status": "working",
+      "evidence_refs": [
+        "conversation-history:2026-02-22",
+        "docs/LOC_GOVERNANCE_CORE.md"
+      ]
+    },
+    {
+      "concept_id": "GT-SELF-GOV",
+      "concept": "self_governance",
+      "current_terms": [
+        "治理自己",
+        "自我治理",
+        "版本管理",
+        "回顧",
+        "收尾",
+        "航向"
+      ],
+      "historical_terms": [
+        "拆劇本",
+        "防衛",
+        "界線"
+      ],
+      "transition": "治理外部互動 → 治理自己的責任與邊界 → 用 Search/Trend/Analysis 回看歷史版本",
+      "interpretation": "Self-governance becomes a recursive feedback process rather than a moral perfection requirement.",
+      "status": "current",
+      "evidence_refs": [
+        "docs/LOC_GOVERNANCE_CORE.md",
+        "docs/LOC8_KM.md",
+        "data/shared/LOC6_GOVERNANCE_REGISTRY.json"
+      ]
+    }
+  ],
+  "analysis_output_rule": {
+    "allowed": [
+      "change",
+      "continuity",
+      "divergence",
+      "first_known_evidence",
+      "prevalence",
+      "cross-source support",
+      "contextual interpretation"
+    ],
+    "avoid": [
+      "automatic_progress_rank",
+      "automatic_moral_rank",
+      "claiming_exact_first_occurrence_without_full_search"
+    ]
+  }
+}
