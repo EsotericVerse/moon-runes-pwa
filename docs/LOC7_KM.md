@@ -389,3 +389,15 @@ P0 已由完整 Threads 主貼文索引取得 **1,049 筆 primary records**，�
 - P0 total characters：161,458
 - 主貼文只作 primary evidence；Reply 仍維持 supplemental evidence。
 - term frequency 不得直接升格 Concept；Concept 仍須由 phrase/context evidence 與人工治理確認。
+
+
+## 18. Content Rights / Privacy Gate
+
+Corpus 匯入、匯出與公開展示必須先通過 Content Rights Gate。
+
+- Policy：`data/shared/LOC_CONTENT_RIGHTS_POLICY.json`
+- Human-readable：`docs/LOC_CONTENT_RIGHTS_POLICY.md`
+- 私訊、MSN／Messenger 對話與其他私人通訊預設不匯入。
+- 平台 export 可取得，不等於其中所有內容可再次公開。
+- 公開展示預設只允許 `self_authored + public + cleared`。
+- Import/export 提示與權利確認屬 P0 governance requirement；沒有 rights gate 的新 corpus import flow 不視為完成。
