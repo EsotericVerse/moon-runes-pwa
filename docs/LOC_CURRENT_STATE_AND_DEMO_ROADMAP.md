@@ -22,14 +22,14 @@ LOC 的角色不是把八個獨立產品放在一起，而是：
 
 ### 1.1 月之符文與 LOC 的層級
 
-**月之符文（Luna Runes）是種子／根；LOC 是框架。**
+**月之符文（LunaRunes）是種子／根；LOC 是框架。**
 
 月之符文位於最底層，提供穩定的語意參照種子。LOC 建立在這個根之上，負責讓符文與後續生成的語言資料被記錄、分類、關聯、檢索與分析。
 
 簡化表示：
 
 ```text
-Luna Runes（月之符文）
+LunaRunes（月之符文）
 ＝語意種子／根
         ↓
 LOC Language System Framework
