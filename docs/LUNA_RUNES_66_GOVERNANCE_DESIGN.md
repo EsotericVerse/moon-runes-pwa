@@ -1,13 +1,13 @@
-# Luna Codex 66 — Governance Design Notes
+# LunaRunes 66 — Governance Design Notes
 
 **Version:** 0.2  
 **Status:** Current Design Interpretation  
-**System:** Luna Codex / 月之符文  
+**System:** LunaRunes / 月之符文  
 **Updated:** 2026-09-07
 
 ## 1. 定位
 
-Luna Codex 66 的成熟度不只來自「66 個符文已固定」，也來自它能同時描述自我、關係、生命、自然、物質、元素、秩序與無序，並保留邊界、演化與自我治理能力。
+LunaRunes 66 的成熟度不只來自「66 個符文已固定」，也來自它能同時描述自我、關係、生命、自然、物質、元素、秩序與無序，並保留邊界、演化與自我治理能力。
 
 月之符文是籤詩／抽籤語言工具與 Reference Seed System，不主張符文本身具有神秘力量，也不要求宗教、階級、師承或特殊身分。
 
@@ -138,7 +138,7 @@ user decision
 
 ## 7. Why 66 is Mature
 
-Luna Codex 66 的成熟可分四層：
+LunaRunes 66 的成熟可分四層：
 
 1. **Semantic maturity**：固定位置、核心定義、組別與四向語意。
 2. **Structural maturity**：八組、抽取、雙卡因果、三卡源－轉－合、五卡與 OW3gs 等組合規則。
@@ -164,7 +164,7 @@ Luna Codex 66 的成熟可分四層：
 
 ## 9. 與 LOC Governance 的關係
 
-Luna Codex 66 是 LOC 最成熟的 Reference Seed System，也是 LOC 治理思想最早能被具體看到的地方之一：
+LunaRunes 66 是 LOC 最成熟的 Reference Seed System，也是 LOC 治理思想最早能被具體看到的地方之一：
 
 - 「界／域」提供 boundary language。
 - 礦物組提供價值與現實語言。
@@ -176,4 +176,4 @@ Luna Codex 66 是 LOC 最成熟的 Reference Seed System，也是 LOC 治理思�
 
 ---
 
-**Luna Codex 66 principle:** a stable symbolic language that can describe reality, evolve through understanding, and remain governable without becoming an authority over the user.
+**LunaRunes 66 principle:** a stable symbolic language that can describe reality, evolve through understanding, and remain governable without becoming an authority over the user.
