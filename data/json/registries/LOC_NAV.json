@@ -8,12 +8,6 @@
   },
   "items": [
     {
-      "id": "home",
-      "label": "首頁",
-      "href": "index.html",
-      "description": "回到 LOC 首頁"
-    },
-    {
       "id": "runes",
       "label": "月符資料",
       "href": "list.html",
