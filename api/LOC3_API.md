@@ -56,7 +56,7 @@ Suno 播放與 YouTube MV 觀看數仍維持為獨立指標。
 取得最新版母資料後，在專案根目錄執行：
 
 ```bash
-python card_api/scripts/build_loc3_dataset.py \
+python api/scripts/build_loc3_dataset.py \
   path/to/Suno_500_公開歌詞作品主資料庫_繁中語意與留白v0.3.2.xlsx \
   data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json
 ```
