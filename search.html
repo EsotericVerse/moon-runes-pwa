@@ -352,14 +352,21 @@
       const ev=(synthesis.evidence||[]).slice(0,8).map(x=>`<span class="pill">${esc(x.label)} · ${esc(x.count)}</span>`).join('');
       const periods=(synthesis.periods||[]).map(x=>`<span class="pill">${esc(x)}</span>`).join('');
       const paths=((synthesis.graph||{}).paths||[]).slice(0,6);
-      const graphHtml=paths.length?`
+      const g=synthesis.graph||{};
+      const eraPath=(g.era_path||[]).map(x=>x.period||x.label||x.era_id).filter(Boolean);
+      const locPath=(g.loc_path||[]).filter(Boolean);
+      const connected=(g.connected_results||[]);
+      const graphHtml=(paths.length||eraPath.length||locPath.length)?`
         <details open>
-          <summary>Graph RAG 關聯路徑 · ${esc((synthesis.graph||{}).edge_count||paths.length)} 條</summary>
+          <summary>Graph RAG 聚合 · ${esc(g.node_count||0)} nodes / ${esc(g.edge_count||0)} edges</summary>
           <div class="summary">
-            ${paths.map(p=>`<div style="margin:.45rem 0"><strong>${esc(p.from?.primary_loc||'')}</strong> ${esc(p.from?.label||p.from?.id||'')} → <b>${esc(p.relation||'related_to')}</b> → <strong>${esc(p.to?.primary_loc||'')}</strong> ${esc(p.to?.label||p.to?.id||'')}${p.summary?`<br><small>${esc(p.summary)}</small>`:''}</div>`).join('')}
+            ${eraPath.length?`<p><strong>時期軌跡：</strong>${eraPath.map(esc).join(' → ')}</p>`:''}
+            ${locPath.length?`<p><strong>跨 LOC：</strong>${locPath.map(esc).join(' · ')}</p>`:''}
+            ${connected.length?`<p><strong>Graph 延伸結果：</strong>${connected.map(x=>`${esc(x.primary_loc||'')} ${esc(x.title||x.result_id||'')}`).join(' · ')}</p>`:''}
+            ${paths.map(p=>`<div style="margin:.45rem 0"><strong>${esc(p.from?.primary_loc||p.from?.node_type||'')}</strong> ${esc(p.from?.label||p.from?.id||'')} → <b>${esc(p.relation||'related_to')}</b> → <strong>${esc(p.to?.primary_loc||p.to?.node_type||'')}</strong> ${esc(p.to?.label||p.to?.id||'')}${p.summary?`<br><small>${esc(p.summary)}</small>`:''}${p.evidence_kind?`<br><small>evidence: ${esc(p.evidence_kind)}</small>`:''}</div>`).join('')}
           </div>
         </details>`:
-        '<p class="summary"><strong>Graph RAG：</strong>目前沒有命中已確認的 Registry edge；不以語意相似硬建關聯。</p>';
+        '<p class="summary"><strong>Graph RAG：</strong>目前沒有可走訪的 Canonical edge；語意相似不會被硬寫成關聯。</p>';
       return `<section class="group synthesis-group">
         <div class="grouphead"><h2>綜合分析</h2><span>Search Synthesis · Graph Enriched</span></div>
         <div class="cards">
