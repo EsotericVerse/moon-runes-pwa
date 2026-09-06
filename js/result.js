@@ -1,5 +1,4 @@
 import { rune } from "./runes64.js";
-import { direction } from "./direction64.js";
 
 const DIRECTIONS = ["正位", "半正位", "半逆位", "逆位"];
 const ROTATIONS = ["rotate(0deg)", "rotate(90deg)", "rotate(-90deg)", "rotate(180deg)"];
@@ -122,7 +121,7 @@ function drawCards(count) {
 }
 
 function getDirectionText(card) {
-  const item = direction[card.id];
+  const item = runeHintMap.get(card.id) || {};
   return item?.[DIRECTION_FIELDS[card.direction]] || "目前沒有對應方向說明。";
 }
 
