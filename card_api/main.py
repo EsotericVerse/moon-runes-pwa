@@ -10,6 +10,7 @@ import os
 from faq_rag import FAQSearchEngine
 from loc3_search import LOC3SearchEngine
 from unified_search import UnifiedSearchEngine
+from facebook_search import FacebookSearchEngine
 from paths import REPO_ROOT, core_json, search_json
 from corpus_analysis import analyze_corpus, classify_text
 
@@ -82,6 +83,16 @@ except Exception as e:
     LOC3_LOAD_ERROR = str(e)
     print(f"Warning: Failed to load LOC3 lyrics dataset: {e}")
 
+
+# Optional private Facebook corpus. The dataset is never committed to the public repo.
+FB_DATA_PATH = Path(os.environ.get("LOC_FB_SEARCH_DATASET", "")).expanduser() if os.environ.get("LOC_FB_SEARCH_DATASET") else None
+try:
+    FB_SEARCHER = FacebookSearchEngine(FB_DATA_PATH) if FB_DATA_PATH and FB_DATA_PATH.exists() else None
+    FB_LOAD_ERROR = None if FB_SEARCHER else "LOC_FB_SEARCH_DATASET not mounted"
+except Exception as e:
+    FB_SEARCHER = None
+    FB_LOAD_ERROR = str(e)
+    print(f"Warning: Failed to load Facebook corpus: {e}")
 
 # Unified Search：保留各 LOC 的 canonical ownership，只統一查詢與結果 envelope
 try:
@@ -521,6 +532,7 @@ async def root():
             "unified_search": "/search",
             "unified_browse": "/search/browse",
             "unified_facets": "/search/facets",
+            "facebook_search": "/search (content_type=facebook_post)",
             "text_analyze": "/analyze/text",
             "corpus_analyze": "/analyze/corpus",
             "health": "/health",
@@ -541,6 +553,8 @@ async def health_check():
         "loc3_ready": LOC3_SEARCHER is not None,
         "loc3_works_loaded": len(LOC3_SEARCHER.works) if LOC3_SEARCHER else 0,
         "unified_search_ready": UNIFIED_SEARCHER is not None,
+        "facebook_search_ready": FB_SEARCHER is not None,
+        "facebook_posts_loaded": len(FB_SEARCHER.posts) if FB_SEARCHER else 0,
         "shared_era_count": len(UNIFIED_SEARCHER.eras.get("eras", [])) if UNIFIED_SEARCHER else 0
     }
 
@@ -628,6 +642,8 @@ async def unified_search_facets():
             "loc6_threads_total_replies": 2430,
             "loc6_threads_indexed_posts": len(searcher._loc6_article_documents()),
             "loc6_threads_full_index_ready": bool((getattr(searcher, "loc6_thread_full", {}) or {}).get("documents")),
+            "facebook_search_ready": FB_SEARCHER is not None,
+            "facebook_posts_loaded": len(FB_SEARCHER.posts) if FB_SEARCHER else 0,
         },
         "timestamp": datetime.now().isoformat(),
     }
@@ -679,6 +695,33 @@ async def unified_search(input: UnifiedSearchInput):
         raise HTTPException(status_code=400, detail="query不可超過500字元")
     if input.top_k < 1 or input.top_k > 10:
         raise HTTPException(status_code=400, detail="top_k必須介於1到10之間")
+
+    if input.content_type.strip().lower() == "facebook_post":
+        if FB_SEARCHER is None:
+            raise HTTPException(
+                status_code=503,
+                detail=f"Facebook corpus尚未掛載: {FB_LOAD_ERROR or 'unknown error'}"
+            )
+        try:
+            items = FB_SEARCHER.search(
+                query,
+                top_k=input.top_k,
+                start_date=input.start_date.strip(),
+                end_date=input.end_date.strip(),
+            )
+            return {
+                "success": True,
+                "system_id": "lo3rwang",
+                "query": query,
+                "content_type": "facebook_post",
+                "count": len(items),
+                "groups": {"social_archive": items},
+                "results": items,
+                "private_runtime_source": True,
+                "timestamp": datetime.now().isoformat(),
+            }
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
     searcher = get_unified_searcher()
     filters = {
