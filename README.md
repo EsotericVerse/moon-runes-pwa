@@ -167,7 +167,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC5 | Resonance | 圖像、聲音、文字、MV、系統圖形與跨媒體概念視覺化 |
 | LOC6 | Governance / Interpretation | 人生觀、價值觀、治理原則、政德風，以及符文組合如何被轉譯為實際文字與敘事的解析實證 |
 | LOC7 | Text Architecture / KM | 文字建築學、知識管理、檢索、關係結構與 Graph RAG 後續方向 |
-| LOC8 | Integration / Temporal Management | 每日符文、事件、時期、時間線、狀態軌跡與跨分發統合 |
+| LOC8 | Context / Relation & Trend | 每日符文、事件、時期、時間線、Relation、Trajectory、趨勢分析與跨分發統合 |
 
 ### 目前具現化成果
 
@@ -180,7 +180,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
 | LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證，保存「符文組合／方位／月相 → 實際敘事」的歷史對照。 |
 | LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7、LOC8 的現有資料來源。完整 Knowledge Graph expansion／Graph RAG 仍屬後續階段。 |
-| LOC8 | Life 頁面已有每日符文、時期、事件紀錄與事件時間線／軌跡等可操作視圖；現階段重點為資料同步、身份／多使用者架構、分析呈現與跨 LOC 引用，而不是從零建立入口。 |
+| LOC8 | `life.html` 已具備每日符文、ERA 時期管理、Event 紀錄、Event Timeline、Relation Library、軌跡 Trajectory 與趨勢分析 Analysis。ERA 已可在顯示位置直接新增／修改／刪除，後端 Apps Script API 已升至 `loc8-mvp-1.1`；Context 目前可呈現跨時期 Relation 與 LOC3 關鍵字比重升降／文字轉折說明，Graph 視圖仍屬後續。 |
 
 LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；LOC6 已有治理／政德風與符文解析資料，LOC7 已有 KM／FAQ／RAG／Unified Search，LOC8 已有可操作的事件、時期與每日符文介面。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
 
