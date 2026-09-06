@@ -12,13 +12,13 @@ if str(CARD_API) not in sys.path:
 from faq_rag import FAQSearchEngine
 from loc3_search import LOC3SearchEngine
 from unified_search import UnifiedSearchEngine
-from paths import runtime_json, shared_json
+from paths import core_json, registry_json, search_json
 
 
 def build_engine() -> UnifiedSearchEngine:
-    faq = FAQSearchEngine(runtime_json("LOC_FAQ_RAG_v0.4.json"))
-    loc3 = LOC3SearchEngine(runtime_json("LOC3_LYRICS_SEARCH_v0.1.json"))
-    runes = json.loads(runtime_json("new_runes.json").read_text(encoding="utf-8")).get("runes", [])
+    faq = FAQSearchEngine(search_json("faq", "LOC_FAQ_RAG_v0.4.json"))
+    loc3 = LOC3SearchEngine(search_json("loc3", "LOC3_LYRICS_SEARCH_v0.1.json"))
+    runes = json.loads(core_json("runes64.json").read_text(encoding="utf-8")).get("runes", [])
     return UnifiedSearchEngine(faq_searcher=faq, loc3_searcher=loc3, runes=runes, repo_root=ROOT)
 
 
@@ -106,7 +106,7 @@ def main() -> int:
     query_results = [validate_result(engine, query) for query in queries]
     snapshot = validate_graph_snapshot(engine)
 
-    schema = json.loads(shared_json("LOC_GRAPH_SCHEMA.json").read_text(encoding="utf-8"))
+    schema = json.loads(registry_json("LOC_GRAPH_SCHEMA.json").read_text(encoding="utf-8"))
     schema_ok = schema.get("schema_version") == "0.4" and bool(schema.get("quality_policy"))
 
     passed = all(row["pass"] for row in query_results) and snapshot["pass"] and schema_ok
