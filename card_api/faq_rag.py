@@ -198,6 +198,27 @@ class FAQSearchEngine:
                     subquery = f"{subquery}{shared_tail}"
                 clause_results = self.search(subquery, top_k=top_k)
                 clause_relevant = [result for result in clause_results if result.score >= 0.08]
+
+                # Prefer the concrete noun phrase requested by the clause over
+                # a generic module definition. Example: "LOC3的歌曲是什麼"
+                # should prefer a FAQ whose question is about 歌曲, not merely
+                # "LOC3是什麼".
+                focus = _normalize(subquery)
+                focus = re.sub(r"loc\s*\d+", "", focus, flags=re.I)
+                focus = re.sub(
+                    r"(是什麼|是甚麼|什麼|甚麼|怎麼運作|怎麼使用|如何運作|如何使用|怎麼|如何|的)",
+                    "",
+                    focus,
+                )
+                focus = focus.strip(" ，,。！？!?")
+                if len(focus) >= 2:
+                    focused = [
+                        result for result in clause_relevant
+                        if focus in _normalize(str(result.chunk.get("question") or ""))
+                    ]
+                    if focused:
+                        clause_relevant = focused
+
                 if clause_relevant:
                     add_result(clause_relevant[0])
                 if len(selected) == intent_limit:
