@@ -1757,23 +1757,78 @@
       return relation?.summary || '';
     }
 
+    function transitionKeywordDelta(fromItems, toItems) {
+      const from = new Map((Array.isArray(fromItems) ? fromItems : []).map(item => [String(item.term || ''), Number(item.percent || 0)]));
+      const to = new Map((Array.isArray(toItems) ? toItems : []).map(item => [String(item.term || ''), Number(item.percent || 0)]));
+      const all = new Set([...from.keys(), ...to.keys()]);
+      const deltas = [...all].map(term => ({
+        term,
+        from: from.get(term) || 0,
+        to: to.get(term) || 0,
+        delta: Number(((to.get(term) || 0) - (from.get(term) || 0)).toFixed(1))
+      }));
+      return {
+        rising: deltas.filter(x => x.delta > 0).sort((a,b) => b.delta - a.delta).slice(0,4),
+        falling: deltas.filter(x => x.delta < 0).sort((a,b) => a.delta - b.delta).slice(0,4)
+      };
+    }
+
     function renderTrajectoryAnalysis() {
       if (!els.trajectoryAnalysis) return;
-      const periods = Array.isArray(loc3PeriodKeywordAnalysis?.periods)
-        ? loc3PeriodKeywordAnalysis.periods.slice()
+
+      // ERA is the continuous axis. LOC6 Threads provides a comparable P0–P8
+      // language series; LOC3 is supplemental from P2 onward and must not
+      // determine which transitions exist.
+      const orderedEras = Array.isArray(eraRegistry)
+        ? eraRegistry.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0))
         : [];
+      const loc6Periods = Array.isArray(loc6PeriodKeywordAnalysis?.periods)
+        ? loc6PeriodKeywordAnalysis.periods
+        : [];
+      const loc3Periods = Array.isArray(loc3PeriodKeywordAnalysis?.periods)
+        ? loc3PeriodKeywordAnalysis.periods
+        : [];
+      const loc6Map = new Map(loc6Periods.map(item => [String(item.period || ''), item]));
+      const loc3Map = new Map(loc3Periods.map(item => [String(item.period || ''), item]));
+
+      const periods = orderedEras
+        .map(era => {
+          const period = String(era.period || '');
+          const loc6 = loc6Map.get(period);
+          const loc3 = loc3Map.get(period);
+          return { era, period, loc6, loc3 };
+        })
+        .filter(item => item.loc6 || item.loc3);
+
       if (periods.length < 2) {
-        els.trajectoryAnalysis.innerHTML = '<div class="empty">目前沒有足夠的 LOC3 時期資料可比較。</div>';
+        els.trajectoryAnalysis.innerHTML = '<div class="empty">目前沒有足夠的跨時期資料可比較。</div>';
         return;
       }
 
-      periods.sort((a,b) => String(a.start_date || '').localeCompare(String(b.start_date || '')));
       const cards = [];
       for (let i = 1; i < periods.length; i++) {
         const from = periods[i - 1];
         const to = periods[i];
-        const { rising, falling, named } = transitionDelta(from, to);
-        const relationSummary = transitionRelationSummary(from.era_id, to.era_id);
+        const relationSummary = transitionRelationSummary(from.era.era_id, to.era.era_id);
+
+        let rising = [];
+        let falling = [];
+        let comparisonLabel = '';
+        let sampleLabel = '';
+
+        if (from.loc6 && to.loc6) {
+          ({ rising, falling } = transitionKeywordDelta(from.loc6.keywords, to.loc6.keywords));
+          comparisonLabel = 'LOC6 Threads 主貼文 document frequency';
+          sampleLabel = `LOC6 ${Number(from.loc6.document_count || 0)} → ${Number(to.loc6.document_count || 0)} 篇`;
+        } else if (from.loc3 && to.loc3) {
+          const delta = transitionDelta(from.loc3, to.loc3);
+          rising = delta.rising;
+          falling = delta.falling;
+          comparisonLabel = 'LOC3 作品語義家族比例';
+          sampleLabel = `LOC3 ${Number(from.loc3.work_count || 0)} → ${Number(to.loc3.work_count || 0)} 首`;
+        } else {
+          continue;
+        }
 
         const fallbackSummary = [
           rising.length ? '主要上升：' + rising.slice(0,3).map(x => `${x.term} +${x.delta}pt`).join('、') : '',
@@ -1784,15 +1839,15 @@
           ? items.map(x => `<span class="transition-delta-chip">${esc(x.term)} <b>${sign === 'up' ? '+' : ''}${esc(x.delta)}pt</b> <small>${esc(x.from)}→${esc(x.to)}%</small></span>`).join('')
           : '<span class="era-source-note">無明顯變化</span>';
 
-        const namedHtml = named.length
-          ? `<div class="transition-analysis-evidence">命名概念：${named.map(x => `${esc(x.term)} ${x.delta > 0 ? '+' : ''}${esc(x.delta)}pt（${esc(x.from)}→${esc(x.to)}%）`).join('、')}</div>`
+        const loc3Supplement = from.loc3 && to.loc3
+          ? `<div class="transition-analysis-evidence">LOC3 補充樣本：${esc(from.loc3.work_count || 0)} → ${esc(to.loc3.work_count || 0)} 首；不取代連續 ERA 的 LOC6 比較基準。</div>`
           : '';
 
         cards.push(`
           <article class="transition-analysis-card">
             <div class="transition-analysis-head">
-              <strong>${esc(from.period)} → ${esc(to.period)}｜${esc(from.period_name || '')} → ${esc(to.period_name || '')}</strong>
-              <small>LOC3 ${esc(from.work_count || 0)} → ${esc(to.work_count || 0)} 首</small>
+              <strong>${esc(from.period)} → ${esc(to.period)}｜${esc(from.era.name || '')} → ${esc(to.era.name || '')}</strong>
+              <small>${esc(sampleLabel)}</small>
             </div>
             <div class="transition-delta-grid">
               <div class="transition-delta-box">
@@ -1805,13 +1860,13 @@
               </div>
             </div>
             <div class="transition-analysis-summary">${esc(relationSummary || fallbackSummary || '目前只有數值差異，尚未建立文字轉折說明。')}</div>
-            ${namedHtml}
-            <div class="transition-analysis-evidence">比較單位：每期作品中命中該語義家族的作品比例；差值單位為 percentage points。</div>
+            <div class="transition-analysis-evidence">比較基準：${esc(comparisonLabel)}；差值單位為 percentage points。</div>
+            ${loc3Supplement}
           </article>
         `);
       }
 
-      els.trajectoryAnalysis.innerHTML = cards.join('');
+      els.trajectoryAnalysis.innerHTML = cards.join('') || '<div class="empty">目前沒有可連續比較的相鄰時期。</div>';
     }
 
     function normalizeRelation(raw) {
