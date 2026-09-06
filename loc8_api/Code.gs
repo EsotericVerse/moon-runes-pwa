@@ -497,7 +497,13 @@ function updateEraById_(eraId, patch) {
       headers.forEach((h, i) => result[h] = row[i]);
       return result;
     }
-    throw new Error('Era not found: ' + eraId);
+    // Repository-governed ERA rows may exist before the Sheet is seeded.
+    // Treat update as upsert so the first UI edit creates the live row.
+    const row = headers.map(h => serializeCell_(patch[h]));
+    sheet.appendRow(row);
+    const result = {};
+    headers.forEach((h, i) => result[h] = row[i]);
+    return result;
   } finally {
     lock.releaseLock();
   }
