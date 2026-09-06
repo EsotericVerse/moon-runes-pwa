@@ -417,6 +417,9 @@ class UnifiedSearchInput(BaseModel):
     query: str
     top_k: int = 6
     content_type: str = ""
+    source: str = ""
+    start_date: str = ""
+    end_date: str = ""
     period: str = ""
     era: str = ""
     playlist: str = ""
@@ -583,6 +586,9 @@ async def unified_search(input: UnifiedSearchInput):
 
     searcher = get_unified_searcher()
     filters = {
+        "source": input.source,
+        "start_date": input.start_date,
+        "end_date": input.end_date,
         "period": input.period,
         "era": input.era,
         "playlist": input.playlist,
