@@ -70,6 +70,7 @@ class UnifiedSearchEngine:
         self.relationships = self._load_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.loc6 = self._load_json("LOC6_GOVERNANCE_REGISTRY.json")
+        self.loc6_threads = self._load_json("LOC6_THREADS_KM_INDEX.json")
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
         self.lots = self._load_json("lots.json")
@@ -502,6 +503,10 @@ class UnifiedSearchEngine:
     def _governance_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "governance_fragment"}:
             return []
+
+        results: list[dict[str, Any]] = []
+
+        # Governed LOC6 fragments.
         scored = []
         for fragment in self.loc6.get("fragments", []):
             score = _text_score(query, [
@@ -516,20 +521,96 @@ class UnifiedSearchEngine:
                 continue
             scored.append((score, fragment))
         scored.sort(key=lambda row: (-row[0], str(row[1].get("fragment_id", ""))))
-        return [{
-            "result_id": fragment.get("fragment_id"),
-            "system_id": fragment.get("system_id") or "lo3rwang",
-            "primary_loc": "LOC6",
-            "related_locs": fragment.get("related_locs", ["LOC3", "LOC4", "LOC7", "LOC8"]),
-            "content_type": "governance_fragment",
-            "group": "governance",
-            "title": fragment.get("statement") or fragment.get("topic") or fragment.get("fragment_id"),
-            "summary": fragment.get("interpretation") or fragment.get("governance_principle") or "",
-            "score": round(score, 6),
-            "era_id": fragment.get("era_id"),
-            "source_refs": fragment.get("source_refs", []),
-            "payload": fragment,
-        } for score, fragment in scored[:top_k]]
+        for score, fragment in scored[:top_k]:
+            results.append({
+                "result_id": fragment.get("fragment_id"),
+                "system_id": fragment.get("system_id") or "lo3rwang",
+                "primary_loc": "LOC6",
+                "related_locs": fragment.get("related_locs", ["LOC3", "LOC4", "LOC7", "LOC8"]),
+                "content_type": "governance_fragment",
+                "group": "governance",
+                "title": fragment.get("statement") or fragment.get("topic") or fragment.get("fragment_id"),
+                "summary": fragment.get("interpretation") or fragment.get("governance_principle") or "",
+                "score": round(score, 6),
+                "era_id": fragment.get("era_id"),
+                "source_refs": fragment.get("source_refs", []),
+                "payload": fragment,
+            })
+
+        # Threads evidence tranche. Main posts are primary evidence; replies are
+        # searchable supplemental evidence and receive a small ranking penalty.
+        thread_scored = []
+        for doc in self.loc6_threads.get("documents", []):
+            score = _text_score(query, [
+                doc.get("text"),
+                " ".join(doc.get("matched_terms", [])),
+                doc.get("era"),
+                doc.get("source_role"),
+            ])
+            if score < 0.34:
+                continue
+            if doc.get("source_role") == "reply":
+                score *= 0.88
+            thread_scored.append((score, doc))
+        thread_scored.sort(key=lambda row: (-row[0], str(row[1].get("date", "")), str(row[1].get("id", ""))))
+
+        for score, doc in thread_scored[:top_k]:
+            role = doc.get("source_role") or "main_post"
+            results.append({
+                "result_id": doc.get("id"),
+                "system_id": "lo3rwang",
+                "primary_loc": "LOC6",
+                "related_locs": ["LOC7", "LOC8"],
+                "content_type": "governance_fragment",
+                "group": "governance",
+                "title": f"Threads · {doc.get('date') or 'undated'} · {doc.get('era') or 'ERA'}",
+                "summary": doc.get("text") or "",
+                "score": round(score, 6),
+                "era_id": f"ERA-{doc.get('era')}" if doc.get("era") else None,
+                "period": doc.get("era"),
+                "source_refs": [{
+                    "source_type": "threads",
+                    "source_id": doc.get("source_id"),
+                    "note": "primary main post" if role == "main_post" else "supplemental reply evidence",
+                }],
+                "payload": {
+                    **doc,
+                    "km_source": "LOC6_THREADS_KM_INDEX",
+                    "evidence_role": "primary" if role == "main_post" else "supplemental",
+                },
+            })
+
+        # Keyword statistics are also searchable KM evidence. They expose the
+        # P0-P8 document-frequency distribution without claiming semantic Canon.
+        q = _compact(query)
+        for stat in self.loc6_threads.get("term_stats", []):
+            term = str(stat.get("term") or "")
+            if not term or (_compact(term) not in q and q not in _compact(term)):
+                continue
+            results.append({
+                "result_id": f"THR-TERM-{term}",
+                "system_id": "lo3rwang",
+                "primary_loc": "LOC6",
+                "related_locs": ["LOC7", "LOC8"],
+                "content_type": "governance_fragment",
+                "group": "governance",
+                "title": f"Threads 關鍵字 · {term}",
+                "summary": f"主貼文 DF {stat.get('main_df', 0)}；Reply DF {stat.get('reply_df', 0)}。可用 ERA distribution 觀察時間變化。",
+                "score": 1.0,
+                "source_refs": [{
+                    "source_type": "threads",
+                    "source_id": self.loc6_threads.get("source"),
+                    "note": "corpus-derived document frequency; not Canon",
+                }],
+                "payload": {
+                    **stat,
+                    "km_source": "LOC6_THREADS_KM_INDEX",
+                    "evidence_role": "statistical",
+                },
+            })
+
+        results.sort(key=lambda item: (-float(item.get("score") or 0), str(item.get("result_id") or "")))
+        return results[:top_k]
 
     def _relationship_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "relationship", "article", "text_work", "reel", "video", "multimedia", "lyrics_work", "suno_song"}:
@@ -705,7 +786,7 @@ class UnifiedSearchEngine:
                 "LOC3": "live",
                 "LOC4": "direct-work-search-live",
                 "LOC5": "direct-media-registry-search-live",
-                "LOC6": "direct-governance-search-live",
+                "LOC6": "governance+threads-km-search-live",
                 "LOC7": "live",
                 "LOC8": "live-era",
             },
