@@ -3,14 +3,14 @@ name: Graph RAG Evaluation
 on:
   pull_request:
     paths:
-      - "card_api/**"
+      - "api/**"
       - "data/json/registries/LOC_GRAPH_*.json"
       - "data/json/registries/LOC8_*.json"
       - ".github/workflows/graph-rag-eval.yml"
   push:
     branches: [main]
     paths:
-      - "card_api/**"
+      - "api/**"
       - "data/json/registries/LOC_GRAPH_*.json"
       - "data/json/registries/LOC8_*.json"
       - ".github/workflows/graph-rag-eval.yml"
@@ -21,14 +21,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: card_api
+        working-directory: api
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: card_api/requirements.txt
+          cache-dependency-path: api/requirements.txt
       - run: pip install -r requirements.txt
       - run: python -m compileall -q .
       - run: python scripts/validate_repo_layout.py
