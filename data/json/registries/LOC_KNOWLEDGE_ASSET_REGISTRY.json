@@ -542,7 +542,7 @@
     {
       "asset_id": "KA-LOC1-DIRECTION-001",
       "title": "LOC1 四向語意 Seed Corpus",
-      "path": "js/direction64.js",
+      "path": "data/json/archive/loc1/direction64_legacy.json",
       "source_type": "structured_seed_corpus",
       "content_type": "rune_direction_corpus",
       "primary_loc": "LOC1",
@@ -555,12 +555,12 @@
         "LOC8"
       ],
       "role": "four_direction_seed_corpus",
-      "status": "current",
-      "authority_level": "derived_from_mother_data",
-      "searchable": true,
-      "index_priority": "highest",
+      "status": "historical",
+      "authority_level": "historical_unresolved",
+      "searchable": false,
+      "index_priority": "low",
       "version": "2026-09-05",
-      "updated_at": "2026-09-05",
+      "updated_at": "2026-09-07",
       "keywords": [
         "正位",
         "半正位",
@@ -574,7 +574,7 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "notes": "Searchable four-direction wording for each rune; it remains subordinate to the canonical mother data.",
+      "notes": "Historical four-direction wording migrated from js/direction64.js. It differs from current core/runes64.json for multiple runes; preserved for governance comparison and excluded from runtime until authority is resolved.",
       "presentation": "internal_source"
     },
     {
@@ -1326,6 +1326,43 @@
         "maintained_in_repo": true
       },
       "notes": "Single maintained expanded rune interpretation projection. The former engine full-copy dataset was removed as duplicate.",
+      "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-LOC1-RUNE-DETAILS-001",
+      "title": "LOC1 Rune Detail Runtime Projection",
+      "path": "data/json/core/rune_details.json",
+      "source_type": "structured_seed_corpus",
+      "content_type": "rune_detail_corpus",
+      "primary_loc": "LOC1",
+      "related_locs": [
+        "LOC2",
+        "LOC4",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "rich_rune_detail_runtime_projection",
+      "status": "current",
+      "authority_level": "derived_from_mother_data",
+      "searchable": true,
+      "index_priority": "high",
+      "version": "0.1",
+      "updated_at": "2026-09-07",
+      "keywords": [
+        "月符",
+        "神話故事",
+        "靈魂咒語",
+        "實踐挑戰",
+        "分組說明",
+        "符文變化歷史"
+      ],
+      "provenance": {
+        "mother_source": "LunaRune64.xlsx",
+        "repository": "EsotericVerse/moon-runes-pwa",
+        "maintained_in_repo": true
+      },
+      "notes": "Rich browser/detail projection migrated from js/runes64.js so structured data no longer lives in JS.",
       "presentation": "internal_source"
     }
   ]
