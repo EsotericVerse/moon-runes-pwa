@@ -4,14 +4,14 @@ import json
 import sys
 from pathlib import Path
 
-CARD_API = Path(__file__).resolve().parents[1]
-if str(CARD_API) not in sys.path:
-    sys.path.insert(0, str(CARD_API))
-from paths import RUNTIME_JSON_DIR
+API_DIR = Path(__file__).resolve().parents[1]
+if str(API_DIR) not in sys.path:
+    sys.path.insert(0, str(API_DIR))
+from paths import search_json
 
-DATA_DIR = RUNTIME_JSON_DIR
-INDEX_PATH = DATA_DIR / "LOC3_LYRICS_SEARCH_v0.1.json"
-CATALOG_PATH = DATA_DIR / "LOC3_MEDIA_LINKS_v0.1.json"
+DATA_DIR = search_json("loc3", "")
+INDEX_PATH = search_json("loc3", "LOC3_LYRICS_SEARCH_v0.1.json")
+CATALOG_PATH = search_json("loc3", "LOC3_MEDIA_LINKS_v0.1.json")
 
 
 REELS = [
