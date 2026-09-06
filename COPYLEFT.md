@@ -1,10 +1,10 @@
-# Luna Codex / LOC Copyleft Policy
+# LOC / Luna Codex / LunaRunes Copyleft Policy
 
 **Status:** Current project governance intent  
 **Version:** 0.1  
 **Updated:** 2026-09-07
 
-Luna Codex（月之符文）and the LOC project are published in a **Copyleft** spirit.
+LOC（Luna Codex／月典）and LunaRunes（月之符文）are published in a **Copyleft** spirit.
 
 The purpose of this policy is to keep the language system usable, inspectable, modifiable and shareable while preserving authorship, provenance and the freedom of downstream users.
 
@@ -32,7 +32,7 @@ Copyleft allows modification; it does **not** make every modification official L
 A fork may change rune interpretations, software or presentation, but it must distinguish:
 
 ```text
-upstream Luna Codex / LOC
+upstream LOC / Luna Codex
 vs
 fork / derivative interpretation
 ```
@@ -79,7 +79,7 @@ A future repository pass may normalize this into explicit standard licenses for 
 
 Preferred project attribution:
 
-**Lucas Oscar Wang 政德 / Luna Codex / LOC / EsotericVerse Studio**
+**Lucas Oscar Wang 政德 / LOC / Luna Codex / LunaRunes / EsotericVerse Studio**
 
 Historical works may retain their original historical attribution where provenance requires it.
 
