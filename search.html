@@ -373,8 +373,13 @@
           <article class="card">
             <div class="meta"><span class="pill">LOC7 · Analysis</span><span class="pill">自動彙整</span>${locs}</div>
             <h3>${esc(synthesis.title||'綜合結果')}</h3>
-            <p class="summary">${esc(synthesis.summary||'')}</p>
+            <p class="summary"><strong>介紹：</strong>${esc(synthesis.introduction||synthesis.summary||'')}</p>
+            ${synthesis.analysis_summary?`<p class="summary"><strong>自動分析：</strong>${esc(synthesis.analysis_summary)}</p>`:''}
+            ${Array.isArray(synthesis.key_findings)&&synthesis.key_findings.length?`<div class="summary"><strong>重點：</strong><ul>${synthesis.key_findings.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+            ${Array.isArray(synthesis.topic_terms)&&synthesis.topic_terms.length?`<div class="meta">${synthesis.topic_terms.slice(0,8).map(x=>`<span class="pill">${esc(x.term)}</span>`).join('')}</div>`:''}
+            ${synthesis.period_trend?.summary?`<p class="summary"><strong>時期趨勢：</strong>${esc(synthesis.period_trend.summary)}</p>`:''}
             ${synthesis.graph_summary?`<p class="summary"><strong>Graph 彙整：</strong>${esc(synthesis.graph_summary)}</p>`:''}
+            ${synthesis.confidence?`<p class="summary"><small>分析信心：${esc(synthesis.confidence.level)} · evidence groups ${esc(synthesis.confidence.evidence_group_count)} · graph edges ${esc(synthesis.confidence.graph_edge_count)}</small></p>`:''}
             ${ev?`<p class="summary"><strong>證據分布：</strong></p><div class="meta">${ev}</div>`:''}
             ${periods?`<p class="summary"><strong>時期：</strong></p><div class="meta">${periods}</div>`:''}
             ${graphHtml}
