@@ -419,7 +419,7 @@ moon-runes-pwa/
 ├── js/                        # 前端邏輯
 ├── css/                       # 前端樣式
 ├── tools/                     # repo-wide builders / importers
-├── loc8_api/                  # Google Apps Script 模組
+├── integrations/google_apps_script/loc8/                  # Google Apps Script 模組
 ├── 64images/                  # 公開 URL 敏感的月符卡圖
 ├── pics/                      # 視覺資產（後續媒體治理）
 ├── reels/                     # 影片資產（後續媒體治理）
