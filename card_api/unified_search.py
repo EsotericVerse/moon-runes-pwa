@@ -207,7 +207,7 @@ class UnifiedSearchEngine:
             "title": f"{name} · {direction} · {category}",
             "summary": poem,
             "score": 1.0,
-            "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune64.xlsx#Lots", "note": "via data/json/shared/lots.json"}],
+            "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune64.xlsx#Lots", "note": "via data/json/core/lots.json"}],
             "payload": {
                 "rune_number": lots_item.get("編號"),
                 "rune_name": name,
