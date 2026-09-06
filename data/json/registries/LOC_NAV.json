@@ -21,7 +21,7 @@
     },
     {
       "id": "search",
-      "label": "LOC 搜尋引擎",
+      "label": "綜合搜尋",
       "href": "search.html",
       "description": "跨 LOC 統整搜尋"
     },
