@@ -361,8 +361,42 @@ ERA suggestion、關鍵字趨勢、作品群聚與 change-point detection 都只
 | Analysis | Implemented (LOC3 baseline) | 比較相鄰時期的 LOC3 關鍵字／語義家族比重升降，並顯示 transition summary |
 | Context | Implemented | 整合 Relation、Trajectory 與 Analysis 的工作區 |
 | Graph View | Planned | 由既有 Relation edge 產生網狀視圖；目前未上線 |
-| Graph RAG | Planned | 待 corpus 與 relation 穩定後再實作 |
+| Graph RAG | Implemented | Unified Search 已以 Canonical Graph RAG 做 bounded traversal；LOC8 Event／Daily Rune snapshot 已接入時間圖，並輸出 provenance |
 
+### Graph RAG 現行整合（2026-09-06）
+
+現行 `card_api/unified_search.py` 已把 Graph RAG 作為 Unified Search 的固定階段，而不是未來規劃：
+
+```text
+Search retrieval
+      ↓
+seed nodes
+      ↓
+Canonical Graph (bounded 1–3 hop)
+      ↓
+ERA / LOC / Work / Media / Knowledge / LOC8 temporal nodes
+      ↓
+Search Synthesis + Provenance
+```
+
+LOC8 目前額外接入兩個 repository-governed fallback snapshot：
+
+- `LOC8_EVENT_SNAPSHOT.json`：Event／歷史里程碑與 ERA temporal evidence。
+- `LOC8_DAILY_RUNE_SNAPSHOT.json`：Daily Rune observation，建立 `LOC8 observation → LOC1 rune → LOC8 ERA` 的跨 LOC 時間橋。
+
+這兩份 snapshot 明確維持 **non-authoritative frontend fallback** 身分；Google Sheet 仍是 LOC8 live data source。
+
+### Relation Library 與公開 Search 的權限邊界
+
+`life.html` 的 Relation Library 目前直接使用 Google Sheet `Relation` 分頁，資料可標記 `visibility=private`。因此公開 `search.html` / Render Search API **不直接讀取 live Relation Sheet**。
+
+規則：
+
+1. private Relation 只供 LOC8 Life workspace 使用。
+2. 要進公開 Graph RAG 的 Relation，必須先經治理，成為 repository 中可公開的 registry／snapshot。
+3. Semantic similarity 只能選 seed，不能自行建立 canonical edge。
+4. Search API 必須回傳 provenance，讓結果可追溯至 source_refs、edge evidence kind 與 evidence status。
+5. Relation 公開化是治理動作，不是單純同步動作。
 ### Analysis 與 Context 的分工
 
 - **Context**：回答「彼此怎麼連」。
