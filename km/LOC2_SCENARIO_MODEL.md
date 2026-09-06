@@ -1,7 +1,7 @@
 # LOC2 Scenario Model — 情境語意模型
 
 **Status:** Working  
-**Owner:** LOC2 — Semantic Playground  
+**Owner:** LOC2 — 月符沙盒遊戲 / Semantic Playground  
 **Updated:** 2026-09-05
 
 ## 1. 定位
