@@ -2085,9 +2085,13 @@ class UnifiedSearchEngine:
         strong_groups = sum(1 for key in ("knowledge", "governance", "relationships", "timeline") if groups.get(key))
         evidence_groups = sum(1 for items in groups.values() if items)
         graph_edges = int(graph.get("edge_count") or 0)
-        if strong_groups >= 2 and graph_edges >= 2:
+        quality = graph.get("quality") or {}
+        mean_edge_quality = float(quality.get("mean_edge_quality") or 0.0)
+        high_quality_edges = int(quality.get("high_quality_edges") or 0)
+
+        if strong_groups >= 2 and graph_edges >= 2 and mean_edge_quality >= 0.80:
             level = "high"
-        elif evidence_groups >= 2 or graph_edges >= 1:
+        elif (evidence_groups >= 2 or graph_edges >= 1) and mean_edge_quality >= 0.60:
             level = "medium"
         else:
             level = "limited"
@@ -2096,6 +2100,8 @@ class UnifiedSearchEngine:
             "evidence_group_count": evidence_groups,
             "strong_group_count": strong_groups,
             "graph_edge_count": graph_edges,
+            "mean_edge_quality": mean_edge_quality,
+            "high_quality_edge_count": high_quality_edges,
         }
 
     def _synthesize_search(
@@ -2276,6 +2282,7 @@ class UnifiedSearchEngine:
                 "loc_path": graph.get("loc_path", []),
                 "connected_results": graph.get("connected_results", [])[:10],
                 "registry_counts": graph.get("graph_registry_counts", {}),
+                "quality": graph.get("quality", {}),
             },
             "governance_note": "綜合結果先由 Search 取回證據，再以 Canonical Graph 聚合 LOC、ERA、作品與分析節點。語意相似只負責選 seed；Graph edge 僅採 Registry、權威欄位或可確定的結構關係。",
         }
@@ -2323,11 +2330,14 @@ class UnifiedSearchEngine:
 
         graph_evidence: dict[str, int] = {}
         graph_status: dict[str, int] = {}
+        graph_quality_bands: dict[str, int] = {}
         for edge in graph.get("edges", []) or []:
             kind = str(edge.get("evidence_kind") or "unspecified")
             status = str(edge.get("evidence_status") or "unspecified")
+            band = str(edge.get("quality_band") or "unspecified")
             graph_evidence[kind] = graph_evidence.get(kind, 0) + 1
             graph_status[status] = graph_status.get(status, 0) + 1
+            graph_quality_bands[band] = graph_quality_bands.get(band, 0) + 1
 
         return {
             "source_ref_count": len(refs),
@@ -2335,7 +2345,9 @@ class UnifiedSearchEngine:
             "result_sources": result_sources[:50],
             "graph_evidence_kinds": graph_evidence,
             "graph_evidence_status": graph_status,
-            "graph_policy": "semantic similarity selects seeds; only recorded/deterministic governed edges are traversed",
+            "graph_quality_bands": graph_quality_bands,
+            "graph_quality": graph.get("quality", {}),
+            "graph_policy": "semantic similarity selects seeds; governed edge quality controls traversal priority and minimum path score",
             "loc8_live_relation_policy": "private Google Sheet Relation rows are not exposed by public Search; only repository-governed public snapshots/registries may enter the canonical graph",
         }
 
