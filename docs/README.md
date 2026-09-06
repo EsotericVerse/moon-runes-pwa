@@ -25,6 +25,7 @@
 | [LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md) | LOC2 真實情境／雙卡因果與 Event Corpus 定位 | Working |
 | [LOC6_ZHENGDE_STYLE.md](./LOC6_ZHENGDE_STYLE.md) | 政德風治理核心、代表句、風格演變與 Stage Profile 規則 | Current / Working |
 | [LOC7_KM.md](./LOC7_KM.md) | LOC7 Knowledge Management 核心治理文件 | Current |
+| [LOC8_KM.md](./LOC8_KM.md) | LOC8 ERA／Event／Relation／Context 判定與治理邏輯 | Working |
 | [JSON_DATA_MAP.md](./JSON_DATA_MAP.md) | JSON 資料角色、來源與同步規則 | Current |
 | `LOC_Canon.docx` | Canon 文件版本之一 | Canon document |
 | `LunarRunesCardCut.pdf` | 月符實體卡列印檔 | Published artifact |
