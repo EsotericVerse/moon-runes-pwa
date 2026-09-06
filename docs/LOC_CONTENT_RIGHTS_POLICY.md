@@ -113,3 +113,25 @@ Private owner export → future authenticated flow
 ```
 
 這一條的目的不是阻止正常閱讀，而是降低以分頁／爬蟲一次搬走整個個人創作 corpus 的風險。
+
+## 8. Rights as Domain Boundary
+
+Rights governance is treated as a domain boundary rather than a moral ranking of content.
+
+A record can be valid historical evidence and still remain private. A third-party text can be meaningful to analysis and still remain non-public. Importability, analyzability and publishability are separate permissions.
+
+~~~text
+record exists
+≠
+may be analyzed publicly
+≠
+may be published
+≠
+may be bulk exported
+~~~
+
+Crossing from private / restricted / review_required into public / cleared requires an explicit governed action.
+
+If authorship, attribution or publication rights are disputed, the content enters review/dispute state; the system should preserve the governance record while preventing silent promotion to public Canon.
+
+This policy implements the boundary principles in [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md).
