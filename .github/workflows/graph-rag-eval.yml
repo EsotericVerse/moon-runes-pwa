@@ -4,15 +4,15 @@ on:
   pull_request:
     paths:
       - "card_api/**"
-      - "data/json/shared/LOC_GRAPH_*.json"
-      - "data/json/shared/LOC8_*.json"
+      - "data/json/registries/LOC_GRAPH_*.json"
+      - "data/json/registries/LOC8_*.json"
       - ".github/workflows/graph-rag-eval.yml"
   push:
     branches: [main]
     paths:
       - "card_api/**"
-      - "data/json/shared/LOC_GRAPH_*.json"
-      - "data/json/shared/LOC8_*.json"
+      - "data/json/registries/LOC_GRAPH_*.json"
+      - "data/json/registries/LOC8_*.json"
       - ".github/workflows/graph-rag-eval.yml"
   workflow_dispatch:
 
