@@ -64,7 +64,7 @@ class UnifiedSearchEngine:
         self.loc3_searcher = loc3_searcher
         self.runes = runes or []
         self.repo_root = repo_root
-        self.shared_root = repo_root / "data" / "json" / "shared"
+        self.registry_root = repo_root / "data" / "json" / "registries"
         self.system = self._load_json("LOC_LANGUAGE_SYSTEM_REGISTRY.json")
         self.eras = self._load_json("LOC_ERA_REGISTRY.json")
         self.content_types = self._load_json("LOC_CONTENT_TYPE_REGISTRY.json")
@@ -80,13 +80,13 @@ class UnifiedSearchEngine:
         self.loc6_thread_full = self._load_loc6_thread_shards()
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
-        self.lots = self._load_json("lots.json")
+        self.lots = self._load_repo_json("data/json/core/lots.json")
         self.loc8_relation_schema = self._load_json("LOC8_RELATION_SCHEMA.json")
         self.loc8_events = self._load_json("LOC8_EVENT_SNAPSHOT.json")
         self.loc8_daily_runes = self._load_json("LOC8_DAILY_RUNE_SNAPSHOT.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
-        path = self.shared_root / name
+        path = self.registry_root / name
         if not path.exists():
             return {}
         try:
