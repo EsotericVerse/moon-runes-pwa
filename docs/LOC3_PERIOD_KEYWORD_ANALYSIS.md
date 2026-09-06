@@ -53,3 +53,10 @@ LOC3 時期分析現在分成兩層：
 - `自我治理`：canonical；`治理自己` 是 alias / 創作階段用語。
 - `已讀不回`：跨 LOC3/4/5 的命名概念；LOC3 端只統計歌曲／歌詞證據。
 
+## Governance Trend Projection
+
+本文件的時期統計可以作為 LOC6/LOC8 治理趨勢的 evidence，但不得直接把 keyword frequency 當成價值觀結論。
+
+例如「界線」「責任」「自由」「自我治理」的比重變化，只能先說明作品語料中的語義重心改變；是否代表治理原則形成，仍需回查原文、事件與跨來源證據。
+
+對應治理歷史分析見 `docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`。
