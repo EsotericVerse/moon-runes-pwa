@@ -179,7 +179,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC4 | 已建立文字分類，並完成以其為文本結構的七大篇長篇小說，全文約 22 萬字；另有其他小說與文字創作。 |
 | LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
 | LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；Threads 公開文字 corpus 自 2024-11-18 起至 2026-09-06，現行去重基準共 **7,008 筆文字紀錄**（4,578 主貼文＋2,430 Reply），已開始接入 KM／Unified Search，並進入全文概念、ERA 與治理語言解析。另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證。 |
-| LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7、LOC8 的現有資料來源。Graph RAG 核心已完成；後續重點為治理 runtime、Graph View 與持續品質驗證。 |
+| LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7、LOC8 的現有資料來源。Graph RAG 核心已完成；後續重點為治理 runtime、rights/publication lifecycle 與持續品質驗證。 |
 | LOC8 | `life.html` 已具備每日符文、ERA 時期管理、Event 紀錄、Event Timeline、Relation Library、軌跡 Trajectory 與趨勢分析 Analysis。ERA 已可在顯示位置直接新增／修改／刪除，後端 Apps Script API 已升至 `loc8-mvp-1.1`；Context 目前可呈現跨時期 Relation 與 LOC3 關鍵字比重升降／文字轉折說明，Graph View 已新增為 LOC8 獨立功能區，以 query-driven bounded neighborhood 探索跨 LOC 關係。 |
 
 LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；LOC6 已有治理／政德風與符文解析資料，LOC7 已有 KM／FAQ／RAG／Unified Search，LOC8 已有可操作的事件、時期與每日符文介面。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
