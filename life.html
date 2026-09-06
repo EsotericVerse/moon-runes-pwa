@@ -817,17 +817,22 @@
               <button class="btn ghost" id="trajNextBtn" type="button" aria-label="向後捲動軌跡">→</button>
             </div>
           </div>
-          <div class="body"><div class="trajectory" id="trajectoryList"><div class="empty" style="min-width:100%">需要至少兩筆具有 State After 的事件才能形成軌跡。</div></div></div>
+          <div class="body">
+            <div class="trajectory" id="trajectoryList"><div class="empty" style="min-width:100%">需要至少兩筆具有 State After 的事件才能形成軌跡。</div></div>
+            <div id="trajectoryInspector" class="state-box" style="margin-top:14px">
+              <div class="empty">點選軌跡節點，可查看它的 Relation、Event、ERA 與搜尋入口。</div>
+            </div>
+          </div>
       </section>
 
       <section class="card" style="margin-top:16px;" id="trajectory-analysis">
         <div class="head">
           <div><h3>趨勢分析 Analysis</h3><p>把軌跡的變化拆成可讀的證據：關鍵字比重怎麼升降，以及這個轉折代表什麼。</p></div>
-          <span class="badge">LOC3 → LOC8</span>
+          <span class="badge">Cross-LOC → LOC8</span>
         </div>
         <div class="body">
           <div class="trajectory-analysis-grid" id="trajectoryAnalysis">
-            <div class="empty">載入 LOC3 時期差異分析中…</div>
+            <div class="empty">載入跨 LOC 時期差異分析中…</div>
           </div>
         </div>
       </section>
@@ -897,11 +902,11 @@
 
         <section class="card" style="margin-top:16px;" id="context-graph">
           <div class="head">
-            <div><h3>Graph View</h3><p>使用同一份 Relation 資料建立網狀視圖；目前先保留為下一階段入口，不另造第二套資料。</p></div>
-            <span class="badge">Next</span>
+            <div><h3>Graph View</h3><p>使用同一份 Relation 資料顯示目前節點的鄰接關係；從 Trajectory 點「查看 Graph」即可展開。</p></div>
+            <span class="badge">Graph-ready</span>
           </div>
           <div class="body">
-            <div class="empty">Graph 視圖尚未啟用。Relation 與 Trajectory 已可使用；之後直接由 Relation edge 產生網狀圖。</div>
+            <div class="empty">先在上方 Trajectory 點選節點，再按「查看 Graph」。只顯示已確認 Relation edge，不自動把語意相似寫成 Canon 關聯。</div>
           </div>
         </section>
       </div>
@@ -1021,6 +1026,7 @@
     const EVENT_CACHE_KEY = "loc8-life-events-cache-v2";
     const DAILY_DRAW_CACHE_KEY = "loc8-daily-draw-cache-v1";
     const RELATION_CACHE_KEY = "loc8-relations-cache-v1";
+    const ERA_OVERRIDE_CACHE_KEY = "loc8-era-overrides-v1";
     const CACHE_SCHEMA_VERSION = "1";
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
 
@@ -1033,6 +1039,7 @@
       eraTimeline: $('#eraTimelineList'),
       trajectory: $('#trajectoryList'),
       trajectoryAnalysis: $('#trajectoryAnalysis'),
+      trajectoryInspector: $('#trajectoryInspector'),
       current: $('#currentState'),
       syncText: $('#syncText'),
       syncDot: $('#syncDot'),
@@ -1196,6 +1203,36 @@
       }
     }
 
+    function readEraOverrides() {
+      const data = readJsonCache(ERA_OVERRIDE_CACHE_KEY, {});
+      return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+    }
+
+    function writeEraOverride(era) {
+      if (!era?.era_id) return;
+      const data = readEraOverrides();
+      data[String(era.era_id)] = { ...era, _local_override: true, _saved_at: Date.now() };
+      try { localStorage.setItem(ERA_OVERRIDE_CACHE_KEY, JSON.stringify(data)); } catch (_) {}
+    }
+
+    function deleteEraOverride(eraId) {
+      const data = readEraOverrides();
+      delete data[String(eraId)];
+      try { localStorage.setItem(ERA_OVERRIDE_CACHE_KEY, JSON.stringify(data)); } catch (_) {}
+    }
+
+    function mergeEraOverrides(base) {
+      const overrides = readEraOverrides();
+      return (Array.isArray(base) ? base : []).map(item => {
+        const override = overrides[String(item.era_id || '')];
+        return override ? { ...item, ...override } : item;
+      }).concat(
+        Object.values(overrides).filter(override =>
+          !(Array.isArray(base) ? base : []).some(item => String(item.era_id || '') === String(override.era_id || ''))
+        )
+      );
+    }
+
     async function loadEraRegistry() {
       await Promise.all([loadLoc3PeriodKeywordAnalysis(), loadLoc6PeriodKeywordAnalysis(), loadLoc4WritingRegistry(), loadLoc5MediaRegistry()]);
 
@@ -1205,7 +1242,7 @@
         const res = await fetch('data/shared/LOC_ERA_REGISTRY.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('Static period registry unavailable');
         const data = await res.json();
-        eraRegistry = Array.isArray(data.eras) ? data.eras : [];
+        eraRegistry = mergeEraOverrides(Array.isArray(data.eras) ? data.eras : []);
       } catch (err) {
         console.warn('Static period registry unavailable', err);
         eraRegistry = [];
@@ -1237,7 +1274,7 @@
           for (const item of remote) {
             if (!staticByPeriod.has(String(item.period || ''))) merged.push(item);
           }
-          eraRegistry = merged;
+          eraRegistry = mergeEraOverrides(merged);
           renderEraTimeline();
           renderTrajectoryAnalysis();
         }
@@ -1381,16 +1418,34 @@
     }
 
     async function saveEra(era, action='era') {
-      const res = await fetch(SHEET_API_URL, {
-        method:'POST',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify({ action, era }),
-        redirect:'follow'
-      });
-      if (!res.ok) throw new Error('ERA POST failed');
-      const data = await res.json();
-      if (data && data.ok === false) throw new Error(data.error || 'ERA API error');
-      return data;
+      const post = async (requestedAction) => {
+        const res = await fetch(SHEET_API_URL, {
+          method:'POST',
+          headers:{'Content-Type':'text/plain;charset=utf-8'},
+          body:JSON.stringify({ action: requestedAction, era }),
+          redirect:'follow'
+        });
+        if (!res.ok) throw new Error('ERA POST failed');
+        const data = await res.json();
+        if (data && data.ok === false) throw new Error(data.error || 'ERA API error');
+        return data;
+      };
+
+      try {
+        const data = await post(action);
+        if (action !== 'delete_era') writeEraOverride(data?.era || era);
+        else deleteEraOverride(era?.era_id);
+        return data;
+      } catch (err) {
+        // Repository-defined ERAs may not exist as rows in the older Sheet yet.
+        // For an edit, create the missing live row instead of failing outright.
+        if (action === 'update_era' && /not found|找不到/i.test(String(err?.message || ''))) {
+          const data = await post('era');
+          writeEraOverride(data?.era || era);
+          return { ...data, action: 'upsert_era' };
+        }
+        throw err;
+      }
     }
 
     function eraFormPayload(form, existing={}) {
@@ -2076,18 +2131,18 @@
       const activeRelations = relations.filter(r => r.status !== 'archived').slice(-16);
       if (activeRelations.length) {
         els.trajectory.innerHTML = activeRelations.map(r => `
-          <div class="step">
+          <button class="step" type="button" data-trajectory-node="${esc(r.source_id)}" data-node-type="${esc(r.source_type)}">
             <div class="t">${esc(r.source_id)}</div>
             <div class="s">${esc(r.source_type)} · ${esc(r.date)}</div>
-          </div>
+          </button>
           <div class="edge">
             <span class="edge-type">→ ${esc(r.relation_type)} →</span>
             ${r.summary ? `<div class="edge-summary">${esc(r.summary)}</div>` : ''}
           </div>
-          <div class="step">
+          <button class="step" type="button" data-trajectory-node="${esc(r.target_id)}" data-node-type="${esc(r.target_type)}">
             <div class="t">${esc(r.target_id)}</div>
             <div class="s">${esc(r.target_type)} · ${esc(r.era || 'ERA —')}</div>
-          </div>
+          </button>
         `).join('');
         return;
       }
@@ -2099,13 +2154,66 @@
       }
       els.trajectory.innerHTML = points.map((e, i) => `
         ${i ? '<div class="arrow">→</div>' : ''}
-        <div class="step">
+        <button class="step" type="button" data-trajectory-node="${esc(e.state_after)}" data-node-type="state">
           <div class="t">${esc(e.state_after)}</div>
           <div class="s">${esc(e.date)} · ${esc(e.event_title)}</div>
-        </div>
+        </button>
       `).join('');
     }
 
+
+    function renderTrajectoryInspector(nodeId, nodeType='state') {
+      if (!els.trajectoryInspector) return;
+      const key = String(nodeId || '').trim();
+      if (!key) return;
+
+      const connected = relations.filter(r =>
+        String(r.source_id || '') === key || String(r.target_id || '') === key
+      );
+      const linkedEvents = events.filter(e => [
+        e.id, e.object_id, e.event_title, e.title, e.state_before, e.state_after
+      ].some(value => String(value || '').includes(key))).slice(-8);
+
+      const eraNames = new Set();
+      connected.forEach(r => { if (r.era) eraNames.add(String(r.era)); });
+      linkedEvents.forEach(e => {
+        if (e.era) eraNames.add(String(e.era));
+        if (e.era_id) {
+          const era = eraRegistry.find(x => String(x.era_id || '') === String(e.era_id));
+          if (era?.period) eraNames.add(String(era.period));
+        }
+      });
+
+      const relationHtml = connected.length
+        ? connected.map(r => {
+            const outgoing = String(r.source_id || '') === key;
+            const other = outgoing ? r.target_id : r.source_id;
+            const arrow = outgoing ? '→' : '←';
+            return `<div class="state-row">
+              <div class="k">${esc(r.relation_type)}</div>
+              <div class="v">${arrow} ${esc(other)}${r.summary ? `<br><small>${esc(r.summary)}</small>` : ''}</div>
+            </div>`;
+          }).join('')
+        : '<div class="empty">目前沒有已儲存的 Relation edge。</div>';
+
+      const eventHtml = linkedEvents.length
+        ? linkedEvents.map(e => `<div class="state-row"><div class="k">${esc(e.date || '—')}</div><div class="v">${esc(e.event_title || e.title || e.id)}${e.state_after ? `<br><small>State → ${esc(e.state_after)}</small>` : ''}</div></div>`).join('')
+        : '<div class="empty">目前沒有直接命中的 Event。</div>';
+
+      const searchUrl = 'search.html?q=' + encodeURIComponent(key);
+      els.trajectoryInspector.innerHTML = `
+        <div class="state-row"><div class="k">節點</div><div class="v"><strong>${esc(key)}</strong> · ${esc(nodeType)}</div></div>
+        <div class="state-row"><div class="k">ERA</div><div class="v">${[...eraNames].map(esc).join(' · ') || '—'}</div></div>
+        <div style="margin-top:10px"><strong>Relation</strong></div>
+        ${relationHtml}
+        <div style="margin-top:12px"><strong>Event</strong></div>
+        ${eventHtml}
+        <div class="actions" style="margin-top:12px">
+          <a class="btn primary" href="${esc(searchUrl)}">搜尋這個節點</a>
+          <button class="btn ghost" type="button" data-node-graph="${esc(key)}">查看 Graph</button>
+        </div>
+      `;
+    }
 
     function isDailyDrawEvent(e) {
       const type = String(e.event_type || '').toLowerCase();
@@ -2830,6 +2938,30 @@
     trajectoryEl.addEventListener('pointercancel', stopTrajectoryDrag);
     trajectoryEl.addEventListener('pointerleave', () => { trajDragging = false; });
 
+    trajectoryEl.addEventListener('click', (ev) => {
+      const node = ev.target.closest('[data-trajectory-node]');
+      if (!node) return;
+      renderTrajectoryInspector(node.dataset.trajectoryNode, node.dataset.nodeType || 'state');
+    });
+
+    els.trajectoryInspector?.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('[data-node-graph]');
+      if (!btn) return;
+      const key = btn.dataset.nodeGraph || '';
+      const graph = $('#context-graph');
+      const connected = relations.filter(r => String(r.source_id || '') === key || String(r.target_id || '') === key);
+      if (graph) {
+        const body = graph.querySelector('.body');
+        if (body) body.innerHTML = connected.length
+          ? `<div class="state-box">
+              <div class="state-row"><div class="k">中心節點</div><div class="v"><strong>${esc(key)}</strong></div></div>
+              ${connected.map(r => `<div class="state-row"><div class="k">${esc(r.relation_type)}</div><div class="v">${esc(r.source_id)} → ${esc(r.target_id)}${r.summary ? `<br><small>${esc(r.summary)}</small>` : ''}</div></div>`).join('')}
+            </div>`
+          : '<div class="empty">此節點目前沒有已確認的 Relation edge；不以語意相似自動建立 Canon Graph。</div>';
+        graph.scrollIntoView({ behavior:'smooth', block:'start' });
+      }
+    });
+
     $('#trajPrevBtn').addEventListener('click', () => {
       trajectoryEl.scrollBy({ left: -Math.max(260, trajectoryEl.clientWidth * 0.75), behavior: 'smooth' });
     });
@@ -2929,9 +3061,11 @@
       }
 
       if (action === 'cancel') {
+        writeEraOverride(era);
         editingEraId = '';
         addingEra = false;
         renderEraTimeline();
+        renderTrajectoryAnalysis();
         return;
       }
 
@@ -2942,7 +3076,9 @@
         try {
           await saveEra({ era_id: eraId }, 'delete_era');
           eraRegistry = eraRegistry.filter(x => x.era_id !== eraId);
+          deleteEraOverride(eraId);
           renderEraTimeline();
+          renderTrajectoryAnalysis();
         } catch (err) {
           alert('刪除時期失敗：' + err.message);
         }
