@@ -1437,13 +1437,26 @@
         else deleteEraOverride(era?.era_id);
         return data;
       } catch (err) {
-        // Repository-defined ERAs may not exist as rows in the older Sheet yet.
-        // For an edit, create the missing live row instead of failing outright.
-        if (action === 'update_era' && /not found|找不到/i.test(String(err?.message || ''))) {
+        const message = String(err?.message || '');
+
+        // Repository-defined ERAs may not exist as rows in the live Sheet yet.
+        // If update_era is supported but the row is missing, create it once.
+        if (action === 'update_era' && /not found|找不到/i.test(message)) {
           const data = await post('era');
           writeEraOverride(data?.era || era);
           return { ...data, action: 'upsert_era' };
         }
+
+        // Older deployed Apps Script versions do not implement update_era.
+        // Do not append a duplicate ERA row. Keep the governed edit as a
+        // browser override so the UI remains usable until the API deployment
+        // is upgraded.
+        if (action === 'update_era' && /unsupported action:\s*update_era/i.test(message)) {
+          writeEraOverride(era);
+          setSync(false, '時期修改已套用 · API 尚未支援 update_era，暫存於此裝置');
+          return { ok: true, era, action: 'local_override', persistence: 'browser' };
+        }
+
         throw err;
       }
     }
