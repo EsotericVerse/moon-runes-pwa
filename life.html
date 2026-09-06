@@ -1018,7 +1018,7 @@
      * Record ownership is separated by user_id / system_id inside the data model.
      */
     const STORAGE_KEY = "loc8-life-events-v1";
-    const EVENT_CACHE_KEY = "loc8-life-events-cache-v1";
+    const EVENT_CACHE_KEY = "loc8-life-events-cache-v2";
     const DAILY_DRAW_CACHE_KEY = "loc8-daily-draw-cache-v1";
     const RELATION_CACHE_KEY = "loc8-relations-cache-v1";
     const CACHE_SCHEMA_VERSION = "1";
@@ -1224,11 +1224,21 @@
         const remote = Array.isArray(data.eras) ? data.eras : [];
         if (remote.length) {
           const staticByPeriod = new Map(eraRegistry.map(item => [String(item.period || ''), item]));
-          eraRegistry = remote.map(item => {
-            const canonical = staticByPeriod.get(String(item.period || ''));
-            return canonical ? { ...canonical, ...item } : item;
+          const remoteByPeriod = new Map(remote.map(item => [String(item.period || ''), item]));
+          const merged = eraRegistry.map(canonical => {
+            const remoteItem = remoteByPeriod.get(String(canonical.period || ''));
+            // Repository ERA registry is the governed source. Remote Sheet may
+            // supplement missing fields, but must not roll the UI back to an
+            // older name/date/description after the canonical first paint.
+            return remoteItem ? { ...remoteItem, ...canonical } : canonical;
           });
+          // Keep genuinely new remote periods that do not exist in the governed registry.
+          for (const item of remote) {
+            if (!staticByPeriod.has(String(item.period || ''))) merged.push(item);
+          }
+          eraRegistry = merged;
           renderEraTimeline();
+          renderTrajectoryAnalysis();
         }
       } catch (err) {
         console.warn('Live period registry unavailable; keeping repository registry', err);
@@ -1612,20 +1622,35 @@
       }
     }
 
-    async function loadEvents() {
-      // Cache-first, then repository snapshot, then live Sheet API.
-      // This guarantees that known LOC8 events remain visible even when
-      // Apps Script deployment or network refresh is temporarily behind.
-      let firstPaint = cachedEvents();
-
-      if (!firstPaint.length) {
-        firstPaint = await loadEventSnapshot();
+    function mergeEventSources(...sources) {
+      const byId = new Map();
+      const anonymous = [];
+      for (const source of sources) {
+        for (const item of (Array.isArray(source) ? source : [])) {
+          const id = String(item?.id || '').trim();
+          if (id) byId.set(id, { ...(byId.get(id) || {}), ...item });
+          else anonymous.push(item);
+        }
       }
+      return [...byId.values(), ...anonymous]
+        .sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')));
+    }
+
+    async function loadEvents() {
+      // Repository snapshot contains governed historical milestones. It must
+      // survive stale local cache and a lagging live Sheet response.
+      const localCache = cachedEvents();
+      const snapshotEvents = await loadEventSnapshot();
+
+      // Priority is left → right. Snapshot wins over stale local cache.
+      let firstPaint = mergeEventSources(localCache, snapshotEvents);
 
       if (firstPaint.length) {
         events = firstPaint;
-        setSync(false, '顯示最近同步事件；背景同步中…');
+        writeEventCache(events);
+        setSync(false, '顯示治理後事件；背景同步中…');
         renderAll();
+        renderEraTimeline();
       }
 
       try {
@@ -1638,18 +1663,22 @@
         const data = await res.json();
         if (data && data.ok === false) throw new Error(data.error || 'API error');
         const remoteEvents = Array.isArray(data) ? data : (data.events || []);
+
         if (!remoteEvents.length && firstPaint.length) {
           events = firstPaint;
-          setSync(false, '遠端回傳空資料；保留本機快取');
+          setSync(false, '遠端回傳空資料；保留治理後事件');
         } else {
-          events = remoteEvents;
+          // Remote may add/update ordinary events, but repository snapshot wins
+          // for same-ID governed historical milestones so a lagging Sheet cannot
+          // overwrite the freshly deployed history.
+          events = mergeEventSources(localCache, remoteEvents, snapshotEvents);
           writeEventCache(events);
-          setSync(true, 'LOC8 已同步 · 快取已更新');
+          setSync(true, 'LOC8 已同步 · 歷史治理資料已保留');
         }
       } catch (err) {
         console.error(err);
-        events = firstPaint.length ? firstPaint : cachedEvents();
-        setSync(false, events.length ? 'Sheet 連線失敗；顯示上次快取' : 'Sheet 連線失敗；目前無快取');
+        events = firstPaint.length ? firstPaint : localCache;
+        setSync(false, events.length ? 'Sheet 連線失敗；保留治理後事件' : 'Sheet 連線失敗；目前無快取');
       }
       renderAll();
       renderEraTimeline();
