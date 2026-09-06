@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC_GRAPH_SCHEMA",
   "authority": "LOC7",
   "purpose": "Shared node/edge contract for LOC Graph RAG and Search Synthesis. Search retrieval chooses graph seeds; governed edges aggregate related LOC, ERA, works, media and analysis without replacing canonical ownership.",
@@ -13,7 +13,9 @@
     "media",
     "governance_fragment",
     "knowledge_asset",
-    "era"
+    "era",
+    "life_event",
+    "daily_rune_draw"
   ],
   "edge_types": [
     "owned_by_loc",
@@ -37,7 +39,10 @@
     "ERA-P0 through current ERA form a deterministic temporal backbone from LOC_ERA_REGISTRY.",
     "Search-time result nodes may receive transient owned_by_loc, belongs_to_era, and media/work linkage edges from their own recorded metadata.",
     "Graph traversal is bounded and feeds Search Synthesis with connected LOCs, ERA paths, works, media and analysis nodes.",
-    "LOC7 manages graph structure/retrieval; LOC8 owns ERA/context authority and consumes graph projections for trend/context views."
+    "LOC7 manages graph structure/retrieval; LOC8 owns ERA/context authority and consumes graph projections for trend/context views.",
+    "LOC8 repository snapshots may contribute public temporal/event observation nodes without replacing the live Google Sheet authority.",
+    "Private LOC8 Google Sheet Relation rows are never exposed through public Search unless they are explicitly governed into a public registry/snapshot.",
+    "Search responses expose a provenance envelope summarizing source_refs and graph evidence kinds/status."
   ],
   "search_synthesis": {
     "seed_source": "Unified Search results + exact query-to-node matches",
@@ -47,8 +52,18 @@
       "era_path",
       "loc_path",
       "connected_results",
-      "paths"
+      "paths",
+      "provenance"
     ],
     "edge_governance": "canonical-only"
+  },
+  "provenance": {
+    "source_contract": "result.source_refs",
+    "graph_contract": [
+      "edge.evidence_kind",
+      "edge.evidence_status",
+      "edge.source_ref"
+    ],
+    "public_relation_policy": "Only repository-governed public snapshots/registries are exposed. Live private LOC8 Relation rows remain in life.html / Google Sheet."
   }
 }
