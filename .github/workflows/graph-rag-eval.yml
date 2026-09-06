@@ -4,15 +4,15 @@ on:
   pull_request:
     paths:
       - "card_api/**"
-      - "data/shared/LOC_GRAPH_*.json"
-      - "data/shared/LOC8_*.json"
+      - "data/json/registries/LOC_GRAPH_*.json"
+      - "data/json/registries/LOC8_*.json"
       - ".github/workflows/graph-rag-eval.yml"
   push:
     branches: [main]
     paths:
       - "card_api/**"
-      - "data/shared/LOC_GRAPH_*.json"
-      - "data/shared/LOC8_*.json"
+      - "data/json/registries/LOC_GRAPH_*.json"
+      - "data/json/registries/LOC8_*.json"
       - ".github/workflows/graph-rag-eval.yml"
   workflow_dispatch:
 
@@ -31,6 +31,7 @@ jobs:
           cache-dependency-path: card_api/requirements.txt
       - run: pip install -r requirements.txt
       - run: python -m compileall -q .
+      - run: python scripts/validate_repo_layout.py
       - run: python -m unittest discover -p "test_*.py"
       - run: python scripts/evaluate_graph_rag.py
       - run: python scripts/validate_search_core.py

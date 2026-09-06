@@ -10,6 +10,7 @@ import os
 from faq_rag import FAQSearchEngine
 from loc3_search import LOC3SearchEngine
 from unified_search import UnifiedSearchEngine
+from paths import REPO_ROOT, core_json, search_json
 
 # 建立 FastAPI 應用
 app = FastAPI(
@@ -35,22 +36,22 @@ app.add_middleware(
 
 # 載入資料（全局，一次載入）
 try:
-    with open('new_runes.json', 'r', encoding='utf-8') as f:
+    with open(core_json("runes64.json"), 'r', encoding='utf-8') as f:
         RUNES = json.load(f)
 except Exception as e:
     RUNES = {"runes": []}
-    print(f"Warning: Failed to load new_runes.json: {e}")
+    print(f"Warning: Failed to load runes64.json: {e}")
 
 try:
-    with open('runes_all_data.json', 'r', encoding='utf-8') as f:
+    with open(core_json("rune_interpretations.json"), 'r', encoding='utf-8') as f:
         RUNE_SINGLE = json.load(f)
 except Exception as e:
     RUNE_SINGLE = []
-    print(f"Warning: Failed to load runes_all_data.json: {e}")
+    print(f"Warning: Failed to load rune_interpretations.json: {e}")
 
 # 載入三卡組合表
 try:
-    with open('three_card_combinations.json', 'r', encoding='utf-8') as f:
+    with open(core_json("three_card_combinations.json"), 'r', encoding='utf-8') as f:
         THREE_CARD_COMBINATIONS = json.load(f)
 except Exception as e:
     THREE_CARD_COMBINATIONS = {}
@@ -61,7 +62,7 @@ RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES.get("runes", []),
 RUNE_SINGLE_MAP = {r.get("符文名稱", f"rune_{i}"): r for i, r in enumerate(RUNE_SINGLE)}
 
 # LOC7 FAQ 資料（全局，一次載入）
-FAQ_DATA_PATH = Path(__file__).resolve().parent / "data" / "LOC_FAQ_RAG_v0.4.json"
+FAQ_DATA_PATH = search_json("faq", "LOC_FAQ_RAG_v0.4.json")
 try:
     FAQ_SEARCHER = FAQSearchEngine(FAQ_DATA_PATH)
     FAQ_LOAD_ERROR = None
@@ -71,7 +72,7 @@ except Exception as e:
     print(f"Warning: Failed to load LOC FAQ dataset: {e}")
 
 # LOC3 歌詞作品層索引（同詞的旋律版本只在結果內分組）
-LOC3_DATA_PATH = Path(__file__).resolve().parent / "data" / "LOC3_LYRICS_SEARCH_v0.1.json"
+LOC3_DATA_PATH = search_json("loc3", "LOC3_LYRICS_SEARCH_v0.1.json")
 try:
     LOC3_SEARCHER = LOC3SearchEngine(LOC3_DATA_PATH)
     LOC3_LOAD_ERROR = None
@@ -82,7 +83,6 @@ except Exception as e:
 
 
 # Unified Search：保留各 LOC 的 canonical ownership，只統一查詢與結果 envelope
-REPO_ROOT = Path(__file__).resolve().parent.parent
 try:
     UNIFIED_SEARCHER = UnifiedSearchEngine(
         faq_searcher=FAQ_SEARCHER,

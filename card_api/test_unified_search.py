@@ -51,20 +51,20 @@ class UnifiedSearchTests(unittest.TestCase):
         temp = TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         root = Path(temp.name)
-        (root / "data" / "shared").mkdir(parents=True)
-        (root / "data" / "shared" / "LOC_ERA_REGISTRY.json").write_text(
+        (root / "data" / "json" / "registries").mkdir(parents=True)
+        (root / "data" / "json" / "registries" / "LOC_ERA_REGISTRY.json").write_text(
             '{"language_system_id":"lo3rwang","eras":[{"era_id":"ERA-P8","period":"P8","order":8,"name":"自我治理與未來展望期","display_label":"P8｜自我治理與未來展望期","description":"自我治理","status":"current","source_event_id":"EV-ERA-P8"}]}',
             encoding="utf-8",
         )
-        (root / "data" / "shared" / "LOC_CONTENT_TYPE_REGISTRY.json").write_text(
+        (root / "data" / "json" / "registries" / "LOC_CONTENT_TYPE_REGISTRY.json").write_text(
             '{"types":[{"id":"lyrics_work","primary_loc":"LOC3"}]}',
             encoding="utf-8",
         )
-        (root / "data" / "shared" / "LOC8_EVENT_SNAPSHOT.json").write_text(
+        (root / "data" / "json" / "registries" / "LOC8_EVENT_SNAPSHOT.json").write_text(
             '{"role":"non-authoritative frontend fallback snapshot","events":[{"id":"EV-TEST","date":"2026-09-01","event_type":"transition","title":"進入自我治理","era":"P8 自我治理與未來展望期","confidence":"recorded","source":"test-event"}]}',
             encoding="utf-8",
         )
-        (root / "data" / "shared" / "LOC8_DAILY_RUNE_SNAPSHOT.json").write_text(
+        (root / "data" / "json" / "registries" / "LOC8_DAILY_RUNE_SNAPSHOT.json").write_text(
             '{"role":"non-authoritative frontend fallback snapshot","daily_draws":[{"id":"DD-TEST","date":"2026-09-01","rune_id":"1","rune":"心","direction":"半正位","era_id":"ERA-P8","confidence":"recorded","source":"test-draw"}]}',
             encoding="utf-8",
         )

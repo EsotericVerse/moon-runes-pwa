@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
+CARD_API = Path(__file__).resolve().parents[1]
+if str(CARD_API) not in sys.path:
+    sys.path.insert(0, str(CARD_API))
+from paths import RUNTIME_JSON_DIR
 
-ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "data"
+DATA_DIR = RUNTIME_JSON_DIR
 INDEX_PATH = DATA_DIR / "LOC3_LYRICS_SEARCH_v0.1.json"
 CATALOG_PATH = DATA_DIR / "LOC3_MEDIA_LINKS_v0.1.json"
 

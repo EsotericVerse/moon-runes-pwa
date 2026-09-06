@@ -35,22 +35,22 @@
   "shards": [
     {
       "shard": 1,
-      "path": "data/generated/loc6/threads/main/part-001.json.gz",
+      "path": "data/json/generated/loc6/threads/main/part-001.json.gz",
       "document_count": 1200
     },
     {
       "shard": 2,
-      "path": "data/generated/loc6/threads/main/part-002.json.gz",
+      "path": "data/json/generated/loc6/threads/main/part-002.json.gz",
       "document_count": 1200
     },
     {
       "shard": 3,
-      "path": "data/generated/loc6/threads/main/part-003.json.gz",
+      "path": "data/json/generated/loc6/threads/main/part-003.json.gz",
       "document_count": 1200
     },
     {
       "shard": 4,
-      "path": "data/generated/loc6/threads/main/part-004.json.gz",
+      "path": "data/json/generated/loc6/threads/main/part-004.json.gz",
       "document_count": 978
     }
   ],

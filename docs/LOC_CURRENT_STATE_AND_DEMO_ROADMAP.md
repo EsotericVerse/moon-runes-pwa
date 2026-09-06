@@ -638,7 +638,7 @@ P0 現在已有可直接分析的原始 Threads 主貼文 corpus，不再是空�
 - 這些統計只代表 P0 原文中實際出現頻率，不直接等同 Concept 或 Canon。
 
 Structured baseline：
-`data/generated/loc6/threads/analysis/LOC6_THREADS_P0_BASELINE_v0.1.json`
+`data/json/generated/loc6/threads/analysis/LOC6_THREADS_P0_BASELINE_v0.1.json`
 
 下一步：建立 P0 Surface Terms → Concept candidates → 與 P1–P8 做 trajectory comparison。
 

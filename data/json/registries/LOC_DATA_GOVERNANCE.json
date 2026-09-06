@@ -16,7 +16,7 @@
   "authorities": {
     "language_system_identity": {
       "authority": "LOC8",
-      "registry": "data/shared/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+      "registry": "data/json/shared/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
       "consumers": [
         "LOC1",
         "LOC2",
@@ -30,7 +30,7 @@
     },
     "era_temporal_state": {
       "authority": "LOC8",
-      "registry": "data/shared/LOC_ERA_REGISTRY.json",
+      "registry": "data/json/shared/LOC_ERA_REGISTRY.json",
       "consumers": [
         "LOC3",
         "LOC4",

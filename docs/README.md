@@ -30,6 +30,9 @@
 | [LOC7_KM.md](./LOC7_KM.md) | LOC7 Knowledge Management 核心治理文件 | Current |
 | [LOC8_KM.md](./LOC8_KM.md) | LOC8 ERA／Event／Relation／Context 判定與治理邏輯 | Working |
 | [JSON_DATA_MAP.md](./JSON_DATA_MAP.md) | JSON 資料角色、來源與同步規則 | Current |
+| [DATA_ARCHITECTURE.md](./DATA_ARCHITECTURE.md) | core / registries / search / generated / archive / experimental 資料架構與月符 projection 規則 | Current |
+| [REPOSITORY_GOVERNANCE.md](./REPOSITORY_GOVERNANCE.md) | Repository 模組化、路徑 migration、刪除／archive 與 CI 配置治理 | Current |
+| [Copyleft Policy](../COPYLEFT.md) | Luna Codex／LOC 的 Copyleft、衍生與 provenance 治理 | Current |
 | `LOC_Canon.docx` | Canon 文件版本之一 | Canon document |
 | `LunarRunesCardCut.pdf` | 月符實體卡列印檔 | Published artifact |
 
@@ -40,7 +43,7 @@ Canon / mother source / original works
         ↓
 Markdown knowledge documents
         ↓
-Shared registries / FAQ source data
+Registries / core projections / FAQ source data
         ↓
 RAG chunks / search indexes / application views
         ↓

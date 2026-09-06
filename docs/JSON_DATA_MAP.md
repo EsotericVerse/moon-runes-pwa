@@ -1,182 +1,177 @@
 # LOC JSON Data Map
 
 **Status:** Current  
-**Updated:** 2026-09-05
+**Updated:** 2026-09-07
 
-此文件說明 repository 內 JSON 的角色，不以「全部 JSON 都是資料庫」處理。
+此文件說明 repository 內 JSON 的**角色、權威與同步方向**。完整目錄契約見 [DATA_ARCHITECTURE.md](./DATA_ARCHITECTURE.md) 與 [REPOSITORY_GOVERNANCE.md](./REPOSITORY_GOVERNANCE.md)。
 
-## 1. 分類
-
-### A. Shared registries — 結構化治理層
-
-路徑：`data/shared/*.json`
-
-用途：跨 LOC 共用的 schema、registry、分類、媒體／ERA／KM 對應與 Unified Search metadata。
-
-重要檔案：
-
-- `LOC_KNOWLEDGE_ASSET_REGISTRY.json`：KM 可索引知識資產與 provenance。
-- `LOC_KM_KEYWORDS.json`：關鍵詞與 aliases；**檢索輔助，不是 Canon 定義本身**。
-- `LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json`：LOC7 語言結構分析 registry。
-- `LOC_SHARED_MANIFEST.json`：shared registry 索引。
-- `LOC_CONTENT_RIGHTS_POLICY.json`：corpus 匯入／匯出／公開展示的權利與隱私 gate；定義 ownership、visibility、rights status 與 UI 提示。
-- `LOC_LANGUAGE_SYSTEM_REGISTRY.json`：語言系統 registry。
-- `LOC_ERA_REGISTRY.json`：ERA／時期 registry。
-- `LOC_CONTENT_TYPE_REGISTRY.json`：內容類型 registry。
-- `LOC_MEDIA_REGISTRY.json`：LOC5 媒體對應。
-- `LOC3_RUNE_SONG_REGISTRY.json`：真正符文歌曲的 provenance registry；confirmed 與 candidate 分開。
-- `LOC6_ERA_STYLE_EVIDENCE.json`：把 LOC3 metadata 依 ERA 聚合後回掛給 LOC6 的風格演變證據。
-- `LOC2_EVENT_REGISTRY.json`：LOC2 Scenario Corpus／Event Corpus；保存現行 Alpha Event 32 與情境語意角色。
-- `LOC6_DUAL_RUNE_RELATION_REGISTRY.json`：雙符文中性關係庫；不含抽牌因／果角色與四向結果。
-
-### B. FAQ source view — 維護型問答資料
-
-路徑：`card_api/data/LOC_FAQ_v0.4.json`
-
-- 現行：v0.4，80 題。
-- 角色：KM 的 FAQ 問答 View。
-- 不得取代 Canon／母資料。
-- v0.1、v0.2、v0.3 為歷史版本。
-
-### C. RAG retrieval derivative — 檢索衍生資料
-
-路徑：`card_api/data/LOC_FAQ_RAG_v0.4.json`
-
-- 來源：`LOC_FAQ_v0.4.json`
-- 角色：原子化 retrieval chunks。
-- Runtime：目前 `card_api/main.py` 載入 v0.4。
-- v0.1、v0.2、v0.3 為歷史版本。
-- 更新 FAQ source 後，RAG 應重新產生／同步，不反向手改成新的 canonical source。
-
-### D. LOC1 runtime / derived data
-
-例如：
-
-- `card_api/new_runes.json`
-- `card_api/runes_all_data.json`
-- `card_api/three_card_combinations.json`
-- `data/shared/lots.json`
-
-此類資料須依符文 Canon 與 `LunaRune64.xlsx` 的治理鏈判定。對符文核心定義而言，`LunaRune64.xlsx` 仍為最高優先母資料；runtime JSON 不得反向覆寫。
-
-### E. LOC3 / LOC5 search data
-
-例如：
-
-- `card_api/data/LOC3_LYRICS_SEARCH_v0.1.json`
-- legacy `LOC3_MEDIA_LINKS_v0.1.json`
-- shared `data/shared/LOC_MEDIA_REGISTRY.json`
-
-媒體 canonical ownership 屬 LOC5；LOC3 可引用 media linkage。現行程式應優先 shared media registry，legacy overlay 僅作 compatibility fallback。
-
-### F. LOC2 scenario / event corpus
-
-路徑：`data/shared/LOC2_EVENT_REGISTRY.json`
-
-- 來源：`loc2.html` 現行 Alpha Event 32。
-- 角色：把 LOC2 Event 作為真實生活狀況的結構化情境語料，而非只當作遊戲效果。
-- 雙卡 A → B 因果是 LOC2 的最小情境文法，可用於描述「狀況如何形成」。
-- 現行 Event 的 SL／ML／NE／OC requirement signature 是 Alpha 快速判定資料，不等於固定符文雙卡映射。
-- LOC2 保留 Event canonical ownership；LOC4／LOC6／LOC7／LOC8 可引用。
-- 未由來源固定的符文配對不得由 registry 或 AI 自動補造。
-
-### G. LOC6 dual-rune relation registry
-
-路徑：`data/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json`
-
-- 角色：集中保存兩個符文之間的**中性語意關係**與來源案例。
-- pair key 為無方向鍵；A＋B 與 B＋A 使用同一筆底層關係。
-- 不保存「第 1 張＝因／第 2 張＝果」的抽牌角色；因果角色由 LOC1 雙卡抽牌 runtime 另外投影。
-- 不在此層加入正位／半正／半逆／逆位；四向屬抽牌 interpretation layer。
-- 可引用《命運句語法圖鑑》明確案例、LOC2 情境證據與實際解牌紀錄，但需逐筆保留 provenance。
-- LOC2 的 group requirement 不是 rune pair，不得自動映射。
-
-### H. LOC6 rune interpretation evidence
-
-路徑：`data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json`
-
-- 來源：七篇《月語者》原始章節大綱。
-- 規模：182 個章節槽位，其中 180 筆有明確三符文＋方位紀錄。
-- 角色：保存「符文組合／方位／月相 → 實際章節敘事」的歷史實證，作為 LOC6 符文解析語料。
-- LOC1 保留符文本體語意權威；LOC4 保留小說作品權威；LOC6 負責解析與意義實證；LOC8 可引用其作為創作軌跡。
-- 原文中的舊符文名、異名或舊方位寫法保留於 raw 欄位，不靜默改寫。
-- 第三篇 Ch5、Ch6 為已確認的特殊流程例外：武打大綱完成後直接交由 AI 展開，當時刻意未進行章節抽牌；因此標記為 `intentional_no_draw`，不是資料缺漏。
-
-### I. Experimental / test JSON
-
-`engine/`、tests 或 temporary data 中的 JSON，除非另有 registry 與 authority 宣告，預設屬實驗／測試／中間產物，不升格為 Canon。
-
-## 2. 同步方向
-
-```text
-Canon / XLSX / original source
-          ↓
-maintained Markdown / shared registry
-          ↓
-FAQ source JSON
-          ↓
-RAG / embeddings / indexes
-          ↓
-API / UI
-```
-
-## 3. 版本規則
-
-- 新版本建立新檔名；不以 v0.3 內容覆寫 v0.2。
-- Runtime 必須明確指向 current version。
-- Historical file 保留 provenance。
-- Registry 可指向 current 與 historical assets，但需有 `status`。
-- 任何 AI 產生的結構化內容，在人工確認前最多標記 `Working`／`Proposed`。
-
-## 4. Current runtime checkpoints
-
-截至 2026-09-06：
-
-- FAQ runtime source：`LOC_FAQ_RAG_v0.4.json`
-- FAQ parent view：`LOC_FAQ_v0.4.json`
-- KM maintainable core：`docs/LOC7_KM.md`
-- Rune mother data：`LunaRune64.xlsx`
-
-這些角色不可互相混寫。
-
-## 5. Governance JSON Alignment
-
-Governance is now represented across several structured assets rather than one monolithic file:
-
-- `LOC_DATA_GOVERNANCE.json`：cross-LOC authority、common control plane、audit/lifecycle rules。
-- `LOC_SHARED_SCHEMA.json`：shared lifecycle/governance envelope。
-- `LOC_REFERENCE_MODEL.json`：stable IDs，包含 `governance_id` 與 supersede/dispute relations。
-- `LOC_CONTENT_RIGHTS_POLICY.json`：rights/privacy/publication domain gate。
-- `LOC6_GOVERNANCE_REGISTRY.json`：governance meaning、政德風與歷史治理語句。
-- `LOC_KM_KEYWORDS.json`：治理概念的 retrieval aliases。
-- `LOC_KNOWLEDGE_ASSET_REGISTRY.json`：治理文件的 KM indexing。
-
-文件層共同基準：
-
-- `docs/LOC_GOVERNANCE_CORE.md`
-- `docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`
-- `docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md`
-
-資料流原則：
+## 1. 統一資料目錄
 
 ~~~text
-original evidence
-→ maintained governance interpretation
-→ shared registry / policy
-→ retrieval / graph
-→ UI / API
+data/json/
+├─ core/
+├─ registries/
+├─ search/
+├─ generated/
+├─ archive/
+└─ experimental/
 ~~~
 
-下游分析可以建立新版本與 relation，但不得反向覆寫原始 evidence 或其他 LOC 的 authoritative record。
+資料依「角色與生命週期」分類，不依副檔名或 LOC 編號無差別堆放。
 
-### Governance Trend Registry
+## 2. Core — 月符正式 runtime projection
 
-`data/shared/LOC_GOVERNANCE_TREND_REGISTRY.json` 將治理語言的演變轉成可檢索結構。
+路徑：`data/json/core/`
 
-分工：
+| 檔案 | 用途 | 上游權威 |
+|---|---|---|
+| `runes64.json` | 基本符文 lookup；名稱、群組、月相、關鍵詞、四向 | `LunaRune64.xlsx` |
+| `rune_interpretations.json` | 64 核心符文 × 四向 × 現實月相的展開解讀 | `LunaRune64.xlsx` / governed derivation |
+| `lots.json` | 66 可抽符文的籤詩 projection | `LunaRune64.xlsx#Lots` |
+| `three_card_combinations.json` | 三卡方向組合規則 | LOC1 interpretation rules |
 
-- LOC6：解讀治理意義。
-- LOC7：管理欄位、關係與 retrieval。
-- LOC8：管理 ERA／時間與 trend projection。
+`LunaRune64.xlsx` 仍是最高優先母資料。Core JSON 是程式唯一正式投影，不得反向覆寫母資料。
 
-目前主要 tracks：Boundary、Freedom、History/Versioning、Self-Governance。其輸出只描述 change / continuity / divergence，不自動判定進步或退步。
+> 同一資料只保留一份正式 projection；不同需求讀不同專用檔，不再建立整套全包副本。
+
+## 3. Registries — 結構化治理與跨 LOC 關係
+
+路徑：`data/json/registries/`
+
+主要包括：
+
+- `LOC_SHARED_MANIFEST.json`
+- `LOC_DATA_GOVERNANCE.json`
+- `LOC_SHARED_SCHEMA.json`
+- `LOC_REFERENCE_MODEL.json`
+- `LOC_CONTENT_RIGHTS_POLICY.json`
+- `LOC_LANGUAGE_SYSTEM_REGISTRY.json`
+- `LOC_ERA_REGISTRY.json`
+- `LOC_GRAPH_SCHEMA.json`
+- `LOC_CROSS_RELATIONSHIP_REGISTRY.json`
+- LOC1–8 各責任域的 Registry / Evidence / Analysis 結構
+
+Registry 保存**關係、權責、狀態與 provenance**，不應為方便查詢而複製另一權威來源的完整 payload。
+
+## 4. Search — 檢索專用 View
+
+路徑：`data/json/search/`
+
+### FAQ
+
+- `search/faq/LOC_FAQ_v0.4.json`：現行 FAQ source view。
+- `search/faq/LOC_FAQ_RAG_v0.4.json`：現行 retrieval derivative。
+
+FAQ / RAG 是 KM View，不是 Canon。
+
+### LOC3
+
+- `search/loc3/LOC3_LYRICS_SEARCH_v0.1.json`
+- shard / manual overlay 依同一 domain 集中
+- `LOC3_MEDIA_LINKS_v0.1.json` 只作 legacy compatibility overlay；LOC5 媒體 canonical ownership 在 `registries/LOC_MEDIA_REGISTRY.json`
+
+Search data 可以為 retrieval 最佳化，但不得變成新的語義母資料。
+
+## 5. Generated — 可重建衍生資料
+
+路徑：`data/json/generated/`
+
+目前主要承接 LOC6 Threads：
+
+- article index
+- document manifest
+- ERA / P0 analysis baseline
+- compressed main-post shards
+
+Generated output 應有 upstream provenance。可以重建的資料，不應因方便而升格 Canon。
+
+## 6. Archive — 歷史版本
+
+路徑：`data/json/archive/`
+
+目前保存 FAQ / RAG v0.1–v0.3。
+
+規則：
+
+- 保留 provenance 與歷史比較價值。
+- Current runtime 不得 silent fallback 到 archive。
+- 舊版本不因新版本發布而被改寫。
+
+## 7. Experimental — 研究資料
+
+路徑：`data/json/experimental/`
+
+目前 `experimental/engine/` 保存：
+
+- `runes_extended.json`
+- `rune_interpretations_filled.json`
+- training / sentence / meta 等研究輸出
+
+`engine/` 本身只保存實驗程式。它直接讀 `core/` 的正式 rune projection，不再維護另一份完整月符副本。
+
+## 8. Configuration JSON 例外
+
+以下是 configuration，不屬資料層：
+
+- root `manifest.json`：PWA configuration
+- `loc8_api/appsscript.json`：Apps Script configuration
+
+因此規則是「集中 data JSON」，不是無差別搬移所有 `.json`。
+
+## 9. 資料同步方向
+
+~~~text
+Canonical / mother source / original evidence
+                ↓
+        governed projection
+                ↓
+      core / registries
+          ↓          ↓
+       search     generated
+          ↓          ↓
+          API / UI / Graph
+                ↓
+           analysis
+~~~
+
+下游 Search、Graph、UI、AI、experimental output 不得反向覆寫上游 authority。
+
+## 10. Python Path Contract
+
+正式 Python 程式統一使用 `card_api/paths.py`：
+
+- `core_json(name)`
+- `registry_json(name)`
+- `search_json(domain, name)`
+- `generated_json(...)`
+- `archive_json(...)`
+- `experimental_json(...)`
+
+新增程式不應重新硬編一套 repository path。
+
+## 11. Governance / KM 對應
+
+- Repository 結構治理：`docs/REPOSITORY_GOVERNANCE.md`
+- Data projection 治理：`docs/DATA_ARCHITECTURE.md`
+- LOC 共用治理：`docs/LOC_GOVERNANCE_CORE.md`
+- Copyleft：`COPYLEFT.md`
+- Knowledge Asset indexing：`data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json`
+
+## 12. Migration 完成條件
+
+移動資料檔案時，以下必須在同一 migration 中更新：
+
+1. Python
+2. JavaScript
+3. HTML fetch URL
+4. Registry / provenance path
+5. Service Worker cache
+6. GitHub Actions workflow
+7. docs / KM
+8. tests
+
+最後執行 `card_api/scripts/validate_repo_layout.py`，舊路徑引用必須為零。
+
+---
+
+**Data rule:** 一個檔案應只有一個清楚角色、一條權威鏈，以及一個值得存在的理由。

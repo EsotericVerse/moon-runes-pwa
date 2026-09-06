@@ -23,7 +23,7 @@ Suno 播放數與喜歡數只用於同詞版本內的推薦順序。
 完整歌詞、末段原句及檢索文字不會寫入部署資料，也不會由 API 回傳。公開 JSON
 只保存分析後的摘要、標籤、轉折欄位、分類與版本資料。
 
-媒體連結另存於 `card_api/data/LOC3_MEDIA_LINKS_v0.1.json`。Instagram Reels
+媒體連結另存於 `data/json/runtime/card_api/LOC3_MEDIA_LINKS_v0.1.json`。Instagram Reels
 與 YouTube MV 都屬版本層的跨媒介完成度證據，不會寫進歌詞語意向量；但若版本已有
 IG Reels，版本推薦分數加 20；已有 YouTube MV，加 30。兩者可累加。IG 點閱、
 Suno 播放與 YouTube MV 觀看數仍維持為獨立指標。
@@ -58,7 +58,7 @@ Suno 播放與 YouTube MV 觀看數仍維持為獨立指標。
 ```bash
 python card_api/scripts/build_loc3_dataset.py \
   path/to/Suno_500_公開歌詞作品主資料庫_繁中語意與留白v0.3.2.xlsx \
-  card_api/data/LOC3_LYRICS_SEARCH_v0.1.json
+  data/json/runtime/card_api/LOC3_LYRICS_SEARCH_v0.1.json
 ```
 
 這是離線建置步驟；Render 執行時不需要安裝 `openpyxl`。

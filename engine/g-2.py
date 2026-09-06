@@ -1,6 +1,9 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer
 from peft import LoraConfig, get_peft_model
 from datasets import load_dataset
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "json" / "experimental" / "engine"
 import torch
 import json
 
@@ -21,7 +24,7 @@ lora_config = LoraConfig(
 model = get_peft_model(model, lora_config)
 
 # 載入專門訓練資料
-dataset = load_dataset('json', data_files='training_data.json', split='train')
+dataset = load_dataset('json', data_files=str(DATA_DIR / "training_data.json"), split='train')
 dataset = dataset.train_test_split(test_size=0.1)
 
 # 預處理

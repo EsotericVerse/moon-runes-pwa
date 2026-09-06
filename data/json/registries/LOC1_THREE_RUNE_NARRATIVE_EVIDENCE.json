@@ -73,7 +73,7 @@
       "real_moon_phase": "滿月",
       "raw_rune_record": "線逆位，愛逆位，空正位，在滿月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -130,7 +130,7 @@
       "real_moon_phase": "滿月",
       "raw_rune_record": "以下為第一章大綱。抽到符文 ：草正位，火正半位，地負半位，在滿月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH01",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -186,7 +186,7 @@
       "real_moon_phase": "滿月",
       "raw_rune_record": "以下為第二章大綱，抽到符文:星正位，生半逆，樹半逆，在滿月 。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH02",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -242,7 +242,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第三章大綱，抽到符文：意逆位、種半正、根正位，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH03",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -298,7 +298,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第四章大綱，抽到符文：意半正位、暗半逆、星正位，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH04",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -354,7 +354,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第五章大綱，抽到符文為：混沌正位、火半正、葉逆位。在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH05",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -410,7 +410,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第六章大綱。抽到符文為：花半正、靈半正、種逆位。在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH06",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -466,7 +466,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第七章大綱。抽到符文為：種逆位、生半正、空半正。在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH07",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -522,7 +522,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第八章大綱。抽到符文為：火正位、種半正、靈正位。在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH08",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -578,7 +578,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第九章大綱。意正位、暗正位、空正位，抽到符文為：。在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH09",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -634,7 +634,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十章大綱。時逆位、光逆位、生半逆，抽到符文為：。在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH10",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -690,7 +690,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十一章大綱。草半逆、線半逆、水正位，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH11",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -746,7 +746,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十二章大綱。風正位、葉逆位、愛正位，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH12",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -800,7 +800,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十三章大綱。空逆位、種正位、水半正，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH13",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -856,7 +856,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十四章大綱。火逆位、愛正位、星半逆，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH14",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -912,7 +912,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十五章大綱。夢正位、線正位、根半逆，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH15",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -968,7 +968,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十六章大綱。葉逆位、空半逆、暗半正，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH16",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -1024,7 +1024,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十七章大綱。抽到的符文為：渾沌半正、水半正、線半逆，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH17",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -1080,7 +1080,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十八章大綱。抽到的符文為：根半逆、靈正位、光半正，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH18",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -1136,7 +1136,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第十九章大綱。抽到的符文為：地半正、混沌半正、空逆位，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH19",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -1192,7 +1192,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第二十章大綱。抽到的符文為：星半逆、葉半正、水逆位，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH20",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -1248,7 +1248,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第二十一章大綱。抽到的符文為：愛逆位、根半逆、混沌正位，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH21",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -1304,7 +1304,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第二十二章大綱。抽到的符文為：愛逆位、種半逆、光逆位，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH22",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -1360,7 +1360,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第二十三章大綱。抽到的符文為：生半逆、水半逆、死正位，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH23",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -1416,7 +1416,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "以下為第二十四章大綱。抽到的符文為：雷逆位、愛半逆、混沌正位，在下弦的月相。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-CH24",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -1472,7 +1472,7 @@
       "real_moon_phase": "滿月",
       "raw_rune_record": "抽到符文為：靈正位/星半正/風正位 都在滿月時",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V01-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -1528,7 +1528,7 @@
       "real_moon_phase": "滿月",
       "raw_rune_record": "花正位/種半逆/愛逆位 都在滿月時",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "第一篇大綱.txt",
@@ -1585,7 +1585,7 @@
       "real_moon_phase": null,
       "raw_rune_record": "此章代表符文為：地半正、風正位、生逆位。請寫出文字數超過一千五百字的文章，成為第一章。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH01",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -1642,7 +1642,7 @@
       "real_moon_phase": null,
       "raw_rune_record": "第二章代表符文為：根半正、地半正、星半正。請寫出文字數超過一千五百字的文章，成為第二章。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH02",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -1699,7 +1699,7 @@
       "real_moon_phase": null,
       "raw_rune_record": "第三章代表符文為：暗正位、花半正、種逆位。請寫出文字數超過一千五百字的文章，大綱如下：",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH03",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -1756,7 +1756,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "第四章代表符文：火逆位、空逆位、空半逆，在下弦。請寫出文字數超過一千五百字的第四章章節文章，大綱如下：",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH04",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -1812,7 +1812,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "第五章代表符文：雷逆位、水半正、混沌逆位，在下弦。請寫出文字數超過一千五百字的第五章章節文章，大綱如下：",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH05",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -1868,7 +1868,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第六章代表符文：靈半正、枝半正、向正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH06",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -1924,7 +1924,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第七章代表符文：氣半逆、星逆位、斷半逆。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH07",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -1980,7 +1980,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第八章代表符文：啟半逆、斷半逆、實半逆。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH08",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2036,7 +2036,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第九章代表符文：雷半逆、封逆位、魂正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH09",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2092,7 +2092,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第十章代表符文：日正位、時半逆位、月正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH10",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2146,7 +2146,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第十一章代表符文：樹正位、夢正位、明正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH11",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2200,7 +2200,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第十二章代表符文：空正位、死半正位、心半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH12",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2254,7 +2254,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第13章代表符文：無逆位、枝半逆、星正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH13",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2310,7 +2310,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第14章代表符文：死半正、月逆位、水半逆。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH14",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2366,7 +2366,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第15章代表符文：鍊正位、日半逆位、無正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH15",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2420,7 +2420,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第16章代表符文：風半逆位、愛半逆位、空逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH16",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2474,7 +2474,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第17章代表符文：無正位、啟正位、辰半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH17",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2528,7 +2528,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第18章代表符文：風半逆、樹半正、彩半逆。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH18",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2584,7 +2584,7 @@
       "real_moon_phase": "星月",
       "raw_rune_record": "第19章代表符文：實半逆位、枝半逆位、星逆位。在星月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH19",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2640,7 +2640,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第20章代表符文：生半逆、福正位、暗逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH20",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2696,7 +2696,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第21章代表符文：向正位、月正位、空逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH21",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2750,7 +2750,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第22章代表符文：光半逆、心半正、辰逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH22",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2806,7 +2806,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第23章代表符文：語逆位、愛正位、明半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH23",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2860,7 +2860,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "第24章代表符文：福半逆、樹正位、風半逆。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-CH24",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2916,7 +2916,7 @@
       "real_moon_phase": "滿月",
       "raw_rune_record": "終章代表符文為：時半正位、夢半逆位、地逆位，都在滿月時。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V02-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "二篇章節大綱.txt",
@@ -2970,7 +2970,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "序章代表符文：時逆位，火半逆位，語半逆位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3024,7 +3024,7 @@
       "real_moon_phase": "滿月",
       "raw_rune_record": "此章代表符文為：魂半正、空逆位、福正位。在滿月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH01",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3080,7 +3080,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：夢半逆、星逆位、風逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH02",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3136,7 +3136,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：幻半逆位、鍊半逆位、根半逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH03",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3190,7 +3190,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：枝正位、時半逆位、斷逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH04",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3213,7 +3213,7 @@
       "real_moon_phase": null,
       "raw_rune_record": null,
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH05",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3240,7 +3240,7 @@
       "real_moon_phase": null,
       "raw_rune_record": null,
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH06",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3298,7 +3298,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：向逆位、夢逆位、地半正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH07",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3352,7 +3352,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：星逆位、明半正位、憶半正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH08",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3406,7 +3406,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：時半逆位、樹逆位、雷正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH09",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3460,7 +3460,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：星逆位、明半正位、憶半正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH10",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3514,7 +3514,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：風逆位、空逆位、枝半正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH11",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3568,7 +3568,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：死正位、鍊逆位、雷逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH12",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3622,7 +3622,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：氣半逆位、風逆位、生正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH13",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3676,7 +3676,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：雷半逆位、彩正位、心半逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH14",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3730,7 +3730,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：憶逆位、地半正位、水半正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH15",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3784,7 +3784,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：啟半正位、語半正位、種半逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH16",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3838,7 +3838,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：幻正位、地半正位、火半逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH17",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3892,7 +3892,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：生半正位、心逆位、封正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH18",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -3946,7 +3946,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：暗正位、辰半正位、葉逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH19",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -4000,7 +4000,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：火半逆位、愛半正位、暗逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH20",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -4054,7 +4054,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：明半正位、心正位、幻正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH21",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -4108,7 +4108,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：向逆位、幻半正位、根半逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH22",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -4162,7 +4162,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：語半正位、夢半逆位、鍊半正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH23",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -4216,7 +4216,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：心半逆位、明逆位、風正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-CH24",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -4270,7 +4270,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：星逆位、心正位、死正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V03-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "三篇大綱.txt",
@@ -4324,7 +4324,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "序章代表符文：鍊逆位，地半逆位，日半逆位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4378,7 +4378,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：樹半逆位、向半正位、啟半逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH01",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4432,7 +4432,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：水正位、愛正位、枝逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH02",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4486,7 +4486,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：彩正位、靈半逆位、向正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH03",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4540,7 +4540,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：月逆位、魂半逆位、星正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH04",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4594,7 +4594,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：根逆位、日逆位、啟逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH05",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4648,7 +4648,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：地半逆位、福逆位、愛半正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH06",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4702,7 +4702,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：福半正位、雷逆位、向半逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH07",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4756,7 +4756,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：草半逆位、夢半逆位、啟正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH08",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4810,7 +4810,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：雷逆位、空半正位、暗半逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH09",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4864,7 +4864,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：愛半正位、夢正位、風半正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH10",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4918,7 +4918,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：魂半正位、福半逆位、語半逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH11",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -4972,7 +4972,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：光逆位、花逆位、生正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH12",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5026,7 +5026,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：死半逆位、辰半逆位、愛逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH13",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5080,7 +5080,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：風逆位、火半逆位、雷半逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH14",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5134,7 +5134,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：時逆位、日逆位、語半逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH15",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5188,7 +5188,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：語半正位、生半逆位、靈逆位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH16",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5242,7 +5242,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：靈半逆位、幻半逆位、風正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH17",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5296,7 +5296,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：靈半正位、月逆位、星正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH18",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5350,7 +5350,7 @@
       "real_moon_phase": "下弦",
       "raw_rune_record": "此章代表符文為：死半逆位、月半逆位、啟正位。在下弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH19",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5404,7 +5404,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：樹正位、啟半正位、花半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH20",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5458,7 +5458,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：彩半正位、心半逆位、死逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH21",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5512,7 +5512,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：心正位、辰半正位、地逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH22",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5566,7 +5566,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：向正位、空半正位、辰半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH23",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5620,7 +5620,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：樹逆位、語逆位、葉半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-CH24",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5674,7 +5674,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：明半逆位、星半正位、語逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V04-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "四篇大綱.txt",
@@ -5728,7 +5728,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "序章代表符文：水半正位，月半正位，語半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -5782,7 +5782,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：愛逆位、辰半正位、水逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH01",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -5836,7 +5836,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：憶正位、禍正位、幻半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH02",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -5890,7 +5890,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：根半逆位、夢半逆位、向逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH03",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -5944,7 +5944,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：啟逆位、火半正位、樹正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH04",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -5998,7 +5998,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：彩正位、幻半正位、啟半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH05",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6052,7 +6052,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：實半正位、斷半逆位、空正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH06",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6106,7 +6106,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：封半逆位、靈半逆位、彩正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH07",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6160,7 +6160,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：明半正位、向半逆位、斷半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH08",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6214,7 +6214,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：彩半逆位、空正位、雷半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH09",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6268,7 +6268,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：火半正位、枝半正位、日正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH10",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6322,7 +6322,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：斷正位、心半正位、虛逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH11",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6376,7 +6376,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：玉半逆位、鏡逆位、光正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH12",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6430,7 +6430,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：分半正位、緣半逆位、韻正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH13",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6484,7 +6484,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：枝正位、誤正位、金半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH14",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6538,7 +6538,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：愛半正位、地正位、老逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH15",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6592,7 +6592,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：幻正位、花正位、生正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH16",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6646,7 +6646,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：果正位、魂半正位、死半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH17",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6700,7 +6700,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：日半逆位、種半逆位、死半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH18",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6754,7 +6754,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：實逆位、啟半逆位、老半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH19",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6808,7 +6808,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：鑽正位、水逆位、果逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH20",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6862,7 +6862,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：實半逆位、心逆位、火正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH21",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6916,7 +6916,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：心正位、愛正位、夢逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH22",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -6970,7 +6970,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：時半正位、實逆位、愛逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH23",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -7024,7 +7024,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：火半逆位、心逆位、明逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-CH24",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -7078,7 +7078,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：誤逆位、花逆位、病正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V05-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "五篇大綱.txt",
@@ -7132,7 +7132,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "序章代表符文：月半逆位，礦正位，空逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7186,7 +7186,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：氣半逆位、虛逆位、草半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH01",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7240,7 +7240,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：彩半正位、夢逆位、花半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH02",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7294,7 +7294,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：福逆位、心半正位、鍊半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH03",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7348,7 +7348,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：老逆位、悟半逆位、心半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH04",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7402,7 +7402,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：啟半逆位、幻逆位、悟正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH05",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7456,7 +7456,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：明逆位、星半正位、實半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH06",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7510,7 +7510,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：語逆位、鍊逆位、愛正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH07",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7564,7 +7564,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：界逆位、福逆位、石半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH08",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7618,7 +7618,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：草正位、辰半逆位、病逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH09",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7672,7 +7672,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：心正位、界正位、草正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH10",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7726,7 +7726,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：彩正位、老半逆位、心逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH11",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7780,7 +7780,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：枝逆位、礦半逆位、石半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH12",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7834,7 +7834,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：風正位、時正位、語逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH13",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7888,7 +7888,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：石逆位、枝正位、光半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH14",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7942,7 +7942,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：光逆位、福半逆位、金半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH15",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -7996,7 +7996,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：死逆位、因半正位、病逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH16",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -8050,7 +8050,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：枝半逆位、日半正位、老正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH17",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -8104,7 +8104,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：心半逆位、魂半逆位、種逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH18",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -8158,7 +8158,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：石逆位、樹半正位、啟正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH19",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -8212,7 +8212,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：土半逆位、鍊半正位、金正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH20",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -8266,7 +8266,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：樹半正位、幻逆位、玉正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH21",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -8320,7 +8320,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：靈半正位、愛半正位、塵正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH22",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -8374,7 +8374,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：愛正位、韻逆位、土逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH23",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -8428,7 +8428,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：域正位、空逆位、分半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-CH24",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -8482,7 +8482,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：語半逆位、水半逆位、界半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V06-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "六篇大綱.txt",
@@ -8536,7 +8536,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "序章代表符文：葉逆位，水半正位，鏡半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-PROLOGUE",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -8590,7 +8590,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：塵正位、暗半正位、枝半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH01",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -8644,7 +8644,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：生逆位、福逆位、塵半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH02",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -8698,7 +8698,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：啟正位、福逆位、花半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH03",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -8752,7 +8752,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：土逆位、誤半逆位、老正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH04",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -8806,7 +8806,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：晶正位、金半正位、葉逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH05",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -8860,7 +8860,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：病正位、分正位、石正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH06",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -8914,7 +8914,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：根逆位、月正位、生半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH07",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -8968,7 +8968,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：封半正位、時逆位、地逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH08",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9022,7 +9022,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：根半正位、老半逆位、枝正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH09",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9076,7 +9076,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：空半正位、福正位、死半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH10",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9130,7 +9130,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：實半正位、葉逆位、土半正位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH11",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9184,7 +9184,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：無正位、福逆位、病逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH12",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9238,7 +9238,7 @@
       "real_moon_phase": "新月",
       "raw_rune_record": "此章代表符文為：病半逆位、向半正位、空半逆位。在新月。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH13",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9292,7 +9292,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：悟半逆位、風逆位、地半逆位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH14",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9346,7 +9346,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：鏡正位、心正位、礦半逆位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH15",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9400,7 +9400,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：界正位、語逆位、悟半正位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH16",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9454,7 +9454,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：病正位、果逆位、樹逆位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH17",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9508,7 +9508,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：時逆位、愛正位、界半逆位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH18",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9562,7 +9562,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：虛半正位、空半正位、塵逆位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH19",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9616,7 +9616,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：實半逆位、鏡正位、緣逆位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH20",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9670,7 +9670,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：鏡半逆位、塵半正位、因半正位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH21",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9724,7 +9724,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：韻半逆位、水半正位、憶半逆位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH22",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9778,7 +9778,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：鍊正位、封半逆位、果半逆位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH23",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9832,7 +9832,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：時半逆位、語半逆位、幻正位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-CH24",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
@@ -9886,7 +9886,7 @@
       "real_moon_phase": "上弦",
       "raw_rune_record": "此章代表符文為：分半逆位、日正位、緣半正位。在上弦。",
       "provenance": {
-        "upstream_registry": "data/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+        "upstream_registry": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
         "upstream_record_id": "MR-V07-EPILOGUE",
         "source_type": "original_outline",
         "source_file": "七篇大綱.txt",
