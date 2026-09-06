@@ -165,16 +165,41 @@ class FAQSearchEngine:
         selected: list[SearchResult] = []
         seen_answers: set[str] = set()
         seen_parents: set[str] = set()
-        for result in relevant:
+
+        def add_result(result: SearchResult) -> bool:
             answer = result.chunk["answer"].strip()
             parent_id = result.chunk["parent_id"]
             if answer in seen_answers or parent_id in seen_parents:
-                continue
+                return False
             seen_answers.add(answer)
             seen_parents.add(parent_id)
             selected.append(result)
-            if len(selected) == intent_limit:
-                break
+            return True
+
+        # Multi-intent queries should retrieve each clause independently before
+        # global ranking. Otherwise one strong topic can occupy all top slots
+        # and hide the second requested source.
+        clauses = [
+            part.strip(" ，,。！？!?")
+            for part in re.split(r"(?:以及|還有|同時|或者|與|和)", query)
+            if part.strip(" ，,。！？!?")
+        ]
+        if intent_limit > 1 and len(clauses) > 1:
+            for clause in clauses[:intent_limit]:
+                clause_results = self.search(clause, top_k=top_k)
+                clause_relevant = [result for result in clause_results if result.score >= 0.08]
+                if clause_relevant:
+                    add_result(clause_relevant[0])
+                if len(selected) == intent_limit:
+                    break
+
+        # Fill remaining slots from the full-query ranking while preserving
+        # distinct source parents/answers.
+        if len(selected) < intent_limit:
+            for result in relevant:
+                add_result(result)
+                if len(selected) == intent_limit:
+                    break
 
         answer = "\n\n".join(
             f"{result.chunk['answer'].strip()} [{result.chunk['id']}]"
