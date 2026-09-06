@@ -561,3 +561,34 @@ Graph View / ERA overlay / temporal context / exploration
 > **LOC7 建關係網；LOC8 看關係如何存在於時間與脈絡。**
 
 原 Context 工作區中的 Relation Graph 保留為 LOC8 本地／私人 Relation 的工作投影；新的獨立 Graph View 則讀取公開且已治理的跨 LOC Graph。
+
+
+## 18. LOC8 UI information architecture
+
+LOC8 public UI is organized as three work areas rather than one menu item per data type:
+
+~~~text
+01 Observe
+- Daily Rune
+- ERA
+
+02 Record
+- Event
+- Timeline
+
+03 Context
+- Relation / Trajectory / Analysis
+- Graph
+~~~
+
+The product-facing name is:
+
+> **LOC8 · Life / Context**
+
+The old shorthand `Rune → ERA → Event` is now historical/partial because it does not cover Relation, Trajectory, Analysis and Graph.
+
+Current interaction summary:
+
+> **Observe → Record → Relate → Analyze**
+
+This is a UI information architecture only; underlying canonical ownership remains unchanged.
