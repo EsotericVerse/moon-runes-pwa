@@ -178,7 +178,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC3 | 已累積大量「政德風」音樂作品，並建立歌曲資料及語意檢索實作。另曾以 LOC1 的 OW3gs 十一張抽牌解釋情境，再將解讀轉化為歌詞與歌曲，形成特殊的符文寫歌方式。 |
 | LOC4 | 已建立文字分類，並完成以其為文本結構的七大篇長篇小說，全文約 22 萬字；另有其他小說與文字創作。 |
 | LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
-| LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證，保存「符文組合／方位／月相 → 實際敘事」的歷史對照。 |
+| LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；Threads 公開文字 corpus 自 2024-11-18 起至 2026-09-06，現行去重基準共 **7,008 筆文字紀錄**（4,578 主貼文＋2,430 Reply），已開始接入 KM／Unified Search，並進入全文概念、ERA 與治理語言解析。另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證。 |
 | LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7、LOC8 的現有資料來源。完整 Knowledge Graph expansion／Graph RAG 仍屬後續階段。 |
 | LOC8 | `life.html` 已具備每日符文、ERA 時期管理、Event 紀錄、Event Timeline、Relation Library、軌跡 Trajectory 與趨勢分析 Analysis。ERA 已可在顯示位置直接新增／修改／刪除，後端 Apps Script API 已升至 `loc8-mvp-1.1`；Context 目前可呈現跨時期 Relation 與 LOC3 關鍵字比重升降／文字轉折說明，Graph 視圖仍屬後續。 |
 
@@ -206,6 +206,24 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 Luna Codex 66 
 目前的 **MVP v1.3 Alpha** 已完成核心循環、四大組態、八職業與首批 32 張事件卡，下一階段為實體卡牌印製與桌面試玩。電子版則可進一步計算方向、狀態、連鎖、多重條件及三卡、五卡、十一卡關係。
 
 > **LOC2 是把 LOC 的語言做成可以互動、可以練習，也可以玩的形式。**
+
+### LOC6｜Threads Public Language Corpus
+
+LOC6 現行新增一個可量化的公開語言 corpus：
+
+- **時間範圍：2024-11-18 ～ 2026-09-06**
+- **主貼文：4,578 筆**
+- **Reply：2,430 筆**
+- **合計：7,008 筆去重文字紀錄**
+- 主貼文作為 primary evidence；Reply 作為 supplemental evidence
+- 現行工作：全文正規化、Surface Term、Concept candidate、ERA 分布、治理語言與可搜尋 Article/KM 索引
+- 這批資料不是 Canon；它是 LOC6 形成概念、風格演變與治理判斷的 primary-source corpus
+
+展示用一句：
+
+> **4,578 篇公開表達 + 2,430 筆互動回應 → 7,008 筆可追蹤、可搜尋、可比較的公共語言紀錄。**
+
+這批 Threads corpus 與 LOC3 的 Suno 創作 corpus 形成兩個不同但互補的長期資料來源：一邊記錄「創作了什麼」，另一邊記錄「公開說了什麼」。LOC 進一步將兩者做時間化、概念化與跨來源檢索。
 
 ### LOC6｜政德風文字摘要
 
