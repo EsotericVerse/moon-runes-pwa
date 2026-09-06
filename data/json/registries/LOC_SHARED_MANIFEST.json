@@ -6,85 +6,85 @@
   "registries": [
     {
       "id": "language_system",
-      "path": "data/json/shared/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+      "path": "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
       "authority": "LOC8",
       "purpose": "Canonical language-system identity, IP, rights and provenance defaults."
     },
     {
       "id": "era",
-      "path": "data/json/shared/LOC_ERA_REGISTRY.json",
+      "path": "data/json/registries/LOC_ERA_REGISTRY.json",
       "authority": "LOC8",
       "purpose": "Canonical ERA labels, temporal state and source Event references."
     },
     {
       "id": "media",
-      "path": "data/json/shared/LOC_MEDIA_REGISTRY.json",
+      "path": "data/json/registries/LOC_MEDIA_REGISTRY.json",
       "authority": "LOC5",
       "purpose": "Canonical media assets and cross-links to works/songs."
     },
     {
       "id": "shared_schema",
-      "path": "data/json/shared/LOC_SHARED_SCHEMA.json",
+      "path": "data/json/registries/LOC_SHARED_SCHEMA.json",
       "authority": "LOC8",
       "purpose": "Shared cross-LOC fields and lifecycle/provenance/rights shapes."
     },
     {
       "id": "data_governance",
-      "path": "data/json/shared/LOC_DATA_GOVERNANCE.json",
+      "path": "data/json/registries/LOC_DATA_GOVERNANCE.json",
       "authority": "LOC8",
       "purpose": "Authority and consumer rules across LOC1-8."
     },
     {
       "id": "content_rights_policy",
-      "path": "data/json/shared/LOC_CONTENT_RIGHTS_POLICY.json",
+      "path": "data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json",
       "authority": "LOC8",
       "purpose": "P0 rights/privacy gates for corpus import, export, public search and publication."
     },
     {
       "id": "reference_model",
-      "path": "data/json/shared/LOC_REFERENCE_MODEL.json",
+      "path": "data/json/registries/LOC_REFERENCE_MODEL.json",
       "authority": "LOC8",
       "purpose": "Stable ID types and cross-LOC relationship vocabulary."
     },
     {
       "id": "loc2_events",
-      "path": "data/json/shared/LOC2_EVENT_REGISTRY.json",
+      "path": "data/json/registries/LOC2_EVENT_REGISTRY.json",
       "authority": "LOC2",
       "purpose": "Scenario Corpus / Event Corpus for real-life situation modeling and LOC2 Alpha events."
     },
     {
       "id": "loc3_rune_songs",
-      "path": "data/json/shared/LOC3_RUNE_SONG_REGISTRY.json",
+      "path": "data/json/registries/LOC3_RUNE_SONG_REGISTRY.json",
       "authority": "LOC3",
       "purpose": "Evidence-based registry for songs actually derived from real rune draws; separates confirmed provenance from candidates."
     },
     {
       "id": "loc3_reasoning",
-      "path": "data/json/shared/LOC3_REASONING_SCHEMA.json",
+      "path": "data/json/registries/LOC3_REASONING_SCHEMA.json",
       "authority": "LOC3",
       "purpose": "Proposition/reasoning analysis schema for rational, explanatory, boundary, governance and judgment-oriented songs."
     },
     {
       "id": "loc4_writing",
-      "path": "data/json/shared/LOC4_WRITING_REGISTRY.json",
+      "path": "data/json/registries/LOC4_WRITING_REGISTRY.json",
       "authority": "LOC4",
       "purpose": "Canonical writing-work catalog entry point and shared cross-LOC references."
     },
     {
       "id": "cross_relationships",
-      "path": "data/json/shared/LOC_CROSS_RELATIONSHIP_REGISTRY.json",
+      "path": "data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json",
       "authority": "LOC7",
       "purpose": "Directional cross-LOC work/media relationships for Unified Search and graph retrieval."
     },
     {
       "id": "loc6_era_style_evidence",
-      "path": "data/json/shared/LOC6_ERA_STYLE_EVIDENCE.json",
+      "path": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json",
       "authority": "LOC6",
       "purpose": "LOC3 metadata aggregates linked back to ERA-based Zhengde Style analysis."
     },
     {
       "id": "loc6_governance",
-      "path": "data/json/shared/LOC6_GOVERNANCE_REGISTRY.json",
+      "path": "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json",
       "authority": "LOC6",
       "purpose": "Canonical governance, meaning, style-state and stage-interpretation records."
     },
@@ -92,53 +92,53 @@
       "id": "loc6_threads_km",
       "path": "data/json/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json",
       "authority": "LOC6",
-      "purpose": "Searchable 138-record LOC6 Threads article tranche; main posts primary evidence. Supplemental reply statistics remain in data/json/shared/LOC6_THREADS_KM_INDEX.json."
+      "purpose": "Searchable 138-record LOC6 Threads article tranche; main posts primary evidence. Supplemental reply statistics remain in data/json/registries/LOC6_THREADS_KM_INDEX.json."
     },
     {
       "id": "loc6_dual_rune_relations",
-      "path": "data/json/shared/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
+      "path": "data/json/registries/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
       "authority": "LOC6",
       "purpose": "Neutral two-rune semantic relation registry, separated from cause/effect draw projection."
     },
     {
       "id": "loc6_rune_interpretation",
-      "path": "data/json/shared/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+      "path": "data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
       "authority": "LOC6",
       "purpose": "Recorded rune-combination interpretation evidence from the seven-volume 月語者 chapter-outline corpus."
     },
     {
       "id": "loc7_linguistic_analysis",
-      "path": "data/json/shared/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json",
+      "path": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json",
       "authority": "LOC7",
       "purpose": "Canonical grammar, syntax, Text Architecture and retrieval-analysis records."
     },
     {
       "id": "analysis_types",
-      "path": "data/json/shared/LOC_ANALYSIS_TYPE_REGISTRY.json",
+      "path": "data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json",
       "authority": "LOC8",
       "purpose": "Shared routing vocabulary for LOC6/LOC7 mixed analyses."
     },
     {
       "id": "content_types",
-      "path": "data/json/shared/LOC_CONTENT_TYPE_REGISTRY.json",
+      "path": "data/json/registries/LOC_CONTENT_TYPE_REGISTRY.json",
       "authority": "LOC8",
       "purpose": "Shared content/asset vocabulary for routing and unified search."
     },
     {
       "id": "source_types",
-      "path": "data/json/shared/LOC_SOURCE_TYPE_REGISTRY.json",
+      "path": "data/json/registries/LOC_SOURCE_TYPE_REGISTRY.json",
       "authority": "LOC8",
       "purpose": "Shared provenance/source vocabulary for source_refs across LOC1-8."
     },
     {
       "id": "loc1_three_rune_narrative_evidence",
-      "path": "data/json/shared/LOC1_THREE_RUNE_NARRATIVE_EVIDENCE.json",
+      "path": "data/json/registries/LOC1_THREE_RUNE_NARRATIVE_EVIDENCE.json",
       "authority": "LOC1",
       "purpose": "LOC1 KM derivative of 月語者 chapter-level three-rune draws and narrative evidence."
     },
     {
       "id": "governance_trends",
-      "path": "data/json/shared/LOC_GOVERNANCE_TREND_REGISTRY.json",
+      "path": "data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json",
       "authority": "LOC8/LOC6",
       "purpose": "Structured governance-language trends: temporal projection by LOC8, interpretation by LOC6, structure by LOC7."
     }
@@ -253,7 +253,7 @@
   },
   "assets": [
     {
-      "path": "data/json/shared/LOC4_TEXT_ANALYSIS_REGISTRY.json",
+      "path": "data/json/registries/LOC4_TEXT_ANALYSIS_REGISTRY.json",
       "authority": "LOC4",
       "purpose": "Structured semantic analysis of LOC4 writing works; short works first, long-form rune novel deferred."
     }
@@ -264,11 +264,11 @@
     "core_document": "docs/LOC_GOVERNANCE_CORE.md",
     "history_document": "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md",
     "luna_runes_design_document": "docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md",
-    "rights_policy": "data/json/shared/LOC_CONTENT_RIGHTS_POLICY.json",
-    "data_governance": "data/json/shared/LOC_DATA_GOVERNANCE.json",
-    "shared_schema": "data/json/shared/LOC_SHARED_SCHEMA.json",
-    "reference_model": "data/json/shared/LOC_REFERENCE_MODEL.json",
+    "rights_policy": "data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json",
+    "data_governance": "data/json/registries/LOC_DATA_GOVERNANCE.json",
+    "shared_schema": "data/json/registries/LOC_SHARED_SCHEMA.json",
+    "reference_model": "data/json/registries/LOC_REFERENCE_MODEL.json",
     "principle": "Framework governance is cross-LOC; canonical ownership remains domain-specific.",
-    "trend_registry": "data/json/shared/LOC_GOVERNANCE_TREND_REGISTRY.json"
+    "trend_registry": "data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json"
   }
 }
