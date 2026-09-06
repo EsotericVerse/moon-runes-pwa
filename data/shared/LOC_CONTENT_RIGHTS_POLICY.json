@@ -57,5 +57,18 @@
     "rule": "Demo、履歷、公開搜尋與下載只顯示 self_authored + public + cleared 的紀錄。"
   },
   "provenance_rule": "Platform export availability does not grant reuse rights to all contained content.",
-  "historical_rule": "Historical records remain immutable evidence; rights metadata and interpretation may change without rewriting the original record."
+  "historical_rule": "Historical records remain immutable evidence; rights metadata and interpretation may change without rewriting the original record.",
+  "public_access_control": {
+    "principle": "Public search is not a bulk corpus export endpoint.",
+    "browse_mode": "preview_only",
+    "search_mode": "matched-result text only",
+    "bulk_export": "disabled_by_default",
+    "controls": [
+      "Do not expose full corpus text through sequential browse/list endpoints.",
+      "Return bounded previews for catalog browsing.",
+      "Keep full-text result counts small and query-driven.",
+      "Owner/private export, if added later, must require an authenticated rights gate.",
+      "robots.txt or copyright notices are advisory and do not replace access controls."
+    ]
+  }
 }
