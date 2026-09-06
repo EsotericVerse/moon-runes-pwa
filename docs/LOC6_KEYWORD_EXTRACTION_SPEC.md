@@ -6,12 +6,13 @@ LOC6 的關鍵字庫以「低 API 依賴、可重跑、可追溯」為原則。�
 
 ## 資料優先序
 
-1. 原始 Threads corpus
-2. ChatGPT 對話紀錄文件
-3. 小說、歌曲、Reels 與其他作品
+1. 原始 Threads 主貼文 corpus（主要統計）
+2. Threads replies（補充證據，不直接與主貼文同權重）
+3. 小說、歌曲、Reels 與其他原始作品
 4. Canon／整理稿
+5. ChatGPT 對話紀錄（gap-filling source；只在其他來源不足時精準回查）
 
-Canon 是治理結果，不反過來覆蓋原始證據。
+Canon 是治理結果，不反過來覆蓋原始證據。ChatGPT 對話若已被程式碼、Markdown、Registry 或 Canon 承接，原則上不重複匯入。
 
 ## 三層詞彙模型
 
@@ -107,6 +108,16 @@ LOC8 Life ERA 與 LOC6 Style ERA 分開保存，不互相取代。
 - LOC6 Style：政德風前傳、第一代、第二代、第三代
 
 關鍵字候選先以 LOC8 時間段統計，之後再映射 LOC6 Style ERA。
+
+### Reply 補充規則
+
+Threads replies 保留為第二層 evidence，不與主貼文直接合併計算同一份主榜。
+
+- 主貼文回答「作者主動公開表達了什麼」。
+- Reply 回答「在互動脈絡中，哪些概念被再次使用、說明、辯護或重申」。
+- Reply 可提高 Concept candidate 的 supporting evidence，但不得只因 reply 高頻就升格為 Canonical Concept。
+- 若某詞在 reply 的 normalized prevalence 高於主貼文，可標記為 `interaction_reinforced`，供人工審查。
+- Reply 與主貼文應分別保留 document frequency 與 ERA distribution，避免互動量改寫主 corpus 的歷史趨勢。
 
 ## API 使用原則
 
