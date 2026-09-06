@@ -74,6 +74,23 @@ def evaluate_case(engine: UnifiedSearchEngine, case: dict) -> dict:
         "graph_evidence_kinds": provenance.get("graph_evidence_kinds", {}),
     }
 
+    quality = graph.get("quality") or {}
+    graph_edges = graph.get("edges", []) or []
+    min_score = float(quality.get("min_traversal_score") or 0.0)
+    bad_quality_edges = [
+        str(edge.get("edge_id") or "")
+        for edge in graph_edges
+        if "edge_quality" not in edge
+        or "quality_band" not in edge
+        or float(edge.get("traversal_score") or 0.0) < min_score
+    ]
+    checks["quality"] = {
+        "pass": not bad_quality_edges and "mean_edge_quality" in quality,
+        "mean_edge_quality": quality.get("mean_edge_quality", 0.0),
+        "min_traversal_score": min_score,
+        "bad_edges": bad_quality_edges,
+    }
+
     passed = all(item.get("pass") for item in checks.values())
     return {
         "id": case.get("id"),
