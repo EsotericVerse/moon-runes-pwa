@@ -89,10 +89,10 @@
       "purpose": "Canonical governance, meaning, style-state and stage-interpretation records."
     },
     {
-      "id": "loc6_threads_km",
+      "id": "loc4_threads_source_index",
       "path": "data/json/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json",
-      "authority": "LOC6",
-      "purpose": "Searchable 138-record LOC6 Threads article tranche; main posts primary evidence. Supplemental reply statistics remain in data/json/registries/LOC6_THREADS_KM_INDEX.json."
+      "authority": "LOC4",
+      "purpose": "Legacy-path Threads representative source-text index. Raw authored posts are LOC4 life writing; LOC6 consumes them as governance/style evidence."
     },
     {
       "id": "loc6_dual_rune_relations",
@@ -141,6 +141,12 @@
       "path": "data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json",
       "authority": "LOC8/LOC6",
       "purpose": "Structured governance-language trends: temporal projection by LOC8, interpretation by LOC6, structure by LOC7."
+    },
+    {
+      "id": "loc4_loc6_boundary",
+      "path": "data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json",
+      "authority": "LOC4/LOC6",
+      "purpose": "Canonical boundary: LOC4 owns authored source text and general work analysis; LOC6 owns governance/Zhengde-style/value interpretation derived from evidence."
     }
   ],
   "integration_status": {
@@ -160,11 +166,12 @@
       "cross_relationship_registry": "connected",
       "source_corpus": "ready",
       "fulltext_search": "connected",
-      "life_writing_sources": "Facebook + Threads connected by reference; raw text LOC4, governance interpretation LOC6",
+      "life_writing_sources": "Facebook + Threads raw authored text owned by LOC4; source-specific storage retained",
       "creative_work_analysis": "complete_for_current_core_set",
       "moon_speaker_analysis": "182-chapter baseline complete; 161 restored rune configs / 21 explicitly unrecovered",
       "moon_speaker_search": "connected",
-      "work_analysis_search": "connected; novel title queries return structured LOC4 analysis records"
+      "work_analysis_search": "connected; novel title queries return structured LOC4 analysis records",
+      "threads_source_counts": "7008 deduplicated / 4578 main / 2430 replies"
     },
     "LOC5": "media-authority-established; cross-relationship-registry-connected",
     "LOC6": {
@@ -172,13 +179,13 @@
       "rune_interpretation_corpus": "connected",
       "rune_interpretation_records": "180 usable / 182 chapter slots",
       "analysis_types": "connected",
-      "corpus_import": "full-main-post-search-connected; replies supplemental",
+      "corpus_import": "derived governance/style interpretation consumes LOC4 source corpora; raw Threads/Facebook ownership excluded",
       "dual_rune_relation_registry": "connected",
       "dual_rune_relation_model": "neutral pair → draw cause/effect projection → directions/context",
       "era_style_evidence": "403 indexed LOC3 works linked by ERA",
       "cross_media_relationship_interpretation": "connected",
-      "threads_km_search": "connected-v0.2-138-articles",
-      "threads_source_counts": "7008 deduplicated / 4578 main / 2430 replies"
+      "threads_km_search": "source-text search is LOC4; LOC6 governance/style derived records remain LOC6",
+      "threads_source_counts": "evidence source only: 7008 LOC4 records / 4578 main / 2430 replies"
     },
     "LOC7": {
       "linguistic_analysis_registry": "schema-ready",
@@ -250,9 +257,9 @@
       "LOC1": "rune retrieval",
       "LOC2": "Scenario/Event registry connected; direct Unified Search corpus integration pending",
       "LOC3": "lyrics/music retrieval",
-      "LOC4": "authored full-text corpus connected; Facebook/Threads life-writing source corpora connected by reference",
+      "LOC4": "creative works + Facebook/Threads life-writing raw text + work/chapter semantic analysis",
       "LOC5": "media retrieval through shared media registry",
-      "LOC6": "Governance registry + Threads/Facebook governance interpretation over LOC4-owned authored text",
+      "LOC6": "governance/Zhengde-style/value/rune interpretation derived from LOC4/LOC3/LOC8 evidence",
       "LOC7": "FAQ/KM retrieval",
       "LOC8": "ERA retrieval"
     },
