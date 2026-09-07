@@ -1080,7 +1080,7 @@
           el('status').textContent='正在搜尋文字資料…';
           let groups=null;
           try{
-            const body={query:q,top_k:10,content_type:'text_record',source:'facebook',period:el('period').value};
+            const body={query:q,top_k:10,content_type:'text_record',source:'facebook',period:el('period').value,start_date:el('startDate').value,end_date:el('endDate').value};
             const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
             const d=await r.json();
             if(r.ok) groups=d.groups||{text:d.results||[]};
@@ -1096,7 +1096,7 @@
         }
 
         el('status').textContent=type==='text_record'?'正在搜尋文字資料……':'正在同時查詢符文、作品、媒體、知識與時期資料……';
-        const body={query:q,top_k:10,content_type:apiType,source:source,period:el('period').value};
+        const body={query:q,top_k:10,content_type:apiType,source:source,period:el('period').value,start_date:el('startDate').value,end_date:el('endDate').value};
         const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const d=await r.json();
         if(!r.ok)throw new Error(d.detail||'搜尋失敗');
