@@ -84,6 +84,7 @@ class UnifiedSearchEngine:
         self.loc8_relation_schema = self._load_json("LOC8_RELATION_SCHEMA.json")
         self.loc8_events = self._load_json("LOC8_EVENT_SNAPSHOT.json")
         self.loc8_daily_runes = self._load_json("LOC8_DAILY_RUNE_SNAPSHOT.json")
+        self.rune_literature = self._load_json("RUNE_LITERATURE_REGISTRY.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
         path = self.registry_root / name
@@ -458,6 +459,61 @@ class UnifiedSearchEngine:
             "source_refs": work.get("source_refs", []),
             "payload": work,
         } for score, work in scored[:top_k]]
+
+    def _rune_literature_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+        if wanted not in {"", "all", "text_record", "text_work", "rune_literature"}:
+            return []
+        scored = []
+        for rune in self.rune_literature.get("runes", []):
+            rune_name = rune.get("rune_name") or ""
+            rune_number = rune.get("rune_number")
+            for entry in rune.get("entries", []) or []:
+                text = entry.get("text") or ""
+                score = _text_score(query, [
+                    rune_name,
+                    rune_number,
+                    entry.get("title"),
+                    text,
+                    entry.get("form"),
+                    entry.get("source_platform"),
+                    " ".join(entry.get("tags", []) or []),
+                    entry.get("relation_note"),
+                ])
+                if score < 0.34:
+                    continue
+                scored.append((score, rune, entry))
+        scored.sort(key=lambda row: (
+            -row[0],
+            str(row[2].get("date") or ""),
+            str(row[2].get("entry_id") or ""),
+        ))
+        results = []
+        for score, rune, entry in scored[:top_k]:
+            payload = dict(entry)
+            payload.update({
+                "rune_id": rune.get("rune_id"),
+                "rune_number": rune.get("rune_number"),
+                "rune_name": rune.get("rune_name"),
+                "rune_group": rune.get("group"),
+            })
+            results.append({
+                "result_id": entry.get("entry_id"),
+                "system_id": "lo3rwang",
+                "primary_loc": "LOC4",
+                "related_locs": ["LOC1", "LOC6", "LOC7", "LOC8"],
+                "content_type": "rune_literature",
+                "group": "textworks",
+                "title": entry.get("title") or f"{rune.get('rune_name')}之文學｜{entry.get('form') or 'text'}",
+                "summary": entry.get("text") or "",
+                "score": round(score, 6),
+                "source_refs": [{
+                    "source_type": entry.get("source_platform") or "loc",
+                    "source_id": entry.get("source_ref") or entry.get("entry_id"),
+                    "note": "rune literature corpus",
+                }],
+                "payload": payload,
+            })
+        return results
 
     def _media_registry_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "multimedia", "reel", "video"}:
@@ -2389,6 +2445,8 @@ class UnifiedSearchEngine:
             faq = []
             music, linked_media = self._music_keyword_results(oracle_terms, top_k, effective_wanted, filters)
             textworks, direct_media, documents, eras = self._keyword_cross_results(oracle_terms, top_k, effective_wanted)
+            rune_literature = self._rune_literature_results(query, top_k, effective_wanted)
+            textworks = [*textworks, *rune_literature][:top_k]
             media_by_id = {}
             for item in [*direct_media, *linked_media]:
                 media_by_id[item.get("result_id")] = item
@@ -2402,6 +2460,8 @@ class UnifiedSearchEngine:
             documents = self._knowledge_asset_results(query, top_k, wanted)
             music, linked_media = self._music_results(query, top_k, wanted, filters)
             textworks = self._loc4_results(query, top_k, wanted)
+            rune_literature = self._rune_literature_results(query, top_k, wanted)
+            textworks = [*textworks, *rune_literature][:top_k]
             direct_media = self._media_registry_results(query, top_k, wanted)
             media_by_id = {}
             for item in [*direct_media, *linked_media]:
