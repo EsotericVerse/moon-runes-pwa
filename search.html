@@ -1012,7 +1012,7 @@
     function inferNaturalSearchHints(query){
       const q=String(query||'').trim();
       let source='';
-      if(/\bIG\b|Instagram|インスタ|限時動態|貼文/i.test(q)) source='instagram';
+      if(/\bIG\b|Instagram|インスタ/i.test(q)) source='instagram';
       else if(/Threads/i.test(q)) source='threads';
       else if(/Facebook|\bFB\b/i.test(q)) source='facebook';
       else if(/X\s*\(Twitter\)|Twitter|\bX\b/i.test(q)) source='x';
