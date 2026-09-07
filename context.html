@@ -212,7 +212,8 @@ document.querySelectorAll('[data-context-switch]').forEach(btn=>btn.addEventList
 const initialContextView=['scenario','sandbox-game','sandbox-guide','docs'].includes(location.hash.slice(1))?location.hash.slice(1):'graph';
 switchContextView(initialContextView);
 function bindSearch(inputId,gridId){const input=document.getElementById(inputId),grid=document.getElementById(gridId);if(!input||!grid)return;input.addEventListener("input",()=>{const q=input.value.trim().toLowerCase();grid.querySelectorAll(".card").forEach(c=>c.classList.toggle("hidden",q&&!c.dataset.search.includes(q)))})}bindSearch("eventSearch","eventGrid");bindSearch("runeSearch","runeGrid");
-</script><script src="js/loc-nav.js">
+</script><script src="js/loc-nav.js"></script>
+<script>
 const CONTEXT_SHEET_API='https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec';
 const CONTEXT_LOC_API='https://moon-runes-pwa.onrender.com';
 const CONTEXT_EVENT_CACHE='context-events-cache-v1';
