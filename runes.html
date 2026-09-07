@@ -482,7 +482,14 @@
         history.replaceState(null,'','runes.html'+(params.toString()?'?'+params.toString():'')+suffix);
       }
     }
-    buttons.forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.runesView)));
+    buttons.forEach(btn=>btn.addEventListener('click',()=>{
+      const name=btn.dataset.runesView;
+      if(name==='draw' && new URLSearchParams(location.search).has('mode')){
+        location.href='runes.html';
+        return;
+      }
+      switchView(name);
+    }));
     document.querySelectorAll('[data-open-view]').forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.openView)));
     const hasMode=new URLSearchParams(location.search).has('mode');
     const mode=new URLSearchParams(location.search).get('mode');
