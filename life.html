@@ -790,7 +790,7 @@
         </div>
       </nav>
       <div class="sidebar-foot">
-        每日符文 → 時期 → 事件 → 脈絡 → Graph View。用時間與脈絡觀看關係如何形成與變化。
+        每日符文 → 時期 → 事件 → 脈絡 → Graph View。LOC7 建 Graph 結構，LOC8 用時間與脈絡觀看關係變化。
       </div>
     </aside>
 
@@ -893,7 +893,7 @@
             <p class="loc-header-meta">Period · Timeline · Keywords</p>
             <h1 class="loc-header-title">時期</h1>
             <h2 class="loc-header-subtitle">時期不是標籤，而是一段連續的變化。</h2>
-            <p class="loc-header-copy">觀看每一段狀態如何接續、轉折，以及現在正在形成什麼方向；作品的活躍範圍保留為來源參考，不取代連續時期本身的邊界。</p>
+            <p class="loc-header-copy">觀看每一段狀態如何接續、轉折，以及現在正在形成什麼方向；作品的活躍範圍保留為來源參考，不取代 LOC8 的連續時期邊界。</p>
           </div>
         </section>
 
@@ -916,7 +916,7 @@
 
         <section class="card" style="margin-top:16px;" id="era-keywords">
           <div class="head">
-            <div><h3>時期關鍵字脈絡</h3><p>以固定時期為時間軸比較關鍵字的文件數、出現比例與相鄰時期變化；不同資料來源保留各自的作品與文字證據。</p></div>
+            <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸比較關鍵字的文件數、出現比例與相鄰時期變化；LOC6 使用 Threads 公開語言，LOC3／LOC4／LOC5 保留各自作品證據。</p></div>
             <span class="badge">Cross-LOC × 時期</span>
           </div>
           <div class="body"><div class="era-keyword-grid" id="eraKeywordGrid"><div class="empty">載入 時期關鍵字中…</div></div></div>
@@ -932,7 +932,7 @@
 
       <section class="card" style="margin-top:16px;" id="era-timeline">
         <div class="head">
-          <div><h3>時期時間線</h3><p>連續時期可直接在顯示位置新增、修改、刪除；Suno 原始活躍範圍只保留為來源註記，不再當作時期邊界。</p></div>
+          <div><h3>時期時間線</h3><p>LOC8 的連續時期；可直接在顯示位置新增、修改、刪除。Suno 原始活躍範圍只保留為來源註記，不再當作時期邊界。</p></div>
           <div class="actions" style="margin:0"><button class="btn primary" id="addEraBtn" type="button">新增時期</button><span class="badge">時期</span></div>
         </div>
         <div class="body"><div class="era-timeline" id="eraTimelineList"><div class="empty">載入時期資料中…</div></div></div>
@@ -968,7 +968,7 @@
             <p class="loc-header-meta">Context · Relation · Trajectory</p>
             <h1 class="loc-header-title">脈絡 Context</h1>
             <h2 class="loc-header-subtitle">不只記先後，而是記「彼此怎麼連、怎麼變」。</h2>
-            <p class="loc-header-copy">Relation 是底層關聯資料；Trajectory 是有方向的演變投影；Graph 將在同一批關聯資料上建立網狀視圖。這裡承接不同資料來源整理出的跨事件、概念、作品與符文關係。</p>
+            <p class="loc-header-copy">Relation 是底層關聯資料；Trajectory 是有方向的演變投影；Graph 將在同一批關聯資料上建立網狀視圖。這裡承接 LOC6 與其他 LOC 模組整理出的跨事件、概念、作品與符文關係。</p>
           </div>
           <div class="sync"><span class="dot ok"></span><span>Relation Library</span></div>
         </section>
@@ -1066,7 +1066,7 @@
 
         <section class="card" style="margin-top:16px;" id="context-graph">
           <div class="head">
-            <div><h3>Graph View</h3><p>這裡呈現本地時期／Relation 工作資料；跨來源 Graph RAG 則使用左側獨立 Graph View 功能區。</p></div>
+            <div><h3>Graph View</h3><p>這裡呈現 LOC8 本地 ERA／Relation 工作資料；跨 LOC Graph RAG 則使用左側獨立 Graph View 功能區。</p></div>
             <span class="badge">Graph-ready</span>
           </div>
           <div class="body">
@@ -1081,7 +1081,7 @@
             <p class="loc-header-meta">Graph View · Graph RAG</p>
             <h1 class="loc-header-title">Graph View</h1>
             <h2 class="loc-header-subtitle">從一個問題或節點出發，看它和哪些時期、事件、作品、符文與治理概念相連。</h2>
-            <p class="loc-header-copy">Graph 結構與 traversal 由底層知識架構管理；此頁只使用 bounded neighborhood，加入時期與時間脈絡。公開介面不提供整張 Graph 批次匯出。</p>
+            <p class="loc-header-copy">Graph 結構與 traversal 由 LOC7 管理；LOC8 只消費 bounded neighborhood，加入 ERA／時間脈絡。公開介面不提供整張 Graph 批次匯出。</p>
           </div>
         </section>
 
