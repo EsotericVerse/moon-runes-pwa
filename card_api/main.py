@@ -13,6 +13,7 @@ from unified_search import UnifiedSearchEngine
 from facebook_search import FacebookSearchEngine
 from paths import REPO_ROOT, core_json, search_json
 from corpus_analysis import analyze_corpus, classify_text
+from keyword_analysis import load_governance, rank_keyword_documents
 
 # 建立 FastAPI 應用
 app = FastAPI(
@@ -481,6 +482,13 @@ class CorpusDocumentInput(BaseModel):
     text: str
 
 
+class KeywordRankingInput(BaseModel):
+    source: str
+    start_date: str = ""
+    end_date: str = ""
+    top_k: int = 10
+
+
 class CorpusAnalyzeInput(BaseModel):
     documents: list[CorpusDocumentInput]
     seed_keywords: list[str] = []
@@ -633,6 +641,42 @@ async def analyze_corpus_endpoint(input: CorpusAnalyzeInput):
         "success": True,
         "mode": "local_first",
         "external_api_required": False,
+        **result,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+@app.post("/analysis/keywords")
+async def keyword_ranking(input: KeywordRankingInput):
+    source = input.source.strip().lower()
+    if source not in {"facebook", "threads", "suno"}:
+        raise HTTPException(status_code=400, detail="source僅支援 facebook、threads、suno")
+    if input.top_k < 1 or input.top_k > 100:
+        raise HTTPException(status_code=400, detail="top_k必須介於1到100之間")
+
+    governance = load_governance(
+        REPO_ROOT / "data" / "json" / "registries" / "LOC_KEYWORD_GOVERNANCE.json"
+    )
+
+    if source == "facebook":
+        documents = get_facebook_searcher(required=True).posts
+    elif source == "threads":
+        documents = get_unified_searcher()._loc6_article_documents()
+    else:
+        documents = get_loc3_searcher().works
+
+    result = rank_keyword_documents(
+        documents,
+        start_date=input.start_date.strip(),
+        end_date=input.end_date.strip(),
+        top_k=input.top_k,
+        governance=governance,
+    )
+    return {
+        "success": True,
+        "source": source,
+        "aggregation": "date_range",
+        "era_boundaries": "not_stored; caller supplies current LOC_ERA_REGISTRY date range",
         **result,
         "timestamp": datetime.now().isoformat(),
     }
