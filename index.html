@@ -1828,7 +1828,7 @@
         <h3 id="framework-detail-title">月之符文</h3>
         <p id="framework-detail-copy"></p>
         <ul class="framework-extra" id="framework-detail-extra"></ul>
-        <a class="framework-detail-link" id="framework-detail-link" href="#" hidden></a>
+        <div class="framework-detail-links" id="framework-detail-links"></div>
       </div>
     </div>
   </div>
@@ -1855,7 +1855,7 @@
       const title = document.querySelector('#framework-detail-title');
       const copy = document.querySelector('#framework-detail-copy');
       const extra = document.querySelector('#framework-detail-extra');
-      const detailLink = document.querySelector('#framework-detail-link');
+      const detailLinks = document.querySelector('#framework-detail-links');
 
       const locInfo = {
         LOC1: {
@@ -1888,7 +1888,10 @@
           kicker:'LOC3 Music',
           title:'音樂',
           copy:'讓語彙與文字進入聲音表達。歌詞、歌曲、曲風、角色與時期都能成為語言的一部分，讓同一概念在音樂裡產生不同情緒與敘事。',
-          href:'search.html', linkLabel:'搜尋',
+          links:[
+            {href:'search.html', label:'搜尋'},
+            {href:'governance.html', label:'治理文件'}
+          ],
           extra:[
             '文字可以轉化成歌詞與歌曲。',
             '歌曲可依主題、情緒、角色、ERA 與作品關係整理。',
@@ -1966,13 +1969,10 @@
         title.textContent=item.title;
         copy.textContent=item.copy;
         extra.innerHTML=(item.extra||[]).map(text=>'<li>'+text+'</li>').join('');
-        if(item.href&&item.linkLabel){
-          detailLink.href=item.href;
-          detailLink.textContent=item.linkLabel+' →';
-          detailLink.hidden=false;
-        }else{
-          detailLink.hidden=true;
-        }
+        const links=item.links||((item.href&&item.linkLabel)?[{href:item.href,label:item.linkLabel}]:[]);
+        detailLinks.innerHTML=links.map(link=>
+          '<a class="framework-detail-link" href="'+link.href+'">'+link.label+' →</a>'
+        ).join('');
         document.querySelectorAll('.framework-tab').forEach(btn=>{
           btn.classList.toggle('active',btn.dataset.locKey===key);
         });
