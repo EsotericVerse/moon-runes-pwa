@@ -26,6 +26,7 @@
 
 - `GET ?action=health`：健康檢查；現行應回傳 `schema: loc8-mvp-1.1`。
 - `GET ?action=diagnostics`：只讀診斷；檢查 User / Event / Era / Runes / History / Relation 分頁是否存在，以及必要 header 是否齊全，不讀出資料列。`ready: true` 代表所有 required Sheet 契約完整。
+- `GET ?action=smoke_test&confirm=LOC8-CRUD-SMOKE`：自清理 CRUD smoke test。只建立 `SMOKE-*` 測試資料，對 Event / Era / Runes / Relation 執行 create → update → verify → delete，最後一定嘗試清除測試列，不碰正式資料。
 - `GET ?action=events&user_id=lo3rwang`：取得指定使用者事件；會排除已分流至 Runes 的每日抽牌紀錄。
 - `GET ?action=users`：取得使用者。
 - `GET ?action=eras`：取得 Era 分頁資料；Era 分頁不存在時回傳空陣列。
@@ -64,9 +65,10 @@
 
 1. `?action=health`：確認 `ok: true` 且 `schema: loc8-mvp-1.1`。
 2. `?action=diagnostics`：確認 `ready: true`；若為 `false`，查看各 Sheet 的 `missing_headers`。
-3. 再回 `life.html` 測試 Event / Era / Daily Draw / Relation 的實際讀寫。
+3. `?action=smoke_test&confirm=LOC8-CRUD-SMOKE`：確認 `passed: true`，代表 Event / Era / Runes / Relation 的 create / update / cleanup 都可用。
+4. 再回 `life.html` 測試真實 UI 的 Event / Era / Daily Draw / Relation 讀寫。
 
-`diagnostics` 不會新增、修改或刪除 Sheet 資料。
+`diagnostics` 不會新增、修改或刪除 Sheet 資料。`smoke_test` 只操作自己建立的 `SMOKE-*` 測試列，並在 `finally` 階段清理。
 
 ## v0.3 編輯流程
 
