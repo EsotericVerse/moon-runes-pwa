@@ -791,7 +791,10 @@ async def keyword_ranking(input: KeywordRankingInput):
     if source == "facebook":
         documents = get_facebook_searcher(required=True).posts
     elif source == "threads":
-        documents = get_unified_searcher()._loc4_article_documents()
+        # Use the complete Threads main-post corpus, streamed shard-by-shard.
+        # Short posts are part of the statistical population and must not be
+        # excluded by article-length heuristics.
+        documents = get_unified_searcher()._iter_loc4_article_documents()
     else:
         documents = get_loc3_searcher().works
 
@@ -836,7 +839,7 @@ async def unified_search_facets():
             "loc3_searchable_works": len(get_loc3_searcher().works) if LOC3_SEARCHER is not None else 0,
             "loc4_threads_total_main_posts": 4578,
             "loc4_threads_total_replies": 2430,
-            "loc4_threads_indexed_posts": len(searcher._loc4_article_documents()),
+            "loc4_threads_indexed_posts": searcher._loc4_thread_document_count(),
             "loc4_threads_full_index_ready": bool((getattr(searcher, "loc4_thread_full", {}) or {}).get("documents")),
             "facebook_corpus_available": FB_DATA_PATH.exists(),
             "facebook_search_loaded": FB_SEARCHER is not None,
