@@ -72,6 +72,7 @@ class UnifiedSearchEngine:
         self.content_types = self._load_json("LOC_CONTENT_TYPE_REGISTRY.json")
         self.relationships = self._load_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
         self.graph_schema = self._load_json("LOC_GRAPH_SCHEMA.json")
+        self.loc2_events = self._load_json("LOC2_EVENT_REGISTRY.json")
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.loc4_analysis = self._load_json("LOC4_TEXT_ANALYSIS_REGISTRY.json")
         self.loc4_corpus_manifest = self._load_repo_json("data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json")
@@ -402,6 +403,47 @@ class UnifiedSearchEngine:
             "source_refs": [{"source_type": asset.get("source_type"), "source_id": asset.get("path"), "note": asset.get("authority_level")}],
             "payload": asset,
         } for score, asset in scored[:top_k]]
+
+    def _loc2_scenario_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+        if wanted not in {"", "all", "scenario_event", "knowledge", "game_document", "game_rule"}:
+            return []
+        scored: list[tuple[float, dict[str, Any]]] = []
+        for row in self.loc2_events.get("records", []) or []:
+            score = _text_score(query, [
+                row.get("event_id"),
+                row.get("title"),
+                row.get("event_group"),
+                row.get("requirement_signature"),
+                row.get("description"),
+                row.get("content_type"),
+            ])
+            if score <= 0:
+                continue
+            scored.append((score, row))
+
+        scored.sort(key=lambda item: (-item[0], str(item[1].get("event_id") or "")))
+        return [{
+            "result_id": row.get("event_id"),
+            "system_id": "lo3rwang",
+            "primary_loc": "LOC2",
+            "related_locs": row.get("related_locs", ["LOC1", "LOC4", "LOC6", "LOC7", "LOC8"]),
+            "content_type": "scenario_event",
+            "group": "scenarios",
+            "title": row.get("title") or row.get("event_id"),
+            "summary": row.get("description") or "",
+            "score": round(score, 6),
+            "source_refs": [{
+                "source_type": "registry",
+                "source_id": "LOC2_EVENT_REGISTRY.json",
+                "note": row.get("status") or self.loc2_events.get("status") or "working",
+            }],
+            "payload": {
+                **row,
+                "scenario_corpus_stage": (self.loc2_events.get("corpus_summary") or {}).get("stage"),
+                "scenario_semantic_role": (self.loc2_events.get("corpus_summary") or {}).get("semantic_role"),
+                "grammar_note": self.loc2_events.get("grammar_note") or {},
+            },
+        } for score, row in scored[:top_k]]
 
     def _faq_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if not self.faq_searcher or wanted not in {"", "all", "faq", "knowledge"}:
@@ -2691,6 +2733,7 @@ class UnifiedSearchEngine:
             "runes": 1,
             "oracle": 1,
             "entities": 8,
+            "scenarios": 6,
             "readings": 4,
             "rune_songs": 3,
         }
@@ -2734,6 +2777,7 @@ class UnifiedSearchEngine:
             "runes": "月符",
             "oracle": "籤詩",
             "entities": "核心詞條",
+            "scenarios": "LOC2 情境事件",
             "readings": "OW3gs 解牌／抽牌紀錄",
             "rune_songs": "符文歌曲",
         }
@@ -2937,6 +2981,7 @@ class UnifiedSearchEngine:
         effective_wanted = "" if oracle_mode else wanted
         if oracle:
             faq = []
+            scenarios = self._loc2_scenario_results(query, top_k, effective_wanted)
             music, linked_media = self._music_keyword_results(oracle_terms, top_k, effective_wanted, filters)
             textworks, direct_media, documents, eras = self._keyword_cross_results(oracle_terms, top_k, effective_wanted)
             rune_literature = self._rune_literature_results(query, top_k, effective_wanted)
@@ -2951,6 +2996,7 @@ class UnifiedSearchEngine:
             runes = self._rune_results(oracle[0]["payload"].get("rune_name", ""), top_k, effective_wanted)
         else:
             faq = self._faq_results(query, top_k, wanted)
+            scenarios = self._loc2_scenario_results(query, top_k, wanted)
             documents = self._knowledge_asset_results(query, top_k, wanted)
             music, linked_media = self._music_results(query, top_k, wanted, filters)
             textworks = self._loc4_results(query, top_k, wanted)
@@ -2973,6 +3019,7 @@ class UnifiedSearchEngine:
 
         groups = {
             "entities": entities,
+            "scenarios": scenarios,
             "oracle": oracle,
             "readings": readings,
             "runes": runes,
@@ -3009,7 +3056,7 @@ class UnifiedSearchEngine:
             "total_count": sum(len(value) for value in groups.values()),
             "coverage": {
                 "LOC1": "live",
-                "LOC2": "knowledge-view-only",
+                "LOC2": f"scenario-event-search-live; {len(self.loc2_events.get('records', []) or [])} scenario events",
                 "LOC3": "live",
                 "LOC4": f"creative-works+life-writing-live; {len((getattr(self, 'loc4_corpus', {}) or {}).get('documents', []))} authored corpus segments; {len((getattr(self, 'loc4_moon_speaker_analysis', {}) or {}).get('chapters', []))} MoonSpeaker chapter analyses",
                 "LOC5": "direct-media-registry-search-live",
