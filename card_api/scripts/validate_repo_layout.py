@@ -13,6 +13,9 @@ FORBIDDEN_PATHS = [
     ROOT / "temp.json",
     ROOT / "mp3" / "my.mp3",
     ROOT / "LOC_LOC_LunaCodex_OW3gs.md",
+    ROOT / "data" / "json" / "facebook",
+    ROOT / "data" / "json" / "fb-semantic-summary.json",
+    ROOT / "js" / "runes_all_data.js",
 ]
 
 REQUIRED_PATHS = [
@@ -23,6 +26,8 @@ REQUIRED_PATHS = [
     ROOT / "data" / "json" / "registries" / "LOC_SHARED_MANIFEST.json",
     ROOT / "data" / "json" / "search" / "faq" / "LOC_FAQ_RAG_v0.4.json",
     ROOT / "data" / "json" / "search" / "loc3" / "LOC3_LYRICS_SEARCH_v0.1.json",
+    ROOT / "data" / "json" / "sources" / "facebook" / "manifest.json",
+    ROOT / "data" / "json" / "generated" / "facebook" / "fb-semantic-summary.json",
     ROOT / "card_api" / "paths.py",
 ]
 
@@ -39,6 +44,8 @@ STALE_TOKENS = [
     "engine/runes64_alldata.json",
     "data/json/shared/",
     "data/json/runtime/card_api/",
+    "data/json/facebook/",
+    "data/json/fb-semantic-summary.json",
 ]
 
 TEXT_SUFFIXES = {".py", ".js", ".html", ".md", ".json", ".yml", ".yaml", ".xml", ".txt"}
@@ -104,7 +111,7 @@ def main() -> int:
         return 1
 
     print("Repository layout validation PASS")
-    print("- JSON roles: core / registries / search / generated / archive / experimental")
+    print("- JSON roles: core / registries / sources / search / generated / archive / experimental / inbox")
     print("- no forbidden legacy data paths")
     print("- no stale runtime/document references")
     print("- every repository-relative JSON reference resolves to an existing file")

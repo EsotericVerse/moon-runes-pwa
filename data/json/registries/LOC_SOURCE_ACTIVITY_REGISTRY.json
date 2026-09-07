@@ -10,7 +10,7 @@
       "label": "Facebook",
       "analysis_start": "2011-04-15",
       "analysis_end": "2026-09-03",
-      "basis": "fb-semantic-summary.json searchable corpus range",
+      "basis": "data/json/generated/facebook/fb-semantic-summary.json searchable corpus range",
       "note": "Current range is the analyzable Facebook corpus range, not a claim about the account creation date."
     },
     {
