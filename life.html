@@ -4088,6 +4088,158 @@
     }
 
 
+    async function postDailyDrawAction(action, dailyDraw) {
+      const res = await fetch(SHEET_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action, daily_draw: dailyDraw }),
+        redirect: 'follow'
+      });
+      if (!res.ok) throw new Error('Daily draw POST failed');
+      const data = await res.json();
+      if (data && data.ok === false) throw new Error(data.error || 'Daily draw API error');
+      return data;
+    }
+
+    async function runUiSmokeTest() {
+      const token = new URLSearchParams(location.search).get('ui_smoke');
+      if (token !== 'LOC8-UI-SMOKE') return null;
+
+      const stamp = Date.now().toString(36).toUpperCase();
+      const ids = {
+        event: 'SMOKE-UI-EV-' + stamp,
+        era: 'SMOKE-UI-ERA-' + stamp,
+        draw: 'SMOKE-UI-DRAW-' + stamp,
+        relation: 'SMOKE-UI-REL-' + stamp
+      };
+      const today = new Date().toISOString().slice(0,10);
+      const result = {
+        ok: false,
+        create: {},
+        render: {},
+        update: {},
+        cleanup: {}
+      };
+
+      setSync(false, 'LOC8 UI smoke test 執行中…');
+
+      try {
+        await testApi();
+
+        const event = normalizeEvent({
+          id: ids.event,
+          user_id: 'lo3rwang',
+          date: today,
+          object_type: 'system',
+          object_id: 'LOC8-UI-SMOKE',
+          event_type: 'smoke_test',
+          title: 'LOC8 UI smoke test',
+          description: 'create',
+          status: 'test',
+          source: 'life.html?ui_smoke=LOC8-UI-SMOKE'
+        });
+        await saveEvent(event, 'event');
+        result.create.event = true;
+
+        const era = {
+          era_id: ids.era,
+          period: 'SMOKEUI-' + stamp,
+          order: 9999,
+          name: 'LOC8 UI Smoke',
+          display_label: 'SMOKEUI｜LOC8 UI Smoke',
+          start_date: today,
+          end_date: today,
+          status: 'test',
+          description: 'create',
+          state_before: '',
+          state_after: '',
+          system_id: 'lo3rwang'
+        };
+        await saveEra(era, 'era');
+        result.create.era = true;
+
+        const draw = {
+          id: ids.draw,
+          user_id: 'lo3rwang',
+          date: today,
+          draw_kind: 'daily_draw',
+          rune: '靈',
+          direction: '正位',
+          note: 'create',
+          tags: ['daily-draw','LOC1','smoke-test'],
+          source: 'life.html?ui_smoke=LOC8-UI-SMOKE',
+          confidence: 'test',
+          system_id: 'lo3rwang'
+        };
+        await postDailyDrawAction('daily_draw', draw);
+        result.create.daily_draw = true;
+
+        const relation = normalizeRelation({
+          id: ids.relation,
+          user_id: 'lo3rwang',
+          date: today,
+          source_type: 'event',
+          source_id: ids.event,
+          target_type: 'era',
+          target_id: ids.era,
+          relation_type: 'references',
+          direction: 'forward',
+          summary: 'create',
+          confidence: 'test',
+          status: 'test',
+          visibility: 'private'
+        });
+        await saveRelation(relation, 'relation');
+        result.create.relation = true;
+
+        await Promise.all([loadEvents(), loadDailyDraws(), loadRelations(), loadEraRegistry()]);
+
+        result.render.event = events.some(item => String(item.id) === ids.event);
+        result.render.era = eraRegistry.some(item => String(item.era_id) === ids.era);
+        result.render.daily_draw = dailyDraws.some(item => String(item.id) === ids.draw);
+        result.render.relation = relations.some(item => String(item.id) === ids.relation);
+
+        await saveEvent({ ...event, description: 'updated' }, 'update_event');
+        await saveEra({ ...era, description: 'updated' }, 'update_era');
+        await postDailyDrawAction('update_daily_draw', { ...draw, note: 'updated' });
+        await saveRelation({ ...relation, summary: 'updated' }, 'update_relation');
+
+        await Promise.all([loadEvents(), loadDailyDraws(), loadRelations(), loadEraRegistry()]);
+
+        result.update.event = events.some(item => String(item.id) === ids.event && String(item.description || '') === 'updated');
+        result.update.era = eraRegistry.some(item => String(item.era_id) === ids.era && String(item.description || '') === 'updated');
+        result.update.daily_draw = dailyDraws.some(item => String(item.id) === ids.draw && String(item.note || '') === 'updated');
+        result.update.relation = relations.some(item => String(item.id) === ids.relation && String(item.summary || '') === 'updated');
+
+        result.ok = ['event','era','daily_draw','relation'].every(key =>
+          result.create[key] === true &&
+          result.render[key] === true &&
+          result.update[key] === true
+        );
+
+        setSync(result.ok, result.ok
+          ? 'LOC8 UI smoke test 通過 · Create / Render / Update'
+          : 'LOC8 UI smoke test 未完全通過');
+        return result;
+      } catch (err) {
+        result.error = String(err?.message || err);
+        setSync(false, 'LOC8 UI smoke test 失敗 · ' + result.error);
+        return result;
+      } finally {
+        try { await saveRelation({ id: ids.relation, user_id: 'lo3rwang' }, 'delete_relation'); result.cleanup.relation = true; } catch (_) { result.cleanup.relation = false; }
+        try { await postDailyDrawAction('delete_daily_draw', { id: ids.draw, user_id: 'lo3rwang' }); result.cleanup.daily_draw = true; } catch (_) { result.cleanup.daily_draw = false; }
+        try { await saveEra({ era_id: ids.era }, 'delete_era'); result.cleanup.era = true; } catch (_) { result.cleanup.era = false; }
+        try { await saveEvent({ id: ids.event, user_id: 'lo3rwang' }, 'delete_event'); result.cleanup.event = true; } catch (_) { result.cleanup.event = false; }
+
+        try {
+          await Promise.all([loadEvents(), loadDailyDraws(), loadRelations(), loadEraRegistry()]);
+        } catch (_) {}
+
+        window.__LOC8_UI_SMOKE_RESULT__ = result;
+        console.info('LOC8 UI smoke result', result);
+      }
+    }
+
     const themePreviewDialog = $('#themePreviewDialog');
     $('#themePreviewBtn')?.addEventListener('click', () => themePreviewDialog?.showModal());
     $('#themePreviewClose')?.addEventListener('click', () => themePreviewDialog?.close());
@@ -4246,6 +4398,12 @@
     try { loadEraRegistry(); } catch (err) { console.error('ERA init failed', err); }
     try { loadEvents(); } catch (err) { console.error('Event init failed', err); }
     try { loadDailyDraws(); } catch (err) { console.error('Daily draw init failed', err); }
+
+    if (new URLSearchParams(location.search).get('ui_smoke') === 'LOC8-UI-SMOKE') {
+      runUiSmokeTest().then(result => {
+        if (result) console.info('LOC8 UI smoke completed', result);
+      });
+    }
   </script>
   <script src="js/loc-nav.js"></script>
 </body>
