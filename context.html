@@ -424,22 +424,58 @@ function updateContextGraphFilters(){const nt=[...new Set(contextGraph.nodes.map
 function renderContextGraph(status=''){const nf=document.querySelector('#contextGraphNodeType').value,ef=document.querySelector('#contextGraphEdgeType').value;const nodes=contextGraph.nodes.filter(n=>!nf||graphNodeType(n)===nf),ids=new Set(nodes.map(graphNodeId));const edges=contextGraph.edges.filter(e=>(!ef||graphEdgeType(e)===ef)&&(!nf||ids.has(String(e.source||''))||ids.has(String(e.target||''))));
 const nodePages=Math.max(1,Math.ceil(nodes.length/CONTEXT_GRAPH_PAGE_SIZE)),edgePages=Math.max(1,Math.ceil(edges.length/CONTEXT_GRAPH_PAGE_SIZE));contextGraphNodePage=Math.min(Math.max(1,contextGraphNodePage),nodePages);contextGraphEdgePage=Math.min(Math.max(1,contextGraphEdgePage),edgePages);const pageNodes=nodes.slice((contextGraphNodePage-1)*CONTEXT_GRAPH_PAGE_SIZE,contextGraphNodePage*CONTEXT_GRAPH_PAGE_SIZE),pageEdges=edges.slice((contextGraphEdgePage-1)*CONTEXT_GRAPH_PAGE_SIZE,contextGraphEdgePage*CONTEXT_GRAPH_PAGE_SIZE);
 document.querySelector('#contextGraphNodes').innerHTML=pageNodes.length?pageNodes.map(n=>`<button type="button" class="context-graph-node" data-context-graph-node="${cEsc(graphNodeId(n))}"><small>${cEsc(graphNodeType(n))}${n.date?' · '+cEsc(n.date):''}</small><strong>${cEsc(graphNodeLabel(n))}</strong><small>${cEsc(n.note||graphNodeId(n))}</small></button>`).join(''):'<div class="context-empty">沒有符合的節點。</div>';document.querySelector('#contextGraphEdges').innerHTML=pageEdges.length?pageEdges.map(e=>`<article class="context-graph-edge"><div class="context-graph-edge-path"><span>${cEsc(e.source||'—')}</span><span class="context-graph-edge-type">→ ${cEsc(graphEdgeType(e))} →</span><span>${cEsc(e.target||'—')}</span></div></article>`).join(''):'<div class="context-empty">沒有符合的關係。</div>';renderContextPager('node',nodes.length,contextGraphNodePage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextGraphNodePage=next;renderContextGraph();});renderContextPager('edge',edges.length,contextGraphEdgePage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextGraphEdgePage=next;renderContextGraph();});if(status)document.querySelector('#contextGraphStatus').textContent=status}
+function relationSearchGraph(q){
+  const query=String(q||'').trim().toLowerCase();
+  if(!query) return {nodes:[],edges:[]};
+  const matched=contextRelations.filter(r=>{
+    const hay=[r.source_id,r.target_id,r.relation_type,r.summary,r.evidence,r.era,r.era_id,r.source_type,r.target_type]
+      .filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(query);
+  });
+  return graphFromRelations(matched);
+}
+function mergeContextGraphs(...graphs){
+  const nodes=new Map(),edges=new Map();
+  for(const g of graphs){
+    for(const n of g?.nodes||[]){
+      const id=graphNodeId(n); if(!id)continue;
+      nodes.set(id,{...(nodes.get(id)||{}),...n});
+    }
+    for(const e of g?.edges||[]){
+      const key=[e.source,e.target,graphEdgeType(e)].join('|');
+      if(!e.source||!e.target)continue;
+      edges.set(key,{...(edges.get(key)||{}),...e});
+    }
+  }
+  return {nodes:[...nodes.values()],edges:[...edges.values()]};
+}
+
 async function searchContextGraph(q,{remote=true}={}){
   if(!q)return;
   const key=contextGraphCacheKey('search',q);
   const cached=readContextCache(key);
-  if(cached?.data&&Array.isArray(cached.data.nodes)){
+  const relationGraph=relationSearchGraph(q);
+  const hasRelation=relationGraph.nodes.length||relationGraph.edges.length;
+
+  if(hasRelation){
+    contextGraph=relationGraph;
+    contextGraphNodePage=1;contextGraphEdgePage=1;
+    updateContextGraphFilters();
+    renderContextGraph(`「${q}」· 脈絡資料 · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
+  }else if(cached?.data&&Array.isArray(cached.data.nodes)){
     contextGraph=cached.data;
     contextGraphNodePage=1;contextGraphEdgePage=1;
     updateContextGraphFilters();
     renderContextGraph(`「${q}」· 快取 · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
     if(!remote) return;
   }else if(!remote){
-    renderContextGraph('目前沒有這個查詢的快取。');
+    renderContextGraph('目前沒有這個查詢的脈絡資料或快取。');
     return;
   }else{
     document.querySelector('#contextGraphStatus').textContent='搜尋中…';
   }
+
+  if(!remote)return;
 
   try{
     const r=await fetch(CONTEXT_LOC_API+'/search',{
@@ -448,13 +484,15 @@ async function searchContextGraph(q,{remote=true}={}){
       body:JSON.stringify({query:q,top_k:6})
     });
     const d=await r.json();
-    contextGraph={nodes:d.graph?.nodes||[],edges:d.graph?.edges||[]};
+    const remoteGraph={nodes:d.graph?.nodes||[],edges:d.graph?.edges||[]};
+    contextGraph=mergeContextGraphs(relationGraph,remoteGraph);
     writeContextCache(key,contextGraph);
     contextGraphNodePage=1;contextGraphEdgePage=1;
     updateContextGraphFilters();
-    renderContextGraph(`「${q}」· ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
+    const source=hasRelation?'脈絡＋Graph RAG':'Graph RAG';
+    renderContextGraph(`「${q}」· ${source} · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
   }catch(e){
-    if(!cached?.data) renderContextGraph('Graph 暫時無法取得。');
+    if(!hasRelation && !cached?.data) renderContextGraph('目前沒有找到脈絡資料，Graph RAG 也暫時無法取得。');
   }
 }
 async function expandContextGraph(id){
