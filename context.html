@@ -223,7 +223,7 @@ const CONTEXT_CACHE_TTL=6*60*60*1000;
 const cEsc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const cUid=()=>crypto?.randomUUID?.()||('ctx-'+Date.now()+'-'+Math.random().toString(36).slice(2));
 let contextEvents=[],contextRelations=[],contextGraph={nodes:[],edges:[]};
-const CONTEXT_EVENT_PAGE_SIZE=10, CONTEXT_RELATION_PAGE_SIZE=10, CONTEXT_GRAPH_PAGE_SIZE=25;
+const CONTEXT_EVENT_PAGE_SIZE=10, CONTEXT_RELATION_PAGE_SIZE=10, CONTEXT_GRAPH_PAGE_SIZE=10;
 let contextEventPage=1, contextRelationPage=1, contextGraphNodePage=1, contextGraphEdgePage=1;
 let contextEventsRemoteLoaded=false, contextRelationsRemoteLoaded=false;
 
