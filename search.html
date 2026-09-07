@@ -168,7 +168,6 @@
             <small>使用目前搜尋詞開啟來源站內搜尋；找到值得保留的內容後，可再交給 Capture 收錄。</small>
           </div>
           <div class="source-search-links" id="sourceSearchLinks"></div>
-          <div class="source-search-links" style="margin-top:8px"><a class="source-search-link" href="km-upload.html">KM JSON Upload</a></div>
         </section>
 
         <div class="suggestions" aria-label="搜尋建議">
@@ -711,7 +710,7 @@
         <div class="grouphead"><h2>綜合分析</h2><span>先看結論，需要時再展開技術資料</span></div>
         <div class="cards">
           <article class="card synthesis-card">
-            <div class="meta"><span class="pill">跨 LOC 綜合結果</span>${locs}</div>
+            <div class="meta"><span class="pill">跨分類綜合結果</span>${locs}</div>
             <h3>${esc(synthesis.title||'綜合結果')}</h3>
 
             <p class="synthesis-lead">${esc(readableSummary)}</p>
@@ -746,17 +745,30 @@
       oracle:{loc:'LOC1',label:'籤詩／解牌',desc:'月之符文的實際提示與使用結果'},
       readings:{loc:'LOC1',label:'OW3gs 解牌／抽牌紀錄',desc:'有來源保存的 11 張抽牌與解讀紀錄'},
       runes:{loc:'LOC1',label:'月之符文',desc:'基本符文、方向與參照語意'},
-      rune_songs:{loc:'LOC3',label:'符文歌曲／歌曲關聯',desc:'已確認符文歌曲，以及明確標示來源狀態的符文－歌曲關聯'},
-      works:{loc:'LOC3',label:'音樂／歌詞',desc:'歌曲、歌詞與符文歌演化證據'},
-      textworks:{loc:'LOC4',label:'文字作品',desc:'文章、小說與文字延伸'},
-      media:{loc:'LOC5',label:'多媒體／圖片',desc:'Reels、影音與知識圖'},
-      governance:{loc:'LOC6',label:'治理／政德風',desc:'治理片段、價值與語言判斷'},
-      loc4_articles:{loc:'LOC4/6',label:'文字／治理文章',desc:'LOC4 原始文字與 LOC6 治理解讀分開呈現'},
-      knowledge:{loc:'LOC7',label:'知識庫／文件',desc:'KM、規格、文件與架構知識'},
-      timeline:{loc:'LOC8',label:'ERA／趨勢',desc:'時間、關係與演變維度'},
-      relationships:{loc:'跨 LOC',label:'關係',desc:'已建立的跨資料與跨媒介關係'},
-      text:{loc:'LOC4 / LOC6 / LOC8',label:'文字',desc:'跨來源文字資料與時間脈絡'}
+      rune_songs:{loc:'自創歌曲(Suno)',label:'符文歌曲／歌曲關聯',desc:'已確認符文歌曲，以及明確標示來源狀態的符文－歌曲關聯'},
+      works:{loc:'自創歌曲(Suno)',label:'音樂／歌詞',desc:'歌曲、歌詞與符文歌演化證據'},
+      textworks:{loc:'文字創作',label:'文字作品',desc:'文章、小說與文字延伸'},
+      media:{loc:'多媒體創作',label:'多媒體／圖片',desc:'Instagram、影音、圖片與知識圖'},
+      governance:{loc:'治理規則',label:'治理／政德風',desc:'治理片段、價值與語言判斷'},
+      loc4_articles:{loc:'文字創作／治理規則',label:'文字／治理文章',desc:'原始文字與治理分析分開呈現'},
+      knowledge:{loc:'知識庫',label:'文件／知識',desc:'KM、規格、文件與架構知識'},
+      timeline:{loc:'趨勢分析',label:'ERA／趨勢',desc:'時間、關係與演變維度'},
+      relationships:{loc:'跨分類',label:'關係',desc:'已建立的跨資料與跨媒介關係'},
+      text:{loc:'文字創作／治理規則／趨勢分析',label:'文字',desc:'跨來源文字資料與時間脈絡'}
     };
+
+    function publicLocLabel(value){
+      const map={
+        LOC3:'自創歌曲(Suno)',
+        LOC4:'文字創作',
+        LOC5:'多媒體創作',
+        LOC6:'治理規則',
+        LOC7:'知識庫',
+        LOC8:'趨勢分析'
+      };
+      const raw=String(value||'');
+      return raw.split(/\s*\/\s*|\s*,\s*/).map(x=>map[x]||x).join('／');
+    }
 
     function resultLocationOverview(groups){
       const cards=[];
@@ -774,7 +786,7 @@
       }
       if(!cards.length) return '';
       return `<section class="group">
-        <div class="grouphead"><h2>資料分布</h2><span>這個主題目前出現在哪些 LOC／資料位置</span></div>
+        <div class="grouphead"><h2>資料分布</h2><span>這個主題目前出現在哪些內容分類／資料位置</span></div>
         <div class="location-map">${cards.join('')}</div>
         <p class="result-logic-note">先看資料分布與關係，再展開下面的原始證據；搜尋結果不再把所有命中當成同一層級的清單。</p>
       </section>`;
@@ -892,7 +904,7 @@
       const type=el('contentType').value;
       if(!['lyrics_work','text_work','governance_article','governance_fragment'].includes(type)){
         el('status').className='status error';
-        el('status').textContent='請先選擇可瀏覽的資料種類：音樂／歌詞、文字作品、LOC6 文章或治理／政德風。';
+        el('status').textContent='請先選擇可瀏覽的資料種類：音樂／歌詞、文字作品、治理文章或治理規則。';
         return;
       }
       const safePage=Math.max(1,Number(page)||1);
