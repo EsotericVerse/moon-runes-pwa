@@ -15,9 +15,9 @@
     },
     {
       "id": "game",
-      "label": "脈絡／月符沙盒",
+      "label": "脈絡",
       "href": "context.html",
-      "description": "LOC2 · 脈絡 · Relation · Graph"
+      "description": "LOC2 · Relation · Graph · 月之符文沙盒"
     },
     {
       "id": "search",
