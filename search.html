@@ -335,7 +335,14 @@
       scopeEl.textContent=scope.era?`ERA：${scope.era.display_label||scope.era.period}｜${scope.start||'—'} ～ ${scope.end||'現在'}`:'ERA：全部時期';
       try{
         const sources=rankingSource?[rankingSource]:['facebook','threads','suno'];
-        const results=await Promise.all(sources.map(async source=>({source,data:await fetchRank(source,scope.start,scope.end)})));
+        const settled=await Promise.allSettled(sources.map(async source=>({source,data:await fetchRank(source,scope.start,scope.end)})));
+        const results=settled.filter(x=>x.status==='fulfilled').map(x=>x.value);
+        const failed=settled.filter(x=>x.status==='rejected');
+        if(!results.length) throw new Error(failed[0]?.reason?.message||'所有排行榜來源皆無法載入');
+        if(failed.length){
+          const skipped=failed.map((x,i)=>sources[settled.indexOf(x)]).filter(Boolean).join('、');
+          scopeEl.textContent += `｜略過不可用來源：${skipped}`;
+        }
         const merged=new Map();
         for(const result of results)for(const item of result.data.items||[]){const term=String(item.term||'').trim();if(!term)continue;const row=merged.get(term)||{term,document_count:0,hit_count:0,sources:new Set()};row.document_count+=Number(item.document_count||0);row.hit_count+=Number(item.hit_count||0);row.sources.add(result.source);merged.set(term,row);}
         const rows=[...merged.values()].sort((a,b)=>b.document_count-a.document_count||b.hit_count-a.hit_count||a.term.localeCompare(b.term,'zh-Hant')).slice(0,10);
