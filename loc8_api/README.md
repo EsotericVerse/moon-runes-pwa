@@ -8,7 +8,7 @@
 
 > 注意：Library URL 是 Apps Script 程式庫版本連結，不是 LOC8 的 Google Sheet 資料庫網址。實際資料仍在 LOC8 Google Sheet 的 `User` / `Event` / `Relation` 分頁。
 
-這個 Apps Script 將 `life.html` 與 LOC8 Google Sheet 的 `User` / `Event` / `Era` / `Runes` / `History` / `Relation` 分頁連起來。現行 health schema 為 `loc8-mvp-1.1`。
+這個 Apps Script 將 `evolution.html` 與 LOC8 Google Sheet 的 `User` / `Event` / `Era` / `Runes` / `History` / `Relation` 分頁連起來。現行 health schema 為 `loc8-mvp-1.1`。
 
 ## 部署
 
@@ -18,7 +18,7 @@
 4. 「部署 → 新增部署作業 → 網頁應用程式」。
 5. 執行身分選「我」；測試階段存取權限選可從網頁呼叫此 Web App 的範圍。
 6. 複製部署後的 `/exec` URL。
-7. 將正式部署的 `/exec` URL 寫入 `life.html` 的 `SHEET_API_URL`。前端使用者不需要設定或輸入後端網址。
+7. 將正式部署的 `/exec` URL 寫入 `evolution.html` 的 `SHEET_API_URL`。前端使用者不需要設定或輸入後端網址。
 
 ## API
 
@@ -59,12 +59,12 @@
 > **部署版本治理：** GitHub 的 `loc8_api/Code.gs` 是程式碼來源，但 Apps Script Web App 不會因 GitHub commit 自動更新。每次 `Code.gs` 變更後，都必須同步至 Apps Script 並更新 deployment；只有線上 `?action=health` 回傳 `loc8-mvp-1.1`，才能確認目前部署至少符合 v1.1 health contract。
 
 
-### life.html UI smoke test
+### evolution.html UI smoke test
 
-在 Apps Script 的 diagnostics 與 CRUD smoke test 都通過後，可用前端測試模式驗證 `life.html` 本身的 save / load / render 契約：
+在 Apps Script 的 diagnostics 與 CRUD smoke test 都通過後，可用前端測試模式驗證 `evolution.html` 本身的 save / load / render 契約：
 
 ```text
-life.html?ui_smoke=LOC8-UI-SMOKE
+evolution.html?ui_smoke=LOC8-UI-SMOKE
 ```
 
 此模式只會在 query parameter **完全等於** `LOC8-UI-SMOKE` 時執行。它會建立專用 `SMOKE-UI-*` Event / Era / Daily Draw / Relation，經過前端 helper 寫入，重新載入並確認 UI 資料模型可讀回，再更新、再次驗證，最後在 `finally` 清理。
@@ -83,13 +83,13 @@ life.html?ui_smoke=LOC8-UI-SMOKE
 1. `?action=health`：確認 `ok: true` 且 `schema: loc8-mvp-1.1`。
 2. `?action=diagnostics`：確認 `ready: true`；若為 `false`，查看各 Sheet 的 `missing_headers`。
 3. `?action=smoke_test&confirm=LOC8-CRUD-SMOKE`：確認 `passed: true`，代表 Event / Era / Runes / Relation 的 create / update / cleanup 都可用。
-4. 再回 `life.html` 測試真實 UI 的 Event / Era / Daily Draw / Relation 讀寫。
+4. 再回 `evolution.html` 測試真實 UI 的 Event / Era / Daily Draw / Relation 讀寫。
 
 `diagnostics` 不會新增、修改或刪除 Sheet 資料。`smoke_test` 只操作自己建立的 `SMOKE-*` 測試列，並在 `finally` 階段清理。
 
 ## v0.3 編輯流程
 
-`life.html` 的 Timeline 每筆事件都有「編輯」與「封存」。編輯會把既有 Event 帶回表單，儲存時使用 `update_event` 覆寫同一筆 `id`；封存只更新 `status=archived`，不刪除歷史。
+`evolution.html` 的 Timeline 每筆事件都有「編輯」與「封存」。編輯會把既有 Event 帶回表單，儲存時使用 `update_event` 覆寫同一筆 `id`；封存只更新 `status=archived`，不刪除歷史。
 
 
 ## Shared reference fields
@@ -108,7 +108,7 @@ The current shared-registry foundation is tracked in `data/json/registries/LOC_S
 
 ## Frontend endpoint policy
 
-`life.html` uses one application-owned Apps Script Web App endpoint. The endpoint is infrastructure configuration, not user data, so it is not exposed as an editable field in the UI.
+`evolution.html` uses one application-owned Apps Script Web App endpoint. The endpoint is infrastructure configuration, not user data, so it is not exposed as an editable field in the UI.
 
 Multiple users or language systems should share the same application endpoint and be separated by record identifiers such as `user_id` and `system_id` (with proper authentication/authorization added before multi-user production use). A separate Google Sheet per user is not the intended client-side configuration model.
 
@@ -163,4 +163,4 @@ Timeline 是時間投影；Trajectory 讀取 Relation edge；未來 Graph View �
 
 ### 部署注意
 
-GitHub 中的 `loc8_api/Code.gs` 更新後，既有 Apps Script Web App 不會自動變更。必須將新版 Code.gs 同步到 Apps Script 並建立/更新 deployment，`life.html` 的 Relation CRUD 才會連到 v1.0 API。
+GitHub 中的 `loc8_api/Code.gs` 更新後，既有 Apps Script Web App 不會自動變更。必須將新版 Code.gs 同步到 Apps Script 並建立/更新 deployment，`evolution.html` 的 Relation CRUD 才會連到 v1.0 API。
