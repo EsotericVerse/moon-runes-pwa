@@ -1284,11 +1284,18 @@ class UnifiedSearchEngine:
         # Search the full LOC4-owned Threads main-post corpus when shards are available.
         # Falls back to the smaller article tranche only when full shards are absent.
         max_thread_matches = max(top_k * 4, 24)
+        compact_query = _compact(query)
         for doc in self._iter_loc4_article_documents():
             if filters.get("period") and doc.get("era") != filters["period"]:
                 continue
             text = str(doc.get("text") or "")
-            if doc.get("source_role") != "main_post" or len(text) < 120:
+            if doc.get("source_role") != "main_post":
+                continue
+            # Threads is primarily short-form writing. Do not discard a short
+            # main post when it directly contains the user's query. The former
+            # 120-character floor hid valid exact-match evidence.
+            direct_match = bool(compact_query and compact_query in _compact(text))
+            if len(text) < 120 and not direct_match:
                 continue
             score = _text_score(query, [
                 text,
