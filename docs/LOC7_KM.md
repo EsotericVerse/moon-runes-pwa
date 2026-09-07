@@ -100,6 +100,25 @@ LOC2 的事件資料在 KM 中不只視為遊戲規則。它同時是一批 **Sc
 維護文件：[LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md)  
 Structured registry：`data/json/registries/LOC2_EVENT_REGISTRY.json`
 
+## 6.5 LOC6–8 公開概念名稱
+
+現行公開概念統一為：
+
+- **LOC6＝方法論**：描述「如何理解、判斷、處理」。治理是其中一種方法，不等於 LOC6 的全部。
+- **LOC7＝方法體系（知識庫）**：由多種方法形成的結構體系；文字建築學是核心表現，KM／RAG／Graph／Relationship 是其技術實作。
+- **LOC8＝文化哲學（時間／趨勢分析）**：把方法體系放入時間、ERA、事件、軌跡與趨勢後，觀察其如何形成文化、思想與哲學。
+
+簡化理解：
+
+```text
+LOC3 / 4 / 5 → 表達與內容
+LOC6 → 方法論
+LOC7 → 方法體系
+LOC8 → 文化哲學 + 時間
+```
+
+公開 Search 類別使用「方法論」「方法體系（知識庫）」「文化哲學（時間／趨勢分析）」；內部 technical ID 仍保留 LOC6／LOC7／LOC8 與 Governance／KM／Graph／Trend 等欄位。
+
 ## 7. 月符基本參照與符文治理規則
 
 月之符文是 LOC 的基本語意參照；LOC 是承接、分類、關聯、搜尋與演化這些語意結果的框架。符文治理／Grammar 以 `LunaRune64.xlsx#Grammar` 為最高優先來源；`data/json/core/rune_grammar.json` 只是 runtime projection。
