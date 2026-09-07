@@ -142,7 +142,7 @@
             <div class="basic-item"><strong>不用背卡</strong><span>先抽、先看，再需要時展開符文本義、脈絡與演算法。</span></div>
           </div>
           <div class="draw-mode-grid">
-            <a class="draw-mode-card" href="runes.html?mode=daily#draw"><strong>今天先抽一張</strong><span>從每日符文開始。</span></a>
+            <a class="draw-mode-card" href="runes.html?mode=daily#daily"><strong>今天先抽一張</strong><span>從每日符文開始。</span></a>
             <button class="draw-mode-card" type="button" data-open-view="library"><strong>查看符文資料</strong><span>瀏覽 66 符文圖鑑。</span></button>
             <a class="draw-mode-card" href="tutorial02.html"><strong>完整新手教學</strong><span>LOC Tutorial 02。</span></a>
           </div>
@@ -222,13 +222,6 @@
         <a class="primary" href="runes.html?mode=daily#draw">抽取每日符文</a>
       </div>
     </section>
-
-    
-        
-        <section class="panel" id="daily-result-slot">
-          <div class="head"><div><p class="eyebrow" id="daily-mode-kicker">LOC1 · Daily Rune</p><h1>今日抽牌</h1></div></div>
-          <p class="note">點擊上方「抽取每日符文」後，會在同一個 runes.html 顯示結果。</p>
-        </section>
       </div>
       <div class="runes-view" id="drawView" hidden>
         <header class="hero loc-header">
@@ -250,7 +243,8 @@
           </div>
         </section>
 
-        <section class="panel" id="draw-result-panel">
+      </div>
+        <section class="panel" id="draw-result-panel" data-draw-execution hidden>
           <div class="head">
             <div>
               <p class="eyebrow" id="mode-kicker">LOC1 · Rune Draw</p>
@@ -284,7 +278,6 @@
             <div class="actions"><button class="action-card primary-action" id="retry-button" type="button"><span><strong>重新抽牌</strong></span><span>↻</span></button></div>
           </div>
         </section>
-      </div>
       <footer>LOC · Luna Codex · 月典 ｜ By 秘藝文域（EsotericVerse Studio）</footer>
   </main>
   </div>
@@ -330,6 +323,8 @@
     document.querySelectorAll('[data-open-view]').forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.openView)));
     const hasMode=new URLSearchParams(location.search).has('mode');
     const mode=new URLSearchParams(location.search).get('mode');
+    const execution=document.querySelector('[data-draw-execution]');
+    if(mode && execution) execution.hidden=false;
     if(mode==='daily'||location.hash==='#daily') switchView('daily',false);
     else if(hasMode||location.hash==='#draw') switchView('draw',false);
     else if(location.hash==='#library') switchView('library',false);
