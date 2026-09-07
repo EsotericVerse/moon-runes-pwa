@@ -143,15 +143,37 @@ class LOC3SearchEngine:
         legacy_media_path = search_json("loc3", "LOC3_MEDIA_LINKS_v0.1.json")
         if shared_media_path.exists():
             media = json.loads(shared_media_path.read_text(encoding="utf-8"))
-            by_song_id = {item.get("linked_song_id"): item for item in media.get("items", []) if item.get("linked_song_id")}
+            by_song_id = {}
+            for item in media.get("items", []):
+                song_id = item.get("linked_song_id")
+                if not song_id:
+                    continue
+                by_song_id.setdefault(song_id, []).append(item)
+
+            for song_id, items in by_song_id.items():
+                items.sort(
+                    key=lambda item: (
+                        str(item.get("media_created_date") or item.get("source_created_date") or ""),
+                        str(item.get("media_id") or ""),
+                    ),
+                    reverse=True,
+                )
+
             for work in works:
                 for version in work.get("versions", []):
-                    item = by_song_id.get(version.get("song_id"))
-                    if item:
-                        version["media_id"] = item.get("media_id")
-                        version["ig_preview_url"] = item.get("url", "")
-                        version["media_type"] = item.get("media_type")
-                        version["media_source_refs"] = item.get("source_refs", [])
+                    items = by_song_id.get(version.get("song_id"), [])
+                    if items:
+                        primary = items[0]
+                        version["media_id"] = primary.get("media_id")
+                        version["media_ids"] = [item.get("media_id") for item in items if item.get("media_id")]
+                        version["ig_preview_url"] = primary.get("url", "")
+                        version["ig_preview_urls"] = [item.get("url") for item in items if item.get("url")]
+                        version["media_type"] = primary.get("media_type")
+                        version["media_source_refs"] = [
+                            ref
+                            for item in items
+                            for ref in item.get("source_refs", [])
+                        ]
         elif legacy_media_path.exists():
             media = json.loads(legacy_media_path.read_text(encoding="utf-8"))
             by_song_id = {item["song_id"]: item for item in media.get("items", [])}

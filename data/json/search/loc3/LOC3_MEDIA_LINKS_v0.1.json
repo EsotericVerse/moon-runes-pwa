@@ -1,302 +1,5167 @@
 {
   "dataset": {
     "name": "LOC3 Media Links",
-    "version": "0.1.1",
-    "updated_at": "2026-09-06",
-    "reels_count": 19,
-    "linked_count": 16,
-    "pending_count": 3,
-    "notes": "IG Reels is a preview channel; temporal fields inherit LOC8 period from the linked LOC3 song/work record. Metrics remain separate from Suno plays."
+    "version": "0.2.0",
+    "updated_at": "2026-09-07",
+    "reels_count": 177,
+    "linked_count": 162,
+    "pending_count": 15,
+    "notes": "Legacy compatibility overlay derived from author-provided LOC3↔LOC5 merge evidence. LOC5 canonical ownership remains LOC_MEDIA_REGISTRY.json. Multiple Reels for one song version are retained in reels/ig_preview_urls; ig_preview_url remains the first Reel for backward compatibility.",
+    "song_version_count": 178,
+    "media_linked_song_version_count": 175,
+    "no_preview_count": 3
   },
   "items": [
     {
-      "title": "你若想跟我有以後",
-      "song_id": "7c466214-2cb9-4ea4-bc94-03e9741f52d0",
-      "suno_url": "https://suno.com/song/7c466214-2cb9-4ea4-bc94-03e9741f52d0",
-      "suno_share_url": "https://suno.com/s/aBTbf4rLUn8ddmtJ",
-      "ig_preview_url": "https://www.instagram.com/p/DaU4VaaoDad/",
-      "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
-      "ig_plays": null,
-      "linked_to_semantic_index": true,
-      "period": "P6",
-      "era_id": "ERA-P6",
-      "period_name": "順其自然與界線整合期",
-      "source_created_date": "2026-07-03",
-      "period_source": "linked_LOC3_song"
-    },
-    {
-      "title": "人生月台",
-      "song_id": "9a56d555-d559-4402-8c17-47f8bfa6515f",
-      "suno_url": "https://suno.com/song/9a56d555-d559-4402-8c17-47f8bfa6515f",
-      "suno_share_url": "https://suno.com/s/nUZEw9am8T82swgs",
-      "ig_preview_url": "https://www.instagram.com/p/DZdqhJ3oYNm/",
-      "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
-      "ig_plays": null,
-      "linked_to_semantic_index": true,
-      "period": "P5",
-      "era_id": "ERA-P5",
-      "period_name": "人生月台與語言重建期",
-      "source_created_date": "2026-06-12",
-      "period_source": "linked_LOC3_song"
-    },
-    {
       "title": "月光把影子拉長",
       "song_id": "b899100f-e2ec-4cbb-97f1-a1d598047297",
-      "suno_url": "https://suno.com/song/b899100f-e2ec-4cbb-97f1-a1d598047297",
+      "suno_url": "https://suno.com/song/b899100f-e2ec-4cbb-97f1-a1d598047297?sh=RoPiwKjVUpXzRK1i",
       "suno_share_url": "https://suno.com/s/RoPiwKjVUpXzRK1i",
       "ig_preview_url": "https://www.instagram.com/p/DcmFJ_TBUdB/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DcmFJ_TBUdB/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DcmFJ_TBUdB/",
+          "date": "2026-08-28"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0077",
       "period": "P7",
       "era_id": "ERA-P7",
-      "period_name": "自由的風期",
-      "source_created_date": "2026-08-29",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 1,
+      "note": null
     },
     {
       "title": "答案不用現在",
       "song_id": "7f913cd4-6d81-419f-81db-3c55548c1b8a",
-      "suno_url": "https://suno.com/song/7f913cd4-6d81-419f-81db-3c55548c1b8a",
+      "suno_url": "https://suno.com/song/7f913cd4-6d81-419f-81db-3c55548c1b8a?sh=F4lAXVuTwYWEZZK1",
       "suno_share_url": "https://suno.com/s/F4lAXVuTwYWEZZK1",
       "ig_preview_url": "https://www.instagram.com/p/Dcir69Eorv5/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Dcir69Eorv5/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Dcir69Eorv5/",
+          "date": "2026-08-27"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0199",
       "period": "P7",
       "era_id": "ERA-P7",
-      "period_name": "自由的風期",
-      "source_created_date": "2026-08-27",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 2,
+      "note": null
     },
     {
       "title": "微月光知道",
       "song_id": "611c9156-2d03-4104-a44b-d6d776bcbc2c",
-      "suno_url": "https://suno.com/song/611c9156-2d03-4104-a44b-d6d776bcbc2c",
+      "suno_url": "https://suno.com/song/611c9156-2d03-4104-a44b-d6d776bcbc2c?sh=kya8Z4N9Wto0gT9K",
       "suno_share_url": "https://suno.com/s/kya8Z4N9Wto0gT9K",
       "ig_preview_url": "https://www.instagram.com/p/Dbpzo7AIwHK/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Dbpzo7AIwHK/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Dbpzo7AIwHK/",
+          "date": "2026-08-05"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0028",
       "period": "P7",
       "era_id": "ERA-P7",
-      "period_name": "自由的風期",
-      "source_created_date": "2026-08-05",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 3,
+      "note": null
     },
     {
       "title": "自由的月",
       "song_id": "d583b308-bf96-4f64-a583-f2f0492b90ad",
-      "suno_url": "https://suno.com/song/d583b308-bf96-4f64-a583-f2f0492b90ad",
+      "suno_url": "https://suno.com/song/d583b308-bf96-4f64-a583-f2f0492b90ad?sh=ENnVM2m1KvY92fJA",
       "suno_share_url": "https://suno.com/s/ENnVM2m1KvY92fJA",
       "ig_preview_url": "https://www.instagram.com/p/DblIpMvIxlH/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DblIpMvIxlH/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DblIpMvIxlH/",
+          "date": "2026-08-03"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0031",
       "period": "P7",
       "era_id": "ERA-P7",
-      "period_name": "自由的風期",
-      "source_created_date": "2026-08-03",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 4,
+      "note": null
     },
     {
       "title": "不預支以後",
       "song_id": "92e5740d-3258-40ce-b8aa-afa19f8271ce",
-      "suno_url": "https://suno.com/song/92e5740d-3258-40ce-b8aa-afa19f8271ce",
+      "suno_url": "https://suno.com/song/92e5740d-3258-40ce-b8aa-afa19f8271ce?sh=qhSdWGHOVY8nHuhm",
       "suno_share_url": "https://suno.com/s/qhSdWGHOVY8nHuhm",
       "ig_preview_url": "https://www.instagram.com/p/DbiSVRmI7Oc/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DbiSVRmI7Oc/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DbiSVRmI7Oc/",
+          "date": "2026-08-02"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0191",
       "period": "P7",
       "era_id": "ERA-P7",
-      "period_name": "自由的風期",
-      "source_created_date": "2026-08-02",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 5,
+      "note": null
     },
     {
       "title": "回到我的風",
       "song_id": "68586151-ba0e-4f72-830f-0c5251e818f8",
-      "suno_url": "https://suno.com/song/68586151-ba0e-4f72-830f-0c5251e818f8",
+      "suno_url": "https://suno.com/song/68586151-ba0e-4f72-830f-0c5251e818f8?sh=5qLTNvMzDDwu5JOA",
       "suno_share_url": "https://suno.com/s/5qLTNvMzDDwu5JOA",
       "ig_preview_url": "https://www.instagram.com/p/DbhCSU2Iq9u/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DbhCSU2Iq9u/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DbhCSU2Iq9u/",
+          "date": "2026-08-01"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0058",
       "period": "P7",
       "era_id": "ERA-P7",
-      "period_name": "自由的風期",
-      "source_created_date": "2026-08-02",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 6,
+      "note": null
     },
     {
       "title": "留一個位置",
       "song_id": "bf52b84c-74e6-4b94-87e2-b8dbff16b3f3",
-      "suno_url": "https://suno.com/song/bf52b84c-74e6-4b94-87e2-b8dbff16b3f3",
+      "suno_url": "https://suno.com/song/bf52b84c-74e6-4b94-87e2-b8dbff16b3f3?sh=K4gcTGB72rubyKgc",
       "suno_share_url": "https://suno.com/s/K4gcTGB72rubyKgc",
       "ig_preview_url": "https://www.instagram.com/p/Dbfeq0uoaWw/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Dbfeq0uoaWw/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Dbfeq0uoaWw/",
+          "date": "2026-08-01"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0322",
       "period": "P7",
       "era_id": "ERA-P7",
-      "period_name": "自由的風期",
-      "source_created_date": "2026-08-01",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 7,
+      "note": null
     },
     {
       "title": "空隙之間",
       "song_id": "c3dfcdb3-bce2-4cc4-ab3f-34298e93ab4c",
-      "suno_url": "https://suno.com/song/c3dfcdb3-bce2-4cc4-ab3f-34298e93ab4c",
+      "suno_url": "https://suno.com/song/c3dfcdb3-bce2-4cc4-ab3f-34298e93ab4c?sh=dMbdpQeTtc7trBvb",
       "suno_share_url": "https://suno.com/s/dMbdpQeTtc7trBvb",
       "ig_preview_url": "https://www.instagram.com/p/Dbagd7JIS8U/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Dbagd7JIS8U/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Dbagd7JIS8U/",
+          "date": "2026-07-30"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0387",
       "period": "P6",
       "era_id": "ERA-P6",
-      "period_name": "順其自然與界線整合期",
-      "source_created_date": "2026-07-30",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 8,
+      "note": null
     },
     {
       "title": "風起之後",
       "song_id": "fb9cce47-9c4f-42e6-84e3-04df918931bf",
-      "suno_url": "https://suno.com/song/fb9cce47-9c4f-42e6-84e3-04df918931bf",
+      "suno_url": "https://suno.com/song/fb9cce47-9c4f-42e6-84e3-04df918931bf?sh=7ndMR8xQm9lkLQ4Q",
       "suno_share_url": "https://suno.com/s/7ndMR8xQm9lkLQ4Q",
       "ig_preview_url": "https://www.instagram.com/p/DbZh0_hIzOe/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DbZh0_hIzOe/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DbZh0_hIzOe/",
+          "date": "2026-07-30"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0371",
       "period": "P6",
       "era_id": "ERA-P6",
-      "period_name": "順其自然與界線整合期",
-      "source_created_date": "2026-07-30",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 9,
+      "note": null
     },
     {
       "title": "問號的終點",
       "song_id": "2c9461ee-9e95-468b-89f7-0490b62a18ee",
-      "suno_url": "https://suno.com/song/2c9461ee-9e95-468b-89f7-0490b62a18ee",
+      "suno_url": "https://suno.com/song/2c9461ee-9e95-468b-89f7-0490b62a18ee?sh=hNAsZhatBZAKAYTF",
       "suno_share_url": "https://suno.com/s/hNAsZhatBZAKAYTF",
       "ig_preview_url": "https://www.instagram.com/p/DbXo7sLIY4w/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DbXo7sLIY4w/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DbXo7sLIY4w/",
+          "date": "2026-07-29"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
-      "linked_to_semantic_index": false
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "已確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 10,
+      "note": null
     },
     {
       "title": "落地以前",
       "song_id": "ae02f7c0-92ae-4b03-a7c9-cb588045f003",
-      "suno_url": "https://suno.com/song/ae02f7c0-92ae-4b03-a7c9-cb588045f003",
+      "suno_url": "https://suno.com/song/ae02f7c0-92ae-4b03-a7c9-cb588045f003?sh=eyhR6PAA7jx2dngC",
       "suno_share_url": "https://suno.com/s/eyhR6PAA7jx2dngC",
       "ig_preview_url": "https://www.instagram.com/p/DbVb6_MIgmv/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DbVb6_MIgmv/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DbVb6_MIgmv/",
+          "date": "2026-07-28"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0117",
       "period": "P6",
       "era_id": "ERA-P6",
-      "period_name": "順其自然與界線整合期",
-      "source_created_date": "2026-07-28",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 11,
+      "note": null
     },
     {
       "title": "風晴以前",
       "song_id": "fff9fff5-0645-4d1d-986d-87ab23f9179a",
-      "suno_url": "https://suno.com/song/fff9fff5-0645-4d1d-986d-87ab23f9179a",
+      "suno_url": "https://suno.com/song/fff9fff5-0645-4d1d-986d-87ab23f9179a?sh=patdCpprEXc0w45S",
       "suno_share_url": "https://suno.com/s/patdCpprEXc0w45S",
       "ig_preview_url": "https://www.instagram.com/p/DbRk0sdoT6u/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DbRk0sdoT6u/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DbRk0sdoT6u/",
+          "date": "2026-07-26"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
-      "linked_to_semantic_index": false
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "已確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 12,
+      "note": null
     },
     {
       "title": "走回自由模樣",
       "song_id": "ddece632-8f69-492c-9779-48e212672bc7",
-      "suno_url": "https://suno.com/song/ddece632-8f69-492c-9779-48e212672bc7",
+      "suno_url": "https://suno.com/song/ddece632-8f69-492c-9779-48e212672bc7?sh=SLqvk2z4K7ukePRt",
       "suno_share_url": "https://suno.com/s/SLqvk2z4K7ukePRt",
       "ig_preview_url": "https://www.instagram.com/p/DbNjNcsoMfg/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DbNjNcsoMfg/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DbNjNcsoMfg/",
+          "date": "2026-07-25"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0183",
       "period": "P6",
       "era_id": "ERA-P6",
-      "period_name": "順其自然與界線整合期",
-      "source_created_date": "2026-07-25",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 13,
+      "note": null
     },
     {
       "title": "等風也造風",
       "song_id": "8df54670-c3bf-4ff1-ae59-d27178e61377",
-      "suno_url": "https://suno.com/song/8df54670-c3bf-4ff1-ae59-d27178e61377",
+      "suno_url": "https://suno.com/song/8df54670-c3bf-4ff1-ae59-d27178e61377?sh=mJu9XOyvAaWPP4oy",
       "suno_share_url": "https://suno.com/s/mJu9XOyvAaWPP4oy",
       "ig_preview_url": "https://www.instagram.com/p/Da_bGP4hSVg/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Da_bGP4hSVg/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Da_bGP4hSVg/",
+          "date": "2026-07-19"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
-      "linked_to_semantic_index": false
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "已確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 14,
+      "note": null
     },
     {
       "title": "整備已完成",
       "song_id": "0e890eb8-6be0-4549-99bc-469e409cc68d",
-      "suno_url": "https://suno.com/song/0e890eb8-6be0-4549-99bc-469e409cc68d",
+      "suno_url": "https://suno.com/song/0e890eb8-6be0-4549-99bc-469e409cc68d?sh=Ae1X5l8f5jFnK2C8",
       "suno_share_url": "https://suno.com/s/Ae1X5l8f5jFnK2C8",
       "ig_preview_url": "https://www.instagram.com/p/Da7tpEUosOd/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Da7tpEUosOd/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Da7tpEUosOd/",
+          "date": "2026-07-18"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0231",
       "period": "P6",
       "era_id": "ERA-P6",
-      "period_name": "順其自然與界線整合期",
-      "source_created_date": "2026-07-18",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 15,
+      "note": null
     },
     {
       "title": "用你喜歡的方式",
       "song_id": "a65a5a6c-ade3-4e5a-bd41-bb01641aba0d",
-      "suno_url": "https://suno.com/song/a65a5a6c-ade3-4e5a-bd41-bb01641aba0d",
+      "suno_url": "https://suno.com/song/a65a5a6c-ade3-4e5a-bd41-bb01641aba0d?sh=CEvQSEtcVGehDYnR",
       "suno_share_url": "https://suno.com/s/CEvQSEtcVGehDYnR",
       "ig_preview_url": "https://www.instagram.com/p/Daz7ienK6R3/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Daz7ienK6R3/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Daz7ienK6R3/",
+          "date": "2026-07-15"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0310",
       "period": "P6",
       "era_id": "ERA-P6",
-      "period_name": "順其自然與界線整合期",
-      "source_created_date": "2026-07-15",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 16,
+      "note": null
     },
     {
       "title": "掌聲之外",
       "song_id": "692875f9-f93a-4680-a026-c7c5b9b7e56a",
-      "suno_url": "https://suno.com/song/692875f9-f93a-4680-a026-c7c5b9b7e56a",
+      "suno_url": "https://suno.com/song/692875f9-f93a-4680-a026-c7c5b9b7e56a?sh=yBJbeFEmWtNYNyPc",
       "suno_share_url": "https://suno.com/s/yBJbeFEmWtNYNyPc",
       "ig_preview_url": "https://www.instagram.com/p/DazgGRWoA2a/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DazgGRWoA2a/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DazgGRWoA2a/",
+          "date": "2026-07-15"
+        }
+      ],
       "media_type": "instagram_reels_preview",
-      "preview_duration_seconds": 30,
+      "preview_duration_seconds": null,
       "ig_plays": null,
       "linked_to_semantic_index": true,
+      "work_id": "LW0217",
       "period": "P6",
       "era_id": "ERA-P6",
-      "period_name": "順其自然與界線整合期",
-      "source_created_date": "2026-07-15",
-      "period_source": "linked_LOC3_song"
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 17,
+      "note": null
+    },
+    {
+      "title": "問心這一關",
+      "song_id": "3e6b4b55-7e44-45b2-b7bc-66d29c07c69e",
+      "suno_url": "https://suno.com/song/3e6b4b55-7e44-45b2-b7bc-66d29c07c69e?sh=tKuf3uZPyyNTGfjH",
+      "suno_share_url": "https://suno.com/s/tKuf3uZPyyNTGfjH",
+      "ig_preview_url": "https://www.instagram.com/p/DaxIo5hIXuq/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaxIo5hIXuq/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaxIo5hIXuq/",
+          "date": "2026-07-14"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0391",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 18,
+      "note": null
+    },
+    {
+      "title": "不把世界想太壞",
+      "song_id": "3e8a2bcb-59ba-4d73-bf1d-d608b36b3a17",
+      "suno_url": "https://suno.com/song/3e8a2bcb-59ba-4d73-bf1d-d608b36b3a17?sh=WMNuznt6wUQ0d4rC",
+      "suno_share_url": "https://suno.com/s/WMNuznt6wUQ0d4rC",
+      "ig_preview_url": "https://www.instagram.com/p/Dawwg4uow6R/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Dawwg4uow6R/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Dawwg4uow6R/",
+          "date": "2026-07-14"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0267",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 19,
+      "note": null
+    },
+    {
+      "title": "一天算一天",
+      "song_id": "39801943-7434-41f7-8f54-41354e7b9ee6",
+      "suno_url": "https://suno.com/song/39801943-7434-41f7-8f54-41354e7b9ee6?sh=f5wYvXey1MmCOKGH",
+      "suno_share_url": "https://suno.com/s/f5wYvXey1MmCOKGH",
+      "ig_preview_url": "https://www.instagram.com/p/DauvN39IK5r/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DauvN39IK5r/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DauvN39IK5r/",
+          "date": "2026-07-13"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0362",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 20,
+      "note": null
+    },
+    {
+      "title": "走過才知道",
+      "song_id": "31ae8d40-400a-4dd0-8199-c2b1c322928c",
+      "suno_url": "https://suno.com/song/31ae8d40-400a-4dd0-8199-c2b1c322928c?sh=qdIAT2F3696Maxtz",
+      "suno_share_url": "https://suno.com/s/qdIAT2F3696Maxtz",
+      "ig_preview_url": "https://www.instagram.com/p/Datt5x5I-Ck/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Datt5x5I-Ck/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Datt5x5I-Ck/",
+          "date": "2026-07-13"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0128",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 21,
+      "note": null
+    },
+    {
+      "title": "回到原點以後",
+      "song_id": "29b0a91d-43b3-42cb-a69e-ca830c080b84",
+      "suno_url": "https://suno.com/song/29b0a91d-43b3-42cb-a69e-ca830c080b84?sh=hm5ry9TbyewbgsgS",
+      "suno_share_url": "https://suno.com/s/hm5ry9TbyewbgsgS",
+      "ig_preview_url": "https://www.instagram.com/p/Dar7sjmIzBE/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Dar7sjmIzBE/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Dar7sjmIzBE/",
+          "date": "2026-07-12"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0396",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 22,
+      "note": null
+    },
+    {
+      "title": "雨停以前",
+      "song_id": "969aed5b-e408-4aea-9188-81efa05036a9",
+      "suno_url": "https://suno.com/song/969aed5b-e408-4aea-9188-81efa05036a9?sh=Vj0HDeKem01nNPqD",
+      "suno_share_url": "https://suno.com/s/Vj0HDeKem01nNPqD",
+      "ig_preview_url": "https://www.instagram.com/p/Daqyx_thCwi/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Daqyx_thCwi/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Daqyx_thCwi/",
+          "date": "2026-07-11"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0126",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 23,
+      "note": null
+    },
+    {
+      "title": "界線之內",
+      "song_id": "02772944-1eb3-47f5-9dc1-1408c1a8a940",
+      "suno_url": "https://suno.com/song/02772944-1eb3-47f5-9dc1-1408c1a8a940?sh=ocMPWW6QSICjpFRD",
+      "suno_share_url": "https://suno.com/s/ocMPWW6QSICjpFRD",
+      "ig_preview_url": "https://www.instagram.com/p/DapkYs4oHH_/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DapkYs4oHH_/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DapkYs4oHH_/",
+          "date": "2026-07-11"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0228",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 24,
+      "note": null
+    },
+    {
+      "title": "界",
+      "song_id": "1dc36c9f-e4d0-444e-8b97-cc6d49b9916d",
+      "suno_url": "https://suno.com/song/1dc36c9f-e4d0-444e-8b97-cc6d49b9916d?sh=07EZ6cI4RvML29Rt",
+      "suno_share_url": "https://suno.com/s/07EZ6cI4RvML29Rt",
+      "ig_preview_url": "https://www.instagram.com/p/DapPp4Loqvx/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DapPp4Loqvx/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DapPp4Loqvx/",
+          "date": "2026-07-11"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0001",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 25,
+      "note": null
+    },
+    {
+      "title": "看見之後",
+      "song_id": "9a5e96da-fed2-451b-acfb-c28faf1d6078",
+      "suno_url": "https://suno.com/song/9a5e96da-fed2-451b-acfb-c28faf1d6078?sh=IZFqu2pr9mWC0eat",
+      "suno_share_url": "https://suno.com/s/IZFqu2pr9mWC0eat",
+      "ig_preview_url": "https://www.instagram.com/p/Dao-kCEo1Xo/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Dao-kCEo1Xo/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Dao-kCEo1Xo/",
+          "date": "2026-07-11"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0124",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 26,
+      "note": null
+    },
+    {
+      "title": "在已讀不回",
+      "song_id": "40183153-9fb2-4305-880a-b4ce1f8f4861",
+      "suno_url": "https://suno.com/song/40183153-9fb2-4305-880a-b4ce1f8f4861?sh=grOHcIFfZmz8Xe5J",
+      "suno_share_url": "https://suno.com/s/grOHcIFfZmz8Xe5J",
+      "ig_preview_url": "https://www.instagram.com/p/DanCw57IpRl/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DanCw57IpRl/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DanCw57IpRl/",
+          "date": "2026-07-10"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0082",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 27,
+      "note": null
+    },
+    {
+      "title": "終於踏實",
+      "song_id": "a009a611-f046-4ec5-b99e-53f387e583aa",
+      "suno_url": "https://suno.com/song/a009a611-f046-4ec5-b99e-53f387e583aa?sh=JUOw7mPQoNhKG884",
+      "suno_share_url": "https://suno.com/s/JUOw7mPQoNhKG884",
+      "ig_preview_url": "https://www.instagram.com/p/DamC7qio1mf/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DamC7qio1mf/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DamC7qio1mf/",
+          "date": "2026-07-10"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0245",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 28,
+      "note": null
+    },
+    {
+      "title": "風未起之前",
+      "song_id": "65d8591e-4290-4f18-aea8-d6539b1cf73e",
+      "suno_url": "https://suno.com/song/65d8591e-4290-4f18-aea8-d6539b1cf73e?sh=OJsTXI2lUxfUhxs9",
+      "suno_share_url": "https://suno.com/s/OJsTXI2lUxfUhxs9",
+      "ig_preview_url": "https://www.instagram.com/p/DakeSsOo9kj/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DakeSsOo9kj/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DakeSsOo9kj/",
+          "date": "2026-07-09"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0208",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 29,
+      "note": null
+    },
+    {
+      "title": "笑著沉默",
+      "song_id": "ecba8b02-163b-4581-8b3b-828ed466063c",
+      "suno_url": "https://suno.com/song/ecba8b02-163b-4581-8b3b-828ed466063c?sh=yKd9zwMwHgPicVPk",
+      "suno_share_url": "https://suno.com/s/yKd9zwMwHgPicVPk",
+      "ig_preview_url": "https://www.instagram.com/p/DajO26uBGnC/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DajO26uBGnC/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DajO26uBGnC/",
+          "date": "2026-07-08"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0364",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 30,
+      "note": null
+    },
+    {
+      "title": "各自承擔",
+      "song_id": "e3dfb50a-34de-4bcb-9117-493f18674c67",
+      "suno_url": "https://suno.com/song/e3dfb50a-34de-4bcb-9117-493f18674c67?sh=T2CqfQgd6btpn1AY",
+      "suno_share_url": "https://suno.com/s/T2CqfQgd6btpn1AY",
+      "ig_preview_url": "https://www.instagram.com/p/DahiXeXoRf3/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DahiXeXoRf3/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DahiXeXoRf3/",
+          "date": "2026-07-08"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0193",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 31,
+      "note": null
+    },
+    {
+      "title": "交淺有界",
+      "song_id": "fff8a29d-e370-419d-a0f3-482d0959ede3",
+      "suno_url": "https://suno.com/song/fff8a29d-e370-419d-a0f3-482d0959ede3?sh=VWu42B5tHy3J1gwN",
+      "suno_share_url": "https://suno.com/s/VWu42B5tHy3J1gwN",
+      "ig_preview_url": "https://www.instagram.com/p/Daghi_2yB6s/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Daghi_2yB6s/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Daghi_2yB6s/",
+          "date": "2026-07-07"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0388",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 32,
+      "note": null
+    },
+    {
+      "title": "火色晨曦",
+      "song_id": "4dc79fc6-d2f7-41db-8f04-c429b9485652",
+      "suno_url": "https://suno.com/song/4dc79fc6-d2f7-41db-8f04-c429b9485652?sh=rjqZrjdNFl3vcfbN",
+      "suno_share_url": "https://suno.com/s/rjqZrjdNFl3vcfbN",
+      "ig_preview_url": "https://www.instagram.com/p/Dad_Lu6BRVB/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Dad_Lu6BRVB/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Dad_Lu6BRVB/",
+          "date": "2026-07-06"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0251",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 33,
+      "note": null
+    },
+    {
+      "title": "微月光等待",
+      "song_id": "bf3d5d06-717d-484f-96bb-7062784b8086",
+      "suno_url": "https://suno.com/song/bf3d5d06-717d-484f-96bb-7062784b8086?sh=RDsbw1cJuEzK7gKo",
+      "suno_share_url": "https://suno.com/s/RDsbw1cJuEzK7gKo",
+      "ig_preview_url": "https://www.instagram.com/p/Dacy3VXK7d0/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Dacy3VXK7d0/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Dacy3VXK7d0/",
+          "date": "2026-07-06"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0135",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 34,
+      "note": null
+    },
+    {
+      "title": "共響而行",
+      "song_id": "8d4cd066-c258-4e36-bdfa-28027a7cbefc",
+      "suno_url": "https://suno.com/song/8d4cd066-c258-4e36-bdfa-28027a7cbefc?sh=mNLEFC66RpxQpYGz",
+      "suno_share_url": "https://suno.com/s/mNLEFC66RpxQpYGz",
+      "ig_preview_url": "https://www.instagram.com/p/Dacrn-loSNb/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/Dacrn-loSNb/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/Dacrn-loSNb/",
+          "date": "2026-07-06"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0313",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 35,
+      "note": null
+    },
+    {
+      "title": "留空以後",
+      "song_id": "519e3699-d0d9-41d6-9ffa-8dee038e210a",
+      "suno_url": "https://suno.com/song/519e3699-d0d9-41d6-9ffa-8dee038e210a?sh=xsnGXrhzrTTPAaCG",
+      "suno_share_url": "https://suno.com/s/xsnGXrhzrTTPAaCG",
+      "ig_preview_url": "https://www.instagram.com/p/DabbDoPhggh/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DabbDoPhggh/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DabbDoPhggh/",
+          "date": "2026-07-05"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0205",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 36,
+      "note": null
+    },
+    {
+      "title": "把日子種回來",
+      "song_id": "ee494e55-bbbc-41f6-b392-dc0ef518773f",
+      "suno_url": "https://suno.com/song/ee494e55-bbbc-41f6-b392-dc0ef518773f?sh=Z7zX2ruQfTobqJfq",
+      "suno_share_url": "https://suno.com/s/Z7zX2ruQfTobqJfq",
+      "ig_preview_url": "https://www.instagram.com/p/DaaMNZjoduX/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaaMNZjoduX/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaaMNZjoduX/",
+          "date": "2026-07-05"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0014",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 37,
+      "note": null
+    },
+    {
+      "title": "留白的餘溫",
+      "song_id": "af61f9d1-a741-4c51-8da6-c5ca35983bad",
+      "suno_url": "https://suno.com/song/af61f9d1-a741-4c51-8da6-c5ca35983bad?sh=HQFkaXROSD5P9XHH",
+      "suno_share_url": "https://suno.com/s/HQFkaXROSD5P9XHH",
+      "ig_preview_url": "https://www.instagram.com/p/DaaG_Y0ocpN/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaaG_Y0ocpN/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaaG_Y0ocpN/",
+          "date": "2026-07-05"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0220",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 38,
+      "note": null
+    },
+    {
+      "title": "靜水深流",
+      "song_id": "6eadf874-7370-4f82-ab8a-caf0c38cbb87",
+      "suno_url": "https://suno.com/song/6eadf874-7370-4f82-ab8a-caf0c38cbb87?sh=M9ToCJA70zTtqLdm",
+      "suno_share_url": "https://suno.com/s/M9ToCJA70zTtqLdm",
+      "ig_preview_url": "https://www.instagram.com/p/DaZ7rTKICdZ/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaZ7rTKICdZ/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaZ7rTKICdZ/",
+          "date": "2026-07-05"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0370",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 39,
+      "note": null
+    },
+    {
+      "title": "風雨之後",
+      "song_id": "ba1eee70-2e75-4548-9ad8-674143c284e1",
+      "suno_url": "https://suno.com/song/ba1eee70-2e75-4548-9ad8-674143c284e1?sh=Ehp06KsP3y4d8w44",
+      "suno_share_url": "https://suno.com/s/Ehp06KsP3y4d8w44",
+      "ig_preview_url": "https://www.instagram.com/p/DaY1G-OSY8W/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaY1G-OSY8W/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaY1G-OSY8W/",
+          "date": "2026-07-04"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0110",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 40,
+      "note": null
+    },
+    {
+      "title": "渡口未明",
+      "song_id": "52cc75d3-9790-4358-97dc-a1c229df5728",
+      "suno_url": "https://suno.com/song/52cc75d3-9790-4358-97dc-a1c229df5728?sh=8OkRPtifW0y1zfaa",
+      "suno_share_url": "https://suno.com/s/8OkRPtifW0y1zfaa",
+      "ig_preview_url": "https://www.instagram.com/p/DaXo9orIr6m/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaXo9orIr6m/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaXo9orIr6m/",
+          "date": "2026-07-04"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0092",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 41,
+      "note": null
+    },
+    {
+      "title": "路還沒出現",
+      "song_id": "57aac293-3593-4691-9d77-93cea5755ea2",
+      "suno_url": "https://suno.com/song/57aac293-3593-4691-9d77-93cea5755ea2?sh=4woVyrOesBKJsZJr",
+      "suno_share_url": "https://suno.com/s/4woVyrOesBKJsZJr",
+      "ig_preview_url": "https://www.instagram.com/p/DaXfCldo9Hl/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaXfCldo9Hl/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaXfCldo9Hl/",
+          "date": "2026-07-04"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0108",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 42,
+      "note": null
+    },
+    {
+      "title": "柳暗花明",
+      "song_id": "9176c7ab-a7ab-4016-a72d-ebb841db6751",
+      "suno_url": "https://suno.com/song/9176c7ab-a7ab-4016-a72d-ebb841db6751?sh=UI7GDIk7nNS9OjM6",
+      "suno_share_url": "https://suno.com/s/UI7GDIk7nNS9OjM6",
+      "ig_preview_url": "https://www.instagram.com/p/DaXXAeCoQw3/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaXXAeCoQw3/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaXXAeCoQw3/",
+          "date": "2026-07-04"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0360",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 43,
+      "note": null
+    },
+    {
+      "title": "展翅之前",
+      "song_id": "692b62d4-ee0d-4f76-bbcc-c8b89a5dbe5b",
+      "suno_url": "https://suno.com/song/692b62d4-ee0d-4f76-bbcc-c8b89a5dbe5b?sh=TxYpc6wjSrPasblL",
+      "suno_share_url": "https://suno.com/s/TxYpc6wjSrPasblL",
+      "ig_preview_url": "https://www.instagram.com/p/DaWqWOaoFzO/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaWqWOaoFzO/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaWqWOaoFzO/",
+          "date": "2026-07-04"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0053",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 44,
+      "note": null
+    },
+    {
+      "title": "共響，白晝之月",
+      "song_id": "555350bb-3f67-404c-97a5-48020203a54f",
+      "suno_url": "https://suno.com/song/555350bb-3f67-404c-97a5-48020203a54f?sh=Vj4AgxP4rnUkhWTE",
+      "suno_share_url": "https://suno.com/s/Vj4AgxP4rnUkhWTE",
+      "ig_preview_url": "https://www.instagram.com/p/DaU7-paoPeE/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaU7-paoPeE/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaU7-paoPeE/",
+          "date": "2026-07-03"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0221",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 45,
+      "note": null
+    },
+    {
+      "title": "你若想跟我有以後",
+      "song_id": "7c466214-2cb9-4ea4-bc94-03e9741f52d0",
+      "suno_url": "https://suno.com/song/7c466214-2cb9-4ea4-bc94-03e9741f52d0?sh=aBTbf4rLUn8ddmtJ",
+      "suno_share_url": "https://suno.com/s/aBTbf4rLUn8ddmtJ",
+      "ig_preview_url": "https://www.instagram.com/p/DaU4VaaoDad/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaU4VaaoDad/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaU4VaaoDad/",
+          "date": "2026-07-03"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0152",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 46,
+      "note": null
+    },
+    {
+      "title": "回到自己",
+      "song_id": "edcca7c2-33da-487d-a3b2-6470bf556ce5",
+      "suno_url": "https://suno.com/song/edcca7c2-33da-487d-a3b2-6470bf556ce5?sh=RqkqSfWJ7ZWf459F",
+      "suno_share_url": "https://suno.com/s/RqkqSfWJ7ZWf459F",
+      "ig_preview_url": "https://www.instagram.com/p/DaUvydLIPRJ/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaUvydLIPRJ/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaUvydLIPRJ/",
+          "date": "2026-07-03"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0265",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 47,
+      "note": null
+    },
+    {
+      "title": "停止內耗",
+      "song_id": "2997486a-9193-4a81-a30e-013889700a6f",
+      "suno_url": "https://suno.com/song/2997486a-9193-4a81-a30e-013889700a6f?sh=hmtauNCZS2C0Dvuj",
+      "suno_share_url": "https://suno.com/s/hmtauNCZS2C0Dvuj",
+      "ig_preview_url": "https://www.instagram.com/p/DaSh93YoFwb/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaSh93YoFwb/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaSh93YoFwb/",
+          "date": "2026-07-02"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0097",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 48,
+      "note": null
+    },
+    {
+      "title": "整裝待發",
+      "song_id": "9bca9b95-31fd-474d-9a41-dedd95b5f586",
+      "suno_url": "https://suno.com/song/9bca9b95-31fd-474d-9a41-dedd95b5f586?sh=8Fh53zwimQtvvv6J",
+      "suno_share_url": "https://suno.com/s/8Fh53zwimQtvvv6J",
+      "ig_preview_url": "https://www.instagram.com/p/DaSSAjYP4YH/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaSSAjYP4YH/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaSSAjYP4YH/",
+          "date": "2026-07-02"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0123",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 49,
+      "note": null
+    },
+    {
+      "title": "漸明",
+      "song_id": "02435ecf-5158-413b-9846-9e974194ac15",
+      "suno_url": "https://suno.com/song/02435ecf-5158-413b-9846-9e974194ac15?sh=mwSOlrMk1plXJxKq",
+      "suno_share_url": "https://suno.com/s/mwSOlrMk1plXJxKq",
+      "ig_preview_url": "https://www.instagram.com/p/DaSHqamPxXm/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaSHqamPxXm/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaSHqamPxXm/",
+          "date": "2026-07-02"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0038",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 50,
+      "note": null
+    },
+    {
+      "title": "校準之光",
+      "song_id": "20e09072-0386-4a5a-83f9-29cc92bca978",
+      "suno_url": "https://suno.com/song/20e09072-0386-4a5a-83f9-29cc92bca978?sh=wUIRLQNXT6jq8ZFl",
+      "suno_share_url": "https://suno.com/s/wUIRLQNXT6jq8ZFl",
+      "ig_preview_url": "https://www.instagram.com/p/DaRX_C-PVhJ/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaRX_C-PVhJ/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaRX_C-PVhJ/",
+          "date": "2026-07-02"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0198",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 51,
+      "note": null
+    },
+    {
+      "title": "光譜之間",
+      "song_id": "47301a3e-b5fa-4a4d-8abe-0fa91ef4c741",
+      "suno_url": "https://suno.com/song/47301a3e-b5fa-4a4d-8abe-0fa91ef4c741?sh=yGfuJXpr8KXrxlRk",
+      "suno_share_url": "https://suno.com/s/yGfuJXpr8KXrxlRk",
+      "ig_preview_url": "https://www.instagram.com/p/DaRExwlyXyJ/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaRExwlyXyJ/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaRExwlyXyJ/",
+          "date": "2026-07-01"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0086",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 52,
+      "note": null
+    },
+    {
+      "title": "仍向遠方",
+      "song_id": "dfbcbba7-317b-41d5-a96f-82b4f969f75d",
+      "suno_url": "https://suno.com/song/dfbcbba7-317b-41d5-a96f-82b4f969f75d?sh=2ndv9XCSC2O1Su2K",
+      "suno_share_url": "https://suno.com/s/2ndv9XCSC2O1Su2K",
+      "ig_preview_url": "https://www.instagram.com/p/DaOkqUnyQ2d/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaOkqUnyQ2d/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaOkqUnyQ2d/",
+          "date": "2026-06-30"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0356",
+      "period": "P6",
+      "era_id": "ERA-P6",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 53,
+      "note": null
+    },
+    {
+      "title": "未知之後",
+      "song_id": "746797c3-7aa4-44bd-bcff-778ce05bca4e",
+      "suno_url": "https://suno.com/song/746797c3-7aa4-44bd-bcff-778ce05bca4e?sh=ruyyrn3LSBrM6yP4",
+      "suno_share_url": "https://suno.com/s/ruyyrn3LSBrM6yP4",
+      "ig_preview_url": "https://www.instagram.com/p/DaNE7PWofDA/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaNE7PWofDA/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaNE7PWofDA/",
+          "date": "2026-06-30"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0041",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 54,
+      "note": null
+    },
+    {
+      "title": "醒來",
+      "song_id": "ce200d76-638f-4d93-9434-6855c88ae672",
+      "suno_url": "https://suno.com/song/ce200d76-638f-4d93-9434-6855c88ae672?sh=9GdqmbIMgnCaWShS",
+      "suno_share_url": "https://suno.com/s/9GdqmbIMgnCaWShS",
+      "ig_preview_url": "https://www.instagram.com/p/DaM8e2wI5mA/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaM8e2wI5mA/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaM8e2wI5mA/",
+          "date": "2026-06-30"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0289",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 55,
+      "note": null
+    },
+    {
+      "title": "日出日落",
+      "song_id": "48c4cc49-9165-4b0f-9e43-d1ae23e5cf03",
+      "suno_url": "https://suno.com/song/48c4cc49-9165-4b0f-9e43-d1ae23e5cf03?sh=QgfBnGEkS14iUFfr",
+      "suno_share_url": "https://suno.com/s/QgfBnGEkS14iUFfr",
+      "ig_preview_url": "https://www.instagram.com/p/DaMLIEwBOhr/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaMLIEwBOhr/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaMLIEwBOhr/",
+          "date": "2026-06-30"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0316",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 56,
+      "note": null
+    },
+    {
+      "title": "踩在地上",
+      "song_id": "1e803f82-3983-45d1-af59-7fc4da98de55",
+      "suno_url": "https://suno.com/song/1e803f82-3983-45d1-af59-7fc4da98de55?sh=H2eWvwkpmeaFujat",
+      "suno_share_url": "https://suno.com/s/H2eWvwkpmeaFujat",
+      "ig_preview_url": "https://www.instagram.com/p/DaKuKMgKzBW/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaKuKMgKzBW/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaKuKMgKzBW/",
+          "date": "2026-06-29"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0103",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 57,
+      "note": null
+    },
+    {
+      "title": "不變應萬變",
+      "song_id": "710252e2-aca9-4ee1-ba48-a83e18b25e2f",
+      "suno_url": "https://suno.com/song/710252e2-aca9-4ee1-ba48-a83e18b25e2f?sh=KknkcqwiD1KtQFdw",
+      "suno_share_url": "https://suno.com/s/KknkcqwiD1KtQFdw",
+      "ig_preview_url": "https://www.instagram.com/p/DaKtoVqoPCF/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaKtoVqoPCF/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaKtoVqoPCF/",
+          "date": "2026-06-29"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0068",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 58,
+      "note": null
+    },
+    {
+      "title": "回歸以後",
+      "song_id": "b1233710-8585-4725-8569-35605a686e67",
+      "suno_url": "https://suno.com/song/b1233710-8585-4725-8569-35605a686e67?sh=Fs3qLnMAMcM25BEJ",
+      "suno_share_url": "https://suno.com/s/Fs3qLnMAMcM25BEJ",
+      "ig_preview_url": "https://www.instagram.com/p/DaJf3J3BpFh/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaJf3J3BpFh/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaJf3J3BpFh/",
+          "date": "2026-06-28"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0024",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 59,
+      "note": null
+    },
+    {
+      "title": "走了真遠",
+      "song_id": "262c05ac-9a06-492f-9576-2732e8363626",
+      "suno_url": "https://suno.com/song/262c05ac-9a06-492f-9576-2732e8363626?sh=grMIG1PeqwR3ZAGx",
+      "suno_share_url": "https://suno.com/s/grMIG1PeqwR3ZAGx",
+      "ig_preview_url": "https://www.instagram.com/p/DaH8i1jIeAN/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaH8i1jIeAN/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaH8i1jIeAN/",
+          "date": "2026-06-28"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0226",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 60,
+      "note": null
+    },
+    {
+      "title": "白晝之月?微月光",
+      "song_id": "fdc498e2-2218-442c-8368-235af1169082",
+      "suno_url": "https://suno.com/song/fdc498e2-2218-442c-8368-235af1169082?sh=d6GmU59LxgJpo7xO",
+      "suno_share_url": "https://suno.com/s/d6GmU59LxgJpo7xO",
+      "ig_preview_url": "https://www.instagram.com/p/DaHorGPqSDd/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaHorGPqSDd/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaHorGPqSDd/",
+          "date": "2026-06-28"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0230",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 61,
+      "note": null
+    },
+    {
+      "title": "一個人的安靜",
+      "song_id": "89ab424d-71b0-43dc-a1da-6141b5d17a49",
+      "suno_url": "https://suno.com/song/89ab424d-71b0-43dc-a1da-6141b5d17a49?sh=TZ4aCBzynCVA4P2v",
+      "suno_share_url": "https://suno.com/s/TZ4aCBzynCVA4P2v",
+      "ig_preview_url": "https://www.instagram.com/p/DaHFbh-o-CT/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaHFbh-o-CT/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaHFbh-o-CT/",
+          "date": "2026-06-28"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0269",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 62,
+      "note": null
+    },
+    {
+      "title": "共響",
+      "song_id": "e641764f-b151-482c-ba50-028ee69346d0",
+      "suno_url": "https://suno.com/song/e641764f-b151-482c-ba50-028ee69346d0?sh=zoxa0JITKFc4wYgd",
+      "suno_share_url": "https://suno.com/s/zoxa0JITKFc4wYgd",
+      "ig_preview_url": "https://www.instagram.com/p/DaFeahLISCS/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaFeahLISCS/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaFeahLISCS/",
+          "date": "2026-06-27"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0051",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 63,
+      "note": null
+    },
+    {
+      "title": "當下",
+      "song_id": "5e2acdd6-2504-4eb6-be8b-6461ec9d73f1",
+      "suno_url": "https://suno.com/song/5e2acdd6-2504-4eb6-be8b-6461ec9d73f1?sh=oT4aSUvbnqIHq3Pe",
+      "suno_share_url": "https://suno.com/s/oT4aSUvbnqIHq3Pe",
+      "ig_preview_url": "https://www.instagram.com/p/DaFb6URI9xR/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaFb6URI9xR/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaFb6URI9xR/",
+          "date": "2026-06-27"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0342",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 64,
+      "note": null
+    },
+    {
+      "title": "漸光",
+      "song_id": "67375242-35f6-4bb1-9686-9624ef076a2d",
+      "suno_url": "https://suno.com/song/67375242-35f6-4bb1-9686-9624ef076a2d?sh=VSaARx01fv4M9onK",
+      "suno_share_url": "https://suno.com/s/VSaARx01fv4M9onK",
+      "ig_preview_url": "https://www.instagram.com/p/DaFbnQbIZpN/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaFbnQbIZpN/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaFbnQbIZpN/",
+          "date": "2026-06-27"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0211",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 65,
+      "note": null
+    },
+    {
+      "title": "微月光代表",
+      "song_id": "1826dd82-0357-49c9-89a1-8f0ce21eba04",
+      "suno_url": "https://suno.com/song/1826dd82-0357-49c9-89a1-8f0ce21eba04?sh=1mK1hEvBngMYHSOT",
+      "suno_share_url": "https://suno.com/s/1mK1hEvBngMYHSOT",
+      "ig_preview_url": "https://www.instagram.com/p/DaFJ9wsoz_T/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaFJ9wsoz_T/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaFJ9wsoz_T/",
+          "date": "2026-06-27"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0006",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 66,
+      "note": null
+    },
+    {
+      "title": "政德風微月光",
+      "song_id": "5830cedc-dc65-4397-82ad-6e070050a463",
+      "suno_url": "https://suno.com/song/5830cedc-dc65-4397-82ad-6e070050a463?sh=yF46WpcxbLaI0awN",
+      "suno_share_url": "https://suno.com/s/yF46WpcxbLaI0awN",
+      "ig_preview_url": "https://www.instagram.com/p/DaElOKEo-Qh/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaElOKEo-Qh/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaElOKEo-Qh/",
+          "date": "2026-06-27"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0052",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 67,
+      "note": null
+    },
+    {
+      "title": "尊重是底線",
+      "song_id": "edf81c33-7963-4a1b-afe1-79d5085db262",
+      "suno_url": "https://suno.com/song/edf81c33-7963-4a1b-afe1-79d5085db262?sh=4TA0LAWZ5QmTffGR",
+      "suno_share_url": "https://suno.com/s/4TA0LAWZ5QmTffGR",
+      "ig_preview_url": "https://www.instagram.com/p/DaDHaH0ovri/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaDHaH0ovri/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaDHaH0ovri/",
+          "date": "2026-06-26"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0210",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 68,
+      "note": null
+    },
+    {
+      "title": "忘了就好",
+      "song_id": "62871494-d34a-4f4b-b9b9-c64c5adaceb8",
+      "suno_url": "https://suno.com/song/62871494-d34a-4f4b-b9b9-c64c5adaceb8?sh=LjF9rl8g73JrIOFb",
+      "suno_share_url": "https://suno.com/s/LjF9rl8g73JrIOFb",
+      "ig_preview_url": "https://www.instagram.com/p/DaCz5TLo-Fi/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaCz5TLo-Fi/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaCz5TLo-Fi/",
+          "date": "2026-06-26"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0202",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 69,
+      "note": null
+    },
+    {
+      "title": "交給時間",
+      "song_id": "0f0e1f5e-2e2e-4ebc-bae4-224456697971",
+      "suno_url": "https://suno.com/song/0f0e1f5e-2e2e-4ebc-bae4-224456697971?sh=m0R7an01qtK4Ev3l",
+      "suno_share_url": "https://suno.com/s/m0R7an01qtK4Ev3l",
+      "ig_preview_url": "https://www.instagram.com/p/DaCx7TLIa6s/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaCx7TLIa6s/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaCx7TLIa6s/",
+          "date": "2026-06-26"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0278",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 70,
+      "note": null
+    },
+    {
+      "title": "又過一天",
+      "song_id": "43b092db-ea5a-45b1-a600-274793deca11",
+      "suno_url": "https://suno.com/song/43b092db-ea5a-45b1-a600-274793deca11?sh=3HzEPQiXpUgqbwm4",
+      "suno_share_url": "https://suno.com/s/3HzEPQiXpUgqbwm4",
+      "ig_preview_url": "https://www.instagram.com/p/DaCOk1LowWx/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaCOk1LowWx/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaCOk1LowWx/",
+          "date": "2026-06-26"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0012",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 71,
+      "note": null
+    },
+    {
+      "title": "政德風",
+      "song_id": "ba3c3d28-40eb-46c0-a9fa-e5956f0098b2",
+      "suno_url": "https://suno.com/song/ba3c3d28-40eb-46c0-a9fa-e5956f0098b2?sh=UkVUigEZjejeBWEd",
+      "suno_share_url": "https://suno.com/s/UkVUigEZjejeBWEd",
+      "ig_preview_url": "https://www.instagram.com/p/DaBxkPhoeIU/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaBxkPhoeIU/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaBxkPhoeIU/",
+          "date": "2026-06-25"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0085",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 72,
+      "note": null
+    },
+    {
+      "title": "允許一切，向前而行",
+      "song_id": "46e75ea3-2c1d-4db1-8d67-ff1d47942df1",
+      "suno_url": "https://suno.com/song/46e75ea3-2c1d-4db1-8d67-ff1d47942df1?sh=ofrfUWpqvDQB6nNW",
+      "suno_share_url": "https://suno.com/s/ofrfUWpqvDQB6nNW",
+      "ig_preview_url": "https://www.instagram.com/p/DaAbYMrKc3t/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaAbYMrKc3t/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaAbYMrKc3t/",
+          "date": "2026-06-25"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0079",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 73,
+      "note": null
+    },
+    {
+      "title": "且待風起",
+      "song_id": "c3e3c484-7754-4ecb-9dab-c417108e9b19",
+      "suno_url": "https://suno.com/song/c3e3c484-7754-4ecb-9dab-c417108e9b19?sh=PiOEBQkrGy82ZVEn",
+      "suno_share_url": "https://suno.com/s/PiOEBQkrGy82ZVEn",
+      "ig_preview_url": "https://www.instagram.com/p/DaAOtaXoaQd/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaAOtaXoaQd/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaAOtaXoaQd/",
+          "date": "2026-06-25"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0242",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 74,
+      "note": null
+    },
+    {
+      "title": "盡人事聽天命",
+      "song_id": "bca6b5f0-7617-4b68-983c-a3592e54ade5",
+      "suno_url": "https://suno.com/song/bca6b5f0-7617-4b68-983c-a3592e54ade5?sh=19iMPFNGAQxPPv1D",
+      "suno_share_url": "https://suno.com/s/19iMPFNGAQxPPv1D",
+      "ig_preview_url": "https://www.instagram.com/p/DaAFo_Hodvd/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DaAFo_Hodvd/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DaAFo_Hodvd/",
+          "date": "2026-06-25"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0106",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 75,
+      "note": null
+    },
+    {
+      "title": "無愧於心",
+      "song_id": "e2d049a9-9c46-4825-af9b-73f100c4b095",
+      "suno_url": "https://suno.com/song/e2d049a9-9c46-4825-af9b-73f100c4b095?sh=H0w34zA7NUe49iWW",
+      "suno_share_url": "https://suno.com/s/H0w34zA7NUe49iWW",
+      "ig_preview_url": "https://www.instagram.com/p/DZ9lwazoKrX/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZ9lwazoKrX/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZ9lwazoKrX/",
+          "date": "2026-06-24"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0180",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 76,
+      "note": null
+    },
+    {
+      "title": "盡力而為",
+      "song_id": "6815d070-6b03-49c0-9fb3-c0e9c1e45156",
+      "suno_url": "https://suno.com/song/6815d070-6b03-49c0-9fb3-c0e9c1e45156?sh=T4S0qM441hTJkip5",
+      "suno_share_url": "https://suno.com/s/T4S0qM441hTJkip5",
+      "ig_preview_url": "https://www.instagram.com/p/DZ8sQ3ohNJ7/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZ8sQ3ohNJ7/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZ8sQ3ohNJ7/",
+          "date": "2026-06-24"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0361",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 77,
+      "note": null
+    },
+    {
+      "title": "允許",
+      "song_id": "ca7be8c7-f9f4-449a-ae96-43d1db769ef7",
+      "suno_url": "https://suno.com/song/ca7be8c7-f9f4-449a-ae96-43d1db769ef7?sh=0kBartHDk3lTMQ3n",
+      "suno_share_url": "https://suno.com/s/0kBartHDk3lTMQ3n",
+      "ig_preview_url": "https://www.instagram.com/p/DZ7P0N_ovxW/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZ7P0N_ovxW/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZ7P0N_ovxW/",
+          "date": "2026-06-23"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0255",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 78,
+      "note": null
+    },
+    {
+      "title": "沒辦法",
+      "song_id": "ff89e067-19e2-4511-a78f-b8d6e42daaf8",
+      "suno_url": "https://suno.com/song/ff89e067-19e2-4511-a78f-b8d6e42daaf8?sh=6yk6Vpb3vc7X0Gqc",
+      "suno_share_url": "https://suno.com/s/6yk6Vpb3vc7X0Gqc",
+      "ig_preview_url": "https://www.instagram.com/p/DZ7MommqE2K/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZ7MommqE2K/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZ7MommqE2K/",
+          "date": "2026-06-23"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0161",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 79,
+      "note": null
+    },
+    {
+      "title": "歲歲安然",
+      "song_id": "8b62277a-c4c1-4508-ac6c-20d2d8d6a339",
+      "suno_url": "https://suno.com/song/8b62277a-c4c1-4508-ac6c-20d2d8d6a339?sh=pkmY7xY6bUPAx0RR",
+      "suno_share_url": "https://suno.com/s/pkmY7xY6bUPAx0RR",
+      "ig_preview_url": "https://www.instagram.com/p/DZ7MTrdqMrt/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZ7MTrdqMrt/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZ7MTrdqMrt/",
+          "date": "2026-06-23"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0059",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 80,
+      "note": null
+    },
+    {
+      "title": "祝我生日快樂",
+      "song_id": "68df5ad8-93aa-4e3a-8592-2520f731466d",
+      "suno_url": "https://suno.com/song/68df5ad8-93aa-4e3a-8592-2520f731466d?sh=9orbeJfjFT0rwJPq",
+      "suno_share_url": "https://suno.com/s/9orbeJfjFT0rwJPq",
+      "ig_preview_url": "https://www.instagram.com/p/DZ6T76WIQW2/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZ6T76WIQW2/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZ6T76WIQW2/",
+          "date": "2026-06-23"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0176",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 81,
+      "note": null
+    },
+    {
+      "title": "生日未許願",
+      "song_id": "90b4af0f-77f9-41bf-8e23-2533dd5ec422",
+      "suno_url": "https://suno.com/song/90b4af0f-77f9-41bf-8e23-2533dd5ec422?sh=AnoClwn8JBPPLqFo",
+      "suno_share_url": "https://suno.com/s/AnoClwn8JBPPLqFo",
+      "ig_preview_url": "https://www.instagram.com/p/DZ6RCayobs9/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZ6RCayobs9/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZ6RCayobs9/",
+          "date": "2026-06-23"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0030",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 82,
+      "note": null
+    },
+    {
+      "title": "不再年輕",
+      "song_id": "1d3cf691-e7b0-4866-8475-1ba4c7b61425",
+      "suno_url": "https://suno.com/song/1d3cf691-e7b0-4866-8475-1ba4c7b61425?sh=CgS7DTUQEEP0htgG",
+      "suno_share_url": "https://suno.com/s/CgS7DTUQEEP0htgG",
+      "ig_preview_url": "https://www.instagram.com/p/DZ6HnXpIQbc/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZ6HnXpIQbc/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZ6HnXpIQbc/",
+          "date": "2026-06-23"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0247",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 83,
+      "note": null
+    },
+    {
+      "title": "明天再說",
+      "song_id": "3be1b44e-7816-4f9b-a57a-2cb98112628b",
+      "suno_url": "https://suno.com/song/3be1b44e-7816-4f9b-a57a-2cb98112628b?sh=km6MmtAa4n8tsadt",
+      "suno_share_url": "https://suno.com/s/km6MmtAa4n8tsadt",
+      "ig_preview_url": "https://www.instagram.com/p/DZ3hTZfoxC1/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZ3hTZfoxC1/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZ3hTZfoxC1/",
+          "date": "2026-06-22"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0203",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 84,
+      "note": null
+    },
+    {
+      "title": "暫退一步",
+      "song_id": "a057dd0e-eee2-4f9e-8716-69c2f79fdd35",
+      "suno_url": "https://suno.com/song/a057dd0e-eee2-4f9e-8716-69c2f79fdd35?sh=wtEKeoZNPwaPFpoN",
+      "suno_share_url": "https://suno.com/s/wtEKeoZNPwaPFpoN",
+      "ig_preview_url": "https://www.instagram.com/p/DZw2M1pIFXn/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZw2M1pIFXn/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZw2M1pIFXn/",
+          "date": "2026-06-19"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0304",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 85,
+      "note": null
+    },
+    {
+      "title": "風起之前",
+      "song_id": "c598d413-4f1d-4d90-9482-faff4307c8b3",
+      "suno_url": "https://suno.com/song/c598d413-4f1d-4d90-9482-faff4307c8b3?sh=mdGoLeAp1AsxPRU1",
+      "suno_share_url": "https://suno.com/s/mdGoLeAp1AsxPRU1",
+      "ig_preview_url": "https://www.instagram.com/p/DZwNNxNo9zA/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZwNNxNo9zA/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZwNNxNo9zA/",
+          "date": "2026-06-19"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0035",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 86,
+      "note": null
+    },
+    {
+      "title": "偶爾自私也無妨",
+      "song_id": "0ce619e6-4a3f-40ad-b63e-98aa97c6f7ec",
+      "suno_url": "https://suno.com/song/0ce619e6-4a3f-40ad-b63e-98aa97c6f7ec?sh=nEFS05ToOzaLl8HQ",
+      "suno_share_url": "https://suno.com/s/nEFS05ToOzaLl8HQ",
+      "ig_preview_url": "https://www.instagram.com/p/DZvo5KKSdof/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZvo5KKSdof/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZvo5KKSdof/",
+          "date": "2026-06-18"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0243",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 87,
+      "note": null
+    },
+    {
+      "title": "風剛剛好",
+      "song_id": "c641a791-001f-4be1-b569-4886d7320ba6",
+      "suno_url": "https://suno.com/song/c641a791-001f-4be1-b569-4886d7320ba6?sh=GeiO5QbETavsbVK6",
+      "suno_share_url": "https://suno.com/s/GeiO5QbETavsbVK6",
+      "ig_preview_url": "https://www.instagram.com/p/DZs_GtKy9Zc/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZs_GtKy9Zc/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZs_GtKy9Zc/",
+          "date": "2026-06-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0143",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 88,
+      "note": null
+    },
+    {
+      "title": "夜雨",
+      "song_id": "ec95ce4a-afbc-4def-b9e4-a41e88130d8e",
+      "suno_url": "https://suno.com/song/ec95ce4a-afbc-4def-b9e4-a41e88130d8e?sh=3upZMjzSJEmKbywT",
+      "suno_share_url": "https://suno.com/s/3upZMjzSJEmKbywT",
+      "ig_preview_url": "https://www.instagram.com/p/DZr_MnIoydv/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZr_MnIoydv/",
+        "https://www.instagram.com/p/DVN8IKPgUZz/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZr_MnIoydv/",
+          "date": "2026-06-17"
+        },
+        {
+          "url": "https://www.instagram.com/p/DVN8IKPgUZz/",
+          "date": "2026-02-26"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0087",
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "多預覽（2）",
+      "source_row": 89,
+      "note": "由原始列 89、121 合併；保留全部 Reels"
+    },
+    {
+      "title": "一個人的起降",
+      "song_id": "7b43bbee-f613-46d8-a412-ba93787795a9",
+      "suno_url": "https://suno.com/song/7b43bbee-f613-46d8-a412-ba93787795a9?sh=lrYTLD9kw4kOx5OA",
+      "suno_share_url": "https://suno.com/s/lrYTLD9kw4kOx5OA",
+      "ig_preview_url": "https://www.instagram.com/p/DZr8KWpoyCD/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZr8KWpoyCD/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZr8KWpoyCD/",
+          "date": "2026-06-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0174",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 90,
+      "note": null
+    },
+    {
+      "title": "當斷",
+      "song_id": "1fc53ae0-da4a-48be-a3fd-04266b4674ea",
+      "suno_url": "https://suno.com/song/1fc53ae0-da4a-48be-a3fd-04266b4674ea?sh=Czk4y5B2kXeZvXZI",
+      "suno_share_url": "https://suno.com/s/Czk4y5B2kXeZvXZI",
+      "ig_preview_url": "https://www.instagram.com/p/DZr4s5vImbM/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZr4s5vImbM/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZr4s5vImbM/",
+          "date": "2026-06-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0333",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 91,
+      "note": null
+    },
+    {
+      "title": "空站月蝕",
+      "song_id": "e1b255d5-cf1d-4218-98fb-b18f04ba50b8",
+      "suno_url": "https://suno.com/song/e1b255d5-cf1d-4218-98fb-b18f04ba50b8?sh=wKlRp9A5u8YTa2H9",
+      "suno_share_url": "https://suno.com/s/wKlRp9A5u8YTa2H9",
+      "ig_preview_url": "https://www.instagram.com/p/DZrtw1RIxT1/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZrtw1RIxT1/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZrtw1RIxT1/",
+          "date": "2026-06-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 92,
+      "note": null
+    },
+    {
+      "title": "今天不思考",
+      "song_id": "1dbb1b47-b0e2-4e5c-a078-41671be00eb6",
+      "suno_url": "https://suno.com/song/1dbb1b47-b0e2-4e5c-a078-41671be00eb6?sh=IbL0UjTTFY7pWhQu",
+      "suno_share_url": "https://suno.com/s/IbL0UjTTFY7pWhQu",
+      "ig_preview_url": "https://www.instagram.com/p/DZrXs5Qotnl/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZrXs5Qotnl/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZrXs5Qotnl/",
+          "date": "2026-06-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0354",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 93,
+      "note": null
+    },
+    {
+      "title": "泡沫妄想",
+      "song_id": "900f1106-63f1-45c7-a2e3-259570eec8e8",
+      "suno_url": "https://suno.com/song/900f1106-63f1-45c7-a2e3-259570eec8e8?sh=LpWQWIBFuVpvNrt6",
+      "suno_share_url": "https://suno.com/s/LpWQWIBFuVpvNrt6",
+      "ig_preview_url": "https://www.instagram.com/p/DZqg0gpB6-f/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZqg0gpB6-f/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZqg0gpB6-f/",
+          "date": "2026-06-16"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0224",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 94,
+      "note": null
+    },
+    {
+      "title": "宜靜不宜動",
+      "song_id": "45ffc467-7114-4947-95c4-5ff16980d48e",
+      "suno_url": "https://suno.com/song/45ffc467-7114-4947-95c4-5ff16980d48e?sh=NgsnCvnbKJakRRrC",
+      "suno_share_url": "https://suno.com/s/NgsnCvnbKJakRRrC",
+      "ig_preview_url": "https://www.instagram.com/p/DZpD5FFoJS5/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZpD5FFoJS5/",
+        "https://www.instagram.com/p/DZgz2yYIYdX/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZpD5FFoJS5/",
+          "date": "2026-06-16"
+        },
+        {
+          "url": "https://www.instagram.com/p/DZgz2yYIYdX/",
+          "date": "2026-06-13"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0365",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "同名作品／新旋律版本",
+      "merge_status": "多預覽（2）",
+      "source_row": 95,
+      "note": "由原始列 95、107 合併；保留全部 Reels"
+    },
+    {
+      "title": "順其自然",
+      "song_id": "77542162-014c-4455-9613-e664e53a6c75",
+      "suno_url": "https://suno.com/song/77542162-014c-4455-9613-e664e53a6c75?sh=NtPzwLMWdXqnH3pC",
+      "suno_share_url": "https://suno.com/s/NtPzwLMWdXqnH3pC",
+      "ig_preview_url": "https://www.instagram.com/p/DZoQOSNItX5/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZoQOSNItX5/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZoQOSNItX5/",
+          "date": "2026-06-16"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0319",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 96,
+      "note": null
+    },
+    {
+      "title": "好好過日子",
+      "song_id": "2802d441-316a-4461-824b-1b7077a7f129",
+      "suno_url": "https://suno.com/song/2802d441-316a-4461-824b-1b7077a7f129?sh=GaLHe7w9E5dAWt8S",
+      "suno_share_url": "https://suno.com/s/GaLHe7w9E5dAWt8S",
+      "ig_preview_url": "https://www.instagram.com/p/DZmdf-hoibq/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZmdf-hoibq/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZmdf-hoibq/",
+          "date": "2026-06-15"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0314",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 97,
+      "note": null
+    },
+    {
+      "title": "回歸正常",
+      "song_id": "95629d67-dcd7-4b85-89e3-2884e9637df5",
+      "suno_url": "https://suno.com/song/95629d67-dcd7-4b85-89e3-2884e9637df5?sh=EgZE9gtEHWC5gWdt",
+      "suno_share_url": "https://suno.com/s/EgZE9gtEHWC5gWdt",
+      "ig_preview_url": "https://www.instagram.com/p/DZl6H-LInTm/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZl6H-LInTm/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZl6H-LInTm/",
+          "date": "2026-06-15"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0216",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 98,
+      "note": null
+    },
+    {
+      "title": "??????",
+      "song_id": "7880ac92-8b81-40be-87c7-a3287fc872b3",
+      "suno_url": "https://suno.com/song/7880ac92-8b81-40be-87c7-a3287fc872b3?sh=w2f7P33Znbjjv82P",
+      "suno_share_url": "https://suno.com/s/w2f7P33Znbjjv82P",
+      "ig_preview_url": "https://www.instagram.com/p/DZkMe0CI_R0/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZkMe0CI_R0/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZkMe0CI_R0/",
+          "date": "2026-06-14"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 99,
+      "note": null
+    },
+    {
+      "title": "也好",
+      "song_id": "59f43a84-4e0f-4ab1-bce3-99c26cc8dd0d",
+      "suno_url": "https://suno.com/song/59f43a84-4e0f-4ab1-bce3-99c26cc8dd0d?sh=KANgw8O3sFhxxroM",
+      "suno_share_url": "https://suno.com/s/KANgw8O3sFhxxroM",
+      "ig_preview_url": "https://www.instagram.com/p/DZj85zOo3Qy/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZj85zOo3Qy/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZj85zOo3Qy/",
+          "date": "2026-06-14"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 100,
+      "note": null
+    },
+    {
+      "title": "微月光",
+      "song_id": "e26d7dc3-1b2b-4b4c-aa04-dfdd0d67ad46",
+      "suno_url": "https://suno.com/song/e26d7dc3-1b2b-4b4c-aa04-dfdd0d67ad46?sh=5kUiQeYHikksDYvO",
+      "suno_share_url": "https://suno.com/s/5kUiQeYHikksDYvO",
+      "ig_preview_url": "https://www.instagram.com/p/DZjqZZNIUK-/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZjqZZNIUK-/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZjqZZNIUK-/",
+          "date": "2026-06-14"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0290",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 101,
+      "note": null
+    },
+    {
+      "title": "擺盪之間",
+      "song_id": "306361bd-5ad3-4c5b-b17f-cd35c50d373e",
+      "suno_url": "https://suno.com/song/306361bd-5ad3-4c5b-b17f-cd35c50d373e?sh=j8e3Q4C3ILSYdiHu",
+      "suno_share_url": "https://suno.com/s/j8e3Q4C3ILSYdiHu",
+      "ig_preview_url": "https://www.instagram.com/p/DZjCi3oIHIk/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZjCi3oIHIk/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZjCi3oIHIk/",
+          "date": "2026-06-14"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0355",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "同名作品／新旋律版本",
+      "merge_status": "單一預覽",
+      "source_row": 102,
+      "note": null
+    },
+    {
+      "title": "空站之後",
+      "song_id": "83c1e930-333a-4c4b-95e2-a3aa35891dcd",
+      "suno_url": "https://suno.com/song/83c1e930-333a-4c4b-95e2-a3aa35891dcd?sh=IGvpLxqSaez0UEKf",
+      "suno_share_url": "https://suno.com/s/IGvpLxqSaez0UEKf",
+      "ig_preview_url": "https://www.instagram.com/p/DZhW0GooBx9/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZhW0GooBx9/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZhW0GooBx9/",
+          "date": "2026-06-13"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0201",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 103,
+      "note": null
+    },
+    {
+      "title": "夜之主權 / 存在場",
+      "song_id": "9720cfdd-369b-461d-a6de-bb3553636066",
+      "suno_url": "https://suno.com/song/9720cfdd-369b-461d-a6de-bb3553636066?sh=02BZCkAenb4dsynG",
+      "suno_share_url": "https://suno.com/s/02BZCkAenb4dsynG",
+      "ig_preview_url": "https://www.instagram.com/p/DZhFHyNocCL/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZhFHyNocCL/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZhFHyNocCL/",
+          "date": "2026-06-13"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0158",
+      "period": "P4",
+      "era_id": "ERA-P4",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 104,
+      "note": null
+    },
+    {
+      "title": "白晝仍在",
+      "song_id": "b0323c71-acb2-4945-8ee6-cffd4cb29e3b",
+      "suno_url": "https://suno.com/song/b0323c71-acb2-4945-8ee6-cffd4cb29e3b?sh=Z6seogpM4MdBv9kc",
+      "suno_share_url": "https://suno.com/s/Z6seogpM4MdBv9kc",
+      "ig_preview_url": "https://www.instagram.com/p/DZhE4vCoCAJ/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZhE4vCoCAJ/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZhE4vCoCAJ/",
+          "date": "2026-06-13"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0175",
+      "period": "P4",
+      "era_id": "ERA-P4",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 105,
+      "note": null
+    },
+    {
+      "title": "暫時月蝕",
+      "song_id": "bddde8fa-5353-412e-bad9-38f92489960b",
+      "suno_url": "https://suno.com/song/bddde8fa-5353-412e-bad9-38f92489960b?sh=rmWpBcavEzhtCqYM",
+      "suno_share_url": "https://suno.com/s/rmWpBcavEzhtCqYM",
+      "ig_preview_url": "https://www.instagram.com/p/DZhEDQfo6EZ/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZhEDQfo6EZ/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZhEDQfo6EZ/",
+          "date": "2026-06-13"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 106,
+      "note": null
+    },
+    {
+      "title": "斷眉",
+      "song_id": "dcbd8f81-0058-4fd2-8625-a96888d47c78",
+      "suno_url": "https://suno.com/song/dcbd8f81-0058-4fd2-8625-a96888d47c78?sh=Fq8DQK1671WWP4i7",
+      "suno_share_url": "https://suno.com/s/Fq8DQK1671WWP4i7",
+      "ig_preview_url": "https://www.instagram.com/p/DZgNhiJyub6/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZgNhiJyub6/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZgNhiJyub6/",
+          "date": "2026-06-12"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0088",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 107,
+      "note": null
+    },
+    {
+      "title": "迷失的自己",
+      "song_id": "e02aab45-5416-418a-955d-fed6248b904b",
+      "suno_url": "https://suno.com/song/e02aab45-5416-418a-955d-fed6248b904b?sh=ieLANAsr0IhMsqwX",
+      "suno_share_url": "https://suno.com/s/ieLANAsr0IhMsqwX",
+      "ig_preview_url": "https://www.instagram.com/p/DZfHItHIoGt/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZfHItHIoGt/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZfHItHIoGt/",
+          "date": "2026-06-12"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0171",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "同名作品／新旋律版本",
+      "merge_status": "單一預覽",
+      "source_row": 108,
+      "note": null
+    },
+    {
+      "title": "歲月不饒人",
+      "song_id": "c570407c-ee1a-45c8-a8b8-a0b05e72a285",
+      "suno_url": "https://suno.com/song/c570407c-ee1a-45c8-a8b8-a0b05e72a285?sh=4jQ3iB2MUoAqilH2",
+      "suno_share_url": "https://suno.com/s/4jQ3iB2MUoAqilH2",
+      "ig_preview_url": "https://www.instagram.com/p/DZe4dtFIFXT/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZe4dtFIFXT/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZe4dtFIFXT/",
+          "date": "2026-06-12"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 109,
+      "note": null
+    },
+    {
+      "title": "人生月台?候車中",
+      "song_id": "5e67d655-03cb-4776-9c9b-51835f08cc54",
+      "suno_url": "https://suno.com/song/5e67d655-03cb-4776-9c9b-51835f08cc54?sh=6AndjLGLtzWUJ6sF",
+      "suno_share_url": "https://suno.com/s/6AndjLGLtzWUJ6sF",
+      "ig_preview_url": "https://www.instagram.com/p/DZexIXBIVM3/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZexIXBIVM3/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZexIXBIVM3/",
+          "date": "2026-06-12"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 110,
+      "note": null
+    },
+    {
+      "title": "歸零之後",
+      "song_id": "44503883-b0e7-4d66-bea9-c4053b9e491e",
+      "suno_url": "https://suno.com/song/44503883-b0e7-4d66-bea9-c4053b9e491e?sh=5O36tPU4yPBLA5PU",
+      "suno_share_url": "https://suno.com/s/5O36tPU4yPBLA5PU",
+      "ig_preview_url": "https://www.instagram.com/p/DZd-Em7IGoM/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZd-Em7IGoM/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZd-Em7IGoM/",
+          "date": "2026-06-12"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 111,
+      "note": null
+    },
+    {
+      "title": "走一步算一步",
+      "song_id": "d21e8ed4-dea5-47db-be9c-512b8036d987",
+      "suno_url": "https://suno.com/song/d21e8ed4-dea5-47db-be9c-512b8036d987?sh=knVdJvrrXRdsXsCr",
+      "suno_share_url": "https://suno.com/s/knVdJvrrXRdsXsCr",
+      "ig_preview_url": "https://www.instagram.com/p/DZdv5MwI_Su/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZdv5MwI_Su/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZdv5MwI_Su/",
+          "date": "2026-06-11"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "同名作品／新旋律版本",
+      "merge_status": "單一預覽",
+      "source_row": 112,
+      "note": null
+    },
+    {
+      "title": "朋友的定義",
+      "song_id": "ba457543-aaba-4bff-871a-cc9f8eef07d6",
+      "suno_url": "https://suno.com/song/ba457543-aaba-4bff-871a-cc9f8eef07d6?sh=4A8nhzi7DLo7h9o0",
+      "suno_share_url": "https://suno.com/s/4A8nhzi7DLo7h9o0",
+      "ig_preview_url": "https://www.instagram.com/p/DZduWEsBNCT/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZduWEsBNCT/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZduWEsBNCT/",
+          "date": "2026-06-11"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0263",
+      "period": "P4",
+      "era_id": "ERA-P4",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 113,
+      "note": null
+    },
+    {
+      "title": "戒痕",
+      "song_id": "d09d7898-8a9f-4171-9d99-88f26c6dab56",
+      "suno_url": "https://suno.com/song/d09d7898-8a9f-4171-9d99-88f26c6dab56?sh=mtNmGg2NjUY6pXhU",
+      "suno_share_url": "https://suno.com/s/mtNmGg2NjUY6pXhU",
+      "ig_preview_url": "https://www.instagram.com/p/DZdsKK6B58Y/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZdsKK6B58Y/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZdsKK6B58Y/",
+          "date": "2026-06-11"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "同名作品／新旋律版本",
+      "merge_status": "單一預覽",
+      "source_row": 114,
+      "note": null
+    },
+    {
+      "title": "自由之風",
+      "song_id": "f3a47ced-20c7-4208-a583-b0d550d96f2a",
+      "suno_url": "https://suno.com/song/f3a47ced-20c7-4208-a583-b0d550d96f2a?sh=YX1IbS3URmv3CcBp",
+      "suno_share_url": "https://suno.com/s/YX1IbS3URmv3CcBp",
+      "ig_preview_url": "https://www.instagram.com/p/DZdrizgBQQR/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZdrizgBQQR/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZdrizgBQQR/",
+          "date": "2026-06-11"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0281",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 115,
+      "note": null
+    },
+    {
+      "title": "仍向前",
+      "song_id": "ef29f33b-579a-4939-acaa-f11871bb4c68",
+      "suno_url": "https://suno.com/song/ef29f33b-579a-4939-acaa-f11871bb4c68?sh=xCzJLIdlRhSLgszU",
+      "suno_share_url": "https://suno.com/s/xCzJLIdlRhSLgszU",
+      "ig_preview_url": "https://www.instagram.com/p/DZdrKRyhyTh/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZdrKRyhyTh/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZdrKRyhyTh/",
+          "date": "2026-06-11"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0377",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 116,
+      "note": null
+    },
+    {
+      "title": "人生月台",
+      "song_id": "9a56d555-d559-4402-8c17-47f8bfa6515f",
+      "suno_url": "https://suno.com/song/9a56d555-d559-4402-8c17-47f8bfa6515f?sh=nUZEw9am8T82swgs",
+      "suno_share_url": "https://suno.com/s/nUZEw9am8T82swgs",
+      "ig_preview_url": "https://www.instagram.com/p/DZdqhJ3oYNm/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DZdqhJ3oYNm/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DZdqhJ3oYNm/",
+          "date": "2026-06-11"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0403",
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "已確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 117,
+      "note": null
+    },
+    {
+      "title": "總會有光",
+      "song_id": "8ab48d60-d0ca-4f7e-aca5-9589452f953c",
+      "suno_url": "https://suno.com/song/8ab48d60-d0ca-4f7e-aca5-9589452f953c?sh=hGNqQiHR3nYnrNkr",
+      "suno_share_url": "https://suno.com/s/hGNqQiHR3nYnrNkr",
+      "ig_preview_url": "https://www.instagram.com/p/DVP-rADAU-e/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVP-rADAU-e/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVP-rADAU-e/",
+          "date": "2026-02-27"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0181",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 118,
+      "note": null
+    },
+    {
+      "title": "前任的形狀",
+      "song_id": "1360badf-50e0-4ca2-81b2-b1e442769b5b",
+      "suno_url": "https://suno.com/song/1360badf-50e0-4ca2-81b2-b1e442769b5b?sh=iRl1rqVTsvEAlK72",
+      "suno_share_url": "https://suno.com/s/iRl1rqVTsvEAlK72",
+      "ig_preview_url": "https://www.instagram.com/p/DVP7_sVAXZ5/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVP7_sVAXZ5/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVP7_sVAXZ5/",
+          "date": "2026-02-27"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0182",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 119,
+      "note": null
+    },
+    {
+      "title": "一切都好",
+      "song_id": "723b239e-06b4-413c-b72a-2a242cf4e3f4",
+      "suno_url": "https://suno.com/song/723b239e-06b4-413c-b72a-2a242cf4e3f4?sh=Bm7lyw5fQboKt0hl",
+      "suno_share_url": "https://suno.com/s/Bm7lyw5fQboKt0hl",
+      "ig_preview_url": "https://www.instagram.com/p/DVN7l3pCMbw/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVN7l3pCMbw/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVN7l3pCMbw/",
+          "date": "2026-02-26"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0374",
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 120,
+      "note": null
+    },
+    {
+      "title": "微光也在",
+      "song_id": "757498d2-90e6-4b8b-968d-dfe7f9bc70a5",
+      "suno_url": "https://suno.com/song/757498d2-90e6-4b8b-968d-dfe7f9bc70a5?sh=qvAZklnrXKFDihTN",
+      "suno_share_url": "https://suno.com/s/qvAZklnrXKFDihTN",
+      "ig_preview_url": "https://www.instagram.com/p/DVN7C2WiIV-/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVN7C2WiIV-/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVN7C2WiIV-/",
+          "date": "2026-02-26"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0169",
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 121,
+      "note": null
+    },
+    {
+      "title": "微光作伴",
+      "song_id": "e9aedc1f-9e64-40dc-adf0-79c2c8ae691c",
+      "suno_url": "https://suno.com/song/e9aedc1f-9e64-40dc-adf0-79c2c8ae691c?sh=XYYRcdizjv2C44z5",
+      "suno_share_url": "https://suno.com/s/XYYRcdizjv2C44z5",
+      "ig_preview_url": "https://www.instagram.com/p/DVN6RVJCAI0/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVN6RVJCAI0/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVN6RVJCAI0/",
+          "date": "2026-02-26"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0399",
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 122,
+      "note": null
+    },
+    {
+      "title": "高空壓縮",
+      "song_id": "cb08c127-b88a-4c40-a931-38c756ae7c83",
+      "suno_url": "https://suno.com/song/cb08c127-b88a-4c40-a931-38c756ae7c83?sh=VeGL0YUzAiaitCoQ",
+      "suno_share_url": "https://suno.com/s/VeGL0YUzAiaitCoQ",
+      "ig_preview_url": "https://www.instagram.com/p/DVMVEXxkvhe/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVMVEXxkvhe/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVMVEXxkvhe/",
+          "date": "2026-02-25"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0069",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 123,
+      "note": null
+    },
+    {
+      "title": "節拍仍在",
+      "song_id": "8ecf40fe-5fcc-4964-a862-7b89361467fa",
+      "suno_url": "https://suno.com/song/8ecf40fe-5fcc-4964-a862-7b89361467fa?sh=yqVZ31jjhEJuuCl5",
+      "suno_share_url": "https://suno.com/s/yqVZ31jjhEJuuCl5",
+      "ig_preview_url": "https://www.instagram.com/p/DVIiOs7gSk7/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVIiOs7gSk7/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVIiOs7gSk7/",
+          "date": "2026-02-24"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 124,
+      "note": null
+    },
+    {
+      "title": "03:47",
+      "song_id": "445c0a66-e22c-4b41-9eb5-4ce97984021b",
+      "suno_url": "https://suno.com/song/445c0a66-e22c-4b41-9eb5-4ce97984021b?sh=P2afMmqSk77Ji2LT",
+      "suno_share_url": "https://suno.com/s/P2afMmqSk77Ji2LT",
+      "ig_preview_url": "https://www.instagram.com/p/DVIZAWcAU0K/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVIZAWcAU0K/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVIZAWcAU0K/",
+          "date": "2026-02-24"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0334",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 125,
+      "note": null
+    },
+    {
+      "title": "中心飛行",
+      "song_id": "199b178d-a8ac-468f-b62a-d3831d03274c",
+      "suno_url": "https://suno.com/song/199b178d-a8ac-468f-b62a-d3831d03274c?sh=pJy2aU3wXvyJ4iRP",
+      "suno_share_url": "https://suno.com/s/pJy2aU3wXvyJ4iRP",
+      "ig_preview_url": "https://www.instagram.com/p/DVGVcDbAZ7u/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVGVcDbAZ7u/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVGVcDbAZ7u/",
+          "date": "2026-02-23"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0324",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 126,
+      "note": null
+    },
+    {
+      "title": "不必替我完成（給兒子",
+      "song_id": "51da9cd7-a8b8-4fc9-b777-19d0351fd1ba",
+      "suno_url": "https://suno.com/song/51da9cd7-a8b8-4fc9-b777-19d0351fd1ba?sh=2IpPQZeQWGlvvQtO",
+      "suno_share_url": "https://suno.com/s/2IpPQZeQWGlvvQtO",
+      "ig_preview_url": "https://www.instagram.com/p/DVFrrXoAffN/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVFrrXoAffN/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVFrrXoAffN/",
+          "date": "2026-02-23"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0394",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 127,
+      "note": null
+    },
+    {
+      "title": "浪內演算 ‧ 節拍登頂",
+      "song_id": "9111fc6d-78da-4b33-af5a-627a94a69f58",
+      "suno_url": "https://suno.com/song/9111fc6d-78da-4b33-af5a-627a94a69f58?sh=SZmNEmzm618TWnSH",
+      "suno_share_url": "https://suno.com/s/SZmNEmzm618TWnSH",
+      "ig_preview_url": "https://www.instagram.com/p/DVFH_92klkU/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVFH_92klkU/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVFH_92klkU/",
+          "date": "2026-02-23"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0326",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 128,
+      "note": null
+    },
+    {
+      "title": "滿潮之前",
+      "song_id": "7f60c89c-f4e5-43cd-a0ed-4aa38be0778c",
+      "suno_url": "https://suno.com/song/7f60c89c-f4e5-43cd-a0ed-4aa38be0778c?sh=212u82NDu2vwe09I",
+      "suno_share_url": "https://suno.com/s/212u82NDu2vwe09I",
+      "ig_preview_url": "https://www.instagram.com/p/DVEIPwsgTtI/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVEIPwsgTtI/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVEIPwsgTtI/",
+          "date": "2026-02-22"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0114",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 129,
+      "note": null
+    },
+    {
+      "title": "真空領域",
+      "song_id": "c4f1ec91-e581-4c79-924e-71bf17e05063",
+      "suno_url": "https://suno.com/song/c4f1ec91-e581-4c79-924e-71bf17e05063?sh=z8rUaCcnt9hmuK1e",
+      "suno_share_url": "https://suno.com/s/z8rUaCcnt9hmuK1e",
+      "ig_preview_url": "https://www.instagram.com/p/DVD40OvAWAg/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVD40OvAWAg/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVD40OvAWAg/",
+          "date": "2026-02-22"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0141",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 130,
+      "note": null
+    },
+    {
+      "title": "真空位",
+      "song_id": "626ce020-2a98-4b9f-bbae-c62b48b2d46f",
+      "suno_url": "https://suno.com/song/626ce020-2a98-4b9f-bbae-c62b48b2d46f?sh=QY0wa4zfCEa54y0x",
+      "suno_share_url": "https://suno.com/s/QY0wa4zfCEa54y0x",
+      "ig_preview_url": "https://www.instagram.com/p/DVDouZBAQHa/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVDouZBAQHa/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVDouZBAQHa/",
+          "date": "2026-02-22"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0232",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 131,
+      "note": null
+    },
+    {
+      "title": "兩個人的白晝之月",
+      "song_id": "e63a8bb5-78b7-4652-9c6f-e97d3c7638e6",
+      "suno_url": "https://suno.com/song/e63a8bb5-78b7-4652-9c6f-e97d3c7638e6?sh=B9yaJ8OeA4Iz8usw",
+      "suno_share_url": "https://suno.com/s/B9yaJ8OeA4Iz8usw",
+      "ig_preview_url": "https://www.instagram.com/p/DVA_kv5gdti/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVA_kv5gdti/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVA_kv5gdti/",
+          "date": "2026-02-21"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0306",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 132,
+      "note": null
+    },
+    {
+      "title": "失焦",
+      "song_id": "dee61870-29bb-43cb-8693-e44984655a7f",
+      "suno_url": "https://suno.com/song/dee61870-29bb-43cb-8693-e44984655a7f?sh=XnORm7q7hmCEQFgB",
+      "suno_share_url": "https://suno.com/s/XnORm7q7hmCEQFgB",
+      "ig_preview_url": "https://www.instagram.com/p/DVAv716AdhU/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DVAv716AdhU/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DVAv716AdhU/",
+          "date": "2026-02-21"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 133,
+      "note": null
+    },
+    {
+      "title": "白晝之月?自持",
+      "song_id": "16419267-09b1-448c-b61e-7a8ee39992f1",
+      "suno_url": "https://suno.com/song/16419267-09b1-448c-b61e-7a8ee39992f1?sh=JMY0UH4UwzKstX5l",
+      "suno_share_url": "https://suno.com/s/JMY0UH4UwzKstX5l",
+      "ig_preview_url": "https://www.instagram.com/p/DU__N21EsNS/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU__N21EsNS/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU__N21EsNS/",
+          "date": "2026-02-21"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0011",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 134,
+      "note": null
+    },
+    {
+      "title": "數位春山",
+      "song_id": "5010142f-95b9-4627-bff0-444dc02fd006",
+      "suno_url": "https://suno.com/song/5010142f-95b9-4627-bff0-444dc02fd006?sh=svTc74k7NKjBOhkU",
+      "suno_share_url": "https://suno.com/s/svTc74k7NKjBOhkU",
+      "ig_preview_url": "https://www.instagram.com/p/DU_BBBcgakN/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU_BBBcgakN/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU_BBBcgakN/",
+          "date": "2026-02-20"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0099",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 135,
+      "note": null
+    },
+    {
+      "title": "單身剛剛好",
+      "song_id": "5e1c6aa6-1d14-4c86-88e0-1ecd39ff1137",
+      "suno_url": "https://suno.com/song/5e1c6aa6-1d14-4c86-88e0-1ecd39ff1137?sh=glKkVVbHMmVvgkWa",
+      "suno_share_url": "https://suno.com/s/glKkVVbHMmVvgkWa",
+      "ig_preview_url": "https://www.instagram.com/p/DU9wJqvAaU0/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU9wJqvAaU0/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU9wJqvAaU0/",
+          "date": "2026-02-20"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0271",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 136,
+      "note": null
+    },
+    {
+      "title": "例行公事",
+      "song_id": "241d11b9-2983-44c9-b86d-4bbebc43563d",
+      "suno_url": "https://suno.com/song/241d11b9-2983-44c9-b86d-4bbebc43563d?sh=KMLHp3B6cYZzytfc",
+      "suno_share_url": "https://suno.com/s/KMLHp3B6cYZzytfc",
+      "ig_preview_url": "https://www.instagram.com/p/DU9eDs9EvcI/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU9eDs9EvcI/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU9eDs9EvcI/",
+          "date": "2026-02-20"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0257",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 137,
+      "note": null
+    },
+    {
+      "title": "微笑校正",
+      "song_id": "f9b12691-3a09-4bb1-9730-ff5545a348a9",
+      "suno_url": "https://suno.com/song/f9b12691-3a09-4bb1-9730-ff5545a348a9?sh=HSrnPXFsgGE1T6mG",
+      "suno_share_url": "https://suno.com/s/HSrnPXFsgGE1T6mG",
+      "ig_preview_url": "https://www.instagram.com/p/DU9cV1gErqM/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU9cV1gErqM/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU9cV1gErqM/",
+          "date": "2026-02-20"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0341",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 138,
+      "note": null
+    },
+    {
+      "title": "月蝕之間",
+      "song_id": "001387de-057d-4cb7-b908-166377046df6",
+      "suno_url": "https://suno.com/song/001387de-057d-4cb7-b908-166377046df6?sh=2VgrZMLWfZ2nykcV",
+      "suno_share_url": "https://suno.com/s/2VgrZMLWfZ2nykcV",
+      "ig_preview_url": "https://www.instagram.com/p/DU9Zkzlkqbs/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU9Zkzlkqbs/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU9Zkzlkqbs/",
+          "date": "2026-02-20"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0163",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 139,
+      "note": null
+    },
+    {
+      "title": "無切面",
+      "song_id": "1ac1eb3d-7ab2-4b9f-bd65-b4c7bb388d3c",
+      "suno_url": "https://suno.com/song/1ac1eb3d-7ab2-4b9f-bd65-b4c7bb388d3c?sh=ka6jHUcWNqi4qMRa",
+      "suno_share_url": "https://suno.com/s/ka6jHUcWNqi4qMRa",
+      "ig_preview_url": "https://www.instagram.com/p/DU9Y-boktVq/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU9Y-boktVq/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU9Y-boktVq/",
+          "date": "2026-02-20"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0042",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 140,
+      "note": null
+    },
+    {
+      "title": "靜光之間",
+      "song_id": "de667b78-7fac-4040-a680-24ffa0639042",
+      "suno_url": "https://suno.com/song/de667b78-7fac-4040-a680-24ffa0639042?sh=F6i5iWyhBjuGqvu9",
+      "suno_share_url": "https://suno.com/s/F6i5iWyhBjuGqvu9",
+      "ig_preview_url": "https://www.instagram.com/p/DU9W2AdErrx/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU9W2AdErrx/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU9W2AdErrx/",
+          "date": "2026-02-19"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0292",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 141,
+      "note": null
+    },
+    {
+      "title": "語言的先知",
+      "song_id": "01c324dd-6604-4a69-b44b-7c92096afe66",
+      "suno_url": "https://suno.com/song/01c324dd-6604-4a69-b44b-7c92096afe66",
+      "suno_share_url": "",
+      "ig_preview_url": "https://www.instagram.com/p/DU9V4voASPt/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU9V4voASPt/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU9V4voASPt/",
+          "date": "2026-02-19"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0157",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 142,
+      "note": null
+    },
+    {
+      "title": "我們不是太陽和地球",
+      "song_id": "0c4661d8-eaca-4e44-9f5a-659045ba025a",
+      "suno_url": "https://suno.com/song/0c4661d8-eaca-4e44-9f5a-659045ba025a?sh=O9bxxq4HtLntsf5X",
+      "suno_share_url": "https://suno.com/s/O9bxxq4HtLntsf5X",
+      "ig_preview_url": "https://www.instagram.com/p/DU76sg6AX-n/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU76sg6AX-n/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU76sg6AX-n/",
+          "date": "2026-02-19"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0020",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 143,
+      "note": null
+    },
+    {
+      "title": "壞人不求人",
+      "song_id": "09aca1fe-5569-423a-8ad7-46379d3a41e1",
+      "suno_url": "https://suno.com/song/09aca1fe-5569-423a-8ad7-46379d3a41e1?sh=rl0fBg5O1PjTHFRi",
+      "suno_share_url": "https://suno.com/s/rl0fBg5O1PjTHFRi",
+      "ig_preview_url": "https://www.instagram.com/p/DU7wmnJAcwY/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU7wmnJAcwY/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU7wmnJAcwY/",
+          "date": "2026-02-19"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0264",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 144,
+      "note": null
+    },
+    {
+      "title": "分身在場",
+      "song_id": "d136f7f4-938e-4851-9f6e-ea85582c1c9b",
+      "suno_url": "https://suno.com/song/d136f7f4-938e-4851-9f6e-ea85582c1c9b?sh=rz4KQC9QKUxVL1Av",
+      "suno_share_url": "https://suno.com/s/rz4KQC9QKUxVL1Av",
+      "ig_preview_url": "https://www.instagram.com/p/DU5qOL4AeZS/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU5qOL4AeZS/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU5qOL4AeZS/",
+          "date": "2026-02-18"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0149",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 145,
+      "note": null
+    },
+    {
+      "title": "雙掌才有聲音",
+      "song_id": "7d6ab742-0d39-4d4f-8528-af87703a66cd",
+      "suno_url": "https://suno.com/song/7d6ab742-0d39-4d4f-8528-af87703a66cd?sh=4fZIqzj6ZihyUosr",
+      "suno_share_url": "https://suno.com/s/4fZIqzj6ZihyUosr",
+      "ig_preview_url": "https://www.instagram.com/p/DU5ZWeRAXuY/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU5ZWeRAXuY/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU5ZWeRAXuY/",
+          "date": "2026-02-18"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0172",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 146,
+      "note": null
+    },
+    {
+      "title": "一個人也行",
+      "song_id": "fd70c3a2-b0c6-4339-9d64-ae49c8772ea4",
+      "suno_url": "https://suno.com/song/fd70c3a2-b0c6-4339-9d64-ae49c8772ea4?sh=jTZTVPJ4uCrRGvo0",
+      "suno_share_url": "https://suno.com/s/jTZTVPJ4uCrRGvo0",
+      "ig_preview_url": "https://www.instagram.com/p/DU4XPd5ATmo/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU4XPd5ATmo/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU4XPd5ATmo/",
+          "date": "2026-02-18"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0344",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 147,
+      "note": null
+    },
+    {
+      "title": "清晨空位",
+      "song_id": "a9524aad-5403-4ab2-863d-dc8377e5a0a7",
+      "suno_url": "https://suno.com/song/a9524aad-5403-4ab2-863d-dc8377e5a0a7?sh=kSFkDLugWUWCCQuS",
+      "suno_share_url": "https://suno.com/s/kSFkDLugWUWCCQuS",
+      "ig_preview_url": "https://www.instagram.com/p/DU4UzggATli/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU4UzggATli/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU4UzggATli/",
+          "date": "2026-02-18"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0139",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 148,
+      "note": null
+    },
+    {
+      "title": "鹽糖日蝕",
+      "song_id": "6e0a3fba-468d-4c23-a427-a2e237783de0",
+      "suno_url": "https://suno.com/song/6e0a3fba-468d-4c23-a427-a2e237783de0?sh=RDnzARherbJiQ7bu",
+      "suno_share_url": "https://suno.com/s/RDnzARherbJiQ7bu",
+      "ig_preview_url": "https://www.instagram.com/p/DU3RZNvgaDN/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU3RZNvgaDN/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU3RZNvgaDN/",
+          "date": "2026-02-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0273",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 149,
+      "note": null
+    },
+    {
+      "title": "微月光原理",
+      "song_id": "f5bc0921-8ff3-4f0e-9caf-552525c50405",
+      "suno_url": "https://suno.com/song/f5bc0921-8ff3-4f0e-9caf-552525c50405?sh=7YmF7xUymO2hYkJG",
+      "suno_share_url": "https://suno.com/s/7YmF7xUymO2hYkJG",
+      "ig_preview_url": "https://www.instagram.com/p/DU2ecBVgf4P/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU2ecBVgf4P/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU2ecBVgf4P/",
+          "date": "2026-02-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0118",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 150,
+      "note": null
+    },
+    {
+      "title": "微月光沒有多說",
+      "song_id": "2b1b4559-3940-4ea0-9dc0-d916717e9eb8",
+      "suno_url": "https://suno.com/song/2b1b4559-3940-4ea0-9dc0-d916717e9eb8?sh=w9IMvPMlu9GvTvnU",
+      "suno_share_url": "https://suno.com/s/w9IMvPMlu9GvTvnU",
+      "ig_preview_url": "https://www.instagram.com/p/DU2dvMxAZ0j/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU2dvMxAZ0j/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU2dvMxAZ0j/",
+          "date": "2026-02-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0279",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 151,
+      "note": null
+    },
+    {
+      "title": "灰燼裡的微月光",
+      "song_id": "c37a8e6a-129a-4eb2-8985-ca6ebe80b23f",
+      "suno_url": "https://suno.com/song/c37a8e6a-129a-4eb2-8985-ca6ebe80b23f?sh=aTv38VH4FJvTBB5D",
+      "suno_share_url": "https://suno.com/s/aTv38VH4FJvTBB5D",
+      "ig_preview_url": "https://www.instagram.com/p/DU2dPrQAQRl/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU2dPrQAQRl/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU2dPrQAQRl/",
+          "date": "2026-02-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0043",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 152,
+      "note": null
+    },
+    {
+      "title": "下半場歸我",
+      "song_id": "e8250230-863b-4f5b-9fea-403b4925b3af",
+      "suno_url": "https://suno.com/song/e8250230-863b-4f5b-9fea-403b4925b3af?sh=ao4VVsjAuxn9Cjnu",
+      "suno_share_url": "https://suno.com/s/ao4VVsjAuxn9Cjnu",
+      "ig_preview_url": "https://www.instagram.com/p/DU2b93cAXgh/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU2b93cAXgh/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU2b93cAXgh/",
+          "date": "2026-02-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0260",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 153,
+      "note": null
+    },
+    {
+      "title": "我全都要",
+      "song_id": "dd0e9876-3a28-48d2-9c45-e7fbd098e2d4",
+      "suno_url": "https://suno.com/song/dd0e9876-3a28-48d2-9c45-e7fbd098e2d4?sh=vCYZHqrSdRt1DmdE",
+      "suno_share_url": "https://suno.com/s/vCYZHqrSdRt1DmdE",
+      "ig_preview_url": "https://www.instagram.com/p/DU2bC1MAaqm/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU2bC1MAaqm/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU2bC1MAaqm/",
+          "date": "2026-02-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0325",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 154,
+      "note": null
+    },
+    {
+      "title": "煙火之後",
+      "song_id": "d93a5add-37dd-4073-8bea-d983115780e1",
+      "suno_url": "https://suno.com/song/d93a5add-37dd-4073-8bea-d983115780e1?sh=0JcttYYi7f8mBDNL",
+      "suno_share_url": "https://suno.com/s/0JcttYYi7f8mBDNL",
+      "ig_preview_url": "https://www.instagram.com/p/DU0iTi3gVgg/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DU0iTi3gVgg/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DU0iTi3gVgg/",
+          "date": "2026-02-16"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0094",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 155,
+      "note": null
+    },
+    {
+      "title": "灰色關係",
+      "song_id": "13027225-fb9e-48fa-b9a3-63ef1c158eea",
+      "suno_url": "https://suno.com/song/13027225-fb9e-48fa-b9a3-63ef1c158eea?sh=gtUQglWoXUiTT0u8",
+      "suno_share_url": "https://suno.com/s/gtUQglWoXUiTT0u8",
+      "ig_preview_url": "https://www.instagram.com/p/DUx_xKoCKsY/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUx_xKoCKsY/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUx_xKoCKsY/",
+          "date": "2026-02-15"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0298",
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 156,
+      "note": null
+    },
+    {
+      "title": "沒有人只有我",
+      "song_id": "7a3d27af-bb42-4119-9554-96304cac4757",
+      "suno_url": "https://suno.com/song/7a3d27af-bb42-4119-9554-96304cac4757?sh=1Kbgd5WkY7Fg93LW",
+      "suno_share_url": "https://suno.com/s/1Kbgd5WkY7Fg93LW",
+      "ig_preview_url": "https://www.instagram.com/p/DUx87yFgQeu/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUx87yFgQeu/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUx87yFgQeu/",
+          "date": "2026-02-15"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0129",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 157,
+      "note": null
+    },
+    {
+      "title": "下半場的主角",
+      "song_id": "3cdfda27-b9b9-4466-bc70-782076d37196",
+      "suno_url": "https://suno.com/song/3cdfda27-b9b9-4466-bc70-782076d37196?sh=OHqzCAkSyT9LxzXp",
+      "suno_share_url": "https://suno.com/s/OHqzCAkSyT9LxzXp",
+      "ig_preview_url": "https://www.instagram.com/p/DUx8TJ4iCSl/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUx8TJ4iCSl/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUx8TJ4iCSl/",
+          "date": "2026-02-15"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0250",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 158,
+      "note": null
+    },
+    {
+      "title": "笨一點也沒關係",
+      "song_id": "c3a90c70-0eb4-463e-9d3c-5fc72b52a07a",
+      "suno_url": "https://suno.com/song/c3a90c70-0eb4-463e-9d3c-5fc72b52a07a?sh=VXSlrfBzQfbD4XYu",
+      "suno_share_url": "https://suno.com/s/VXSlrfBzQfbD4XYu",
+      "ig_preview_url": "https://www.instagram.com/p/DUx7fu1CCFX/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUx7fu1CCFX/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUx7fu1CCFX/",
+          "date": "2026-02-15"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0223",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 159,
+      "note": null
+    },
+    {
+      "title": "重新上拍",
+      "song_id": "27b140de-caea-4d5a-b618-c6718345b271",
+      "suno_url": "https://suno.com/song/27b140de-caea-4d5a-b618-c6718345b271?sh=H2izxDrY8FHRJSOw",
+      "suno_share_url": "https://suno.com/s/H2izxDrY8FHRJSOw",
+      "ig_preview_url": "https://www.instagram.com/p/DUxwtvLgdDJ/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUxwtvLgdDJ/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUxwtvLgdDJ/",
+          "date": "2026-02-15"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0234",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 160,
+      "note": null
+    },
+    {
+      "title": "銀色協議",
+      "song_id": "c4d90dbe-4f4d-4cf6-ad06-5567cd243a3c",
+      "suno_url": "https://suno.com/song/c4d90dbe-4f4d-4cf6-ad06-5567cd243a3c?sh=5U5P4c1GfgvatTrm",
+      "suno_share_url": "https://suno.com/s/5U5P4c1GfgvatTrm",
+      "ig_preview_url": "https://www.instagram.com/p/DUxMXBCgeFu/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUxMXBCgeFu/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUxMXBCgeFu/",
+          "date": "2026-02-15"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0167",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 161,
+      "note": null
+    },
+    {
+      "title": "對齊之前",
+      "song_id": "65df7836-6dc6-464b-b77d-d158470b2e28",
+      "suno_url": "https://suno.com/song/65df7836-6dc6-464b-b77d-d158470b2e28?sh=5FiI7y5iMoq5DSru",
+      "suno_share_url": "https://suno.com/s/5FiI7y5iMoq5DSru",
+      "ig_preview_url": "https://www.instagram.com/p/DUxLpl5AZlF/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUxLpl5AZlF/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUxLpl5AZlF/",
+          "date": "2026-02-15"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0270",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 162,
+      "note": null
+    },
+    {
+      "title": "日蝕之前的顯現",
+      "song_id": "e2ddddd2-a0fc-49c0-bbd3-ff0eec167ae4",
+      "suno_url": "https://suno.com/song/e2ddddd2-a0fc-49c0-bbd3-ff0eec167ae4?sh=Mx3NCx0esOhu9LF5",
+      "suno_share_url": "https://suno.com/s/Mx3NCx0esOhu9LF5",
+      "ig_preview_url": "https://www.instagram.com/p/DUxJfC3geT5/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUxJfC3geT5/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUxJfC3geT5/",
+          "date": "2026-02-15"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0144",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 163,
+      "note": null
+    },
+    {
+      "title": "微月光?月蝕之後",
+      "song_id": "f6b2ff29-8e41-4b4a-9905-a3f84ae71080",
+      "suno_url": "https://suno.com/song/f6b2ff29-8e41-4b4a-9905-a3f84ae71080?sh=vXRoVv4ROpkDuy3J",
+      "suno_share_url": "https://suno.com/s/vXRoVv4ROpkDuy3J",
+      "ig_preview_url": "https://www.instagram.com/p/DUbyvLvEugl/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUbyvLvEugl/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUbyvLvEugl/",
+          "date": "2026-02-06"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0229",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 164,
+      "note": null
+    },
+    {
+      "title": "微月光?順其自然",
+      "song_id": "33f29d06-9875-4f59-8e7e-3f7a54b3c06f",
+      "suno_url": "https://suno.com/song/33f29d06-9875-4f59-8e7e-3f7a54b3c06f?sh=uk1g5R1ECvqaZOmy",
+      "suno_share_url": "https://suno.com/s/uk1g5R1ECvqaZOmy",
+      "ig_preview_url": "https://www.instagram.com/p/DUbyK77kt1M/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUbyK77kt1M/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUbyK77kt1M/",
+          "date": "2026-02-06"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0241",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 165,
+      "note": null
+    },
+    {
+      "title": "微月光旁的同意星",
+      "song_id": "e966ca6d-5b0f-45f9-a98a-a7719382dd82",
+      "suno_url": "https://suno.com/song/e966ca6d-5b0f-45f9-a98a-a7719382dd82?sh=GU7rJJmSwVev4GA5",
+      "suno_share_url": "https://suno.com/s/GU7rJJmSwVev4GA5",
+      "ig_preview_url": "https://www.instagram.com/p/DUbxG9kkhxT/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUbxG9kkhxT/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUbxG9kkhxT/",
+          "date": "2026-02-06"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0386",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 166,
+      "note": null
+    },
+    {
+      "title": "十字路口的微月光",
+      "song_id": "5c03a2be-aeb3-4602-8104-e8f6ac4b43ce",
+      "suno_url": "https://suno.com/song/5c03a2be-aeb3-4602-8104-e8f6ac4b43ce?sh=bGvvJS6Bw17tEmwc",
+      "suno_share_url": "https://suno.com/s/bGvvJS6Bw17tEmwc",
+      "ig_preview_url": "https://www.instagram.com/p/DUbwlJcEmv6/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUbwlJcEmv6/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUbwlJcEmv6/",
+          "date": "2026-02-06"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0093",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 167,
+      "note": null
+    },
+    {
+      "title": "微月光旁的失速星",
+      "song_id": "2b5998b1-4f48-48cb-9a81-36a07cf91902",
+      "suno_url": "https://suno.com/song/2b5998b1-4f48-48cb-9a81-36a07cf91902?sh=reGwlMpAgSosI0Gx",
+      "suno_share_url": "https://suno.com/s/reGwlMpAgSosI0Gx",
+      "ig_preview_url": "https://www.instagram.com/p/DUZHTCZEuKo/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUZHTCZEuKo/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUZHTCZEuKo/",
+          "date": "2026-02-05"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0359",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 168,
+      "note": null
+    },
+    {
+      "title": "微月光旁的失序星",
+      "song_id": "d517fdfb-0f05-43b9-be34-8ac2c4e0135c",
+      "suno_url": "https://suno.com/song/d517fdfb-0f05-43b9-be34-8ac2c4e0135c?sh=gs5jLSf6xNFv2Edr",
+      "suno_share_url": "https://suno.com/s/gs5jLSf6xNFv2Edr",
+      "ig_preview_url": "https://www.instagram.com/p/DUZFGhBEqEh/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUZFGhBEqEh/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUZFGhBEqEh/",
+          "date": "2026-02-05"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0121",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 169,
+      "note": null
+    },
+    {
+      "title": "已讀不回，不發光的獨行星",
+      "song_id": "29e92043-7f11-46f1-8e95-67b1a5e39452",
+      "suno_url": "https://suno.com/song/29e92043-7f11-46f1-8e95-67b1a5e39452?sh=C7idHPWfGVqCAWQs",
+      "suno_share_url": "https://suno.com/s/C7idHPWfGVqCAWQs",
+      "ig_preview_url": "https://www.instagram.com/p/DUZD8fykuI_/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUZD8fykuI_/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUZD8fykuI_/",
+          "date": "2026-02-05"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0145",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 170,
+      "note": null
+    },
+    {
+      "title": "微月光旁的一日星",
+      "song_id": "a9561efb-a412-4dd0-937a-288bcd082b22",
+      "suno_url": "https://suno.com/song/a9561efb-a412-4dd0-937a-288bcd082b22?sh=Y61tvayGRMpxHAU2",
+      "suno_share_url": "https://suno.com/s/Y61tvayGRMpxHAU2",
+      "ig_preview_url": "https://www.instagram.com/p/DUY_0C9ktzi/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUY_0C9ktzi/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUY_0C9ktzi/",
+          "date": "2026-02-05"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0259",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 171,
+      "note": null
+    },
+    {
+      "title": "夜還亮著",
+      "song_id": "c7df5537-1786-40f0-8a55-5e6352f5cf7e",
+      "suno_url": "https://suno.com/song/c7df5537-1786-40f0-8a55-5e6352f5cf7e?sh=mKuC37W8YzjydVei",
+      "suno_share_url": "https://suno.com/s/mKuC37W8YzjydVei",
+      "ig_preview_url": "https://www.instagram.com/p/DUY6_QNEo_V/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUY6_QNEo_V/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUY6_QNEo_V/",
+          "date": "2026-02-05"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0050",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 172,
+      "note": null
+    },
+    {
+      "title": "獨角戲",
+      "song_id": "15794773-9ff9-453b-8ba1-5b93de0f5f5e",
+      "suno_url": "https://suno.com/song/15794773-9ff9-453b-8ba1-5b93de0f5f5e",
+      "suno_share_url": "",
+      "ig_preview_url": "https://www.instagram.com/p/DUYolYAgRwG/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DUYolYAgRwG/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DUYolYAgRwG/",
+          "date": "2026-02-05"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0372",
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 173,
+      "note": null
+    },
+    {
+      "title": "足元、??光",
+      "song_id": "4f454c51-ec95-4292-a23a-84dee28b8241",
+      "suno_url": "https://suno.com/song/4f454c51-ec95-4292-a23a-84dee28b8241?sh=dbp1Xczsi4bJeN8J",
+      "suno_share_url": "https://suno.com/s/dbp1Xczsi4bJeN8J",
+      "ig_preview_url": "https://www.instagram.com/p/DSX6OsOAeNR/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DSX6OsOAeNR/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DSX6OsOAeNR/",
+          "date": "2025-12-17"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "未進語意索引",
+      "merge_status": "單一預覽",
+      "source_row": 174,
+      "note": null
+    },
+    {
+      "title": "月光未散",
+      "song_id": "3b8d6798-7383-43f0-90e7-e1c32f1e2378",
+      "suno_url": "https://suno.com/song/3b8d6798-7383-43f0-90e7-e1c32f1e2378?sh=CxXQaqbNFfKpKTDI",
+      "suno_share_url": "https://suno.com/s/CxXQaqbNFfKpKTDI",
+      "ig_preview_url": "",
+      "ig_preview_urls": [],
+      "reels": [],
+      "media_type": null,
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0164",
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "找不到",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "無預覽網址",
+      "source_row": 175,
+      "note": null
+    },
+    {
+      "title": "微??光?",
+      "song_id": "13e68d20-8790-4df1-a2f0-dd8d1abf37f7",
+      "suno_url": "https://suno.com/song/13e68d20-8790-4df1-a2f0-dd8d1abf37f7?sh=0ip4xQgA9BgmAVzV",
+      "suno_share_url": "https://suno.com/s/0ip4xQgA9BgmAVzV",
+      "ig_preview_url": "",
+      "ig_preview_urls": [],
+      "reels": [],
+      "media_type": null,
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": false,
+      "work_id": null,
+      "period": null,
+      "era_id": null,
+      "period_source": null,
+      "verification_status": "找不到",
+      "loc3_match": "未進語意索引",
+      "merge_status": "無預覽網址",
+      "source_row": 176,
+      "note": null
+    },
+    {
+      "title": "微月光(fin)",
+      "song_id": "705065ba-2f41-4857-a5c4-693e9653508a",
+      "suno_url": "https://suno.com/song/705065ba-2f41-4857-a5c4-693e9653508a?sh=0kKlAv1eglA2x9tz",
+      "suno_share_url": "https://suno.com/s/0kKlAv1eglA2x9tz",
+      "ig_preview_url": "",
+      "ig_preview_urls": [],
+      "reels": [],
+      "media_type": null,
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0140",
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "找不到",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "無預覽網址",
+      "source_row": 177,
+      "note": null
+    },
+    {
+      "title": "微光而行",
+      "song_id": "d8d4cfe0-77d8-4cc8-abf1-f50de3ba161d",
+      "suno_url": "https://suno.com/song/d8d4cfe0-77d8-4cc8-abf1-f50de3ba161d?sh=oo4fpMKAA54CSPqY",
+      "suno_share_url": "https://suno.com/s/oo4fpMKAA54CSPqY",
+      "ig_preview_url": "https://www.instagram.com/p/DSVwuDdEpI0/",
+      "ig_preview_urls": [
+        "https://www.instagram.com/p/DSVwuDdEpI0/"
+      ],
+      "reels": [
+        {
+          "url": "https://www.instagram.com/p/DSVwuDdEpI0/",
+          "date": "2025-12-16"
+        }
+      ],
+      "media_type": "instagram_reels_preview",
+      "preview_duration_seconds": null,
+      "ig_plays": null,
+      "linked_to_semantic_index": true,
+      "work_id": "LW0285",
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_source": "linked_LOC3_song",
+      "verification_status": "順序核對通過／內容待確認",
+      "loc3_match": "song_id 精確匹配",
+      "merge_status": "單一預覽",
+      "source_row": 178,
+      "note": null
     }
   ]
 }

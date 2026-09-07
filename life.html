@@ -804,6 +804,7 @@
           <p class="loc-header-copy">新增或更新事件，記錄事件前後的狀態、標籤與所屬時期；這些資料會再被時間線與時期分析使用。</p>
         </div>
         <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">載入中…</span></div>
+        <div id="uiSmokeResult" class="editing-note" hidden style="margin-top:10px"></div>
       </section>
 
       <section class="grid cols-4" aria-label="摘要">
@@ -1420,13 +1421,32 @@
       return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
     }
 
-    function setSync(ok, text) {
+    let uiSmokeStatusLocked = false;
+
+    function setSync(ok, text, options = {}) {
+      if (uiSmokeStatusLocked && options.force !== true) return;
       els.syncText.textContent = text;
       els.syncDot.classList.toggle('ok', !!ok);
       if (els.drawSyncText) els.drawSyncText.textContent = text;
       if (els.drawSyncDot) els.drawSyncDot.classList.toggle('ok', !!ok);
       if (els.eventSyncText) els.eventSyncText.textContent = text;
       if (els.eventSyncDot) els.eventSyncDot.classList.toggle('ok', !!ok);
+    }
+
+    function renderUiSmokeResult(result) {
+      const box = document.querySelector('#uiSmokeResult');
+      if (!box || !result) return;
+      const keys = ['event','era','daily_draw','relation'];
+      const rows = keys.map(key => {
+        const label = key === 'daily_draw' ? 'Daily Draw' : key.charAt(0).toUpperCase() + key.slice(1);
+        const created = result.create?.[key] === true;
+        const rendered = result.render?.[key] === true;
+        const updated = result.update?.[key] === true;
+        const cleaned = result.cleanup?.[key] === true;
+        return `${label}: create ${created ? '✓' : '✗'} · render ${rendered ? '✓' : '✗'} · update ${updated ? '✓' : '✗'} · cleanup ${cleaned ? '✓' : '✗'}`;
+      });
+      box.hidden = false;
+      box.textContent = (result.ok ? 'LOC8 UI smoke test：PASS' : 'LOC8 UI smoke test：FAIL') + '｜' + rows.join('｜') + (result.error ? '｜' + result.error : '');
     }
 
     function readJsonCache(key, fallback=null) {
@@ -3274,7 +3294,7 @@
           dailyDraws = fallback;
           dailyDrawPage = 1;
           renderDailyDraws(dailyDraws);
-          if (els.drawSyncText) els.drawSyncText.textContent = '顯示最近同步的每日符文趨勢';
+          if (!uiSmokeStatusLocked && els.drawSyncText) els.drawSyncText.textContent = '顯示最近同步的每日符文趨勢';
         } else {
           renderDailyRuneAnalysis();
         }
@@ -3295,8 +3315,8 @@
           dailyDrawPage = 1;
           writeDailyDrawCache(dailyDraws);
           renderDailyDraws(dailyDraws);
-          if (els.drawSyncText) els.drawSyncText.textContent = '每日符文資料已同步';
-          if (els.drawSyncDot) els.drawSyncDot.classList.add('ok');
+          if (!uiSmokeStatusLocked && els.drawSyncText) els.drawSyncText.textContent = '每日符文資料已同步';
+          if (!uiSmokeStatusLocked && els.drawSyncDot) els.drawSyncDot.classList.add('ok');
         } else if (!dailyDraws.length) {
           dailyDraws = fallback;
           renderDailyDraws(dailyDraws);
@@ -3307,7 +3327,7 @@
           dailyDraws = fallback.length ? fallback : cached;
           renderDailyDraws(dailyDraws);
         }
-        if (els.drawSyncText) {
+        if (!uiSmokeStatusLocked && els.drawSyncText) {
           els.drawSyncText.textContent = dailyDraws.length
             ? '即時 API 未回應，顯示最近同步趨勢'
             : '每日符文資料暫時無法載入';
@@ -4121,7 +4141,8 @@
         cleanup: {}
       };
 
-      setSync(false, 'LOC8 UI smoke test 執行中…');
+      uiSmokeStatusLocked = true;
+      setSync(false, 'LOC8 UI smoke test 執行中…', { force: true });
 
       try {
         await testApi();
@@ -4217,13 +4238,9 @@
           result.update[key] === true
         );
 
-        setSync(result.ok, result.ok
-          ? 'LOC8 UI smoke test 通過 · Create / Render / Update'
-          : 'LOC8 UI smoke test 未完全通過');
         return result;
       } catch (err) {
         result.error = String(err?.message || err);
-        setSync(false, 'LOC8 UI smoke test 失敗 · ' + result.error);
         return result;
       } finally {
         try { await saveRelation({ id: ids.relation, user_id: 'lo3rwang' }, 'delete_relation'); result.cleanup.relation = true; } catch (_) { result.cleanup.relation = false; }
@@ -4236,6 +4253,11 @@
         } catch (_) {}
 
         window.__LOC8_UI_SMOKE_RESULT__ = result;
+        renderUiSmokeResult(result);
+        setSync(result.ok, result.ok
+          ? 'LOC8 UI smoke test 通過 · Create / Render / Update / Cleanup'
+          : 'LOC8 UI smoke test 失敗' + (result.error ? ' · ' + result.error : ''), { force: true });
+        uiSmokeStatusLocked = false;
         console.info('LOC8 UI smoke result', result);
       }
     }
