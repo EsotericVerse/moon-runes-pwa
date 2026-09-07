@@ -97,8 +97,8 @@
         <button class="workspace-switch active" type="button" data-search-view="query"><strong>查詢</strong><small>單純搜尋內容</small></button>
       </div>
       <div class="workspace-nav-group">
-        <div class="workspace-nav-label">02 · ERA</div>
-        <button class="workspace-switch" type="button" data-search-view="era"><strong>ERA 時期設定</strong><small>設定作品的時間跨度</small></button>
+        <div class="workspace-nav-label">02 · 時期</div>
+        <button class="workspace-switch" type="button" data-search-view="era"><strong>時期設定</strong><small>設定作品的時間跨度</small></button>
       </div>
       <div class="workspace-nav-group">
         <div class="workspace-nav-label">03 · 排行</div>
@@ -264,7 +264,7 @@
       const host=qel('eraSettingsList'),status=qel('eraSettingStatus'); if(!host)return;
       host.innerHTML='<div class="empty">載入 ERA 設定中…</div>';
       const rows=await eraRows();
-      status.textContent=rows.length?`目前 ${rows.length} 個 ERA。`:'目前無 ERA 資料。';
+      status.textContent=rows.length?`目前 ${rows.length} 個時期。`:'目前無 ERA 資料。';
       host.innerHTML=rows.map(row=>`
         <article class="era-setting-card" data-era-id="${escRank(row.era_id||'')}">
           <div class="era-setting-head">
