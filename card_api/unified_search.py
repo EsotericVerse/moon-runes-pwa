@@ -119,7 +119,7 @@ class UnifiedSearchEngine:
             return {}
 
     def _load_loc4_thread_shards(self) -> dict[str, Any]:
-        manifest = getattr(self, "loc6_thread_manifest", {}) or {}
+        manifest = getattr(self, "loc4_thread_manifest", {}) or {}
         documents: list[dict[str, Any]] = []
         for shard in manifest.get("shards", []):
             path = shard.get("path")
@@ -134,7 +134,7 @@ class UnifiedSearchEngine:
         }
 
     def _loc4_article_documents(self) -> list[dict[str, Any]]:
-        full_docs = (getattr(self, "loc6_thread_full", {}) or {}).get("documents", [])
+        full_docs = (getattr(self, "loc4_thread_full", {}) or {}).get("documents", [])
         if full_docs:
             return full_docs
         return self.loc4_thread_articles.get("documents", []) or self.loc4_threads.get("documents", [])
@@ -1405,41 +1405,21 @@ class UnifiedSearchEngine:
                 })
 
         elif wanted == "governance_article":
-            for doc in self._loc4_article_documents():
-                if doc.get("source_role") != "main_post":
+            for asset in self.knowledge_assets.get("assets", []):
+                if asset.get("primary_loc") != "LOC6" or asset.get("content_type") != "governance_article":
                     continue
-                if filters.get("period") and doc.get("era") != filters["period"]:
-                    continue
-                full_text = str(doc.get("text") or "")
-                preview = full_text[:360] + ("…" if len(full_text) > 360 else "")
-                public_payload = {k: v for k, v in doc.items() if k != "text"}
-                public_payload.update({
-                    "km_source": "LOC4_THREADS_FULL_CORPUS",
-                    "evidence_role": "primary",
-                    "full_text_available": True,
-                    "public_browse_mode": "preview_only",
-                    "char_count": doc.get("char_count") or len(full_text),
-                })
                 items.append({
-                    "result_id": doc.get("id"),
+                    "result_id": asset.get("asset_id"),
                     "system_id": "lo3rwang",
                     "primary_loc": "LOC6",
-                    "related_locs": ["LOC7", "LOC8"],
+                    "related_locs": asset.get("related_locs", ["LOC4", "LOC7", "LOC8"]),
                     "content_type": "governance_article",
-                    "group": "loc4_articles",
-                    "title": (
-                        f"Threads｜{doc.get('date') or 'undated'}｜{doc.get('era') or 'ERA'}｜"
-                        + ((re.split(r"[。！？!?\n]", full_text, maxsplit=1)[0].strip()[:34] + "…")
-                           if len(re.split(r"[。！？!?\n]", full_text, maxsplit=1)[0].strip()) > 34
-                           else re.split(r"[。！？!?\n]", full_text, maxsplit=1)[0].strip())
-                    ),
-                    "summary": preview,
-                    "period": doc.get("era"),
-                    "era_id": f"ERA-{doc.get('era')}" if doc.get("era") else None,
-                    "source_refs": [{"source_type": "threads", "source_id": doc.get("source_id"), "note": "primary main-post evidence"}],
-                    "payload": public_payload,
+                    "group": "governance",
+                    "title": asset.get("title"),
+                    "summary": asset.get("public_summary") or asset.get("notes") or asset.get("role") or "",
+                    "source_refs": [{"source_type": asset.get("source_type"), "source_id": asset.get("path"), "note": asset.get("authority_level")}],
+                    "payload": asset,
                 })
-            items.sort(key=lambda r: (str((r.get("payload") or {}).get("date") or ""), str(r.get("result_id") or "")), reverse=True)
 
         elif wanted == "governance_fragment":
             for fragment in self.loc6.get("fragments", []):
@@ -2945,7 +2925,7 @@ class UnifiedSearchEngine:
                 "LOC3": "live",
                 "LOC4": f"creative-works+life-writing-live; {len((getattr(self, 'loc4_corpus', {}) or {}).get('documents', []))} authored corpus segments; {len((getattr(self, 'loc4_moon_speaker_analysis', {}) or {}).get('chapters', []))} MoonSpeaker chapter analyses",
                 "LOC5": "direct-media-registry-search-live",
-                "LOC6": "governance+threads-km-search-live",
+                "LOC6": "governance/style-derived-search-live",
                 "LOC4_threads_indexed": len(self._loc4_article_documents()),
                 "LOC7": "live",
                 "LOC8": "era+context-graph-live",
