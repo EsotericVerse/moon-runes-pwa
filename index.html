@@ -1863,90 +1863,115 @@
 
       const locInfo = {
         LOC1: {
-          kicker:'LOC1 · LunaRunes / Lexicon',
-          title:'符文語彙（token）',
-          copy:'LOC1 是語言框架的基本語彙層。月之符文提供固定的文字語彙（token）與語意種子，並承接籤詩、方向與解牌入口。',
-          route:'獨立功能入口：月之符文圖鑑、抽牌與籤詩。',
+          kicker:'LOC1 · LunaRunes / Token',
+          title:'月之符文',
+          copy:'以 66 個月之符文作為語彙（Token）與語意種子，提供符文本義、四種方向、符文籤詩 Lots 與多卡抽牌語法。',
+          route:'功能入口：月之符文資料、每日符文與抽牌。',
           extra:[
-            '核心：月之符文是基本文字語彙（token），也是語意種子。',
-            '使用：抽牌、籤詩、解牌；單卡到 OW3gs 都由這個語彙層開始。',
-            '歷史：月之符文先累積實作，LOC 再由實作抽象出框架；框架成立後，月之符文又成為完整參照實例。'
+            '語彙：66 個固定符文與四種方向。',
+            '籤詩：單卡、雙卡、三卡、五卡與 OW3gs。',
+            '用途：提供問題、創作與語意分析的起始語彙。'
           ],
           resources:[
-            {label:'開始每日符文',href:'runes.html?mode=daily#daily',meta:'Daily Rune · 一天一張'},
-            {label:'查看月之符文66 圖鑑',href:'runes.html',meta:'66 語彙 · 四向 · 基本資料'}
+            {label:'每日符文',href:'runes.html?mode=daily#daily',meta:'一天一張 · Daily Rune'},
+            {label:'月之符文資料',href:'runes.html#library',meta:'66 符文 · 四向 · 基本定義'}
           ],
-          href:'runes.html?mode=daily#daily', label:'進入 LOC1'
+          href:'runes.html', label:'進入月之符文'
         },
         LOC2: {
-          kicker:'LOC2 · Context / Graph',
+          kicker:'LOC2 · Context',
           title:'脈絡',
-          copy:'LOC2 負責語彙之間的關係、情境、事件與 Graph。月之符文沙盒是代表作：讓平等的符文節點進入相對關係，觀察共鳴、互補、衝突與情境。',
-          route:'獨立入口是 context.html；脈絡、Relation 與 Graph 的公開展示均由 LOC2 承接。',
+          copy:'處理語彙、作品、事件與概念之間的關係，透過 Relation、Context、Event 與 Graph 看見它們如何彼此連結。',
+          route:'功能入口：脈絡、Graph、情境與沙盒遊戲。',
           extra:[
-            '關係是一對一 edge；多個關係累積後形成脈絡。',
-            '月之符文沙盒：符文脈絡的互動實作，不只是遊戲分類。',
-            'Graph：節點、edge、Scenario、Event 與跨作品關係的脈絡表示。',
-            'LOC7 可提供 Graph RAG 演算法，但不取代 LOC2 對脈絡／關係的責任。'
+            'Relation：描述節點之間的相對關係。',
+            'Context / Event：把關係放進具體情境。',
+            'Graph：把多個關係組成可觀察的關係圖。'
           ],
           resources:[
-            {label:'月之符文沙盒',href:'context.html',meta:'Semantic Playground · 脈絡實作'},
-            {label:'開始可玩 Alpha',href:'loc2-game.html',meta:'Web Alpha · 單機雙人'}
+            {label:'查看脈絡與 Graph',href:'context.html',meta:'Relation · Context · Event · Graph'},
+            {label:'月之符文沙盒',href:'loc2-game.html',meta:'Semantic Playground'}
           ],
-          href:'context.html', label:'進入 LOC2'
+          href:'context.html', label:'進入脈絡'
         },
         LOC3: {
           kicker:'LOC3 · Music',
           title:'音樂',
-          copy:'文字與語意延伸成歌曲、歌詞與聲音。歌曲是文學語言跨入聲音媒介的一種表達。',
-          route:'統一入口：LOC Search。',
-          extra:['歌曲、歌詞、曲風、ERA 與符文歌曲。','文字不是被替代，而是被轉成可聽見的表達。'],
-          href:'search.html?content_type=lyrics_work&q=LOC3%20音樂%20歌詞', label:'查看 LOC3'
+          copy:'把語彙與文字延伸成歌曲、歌詞與聲音作品，並以 Suno 作品、曲風、主題與 ERA 等資料建立可搜尋的音樂語料。',
+          route:'內容入口：LOC Search。',
+          extra:[
+            '歌曲與歌詞是主要內容。',
+            '可依作品、主題、曲風、ERA 與關鍵字搜尋。',
+            '音樂與文字、多媒體之間可以建立跨媒介關係。'
+          ],
+          href:'search.html?content_type=lyrics_work&q=音樂%20Suno', label:'查看音樂'
         },
         LOC4: {
-          kicker:'LOC4 · Writing',
+          kicker:'LOC4 · Literary',
           title:'文字創作',
-          copy:'文章、小說、生活文字與敘事作品，是文學語言最直接的文字表達。',
-          route:'統一入口：LOC Search。',
-          extra:['創作作品與生活文字都保留原始來源與 provenance。','LOC4 保存作品本體，不把後續方法分析回寫成原文。'],
-          href:'search.html?content_type=text_work&q=LOC4%20文字%20小說%20文章', label:'查看 LOC4'
+          copy:'承接小說、文章、散文、生活文字與其他文字作品，保存原始文本及其可搜尋、可關聯的語意內容。',
+          route:'內容入口：LOC Search。',
+          extra:[
+            '包含小說、文章、散文與生活文字。',
+            '作品本體與後續分析分開保存。',
+            '文字可以再延伸到音樂、多媒體與其他表達形式。'
+          ],
+          href:'search.html?content_type=text_work&q=文字創作%20小說%20文章', label:'查看文字創作'
         },
         LOC5: {
-          kicker:'LOC5 · Multimedia',
+          kicker:'LOC5 · Media',
           title:'多媒體',
-          copy:'結合文字、音樂、圖像與影音。圖像可以在一次觀看中承載大量複雜文字關係，是 LOC3＋LOC4 再加上視覺表達的延伸。',
-          route:'統一入口：LOC Search。',
-          extra:['Reels、MV、影片、知識圖與概念視覺化。','重點是跨媒介表達，不是把平台名稱當分類。'],
-          href:'search.html?content_type=multimedia&q=LOC5%20多媒體%20圖像%20影音', label:'查看 LOC5'
+          copy:'把文字、音樂、圖像與影音放在同一個表達系統中，承接 Reels、MV、影片、概念圖與系統視覺化等跨媒介內容。',
+          route:'內容入口：LOC Search。',
+          extra:[
+            '包含圖像、影音、Reels、MV 與概念視覺。',
+            '同一概念可以用文字、聲音與圖像分別表達。',
+            '重點是跨媒介關係，而不是特定平台。'
+          ],
+          href:'search.html?content_type=multimedia&q=多媒體%20圖像%20影音', label:'查看多媒體'
         },
         LOC6: {
-          kicker:'LOC6 · Methodology',
-          title:'方法論',
-          copy:'處理「怎麼理解、怎麼判斷、怎麼處理」。治理是其中一種方法，而不是 LOC6 的全部。',
-          route:'統一入口：LOC Search。',
-          extra:['包含治理、解讀、價值判斷、政德風與其他可描述的方法。','符文中的治理解牌方式亦屬方法論實作。'],
-          href:'search.html?q=LOC6%20方法論%20治理%20政德風', label:'查看 LOC6'
+          kicker:'LOC6 · Governance',
+          title:'治理',
+          copy:'整理語言系統的規則、權責、版本、邊界與變更依據，也承接政德風與自我治理等固定治理內容。',
+          route:'正式入口：治理主頁。',
+          extra:[
+            '系統治理：命名、資料權責、版本、邊界與公開規則。',
+            '個人治理：價值、選擇、責任、界與域。',
+            '治理文件提供可閱讀、可引用、可維護的固定依據。'
+          ],
+          resources:[
+            {label:'治理章節文件',href:'governance.html',meta:'Rules · Boundary · Rights · Version'},
+            {label:'政德風說明',href:'governance.html#style',meta:'Personal Governance · Style'}
+          ],
+          href:'governance.html', label:'進入治理'
         },
         LOC7: {
-          kicker:'LOC7 · Algorithm / Knowledge Base',
-          title:'演算法（知識庫）',
-          copy:'把方法論結構化為可重複執行、檢索、關聯與驗證的演算法；文字建築學、KM、RAG、Search 與 Graph RAG 都在這裡形成技術實作。',
-          route:'統一入口：LOC Search。',
-          extra:['LOC7 不擁有脈絡本身；它提供處理脈絡與知識的演算法。','知識庫是演算法運作與檢索的主要資料結構之一。'],
-          resources:[{label:'LOC7 知識庫',href:'search.html?q=LOC7%20KM%20RAG%20Text%20Architecture',meta:'KM · RAG · Text Architecture'}],
-          href:'search.html?content_type=knowledge&q=LOC7%20演算法%20知識庫%20RAG', label:'查看 LOC7'
+          kicker:'LOC7 · Algorithm',
+          title:'演算法',
+          copy:'把語彙、脈絡與方法整理成可重複執行的資料結構與演算法，包含文字建築、Knowledge Management、Search、RAG 與 Graph RAG。',
+          route:'主要操作入口：LOC Search。',
+          extra:[
+            '文字建築：整理文字與知識的結構。',
+            'KM / RAG：建立可檢索與可回溯的知識資料。',
+            'Search / Graph RAG：依語意與關係進行查詢與 traversal。'
+          ],
+          resources:[
+            {label:'LOC Search',href:'search.html',meta:'Search · KM · RAG'}
+          ],
+          href:'search.html?content_type=knowledge&q=演算法%20文字建築%20KM%20RAG', label:'查看演算法'
         },
         LOC8: {
           kicker:'LOC8 · Projection',
           title:'推演',
-          copy:'把作品、語言、方法與風格放入時間，透過 ERA、Event、Trajectory 與 Trend 觀察變化並推導後續方向。推演以既有證據為基礎，不等於預言。',
-          route:'獨立功能入口是 projection.html；只呈現每日符文、時期、事件、時間線與趨勢推演。',
+          copy:'把既有語言、作品、事件與方法放回時間中，透過 ERA、Timeline、Trajectory 與 Trend 觀察變化並進行推演。',
+          route:'功能入口：推演。',
           extra:[
-            '時間不是另一種內容，而是讓前面各層產生「前後變化」的維度。',
-            'ERA、Trajectory、Trend 用來描述已發生與正在形成的變化。',
-            'LOC8 引用既有關係資料作時間投影，但不展示或管理脈絡與 Graph 本體。'
+            'ERA：劃分不同時期與狀態。',
+            'Timeline / Trajectory：觀察事件與語言的前後關係。',
+            'Trend：比較不同時期的語彙與作品變化。'
           ],
-          href:'projection.html', label:'進入 LOC8'
+          href:'evolution.html', label:'進入推演'
         }
       };
       function render(key){
