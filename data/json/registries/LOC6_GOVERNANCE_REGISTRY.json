@@ -254,7 +254,7 @@
       "analysis_type": "governance",
       "source_refs": [
         "conversation-history:2026-02-22",
-        "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md"
+        "governance.html"
       ],
       "confidence": "reconstructed",
       "lifecycle": {
@@ -278,7 +278,7 @@
       "analysis_type": "governance",
       "source_refs": [
         "conversation-history:2026-02-22",
-        "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md"
+        "governance.html"
       ],
       "confidence": "reconstructed",
       "lifecycle": {
@@ -303,7 +303,7 @@
       "analysis_type": "governance",
       "source_refs": [
         "conversation-history:2026-09-07",
-        "docs/LOC_GOVERNANCE_CORE.md"
+        "governance.html"
       ],
       "confidence": "recorded",
       "lifecycle": {
@@ -326,7 +326,7 @@
       "style_features": [],
       "analysis_type": "governance",
       "source_refs": [
-        "docs/LOC_GOVERNANCE_CORE.md"
+        "governance.html"
       ],
       "confidence": "recorded",
       "lifecycle": {
@@ -360,7 +360,7 @@
   "corpus_families": {
     "zhengde_style": {
       "role": "derived personal governance / style evolution corpus",
-      "document": "docs/LOC6_ZHENGDE_STYLE.md",
+      "document": "governance.html#style",
       "source_evidence_owner": "LOC4 for authored Facebook/Threads/writing text; LOC3 for songs/lyrics where applicable",
       "rule": "Do not classify the raw source post/article itself as LOC6."
     },
@@ -398,7 +398,7 @@
     "current_stage": "ERA-P8 / 治理自己",
     "current_shift": "from external script-breaking toward self-governance, closure, boundaries and route selection",
     "evidence_refs": [
-      "docs/LOC6_ZHENGDE_STYLE.md",
+      "governance.html#style",
       "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.manual-20260903.json",
       "README.md",
       "index.html"
