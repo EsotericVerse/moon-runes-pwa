@@ -28,6 +28,7 @@ data/json/
 | 檔案 | 用途 | 上游權威 |
 |---|---|---|
 | `runes64.json` | 基本符文 lookup；名稱、群組、月相、關鍵詞、四向 | `LunaRune64.xlsx` |
+| `rune_grammar.json` | 符文治理／Grammar runtime projection；單卡、兩卡、三卡、五卡、OW3gs、符文交互與月相交互 | `LunaRune64.xlsx#Grammar` |
 | `rune_interpretations.json` | 64 核心符文 × 四向 × 現實月相的展開解讀 | `LunaRune64.xlsx` / governed derivation |
 | `lots.json` | 66 可抽符文的籤詩 projection | `LunaRune64.xlsx#Lots` |
 | `three_card_combinations.json` | 三卡方向組合規則 | LOC1 interpretation rules |
