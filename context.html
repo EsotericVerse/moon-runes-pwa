@@ -227,6 +227,23 @@ const CONTEXT_CACHE_TTL=6*60*60*1000;
 const cEsc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const cUid=()=>crypto?.randomUUID?.()||('ctx-'+Date.now()+'-'+Math.random().toString(36).slice(2));
 let contextEvents=[],contextRelations=[],contextGraph={nodes:[],edges:[]};
+
+const CONTEXT_DEFAULT_GRAPH={
+  nodes:[
+    {id:"era_微月光",label:"微月光",type:"era",date:"2026-01-15",note:"ERA 起點"},
+    {id:"concept_政德風",label:"政德風",type:"concept",date:"2026-02-03",note:"正式定義代表日"},
+    {id:"era_人生月台",label:"人生月台",type:"era",date:"2026-06-10",note:"ERA 起點"},
+    {id:"era_順其自然",label:"順其自然",type:"era",date:"2026-07-01",note:"ERA 起點"},
+    {id:"era_自由的風",label:"自由的風",type:"era",date:"2026-08-01",note:"ERA 起點"},
+    {id:"concept_月之符文",label:"月之符文",type:"concept",date:"",note:"最開始為月之符文14的形式"}
+  ],
+  edges:[
+    {source:"era_微月光",target:"concept_政德風",type:"evolves_to"},
+    {source:"concept_政德風",target:"era_人生月台",type:"influences"},
+    {source:"era_人生月台",target:"era_順其自然",type:"transitions_to"},
+    {source:"era_順其自然",target:"era_自由的風",type:"transitions_to"}
+  ]
+};
 const CONTEXT_EVENT_PAGE_SIZE=10, CONTEXT_RELATION_PAGE_SIZE=10, CONTEXT_GRAPH_PAGE_SIZE=10;
 let contextEventPage=1, contextRelationPage=1, contextGraphNodePage=1, contextGraphEdgePage=1;
 let contextEventsRemoteLoaded=false, contextRelationsRemoteLoaded=false;
@@ -396,7 +413,7 @@ const graphNodeId=n=>String(n?.id||n?.node_id||''),graphNodeLabel=n=>String(n?.l
 function updateContextGraphFilters(){const nt=[...new Set(contextGraph.nodes.map(graphNodeType))].sort(),et=[...new Set(contextGraph.edges.map(graphEdgeType))].sort();document.querySelector('#contextGraphNodeType').innerHTML='<option value="">全部節點類型</option>'+nt.map(x=>`<option>${cEsc(x)}</option>`).join('');document.querySelector('#contextGraphEdgeType').innerHTML='<option value="">全部關係類型</option>'+et.map(x=>`<option>${cEsc(x)}</option>`).join('')}
 function renderContextGraph(status=''){const nf=document.querySelector('#contextGraphNodeType').value,ef=document.querySelector('#contextGraphEdgeType').value;const nodes=contextGraph.nodes.filter(n=>!nf||graphNodeType(n)===nf),ids=new Set(nodes.map(graphNodeId));const edges=contextGraph.edges.filter(e=>(!ef||graphEdgeType(e)===ef)&&(!nf||ids.has(String(e.source||''))||ids.has(String(e.target||''))));
 const nodePages=Math.max(1,Math.ceil(nodes.length/CONTEXT_GRAPH_PAGE_SIZE)),edgePages=Math.max(1,Math.ceil(edges.length/CONTEXT_GRAPH_PAGE_SIZE));contextGraphNodePage=Math.min(Math.max(1,contextGraphNodePage),nodePages);contextGraphEdgePage=Math.min(Math.max(1,contextGraphEdgePage),edgePages);const pageNodes=nodes.slice((contextGraphNodePage-1)*CONTEXT_GRAPH_PAGE_SIZE,contextGraphNodePage*CONTEXT_GRAPH_PAGE_SIZE),pageEdges=edges.slice((contextGraphEdgePage-1)*CONTEXT_GRAPH_PAGE_SIZE,contextGraphEdgePage*CONTEXT_GRAPH_PAGE_SIZE);
-document.querySelector('#contextGraphNodes').innerHTML=pageNodes.length?pageNodes.map(n=>`<button type="button" class="context-graph-node" data-context-graph-node="${cEsc(graphNodeId(n))}"><small>${cEsc(graphNodeType(n))}</small><strong>${cEsc(graphNodeLabel(n))}</strong><small>${cEsc(graphNodeId(n))}</small></button>`).join(''):'<div class="context-empty">沒有符合的節點。</div>';document.querySelector('#contextGraphEdges').innerHTML=pageEdges.length?pageEdges.map(e=>`<article class="context-graph-edge"><div class="context-graph-edge-path"><span>${cEsc(e.source||'—')}</span><span class="context-graph-edge-type">→ ${cEsc(graphEdgeType(e))} →</span><span>${cEsc(e.target||'—')}</span></div></article>`).join(''):'<div class="context-empty">沒有符合的關係。</div>';renderContextPager('node',nodes.length,contextGraphNodePage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextGraphNodePage=next;renderContextGraph();});renderContextPager('edge',edges.length,contextGraphEdgePage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextGraphEdgePage=next;renderContextGraph();});if(status)document.querySelector('#contextGraphStatus').textContent=status}
+document.querySelector('#contextGraphNodes').innerHTML=pageNodes.length?pageNodes.map(n=>`<button type="button" class="context-graph-node" data-context-graph-node="${cEsc(graphNodeId(n))}"><small>${cEsc(graphNodeType(n))}${n.date?' · '+cEsc(n.date):''}</small><strong>${cEsc(graphNodeLabel(n))}</strong><small>${cEsc(n.note||graphNodeId(n))}</small></button>`).join(''):'<div class="context-empty">沒有符合的節點。</div>';document.querySelector('#contextGraphEdges').innerHTML=pageEdges.length?pageEdges.map(e=>`<article class="context-graph-edge"><div class="context-graph-edge-path"><span>${cEsc(e.source||'—')}</span><span class="context-graph-edge-type">→ ${cEsc(graphEdgeType(e))} →</span><span>${cEsc(e.target||'—')}</span></div></article>`).join(''):'<div class="context-empty">沒有符合的關係。</div>';renderContextPager('node',nodes.length,contextGraphNodePage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextGraphNodePage=next;renderContextGraph();});renderContextPager('edge',edges.length,contextGraphEdgePage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextGraphEdgePage=next;renderContextGraph();});if(status)document.querySelector('#contextGraphStatus').textContent=status}
 async function searchContextGraph(q,{remote=true}={}){
   if(!q)return;
   const key=contextGraphCacheKey('search',q);
@@ -457,6 +474,10 @@ document.querySelector('#contextGraphNodes')?.addEventListener('click',ev=>{cons
 document.querySelector('#contextGraphNodeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphEdgeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphReset')?.addEventListener('click',()=>{document.querySelector('#contextGraphNodeType').value='';document.querySelector('#contextGraphEdgeType').value='';renderContextGraph()});
 
 resetContextEvent();resetContextRelation();
+contextGraph=CONTEXT_DEFAULT_GRAPH;
+contextGraphNodePage=1;contextGraphEdgePage=1;
+updateContextGraphFilters();
+renderContextGraph(`預設時間脈絡 · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
 const eventCacheAtStart=readContextCache(CONTEXT_EVENT_CACHE);
 const relationCacheAtStart=readContextCache(CONTEXT_RELATION_CACHE);
 loadContextEvents({remote:!Array.isArray(eventCacheAtStart?.data)});
