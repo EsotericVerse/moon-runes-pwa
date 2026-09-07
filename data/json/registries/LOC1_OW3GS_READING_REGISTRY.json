@@ -1,26 +1,29 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC1_OW3GS_READING_REGISTRY",
   "authority": "LOC1",
   "updated_at": "2026-09-07",
   "source_document": "OW3gs_占卜結果與解析_本對話整理_20260907.txt",
-  "purpose": "Store complete Base66 OW3gs 11-card divination results and interpretations for search, examples, and later validation analysis.",
+  "purpose": "Maintain a small, curated set of complete Base66 OW3gs 11-card readings as interpretation reference cases and real-world validation evidence. This is not a bulk divination log.",
   "reading_model": {
-    "positions_1_6": "因的描述層 / Context Field",
-    "positions_7_11": "果的判定層 / Core Fate Sentence"
+    "positions_1_6": "事情成因的描述層：描述成因、背景、條件、來源與脈絡",
+    "positions_7_11": "對於事情的建議文字層：形成主要回應、判斷與建議文字"
   },
   "governance": [
-    "Only complete 11-card OW3gs results composed entirely of Base66 formal runes are included.",
-    "Non-formal, fabricated, or incomplete rune sequences are excluded.",
+    "This registry is a curated reference set, not a bulk archive of personal divination history.",
+    "Only complete 11-card OW3gs results composed entirely of Base66 formal runes are included as formal records.",
+    "Non-formal, fabricated, incomplete, or reconstructed rune sequences are excluded from the formal set.",
     "Card order and orientation are preserved exactly.",
-    "Verified real-world outcomes are stored separately as verification evidence."
+    "Real-world outcomes are stored separately from the original interpretation and must not rewrite the original reading.",
+    "When a real-world outcome is still in progress, the record remains pending or partially verified rather than being declared correct.",
+    "Lost historical interpretation text must not be recreated from hindsight."
   ],
   "records": [
     {
       "id": "OW3GS-01",
       "title": "今年下半年整體運勢",
       "spread_type": "OW3gs 11-card",
-      "status": "formal_base66",
+      "status": "partial_verification",
       "cards": [
         {
           "position": 1,
@@ -80,7 +83,9 @@
       ],
       "context_text": "啟正表示新的階段已經開始啟動。\n地半逆顯示現實基礎仍有部分不穩，需要重新調整。\n語半正表示表達、溝通與個人語言逐漸形成。\n時半逆表示時機尚未完全成熟，部分事情仍需等待。\n心正表示內在意願與核心動機相對明確。\n暗半正表示仍有未知與尚未完全顯現的部分，但不是完全不可見。",
       "core_text": "命正表示下半年的核心走向具有明確的人生轉折意味。\n實正表示事情會逐漸形成具體成果。\n日半逆表示外在明朗度仍不是完全充分，部分成果尚未全面展開。\n果半正表示已有結果逐漸成熟，但尚未完全收成。\n界正表示新的生活邊界、範圍與位置逐步建立。",
-      "conclusion": "下半年不是單純的「突然好轉」，而是新的階段啟動後，\n透過重新落地、等待時機與調整現實條件，逐漸形成新的生活範圍與成果。\n核心五張顯示「命—實—日—果—界」的結構：\n人生方向逐步落地，成果開始成形，新的界線也逐漸建立。"
+      "conclusion": "下半年不是單純的「突然好轉」，而是新的階段啟動後，\n透過重新落地、等待時機與調整現實條件，逐漸形成新的生活範圍與成果。\n核心五張顯示「命—實—日—果—界」的結構：\n人生方向逐步落地，成果開始成形，新的界線也逐漸建立。",
+      "verification": "截至 2026-09-07：2026 下半年仍在進行。到目前為止變化很大，但整體仍在努力與推進中，尚不適合做最終驗證。",
+      "validation_note": "保留至年底再做完整回測；目前只能確認「變化大、持續建構」這一層。"
     },
     {
       "id": "OW3GS-02",
@@ -147,13 +152,14 @@
       "context_text": "玄半逆表示狀況複雜，但混亂正在逐漸被看見。\n心半正表示對修車仍有期待，但態度並非完全確定。\n火正表示事情會實際啟動，維修檢查或處置會進行。\n月逆表示進度與時間節奏不穩定。\n愛半逆表示對原本車輛仍有情感或保留，但開始產生動搖。\n幻正表示原本對「修好即可繼續使用」的想像仍存在。",
       "core_text": "根逆表示真正問題可能位於更根本的地方。\n暗正表示隱藏問題會明顯浮現。\n土逆表示基礎穩定性不足。\n封半正表示最後會出現停止、封住或不再繼續投入的傾向。\n老半逆表示老化、舊零件或整體使用年限成為重要因素。",
       "conclusion": "這組牌的核心並不是「修不好」，\n而是「檢查後發現問題牽涉根本、老化與基礎穩定性，\n繼續投入維修不再是最合理選項，因此由修車轉為換車」。",
-      "verification": "實際結果為：最後決定不修，直接買新車。"
+      "verification": "實際結果：最後放棄修理舊機車，直接購買新車。原先只是考慮有額外預算就換車，後來基於舊車即使修好仍可能持續產生問題的風險，決定一次汰換。換車後目前使用狀況良好。",
+      "validation_note": "高價值案例：表面問題是「修車」，實際解決結構是「替換整個方案」。可用來檢驗 OW3gs 是否描述問題的結構性解法，而非只回答字面問題。"
     },
     {
       "id": "OW3GS-03",
       "title": "找房子的策略方向",
       "spread_type": "OW3gs 11-card",
-      "status": "formal_base66",
+      "status": "verified",
       "cards": [
         {
           "position": 1,
@@ -213,13 +219,15 @@
       ],
       "context_text": "憶半逆表示容易拿新房與過去居住經驗比較。\n彩半逆表示要避免被外觀、照片與表面氛圍干擾。\n魂正表示真正核心是住處能否承載自己、讓自己恢復完整。\n緣半逆表示不要因房東、仲介或「很有緣」的感覺而過早決定。\n空正表示實際空間、動線、採光、通風與收納非常重要。\n光半逆表示照片與白天看房未必能呈現完整狀況，需要額外確認夜間與實際環境。",
       "core_text": "夢半正：先定義理想生活，但不要被理想綁架。\n域半逆：縮小搜尋範圍，先確定可接受區域。\n枝半逆：減少過多分支，不要保留太多候選。\n命半逆：不需要把這次租屋當成終極住所。\n分逆：最重要的是清楚排除不合適物件，不要模糊底線。",
-      "conclusion": "找房策略不是大量瀏覽，而是精準篩選：\n先定義必要條件，縮小區域，每輪只留少量候選，\n實際確認空間與生活條件，不把暫時住處當成終身決定，\n踩到底線的物件立即淘汰。"
+      "conclusion": "找房策略不是大量瀏覽，而是精準篩選：\n先定義必要條件，縮小區域，每輪只留少量候選，\n實際確認空間與生活條件，不把暫時住處當成終身決定，\n踩到底線的物件立即淘汰。",
+      "verification": "實際結果：最後在舊家附近找到新住處，仍落在熟悉生活圈附近，符合『在熟悉區域附近尋找』的策略方向。",
+      "validation_note": "可用來檢驗『域／範圍縮小、熟悉生活條件』在找房情境中的實際作用。"
     },
     {
       "id": "OW3GS-04",
       "title": "凱基理賠狀況",
       "spread_type": "OW3gs 11-card",
-      "status": "formal_base66",
+      "status": "verified",
       "cards": [
         {
           "position": 1,
@@ -279,7 +287,9 @@
       ],
       "context_text": "命半逆表示案件結果尚未完全定錨。\n枝正表示流程仍在延伸，可能涉及調閱、補件、不同項目或不同部門。\n語逆表示文件、醫療描述、保單語言或資訊一致性可能是重要變數。\n根半正表示審核回到保單、病歷與實際住院事實等根本資料。\n福正表示案件中存在實際有利、可得的部分。\n氣正表示流程仍在持續運轉，並非停滯。",
       "core_text": "草正表示明確、基本且符合條款的項目有落地可能。\n心半正表示期待存在，但結果仍在形成。\n鍊正表示契約、條款與證明文件的完整連結是核定關鍵。\n金半逆表示可能有實際財務結果，但金額或範圍較最高期待收斂。\n禍半逆表示較壞情況有收束跡象，但仍可能保留局部不利。",
-      "conclusion": "不像完全拒賠。\n較像持續審核後存在實際給付可能，\n但最終金額與給付範圍仍可能需要校正期待。"
+      "conclusion": "不像完全拒賠。\n較像持續審核後存在實際給付可能，\n但最終金額與給付範圍仍可能需要校正期待。",
+      "verification": "實際結果：凱基理賠金額比原先預計少，而且處理速度非常慢；但因延遲，另支付一千多元利息。",
+      "validation_note": "高價值混合結果案例：主給付縮水、流程延遲，但同時出現額外利息補償。多卡不可被壓成單一吉凶。"
     },
     {
       "id": "OW3GS-05",
@@ -346,13 +356,14 @@
       "context_text": "老逆表示舊生活結構已不適合繼續維持。\n界逆表示新舊住所、物品與責任交接容易混亂。\n悟半逆表示實際搬運中需要修正原本規劃。\n死正表示舊階段會正式結束。\n花半逆表示新家初期不會立即達到理想完成狀態。\n心逆表示搬家前後的情緒與疲勞負荷偏高。",
       "core_text": "福正表示核心搬遷結果偏順利。\n草正表示入住後從基本日常重新建立生活。\n鑽半逆表示有價值物品可能損耗、缺失或需要重新篩選。\n金逆表示實質財務損失與補買成本。\n暗半逆表示原本不明的細節逐漸被確認。",
       "conclusion": "搬家本身順利完成，舊生活正式切斷；\n真正留下的尾巴是部分物品在交接中遺失，\n形成實際補買與財務成本。\n此組具有明確事後驗證價值。",
-      "verification": "實際結果：\n搬家已完成，但部分行李在過程中消失。\n後續已完全確認無法找回，只能視為遺失；\n必要用品需另外重新購買。"
+      "verification": "實際結果：搬家整體圓滿完成，但成本很高。",
+      "validation_note": "以使用者後續總結為準：核心結果是『完成度高、代價高』。先前將物品遺失視為主要結果的權重應降低，不可覆蓋整體圓滿的主結果。"
     },
     {
       "id": "OW3GS-06",
       "title": "今年整體感情運勢",
       "spread_type": "OW3gs 11-card",
-      "status": "formal_base66",
+      "status": "partial_verification",
       "cards": [
         {
           "position": 1,
@@ -412,7 +423,9 @@
       ],
       "context_text": "禍逆＋封逆表示不良循環逐漸退去，原先封閉的狀態開始鬆動。\n實半正表示開始出現現實互動或可能性，但尚未完全成形。\n靈逆＋向逆表示核心感覺與方向未必同步，關係定位可能不清楚。\n幻正表示真實互動與想像同時存在，需要避免提前把可能性視為關係。",
       "core_text": "無半正：無＝Blank／all possibilities，感情仍保留多種可能。\n玉逆：需要進行價值篩選，不是所有看似合適的人都值得留下。\n土半正：真正能留下的關係需要穩定互動、時間與現實條件累積。\n魂逆：可能因深層共鳴不足而淘汰。\n葉正：新的互動、認識與感情可能重新生長，但葉並不是果，因此不直接等於成熟定局。",
-      "conclusion": "整體中性偏正，後段比前段好。\n主軸：\n清除不良 → 解除封閉 → 出現可能 → 價值篩選 → 現實培養 → 共鳴驗證 → 新枝葉生長。\n核心句：\n「無留其可能，玉辨其價值；土使其落地，魂驗其共鳴，葉才得以生長。」"
+      "conclusion": "整體中性偏正，後段比前段好。\n主軸：\n清除不良 → 解除封閉 → 出現可能 → 價值篩選 → 現實培養 → 共鳴驗證 → 新枝葉生長。\n核心句：\n「無留其可能，玉辨其價值；土使其落地，魂驗其共鳴，葉才得以生長。」",
+      "verification": "截至 2026-09-07：今年感情整體幾乎一片空白。曾遇到一位有點喜歡的人，但後來沒有下文；理想與實際落差很大。",
+      "validation_note": "年度尚未結束，因此只做部分回測。現階段較接近『可能性出現但未落地／共鳴不足而未形成關係』。"
     },
     {
       "id": "OW3GS-07",
@@ -484,7 +497,7 @@
       "id": "OW3GS-08",
       "title": "九月份整體運勢",
       "spread_type": "OW3gs 11-card",
-      "status": "formal_base66",
+      "status": "pending",
       "cards": [
         {
           "position": 1,
@@ -544,7 +557,9 @@
       ],
       "context_text": "明半正＋樹半正表示逐漸看清，新長期結構正在形成，但仍未完全成熟。\n晶逆表示原本固定、凝結的結構開始鬆動。\n憶逆表示舊記憶、舊經驗或過往模式逐漸失去支配力。\n鍊逆表示解除原有連結、束縛或綁定。\n枝逆表示剪除過度延伸的分支，避免所有可能性同時生長。",
       "core_text": "花逆：不是外在盛開或成果展示期。\n地正：核心生活基礎穩固，是整組的重要穩定器。\n心半逆：心理仍需要時間追上已經穩定的現實。\n辰正：時序與節點逐漸對位，事情進入合適的時間位置。\n語逆：不宜太早替九月或未來下完整定義。",
-      "conclusion": "九月較適合定義為「整地與對時月」：\n剪枝、解鍊、放下舊記憶與失效結構；\n不急著開花，把土地踩實，等待時序真正對位。"
+      "conclusion": "九月較適合定義為「整地與對時月」：\n剪枝、解鍊、放下舊記憶與失效結構；\n不急著開花，把土地踩實，等待時序真正對位。",
+      "verification": "2026-09-07 時九月才剛開始，資料不足，暫不做事後驗證。",
+      "validation_note": "月底或更晚再回測，避免提前宣告命中。"
     }
   ]
 }
