@@ -57,7 +57,11 @@ class UnifiedSearchTests(unittest.TestCase):
             encoding="utf-8",
         )
         (root / "data" / "json" / "registries" / "LOC_CONTENT_TYPE_REGISTRY.json").write_text(
-            '{"types":[{"id":"lyrics_work","primary_loc":"LOC3"}]}',
+            '{"types":[{"id":"lyrics_work","primary_loc":"LOC3"},{"id":"scenario_event","primary_loc":"LOC2"}]}',
+            encoding="utf-8",
+        )
+        (root / "data" / "json" / "registries" / "LOC2_EVENT_REGISTRY.json").write_text(
+            '{"status":"working","corpus_summary":{"stage":"Alpha","semantic_role":"real_life_scenario_prototypes"},"grammar_note":{"dual_card":"A → B causal structure"},"records":[{"event_id":"E02","title":"自我懷疑","event_group":"靈魂","requirement_signature":"SL + OC","description":"你開始質疑自己的定義。","content_type":"scenario_event","primary_loc":"LOC2","related_locs":["LOC1","LOC4","LOC6","LOC7","LOC8"],"status":"working"}]}',
             encoding="utf-8",
         )
         (root / "data" / "json" / "registries" / "LOC8_EVENT_SNAPSHOT.json").write_text(
@@ -84,6 +88,15 @@ class UnifiedSearchTests(unittest.TestCase):
         self.assertEqual(len(result["groups"]["timeline"]), 1)
         self.assertEqual(result["groups"]["works"][0]["primary_loc"], "LOC3")
         self.assertEqual(result["groups"]["media"][0]["primary_loc"], "LOC5")
+
+    def test_loc2_scenario_events_are_searchable_without_changing_ownership(self):
+        result = self.make_engine().search("自我懷疑", content_type="scenario_event", top_k=5)
+        self.assertEqual(len(result["groups"]["scenarios"]), 1)
+        item = result["groups"]["scenarios"][0]
+        self.assertEqual(item["result_id"], "E02")
+        self.assertEqual(item["primary_loc"], "LOC2")
+        self.assertEqual(item["content_type"], "scenario_event")
+        self.assertEqual(item["payload"]["requirement_signature"], "SL + OC")
 
     def test_content_type_filter_does_not_merge_ownership(self):
         result = self.make_engine().search("自我治理", content_type="faq")
