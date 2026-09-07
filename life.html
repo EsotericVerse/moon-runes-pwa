@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LOC8 · Life / Context</title>
-  <meta name="description" content="LOC8 Life / Context：整合每日符文、ERA、Event、Context 與 Graph，觀察時間、關係、趨勢與生活脈絡。" />
+  <title>Life / Context · 趨勢分析</title>
+  <meta name="description" content="整合每日符文、時期、事件、脈絡與 Graph，觀察時間、關係、趨勢與生活變化。" />
   <style>
     :root {
       --bg: #07101f;
@@ -739,7 +739,7 @@
           <p>每日符文、時期、事件與關係的變化觀察</p>
         </div>
       </div>
-      <nav class="nav" aria-label="LOC8 功能">
+      <nav class="nav" aria-label="趨勢分析功能">
 <div class="nav-group">
           <div class="nav-group-label">01 · 符文</div>
           <button class="view-switch active" id="dailyDrawViewBtn" type="button" data-view="daily">
@@ -790,7 +790,7 @@
         </div>
       </nav>
       <div class="sidebar-foot">
-        每日符文 → 時期 → 事件 → 脈絡 → Graph View。LOC7 建 Graph 結構，LOC8 用時間與脈絡觀看關係變化。
+        每日符文 → 時期 → 事件 → 脈絡 → Graph View。用時間與脈絡觀看關係如何形成與變化。
       </div>
     </aside>
 
@@ -798,7 +798,7 @@
       <div class="life-view" id="lifeView" hidden>
       <section class="hero" id="overview">
         <div class="loc-header">
-          <p class="loc-header-meta">LOC8 · Event · Current State · Record</p>
+          <p class="loc-header-meta">Event · Current State · Record</p>
           <h1 class="loc-header-title">事件紀錄</h1>
           <h2 class="loc-header-subtitle">把發生過的事情，記成可以持續追蹤的狀態。</h2>
           <p class="loc-header-copy">新增或更新事件，記錄事件前後的狀態、標籤與所屬時期；這些資料會再被時間線與時期分析使用。</p>
@@ -890,10 +890,10 @@
       <div class="life-view" id="eraTrendView" hidden>
         <section class="hero">
           <div class="loc-header">
-            <p class="loc-header-meta">LOC8 · Period · Timeline · Keywords</p>
+            <p class="loc-header-meta">Period · Timeline · Keywords</p>
             <h1 class="loc-header-title">時期</h1>
             <h2 class="loc-header-subtitle">時期不是標籤，而是一段連續的變化。</h2>
-            <p class="loc-header-copy">觀看每一段狀態如何接續、轉折，以及現在正在形成什麼方向；作品的活躍範圍保留為來源參考，不取代 LOC8 的連續時期邊界。</p>
+            <p class="loc-header-copy">觀看每一段狀態如何接續、轉折，以及現在正在形成什麼方向；作品的活躍範圍保留為來源參考，不取代連續時期本身的邊界。</p>
           </div>
         </section>
 
@@ -916,7 +916,7 @@
 
         <section class="card" style="margin-top:16px;" id="era-keywords">
           <div class="head">
-            <div><h3>時期關鍵字脈絡</h3><p>以 LOC8 固定時期為時間軸比較關鍵字的文件數、出現比例與相鄰時期變化；LOC6 使用 Threads 公開語言，LOC3／LOC4／LOC5 保留各自作品證據。</p></div>
+            <div><h3>時期關鍵字脈絡</h3><p>以固定時期為時間軸比較關鍵字的文件數、出現比例與相鄰時期變化；不同資料來源保留各自的作品與文字證據。</p></div>
             <span class="badge">Cross-LOC × 時期</span>
           </div>
           <div class="body"><div class="era-keyword-grid" id="eraKeywordGrid"><div class="empty">載入 時期關鍵字中…</div></div></div>
@@ -932,8 +932,8 @@
 
       <section class="card" style="margin-top:16px;" id="era-timeline">
         <div class="head">
-          <div><h3>時期時間線</h3><p>LOC8 的連續時期；可直接在顯示位置新增、修改、刪除。Suno 原始活躍範圍只保留為來源註記，不再當作時期邊界。</p></div>
-          <div class="actions" style="margin:0"><button class="btn primary" id="addEraBtn" type="button">新增時期</button><span class="badge">時期 · LOC8</span></div>
+          <div><h3>時期時間線</h3><p>連續時期可直接在顯示位置新增、修改、刪除；Suno 原始活躍範圍只保留為來源註記，不再當作時期邊界。</p></div>
+          <div class="actions" style="margin:0"><button class="btn primary" id="addEraBtn" type="button">新增時期</button><span class="badge">時期</span></div>
         </div>
         <div class="body"><div class="era-timeline" id="eraTimelineList"><div class="empty">載入時期資料中…</div></div></div>
       </section>
@@ -943,7 +943,7 @@
       <div class="life-view" id="eventTimeView" hidden>
         <section class="hero">
           <div class="loc-header">
-            <p class="loc-header-meta">LOC8 · Event · Timeline</p>
+            <p class="loc-header-meta">Event · Timeline</p>
             <h1 class="loc-header-title">事件時間線</h1>
             <h2 class="loc-header-subtitle">把事件留在時間裡，先回答「什麼時候發生了什麼」。</h2>
             <p class="loc-header-copy">這裡只保存 Event 的時間順序與紀錄維護；狀態如何演變、概念如何互相影響，移到獨立的「脈絡 Context」處理。</p>
@@ -965,12 +965,12 @@
       <div class="life-view" id="contextView" hidden>
         <section class="hero">
           <div class="loc-header">
-            <p class="loc-header-meta">LOC8 · Context · Relation · Trajectory</p>
+            <p class="loc-header-meta">Context · Relation · Trajectory</p>
             <h1 class="loc-header-title">脈絡 Context</h1>
             <h2 class="loc-header-subtitle">不只記先後，而是記「彼此怎麼連、怎麼變」。</h2>
-            <p class="loc-header-copy">Relation 是底層關聯資料；Trajectory 是有方向的演變投影；Graph 將在同一批關聯資料上建立網狀視圖。這裡承接 LOC6 與其他 LOC 模組整理出的跨事件、概念、作品與符文關係。</p>
+            <p class="loc-header-copy">Relation 是底層關聯資料；Trajectory 是有方向的演變投影；Graph 將在同一批關聯資料上建立網狀視圖。這裡承接不同資料來源整理出的跨事件、概念、作品與符文關係。</p>
           </div>
-          <div class="sync"><span class="dot ok"></span><span>Relation Library · LOC8 v1.0</span></div>
+          <div class="sync"><span class="dot ok"></span><span>Relation Library</span></div>
         </section>
 
       <section class="card" style="margin-top:16px;" id="trajectory">
@@ -992,7 +992,7 @@
       <section class="card" style="margin-top:16px;" id="trajectory-analysis">
         <div class="head">
           <div><h3>趨勢分析 Analysis</h3><p>把軌跡的變化拆成可讀的證據：關鍵字比重怎麼升降，以及這個轉折代表什麼。</p></div>
-          <span class="badge">Cross-LOC → LOC8</span>
+          <span class="badge">跨來源趨勢</span>
         </div>
         <div class="body">
           <div class="trajectory-analysis-grid" id="trajectoryAnalysis">
@@ -1066,7 +1066,7 @@
 
         <section class="card" style="margin-top:16px;" id="context-graph">
           <div class="head">
-            <div><h3>Graph View</h3><p>這裡呈現 LOC8 本地 ERA／Relation 工作資料；跨 LOC Graph RAG 則使用左側獨立 Graph View 功能區。</p></div>
+            <div><h3>Graph View</h3><p>這裡呈現本地時期／Relation 工作資料；跨來源 Graph RAG 則使用左側獨立 Graph View 功能區。</p></div>
             <span class="badge">Graph-ready</span>
           </div>
           <div class="body">
@@ -1078,10 +1078,10 @@
       <div class="life-view" id="graphView" hidden>
         <section class="hero">
           <div class="loc-header">
-            <p class="loc-header-meta">LOC8 · Graph View · LOC7 Graph RAG</p>
+            <p class="loc-header-meta">Graph View · Graph RAG</p>
             <h1 class="loc-header-title">Graph View</h1>
             <h2 class="loc-header-subtitle">從一個問題或節點出發，看它和哪些時期、事件、作品、符文與治理概念相連。</h2>
-            <p class="loc-header-copy">Graph 結構與 traversal 由 LOC7 管理；LOC8 只消費 bounded neighborhood，加入 ERA／時間脈絡。公開介面不提供整張 Graph 批次匯出。</p>
+            <p class="loc-header-copy">Graph 結構與 traversal 由底層知識架構管理；此頁只使用 bounded neighborhood，加入時期與時間脈絡。公開介面不提供整張 Graph 批次匯出。</p>
           </div>
         </section>
 
@@ -1152,7 +1152,7 @@
       <div class="life-view" id="dailyDrawView">
         <section class="hero">
           <div class="loc-header">
-            <p class="loc-header-meta">LOC8 · Daily Rune · Trend · Record</p>
+            <p class="loc-header-meta">Daily Rune · Trend · Record</p>
             <h1 class="loc-header-title">每日符文</h1>
             <h2 class="loc-header-subtitle">從每天的一張符文，看見近期正在形成的趨勢。</h2>
             <p class="loc-header-copy">主抽作為趨勢核心，補抽保留為當日脈絡；可以先看近期分布與重複符文，再維護每天的紀錄。</p>
@@ -1257,12 +1257,12 @@
           <button class="theme-dialog-close" id="themePreviewClose" type="button">關閉</button>
         </div>
         <div class="theme-dialog-body">
-          <img src="data:image/jpeg;base64,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" alt="LOC8 日間與夜間主題 mockup 預覽" />
-          <p>這是 LOC8 的日間／夜間介面概念圖，只作為設計預覽，不佔用主要功能畫面的視覺焦點。</p>
+          <img src="data:image/jpeg;base64,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" alt="日間與夜間主題 mockup 預覽" />
+          <p>這是日間／夜間介面概念圖，只作為設計預覽，不佔用主要功能畫面的視覺焦點。</p>
         </div>
       </dialog>
 
-      <div class="footer">LOC8 · 脈絡分析 · Rune → ERA → Event</div>
+      <div class="footer">脈絡分析 · Rune → 時期 → Event</div>
     </main>
   </div>
 
