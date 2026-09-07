@@ -1,38 +1,38 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "source": "LunaRune64.xlsx#Grammar",
   "source_authority": "mother_workbook",
   "projection_role": "runtime_core",
-  "source_note": "由使用者於 2026-09-07 提供的 LunaRune64 核心母資料 Grammar 工作表同步。若本 JSON 與母資料衝突，以 LunaRune64.xlsx#Grammar 為準。",
+  "source_note": "依使用者於 2026-09-07 提供的最新 Grammar 工作表畫面同步。若本 JSON 與 LunaRune64.xlsx#Grammar 衝突，以母資料為準。",
   "governance": {
-    "global_layering": "詞彙層 → 關係層 → 位置層 → 場域層 → 時間修飾層",
-    "global_rule": "後層只作修飾，不覆蓋符文本義。",
-    "group_alternation": false,
-    "group_alternation_note": "不採群組交替作為現行 Grammar；OW3gs 1–6 的群組、重複主題與張力聚合不等同群組交替。"
+    "global_layering": "詞彙層 → 卡片位置層 → 治理層 → 時間修飾層",
+    "global_rule": "後層時間的月相交互只作修飾，不覆蓋符文本義。",
+    "rune_interaction_scope": "sandbox_only",
+    "lunar_interaction_weight": "low"
   },
   "records": [
     {
       "category": "全域",
       "item": "語法分層",
-      "content": "詞彙層 → 關係層 → 位置層 → 場域層 → 時間修飾層",
-      "note": "後層只作修飾，不覆蓋符文本義。"
+      "content": "詞彙層 → 卡片位置層 → 治理層 → 時間修飾層",
+      "note": "後層時間的月相交互只作修飾，不覆蓋符文本義。"
     },
     {
       "category": "單卡",
-      "item": "基本結構",
-      "content": "符文本義＋方向＋卡片固有月相",
-      "note": "真實月相只作低權重時間修飾。"
+      "item": "治理原則",
+      "content": "符文本義 + 卡牌方向 + 月相交互",
+      "note": "月相交互只作低權重時間修飾。"
     },
     {
       "category": "兩卡",
-      "item": "基本結構",
-      "content": "卡 A＋卡 B＋兩卡方向關係＋交互或治理原則",
-      "note": "交互描述兩個主題如何作用，不單獨決定吉凶。"
+      "item": "治理原則",
+      "content": "因 + 果 + 月相交互",
+      "note": "交互描述兩個主題因果如何作用，不單獨決定吉凶。"
     },
     {
       "category": "三卡",
-      "item": "整體結構",
-      "content": "源＋轉＋合＋交互或治理原則",
+      "item": "治理原則",
+      "content": "源 + 轉 + 合 + 月相交互",
       "note": "形成「源起、過程、顯化」的完整圖景。"
     },
     {
@@ -55,9 +55,9 @@
     },
     {
       "category": "五卡",
-      "item": "整體結構",
-      "content": "過去＋現在＋未來＋環境＋心境＋交互或治理原則",
-      "note": "不是「兩卡＋三卡」的拼接。"
+      "item": "治理原則",
+      "content": "過去 + 現在 + 未來顯化 + 周圍環境 + 自己心境 + 月相交互",
+      "note": "不是「兩卡 + 三卡」的拼接。"
     },
     {
       "category": "五卡",
@@ -73,7 +73,7 @@
     },
     {
       "category": "五卡",
-      "item": "未來可能",
+      "item": "未來顯化",
       "content": "若目前條件延續，最可能的發展趨勢",
       "note": "不是絕對結果。"
     },
@@ -81,49 +81,55 @@
       "category": "五卡",
       "item": "環境",
       "content": "他人、環境、制度、現實限制與外部助力",
-      "note": "不是第四個時間階段。"
+      "note": "周圍環境的狀態。"
     },
     {
       "category": "五卡",
       "item": "心境",
       "content": "本人立場、期待、恐懼、動機與主觀認知",
-      "note": "不是第五個時間階段。"
+      "note": "自己心境的狀態。"
     },
     {
       "category": "五卡",
       "item": "關係優先",
-      "content": "因→現、現→向、境→現／向、心→現／向；必要時因→向",
+      "content": "過去→現在→未來→環境→心境",
       "note": "只計算具有語義關係的卡對，不要求五張彼此全連。"
     },
     {
       "category": "OW3gs",
-      "item": "整體結構",
-      "content": "1–6 因的描述層 ＋7–11 果的判定層＋交互或治理原則",
-      "note": "十一張牌不是等權並列。"
+      "item": "治理原則",
+      "content": "1–6 因的描述層 + 7–11 果的判定層 + 月相交互",
+      "note": "用符文模型完整形容事件，十一張牌不是等權並列。"
     },
     {
       "category": "OW3gs",
       "item": "1–6 因的描述層",
-      "content": "背景、既有條件、資源、阻力、外部擾動、尚未成形因素",
-      "note": "以群組、重複主題與張力聚合，不要求逐張成句。"
+      "content": "1.背景 2.現在 3.資源 4.意向 5.外部擾動 6.尚未成形因素",
+      "note": "分析產生問題的可能狀態。"
     },
     {
       "category": "OW3gs",
       "item": "7–11 果的判定層",
-      "content": "7 因、8 現、9 向、10 境、11 心",
-      "note": "核心判定區間。"
+      "content": "建議：7.成因 8.現在 9.未來 10.環境 11.心境",
+      "note": "建議該怎麼做的治理原則。"
     },
     {
       "category": "OW3gs",
       "item": "讀取順序",
-      "content": "先讀 7–11 → 再掃描 1–6 → 只回填有明確語義關係的場域訊息 → 最後套月相交互",
-      "note": "避免十一張逐句硬接。"
+      "content": "先讀 7–11 → 再掃描 1–6 → 最後套月相交互",
+      "note": "治理原則為分成兩個模型。鑑古知今為原則。"
+    },
+    {
+      "category": "OW3gs",
+      "item": "額外說明",
+      "content": "有時候跟每日符文交替比照，會很有意思。",
+      "note": "重在模型的關聯，而非把抽牌維度提高的複雜化。"
     },
     {
       "category": "符文交互",
-      "item": "作用",
-      "content": "描述兩個語義主題的共鳴、互補、衝突與語氣張力",
-      "note": "只作關係修飾，不改寫符文本義。"
+      "item": "治理原則",
+      "content": "描述兩個符文語義主題的共鳴、互補、衝突與語氣張力",
+      "note": "月符沙盒專用，因符文關係為平等。"
     },
     {
       "category": "月相交互",
