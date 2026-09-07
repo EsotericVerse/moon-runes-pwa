@@ -1,6 +1,6 @@
 {
-  "schema_version": "1.0",
-  "registry": "LOC6_THREADS_DOCUMENT_MANIFEST",
+  "schema_version": "1.1",
+  "registry": "LOC4_THREADS_DOCUMENT_MANIFEST",
   "status": "working",
   "source": "threads_and_replies.json",
   "source_window": {
@@ -14,7 +14,7 @@
     "replies": 2430
   },
   "indexed_layer": {
-    "role": "main_post_primary_evidence",
+    "role": "LOC4_life_writing_main_post_primary_evidence",
     "document_count": 4578,
     "shard_size": 1200,
     "shard_count": 4,
@@ -55,5 +55,13 @@
     }
   ],
   "reply_policy": "Replies remain supplemental evidence and are not included in the primary main-post shard set.",
-  "governance": "Document text is primary-source evidence. Search hits, frequency and clustering do not automatically become Canon."
+  "governance": "Raw Threads documents belong to LOC4 life writing. LOC6 consumes them for governance/Zhengde-style interpretation; LOC7 retrieves them; LOC8 projects time/ERA/trend.",
+  "primary_loc": "LOC4",
+  "authority": "LOC4",
+  "storage_note": "Legacy generated path remains under data/json/generated/loc6 for compatibility. Path does not define ownership; raw Threads authored text is LOC4 life writing.",
+  "consumer_locs": [
+    "LOC6",
+    "LOC7",
+    "LOC8"
+  ]
 }
