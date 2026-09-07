@@ -8,7 +8,7 @@
 
 > 注意：Library URL 是 Apps Script 程式庫版本連結，不是 LOC8 的 Google Sheet 資料庫網址。實際資料仍在 LOC8 Google Sheet 的 `User` / `Event` / `Relation` 分頁。
 
-這個 Apps Script 將 `life.html` 與 LOC8 Google Sheet 的 `User` / `Event` 分頁連起來。
+這個 Apps Script 將 `life.html` 與 LOC8 Google Sheet 的 `User` / `Event` / `Era` / `Runes` / `History` / `Relation` 分頁連起來。現行 health schema 為 `loc8-mvp-1.1`。
 
 ## 部署
 
@@ -22,23 +22,39 @@
 
 ## API
 
-- `GET ?action=health`：健康檢查
-- `GET ?action=events&user_id=lo3rwang`：取得指定使用者事件
-- `GET ?action=users`：取得使用者
-- `GET ?action=relations&user_id=lo3rwang`：取得指定使用者關聯
-- `POST action=event`：新增事件
-- `POST action=update_event`：依 `id` 更新既有事件
-- `POST action=archive_event`：依 `id` 將事件標記為 `archived`
-- `POST action=delete_event`：依 `id` 刪除事件
-- `POST action=relation`：新增關聯
-- `POST action=update_relation`：依 `id` 更新關聯
-- `POST action=delete_relation`：依 `id` 刪除關聯
-- `POST action=user`：新增使用者
+### GET
 
-事件會依 `Event` 第一列欄位寫入；使用者依 `User` 第一列欄位寫入。
+- `GET ?action=health`：健康檢查；現行應回傳 `schema: loc8-mvp-1.1`。
+- `GET ?action=events&user_id=lo3rwang`：取得指定使用者事件；會排除已分流至 Runes 的每日抽牌紀錄。
+- `GET ?action=users`：取得使用者。
+- `GET ?action=eras`：取得 Era 分頁資料；Era 分頁不存在時回傳空陣列。
+- `GET ?action=daily_draws&user_id=lo3rwang`：取得每日抽牌紀錄。
+- `GET ?action=history&user_id=lo3rwang`：取得 History 分頁資料；分頁不存在時回傳空陣列。
+- `GET ?action=relations&user_id=lo3rwang`：取得指定使用者關聯。
 
-> 目前是單人 MVP。OAuth 與正式權限邊界之後再接；在此之前，不要把 Web App URL 當成安全授權機制。
+### POST
 
+- `action=user`：新增使用者。
+- `action=event`：新增事件；若 payload 被辨識為 daily draw，會改寫入 Runes。
+- `action=update_event`：依 `id` 更新既有事件。
+- `action=archive_event`：依 `id` 將事件標記為 `archived`。
+- `action=delete_event`：依 `id` 刪除事件。
+- `action=era`：新增 Era。
+- `action=update_era`：依 `era_id` 更新 Era；若 repository-governed Era 尚未存在於 Sheet，現行程式會 upsert 建立資料列。
+- `action=delete_era`：依 `era_id` 刪除 Era。
+- `action=daily_draw`：新增每日抽牌紀錄。
+- `action=update_daily_draw`：依 `id` 更新每日抽牌紀錄。
+- `action=delete_daily_draw`：依 `id` 刪除每日抽牌紀錄。
+- `action=batch_update_daily_draws`：批次更新每日抽牌。
+- `action=batch_delete_daily_draws`：批次刪除每日抽牌。
+- `action=migrate_daily_draws`：將 Event 中的舊每日抽牌紀錄複製到 Runes；會依 `id` 避免重複。
+- `action=relation`：新增關聯。
+- `action=update_relation`：依 `id` 更新關聯。
+- `action=delete_relation`：依 `id` 刪除關聯。
+
+各資料列依對應 Sheet 第一列 header 做欄位映射。第一列可保留空白欄位位置，但正式資料欄應使用明確且不重複的 header 名稱。
+
+> **部署版本治理：** GitHub 的 `loc8_api/Code.gs` 是程式碼來源，但 Apps Script Web App 不會因 GitHub commit 自動更新。每次 `Code.gs` 變更後，都必須同步至 Apps Script 並更新 deployment；只有線上 `?action=health` 回傳 `loc8-mvp-1.1`，才能確認目前部署至少符合 v1.1 health contract。
 
 ## v0.3 編輯流程
 
