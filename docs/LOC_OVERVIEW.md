@@ -22,8 +22,8 @@ LOC1–8 是功能分工，不是版本順序，也不是成熟度高低。
 - **LOC4 · Writing**：文字創作、小說、文章與其他文字作品。
 - **LOC5 · Resonance**：圖像、聲音與文字的多媒體呈現。
 - **LOC6 · Methodology / Governance**：方法論；包含治理、解讀、價值判斷、政德風與處理方式。
-- **LOC7 · Methodological System / Text Architecture**：方法體系；由多種方法形成文字建築、知識管理、檢索與關聯結構。
-- **LOC8 · Cultural Philosophy / Time & Trend**：文化哲學；把方法體系放入事件、時間、ERA、軌跡與趨勢中觀察其演化。
+- **LOC7 · Algorithm / Text Architecture**：演算法；由多種方法形成文字建築、知識管理、檢索與關聯結構。
+- **LOC8 · Cultural Philosophy / Time & Trend**：文化哲學；把演算法放入事件、時間、ERA、軌跡與趨勢中觀察其演化。
 
 ## 月符與 LOC
 
