@@ -18,7 +18,7 @@ pre{white-space:pre-wrap;word-break:break-word;max-height:340px;overflow:auto;pa
 <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="km-upload" aria-label="全站導覽"></nav></div>
 <main>
 <p>LOC7 · Knowledge Intake</p><h1>KM JSON Upload</h1>
-<p>把更新後的 JSON 直接送進 KM inbox。頁面只負責驗證 JSON 與上傳，不在瀏覽器保存任何 GitHub token。</p>
+<p>把更新後的 JSON 直接送進 KM inbox。這個頁面只做 JSON 格式驗證與上傳，不做關鍵字解析、分類、embedding 或其他分析。</p>
 <section class="card">
 <label class="drop" for="file"><strong>選擇 JSON</strong><br><span id="fileName">尚未選擇檔案</span></label>
 <input id="file" type="file" accept=".json,application/json">
@@ -44,7 +44,7 @@ el('file').addEventListener('change',async()=>{
    const text=await f.text(); const data=JSON.parse(text);
    current={filename:f.name,data};
    const count=Array.isArray(data)?data.length:(data&&typeof data==='object'?Object.keys(data).length:0);
-   el('meta').textContent=`${(f.size/1024).toFixed(1)} KB · 頂層 ${count} 項 · JSON 格式正常`;
+   el('meta').textContent=`${(f.size/1024).toFixed(1)} KB · 頂層 ${count} 項 · JSON 格式正常 · 不進行內容解析`;
    el('preview').hidden=false; el('preview').textContent=JSON.stringify(data,null,2).slice(0,12000);
    el('upload').disabled=false;
  }catch(e){el('status').className='status err';el('status').textContent='JSON 格式錯誤：'+e.message;el('preview').hidden=true;}
