@@ -749,11 +749,11 @@
     }
 
     const GROUP_LOCATION_META={
-      entities:{loc:'月之符文',label:'符文',desc:'方法名稱、定義與讀取規則'},
+      entities:{loc:'月之符文',label:'符文',desc:'符文資料與知識庫內容；另收不屬於其他符文專門分類的例外項'},
       scenarios:{loc:'月符沙盒',label:'符文沙盒',desc:'Scenario Corpus／Event Corpus；把符文帶入真實情境與互動'},
       oracle:{loc:'月之符文',label:'符文占卜',desc:'抽牌／籤詩本身的使用結果'},
       readings:{loc:'月之符文',label:'符文治理',desc:'解牌原理、判讀規則與已保存的占卜解讀紀錄，例如 OW3gs、雙卡因果、三卡源轉合與多卡判讀'},
-      runes:{loc:'月之符文',label:'符文',desc:'基本符文、方向與參照語意'},
+      runes:{loc:'月之符文',label:'符文',desc:'基本符文、方向、參照語意與符文資料'},
       rune_songs:{loc:'自創歌曲(Suno)',label:'符文音樂',desc:'已確認符文歌曲，以及明確標示來源狀態的符文－歌曲關聯'},
       works:{loc:'自創歌曲(Suno)',label:'音樂／歌詞',desc:'歌曲、歌詞與符文歌演化證據'},
       textworks:{loc:'文字創作',label:'文字作品',desc:'文章、小說與文字延伸'},
@@ -843,7 +843,8 @@
     function applyPublicCategoryFilter(groups,type){
       if(!isRunePublicCategory(type)) return groups||{};
       const g=groups||{};
-      if(type==='rune_core') return {entities:g.entities||[],runes:g.runes||[]};
+
+      // Specialized rune views take priority. "符文" is the fallback bucket.
       if(type==='rune_sandbox') return {scenarios:g.scenarios||[]};
       if(type==='rune_music') return {rune_songs:g.rune_songs||[]};
       if(type==='rune_governance'){
@@ -851,15 +852,36 @@
           const p=item?.payload||{};
           const hay=[
             item?.title,item?.summary,item?.result_id,
-            p?.title,p?.summary,p?.retrieval_text,
+            p?.title,p?.summary,p?.retrieval_text,p?.description,
             ...(p?.keywords||[])
           ].filter(Boolean).join(' ');
-          return /OW3gs|解牌|判讀|雙卡|因果|三卡|源.?轉.?合|五卡|十一卡|11張|7.?11|符文語法|命運句/i.test(hay);
+          return /OW3gs|解牌|判讀|雙卡|因果|三卡|源.?轉.?合|五卡|十一卡|11張|7.?11|符文語法|命運句|正位|逆位|半正|半逆/i.test(hay);
         });
         return {readings:g.readings||[],knowledge};
       }
       if(type==='rune_divination') return {oracle:g.oracle||[]};
       if(type==='rune_image') return {media:(g.media||[]).filter(hasRuneRelation)};
+
+      if(type==='rune_core'){
+        const knowledge=(g.knowledge||[]).filter(item=>{
+          const p=item?.payload||{};
+          const hay=[
+            item?.title,item?.summary,item?.result_id,
+            p?.title,p?.summary,p?.retrieval_text,p?.description,
+            ...(p?.keywords||[])
+          ].filter(Boolean).join(' ');
+          const runeRelated=hasRuneRelation(item)||/月之符文|月符|符文|rune/i.test(hay);
+          const specialized=/OW3gs|解牌|判讀|抽牌|占卜|雙卡|因果|三卡|源.?轉.?合|五卡|十一卡|11張|符文音樂|符文影像|Semantic Playground/i.test(hay);
+          return runeRelated&&!specialized;
+        });
+        const exceptions=(g.relationships||[]).filter(hasRuneRelation);
+        return {
+          entities:g.entities||[],
+          runes:g.runes||[],
+          knowledge,
+          relationships:exceptions
+        };
+      }
       return g;
     }
 
