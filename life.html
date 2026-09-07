@@ -316,6 +316,10 @@
     .era-name { font-weight:700; }
     .era-desc { margin-top:5px; color:var(--muted); font-size:12px; line-height:1.55; }
     .era-source-note { margin-top:4px; color:var(--muted); font-size:10px; opacity:.78; }
+    .era-source-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .era-source-label{color:var(--muted);font-size:10px;letter-spacing:.04em;white-space:nowrap}
+    .era-source-chips{display:flex;flex-wrap:wrap;gap:6px}
+    .era-source-chip{display:inline-flex;align-items:center;min-height:24px;padding:4px 9px;border:1px solid rgba(196,216,255,.18);border-radius:999px;background:rgba(255,255,255,.035);color:#dbe7f7;font-size:10px;line-height:1;white-space:nowrap}
 
     .timeline { position: relative; display: grid; gap: 0; }
     .timeline::before {
@@ -2165,6 +2169,7 @@
                 <div class="era-keyword-chips">${era.milestones.map(item => `<span class="era-keyword-chip"><b>${esc(item.date || '')}</b> ${esc(item.title || '')}</span>`).join('')}</div>
               ` : ''}
               ${entries.length ? `<div class="era-keyword-chips">${entries.map(([tag,count]) => `<span class="era-keyword-chip">${esc(tag)} <b>${String(count).includes("%") ? esc(count) : "×" + esc(count)}</b></span>`).join('')}</div>` : ''}
+              ${Array.isArray(era.source_labels) && era.source_labels.length ? `<div class="era-source-row"><span class="era-source-label">資料來源</span><div class="era-source-chips">${era.source_labels.map(source => `<span class="era-source-chip">${esc(source)}</span>`).join('')}</div></div>` : ''}
               ${sourceRange ? `<div class="era-source-note">Suno 原始活躍範圍（來源參考）：${esc(sourceRange)}</div>` : ''}
               <div class="era-tools">
                 <button class="btn ghost" type="button" data-era-action="edit" data-era-id="${esc(era.era_id)}">修改</button>
