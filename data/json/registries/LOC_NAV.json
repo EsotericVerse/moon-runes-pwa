@@ -15,9 +15,9 @@
     },
     {
       "id": "game",
-      "label": "月符沙盒",
+      "label": "脈絡／月符沙盒",
       "href": "loc2.html",
-      "description": "Semantic Playground"
+      "description": "LOC2 · Context · Graph"
     },
     {
       "id": "search",
@@ -27,9 +27,9 @@
     },
     {
       "id": "life",
-      "label": "文化哲學",
+      "label": "文學演化",
       "href": "life.html",
-      "description": "時間 · 關係 · 趨勢"
+      "description": "LOC8 · 時間 · ERA · 趨勢"
     }
   ]
 }
