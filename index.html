@@ -234,7 +234,7 @@
 
     .evolution-path {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
       margin-top: 18px;
     }
@@ -259,7 +259,7 @@
       font-weight: 900;
     }
 
-    .evolution-step:last-child::after { display: none; }
+    .evolution-step:nth-child(4n)::after { display: none; }
 
     .evolution-step strong {
       display: block;
