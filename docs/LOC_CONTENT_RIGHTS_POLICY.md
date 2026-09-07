@@ -135,3 +135,38 @@ Crossing from private / restricted / review_required into public / cleared requi
 If authorship, attribution or publication rights are disputed, the content enters review/dispute state; the system should preserve the governance record while preventing silent promotion to public Canon.
 
 This policy implements the boundary principles in [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md).
+
+
+## 9. Public Text Display Policy
+
+全文是否可被分析，與全文是否可被公開展示，是兩個不同權限。
+
+公開搜尋與公開 API 使用 `display_policy` 控制正文暴露程度：
+
+```text
+snippet       = 只回傳與查詢相關的文字片段
+full          = 可回傳全文
+metadata_only = 只回傳標題、日期、作者、來源、標籤等 metadata，不回正文
+```
+
+治理優先序：
+
+```text
+record.display_policy
+→ content_type.default_display_policy
+→ registry default
+```
+
+現行預設：
+- 歌詞作品（`lyrics_work`）：`snippet`
+- 歌曲／音樂版本 metadata：`metadata_only`
+- Threads／治理文章（`governance_article`）：`snippet`
+- 小說、文章、散文、生活紀錄等長文：`snippet`
+- FAQ、已核准公開的知識文件：可為 `full`
+- 短治理片段：可為 `full`
+
+重要限制：
+- `snippet` 不只是 UI 截短；公開 API payload 也不得夾帶完整 `lyrics`、`text`、`full_text`、`transcript` 或其他等價全文欄位。
+- 搜尋、分類、Graph、RAG 與趨勢分析仍可在授權範圍內使用完整原文。
+- `full` 只代表展示層允許全文；仍必須同時通過 ownership / visibility / rights gate。
+- 個別內容可覆寫類型預設，例如作者自己的 Threads 文章可明確設定為 `full`；未設定時維持類型預設。
