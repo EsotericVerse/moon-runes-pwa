@@ -36,10 +36,10 @@
         "LOC Search / Graph / Trend 的目的之一，是讓使用者看見語言如何改變，再自行決定如何治理下一個版本。"
       ],
       "governance": {
-        "core_document": "docs/LOC_GOVERNANCE_CORE.md",
-        "history_document": "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md",
-        "luna_runes_66_document": "docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md",
-        "rights_document": "docs/LOC_CONTENT_RIGHTS_POLICY.md",
+        "core_document": "governance.html",
+        "history_document": "governance.html",
+        "luna_runes_66_document": "governance.html",
+        "rights_document": "data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json",
         "system_vs_personal": "LOC system governance defines representation, authority, boundary and lifecycle; Zhengde Style/self-governance remains a personal governance corpus and example, not a mandatory worldview.",
         "stance": "share methods and language without requiring belief or obedience"
       },
