@@ -54,7 +54,13 @@ button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:po
 .context-page-btn.active{background:rgba(169,199,255,.2);border-color:var(--line-strong)}.context-page-btn:disabled{opacity:.35;cursor:not-allowed}
 </style>
   <link rel="stylesheet" href="css/loc-responsive.css">
-<link rel="stylesheet" href="css/loc-nav.css"></head><body class="loc-responsive-page loc-page-game"><div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="game" aria-label="全站導覽"></nav></div><div class="app-shell">
+<link rel="stylesheet" href="css/loc-nav.css"><style id="loc-site-footer-style">
+.loc-site-footer{margin-top:32px;padding:20px 16px;text-align:center;font-size:13px;line-height:1.6;color:var(--muted,#7f8794);border-top:1px solid var(--line,rgba(127,135,148,.22))}
+.loc-site-footer a{color:inherit;text-decoration:none}
+.loc-site-footer a:hover{text-decoration:underline}
+.loc-site-footer span{margin:0 8px;opacity:.7}
+</style>
+</head><body class="loc-responsive-page loc-page-game"><div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="game" aria-label="全站導覽"></nav></div><div class="app-shell">
 <aside class="workspace-sidebar">
   <div class="workspace-brand"><h1>Context</h1><p>脈絡</p></div>
   <nav class="workspace-nav" aria-label="脈絡功能">
@@ -196,7 +202,7 @@ button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:po
     </div>
   </div>
 </section>
-<footer class="foot"><div class="wrap">LOC · Luna Codex · 月典 ｜ Lucas Oscar Wang 政德</div></footer></main></div><script>
+</main></div><script>
 function switchContextView(name){
   document.querySelectorAll('[data-context-view]').forEach(el=>el.hidden=el.dataset.contextView!==name);
   document.querySelectorAll('[data-context-switch]').forEach(btn=>btn.classList.toggle('active',btn.dataset.contextSwitch===name));
@@ -450,4 +456,5 @@ const eventCacheAtStart=readContextCache(CONTEXT_EVENT_CACHE);
 const relationCacheAtStart=readContextCache(CONTEXT_RELATION_CACHE);
 loadContextEvents({remote:!Array.isArray(eventCacheAtStart?.data)});
 loadContextRelations({remote:!Array.isArray(relationCacheAtStart?.data)});
-</script></body></html>
+</script><footer class="loc-site-footer"><a href="index.html">月典</a><span>｜</span><a href="lo3rwang.html">Lucas Oscar Wang 政德</a></footer>
+</body></html>
