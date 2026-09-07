@@ -509,36 +509,43 @@ async function renderResult(mode, config, realPhase) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
-  const params = new URLSearchParams(window.location.search);
-  const requestedMode = params.get("mode");
-  if (!requestedMode) return;
-  const mode = normalizeMode(requestedMode);
-  const config = MODE_CONFIG[mode];
+async function executeDraw(mode, config, realPhase) {
+  const panel = document.getElementById("draw-result-panel");
   const ritualView = document.getElementById("ritual-view");
-  if (ritualView) ritualView.hidden = false;
-  const realPhase = window.LOCMoonPhase?.getRealPhase() || "未知";
+  const resultView = document.getElementById("result-view");
 
-  sessionStorage.setItem("realPhase", realPhase);
+  if (panel) panel.hidden = false;
+  if (resultView) resultView.hidden = true;
+  if (ritualView) ritualView.hidden = false;
 
   document.getElementById("mode-title").textContent = config.title;
   document.getElementById("mode-kicker").textContent = config.kicker;
-  const moonPhase = document.getElementById("moon-phase");
-  if (moonPhase) {
-    moonPhase.textContent = `本次真實月相｜${realPhase}`;
-  }
+
   const ritualPhase = document.getElementById("ritual-phase");
-  if (ritualPhase) {
-    ritualPhase.textContent = `月相：無 / 真實月相：${realPhase}`;
-  }
+  if (ritualPhase) ritualPhase.textContent = `月相：無 / 真實月相：${realPhase}`;
+
+  panel?.scrollIntoView({behavior:"smooth", block:"start"});
 
   const loaders = [runRitual(mode, config), ensureLocalData(mode)];
   if (mode !== "5card") loaders.push(loadRuneHints());
   if (mode === "single" || mode === "daily") loaders.push(loadLots());
   await Promise.all(loaders);
   await renderResult(mode, config, realPhase);
+}
 
-  document.getElementById("retry-button").addEventListener("click", () => {
-    window.location.href = "runes.html?mode=" + encodeURIComponent(mode) + "#draw";
+window.addEventListener("DOMContentLoaded", async () => {
+  const params = new URLSearchParams(window.location.search);
+  const requestedMode = params.get("mode");
+  if (!requestedMode) return;
+
+  const mode = normalizeMode(requestedMode);
+  const config = MODE_CONFIG[mode];
+  const realPhase = window.LOCMoonPhase?.getRealPhase() || "未知";
+  sessionStorage.setItem("realPhase", realPhase);
+
+  await executeDraw(mode, config, realPhase);
+
+  document.getElementById("retry-button")?.addEventListener("click", async () => {
+    await executeDraw(mode, config, realPhase);
   });
 });
