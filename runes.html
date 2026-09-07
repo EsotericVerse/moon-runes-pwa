@@ -131,39 +131,35 @@
       <div class="workspace-brand"><h1>LunaRunes</h1><p>月之符文</p></div>
       <nav class="workspace-nav" aria-label="月之符文功能">
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">01 · 入門</div>
-          <button class="workspace-switch active" type="button" data-runes-view="beginner"><strong>新手入門</strong><small>66 符文 · 四向 · 怎麼開始</small></button>
+          <div class="workspace-nav-label">01 · 文件</div>
+          <button class="workspace-switch active" type="button" data-runes-view="reference"><strong>基本文件</strong><small>新手入門 · 判讀規則 · 命運句</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">02 · 文件</div>
-          <button class="workspace-switch" type="button" data-runes-view="reference"><strong>基本文件</strong><small>判讀規則 · 命運句結構</small></button>
-        </div>
-        <div class="workspace-nav-group">
-          <div class="workspace-nav-label">03 · 範例</div>
+          <div class="workspace-nav-label">02 · 範例</div>
           <button class="workspace-switch" type="button" data-runes-view="examples"><strong>占卜結果範例</strong><small>固定案例 · 命運句練習</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">04 · 體系</div>
+          <div class="workspace-nav-label">03 · 體系</div>
           <button class="workspace-switch" type="button" data-runes-view="systems"><strong>多元體系</strong><small>符文歌曲 · 符文文學</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">05 · 資料</div>
+          <div class="workspace-nav-label">04 · 資料</div>
           <button class="workspace-switch" type="button" data-runes-view="library"><strong>符文資料</strong><small>66 圖鑑 · 基礎資料 · 實體卡</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">06 · 每日</div>
+          <div class="workspace-nav-label">05 · 每日</div>
           <button class="workspace-switch" type="button" data-runes-view="daily"><strong>每日符文</strong><small>一天一張 · 今日語意提示</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">07 · 抽牌</div>
+          <div class="workspace-nav-label">06 · 抽牌</div>
           <button class="workspace-switch" type="button" data-runes-view="draw"><strong>抽牌</strong><small>單卡 · 雙卡 · 三卡 · 五卡 · OW3gs</small></button>
         </div>
       </nav>
-      <div class="workspace-foot">新手入門、基本文件、占卜結果範例、多元體系、符文資料、每日符文與抽牌都在同一頁。</div>
+      <div class="workspace-foot">基本文件、占卜結果範例、多元體系、符文資料、每日符文與抽牌都在同一頁。</div>
     </aside>
     <main class="page workspace-main">
-      <div class="runes-view" id="beginnerView">
-        <header class="hero loc-header">
+      <div class="runes-view" id="referenceView">
+<header class="hero loc-header">
           <p class="loc-header-meta">LunaRunes · Beginner</p>
           <h1 class="loc-header-title">新手入門</h1>
           <h2 class="loc-header-subtitle">不用先學會所有符文，也可以直接開始。</h2>
@@ -183,14 +179,13 @@
             <a class="draw-mode-card" href="tutorial02.html"><strong>完整新手教學</strong><span>LOC Tutorial 02。</span></a>
           </div>
         </section>
-      </div>
-      <div class="runes-view" id="referenceView" hidden>
-        <header class="hero loc-header">
-          <p class="loc-header-meta">LunaRunes · Basic Reference</p>
-          <h1 class="loc-header-title">基本文件</h1>
-          <h2 class="loc-header-subtitle">用固定規則理解抽牌結果，再用少量案例練習命運句。</h2>
-          <p class="loc-header-copy">這裡只放月之符文最基本、穩定的判讀規則與代表案例。更深入的方法、完整案例與延伸分析仍由知識庫提供。</p>
-        </header>
+
+
+
+        <section class="rune-basics">
+          <h2>基本文件</h2>
+          <p>這裡整理月之符文最基本、穩定的使用與判讀規則；更深入的方法與延伸分析仍由知識庫提供。</p>
+        </section>
 
         <section class="rune-basics">
           <h2>基本判讀順序</h2>
@@ -475,7 +470,6 @@
   (()=> {
     const buttons=[...document.querySelectorAll('[data-runes-view]')];
     const views={
-      beginner:document.getElementById('beginnerView'),
       reference:document.getElementById('referenceView'),
       examples:document.getElementById('examplesView'),
       systems:document.getElementById('systemsView'),
@@ -488,7 +482,7 @@
       buttons.forEach(btn=>btn.classList.toggle('active',btn.dataset.runesView===name));
       if(updateUrl){
         const params=new URLSearchParams(location.search);
-        const suffix=name==='beginner'?'':('#'+name);
+        const suffix=name==='reference'?'':('#'+name);
         history.replaceState(null,'','runes.html'+(params.toString()?'?'+params.toString():'')+suffix);
       }
     }
@@ -504,7 +498,7 @@
     else if(location.hash==='#examples') switchView('examples',false);
     else if(location.hash==='#systems') switchView('systems',false);
     else if(location.hash==='#library') switchView('library',false);
-    else switchView('beginner',false);
+    else switchView('reference',false);
   })();
   </script>
 </body>
