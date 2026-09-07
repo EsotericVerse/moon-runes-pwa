@@ -910,6 +910,19 @@
             <span class="badge">排行 → 搜尋 → 證據</span>
           </div>
           <div class="body">
+            <div class="era-keyword-chips" id="keywordRankingSourceTabs" aria-label="排行榜來源" style="margin-top:0;margin-bottom:10px">
+              <button class="era-keyword-chip active" type="button" data-ranking-source="">全部</button>
+              <button class="era-keyword-chip" type="button" data-ranking-source="facebook">Facebook</button>
+              <button class="era-keyword-chip" type="button" data-ranking-source="threads">Threads</button>
+              <button class="era-keyword-chip" type="button" data-ranking-source="suno">Suno</button>
+            </div>
+            <div class="row" style="margin-bottom:10px;align-items:center">
+              <label class="era-source-note" for="keywordRankingEraFilter" style="margin:0">ERA</label>
+              <select id="keywordRankingEraFilter" style="max-width:320px">
+                <option value="">全部 ERA</option>
+              </select>
+            </div>
+            <div class="era-source-note" id="keywordRankingScope" style="margin-bottom:10px">載入排行榜範圍中…</div>
             <div class="keyword-ranking-list" id="keywordRankingList"><div class="empty">載入關鍵字排行榜中…</div></div>
           </div>
         </section>
@@ -1322,6 +1335,9 @@
       eraMetricKeywords: $('#eraMetricKeywords'),
       eraKeywordGrid: $('#eraKeywordGrid'),
       keywordRankingList: $('#keywordRankingList'),
+      keywordRankingSourceTabs: $('#keywordRankingSourceTabs'),
+      keywordRankingEraFilter: $('#keywordRankingEraFilter'),
+      keywordRankingScope: $('#keywordRankingScope'),
       eraTrendStrip: $('#eraTrendStrip'),
       graphStatus: $('#graphStatus'),
       graphRegistryNodes: $('#graphRegistryNodes'),
@@ -1377,6 +1393,10 @@
     let loc6PeriodKeywordAnalysis = null;
     let loc4WritingRegistry = null;
     let loc5MediaRegistry = null;
+    let sourceActivityRegistry = null;
+    let keywordRankingSource = '';
+    let keywordRankingEra = '';
+    let keywordRankingRequestToken = 0;
     let runeMetaMap = new Map();
     let editingId = '';
     let relations = [];
@@ -1497,6 +1517,14 @@
       );
     }
 
+    async function loadSourceActivityRegistry() {
+      sourceActivityRegistry = await cachedStaticJson(
+        'data/json/registries/LOC_SOURCE_ACTIVITY_REGISTRY.json',
+        TREND_SOURCE_CACHE_PREFIX + 'source-activity',
+        sourceActivityRegistry
+      );
+    }
+
     function readEraOverrides() {
       const data = readJsonCache(ERA_OVERRIDE_CACHE_KEY, {});
       return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
@@ -1528,7 +1556,7 @@
     }
 
     async function loadEraRegistry() {
-      await Promise.all([loadLoc3PeriodKeywordAnalysis(), loadLoc6PeriodKeywordAnalysis(), loadLoc4WritingRegistry(), loadLoc5MediaRegistry()]);
+      await Promise.all([loadLoc3PeriodKeywordAnalysis(), loadLoc6PeriodKeywordAnalysis(), loadLoc4WritingRegistry(), loadLoc5MediaRegistry(), loadSourceActivityRegistry()]);
 
       // Render from repository registries first. The period/keyword view must
       // not depend on Event rows or on the Apps Script deployment being fresh.
@@ -1781,68 +1809,158 @@
       };
     }
 
-    function searchHref(term, period='') {
+    function searchHref(term, period='', source='', startDate='', endDate='') {
       const params = new URLSearchParams();
       params.set('q', String(term || ''));
+      params.set('content_type', source === 'suno' ? 'lyrics_work' : 'text_record');
       if (period) params.set('period', String(period));
+      if (source) params.set('source', String(source));
+      if (startDate) params.set('start_date', String(startDate));
+      if (endDate) params.set('end_date', String(endDate));
       return 'search.html?' + params.toString();
     }
 
-    function renderKeywordRanking() {
+    function rankingSourceMeta(source) {
+      return (Array.isArray(sourceActivityRegistry?.sources) ? sourceActivityRegistry.sources : [])
+        .find(item => String(item.id || '') === String(source || '')) || null;
+    }
+
+    function rankingEraMeta(period) {
+      return eraRegistry.find(item => String(item.period || '') === String(period || '')) || null;
+    }
+
+    function maxDate(a='', b='') {
+      if (!a) return b || '';
+      if (!b) return a || '';
+      return a > b ? a : b;
+    }
+
+    function minDate(a='', b='') {
+      if (!a) return b || '';
+      if (!b) return a || '';
+      return a < b ? a : b;
+    }
+
+    function rankingScopeFor(source) {
+      const src = rankingSourceMeta(source) || {};
+      const era = keywordRankingEra ? rankingEraMeta(keywordRankingEra) : null;
+      let start = String(src.analysis_start || '');
+      let end = String(src.analysis_end || '');
+      if (era) {
+        start = maxDate(start, String(era.start_date || ''));
+        end = minDate(end, String(era.end_date || ''));
+      }
+      const valid = !(start && end && start > end);
+      return { source, label:src.label || source, start, end, era, valid, meta:src };
+    }
+
+    function renderKeywordRankingControls() {
+      if (els.keywordRankingSourceTabs) {
+        els.keywordRankingSourceTabs.querySelectorAll('[data-ranking-source]').forEach(btn => {
+          btn.classList.toggle('active', String(btn.dataset.rankingSource || '') === keywordRankingSource);
+        });
+      }
+      if (els.keywordRankingEraFilter) {
+        const current = keywordRankingEra;
+        const ordered = eraRegistry.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0));
+        els.keywordRankingEraFilter.innerHTML = '<option value="">全部 ERA</option>' + ordered.map(era =>
+          `<option value="${esc(era.period || '')}">${esc(era.period || era.era_id)} · ${esc(era.name || '')}</option>`
+        ).join('');
+        if ([...els.keywordRankingEraFilter.options].some(o => o.value === current)) {
+          els.keywordRankingEraFilter.value = current;
+        }
+      }
+    }
+
+    async function fetchKeywordRanking(source, startDate='', endDate='') {
+      const res = await fetch('https://moon-runes-pwa.onrender.com/analysis/keywords', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ source, start_date:startDate, end_date:endDate, top_k:50 })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || '關鍵字排行載入失敗');
+      return data;
+    }
+
+    async function renderKeywordRanking() {
       if (!els.keywordRankingList) return;
-      const rows = new Map();
+      renderKeywordRankingControls();
+      const token = ++keywordRankingRequestToken;
+      els.keywordRankingList.innerHTML = '<div class="empty">計算關鍵字排行榜中…</div>';
 
-      const add = (term, documentCount=0, hitCount=0, period='', percent=0, source='') => {
-        term = String(term || '').trim();
-        if (!term) return;
-        const row = rows.get(term) || { term, document_count:0, hit_count:0, periods:[], sources:new Set() };
-        row.document_count += Number(documentCount || 0);
-        row.hit_count += Number(hitCount || 0);
-        if (period) row.periods.push({ period:String(period), percent:Number(percent || 0), document_count:Number(documentCount || 0) });
-        if (source) row.sources.add(source);
-        rows.set(term,row);
-      };
+      const sources = keywordRankingSource ? [keywordRankingSource] : ['facebook','threads','suno'];
+      const scopes = sources.map(rankingScopeFor).filter(x => x.valid);
 
-      for (const period of (Array.isArray(loc6PeriodKeywordAnalysis?.periods) ? loc6PeriodKeywordAnalysis.periods : [])) {
-        for (const item of (Array.isArray(period?.keywords) ? period.keywords : [])) {
-          add(item.term, item.document_count, item.hit_count, period.period, item.percent, '文字');
+      if (els.keywordRankingScope) {
+        if (keywordRankingSource) {
+          const scope = scopes[0] || rankingScopeFor(keywordRankingSource);
+          const eraText = scope.era ? `｜ERA：${scope.era.period} · ${scope.era.name || ''}（${scope.era.start_date || '—'} ～ ${scope.era.end_date || '現在'}）` : '｜ERA：全部';
+          const usageText = scope.meta?.usage_start && scope.meta.usage_start !== scope.meta.analysis_start
+            ? `｜開始使用日：${scope.meta.usage_start}`
+            : '';
+          els.keywordRankingScope.textContent = `${scope.label}｜來源資料區間：${scope.start || '—'} ～ ${scope.end || '現在'}${usageText}${eraText}`;
+        } else {
+          const era = keywordRankingEra ? rankingEraMeta(keywordRankingEra) : null;
+          els.keywordRankingScope.textContent = era
+            ? `全部來源｜各來源先與 ERA 日期取交集後計算｜ERA：${era.period} · ${era.name || ''}（${era.start_date || '—'} ～ ${era.end_date || '現在'}）`
+            : '全部來源｜Facebook、Threads、Suno 各依自己的資料區間計算後合併｜ERA：全部';
         }
       }
 
-      for (const period of (Array.isArray(loc3PeriodKeywordAnalysis?.periods) ? loc3PeriodKeywordAnalysis.periods : [])) {
-        const items = Array.isArray(period?.normalized_top_keywords)
-          ? period.normalized_top_keywords
-          : (Array.isArray(period?.normalized_semantic_families) ? period.normalized_semantic_families : []);
-        for (const item of items) {
-          const docs = Number(item.document_count ?? item.work_count ?? 0);
-          const hits = Number(item.hit_count ?? docs);
-          add(item.term, docs, hits, period.period, item.percent, '作品');
+      try {
+        const results = await Promise.all(scopes.map(async scope => ({
+          scope,
+          data: await fetchKeywordRanking(scope.source, scope.start, scope.end)
+        })));
+        if (token !== keywordRankingRequestToken) return;
+
+        const merged = new Map();
+        for (const result of results) {
+          for (const item of (result.data.items || [])) {
+            const term = String(item.term || '').trim();
+            if (!term) continue;
+            const row = merged.get(term) || { term, document_count:0, hit_count:0, sources:new Set() };
+            row.document_count += Number(item.document_count || 0);
+            row.hit_count += Number(item.hit_count || 0);
+            row.sources.add(result.scope.label);
+            merged.set(term,row);
+          }
         }
+
+        const ranked = [...merged.values()]
+          .sort((a,b) => b.document_count - a.document_count || b.hit_count - a.hit_count || a.term.localeCompare(b.term,'zh-Hant'))
+          .slice(0,10);
+
+        if (!ranked.length) {
+          els.keywordRankingList.innerHTML = '<div class="empty">目前沒有符合這個來源／ERA 日期範圍的關鍵字資料。</div>';
+          return;
+        }
+
+        const selectedScope = keywordRankingSource ? scopes[0] : null;
+        els.keywordRankingList.innerHTML = ranked.map((row,index) => {
+          const sourceText = [...row.sources].join('＋') || '資料';
+          const href = searchHref(
+            row.term,
+            keywordRankingEra,
+            keywordRankingSource,
+            selectedScope?.start || '',
+            selectedScope?.end || ''
+          );
+          return `
+            <div class="keyword-rank-row">
+              <div class="rank">#${index+1}</div>
+              <div class="term"><a href="${esc(href)}" title="搜尋「${esc(row.term)}」的內容">${esc(row.term)}</a></div>
+              <div class="metric">${esc(row.document_count)} 篇／件</div>
+              <div class="metric secondary">${esc(row.hit_count)} 次 · ${esc(sourceText)}</div>
+              <a class="search" href="${esc(href)}">查看內容 →</a>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        if (token !== keywordRankingRequestToken) return;
+        els.keywordRankingList.innerHTML = '<div class="empty">動態排行榜暫時無法載入：' + esc(err.message) + '</div>';
       }
-
-      const ranked = [...rows.values()]
-        .sort((a,b) => b.document_count - a.document_count || b.hit_count - a.hit_count || a.term.localeCompare(b.term,'zh-Hant'))
-        .slice(0,10);
-
-      if (!ranked.length) {
-        els.keywordRankingList.innerHTML = '<div class="empty">目前沒有可建立排行榜的關鍵字資料。</div>';
-        return;
-      }
-
-      els.keywordRankingList.innerHTML = ranked.map((row,index) => {
-        const peak = row.periods.slice().sort((a,b) => b.percent - a.percent || b.document_count - a.document_count)[0];
-        const sourceText = [...row.sources].join('＋') || '資料';
-        return `
-          <div class="keyword-rank-row">
-            <div class="rank">#${index+1}</div>
-            <div class="term"><a href="${esc(searchHref(row.term))}" title="搜尋「${esc(row.term)}」的作品與文字">${esc(row.term)}</a></div>
-            <div class="metric">${esc(row.document_count)} 篇／件</div>
-            <div class="metric secondary">${esc(row.hit_count)} 次 · ${esc(sourceText)}</div>
-            <a class="search" href="${esc(searchHref(row.term))}">查看內容 →</a>
-          </div>
-          ${peak ? `<div class="era-source-note" style="margin:-4px 12px 4px 54px">高峰：<a href="${esc(searchHref(row.term, peak.period))}" style="color:var(--accent)">${esc(peak.period)}</a> · ${esc(peak.percent)}%</div>` : ''}
-        `;
-      }).join('');
     }
 
     function renderEraTimeline() {
@@ -4001,6 +4119,17 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+
+    els.keywordRankingSourceTabs?.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-ranking-source]');
+      if (!btn) return;
+      keywordRankingSource = String(btn.dataset.rankingSource || '');
+      renderKeywordRanking();
+    });
+    els.keywordRankingEraFilter?.addEventListener('change', () => {
+      keywordRankingEra = String(els.keywordRankingEraFilter.value || '');
+      renderKeywordRanking();
+    });
 
     $('#addEraBtn')?.addEventListener('click', () => {
       addingEra = true;
