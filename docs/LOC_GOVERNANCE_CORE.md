@@ -184,6 +184,19 @@ Keep / Amend / Add Alternative / Restrict / Withdraw / Supersede / Tombstone
 7. public / canonical relation 必須經 publish governance。
 8. Graph node 是 authoritative record 的 reference，不應複製後反向取代原權威來源。
 
+## 7.1 Rune Interpretation Baseline
+
+月符治理的可執行基準：
+
+- 一般雙卡：第 1 張＝因，第 2 張＝果。
+- 三卡：源 → 轉 → 合。
+- OW3gs：1–6＝因的描述層；7–11＝果的判定層。
+- 不採群組交替作為預設判讀規則。
+- 一般占卜不使用平等／交替 Graph。
+- 平等、合作、交替的符文關係只屬符文沙盒；沙盒節點彼此等權，適合互動與暫時定義。
+- 符文治理可以正向由符文解讀現況，也可以反向由現況語意映射回最接近的符文與方向。
+- Reverse mapping 是語意分類／治理，不等同重新抽牌。
+
 ## 8. Rights / Publication / Boundary Gate
 
 Public Search 與 Graph 不得假定「資料存在於 repository」就等於可以公開。
