@@ -1,0 +1,76 @@
+{
+  "schema_version": "0.1",
+  "dataset": "LOC4 authored text corpus",
+  "authority": "LOC4",
+  "status": "searchable_source_corpus_ready",
+  "generated_at": "2026-09-07",
+  "source_scope": {
+    "core_authored_works": "12 source text files / 6 catalogued core works plus 假性單身",
+    "note": "This corpus is only the authored-work layer of LOC4. Facebook and Threads authored life/public text are separate source corpora referenced by LOC4 rather than duplicated here."
+  },
+  "governance": {
+    "raw_text_owner": "author",
+    "public_display_policy": "snippet",
+    "era_policy": "dates belong to source records; ERA is projected from the current LOC_ERA_REGISTRY and is not frozen into corpus text"
+  },
+  "document_count": 82,
+  "source_file_count": 12,
+  "works": [
+    {
+      "work_id": "LOC4-MOON-SPEAKER",
+      "title": "月語者",
+      "date": "2025-05-18"
+    },
+    {
+      "work_id": "LOC4-WRONG-PERSON",
+      "title": "錯的人：命運的錯位者",
+      "date": "2025-05-19"
+    },
+    {
+      "work_id": "LOC4-PSEUDO-SINGLE",
+      "title": "假性單身",
+      "date": null
+    },
+    {
+      "work_id": "LOC4-MMM-RELATIONSHIP",
+      "title": "男男男關係",
+      "date": "2025-05-27"
+    },
+    {
+      "work_id": "LOC4-BEFORE-AFTER-YOU",
+      "title": "在你之前，在你之後",
+      "date": "2025-05-22"
+    },
+    {
+      "work_id": "LOC4-ONE-DAY-LOVER",
+      "title": "一日情人",
+      "date": "2025-05-28"
+    }
+  ],
+  "shards": [
+    {
+      "path": "data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_01.json",
+      "document_count": 14
+    },
+    {
+      "path": "data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_02.json",
+      "document_count": 14
+    },
+    {
+      "path": "data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_03.json",
+      "document_count": 14
+    },
+    {
+      "path": "data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_04.json",
+      "document_count": 14
+    },
+    {
+      "path": "data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_05.json",
+      "document_count": 14
+    },
+    {
+      "path": "data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_06.json",
+      "document_count": 12
+    }
+  ]
+}
