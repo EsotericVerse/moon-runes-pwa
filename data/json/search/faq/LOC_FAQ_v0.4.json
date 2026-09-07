@@ -9,7 +9,7 @@
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
     "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 最新 LunaRune64.xlsx Grammar：一般牌陣使用治理解牌方式＋月相交互，符文交互限定月符沙盒專用；並同步自然語言 Search/RAG、來源／內容分類與時間篩選規則。",
-    "entry_count": 83,
+    "entry_count": 84,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
       "reference_rune": "0：德（De）",
@@ -2054,7 +2054,7 @@
         "符文交互在哪裡用？",
         "月符沙盒為什麼是平等關係？"
       ],
-      "answer": "以 LunaRune64.xlsx#Grammar 為準：兩卡＝因＋果＋月相交互；三卡＝源＋轉＋合＋月相交互；五卡＝過去＋現在＋未來顯化＋周圍環境＋自己心境＋月相交互，且不是2+3拼接。OW3gs 分成 1–6 因的描述層與 7–11 果的判定層，先讀7–11，再掃描1–6，最後套月相交互。符文交互描述共鳴、互補、衝突與語氣張力，但現行限定月符沙盒專用，因沙盒符文關係為平等。",
+      "answer": "以 LunaRune64.xlsx#Grammar 為準：兩卡＝因＋果＋月相交互；三卡＝源＋轉＋合＋月相交互；五卡＝過去＋現在＋未來顯化＋周圍環境＋自己心境＋月相交互。OW3gs 則由兩個符文模組組成：古模組 1–6 與今模組 7–11，核心原則是「鑑古知今」。讀取時先讀今模組 7–11，再回看古模組 1–6，最後套月相交互。符文交互現行限定月符沙盒專用。",
       "keywords": [
         "Grammar",
         "兩卡",
@@ -2066,7 +2066,11 @@
         "符文交互",
         "月符沙盒",
         "月相交互",
-        "治理解牌方式"
+        "治理解牌方式",
+        "古模組",
+        "今模組",
+        "鑑古知今",
+        "兩個符文模組"
       ],
       "source_refs": [
         "LunaRune64.xlsx#Grammar",
@@ -2098,6 +2102,33 @@
       "source_refs": [
         "docs/LOC7_KM.md",
         "docs/LOC_GOVERNANCE_CORE.md"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-084",
+      "category": "符文治理",
+      "question": "OW3gs 為什麼分成兩個符文模組？",
+      "aliases": [
+        "OW3gs 的古和今是什麼？",
+        "OW3gs 1–6 和 7–11 是兩個模組嗎？",
+        "鑑古知今在 OW3gs 是什麼意思？"
+      ],
+      "answer": "OW3gs 的核心不是把十一張牌當成同一層，而是分成兩個符文模組。古模組（1–6）用來回看形成問題的背景、條件與來源，負責「鑑古」；今模組（7–11）用來判讀現在與後續應如何理解、處理，負責「知今」。因此 OW3gs 的核心原則是「鑑古知今」。",
+      "keywords": [
+        "OW3gs",
+        "古模組",
+        "今模組",
+        "鑑古知今",
+        "1–6",
+        "7–11",
+        "符文模組"
+      ],
+      "source_refs": [
+        "LunaRune64.xlsx#Grammar",
+        "data/json/core/rune_grammar.json",
+        "docs/LOC7_KM.md"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
