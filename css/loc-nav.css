@@ -10,7 +10,7 @@
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:24px;
+  gap:18px;
   min-height:64px;
   width:100%;
   padding:14px 0;
@@ -23,7 +23,7 @@
   display:block;
   flex:0 0 auto;
   color:var(--text,var(--loc-text,#f5f1ff));
-  font-size:.94rem;
+  font-size:1rem;
   font-weight:800;
   letter-spacing:.08em;
   text-decoration:none;
@@ -34,7 +34,7 @@
   flex-wrap:wrap;
   justify-content:flex-end;
   align-items:center;
-  gap:14px;
+  gap:12px;
 }
 .loc-global-link{
   position:relative;
