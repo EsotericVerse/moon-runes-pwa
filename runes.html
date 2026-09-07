@@ -81,31 +81,52 @@
     @media(max-width:980px){.group-row{grid-template-columns:repeat(4,minmax(0,1fr))}.basic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:700px){.group-row{grid-template-columns:repeat(3,minmax(0,1fr))}.modal-body{grid-template-columns:1fr}.card-side{position:static}.count{width:100%;margin-left:0}.physical-card-download,.daily-entry{grid-template-columns:1fr}.download-btn{width:100%}.daily-entry .daily-actions{justify-content:flex-start}.daily-entry a{flex:1}}
     @media(max-width:470px){.group-row{grid-template-columns:repeat(2,minmax(0,1fr))}.basic-grid{grid-template-columns:1fr}.page{width:min(100% - 18px,1180px)}}
-  </style>
+  
+    .app-shell{width:min(1500px,100%);margin:0 auto;padding:22px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px}
+    .workspace-sidebar{position:sticky;top:22px;align-self:start;min-height:calc(100vh - 44px);padding:20px 16px;border:1px solid var(--line);background:rgba(6,15,28,.75);backdrop-filter:blur(18px);border-radius:24px;box-shadow:var(--shadow)}
+    .workspace-brand{padding:4px 6px 18px;border-bottom:1px solid var(--line);margin-bottom:16px}.workspace-brand h1{margin:0;font-size:18px}.workspace-brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+    .workspace-nav{display:grid;gap:14px}.workspace-nav-group{display:grid;gap:6px}.workspace-nav-label{padding:0 9px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.12em;opacity:.72}
+    .workspace-switch{width:100%;display:grid;gap:3px;text-align:left;cursor:pointer;padding:10px 11px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--muted);font:inherit}
+    .workspace-switch:hover,.workspace-switch.active{color:var(--text);border-color:var(--line);background:rgba(180,158,255,.08)}.workspace-switch.active{box-shadow:inset 2px 0 0 var(--purple)}
+    .workspace-switch strong{font-size:13px}.workspace-switch small{font-size:10px;line-height:1.35}
+    .workspace-foot{margin-top:18px;padding:14px 8px 2px;color:var(--muted);font-size:12px;line-height:1.6}
+    .workspace-main{min-width:0}.runes-view[hidden]{display:none!important}
+    .draw-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+    .draw-mode-card{display:block;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface2);text-decoration:none;color:var(--text)}
+    .draw-mode-card:hover{border-color:rgba(231,194,125,.5);transform:translateY(-2px)}.draw-mode-card strong{display:block;color:var(--gold)}.draw-mode-card span{display:block;margin-top:5px;color:var(--muted);font-size:.82rem}
+    @media(max-width:900px){.app-shell{grid-template-columns:1fr;padding:14px}.workspace-sidebar{position:static;min-height:0}.workspace-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-nav-label{grid-column:1/-1}.workspace-foot{display:none}}
+    @media(max-width:560px){.draw-mode-grid{grid-template-columns:1fr}}
+</style>
   <link rel="stylesheet" href="css/loc-nav.css" />
 </head>
 <body>
   <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="runes" aria-label="全站導覽"></nav></div>
-  <main class="page">
-    <header class="hero loc-header">
+  <div class="app-shell">
+    <aside class="workspace-sidebar">
+      <div class="workspace-brand"><h1>LunaRunes</h1><p>月之符文 · LOC1</p></div>
+      <nav class="workspace-nav" aria-label="月之符文功能">
+        <div class="workspace-nav-group">
+          <div class="workspace-nav-label">01 · 資料</div>
+          <button class="workspace-switch active" type="button" data-runes-view="library"><strong>月之符文資料</strong><small>66 圖鑑 · 基礎資料 · 實體卡</small></button>
+        </div>
+        <div class="workspace-nav-group">
+          <div class="workspace-nav-label">02 · 抽牌</div>
+          <button class="workspace-switch" type="button" data-runes-view="draw"><strong>抽牌</strong><small>每日 · 單卡 · 雙卡 · 三卡 · 五卡</small></button>
+        </div>
+      </nav>
+      <div class="workspace-foot">月之符文本體與抽牌功能分開顯示，但仍留在同一個 runes.html。</div>
+    </aside>
+    <main class="page workspace-main">
+      <div class="runes-view" id="libraryView">
+        <header class="hero loc-header">
       <p class="loc-header-meta">LunaRunes · Rune Library</p>
       <h1 class="loc-header-title">月之符文資料</h1>
       <h2 class="loc-header-subtitle">月之符文66 圖鑑</h2>
       <p class="loc-header-copy">這裡是符文資料展示，不是抽牌。1–64 依八個組別排列成 8×8；65「玄」與 66「命」另列為特殊符文。點擊卡片圖片即可浮出完整卡面與符文基礎資料。</p>
     </header>
 
-    <section class="daily-entry" aria-labelledby="daily-entry-title">
-      <div>
-        <h2 id="daily-entry-title">今天的月之符文</h2>
-        <p>每日符文是最直接的使用入口：抽一張作為今日語意提示；歷史紀錄與趨勢則交由 LOC8 推演。</p>
-      </div>
-      <div class="daily-actions">
-        <a class="primary" href="result.html?mode=daily">抽取每日符文</a>
-        <a href="projection.html">查看歷史趨勢</a>
-      </div>
-    </section>
-
-    <section class="rune-basics" aria-labelledby="rune-basics-title">
+    
+        <section class="rune-basics" aria-labelledby="rune-basics-title">
       <h2 id="rune-basics-title">月之符文卡是什麼？</h2>
       <p>月之符文是一套把概念、狀態與變化整理成可抽取語言的符文卡。你可以把它當成抽籤、語意提示或創作起點；重點不是先接受某種神秘學立場，而是從抽到的文字重新觀看正在思考的事情。</p>
       <div class="basic-grid">
@@ -117,7 +138,8 @@
       <a class="learn-more" href="tutorial02.html">閱讀 LOC Tutorial 02：月之符文入門 →</a>
     </section>
 
-    <section class="rune-overview" aria-labelledby="rune-overview-title">
+    
+        <section class="rune-overview" aria-labelledby="rune-overview-title">
       <div class="rune-overview-head">
         <h2 id="rune-overview-title">月之符文66 全符文總覽</h2>
         <p>完整觀看目前固定的 66 張月之符文卡面。下方圖鑑再依八個組別逐列展示，方便比較同組符文的視覺與語意差異。</p>
@@ -127,7 +149,8 @@
       </a>
     </section>
 
-    <section class="physical-card-download" aria-labelledby="physical-card-title">
+    
+        <section class="physical-card-download" aria-labelledby="physical-card-title">
       <div>
         <h2 id="physical-card-title">想把月之符文變成實體卡片？</h2>
         <p>可下載完整實體卡片 PDF，自行列印、裁切並護貝，就能做成一套可實際使用的月之符文卡牌。</p>
@@ -135,21 +158,10 @@
       <a class="download-btn" href="docs/LunarRunesCardCut.pdf" download>下載全符文實體卡片 PDF ↓</a>
     </section>
 
-    <section aria-label="符文清單">
+    
+        <section aria-label="符文清單">
       <p style="margin:0 0 12px;color:var(--muted);font-size:.86rem;">八個組別不只分類符文主題，也會影響解讀時的語氣與敘述方向。以下每一列都標示其主要語氣特徵。</p>
-      <div class="hero" style="padding:8px 0 4px">
-      <p style="margin:0 0 6px;color:var(--purple);font-weight:800">LOC1 · Rune Lexicon</p>
-      <h1 style="margin:.1em 0;font-size:clamp(1.8rem,4vw,3rem)">符文語彙</h1>
-      <p style="max-width:780px;color:var(--muted)">月之符文是 LOC 的基本文字語彙（token）與語意種子。你可以直接查閱 66 符文，也可以從每日抽牌或不同牌陣開始使用這套語彙。</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0">
-        <a href="result.html?mode=daily" style="display:inline-block;padding:10px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none">每日抽牌</a>
-        <a href="result.html" style="display:inline-block;padding:10px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none">單卡</a>
-        <a href="2card.html" style="display:inline-block;padding:10px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none">雙卡</a>
-        <a href="3card.html" style="display:inline-block;padding:10px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none">三卡</a>
-        <a href="5card.html" style="display:inline-block;padding:10px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none">五卡</a>
-      </div>
-    </div>
-    <div class="toolbar">
+      <div class="toolbar">
         <select class="filter" id="group-filter" aria-label="依分組瀏覽">
           <option value="">全部分組</option>
           <option value="靈魂">靈魂</option><option value="連結">連結</option><option value="生命">生命</option><option value="自然">自然</option>
@@ -161,9 +173,46 @@
       <div class="rune-grid" id="rune-grid" aria-live="polite"></div>
     </section>
 
-    <footer>LOC · Luna Codex · 月典 ｜ By 秘藝文域（EsotericVerse Studio）</footer>
+    
+      </div>
+      <div class="runes-view" id="drawView" hidden>
+        <header class="hero loc-header">
+          <p class="loc-header-meta">LunaRunes · Draw</p>
+          <h1 class="loc-header-title">抽牌</h1>
+          <h2 class="loc-header-subtitle">依問題選擇不同的符文演算法。</h2>
+          <p class="loc-header-copy">抽牌方式負責選擇卡數與結構；抽出符文後，再依對應的治理解牌方式進行判讀。</p>
+        </header>
+        <section class="daily-entry" aria-labelledby="daily-entry-title">
+      <div>
+        <h2 id="daily-entry-title">今天的月之符文</h2>
+        <p>每日符文是最直接的使用入口：抽一張作為今日語意提示；歷史紀錄與趨勢則交由 LOC8 推演。</p>
+      </div>
+      <div class="daily-actions">
+        <a class="primary" href="result.html?mode=daily">抽取每日符文</a>
+        <a href="projection.html">查看歷史趨勢</a>
+      </div>
+    </section>
+
+    
+        <section class="rune-basics">
+          <h2>抽牌方式</h2>
+          <p>選擇需要的抽牌方式。各方式對應不同的符文演算法。</p>
+          <div class="draw-mode-grid">
+            <a class="draw-mode-card" href="result.html"><strong>單卡</strong><span>單一語意種子。</span></a>
+            <a class="draw-mode-card" href="2card.html"><strong>雙卡</strong><span>因 → 果。</span></a>
+            <a class="draw-mode-card" href="3card.html"><strong>三卡</strong><span>源 → 轉 → 合。</span></a>
+            <a class="draw-mode-card" href="5card.html"><strong>五卡</strong><span>過去 → 現在 → 未來顯化 → 環境 → 心境。</span></a>
+            <div class="draw-mode-card"><strong>OW3gs</strong><span>兩個因果模組綜合的演算法。目前暫時不提供連結。</span></div>
+            <a class="draw-mode-card" href="search.html?q=%E6%8A%BD%E7%89%8C%E6%96%B9%E5%BC%8F"><strong>抽牌方式說明</strong><span>查看各種抽牌方式與對應的治理解牌方式。</span></a>
+          </div>
+        </section>
+      </div>
+      <footer>LOC · Luna Codex · 月典 ｜ By 秘藝文域（EsotericVerse Studio）</footer>
   </main>
 
+  
+    </main>
+  </div>
   <dialog id="rune-modal" aria-labelledby="modal-title">
     <div class="modal-head">
       <h2 class="modal-title" id="modal-title">符文資料</h2>
@@ -181,5 +230,19 @@
   <script type="module" src="js/runeLibrary.js?v=20260905-3"></script>
   <script type="module" src="js/list.js?v=20260905-5"></script>
   <script src="js/loc-nav.js"></script>
+
+  <script>
+  (()=> {
+    const buttons=[...document.querySelectorAll('[data-runes-view]')];
+    const views={library:document.getElementById('libraryView'),draw:document.getElementById('drawView')};
+    function switchView(name){
+      Object.entries(views).forEach(([key,view])=>view.hidden=key!==name);
+      buttons.forEach(btn=>btn.classList.toggle('active',btn.dataset.runesView===name));
+      history.replaceState(null,'',name==='library'?'runes.html':'runes.html#draw');
+    }
+    buttons.forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.runesView)));
+    if(location.hash==='#draw')switchView('draw');
+  })();
+  </script>
 </body>
 </html>
