@@ -1925,11 +1925,21 @@
       }
 
       try {
-        const results = await Promise.all(scopes.map(async scope => ({
+        const settled = await Promise.allSettled(scopes.map(async scope => ({
           scope,
           data: await fetchKeywordRanking(scope.source, scope.start, scope.end)
         })));
         if (token !== keywordRankingRequestToken) return;
+        const results = settled.filter(item => item.status === 'fulfilled').map(item => item.value);
+        const failed = settled.filter(item => item.status === 'rejected');
+        if (!results.length) throw new Error(failed[0]?.reason?.message || '所有排行榜來源皆無法載入');
+        if (failed.length && els.keywordRankingScope) {
+          const failedSources = failed.map(item => {
+            const idx = settled.indexOf(item);
+            return scopes[idx]?.label || scopes[idx]?.source || '';
+          }).filter(Boolean);
+          if (failedSources.length) els.keywordRankingScope.textContent += `｜略過不可用來源：${failedSources.join('、')}`;
+        }
 
         const merged = new Map();
         for (const result of results) {
