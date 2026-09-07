@@ -1,5 +1,6 @@
 (() => {
   const NAV_URL = "data/json/registries/LOC_NAV.json";
+  const WEB_BUILD = "0.5";
 
   function esc(value) {
     return String(value ?? "").replace(/[&<>"']/g, ch => ({
@@ -60,8 +61,26 @@
     }
   }
 
+  function renderBuildLabel() {
+    document.querySelectorAll(".workspace-sidebar").forEach(sidebar => {
+      if (sidebar.querySelector("[data-web-build]")) return;
+      const label = document.createElement("div");
+      label.dataset.webBuild = "true";
+      label.textContent = "Web Build " + WEB_BUILD;
+      label.style.marginTop = "14px";
+      label.style.paddingTop = "10px";
+      label.style.borderTop = "1px solid rgba(127,135,148,.18)";
+      label.style.fontSize = "11px";
+      label.style.letterSpacing = ".08em";
+      label.style.opacity = ".58";
+      label.style.textAlign = "center";
+      sidebar.appendChild(label);
+    });
+  }
+
   window.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("[data-loc-nav]").forEach(renderNav);
+    renderBuildLabel();
     loadPageEnhancements();
   });
 })();
