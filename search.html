@@ -1068,7 +1068,6 @@
       panel.hidden=!willOpen;
       el('advancedToggle').setAttribute('aria-expanded',String(willOpen));
     };
-    });
     ['period','startDate','endDate'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
     updateFilterSummary();
     el('clearSearch').onclick=clearAllSearch;
