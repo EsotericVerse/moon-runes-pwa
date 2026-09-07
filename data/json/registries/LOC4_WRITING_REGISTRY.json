@@ -731,5 +731,11 @@
       "LOC7": "搜尋、KM、Text Architecture 與 Graph retrieval。",
       "LOC8": "日期、ERA、事件、脈絡與趨勢投影。"
     }
+  },
+  "analysis_status": {
+    "creative_works": "core novels complete at work-level semantic analysis",
+    "moon_speaker": "7-part full-text architecture complete; chapter-level deeper semantic annotations may continue",
+    "registry": "data/json/registries/LOC4_TEXT_ANALYSIS_REGISTRY.json",
+    "updated_at": "2026-09-07"
   }
 }
