@@ -161,8 +161,9 @@
       "source_corpus": "ready",
       "fulltext_search": "connected",
       "life_writing_sources": "Facebook + Threads connected by reference; raw text LOC4, governance interpretation LOC6",
-      "creative_work_analysis": "core_novels_complete_at_work_level",
-      "moon_speaker_analysis": "7-part full-text architecture complete; chapter-level deepening can continue"
+      "creative_work_analysis": "complete_for_current_core_set",
+      "moon_speaker_analysis": "182-chapter baseline complete; 161 restored rune configs / 21 explicitly unrecovered",
+      "moon_speaker_search": "connected"
     },
     "LOC5": "media-authority-established; cross-relationship-registry-connected",
     "LOC6": {
@@ -260,7 +261,12 @@
     {
       "path": "data/json/registries/LOC4_TEXT_ANALYSIS_REGISTRY.json",
       "authority": "LOC4",
-      "purpose": "Structured semantic analysis of LOC4 writing works; short works first, long-form rune novel deferred."
+      "purpose": "Structured semantic analysis of LOC4 creative works; core work-level analysis complete and 月語者 182-chapter baseline complete."
+    },
+    {
+      "path": "data/json/registries/LOC4_MOON_SPEAKER_RUNE_RECOVERY.json",
+      "authority": "LOC4",
+      "purpose": "Recovered MoonSpeaker chapter three-rune/moon-phase evidence; missing rows are never inferred."
     }
   ],
   "updated_at": "2026-09-07",
