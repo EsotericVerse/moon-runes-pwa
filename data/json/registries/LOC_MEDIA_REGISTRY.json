@@ -10483,6 +10483,2992 @@
         "rule": "inherit LOC8 period from linked LOC3 song/work record",
         "inherited_at": "2026-09-07"
       }
+    },
+    {
+      "media_id": "MEDIA-0142",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "微笑校正",
+      "linked_song_id": "f9b12691-3a09-4bb1-9730-ff5545a348a9",
+      "linked_work_id": "LW0341",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU9cV1gErqM/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17899589178390270",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "f9b12691-3a09-4bb1-9730-ff5545a348a9",
+          "note": "https://suno.com/song/f9b12691-3a09-4bb1-9730-ff5545a348a9?sh=HSrnPXFsgGE1T6mG"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-20",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0341",
+        "source_song_id": "f9b12691-3a09-4bb1-9730-ff5545a348a9",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0143",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "月蝕之間",
+      "linked_song_id": "001387de-057d-4cb7-b908-166377046df6",
+      "linked_work_id": "LW0163",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU9Zkzlkqbs/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17962129104045234",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "001387de-057d-4cb7-b908-166377046df6",
+          "note": "https://suno.com/song/001387de-057d-4cb7-b908-166377046df6?sh=2VgrZMLWfZ2nykcV"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-20",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0163",
+        "source_song_id": "001387de-057d-4cb7-b908-166377046df6",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0144",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "無切面",
+      "linked_song_id": "1ac1eb3d-7ab2-4b9f-bd65-b4c7bb388d3c",
+      "linked_work_id": "LW0042",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU9Y-boktVq/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17850456093681605",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "1ac1eb3d-7ab2-4b9f-bd65-b4c7bb388d3c",
+          "note": "https://suno.com/song/1ac1eb3d-7ab2-4b9f-bd65-b4c7bb388d3c?sh=ka6jHUcWNqi4qMRa"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-20",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0042",
+        "source_song_id": "1ac1eb3d-7ab2-4b9f-bd65-b4c7bb388d3c",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0145",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "靜光之間",
+      "linked_song_id": "de667b78-7fac-4040-a680-24ffa0639042",
+      "linked_work_id": "LW0292",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU9W2AdErrx/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17925660822235734",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "de667b78-7fac-4040-a680-24ffa0639042",
+          "note": "https://suno.com/song/de667b78-7fac-4040-a680-24ffa0639042?sh=F6i5iWyhBjuGqvu9"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-19",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0292",
+        "source_song_id": "de667b78-7fac-4040-a680-24ffa0639042",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0146",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "語言的先知",
+      "linked_song_id": "01c324dd-6604-4a69-b44b-7c92096afe66",
+      "linked_work_id": "LW0157",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU9V4voASPt/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18086834225171342",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "01c324dd-6604-4a69-b44b-7c92096afe66",
+          "note": "https://suno.com/song/01c324dd-6604-4a69-b44b-7c92096afe66"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-19",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0157",
+        "source_song_id": "01c324dd-6604-4a69-b44b-7c92096afe66",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0147",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "我們不是太陽和地球",
+      "linked_song_id": "0c4661d8-eaca-4e44-9f5a-659045ba025a",
+      "linked_work_id": "LW0020",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU76sg6AX-n/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17998538225731091",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "0c4661d8-eaca-4e44-9f5a-659045ba025a",
+          "note": "https://suno.com/song/0c4661d8-eaca-4e44-9f5a-659045ba025a?sh=O9bxxq4HtLntsf5X"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-19",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0020",
+        "source_song_id": "0c4661d8-eaca-4e44-9f5a-659045ba025a",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0148",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "壞人不求人",
+      "linked_song_id": "09aca1fe-5569-423a-8ad7-46379d3a41e1",
+      "linked_work_id": "LW0264",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU7wmnJAcwY/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17956755536924826",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "09aca1fe-5569-423a-8ad7-46379d3a41e1",
+          "note": "https://suno.com/song/09aca1fe-5569-423a-8ad7-46379d3a41e1?sh=rl0fBg5O1PjTHFRi"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-19",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0264",
+        "source_song_id": "09aca1fe-5569-423a-8ad7-46379d3a41e1",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0149",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "分身在場",
+      "linked_song_id": "d136f7f4-938e-4851-9f6e-ea85582c1c9b",
+      "linked_work_id": "LW0149",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU5qOL4AeZS/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17980486625973536",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "d136f7f4-938e-4851-9f6e-ea85582c1c9b",
+          "note": "https://suno.com/song/d136f7f4-938e-4851-9f6e-ea85582c1c9b?sh=rz4KQC9QKUxVL1Av"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-18",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0149",
+        "source_song_id": "d136f7f4-938e-4851-9f6e-ea85582c1c9b",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0150",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "雙掌才有聲音",
+      "linked_song_id": "7d6ab742-0d39-4d4f-8528-af87703a66cd",
+      "linked_work_id": "LW0172",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU5ZWeRAXuY/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18074520659423625",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "7d6ab742-0d39-4d4f-8528-af87703a66cd",
+          "note": "https://suno.com/song/7d6ab742-0d39-4d4f-8528-af87703a66cd?sh=4fZIqzj6ZihyUosr"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-18",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0172",
+        "source_song_id": "7d6ab742-0d39-4d4f-8528-af87703a66cd",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0151",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "一個人也行",
+      "linked_song_id": "fd70c3a2-b0c6-4339-9d64-ae49c8772ea4",
+      "linked_work_id": "LW0344",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU4XPd5ATmo/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18092141954513444",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "fd70c3a2-b0c6-4339-9d64-ae49c8772ea4",
+          "note": "https://suno.com/song/fd70c3a2-b0c6-4339-9d64-ae49c8772ea4?sh=jTZTVPJ4uCrRGvo0"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-18",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0344",
+        "source_song_id": "fd70c3a2-b0c6-4339-9d64-ae49c8772ea4",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0152",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "清晨空位",
+      "linked_song_id": "a9524aad-5403-4ab2-863d-dc8377e5a0a7",
+      "linked_work_id": "LW0139",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU4UzggATli/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18061849193330159",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "a9524aad-5403-4ab2-863d-dc8377e5a0a7",
+          "note": "https://suno.com/song/a9524aad-5403-4ab2-863d-dc8377e5a0a7?sh=kSFkDLugWUWCCQuS"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-18",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0139",
+        "source_song_id": "a9524aad-5403-4ab2-863d-dc8377e5a0a7",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0153",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "鹽糖日蝕",
+      "linked_song_id": "6e0a3fba-468d-4c23-a427-a2e237783de0",
+      "linked_work_id": "LW0273",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU3RZNvgaDN/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18097406566745692",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "6e0a3fba-468d-4c23-a427-a2e237783de0",
+          "note": "https://suno.com/song/6e0a3fba-468d-4c23-a427-a2e237783de0?sh=RDnzARherbJiQ7bu"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0273",
+        "source_song_id": "6e0a3fba-468d-4c23-a427-a2e237783de0",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0154",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "微月光原理",
+      "linked_song_id": "f5bc0921-8ff3-4f0e-9caf-552525c50405",
+      "linked_work_id": "LW0118",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU2ecBVgf4P/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18065814479558948",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "f5bc0921-8ff3-4f0e-9caf-552525c50405",
+          "note": "https://suno.com/song/f5bc0921-8ff3-4f0e-9caf-552525c50405?sh=7YmF7xUymO2hYkJG"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0118",
+        "source_song_id": "f5bc0921-8ff3-4f0e-9caf-552525c50405",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0155",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "微月光沒有多說",
+      "linked_song_id": "2b1b4559-3940-4ea0-9dc0-d916717e9eb8",
+      "linked_work_id": "LW0279",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU2dvMxAZ0j/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17872061520541130",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "2b1b4559-3940-4ea0-9dc0-d916717e9eb8",
+          "note": "https://suno.com/song/2b1b4559-3940-4ea0-9dc0-d916717e9eb8?sh=w9IMvPMlu9GvTvnU"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0279",
+        "source_song_id": "2b1b4559-3940-4ea0-9dc0-d916717e9eb8",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0156",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "灰燼裡的微月光",
+      "linked_song_id": "c37a8e6a-129a-4eb2-8985-ca6ebe80b23f",
+      "linked_work_id": "LW0043",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU2dPrQAQRl/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18117683005618285",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "c37a8e6a-129a-4eb2-8985-ca6ebe80b23f",
+          "note": "https://suno.com/song/c37a8e6a-129a-4eb2-8985-ca6ebe80b23f?sh=aTv38VH4FJvTBB5D"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0043",
+        "source_song_id": "c37a8e6a-129a-4eb2-8985-ca6ebe80b23f",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0157",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "下半場歸我",
+      "linked_song_id": "e8250230-863b-4f5b-9fea-403b4925b3af",
+      "linked_work_id": "LW0260",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU2b93cAXgh/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17957100638919450",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "e8250230-863b-4f5b-9fea-403b4925b3af",
+          "note": "https://suno.com/song/e8250230-863b-4f5b-9fea-403b4925b3af?sh=ao4VVsjAuxn9Cjnu"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0260",
+        "source_song_id": "e8250230-863b-4f5b-9fea-403b4925b3af",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0158",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "我全都要",
+      "linked_song_id": "dd0e9876-3a28-48d2-9c45-e7fbd098e2d4",
+      "linked_work_id": "LW0325",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU2bC1MAaqm/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18080183525353273",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "dd0e9876-3a28-48d2-9c45-e7fbd098e2d4",
+          "note": "https://suno.com/song/dd0e9876-3a28-48d2-9c45-e7fbd098e2d4?sh=vCYZHqrSdRt1DmdE"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0325",
+        "source_song_id": "dd0e9876-3a28-48d2-9c45-e7fbd098e2d4",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0159",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "煙火之後",
+      "linked_song_id": "d93a5add-37dd-4073-8bea-d983115780e1",
+      "linked_work_id": "LW0094",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DU0iTi3gVgg/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18067398206639949",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "d93a5add-37dd-4073-8bea-d983115780e1",
+          "note": "https://suno.com/song/d93a5add-37dd-4073-8bea-d983115780e1?sh=0JcttYYi7f8mBDNL"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-16",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0094",
+        "source_song_id": "d93a5add-37dd-4073-8bea-d983115780e1",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0160",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "灰色關係",
+      "linked_song_id": "13027225-fb9e-48fa-b9a3-63ef1c158eea",
+      "linked_work_id": "LW0298",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUx_xKoCKsY/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18063616970648391",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "13027225-fb9e-48fa-b9a3-63ef1c158eea",
+          "note": "https://suno.com/song/13027225-fb9e-48fa-b9a3-63ef1c158eea?sh=gtUQglWoXUiTT0u8"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_name": "重啟與格式形成期",
+      "source_created_date": "2026-02-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0298",
+        "source_song_id": "13027225-fb9e-48fa-b9a3-63ef1c158eea",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0161",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "沒有人只有我",
+      "linked_song_id": "7a3d27af-bb42-4119-9554-96304cac4757",
+      "linked_work_id": "LW0129",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUx87yFgQeu/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18088154240326045",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "7a3d27af-bb42-4119-9554-96304cac4757",
+          "note": "https://suno.com/song/7a3d27af-bb42-4119-9554-96304cac4757?sh=1Kbgd5WkY7Fg93LW"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0129",
+        "source_song_id": "7a3d27af-bb42-4119-9554-96304cac4757",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0162",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "下半場的主角",
+      "linked_song_id": "3cdfda27-b9b9-4466-bc70-782076d37196",
+      "linked_work_id": "LW0250",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUx8TJ4iCSl/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18070109129540341",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "3cdfda27-b9b9-4466-bc70-782076d37196",
+          "note": "https://suno.com/song/3cdfda27-b9b9-4466-bc70-782076d37196?sh=OHqzCAkSyT9LxzXp"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0250",
+        "source_song_id": "3cdfda27-b9b9-4466-bc70-782076d37196",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0163",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "笨一點也沒關係",
+      "linked_song_id": "c3a90c70-0eb4-463e-9d3c-5fc72b52a07a",
+      "linked_work_id": "LW0223",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUx7fu1CCFX/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18132943327506458",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "c3a90c70-0eb4-463e-9d3c-5fc72b52a07a",
+          "note": "https://suno.com/song/c3a90c70-0eb4-463e-9d3c-5fc72b52a07a?sh=VXSlrfBzQfbD4XYu"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0223",
+        "source_song_id": "c3a90c70-0eb4-463e-9d3c-5fc72b52a07a",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0164",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "重新上拍",
+      "linked_song_id": "27b140de-caea-4d5a-b618-c6718345b271",
+      "linked_work_id": "LW0234",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUxwtvLgdDJ/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17962549080040075",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "27b140de-caea-4d5a-b618-c6718345b271",
+          "note": "https://suno.com/song/27b140de-caea-4d5a-b618-c6718345b271?sh=H2izxDrY8FHRJSOw"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0234",
+        "source_song_id": "27b140de-caea-4d5a-b618-c6718345b271",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0165",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "銀色協議",
+      "linked_song_id": "c4d90dbe-4f4d-4cf6-ad06-5567cd243a3c",
+      "linked_work_id": "LW0167",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUxMXBCgeFu/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17877783213483567",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "c4d90dbe-4f4d-4cf6-ad06-5567cd243a3c",
+          "note": "https://suno.com/song/c4d90dbe-4f4d-4cf6-ad06-5567cd243a3c?sh=5U5P4c1GfgvatTrm"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0167",
+        "source_song_id": "c4d90dbe-4f4d-4cf6-ad06-5567cd243a3c",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0166",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "對齊之前",
+      "linked_song_id": "65df7836-6dc6-464b-b77d-d158470b2e28",
+      "linked_work_id": "LW0270",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUxLpl5AZlF/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18080129645582478",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "65df7836-6dc6-464b-b77d-d158470b2e28",
+          "note": "https://suno.com/song/65df7836-6dc6-464b-b77d-d158470b2e28?sh=5FiI7y5iMoq5DSru"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0270",
+        "source_song_id": "65df7836-6dc6-464b-b77d-d158470b2e28",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0167",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "日蝕之前的顯現",
+      "linked_song_id": "e2ddddd2-a0fc-49c0-bbd3-ff0eec167ae4",
+      "linked_work_id": "LW0144",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUxJfC3geT5/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18381982441090127",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "e2ddddd2-a0fc-49c0-bbd3-ff0eec167ae4",
+          "note": "https://suno.com/song/e2ddddd2-a0fc-49c0-bbd3-ff0eec167ae4?sh=Mx3NCx0esOhu9LF5"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0144",
+        "source_song_id": "e2ddddd2-a0fc-49c0-bbd3-ff0eec167ae4",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0168",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "微月光・月蝕之後",
+      "linked_song_id": "f6b2ff29-8e41-4b4a-9905-a3f84ae71080",
+      "linked_work_id": "LW0229",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUbyvLvEugl/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17860214811534848",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "f6b2ff29-8e41-4b4a-9905-a3f84ae71080",
+          "note": "https://suno.com/song/f6b2ff29-8e41-4b4a-9905-a3f84ae71080?sh=vXRoVv4ROpkDuy3J"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-06",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0229",
+        "source_song_id": "f6b2ff29-8e41-4b4a-9905-a3f84ae71080",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0169",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "微月光・順其自然",
+      "linked_song_id": "33f29d06-9875-4f59-8e7e-3f7a54b3c06f",
+      "linked_work_id": "LW0241",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUbyK77kt1M/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18110695993645359",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "33f29d06-9875-4f59-8e7e-3f7a54b3c06f",
+          "note": "https://suno.com/song/33f29d06-9875-4f59-8e7e-3f7a54b3c06f?sh=uk1g5R1ECvqaZOmy"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-06",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0241",
+        "source_song_id": "33f29d06-9875-4f59-8e7e-3f7a54b3c06f",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0170",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "微月光旁的同意星",
+      "linked_song_id": "e966ca6d-5b0f-45f9-a98a-a7719382dd82",
+      "linked_work_id": "LW0386",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUbxG9kkhxT/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18063302807312357",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "e966ca6d-5b0f-45f9-a98a-a7719382dd82",
+          "note": "https://suno.com/song/e966ca6d-5b0f-45f9-a98a-a7719382dd82?sh=GU7rJJmSwVev4GA5"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-06",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0386",
+        "source_song_id": "e966ca6d-5b0f-45f9-a98a-a7719382dd82",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0171",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "十字路口的微月光",
+      "linked_song_id": "5c03a2be-aeb3-4602-8104-e8f6ac4b43ce",
+      "linked_work_id": "LW0093",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUbwlJcEmv6/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18075861827374307",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "5c03a2be-aeb3-4602-8104-e8f6ac4b43ce",
+          "note": "https://suno.com/song/5c03a2be-aeb3-4602-8104-e8f6ac4b43ce?sh=bGvvJS6Bw17tEmwc"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-06",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0093",
+        "source_song_id": "5c03a2be-aeb3-4602-8104-e8f6ac4b43ce",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0172",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "微月光旁的失速星",
+      "linked_song_id": "2b5998b1-4f48-48cb-9a81-36a07cf91902",
+      "linked_work_id": "LW0359",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUZHTCZEuKo/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18442443940109457",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "2b5998b1-4f48-48cb-9a81-36a07cf91902",
+          "note": "https://suno.com/song/2b5998b1-4f48-48cb-9a81-36a07cf91902?sh=reGwlMpAgSosI0Gx"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-05",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0359",
+        "source_song_id": "2b5998b1-4f48-48cb-9a81-36a07cf91902",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0173",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "微月光旁的失序星",
+      "linked_song_id": "d517fdfb-0f05-43b9-be34-8ac2c4e0135c",
+      "linked_work_id": "LW0121",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUZFGhBEqEh/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18121109671505119",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "d517fdfb-0f05-43b9-be34-8ac2c4e0135c",
+          "note": "https://suno.com/song/d517fdfb-0f05-43b9-be34-8ac2c4e0135c?sh=gs5jLSf6xNFv2Edr"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-05",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0121",
+        "source_song_id": "d517fdfb-0f05-43b9-be34-8ac2c4e0135c",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0174",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "已讀不回，不發光的獨行星",
+      "linked_song_id": "29e92043-7f11-46f1-8e95-67b1a5e39452",
+      "linked_work_id": "LW0145",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUZD8fykuI_/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18087494495276328",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "29e92043-7f11-46f1-8e95-67b1a5e39452",
+          "note": "https://suno.com/song/29e92043-7f11-46f1-8e95-67b1a5e39452?sh=C7idHPWfGVqCAWQs"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-05",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0145",
+        "source_song_id": "29e92043-7f11-46f1-8e95-67b1a5e39452",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0175",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "微月光旁的一日星",
+      "linked_song_id": "a9561efb-a412-4dd0-937a-288bcd082b22",
+      "linked_work_id": "LW0259",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUY_0C9ktzi/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17942031075107836",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "a9561efb-a412-4dd0-937a-288bcd082b22",
+          "note": "https://suno.com/song/a9561efb-a412-4dd0-937a-288bcd082b22?sh=Y61tvayGRMpxHAU2"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-05",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0259",
+        "source_song_id": "a9561efb-a412-4dd0-937a-288bcd082b22",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0176",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "夜還亮著",
+      "linked_song_id": "c7df5537-1786-40f0-8a55-5e6352f5cf7e",
+      "linked_work_id": "LW0050",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUY6_QNEo_V/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17907394341343341",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "c7df5537-1786-40f0-8a55-5e6352f5cf7e",
+          "note": "https://suno.com/song/c7df5537-1786-40f0-8a55-5e6352f5cf7e?sh=mKuC37W8YzjydVei"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-05",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0050",
+        "source_song_id": "c7df5537-1786-40f0-8a55-5e6352f5cf7e",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0177",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "獨角戲",
+      "linked_song_id": "15794773-9ff9-453b-8ba1-5b93de0f5f5e",
+      "linked_work_id": "LW0372",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DUYolYAgRwG/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18108725101674376",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "15794773-9ff9-453b-8ba1-5b93de0f5f5e",
+          "note": "https://suno.com/song/15794773-9ff9-453b-8ba1-5b93de0f5f5e"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P3",
+      "era_id": "ERA-P3",
+      "period_name": "微月光與關係敘事期",
+      "source_created_date": "2026-02-05",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0372",
+        "source_song_id": "15794773-9ff9-453b-8ba1-5b93de0f5f5e",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0178",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "足元、まだ光",
+      "linked_song_id": "4f454c51-ec95-4292-a23a-84dee28b8241",
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DSX6OsOAeNR/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18101460232783184",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "4f454c51-ec95-4292-a23a-84dee28b8241",
+          "note": "https://suno.com/song/4f454c51-ec95-4292-a23a-84dee28b8241?sh=dbp1Xczsi4bJeN8J"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2025-12-17"
+    },
+    {
+      "media_id": "MEDIA-0179",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_unresolved",
+      "title": "月光未散",
+      "linked_song_id": "3b8d6798-7383-43f0-90e7-e1c32f1e2378",
+      "linked_work_id": "LW0164",
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17909184960274803",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "3b8d6798-7383-43f0-90e7-e1c32f1e2378",
+          "note": "https://suno.com/song/3b8d6798-7383-43f0-90e7-e1c32f1e2378?sh=CxXQaqbNFfKpKTDI"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_name": "重啟與格式形成期",
+      "source_created_date": "2025-12-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0164",
+        "source_song_id": "3b8d6798-7383-43f0-90e7-e1c32f1e2378",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0180",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_unresolved",
+      "title": "微かな光へ",
+      "linked_song_id": "13e68d20-8790-4df1-a2f0-dd8d1abf37f7",
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18093399862921337",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "13e68d20-8790-4df1-a2f0-dd8d1abf37f7",
+          "note": "https://suno.com/song/13e68d20-8790-4df1-a2f0-dd8d1abf37f7?sh=0ip4xQgA9BgmAVzV"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2025-12-16"
+    },
+    {
+      "media_id": "MEDIA-0181",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_unresolved",
+      "title": "微月光(fin)",
+      "linked_song_id": "705065ba-2f41-4857-a5c4-693e9653508a",
+      "linked_work_id": "LW0140",
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18081366263125923",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "705065ba-2f41-4857-a5c4-693e9653508a",
+          "note": "https://suno.com/song/705065ba-2f41-4857-a5c4-693e9653508a?sh=0kKlAv1eglA2x9tz"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_name": "重啟與格式形成期",
+      "source_created_date": "2025-12-16",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0140",
+        "source_song_id": "705065ba-2f41-4857-a5c4-693e9653508a",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
     }
   ]
 }
