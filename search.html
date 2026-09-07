@@ -111,7 +111,7 @@
         <button class="workspace-switch" type="button" data-search-view="ranking"><strong>排行榜</strong><small>依時間跨度觀察關鍵字</small></button>
       </div>
     </nav>
-    <div class="workspace-foot">多元搜尋、ERA 時期設定、排行榜各自分工；搜尋負責跨格式查找，ERA 定義作品的時間跨度，排行榜再依這些跨度觀察詞彙分布。</div>
+    <div class="workspace-foot">多元搜尋、時期設定、排行榜各自分工；搜尋負責跨格式查找，時期定義作品的時間跨度，排行榜再依這些跨度觀察詞彙分布。</div>
   </aside>
   <main class="page workspace-main">
     <div class="search-view" id="queryView">
@@ -137,7 +137,7 @@
           <button class="filter-toggle" id="advancedToggle" type="button" aria-expanded="false" aria-controls="advancedPanel">
             <span class="filter-toggle-main">
               <strong>時間篩選</strong>
-              <small>日期 · ERA</small>
+              <small>日期 · 時期</small>
             </span>
             <span class="filter-count" id="filterCount" hidden>0</span>
             <span class="filter-chevron" aria-hidden="true">⌄</span>
@@ -712,16 +712,20 @@
     const ERA_CACHE_KEY='loc-search-era-registry-v3';
     const ERA_CACHE_TTL=24*60*60*1000;
     const ERA_FALLBACK=[
-      {period:'P0',display_label:'P0｜月之符文前史'},
-      {period:'P0.5',display_label:'P0.5｜月之符文前史過渡期'},
-      {period:'P1',display_label:'P1｜月之符文到月典形成期'},
-      {period:'P2',display_label:'P2｜重啟與格式形成期'},
-      {period:'P3',display_label:'P3｜微月光與關係敘事期'},
-      {period:'P4',display_label:'P4｜現實壓力與治理轉折期'},
-      {period:'P5',display_label:'P5｜人生月台與語言重建期'},
-      {period:'P6',display_label:'P6｜順其自然與界線整合期'},
-      {period:'P7',display_label:'P7｜自由的風期'},
-      {period:'P8',display_label:'P8｜自我治理與未來展望期'}
+      {period:'P1.0',display_label:'P1.0｜大學時代文字'},
+      {period:'P2.0',display_label:'P2.0｜當兵入伍到公開網路文字之前'},
+      {period:'P3.0',display_label:'P3.0｜公開網路文字期'},
+      {period:'P4.0',display_label:'P4.0｜Threads'},
+      {period:'P4.1',display_label:'P4.1｜Threads開始啟動'},
+      {period:'P4.2',display_label:'P4.2｜《月語者》籌劃期'},
+      {period:'P5.0',display_label:'P5.0｜月符到月典形成期'},
+      {period:'P5.1',display_label:'P5.1｜LOC啟動'},
+      {period:'P5.2',display_label:'P5.2｜微月光與關係敘事期'},
+      {period:'P5.3',display_label:'P5.3｜自我治理的啟動跟檢討'},
+      {period:'P5.4',display_label:'P5.4｜人生月台與療傷期'},
+      {period:'P5.5',display_label:'P5.5｜順其自然與劃清界線'},
+      {period:'P5.6',display_label:'P5.6｜自由的風的脫困期'},
+      {period:'P5.7',display_label:'P5.7｜自我治理與未來展望期'}
     ];
     function renderCorpusStatus(corpus){
       if(!corpus){return;}
