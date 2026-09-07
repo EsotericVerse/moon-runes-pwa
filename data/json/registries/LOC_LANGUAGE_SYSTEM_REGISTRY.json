@@ -24,7 +24,7 @@
         "source_references": [],
         "provenance_note": "預留協作、共享、影響與來源欄位；目前系統以單一個人語言系統為基準。"
       },
-      "framework_definition": "LOC／月典是一套語言系統框架。它將符文與籤詩、情境、音樂、文字、多媒體、治理、文字建築／知識管理，以及事件與時間脈絡分配給 LOC1–8 各自的責任域，再透過共同搜尋、關聯、趨勢與時間結構形成可追溯、可版本化、可演化的整體。LunaRunes／月之符文是其成熟的 Reference Seed System。",
+      "framework_definition": "LOC／月典是一套語言系統框架。月之符文提供基本文字語彙（token）與語意種子；LOC 將這些語意及其延伸內容分配到不同責任域，再透過搜尋、關聯、方法、方法體系與時間趨勢觀察其演化。",
       "framework_principles": [
         "LOC1–8 是同一套語言系統的責任分工，不是八套獨立產品，也不是版本或成熟度排序。",
         "穩定的是框架，不是語言：identity、schema、ownership、provenance 與治理流程可穩定，meaning、relation、context 與 interpretation 可演化。",
@@ -60,6 +60,12 @@
           ]
         },
         "rule": "Luna Codex 不得作為月之符文的英文名稱；月之符文的正式英文名稱固定為 LunaRunes。"
+      },
+      "public_concept_map": {
+        "LOC3-5": "表達／內容：音樂、文字、多媒體",
+        "LOC6": "方法論：如何理解、判斷、處理與治理",
+        "LOC7": "方法體系：由多種方法形成的文字建築、知識與關係結構",
+        "LOC8": "文化哲學：把方法體系放入時間、ERA、事件與趨勢後觀察其演化"
       }
     }
   ]
