@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC_DATA_GOVERNANCE",
   "language_system_id": "lo3rwang",
   "principles": {
@@ -69,6 +69,14 @@
     },
     "writing_works": {
       "authority": "LOC4",
+      "registry": "data/json/registries/LOC4_WRITING_REGISTRY.json",
+      "scope": [
+        "creative works",
+        "life writing",
+        "Facebook authored text",
+        "Threads authored text",
+        "work/chapter literary-semantic analysis"
+      ],
       "consumers": [
         "LOC4",
         "LOC5",
@@ -90,6 +98,15 @@
     },
     "governance_interpretation": {
       "authority": "LOC6",
+      "registry": "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json",
+      "scope": [
+        "Zhengde Style",
+        "values",
+        "governance principles",
+        "style-state",
+        "ERA governance comparison",
+        "rune interpretation"
+      ],
       "consumers": [
         "LOC6",
         "LOC7",
@@ -119,9 +136,10 @@
     }
   },
   "analysis_boundary": {
-    "LOC6": "Meaning, values, governance, stage interpretation, style-state interpretation.",
+    "LOC6": "Meaning, values, governance, Zhengde Style, stage/style-state interpretation, and rune-to-governance interpretation derived from source evidence.",
     "LOC7": "Grammar, syntax, linguistic structure, semantic engineering, text architecture, retrieval structure.",
-    "LOC8": "Does not own interpretive analysis; provides event, state, ERA, time, registry, and cross-LOC integration context."
+    "LOC8": "Does not own interpretive analysis; provides event, state, ERA, time, registry, and cross-LOC integration context.",
+    "LOC4": "Creative/life-writing text authority plus work-level and chapter-level literary/semantic analysis."
   },
   "rights_boundary": {
     "LOC6": "Defines governance principles for authorship, attribution, sharing, licensing, and collaboration.",
@@ -182,5 +200,13 @@
       "self-governance decision",
       "new language/event"
     ]
+  },
+  "loc4_loc6_boundary": {
+    "registry": "data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json",
+    "source_owner": "LOC4",
+    "interpretation_owner": "LOC6",
+    "rule": "Raw authored text and ordinary work/chapter analysis remain LOC4. Governance/value/Zhengde-style interpretations derived from those texts are LOC6.",
+    "platform_rule": "Facebook/Threads are LOC4 life-writing sources; platform does not make them LOC6.",
+    "no_overwrite": "LOC6 references LOC4 evidence and creates separate derived records; it never changes LOC4 canonical text."
   }
 }
