@@ -4560,6 +4560,2999 @@
         "rule": "inherit LOC8 period from linked LOC3 song/work record",
         "inherited_at": "2026-09-07"
       }
+    },
+    {
+      "media_id": "MEDIA-0062",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "回歸以後",
+      "linked_song_id": "b1233710-8585-4725-8569-35605a686e67",
+      "linked_work_id": "LW0024",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaJf3J3BpFh/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18020167841894491",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "b1233710-8585-4725-8569-35605a686e67",
+          "note": "https://suno.com/song/b1233710-8585-4725-8569-35605a686e67?sh=Fs3qLnMAMcM25BEJ"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-28",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0024",
+        "source_song_id": "b1233710-8585-4725-8569-35605a686e67",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0063",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "走了真遠",
+      "linked_song_id": "262c05ac-9a06-492f-9576-2732e8363626",
+      "linked_work_id": "LW0226",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaH8i1jIeAN/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18071328692343676",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "262c05ac-9a06-492f-9576-2732e8363626",
+          "note": "https://suno.com/song/262c05ac-9a06-492f-9576-2732e8363626?sh=grMIG1PeqwR3ZAGx"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-28",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0226",
+        "source_song_id": "262c05ac-9a06-492f-9576-2732e8363626",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0064",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "白晝之月・微月光",
+      "linked_song_id": "fdc498e2-2218-442c-8368-235af1169082",
+      "linked_work_id": "LW0230",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaHorGPqSDd/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18104292071038467",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "fdc498e2-2218-442c-8368-235af1169082",
+          "note": "https://suno.com/song/fdc498e2-2218-442c-8368-235af1169082?sh=d6GmU59LxgJpo7xO"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-28",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0230",
+        "source_song_id": "fdc498e2-2218-442c-8368-235af1169082",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0065",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "一個人的安靜",
+      "linked_song_id": "89ab424d-71b0-43dc-a1da-6141b5d17a49",
+      "linked_work_id": "LW0269",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaHFbh-o-CT/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17973490488065543",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "89ab424d-71b0-43dc-a1da-6141b5d17a49",
+          "note": "https://suno.com/song/89ab424d-71b0-43dc-a1da-6141b5d17a49?sh=TZ4aCBzynCVA4P2v"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-28",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0269",
+        "source_song_id": "89ab424d-71b0-43dc-a1da-6141b5d17a49",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0066",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "共響",
+      "linked_song_id": "e641764f-b151-482c-ba50-028ee69346d0",
+      "linked_work_id": "LW0051",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaFeahLISCS/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18096297593350722",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "e641764f-b151-482c-ba50-028ee69346d0",
+          "note": "https://suno.com/song/e641764f-b151-482c-ba50-028ee69346d0?sh=zoxa0JITKFc4wYgd"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-27",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0051",
+        "source_song_id": "e641764f-b151-482c-ba50-028ee69346d0",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0067",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "當下",
+      "linked_song_id": "5e2acdd6-2504-4eb6-be8b-6461ec9d73f1",
+      "linked_work_id": "LW0342",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaFb6URI9xR/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18121863208682404",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "5e2acdd6-2504-4eb6-be8b-6461ec9d73f1",
+          "note": "https://suno.com/song/5e2acdd6-2504-4eb6-be8b-6461ec9d73f1?sh=oT4aSUvbnqIHq3Pe"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-27",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0342",
+        "source_song_id": "5e2acdd6-2504-4eb6-be8b-6461ec9d73f1",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0068",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "漸光",
+      "linked_song_id": "67375242-35f6-4bb1-9686-9624ef076a2d",
+      "linked_work_id": "LW0211",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaFbnQbIZpN/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17859144189662147",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "67375242-35f6-4bb1-9686-9624ef076a2d",
+          "note": "https://suno.com/song/67375242-35f6-4bb1-9686-9624ef076a2d?sh=VSaARx01fv4M9onK"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-27",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0211",
+        "source_song_id": "67375242-35f6-4bb1-9686-9624ef076a2d",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0069",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "微月光代表",
+      "linked_song_id": "1826dd82-0357-49c9-89a1-8f0ce21eba04",
+      "linked_work_id": "LW0006",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaFJ9wsoz_T/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18120996337706292",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "1826dd82-0357-49c9-89a1-8f0ce21eba04",
+          "note": "https://suno.com/song/1826dd82-0357-49c9-89a1-8f0ce21eba04?sh=1mK1hEvBngMYHSOT"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-27",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0006",
+        "source_song_id": "1826dd82-0357-49c9-89a1-8f0ce21eba04",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0070",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "政德風微月光",
+      "linked_song_id": "5830cedc-dc65-4397-82ad-6e070050a463",
+      "linked_work_id": "LW0052",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaElOKEo-Qh/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18017545310853067",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "5830cedc-dc65-4397-82ad-6e070050a463",
+          "note": "https://suno.com/song/5830cedc-dc65-4397-82ad-6e070050a463?sh=yF46WpcxbLaI0awN"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-27",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0052",
+        "source_song_id": "5830cedc-dc65-4397-82ad-6e070050a463",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0071",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "尊重是底線",
+      "linked_song_id": "edf81c33-7963-4a1b-afe1-79d5085db262",
+      "linked_work_id": "LW0210",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaDHaH0ovri/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18108394990951863",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "edf81c33-7963-4a1b-afe1-79d5085db262",
+          "note": "https://suno.com/song/edf81c33-7963-4a1b-afe1-79d5085db262?sh=4TA0LAWZ5QmTffGR"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-26",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0210",
+        "source_song_id": "edf81c33-7963-4a1b-afe1-79d5085db262",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0072",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "忘了就好",
+      "linked_song_id": "62871494-d34a-4f4b-b9b9-c64c5adaceb8",
+      "linked_work_id": "LW0202",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaCz5TLo-Fi/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18060679529721425",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "62871494-d34a-4f4b-b9b9-c64c5adaceb8",
+          "note": "https://suno.com/song/62871494-d34a-4f4b-b9b9-c64c5adaceb8?sh=LjF9rl8g73JrIOFb"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-26",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0202",
+        "source_song_id": "62871494-d34a-4f4b-b9b9-c64c5adaceb8",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0073",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "交給時間",
+      "linked_song_id": "0f0e1f5e-2e2e-4ebc-bae4-224456697971",
+      "linked_work_id": "LW0278",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaCx7TLIa6s/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17966792268085654",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "0f0e1f5e-2e2e-4ebc-bae4-224456697971",
+          "note": "https://suno.com/song/0f0e1f5e-2e2e-4ebc-bae4-224456697971?sh=m0R7an01qtK4Ev3l"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-26",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0278",
+        "source_song_id": "0f0e1f5e-2e2e-4ebc-bae4-224456697971",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0074",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "又過一天",
+      "linked_song_id": "43b092db-ea5a-45b1-a600-274793deca11",
+      "linked_work_id": "LW0012",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaCOk1LowWx/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17870054544554057",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "43b092db-ea5a-45b1-a600-274793deca11",
+          "note": "https://suno.com/song/43b092db-ea5a-45b1-a600-274793deca11?sh=3HzEPQiXpUgqbwm4"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-26",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0012",
+        "source_song_id": "43b092db-ea5a-45b1-a600-274793deca11",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0075",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "政德風",
+      "linked_song_id": "ba3c3d28-40eb-46c0-a9fa-e5956f0098b2",
+      "linked_work_id": "LW0085",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaBxkPhoeIU/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18083927147213115",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "ba3c3d28-40eb-46c0-a9fa-e5956f0098b2",
+          "note": "https://suno.com/song/ba3c3d28-40eb-46c0-a9fa-e5956f0098b2?sh=UkVUigEZjejeBWEd"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-25",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0085",
+        "source_song_id": "ba3c3d28-40eb-46c0-a9fa-e5956f0098b2",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0076",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "允許一切，向前而行",
+      "linked_song_id": "46e75ea3-2c1d-4db1-8d67-ff1d47942df1",
+      "linked_work_id": "LW0079",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaAbYMrKc3t/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18068448299392421",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "46e75ea3-2c1d-4db1-8d67-ff1d47942df1",
+          "note": "https://suno.com/song/46e75ea3-2c1d-4db1-8d67-ff1d47942df1?sh=ofrfUWpqvDQB6nNW"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-25",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0079",
+        "source_song_id": "46e75ea3-2c1d-4db1-8d67-ff1d47942df1",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0077",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "且待風起",
+      "linked_song_id": "c3e3c484-7754-4ecb-9dab-c417108e9b19",
+      "linked_work_id": "LW0242",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaAOtaXoaQd/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18109196141069390",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "c3e3c484-7754-4ecb-9dab-c417108e9b19",
+          "note": "https://suno.com/song/c3e3c484-7754-4ecb-9dab-c417108e9b19?sh=PiOEBQkrGy82ZVEn"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-25",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0242",
+        "source_song_id": "c3e3c484-7754-4ecb-9dab-c417108e9b19",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0078",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "盡人事聽天命",
+      "linked_song_id": "bca6b5f0-7617-4b68-983c-a3592e54ade5",
+      "linked_work_id": "LW0106",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DaAFo_Hodvd/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18114754471842653",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "bca6b5f0-7617-4b68-983c-a3592e54ade5",
+          "note": "https://suno.com/song/bca6b5f0-7617-4b68-983c-a3592e54ade5?sh=19iMPFNGAQxPPv1D"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-25",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0106",
+        "source_song_id": "bca6b5f0-7617-4b68-983c-a3592e54ade5",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0079",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "無愧於心",
+      "linked_song_id": "e2d049a9-9c46-4825-af9b-73f100c4b095",
+      "linked_work_id": "LW0180",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZ9lwazoKrX/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17989369160817606",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "e2d049a9-9c46-4825-af9b-73f100c4b095",
+          "note": "https://suno.com/song/e2d049a9-9c46-4825-af9b-73f100c4b095?sh=H0w34zA7NUe49iWW"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-24",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0180",
+        "source_song_id": "e2d049a9-9c46-4825-af9b-73f100c4b095",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0080",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "盡力而為",
+      "linked_song_id": "6815d070-6b03-49c0-9fb3-c0e9c1e45156",
+      "linked_work_id": "LW0361",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZ8sQ3ohNJ7/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17991783500995922",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "6815d070-6b03-49c0-9fb3-c0e9c1e45156",
+          "note": "https://suno.com/song/6815d070-6b03-49c0-9fb3-c0e9c1e45156?sh=T4S0qM441hTJkip5"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-24",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0361",
+        "source_song_id": "6815d070-6b03-49c0-9fb3-c0e9c1e45156",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0081",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "允許",
+      "linked_song_id": "ca7be8c7-f9f4-449a-ae96-43d1db769ef7",
+      "linked_work_id": "LW0255",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZ7P0N_ovxW/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18139097581479182",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "ca7be8c7-f9f4-449a-ae96-43d1db769ef7",
+          "note": "https://suno.com/song/ca7be8c7-f9f4-449a-ae96-43d1db769ef7?sh=0kBartHDk3lTMQ3n"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-23",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0255",
+        "source_song_id": "ca7be8c7-f9f4-449a-ae96-43d1db769ef7",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0082",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "沒辦法",
+      "linked_song_id": "ff89e067-19e2-4511-a78f-b8d6e42daaf8",
+      "linked_work_id": "LW0161",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZ7MommqE2K/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17931450978302863",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "ff89e067-19e2-4511-a78f-b8d6e42daaf8",
+          "note": "https://suno.com/song/ff89e067-19e2-4511-a78f-b8d6e42daaf8?sh=6yk6Vpb3vc7X0Gqc"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-23",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0161",
+        "source_song_id": "ff89e067-19e2-4511-a78f-b8d6e42daaf8",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0083",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "歲歲安然",
+      "linked_song_id": "8b62277a-c4c1-4508-ac6c-20d2d8d6a339",
+      "linked_work_id": "LW0059",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZ7MTrdqMrt/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18107490227005170",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "8b62277a-c4c1-4508-ac6c-20d2d8d6a339",
+          "note": "https://suno.com/song/8b62277a-c4c1-4508-ac6c-20d2d8d6a339?sh=pkmY7xY6bUPAx0RR"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-23",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0059",
+        "source_song_id": "8b62277a-c4c1-4508-ac6c-20d2d8d6a339",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0084",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "祝我生日快樂",
+      "linked_song_id": "68df5ad8-93aa-4e3a-8592-2520f731466d",
+      "linked_work_id": "LW0176",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZ6T76WIQW2/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18140539141558595",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "68df5ad8-93aa-4e3a-8592-2520f731466d",
+          "note": "https://suno.com/song/68df5ad8-93aa-4e3a-8592-2520f731466d?sh=9orbeJfjFT0rwJPq"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-23",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0176",
+        "source_song_id": "68df5ad8-93aa-4e3a-8592-2520f731466d",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0085",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "生日未許願",
+      "linked_song_id": "90b4af0f-77f9-41bf-8e23-2533dd5ec422",
+      "linked_work_id": "LW0030",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZ6RCayobs9/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18087098066166413",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "90b4af0f-77f9-41bf-8e23-2533dd5ec422",
+          "note": "https://suno.com/song/90b4af0f-77f9-41bf-8e23-2533dd5ec422?sh=AnoClwn8JBPPLqFo"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-23",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0030",
+        "source_song_id": "90b4af0f-77f9-41bf-8e23-2533dd5ec422",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0086",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "不再年輕",
+      "linked_song_id": "1d3cf691-e7b0-4866-8475-1ba4c7b61425",
+      "linked_work_id": "LW0247",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZ6HnXpIQbc/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18168243172427983",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "1d3cf691-e7b0-4866-8475-1ba4c7b61425",
+          "note": "https://suno.com/song/1d3cf691-e7b0-4866-8475-1ba4c7b61425?sh=CgS7DTUQEEP0htgG"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-23",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0247",
+        "source_song_id": "1d3cf691-e7b0-4866-8475-1ba4c7b61425",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0087",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "明天再說",
+      "linked_song_id": "3be1b44e-7816-4f9b-a57a-2cb98112628b",
+      "linked_work_id": "LW0203",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZ3hTZfoxC1/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18405779527157732",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "3be1b44e-7816-4f9b-a57a-2cb98112628b",
+          "note": "https://suno.com/song/3be1b44e-7816-4f9b-a57a-2cb98112628b?sh=km6MmtAa4n8tsadt"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-22",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0203",
+        "source_song_id": "3be1b44e-7816-4f9b-a57a-2cb98112628b",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0088",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "暫退一步",
+      "linked_song_id": "a057dd0e-eee2-4f9e-8716-69c2f79fdd35",
+      "linked_work_id": "LW0304",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZw2M1pIFXn/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18123704032654344",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "a057dd0e-eee2-4f9e-8716-69c2f79fdd35",
+          "note": "https://suno.com/song/a057dd0e-eee2-4f9e-8716-69c2f79fdd35?sh=wtEKeoZNPwaPFpoN"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-19",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0304",
+        "source_song_id": "a057dd0e-eee2-4f9e-8716-69c2f79fdd35",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0089",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "風起之前",
+      "linked_song_id": "c598d413-4f1d-4d90-9482-faff4307c8b3",
+      "linked_work_id": "LW0035",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZwNNxNo9zA/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18107195279052444",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "c598d413-4f1d-4d90-9482-faff4307c8b3",
+          "note": "https://suno.com/song/c598d413-4f1d-4d90-9482-faff4307c8b3?sh=mdGoLeAp1AsxPRU1"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-19",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0035",
+        "source_song_id": "c598d413-4f1d-4d90-9482-faff4307c8b3",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0090",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "偶爾自私也無妨",
+      "linked_song_id": "0ce619e6-4a3f-40ad-b63e-98aa97c6f7ec",
+      "linked_work_id": "LW0243",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZvo5KKSdof/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18377518996161831",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "0ce619e6-4a3f-40ad-b63e-98aa97c6f7ec",
+          "note": "https://suno.com/song/0ce619e6-4a3f-40ad-b63e-98aa97c6f7ec?sh=nEFS05ToOzaLl8HQ"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-18",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0243",
+        "source_song_id": "0ce619e6-4a3f-40ad-b63e-98aa97c6f7ec",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0091",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "風剛剛好",
+      "linked_song_id": "c641a791-001f-4be1-b569-4886d7320ba6",
+      "linked_work_id": "LW0143",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZs_GtKy9Zc/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17853102987694347",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "c641a791-001f-4be1-b569-4886d7320ba6",
+          "note": "https://suno.com/song/c641a791-001f-4be1-b569-4886d7320ba6?sh=GeiO5QbETavsbVK6"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0143",
+        "source_song_id": "c641a791-001f-4be1-b569-4886d7320ba6",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0092",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "夜雨",
+      "linked_song_id": "ec95ce4a-afbc-4def-b9e4-a41e88130d8e",
+      "linked_work_id": "LW0087",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZr_MnIoydv/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17983123031846101",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "ec95ce4a-afbc-4def-b9e4-a41e88130d8e",
+          "note": "https://suno.com/song/ec95ce4a-afbc-4def-b9e4-a41e88130d8e?sh=3upZMjzSJEmKbywT"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_name": "重啟與格式形成期",
+      "source_created_date": "2026-06-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0087",
+        "source_song_id": "ec95ce4a-afbc-4def-b9e4-a41e88130d8e",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0093",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "一個人的起降",
+      "linked_song_id": "7b43bbee-f613-46d8-a412-ba93787795a9",
+      "linked_work_id": "LW0174",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZr8KWpoyCD/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18090647708373528",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "7b43bbee-f613-46d8-a412-ba93787795a9",
+          "note": "https://suno.com/song/7b43bbee-f613-46d8-a412-ba93787795a9?sh=lrYTLD9kw4kOx5OA"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0174",
+        "source_song_id": "7b43bbee-f613-46d8-a412-ba93787795a9",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0094",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "當斷",
+      "linked_song_id": "1fc53ae0-da4a-48be-a3fd-04266b4674ea",
+      "linked_work_id": "LW0333",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZr4s5vImbM/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18099937373134693",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "1fc53ae0-da4a-48be-a3fd-04266b4674ea",
+          "note": "https://suno.com/song/1fc53ae0-da4a-48be-a3fd-04266b4674ea?sh=Czk4y5B2kXeZvXZI"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0333",
+        "source_song_id": "1fc53ae0-da4a-48be-a3fd-04266b4674ea",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0095",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "空站月蝕",
+      "linked_song_id": "e1b255d5-cf1d-4218-98fb-b18f04ba50b8",
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZrtw1RIxT1/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18119732188774962",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "e1b255d5-cf1d-4218-98fb-b18f04ba50b8",
+          "note": "https://suno.com/song/e1b255d5-cf1d-4218-98fb-b18f04ba50b8?sh=wKlRp9A5u8YTa2H9"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2026-06-17"
+    },
+    {
+      "media_id": "MEDIA-0096",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "今天不思考",
+      "linked_song_id": "1dbb1b47-b0e2-4e5c-a078-41671be00eb6",
+      "linked_work_id": "LW0354",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZrXs5Qotnl/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18104772074081477",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "1dbb1b47-b0e2-4e5c-a078-41671be00eb6",
+          "note": "https://suno.com/song/1dbb1b47-b0e2-4e5c-a078-41671be00eb6?sh=IbL0UjTTFY7pWhQu"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-17",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0354",
+        "source_song_id": "1dbb1b47-b0e2-4e5c-a078-41671be00eb6",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0097",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "泡沫妄想",
+      "linked_song_id": "900f1106-63f1-45c7-a2e3-259570eec8e8",
+      "linked_work_id": "LW0224",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZqg0gpB6-f/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18084659543149626",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "900f1106-63f1-45c7-a2e3-259570eec8e8",
+          "note": "https://suno.com/song/900f1106-63f1-45c7-a2e3-259570eec8e8?sh=LpWQWIBFuVpvNrt6"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-16",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0224",
+        "source_song_id": "900f1106-63f1-45c7-a2e3-259570eec8e8",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0098",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "宜靜不宜動",
+      "linked_song_id": "45ffc467-7114-4947-95c4-5ff16980d48e",
+      "linked_work_id": "LW0365",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZpD5FFoJS5/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18086157449290021",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "45ffc467-7114-4947-95c4-5ff16980d48e",
+          "note": "https://suno.com/song/45ffc467-7114-4947-95c4-5ff16980d48e?sh=NgsnCvnbKJakRRrC"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-16",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0365",
+        "source_song_id": "45ffc467-7114-4947-95c4-5ff16980d48e",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0099",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "順其自然",
+      "linked_song_id": "77542162-014c-4455-9613-e664e53a6c75",
+      "linked_work_id": "LW0319",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZoQOSNItX5/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18102061094156960",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "77542162-014c-4455-9613-e664e53a6c75",
+          "note": "https://suno.com/song/77542162-014c-4455-9613-e664e53a6c75?sh=NtPzwLMWdXqnH3pC"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-16",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0319",
+        "source_song_id": "77542162-014c-4455-9613-e664e53a6c75",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0100",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "好好過日子",
+      "linked_song_id": "2802d441-316a-4461-824b-1b7077a7f129",
+      "linked_work_id": "LW0314",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZmdf-hoibq/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17875413582614616",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "2802d441-316a-4461-824b-1b7077a7f129",
+          "note": "https://suno.com/song/2802d441-316a-4461-824b-1b7077a7f129?sh=GaLHe7w9E5dAWt8S"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0314",
+        "source_song_id": "2802d441-316a-4461-824b-1b7077a7f129",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0101",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "回歸正常",
+      "linked_song_id": "95629d67-dcd7-4b85-89e3-2884e9637df5",
+      "linked_work_id": "LW0216",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DZl6H-LInTm/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18080204339645096",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "95629d67-dcd7-4b85-89e3-2884e9637df5",
+          "note": "https://suno.com/song/95629d67-dcd7-4b85-89e3-2884e9637df5?sh=EgZE9gtEHWC5gWdt"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": "2026-06-15",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0216",
+        "source_song_id": "95629d67-dcd7-4b85-89e3-2884e9637df5",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
     }
   ]
 }
