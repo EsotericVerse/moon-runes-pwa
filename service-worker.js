@@ -1,15 +1,8 @@
-const CACHE_NAME = "moon-runes-pwa-v146";
+const CACHE_NAME = "moon-runes-pwa-v147";
 
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
-  "/runes.html#draw",
-  "/runes.html?mode=single#draw",
-  "/runes.html?mode=daily#daily",
-  "/runes.html?mode=2card#draw",
-  "/runes.html?mode=3card#draw",
-  "/runes.html?mode=5card#draw",
-  "/runes.html",
   "/search.html",
   "/tutorial01.html",
   "/tutorial02.html",
@@ -38,7 +31,7 @@ const ASSETS_TO_CACHE = [
   "/data/json/core/runes64.json",
   "/js/main.js",
   "/js/locMoonPhase.js",
-  "/js/rune-draw.js?v=20260908-1",
+  "/js/rune-draw.js?v=20260908-2",
   "/js/rune-daily-records.js?v=20260908-1",
   "/js/runeLibrary.js?v=20260905-3",
   "/js/runes64.js",
@@ -88,6 +81,12 @@ self.addEventListener("fetch", (event) => {
 
   if (url.origin !== self.location.origin) {
     event.respondWith(fetch(request));
+    return;
+  }
+
+  // LunaRunes is updated frequently. Never serve a cached HTML shell here.
+  if (url.pathname === "/runes.html") {
+    event.respondWith(fetch(request, { cache: "no-store" }));
     return;
   }
 
