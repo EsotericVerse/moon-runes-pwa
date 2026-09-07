@@ -115,8 +115,12 @@
           <button class="workspace-switch" type="button" data-runes-view="library"><strong>符文資料</strong><small>66 圖鑑 · 基礎資料 · 實體卡</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">03 · 抽牌</div>
-          <button class="workspace-switch" type="button" data-runes-view="draw"><strong>抽牌</strong><small>每日 · 單卡 · 雙卡 · 三卡 · 五卡 · OW3gs</small></button>
+          <div class="workspace-nav-label">03 · 每日</div>
+          <button class="workspace-switch" type="button" data-runes-view="daily"><strong>每日符文</strong><small>一天一張 · 今日語意提示</small></button>
+        </div>
+        <div class="workspace-nav-group">
+          <div class="workspace-nav-label">04 · 抽牌</div>
+          <button class="workspace-switch" type="button" data-runes-view="draw"><strong>抽牌</strong><small>單卡 · 雙卡 · 三卡 · 五卡 · OW3gs</small></button>
         </div>
       </nav>
       <div class="workspace-foot">LOC1 統一由 runes.html 承接：新手入門、符文資料與抽牌都在同一頁。</div>
@@ -202,12 +206,12 @@
 
     
       </div>
-      <div class="runes-view" id="drawView" hidden>
+      <div class="runes-view" id="dailyView" hidden>
         <header class="hero loc-header">
-          <p class="loc-header-meta">LunaRunes · Draw</p>
-          <h1 class="loc-header-title">抽牌</h1>
-          <h2 class="loc-header-subtitle">依問題選擇不同的符文演算法。</h2>
-          <p class="loc-header-copy">抽牌方式負責選擇卡數與結構；抽出符文後，再依對應的治理解牌方式進行判讀。</p>
+          <p class="loc-header-meta">LunaRunes · Daily</p>
+          <h1 class="loc-header-title">每日符文</h1>
+          <h2 class="loc-header-subtitle">一天一張，觀看今天的語意提示。</h2>
+          <p class="loc-header-copy">每日符文是 LOC1 的固定入口，和一般多卡抽牌分開。</p>
         </header>
         <section class="daily-entry" aria-labelledby="daily-entry-title">
       <div>
@@ -216,12 +220,24 @@
       </div>
       <div class="daily-actions">
         <a class="primary" href="runes.html?mode=daily#draw">抽取每日符文</a>
-        <a href="evolution.html">查看歷史趨勢</a>
       </div>
     </section>
 
     
-        <section class="rune-basics">
+        
+        <section class="panel" id="daily-result-slot">
+          <div class="head"><div><p class="eyebrow" id="daily-mode-kicker">LOC1 · Daily Rune</p><h1>今日抽牌</h1></div></div>
+          <p class="note">點擊上方「抽取每日符文」後，會在同一個 runes.html 顯示結果。</p>
+        </section>
+      </div>
+      <div class="runes-view" id="drawView" hidden>
+        <header class="hero loc-header">
+          <p class="loc-header-meta">LunaRunes · Draw</p>
+          <h1 class="loc-header-title">抽牌</h1>
+          <h2 class="loc-header-subtitle">依問題選擇不同的符文演算法。</h2>
+          <p class="loc-header-copy">抽牌方式負責選擇卡數與結構；抽出符文後，再依對應的治理解牌方式進行判讀。</p>
+        </header>
+<section class="rune-basics">
           <h2>抽牌方式</h2>
           <p>選擇需要的抽牌方式。各方式對應不同的符文演算法。</p>
           <div class="draw-mode-grid">
@@ -298,6 +314,7 @@
     const views={
       beginner:document.getElementById('beginnerView'),
       library:document.getElementById('libraryView'),
+      daily:document.getElementById('dailyView'),
       draw:document.getElementById('drawView')
     };
     function switchView(name,updateUrl=true){
@@ -312,7 +329,9 @@
     buttons.forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.runesView)));
     document.querySelectorAll('[data-open-view]').forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.openView)));
     const hasMode=new URLSearchParams(location.search).has('mode');
-    if(hasMode||location.hash==='#draw') switchView('draw',false);
+    const mode=new URLSearchParams(location.search).get('mode');
+    if(mode==='daily'||location.hash==='#daily') switchView('daily',false);
+    else if(hasMode||location.hash==='#draw') switchView('draw',false);
     else if(location.hash==='#library') switchView('library',false);
     else switchView('beginner',false);
   })();
