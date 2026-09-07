@@ -218,7 +218,7 @@ Canonical / mother source / original evidence
 
 ## Public page rename compatibility
 
-- `runes.html`：月之符文 canonical page；`list.html` 保留為 redirect。
-- `context.html`：LOC2 脈絡 canonical page；`loc2.html` 保留為 redirect；`loc2-game.html` 是 Semantic Playground 實作。
-- `evolution.html`：LOC8 推演 canonical page；`life.html`、`evolution.html` 保留為 redirect。
+- `runes.html`：月之符文 canonical page；`runes.html#library` 保留為 redirect。
+- `context.html`：LOC2 脈絡 canonical page；`context.html` 保留為 redirect；`loc2-game.html` 是 Semantic Playground 實作。
+- `evolution.html`：LOC8 推演 canonical page；`evolution.html`、`evolution.html` 保留為 redirect。
 - Service Worker、Sitemap 與 `LOC_NAV.json` 只使用 canonical page，避免 precache 依賴 redirect。

@@ -52,7 +52,7 @@ Tier E  Retrieval derivatives
 
 Tier F  Application views
         ├─ search.html
-        ├─ faq.html
+        ├─ search.html?content_type=knowledge
         └─ API responses
 ```
 

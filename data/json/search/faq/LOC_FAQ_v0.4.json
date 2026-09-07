@@ -2243,12 +2243,12 @@
     {
       "id": "FAQ-089",
       "category": "LOC2 脈絡",
-      "question": "Graph 為什麼歸 LOC2，但還顯示在 life.html？",
+      "question": "Graph 為什麼歸 LOC2，但還顯示在 evolution.html？",
       "aliases": [
         "Graph屬於LOC2還是LOC8？",
         "Graph View為什麼還在LOC8頁面？"
       ],
-      "answer": "Graph 的關係／脈絡語意責任歸 LOC2，因為 Graph 本質是節點與 edge 所形成的脈絡。LOC7 負責 Graph RAG traversal／retrieval 演算法；LOC8 則把 Graph 投影到時間、ERA、Trajectory、Trend 做推演觀察。頁面位置可以維持 life.html，不等於資料 ownership 在 LOC8。",
+      "answer": "Graph 的關係／脈絡語意責任歸 LOC2，因為 Graph 本質是節點與 edge 所形成的脈絡。LOC7 負責 Graph RAG traversal／retrieval 演算法；LOC8 則把 Graph 投影到時間、ERA、Trajectory、Trend 做推演觀察。頁面位置可以維持 evolution.html，不等於資料 ownership 在 LOC8。",
       "keywords": [
         "Graph",
         "LOC2",
