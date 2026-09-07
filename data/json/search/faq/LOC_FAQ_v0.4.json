@@ -8,7 +8,7 @@
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 最新 LunaRune64.xlsx Grammar：一般牌陣使用治理原則＋月相交互，符文交互限定月符沙盒專用；並同步自然語言 Search/RAG、來源／內容分類與時間篩選規則。",
+    "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 最新 LunaRune64.xlsx Grammar：一般牌陣使用治理解牌方式＋月相交互，符文交互限定月符沙盒專用；並同步自然語言 Search/RAG、來源／內容分類與時間篩選規則。",
     "entry_count": 83,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
@@ -2065,7 +2065,8 @@
         "OW3gs",
         "符文交互",
         "月符沙盒",
-        "月相交互"
+        "月相交互",
+        "治理解牌方式"
       ],
       "source_refs": [
         "LunaRune64.xlsx#Grammar",
