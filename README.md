@@ -173,14 +173,14 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 
 | 分發 | 名稱 | 功能定位 |
 |---|---|---|
-| LOC1 | 符文語彙（token） | 基本文字語彙、語意種子、籤詩與解牌入口 |
-| LOC2 | 脈絡 | 關係、Context、Scenario、Event 與 Graph；月之符文沙盒是代表性實作 |
-| LOC3 | 音樂 | 文字與語意延伸為歌曲、歌詞與聲音 |
-| LOC4 | 文字創作 | 文章、小說、生活文字與敘事作品 |
-| LOC5 | 多媒體 | 文字、音樂、圖像與影音的跨媒介表達 |
-| LOC6 | Methodology / Governance | 方法論：如何理解、判斷、處理；治理、解牌、價值判斷與政德風都是其中的方法 |
-| LOC7 | Algorithm / Text Architecture | 演算法（知識庫）：文字建築、知識管理、檢索、RAG 與 Graph RAG；關係／Graph 脈絡資料本體歸 LOC2 |
-| LOC8 | Projection / Time & Trend | 推演：把作品、語言、方法與風格放進事件、時期、時間線、Trajectory 與 Trend 中觀察其演變 |
+| LOC1 | LunaRunes (Token)／符文語彙／月之符文 | 基本文字語彙、語意種子、籤詩與解牌入口 |
+| LOC2 | Context／脈絡／關係圖 | 關係、Context、Scenario、Event 與 Graph；月之符文沙盒是代表性實作 |
+| LOC3 | Music／音樂／Suno | 文字與語意延伸為歌曲、歌詞與聲音 |
+| LOC4 | Literary／文字創作 | 文章、小說、生活文字與敘事作品 |
+| LOC5 | Media／多媒體 | 文字、音樂、圖像與影音的跨媒介表達 |
+| LOC6 | Method／方法論 | 方法論：如何理解、判斷、處理；治理、解牌、價值判斷與政德風都是其中的方法 |
+| LOC7 | Algorithm／演算法 | 演算法（知識庫）：文字建築、知識管理、檢索、RAG 與 Graph RAG；關係／Graph 脈絡資料本體歸 LOC2 |
+| LOC8 | Evolution／推演 | 推演：把作品、語言、方法與風格放進事件、時期、時間線、Trajectory 與 Trend 中觀察其演變 |
 
 ### 目前具現化成果
 
@@ -193,7 +193,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
 | LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；Threads 公開文字 corpus 自 2024-11-18 起至 2026-09-06，現行去重基準共 **7,008 筆文字紀錄**（4,578 主貼文＋2,430 Reply）。**4,578 筆主貼文全文已完成 repository sharded index 並接入 Unified Search**；Reply 保留為 supplemental evidence。另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證。 |
 | LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢各 LOC 現有資料來源，Canonical Graph RAG 核心已完成 bounded traversal、provenance 與品質治理。另已加入 local-first Simple Text Analysis API（`/analyze/text`、`/analyze/corpus`），可在不依賴外部 LLM／Embedding API key 的情況下完成基本解析、關鍵字與分類。公開搜尋新增 `snippet / full / metadata_only` 展示治理，全文可供授權分析，但不等於全文公開。 |
-| LOC8 | `projection.html` 已具備每日符文歷史、時期管理、Event、Timeline、跨時期 Trend Analysis 與**關鍵字 Top 10 排行**。排行榜可直接點入 Unified Search 回查實際作品、文章與文字證據，形成「排行 → 趨勢 → 搜尋 → 證據」閉環。Context、Relation 與 Graph 的公開展示入口歸 `context.html`；後續重點為更多 corpus 接入、統計摘要與持續品質驗證。 |
+| LOC8 | `evolution.html` 已具備每日符文歷史、時期管理、Event、Timeline、跨時期 Trend Analysis 與**關鍵字 Top 10 排行**。排行榜可直接點入 Unified Search 回查實際作品、文章與文字證據，形成「排行 → 趨勢 → 搜尋 → 證據」閉環。Context、Relation 與 Graph 的公開展示入口歸 `context.html`；後續重點為更多 corpus 接入、統計摘要與持續品質驗證。 |
 
 LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；LOC6 已有治理／政德風與符文解析資料，LOC7 已有 KM／FAQ／RAG／Unified Search，LOC8 已有可操作的每日符文歷史、事件、時期與趨勢推演介面。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
 
