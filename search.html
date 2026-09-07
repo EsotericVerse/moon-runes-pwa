@@ -210,20 +210,20 @@
         {q:'月光',title:'月光',desc:'多媒體創作 · 視覺意象'}
       ],
       governance_fragment:[
-        {q:'自我治理',title:'自我治理',desc:'治理規則 · 治理核心'},
-        {q:'界線',title:'界線',desc:'治理規則 · 邊界／治理'},
-        {q:'免錢的最貴',title:'免錢的最貴',desc:'治理規則 · 價值判準'},
-        {q:'我不跟你走劇本',title:'我不跟你走劇本',desc:'治理規則 · 敘事主權'},
-        {q:'慈悲不是投降',title:'慈悲不是投降',desc:'治理規則 · 防衛邊界'},
-        {q:'錯誤',title:'錯誤',desc:'治理規則 · 錯誤治理'}
+        {q:'自我治理',title:'自我治理',desc:'方法論 · 治理核心'},
+        {q:'界線',title:'界線',desc:'方法論 · 邊界／治理'},
+        {q:'免錢的最貴',title:'免錢的最貴',desc:'方法論 · 價值判準'},
+        {q:'我不跟你走劇本',title:'我不跟你走劇本',desc:'方法論 · 敘事主權'},
+        {q:'慈悲不是投降',title:'慈悲不是投降',desc:'方法論 · 防衛邊界'},
+        {q:'錯誤',title:'錯誤',desc:'方法論 · 錯誤治理'}
       ],
       governance_article:[
-        {q:'自我治理',title:'自我治理',desc:'治理規則 · 治理文章'},
-        {q:'自由',title:'自由',desc:'治理規則 · Threads 長文'},
-        {q:'選擇',title:'選擇',desc:'治理規則 · 價值／決策'},
-        {q:'責任',title:'責任',desc:'治理規則 · 治理語言'},
-        {q:'尊重',title:'尊重',desc:'治理規則 · 關係／界線'},
-        {q:'政德風',title:'政德風',desc:'治理規則 · 風格演變'}
+        {q:'自我治理',title:'自我治理',desc:'方法論 · 治理文章'},
+        {q:'自由',title:'自由',desc:'方法論 · Threads 長文'},
+        {q:'選擇',title:'選擇',desc:'方法論 · 價值／決策'},
+        {q:'責任',title:'責任',desc:'方法論 · 治理語言'},
+        {q:'尊重',title:'尊重',desc:'方法論 · 關係／界線'},
+        {q:'政德風',title:'政德風',desc:'方法論 · 風格演變'}
       ],
       scenario_event:[
         {q:'自我懷疑',title:'自我懷疑',desc:'LOC2 · 情境事件'},
@@ -234,15 +234,15 @@
         {q:'未知來信',title:'未知來信',desc:'LOC2 · 情境事件'}
       ],
       knowledge:[
-        {q:'LOC 是什麼',title:'LOC 是什麼',desc:'知識庫 · 系統知識'},
-        {q:'月之符文',title:'月之符文',desc:'知識庫 · 文件／FAQ'},
-        {q:'LOC2 怎麼玩',title:'LOC2 怎麼玩',desc:'知識庫 · 規則知識'},
-        {q:'文字建築學',title:'文字建築學',desc:'知識庫 · 結構分析'},
-        {q:'Graph RAG',title:'Graph RAG',desc:'知識庫 · 檢索／關係'},
-        {q:'自我治理',title:'自我治理',desc:'知識庫 · 跨文件知識'}
+        {q:'LOC 是什麼',title:'LOC 是什麼',desc:'方法體系（知識庫） · 系統知識'},
+        {q:'月之符文',title:'月之符文',desc:'方法體系（知識庫） · 文件／FAQ'},
+        {q:'LOC2 怎麼玩',title:'LOC2 怎麼玩',desc:'方法體系（知識庫） · 規則知識'},
+        {q:'文字建築學',title:'文字建築學',desc:'方法體系（知識庫） · 結構分析'},
+        {q:'Graph RAG',title:'Graph RAG',desc:'方法體系（知識庫） · 檢索／關係'},
+        {q:'自我治理',title:'自我治理',desc:'方法體系（知識庫） · 跨文件知識'}
       ]
     };
-    const labels={entities:'符文核心詞條',scenarios:'符文沙盒',oracle:'符文占卜',readings:'符文治理',runes:'符文',rune_songs:'符文音樂',works:'自創歌曲(Suno)',textworks:'文字創作',relationships:'跨分類關聯',governance:'治理規則',loc4_articles:'文字／治理文章',text:'文字',media:'多媒體創作',knowledge:'知識庫',timeline:'趨勢分析'};
+    const labels={entities:'符文核心詞條',scenarios:'符文沙盒',oracle:'符文占卜',readings:'符文治理',runes:'符文',rune_songs:'符文音樂',works:'自創歌曲(Suno)',textworks:'文字創作',relationships:'跨分類關聯',governance:'方法論',loc4_articles:'文字／方法文章',text:'文字',media:'多媒體創作',knowledge:'方法體系（知識庫）',timeline:'文化哲學（時間／趨勢分析）'};
     const LOCAL_SEARCH_CACHE=new Map();
     async function localJson(path){
       if(LOCAL_SEARCH_CACHE.has(path))return LOCAL_SEARCH_CACHE.get(path);
@@ -711,7 +711,7 @@
       textworks:{loc:'文字創作',label:'文字創作',desc:'小說、文章、生活文字與其他作者文字；來源平台另行標示'},
       media:{loc:'多媒體創作',label:'多媒體／符文影像',desc:'Instagram、影音、圖片、知識圖與已建立的符文影像關聯'},
       governance:{loc:'治理規則',label:'治理／政德風',desc:'治理片段、價值與語言判斷'},
-      loc4_articles:{loc:'文字創作／治理規則',label:'文字／治理文章',desc:'作品文字、來源平台文字與治理分析分開呈現'},
+      loc4_articles:{loc:'文字創作／治理規則',label:'文字／方法文章',desc:'作品文字、來源平台文字與治理分析分開呈現'},
       knowledge:{loc:'知識庫',label:'文件／知識',desc:'KM、規格、文件與架構知識'},
       timeline:{loc:'趨勢分析',label:'ERA／趨勢',desc:'時間、關係與演變維度'},
       relationships:{loc:'跨分類',label:'關係',desc:'已建立的跨資料與跨媒介關係'},
