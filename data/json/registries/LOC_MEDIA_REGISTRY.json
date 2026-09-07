@@ -16448,13 +16448,15 @@
       "media_id": "MEDIA-0194",
       "system_id": "lo3rwang",
       "primary_loc": "LOC5",
-      "related_locs": [],
-      "media_type": "instagram_reels_unresolved",
+      "related_locs": [
+        "LOC1"
+      ],
+      "media_type": "instagram_reel",
       "title": "月之符文說明 #月之符文 #靈性感知 #能量牌卡",
       "linked_song_id": null,
       "linked_work_id": null,
       "platform": "instagram",
-      "url": null,
+      "url": "https://www.instagram.com/reel/DMA-ZxLTINw/",
       "preview_duration_seconds": null,
       "metrics": {
         "plays": null
@@ -16464,6 +16466,11 @@
           "source_type": "instagram_media_id",
           "source_id": "18053144108387396",
           "note": null
+        },
+        {
+          "source_type": "instagram_url",
+          "source_id": "https://www.instagram.com/reel/DMA-ZxLTINw/",
+          "note": "public Reel URL confirmed by author"
         }
       ],
       "linked_to_semantic_index": false,
@@ -16503,19 +16510,23 @@
       "period": null,
       "era_id": null,
       "period_name": null,
-      "source_created_date": "2025-07-12"
+      "source_created_date": "2025-07-12",
+      "needs_url": false,
+      "purpose": "promotional"
     },
     {
       "media_id": "MEDIA-0195",
       "system_id": "lo3rwang",
       "primary_loc": "LOC5",
-      "related_locs": [],
-      "media_type": "instagram_reels_unresolved",
+      "related_locs": [
+        "LOC1"
+      ],
+      "media_type": "instagram_reel",
       "title": "你最近卡關了嗎？給你一些突破建議！#月之符文 #直覺選一張 #心靈指引 #療癒文字 #靈性感知 #每日占卜 #能量牌卡",
       "linked_song_id": null,
       "linked_work_id": null,
       "platform": "instagram",
-      "url": null,
+      "url": "https://www.instagram.com/reel/DMA9yDAzeRK/",
       "preview_duration_seconds": null,
       "metrics": {
         "plays": null
@@ -16525,6 +16536,11 @@
           "source_type": "instagram_media_id",
           "source_id": "18018479150721730",
           "note": null
+        },
+        {
+          "source_type": "instagram_url",
+          "source_id": "https://www.instagram.com/reel/DMA9yDAzeRK/",
+          "note": "public Reel URL confirmed by author"
         }
       ],
       "linked_to_semantic_index": false,
@@ -16564,7 +16580,9 @@
       "period": null,
       "era_id": null,
       "period_name": null,
-      "source_created_date": "2025-07-12"
+      "source_created_date": "2025-07-12",
+      "needs_url": false,
+      "purpose": "promotional"
     },
     {
       "media_id": "MEDIA-0196",
