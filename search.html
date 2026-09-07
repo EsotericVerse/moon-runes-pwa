@@ -226,12 +226,12 @@
         {q:'政德風',title:'政德風',desc:'方法論 · 風格演變'}
       ],
       scenario_event:[
-        {q:'自我懷疑',title:'自我懷疑',desc:'LOC2 · 情境事件'},
-        {q:'合作',title:'合作',desc:'LOC2 · 情境事件'},
-        {q:'重建關係',title:'重建關係',desc:'LOC2 · 情境事件'},
-        {q:'資源不足',title:'資源不足',desc:'LOC2 · 情境事件'},
-        {q:'選擇',title:'選擇',desc:'LOC2 · 情境事件'},
-        {q:'未知來信',title:'未知來信',desc:'LOC2 · 情境事件'}
+        {q:'自我懷疑',title:'自我懷疑',desc:'脈絡 · 情境事件'},
+        {q:'合作',title:'合作',desc:'脈絡 · 情境事件'},
+        {q:'重建關係',title:'重建關係',desc:'脈絡 · 情境事件'},
+        {q:'資源不足',title:'資源不足',desc:'脈絡 · 情境事件'},
+        {q:'選擇',title:'選擇',desc:'脈絡 · 情境事件'},
+        {q:'未知來信',title:'未知來信',desc:'脈絡 · 情境事件'}
       ],
       knowledge:[
         {q:'LOC 是什麼',title:'LOC 是什麼',desc:'演算法（知識庫） · 系統知識'},
@@ -710,10 +710,10 @@
       works:{loc:'自創歌曲(Suno)',label:'音樂／歌詞',desc:'一般歌曲與歌詞；有明確符文延伸者投影到符文體系'},
       textworks:{loc:'文字創作',label:'文字創作',desc:'一般小說、文章與作者文字；有明確符文延伸者投影到符文體系'},
       media:{loc:'多媒體創作',label:'符文體系',desc:'符文延伸為圖像、影音、知識圖或其他多媒體表達'},
-      governance:{loc:'方法論',label:'符文演算',desc:'Grammar、治理解牌方式、月相交互與正反向符文治理等方法論'},
+      governance:{loc:'方法論',label:'符文演算',desc:'Grammar、治理解牌方式、月相交互與正反向符文演算等方法論'},
       loc4_articles:{loc:'文字創作／方法論',label:'文字／方法文章',desc:'作品原文與方法分析分開呈現'},
       knowledge:{loc:'演算法（知識庫）',label:'符文演算',desc:'符文 Grammar、方法、規格與可檢索知識'},
-      timeline:{loc:'文化哲學（時間／趨勢分析）',label:'符文演化',desc:'符文跨時間、ERA、事件與趨勢的演變'},
+      timeline:{loc:'文學演化（時間／趨勢分析）',label:'符文演化',desc:'符文跨時間、ERA、事件與趨勢的演變'},
       relationships:{loc:'跨分類',label:'符文脈絡',desc:'符文從語意種子延伸到作品、方法、媒體與時期的關係'},
       text:{loc:'文字創作',label:'文字創作',desc:'對外統一為文字創作；來源平台另作來源標示'}
     };
@@ -815,7 +815,7 @@
         const knowledge=(g.knowledge||[]).filter(item=>{
           const p=item?.payload||{};
           const hay=[item?.title,item?.summary,item?.result_id,p?.title,p?.summary,p?.retrieval_text,p?.description,...(p?.keywords||[])].filter(Boolean).join(' ');
-          return /Grammar|治理解牌方式|月相交互|Reverse|反向符文治理|正向符文治理|OW3gs|雙卡|三卡|五卡|源.?轉.?合|解牌方法|判讀方法/i.test(hay);
+          return /Grammar|治理解牌方式|月相交互|Reverse|反向符文演算|正向符文演算|OW3gs|雙卡|三卡|五卡|源.?轉.?合|解牌方法|判讀方法/i.test(hay);
         });
         return {knowledge,governance:(g.governance||[]).filter(hasRuneRelation)};
       }
@@ -832,7 +832,7 @@
           const p=item?.payload||{};
           const hay=[item?.title,item?.summary,item?.result_id,p?.title,p?.summary,p?.retrieval_text,p?.description,...(p?.keywords||[])].filter(Boolean).join(' ');
           const runeRelated=hasRuneRelation(item)||/月之符文|月符|符文|rune/i.test(hay);
-          const method=/Grammar|治理解牌方式|月相交互|Reverse|反向符文治理|正向符文治理|OW3gs|雙卡|三卡|五卡|解牌方法|判讀方法/i.test(hay);
+          const method=/Grammar|治理解牌方式|月相交互|Reverse|反向符文演算|正向符文演算|OW3gs|雙卡|三卡|五卡|解牌方法|判讀方法/i.test(hay);
           return runeRelated&&!method;
         });
         return {
