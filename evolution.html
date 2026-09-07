@@ -74,7 +74,7 @@ Promise.all([
   const eras=[...(eraData.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
   const current=eras.find(e=>e.status==='current')||eras[eras.length-1];
   $('#eraCount').textContent=eras.length||'0'; $('#eraCurrent').textContent=current?.period||'—'; $('#eraStart').textContent=current?.start_date||'—';
-  $('#eraTimeline').innerHTML=eras.map(e=>`<article class="era ${e.status==='current'?'current':''}"><div class="era-head"><strong>${esc(e.display_label||((e.period||'')+'｜'+(e.name||'')))}</strong><small>${esc(e.start_date||'—')} ～ ${esc(e.end_date||'現在')}</small></div><p>${esc(e.description||'')}</p></article>`).join('')||'<div class="empty">尚無 ERA。</div>';
+  $('#eraTimeline').innerHTML=eras.map(e=>`<article class="era ${e.status==='current'?'current':''}"><div class="era-head"><strong>${esc(e.display_label||((e.period||'')+'｜'+(e.name||'')))}</strong><small>${esc(e.start_date||'—')} ～ ${esc(e.end_date||'現在')}</small></div><p>${esc(e.description||'')}</p></article>`).join('')||'<div class="empty">尚無時期資料。</div>';
   const m3=new Map((loc3.periods||[]).map(x=>[String(x.period||''),x]));
   const m6=new Map((loc6.periods||[]).map(x=>[String(x.period||''),x]));
   $('#trendGrid').innerHTML=eras.map(e=>{
