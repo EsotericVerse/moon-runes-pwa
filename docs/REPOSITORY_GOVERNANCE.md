@@ -19,10 +19,12 @@ moon-runes-pwa/
 │  └─ json/
 │     ├─ core/               # stable runtime projections of core rune data
 │     ├─ registries/         # current cross-LOC Registry / Schema / Policy
+│     ├─ sources/            # governed first-party/imported source corpora
 │     ├─ search/             # query/index datasets grouped by domain
-│     ├─ generated/          # reproducible generated indexes / analysis / shards
+│     ├─ generated/          # reproducible generated indexes / analysis / summaries
 │     ├─ archive/            # historical data not loaded by current runtime
-│     └─ experimental/       # experimental JSON datasets
+│     ├─ experimental/       # experimental JSON datasets
+│     └─ inbox/              # newly imported JSON awaiting governance/intake
 ├─ docs/
 │  ├─ methodology/           # historical methodology / naming documents
 │  └─ ...                    # current KM / Governance / tutorials / published docs
@@ -53,6 +55,9 @@ The highest rune mother source remains `LunaRune64.xlsx`; core JSON does not sup
 ### registries
 Current structured governance/relationship/system records shared across LOC domains.
 
+### sources
+Governed primary/source corpora after import normalization. These records preserve provenance and are not analysis output.
+
 ### search
 Datasets directly loaded by retrieval modules. Domain subdirectories prevent FAQ, LOC3 and later indexes from becoming one flat bucket.
 
@@ -64,6 +69,9 @@ Historical versions retained for provenance. Runtime must not silently load arch
 
 ### experimental
 Research datasets used by `engine/`. Experimental data cannot be promoted to current runtime merely by being present in the repository.
+
+### inbox
+Newly captured or uploaded JSON waiting for validation, classification and promotion. Inbox data is not Canon and may be ephemeral on deployments unless persisted.
 
 ## 4. Configuration JSON exception
 
@@ -78,7 +86,7 @@ The rule is **centralize data JSON**, not “move every .json extension blindly.
 
 ## 5. Path contract
 
-Python API code must use `card_api/paths.py` for current core/registry/search/generated paths rather than rebuilding path strings in each module.
+Python API code must use `card_api/paths.py` for current core/registry/source/search/generated/archive/experimental/inbox paths rather than rebuilding path strings in each module.
 
 Browser-visible paths use the public repository path directly, e.g.:
 
