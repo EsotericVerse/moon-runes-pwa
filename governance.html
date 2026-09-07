@@ -29,112 +29,135 @@ p{margin:.8rem 0}ul{padding-left:1.35rem}.eyebrow{font-size:.82rem;letter-spacin
   </aside>
   <main class="workspace-main">
     <section class="governance-view" id="governanceView"><article>
-<div class="eyebrow">Governance · Public Knowledge Article</div>
+<div class="eyebrow">Governance · Canonical Public View</div>
 <h1>治理</h1>
-<p class="lead">治理不是替內容加上一層限制，而是讓語言、規則、資料與作品在長期使用中保持一致、可追溯、可修正與可延續。</p>
+<p class="lead">治理負責讓語言、資料、規則與作品在長期使用中保持一致、可追溯、可修正與可延續。穩定的是框架，不是語言。</p>
 
-<h2>一、治理是什麼</h2>
-<p>治理處理的是「系統如何做決定，以及決定之後如何保持一致」。它不只回答某個詞是什麼意思，也要回答：誰有權修改、什麼資料優先、同一概念出現衝突時採用哪一個版本、哪些名稱可以對外使用、哪些規則只能作為內部識別，以及變更之後哪些頁面與資料需要同步。</p>
-<p>因此，治理不是額外附加的說明，而是系統能否長期運作的基礎。沒有治理，同一個詞可能在不同頁面有不同定義；同一份資料可能被複製成多份互相矛盾的版本；一次局部修改也可能破壞搜尋、Graph、抽牌或文件之間的關係。</p>
+<h2>一、治理定位</h2>
+<p>LOC 是語言系統框架，不是教義，也不要求使用者接受特定人生觀。治理處理的是 representation、relationship、scope、lifecycle、provenance、rights 與 boundary：誰負責什麼、資料從哪裡來、哪些內容可以公開、變更如何留下歷史，以及衝突如何被處理。</p>
+<p><strong>治理觀點可以不同，但邊界、權責、來源與歷史不能含糊。</strong></p>
 
-<h2>二、治理規則處理什麼</h2>
+<h2>二、兩種治理</h2>
+<h3>System Governance</h3>
+<ul><li>資料權責與母資料優先序。</li><li>命名、版本、來源與 Canon 狀態。</li><li>功能邊界與跨域關係。</li><li>公開、隱私、權利與 publication gate。</li><li>異議、review、supersede、withdraw 與歷史留痕。</li></ul>
+<h3>Personal Governance</h3>
+<p>個人可以用 LOC 回顧自己的語言、價值、界線、選擇與責任，形成自我治理。這是可被分享與比較的方法，但不會自動變成所有使用者必須採用的規則。</p>
+<p><strong>分享方法，不輸出服從。</strong></p>
+
+<h2>三、核心原則</h2>
 <ul>
-<li><strong>命名治理：</strong>固定正式名稱、簡稱、公開名稱與內部識別，避免同一概念被反覆改名。</li>
-<li><strong>資料權責：</strong>指定母資料、衍生資料與展示資料的優先順序，避免多份來源互相污染。</li>
-<li><strong>版本治理：</strong>區分現行規則、歷史版本、Alpha 草稿與已廢止內容。</li>
-<li><strong>功能邊界：</strong>確認每個頁面與功能負責什麼，不讓搜尋、脈絡、抽牌、推演等功能互相侵入。</li>
-<li><strong>公開治理：</strong>決定哪些內容可以直接展示、哪些只提供片段、哪些只保留 metadata 或內部使用。</li>
-<li><strong>變更同步：</strong>一項核心規則改動後，必須檢查相關 HTML、JS、JSON、KM、FAQ 與搜尋索引是否需要同步。</li>
+<li><strong>中立：</strong>不預設政治、宗教、文化、道德或個人價值為唯一正解。</li>
+<li><strong>尊重：</strong>不同意不等於錯誤；異議進入 review，而不是直接刪除。</li>
+<li><strong>界與域：</strong>明確定義 scope、ownership、permission、responsibility 與交界。</li>
+<li><strong>身分平等：</strong>職稱、地位、信仰或角色不會自動取得更高真值。</li>
+<li><strong>脈絡適用：</strong>舊版本不等於錯，新版本也不等於永恆正確。</li>
+<li><strong>多重描述：</strong>同一節點可以存在不同 interpretation 與 relation。</li>
+<li><strong>可追溯：</strong>新增、修改、刪除、異議、發布與撤回都應留下歷史。</li>
+<li><strong>Evidence before Canon：</strong>AI 推論、相似度或單一資料點不能直接升格 Canon。</li>
+<li><strong>第一人稱經驗權：</strong>人生事件與自身狀態以本人確認優先於系統推測。</li>
 </ul>
 
-<h2>三、為什麼需要治理文件</h2>
-<p>治理如果只存在於作者腦中，系統就無法穩定延續。治理文件的功能，是把已經做出的判斷寫成可查閱的依據，讓未來的開發、整理、搜尋與內容生成都有一致的參考基準。</p>
-<p>它至少有四個必要性：</p>
+<h2>四、版本與歷史完整性</h2>
+<p>LOC 採近似 append-only 的歷史治理：原始事件與原始語句保留；後續 interpretation 可以修正、取代或標記為 historical / superseded，但不反向改寫原始證據。</p>
+<p><strong>原始紀錄 → interpretation v1 → interpretation v2 / dispute / supersede → Current View</strong></p>
+<ul><li>AI rewrite 不得冒充歷史原文。</li><li>Delete 預設是從 active use 移除，不代表歷史消失。</li><li>現行規則可以更新，但舊版本需保留可追溯關係。</li></ul>
+
+<h2>五、Create / Update / Delete</h2>
+<ul><li><strong>Create：</strong>保存建立者、時間、來源、權責與 initial status。</li><li><strong>Update：</strong>保存 before / after、理由、證據、actor 與版本關係。</li><li><strong>Delete：</strong>預設轉為 archived / tombstoned 等治理狀態，而不是靜默抹除。</li></ul>
+
+<h2>六、治理生命週期</h2>
+<p><strong>Propose / Create → Review → Rights / Evidence / Boundary Check → Accept / Publish → Active → Dispute / Change Request → Re-review → Keep / Amend / Alternative / Restrict / Withdraw / Supersede / Tombstone</strong></p>
+<p>治理狀態描述的是 evidence 與 lifecycle，不是思想對錯。</p>
+
+<h2>七、資料與功能權責</h2>
+<p>核心模型是：<strong>Authority → Registry → Reference → Consumer</strong>。母資料與權威來源優先於衍生檔與展示層；跨域只能 reference、consume 或 propose change，不直接覆寫另一個 domain 的 authoritative record。</p>
+<ul><li>原始作者文字與作品本體保留在原始資料責任區。</li><li>治理、價值觀、政德風、style-state 與治理 interpretation 由治理層承接。</li><li>Search、Graph、推演可以消費治理資料，但不能反向成為治理權威。</li><li>公開 UI 不需要反覆暴露內部 LOC 編號；編號主要作為資料治理識別。</li></ul>
+
+<h2>八、Relation / Graph 治理</h2>
+<ul><li>semantic similarity 只能選 seed，不能自行創造 canonical edge。</li><li>relation 必須保留 source、target、type、direction、source refs 與 evidence status。</li><li>不同 relation 可以並存；錯誤 relation 應修改、redirect、dispute 或 withdraw，而不是抹除歷史。</li><li>private relation 不因同步而自動公開。</li><li>Graph node 是權威資料的 reference，不反向取代原始來源。</li></ul>
+
+<h2>九、月之符文治理</h2>
+<p>月之符文的核心語義與 Grammar 以母資料為最高優先來源。符文提供語言，不提供權威；抽牌提供入口，判讀仍需回到問題脈絡與現實證據。</p>
 <ul>
-<li><strong>避免回歸：</strong>已修正過的名稱、規則與架構，不應在日後整理時又被舊資料帶回來。</li>
-<li><strong>降低維護成本：</strong>遇到衝突時先查治理規則，而不是每次重新討論整個系統。</li>
-<li><strong>支援跨功能一致性：</strong>同一概念在網站、搜尋、Graph、文件與資料庫中應有一致的定義與責任邊界。</li>
-<li><strong>保留決策脈絡：</strong>治理文件不只記「現在是什麼」，也要能理解「為什麼改成現在這樣」。</li>
+<li>單卡：符文本義 + 卡牌方向 + 月相交互。</li>
+<li>雙卡：因 + 果 + 月相交互。</li>
+<li>三卡：源 + 轉 + 合 + 月相交互。</li>
+<li>五卡：過去 + 現在 + 未來顯化 + 周圍環境 + 自己心境 + 月相交互；不是 2+3 拼接。</li>
+<li>OW3gs：先讀 7–11 今模組，再回看 1–6 古模組，最後套月相交互。</li>
+<li>符文交互限定沙盒；月相交互只作低權重時間修飾。</li>
+<li>醫療、法律、工作、合約、金錢與他人意願等現實事項，以現實證據與程序優先。</li>
 </ul>
 
-<h2>四、治理的基本原則</h2>
-<ul>
-<li>現行明確決定優先於歷史草稿。</li>
-<li>母資料優先於衍生檔與展示層。</li>
-<li>公開名稱以使用者可理解為優先，內部編號不必反覆暴露。</li>
-<li>功能應各自有清楚責任，不因方便而重複實作相同邏輯。</li>
-<li>可以刪除重複結構，但不能因簡化而破壞既有功能。</li>
-<li>資料可以被重新整理，但需要保留可追溯性與來源關係。</li>
-<li>治理不是禁止改動；治理是讓改動有依據、有範圍、有同步規則。</li>
-</ul>
+<h2>十、內容權利、隱私與公開</h2>
+<p>資料能被匯入，不代表能被公開；能被分析，也不等於能被全文展示或 bulk export。</p>
+<p><strong>公開最小條件：</strong>ownership / permission 有效、visibility = public、rights_status = cleared。</p>
+<ul><li>私人通訊、未授權第三方內容、review_required 資料不得自動公開。</li><li>Public Browse 只提供 preview；Public Search 只提供與查詢直接相關的有限結果。</li><li>完整第一方 corpus 不應透過匿名公開端點整批交付。</li><li>display policy 分為 snippet / full / metadata_only。</li><li>搜尋、分類、Graph、RAG 與推演可以在授權範圍內使用完整內容，但展示層仍受公開規則限制。</li></ul>
 
-<h2>五、治理與政德風</h2>
-<p>政德風是治理最直接的個人語言實作之一。它不是單純文體，而是長期把感受、經驗、價值判斷、界線、責任與選擇整理成可重複使用的語言方式。</p>
-<p>因此，這個頁面同時承接兩件事：前半部保存治理原則與治理文件；後半部記錄政德風如何在作品與生活文字中逐步形成「治理自己」的語言。</p>
+<h2>十一、自我治理</h2>
+<p>自我治理不是道德審判，也不是把目前版本變成永恆正解。</p>
+<p><strong>回顧 → 比較 → 發現變化 → 理解當時脈絡 → 辨認自己的域與他人的域 → 修正 → 留痕 → 承擔選擇 → 前進</strong></p>
+<p><strong>拿過去的自己當資料，不拿過去的自己當枷鎖。</strong></p>
 
-</article></section>
-    <section class="governance-view" id="styleView" hidden><article><h2>六、政德風摘要</h2>
-<p>政德風不是固定文體，也不是單純的語錄集合。它是王政德長期作品、生活紀錄、歌曲與文章中逐步形成的個人語言系統表現。其核心特徵，是在感性經驗與理性論述之間擺盪，並隨人生階段逐漸加入界線、責任、取捨、主權與自我治理。</p>
-<p>從資料結構來看，政德風的證據分散在歌曲、文章、生活文字、Reels、多媒體與 ERA 時間脈絡之中；治理的工作，是把這些跨媒介材料重新整理成可以比較、追蹤與再利用的語言特徵。</p>
-<h2>七、兩個長期並存的核心：理性與感性</h2>
-<p>政德風長期存在兩種明顯語言狀態。</p>
-<p>第一種是感性書寫。它從個人經驗、身體感受、等待、失落、孤獨、愛與希望出發，經常使用月光、微光、風、夜晚、道路、月台等意象，讓情緒透過畫面與節奏流動。</p>
-<p>第二種是理性書寫。它不是描述「我有什麼感覺」，而是直接提出命題，例如關係需要互動、責任有其界線、存在不需要辯解、逃避也是面對的一種。這類文字後來大量進入歌曲，形成一批近似「文章被音樂化」的作品。</p>
-<p>因此，政德風不能只用情緒分類理解。完整分析至少要同時觀察 Affect、Reasoning / Proposition、State、Hope / Resolution 四個語意層。</p>
-<h2>八、歌曲中的三種論述方向</h2>
-<p>在理性歌曲中，又可以進一步區分三種方向。</p>
-<h3>思辨論述型</h3>
-<p>面向問題或世界本身，核心是理解、判斷、重框與提出觀點。</p>
-<p>典型結構是：</p>
-<p>「這件事到底是什麼？」 「這個關係為什麼會變成這樣？」 「某個概念是否可以用另一種方式理解？」</p>
-<h3>治理宣言型</h3>
-<p>面向自己，核心是自省、自我規範、責任、界線、取捨與行動方向。</p>
-<p>它不是單純自我檢討，而是：</p>
-<p>看見問題 → 確認責任 → 建立界線 → 做出選擇 → 規定自己接下來怎麼做。</p>
-<h3>勸戒論述型</h3>
-<p>面向他人或群體，核心是提醒、勸告、警告、責任與後果。</p>
-<p>它和治理宣言型最大的差異，在於語意方向不同：前者治理自己，後者向外提出規範性判斷。</p>
-<h2>九、狀態紀錄與希望尾巴</h2>
-<p>政德風還有一類特殊作品，是作者用歌曲記錄自己自述的發作、身心狀態或意識狀態。這些作品不宜單純視為情緒歌，也不應被誤判成符文歌曲。</p>
-<p>其資料功能比較接近：</p>
-<p>狀態發生 → 描述感受與知覺 → 留下紀錄 → 尋找恢復或希望的尾端。</p>
-<p>這使歌曲 corpus 同時保存情緒史、思想史、狀態史與語言治理史。</p>
-<h2>十、從 ERA 看風格變化</h2>
-<p>政德風的時間變化以 ERA 為主要座標。</p>
-<p>早期作品較常從感受出發，以月光、微光、孤獨與等待建立語言辨識度。中期開始增加大量現實判斷、界線、關係規則與存在命題。之後語言逐步從「描述我受到什麼」轉向「我怎麼處理、怎麼選、怎麼治理自己」。</p>
-<p>到了「自由的月／治理自己」階段，核心不再只是取得自由，而是自由之後如何管理過去、未竟之事、責任、界線與未來航向。</p>
-<p>因此目前政德風最重要的演變，可以概括為：</p>
-<p><strong>感受 → 描述 → 理解 → 判斷 → 建立界線 → 自我治理。</strong></p>
-<h2>十一、跨媒介關係也是政德風證據</h2>
-<p>政德風不只存在於單一作品。</p>
-<p>例如《已讀不回》先以歌曲形成語意核心，再延伸為六章文章，並另有 Reels。這種關係證明，同一個概念可以由短歌詞擴寫成長篇文字，再轉成視聽作品。</p>
-<p>因此治理分析不能只問「這句話是什麼風格」，還要觀察：</p>
-<ul>
-<li>同一概念如何跨歌曲、文章與多媒體重寫；</li>
-<li>同一觀點如何在不同 ERA 被重新定義；</li>
-<li>短句如何發展成論述；</li>
-<li>情緒如何逐步被整理成治理語言。</li>
-</ul>
-<p>這些關係由知識管理與 Search 統整呈現，而作品本身仍由各自的資料來源保存。</p>
-<h2>十二、治理頁的現行角色</h2>
-<p>治理頁的核心是保存並解析：</p>
-<ul>
-<li>政德風的治理原則；</li>
-<li>句型、語氣與價值判準；</li>
-<li>歌曲與文章中的命題；</li>
-<li>ERA 間的風格差異；</li>
-<li>跨媒介語言演化的意義。</li>
-</ul>
-<p>對使用者而言，治理頁提供的是規則與方法的主入口；若要追查某一個具體概念或作品，則可在 <strong>LOC 搜尋引擎</strong>輸入「政德風」、「界線」、「治理自己」或作品名稱，查看歌曲、文章、多媒體、知識文件、ERA 與關係證據如何共同形成同一個語言主題。</p>
-<h2>十三、可操作的語意時間線</h2>
-<p>Facebook 長期文字紀錄已開始轉成可互動的 LOC 語意時間線。頁面公開的只有聚合統計；私人原文可由使用者自行在瀏覽器本機載入，資料不會上傳。</p>
-<p>這個介面讓「語言演變」不再只是一次性的分析報告，而可以直接切換概念、查看年度趨勢、比較不同時期語境，並以本機 corpus 搜尋代表原文。</p>
-<p><a class="back" href="facebook-timeline.html">開啟 Facebook Semantic Timeline →</a></p>
-<h2>結論</h2>
-<p>政德風不是「某一種寫法」，而是一個持續演化的個人語言紀錄。</p>
-<p>它可以非常感性，也可以非常理性；可以記錄混亂，也可以整理規則；可以只是月光下的一句感受，也可以發展成一篇文章、一首論述歌曲，甚至成為一套自我治理方式。</p>
-<p>治理所保存的，就是這些語言如何從經驗中形成、如何被整理成規則、如何改變，以及最後如何被重新使用。</p>
-<a class="back" href="search.html?q=%E6%94%BF%E5%BE%B7%E9%A2%A8">← 回到 LOC Search</a>
+<h2>十二、治理語言的變化</h2>
+<p>治理語言目前可觀察到這條轉移：</p>
+<p><strong>外部劇本／防衛 → 權責辨識 → 界線與位置 → 等待、重建與接受未知 → 界線內化 → 自由與選擇 → 自我治理、收尾與航向</strong></p>
+<p>這不是「早期錯、後期對」，而是治理焦點與語彙在時間中的變化。歷史使用過的「底線」保留；現行治理更偏向「界／域／domain boundary／scope／ownership／permission／responsibility」。</p>
+
+<h2>十三、治理完成的判定</h2>
+<p>任何功能要宣稱治理完成，至少要回答四層：</p>
+<p><strong>Principle → Policy → Executable Control → Evidence / Audit Trail</strong></p>
+<ul><li>是否有明確 domain / ownership。</li><li>是否支援 Create / Update / Delete。</li><li>是否保留 before / after / history。</li><li>是否有 dispute / review。</li><li>是否有 rights / publication gate。</li><li>是否有 provenance。</li><li>是否能 supersede 而不重寫歷史。</li><li>是否把推論與 Canon 分離。</li></ul>
+
+<h2>十四、治理文件為什麼獨立存在</h2>
+<p>治理是特殊層。不是每一個功能都因為有資料或統計就應新增獨立頁面；治理需要獨立頁，是因為它本身負責規則、權責、版本、邊界、變更依據與可稽核性。</p>
+<p>governance.html 因此是治理的正式公開入口。治理相關正文以此頁為主；Markdown 只保留確實需要的技術規格、schema、API、資料結構或機器治理文件。</p>
+</article></section><section class="governance-view" id="styleView" hidden><article>
+<div class="eyebrow">Zhengde Style · Fixed Governance Document</div>
+<h1>政德風</h1>
+<p class="lead">政德風是已整理完成的固定說明文件。它記錄王政德如何把經驗、感受、判斷、界線、責任與選擇逐步整理成可再次使用的語言。</p>
+
+<h2>一、核心公式</h2>
+<p><strong>把經驗整理成可以再次使用的語言。</strong></p>
+<p>看見情境 → 拆解預設 → 確認權責 → 建立界線 → 保留選擇 → 做出取捨 → 回到可治理的日常。</p>
+
+<h2>二、治理內容與風格狀態分開</h2>
+<h3>Governance Content</h3>
+<p>回答「相信什麼、怎麼判斷、界線在哪裡」：價值判準、主權、權責、尊重、界線、自我治理、收尾與航向。</p>
+<h3>Style State</h3>
+<p>回答「同一個意思，在某個時期會怎麼說」：句子長短、感性／理性比例、意象密度、反問與反轉、克制度、外部拆解或內部治理。</p>
+<p>價值可能延續，但說法會隨時期改變，因此兩者不能混成同一資料。</p>
+
+<h2>三、長期並存的理性與感性</h2>
+<p>感性書寫多從個人經驗、身體感受、等待、失落、孤獨、愛與希望出發，常使用月光、微光、風、夜晚、道路、月台等意象。</p>
+<p>理性書寫則直接提出命題、界線、責任與判斷。這些文字後來也大量進入歌曲，使部分作品形成近似「文章被音樂化」的表達。</p>
+
+<h2>四、三種論述方向</h2>
+<ul><li><strong>思辨論述型：</strong>理解問題、重框、提出觀點。</li><li><strong>治理宣言型：</strong>面向自己，從看見問題走到確認責任、建立界線、做出選擇。</li><li><strong>勸戒論述型：</strong>面向他人或群體，提出提醒、責任與後果。</li></ul>
+
+<h2>五、核心治理模組</h2>
+<ul><li><strong>價值與判準：</strong>用自己的價值標準判斷，而不是因權威或群體劇本直接接受。</li><li><strong>主權與選擇：</strong>保留回答、拒絕、失敗、修改與重新決定的權利。</li><li><strong>權責與界線：</strong>先確認位置、責任與義務，再決定是否介入。</li><li><strong>防衛而不失控：</strong>必要時停止被侵入、被定義或被拖進不屬於自己的責任。</li><li><strong>幽默與反轉：</strong>以短句、反問、雙關或現實落差快速重設語境。</li></ul>
+
+<h2>六、代表治理句</h2>
+<ul><li>「價值觀的價值。」</li><li>「我允許錯誤發生，只要錯的有價值。」</li><li>「免錢的最貴。」</li><li>「我不跟你走劇本。」</li><li>「你在玩話術，我在改規則。」</li><li>「我不是要當王，我只要系統能跑。」</li><li>「慈悲不是投降。」</li></ul>
+
+<h2>七、現行階段：治理自己</h2>
+<p>目前重心已從「取得自由」移到「自由之後如何治理自由」：整理過往、完成未竟之事、確認責任、斷捨離、重新歸檔並選擇下一段航向。</p>
+<p><strong>從「拆別人的劇本」逐漸移向「治理自己的日子」。</strong></p>
+
+<h2>八、ERA 與風格變化</h2>
+<p>政德風的主要時間座標是 ERA，而不是直接用年齡切分。年齡只能作為 ERA 與歷史語料之上的次級 View。</p>
+<p>目前可概括為：探索與試錯 → 感性／關係敘事 → 界線與治理轉折 → 等待與重建 → 界線整合 → 自由與前行 → 自我治理。</p>
+
+<h2>九、跨媒介證據</h2>
+<p>政德風不只存在於單一文章。歌曲、文章、生活文字、Reels、多媒體與 ERA 都可能成為證據。同一概念可以由短句形成歌曲，再擴寫為文章，最後轉成影音或其他表達。</p>
+<p>原始文本仍屬原始資料來源；治理頁只保存經確認的治理與風格 interpretation，不反向覆寫原文。</p>
+
+<h2>十、政德風治理規則</h2>
+<ol><li>原始語句保留原文，不以後期說法覆寫。</li><li>代表句與後設解讀分開保存。</li><li>AI 重寫不能冒充歷史原文。</li><li>風格推論需要來源與 confidence。</li><li>不因一句話「很像政德風」就自動升格為核心原則。</li><li>現行階段可以更新，歷史階段不得被新版本抹除。</li><li>自我治理是版本管理，不是道德審判。</li></ol>
+
+<h2>十一、治理頁的角色</h2>
+<p>政德風是治理主頁中的固定個人治理文件；搜尋「政德風」時應優先顯示這份正式說明，再列歌曲、Threads、文章與其他語料作為證據。</p>
+<p><a class="back" href="search.html?q=%E6%94%BF%E5%BE%B7%E9%A2%A8">查看政德風相關證據 →</a></p>
 </article></section>
   </main>
 </div>
