@@ -363,7 +363,7 @@
     }
     function runeSongCard(r){
       const p=r.payload||{},runes=p.runes||[];
-      const methodLabel={rune_song:'符文歌曲',special_rune_song:'特別製作',exact_11_scan:'11符掃描關聯'}[p.generation_method]||p.generation_method||'';
+      const methodLabel={rune_song:'符文歌曲',special_rune_song:'特別製作',exact_11_scan:'符文歌曲'}[p.generation_method]||p.generation_method||'';
       return `<article class="card">
         <div class="meta"><span class="pill">${esc(p.song_type_label||'符文歌曲')}</span>${methodLabel?`<span class="pill">${esc(methodLabel)}</span>`:''}<span class="pill">${esc(p.rune_count||runes.length)} 符</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}</div>
         <h3>${esc(r.title||r.result_id)}</h3>
