@@ -296,8 +296,7 @@ LOC6 承接治理原則、價值觀句型與政德風。
 | `docs/LOC_Canon.docx` | LOC Canon 0.5r |
 | `docs/64LunaRune.docx` | 命運句語法圖鑑 |
 | `docs/LunarRunesCardCut.pdf` | 紙本符文卡輸出 |
-| `docs/LOC7_KM.md` | Knowledge Management 主文件 |
-| `docs/JSON_DATA_MAP.md` | JSON 角色與同步方向 |
+| `governance.html` | 系統、資料與 Repository 治理統一入口 |
 | `COPYLEFT.md` | Copyleft 治理說明 |
 
 ---
@@ -308,7 +307,7 @@ LOC6 承接治理原則、價值觀句型與政德風。
 moon-runes-pwa/
 ├── card_api/            # FastAPI / Search
 ├── data/json/           # core / registries / search / generated / archive / experimental
-├── docs/                # Canon、KM、治理與技術文件
+├── docs/                # Canon、列印／交換與必要技術文件
 ├── engine/              # 語意與向量實驗
 ├── js/                  # 前端邏輯
 ├── css/                 # 前端樣式
