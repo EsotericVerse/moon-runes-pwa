@@ -3,6 +3,9 @@ import { rune } from "./runes64.js";
 const API = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
 const CACHE_KEY = "loc1-physical-daily-draw-cache-v1";
 const $ = s => document.querySelector(s);
+const PAGE_SIZE = 20;
+let currentPage = 1;
+let currentRows = [];
 
 function esc(value="") {
   return String(value).replace(/[&<>"']/g, ch => ({
@@ -33,22 +36,75 @@ function writeCache(rows) {
   try { localStorage.setItem(CACHE_KEY,JSON.stringify(rows)); } catch (_) {}
 }
 
+function pageNumbers(current,total){
+  const out=[];
+  const start=Math.max(1,Math.min(current-2,Math.max(1,total-4)));
+  const end=Math.min(total,Math.max(5,current+2));
+  for(let i=start;i<=end;i++) out.push(i);
+  return out;
+}
+
+function renderPagination(total){
+  const nav=$("#dailyHistoryPagination");
+  const info=$("#dailyHistoryPageInfo");
+  const pages=$("#dailyHistoryPages");
+  if(!nav||!info||!pages) return;
+
+  const totalPages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  currentPage=Math.min(Math.max(1,currentPage),totalPages);
+
+  if(total<=PAGE_SIZE){
+    nav.hidden=true;
+    pages.innerHTML="";
+    return;
+  }
+
+  const from=(currentPage-1)*PAGE_SIZE+1;
+  const to=Math.min(total,currentPage*PAGE_SIZE);
+  info.textContent=`第 ${from}–${to} 筆，共 ${total} 筆 · 第 ${currentPage} / ${totalPages} 頁`;
+
+  const nums=pageNumbers(currentPage,totalPages);
+  let html=`<button class="daily-page-btn" type="button" data-daily-page="${currentPage-1}" ${currentPage===1?"disabled":""}>上一頁</button>`;
+  if(nums[0]>1){
+    html+='<button class="daily-page-btn" type="button" data-daily-page="1">1</button>';
+    if(nums[0]>2) html+='<span class="daily-history-page-info">…</span>';
+  }
+  html+=nums.map(n=>`<button class="daily-page-btn ${n===currentPage?"active":""}" type="button" data-daily-page="${n}">${n}</button>`).join("");
+  if(nums[nums.length-1]<totalPages){
+    if(nums[nums.length-1]<totalPages-1) html+='<span class="daily-history-page-info">…</span>';
+    html+=`<button class="daily-page-btn" type="button" data-daily-page="${totalPages}">${totalPages}</button>`;
+  }
+  html+=`<button class="daily-page-btn" type="button" data-daily-page="${currentPage+1}" ${currentPage===totalPages?"disabled":""}>下一頁</button>`;
+
+  pages.innerHTML=html;
+  nav.hidden=false;
+}
+
 function render(rows) {
   const list=$("#dailyHistoryList");
   if(!list) return;
-  const sorted=rows.slice().sort((a,b)=>{
+  currentRows=rows.slice().sort((a,b)=>{
     const d=new Date(b.date)-new Date(a.date);
     return d || String(b.id).localeCompare(String(a.id));
   });
-  $("#dailyMetricCount").textContent=String(sorted.length);
-  $("#dailyMetricPrimary").textContent=String(sorted.filter(x=>x.draw_kind!=="daily_draw_supplement").length);
-  $("#dailyMetricSupplement").textContent=String(sorted.filter(x=>x.draw_kind==="daily_draw_supplement").length);
-  list.innerHTML=sorted.length?sorted.slice(0,80).map(x=>`
+
+  $("#dailyMetricCount").textContent=String(currentRows.length);
+  $("#dailyMetricPrimary").textContent=String(currentRows.filter(x=>x.draw_kind!=="daily_draw_supplement").length);
+  $("#dailyMetricSupplement").textContent=String(currentRows.filter(x=>x.draw_kind==="daily_draw_supplement").length);
+
+  const totalPages=Math.max(1,Math.ceil(currentRows.length/PAGE_SIZE));
+  currentPage=Math.min(Math.max(1,currentPage),totalPages);
+  const start=(currentPage-1)*PAGE_SIZE;
+  const pageRows=currentRows.slice(start,start+PAGE_SIZE);
+
+  list.innerHTML=pageRows.length?pageRows.map(x=>`
     <div class="daily-history-row">
       <small>${esc(x.date||"—")}</small>
       <strong>${esc(x.rune||"—")} · ${esc(x.direction||"—")}</strong>
       <small>${x.draw_kind==="daily_draw_supplement"?"補抽":"主抽"}</small>
     </div>`).join(""):'<div class="empty">尚無已儲存的實體牌紀錄。</div>';
+
+  renderPagination(currentRows.length);
 }
 
 async function loadRecords() {
@@ -133,5 +189,14 @@ window.addEventListener("DOMContentLoaded",()=>{
   populateRunes();
   $("#dailyRecordDate").value=new Date().toISOString().slice(0,10);
   form.addEventListener("submit",saveRecord);
+  $("#dailyHistoryPages")?.addEventListener("click",ev=>{
+    const btn=ev.target.closest("[data-daily-page]");
+    if(!btn||btn.disabled) return;
+    const next=Number(btn.dataset.dailyPage||1);
+    if(!Number.isFinite(next)||next<1) return;
+    currentPage=next;
+    render(currentRows);
+    $("#dailyHistoryList")?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
   loadRecords();
 });
