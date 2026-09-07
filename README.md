@@ -164,7 +164,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC1 | Lots | 66 符文籤詩、四向判讀、抽取、多符文組合、每日抽取與趨勢 |
 | LOC2 | Game / Scenario | 將符文語言放進真實情境：以雙卡因果描述狀況，並透過 Event、回應、共振與規則互動形成可處理的情境語料 |
 | LOC3 | Music | 音樂創作、微月光、政德風、符文寫歌與歌詞語意檢索 |
-| LOC4 | Writing | 文字分類、小說、角色、符文文本、世界觀與敘事創作 |
+| LOC4 | Writing | 作者文字本體：小說、文章、生活書寫、Facebook／Threads 社群生活文字、角色、符文文本、世界觀與敘事創作 |
 | LOC5 | Resonance | 圖像、聲音、文字、MV、系統圖形與跨媒體概念視覺化 |
 | LOC6 | Governance / Interpretation | 人生觀、價值觀、治理原則、政德風，以及符文組合如何被轉譯為實際文字與敘事的解析實證 |
 | LOC7 | Text Architecture / KM | 文字建築學、知識管理、檢索、關係結構與 Graph RAG 後續方向 |
@@ -177,7 +177,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC1 | 66 符文固定資料、四向內容及每張符文的獨立圖卡均已完成；抽牌、查詢與每日抽取 PWA 已實際運作，並持續發展語意解讀。 |
 | LOC2 | **LOC SP：Semantic Playground MVP v1.3 Alpha** 已完成核心循環、四大組態、八職業架構與首批 32 張事件卡，目前進入實體卡牌印製及桌面試玩驗證。 |
 | LOC3 | 已累積大量「政德風」音樂作品，並建立歌曲資料及語意檢索實作。另曾以 LOC1 的 OW3gs 十一張抽牌解釋情境，再將解讀轉化為歌詞與歌曲，形成特殊的符文寫歌方式。 |
-| LOC4 | 已建立文字分類，並完成以其為文本結構的七大篇長篇小說，全文約 22 萬字；另有其他小說與文字創作。 |
+| LOC4 | 作者文字本體層已成立：核心小說純文字 corpus 已由作者檔案庫匯入為 document-level 搜尋資料；《月語者》七篇與《錯的人：命運的錯位者》《假性單身》《男男男關係》《在你之前，在你之後》《一日情人》等核心作品可全文檢索。LOC4 同時承接 Facebook（2011-04-15～2026-09-03）與 Threads（2024-11-18～2026-09-06）的作者生活／公開文字所有權；來源 corpus 不重複搬檔，LOC6 以 reference 方式做治理與政德風分析。 |
 | LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
 | LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；Threads 公開文字 corpus 自 2024-11-18 起至 2026-09-06，現行去重基準共 **7,008 筆文字紀錄**（4,578 主貼文＋2,430 Reply）。**4,578 筆主貼文全文已完成 repository sharded index 並接入 Unified Search**；Reply 保留為 supplemental evidence。另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證。 |
 | LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢各 LOC 現有資料來源，Canonical Graph RAG 核心已完成 bounded traversal、provenance 與品質治理。另已加入 local-first Simple Text Analysis API（`/analyze/text`、`/analyze/corpus`），可在不依賴外部 LLM／Embedding API key 的情況下完成基本解析、關鍵字與分類。公開搜尋新增 `snippet / full / metadata_only` 展示治理，全文可供授權分析，但不等於全文公開。 |
@@ -207,6 +207,15 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 LunaRunes 66 �
 目前的 **MVP v1.3 Alpha** 已完成核心循環、四大組態、八職業與首批 32 張事件卡，下一階段為實體卡牌印製與桌面試玩。電子版則可進一步計算方向、狀態、連鎖、多重條件及三卡、五卡、十一卡關係。
 
 > **LOC2 是把 LOC 的語言做成可以互動、可以練習，也可以玩的形式。**
+
+### LOC4｜Writing Corpus 與生活文字
+
+LOC4 不只是一小批小說作品。它是作者「文字本體」的責任域，分成兩個互補來源：
+
+- **創作作品層**：小說、文章、符文文本、世界觀等；現行核心純文字檔已建立 document-level full-text index。
+- **生活／公開文字層**：Facebook 與 Threads 的作者文字。原始 corpus 保留在來源專用資料層，不重複複製；LOC4 擁有文字本體，LOC6 消費同一批資料做治理／政德風解讀，LOC7 負責檢索與文字建築，LOC8 負責時間、ERA 與趨勢投影。
+
+因此「作品數」不是 LOC4 的主要規模指標；作品 corpus 只是 LOC4 的高密度創作樣本，長期生活文字 corpus 才構成作者整體文字演變的主要時間基底。
 
 ### LOC6｜Threads Public Language Corpus
 
