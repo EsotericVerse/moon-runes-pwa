@@ -3959,7 +3959,7 @@
     const dailyDrawView = $('#dailyDrawView');
     const graphView = $('#graphView');
 
-    function switchView(view, trigger = null) {
+    function switchView(view, trigger = null, options = {}) {
       document.body.classList.remove('life-initial-daily');
       lifeView.hidden = view !== 'overview';
       eventTimeView.hidden = view !== 'event-time';
@@ -3985,8 +3985,12 @@
           renderGraphView();
         });
       } else if (view === 'era-trend') {
-        history.replaceState(null, '', '#era-trend');
-        loadEraRegistry();
+        history.replaceState(null, '', options.preserveHash || '#era-trend');
+        loadEraRegistry().then(() => {
+          if (options.scrollTarget) {
+            requestAnimationFrame(() => document.querySelector(options.scrollTarget)?.scrollIntoView({ behavior:'smooth', block:'start' }));
+          }
+        });
       } else if (view === 'graph') {
         history.replaceState(null, '', '#graph');
         loadGraphMetadata();
@@ -4075,6 +4079,7 @@
 
     if (location.hash === '#event-time') switchView('event-time', $('#eventTimeViewBtn'));
     else if (location.hash === '#context') switchView('context', $('#contextViewBtn'));
+    else if (location.hash === '#keyword-ranking') switchView('era-trend', $('#eraTrendViewBtn'), { preserveHash:'#keyword-ranking', scrollTarget:'#keyword-ranking' });
     else if (location.hash === '#era-trend') switchView('era-trend', $('#eraTrendViewBtn'));
     else if (location.hash === '#graph') switchView('graph', $('#graphViewBtn'));
     else if (location.hash === '#overview') switchView('overview', $('#overviewViewBtn'));
