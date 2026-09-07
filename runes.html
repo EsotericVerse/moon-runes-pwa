@@ -184,7 +184,7 @@
             <div class="basic-item"><strong>不用背卡</strong><span>先抽、先看，再需要時展開符文本義、脈絡與演算法。</span></div>
           </div>
           <div class="draw-mode-grid">
-            <a class="draw-mode-card" href="runes.html?mode=daily#daily"><strong>今天先抽一張</strong><span>從每日符文開始。</span></a>
+            <a class="draw-mode-card" href="runes.html?mode=daily#draw"><strong>今天先抽一張</strong><span>從每日符文開始。</span></a>
             <button class="draw-mode-card" type="button" data-open-view="library"><strong>查看符文資料</strong><span>瀏覽 66 符文圖鑑。</span></button>
             <a class="draw-mode-card" href="tutorial02.html"><strong>完整新手教學</strong><span>LOC Tutorial 02。</span></a>
           </div>
@@ -358,7 +358,7 @@
             <p>只負責抽牌與顯示結果。不會自動存檔，也不會改動下方統計。</p>
           </div>
           <div class="daily-actions">
-            <a class="primary" href="runes.html?mode=daily#daily">抽取每日符文</a>
+            <a class="primary" href="runes.html?mode=daily#draw">抽取每日符文</a>
           </div>
         </section>
 
@@ -398,6 +398,7 @@
           <h2>選擇抽牌數量</h2>
           <p>選擇這次要使用的抽牌方式。</p>
           <div class="draw-mode-grid">
+            <a class="draw-mode-card" href="runes.html?mode=daily#draw"><strong>每日符文</strong><span>今日節奏、提醒與月相對應；不是一般單卡解讀。</span></a>
             <a class="draw-mode-card" href="runes.html?mode=single#draw"><strong>單卡</strong><span>單一語意種子。</span></a>
             <a class="draw-mode-card" href="runes.html?mode=2card#draw"><strong>雙卡</strong><span>因 → 果。</span></a>
             <a class="draw-mode-card" href="runes.html?mode=3card#draw"><strong>三卡</strong><span>源 → 轉 → 合。</span></a>
@@ -501,7 +502,8 @@
     // 抽牌模式頁由 rune-draw.js 同時開啟等待面板與 ritual，
     // 避免先閃出預設的「選擇抽牌方式」標題。
     if(selector) selector.hidden=hasMode;
-    if(mode==='daily'||location.hash==='#daily') switchView('daily',false);
+    if(mode==='daily') switchView('draw',false);
+    else if(location.hash==='#daily') switchView('daily',false);
     else if(hasMode||location.hash==='#draw') switchView('draw',false);
     else if(location.hash==='#reference') switchView('reference',false);
     else if(location.hash==='#examples') switchView('examples',false);
