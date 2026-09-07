@@ -1,0 +1,314 @@
+{
+  "schema_version": "0.1",
+  "registry_id": "RUNE_NARRATIVE_OCCURRENCE_REGISTRY",
+  "title": "月語者正文符文出現紀錄",
+  "purpose": "記錄符文在小說正文／章節中實際出現或被使用的章節位置；與章節生成三卡分開治理。",
+  "governance": {
+    "distinct_from": [
+      "canonical_rune_definition",
+      "chapter_generation_three_runes"
+    ],
+    "rules": [
+      "本 registry 只記錄正文實際出現／使用／提及的符文。",
+      "不將正文出現視為章節抽牌或生成條件。",
+      "歷史名稱照原文保存，不自動映射到現行 66 符。",
+      "未出現在來源表的章節不推定為沒有符文，只標示為來源未記錄。"
+    ]
+  },
+  "source": {
+    "file": "符文統計Ch1.xlsx",
+    "sheet": "Sheet1",
+    "scope": "《月語者》第一篇"
+  },
+  "summary": {
+    "chapter_records": 17,
+    "distinct_rune_labels": 22,
+    "rune_occurrence_counts": {
+      "月": 5,
+      "雷": 3,
+      "夢": 3,
+      "樹": 3,
+      "水": 2,
+      "火": 2,
+      "地": 2,
+      "空": 2,
+      "星": 2,
+      "意": 2,
+      "愛": 2,
+      "暗": 2,
+      "光": 1,
+      "死": 1,
+      "花": 1,
+      "時": 1,
+      "根": 1,
+      "草": 1,
+      "葉": 1,
+      "蝕": 1,
+      "線": 1,
+      "靈": 1
+    }
+  },
+  "records": [
+    {
+      "occurrence_id": "MS-V1-OCC-001",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第二章",
+      "runes_original": [
+        "星",
+        "暗",
+        "草"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-002",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第三章",
+      "runes_original": [
+        "星",
+        "月"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-003",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第四章",
+      "runes_original": [
+        "月"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-004",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第五章",
+      "runes_original": [
+        "夢",
+        "意",
+        "樹",
+        "火"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-005",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第六章",
+      "runes_original": [
+        "愛",
+        "樹"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-006",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第七章",
+      "runes_original": [
+        "月",
+        "樹",
+        "線",
+        "花"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-007",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第十章",
+      "runes_original": [
+        "靈"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-008",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第十一章",
+      "runes_original": [
+        "暗",
+        "月"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-009",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第十三章",
+      "runes_original": [
+        "光"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-010",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第十四章",
+      "runes_original": [
+        "水"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-011",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第十五章",
+      "runes_original": [
+        "雷"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-012",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第十六章",
+      "runes_original": [
+        "夢"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-013",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第十七章",
+      "runes_original": [
+        "地",
+        "愛",
+        "火",
+        "雷"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-014",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第十八章",
+      "runes_original": [
+        "夢",
+        "意",
+        "時"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-015",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第十九章",
+      "runes_original": [
+        "死",
+        "空",
+        "蝕"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-016",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第二十二章",
+      "runes_original": [
+        "月"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    },
+    {
+      "occurrence_id": "MS-V1-OCC-017",
+      "work": "月語者",
+      "volume": 1,
+      "volume_title": "現在，下弦之卷",
+      "chapter": "第二十章",
+      "runes_original": [
+        "地",
+        "根",
+        "水",
+        "空",
+        "葉",
+        "雷"
+      ],
+      "source_file": "符文統計Ch1.xlsx",
+      "source_sheet": "Sheet1",
+      "evidence_type": "chapter_rune_occurrence",
+      "interpretation_status": "uninterpreted"
+    }
+  ]
+}
