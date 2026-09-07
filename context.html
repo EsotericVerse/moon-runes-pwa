@@ -228,26 +228,7 @@ const cEsc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'
 const cUid=()=>crypto?.randomUUID?.()||('ctx-'+Date.now()+'-'+Math.random().toString(36).slice(2));
 let contextEvents=[],contextRelations=[],contextGraph={nodes:[],edges:[]};
 
-const CONTEXT_DEFAULT_GRAPH={
-  nodes:[
-    {id:"era_微月光",label:"微月光",type:"era",date:"2026-01-15",note:"ERA 開始代表日"},
-    {id:"era_白晝之月",label:"白晝之月",type:"era",date:"2026-02-21",note:"ERA 開始代表日"},
-    {id:"concept_政德風",label:"政德風",type:"concept",date:"2026-02-03",note:"正式定義代表日"},
-    {id:"era_人生月台",label:"人生月台",type:"era",date:"2026-04-09",note:"ERA 開始代表日"},
-    {id:"era_順其自然",label:"順其自然",type:"era",date:"2026-07-04",note:"ERA 開始代表日"},
-    {id:"era_自由的風",label:"自由的風",type:"era",date:"",note:"ERA 交界日期待界定"},
-    {id:"era_自由的月",label:"自由的月",type:"era",date:"",note:"ERA 交界日期待界定"},
-    {id:"concept_月之符文",label:"月之符文",type:"concept",date:"",note:"最開始為月之符文14的形式"}
-  ],
-  edges:[
-    {source:"era_微月光",target:"era_白晝之月",type:"transitions_to"},
-    {source:"era_白晝之月",target:"era_人生月台",type:"transitions_to"},
-    {source:"era_人生月台",target:"era_順其自然",type:"transitions_to"},
-    {source:"era_順其自然",target:"era_自由的風",type:"transitions_to"},
-    {source:"era_自由的風",target:"era_自由的月",type:"transitions_to"},
-    {source:"concept_政德風",target:"era_人生月台",type:"influences"}
-  ]
-};
+
 const CONTEXT_EVENT_PAGE_SIZE=10, CONTEXT_RELATION_PAGE_SIZE=10, CONTEXT_GRAPH_PAGE_SIZE=10;
 let contextEventPage=1, contextRelationPage=1, contextGraphNodePage=1, contextGraphEdgePage=1;
 let contextEventsRemoteLoaded=false, contextRelationsRemoteLoaded=false;
@@ -362,6 +343,7 @@ async function loadContextRelations({remote=false}={}){
   if(Array.isArray(cached?.data)){
     contextRelations=cached.data;
     renderContextRelations();
+    syncDefaultGraphFromRelations();
   }else if(!remote){
     contextRelations=[];
     renderContextRelations();
@@ -379,6 +361,7 @@ async function loadContextRelations({remote=false}={}){
     contextRelationsRemoteLoaded=true;
     writeContextCache(CONTEXT_RELATION_CACHE,contextRelations);
     renderContextRelations();
+    syncDefaultGraphFromRelations();
   }catch(e){
     console.error(e);
     if(!Array.isArray(cached?.data)){
@@ -387,6 +370,29 @@ async function loadContextRelations({remote=false}={}){
     }
   }
 }
+function graphFromRelations(relations){
+  const nodesById=new Map();
+  const edges=[];
+  for(const r of relations||[]){
+    const source=String(r.source_id||'').trim();
+    const target=String(r.target_id||'').trim();
+    if(!source||!target) continue;
+    if(!nodesById.has(source)) nodesById.set(source,{id:source,label:source,type:r.source_type||'unknown'});
+    if(!nodesById.has(target)) nodesById.set(target,{id:target,label:target,type:r.target_type||'unknown',date:r.date||''});
+    else if(r.date && !nodesById.get(target).date) nodesById.get(target).date=r.date;
+    edges.push({source,target,type:r.relation_type||'related_to'});
+  }
+  return {nodes:[...nodesById.values()],edges};
+}
+function syncDefaultGraphFromRelations(){
+  if(!Array.isArray(contextRelations)||!contextRelations.length) return;
+  contextGraph=graphFromRelations(contextRelations);
+  contextGraphNodePage=1;
+  contextGraphEdgePage=1;
+  updateContextGraphFilters();
+  renderContextGraph(`Relation 資料 · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
+}
+
 function renderContextRelations(){
   const list=document.querySelector('#contextRelationList');
   if(!list)return;
@@ -478,10 +484,6 @@ document.querySelector('#contextGraphNodes')?.addEventListener('click',ev=>{cons
 document.querySelector('#contextGraphNodeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphEdgeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphReset')?.addEventListener('click',()=>{document.querySelector('#contextGraphNodeType').value='';document.querySelector('#contextGraphEdgeType').value='';renderContextGraph()});
 
 resetContextEvent();resetContextRelation();
-contextGraph=CONTEXT_DEFAULT_GRAPH;
-contextGraphNodePage=1;contextGraphEdgePage=1;
-updateContextGraphFilters();
-renderContextGraph(`預設時間脈絡 · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
 const eventCacheAtStart=readContextCache(CONTEXT_EVENT_CACHE);
 const relationCacheAtStart=readContextCache(CONTEXT_RELATION_CACHE);
 loadContextEvents({remote:!Array.isArray(eventCacheAtStart?.data)});
