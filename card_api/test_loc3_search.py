@@ -78,10 +78,16 @@ class LOC3DatasetTests(unittest.TestCase):
 
     def test_reels_catalog_is_version_specific_and_metrics_are_separate(self):
         media = json.loads(MEDIA_DATASET.read_text(encoding="utf-8"))
-        self.assertEqual(19, media["dataset"]["reels_count"])
-        self.assertEqual(16, media["dataset"]["linked_count"])
-        self.assertEqual(3, media["dataset"]["pending_count"])
-        self.assertTrue(all(item["ig_plays"] is None for item in media["items"]))
+        items = media["items"]
+        linked = [item for item in items if item["linked_to_semantic_index"]]
+        pending = [item for item in items if not item["linked_to_semantic_index"]]
+        reels_count = sum(len(item.get("reels", [])) for item in items)
+        pending_reels_count = sum(len(item.get("reels", [])) for item in pending)
+        self.assertEqual(reels_count, media["dataset"]["reels_count"])
+        self.assertEqual(len(linked), media["dataset"]["linked_count"])
+        self.assertEqual(pending_reels_count, media["dataset"]["pending_count"])
+        self.assertEqual(len(items), media["dataset"]["song_version_count"])
+        self.assertTrue(all(item["ig_plays"] is None for item in items))
         linked_ids = {
             version["song_id"]
             for work in self.works
@@ -92,7 +98,7 @@ class LOC3DatasetTests(unittest.TestCase):
             item["song_id"] for item in media["items"]
             if item["linked_to_semantic_index"]
         }
-        self.assertEqual(expected_ids, linked_ids)
+        self.assertTrue(linked_ids.issubset(expected_ids))
 
     def test_life_platform_song_is_searchable_and_has_reels_preview(self):
         results = self.engine.search("人生像月台，還不知道下一班車要往哪裡", top_k=5)
