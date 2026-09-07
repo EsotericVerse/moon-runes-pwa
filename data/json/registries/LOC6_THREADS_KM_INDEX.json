@@ -1,15 +1,16 @@
 {
-  "schema_version": "0.1",
-  "registry": "LOC6_THREADS_KM_INDEX",
+  "schema_version": "0.2",
+  "registry": "LOC4_THREADS_KM_SOURCE_INDEX",
   "status": "working",
   "source": "threads_and_replies.json",
   "source_snapshot": "2026-09-05",
-  "primary_loc": "LOC6",
+  "primary_loc": "LOC4",
   "related_locs": [
+    "LOC6",
     "LOC7",
     "LOC8"
   ],
-  "purpose": "First searchable KM tranche from Threads. Main posts are primary evidence; replies are supplemental evidence.",
+  "purpose": "Legacy representative Threads source-text/KM tranche. Raw authored Threads text is LOC4 life writing; LOC6 consumes it only as governance/Zhengde-style evidence.",
   "corpus_counts": {
     "deduplicated": 7008,
     "main_posts": 4578,
@@ -19,7 +20,7 @@
     "main_excerpt_count": 8,
     "reply_excerpt_count": 2,
     "method": "governance-seed + length + ERA-balanced representative tranche",
-    "full_corpus_import_status": "pending",
+    "full_corpus_import_status": "superseded_by_full_main_post_index",
     "searchable_article_tranche": 21,
     "updated_at": "2026-09-06"
   },
@@ -722,5 +723,8 @@
       ],
       "text": "站在高處別忘寒冷 落在低處也別心焦 真正值得治理的從來不是 別人眼中的那座座標 我還想往未知裡闖 保持一點孩子的狂 不為是非耗盡月光 也不為輸贏丟掉嚮往 潮來潮往 人來人往 我只守好自己的航道 愉快生活 盡力就好 還能探險—— 就是最好 https://suno.com/s/MeTrhUWNydfmiBcJ"
     }
-  ]
+  ],
+  "authority": "LOC4",
+  "storage_note": "Filename/path is historical and retained for compatibility. Ownership follows LOC4_LOC6_BOUNDARY_REGISTRY, not the legacy LOC6 filename.",
+  "governance": "Raw post/reply text remains LOC4. matched_terms, frequency, governance/style interpretations and other derived analyses may be LOC6/LOC7/LOC8 outputs by reference."
 }
