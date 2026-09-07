@@ -160,7 +160,9 @@
       "cross_relationship_registry": "connected",
       "source_corpus": "ready",
       "fulltext_search": "connected",
-      "life_writing_sources": "Facebook + Threads connected by reference; raw text LOC4, governance interpretation LOC6"
+      "life_writing_sources": "Facebook + Threads connected by reference; raw text LOC4, governance interpretation LOC6",
+      "creative_work_analysis": "core_novels_complete_at_work_level",
+      "moon_speaker_analysis": "7-part full-text architecture complete; chapter-level deepening can continue"
     },
     "LOC5": "media-authority-established; cross-relationship-registry-connected",
     "LOC6": {
