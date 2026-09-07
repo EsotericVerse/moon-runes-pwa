@@ -166,15 +166,15 @@ def _metrics(body: str) -> dict[str, int]:
 def _load_work_texts(repo_root: Path) -> dict[str, str]:
     manifest_path = repo_root / "data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json"
     manifest = _load_json(manifest_path)
-    rows: list[dict[str, Any]] = []
+    grouped: dict[str, list[dict[str, Any]]] = {}
     for shard in manifest.get("shards", []):
         payload = _load_json(repo_root / str(shard.get("path") or ""))
-        rows.extend(payload.get("documents", []))
-
-    moon = [row for row in rows if row.get("work_id") == "LOC4-MOON-SPEAKER"]
-    grouped: dict[str, list[dict[str, Any]]] = {}
-    for row in moon:
-        grouped.setdefault(str(row.get("source_file") or ""), []).append(row)
+        for row in payload.get("documents", []):
+            if row.get("work_id") != "LOC4-MOON-SPEAKER":
+                continue
+            grouped.setdefault(str(row.get("source_file") or ""), []).append(row)
+        # Do not retain unrelated LOC4 corpus rows during startup analysis.
+        del payload
 
     result: dict[str, str] = {}
     for source_file, items in grouped.items():
