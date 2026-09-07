@@ -8,7 +8,21 @@
     "global_layering": "詞彙層 → 卡片位置層 → 治理層 → 時間修飾層",
     "global_rule": "後層時間的月相交互只作修飾，不覆蓋符文本義。",
     "rune_interaction_scope": "sandbox_only",
-    "lunar_interaction_weight": "low"
+    "lunar_interaction_weight": "low",
+    "ow3gs_model": "two_rune_modules",
+    "ow3gs_principle": "鑑古知今",
+    "ow3gs_modules": {
+      "ancient": {
+        "range": "1–6",
+        "label": "古模組",
+        "role": "回看形成問題的背景、條件與來源"
+      },
+      "present": {
+        "range": "7–11",
+        "label": "今模組",
+        "role": "判讀現在與後續應如何理解、處理"
+      }
+    }
   },
   "records": [
     {
@@ -98,26 +112,26 @@
     {
       "category": "OW3gs",
       "item": "治理解牌方式",
-      "content": "1–6 因的描述層 + 7–11 果的判定層 + 月相交互",
-      "note": "用符文模型完整形容事件，十一張牌不是等權並列。"
+      "content": "古模組（1–6） + 今模組（7–11） + 月相交互",
+      "note": "OW3gs 由兩個符文模組組成，核心原則是「鑑古知今」；十一張牌不是等權並列。"
     },
     {
       "category": "OW3gs",
-      "item": "1–6 因的描述層",
+      "item": "古模組（1–6）",
       "content": "1.背景 2.現在 3.資源 4.意向 5.外部擾動 6.尚未成形因素",
-      "note": "分析產生問題的可能狀態。"
+      "note": "回看形成問題的背景與條件，屬「鑑古」。"
     },
     {
       "category": "OW3gs",
-      "item": "7–11 果的判定層",
+      "item": "今模組（7–11）",
       "content": "建議：7.成因 8.現在 9.未來 10.環境 11.心境",
-      "note": "建議該怎麼做的治理解牌方式。"
+      "note": "判讀現在與後續應如何理解、處理，屬「知今」。"
     },
     {
       "category": "OW3gs",
       "item": "讀取順序",
-      "content": "先讀 7–11 → 再掃描 1–6 → 最後套月相交互",
-      "note": "治理解牌方式為分成兩個模型。鑑古知今為原則。"
+      "content": "先讀今模組 7–11 → 再回看古模組 1–6 → 最後套月相交互",
+      "note": "以「鑑古知今」串接兩個符文模組。"
     },
     {
       "category": "OW3gs",
