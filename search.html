@@ -498,7 +498,7 @@
     }
     function quick(){
       const type=el('contentType').value;
-      const alias={knowledge_image:'multimedia',relationship:'knowledge',oracle:'default',rune_record:'default',era:'default',rune_core:'default',rune_sandbox:'default',rune_music:'lyrics_work',rune_image:'multimedia',rune_governance:'default',rune_divination:'default'};
+      const alias={knowledge_image:'multimedia',relationship:'knowledge',oracle:'default',rune_record:'default',era:'default',rune_core:'default',rune_sandbox:'default',rune_music:'lyrics_work',rune_image:'multimedia',rune_governance:'knowledge',rune_divination:'default'};
       const key=promptSets[type]?type:(alias[type]||'default');
       const prompts=promptSets[key]||promptSets.default;
       el('quick').innerHTML=prompts.map(x=>`
@@ -752,7 +752,7 @@
       entities:{loc:'月之符文',label:'符文',desc:'方法名稱、定義與讀取規則'},
       scenarios:{loc:'月符沙盒',label:'符文沙盒',desc:'Scenario Corpus／Event Corpus；把符文帶入真實情境與互動'},
       oracle:{loc:'月之符文',label:'符文占卜',desc:'抽牌／籤詩本身的使用結果'},
-      readings:{loc:'月之符文',label:'符文治理',desc:'占卜完成後保存的結果、解讀與後續紀錄'},
+      readings:{loc:'月之符文',label:'符文治理',desc:'解牌原理、判讀規則與已保存的占卜解讀紀錄，例如 OW3gs、雙卡因果、三卡源轉合與多卡判讀'},
       runes:{loc:'月之符文',label:'符文',desc:'基本符文、方向與參照語意'},
       rune_songs:{loc:'自創歌曲(Suno)',label:'符文音樂',desc:'已確認符文歌曲，以及明確標示來源狀態的符文－歌曲關聯'},
       works:{loc:'自創歌曲(Suno)',label:'音樂／歌詞',desc:'歌曲、歌詞與符文歌演化證據'},
@@ -809,7 +809,7 @@
 
     function isRuneQuery(query){
       const q=String(query||'').trim();
-      return /月符|月之符文|符文|OW3gs|抽牌|占卜|解牌|解讀|正位|逆位|半正|半逆/i.test(q);
+      return /月符|月之符文|符文|OW3gs|抽牌|占卜|解牌|解讀|判讀|雙卡|因果|三卡|源轉合|五卡|十一卡|11張|7-11|正位|逆位|半正|半逆/i.test(q);
     }
 
     function resultOrderForQuery(query){
@@ -846,7 +846,18 @@
       if(type==='rune_core') return {entities:g.entities||[],runes:g.runes||[]};
       if(type==='rune_sandbox') return {scenarios:g.scenarios||[]};
       if(type==='rune_music') return {rune_songs:g.rune_songs||[]};
-      if(type==='rune_governance') return {readings:g.readings||[]};
+      if(type==='rune_governance'){
+        const knowledge=(g.knowledge||[]).filter(item=>{
+          const p=item?.payload||{};
+          const hay=[
+            item?.title,item?.summary,item?.result_id,
+            p?.title,p?.summary,p?.retrieval_text,
+            ...(p?.keywords||[])
+          ].filter(Boolean).join(' ');
+          return /OW3gs|解牌|判讀|雙卡|因果|三卡|源.?轉.?合|五卡|十一卡|11張|7.?11|符文語法|命運句/i.test(hay);
+        });
+        return {readings:g.readings||[],knowledge};
+      }
       if(type==='rune_divination') return {oracle:g.oracle||[]};
       if(type==='rune_image') return {media:(g.media||[]).filter(hasRuneRelation)};
       return g;
