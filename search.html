@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#081522" />
-  <meta name="description" content="LOC 搜尋引擎｜從符文、作品、媒體、知識與時間語意中，以同一個入口搜尋 lo3rwang／政德風語言系統。" />
-  <title>LOC 搜尋引擎｜lo3rwang</title>
+  <meta name="description" content="多元搜尋｜跨文字、音樂、多媒體、符文、脈絡與知識搜尋。" />
+  <title>多元搜尋｜LOC 月典</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="favicon.ico" />
   <style>
@@ -53,7 +53,7 @@
     @media(max-width:900px){.location-map{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:720px){.pagination{align-items:stretch}.pagination-pages{width:100%;justify-content:center}.pagination-info{width:100%;text-align:center}.suggestion-grid{grid-template-columns:1fr 1fr}.primary-actions{display:grid;grid-template-columns:1fr 1fr}.submit,.clear-btn,.browse-btn{width:100%}.filter-tabs{grid-template-columns:1fr 1fr 1fr}.filter-tab{font-size:.78rem;padding:10px 6px}.time-grid{grid-template-columns:1fr}.browse-inline{align-items:stretch;flex-direction:column}.topbar{align-items:flex-start;flex-direction:column}}
   
-/* Unified LOC workspace shell: aligned with projection.html */
+/* Unified LOC workspace shell */
 .app-shell{width:min(1500px,100%);margin:0 auto;padding:22px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px}
 .workspace-sidebar{position:sticky;top:22px;align-self:start;min-height:calc(100vh - 44px);padding:20px 16px;border:1px solid var(--line);background:rgba(6,15,28,.75);backdrop-filter:blur(18px);border-radius:24px;box-shadow:0 18px 50px rgba(0,0,0,.25)}
 .workspace-brand{padding:4px 6px 18px;border-bottom:1px solid var(--line);margin-bottom:16px}
@@ -96,11 +96,11 @@
   <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="search" aria-label="全站導覽"></nav></div>
   <div class="app-shell">
   <aside class="workspace-sidebar">
-    <div class="workspace-brand"><h1>Search</h1><p>搜尋</p></div>
+    <div class="workspace-brand"><h1>Search</h1><p>多元搜尋</p></div>
     <nav class="workspace-nav" aria-label="搜尋功能">
       <div class="workspace-nav-group">
-        <div class="workspace-nav-label">01 · 查詢</div>
-        <button class="workspace-switch active" type="button" data-search-view="query"><strong>查詢</strong><small>單純搜尋內容</small></button>
+        <div class="workspace-nav-label">01 · 搜尋</div>
+        <button class="workspace-switch active" type="button" data-search-view="query"><strong>多元搜尋</strong><small>跨文字、音樂、多媒體、符文、脈絡與知識</small></button>
       </div>
       <div class="workspace-nav-group">
         <div class="workspace-nav-label">02 · 時期</div>
@@ -111,14 +111,14 @@
         <button class="workspace-switch" type="button" data-search-view="ranking"><strong>排行榜</strong><small>依時間跨度觀察關鍵字</small></button>
       </div>
     </nav>
-    <div class="workspace-foot">查詢、ERA 時期設定、排行榜各自分工；ERA 定義作品的時間跨度，排行榜再依這些跨度觀察詞彙分布。</div>
+    <div class="workspace-foot">多元搜尋、時期設定、排行榜各自分工；搜尋負責跨格式查找，時期定義作品的時間跨度，排行榜再依這些跨度觀察詞彙分布。</div>
   </aside>
   <main class="page workspace-main">
     <div class="search-view" id="queryView">
     <header class="hero loc-header">
-      <p class="loc-header-meta">Semantic Search</p>
-      <h1 class="loc-header-title">LOC 搜尋引擎</h1>
-      <h2 class="loc-header-subtitle">從一句話，找到相關的內容。</h2>
+      <p class="loc-header-meta">Cross-format Search</p>
+      <h1 class="loc-header-title">多元搜尋</h1>
+      <h2 class="loc-header-subtitle">跨文字、音樂、多媒體、符文、脈絡與知識搜尋。</h2>
       <p class="loc-header-copy">輸入一個詞、一句話或一個情境，從文字、音樂、圖片、影音、符文與文件中找出相關內容。</p>
     </header>
     <section class="search-panel">
@@ -137,7 +137,7 @@
           <button class="filter-toggle" id="advancedToggle" type="button" aria-expanded="false" aria-controls="advancedPanel">
             <span class="filter-toggle-main">
               <strong>時間篩選</strong>
-              <small>日期 · ERA</small>
+              <small>日期 · 時期</small>
             </span>
             <span class="filter-count" id="filterCount" hidden>0</span>
             <span class="filter-chevron" aria-hidden="true">⌄</span>
@@ -158,19 +158,23 @@
                 <div class="field"><label for="endDate">結束日期</label><input id="endDate" type="date"></div>
               </div>
               <div class="field era-field">
-                <label for="period">ERA</label>
+                <label for="period">時期</label>
                 <select id="period">
                   <option value="">全部時期</option>
-                  <option value="P0">P0</option>
-                  <option value="P0.5">P0.5</option>
-                  <option value="P1">P1</option>
-                  <option value="P2">P2</option>
-                  <option value="P3">P3</option>
-                  <option value="P4">P4</option>
-                  <option value="P5">P5</option>
-                  <option value="P6">P6</option>
-                  <option value="P7">P7</option>
-                  <option value="P8">P8</option>
+                  <option value="P1.0">P1.0｜大學時代文字</option>
+                  <option value="P2.0">P2.0｜當兵入伍到公開網路文字之前</option>
+                  <option value="P3.0">P3.0｜公開網路文字期</option>
+                  <option value="P4.0">P4.0｜Threads</option>
+                  <option value="P4.1">P4.1｜Threads開始啟動</option>
+                  <option value="P4.2">P4.2｜《月語者》籌劃期</option>
+                  <option value="P5.0">P5.0｜月符到月典形成期</option>
+                  <option value="P5.1">P5.1｜LOC啟動</option>
+                  <option value="P5.2">P5.2｜微月光與關係敘事期</option>
+                  <option value="P5.3">P5.3｜自我治理的啟動跟檢討</option>
+                  <option value="P5.4">P5.4｜人生月台與療傷期</option>
+                  <option value="P5.5">P5.5｜順其自然與劃清界線</option>
+                  <option value="P5.6">P5.6｜自由的風的脫困期</option>
+                  <option value="P5.7">P5.7｜自我治理與未來展望期</option>
                 </select>
               </div>
             </div>
@@ -712,16 +716,20 @@
     const ERA_CACHE_KEY='loc-search-era-registry-v3';
     const ERA_CACHE_TTL=24*60*60*1000;
     const ERA_FALLBACK=[
-      {period:'P0',display_label:'P0｜月之符文前史'},
-      {period:'P0.5',display_label:'P0.5｜月之符文前史過渡期'},
-      {period:'P1',display_label:'P1｜月之符文到月典形成期'},
-      {period:'P2',display_label:'P2｜重啟與格式形成期'},
-      {period:'P3',display_label:'P3｜微月光與關係敘事期'},
-      {period:'P4',display_label:'P4｜現實壓力與治理轉折期'},
-      {period:'P5',display_label:'P5｜人生月台與語言重建期'},
-      {period:'P6',display_label:'P6｜順其自然與界線整合期'},
-      {period:'P7',display_label:'P7｜自由的風期'},
-      {period:'P8',display_label:'P8｜自我治理與未來展望期'}
+      {period:'P1.0',display_label:'P1.0｜大學時代文字'},
+      {period:'P2.0',display_label:'P2.0｜當兵入伍到公開網路文字之前'},
+      {period:'P3.0',display_label:'P3.0｜公開網路文字期'},
+      {period:'P4.0',display_label:'P4.0｜Threads'},
+      {period:'P4.1',display_label:'P4.1｜Threads開始啟動'},
+      {period:'P4.2',display_label:'P4.2｜《月語者》籌劃期'},
+      {period:'P5.0',display_label:'P5.0｜月符到月典形成期'},
+      {period:'P5.1',display_label:'P5.1｜LOC啟動'},
+      {period:'P5.2',display_label:'P5.2｜微月光與關係敘事期'},
+      {period:'P5.3',display_label:'P5.3｜自我治理的啟動跟檢討'},
+      {period:'P5.4',display_label:'P5.4｜人生月台與療傷期'},
+      {period:'P5.5',display_label:'P5.5｜順其自然與劃清界線'},
+      {period:'P5.6',display_label:'P5.6｜自由的風的脫困期'},
+      {period:'P5.7',display_label:'P5.7｜自我治理與未來展望期'}
     ];
     function renderCorpusStatus(corpus){
       if(!corpus){return;}

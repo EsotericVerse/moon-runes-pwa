@@ -1,605 +1,391 @@
-# 🌕 LOC｜月典（Luna Codex）PWA
+# 🌕 LOC｜月典（Luna Codex）
 
-由 [秘藝文域（EsotericVerse Studio）](mailto:esotericverse.xy@gmail.com) 建立的 LOC（Luna Codex／月典）語言系統框架與 LunaRunes（月之符文）PWA 實作。
+LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋並推演語言**的語言系統框架。
 
-本專案以 HTML、CSS、原生 JavaScript 與 Python／FastAPI 組成，可透過 GitHub Pages 提供前端服務，並支援漸進式網頁應用程式（PWA）。
+系統以 LunaRunes（月之符文）作為語彙種子，從語彙延伸到脈絡、文字創作、多媒體、治理、文字建築與時間推演。月之符文是重要的 Reference Seed System，但不是使用 LOC 的門檻。
 
-- **LOC＝Luna Codex＝月典**
-- **LunaRunes＝月之符文**
-- **「月符」僅作歷史／口語簡稱，不作正式名稱對應**
+> 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
+
 - **現行 Canon：0.5r**
+- **Web Build：0.5**
 - **公開網站：<https://loc.lo3rwang.cc/>**
-- **符文查詢：<https://loc.lo3rwang.cc/runes.html>**
-
-LOC 最初以正方形符文紙牌呈現，後來逐步發展為管理符文、創作、跨媒體表達、治理與文字結構的語言系統。它統整作者兩年多累積的個人作品與人生觀，形成可持續延伸至遊戲、音樂、小說、視覺、治理及語意技術的語言框架。
-
-> LOC 始於一副牌，但不止於一副牌。
+- **作者：Lucas Oscar Wang 政德**
+- **GitHub：<https://github.com/EsotericVerse/moon-runes-pwa>**
 
 ---
 
-## ✨ 主要特色
+## 目前進度｜2026-09-08
 
-- 🎯 **多種抽取模式**：提供單卡、雙卡、三卡、五卡與每日抽取流程
-- 🌙 **月相與四向語意**：結合符文固定月相、當日時間窗與四種卡牌方向
-- 🧩 **66 符文固定骨架**：1–64 核心符文，加上 65「玄」與 66「命」
-- 🔎 **符文資料查詢**：依群組與符文名稱瀏覽卡面及相關資料
-- 🧠 **結構化建議實驗**：Python／FastAPI 測試符文資料、組合及規則式建議
-- 📱 **PWA 已完成**：自 2025 年 5 月起具備安裝、桌面／主畫面啟動與離線快取
-- 🎨 **響應式設計**：支援桌機與行動裝置顯示
-- 📚 **Canon 與母資料治理**：文件、資料庫、衍生資料與應用分層管理
+目前已進入 **Demo 收斂與功能驗收階段**。核心骨架不再擴張，優先處理功能完整性、資料一致性與公開入口。
+
+- **LOC1**：66 符固定骨架、單卡／雙卡／三卡／五卡／OW3gs、每日抽與月相顯示已具備；目前以解讀一致性與等待體驗收尾。
+- **LOC2**：Context／Relation／Event／Graph 與 Semantic Playground 已有可展示實作；Graph 本體權責固定歸 LOC2。
+- **LOC3**：Suno corpus 已整理至 773 首；歌曲／歌詞搜尋與時期分析已有基礎，後續補新歌同步與分類。
+- **LOC4**：小說、文章、Pixnet、PTT、Threads 與 Facebook 等文字來源逐步納入統一 corpus；早期作品首次發表日期與後期潤稿版分開治理。
+- **LOC5**：Reels、圖像、影音與系統視覺資產已有實際成果；目前以 Registry、來源對應與搜尋整合為主。
+- **LOC6**：治理內容已統一收斂到 `governance.html`；政德風進入 **6.1｜改名後・自我治理期**。
+- **LOC7**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與 Simple Text Analysis 已有作用中基礎；下一步是更新 FAQ 到現行 Canon／時期／頁面架構。
+- **LOC8**：`evolution.html` 已統一承接 Period、Timeline、Trend、Trajectory；Facebook／Threads／Pixnet／PTT／Suno 等只作 source，不再建立平台專屬 Timeline 頁。
+
+### Demo 前目前優先順序
+
+1. FAQ／KM 同步現行定義
+2. 核心頁面功能驗收
+3. 搜尋、Context、Evolution 的資料與 fallback 一致性
+4. 最後再更新 tutorial01 / tutorial02
+
+## Demo 入口
+
+| 功能 | 頁面 | 說明 |
+|---|---|---|
+| 首頁 | [index.html](https://loc.lo3rwang.cc/) | LOC 總覽與主要入口 |
+| 月之符文 | [runes.html](https://loc.lo3rwang.cc/runes.html) | 66 符、抽牌、每日抽、雙卡／三卡／五卡／OW3gs |
+| 脈絡 | [context.html](https://loc.lo3rwang.cc/context.html) | 節點、關係式、Event、Graph、沙盒 |
+| 多元搜尋 | [search.html](https://loc.lo3rwang.cc/search.html) | Cross-format Search：文字、音樂、多媒體、符文、脈絡與知識 |
+| 推演 | [evolution.html](https://loc.lo3rwang.cc/evolution.html) | 時期、Timeline、Trend、Trajectory |
+| 治理 | [governance.html](https://loc.lo3rwang.cc/governance.html) | 政德風、治理原則與方法 |
+| LOC2 遊戲 | [loc2-game.html](https://loc.lo3rwang.cc/loc2-game.html) | Semantic Playground |
+| 作者 | [lo3rwang.html](https://loc.lo3rwang.cc/lo3rwang.html) | Lucas Oscar Wang 政德 |
+
+新手導覽：
+- [tutorial01.html](https://loc.lo3rwang.cc/tutorial01.html)
+- [tutorial02.html](https://loc.lo3rwang.cc/tutorial02.html)
 
 ---
 
-## 🧭 系統自我定義
+## LOC 1–8
 
-### LOC 是什麼
+LOC1–8 是**功能分隔與標準骨架**，不是版本、成熟度或高低排序。
 
-LOC 是一套拆解、組織並重新表達文學語言的系統框架。歷史上，它從月之符文的實際使用、作品延伸與資料整理中逐步抽象成形；結構上，月之符文可作為 LOC Framework 的完整實例與 Reference Seed System。
+| LOC | 現行定位 | 主要內容 |
+|---|---|---|
+| LOC1 | LunaRunes 月之符文 | 66 符、籤詩、抽牌、月相、四向、OW3gs |
+| LOC2 | Context 脈絡 | 節點、關係、Event、Graph、Semantic Playground |
+| LOC3 | Music 音樂 | Suno、歌曲、歌詞與音樂語意 |
+| LOC4 | Literary 文字創作 | 小說、文章、生活文字與創作 corpus |
+| LOC5 | Media 多媒體 | 圖像、影音、Reels、系統視覺化 |
+| LOC6 | Governance 治理 | 政德風、價值觀、治理句型與方法 |
+| LOC7 | Text Architecture 文字建築 | KM、搜尋、RAG、Graph RAG、文字結構與演算法 |
+| LOC8 | Evolution 推演 | 時期、時間線、趨勢、軌跡與跨來源時間分析 |
 
-LOC 不以象徵的神聖性建立權威，而以定義、結構及資料一致性成立。
-
-### LOC 與月之符文的平行結構
+LOC 的功能關係可概括為：
 
 ```text
-LOC：
-LOC1 符文語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演
-
-月之符文：
-符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算 → 符文演化
+語彙
+  ↓
+文字創作／多元體系
+  ↓
+脈絡與關係
+  ↓
+演算法與文字建築
+  ↓
+時間中的推演
 ```
 
-月之符文先累積實作，LOC 再由實作抽象出框架；框架成立後，又可反過來完整描述月之符文。
-
-### LOC 不做什麼
-
-- 不宣告不可改變的命定結果
-- 不提供不可質疑的唯一答案
-- 不替代使用者作出選擇
-- 不隸屬、支持或批判任何宗教或信仰體系
-
-> LOC 的核心不是預言未來，而是讓語言、作品與人生選擇擁有一致座標。
-
-### 微月光原則
-
-> 不照亮整條道路，  
-> 只在困境中照亮當下能前行的一小段。
-
-LOC 用於釐清問題、提供方向及協助理解結構，而不是替使用者裁決人生。
-
 ---
 
-## 📚 核心文件與資料檔案
+## LunaRunes｜月之符文
 
-| 檔案 | 定位與用途 |
-|---|---|
-| [`64LunaRune.docx`](./docs/64LunaRune.docx) | **命運句語法圖鑑**：整理符文四向語意、命運句與相關語法資料 |
-| [`LOC_Canon.docx`](./docs/LOC_Canon.docx) | **LOC Canon 0.5r**：現行系統定義、固定骨架與治理規則 |
-| [`LunarRunesCardCut.pdf`](./docs/LunarRunesCardCut.pdf) | **實際紙本卡片列印檔案**：供正方形月之符文卡牌輸出與裁切使用 |
-| [`LunaRune64.xlsx`](./LunaRune64.xlsx) | **符文資料庫／最高優先母資料**：符文名稱、分類、定義、月相與四向語意的 Single Source of Truth |
+月之符文固定為 **66 符**。
 
-文件分工：
+- 1–64：八組核心符文
+- 65：玄（Chaos）
+- 66：命（Fate）
+- 第 0 符「德」是作者基準符，不列入抽牌
 
-- `docs/LOC_Canon.docx` 定義系統規則
-- `LunaRune64.xlsx` 保存結構化符文母資料
-- `docs/64LunaRune.docx` 說明命運句與語法內容
-- `docs/LunarRunesCardCut.pdf` 將系統輸出為可實際使用的紙本卡牌
-
----
-
-## 🧩 66 符文固定骨架
-
-LOC 的正式符文骨架共 66 符文，數量、編號與位置固定，不再新增、刪除或調換。
-
-| 編號 | 定位 | 說明 |
-|---|---|---|
-| 1–64 | 核心符文 | 固定語意主體，具有名稱、分類、核心定義、固定月相與四向語意 |
-| 65「玄」 | Chaos | 固定特殊符文 |
-| 66「命」 | Fate | 固定特殊符文 |
-
-### 第 0 符「德」
-
-第 0 符「德」是作者基準符：
-
-- 不列入 66 符文牌組
-- 不參與一般抽取
-- 不構成 LOC0
-- 可保留於 Canon、索引與作者方法論說明中
-
-完整符文內容可於 [LOC 符文查詢](https://loc.lo3rwang.cc/runes.html) 瀏覽。
-
----
-
-## ◰ 正方形卡牌與四向語意
-
-四向語意來自 LOC 最初的正方形紙牌結構。同一張卡牌旋轉後形成：
+每張核心符文具有固定月相與四向語意：
 
 - 正位
 - 半正位
 - 半逆位
 - 逆位
 
-方向改變語意的狀態、張力與閱讀角度，但不取代符文本身的核心定義。四向不是單純的吉凶好壞，也不是四張不同卡牌。
+1–64 每個八符組內，新月、上弦、滿月、下弦各出現兩次。
+
+`LunaRune64.xlsx` 是符文母資料與最高優先來源；JSON、JavaScript、搜尋索引與畫面內容均屬衍生資料。
 
 ---
 
-## 🌙 月相與時間窗
+## 抽牌與 OW3gs
 
-### 符文固定月相
+現行抽牌模式：
 
-1–64 每張核心符文皆具有固定月相：
+- 單卡
+- 雙卡
+- 三卡
+- 五卡
+- OW3gs 十一張
 
-- 新月
-- 上弦
-- 滿月
-- 下弦
+OW3gs 的結構：
 
-每個八符文組內，四種固定月相各出現兩次，以維持群組配置平衡。
+- **1–6：因的描述層**
+- **7–11：果的判定層**
 
-### 應用層時間窗
+雙卡、三卡、五卡與 OW3gs 均有各自語法與判讀結構；符文本體、抽牌順序、四向、月相與問題脈絡分層處理。
 
-目前程式依農曆日期提供額外的時間背景：
+---
+
+## Context 與 Evolution
+
+### Context
+
+Context 負責回答：
+
+> A 跟 B 怎麼連？
+
+現行功能包含：
+
+- 節點
+- 關係式
+- Event
+- Graph
+- Graph RAG
+- 沙盒遊戲
+
+### Evolution
+
+Evolution 負責回答：
+
+> 這些關係如何隨時間一起改變？
+
+概念上：
 
 ```text
-農曆 1–7 日   → 新月
-農曆 8–14 日  → 上弦
-農曆 15–21 日 → 滿月
-農曆 22–28 日 → 下弦
-農曆 29–30 日 → 空亡
+Context Graph × Time × Period × Event × Works → Evolution
 ```
 
-時間窗只作為占卜結果的額外說明與加權提示，不改寫符文本體語意。
+現行 `evolution.html` 已提供：
+
+- 時期
+- Timeline
+- Trend
+- Trajectory
+- 時期資料新增／編輯／刪除
+- Event 新增／編輯／刪除
+
+符文演化另有 LunaRune-specific 演算法，不與一般 Evolution 趨勢計算混為一體。
 
 ---
 
-## 🧱 語意分立
+## 現行時期（Period / ERA）
 
-英文只作為註解標示，不參與中文符文的語意生成或構詞。
+公開介面使用「**時期**」；內部 stable ID 可保留既有 `ERA-...`。
 
-| 中文 | 英文註解 | 定義 |
+### 大時期
+
+| 時期 | 日期 | 定位 |
 |---|---|---|
-| 無 | Blank | 一切皆有可能；值與內容尚未確定 |
-| 虛 | Void | 空洞、未實化或結構尚未形成 |
-| 空 | Space | 空間與位置維度 |
-| 氣 | Breath | 流動、氣息與生命動勢 |
-| 暗 | Shadow | 陰影及未被照見的部分 |
-| 玄 | Chaos | 混沌與不可完全歸因的生成條件 |
-| 誤 | Error | 錯置、偏差或辨識失準 |
+| P1.0 | 1980-06-23 ～ 2003-12-15 | 早期／大學時代文字 |
+| P2.0 | 2003-12-16 ～ 2009-03-24 | 當兵入伍到公開網路文字之前 |
+| P3.0 | 2009-03-25 ～ 2024-11-17 | 公開網路文字期 |
+| P4.0 | 2024-11-18 ～ 2025-04-27 | Threads |
+| P5.0 起 | 2025-04-28 ～ | 月符／月典形成後的現行階段 |
 
----
+重要歷史切點：
 
-## 🧭 LOC1–8｜八種分發與功能分工
+- **2003-12-16**：入伍，明確人生轉折
+- **2009-03-25**：目前已確認最早 Pixnet 公開網路文字
+- **2010-02-10 11:34:28**：PTT `sopa1980` 註冊
+- **2012-01-30**：〈老鼠〉，第一篇正式發表小說
+- **2024-11-18**：Threads 開始
+- **2025-04-28**：《月語者》開始寫作，作為 P5.0 起點
 
-LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成熟度或高低優劣。編號到 8 為止，不存在 LOC9。
+### P4 / P5 細分
 
-| 分發 | 名稱 | 功能定位 |
+| 時期 | 日期 | 名稱 |
 |---|---|---|
-| LOC1 | 符文語彙（token） | 基本文字語彙、語意種子、籤詩與解牌入口 |
-| LOC2 | 脈絡 | 關係、Context、Scenario、Event 與 Graph；月之符文沙盒是代表性實作 |
-| LOC3 | 音樂 | 文字與語意延伸為歌曲、歌詞與聲音 |
-| LOC4 | 文字創作 | 文章、小說、生活文字與敘事作品 |
-| LOC5 | 多媒體 | 文字、音樂、圖像與影音的跨媒介表達 |
-| LOC6 | Methodology / Governance | 方法論：如何理解、判斷、處理；治理、解牌、價值判斷與政德風都是其中的方法 |
-| LOC7 | Algorithm / Text Architecture | 演算法（知識庫）：文字建築、知識管理、檢索、RAG 與 Graph RAG；關係／Graph 脈絡資料本體歸 LOC2 |
-| LOC8 | Projection / Time & Trend | 推演：把作品、語言、方法與風格放進事件、時期、時間線、Trajectory 與 Trend 中觀察其演變 |
+| P4.1 | 2024-11-18 ～ 2025-02-20 | Threads開始啟動 |
+| P4.2 | 2025-02-21 ～ 2025-04-27 | 《月語者》籌劃期 |
+| P5.0 | 2025-04-28 ～ 2025-10-15 | 月符到月典形成期 |
+| P5.1 | 2025-10-16 ～ 2026-01-14 | LOC啟動 |
+| P5.2 | 2026-01-15 ～ 2026-03-08 | 微月光與關係敘事期 |
+| P5.3 | 2026-03-09 ～ 2026-06-09 | 自我治理的啟動跟檢討 |
+| P5.4 | 2026-06-10 ～ 2026-06-30 | 人生月台與療傷期 |
+| P5.5 | 2026-07-01 ～ 2026-07-31 | 順其自然與劃清界線 |
+| P5.6 | 2026-08-01 ～ 2026-08-31 | 自由的風的脫困期 |
+| P5.7 | 2026-09-01 ～ 現在 | 自我治理與未來展望期 |
 
-### 目前具現化成果
+Facebook、PTT、Pixnet、Threads、Suno、小說與其他作品都視為不同 corpus / source；**平台本身不是 LOC 的身份，也不各自擁有獨立功能頁**。Timeline 由 Evolution 統一承接。
 
-| 分發 | 現行成果與階段 |
+---
+
+## 早期文字與小說
+
+目前已確認的早期公開文字起點為 Pixnet：
+
+- **2009-03-25 10:15｜〈同情心？〉**
+
+小說／創作歷史則另行治理，不把後來的潤稿版日期覆蓋首次發表日期。
+
+已確認案例：
+
+| 早期名稱 | 最早可確認日期 | 現行／潤稿版名稱 |
+|---|---|---|
+| [創作] 生日情人 | 2011-04-08 | 一日情人 |
+| [創作] 我的兩個男朋友 | 2011-06-13 | 男男男關係 |
+| [創作] 老鼠 | 2012-01-30 | 老鼠 |
+| 假性單身 | 2015-03-25 | 假性單身 |
+| 在你之前在你之後 | 2016-06-23 | 在你之前，在你之後 |
+| 浮木 | 2021-03-12 | 錯的人 |
+
+其中〈老鼠〉是第一篇正式發表小說。這些作品屬於 LOC4 早期一般文字創作，**不是符文文學**。後期版本是在既有故事脈絡上進行潤稿、擴寫、改名與正式發行。
+
+---
+
+## Search / Text Architecture
+
+`search.html` 是 Cross-format Search 統一入口，目標是讓使用者不必先理解 LOC 編號，就能直接輸入關鍵字、作品名稱、句子或概念。
+
+可查詢的主要類型包括：
+
+- 月之符文
+- 音樂／歌詞
+- 文字作品
+- 多媒體
+- Governance／政德風
+- Knowledge / KM
+- Context / Relation
+- 時期與時間資料
+
+技術面由 `card_api/` 提供作用中的 FastAPI 與搜尋 API；資料集中於 `data/json/`，實驗性向量／語意程式保留在 `engine/`。
+
+Graph RAG 的關係資料所有權仍歸 Context；LOC7 負責檢索、文字建築與演算法。
+
+---
+
+## 主要 corpus
+
+目前 LOC 已累積多種長期語言與創作資料來源：
+
+- Threads：4,578 筆主貼文 + 2,430 筆 Reply
+- Suno：773 首歌曲
+- Pixnet：66 篇文章
+- PTT：`sopa1980` 公開發表紀錄
+- Facebook：兩個帳號，資料持續匯出／整理
+- 小說與文章：保留首次發表、原始版本、潤稿版與正式版關係
+
+Corpus 是分析證據，不等於 Canon；Canon、原始作品、Registry、搜尋索引與 UI 各自分層治理。
+
+---
+
+## Governance / 政德風
+
+LOC6 承接治理原則、價值觀句型與政德風。
+
+目前政德風進入：
+
+**政德風 6.1｜改名後・自我治理期**
+
+版本節點以真實人生重大日期與文字演化為依據；版本變化不覆蓋歷史原文。
+
+治理原則包括：
+
+- 原始資料保留原文
+- 後設解讀與原始文本分開
+- stable ID 優先維持
+- 衍生資料不得反向覆寫母資料
+- 允許修正，但保留來源與歷史
+
+---
+
+## 核心資料與文件
+
+| 檔案 | 用途 |
 |---|---|
-| LOC1 | 66 符文固定資料、四向內容及每張符文的獨立圖卡均已完成；抽牌、查詢與每日抽取 PWA 已實際運作，並持續發展語意解讀。 |
-| LOC2 | **LOC SP：Semantic Playground MVP v1.3 Alpha** 已完成核心循環、四大組態、八職業架構與首批 32 張事件卡，目前進入實體卡牌印製及桌面試玩驗證。 |
-| LOC3 | 已累積大量「政德風」音樂作品，並建立歌曲資料及語意檢索實作。另曾以 LOC1 的 OW3gs 十一張抽牌解釋情境，再將解讀轉化為歌詞與歌曲，形成特殊的符文寫歌方式。 |
-| LOC4 | 作者文字本體層已成立：核心小說純文字 corpus 已由作者檔案庫匯入為 document-level 搜尋資料；《月語者》七篇與《錯的人：命運的錯位者》《假性單身》《男男男關係》《在你之前，在你之後》《一日情人》等核心作品可全文檢索。LOC4 同時承接 Facebook（2011-04-15～2026-09-03）與 Threads（2024-11-18～2026-09-06）的作者生活／公開文字所有權；來源 corpus 不重複搬檔，LOC6 以 reference 方式做治理與政德風分析。 |
-| LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
-| LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；Threads 公開文字 corpus 自 2024-11-18 起至 2026-09-06，現行去重基準共 **7,008 筆文字紀錄**（4,578 主貼文＋2,430 Reply）。**4,578 筆主貼文全文已完成 repository sharded index 並接入 Unified Search**；Reply 保留為 supplemental evidence。另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證。 |
-| LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢各 LOC 現有資料來源，Canonical Graph RAG 核心已完成 bounded traversal、provenance 與品質治理。另已加入 local-first Simple Text Analysis API（`/analyze/text`、`/analyze/corpus`），可在不依賴外部 LLM／Embedding API key 的情況下完成基本解析、關鍵字與分類。公開搜尋新增 `snippet / full / metadata_only` 展示治理，全文可供授權分析，但不等於全文公開。 |
-| LOC8 | `projection.html` 已具備每日符文歷史、時期管理、Event、Timeline、跨時期 Trend Analysis 與**關鍵字 Top 10 排行**。排行榜可直接點入 Unified Search 回查實際作品、文章與文字證據，形成「排行 → 趨勢 → 搜尋 → 證據」閉環。Context、Relation 與 Graph 的公開展示入口歸 `context.html`；後續重點為更多 corpus 接入、統計摘要與持續品質驗證。 |
-
-LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；LOC6 已有治理／政德風與符文解析資料，LOC7 已有 KM／FAQ／RAG／Unified Search，LOC8 已有可操作的每日符文歷史、事件、時期與趨勢推演介面。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
-
-### LOC2｜Semantic Playground
-
-LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 LunaRunes 66 符文為基礎，不是傳統戰鬥卡牌，也不只是抽牌解籤。
-
-> **世界提出問題 → 玩家用符文回答 → 不同答案彼此共振 → 形成暫時定義。**
-
-玩家面對事件後，從手中的符文選出組合建立回答；不同玩家的回答會互相影響、比較與共振。遊戲真正關注的不是攻擊力，而是：面對同一個問題，每個人如何理解、如何回答，又如何面對別人的答案。
-
-符文組合沿用 LOC1 的語意結構：
-
-- 單卡：基本語意
-- 雙卡：底層先查「兩符文的中性關係」，實際抽牌再依第 1 張＝因、第 2 張＝果形成因果投影
-- 三卡：源－轉－合
-- 五卡與十一卡：更完整的局勢與語意結構
-
-雙卡關係與雙卡抽牌結果分開治理：`LOC6_DUAL_RUNE_RELATION_REGISTRY.json` 只保存 A＋B 的關係；抽牌順序、四向、問題與月相等條件則在 LOC1 interpretation runtime 疊加。
-
-八職業也不是人格分類，而是八種回應世界的方法：承載、裁斷、校正、培育、承擔、導流、校準與保留未知。
-
-目前的 **MVP v1.3 Alpha** 已完成核心循環、四大組態、八職業與首批 32 張事件卡，下一階段為實體卡牌印製與桌面試玩。電子版則可進一步計算方向、狀態、連鎖、多重條件及三卡、五卡、十一卡關係。
-
-> **LOC2 是把 LOC 的語言做成可以互動、可以練習，也可以玩的形式。**
-
-### LOC4｜Writing Corpus 與生活文字
-
-LOC4 明確分成兩個部分：**創作作品**與**生活文字**。
-
-- **創作作品**：小說、文章、符文文本、世界觀等；現行核心純文字檔已建立 document-level full-text index。
-- **生活文字**：Facebook 與 Threads。兩者的原始文字都屬 LOC4；source corpus 保留在各自資料層，不重複複製。LOC6 使用這些文字做治理／政德風解讀，LOC7 負責檢索與文字建築，LOC8 負責時間、ERA 與趨勢投影。
-
-因此「作品數」不是 LOC4 的主要規模指標；作品 corpus 只是 LOC4 的高密度創作樣本，長期生活文字 corpus 才構成作者整體文字演變的主要時間基底。
-
-### LOC6｜Threads Public Language Corpus
-
-LOC6 現行新增一個可量化的公開語言 corpus：
-
-- **時間範圍：2024-11-18 ～ 2026-09-06**
-- **主貼文：4,578 筆**
-- **Reply：2,430 筆**
-- **合計：7,008 筆去重文字紀錄**
-- 主貼文作為 primary evidence；Reply 作為 supplemental evidence
-- 現行工作：全文正規化、Surface Term、Concept candidate、ERA 分布、治理語言與可搜尋 Article/KM 索引
-- 這批資料不是 Canon；它是 LOC6 形成概念、風格演變與治理判斷的 primary-source corpus
-
-展示用一句：
-
-> **4,578 篇公開表達 + 2,430 筆互動回應 → 7,008 筆可追蹤、可搜尋、可比較的公共語言紀錄。**
-
-這批 Threads corpus 與 LOC3 的 Suno 創作 corpus 形成兩個不同但互補的長期資料來源：一邊記錄「創作了什麼」，另一邊記錄「公開說了什麼」。LOC 進一步將兩者做時間化、概念化與跨來源檢索。
-
-### LOC6｜政德風文字摘要
-
-政德風是 LOC6 已形成的語錄、價值觀、語氣與語言治理系統，也是 LOC3 音樂、LOC4 小說及其他創作分發的重要風格來源。
-
-> **政德風＝長話短說的極限：拆權威、斷話術、守底線。**
-
-它將過往經驗整理成最簡單、能說也能「道」的「道」。其作用近似一套**語言人格防火牆**：
-
-**拆劇本 → 斷頻率 → 反話術 → 回收主權 → 保持幽默 → 拒絕情緒勒索**
-
-| 範圍 | 內容摘要 |
-|---|---|
-| 核心哲學 | 價值觀是衡量尺度；道德是價值觀的體現與換算規則。錯誤可以發生，但必須產生價值。 |
-| 主權與意志 | 相信自己的判斷，保留選擇、拒絕、失敗及重新決定的權利。 |
-| 斷頻率與反控制 | 不跟隨他人預設劇本；辨認控制、話術與偷渡規則，重新取得回答方式。 |
-| 拆解代表權 | 追問「代表誰、依據什麼、誰授權」，拒絕人格、倫理、正義、群眾、制度與信仰挾持。 |
-| 契約與價值 | 沒有共同同意與共同價值的單方面宣告，不構成契約。 |
-| 邊界與防衛 | 慈悲不是投降；底線受到侵犯時，保留回應與自我防衛。 |
-| 關係與生活 | 不依附關係取得主權；戰役結束後仍回到日常、探索與生活。 |
-| 幽默與反轉 | 以短句、雙關、自嘲及現實落差，中止無效話術並降低其控制力。 |
-
-代表句包括：
-
-- 「價值觀的價值。」
-- 「免錢的最貴。」
-- 「我允許錯誤發生，只要錯的有價值。」
-- 「我不跟你走劇本。」
-- 「你在玩話術，我在改規則。」
-- 「你代表正義？那我代表現實。」
-- 「單方面宣告不叫契約，叫自言自語。」
-- 「你說只有兩個選項，但我覺得有六個：你、他、尊重、我、我不想選、我不知道。」
-- 「慈悲不是投降。」
-- 「我不是要當王，我只要系統能跑。」
-
-完整語錄保存為 LOC6 的內容庫；README 與介紹材料採摘要呈現。
-
-本 repository 以 LOC1／月之符文為起點，現已逐步整合 LOC2–8 的可展示成果、資料 Registry、搜尋入口與系統文件；各分發的完整內容仍由其原始作品與知識來源保存。
+| `LunaRune64.xlsx` | LunaRunes 母資料 / Single Source of Truth |
+| `docs/LOC_Canon.docx` | LOC Canon 0.5r |
+| `docs/64LunaRune.docx` | 命運句語法圖鑑 |
+| `docs/LunarRunesCardCut.pdf` | 紙本符文卡輸出 |
+| `docs/LOC7_KM.md` | Knowledge Management 主文件 |
+| `docs/JSON_DATA_MAP.md` | JSON 角色與同步方向 |
+| `COPYLEFT.md` | Copyleft 治理說明 |
 
 ---
 
-## 🧰 內建簡易文字解析 API
-
-LOC 現行提供一個不依賴外部 LLM／Embedding API Key 的基礎文字解析層，讓新的文字資料可以自動進入系統。
-
-- `POST /analyze/text`：單篇文字關鍵字抽取與使用者自訂規則式分類
-- `POST /analyze/corpus`：批次建立 keyword library、日期／來源索引、時期統計與 trajectories
-- 基礎流程：**Raw Data → Parse → Keyword / Category Library → Time Index → Trend**
-- LLM 摘要、embedding、cluster 命名與高階分類屬於 optional enrichment，由部署者自行決定
-
-這個 baseline API 的目的，是避免 LOC 只能靠作者手動整理資料。未來其他使用者匯入 Facebook、Threads、日記、作品或其他 corpus 時，基礎解析與趨勢資料必須可以自動建立；人工只負責校正與治理。
-
-完整規格：[LOC Simple Text Analysis API](./docs/LOC_SIMPLE_TEXT_ANALYSIS_API.md)
-
----
-
-## 🚀 功能詳解
-
-### 主要入口（`index.html`）
-
-- 顯示「玄」之符文作為起始卡面
-- 提供主要抽取入口及操作說明
-- 連結每日抽取、符文查詢與各種牌數模式
-- 顯示固定月相與當日時間背景
-- 將抽取結果導向結果頁面
-
-### 抽取模式
-
-- `runes.html#draw`：單卡、每日、雙卡、三卡與五卡結果入口
-- `runes.html?mode=2card#draw`／`runes.html?mode=3card#draw`／`runes.html?mode=5card#draw`：不同牌數的獨立頁面
-- `runes.html?mode=daily#daily`：每日抽取頁面
-- `runes.html?mode=single#draw`：替代風格的單卡／命運結果呈現
-- `runes.html`：依群組及符文查詢完整資料
-- [`search.html`](https://loc.lo3rwang.cc/search.html)：**Unified Search 主入口**；同時查詢籤詩／符文、音樂、文字作品、媒體、治理／政德風、知識與時期資料，使用者不必先選 LOC 編號
-- [`search.html?content_type=knowledge`](https://loc.lo3rwang.cc/search.html?content_type=knowledge)：LOC7 Knowledge Base 專門查詢介面（保留作進階／單域 View）
-- `search.html?content_type=lyrics_work`：相容導向頁；LOC3 歌詞、作品類別、歌詞類型、ERA、Reels 與跨 LOC 關聯搜尋已整合進 [`search.html`](https://loc.lo3rwang.cc/search.html?content_type=lyrics_work)
-
-### Python／FastAPI API
-
-`card_api/` 是目前實際作用的 API 程式目錄；資料已集中到 `data/json/`，並由 `card_api/paths.py` 統一解析路徑。API 用於：
-
-- 符文資料讀取
-- 農曆日期及時間窗計算
-- 單卡與多卡組合資料
-- 占卜結果與建議規則處理
-- Unified Search 跨 LOC 查詢與 facets（`/search`、`/search/facets`）
-- LOC7 FAQ 語意檢索與依據式回答（`/faq/search`、`/faq/ask`）
-- LOC3 歌詞作品層檢索與同詞版本推薦（`/loc3/search`、`/loc3/facets`）
-
-### Unified Search
-
-現行整合採 **「共用查詢層，不合併 Canon ownership」** 的方式：
-
-```text
-自然語言 Query
-      ↓
-Unified Search
-      ├─ LOC1  符文語彙（token）
-      ├─ LOC2  脈絡／Scenario／Graph
-      ├─ LOC3  音樂／歌詞
-      ├─ LOC4  文字作品
-      ├─ LOC5  多媒體／媒體 Registry
-      ├─ LOC6  方法論／治理／政德風
-      ├─ LOC7  演算法／FAQ／KM／Knowledge Assets
-      └─ LOC8  每日符文歷史／ERA／Event／Trend
-      ↓
-Shared Result Envelope
-```
-
-LOC4 已可直接搜尋 Writing Registry，LOC5 可搜尋 Media Registry，LOC6 可直接搜尋 Governance／政德風 Registry，並從 4,578 筆 Threads 主貼文全文 corpus 搜尋文章原文；LOC7 讀取 FAQ／KM 與已登錄 Knowledge Assets，LOC8 讀取連續時期 Registry。LOC2 目前仍以 LOC7 Knowledge View 為主，尚未作為獨立結果群組直接路由。
-
-不同來源的搜尋分數維持各自尺度，前端依資料類型分組呈現，不把不同引擎的 score 強制混成單一排行榜。舊有 `search.html?content_type=knowledge`、`search.html?content_type=lyrics_work` 保留為專門 View，`search.html` 作為整合入口。
-
-### 語意引擎實驗
-
-`engine/` 是獨立的實驗程式目錄；實驗 JSON 已集中到 `data/json/experimental/engine/`，二進位向量仍留在 engine／後續 binary data migration 處理。其內容用於研究及驗證，不等同於 `card_api/` 的正式作用流程，也不代表完整 LLM、RAG 或 Graph RAG 已正式部署。
-
-### PWA 功能
-
-PWA 與 RWD 架構已於 2025 年 5 月完成，現行版本包含：
-
-- 首頁載入後主動註冊 Service Worker
-- 透過 `moon-runes-pwa-v107` 快取關鍵資源（包含 FAQ 與集中式資料路徑）
-- 更新時保留現行快取並清除舊版快取
-- 支援新增至桌面／主畫面
-- 提供 192×192、512×512 與 Apple Touch Icon
-- 以 standalone 模式顯示
-- 支援響應式桌機與行動版介面
-
----
-
-## 🧠 KM 文件治理
-
-LOC7_KM 採 **Markdown-first, structured-data-native**：
-
-- `docs/LOC7_KM.md`：repository 內可維護 KM 主文件
-- `docs/JSON_DATA_MAP.md`：JSON 角色與同步方向
-- `data/json/registries/*.json`：跨 LOC 結構化 registry
-- FAQ v0.4 為 KM 問答 View；RAG v0.4 為其檢索衍生資料
-- 下游 JSON／索引／UI／AI 推論不得反向覆寫 Canon、母資料或原始作品
-
-詳見 [docs 文件索引](./docs/README.md)、[Repository Governance](./docs/REPOSITORY_GOVERNANCE.md) 與 [Data Architecture](./docs/DATA_ARCHITECTURE.md)。
-
----
-
-## 🗃️ 母資料治理
-
-`LunaRune64.xlsx` 是 LOC 符文母資料與最高優先資料來源（Single Source of Truth）。
-
-```text
-LunaRune64.xlsx
-        ↓
-JSON／JavaScript／其他衍生資料
-        ├── 網站與符文查詢
-        ├── 抽取系統與 PWA
-        ├── 作品
-        └── 其他應用
-```
-
-治理原則：
-
-- 修改由母資料源頭發起並向下同步
-- 衍生端不得反向覆寫 Canon 母資料
-- 網站、作品與應用是平行分支，不是彼此依序產生
-- 66 符文固定骨架與應用內容分開治理
-- 不直接在 `64images/` 或衍生 JSON 中新增第 67 個符文
-
----
-
-## 🧠 語意技術方向
-
-LOC 的語意技術以可檢索、可組合及可解釋為目標。
-
-LOC3 現行 demo 主要採用：
-
-```text
-資料 → Embedding → FAISS → 語意搜尋結果
-```
-
-LOC7 FAQ v0.4 已整理 80 題公開 FAQ，並同步產生 RAG v0.4 檢索資料，提供 [`search.html?content_type=knowledge`](https://loc.lo3rwang.cc/search.html?content_type=knowledge) 作為專門 Knowledge View，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。Unified Search 則把 FAQ／KM 與 LOC1、LOC3、LOC4、LOC5、LOC6、LOC8 的現有資料來源放進同一查詢入口。Graph RAG 核心已完成並具 temporal/provenance/precision/quality 與 regression/integration validation；後續重點為治理 runtime 與視覺化。
-
----
-
-## 📁 專案結構
+## Repository 結構
 
 ```text
 moon-runes-pwa/
-├── card_api/                  # 作用中 FastAPI / Search 程式
-│   ├── main.py
-│   ├── paths.py               # Python 資料路徑 contract
-│   ├── faq_rag.py
-│   ├── loc3_search.py
-│   ├── unified_search.py
-│   └── scripts/
-├── data/
-│   └── json/
-│       ├── core/              # 穩定 runtime projection
-│       ├── registries/        # Registry / Schema / Policy
-│       ├── search/            # FAQ、LOC3 等檢索資料
-│       ├── generated/         # 可重建索引／分析／shards
-│       ├── archive/           # 歷史版本，不進 current runtime
-│       └── experimental/      # engine 實驗 JSON
-├── engine/                    # 實驗程式與二進位向量；JSON 不再散放於此
-├── docs/
-│   ├── README.md
-│   ├── REPOSITORY_GOVERNANCE.md
-│   ├── methodology/
-│   └── LOC／KM／Governance 文件
-├── js/                        # 前端邏輯
-├── css/                       # 前端樣式
-├── tools/                     # repo-wide builders / importers
-├── loc8_api/                  # Google Apps Script 模組
-├── 64images/                  # 公開 URL 敏感的月之符文卡圖
-├── pics/                      # 視覺資產（後續媒體治理）
-├── reels/                     # 影片資產（後續媒體治理）
-├── *.html                     # GitHub Pages 公開路由
-├── LunaRune64.xlsx            # 最高優先符文母資料
-├── manifest.json              # PWA config；不是 data JSON
-└── service-worker.js
+├── card_api/            # FastAPI / Search
+├── data/json/           # core / registries / search / generated / archive / experimental
+├── docs/                # Canon、KM、治理與技術文件
+├── engine/              # 語意與向量實驗
+├── js/                  # 前端邏輯
+├── css/                 # 前端樣式
+├── tools/               # builders / importers / utilities
+├── 64images/            # 66 符文卡面
+├── pics/                # 系統視覺資產
+├── reels/               # 多媒體資產
+├── index.html
+├── runes.html
+├── context.html
+├── search.html
+├── evolution.html
+├── governance.html
+├── loc2-game.html
+├── lo3rwang.html
+├── tutorial01.html
+├── tutorial02.html
+├── LunaRune64.xlsx
+├── manifest.json
+├── service-worker.js
+├── COPYLEFT.md
+└── README.md
 ```
 
-資料與目錄治理詳見 [Repository Governance](./docs/REPOSITORY_GOVERNANCE.md) 與 [Data Directory](./data/README.md)。
+根目錄 HTML 只保留目前仍有明確功能或展示責任的頁面；舊的單一平台 Timeline、舊 Projection、內部 KM Upload 與重複介紹頁已移除。
 
 ---
 
-## 🛠️ 技術架構
+## 技術
 
-### 前端
+### Frontend
+- HTML
+- CSS
+- Vanilla JavaScript
+- PWA / Service Worker
 
-- HTML5
-- CSS3
-- 原生 JavaScript
-- PWA：Service Worker＋Web App Manifest
-- 農曆計算：`solarlunar`
-
-### 作用中 API（`card_api/`）
-
-Render Blueprint 已指向 `card_api/`，使用 `uvicorn main:app` 啟動 FastAPI。
-
+### Backend / Search
 - Python
 - FastAPI
 - Uvicorn
-- Pydantic
-- `zhdate`
-- JSON 結構化資料
-- LOC7 FAQ 中文混合檢索（Python 標準函式庫）
+- JSON registries
+- Semantic / keyword retrieval
+- RAG / Graph RAG
 
-### 實驗引擎（`engine/`）
+### Data governance
 
-- 語意向量與 Embedding 資料
-- 訓練及測試資料
-- Python 實驗腳本
-- 尚未納入正式 API 流程的研究內容
+```text
+Canon / Master Data
+        ↓
+Registry / Structured Data
+        ↓
+Search / Generated Index
+        ↓
+UI / API / Analysis
+```
 
-### 瀏覽器
-
-建議使用近期版本的 Chrome、Firefox、Safari 或 Edge。行動版支援 iOS Safari 與 Android Chrome；實際離線能力依瀏覽器的 PWA 與 Service Worker 支援而定。
-
----
-
-## 🎨 維護指南
-
-### 修改符文資料
-
-1. 先修改最高優先母資料 `LunaRune64.xlsx`
-2. 依既有同步流程重新產生 JSON／JavaScript 衍生資料
-3. 核對 `64images/` 中的卡面檔名與編號
-4. 測試符文查詢及所有抽取模式
-5. 不得直接新增、刪除或調換 66 符文
-
-### 修改樣式
-
-主要樣式位於 `css/style.css`，可調整色彩、版面、響應式配置與動畫效果。
-
-### 擴展功能
-
-新增抽取或顯示模式時，可參考 `js/main.js`、`js/result.js` 與既有牌數模式。功能擴展不得改寫 Canon 固定骨架。
+衍生層不得反向覆寫上游 Canon 或母資料。
 
 ---
 
-## 🙌 貢獻指南
+## 授權
 
-歡迎針對程式、介面、文件及可驗證資料問題提出 Issue 或 Pull Request。
+本專案以 **Copyleft** 精神發布。原創程式、資料結構、月之符文與 LOC 內容鼓勵研究、使用、修改與衍生，同時保留作者、來源、修改歷史與相容的共享原則。
 
-1. Fork repository 並建立功能分支
-2. 完成修改與測試
-3. 說明是否影響母資料、衍生資料或應用層
-4. 發送 Pull Request 進行討論
+完整說明見 [COPYLEFT.md](./COPYLEFT.md)。
 
-Canon、66 符文、編號與固定位置不接受任意增刪；相關提案應先說明資料依據及治理影響。
+第三方資料、私人 corpus、外部平台內容與另有授權限制的資產，不因本 repository 的 Copyleft 說明而自動重新授權。
 
 ---
 
-## OW3gs · 十一符文語意判讀法
+## Author
 
-OW3gs 是 LOC1 的十一符文語意判讀方法。它不把 11 張符文等權串接，而是分成兩個責任層：
+**Lucas Oscar Wang 政德**  
+Language Systems Governance Architect · Wordsmith
 
-- **第 1–6 張：事情成因的描述層** — 描述事情成因、背景、條件、來源與脈絡。
-- **第 7–11 張：對於事情的建議文字層** — 形成對於事情的建議文字與主要回應。
+- Website: <https://lo3rwang.cc/>
+- LOC: <https://loc.lo3rwang.cc/>
+- GitHub: <https://github.com/EsotericVerse>
 
-完整結構：**1–6 事情成因的描述層 + 7–11 對於事情的建議文字層**。
-
-OW3gs 不改變 LunaRunes 的固定符文骨架；第 0 符「德」是系統基準符，不參與抽取。
-
----
-
-## 📞 聯絡資訊
-
-**秘藝文域（EsotericVerse Studio）**
-
-- Email：[esotericverse.xy@gmail.com](mailto:esotericverse.xy@gmail.com)
-- LOC：<https://loc.lo3rwang.cc/>
-- 作者網站：<https://lo3rwang.cc/>
-- 社群帳號：[@lo3rwang](https://lo3rwang.cc/)
-- GitHub：[@EsotericVerse](https://github.com/EsotericVerse)
-
----
-
-## 📄 授權與署名
-
-本專案以 **Copyleft** 原則發布；LunaRunes（月之符文）的原創符文系統、語意結構與相關實作鼓勵研究、使用、修改與衍生，並要求保留來源、變更歷史與相同／相容的共享精神。完整治理說明見 [`COPYLEFT.md`](./COPYLEFT.md)。
-
-**OW3gs made by OscarWang / LunarCodex / 王政德**
-
-唯一作者：**Lucas Oscar Wang 政德**  
-**Language Systems Governance Architect (LOC) · Wordsmith · Moon Resonator**
-
----
-
-**用微月光，照亮當下可前行的一步。**
-
-## Governance / 治理層
-
-LOC 的功能骨架完成後，現行重點轉向 Governance Consolidation：把長期累積的治理語句、月之符文設計理由、資料權責、版本規則、Rights、Graph／Relation 與 ERA 趨勢整理成一致的治理層。
-
-主要文件：
-
-- `governance.html`
-- `governance.html`
-- `governance.html`
-- `data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json`
-
-核心原則是：**穩定的是框架，不是語言；保留歷史，允許修正；提供邊界，不要求思想服從。**
-
-
-## 2026-09-07 最新進度
-
-- LOC4《月語者》：182 章章級 baseline 解析已完成；以完整章節正文建立 title signals、敘事功能、themes、entities、metrics 與來源追溯。三符文／月相已恢復 161 章，另 21 章保持未恢復，不從正文推測補值。
-
-
-- Threads：7,008 筆去重文字紀錄；其中 4,578 筆主貼文全文已完成 repository 索引並可供搜尋。
-- Unified Search：跨作品、文字、知識、媒體與時間資料的共同入口；Graph RAG 核心已完成。
-- 趨勢分析：已加入關鍵字 Top 10，並可點詞回查實際命中內容。
-- Simple Text Analysis：已加入 local-first `/analyze/text` 與 `/analyze/corpus`，基礎解析不需要外部模型 API key。
-- 內容治理：公開搜尋支援 `snippet / full / metadata_only`，把「可全文分析」與「可全文公開」分離。
-- Facebook 長期 corpus 尚未正式接入 Unified Search；目前仍在資料整理／解析階段，不應視為已完成搜尋來源。
-
+> LOC 始於一副牌，但不止於一副牌。

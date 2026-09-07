@@ -15,8 +15,8 @@
 .brand{padding:4px 6px 18px;border-bottom:1px solid var(--line);margin-bottom:16px}.brand h1{margin:0;font-size:18px}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.nav{display:grid;gap:14px}.nav-group{display:grid;gap:6px}.nav-label{padding:0 9px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.12em}
 .view-switch{width:100%;display:grid;gap:3px;text-align:left;cursor:pointer;padding:10px 11px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--muted);font:inherit}.view-switch:hover,.view-switch.active{color:var(--text);border-color:var(--line);background:rgba(169,199,255,.08)}.view-switch.active{box-shadow:inset 2px 0 0 var(--accent)}.view-switch strong{font-size:13px}.view-switch small{font-size:10px;line-height:1.35}.sidebar-foot{margin-top:18px;padding:14px 8px 2px;color:var(--muted);font-size:12px;line-height:1.6}
 main{min-width:0}.view[hidden]{display:none!important}.hero{padding:28px 0 18px}.hero h1{margin:0;font-size:clamp(2rem,5vw,4rem)}.hero h2{margin:8px 0 0;font-size:1.15rem}.hero p{color:var(--muted);line-height:1.7;max-width:880px}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.card{border:1px solid var(--line);background:linear-gradient(180deg,rgba(18,33,56,.82),rgba(10,21,37,.78));border-radius:18px;box-shadow:var(--shadow);padding:16px}.metric small{color:var(--muted)}.metric strong{display:block;margin-top:6px;font-size:1.6rem}.timeline,.keyword-grid{display:grid;gap:10px;margin-top:16px}.keyword-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.era,.keyword-card{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:rgba(255,255,255,.025)}.era.current{border-color:var(--line2);background:rgba(169,199,255,.08)}.era-head{display:flex;justify-content:space-between;gap:12px}.era-head small,.era p,.keyword-card small{color:var(--muted)}.era p{line-height:1.65;margin:8px 0 0}.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.chip{border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:11px;color:var(--muted)}.source-note{margin:14px 0;color:var(--muted);font-size:12px}.empty{padding:18px;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
-@media(max-width:900px){.app{grid-template-columns:1fr;padding:14px}.sidebar{position:static;min-height:0}.nav{grid-template-columns:repeat(2,minmax(0,1fr))}.nav-label{grid-column:1/-1}.sidebar-foot{display:none}.metrics,.keyword-grid{grid-template-columns:1fr}}
+.era,.keyword-card,.trajectory-card{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:rgba(255,255,255,.025)}.era-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.mini-btn{border:1px solid var(--line);border-radius:9px;background:rgba(169,199,255,.08);color:var(--text);padding:6px 9px;font:inherit;font-size:11px;cursor:pointer}.mini-btn.primary{background:rgba(169,199,255,.18)}.era-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.era-editor .full{grid-column:1/-1}.era-editor label{display:grid;gap:5px;color:var(--muted);font-size:11px}.era-editor input,.era-editor textarea,.era-editor select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:#091525;color:var(--text);font:inherit}.era-editor textarea{min-height:74px;resize:vertical}.event-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.event-form .full{grid-column:1/-1}.event-form label{display:grid;gap:5px;color:var(--muted);font-size:11px}.event-form input,.event-form textarea,.event-form select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:#091525;color:var(--text);font:inherit}.event-form textarea{min-height:72px;resize:vertical}.event-list{display:grid;gap:10px;margin-top:14px}.event-card{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:rgba(255,255,255,.025)}.event-head{display:flex;justify-content:space-between;gap:12px}.event-head small,.event-card p{color:var(--muted)}.era.current{border-color:var(--line2);background:rgba(169,199,255,.08)}.era-head{display:flex;justify-content:space-between;gap:12px}.era-head small,.era p,.keyword-card small{color:var(--muted)}.era p{line-height:1.65;margin:8px 0 0}.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.chip{border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:11px;color:var(--muted)}.source-note{margin:14px 0;color:var(--muted);font-size:12px}.empty{padding:18px;color:var(--muted);border:1px dashed var(--line);border-radius:14px}.trajectory-list{display:grid;gap:12px;margin-top:16px}.trajectory-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.trajectory-head small{color:var(--muted)}.trajectory-delta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.trajectory-box{border:1px solid var(--line);border-radius:12px;padding:10px}.trajectory-box b{display:block;font-size:11px;color:var(--muted);margin-bottom:7px}.trajectory-note{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.6}
+@media(max-width:900px){.app{grid-template-columns:1fr;padding:14px}.sidebar{position:static;min-height:0}.nav{grid-template-columns:repeat(2,minmax(0,1fr))}.nav-label{grid-column:1/-1}.sidebar-foot{display:none}.metrics,.keyword-grid,.trajectory-delta{grid-template-columns:1fr}}
 </style>
 <style id="loc-site-footer-style">
 .loc-site-footer{margin-top:32px;padding:20px 16px;text-align:center;font-size:13px;line-height:1.6;color:var(--muted,#7f8794);border-top:1px solid var(--line,rgba(127,135,148,.22))}
@@ -32,7 +32,9 @@ main{min-width:0}.view[hidden]{display:none!important}.hero{padding:28px 0 18px}
   <div class="brand"><h1>Evolution</h1><p>推演</p></div>
   <nav class="nav" aria-label="演化功能">
     <div class="nav-group"><div class="nav-label">01 · 總覽</div><button class="view-switch active" type="button" data-view="overview"><strong>推演總覽</strong><small>時期 · Current · 時間跨度</small></button></div>
-    <div class="nav-group"><div class="nav-label">02 · 趨勢</div><button class="view-switch" type="button" data-view="trend"><strong>時期趨勢</strong><small>跨時期關鍵字脈絡</small></button></div>
+    <div class="nav-group"><div class="nav-label">02 · 時間線</div><button class="view-switch" type="button" data-view="timeline"><strong>時間線</strong><small>事件 · 新增 · 編輯 · 刪除</small></button></div>
+    <div class="nav-group"><div class="nav-label">03 · 趨勢</div><button class="view-switch" type="button" data-view="trend"><strong>時期趨勢</strong><small>跨時期關鍵字脈絡</small></button></div>
+    <div class="nav-group"><div class="nav-label">04 · 軌跡</div><button class="view-switch" type="button" data-view="trajectory"><strong>軌跡</strong><small>時期轉折 · 關鍵字升降</small></button></div>
   </nav>
   <div class="sidebar-foot">從時間、時期與事件變化中，觀察語言與作品如何一路演變。</div>
 </aside>
@@ -45,30 +47,126 @@ main{min-width:0}.view[hidden]{display:none!important}.hero{padding:28px 0 18px}
     <div class="card metric"><small>目前起點</small><strong id="eraStart">—</strong></div>
   </div>
   <div class="source-note">依既有時期紀錄整理。</div>
+  <div class="era-actions"><button class="mini-btn primary" id="addEraBtn" type="button">新增時期</button></div>
   <div class="timeline" id="eraTimeline"><div class="empty">載入時期…</div></div>
+</section>
+<section class="view" id="timelineView" hidden>
+  <div class="hero"><h1>時間線</h1><h2>直接維護事件紀錄。</h2><p>事件依日期排列，可新增、編輯與刪除；後續趨勢與軌跡再從這些資料進行分析。</p></div>
+  <form id="timelineEventForm" class="event-form">
+    <input type="hidden" id="timelineEventId">
+    <label>日期<input id="timelineEventDate" type="date" required></label>
+    <label>事件類型<input id="timelineEventType" value="transition"></label>
+    <label class="full">事件名稱<input id="timelineEventTitle" required></label>
+    <label>對象類型<input id="timelineEventObjectType" value="person"></label>
+    <label>對象 ID<input id="timelineEventObjectId"></label>
+    <label class="full">描述<textarea id="timelineEventDescription"></textarea></label>
+    <label>State Before<textarea id="timelineEventBefore"></textarea></label>
+    <label>State After<textarea id="timelineEventAfter"></textarea></label>
+    <label>時期<input id="timelineEventPeriod"></label>
+    <label>狀態<select id="timelineEventStatus"><option value="current">Current</option><option value="released">Released</option><option value="archived">Archived</option></select></label>
+    <div class="era-actions full">
+      <button class="mini-btn primary" id="timelineEventSubmit" type="submit">新增事件</button>
+      <button class="mini-btn" id="timelineEventCancel" type="button" hidden>取消編輯</button>
+    </div>
+  </form>
+  <div class="event-list" id="timelineEventList"><div class="empty">載入事件…</div></div>
 </section>
 <section class="view" id="trendView" hidden>
   <div class="hero"><h1>時期趨勢</h1><h2>比較不同時期中語言與作品關鍵字的變化。</h2><p>透過不同時期的關鍵字、主題與作品分布，觀察語言重心如何移動。</p></div>
   <div class="source-note">資料來源：LOC3_PERIOD_KEYWORD_ANALYSIS.json + LOC6_PERIOD_KEYWORD_ANALYSIS.json（靜態）</div>
   <div class="keyword-grid" id="trendGrid"><div class="empty">載入時期分析…</div></div>
 </section>
+<section class="view" id="trajectoryView" hidden>
+  <div class="hero"><h1>軌跡</h1><h2>觀察一個時期如何轉變成下一個時期。</h2><p>把各時期依時間串接，並比較相鄰時期的語意關鍵字變化，找出每一次轉折的方向。</p></div>
+  <div class="source-note">資料來源：時期資料 + LOC3 / LOC6 時期分析；只呈現現有資料可支持的變化。</div>
+  <div class="trajectory-list" id="trajectoryList"><div class="empty">載入軌跡…</div></div>
+</section>
 </main>
 </div>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-function switchView(name){$('#overviewView').hidden=name!=='overview';$('#trendView').hidden=name!=='trend';$$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));history.replaceState(null,'',name==='overview'?'evolution.html':'evolution.html#trend')}
+const EVOLUTION_SHEET_API='https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec';
+let evolutionEras=[]; let editingEraId=''; let addingEra=false; let timelineEvents=[];
+const eventUid=()=>crypto?.randomUUID?.()||('EV-'+Date.now()+'-'+Math.random().toString(36).slice(2));
+async function postEvent(action,event){const r=await fetch(EVOLUTION_SHEET_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,event}),redirect:'follow'});if(!r.ok)throw new Error('request failed');const d=await r.json();if(d&&d.ok===false)throw new Error(d.error||'request failed');return d}
+async function loadTimelineEvents(){try{const u=new URL(EVOLUTION_SHEET_API);u.searchParams.set('action','events');u.searchParams.set('user_id','lo3rwang');const r=await fetch(u,{cache:'no-store',redirect:'follow'});const d=await r.json();timelineEvents=Array.isArray(d)?d:(d.events||[]);renderTimelineEvents()}catch(err){$('#timelineEventList').innerHTML='<div class="empty">事件載入失敗：'+esc(err.message)+'</div>'}}
+function renderTimelineEvents(){const host=$('#timelineEventList');if(!host)return;const rows=[...timelineEvents].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));host.innerHTML=rows.length?rows.map(e=>`<article class="event-card"><div class="event-head"><div><strong>${esc(e.event_title||e.title||'未命名事件')}</strong><small>${esc(e.date||'')} · ${esc(e.event_type||'')}</small></div><small>${esc(e.status||'current')}</small></div>${e.description?`<p>${esc(e.description)}</p>`:''}${e.state_after?`<p><strong>State →</strong> ${esc(e.state_after)}</p>`:''}<div class="era-actions"><button class="mini-btn" data-timeline-event="edit" data-id="${esc(e.id)}">編輯</button><button class="mini-btn" data-timeline-event="delete" data-id="${esc(e.id)}">刪除</button></div></article>`).join(''):'<div class="empty">尚無事件。</div>'}
+function resetTimelineEvent(){const f=$('#timelineEventForm');f?.reset();$('#timelineEventId').value='';$('#timelineEventDate').value=new Date().toISOString().slice(0,10);$('#timelineEventType').value='transition';$('#timelineEventObjectType').value='person';$('#timelineEventStatus').value='current';$('#timelineEventSubmit').textContent='新增事件';$('#timelineEventCancel').hidden=true}
+function editTimelineEvent(id){const e=timelineEvents.find(x=>String(x.id)===String(id));if(!e)return;$('#timelineEventId').value=e.id||'';$('#timelineEventDate').value=e.date||'';$('#timelineEventType').value=e.event_type||'transition';$('#timelineEventTitle').value=e.event_title||e.title||'';$('#timelineEventObjectType').value=e.object_type||'person';$('#timelineEventObjectId').value=e.object_id||'';$('#timelineEventDescription').value=e.description||'';$('#timelineEventBefore').value=e.state_before||'';$('#timelineEventAfter').value=e.state_after||'';$('#timelineEventPeriod').value=e.era||'';$('#timelineEventStatus').value=e.status||'current';$('#timelineEventSubmit').textContent='儲存修改';$('#timelineEventCancel').hidden=false}
+function eraUid(period=''){const safe=String(period||'').trim().replace(/\s+/g,'-');return safe?'ERA-'+safe:'ERA-'+Date.now()}
+function eraEditorHtml(e={},isNew=false){return `<form class="era-editor" data-era-form="${isNew?'new':esc(e.era_id||'')}"><label>代號<input name="period" value="${esc(e.period||'')}" required></label><label>排序<input name="order" type="number" step="0.1" value="${esc(e.order??'')}"></label><label class="full">名稱<input name="name" value="${esc(e.name||'')}" required></label><label>開始日期<input name="start_date" type="date" value="${esc(e.start_date||'')}"></label><label>結束日期<input name="end_date" type="date" value="${esc(e.end_date||'')}"></label><label>狀態<select name="status"><option value="current" ${e.status==='current'?'selected':''}>Current</option><option value="released" ${e.status==='released'?'selected':''}>Released</option><option value="archived" ${e.status==='archived'?'selected':''}>Archived</option></select></label><label class="full">描述<textarea name="description">${esc(e.description||'')}</textarea></label><div class="era-actions full"><button class="mini-btn primary" type="submit">${isNew?'新增':'儲存修改'}</button><button class="mini-btn" type="button" data-era-action="cancel">取消</button></div></form>`}
+function renderEraCrud(){const host=$('#eraTimeline');if(!host)return;const ordered=[...evolutionEras].sort((a,b)=>Number(a.order||0)-Number(b.order||0));const rows=ordered.map(e=>editingEraId===e.era_id?`<article class="era">${eraEditorHtml(e,false)}</article>`:`<article class="era ${e.status==='current'?'current':''}"><div class="era-head"><strong>${esc(e.display_label||((e.period||'')+'｜'+(e.name||'')))}</strong><small>${esc(e.start_date||'—')} ～ ${esc(e.end_date||'現在')}</small></div><p>${esc(e.description||'')}</p><div class="era-actions"><button class="mini-btn" data-era-action="edit" data-era-id="${esc(e.era_id||'')}">編輯</button><button class="mini-btn" data-era-action="delete" data-era-id="${esc(e.era_id||'')}">刪除</button></div></article>`).join('');host.innerHTML=(addingEra?`<article class="era">${eraEditorHtml({},true)}</article>`:'')+(rows||'<div class="empty">尚無時期資料。</div>')}
+async function postEra(action,era){const r=await fetch(EVOLUTION_SHEET_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,era}),redirect:'follow'});if(!r.ok)throw new Error('request failed');const d=await r.json();if(d&&d.ok===false)throw new Error(d.error||'request failed');return d}
+function eraPayload(form,existing={}){const fd=new FormData(form),period=String(fd.get('period')||'').trim(),name=String(fd.get('name')||'').trim();return {...existing,era_id:existing.era_id||eraUid(period),period,order:String(fd.get('order')||'').trim(),name,display_label:period&&name?period+'｜'+name:(name||period),start_date:String(fd.get('start_date')||'').trim(),end_date:String(fd.get('end_date')||'').trim(),status:String(fd.get('status')||'current'),description:String(fd.get('description')||'').trim(),system_id:existing.system_id||'lo3rwang'}}
+function switchView(name){$('#overviewView').hidden=name!=='overview';$('#timelineView').hidden=name!=='timeline';$('#trendView').hidden=name!=='trend';$('#trajectoryView').hidden=name!=='trajectory';$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));const hash=name==='overview'?'':'#'+name;history.replaceState(null,'','evolution.html'+hash)}
 $$('[data-view]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
-if(location.hash==='#trend')switchView('trend');
+if(location.hash==='#timeline')switchView('timeline'); else if(location.hash==='#trend')switchView('trend'); else if(location.hash==='#trajectory')switchView('trajectory');
+resetTimelineEvent();loadTimelineEvents();
+$('#timelineEventForm')?.addEventListener('submit',async ev=>{
+  ev.preventDefault();
+  const id=$('#timelineEventId').value;
+  const event={
+    id:id||eventUid(),
+    user_id:'lo3rwang',
+    date:$('#timelineEventDate').value,
+    event_type:$('#timelineEventType').value.trim(),
+    event_title:$('#timelineEventTitle').value.trim(),
+    object_type:$('#timelineEventObjectType').value.trim(),
+    object_id:$('#timelineEventObjectId').value.trim(),
+    description:$('#timelineEventDescription').value.trim(),
+    state_before:$('#timelineEventBefore').value.trim(),
+    state_after:$('#timelineEventAfter').value.trim(),
+    era:$('#timelineEventPeriod').value.trim(),
+    status:$('#timelineEventStatus').value,
+    confidence:'recorded',
+    system_id:'lo3rwang',
+    primary_loc:'LOC8'
+  };
+  try{
+    await postEvent(id?'update_event':'event',event);
+    resetTimelineEvent();
+    await loadTimelineEvents();
+  }catch(err){
+    alert('事件儲存失敗：'+err.message);
+  }
+});
+$('#timelineEventCancel')?.addEventListener('click',resetTimelineEvent);
+$('#timelineEventList')?.addEventListener('click',async ev=>{
+  const b=ev.target.closest('[data-timeline-event]');
+  if(!b)return;
+  const id=b.dataset.id;
+  const action=b.dataset.timelineEvent;
+  if(action==='edit'){
+    editTimelineEvent(id);
+    $('#timelineEventForm')?.scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
+  if(action==='delete'){
+    if(!confirm('刪除這筆事件？'))return;
+    try{
+      await postEvent('delete_event',{id,user_id:'lo3rwang'});
+      await loadTimelineEvents();
+    }catch(err){
+      alert('事件刪除失敗：'+err.message);
+    }
+  }
+});
+$('#addEraBtn')?.addEventListener('click',()=>{addingEra=true;editingEraId='';renderEraCrud()});
+$('#eraTimeline')?.addEventListener('click',async ev=>{const b=ev.target.closest('[data-era-action]');if(!b)return;const a=b.dataset.eraAction,id=b.dataset.eraId||'';if(a==='edit'){editingEraId=id;addingEra=false;renderEraCrud();return}if(a==='cancel'){editingEraId='';addingEra=false;renderEraCrud();return}if(a==='delete'){const item=evolutionEras.find(x=>x.era_id===id);if(!confirm('確定刪除時期「'+(item?.display_label||item?.name||id)+'」？'))return;try{await postEra('delete_era',{era_id:id});evolutionEras=evolutionEras.filter(x=>x.era_id!==id);renderEraCrud()}catch(err){alert('刪除失敗：'+err.message)}}});
+$('#eraTimeline')?.addEventListener('submit',async ev=>{const form=ev.target.closest('[data-era-form]');if(!form)return;ev.preventDefault();const token=form.dataset.eraForm,isNew=token==='new',existing=isNew?{}:(evolutionEras.find(x=>x.era_id===token)||{}),era=eraPayload(form,existing);try{await postEra(isNew?'era':'update_era',era);if(isNew)evolutionEras.push(era);else evolutionEras=evolutionEras.map(x=>x.era_id===token?era:x);addingEra=false;editingEraId='';renderEraCrud()}catch(err){alert((isNew?'新增':'修改')+'失敗：'+err.message)}});
 Promise.all([
   fetch('data/json/registries/LOC_ERA_REGISTRY.json').then(r=>r.json()),
   fetch('data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json').then(r=>r.json()).catch(()=>({periods:[]})),
-  fetch('data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json').then(r=>r.json()).catch(()=>({periods:[]}))
-]).then(([eraData,loc3,loc6])=>{
-  const eras=[...(eraData.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+  fetch('data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json').then(r=>r.json()).catch(()=>({periods:[]})),
+  fetch(EVOLUTION_SHEET_API+'?action=eras&user_id=lo3rwang',{cache:'no-store'}).then(r=>r.json()).catch(()=>({eras:[]}))
+]).then(([eraData,loc3,loc6,remoteEraData])=>{
+  const remoteEras=Array.isArray(remoteEraData)?remoteEraData:(remoteEraData.eras||[]);
+  const eras=[...(remoteEras.length?remoteEras:(eraData.eras||[]))].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+  evolutionEras=eras;
   const current=eras.find(e=>e.status==='current')||eras[eras.length-1];
   $('#eraCount').textContent=eras.length||'0'; $('#eraCurrent').textContent=current?.period||'—'; $('#eraStart').textContent=current?.start_date||'—';
-  $('#eraTimeline').innerHTML=eras.map(e=>`<article class="era ${e.status==='current'?'current':''}"><div class="era-head"><strong>${esc(e.display_label||((e.period||'')+'｜'+(e.name||'')))}</strong><small>${esc(e.start_date||'—')} ～ ${esc(e.end_date||'現在')}</small></div><p>${esc(e.description||'')}</p></article>`).join('')||'<div class="empty">尚無 ERA。</div>';
+  renderEraCrud();
   const m3=new Map((loc3.periods||[]).map(x=>[String(x.period||''),x]));
   const m6=new Map((loc6.periods||[]).map(x=>[String(x.period||''),x]));
   $('#trendGrid').innerHTML=eras.map(e=>{
@@ -77,7 +175,39 @@ Promise.all([
     const uniq=[...new Set(kws)].slice(0,10);
     return `<article class="keyword-card"><strong>${esc(e.display_label||e.period)}</strong><small>${esc(e.start_date||'—')} ～ ${esc(e.end_date||'現在')}</small><div class="chips">${uniq.length?uniq.map(k=>`<span class="chip">${esc(k)}</span>`).join(''):'<span class="chip">尚無分析</span>'}</div></article>`;
   }).join('');
-}).catch(err=>{$('#eraTimeline').innerHTML='<div class="empty">靜態資料載入失敗：'+esc(err.message)+'</div>';$('#trendGrid').innerHTML='<div class="empty">靜態資料載入失敗。</div>'});
+
+  function keywordMap(item){
+    const src=Array.isArray(item?.normalized_semantic_families)?item.normalized_semantic_families:(Array.isArray(item?.normalized_top_keywords)?item.normalized_top_keywords:[]);
+    return new Map(src.map(x=>[String(x.term||''),Number(x.percent||0)]));
+  }
+  function delta(fromItem,toItem){
+    const a=keywordMap(fromItem),b=keywordMap(toItem),terms=new Set([...a.keys(),...b.keys()]);
+    const rows=[...terms].map(term=>({term,from:a.get(term)||0,to:b.get(term)||0,delta:Number(((b.get(term)||0)-(a.get(term)||0)).toFixed(1))}));
+    return {
+      up:rows.filter(x=>x.delta>0).sort((x,y)=>y.delta-x.delta).slice(0,4),
+      down:rows.filter(x=>x.delta<0).sort((x,y)=>x.delta-y.delta).slice(0,4)
+    };
+  }
+  const trajectory=[];
+  for(let i=1;i<eras.length;i++){
+    const fromEra=eras[i-1],toEra=eras[i];
+    const from3=m3.get(String(fromEra.period||''))||{},to3=m3.get(String(toEra.period||''))||{};
+    const d=delta(from3,to3);
+    const chip=(x,up)=>`<span class="chip">${esc(x.term)} ${up?'+':''}${esc(x.delta)}pt</span>`;
+    trajectory.push(`<article class="trajectory-card">
+      <div class="trajectory-head">
+        <strong>${esc(fromEra.display_label||fromEra.period)} → ${esc(toEra.display_label||toEra.period)}</strong>
+        <small>${esc(toEra.start_date||'—')}</small>
+      </div>
+      <div class="trajectory-delta">
+        <div class="trajectory-box"><b>比重上升</b><div class="chips">${d.up.length?d.up.map(x=>chip(x,true)).join(''):'<span class="chip">尚無足夠資料</span>'}</div></div>
+        <div class="trajectory-box"><b>比重下降</b><div class="chips">${d.down.length?d.down.map(x=>chip(x,false)).join(''):'<span class="chip">尚無足夠資料</span>'}</div></div>
+      </div>
+      <div class="trajectory-note">${esc(toEra.description||'')}</div>
+    </article>`);
+  }
+  $('#trajectoryList').innerHTML=trajectory.join('')||'<div class="empty">目前沒有足夠的時期資料可形成軌跡。</div>';
+}).catch(err=>{$('#eraTimeline').innerHTML='<div class="empty">靜態資料載入失敗：'+esc(err.message)+'</div>';$('#trendGrid').innerHTML='<div class="empty">靜態資料載入失敗。</div>';$('#trajectoryList').innerHTML='<div class="empty">軌跡資料載入失敗。</div>'});
 </script>
 <script src="js/loc-nav.js"></script>
 

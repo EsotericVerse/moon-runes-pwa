@@ -2,7 +2,7 @@
   "schema_version": "0.3",
   "registry": "LOC_KNOWLEDGE_ASSET_REGISTRY",
   "authority": "LOC7_KM",
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-08",
   "purpose": "Register human-readable and structured knowledge assets that LOC7_KM may index, cite, version, and expose through knowledge/search views.",
   "rules": [
     "Registration as a knowledge asset does not make every statement Canon.",
@@ -16,8 +16,8 @@
     {
       "asset_id": "KA-PERSON-LO3RWANG-001",
       "title": "王政德（Lucas Oscar Wang / lo3rwang）",
-      "path": "docs/LO3RWANG_PROFILE.md",
-      "source_type": "document",
+      "path": "lo3rwang.html",
+      "source_type": "public_page",
       "content_type": "knowledge_document",
       "primary_loc": "LOC7",
       "related_locs": [
@@ -57,13 +57,13 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "notes": "Identity-intent queries should prefer this official profile over generic corpus matches."
+      "notes": "Official public identity profile is maintained directly in lo3rwang.html; duplicate Markdown profile removed."
     },
     {
       "asset_id": "KA-LOC-OVERVIEW-001",
       "title": "LOC／月典：語言系統框架介紹",
-      "path": "docs/LOC_OVERVIEW.md",
-      "source_type": "document",
+      "path": "index.html",
+      "source_type": "public_page",
       "content_type": "knowledge_document",
       "primary_loc": "LOC7",
       "related_locs": [
@@ -97,7 +97,7 @@
         "LOC8",
         "Luna Codex"
       ],
-      "public_path": "loc-overview.html",
+      "public_path": "index.html",
       "public_summary": "LOC／月典是一套把語言、作品、治理與時間脈絡整理成可搜尋、可關聯、可演化結構的語言系統框架。",
       "presentation": "public_article",
       "exposure_policy": "public_full_text",
@@ -112,7 +112,7 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "notes": "Exact system-name queries should prefer this overview instead of expanding every work whose metadata contains LOC."
+      "notes": "Public LOC overview is maintained directly in index.html and summarized in README.md; duplicate Markdown overview removed."
     },
     {
       "asset_id": "KA-README-001",
@@ -450,8 +450,8 @@
     {
       "asset_id": "KA-LOC6-ZD-ANALYSIS-001",
       "title": "政德風：從感性書寫到自我治理的語言演變",
-      "path": "docs/LOC6_ZHENGDE_STYLE_ANALYSIS.md",
-      "source_type": "document",
+      "path": "governance.html#style",
+      "source_type": "public_page",
       "content_type": "governance_article",
       "primary_loc": "LOC6",
       "related_locs": [
@@ -490,8 +490,8 @@
           "LOC4/LOC5 cross relationships"
         ]
       },
-      "notes": "Public-facing analytical Knowledge Asset. LOC6 provides style/governance evidence; LOC7_KM indexes and exposes it through LOC Search.",
-      "public_path": "governance.html",
+      "notes": "Zhengde Style analysis and governance are consolidated in governance.html; duplicate Markdown analysis removed.",
+      "public_path": "governance.html#style",
       "public_summary": "政德風是王政德長期作品、生活紀錄、歌曲與文章中逐步形成的個人語言表現；其演變可從感性書寫、理性命題、界線建立，一路追蹤到現行的自我治理。",
       "presentation": "public_article",
       "exposure_policy": "public_full_text",
@@ -618,57 +618,6 @@
         "maintained_in_repo": true
       },
       "notes": "Structured Lots answers used by oracle mode and normal LOC RAG retrieval. The spreadsheet mother source remains authoritative.",
-      "presentation": "internal_source"
-    },
-    {
-      "asset_id": "KA-LOC-CURRENT-STATE-001",
-      "title": "LOC Current State & Demo Roadmap",
-      "path": "docs/LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md",
-      "source_type": "document",
-      "content_type": "knowledge_document",
-      "primary_loc": "LOC7",
-      "related_locs": [
-        "LOC1",
-        "LOC2",
-        "LOC3",
-        "LOC4",
-        "LOC5",
-        "LOC6",
-        "LOC8"
-      ],
-      "role": "current_system_definition_demo_roadmap_and_decision_log",
-      "status": "current",
-      "authority_level": "working_governance_summary",
-      "searchable": true,
-      "index_priority": "highest",
-      "version": "2026-09-05",
-      "updated_at": "2026-09-05",
-      "keywords": [
-        "LOC基本定義",
-        "語言系統框架",
-        "月之符文",
-        "Seed Corpus",
-        "Semantic Playground",
-        "LOC RAG",
-        "Graph RAG",
-        "LOC8",
-        "關係分析",
-        "趨勢分析",
-        "Demo",
-        "Golden Query",
-        "資料治理",
-        "未知演化",
-        "LunaRunes"
-      ],
-      "provenance": {
-        "repository": "EsotericVerse/moon-runes-pwa",
-        "maintained_in_repo": true,
-        "derived_from": [
-          "creator-confirmed architecture decisions",
-          "current repository implementation"
-        ]
-      },
-      "notes": "Maintained current-state knowledge asset. Separates Stable decisions, Working items, Pending gaps and Demo priorities so future changes do not require reconstructing architecture from chat history.",
       "presentation": "internal_source"
     },
     {
