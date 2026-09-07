@@ -80,10 +80,10 @@ LOC 的治理層不是另一個獨立產品，而是橫跨 1–8 的控制方式
 
 核心原則見：
 
-- [LOC Governance Core](./LOC_GOVERNANCE_CORE.md)
-- [LOC Governance History & Trend Analysis](./LOC_GOVERNANCE_HISTORY_AND_TRENDS.md)
-- [LunaRunes 66 Governance Design](./LUNA_RUNES_66_GOVERNANCE_DESIGN.md)
-- [Content Rights & Privacy Governance](./LOC_CONTENT_RIGHTS_POLICY.md)
+- [LOC Governance Core](../governance.html)
+- [LOC Governance History & Trend Analysis](../governance.html)
+- [LunaRunes 66 Governance Design](../governance.html)
+- [Content Rights & Privacy Governance](../data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json)
 
 現行治理可以簡化為：
 
