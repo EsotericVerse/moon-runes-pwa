@@ -1333,6 +1333,46 @@
       },
       "notes": "Single maintained expanded rune interpretation projection. The former engine full-copy dataset was removed as duplicate.",
       "presentation": "internal_source"
+    },
+    {
+      "asset_id": "KA-RUNE-GRAMMAR",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC7",
+      "related_locs": [
+        "LOC1",
+        "LOC2",
+        "LOC6"
+      ],
+      "content_type": "knowledge_document",
+      "title": "月之符文 Grammar／符文治理規則",
+      "summary": "LunaRune64.xlsx Grammar 工作表的機器可讀投影，涵蓋語法分層、單卡、兩卡、三卡、五卡、OW3gs、符文交互與月相交互。",
+      "keywords": [
+        "Grammar",
+        "符文治理",
+        "兩卡",
+        "三卡",
+        "五卡",
+        "OW3gs",
+        "符文交互",
+        "月相交互",
+        "源轉合",
+        "關係優先"
+      ],
+      "source_refs": [
+        {
+          "source_type": "spreadsheet",
+          "source_id": "LunaRune64.xlsx#Grammar"
+        }
+      ],
+      "public_path": null,
+      "provenance": {
+        "mother_source": "LunaRune64.xlsx#Grammar",
+        "projection": "data/json/core/rune_grammar.json",
+        "updated_at": "2026-09-07"
+      },
+      "lifecycle": {
+        "status": "current"
+      }
     }
   ]
 }
