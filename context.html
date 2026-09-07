@@ -79,8 +79,28 @@ button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:po
 <h2 class="loc-header-subtitle">建立關係，並從 Graph 看見它們如何連在一起。</h2>
 <p class="loc-header-copy">Relation 是脈絡的基本資料。你可以建立、修改或刪除關係；Graph 則從既有資料中搜尋節點與關係，展開局部脈絡。</p>
 
-<div class="context-tool-grid">
-  <section class="context-tool-card" id="relation-library">
+
+<section class="context-tool-card">
+    <h3>關係圖探索器</h3>
+    <p>從一個概念、作品、事件或符文出發，查看它周圍的節點與關係。</p>
+    <form id="contextGraphForm" class="context-graph-toolbar">
+      <label>搜尋<input id="contextGraphQuery" placeholder="例如：自我治理、界、人生月台"></label>
+      <label>Depth<select id="contextGraphDepth"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select></label>
+      <button class="context-btn primary" type="submit">搜尋關係</button>
+    </form>
+    <div class="context-graph-status" id="contextGraphStatus">尚未查詢。</div>
+    <div class="context-graph-filter">
+      <select id="contextGraphNodeType"><option value="">全部節點類型</option></select>
+      <select id="contextGraphEdgeType"><option value="">全部關係類型</option></select>
+      <button class="context-btn ghost" type="button" id="contextGraphReset">清除篩選</button>
+    </div>
+    <div class="context-graph-layout">
+      <div class="context-graph-panel"><h3>Nodes</h3><div class="context-list" id="contextGraphNodes"><div class="context-empty">先搜尋一個概念。</div></div><div class="context-pagination" id="contextGraphNodePagination" hidden><div class="context-page-info" id="contextGraphNodePageInfo"></div><div class="context-page-buttons" id="contextGraphNodePageButtons"></div></div></div>
+      <div class="context-graph-panel"><h3>Edges</h3><div class="context-list" id="contextGraphEdges"><div class="context-empty">尚無關係。</div></div><div class="context-pagination" id="contextGraphEdgePagination" hidden><div class="context-page-info" id="contextGraphEdgePageInfo"></div><div class="context-page-buttons" id="contextGraphEdgePageButtons"></div></div></div>
+    </div>
+  </section>
+<section class="context-tool-card" style="margin-top:16px">
+
     <h3 id="contextRelationFormTitle">新增關係</h3>
     <p>建立來源節點、目標節點與它們之間的關係。</p>
     <form id="contextRelationForm">
@@ -108,29 +128,13 @@ button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:po
       </div>
       <div class="context-actions"><button class="context-btn primary" type="submit" id="contextRelationSubmit">新增關係</button><button class="context-btn ghost" type="button" id="contextRelationCancel" hidden>取消編輯</button></div>
     </form>
-    <div class="context-list" id="contextRelationList"><div class="context-empty">正在準備關係資料…</div></div><div class="context-pagination" id="contextRelationPagination" hidden><div class="context-page-info" id="contextRelationPageInfo"></div><div class="context-page-buttons" id="contextRelationPageButtons"></div></div>
-  </section>
-
-  <section class="context-tool-card">
-    <h3>Graph Explorer</h3>
-    <p>從一個概念、作品、事件或符文出發，查看它周圍的關係。</p>
-    <form id="contextGraphForm" class="context-graph-toolbar">
-      <label>搜尋<input id="contextGraphQuery" placeholder="例如：自我治理、界、人生月台"></label>
-      <label>Depth<select id="contextGraphDepth"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select></label>
-      <button class="context-btn primary" type="submit">搜尋關係</button>
-    </form>
-    <div class="context-graph-status" id="contextGraphStatus">尚未查詢。</div>
-    <div class="context-graph-filter">
-      <select id="contextGraphNodeType"><option value="">全部節點類型</option></select>
-      <select id="contextGraphEdgeType"><option value="">全部關係類型</option></select>
-      <button class="context-btn ghost" type="button" id="contextGraphReset">清除篩選</button>
-    </div>
-    <div class="context-graph-layout">
-      <div class="context-graph-panel"><h3>Nodes</h3><div class="context-list" id="contextGraphNodes"><div class="context-empty">先搜尋一個概念。</div></div><div class="context-pagination" id="contextGraphNodePagination" hidden><div class="context-page-info" id="contextGraphNodePageInfo"></div><div class="context-page-buttons" id="contextGraphNodePageButtons"></div></div></div>
-      <div class="context-graph-panel"><h3>Edges</h3><div class="context-list" id="contextGraphEdges"><div class="context-empty">尚無關係。</div></div><div class="context-pagination" id="contextGraphEdgePagination" hidden><div class="context-page-info" id="contextGraphEdgePageInfo"></div><div class="context-page-buttons" id="contextGraphEdgePageButtons"></div></div></div>
-    </div>
-  </section>
-</div>
+  
+</section>
+<section class="context-tool-card" style="margin-top:16px">
+  <div class="context-item-head"><div><h3>關係列表</h3><p>可直接編輯或刪除既有關係。</p></div></div>
+  <div class="context-list" id="contextRelationList"><div class="context-empty">正在準備關係資料…</div></div>
+  <div class="context-pagination" id="contextRelationPagination" hidden><div class="context-page-info" id="contextRelationPageInfo"></div><div class="context-page-buttons" id="contextRelationPageButtons"></div></div>
+</section>
 </div></section>
 <section class="context-section" data-context-view="sandbox-guide"><div class="wrap"><h2>月之符文組合規則</h2><p class="intro">沙盒直接使用月之符文既有的組合語法：單張保留原意，雙卡表現因果，三卡使用「源－轉－合」，更多張數依各自既定規律處理。</p><div class="table"><table><thead><tr><th>卡數</th><th>語義結構</th><th>遊戲中的作用</th></tr></thead><tbody><tr><td>1</td><td>單符狀態</td><td>基本行為／狀態</td></tr><tr><td>2</td><td>因果</td><td>基本事件與交互關係</td></tr><tr><td>3</td><td>源－轉－合</td><td>完整事件回答與語義鏈</td></tr><tr><td>5</td><td>五卡規律</td><td>較完整局勢</td></tr><tr><td>11</td><td>OW3gs</td><td>大型語義組合</td></tr></tbody></table></div></div></section>
 <section class="context-section" data-context-view="scenario" id="scenario-model"><div class="wrap">
