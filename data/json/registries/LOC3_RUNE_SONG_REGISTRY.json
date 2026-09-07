@@ -11,19 +11,17 @@
     "medium_candidate": "Temporal/contextual match to a known draw, but no direct rune linkage.",
     "rejected_theme_only": "Rune/moon/fate imagery without draw provenance.",
     "author_recalled": "Author recalls that rune songs were created using OW3gs 11-card draws, and identifies these candidates as likely belonging to that process. Stronger than metadata inference, but still distinct from a preserved original draw-to-song record.",
-    "ow3gs_exact_11": "A confirmed rune song whose preserved draw provenance uses OW3gs and contains exactly 11 non-repeating runes.",
+    "ow3gs_exact_11": "Exactly 11 DISTINCT runes after deduplication. These are classified as rune songs and use the 11-rune set as their governed rune membership.",
     "special_rune_song": "More than 11 distinct runes by deliberate special construction / rune-filling design; related to rune search but excluded from OW3gs 11-rune results.",
-    "exact_11_scan": "Exactly 11 DISTINCT rune-name hits in the scan. The 11-name membership is preserved directly, but this scan alone does not prove draw-to-song provenance."
+    "exact_11_scan": "Deprecated: exact-11 distinct-rune records are now classified as rune songs by author rule."
   },
   "rules": [
     "Rune membership is counted by DISTINCT rune names; repeated occurrences of the same rune count once.",
-    "When a scanned song has exactly 11 distinct rune-name hits, those 11 names are stored directly as its rune membership set; no reverse guessing is required.",
-    "Exactly-11 lexical membership alone does not prove rune_song or OW3gs generation provenance.",
-    "Confirmed rune_song status still requires preserved draw-to-song provenance or explicit author confirmation.",
-    "Songs with more than 11 distinct runes may be special rune songs deliberately filled with rune vocabulary; keep them separate from OW3gs exact-11 results.",
-    "Searching one rune may surface confirmed rune songs and separately labeled exact-11 scan associations containing that rune.",
-    "Searching OW3gs surfaces the OW3gs definition/method first, then preserved draw/reading records, confirmed related rune songs, and separately labeled exact-11 scan associations.",
-    "Explicit author rejection overrides automatic keyword inference."
+    "A song with exactly 11 distinct rune-name hits is classified as a rune song.",
+    "Those 11 distinct rune names are stored directly as the song's rune membership set; no reverse guessing is required.",
+    "Exactly-11 rune songs are surfaced by both OW3gs search and single-rune reverse lookup.",
+    "Songs with more than 11 distinct runes may be special rune songs deliberately filled with rune vocabulary; keep them separate from the exact-11 class.",
+    "Explicit author rejection overrides automatic classification."
   ],
   "confirmed_records": [
     {
@@ -1028,16 +1026,14 @@
       "entity_definition",
       "method",
       "reading_examples",
-      "confirmed_rune_songs",
-      "exact_11_scan_associations",
+      "rune_songs",
       "related_documents"
     ],
-    "rune_query_relation": "reverse lookup confirmed rune-song membership plus separately labeled exact-11 scan membership",
-    "exact_11_scan_count": 37,
-    "confirmed_rune_song_count": 4,
-    "special_confirmed_count": 4
+    "rune_query_relation": "reverse lookup rune songs by governed rune membership",
+    "exact_11_rune_song_count": 37,
+    "confirmed_special_rune_song_count": 4
   },
-  "exact_11_scan_records": [
+  "ow3gs_records": [
     {
       "work_id": "E0334",
       "title": "自律域",
@@ -1058,11 +1054,14 @@
         "無"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0048",
@@ -1084,11 +1083,14 @@
         "命"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0112",
@@ -1110,11 +1112,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0163",
@@ -1136,11 +1141,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0164",
@@ -1162,11 +1170,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0251",
@@ -1188,11 +1199,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0353",
@@ -1214,11 +1228,14 @@
         "命"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0462",
@@ -1240,11 +1257,14 @@
         "無"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0499",
@@ -1266,11 +1286,14 @@
         "幻"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0130",
@@ -1292,11 +1315,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0306",
@@ -1318,11 +1344,14 @@
         "命"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0350",
@@ -1344,11 +1373,14 @@
         "無"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0137",
@@ -1370,11 +1402,14 @@
         "命"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0138",
@@ -1396,11 +1431,14 @@
         "命"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0338",
@@ -1422,11 +1460,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0429",
@@ -1448,11 +1489,14 @@
         "無"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0106",
@@ -1474,11 +1518,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0128",
@@ -1500,11 +1547,14 @@
         "命"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0129",
@@ -1526,11 +1576,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0135",
@@ -1552,11 +1605,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0136",
@@ -1578,11 +1634,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0235",
@@ -1604,11 +1663,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0447",
@@ -1630,11 +1692,14 @@
         "無"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0489",
@@ -1656,11 +1721,14 @@
         "命"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0249",
@@ -1682,11 +1750,14 @@
         "明"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0454",
@@ -1708,11 +1779,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0468",
@@ -1734,11 +1808,14 @@
         "命"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0099",
@@ -1760,11 +1837,14 @@
         "夢"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0189",
@@ -1786,11 +1866,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0248",
@@ -1812,11 +1895,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0269",
@@ -1838,11 +1924,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0293",
@@ -1864,11 +1953,14 @@
         "命"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0455",
@@ -1890,11 +1982,14 @@
         "果"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0475",
@@ -1916,11 +2011,14 @@
         "無"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0113",
@@ -1942,11 +2040,14 @@
         "無"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0260",
@@ -1968,11 +2069,14 @@
         "空"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     },
     {
       "work_id": "E0378",
@@ -1994,11 +2098,14 @@
         "夢"
       ],
       "rune_count": 11,
-      "generation_method": null,
-      "mapping_status": "exact_11_distinct_scan",
-      "record_type": "exact_11_rune_membership_scan",
-      "provenance_status": "draw_to_song_unconfirmed",
-      "note": "Exactly 11 distinct rune-name hits are preserved as the song's 11-rune membership set. This does not by itself prove rune-song / OW3gs creation provenance."
+      "generation_method": "OW3gs",
+      "mapping_status": "exact_11_distinct_runes",
+      "record_type": "rune_song",
+      "provenance_status": "classified_by_author_rule",
+      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
+      "status": "confirmed",
+      "role": "exact_11_rune_song",
+      "rune_song_flag": true
     }
   ]
 }
