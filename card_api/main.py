@@ -660,6 +660,7 @@ async def km_import(input: KMImportInput):
         "imported_at": datetime.now().isoformat(),
         "source": input.source.strip() or "manual_upload",
         "filename": filename,
+        "analysis": "none",
         "payload": input.data,
     }
     serialized = json.dumps(envelope, ensure_ascii=False, indent=2)
