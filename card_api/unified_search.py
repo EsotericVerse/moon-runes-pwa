@@ -833,6 +833,23 @@ class UnifiedSearchEngine:
                 themes = item.get("themes", [])
                 semantic_keywords = item.get("semantic_keywords", [])
                 governance_signals = item.get("governance_signals", [])
+                work = next(
+                    (w for w in self.loc4.get("works", []) if w.get("work_id") == item.get("work_id")),
+                    {}
+                )
+                source_refs = list(work.get("source_refs", []))
+                first_chapter = next(
+                    (ref for ref in source_refs if ref.get("role") == "first_chapter_or_prologue"),
+                    None
+                )
+                music_refs = [
+                    ref for ref in source_refs
+                    if ref.get("source_type") == "suno_share"
+                    or ref.get("role") in {
+                        "theme_song", "related_song", "featured_song", "same_title_song",
+                        "op", "proposal_song", "character_theme"
+                    }
+                ]
                 summary_parts = []
                 if themes:
                     summary_parts.append("主題：" + "、".join(themes[:8]))
@@ -852,13 +869,31 @@ class UnifiedSearchEngine:
                     "score": round(score, 6),
                     "era_id": item.get("era_id"),
                     "period": item.get("period"),
-                    "source_refs": [{
-                        "source_type": "loc4_text_analysis_registry",
-                        "source_id": item.get("analysis_id"),
-                        "note": "structured LOC4 work-level semantic analysis"
-                    }],
+                    "source_refs": [
+                        {
+                            "source_type": "loc4_text_analysis_registry",
+                            "source_id": item.get("analysis_id"),
+                            "note": "structured LOC4 work-level semantic analysis"
+                        },
+                        *source_refs,
+                    ],
                     "payload": {
                         **item,
+                        "work_catalog": {
+                            "work_id": work.get("work_id"),
+                            "title": work.get("title"),
+                            "summary": work.get("summary"),
+                            "chapter_count": work.get("chapter_count"),
+                            "created_date": work.get("created_date"),
+                            "period": work.get("period"),
+                            "period_name": work.get("period_name"),
+                            "era_id": work.get("era_id"),
+                            "tags": work.get("tags", []),
+                            "first_chapter_or_prologue": first_chapter,
+                            "music_refs": music_refs,
+                            "music_map": work.get("music_map"),
+                            "relationship_refs": work.get("relationship_refs", []),
+                        },
                         "analysis_view": {
                             "themes": themes,
                             "semantic_keywords": semantic_keywords,
