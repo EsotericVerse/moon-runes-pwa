@@ -464,7 +464,7 @@
       const total=Number(corpus.loc4_threads_total_main_posts||4578);
       const replies=Number(corpus.loc4_threads_total_replies||2430);
       const full=!!corpus.loc4_threads_full_index_ready;
-      el('corpusStatus').textContent=`Corpus：LOC3 ${loc3} 首可搜尋作品 · LOC6 Threads ${indexed} / ${total} 篇主貼文已索引 · ${replies} 筆 Reply 補充證據${full?' · 全文索引已就緒':' · 全文索引持續擴充中'}`;
+      el('corpusStatus').textContent=`Corpus：LOC3 ${loc3} 首可搜尋作品 · LOC4 Threads ${indexed} / ${total} 篇主貼文已索引 · ${replies} 筆 Reply 補充證據${full?' · 全文索引已就緒':' · 全文索引持續擴充中'}`;
     }
     function applyEras(eras){
       const select=el('period'),current=select.value;
