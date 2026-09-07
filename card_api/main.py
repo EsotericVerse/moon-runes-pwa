@@ -84,19 +84,36 @@ except Exception as e:
     print(f"Warning: Failed to load LOC3 lyrics dataset: {e}")
 
 
-# Optional private Facebook corpus. The dataset is never committed to the public repo.
+# Facebook historical text corpus.
+# Keep it out of API startup: the corpus is comparatively large and must not
+# determine whether the whole FastAPI service can boot on Render.
 FB_DATA_PATH = (
     Path(os.environ.get("LOC_FB_SEARCH_DATASET", "")).expanduser()
     if os.environ.get("LOC_FB_SEARCH_DATASET")
     else Path(__file__).resolve().parents[1] / "data" / "json" / "facebook" / "manifest.json"
 )
-try:
-    FB_SEARCHER = FacebookSearchEngine(FB_DATA_PATH) if FB_DATA_PATH.exists() else None
-    FB_LOAD_ERROR = None if FB_SEARCHER else f"Facebook corpus not found: {FB_DATA_PATH}"
-except Exception as e:
-    FB_SEARCHER = None
-    FB_LOAD_ERROR = str(e)
-    print(f"Warning: Failed to load Facebook corpus: {e}")
+FB_SEARCHER = None
+FB_LOAD_ERROR = None
+
+def get_facebook_searcher(required: bool = False):
+    global FB_SEARCHER, FB_LOAD_ERROR
+    if FB_SEARCHER is not None:
+        return FB_SEARCHER
+    if not FB_DATA_PATH.exists():
+        FB_LOAD_ERROR = f"Facebook corpus not found: {FB_DATA_PATH}"
+        if required:
+            raise HTTPException(status_code=503, detail=f"Facebook corpus尚未就緒: {FB_LOAD_ERROR}")
+        return None
+    try:
+        FB_SEARCHER = FacebookSearchEngine(FB_DATA_PATH)
+        FB_LOAD_ERROR = None
+        return FB_SEARCHER
+    except Exception as e:
+        FB_LOAD_ERROR = str(e)
+        print(f"Warning: Failed to lazy-load Facebook corpus: {e}")
+        if required:
+            raise HTTPException(status_code=503, detail=f"Facebook corpus尚未就緒: {FB_LOAD_ERROR}")
+        return None
 
 # Unified Search：保留各 LOC 的 canonical ownership，只統一查詢與結果 envelope
 try:
@@ -557,7 +574,8 @@ async def health_check():
         "loc3_ready": LOC3_SEARCHER is not None,
         "loc3_works_loaded": len(LOC3_SEARCHER.works) if LOC3_SEARCHER else 0,
         "unified_search_ready": UNIFIED_SEARCHER is not None,
-        "facebook_search_ready": FB_SEARCHER is not None,
+        "facebook_corpus_available": FB_DATA_PATH.exists(),
+        "facebook_search_loaded": FB_SEARCHER is not None,
         "facebook_posts_loaded": len(FB_SEARCHER.posts) if FB_SEARCHER else 0,
         "shared_era_count": len(UNIFIED_SEARCHER.eras.get("eras", [])) if UNIFIED_SEARCHER else 0
     }
@@ -646,7 +664,8 @@ async def unified_search_facets():
             "loc6_threads_total_replies": 2430,
             "loc6_threads_indexed_posts": len(searcher._loc6_article_documents()),
             "loc6_threads_full_index_ready": bool((getattr(searcher, "loc6_thread_full", {}) or {}).get("documents")),
-            "facebook_search_ready": FB_SEARCHER is not None,
+            "facebook_corpus_available": FB_DATA_PATH.exists(),
+            "facebook_search_loaded": FB_SEARCHER is not None,
             "facebook_posts_loaded": len(FB_SEARCHER.posts) if FB_SEARCHER else 0,
         },
         "timestamp": datetime.now().isoformat(),
@@ -704,13 +723,9 @@ async def unified_search(input: UnifiedSearchInput):
     requested_source = input.source.strip().lower()
 
     if requested_type in {"facebook_post"} or requested_source == "facebook":
-        if FB_SEARCHER is None:
-            raise HTTPException(
-                status_code=503,
-                detail=f"Facebook corpus尚未掛載: {FB_LOAD_ERROR or 'unknown error'}"
-            )
+        fb_searcher = get_facebook_searcher(required=True)
         try:
-            items = FB_SEARCHER.search(
+            items = fb_searcher.search(
                 query,
                 top_k=input.top_k,
                 start_date=input.start_date.strip(),
@@ -756,13 +771,14 @@ async def unified_search(input: UnifiedSearchInput):
                 if items:
                     merged_groups.setdefault(group_name, []).extend(items)
                     total += len(items)
-        if not requested_source and FB_SEARCHER is not None:
-            fb_items = FB_SEARCHER.search(
+        if not requested_source:
+            fb_searcher = get_facebook_searcher(required=False)
+            fb_items = fb_searcher.search(
                 query,
                 top_k=input.top_k,
                 start_date=input.start_date.strip(),
                 end_date=input.end_date.strip(),
-            )
+            ) if fb_searcher is not None else []
             if fb_items:
                 merged_groups.setdefault("text", []).extend(fb_items)
                 total += len(fb_items)
