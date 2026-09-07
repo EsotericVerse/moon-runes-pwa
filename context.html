@@ -230,18 +230,22 @@ let contextEvents=[],contextRelations=[],contextGraph={nodes:[],edges:[]};
 
 const CONTEXT_DEFAULT_GRAPH={
   nodes:[
-    {id:"era_微月光",label:"微月光",type:"era",date:"2026-01-15",note:"ERA 起點"},
+    {id:"era_微月光",label:"微月光",type:"era",date:"2026-01-15",note:"ERA 開始代表日"},
+    {id:"era_白晝之月",label:"白晝之月",type:"era",date:"2026-02-21",note:"ERA 開始代表日"},
     {id:"concept_政德風",label:"政德風",type:"concept",date:"2026-02-03",note:"正式定義代表日"},
-    {id:"era_人生月台",label:"人生月台",type:"era",date:"2026-06-10",note:"ERA 起點"},
-    {id:"era_順其自然",label:"順其自然",type:"era",date:"2026-07-01",note:"ERA 起點"},
-    {id:"era_自由的風",label:"自由的風",type:"era",date:"2026-08-01",note:"ERA 起點"},
+    {id:"era_人生月台",label:"人生月台",type:"era",date:"2026-04-09",note:"ERA 開始代表日"},
+    {id:"era_順其自然",label:"順其自然",type:"era",date:"2026-07-04",note:"ERA 開始代表日"},
+    {id:"era_自由的風",label:"自由的風",type:"era",date:"",note:"ERA 交界日期待界定"},
+    {id:"era_自由的月",label:"自由的月",type:"era",date:"",note:"ERA 交界日期待界定"},
     {id:"concept_月之符文",label:"月之符文",type:"concept",date:"",note:"最開始為月之符文14的形式"}
   ],
   edges:[
-    {source:"era_微月光",target:"concept_政德風",type:"evolves_to"},
-    {source:"concept_政德風",target:"era_人生月台",type:"influences"},
+    {source:"era_微月光",target:"era_白晝之月",type:"transitions_to"},
+    {source:"era_白晝之月",target:"era_人生月台",type:"transitions_to"},
     {source:"era_人生月台",target:"era_順其自然",type:"transitions_to"},
-    {source:"era_順其自然",target:"era_自由的風",type:"transitions_to"}
+    {source:"era_順其自然",target:"era_自由的風",type:"transitions_to"},
+    {source:"era_自由的風",target:"era_自由的月",type:"transitions_to"},
+    {source:"concept_政德風",target:"era_人生月台",type:"influences"}
   ]
 };
 const CONTEXT_EVENT_PAGE_SIZE=10, CONTEXT_RELATION_PAGE_SIZE=10, CONTEXT_GRAPH_PAGE_SIZE=10;
