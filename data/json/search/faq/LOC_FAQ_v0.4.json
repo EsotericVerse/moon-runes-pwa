@@ -9,7 +9,7 @@
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
     "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 最新 LunaRune64.xlsx Grammar：一般牌陣使用治理解牌方式＋月相交互，符文交互限定月符沙盒專用；並同步自然語言 Search/RAG、來源／內容分類與時間篩選規則。",
-    "entry_count": 86,
+    "entry_count": 87,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
       "reference_rune": "0：德（De）",
@@ -2136,21 +2136,22 @@
     {
       "id": "FAQ-085",
       "category": "月符分類",
-      "question": "月符 Search 為什麼分成符文籤詩、符文體系、符文演算、符文演化？",
+      "question": "月符 Search 的符文籤詩、符文脈絡、符文體系、符文演算、符文演化怎麼分？",
       "aliases": [
         "月符搜尋有哪些分類？",
         "符文占卜為什麼改叫符文籤詩？",
         "符文歌曲和符文文學放哪裡？",
         "未來性放在哪裡？"
       ],
-      "answer": "月符 Search 對外使用四類：符文籤詩負責抽牌、籤詩與解牌；符文體系收納符文本體及其文學、歌曲、影像、沙盒等延伸；符文演算收納符文語彙（token）、位置、方向、Grammar、治理解牌方式、月相交互與正反向符文治理等可重複判讀規則；符文演化收納 ERA、Relation、Trajectory、Trend 與其他跨時期變化。所有未來性統一視為演化。",
+      "answer": "符文籤詩負責抽牌、籤詩與解牌；符文脈絡負責符文之間或符文與事件／作品之間的關係、情境與 Graph，月符沙盒是代表性實作；符文體系收納符文本體及其文學、歌曲、影像、沙盒等延伸形式；符文演算收納 Grammar、治理解牌方式、月相交互與正反向符文治理等可重複規則；符文演化收納 ERA、Relation、Trajectory、Trend 與所有跨時期／未來性變化。",
       "keywords": [
         "符文籤詩",
+        "符文脈絡",
         "符文體系",
         "符文演算",
         "符文演化",
-        "去神秘學",
-        "月符 Search"
+        "Graph",
+        "月符沙盒"
       ],
       "source_refs": [
         "docs/LOC7_KM.md",
@@ -2182,6 +2183,33 @@
       "source_refs": [
         "docs/LOC7_KM.md",
         "search.html",
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-087",
+      "category": "LOC 基本定義",
+      "question": "LOC 和月之符文到底是誰先形成的？",
+      "aliases": [
+        "LOC是從月符來的嗎？",
+        "月符是LOC框架的例子嗎？",
+        "LOC和月之符文是什麼關係？"
+      ],
+      "answer": "兩種說法分別描述歷史與結構。歷史上，月之符文先累積語彙、籤詩、作品、方法與時間證據，LOC 再從這些實作中抽象整理出框架；結構上，LOC Framework 成立後，月之符文又可以被完整描述為其中一個實例／Reference Seed System。因此「月符先長出實例，LOC 再抽象出框架；框架成立後，再反過來描述月符」兩者並不矛盾。",
+      "keywords": [
+        "LOC",
+        "月之符文",
+        "Reference Seed System",
+        "框架",
+        "實例",
+        "歷史關係",
+        "結構關係"
+      ],
+      "source_refs": [
+        "docs/LOC7_KM.md",
+        "docs/LOC_OVERVIEW.md",
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
       "canon_version": "0.5r",
