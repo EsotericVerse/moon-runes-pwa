@@ -1,9 +1,9 @@
 {
-  "schema_version": "0.4",
+  "schema_version": "0.5",
   "registry": "LOC4_WRITING_REGISTRY",
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
-  "purpose": "Canonical LOC4 writing catalog and authored-text ownership registry. LOC4 covers creative works plus authored life-writing text (including Facebook/Threads source corpora); LOC6/LOC7/LOC8 may analyze, retrieve, and project these texts without taking ownership of the raw writing.",
+  "purpose": "Canonical LOC4 Writing registry. LOC4 has exactly two primary text domains: (1) 創作作品 / creative works, and (2) 生活文字 / life writing. Facebook and Threads authored text belong to LOC4 life writing. LOC6/LOC7/LOC8 may analyze, retrieve, and project these texts without changing LOC4 ownership.",
   "work_schema": {
     "required": [
       "work_id",
@@ -667,36 +667,69 @@
     }
   ],
   "scope_policy": {
-    "authored_work_corpus": {
+    "creative_works": {
       "status": "source_ready_and_searchable",
       "manifest": "data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json",
-      "note": "Current core authored works were imported from author-provided plain-text files and are searchable at document level."
+      "note": "LOC4 創作作品核心純文字已匯入 document-level corpus。"
     },
-    "life_writing_corpus": {
+    "life_writing": {
       "status": "connected_by_reference",
       "sources": [
-        {
-          "source": "facebook",
-          "range": "2011-04-15/2026-09-03",
-          "role": "author life/public writing",
-          "consumer_locs": [
-            "LOC6",
-            "LOC7",
-            "LOC8"
-          ]
-        },
-        {
-          "source": "threads",
-          "range": "2024-11-18/2026-09-06",
-          "role": "author public/life writing",
-          "consumer_locs": [
-            "LOC6",
-            "LOC7",
-            "LOC8"
-          ]
-        }
+        "facebook",
+        "threads"
       ],
-      "rule": "Do not duplicate Facebook/Threads raw corpora into LOC4 files. Preserve source corpus once; LOC4 owns the authored text layer while LOC6 owns governance/style interpretation."
+      "rule": "Facebook/Threads are LOC4 life writing. Preserve each source corpus once; do not duplicate raw records solely to represent LOC4 ownership."
+    }
+  },
+  "domain_model": {
+    "rule": "LOC4 consists of two primary domains. Do not collapse LOC4 into only a work catalogue.",
+    "domains": [
+      {
+        "id": "creative_works",
+        "label": "創作作品",
+        "definition": "作者刻意完成或整理成作品的文字創作。",
+        "includes": [
+          "小說",
+          "文章作品",
+          "散文",
+          "符文文本",
+          "世界觀",
+          "其他正式文字作品"
+        ],
+        "source_model": "author-provided work files + LOC4 work registry",
+        "current_status": "core authored plain-text corpus connected to document-level full-text search"
+      },
+      {
+        "id": "life_writing",
+        "label": "生活文字",
+        "definition": "作者在日常生活與社群脈絡中留下的長期文字紀錄。",
+        "includes": [
+          "Facebook",
+          "Threads"
+        ],
+        "sources": [
+          {
+            "source": "facebook",
+            "date_start": "2011-04-15",
+            "date_end": "2026-09-03",
+            "ownership": "LOC4",
+            "note": "生活文字來源；原始 corpus 保留在 Facebook source storage，不複製成第二份 LOC4 corpus。"
+          },
+          {
+            "source": "threads",
+            "date_start": "2024-11-18",
+            "date_end": "2026-09-06",
+            "ownership": "LOC4",
+            "note": "生活文字來源；原始 corpus 保留在 Threads source storage，不複製成第二份 LOC4 corpus。"
+          }
+        ],
+        "current_status": "source corpora connected by reference"
+      }
+    ],
+    "downstream_roles": {
+      "LOC6": "分析治理、政德風、價值觀與語言演變；不擁有 Facebook/Threads 原文。",
+      "LOC7": "搜尋、KM、Text Architecture 與 Graph retrieval。",
+      "LOC8": "日期、ERA、事件、脈絡與趨勢投影。"
     }
   }
 }
