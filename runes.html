@@ -145,8 +145,8 @@
           <button class="workspace-switch active" type="button" data-runes-view="draw"><strong>抽牌</strong><small>單卡 · 雙卡 · 三卡 · 五卡 · OW3gs</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">02 · 每日</div>
-          <button class="workspace-switch" type="button" data-runes-view="daily"><strong>每日符文</strong><small>一天一張 · 今日語意提示</small></button>
+          <div class="workspace-nav-label">02 · 趨勢</div>
+          <button class="workspace-switch" type="button" data-runes-view="daily"><strong>每日符文趨勢分析</strong><small>紀錄 · 統計 · 長期趨勢</small></button>
         </div>
         <div class="workspace-nav-group">
           <div class="workspace-nav-label">03 · 文件</div>
@@ -165,7 +165,7 @@
           <button class="workspace-switch" type="button" data-runes-view="library"><strong>符文資料</strong><small>66 圖鑑 · 基礎資料 · 實體卡</small></button>
         </div>
       </nav>
-      <div class="workspace-foot">抽牌、每日符文、基本文件、占卜結果範例、多元體系與符文資料都在同一頁。</div>
+      <div class="workspace-foot">抽牌、每日符文趨勢分析、基本文件、占卜結果範例、多元體系與符文資料都在同一頁。</div>
     </aside>
     <main class="page workspace-main">
       <div class="runes-view" id="referenceView" hidden>
@@ -346,25 +346,14 @@
       </div>
       <div class="runes-view" id="dailyView" hidden>
         <header class="hero loc-header">
-          <p class="loc-header-meta">LunaRunes · Daily</p>
-          <h1 class="loc-header-title">每日符文</h1>
-          <h2 class="loc-header-subtitle">線上抽牌與實體牌紀錄，放在同一頁但彼此獨立。</h2>
-          <p class="loc-header-copy">現階段統計只以手動輸入的實體牌紀錄為準；線上每日抽牌不會自動寫入任何紀錄。</p>
+          <p class="loc-header-meta">LunaRunes · Daily Trend</p>
+          <h1 class="loc-header-title">每日符文趨勢分析</h1>
+          <h2 class="loc-header-subtitle">把每日符文紀錄放回時間中，觀察重複、方向與長期變化。</h2>
+          <p class="loc-header-copy">這裡只負責紀錄、統計與趨勢分析；每日符文抽牌已統一放在「抽牌」功能中。</p>
         </header>
-
-        <section class="daily-entry" aria-labelledby="daily-entry-title">
-          <div>
-            <h2 id="daily-entry-title">線上每日抽牌</h2>
-            <p>只負責抽牌與顯示結果。不會自動存檔，也不會改動下方統計。</p>
-          </div>
-          <div class="daily-actions">
-            <a class="primary" href="runes.html?mode=daily#draw">抽取每日符文</a>
-          </div>
-        </section>
-
-        <section class="rune-basics" aria-labelledby="daily-record-title">
-          <h2 id="daily-record-title">實體牌紀錄與統計</h2>
-          <p>抽完實體牌後，再手動記錄。只有按下「儲存紀錄」才會寫入；不會自動帶入剛才線上抽到的牌。</p>
+<section class="rune-basics" aria-labelledby="daily-record-title">
+          <h2 id="daily-record-title">每日符文紀錄與趨勢</h2>
+          <p>完成每日實體牌抽取後再手動記錄。資料會用於下方統計與後續趨勢觀察；線上抽牌不會自動寫入。</p>
           <div class="daily-record-grid">
             <form class="daily-record-form" id="dailyRecordForm">
               <h3>手動記錄實體牌</h3>
@@ -381,8 +370,8 @@
             </form>
 
             <div class="daily-stats-panel">
-              <h3>每日符文統計</h3>
-              <p id="dailyStatsStatus">載入已記錄的實體牌資料…</p>
+              <h3>每日符文趨勢統計</h3>
+              <p id="dailyStatsStatus">載入已記錄的每日符文資料…</p>
               <div class="daily-metrics">
                 <div class="daily-metric"><small>紀錄數</small><strong id="dailyMetricCount">—</strong></div>
                 <div class="daily-metric"><small>主抽</small><strong id="dailyMetricPrimary">—</strong></div>
