@@ -9,7 +9,7 @@
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
     "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 最新 LunaRune64.xlsx Grammar：一般牌陣使用治理解牌方式＋月相交互，符文交互限定月符沙盒專用；並同步自然語言 Search/RAG、來源／內容分類與時間篩選規則。",
-    "entry_count": 85,
+    "entry_count": 86,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
       "reference_rune": "0：德（De）",
@@ -2136,18 +2136,18 @@
     {
       "id": "FAQ-085",
       "category": "月符分類",
-      "question": "月符 Search 為什麼分成符文籤詩、符文體系、符文方法、符文演化？",
+      "question": "月符 Search 為什麼分成符文籤詩、符文體系、符文演算、符文演化？",
       "aliases": [
         "月符搜尋有哪些分類？",
         "符文占卜為什麼改叫符文籤詩？",
         "符文歌曲和符文文學放哪裡？",
         "未來性放在哪裡？"
       ],
-      "answer": "月符 Search 對外使用四類：符文籤詩負責抽牌、籤詩與解牌；符文體系收納符文本體及其文學、歌曲、影像、沙盒等延伸；符文方法收納 Grammar、治理解牌方式、月相交互與正反向符文治理；符文演化收納 ERA、Relation、Trajectory、Trend 與其他跨時期變化。所有未來性統一視為演化，避免額外神秘化。",
+      "answer": "月符 Search 對外使用四類：符文籤詩負責抽牌、籤詩與解牌；符文體系收納符文本體及其文學、歌曲、影像、沙盒等延伸；符文演算收納符文語彙（token）、位置、方向、Grammar、治理解牌方式、月相交互與正反向符文治理等可重複判讀規則；符文演化收納 ERA、Relation、Trajectory、Trend 與其他跨時期變化。所有未來性統一視為演化。",
       "keywords": [
         "符文籤詩",
         "符文體系",
-        "符文方法",
+        "符文演算",
         "符文演化",
         "去神秘學",
         "月符 Search"
@@ -2155,6 +2155,34 @@
       "source_refs": [
         "docs/LOC7_KM.md",
         "search.html"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-086",
+      "category": "LOC 分類",
+      "question": "LOC 的公開 Tag 怎麼分？",
+      "aliases": [
+        "LOC3到8怎麼分類？",
+        "方法論和演算法有什麼差別？",
+        "文化哲學在 LOC 哪裡？"
+      ],
+      "answer": "LOC 對外 Tag 採一致抽象層級：LOC3／4／5 屬表達；LOC6 是方法論；LOC7 是演算法（知識庫）；LOC8 是文化哲學（時間／趨勢分析）。月符另有符文籤詩、符文體系、符文演算、符文演化四個特化分類。技術層仍可保留 Governance、KM、Graph、Trend 等名稱。",
+      "keywords": [
+        "表達",
+        "方法論",
+        "演算法",
+        "文化哲學",
+        "符文籤詩",
+        "符文體系",
+        "符文演算",
+        "符文演化"
+      ],
+      "source_refs": [
+        "docs/LOC7_KM.md",
+        "search.html",
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
