@@ -8,12 +8,12 @@
     "LOC8"
   ],
   "status": "Working",
-  "updated_at": "2026-09-06",
+  "updated_at": "2026-09-08",
   "rules": [
     "命名概念與一般語義／意象分層治理。",
-    "微月光與微光意象不是 aliases。",
     "自我治理為 canonical term；治理自己為 alias / creative-stage label。",
-    "Named concepts are retained in period analysis even when they are not among the top generic semantic tags."
+    "Named concepts are retained in period analysis even when they are not among the top generic semantic tags.",
+    "「微光意象」不再作獨立 keyword；相關語義統一歸入「希望」，避免與專有名詞「微月光」形成重複統計。"
   ],
   "keywords": [
     {
@@ -24,7 +24,6 @@
       ],
       "not_aliases": [
         "微光",
-        "微光意象",
         "光芒",
         "月亮月光"
       ],
@@ -53,15 +52,12 @@
       "status": "Canonical"
     },
     {
-      "term": "微光意象",
-      "keyword_type": "imagery",
+      "term": "希望",
+      "keyword_type": "semantic",
       "aliases": [
         "微光",
         "微弱光線",
         "微光／光芒意象"
-      ],
-      "not_aliases": [
-        "微月光"
       ],
       "status": "Stable"
     }
