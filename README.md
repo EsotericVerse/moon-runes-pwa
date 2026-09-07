@@ -179,9 +179,9 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC3 | 已累積大量「政德風」音樂作品，並建立歌曲資料及語意檢索實作。另曾以 LOC1 的 OW3gs 十一張抽牌解釋情境，再將解讀轉化為歌詞與歌曲，形成特殊的符文寫歌方式。 |
 | LOC4 | 已建立文字分類，並完成以其為文本結構的七大篇長篇小說，全文約 22 萬字；另有其他小說與文字創作。 |
 | LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
-| LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；Threads 公開文字 corpus 自 2024-11-18 起至 2026-09-06，現行去重基準共 **7,008 筆文字紀錄**（4,578 主貼文＋2,430 Reply），已開始接入 KM／Unified Search，並進入全文概念、ERA 與治理語言解析。另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證。 |
-| LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7、LOC8 的現有資料來源。Graph RAG 核心已完成；後續重點為治理 runtime、Graph View 與持續品質驗證。 |
-| LOC8 | `life.html` 已具備每日符文、ERA 時期管理、Event 紀錄、Event Timeline、Relation Library、軌跡 Trajectory 與趨勢分析 Analysis。ERA 已可在顯示位置直接新增／修改／刪除，後端 Apps Script API 已升至 `loc8-mvp-1.1`；Context 目前可呈現跨時期 Relation 與 LOC3 關鍵字比重升降／文字轉折說明，Graph 視圖仍屬後續。 |
+| LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；Threads 公開文字 corpus 自 2024-11-18 起至 2026-09-06，現行去重基準共 **7,008 筆文字紀錄**（4,578 主貼文＋2,430 Reply）。**4,578 筆主貼文全文已完成 repository sharded index 並接入 Unified Search**；Reply 保留為 supplemental evidence。另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證。 |
+| LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢各 LOC 現有資料來源，Canonical Graph RAG 核心已完成 bounded traversal、provenance 與品質治理。另已加入 local-first Simple Text Analysis API（`/analyze/text`、`/analyze/corpus`），可在不依賴外部 LLM／Embedding API key 的情況下完成基本解析、關鍵字與分類。公開搜尋新增 `snippet / full / metadata_only` 展示治理，全文可供授權分析，但不等於全文公開。 |
+| LOC8 | `life.html` 已具備每日符文、時期管理、Event、Relation、Trajectory、跨時期 Trend Analysis、**關鍵字 Top 10 排行**與 Graph View。排行榜可直接點入 Unified Search 回查實際作品／文章／文字證據，形成「排行 → 趨勢 → 搜尋 → 證據」閉環。Graph View 已上線使用既有 Graph RAG bounded neighborhood；後續重點為更多 corpus 接入、統計摘要與持續品質驗證。 |
 
 LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；LOC6 已有治理／政德風與符文解析資料，LOC7 已有 KM／FAQ／RAG／Unified Search，LOC8 已有可操作的事件、時期與每日符文介面。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
 
@@ -567,3 +567,14 @@ LOC 的功能骨架完成後，現行重點轉向 Governance Consolidation：把
 - `docs/LOC_CONTENT_RIGHTS_POLICY.md`
 
 核心原則是：**穩定的是框架，不是語言；保留歷史，允許修正；提供邊界，不要求思想服從。**
+
+
+## 2026-09-07 最新進度
+
+- Threads：7,008 筆去重文字紀錄；其中 4,578 筆主貼文全文已完成 repository 索引並可供搜尋。
+- Unified Search：跨作品、文字、知識、媒體與時間資料的共同入口；Graph RAG 核心已完成。
+- 趨勢分析：已加入關鍵字 Top 10，並可點詞回查實際命中內容。
+- Simple Text Analysis：已加入 local-first `/analyze/text` 與 `/analyze/corpus`，基礎解析不需要外部模型 API key。
+- 內容治理：公開搜尋支援 `snippet / full / metadata_only`，把「可全文分析」與「可全文公開」分離。
+- Facebook 長期 corpus 尚未正式接入 Unified Search；目前仍在資料整理／解析階段，不應視為已完成搜尋來源。
+
