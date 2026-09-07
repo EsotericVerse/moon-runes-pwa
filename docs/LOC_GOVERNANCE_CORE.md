@@ -299,15 +299,14 @@ Audit 應檢查：
 
 ## 12. LOC1–8 Governance Responsibility
 
-- **LOC1**：符文本體、四向、Lots 與抽牌語義權威。
-- **LOC2**：情境、遊戲規則與互動定義。
+- **LOC1**：月符／語彙（token）、四向、籤詩、每日抽與抽牌語義權威。
 - **LOC3**：歌曲／歌詞 metadata、創作 provenance 與 reasoning annotation。
 - **LOC4**：文字作品與原始文本權威。
 - **LOC5**：媒體 representation 與跨媒介映射。
-- **LOC2**：脈絡、關係、Scenario／Event 與 Canonical Graph 的語意責任。
+- **LOC2**：脈絡、Relation、Context、Scenario／Event 與 Canonical Graph 的語意責任；Semantic Playground 是互動實作。
 - **LOC6**：方法論；治理、價值、政德風與 interpretation 是其中的具體方法。
 - **LOC7**：演算法（知識庫）；schema、KM、RAG、Search、Graph RAG traversal、validation 與 retrieval。
-- **LOC8**：文學演化；時間、ERA、Trajectory、Trend 與演化投影。
+- **LOC8**：推演；每日符文歷史、事件、時間、ERA、Timeline 與 Trend。
 
 各 LOC 保有 canonical ownership；跨 LOC 只能 reference / consume / propose change，不應直接覆寫另一 domain 的 authoritative record。
 
