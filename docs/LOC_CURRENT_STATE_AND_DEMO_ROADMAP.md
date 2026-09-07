@@ -167,7 +167,7 @@ LOC Framework 原則上不必綁死 66 月符。
 - 把方法論結構化成可重複、可檢索、可驗證的演算法
 - 不擁有 LOC2 的關係／脈絡資料本體
 
-### LOC8｜文學演化
+### LOC8｜推演
 - ERA、Event Timeline、Trajectory、Trend
 - 觀察作品、語言、方法與風格如何隨時間變化
 - 消費 LOC2 Graph 作時間投影；Graph View 頁面位置可維持不變
@@ -362,7 +362,7 @@ Graph RAG 已由「關係 groundwork」進入正式 Search Core：
 6. LOC1 Seed Corpus 是 RAG 的正式一部分。
 7. LOC2 是脈絡層；Semantic Playground 是代表性互動實作。
 8. LOC7 管演算法、KM、RAG、Graph RAG 與全 LOC 文字檢索；Graph 脈絡資料歸 LOC2。
-9. LOC8 核心定位為文學演化（Time / ERA / Trajectory / Trend）。
+9. LOC8 核心定位為推演（Time / ERA / Trajectory / Trend）。
 10. 時間線／ERA 是「關係」的一個維度；Trajectory 與 Analysis 分別負責演變投影與變化證據解讀。
 11. LOC Search 是唯一文字搜尋入口。
 12. Search 介面簡稱「LOC 搜尋引擎」，正式技術名「LOC RAG 語意向量搜尋」。
