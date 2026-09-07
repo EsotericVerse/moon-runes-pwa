@@ -143,19 +143,23 @@
           <button class="workspace-switch" type="button" data-runes-view="examples"><strong>占卜結果範例</strong><small>固定案例 · 命運句練習</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">04 · 資料</div>
+          <div class="workspace-nav-label">04 · 體系</div>
+          <button class="workspace-switch" type="button" data-runes-view="systems"><strong>多元體系</strong><small>符文歌曲 · 符文文學</small></button>
+        </div>
+        <div class="workspace-nav-group">
+          <div class="workspace-nav-label">05 · 資料</div>
           <button class="workspace-switch" type="button" data-runes-view="library"><strong>符文資料</strong><small>66 圖鑑 · 基礎資料 · 實體卡</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">05 · 每日</div>
+          <div class="workspace-nav-label">06 · 每日</div>
           <button class="workspace-switch" type="button" data-runes-view="daily"><strong>每日符文</strong><small>一天一張 · 今日語意提示</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">06 · 抽牌</div>
+          <div class="workspace-nav-label">07 · 抽牌</div>
           <button class="workspace-switch" type="button" data-runes-view="draw"><strong>抽牌</strong><small>單卡 · 雙卡 · 三卡 · 五卡 · OW3gs</small></button>
         </div>
       </nav>
-      <div class="workspace-foot">新手入門、基本文件、占卜結果範例、符文資料、每日符文與抽牌都在同一頁。</div>
+      <div class="workspace-foot">新手入門、基本文件、占卜結果範例、多元體系、符文資料、每日符文與抽牌都在同一頁。</div>
     </aside>
     <main class="page workspace-main">
       <div class="runes-view" id="beginnerView">
@@ -239,6 +243,38 @@
           </div>
         </section>
 
+      </div>
+      <div class="runes-view" id="systemsView" hidden>
+        <header class="hero loc-header">
+          <p class="loc-header-meta">LunaRunes · Systems</p>
+          <h1 class="loc-header-title">多元體系</h1>
+          <h2 class="loc-header-subtitle">同一套符文語彙，可以延伸成不同形式的作品。</h2>
+          <p class="loc-header-copy">這裡只整理固定、代表性的符文延伸形式。內容直接寫在頁面裡，不依賴知識庫查詢。</p>
+        </header>
+
+        <section class="rune-basics">
+          <div class="reading-ref-grid">
+            <article class="reading-ref-card">
+              <h3>符文歌曲</h3>
+              <p>把一張或多張符文的語意、方向與組合關係轉成歌詞、主題與聲音表達。符文在這裡不是單純歌名標籤，而是創作結構與語意來源。</p>
+              <ul>
+                <li>可由單一符文延伸成主題歌曲。</li>
+                <li>也可以由多卡結果形成完整敘事或情緒走向。</li>
+                <li>歌曲是符文語彙轉化成音樂語言的實際例子。</li>
+              </ul>
+            </article>
+
+            <article class="reading-ref-card">
+              <h3>符文文學</h3>
+              <p>把符文從簡短語彙展開成角色、情境、事件、段落與完整故事。符文可以作為創作種子，也可以用來觀察作品中的語意結構。</p>
+              <ul>
+                <li>單一符文可以延伸成角色狀態或核心主題。</li>
+                <li>多符文可以形成關係、事件與敘事結構。</li>
+                <li>《月語者》是月之符文與文字創作互相延伸的代表案例之一。</li>
+              </ul>
+            </article>
+          </div>
+        </section>
       </div>
       <div class="runes-view" id="libraryView" hidden>
         <header class="hero loc-header">
@@ -433,6 +469,7 @@
       beginner:document.getElementById('beginnerView'),
       reference:document.getElementById('referenceView'),
       examples:document.getElementById('examplesView'),
+      systems:document.getElementById('systemsView'),
       library:document.getElementById('libraryView'),
       daily:document.getElementById('dailyView'),
       draw:document.getElementById('drawView')
@@ -456,6 +493,7 @@
     else if(hasMode||location.hash==='#draw') switchView('draw',false);
     else if(location.hash==='#reference') switchView('reference',false);
     else if(location.hash==='#examples') switchView('examples',false);
+    else if(location.hash==='#systems') switchView('systems',false);
     else if(location.hash==='#library') switchView('library',false);
     else switchView('beginner',false);
   })();
