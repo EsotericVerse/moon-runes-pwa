@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_CONTENT_TYPE_REGISTRY",
   "authority": "LOC8",
   "purpose": "Shared content/asset vocabulary for routing and unified search. Canonical content remains owned by its primary LOC.",
@@ -139,14 +139,16 @@
       "primary_loc": "LOC6",
       "kind": "analysis_record",
       "label": "治理片段",
-      "default_display_policy": "full"
+      "default_display_policy": "full",
+      "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities."
     },
     {
       "id": "governance_article",
       "primary_loc": "LOC6",
       "kind": "knowledge_work",
       "label": "治理文章",
-      "default_display_policy": "snippet"
+      "default_display_policy": "snippet",
+      "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities."
     },
     {
       "id": "dual_rune_relation",
@@ -209,28 +211,32 @@
       "primary_loc": "LOC4",
       "label": "Facebook 生活文字",
       "default_display_policy": "snippet",
-      "kind": "life_writing_record"
+      "kind": "life_writing_record",
+      "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it."
     },
     {
       "id": "social_text_record",
       "primary_loc": "LOC4",
       "kind": "life_writing_record",
       "label": "社群生活文字",
-      "default_display_policy": "snippet"
+      "default_display_policy": "snippet",
+      "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it."
     },
     {
       "id": "text_record",
       "primary_loc": "LOC4",
       "kind": "authored_text_record",
       "label": "文字紀錄",
-      "default_display_policy": "snippet"
+      "default_display_policy": "snippet",
+      "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it."
     },
     {
       "id": "work_analysis",
       "primary_loc": "LOC4",
       "kind": "analysis_record",
       "label": "作品解析",
-      "default_display_policy": "full"
+      "default_display_policy": "full",
+      "ownership_note": "General work/chapter literary-semantic analysis belongs to LOC4; governance projection of that analysis is a separate LOC6 record."
     }
   ],
   "rules": [
@@ -239,7 +245,10 @@
     "Unified search may filter by content_type without exposing LOC numbers to the user.",
     "README.md and other overview documents may be indexed as knowledge_document while preserving their derived/provenance status.",
     "display_policy governs public text exposure independently from whether full text may be indexed or analyzed internally.",
-    "Author-created Facebook/Threads raw text is LOC4 life-writing content; LOC6 may consume the same records for governance/style interpretation without taking ownership of the raw text."
+    "Author-created Facebook/Threads raw text is LOC4 life-writing content; LOC6 may consume the same records for governance/style interpretation without taking ownership of the raw text.",
+    "LOC4/LOC6 boundary: raw authored text, including Facebook/Threads life writing, is LOC4; governance/value/Zhengde-style interpretation derived from it is LOC6.",
+    "A quoted source statement inside a LOC6 governance record is evidence, not transfer of ownership of the original text.",
+    "General literary/semantic work analysis is LOC4. Only governance/style/value interpretation of that material is LOC6."
   ],
   "display_policy": {
     "allowed_values": [
