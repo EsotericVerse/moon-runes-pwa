@@ -783,7 +783,7 @@
 
     function resultLocationOverview(groups){
       const cards=[];
-      for(const key of RESULT_ORDER){
+      for(const key of resultOrderForQuery(el('query')?.value||'')){
         const items=groups?.[key]||[];
         if(!items.length) continue;
         const meta=GROUP_LOCATION_META[key]||{loc:'LOC',label:labels[key]||key,desc:''};
@@ -805,6 +805,18 @@
 
     const PAGE_SIZE=20;
     const RESULT_ORDER=['scenarios','readings','runes','rune_songs','works','textworks','relationships','governance','loc4_articles','text','media','knowledge','timeline'];
+    const RUNE_RESULT_PRIORITY=['runes','oracle','readings','scenarios','rune_songs','media'];
+
+    function isRuneQuery(query){
+      const q=String(query||'').trim();
+      return /月符|月之符文|符文|OW3gs|抽牌|占卜|解牌|解讀|正位|逆位|半正|半逆/i.test(q);
+    }
+
+    function resultOrderForQuery(query){
+      if(!isRuneQuery(query)) return RESULT_ORDER;
+      const seen=new Set(RUNE_RESULT_PRIORITY);
+      return [...RUNE_RESULT_PRIORITY,...RESULT_ORDER.filter(key=>!seen.has(key))];
+    }
     let searchState={groups:{},synthesis:null,graph:null,page:1,total:0};
     let browseState={active:false,type:'',key:'',page:1,total:0,items:[]};
 
@@ -851,7 +863,8 @@
 
     function flattenGroups(groups,entityMode=false){
       const rows=[];
-      for(const key of RESULT_ORDER){
+      const order=resultOrderForQuery(el('query')?.value||'');
+      for(const key of order){
         if(entityMode&&(key==='readings'||key==='rune_songs'))continue;
         for(const item of (groups?.[key]||[])) rows.push({key,item});
       }
@@ -915,7 +928,7 @@
       html+=resultLocationOverview(searchState.groups);
 
       const evidenceBlocks=[];
-      for(const key of RESULT_ORDER){
+      for(const key of resultOrderForQuery(el('query')?.value||'')){
         const items=slice.filter(row=>row.key===key).map(row=>row.item);
         if(!items.length)continue;
         const renderer=rendererForGroup(key);
