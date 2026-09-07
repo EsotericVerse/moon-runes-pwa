@@ -2,34 +2,34 @@
   "schema_version": "1.2",
   "component": "LOC_GLOBAL_NAV",
   "brand": {
-    "label": "LOC · 月典",
+    "label": "LOC月典",
     "href": "index.html",
     "subtitle": "Luna Codex"
   },
   "items": [
     {
       "id": "runes",
-      "label": "月之符文",
+      "label": "符文語彙",
       "href": "runes.html",
-      "description": "66 符文圖鑑"
+      "description": ""
     },
     {
       "id": "game",
       "label": "脈絡",
       "href": "context.html",
-      "description": "LOC2 · Relation · Graph · 月之符文沙盒"
+      "description": ""
     },
     {
       "id": "search",
-      "label": "綜合搜尋",
+      "label": "搜尋",
       "href": "search.html",
-      "description": "跨內容整合搜尋"
+      "description": ""
     },
     {
       "id": "evolution",
       "label": "推演",
       "href": "evolution.html",
-      "description": "LOC8 · 符文演化 · ERA · 時期趨勢"
+      "description": ""
     }
   ]
 }
