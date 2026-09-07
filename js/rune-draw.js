@@ -437,10 +437,16 @@ async function runRitual(mode, config) {
 
   const messages = messagesByMode[mode] || messagesByMode.single;
   const message = document.getElementById("ritual-message");
+  const ritualStartedAt = performance.now();
   for (let i = 0; i < messages.length; i++) {
     const secondsLeft = Math.max(1, messages.length - i);
     message.textContent = `${messages[i]}（約 ${secondsLeft} 秒）`;
     await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+
+  const elapsed = performance.now() - ritualStartedAt;
+  if (elapsed < 5000) {
+    await new Promise(resolve => setTimeout(resolve, 5000 - elapsed));
   }
 
   document.body.dataset.drawing = "false";
@@ -544,8 +550,4 @@ window.addEventListener("DOMContentLoaded", async () => {
   sessionStorage.setItem("realPhase", realPhase);
 
   await executeDraw(mode, config, realPhase);
-
-  document.getElementById("retry-button")?.addEventListener("click", async () => {
-    await executeDraw(mode, config, realPhase);
-  });
 });
