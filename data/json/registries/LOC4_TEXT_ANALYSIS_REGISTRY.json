@@ -1,22 +1,17 @@
 {
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "registry": "LOC4_TEXT_ANALYSIS_REGISTRY",
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
-  "status": "CoreCreativeWorksAnalyzed",
+  "status": "CoreCreativeWorksAndMoonSpeakerChapterBaselineComplete",
   "updated_at": "2026-09-07",
-  "purpose": "Structured semantic analysis for LOC4 creative works. The current author-provided plain-text core corpus is analyzed at work level; 月語者 additionally has seven-part long-form architecture and chapter-title/rune structure evidence. Facebook/Threads life writing remain a separate LOC4 domain and are not counted as creative-work analysis.",
+  "purpose": "Structured semantic analysis for LOC4 creative works. Core creative works are analyzed at work level. 月語者 additionally has a complete 182-chapter baseline generated from full chapter text, with recovered three-rune/moon-phase evidence attached only where source data exists.",
   "scope_policy": {
-    "current": "LOC4 創作作品（author-provided core plain-text corpus）",
-    "completed_work_level": [
-      "LOC4-MOON-SPEAKER",
-      "LOC4-ONE-DAY-LOVER",
-      "LOC4-WRONG-PERSON",
-      "LOC4-PSEUDO-SINGLE",
-      "LOC4-MMM-RELATIONSHIP",
-      "LOC4-BEFORE-AFTER-YOU"
-    ],
-    "rule": "Creative-work analysis and life-writing analysis are separate. Do not use Facebook/Threads counts to represent creative-work completion. Work-level semantic analysis may coexist with deeper chapter-level analysis."
+    "current": "LOC4 創作作品",
+    "creative_work_level_status": "complete_for_current_core_set",
+    "moon_speaker_chapter_status": "complete_baseline_182_chapters",
+    "life_writing_note": "Facebook/Threads are LOC4生活文字 and are analyzed through their own source/trend pipelines; they are not counted as creative-work novel analysis.",
+    "rule": "Do not infer missing rune configurations. Chapter semantic evidence may be enriched later, but source-derived fields remain authoritative."
   },
   "analysis_dimensions": [
     "named_keywords",
@@ -758,7 +753,7 @@
       "work_id": "LOC4-MOON-SPEAKER",
       "title": "月語者",
       "structure": "7 parts × 26 chapter slots",
-      "analysis_status": "seven_part_full_text_analyzed",
+      "analysis_status": "182_chapter_baseline_complete",
       "parts": [
         {
           "part": 1,
@@ -848,7 +843,36 @@
         "author-provided allCh1–allCh7 plain-text files",
         "MoonSpeaker_章節三卡_恢復資料.csv"
       ],
-      "rule": "章級語意可繼續深化，但七篇全文本身不再標記為 deferred。"
+      "rule": "七篇與182章 baseline 已完成；後續若新增人工／LLM 深層註解，應疊加而非覆寫來源證據。"
     }
+  },
+  "chapter_level_analysis": {
+    "work_id": "LOC4-MOON-SPEAKER",
+    "title": "月語者",
+    "status": "complete_baseline_182_chapters",
+    "chapter_count": 182,
+    "part_count": 7,
+    "engine": "card_api/loc4_chapter_analysis.py",
+    "api": "GET /analysis/loc4/moon-speaker",
+    "rune_recovery_registry": "data/json/registries/LOC4_MOON_SPEAKER_RUNE_RECOVERY.json",
+    "rune_recovered_chapters": 161,
+    "rune_not_recovered_chapters": 21,
+    "search_status": "connected_to_unified_search",
+    "analysis_dimensions": [
+      "chapter_boundary",
+      "title_signals",
+      "narrative_function",
+      "themes",
+      "key_entities",
+      "semantic_summary",
+      "text_metrics",
+      "rune_configuration",
+      "source_provenance"
+    ],
+    "governance": [
+      "182章均直接從作者提供的完整章節正文切分。",
+      "三符文／月相僅採已恢復來源；缺少的21章不由正文或章名推測。",
+      "章級 themes / entities 為 deterministic text evidence，可重現並可後續疊加人工解析。"
+    ]
   }
 }
