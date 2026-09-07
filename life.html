@@ -4049,16 +4049,41 @@
 
     async function testApi() {
       setSync(false, '測試 LOC8 連線…');
-      const url = new URL(SHEET_API_URL);
-      url.searchParams.set('action', 'health');
-      const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store', redirect: 'follow' });
-      if (!res.ok) throw new Error('Health check failed');
-      const data = await res.json();
-      if (!data || data.ok !== true) throw new Error(data && data.error ? data.error : 'API not ready');
-      if (data.schema !== 'loc8-mvp-1.1') {
-        throw new Error('API schema mismatch: ' + (data.schema || 'unknown'));
+
+      const healthUrl = new URL(SHEET_API_URL);
+      healthUrl.searchParams.set('action', 'health');
+      const healthRes = await fetch(healthUrl.toString(), { method: 'GET', cache: 'no-store', redirect: 'follow' });
+      if (!healthRes.ok) throw new Error('Health check failed');
+
+      const health = await healthRes.json();
+      if (!health || health.ok !== true) throw new Error(health && health.error ? health.error : 'API not ready');
+      if (health.schema !== 'loc8-mvp-1.1') {
+        throw new Error('API schema mismatch: ' + (health.schema || 'unknown'));
       }
-      setSync(true, 'Google Sheet API 已連線 · v1.1');
+
+      const diagnosticsUrl = new URL(SHEET_API_URL);
+      diagnosticsUrl.searchParams.set('action', 'diagnostics');
+      const diagnosticsRes = await fetch(diagnosticsUrl.toString(), { method: 'GET', cache: 'no-store', redirect: 'follow' });
+      if (!diagnosticsRes.ok) throw new Error('Diagnostics check failed');
+
+      const diagnostics = await diagnosticsRes.json();
+      if (!diagnostics || diagnostics.ok !== true) {
+        throw new Error(diagnostics && diagnostics.error ? diagnostics.error : 'Diagnostics unavailable');
+      }
+      if (diagnostics.schema !== 'loc8-mvp-1.1') {
+        throw new Error('Diagnostics schema mismatch: ' + (diagnostics.schema || 'unknown'));
+      }
+      if (diagnostics.ready !== true) {
+        const issues = (Array.isArray(diagnostics.sheets) ? diagnostics.sheets : [])
+          .filter(sheet => sheet.required && (!sheet.exists || (Array.isArray(sheet.missing_headers) && sheet.missing_headers.length)))
+          .map(sheet => {
+            if (!sheet.exists) return sheet.name + ': missing sheet';
+            return sheet.name + ': missing ' + sheet.missing_headers.join(', ');
+          });
+        throw new Error('Sheet schema not ready' + (issues.length ? ' · ' + issues.join(' / ') : ''));
+      }
+
+      setSync(true, 'Google Sheet API 已連線 · v1.1 · Schema Ready');
       return true;
     }
 
