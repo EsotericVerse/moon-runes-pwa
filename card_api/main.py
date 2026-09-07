@@ -1,4 +1,6 @@
 import json
+import base64
+import re
 from pathlib import Path
 from zhdate import ZhDate
 from datetime import datetime
@@ -6,6 +8,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import os
+import requests
 
 from faq_rag import FAQSearchEngine
 from loc3_search import LOC3SearchEngine
@@ -498,6 +501,12 @@ class CorpusAnalyzeInput(BaseModel):
     granularity: str = "month"
 
 
+class KMImportInput(BaseModel):
+    filename: str
+    data: dict | list
+    source: str = "manual_upload"
+
+
 def get_faq_searcher():
     if FAQ_SEARCHER is None:
         raise HTTPException(
@@ -565,6 +574,7 @@ async def root():
             "facebook_search": "/search (content_type=text_record, source=facebook)",
             "text_analyze": "/analyze/text",
             "corpus_analyze": "/analyze/corpus",
+            "km_import": "/km/import",
             "loc4_moon_speaker_analysis": "/analysis/loc4/moon-speaker",
             "health": "/health",
             "docs": "/docs"
@@ -588,6 +598,99 @@ async def health_check():
         "facebook_search_loaded": FB_SEARCHER is not None,
         "facebook_posts_loaded": len(FB_SEARCHER.posts) if FB_SEARCHER else 0,
         "shared_era_count": len(UNIFIED_SEARCHER.eras.get("eras", [])) if UNIFIED_SEARCHER else 0
+    }
+
+
+
+def _safe_km_filename(name: str) -> str:
+    raw = Path(name or "km-import.json").name
+    if not raw.lower().endswith(".json"):
+        raw += ".json"
+    safe = re.sub(r"[^A-Za-z0-9._-]+", "_", raw).strip("._")
+    if not safe:
+        safe = "km-import.json"
+    return safe[:160]
+
+
+def _write_km_to_github(filename: str, payload: str):
+    token = os.environ.get("LOC_KM_GITHUB_TOKEN", "").strip()
+    repo = os.environ.get("LOC_KM_GITHUB_REPO", "EsotericVerse/moon-runes-pwa").strip()
+    branch = os.environ.get("LOC_KM_GITHUB_BRANCH", "main").strip() or "main"
+    if not token:
+        return None
+
+    path = f"data/json/inbox/{filename}"
+    api = f"https://api.github.com/repos/{repo}/contents/{path}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    current_sha = None
+    existing = requests.get(api, headers=headers, params={"ref": branch}, timeout=20)
+    if existing.status_code == 200:
+        current_sha = existing.json().get("sha")
+    elif existing.status_code != 404:
+        raise RuntimeError(f"GitHub lookup failed: {existing.status_code}")
+
+    body = {
+        "message": f"data(km): import {filename}",
+        "content": base64.b64encode(payload.encode("utf-8")).decode("ascii"),
+        "branch": branch,
+    }
+    if current_sha:
+        body["sha"] = current_sha
+    saved = requests.put(api, headers=headers, json=body, timeout=30)
+    if saved.status_code not in (200, 201):
+        raise RuntimeError(f"GitHub write failed: {saved.status_code}")
+    result = saved.json()
+    return {
+        "mode": "github",
+        "path": path,
+        "commit_sha": (result.get("commit") or {}).get("sha"),
+        "content_url": ((result.get("content") or {}).get("html_url")),
+    }
+
+
+@app.post("/km/import")
+async def km_import(input: KMImportInput):
+    filename = _safe_km_filename(input.filename)
+    envelope = {
+        "schema_version": "0.1",
+        "imported_at": datetime.now().isoformat(),
+        "source": input.source.strip() or "manual_upload",
+        "filename": filename,
+        "payload": input.data,
+    }
+    serialized = json.dumps(envelope, ensure_ascii=False, indent=2)
+    if len(serialized.encode("utf-8")) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="JSON 超過 15 MB，請拆分後再上傳")
+
+    try:
+        github_result = _write_km_to_github(filename, serialized)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"KM GitHub 寫入失敗: {e}")
+
+    if github_result:
+        return {
+            "success": True,
+            **github_result,
+            "filename": filename,
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    inbox = REPO_ROOT / "data" / "json" / "inbox"
+    inbox.mkdir(parents=True, exist_ok=True)
+    out = inbox / filename
+    out.write_text(serialized, encoding="utf-8")
+    return {
+        "success": True,
+        "mode": "runtime_inbox",
+        "path": str(out.relative_to(REPO_ROOT)),
+        "persistent": False,
+        "note": "未設定 LOC_KM_GITHUB_TOKEN；已寫入目前執行環境 inbox。Render 重新部署後可能消失。",
+        "filename": filename,
+        "timestamp": datetime.now().isoformat(),
     }
 
 

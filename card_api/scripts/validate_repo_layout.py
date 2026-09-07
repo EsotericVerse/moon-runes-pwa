@@ -50,6 +50,9 @@ SKIP_FILES = {
     "card_api/scripts/validate_repo_layout.py",
     "engine/README.md",
 }
+SKIP_JSON_TARGET_PREFIXES = (
+    "data/json/inbox/",
+)
 
 JSON_PATH_RE = re.compile(
     r"""(?P<path>/?(?:data|card_api|engine|loc8_api)/[A-Za-z0-9_./-]+\.json(?:\.gz)?)"""
@@ -89,6 +92,8 @@ def main() -> int:
         # Verify the referenced file actually exists after every path migration.
         for match in JSON_PATH_RE.finditer(content):
             target = match.group("path").lstrip("/")
+            if any(target.startswith(prefix) for prefix in SKIP_JSON_TARGET_PREFIXES):
+                continue
             if not (ROOT / target).is_file():
                 failures.append(f"missing JSON target {target!r}: referenced by {rp}")
 

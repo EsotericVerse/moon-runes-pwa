@@ -43,6 +43,12 @@
     .synthesis-tech[open]>summary{margin-bottom:12px;color:var(--text)}
     .synthesis-tech-body{display:grid;gap:10px}
     .synthesis-tech-body .summary{font-size:.82rem;color:var(--muted)}
+    .source-search{margin:16px 0 0;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.12)}
+    .source-search-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}
+    .source-search-head strong{font-size:.9rem}.source-search-head small{color:var(--muted);font-size:.76rem}
+    .source-search-links{display:flex;flex-wrap:wrap;gap:8px}
+    .source-search-link{display:inline-flex;align-items:center;padding:8px 11px;border:1px solid var(--line);border-radius:10px;color:var(--text);background:var(--soft);text-decoration:none;font-size:.82rem;font-weight:800}
+    .source-search-link:hover,.source-search-link:focus-visible{border-color:var(--mint);outline:none}
     footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
     @media(max-width:900px){.location-map{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:720px){.pagination{align-items:stretch}.pagination-pages{width:100%;justify-content:center}.pagination-info{width:100%;text-align:center}.suggestion-grid{grid-template-columns:1fr 1fr}.primary-actions{display:grid;grid-template-columns:1fr 1fr}.submit,.clear-btn,.browse-btn{width:100%}.filter-tabs{grid-template-columns:1fr 1fr 1fr}.filter-tab{font-size:.78rem;padding:10px 6px}.time-grid{grid-template-columns:1fr}.browse-inline{align-items:stretch;flex-direction:column}.topbar{align-items:flex-start;flex-direction:column}}
@@ -156,6 +162,15 @@
           </div>
         </section>
 
+        <section class="source-search" id="sourceSearch" aria-label="來源搜尋">
+          <div class="source-search-head">
+            <strong>到原始來源繼續搜尋</strong>
+            <small>使用目前搜尋詞開啟來源站內搜尋；找到值得保留的內容後，可再交給 Capture 收錄。</small>
+          </div>
+          <div class="source-search-links" id="sourceSearchLinks"></div>
+          <div class="source-search-links" style="margin-top:8px"><a class="source-search-link" href="km-upload.html">KM JSON Upload</a></div>
+        </section>
+
         <div class="suggestions" aria-label="搜尋建議">
           <div class="suggestions-head">
             <strong>快速範例</strong>
@@ -184,6 +199,23 @@
   <script src="js/facebook-repo-corpus.js"></script>
   <script>
     const API='https://moon-runes-pwa.onrender.com';
+    const SOURCE_SEARCH_PROVIDERS=[
+      {id:'threads',label:'Threads',url:q=>`https://www.threads.com/search?q=${encodeURIComponent(q)}`},
+      {id:'youtube',label:'YouTube',url:q=>`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`},
+      {id:'github',label:'GitHub',url:q=>`https://github.com/search?q=${encodeURIComponent(q)}&type=code`},
+      {id:'suno',label:'Suno',url:q=>`https://suno.com/search?q=${encodeURIComponent(q)}`}
+    ];
+    function renderSourceSearchLinks(){
+      const host=el('sourceSearchLinks');
+      if(!host)return;
+      const q=el('query')?.value.trim()||'';
+      host.innerHTML=SOURCE_SEARCH_PROVIDERS.map(p=>{
+        const disabled=!q;
+        const href=disabled?'#':p.url(q);
+        return `<a class="source-search-link" data-source-search="${esc(p.id)}" href="${esc(href)}" target="_blank" rel="noopener noreferrer" aria-disabled="${disabled?'true':'false'}">${esc(p.label)}${q?'：'+esc(q):''}</a>`;
+      }).join('');
+      host.querySelectorAll('a[aria-disabled="true"]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));
+    }
     const promptSets={
       default:[
         {q:'已讀不回',title:'已讀不回',desc:'歌曲 · 關係 · 文章'},
@@ -449,7 +481,10 @@
       const q=p.get('q')||'';
       const period=p.get('period')||'';
       if(type&&[...el('contentType').options].some(o=>o.value===type)) el('contentType').value=type;
-      if(q) el('query').value=q;
+      if(q) {
+        el('query').value=q;
+        renderSourceSearchLinks();
+      }
       if(period&&[...el('period').options].some(o=>o.value===period)) el('period').value=period;
       if(q) el('searchForm').requestSubmit();
     }
@@ -465,6 +500,7 @@
         </button>`).join('');
       document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{
         el('query').value=b.dataset.q;
+        renderSourceSearchLinks();
         el('query').focus();
       });
     }
@@ -913,6 +949,7 @@
       quick();
       applyEras(ERA_FALLBACK);
       el('query').focus();
+      renderSourceSearchLinks();
       history.replaceState(null,'',location.pathname);
     }
     function selectedText(id){
@@ -955,6 +992,8 @@
     ['contentType','sourceFilter','period'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
     updateFilterSummary();
     el('clearSearch').onclick=clearAllSearch;
+    el('query').addEventListener('input',renderSourceSearchLinks);
+    renderSourceSearchLinks();
     el('browse').onclick=()=>browse(1);
     el('contentType').addEventListener('change',()=>{browseState={active:false,type:'',key:'',page:1,total:0,items:[]};if(el('pagination'))el('pagination').hidden=true;el('browse').textContent='瀏覽目前類型';});
     el('searchForm').onsubmit=async e=>{
