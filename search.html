@@ -234,15 +234,15 @@
         {q:'未知來信',title:'未知來信',desc:'LOC2 · 情境事件'}
       ],
       knowledge:[
-        {q:'LOC 是什麼',title:'LOC 是什麼',desc:'方法體系（知識庫） · 系統知識'},
-        {q:'月之符文',title:'月之符文',desc:'方法體系（知識庫） · 文件／FAQ'},
-        {q:'LOC2 怎麼玩',title:'LOC2 怎麼玩',desc:'方法體系（知識庫） · 規則知識'},
-        {q:'文字建築學',title:'文字建築學',desc:'方法體系（知識庫） · 結構分析'},
-        {q:'Graph RAG',title:'Graph RAG',desc:'方法體系（知識庫） · 檢索／關係'},
-        {q:'自我治理',title:'自我治理',desc:'方法體系（知識庫） · 跨文件知識'}
+        {q:'LOC 是什麼',title:'LOC 是什麼',desc:'演算法（知識庫） · 系統知識'},
+        {q:'月之符文',title:'月之符文',desc:'演算法（知識庫） · 文件／FAQ'},
+        {q:'LOC2 怎麼玩',title:'LOC2 怎麼玩',desc:'演算法（知識庫） · 規則知識'},
+        {q:'文字建築學',title:'文字建築學',desc:'演算法（知識庫） · 結構分析'},
+        {q:'Graph RAG',title:'Graph RAG',desc:'演算法（知識庫） · 檢索／關係'},
+        {q:'自我治理',title:'自我治理',desc:'演算法（知識庫） · 跨文件知識'}
       ]
     };
-    const labels={entities:'符文體系',scenarios:'符文體系',oracle:'符文籤詩',readings:'符文籤詩',runes:'符文體系',rune_songs:'符文體系',works:'自創歌曲(Suno)',textworks:'文字創作',relationships:'符文演化',governance:'方法論',loc4_articles:'文字／方法文章',text:'文字',media:'多媒體創作',knowledge:'方法體系（知識庫）',timeline:'符文演化'};
+    const labels={entities:'符文體系',scenarios:'符文體系',oracle:'符文籤詩',readings:'符文籤詩',runes:'符文體系',rune_songs:'符文體系',works:'自創歌曲(Suno)',textworks:'文字創作',relationships:'符文演化',governance:'方法論',loc4_articles:'文字／方法文章',text:'文字',media:'多媒體創作',knowledge:'演算法（知識庫）',timeline:'符文演化'};
     const LOCAL_SEARCH_CACHE=new Map();
     async function localJson(path){
       if(LOCAL_SEARCH_CACHE.has(path))return LOCAL_SEARCH_CACHE.get(path);
@@ -710,9 +710,9 @@
       works:{loc:'自創歌曲(Suno)',label:'音樂／歌詞',desc:'一般歌曲與歌詞；有明確符文延伸者投影到符文體系'},
       textworks:{loc:'文字創作',label:'文字創作',desc:'一般小說、文章與作者文字；有明確符文延伸者投影到符文體系'},
       media:{loc:'多媒體創作',label:'符文體系',desc:'符文延伸為圖像、影音、知識圖或其他多媒體表達'},
-      governance:{loc:'方法論',label:'符文方法',desc:'Grammar、治理解牌方式、月相交互與正反向符文治理等方法論'},
+      governance:{loc:'方法論',label:'符文演算',desc:'Grammar、治理解牌方式、月相交互與正反向符文治理等方法論'},
       loc4_articles:{loc:'文字創作／方法論',label:'文字／方法文章',desc:'作品原文與方法分析分開呈現'},
-      knowledge:{loc:'方法體系（知識庫）',label:'符文方法',desc:'符文 Grammar、方法、規格與可檢索知識'},
+      knowledge:{loc:'演算法（知識庫）',label:'符文演算',desc:'符文 Grammar、方法、規格與可檢索知識'},
       timeline:{loc:'文化哲學（時間／趨勢分析）',label:'符文演化',desc:'符文跨時間、ERA、事件與趨勢的演變'},
       relationships:{loc:'跨分類',label:'符文演化',desc:'符文從語意種子延伸到作品、方法、媒體與時期的關係'},
       text:{loc:'文字創作',label:'文字創作',desc:'對外統一為文字創作；來源平台另作來源標示'}
@@ -778,12 +778,12 @@
         rune_sandbox:'rune_system',
         rune_music:'rune_system',
         rune_image:'rune_system',
-        rune_governance:'rune_method'
+        rune_governance:'rune_algorithm'
       };
       return legacy[type]||type;
     }
     function isRunePublicCategory(type){
-      return ['rune_system','rune_method','rune_evolution','rune_divination','rune_core','rune_sandbox','rune_music','rune_image','rune_governance'].includes(type);
+      return ['rune_system','rune_algorithm','rune_evolution','rune_divination','rune_core','rune_sandbox','rune_music','rune_image','rune_governance'].includes(type);
     }
 
     function apiContentType(type){
@@ -811,7 +811,7 @@
         return {oracle:g.oracle||[],readings:g.readings||[]};
       }
 
-      if(type==='rune_method'){
+      if(type==='rune_algorithm'){
         const knowledge=(g.knowledge||[]).filter(item=>{
           const p=item?.payload||{};
           const hay=[item?.title,item?.summary,item?.result_id,p?.title,p?.summary,p?.retrieval_text,p?.description,...(p?.keywords||[])].filter(Boolean).join(' ');
