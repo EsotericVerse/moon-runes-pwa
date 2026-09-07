@@ -1434,10 +1434,10 @@
       <div class="loc-header">
         <p class="loc-header-meta">LOC · Luna Codex · Language System Framework</p>
         <h1 class="loc-header-title">LOC · 月典</h1>
-        <h2 class="loc-header-subtitle">不知道怎麼說，就先抽一張。</h2>
+        <h2 class="loc-header-subtitle">從語彙開始，讓脈絡、作品與時間彼此連結。</h2>
         <p class="loc-header-copy">
-          月典（LOC）把人的創作、文字、歌曲、知識與生活紀錄整理成可以搜尋、比較、追蹤變化與分析趨勢的資料。
-          它以月之符文為起點，將這些語言相關內容連結起來，形成一套可以持續整理、理解與分析的語言系統框架。
+          LOC／月典是一套拆解、組織、搜尋並推演文學語言的系統框架。
+          它以月符作為語彙種子，經過脈絡、創作表達、方法論與知識演算法，最後放回時間中觀察演化。
         </p>
 
         <div class="hero-actions">
@@ -1465,7 +1465,7 @@
           <p class="eyebrow">Start Here</p>
           <h2 id="start-title">今天想從哪裡開始？</h2>
         </div>
-        <p>月之符文是整套 LOC 的根。先從月之符文直接使用，再往下理解符文演化。什麼都不知道但有興趣想了解更深，請看新手教學。知道一些想知道框架架構，請點框架圖。</p>
+        <p>第一次使用可直接抽取每日符文；想查定義可進入 66 符文圖鑑；想理解整體則查看 LOC1–8 框架。Search 負責跨資料搜尋，推演頁負責時間、ERA 與趨勢。</p>
       </div>
 
       <div class="hero-actions start-actions">
@@ -1575,10 +1575,10 @@
     <section class="section" id="language-evolution" aria-labelledby="language-evolution-title">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">Language Evolution · Rune-Centric Vision</p>
-          <h2 id="language-evolution-title">語言進化：符文不只是一副牌。</h2>
+          <p class="eyebrow">LunaRunes Context Evolution</p>
+          <h2 id="language-evolution-title">月之符文的脈絡演化</h2>
         </div>
-        <p>LOC 的遠景，是觀察一組有限符文如何從語彙開始，逐步形成文法、建築、作品與可持續演化的語言系統。</p>
+        <p>月符由基本語彙出發，進入關係與情境，再延伸為作品、方法、知識結構與時間中的演化證據。</p>
       </div>
 
       <div class="evolution-path" aria-label="符文語言進化路徑">
@@ -1616,8 +1616,8 @@
         </article>
 
         <article class="evolution-step">
-          <small>LOC8 · 推演</small><strong>觀察推演</strong><p>把作品、語言、方法與風格放入時間、ERA、Event、Trajectory 與 Trend，觀察它們如何累積、轉變與形成新的文學表達。Graph View 保留在此頁展示，但 Graph 的脈絡責任歸 LOC2。</p>
-          <span class="evolution-status complete">已實作 · 每日符文／ERA／Event／Relation／Trajectory／Trend／Graph View</span>
+          <small>LOC8 · 推演</small><strong>觀察推演</strong><p>把作品、語言、方法與風格放入時間、ERA、Event、Trajectory 與 Trend，觀察它們如何累積、轉變與形成新的文學表達。脈絡、Relation 與 Graph 的展示入口歸 LOC2。</p>
+          <span class="evolution-status complete">已實作 · 每日符文／ERA／Event／Timeline／Trend</span>
         </article>
       </div>
 
@@ -1803,8 +1803,8 @@
         <button class="framework-tab" type="button" data-loc-key="LOC8">LOC8</button>
       </div>
       <div class="framework-detail">
-        <div class="kicker" id="framework-detail-kicker">LOC1 · Lots</div>
-        <h3 id="framework-detail-title">符文抽籤</h3>
+        <div class="kicker" id="framework-detail-kicker">LOC1 · 月符／語彙（token）</div>
+        <h3 id="framework-detail-title">月符／語彙（token）</h3>
         <p id="framework-detail-copy"></p>
         <ul class="framework-extra" id="framework-detail-extra"></ul>
         <div class="framework-resources" id="framework-detail-resources"></div>
@@ -1853,7 +1853,7 @@
           ],
           resources:[
             {label:'開始每日符文',href:'result.html?mode=daily',meta:'Daily Rune · 一天一張'},
-            {label:'查看月之符文66 圖鑑',href:'list.html',meta:'66 語彙 · 四向 · 基本資料'}
+            {label:'查看月之符文66 圖鑑',href:'runes.html',meta:'66 語彙 · 四向 · 基本資料'}
           ],
           href:'result.html?mode=daily', label:'進入 LOC1'
         },
@@ -1861,7 +1861,7 @@
           kicker:'LOC2 · Context / Graph',
           title:'脈絡',
           copy:'LOC2 負責語彙之間的關係、情境、事件與 Graph。月符沙盒是代表作：讓平等的符文節點進入相對關係，觀察共鳴、互補、衝突與情境。',
-          route:'頁面維持月符沙盒入口；Graph View 仍可在 projection.html 顯示，但語意責任與關係資料歸 LOC2。',
+          route:'獨立入口是 context.html；脈絡、Relation 與 Graph 的公開展示均由 LOC2 承接。',
           extra:[
             '關係是一對一 edge；多個關係累積後形成脈絡。',
             '月符沙盒：符文脈絡的互動實作，不只是遊戲分類。',
@@ -1919,11 +1919,11 @@
           kicker:'LOC8 · Projection',
           title:'推演',
           copy:'把作品、語言、方法與風格放入時間，透過 ERA、Event、Trajectory 與 Trend 觀察變化並推導後續方向。推演以既有證據為基礎，不等於預言。',
-          route:'獨立功能入口是 projection.html；Graph View 可保留在此作為演化視圖。',
+          route:'獨立功能入口是 projection.html；只呈現每日符文、時期、事件、時間線與趨勢推演。',
           extra:[
             '時間不是另一種內容，而是讓前面各層產生「前後變化」的維度。',
             'ERA、Trajectory、Trend 用來描述已發生與正在形成的變化。',
-            'Graph 的關係／脈絡責任歸 LOC2；LOC8 消費 Graph 做時間投影與推演分析。'
+            'LOC8 引用既有關係資料作時間投影，但不展示或管理脈絡與 Graph 本體。'
           ],
           href:'projection.html', label:'進入 LOC8'
         }
