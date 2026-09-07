@@ -83,10 +83,12 @@ Before this cleanup, equivalent copies of `runes_all_data.json` existed under bo
 data/json/
 ├─ core/          canonical-governed runtime projections
 ├─ registries/    current Registry / Schema / Policy / Manifest
+├─ sources/       governed primary/imported source corpora
 ├─ search/        retrieval-specific datasets
 ├─ generated/     rebuildable generated indexes / analysis
 ├─ archive/       historical versions excluded from runtime
-└─ experimental/  research-only datasets and outputs
+├─ experimental/  research-only datasets and outputs
+└─ inbox/         newly imported data awaiting governance
 ```
 
 ### core
@@ -100,6 +102,12 @@ Must be small enough in responsibility that a developer can tell which file to l
 Cross-LOC structured records: ownership, ERA, media, graph, governance, schemas, rights, relationships and KM registries.
 
 A Registry may point to another authority but must not clone its full payload.
+
+### sources
+
+Governed first-party or imported source corpora. Source data preserves provenance and should not be confused with generated analysis or retrieval indexes.
+
+Current example: `sources/facebook/` stores the normalized Facebook corpus shards and manifest.
 
 ### search
 
@@ -124,6 +132,10 @@ Historical versions preserved for provenance. Current runtime must never silentl
 
 Research data used by `engine/`. Experimental data cannot override `core/` or `registries/`.
 
+### inbox
+
+Temporary intake zone for browser capture and KM upload. Data in `inbox/` must be validated and assigned a governed role before long-term use.
+
 ## 5. Configuration JSON is not data JSON
 
 These remain next to the components they configure:
@@ -139,10 +151,12 @@ Python production code must use `card_api/paths.py`:
 
 - `core_json(name)`
 - `registry_json(name)`
+- `source_json(domain, name)`
 - `search_json(domain, name)`
 - `generated_json(...)`
 - `archive_json(...)`
 - `experimental_json(...)`
+- `inbox_json(...)`
 
 Hard-coded repository-relative data paths in new Python modules are discouraged.
 
