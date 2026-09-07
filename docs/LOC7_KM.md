@@ -134,7 +134,7 @@ LOC1 符文語彙（token）
 
 - LOC2 owns 關係／脈絡／Canonical Graph 語意資料；月之符文沙盒是代表性互動實作。
 - LOC7 owns 處理這些資料的演算法、KM、RAG、Search 與 Graph RAG traversal。
-- LOC8 owns 時間投影與推演 View；Graph／脈絡的公開展示入口歸 LOC2 `context.html`；LOC8 `projection.html` 只引用關係資料作時間投影。
+- LOC8 owns 時間投影與推演 View；Graph／脈絡的公開展示入口歸 LOC2 `context.html`；LOC8 `evolution.html` 只引用關係資料作時間投影。
 
 ## 7. 月之符文基本參照與符文治理規則
 
