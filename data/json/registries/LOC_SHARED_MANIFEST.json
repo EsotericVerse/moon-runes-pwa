@@ -163,7 +163,8 @@
       "life_writing_sources": "Facebook + Threads connected by reference; raw text LOC4, governance interpretation LOC6",
       "creative_work_analysis": "complete_for_current_core_set",
       "moon_speaker_analysis": "182-chapter baseline complete; 161 restored rune configs / 21 explicitly unrecovered",
-      "moon_speaker_search": "connected"
+      "moon_speaker_search": "connected",
+      "work_analysis_search": "connected; novel title queries return structured LOC4 analysis records"
     },
     "LOC5": "media-authority-established; cross-relationship-registry-connected",
     "LOC6": {
