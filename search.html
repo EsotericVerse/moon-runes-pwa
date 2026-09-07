@@ -359,8 +359,8 @@
         <div class="meta"><span class="pill">OW3gs</span><span class="pill">${esc(statusLabel)}</span></div>
         <h3>${esc(r.title||'OW3gs 解牌案例')}</h3>
         ${cards.length?`<p class="summary"><strong>11 張：</strong>${cards.map((x,i)=>`${i+1}. ${esc(x.rune||'')}${esc(x.direction||'')}`).join(' · ')}</p>`:''}
-        ${p.context_text?`<details><summary>1–6 因的描述層</summary><p class="summary">${esc(p.context_text)}</p></details>`:''}
-        ${p.core_text?`<details><summary>7–11 果的判定層</summary><p class="summary">${esc(p.core_text)}</p></details>`:''}
+        ${p.context_text?`<details><summary>1–6 事情成因的描述層</summary><p class="summary">${esc(p.context_text)}</p></details>`:''}
+        ${p.core_text?`<details><summary>7–11 對於事情的建議文字層</summary><p class="summary">${esc(p.core_text)}</p></details>`:''}
         ${p.conclusion?`<p class="summary"><strong>結論：</strong>${esc(p.conclusion)}</p>`:''}
         ${p.verification?`<p class="summary"><strong>事後驗證：</strong>${esc(p.verification)}</p>`:''}
         ${p.interpretation_status?`<p class="summary"><small>${esc(p.interpretation_status)}</small></p>`:''}
