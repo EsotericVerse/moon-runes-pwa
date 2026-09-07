@@ -8,8 +8,8 @@
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "LOC7_KM 現行 FAQ。v0.4 同步 2026-09-06 的 LOC 公開介面、LOC6/LOC7/LOC8 權責、Unified Search、時期用語與目前已實作功能；FAQ 仍是 KM 的問答 View，不取代 Canon、母資料或 Shared Registry。",
-    "entry_count": 80,
+    "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 最新 LunaRune64.xlsx Grammar：一般牌陣使用治理解牌方式＋月相交互，符文交互限定月符沙盒專用；並同步自然語言 Search/RAG、來源／內容分類與時間篩選規則。",
+    "entry_count": 90,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
       "reference_rune": "0：德（De）",
@@ -101,20 +101,24 @@
         "LOC和月符是同一件事嗎？",
         "月典和月符有什麼差別？",
         "Luna Codex與LunaRunes有什麼差別？",
-        "月符在LOC裡是什麼位置？"
+        "月符在LOC裡是什麼位置？",
+        "為什麼說月符為種？"
       ],
-      "answer": "月之符文（LunaRunes）是 LOC 的原生符文核心；月典（LOC／Luna Codex）則是為了記錄、解析、延伸與關聯月符及其作品而自然長出的語言系統框架。月之符文是根，月典是由這個根發展出的語言生態。",
+      "answer": "LOC 是框架，月之符文是基本語意參照。月符提供最小語意種子、方向與文件分類觀念；LOC 負責把這些語意承接到占卜、治理、情境、音樂、影像、文字、關係與時間。使用者不需要先理解符文或 LLM 才能使用 LOC。",
       "keywords": [
         "月典",
         "Luna Codex",
         "LOC",
         "月符",
         "LunaRunes",
-        "原生核心",
-        "語言生態"
+        "基本參照",
+        "語意種子",
+        "月符為種",
+        "框架"
       ],
       "source_refs": [
-        "master-system:2026-09"
+        "docs/LOC_OVERVIEW.md",
+        "docs/LOC7_KM.md"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -2007,6 +2011,280 @@
       ],
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-081",
+      "category": "搜尋與RAG",
+      "question": "LOC Search 為什麼不需要先選內容類別？",
+      "aliases": [
+        "搜尋要先選歌曲或文字嗎？",
+        "可以直接用一句話搜尋嗎？",
+        "來源要先選Instagram或Threads嗎？",
+        "進階搜尋要選什麼？"
+      ],
+      "answer": "LOC Search 預設應以自然語言跨全部內容搜尋。內容類型與來源可直接寫進句子，例如「我想看我在 Instagram 發表過的文字」；Search 再自行判斷來源與內容意圖。進階篩選只保留日期與 ERA，作為額外時間限制。",
+      "keywords": [
+        "自然語言搜尋",
+        "Semantic Search",
+        "跨類別",
+        "Instagram",
+        "Threads",
+        "ERA",
+        "時間篩選",
+        "RAG"
+      ],
+      "source_refs": [
+        "docs/LOC7_KM.md",
+        "search.html"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-082",
+      "category": "符文治理",
+      "question": "一般兩卡、五卡、OW3gs 與符文沙盒 Graph 怎麼區分？",
+      "aliases": [
+        "兩卡怎麼解？",
+        "五卡是不是2+3？",
+        "OW3gs 1到6和7到11怎麼讀？",
+        "符文交互在哪裡用？",
+        "月符沙盒為什麼是平等關係？"
+      ],
+      "answer": "以 LunaRune64.xlsx#Grammar 為準：兩卡＝因＋果＋月相交互；三卡＝源＋轉＋合＋月相交互；五卡＝過去＋現在＋未來顯化＋周圍環境＋自己心境＋月相交互。OW3gs 則由兩個符文模組組成：古模組 1–6 與今模組 7–11，核心原則是「鑑古知今」。讀取時先讀今模組 7–11，再回看古模組 1–6，最後套月相交互。符文交互現行限定月符沙盒專用。",
+      "keywords": [
+        "Grammar",
+        "兩卡",
+        "因果",
+        "三卡",
+        "源轉合",
+        "五卡",
+        "OW3gs",
+        "符文交互",
+        "月符沙盒",
+        "月相交互",
+        "治理解牌方式",
+        "古模組",
+        "今模組",
+        "鑑古知今",
+        "兩個符文模組"
+      ],
+      "source_refs": [
+        "LunaRune64.xlsx#Grammar",
+        "data/json/core/rune_grammar.json",
+        "docs/LOC7_KM.md"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-083",
+      "category": "符文治理",
+      "question": "什麼是反向符文治理？",
+      "aliases": [
+        "可以從現況反推符文嗎？",
+        "這個狀況像哪一張符文？",
+        "Reverse rune mapping是什麼？",
+        "像福半正是什麼意思？"
+      ],
+      "answer": "反向符文治理是把已經發生的語句、事件、情緒或治理狀態映射回最接近的符文與方向，例如指出「這個狀況很像福半正的語意狀態」。它不是重新抽牌，而是把月符當作共同語意座標。",
+      "keywords": [
+        "反向符文治理",
+        "Reverse mapping",
+        "語意映射",
+        "福半正",
+        "符文方向",
+        "共同語意座標"
+      ],
+      "source_refs": [
+        "docs/LOC7_KM.md",
+        "docs/LOC_GOVERNANCE_CORE.md"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-084",
+      "category": "符文治理",
+      "question": "OW3gs 為什麼分成兩個符文模組？",
+      "aliases": [
+        "OW3gs 的古和今是什麼？",
+        "OW3gs 1–6 和 7–11 是兩個模組嗎？",
+        "鑑古知今在 OW3gs 是什麼意思？"
+      ],
+      "answer": "OW3gs 的核心不是把十一張牌當成同一層，而是分成兩個符文模組。古模組（1–6）用來回看形成問題的背景、條件與來源，負責「鑑古」；今模組（7–11）用來判讀現在與後續應如何理解、處理，負責「知今」。因此 OW3gs 的核心原則是「鑑古知今」。",
+      "keywords": [
+        "OW3gs",
+        "古模組",
+        "今模組",
+        "鑑古知今",
+        "1–6",
+        "7–11",
+        "符文模組"
+      ],
+      "source_refs": [
+        "LunaRune64.xlsx#Grammar",
+        "data/json/core/rune_grammar.json",
+        "docs/LOC7_KM.md"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-085",
+      "category": "月符分類",
+      "question": "月符 Search 的符文籤詩、符文脈絡、符文體系、符文演算、符文演化怎麼分？",
+      "aliases": [
+        "月符搜尋有哪些分類？",
+        "符文占卜為什麼改叫符文籤詩？",
+        "符文歌曲和符文文學放哪裡？",
+        "未來性放在哪裡？"
+      ],
+      "answer": "符文籤詩負責抽牌、籤詩與解牌；符文脈絡負責符文之間或符文與事件／作品之間的關係、情境與 Graph，月符沙盒是代表性實作；符文體系收納符文本體及其文學、歌曲、影像、沙盒等延伸形式；符文演算收納 Grammar、治理解牌方式、月相交互與正反向符文治理等可重複規則；符文演化收納 ERA、Relation、Trajectory、Trend 與所有跨時期／未來性變化。",
+      "keywords": [
+        "符文籤詩",
+        "符文脈絡",
+        "符文體系",
+        "符文演算",
+        "符文演化",
+        "Graph",
+        "月符沙盒"
+      ],
+      "source_refs": [
+        "docs/LOC7_KM.md",
+        "search.html"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-086",
+      "category": "LOC 分類",
+      "question": "LOC 的公開 Tag 怎麼分？",
+      "aliases": [
+        "LOC3到8怎麼分類？",
+        "方法論和演算法有什麼差別？",
+        "推演在 LOC 哪裡？"
+      ],
+      "answer": "LOC 對外 Tag 採一致抽象層級：LOC3／4／5 屬表達；LOC6 是方法論；LOC7 是演算法（知識庫）；LOC8 是推演（時間／趨勢分析）。月符另有符文籤詩、符文體系、符文演算、符文演化四個特化分類。技術層仍可保留 Governance、KM、Graph、Trend 等名稱。",
+      "keywords": [
+        "表達",
+        "方法論",
+        "演算法",
+        "推演",
+        "符文籤詩",
+        "符文體系",
+        "符文演算",
+        "符文演化"
+      ],
+      "source_refs": [
+        "docs/LOC7_KM.md",
+        "search.html",
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-087",
+      "category": "LOC 基本定義",
+      "question": "LOC 和月之符文到底是誰先形成的？",
+      "aliases": [
+        "LOC是從月符來的嗎？",
+        "月符是LOC框架的例子嗎？",
+        "LOC和月之符文是什麼關係？"
+      ],
+      "answer": "兩種說法分別描述歷史與結構。歷史上，月之符文先累積語彙、籤詩、作品、方法與時間證據，LOC 再從這些實作中抽象整理出框架；結構上，LOC Framework 成立後，月之符文又可以被完整描述為其中一個實例／Reference Seed System。因此「月符先長出實例，LOC 再抽象出框架；框架成立後，再反過來描述月符」兩者並不矛盾。",
+      "keywords": [
+        "LOC",
+        "月之符文",
+        "Reference Seed System",
+        "框架",
+        "實例",
+        "歷史關係",
+        "結構關係"
+      ],
+      "source_refs": [
+        "docs/LOC7_KM.md",
+        "docs/LOC_OVERVIEW.md",
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-088",
+      "category": "LOC 基本定義",
+      "question": "LOC1–8 現在怎麼分類？",
+      "aliases": [
+        "LOC最新八個分類是什麼？",
+        "LOC2為什麼是脈絡？",
+        "LOC8為什麼叫推演？"
+      ],
+      "answer": "現行分類是：LOC1 月符／語彙（token）、LOC2 脈絡、LOC3 音樂、LOC4 文字創作、LOC5 多媒體、LOC6 方法論、LOC7 演算法（知識庫）、LOC8 推演。這是一套拆解、組織並重新表達文學語言的系統框架。",
+      "keywords": [
+        "LOC1",
+        "LOC2",
+        "脈絡",
+        "方法論",
+        "演算法",
+        "推演"
+      ],
+      "source_refs": [
+        "docs/LOC_OVERVIEW.md",
+        "docs/LOC7_KM.md"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-089",
+      "category": "LOC2 脈絡",
+      "question": "Graph 為什麼歸 LOC2，但還顯示在 life.html？",
+      "aliases": [
+        "Graph屬於LOC2還是LOC8？",
+        "Graph View為什麼還在LOC8頁面？"
+      ],
+      "answer": "Graph 的關係／脈絡語意責任歸 LOC2，因為 Graph 本質是節點與 edge 所形成的脈絡。LOC7 負責 Graph RAG traversal／retrieval 演算法；LOC8 則把 Graph 投影到時間、ERA、Trajectory、Trend 做推演觀察。頁面位置可以維持 life.html，不等於資料 ownership 在 LOC8。",
+      "keywords": [
+        "Graph",
+        "LOC2",
+        "脈絡",
+        "LOC7",
+        "Graph RAG",
+        "LOC8",
+        "推演"
+      ],
+      "source_refs": [
+        "data/json/registries/LOC_GRAPH_SCHEMA.json",
+        "docs/LOC7_KM.md"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-090",
+      "category": "LOC8 推演",
+      "question": "為什麼 LOC8 叫推演，但月符仍叫符文演化？",
+      "aliases": [
+        "推演和符文演化有什麼差別？",
+        "LOC8為什麼不是文學演化？"
+      ],
+      "answer": "LOC8 的「推演」描述一個操作：根據既有時間、ERA、Event、Trajectory、Trend 與脈絡證據，觀察變化並推導後續方向；它不宣稱涵蓋整體文學史或文化史。月符的「符文演化」則描述符文本身跨時間、作品、關係與使用方式所發生的變化，所以仍保留「演化」。",
+      "keywords": [
+        "LOC8",
+        "推演",
+        "符文演化",
+        "ERA",
+        "Trajectory",
+        "Trend"
+      ],
+      "source_refs": [
+        "docs/LOC8_KM.md",
+        "docs/LOC7_KM.md"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"

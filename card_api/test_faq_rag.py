@@ -14,7 +14,7 @@ class FAQSearchEngineTest(unittest.TestCase):
         cls.engine = FAQSearchEngine(DATASET)
 
     def test_dataset_is_loaded(self):
-        self.assertEqual(len(self.engine.chunks), 80)
+        self.assertEqual(len(self.engine.chunks), 90)
 
     def test_alias_query_finds_loc_definition(self):
         result = self.engine.search("可以簡單介紹月典嗎？", top_k=3)[0]

@@ -77,10 +77,12 @@
         </div>
 
         <section class="filter-shell" id="advancedSearch">
+          <input id="contentType" type="hidden" value="">
+          <input id="sourceFilter" type="hidden" value="">
           <button class="filter-toggle" id="advancedToggle" type="button" aria-expanded="false" aria-controls="advancedPanel">
             <span class="filter-toggle-main">
-              <strong>篩選搜尋</strong>
-              <small>內容 · 來源 · 時間</small>
+              <strong>時間篩選</strong>
+              <small>日期 · ERA</small>
             </span>
             <span class="filter-count" id="filterCount" hidden>0</span>
             <span class="filter-chevron" aria-hidden="true">⌄</span>
@@ -91,59 +93,17 @@
           </div>
 
           <div class="filter-panel" id="advancedPanel" hidden>
-            <nav class="filter-tabs" aria-label="搜尋篩選分類">
-              <button type="button" class="filter-tab active" data-filter-target="filterType">內容</button>
-              <button type="button" class="filter-tab" data-filter-target="filterSource">來源</button>
-              <button type="button" class="filter-tab" data-filter-target="filterTime">時間</button>
-            </nav>
-
-            <div class="filter-section active" id="filterType">
-              <div class="filter-section-head">
-                <strong>內容</strong>
-                <span>選擇你想找的內容形式。</span>
-              </div>
-              <select id="contentType">
-                <option value="">全部內容</option>
-                <option value="text_record">文字</option>
-                <option value="lyrics_work">音樂／歌詞</option>
-                <option value="knowledge_image">圖片</option>
-                <option value="multimedia">影音</option>
-                <option value="rune_record">符文</option>
-                <option value="scenario_event">情境／事件</option>
-                <option value="knowledge">文件／知識</option>
-              </select>
-              <div class="browse-inline">
-                <button class="browse-btn" id="browse" type="button">依這個內容瀏覽</button>
-                <small>不輸入關鍵字也可以；先選內容，再直接瀏覽。</small>
-              </div>
-            </div>
-
-            <div class="filter-section" id="filterSource" hidden>
-              <div class="filter-section-head">
-                <strong>來源</strong>
-                <span>選擇資料實際來自哪個平台或資料庫。</span>
-              </div>
-              <select id="sourceFilter">
-                <option value="">全部來源</option>
-                <option value="facebook">Facebook</option>
-                <option value="threads">Threads</option>
-                <option value="suno">Suno</option>
-                <option value="instagram">Instagram</option>
-                <option value="loc">LOC 站內資料</option>
-              </select>
-            </div>
-
-            <div class="filter-section" id="filterTime" hidden>
+            <div class="filter-section active" id="filterTime">
               <div class="filter-section-head">
                 <strong>時間</strong>
-                <span>依日期區間或既有時期篩選。</span>
+                <span>只限制搜尋時間；內容類型與來源直接寫在搜尋句子裡。</span>
               </div>
               <div class="time-grid">
                 <div class="field"><label for="startDate">開始日期</label><input id="startDate" type="date"></div>
                 <div class="field"><label for="endDate">結束日期</label><input id="endDate" type="date"></div>
               </div>
               <div class="field era-field">
-                <label for="period">時期</label>
+                <label for="period">ERA</label>
                 <select id="period">
                   <option value="">全部時期</option>
                   <option value="P0">P0</option>
@@ -165,10 +125,9 @@
         <section class="source-search" id="sourceSearch" aria-label="來源搜尋">
           <div class="source-search-head">
             <strong>到原始來源繼續搜尋</strong>
-            <small>使用目前搜尋詞開啟來源站內搜尋；找到值得保留的內容後，可再交給 Capture 收錄。</small>
+            <small>來源可直接寫進搜尋句子；這裡只提供跳到原始平台繼續查找。</small>
           </div>
           <div class="source-search-links" id="sourceSearchLinks"></div>
-          <div class="source-search-links" style="margin-top:8px"><a class="source-search-link" href="km-upload.html">KM JSON Upload</a></div>
         </section>
 
         <div class="suggestions" aria-label="搜尋建議">
@@ -202,6 +161,7 @@
     const SOURCE_SEARCH_PROVIDERS=[
       {id:'threads',label:'Threads',url:q=>`https://www.threads.com/search?q=${encodeURIComponent(q)}`},
       {id:'youtube',label:'YouTube',url:q=>`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`},
+      {id:'x',label:'X (Twitter)',url:q=>`https://x.com/search?q=${encodeURIComponent(q)}&src=typed_query`},
       {id:'github',label:'GitHub',url:q=>`https://github.com/search?q=${encodeURIComponent(q)}&type=code`},
       {id:'suno',label:'Suno',url:q=>`https://suno.com/search?q=${encodeURIComponent(q)}`}
     ];
@@ -226,12 +186,12 @@
         {q:'自由的風',title:'自由的風',desc:'歌曲 · 時期 · 狀態'}
       ],
       lyrics_work:[
-        {q:'已讀不回',title:'已讀不回',desc:'LOC3 · 歌曲／歌詞'},
-        {q:'人生月台',title:'人生月台',desc:'LOC3 · 時期作品'},
-        {q:'自由的風',title:'自由的風',desc:'LOC3 · 主題／歌曲'},
-        {q:'微月光',title:'微月光',desc:'LOC3 · 歌曲／主題'},
-        {q:'界線',title:'界線',desc:'LOC3 · 歌詞命題'},
-        {q:'自我治理',title:'自我治理',desc:'LOC3 · 現行創作'}
+        {q:'已讀不回',title:'已讀不回',desc:'自創歌曲(Suno) · 歌曲／歌詞'},
+        {q:'人生月台',title:'人生月台',desc:'自創歌曲(Suno) · 時期作品'},
+        {q:'自由的風',title:'自由的風',desc:'自創歌曲(Suno) · 主題／歌曲'},
+        {q:'微月光',title:'微月光',desc:'自創歌曲(Suno) · 歌曲／主題'},
+        {q:'界線',title:'界線',desc:'自創歌曲(Suno) · 歌詞命題'},
+        {q:'自我治理',title:'自我治理',desc:'自創歌曲(Suno) · 現行創作'}
       ],
       text_record:[
         {q:'自由',title:'自由',desc:'文字 · 長期語境'},
@@ -242,47 +202,47 @@
         {q:'感情',title:'感情',desc:'文字 · 歷史語境'}
       ],
       multimedia:[
-        {q:'月之符文',title:'月之符文',desc:'LOC5 · 圖像／影音'},
-        {q:'自由的風',title:'自由的風',desc:'LOC5 · Reels／視覺'},
-        {q:'界線',title:'界線',desc:'LOC5 · 多媒體表達'},
-        {q:'微月光',title:'微月光',desc:'LOC5 · 影像／聲音'},
-        {q:'宣傳',title:'宣傳',desc:'LOC5 · 公開影音'},
-        {q:'月光',title:'月光',desc:'LOC5 · 視覺意象'}
+        {q:'月之符文',title:'月之符文',desc:'多媒體創作 · 圖像／影音'},
+        {q:'自由的風',title:'自由的風',desc:'多媒體創作 · Instagram／視覺'},
+        {q:'界線',title:'界線',desc:'多媒體創作 · 多媒體表達'},
+        {q:'微月光',title:'微月光',desc:'多媒體創作 · 影像／聲音'},
+        {q:'宣傳',title:'宣傳',desc:'多媒體創作 · 公開影音'},
+        {q:'月光',title:'月光',desc:'多媒體創作 · 視覺意象'}
       ],
       governance_fragment:[
-        {q:'自我治理',title:'自我治理',desc:'LOC6 · 治理核心'},
-        {q:'界線',title:'界線',desc:'LOC6 · 邊界／治理'},
-        {q:'免錢的最貴',title:'免錢的最貴',desc:'LOC6 · 價值判準'},
-        {q:'我不跟你走劇本',title:'我不跟你走劇本',desc:'LOC6 · 敘事主權'},
-        {q:'慈悲不是投降',title:'慈悲不是投降',desc:'LOC6 · 防衛邊界'},
-        {q:'錯誤',title:'錯誤',desc:'LOC6 · 錯誤治理'}
+        {q:'自我治理',title:'自我治理',desc:'方法論 · 治理核心'},
+        {q:'界線',title:'界線',desc:'方法論 · 邊界／治理'},
+        {q:'免錢的最貴',title:'免錢的最貴',desc:'方法論 · 價值判準'},
+        {q:'我不跟你走劇本',title:'我不跟你走劇本',desc:'方法論 · 敘事主權'},
+        {q:'慈悲不是投降',title:'慈悲不是投降',desc:'方法論 · 防衛邊界'},
+        {q:'錯誤',title:'錯誤',desc:'方法論 · 錯誤治理'}
       ],
       governance_article:[
-        {q:'自我治理',title:'自我治理',desc:'LOC6 · 治理文章'},
-        {q:'自由',title:'自由',desc:'LOC6 · Threads 長文'},
-        {q:'選擇',title:'選擇',desc:'LOC6 · 價值／決策'},
-        {q:'責任',title:'責任',desc:'LOC6 · 治理語言'},
-        {q:'尊重',title:'尊重',desc:'LOC6 · 關係／界線'},
-        {q:'政德風',title:'政德風',desc:'LOC6 · 風格演變'}
+        {q:'自我治理',title:'自我治理',desc:'方法論 · 治理文章'},
+        {q:'自由',title:'自由',desc:'方法論 · Threads 長文'},
+        {q:'選擇',title:'選擇',desc:'方法論 · 價值／決策'},
+        {q:'責任',title:'責任',desc:'方法論 · 治理語言'},
+        {q:'尊重',title:'尊重',desc:'方法論 · 關係／界線'},
+        {q:'政德風',title:'政德風',desc:'方法論 · 風格演變'}
       ],
       scenario_event:[
-        {q:'自我懷疑',title:'自我懷疑',desc:'LOC2 · 情境事件'},
-        {q:'合作',title:'合作',desc:'LOC2 · 情境事件'},
-        {q:'重建關係',title:'重建關係',desc:'LOC2 · 情境事件'},
-        {q:'資源不足',title:'資源不足',desc:'LOC2 · 情境事件'},
-        {q:'選擇',title:'選擇',desc:'LOC2 · 情境事件'},
-        {q:'未知來信',title:'未知來信',desc:'LOC2 · 情境事件'}
+        {q:'自我懷疑',title:'自我懷疑',desc:'脈絡 · 情境事件'},
+        {q:'合作',title:'合作',desc:'脈絡 · 情境事件'},
+        {q:'重建關係',title:'重建關係',desc:'脈絡 · 情境事件'},
+        {q:'資源不足',title:'資源不足',desc:'脈絡 · 情境事件'},
+        {q:'選擇',title:'選擇',desc:'脈絡 · 情境事件'},
+        {q:'未知來信',title:'未知來信',desc:'脈絡 · 情境事件'}
       ],
       knowledge:[
-        {q:'LOC 是什麼',title:'LOC 是什麼',desc:'LOC7 · 系統知識'},
-        {q:'月之符文',title:'月之符文',desc:'LOC7 · 文件／FAQ'},
-        {q:'LOC2 怎麼玩',title:'LOC2 怎麼玩',desc:'LOC7 · 規則知識'},
-        {q:'文字建築學',title:'文字建築學',desc:'LOC7 · 結構分析'},
-        {q:'Graph RAG',title:'Graph RAG',desc:'LOC7 · 檢索／關係'},
-        {q:'自我治理',title:'自我治理',desc:'LOC7 · 跨文件知識'}
+        {q:'LOC 是什麼',title:'LOC 是什麼',desc:'演算法（知識庫） · 系統知識'},
+        {q:'月之符文',title:'月之符文',desc:'演算法（知識庫） · 文件／FAQ'},
+        {q:'LOC2 怎麼玩',title:'LOC2 怎麼玩',desc:'演算法（知識庫） · 規則知識'},
+        {q:'文字建築學',title:'文字建築學',desc:'演算法（知識庫） · 結構分析'},
+        {q:'Graph RAG',title:'Graph RAG',desc:'演算法（知識庫） · 檢索／關係'},
+        {q:'自我治理',title:'自我治理',desc:'演算法（知識庫） · 跨文件知識'}
       ]
     };
-    const labels={entities:'核心詞條',scenarios:'LOC2 情境事件',oracle:'籤詩結果',readings:'OW3gs 解牌／抽牌紀錄',runes:'月符',rune_songs:'符文歌曲',works:'Suno 歌曲／歌詞',textworks:'文字',relationships:'跨 LOC 關聯',governance:'文字',loc4_articles:'文字',text:'文字',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
+    const labels={entities:'符文體系',scenarios:'符文脈絡',oracle:'符文籤詩',readings:'符文籤詩',runes:'符文體系',rune_songs:'符文體系',works:'自創歌曲(Suno)',textworks:'文字創作',relationships:'符文脈絡',governance:'方法論',loc4_articles:'文字／方法文章',text:'文字',media:'多媒體創作',knowledge:'演算法（知識庫）',timeline:'符文演化'};
     const LOCAL_SEARCH_CACHE=new Map();
     async function localJson(path){
       if(LOCAL_SEARCH_CACHE.has(path))return LOCAL_SEARCH_CACHE.get(path);
@@ -472,7 +432,7 @@
       for(const key of Object.keys(groups))groups[key]=groups[key].slice(0,topK);
       return {groups,synthesis:null,graph:null,local_fallback:true};
     }
-    const locLabels={LOC1:'LOC1 · Lots',LOC3:'LOC3 · Music',LOC4:'LOC4 · Writing',LOC5:'LOC5 · Resonance',LOC6:'LOC6 · Governance',LOC7:'LOC7 · Text Architecture',LOC8:'LOC8 · Integration'};
+    const locLabels={LOC1:'符文語彙（token）',LOC2:'脈絡',LOC3:'音樂',LOC4:'文字創作',LOC5:'多媒體',LOC6:'方法論',LOC7:'演算法（知識庫）',LOC8:'推演'};
     const el=id=>document.getElementById(id);
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
     function bootFromUrl(){
@@ -490,7 +450,7 @@
     }
     function quick(){
       const type=el('contentType').value;
-      const alias={knowledge_image:'multimedia',relationship:'knowledge',oracle:'default',rune_record:'default',era:'default'};
+      const alias={knowledge_image:'multimedia',relationship:'knowledge',oracle:'default',rune_record:'default',era:'default',rune_core:'default',rune_sandbox:'default',rune_music:'lyrics_work',rune_image:'multimedia',rune_governance:'knowledge',rune_divination:'default'};
       const key=promptSets[type]?type:(alias[type]||'default');
       const prompts=promptSets[key]||promptSets.default;
       el('quick').innerHTML=prompts.map(x=>`
@@ -507,9 +467,9 @@
     const ERA_CACHE_KEY='loc-search-era-registry-v3';
     const ERA_CACHE_TTL=24*60*60*1000;
     const ERA_FALLBACK=[
-      {period:'P0',display_label:'P0｜月符前史'},
-      {period:'P0.5',display_label:'P0.5｜月符前史過渡期'},
-      {period:'P1',display_label:'P1｜月符到月典形成期'},
+      {period:'P0',display_label:'P0｜月之符文前史'},
+      {period:'P0.5',display_label:'P0.5｜月之符文前史過渡期'},
+      {period:'P1',display_label:'P1｜月之符文到月典形成期'},
       {period:'P2',display_label:'P2｜重啟與格式形成期'},
       {period:'P3',display_label:'P3｜微月光與關係敘事期'},
       {period:'P4',display_label:'P4｜現實壓力與治理轉折期'},
@@ -525,7 +485,7 @@
       const total=Number(corpus.loc4_threads_total_main_posts||4578);
       const replies=Number(corpus.loc4_threads_total_replies||2430);
       const full=!!corpus.loc4_threads_full_index_ready;
-      el('corpusStatus').textContent=`Corpus：LOC3 ${loc3} 首可搜尋作品 · LOC4 Threads ${indexed} / ${total} 篇主貼文已索引 · ${replies} 筆 Reply 補充證據${full?' · 全文索引已就緒':' · 全文索引持續擴充中'}`;
+      el('corpusStatus').textContent=`Corpus：自創歌曲 ${loc3} 首可搜尋作品 · Threads ${indexed} / ${total} 篇主貼文已索引 · ${replies} 筆 Reply 補充證據${full?' · 全文索引已就緒':' · 全文索引持續擴充中'}`;
     }
     function applyEras(eras){
       const select=el('period'),current=select.value;
@@ -578,7 +538,7 @@
     function entityCard(r){
       const p=r.payload||{},structure=p.structure||[],steps=p.reading_order||[];
       return `<article class="card synthesis-card">
-        <div class="meta"><span class="pill">核心詞條</span><span class="pill">LOC1 · Lots</span><span class="pill">11 張抽取結構</span></div>
+        <div class="meta"><span class="pill">核心詞條</span><span class="pill">符文語彙（token）</span><span class="pill">11 張抽取結構</span></div>
         <h3>${esc(r.title||'OW3gs')}</h3>
         <p class="synthesis-lead">${esc(p.definition||r.summary||'')}</p>
         ${structure.length?`<div class="cards">${structure.map(x=>`<div class="location-card"><strong>${esc(x.range)} · ${esc(x.label)}</strong><small>${esc(x.description)}</small></div>`).join('')}</div>`:''}
@@ -623,15 +583,15 @@
     }
     function oracleCard(r){
       const p=r.payload||{},terms=p.extension_terms||[];
-      return `<article class="card"><div class="meta"><span class="pill">LOC1 · Lots</span><span class="pill">${esc(p.rune_name||'')} · ${esc(p.direction||'')}</span><span class="pill">${esc(p.question_category||'')}</span></div><h3>籤詩：${esc(p.lot||r.summary||'')}</h3>${p.direction_text?`<p class="summary"><strong>方位語意：</strong>${esc(p.direction_text)}</p>`:''}${terms.length?`<p class="summary"><strong>延伸字樣：</strong>${terms.map(esc).join(' · ')}</p>`:''}</article>`;
+      return `<article class="card"><div class="meta"><span class="pill">符文語彙（token）</span><span class="pill">${esc(p.rune_name||'')} · ${esc(p.direction||'')}</span><span class="pill">${esc(p.question_category||'')}</span></div><h3>籤詩：${esc(p.lot||r.summary||'')}</h3>${p.direction_text?`<p class="summary"><strong>方位語意：</strong>${esc(p.direction_text)}</p>`:''}${terms.length?`<p class="summary"><strong>延伸字樣：</strong>${terms.map(esc).join(' · ')}</p>`:''}</article>`;
     }
     function musicCard(r){
       const p=r.payload||{},score=Number(r.score||0),v=p.recommended_version||{},keys=(p.matched_terms?.length?p.matched_terms:(p.semantic_keywords||p.tags||[])).slice(0,8);
       const melody=v.style_prompt?`<details><summary>旋律／編曲資訊</summary><p class="summary">${esc(v.style_prompt)}</p></details>`:'';const lyrics=p.lyrics?`<details><summary>展開完整歌詞</summary><p class="summary">${esc(p.lyrics)}</p></details>`:'';
       const alternates=(p.alternate_versions||[]).length?`<details><summary>另外 ${p.alternate_versions.length} 個同詞旋律版本</summary></details>`:'';
-      return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels.LOC3)}</span><span class="pill">作品類別：${esc(p.origin_label||'一般歌曲')}</span><span class="pill">歌詞類型：${esc(p.lyric_type||p.category||'待分類')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.era_name?`<span class="pill">${esc(p.era_name)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${keys.length?`<p class="summary"><strong>關鍵字／命題：</strong>${keys.map(esc).join(' · ')}</p>`:''}${p.start_state||p.turn_method||p.final_state?`<p class="summary"><strong>語意路徑：</strong>${esc(p.start_state||'—')} → ${esc(p.turn_method||'—')} → ${esc(p.final_state||'—')}</p>`:''}${linksFor(r)}${lyrics}${melody}${alternates}</article>`;
+      return `<article class="card"><div class="meta"><span class="pill">${esc(publicLocLabel('LOC3'))}</span><span class="pill">作品類別：${esc(p.origin_label||'一般歌曲')}</span><span class="pill">歌詞類型：${esc(p.lyric_type||p.category||'待分類')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.era_name?`<span class="pill">${esc(p.era_name)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${keys.length?`<p class="summary"><strong>關鍵字／命題：</strong>${keys.map(esc).join(' · ')}</p>`:''}${p.start_state||p.turn_method||p.final_state?`<p class="summary"><strong>語意路徑：</strong>${esc(p.start_state||'—')} → ${esc(p.turn_method||'—')} → ${esc(p.final_state||'—')}</p>`:''}${linksFor(r)}${lyrics}${melody}${alternates}</article>`;
     }
-    function card(r){const score=Number(r.score||0),p=r.payload||{};const fullText=p.text||p.content||p.body||p.full_text||'';const img=r.content_type==='knowledge_image'&&p.path?`<img class="knowledge-image" src="${esc(p.path)}" alt="${esc(r.title||'LOC 知識圖')}" loading="lazy" />`:'';return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels[r.primary_loc]||r.primary_loc||'LOC')}</span><span class="pill">${esc(r.content_type||'record')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${img}${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${fullText?`<details><summary>展開全文</summary><p class="summary">${esc(fullText)}</p></details>`:''}${linksFor(r)}</article>`}
+    function card(r){const score=Number(r.score||0),p=r.payload||{};const fullText=p.text||p.content||p.body||p.full_text||'';const img=r.content_type==='knowledge_image'&&p.path?`<img class="knowledge-image" src="${esc(p.path)}" alt="${esc(r.title||'LOC 知識圖')}" loading="lazy" />`:'';return `<article class="card"><div class="meta"><span class="pill">${esc(publicLocLabel(r.primary_loc)||'LOC')}</span><span class="pill">${esc(r.content_type||'record')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${img}${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${fullText?`<details><summary>展開全文</summary><p class="summary">${esc(fullText)}</p></details>`:''}${linksFor(r)}</article>`}
     function textArticleCard(r){
       const p=r.payload||{};
       const source=(p.source_role==='main_post'||p.evidence_role==='primary')?'Threads 主貼文':'LOC6 維護文章';
@@ -640,11 +600,11 @@
       const preview=text.length>220?text.slice(0,220)+'…':text;
       const canExpand=text.length>220;
       const chars=Number(p.char_count||text.length||0);
-      return `<article class="card"><div class="meta"><span class="pill">${esc(r.primary_loc||"LOC6")} · ${r.primary_loc==="LOC4"?"Threads":"Article"}</span><span class="pill">${esc(source)}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}${chars?`<span class="pill">${chars} 字</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3><p class="summary">${esc(preview)}</p>${canExpand?`<details><summary>展開原文</summary><p class="summary">${esc(text)}</p></details>`:''}${terms.length?`<p class="summary"><strong>關鍵字／命中：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
+      return `<article class="card"><div class="meta"><span class="pill">${esc(publicLocLabel(r.primary_loc||"LOC6"))} · ${r.primary_loc==="LOC4"?"Threads":"Article"}</span><span class="pill">${esc(source)}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}${chars?`<span class="pill">${chars} 字</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3><p class="summary">${esc(preview)}</p>${canExpand?`<details><summary>展開原文</summary><p class="summary">${esc(text)}</p></details>`:''}${terms.length?`<p class="summary"><strong>關鍵字／命中：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
     }
     function relationshipCard(r){
       const p=r.payload||{},src=p.source||{},targets=p.targets||[],kw=p.keywords||[],loc6=p.loc6_interpretation||{};
-      return `<article class="card"><div class="meta"><span class="pill">跨 LOC 關聯</span><span class="pill">${esc(p.direction||'')}</span></div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}<div class="meta"><span class="pill">${esc(src.primary_loc||'LOC3')}：${esc(src.title||'')}</span>${targets.map(t=>`<span class="pill">${esc(t.primary_loc||'')}：${esc(t.title||'')}${t.chapter_count?` · ${t.chapter_count}章`:''}</span>`).join('')}</div>${kw.length?`<p class="summary"><strong>關鍵字：</strong>${kw.map(esc).join(' · ')}</p>`:''}${loc6.label?`<p class="summary"><strong>LOC6：</strong>${esc(loc6.label)} — ${esc(loc6.note||'')}</p>`:''}</article>`;
+      return `<article class="card"><div class="meta"><span class="pill">跨 LOC 關聯</span><span class="pill">${esc(p.direction||'')}</span></div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}<div class="meta"><span class="pill">${esc(publicLocLabel(src.primary_loc||'LOC3'))}：${esc(src.title||'')}</span>${targets.map(t=>`<span class="pill">${esc(publicLocLabel(t.primary_loc||''))}：${esc(t.title||'')}${t.chapter_count?` · ${t.chapter_count}章`:''}</span>`).join('')}</div>${kw.length?`<p class="summary"><strong>關鍵字：</strong>${kw.map(esc).join(' · ')}</p>`:''}${loc6.label?`<p class="summary"><strong>LOC6：</strong>${esc(loc6.label)} — ${esc(loc6.note||'')}</p>`:''}</article>`;
     }
 
     function synthesisCard(synthesis,graph){
@@ -701,8 +661,8 @@
           <div class="summary">
             ${eraPath.length?`<p><strong>時期軌跡：</strong>${eraPath.map(esc).join(' → ')}</p>`:''}
             ${locPath.length?`<p><strong>跨 LOC：</strong>${locPath.map(esc).join(' · ')}</p>`:''}
-            ${connected.length?`<p><strong>Graph 延伸結果：</strong>${connected.map(x=>`${esc(x.primary_loc||'')} ${esc(x.title||x.result_id||'')}`).join(' · ')}</p>`:''}
-            ${paths.map(p=>`<div style="margin:.45rem 0"><strong>${esc(p.from?.primary_loc||p.from?.node_type||'')}</strong> ${esc(p.from?.label||p.from?.id||'')} → <b>${esc(p.relation||'related_to')}</b> → <strong>${esc(p.to?.primary_loc||p.to?.node_type||'')}</strong> ${esc(p.to?.label||p.to?.id||'')}${p.summary?`<br><small>${esc(p.summary)}</small>`:''}${p.evidence_kind?`<br><small>evidence: ${esc(p.evidence_kind)}</small>`:''}</div>`).join('')}
+            ${connected.length?`<p><strong>Graph 延伸結果：</strong>${connected.map(x=>`${esc(publicLocLabel(x.primary_loc||''))} ${esc(x.title||x.result_id||'')}`).join(' · ')}</p>`:''}
+            ${paths.map(p=>`<div style="margin:.45rem 0"><strong>${esc(publicLocLabel(p.from?.primary_loc)||p.from?.node_type||'')}</strong> ${esc(p.from?.label||p.from?.id||'')} → <b>${esc(p.relation||'related_to')}</b> → <strong>${esc(publicLocLabel(p.to?.primary_loc)||p.to?.node_type||'')}</strong> ${esc(p.to?.label||p.to?.id||'')}${p.summary?`<br><small>${esc(p.summary)}</small>`:''}${p.evidence_kind?`<br><small>evidence: ${esc(p.evidence_kind)}</small>`:''}</div>`).join('')}
           </div>
         </details>`
         : '<p class="summary"><strong>Graph RAG：</strong>目前沒有可走訪的 Canonical edge。</p>';
@@ -711,7 +671,7 @@
         <div class="grouphead"><h2>綜合分析</h2><span>先看結論，需要時再展開技術資料</span></div>
         <div class="cards">
           <article class="card synthesis-card">
-            <div class="meta"><span class="pill">跨 LOC 綜合結果</span>${locs}</div>
+            <div class="meta"><span class="pill">跨分類綜合結果</span>${locs}</div>
             <h3>${esc(synthesis.title||'綜合結果')}</h3>
 
             <p class="synthesis-lead">${esc(readableSummary)}</p>
@@ -741,26 +701,41 @@
     }
 
     const GROUP_LOCATION_META={
-      entities:{loc:'LOC1',label:'核心詞條',desc:'方法名稱、定義與讀取規則'},
-      scenarios:{loc:'LOC2',label:'情境事件',desc:'Scenario Corpus／Event Corpus；真實生活狀況的語意題目'},
-      oracle:{loc:'LOC1',label:'籤詩／解牌',desc:'月之符文的實際提示與使用結果'},
-      readings:{loc:'LOC1',label:'OW3gs 解牌／抽牌紀錄',desc:'有來源保存的 11 張抽牌與解讀紀錄'},
-      runes:{loc:'LOC1',label:'月之符文',desc:'基本符文、方向與參照語意'},
-      rune_songs:{loc:'LOC3',label:'符文歌曲／歌曲關聯',desc:'已確認符文歌曲，以及明確標示來源狀態的符文－歌曲關聯'},
-      works:{loc:'LOC3',label:'音樂／歌詞',desc:'歌曲、歌詞與符文歌演化證據'},
-      textworks:{loc:'LOC4',label:'文字作品',desc:'文章、小說與文字延伸'},
-      media:{loc:'LOC5',label:'多媒體／圖片',desc:'Reels、影音與知識圖'},
-      governance:{loc:'LOC6',label:'治理／政德風',desc:'治理片段、價值與語言判斷'},
-      loc4_articles:{loc:'LOC4/6',label:'文字／治理文章',desc:'LOC4 原始文字與 LOC6 治理解讀分開呈現'},
-      knowledge:{loc:'LOC7',label:'知識庫／文件',desc:'KM、規格、文件與架構知識'},
-      timeline:{loc:'LOC8',label:'ERA／趨勢',desc:'時間、關係與演變維度'},
-      relationships:{loc:'跨 LOC',label:'關係',desc:'已建立的跨資料與跨媒介關係'},
-      text:{loc:'LOC4 / LOC6 / LOC8',label:'文字',desc:'跨來源文字資料與時間脈絡'}
+      entities:{loc:'月之符文',label:'符文體系',desc:'符文本體與可延伸的基本語彙（token）／語意種子'},
+      scenarios:{loc:'月之符文沙盒',label:'符文脈絡',desc:'符文延伸到沙盒、情境與互動後形成的 Semantic Playground'},
+      oracle:{loc:'月之符文',label:'符文籤詩',desc:'抽牌、籤詩與其結果'},
+      readings:{loc:'月之符文',label:'符文籤詩',desc:'解牌與實際判讀紀錄；解牌屬於籤詩使用的一部分'},
+      runes:{loc:'月之符文',label:'符文體系',desc:'基本符文、方向、語彙（token）與語意種子'},
+      rune_songs:{loc:'自創歌曲(Suno)',label:'符文體系',desc:'符文延伸為歌曲後的作品與 rune-song 關聯'},
+      works:{loc:'自創歌曲(Suno)',label:'音樂／歌詞',desc:'一般歌曲與歌詞；有明確符文延伸者投影到符文體系'},
+      textworks:{loc:'文字創作',label:'文字創作',desc:'一般小說、文章與作者文字；有明確符文延伸者投影到符文體系'},
+      media:{loc:'多媒體創作',label:'符文體系',desc:'符文延伸為圖像、影音、知識圖或其他多媒體表達'},
+      governance:{loc:'方法論',label:'符文演算',desc:'Grammar、治理解牌方式、月相交互與正反向符文演算等方法論'},
+      loc4_articles:{loc:'文字創作／方法論',label:'文字／方法文章',desc:'作品原文與方法分析分開呈現'},
+      knowledge:{loc:'演算法（知識庫）',label:'符文演算',desc:'符文 Grammar、方法、規格與可檢索知識'},
+      timeline:{loc:'推演（時間／趨勢分析）',label:'符文演化',desc:'符文跨時間、ERA、事件與趨勢的演變'},
+      relationships:{loc:'跨分類',label:'符文脈絡',desc:'符文從語意種子延伸到作品、方法、媒體與時期的關係'},
+      text:{loc:'文字創作',label:'文字創作',desc:'對外統一為文字創作；來源平台另作來源標示'}
     };
+
+    function publicLocLabel(value){
+      const map={
+        LOC1:'符文語彙（token）',
+        LOC2:'脈絡',
+        LOC3:'音樂',
+        LOC4:'文字創作',
+        LOC5:'多媒體',
+        LOC6:'方法論',
+        LOC7:'演算法（知識庫）',
+        LOC8:'推演'
+      };
+      const raw=String(value||'');
+      return raw.split(/\s*\/\s*|\s*,\s*/).map(x=>{const key=(x.match(/LOC[1-8]/i)||[])[0]?.toUpperCase();return key?map[key]:x;}).join('／');
+    }
 
     function resultLocationOverview(groups){
       const cards=[];
-      for(const key of RESULT_ORDER){
+      for(const key of resultOrderForQuery(el('query')?.value||'')){
         const items=groups?.[key]||[];
         if(!items.length) continue;
         const meta=GROUP_LOCATION_META[key]||{loc:'LOC',label:labels[key]||key,desc:''};
@@ -774,7 +749,7 @@
       }
       if(!cards.length) return '';
       return `<section class="group">
-        <div class="grouphead"><h2>資料分布</h2><span>這個主題目前出現在哪些 LOC／資料位置</span></div>
+        <div class="grouphead"><h2>資料分布</h2><span>這個主題目前出現在哪些內容分類／資料位置</span></div>
         <div class="location-map">${cards.join('')}</div>
         <p class="result-logic-note">先看資料分布與關係，再展開下面的原始證據；搜尋結果不再把所有命中當成同一層級的清單。</p>
       </section>`;
@@ -782,8 +757,96 @@
 
     const PAGE_SIZE=20;
     const RESULT_ORDER=['scenarios','readings','runes','rune_songs','works','textworks','relationships','governance','loc4_articles','text','media','knowledge','timeline'];
+    const RUNE_RESULT_PRIORITY=['oracle','readings','runes','scenarios','rune_songs','media','knowledge','relationships','timeline'];
+
+    function isRuneQuery(query){
+      const q=String(query||'').trim();
+      return /月符|月之符文|符文|OW3gs|抽牌|占卜|解牌|解讀|判讀|雙卡|因果|三卡|源轉合|五卡|十一卡|11張|7-11|正位|逆位|半正|半逆/i.test(q);
+    }
+
+    function resultOrderForQuery(query){
+      if(!isRuneQuery(query)) return RESULT_ORDER;
+      const seen=new Set(RUNE_RESULT_PRIORITY);
+      return [...RUNE_RESULT_PRIORITY,...RESULT_ORDER.filter(key=>!seen.has(key))];
+    }
     let searchState={groups:{},synthesis:null,graph:null,page:1,total:0};
     let browseState={active:false,type:'',key:'',page:1,total:0,items:[]};
+
+    function normalizeRunePublicCategory(type){
+      const legacy={
+        rune_core:'rune_system',
+        rune_sandbox:'rune_system',
+        rune_music:'rune_system',
+        rune_image:'rune_system',
+        rune_governance:'rune_algorithm'
+      };
+      return legacy[type]||type;
+    }
+    function isRunePublicCategory(type){
+      return ['rune_system','rune_algorithm','rune_evolution','rune_divination','rune_core','rune_sandbox','rune_music','rune_image','rune_governance'].includes(type);
+    }
+
+    function apiContentType(type){
+      // Rune public categories are view projections over existing canonical groups.
+      // Do not create duplicate backend records just for presentation taxonomy.
+      return isRunePublicCategory(type) ? '' : type;
+    }
+
+    function hasRuneRelation(item){
+      const p=item?.payload||{};
+      const related=[...(item?.related_locs||[]),...(p.related_locs||[])].map(String);
+      const tags=[...(p.tags||[]),...(p.keywords||[]),...(p.runes||[])].map(String).join(' ');
+      return item?.primary_loc==='LOC1'
+        || related.includes('LOC1')
+        || /符文|月符|rune/i.test(tags)
+        || /RUNE[-_]/i.test(String(item?.result_id||''));
+    }
+
+    function applyPublicCategoryFilter(groups,type){
+      if(!isRunePublicCategory(type)) return groups||{};
+      type=normalizeRunePublicCategory(type);
+      const g=groups||{};
+
+      if(type==='rune_divination'){
+        return {oracle:g.oracle||[],readings:g.readings||[]};
+      }
+
+      if(type==='rune_algorithm'){
+        const knowledge=(g.knowledge||[]).filter(item=>{
+          const p=item?.payload||{};
+          const hay=[item?.title,item?.summary,item?.result_id,p?.title,p?.summary,p?.retrieval_text,p?.description,...(p?.keywords||[])].filter(Boolean).join(' ');
+          return /Grammar|治理解牌方式|月相交互|Reverse|反向符文演算|正向符文演算|OW3gs|雙卡|三卡|五卡|源.?轉.?合|解牌方法|判讀方法/i.test(hay);
+        });
+        return {knowledge,governance:(g.governance||[]).filter(hasRuneRelation)};
+      }
+
+      if(type==='rune_evolution'){
+        return {
+          relationships:(g.relationships||[]).filter(hasRuneRelation),
+          timeline:(g.timeline||[]).filter(hasRuneRelation)
+        };
+      }
+
+      if(type==='rune_system'){
+        const knowledge=(g.knowledge||[]).filter(item=>{
+          const p=item?.payload||{};
+          const hay=[item?.title,item?.summary,item?.result_id,p?.title,p?.summary,p?.retrieval_text,p?.description,...(p?.keywords||[])].filter(Boolean).join(' ');
+          const runeRelated=hasRuneRelation(item)||/月之符文|月符|符文|rune/i.test(hay);
+          const method=/Grammar|治理解牌方式|月相交互|Reverse|反向符文演算|正向符文演算|OW3gs|雙卡|三卡|五卡|解牌方法|判讀方法/i.test(hay);
+          return runeRelated&&!method;
+        });
+        return {
+          entities:g.entities||[],
+          runes:g.runes||[],
+          scenarios:g.scenarios||[],
+          rune_songs:g.rune_songs||[],
+          media:(g.media||[]).filter(hasRuneRelation),
+          textworks:(g.textworks||[]).filter(hasRuneRelation),
+          knowledge
+        };
+      }
+      return g;
+    }
 
     function rendererForGroup(key){
       return key==='oracle'?oracleCard:
@@ -796,7 +859,8 @@
 
     function flattenGroups(groups,entityMode=false){
       const rows=[];
-      for(const key of RESULT_ORDER){
+      const order=resultOrderForQuery(el('query')?.value||'');
+      for(const key of order){
         if(entityMode&&(key==='readings'||key==='rune_songs'))continue;
         for(const item of (groups?.[key]||[])) rows.push({key,item});
       }
@@ -860,7 +924,7 @@
       html+=resultLocationOverview(searchState.groups);
 
       const evidenceBlocks=[];
-      for(const key of RESULT_ORDER){
+      for(const key of resultOrderForQuery(el('query')?.value||'')){
         const items=slice.filter(row=>row.key===key).map(row=>row.item);
         if(!items.length)continue;
         const renderer=rendererForGroup(key);
@@ -890,13 +954,18 @@
 
     async function browse(page=1){
       const type=el('contentType').value;
+      if(isRunePublicCategory(type)){
+        el('status').className='status';
+        el('status').textContent='符文相關分類請輸入關鍵字搜尋；這些分類直接投影既有資料，不另建立重複瀏覽資料集。';
+        return;
+      }
       if(!['lyrics_work','text_work','governance_article','governance_fragment'].includes(type)){
         el('status').className='status error';
-        el('status').textContent='請先選擇可瀏覽的資料種類：音樂／歌詞、文字作品、LOC6 文章或治理／政德風。';
+        el('status').textContent='請先選擇可瀏覽的資料種類：音樂／歌詞、文字作品或方法論資料。';
         return;
       }
       const safePage=Math.max(1,Number(page)||1);
-      el('browse').disabled=true;
+      if(el('browse')) el('browse').disabled=true;
       el('status').className='status';
       el('status').textContent=`正在載入第 ${safePage} 頁……`;
       try{
@@ -917,11 +986,11 @@
         const from=browseState.total?((safePage-1)*PAGE_SIZE+1):0;
         const to=Math.min(browseState.total,safePage*PAGE_SIZE);
         el('status').textContent=`第 ${from}–${to} 筆，共 ${browseState.total} 筆。`;
-        el('browse').textContent='重新瀏覽第 1 頁';
+        if(el('browse')) el('browse').textContent='重新瀏覽第 1 頁';
       }catch(err){
         el('status').className='status error';
         el('status').textContent=`暫時無法瀏覽：${err.message}`;
-      }finally{el('browse').disabled=false;}
+      }finally{if(el('browse')) el('browse').disabled=false;}
     }
 
 
@@ -938,13 +1007,12 @@
       searchState={groups:{},synthesis:null,graph:null,page:1,total:0};
       browseState={active:false,type:'',key:'',page:1,total:0,items:[]};
       if(el('pagination'))el('pagination').hidden=true;
-      el('browse').textContent='依資料種類瀏覽';
       const panel=el('advancedPanel');
       const toggle=el('advancedToggle');
       if(panel) panel.hidden=true;
       if(toggle) toggle.setAttribute('aria-expanded','false');
-      document.querySelectorAll('.filter-tab').forEach((btn,i)=>btn.classList.toggle('active',i===0));
-      document.querySelectorAll('.filter-section').forEach((sec,i)=>{sec.hidden=i!==0;sec.classList.toggle('active',i===0);});
+      el('contentType').value='';
+      el('sourceFilter').value='';
       updateFilterSummary();
       quick();
       applyEras(ERA_FALLBACK);
@@ -952,6 +1020,26 @@
       renderSourceSearchLinks();
       history.replaceState(null,'',location.pathname);
     }
+    function inferNaturalSearchHints(query){
+      const q=String(query||'').trim();
+      let source='';
+      if(/\bIG\b|Instagram|インスタ/i.test(q)) source='instagram';
+      else if(/Threads/i.test(q)) source='threads';
+      else if(/Facebook|\bFB\b/i.test(q)) source='facebook';
+      else if(/X\s*\(Twitter\)|Twitter|\bX\b/i.test(q)) source='x';
+      else if(/Suno/i.test(q)) source='suno';
+
+      // Only apply a content hint when the wording is explicit.
+      // Otherwise keep all categories visible.
+      let contentType='';
+      if(/文字|文章|貼文|小說|散文|日記|生活文字/i.test(q)) contentType='text_record';
+      else if(/歌曲|歌詞|音樂|Suno/i.test(q)) contentType='lyrics_work';
+      else if(/圖片|影像|照片|影音|影片|Instagram|\bIG\b/i.test(q)) contentType='multimedia';
+      else if(/文件|知識庫|FAQ|規格/i.test(q)) contentType='knowledge';
+
+      return {source,contentType};
+    }
+
     function selectedText(id){
       const node=el(id);
       if(!node || !node.value) return '';
@@ -960,12 +1048,12 @@
     }
     function updateFilterSummary(){
       const chips=[];
-      const type=selectedText('contentType');
       const period=selectedText('period');
-      const source=selectedText('sourceFilter');
-      if(el('contentType')?.value) chips.push(type);
-      if(el('sourceFilter')?.value) chips.push('來源：'+source);
-      if(el('period')?.value) chips.push(period);
+      const start=el('startDate')?.value||'';
+      const end=el('endDate')?.value||'';
+      if(period) chips.push(period);
+      if(start) chips.push('從 '+start);
+      if(end) chips.push('到 '+end);
       el('activeFilters').innerHTML=chips.length
         ? chips.map(x=>`<span class="filter-chip">${esc(x)}</span>`).join('')
         : '<span class="filter-chip muted">目前搜尋：全部資料</span>';
@@ -980,27 +1068,21 @@
       panel.hidden=!willOpen;
       el('advancedToggle').setAttribute('aria-expanded',String(willOpen));
     };
-    document.querySelectorAll('.filter-tab').forEach(btn=>btn.onclick=()=>{
-      const target=btn.dataset.filterTarget;
-      document.querySelectorAll('.filter-tab').forEach(x=>x.classList.toggle('active',x===btn));
-      document.querySelectorAll('.filter-section').forEach(sec=>{
-        const active=sec.id===target;
-        sec.hidden=!active;
-        sec.classList.toggle('active',active);
-      });
     });
-    ['contentType','sourceFilter','period'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
+    ['period','startDate','endDate'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
     updateFilterSummary();
     el('clearSearch').onclick=clearAllSearch;
     el('query').addEventListener('input',renderSourceSearchLinks);
     renderSourceSearchLinks();
-    el('browse').onclick=()=>browse(1);
-    el('contentType').addEventListener('change',()=>{browseState={active:false,type:'',key:'',page:1,total:0,items:[]};if(el('pagination'))el('pagination').hidden=true;el('browse').textContent='瀏覽目前類型';});
     el('searchForm').onsubmit=async e=>{
       e.preventDefault();
       const q=el('query').value.trim(); if(!q)return;
-      const type=el('contentType').value;
-      const source=el('sourceFilter').value;
+      const hints=inferNaturalSearchHints(q);
+      el('contentType').value=hints.contentType||'';
+      el('sourceFilter').value=hints.source||'';
+      const type=hints.contentType||'';
+      const apiType=apiContentType(type);
+      const source=hints.source||'';
       el('submit').disabled=true;
       el('status').className='status';
       el('groups').innerHTML='';
@@ -1009,7 +1091,7 @@
           el('status').textContent='正在搜尋文字資料…';
           let groups=null;
           try{
-            const body={query:q,top_k:10,content_type:'text_record',source:'facebook',period:el('period').value};
+            const body={query:q,top_k:10,content_type:'text_record',source:'facebook',period:el('period').value,start_date:el('startDate').value,end_date:el('endDate').value};
             const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
             const d=await r.json();
             if(r.ok) groups=d.groups||{text:d.results||[]};
@@ -1025,7 +1107,7 @@
         }
 
         el('status').textContent=type==='text_record'?'正在搜尋文字資料……':'正在同時查詢符文、作品、媒體、知識與時期資料……';
-        const body={query:q,top_k:10,content_type:type,source:source,period:el('period').value};
+        const body={query:q,top_k:10,content_type:apiType,source:source,period:el('period').value,start_date:el('startDate').value,end_date:el('endDate').value};
         const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const d=await r.json();
         if(!r.ok)throw new Error(d.detail||'搜尋失敗');
@@ -1040,12 +1122,14 @@
           }catch(_){}
         }
 
+        d.groups=applyPublicCategoryFilter(d.groups||{},type);
         const total=Object.values(d.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
         el('status').textContent=total?`找到 ${total} 筆相關結果。`:'沒有找到足夠接近的內容。';
         render(d.groups,d.synthesis,d.graph);
       }catch(err){
         try{
-          const fallback=await localStaticSearch(q,{topK:10,type,source,period:el('period').value});
+          const fallback=await localStaticSearch(q,{topK:10,type:apiType,source,period:el('period').value});
+          fallback.groups=applyPublicCategoryFilter(fallback.groups||{},type);
           const total=Object.values(fallback.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
           if(total){
             el('status').className='status';

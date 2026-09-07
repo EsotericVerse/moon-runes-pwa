@@ -184,6 +184,26 @@ Keep / Amend / Add Alternative / Restrict / Withdraw / Supersede / Tombstone
 7. public / canonical relation 必須經 publish governance。
 8. Graph node 是 authoritative record 的 reference，不應複製後反向取代原權威來源。
 
+## 7.1 Rune Interpretation Baseline
+
+符文治理／Grammar 以 `LunaRune64.xlsx#Grammar` 為最高優先來源。
+
+- 全域：詞彙層 → 卡片位置層 → 治理層 → 時間修飾層。
+- 後層時間的月相交互只作修飾，不覆蓋符文本義。
+- 單卡：符文本義 + 卡牌方向 + 月相交互。
+- 兩卡：因 + 果 + 月相交互。
+- 三卡：源 + 轉 + 合 + 月相交互。
+- 五卡：過去 + 現在 + 未來顯化 + 周圍環境 + 自己心境 + 月相交互；不是 2+3 拼接。
+- 五卡關係優先：過去 → 現在 → 未來 → 環境 → 心境；只計有語義關係的卡對。
+- OW3gs 由兩個符文模組組成，核心原則是「鑑古知今」。
+- 古模組（1–6）：背景、現在、資源、意向、外部擾動、尚未成形因素；負責「鑑古」。
+- 今模組（7–11）：成因、現在、未來、環境、心境；負責「知今」。
+- 讀取順序：先讀今模組 7–11 → 再回看古模組 1–6 → 最後套月相交互。
+- OW3gs 的重點是兩個符文模組的關聯，不是增加抽牌維度本身的複雜度。
+- 符文交互限定月之符文沙盒專用；因沙盒符文關係為平等。
+- 月相交互只作額外、小幅、低權重時間情境修飾。
+- 符文治理可正向由符文解讀現況，也可反向由現況語意映射回符文／方向；Reverse mapping 不等同重新抽牌。
+
 ## 8. Rights / Publication / Boundary Gate
 
 Public Search 與 Graph 不得假定「資料存在於 repository」就等於可以公開。
@@ -279,14 +299,14 @@ Audit 應檢查：
 
 ## 12. LOC1–8 Governance Responsibility
 
-- **LOC1**：符文本體、四向、Lots 與抽牌語義權威。
-- **LOC2**：情境、遊戲規則與互動定義。
+- **LOC1**：符文語彙（token）、四向、籤詩、每日抽與抽牌語義權威。
 - **LOC3**：歌曲／歌詞 metadata、創作 provenance 與 reasoning annotation。
 - **LOC4**：文字作品與原始文本權威。
 - **LOC5**：媒體 representation 與跨媒介映射。
-- **LOC6**：價值、治理語言、政德風、interpretation 與治理原則。
-- **LOC7**：schema、relationship、KM、Graph、validation、retrieval 與治理控制結構。
-- **LOC8**：時間、事件、ERA、生活脈絡、Trend 與自我治理 feedback。
+- **LOC2**：脈絡、Relation、Context、Scenario／Event 與 Canonical Graph 的語意責任；Semantic Playground 是互動實作。
+- **LOC6**：方法論；治理、價值、政德風與 interpretation 是其中的具體方法。
+- **LOC7**：演算法（知識庫）；schema、KM、RAG、Search、Graph RAG traversal、validation 與 retrieval。
+- **LOC8**：推演；每日符文歷史、事件、時間、ERA、Timeline 與 Trend。
 
 各 LOC 保有 canonical ownership；跨 LOC 只能 reference / consume / propose change，不應直接覆寫另一 domain 的 authoritative record。
 

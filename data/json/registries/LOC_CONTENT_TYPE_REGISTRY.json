@@ -14,19 +14,22 @@
       "id": "scenario_event",
       "primary_loc": "LOC2",
       "kind": "scenario_corpus",
-      "label": "情境事件"
+      "label": "情境事件",
+      "public_category": "脈絡"
     },
     {
       "id": "game_rule",
       "primary_loc": "LOC2",
       "kind": "interactive_system",
-      "label": "遊戲規則"
+      "label": "遊戲規則",
+      "public_category": "脈絡"
     },
     {
       "id": "game_document",
       "primary_loc": "LOC2",
       "kind": "document",
-      "label": "遊戲文件"
+      "label": "遊戲文件",
+      "public_category": "脈絡"
     },
     {
       "id": "song",
@@ -61,48 +64,55 @@
       "primary_loc": "LOC4",
       "kind": "work",
       "label": "小說",
-      "default_display_policy": "snippet"
+      "default_display_policy": "snippet",
+      "public_category": "文字創作"
     },
     {
       "id": "article",
       "primary_loc": "LOC4",
       "kind": "work",
       "label": "文章",
-      "default_display_policy": "snippet"
+      "default_display_policy": "snippet",
+      "public_category": "文字創作"
     },
     {
       "id": "essay",
       "primary_loc": "LOC4",
       "kind": "work",
       "label": "散文",
-      "default_display_policy": "snippet"
+      "default_display_policy": "snippet",
+      "public_category": "文字創作"
     },
     {
       "id": "journal",
       "primary_loc": "LOC4",
       "kind": "record",
       "label": "生活紀錄",
-      "default_display_policy": "snippet"
+      "default_display_policy": "snippet",
+      "public_category": "文字創作"
     },
     {
       "id": "lyrics_draft",
       "primary_loc": "LOC4",
       "kind": "work",
       "label": "歌詞原稿",
-      "default_display_policy": "snippet"
+      "default_display_policy": "snippet",
+      "public_category": "文字創作"
     },
     {
       "id": "rune_text",
       "primary_loc": "LOC4",
       "kind": "work",
       "label": "符文文本",
-      "default_display_policy": "snippet"
+      "default_display_policy": "snippet",
+      "public_category": "文字創作"
     },
     {
       "id": "worldbuilding",
       "primary_loc": "LOC4",
       "kind": "work",
-      "label": "世界觀"
+      "label": "世界觀",
+      "public_category": "文字創作"
     },
     {
       "id": "character",
@@ -148,7 +158,8 @@
       "kind": "analysis_record",
       "label": "治理片段",
       "default_display_policy": "full",
-      "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities."
+      "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities.",
+      "public_category": "方法論"
     },
     {
       "id": "governance_article",
@@ -156,63 +167,73 @@
       "kind": "knowledge_work",
       "label": "治理文章",
       "default_display_policy": "snippet",
-      "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities."
+      "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities.",
+      "public_category": "方法論"
     },
     {
       "id": "dual_rune_relation",
-      "primary_loc": "LOC6",
-      "kind": "grammar_relation",
-      "label": "雙符文關係"
+      "primary_loc": "LOC2",
+      "kind": "context_relation",
+      "label": "雙符文關係",
+      "public_category": "脈絡"
     },
     {
       "id": "rune_interpretation",
       "primary_loc": "LOC6",
       "kind": "analysis_record",
-      "label": "符文解析實證"
+      "label": "符文解析實證",
+      "public_category": "方法論"
     },
     {
       "id": "linguistic_analysis",
       "primary_loc": "LOC7",
       "kind": "analysis_record",
-      "label": "語言結構分析"
+      "label": "語言結構分析",
+      "public_category": "演算法（知識庫）"
     },
     {
       "id": "knowledge_object",
       "primary_loc": "LOC7",
       "kind": "knowledge",
-      "label": "知識物件"
+      "label": "知識物件",
+      "public_category": "演算法（知識庫）"
     },
     {
       "id": "knowledge_document",
       "primary_loc": "LOC7",
       "kind": "knowledge",
       "label": "知識文件",
-      "default_display_policy": "full"
+      "default_display_policy": "full",
+      "public_category": "演算法（知識庫）"
     },
     {
       "id": "faq",
       "primary_loc": "LOC7",
       "kind": "knowledge_view",
       "label": "FAQ",
-      "default_display_policy": "full"
+      "default_display_policy": "full",
+      "public_category": "演算法（知識庫）"
     },
     {
       "id": "event",
       "primary_loc": "LOC8",
       "kind": "temporal_record",
-      "label": "事件"
+      "label": "事件",
+      "public_category": "文學演化"
     },
     {
       "id": "era",
       "primary_loc": "LOC8",
       "kind": "temporal_registry",
-      "label": "ERA"
+      "label": "ERA",
+      "public_category": "文學演化"
     },
     {
       "id": "registry",
       "primary_loc": "LOC8",
       "kind": "integration",
-      "label": "Registry"
+      "label": "Registry",
+      "public_category": "文學演化"
     },
     {
       "id": "facebook_post",
@@ -220,7 +241,8 @@
       "label": "Facebook 生活文字",
       "default_display_policy": "snippet",
       "kind": "life_writing_record",
-      "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it."
+      "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it.",
+      "public_category": "文字創作"
     },
     {
       "id": "social_text_record",
@@ -228,7 +250,8 @@
       "kind": "life_writing_record",
       "label": "社群生活文字",
       "default_display_policy": "snippet",
-      "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it."
+      "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it.",
+      "public_category": "文字創作"
     },
     {
       "id": "text_record",
@@ -236,7 +259,8 @@
       "kind": "authored_text_record",
       "label": "文字紀錄",
       "default_display_policy": "snippet",
-      "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it."
+      "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it.",
+      "public_category": "文字創作"
     },
     {
       "id": "work_analysis",
@@ -244,7 +268,8 @@
       "kind": "analysis_record",
       "label": "作品解析",
       "default_display_policy": "full",
-      "ownership_note": "General work/chapter literary-semantic analysis belongs to LOC4; governance projection of that analysis is a separate LOC6 record."
+      "ownership_note": "General work/chapter literary-semantic analysis belongs to LOC4; governance projection of that analysis is a separate LOC6 record.",
+      "public_category": "文字創作"
     }
   ],
   "rules": [
@@ -256,7 +281,11 @@
     "Author-created Facebook/Threads raw text is LOC4 life-writing content; LOC6 may consume the same records for governance/style interpretation without taking ownership of the raw text.",
     "LOC4/LOC6 boundary: raw authored text, including Facebook/Threads life writing, is LOC4; governance/value/Zhengde-style interpretation derived from it is LOC6.",
     "A quoted source statement inside a LOC6 governance record is evidence, not transfer of ownership of the original text.",
-    "General literary/semantic work analysis is LOC4. Only governance/style/value interpretation of that material is LOC6."
+    "General literary/semantic work analysis is LOC4. Only governance/style/value interpretation of that material is LOC6.",
+    "Public category and source platform are separate dimensions: authored text defaults to public_category=文字創作 regardless of platform.",
+    "content_type may preserve subtype such as novel, article, essay, journal, social_text_record, or text_record without changing the public category.",
+    "source_platform records provenance such as Threads, Facebook, Instagram, X(Twitter), Vocus, or another actual source; source platform must not replace the public category.",
+    "X(Twitter) may be configured as a source label/test source without ingesting private or non-public posts."
   ],
   "display_policy": {
     "allowed_values": [

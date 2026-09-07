@@ -44,7 +44,7 @@
       "id": "reference_model",
       "path": "data/json/registries/LOC_REFERENCE_MODEL.json",
       "authority": "LOC8",
-      "purpose": "Stable ID types and cross-LOC relationship vocabulary."
+      "purpose": "Stable ID types and shared relationship vocabulary; LOC2 owns relation/context semantics while each object keeps its canonical owner."
     },
     {
       "id": "loc2_events",
@@ -73,8 +73,8 @@
     {
       "id": "cross_relationships",
       "path": "data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json",
-      "authority": "LOC7",
-      "purpose": "Directional cross-LOC work/media relationships for Unified Search and graph retrieval."
+      "authority": "LOC2",
+      "purpose": "Canonical cross-LOC context/relationship edges consumed by Search, Graph RAG and evolution views."
     },
     {
       "id": "loc6_era_style_evidence",
