@@ -242,6 +242,179 @@
       ]
     };
     const labels={entities:'核心詞條',oracle:'籤詩結果',readings:'OW3gs 解牌／抽牌紀錄',runes:'月符',rune_songs:'符文歌曲',works:'Suno 歌曲／歌詞',textworks:'文字',relationships:'跨 LOC 關聯',governance:'文字',loc6_articles:'文字',text:'文字',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
+    const LOCAL_SEARCH_CACHE=new Map();
+    async function localJson(path){
+      if(LOCAL_SEARCH_CACHE.has(path))return LOCAL_SEARCH_CACHE.get(path);
+      const p=fetch(path,{cache:'no-store'}).then(async r=>{
+        if(!r.ok)throw new Error('local dataset unavailable: '+path);
+        return r.json();
+      });
+      LOCAL_SEARCH_CACHE.set(path,p);
+      return p;
+    }
+    function localNorm(v){
+      return String(v??'').toLowerCase().replace(/[\s\u3000]+/g,' ').trim();
+    }
+    function localScore(q,fields){
+      const query=localNorm(q);
+      if(!query)return 0;
+      const text=localNorm((fields||[]).filter(Boolean).join(' '));
+      if(!text)return 0;
+      let score=0;
+      if(text===query)score+=100;
+      if(text.includes(query))score+=40;
+      const terms=query.split(/[\s、，,；;：:／/｜|]+/).filter(Boolean);
+      for(const term of terms){
+        if(text.includes(term))score+=12;
+      }
+      return score;
+    }
+    function localPush(scored,score,key,item){
+      if(score>0)scored.push({score,key,item});
+    }
+    async function localStaticSearch(q,{type='',period='',source='',topK=10}={}){
+      const scored=[];
+      const wants=(...types)=>!type||type==='all'||types.includes(type);
+
+      if(wants('rune_record','oracle')){
+        try{
+          const d=await localJson('data/json/core/runes64.json');
+          for(const rune of d.runes||[]){
+            const score=localScore(q,[rune.名稱,rune.英文,rune.顯化形式,rune.關鍵詞,rune.所屬分組,rune.正向表示,rune.半正向表示,rune.半逆向表示,rune.逆向表示]);
+            localPush(scored,score,'runes',{
+              result_id:'RUNE-'+rune.編號,system_id:'lo3rwang',primary_loc:'LOC1',
+              content_type:'rune_record',title:String(rune.編號).padStart(2,'0')+' · '+rune.名稱,
+              summary:[rune.顯化形式,rune.關鍵詞].filter(Boolean).join('｜'),score,payload:rune
+            });
+          }
+        }catch(_){}
+      }
+
+      if(wants('lyrics_work','suno_song','multimedia','reel','video')){
+        try{
+          const manifest=await localJson('data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json');
+          const shardNames=Array.isArray(manifest.shards)?manifest.shards:[];
+          const shards=await Promise.all(shardNames.map(name=>localJson('data/json/search/loc3/'+name).catch(()=>({works:[]}))));
+          const works=shards.flatMap(d=>d.works||[]);
+          for(const work of works){
+            if(period&&String(work.period||'')!==period)continue;
+            const score=localScore(q,[work.title,work.summary,work.retrieval_text,work.style,(work.tags||[]).join(' '),(work.playlists||[]).join(' ')]);
+            if(score<=0)continue;
+            if(wants('lyrics_work','suno_song')){
+              localPush(scored,score,'works',{
+                result_id:work.work_id,system_id:'lo3rwang',primary_loc:'LOC3',
+                content_type:'lyrics_work',title:work.title,summary:work.summary||'',score,
+                period:work.period,era_id:work.era_id||'',payload:{...work,recommended_version:(work.versions||[])[0]||{},alternate_versions:(work.versions||[]).slice(1)}
+              });
+            }
+            if(wants('multimedia','reel','video')){
+              const v=(work.versions||[]).find(x=>x.ig_preview_url||x.youtube_mv_url);
+              if(v)localPush(scored,score*0.95,'media',{
+                result_id:'MEDIA-'+work.work_id,system_id:'lo3rwang',primary_loc:'LOC5',
+                content_type:'multimedia',title:work.title+' · 影音',summary:work.summary||'',score:score*0.95,
+                period:work.period,payload:{url:v.ig_preview_url||v.youtube_mv_url,linked_work_id:work.work_id,recommended_version:v}
+              });
+            }
+          }
+        }catch(_){}
+      }
+
+      if(wants('text_work','text_record')){
+        try{
+          const d=await localJson('data/json/registries/LOC4_WRITING_REGISTRY.json');
+          for(const work of d.works||[]){
+            if(period&&String(work.period||'')!==period)continue;
+            const score=localScore(q,[work.title,work.summary,(work.tags||[]).join(' '),work.content_type,work.period_name]);
+            localPush(scored,score,'textworks',{
+              result_id:work.work_id,system_id:'lo3rwang',primary_loc:'LOC4',
+              content_type:'text_work',title:work.title,summary:work.summary||'',score,
+              period:work.period,era_id:work.era_id||'',payload:work
+            });
+          }
+        }catch(_){}
+        if((!source||source==='facebook')&&window.LOCFacebookCorpus?.search){
+          try{
+            const fb=await window.LOCFacebookCorpus.search(q,{top_k:Math.max(topK,20)});
+            for(const item of fb||[])localPush(scored,Number(item.score||20),'text',item);
+          }catch(_){}
+        }
+      }
+
+      if(wants('governance_fragment','governance_article','text_record')){
+        try{
+          const d=await localJson('data/json/registries/LOC6_GOVERNANCE_REGISTRY.json');
+          for(const row of d.fragments||[]){
+            if(period&&row.era_id&&String(row.era_id)!=='ERA-'+period)continue;
+            const score=localScore(q,[row.topic,row.statement,row.interpretation,row.governance_principle,(row.style_features||[]).join(' ')]);
+            localPush(scored,score,'governance',{
+              result_id:row.fragment_id,system_id:'lo3rwang',primary_loc:'LOC6',
+              content_type:'governance_fragment',title:row.topic||row.statement||row.fragment_id,
+              summary:row.interpretation||row.statement||'',score,era_id:row.era_id||'',payload:row
+            });
+          }
+        }catch(_){}
+      }
+
+      if(wants('multimedia','reel','video','knowledge_image')){
+        try{
+          const d=await localJson('data/json/registries/LOC_MEDIA_REGISTRY.json');
+          for(const row of d.items||[]){
+            const sem=row.semantic_descriptor||{};
+            const score=localScore(q,[row.title,row.media_type,row.platform,sem.visual_summary,(sem.scene_keywords||[]).join(' '),(sem.visual_motifs||[]).join(' '),(sem.manual_tags||[]).join(' '),(sem.generated_tags||[]).join(' ')]);
+            localPush(scored,score,'media',{
+              result_id:row.media_id,system_id:'lo3rwang',primary_loc:'LOC5',
+              content_type:'multimedia',title:row.title||row.media_id,summary:sem.visual_summary||row.media_type||'',score,payload:{...row,url:row.url}
+            });
+          }
+        }catch(_){}
+      }
+
+      if(wants('knowledge','knowledge_document','faq','relationship')){
+        try{
+          const d=await localJson('data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json');
+          for(const row of d.assets||[]){
+            if(row.searchable===false)continue;
+            const score=localScore(q,[row.title,row.public_summary,row.role,row.notes,(row.keywords||[]).join(' '),(row.intent_aliases||[]).join(' ')]);
+            localPush(scored,score,'knowledge',{
+              result_id:row.asset_id,system_id:'lo3rwang',primary_loc:row.primary_loc||'LOC7',
+              content_type:row.content_type||'knowledge_document',title:row.title,summary:row.public_summary||row.notes||row.role||'',score,payload:row
+            });
+          }
+        }catch(_){}
+        try{
+          const d=await localJson('data/json/search/faq/LOC_FAQ_RAG_v0.4.json');
+          for(const row of d.chunks||[]){
+            const score=localScore(q,[row.intent,row.question,(row.aliases||[]).join(' '),row.answer,(row.keywords||[]).join(' '),row.retrieval_text]);
+            localPush(scored,score,'knowledge',{
+              result_id:row.id,system_id:'lo3rwang',primary_loc:'LOC7',
+              content_type:'faq',title:row.question,summary:row.answer||'',score,payload:row
+            });
+          }
+        }catch(_){}
+      }
+
+      if(wants('era')){
+        try{
+          const d=await localJson('data/json/registries/LOC_ERA_REGISTRY.json');
+          for(const row of d.eras||[]){
+            if(period&&String(row.period||'')!==period)continue;
+            const score=localScore(q,[row.period,row.name,row.display_label,row.description,row.state_before,row.state_after]);
+            localPush(scored,score,'timeline',{
+              result_id:row.era_id,system_id:'lo3rwang',primary_loc:'LOC8',
+              content_type:'era',title:row.display_label||row.name,summary:row.description||row.state_after||'',score,period:row.period,era_id:row.era_id,payload:row
+            });
+          }
+        }catch(_){}
+      }
+
+      scored.sort((a,b)=>b.score-a.score);
+      const groups={};
+      for(const row of scored.slice(0,Math.max(topK*4,40))){
+        (groups[row.key]||(groups[row.key]=[])).push(row.item);
+      }
+      for(const key of Object.keys(groups))groups[key]=groups[key].slice(0,topK);
+      return {groups,synthesis:null,graph:null,local_fallback:true};
+    }
     const locLabels={LOC1:'LOC1 · Lots',LOC3:'LOC3 · Music',LOC4:'LOC4 · Writing',LOC5:'LOC5 · Resonance',LOC6:'LOC6 · Governance',LOC7:'LOC7 · Text Architecture',LOC8:'LOC8 · Integration'};
     const el=id=>document.getElementById(id);
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -806,8 +979,21 @@
         el('status').textContent=total?`找到 ${total} 筆相關結果。`:'沒有找到足夠接近的內容。';
         render(d.groups,d.synthesis,d.graph);
       }catch(err){
-        el('status').className='status error';
-        el('status').textContent=`暫時無法搜尋：${err.message}`;
+        try{
+          const fallback=await localStaticSearch(q,{topK:10,type,source,period:el('period').value});
+          const total=Object.values(fallback.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
+          if(total){
+            el('status').className='status';
+            el('status').textContent=`Render API 暫時無法連線，已切換本機靜態搜尋；找到 ${total} 筆結果。`;
+            render(fallback.groups,null,null);
+          }else{
+            el('status').className='status error';
+            el('status').textContent=`Render API 暫時無法連線，本機資料也沒有找到足夠接近的內容。`;
+          }
+        }catch(fallbackErr){
+          el('status').className='status error';
+          el('status').textContent=`暫時無法搜尋：${err.message}`;
+        }
       }finally{
         el('submit').disabled=false;
       }
