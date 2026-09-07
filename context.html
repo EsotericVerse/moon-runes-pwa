@@ -280,6 +280,7 @@ async function loadContextEvents({remote=false}={}){
   if(Array.isArray(cached?.data)){
     contextEvents=cached.data;
     renderContextEvents();
+    syncOverviewGraph();
   }else if(!remote){
     contextEvents=[];
     renderContextEvents();
@@ -297,6 +298,7 @@ async function loadContextEvents({remote=false}={}){
     contextEventsRemoteLoaded=true;
     writeContextCache(CONTEXT_EVENT_CACHE,contextEvents);
     renderContextEvents();
+    syncOverviewGraph();
   }catch(e){
     console.error(e);
     if(!Array.isArray(cached?.data)){
@@ -414,14 +416,65 @@ function graphFromRelations(relations){
   }
   return {nodes:[...nodesById.values()],edges};
 }
-function syncDefaultGraphFromRelations(){
-  if(!Array.isArray(contextRelations)||!contextRelations.length) return;
-  contextGraph=graphFromRelations(contextRelations);
+function graphFromEvents(events){
+  const nodesById=new Map();
+  const edges=[];
+  for(const e of events||[]){
+    const eventId='event:'+String(e.id||'').trim();
+    if(eventId==='event:') continue;
+    const title=e.event_title||e.title||e.event_type||e.id;
+    nodesById.set(eventId,{
+      id:eventId,
+      label:title,
+      type:'event',
+      date:e.date||'',
+      note:e.description||e.state_after||''
+    });
+
+    const objectId=String(e.object_id||'').trim();
+    if(objectId){
+      if(!nodesById.has(objectId)) nodesById.set(objectId,{
+        id:objectId,label:objectId,type:e.object_type||'unknown'
+      });
+      edges.push({
+        source:eventId,
+        target:objectId,
+        type:e.event_type||'event_of'
+      });
+    }
+
+    const eraId=String(e.era_id||e.era||'').trim();
+    if(eraId){
+      const normalizedEra=/^ERA-/i.test(eraId)?eraId:eraId;
+      if(!nodesById.has(normalizedEra)) nodesById.set(normalizedEra,{
+        id:normalizedEra,label:normalizedEra,type:'era'
+      });
+      edges.push({
+        source:eventId,
+        target:normalizedEra,
+        type:'occurs_in'
+      });
+    }
+  }
+  return {nodes:[...nodesById.values()],edges};
+}
+function overviewGraph(){
+  return mergeContextGraphs(
+    graphFromRelations(contextRelations),
+    graphFromEvents(contextEvents)
+  );
+}
+function syncOverviewGraph(){
+  const g=overviewGraph();
+  if(!g.nodes.length&&!g.edges.length)return;
+  contextGraph=g;
   contextGraphNodePage=1;
   contextGraphEdgePage=1;
   updateContextGraphFilters();
-  renderContextGraph(`Relation 資料 · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
+  renderContextGraph(`Overview · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
 }
+
+function syncDefaultGraphFromRelations(){ syncOverviewGraph(); }
 
 function renderContextNodeLibrary(){
   const list=document.querySelector('#contextNodeLibraryList');
@@ -482,6 +535,16 @@ function relationSearchGraph(q){
   });
   return graphFromRelations(matched);
 }
+function eventSearchGraph(q){
+  const query=String(q||'').trim().toLowerCase();
+  if(!query) return {nodes:[],edges:[]};
+  const matched=contextEvents.filter(e=>{
+    const hay=[e.id,e.event_title,e.title,e.description,e.state_before,e.state_after,e.object_type,e.object_id,e.event_type,e.era,e.era_id,e.tags,e.source]
+      .flat().filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(query);
+  });
+  return graphFromEvents(matched);
+}
 function mergeContextGraphs(...graphs){
   const nodes=new Map(),edges=new Map();
   for(const g of graphs){
@@ -503,13 +566,18 @@ async function searchContextGraph(q,{remote=true}={}){
   const key=contextGraphCacheKey('search',q);
   const cached=readContextCache(key);
   const relationGraph=relationSearchGraph(q);
+  const eventGraph=eventSearchGraph(q);
+  const localGraph=mergeContextGraphs(relationGraph,eventGraph);
   const hasRelation=relationGraph.nodes.length||relationGraph.edges.length;
+  const hasEvent=eventGraph.nodes.length||eventGraph.edges.length;
+  const hasLocal=localGraph.nodes.length||localGraph.edges.length;
 
-  if(hasRelation){
-    contextGraph=relationGraph;
+  if(hasLocal){
+    contextGraph=localGraph;
     contextGraphNodePage=1;contextGraphEdgePage=1;
     updateContextGraphFilters();
-    renderContextGraph(`「${q}」· 脈絡資料 · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
+    const localKinds=[hasRelation?'Relation':'',hasEvent?'Event':''].filter(Boolean).join('＋');
+    renderContextGraph(`「${q}」· ${localKinds} · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
   }else if(cached?.data&&Array.isArray(cached.data.nodes)){
     contextGraph=cached.data;
     contextGraphNodePage=1;contextGraphEdgePage=1;
@@ -533,14 +601,14 @@ async function searchContextGraph(q,{remote=true}={}){
     });
     const d=await r.json();
     const remoteGraph={nodes:d.graph?.nodes||[],edges:d.graph?.edges||[]};
-    contextGraph=mergeContextGraphs(relationGraph,remoteGraph);
+    contextGraph=mergeContextGraphs(localGraph,remoteGraph);
     writeContextCache(key,contextGraph);
     contextGraphNodePage=1;contextGraphEdgePage=1;
     updateContextGraphFilters();
-    const source=hasRelation?'脈絡＋Graph RAG':'Graph RAG';
+    const source=hasLocal?'Context＋Graph RAG':'Graph RAG';
     renderContextGraph(`「${q}」· ${source} · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
   }catch(e){
-    if(!hasRelation && !cached?.data) renderContextGraph('目前沒有找到脈絡資料，Graph RAG 也暫時無法取得。');
+    if(!hasLocal && !cached?.data) renderContextGraph('目前沒有找到 Context 資料，Graph RAG 也暫時無法取得。');
   }
 }
 async function expandContextGraph(id){
