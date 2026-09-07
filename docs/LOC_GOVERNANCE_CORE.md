@@ -200,7 +200,7 @@ Keep / Amend / Add Alternative / Restrict / Withdraw / Supersede / Tombstone
 - 今模組（7–11）：成因、現在、未來、環境、心境；負責「知今」。
 - 讀取順序：先讀今模組 7–11 → 再回看古模組 1–6 → 最後套月相交互。
 - OW3gs 的重點是兩個符文模組的關聯，不是增加抽牌維度本身的複雜度。
-- 符文交互限定月符沙盒專用；因沙盒符文關係為平等。
+- 符文交互限定月之符文沙盒專用；因沙盒符文關係為平等。
 - 月相交互只作額外、小幅、低權重時間情境修飾。
 - 符文治理可正向由符文解讀現況，也可反向由現況語意映射回符文／方向；Reverse mapping 不等同重新抽牌。
 
@@ -299,7 +299,7 @@ Audit 應檢查：
 
 ## 12. LOC1–8 Governance Responsibility
 
-- **LOC1**：月符／語彙（token）、四向、籤詩、每日抽與抽牌語義權威。
+- **LOC1**：符文語彙（token）、四向、籤詩、每日抽與抽牌語義權威。
 - **LOC3**：歌曲／歌詞 metadata、創作 provenance 與 reasoning annotation。
 - **LOC4**：文字作品與原始文本權威。
 - **LOC5**：媒體 representation 與跨媒介映射。
