@@ -846,7 +846,7 @@
                 <div class="field full"><label for="description">事件描述</label><textarea id="description" name="description" placeholder="只寫可確認的內容；推論可放在狀態變化或備註。"></textarea></div>
                 <div class="field"><label for="before">State Before</label><textarea id="before" name="state_before" placeholder="事件前"></textarea></div>
                 <div class="field"><label for="after">State After</label><textarea id="after" name="state_after" placeholder="事件後"></textarea></div>
-                <div class="field"><label for="era">ERA / 時期</label><input id="era" name="era" placeholder="可留白" /></div>
+                <div class="field"><label for="era">時期</label><input id="era" name="era" placeholder="可留白" /></div>
                 <div class="field"><label for="status">版本狀態</label>
                   <select id="status" name="status">
                     <option value="current">Current</option>
@@ -916,7 +916,7 @@
             <div class="row" style="margin-bottom:10px;align-items:center">
               <label class="era-source-note" for="keywordRankingEraFilter" style="margin:0">ERA</label>
               <select id="keywordRankingEraFilter" style="max-width:320px">
-                <option value="">全部 ERA</option>
+                <option value="">全部時期</option>
               </select>
             </div>
             <div class="era-source-note" id="keywordRankingScope" style="margin-bottom:10px">載入排行榜範圍中…</div>
@@ -937,7 +937,7 @@
             <div><h3>時期趨勢</h3><p>把各時期連成一條軌跡，看名稱、期間與狀態變化。</p></div>
             <span class="badge">趨勢</span>
           </div>
-          <div class="body"><div class="era-trend-strip" id="eraTrendStrip"><div class="empty">載入 ERA 趨勢中…</div></div></div>
+          <div class="body"><div class="era-trend-strip" id="eraTrendStrip"><div class="empty">載入時期趨勢中…</div></div></div>
         </section>
 
       <section class="card" style="margin-top:16px;" id="era-timeline">
@@ -994,7 +994,7 @@
           <div class="body">
             <div class="trajectory" id="trajectoryList"><div class="empty" style="min-width:100%">需要至少兩筆具有 State After 的事件才能形成軌跡。</div></div>
             <div id="trajectoryInspector" class="state-box" style="margin-top:14px">
-              <div class="empty">點選軌跡節點，可查看它的 Relation、Event、ERA 與搜尋入口。</div>
+              <div class="empty">點選軌跡節點，可查看它的 Relation、Event、時期與搜尋入口。</div>
             </div>
           </div>
       </section>
@@ -1080,7 +1080,7 @@
             <span class="badge">Graph-ready</span>
           </div>
           <div class="body">
-            <div class="empty">正在建立 ERA／Relation Graph…</div>
+            <div class="empty">正在建立時期／Relation Graph…</div>
           </div>
         </section>
       </div>
@@ -1879,7 +1879,7 @@
       if (els.keywordRankingEraFilter) {
         const current = keywordRankingEra;
         const ordered = eraRegistry.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0));
-        els.keywordRankingEraFilter.innerHTML = '<option value="">全部 ERA</option>' + ordered.map(era =>
+        els.keywordRankingEraFilter.innerHTML = '<option value="">全部時期</option>' + ordered.map(era =>
           `<option value="${esc(era.period || '')}">${esc(era.period || era.era_id)} · ${esc(era.name || '')}</option>`
         ).join('');
         if ([...els.keywordRankingEraFilter.options].some(o => o.value === current)) {
