@@ -15,6 +15,10 @@ function doGet(e) {
       return json_({ ok: true, service: 'LOC8', schema: 'loc8-mvp-1.1' });
     }
 
+    if (action === 'diagnostics') {
+      return json_(diagnostics_());
+    }
+
     if (action === 'users') {
       return json_({ ok: true, users: readRows_(USER_SHEET) });
     }
@@ -204,6 +208,57 @@ function doPost(e) {
   } catch (err) {
     return json_({ ok: false, error: errorText_(err) });
   }
+}
+
+function diagnostics_() {
+  const specs = [
+    { name: USER_SHEET, required: true, headers: ['user_id', 'display_name', 'provider', 'provider_user_id', 'email', 'created_at', 'status', 'visibility'] },
+    { name: EVENT_SHEET, required: true, headers: ['id', 'user_id', 'date', 'object_type', 'object_id', 'event_type', 'title', 'description', 'state_before', 'state_after', 'era', 'tags', 'status', 'source', 'confidence', 'created_at', 'system_id', 'primary_loc', 'related_locs', 'era_id'] },
+    { name: ERA_SHEET, required: true, headers: ['era_id', 'period', 'order', 'name', 'display_label', 'start_date', 'end_date', 'status', 'description', 'state_before', 'state_after', 'system_id', 'updated_at'] },
+    { name: DAILY_DRAW_SHEET, required: true, headers: ['id', 'user_id', 'date', 'draw_kind', 'rune_id', 'rune', 'direction', 'real_moon_phase', 'note', 'interpretation', 'tags', 'source', 'confidence', 'created_at', 'system_id', 'era_id', 'updated_at'] },
+    { name: HISTORY_SHEET, required: false, headers: [] },
+    { name: RELATION_SHEET, required: true, headers: ['id', 'user_id', 'date', 'source_type', 'source_id', 'target_type', 'target_id', 'relation_type', 'direction', 'summary', 'evidence', 'confidence', 'era', 'era_id', 'primary_loc', 'related_locs', 'status', 'created_at', 'updated_at', 'visibility'] }
+  ];
+
+  const ss = SpreadsheetApp.openById(LOC8_SPREADSHEET_ID);
+  const sheets = specs.map(spec => inspectSheet_(ss, spec));
+  const ready = sheets.every(item => !item.required || (item.exists && item.missing_headers.length === 0));
+
+  return {
+    ok: true,
+    service: 'LOC8',
+    schema: 'loc8-mvp-1.1',
+    ready: ready,
+    timezone: Session.getScriptTimeZone() || 'Asia/Taipei',
+    sheets: sheets
+  };
+}
+
+function inspectSheet_(ss, spec) {
+  const sheet = ss.getSheetByName(spec.name);
+  if (!sheet) {
+    return {
+      name: spec.name,
+      required: spec.required,
+      exists: false,
+      missing_headers: spec.headers.slice(),
+      header_count: 0
+    };
+  }
+
+  const lastColumn = Math.max(sheet.getLastColumn(), 1);
+  const headers = sheet.getRange(1, 1, 1, lastColumn).getDisplayValues()[0]
+    .map(v => String(v).trim());
+  const namedHeaders = headers.filter(Boolean);
+  const missing = spec.headers.filter(header => namedHeaders.indexOf(header) < 0);
+
+  return {
+    name: spec.name,
+    required: spec.required,
+    exists: true,
+    missing_headers: missing,
+    header_count: namedHeaders.length
+  };
 }
 
 function parseBody_(e) {
