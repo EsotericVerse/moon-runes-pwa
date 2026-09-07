@@ -138,6 +138,7 @@
                 <option value="threads">Threads</option>
                 <option value="suno">Suno</option>
                 <option value="instagram">Instagram</option>
+                <option value="x">X (Twitter)</option>
                 <option value="loc">LOC 站內資料</option>
               </select>
             </div>
@@ -210,6 +211,7 @@
     const SOURCE_SEARCH_PROVIDERS=[
       {id:'threads',label:'Threads',url:q=>`https://www.threads.com/search?q=${encodeURIComponent(q)}`},
       {id:'youtube',label:'YouTube',url:q=>`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`},
+      {id:'x',label:'X (Twitter)',url:q=>`https://x.com/search?q=${encodeURIComponent(q)}&src=typed_query`},
       {id:'github',label:'GitHub',url:q=>`https://github.com/search?q=${encodeURIComponent(q)}&type=code`},
       {id:'suno',label:'Suno',url:q=>`https://suno.com/search?q=${encodeURIComponent(q)}`}
     ];
@@ -756,14 +758,14 @@
       runes:{loc:'月之符文',label:'符文',desc:'基本符文、方向、參照語意與符文資料'},
       rune_songs:{loc:'自創歌曲(Suno)',label:'符文音樂',desc:'已確認符文歌曲，以及明確標示來源狀態的符文－歌曲關聯'},
       works:{loc:'自創歌曲(Suno)',label:'音樂／歌詞',desc:'歌曲、歌詞與符文歌演化證據'},
-      textworks:{loc:'文字創作',label:'文字作品',desc:'文章、小說與文字延伸'},
+      textworks:{loc:'文字創作',label:'文字創作',desc:'小說、文章、生活文字與其他作者文字；來源平台另行標示'},
       media:{loc:'多媒體創作',label:'多媒體／符文影像',desc:'Instagram、影音、圖片、知識圖與已建立的符文影像關聯'},
       governance:{loc:'治理規則',label:'治理／政德風',desc:'治理片段、價值與語言判斷'},
       loc4_articles:{loc:'文字創作／治理規則',label:'文字／治理文章',desc:'作品文字、來源平台文字與治理分析分開呈現'},
       knowledge:{loc:'知識庫',label:'文件／知識',desc:'KM、規格、文件與架構知識'},
       timeline:{loc:'趨勢分析',label:'ERA／趨勢',desc:'時間、關係與演變維度'},
       relationships:{loc:'跨分類',label:'關係',desc:'已建立的跨資料與跨媒介關係'},
-      text:{loc:'文字資料',label:'文字',desc:'Threads、Facebook、Instagram 與作品文字依來源與內容型態分開保存'}
+      text:{loc:'文字創作',label:'文字創作',desc:'對外統一為文字創作；Threads、Facebook、Instagram、X(Twitter) 等只作來源標示'}
     };
 
     function publicLocLabel(value){
