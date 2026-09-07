@@ -103,6 +103,7 @@
                 <option value="knowledge_image">圖片</option>
                 <option value="multimedia">影音</option>
                 <option value="rune_record">符文</option>
+                <option value="scenario_event">情境／事件</option>
                 <option value="knowledge">文件／知識</option>
               </select>
               <div class="browse-inline">
@@ -232,6 +233,14 @@
         {q:'尊重',title:'尊重',desc:'LOC6 · 關係／界線'},
         {q:'政德風',title:'政德風',desc:'LOC6 · 風格演變'}
       ],
+      scenario_event:[
+        {q:'自我懷疑',title:'自我懷疑',desc:'LOC2 · 情境事件'},
+        {q:'合作',title:'合作',desc:'LOC2 · 情境事件'},
+        {q:'重建關係',title:'重建關係',desc:'LOC2 · 情境事件'},
+        {q:'資源不足',title:'資源不足',desc:'LOC2 · 情境事件'},
+        {q:'選擇',title:'選擇',desc:'LOC2 · 情境事件'},
+        {q:'未知來信',title:'未知來信',desc:'LOC2 · 情境事件'}
+      ],
       knowledge:[
         {q:'LOC 是什麼',title:'LOC 是什麼',desc:'LOC7 · 系統知識'},
         {q:'月之符文',title:'月之符文',desc:'LOC7 · 文件／FAQ'},
@@ -241,7 +250,7 @@
         {q:'自我治理',title:'自我治理',desc:'LOC7 · 跨文件知識'}
       ]
     };
-    const labels={entities:'核心詞條',oracle:'籤詩結果',readings:'OW3gs 解牌／抽牌紀錄',runes:'月符',rune_songs:'符文歌曲',works:'Suno 歌曲／歌詞',textworks:'文字',relationships:'跨 LOC 關聯',governance:'文字',loc6_articles:'文字',text:'文字',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
+    const labels={entities:'核心詞條',scenarios:'LOC2 情境事件',oracle:'籤詩結果',readings:'OW3gs 解牌／抽牌紀錄',runes:'月符',rune_songs:'符文歌曲',works:'Suno 歌曲／歌詞',textworks:'文字',relationships:'跨 LOC 關聯',governance:'文字',loc6_articles:'文字',text:'文字',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
     const LOCAL_SEARCH_CACHE=new Map();
     async function localJson(path){
       if(LOCAL_SEARCH_CACHE.has(path))return LOCAL_SEARCH_CACHE.get(path);
@@ -275,6 +284,22 @@
     async function localStaticSearch(q,{type='',period='',source='',topK=10}={}){
       const scored=[];
       const wants=(...types)=>!type||type==='all'||types.includes(type);
+
+      if(wants('scenario_event','knowledge','game_document','game_rule')){
+        try{
+          const d=await localJson('data/json/registries/LOC2_EVENT_REGISTRY.json');
+          for(const row of d.records||[]){
+            const score=localScore(q,[row.event_id,row.title,row.event_group,row.requirement_signature,row.description,row.content_type]);
+            localPush(scored,score,'scenarios',{
+              result_id:row.event_id,system_id:'lo3rwang',primary_loc:'LOC2',
+              related_locs:row.related_locs||['LOC1','LOC4','LOC6','LOC7','LOC8'],
+              content_type:'scenario_event',title:row.title||row.event_id,
+              summary:row.description||'',score,
+              payload:{...row,scenario_corpus_stage:d.corpus_summary?.stage||'',grammar_note:d.grammar_note||{}}
+            });
+          }
+        }catch(_){}
+      }
 
       if(wants('rune_record','oracle')){
         try{
@@ -719,7 +744,7 @@
     }
 
     const PAGE_SIZE=20;
-    const RESULT_ORDER=['readings','runes','rune_songs','works','textworks','relationships','governance','loc6_articles','text','media','knowledge','timeline'];
+    const RESULT_ORDER=['scenarios','readings','runes','rune_songs','works','textworks','relationships','governance','loc6_articles','text','media','knowledge','timeline'];
     let searchState={groups:{},synthesis:null,graph:null,page:1,total:0};
     let browseState={active:false,type:'',key:'',page:1,total:0,items:[]};
 
