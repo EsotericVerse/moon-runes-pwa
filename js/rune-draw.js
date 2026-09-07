@@ -474,6 +474,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (!requestedMode) return;
   const mode = normalizeMode(requestedMode);
   const config = MODE_CONFIG[mode];
+  const ritualView = document.getElementById("ritual-view");
+  if (ritualView) ritualView.hidden = false;
   const realPhase = window.LOCMoonPhase?.getRealPhase() || "未知";
 
   sessionStorage.setItem("realPhase", realPhase);
