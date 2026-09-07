@@ -167,8 +167,8 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC4 | Writing | 兩部分：①創作作品（小說、文章、符文文本、世界觀等）②生活文字（Facebook／Threads） |
 | LOC5 | Resonance | 圖像、聲音、文字、MV、系統圖形與跨媒體概念視覺化 |
 | LOC6 | Methodology / Governance | 方法論：如何理解、判斷、處理；治理、解牌、價值判斷與政德風都是其中的方法 |
-| LOC7 | Methodological System / Text Architecture | 方法體系：由多種方法形成的文字建築、知識管理、檢索、關係結構與 Graph RAG |
-| LOC8 | Cultural Philosophy / Time & Trend | 文化哲學：把方法體系放進事件、時期、時間線、Relation、Trajectory 與趨勢中觀察其演化 |
+| LOC7 | Algorithm / Text Architecture | 演算法：由多種方法形成的文字建築、知識管理、檢索、關係結構與 Graph RAG |
+| LOC8 | Cultural Philosophy / Time & Trend | 文化哲學：把演算法放進事件、時期、時間線、Relation、Trajectory 與趨勢中觀察其演化 |
 
 ### 目前具現化成果
 
