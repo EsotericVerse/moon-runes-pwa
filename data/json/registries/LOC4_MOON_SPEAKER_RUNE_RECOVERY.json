@@ -1,0 +1,4197 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC4_MOON_SPEAKER_RUNE_RECOVERY",
+  "authority": "LOC4",
+  "updated_at": "2026-09-07",
+  "work_id": "LOC4-MOON-SPEAKER",
+  "purpose": "Recovered chapter-level three-rune/moon-phase evidence for MoonSpeaker. Missing rows must not be inferred.",
+  "record_count": 161,
+  "records": [
+    {
+      "part": 1,
+      "chapter": 17,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第十七章",
+      "runes": [
+        {
+          "legacy_name": "渾沌",
+          "canonical_name": null,
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "線",
+          "canonical_name": null,
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 515
+    },
+    {
+      "part": 1,
+      "chapter": 18,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第十八章",
+      "runes": [
+        {
+          "legacy_name": "根",
+          "canonical_name": "根",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "靈",
+          "canonical_name": "靈",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "光",
+          "canonical_name": "光",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 532
+    },
+    {
+      "part": 1,
+      "chapter": 19,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第十九章",
+      "runes": [
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "混沌",
+          "canonical_name": null,
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 554
+    },
+    {
+      "part": 1,
+      "chapter": 20,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第二十章",
+      "runes": [
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "葉",
+          "canonical_name": "葉",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 583
+    },
+    {
+      "part": 1,
+      "chapter": 21,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第二十一章",
+      "runes": [
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "根",
+          "canonical_name": "根",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "混沌",
+          "canonical_name": null,
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 596
+    },
+    {
+      "part": 1,
+      "chapter": 22,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第二十二章",
+      "runes": [
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "種",
+          "canonical_name": "種",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "光",
+          "canonical_name": "光",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 611
+    },
+    {
+      "part": 1,
+      "chapter": 23,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第二十三章",
+      "runes": [
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 634
+    },
+    {
+      "part": 1,
+      "chapter": 24,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第二十四章",
+      "runes": [
+        {
+          "legacy_name": "雷",
+          "canonical_name": "雷",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "混沌",
+          "canonical_name": null,
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 651
+    },
+    {
+      "part": 2,
+      "chapter": 1,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第一章",
+      "runes": [
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": null,
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 7
+    },
+    {
+      "part": 2,
+      "chapter": 2,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第二章",
+      "runes": [
+        {
+          "legacy_name": "根",
+          "canonical_name": "根",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": null,
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 21
+    },
+    {
+      "part": 2,
+      "chapter": 3,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第三章",
+      "runes": [
+        {
+          "legacy_name": "暗",
+          "canonical_name": "暗",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "花",
+          "canonical_name": "花",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "種",
+          "canonical_name": "種",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": null,
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 38
+    },
+    {
+      "part": 2,
+      "chapter": 4,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第四章",
+      "runes": [
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 50
+    },
+    {
+      "part": 2,
+      "chapter": 5,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第五章",
+      "runes": [
+        {
+          "legacy_name": "雷",
+          "canonical_name": "雷",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "混沌",
+          "canonical_name": null,
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 66
+    },
+    {
+      "part": 2,
+      "chapter": 6,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第六章",
+      "runes": [
+        {
+          "legacy_name": "靈",
+          "canonical_name": "靈",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "向",
+          "canonical_name": "向",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 87
+    },
+    {
+      "part": 2,
+      "chapter": 7,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第七章",
+      "runes": [
+        {
+          "legacy_name": "氣",
+          "canonical_name": "氣",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "斷",
+          "canonical_name": "斷",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 111
+    },
+    {
+      "part": 2,
+      "chapter": 8,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第八章",
+      "runes": [
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "斷",
+          "canonical_name": "斷",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "實",
+          "canonical_name": "實",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 130
+    },
+    {
+      "part": 2,
+      "chapter": 9,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第九章",
+      "runes": [
+        {
+          "legacy_name": "雷",
+          "canonical_name": "雷",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "封",
+          "canonical_name": "封",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "魂",
+          "canonical_name": "魂",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 156
+    },
+    {
+      "part": 2,
+      "chapter": 10,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第十章",
+      "runes": [
+        {
+          "legacy_name": "日",
+          "canonical_name": "日",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "月",
+          "canonical_name": "月",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 190
+    },
+    {
+      "part": 2,
+      "chapter": 11,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第十一章",
+      "runes": [
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "夢",
+          "canonical_name": "夢",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "明",
+          "canonical_name": "明",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 225
+    },
+    {
+      "part": 2,
+      "chapter": 12,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第十二章",
+      "runes": [
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 265
+    },
+    {
+      "part": 2,
+      "chapter": 13,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第13章",
+      "runes": [
+        {
+          "legacy_name": "無",
+          "canonical_name": "無",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 301
+    },
+    {
+      "part": 2,
+      "chapter": 14,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第14章",
+      "runes": [
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "月",
+          "canonical_name": "月",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 335
+    },
+    {
+      "part": 2,
+      "chapter": 15,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第15章",
+      "runes": [
+        {
+          "legacy_name": "鍊",
+          "canonical_name": "鍊",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "日",
+          "canonical_name": "日",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "無",
+          "canonical_name": "無",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 368
+    },
+    {
+      "part": 2,
+      "chapter": 16,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第16章",
+      "runes": [
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 393
+    },
+    {
+      "part": 2,
+      "chapter": 17,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第17章",
+      "runes": [
+        {
+          "legacy_name": "無",
+          "canonical_name": "無",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "辰",
+          "canonical_name": "辰",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 443
+    },
+    {
+      "part": 2,
+      "chapter": 18,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第18章",
+      "runes": [
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "彩",
+          "canonical_name": "彩",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 493
+    },
+    {
+      "part": 2,
+      "chapter": 19,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第19章",
+      "runes": [
+        {
+          "legacy_name": "實",
+          "canonical_name": "實",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": null,
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 524
+    },
+    {
+      "part": 2,
+      "chapter": 20,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第20章",
+      "runes": [
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "暗",
+          "canonical_name": "暗",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 571
+    },
+    {
+      "part": 2,
+      "chapter": 21,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第21章",
+      "runes": [
+        {
+          "legacy_name": "向",
+          "canonical_name": "向",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "月",
+          "canonical_name": "月",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 617
+    },
+    {
+      "part": 2,
+      "chapter": 22,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第22章",
+      "runes": [
+        {
+          "legacy_name": "光",
+          "canonical_name": "光",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "辰",
+          "canonical_name": "辰",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 684
+    },
+    {
+      "part": 2,
+      "chapter": 23,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第23章",
+      "runes": [
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "明",
+          "canonical_name": "明",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 733
+    },
+    {
+      "part": 2,
+      "chapter": 24,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "第24章",
+      "runes": [
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 774
+    },
+    {
+      "part": 2,
+      "chapter": 25,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "終章",
+      "runes": [
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "夢",
+          "canonical_name": "夢",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "滿月",
+      "source_outline": "二篇章節大綱.txt",
+      "source_line": 820
+    },
+    {
+      "part": 3,
+      "chapter": 0,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "序章",
+      "runes": [
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 4
+    },
+    {
+      "part": 3,
+      "chapter": 1,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch1",
+      "runes": [
+        {
+          "legacy_name": "魂",
+          "canonical_name": "魂",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "滿月",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 42
+    },
+    {
+      "part": 3,
+      "chapter": 2,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch2",
+      "runes": [
+        {
+          "legacy_name": "夢",
+          "canonical_name": "夢",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 76
+    },
+    {
+      "part": 3,
+      "chapter": 3,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch3",
+      "runes": [
+        {
+          "legacy_name": "幻",
+          "canonical_name": "幻",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "鍊",
+          "canonical_name": "鍊",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "根",
+          "canonical_name": "根",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 94
+    },
+    {
+      "part": 3,
+      "chapter": 4,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch4",
+      "runes": [
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "斷",
+          "canonical_name": "斷",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 120
+    },
+    {
+      "part": 3,
+      "chapter": 7,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch7",
+      "runes": [
+        {
+          "legacy_name": "向",
+          "canonical_name": "向",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "夢",
+          "canonical_name": "夢",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 192
+    },
+    {
+      "part": 3,
+      "chapter": 8,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch8",
+      "runes": [
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "明",
+          "canonical_name": "明",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "憶",
+          "canonical_name": "憶",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 217
+    },
+    {
+      "part": 3,
+      "chapter": 9,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch9",
+      "runes": [
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "雷",
+          "canonical_name": "雷",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 256
+    },
+    {
+      "part": 3,
+      "chapter": 10,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch10",
+      "runes": [
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "明",
+          "canonical_name": "明",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "憶",
+          "canonical_name": "憶",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 287
+    },
+    {
+      "part": 3,
+      "chapter": 11,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch11",
+      "runes": [
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 315
+    },
+    {
+      "part": 3,
+      "chapter": 12,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch12",
+      "runes": [
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "鍊",
+          "canonical_name": "鍊",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "雷",
+          "canonical_name": "雷",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 355
+    },
+    {
+      "part": 3,
+      "chapter": 13,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch13",
+      "runes": [
+        {
+          "legacy_name": "氣",
+          "canonical_name": "氣",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 392
+    },
+    {
+      "part": 3,
+      "chapter": 14,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch14",
+      "runes": [
+        {
+          "legacy_name": "雷",
+          "canonical_name": "雷",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "彩",
+          "canonical_name": "彩",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 431
+    },
+    {
+      "part": 3,
+      "chapter": 15,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch15",
+      "runes": [
+        {
+          "legacy_name": "憶",
+          "canonical_name": "憶",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 458
+    },
+    {
+      "part": 3,
+      "chapter": 16,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch16",
+      "runes": [
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "種",
+          "canonical_name": "種",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 502
+    },
+    {
+      "part": 3,
+      "chapter": 17,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch17",
+      "runes": [
+        {
+          "legacy_name": "幻",
+          "canonical_name": "幻",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 534
+    },
+    {
+      "part": 3,
+      "chapter": 18,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch18",
+      "runes": [
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "封",
+          "canonical_name": "封",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 567
+    },
+    {
+      "part": 3,
+      "chapter": 19,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch19",
+      "runes": [
+        {
+          "legacy_name": "暗",
+          "canonical_name": "暗",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "辰",
+          "canonical_name": "辰",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "葉",
+          "canonical_name": "葉",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 602
+    },
+    {
+      "part": 3,
+      "chapter": 20,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch20",
+      "runes": [
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "暗",
+          "canonical_name": "暗",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 632
+    },
+    {
+      "part": 3,
+      "chapter": 21,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch21",
+      "runes": [
+        {
+          "legacy_name": "明",
+          "canonical_name": "明",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "幻",
+          "canonical_name": "幻",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 670
+    },
+    {
+      "part": 3,
+      "chapter": 22,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch22",
+      "runes": [
+        {
+          "legacy_name": "向",
+          "canonical_name": "向",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "幻",
+          "canonical_name": "幻",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "根",
+          "canonical_name": "根",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 701
+    },
+    {
+      "part": 3,
+      "chapter": 23,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "Ch23",
+      "runes": [
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "夢",
+          "canonical_name": "夢",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "鍊",
+          "canonical_name": "鍊",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 730
+    },
+    {
+      "part": 3,
+      "chapter": 24,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "ch24",
+      "runes": [
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "明",
+          "canonical_name": "明",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 767
+    },
+    {
+      "part": 3,
+      "chapter": 25,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "ch終章",
+      "runes": [
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "三篇大綱.txt",
+      "source_line": 804
+    },
+    {
+      "part": 4,
+      "chapter": 0,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "序章",
+      "runes": [
+        {
+          "legacy_name": "鍊",
+          "canonical_name": "鍊",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "日",
+          "canonical_name": "日",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 4
+    },
+    {
+      "part": 4,
+      "chapter": 1,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch1",
+      "runes": [
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "向",
+          "canonical_name": "向",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 26
+    },
+    {
+      "part": 4,
+      "chapter": 2,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch2",
+      "runes": [
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 57
+    },
+    {
+      "part": 4,
+      "chapter": 3,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch3",
+      "runes": [
+        {
+          "legacy_name": "彩",
+          "canonical_name": "彩",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "靈",
+          "canonical_name": "靈",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "向",
+          "canonical_name": "向",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 88
+    },
+    {
+      "part": 4,
+      "chapter": 4,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch4",
+      "runes": [
+        {
+          "legacy_name": "月",
+          "canonical_name": "月",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "魂",
+          "canonical_name": "魂",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 115
+    },
+    {
+      "part": 4,
+      "chapter": 5,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch5",
+      "runes": [
+        {
+          "legacy_name": "根",
+          "canonical_name": "根",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "日",
+          "canonical_name": "日",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 148
+    },
+    {
+      "part": 4,
+      "chapter": 6,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch6",
+      "runes": [
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 188
+    },
+    {
+      "part": 4,
+      "chapter": 7,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch7",
+      "runes": [
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "雷",
+          "canonical_name": "雷",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "向",
+          "canonical_name": "向",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 221
+    },
+    {
+      "part": 4,
+      "chapter": 8,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch8",
+      "runes": [
+        {
+          "legacy_name": "草",
+          "canonical_name": "草",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "夢",
+          "canonical_name": "夢",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 265
+    },
+    {
+      "part": 4,
+      "chapter": 9,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch9",
+      "runes": [
+        {
+          "legacy_name": "雷",
+          "canonical_name": "雷",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "暗",
+          "canonical_name": "暗",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 300
+    },
+    {
+      "part": 4,
+      "chapter": 10,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch10",
+      "runes": [
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "夢",
+          "canonical_name": "夢",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 334
+    },
+    {
+      "part": 4,
+      "chapter": 11,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch11",
+      "runes": [
+        {
+          "legacy_name": "魂",
+          "canonical_name": "魂",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 373
+    },
+    {
+      "part": 4,
+      "chapter": 12,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch12",
+      "runes": [
+        {
+          "legacy_name": "光",
+          "canonical_name": "光",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "花",
+          "canonical_name": "花",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 408
+    },
+    {
+      "part": 4,
+      "chapter": 13,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch13",
+      "runes": [
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "辰",
+          "canonical_name": "辰",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 452
+    },
+    {
+      "part": 4,
+      "chapter": 14,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch14",
+      "runes": [
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "雷",
+          "canonical_name": "雷",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 494
+    },
+    {
+      "part": 4,
+      "chapter": 15,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch15",
+      "runes": [
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "日",
+          "canonical_name": "日",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 532
+    },
+    {
+      "part": 4,
+      "chapter": 16,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch16",
+      "runes": [
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "靈",
+          "canonical_name": "靈",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 568
+    },
+    {
+      "part": 4,
+      "chapter": 17,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch17",
+      "runes": [
+        {
+          "legacy_name": "靈",
+          "canonical_name": "靈",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "幻",
+          "canonical_name": "幻",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 611
+    },
+    {
+      "part": 4,
+      "chapter": 18,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch18",
+      "runes": [
+        {
+          "legacy_name": "靈",
+          "canonical_name": "靈",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "月",
+          "canonical_name": "月",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 648
+    },
+    {
+      "part": 4,
+      "chapter": 19,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch19",
+      "runes": [
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "月",
+          "canonical_name": "月",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 669
+    },
+    {
+      "part": 4,
+      "chapter": 20,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch20",
+      "runes": [
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "花",
+          "canonical_name": "花",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 713
+    },
+    {
+      "part": 4,
+      "chapter": 21,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch21",
+      "runes": [
+        {
+          "legacy_name": "彩",
+          "canonical_name": "彩",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 751
+    },
+    {
+      "part": 4,
+      "chapter": 22,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch22",
+      "runes": [
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "辰",
+          "canonical_name": "辰",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 799
+    },
+    {
+      "part": 4,
+      "chapter": 23,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "Ch23",
+      "runes": [
+        {
+          "legacy_name": "向",
+          "canonical_name": "向",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "辰",
+          "canonical_name": "辰",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 842
+    },
+    {
+      "part": 4,
+      "chapter": 24,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "ch24",
+      "runes": [
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "葉",
+          "canonical_name": "葉",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 878
+    },
+    {
+      "part": 4,
+      "chapter": 25,
+      "part_name": "超古代．滿月之卷",
+      "chapter_marker": "ch終章",
+      "runes": [
+        {
+          "legacy_name": "明",
+          "canonical_name": "明",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "四篇大綱.txt",
+      "source_line": 923
+    },
+    {
+      "part": 5,
+      "chapter": 0,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "序章",
+      "runes": [
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "月",
+          "canonical_name": "月",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 4
+    },
+    {
+      "part": 5,
+      "chapter": 1,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch1",
+      "runes": [
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "辰",
+          "canonical_name": "辰",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 27
+    },
+    {
+      "part": 5,
+      "chapter": 2,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch2",
+      "runes": [
+        {
+          "legacy_name": "憶",
+          "canonical_name": "憶",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "禍",
+          "canonical_name": "禍",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "幻",
+          "canonical_name": "幻",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 54
+    },
+    {
+      "part": 5,
+      "chapter": 3,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch3",
+      "runes": [
+        {
+          "legacy_name": "根",
+          "canonical_name": "根",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "夢",
+          "canonical_name": "夢",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "向",
+          "canonical_name": "向",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 82
+    },
+    {
+      "part": 5,
+      "chapter": 4,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch4",
+      "runes": [
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 104
+    },
+    {
+      "part": 5,
+      "chapter": 5,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch5",
+      "runes": [
+        {
+          "legacy_name": "彩",
+          "canonical_name": "彩",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "幻",
+          "canonical_name": "幻",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 131
+    },
+    {
+      "part": 5,
+      "chapter": 6,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch6",
+      "runes": [
+        {
+          "legacy_name": "實",
+          "canonical_name": "實",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "斷",
+          "canonical_name": "斷",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 161
+    },
+    {
+      "part": 5,
+      "chapter": 7,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch7",
+      "runes": [
+        {
+          "legacy_name": "封",
+          "canonical_name": "封",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "靈",
+          "canonical_name": "靈",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "彩",
+          "canonical_name": "彩",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 184
+    },
+    {
+      "part": 5,
+      "chapter": 8,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch8",
+      "runes": [
+        {
+          "legacy_name": "明",
+          "canonical_name": "明",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "向",
+          "canonical_name": "向",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "斷",
+          "canonical_name": "斷",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 221
+    },
+    {
+      "part": 5,
+      "chapter": 9,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch9",
+      "runes": [
+        {
+          "legacy_name": "彩",
+          "canonical_name": "彩",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "雷",
+          "canonical_name": "雷",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 258
+    },
+    {
+      "part": 5,
+      "chapter": 10,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch10",
+      "runes": [
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "日",
+          "canonical_name": "日",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 282
+    },
+    {
+      "part": 5,
+      "chapter": 11,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch11",
+      "runes": [
+        {
+          "legacy_name": "斷",
+          "canonical_name": "斷",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "虛",
+          "canonical_name": "虛",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 314
+    },
+    {
+      "part": 5,
+      "chapter": 12,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch12",
+      "runes": [
+        {
+          "legacy_name": "玉",
+          "canonical_name": "玉",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "鏡",
+          "canonical_name": "鏡",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "光",
+          "canonical_name": "光",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 344
+    },
+    {
+      "part": 5,
+      "chapter": 13,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch13",
+      "runes": [
+        {
+          "legacy_name": "分",
+          "canonical_name": "分",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "緣",
+          "canonical_name": "緣",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "韻",
+          "canonical_name": "韻",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 371
+    },
+    {
+      "part": 5,
+      "chapter": 14,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch14",
+      "runes": [
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "誤",
+          "canonical_name": "誤",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "金",
+          "canonical_name": "金",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 402
+    },
+    {
+      "part": 5,
+      "chapter": 15,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch15",
+      "runes": [
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "老",
+          "canonical_name": "老",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 440
+    },
+    {
+      "part": 5,
+      "chapter": 16,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch16",
+      "runes": [
+        {
+          "legacy_name": "幻",
+          "canonical_name": "幻",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "花",
+          "canonical_name": "花",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 467
+    },
+    {
+      "part": 5,
+      "chapter": 17,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch17",
+      "runes": [
+        {
+          "legacy_name": "果",
+          "canonical_name": "果",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "魂",
+          "canonical_name": "魂",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 491
+    },
+    {
+      "part": 5,
+      "chapter": 18,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch18",
+      "runes": [
+        {
+          "legacy_name": "日",
+          "canonical_name": "日",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "種",
+          "canonical_name": "種",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 517
+    },
+    {
+      "part": 5,
+      "chapter": 19,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch19",
+      "runes": [
+        {
+          "legacy_name": "實",
+          "canonical_name": "實",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "老",
+          "canonical_name": "老",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 545
+    },
+    {
+      "part": 5,
+      "chapter": 20,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch20",
+      "runes": [
+        {
+          "legacy_name": "鑽",
+          "canonical_name": "鑽",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "果",
+          "canonical_name": "果",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 570
+    },
+    {
+      "part": 5,
+      "chapter": 21,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch21",
+      "runes": [
+        {
+          "legacy_name": "實",
+          "canonical_name": "實",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 599
+    },
+    {
+      "part": 5,
+      "chapter": 22,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch22",
+      "runes": [
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "夢",
+          "canonical_name": "夢",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 633
+    },
+    {
+      "part": 5,
+      "chapter": 23,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "Ch23",
+      "runes": [
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "實",
+          "canonical_name": "實",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 663
+    },
+    {
+      "part": 5,
+      "chapter": 24,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "ch24",
+      "runes": [
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "明",
+          "canonical_name": "明",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 691
+    },
+    {
+      "part": 5,
+      "chapter": 25,
+      "part_name": "也許．幻蝕之卷",
+      "chapter_marker": "ch終章",
+      "runes": [
+        {
+          "legacy_name": "誤",
+          "canonical_name": "誤",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "花",
+          "canonical_name": "花",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "病",
+          "canonical_name": "病",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "五篇大綱.txt",
+      "source_line": 718
+    },
+    {
+      "part": 6,
+      "chapter": 0,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "序章",
+      "runes": [
+        {
+          "legacy_name": "月",
+          "canonical_name": "月",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "礦",
+          "canonical_name": "礦",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 4
+    },
+    {
+      "part": 6,
+      "chapter": 1,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch1",
+      "runes": [
+        {
+          "legacy_name": "氣",
+          "canonical_name": "氣",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "虛",
+          "canonical_name": "虛",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "草",
+          "canonical_name": "草",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 34
+    },
+    {
+      "part": 6,
+      "chapter": 2,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch2",
+      "runes": [
+        {
+          "legacy_name": "彩",
+          "canonical_name": "彩",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "夢",
+          "canonical_name": "夢",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "花",
+          "canonical_name": "花",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 65
+    },
+    {
+      "part": 6,
+      "chapter": 3,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch3",
+      "runes": [
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "鍊",
+          "canonical_name": "鍊",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 89
+    },
+    {
+      "part": 6,
+      "chapter": 4,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch4",
+      "runes": [
+        {
+          "legacy_name": "老",
+          "canonical_name": "老",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "悟",
+          "canonical_name": "悟",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 120
+    },
+    {
+      "part": 6,
+      "chapter": 5,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch5",
+      "runes": [
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "幻",
+          "canonical_name": "幻",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "悟",
+          "canonical_name": "悟",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 157
+    },
+    {
+      "part": 6,
+      "chapter": 6,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch6",
+      "runes": [
+        {
+          "legacy_name": "明",
+          "canonical_name": "明",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "實",
+          "canonical_name": "實",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 197
+    },
+    {
+      "part": 6,
+      "chapter": 7,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch7",
+      "runes": [
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "鍊",
+          "canonical_name": "鍊",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 245
+    },
+    {
+      "part": 6,
+      "chapter": 8,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch8",
+      "runes": [
+        {
+          "legacy_name": "界",
+          "canonical_name": "界",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "石",
+          "canonical_name": "石",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 285
+    },
+    {
+      "part": 6,
+      "chapter": 9,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch9",
+      "runes": [
+        {
+          "legacy_name": "草",
+          "canonical_name": "草",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "辰",
+          "canonical_name": "辰",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "病",
+          "canonical_name": "病",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 327
+    },
+    {
+      "part": 6,
+      "chapter": 10,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch10",
+      "runes": [
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "界",
+          "canonical_name": "界",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "草",
+          "canonical_name": "草",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 367
+    },
+    {
+      "part": 6,
+      "chapter": 11,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch11",
+      "runes": [
+        {
+          "legacy_name": "彩",
+          "canonical_name": "彩",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "老",
+          "canonical_name": "老",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 404
+    },
+    {
+      "part": 6,
+      "chapter": 12,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch12",
+      "runes": [
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "礦",
+          "canonical_name": "礦",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "石",
+          "canonical_name": "石",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 435
+    },
+    {
+      "part": 6,
+      "chapter": 13,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch13",
+      "runes": [
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 469
+    },
+    {
+      "part": 6,
+      "chapter": 14,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch14",
+      "runes": [
+        {
+          "legacy_name": "石",
+          "canonical_name": "石",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "光",
+          "canonical_name": "光",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 498
+    },
+    {
+      "part": 6,
+      "chapter": 15,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch15",
+      "runes": [
+        {
+          "legacy_name": "光",
+          "canonical_name": "光",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "金",
+          "canonical_name": "金",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 541
+    },
+    {
+      "part": 6,
+      "chapter": 16,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch16",
+      "runes": [
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "因",
+          "canonical_name": "因",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "病",
+          "canonical_name": "病",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 574
+    },
+    {
+      "part": 6,
+      "chapter": 17,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch17",
+      "runes": [
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "日",
+          "canonical_name": "日",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "老",
+          "canonical_name": "老",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 609
+    },
+    {
+      "part": 6,
+      "chapter": 18,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch18",
+      "runes": [
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "魂",
+          "canonical_name": "魂",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "種",
+          "canonical_name": "種",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 643
+    },
+    {
+      "part": 6,
+      "chapter": 19,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch19",
+      "runes": [
+        {
+          "legacy_name": "石",
+          "canonical_name": "石",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 688
+    },
+    {
+      "part": 6,
+      "chapter": 20,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch20",
+      "runes": [
+        {
+          "legacy_name": "土",
+          "canonical_name": "土",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "鍊",
+          "canonical_name": "鍊",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "金",
+          "canonical_name": "金",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 727
+    },
+    {
+      "part": 6,
+      "chapter": 21,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch21",
+      "runes": [
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "幻",
+          "canonical_name": "幻",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "玉",
+          "canonical_name": "玉",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 766
+    },
+    {
+      "part": 6,
+      "chapter": 22,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch22",
+      "runes": [
+        {
+          "legacy_name": "靈",
+          "canonical_name": "靈",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "塵",
+          "canonical_name": "塵",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 796
+    },
+    {
+      "part": 6,
+      "chapter": 23,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "Ch23",
+      "runes": [
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "韻",
+          "canonical_name": "韻",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "土",
+          "canonical_name": "土",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 828
+    },
+    {
+      "part": 6,
+      "chapter": 24,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "ch24",
+      "runes": [
+        {
+          "legacy_name": "域",
+          "canonical_name": "域",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "分",
+          "canonical_name": "分",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 859
+    },
+    {
+      "part": 6,
+      "chapter": 25,
+      "part_name": "註定．無日之卷",
+      "chapter_marker": "ch終章",
+      "runes": [
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "界",
+          "canonical_name": "界",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "六篇大綱.txt",
+      "source_line": 894
+    },
+    {
+      "part": 7,
+      "chapter": 0,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "序章",
+      "runes": [
+        {
+          "legacy_name": "葉",
+          "canonical_name": "葉",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "鏡",
+          "canonical_name": "鏡",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 5
+    },
+    {
+      "part": 7,
+      "chapter": 1,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第一章",
+      "runes": [
+        {
+          "legacy_name": "塵",
+          "canonical_name": "塵",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "暗",
+          "canonical_name": "暗",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 89
+    },
+    {
+      "part": 7,
+      "chapter": 2,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第二章",
+      "runes": [
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "塵",
+          "canonical_name": "塵",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 163
+    },
+    {
+      "part": 7,
+      "chapter": 3,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第三章",
+      "runes": [
+        {
+          "legacy_name": "啟",
+          "canonical_name": "啟",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "花",
+          "canonical_name": "花",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 235
+    },
+    {
+      "part": 7,
+      "chapter": 4,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第四章",
+      "runes": [
+        {
+          "legacy_name": "土",
+          "canonical_name": "土",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "誤",
+          "canonical_name": "誤",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "老",
+          "canonical_name": "老",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 307
+    },
+    {
+      "part": 7,
+      "chapter": 5,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第五章",
+      "runes": [
+        {
+          "legacy_name": "晶",
+          "canonical_name": "晶",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "金",
+          "canonical_name": "金",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "葉",
+          "canonical_name": "葉",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 386
+    },
+    {
+      "part": 7,
+      "chapter": 6,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第六章",
+      "runes": [
+        {
+          "legacy_name": "病",
+          "canonical_name": "病",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "分",
+          "canonical_name": "分",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "石",
+          "canonical_name": "石",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 474
+    },
+    {
+      "part": 7,
+      "chapter": 7,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第七章",
+      "runes": [
+        {
+          "legacy_name": "根",
+          "canonical_name": "根",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "月",
+          "canonical_name": "月",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 539
+    },
+    {
+      "part": 7,
+      "chapter": 8,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第八章",
+      "runes": [
+        {
+          "legacy_name": "封",
+          "canonical_name": "封",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 628
+    },
+    {
+      "part": 7,
+      "chapter": 9,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第九章",
+      "runes": [
+        {
+          "legacy_name": "根",
+          "canonical_name": "根",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "老",
+          "canonical_name": "老",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "枝",
+          "canonical_name": "枝",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 695
+    },
+    {
+      "part": 7,
+      "chapter": 10,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第十章",
+      "runes": [
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "死",
+          "canonical_name": "死",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 771
+    },
+    {
+      "part": 7,
+      "chapter": 11,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第十一章",
+      "runes": [
+        {
+          "legacy_name": "實",
+          "canonical_name": "實",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "葉",
+          "canonical_name": "葉",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "土",
+          "canonical_name": "土",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 875
+    },
+    {
+      "part": 7,
+      "chapter": 12,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第十二章",
+      "runes": [
+        {
+          "legacy_name": "無",
+          "canonical_name": "無",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "福",
+          "canonical_name": "福",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "病",
+          "canonical_name": "病",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 967
+    },
+    {
+      "part": 7,
+      "chapter": 13,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第十三章",
+      "runes": [
+        {
+          "legacy_name": "病",
+          "canonical_name": "病",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "向",
+          "canonical_name": "向",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "新月",
+      "source_outline": "allCh7.txt",
+      "source_line": 1086
+    },
+    {
+      "part": 7,
+      "chapter": 14,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第十四章",
+      "runes": [
+        {
+          "legacy_name": "悟",
+          "canonical_name": "悟",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 1151
+    },
+    {
+      "part": 7,
+      "chapter": 15,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第十五章",
+      "runes": [
+        {
+          "legacy_name": "鏡",
+          "canonical_name": "鏡",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "心",
+          "canonical_name": "心",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "礦",
+          "canonical_name": "礦",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 1253
+    },
+    {
+      "part": 7,
+      "chapter": 16,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第十六章",
+      "runes": [
+        {
+          "legacy_name": "界",
+          "canonical_name": "界",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "悟",
+          "canonical_name": "悟",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 1350
+    },
+    {
+      "part": 7,
+      "chapter": 17,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第十七章",
+      "runes": [
+        {
+          "legacy_name": "病",
+          "canonical_name": "病",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "果",
+          "canonical_name": "果",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 1448
+    },
+    {
+      "part": 7,
+      "chapter": 18,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第十八章",
+      "runes": [
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "界",
+          "canonical_name": "界",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 1551
+    },
+    {
+      "part": 7,
+      "chapter": 19,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第十九章",
+      "runes": [
+        {
+          "legacy_name": "虛",
+          "canonical_name": "虛",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "塵",
+          "canonical_name": "塵",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 1642
+    },
+    {
+      "part": 7,
+      "chapter": 20,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第二十章",
+      "runes": [
+        {
+          "legacy_name": "實",
+          "canonical_name": "實",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "鏡",
+          "canonical_name": "鏡",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "緣",
+          "canonical_name": "緣",
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 1728
+    },
+    {
+      "part": 7,
+      "chapter": 21,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第二十一章",
+      "runes": [
+        {
+          "legacy_name": "鏡",
+          "canonical_name": "鏡",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "塵",
+          "canonical_name": "塵",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "因",
+          "canonical_name": "因",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 1822
+    },
+    {
+      "part": 7,
+      "chapter": 22,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第二十二章",
+      "runes": [
+        {
+          "legacy_name": "韻",
+          "canonical_name": "韻",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "憶",
+          "canonical_name": "憶",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 1912
+    },
+    {
+      "part": 7,
+      "chapter": 23,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第二十三章",
+      "runes": [
+        {
+          "legacy_name": "鍊",
+          "canonical_name": "鍊",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "封",
+          "canonical_name": "封",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "果",
+          "canonical_name": "果",
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 2000
+    },
+    {
+      "part": 7,
+      "chapter": 24,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "第二十四章",
+      "runes": [
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "語",
+          "canonical_name": "語",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "幻",
+          "canonical_name": "幻",
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 2084
+    },
+    {
+      "part": 7,
+      "chapter": 25,
+      "part_name": "無限．迴夢之卷",
+      "chapter_marker": "終章",
+      "runes": [
+        {
+          "legacy_name": "分",
+          "canonical_name": "分",
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "日",
+          "canonical_name": "日",
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "緣",
+          "canonical_name": "緣",
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "上弦",
+      "source_outline": "allCh7.txt",
+      "source_line": 2157
+    }
+  ]
+}
