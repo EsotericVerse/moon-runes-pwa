@@ -1,8 +1,8 @@
 {
   "schema_version": "0.1",
   "registry": "LOC_CROSS_RELATIONSHIP_REGISTRY",
-  "authority": "LOC7",
-  "purpose": "Directional cross-LOC work relationships consumed by LOC3 specialist search, Unified Search, LOC6 interpretation and graph retrieval.",
+  "authority": "LOC2",
+  "purpose": "Canonical cross-LOC context and relationship edges. LOC2 owns relation/context semantics; LOC7 consumes these edges for Search and Graph RAG algorithms; LOC8 consumes them for temporal/evolution views.",
   "relationship_schema": {
     "required": [
       "relationship_id",
