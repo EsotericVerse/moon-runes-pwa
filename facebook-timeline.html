@@ -77,5 +77,6 @@ async function searchLocal(){
   $('#results').innerHTML=hit.length?hit.map(r=>'<div class="result"><div class="meta">'+esc((r.payload||{}).date||'')+' · Facebook · score '+Number(r.score||0).toFixed(4)+'</div><p>'+esc(String(r.summary||'').slice(0,700))+(String(r.summary||'').length>700?'…':'')+'</p></div>').join(''):'<div class="note">沒有符合結果。</div>';
 }
 init().catch(err=>{$('#chart').innerHTML='<div class="note">資料載入失敗：'+esc(err.message)+'</div>'});
-</script><footer class="loc-site-footer"><a href="index.html">LOC月典</a><span>|</span><span>By</span> <a href="lo3rwang.html">Lucas Oscar Wang 政德</a></footer>
+</script>
+<footer class="loc-site-footer"><a href="index.html">月典</a><span>｜</span><a href="lo3rwang.html">Lucas Oscar Wang 政德</a></footer>
 </body></html>
