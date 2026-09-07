@@ -741,7 +741,7 @@
         <div class="moon" aria-hidden="true"></div>
         <div>
           <h1>Projection</h1>
-          <p>每日符文、時期、事件與關係的變化觀察</p>
+          <p>每日符文、時期與事件的時間推演</p>
         </div>
       </div>
       <nav class="nav" aria-label="趨勢分析功能">
@@ -774,19 +774,10 @@
         </div>
 
         <div class="nav-group">
-          <div class="nav-group-label">04 · 脈絡</div>
-          <button class="view-switch" id="contextViewBtn" type="button" data-view="context">
-            <span class="nav-title">脈絡 Context</span>
-            <span class="nav-sub">Relation · Trajectory · Graph</span>
-          </button>
-        </div>
-
-        <div class="nav-group">
-          <div class="nav-group-label">05 · Graph View</div>
-          <button class="view-switch" id="graphViewBtn" type="button" data-view="graph">
-            <span class="nav-title">Graph View</span>
-            <span class="nav-sub">Search seed · bounded neighborhood · provenance</span>
-          </button>
+          <div class="nav-group-label">04 · 跨模組</div>
+          <a class="nav-home" href="context.html">
+            脈絡與 Graph 已移至 LOC2 →
+          </a>
         </div>
 
         <div class="nav-group">
@@ -795,7 +786,7 @@
         </div>
       </nav>
       <div class="sidebar-foot">
-        時期 → 事件 → Trajectory → Trend → 推演。每日抽牌本體歸「符文語彙」；Graph 的脈絡本體歸 LOC2，此頁保留時間／演化投影。
+        每日符文 → 時期 → 事件 → 時間線 → 趨勢推演。脈絡、Relation 與 Graph 的展示入口歸 LOC2。
       </div>
     </aside>
 
@@ -965,7 +956,7 @@
             <p class="loc-header-meta">Event · Timeline</p>
             <h1 class="loc-header-title">事件時間線</h1>
             <h2 class="loc-header-subtitle">把事件留在時間裡，先回答「什麼時候發生了什麼」。</h2>
-            <p class="loc-header-copy">這裡只保存 Event 的時間順序與紀錄維護；狀態如何演變、概念如何互相影響，移到獨立的「脈絡 Context」處理。</p>
+            <p class="loc-header-copy">這裡保存 Event 的時間順序與紀錄維護；狀態關係與 Graph 請前往 LOC2「脈絡」。</p>
           </div>
           <div class="sync"><span class="dot" id="eventSyncDot"></span><span id="eventSyncText">載入中…</span></div>
         </section>
@@ -4405,16 +4396,16 @@
 
     $('#overviewViewBtn').addEventListener('click', () => switchView('overview', $('#overviewViewBtn')));
     $('#eventTimeViewBtn').addEventListener('click', () => switchView('event-time', $('#eventTimeViewBtn')));
-    $('#contextViewBtn').addEventListener('click', () => switchView('context', $('#contextViewBtn')));
+    $('#contextViewBtn')?.addEventListener('click', () => switchView('context', $('#contextViewBtn')));
     $('#eraTrendViewBtn').addEventListener('click', () => switchView('era-trend', $('#eraTrendViewBtn')));
     $('#dailyDrawViewBtn').addEventListener('click', () => switchView('daily', $('#dailyDrawViewBtn')));
-    $('#graphViewBtn').addEventListener('click', () => switchView('graph', $('#graphViewBtn')));
+    $('#graphViewBtn')?.addEventListener('click', () => switchView('graph', $('#graphViewBtn')));
 
     if (location.hash === '#event-time') switchView('event-time', $('#eventTimeViewBtn'));
-    else if (location.hash === '#context') switchView('context', $('#contextViewBtn'));
+    else if (location.hash === '#context' || location.hash === '#context-graph') location.replace('context.html#context-entry');
     else if (location.hash === '#keyword-ranking') switchView('era-trend', $('#eraTrendViewBtn'), { preserveHash:'#keyword-ranking', scrollTarget:'#keyword-ranking' });
     else if (location.hash === '#era-trend') switchView('era-trend', $('#eraTrendViewBtn'));
-    else if (location.hash === '#graph') switchView('graph', $('#graphViewBtn'));
+    else if (location.hash === '#graph') location.replace('context.html#graph-entry');
     else if (location.hash === '#overview') switchView('overview', $('#overviewViewBtn'));
     else switchView('daily', $('#dailyDrawViewBtn'));
 
