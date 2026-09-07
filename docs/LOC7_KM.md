@@ -338,7 +338,7 @@ LOC1 符文語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法
 
 政德風採「原始語句／治理原則／風格狀態／時期投影」分層保存，不再只以語錄集合處理。
 
-- 維護文件：`docs/LOC6_ZHENGDE_STYLE.md`
+- 維護文件：`governance.html#style`
 - 結構化 registry：`data/json/registries/LOC6_GOVERNANCE_REGISTRY.json`
 - LOC3 可提供不同 ERA 的歌曲與歌詞證據。
 - LOC4 可提供長文、小說、文章中的文字證據。
@@ -644,7 +644,7 @@ P0 已由完整 Threads 主貼文索引取得 **1,049 筆 primary records**，�
 Corpus 匯入、匯出與公開展示必須先通過 Content Rights Gate。
 
 - Policy：`data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json`
-- Human-readable：`docs/LOC_CONTENT_RIGHTS_POLICY.md`
+- Human-readable：`data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json`
 - 私訊、MSN／Messenger 對話與其他私人通訊預設不匯入。
 - 平台 export 可取得，不等於其中所有內容可再次公開。
 - 公開展示預設只允許 `self_authored + public + cleared`。
@@ -676,7 +676,7 @@ Markdown / JSON / Registry
 
 ## 20. Governance Control Plane
 
-LOC7 負責把治理原則轉成可執行的 schema、relationship、validation、history 與 audit structure。共用原則見 [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md)。
+LOC7 負責把治理原則轉成可執行的 schema、relationship、validation、history 與 audit structure。共用原則見 [../governance.html](../governance.html)。
 
 KM 中任何可治理 Knowledge Object／Relation／ERA／Rule／Schema，最終應支援：
 
@@ -728,11 +728,11 @@ LOC7 不以「JSON 副檔名」判斷資料是否固定，而以 authority、siz
 
 治理層的 KM source-of-truth 分工：
 
-- `LOC_GOVERNANCE_CORE.md`：共用治理原則與 Audit baseline。
-- `LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`：治理語言歷史與趨勢。
-- `LUNA_RUNES_66_GOVERNANCE_DESIGN.md`：月之符文66治理設計解讀。
-- `LOC6_ZHENGDE_STYLE.md`：個人治理 corpus / 政德風。
-- `LOC_CONTENT_RIGHTS_POLICY.md`：rights/privacy/publication gate。
+- `../governance.html`：共用治理原則與 Audit baseline。
+- `../governance.html`：治理語言歷史與趨勢。
+- `../governance.html`：月之符文66治理設計解讀。
+- `../governance.html#style`：個人治理 corpus / 政德風。
+- `../data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json`：rights/privacy/publication gate。
 - `LOC8_KM.md`：時間、ERA、Trend 與 self-governance feedback。
 
 LOC7 的責任是讓這些來源可被索引、引用、建立 governed relation 與 audit，而不是把它們融合成單一不可變文本。
