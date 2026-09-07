@@ -14,6 +14,7 @@ from facebook_search import FacebookSearchEngine
 from paths import REPO_ROOT, core_json, search_json
 from corpus_analysis import analyze_corpus, classify_text
 from keyword_analysis import load_governance, rank_keyword_documents
+from loc4_chapter_analysis import get_moon_speaker_chapter_analysis
 
 # 建立 FastAPI 應用
 app = FastAPI(
@@ -564,6 +565,7 @@ async def root():
             "facebook_search": "/search (content_type=text_record, source=facebook)",
             "text_analyze": "/analyze/text",
             "corpus_analyze": "/analyze/corpus",
+            "loc4_moon_speaker_analysis": "/analysis/loc4/moon-speaker",
             "health": "/health",
             "docs": "/docs"
         }
@@ -646,6 +648,31 @@ async def analyze_corpus_endpoint(input: CorpusAnalyzeInput):
     }
 
 
+@app.get("/analysis/loc4/moon-speaker")
+async def loc4_moon_speaker_analysis(part: int | None = None, chapter: int | None = None):
+    if part is not None and not 1 <= part <= 7:
+        raise HTTPException(status_code=400, detail="part必須介於1到7之間")
+    if chapter is not None and not 0 <= chapter <= 25:
+        raise HTTPException(status_code=400, detail="chapter必須介於0到25之間")
+    result = get_moon_speaker_chapter_analysis(
+        REPO_ROOT,
+        part=part,
+        chapter=chapter,
+    )
+    if result.get("chapter_count") != 182:
+        raise HTTPException(
+            status_code=503,
+            detail=f"月語者章級解析不完整：目前{result.get('chapter_count')}章，預期182章",
+        )
+    return {
+        "success": True,
+        "mode": "local_deterministic_full_chapter_analysis",
+        "external_api_required": False,
+        **result,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
 @app.post("/analysis/keywords")
 async def keyword_ranking(input: KeywordRankingInput):
     source = input.source.strip().lower()
@@ -711,6 +738,8 @@ async def unified_search_facets():
             "facebook_corpus_available": FB_DATA_PATH.exists(),
             "facebook_search_loaded": FB_SEARCHER is not None,
             "facebook_posts_loaded": len(FB_SEARCHER.posts) if FB_SEARCHER else 0,
+            "loc4_moon_speaker_chapters": 182,
+            "loc4_moon_speaker_rune_recovery_records": 161,
         },
         "timestamp": datetime.now().isoformat(),
     }
