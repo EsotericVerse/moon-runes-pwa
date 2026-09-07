@@ -88,6 +88,7 @@ class UnifiedSearchEngine:
         self.loc8_daily_runes = self._load_json("LOC8_DAILY_RUNE_SNAPSHOT.json")
         self.rune_literature = self._load_json("RUNE_LITERATURE_REGISTRY.json")
         self.rune_songs = self._load_json("LOC3_RUNE_SONG_REGISTRY.json")
+        self.ow3gs_readings = self._load_json("LOC1_OW3GS_READING_REGISTRY.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
         path = self.registry_root / name
@@ -460,36 +461,51 @@ class UnifiedSearchEngine:
         if wanted not in {"", "all", "rune_record", "knowledge", "faq"}:
             return []
         q = _compact(query)
-        if "ow3gs" not in q and q not in {"11張抽牌", "十一張抽牌", "11卡", "十一卡"}:
+        rune_names = {
+            _compact(rune.get("名稱") or rune.get("符文名稱") or rune.get("name") or ""):
+            (rune.get("名稱") or rune.get("符文名稱") or rune.get("name") or "")
+            for rune in self.runes
+        }
+        rune_query = rune_names.get(q)
+        is_ow3gs = "ow3gs" in q or q in {"11張抽牌", "十一張抽牌", "11卡", "十一卡"}
+        if not is_ow3gs and not rune_query:
             return []
+
         output = []
-        for idx, record in enumerate(self.rune_songs.get("known_draw_contexts", []) or [], start=1):
-            if str(record.get("spread_type") or "").lower().find("ow3gs") < 0:
-                continue
+        for idx, record in enumerate(self.ow3gs_readings.get("records", []) or [], start=1):
             cards = record.get("cards", []) or []
+            if rune_query and not any(card.get("rune") == rune_query for card in cards):
+                continue
             card_text = "、".join(
                 f"{card.get('rune', '')}{card.get('direction', '')}" for card in cards if card.get("rune")
             )
             output.append({
-                "result_id": f"OW3GS-DRAW-{record.get('date') or idx}",
+                "result_id": record.get("id") or f"OW3GS-READING-{idx}",
                 "system_id": "lo3rwang",
                 "primary_loc": "LOC1",
-                "related_locs": ["LOC3", "LOC8"],
+                "related_locs": ["LOC7", "LOC8"],
                 "content_type": "rune_reading",
                 "group": "readings",
-                "title": f"OW3gs 抽牌紀錄 · {record.get('date') or '未標日期'}",
-                "summary": card_text,
-                "score": 1.0,
-                "source_refs": [{"source_type": "registry", "source_id": "LOC3_RUNE_SONG_REGISTRY.json", "note": record.get("provenance")}],
+                "title": record.get("title") or f"OW3gs 解牌案例 {idx}",
+                "summary": record.get("conclusion") or card_text,
+                "score": 1.0 if is_ow3gs else 0.94,
+                "source_refs": [{
+                    "source_type": "registry",
+                    "source_id": "LOC1_OW3GS_READING_REGISTRY.json",
+                    "note": "Base66 formal OW3gs reading corpus",
+                }],
                 "payload": {
-                    "spread_type": record.get("spread_type"),
-                    "date": record.get("date"),
+                    "spread_type": record.get("spread_type") or "OW3gs 11-card",
                     "cards": cards,
-                    "record_status": "draw_record",
-                    "interpretation_status": "完整解讀文字未保存在此 registry"
+                    "record_status": record.get("status") or "formal_base66",
+                    "context_text": record.get("context_text"),
+                    "core_text": record.get("core_text"),
+                    "conclusion": record.get("conclusion"),
+                    "verification": record.get("verification"),
+                    "interpretation_status": "完整 Base66 OW3gs 解牌案例",
                 },
             })
-        return output[:top_k]
+        return output[:max(top_k, 8) if is_ow3gs else top_k]
 
     def _rune_song_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "lyrics_work", "suno_song", "rune_record", "knowledge"}:
