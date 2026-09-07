@@ -1,0 +1,109 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC4_LOC6_BOUNDARY_REGISTRY",
+  "status": "current",
+  "updated_at": "2026-09-07",
+  "purpose": "Canonical responsibility boundary between LOC4 Writing and LOC6 Governance. The distinction is source text vs governance/style interpretation, not platform vs document.",
+  "core_rule": "原始作者文字歸 LOC4；由原始文字產生的治理、價值觀、政德風、風格狀態與治理解讀歸 LOC6。跨域只能 reference / consume，不得改寫另一方的 canonical ownership。",
+  "LOC4": {
+    "authority": "author_text",
+    "domains": {
+      "creative_works": {
+        "label": "創作作品",
+        "includes": [
+          "小說",
+          "文章作品",
+          "散文",
+          "符文文本",
+          "世界觀",
+          "其他正式文字作品"
+        ],
+        "owned_records": [
+          "work metadata",
+          "full text",
+          "chapter text",
+          "work-level literary/semantic analysis",
+          "chapter-level literary/semantic analysis",
+          "public source links",
+          "theme-song/cross-media references attached to the work"
+        ]
+      },
+      "life_writing": {
+        "label": "生活文字",
+        "includes": [
+          "Facebook authored posts",
+          "Threads authored main posts",
+          "Threads authored replies"
+        ],
+        "owned_records": [
+          "raw text",
+          "source id",
+          "source date",
+          "platform provenance",
+          "public-display policy",
+          "source-level metadata"
+        ]
+      }
+    },
+    "must_not_own": [
+      "政德風規則本體",
+      "價值觀／治理原則",
+      "治理風格狀態",
+      "跨 ERA 治理解讀",
+      "符文到治理語意的 interpretation"
+    ]
+  },
+  "LOC6": {
+    "authority": "governance_and_style_interpretation",
+    "owns": [
+      "政德風",
+      "人生觀／價值觀的治理化表述",
+      "governance principles",
+      "style-state interpretation",
+      "ERA governance/style comparison",
+      "governance fragments",
+      "rune interpretation evidence",
+      "由 LOC4 原文萃取後經確認的治理／風格分析"
+    ],
+    "consumes": [
+      "LOC4 creative works",
+      "LOC4 Facebook life writing",
+      "LOC4 Threads life writing",
+      "LOC3 songs/lyrics",
+      "LOC8 ERA/time context"
+    ],
+    "must_not_own": [
+      "Facebook/Threads raw text",
+      "小說／文章全文",
+      "作品本體 metadata",
+      "一般作品級／章級文學語意解析"
+    ]
+  },
+  "projection_rules": [
+    {
+      "source": "LOC4 raw text",
+      "target": "LOC6 interpretation",
+      "relation": "interpreted_as",
+      "requirement": "LOC6 record must keep source_refs back to LOC4/source corpus."
+    },
+    {
+      "source": "LOC4 work analysis",
+      "target": "LOC6 governance analysis",
+      "relation": "governance_projection_of",
+      "requirement": "LOC6 may add governance meaning but must not overwrite LOC4 work analysis."
+    },
+    {
+      "source": "LOC4 life writing",
+      "target": "LOC6 Zhengde Style",
+      "relation": "style_evidence_for",
+      "requirement": "raw post stays LOC4; derived style profile/statement stays LOC6."
+    }
+  ],
+  "search_rules": [
+    "搜尋 Facebook/Threads 原文時 primary_loc = LOC4。",
+    "搜尋小說／文章原文與一般作品解析時 primary_loc = LOC4。",
+    "搜尋政德風、價值觀、治理原則、style-state 或 governance interpretation 時 primary_loc = LOC6。",
+    "同一 query 可同時回傳 LOC4 原文證據與 LOC6 解讀，但兩者必須是不同 records。"
+  ],
+  "storage_rule": "Storage path does not define ownership. Historical generated files may remain under a legacy loc6 path temporarily, but metadata/primary_loc must follow this registry until physical path migration is separately performed."
+}
