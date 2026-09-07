@@ -73,6 +73,7 @@ class UnifiedSearchEngine:
         self.relationships = self._load_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
         self.graph_schema = self._load_json("LOC_GRAPH_SCHEMA.json")
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
+        self.loc4_analysis = self._load_json("LOC4_TEXT_ANALYSIS_REGISTRY.json")
         self.loc4_corpus_manifest = self._load_repo_json("data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json")
         self.loc4_corpus = self._load_loc4_corpus_shards()
         try:
@@ -759,6 +760,27 @@ class UnifiedSearchEngine:
             if score >= 0.34:
                 scored.append((score, "work", work))
 
+        # Work-level LOC4 semantic analysis.
+        for analysis in (getattr(self, "loc4_analysis", {}) or {}).get("analyses", []):
+            score = _text_score(query, [
+                analysis.get("title"),
+                analysis.get("work_id"),
+                analysis.get("analysis_status"),
+                analysis.get("narrative_mode"),
+                " ".join(analysis.get("named_keywords", [])),
+                " ".join(analysis.get("themes", [])),
+                " ".join(analysis.get("relationship_model", [])),
+                analysis.get("start_state"),
+                " ".join(analysis.get("turn_structure", [])),
+                analysis.get("final_state"),
+                " ".join(analysis.get("imagery", [])),
+                " ".join(analysis.get("semantic_keywords", [])),
+                " ".join(analysis.get("governance_signals", [])),
+                analysis.get("period_relation"),
+            ])
+            if score >= 0.34:
+                scored.append((score * 0.997, "analysis", analysis))
+
         # Chapter-level MoonSpeaker semantic/structure analysis.
         for chapter in (getattr(self, "loc4_moon_speaker_analysis", {}) or {}).get("chapters", []):
             score = _text_score(query, [
@@ -806,6 +828,45 @@ class UnifiedSearchEngine:
                     "period": item.get("period"),
                     "source_refs": item.get("source_refs", []),
                     "payload": item,
+                })
+            elif kind == "analysis":
+                themes = item.get("themes", [])
+                semantic_keywords = item.get("semantic_keywords", [])
+                governance_signals = item.get("governance_signals", [])
+                summary_parts = []
+                if themes:
+                    summary_parts.append("主題：" + "、".join(themes[:8]))
+                if item.get("start_state"):
+                    summary_parts.append("起始：" + str(item.get("start_state")))
+                if item.get("final_state"):
+                    summary_parts.append("結果：" + str(item.get("final_state")))
+                results.append({
+                    "result_id": item.get("analysis_id"),
+                    "system_id": "lo3rwang",
+                    "primary_loc": "LOC4",
+                    "related_locs": item.get("related_locs", ["LOC6", "LOC7", "LOC8"]),
+                    "content_type": "work_analysis",
+                    "group": "textworks",
+                    "title": f"作品解析｜{item.get('title')}",
+                    "summary": "｜".join(summary_parts) or "LOC4 作品語意解析",
+                    "score": round(score, 6),
+                    "era_id": item.get("era_id"),
+                    "period": item.get("period"),
+                    "source_refs": [{
+                        "source_type": "loc4_text_analysis_registry",
+                        "source_id": item.get("analysis_id"),
+                        "note": "structured LOC4 work-level semantic analysis"
+                    }],
+                    "payload": {
+                        **item,
+                        "analysis_view": {
+                            "themes": themes,
+                            "semantic_keywords": semantic_keywords,
+                            "governance_signals": governance_signals,
+                            "relationship_model": item.get("relationship_model", []),
+                            "turn_structure": item.get("turn_structure", []),
+                        },
+                    },
                 })
             elif kind == "chapter":
                 themes = item.get("themes", [])
