@@ -70,9 +70,8 @@ button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:po
     <div class="workspace-nav-group"><div class="workspace-nav-label">04 · 情境</div><button class="workspace-switch" type="button" data-context-switch="scenario"><strong>情境 / Event</strong><small>事件卡 · 情境語料</small></button></div>
     <div class="workspace-nav-group"><div class="workspace-nav-label">05 · 遊戲</div><button class="workspace-switch" type="button" data-context-switch="sandbox-game"><strong>沙盒遊戲</strong><small>Semantic Playground · 實際遊玩</small></button></div>
     <div class="workspace-nav-group"><div class="workspace-nav-label">06 · 說明</div><button class="workspace-switch" type="button" data-context-switch="sandbox-guide"><strong>沙盒遊戲說明</strong><small>規則 · Event · 符文 · 八種回應方式</small></button></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">07 · 文件</div><button class="workspace-switch" type="button" data-context-switch="docs"><strong>文件</strong><small>脈絡知識與規則來源</small></button></div>
   </nav>
-  <div class="workspace-foot">Graph、節點、關係式、Event、沙盒遊戲與文件各自獨立；Graph 只負責把節點與關係組合起來觀看。</div>
+  <div class="workspace-foot">Graph、節點、關係式、Event 與沙盒遊戲各自獨立；沙盒相關文件收在遊戲說明內。</div>
 </aside>
 <main class="workspace-main">
 <section class="hero context-section" data-context-view="graph" id="context-entry"><div class="wrap loc-header">
@@ -162,7 +161,15 @@ button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:po
   <div class="context-pagination" id="contextRelationPagination" hidden><div class="context-page-info" id="contextRelationPageInfo"></div><div class="context-page-buttons" id="contextRelationPageButtons"></div></div>
 </section>
 </div></section>
-<section class="context-section" data-context-view="sandbox-guide"><div class="wrap"><h2>月之符文組合規則</h2><p class="intro">沙盒直接使用月之符文既有的組合語法：單張保留原意，雙卡表現因果，三卡使用「源－轉－合」，更多張數依各自既定規律處理。</p><div class="table"><table><thead><tr><th>卡數</th><th>語義結構</th><th>遊戲中的作用</th></tr></thead><tbody><tr><td>1</td><td>單符狀態</td><td>基本行為／狀態</td></tr><tr><td>2</td><td>因果</td><td>基本事件與交互關係</td></tr><tr><td>3</td><td>源－轉－合</td><td>完整事件回答與語義鏈</td></tr><tr><td>5</td><td>五卡規律</td><td>較完整局勢</td></tr><tr><td>11</td><td>OW3gs</td><td>大型語義組合</td></tr></tbody></table></div></div></section>
+<section class="context-section" data-context-view="sandbox-guide"><div class="wrap"><h2>月之符文組合規則</h2><p class="intro">沙盒直接使用月之符文既有的組合語法：單張保留原意，雙卡表現因果，三卡使用「源－轉－合」，更多張數依各自既定規律處理。</p><div class="table"><table><thead><tr><th>卡數</th><th>語義結構</th><th>遊戲中的作用</th></tr></thead><tbody><tr><td>1</td><td>單符狀態</td><td>基本行為／狀態</td></tr><tr><td>2</td><td>因果</td><td>基本事件與交互關係</td></tr><tr><td>3</td><td>源－轉－合</td><td>完整事件回答與語義鏈</td></tr><tr><td>5</td><td>五卡規律</td><td>較完整局勢</td></tr><tr><td>11</td><td>OW3gs</td><td>大型語義組合</td></tr></tbody></table></div></div><section class="context-tool-card" style="margin-top:20px">
+  <h3>沙盒遊戲文件</h3>
+  <p>這裡只保留 Semantic Playground 的玩法與規則來源，不作為 Context 的一般文件中心。</p>
+  <div class="doc-links">
+    <a href="search.html?q=%E8%84%88%E7%B5%A1%20Event%2032">Event 32 →</a>
+    <a href="search.html?q=%E8%84%88%E7%B5%A1%20RP%2016%E2%98%85%200%E2%80%B2">RP / 16★ / 0′ →</a>
+    <a href="loc2-game.html" target="_blank" rel="noopener">另開沙盒遊戲 ↗</a>
+  </div>
+</section></section>
 <section class="context-section" data-context-view="scenario" id="scenario-model"><div class="wrap">
 <div class="loc-header">
 <p class="loc-header-meta">Scenario / Event</p>
@@ -218,20 +225,7 @@ button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:po
     </div>
   </div>
 </section>
-<section class="context-docs" data-context-view="docs" hidden>
-  <div class="wrap loc-header">
-    <p class="loc-header-meta">Documents · Context Sources</p>
-    <h1 class="loc-header-title">脈絡文件</h1>
-    <h2 class="loc-header-subtitle">依用途分類查看脈絡的知識與規則來源。</h2>
-    <p class="loc-header-copy">依照脈絡、情境與沙盒用途查看相關說明與規則。</p>
-    <div class="doc-category-grid" style="margin-top:20px">
-      <article class="doc-category"><h3>脈絡 / Graph</h3><p>Relation、Context、節點、edge 與 Graph 的相關說明。</p><div class="doc-links"><a href="search.html?q=%E8%84%88%E7%B5%A1%20Graph">查看脈絡文件 →</a><a href="search.html?q=Graph%20Relation">查看 Graph / Relation 文件 →</a></div></article>
-      <article class="doc-category"><h3>情境 / Event</h3><p>事件模型、情境語料、事件卡與真實情境的結構。</p><div class="doc-links"><a href="search.html?q=%E8%84%88%E7%B5%A1%20%E6%83%85%E5%A2%83%20Event">查看情境／Event 文件 →</a><a href="search.html?q=%E8%84%88%E7%B5%A1%20Event%2032">查看 Event 32 →</a></div></article>
-      <article class="doc-category"><h3>月之符文沙盒</h3><p>Semantic Playground、RP、De、16★、0′ 與沙盒規則。</p><div class="doc-links"><a href="context.html#sandbox-guide">沙盒遊戲說明 →</a><a href="search.html?q=%E8%84%88%E7%B5%A1%20RP%2016%E2%98%85%200%E2%80%B2">查看 RP / 16★ / 0′ →</a><a href="context.html#sandbox-game">進入沙盒遊戲 →</a></div></article>
-      <article class="doc-category"><h3>治理 / KM</h3><p>脈絡的資料責任、邊界、知識庫與跨系統關係。</p><div class="doc-links"><a href="search.html?q=%E8%84%88%E7%B5%A1%20KM">查看脈絡 KM →</a><a href="search.html?q=%E8%84%88%E7%B5%A1%20%E8%B3%87%E6%96%99%E6%B2%BB%E7%90%86">查看治理說明 →</a></div></article>
-    </div>
-  </div>
-</section>
+
 </main></div><script>
 function switchContextView(name){
   document.querySelectorAll('[data-context-view]').forEach(el=>el.hidden=el.dataset.contextView!==name);
@@ -239,7 +233,7 @@ function switchContextView(name){
   history.replaceState(null,'',name==='graph'?'context.html':'context.html#'+name);
 }
 document.querySelectorAll('[data-context-switch]').forEach(btn=>btn.addEventListener('click',()=>switchContextView(btn.dataset.contextSwitch)));
-const initialContextView=['nodes','relations','scenario','sandbox-game','sandbox-guide','docs'].includes(location.hash.slice(1))?location.hash.slice(1):'graph';
+const initialContextView=['nodes','relations','scenario','sandbox-game','sandbox-guide'].includes(location.hash.slice(1))?location.hash.slice(1):'graph';
 switchContextView(initialContextView);
 function bindSearch(inputId,gridId){const input=document.getElementById(inputId),grid=document.getElementById(gridId);if(!input||!grid)return;input.addEventListener("input",()=>{const q=input.value.trim().toLowerCase();grid.querySelectorAll(".card").forEach(c=>c.classList.toggle("hidden",q&&!c.dataset.search.includes(q)))})}bindSearch("eventSearch","eventGrid");bindSearch("runeSearch","runeGrid");
 </script><script src="js/loc-nav.js"></script>
