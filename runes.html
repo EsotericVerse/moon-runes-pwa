@@ -136,22 +136,26 @@
         </div>
         <div class="workspace-nav-group">
           <div class="workspace-nav-label">02 · 文件</div>
-          <button class="workspace-switch" type="button" data-runes-view="reference"><strong>基本文件</strong><small>判讀規則 · 命運句 · 練習案例</small></button>
+          <button class="workspace-switch" type="button" data-runes-view="reference"><strong>基本文件</strong><small>判讀規則 · 命運句結構</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">03 · 資料</div>
+          <div class="workspace-nav-label">03 · 範例</div>
+          <button class="workspace-switch" type="button" data-runes-view="examples"><strong>占卜結果範例</strong><small>固定案例 · 命運句練習</small></button>
+        </div>
+        <div class="workspace-nav-group">
+          <div class="workspace-nav-label">04 · 資料</div>
           <button class="workspace-switch" type="button" data-runes-view="library"><strong>符文資料</strong><small>66 圖鑑 · 基礎資料 · 實體卡</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">04 · 每日</div>
+          <div class="workspace-nav-label">05 · 每日</div>
           <button class="workspace-switch" type="button" data-runes-view="daily"><strong>每日符文</strong><small>一天一張 · 今日語意提示</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">05 · 抽牌</div>
+          <div class="workspace-nav-label">06 · 抽牌</div>
           <button class="workspace-switch" type="button" data-runes-view="draw"><strong>抽牌</strong><small>單卡 · 雙卡 · 三卡 · 五卡 · OW3gs</small></button>
         </div>
       </nav>
-      <div class="workspace-foot">新手入門、基本文件、符文資料、每日符文與抽牌都在同一頁。</div>
+      <div class="workspace-foot">新手入門、基本文件、占卜結果範例、符文資料、每日符文與抽牌都在同一頁。</div>
     </aside>
     <main class="page workspace-main">
       <div class="runes-view" id="beginnerView">
@@ -205,6 +209,14 @@
           </div>
         </section>
 
+      </div>
+      <div class="runes-view" id="examplesView" hidden>
+        <header class="hero loc-header">
+          <p class="loc-header-meta">LunaRunes · Reading Examples</p>
+          <h1 class="loc-header-title">占卜結果範例</h1>
+          <h2 class="loc-header-subtitle">用少量固定案例，練習怎麼把符文讀成命運句。</h2>
+          <p class="loc-header-copy">這裡只放代表性案例，重點是看判讀結構怎麼成立；不是占卜紀錄資料庫，也不需要每次從知識庫重新搜尋。</p>
+        </header>
         <section class="rune-basics">
           <h2>固定練習案例</h2>
           <p>這些案例用來練習「先看結構，再讀符文」；不是占卜結果資料庫。</p>
@@ -226,6 +238,7 @@
             </article>
           </div>
         </section>
+
       </div>
       <div class="runes-view" id="libraryView" hidden>
         <header class="hero loc-header">
@@ -419,6 +432,7 @@
     const views={
       beginner:document.getElementById('beginnerView'),
       reference:document.getElementById('referenceView'),
+      examples:document.getElementById('examplesView'),
       library:document.getElementById('libraryView'),
       daily:document.getElementById('dailyView'),
       draw:document.getElementById('drawView')
@@ -441,6 +455,7 @@
     if(mode==='daily'||location.hash==='#daily') switchView('daily',false);
     else if(hasMode||location.hash==='#draw') switchView('draw',false);
     else if(location.hash==='#reference') switchView('reference',false);
+    else if(location.hash==='#examples') switchView('examples',false);
     else if(location.hash==='#library') switchView('library',false);
     else switchView('beginner',false);
   })();
