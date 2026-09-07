@@ -1,9 +1,9 @@
 {
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "registry": "LOC6_GOVERNANCE_REGISTRY",
   "authority": "LOC6",
   "language_system_id": "lo3rwang",
-  "purpose": "Registry for LOC6 governance corpus: Zhengde Style values/governance/style-state records plus rune grammar/interpretation references. These corpora remain distinct.",
+  "purpose": "Registry for LOC6 governance and Zhengde Style interpretation: values, governance principles, style-state/stage interpretation and rune interpretation. LOC6 consumes LOC4/LOC3/LOC8 evidence but does not own raw Facebook/Threads text, novels/articles, or general literary-semantic work analysis.",
   "fragment_schema": {
     "required": [
       "fragment_id",
@@ -341,7 +341,7 @@
     "licensing principles",
     "collaboration principles"
   ],
-  "boundary_note": "LOC6 interprets meaning, governance, style-state, and recorded rune-to-text realization. It does not own rune mother definitions, grammar/syntax engineering, or temporal event storage.",
+  "boundary_note": "LOC6 owns derived meaning/governance/Zhengde-style/style-state/rune interpretation records. Raw authored text (including Facebook/Threads), creative works, and ordinary work/chapter literary-semantic analysis remain LOC4. A source statement copied into a LOC6 fragment is evidence only and must retain source_refs.",
   "updated_at": "2026-09-07",
   "rune_interpretation_corpus": {
     "registry": "data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
@@ -359,8 +359,10 @@
   },
   "corpus_families": {
     "zhengde_style": {
-      "role": "personal language governance / style evolution corpus",
-      "document": "docs/LOC6_ZHENGDE_STYLE.md"
+      "role": "derived personal governance / style evolution corpus",
+      "document": "docs/LOC6_ZHENGDE_STYLE.md",
+      "source_evidence_owner": "LOC4 for authored Facebook/Threads/writing text; LOC3 for songs/lyrics where applicable",
+      "rule": "Do not classify the raw source post/article itself as LOC6."
     },
     "rune_grammar_interpretation": {
       "role": "rune-pair / card-combination grammar and interpretation evidence",
@@ -1546,5 +1548,21 @@
       "底線"
     ],
     "note": "底線 remains valid historical language where recorded, but current governance prefers framework/domain boundary because boundaries can be contextual without becoming moral absolutism."
+  },
+  "source_evidence_policy": {
+    "boundary_registry": "data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json",
+    "rule": "Source evidence remains owned by its source LOC. LOC6 creates separate derived records.",
+    "loc4_sources": [
+      "creative works",
+      "Facebook life writing",
+      "Threads life writing",
+      "LOC4 work/chapter analysis"
+    ],
+    "required_for_derived_records": [
+      "source_refs",
+      "analysis_type",
+      "confidence",
+      "lifecycle"
+    ]
   }
 }
