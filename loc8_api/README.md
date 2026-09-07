@@ -59,6 +59,23 @@
 > **部署版本治理：** GitHub 的 `loc8_api/Code.gs` 是程式碼來源，但 Apps Script Web App 不會因 GitHub commit 自動更新。每次 `Code.gs` 變更後，都必須同步至 Apps Script 並更新 deployment；只有線上 `?action=health` 回傳 `loc8-mvp-1.1`，才能確認目前部署至少符合 v1.1 health contract。
 
 
+### life.html UI smoke test
+
+在 Apps Script 的 diagnostics 與 CRUD smoke test 都通過後，可用前端測試模式驗證 `life.html` 本身的 save / load / render 契約：
+
+```text
+life.html?ui_smoke=LOC8-UI-SMOKE
+```
+
+此模式只會在 query parameter **完全等於** `LOC8-UI-SMOKE` 時執行。它會建立專用 `SMOKE-UI-*` Event / Era / Daily Draw / Relation，經過前端 helper 寫入，重新載入並確認 UI 資料模型可讀回，再更新、再次驗證，最後在 `finally` 清理。
+
+完成後：
+- 頁面同步狀態顯示通過／失敗；
+- 完整結果保存在 `window.__LOC8_UI_SMOKE_RESULT__`；
+- Console 會輸出 `LOC8 UI smoke result`。
+
+這是維護／部署驗證模式，不應作為一般使用者操作入口。
+
 ### 部署後驗證
 
 更新 Apps Script deployment 後，建議依序開啟：
