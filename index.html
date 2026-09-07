@@ -1828,9 +1828,6 @@
         <h3 id="framework-detail-title">符文語彙（token）</h3>
         <p id="framework-detail-copy"></p>
         <ul class="framework-extra" id="framework-detail-extra"></ul>
-        <div class="framework-resources" id="framework-detail-resources"></div>
-        <div class="route" id="framework-detail-route"></div>
-        <a class="cta primary" id="framework-detail-link" href="runes.html?mode=daily#daily">進入 LOC1</a>
       </div>
     </div>
   </div>
@@ -1857,117 +1854,87 @@
       const title = document.querySelector('#framework-detail-title');
       const copy = document.querySelector('#framework-detail-copy');
       const extra = document.querySelector('#framework-detail-extra');
-      const resources = document.querySelector('#framework-detail-resources');
-      const route = document.querySelector('#framework-detail-route');
-      const link = document.querySelector('#framework-detail-link');
 
       const locInfo = {
         LOC1: {
           kicker:'LOC1 · LunaRunes / Token',
           title:'月之符文',
           copy:'以 66 個月之符文作為語彙（Token）與語意種子，提供符文本義、四種方向、符文籤詩 Lots 與多卡抽牌語法。',
-          route:'功能入口：月之符文資料、每日符文與抽牌。',
           extra:[
             '語彙：66 個固定符文與四種方向。',
             '籤詩：單卡、雙卡、三卡、五卡與 OW3gs。',
-            '用途：提供問題、創作與語意分析的起始語彙。'
-          ],
-          resources:[
-            {label:'每日符文',href:'runes.html?mode=daily#daily',meta:'一天一張 · Daily Rune'},
-            {label:'月之符文資料',href:'runes.html#library',meta:'66 符文 · 四向 · 基本定義'}
-          ],
-          href:'runes.html', label:'進入月之符文'
+            '作用：提供問題、創作與語意分析的起始語彙。'
+          ]
         },
         LOC2: {
           kicker:'LOC2 · Context',
           title:'脈絡',
           copy:'處理語彙、作品、事件與概念之間的關係，透過 Relation、Context、Event 與 Graph 看見它們如何彼此連結。',
-          route:'功能入口：脈絡、Graph、情境與沙盒遊戲。',
           extra:[
             'Relation：描述節點之間的相對關係。',
             'Context / Event：把關係放進具體情境。',
             'Graph：把多個關係組成可觀察的關係圖。'
-          ],
-          resources:[
-            {label:'查看脈絡與 Graph',href:'context.html',meta:'Relation · Context · Event · Graph'},
-            {label:'月之符文沙盒',href:'loc2-game.html',meta:'Semantic Playground'}
-          ],
-          href:'context.html', label:'進入脈絡'
+          ]
         },
         LOC3: {
           kicker:'LOC3 · Music',
           title:'音樂',
-          copy:'把語彙與文字延伸成歌曲、歌詞與聲音作品，並以 Suno 作品、曲風、主題與 ERA 等資料建立可搜尋的音樂語料。',
-          route:'內容入口：LOC Search。',
+          copy:'把語彙與文字延伸成歌曲、歌詞與聲音作品，讓語言進入音樂表達。',
           extra:[
-            '歌曲與歌詞是主要內容。',
-            '可依作品、主題、曲風、ERA 與關鍵字搜尋。',
-            '音樂與文字、多媒體之間可以建立跨媒介關係。'
-          ],
-          href:'search.html?content_type=lyrics_work&q=音樂%20Suno', label:'查看音樂'
+            '包含歌曲、歌詞、曲風、主題與 ERA。',
+            '音樂可與文字、多媒體建立跨媒介關係。',
+            'Suno 是目前主要的音樂實作來源之一。'
+          ]
         },
         LOC4: {
           kicker:'LOC4 · Literary',
           title:'文字創作',
-          copy:'承接小說、文章、散文、生活文字與其他文字作品，保存原始文本及其可搜尋、可關聯的語意內容。',
-          route:'內容入口：LOC Search。',
+          copy:'承接小說、文章、散文、生活文字與其他文字作品，讓語彙形成完整的文字表達。',
           extra:[
             '包含小說、文章、散文與生活文字。',
-            '作品本體與後續分析分開保存。',
-            '文字可以再延伸到音樂、多媒體與其他表達形式。'
-          ],
-          href:'search.html?content_type=text_work&q=文字創作%20小說%20文章', label:'查看文字創作'
+            '作品保留原始文本與來源。',
+            '文字可以延伸到音樂、多媒體與其他表達形式。'
+          ]
         },
         LOC5: {
           kicker:'LOC5 · Media',
           title:'多媒體',
-          copy:'把文字、音樂、圖像與影音放在同一個表達系統中，承接 Reels、MV、影片、概念圖與系統視覺化等跨媒介內容。',
-          route:'內容入口：LOC Search。',
+          copy:'把文字、音樂、圖像與影音放在同一個表達系統中，形成跨媒介內容。',
           extra:[
             '包含圖像、影音、Reels、MV 與概念視覺。',
             '同一概念可以用文字、聲音與圖像分別表達。',
-            '重點是跨媒介關係，而不是特定平台。'
-          ],
-          href:'search.html?content_type=multimedia&q=多媒體%20圖像%20影音', label:'查看多媒體'
+            '重點是跨媒介表達與關係。'
+          ]
         },
         LOC6: {
           kicker:'LOC6 · Method',
           title:'方法論',
-          copy:'整理語言如何被理解、判讀、比較與處理的方法，將可重複使用的分析原則與操作方式組織成方法體系。',
-          route:'內容入口：LOC Search。',
+          copy:'整理語言如何被理解、判讀、比較與處理的方法，形成可重複使用的方法體系。',
           extra:[
-            '解讀方法：整理語彙、脈絡與作品的判讀方式。',
-            '分析方法：把可重複使用的判準整理成明確方法。',
-            '方法論可以被 LOC7 進一步結構化為演算法。'
-          ],
-          href:'search.html?q=方法論%20Method', label:'查看方法論'
+            '整理語彙、脈絡與作品的判讀方式。',
+            '把可重複使用的判準整理成方法。',
+            '方法可進一步被結構化為演算法。'
+          ]
         },
         LOC7: {
           kicker:'LOC7 · Algorithm',
           title:'演算法',
-          copy:'把語彙、脈絡與方法整理成可重複執行的資料結構與演算法，包含文字建築、Knowledge Management、Search、RAG 與 Graph RAG。',
-          route:'主要操作入口：LOC Search。',
+          copy:'把語彙、脈絡與方法整理成可重複執行的資料結構與演算法。',
           extra:[
-            '文字建築：整理文字與知識的結構。',
-            'KM / RAG：建立可檢索與可回溯的知識資料。',
-            'Search / Graph RAG：依語意與關係進行查詢與 traversal。'
-          ],
-          resources:[
-            {label:'LOC Search',href:'search.html',meta:'Search · KM · RAG'}
-          ],
-          href:'search.html?content_type=knowledge&q=演算法%20文字建築%20KM%20RAG', label:'查看演算法'
+            '包含文字建築、Knowledge Management、Search、RAG 與 Graph RAG。',
+            '負責把方法轉成可執行、可檢索與可驗證的結構。',
+            '演算法處理資料，但不取代各分區本身的內容責任。'
+          ]
         },
         LOC8: {
           kicker:'LOC8 · Projection',
           title:'推演',
           copy:'把既有語言、作品、事件與方法放回時間中，透過 ERA、Timeline、Trajectory 與 Trend 觀察變化並進行推演。',
-          route:'功能入口：推演。',
           extra:[
             'ERA：劃分不同時期與狀態。',
-            'Timeline / Trajectory：觀察事件與語言的前後關係。',
+            'Timeline / Trajectory：觀察前後關係與變化路徑。',
             'Trend：比較不同時期的語彙與作品變化。'
-          ],
-          href:'evolution.html', label:'進入推演'
+          ]
         }
       };
       function render(key){
@@ -1976,21 +1943,6 @@
         title.textContent=item.title;
         copy.textContent=item.copy;
         extra.innerHTML=(item.extra||[]).map(text=>'<li>'+text+'</li>').join('');
-        resources.innerHTML=(item.resources||[]).length
-          ? '<div class="framework-resource-title">保留內容／直接連結</div>' +
-            (item.resources||[]).map(resource=>{
-              const attrs=[
-                resource.external ? 'target="_blank" rel="noopener noreferrer"' : '',
-                resource.download ? 'download' : ''
-              ].filter(Boolean).join(' ');
-              return '<a class="framework-resource-link" href="'+resource.href+'" '+attrs+'>'+
-                '<span><strong>'+resource.label+'</strong><small>'+resource.meta+'</small></span>'+
-                '<span aria-hidden="true">→</span></a>';
-            }).join('')
-          : '';
-        route.textContent=item.route;
-        link.href=item.href;
-        link.textContent=item.label;
         document.querySelectorAll('.framework-tab').forEach(btn=>{
           btn.classList.toggle('active',btn.dataset.locKey===key);
         });
