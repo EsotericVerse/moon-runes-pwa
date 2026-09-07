@@ -314,14 +314,14 @@ LOC 現行提供一個不依賴外部 LLM／Embedding API Key 的基礎文字解
 
 ### 抽取模式
 
-- `result.html`：單卡、每日、雙卡、三卡與五卡結果入口
-- `2card.html`／`3card.html`／`5card.html`：不同牌數的獨立頁面
-- `daily.html`：每日抽取頁面
-- `fate.html`：替代風格的單卡／命運結果呈現
+- `runes.html#draw`：單卡、每日、雙卡、三卡與五卡結果入口
+- `runes.html?mode=2card#draw`／`runes.html?mode=3card#draw`／`runes.html?mode=5card#draw`：不同牌數的獨立頁面
+- `runes.html?mode=daily#daily`：每日抽取頁面
+- `runes.html?mode=single#draw`：替代風格的單卡／命運結果呈現
 - `runes.html`：依群組及符文查詢完整資料
 - [`search.html`](https://loc.lo3rwang.cc/search.html)：**Unified Search 主入口**；同時查詢籤詩／符文、音樂、文字作品、媒體、治理／政德風、知識與時期資料，使用者不必先選 LOC 編號
-- [`faq.html`](https://loc.lo3rwang.cc/faq.html)：LOC7 Knowledge Base 專門查詢介面（保留作進階／單域 View）
-- `loc3.html`：相容導向頁；LOC3 歌詞、作品類別、歌詞類型、ERA、Reels 與跨 LOC 關聯搜尋已整合進 [`search.html`](https://loc.lo3rwang.cc/search.html?content_type=lyrics_work)
+- [`search.html?content_type=knowledge`](https://loc.lo3rwang.cc/search.html?content_type=knowledge)：LOC7 Knowledge Base 專門查詢介面（保留作進階／單域 View）
+- `search.html?content_type=lyrics_work`：相容導向頁；LOC3 歌詞、作品類別、歌詞類型、ERA、Reels 與跨 LOC 關聯搜尋已整合進 [`search.html`](https://loc.lo3rwang.cc/search.html?content_type=lyrics_work)
 
 ### Python／FastAPI API
 
@@ -357,7 +357,7 @@ Shared Result Envelope
 
 LOC4 已可直接搜尋 Writing Registry，LOC5 可搜尋 Media Registry，LOC6 可直接搜尋 Governance／政德風 Registry，並從 4,578 筆 Threads 主貼文全文 corpus 搜尋文章原文；LOC7 讀取 FAQ／KM 與已登錄 Knowledge Assets，LOC8 讀取連續時期 Registry。LOC2 目前仍以 LOC7 Knowledge View 為主，尚未作為獨立結果群組直接路由。
 
-不同來源的搜尋分數維持各自尺度，前端依資料類型分組呈現，不把不同引擎的 score 強制混成單一排行榜。舊有 `faq.html`、`loc3.html` 保留為專門 View，`search.html` 作為整合入口。
+不同來源的搜尋分數維持各自尺度，前端依資料類型分組呈現，不把不同引擎的 score 強制混成單一排行榜。舊有 `search.html?content_type=knowledge`、`search.html?content_type=lyrics_work` 保留為專門 View，`search.html` 作為整合入口。
 
 ### 語意引擎實驗
 
@@ -425,7 +425,7 @@ LOC3 現行 demo 主要採用：
 資料 → Embedding → FAISS → 語意搜尋結果
 ```
 
-LOC7 FAQ v0.4 已整理 80 題公開 FAQ，並同步產生 RAG v0.4 檢索資料，提供 [`faq.html`](https://loc.lo3rwang.cc/faq.html) 作為專門 Knowledge View，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。Unified Search 則把 FAQ／KM 與 LOC1、LOC3、LOC4、LOC5、LOC6、LOC8 的現有資料來源放進同一查詢入口。Graph RAG 核心已完成並具 temporal/provenance/precision/quality 與 regression/integration validation；後續重點為治理 runtime 與視覺化。
+LOC7 FAQ v0.4 已整理 80 題公開 FAQ，並同步產生 RAG v0.4 檢索資料，提供 [`search.html?content_type=knowledge`](https://loc.lo3rwang.cc/search.html?content_type=knowledge) 作為專門 Knowledge View，並在 `card_api/` 提供 `/faq/search` 與 `/faq/ask`。Unified Search 則把 FAQ／KM 與 LOC1、LOC3、LOC4、LOC5、LOC6、LOC8 的現有資料來源放進同一查詢入口。Graph RAG 核心已完成並具 temporal/provenance/precision/quality 與 regression/integration validation；後續重點為治理 runtime 與視覺化。
 
 ---
 
