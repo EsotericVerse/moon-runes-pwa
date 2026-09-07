@@ -134,7 +134,7 @@ LOC1 月符／語彙（token）
 
 - LOC2 owns 關係／脈絡／Canonical Graph 語意資料；月符沙盒是代表性互動實作。
 - LOC7 owns 處理這些資料的演算法、KM、RAG、Search 與 Graph RAG traversal。
-- LOC8 owns 時間投影與推演 View；Graph View 可以繼續放在 life.html，不代表 Graph ownership 在 LOC8。
+- LOC8 owns 時間投影與推演 View；Graph／脈絡的公開展示入口歸 LOC2 `context.html`；LOC8 `projection.html` 只引用關係資料作時間投影。
 
 ## 7. 月符基本參照與符文治理規則
 
@@ -549,7 +549,7 @@ python scripts/evaluate_graph_rag.py
 - 公開介面：使用「時期」。
 - Stable machine ID：仍可保留 `ERA-P1`～`ERA-P8`。
 - 公開功能名稱與右上導覽一致；技術分類放在 `loc-header-meta`。
-- LOC6 擁有治理／意義語義；LOC7 擁有 KM、檢索與結構；LOC8 擁有事件、時期與時間統合。
+- LOC6 擁有方法與治理語義；LOC7 擁有演算法、KM 與檢索結構；LOC8 擁有每日符文歷史、事件、時期與時間推演。
 
 
 ## 16. ChatGPT 對話紀錄匯入策略
