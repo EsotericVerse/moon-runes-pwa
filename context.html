@@ -287,7 +287,7 @@ function renderContextPager(kind,total,page,pageSize,onPage){
   };
   const [navSel,infoSel,buttonsSel]=map[kind]||[]; if(!navSel)return;
   const nav=document.querySelector(navSel),info=document.querySelector(infoSel),buttons=document.querySelector(buttonsSel); if(!nav||!info||!buttons)return;
-  if(total<=pageSize){nav.hidden=true;buttons.innerHTML='';return;}
+  if(total<=0){nav.hidden=true;buttons.innerHTML='';info.textContent='';return;}
   const totalPages=Math.max(1,Math.ceil(total/pageSize)),safe=Math.min(Math.max(1,page),totalPages);
   const from=(safe-1)*pageSize+1,to=Math.min(total,safe*pageSize);
   info.textContent=`第 ${from}–${to} 筆，共 ${total} 筆 · 第 ${safe} / ${totalPages} 頁`;
