@@ -223,3 +223,32 @@ raw corpus
 以上屬於 LOC 必須提供的 baseline capability，且 `external_api_required = false`。LLM 摘要、embedding、cluster naming、高階分類等屬 optional enrichment；不得成為第一次匯入與建立趨勢的必要條件。
 
 完整規格見 [LOC_SIMPLE_TEXT_ANALYSIS_API.md](./LOC_SIMPLE_TEXT_ANALYSIS_API.md)。
+
+
+## Dynamic Keyword Ranking / ERA Aggregation
+
+關鍵字排行不保存固定的 ERA 結果。來源資料只保留自己的日期與內容／關鍵字；查詢時再讀取現行 `LOC_ERA_REGISTRY.json` 的最新日期邊界。
+
+```text
+dated corpus
+→ automatic keyword extraction
+→ document_count / hit_count
+→ source activity range
+→ current ERA date intersection
+→ Top 10
+→ search evidence
+```
+
+現行 API：
+
+- `POST /analysis/keywords`
+- source：`facebook | threads | suno`
+- filters：`start_date / end_date / top_k`
+
+治理來源：
+
+- `LOC_KEYWORD_GOVERNANCE.json`：stop terms、alias normalization、抽詞規則
+- `LOC_SOURCE_ACTIVITY_REGISTRY.json`：各來源可分析區間／已記錄的平台開始使用日期
+- `LOC_ERA_REGISTRY.json`：ERA 日期邊界；只在查詢／聚合時套用
+
+因此 ERA 邊界小幅修正時，不需要人工改寫 Facebook／Threads／Suno 的排行榜，只需用新日期範圍重新聚合。
