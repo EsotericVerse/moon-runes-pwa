@@ -503,7 +503,8 @@
     const mode=new URLSearchParams(location.search).get('mode');
     const execution=document.querySelector('[data-draw-execution]');
     const selector=document.getElementById('draw-mode-selector');
-    if(mode && execution) execution.hidden=false;
+    // 抽牌模式頁由 rune-draw.js 同時開啟等待面板與 ritual，
+    // 避免先閃出預設的「選擇抽牌方式」標題。
     if(selector) selector.hidden=hasMode;
     if(mode==='daily'||location.hash==='#daily') switchView('daily',false);
     else if(hasMode||location.hash==='#draw') switchView('draw',false);
