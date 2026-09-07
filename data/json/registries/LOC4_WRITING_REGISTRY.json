@@ -1,9 +1,9 @@
 {
-  "schema_version": "0.6",
+  "schema_version": "0.7",
   "registry": "LOC4_WRITING_REGISTRY",
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
-  "purpose": "Canonical LOC4 Writing registry. LOC4 has exactly two primary text domains: (1) 創作作品 / creative works, and (2) 生活文字 / life writing. Facebook and Threads authored text belong to LOC4 life writing. LOC6/LOC7/LOC8 may analyze, retrieve, and project these texts without changing LOC4 ownership.",
+  "purpose": "Canonical writing registry. Public-facing authored text uses the unified category「文字創作」; novel/article/essay/journal/social text remain content subtypes, while Threads/Facebook/Instagram/X(Twitter)/Vocus and other platforms remain provenance sources. Governance, knowledge and trend layers may analyze or project these texts without changing their source or writing category.",
   "work_schema": {
     "required": [
       "work_id",
@@ -40,7 +40,12 @@
       "relationship_refs": "cross-LOC relationship IDs",
       "period": "LOC8 period code (P1–P8)",
       "period_name": "LOC8 public period name",
-      "period_assignment": "mapping rule and evidence for temporal assignment"
+      "period_assignment": "mapping rule and evidence for temporal assignment",
+      "public_category": "default public display category; new authored text defaults to 文字創作",
+      "source_platform": "actual source platform/provenance, independent from public_category"
+    },
+    "defaults": {
+      "public_category": "文字創作"
     }
   },
   "works": [
@@ -89,7 +94,8 @@
       "lifecycle": {
         "status": "catalogued",
         "updated_at": "2026-09-06"
-      }
+      },
+      "public_category": "文字創作"
     },
     {
       "work_id": "LOC4-ONE-DAY-LOVER",
@@ -134,7 +140,8 @@
       "lifecycle": {
         "status": "catalogued",
         "updated_at": "2026-09-06"
-      }
+      },
+      "public_category": "文字創作"
     },
     {
       "work_id": "LOC4-READ-RECEIPT",
@@ -198,7 +205,8 @@
       "lifecycle": {
         "status": "catalogued",
         "updated_at": "2026-09-06"
-      }
+      },
+      "public_category": "文字創作"
     },
     {
       "work_id": "LOC4-BEFORE-AFTER-YOU",
@@ -357,7 +365,8 @@
             "title": "未拆封的風"
           }
         ]
-      }
+      },
+      "public_category": "文字創作"
     },
     {
       "work_id": "LOC4-MMM-RELATIONSHIP",
@@ -409,7 +418,8 @@
       "lifecycle": {
         "status": "catalogued",
         "updated_at": "2026-09-06"
-      }
+      },
+      "public_category": "文字創作"
     },
     {
       "work_id": "LOC4-WRONG-PERSON",
@@ -455,7 +465,8 @@
       "lifecycle": {
         "status": "catalogued",
         "updated_at": "2026-09-06"
-      }
+      },
+      "public_category": "文字創作"
     },
     {
       "work_id": "LOC4-MILK-PAPER-BOAT",
@@ -506,7 +517,8 @@
       "lifecycle": {
         "status": "catalogued",
         "updated_at": "2026-09-06"
-      }
+      },
+      "public_category": "文字創作"
     },
     {
       "work_id": "LOC4-GRAY-RELATIONSHIP",
@@ -556,7 +568,8 @@
       "lifecycle": {
         "status": "catalogued",
         "updated_at": "2026-09-06"
-      }
+      },
+      "public_category": "文字創作"
     },
     {
       "work_id": "LOC4-PROPHET-PERSON",
@@ -602,7 +615,8 @@
       "lifecycle": {
         "status": "catalogued",
         "updated_at": "2026-09-06"
-      }
+      },
+      "public_category": "文字創作"
     },
     {
       "work_id": "LOC4-PSEUDO-SINGLE",
@@ -651,7 +665,8 @@
       "lifecycle": {
         "status": "catalogued_and_indexed",
         "updated_at": "2026-09-07"
-      }
+      },
+      "public_category": "文字創作"
     }
   ],
   "migration_note": "Core authored plain-text corpus is now imported and searchable. Facebook/Threads authored life-writing remains in source-specific corpora and is referenced by LOC4; it is not duplicated.",

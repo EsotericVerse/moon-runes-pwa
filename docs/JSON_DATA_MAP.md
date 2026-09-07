@@ -28,6 +28,7 @@ data/json/
 | 檔案 | 用途 | 上游權威 |
 |---|---|---|
 | `runes64.json` | 基本符文 lookup；名稱、群組、月相、關鍵詞、四向 | `LunaRune64.xlsx` |
+| `rune_grammar.json` | 符文治理／Grammar runtime projection；單卡、兩卡、三卡、五卡、OW3gs、符文交互與月相交互 | `LunaRune64.xlsx#Grammar` |
 | `rune_interpretations.json` | 64 核心符文 × 四向 × 現實月相的展開解讀 | `LunaRune64.xlsx` / governed derivation |
 | `lots.json` | 66 可抽符文的籤詩 projection | `LunaRune64.xlsx#Lots` |
 | `three_card_combinations.json` | 三卡方向組合規則 | LOC1 interpretation rules |
@@ -213,3 +214,11 @@ Canonical / mother source / original evidence
 ---
 
 **Data rule:** 一個檔案應只有一個清楚角色、一條權威鏈，以及一個值得存在的理由。
+
+
+## Public page rename compatibility
+
+- `runes.html`：月之符文 canonical page；`list.html` 保留為 redirect。
+- `context.html`：LOC2 脈絡 canonical page；`loc2.html` 保留為 redirect；`loc2-game.html` 是 Semantic Playground 實作。
+- `projection.html`：LOC8 推演 canonical page；`life.html`、`evolution.html` 保留為 redirect。
+- Service Worker、Sitemap 與 `LOC_NAV.json` 只使用 canonical page，避免 precache 依賴 redirect。

@@ -9,27 +9,27 @@
   "items": [
     {
       "id": "runes",
-      "label": "月之符文資料",
-      "href": "list.html",
-      "description": "月之符文66 圖鑑"
+      "label": "月之符文",
+      "href": "runes.html",
+      "description": "66 符文圖鑑"
     },
     {
       "id": "game",
-      "label": "月符沙盒遊戲",
-      "href": "loc2.html",
-      "description": "LOC2 · Semantic Playground"
+      "label": "脈絡",
+      "href": "context.html",
+      "description": "LOC2 · Relation · Graph · 月之符文沙盒"
     },
     {
       "id": "search",
       "label": "綜合搜尋",
       "href": "search.html",
-      "description": "跨 LOC 統整搜尋"
+      "description": "跨內容整合搜尋"
     },
     {
-      "id": "life",
-      "label": "趨勢分析",
-      "href": "life.html",
-      "description": "LOC8 · Context · Relation · Trend"
+      "id": "projection",
+      "label": "推演",
+      "href": "projection.html",
+      "description": "LOC8 · 每日符文 · ERA · Event · Trend"
     }
   ]
 }

@@ -1,14 +1,16 @@
-# LOC8_KM — Context, ERA, Event & Relation
+> **Graph ownership：LOC2。** 本文件與 projection.html 只保留 Graph 的時間／ERA／Trajectory／Trend View；不再把關係／Graph 本體視為 LOC8 authority。
+
+# LOC8｜推演
 
 **Version:** 0.1  
 **Status:** Working  
-**Primary LOC:** LOC8 — Context Analysis  
+**Primary LOC:** LOC8 — Projection / Time & Trend  
 **KM Owner:** LOC7_KM  
 **Updated:** 2026-09-06
 
 ## 1. 定位
 
-LOC8 負責把事件、時期、狀態、作品與跨 LOC 訊號放回時間與脈絡中，形成可追蹤的生活／創作軌跡。
+LOC8 負責把每日符文、事件、時期、作品與跨 LOC 訊號放回時間軸，形成可比較的 ERA、Timeline 與 Trend，觀察既有語言與作品如何演變。
 
 LOC8 不把 ERA 視為單純的日期分段。ERA 是一段具有相對穩定語意狀態，且與前後期間存在可辨識差異的時間區間。
 
@@ -360,7 +362,7 @@ ERA suggestion、關鍵字趨勢、作品群聚與 change-point detection 都只
 | Trajectory | Implemented | 將 Relation／State 投影成有方向的演變軌跡 |
 | Analysis | Implemented (LOC3 baseline) | 比較相鄰時期的 LOC3 關鍵字／語義家族比重升降，並顯示 transition summary |
 | Context | Implemented | 整合 Relation、Trajectory 與 Analysis 的工作區 |
-| Graph View | Planned | 由既有 Relation edge 產生網狀視圖；目前未上線 |
+| Context / Graph View | Moved to LOC2 | 公開展示入口移至 `context.html`；LOC8 僅引用關係資料作時間投影 |
 | Graph RAG | Implemented | Unified Search 已以 Canonical Graph RAG 做 bounded traversal；LOC8 Event／Daily Rune snapshot 已接入時間圖，並輸出 provenance |
 
 ### Graph RAG 現行整合（2026-09-06）
@@ -388,11 +390,11 @@ LOC8 目前額外接入兩個 repository-governed fallback snapshot：
 
 ### Relation Library 與公開 Search 的權限邊界
 
-`life.html` 的 Relation Library 目前直接使用 Google Sheet `Relation` 分頁，資料可標記 `visibility=private`。因此公開 `search.html` / Render Search API **不直接讀取 live Relation Sheet**。
+`projection.html` 的 Relation Library 目前直接使用 Google Sheet `Relation` 分頁，資料可標記 `visibility=private`。因此公開 `search.html` / Render Search API **不直接讀取 live Relation Sheet**。
 
 規則：
 
-1. private Relation 只供 LOC8 Life workspace 使用。
+1. private Relation 保留為內部相容資料，不再作為 LOC8 公開功能展示。
 2. 要進公開 Graph RAG 的 Relation，必須先經治理，成為 repository 中可公開的 registry／snapshot。
 3. Semantic similarity 只能選 seed，不能自行建立 canonical edge。
 4. Search API 必須回傳 provenance，讓結果可追溯至 source_refs、edge evidence kind 與 evidence status。
@@ -485,7 +487,7 @@ LOC8 不應輸出：
 
 ### 治理實作缺口
 
-LOC8 功能核心目前已具備 Daily Rune、ERA、Event、Relation、Trajectory、Analysis、Context 與 Graph RAG。後續優先補的是治理控制，不再優先擴張功能：
+LOC8 公開功能核心目前收斂為 Daily Rune、ERA、Event、Timeline 與 Trend Analysis。Context、Relation 與 Graph 的展示入口歸 LOC2；Graph RAG 演算法歸 LOC7。後續優先補治理控制與時間證據品質：
 
 - Governance audit log（before/after/reason/evidence）
 - Dispute / Review
@@ -522,9 +524,9 @@ LOC8：它什麼時候出現、如何變化、是否形成持續趨勢
 
 治理趨勢本身也是自我治理的輸入，而不是自動產生「你變得更好／更壞」的價值判決。
 
-## 17. Graph View — Implemented
+## 17. Context / Graph 展示遷移
 
-LOC8 現在有獨立的「關係圖 Graph」功能區。
+LOC8 不再提供獨立的「關係圖 Graph」公開功能區。
 
 其責任不是重新建立 Graph，而是消費 LOC7 已治理的 Graph RAG：
 
@@ -532,7 +534,7 @@ LOC8 現在有獨立的「關係圖 Graph」功能區。
 natural-language query
 → Unified Search chooses seeds
 → LOC7 bounded Graph traversal
-→ LOC8 Graph View
+→ LOC2 Context / Graph View
 → ERA / Event / context reading
 ~~~
 
@@ -558,6 +560,6 @@ Graph View / ERA overlay / temporal context / exploration
 
 因此仍維持：
 
-> **LOC7 建關係網；LOC8 看關係如何存在於時間與脈絡。**
+> **LOC2 承接脈絡與 Graph 展示；LOC7 提供檢索演算法；LOC8 觀察時間變化。**
 
-原 Context 工作區中的 Relation Graph 保留為 LOC8 本地／私人 Relation 的工作投影；新的獨立 Graph View 則讀取公開且已治理的跨 LOC Graph。
+舊 Context／Graph DOM 暫留作相容層，但不出現在 LOC8 導覽；既有 `#context`、`#context-graph`、`#graph` 入口會轉向 LOC2。

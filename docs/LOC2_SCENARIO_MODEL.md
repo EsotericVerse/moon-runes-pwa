@@ -1,12 +1,12 @@
 # LOC2 Scenario Model — 情境語意模型
 
 **Status:** Working  
-**Owner:** LOC2 — Semantic Playground  
+**Owner:** LOC2 — Context / Semantic Playground  
 **Updated:** 2026-09-05
 
 ## 1. 定位
 
-LOC2 不只是桌遊／電子卡牌規則。它同時是月之符文進入真實生活狀況的 **Scenario Model / Semantic Playground**。
+LOC2 是語彙之間的脈絡責任區，承接 Relation、Context、Scenario、Event 與 Graph。Semantic Playground／桌遊是其中一個互動實作，不等於 LOC2 的全部。
 
 核心工作不是替生活事件下唯一答案，而是把一個狀況轉成可描述、可比較、可回應的語意問題。
 
@@ -59,7 +59,7 @@ LOC2 Event / Scenario
 ## 5. 與 LOC1–8 的關係
 
 - **LOC1**：提供符文本體、基本語意、方位與抽取。
-- **LOC2**：提供情境，把符文放進真實狀況中測試與使用。
+- **LOC2**：提供脈絡，把符文放進關係、情境與事件中測試，並以 Graph 表示多重關聯。
 - **LOC3**：部分抽牌／情境結果可延伸為歌曲。
 - **LOC4**：情境可延伸為對話、微型敘事、小說片段與其他文字作品。
 - **LOC5**：情境與作品可進一步轉成圖像、聲音與影音。

@@ -9,7 +9,7 @@
 - **「月符」僅作歷史／口語簡稱，不作正式名稱對應**
 - **現行 Canon：0.5r**
 - **公開網站：<https://loc.lo3rwang.cc/>**
-- **符文查詢：<https://loc.lo3rwang.cc/list.html>**
+- **符文查詢：<https://loc.lo3rwang.cc/runes.html>**
 
 LOC 最初以正方形符文紙牌呈現，後來逐步發展為管理符文、創作、跨媒體表達、治理與文字結構的語言系統。它統整作者兩年多累積的個人作品與人生觀，形成可持續延伸至遊戲、音樂、小說、視覺、治理及語意技術的語言框架。
 
@@ -34,9 +34,21 @@ LOC 最初以正方形符文紙牌呈現，後來逐步發展為管理符文、�
 
 ### LOC 是什麼
 
-LOC 是一套以符文作為基礎語意單位的語言系統。它透過符文組合、卡牌方向、月相及時間背景，協助使用者理解問題結構、當下狀態與可能的回應方向。
+LOC 是一套拆解、組織並重新表達文學語言的系統框架。歷史上，它從月之符文的實際使用、作品延伸與資料整理中逐步抽象成形；結構上，月之符文可作為 LOC Framework 的完整實例與 Reference Seed System。
 
 LOC 不以象徵的神聖性建立權威，而以定義、結構及資料一致性成立。
+
+### LOC 與月之符文的平行結構
+
+```text
+LOC：
+LOC1 符文語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演
+
+月之符文：
+符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算 → 符文演化
+```
+
+月之符文先累積實作，LOC 再由實作抽象出框架；框架成立後，又可反過來完整描述月之符文。
 
 ### LOC 不做什麼
 
@@ -93,7 +105,7 @@ LOC 的正式符文骨架共 66 符文，數量、編號與位置固定，不再
 - 不構成 LOC0
 - 可保留於 Canon、索引與作者方法論說明中
 
-完整符文內容可於 [LOC 符文查詢](https://loc.lo3rwang.cc/list.html) 瀏覽。
+完整符文內容可於 [LOC 符文查詢](https://loc.lo3rwang.cc/runes.html) 瀏覽。
 
 ---
 
@@ -161,14 +173,14 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 
 | 分發 | 名稱 | 功能定位 |
 |---|---|---|
-| LOC1 | Lots | 66 符文籤詩、四向判讀、抽取、多符文組合、每日抽取與趨勢 |
-| LOC2 | Game / Scenario | 將符文語言放進真實情境：以雙卡因果描述狀況，並透過 Event、回應、共振與規則互動形成可處理的情境語料 |
-| LOC3 | Music | 音樂創作、微月光、政德風、符文寫歌與歌詞語意檢索 |
-| LOC4 | Writing | 兩部分：①創作作品（小說、文章、符文文本、世界觀等）②生活文字（Facebook／Threads） |
-| LOC5 | Resonance | 圖像、聲音、文字、MV、系統圖形與跨媒體概念視覺化 |
-| LOC6 | Governance / Interpretation | 人生觀、價值觀、治理原則、政德風，以及符文組合如何被轉譯為實際文字與敘事的解析實證 |
-| LOC7 | Text Architecture / KM | 文字建築學、知識管理、檢索、關係結構與 Graph RAG 後續方向 |
-| LOC8 | Context / Relation & Trend | 每日符文、事件、時期、時間線、Relation、Trajectory、趨勢分析與跨分發統合 |
+| LOC1 | 符文語彙（token） | 基本文字語彙、語意種子、籤詩與解牌入口 |
+| LOC2 | 脈絡 | 關係、Context、Scenario、Event 與 Graph；月之符文沙盒是代表性實作 |
+| LOC3 | 音樂 | 文字與語意延伸為歌曲、歌詞與聲音 |
+| LOC4 | 文字創作 | 文章、小說、生活文字與敘事作品 |
+| LOC5 | 多媒體 | 文字、音樂、圖像與影音的跨媒介表達 |
+| LOC6 | Methodology / Governance | 方法論：如何理解、判斷、處理；治理、解牌、價值判斷與政德風都是其中的方法 |
+| LOC7 | Algorithm / Text Architecture | 演算法（知識庫）：文字建築、知識管理、檢索、RAG 與 Graph RAG；關係／Graph 脈絡資料本體歸 LOC2 |
+| LOC8 | Projection / Time & Trend | 推演：把作品、語言、方法與風格放進事件、時期、時間線、Trajectory 與 Trend 中觀察其演變 |
 
 ### 目前具現化成果
 
@@ -181,9 +193,9 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC5 | **已有實際影音作品，不是僅停留在概念或視覺素材階段。** 除系統圖形、LOC1 的 66 張獨立符文圖卡與既有 LOC3 關聯 Reels 外，已確認至少兩支「月之符文」宣傳影片曾公開發布於 Instagram Reels，形成可驗證的 LOC1 × LOC5 跨媒體成果；本地影片資產亦正在回收整理至 repository。後續重點轉為媒體 Registry、來源對應與 Unified Search 整合，而非從零製作 LOC5 影片。 |
 | LOC6 | 已形成政德風語錄、價值觀、治理與風格內容；Threads 公開文字 corpus 自 2024-11-18 起至 2026-09-06，現行去重基準共 **7,008 筆文字紀錄**（4,578 主貼文＋2,430 Reply）。**4,578 筆主貼文全文已完成 repository sharded index 並接入 Unified Search**；Reply 保留為 supplemental evidence。另由《月語者》七篇章節大綱整理出 182 個章節槽位、180 筆具明確三符文紀錄的符文解析實證。 |
 | LOC7 | 已完成文字建築與 KM 基礎，現行 LOC7_KM v0.3、FAQ v0.4／RAG v0.4；Unified Search 已統一查詢各 LOC 現有資料來源，Canonical Graph RAG 核心已完成 bounded traversal、provenance 與品質治理。另已加入 local-first Simple Text Analysis API（`/analyze/text`、`/analyze/corpus`），可在不依賴外部 LLM／Embedding API key 的情況下完成基本解析、關鍵字與分類。公開搜尋新增 `snippet / full / metadata_only` 展示治理，全文可供授權分析，但不等於全文公開。 |
-| LOC8 | `life.html` 已具備每日符文、時期管理、Event、Relation、Trajectory、跨時期 Trend Analysis、**關鍵字 Top 10 排行**與 Graph View。排行榜可直接點入 Unified Search 回查實際作品／文章／文字證據，形成「排行 → 趨勢 → 搜尋 → 證據」閉環。Graph View 已上線使用既有 Graph RAG bounded neighborhood；後續重點為更多 corpus 接入、統計摘要與持續品質驗證。 |
+| LOC8 | `projection.html` 已具備每日符文歷史、時期管理、Event、Timeline、跨時期 Trend Analysis 與**關鍵字 Top 10 排行**。排行榜可直接點入 Unified Search 回查實際作品、文章與文字證據，形成「排行 → 趨勢 → 搜尋 → 證據」閉環。Context、Relation 與 Graph 的公開展示入口歸 `context.html`；後續重點為更多 corpus 接入、統計摘要與持續品質驗證。 |
 
-LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；LOC6 已有治理／政德風與符文解析資料，LOC7 已有 KM／FAQ／RAG／Unified Search，LOC8 已有可操作的事件、時期與每日符文介面。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
+LOC 目前不是只停留在概念層：LOC1–5 都已有可直接展示的實體作品或可運作成果；LOC6 已有治理／政德風與符文解析資料，LOC7 已有 KM／FAQ／RAG／Unified Search，LOC8 已有可操作的每日符文歷史、事件、時期與趨勢推演介面。這些內容多數源自作者的個人作品與人生經驗，LOC 則提供統整、關係化及後續延伸的共同骨架。
 
 ### LOC2｜Semantic Playground
 
@@ -306,7 +318,7 @@ LOC 現行提供一個不依賴外部 LLM／Embedding API Key 的基礎文字解
 - `2card.html`／`3card.html`／`5card.html`：不同牌數的獨立頁面
 - `daily.html`：每日抽取頁面
 - `fate.html`：替代風格的單卡／命運結果呈現
-- `list.html`：依群組及符文查詢完整資料
+- `runes.html`：依群組及符文查詢完整資料
 - [`search.html`](https://loc.lo3rwang.cc/search.html)：**Unified Search 主入口**；同時查詢籤詩／符文、音樂、文字作品、媒體、治理／政德風、知識與時期資料，使用者不必先選 LOC 編號
 - [`faq.html`](https://loc.lo3rwang.cc/faq.html)：LOC7 Knowledge Base 專門查詢介面（保留作進階／單域 View）
 - `loc3.html`：相容導向頁；LOC3 歌詞、作品類別、歌詞類型、ERA、Reels 與跨 LOC 關聯搜尋已整合進 [`search.html`](https://loc.lo3rwang.cc/search.html?content_type=lyrics_work)
@@ -331,13 +343,14 @@ LOC 現行提供一個不依賴外部 LLM／Embedding API Key 的基礎文字解
 自然語言 Query
       ↓
 Unified Search
-      ├─ LOC1  籤詩／月符
-      ├─ LOC3  歌曲／歌詞
+      ├─ LOC1  符文語彙（token）
+      ├─ LOC2  脈絡／Scenario／Graph
+      ├─ LOC3  音樂／歌詞
       ├─ LOC4  文字作品
-      ├─ LOC5  Reels／媒體 Registry
-      ├─ LOC6  治理／政德風
-      ├─ LOC7  FAQ／KM／Knowledge Assets
-      └─ LOC8  時期／時間脈絡
+      ├─ LOC5  多媒體／媒體 Registry
+      ├─ LOC6  方法論／治理／政德風
+      ├─ LOC7  演算法／FAQ／KM／Knowledge Assets
+      └─ LOC8  每日符文歷史／ERA／Event／Trend
       ↓
 Shared Result Envelope
 ```
@@ -445,7 +458,7 @@ moon-runes-pwa/
 ├── css/                       # 前端樣式
 ├── tools/                     # repo-wide builders / importers
 ├── loc8_api/                  # Google Apps Script 模組
-├── 64images/                  # 公開 URL 敏感的月符卡圖
+├── 64images/                  # 公開 URL 敏感的月之符文卡圖
 ├── pics/                      # 視覺資產（後續媒體治理）
 ├── reels/                     # 影片資產（後續媒體治理）
 ├── *.html                     # GitHub Pages 公開路由

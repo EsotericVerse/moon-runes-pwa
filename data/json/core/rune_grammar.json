@@ -1,0 +1,155 @@
+{
+  "schema_version": "0.2",
+  "source": "LunaRune64.xlsx#Grammar",
+  "source_authority": "mother_workbook",
+  "projection_role": "runtime_core",
+  "source_note": "依使用者於 2026-09-07 提供的最新 Grammar 工作表畫面同步；對外將「治理原則」統一表述為「治理解牌方式」，避免與一般系統治理混淆。若本 JSON 與 LunaRune64.xlsx#Grammar 衝突，以母資料為準。",
+  "governance": {
+    "global_layering": "詞彙層 → 卡片位置層 → 治理層 → 時間修飾層",
+    "global_rule": "後層時間的月相交互只作修飾，不覆蓋符文本義。",
+    "rune_interaction_scope": "sandbox_only",
+    "lunar_interaction_weight": "low",
+    "ow3gs_model": "two_rune_modules",
+    "ow3gs_principle": "鑑古知今",
+    "ow3gs_modules": {
+      "ancient": {
+        "range": "1–6",
+        "label": "古模組",
+        "role": "回看形成問題的背景、條件與來源"
+      },
+      "present": {
+        "range": "7–11",
+        "label": "今模組",
+        "role": "判讀現在與後續應如何理解、處理"
+      }
+    }
+  },
+  "records": [
+    {
+      "category": "全域",
+      "item": "語法分層",
+      "content": "詞彙層 → 卡片位置層 → 治理層 → 時間修飾層",
+      "note": "後層時間的月相交互只作修飾，不覆蓋符文本義。"
+    },
+    {
+      "category": "單卡",
+      "item": "治理解牌方式",
+      "content": "符文本義 + 卡牌方向 + 月相交互",
+      "note": "月相交互只作低權重時間修飾。"
+    },
+    {
+      "category": "兩卡",
+      "item": "治理解牌方式",
+      "content": "因 + 果 + 月相交互",
+      "note": "交互描述兩個主題因果如何作用，不單獨決定吉凶。"
+    },
+    {
+      "category": "三卡",
+      "item": "治理解牌方式",
+      "content": "源 + 轉 + 合 + 月相交互",
+      "note": "形成「源起、過程、顯化」的完整圖景。"
+    },
+    {
+      "category": "三卡",
+      "item": "源",
+      "content": "啟動點、潛因、內在狀態",
+      "note": "回答事情從何而起。"
+    },
+    {
+      "category": "三卡",
+      "item": "轉",
+      "content": "過程中介、能量互動、挑戰與助力",
+      "note": "回答事情如何轉化。"
+    },
+    {
+      "category": "三卡",
+      "item": "合",
+      "content": "結果顯化、整合方向、當下建議",
+      "note": "不是絕對宿命判決。"
+    },
+    {
+      "category": "五卡",
+      "item": "治理解牌方式",
+      "content": "過去 + 現在 + 未來顯化 + 周圍環境 + 自己心境 + 月相交互",
+      "note": "不是「兩卡 + 三卡」的拼接。"
+    },
+    {
+      "category": "五卡",
+      "item": "過去",
+      "content": "過去、成因、既有條件",
+      "note": "回答「現在為何形成」。"
+    },
+    {
+      "category": "五卡",
+      "item": "現在",
+      "content": "當前核心狀態",
+      "note": "五卡主句與主要判讀中心。"
+    },
+    {
+      "category": "五卡",
+      "item": "未來顯化",
+      "content": "若目前條件延續，最可能的發展趨勢",
+      "note": "不是絕對結果。"
+    },
+    {
+      "category": "五卡",
+      "item": "環境",
+      "content": "他人、環境、制度、現實限制與外部助力",
+      "note": "周圍環境的狀態。"
+    },
+    {
+      "category": "五卡",
+      "item": "心境",
+      "content": "本人立場、期待、恐懼、動機與主觀認知",
+      "note": "自己心境的狀態。"
+    },
+    {
+      "category": "五卡",
+      "item": "關係優先",
+      "content": "過去→現在→未來→環境→心境",
+      "note": "只計算具有語義關係的卡對，不要求五張彼此全連。"
+    },
+    {
+      "category": "OW3gs",
+      "item": "治理解牌方式",
+      "content": "古模組（1–6） + 今模組（7–11） + 月相交互",
+      "note": "OW3gs 由兩個符文模組組成，核心原則是「鑑古知今」；十一張牌不是等權並列。"
+    },
+    {
+      "category": "OW3gs",
+      "item": "古模組（1–6）",
+      "content": "1.背景 2.現在 3.資源 4.意向 5.外部擾動 6.尚未成形因素",
+      "note": "回看形成問題的背景與條件，屬「鑑古」。"
+    },
+    {
+      "category": "OW3gs",
+      "item": "今模組（7–11）",
+      "content": "建議：7.成因 8.現在 9.未來 10.環境 11.心境",
+      "note": "判讀現在與後續應如何理解、處理，屬「知今」。"
+    },
+    {
+      "category": "OW3gs",
+      "item": "讀取順序",
+      "content": "先讀今模組 7–11 → 再回看古模組 1–6 → 最後套月相交互",
+      "note": "以「鑑古知今」串接兩個符文模組。"
+    },
+    {
+      "category": "OW3gs",
+      "item": "額外說明",
+      "content": "有時候跟每日符文交替比照，會很有意思。",
+      "note": "重在模型的關聯，而非把抽牌維度提高的複雜化。"
+    },
+    {
+      "category": "符文交互",
+      "item": "治理解牌方式",
+      "content": "描述兩個符文語義主題的共鳴、互補、衝突與語氣張力",
+      "note": "月符沙盒專用，因符文關係為平等。"
+    },
+    {
+      "category": "月相交互",
+      "item": "額外小幅低權重",
+      "content": "卡片月相跟真實月相的交互作用",
+      "note": "真實月相是低權重時間情境修飾。"
+    }
+  ]
+}

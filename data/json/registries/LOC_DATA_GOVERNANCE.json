@@ -133,13 +133,34 @@
         "LOC7",
         "LOC8"
       ]
+    },
+    "context_relationship_graph": {
+      "authority": "LOC2",
+      "registry": "data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json",
+      "scope": [
+        "context",
+        "relationship",
+        "scenario",
+        "event relation",
+        "graph node/edge semantics"
+      ],
+      "consumers": [
+        "LOC2",
+        "LOC3",
+        "LOC4",
+        "LOC5",
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ]
     }
   },
   "analysis_boundary": {
-    "LOC6": "Meaning, values, governance, Zhengde Style, stage/style-state interpretation, and rune-to-governance interpretation derived from source evidence.",
-    "LOC7": "Grammar, syntax, linguistic structure, semantic engineering, text architecture, retrieval structure.",
-    "LOC8": "Does not own interpretive analysis; provides event, state, ERA, time, registry, and cross-LOC integration context.",
-    "LOC4": "Creative/life-writing text authority plus work-level and chapter-level literary/semantic analysis."
+    "LOC6": "Methodology: meaning, judgment, governance, Zhengde Style and interpretation methods derived from source evidence.",
+    "LOC7": "Algorithms/knowledge base: text architecture, KM, retrieval, RAG, Graph RAG traversal, validation and semantic engineering.",
+    "LOC8": "Literary evolution: time, ERA, Event timeline, Trajectory and Trend projections. It may display Graph views but does not own graph relation semantics.",
+    "LOC4": "Creative/life-writing text authority plus work-level and chapter-level literary/semantic analysis.",
+    "LOC2": "Context, relationship, Scenario/Event relation and Canonical Graph semantics."
   },
   "rights_boundary": {
     "LOC6": "Defines governance principles for authorship, attribution, sharing, licensing, and collaboration.",
