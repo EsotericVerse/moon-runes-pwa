@@ -26,9 +26,9 @@
       "id": "suno",
       "label": "Suno",
       "analysis_start": "2025-02-21",
-      "analysis_end": null,
+      "analysis_end": "2026-09-06",
       "basis": "LOC_ERA_REGISTRY source_active_range",
-      "note": "Original Suno activity range begins in P0.5; end remains open while source is active."
+      "note": "Current analyzable Suno corpus snapshot ends at 2026-09-06. Do not present as real-time/current unless the source snapshot is refreshed."
     }
   ]
 }
