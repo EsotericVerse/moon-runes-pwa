@@ -62,11 +62,11 @@ const MODE_CONFIG = {
     note: "目前以單卡既有資料進行基礎解讀。"
   },
   daily: {
-    title: "每日抽牌",
+    title: "每日符文",
     kicker: "LOC1 · Daily Rune",
     count: 1,
     labels: ["今日"],
-    note: "每日模式沿用現有的每日提醒資料。"
+    note: "每日符文不是一般單卡解讀；它以今日節奏、提醒與真實月相對應資料為主。"
   },
   "2card": {
     title: "雙卡 · 因 → 果",
