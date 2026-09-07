@@ -137,83 +137,40 @@ LOC Framework 原則上不必綁死 66 月符。
 
 ## 4. LOC1–8 現行責任
 
-### LOC1｜Lots / Seed Corpus
-- 月之符文語意種子
-- 66 符文資料
-- 四向
-- Lots 籤詩
-- 抽取與多卡語法入口
-- 是 RAG 的第一層 Seed Corpus，不是 Search 之外的例外
+### LOC1｜月符／語彙（token）
+- 月之符文基本文字語彙與語意種子
+- 66 符文資料、四向、Lots、抽牌與解牌入口
 
-### LOC2｜Semantic Playground / Simulation
-- 語意沙盒
-- Event / Scenario
-- 玩家用符文回答問題
-- 回應、互動、共振與暫時定義
-- 讓符文從「被理解」進入「被測試」
-- 是 LOC 的 Semantic Simulation Layer
+### LOC2｜脈絡
+- 關係、Context、Scenario、Event
+- Canonical Graph 的節點／edge 脈絡
+- 月符沙盒是代表性互動實作
+- Graph View 可在 life.html 顯示，但關係／脈絡責任歸 LOC2
 
-### LOC3｜Music
-- 歌曲
-- 歌詞
-- 符文歌 provenance
-- ERA 音樂證據
-- reasoning / proposition metadata
+### LOC3｜音樂
+- 歌曲、歌詞、聲音與符文歌曲延伸
 
-### LOC4｜Writing
-- 創作文字
-- 文章
-- 小說
-- 角色與敘事作品
-- 歌曲轉文章、主題曲等跨媒介文字關係
+### LOC4｜文字創作
+- 文章、小說、生活文字與敘事作品
 
-### LOC5｜Resonance / Multimedia
-- 圖像
-- Reels
-- MV
-- 影片
-- 聲音 × 文字 × 視覺
-- 符文與作品的多媒體演化證據
+### LOC5｜多媒體
+- 圖像、Reels、MV、影片
+- 文字＋音樂＋圖像的跨媒介表達
 
-### LOC6｜Governance / Interpretation
-- 政德風
-- 人生觀、價值觀、治理原則
-- 語氣、命題、判斷方式
-- 符文／作品如何被轉譯成文字與治理意義
-- ERA 間的風格差異分析
+### LOC6｜方法論
+- 如何理解、判斷、處理
+- 治理、政德風、價值判斷與解讀方法
 
-### LOC7｜Knowledge Management / RAG / Graph Structure
-- Knowledge Assets
-- KM
-- Text Architecture
-- Relationship Schema
-- Retrieval
-- RAG
-- Graph 結構與後續多跳擴展
-- **所有 LOC 的文字搜尋統一由 LOC Search / LOC RAG 管理**
+### LOC7｜演算法（知識庫）
+- Text Architecture、KM、RAG、Search
+- Graph RAG traversal / retrieval algorithm
+- 把方法論結構化成可重複、可檢索、可驗證的演算法
+- 不擁有 LOC2 的關係／脈絡資料本體
 
-### LOC8｜Context / Relation & Trend
-LOC8 的現行核心是**事件、時期、關係、軌跡與趨勢分析**，時間只是其中一個投影維度。
-
-目前已實作：
-
-- 每日符文紀錄與近期趨勢
-- Event 新增／修改／刪除與 Current State
-- ERA 時期直接新增／修改／刪除（顯示即管理）
-- Event Timeline：回答「什麼時候發生什麼」
-- Relation Library：保存節點與節點之間的關係
-- 軌跡 Trajectory：呈現狀態／時期如何一路轉變
-- 趨勢分析 Analysis：比較相鄰 LOC3 時期的關鍵字／語義家族比重升降，並搭配文字轉折說明
-- Context：統合 Relation、Trajectory、Analysis，作為 Graph-ready 的脈絡工作區
-- 跨 LOC 的時間、作品、概念與 Event 引用
-
-Graph View 視覺化仍可持續擴充，但 **Graph RAG 核心已完成並進入治理／品質維護階段**。現行已具 bounded multi-hop traversal、cross-LOC expansion、temporal nodes、provenance、precision control、edge quality weighting、regression tests 與 integration validation。
-
-因此：
-
-> LOC6 負責意義／治理判斷；  
-> LOC7 建立與管理知識／檢索結構；  
-> LOC8 記錄事情何時發生、如何沿時間改變，並把跨 LOC 資料放回同一段脈絡。
+### LOC8｜文學演化
+- ERA、Event Timeline、Trajectory、Trend
+- 觀察作品、語言、方法與風格如何隨時間變化
+- 消費 LOC2 Graph 作時間投影；Graph View 頁面位置可維持不變
 
 ---
 
@@ -403,9 +360,9 @@ Graph RAG 已由「關係 groundwork」進入正式 Search Core：
 4. 66 月符是目前 LOC 的 Reference Seed System，但不是理論上唯一可接入的 seed vocabulary。
 5. LOC1–8 是責任分工，不是八套產品。
 6. LOC1 Seed Corpus 是 RAG 的正式一部分。
-7. LOC2 是 Semantic Playground / Simulation Layer。
-8. LOC7 管 KM、RAG、Graph structure 與全 LOC 文字檢索。
-9. LOC8 核心定位為 Context / Relation & Trend Analysis。
+7. LOC2 是脈絡層；Semantic Playground 是代表性互動實作。
+8. LOC7 管演算法、KM、RAG、Graph RAG 與全 LOC 文字檢索；Graph 脈絡資料歸 LOC2。
+9. LOC8 核心定位為文學演化（Time / ERA / Trajectory / Trend）。
 10. 時間線／ERA 是「關係」的一個維度；Trajectory 與 Analysis 分別負責演變投影與變化證據解讀。
 11. LOC Search 是唯一文字搜尋入口。
 12. Search 介面簡稱「LOC 搜尋引擎」，正式技術名「LOC RAG 語意向量搜尋」。
