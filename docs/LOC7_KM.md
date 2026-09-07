@@ -106,7 +106,7 @@ Structured registry：`data/json/registries/LOC2_EVENT_REGISTRY.json`
 
 - **LOC6＝方法論**：描述「如何理解、判斷、處理」。治理是其中一種方法，不等於 LOC6 的全部。
 - **LOC7＝演算法（知識庫）**：由多種方法形成的結構體系；文字建築學是核心表現，KM／RAG／Graph／Relationship 是其技術實作。
-- **LOC8＝文學演化（時間／趨勢分析）**：把演算法放入時間、ERA、事件、軌跡與趨勢後，觀察其如何形成文化、思想與哲學。
+- **LOC8＝推演（時間／趨勢分析）**：把演算法放入時間、ERA、事件、軌跡與趨勢後，觀察其如何形成文化、思想與哲學。
 
 簡化理解：
 
@@ -114,10 +114,10 @@ Structured registry：`data/json/registries/LOC2_EVENT_REGISTRY.json`
 LOC3 / 4 / 5 → 表達與內容
 LOC6 → 方法論
 LOC7 → 演算法
-LOC8 → 文學演化 + 時間
+LOC8 → 推演 + 時間
 ```
 
-公開 Search 類別使用「方法論」「演算法（知識庫）」「文學演化（時間／趨勢分析）」；內部 technical ID 仍保留 LOC6／LOC7／LOC8 與 Governance／KM／Graph／Trend 等欄位。
+公開 Search 類別使用「方法論」「演算法（知識庫）」「推演（時間／趨勢分析）」；內部 technical ID 仍保留 LOC6／LOC7／LOC8 與 Governance／KM／Graph／Trend 等欄位。
 
 ## 6.6 現行 LOC1–8 責任（2026-09-07 收斂版）
 
@@ -129,12 +129,12 @@ LOC1 月符／語彙（token）
 → LOC5 多媒體
 → LOC6 方法論
 → LOC7 演算法（知識庫）
-→ LOC8 文學演化
+→ LOC8 推演
 ```
 
 - LOC2 owns 關係／脈絡／Canonical Graph 語意資料；月符沙盒是代表性互動實作。
 - LOC7 owns 處理這些資料的演算法、KM、RAG、Search 與 Graph RAG traversal。
-- LOC8 owns 時間投影與文學演化 View；Graph View 可以繼續放在 life.html，不代表 Graph ownership 在 LOC8。
+- LOC8 owns 時間投影與推演 View；Graph View 可以繼續放在 life.html，不代表 Graph ownership 在 LOC8。
 
 ## 7. 月符基本參照與符文治理規則
 
@@ -285,7 +285,7 @@ OW3gs 不是十一張牌等權並列，而是由**兩個符文模組**組成。
 - **表達**：LOC3／4／5；音樂、文字、多媒體等內容與媒介。
 - **方法論**：LOC6；描述如何理解、判斷、處理。治理是其中一種方法。
 - **演算法（知識庫）**：LOC7；把方法結構化成可執行、可檢索、可驗證的文字建築、KM、RAG、Search 與 Graph RAG 演算法。關係／Graph 脈絡資料本體歸 LOC2。
-- **文學演化（時間／趨勢分析）**：LOC8；把演算法與內容放入時間、ERA、事件、Relation、Trajectory、Trend 後觀察其文化與演化。
+- **推演（時間／趨勢分析）**：LOC8；把演算法與內容放入時間、ERA、事件、Relation、Trajectory、Trend 後觀察其文化與演化。
 
 **月符特化分類**
 - **符文籤詩**：抽牌、籤詩、解牌。
@@ -319,7 +319,7 @@ LOC 與月之符文採平行理解，但兩者不是彼此獨立起源。
 
 ```text
 LOC：
-LOC1 月符／語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 文學演化
+LOC1 月符／語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演
 
 月之符文：
 符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算 → 符文演化
