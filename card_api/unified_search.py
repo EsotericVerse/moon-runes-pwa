@@ -87,7 +87,8 @@ class UnifiedSearchEngine:
         self.loc3_period_keywords = self._load_json("LOC3_PERIOD_KEYWORD_ANALYSIS.json")
         self.loc4_thread_articles = {}
         self.loc4_thread_manifest = self._load_repo_json("data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json")
-        self.loc4_thread_full = self._load_loc4_thread_shards()
+        # Threads full-text shards are intentionally NOT loaded at startup.
+        # Render small instances cannot afford keeping the expanded corpus resident.
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
         self.lots = self._load_repo_json("data/json/core/lots.json")
@@ -119,26 +120,42 @@ class UnifiedSearchEngine:
         except Exception:
             return {}
 
-    def _load_loc4_thread_shards(self) -> dict[str, Any]:
-        manifest = getattr(self, "loc4_thread_manifest", {}) or {}
-        documents: list[dict[str, Any]] = []
-        for shard in manifest.get("shards", []):
-            path = shard.get("path")
-            if not path:
-                continue
-            part = self._load_repo_json(path)
-            documents.extend(part.get("documents", []))
-        return {
-            "documents": documents,
-            "document_count": len(documents),
-            "manifest": manifest,
-        }
+    def _iter_loc4_article_documents(self):
+        """Yield LOC4 Threads records one shard at a time.
 
-    def _loc4_article_documents(self) -> list[dict[str, Any]]:
-        full_docs = (getattr(self, "loc4_thread_full", {}) or {}).get("documents", [])
-        if full_docs:
-            return full_docs
-        return self.loc4_thread_articles.get("documents", []) or self.loc4_threads.get("documents", [])
+        This keeps the expanded 4,578-post corpus off the process heap during
+        startup and bounds per-query memory to roughly one shard plus matches.
+        """
+        manifest = getattr(self, "loc4_thread_manifest", {}) or {}
+        shards = manifest.get("shards", []) or []
+        if shards:
+            for shard in shards:
+                path = shard.get("path")
+                if not path:
+                    continue
+                part = self._load_repo_json(path)
+                for doc in part.get("documents", []) or []:
+                    yield doc
+                # Drop the expanded shard before opening the next gzip file.
+                del part
+            return
+
+        # Compatibility fallback for deployments without full shards.
+        fallback = self.loc4_thread_articles.get("documents", []) or self.loc4_threads.get("documents", [])
+        for doc in fallback:
+            yield doc
+
+    def _loc4_thread_document_count(self) -> int:
+        manifest = getattr(self, "loc4_thread_manifest", {}) or {}
+        indexed = manifest.get("indexed_layer", {}) or {}
+        count = indexed.get("document_count")
+        if isinstance(count, int):
+            return count
+        corpus = manifest.get("corpus_counts", {}) or {}
+        count = corpus.get("main_posts")
+        if isinstance(count, int):
+            return count
+        return len(self.loc4_threads.get("documents", []) or [])
 
     def _load_loc4_corpus_shards(self) -> dict[str, Any]:
         manifest = getattr(self, "loc4_corpus_manifest", {}) or {}
@@ -1169,8 +1186,8 @@ class UnifiedSearchEngine:
 
         # Search the full LOC4-owned Threads main-post corpus when shards are available.
         # Falls back to the smaller article tranche only when full shards are absent.
-        article_docs = self._loc4_article_documents()
-        for doc in article_docs:
+        max_thread_matches = max(top_k * 4, 24)
+        for doc in self._iter_loc4_article_documents():
             if filters.get("period") and doc.get("era") != filters["period"]:
                 continue
             text = str(doc.get("text") or "")
@@ -1183,6 +1200,9 @@ class UnifiedSearchEngine:
             ])
             if score >= 0.34:
                 scored.append((score * 0.96, doc, "threads"))
+                if len(scored) > max_thread_matches * 2:
+                    scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("asset_id") or "")))
+                    scored = scored[:max_thread_matches]
 
         scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("asset_id") or "")))
         out = []
@@ -2973,7 +2993,7 @@ class UnifiedSearchEngine:
                 "LOC4": f"creative-works+life-writing-live; {len((getattr(self, 'loc4_corpus', {}) or {}).get('documents', []))} authored corpus segments; {len((getattr(self, 'loc4_moon_speaker_analysis', {}) or {}).get('chapters', []))} MoonSpeaker chapter analyses",
                 "LOC5": "direct-media-registry-search-live",
                 "LOC6": "governance/style-derived-search-live",
-                "LOC4_threads_indexed": len(self._loc4_article_documents()),
+                "LOC4_threads_indexed": self._loc4_thread_document_count(),
                 "LOC7": "live",
                 "LOC8": "era+context-graph-live",
             },
