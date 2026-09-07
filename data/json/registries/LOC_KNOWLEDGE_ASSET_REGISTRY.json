@@ -1,15 +1,15 @@
 {
   "schema_version": "0.3",
   "registry": "LOC_KNOWLEDGE_ASSET_REGISTRY",
-  "authority": "LOC7_KM",
+  "authority": "LOC7",
   "updated_at": "2026-09-08",
-  "purpose": "Register human-readable and structured knowledge assets that LOC7_KM may index, cite, version, and expose through knowledge/search views.",
+  "purpose": "Register searchable human-readable and structured knowledge assets without requiring duplicate Markdown documentation.",
   "rules": [
     "Registration as a knowledge asset does not make every statement Canon.",
     "Each asset keeps its own authority, status, provenance, and version context.",
     "README.md is a maintained system overview and progress/documentation view; it is not the highest-priority Canon source.",
     "Canonical definitions remain governed by their designated mother sources and Canon documents.",
-    "Repository knowledge documents are Markdown-first; DOCX/PDF are publication or exchange snapshots unless separately designated as Canon.",
+    "Knowledge may be maintained in canonical public pages, structured registries, source data, or necessary technical documents; duplicate Markdown is not required.",
     "Derived JSON, retrieval indexes, application views, and AI inference must not overwrite upstream Canon, mother data, or primary records."
   ],
   "assets": [
@@ -140,90 +140,6 @@
         "maintained_in_repo": true
       },
       "notes": "README summarizes current LOC architecture, implementation status, public entry points, and cross-LOC progress. It should be indexed by KM with provenance retained, but must not override Canon or mother data.",
-      "presentation": "internal_source"
-    },
-    {
-      "asset_id": "KA-KM-001",
-      "title": "LOC7_KM",
-      "path": "docs/LOC7_KM.md",
-      "source_type": "document",
-      "content_type": "knowledge_document",
-      "primary_loc": "LOC7",
-      "related_locs": [
-        "LOC1",
-        "LOC2",
-        "LOC3",
-        "LOC4",
-        "LOC5",
-        "LOC6",
-        "LOC8"
-      ],
-      "role": "knowledge_management_core",
-      "status": "current",
-      "authority_level": "governance_document",
-      "searchable": true,
-      "index_priority": "high",
-      "provenance": {
-        "repository": "EsotericVerse/moon-runes-pwa",
-        "maintained_in_repo": true
-      },
-      "version": "0.3",
-      "updated_at": "2026-09-06",
-      "notes": "Markdown-first maintainable KM source in the repository. v0.3 aligns current Unified Search, FAQ/RAG v0.4, LOC6/LOC7/LOC8 boundaries, and public period terminology.",
-      "presentation": "internal_source"
-    },
-    {
-      "asset_id": "KA-DOCS-001",
-      "title": "LOC Documentation Index",
-      "path": "docs/README.md",
-      "source_type": "document",
-      "content_type": "knowledge_document",
-      "primary_loc": "LOC7",
-      "related_locs": [
-        "LOC1",
-        "LOC2",
-        "LOC3",
-        "LOC4",
-        "LOC5",
-        "LOC6",
-        "LOC8"
-      ],
-      "role": "documentation_index",
-      "status": "current",
-      "authority_level": "derived_overview",
-      "searchable": true,
-      "index_priority": "medium",
-      "version": "2026-09-05",
-      "provenance": {
-        "repository": "EsotericVerse/moon-runes-pwa",
-        "maintained_in_repo": true
-      },
-      "presentation": "internal_source"
-    },
-    {
-      "asset_id": "KA-DATA-001",
-      "title": "LOC JSON Data Map",
-      "path": "docs/JSON_DATA_MAP.md",
-      "source_type": "document",
-      "content_type": "knowledge_document",
-      "primary_loc": "LOC7",
-      "related_locs": [
-        "LOC1",
-        "LOC2",
-        "LOC3",
-        "LOC5",
-        "LOC8"
-      ],
-      "role": "data_governance_map",
-      "status": "current",
-      "authority_level": "governance_document",
-      "searchable": true,
-      "index_priority": "high",
-      "version": "2026-09-05",
-      "provenance": {
-        "repository": "EsotericVerse/moon-runes-pwa",
-        "maintained_in_repo": true
-      },
       "presentation": "internal_source"
     },
     {
@@ -1139,79 +1055,6 @@
         ]
       },
       "notes": "Trend projection only; does not automatically rank historical stages as progress/regression.",
-      "presentation": "internal_source"
-    },
-    {
-      "asset_id": "KA-REPO-GOV-001",
-      "title": "Repository Governance",
-      "path": "docs/REPOSITORY_GOVERNANCE.md",
-      "source_type": "document",
-      "content_type": "knowledge_document",
-      "primary_loc": "LOC7",
-      "related_locs": [
-        "LOC6",
-        "LOC8"
-      ],
-      "role": "repository_structure_governance",
-      "status": "current",
-      "authority_level": "governance_document",
-      "searchable": true,
-      "index_priority": "high",
-      "version": "2026-09-07",
-      "updated_at": "2026-09-07",
-      "keywords": [
-        "repository governance",
-        "檔案架構",
-        "目錄治理",
-        "path migration",
-        "模組化",
-        "檔案配置",
-        "cleanup"
-      ],
-      "provenance": {
-        "repository": "EsotericVerse/moon-runes-pwa",
-        "maintained_in_repo": true
-      },
-      "notes": "Defines repository directory roles, path-migration safety rules, delete/archive policy and CI layout enforcement.",
-      "presentation": "internal_source"
-    },
-    {
-      "asset_id": "KA-DATA-ARCH-001",
-      "title": "LOC Data Architecture",
-      "path": "docs/DATA_ARCHITECTURE.md",
-      "source_type": "document",
-      "content_type": "knowledge_document",
-      "primary_loc": "LOC7",
-      "related_locs": [
-        "LOC1",
-        "LOC6",
-        "LOC8"
-      ],
-      "role": "data_architecture_and_projection_governance",
-      "status": "current",
-      "authority_level": "governance_document",
-      "searchable": true,
-      "index_priority": "highest",
-      "version": "0.1",
-      "updated_at": "2026-09-07",
-      "keywords": [
-        "data architecture",
-        "runes64.json",
-        "core",
-        "registries",
-        "search",
-        "generated",
-        "archive",
-        "experimental",
-        "Single Source of Truth",
-        "projection"
-      ],
-      "provenance": {
-        "repository": "EsotericVerse/moon-runes-pwa",
-        "maintained_in_repo": true,
-        "mother_source": "LunaRune64.xlsx"
-      },
-      "notes": "Defines one-authority/many-purpose-specific-projections data model and normalized JSON directory responsibilities.",
       "presentation": "internal_source"
     },
     {
