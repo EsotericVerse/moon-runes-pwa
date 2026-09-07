@@ -104,13 +104,22 @@
               </div>
               <select id="contentType">
                 <option value="">全部內容</option>
-                <option value="text_record">文字</option>
-                <option value="lyrics_work">音樂／歌詞</option>
-                <option value="knowledge_image">圖片</option>
-                <option value="multimedia">影音</option>
-                <option value="rune_record">符文</option>
-                <option value="scenario_event">情境／事件</option>
-                <option value="knowledge">文件／知識</option>
+                <optgroup label="符文相關">
+                  <option value="rune_core">符文</option>
+                  <option value="rune_sandbox">符文沙盒</option>
+                  <option value="rune_music">符文音樂</option>
+                  <option value="rune_image">符文影像</option>
+                  <option value="rune_governance">符文治理</option>
+                  <option value="rune_divination">符文占卜</option>
+                </optgroup>
+                <optgroup label="一般內容">
+                  <option value="text_record">文字</option>
+                  <option value="lyrics_work">音樂／歌詞</option>
+                  <option value="knowledge_image">圖片</option>
+                  <option value="multimedia">影音</option>
+                  <option value="scenario_event">情境／事件</option>
+                  <option value="knowledge">文件／知識</option>
+                </optgroup>
               </select>
               <div class="browse-inline">
                 <button class="browse-btn" id="browse" type="button">依這個內容瀏覽</button>
@@ -281,7 +290,7 @@
         {q:'自我治理',title:'自我治理',desc:'知識庫 · 跨文件知識'}
       ]
     };
-    const labels={entities:'核心詞條',scenarios:'LOC2 情境事件',oracle:'籤詩結果',readings:'OW3gs 解牌／抽牌紀錄',runes:'月符',rune_songs:'符文歌曲',works:'Suno 歌曲／歌詞',textworks:'文字',relationships:'跨 LOC 關聯',governance:'文字',loc4_articles:'文字',text:'文字',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
+    const labels={entities:'符文核心詞條',scenarios:'符文沙盒',oracle:'符文占卜',readings:'符文治理',runes:'符文',rune_songs:'符文音樂',works:'自創歌曲(Suno)',textworks:'文字創作',relationships:'跨分類關聯',governance:'治理規則',loc4_articles:'文字／治理文章',text:'文字',media:'多媒體創作',knowledge:'知識庫',timeline:'趨勢分析'};
     const LOCAL_SEARCH_CACHE=new Map();
     async function localJson(path){
       if(LOCAL_SEARCH_CACHE.has(path))return LOCAL_SEARCH_CACHE.get(path);
@@ -489,7 +498,7 @@
     }
     function quick(){
       const type=el('contentType').value;
-      const alias={knowledge_image:'multimedia',relationship:'knowledge',oracle:'default',rune_record:'default',era:'default'};
+      const alias={knowledge_image:'multimedia',relationship:'knowledge',oracle:'default',rune_record:'default',era:'default',rune_core:'default',rune_sandbox:'default',rune_music:'lyrics_work',rune_image:'multimedia',rune_governance:'default',rune_divination:'default'};
       const key=promptSets[type]?type:(alias[type]||'default');
       const prompts=promptSets[key]||promptSets.default;
       el('quick').innerHTML=prompts.map(x=>`
@@ -740,15 +749,15 @@
     }
 
     const GROUP_LOCATION_META={
-      entities:{loc:'月之符文',label:'核心詞條',desc:'方法名稱、定義與讀取規則'},
-      scenarios:{loc:'月符沙盒',label:'情境事件',desc:'Scenario Corpus／Event Corpus；真實生活狀況的語意題目'},
-      oracle:{loc:'月之符文',label:'籤詩／解牌',desc:'月之符文的實際提示與使用結果'},
-      readings:{loc:'月之符文',label:'OW3gs 解牌／抽牌紀錄',desc:'有來源保存的 11 張抽牌與解讀紀錄'},
-      runes:{loc:'月之符文',label:'月之符文',desc:'基本符文、方向與參照語意'},
-      rune_songs:{loc:'自創歌曲(Suno)',label:'符文歌曲／歌曲關聯',desc:'已確認符文歌曲，以及明確標示來源狀態的符文－歌曲關聯'},
+      entities:{loc:'月之符文',label:'符文',desc:'方法名稱、定義與讀取規則'},
+      scenarios:{loc:'月符沙盒',label:'符文沙盒',desc:'Scenario Corpus／Event Corpus；把符文帶入真實情境與互動'},
+      oracle:{loc:'月之符文',label:'符文占卜',desc:'抽牌／籤詩本身的使用結果'},
+      readings:{loc:'月之符文',label:'符文治理',desc:'占卜完成後保存的結果、解讀與後續紀錄'},
+      runes:{loc:'月之符文',label:'符文',desc:'基本符文、方向與參照語意'},
+      rune_songs:{loc:'自創歌曲(Suno)',label:'符文音樂',desc:'已確認符文歌曲，以及明確標示來源狀態的符文－歌曲關聯'},
       works:{loc:'自創歌曲(Suno)',label:'音樂／歌詞',desc:'歌曲、歌詞與符文歌演化證據'},
       textworks:{loc:'文字創作',label:'文字作品',desc:'文章、小說與文字延伸'},
-      media:{loc:'多媒體創作',label:'多媒體／圖片',desc:'Instagram、影音、圖片與知識圖'},
+      media:{loc:'多媒體創作',label:'多媒體／符文影像',desc:'Instagram、影音、圖片、知識圖與已建立的符文影像關聯'},
       governance:{loc:'治理規則',label:'治理／政德風',desc:'治理片段、價值與語言判斷'},
       loc4_articles:{loc:'文字創作／治理規則',label:'文字／治理文章',desc:'作品文字、來源平台文字與治理分析分開呈現'},
       knowledge:{loc:'知識庫',label:'文件／知識',desc:'KM、規格、文件與架構知識'},
@@ -798,6 +807,38 @@
     const RESULT_ORDER=['scenarios','readings','runes','rune_songs','works','textworks','relationships','governance','loc4_articles','text','media','knowledge','timeline'];
     let searchState={groups:{},synthesis:null,graph:null,page:1,total:0};
     let browseState={active:false,type:'',key:'',page:1,total:0,items:[]};
+
+    function isRunePublicCategory(type){
+      return ['rune_core','rune_sandbox','rune_music','rune_image','rune_governance','rune_divination'].includes(type);
+    }
+
+    function apiContentType(type){
+      // Rune public categories are view projections over existing canonical groups.
+      // Do not create duplicate backend records just for presentation taxonomy.
+      return isRunePublicCategory(type) ? '' : type;
+    }
+
+    function hasRuneRelation(item){
+      const p=item?.payload||{};
+      const related=[...(item?.related_locs||[]),...(p.related_locs||[])].map(String);
+      const tags=[...(p.tags||[]),...(p.keywords||[]),...(p.runes||[])].map(String).join(' ');
+      return item?.primary_loc==='LOC1'
+        || related.includes('LOC1')
+        || /符文|月符|rune/i.test(tags)
+        || /RUNE[-_]/i.test(String(item?.result_id||''));
+    }
+
+    function applyPublicCategoryFilter(groups,type){
+      if(!isRunePublicCategory(type)) return groups||{};
+      const g=groups||{};
+      if(type==='rune_core') return {entities:g.entities||[],runes:g.runes||[]};
+      if(type==='rune_sandbox') return {scenarios:g.scenarios||[]};
+      if(type==='rune_music') return {rune_songs:g.rune_songs||[]};
+      if(type==='rune_governance') return {readings:g.readings||[]};
+      if(type==='rune_divination') return {oracle:g.oracle||[]};
+      if(type==='rune_image') return {media:(g.media||[]).filter(hasRuneRelation)};
+      return g;
+    }
 
     function rendererForGroup(key){
       return key==='oracle'?oracleCard:
@@ -904,6 +945,11 @@
 
     async function browse(page=1){
       const type=el('contentType').value;
+      if(isRunePublicCategory(type)){
+        el('status').className='status';
+        el('status').textContent='符文相關分類請輸入關鍵字搜尋；這些分類直接投影既有資料，不另建立重複瀏覽資料集。';
+        return;
+      }
       if(!['lyrics_work','text_work','governance_article','governance_fragment'].includes(type)){
         el('status').className='status error';
         el('status').textContent='請先選擇可瀏覽的資料種類：音樂／歌詞、文字作品、治理文章或治理規則。';
@@ -1014,6 +1060,7 @@
       e.preventDefault();
       const q=el('query').value.trim(); if(!q)return;
       const type=el('contentType').value;
+      const apiType=apiContentType(type);
       const source=el('sourceFilter').value;
       el('submit').disabled=true;
       el('status').className='status';
@@ -1039,7 +1086,7 @@
         }
 
         el('status').textContent=type==='text_record'?'正在搜尋文字資料……':'正在同時查詢符文、作品、媒體、知識與時期資料……';
-        const body={query:q,top_k:10,content_type:type,source:source,period:el('period').value};
+        const body={query:q,top_k:10,content_type:apiType,source:source,period:el('period').value};
         const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const d=await r.json();
         if(!r.ok)throw new Error(d.detail||'搜尋失敗');
@@ -1054,12 +1101,14 @@
           }catch(_){}
         }
 
+        d.groups=applyPublicCategoryFilter(d.groups||{},type);
         const total=Object.values(d.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
         el('status').textContent=total?`找到 ${total} 筆相關結果。`:'沒有找到足夠接近的內容。';
         render(d.groups,d.synthesis,d.graph);
       }catch(err){
         try{
-          const fallback=await localStaticSearch(q,{topK:10,type,source,period:el('period').value});
+          const fallback=await localStaticSearch(q,{topK:10,type:apiType,source,period:el('period').value});
+          fallback.groups=applyPublicCategoryFilter(fallback.groups||{},type);
           const total=Object.values(fallback.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
           if(total){
             el('status').className='status';
