@@ -52,14 +52,49 @@
     footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
     @media(max-width:900px){.location-map{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:720px){.pagination{align-items:stretch}.pagination-pages{width:100%;justify-content:center}.pagination-info{width:100%;text-align:center}.suggestion-grid{grid-template-columns:1fr 1fr}.primary-actions{display:grid;grid-template-columns:1fr 1fr}.submit,.clear-btn,.browse-btn{width:100%}.filter-tabs{grid-template-columns:1fr 1fr 1fr}.filter-tab{font-size:.78rem;padding:10px 6px}.time-grid{grid-template-columns:1fr}.browse-inline{align-items:stretch;flex-direction:column}.topbar{align-items:flex-start;flex-direction:column}}
-  </style>
+  
+/* Unified LOC workspace shell: aligned with projection.html */
+.app-shell{width:min(1500px,100%);margin:0 auto;padding:22px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px}
+.workspace-sidebar{position:sticky;top:22px;align-self:start;min-height:calc(100vh - 44px);padding:20px 16px;border:1px solid var(--line);background:rgba(6,15,28,.75);backdrop-filter:blur(18px);border-radius:24px;box-shadow:0 18px 50px rgba(0,0,0,.25)}
+.workspace-brand{padding:4px 6px 18px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.workspace-brand h1{margin:0;font-size:18px;letter-spacing:.04em}.workspace-brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.workspace-nav{display:grid;gap:14px}.workspace-nav-group{display:grid;gap:6px}.workspace-nav-label{padding:0 9px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.72}
+.workspace-switch{width:100%;display:grid;gap:3px;text-align:left;cursor:pointer;padding:10px 11px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--muted);font:inherit;transition:.18s ease}
+.workspace-switch:hover,.workspace-switch.active{color:var(--text);border-color:var(--line);background:rgba(180,158,255,.08)}.workspace-switch.active{box-shadow:inset 2px 0 0 var(--purple)}
+.workspace-switch strong{font-size:13px}.workspace-switch small{font-size:10px;line-height:1.35;font-weight:400}
+.workspace-foot{margin-top:18px;padding:14px 8px 2px;color:var(--muted);font-size:12px;line-height:1.6}
+.workspace-main{min-width:0}.search-view[hidden]{display:none!important}
+.ranking-panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,rgba(23,47,80,.86),rgba(12,28,49,.82));padding:18px}
+.ranking-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:14px}.ranking-head h2{margin:0 0 6px}.ranking-head p{margin:0;color:var(--muted)}
+.ranking-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.ranking-tab{border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.025);color:var(--muted);padding:7px 11px;cursor:pointer}.ranking-tab.active{color:var(--text);border-color:rgba(231,194,125,.48);background:rgba(231,194,125,.08)}
+.ranking-scope{color:var(--muted);font-size:.82rem;margin:8px 0 12px}.ranking-list{display:grid;gap:8px}.ranking-row{display:grid;grid-template-columns:44px minmax(120px,1fr) auto auto auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}
+.ranking-row .rank{color:var(--muted);text-align:center}.ranking-row .term{font-weight:800}.ranking-row .metric{color:var(--muted);font-size:.78rem;white-space:nowrap}.ranking-row button{border:0;background:transparent;color:var(--gold);cursor:pointer}
+@media(max-width:900px){.app-shell{grid-template-columns:1fr;padding:14px}.workspace-sidebar{position:static;min-height:0}.workspace-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-nav-label{grid-column:1/-1}.workspace-foot{display:none}}
+@media(max-width:700px){.ranking-row{grid-template-columns:36px minmax(0,1fr) auto}.ranking-row .metric.secondary{display:none}}
+</style>
   <link rel="stylesheet" href="css/loc-responsive.css">
 
   <link rel="stylesheet" href="css/loc-nav.css" />
 </head>
 <body class="loc-responsive-page loc-page-search">
   <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="search" aria-label="全站導覽"></nav></div>
-  <main class="page">
+  <div class="app-shell">
+  <aside class="workspace-sidebar">
+    <div class="workspace-brand"><h1>Search</h1><p>查詢與關鍵字排行榜</p></div>
+    <nav class="workspace-nav" aria-label="搜尋功能">
+      <div class="workspace-nav-group">
+        <div class="workspace-nav-label">01 · 查詢</div>
+        <button class="workspace-switch active" type="button" data-search-view="query"><strong>查詢</strong><small>關鍵字 · 日期 · ERA 時期</small></button>
+      </div>
+      <div class="workspace-nav-group">
+        <div class="workspace-nav-label">02 · 排行</div>
+        <button class="workspace-switch" type="button" data-search-view="ranking"><strong>排行榜</strong><small>沿用目前查詢的時間跨度</small></button>
+      </div>
+    </nav>
+    <div class="workspace-foot">時間跨度只在「查詢」設定一次；排行榜沿用同一範圍，點擊關鍵字即可回到查詢證據。</div>
+  </aside>
+  <main class="page workspace-main">
+    <div class="search-view" id="queryView">
     <header class="hero loc-header">
       <p class="loc-header-meta">Semantic Search</p>
       <h1 class="loc-header-title">LOC 搜尋引擎</h1>
@@ -153,9 +188,98 @@
       <div class="pagination-info" id="paginationInfo"></div>
       <div class="pagination-pages" id="paginationPages"></div>
     </nav>
+    </div>
+    <div class="search-view" id="rankingView" hidden>
+      <header class="hero loc-header">
+        <p class="loc-header-meta">Keyword Ranking</p>
+        <h1 class="loc-header-title">排行榜</h1>
+        <h2 class="loc-header-subtitle">用同一個時間跨度，比較哪些詞最常出現。</h2>
+        <p class="loc-header-copy">排行榜沿用「查詢」中的日期與 ERA 設定；來源可以切換，但不再重複設定時期。</p>
+      </header>
+      <section class="ranking-panel">
+        <div class="ranking-head"><div><h2>關鍵字 Top 10</h2><p>篇／件數與總命中次數分開計算；點關鍵字直接回到查詢查看證據。</p></div></div>
+        <div class="ranking-tabs" id="searchRankingSourceTabs">
+          <button class="ranking-tab active" type="button" data-rank-source="">全部</button>
+          <button class="ranking-tab" type="button" data-rank-source="facebook">Facebook</button>
+          <button class="ranking-tab" type="button" data-rank-source="threads">Threads</button>
+          <button class="ranking-tab" type="button" data-rank-source="suno">Suno</button>
+        </div>
+        <div class="ranking-scope" id="searchRankingScope">載入時間跨度中…</div>
+        <div class="ranking-list" id="searchRankingList"><div class="empty">切換到排行榜時會依目前時間跨度計算。</div></div>
+      </section>
+    </div>
     <footer>LOC Search · 語言框架上的資料搜尋與關聯檢索 · system_id: lo3rwang</footer>
   </main>
-  <script src="js/facebook-repo-corpus.js"></script>
+  </div>
+  
+  <script>
+  (()=>{ 
+    const qel=id=>document.getElementById(id);
+    let rankingSource='';
+    let eraCache=null;
+    const escRank=s=>String(s??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    async function eraRows(){
+      if(eraCache)return eraCache;
+      try{
+        const r=await fetch('data/json/registries/LOC_ERA_REGISTRY.json',{cache:'no-store'});
+        const d=await r.json(); eraCache=Array.isArray(d.eras)?d.eras:[]; return eraCache;
+      }catch(_){eraCache=[];return eraCache;}
+    }
+    async function currentScope(){
+      let start=qel('startDate')?.value||'', end=qel('endDate')?.value||'';
+      const period=qel('period')?.value||'';
+      let era=null;
+      if(period){
+        era=(await eraRows()).find(x=>String(x.period||'')===period)||null;
+        if(era){ if(!start)start=era.start_date||''; if(!end)end=era.end_date||''; }
+      }
+      return {start,end,period,era};
+    }
+    function switchSearchView(name){
+      qel('queryView').hidden=name!=='query'; qel('rankingView').hidden=name!=='ranking';
+      document.querySelectorAll('[data-search-view]').forEach(b=>b.classList.toggle('active',b.dataset.searchView===name));
+      if(name==='ranking')renderSearchRanking();
+    }
+    async function fetchRank(source,start,end){
+      const r=await fetch('https://moon-runes-pwa.onrender.com/analysis/keywords',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({source,start_date:start,end_date:end,top_k:50})
+      });
+      const d=await r.json(); if(!r.ok)throw new Error(d.detail||'排行榜載入失敗'); return d;
+    }
+    async function renderSearchRanking(){
+      const host=qel('searchRankingList'),scopeEl=qel('searchRankingScope'); if(!host)return;
+      host.innerHTML='<div class="empty">計算關鍵字排行榜中…</div>';
+      const scope=await currentScope();
+      const eraText=scope.era?scope.era.display_label||scope.period:(scope.period||'全部時期');
+      scopeEl.textContent='時間跨度：'+(scope.start||'不限')+' ～ '+(scope.end||'現在')+'｜ERA：'+eraText;
+      try{
+        const sources=rankingSource?[rankingSource]:['facebook','threads','suno'];
+        const results=await Promise.all(sources.map(async source=>({source,data:await fetchRank(source,scope.start,scope.end)})));
+        const merged=new Map();
+        for(const result of results){
+          for(const item of result.data.items||[]){
+            const term=String(item.term||'').trim(); if(!term)continue;
+            const row=merged.get(term)||{term,document_count:0,hit_count:0,sources:new Set()};
+            row.document_count+=Number(item.document_count||0); row.hit_count+=Number(item.hit_count||0); row.sources.add(result.source); merged.set(term,row);
+          }
+        }
+        const rows=[...merged.values()].sort((a,b)=>b.document_count-a.document_count||b.hit_count-a.hit_count||a.term.localeCompare(b.term,'zh-Hant')).slice(0,10);
+        if(!rows.length){host.innerHTML='<div class="empty">目前時間跨度沒有可排名資料。</div>';return;}
+        host.innerHTML=rows.map((row,i)=>`<div class="ranking-row"><div class="rank">#${i+1}</div><div class="term">${escRank(row.term)}</div><div class="metric">${row.document_count} 篇／件</div><div class="metric secondary">${row.hit_count} 次 · ${escRank([...row.sources].join('＋'))}</div><button type="button" data-rank-query="${escRank(row.term)}">查看內容 →</button></div>`).join('');
+        host.querySelectorAll('[data-rank-query]').forEach(btn=>btn.addEventListener('click',()=>{
+          qel('query').value=btn.dataset.rankQuery||''; switchSearchView('query'); qel('searchForm')?.requestSubmit();
+        }));
+      }catch(err){host.innerHTML='<div class="empty">動態排行榜暫時無法載入：'+escRank(err.message)+'</div>';}
+    }
+    document.querySelectorAll('[data-search-view]').forEach(btn=>btn.addEventListener('click',()=>switchSearchView(btn.dataset.searchView)));
+    qel('searchRankingSourceTabs')?.addEventListener('click',e=>{
+      const btn=e.target.closest('[data-rank-source]'); if(!btn)return; rankingSource=btn.dataset.rankSource||'';
+      qel('searchRankingSourceTabs').querySelectorAll('[data-rank-source]').forEach(x=>x.classList.toggle('active',x===btn)); renderSearchRanking();
+    });
+  })();
+  </script>
+<script src="js/facebook-repo-corpus.js"></script>
   <script>
     const API='https://moon-runes-pwa.onrender.com';
     const SOURCE_SEARCH_PROVIDERS=[
