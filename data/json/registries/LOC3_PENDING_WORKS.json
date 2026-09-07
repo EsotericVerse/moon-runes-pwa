@@ -13,12 +13,22 @@
       "era_name": "自我治理與未來展望期",
       "creative_stage": "治理自己",
       "playlist": "6.治理自己",
-      "status": "metadata_pending",
+      "status": "lyrics_pending",
       "lyrics_status": "pending",
-      "suno_status": "pending",
+      "suno_status": "confirmed",
       "search_status": "excluded_until_lyrics_sync",
-      "source": "author_confirmed_title"
+      "source": "author_confirmed_title_and_suno_url",
+      "song_id": "9e584c30-de61-4f03-babb-d66e35cf3bbf",
+      "suno_url": "https://suno.com/song/9e584c30-de61-4f03-babb-d66e35cf3bbf",
+      "source_refs": [
+        {
+          "source_type": "suno_song",
+          "source_id": "9e584c30-de61-4f03-babb-d66e35cf3bbf",
+          "url": "https://suno.com/song/9e584c30-de61-4f03-babb-d66e35cf3bbf",
+          "note": "author-confirmed Suno song URL"
+        }
+      ]
     }
   ],
-  "updated_at": "2026-09-05"
+  "updated_at": "2026-09-07"
 }
