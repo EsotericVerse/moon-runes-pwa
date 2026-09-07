@@ -1424,10 +1424,10 @@
     <div class="topbar">
       <span class="brand" aria-label="LOC 月典">LOC · 月典</span>
       <nav class="nav-links" aria-label="主要導覽">
-        <a href="list.html">月之符文資料</a>
-        <a href="loc2.html">月符沙盒遊戲</a>
-        <a href="search.html">綜合搜尋</a>
-        <a href="life.html">推演</a>
+        <a href="runes.html">符文語彙</a>
+        <a href="context.html">脈絡</a>
+        <a href="search.html">搜尋</a>
+        <a href="projection.html">推演</a>
       </nav>
     </div>
     <header class="hero">
@@ -1443,7 +1443,7 @@
         <div class="hero-actions">
           <a class="cta primary" href="result.html?mode=daily">今日抽一張</a>
           <a class="cta secondary" href="#rune-entry">開始問一件事</a>
-          <a class="cta secondary" href="life.html#keyword-ranking">查看關鍵字排行</a>
+          <a class="cta secondary" href="projection.html#keyword-ranking">查看關鍵字排行</a>
           
         </div>
 
@@ -1495,7 +1495,7 @@
             <p>介紹：「玄」，月之符文所揭示</p>
             <p>所屬分組：它就是全部</p>
             <p id="moon-phase-index">月相：無 / 真實月相：計算中...</p>
-            <a class="rune-data-cta" href="list.html">
+            <a class="rune-data-cta" href="runes.html">
               <span>
                 <strong>查看完整月之符文資料</strong>
                 <small>月之符文66 圖鑑 · 八組分類 · 卡片詳細說明</small>
@@ -1717,7 +1717,7 @@
 
       <div class="hero-actions" style="margin-top:20px;">
         <a class="cta primary" href="search.html">試用綜合搜尋</a>
-        <a class="cta secondary" href="life.html#keyword-ranking">查看關鍵字排行</a>
+        <a class="cta secondary" href="projection.html#keyword-ranking">查看關鍵字排行</a>
       </div>
     </section>
 
@@ -1861,7 +1861,7 @@
           kicker:'LOC2 · Context / Graph',
           title:'脈絡',
           copy:'LOC2 負責語彙之間的關係、情境、事件與 Graph。月符沙盒是代表作：讓平等的符文節點進入相對關係，觀察共鳴、互補、衝突與情境。',
-          route:'頁面維持月符沙盒入口；Graph View 仍可在 life.html 顯示，但語意責任與關係資料歸 LOC2。',
+          route:'頁面維持月符沙盒入口；Graph View 仍可在 projection.html 顯示，但語意責任與關係資料歸 LOC2。',
           extra:[
             '關係是一對一 edge；多個關係累積後形成脈絡。',
             '月符沙盒：符文脈絡的互動實作，不只是遊戲分類。',
@@ -1869,10 +1869,10 @@
             'LOC7 可提供 Graph RAG 演算法，但不取代 LOC2 對脈絡／關係的責任。'
           ],
           resources:[
-            {label:'月符沙盒',href:'loc2.html',meta:'Semantic Playground · 脈絡實作'},
+            {label:'月符沙盒',href:'context.html',meta:'Semantic Playground · 脈絡實作'},
             {label:'開始可玩 Alpha',href:'loc2-game.html',meta:'Web Alpha · 單機雙人'}
           ],
-          href:'loc2.html', label:'進入 LOC2'
+          href:'context.html', label:'進入 LOC2'
         },
         LOC3: {
           kicker:'LOC3 · Music',
@@ -1918,14 +1918,14 @@
         LOC8: {
           kicker:'LOC8 · Projection',
           title:'推演',
-          copy:'把作品、語言、方法與風格放入時間，透過 ERA、Event、Trajectory 與 Trend 觀察它們如何變化。所有未來性統一視為演化。',
-          route:'獨立功能入口仍是 life.html；Graph View 可保留在此作為演化視圖。',
+          copy:'把作品、語言、方法與風格放入時間，透過 ERA、Event、Trajectory 與 Trend 觀察變化並推導後續方向。推演以既有證據為基礎，不等於預言。',
+          route:'獨立功能入口是 projection.html；Graph View 可保留在此作為演化視圖。',
           extra:[
             '時間不是另一種內容，而是讓前面各層產生「前後變化」的維度。',
             'ERA、Trajectory、Trend 用來描述已發生與正在形成的變化。',
-            'Graph 的關係／脈絡責任歸 LOC2；LOC8 消費 Graph 做時間投影與演化分析。'
+            'Graph 的關係／脈絡責任歸 LOC2；LOC8 消費 Graph 做時間投影與推演分析。'
           ],
-          href:'life.html', label:'進入 LOC8'
+          href:'projection.html', label:'進入 LOC8'
         }
       };
       function render(key){
