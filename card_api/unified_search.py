@@ -76,7 +76,7 @@ class UnifiedSearchEngine:
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.loc4_analysis = self._load_json("LOC4_TEXT_ANALYSIS_REGISTRY.json")
         self.loc4_corpus_manifest = self._load_repo_json("data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json")
-        self.loc4_corpus = self._load_loc4_corpus_shards()
+        # LOC4 authored full text is streamed shard-by-shard on demand.
         try:
             self.loc4_moon_speaker_analysis = build_moon_speaker_chapter_analysis(repo_root)
         except Exception:
@@ -157,20 +157,29 @@ class UnifiedSearchEngine:
             return count
         return len(self.loc4_threads.get("documents", []) or [])
 
-    def _load_loc4_corpus_shards(self) -> dict[str, Any]:
+    def _iter_loc4_corpus_documents(self):
+        """Yield LOC4 authored text documents one shard at a time."""
         manifest = getattr(self, "loc4_corpus_manifest", {}) or {}
-        documents: list[dict[str, Any]] = []
-        for shard in manifest.get("shards", []):
+        for shard in manifest.get("shards", []) or []:
             path = shard.get("path")
             if not path:
                 continue
             part = self._load_repo_json(path)
-            documents.extend(part.get("documents", []))
-        return {
-            "documents": documents,
-            "document_count": len(documents),
-            "manifest": manifest,
-        }
+            for doc in part.get("documents", []) or []:
+                yield doc
+            del part
+
+    def _loc4_corpus_document_count(self) -> int:
+        manifest = getattr(self, "loc4_corpus_manifest", {}) or {}
+        count = manifest.get("document_count")
+        if isinstance(count, int):
+            return count
+        total = 0
+        for shard in manifest.get("shards", []) or []:
+            shard_count = shard.get("document_count")
+            if isinstance(shard_count, int):
+                total += shard_count
+        return total
 
 
     @staticmethod
@@ -853,8 +862,9 @@ class UnifiedSearchEngine:
             if score >= 0.34:
                 scored.append((score * 0.992, "chapter", chapter))
 
-        # Document-level authored full-text corpus.
-        for doc in (getattr(self, "loc4_corpus", {}) or {}).get("documents", []):
+        # Document-level authored full-text corpus, streamed shard-by-shard.
+        max_document_matches = max(top_k * 4, 24)
+        for doc in self._iter_loc4_corpus_documents():
             score = _text_score(query, [
                 doc.get("title"),
                 doc.get("section"),
@@ -863,6 +873,9 @@ class UnifiedSearchEngine:
             ])
             if score >= 0.34:
                 scored.append((score * 0.985, "document", doc))
+                if len(scored) > max_document_matches * 3:
+                    scored.sort(key=lambda row: (-row[0], str(row[2].get("id") or row[2].get("work_id") or "")))
+                    scored = scored[:max_document_matches]
 
         scored.sort(key=lambda row: (-row[0], str(row[2].get("id") or row[2].get("work_id") or "")))
         results = []
@@ -2990,7 +3003,7 @@ class UnifiedSearchEngine:
                 "LOC1": "live",
                 "LOC2": f"scenario-event-search-live; {len(self.loc2_events.get('records', []) or [])} scenario events",
                 "LOC3": "live",
-                "LOC4": f"creative-works+life-writing-live; {len((getattr(self, 'loc4_corpus', {}) or {}).get('documents', []))} authored corpus segments; {len((getattr(self, 'loc4_moon_speaker_analysis', {}) or {}).get('chapters', []))} MoonSpeaker chapter analyses",
+                "LOC4": f"creative-works+life-writing-live; {self._loc4_corpus_document_count()} authored corpus segments; {len((getattr(self, 'loc4_moon_speaker_analysis', {}) or {}).get('chapters', []))} MoonSpeaker chapter analyses",
                 "LOC5": "direct-media-registry-search-live",
                 "LOC6": "governance/style-derived-search-live",
                 "LOC4_threads_indexed": self._loc4_thread_document_count(),
