@@ -155,9 +155,12 @@
       "ui": "Unified Search only; loc3.html compatibility redirect"
     },
     "LOC4": {
-      "writing_registry": "schema-ready",
-      "corpus_import": "pending",
-      "cross_relationship_registry": "connected"
+      "writing_registry": "connected",
+      "corpus_import": "complete_for_current_core_authored_set",
+      "cross_relationship_registry": "connected",
+      "source_corpus": "ready",
+      "fulltext_search": "connected",
+      "life_writing_sources": "Facebook + Threads connected by reference; raw text LOC4, governance interpretation LOC6"
     },
     "LOC5": "media-authority-established; cross-relationship-registry-connected",
     "LOC6": {
@@ -165,13 +168,13 @@
       "rune_interpretation_corpus": "connected",
       "rune_interpretation_records": "180 usable / 182 chapter slots",
       "analysis_types": "connected",
-      "corpus_import": "partial-primary-corpus-connected",
+      "corpus_import": "full-main-post-search-connected; replies supplemental",
       "dual_rune_relation_registry": "connected",
       "dual_rune_relation_model": "neutral pair → draw cause/effect projection → directions/context",
       "era_style_evidence": "403 indexed LOC3 works linked by ERA",
       "cross_media_relationship_interpretation": "connected",
       "threads_km_search": "connected-v0.2-138-articles",
-      "threads_source_counts": "6907 deduplicated / 4491 main / 2416 replies"
+      "threads_source_counts": "7008 deduplicated / 4578 main / 2430 replies"
     },
     "LOC7": {
       "linguistic_analysis_registry": "schema-ready",
@@ -243,9 +246,9 @@
       "LOC1": "rune retrieval",
       "LOC2": "Scenario/Event registry connected; direct Unified Search corpus integration pending",
       "LOC3": "lyrics/music retrieval",
-      "LOC4": "registry ready; corpus import pending",
+      "LOC4": "authored full-text corpus connected; Facebook/Threads life-writing source corpora connected by reference",
       "LOC5": "media retrieval through shared media registry",
-      "LOC6": "Governance registry + Threads KM evidence searchable through Unified Search",
+      "LOC6": "Governance registry + Threads/Facebook governance interpretation over LOC4-owned authored text",
       "LOC7": "FAQ/KM retrieval",
       "LOC8": "ERA retrieval"
     },
