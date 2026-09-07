@@ -1,6 +1,6 @@
-> **Graph ownership：LOC2。** 本文件與 life.html 只保留 Graph 的時間／ERA／Trajectory／Trend View；不再把關係／Graph 本體視為 LOC8 authority。
+> **Graph ownership：LOC2。** 本文件與 projection.html 只保留 Graph 的時間／ERA／Trajectory／Trend View；不再把關係／Graph 本體視為 LOC8 authority。
 
-# LOC8｜文學演化
+# LOC8｜推演
 
 **Version:** 0.1  
 **Status:** Working  
@@ -390,7 +390,7 @@ LOC8 目前額外接入兩個 repository-governed fallback snapshot：
 
 ### Relation Library 與公開 Search 的權限邊界
 
-`life.html` 的 Relation Library 目前直接使用 Google Sheet `Relation` 分頁，資料可標記 `visibility=private`。因此公開 `search.html` / Render Search API **不直接讀取 live Relation Sheet**。
+`projection.html` 的 Relation Library 目前直接使用 Google Sheet `Relation` 分頁，資料可標記 `visibility=private`。因此公開 `search.html` / Render Search API **不直接讀取 live Relation Sheet**。
 
 規則：
 
