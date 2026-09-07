@@ -103,6 +103,55 @@ function switchView(name){$('#overviewView').hidden=name!=='overview';$('#trendV
 $$('[data-view]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
 if(location.hash==='#timeline')switchView('timeline'); else if(location.hash==='#trend')switchView('trend'); else if(location.hash==='#trajectory')switchView('trajectory');
 resetTimelineEvent();loadTimelineEvents();
+$('#timelineEventForm')?.addEventListener('submit',async ev=>{
+  ev.preventDefault();
+  const id=$('#timelineEventId').value;
+  const event={
+    id:id||eventUid(),
+    user_id:'lo3rwang',
+    date:$('#timelineEventDate').value,
+    event_type:$('#timelineEventType').value.trim(),
+    event_title:$('#timelineEventTitle').value.trim(),
+    object_type:$('#timelineEventObjectType').value.trim(),
+    object_id:$('#timelineEventObjectId').value.trim(),
+    description:$('#timelineEventDescription').value.trim(),
+    state_before:$('#timelineEventBefore').value.trim(),
+    state_after:$('#timelineEventAfter').value.trim(),
+    era:$('#timelineEventPeriod').value.trim(),
+    status:$('#timelineEventStatus').value,
+    confidence:'recorded',
+    system_id:'lo3rwang',
+    primary_loc:'LOC8'
+  };
+  try{
+    await postEvent(id?'update_event':'event',event);
+    resetTimelineEvent();
+    await loadTimelineEvents();
+  }catch(err){
+    alert('事件儲存失敗：'+err.message);
+  }
+});
+$('#timelineEventCancel')?.addEventListener('click',resetTimelineEvent);
+$('#timelineEventList')?.addEventListener('click',async ev=>{
+  const b=ev.target.closest('[data-timeline-event]');
+  if(!b)return;
+  const id=b.dataset.id;
+  const action=b.dataset.timelineEvent;
+  if(action==='edit'){
+    editTimelineEvent(id);
+    $('#timelineEventForm')?.scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
+  if(action==='delete'){
+    if(!confirm('刪除這筆事件？'))return;
+    try{
+      await postEvent('delete_event',{id,user_id:'lo3rwang'});
+      await loadTimelineEvents();
+    }catch(err){
+      alert('事件刪除失敗：'+err.message);
+    }
+  }
+});
 $('#addEraBtn')?.addEventListener('click',()=>{addingEra=true;editingEraId='';renderEraCrud()});
 $('#eraTimeline')?.addEventListener('click',async ev=>{const b=ev.target.closest('[data-era-action]');if(!b)return;const a=b.dataset.eraAction,id=b.dataset.eraId||'';if(a==='edit'){editingEraId=id;addingEra=false;renderEraCrud();return}if(a==='cancel'){editingEraId='';addingEra=false;renderEraCrud();return}if(a==='delete'){const item=evolutionEras.find(x=>x.era_id===id);if(!confirm('確定刪除時期「'+(item?.display_label||item?.name||id)+'」？'))return;try{await postEra('delete_era',{era_id:id});evolutionEras=evolutionEras.filter(x=>x.era_id!==id);renderEraCrud()}catch(err){alert('刪除失敗：'+err.message)}}});
 $('#eraTimeline')?.addEventListener('submit',async ev=>{const form=ev.target.closest('[data-era-form]');if(!form)return;ev.preventDefault();const token=form.dataset.eraForm,isNew=token==='new',existing=isNew?{}:(evolutionEras.find(x=>x.era_id===token)||{}),era=eraPayload(form,existing);try{await postEra(isNew?'era':'update_era',era);if(isNew)evolutionEras.push(era);else evolutionEras=evolutionEras.map(x=>x.era_id===token?era:x);addingEra=false;editingEraId='';renderEraCrud()}catch(err){alert((isNew?'新增':'修改')+'失敗：'+err.message)}});
