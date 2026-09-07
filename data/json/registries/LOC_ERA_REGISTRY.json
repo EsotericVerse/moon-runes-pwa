@@ -232,39 +232,53 @@
       "era_id": "ERA-P7",
       "period": "P7",
       "order": 7,
-      "name": "自由的風期",
-      "display_label": "P7｜自由的風期",
+      "name": "自由的風 → 自由的月轉換期",
+      "display_label": "P7｜自由的風 → 自由的月轉換期",
       "start_date": "2026-08-01",
       "end_date": "2026-08-31",
       "status": "released",
       "source_event_id": "EV-ERA-P7",
-      "description": "期間：2026-08-01～2026-08-31。當一切慢慢實現。所有事情已經盡力，只能在計畫內的等待。",
+      "description": "期間：2026-08-01～2026-08-31。生活條件逐步落定，從脫困、起飛與重新擁有選擇權，進一步轉向自由之後的整理、斷捨離、邊界與自我治理。",
       "state_before": "P6 順其自然與界線整合期",
-      "state_after": "自由的風：生活條件逐步落定，語言轉向自由、前行、選擇與新的可能",
+      "state_after": "脫困 → 起飛 → 自由 → 自我治理：自由的風逐步轉入自由的月。",
       "source_active_range": {
         "start": "2026-08-01",
         "end": "2026-08-31",
         "source": "Suno / original ERA segmentation"
-      }
+      },
+      "source_labels": [
+        "Suno",
+        "Instagram",
+        "Threads",
+        "Facebook",
+        "個人創作"
+      ]
     },
     {
       "era_id": "ERA-P8",
       "period": "P8",
       "order": 8,
-      "name": "自我治理與未來展望期",
-      "display_label": "P8｜自我治理與未來展望期",
+      "name": "自由的月／治理自己期",
+      "display_label": "P8｜自由的月／治理自己期",
       "start_date": "2026-09-01",
       "end_date": null,
       "status": "current",
       "source_event_id": "EV-ERA-P8",
-      "description": "期間：2026-09-01～？。理想與期望。首先由自我治理開始。自我治理是將以前的事物經過整理跟反思，進而得到進化的方式。",
-      "state_before": "P7 自由的風期",
-      "state_after": "自我治理與未來展望：自由之後進入主動管理生活、選擇、邊界與航向的 Current 階段",
+      "description": "期間：2026-09-01～現在。自由已成為既定條件，重點轉向整理過往、完成未竟事項、建立邊界與秩序，並主動選擇下一步航向。",
+      "state_before": "P7 自由的風 → 自由的月轉換期",
+      "state_after": "自由的月：自由之後進入治理自己、整理歷史、建立秩序與選擇未來方向的 Current 階段。",
       "source_active_range": {
         "start": "2026-09-01",
         "end": null,
         "source": "Suno / original ERA segmentation"
-      }
+      },
+      "source_labels": [
+        "Suno",
+        "Instagram",
+        "Threads",
+        "Facebook",
+        "個人創作"
+      ]
     }
   ],
   "periodization_rule": {
