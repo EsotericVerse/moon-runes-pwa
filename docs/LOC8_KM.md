@@ -1,4 +1,6 @@
-# LOC8_KM — Context, ERA, Event & Relation
+> **Graph ownership：LOC2。** 本文件與 life.html 只保留 Graph 的時間／ERA／Trajectory／Trend View；不再把關係／Graph 本體視為 LOC8 authority。
+
+# LOC8｜文學演化
 
 **Version:** 0.1  
 **Status:** Working  
