@@ -8,7 +8,7 @@
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 的 LunaRune64.xlsx Grammar、自然語言 Search/RAG、月符基本參照、符文治理、符文沙盒 Graph、來源／內容分類與時間篩選規則。",
+    "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 最新 LunaRune64.xlsx Grammar：一般牌陣使用治理原則＋月相交互，符文交互限定月符沙盒專用；並同步自然語言 Search/RAG、來源／內容分類與時間篩選規則。",
     "entry_count": 83,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
@@ -2048,30 +2048,29 @@
       "category": "符文治理",
       "question": "一般兩卡、五卡、OW3gs 與符文沙盒 Graph 怎麼區分？",
       "aliases": [
-        "兩卡一定只有因果嗎？",
-        "符文交互還保留嗎？",
-        "符文沙盒為什麼可以交替？",
-        "群組交替還要用嗎？",
-        "OW3gs 1到6怎麼讀？"
+        "兩卡怎麼解？",
+        "五卡是不是2+3？",
+        "OW3gs 1到6和7到11怎麼讀？",
+        "符文交互在哪裡用？",
+        "月符沙盒為什麼是平等關係？"
       ],
-      "answer": "以 LunaRune64.xlsx 的 Grammar 為準：兩卡是卡A＋卡B＋方向關係＋交互或治理原則；因果可由牌位／問題建立，但符文交互仍描述共鳴、互補、衝突與語氣張力，且不單獨決定吉凶。五卡不是2+3拼接，只連有語義關係的卡對。OW3gs 先讀7–11，再掃描1–6；1–6可做群組、重複主題與張力聚合，但不採群組交替。沙盒 Graph 則是另一場域，可使用平等節點互動。",
+      "answer": "以 LunaRune64.xlsx#Grammar 為準：兩卡＝因＋果＋月相交互；三卡＝源＋轉＋合＋月相交互；五卡＝過去＋現在＋未來顯化＋周圍環境＋自己心境＋月相交互，且不是2+3拼接。OW3gs 分成 1–6 因的描述層與 7–11 果的判定層，先讀7–11，再掃描1–6，最後套月相交互。符文交互描述共鳴、互補、衝突與語氣張力，但現行限定月符沙盒專用，因沙盒符文關係為平等。",
       "keywords": [
         "Grammar",
         "兩卡",
-        "符文交互",
         "因果",
+        "三卡",
+        "源轉合",
         "五卡",
-        "關係優先",
         "OW3gs",
-        "群組聚合",
-        "群組交替",
-        "符文沙盒",
-        "Graph"
+        "符文交互",
+        "月符沙盒",
+        "月相交互"
       ],
       "source_refs": [
         "LunaRune64.xlsx#Grammar",
-        "docs/LOC7_KM.md",
-        "docs/LOC_GOVERNANCE_CORE.md"
+        "data/json/core/rune_grammar.json",
+        "docs/LOC7_KM.md"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
