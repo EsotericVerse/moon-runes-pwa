@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "registry": "LOC4_WRITING_REGISTRY",
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
@@ -743,5 +743,23 @@
     "moon_speaker": "7-part full-text architecture complete; chapter-level deeper semantic annotations may continue",
     "registry": "data/json/registries/LOC4_TEXT_ANALYSIS_REGISTRY.json",
     "updated_at": "2026-09-07"
-  }
+  },
+  "governance_boundary": {
+    "boundary_registry": "data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json",
+    "owns": [
+      "創作作品原文與 metadata",
+      "Facebook/Threads 生活文字原文與來源 metadata",
+      "作品級文學／語意解析",
+      "章級文學／語意解析",
+      "作品第一章／公開來源連結與作品附屬跨媒介 reference"
+    ],
+    "does_not_own": [
+      "政德風規則",
+      "價值觀／治理原則",
+      "style-state interpretation",
+      "跨 ERA 治理解讀"
+    ],
+    "LOC6_relation": "LOC6 reads LOC4 records as evidence and publishes separate governance/style interpretations by reference."
+  },
+  "updated_at": "2026-09-07"
 }
