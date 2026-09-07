@@ -33,7 +33,7 @@ main{min-width:0}.view[hidden]{display:none!important}.hero{padding:28px 0 18px}
   <nav class="nav" aria-label="演化功能">
     <div class="nav-group"><div class="nav-label">01 · 總覽</div><button class="view-switch active" type="button" data-view="overview"><strong>推演總覽</strong><small>時期 · Current · 時間跨度</small></button></div>
     <div class="nav-group"><div class="nav-label">02 · 趨勢</div><button class="view-switch" type="button" data-view="trend"><strong>時期趨勢</strong><small>跨時期關鍵字脈絡</small></button></div>
-    <div class="nav-group"><div class="nav-label">03 · 軌跡</div><button class="view-switch" type="button" data-view="trajectory"><strong>軌跡</strong><small>ERA 轉折 · 關鍵字升降</small></button></div>
+    <div class="nav-group"><div class="nav-label">03 · 軌跡</div><button class="view-switch" type="button" data-view="trajectory"><strong>軌跡</strong><small>時期轉折 · 關鍵字升降</small></button></div>
   </nav>
   <div class="sidebar-foot">從時間、時期與事件變化中，觀察語言與作品如何一路演變。</div>
 </aside>
@@ -54,8 +54,8 @@ main{min-width:0}.view[hidden]{display:none!important}.hero{padding:28px 0 18px}
   <div class="keyword-grid" id="trendGrid"><div class="empty">載入時期分析…</div></div>
 </section>
 <section class="view" id="trajectoryView" hidden>
-  <div class="hero"><h1>軌跡</h1><h2>觀察一個時期如何轉變成下一個時期。</h2><p>把 ERA 依時間串接，並比較相鄰時期的語意關鍵字變化，找出每一次轉折的方向。</p></div>
-  <div class="source-note">資料來源：ERA Registry + LOC3 / LOC6 時期分析；只呈現現有資料可支持的變化。</div>
+  <div class="hero"><h1>軌跡</h1><h2>觀察一個時期如何轉變成下一個時期。</h2><p>把各時期依時間串接，並比較相鄰時期的語意關鍵字變化，找出每一次轉折的方向。</p></div>
+  <div class="source-note">資料來源：時期資料 + LOC3 / LOC6 時期分析；只呈現現有資料可支持的變化。</div>
   <div class="trajectory-list" id="trajectoryList"><div class="empty">載入軌跡…</div></div>
 </section>
 </main>
@@ -114,7 +114,7 @@ Promise.all([
       <div class="trajectory-note">${esc(toEra.description||'')}</div>
     </article>`);
   }
-  $('#trajectoryList').innerHTML=trajectory.join('')||'<div class="empty">目前沒有足夠的 ERA 可形成軌跡。</div>';
+  $('#trajectoryList').innerHTML=trajectory.join('')||'<div class="empty">目前沒有足夠的時期資料可形成軌跡。</div>';
 }).catch(err=>{$('#eraTimeline').innerHTML='<div class="empty">靜態資料載入失敗：'+esc(err.message)+'</div>';$('#trendGrid').innerHTML='<div class="empty">靜態資料載入失敗。</div>';$('#trajectoryList').innerHTML='<div class="empty">軌跡資料載入失敗。</div>'});
 </script>
 <script src="js/loc-nav.js"></script>
