@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>治理｜政德風與語言治理方法｜LOC</title><meta name="description" content="LOC 治理主頁：整理治理規則、治理文件的功能與必要性，以及政德風如何從個人語言實作中形成自我治理方法。">
+<link rel="stylesheet" href="css/loc-nav.css">
+<style>
+:root{--bg:#f5f5f3;--card:#fff;--text:#181818;--muted:#666;--line:#d9d9d4}
+@media(prefers-color-scheme:dark){:root{--bg:#111;--card:#181818;--text:#f2f2f2;--muted:#aaa;--line:#343434}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.85}
+body{min-height:100vh} .app-shell{display:grid;grid-template-columns:260px minmax(0,1fr);gap:22px;width:min(1180px,calc(100% - 28px));margin:0 auto;padding:22px 0 64px}.workspace-sidebar{position:sticky;top:86px;align-self:start;min-height:calc(100vh - 108px);padding:18px;border:1px solid var(--line);border-radius:20px;background:var(--card)}.workspace-brand h1{margin:0;font-size:1.15rem}.workspace-brand p{margin:4px 0 0;color:var(--muted);font-size:.82rem}.workspace-nav{display:grid;gap:12px;margin-top:18px}.workspace-nav-label{margin-bottom:5px;color:var(--muted);font-size:.72rem;letter-spacing:.08em}.workspace-switch{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:14px;background:transparent;color:var(--text);text-align:left;cursor:pointer}.workspace-switch strong{display:block;font-size:.95rem}.workspace-switch small{display:block;margin-top:4px;color:var(--muted);font-size:.74rem}.workspace-switch.active{background:rgba(127,127,127,.08);border-color:#999}.workspace-main{min-width:0}.governance-view[hidden]{display:none!important}article{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(24px,5vw,52px)}@media(max-width:860px){.app-shell{grid-template-columns:1fr}.workspace-sidebar{position:static;min-height:0}.workspace-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.workspace-nav{grid-template-columns:1fr}}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.2;margin:.2rem 0 1rem}h2{margin-top:2.2rem;padding-top:1.25rem;border-top:1px solid var(--line)}h3{margin-top:1.6rem}
+p{margin:.8rem 0}ul{padding-left:1.35rem}.eyebrow{font-size:.82rem;letter-spacing:.08em;color:var(--muted)}.lead{font-size:1.08rem;color:var(--muted)}.back{display:inline-block;margin-top:2rem;color:inherit;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:.55rem .9rem}
+</style></head><body>
+<div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav aria-label="全站導覽"></nav></div>
+<div class="app-shell">
+  <aside class="workspace-sidebar">
+    <div class="workspace-brand"><h1>Governance</h1><p>治理</p></div>
+    <nav class="workspace-nav" aria-label="治理功能">
+      <div>
+        <div class="workspace-nav-label">01 · 文件</div>
+        <button class="workspace-switch active" type="button" data-governance-view="governance"><strong>治理章節文件</strong><small>規則 · 權責 · 必要性 · 維護原則</small></button>
+      </div>
+      <div>
+        <div class="workspace-nav-label">02 · 風格</div>
+        <button class="workspace-switch" type="button" data-governance-view="style"><strong>政德風說明</strong><small>語言風格 · 治理自己 · ERA 變化</small></button>
+      </div>
+    </nav>
+  </aside>
+  <main class="workspace-main">
+    <section class="governance-view" id="governanceView"><article>
+<div class="eyebrow">Governance · Public Knowledge Article</div>
+<h1>治理</h1>
+<p class="lead">治理不是替內容加上一層限制，而是讓語言、規則、資料與作品在長期使用中保持一致、可追溯、可修正與可延續。</p>
+
+<h2>一、治理是什麼</h2>
+<p>治理處理的是「系統如何做決定，以及決定之後如何保持一致」。它不只回答某個詞是什麼意思，也要回答：誰有權修改、什麼資料優先、同一概念出現衝突時採用哪一個版本、哪些名稱可以對外使用、哪些規則只能作為內部識別，以及變更之後哪些頁面與資料需要同步。</p>
+<p>因此，治理不是額外附加的說明，而是系統能否長期運作的基礎。沒有治理，同一個詞可能在不同頁面有不同定義；同一份資料可能被複製成多份互相矛盾的版本；一次局部修改也可能破壞搜尋、Graph、抽牌或文件之間的關係。</p>
+
+<h2>二、治理規則處理什麼</h2>
+<ul>
+<li><strong>命名治理：</strong>固定正式名稱、簡稱、公開名稱與內部識別，避免同一概念被反覆改名。</li>
+<li><strong>資料權責：</strong>指定母資料、衍生資料與展示資料的優先順序，避免多份來源互相污染。</li>
+<li><strong>版本治理：</strong>區分現行規則、歷史版本、Alpha 草稿與已廢止內容。</li>
+<li><strong>功能邊界：</strong>確認每個頁面與功能負責什麼，不讓搜尋、脈絡、抽牌、推演等功能互相侵入。</li>
+<li><strong>公開治理：</strong>決定哪些內容可以直接展示、哪些只提供片段、哪些只保留 metadata 或內部使用。</li>
+<li><strong>變更同步：</strong>一項核心規則改動後，必須檢查相關 HTML、JS、JSON、KM、FAQ 與搜尋索引是否需要同步。</li>
+</ul>
+
+<h2>三、為什麼需要治理文件</h2>
+<p>治理如果只存在於作者腦中，系統就無法穩定延續。治理文件的功能，是把已經做出的判斷寫成可查閱的依據，讓未來的開發、整理、搜尋與內容生成都有一致的參考基準。</p>
+<p>它至少有四個必要性：</p>
+<ul>
+<li><strong>避免回歸：</strong>已修正過的名稱、規則與架構，不應在日後整理時又被舊資料帶回來。</li>
+<li><strong>降低維護成本：</strong>遇到衝突時先查治理規則，而不是每次重新討論整個系統。</li>
+<li><strong>支援跨功能一致性：</strong>同一概念在網站、搜尋、Graph、文件與資料庫中應有一致的定義與責任邊界。</li>
+<li><strong>保留決策脈絡：</strong>治理文件不只記「現在是什麼」，也要能理解「為什麼改成現在這樣」。</li>
+</ul>
+
+<h2>四、治理的基本原則</h2>
+<ul>
+<li>現行明確決定優先於歷史草稿。</li>
+<li>母資料優先於衍生檔與展示層。</li>
+<li>公開名稱以使用者可理解為優先，內部編號不必反覆暴露。</li>
+<li>功能應各自有清楚責任，不因方便而重複實作相同邏輯。</li>
+<li>可以刪除重複結構，但不能因簡化而破壞既有功能。</li>
+<li>資料可以被重新整理，但需要保留可追溯性與來源關係。</li>
+<li>治理不是禁止改動；治理是讓改動有依據、有範圍、有同步規則。</li>
+</ul>
+
+<h2>五、治理與政德風</h2>
+<p>政德風是治理最直接的個人語言實作之一。它不是單純文體，而是長期把感受、經驗、價值判斷、界線、責任與選擇整理成可重複使用的語言方式。</p>
+<p>因此，這個頁面同時承接兩件事：前半部保存治理原則與治理文件；後半部記錄政德風如何在作品與生活文字中逐步形成「治理自己」的語言。</p>
+
+</article></section>
+    <section class="governance-view" id="styleView" hidden><article><h2>六、政德風摘要</h2>
+<p>政德風不是固定文體，也不是單純的語錄集合。它是王政德長期作品、生活紀錄、歌曲與文章中逐步形成的個人語言系統表現。其核心特徵，是在感性經驗與理性論述之間擺盪，並隨人生階段逐漸加入界線、責任、取捨、主權與自我治理。</p>
+<p>從資料結構來看，政德風的證據分散在歌曲、文章、生活文字、Reels、多媒體與 ERA 時間脈絡之中；治理的工作，是把這些跨媒介材料重新整理成可以比較、追蹤與再利用的語言特徵。</p>
+<h2>七、兩個長期並存的核心：理性與感性</h2>
+<p>政德風長期存在兩種明顯語言狀態。</p>
+<p>第一種是感性書寫。它從個人經驗、身體感受、等待、失落、孤獨、愛與希望出發，經常使用月光、微光、風、夜晚、道路、月台等意象，讓情緒透過畫面與節奏流動。</p>
+<p>第二種是理性書寫。它不是描述「我有什麼感覺」，而是直接提出命題，例如關係需要互動、責任有其界線、存在不需要辯解、逃避也是面對的一種。這類文字後來大量進入歌曲，形成一批近似「文章被音樂化」的作品。</p>
+<p>因此，政德風不能只用情緒分類理解。完整分析至少要同時觀察 Affect、Reasoning / Proposition、State、Hope / Resolution 四個語意層。</p>
+<h2>八、歌曲中的三種論述方向</h2>
+<p>在理性歌曲中，又可以進一步區分三種方向。</p>
+<h3>思辨論述型</h3>
+<p>面向問題或世界本身，核心是理解、判斷、重框與提出觀點。</p>
+<p>典型結構是：</p>
+<p>「這件事到底是什麼？」 「這個關係為什麼會變成這樣？」 「某個概念是否可以用另一種方式理解？」</p>
+<h3>治理宣言型</h3>
+<p>面向自己，核心是自省、自我規範、責任、界線、取捨與行動方向。</p>
+<p>它不是單純自我檢討，而是：</p>
+<p>看見問題 → 確認責任 → 建立界線 → 做出選擇 → 規定自己接下來怎麼做。</p>
+<h3>勸戒論述型</h3>
+<p>面向他人或群體，核心是提醒、勸告、警告、責任與後果。</p>
+<p>它和治理宣言型最大的差異，在於語意方向不同：前者治理自己，後者向外提出規範性判斷。</p>
+<h2>九、狀態紀錄與希望尾巴</h2>
+<p>政德風還有一類特殊作品，是作者用歌曲記錄自己自述的發作、身心狀態或意識狀態。這些作品不宜單純視為情緒歌，也不應被誤判成符文歌曲。</p>
+<p>其資料功能比較接近：</p>
+<p>狀態發生 → 描述感受與知覺 → 留下紀錄 → 尋找恢復或希望的尾端。</p>
+<p>這使歌曲 corpus 同時保存情緒史、思想史、狀態史與語言治理史。</p>
+<h2>十、從 ERA 看風格變化</h2>
+<p>政德風的時間變化以 ERA 為主要座標。</p>
+<p>早期作品較常從感受出發，以月光、微光、孤獨與等待建立語言辨識度。中期開始增加大量現實判斷、界線、關係規則與存在命題。之後語言逐步從「描述我受到什麼」轉向「我怎麼處理、怎麼選、怎麼治理自己」。</p>
+<p>到了「自由的月／治理自己」階段，核心不再只是取得自由，而是自由之後如何管理過去、未竟之事、責任、界線與未來航向。</p>
+<p>因此目前政德風最重要的演變，可以概括為：</p>
+<p><strong>感受 → 描述 → 理解 → 判斷 → 建立界線 → 自我治理。</strong></p>
+<h2>十一、跨媒介關係也是政德風證據</h2>
+<p>政德風不只存在於單一作品。</p>
+<p>例如《已讀不回》先以歌曲形成語意核心，再延伸為六章文章，並另有 Reels。這種關係證明，同一個概念可以由短歌詞擴寫成長篇文字，再轉成視聽作品。</p>
+<p>因此治理分析不能只問「這句話是什麼風格」，還要觀察：</p>
+<ul>
+<li>同一概念如何跨歌曲、文章與多媒體重寫；</li>
+<li>同一觀點如何在不同 ERA 被重新定義；</li>
+<li>短句如何發展成論述；</li>
+<li>情緒如何逐步被整理成治理語言。</li>
+</ul>
+<p>這些關係由知識管理與 Search 統整呈現，而作品本身仍由各自的資料來源保存。</p>
+<h2>十二、治理頁的現行角色</h2>
+<p>治理頁的核心是保存並解析：</p>
+<ul>
+<li>政德風的治理原則；</li>
+<li>句型、語氣與價值判準；</li>
+<li>歌曲與文章中的命題；</li>
+<li>ERA 間的風格差異；</li>
+<li>跨媒介語言演化的意義。</li>
+</ul>
+<p>對使用者而言，治理頁提供的是規則與方法的主入口；若要追查某一個具體概念或作品，則可在 <strong>LOC 搜尋引擎</strong>輸入「政德風」、「界線」、「治理自己」或作品名稱，查看歌曲、文章、多媒體、知識文件、ERA 與關係證據如何共同形成同一個語言主題。</p>
+<h2>十三、可操作的語意時間線</h2>
+<p>Facebook 長期文字紀錄已開始轉成可互動的 LOC 語意時間線。頁面公開的只有聚合統計；私人原文可由使用者自行在瀏覽器本機載入，資料不會上傳。</p>
+<p>這個介面讓「語言演變」不再只是一次性的分析報告，而可以直接切換概念、查看年度趨勢、比較不同時期語境，並以本機 corpus 搜尋代表原文。</p>
+<p><a class="back" href="facebook-timeline.html">開啟 Facebook Semantic Timeline →</a></p>
+<h2>結論</h2>
+<p>政德風不是「某一種寫法」，而是一個持續演化的個人語言紀錄。</p>
+<p>它可以非常感性，也可以非常理性；可以記錄混亂，也可以整理規則；可以只是月光下的一句感受，也可以發展成一篇文章、一首論述歌曲，甚至成為一套自我治理方式。</p>
+<p>治理所保存的，就是這些語言如何從經驗中形成、如何被整理成規則、如何改變，以及最後如何被重新使用。</p>
+<a class="back" href="search.html?q=%E6%94%BF%E5%BE%B7%E9%A2%A8">← 回到 LOC Search</a>
+</article></section>
+  </main>
+</div>
+<script>
+(()=>{
+  const buttons=[...document.querySelectorAll('[data-governance-view]')];
+  const views={governance:document.getElementById('governanceView'),style:document.getElementById('styleView')};
+  function switchView(name){
+    Object.entries(views).forEach(([key,view])=>view.hidden=key!==name);
+    buttons.forEach(btn=>btn.classList.toggle('active',btn.dataset.governanceView===name));
+    history.replaceState(null,'',name==='governance'?'governance.html':'governance.html#style');
+  }
+  buttons.forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.governanceView)));
+  if(location.hash==='#style') switchView('style');
+})();
+</script>
+<script src="js/loc-nav.js"></script>
+</body></html>
