@@ -3294,7 +3294,7 @@
           dailyDraws = fallback;
           dailyDrawPage = 1;
           renderDailyDraws(dailyDraws);
-          if (els.drawSyncText) els.drawSyncText.textContent = '顯示最近同步的每日符文趨勢';
+          if (!uiSmokeStatusLocked && els.drawSyncText) els.drawSyncText.textContent = '顯示最近同步的每日符文趨勢';
         } else {
           renderDailyRuneAnalysis();
         }
@@ -3315,8 +3315,8 @@
           dailyDrawPage = 1;
           writeDailyDrawCache(dailyDraws);
           renderDailyDraws(dailyDraws);
-          if (els.drawSyncText) els.drawSyncText.textContent = '每日符文資料已同步';
-          if (els.drawSyncDot) els.drawSyncDot.classList.add('ok');
+          if (!uiSmokeStatusLocked && els.drawSyncText) els.drawSyncText.textContent = '每日符文資料已同步';
+          if (!uiSmokeStatusLocked && els.drawSyncDot) els.drawSyncDot.classList.add('ok');
         } else if (!dailyDraws.length) {
           dailyDraws = fallback;
           renderDailyDraws(dailyDraws);
@@ -3327,7 +3327,7 @@
           dailyDraws = fallback.length ? fallback : cached;
           renderDailyDraws(dailyDraws);
         }
-        if (els.drawSyncText) {
+        if (!uiSmokeStatusLocked && els.drawSyncText) {
           els.drawSyncText.textContent = dailyDraws.length
             ? '即時 API 未回應，顯示最近同步趨勢'
             : '每日符文資料暫時無法載入';
