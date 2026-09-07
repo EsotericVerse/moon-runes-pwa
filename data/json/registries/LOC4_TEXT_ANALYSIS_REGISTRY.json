@@ -748,13 +748,15 @@
           "role": "op",
           "label": "OP",
           "source_loc": "LOC3",
-          "url": "https://suno.com/s/doXe7ALt4MVs0tXK"
+          "url": "https://suno.com/s/doXe7ALt4MVs0tXK",
+          "title": "光還在那裡"
         },
         {
           "role": "proposal_song",
           "label": "求婚歌",
           "source_loc": "LOC3",
-          "url": "https://suno.com/s/YvP6Wi5lPHZywCrX"
+          "url": "https://suno.com/s/YvP6Wi5lPHZywCrX",
+          "title": "一次次選擇"
         }
       ],
       "cross_loc_note": "角色／作品主題曲屬 LOC3 音樂證據，透過角色或作品節點連到 LOC4 章節結構；不把歌曲當成 LOC4 章節內容。"
