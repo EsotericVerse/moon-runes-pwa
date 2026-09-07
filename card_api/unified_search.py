@@ -440,10 +440,10 @@ class UnifiedSearchEngine:
             "content_type": "knowledge_entity",
             "group": "entities",
             "title": "OW3gs",
-            "summary": "LOC1 的 11 張抽取結構：1–6 為 Context Field（因的描述層），7–11 為 Core Fate Sentence（果的判定層）。",
+            "summary": "LOC1 的 11 張 OW3gs 結構：1–6 為事情成因的描述層，7–11 為對於事情的建議文字層。",
             "score": 1.0,
             "source_refs": [
-                {"source_type": "document", "source_id": "命運句語法圖鑑_MoonSyntax_V2.1", "note": "OW3gs 十一卡語法"},
+                {"source_type": "document", "source_id": "命運句語法圖鑑_MoonSyntax_V2.1", "note": "OW3gs 十一卡語法"},\n                {"source_type": "document", "source_id": "LOC1_OW3GS_REFERENCE_CASES.md", "note": "OW3gs 真實案例與回測證據"},
                 {"source_type": "registry", "source_id": "LOC3_RUNE_SONG_REGISTRY.json", "note": "符文歌曲生成方法與關聯"}
             ],
             "payload": {
