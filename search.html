@@ -250,9 +250,16 @@
       const type=p.get('content_type')||'';
       const q=p.get('q')||'';
       const period=p.get('period')||'';
+      const source=p.get('source')||'';
+      const startDate=p.get('start_date')||'';
+      const endDate=p.get('end_date')||'';
       if(type&&[...el('contentType').options].some(o=>o.value===type)) el('contentType').value=type;
       if(q) el('query').value=q;
       if(period&&[...el('period').options].some(o=>o.value===period)) el('period').value=period;
+      if(source&&[...el('sourceFilter').options].some(o=>o.value===source)) el('sourceFilter').value=source;
+      if(startDate) el('startDate').value=startDate;
+      if(endDate) el('endDate').value=endDate;
+      updateFilterSummary();
       if(q) el('searchForm').requestSubmit();
     }
     function quick(){
@@ -676,6 +683,8 @@
       if(el('contentType')?.value) chips.push(type);
       if(el('sourceFilter')?.value) chips.push('來源：'+source);
       if(el('period')?.value) chips.push(period);
+      if(el('startDate')?.value) chips.push('起：'+el('startDate').value);
+      if(el('endDate')?.value) chips.push('迄：'+el('endDate').value);
       el('activeFilters').innerHTML=chips.length
         ? chips.map(x=>`<span class="filter-chip">${esc(x)}</span>`).join('')
         : '<span class="filter-chip muted">目前搜尋：全部資料</span>';
@@ -699,7 +708,7 @@
         sec.classList.toggle('active',active);
       });
     });
-    ['contentType','sourceFilter','period'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
+    ['contentType','sourceFilter','period','startDate','endDate'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
     updateFilterSummary();
     el('clearSearch').onclick=clearAllSearch;
     el('browse').onclick=()=>browse(1);
@@ -717,13 +726,13 @@
           el('status').textContent='正在搜尋文字資料…';
           let groups=null;
           try{
-            const body={query:q,top_k:10,content_type:'text_record',source:'facebook',period:el('period').value};
+            const body={query:q,top_k:10,content_type:'text_record',source:'facebook',period:el('period').value,start_date:el('startDate').value,end_date:el('endDate').value};
             const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
             const d=await r.json();
             if(r.ok) groups=d.groups||{text:d.results||[]};
           }catch(_){}
           if(!groups){
-            const items=await window.LOCFacebookCorpus.search(q,{top_k:50});
+            const items=await window.LOCFacebookCorpus.search(q,{top_k:50,start_date:el('startDate').value,end_date:el('endDate').value});
             groups={text:items};
           }
           const count=Object.values(groups).reduce((n,items)=>n+(items?.length||0),0);
@@ -733,14 +742,14 @@
         }
 
         el('status').textContent=type==='text_record'?'正在搜尋文字資料……':'正在同時查詢符文、作品、媒體、知識與時期資料……';
-        const body={query:q,top_k:10,content_type:type,source:source,period:el('period').value};
+        const body={query:q,top_k:10,content_type:type,source:source,period:el('period').value,start_date:el('startDate').value,end_date:el('endDate').value};
         const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const d=await r.json();
         if(!r.ok)throw new Error(d.detail||'搜尋失敗');
 
         if(type==='text_record' && !source){
           try{
-            const fb=await window.LOCFacebookCorpus.search(q,{top_k:20});
+            const fb=await window.LOCFacebookCorpus.search(q,{top_k:20,start_date:el('startDate').value,end_date:el('endDate').value});
             if(fb.length){
               d.groups=d.groups||{};
               d.groups.text=[...(d.groups.text||[]),...fb];
