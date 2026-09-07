@@ -1,0 +1,497 @@
+{
+  "schema_version": "0.1",
+  "registry_id": "RUNE_LITERATURE_REGISTRY",
+  "title": "月之符文 66 符文文學 Registry",
+  "scope": "66 runes only; canonical definitions are not stored or overridden here.",
+  "governance": {
+    "purpose": "記錄每一符相關的文學與創作文本，供搜尋、歷史比較與語意演變分析使用。",
+    "canonical_definition_authority": "LunaRune64.xlsx / canonical rune data",
+    "literature_is_canonical_definition": false,
+    "rules": [
+      "文學文本不得回寫或覆蓋符文 Canon 定義。",
+      "只收錄有實際來源的作者文本、作品片段、詩句、歌詞意象、歷史寫法或明確整理稿。",
+      "每筆 entry 必須保留來源、日期（若可得）與文體；未知欄位留空，不推測。",
+      "同一文本可關聯多符，但每個 rune entry 保留獨立關聯理由。"
+    ]
+  },
+  "entry_schema": {
+    "entry_id": "RLIT-<rune_number>-<sequence>",
+    "title": "optional",
+    "text": "required",
+    "form": "prose | poem | lyric | fiction | quote | note | historical_text | other",
+    "date": "YYYY-MM-DD or empty",
+    "source_platform": "facebook | threads | suno | instagram | loc | other",
+    "source_ref": "URL, source ID, file, post ID, work ID, or empty",
+    "source_title": "optional",
+    "author": "optional; default is not inferred",
+    "tags": "array",
+    "relation_note": "why this text is associated with the rune",
+    "status": "recorded | reviewed | canonical_example",
+    "created_at": "ISO timestamp"
+  },
+  "rune_count": 66,
+  "runes": [
+    {
+      "rune_number": 1,
+      "rune_id": "RUNE-1",
+      "rune_name": "靈",
+      "group": "靈魂",
+      "entries": []
+    },
+    {
+      "rune_number": 2,
+      "rune_id": "RUNE-2",
+      "rune_name": "魂",
+      "group": "靈魂",
+      "entries": []
+    },
+    {
+      "rune_number": 3,
+      "rune_id": "RUNE-3",
+      "rune_name": "彩",
+      "group": "靈魂",
+      "entries": []
+    },
+    {
+      "rune_number": 4,
+      "rune_id": "RUNE-4",
+      "rune_name": "憶",
+      "group": "靈魂",
+      "entries": []
+    },
+    {
+      "rune_number": 5,
+      "rune_id": "RUNE-5",
+      "rune_name": "界",
+      "group": "靈魂",
+      "entries": []
+    },
+    {
+      "rune_number": 6,
+      "rune_id": "RUNE-6",
+      "rune_name": "域",
+      "group": "靈魂",
+      "entries": []
+    },
+    {
+      "rune_number": 7,
+      "rune_id": "RUNE-7",
+      "rune_name": "鏡",
+      "group": "靈魂",
+      "entries": []
+    },
+    {
+      "rune_number": 8,
+      "rune_id": "RUNE-8",
+      "rune_name": "核",
+      "group": "靈魂",
+      "entries": []
+    },
+    {
+      "rune_number": 9,
+      "rune_id": "RUNE-9",
+      "rune_name": "向",
+      "group": "連結",
+      "entries": []
+    },
+    {
+      "rune_number": 10,
+      "rune_id": "RUNE-10",
+      "rune_name": "斷",
+      "group": "連結",
+      "entries": []
+    },
+    {
+      "rune_number": 11,
+      "rune_id": "RUNE-11",
+      "rune_name": "封",
+      "group": "連結",
+      "entries": []
+    },
+    {
+      "rune_number": 12,
+      "rune_id": "RUNE-12",
+      "rune_name": "鍊",
+      "group": "連結",
+      "entries": []
+    },
+    {
+      "rune_number": 13,
+      "rune_id": "RUNE-13",
+      "rune_name": "啟",
+      "group": "連結",
+      "entries": []
+    },
+    {
+      "rune_number": 14,
+      "rune_id": "RUNE-14",
+      "rune_name": "分",
+      "group": "連結",
+      "entries": []
+    },
+    {
+      "rune_number": 15,
+      "rune_id": "RUNE-15",
+      "rune_name": "悟",
+      "group": "連結",
+      "entries": []
+    },
+    {
+      "rune_number": 16,
+      "rune_id": "RUNE-16",
+      "rune_name": "誤",
+      "group": "連結",
+      "entries": []
+    },
+    {
+      "rune_number": 17,
+      "rune_id": "RUNE-17",
+      "rune_name": "生",
+      "group": "生命",
+      "entries": []
+    },
+    {
+      "rune_number": 18,
+      "rune_id": "RUNE-18",
+      "rune_name": "老",
+      "group": "生命",
+      "entries": []
+    },
+    {
+      "rune_number": 19,
+      "rune_id": "RUNE-19",
+      "rune_name": "病",
+      "group": "生命",
+      "entries": []
+    },
+    {
+      "rune_number": 20,
+      "rune_id": "RUNE-20",
+      "rune_name": "死",
+      "group": "生命",
+      "entries": []
+    },
+    {
+      "rune_number": 21,
+      "rune_id": "RUNE-21",
+      "rune_name": "心",
+      "group": "生命",
+      "entries": []
+    },
+    {
+      "rune_number": 22,
+      "rune_id": "RUNE-22",
+      "rune_name": "愛",
+      "group": "生命",
+      "entries": []
+    },
+    {
+      "rune_number": 23,
+      "rune_id": "RUNE-23",
+      "rune_name": "語",
+      "group": "生命",
+      "entries": []
+    },
+    {
+      "rune_number": 24,
+      "rune_id": "RUNE-24",
+      "rune_name": "韻",
+      "group": "生命",
+      "entries": []
+    },
+    {
+      "rune_number": 25,
+      "rune_id": "RUNE-25",
+      "rune_name": "樹",
+      "group": "自然",
+      "entries": []
+    },
+    {
+      "rune_number": 26,
+      "rune_id": "RUNE-26",
+      "rune_name": "花",
+      "group": "自然",
+      "entries": []
+    },
+    {
+      "rune_number": 27,
+      "rune_id": "RUNE-27",
+      "rune_name": "葉",
+      "group": "自然",
+      "entries": []
+    },
+    {
+      "rune_number": 28,
+      "rune_id": "RUNE-28",
+      "rune_name": "草",
+      "group": "自然",
+      "entries": []
+    },
+    {
+      "rune_number": 29,
+      "rune_id": "RUNE-29",
+      "rune_name": "根",
+      "group": "自然",
+      "entries": []
+    },
+    {
+      "rune_number": 30,
+      "rune_id": "RUNE-30",
+      "rune_name": "種",
+      "group": "自然",
+      "entries": []
+    },
+    {
+      "rune_number": 31,
+      "rune_id": "RUNE-31",
+      "rune_name": "實",
+      "group": "自然",
+      "entries": []
+    },
+    {
+      "rune_number": 32,
+      "rune_id": "RUNE-32",
+      "rune_name": "枝",
+      "group": "自然",
+      "entries": []
+    },
+    {
+      "rune_number": 33,
+      "rune_id": "RUNE-33",
+      "rune_name": "金",
+      "group": "礦物",
+      "entries": []
+    },
+    {
+      "rune_number": 34,
+      "rune_id": "RUNE-34",
+      "rune_name": "玉",
+      "group": "礦物",
+      "entries": []
+    },
+    {
+      "rune_number": 35,
+      "rune_id": "RUNE-35",
+      "rune_name": "晶",
+      "group": "礦物",
+      "entries": []
+    },
+    {
+      "rune_number": 36,
+      "rune_id": "RUNE-36",
+      "rune_name": "地",
+      "group": "礦物",
+      "entries": []
+    },
+    {
+      "rune_number": 37,
+      "rune_id": "RUNE-37",
+      "rune_name": "石",
+      "group": "礦物",
+      "entries": []
+    },
+    {
+      "rune_number": 38,
+      "rune_id": "RUNE-38",
+      "rune_name": "鑽",
+      "group": "礦物",
+      "entries": []
+    },
+    {
+      "rune_number": 39,
+      "rune_id": "RUNE-39",
+      "rune_name": "礦",
+      "group": "礦物",
+      "entries": []
+    },
+    {
+      "rune_number": 40,
+      "rune_id": "RUNE-40",
+      "rune_name": "塵",
+      "group": "礦物",
+      "entries": []
+    },
+    {
+      "rune_number": 41,
+      "rune_id": "RUNE-41",
+      "rune_name": "光",
+      "group": "元素",
+      "entries": []
+    },
+    {
+      "rune_number": 42,
+      "rune_id": "RUNE-42",
+      "rune_name": "暗",
+      "group": "元素",
+      "entries": []
+    },
+    {
+      "rune_number": 43,
+      "rune_id": "RUNE-43",
+      "rune_name": "水",
+      "group": "元素",
+      "entries": []
+    },
+    {
+      "rune_number": 44,
+      "rune_id": "RUNE-44",
+      "rune_name": "火",
+      "group": "元素",
+      "entries": []
+    },
+    {
+      "rune_number": 45,
+      "rune_id": "RUNE-45",
+      "rune_name": "風",
+      "group": "元素",
+      "entries": []
+    },
+    {
+      "rune_number": 46,
+      "rune_id": "RUNE-46",
+      "rune_name": "土",
+      "group": "元素",
+      "entries": []
+    },
+    {
+      "rune_number": 47,
+      "rune_id": "RUNE-47",
+      "rune_name": "雷",
+      "group": "元素",
+      "entries": []
+    },
+    {
+      "rune_number": 48,
+      "rune_id": "RUNE-48",
+      "rune_name": "氣",
+      "group": "元素",
+      "entries": []
+    },
+    {
+      "rune_number": 49,
+      "rune_id": "RUNE-49",
+      "rune_name": "日",
+      "group": "秩序",
+      "entries": []
+    },
+    {
+      "rune_number": 50,
+      "rune_id": "RUNE-50",
+      "rune_name": "月",
+      "group": "秩序",
+      "entries": []
+    },
+    {
+      "rune_number": 51,
+      "rune_id": "RUNE-51",
+      "rune_name": "星",
+      "group": "秩序",
+      "entries": []
+    },
+    {
+      "rune_number": 52,
+      "rune_id": "RUNE-52",
+      "rune_name": "辰",
+      "group": "秩序",
+      "entries": []
+    },
+    {
+      "rune_number": 53,
+      "rune_id": "RUNE-53",
+      "rune_name": "明",
+      "group": "秩序",
+      "entries": []
+    },
+    {
+      "rune_number": 54,
+      "rune_id": "RUNE-54",
+      "rune_name": "時",
+      "group": "秩序",
+      "entries": []
+    },
+    {
+      "rune_number": 55,
+      "rune_id": "RUNE-55",
+      "rune_name": "空",
+      "group": "秩序",
+      "entries": []
+    },
+    {
+      "rune_number": 56,
+      "rune_id": "RUNE-56",
+      "rune_name": "因",
+      "group": "秩序",
+      "entries": []
+    },
+    {
+      "rune_number": 57,
+      "rune_id": "RUNE-57",
+      "rune_name": "福",
+      "group": "無序",
+      "entries": []
+    },
+    {
+      "rune_number": 58,
+      "rune_id": "RUNE-58",
+      "rune_name": "禍",
+      "group": "無序",
+      "entries": []
+    },
+    {
+      "rune_number": 59,
+      "rune_id": "RUNE-59",
+      "rune_name": "無",
+      "group": "無序",
+      "entries": []
+    },
+    {
+      "rune_number": 60,
+      "rune_id": "RUNE-60",
+      "rune_name": "夢",
+      "group": "無序",
+      "entries": []
+    },
+    {
+      "rune_number": 61,
+      "rune_id": "RUNE-61",
+      "rune_name": "幻",
+      "group": "無序",
+      "entries": []
+    },
+    {
+      "rune_number": 62,
+      "rune_id": "RUNE-62",
+      "rune_name": "緣",
+      "group": "無序",
+      "entries": []
+    },
+    {
+      "rune_number": 63,
+      "rune_id": "RUNE-63",
+      "rune_name": "虛",
+      "group": "無序",
+      "entries": []
+    },
+    {
+      "rune_number": 64,
+      "rune_id": "RUNE-64",
+      "rune_name": "果",
+      "group": "無序",
+      "entries": []
+    },
+    {
+      "rune_number": 65,
+      "rune_id": "RUNE-65",
+      "rune_name": "玄",
+      "group": "特殊",
+      "entries": []
+    },
+    {
+      "rune_number": 66,
+      "rune_id": "RUNE-66",
+      "rune_name": "命",
+      "group": "特殊",
+      "entries": []
+    }
+  ]
+}
