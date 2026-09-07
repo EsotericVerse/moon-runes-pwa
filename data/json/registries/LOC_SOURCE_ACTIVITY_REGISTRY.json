@@ -1,0 +1,34 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC_SOURCE_ACTIVITY_REGISTRY",
+  "authority": "LOC8",
+  "purpose": "Source-specific activity / analyzable date ranges used by trend and ranking UI. Source ranges do not replace LOC ERA boundaries.",
+  "updated_at": "2026-09-07",
+  "sources": [
+    {
+      "id": "facebook",
+      "label": "Facebook",
+      "analysis_start": "2011-04-15",
+      "analysis_end": "2026-09-03",
+      "basis": "fb-semantic-summary.json searchable corpus range",
+      "note": "Current range is the analyzable Facebook corpus range, not a claim about the account creation date."
+    },
+    {
+      "id": "threads",
+      "label": "Threads",
+      "analysis_start": "2024-11-18",
+      "analysis_end": "2026-09-06",
+      "usage_start": "2024-11-28",
+      "basis": "LOC6 Threads corpus + LOC8 platform_start milestone",
+      "note": "Corpus evidence starts 2024-11-18; recorded platform_start milestone is 2024-11-28. Keep both distinctions."
+    },
+    {
+      "id": "suno",
+      "label": "Suno",
+      "analysis_start": "2025-02-21",
+      "analysis_end": null,
+      "basis": "LOC_ERA_REGISTRY source_active_range",
+      "note": "Original Suno activity range begins in P0.5; end remains open while source is active."
+    }
+  ]
+}
