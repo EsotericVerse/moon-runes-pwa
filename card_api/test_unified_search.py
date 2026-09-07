@@ -73,7 +73,7 @@ class UnifiedSearchTests(unittest.TestCase):
             encoding="utf-8",
         )
         (root / "data" / "json" / "registries" / "LOC4_WRITING_REGISTRY.json").write_text(
-            '{"works":[{"work_id":"LOC4-TEST-NOVEL","system_id":"lo3rwang","primary_loc":"LOC4","title":"測試小說","content_type":"novel","music_map":{"character_themes":[{"character":"德興","role":"character_theme","url":"https://suno.com/s/test-theme"}]}}]}',
+            '{"works":[{"work_id":"LOC4-TEST-NOVEL","system_id":"lo3rwang","primary_loc":"LOC4","title":"測試小說","content_type":"novel","music_map":{"character_themes":[{"character":"德興","role":"character_theme","title":"如果我沒有回頭","url":"https://suno.com/s/test-theme"}]}}]}',
             encoding="utf-8",
         )
         return UnifiedSearchEngine(
@@ -112,7 +112,7 @@ class UnifiedSearchTests(unittest.TestCase):
     def test_character_query_returns_entity_theme_song_and_work(self):
         result = self.make_engine().search("德興", top_k=6)
         self.assertTrue(any(item.get("content_type") == "character" for item in result["groups"]["entities"]))
-        self.assertTrue(any(item.get("title") == "德興｜角色主題曲" for item in result["groups"]["works"]))
+        self.assertTrue(any(item.get("title") == "如果我沒有回頭（德興）" for item in result["groups"]["works"]))
         self.assertTrue(any(item.get("result_id") == "LOC4-TEST-NOVEL" for item in result["groups"]["textworks"]))
 
     def test_character_graph_projects_work_and_theme_edges(self):
