@@ -173,3 +173,11 @@ LOC / Luna Codex / LunaRunes / OW3gs
 本文件為某一歷史位置上的方法與正名索引。  
 未來修正將形成新的 de-of，  
 而本文件仍作為不可抹滅的歷史存在。
+
+
+## 實際解牌與回測參考
+
+- [LOC1 OW3gs Reference Cases](../LOC1_OW3GS_REFERENCE_CASES.md)：少量真實案例、事後結果與回測原理。
+- [LOC1 月之符文深入操作說明](../LOC1_DIVINATION_DEEP_GUIDE.md)：OW3gs 實際解牌流程、常見錯誤與驗證方法。
+
+案例文件屬 evidence / reference，不取代本方法論文件的結構定義。

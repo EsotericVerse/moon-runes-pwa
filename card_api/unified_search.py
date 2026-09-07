@@ -509,7 +509,7 @@ class UnifiedSearchEngine:
                 "content_type": "knowledge_entity",
                 "group": "entities",
                 "title": "OW3gs",
-                "summary": "LOC1 的 11 張抽取結構：1–6 為 Context Field（因的描述層），7–11 為 Core Fate Sentence（果的判定層）。",
+                "summary": "LOC1 的 11 張 OW3gs 結構：1–6 為事情成因的描述層，7–11 為對於事情的建議文字層。",
                 "score": 1.0,
                 "source_refs": [
                     {"source_type": "document", "source_id": "命運句語法圖鑑_MoonSyntax_V2.1", "note": "OW3gs 十一卡語法"},
@@ -520,7 +520,7 @@ class UnifiedSearchEngine:
                     "aliases": ["11 張抽牌", "十一卡", "7–11 法則"],
                     "definition": "OW3gs 是月之符文的 11 張抽取結構，也是作者規則層的重要方法之一。",
                     "structure": [
-                        {"range": "1–6", "label": "Context Field／因的描述層", "description": "聚合背景、既有條件、資源、阻力、外部擾動與尚未成形因素。"},
+                        {"range": "1–6", "label": "事情成因的描述層", "description": "描述成因、背景、條件、來源與事情如何走到目前狀態。"},
                         {"range": "7–11", "label": "Core Fate Sentence／果的判定層", "description": "依序為因、現、向、境、心，形成主要核心判定。引擎實際判讀仍依現行 OW3gs Canon。"}
                     ],
                     "reading_order": [
