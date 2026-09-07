@@ -563,6 +563,7 @@ class UnifiedSearchEngine:
                         "character": character,
                         "work_id": work.get("work_id"),
                         "work_title": work.get("title"),
+                        "theme_song_title": theme.get("title"),
                         "theme_song_url": theme.get("url"),
                         "theme_song_role": theme.get("role") or "character_theme",
                     },
@@ -590,8 +591,8 @@ class UnifiedSearchEngine:
                     "related_locs": ["LOC4", "LOC7"],
                     "content_type": "suno_song",
                     "group": "works",
-                    "title": f"{character}｜角色主題曲",
-                    "summary": f"《{work.get('title')}》中 {character} 的作者確認角色主題曲。",
+                    "title": f"{theme.get('title') or character}（{character}）",
+                    "summary": f"《{work.get('title')}》中 {character} 的作者確認角色主題曲《{theme.get('title') or character}》。",
                     "score": 1.0,
                     "source_refs": [
                         {"source_type": "suno_share", "source_id": url, "note": "author-confirmed character theme song"},
@@ -2100,7 +2101,7 @@ class UnifiedSearchEngine:
                     sid = f"SONGREF::{wid}::{character}"
                     add_node(
                         sid,
-                        f"{character}｜角色主題曲",
+                        f"{theme.get('title') or character}（{character}）",
                         "music_work",
                         "LOC3",
                         source_url=theme_url,
@@ -2113,7 +2114,7 @@ class UnifiedSearchEngine:
                         sid,
                         "character_theme",
                         "record_metadata",
-                        f"{character} has an author-confirmed character theme song.",
+                        f"{character} has the author-confirmed character theme song {theme.get('title') or character}.",
                         "confirmed",
                         source_ref="LOC4_WRITING_REGISTRY.json",
                     )
