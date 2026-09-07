@@ -8,10 +8,27 @@
 :root{--bg:#f5f5f3;--card:#fff;--text:#181818;--muted:#666;--line:#d9d9d4}
 @media(prefers-color-scheme:dark){:root{--bg:#111;--card:#181818;--text:#f2f2f2;--muted:#aaa;--line:#343434}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.85}
-main{max-width:860px;margin:0 auto;padding:88px 20px 64px}article{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(24px,5vw,52px)}
+body{min-height:100vh} .app-shell{display:grid;grid-template-columns:260px minmax(0,1fr);gap:22px;width:min(1180px,calc(100% - 28px));margin:0 auto;padding:22px 0 64px}.workspace-sidebar{position:sticky;top:86px;align-self:start;min-height:calc(100vh - 108px);padding:18px;border:1px solid var(--line);border-radius:20px;background:var(--card)}.workspace-brand h1{margin:0;font-size:1.15rem}.workspace-brand p{margin:4px 0 0;color:var(--muted);font-size:.82rem}.workspace-nav{display:grid;gap:12px;margin-top:18px}.workspace-nav-label{margin-bottom:5px;color:var(--muted);font-size:.72rem;letter-spacing:.08em}.workspace-switch{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:14px;background:transparent;color:var(--text);text-align:left;cursor:pointer}.workspace-switch strong{display:block;font-size:.95rem}.workspace-switch small{display:block;margin-top:4px;color:var(--muted);font-size:.74rem}.workspace-switch.active{background:rgba(127,127,127,.08);border-color:#999}.workspace-main{min-width:0}.governance-view[hidden]{display:none!important}article{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(24px,5vw,52px)}@media(max-width:860px){.app-shell{grid-template-columns:1fr}.workspace-sidebar{position:static;min-height:0}.workspace-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.workspace-nav{grid-template-columns:1fr}}
 h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.2;margin:.2rem 0 1rem}h2{margin-top:2.2rem;padding-top:1.25rem;border-top:1px solid var(--line)}h3{margin-top:1.6rem}
 p{margin:.8rem 0}ul{padding-left:1.35rem}.eyebrow{font-size:.82rem;letter-spacing:.08em;color:var(--muted)}.lead{font-size:1.08rem;color:var(--muted)}.back{display:inline-block;margin-top:2rem;color:inherit;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:.55rem .9rem}
-</style></head><body><main><article>
+</style></head><body>
+<div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav aria-label="全站導覽"></nav></div>
+<div class="app-shell">
+  <aside class="workspace-sidebar">
+    <div class="workspace-brand"><h1>Governance</h1><p>治理</p></div>
+    <nav class="workspace-nav" aria-label="治理功能">
+      <div>
+        <div class="workspace-nav-label">01 · 文件</div>
+        <button class="workspace-switch active" type="button" data-governance-view="governance"><strong>治理章節文件</strong><small>規則 · 權責 · 必要性 · 維護原則</small></button>
+      </div>
+      <div>
+        <div class="workspace-nav-label">02 · 風格</div>
+        <button class="workspace-switch" type="button" data-governance-view="style"><strong>政德風說明</strong><small>語言風格 · 治理自己 · ERA 變化</small></button>
+      </div>
+    </nav>
+  </aside>
+  <main class="workspace-main">
+    <section class="governance-view" id="governanceView"><article>
 <div class="eyebrow">Governance · Public Knowledge Article</div>
 <h1>治理</h1>
 <p class="lead">治理不是替內容加上一層限制，而是讓語言、規則、資料與作品在長期使用中保持一致、可追溯、可修正與可延續。</p>
@@ -55,7 +72,8 @@ p{margin:.8rem 0}ul{padding-left:1.35rem}.eyebrow{font-size:.82rem;letter-spacin
 <p>政德風是治理最直接的個人語言實作之一。它不是單純文體，而是長期把感受、經驗、價值判斷、界線、責任與選擇整理成可重複使用的語言方式。</p>
 <p>因此，這個頁面同時承接兩件事：前半部保存治理原則與治理文件；後半部記錄政德風如何在作品與生活文字中逐步形成「治理自己」的語言。</p>
 
-<h2>六、政德風摘要</h2>
+</article></section>
+    <section class="governance-view" id="styleView" hidden><article><h2>六、政德風摘要</h2>
 <p>政德風不是固定文體，也不是單純的語錄集合。它是王政德長期作品、生活紀錄、歌曲與文章中逐步形成的個人語言系統表現。其核心特徵，是在感性經驗與理性論述之間擺盪，並隨人生階段逐漸加入界線、責任、取捨、主權與自我治理。</p>
 <p>從資料結構來看，政德風的證據分散在歌曲、文章、生活文字、Reels、多媒體與 ERA 時間脈絡之中；治理的工作，是把這些跨媒介材料重新整理成可以比較、追蹤與再利用的語言特徵。</p>
 <h2>七、兩個長期並存的核心：理性與感性</h2>
@@ -117,4 +135,21 @@ p{margin:.8rem 0}ul{padding-left:1.35rem}.eyebrow{font-size:.82rem;letter-spacin
 <p>它可以非常感性，也可以非常理性；可以記錄混亂，也可以整理規則；可以只是月光下的一句感受，也可以發展成一篇文章、一首論述歌曲，甚至成為一套自我治理方式。</p>
 <p>治理所保存的，就是這些語言如何從經驗中形成、如何被整理成規則、如何改變，以及最後如何被重新使用。</p>
 <a class="back" href="search.html?q=%E6%94%BF%E5%BE%B7%E9%A2%A8">← 回到 LOC Search</a>
-</article></main><script src="js/loc-nav.js"></script></body></html>
+</article></section>
+  </main>
+</div>
+<script>
+(()=>{
+  const buttons=[...document.querySelectorAll('[data-governance-view]')];
+  const views={governance:document.getElementById('governanceView'),style:document.getElementById('styleView')};
+  function switchView(name){
+    Object.entries(views).forEach(([key,view])=>view.hidden=key!==name);
+    buttons.forEach(btn=>btn.classList.toggle('active',btn.dataset.governanceView===name));
+    history.replaceState(null,'',name==='governance'?'zhengde-style.html':'zhengde-style.html#style');
+  }
+  buttons.forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.governanceView)));
+  if(location.hash==='#style') switchView('style');
+})();
+</script>
+<script src="js/loc-nav.js"></script>
+</body></html>
