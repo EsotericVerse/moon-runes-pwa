@@ -1,0 +1,137 @@
+import { rune } from "./runes64.js";
+
+const API = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
+const CACHE_KEY = "loc1-physical-daily-draw-cache-v1";
+const $ = s => document.querySelector(s);
+
+function esc(value="") {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[ch]));
+}
+
+function normalize(row={}) {
+  return {
+    id:String(row.id||""),
+    date:String(row.date||""),
+    draw_kind:String(row.draw_kind||"daily_draw"),
+    rune_id:String(row.rune_id||""),
+    rune:String(row.rune||""),
+    direction:String(row.direction||""),
+    note:String(row.note||"")
+  };
+}
+
+function readCache() {
+  try {
+    const v=JSON.parse(localStorage.getItem(CACHE_KEY)||"[]");
+    return Array.isArray(v)?v.map(normalize):[];
+  } catch (_) { return []; }
+}
+
+function writeCache(rows) {
+  try { localStorage.setItem(CACHE_KEY,JSON.stringify(rows)); } catch (_) {}
+}
+
+function render(rows) {
+  const list=$("#dailyHistoryList");
+  if(!list) return;
+  const sorted=rows.slice().sort((a,b)=>{
+    const d=new Date(b.date)-new Date(a.date);
+    return d || String(b.id).localeCompare(String(a.id));
+  });
+  $("#dailyMetricCount").textContent=String(sorted.length);
+  $("#dailyMetricPrimary").textContent=String(sorted.filter(x=>x.draw_kind!=="daily_draw_supplement").length);
+  $("#dailyMetricSupplement").textContent=String(sorted.filter(x=>x.draw_kind==="daily_draw_supplement").length);
+  list.innerHTML=sorted.length?sorted.slice(0,80).map(x=>`
+    <div class="daily-history-row">
+      <small>${esc(x.date||"—")}</small>
+      <strong>${esc(x.rune||"—")} · ${esc(x.direction||"—")}</strong>
+      <small>${x.draw_kind==="daily_draw_supplement"?"補抽":"主抽"}</small>
+    </div>`).join(""):'<div class="empty">尚無已儲存的實體牌紀錄。</div>';
+}
+
+async function loadRecords() {
+  const cached=readCache();
+  if(cached.length){
+    render(cached);
+    $("#dailyStatsStatus").textContent="先顯示最近快取；正在同步已記錄資料。";
+  }
+  try{
+    const url=new URL(API);
+    url.searchParams.set("action","daily_draws");
+    url.searchParams.set("user_id","lo3rwang");
+    const res=await fetch(url.toString(),{method:"GET",cache:"no-store",redirect:"follow"});
+    const data=await res.json();
+    if(!res.ok||data?.ok===false) throw new Error(data?.error||"載入失敗");
+    const rows=Array.isArray(data.daily_draws)?data.daily_draws.map(normalize):[];
+    writeCache(rows);
+    render(rows);
+    $("#dailyStatsStatus").textContent="統計只包含已明確儲存的實體牌紀錄。";
+  }catch(_){
+    $("#dailyStatsStatus").textContent=cached.length?"即時資料未回應，顯示最近快取。":"每日符文紀錄暫時無法載入。";
+  }
+}
+
+function populateRunes(){
+  const select=$("#dailyRecordRune");
+  if(!select) return;
+  const items=(rune||[]).filter(x=>x&&Number(x.編號)>=1&&Number(x.編號)<=66);
+  for(const item of items){
+    const option=document.createElement("option");
+    option.value=item.符文名稱;
+    option.dataset.runeId=String(item.編號);
+    option.textContent=String(item.編號).padStart(2,"0")+" · "+item.符文名稱;
+    select.appendChild(option);
+  }
+}
+
+async function saveRecord(ev){
+  ev.preventDefault();
+  const status=$("#dailyRecordStatus");
+  const select=$("#dailyRecordRune");
+  const selected=select?.selectedOptions?.[0];
+  const payload={
+    action:"daily_draw",
+    daily_draw:{
+      user_id:"lo3rwang",
+      date:$("#dailyRecordDate").value,
+      draw_kind:$("#dailyRecordKind").value,
+      rune_id:selected?.dataset?.runeId||"",
+      rune:select.value,
+      direction:$("#dailyRecordDirection").value,
+      note:$("#dailyRecordNote").value.trim(),
+      source:"physical-card-manual-entry",
+      confidence:"recorded"
+    }
+  };
+  if(!payload.daily_draw.date||!payload.daily_draw.rune){
+    status.textContent="請先選擇日期與實體牌結果。";
+    return;
+  }
+  status.textContent="正在儲存實體牌紀錄…";
+  try{
+    const res=await fetch(API,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload),
+      redirect:"follow"
+    });
+    const data=await res.json();
+    if(!res.ok||data?.ok===false) throw new Error(data?.error||"儲存失敗");
+    status.textContent="實體牌紀錄已儲存。";
+    $("#dailyRecordNote").value="";
+    await loadRecords();
+  }catch(err){
+    status.textContent="儲存失敗："+err.message;
+  }
+}
+
+window.addEventListener("DOMContentLoaded",()=>{
+  const form=$("#dailyRecordForm");
+  if(!form) return;
+  populateRunes();
+  $("#dailyRecordDate").value=new Date().toISOString().slice(0,10);
+  form.addEventListener("submit",saveRecord);
+  loadRecords();
+});

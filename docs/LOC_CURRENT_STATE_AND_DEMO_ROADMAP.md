@@ -605,11 +605,11 @@ LOC 現在進入 **Governance Consolidation**：功能骨架不再是主要缺�
 
 ### 18.1 已形成的治理文件
 
-- `docs/LOC_GOVERNANCE_CORE.md`
-- `docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`
-- `docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md`
-- `docs/LOC_CONTENT_RIGHTS_POLICY.md`
-- `docs/LOC6_ZHENGDE_STYLE.md`
+- `governance.html`
+- `governance.html`
+- `governance.html`
+- `data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json`
+- `governance.html#style`
 - `docs/LOC7_KM.md`
 - `docs/LOC8_KM.md`
 

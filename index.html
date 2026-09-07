@@ -1424,10 +1424,10 @@
     <div class="topbar">
       <span class="brand" aria-label="LOC月典">LOC月典</span>
       <nav class="nav-links" aria-label="主要導覽">
-        <a href="runes.html">符文語彙</a>
+        <a href="runes.html">月之符文</a>
         <a href="context.html">脈絡</a>
         <a href="search.html">搜尋</a>
-        <a href="projection.html">推演</a>
+        <a href="evolution.html">推演</a>
       </nav>
     </div>
     <header class="hero">
@@ -1441,9 +1441,9 @@
         </p>
 
         <div class="hero-actions">
-          <a class="cta primary" href="result.html?mode=daily">今日抽一張</a>
+          <a class="cta primary" href="runes.html?mode=daily#daily">今日抽一張</a>
           <a class="cta secondary" href="#rune-entry">開始問一件事</a>
-          <a class="cta secondary" href="projection.html#keyword-ranking">查看關鍵字排行</a>
+          <a class="cta secondary" href="search.html#rankingView">查看關鍵字排行</a>
           
         </div>
 
@@ -1470,8 +1470,8 @@
 
       <div class="hero-actions start-actions">
         <a class="cta primary" href="tutorial01.html">新手教學</a>
-        <a class="cta secondary" href="result.html?mode=daily">每日符文</a>
-        <a class="cta secondary" href="runes.html">符文語彙</a>
+        <a class="cta secondary" href="runes.html?mode=daily#daily">每日符文</a>
+        <a class="cta secondary" href="runes.html">月之符文</a>
         <a class="cta secondary" href="#framework-map">LOC1–8 框架</a>
       </div>
     </section>
@@ -1496,7 +1496,7 @@
             <p>介紹：「玄」，月之符文所揭示</p>
             <p>所屬分組：它就是全部</p>
             <p id="moon-phase-index">月相：無 / 真實月相：計算中...</p>
-            <a class="rune-data-cta" href="runes.html">
+            <a class="rune-data-cta" href="runes.html#library">
               <span>
                 <strong>查看完整月之符文資料</strong>
                 <small>月之符文66 圖鑑 · 八組分類 · 卡片詳細說明</small>
@@ -1513,11 +1513,11 @@
           </div>
 
           <div class="description" id="description">
-            <p><strong>選擇抽牌方式</strong></p>
-            <p>從單一卡片到多卡組合，依問題需要選擇不同的語意結構。OW3gs 11 張模式目前保留位置，暫不開放連結。</p>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;"><p style="margin:0;"><strong>選擇抽牌方式</strong></p><a href="search.html?q=%E6%8A%BD%E7%89%8C%E6%96%B9%E5%BC%8F" style="font-size:.82rem;text-decoration:none;">抽牌方式說明 →</a></div>
+            <p>從單一卡片到多卡組合，依問題需要選擇不同的符文演算法。</p>
 
             <div class="draw-mode-grid" aria-label="LOC1 抽牌模式">
-              <a class="draw-mode" href="result.html">
+              <a class="draw-mode" href="runes.html?mode=single#draw">
                 <span class="mode-kicker">Single Rune</span>
                 <div>
                   <strong>單卡</strong>
@@ -1525,7 +1525,7 @@
                 </div>
               </a>
 
-              <a class="draw-mode" href="result.html?mode=daily">
+              <a class="draw-mode" href="runes.html?mode=daily#daily">
                 <span class="mode-kicker">Daily Rune</span>
                 <div>
                   <strong>每日</strong>
@@ -1533,7 +1533,7 @@
                 </div>
               </a>
 
-              <a class="draw-mode" href="result.html?mode=2card">
+              <a class="draw-mode" href="runes.html?mode=2card#draw">
                 <span class="mode-kicker">2 Cards</span>
                 <div>
                   <strong>雙卡</strong>
@@ -1541,7 +1541,7 @@
                 </div>
               </a>
 
-              <a class="draw-mode" href="result.html?mode=3card">
+              <a class="draw-mode" href="runes.html?mode=3card#draw">
                 <span class="mode-kicker">3 Cards</span>
                 <div>
                   <strong>三卡</strong>
@@ -1549,7 +1549,7 @@
                 </div>
               </a>
 
-              <a class="draw-mode" href="result.html?mode=5card">
+              <a class="draw-mode" href="runes.html?mode=5card#draw">
                 <span class="mode-kicker">5 Cards</span>
                 <div>
                   <strong>五卡</strong>
@@ -1558,12 +1558,13 @@
               </a>
 
               <div class="draw-mode disabled" aria-disabled="true">
-                <span class="mode-kicker">OW3gs · Reserved</span>
+                <span class="mode-kicker">OW3gs · 11 張</span>
                 <div>
                   <strong>11 張</strong>
-                  <p>OW3gs 模式預留；目前不提供連結。</p>
+                  <p>OW3gs：兩個因果模組綜合的演算法。目前暫時不提供連結。</p>
                 </div>
               </div>
+              
             </div>
           </div>
         </div>
@@ -1728,15 +1729,15 @@
           <strong>治理文件</strong>
           <span>已建立系統治理、資料權責、內容版權／公開邊界與月之符文66治理文件；目前也把全文分析與公開展示、來源日期、ERA 動態聚合等規則納入治理層。</span>
           <div class="hero-actions" style="margin-top:10px">
-            <a class="cta secondary" href="docs/LOC_GOVERNANCE_CORE.md">LOC Governance Core</a>
-            <a class="cta secondary" href="docs/LOC_CONTENT_RIGHTS_POLICY.md">內容權利與公開治理</a>
+            <a class="cta secondary" href="governance.html">治理章節文件</a>
+            <a class="cta secondary" href="governance.html#style">政德風說明</a>
           </div>
         </div>
       </div>
 
       <div class="hero-actions" style="margin-top:20px;">
         <a class="cta primary" href="search.html">試用綜合搜尋</a>
-        <a class="cta secondary" href="projection.html#keyword-ranking">查看關鍵字排行</a>
+        <a class="cta secondary" href="search.html#rankingView">查看關鍵字排行</a>
       </div>
     </section>
 
@@ -1828,7 +1829,7 @@
         <ul class="framework-extra" id="framework-detail-extra"></ul>
         <div class="framework-resources" id="framework-detail-resources"></div>
         <div class="route" id="framework-detail-route"></div>
-        <a class="cta primary" id="framework-detail-link" href="result.html?mode=daily">進入 LOC1</a>
+        <a class="cta primary" id="framework-detail-link" href="runes.html?mode=daily#daily">進入 LOC1</a>
       </div>
     </div>
   </div>
@@ -1931,7 +1932,7 @@
           copy:'把方法論結構化為可重複執行、檢索、關聯與驗證的演算法；文字建築學、KM、RAG、Search 與 Graph RAG 都在這裡形成技術實作。',
           route:'統一入口：LOC Search。',
           extra:['LOC7 不擁有脈絡本身；它提供處理脈絡與知識的演算法。','知識庫是演算法運作與檢索的主要資料結構之一。'],
-          resources:[{label:'LOC7_KM.md',href:'docs/LOC7_KM.md',meta:'KM · RAG · Text Architecture'}],
+          resources:[{label:'LOC7 知識庫',href:'search.html?q=LOC7%20KM%20RAG%20Text%20Architecture',meta:'KM · RAG · Text Architecture'}],
           href:'search.html?content_type=knowledge&q=LOC7%20演算法%20知識庫%20RAG', label:'查看 LOC7'
         },
         LOC8: {

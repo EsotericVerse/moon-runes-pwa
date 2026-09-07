@@ -1,4 +1,4 @@
-> **Graph ownership：LOC2。** 本文件與 projection.html 只保留 Graph 的時間／ERA／Trajectory／Trend View；不再把關係／Graph 本體視為 LOC8 authority。
+> **Graph ownership：LOC2。** 本文件與 evolution.html 只保留 Graph 的時間／ERA／Trajectory／Trend View；不再把關係／Graph 本體視為 LOC8 authority。
 
 # LOC8｜推演
 
@@ -390,7 +390,7 @@ LOC8 目前額外接入兩個 repository-governed fallback snapshot：
 
 ### Relation Library 與公開 Search 的權限邊界
 
-`projection.html` 的 Relation Library 目前直接使用 Google Sheet `Relation` 分頁，資料可標記 `visibility=private`。因此公開 `search.html` / Render Search API **不直接讀取 live Relation Sheet**。
+`evolution.html` 的 Relation Library 目前直接使用 Google Sheet `Relation` 分頁，資料可標記 `visibility=private`。因此公開 `search.html` / Render Search API **不直接讀取 live Relation Sheet**。
 
 規則：
 
@@ -496,7 +496,7 @@ LOC8 公開功能核心目前收斂為 Daily Rune、ERA、Event、Timeline 與 T
 - Rights runtime enforcement
 - ERA Candidate → Accept / Adjust / Split / Merge / Reject 的完整操作流
 
-共用治理基準見 [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md)。
+共用治理基準見 [../governance.html](../governance.html)。
 
 ## 16. Governance Trend as Analysis Type
 

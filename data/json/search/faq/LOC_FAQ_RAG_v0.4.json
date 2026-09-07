@@ -2401,7 +2401,7 @@
       "related_ids": [],
       "source_refs": [
         "docs/LOC7_KM.md",
-        "docs/LOC_GOVERNANCE_CORE.md"
+        "governance.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"

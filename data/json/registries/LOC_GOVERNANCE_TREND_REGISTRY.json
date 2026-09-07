@@ -88,8 +88,8 @@
       "interpretation": "Current governance prefers contextual domain boundaries over a single universal fixed bottom-line model.",
       "status": "working",
       "evidence_refs": [
-        "docs/LOC6_ZHENGDE_STYLE.md",
-        "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md",
+        "governance.html#style",
+        "governance.html",
         "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json"
       ]
     },
@@ -111,7 +111,7 @@
       "status": "working",
       "evidence_refs": [
         "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json",
-        "docs/LOC6_ZHENGDE_STYLE.md"
+        "governance.html#style"
       ]
     },
     {
@@ -132,7 +132,7 @@
       "status": "working",
       "evidence_refs": [
         "conversation-history:2026-02-22",
-        "docs/LOC_GOVERNANCE_CORE.md"
+        "governance.html"
       ]
     },
     {
@@ -155,7 +155,7 @@
       "interpretation": "Self-governance becomes a recursive feedback process rather than a moral perfection requirement.",
       "status": "current",
       "evidence_refs": [
-        "docs/LOC_GOVERNANCE_CORE.md",
+        "governance.html",
         "docs/LOC8_KM.md",
         "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json"
       ]

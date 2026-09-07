@@ -343,7 +343,7 @@
     {
       "asset_id": "KA-LOC6-ZD-001",
       "title": "LOC6 Zhengde Style Governance Guide",
-      "path": "docs/LOC6_ZHENGDE_STYLE.md",
+      "path": "governance.html#style",
       "source_type": "document",
       "content_type": "knowledge_document",
       "primary_loc": "LOC6",
@@ -491,7 +491,7 @@
         ]
       },
       "notes": "Public-facing analytical Knowledge Asset. LOC6 provides style/governance evidence; LOC7_KM indexes and exposes it through LOC Search.",
-      "public_path": "zhengde-style.html",
+      "public_path": "governance.html",
       "public_summary": "政德風是王政德長期作品、生活紀錄、歌曲與文章中逐步形成的個人語言表現；其演變可從感性書寫、理性命題、界線建立，一路追蹤到現行的自我治理。",
       "presentation": "public_article",
       "exposure_policy": "public_full_text",
@@ -1027,7 +1027,7 @@
     {
       "asset_id": "KA-LOC-GOV-CORE-001",
       "title": "LOC Governance Core — 中立語言治理核心",
-      "path": "docs/LOC_GOVERNANCE_CORE.md",
+      "path": "governance.html",
       "source_type": "document",
       "content_type": "knowledge_document",
       "primary_loc": "LOC6",
@@ -1074,7 +1074,7 @@
     {
       "asset_id": "KA-LOC-GOV-HISTORY-001",
       "title": "LOC Governance History & Trend Analysis",
-      "path": "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md",
+      "path": "governance.html",
       "source_type": "document",
       "content_type": "analysis",
       "primary_loc": "LOC6",
@@ -1114,7 +1114,7 @@
     {
       "asset_id": "KA-LUNA66-GOV-001",
       "title": "LunaRunes 66 — Governance Design Notes",
-      "path": "docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md",
+      "path": "governance.html",
       "source_type": "document",
       "content_type": "knowledge_document",
       "primary_loc": "LOC1",

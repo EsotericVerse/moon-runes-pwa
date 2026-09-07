@@ -192,7 +192,7 @@ Canonical / mother source / original evidence
 
 - Repository 結構治理：`docs/REPOSITORY_GOVERNANCE.md`
 - Data projection 治理：`docs/DATA_ARCHITECTURE.md`
-- LOC 共用治理：`docs/LOC_GOVERNANCE_CORE.md`
+- LOC 共用治理：`governance.html`
 - Copyleft：`COPYLEFT.md`
 - Knowledge Asset indexing：`data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json`
 
@@ -220,5 +220,5 @@ Canonical / mother source / original evidence
 
 - `runes.html`：月之符文 canonical page；`list.html` 保留為 redirect。
 - `context.html`：LOC2 脈絡 canonical page；`loc2.html` 保留為 redirect；`loc2-game.html` 是 Semantic Playground 實作。
-- `projection.html`：LOC8 推演 canonical page；`life.html`、`evolution.html` 保留為 redirect。
+- `evolution.html`：LOC8 推演 canonical page；`life.html`、`evolution.html` 保留為 redirect。
 - Service Worker、Sitemap 與 `LOC_NAV.json` 只使用 canonical page，避免 precache 依賴 redirect。

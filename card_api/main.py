@@ -282,30 +282,57 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
     if mode in ["5", "5d"]:
         if rune3_id is None or rune3_dir is None or rune4_id is None or rune4_dir is None or rune5_id is None or rune5_dir is None:
             raise ValueError("模式 5 需要五張符文")
+
         rune3 = RUNES_MAP.get(rune3_id, {})
         rune4 = RUNES_MAP.get(rune4_id, {})
         rune5 = RUNES_MAP.get(rune5_id, {})
-        rune3_name = rune3.get("名稱", "未知")
-        rune4_name = rune4.get("名稱", "未知")
-        rune5_name = rune5.get("名稱", "未知")
+        runes5 = [rune1, rune2, rune3, rune4, rune5]
+        dirs5 = [rune1_dir, rune2_dir, rune3_dir, rune4_dir, rune5_dir]
+        labels5 = ["過去", "現在", "未來顯化", "周圍環境", "自己心境"]
 
-        three_mode = "3" if mode == "5" else "3d"
-        two_mode = "2" if mode == "5" else "2d"
-        three_result = generate_divination(three_mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id, rune3_dir, debug=debug)
-        two_result = generate_divination(two_mode, rune4_id, rune4_dir, rune5_id, rune5_dir, debug=debug)
-        
+        def five_card_core(rune_data, direction_value):
+            forward = direction_value in [1, 2]
+            source_fields = ["顯化形式", "關鍵詞"] if forward else ["陰暗面", "反向關鍵詞"]
+            candidates = []
+            for field in source_fields:
+                candidates.extend(str(rune_data.get(field, "")).split("・"))
+            candidates = [item.strip() for item in candidates if item.strip()]
+            if candidates:
+                return candidates[0]
+            if not forward:
+                return str(rune_data.get("反向含義", "")).strip() or "需要重新整理"
+            return str(rune_data.get("名稱", "")).strip() or "目前狀態"
+
+        position_lines = []
+        for label, rune_data, direction_value in zip(labels5, runes5, dirs5):
+            name = rune_data.get("名稱", "未知")
+            core = five_card_core(rune_data, direction_value)
+            position_lines.append(f"{label}「{name}」{dir_map[direction_value]}：{core}")
+
         result = {
-            "完整現況": f"您抽的符文有五張：{rune1_name}之符文（{dir_map[rune1_dir]}）、{rune2_name}之符文（{dir_map[rune2_dir]}）、{rune3_name}之符文（{dir_map[rune3_dir]}）、{rune4_name}之符文（{dir_map[rune4_dir]}）和{rune5_name}之符文（{dir_map[rune5_dir]}）。",
-            "牌面解說": f"{three_result['牌面解說']}而你的周圍環境會使，{two_result['牌面解說']}",
-            "占卜結論": f"{three_result['占卜結論']}{two_result['占卜結論']}"
+            "完整現況": "；".join(position_lines) + "。",
+            "牌面解說": (
+                f"過去描述形成現況的背景；現在是此刻核心；未來顯化描述目前條件延續後的趨勢；"
+                f"周圍環境描述外部條件；自己心境描述內在位置。"
+                f"本次真實月相為{real_moon}，月相交互只作低權重時間脈絡修飾。"
+            ),
+            "占卜結論": (
+                f"先以「現在」為核心，對照「過去」理解成因，再看「周圍環境」與「自己心境」如何共同影響"
+                f"「未來顯化」。五卡是五個獨立位置，不再拆成三卡加雙卡。"
+            )
         }
-        
+
         if debug:
-            three_debug = {k: v for k, v in three_result.items() if k not in ["完整現況", "牌面解說", "占卜結論"]}
-            two_debug = {k: v for k, v in two_result.items() if k not in ["完整現況", "牌面解說", "占卜結論"]}
-            result["三張_debug"] = three_debug
-            result["兩張_debug"] = two_debug
-        
+            result["位置"] = {
+                label: {
+                    "符文": rune_data.get("名稱", "未知"),
+                    "方向": dir_map[direction_value],
+                    "核心": five_card_core(rune_data, direction_value),
+                }
+                for label, rune_data, direction_value in zip(labels5, runes5, dirs5)
+            }
+            result["現在月相"] = real_moon
+
         return result
 
     if mode in ["2", "2d"]:
@@ -791,7 +818,10 @@ async def keyword_ranking(input: KeywordRankingInput):
     if source == "facebook":
         documents = get_facebook_searcher(required=True).posts
     elif source == "threads":
-        documents = get_unified_searcher()._loc4_article_documents()
+        # Use the complete Threads main-post corpus, streamed shard-by-shard.
+        # Short posts are part of the statistical population and must not be
+        # excluded by article-length heuristics.
+        documents = get_unified_searcher()._iter_loc4_article_documents()
     else:
         documents = get_loc3_searcher().works
 
@@ -836,7 +866,7 @@ async def unified_search_facets():
             "loc3_searchable_works": len(get_loc3_searcher().works) if LOC3_SEARCHER is not None else 0,
             "loc4_threads_total_main_posts": 4578,
             "loc4_threads_total_replies": 2430,
-            "loc4_threads_indexed_posts": len(searcher._loc4_article_documents()),
+            "loc4_threads_indexed_posts": searcher._loc4_thread_document_count(),
             "loc4_threads_full_index_ready": bool((getattr(searcher, "loc4_thread_full", {}) or {}).get("documents")),
             "facebook_corpus_available": FB_DATA_PATH.exists(),
             "facebook_search_loaded": FB_SEARCHER is not None,

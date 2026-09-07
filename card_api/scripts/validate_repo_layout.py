@@ -65,6 +65,11 @@ JSON_PATH_RE = re.compile(
     r"""(?P<path>/?(?:data|card_api|engine|loc8_api)/[A-Za-z0-9_./-]+\.json(?:\.gz)?)"""
 )
 
+PUBLIC_MD_LINK_RE = re.compile(
+    r"""href\s*[:=]\s*["'][^"']+\.md(?:[?#][^"']*)?["']""",
+    re.IGNORECASE,
+)
+
 
 def rel(path: Path) -> str:
     return path.relative_to(ROOT).as_posix()
@@ -95,6 +100,11 @@ def main() -> int:
             if token in content:
                 failures.append(f"stale path token {token!r}: {rp}")
 
+        # Public web surfaces must route knowledge through Search/Web views.
+        # Never expose raw Markdown files as clickable links from HTML/JS.
+        if path.suffix.lower() in {".html", ".js"} and PUBLIC_MD_LINK_RE.search(content):
+            failures.append(f"public .md link exposed in web surface: {rp}")
+
         # Repository-relative JSON references are executable/data contracts.
         # Verify the referenced file actually exists after every path migration.
         for match in JSON_PATH_RE.finditer(content):
@@ -115,6 +125,7 @@ def main() -> int:
     print("- no forbidden legacy data paths")
     print("- no stale runtime/document references")
     print("- every repository-relative JSON reference resolves to an existing file")
+    print("- no public HTML/JS links expose raw Markdown files")
     return 0
 
 

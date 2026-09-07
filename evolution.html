@@ -1,1 +1,77 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LOC8 推演</title><link rel="canonical" href="https://loc.lo3rwang.cc/projection.html"><meta http-equiv="refresh" content="0;url=projection.html"><script>location.replace('projection.html'+location.search+location.hash)</script></head><body><p>頁面已移至 <a href="projection.html">projection.html</a>。</p></body></html>
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>符文演化｜LOC8</title>
+<meta name="description" content="LOC8 符文演化：以靜態 ERA 與時期分析資料觀察語言、作品與方法的時間變化。">
+<link rel="canonical" href="https://loc.lo3rwang.cc/evolution.html">
+<link rel="stylesheet" href="css/loc-responsive.css">
+<link rel="stylesheet" href="css/loc-nav.css">
+<style>
+:root{--line:rgba(196,216,255,.14);--line2:rgba(196,216,255,.28);--text:#edf4ff;--muted:#9fb1ca;--accent:#a9c7ff;--shadow:0 18px 50px rgba(0,0,0,.25)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:radial-gradient(circle at 15% 10%,rgba(90,130,210,.18),transparent 30%),linear-gradient(180deg,#081222,#060d18)}
+.app{width:min(1500px,100%);margin:0 auto;padding:22px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px}.sidebar{position:sticky;top:22px;align-self:start;min-height:calc(100vh - 44px);padding:20px 16px;border:1px solid var(--line);background:rgba(6,15,28,.75);backdrop-filter:blur(18px);border-radius:24px;box-shadow:var(--shadow)}
+.brand{padding:4px 6px 18px;border-bottom:1px solid var(--line);margin-bottom:16px}.brand h1{margin:0;font-size:18px}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.nav{display:grid;gap:14px}.nav-group{display:grid;gap:6px}.nav-label{padding:0 9px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.12em}
+.view-switch{width:100%;display:grid;gap:3px;text-align:left;cursor:pointer;padding:10px 11px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--muted);font:inherit}.view-switch:hover,.view-switch.active{color:var(--text);border-color:var(--line);background:rgba(169,199,255,.08)}.view-switch.active{box-shadow:inset 2px 0 0 var(--accent)}.view-switch strong{font-size:13px}.view-switch small{font-size:10px;line-height:1.35}.sidebar-foot{margin-top:18px;padding:14px 8px 2px;color:var(--muted);font-size:12px;line-height:1.6}
+main{min-width:0}.view[hidden]{display:none!important}.hero{padding:28px 0 18px}.hero h1{margin:0;font-size:clamp(2rem,5vw,4rem)}.hero h2{margin:8px 0 0;font-size:1.15rem}.hero p{color:var(--muted);line-height:1.7;max-width:880px}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.card{border:1px solid var(--line);background:linear-gradient(180deg,rgba(18,33,56,.82),rgba(10,21,37,.78));border-radius:18px;box-shadow:var(--shadow);padding:16px}.metric small{color:var(--muted)}.metric strong{display:block;margin-top:6px;font-size:1.6rem}.timeline,.keyword-grid{display:grid;gap:10px;margin-top:16px}.keyword-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.era,.keyword-card{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:rgba(255,255,255,.025)}.era.current{border-color:var(--line2);background:rgba(169,199,255,.08)}.era-head{display:flex;justify-content:space-between;gap:12px}.era-head small,.era p,.keyword-card small{color:var(--muted)}.era p{line-height:1.65;margin:8px 0 0}.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.chip{border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:11px;color:var(--muted)}.source-note{margin:14px 0;color:var(--muted);font-size:12px}.empty{padding:18px;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
+@media(max-width:900px){.app{grid-template-columns:1fr;padding:14px}.sidebar{position:static;min-height:0}.nav{grid-template-columns:repeat(2,minmax(0,1fr))}.nav-label{grid-column:1/-1}.sidebar-foot{display:none}.metrics,.keyword-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="loc-responsive-page loc-page-life">
+<div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="evolution" aria-label="全站導覽"></nav></div>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><h1>Evolution</h1><p>符文演化 · LOC8</p></div>
+  <nav class="nav" aria-label="演化功能">
+    <div class="nav-group"><div class="nav-label">01 · 總覽</div><button class="view-switch active" type="button" data-view="overview"><strong>演化總覽</strong><small>ERA · Current · 時間跨度</small></button></div>
+    <div class="nav-group"><div class="nav-label">02 · 趨勢</div><button class="view-switch" type="button" data-view="trend"><strong>時期趨勢</strong><small>跨時期關鍵字脈絡</small></button></div>
+  </nav>
+  <div class="sidebar-foot">此頁只讀 repository 靜態 JSON，不呼叫 Render。查詢／ERA 設定／排行榜在 Search；Graph／Event 在 Context；抽牌與每日符文在 Runes。</div>
+</aside>
+<main>
+<section class="view" id="overviewView">
+  <div class="hero"><h1>符文演化</h1><h2>把既有語言放回時間，觀察它如何改變。</h2><p>LOC8 只負責時間中的觀察與推演，不重新管理 Search、Graph、Event 或抽牌功能。</p></div>
+  <div class="metrics">
+    <div class="card metric"><small>時期總數</small><strong id="eraCount">—</strong></div>
+    <div class="card metric"><small>目前時期</small><strong id="eraCurrent">—</strong></div>
+    <div class="card metric"><small>目前起點</small><strong id="eraStart">—</strong></div>
+  </div>
+  <div class="source-note">資料來源：LOC_ERA_REGISTRY.json（靜態）</div>
+  <div class="timeline" id="eraTimeline"><div class="empty">載入 ERA…</div></div>
+</section>
+<section class="view" id="trendView" hidden>
+  <div class="hero"><h1>時期趨勢</h1><h2>比較不同 ERA 中語言與作品關鍵字的變化。</h2><p>這裡只讀已生成的 LOC3／LOC6 時期分析；需要重新查詢、設定 ERA 或即時計算排行榜時，再前往 Search。</p></div>
+  <div class="source-note">資料來源：LOC3_PERIOD_KEYWORD_ANALYSIS.json + LOC6_PERIOD_KEYWORD_ANALYSIS.json（靜態）</div>
+  <div class="keyword-grid" id="trendGrid"><div class="empty">載入時期分析…</div></div>
+</section>
+</main>
+</div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+function switchView(name){$('#overviewView').hidden=name!=='overview';$('#trendView').hidden=name!=='trend';$$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));history.replaceState(null,'',name==='overview'?'evolution.html':'evolution.html#trend')}
+$$('[data-view]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+if(location.hash==='#trend')switchView('trend');
+Promise.all([
+  fetch('data/json/registries/LOC_ERA_REGISTRY.json').then(r=>r.json()),
+  fetch('data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json').then(r=>r.json()).catch(()=>({periods:[]})),
+  fetch('data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json').then(r=>r.json()).catch(()=>({periods:[]}))
+]).then(([eraData,loc3,loc6])=>{
+  const eras=[...(eraData.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+  const current=eras.find(e=>e.status==='current')||eras[eras.length-1];
+  $('#eraCount').textContent=eras.length||'0'; $('#eraCurrent').textContent=current?.period||'—'; $('#eraStart').textContent=current?.start_date||'—';
+  $('#eraTimeline').innerHTML=eras.map(e=>`<article class="era ${e.status==='current'?'current':''}"><div class="era-head"><strong>${esc(e.display_label||((e.period||'')+'｜'+(e.name||'')))}</strong><small>${esc(e.start_date||'—')} ～ ${esc(e.end_date||'現在')}</small></div><p>${esc(e.description||'')}</p></article>`).join('')||'<div class="empty">尚無 ERA。</div>';
+  const m3=new Map((loc3.periods||[]).map(x=>[String(x.period||''),x]));
+  const m6=new Map((loc6.periods||[]).map(x=>[String(x.period||''),x]));
+  $('#trendGrid').innerHTML=eras.map(e=>{
+    const a=m3.get(String(e.period||''))||{}, b=m6.get(String(e.period||''))||{};
+    const kws=[...(a.normalized_top_keywords||[]).slice(0,5).map(x=>x.term),...(b.keywords||[]).slice(0,5).map(x=>x.term)];
+    const uniq=[...new Set(kws)].slice(0,10);
+    return `<article class="keyword-card"><strong>${esc(e.display_label||e.period)}</strong><small>${esc(e.start_date||'—')} ～ ${esc(e.end_date||'現在')}</small><div class="chips">${uniq.length?uniq.map(k=>`<span class="chip">${esc(k)}</span>`).join(''):'<span class="chip">尚無分析</span>'}</div></article>`;
+  }).join('');
+}).catch(err=>{$('#eraTimeline').innerHTML='<div class="empty">靜態資料載入失敗：'+esc(err.message)+'</div>';$('#trendGrid').innerHTML='<div class="empty">靜態資料載入失敗。</div>'});
+</script>
+<script src="js/loc-nav.js"></script>
+</body></html>

@@ -509,7 +509,7 @@ class UnifiedSearchEngine:
                 "content_type": "knowledge_entity",
                 "group": "entities",
                 "title": "OW3gs",
-                "summary": "LOC1 的 11 張抽取結構：1–6 為 Context Field（因的描述層），7–11 為 Core Fate Sentence（果的判定層）。",
+                "summary": "LOC1 的 11 張 OW3gs 結構：1–6 為因的描述層，7–11 為果的判定層。",
                 "score": 1.0,
                 "source_refs": [
                     {"source_type": "document", "source_id": "命運句語法圖鑑_MoonSyntax_V2.1", "note": "OW3gs 十一卡語法"},
@@ -520,8 +520,8 @@ class UnifiedSearchEngine:
                     "aliases": ["11 張抽牌", "十一卡", "7–11 法則"],
                     "definition": "OW3gs 是月之符文的 11 張抽取結構，也是作者規則層的重要方法之一。",
                     "structure": [
-                        {"range": "1–6", "label": "Context Field／因的描述層", "description": "聚合背景、既有條件、資源、阻力、外部擾動與尚未成形因素。"},
-                        {"range": "7–11", "label": "Core Fate Sentence／果的判定層", "description": "依序為因、現、向、境、心，形成主要核心判定。引擎實際判讀仍依現行 OW3gs Canon。"}
+                        {"range": "1–6", "label": "因的描述層", "description": "描述成因、背景、條件、來源與事情如何走到目前狀態。"},
+                        {"range": "7–11", "label": "果的判定層", "description": "依序為因、現、向、境、心，形成主要核心判定。引擎實際判讀仍依現行 OW3gs Canon。"}
                     ],
                     "reading_order": [
                         "先讀第 7–11 張，建立核心五卡命運句。",
@@ -1248,7 +1248,8 @@ class UnifiedSearchEngine:
         if wanted not in {"", "all", "governance_article", "text_record"}:
             return []
 
-        scored: list[tuple[float, dict[str, Any], str]] = []
+        asset_scored: list[tuple[float, dict[str, Any], str]] = []
+        thread_scored: list[tuple[float, dict[str, Any], str]] = []
         query_terms = [
             term for term in re.split(r"[\s、，,；;：:／/｜|]+", _normalize(query))
             if term
@@ -1279,31 +1280,40 @@ class UnifiedSearchEngine:
             if score >= 0.34:
                 row = dict(asset)
                 row["_content"] = content
-                scored.append((score, row, "asset"))
+                asset_scored.append((score, row, "asset"))
 
         # Search the full LOC4-owned Threads main-post corpus when shards are available.
         # Falls back to the smaller article tranche only when full shards are absent.
         max_thread_matches = max(top_k * 4, 24)
+        compact_query = _compact(query)
         for doc in self._iter_loc4_article_documents():
             if filters.get("period") and doc.get("era") != filters["period"]:
                 continue
             text = str(doc.get("text") or "")
-            if doc.get("source_role") != "main_post" or len(text) < 120:
+            if doc.get("source_role") != "main_post":
                 continue
+            # Threads corpus has no minimum-length gate. Every main post
+            # remains searchable; relevance is controlled by match quality,
+            # scoring and result ranking instead of text length.
+            direct_match = bool(compact_query and compact_query in _compact(text))
             score = _text_score(query, [
                 text,
                 " ".join(doc.get("matched_terms", [])),
                 doc.get("era"),
             ])
             if score >= 0.34:
-                scored.append((score * 0.96, doc, "threads"))
-                if len(scored) > max_thread_matches * 2:
-                    scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("asset_id") or "")))
-                    scored = scored[:max_thread_matches]
+                thread_scored.append((score * 0.96, doc, "threads"))
+                if len(thread_scored) > max_thread_matches * 2:
+                    thread_scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("id") or "")))
+                    thread_scored = thread_scored[:max_thread_matches]
 
-        scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("asset_id") or "")))
+        # Preserve source diversity. Threads is a large LOC4 corpus and must
+        # not compete for the same tiny top-k quota as maintained LOC6 assets.
+        asset_scored.sort(key=lambda row: (-row[0], str(row[1].get("asset_id") or "")))
+        thread_scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("id") or "")))
+        selected = [*asset_scored[:top_k], *thread_scored[:top_k]]
         out = []
-        for score, item, source_kind in scored[:top_k]:
+        for score, item, source_kind in selected:
             if source_kind == "asset":
                 out.append({
                     "result_id": item.get("asset_id"),

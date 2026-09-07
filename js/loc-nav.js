@@ -16,7 +16,7 @@
 
   function loadPageEnhancements() {
     const file = location.pathname.split("/").pop() || "index.html";
-    if (file !== "projection.html") return;
+    if (file !== "evolution.html") return;
     if (document.querySelector('script[data-life-draw-history]')) return;
 
     const script = document.createElement('script');
@@ -26,31 +26,36 @@
     document.body.appendChild(script);
   }
 
+  const DEFAULT_NAV = [
+    {id:"runes",label:"月之符文",href:"runes.html"},
+    {id:"game",label:"脈絡",href:"context.html"},
+    {id:"search",label:"搜尋",href:"search.html"},
+    {id:"evolution",label:"推演",href:"evolution.html"}
+  ];
+
+  function paintNav(node, items = DEFAULT_NAV) {
+    const active = currentId(node, items);
+    node.innerHTML = `
+      <a class="loc-global-brand" href="index.html" aria-label="回到 LOC月典首頁">LOC月典</a>
+      <div class="loc-global-links">
+        ${items.map(item => `
+          <a class="loc-global-link" href="${esc(item.href)}"${item.id === active ? ' aria-current="page"' : ""}>
+            ${esc(item.label)}
+          </a>
+        `).join("")}
+      </div>
+    `;
+  }
+
   async function renderNav(node) {
+    paintNav(node);
     try {
       const response = await fetch(NAV_URL, { cache: "no-store" });
-      if (!response.ok) throw new Error("LOC nav unavailable");
+      if (!response.ok) return;
       const data = await response.json();
-      const items = Array.isArray(data.items) ? data.items : [];
-      const active = currentId(node, items);
-      const brand = data.brand || {};
-
-      node.innerHTML = `
-        <a class="loc-global-brand" href="${esc(brand.href || "index.html")}">
-          <strong>${esc(brand.label || "LOC · 月典")}</strong>
-          <small>${esc(brand.subtitle || "Luna Codex")}</small>
-        </a>
-        <div class="loc-global-links">
-          ${items.map(item => `
-            <a class="loc-global-link" href="${esc(item.href)}"${item.id === active ? ' aria-current="page"' : ""}>
-              <strong>${esc(item.label)}</strong>
-              <small>${esc(item.description || "")}</small>
-            </a>
-          `).join("")}
-        </div>
-      `;
+      const items = Array.isArray(data.items) && data.items.length ? data.items : DEFAULT_NAV;
+      paintNav(node, items);
     } catch (error) {
-      node.innerHTML = '<a class="loc-global-brand" href="index.html"><strong>LOC月典</strong><small>Luna Codex</small></a><div class="loc-global-links"><a class="loc-global-link" href="runes.html"><strong>月之符文</strong><small>66 符文圖鑑</small></a><a class="loc-global-link" href="context.html"><strong>脈絡</strong><small>LOC2 · Relation · Graph · 月之符文沙盒</small></a><a class="loc-global-link" href="search.html"><strong>綜合搜尋</strong><small>跨內容整合搜尋</small></a><a class="loc-global-link" href="projection.html"><strong>推演</strong><small>LOC8 · 每日符文 · ERA · Event · Trend</small></a></div>';
       console.warn(error);
     }
   }
