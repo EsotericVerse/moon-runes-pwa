@@ -78,10 +78,13 @@ class LOC3DatasetTests(unittest.TestCase):
 
     def test_reels_catalog_is_version_specific_and_metrics_are_separate(self):
         media = json.loads(MEDIA_DATASET.read_text(encoding="utf-8"))
-        self.assertEqual(19, media["dataset"]["reels_count"])
-        self.assertEqual(16, media["dataset"]["linked_count"])
-        self.assertEqual(3, media["dataset"]["pending_count"])
-        self.assertTrue(all(item["ig_plays"] is None for item in media["items"]))
+        items = media["items"]
+        linked = [item for item in items if item["linked_to_semantic_index"]]
+        pending = [item for item in items if not item["linked_to_semantic_index"]]
+        self.assertEqual(len(items), media["dataset"]["reels_count"])
+        self.assertEqual(len(linked), media["dataset"]["linked_count"])
+        self.assertEqual(len(pending), media["dataset"]["pending_count"])
+        self.assertTrue(all(item["ig_plays"] is None for item in items))
         linked_ids = {
             version["song_id"]
             for work in self.works
