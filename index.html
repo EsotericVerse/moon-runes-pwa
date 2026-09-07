@@ -1686,6 +1686,10 @@
           <span>現行已整理 773 首歌曲資料；歌曲與歌詞已納入可分析範圍，保留作品日期與來源，排行榜可依來源與 ERA 日期交集動態計算，不把歌曲時期固定寫死。</span>
         </div>
         <div class="evolution-proof-item">
+          <strong>LOC4｜作者文字本體已接入全文搜尋</strong>
+          <span>核心小說純文字已建立 document-level corpus；Facebook 與 Threads 的生活／公開文字也歸入 LOC4 的 authored-text layer，但保留在各自來源 corpus，不重複複製。LOC6、LOC7、LOC8 分別負責治理解讀、檢索與時間趨勢。</span>
+        </div>
+        <div class="evolution-proof-item">
           <strong>來源 × ERA 動態 Top 10</strong>
           <span>排行榜可先看全部，再切 Facebook、Threads、Suno，並依現行 ERA Registry 的日期邊界動態重新聚合；ERA 日期微調時不必重做固定排行。</span>
         </div>
@@ -1900,13 +1904,13 @@
         },
         LOC4: {
           kicker:'LOC4 · Writing',
-          title:'文字創作',
-          copy:'小說、文章與其他文字作品的創作分發。文字本身是作品，不等同於治理文件或知識架構。',
-          route:'統一入口：LOC Search；以 LOC4 專屬關鍵字與文字作品資料類型進入。',
+          title:'文字與生活書寫',
+          copy:'承接作者文字本體：小說、文章、生活書寫，以及 Facebook／Threads 的長期公開文字。創作作品只是高密度樣本，不代表 LOC4 的全部文字規模。',
+          route:'統一入口：LOC Search；作品正文、Facebook 與 Threads 維持各自來源，再由搜尋／治理／時間層共同使用。',
           extra:[
-            '內容：小說、文章、角色敘事與其他文字作品。',
-            '代表實驗：《月語者》與多篇短中篇作品。',
-            '功能：從主題、情境與角色語意搜尋文字作品。'
+            '創作層：核心小說純文字 corpus 已接成 document-level 全文搜尋。',
+            '生活文字層：Facebook 2011-04-15～2026-09-03；Threads 2024-11-18～2026-09-06。',
+            '權責：LOC4 保存作者文字本體；LOC6 做治理／政德風解讀，LOC7 負責檢索，LOC8 負責 ERA／趨勢。'
           ],
           resources:[
             {label:'《月語者》',href:'https://vocus.cc/article/6829d52cfd8978000109b281',meta:'長篇小說 · 代表性符文創作實驗',external:true},
