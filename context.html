@@ -102,7 +102,7 @@ button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:po
       </div>
       <div class="context-actions"><button class="context-btn primary" type="submit" id="contextRelationSubmit">新增關係</button><button class="context-btn ghost" type="button" id="contextRelationCancel" hidden>取消編輯</button></div>
     </form>
-    <div class="context-list" id="contextRelationList"><div class="context-empty">尚未載入關係快取。</div></div><div class="context-pagination" id="contextRelationPagination" hidden><div class="context-page-info" id="contextRelationPageInfo"></div><div class="context-page-buttons" id="contextRelationPageButtons"></div></div>
+    <div class="context-list" id="contextRelationList"><div class="context-empty">正在準備關係資料…</div></div><div class="context-pagination" id="contextRelationPagination" hidden><div class="context-page-info" id="contextRelationPageInfo"></div><div class="context-page-buttons" id="contextRelationPageButtons"></div></div>
   </section>
 
   <section class="context-tool-card">
@@ -363,7 +363,7 @@ function renderContextRelations(){
   contextRelationPage=Math.min(Math.max(1,contextRelationPage),totalPages);
   const pageRows=sorted.slice((contextRelationPage-1)*CONTEXT_RELATION_PAGE_SIZE,contextRelationPage*CONTEXT_RELATION_PAGE_SIZE);
 
-  list.innerHTML=pageRows.length?pageRows.map(r=>`<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(r.source_id)} → ${cEsc(r.target_id)}</h4><small>${cEsc(r.relation_type||'related_to')} · ${cEsc(r.date||'')}</small></div><span class="badge">${cEsc(r.status||'current')}</span></div>${r.summary?`<p>${cEsc(r.summary)}</p>`:''}<div class="context-actions"><button class="context-btn ghost" data-context-relation="edit" data-id="${cEsc(r.id)}">編輯</button><button class="context-btn ghost" data-context-relation="delete" data-id="${cEsc(r.id)}">刪除</button></div></article>`).join(''):'<div class="context-empty">目前沒有關係快取。翻到下一頁或新增關係時再連線。</div>';
+  list.innerHTML=pageRows.length?pageRows.map(r=>`<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(r.source_id)} → ${cEsc(r.target_id)}</h4><small>${cEsc(r.relation_type||'related_to')} · ${cEsc(r.date||'')}</small></div><span class="badge">${cEsc(r.status||'current')}</span></div>${r.summary?`<p>${cEsc(r.summary)}</p>`:''}<div class="context-actions"><button class="context-btn ghost" data-context-relation="edit" data-id="${cEsc(r.id)}">編輯</button><button class="context-btn ghost" data-context-relation="delete" data-id="${cEsc(r.id)}">刪除</button></div></article>`).join(''):'<div class="context-empty">目前沒有關係資料。</div>';
 
   renderContextPager('relation',Math.max(sorted.length, contextRelationsRemoteLoaded ? sorted.length : CONTEXT_RELATION_PAGE_SIZE+1),contextRelationPage,CONTEXT_RELATION_PAGE_SIZE,async next=>{
     if(next>1 && !contextRelationsRemoteLoaded){
@@ -445,5 +445,9 @@ document.querySelector('#contextGraphForm')?.addEventListener('submit',ev=>{ev.p
 document.querySelector('#contextGraphNodes')?.addEventListener('click',ev=>{const b=ev.target.closest('[data-context-graph-node]');if(b)expandContextGraph(b.dataset.contextGraphNode)});
 document.querySelector('#contextGraphNodeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphEdgeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphReset')?.addEventListener('click',()=>{document.querySelector('#contextGraphNodeType').value='';document.querySelector('#contextGraphEdgeType').value='';renderContextGraph()});
 
-resetContextEvent();resetContextRelation();loadContextEvents({remote:false});loadContextRelations({remote:false});
+resetContextEvent();resetContextRelation();
+const eventCacheAtStart=readContextCache(CONTEXT_EVENT_CACHE);
+const relationCacheAtStart=readContextCache(CONTEXT_RELATION_CACHE);
+loadContextEvents({remote:!Array.isArray(eventCacheAtStart?.data)});
+loadContextRelations({remote:!Array.isArray(relationCacheAtStart?.data)});
 </script></body></html>
