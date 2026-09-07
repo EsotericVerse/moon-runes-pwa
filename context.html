@@ -209,17 +209,47 @@ function bindSearch(inputId,gridId){const input=document.getElementById(inputId)
 </script><script src="js/loc-nav.js">
 const CONTEXT_SHEET_API='https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec';
 const CONTEXT_LOC_API='https://moon-runes-pwa.onrender.com';
+const CONTEXT_EVENT_CACHE='context-events-cache-v1';
+const CONTEXT_RELATION_CACHE='context-relations-cache-v1';
+const CONTEXT_GRAPH_CACHE_PREFIX='context-graph-cache-v1:';
+const CONTEXT_CACHE_TTL=6*60*60*1000;
 const cEsc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const cUid=()=>crypto?.randomUUID?.()||('ctx-'+Date.now()+'-'+Math.random().toString(36).slice(2));
 let contextEvents=[],contextRelations=[],contextGraph={nodes:[],edges:[]};
 const CONTEXT_EVENT_PAGE_SIZE=20, CONTEXT_GRAPH_PAGE_SIZE=25;
 let contextEventPage=1, contextGraphNodePage=1, contextGraphEdgePage=1;
 
+function readContextCache(key){
+  try{
+    const raw=JSON.parse(localStorage.getItem(key)||'null');
+    if(!raw||typeof raw!=='object') return null;
+    return {data:raw.data,age:Date.now()-Number(raw.saved_at||0)};
+  }catch(_){return null;}
+}
+function writeContextCache(key,data){
+  try{localStorage.setItem(key,JSON.stringify({saved_at:Date.now(),data}));}catch(_){}
+}
+function contextGraphCacheKey(kind,value,depth=''){
+  return CONTEXT_GRAPH_CACHE_PREFIX+kind+':'+encodeURIComponent(String(value||''))+':'+String(depth||'');
+}
 function contextPost(action,key,payload){
   return fetch(CONTEXT_SHEET_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,[key]:payload}),redirect:'follow'}).then(async r=>{if(!r.ok)throw new Error('request failed');const d=await r.json();if(d&&d.ok===false)throw new Error(d.error||'request failed');return d});
 }
 async function loadContextEvents(){
-  try{const u=new URL(CONTEXT_SHEET_API);u.searchParams.set('action','events');u.searchParams.set('user_id','lo3rwang');const r=await fetch(u,{cache:'no-store',redirect:'follow'});const d=await r.json();contextEvents=(Array.isArray(d)?d:(d.events||[]));}catch(e){console.error(e);contextEvents=[]}
+  const cached=readContextCache(CONTEXT_EVENT_CACHE);
+  if(Array.isArray(cached?.data)&&cached.data.length){
+    contextEvents=cached.data;
+    renderContextEvents();
+  }
+  try{
+    const u=new URL(CONTEXT_SHEET_API);u.searchParams.set('action','events');u.searchParams.set('user_id','lo3rwang');
+    const r=await fetch(u,{cache:'no-store',redirect:'follow'});const d=await r.json();
+    contextEvents=(Array.isArray(d)?d:(d.events||[]));
+    writeContextCache(CONTEXT_EVENT_CACHE,contextEvents);
+  }catch(e){
+    console.error(e);
+    if(!Array.isArray(cached?.data)) contextEvents=[];
+  }
   renderContextEvents();
 }
 function contextPageNums(current,totalPages){
@@ -272,7 +302,20 @@ document.querySelector('#contextEventRefresh')?.addEventListener('click',loadCon
 document.querySelector('#contextEventList')?.addEventListener('click',async ev=>{const b=ev.target.closest('[data-context-event]');if(!b)return;const id=b.dataset.id,a=b.dataset.contextEvent;if(a==='edit')return editContextEvent(id);if(a==='archive'){if(!confirm('封存這筆事件？'))return;await contextPost('archive_event','event',{id,user_id:'lo3rwang'});await loadContextEvents()}if(a==='delete'){if(!confirm('刪除這筆事件？'))return;await contextPost('delete_event','event',{id,user_id:'lo3rwang'});await loadContextEvents()}});
 
 async function loadContextRelations(){
-  try{const u=new URL(CONTEXT_SHEET_API);u.searchParams.set('action','relations');u.searchParams.set('user_id','lo3rwang');const r=await fetch(u,{cache:'no-store',redirect:'follow'});const d=await r.json();contextRelations=d.relations||[];}catch(e){console.error(e);contextRelations=[]}
+  const cached=readContextCache(CONTEXT_RELATION_CACHE);
+  if(Array.isArray(cached?.data)&&cached.data.length){
+    contextRelations=cached.data;
+    renderContextRelations();
+  }
+  try{
+    const u=new URL(CONTEXT_SHEET_API);u.searchParams.set('action','relations');u.searchParams.set('user_id','lo3rwang');
+    const r=await fetch(u,{cache:'no-store',redirect:'follow'});const d=await r.json();
+    contextRelations=d.relations||[];
+    writeContextCache(CONTEXT_RELATION_CACHE,contextRelations);
+  }catch(e){
+    console.error(e);
+    if(!Array.isArray(cached?.data)) contextRelations=[];
+  }
   renderContextRelations();
 }
 function renderContextRelations(){const list=document.querySelector('#contextRelationList');if(!list)return;list.innerHTML=contextRelations.length?[...contextRelations].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).map(r=>`<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(r.source_id)} → ${cEsc(r.target_id)}</h4><small>${cEsc(r.relation_type||'related_to')} · ${cEsc(r.date||'')}</small></div><span class="badge">${cEsc(r.status||'current')}</span></div>${r.summary?`<p>${cEsc(r.summary)}</p>`:''}<div class="context-actions"><button class="context-btn ghost" data-context-relation="edit" data-id="${cEsc(r.id)}">編輯</button><button class="context-btn ghost" data-context-relation="delete" data-id="${cEsc(r.id)}">刪除</button></div></article>`).join(''):'<div class="context-empty">尚無關係。</div>'}
@@ -287,8 +330,52 @@ function updateContextGraphFilters(){const nt=[...new Set(contextGraph.nodes.map
 function renderContextGraph(status=''){const nf=document.querySelector('#contextGraphNodeType').value,ef=document.querySelector('#contextGraphEdgeType').value;const nodes=contextGraph.nodes.filter(n=>!nf||graphNodeType(n)===nf),ids=new Set(nodes.map(graphNodeId));const edges=contextGraph.edges.filter(e=>(!ef||graphEdgeType(e)===ef)&&(!nf||ids.has(String(e.source||''))||ids.has(String(e.target||''))));
 const nodePages=Math.max(1,Math.ceil(nodes.length/CONTEXT_GRAPH_PAGE_SIZE)),edgePages=Math.max(1,Math.ceil(edges.length/CONTEXT_GRAPH_PAGE_SIZE));contextGraphNodePage=Math.min(Math.max(1,contextGraphNodePage),nodePages);contextGraphEdgePage=Math.min(Math.max(1,contextGraphEdgePage),edgePages);const pageNodes=nodes.slice((contextGraphNodePage-1)*CONTEXT_GRAPH_PAGE_SIZE,contextGraphNodePage*CONTEXT_GRAPH_PAGE_SIZE),pageEdges=edges.slice((contextGraphEdgePage-1)*CONTEXT_GRAPH_PAGE_SIZE,contextGraphEdgePage*CONTEXT_GRAPH_PAGE_SIZE);
 document.querySelector('#contextGraphNodes').innerHTML=pageNodes.length?pageNodes.map(n=>`<button type="button" class="context-graph-node" data-context-graph-node="${cEsc(graphNodeId(n))}"><small>${cEsc(graphNodeType(n))}</small><strong>${cEsc(graphNodeLabel(n))}</strong><small>${cEsc(graphNodeId(n))}</small></button>`).join(''):'<div class="context-empty">沒有符合的節點。</div>';document.querySelector('#contextGraphEdges').innerHTML=pageEdges.length?pageEdges.map(e=>`<article class="context-graph-edge"><div class="context-graph-edge-path"><span>${cEsc(e.source||'—')}</span><span class="context-graph-edge-type">→ ${cEsc(graphEdgeType(e))} →</span><span>${cEsc(e.target||'—')}</span></div></article>`).join(''):'<div class="context-empty">沒有符合的關係。</div>';renderContextPager('node',nodes.length,contextGraphNodePage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextGraphNodePage=next;renderContextGraph();});renderContextPager('edge',edges.length,contextGraphEdgePage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextGraphEdgePage=next;renderContextGraph();});if(status)document.querySelector('#contextGraphStatus').textContent=status}
-async function searchContextGraph(q){if(!q)return;document.querySelector('#contextGraphStatus').textContent='搜尋中…';try{const r=await fetch(CONTEXT_LOC_API+'/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,top_k:6})});const d=await r.json();contextGraph={nodes:d.graph?.nodes||[],edges:d.graph?.edges||[]};contextGraphNodePage=1;contextGraphEdgePage=1;updateContextGraphFilters();renderContextGraph(`「${q}」· ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`)}catch(e){renderContextGraph('Graph 暫時無法取得。')}}
-async function expandContextGraph(id){const depth=document.querySelector('#contextGraphDepth').value;try{const u=new URL(CONTEXT_LOC_API+'/search/graph');u.searchParams.set('node_id',id);u.searchParams.set('depth',depth);const r=await fetch(u,{cache:'no-store'});const d=await r.json();contextGraph={nodes:d.nodes||[],edges:d.edges||[]};contextGraphNodePage=1;contextGraphEdgePage=1;updateContextGraphFilters();renderContextGraph(`${id} · depth ${depth}`)}catch(e){document.querySelector('#contextGraphStatus').textContent='無法展開節點。'}}
+async function searchContextGraph(q){
+  if(!q)return;
+  const key=contextGraphCacheKey('search',q);
+  const cached=readContextCache(key);
+  if(cached?.data&&Array.isArray(cached.data.nodes)){
+    contextGraph=cached.data;
+    contextGraphNodePage=1;contextGraphEdgePage=1;
+    updateContextGraphFilters();
+    renderContextGraph(`「${q}」· 快取 · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
+  }else{
+    document.querySelector('#contextGraphStatus').textContent='搜尋中…';
+  }
+  try{
+    const r=await fetch(CONTEXT_LOC_API+'/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,top_k:6})});
+    const d=await r.json();
+    contextGraph={nodes:d.graph?.nodes||[],edges:d.graph?.edges||[]};
+    writeContextCache(key,contextGraph);
+    contextGraphNodePage=1;contextGraphEdgePage=1;
+    updateContextGraphFilters();
+    renderContextGraph(`「${q}」· ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
+  }catch(e){
+    if(!cached?.data) renderContextGraph('Graph 暫時無法取得。');
+  }
+}
+async function expandContextGraph(id){
+  const depth=document.querySelector('#contextGraphDepth').value;
+  const key=contextGraphCacheKey('node',id,depth);
+  const cached=readContextCache(key);
+  if(cached?.data&&Array.isArray(cached.data.nodes)){
+    contextGraph=cached.data;
+    contextGraphNodePage=1;contextGraphEdgePage=1;
+    updateContextGraphFilters();
+    renderContextGraph(`${id} · depth ${depth} · 快取`);
+  }
+  try{
+    const u=new URL(CONTEXT_LOC_API+'/search/graph');u.searchParams.set('node_id',id);u.searchParams.set('depth',depth);
+    const r=await fetch(u,{cache:'no-store'});const d=await r.json();
+    contextGraph={nodes:d.nodes||[],edges:d.edges||[]};
+    writeContextCache(key,contextGraph);
+    contextGraphNodePage=1;contextGraphEdgePage=1;
+    updateContextGraphFilters();
+    renderContextGraph(`${id} · depth ${depth}`);
+  }catch(e){
+    if(!cached?.data) document.querySelector('#contextGraphStatus').textContent='無法展開節點。';
+  }
+}
 document.querySelector('#contextGraphForm')?.addEventListener('submit',ev=>{ev.preventDefault();searchContextGraph(document.querySelector('#contextGraphQuery').value.trim())});
 document.querySelector('#contextGraphNodes')?.addEventListener('click',ev=>{const b=ev.target.closest('[data-context-graph-node]');if(b)expandContextGraph(b.dataset.contextGraphNode)});
 document.querySelector('#contextGraphNodeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphEdgeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphReset')?.addEventListener('click',()=>{document.querySelector('#contextGraphNodeType').value='';document.querySelector('#contextGraphEdgeType').value='';renderContextGraph()});
