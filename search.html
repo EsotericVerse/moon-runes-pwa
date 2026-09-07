@@ -740,11 +740,11 @@
     }
 
     const GROUP_LOCATION_META={
-      entities:{loc:'LOC1',label:'核心詞條',desc:'方法名稱、定義與讀取規則'},
-      scenarios:{loc:'LOC2',label:'情境事件',desc:'Scenario Corpus／Event Corpus；真實生活狀況的語意題目'},
-      oracle:{loc:'LOC1',label:'籤詩／解牌',desc:'月之符文的實際提示與使用結果'},
-      readings:{loc:'LOC1',label:'OW3gs 解牌／抽牌紀錄',desc:'有來源保存的 11 張抽牌與解讀紀錄'},
-      runes:{loc:'LOC1',label:'月之符文',desc:'基本符文、方向與參照語意'},
+      entities:{loc:'月之符文',label:'核心詞條',desc:'方法名稱、定義與讀取規則'},
+      scenarios:{loc:'月符沙盒',label:'情境事件',desc:'Scenario Corpus／Event Corpus；真實生活狀況的語意題目'},
+      oracle:{loc:'月之符文',label:'籤詩／解牌',desc:'月之符文的實際提示與使用結果'},
+      readings:{loc:'月之符文',label:'OW3gs 解牌／抽牌紀錄',desc:'有來源保存的 11 張抽牌與解讀紀錄'},
+      runes:{loc:'月之符文',label:'月之符文',desc:'基本符文、方向與參照語意'},
       rune_songs:{loc:'自創歌曲(Suno)',label:'符文歌曲／歌曲關聯',desc:'已確認符文歌曲，以及明確標示來源狀態的符文－歌曲關聯'},
       works:{loc:'自創歌曲(Suno)',label:'音樂／歌詞',desc:'歌曲、歌詞與符文歌演化證據'},
       textworks:{loc:'文字創作',label:'文字作品',desc:'文章、小說與文字延伸'},
@@ -759,6 +759,8 @@
 
     function publicLocLabel(value){
       const map={
+        LOC1:'月之符文',
+        LOC2:'月符沙盒',
         LOC3:'自創歌曲(Suno)',
         LOC4:'文字創作',
         LOC5:'多媒體創作',
