@@ -173,11 +173,11 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 
 | 分發 | 名稱 | 功能定位 |
 |---|---|---|
-| LOC1 | Lots | 66 符文籤詩、四向判讀、抽取、多符文組合、每日抽取與趨勢 |
-| LOC2 | Game / Scenario | 將符文語言放進真實情境：以雙卡因果描述狀況，並透過 Event、回應、共振與規則互動形成可處理的情境語料 |
-| LOC3 | Music | 音樂創作、微月光、政德風、符文寫歌與歌詞語意檢索 |
-| LOC4 | Writing | 兩部分：①創作作品（小說、文章、符文文本、世界觀等）②生活文字（Facebook／Threads） |
-| LOC5 | Resonance | 圖像、聲音、文字、MV、系統圖形與跨媒體概念視覺化 |
+| LOC1 | 月符／語彙（token） | 基本文字語彙、語意種子、籤詩與解牌入口 |
+| LOC2 | 脈絡 | 關係、Context、Scenario、Event 與 Graph；月符沙盒是代表性實作 |
+| LOC3 | 音樂 | 文字與語意延伸為歌曲、歌詞與聲音 |
+| LOC4 | 文字創作 | 文章、小說、生活文字與敘事作品 |
+| LOC5 | 多媒體 | 文字、音樂、圖像與影音的跨媒介表達 |
 | LOC6 | Methodology / Governance | 方法論：如何理解、判斷、處理；治理、解牌、價值判斷與政德風都是其中的方法 |
 | LOC7 | Algorithm / Text Architecture | 演算法（知識庫）：文字建築、知識管理、檢索、RAG 與 Graph RAG；關係／Graph 脈絡資料本體歸 LOC2 |
 | LOC8 | Projection / Time & Trend | 推演：把作品、語言、方法與風格放進事件、時期、時間線、Trajectory 與 Trend 中觀察其演變 |
