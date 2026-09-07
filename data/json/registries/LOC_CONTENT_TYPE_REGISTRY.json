@@ -14,19 +14,22 @@
       "id": "scenario_event",
       "primary_loc": "LOC2",
       "kind": "scenario_corpus",
-      "label": "情境事件"
+      "label": "情境事件",
+      "public_category": "脈絡"
     },
     {
       "id": "game_rule",
       "primary_loc": "LOC2",
       "kind": "interactive_system",
-      "label": "遊戲規則"
+      "label": "遊戲規則",
+      "public_category": "脈絡"
     },
     {
       "id": "game_document",
       "primary_loc": "LOC2",
       "kind": "document",
-      "label": "遊戲文件"
+      "label": "遊戲文件",
+      "public_category": "脈絡"
     },
     {
       "id": "song",
@@ -155,7 +158,8 @@
       "kind": "analysis_record",
       "label": "治理片段",
       "default_display_policy": "full",
-      "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities."
+      "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities.",
+      "public_category": "方法論"
     },
     {
       "id": "governance_article",
@@ -163,63 +167,73 @@
       "kind": "knowledge_work",
       "label": "治理文章",
       "default_display_policy": "snippet",
-      "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities."
+      "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities.",
+      "public_category": "方法論"
     },
     {
       "id": "dual_rune_relation",
-      "primary_loc": "LOC6",
-      "kind": "grammar_relation",
-      "label": "雙符文關係"
+      "primary_loc": "LOC2",
+      "kind": "context_relation",
+      "label": "雙符文關係",
+      "public_category": "脈絡"
     },
     {
       "id": "rune_interpretation",
       "primary_loc": "LOC6",
       "kind": "analysis_record",
-      "label": "符文解析實證"
+      "label": "符文解析實證",
+      "public_category": "方法論"
     },
     {
       "id": "linguistic_analysis",
       "primary_loc": "LOC7",
       "kind": "analysis_record",
-      "label": "語言結構分析"
+      "label": "語言結構分析",
+      "public_category": "演算法（知識庫）"
     },
     {
       "id": "knowledge_object",
       "primary_loc": "LOC7",
       "kind": "knowledge",
-      "label": "知識物件"
+      "label": "知識物件",
+      "public_category": "演算法（知識庫）"
     },
     {
       "id": "knowledge_document",
       "primary_loc": "LOC7",
       "kind": "knowledge",
       "label": "知識文件",
-      "default_display_policy": "full"
+      "default_display_policy": "full",
+      "public_category": "演算法（知識庫）"
     },
     {
       "id": "faq",
       "primary_loc": "LOC7",
       "kind": "knowledge_view",
       "label": "FAQ",
-      "default_display_policy": "full"
+      "default_display_policy": "full",
+      "public_category": "演算法（知識庫）"
     },
     {
       "id": "event",
       "primary_loc": "LOC8",
       "kind": "temporal_record",
-      "label": "事件"
+      "label": "事件",
+      "public_category": "文學演化"
     },
     {
       "id": "era",
       "primary_loc": "LOC8",
       "kind": "temporal_registry",
-      "label": "ERA"
+      "label": "ERA",
+      "public_category": "文學演化"
     },
     {
       "id": "registry",
       "primary_loc": "LOC8",
       "kind": "integration",
-      "label": "Registry"
+      "label": "Registry",
+      "public_category": "文學演化"
     },
     {
       "id": "facebook_post",
