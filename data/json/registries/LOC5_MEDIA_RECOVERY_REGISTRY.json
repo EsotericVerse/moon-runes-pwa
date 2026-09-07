@@ -1,0 +1,70 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC5_MEDIA_RECOVERY_REGISTRY",
+  "authority": "LOC5",
+  "status": "working",
+  "updated_at": "2026-09-07",
+  "purpose": "Evidence-backed recovery queue for historical LOC5 media. Threads life-writing posts are searched for Suno/media links, then cross-checked against LOC3 song data and LOC5 media registry. A Suno link alone proves a song reference, not an Instagram/YouTube media asset.",
+  "recovery_method": [
+    "search LOC4 Threads source text for Suno/share/media URLs",
+    "cross-match Suno share URL against LOC3 song/version records",
+    "cross-match known IG/YouTube links against LOC3_MEDIA_LINKS and LOC_MEDIA_REGISTRY",
+    "promote to LOC5 media only when an actual media URL or explicit media evidence exists",
+    "otherwise retain as candidate/evidence and do not invent a Reel/MV link"
+  ],
+  "source_scope": {
+    "threads_owner": "LOC4",
+    "current_evidence_registry": "data/json/registries/LOC6_THREADS_KM_INDEX.json",
+    "note": "The current representative tranche already contains recoverable Suno references; full 4,578-main-post corpus should be mined next for broader LOC5 recovery."
+  },
+  "candidates": [
+    {
+      "recovery_id": "LOC5-REC-THREADS-001",
+      "threads_record_id": "THR-A-0119",
+      "date": "2026-08-29",
+      "suno_share_url": "https://suno.com/s/J9VowGrRFhPLQcY4",
+      "status": "song_reference_found_media_not_yet_matched",
+      "loc5_existing": false
+    },
+    {
+      "recovery_id": "LOC5-REC-THREADS-002",
+      "threads_record_id": "THR-A-0120",
+      "date": "2026-08-27",
+      "suno_share_url": "https://suno.com/s/F4lAXVuTwYWEZZK1",
+      "status": "matched_existing_loc5_media",
+      "loc5_existing": true,
+      "matched_title": "答案不用現在",
+      "instagram_url": "https://www.instagram.com/p/Dcir69Eorv5/"
+    },
+    {
+      "recovery_id": "LOC5-REC-THREADS-003",
+      "threads_record_id": "THR-A-0130",
+      "date": "2026-09-02",
+      "suno_share_url": "https://suno.com/s/NNiC0qVpXV1xUv1C",
+      "status": "song_reference_found_media_not_yet_matched",
+      "loc5_existing": false
+    },
+    {
+      "recovery_id": "LOC5-REC-THREADS-004",
+      "threads_record_id": "THR-A-0131",
+      "date": "2026-09-05",
+      "suno_share_url": "https://suno.com/s/NP5obwvr2YEvyPws",
+      "status": "song_reference_found_media_not_yet_matched",
+      "loc5_existing": false
+    },
+    {
+      "recovery_id": "LOC5-REC-THREADS-005",
+      "threads_record_id": "THR-A-0135",
+      "date": "2026-09-03",
+      "suno_share_url": "https://suno.com/s/MeTrhUWNydfmiBcJ",
+      "status": "song_reference_found_media_not_yet_matched",
+      "loc5_existing": false
+    }
+  ],
+  "counts": {
+    "current_threads_suno_evidence": 5,
+    "already_matched_loc5": 1,
+    "unresolved_media_candidates": 4
+  },
+  "governance_rule": "Do not create LOC5 media records from Suno URLs alone. LOC5 requires an actual media asset/link (Instagram Reel, YouTube MV, image/video file, etc.) or explicit author-confirmed media relation."
+}
