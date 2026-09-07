@@ -394,6 +394,18 @@
         </section>
       </div>
       <div class="runes-view" id="drawView">
+        <section class="rune-basics" id="draw-mode-selector">
+          <h2>選擇抽牌數量</h2>
+          <p>選擇這次要使用的抽牌方式。</p>
+          <div class="draw-mode-grid">
+            <a class="draw-mode-card" href="runes.html?mode=single#draw"><strong>單卡</strong><span>單一語意種子。</span></a>
+            <a class="draw-mode-card" href="runes.html?mode=2card#draw"><strong>雙卡</strong><span>因 → 果。</span></a>
+            <a class="draw-mode-card" href="runes.html?mode=3card#draw"><strong>三卡</strong><span>源 → 轉 → 合。</span></a>
+            <a class="draw-mode-card" href="runes.html?mode=5card#draw"><strong>五卡</strong><span>過去 → 現在 → 未來顯化 → 環境 → 心境。</span></a>
+            <div class="draw-mode-card" aria-disabled="true"><strong>OW3gs · 11 卡</strong><span>十一張符文：1–6 因的描述層＋7–11 果的判定層。</span></div>
+          </div>
+        </section>
+
         <section class="panel" id="draw-result-panel" data-draw-execution hidden>
           <div class="head">
             <div>
@@ -421,19 +433,6 @@
               <div class="five-card-schema" id="five-card-schema" hidden><strong>過去</strong><span>→</span><strong>現在</strong><span>→</span><strong>未來顯化</strong><span>／</span><strong>周圍環境</strong><span>・</span><strong>自己心境</strong></div>
               <div class="result-card-stage"><div class="cards-grid" id="cards-grid"></div></div>
             </section>
-        <section class="rune-basics" id="draw-mode-selector">
-          <h2>選擇抽牌數量</h2>
-          <p>選擇這次要使用的抽牌方式。</p>
-          <div class="draw-mode-grid">
-            <a class="draw-mode-card" href="runes.html?mode=single#draw"><strong>單卡</strong><span>單一語意種子。</span></a>
-            <a class="draw-mode-card" href="runes.html?mode=2card#draw"><strong>雙卡</strong><span>因 → 果。</span></a>
-            <a class="draw-mode-card" href="runes.html?mode=3card#draw"><strong>三卡</strong><span>源 → 轉 → 合。</span></a>
-            <a class="draw-mode-card" href="runes.html?mode=5card#draw"><strong>五卡</strong><span>過去 → 現在 → 未來顯化 → 環境 → 心境。</span></a>
-            <div class="draw-mode-card" aria-disabled="true"><strong>OW3gs · 11 卡</strong><span>十一張符文：1–6 因的描述層＋7–11 果的判定層。</span></div>
-          </div>
-        </section>
-      </div>
-
             <section class="result-block">
               <div class="result-section-head"><h2>本次解讀</h2><p id="mode-note"></p></div>
               <div class="reading" id="reading"></div>
@@ -441,6 +440,7 @@
             <div class="actions"><button class="action-card primary-action" id="retry-button" type="button"><span><strong>重新抽牌</strong></span><span>↻</span></button></div>
           </div>
         </section>
+      </div>
       
   </main>
   </div>
@@ -490,7 +490,9 @@
     const hasMode=new URLSearchParams(location.search).has('mode');
     const mode=new URLSearchParams(location.search).get('mode');
     const execution=document.querySelector('[data-draw-execution]');
+    const selector=document.getElementById('draw-mode-selector');
     if(mode && execution) execution.hidden=false;
+    if(selector) selector.hidden=hasMode;
     if(mode==='daily'||location.hash==='#daily') switchView('daily',false);
     else if(hasMode||location.hash==='#draw') switchView('draw',false);
     else if(location.hash==='#reference') switchView('reference',false);
