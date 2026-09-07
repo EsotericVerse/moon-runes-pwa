@@ -203,6 +203,12 @@
       "primary_loc": "LOC8",
       "kind": "integration",
       "label": "Registry"
+    },
+    {
+      "id": "facebook_post",
+      "primary_loc": "LOC6",
+      "label": "Facebook 歷史文字",
+      "default_display_policy": "snippet"
     }
   ],
   "rules": [
