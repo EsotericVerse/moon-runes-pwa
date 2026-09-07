@@ -198,16 +198,20 @@ class LOC3SearchEngine:
         else:
             self.relationships = []
         self.works = works
-        self._features = [_features(str(work.get("retrieval_text", ""))) for work in works]
+        # Feature counters are only an initialization buffer. Keeping them after
+        # vectors are built duplicates the LOC3 search representation in RAM.
+        features_by_work = [_features(str(work.get("retrieval_text", ""))) for work in works]
         document_frequency: Counter[str] = Counter()
-        for features in self._features:
+        for features in features_by_work:
             document_frequency.update(features.keys())
         count = len(works)
         self._idf = {
             feature: math.log((count + 1) / (frequency + 1)) + 1
             for feature, frequency in document_frequency.items()
         }
-        self._vectors = [self._vectorize(features) for features in self._features]
+        self._vectors = [self._vectorize(features) for features in features_by_work]
+        del features_by_work
+        del document_frequency
 
     def _vectorize(self, features: Counter[str]) -> dict[str, float]:
         weighted = {
