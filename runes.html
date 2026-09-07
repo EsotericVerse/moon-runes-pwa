@@ -95,7 +95,23 @@
     .draw-mode-card{display:block;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface2);text-decoration:none;color:var(--text)}
     .draw-mode-card:hover{border-color:rgba(231,194,125,.5);transform:translateY(-2px)}.draw-mode-card strong{display:block;color:var(--gold)}.draw-mode-card span{display:block;margin-top:5px;color:var(--muted);font-size:.82rem}
     @media(max-width:900px){.app-shell{grid-template-columns:1fr;padding:14px}.workspace-sidebar{position:static;min-height:0}.workspace-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-nav-label{grid-column:1/-1}.workspace-foot{display:none}}
-    @media(max-width:560px){.draw-mode-grid{grid-template-columns:1fr}}
+    .daily-record-grid{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(0,1.15fr);gap:14px;margin-top:16px}
+    .daily-record-form,.daily-stats-panel{padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface2)}
+    .daily-record-form h3,.daily-stats-panel h3{margin:0 0 6px;color:var(--gold)}
+    .daily-record-form p,.daily-stats-panel p{margin:0 0 12px;color:var(--muted);font-size:.82rem;line-height:1.6}
+    .daily-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .daily-form-grid label{display:grid;gap:5px;color:var(--muted);font-size:.75rem}.daily-form-grid label.full{grid-column:1/-1}
+    .daily-form-grid input,.daily-form-grid select{min-height:42px;padding:8px 10px;border:1px solid var(--line);border-radius:11px;background:#10233f;color:var(--text)}
+    .daily-record-submit{margin-top:10px;min-height:42px;padding:9px 14px;border:0;border-radius:999px;background:linear-gradient(135deg,#c7b7ff,#e8c57f);color:#160f26;font-weight:800;cursor:pointer}
+    .daily-record-status{margin-top:8px;color:var(--muted);font-size:.76rem}
+    .daily-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+    .daily-metric{padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}
+    .daily-metric small{display:block;color:var(--muted)}.daily-metric strong{display:block;margin-top:3px;font-size:1.15rem}
+    .daily-history-list{display:grid;gap:7px;max-height:420px;overflow:auto}
+    .daily-history-row{display:grid;grid-template-columns:92px 1fr auto;gap:9px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.02);font-size:.8rem}
+    .daily-history-row small{color:var(--muted)}.daily-history-row strong{color:var(--text)}
+    @media(max-width:900px){.daily-record-grid{grid-template-columns:1fr}}
+    @media(max-width:560px){.draw-mode-grid{grid-template-columns:1fr}.daily-form-grid,.daily-metrics{grid-template-columns:1fr}.daily-history-row{grid-template-columns:1fr}}
 </style>
   <link rel="stylesheet" href="css/loc-nav.css" />
   <link rel="stylesheet" href="css/rune-draw.css" />
@@ -210,18 +226,50 @@
         <header class="hero loc-header">
           <p class="loc-header-meta">LunaRunes · Daily</p>
           <h1 class="loc-header-title">每日符文</h1>
-          <h2 class="loc-header-subtitle">一天一張，觀看今天的語意提示。</h2>
-          <p class="loc-header-copy">每日符文是 LOC1 的固定入口，和一般多卡抽牌分開。</p>
+          <h2 class="loc-header-subtitle">線上抽牌與實體牌紀錄，放在同一頁但彼此獨立。</h2>
+          <p class="loc-header-copy">現階段統計只以手動輸入的實體牌紀錄為準；線上每日抽牌不會自動寫入任何紀錄。</p>
         </header>
+
         <section class="daily-entry" aria-labelledby="daily-entry-title">
-      <div>
-        <h2 id="daily-entry-title">今天的月之符文</h2>
-        <p>每日符文是最直接的使用入口：抽一張作為今日語意提示；歷史紀錄與趨勢則交由 LOC8 推演。</p>
-      </div>
-      <div class="daily-actions">
-        <a class="primary" href="runes.html?mode=daily#draw">抽取每日符文</a>
-      </div>
-    </section>
+          <div>
+            <h2 id="daily-entry-title">線上每日抽牌</h2>
+            <p>只負責抽牌與顯示結果。不會自動存檔，也不會改動下方統計。</p>
+          </div>
+          <div class="daily-actions">
+            <a class="primary" href="runes.html?mode=daily#daily">抽取每日符文</a>
+          </div>
+        </section>
+
+        <section class="rune-basics" aria-labelledby="daily-record-title">
+          <h2 id="daily-record-title">實體牌紀錄與統計</h2>
+          <p>抽完實體牌後，再手動記錄。只有按下「儲存紀錄」才會寫入；不會自動帶入剛才線上抽到的牌。</p>
+          <div class="daily-record-grid">
+            <form class="daily-record-form" id="dailyRecordForm">
+              <h3>手動記錄實體牌</h3>
+              <p>來源固定視為實體牌紀錄。</p>
+              <div class="daily-form-grid">
+                <label>日期<input id="dailyRecordDate" type="date" required></label>
+                <label>類型<select id="dailyRecordKind"><option value="daily_draw">主抽</option><option value="daily_draw_supplement">補抽</option></select></label>
+                <label>符文<select id="dailyRecordRune" required><option value="">選擇符文</option></select></label>
+                <label>方向<select id="dailyRecordDirection"><option>正位</option><option>半正位</option><option>半逆位</option><option>逆位</option></select></label>
+                <label class="full">備註<input id="dailyRecordNote" type="text" placeholder="可留空"></label>
+              </div>
+              <button class="daily-record-submit" type="submit">儲存紀錄</button>
+              <div class="daily-record-status" id="dailyRecordStatus">尚未寫入任何資料。</div>
+            </form>
+
+            <div class="daily-stats-panel">
+              <h3>每日符文統計</h3>
+              <p id="dailyStatsStatus">載入已記錄的實體牌資料…</p>
+              <div class="daily-metrics">
+                <div class="daily-metric"><small>紀錄數</small><strong id="dailyMetricCount">—</strong></div>
+                <div class="daily-metric"><small>主抽</small><strong id="dailyMetricPrimary">—</strong></div>
+                <div class="daily-metric"><small>補抽</small><strong id="dailyMetricSupplement">—</strong></div>
+              </div>
+              <div class="daily-history-list" id="dailyHistoryList"></div>
+            </div>
+          </div>
+        </section>
       </div>
       <div class="runes-view" id="drawView" hidden>
         <header class="hero loc-header">
@@ -299,6 +347,7 @@
   <script type="module" src="js/list.js?v=20260905-5"></script>
   <script src="js/locMoonPhase.js"></script>
   <script type="module" src="js/rune-draw.js?v=20260908-1"></script>
+  <script type="module" src="js/rune-daily-records.js?v=20260908-1"></script>
   <script src="js/loc-nav.js"></script>
 
   <script>
