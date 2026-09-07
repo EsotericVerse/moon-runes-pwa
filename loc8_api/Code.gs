@@ -442,8 +442,7 @@ function deleteObjectById_(sheetName, id, expectedUserId) {
 function getHeaders_(sheet) {
   const lastColumn = Math.max(sheet.getLastColumn(), 1);
   return sheet.getRange(1, 1, 1, lastColumn).getDisplayValues()[0]
-    .map(v => String(v).trim())
-    .filter(Boolean);
+    .map(v => String(v).trim());
 }
 
 function serializeCell_(value) {
