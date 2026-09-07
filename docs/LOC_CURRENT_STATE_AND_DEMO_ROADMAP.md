@@ -145,7 +145,7 @@ LOC Framework 原則上不必綁死 66 月符。
 - 關係、Context、Scenario、Event
 - Canonical Graph 的節點／edge 脈絡
 - 月符沙盒是代表性互動實作
-- Graph View 可在 life.html 顯示，但關係／脈絡責任歸 LOC2
+- Graph View 可在 evolution.html 顯示，但關係／脈絡責任歸 LOC2
 
 ### LOC3｜音樂
 - 歌曲、歌詞、聲音與符文歌曲延伸
