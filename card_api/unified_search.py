@@ -936,7 +936,7 @@ class UnifiedSearchEngine:
 
     def _loc6_article_results(self, query: str, top_k: int, wanted: str, filters: dict[str, str] | None = None) -> list[dict[str, Any]]:
         filters = filters or {}
-        if wanted not in {"", "all", "governance_article"}:
+        if wanted not in {"", "all", "governance_article", "text_record"}:
             return []
 
         scored: list[tuple[float, dict[str, Any], str]] = []
