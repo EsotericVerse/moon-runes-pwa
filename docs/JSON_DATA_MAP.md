@@ -11,10 +11,12 @@
 data/json/
 ├─ core/
 ├─ registries/
+├─ sources/
 ├─ search/
 ├─ generated/
 ├─ archive/
-└─ experimental/
+├─ experimental/
+└─ inbox/
 ~~~
 
 資料依「角色與生命週期」分類，不依副檔名或 LOC 編號無差別堆放。
@@ -43,10 +45,12 @@ data/json/
 ~~~text
 大型成熟穩定資料 → core projection
 小型持續治理資料 → registries
+一手來源 corpus  → sources
 檢索衍生資料     → search
 可重建結果       → generated
 歷史版本         → archive
 研究資料         → experimental
+待治理匯入資料   → inbox
 ~~~
 
 ## 3. Registries — 結構化治理與跨 LOC 關係
@@ -68,7 +72,17 @@ data/json/
 
 Registry 保存**關係、權責、狀態與 provenance**，不應為方便查詢而複製另一權威來源的完整 payload。
 
-## 4. Search — 檢索專用 View
+## 4. Sources — 一手來源 Corpus
+
+路徑：`data/json/sources/`
+
+保存已經完成基本清理、可追溯 provenance 的一手或匯入 corpus。它們不是 Canon，也不是 generated analysis。
+
+目前：
+- `sources/facebook/manifest.json`
+- `sources/facebook/facebook_posts_01.json` ～ `facebook_posts_09.json`
+
+## 5. Search — 檢索專用 View
 
 路徑：`data/json/search/`
 
@@ -87,20 +101,21 @@ FAQ / RAG 是 KM View，不是 Canon。
 
 Search data 可以為 retrieval 最佳化，但不得變成新的語義母資料。
 
-## 5. Generated — 可重建衍生資料
+## 6. Generated — 可重建衍生資料
 
 路徑：`data/json/generated/`
 
-目前主要承接 LOC6 Threads：
+目前承接 Threads/LOC4/LOC6 衍生資料，以及 Facebook 語意摘要：
 
 - article index
 - document manifest
 - ERA / P0 analysis baseline
 - compressed main-post shards
+- `generated/facebook/fb-semantic-summary.json`
 
 Generated output 應有 upstream provenance。可以重建的資料，不應因方便而升格 Canon。
 
-## 6. Archive — 歷史版本
+## 7. Archive — 歷史版本
 
 路徑：`data/json/archive/`
 
@@ -112,7 +127,7 @@ Generated output 應有 upstream provenance。可以重建的資料，不應因�
 - Current runtime 不得 silent fallback 到 archive。
 - 舊版本不因新版本發布而被改寫。
 
-## 7. Experimental — 研究資料
+## 8. Experimental — 研究資料
 
 路徑：`data/json/experimental/`
 
@@ -124,7 +139,13 @@ Generated output 應有 upstream provenance。可以重建的資料，不應因�
 
 `engine/` 本身只保存實驗程式。它直接讀 `core/` 的正式 rune projection，不再維護另一份完整月符副本。
 
-## 8. Configuration JSON 例外
+## 9. Inbox — 匯入暫存
+
+路徑：`data/json/inbox/`
+
+瀏覽器 capture 或 KM upload 新資料先進 inbox。完成 schema/provenance 驗證後，再依責任移入 sources / registries / search / generated；不得直接把 inbox 當正式資料來源。
+
+## 10. Configuration JSON 例外
 
 以下是 configuration，不屬資料層：
 
@@ -133,7 +154,7 @@ Generated output 應有 upstream provenance。可以重建的資料，不應因�
 
 因此規則是「集中 data JSON」，不是無差別搬移所有 `.json`。
 
-## 9. 資料同步方向
+## 11. 資料同步方向
 
 ~~~text
 Canonical / mother source / original evidence
@@ -151,20 +172,22 @@ Canonical / mother source / original evidence
 
 下游 Search、Graph、UI、AI、experimental output 不得反向覆寫上游 authority。
 
-## 10. Python Path Contract
+## 12. Python Path Contract
 
 正式 Python 程式統一使用 `card_api/paths.py`：
 
 - `core_json(name)`
 - `registry_json(name)`
+- `source_json(domain, name)`
 - `search_json(domain, name)`
 - `generated_json(...)`
 - `archive_json(...)`
 - `experimental_json(...)`
+- `inbox_json(...)`
 
 新增程式不應重新硬編一套 repository path。
 
-## 11. Governance / KM 對應
+## 13. Governance / KM 對應
 
 - Repository 結構治理：`docs/REPOSITORY_GOVERNANCE.md`
 - Data projection 治理：`docs/DATA_ARCHITECTURE.md`
@@ -172,7 +195,7 @@ Canonical / mother source / original evidence
 - Copyleft：`COPYLEFT.md`
 - Knowledge Asset indexing：`data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json`
 
-## 12. Migration 完成條件
+## 14. Migration 完成條件
 
 移動資料檔案時，以下必須在同一 migration 中更新：
 
