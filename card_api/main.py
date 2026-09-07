@@ -602,6 +602,127 @@ async def health_check():
 
 
 
+def _load_existing_keyword_terms():
+    """Load only already-governed keyword registries. Never create new terms."""
+    terms = []
+    registry_dir = REPO_ROOT / "data" / "json" / "registries"
+    for path in registry_dir.glob("*_KEYWORD_REGISTRY.json"):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        for item in data.get("keywords", []):
+            if not isinstance(item, dict):
+                continue
+            term = str(item.get("term", "")).strip()
+            if not term:
+                continue
+            aliases = [str(x).strip() for x in item.get("aliases", []) if str(x).strip()]
+            terms.append({
+                "term": term,
+                "aliases": aliases,
+                "keyword_type": item.get("keyword_type", ""),
+                "registry": data.get("registry", path.stem),
+            })
+    return terms
+
+
+def _record_text(record: dict) -> str:
+    fields = []
+    for key in ("title", "text", "summary", "caption", "description", "content"):
+        value = record.get(key)
+        if isinstance(value, str) and value.strip():
+            fields.append(value)
+    return "\n".join(fields)
+
+
+def _tag_existing_keywords(record: dict, keyword_terms: list[dict]) -> dict:
+    """Attach existing keyword terms only. Does not mint or suggest new keywords."""
+    text = _record_text(record).lower()
+    matched = []
+    for item in keyword_terms:
+        candidates = [item["term"], *item.get("aliases", [])]
+        hits = [x for x in candidates if x and x.lower() in text]
+        if hits:
+            matched.append({
+                "term": item["term"],
+                "matched_by": hits,
+                "keyword_type": item.get("keyword_type", ""),
+                "registry": item.get("registry", ""),
+            })
+    updated = dict(record)
+    updated["matched_keywords"] = matched
+    return updated
+
+
+def _extract_records(data):
+    if isinstance(data, list):
+        return [x for x in data if isinstance(x, dict)]
+    if isinstance(data, dict):
+        if isinstance(data.get("records"), list):
+            return [x for x in data["records"] if isinstance(x, dict)]
+        return [data]
+    return []
+
+
+def _record_identity(record: dict):
+    source = str(record.get("source", "")).strip().lower()
+    stable_id = (
+        record.get("source_id")
+        or record.get("media_id")
+        or record.get("post_id")
+        or record.get("song_id")
+    )
+    if stable_id:
+        return ("source_id", source, str(stable_id))
+    url = str(record.get("url", "")).strip()
+    if url:
+        return ("url", url)
+    content_hash = record.get("content_hash") or record.get("hash")
+    if content_hash:
+        return ("hash", str(content_hash))
+    rid = record.get("id")
+    if rid:
+        return ("id", str(rid))
+    return None
+
+
+def _record_hash(record: dict):
+    explicit = record.get("content_hash") or record.get("hash")
+    if explicit:
+        return str(explicit)
+    canonical = json.dumps(record, ensure_ascii=False, sort_keys=True, default=str)
+    return __import__("hashlib").sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _merge_records(existing: list[dict], incoming: list[dict]):
+    """skip same record, update changed stable record, append new record."""
+    merged = list(existing)
+    index = {}
+    for i, row in enumerate(merged):
+        ident = _record_identity(row)
+        if ident:
+            index[ident] = i
+
+    stats = {"appended": 0, "updated": 0, "skipped": 0}
+    for row in incoming:
+        ident = _record_identity(row)
+        if ident and ident in index:
+            pos = index[ident]
+            if _record_hash(merged[pos]) == _record_hash(row):
+                stats["skipped"] += 1
+            else:
+                merged[pos] = row
+                stats["updated"] += 1
+            continue
+
+        merged.append(row)
+        if ident:
+            index[ident] = len(merged) - 1
+        stats["appended"] += 1
+    return merged, stats
+
+
 def _safe_km_filename(name: str) -> str:
     raw = Path(name or "km-import.json").name
     if not raw.lower().endswith(".json"):
@@ -612,7 +733,7 @@ def _safe_km_filename(name: str) -> str:
     return safe[:160]
 
 
-def _write_km_to_github(filename: str, payload: str):
+def _github_km_existing(filename: str):
     token = os.environ.get("LOC_KM_GITHUB_TOKEN", "").strip()
     repo = os.environ.get("LOC_KM_GITHUB_REPO", "EsotericVerse/moon-runes-pwa").strip()
     branch = os.environ.get("LOC_KM_GITHUB_BRANCH", "main").strip() or "main"
@@ -626,71 +747,46 @@ def _write_km_to_github(filename: str, payload: str):
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
-    current_sha = None
     existing = requests.get(api, headers=headers, params={"ref": branch}, timeout=20)
-    if existing.status_code == 200:
-        current_sha = existing.json().get("sha")
-    elif existing.status_code != 404:
+    if existing.status_code == 404:
+        return {"sha": None, "records": [], "path": path, "api": api, "headers": headers, "branch": branch}
+    if existing.status_code != 200:
         raise RuntimeError(f"GitHub lookup failed: {existing.status_code}")
 
-    body = {
-        "message": f"data(km): import {filename}",
-        "content": base64.b64encode(payload.encode("utf-8")).decode("ascii"),
+    body = existing.json()
+    raw = base64.b64decode(body.get("content", "")).decode("utf-8") if body.get("content") else ""
+    try:
+        parsed = json.loads(raw) if raw else {}
+    except Exception:
+        parsed = {}
+    records = _extract_records(parsed.get("payload", parsed) if isinstance(parsed, dict) else parsed)
+    return {
+        "sha": body.get("sha"),
+        "records": records,
+        "path": path,
+        "api": api,
+        "headers": headers,
         "branch": branch,
     }
-    if current_sha:
-        body["sha"] = current_sha
-    saved = requests.put(api, headers=headers, json=body, timeout=30)
+
+
+def _write_km_to_github(filename: str, payload: str, state: dict):
+    body = {
+        "message": f"data(km): append {filename}",
+        "content": base64.b64encode(payload.encode("utf-8")).decode("ascii"),
+        "branch": state["branch"],
+    }
+    if state.get("sha"):
+        body["sha"] = state["sha"]
+    saved = requests.put(state["api"], headers=state["headers"], json=body, timeout=30)
     if saved.status_code not in (200, 201):
         raise RuntimeError(f"GitHub write failed: {saved.status_code}")
     result = saved.json()
     return {
         "mode": "github",
-        "path": path,
+        "path": state["path"],
         "commit_sha": (result.get("commit") or {}).get("sha"),
         "content_url": ((result.get("content") or {}).get("html_url")),
-    }
-
-
-@app.post("/km/import")
-async def km_import(input: KMImportInput):
-    filename = _safe_km_filename(input.filename)
-    envelope = {
-        "schema_version": "0.1",
-        "imported_at": datetime.now().isoformat(),
-        "source": input.source.strip() or "manual_upload",
-        "filename": filename,
-        "payload": input.data,
-    }
-    serialized = json.dumps(envelope, ensure_ascii=False, indent=2)
-    if len(serialized.encode("utf-8")) > 15 * 1024 * 1024:
-        raise HTTPException(status_code=413, detail="JSON 超過 15 MB，請拆分後再上傳")
-
-    try:
-        github_result = _write_km_to_github(filename, serialized)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"KM GitHub 寫入失敗: {e}")
-
-    if github_result:
-        return {
-            "success": True,
-            **github_result,
-            "filename": filename,
-            "timestamp": datetime.now().isoformat(),
-        }
-
-    inbox = REPO_ROOT / "data" / "json" / "inbox"
-    inbox.mkdir(parents=True, exist_ok=True)
-    out = inbox / filename
-    out.write_text(serialized, encoding="utf-8")
-    return {
-        "success": True,
-        "mode": "runtime_inbox",
-        "path": str(out.relative_to(REPO_ROOT)),
-        "persistent": False,
-        "note": "未設定 LOC_KM_GITHUB_TOKEN；已寫入目前執行環境 inbox。Render 重新部署後可能消失。",
-        "filename": filename,
-        "timestamp": datetime.now().isoformat(),
     }
 
 
