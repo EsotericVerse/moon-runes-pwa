@@ -64,22 +64,22 @@ button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:po
 <aside class="workspace-sidebar">
   <div class="workspace-brand"><h1>Context</h1><p>脈絡</p></div>
   <nav class="workspace-nav" aria-label="脈絡功能">
-    <div class="workspace-nav-group"><div class="workspace-nav-label">01 · 關係</div><button class="workspace-switch active" type="button" data-context-switch="graph"><strong>脈絡 / Graph</strong><small>Relation · edge · Graph</small></button></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">02 · 情境</div><button class="workspace-switch" type="button" data-context-switch="scenario"><strong>情境 / Event</strong><small>事件卡 · 情境語料</small></button></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">03 · 遊戲</div><button class="workspace-switch" type="button" data-context-switch="sandbox-game"><strong>沙盒遊戲</strong><small>Semantic Playground · 實際遊玩</small></button></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">04 · 說明</div><button class="workspace-switch" type="button" data-context-switch="sandbox-guide"><strong>沙盒遊戲說明</strong><small>規則 · Event · 符文 · 八種回應方式</small></button></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">05 · 文件</div><button class="workspace-switch" type="button" data-context-switch="docs"><strong>文件</strong><small>脈絡知識與規則來源</small></button></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">01 · Graph</div><button class="workspace-switch active" type="button" data-context-switch="graph"><strong>關係圖探索</strong><small>Graph · 搜尋 · 展開</small></button></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">02 · 節點</div><button class="workspace-switch" type="button" data-context-switch="nodes"><strong>節點</strong><small>Node · 概念 · 實體</small></button></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">03 · 關係</div><button class="workspace-switch" type="button" data-context-switch="relations"><strong>關係式</strong><small>Relation · Edge · CRUD</small></button></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">04 · 情境</div><button class="workspace-switch" type="button" data-context-switch="scenario"><strong>情境 / Event</strong><small>事件卡 · 情境語料</small></button></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">05 · 遊戲</div><button class="workspace-switch" type="button" data-context-switch="sandbox-game"><strong>沙盒遊戲</strong><small>Semantic Playground · 實際遊玩</small></button></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">06 · 說明</div><button class="workspace-switch" type="button" data-context-switch="sandbox-guide"><strong>沙盒遊戲說明</strong><small>規則 · Event · 符文 · 八種回應方式</small></button></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">07 · 文件</div><button class="workspace-switch" type="button" data-context-switch="docs"><strong>文件</strong><small>脈絡知識與規則來源</small></button></div>
   </nav>
-  <div class="workspace-foot">脈絡頁在同一頁分開處理 Graph、Event、實際沙盒遊戲、沙盒說明與文件；各功能互不混用。</div>
+  <div class="workspace-foot">Graph、節點、關係式、Event、沙盒遊戲與文件各自獨立；Graph 只負責把節點與關係組合起來觀看。</div>
 </aside>
 <main class="workspace-main">
 <section class="hero context-section" data-context-view="graph" id="context-entry"><div class="wrap loc-header">
-<p class="loc-header-meta">Context / Relation / Graph</p>
-<h1 class="loc-header-title">脈絡</h1>
-<h2 class="loc-header-subtitle">建立關係，並從 Graph 看見它們如何連在一起。</h2>
-<p class="loc-header-copy">Relation 是脈絡的基本資料。你可以建立、修改或刪除關係；Graph 則從既有資料中搜尋節點與關係，展開局部脈絡。</p>
-
-
+<p class="loc-header-meta">Context / Graph</p>
+<h1 class="loc-header-title">關係圖探索</h1>
+<h2 class="loc-header-subtitle">把節點與關係組合起來，查看局部脈絡。</h2>
+<p class="loc-header-copy">Graph 只負責搜尋、展開與閱讀；節點與關係式分別在各自功能中管理。</p>
 <section class="context-tool-card">
     <h3>關係圖探索器</h3>
     <p>從一個概念、作品、事件或符文出發，查看它周圍的節點與關係。</p>
@@ -99,7 +99,33 @@ button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:po
       <div class="context-graph-panel"><h3>Edges</h3><div class="context-list" id="contextGraphEdges"><div class="context-empty">尚無關係。</div></div><div class="context-pagination" id="contextGraphEdgePagination" hidden><div class="context-page-info" id="contextGraphEdgePageInfo"></div><div class="context-page-buttons" id="contextGraphEdgePageButtons"></div></div></div>
     </div>
   </section>
-<section class="context-tool-card" style="margin-top:16px">
+</div></section>
+
+<section class="context-section" data-context-view="nodes" id="context-nodes"><div class="wrap">
+<div class="loc-header">
+<p class="loc-header-meta">Context / Node</p>
+<h1 class="loc-header-title">節點</h1>
+<h2 class="loc-header-subtitle">管理 Graph 中可以被連結的基本單位。</h2>
+<p class="loc-header-copy">節點代表概念、ERA、人物、作品、符文、事件或狀態；它本身不是關係式。</p>
+</div>
+<section class="context-tool-card">
+  <div class="context-item-head"><div><h3>節點列表</h3><p>目前先由既有 Relation 資料彙整唯一節點，與關係式分開顯示。</p></div></div>
+  <div class="context-graph-filter">
+    <select id="contextNodeLibraryType"><option value="">全部節點類型</option></select>
+  </div>
+  <div class="context-list" id="contextNodeLibraryList"><div class="context-empty">正在準備節點資料…</div></div>
+  <div class="context-pagination" id="contextNodeLibraryPagination" hidden><div class="context-page-info" id="contextNodeLibraryPageInfo"></div><div class="context-page-buttons" id="contextNodeLibraryPageButtons"></div></div>
+</section>
+</div></section>
+
+<section class="context-section" data-context-view="relations" id="context-relations"><div class="wrap">
+<div class="loc-header">
+<p class="loc-header-meta">Context / Relation</p>
+<h1 class="loc-header-title">關係式</h1>
+<h2 class="loc-header-subtitle">描述兩個節點之間的連結。</h2>
+<p class="loc-header-copy">Relation 只負責 source → relation → target，以及日期、方向、摘要、證據與可信度。</p>
+</div>
+<section class="context-tool-card" id="relation-library">
 
     <h3 id="contextRelationFormTitle">新增關係</h3>
     <p>建立來源節點、目標節點與它們之間的關係。</p>
@@ -213,7 +239,7 @@ function switchContextView(name){
   history.replaceState(null,'',name==='graph'?'context.html':'context.html#'+name);
 }
 document.querySelectorAll('[data-context-switch]').forEach(btn=>btn.addEventListener('click',()=>switchContextView(btn.dataset.contextSwitch)));
-const initialContextView=['scenario','sandbox-game','sandbox-guide','docs'].includes(location.hash.slice(1))?location.hash.slice(1):'graph';
+const initialContextView=['nodes','relations','scenario','sandbox-game','sandbox-guide','docs'].includes(location.hash.slice(1))?location.hash.slice(1):'graph';
 switchContextView(initialContextView);
 function bindSearch(inputId,gridId){const input=document.getElementById(inputId),grid=document.getElementById(gridId);if(!input||!grid)return;input.addEventListener("input",()=>{const q=input.value.trim().toLowerCase();grid.querySelectorAll(".card").forEach(c=>c.classList.toggle("hidden",q&&!c.dataset.search.includes(q)))})}bindSearch("eventSearch","eventGrid");bindSearch("runeSearch","runeGrid");
 </script><script src="js/loc-nav.js"></script>
@@ -230,7 +256,7 @@ let contextEvents=[],contextRelations=[],contextGraph={nodes:[],edges:[]};
 
 
 const CONTEXT_EVENT_PAGE_SIZE=10, CONTEXT_RELATION_PAGE_SIZE=10, CONTEXT_GRAPH_PAGE_SIZE=10;
-let contextEventPage=1, contextRelationPage=1, contextGraphNodePage=1, contextGraphEdgePage=1;
+let contextEventPage=1, contextRelationPage=1, contextGraphNodePage=1, contextGraphEdgePage=1, contextNodeLibraryPage=1;
 let contextEventsRemoteLoaded=false, contextRelationsRemoteLoaded=false;
 
 function readContextCache(key){
@@ -289,7 +315,8 @@ function renderContextPager(kind,total,page,pageSize,onPage){
     event:['#contextEventPagination','#contextEventPageInfo','#contextEventPageButtons'],
     relation:['#contextRelationPagination','#contextRelationPageInfo','#contextRelationPageButtons'],
     node:['#contextGraphNodePagination','#contextGraphNodePageInfo','#contextGraphNodePageButtons'],
-    edge:['#contextGraphEdgePagination','#contextGraphEdgePageInfo','#contextGraphEdgePageButtons']
+    edge:['#contextGraphEdgePagination','#contextGraphEdgePageInfo','#contextGraphEdgePageButtons'],
+    nodeLibrary:['#contextNodeLibraryPagination','#contextNodeLibraryPageInfo','#contextNodeLibraryPageButtons']
   };
   const [navSel,infoSel,buttonsSel]=map[kind]||[]; if(!navSel)return;
   const nav=document.querySelector(navSel),info=document.querySelector(infoSel),buttons=document.querySelector(buttonsSel); if(!nav||!info||!buttons)return;
@@ -343,10 +370,12 @@ async function loadContextRelations({remote=false}={}){
   if(Array.isArray(cached?.data)){
     contextRelations=cached.data;
     renderContextRelations();
+    renderContextNodeLibrary();
     syncDefaultGraphFromRelations();
   }else if(!remote){
     contextRelations=[];
     renderContextRelations();
+    renderContextNodeLibrary();
   }
 
   if(!remote) return;
@@ -361,6 +390,7 @@ async function loadContextRelations({remote=false}={}){
     contextRelationsRemoteLoaded=true;
     writeContextCache(CONTEXT_RELATION_CACHE,contextRelations);
     renderContextRelations();
+    renderContextNodeLibrary();
     syncDefaultGraphFromRelations();
   }catch(e){
     console.error(e);
@@ -392,6 +422,24 @@ function syncDefaultGraphFromRelations(){
   updateContextGraphFilters();
   renderContextGraph(`Relation 資料 · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
 }
+
+function renderContextNodeLibrary(){
+  const list=document.querySelector('#contextNodeLibraryList');
+  const typeSel=document.querySelector('#contextNodeLibraryType');
+  if(!list||!typeSel)return;
+  const all=graphFromRelations(contextRelations).nodes.sort((a,b)=>graphNodeLabel(a).localeCompare(graphNodeLabel(b),'zh-Hant'));
+  const types=[...new Set(all.map(graphNodeType))].sort();
+  const current=typeSel.value;
+  typeSel.innerHTML='<option value="">全部節點類型</option>'+types.map(x=>`<option value="${cEsc(x)}">${cEsc(x)}</option>`).join('');
+  if(types.includes(current))typeSel.value=current;
+  const rows=all.filter(n=>!typeSel.value||graphNodeType(n)===typeSel.value);
+  const pages=Math.max(1,Math.ceil(rows.length/CONTEXT_GRAPH_PAGE_SIZE));
+  contextNodeLibraryPage=Math.min(Math.max(1,contextNodeLibraryPage),pages);
+  const pageRows=rows.slice((contextNodeLibraryPage-1)*CONTEXT_GRAPH_PAGE_SIZE,contextNodeLibraryPage*CONTEXT_GRAPH_PAGE_SIZE);
+  list.innerHTML=pageRows.length?pageRows.map(n=>`<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(graphNodeLabel(n))}</h4><small>${cEsc(graphNodeType(n))} · ${cEsc(graphNodeId(n))}</small></div></div></article>`).join(''):'<div class="context-empty">目前沒有節點資料。</div>';
+  renderContextPager('nodeLibrary',rows.length,contextNodeLibraryPage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextNodeLibraryPage=next;renderContextNodeLibrary();});
+}
+document.querySelector('#contextNodeLibraryType')?.addEventListener('change',()=>{contextNodeLibraryPage=1;renderContextNodeLibrary()});
 
 function renderContextRelations(){
   const list=document.querySelector('#contextRelationList');
