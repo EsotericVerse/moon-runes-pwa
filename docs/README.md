@@ -22,7 +22,7 @@
 |---|---|---|
 | [LOC3_PERIOD_KEYWORD_ANALYSIS.md](./LOC3_PERIOD_KEYWORD_ANALYSIS.md) | LOC3 依 LOC8 連續時期統計歌曲關鍵字、轉折、情緒功能與結尾狀態 | Working |
 | [LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md](./LOC_CURRENT_STATE_AND_DEMO_ROADMAP.md) | LOC 現行基本定義、Demo 架構、LOC1–8 責任、LOC8 時期／事件／時間統合與下一步 | Current / Working |
-| [LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md) | LOC2 真實情境／雙卡因果與 Event Corpus 定位 | Working |
+| [LOC1_OW3GS_REFERENCE_CASES.md](./LOC1_OW3GS_REFERENCE_CASES.md) | OW3gs 真實解牌 reference cases、事後結果與語法回測證據 | Current / Reference |\n| [LOC1_DIVINATION_DEEP_GUIDE.md](./LOC1_DIVINATION_DEEP_GUIDE.md) | LOC1 多卡解牌、OW3gs 1–6／7–11 操作流程、常見錯誤與回測方法 | Current / Working |\n| [LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md) | LOC2 真實情境／雙卡因果與 Event Corpus 定位 | Working |
 | [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md) | LOC 共用中立治理核心、CRUD／異議／邊界／版本與治理 Audit 基準 | Current / Governance Baseline |
 | [LOC_GOVERNANCE_HISTORY_AND_TRENDS.md](./LOC_GOVERNANCE_HISTORY_AND_TRENDS.md) | LOC 治理思想歷史、語彙變化與自我治理趨勢分析 | Working Historical Analysis |
 | [LUNA_RUNES_66_GOVERNANCE_DESIGN.md](./LUNA_RUNES_66_GOVERNANCE_DESIGN.md) | 月之符文66的平等使用、界／域、礦物組、悟與演化治理設計觀點 | Current Design Interpretation |
