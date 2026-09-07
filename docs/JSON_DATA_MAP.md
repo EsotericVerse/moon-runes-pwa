@@ -192,7 +192,7 @@ Canonical / mother source / original evidence
 
 - Repository 結構治理：`docs/REPOSITORY_GOVERNANCE.md`
 - Data projection 治理：`docs/DATA_ARCHITECTURE.md`
-- LOC 共用治理：`docs/LOC_GOVERNANCE_CORE.md`
+- LOC 共用治理：`governance.html`
 - Copyleft：`COPYLEFT.md`
 - Knowledge Asset indexing：`data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json`
 
