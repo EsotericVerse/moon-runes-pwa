@@ -27,7 +27,7 @@
   }
 
   const DEFAULT_NAV = [
-    {id:"runes",label:"符文語彙",href:"runes.html"},
+    {id:"runes",label:"月之符文",href:"runes.html"},
     {id:"game",label:"脈絡",href:"context.html"},
     {id:"search",label:"搜尋",href:"search.html"},
     {id:"evolution",label:"推演",href:"evolution.html"}
