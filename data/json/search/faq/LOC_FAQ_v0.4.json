@@ -8,7 +8,7 @@
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 的自然語言 Search/RAG、月符基本參照、符文治理、符文沙盒 Graph、來源／內容分類與時間篩選規則。FAQ 是 KM 問答 View，不取代 Canon、母資料或 Shared Registry。",
+    "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 的 LunaRune64.xlsx Grammar、自然語言 Search/RAG、月符基本參照、符文治理、符文沙盒 Graph、來源／內容分類與時間篩選規則。",
     "entry_count": 83,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
@@ -2046,25 +2046,30 @@
     {
       "id": "FAQ-082",
       "category": "符文治理",
-      "question": "一般雙卡、符文沙盒與符文 Graph 有什麼差別？",
+      "question": "一般兩卡、五卡、OW3gs 與符文沙盒 Graph 怎麼區分？",
       "aliases": [
-        "雙卡是平等關係嗎？",
+        "兩卡一定只有因果嗎？",
+        "符文交互還保留嗎？",
         "符文沙盒為什麼可以交替？",
-        "一般解牌能不能用Graph？",
-        "群組交替還要用嗎？"
+        "群組交替還要用嗎？",
+        "OW3gs 1到6怎麼讀？"
       ],
-      "answer": "一般符文占卜與治理中，雙卡固定為第1張因→第2張果；三卡為源→轉→合。平等、合作、交替的符文 Graph 只屬符文沙盒，沙盒中的符文節點彼此等權。群組交替目前沒有足夠穩定的理論與實證，因此不作預設判讀規則。",
+      "answer": "以 LunaRune64.xlsx 的 Grammar 為準：兩卡是卡A＋卡B＋方向關係＋交互或治理原則；因果可由牌位／問題建立，但符文交互仍描述共鳴、互補、衝突與語氣張力，且不單獨決定吉凶。五卡不是2+3拼接，只連有語義關係的卡對。OW3gs 先讀7–11，再掃描1–6；1–6可做群組、重複主題與張力聚合，但不採群組交替。沙盒 Graph 則是另一場域，可使用平等節點互動。",
       "keywords": [
-        "雙卡",
+        "Grammar",
+        "兩卡",
+        "符文交互",
         "因果",
-        "符文沙盒",
-        "Graph",
-        "平等節點",
-        "交替",
+        "五卡",
+        "關係優先",
+        "OW3gs",
+        "群組聚合",
         "群組交替",
-        "源轉合"
+        "符文沙盒",
+        "Graph"
       ],
       "source_refs": [
+        "LunaRune64.xlsx#Grammar",
         "docs/LOC7_KM.md",
         "docs/LOC_GOVERNANCE_CORE.md"
       ],
