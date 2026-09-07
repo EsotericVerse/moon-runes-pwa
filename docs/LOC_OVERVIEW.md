@@ -21,7 +21,7 @@ LOC 的用途，是把符文、情境、音樂、文字、多媒體、治理原�
 - **LOC5 · 多媒體**：文字、音樂、圖像、影音與跨媒介表達。
 - **LOC6 · 方法論**：描述如何理解、判斷與處理；治理是其中一種方法。
 - **LOC7 · 演算法（知識庫）**：把方法結構化為文字建築、KM、RAG、Search、Graph RAG 等可重複處理方式。
-- **LOC8 · 文學演化**：加入時間、ERA、Event、Trajectory、Trend，觀察作品、語言、方法與風格如何演變。
+- **LOC8 · 推演**：加入時間、ERA、Event、Trajectory、Trend，觀察作品、語言、方法與風格如何演變。
 
 Graph 的關係／脈絡 ownership 歸 LOC2；LOC7 提供處理 Graph 的演算法；LOC8 可在既有頁面顯示 Graph 的時間／演化 View。
 
@@ -37,7 +37,7 @@ LOC 並不等於月符牌組本身。月符是基本參照，LOC 負責承接、
 
 ```text
 LOC：
-LOC1 月符／語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 文學演化
+LOC1 月符／語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演
 
 月之符文：
 符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算 → 符文演化
