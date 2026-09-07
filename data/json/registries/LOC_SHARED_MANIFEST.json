@@ -158,7 +158,7 @@
       "rune_song_registry": "connected; confirmed provenance records currently pending",
       "reasoning_proposition_layer": "connected",
       "cross_relationship_registry": "connected",
-      "ui": "Unified Search only; loc3.html compatibility redirect"
+      "ui": "Unified Search only; search.html?content_type=lyrics_work compatibility redirect"
     },
     "LOC4": {
       "writing_registry": "connected",
@@ -193,7 +193,7 @@
       "faq_v0_3": "connected",
       "faq_rag_v0_3": "connected",
       "cross_relationship_registry": "connected",
-      "ui": "LOC Search knowledge category; faq.html compatibility redirect"
+      "ui": "LOC Search knowledge category; search.html?content_type=knowledge compatibility redirect"
     },
     "LOC8": {
       "authority_source": "established",
@@ -245,12 +245,12 @@
     "ui": {
       "primary_search": "search.html",
       "specialist_views": [
-        "list.html",
-        "life.html"
+        "runes.html#library",
+        "evolution.html"
       ],
       "redirected_views": [
-        "loc3.html → search.html?content_type=lyrics_work",
-        "faq.html → search.html?content_type=knowledge"
+        "search.html?content_type=lyrics_work → search.html?content_type=lyrics_work",
+        "search.html?content_type=knowledge → search.html?content_type=knowledge"
       ]
     },
     "live_coverage": {

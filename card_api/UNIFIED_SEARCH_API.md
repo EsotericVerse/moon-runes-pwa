@@ -97,11 +97,11 @@ Primary integrated interface:
 
 Specialist views remain available where they still represent distinct workflows:
 
-- `/faq.html`
-- `/list.html`
-- `/life.html`
+- `/search.html?content_type=knowledge`
+- `/runes.html#library`
+- `/evolution.html`
 
-`/loc3.html` is now a compatibility redirect to `/search.html?content_type=lyrics_work`. LOC3 remains the canonical music/lyrics data authority, but search presentation is consolidated into Unified Search.
+`/search.html?content_type=lyrics_work` is now a compatibility redirect to `/search.html?content_type=lyrics_work`. LOC3 remains the canonical music/lyrics data authority, but search presentation is consolidated into Unified Search.
 
 This preserves deep/specialized workflows while providing one default semantic entry point.
 
@@ -115,7 +115,7 @@ This preserves deep/specialized workflows while providing one default semantic e
 - `provenance.graph_evidence_status`：recorded / deterministic 等 evidence status 統計。
 - LOC8 的 repository Event／Daily Rune snapshot 可進公開時間圖；live Google Sheet `Relation` 的 private rows 不會由公開 Search API 直接輸出。
 
-這個界線確保 `life.html` 可以保有私人 Relation Library，同時讓公開 `search.html` 使用已治理、可追溯的 Graph RAG。
+這個界線確保 `evolution.html` 可以保有私人 Relation Library，同時讓公開 `search.html` 使用已治理、可追溯的 Graph RAG。
 
 ## Graph Quality / Weighted Traversal
 
@@ -169,7 +169,7 @@ This prevents the endpoint from becoming a bulk corpus/Graph export surface.
 
 With `node_id`, the endpoint returns a bounded `graph_neighborhood` at depth 1–3.
 
-LOC8 `life.html#graph` uses this contract: natural-language queries first use `POST /search`, then clicking a node requests one bounded neighborhood.
+LOC8 `evolution.html#graph` uses this contract: natural-language queries first use `POST /search`, then clicking a node requests one bounded neighborhood.
 
 Graph ownership remains LOC7; LOC8 is a visualization/context consumer.
 
