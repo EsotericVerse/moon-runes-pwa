@@ -14,6 +14,26 @@ LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋�
 
 ---
 
+## 目前進度｜2026-09-08
+
+目前已進入 **Demo 收斂與功能驗收階段**。核心骨架不再擴張，優先處理功能完整性、資料一致性與公開入口。
+
+- **LOC1**：66 符固定骨架、單卡／雙卡／三卡／五卡／OW3gs、每日抽與月相顯示已具備；目前以解讀一致性與等待體驗收尾。
+- **LOC2**：Context／Relation／Event／Graph 與 Semantic Playground 已有可展示實作；Graph 本體權責固定歸 LOC2。
+- **LOC3**：Suno corpus 已整理至 773 首；歌曲／歌詞搜尋與時期分析已有基礎，後續補新歌同步與分類。
+- **LOC4**：小說、文章、Pixnet、PTT、Threads 與 Facebook 等文字來源逐步納入統一 corpus；早期作品首次發表日期與後期潤稿版分開治理。
+- **LOC5**：Reels、圖像、影音與系統視覺資產已有實際成果；目前以 Registry、來源對應與搜尋整合為主。
+- **LOC6**：治理內容已統一收斂到 `governance.html`；政德風進入 **6.1｜改名後・自我治理期**。
+- **LOC7**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與 Simple Text Analysis 已有作用中基礎；下一步是更新 FAQ 到現行 Canon／時期／頁面架構。
+- **LOC8**：`evolution.html` 已統一承接 Period、Timeline、Trend、Trajectory；Facebook／Threads／Pixnet／PTT／Suno 等只作 source，不再建立平台專屬 Timeline 頁。
+
+### Demo 前目前優先順序
+
+1. FAQ／KM 同步現行定義
+2. 核心頁面功能驗收
+3. 搜尋、Context、Evolution 的資料與 fallback 一致性
+4. 最後再更新 tutorial01 / tutorial02
+
 ## Demo 入口
 
 | 功能 | 頁面 | 說明 |
