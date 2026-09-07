@@ -217,6 +217,13 @@
       "kind": "life_writing_record",
       "label": "社群生活文字",
       "default_display_policy": "snippet"
+    },
+    {
+      "id": "text_record",
+      "primary_loc": "LOC4",
+      "kind": "authored_text_record",
+      "label": "文字紀錄",
+      "default_display_policy": "snippet"
     }
   ],
   "rules": [
