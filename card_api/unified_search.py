@@ -492,44 +492,31 @@ class UnifiedSearchEngine:
             for work in (getattr(self.loc3_searcher, "works", []) if self.loc3_searcher else [])
         }
 
-        records: list[tuple[dict[str, Any], str, str, str]] = []
+        records: list[tuple[dict[str, Any], str, str]] = []
 
-        # OW3gs is a method/entity query. Only confirmed rune-song works are
-        # surfaced as songs here; lexical 11-hit scan records are not promoted
-        # to OW3gs provenance.
-        if is_ow3gs:
-            for record in self.rune_songs.get("confirmed_records", []) or []:
-                if record.get("special_construction"):
-                    records.append((record, "特別製作符文歌", "special_rune_song", "confirmed"))
-                else:
-                    records.append((record, "符文歌曲", "rune_song", "confirmed"))
+        for record in self.rune_songs.get("ow3gs_records", []) or []:
+            runes = record.get("runes", []) or []
+            if is_ow3gs or (rune_query and rune_query in runes):
+                records.append((record, "符文歌曲", "OW3gs"))
 
-        # A single-rune query can reverse-link both governed rune songs and
-        # exact-11 lexical membership. The latter is visibly marked as a scan
-        # association rather than confirmed draw provenance.
         if rune_query:
             for record in self.rune_songs.get("confirmed_records", []) or []:
                 runes = record.get("runes", []) or []
                 if rune_query in runes:
                     label = "特別製作符文歌" if record.get("special_construction") else "符文歌曲"
                     method_name = "special_rune_song" if record.get("special_construction") else "rune_song"
-                    records.append((record, label, method_name, "confirmed"))
-
-            for record in self.rune_songs.get("exact_11_scan_records", []) or []:
-                runes = record.get("runes", []) or []
-                if rune_query in runes:
-                    records.append((
-                        record,
-                        "11符掃描關聯（待抽牌來源確認）",
-                        "exact_11_scan",
-                        "scan_association",
-                    ))
+                    records.append((record, label, method_name))
+        elif is_ow3gs:
+            for record in self.rune_songs.get("confirmed_records", []) or []:
+                if record.get("special_construction"):
+                    continue
+                records.append((record, "符文歌曲", record.get("generation_method") or "rune_song"))
 
         output = []
         seen = set()
-        for record, type_label, method_name, relation_status in records:
+        for record, type_label, method_name in records:
             work_id = str(record.get("work_id") or "")
-            dedupe_key = f"{work_id}:{relation_status}" if work_id else f"{record.get('title')}:{relation_status}"
+            dedupe_key = work_id or f"{record.get('title')}:{method_name}"
             if dedupe_key in seen:
                 continue
             seen.add(dedupe_key)
@@ -539,15 +526,15 @@ class UnifiedSearchEngine:
             recommended = versions[0] if versions else {}
             runes = record.get("runes", []) or []
             output.append({
-                "result_id": f"RUNE-SONG-{work_id or len(output)+1}-{relation_status}",
+                "result_id": f"RUNE-SONG-{work_id or len(output)+1}",
                 "system_id": "lo3rwang",
                 "primary_loc": "LOC3",
                 "related_locs": ["LOC1", "LOC7"],
-                "content_type": "rune_song" if relation_status == "confirmed" else "rune_song_association",
+                "content_type": "rune_song",
                 "group": "rune_songs",
                 "title": record.get("title") or work.get("title") or work_id,
                 "summary": f"{type_label} · {len(runes)} 個 distinct 符文",
-                "score": 1.0 if relation_status == "confirmed" else 0.82,
+                "score": 1.0,
                 "period": record.get("period") or work.get("period"),
                 "source_refs": [{
                     "source_type": "registry",
@@ -558,7 +545,8 @@ class UnifiedSearchEngine:
                     "work_id": work_id,
                     "generation_method": method_name,
                     "song_type_label": type_label,
-                    "relation_status": relation_status,
+                    "relation_status": "confirmed",
+                    "rune_song_flag": True,
                     "rune_count": len(runes),
                     "runes": runes,
                     "created_date": record.get("created_date"),
@@ -570,7 +558,6 @@ class UnifiedSearchEngine:
             })
 
         output.sort(key=lambda item: (
-            0 if (item.get("payload") or {}).get("relation_status") == "confirmed" else 1,
             str(item.get("period") or ""),
             str(item.get("title") or ""),
         ))
