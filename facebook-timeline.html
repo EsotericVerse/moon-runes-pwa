@@ -29,7 +29,7 @@
 </div></div>
 <script src="js/facebook-repo-corpus.js"></script>
 <script>
-const DATA_URL='data/json/fb-semantic-summary.json',API='https://moon-runes-pwa.onrender.com';let data;const $=s=>document.querySelector(s);
+const DATA_URL='data/json/generated/facebook/fb-semantic-summary.json',API='https://moon-runes-pwa.onrender.com';let data;const $=s=>document.querySelector(s);
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function concepts(){return Object.keys(data.yearly_concepts[0]).filter(k=>k!=='年份')}
 async function init(){
