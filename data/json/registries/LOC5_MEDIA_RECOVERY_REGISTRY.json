@@ -1,8 +1,8 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC5_MEDIA_RECOVERY_REGISTRY",
   "authority": "LOC5",
-  "status": "working",
+  "status": "author_source_imported",
   "updated_at": "2026-09-07",
   "purpose": "Evidence-backed recovery queue for historical LOC5 media. Threads life-writing posts are searched for Suno/media links, then cross-checked against LOC3 song data and LOC5 media registry. A Suno link alone proves a song reference, not an Instagram/YouTube media asset.",
   "recovery_method": [
@@ -23,7 +23,7 @@
       "threads_record_id": "THR-A-0119",
       "date": "2026-08-29",
       "suno_share_url": "https://suno.com/s/J9VowGrRFhPLQcY4",
-      "status": "song_reference_found_media_not_yet_matched",
+      "status": "superseded_by_author_merge_list",
       "loc5_existing": false
     },
     {
@@ -41,7 +41,7 @@
       "threads_record_id": "THR-A-0130",
       "date": "2026-09-02",
       "suno_share_url": "https://suno.com/s/NNiC0qVpXV1xUv1C",
-      "status": "song_reference_found_media_not_yet_matched",
+      "status": "superseded_by_author_merge_list",
       "loc5_existing": false
     },
     {
@@ -49,7 +49,7 @@
       "threads_record_id": "THR-A-0131",
       "date": "2026-09-05",
       "suno_share_url": "https://suno.com/s/NP5obwvr2YEvyPws",
-      "status": "song_reference_found_media_not_yet_matched",
+      "status": "superseded_by_author_merge_list",
       "loc5_existing": false
     },
     {
@@ -57,14 +57,29 @@
       "threads_record_id": "THR-A-0135",
       "date": "2026-09-03",
       "suno_share_url": "https://suno.com/s/MeTrhUWNydfmiBcJ",
-      "status": "song_reference_found_media_not_yet_matched",
+      "status": "superseded_by_author_merge_list",
       "loc5_existing": false
     }
   ],
   "counts": {
-    "current_threads_suno_evidence": 5,
-    "already_matched_loc5": 1,
-    "unresolved_media_candidates": 4
+    "source_song_version_rows": 178,
+    "recovered_reel_urls": 177,
+    "rows_with_preview": 175,
+    "rows_without_preview": 3,
+    "semantic_linked_rows": 162,
+    "loc5_media_total_after_merge": 179,
+    "new_media_records_added": 158,
+    "existing_media_records_updated": 19
   },
-  "governance_rule": "Do not create LOC5 media records from Suno URLs alone. LOC5 requires an actual media asset/link (Instagram Reel, YouTube MV, image/video file, etc.) or explicit author-confirmed media relation."
+  "governance_rule": "Author-provided exact Suno↔Instagram URLs may become LOC5 media evidence. Missing URLs remain missing; unresolved content verification stays under_review rather than being silently promoted.",
+  "primary_source": {
+    "name": "LOC3_LOC5_影音連結整合清單",
+    "authority": "author-provided",
+    "song_version_rows": 178,
+    "reel_urls": 177,
+    "rows_with_preview": 175,
+    "rows_without_preview": 3,
+    "semantic_linked_rows": 162,
+    "rule": "same song multiple Reels preserved; different song_id versions kept separate; blanks never guessed"
+  }
 }
