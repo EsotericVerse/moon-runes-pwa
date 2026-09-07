@@ -72,6 +72,10 @@ class UnifiedSearchTests(unittest.TestCase):
             '{"role":"non-authoritative frontend fallback snapshot","daily_draws":[{"id":"DD-TEST","date":"2026-09-01","rune_id":"1","rune":"心","direction":"半正位","era_id":"ERA-P8","confidence":"recorded","source":"test-draw"}]}',
             encoding="utf-8",
         )
+        (root / "data" / "json" / "registries" / "LOC4_WRITING_REGISTRY.json").write_text(
+            '{"works":[{"work_id":"LOC4-TEST-NOVEL","system_id":"lo3rwang","primary_loc":"LOC4","title":"測試小說","content_type":"novel","music_map":{"character_themes":[{"character":"德興","role":"character_theme","url":"https://suno.com/s/test-theme"}]}}]}',
+            encoding="utf-8",
+        )
         return UnifiedSearchEngine(
             faq_searcher=FakeFAQ(),
             loc3_searcher=FakeLOC3(),
@@ -104,6 +108,21 @@ class UnifiedSearchTests(unittest.TestCase):
         self.assertEqual(len(result["groups"]["works"]), 0)
         self.assertEqual(result["groups"]["knowledge"][0]["primary_loc"], "LOC7")
 
+
+    def test_character_query_returns_entity_theme_song_and_work(self):
+        result = self.make_engine().search("德興", top_k=6)
+        self.assertTrue(any(item.get("content_type") == "character" for item in result["groups"]["entities"]))
+        self.assertTrue(any(item.get("title") == "德興｜角色主題曲" for item in result["groups"]["works"]))
+        self.assertTrue(any(item.get("result_id") == "LOC4-TEST-NOVEL" for item in result["groups"]["textworks"]))
+
+    def test_character_graph_projects_work_and_theme_edges(self):
+        graph = self.make_engine()._canonical_graph()
+        node_ids = {node["id"] for node in graph["nodes"]}
+        relation_types = {edge["relation_type"] for edge in graph["edges"]}
+        self.assertIn("CHAR::LOC4-TEST-NOVEL::德興", node_ids)
+        self.assertIn("SONGREF::LOC4-TEST-NOVEL::德興", node_ids)
+        self.assertIn("appears_in", relation_types)
+        self.assertIn("character_theme", relation_types)
 
     def test_loc8_temporal_snapshots_enter_canonical_graph_without_live_private_relations(self):
         graph = self.make_engine()._canonical_graph()

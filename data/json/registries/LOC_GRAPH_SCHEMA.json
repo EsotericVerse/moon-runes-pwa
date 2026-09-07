@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "registry": "LOC_GRAPH_SCHEMA",
   "authority": "LOC7",
   "purpose": "Shared node/edge contract for LOC Graph RAG and Search Synthesis. Search retrieval chooses graph seeds; governed edges aggregate related LOC, ERA, works, media and analysis without replacing canonical ownership.",
@@ -15,7 +15,8 @@
     "knowledge_asset",
     "era",
     "life_event",
-    "daily_rune_draw"
+    "daily_rune_draw",
+    "character"
   ],
   "edge_types": [
     "owned_by_loc",
@@ -30,7 +31,10 @@
     "related_to",
     "temporal_before",
     "temporal_after",
-    "source_of"
+    "source_of",
+    "appears_in",
+    "character_theme",
+    "work_theme"
   ],
   "rules": [
     "Graph nodes are references to authoritative records, not replacement copies.",
@@ -121,7 +125,10 @@
       "analyzed_by": 0.88,
       "references": 0.86,
       "has_lot": 0.86,
-      "related_to": 0.78
+      "related_to": 0.78,
+      "appears_in": 0.96,
+      "character_theme": 0.96,
+      "work_theme": 0.94
     }
   },
   "public_access": {

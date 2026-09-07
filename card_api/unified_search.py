@@ -493,44 +493,122 @@ class UnifiedSearchEngine:
         return results
 
     def _entity_results(self, query: str, wanted: str) -> list[dict[str, Any]]:
-        """Deterministic entity-first entries for named LOC methods."""
-        if wanted not in {"", "all", "knowledge", "faq"}:
+        """Deterministic entity-first entries for named LOC methods and LOC4 characters."""
+        if wanted not in {"", "all", "knowledge", "faq", "text_work", "lyrics_work", "suno_song"}:
             return []
         q = _compact(query)
+        results: list[dict[str, Any]] = []
+
         aliases = {"ow3gs", "11張抽牌", "十一張抽牌", "11卡", "十一卡"}
-        if not any(alias in q for alias in aliases):
+        if any(alias in q for alias in aliases):
+            results.append({
+                "result_id": "ENTITY-OW3GS",
+                "system_id": "lo3rwang",
+                "primary_loc": "LOC1",
+                "related_locs": ["LOC3", "LOC7", "LOC8"],
+                "content_type": "knowledge_entity",
+                "group": "entities",
+                "title": "OW3gs",
+                "summary": "LOC1 的 11 張抽取結構：1–6 為 Context Field（因的描述層），7–11 為 Core Fate Sentence（果的判定層）。",
+                "score": 1.0,
+                "source_refs": [
+                    {"source_type": "document", "source_id": "命運句語法圖鑑_MoonSyntax_V2.1", "note": "OW3gs 十一卡語法"},
+                    {"source_type": "registry", "source_id": "LOC3_RUNE_SONG_REGISTRY.json", "note": "符文歌曲生成方法與關聯"}
+                ],
+                "payload": {
+                    "entity_type": "method",
+                    "aliases": ["11 張抽牌", "十一卡", "7–11 法則"],
+                    "definition": "OW3gs 是月之符文的 11 張抽取結構，也是作者規則層的重要方法之一。",
+                    "structure": [
+                        {"range": "1–6", "label": "Context Field／因的描述層", "description": "聚合背景、既有條件、資源、阻力、外部擾動與尚未成形因素。"},
+                        {"range": "7–11", "label": "Core Fate Sentence／果的判定層", "description": "依序為因、現、向、境、心，形成主要核心判定。引擎實際判讀仍依現行 OW3gs Canon。"}
+                    ],
+                    "reading_order": [
+                        "先讀第 7–11 張，建立核心五卡命運句。",
+                        "再掃描第 1–6 張的重複群組、方向、張力與顯著主題。",
+                        "只把與核心有明確語義關係的場域訊息帶回，不把 11 張等權線性串接。",
+                        "最後才加入真實月相作低權重時間修飾。"
+                    ],
+                    "rune_song_note": "符文歌曲是以實際抽牌結果形成語意／解讀後再轉化成歌曲；OW3gs 是其中的 11 張生成方法。"
+                },
+            })
+
+        # LOC4 owns character identity through the authored work/music mapping.
+        # LOC7 exposes a graph/search projection; it does not create a second
+        # canonical character store.
+        for work in self.loc4.get("works", []):
+            music_map = work.get("music_map") or {}
+            for theme in music_map.get("character_themes", []) or []:
+                character = str(theme.get("character") or "").strip()
+                if not character or _compact(character) != q:
+                    continue
+                cid = f"CHAR::{work.get('work_id')}::{character}"
+                results.append({
+                    "result_id": cid,
+                    "system_id": work.get("system_id") or "lo3rwang",
+                    "primary_loc": "LOC4",
+                    "related_locs": ["LOC3", "LOC7"],
+                    "content_type": "character",
+                    "group": "entities",
+                    "title": character,
+                    "summary": f"《{work.get('title')}》角色；已有作者確認的角色主題曲關聯。",
+                    "score": 1.0,
+                    "source_refs": [{
+                        "source_type": "registry",
+                        "source_id": "LOC4_WRITING_REGISTRY.json",
+                        "note": "author-confirmed character/theme mapping"
+                    }],
+                    "payload": {
+                        "entity_type": "character",
+                        "character": character,
+                        "work_id": work.get("work_id"),
+                        "work_title": work.get("title"),
+                        "theme_song_url": theme.get("url"),
+                        "theme_song_role": theme.get("role") or "character_theme",
+                    },
+                })
+        return results
+
+    def _character_theme_results(self, query: str, wanted: str) -> list[dict[str, Any]]:
+        """Return author-confirmed LOC3 theme-song references for exact character queries."""
+        if wanted not in {"", "all", "lyrics_work", "suno_song"}:
             return []
-        return [{
-            "result_id": "ENTITY-OW3GS",
-            "system_id": "lo3rwang",
-            "primary_loc": "LOC1",
-            "related_locs": ["LOC3", "LOC7", "LOC8"],
-            "content_type": "knowledge_entity",
-            "group": "entities",
-            "title": "OW3gs",
-            "summary": "LOC1 的 11 張抽取結構：1–6 為 Context Field（因的描述層），7–11 為 Core Fate Sentence（果的判定層）。",
-            "score": 1.0,
-            "source_refs": [
-                {"source_type": "document", "source_id": "命運句語法圖鑑_MoonSyntax_V2.1", "note": "OW3gs 十一卡語法"},
-                {"source_type": "registry", "source_id": "LOC3_RUNE_SONG_REGISTRY.json", "note": "符文歌曲生成方法與關聯"}
-            ],
-            "payload": {
-                "entity_type": "method",
-                "aliases": ["11 張抽牌", "十一卡", "7–11 法則"],
-                "definition": "OW3gs 是月之符文的 11 張抽取結構，也是作者規則層的重要方法之一。",
-                "structure": [
-                    {"range": "1–6", "label": "Context Field／因的描述層", "description": "聚合背景、既有條件、資源、阻力、外部擾動與尚未成形因素。"},
-                    {"range": "7–11", "label": "Core Fate Sentence／果的判定層", "description": "依序為因、現、向、境、心，形成主要核心判定。"}
-                ],
-                "reading_order": [
-                    "先讀第 7–11 張，建立核心五卡命運句。",
-                    "再掃描第 1–6 張的重複群組、方向、張力與顯著主題。",
-                    "只把與核心有明確語義關係的場域訊息帶回，不把 11 張等權線性串接。",
-                    "最後才加入真實月相作低權重時間修飾。"
-                ],
-                "rune_song_note": "符文歌曲是以實際抽牌結果形成語意／解讀後再轉化成歌曲；OW3gs 是其中的 11 張生成方法。"
-            },
-        }]
+        q = _compact(query)
+        results = []
+        for work in self.loc4.get("works", []):
+            music_map = work.get("music_map") or {}
+            for theme in music_map.get("character_themes", []) or []:
+                character = str(theme.get("character") or "").strip()
+                url = str(theme.get("url") or "").strip()
+                if not character or _compact(character) != q or not url:
+                    continue
+                rid = f"SONGREF::{work.get('work_id')}::{character}"
+                results.append({
+                    "result_id": rid,
+                    "system_id": work.get("system_id") or "lo3rwang",
+                    "primary_loc": "LOC3",
+                    "related_locs": ["LOC4", "LOC7"],
+                    "content_type": "suno_song",
+                    "group": "works",
+                    "title": f"{character}｜角色主題曲",
+                    "summary": f"《{work.get('title')}》中 {character} 的作者確認角色主題曲。",
+                    "score": 1.0,
+                    "source_refs": [
+                        {"source_type": "suno_share", "source_id": url, "note": "author-confirmed character theme song"},
+                        {"source_type": "registry", "source_id": "LOC4_WRITING_REGISTRY.json", "note": "character/theme mapping authority"},
+                    ],
+                    "payload": {
+                        "work_id": rid,
+                        "character": character,
+                        "role": theme.get("role") or "character_theme",
+                        "suno_share_url": url,
+                        "source_work_id": work.get("work_id"),
+                        "source_work_title": work.get("title"),
+                        "projection_only": True,
+                    },
+                })
+        return results
+
 
     def _ow3gs_reading_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "rune_record", "knowledge", "faq"}:
@@ -819,11 +897,16 @@ class UnifiedSearchEngine:
 
         # Work-level catalogue results.
         for work in self.loc4.get("works", []):
+            character_names = [
+                str(row.get("character") or "")
+                for row in ((work.get("music_map") or {}).get("character_themes", []) or [])
+            ]
             score = _text_score(query, [
                 work.get("title"),
                 work.get("summary"),
                 " ".join(work.get("tags", [])),
                 work.get("content_type"),
+                " ".join(character_names),
             ])
             if score >= 0.34:
                 scored.append((score, "work", work))
@@ -1985,6 +2068,83 @@ class UnifiedSearchEngine:
                     f"{wid} is assigned to {work.get('period') or work.get('era_id')}.",
                 )
 
+            # LOC4 character identity and theme-song mapping are authoritative
+            # work metadata. LOC7 projects them into graph nodes/edges without
+            # duplicating the underlying character catalogue.
+            music_map = work.get("music_map") or {}
+            for theme in music_map.get("character_themes", []) or []:
+                character = str(theme.get("character") or "").strip()
+                if not character:
+                    continue
+                cid = f"CHAR::{wid}::{character}"
+                add_node(
+                    cid,
+                    character,
+                    "character",
+                    "LOC4",
+                    work_id=wid,
+                    work_title=work.get("title"),
+                )
+                add_edge(
+                    f"EDGE-{cid}-APPEARS-{wid}",
+                    cid,
+                    wid,
+                    "appears_in",
+                    "record_metadata",
+                    f"{character} is a character in {work.get('title') or wid}.",
+                    "confirmed",
+                    source_ref="LOC4_WRITING_REGISTRY.json",
+                )
+                theme_url = str(theme.get("url") or "").strip()
+                if theme_url:
+                    sid = f"SONGREF::{wid}::{character}"
+                    add_node(
+                        sid,
+                        f"{character}｜角色主題曲",
+                        "music_work",
+                        "LOC3",
+                        source_url=theme_url,
+                        projection_only=True,
+                        source_work_id=wid,
+                    )
+                    add_edge(
+                        f"EDGE-{cid}-THEME-{sid}",
+                        cid,
+                        sid,
+                        "character_theme",
+                        "record_metadata",
+                        f"{character} has an author-confirmed character theme song.",
+                        "confirmed",
+                        source_ref="LOC4_WRITING_REGISTRY.json",
+                    )
+
+            for theme in music_map.get("work_level", []) or []:
+                theme_url = str(theme.get("url") or "").strip()
+                role = str(theme.get("role") or "theme").strip()
+                if not theme_url:
+                    continue
+                sid = f"SONGREF::{wid}::{role}"
+                add_node(
+                    sid,
+                    theme.get("label") or f"{work.get('title') or wid}｜{role}",
+                    "music_work",
+                    "LOC3",
+                    source_url=theme_url,
+                    projection_only=True,
+                    source_work_id=wid,
+                    role=role,
+                )
+                add_edge(
+                    f"EDGE-{wid}-THEME-{sid}",
+                    wid,
+                    sid,
+                    "work_theme",
+                    "record_metadata",
+                    f"{work.get('title') or wid} has an author-confirmed {role} song.",
+                    "confirmed",
+                    source_ref="LOC4_WRITING_REGISTRY.json",
+                )
+
         # LOC5 media: registry gives stable media IDs, period inheritance and
         # optional linked work/song references.
         for media in self.media.get("items", []):
@@ -2253,6 +2413,8 @@ class UnifiedSearchEngine:
                     elif node_type == "life_event" and object_type in {"system", "work"}:
                         exclusive = True
                     elif node_type == "rune" and label == q:
+                        exclusive = True
+                    elif node_type == "character" and label == q:
                         exclusive = True
 
             if strong:
@@ -2944,6 +3106,9 @@ class UnifiedSearchEngine:
             scenarios = self._loc2_scenario_results(query, top_k, wanted)
             documents = self._knowledge_asset_results(query, top_k, wanted)
             music, linked_media = self._music_results(query, top_k, wanted, filters)
+            character_theme_music = self._character_theme_results(query, wanted)
+            music_by_id = {item.get("result_id"): item for item in [*character_theme_music, *music]}
+            music = list(music_by_id.values())[:top_k]
             textworks = self._loc4_results(query, top_k, wanted)
             rune_literature = self._rune_literature_results(query, top_k, wanted)
             textworks = [*textworks, *rune_literature][:top_k]

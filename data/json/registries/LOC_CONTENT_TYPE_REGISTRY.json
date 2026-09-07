@@ -105,6 +105,14 @@
       "label": "世界觀"
     },
     {
+      "id": "character",
+      "primary_loc": "LOC4",
+      "kind": "entity",
+      "label": "角色",
+      "default_display_policy": "metadata_only",
+      "ownership_note": "Character identity belongs to the authored LOC4 work; LOC7 may project it into Graph/Search."
+    },
+    {
       "id": "reel",
       "primary_loc": "LOC5",
       "kind": "media",
