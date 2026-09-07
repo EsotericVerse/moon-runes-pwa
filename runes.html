@@ -112,6 +112,14 @@
     .daily-history-row small{color:var(--muted)}.daily-history-row strong{color:var(--text)}
     @media(max-width:900px){.daily-record-grid{grid-template-columns:1fr}}
     @media(max-width:560px){.draw-mode-grid{grid-template-columns:1fr}.daily-form-grid,.daily-metrics{grid-template-columns:1fr}.daily-history-row{grid-template-columns:1fr}}
+
+    .reading-ref-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .reading-ref-card{padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface2)}
+    .reading-ref-card h3{margin:0 0 7px;color:var(--gold);font-size:1rem}
+    .reading-ref-card p{margin:0;color:#dce6f7;line-height:1.7}
+    .reading-ref-card ul{margin:9px 0 0;padding-left:20px;color:var(--muted)}
+    .reading-ref-card li+li{margin-top:5px}
+    @media(max-width:700px){.reading-ref-grid{grid-template-columns:1fr}}
 </style>
   <link rel="stylesheet" href="css/loc-nav.css" />
   <link rel="stylesheet" href="css/rune-draw.css" />
@@ -127,19 +135,23 @@
           <button class="workspace-switch active" type="button" data-runes-view="beginner"><strong>新手入門</strong><small>66 符文 · 四向 · 怎麼開始</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">02 · 資料</div>
+          <div class="workspace-nav-label">02 · 文件</div>
+          <button class="workspace-switch" type="button" data-runes-view="reference"><strong>基本文件</strong><small>判讀規則 · 命運句 · 練習案例</small></button>
+        </div>
+        <div class="workspace-nav-group">
+          <div class="workspace-nav-label">03 · 資料</div>
           <button class="workspace-switch" type="button" data-runes-view="library"><strong>符文資料</strong><small>66 圖鑑 · 基礎資料 · 實體卡</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">03 · 每日</div>
+          <div class="workspace-nav-label">04 · 每日</div>
           <button class="workspace-switch" type="button" data-runes-view="daily"><strong>每日符文</strong><small>一天一張 · 今日語意提示</small></button>
         </div>
         <div class="workspace-nav-group">
-          <div class="workspace-nav-label">04 · 抽牌</div>
+          <div class="workspace-nav-label">05 · 抽牌</div>
           <button class="workspace-switch" type="button" data-runes-view="draw"><strong>抽牌</strong><small>單卡 · 雙卡 · 三卡 · 五卡 · OW3gs</small></button>
         </div>
       </nav>
-      <div class="workspace-foot">新手入門、符文資料、每日符文與抽牌都在同一頁。</div>
+      <div class="workspace-foot">新手入門、基本文件、符文資料、每日符文與抽牌都在同一頁。</div>
     </aside>
     <main class="page workspace-main">
       <div class="runes-view" id="beginnerView">
@@ -161,6 +173,57 @@
             <a class="draw-mode-card" href="runes.html?mode=daily#daily"><strong>今天先抽一張</strong><span>從每日符文開始。</span></a>
             <button class="draw-mode-card" type="button" data-open-view="library"><strong>查看符文資料</strong><span>瀏覽 66 符文圖鑑。</span></button>
             <a class="draw-mode-card" href="tutorial02.html"><strong>完整新手教學</strong><span>LOC Tutorial 02。</span></a>
+          </div>
+        </section>
+      </div>
+      <div class="runes-view" id="referenceView" hidden>
+        <header class="hero loc-header">
+          <p class="loc-header-meta">LunaRunes · Basic Reference</p>
+          <h1 class="loc-header-title">基本文件</h1>
+          <h2 class="loc-header-subtitle">用固定規則理解抽牌結果，再用少量案例練習命運句。</h2>
+          <p class="loc-header-copy">這裡只放月之符文最基本、穩定的判讀規則與代表案例。更深入的方法、完整案例與延伸分析仍由知識庫提供。</p>
+        </header>
+
+        <section class="rune-basics">
+          <h2>基本判讀順序</h2>
+          <div class="basic-grid">
+            <div class="basic-item"><strong>先看符文本義</strong><span>先確認每張符文最基本的語意，不先被吉凶或結論帶走。</span></div>
+            <div class="basic-item"><strong>再看卡牌方向</strong><span>正位、半正位、半逆位、逆位描述同一語彙在當下狀態中的不同表現。</span></div>
+            <div class="basic-item"><strong>依卡位讀結構</strong><span>雙卡、三卡、五卡與 OW3gs 都有自己的位置責任，不能混成同一種讀法。</span></div>
+            <div class="basic-item"><strong>最後才看月相</strong><span>真實月相是低權重的時間修飾，不應推翻符文本義、方向與主要卡位。</span></div>
+          </div>
+        </section>
+
+        <section class="rune-basics">
+          <h2>命運句基本結構</h2>
+          <div class="reading-ref-grid">
+            <article class="reading-ref-card"><h3>單卡</h3><p>回答當下最核心的語意或狀態。</p></article>
+            <article class="reading-ref-card"><h3>雙卡</h3><p><strong>因 → 果</strong>。第一張描述造成狀況的來源，第二張描述主要結果或落點。</p></article>
+            <article class="reading-ref-card"><h3>三卡</h3><p><strong>源 → 轉 → 合</strong>。從來源、轉折到整合結果，形成一條最基本的語意鏈。</p></article>
+            <article class="reading-ref-card"><h3>五卡</h3><p><strong>過去 → 現在 → 未來顯化 → 周圍環境 → 自己心境</strong>。五個位置各自有責任，不是 2+3 拼接。</p></article>
+            <article class="reading-ref-card"><h3>OW3gs</h3><p><strong>1–6 因的描述層＋7–11 果的判定層</strong>。先讀 7–11 的核心判定，再回看 1–6 補足造成現況的背景與條件。</p></article>
+          </div>
+        </section>
+
+        <section class="rune-basics">
+          <h2>固定練習案例</h2>
+          <p>這些案例用來練習「先看結構，再讀符文」；不是占卜結果資料庫。</p>
+          <div class="reading-ref-grid">
+            <article class="reading-ref-card">
+              <h3>案例一｜修車狀況</h3>
+              <p><strong>核心 7–11：</strong>根逆、暗正、土逆、封半正、老半逆。</p>
+              <ul><li>先看根／土／老形成的基礎與老化問題。</li><li>封半正表示繼續投入的空間正在收束。</li><li>結論不是單純「修不好」，而是「是否值得繼續修」成為真正問題。</li></ul>
+            </article>
+            <article class="reading-ref-card">
+              <h3>案例二｜找房子的策略方向</h3>
+              <p><strong>核心 7–11：</strong>夢半正、域半逆、枝半逆、命半逆、分逆。</p>
+              <ul><li>夢先保留理想，但不能被理想綁住。</li><li>域、枝要求縮小範圍與候選。</li><li>分逆強調排除不合適物件，先守住底線。</li></ul>
+            </article>
+            <article class="reading-ref-card">
+              <h3>案例三｜理賠狀況</h3>
+              <p><strong>核心 7–11：</strong>草正、心半正、鍊正、金半逆、禍半逆。</p>
+              <ul><li>草與鍊顯示符合條款的部分仍能落地。</li><li>金半逆表示實際金額可能低於最高期待。</li><li>禍半逆表示較壞情況收束，但不是完全沒有代價。</li></ul>
+            </article>
           </div>
         </section>
       </div>
@@ -355,6 +418,7 @@
     const buttons=[...document.querySelectorAll('[data-runes-view]')];
     const views={
       beginner:document.getElementById('beginnerView'),
+      reference:document.getElementById('referenceView'),
       library:document.getElementById('libraryView'),
       daily:document.getElementById('dailyView'),
       draw:document.getElementById('drawView')
@@ -376,6 +440,7 @@
     if(mode && execution) execution.hidden=false;
     if(mode==='daily'||location.hash==='#daily') switchView('daily',false);
     else if(hasMode||location.hash==='#draw') switchView('draw',false);
+    else if(location.hash==='#reference') switchView('reference',false);
     else if(location.hash==='#library') switchView('library',false);
     else switchView('beginner',false);
   })();
