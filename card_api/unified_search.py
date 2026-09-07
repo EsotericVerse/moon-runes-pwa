@@ -71,6 +71,8 @@ class UnifiedSearchEngine:
         self.relationships = self._load_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
         self.graph_schema = self._load_json("LOC_GRAPH_SCHEMA.json")
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
+        self.loc4_corpus_manifest = self._load_repo_json("data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json")
+        self.loc4_corpus = self._load_loc4_corpus_shards()
         self.loc6 = self._load_json("LOC6_GOVERNANCE_REGISTRY.json")
         self.loc6_threads = self._load_json("LOC6_THREADS_KM_INDEX.json")
         self.loc6_period_keywords = self._load_json("LOC6_PERIOD_KEYWORD_ANALYSIS.json")
@@ -128,6 +130,22 @@ class UnifiedSearchEngine:
         if full_docs:
             return full_docs
         return self.loc6_thread_articles.get("documents", []) or self.loc6_threads.get("documents", [])
+
+    def _load_loc4_corpus_shards(self) -> dict[str, Any]:
+        manifest = getattr(self, "loc4_corpus_manifest", {}) or {}
+        documents: list[dict[str, Any]] = []
+        for shard in manifest.get("shards", []):
+            path = shard.get("path")
+            if not path:
+                continue
+            part = self._load_repo_json(path)
+            documents.extend(part.get("documents", []))
+        return {
+            "documents": documents,
+            "document_count": len(documents),
+            "manifest": manifest,
+        }
+
 
     @staticmethod
     def _allowed(content_type: str, wanted: str) -> bool:
@@ -703,9 +721,12 @@ class UnifiedSearchEngine:
         return music, media
 
     def _loc4_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
-        if wanted not in {"", "all", "text_work", "article"}:
+        if wanted not in {"", "all", "text_work", "article", "text_record"}:
             return []
-        scored = []
+
+        scored: list[tuple[float, str, dict[str, Any]]] = []
+
+        # Work-level catalogue results.
         for work in self.loc4.get("works", []):
             score = _text_score(query, [
                 work.get("title"),
@@ -713,24 +734,66 @@ class UnifiedSearchEngine:
                 " ".join(work.get("tags", [])),
                 work.get("content_type"),
             ])
-            if score < 0.34:
+            if score >= 0.34:
+                scored.append((score, "work", work))
+
+        # Document-level authored full-text corpus.
+        for doc in (getattr(self, "loc4_corpus", {}) or {}).get("documents", []):
+            score = _text_score(query, [
+                doc.get("title"),
+                doc.get("section"),
+                doc.get("text"),
+                doc.get("retrieval_text"),
+            ])
+            if score >= 0.34:
+                scored.append((score * 0.985, "document", doc))
+
+        scored.sort(key=lambda row: (-row[0], str(row[2].get("id") or row[2].get("work_id") or "")))
+        results = []
+        seen: set[str] = set()
+        for score, kind, item in scored:
+            rid = str(item.get("id") or item.get("work_id") or "")
+            if not rid or rid in seen:
                 continue
-            scored.append((score, work))
-        scored.sort(key=lambda row: (-row[0], str(row[1].get("work_id", ""))))
-        return [{
-            "result_id": work.get("work_id"),
-            "system_id": work.get("system_id") or "lo3rwang",
-            "primary_loc": "LOC4",
-            "related_locs": work.get("related_locs", []),
-            "content_type": "text_work",
-            "group": "textworks",
-            "title": work.get("title"),
-            "summary": work.get("summary"),
-            "score": round(score, 6),
-            "era_id": work.get("era_id"),
-            "source_refs": work.get("source_refs", []),
-            "payload": work,
-        } for score, work in scored[:top_k]]
+            seen.add(rid)
+            if kind == "work":
+                results.append({
+                    "result_id": item.get("work_id"),
+                    "system_id": item.get("system_id") or "lo3rwang",
+                    "primary_loc": "LOC4",
+                    "related_locs": item.get("related_locs", []),
+                    "content_type": "text_work",
+                    "group": "textworks",
+                    "title": item.get("title"),
+                    "summary": item.get("summary"),
+                    "score": round(score, 6),
+                    "era_id": item.get("era_id"),
+                    "period": item.get("period"),
+                    "source_refs": item.get("source_refs", []),
+                    "payload": item,
+                })
+            else:
+                text = str(item.get("text") or "")
+                results.append({
+                    "result_id": item.get("id"),
+                    "system_id": "lo3rwang",
+                    "primary_loc": "LOC4",
+                    "related_locs": item.get("related_locs", ["LOC6", "LOC7", "LOC8"]),
+                    "content_type": "text_work",
+                    "group": "textworks",
+                    "title": f"{item.get('title')}｜{item.get('section') or '正文'}｜片段 {item.get('segment')}",
+                    "summary": text,
+                    "score": round(score, 6),
+                    "source_refs": [{
+                        "source_type": item.get("source_type") or "author_library_text",
+                        "source_id": item.get("source_file"),
+                        "note": "author-owned LOC4 source corpus"
+                    }],
+                    "payload": item,
+                })
+            if len(results) >= top_k:
+                break
+        return results
 
     def _rune_literature_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "text_record", "text_work", "rune_literature"}:
@@ -961,9 +1024,9 @@ class UnifiedSearchEngine:
                 out.append({
                     "result_id": item.get("id"),
                     "system_id": "lo3rwang",
-                    "primary_loc": "LOC6",
-                    "related_locs": ["LOC7", "LOC8"],
-                    "content_type": "governance_article",
+                    "primary_loc": "LOC4",
+                    "related_locs": ["LOC6", "LOC7", "LOC8"],
+                    "content_type": "text_record",
                     "group": "loc6_articles",
                     "title": f"Threads｜{item.get('date') or 'undated'}｜{item.get('era') or 'ERA'}" + (f"｜{headline}" if headline else ""),
                     "summary": text,
@@ -2795,7 +2858,7 @@ class UnifiedSearchEngine:
                 "LOC1": "live",
                 "LOC2": "knowledge-view-only",
                 "LOC3": "live",
-                "LOC4": "direct-work-search-live",
+                "LOC4": f"authored-work-fulltext+social-life-writing-live; {len((getattr(self, 'loc4_corpus', {}) or {}).get('documents', []))} authored corpus segments",
                 "LOC5": "direct-media-registry-search-live",
                 "LOC6": "governance+threads-km-search-live",
                 "LOC6_threads_indexed": len(self._loc6_article_documents()),
