@@ -8,8 +8,8 @@
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "LOC7_KM 現行 FAQ。v0.4 同步 2026-09-06 的 LOC 公開介面、LOC6/LOC7/LOC8 權責、Unified Search、時期用語與目前已實作功能；FAQ 仍是 KM 的問答 View，不取代 Canon、母資料或 Shared Registry。",
-    "entry_count": 80,
+    "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 的自然語言 Search/RAG、月符基本參照、符文治理、符文沙盒 Graph、來源／內容分類與時間篩選規則。FAQ 是 KM 問答 View，不取代 Canon、母資料或 Shared Registry。",
+    "entry_count": 83,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
       "reference_rune": "0：德（De）",
@@ -101,20 +101,24 @@
         "LOC和月符是同一件事嗎？",
         "月典和月符有什麼差別？",
         "Luna Codex與LunaRunes有什麼差別？",
-        "月符在LOC裡是什麼位置？"
+        "月符在LOC裡是什麼位置？",
+        "為什麼說月符為種？"
       ],
-      "answer": "月之符文（LunaRunes）是 LOC 的原生符文核心；月典（LOC／Luna Codex）則是為了記錄、解析、延伸與關聯月符及其作品而自然長出的語言系統框架。月之符文是根，月典是由這個根發展出的語言生態。",
+      "answer": "LOC 是框架，月之符文是基本語意參照。月符提供最小語意種子、方向與文件分類觀念；LOC 負責把這些語意承接到占卜、治理、情境、音樂、影像、文字、關係與時間。使用者不需要先理解符文或 LLM 才能使用 LOC。",
       "keywords": [
         "月典",
         "Luna Codex",
         "LOC",
         "月符",
         "LunaRunes",
-        "原生核心",
-        "語言生態"
+        "基本參照",
+        "語意種子",
+        "月符為種",
+        "框架"
       ],
       "source_refs": [
-        "master-system:2026-09"
+        "docs/LOC_OVERVIEW.md",
+        "docs/LOC7_KM.md"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -2007,6 +2011,88 @@
       ],
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-081",
+      "category": "搜尋與RAG",
+      "question": "LOC Search 為什麼不需要先選內容類別？",
+      "aliases": [
+        "搜尋要先選歌曲或文字嗎？",
+        "可以直接用一句話搜尋嗎？",
+        "來源要先選Instagram或Threads嗎？",
+        "進階搜尋要選什麼？"
+      ],
+      "answer": "LOC Search 預設應以自然語言跨全部內容搜尋。內容類型與來源可直接寫進句子，例如「我想看我在 Instagram 發表過的文字」；Search 再自行判斷來源與內容意圖。進階篩選只保留日期與 ERA，作為額外時間限制。",
+      "keywords": [
+        "自然語言搜尋",
+        "Semantic Search",
+        "跨類別",
+        "Instagram",
+        "Threads",
+        "ERA",
+        "時間篩選",
+        "RAG"
+      ],
+      "source_refs": [
+        "docs/LOC7_KM.md",
+        "search.html"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-082",
+      "category": "符文治理",
+      "question": "一般雙卡、符文沙盒與符文 Graph 有什麼差別？",
+      "aliases": [
+        "雙卡是平等關係嗎？",
+        "符文沙盒為什麼可以交替？",
+        "一般解牌能不能用Graph？",
+        "群組交替還要用嗎？"
+      ],
+      "answer": "一般符文占卜與治理中，雙卡固定為第1張因→第2張果；三卡為源→轉→合。平等、合作、交替的符文 Graph 只屬符文沙盒，沙盒中的符文節點彼此等權。群組交替目前沒有足夠穩定的理論與實證，因此不作預設判讀規則。",
+      "keywords": [
+        "雙卡",
+        "因果",
+        "符文沙盒",
+        "Graph",
+        "平等節點",
+        "交替",
+        "群組交替",
+        "源轉合"
+      ],
+      "source_refs": [
+        "docs/LOC7_KM.md",
+        "docs/LOC_GOVERNANCE_CORE.md"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-083",
+      "category": "符文治理",
+      "question": "什麼是反向符文治理？",
+      "aliases": [
+        "可以從現況反推符文嗎？",
+        "這個狀況像哪一張符文？",
+        "Reverse rune mapping是什麼？",
+        "像福半正是什麼意思？"
+      ],
+      "answer": "反向符文治理是把已經發生的語句、事件、情緒或治理狀態映射回最接近的符文與方向，例如指出「這個狀況很像福半正的語意狀態」。它不是重新抽牌，而是把月符當作共同語意座標。",
+      "keywords": [
+        "反向符文治理",
+        "Reverse mapping",
+        "語意映射",
+        "福半正",
+        "符文方向",
+        "共同語意座標"
+      ],
+      "source_refs": [
+        "docs/LOC7_KM.md",
+        "docs/LOC_GOVERNANCE_CORE.md"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
