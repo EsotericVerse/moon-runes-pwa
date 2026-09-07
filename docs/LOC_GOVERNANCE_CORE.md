@@ -304,9 +304,10 @@ Audit 應檢查：
 - **LOC3**：歌曲／歌詞 metadata、創作 provenance 與 reasoning annotation。
 - **LOC4**：文字作品與原始文本權威。
 - **LOC5**：媒體 representation 與跨媒介映射。
-- **LOC6**：價值、治理語言、政德風、interpretation 與治理原則。
-- **LOC7**：schema、relationship、KM、Graph、validation、retrieval 與治理控制結構。
-- **LOC8**：時間、事件、ERA、生活脈絡、Trend 與自我治理 feedback。
+- **LOC2**：脈絡、關係、Scenario／Event 與 Canonical Graph 的語意責任。
+- **LOC6**：方法論；治理、價值、政德風與 interpretation 是其中的具體方法。
+- **LOC7**：演算法（知識庫）；schema、KM、RAG、Search、Graph RAG traversal、validation 與 retrieval。
+- **LOC8**：文學演化；時間、ERA、Trajectory、Trend 與演化投影。
 
 各 LOC 保有 canonical ownership；跨 LOC 只能 reference / consume / propose change，不應直接覆寫另一 domain 的 authoritative record。
 
