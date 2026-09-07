@@ -206,8 +206,16 @@
     },
     {
       "id": "facebook_post",
-      "primary_loc": "LOC6",
-      "label": "Facebook 歷史文字",
+      "primary_loc": "LOC4",
+      "label": "Facebook 生活文字",
+      "default_display_policy": "snippet",
+      "kind": "life_writing_record"
+    },
+    {
+      "id": "social_text_record",
+      "primary_loc": "LOC4",
+      "kind": "life_writing_record",
+      "label": "社群生活文字",
       "default_display_policy": "snippet"
     }
   ],
@@ -216,7 +224,8 @@
     "A media representation of a LOC3/LOC4 work receives its own LOC5 media_id and references the source work_id.",
     "Unified search may filter by content_type without exposing LOC numbers to the user.",
     "README.md and other overview documents may be indexed as knowledge_document while preserving their derived/provenance status.",
-    "display_policy governs public text exposure independently from whether full text may be indexed or analyzed internally."
+    "display_policy governs public text exposure independently from whether full text may be indexed or analyzed internally.",
+    "Author-created Facebook/Threads raw text is LOC4 life-writing content; LOC6 may consume the same records for governance/style interpretation without taking ownership of the raw text."
   ],
   "display_policy": {
     "allowed_values": [
