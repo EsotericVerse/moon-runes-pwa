@@ -1,9 +1,9 @@
 # LOC7_KM — Knowledge Management
 
-**Version:** 0.3  
+**Version:** 0.4  
 **Status:** Current  
 **Owner:** LOC7 — Text Architecture  
-**Updated:** 2026-09-06
+**Updated:** 2026-09-07
 
 ## 1. 定位
 
@@ -100,41 +100,65 @@ LOC2 的事件資料在 KM 中不只視為遊戲規則。它同時是一批 **Sc
 維護文件：[LOC2_SCENARIO_MODEL.md](./LOC2_SCENARIO_MODEL.md)  
 Structured registry：`data/json/registries/LOC2_EVENT_REGISTRY.json`
 
-## 7. 雙符文關係層
+## 7. 月符基本參照與符文治理規則
 
-雙卡資料必須拆成「關係」與「抽牌投影」兩層，不能混成同一筆解牌資料。
+月之符文是 LOC 的基本語意參照；LOC 是承接、分類、關聯、搜尋與演化這些語意結果的框架。使用者不需要理解符文或 LLM 才能使用 LOC；自然語言輸入、抽牌、搜尋與結果閱讀應該是主要入口。
 
-### 7.1 Pair Relation — 中性關係
+### 7.1 一般雙卡：因 → 果
 
-`data/json/registries/LOC6_DUAL_RUNE_RELATION_REGISTRY.json` 保存兩個符文放在一起時的基本語意關係。
-
-- pair key 不帶方向，固定以較小符文 ID 在前，例如 `09_16`。
-- A＋B 與 B＋A 查到同一個中性關係。
-- 關係層不指定誰是「因」、誰是「果」。
-- 可集中引用《命運句語法圖鑑》的明確雙卡例子、LOC2 可證明的情境案例，以及後續人工確認的實際案例。
-- LOC2 Event 的 SL／ML／NE／OC requirement 不得自動轉成特定符文 pair。
-
-### 7.2 Draw Projection — 抽牌因果投影
-
-真正進入 LOC1 雙卡抽牌時，才疊加：
+一般符文占卜與符文治理中，雙卡固定採：
 
 ```text
-中性 A＋B 關係
+第 1 張＝因
       ↓
-抽牌順序：第1張＝因、第2張＝果
-      ↓
-兩張四向狀態
-      ↓
-問題／情境
-      ↓
-月相等背景
-      ↓
-本次雙卡解讀
+第 2 張＝果
 ```
 
-因此同一個 pair 可以支援 `A → B` 與 `B → A` 兩種因果投影；它們共享底層關係，但不是同一個抽牌答案。
+這是基本治理原則。一般雙卡解讀不得改寫成平等合作、輪替或無方向關係。
 
-這個分層讓案例庫可被 LOC1 解牌重用，同時由 LOC6 保存牌組文法，不把歷史案例硬寫成固定命運句。
+### 7.2 三卡與 OW3gs
+
+- 三卡：源 → 轉 → 合。
+- OW3gs：1–6 為因的描述層；7–11 為果的判定層。
+- 五卡與其他多卡結構依各自已確認的判讀規則處理。
+- 不採「群組交替」作為預設理論；現階段沒有足夠穩定的理論與實證支持，不進 Canon、KM 或 Search 推理。
+
+### 7.3 符文治理
+
+符文治理包含兩個方向：
+
+1. **Forward：符文 → 現況解讀**
+   - 依符文本義、方向、抽牌位置與問題脈絡解讀。
+   - 包含 OW3gs、雙卡因果、三卡源轉合與其他已確認判讀原理。
+
+2. **Reverse：現況語意 → 符文映射**
+   - 將使用者語句、事件、情緒或治理狀態映射回最接近的符文與方向。
+   - 例如系統可以指出「這個狀況很像福半正的語意狀態」。
+   - 這不是重新抽牌，而是以月符作為共同語意座標。
+
+### 7.4 符文沙盒 Graph
+
+符文沙盒與一般解牌不同。沙盒中的符文 Graph 採平等節點：
+
+- 符文彼此沒有預設因果高低。
+- 可以合作、交替、互相影響並形成暫時定義。
+- 平等／交替關係只屬沙盒互動與 Graph，不套用到一般雙卡占卜。
+- Search／RAG 只有在明確進入符文沙盒語境時，才使用這種平等 Graph 關係。
+
+### 7.5 Search / RAG 月符特化
+
+月符相關查詢優先顯示：
+
+```text
+符文
+→ 符文占卜
+→ 符文治理
+→ 符文沙盒
+→ 符文音樂
+→ 符文影像
+```
+
+「符文」本身主要是符文資料／知識庫，加上無法歸入其他專門符文類別的例外項。專門類別優先，避免同一資料重複出現在所有符文分類。
 
 ## 8. 政德風治理 Corpus
 
@@ -223,6 +247,19 @@ LOC3 實驗例外治理：**代表歌名長度超過 16 字元的作品，視為
 LOC3 另有作品層治理：禁咒／符文詠唱類屬 `hidden_exception`，不展示、不推薦、不進一般搜尋；與 LOC4 有明確關聯的主題曲、角色曲、OP、求婚歌等保存 `loc4_relation`，現行作品推薦加權基準 +40。此加權只作 bounded recommendation prior，不取代歌詞語意相似度。
 
 LOC5 媒體稽核：目前 Suno 500 workbook、`LOC3_MEDIA_LINKS_v0.1.json` 與 shared `LOC_MEDIA_REGISTRY.json` 均未找到上述四首 confirmed rune songs 的 Reels／MV 對應。未找到不等於不存在；在實際媒體來源回收前，不建立 LOC5 假連結。
+
+## 9.5 Natural-language Search / RAG
+
+LOC Search 的預設行為是跨全部內容類別的自然語言檢索，不要求使用者先選文字、歌曲、符文、來源平台或治理類別。
+
+- 內容種類與來源直接寫在搜尋句子裡，例如「我想看我在 Instagram 發表過的文字」。
+- Search 自行解析 source / content intent；沒有明確指定時，維持跨類別搜尋。
+- 進階篩選只保留時間與 ERA，作為額外限制。
+- Search 結果可由 Semantic Retrieval 選 seed，再以 governed Graph Relation 展開。
+- Governance Analysis 負責理解「這句話背後在說什麼／使用的是什麼原理」。
+- Trend / Temporal Analysis 負責把目前狀態放回歷史、ERA 與相似事件，提供可能方向；它是基於歷史模式的推估，不宣稱必然預言。
+- 文字型新增資料對外統一使用「文字創作」；Threads、Facebook、Instagram、X(Twitter)、Vocus 等只保留為 source platform。
+- X(Twitter) 可作來源測試，但私人／非公開內容不得因來源存在而自動進入公開 corpus。
 
 ## 10. FAQ / RAG 現況
 
