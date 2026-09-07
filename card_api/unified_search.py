@@ -85,6 +85,7 @@ class UnifiedSearchEngine:
         self.loc8_events = self._load_json("LOC8_EVENT_SNAPSHOT.json")
         self.loc8_daily_runes = self._load_json("LOC8_DAILY_RUNE_SNAPSHOT.json")
         self.rune_literature = self._load_json("RUNE_LITERATURE_REGISTRY.json")
+        self.rune_songs = self._load_json("LOC3_RUNE_SONG_REGISTRY.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
         path = self.registry_root / name
@@ -396,6 +397,150 @@ class UnifiedSearchEngine:
                 "payload": row,
             })
         return results
+
+    def _entity_results(self, query: str, wanted: str) -> list[dict[str, Any]]:
+        """Deterministic entity-first entries for named LOC methods."""
+        if wanted not in {"", "all", "knowledge", "faq"}:
+            return []
+        q = _compact(query)
+        aliases = {"ow3gs", "11張抽牌", "十一張抽牌", "11卡", "十一卡"}
+        if not any(alias in q for alias in aliases):
+            return []
+        return [{
+            "result_id": "ENTITY-OW3GS",
+            "system_id": "lo3rwang",
+            "primary_loc": "LOC1",
+            "related_locs": ["LOC3", "LOC7", "LOC8"],
+            "content_type": "knowledge_entity",
+            "group": "entities",
+            "title": "OW3gs",
+            "summary": "LOC1 的 11 張抽取結構：1–6 為 Context Field（因的描述層），7–11 為 Core Fate Sentence（果的判定層）。",
+            "score": 1.0,
+            "source_refs": [
+                {"source_type": "document", "source_id": "命運句語法圖鑑_MoonSyntax_V2.1", "note": "OW3gs 十一卡語法"},
+                {"source_type": "registry", "source_id": "LOC3_RUNE_SONG_REGISTRY.json", "note": "符文歌曲生成方法與關聯"}
+            ],
+            "payload": {
+                "entity_type": "method",
+                "aliases": ["11 張抽牌", "十一卡", "7–11 法則"],
+                "definition": "OW3gs 是月之符文的 11 張抽取結構，也是作者規則層的重要方法之一。",
+                "structure": [
+                    {"range": "1–6", "label": "Context Field／因的描述層", "description": "聚合背景、既有條件、資源、阻力、外部擾動與尚未成形因素。"},
+                    {"range": "7–11", "label": "Core Fate Sentence／果的判定層", "description": "依序為因、現、向、境、心，形成主要核心判定。"}
+                ],
+                "reading_order": [
+                    "先讀第 7–11 張，建立核心五卡命運句。",
+                    "再掃描第 1–6 張的重複群組、方向、張力與顯著主題。",
+                    "只把與核心有明確語義關係的場域訊息帶回，不把 11 張等權線性串接。",
+                    "最後才加入真實月相作低權重時間修飾。"
+                ],
+                "rune_song_note": "符文歌曲是以實際抽牌結果形成語意／解讀後再轉化成歌曲；OW3gs 是其中的 11 張生成方法。"
+            },
+        }]
+
+    def _ow3gs_reading_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+        if wanted not in {"", "all", "rune_record", "knowledge", "faq"}:
+            return []
+        q = _compact(query)
+        if "ow3gs" not in q and q not in {"11張抽牌", "十一張抽牌", "11卡", "十一卡"}:
+            return []
+        output = []
+        for idx, record in enumerate(self.rune_songs.get("known_draw_contexts", []) or [], start=1):
+            if str(record.get("spread_type") or "").lower().find("ow3gs") < 0:
+                continue
+            cards = record.get("cards", []) or []
+            card_text = "、".join(
+                f"{card.get('rune', '')}{card.get('direction', '')}" for card in cards if card.get("rune")
+            )
+            output.append({
+                "result_id": f"OW3GS-DRAW-{record.get('date') or idx}",
+                "system_id": "lo3rwang",
+                "primary_loc": "LOC1",
+                "related_locs": ["LOC3", "LOC8"],
+                "content_type": "rune_reading",
+                "group": "readings",
+                "title": f"OW3gs 抽牌紀錄 · {record.get('date') or '未標日期'}",
+                "summary": card_text,
+                "score": 1.0,
+                "source_refs": [{"source_type": "registry", "source_id": "LOC3_RUNE_SONG_REGISTRY.json", "note": record.get("provenance")}],
+                "payload": {
+                    "spread_type": record.get("spread_type"),
+                    "date": record.get("date"),
+                    "cards": cards,
+                    "record_status": "draw_record",
+                    "interpretation_status": "完整解讀文字未保存在此 registry"
+                },
+            })
+        return output[:top_k]
+
+    def _rune_song_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+        if wanted not in {"", "all", "lyrics_work", "suno_song", "rune_record", "knowledge"}:
+            return []
+        q = _compact(query)
+        rune_names = {
+            _compact(rune.get("名稱") or rune.get("符文名稱") or rune.get("name") or ""):
+            (rune.get("名稱") or rune.get("符文名稱") or rune.get("name") or "")
+            for rune in self.runes
+        }
+        rune_query = rune_names.get(q)
+        is_ow3gs = "ow3gs" in q or q in {"11張抽牌", "十一張抽牌", "11卡", "十一卡"}
+        if not rune_query and not is_ow3gs:
+            return []
+
+        work_by_id = {
+            str(work.get("work_id") or ""): work
+            for work in (getattr(self.loc3_searcher, "works", []) if self.loc3_searcher else [])
+        }
+        records = []
+        for record in self.rune_songs.get("ow3gs_records", []) or []:
+            runes = record.get("runes", []) or []
+            if is_ow3gs or (rune_query and rune_query in runes):
+                records.append((record, "OW3gs 11符", "OW3gs"))
+
+        if rune_query:
+            for record in self.rune_songs.get("confirmed_records", []) or []:
+                runes = record.get("runes", []) or []
+                if record.get("special_construction") and rune_query in runes:
+                    records.append((record, "特別製作符文歌", "special_rune_song"))
+
+        output = []
+        seen = set()
+        for record, type_label, method in records:
+            work_id = str(record.get("work_id") or "")
+            dedupe_key = work_id or f"{record.get('title')}:{method}"
+            if dedupe_key in seen:
+                continue
+            seen.add(dedupe_key)
+            work = work_by_id.get(work_id, {})
+            versions = work.get("versions", []) or []
+            recommended = versions[0] if versions else {}
+            runes = record.get("runes", []) or []
+            output.append({
+                "result_id": f"RUNE-SONG-{work_id or len(output)+1}",
+                "system_id": "lo3rwang",
+                "primary_loc": "LOC3",
+                "related_locs": ["LOC1", "LOC7"],
+                "content_type": "rune_song",
+                "group": "rune_songs",
+                "title": record.get("title") or work.get("title") or work_id,
+                "summary": f"{type_label} · {len(runes)} 個 distinct 符文",
+                "score": 1.0 if is_ow3gs else 0.95,
+                "period": record.get("period") or work.get("period"),
+                "source_refs": [{"source_type": "registry", "source_id": "LOC3_RUNE_SONG_REGISTRY.json", "note": record.get("mapping_status") or record.get("confidence")}],
+                "payload": {
+                    "work_id": work_id,
+                    "generation_method": method,
+                    "song_type_label": type_label,
+                    "rune_count": len(runes),
+                    "runes": runes,
+                    "created_date": record.get("created_date"),
+                    "era_name": record.get("era_name") or work.get("era_name"),
+                    "recommended_version": recommended,
+                    "mapping_status": record.get("mapping_status") or record.get("status"),
+                },
+            })
+        output.sort(key=lambda item: (str(item.get("period") or ""), str(item.get("title") or "")))
+        return output[:max(top_k, 12) if is_ow3gs else top_k]
 
     def _music_keyword_results(
         self,
@@ -2308,6 +2453,9 @@ class UnifiedSearchEngine:
             "media": 1,
             "runes": 1,
             "oracle": 1,
+            "entities": 8,
+            "readings": 4,
+            "rune_songs": 3,
         }
         candidates: list[tuple[int, float, str, dict[str, Any]]] = []
         for group, items in nonempty.items():
@@ -2348,6 +2496,9 @@ class UnifiedSearchEngine:
             "media": "多媒體",
             "runes": "月符",
             "oracle": "籤詩",
+            "entities": "核心詞條",
+            "readings": "OW3gs 解牌／抽牌紀錄",
+            "rune_songs": "符文歌曲",
         }
         evidence = [
             {"group": key, "label": evidence_labels.get(key, key), "count": len(items)}
@@ -2579,9 +2730,16 @@ class UnifiedSearchEngine:
             runes = self._rune_results(query, top_k, wanted)
             eras = self._era_results(query, top_k, wanted)
 
+        entities = self._entity_results(query, wanted)
+        readings = self._ow3gs_reading_results(query, top_k, wanted)
+        rune_songs = self._rune_song_results(query, top_k, wanted)
+
         groups = {
+            "entities": entities,
             "oracle": oracle,
+            "readings": readings,
             "runes": runes,
+            "rune_songs": rune_songs,
             "works": music,
             "textworks": textworks,
             "relationships": relationships,
