@@ -241,7 +241,7 @@
         {q:'自我治理',title:'自我治理',desc:'LOC7 · 跨文件知識'}
       ]
     };
-    const labels={oracle:'籤詩結果',runes:'月符',works:'Suno 歌曲／歌詞',textworks:'文字',relationships:'跨 LOC 關聯',governance:'文字',loc6_articles:'文字',text:'文字',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
+    const labels={entities:'核心詞條',oracle:'籤詩結果',readings:'OW3gs 解牌／抽牌紀錄',runes:'月符',rune_songs:'符文歌曲',works:'Suno 歌曲／歌詞',textworks:'文字',relationships:'跨 LOC 關聯',governance:'文字',loc6_articles:'文字',text:'文字',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
     const locLabels={LOC1:'LOC1 · Lots',LOC3:'LOC3 · Music',LOC4:'LOC4 · Writing',LOC5:'LOC5 · Resonance',LOC6:'LOC6 · Governance',LOC7:'LOC7 · Text Architecture',LOC8:'LOC8 · Integration'};
     const el=id=>document.getElementById(id);
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -250,16 +250,9 @@
       const type=p.get('content_type')||'';
       const q=p.get('q')||'';
       const period=p.get('period')||'';
-      const source=p.get('source')||'';
-      const startDate=p.get('start_date')||'';
-      const endDate=p.get('end_date')||'';
       if(type&&[...el('contentType').options].some(o=>o.value===type)) el('contentType').value=type;
       if(q) el('query').value=q;
       if(period&&[...el('period').options].some(o=>o.value===period)) el('period').value=period;
-      if(source&&[...el('sourceFilter').options].some(o=>o.value===source)) el('sourceFilter').value=source;
-      if(startDate) el('startDate').value=startDate;
-      if(endDate) el('endDate').value=endDate;
-      updateFilterSummary();
       if(q) el('searchForm').requestSubmit();
     }
     function quick(){
@@ -341,12 +334,53 @@
     function linksFor(r){
       const p=r.payload||{}; const out=[];
       if(r.content_type==='rune_record'){const n=String(r.result_id||'').replace('RUNE-','');out.push(`<a class="secondary" href="list.html#${esc(n)}">查看符文資料</a>`)}
-      if(r.content_type==='lyrics_work'){const v=p.recommended_version||{};if(v.suno_url)out.push(`<a class="play" href="${esc(v.suno_url)}" target="_blank" rel="noopener">Suno 播放 ↗</a>`);if(v.ig_preview_url)out.push(`<a class="secondary" href="${esc(v.ig_preview_url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`)}
+      if(r.content_type==='lyrics_work'||r.content_type==='rune_song'||r.content_type==='rune_song_association'){const v=p.recommended_version||{};if(v.suno_url)out.push(`<a class="play" href="${esc(v.suno_url)}" target="_blank" rel="noopener">Suno 播放 ↗</a>`);if(v.ig_preview_url)out.push(`<a class="secondary" href="${esc(v.ig_preview_url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`)}
       if(r.content_type==='reel'&&p.url)out.push(`<a class="play" href="${esc(p.url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`);
       if(p.public_path)out.push(`<a class="secondary" href="${esc(p.public_path)}">閱讀介紹文章</a>`);
       if(r.content_type==='knowledge_image'&&p.path)out.push(`<a class="secondary" href="${esc(p.path)}" target="_blank" rel="noopener">查看原圖 ↗</a>`);
       if(r.content_type==='era')out.push('<a class="secondary" href="life.html#era-trend">脈絡分析</a>');
       return out.length?`<div class="links">${out.join('')}</div>`:'';
+    }
+    function entityCard(r){
+      const p=r.payload||{},structure=p.structure||[],steps=p.reading_order||[];
+      return `<article class="card synthesis-card">
+        <div class="meta"><span class="pill">核心詞條</span><span class="pill">LOC1 · Lots</span><span class="pill">11 張抽取結構</span></div>
+        <h3>${esc(r.title||'OW3gs')}</h3>
+        <p class="synthesis-lead">${esc(p.definition||r.summary||'')}</p>
+        ${structure.length?`<div class="cards">${structure.map(x=>`<div class="location-card"><strong>${esc(x.range)} · ${esc(x.label)}</strong><small>${esc(x.description)}</small></div>`).join('')}</div>`:''}
+        ${steps.length?`<div class="summary"><strong>讀取順序</strong><ol>${steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>`:''}
+        ${p.rune_song_note?`<p class="summary"><strong>符文歌曲：</strong>${esc(p.rune_song_note)}</p>`:''}
+      </article>`;
+    }
+    function readingCard(r){
+      const p=r.payload||{},cards=p.cards||[];
+      return `<article class="card">
+        <div class="meta"><span class="pill">OW3gs</span><span class="pill">${esc(p.record_status||'抽牌紀錄')}</span>${p.date?`<span class="pill">${esc(p.date)}</span>`:''}</div>
+        <h3>${esc(r.title||'OW3gs 抽牌紀錄')}</h3>
+        ${cards.length?`<p class="summary"><strong>11 張：</strong>${cards.map((x,i)=>`${i+1}. ${esc(x.rune||'')}${esc(x.direction||'')}`).join(' · ')}</p>`:''}
+        ${p.interpretation_status?`<p class="summary"><small>${esc(p.interpretation_status)}</small></p>`:''}
+      </article>`;
+    }
+    function runeSongCard(r){
+      const p=r.payload||{},runes=p.runes||[];
+      const methodLabel={rune_song:'符文歌曲',special_rune_song:'特別製作',exact_11_scan:'符文歌曲'}[p.generation_method]||p.generation_method||'';
+      return `<article class="card">
+        <div class="meta"><span class="pill">${esc(p.song_type_label||'符文歌曲')}</span>${methodLabel?`<span class="pill">${esc(methodLabel)}</span>`:''}<span class="pill">${esc(p.rune_count||runes.length)} 符</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}</div>
+        <h3>${esc(r.title||r.result_id)}</h3>
+        ${runes.length?`<p class="summary"><strong>符文：</strong>${runes.map(x=>`<a class="secondary" style="padding:2px 7px;margin:2px 2px 2px 0" href="search.html?q=${encodeURIComponent(x)}">${esc(x)}</a>`).join('')}</p>`:''}
+        ${p.created_date?`<p class="summary"><small>建立日期：${esc(p.created_date)}</small></p>`:''}
+        ${linksFor(r)}
+      </article>`;
+    }
+    function entityFirstBlock(groups){
+      const entities=groups?.entities||[];
+      if(!entities.length)return '';
+      const readings=groups?.readings||[];
+      const songs=groups?.rune_songs||[];
+      let html=`<section class="group"><div class="grouphead"><h2>詞條介紹與方法</h2><span>先理解 OW3gs，再看實際關聯資料</span></div><div class="cards">${entities.map(entityCard).join('')}</div></section>`;
+      if(readings.length)html+=`<section class="group"><div class="grouphead"><h2>相關解牌／抽牌紀錄</h2><span>只顯示有保存來源的紀錄</span></div><div class="cards">${readings.map(readingCard).join('')}</div></section>`;
+      if(songs.length)html+=`<section class="group"><div class="grouphead"><h2>符文歌曲</h2><span>OW3gs 11 符關聯作品</span></div><div class="cards">${songs.map(runeSongCard).join('')}</div></section>`;
+      return html;
     }
     function oracleCard(r){
       const p=r.payload||{},terms=p.extension_terms||[];
@@ -468,8 +502,11 @@
     }
 
     const GROUP_LOCATION_META={
+      entities:{loc:'LOC1',label:'核心詞條',desc:'方法名稱、定義與讀取規則'},
       oracle:{loc:'LOC1',label:'籤詩／解牌',desc:'月之符文的實際提示與使用結果'},
+      readings:{loc:'LOC1',label:'OW3gs 解牌／抽牌紀錄',desc:'有來源保存的 11 張抽牌與解讀紀錄'},
       runes:{loc:'LOC1',label:'月之符文',desc:'基本符文、方向與參照語意'},
+      rune_songs:{loc:'LOC3',label:'符文歌曲／歌曲關聯',desc:'已確認符文歌曲，以及明確標示來源狀態的符文－歌曲關聯'},
       works:{loc:'LOC3',label:'音樂／歌詞',desc:'歌曲、歌詞與符文歌演化證據'},
       textworks:{loc:'LOC4',label:'文字作品',desc:'文章、小說與文字延伸'},
       media:{loc:'LOC5',label:'多媒體／圖片',desc:'Reels、影音與知識圖'},
@@ -504,20 +541,23 @@
     }
 
     const PAGE_SIZE=20;
-    const RESULT_ORDER=['oracle','runes','works','textworks','relationships','governance','loc6_articles','text','media','knowledge','timeline'];
+    const RESULT_ORDER=['readings','runes','rune_songs','works','textworks','relationships','governance','loc6_articles','text','media','knowledge','timeline'];
     let searchState={groups:{},synthesis:null,graph:null,page:1,total:0};
     let browseState={active:false,type:'',key:'',page:1,total:0,items:[]};
 
     function rendererForGroup(key){
       return key==='oracle'?oracleCard:
+        (key==='readings'?readingCard:
+        (key==='rune_songs'?runeSongCard:
         (key==='relationships'?relationshipCard:
         (key==='works'?musicCard:
-        (key==='loc6_articles'?loc6ArticleCard:card)));
+        (key==='loc6_articles'?loc6ArticleCard:card)))));
     }
 
-    function flattenGroups(groups){
+    function flattenGroups(groups,entityMode=false){
       const rows=[];
       for(const key of RESULT_ORDER){
+        if(entityMode&&(key==='readings'||key==='rune_songs'))continue;
         for(const item of (groups?.[key]||[])) rows.push({key,item});
       }
       return rows;
@@ -567,14 +607,16 @@
     }
 
     function renderSearchPage(page=1){
-      const rows=flattenGroups(searchState.groups);
+      const entityMode=(searchState.groups?.entities||[]).length>0;
+      const rows=flattenGroups(searchState.groups,entityMode);
       searchState.total=rows.length;
       const totalPages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
       searchState.page=Math.min(Math.max(1,page),totalPages);
       const start=(searchState.page-1)*PAGE_SIZE;
       const slice=rows.slice(start,start+PAGE_SIZE);
 
-      let html=searchState.synthesis?synthesisCard(searchState.synthesis,searchState.graph):'';
+      let html=entityFirstBlock(searchState.groups);
+      html+=searchState.synthesis?synthesisCard(searchState.synthesis,searchState.graph):'';
       html+=resultLocationOverview(searchState.groups);
 
       const evidenceBlocks=[];
@@ -683,8 +725,6 @@
       if(el('contentType')?.value) chips.push(type);
       if(el('sourceFilter')?.value) chips.push('來源：'+source);
       if(el('period')?.value) chips.push(period);
-      if(el('startDate')?.value) chips.push('起：'+el('startDate').value);
-      if(el('endDate')?.value) chips.push('迄：'+el('endDate').value);
       el('activeFilters').innerHTML=chips.length
         ? chips.map(x=>`<span class="filter-chip">${esc(x)}</span>`).join('')
         : '<span class="filter-chip muted">目前搜尋：全部資料</span>';
@@ -708,7 +748,7 @@
         sec.classList.toggle('active',active);
       });
     });
-    ['contentType','sourceFilter','period','startDate','endDate'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
+    ['contentType','sourceFilter','period'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
     updateFilterSummary();
     el('clearSearch').onclick=clearAllSearch;
     el('browse').onclick=()=>browse(1);
@@ -726,13 +766,13 @@
           el('status').textContent='正在搜尋文字資料…';
           let groups=null;
           try{
-            const body={query:q,top_k:10,content_type:'text_record',source:'facebook',period:el('period').value,start_date:el('startDate').value,end_date:el('endDate').value};
+            const body={query:q,top_k:10,content_type:'text_record',source:'facebook',period:el('period').value};
             const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
             const d=await r.json();
             if(r.ok) groups=d.groups||{text:d.results||[]};
           }catch(_){}
           if(!groups){
-            const items=await window.LOCFacebookCorpus.search(q,{top_k:50,start_date:el('startDate').value,end_date:el('endDate').value});
+            const items=await window.LOCFacebookCorpus.search(q,{top_k:50});
             groups={text:items};
           }
           const count=Object.values(groups).reduce((n,items)=>n+(items?.length||0),0);
@@ -742,14 +782,14 @@
         }
 
         el('status').textContent=type==='text_record'?'正在搜尋文字資料……':'正在同時查詢符文、作品、媒體、知識與時期資料……';
-        const body={query:q,top_k:10,content_type:type,source:source,period:el('period').value,start_date:el('startDate').value,end_date:el('endDate').value};
+        const body={query:q,top_k:10,content_type:type,source:source,period:el('period').value};
         const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const d=await r.json();
         if(!r.ok)throw new Error(d.detail||'搜尋失敗');
 
         if(type==='text_record' && !source){
           try{
-            const fb=await window.LOCFacebookCorpus.search(q,{top_k:20,start_date:el('startDate').value,end_date:el('endDate').value});
+            const fb=await window.LOCFacebookCorpus.search(q,{top_k:20});
             if(fb.length){
               d.groups=d.groups||{};
               d.groups.text=[...(d.groups.text||[]),...fb];
