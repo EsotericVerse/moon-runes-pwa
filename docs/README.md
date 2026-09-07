@@ -27,7 +27,7 @@
 | [../governance.html](../governance.html) | LOC 治理、政德風、版本與治理方法的統一公開入口 | Current |
 | [LOC7_KM.md](./LOC7_KM.md) | LOC7 Knowledge Management 核心治理文件 | Current |
 | [LOC_SIMPLE_TEXT_ANALYSIS_API.md](./LOC_SIMPLE_TEXT_ANALYSIS_API.md) | LOC 內建簡易文字解析／分類 API：Local First、無外部 API Key 依賴，建立關鍵字庫與趨勢資料 | Current |
-| [LOC8_KM.md](./LOC8_KM.md) | LOC8 ERA／Event／Relation／Context 判定與治理邏輯 | Working |
+| [LOC8_KM.md](./LOC8_KM.md) | LOC8 時期／Event／Timeline／Trend／Trajectory 的時間推演與治理邏輯；Graph／Relation 本體歸 LOC2 | Working |
 | [JSON_DATA_MAP.md](./JSON_DATA_MAP.md) | JSON 資料角色、來源與同步規則 | Current |
 | [DATA_ARCHITECTURE.md](./DATA_ARCHITECTURE.md) | core / registries / search / generated / archive / experimental 資料架構與月符 projection 規則 | Current |
 | [REPOSITORY_GOVERNANCE.md](./REPOSITORY_GOVERNANCE.md) | Repository 模組化、路徑 migration、刪除／archive 與 CI 配置治理 | Current |
