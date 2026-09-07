@@ -10,14 +10,14 @@
     {
       "id": "runes",
       "label": "月之符文",
-      "href": "list.html",
+      "href": "runes.html",
       "description": "66 符文圖鑑"
     },
     {
       "id": "game",
       "label": "脈絡／月符沙盒",
-      "href": "loc2.html",
-      "description": "LOC2 · Context · Graph"
+      "href": "context.html",
+      "description": "LOC2 · 脈絡 · Relation · Graph"
     },
     {
       "id": "search",
@@ -29,7 +29,7 @@
       "id": "projection",
       "label": "推演",
       "href": "projection.html",
-      "description": "LOC8 · 時間 · ERA · Trajectory · Trend"
+      "description": "LOC8 · 每日符文 · ERA · Event · Trend"
     }
   ]
 }
