@@ -416,8 +416,13 @@
           <div class="ritual" id="ritual-view" hidden>
             <div class="ritual-layout">
               <div class="ritual-left">
-                <div class="ritual-rune"><img src="64images/66_命.png" alt="命之符文" /></div>
-                <div class="ritual-phase-box"><p id="ritual-phase">真實月相：計算中...</p></div>
+                <div class="ritual-rune"><img src="64images/65_玄.png" alt="玄之符文" /></div>
+                <div class="ritual-phase-box">
+                  <p>卡牌面向：正位</p>
+                  <p>介紹：「玄」，月之符文所揭示</p>
+                  <p>所屬分組：它就是全部</p>
+                  <p id="ritual-phase">月相：無 / 真實月相：計算中...</p>
+                </div>
               </div>
               <div class="ritual-right">
                 <div class="ritual-text-box">
@@ -437,7 +442,13 @@
               <div class="result-section-head"><h2>本次解讀</h2><p id="mode-note"></p></div>
               <div class="reading" id="reading"></div>
             </section>
-            <div class="actions"><button class="action-card primary-action" id="retry-button" type="button"><span><strong>重新抽牌</strong></span><span>↻</span></button></div>
+            <div class="actions">
+              <button class="action-card primary-action" id="retry-button" type="button"><span><strong>重新抽牌</strong></span><span>↻</span></button>
+              <a class="action-card" href="runes.html?mode=single#draw"><span><strong>單卡</strong><small>改抽一張</small></span><span>1</span></a>
+              <a class="action-card" href="runes.html?mode=2card#draw"><span><strong>雙卡</strong><small>因 → 果</small></span><span>2</span></a>
+              <a class="action-card" href="runes.html?mode=3card#draw"><span><strong>三卡</strong><small>源 → 轉 → 合</small></span><span>3</span></a>
+              <a class="action-card" href="runes.html?mode=5card#draw"><span><strong>五卡</strong><small>情境展開</small></span><span>5</span></a>
+            </div>
           </div>
         </section>
       </div>
