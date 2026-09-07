@@ -42,13 +42,13 @@ LOC 不以象徵的神聖性建立權威，而以定義、結構及資料一致�
 
 ```text
 LOC：
-LOC1 月符／語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演
+LOC1 符文語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演
 
 月之符文：
 符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算 → 符文演化
 ```
 
-月符先累積實作，LOC 再由實作抽象出框架；框架成立後，又可反過來完整描述月符。
+月之符文先累積實作，LOC 再由實作抽象出框架；框架成立後，又可反過來完整描述月之符文。
 
 ### LOC 不做什麼
 
@@ -173,8 +173,8 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 
 | 分發 | 名稱 | 功能定位 |
 |---|---|---|
-| LOC1 | 月符／語彙（token） | 基本文字語彙、語意種子、籤詩與解牌入口 |
-| LOC2 | 脈絡 | 關係、Context、Scenario、Event 與 Graph；月符沙盒是代表性實作 |
+| LOC1 | 符文語彙（token） | 基本文字語彙、語意種子、籤詩與解牌入口 |
+| LOC2 | 脈絡 | 關係、Context、Scenario、Event 與 Graph；月之符文沙盒是代表性實作 |
 | LOC3 | 音樂 | 文字與語意延伸為歌曲、歌詞與聲音 |
 | LOC4 | 文字創作 | 文章、小說、生活文字與敘事作品 |
 | LOC5 | 多媒體 | 文字、音樂、圖像與影音的跨媒介表達 |
@@ -343,7 +343,7 @@ LOC 現行提供一個不依賴外部 LLM／Embedding API Key 的基礎文字解
 自然語言 Query
       ↓
 Unified Search
-      ├─ LOC1  月符／語彙（token）
+      ├─ LOC1  符文語彙（token）
       ├─ LOC2  脈絡／Scenario／Graph
       ├─ LOC3  音樂／歌詞
       ├─ LOC4  文字作品
@@ -458,7 +458,7 @@ moon-runes-pwa/
 ├── css/                       # 前端樣式
 ├── tools/                     # repo-wide builders / importers
 ├── loc8_api/                  # Google Apps Script 模組
-├── 64images/                  # 公開 URL 敏感的月符卡圖
+├── 64images/                  # 公開 URL 敏感的月之符文卡圖
 ├── pics/                      # 視覺資產（後續媒體治理）
 ├── reels/                     # 影片資產（後續媒體治理）
 ├── *.html                     # GitHub Pages 公開路由
