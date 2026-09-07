@@ -437,16 +437,18 @@ async function runRitual(mode, config) {
 
   const messages = messagesByMode[mode] || messagesByMode.single;
   const message = document.getElementById("ritual-message");
-  const ritualStartedAt = performance.now();
-  for (let i = 0; i < messages.length; i++) {
-    const secondsLeft = Math.max(1, messages.length - i);
-    message.textContent = `${messages[i]}（約 ${secondsLeft} 秒）`;
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  const startedAt = Date.now();
+
+  for (let i = 0; i < 5; i++) {
+    if (message) message.textContent = messages[i] || "";
+    const nextTick = startedAt + ((i + 1) * 1000);
+    const wait = Math.max(0, nextTick - Date.now());
+    await new Promise(resolve => setTimeout(resolve, wait));
   }
 
-  const elapsed = performance.now() - ritualStartedAt;
-  if (elapsed < 5000) {
-    await new Promise(resolve => setTimeout(resolve, 5000 - elapsed));
+  const remaining = Math.max(0, (startedAt + 5000) - Date.now());
+  if (remaining > 0) {
+    await new Promise(resolve => setTimeout(resolve, remaining));
   }
 
   document.body.dataset.drawing = "false";
