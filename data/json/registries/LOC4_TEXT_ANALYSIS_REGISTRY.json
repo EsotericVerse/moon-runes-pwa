@@ -617,7 +617,9 @@
           "theme_song": {
             "role": "character_theme",
             "source_loc": "LOC3",
-            "url": "https://suno.com/s/C9YWrn9xn19hoQhV"
+            "url": "https://suno.com/s/C9YWrn9xn19hoQhV",
+            "character": "阿珠",
+            "title": "我以為那才是對的"
           }
         },
         {
@@ -630,7 +632,9 @@
           "theme_song": {
             "role": "character_theme",
             "source_loc": "LOC3",
-            "url": "https://suno.com/s/OIX6l1eFUJ7IYOBz"
+            "url": "https://suno.com/s/OIX6l1eFUJ7IYOBz",
+            "character": "德興",
+            "title": "如果我沒有回頭"
           }
         },
         {
@@ -643,7 +647,9 @@
           "theme_song": {
             "role": "character_theme",
             "source_loc": "LOC3",
-            "url": "https://suno.com/s/a8tUvkKBIbojDGsp"
+            "url": "https://suno.com/s/a8tUvkKBIbojDGsp",
+            "character": "阿文",
+            "title": "湖沒有留下名字"
           }
         },
         {
@@ -672,7 +678,9 @@
           "theme_song": {
             "role": "character_theme",
             "source_loc": "LOC3",
-            "url": "https://suno.com/s/JJ0rs9I78FXHas5A"
+            "url": "https://suno.com/s/JJ0rs9I78FXHas5A",
+            "character": "小維",
+            "title": "慢慢回應"
           }
         },
         {
@@ -685,7 +693,9 @@
           "theme_song": {
             "role": "character_theme",
             "source_loc": "LOC3",
-            "url": "https://suno.com/s/4Wx3tCqM7BmmzTI4"
+            "url": "https://suno.com/s/4Wx3tCqM7BmmzTI4",
+            "character": "阿鎧",
+            "title": "未拆封的風"
           }
         },
         {
@@ -720,7 +730,9 @@
           "theme_song": {
             "role": "character_theme",
             "source_loc": "LOC3",
-            "url": "https://suno.com/s/4nHz2DJlyK1mGIeM"
+            "url": "https://suno.com/s/4nHz2DJlyK1mGIeM",
+            "character": "小瑤",
+            "title": "我沒有走進去"
           }
         }
       ],
