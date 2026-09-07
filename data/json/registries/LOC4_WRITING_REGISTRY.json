@@ -1,9 +1,9 @@
 {
-  "schema_version": "0.3",
+  "schema_version": "0.4",
   "registry": "LOC4_WRITING_REGISTRY",
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
-  "purpose": "Canonical catalog for LOC4 writing works with LOC8 period assignment based on the first chapter/prologue publication date. Supports cross-period analysis with LOC3 and LOC5.",
+  "purpose": "Canonical LOC4 writing catalog and authored-text ownership registry. LOC4 covers creative works plus authored life-writing text (including Facebook/Threads source corpora); LOC6/LOC7/LOC8 may analyze, retrieve, and project these texts without taking ownership of the raw writing.",
   "work_schema": {
     "required": [
       "work_id",
@@ -585,9 +585,52 @@
         "status": "catalogued",
         "updated_at": "2026-09-06"
       }
+    },
+    {
+      "work_id": "LOC4-PSEUDO-SINGLE",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "title": "假性單身",
+      "content_type": "novel",
+      "chapter_count": 4,
+      "created_date": null,
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "summary": "四章關係／生活敘事作品；完整純文字來源已由作者提供並納入 LOC4 document-level corpus。",
+      "tags": [
+        "假性單身",
+        "婚姻",
+        "友情",
+        "曖昧",
+        "身份",
+        "理解",
+        "選擇"
+      ],
+      "relationship_refs": [],
+      "source_refs": [
+        {
+          "source_type": "author_library_text",
+          "title": "假性單身.txt",
+          "role": "full_text_source"
+        }
+      ],
+      "provenance": {
+        "source": "author-provided plain-text corpus",
+        "date_basis": "not yet confirmed"
+      },
+      "lifecycle": {
+        "status": "catalogued_and_indexed",
+        "updated_at": "2026-09-07"
+      }
     }
   ],
-  "migration_note": "Registry reserved now to avoid schema migration after the LOC4 corpus is imported. Existing writing corpus is not silently reconstructed here.",
+  "migration_note": "Core authored plain-text corpus is now imported and searchable. Facebook/Threads authored life-writing remains in source-specific corpora and is referenced by LOC4; it is not duplicated.",
   "period_summary": [
     {
       "period": "P1",
@@ -622,5 +665,38 @@
         "已讀不回"
       ]
     }
-  ]
+  ],
+  "scope_policy": {
+    "authored_work_corpus": {
+      "status": "source_ready_and_searchable",
+      "manifest": "data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json",
+      "note": "Current core authored works were imported from author-provided plain-text files and are searchable at document level."
+    },
+    "life_writing_corpus": {
+      "status": "connected_by_reference",
+      "sources": [
+        {
+          "source": "facebook",
+          "range": "2011-04-15/2026-09-03",
+          "role": "author life/public writing",
+          "consumer_locs": [
+            "LOC6",
+            "LOC7",
+            "LOC8"
+          ]
+        },
+        {
+          "source": "threads",
+          "range": "2024-11-18/2026-09-06",
+          "role": "author public/life writing",
+          "consumer_locs": [
+            "LOC6",
+            "LOC7",
+            "LOC8"
+          ]
+        }
+      ],
+      "rule": "Do not duplicate Facebook/Threads raw corpora into LOC4 files. Preserve source corpus once; LOC4 owns the authored text layer while LOC6 owns governance/style interpretation."
+    }
+  }
 }
