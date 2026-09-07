@@ -2006,7 +2006,7 @@
       if (!eraRegistry.length) {
         els.eraTimeline.innerHTML = '<div class="empty">尚無時期資料。</div>';
         if (els.eraTrendStrip) els.eraTrendStrip.innerHTML = '<div class="empty">尚無時期趨勢資料。</div>';
-        if (els.eraKeywordGrid) els.eraKeywordGrid.innerHTML = '<div class="empty">LOC3 時期關鍵字資料載入失敗。</div>';
+        if (els.eraKeywordGrid) els.eraKeywordGrid.innerHTML = '<div class="empty">自創歌曲時期關鍵字資料載入失敗。</div>';
         return;
       }
 
@@ -2061,14 +2061,14 @@
               <div class="era-keyword-head">
                 <strong>${esc(period || era.era_id)} · ${esc(era.name || '')}</strong>
                 <small>${loc6DocCount
-                  ? `LOC6 Threads ${loc6DocCount} 篇`
+                  ? `Threads ${loc6DocCount} 篇`
                   : (isP1
-                    ? `非 LOC3 證據 ${nonLoc3.itemCount} 件（LOC4 ${nonLoc3.loc4Count}／LOC5 ${nonLoc3.loc5Count}）`
-                    : (loc3WorkCount ? `LOC3 ${loc3WorkCount} 首` : '尚無正式分析'))}</small>
+                    ? `非歌曲證據 ${nonLoc3.itemCount} 件（文字創作 ${nonLoc3.loc4Count}／多媒體創作 ${nonLoc3.loc5Count}）`
+                    : (loc3WorkCount ? `自創歌曲 ${loc3WorkCount} 首` : '尚無正式分析'))}</small>
               </div>
 
               ${loc6Keywords.length ? `
-                <div class="era-source-note" style="margin-bottom:6px">LOC6｜Threads 公開語言</div>
+                <div class="era-source-note" style="margin-bottom:6px">Threads 公開語言</div>
                 <div class="era-keyword-chips" style="margin-bottom:10px">
                   ${loc6Keywords.map(item => { const prev=prevLoc6Percent.get(String(item.term||''))||0; const delta=Number((Number(item.percent||0)-prev).toFixed(1)); const deltaText=eraIndex===0?'':(delta>0?' ▲'+delta:(delta<0?' ▼'+Math.abs(delta):' ＝')); return `<a class="era-keyword-chip" href="${esc(searchHref(item.term, period))}" title="搜尋 ${esc(item.term)} 的內容">${esc(item.term)} <b>${esc(item.document_count||0)}篇 · ${esc(item.percent)}%${esc(deltaText)}</b></a>`; }).join('')}
                 </div>
@@ -2076,13 +2076,13 @@
               ` : ''}
 
               ${isP1 ? `
-                <div class="era-source-note" style="margin-bottom:6px">P1 關鍵字｜LOC4 + LOC5</div>
+                <div class="era-source-note" style="margin-bottom:6px">P1 關鍵字｜文字創作 + 多媒體創作</div>
                 <div class="era-keyword-chips" style="margin-bottom:10px">
                   ${nonLoc3.keywords.length
                     ? nonLoc3.keywords.map(item => `<a class="era-keyword-chip" href="${esc(searchHref(item.term, period))}" title="搜尋 ${esc(item.term)} 的內容">${esc(item.term)} <b>${esc(item.percent)}%</b></a>`).join('')
-                    : '<span class="era-source-note">P1 尚無可統計的非 LOC3 關鍵字</span>'}
+                    : '<span class="era-source-note">P1 尚無可統計的非歌曲關鍵字</span>'}
                 </div>
-                <div class="era-source-note">P1 不使用 LOC3 關鍵字；LOC3 在此期只備份、不作正式搜尋分析。</div>
+                <div class="era-source-note">P1 不使用自創歌曲關鍵字；歌曲資料在此期只備份、不作正式搜尋分析。</div>
               ` : `
                 ${namedKeywords.length ? `
                   <div class="era-source-note" style="margin-bottom:6px">命名關鍵字</div>
@@ -2090,19 +2090,19 @@
                     ${namedKeywords.map(item => `<a class="era-keyword-chip" href="${esc(searchHref(item.term, period))}" title="搜尋 ${esc(item.term)} 的內容">${esc(item.term)}${item.aliases?.length ? `（${esc(item.aliases.join('／'))}）` : ''} <b>${esc(item.percent)}%</b></a>`).join('')}
                   </div>
                 ` : ''}
-                <div class="era-source-note" style="margin-bottom:6px">LOC3 主要語義</div>
+                <div class="era-source-note" style="margin-bottom:6px">自創歌曲主要語義</div>
                 <div class="era-keyword-chips">
                   ${loc3Keywords.length
                     ? loc3Keywords.map(item => `<a class="era-keyword-chip" href="${esc(searchHref(item.term, period))}" title="搜尋 ${esc(item.term)} 的內容">${esc(item.term)} <b>${esc(item.percent)}%</b></a>`).join('')
-                    : '<span class="era-source-note">此時期尚無 LOC3 關鍵字分析</span>'}
+                    : '<span class="era-source-note">此時期尚無自創歌曲關鍵字分析</span>'}
                 </div>
               `}
 
-              <div class="era-source-note" style="margin-top:10px;margin-bottom:6px">LOC4 作品（${loc4Works.length}）</div>
+              <div class="era-source-note" style="margin-top:10px;margin-bottom:6px">文字創作（${loc4Works.length}）</div>
               <div class="era-keyword-chips">
                 ${loc4Works.length
                   ? loc4Works.map(work => `<span class="era-keyword-chip">${esc(work.title)} <b>${esc(work.created_date || '')}</b></span>`).join('')
-                  : '<span class="era-source-note">此時期尚無 LOC4 作品</span>'}
+                  : '<span class="era-source-note">此時期尚無文字創作</span>'}
               </div>
             </article>
           `;
