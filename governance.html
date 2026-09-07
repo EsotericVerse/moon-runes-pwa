@@ -97,6 +97,14 @@ p{margin:.8rem 0}ul{padding-left:1.35rem}.eyebrow{font-size:.82rem;letter-spacin
 <li>Repository 結構的目標是讓檔案的 authority、lifecycle 與 runtime responsibility 從位置即可判讀。</li>
 </ul>
 
+<h3>基礎文字解析治理</h3>
+<p>基礎文字解析應可在不依賴外部 LLM／Embedding API Key 的情況下運作。文字清理、關鍵字候選、規則式分類、日期／來源索引與基本 Trend projection 屬可本機執行的基礎能力；LLM、Embedding、clustering 與外部模型分類是 optional enrichment。</p>
+<ul>
+<li>人工應主要負責校正、例外處理與治理，不應成為一般資料匯入的必要執行層。</li>
+<li>基礎解析結果是 derived data，不是 Canon，也不得覆寫原始 corpus。</li>
+<li>API 實作與 endpoint 細節由 <code>card_api/</code> 程式本身維護，不另建立重複治理文件。</li>
+</ul>
+
 <h2>九、Relation / Graph 治理</h2>
 <ul><li>semantic similarity 只能選 seed，不能自行創造 canonical edge。</li><li>relation 必須保留 source、target、type、direction、source refs 與 evidence status。</li><li>不同 relation 可以並存；錯誤 relation 應修改、redirect、dispute 或 withdraw，而不是抹除歷史。</li><li>private relation 不因同步而自動公開。</li><li>Graph node 是權威資料的 reference，不反向取代原始來源。</li></ul>
 
