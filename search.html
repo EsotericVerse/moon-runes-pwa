@@ -432,7 +432,7 @@
       for(const key of Object.keys(groups))groups[key]=groups[key].slice(0,topK);
       return {groups,synthesis:null,graph:null,local_fallback:true};
     }
-    const locLabels={LOC1:'符文語彙（token）',LOC2:'脈絡',LOC3:'音樂',LOC4:'文字創作',LOC5:'多媒體',LOC6:'方法論',LOC7:'演算法（知識庫）',LOC8:'推演'};
+    const locLabels={LOC1:'LunaRunes (Token) · 符文語彙',LOC2:'Context · 脈絡',LOC3:'Music · 音樂',LOC4:'Literary · 文字創作',LOC5:'Media · 多媒體',LOC6:'Method · 方法論',LOC7:'Algorithm · 演算法',LOC8:'Evolution · 推演'};
     const el=id=>document.getElementById(id);
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
     function bootFromUrl(){
@@ -720,14 +720,14 @@
 
     function publicLocLabel(value){
       const map={
-        LOC1:'符文語彙（token）',
-        LOC2:'脈絡',
-        LOC3:'音樂',
-        LOC4:'文字創作',
-        LOC5:'多媒體',
-        LOC6:'方法論',
-        LOC7:'演算法（知識庫）',
-        LOC8:'推演'
+        LOC1:'LunaRunes (Token) · 符文語彙',
+        LOC2:'Context · 脈絡',
+        LOC3:'Music · 音樂',
+        LOC4:'Literary · 文字創作',
+        LOC5:'Media · 多媒體',
+        LOC6:'Method · 方法論',
+        LOC7:'Algorithm · 演算法',
+        LOC8:'Evolution · 推演'
       };
       const raw=String(value||'');
       return raw.split(/\s*\/\s*|\s*,\s*/).map(x=>{const key=(x.match(/LOC[1-8]/i)||[])[0]?.toUpperCase();return key?map[key]:x;}).join('／');
