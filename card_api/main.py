@@ -775,6 +775,8 @@ async def unified_search(input: UnifiedSearchInput):
                 start_date=input.start_date.strip(),
                 end_date=input.end_date.strip(),
             )
+            public_searcher = get_unified_searcher()
+            items = [public_searcher._public_display_result(item, query) for item in items]
             return {
                 "success": True,
                 "system_id": "lo3rwang",
@@ -823,6 +825,7 @@ async def unified_search(input: UnifiedSearchInput):
                 start_date=input.start_date.strip(),
                 end_date=input.end_date.strip(),
             ) if fb_searcher is not None else []
+            fb_items = [searcher._public_display_result(item, query) for item in fb_items]
             if fb_items:
                 merged_groups.setdefault("text", []).extend(fb_items)
                 total += len(fb_items)
