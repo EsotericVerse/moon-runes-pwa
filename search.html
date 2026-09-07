@@ -363,6 +363,13 @@
       }catch(err){host.innerHTML='<div class="empty">動態排行榜暫時無法載入：'+escRank(err.message)+'</div>';}
     }
     document.querySelectorAll('[data-search-view]').forEach(btn=>btn.addEventListener('click',()=>switchSearchView(btn.dataset.searchView)));
+    const initialView = (() => {
+      const hash = location.hash.replace(/^#/,'');
+      if (hash === 'ranking' || hash === 'rankingView') return 'ranking';
+      if (hash === 'era' || hash === 'eraView') return 'era';
+      return 'query';
+    })();
+    switchSearchView(initialView);
     qel('searchRankingSourceTabs')?.addEventListener('click',e=>{const btn=e.target.closest('[data-rank-source]');if(!btn)return;rankingSource=btn.dataset.rankSource||'';qel('searchRankingSourceTabs').querySelectorAll('[data-rank-source]').forEach(x=>x.classList.toggle('active',x===btn));renderSearchRanking();});
   })();
   </script>
