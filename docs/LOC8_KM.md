@@ -496,7 +496,7 @@ LOC8 公開功能核心目前收斂為 Daily Rune、ERA、Event、Timeline 與 T
 - Rights runtime enforcement
 - ERA Candidate → Accept / Adjust / Split / Merge / Reject 的完整操作流
 
-共用治理基準見 [LOC_GOVERNANCE_CORE.md](./LOC_GOVERNANCE_CORE.md)。
+共用治理基準見 [../governance.html](../governance.html)。
 
 ## 16. Governance Trend as Analysis Type
 
