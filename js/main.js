@@ -11,7 +11,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (card) {
     card.addEventListener("click", () => {
-      window.location.href = "result.html";
+      window.location.href = "runes.html#draw";
     });
   }
 });
