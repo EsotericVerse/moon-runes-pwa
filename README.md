@@ -580,6 +580,9 @@ LOC 的功能骨架完成後，現行重點轉向 Governance Consolidation：把
 
 ## 2026-09-07 最新進度
 
+- LOC4《月語者》：182 章章級 baseline 解析已完成；以完整章節正文建立 title signals、敘事功能、themes、entities、metrics 與來源追溯。三符文／月相已恢復 161 章，另 21 章保持未恢復，不從正文推測補值。
+
+
 - Threads：7,008 筆去重文字紀錄；其中 4,578 筆主貼文全文已完成 repository 索引並可供搜尋。
 - Unified Search：跨作品、文字、知識、媒體與時間資料的共同入口；Graph RAG 核心已完成。
 - 趨勢分析：已加入關鍵字 Top 10，並可點詞回查實際命中內容。
