@@ -381,8 +381,8 @@ ChatGPT 對話不是預設第二套完整 corpus，而是 **gap-filling source**
 - 去重基準：7008 筆
 - 主貼文：4578 筆，視為 primary evidence
 - Reply：2430 筆，視為 supplemental evidence
-- 搜尋索引：`data/json/registries/LOC6_THREADS_KM_INDEX.json`
-- Unified Search group：`governance`
+- 搜尋索引：`data/json/registries/LOC4_THREADS_KM_INDEX.json`
+- Unified Search group：`text`
 - Content type：`governance_fragment`
 
 索引同時保存：

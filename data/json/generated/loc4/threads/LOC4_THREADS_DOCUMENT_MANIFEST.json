@@ -35,22 +35,22 @@
   "shards": [
     {
       "shard": 1,
-      "path": "data/json/generated/loc6/threads/main/part-001.json.gz",
+      "path": "data/json/generated/loc4/threads/main/part-001.json.gz",
       "document_count": 1200
     },
     {
       "shard": 2,
-      "path": "data/json/generated/loc6/threads/main/part-002.json.gz",
+      "path": "data/json/generated/loc4/threads/main/part-002.json.gz",
       "document_count": 1200
     },
     {
       "shard": 3,
-      "path": "data/json/generated/loc6/threads/main/part-003.json.gz",
+      "path": "data/json/generated/loc4/threads/main/part-003.json.gz",
       "document_count": 1200
     },
     {
       "shard": 4,
-      "path": "data/json/generated/loc6/threads/main/part-004.json.gz",
+      "path": "data/json/generated/loc4/threads/main/part-004.json.gz",
       "document_count": 978
     }
   ],
@@ -58,7 +58,7 @@
   "governance": "Raw Threads documents belong to LOC4 life writing. LOC6 consumes them for governance/Zhengde-style interpretation; LOC7 retrieves them; LOC8 projects time/ERA/trend.",
   "primary_loc": "LOC4",
   "authority": "LOC4",
-  "storage_note": "Legacy generated path remains under data/json/generated/loc6 for compatibility. Path does not define ownership; raw Threads authored text is LOC4 life writing.",
+  "storage_note": "Canonical LOC4 Threads source-corpus manifest. LOC6 may consume by reference but must not own raw authored text.",
   "consumer_locs": [
     "LOC6",
     "LOC7",
