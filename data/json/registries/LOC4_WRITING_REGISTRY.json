@@ -615,6 +615,12 @@
       "relationship_refs": [],
       "source_refs": [
         {
+          "source_type": "vocus_article",
+          "url": "https://vocus.cc/article/683207c3fd89780001244b5a",
+          "title": "假性單身",
+          "role": "first_chapter_or_prologue"
+        },
+        {
           "source_type": "author_library_text",
           "title": "假性單身.txt",
           "role": "full_text_source"
@@ -622,7 +628,7 @@
       ],
       "provenance": {
         "source": "author-provided plain-text corpus",
-        "date_basis": "not yet confirmed"
+        "date_basis": "author-provided Vocus first publication link"
       },
       "lifecycle": {
         "status": "catalogued_and_indexed",
