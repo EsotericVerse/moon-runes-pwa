@@ -9,7 +9,7 @@
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
     "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 最新 LunaRune64.xlsx Grammar：一般牌陣使用治理解牌方式＋月相交互，符文交互限定月符沙盒專用；並同步自然語言 Search/RAG、來源／內容分類與時間篩選規則。",
-    "entry_count": 84,
+    "entry_count": 85,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
       "reference_rune": "0：德（De）",
@@ -2129,6 +2129,32 @@
         "LunaRune64.xlsx#Grammar",
         "data/json/core/rune_grammar.json",
         "docs/LOC7_KM.md"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-085",
+      "category": "月符分類",
+      "question": "月符 Search 為什麼分成符文籤詩、符文體系、符文方法、符文演化？",
+      "aliases": [
+        "月符搜尋有哪些分類？",
+        "符文占卜為什麼改叫符文籤詩？",
+        "符文歌曲和符文文學放哪裡？",
+        "未來性放在哪裡？"
+      ],
+      "answer": "月符 Search 對外使用四類：符文籤詩負責抽牌、籤詩與解牌；符文體系收納符文本體及其文學、歌曲、影像、沙盒等延伸；符文方法收納 Grammar、治理解牌方式、月相交互與正反向符文治理；符文演化收納 ERA、Relation、Trajectory、Trend 與其他跨時期變化。所有未來性統一視為演化，避免額外神秘化。",
+      "keywords": [
+        "符文籤詩",
+        "符文體系",
+        "符文方法",
+        "符文演化",
+        "去神秘學",
+        "月符 Search"
+      ],
+      "source_refs": [
+        "docs/LOC7_KM.md",
+        "search.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
