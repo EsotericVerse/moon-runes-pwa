@@ -19,6 +19,14 @@ function doGet(e) {
       return json_(diagnostics_());
     }
 
+    if (action === 'smoke_test') {
+      const confirm = String((e && e.parameter && e.parameter.confirm) || '');
+      if (confirm !== 'LOC8-CRUD-SMOKE') {
+        return json_({ ok: false, error: 'Missing smoke-test confirmation' });
+      }
+      return json_(crudSmokeTest_());
+    }
+
     if (action === 'users') {
       return json_({ ok: true, users: readRows_(USER_SHEET) });
     }
@@ -207,6 +215,110 @@ function doPost(e) {
     throw new Error('Unsupported action: ' + action);
   } catch (err) {
     return json_({ ok: false, error: errorText_(err) });
+  }
+}
+
+function crudSmokeTest_() {
+  const stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Taipei', 'yyyyMMddHHmmss');
+  const ids = {
+    event: 'SMOKE-EV-' + stamp,
+    era: 'SMOKE-ERA-' + stamp,
+    draw: 'SMOKE-DRAW-' + stamp,
+    relation: 'SMOKE-REL-' + stamp
+  };
+  const userId = 'loc8-smoke-test';
+  const results = {};
+
+  try {
+    const event = normalizeEvent_({
+      id: ids.event,
+      user_id: userId,
+      date: Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Taipei', 'yyyy-MM-dd'),
+      title: 'LOC8 CRUD smoke test',
+      description: 'create',
+      event_type: 'smoke_test',
+      status: 'test',
+      source: 'loc8_api/smoke_test'
+    });
+    appendObject_(EVENT_SHEET, event);
+    const eventUpdated = updateObjectById_(EVENT_SHEET, ids.event, { description: 'updated' }, userId);
+    results.event = {
+      create: true,
+      update: String(eventUpdated.description || '') === 'updated'
+    };
+
+    const era = normalizeEra_({
+      era_id: ids.era,
+      period: 'SMOKE',
+      name: 'LOC8 CRUD Smoke',
+      status: 'test',
+      description: 'create'
+    });
+    appendObject_(ERA_SHEET, era);
+    const eraUpdated = updateEraById_(ids.era, Object.assign({}, era, { description: 'updated' }));
+    results.era = {
+      create: true,
+      update: String(eraUpdated.description || '') === 'updated'
+    };
+
+    const draw = normalizeDailyDraw_({
+      id: ids.draw,
+      user_id: userId,
+      draw_kind: 'daily_draw',
+      rune: '靈',
+      direction: '正位',
+      note: 'create',
+      source: 'loc8_api/smoke_test'
+    });
+    appendObject_(DAILY_DRAW_SHEET, draw);
+    const drawUpdated = updateObjectById_(DAILY_DRAW_SHEET, ids.draw, { note: 'updated' }, userId);
+    results.daily_draw = {
+      create: true,
+      update: String(drawUpdated.note || '') === 'updated'
+    };
+
+    const relation = normalizeRelation_({
+      id: ids.relation,
+      user_id: userId,
+      source_type: 'event',
+      source_id: ids.event,
+      target_type: 'era',
+      target_id: ids.era,
+      relation_type: 'references',
+      summary: 'create',
+      status: 'test',
+      visibility: 'private'
+    });
+    appendObject_(RELATION_SHEET, relation);
+    const relationUpdated = updateObjectById_(RELATION_SHEET, ids.relation, { summary: 'updated' }, userId);
+    results.relation = {
+      create: true,
+      update: String(relationUpdated.summary || '') === 'updated'
+    };
+
+    return {
+      ok: true,
+      service: 'LOC8',
+      schema: 'loc8-mvp-1.1',
+      smoke_test: 'crud',
+      passed: Object.keys(results).every(key => results[key].create && results[key].update),
+      results: results
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      service: 'LOC8',
+      schema: 'loc8-mvp-1.1',
+      smoke_test: 'crud',
+      passed: false,
+      results: results,
+      error: errorText_(err)
+    };
+  } finally {
+    try { deleteObjectById_(RELATION_SHEET, ids.relation, userId); } catch (_) {}
+    try { deleteObjectById_(DAILY_DRAW_SHEET, ids.draw, userId); } catch (_) {}
+    try { deleteEraById_(ids.era); } catch (_) {}
+    try { deleteObjectById_(EVENT_SHEET, ids.event, userId); } catch (_) {}
   }
 }
 
