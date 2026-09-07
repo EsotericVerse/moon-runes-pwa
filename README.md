@@ -583,10 +583,10 @@ LOC 的功能骨架完成後，現行重點轉向 Governance Consolidation：把
 
 主要文件：
 
-- `docs/LOC_GOVERNANCE_CORE.md`
-- `docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md`
-- `docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md`
-- `docs/LOC_CONTENT_RIGHTS_POLICY.md`
+- `governance.html`
+- `governance.html`
+- `governance.html`
+- `data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json`
 
 核心原則是：**穩定的是框架，不是語言；保留歷史，允許修正；提供邊界，不要求思想服從。**
 
