@@ -42,7 +42,7 @@ LOC 不以象徵的神聖性建立權威，而以定義、結構及資料一致�
 
 ```text
 LOC：
-LOC1 月符／語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 文學演化
+LOC1 月符／語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演
 
 月之符文：
 符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算 → 符文演化
@@ -180,7 +180,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC5 | Resonance | 圖像、聲音、文字、MV、系統圖形與跨媒體概念視覺化 |
 | LOC6 | Methodology / Governance | 方法論：如何理解、判斷、處理；治理、解牌、價值判斷與政德風都是其中的方法 |
 | LOC7 | Algorithm / Text Architecture | 演算法（知識庫）：文字建築、知識管理、檢索、RAG 與 Graph RAG；關係／Graph 脈絡資料本體歸 LOC2 |
-| LOC8 | Literary Evolution / Time & Trend | 文學演化：把作品、語言、方法與風格放進事件、時期、時間線、Trajectory 與 Trend 中觀察其演變 |
+| LOC8 | Projection / Time & Trend | 推演：把作品、語言、方法與風格放進事件、時期、時間線、Trajectory 與 Trend 中觀察其演變 |
 
 ### 目前具現化成果
 
