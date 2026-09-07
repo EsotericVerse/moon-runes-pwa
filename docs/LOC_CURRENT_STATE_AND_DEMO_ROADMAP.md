@@ -443,7 +443,7 @@ Graph RAG 已由「關係 groundwork」進入正式 Search Core：
 
 ### Priority B｜Search Corpus 補齊
 - LOC2 規則完整進 KM / Search
-- LOC4 corpus migration
+- LOC4 corpus品質驗證與更多 Life Writing 關聯
 - LOC5 歷史 Reels / Media Registry 回補
 - LOC6 Governance direct search
 - LOC8 Relation / Trend results
@@ -694,3 +694,30 @@ LOC 現在進入 **Governance Consolidation**：功能骨架不再是主要缺�
 ~~~
 
 這不是用現在版本覆蓋過去，而是把過去版本納入可追溯的現在。
+
+
+## LOC4｜作者文字本體與來源分工
+
+LOC4 的現行狀態不再是「corpus import pending」。
+
+### 已完成
+
+- 作者檔案庫中的核心小說純文字已建立 document-level corpus manifest 與 shards。
+- Unified Search 已接入 LOC4 正文片段檢索。
+- Facebook／Threads 的作者生活／公開文字視為 LOC4 authored-text layer；原始 source corpus 保持單一來源，不為 LOC4 重複複製。
+- LOC6 對 Facebook／Threads 的治理、政德風、概念演變解讀屬 analysis ownership，不改變原始文字的 LOC4 ownership。
+
+### 現行資料責任
+
+~~~text
+作者原始文字
+├─ 創作作品（LOC4 corpus）
+├─ Facebook life writing（LOC4 ownership / source-specific storage）
+└─ Threads life writing（LOC4 ownership / source-specific storage）
+        ↓
+LOC6 Governance / Zhengde Style interpretation
+LOC7 Search / Text Architecture
+LOC8 Time / ERA / Trend
+~~~
+
+因此 LOC4 的規模不能只用「幾部小說」描述。小說是高密度創作樣本；Facebook 與 Threads 長期文字才是整體語言演變的重要主體。
