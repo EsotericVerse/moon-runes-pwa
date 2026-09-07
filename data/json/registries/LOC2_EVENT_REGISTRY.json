@@ -6,7 +6,7 @@
   "updated_at": "2026-09-05",
   "purpose": "Structured Scenario Corpus / Event Corpus for LOC2. Events model situations people can encounter and are not limited to game-effect semantics.",
   "source_refs": [
-    "loc2.html",
+    "context.html",
     "docs/LOC2_SCENARIO_MODEL.md"
   ],
   "grammar_note": {
