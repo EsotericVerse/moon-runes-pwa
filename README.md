@@ -166,9 +166,9 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC3 | Music | 音樂創作、微月光、政德風、符文寫歌與歌詞語意檢索 |
 | LOC4 | Writing | 兩部分：①創作作品（小說、文章、符文文本、世界觀等）②生活文字（Facebook／Threads） |
 | LOC5 | Resonance | 圖像、聲音、文字、MV、系統圖形與跨媒體概念視覺化 |
-| LOC6 | Governance / Interpretation | 人生觀、價值觀、治理原則、政德風，以及符文組合如何被轉譯為實際文字與敘事的解析實證 |
-| LOC7 | Text Architecture / KM | 文字建築學、知識管理、檢索、關係結構與 Graph RAG 後續方向 |
-| LOC8 | Context / Relation & Trend | 每日符文、事件、時期、時間線、Relation、Trajectory、趨勢分析與跨分發統合 |
+| LOC6 | Methodology / Governance | 方法論：如何理解、判斷、處理；治理、解牌、價值判斷與政德風都是其中的方法 |
+| LOC7 | Methodological System / Text Architecture | 方法體系：由多種方法形成的文字建築、知識管理、檢索、關係結構與 Graph RAG |
+| LOC8 | Cultural Philosophy / Time & Trend | 文化哲學：把方法體系放進事件、時期、時間線、Relation、Trajectory 與趨勢中觀察其演化 |
 
 ### 目前具現化成果
 
