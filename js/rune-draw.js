@@ -1,6 +1,19 @@
 import { rune } from "./runes64.js";
-import { direction } from "./direction64.js";
-import { allData } from "./rune_all_data_all.js";
+
+let direction = {};
+let allData = [];
+
+async function ensureLocalData(mode) {
+  if (mode === "5card") return;
+  if (!Object.keys(direction).length) {
+    const mod = await import("./direction64.js");
+    direction = mod.direction || {};
+  }
+  if ((mode === "single" || mode === "daily") && !allData.length) {
+    const mod = await import("./rune_all_data_all.js");
+    allData = mod.allData || [];
+  }
+}
 
 const DIRECTIONS = ["正位", "半正位", "半逆位", "逆位"];
 const ROTATIONS = ["rotate(0deg)", "rotate(90deg)", "rotate(-90deg)", "rotate(180deg)"];
@@ -148,9 +161,9 @@ function getLotsHtml(card) {
 
 function cardHtml(card, label, realPhase, density = "full", showLots = false) {
   const hint = runeHintMap.get(card.id) || {};
-  const directionText =
-    hint[DIRECTION_FIELDS[card.direction]] ||
-    getDirectionText(card);
+  const minimal = density === "minimal";
+  const directionText = minimal ? "" :
+    (hint[DIRECTION_FIELDS[card.direction]] || getDirectionText(card));
 
   const groupText =
     card.rune.分組說明 ||
@@ -161,8 +174,6 @@ function cardHtml(card, label, realPhase, density = "full", showLots = false) {
     "目前沒有額外的反向提醒。";
 
   const english = hint.英文 || card.rune.英文 || "";
-  const minimal = density === "minimal";
-  const medium = density === "medium";
 
   return `
     <article class="rune-result-card" data-density="${density}">
@@ -435,7 +446,29 @@ async function runRitual(mode, config) {
   document.body.dataset.drawing = "false";
 }
 
-function renderResult(mode, config, realPhase) {
+async function requestRenderFive(cards) {
+  const payload = {
+    mode: "5",
+    rune1_id: cards[0].id, rune1_dir: cards[0].directionIndex + 1,
+    rune2_id: cards[1].id, rune2_dir: cards[1].directionIndex + 1,
+    rune3_id: cards[2].id, rune3_dir: cards[2].directionIndex + 1,
+    rune4_id: cards[3].id, rune4_dir: cards[3].directionIndex + 1,
+    rune5_id: cards[4].id, rune5_dir: cards[4].directionIndex + 1,
+    debug: false
+  };
+  const response = await fetch("https://moon-runes-pwa.onrender.com/divination", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json();
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.detail || "五卡解牌服務暫時無法使用");
+  }
+  return data.data || {};
+}
+
+async function renderResult(mode, config, realPhase) {
   const cards = drawCards(config.count);
   const grid = document.getElementById("cards-grid");
   const reading = document.getElementById("reading");
@@ -447,20 +480,28 @@ function renderResult(mode, config, realPhase) {
   ).join("");
 
   const resultRealPhase = document.getElementById("result-real-phase");
-  if (resultRealPhase) {
-    resultRealPhase.textContent = `真實月相｜${realPhase}`;
-  }
+  if (resultRealPhase) resultRealPhase.textContent = `真實月相｜${realPhase}`;
 
   const fiveCardSchema = document.getElementById("five-card-schema");
-  if (fiveCardSchema) {
-    fiveCardSchema.hidden = config.count !== 5;
-  }
+  if (fiveCardSchema) fiveCardSchema.hidden = config.count !== 5;
 
-  reading.innerHTML = config.count === 1
-    ? buildSingleReading(cards[0], realPhase, mode === "daily")
-    : config.count === 5
-      ? buildFiveCardReading(cards, realPhase)
+  if (mode === "5card") {
+    reading.innerHTML = '<div class="reading-lead"><strong>五卡解牌</strong>正在由 Render 進行五個位置的整合判讀…</div>';
+    try {
+      const remote = await requestRenderFive(cards);
+      reading.innerHTML = `
+        <div class="reading-lead"><strong>完整現況</strong>${remote["完整現況"] || "—"}</div>
+        <p><strong>牌面解說：</strong>${remote["牌面解說"] || "—"}</p>
+        <p><strong>占卜結論：</strong>${remote["占卜結論"] || "—"}</p>
+      `;
+    } catch (error) {
+      reading.innerHTML = `<div class="reading-lead"><strong>五卡解牌暫時無法完成</strong>${error.message}</div>`;
+    }
+  } else {
+    reading.innerHTML = config.count === 1
+      ? buildSingleReading(cards[0], realPhase, mode === "daily")
       : buildMultiReading(cards, config.labels, realPhase);
+  }
 
   document.getElementById("mode-note").textContent = config.note;
   document.getElementById("ritual-view").hidden = true;
@@ -491,12 +532,11 @@ window.addEventListener("DOMContentLoaded", async () => {
     ritualPhase.textContent = `月相：無 / 真實月相：${realPhase}`;
   }
 
-  await Promise.all([
-    runRitual(mode, config),
-    loadRuneHints(),
-    loadLots()
-  ]);
-  renderResult(mode, config, realPhase);
+  const loaders = [runRitual(mode, config), ensureLocalData(mode)];
+  if (mode !== "5card") loaders.push(loadRuneHints());
+  if (mode === "single" || mode === "daily") loaders.push(loadLots());
+  await Promise.all(loaders);
+  await renderResult(mode, config, realPhase);
 
   document.getElementById("retry-button").addEventListener("click", () => {
     window.location.href = "runes.html?mode=" + encodeURIComponent(mode) + "#draw";
