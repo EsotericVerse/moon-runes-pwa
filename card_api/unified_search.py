@@ -81,12 +81,12 @@ class UnifiedSearchEngine:
         except Exception:
             self.loc4_moon_speaker_analysis = {"chapters": [], "chapter_count": 0}
         self.loc6 = self._load_json("LOC6_GOVERNANCE_REGISTRY.json")
-        self.loc6_threads = self._load_json("LOC6_THREADS_KM_INDEX.json")
+        self.loc4_threads = self._load_json("LOC4_THREADS_KM_INDEX.json")
         self.loc6_period_keywords = self._load_json("LOC6_PERIOD_KEYWORD_ANALYSIS.json")
         self.loc3_period_keywords = self._load_json("LOC3_PERIOD_KEYWORD_ANALYSIS.json")
-        self.loc6_thread_articles = self._load_repo_json("data/json/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json")
-        self.loc6_thread_manifest = self._load_repo_json("data/json/generated/loc6/threads/LOC6_THREADS_DOCUMENT_MANIFEST.json")
-        self.loc6_thread_full = self._load_loc6_thread_shards()
+        self.loc4_thread_articles = {}
+        self.loc4_thread_manifest = self._load_repo_json("data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json")
+        self.loc4_thread_full = self._load_loc4_thread_shards()
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
         self.lots = self._load_repo_json("data/json/core/lots.json")
@@ -118,7 +118,7 @@ class UnifiedSearchEngine:
         except Exception:
             return {}
 
-    def _load_loc6_thread_shards(self) -> dict[str, Any]:
+    def _load_loc4_thread_shards(self) -> dict[str, Any]:
         manifest = getattr(self, "loc6_thread_manifest", {}) or {}
         documents: list[dict[str, Any]] = []
         for shard in manifest.get("shards", []):
@@ -133,11 +133,11 @@ class UnifiedSearchEngine:
             "manifest": manifest,
         }
 
-    def _loc6_article_documents(self) -> list[dict[str, Any]]:
+    def _loc4_article_documents(self) -> list[dict[str, Any]]:
         full_docs = (getattr(self, "loc6_thread_full", {}) or {}).get("documents", [])
         if full_docs:
             return full_docs
-        return self.loc6_thread_articles.get("documents", []) or self.loc6_threads.get("documents", [])
+        return self.loc4_thread_articles.get("documents", []) or self.loc4_threads.get("documents", [])
 
     def _load_loc4_corpus_shards(self) -> dict[str, Any]:
         manifest = getattr(self, "loc4_corpus_manifest", {}) or {}
@@ -1087,7 +1087,7 @@ class UnifiedSearchEngine:
                 eras.append({"result_id":era.get("era_id"),"system_id":self.eras.get("language_system_id") or "lo3rwang","primary_loc":"LOC8","related_locs":["LOC3","LOC4","LOC5","LOC6","LOC7"],"content_type":"era","group":"timeline","title":era.get("display_label") or era.get("name"),"summary":era.get("description") or era.get("state_after"),"score":round(score,6),"era_id":era.get("era_id"),"period":era.get("period"),"source_refs":[],"payload":payload})
         return textworks, media_results, knowledge, eras
 
-    def _loc6_article_results(self, query: str, top_k: int, wanted: str, filters: dict[str, str] | None = None) -> list[dict[str, Any]]:
+    def _loc4_article_results(self, query: str, top_k: int, wanted: str, filters: dict[str, str] | None = None) -> list[dict[str, Any]]:
         filters = filters or {}
         if wanted not in {"", "all", "governance_article", "text_record"}:
             return []
@@ -1125,9 +1125,9 @@ class UnifiedSearchEngine:
                 row["_content"] = content
                 scored.append((score, row, "asset"))
 
-        # Search the full LOC6 Threads main-post corpus when shards are available.
+        # Search the full LOC4-owned Threads main-post corpus when shards are available.
         # Falls back to the smaller article tranche only when full shards are absent.
-        article_docs = self._loc6_article_documents()
+        article_docs = self._loc4_article_documents()
         for doc in article_docs:
             if filters.get("period") and doc.get("era") != filters["period"]:
                 continue
@@ -1152,7 +1152,7 @@ class UnifiedSearchEngine:
                     "primary_loc": "LOC6",
                     "related_locs": item.get("related_locs", ["LOC7", "LOC8"]),
                     "content_type": "governance_article",
-                    "group": "loc6_articles",
+                    "group": "loc4_articles",
                     "title": item.get("title"),
                     "summary": item.get("public_summary") or item.get("notes") or item.get("role") or "",
                     "score": round(score, 6),
@@ -1171,7 +1171,7 @@ class UnifiedSearchEngine:
                 payload = {
                     **item,
                     "matched_terms": matched_terms,
-                    "km_source": "LOC6_THREADS_FULL_CORPUS",
+                    "km_source": "LOC4_THREADS_FULL_CORPUS",
                     "evidence_role": "primary",
                 }
                 out.append({
@@ -1180,7 +1180,7 @@ class UnifiedSearchEngine:
                     "primary_loc": "LOC4",
                     "related_locs": ["LOC6", "LOC7", "LOC8"],
                     "content_type": "text_record",
-                    "group": "loc6_articles",
+                    "group": "loc4_articles",
                     "title": f"Threads｜{item.get('date') or 'undated'}｜{item.get('era') or 'ERA'}" + (f"｜{headline}" if headline else ""),
                     "summary": text,
                     "score": round(score, 6),
@@ -1228,77 +1228,9 @@ class UnifiedSearchEngine:
                 "payload": fragment,
             })
 
-        # Threads evidence tranche. Main posts are primary evidence; replies are
-        # searchable supplemental evidence and receive a small ranking penalty.
-        thread_scored = []
-        for doc in self.loc6_threads.get("documents", []):
-            score = _text_score(query, [
-                doc.get("text"),
-                " ".join(doc.get("matched_terms", [])),
-                doc.get("era"),
-                doc.get("source_role"),
-            ])
-            if score < 0.34:
-                continue
-            if doc.get("source_role") == "reply":
-                score *= 0.88
-            thread_scored.append((score, doc))
-        thread_scored.sort(key=lambda row: (-row[0], str(row[1].get("date", "")), str(row[1].get("id", ""))))
-
-        for score, doc in thread_scored[:top_k]:
-            role = doc.get("source_role") or "main_post"
-            results.append({
-                "result_id": doc.get("id"),
-                "system_id": "lo3rwang",
-                "primary_loc": "LOC6",
-                "related_locs": ["LOC7", "LOC8"],
-                "content_type": "governance_fragment",
-                "group": "governance",
-                "title": f"Threads · {doc.get('date') or 'undated'} · {doc.get('era') or 'ERA'}",
-                "summary": doc.get("text") or "",
-                "score": round(score, 6),
-                "era_id": f"ERA-{doc.get('era')}" if doc.get("era") else None,
-                "period": doc.get("era"),
-                "source_refs": [{
-                    "source_type": "threads",
-                    "source_id": doc.get("source_id"),
-                    "note": "primary main post" if role == "main_post" else "supplemental reply evidence",
-                }],
-                "payload": {
-                    **doc,
-                    "km_source": "LOC6_THREADS_KM_INDEX",
-                    "evidence_role": "primary" if role == "main_post" else "supplemental",
-                },
-            })
-
-        # Keyword statistics are also searchable KM evidence. They expose the
-        # P0-P8 document-frequency distribution without claiming semantic Canon.
-        q = _compact(query)
-        for stat in self.loc6_threads.get("term_stats", []):
-            term = str(stat.get("term") or "")
-            if not term or (_compact(term) not in q and q not in _compact(term)):
-                continue
-            results.append({
-                "result_id": f"THR-TERM-{term}",
-                "system_id": "lo3rwang",
-                "primary_loc": "LOC6",
-                "related_locs": ["LOC7", "LOC8"],
-                "content_type": "governance_fragment",
-                "group": "governance",
-                "title": f"Threads 關鍵字 · {term}",
-                "summary": f"主貼文 DF {stat.get('main_df', 0)}；Reply DF {stat.get('reply_df', 0)}。可用 ERA distribution 觀察時間變化。",
-                "score": 1.0,
-                "source_refs": [{
-                    "source_type": "threads",
-                    "source_id": self.loc6_threads.get("source"),
-                    "note": "corpus-derived document frequency; not Canon",
-                }],
-                "payload": {
-                    **stat,
-                    "km_source": "LOC6_THREADS_KM_INDEX",
-                    "evidence_role": "statistical",
-                },
-            })
+        # Raw Threads source text is LOC4-owned and is searched through
+        # _loc4_article_results(). LOC6 governance results intentionally contain
+        # derived governance/style records only.
 
         results.sort(key=lambda item: (-float(item.get("score") or 0), str(item.get("result_id") or "")))
         return results[:top_k]
@@ -1473,7 +1405,7 @@ class UnifiedSearchEngine:
                 })
 
         elif wanted == "governance_article":
-            for doc in self._loc6_article_documents():
+            for doc in self._loc4_article_documents():
                 if doc.get("source_role") != "main_post":
                     continue
                 if filters.get("period") and doc.get("era") != filters["period"]:
@@ -1482,7 +1414,7 @@ class UnifiedSearchEngine:
                 preview = full_text[:360] + ("…" if len(full_text) > 360 else "")
                 public_payload = {k: v for k, v in doc.items() if k != "text"}
                 public_payload.update({
-                    "km_source": "LOC6_THREADS_FULL_CORPUS",
+                    "km_source": "LOC4_THREADS_FULL_CORPUS",
                     "evidence_role": "primary",
                     "full_text_available": True,
                     "public_browse_mode": "preview_only",
@@ -1494,7 +1426,7 @@ class UnifiedSearchEngine:
                     "primary_loc": "LOC6",
                     "related_locs": ["LOC7", "LOC8"],
                     "content_type": "governance_article",
-                    "group": "loc6_articles",
+                    "group": "loc4_articles",
                     "title": (
                         f"Threads｜{doc.get('date') or 'undated'}｜{doc.get('era') or 'ERA'}｜"
                         + ((re.split(r"[。！？!?\n]", full_text, maxsplit=1)[0].strip()[:34] + "…")
@@ -2684,7 +2616,7 @@ class UnifiedSearchEngine:
             "governance": 5,
             "relationships": 4,
             "timeline": 3,
-            "loc6_articles": 2,
+            "loc4_articles": 2,
             "works": 1,
             "textworks": 1,
             "media": 1,
@@ -2727,7 +2659,7 @@ class UnifiedSearchEngine:
             "governance": "治理／政德風",
             "relationships": "跨 LOC 關聯",
             "timeline": "時期",
-            "loc6_articles": "Threads／LOC6 文章",
+            "loc4_articles": "Threads／LOC6 文章",
             "works": "歌曲／歌詞",
             "textworks": "文字作品",
             "media": "多媒體",
@@ -2947,7 +2879,7 @@ class UnifiedSearchEngine:
             media = list(media_by_id.values())[:top_k]
             relationships = []
             governance = self._governance_results(query, top_k, effective_wanted)
-            loc6_articles = self._loc6_article_results(query, top_k, effective_wanted, filters)
+            loc4_articles = self._loc4_article_results(query, top_k, effective_wanted, filters)
             runes = self._rune_results(oracle[0]["payload"].get("rune_name", ""), top_k, effective_wanted)
         else:
             faq = self._faq_results(query, top_k, wanted)
@@ -2963,7 +2895,7 @@ class UnifiedSearchEngine:
             media = list(media_by_id.values())[:top_k]
             relationships = self._relationship_results(query, top_k, wanted)
             governance = self._governance_results(query, top_k, wanted)
-            loc6_articles = self._loc6_article_results(query, top_k, wanted, filters)
+            loc4_articles = self._loc4_article_results(query, top_k, wanted, filters)
             runes = self._rune_results(query, top_k, wanted)
             eras = self._era_results(query, top_k, wanted)
 
@@ -2981,7 +2913,7 @@ class UnifiedSearchEngine:
             "textworks": textworks,
             "relationships": relationships,
             "governance": governance,
-            "loc6_articles": loc6_articles,
+            "loc4_articles": loc4_articles,
             "media": media,
             "knowledge": [*documents, *faq],
             "timeline": eras,
@@ -3014,7 +2946,7 @@ class UnifiedSearchEngine:
                 "LOC4": f"creative-works+life-writing-live; {len((getattr(self, 'loc4_corpus', {}) or {}).get('documents', []))} authored corpus segments; {len((getattr(self, 'loc4_moon_speaker_analysis', {}) or {}).get('chapters', []))} MoonSpeaker chapter analyses",
                 "LOC5": "direct-media-registry-search-live",
                 "LOC6": "governance+threads-km-search-live",
-                "LOC6_threads_indexed": len(self._loc6_article_documents()),
+                "LOC4_threads_indexed": len(self._loc4_article_documents()),
                 "LOC7": "live",
                 "LOC8": "era+context-graph-live",
             },
