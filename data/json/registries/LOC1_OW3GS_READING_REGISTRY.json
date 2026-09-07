@@ -6,8 +6,8 @@
   "source_document": "OW3gs_占卜結果與解析_本對話整理_20260907.txt",
   "purpose": "Maintain a small, curated set of complete Base66 OW3gs 11-card readings as interpretation reference cases and real-world validation evidence. This is not a bulk divination log.",
   "reading_model": {
-    "positions_1_6": "事情成因的描述層：描述成因、背景、條件、來源與脈絡",
-    "positions_7_11": "對於事情的建議文字層：形成主要回應、判斷與建議文字"
+    "positions_1_6": "因的描述層：1.背景 2.現在 3.資源 4.意向 5.外部擾動 6.尚未成形因素",
+    "positions_7_11": "果的判定層：建議：7.成因 8.現在 9.未來 10.環境 11.心境"
   },
   "governance": [
     "This registry is a curated reference set, not a bulk archive of personal divination history.",
