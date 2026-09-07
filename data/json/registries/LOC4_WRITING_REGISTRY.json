@@ -249,38 +249,44 @@
         {
           "source_type": "suno_share",
           "role": "character_theme",
-          "title": "德興",
-          "url": "https://suno.com/s/OIX6l1eFUJ7IYOBz"
+          "title": "如果我沒有回頭",
+          "url": "https://suno.com/s/OIX6l1eFUJ7IYOBz",
+          "character": "德興"
         },
         {
           "source_type": "suno_share",
           "role": "character_theme",
-          "title": "小瑤",
-          "url": "https://suno.com/s/4nHz2DJlyK1mGIeM"
+          "title": "我沒有走進去",
+          "url": "https://suno.com/s/4nHz2DJlyK1mGIeM",
+          "character": "小瑤"
         },
         {
           "source_type": "suno_share",
           "role": "character_theme",
-          "title": "阿珠",
-          "url": "https://suno.com/s/C9YWrn9xn19hoQhV"
+          "title": "我以為那才是對的",
+          "url": "https://suno.com/s/C9YWrn9xn19hoQhV",
+          "character": "阿珠"
         },
         {
           "source_type": "suno_share",
           "role": "character_theme",
-          "title": "阿文",
-          "url": "https://suno.com/s/a8tUvkKBIbojDGsp"
+          "title": "湖沒有留下名字",
+          "url": "https://suno.com/s/a8tUvkKBIbojDGsp",
+          "character": "阿文"
         },
         {
           "source_type": "suno_share",
           "role": "character_theme",
-          "title": "小維",
-          "url": "https://suno.com/s/JJ0rs9I78FXHas5A"
+          "title": "慢慢回應",
+          "url": "https://suno.com/s/JJ0rs9I78FXHas5A",
+          "character": "小維"
         },
         {
           "source_type": "suno_share",
           "role": "character_theme",
-          "title": "阿鎧",
-          "url": "https://suno.com/s/4Wx3tCqM7BmmzTI4"
+          "title": "未拆封的風",
+          "url": "https://suno.com/s/4Wx3tCqM7BmmzTI4",
+          "character": "阿鎧"
         }
       ],
       "provenance": {
@@ -311,32 +317,38 @@
           {
             "character": "德興",
             "role": "character_theme",
-            "url": "https://suno.com/s/OIX6l1eFUJ7IYOBz"
+            "url": "https://suno.com/s/OIX6l1eFUJ7IYOBz",
+            "title": "如果我沒有回頭"
           },
           {
             "character": "小瑤",
             "role": "character_theme",
-            "url": "https://suno.com/s/4nHz2DJlyK1mGIeM"
+            "url": "https://suno.com/s/4nHz2DJlyK1mGIeM",
+            "title": "我沒有走進去"
           },
           {
             "character": "阿珠",
             "role": "character_theme",
-            "url": "https://suno.com/s/C9YWrn9xn19hoQhV"
+            "url": "https://suno.com/s/C9YWrn9xn19hoQhV",
+            "title": "我以為那才是對的"
           },
           {
             "character": "阿文",
             "role": "character_theme",
-            "url": "https://suno.com/s/a8tUvkKBIbojDGsp"
+            "url": "https://suno.com/s/a8tUvkKBIbojDGsp",
+            "title": "湖沒有留下名字"
           },
           {
             "character": "小維",
             "role": "character_theme",
-            "url": "https://suno.com/s/JJ0rs9I78FXHas5A"
+            "url": "https://suno.com/s/JJ0rs9I78FXHas5A",
+            "title": "慢慢回應"
           },
           {
             "character": "阿鎧",
             "role": "character_theme",
-            "url": "https://suno.com/s/4Wx3tCqM7BmmzTI4"
+            "url": "https://suno.com/s/4Wx3tCqM7BmmzTI4",
+            "title": "未拆封的風"
           }
         ]
       }
