@@ -1292,12 +1292,10 @@ class UnifiedSearchEngine:
             text = str(doc.get("text") or "")
             if doc.get("source_role") != "main_post":
                 continue
-            # Threads is primarily short-form writing. Do not discard a short
-            # main post when it directly contains the user's query. The former
-            # 120-character floor hid valid exact-match evidence.
+            # Threads corpus has no minimum-length gate. Every main post
+            # remains searchable; relevance is controlled by match quality,
+            # scoring and result ranking instead of text length.
             direct_match = bool(compact_query and compact_query in _compact(text))
-            if len(text) < 120 and not direct_match:
-                continue
             score = _text_score(query, [
                 text,
                 " ".join(doc.get("matched_terms", [])),
