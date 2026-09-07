@@ -32,61 +32,71 @@
       "id": "song",
       "primary_loc": "LOC3",
       "kind": "work",
-      "label": "歌曲"
+      "label": "歌曲",
+      "default_display_policy": "metadata_only"
     },
     {
       "id": "rune_song",
       "primary_loc": "LOC3",
       "kind": "work_subtype",
-      "label": "符文歌曲"
+      "label": "符文歌曲",
+      "default_display_policy": "metadata_only"
     },
     {
       "id": "lyrics_work",
       "primary_loc": "LOC3",
       "kind": "work",
-      "label": "歌詞作品"
+      "label": "歌詞作品",
+      "default_display_policy": "snippet"
     },
     {
       "id": "music_version",
       "primary_loc": "LOC3",
       "kind": "version",
-      "label": "音樂版本"
+      "label": "音樂版本",
+      "default_display_policy": "metadata_only"
     },
     {
       "id": "novel",
       "primary_loc": "LOC4",
       "kind": "work",
-      "label": "小說"
+      "label": "小說",
+      "default_display_policy": "snippet"
     },
     {
       "id": "article",
       "primary_loc": "LOC4",
       "kind": "work",
-      "label": "文章"
+      "label": "文章",
+      "default_display_policy": "snippet"
     },
     {
       "id": "essay",
       "primary_loc": "LOC4",
       "kind": "work",
-      "label": "散文"
+      "label": "散文",
+      "default_display_policy": "snippet"
     },
     {
       "id": "journal",
       "primary_loc": "LOC4",
       "kind": "record",
-      "label": "生活紀錄"
+      "label": "生活紀錄",
+      "default_display_policy": "snippet"
     },
     {
       "id": "lyrics_draft",
       "primary_loc": "LOC4",
       "kind": "work",
-      "label": "歌詞原稿"
+      "label": "歌詞原稿",
+      "default_display_policy": "snippet"
     },
     {
       "id": "rune_text",
       "primary_loc": "LOC4",
       "kind": "work",
-      "label": "符文文本"
+      "label": "符文文本",
+      "default_display_policy": "snippet"
     },
     {
       "id": "worldbuilding",
@@ -128,13 +138,15 @@
       "id": "governance_fragment",
       "primary_loc": "LOC6",
       "kind": "analysis_record",
-      "label": "治理片段"
+      "label": "治理片段",
+      "default_display_policy": "full"
     },
     {
       "id": "governance_article",
       "primary_loc": "LOC6",
       "kind": "knowledge_work",
-      "label": "治理文章"
+      "label": "治理文章",
+      "default_display_policy": "snippet"
     },
     {
       "id": "dual_rune_relation",
@@ -164,13 +176,15 @@
       "id": "knowledge_document",
       "primary_loc": "LOC7",
       "kind": "knowledge",
-      "label": "知識文件"
+      "label": "知識文件",
+      "default_display_policy": "full"
     },
     {
       "id": "faq",
       "primary_loc": "LOC7",
       "kind": "knowledge_view",
-      "label": "FAQ"
+      "label": "FAQ",
+      "default_display_policy": "full"
     },
     {
       "id": "event",
@@ -195,6 +209,26 @@
     "content_type describes what a record is; primary_loc describes who owns its canonical definition.",
     "A media representation of a LOC3/LOC4 work receives its own LOC5 media_id and references the source work_id.",
     "Unified search may filter by content_type without exposing LOC numbers to the user.",
-    "README.md and other overview documents may be indexed as knowledge_document while preserving their derived/provenance status."
-  ]
+    "README.md and other overview documents may be indexed as knowledge_document while preserving their derived/provenance status.",
+    "display_policy governs public text exposure independently from whether full text may be indexed or analyzed internally."
+  ],
+  "display_policy": {
+    "allowed_values": [
+      "snippet",
+      "full",
+      "metadata_only"
+    ],
+    "default_when_unspecified": "snippet",
+    "precedence": [
+      "record.display_policy",
+      "content_type.default_display_policy",
+      "registry.display_policy.default_when_unspecified"
+    ],
+    "enforcement": "Apply only at public response/export boundary. Full text may remain available internally for authorized indexing, analysis, Graph and RAG.",
+    "notes": [
+      "snippet returns only a query-relevant preview and must not expose full text through payload fields.",
+      "full allows full public text only when rights/visibility governance also permits it.",
+      "metadata_only returns bibliographic/source metadata without body text."
+    ]
+  }
 }
