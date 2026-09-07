@@ -33,13 +33,7 @@
       const data = await response.json();
       const items = Array.isArray(data.items) ? data.items : [];
       const active = currentId(node, items);
-      const brand = data.brand || {};
-
       node.innerHTML = `
-        <a class="loc-global-brand" href="${esc(brand.href || "index.html")}">
-          <strong>${esc(brand.label || "LOC · 月典")}</strong>
-          <small>${esc(brand.subtitle || "Luna Codex")}</small>
-        </a>
         <div class="loc-global-links">
           ${items.map(item => `
             <a class="loc-global-link" href="${esc(item.href)}"${item.id === active ? ' aria-current="page"' : ""}>
@@ -47,10 +41,13 @@
               <small>${esc(item.description || "")}</small>
             </a>
           `).join("")}
+          <a class="loc-global-link loc-home-link" href="index.html">
+            <strong>回首頁</strong>
+          </a>
         </div>
       `;
     } catch (error) {
-      node.innerHTML = '<a class="loc-global-brand" href="index.html"><strong>LOC月典</strong><small>Luna Codex</small></a><div class="loc-global-links"><a class="loc-global-link" href="runes.html"><strong>月之符文</strong><small>66 符文圖鑑</small></a><a class="loc-global-link" href="context.html"><strong>脈絡</strong><small>LOC2 · Relation · Graph · 月之符文沙盒</small></a><a class="loc-global-link" href="search.html"><strong>綜合搜尋</strong><small>跨內容整合搜尋</small></a><a class="loc-global-link" href="evolution.html"><strong>推演</strong><small>LOC8 · 每日符文 · ERA · Event · Trend</small></a></div>';
+      node.innerHTML = '<div class="loc-global-links"><a class="loc-global-link" href="runes.html"><strong>月之符文</strong></a><a class="loc-global-link" href="context.html"><strong>脈絡</strong></a><a class="loc-global-link" href="search.html"><strong>綜合搜尋</strong></a><a class="loc-global-link" href="evolution.html"><strong>推演</strong></a><a class="loc-global-link loc-home-link" href="index.html"><strong>回首頁</strong></a></div>';
       console.warn(error);
     }
   }
