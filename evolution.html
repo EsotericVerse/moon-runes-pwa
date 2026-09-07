@@ -28,21 +28,21 @@ main{min-width:0}.view[hidden]{display:none!important}.hero{padding:28px 0 18px}
     <div class="nav-group"><div class="nav-label">01 · 總覽</div><button class="view-switch active" type="button" data-view="overview"><strong>推演總覽</strong><small>ERA · Current · 時間跨度</small></button></div>
     <div class="nav-group"><div class="nav-label">02 · 趨勢</div><button class="view-switch" type="button" data-view="trend"><strong>時期趨勢</strong><small>跨時期關鍵字脈絡</small></button></div>
   </nav>
-  <div class="sidebar-foot">此頁只讀 repository 靜態 JSON，不呼叫 Render。查詢／ERA 設定／排行榜在 Search；Graph／Event 在 Context；抽牌與每日符文在 Runes。</div>
+  <div class="sidebar-foot">從時間、時期與事件變化中，觀察語言與作品如何一路演變。</div>
 </aside>
 <main>
 <section class="view" id="overviewView">
-  <div class="hero"><h1>推演</h1><h2>把既有語言放回時間，觀察它如何改變。</h2><p>推演負責時間中的觀察與推演，不重新管理 Search、Graph、Event 或抽牌功能。</p></div>
+  <div class="hero"><h1>推演</h1><h2>把既有語言放回時間，觀察它如何改變。</h2><p>透過時期、事件與作品的前後變化，整理出不同階段的特徵與發展方向。</p></div>
   <div class="metrics">
     <div class="card metric"><small>時期總數</small><strong id="eraCount">—</strong></div>
     <div class="card metric"><small>目前時期</small><strong id="eraCurrent">—</strong></div>
     <div class="card metric"><small>目前起點</small><strong id="eraStart">—</strong></div>
   </div>
-  <div class="source-note">資料來源：LOC_ERA_REGISTRY.json（靜態）</div>
+  <div class="source-note">依既有時期紀錄整理。</div>
   <div class="timeline" id="eraTimeline"><div class="empty">載入 ERA…</div></div>
 </section>
 <section class="view" id="trendView" hidden>
-  <div class="hero"><h1>時期趨勢</h1><h2>比較不同 ERA 中語言與作品關鍵字的變化。</h2><p>這裡只讀已生成的 LOC3／LOC6 時期分析；需要重新查詢、設定 ERA 或即時計算排行榜時，再前往 Search。</p></div>
+  <div class="hero"><h1>時期趨勢</h1><h2>比較不同 ERA 中語言與作品關鍵字的變化。</h2><p>透過不同時期的關鍵字、主題與作品分布，觀察語言重心如何移動。</p></div>
   <div class="source-note">資料來源：LOC3_PERIOD_KEYWORD_ANALYSIS.json + LOC6_PERIOD_KEYWORD_ANALYSIS.json（靜態）</div>
   <div class="keyword-grid" id="trendGrid"><div class="empty">載入時期分析…</div></div>
 </section>
