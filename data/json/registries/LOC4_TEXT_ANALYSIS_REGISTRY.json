@@ -1,17 +1,22 @@
 {
-  "schema_version": "0.4",
+  "schema_version": "0.5",
   "registry": "LOC4_TEXT_ANALYSIS_REGISTRY",
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
-  "status": "Working",
-  "updated_at": "2026-09-06",
-  "purpose": "Structured semantic analysis for LOC4 writing works. Short works are analyzed first; 月語者 is intentionally deferred because its long-form rune narrative requires a separate chapter/rune architecture.",
+  "status": "CoreCreativeWorksAnalyzed",
+  "updated_at": "2026-09-07",
+  "purpose": "Structured semantic analysis for LOC4 creative works. The current author-provided plain-text core corpus is analyzed at work level; 月語者 additionally has seven-part long-form architecture and chapter-title/rune structure evidence. Facebook/Threads life writing remain a separate LOC4 domain and are not counted as creative-work analysis.",
   "scope_policy": {
-    "current": "short and medium LOC4 works",
-    "deferred": [
-      "LOC4-MOON-SPEAKER"
+    "current": "LOC4 創作作品（author-provided core plain-text corpus）",
+    "completed_work_level": [
+      "LOC4-MOON-SPEAKER",
+      "LOC4-ONE-DAY-LOVER",
+      "LOC4-WRONG-PERSON",
+      "LOC4-PSEUDO-SINGLE",
+      "LOC4-MMM-RELATIONSHIP",
+      "LOC4-BEFORE-AFTER-YOU"
     ],
-    "rule": "Do not infer missing chapters or unpublished text. Every analysis record must identify source scope and confidence."
+    "rule": "Creative-work analysis and life-writing analysis are separate. Do not use Facebook/Threads counts to represent creative-work completion. Work-level semantic analysis may coexist with deeper chapter-level analysis."
   },
   "analysis_dimensions": [
     "named_keywords",
@@ -284,6 +289,318 @@
       "semantic_families": [
         "光月意象"
       ]
+    },
+    {
+      "analysis_id": "LOC4-A-PSEUDO-SINGLE",
+      "work_id": "LOC4-PSEUDO-SINGLE",
+      "title": "假性單身",
+      "analysis_status": "full_text_work_analysis",
+      "source_scope": "4 chapters / author-provided plain text",
+      "narrative_mode": "first_person_life_relationship_fiction",
+      "named_keywords": [
+        "假性單身",
+        "小靜",
+        "強哥"
+      ],
+      "themes": [
+        "婚姻名義與實際關係落差",
+        "友情與曖昧",
+        "身份揭露",
+        "伴侶責任",
+        "家庭勞動",
+        "關係真相",
+        "理解與選擇"
+      ],
+      "relationship_model": [
+        "朋友關係承接長期生活理解",
+        "婚姻形式與情感／責任實況分離",
+        "圈內身份與異性婚姻資訊交錯",
+        "主角透過兩條人際線索辨識同一關係系統"
+      ],
+      "start_state": "以朋友重逢與『假性單身』自我描述打開婚姻現況。",
+      "turn_structure": [
+        "回溯青春期友情與身份揭露",
+        "重逢後得知婚姻疲乏與離婚準備",
+        "另一條圈內熟人關係逐步暴露資訊",
+        "家庭照片把兩條敘事線合併為同一真相"
+      ],
+      "final_state": "關係標籤被重新拆解，重點轉向實際責任、誠實與位置。",
+      "imagery": [
+        "咖啡館",
+        "照片",
+        "家庭合照",
+        "通訊軟體"
+      ],
+      "semantic_keywords": [
+        "婚姻",
+        "單身",
+        "身份",
+        "友情",
+        "曖昧",
+        "責任",
+        "家庭",
+        "離婚",
+        "真相",
+        "位置",
+        "理解",
+        "界線"
+      ],
+      "governance_signals": [
+        "名義不等於實際關係",
+        "關係位置需要與責任一致",
+        "資訊不完整時避免過早定義",
+        "身份與關係應分開辨識"
+      ],
+      "source_metrics": {
+        "cjk_characters": 1701,
+        "chapter_count": 4
+      },
+      "confidence": "high"
+    },
+    {
+      "analysis_id": "LOC4-A-MMM-RELATIONSHIP",
+      "work_id": "LOC4-MMM-RELATIONSHIP",
+      "title": "男男男關係",
+      "analysis_status": "full_text_work_analysis",
+      "source_scope": "20 chapters / author-provided plain text",
+      "narrative_mode": "multi_person_relationship_fiction",
+      "named_keywords": [
+        "阿承",
+        "小武",
+        "布丁"
+      ],
+      "themes": [
+        "多方關係",
+        "喜歡與愛",
+        "身份認同",
+        "第三者位置",
+        "共存",
+        "社會目光",
+        "界線",
+        "承擔",
+        "關係協商"
+      ],
+      "relationship_model": [
+        "三人關係由吸引、試探與資訊不對稱逐步形成",
+        "關係不是以單一二人伴侶模型處理，而是持續協商位置",
+        "親密、嫉妒、第三者與共存需要明確邊界",
+        "外部社會壓力與內部責任同時作用"
+      ],
+      "start_state": "從『喜歡』與酒吧相遇建立人物吸引與差異。",
+      "turn_structure": [
+        "日常互動建立親密與角色差異",
+        "真相揭露使二人關係轉成三方結構",
+        "身份與認同被迫明說",
+        "三方嘗試共存並承受代價",
+        "外界壓力與內部衝突測試界線",
+        "以條約／協議式語言重新建立可持續關係"
+      ],
+      "final_state": "結束不是消失，而是把關係從失控狀態改造成可被承擔的新開始。",
+      "imagery": [
+        "布丁",
+        "酒吧",
+        "超市",
+        "床",
+        "地圖",
+        "風暴"
+      ],
+      "semantic_keywords": [
+        "三人關係",
+        "喜歡",
+        "愛",
+        "共存",
+        "第三者",
+        "身份",
+        "認同",
+        "界線",
+        "責任",
+        "承擔",
+        "自由",
+        "社會目光"
+      ],
+      "governance_signals": [
+        "多方關係需要明確位置",
+        "自由不能免除責任",
+        "共存需建立可說明的界線",
+        "親密關係要處理資訊與權力不對稱"
+      ],
+      "source_metrics": {
+        "cjk_characters": 19337,
+        "chapter_count": 20
+      },
+      "confidence": "high"
+    },
+    {
+      "analysis_id": "LOC4-A-BEFORE-AFTER-YOU",
+      "work_id": "LOC4-BEFORE-AFTER-YOU",
+      "title": "在你之前，在你之後",
+      "analysis_status": "full_text_work_analysis",
+      "source_scope": "20 chapters / author-provided plain text",
+      "narrative_mode": "ensemble_non_linear_mirrored_relationship_fiction",
+      "named_keywords": [
+        "阿珠",
+        "德興",
+        "阿文",
+        "小維",
+        "阿鎧",
+        "小瑤",
+        "承諾",
+        "守護",
+        "幸福",
+        "永恆"
+      ],
+      "themes": [
+        "關係前後對照",
+        "選擇",
+        "承諾",
+        "守護",
+        "家庭",
+        "失去",
+        "幸福",
+        "時間",
+        "角色位置",
+        "成長"
+      ],
+      "relationship_model": [
+        "人物與主題透過 Before/After 章節成對比較",
+        "同一角色在重大關係事件前後呈現不同選擇與責任",
+        "部分角色刻意不對稱，保留不同位置的敘事視角",
+        "個人選擇與家庭／伴侶系統互相牽動"
+      ],
+      "start_state": "以多角色『在你之前』的生命狀態建立關係網。",
+      "turn_structure": [
+        "各人物線分別建立原始位置",
+        "交會節點讓人物關係開始相互影響",
+        "承諾與守護成為跨角色共同主題",
+        "After 章回看同一人物的選擇後果",
+        "幸福與永恆由抽象願望轉成可承擔的生活選擇"
+      ],
+      "final_state": "作品把『之前／之後』轉成選擇與責任的比較框架，而不是單純線性時間。",
+      "imagery": [
+        "市場",
+        "咖啡",
+        "夜",
+        "風",
+        "照片",
+        "電話"
+      ],
+      "semantic_keywords": [
+        "之前",
+        "之後",
+        "選擇",
+        "承諾",
+        "守護",
+        "幸福",
+        "永恆",
+        "家庭",
+        "愛",
+        "位置",
+        "失去",
+        "成長"
+      ],
+      "governance_signals": [
+        "選擇會改變關係位置",
+        "承諾必須能被實際承擔",
+        "守護不是控制",
+        "關係結果需回看其前因與代價"
+      ],
+      "source_metrics": {
+        "cjk_characters": 29432,
+        "chapter_count": 20
+      },
+      "confidence": "high"
+    },
+    {
+      "analysis_id": "LOC4-A-MOON-SPEAKER",
+      "work_id": "LOC4-MOON-SPEAKER",
+      "title": "月語者",
+      "analysis_status": "full_text_work_analysis_with_longform_architecture",
+      "source_scope": "7 parts / 182 chapter slots / author-provided plain text",
+      "narrative_mode": "long_form_rune_worldbuilding_quest_fiction",
+      "named_keywords": [
+        "月語者",
+        "小月",
+        "朔端",
+        "望敦",
+        "神國",
+        "彼岸",
+        "夢境",
+        "符文",
+        "命運",
+        "意志"
+      ],
+      "themes": [
+        "符文生成",
+        "世界觀",
+        "時間",
+        "命運",
+        "責任",
+        "共振",
+        "夢境",
+        "靈魂",
+        "彼岸",
+        "神國",
+        "因果",
+        "輪迴"
+      ],
+      "relationship_model": [
+        "角色關係與符文試煉同步推進",
+        "個人選擇持續被放進世界規則、歷史與責任脈絡",
+        "靈魂、記憶、命運與彼岸形成跨篇長期關聯",
+        "每篇以不同時間／世界狀態重組同一組核心問題"
+      ],
+      "start_state": "由月語者身分、織命與符文試煉啟動，從個人遭遇逐步進入跨時代世界觀。",
+      "turn_structure": [
+        "第一篇：現在／下弦——進入符文世界、自然試煉與自我定位",
+        "第二篇：過去／新月——追溯誓言、神教、裁決與歷史因果",
+        "第三篇：近未來／上弦——彼岸、記憶、靈魂與命運衝突",
+        "第四篇：超古代／滿月——神國、意志、因果與世界生成機制",
+        "第五篇：也許／幻蝕——夢境、退化、虛與意志的失衡",
+        "第六篇：註定／無日——責任、教導、命運與無日世界的重新定位",
+        "第七篇：無限／迴夢——夢境守護、輪迴、虛實與長期關係收束"
+      ],
+      "final_state": "七篇把符文從抽象語彙推展成角色、事件、世界規則與時間循環，形成 LOC1→LOC4 的長篇敘事實證。",
+      "imagery": [
+        "月",
+        "夢",
+        "花",
+        "光",
+        "霧",
+        "冰",
+        "彼岸",
+        "神國",
+        "符文",
+        "門",
+        "種子",
+        "靈魂"
+      ],
+      "semantic_keywords": [
+        "符文",
+        "命運",
+        "意志",
+        "夢境",
+        "靈魂",
+        "彼岸",
+        "神國",
+        "因果",
+        "責任",
+        "共振",
+        "輪迴",
+        "世界生成"
+      ],
+      "governance_signals": [
+        "力量需與責任成對",
+        "命運不是取消選擇",
+        "世界規則需要可追溯因果",
+        "不同時代的同一問題可用不同敘事重述"
+      ],
+      "source_metrics": {
+        "source_files": 7,
+        "cjk_characters_total": 200691,
+        "chapter_slots": 182
+      },
+      "longform_note": "已完成整體與七篇層級的全文語意／結構解析；章級三符文與章節標題資料另由 MoonSpeaker chapter/rune datasets 維持，不把缺失欄位推測補齊。",
+      "confidence": "high"
     }
   ],
   "semantic_family_registry": "data/json/registries/LOC_SEMANTIC_FAMILY_REGISTRY.json",
@@ -434,6 +751,104 @@
         }
       ],
       "cross_loc_note": "角色／作品主題曲屬 LOC3 音樂證據，透過角色或作品節點連到 LOC4 章節結構；不把歌曲當成 LOC4 章節內容。"
+    }
+  },
+  "longform_architecture": {
+    "LOC4-MOON-SPEAKER": {
+      "work_id": "LOC4-MOON-SPEAKER",
+      "title": "月語者",
+      "structure": "7 parts × 26 chapter slots",
+      "analysis_status": "seven_part_full_text_analyzed",
+      "parts": [
+        {
+          "part": 1,
+          "label": "現在．下弦之卷",
+          "focus": [
+            "進入符文世界",
+            "自然試煉",
+            "夢之花園",
+            "靈魂與月之身分"
+          ],
+          "cjk_characters": 29479
+        },
+        {
+          "part": 2,
+          "label": "過去．新月之卷",
+          "focus": [
+            "神教",
+            "誓言",
+            "裁決",
+            "歷史因果",
+            "朔端／望敦"
+          ],
+          "cjk_characters": 30098
+        },
+        {
+          "part": 3,
+          "label": "近未來．上弦之卷",
+          "focus": [
+            "彼岸",
+            "記憶",
+            "靈魂",
+            "命運",
+            "神國入口"
+          ],
+          "cjk_characters": 28456
+        },
+        {
+          "part": 4,
+          "label": "超古代．滿月之卷",
+          "focus": [
+            "神國",
+            "意志",
+            "因果",
+            "虛",
+            "世界生成"
+          ],
+          "cjk_characters": 30911
+        },
+        {
+          "part": 5,
+          "label": "也許．幻蝕之卷",
+          "focus": [
+            "夢蝕",
+            "退化",
+            "虛",
+            "夢境系統",
+            "意志"
+          ],
+          "cjk_characters": 26598
+        },
+        {
+          "part": 6,
+          "label": "註定．無日之卷",
+          "focus": [
+            "責任",
+            "命運",
+            "符文教導",
+            "無日",
+            "彼岸"
+          ],
+          "cjk_characters": 25488
+        },
+        {
+          "part": 7,
+          "label": "無限．迴夢之卷",
+          "focus": [
+            "夢境守護",
+            "虛實",
+            "輪迴",
+            "命運",
+            "收束"
+          ],
+          "cjk_characters": 29661
+        }
+      ],
+      "evidence": [
+        "author-provided allCh1–allCh7 plain-text files",
+        "MoonSpeaker_章節三卡_恢復資料.csv"
+      ],
+      "rule": "章級語意可繼續深化，但七篇全文本身不再標記為 deferred。"
     }
   }
 }
