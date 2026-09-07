@@ -77,10 +77,12 @@
         </div>
 
         <section class="filter-shell" id="advancedSearch">
+          <input id="contentType" type="hidden" value="">
+          <input id="sourceFilter" type="hidden" value="">
           <button class="filter-toggle" id="advancedToggle" type="button" aria-expanded="false" aria-controls="advancedPanel">
             <span class="filter-toggle-main">
-              <strong>篩選搜尋</strong>
-              <small>內容 · 來源 · 時間</small>
+              <strong>時間篩選</strong>
+              <small>日期 · ERA</small>
             </span>
             <span class="filter-count" id="filterCount" hidden>0</span>
             <span class="filter-chevron" aria-hidden="true">⌄</span>
@@ -91,69 +93,17 @@
           </div>
 
           <div class="filter-panel" id="advancedPanel" hidden>
-            <nav class="filter-tabs" aria-label="搜尋篩選分類">
-              <button type="button" class="filter-tab active" data-filter-target="filterType">內容</button>
-              <button type="button" class="filter-tab" data-filter-target="filterSource">來源</button>
-              <button type="button" class="filter-tab" data-filter-target="filterTime">時間</button>
-            </nav>
-
-            <div class="filter-section active" id="filterType">
-              <div class="filter-section-head">
-                <strong>內容</strong>
-                <span>選擇你想找的內容形式。</span>
-              </div>
-              <select id="contentType">
-                <option value="">全部內容</option>
-                <optgroup label="符文相關">
-                  <option value="rune_core">符文</option>
-                  <option value="rune_sandbox">符文沙盒</option>
-                  <option value="rune_music">符文音樂</option>
-                  <option value="rune_image">符文影像</option>
-                  <option value="rune_governance">符文治理</option>
-                  <option value="rune_divination">符文占卜</option>
-                </optgroup>
-                <optgroup label="一般內容">
-                  <option value="text_record">文字</option>
-                  <option value="lyrics_work">音樂／歌詞</option>
-                  <option value="knowledge_image">圖片</option>
-                  <option value="multimedia">影音</option>
-                  <option value="scenario_event">情境／事件</option>
-                  <option value="knowledge">文件／知識</option>
-                </optgroup>
-              </select>
-              <div class="browse-inline">
-                <button class="browse-btn" id="browse" type="button">依這個內容瀏覽</button>
-                <small>不輸入關鍵字也可以；先選內容，再直接瀏覽。</small>
-              </div>
-            </div>
-
-            <div class="filter-section" id="filterSource" hidden>
-              <div class="filter-section-head">
-                <strong>來源</strong>
-                <span>選擇資料實際來自哪個平台或資料庫。</span>
-              </div>
-              <select id="sourceFilter">
-                <option value="">全部來源</option>
-                <option value="facebook">Facebook</option>
-                <option value="threads">Threads</option>
-                <option value="suno">Suno</option>
-                <option value="instagram">Instagram</option>
-                <option value="x">X (Twitter)</option>
-                <option value="loc">LOC 站內資料</option>
-              </select>
-            </div>
-
-            <div class="filter-section" id="filterTime" hidden>
+            <div class="filter-section active" id="filterTime">
               <div class="filter-section-head">
                 <strong>時間</strong>
-                <span>依日期區間或既有時期篩選。</span>
+                <span>只限制搜尋時間；內容類型與來源直接寫在搜尋句子裡。</span>
               </div>
               <div class="time-grid">
                 <div class="field"><label for="startDate">開始日期</label><input id="startDate" type="date"></div>
                 <div class="field"><label for="endDate">結束日期</label><input id="endDate" type="date"></div>
               </div>
               <div class="field era-field">
-                <label for="period">時期</label>
+                <label for="period">ERA</label>
                 <select id="period">
                   <option value="">全部時期</option>
                   <option value="P0">P0</option>
@@ -175,7 +125,7 @@
         <section class="source-search" id="sourceSearch" aria-label="來源搜尋">
           <div class="source-search-head">
             <strong>到原始來源繼續搜尋</strong>
-            <small>使用目前搜尋詞開啟來源站內搜尋；找到值得保留的內容後，可再交給 Capture 收錄。</small>
+            <small>來源可直接寫進搜尋句子；這裡只提供跳到原始平台繼續查找。</small>
           </div>
           <div class="source-search-links" id="sourceSearchLinks"></div>
         </section>
@@ -1004,7 +954,7 @@
         return;
       }
       const safePage=Math.max(1,Number(page)||1);
-      el('browse').disabled=true;
+      if(el('browse')) el('browse').disabled=true;
       el('status').className='status';
       el('status').textContent=`正在載入第 ${safePage} 頁……`;
       try{
@@ -1025,11 +975,11 @@
         const from=browseState.total?((safePage-1)*PAGE_SIZE+1):0;
         const to=Math.min(browseState.total,safePage*PAGE_SIZE);
         el('status').textContent=`第 ${from}–${to} 筆，共 ${browseState.total} 筆。`;
-        el('browse').textContent='重新瀏覽第 1 頁';
+        if(el('browse')) el('browse').textContent='重新瀏覽第 1 頁';
       }catch(err){
         el('status').className='status error';
         el('status').textContent=`暫時無法瀏覽：${err.message}`;
-      }finally{el('browse').disabled=false;}
+      }finally{if(el('browse')) el('browse').disabled=false;}
     }
 
 
@@ -1046,13 +996,12 @@
       searchState={groups:{},synthesis:null,graph:null,page:1,total:0};
       browseState={active:false,type:'',key:'',page:1,total:0,items:[]};
       if(el('pagination'))el('pagination').hidden=true;
-      el('browse').textContent='依資料種類瀏覽';
       const panel=el('advancedPanel');
       const toggle=el('advancedToggle');
       if(panel) panel.hidden=true;
       if(toggle) toggle.setAttribute('aria-expanded','false');
-      document.querySelectorAll('.filter-tab').forEach((btn,i)=>btn.classList.toggle('active',i===0));
-      document.querySelectorAll('.filter-section').forEach((sec,i)=>{sec.hidden=i!==0;sec.classList.toggle('active',i===0);});
+      el('contentType').value='';
+      el('sourceFilter').value='';
       updateFilterSummary();
       quick();
       applyEras(ERA_FALLBACK);
@@ -1060,6 +1009,26 @@
       renderSourceSearchLinks();
       history.replaceState(null,'',location.pathname);
     }
+    function inferNaturalSearchHints(query){
+      const q=String(query||'').trim();
+      let source='';
+      if(/\bIG\b|Instagram|インスタ|限時動態|貼文/i.test(q)) source='instagram';
+      else if(/Threads/i.test(q)) source='threads';
+      else if(/Facebook|\bFB\b/i.test(q)) source='facebook';
+      else if(/X\s*\(Twitter\)|Twitter|\bX\b/i.test(q)) source='x';
+      else if(/Suno/i.test(q)) source='suno';
+
+      // Only apply a content hint when the wording is explicit.
+      // Otherwise keep all categories visible.
+      let contentType='';
+      if(/文字|文章|貼文|小說|散文|日記|生活文字/i.test(q)) contentType='text_record';
+      else if(/歌曲|歌詞|音樂|Suno/i.test(q)) contentType='lyrics_work';
+      else if(/圖片|影像|照片|影音|影片|Instagram|\bIG\b/i.test(q)) contentType='multimedia';
+      else if(/文件|知識庫|FAQ|規格/i.test(q)) contentType='knowledge';
+
+      return {source,contentType};
+    }
+
     function selectedText(id){
       const node=el(id);
       if(!node || !node.value) return '';
@@ -1068,12 +1037,12 @@
     }
     function updateFilterSummary(){
       const chips=[];
-      const type=selectedText('contentType');
       const period=selectedText('period');
-      const source=selectedText('sourceFilter');
-      if(el('contentType')?.value) chips.push(type);
-      if(el('sourceFilter')?.value) chips.push('來源：'+source);
-      if(el('period')?.value) chips.push(period);
+      const start=el('startDate')?.value||'';
+      const end=el('endDate')?.value||'';
+      if(period) chips.push(period);
+      if(start) chips.push('從 '+start);
+      if(end) chips.push('到 '+end);
       el('activeFilters').innerHTML=chips.length
         ? chips.map(x=>`<span class="filter-chip">${esc(x)}</span>`).join('')
         : '<span class="filter-chip muted">目前搜尋：全部資料</span>';
@@ -1088,28 +1057,21 @@
       panel.hidden=!willOpen;
       el('advancedToggle').setAttribute('aria-expanded',String(willOpen));
     };
-    document.querySelectorAll('.filter-tab').forEach(btn=>btn.onclick=()=>{
-      const target=btn.dataset.filterTarget;
-      document.querySelectorAll('.filter-tab').forEach(x=>x.classList.toggle('active',x===btn));
-      document.querySelectorAll('.filter-section').forEach(sec=>{
-        const active=sec.id===target;
-        sec.hidden=!active;
-        sec.classList.toggle('active',active);
-      });
     });
-    ['contentType','sourceFilter','period'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
+    ['period','startDate','endDate'].forEach(id=>el(id)?.addEventListener('change',updateFilterSummary));
     updateFilterSummary();
     el('clearSearch').onclick=clearAllSearch;
     el('query').addEventListener('input',renderSourceSearchLinks);
     renderSourceSearchLinks();
-    el('browse').onclick=()=>browse(1);
-    el('contentType').addEventListener('change',()=>{browseState={active:false,type:'',key:'',page:1,total:0,items:[]};if(el('pagination'))el('pagination').hidden=true;el('browse').textContent='瀏覽目前類型';});
     el('searchForm').onsubmit=async e=>{
       e.preventDefault();
       const q=el('query').value.trim(); if(!q)return;
-      const type=el('contentType').value;
+      const hints=inferNaturalSearchHints(q);
+      el('contentType').value=hints.contentType||'';
+      el('sourceFilter').value=hints.source||'';
+      const type=hints.contentType||'';
       const apiType=apiContentType(type);
-      const source=el('sourceFilter').value;
+      const source=hints.source||'';
       el('submit').disabled=true;
       el('status').className='status';
       el('groups').innerHTML='';
