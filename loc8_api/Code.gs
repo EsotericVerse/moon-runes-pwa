@@ -449,7 +449,7 @@ function normalizeDailyDraw_(raw) {
     note: raw.note || raw.description || '',
     interpretation: raw.interpretation || '',
     tags: Array.isArray(raw.tags) ? raw.tags.join(', ') : (raw.tags || ''),
-    source: raw.source || 'life.html#daily-draw',
+    source: raw.source || 'evolution.html#daily-draw',
     confidence: raw.confidence || 'recorded',
     created_at: raw.created_at || createdAt,
     system_id: raw.system_id || 'lo3rwang',
