@@ -25,6 +25,7 @@
 ### GET
 
 - `GET ?action=health`：健康檢查；現行應回傳 `schema: loc8-mvp-1.1`。
+- `GET ?action=diagnostics`：只讀診斷；檢查 User / Event / Era / Runes / History / Relation 分頁是否存在，以及必要 header 是否齊全，不讀出資料列。`ready: true` 代表所有 required Sheet 契約完整。
 - `GET ?action=events&user_id=lo3rwang`：取得指定使用者事件；會排除已分流至 Runes 的每日抽牌紀錄。
 - `GET ?action=users`：取得使用者。
 - `GET ?action=eras`：取得 Era 分頁資料；Era 分頁不存在時回傳空陣列。
@@ -55,6 +56,17 @@
 各資料列依對應 Sheet 第一列 header 做欄位映射。第一列可保留空白欄位位置，但正式資料欄應使用明確且不重複的 header 名稱。
 
 > **部署版本治理：** GitHub 的 `loc8_api/Code.gs` 是程式碼來源，但 Apps Script Web App 不會因 GitHub commit 自動更新。每次 `Code.gs` 變更後，都必須同步至 Apps Script 並更新 deployment；只有線上 `?action=health` 回傳 `loc8-mvp-1.1`，才能確認目前部署至少符合 v1.1 health contract。
+
+
+### 部署後驗證
+
+更新 Apps Script deployment 後，建議依序開啟：
+
+1. `?action=health`：確認 `ok: true` 且 `schema: loc8-mvp-1.1`。
+2. `?action=diagnostics`：確認 `ready: true`；若為 `false`，查看各 Sheet 的 `missing_headers`。
+3. 再回 `life.html` 測試 Event / Era / Daily Draw / Relation 的實際讀寫。
+
+`diagnostics` 不會新增、修改或刪除 Sheet 資料。
 
 ## v0.3 編輯流程
 
