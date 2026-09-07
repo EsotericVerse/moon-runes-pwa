@@ -10,8 +10,8 @@
     "studio": "秘藝文域（EsotericVerse Studio）",
     "description": "由 LOC FAQ v0.4 同步產生；已對齊 2026-09-07 最新 LunaRune64.xlsx Grammar。本檔為 retrieval derivative，不是 Canon。",
     "source_dataset": "LOC_FAQ_v0.4.json",
-    "parent_entry_count": 89,
-    "chunk_count": 89,
+    "parent_entry_count": 90,
+    "chunk_count": 90,
     "chunk_policy": "每個 FAQ 條目先對應一個完整 Semantic Chunk；後續可由 LOC7_KM 再拆 Knowledge Object 或多意圖子 chunk。",
     "system_id": "lo3rwang",
     "primary_loc": "LOC7",
@@ -2477,20 +2477,20 @@
       "aliases": [
         "LOC3到8怎麼分類？",
         "方法論和演算法有什麼差別？",
-        "文學演化在 LOC 哪裡？"
+        "推演在 LOC 哪裡？"
       ],
-      "answer": "LOC 對外 Tag 採一致抽象層級：LOC3／4／5 屬表達；LOC6 是方法論；LOC7 是演算法（知識庫）；LOC8 是文學演化（時間／趨勢分析）。月符另有符文籤詩、符文體系、符文演算、符文演化四個特化分類。技術層仍可保留 Governance、KM、Graph、Trend 等名稱。",
+      "answer": "LOC 對外 Tag 採一致抽象層級：LOC3／4／5 屬表達；LOC6 是方法論；LOC7 是演算法（知識庫）；LOC8 是推演（時間／趨勢分析）。月符另有符文籤詩、符文體系、符文演算、符文演化四個特化分類。技術層仍可保留 Governance、KM、Graph、Trend 等名稱。",
       "keywords": [
         "表達",
         "方法論",
         "演算法",
-        "文學演化",
+        "推演",
         "符文籤詩",
         "符文體系",
         "符文演算",
         "符文演化"
       ],
-      "retrieval_text": "LOC 的公開 Tag 怎麼分？ LOC3到8怎麼分類？ 方法論和演算法有什麼差別？ 文學演化在 LOC 哪裡？ 表達 方法論 演算法 文學演化 符文籤詩 符文體系 符文演算 符文演化 LOC 對外 Tag 採一致抽象層級：LOC3／4／5 屬表達；LOC6 是方法論；LOC7 是演算法（知識庫）；LOC8 是文學演化（時間／趨勢分析）。月符另有符文籤詩、符文體系、符文演算、符文演化四個特化分類。技術層仍可保留 Governance、KM、Graph、Trend 等名稱。",
+      "retrieval_text": "LOC 的公開 Tag 怎麼分？ LOC3到8怎麼分類？ 方法論和演算法有什麼差別？ 推演在 LOC 哪裡？ 表達 方法論 演算法 推演 符文籤詩 符文體系 符文演算 符文演化 LOC 對外 Tag 採一致抽象層級：LOC3／4／5 屬表達；LOC6 是方法論；LOC7 是演算法（知識庫）；LOC8 是推演（時間／趨勢分析）。月符另有符文籤詩、符文體系、符文演算、符文演化四個特化分類。技術層仍可保留 Governance、KM、Graph、Trend 等名稱。",
       "related_ids": [],
       "source_refs": [
         "docs/LOC7_KM.md",
@@ -2540,18 +2540,18 @@
       "aliases": [
         "LOC最新八個分類是什麼？",
         "LOC2為什麼是脈絡？",
-        "LOC8為什麼叫文學演化？"
+        "LOC8為什麼叫推演？"
       ],
-      "answer": "現行分類是：LOC1 月符／語彙（token）、LOC2 脈絡、LOC3 音樂、LOC4 文字創作、LOC5 多媒體、LOC6 方法論、LOC7 演算法（知識庫）、LOC8 文學演化。這是一套拆解、組織並重新表達文學語言的系統框架。",
+      "answer": "現行分類是：LOC1 月符／語彙（token）、LOC2 脈絡、LOC3 音樂、LOC4 文字創作、LOC5 多媒體、LOC6 方法論、LOC7 演算法（知識庫）、LOC8 推演。這是一套拆解、組織並重新表達文學語言的系統框架。",
       "keywords": [
         "LOC1",
         "LOC2",
         "脈絡",
         "方法論",
         "演算法",
-        "文學演化"
+        "推演"
       ],
-      "retrieval_text": "LOC1–8 現在怎麼分類？ LOC最新八個分類是什麼？ LOC2為什麼是脈絡？ LOC8為什麼叫文學演化？ LOC1 LOC2 脈絡 方法論 演算法 文學演化 現行分類是：LOC1 月符／語彙（token）、LOC2 脈絡、LOC3 音樂、LOC4 文字創作、LOC5 多媒體、LOC6 方法論、LOC7 演算法（知識庫）、LOC8 文學演化。這是一套拆解、組織並重新表達文學語言的系統框架。",
+      "retrieval_text": "LOC1–8 現在怎麼分類？ LOC最新八個分類是什麼？ LOC2為什麼是脈絡？ LOC8為什麼叫推演？ LOC1 LOC2 脈絡 方法論 演算法 推演 現行分類是：LOC1 月符／語彙（token）、LOC2 脈絡、LOC3 音樂、LOC4 文字創作、LOC5 多媒體、LOC6 方法論、LOC7 演算法（知識庫）、LOC8 推演。這是一套拆解、組織並重新表達文學語言的系統框架。",
       "related_ids": [],
       "source_refs": [
         "docs/LOC_OVERVIEW.md",
@@ -2570,7 +2570,7 @@
         "Graph屬於LOC2還是LOC8？",
         "Graph View為什麼還在LOC8頁面？"
       ],
-      "answer": "Graph 的關係／脈絡語意責任歸 LOC2，因為 Graph 本質是節點與 edge 所形成的脈絡。LOC7 負責 Graph RAG traversal／retrieval 演算法；LOC8 則把 Graph 投影到時間、ERA、Trajectory、Trend 做文學演化觀察。頁面位置可以維持 life.html，不等於資料 ownership 在 LOC8。",
+      "answer": "Graph 的關係／脈絡語意責任歸 LOC2，因為 Graph 本質是節點與 edge 所形成的脈絡。LOC7 負責 Graph RAG traversal／retrieval 演算法；LOC8 則把 Graph 投影到時間、ERA、Trajectory、Trend 做推演觀察。頁面位置可以維持 life.html，不等於資料 ownership 在 LOC8。",
       "keywords": [
         "Graph",
         "LOC2",
@@ -2578,12 +2578,40 @@
         "LOC7",
         "Graph RAG",
         "LOC8",
-        "文學演化"
+        "推演"
       ],
-      "retrieval_text": "Graph 為什麼歸 LOC2，但還顯示在 life.html？ Graph屬於LOC2還是LOC8？ Graph View為什麼還在LOC8頁面？ Graph LOC2 脈絡 LOC7 Graph RAG LOC8 文學演化 Graph 的關係／脈絡語意責任歸 LOC2，因為 Graph 本質是節點與 edge 所形成的脈絡。LOC7 負責 Graph RAG traversal／retrieval 演算法；LOC8 則把 Graph 投影到時間、ERA、Trajectory、Trend 做文學演化觀察。頁面位置可以維持 life.html，不等於資料 ownership 在 LOC8。",
+      "retrieval_text": "Graph 為什麼歸 LOC2，但還顯示在 life.html？ Graph屬於LOC2還是LOC8？ Graph View為什麼還在LOC8頁面？ Graph LOC2 脈絡 LOC7 Graph RAG LOC8 推演 Graph 的關係／脈絡語意責任歸 LOC2，因為 Graph 本質是節點與 edge 所形成的脈絡。LOC7 負責 Graph RAG traversal／retrieval 演算法；LOC8 則把 Graph 投影到時間、ERA、Trajectory、Trend 做推演觀察。頁面位置可以維持 life.html，不等於資料 ownership 在 LOC8。",
       "related_ids": [],
       "source_refs": [
         "data/json/registries/LOC_GRAPH_SCHEMA.json",
+        "docs/LOC7_KM.md"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-090-A",
+      "parent_id": "FAQ-090",
+      "category": "LOC8 推演",
+      "intent": "為什麼 LOC8 叫推演，但月符仍叫符文演化",
+      "question": "為什麼 LOC8 叫推演，但月符仍叫符文演化？",
+      "aliases": [
+        "推演和符文演化有什麼差別？",
+        "LOC8為什麼不是文學演化？"
+      ],
+      "answer": "LOC8 的「推演」描述一個操作：根據既有時間、ERA、Event、Trajectory、Trend 與脈絡證據，觀察變化並推導後續方向；它不宣稱涵蓋整體文學史或文化史。月符的「符文演化」則描述符文本身跨時間、作品、關係與使用方式所發生的變化，所以仍保留「演化」。",
+      "keywords": [
+        "LOC8",
+        "推演",
+        "符文演化",
+        "ERA",
+        "Trajectory",
+        "Trend"
+      ],
+      "retrieval_text": "為什麼 LOC8 叫推演，但月符仍叫符文演化？ 推演和符文演化有什麼差別？ LOC8為什麼不是文學演化？ LOC8 推演 符文演化 ERA Trajectory Trend LOC8 的「推演」描述一個操作：根據既有時間、ERA、Event、Trajectory、Trend 與脈絡證據，觀察變化並推導後續方向；它不宣稱涵蓋整體文學史或文化史。月符的「符文演化」則描述符文本身跨時間、作品、關係與使用方式所發生的變化，所以仍保留「演化」。",
+      "related_ids": [],
+      "source_refs": [
+        "docs/LOC8_KM.md",
         "docs/LOC7_KM.md"
       ],
       "canon_version": "0.5r",
