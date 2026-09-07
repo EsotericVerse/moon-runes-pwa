@@ -53,7 +53,6 @@ SKIP_PREFIXES = (
     "data/json/archive/",
 )
 SKIP_FILES = {
-    "docs/REPOSITORY_GOVERNANCE.md",
     "card_api/scripts/validate_repo_layout.py",
     "engine/README.md",
 }
