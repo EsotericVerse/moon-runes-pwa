@@ -7,6 +7,8 @@ import unicodedata
 from pathlib import Path
 from typing import Any
 
+from loc4_chapter_analysis import build_moon_speaker_chapter_analysis
+
 
 def _normalize(value: Any) -> str:
     return unicodedata.normalize("NFKC", str(value or "")).lower().strip()
@@ -73,6 +75,10 @@ class UnifiedSearchEngine:
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.loc4_corpus_manifest = self._load_repo_json("data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json")
         self.loc4_corpus = self._load_loc4_corpus_shards()
+        try:
+            self.loc4_moon_speaker_analysis = build_moon_speaker_chapter_analysis(repo_root)
+        except Exception:
+            self.loc4_moon_speaker_analysis = {"chapters": [], "chapter_count": 0}
         self.loc6 = self._load_json("LOC6_GOVERNANCE_REGISTRY.json")
         self.loc6_threads = self._load_json("LOC6_THREADS_KM_INDEX.json")
         self.loc6_period_keywords = self._load_json("LOC6_PERIOD_KEYWORD_ANALYSIS.json")
@@ -753,6 +759,19 @@ class UnifiedSearchEngine:
             if score >= 0.34:
                 scored.append((score, "work", work))
 
+        # Chapter-level MoonSpeaker semantic/structure analysis.
+        for chapter in (getattr(self, "loc4_moon_speaker_analysis", {}) or {}).get("chapters", []):
+            score = _text_score(query, [
+                chapter.get("title"),
+                chapter.get("semantic_summary"),
+                " ".join(str(x.get("label") or "") for x in chapter.get("themes", [])),
+                " ".join(str(x.get("name") or "") for x in chapter.get("key_entities", [])),
+                " ".join(chapter.get("title_signals", [])),
+                chapter.get("part_name"),
+            ])
+            if score >= 0.34:
+                scored.append((score * 0.992, "chapter", chapter))
+
         # Document-level authored full-text corpus.
         for doc in (getattr(self, "loc4_corpus", {}) or {}).get("documents", []):
             score = _text_score(query, [
@@ -787,6 +806,28 @@ class UnifiedSearchEngine:
                     "period": item.get("period"),
                     "source_refs": item.get("source_refs", []),
                     "payload": item,
+                })
+            elif kind == "chapter":
+                themes = item.get("themes", [])
+                results.append({
+                    "result_id": item.get("chapter_id"),
+                    "system_id": "lo3rwang",
+                    "primary_loc": "LOC4",
+                    "related_locs": ["LOC1", "LOC6", "LOC7", "LOC8"],
+                    "content_type": "text_work",
+                    "group": "textworks",
+                    "title": f"月語者｜{item.get('part_name')}｜{item.get('chapter_label')}｜{item.get('title')}",
+                    "summary": item.get("semantic_summary") or "",
+                    "score": round(score, 6),
+                    "source_refs": [{
+                        "source_type": "loc4_chapter_analysis",
+                        "source_id": item.get("chapter_id"),
+                        "note": "full-chapter deterministic semantic evidence"
+                    }],
+                    "payload": {
+                        **item,
+                        "matched_theme_labels": [row.get("label") for row in themes],
+                    },
                 })
             else:
                 text = str(item.get("text") or "")
@@ -2874,7 +2915,7 @@ class UnifiedSearchEngine:
                 "LOC1": "live",
                 "LOC2": "knowledge-view-only",
                 "LOC3": "live",
-                "LOC4": f"authored-work-fulltext+social-life-writing-live; {len((getattr(self, 'loc4_corpus', {}) or {}).get('documents', []))} authored corpus segments",
+                "LOC4": f"creative-works+life-writing-live; {len((getattr(self, 'loc4_corpus', {}) or {}).get('documents', []))} authored corpus segments; {len((getattr(self, 'loc4_moon_speaker_analysis', {}) or {}).get('chapters', []))} MoonSpeaker chapter analyses",
                 "LOC5": "direct-media-registry-search-live",
                 "LOC6": "governance+threads-km-search-live",
                 "LOC6_threads_indexed": len(self._loc6_article_documents()),
