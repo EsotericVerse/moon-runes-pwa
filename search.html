@@ -250,7 +250,7 @@
         {q:'自我治理',title:'自我治理',desc:'LOC7 · 跨文件知識'}
       ]
     };
-    const labels={entities:'核心詞條',scenarios:'LOC2 情境事件',oracle:'籤詩結果',readings:'OW3gs 解牌／抽牌紀錄',runes:'月符',rune_songs:'符文歌曲',works:'Suno 歌曲／歌詞',textworks:'文字',relationships:'跨 LOC 關聯',governance:'文字',loc6_articles:'文字',text:'文字',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
+    const labels={entities:'核心詞條',scenarios:'LOC2 情境事件',oracle:'籤詩結果',readings:'OW3gs 解牌／抽牌紀錄',runes:'月符',rune_songs:'符文歌曲',works:'Suno 歌曲／歌詞',textworks:'文字',relationships:'跨 LOC 關聯',governance:'文字',loc4_articles:'文字',text:'文字',media:'多媒體作品',knowledge:'文件／知識庫',timeline:'時期／時間'};
     const LOCAL_SEARCH_CACHE=new Map();
     async function localJson(path){
       if(LOCAL_SEARCH_CACHE.has(path))return LOCAL_SEARCH_CACHE.get(path);
@@ -485,11 +485,11 @@
     function renderCorpusStatus(corpus){
       if(!corpus){return;}
       const loc3=Number(corpus.loc3_searchable_works||0);
-      const indexed=Number(corpus.loc6_threads_indexed_posts||0);
-      const total=Number(corpus.loc6_threads_total_main_posts||4578);
-      const replies=Number(corpus.loc6_threads_total_replies||2430);
-      const full=!!corpus.loc6_threads_full_index_ready;
-      el('corpusStatus').textContent=`Corpus：LOC3 ${loc3} 首可搜尋作品 · LOC6 Threads ${indexed} / ${total} 篇主貼文已索引 · ${replies} 筆 Reply 補充證據${full?' · 全文索引已就緒':' · 全文索引持續擴充中'}`;
+      const indexed=Number(corpus.loc4_threads_indexed_posts||0);
+      const total=Number(corpus.loc4_threads_total_main_posts||4578);
+      const replies=Number(corpus.loc4_threads_total_replies||2430);
+      const full=!!corpus.loc4_threads_full_index_ready;
+      el('corpusStatus').textContent=`Corpus：LOC3 ${loc3} 首可搜尋作品 · LOC4 Threads ${indexed} / ${total} 篇主貼文已索引 · ${replies} 筆 Reply 補充證據${full?' · 全文索引已就緒':' · 全文索引持續擴充中'}`;
     }
     function applyEras(eras){
       const select=el('period'),current=select.value;
@@ -596,7 +596,7 @@
       return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels.LOC3)}</span><span class="pill">作品類別：${esc(p.origin_label||'一般歌曲')}</span><span class="pill">歌詞類型：${esc(p.lyric_type||p.category||'待分類')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.era_name?`<span class="pill">${esc(p.era_name)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${keys.length?`<p class="summary"><strong>關鍵字／命題：</strong>${keys.map(esc).join(' · ')}</p>`:''}${p.start_state||p.turn_method||p.final_state?`<p class="summary"><strong>語意路徑：</strong>${esc(p.start_state||'—')} → ${esc(p.turn_method||'—')} → ${esc(p.final_state||'—')}</p>`:''}${linksFor(r)}${lyrics}${melody}${alternates}</article>`;
     }
     function card(r){const score=Number(r.score||0),p=r.payload||{};const fullText=p.text||p.content||p.body||p.full_text||'';const img=r.content_type==='knowledge_image'&&p.path?`<img class="knowledge-image" src="${esc(p.path)}" alt="${esc(r.title||'LOC 知識圖')}" loading="lazy" />`:'';return `<article class="card"><div class="meta"><span class="pill">${esc(locLabels[r.primary_loc]||r.primary_loc||'LOC')}</span><span class="pill">${esc(r.content_type||'record')}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${img}${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${fullText?`<details><summary>展開全文</summary><p class="summary">${esc(fullText)}</p></details>`:''}${linksFor(r)}</article>`}
-    function loc6ArticleCard(r){
+    function textArticleCard(r){
       const p=r.payload||{};
       const source=(p.source_role==='main_post'||p.evidence_role==='primary')?'Threads 主貼文':'LOC6 維護文章';
       const terms=(p.matched_terms||p.keywords||[]).slice(0,8);
@@ -604,7 +604,7 @@
       const preview=text.length>220?text.slice(0,220)+'…':text;
       const canExpand=text.length>220;
       const chars=Number(p.char_count||text.length||0);
-      return `<article class="card"><div class="meta"><span class="pill">LOC6 · Article</span><span class="pill">${esc(source)}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}${chars?`<span class="pill">${chars} 字</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3><p class="summary">${esc(preview)}</p>${canExpand?`<details><summary>展開原文</summary><p class="summary">${esc(text)}</p></details>`:''}${terms.length?`<p class="summary"><strong>關鍵字／命中：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
+      return `<article class="card"><div class="meta"><span class="pill">${esc(r.primary_loc||"LOC6")} · ${r.primary_loc==="LOC4"?"Threads":"Article"}</span><span class="pill">${esc(source)}</span>${r.period?`<span class="pill">${esc(r.period)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}${chars?`<span class="pill">${chars} 字</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3><p class="summary">${esc(preview)}</p>${canExpand?`<details><summary>展開原文</summary><p class="summary">${esc(text)}</p></details>`:''}${terms.length?`<p class="summary"><strong>關鍵字／命中：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
     }
     function relationshipCard(r){
       const p=r.payload||{},src=p.source||{},targets=p.targets||[],kw=p.keywords||[],loc6=p.loc6_interpretation||{};
@@ -715,7 +715,7 @@
       textworks:{loc:'LOC4',label:'文字作品',desc:'文章、小說與文字延伸'},
       media:{loc:'LOC5',label:'多媒體／圖片',desc:'Reels、影音與知識圖'},
       governance:{loc:'LOC6',label:'治理／政德風',desc:'治理片段、價值與語言判斷'},
-      loc6_articles:{loc:'LOC6',label:'治理文章',desc:'長文與風格演變證據'},
+      loc4_articles:{loc:'LOC4/6',label:'文字／治理文章',desc:'LOC4 原始文字與 LOC6 治理解讀分開呈現'},
       knowledge:{loc:'LOC7',label:'知識庫／文件',desc:'KM、規格、文件與架構知識'},
       timeline:{loc:'LOC8',label:'ERA／趨勢',desc:'時間、關係與演變維度'},
       relationships:{loc:'跨 LOC',label:'關係',desc:'已建立的跨資料與跨媒介關係'},
@@ -745,7 +745,7 @@
     }
 
     const PAGE_SIZE=20;
-    const RESULT_ORDER=['scenarios','readings','runes','rune_songs','works','textworks','relationships','governance','loc6_articles','text','media','knowledge','timeline'];
+    const RESULT_ORDER=['scenarios','readings','runes','rune_songs','works','textworks','relationships','governance','loc4_articles','text','media','knowledge','timeline'];
     let searchState={groups:{},synthesis:null,graph:null,page:1,total:0};
     let browseState={active:false,type:'',key:'',page:1,total:0,items:[]};
 
@@ -755,7 +755,7 @@
         (key==='rune_songs'?runeSongCard:
         (key==='relationships'?relationshipCard:
         (key==='works'?musicCard:
-        (key==='loc6_articles'?loc6ArticleCard:card)))));
+        (key==='loc4_articles'?textArticleCard:card)))));
     }
 
     function flattenGroups(groups,entityMode=false){
@@ -868,7 +868,7 @@
         const r=await fetch(`${API}/search/browse`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const d=await r.json();
         if(!r.ok)throw new Error(d.detail||'瀏覽失敗');
-        const key=type==='lyrics_work'?'works':(type==='text_work'?'textworks':(type==='governance_article'?'loc6_articles':'governance'));
+        const key=type==='lyrics_work'?'works':(type==='text_work'?'textworks':(type==='governance_article'?'loc4_articles':'governance'));
         browseState={active:true,type,key,page:safePage,total:Number(d.total_count||0),items:d.items||[]};
         const renderer=rendererForGroup(key);
         el('groups').innerHTML=browseState.items.length

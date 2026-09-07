@@ -90,9 +90,9 @@
     },
     {
       "id": "loc4_threads_source_index",
-      "path": "data/json/generated/loc6/LOC6_THREADS_ARTICLE_INDEX_v0.2.json",
+      "path": "data/json/registries/LOC4_THREADS_KM_INDEX.json",
       "authority": "LOC4",
-      "purpose": "Legacy-path Threads representative source-text index. Raw authored posts are LOC4 life writing; LOC6 consumes them as governance/style evidence."
+      "purpose": "Canonical LOC4 Threads representative source-text index. Raw authored posts are LOC4 life writing; LOC6 consumes them as governance/style evidence."
     },
     {
       "id": "loc6_dual_rune_relations",

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Build the full LOC6 Threads main-post corpus index.
+"""Build the full LOC4 Threads main-post corpus index.
 
 Usage:
-    python tools/loc6_threads_full_index.py threads_and_replies.json \
-      --out data/json/generated/loc6/threads
+    python tools/loc4_threads_full_index.py threads_and_replies.json \
+      --out data/json/generated/loc4/threads
 
 The extractor preserves primary-source text and emits sharded JSON plus a manifest.
 Replies are counted but remain supplemental evidence and are not copied into the
@@ -115,11 +115,11 @@ def write_index(main: list[dict], replies: list[dict], out_dir: Path, shard_size
     for start in range(0, len(main), shard_size):
         number = start // shard_size + 1
         docs = main[start:start + shard_size]
-        rel = f"data/json/generated/loc6/threads/main/part-{number:03d}.json.gz"
+        rel = f"data/json/generated/loc4/threads/main/part-{number:03d}.json.gz"
         path = main_dir / f"part-{number:03d}.json.gz"
         payload = {
             "schema_version": "1.0",
-            "registry": "LOC6_THREADS_MAIN_POST_SHARD",
+            "registry": "LOC4_THREADS_MAIN_POST_SHARD",
             "shard": number,
             "start_index": start,
             "end_index": start + len(docs) - 1,
@@ -137,7 +137,7 @@ def write_index(main: list[dict], replies: list[dict], out_dir: Path, shard_size
     dates = [row["date"] for row in main if row.get("date")]
     manifest = {
         "schema_version": "1.0",
-        "registry": "LOC6_THREADS_DOCUMENT_MANIFEST",
+        "registry": "LOC4_THREADS_DOCUMENT_MANIFEST",
         "status": "working",
         "source": "threads_and_replies.json",
         "source_window": {
@@ -162,7 +162,7 @@ def write_index(main: list[dict], replies: list[dict], out_dir: Path, shard_size
         "reply_policy": "Replies remain supplemental evidence and are not included in the primary main-post shard set.",
         "governance": "Document text is primary-source evidence. Search hits, frequency and clustering do not automatically become Canon.",
     }
-    (out_dir / "LOC6_THREADS_DOCUMENT_MANIFEST.json").write_text(
+    (out_dir / "LOC4_THREADS_DOCUMENT_MANIFEST.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
@@ -170,7 +170,7 @@ def write_index(main: list[dict], replies: list[dict], out_dir: Path, shard_size
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source", type=Path)
-    parser.add_argument("--out", type=Path, default=Path("data/json/generated/loc6/threads"))
+    parser.add_argument("--out", type=Path, default=Path("data/json/generated/loc4/threads"))
     parser.add_argument("--shard-size", type=int, default=1200)
     parser.add_argument("--expect-main", type=int, default=4578)
     parser.add_argument("--expect-replies", type=int, default=2430)

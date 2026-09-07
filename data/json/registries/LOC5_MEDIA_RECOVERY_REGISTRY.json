@@ -14,7 +14,7 @@
   ],
   "source_scope": {
     "threads_owner": "LOC4",
-    "current_evidence_registry": "data/json/registries/LOC6_THREADS_KM_INDEX.json",
+    "current_evidence_registry": "data/json/registries/LOC4_THREADS_KM_INDEX.json",
     "note": "The current representative tranche already contains recoverable Suno references; full 4,578-main-post corpus should be mined next for broader LOC5 recovery."
   },
   "candidates": [
