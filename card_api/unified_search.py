@@ -1248,7 +1248,8 @@ class UnifiedSearchEngine:
         if wanted not in {"", "all", "governance_article", "text_record"}:
             return []
 
-        scored: list[tuple[float, dict[str, Any], str]] = []
+        asset_scored: list[tuple[float, dict[str, Any], str]] = []
+        thread_scored: list[tuple[float, dict[str, Any], str]] = []
         query_terms = [
             term for term in re.split(r"[\s、，,；;：:／/｜|]+", _normalize(query))
             if term
@@ -1279,7 +1280,7 @@ class UnifiedSearchEngine:
             if score >= 0.34:
                 row = dict(asset)
                 row["_content"] = content
-                scored.append((score, row, "asset"))
+                asset_scored.append((score, row, "asset"))
 
         # Search the full LOC4-owned Threads main-post corpus when shards are available.
         # Falls back to the smaller article tranche only when full shards are absent.
@@ -1303,14 +1304,18 @@ class UnifiedSearchEngine:
                 doc.get("era"),
             ])
             if score >= 0.34:
-                scored.append((score * 0.96, doc, "threads"))
-                if len(scored) > max_thread_matches * 2:
-                    scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("asset_id") or "")))
-                    scored = scored[:max_thread_matches]
+                thread_scored.append((score * 0.96, doc, "threads"))
+                if len(thread_scored) > max_thread_matches * 2:
+                    thread_scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("id") or "")))
+                    thread_scored = thread_scored[:max_thread_matches]
 
-        scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("asset_id") or "")))
+        # Preserve source diversity. Threads is a large LOC4 corpus and must
+        # not compete for the same tiny top-k quota as maintained LOC6 assets.
+        asset_scored.sort(key=lambda row: (-row[0], str(row[1].get("asset_id") or "")))
+        thread_scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("id") or "")))
+        selected = [*asset_scored[:top_k], *thread_scored[:top_k]]
         out = []
-        for score, item, source_kind in scored[:top_k]:
+        for score, item, source_kind in selected:
             if source_kind == "asset":
                 out.append({
                     "result_id": item.get("asset_id"),
