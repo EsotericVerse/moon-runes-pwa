@@ -2,7 +2,7 @@
   "schema_version": "1.2",
   "component": "LOC_GLOBAL_NAV",
   "brand": {
-    "label": "LOC · 月典",
+    "label": "LOC月典",
     "href": "index.html",
     "subtitle": "Luna Codex"
   },
@@ -26,10 +26,10 @@
       "description": "跨內容整合搜尋"
     },
     {
-      "id": "projection",
+      "id": "evolution",
       "label": "推演",
-      "href": "projection.html",
-      "description": "LOC8 · 每日符文 · ERA · Event · Trend"
+      "href": "evolution.html",
+      "description": "LOC8 Evolution · 時期 · 趨勢 · 推演"
     }
   ]
 }
