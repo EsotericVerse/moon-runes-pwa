@@ -164,7 +164,7 @@ LOC1–8 是固定的功能分隔與標準骨架，不是版本、排名、成�
 | LOC1 | Lots | 66 符文籤詩、四向判讀、抽取、多符文組合、每日抽取與趨勢 |
 | LOC2 | Game / Scenario | 將符文語言放進真實情境：以雙卡因果描述狀況，並透過 Event、回應、共振與規則互動形成可處理的情境語料 |
 | LOC3 | Music | 音樂創作、微月光、政德風、符文寫歌與歌詞語意檢索 |
-| LOC4 | Writing | 作者文字本體：小說、文章、生活書寫、Facebook／Threads 社群生活文字、角色、符文文本、世界觀與敘事創作 |
+| LOC4 | Writing | 兩部分：①創作作品（小說、文章、符文文本、世界觀等）②生活文字（Facebook／Threads） |
 | LOC5 | Resonance | 圖像、聲音、文字、MV、系統圖形與跨媒體概念視覺化 |
 | LOC6 | Governance / Interpretation | 人生觀、價值觀、治理原則、政德風，以及符文組合如何被轉譯為實際文字與敘事的解析實證 |
 | LOC7 | Text Architecture / KM | 文字建築學、知識管理、檢索、關係結構與 Graph RAG 後續方向 |
@@ -210,10 +210,10 @@ LOC2 是一款把「理解語意」變成遊戲的桌遊。它以 LunaRunes 66 �
 
 ### LOC4｜Writing Corpus 與生活文字
 
-LOC4 不只是一小批小說作品。它是作者「文字本體」的責任域，分成兩個互補來源：
+LOC4 明確分成兩個部分：**創作作品**與**生活文字**。
 
-- **創作作品層**：小說、文章、符文文本、世界觀等；現行核心純文字檔已建立 document-level full-text index。
-- **生活／公開文字層**：Facebook 與 Threads 的作者文字。原始 corpus 保留在來源專用資料層，不重複複製；LOC4 擁有文字本體，LOC6 消費同一批資料做治理／政德風解讀，LOC7 負責檢索與文字建築，LOC8 負責時間、ERA 與趨勢投影。
+- **創作作品**：小說、文章、符文文本、世界觀等；現行核心純文字檔已建立 document-level full-text index。
+- **生活文字**：Facebook 與 Threads。兩者的原始文字都屬 LOC4；source corpus 保留在各自資料層，不重複複製。LOC6 使用這些文字做治理／政德風解讀，LOC7 負責檢索與文字建築，LOC8 負責時間、ERA 與趨勢投影。
 
 因此「作品數」不是 LOC4 的主要規模指標；作品 corpus 只是 LOC4 的高密度創作樣本，長期生活文字 corpus 才構成作者整體文字演變的主要時間基底。
 
