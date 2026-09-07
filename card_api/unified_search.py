@@ -132,6 +132,112 @@ class UnifiedSearchEngine:
     def _allowed(content_type: str, wanted: str) -> bool:
         return not wanted or wanted == "all" or content_type == wanted
 
+    def _default_display_policy(self, content_type: str) -> str:
+        for item in (self.content_types.get("types", []) if isinstance(self.content_types, dict) else []):
+            if str(item.get("id") or "") == str(content_type or ""):
+                value = str(item.get("default_display_policy") or "").strip()
+                if value in {"snippet", "full", "metadata_only"}:
+                    return value
+        cfg = self.content_types.get("display_policy", {}) if isinstance(self.content_types, dict) else {}
+        value = str(cfg.get("default_when_unspecified") or "snippet").strip()
+        return value if value in {"snippet", "full", "metadata_only"} else "snippet"
+
+    @staticmethod
+    def _query_snippet(text: Any, query: str, radius: int = 90) -> str:
+        raw = re.sub(r"\s+", " ", str(text or "")).strip()
+        if not raw:
+            return ""
+        q = re.sub(r"\s+", "", str(query or "")).strip()
+        compact = re.sub(r"\s+", "", raw)
+        pos = compact.lower().find(q.lower()) if q else -1
+
+        # Map the compact-string position back approximately to the original
+        # whitespace-preserving string. For CJK corpora this is normally exact
+        # enough and avoids tokenization dependencies.
+        if pos >= 0:
+            nonspace_seen = 0
+            center = 0
+            for i, ch in enumerate(raw):
+                if not ch.isspace():
+                    if nonspace_seen >= pos:
+                        center = i
+                        break
+                    nonspace_seen += 1
+        else:
+            center = 0
+
+        start = max(0, center - radius)
+        end = min(len(raw), center + max(radius, len(q) + radius))
+        snippet = raw[start:end].strip()
+        if start > 0:
+            snippet = "…" + snippet
+        if end < len(raw):
+            snippet += "…"
+        return snippet
+
+    def _public_display_result(self, item: dict[str, Any], query: str) -> dict[str, Any]:
+        row = dict(item)
+        payload = dict(row.get("payload") or {})
+
+        explicit = str(row.get("display_policy") or payload.get("display_policy") or "").strip()
+        if explicit not in {"snippet", "full", "metadata_only"}:
+            explicit = ""
+
+        # Threads corpus records default to snippet even when they are routed
+        # through the shorter governance_fragment result type.
+        is_threads = any(
+            str(ref.get("source_type") or "").lower() == "threads"
+            for ref in (row.get("source_refs") or [])
+            if isinstance(ref, dict)
+        )
+        policy = explicit or ("snippet" if is_threads else self._default_display_policy(str(row.get("content_type") or "")))
+
+        row["display_policy"] = policy
+
+        if policy == "full":
+            return row
+
+        full_fields = ("lyrics", "text", "full_text", "transcript", "body", "content")
+        source_text = ""
+        for key in full_fields:
+            value = payload.get(key)
+            if isinstance(value, str) and value.strip():
+                source_text = value
+                break
+
+        for key in full_fields:
+            payload.pop(key, None)
+
+        # Nested copies occasionally appear in imported/search result payloads.
+        for nested_key in ("source", "document", "work", "record"):
+            nested = payload.get(nested_key)
+            if isinstance(nested, dict):
+                clean = dict(nested)
+                for key in full_fields:
+                    clean.pop(key, None)
+                payload[nested_key] = clean
+
+        if policy == "metadata_only":
+            row["summary"] = ""
+            row["snippet"] = ""
+        else:
+            snippet = self._query_snippet(source_text or row.get("summary"), query)
+            row["summary"] = snippet
+            row["snippet"] = snippet
+
+        row["payload"] = payload
+        return row
+
+    def _apply_public_display_policies(
+        self,
+        groups: dict[str, list[dict[str, Any]]],
+        query: str,
+    ) -> dict[str, list[dict[str, Any]]]:
+        return {
+            key: [self._public_display_result(item, query) for item in items]
+            for key, items in groups.items()
+        }
+
     def _oracle_result(self, query: str) -> tuple[list[dict[str, Any]], list[str]]:
         """Parse natural-language single-rune queries such as 愛情 + 心半正 and return Lots first."""
         q = _normalize(query)
@@ -2489,6 +2595,11 @@ class UnifiedSearchEngine:
         graph = self._graph_enrichment(query, groups)
         synthesis = self._synthesize_search(query, groups, graph)
         provenance = self._provenance_summary(groups, graph)
+
+        # Search/index/Graph may use authorized full text internally, but the
+        # public response boundary must obey content display governance.
+        groups = self._apply_public_display_policies(groups, query)
+
         return {
             "system_id": "lo3rwang",
             "query": query,
