@@ -725,6 +725,6 @@
     }
   ],
   "authority": "LOC4",
-  "storage_note": "Filename/path is historical and retained for compatibility. Ownership follows LOC4_LOC6_BOUNDARY_REGISTRY, not the legacy LOC6 filename.",
-  "governance": "Raw post/reply text remains LOC4. matched_terms, frequency, governance/style interpretations and other derived analyses may be LOC6/LOC7/LOC8 outputs by reference."
+  "storage_note": "Canonical LOC4 life-writing source index. LOC6 consumes these records only as evidence for separate governance/style interpretations.",
+  "governance": "Raw post/reply text remains LOC4. Derived governance/style interpretations are separate LOC6 records."
 }
