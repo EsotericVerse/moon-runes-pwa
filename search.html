@@ -720,14 +720,14 @@
 
     function publicLocLabel(value){
       const map={
-        LOC1:'月之符文',
-        LOC2:'月符沙盒',
-        LOC3:'自創歌曲(Suno)',
+        LOC1:'月符／語彙（token）',
+        LOC2:'脈絡',
+        LOC3:'音樂',
         LOC4:'文字創作',
-        LOC5:'多媒體創作',
-        LOC6:'治理規則',
-        LOC7:'知識庫',
-        LOC8:'趨勢分析'
+        LOC5:'多媒體',
+        LOC6:'方法論',
+        LOC7:'演算法（知識庫）',
+        LOC8:'文學演化'
       };
       const raw=String(value||'');
       return raw.split(/\s*\/\s*|\s*,\s*/).map(x=>map[x]||x).join('／');
@@ -961,7 +961,7 @@
       }
       if(!['lyrics_work','text_work','governance_article','governance_fragment'].includes(type)){
         el('status').className='status error';
-        el('status').textContent='請先選擇可瀏覽的資料種類：音樂／歌詞、文字作品、治理文章或治理規則。';
+        el('status').textContent='請先選擇可瀏覽的資料種類：音樂／歌詞、文字作品或方法論資料。';
         return;
       }
       const safePage=Math.max(1,Number(page)||1);
