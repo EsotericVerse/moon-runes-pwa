@@ -343,7 +343,7 @@
     {
       "asset_id": "KA-LOC6-ZD-001",
       "title": "LOC6 Zhengde Style Governance Guide",
-      "path": "docs/LOC6_ZHENGDE_STYLE.md",
+      "path": "governance.html#style",
       "source_type": "document",
       "content_type": "knowledge_document",
       "primary_loc": "LOC6",
@@ -1027,7 +1027,7 @@
     {
       "asset_id": "KA-LOC-GOV-CORE-001",
       "title": "LOC Governance Core — 中立語言治理核心",
-      "path": "docs/LOC_GOVERNANCE_CORE.md",
+      "path": "governance.html",
       "source_type": "document",
       "content_type": "knowledge_document",
       "primary_loc": "LOC6",
@@ -1074,7 +1074,7 @@
     {
       "asset_id": "KA-LOC-GOV-HISTORY-001",
       "title": "LOC Governance History & Trend Analysis",
-      "path": "docs/LOC_GOVERNANCE_HISTORY_AND_TRENDS.md",
+      "path": "governance.html",
       "source_type": "document",
       "content_type": "analysis",
       "primary_loc": "LOC6",
@@ -1114,7 +1114,7 @@
     {
       "asset_id": "KA-LUNA66-GOV-001",
       "title": "LunaRunes 66 — Governance Design Notes",
-      "path": "docs/LUNA_RUNES_66_GOVERNANCE_DESIGN.md",
+      "path": "governance.html",
       "source_type": "document",
       "content_type": "knowledge_document",
       "primary_loc": "LOC1",
