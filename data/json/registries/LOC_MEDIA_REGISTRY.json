@@ -13469,6 +13469,1459 @@
         "rule": "inherit LOC8 period from linked LOC3 song/work record",
         "inherited_at": "2026-09-07"
       }
+    },
+    {
+      "media_id": "MEDIA-0182",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "instagram_reels_preview",
+      "title": "微光而行",
+      "linked_song_id": "d8d4cfe0-77d8-4cc8-abf1-f50de3ba161d",
+      "linked_work_id": "LW0285",
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/DSVwuDdEpI0/",
+      "preview_duration_seconds": 30,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18084726854093858",
+          "note": null
+        },
+        {
+          "source_type": "suno_song",
+          "source_id": "d8d4cfe0-77d8-4cc8-abf1-f50de3ba161d",
+          "note": "https://suno.com/song/d8d4cfe0-77d8-4cc8-abf1-f50de3ba161d?sh=oo4fpMKAA54CSPqY"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "Imported from LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_name": "重啟與格式形成期",
+      "source_created_date": "2025-12-16",
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0285",
+        "source_song_id": "d8d4cfe0-77d8-4cc8-abf1-f50de3ba161d",
+        "rule": "inherit LOC8 period from linked LOC3 song/work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0183",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "對嘴特效",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17874297129526605",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "對嘴特效",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2026-07-05"
+    },
+    {
+      "media_id": "MEDIA-0184",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "對嘴特效,還不錯!",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18085708361447804",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "對嘴特效,還不錯!",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2026-07-04"
+    },
+    {
+      "media_id": "MEDIA-0185",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "這個做的很成功!!",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18134568763588286",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "這個做的很成功!!",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2026-07-02"
+    },
+    {
+      "media_id": "MEDIA-0186",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "對嘴辦, 好像很有趣跟好玩!",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17999719127779293",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "對嘴辦, 好像很有趣跟好玩!",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2026-07-02"
+    },
+    {
+      "media_id": "MEDIA-0187",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "用meta ai畫出部分",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17892136446559717",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "用meta ai畫出部分",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2026-07-02"
+    },
+    {
+      "media_id": "MEDIA-0188",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "好像很好玩",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18088996823415276",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "好像很好玩",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2026-07-02"
+    },
+    {
+      "media_id": "MEDIA-0189",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "Instagram Reel 18145800373467383",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18145800373467383",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2026-06-30"
+    },
+    {
+      "media_id": "MEDIA-0190",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "接下來要等左眉毛復原",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18471270070105579",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "接下來要等左眉毛復原",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2026-06-12"
+    },
+    {
+      "media_id": "MEDIA-0191",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "Instagram Reel 18074388707622880",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18074388707622880",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2026-02-15"
+    },
+    {
+      "media_id": "MEDIA-0192",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "Instagram Reel 17967242759867313",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17967242759867313",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2026-02-01"
+    },
+    {
+      "media_id": "MEDIA-0193",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "Instagram Reel 17931667076998746",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17931667076998746",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2025-11-15"
+    },
+    {
+      "media_id": "MEDIA-0194",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "月之符文說明 #月之符文 #靈性感知 #能量牌卡",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18053144108387396",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "月之符文說明 #月之符文 #靈性感知 #能量牌卡",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2025-07-12"
+    },
+    {
+      "media_id": "MEDIA-0195",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "你最近卡關了嗎？給你一些突破建議！#月之符文 #直覺選一張 #心靈指引 #療癒文字 #靈性感知 #每日占卜 #能量牌卡",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18018479150721730",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "你最近卡關了嗎？給你一些突破建議！#月之符文 #直覺選一張 #心靈指引 #療癒文字 #靈性感知 #每日占卜 #能量牌卡",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2025-07-12"
+    },
+    {
+      "media_id": "MEDIA-0196",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "董滋董滋",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17946719321977322",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "董滋董滋",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2025-05-07"
+    },
+    {
+      "media_id": "MEDIA-0197",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "今天顏色說隨機換",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18173200798309398",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "今天顏色說隨機換",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2024-12-03"
+    },
+    {
+      "media_id": "MEDIA-0198",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "今天混紫色",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18010713026487101",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "今天混紫色",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2024-11-30"
+    },
+    {
+      "media_id": "MEDIA-0199",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "這是一個漂浮感?",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "18050753477506217",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": "這是一個漂浮感?",
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2024-11-17"
+    },
+    {
+      "media_id": "MEDIA-0200",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [],
+      "media_type": "instagram_reels_unresolved",
+      "title": "Instagram Reel 17905464857948920",
+      "linked_song_id": null,
+      "linked_work_id": null,
+      "platform": "instagram",
+      "url": null,
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "instagram_media_id",
+          "source_id": "17905464857948920",
+          "note": null
+        }
+      ],
+      "linked_to_semantic_index": false,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": null,
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "LOC5-native Instagram Reel imported from workbook; no Suno/LOC3 linkage recorded."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "needs_url",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": null,
+      "era_id": null,
+      "period_name": null,
+      "source_created_date": "2024-03-27"
+    },
+    {
+      "media_id": "MEDIA-0201",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "youtube_music_video",
+      "title": "月下獨酌",
+      "linked_song_id": null,
+      "linked_work_id": "LW0389",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/watch?v=MkhFhgo_Qz0",
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "suno_share",
+          "source_id": "tX5v7D0G7gxcAo3m",
+          "note": "https://suno.com/s/tX5v7D0G7gxcAo3m"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": "music_video",
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "YouTube MV pairing confirmed by author in LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_name": "重啟與格式形成期",
+      "source_created_date": null,
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0389",
+        "source_song_id": null,
+        "rule": "inherit LOC8 period from linked LOC3 work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0202",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "youtube_music_video",
+      "title": "陪你再走一程",
+      "linked_song_id": null,
+      "linked_work_id": "LW0350",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/watch?v=yB3KBs7aLis",
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "suno_share",
+          "source_id": "Na2ASXLm3QWUx4eo",
+          "note": "https://suno.com/s/Na2ASXLm3QWUx4eo"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": "music_video",
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "YouTube MV pairing confirmed by author in LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_name": "重啟與格式形成期",
+      "source_created_date": null,
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0350",
+        "source_song_id": null,
+        "rule": "inherit LOC8 period from linked LOC3 work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0203",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "youtube_music_video",
+      "title": "微月光",
+      "linked_song_id": null,
+      "linked_work_id": "LW0290",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/watch?v=ysWV2sHpeTY",
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "suno_share",
+          "source_id": "uWAXuBoRIuIMOaX9",
+          "note": "https://suno.com/s/uWAXuBoRIuIMOaX9"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": "music_video",
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "YouTube MV pairing confirmed by author in LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P5",
+      "era_id": "ERA-P5",
+      "period_name": "人生月台與語言重建期",
+      "source_created_date": null,
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0290",
+        "source_song_id": null,
+        "rule": "inherit LOC8 period from linked LOC3 work record",
+        "inherited_at": "2026-09-07"
+      }
+    },
+    {
+      "media_id": "MEDIA-0204",
+      "system_id": "lo3rwang",
+      "primary_loc": "LOC5",
+      "related_locs": [
+        "LOC3"
+      ],
+      "media_type": "youtube_music_video",
+      "title": "微光而行",
+      "linked_song_id": null,
+      "linked_work_id": "LW0285",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/watch?v=lAxPPV3DwiI",
+      "preview_duration_seconds": null,
+      "metrics": {
+        "plays": null
+      },
+      "source_refs": [
+        {
+          "source_type": "suno_share",
+          "source_id": "iBWC1eN8VWorv6Zo",
+          "note": "https://suno.com/s/iBWC1eN8VWorv6Zo"
+        }
+      ],
+      "linked_to_semantic_index": true,
+      "semantic_descriptor": {
+        "visual_summary": null,
+        "scene_keywords": [],
+        "mood": [],
+        "visual_motifs": [],
+        "narrative_function": "music_video",
+        "manual_tags": [],
+        "generated_tags": []
+      },
+      "provenance": {
+        "primary_author": "lo3rwang",
+        "collaboration_status": "solo",
+        "contributors": [],
+        "shared_with": [],
+        "influences": [],
+        "source_references": [],
+        "tools_used": [],
+        "provenance_note": "YouTube MV pairing confirmed by author in LOC3_LOC5 audiovisual integration workbook (2026-09-07)."
+      },
+      "rights": {
+        "rights_holder_id": "lo3rwang",
+        "copyright_status": "author_owned",
+        "ip_name": "政德風",
+        "ip_status": "personal_ip",
+        "attribution_required": true,
+        "license": null,
+        "rights_note": null
+      },
+      "lifecycle": {
+        "status": "current",
+        "created_at": null,
+        "updated_at": "2026-09-07"
+      },
+      "period": "P2",
+      "era_id": "ERA-P2",
+      "period_name": "重啟與格式形成期",
+      "source_created_date": null,
+      "temporal_inheritance": {
+        "source_loc": "LOC3",
+        "source_work_id": "LW0285",
+        "source_song_id": null,
+        "rule": "inherit LOC8 period from linked LOC3 work record",
+        "inherited_at": "2026-09-07"
+      }
     }
   ]
 }
