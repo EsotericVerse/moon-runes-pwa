@@ -2127,7 +2127,7 @@ class UnifiedSearchEngine:
                 sid = f"SONGREF::{wid}::{role}"
                 add_node(
                     sid,
-                    theme.get("label") or f"{work.get('title') or wid}｜{role}",
+                    theme.get("title") or theme.get("label") or f"{work.get('title') or wid}｜{role}",
                     "music_work",
                     "LOC3",
                     source_url=theme_url,
@@ -2141,7 +2141,7 @@ class UnifiedSearchEngine:
                     sid,
                     "work_theme",
                     "record_metadata",
-                    f"{work.get('title') or wid} has an author-confirmed {role} song.",
+                    f"{work.get('title') or wid} has the author-confirmed {role} song {theme.get('title') or theme.get('label') or role}.",
                     "confirmed",
                     source_ref="LOC4_WRITING_REGISTRY.json",
                 )

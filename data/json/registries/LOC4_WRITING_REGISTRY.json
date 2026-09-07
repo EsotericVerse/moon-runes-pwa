@@ -239,12 +239,16 @@
         {
           "source_type": "suno_share",
           "role": "op",
-          "url": "https://suno.com/s/doXe7ALt4MVs0tXK"
+          "url": "https://suno.com/s/doXe7ALt4MVs0tXK",
+          "title": "光還在那裡",
+          "label": "OP"
         },
         {
           "source_type": "suno_share",
           "role": "proposal_song",
-          "url": "https://suno.com/s/YvP6Wi5lPHZywCrX"
+          "url": "https://suno.com/s/YvP6Wi5lPHZywCrX",
+          "title": "一次次選擇",
+          "label": "求婚歌"
         },
         {
           "source_type": "suno_share",
@@ -305,12 +309,14 @@
           {
             "role": "op",
             "label": "OP",
-            "url": "https://suno.com/s/doXe7ALt4MVs0tXK"
+            "url": "https://suno.com/s/doXe7ALt4MVs0tXK",
+            "title": "光還在那裡"
           },
           {
             "role": "proposal_song",
             "label": "求婚歌",
-            "url": "https://suno.com/s/YvP6Wi5lPHZywCrX"
+            "url": "https://suno.com/s/YvP6Wi5lPHZywCrX",
+            "title": "一次次選擇"
           }
         ],
         "character_themes": [
