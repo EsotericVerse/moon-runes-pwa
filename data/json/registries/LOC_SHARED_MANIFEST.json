@@ -258,7 +258,7 @@
       "LOC2": "Scenario/Event registry connected; direct Unified Search corpus integration pending",
       "LOC3": "lyrics/music retrieval",
       "LOC4": "creative works + Facebook/Threads life-writing raw text + work/chapter semantic analysis",
-      "LOC5": "media retrieval through shared media registry",
+      "LOC5": "179 LOC5 media records after author-source backfill; 177 Reels URLs across 175 song-version rows; multiple Reels per song preserved",
       "LOC6": "governance/Zhengde-style/value/rune interpretation derived from LOC4/LOC3/LOC8 evidence",
       "LOC7": "FAQ/KM retrieval",
       "LOC8": "ERA retrieval"
@@ -289,5 +289,17 @@
     "reference_model": "data/json/registries/LOC_REFERENCE_MODEL.json",
     "principle": "Framework governance is cross-LOC; canonical ownership remains domain-specific.",
     "trend_registry": "data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json"
+  },
+  "loc5_media_backfill": {
+    "status": "author-source-imported",
+    "source": "LOC3_LOC5_影音連結整合清單",
+    "song_version_rows": 178,
+    "reel_urls": 177,
+    "rows_with_preview": 175,
+    "rows_without_preview": 3,
+    "semantic_linked_rows": 162,
+    "media_registry_total": 179,
+    "multiple_reels_rule": "same song version may keep multiple Reels; different song_id versions remain separate; blanks are not guessed",
+    "updated_at": "2026-09-07"
   }
 }
