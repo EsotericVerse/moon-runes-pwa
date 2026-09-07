@@ -277,7 +277,7 @@
       "provenance": {
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true,
-        "source": "loc2.html Alpha Event 32"
+        "source": "context.html Alpha Event 32"
       },
       "notes": "Preserves the 32 current Alpha Event titles, requirement signatures and descriptions as scenario prototypes. Requirement signatures are not silently converted into fixed rune-pair mappings.",
       "presentation": "internal_source"
