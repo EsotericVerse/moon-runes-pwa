@@ -9,7 +9,7 @@
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
     "description": "LOC7_KM 現行 FAQ。同步 2026-09-07 最新 LunaRune64.xlsx Grammar：一般牌陣使用治理解牌方式＋月相交互，符文交互限定月符沙盒專用；並同步自然語言 Search/RAG、來源／內容分類與時間篩選規則。",
-    "entry_count": 87,
+    "entry_count": 89,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
       "reference_rune": "0：德（De）",
@@ -2167,14 +2167,14 @@
       "aliases": [
         "LOC3到8怎麼分類？",
         "方法論和演算法有什麼差別？",
-        "文化哲學在 LOC 哪裡？"
+        "文學演化在 LOC 哪裡？"
       ],
-      "answer": "LOC 對外 Tag 採一致抽象層級：LOC3／4／5 屬表達；LOC6 是方法論；LOC7 是演算法（知識庫）；LOC8 是文化哲學（時間／趨勢分析）。月符另有符文籤詩、符文體系、符文演算、符文演化四個特化分類。技術層仍可保留 Governance、KM、Graph、Trend 等名稱。",
+      "answer": "LOC 對外 Tag 採一致抽象層級：LOC3／4／5 屬表達；LOC6 是方法論；LOC7 是演算法（知識庫）；LOC8 是文學演化（時間／趨勢分析）。月符另有符文籤詩、符文體系、符文演算、符文演化四個特化分類。技術層仍可保留 Governance、KM、Graph、Trend 等名稱。",
       "keywords": [
         "表達",
         "方法論",
         "演算法",
-        "文化哲學",
+        "文學演化",
         "符文籤詩",
         "符文體系",
         "符文演算",
@@ -2211,6 +2211,56 @@
         "docs/LOC7_KM.md",
         "docs/LOC_OVERVIEW.md",
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-088",
+      "category": "LOC 基本定義",
+      "question": "LOC1–8 現在怎麼分類？",
+      "aliases": [
+        "LOC最新八個分類是什麼？",
+        "LOC2為什麼是脈絡？",
+        "LOC8為什麼叫文學演化？"
+      ],
+      "answer": "現行分類是：LOC1 月符／語彙（token）、LOC2 脈絡、LOC3 音樂、LOC4 文字創作、LOC5 多媒體、LOC6 方法論、LOC7 演算法（知識庫）、LOC8 文學演化。這是一套拆解、組織並重新表達文學語言的系統框架。",
+      "keywords": [
+        "LOC1",
+        "LOC2",
+        "脈絡",
+        "方法論",
+        "演算法",
+        "文學演化"
+      ],
+      "source_refs": [
+        "docs/LOC_OVERVIEW.md",
+        "docs/LOC7_KM.md"
+      ],
+      "canon_version": "0.5r",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-089",
+      "category": "LOC2 脈絡",
+      "question": "Graph 為什麼歸 LOC2，但還顯示在 life.html？",
+      "aliases": [
+        "Graph屬於LOC2還是LOC8？",
+        "Graph View為什麼還在LOC8頁面？"
+      ],
+      "answer": "Graph 的關係／脈絡語意責任歸 LOC2，因為 Graph 本質是節點與 edge 所形成的脈絡。LOC7 負責 Graph RAG traversal／retrieval 演算法；LOC8 則把 Graph 投影到時間、ERA、Trajectory、Trend 做文學演化觀察。頁面位置可以維持 life.html，不等於資料 ownership 在 LOC8。",
+      "keywords": [
+        "Graph",
+        "LOC2",
+        "脈絡",
+        "LOC7",
+        "Graph RAG",
+        "LOC8",
+        "文學演化"
+      ],
+      "source_refs": [
+        "data/json/registries/LOC_GRAPH_SCHEMA.json",
+        "docs/LOC7_KM.md"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
