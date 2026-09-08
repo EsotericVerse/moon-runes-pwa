@@ -563,7 +563,7 @@
           const shards=await Promise.all(shardNames.map(name=>localJson('data/json/search/loc3/'+name).catch(()=>({works:[]}))));
           const works=shards.flatMap(d=>d.works||[]);
           for(const work of works){
-            if(period&&String(work.period||'')!==period)continue;
+            if(period&&((LEGACY_PERIOD_MAP[String(work.period||'')]||String(work.period||''))!==period))continue;
             const score=localScore(q,[work.title,work.summary,work.retrieval_text,work.style,(work.tags||[]).join(' '),(work.playlists||[]).join(' ')]);
             if(score<=0)continue;
             if(wants('lyrics_work','suno_song')){
@@ -610,7 +610,7 @@
         try{
           const d=await localJson('data/json/registries/LOC6_GOVERNANCE_REGISTRY.json');
           for(const row of d.fragments||[]){
-            if(period&&row.era_id&&String(row.era_id)!=='ERA-'+period)continue;
+            if(period&&row.era_id){const raw=String(row.era_id).replace(/^ERA-/,'');const canonical=LEGACY_PERIOD_MAP[raw]||raw;if(canonical!==period)continue;}
             const score=localScore(q,[row.topic,row.statement,row.interpretation,row.governance_principle,(row.style_features||[]).join(' ')]);
             localPush(scored,score,'governance',{
               result_id:row.fragment_id,system_id:'lo3rwang',primary_loc:'LOC6',
@@ -663,7 +663,7 @@
         try{
           const d=await localJson('data/json/registries/LOC_ERA_REGISTRY.json');
           for(const row of d.eras||[]){
-            if(period&&String(row.period||'')!==period)continue;
+            if(period&&((LEGACY_PERIOD_MAP[String(row.period||'')]||String(row.period||''))!==period))continue;
             const score=localScore(q,[row.period,row.name,row.display_label,row.description,row.state_before,row.state_after]);
             localPush(scored,score,'timeline',{
               result_id:row.era_id,system_id:'lo3rwang',primary_loc:'LOC8',
@@ -713,10 +713,10 @@
         el('query').focus();
       });
     }
-    const ERA_CACHE_KEY='loc-search-era-registry-v3';
+    const ERA_CACHE_KEY='loc-search-era-registry-v4';
     const ERA_CACHE_TTL=24*60*60*1000;
     const ERA_FALLBACK=[
-      {period:'P1.0',display_label:'P1.0｜大學時代文字'},
+      {period:'P1.0',display_label:'P1.0｜早期／大學時代文字'},
       {period:'P2.0',display_label:'P2.0｜當兵入伍到公開網路文字之前'},
       {period:'P3.0',display_label:'P3.0｜公開網路文字期'},
       {period:'P4.0',display_label:'P4.0｜Threads'},
@@ -829,6 +829,30 @@
       {period:'P5.7',name:'自我治理與未來展望期',start:'2026-09-01',end:null}
     ];
     const LEGACY_PERIOD_MAP={P0:'P4.1','P0.5':'P4.2',P1:'P5.0',P2:'P5.1',P3:'P5.2',P4:'P5.3',P5:'P5.4',P6:'P5.5',P7:'P5.6',P8:'P5.7'};
+    const PERIOD_FILTER_RANGES=[
+      {period:'P1.0',start:'1980-06-23',end:'2003-12-15'},
+      {period:'P2.0',start:'2003-12-16',end:'2009-03-24'},
+      {period:'P3.0',start:'2009-03-25',end:'2024-11-17'},
+      {period:'P4.0',start:'2024-11-18',end:'2025-04-27'},
+      {period:'P4.1',start:'2024-11-18',end:'2025-02-20'},
+      {period:'P4.2',start:'2025-02-21',end:'2025-04-27'},
+      {period:'P5.0',start:'2025-04-28',end:'2025-10-15'},
+      {period:'P5.1',start:'2025-10-16',end:'2026-01-14'},
+      {period:'P5.2',start:'2026-01-15',end:'2026-03-08'},
+      {period:'P5.3',start:'2026-03-09',end:'2026-06-09'},
+      {period:'P5.4',start:'2026-06-10',end:'2026-06-30'},
+      {period:'P5.5',start:'2026-07-01',end:'2026-07-31'},
+      {period:'P5.6',start:'2026-08-01',end:'2026-08-31'},
+      {period:'P5.7',start:'2026-09-01',end:''}
+    ];
+    function effectiveSearchRange(){
+      const selected=String(el('period')?.value||'');
+      const row=PERIOD_FILTER_RANGES.find(x=>x.period===selected);
+      return {
+        start:el('startDate')?.value||(row?.start||''),
+        end:el('endDate')?.value||(row?.end||'')
+      };
+    }
     function publicPeriodLabel(r,p={}){
       const rawDate=String(p.date||p.created_date||p.creation_date||p.published_date||r.date||r.created_date||'').slice(0,10);
       let row=rawDate?PUBLIC_PERIODS.find(x=>rawDate>=x.start&&(!x.end||rawDate<=x.end)):null;
@@ -1369,7 +1393,7 @@
           el('status').textContent='正在搜尋文字資料…';
           let groups=null;
           try{
-            const body={query:q,top_k:10,content_type:'text_record',source:'facebook',period:el('period').value,start_date:el('startDate').value,end_date:el('endDate').value};
+            const range=effectiveSearchRange();const body={query:q,top_k:10,content_type:'text_record',source:'facebook',period:'',start_date:range.start,end_date:range.end};
             const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
             const d=await r.json();
             if(r.ok) groups=d.groups||{text:d.results||[]};
@@ -1385,7 +1409,7 @@
         }
 
         el('status').textContent=type==='text_record'?'正在搜尋文字資料……':'正在同時查詢符文、作品、媒體、知識與時期資料……';
-        const body={query:q,top_k:10,content_type:apiType,source:source,period:el('period').value,start_date:el('startDate').value,end_date:el('endDate').value};
+        const range=effectiveSearchRange();const body={query:q,top_k:10,content_type:apiType,source:source,period:'',start_date:range.start,end_date:range.end};
         const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const d=await r.json();
         if(!r.ok)throw new Error(d.detail||'搜尋失敗');
