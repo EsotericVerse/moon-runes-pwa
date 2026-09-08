@@ -1016,7 +1016,14 @@
     }
     function sourceRows(rows){
       const fmt=n=>Number.isFinite(Number(n))?Number(n).toLocaleString('zh-TW'):'—';
-      return `<div class="source-table-wrap"><table class="source-table"><thead><tr><th>資料來源</th><th>總字數</th><th>總筆數／件數</th><th>最早資料</th><th>最新資料</th><th>狀態</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.source)}</td><td>${row.char_count!=null?fmt(row.char_count):'待重算'}</td><td>${fmt(row.records)} 筆／件</td><td>${esc(row.start_date||'—')}</td><td>${esc(row.end_date||'—')}</td><td>${esc(row.status||'')}</td></tr>`).join('')}</tbody></table></div>`;
+      const labels={article:'篇文章',post:'篇貼文',reply:'筆回覆',song:'首歌曲',lyrics:'首歌詞作品',image:'張圖片',video:'支影片',reel:'支 Reels',audio:'段音訊',media:'筆多媒體',document:'份文件',text:'筆文字'};
+      const countText=row=>{
+        const counts=row.content_counts||{};
+        const parts=Object.entries(counts).filter(([,v])=>Number(v)>0).map(([k,v])=>fmt(v)+' '+(labels[k]||k));
+        if(parts.length)return parts.join(' · ');
+        return row.records!=null?fmt(row.records)+' 筆':'—';
+      };
+      return `<div class="source-table-wrap"><table class="source-table"><thead><tr><th>資料來源</th><th>總字數</th><th>內容數量</th><th>最早資料</th><th>最新資料</th><th>狀態</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.source)}</td><td>${row.char_count!=null?fmt(row.char_count)+' 字':'待重算'}</td><td>${esc(countText(row))}</td><td>${esc(row.start_date||'—')}</td><td>${esc(row.end_date||'—')}</td><td>${esc(row.status||'')}</td></tr>`).join('')}</tbody></table></div>`;
     }
     async function renderSourceStats(){
       try{
