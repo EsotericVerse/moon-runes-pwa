@@ -135,6 +135,15 @@ def main() -> int:
             )
         if language_registry.get("canonical_priority") != "highest_for_LOC1_8_names_and_roles":
             failures.append("LOC1-8 canonical priority is not locked in language-system registry")
+        if language_registry.get("canon_version") != "1.0" or language_registry.get("canon_status") != "formal":
+            failures.append("current LOC Canon is not locked to formal 1.0")
+        constants = system.get("fixed_constants") or {}
+        if constants.get("loc_range") != "LOC1–LOC8 only; LOC9 does not exist":
+            failures.append("LOC range constant drifted: LOC must remain LOC1–LOC8 only")
+        if constants.get("lunarunes_count") != 66:
+            failures.append("LunaRunes fixed count drifted from 66")
+        if constants.get("context_zh") != "脈絡":
+            failures.append("LOC2 canonical Chinese term must remain 脈絡")
     except Exception as exc:
         failures.append(f"failed to validate LOC1-8 canonical map: {exc}")
 
