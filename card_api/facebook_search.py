@@ -134,7 +134,7 @@ class FacebookSearchEngine:
                 "result_id": post.get("record_id"),
                 "system_id": "lo3rwang",
                 "primary_loc": "LOC4",
-                "related_locs": ["LOC6", "LOC7", "LOC8"],
+                "related_locs": ["LOC7", "LOC8"],
                 "content_type": "facebook_post",
                 "group": "social_archive",
                 "title": f"Facebook｜{str(post.get('date') or '')[:10]}",
