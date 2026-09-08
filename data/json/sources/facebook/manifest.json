@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "dataset": "LOC Facebook historical text corpus",
   "source": "Facebook export",
   "records": 17656,
@@ -13,5 +13,15 @@
     "facebook_posts_07.json",
     "facebook_posts_08.json",
     "facebook_posts_09.json"
+  ],
+  "mother_sources": [
+    {
+      "account": "oscars80",
+      "source": "Facebook",
+      "manifest": "oscars80_mother_manifest.json",
+      "text_records": 673,
+      "status": "imported_mother",
+      "note": "Mother source is registered before derived runtime/search shards; keep author_account while analyzing Facebook accounts together."
+    }
   ]
 }
