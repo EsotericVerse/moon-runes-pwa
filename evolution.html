@@ -91,7 +91,7 @@ let evolutionEras=[]; let editingEraId=''; let addingEra=false; let timelineEven
 const eventUid=()=>crypto?.randomUUID?.()||('EV-'+Date.now()+'-'+Math.random().toString(36).slice(2));
 async function postEvent(action,event){const r=await fetch(EVOLUTION_SHEET_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,event}),redirect:'follow'});if(!r.ok)throw new Error('request failed');const d=await r.json();if(d&&d.ok===false)throw new Error(d.error||'request failed');return d}
 async function loadTimelineEvents(){try{const u=new URL(EVOLUTION_SHEET_API);u.searchParams.set('action','events');u.searchParams.set('user_id','lo3rwang');const r=await fetch(u,{cache:'no-store',redirect:'follow'});const d=await r.json();timelineEvents=Array.isArray(d)?d:(d.events||[]);renderTimelineEvents()}catch(err){$('#timelineEventList').innerHTML='<div class="empty">事件載入失敗：'+esc(err.message)+'</div>'}}
-function renderTimelineEvents(){const host=$('#timelineEventList');if(!host)return;const rows=[...timelineEvents].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));host.innerHTML=rows.length?rows.map(e=>`<article class="event-card"><div class="event-head"><div><strong>${esc(e.event_title||e.title||'未命名事件')}</strong><small>${esc(e.date||'')} · ${esc(e.event_type||'')}</small></div><small>${esc(e.status||'current')}</small></div>${e.description?`<p>${esc(e.description)}</p>`:''}${e.state_after?`<p><strong>State →</strong> ${esc(e.state_after)}</p>`:''}<div class="era-actions"><button class="mini-btn" data-timeline-event="edit" data-id="${esc(e.id)}">編輯</button><button class="mini-btn" data-timeline-event="delete" data-id="${esc(e.id)}">刪除</button></div></article>`).join(''):'<div class="empty">尚無事件。</div>'}
+function renderTimelineEvents(){const host=$('#timelineEventList');if(!host)return;const eras=window.LOCPeriods.peek()?.eras||[];const rows=[...timelineEvents].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));host.innerHTML=rows.length?rows.map(e=>{const periodLabel=window.LOCPeriods.label(e.era||e.period,e.date,eras);return `<article class="event-card"><div class="event-head"><div><strong>${esc(e.event_title||e.title||'未命名事件')}</strong><small>${esc(e.date||'')} · ${esc(e.event_type||'')}${periodLabel?' · '+esc(periodLabel):''}</small></div><small>${esc(e.status||'current')}</small></div>${e.description?`<p>${esc(e.description)}</p>`:''}${e.state_after?`<p><strong>State →</strong> ${esc(e.state_after)}</p>`:''}<div class="era-actions"><button class="mini-btn" data-timeline-event="edit" data-id="${esc(e.id)}">編輯</button><button class="mini-btn" data-timeline-event="delete" data-id="${esc(e.id)}">刪除</button></div></article>`}).join(''):'<div class="empty">尚無事件。</div>'}
 function resetTimelineEvent(){const f=$('#timelineEventForm');f?.reset();$('#timelineEventId').value='';$('#timelineEventDate').value=new Date().toISOString().slice(0,10);$('#timelineEventType').value='transition';$('#timelineEventObjectType').value='person';$('#timelineEventStatus').value='current';$('#timelineEventSubmit').textContent='新增事件';$('#timelineEventCancel').hidden=true}
 function editTimelineEvent(id){const e=timelineEvents.find(x=>String(x.id)===String(id));if(!e)return;$('#timelineEventId').value=e.id||'';$('#timelineEventDate').value=e.date||'';$('#timelineEventType').value=e.event_type||'transition';$('#timelineEventTitle').value=e.event_title||e.title||'';$('#timelineEventObjectType').value=e.object_type||'person';$('#timelineEventObjectId').value=e.object_id||'';$('#timelineEventDescription').value=e.description||'';$('#timelineEventBefore').value=e.state_before||'';$('#timelineEventAfter').value=e.state_after||'';$('#timelineEventPeriod').value=window.LOCPeriods.normalizePeriod(e.era||e.period||'');$('#timelineEventStatus').value=e.status||'current';$('#timelineEventSubmit').textContent='儲存修改';$('#timelineEventCancel').hidden=false}
 function eraUid(period=''){const safe=String(period||'').trim().replace(/\s+/g,'-');return safe?'ERA-'+safe:'ERA-'+Date.now()}
@@ -152,18 +152,15 @@ $('#timelineEventList')?.addEventListener('click',async ev=>{
     }
   }
 });
-$('#addEraBtn')?.addEventListener('click',()=>{addingEra=true;editingEraId='';renderEraCrud()});
-$('#eraTimeline')?.addEventListener('click',async ev=>{const b=ev.target.closest('[data-era-action]');if(!b)return;const a=b.dataset.eraAction,id=b.dataset.eraId||'';if(a==='edit'){editingEraId=id;addingEra=false;renderEraCrud();return}if(a==='cancel'){editingEraId='';addingEra=false;renderEraCrud();return}if(a==='delete'){const item=evolutionEras.find(x=>x.era_id===id);if(!confirm('確定刪除時期「'+(item?.display_label||item?.name||id)+'」？'))return;try{await postEra('delete_era',{era_id:id});evolutionEras=evolutionEras.filter(x=>x.era_id!==id);renderEraCrud()}catch(err){alert('刪除失敗：'+err.message)}}});
-$('#eraTimeline')?.addEventListener('submit',async ev=>{const form=ev.target.closest('[data-era-form]');if(!form)return;ev.preventDefault();const token=form.dataset.eraForm,isNew=token==='new',existing=isNew?{}:(evolutionEras.find(x=>x.era_id===token)||{}),era=eraPayload(form,existing);try{await postEra(isNew?'era':'update_era',era);if(isNew)evolutionEras.push(era);else evolutionEras=evolutionEras.map(x=>x.era_id===token?era:x);addingEra=false;editingEraId='';renderEraCrud()}catch(err){alert((isNew?'新增':'修改')+'失敗：'+err.message)}});
 Promise.all([
-  fetch('data/json/registries/LOC_ERA_REGISTRY.json').then(r=>r.json()),
+  window.LOCPeriods.load({force:true}),
   fetch('data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json').then(r=>r.json()).catch(()=>({periods:[]})),
-  fetch('data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json').then(r=>r.json()).catch(()=>({periods:[]})),
-  fetch(EVOLUTION_SHEET_API+'?action=eras&user_id=lo3rwang',{cache:'no-store'}).then(r=>r.json()).catch(()=>({eras:[]}))
-]).then(([eraData,loc3,loc6,remoteEraData])=>{
-  const remoteEras=Array.isArray(remoteEraData)?remoteEraData:(remoteEraData.eras||[]);
-  const eras=[...(remoteEras.length?remoteEras:(eraData.eras||[]))].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+  fetch('data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json').then(r=>r.json()).catch(()=>({periods:[]}))
+]).then(([periodData,loc3,loc6])=>{
+  const eras=[...(periodData.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
   evolutionEras=eras;
+  window.LOCPeriods.fillSelect($('#timelineEventPeriod'),{includeAll:true,allLabel:'未指定'});
+  renderTimelineEvents();
   const current=eras.find(e=>e.status==='current')||eras[eras.length-1];
   $('#eraCount').textContent=eras.length||'0'; $('#eraCurrent').textContent=current?.period||'—'; $('#eraStart').textContent=current?.start_date||'—';
   renderEraCrud();
