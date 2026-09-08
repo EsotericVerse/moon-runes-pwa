@@ -1218,7 +1218,32 @@
         || /RUNE[-_]/i.test(String(item?.result_id||''));
     }
 
-    function applyPublicCategoryFilter(groups,type){
+    function itemHasExactRune(item,runeName){
+      if(!runeName) return true;
+      const p=item?.payload||{};
+      const exactValues=[
+        p.rune_name,p.名稱,p.符文名稱,item?.rune_name,item?.名稱,item?.符文名稱
+      ].filter(Boolean).map(String);
+      if(exactValues.includes(runeName)) return true;
+
+      const arrays=[p.runes,p.canonical_names,p.search_runes,p.tags];
+      for(const arr of arrays){
+        if(Array.isArray(arr) && arr.map(String).includes(runeName)) return true;
+      }
+
+      const cards=[...(Array.isArray(p.cards)?p.cards:[]),...(Array.isArray(p.rune_configuration)?p.rune_configuration:[])];
+      if(cards.some(card=>String(card?.rune||card?.canonical_name||'')===runeName)) return true;
+
+      const matched=Array.isArray(p.matched_rune_sources)?p.matched_rune_sources:[];
+      if(matched.some(row=>String(row?.canonical_name||'')===runeName)) return true;
+
+      const resultId=String(item?.result_id||'');
+      const title=String(item?.title||'');
+      if(item?.content_type==='rune_record' && (title.includes('· '+runeName)||title.endsWith(runeName))) return true;
+      return false;
+    }
+
+    function applyPublicCategoryFilter(groups,type,explicitRune=''){
       if(!isRunePublicCategory(type)) return groups||{};
       type=normalizeRunePublicCategory(type);
       const g=groups||{};
@@ -1251,14 +1276,15 @@
           const method=/Grammar|治理解牌方式|月相交互|Reverse|反向符文演算|正向符文演算|OW3gs|雙卡|三卡|五卡|解牌方法|判讀方法/i.test(hay);
           return runeRelated&&!method;
         });
+        const exact=items=>(items||[]).filter(item=>itemHasExactRune(item,explicitRune));
         return {
-          entities:g.entities||[],
-          runes:g.runes||[],
-          textworks:(g.textworks||[]).filter(hasRuneRelation),
-          rune_songs:g.rune_songs||[],
-          oracle:g.oracle||[],
-          readings:g.readings||[],
-          knowledge
+          entities:exact(g.entities),
+          runes:exact(g.runes),
+          textworks:exact(g.textworks),
+          rune_songs:exact(g.rune_songs),
+          oracle:exact(g.oracle),
+          readings:exact(g.readings),
+          knowledge:exact(knowledge)
         };
       }
       return g;
@@ -1436,12 +1462,10 @@
       history.replaceState(null,'',location.pathname);
     }
     function extractExplicitRuneQuery(query){
-      const q=String(query||'').trim();
+      const q=String(query||'').replace(/\s+/g,'').trim();
+      if(!q.includes('符文')) return '';
       const names=['靈','魂','彩','憶','界','域','鏡','核','向','斷','封','鍊','啟','分','悟','誤','生','老','病','死','心','愛','語','韻','樹','花','葉','草','根','種','實','枝','金','玉','晶','地','石','鑽','礦','塵','光','暗','水','火','風','土','雷','氣','日','月','星','辰','明','時','空','因','福','禍','無','夢','幻','緣','虛','果','玄','命'];
-      for(const name of names){
-        if(q.includes(name+'之符文')) return name;
-      }
-      return '';
+      return names.find(name=>q.includes(name))||'';
     }
 
     function inferNaturalSearchHints(query){
@@ -1569,7 +1593,7 @@
         }
 
         d.groups=enforceLiteralShortQuery(d.groups||{},q);
-        d.groups=applyPublicCategoryFilter(d.groups||{},type);
+        d.groups=applyPublicCategoryFilter(d.groups||{},type,hints.explicitRune||'');
         const total=Object.values(d.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
         const threadsCount=Object.values(d.groups||{}).flat().filter(item=>(item?.source_refs||[]).some(ref=>ref?.source_type==='threads')).length;
         el('status').className=threadsLoadError?'status error':'status';
@@ -1582,7 +1606,7 @@
         try{
           const fallback=await localStaticSearch(q,{topK:50,type:apiType,source,period:el('period').value});
           fallback.groups=enforceLiteralShortQuery(fallback.groups||{},q);
-          fallback.groups=applyPublicCategoryFilter(fallback.groups||{},type);
+          fallback.groups=applyPublicCategoryFilter(fallback.groups||{},type,hints.explicitRune||'');
           const total=Object.values(fallback.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
           if(total){
             el('status').className='status';
