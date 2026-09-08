@@ -2,7 +2,7 @@
   "schema_version": "2.0",
   "definition_version": "2.0",
   "registry": "LOC_ERA_REGISTRY",
-  "updated_at": "2026-09-08",
+  "updated_at": "2026-09-09",
   "authority": {
     "loc": "Search",
     "source_type": "Period Definition",
@@ -14,14 +14,14 @@
       "era_id": "ERA-P1.0",
       "period": "P1.0",
       "order": 1,
-      "name": "早期／大學時代文字",
-      "display_label": "P1.0｜早期／大學時代文字",
+      "name": "學生時代",
+      "display_label": "P1.0｜學生時代",
       "start_date": "1980-06-23",
       "end_date": "2003-12-15",
       "status": "released",
       "period_type": "segment",
       "definition_version": "2.0",
-      "description": "早期到大學時代的文字與個人語言前史。"
+      "description": "學生時代的文字與個人語言前史。"
     },
     {
       "era_id": "ERA-P2.0",
