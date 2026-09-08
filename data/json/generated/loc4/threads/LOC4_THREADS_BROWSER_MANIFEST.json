@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "dataset": "LOC4 Threads browser-readable main-post corpus",
+  "document_count": 4578,
+  "shard_size": 500,
+  "shards": [
+    {
+      "shard": 1,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-001.json",
+      "document_count": 500
+    },
+    {
+      "shard": 2,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-002.json",
+      "document_count": 500
+    },
+    {
+      "shard": 3,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-003.json",
+      "document_count": 500
+    },
+    {
+      "shard": 4,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-004.json",
+      "document_count": 500
+    },
+    {
+      "shard": 5,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-005.json",
+      "document_count": 500
+    },
+    {
+      "shard": 6,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-006.json",
+      "document_count": 500
+    },
+    {
+      "shard": 7,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-007.json",
+      "document_count": 500
+    },
+    {
+      "shard": 8,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-008.json",
+      "document_count": 500
+    },
+    {
+      "shard": 9,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-009.json",
+      "document_count": 500
+    },
+    {
+      "shard": 10,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-010.json",
+      "document_count": 78
+    }
+  ],
+  "note": "Plain JSON shards for browser/backend search. Legacy .json.gz payloads are invalid and must not be used."
+}
