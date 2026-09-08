@@ -703,31 +703,24 @@ class UnifiedSearchEngine:
             for work in (getattr(self.loc3_searcher, "works", []) if self.loc3_searcher else [])
         }
 
-        records: list[tuple[dict[str, Any], str, str]] = []
-
-        for record in self.rune_songs.get("ow3gs_records", []) or []:
-            runes = record.get("runes", []) or []
-            if is_ow3gs or (rune_query and rune_query in runes):
-                records.append((record, "符文歌曲", "OW3gs"))
-
-        if rune_query:
-            for record in self.rune_songs.get("confirmed_records", []) or []:
-                runes = record.get("runes", []) or []
-                if rune_query in runes:
-                    label = "特別製作符文歌" if record.get("special_construction") else "符文歌曲"
-                    method_name = "special_rune_song" if record.get("special_construction") else "rune_song"
-                    records.append((record, label, method_name))
-        elif is_ow3gs:
-            for record in self.rune_songs.get("confirmed_records", []) or []:
-                if record.get("special_construction"):
+        records = []
+        for record in self.rune_songs.get("confirmed_records", []) or []:
+            cards = record.get("cards") or record.get("draw_result") or []
+            if cards and isinstance(cards, list):
+                membership = [card.get("rune") for card in cards if isinstance(card, dict) and card.get("rune")]
+                if rune_query and rune_query not in membership:
                     continue
-                records.append((record, "符文歌曲", record.get("generation_method") or "rune_song"))
+            elif rune_query:
+                # A confirmed rune song without recovered draw provenance is not
+                # eligible for single-rune reverse lookup.
+                continue
+            records.append(record)
 
         output = []
         seen = set()
-        for record, type_label, method_name in records:
+        for record in records:
             work_id = str(record.get("work_id") or "")
-            dedupe_key = work_id or f"{record.get('title')}:{method_name}"
+            dedupe_key = work_id or str(record.get("title") or "")
             if dedupe_key in seen:
                 continue
             seen.add(dedupe_key)
@@ -735,7 +728,8 @@ class UnifiedSearchEngine:
             work = work_by_id.get(work_id, {})
             versions = work.get("versions", []) or []
             recommended = versions[0] if versions else {}
-            runes = record.get("runes", []) or []
+            cards = record.get("cards") or record.get("draw_result") or []
+            runes = [card.get("rune") for card in cards if isinstance(card, dict) and card.get("rune")]
             output.append({
                 "result_id": f"RUNE-SONG-{work_id or len(output)+1}",
                 "system_id": "lo3rwang",
@@ -744,27 +738,28 @@ class UnifiedSearchEngine:
                 "content_type": "rune_song",
                 "group": "rune_songs",
                 "title": record.get("title") or work.get("title") or work_id,
-                "summary": f"{type_label} · {len(runes)} 個 distinct 符文",
+                "summary": "符文歌曲 · OW3gs 11 抽",
                 "score": 1.0,
                 "period": record.get("period") or work.get("period"),
                 "source_refs": [{
                     "source_type": "registry",
                     "source_id": "LOC3_RUNE_SONG_REGISTRY.json",
-                    "note": record.get("mapping_status") or record.get("confidence"),
+                    "note": record.get("draw_provenance_status") or record.get("confidence"),
                 }],
                 "payload": {
                     "work_id": work_id,
-                    "generation_method": method_name,
-                    "song_type_label": type_label,
+                    "generation_method": "OW3gs 11-card",
+                    "song_type_label": "符文歌曲",
                     "relation_status": "confirmed",
                     "rune_song_flag": True,
-                    "rune_count": len(runes),
+                    "rune_count": 11,
                     "runes": runes,
+                    "cards": cards,
+                    "draw_provenance_status": record.get("draw_provenance_status"),
                     "created_date": record.get("created_date"),
                     "era_name": record.get("era_name") or work.get("era_name"),
                     "recommended_version": recommended,
                     "mapping_status": record.get("mapping_status") or record.get("status"),
-                    "provenance_status": record.get("provenance_status"),
                 },
             })
 
