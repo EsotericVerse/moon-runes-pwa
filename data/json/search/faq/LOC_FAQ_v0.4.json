@@ -4,7 +4,7 @@
     "id": "loc-faq-v0.4",
     "title": "LOC FAQ v0.4",
     "language": "zh-Hant-TW",
-    "canon_version": "0.5r",
+    "canon_version": "1.0",
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
@@ -530,7 +530,7 @@
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1111,7 +1111,7 @@
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1181,7 +1181,7 @@
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
         "governance.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1251,7 +1251,7 @@
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
         "search.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1327,7 +1327,7 @@
         "evolution.html",
         "context.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1771,7 +1771,7 @@
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2194,7 +2194,7 @@
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2245,7 +2245,7 @@
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
