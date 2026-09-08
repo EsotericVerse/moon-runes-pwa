@@ -3,7 +3,7 @@
 
   const REGISTRY_URL='data/json/registries/LOC_ERA_REGISTRY.json';
   const SHEET_API='https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec';
-  const LEGACY_MAP={P0:'P4.1','P0.5':'P4.2',P1:'P5.0',P2:'P5.1',P3:'P5.2',P4:'P5.3',P5:'P5.4',P6:'P5.5',P7:'P5.6',P8:'P5.7'};
+  const LEGACY_MAP={P0:'P5.0','P0.5':'P5.1',P1:'P6.0',P2:'P6.1',P3:'P6.2',P4:'P7.0',P5:'P7.0',P6:'P7.0',P7:'P7.1',P8:'P7.2'};
   let memory=null;
   let inflight=null;
 
@@ -33,11 +33,12 @@
     if(baselineSet?.has(p))return true;
     return /^P\d+\.\d+$/.test(p);
   }
-  function merge(baseRows, remoteRows){
+  function merge(baseRows, remoteRows, definitionVersion=''){
     const baseline=(baseRows||[]).map(clean).filter(x=>x.period);
     const baselineSet=new Set(baseline.map(x=>x.period));
     const byPeriod=new Map(baseline.map(x=>[x.period,x]));
     for(const raw of remoteRows||[]){
+      if(definitionVersion && n(raw?.definition_version)!==n(definitionVersion)) continue;
       const row=clean(raw);
       const p=normalizePeriod(row.period);
       if(!isPublicPeriod(p,baselineSet))continue;
@@ -65,11 +66,12 @@
         const d=await fetchJson(u.toString());
         remote=Array.isArray(d)?{eras:d}:d||{eras:[]};
       }catch(_){}
-      const eras=merge(registry.eras||[],remote.eras||[]);
+      const definitionVersion=n(registry.definition_version)||n(registry.schema_version);
+      const eras=merge(registry.eras||[],remote.eras||[],definitionVersion);
       const current=eras.find(x=>x.status==='current')||eras[eras.length-1]||null;
       const segmentCount=eras.filter(x=>x.period_type!=='parent').length;
       memory={
-        version:n(registry.schema_version)||'—',
+        version:n(registry.definition_version)||n(registry.schema_version)||'—',
         updated_at:n(registry.updated_at)||'',
         eras,
         current,
