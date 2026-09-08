@@ -1,23 +1,89 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-08",
+  "generated_at": "2026-09-09",
   "text_summary": {
     "catalogued_records": 26739,
     "searchable_records": 24309,
     "fulltext_records": 23906,
     "start_date": "2005-04-12",
-    "end_date": "2026-09-06"
+    "end_date": "2026-09-06",
+    "char_count": 2356594,
+    "char_count_unit": "characters",
+    "char_count_scope": "searchable full-text body only"
   },
   "text_sources": [
-    {"source":"Facebook","records":18329,"searchable_records":18329,"start_date":"2009-09-30","end_date":"2026-08-30","status":"全文可搜尋"},
-    {"source":"Threads","records":7008,"searchable_records":4578,"start_date":"2024-11-18","end_date":"2026-09-06","status":"主貼文 4,578 筆可搜尋；回覆 2,430 筆待母檔回補"},
-    {"source":"KKCity","records":940,"searchable_records":940,"start_date":"2005-04-12","end_date":"2010-09-21","status":"離線史料全文可搜尋"},
-    {"source":"無名小站","records":59,"searchable_records":59,"start_date":"2009-01-23","end_date":"2012-01-30","status":"離線史料全文可搜尋"},
-    {"source":"Suno 歌詞作品","records":403,"searchable_records":403,"fulltext_records":0,"start_date":"2025-10-16","end_date":"2026-09-03","status":"作品語意可搜尋；完整歌詞待母資料回補"}
+    {
+      "source": "Facebook",
+      "records": 18329,
+      "searchable_records": 18329,
+      "start_date": "2009-09-30",
+      "end_date": "2026-08-30",
+      "status": "全文可搜尋",
+      "char_count": 1352152
+    },
+    {
+      "source": "Threads",
+      "records": 7008,
+      "searchable_records": 4578,
+      "start_date": "2024-11-18",
+      "end_date": "2026-09-06",
+      "status": "主貼文 4,578 筆可搜尋；回覆 2,430 筆待母檔回補",
+      "char_count": 539996
+    },
+    {
+      "source": "KKCity",
+      "records": 940,
+      "searchable_records": 940,
+      "start_date": "2005-04-12",
+      "end_date": "2010-09-21",
+      "status": "離線史料全文可搜尋",
+      "char_count": 421187
+    },
+    {
+      "source": "無名小站",
+      "records": 59,
+      "searchable_records": 59,
+      "start_date": "2009-01-23",
+      "end_date": "2012-01-30",
+      "status": "離線史料全文可搜尋",
+      "char_count": 43259
+    },
+    {
+      "source": "Suno 歌詞作品",
+      "records": 403,
+      "searchable_records": 403,
+      "fulltext_records": 0,
+      "start_date": "2025-10-16",
+      "end_date": "2026-09-03",
+      "status": "作品語意可搜尋；完整歌詞待母資料回補"
+    }
   ],
   "media_sources": [
-    {"source":"Instagram Reels／貼文","records":196,"public_url_records":183,"start_date":"2024-11-17","end_date":"2026-08-29","status":"183 筆具公開 URL；13 筆待補"},
-    {"source":"Facebook 圖片貼文","records":802,"public_url_records":0,"start_date":"2011-06-12","end_date":"2026-08-29","status":"匯出媒體路徑已保留；公開 URL 待補"}
+    {
+      "source": "Instagram Reels／貼文",
+      "records": 196,
+      "public_url_records": 183,
+      "start_date": "2024-11-17",
+      "end_date": "2026-08-29",
+      "status": "183 筆具公開 URL；13 筆待補"
+    },
+    {
+      "source": "Facebook 圖片貼文",
+      "records": 802,
+      "public_url_records": 0,
+      "start_date": "2011-06-12",
+      "end_date": "2026-08-29",
+      "status": "匯出媒體路徑已保留；公開 URL 待補"
+    }
   ],
-  "policy": "Counts distinguish catalogued, searchable, full-text, and public-URL-ready records. Restricted classification 爭議文章 is excluded from display and search."
+  "policy": "Counts distinguish catalogued, searchable, full-text, and public-URL-ready records. Restricted classification 爭議文章 is excluded from display and search.",
+  "knowledge_summary": {
+    "registered_assets": 31,
+    "faq_items": 90,
+    "searchable_unit_floor": 515,
+    "indexed_source_characters_raw": 1180877,
+    "indexed_source_characters_deduplicated": 1094339,
+    "deduplication_note": "LOC_FAQ_RAG_v0.4.json is excluded from deduplicated KM source volume because it is a retrieval projection of the same 90 FAQ items.",
+    "counting_note": "KM source character volume is kept separate from authored full-text body character count because structured JSON/JS sources contain metadata and schema text."
+  }
 }
