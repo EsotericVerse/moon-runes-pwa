@@ -1628,7 +1628,8 @@
     quick();
     
     renderSourceStats();
-    facets().finally(bootFromUrl);
+    bootFromUrl();
+    facets();
     if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'));
   </script>
   <script src="js/loc-nav.js"></script>
