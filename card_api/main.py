@@ -959,7 +959,10 @@ async def unified_search(input: UnifiedSearchInput):
     if requested_type == "text_record":
         merged_groups = {}
         total = 0
-        for text_type in ("text_work", "governance_article", "governance_fragment"):
+        # text_record must include the LOC4 Threads corpus itself. Previously
+        # this branch searched text_work/governance only, which silently
+        # excluded Threads whenever the UI selected the text category.
+        for text_type in ("text_record", "text_work", "governance_article", "governance_fragment"):
             partial = searcher.search(
                 query,
                 top_k=input.top_k,
@@ -977,8 +980,16 @@ async def unified_search(input: UnifiedSearchInput):
             )
             for group_name, items in (partial.get("groups") or {}).items():
                 if items:
-                    merged_groups.setdefault(group_name, []).extend(items)
-                    total += len(items)
+                    bucket = merged_groups.setdefault(group_name, [])
+                    seen = {str(item.get("result_id") or "") for item in bucket}
+                    for item in items:
+                        rid = str(item.get("result_id") or "")
+                        if rid and rid in seen:
+                            continue
+                        bucket.append(item)
+                        if rid:
+                            seen.add(rid)
+                        total += 1
         if not requested_source:
             fb_searcher = get_facebook_searcher(required=False)
             fb_items = fb_searcher.search(
