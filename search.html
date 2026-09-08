@@ -899,13 +899,37 @@
     }
     async function renderSourceStats(){
       try{
-        const data=await localJson('data/json/generated/search/SEARCH_SOURCE_STATS.json');
+        const [data,eraData]=await Promise.all([
+          localJson('data/json/generated/search/SEARCH_SOURCE_STATS.json'),
+          localJson('data/json/registries/LOC_ERA_REGISTRY.json')
+        ]);
         const s=data.text_summary||{};
+        const spanLabel=(start,end)=>{
+          if(!start||!end)return '—';
+          const a=new Date(start+'T00:00:00'),b=new Date(end+'T00:00:00');
+          let months=(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth());
+          if(b.getDate()<a.getDate())months--;
+          const years=Math.floor(Math.max(0,months)/12);
+          const rest=Math.max(0,months)%12;
+          return years+' 年'+(rest?' '+rest+' 個月':'');
+        };
+        const eras=(eraData.eras||[]).filter(x=>x.status==='released'||x.status==='current');
+        const eraHtml=eras.length?`<div class="source-era-strip">${eras.map(x=>`<span class="filter-chip" title="${esc((x.start_date||'')+' → '+(x.end_date||'現在'))}">${esc(x.display_label||x.name||x.period)}</span>`).join('')}</div>`:'';
         el('sourceStatsUpdated').textContent=`更新：${data.generated_at||'—'}`;
-        el('sourceStatsBody').innerHTML=`<div class="source-stats-summary"><div class="source-stat-total"><strong>${Number(s.catalogued_records||0).toLocaleString('zh-TW')}</strong><small>文字來源總數</small></div><div class="source-stat-total"><strong>${Number(s.searchable_records||0).toLocaleString('zh-TW')}</strong><small>目前可搜尋</small></div><div class="source-stat-total"><strong>${esc(s.start_date||'—')} → ${esc(s.end_date||'—')}</strong><small>文字時間範圍</small></div></div>${sourceRows(data.text_sources||[])}<details><summary>多媒體來源與 URL 狀態</summary>${sourceRows(data.media_sources||[],'public_url_records')}</details>`;
+        el('sourceStatsBody').innerHTML=`
+          <div class="source-stats-summary">
+            <div class="source-stat-total"><strong>${Number(s.searchable_records||0).toLocaleString('zh-TW')}</strong><small>可搜尋文字總數</small></div>
+            <div class="source-stat-total"><strong>${spanLabel(s.start_date,s.end_date)}</strong><small>實際文字跨度</small></div>
+            <div class="source-stat-total"><strong>${esc(s.start_date||'—')} → ${esc(s.end_date||'—')}</strong><small>目前資料範圍</small></div>
+          </div>
+          <section class="source-era-overview">
+            <div class="source-search-head"><strong>時期</strong><small>依現行時期定義展示整體文字時間軸</small></div>
+            ${eraHtml}
+          </section>
+          <details><summary>查看來源文章數與搜尋狀態</summary>${sourceRows(data.text_sources||[])}</details>`;
       }catch(_){el('sourceStatsBody').innerHTML='<div class="empty">搜尋資料統計暫時無法載入。</div>'}
     }
-    async function facets(){
+        async function facets(){
       try{
         const data=await window.LOCPeriods.load({force:true});
         await window.LOCPeriods.fillSelect(el('period'),{includeAll:true,allLabel:'全部時期'});
