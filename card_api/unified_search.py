@@ -135,7 +135,7 @@ class UnifiedSearchEngine:
         startup and bounds per-query memory to roughly one shard plus matches.
         """
         manifest = getattr(self, "loc4_thread_manifest", {}) or {}
-        shards = manifest.get("shards", []) or []
+        shards = manifest.get("browser_shards", []) or manifest.get("shards", []) or []
         if shards:
             for shard in shards:
                 path = shard.get("path")
