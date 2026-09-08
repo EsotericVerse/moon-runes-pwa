@@ -84,6 +84,9 @@
 .era-setting-grid label{display:grid;gap:5px;color:var(--muted);font-size:.75rem}.era-setting-grid input,.era-setting-grid select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#091522;color:var(--text)}
 .era-setting-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.era-setting-actions button{border:1px solid var(--line);border-radius:10px;background:rgba(180,158,255,.08);color:var(--text);padding:8px 11px;cursor:pointer}
 .era-setting-status{color:var(--muted);font-size:.8rem;margin-bottom:12px}
+.source-governance-row{grid-template-columns:minmax(170px,1.6fr) repeat(4,minmax(110px,1fr));align-items:start}
+.source-governance-row .term small,.source-governance-row .metric small{display:block;color:var(--muted);font-size:.72rem;margin-top:3px}
+@media(max-width:900px){.source-governance-row{grid-template-columns:1fr 1fr}.source-governance-row .term{grid-column:1/-1}}
 @media(max-width:900px){.era-setting-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.era-setting-grid{grid-template-columns:1fr}}
 </style>
@@ -115,8 +118,12 @@
         <div class="workspace-nav-label">03 · 排行</div>
         <button class="workspace-switch" type="button" data-search-view="ranking"><strong>排行榜</strong><small>依時間跨度觀察關鍵字</small></button>
       </div>
+      <div class="workspace-nav-group">
+        <div class="workspace-nav-label">04 · 資料</div>
+        <button class="workspace-switch" type="button" data-search-view="sources"><strong>資料來源</strong><small>檢查平台資料時間與更新狀態</small></button>
+      </div>
     </nav>
-    <div class="workspace-foot">多元搜尋、時期設定、排行榜各自分工；搜尋負責跨格式查找，時期定義作品的時間跨度，排行榜再依這些跨度觀察詞彙分布。</div>
+    <div class="workspace-foot">多元搜尋、時期設定、排行榜、資料來源各自分工；資料來源以最早／最新資料日期作為更新判斷基準。</div>
   </aside>
   <main class="page workspace-main">
     <div class="search-view" id="queryView">
@@ -244,6 +251,20 @@
         <div class="ranking-list" id="searchUsageList"><div class="empty">開始搜尋後會在這裡累積。</div></div>
       </section>
     </div>
+
+    <div class="search-view" id="sourcesView" hidden>
+      <header class="hero loc-header">
+        <p class="loc-header-meta">Source Status</p>
+        <h1 class="loc-header-title">資料來源</h1>
+        <h2 class="loc-header-subtitle">查看每個平台目前匯入到哪一天。</h2>
+        <p class="loc-header-copy">資料時間採實際已匯入內容的最早與最新日期。之後更新來源時，以最新資料日期是否往後推進作為第一個檢查點。</p>
+      </header>
+      <section class="ranking-panel">
+        <div class="ranking-head"><div><h2>來源更新狀態</h2><p>平台｜最早資料｜最新資料｜總字數｜總文章／歌曲／圖片／多媒體數</p></div></div>
+        <div class="era-setting-status" id="sourceGovernanceStatus">載入來源資料…</div>
+        <div class="ranking-list" id="sourceGovernanceList"><div class="empty">載入中…</div></div>
+      </section>
+    </div>
     
   </main>
   </div>
@@ -296,10 +317,42 @@
       qel('queryView').hidden=name!=='query';
       qel('eraView').hidden=name!=='era';
       qel('rankingView').hidden=name!=='ranking';
+      qel('sourcesView').hidden=name!=='sources';
       document.querySelectorAll('[data-search-view]').forEach(b=>b.classList.toggle('active',b.dataset.searchView===name));
       if(name==='era')renderEraSettings();
       if(name==='ranking'){renderSearchRanking();renderSearchUsage();}
+      if(name==='sources')renderSourceGovernance();
     }
+    async function renderSourceGovernance(){
+      const host=qel('sourceGovernanceList'),status=qel('sourceGovernanceStatus');
+      if(!host||!status)return;
+      host.innerHTML='<div class="empty">載入來源資料中…</div>';
+      try{
+        const data=await fetch('data/json/generated/search/SEARCH_SOURCE_STATS.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('統計檔載入失敗');return r.json();});
+        const rows=[...(data.text_sources||[]),...(data.media_sources||[])];
+        const fmt=n=>Number.isFinite(Number(n))?Number(n).toLocaleString('zh-TW'):'—';
+        const countLabel=row=>{
+          const n=row.records??row.searchable_records??row.public_url_records;
+          if(row.source==='Suno 歌詞作品')return fmt(n)+' 首歌曲';
+          if(/圖片/.test(row.source||''))return fmt(n)+' 張／筆圖片';
+          if(/Instagram|Reels|多媒體/.test(row.source||''))return fmt(n)+' 筆多媒體';
+          return fmt(n)+' 篇／筆';
+        };
+        host.innerHTML=rows.map(row=>`
+          <div class="ranking-row source-governance-row">
+            <div class="term"><strong>${escRank(row.source||'未命名來源')}</strong><small>${escRank(row.status||'')}</small></div>
+            <div class="metric"><strong>${escRank(row.start_date||'—')}</strong><small>最早資料</small></div>
+            <div class="metric"><strong>${escRank(row.end_date||'—')}</strong><small>最新資料</small></div>
+            <div class="metric"><strong>${row.char_count!=null?fmt(row.char_count):'待重算'}</strong><small>總字數</small></div>
+            <div class="metric"><strong>${countLabel(row)}</strong><small>總數量</small></div>
+          </div>`).join('');
+        status.textContent=`統計檔更新：${data.generated_at||'—'} · 「最新資料」是後續更新時的主要比對欄位。`;
+      }catch(err){
+        status.textContent='來源資料載入失敗：'+String(err.message||err);
+        host.innerHTML='<div class="empty">目前無法讀取來源統計。</div>';
+      }
+    }
+
     async function renderEraSettings(){
       const host=qel('eraSettingsList'),status=qel('eraSettingStatus'); if(!host)return;
       host.innerHTML='<div class="empty">載入時期設定中…</div>';
