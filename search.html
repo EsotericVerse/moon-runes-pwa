@@ -1535,9 +1535,11 @@
       }
       try{recordSearchUsage(q);}catch(_){}
       const hints=inferNaturalSearchHints(q);
-      el('contentType').value=hints.contentType||'';
+      const urlType=new URLSearchParams(location.search).get('content_type')||'';
+      const type=(urlType&&isRunePublicCategory(urlType))?urlType:(hints.contentType||'');
+      const backendQuery=hints.explicitRune||q;
+      el('contentType').value=type;
       el('sourceFilter').value=hints.source||'';
-      const type=hints.contentType||'';
       const apiType=apiContentType(type);
       const source=hints.source||'';
       let threadsLoadError='';
@@ -1565,7 +1567,7 @@
         }
 
         el('status').textContent=type==='text_record'?'正在搜尋文字資料……':'正在同時查詢符文、作品、媒體、知識與時期資料……';
-        const range=effectiveSearchRange();const body={query:q,top_k:10,content_type:apiType,source:source,period:'',start_date:range.start,end_date:range.end};
+        const range=effectiveSearchRange();const body={query:backendQuery,top_k:20,content_type:apiType,source:source,period:'',start_date:range.start,end_date:range.end};
         const r=await fetch(`${API}/search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const d=await r.json();
         if(!r.ok)throw new Error(d.detail||'搜尋失敗');
@@ -1592,7 +1594,7 @@
           }
         }
 
-        d.groups=enforceLiteralShortQuery(d.groups||{},q);
+        d.groups=hints.explicitRune?(d.groups||{}):enforceLiteralShortQuery(d.groups||{},q);
         d.groups=applyPublicCategoryFilter(d.groups||{},type,hints.explicitRune||'');
         const total=Object.values(d.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
         const threadsCount=Object.values(d.groups||{}).flat().filter(item=>(item?.source_refs||[]).some(ref=>ref?.source_type==='threads')).length;
@@ -1601,11 +1603,11 @@
         el('status').textContent=total
           ? `找到 ${total} 筆相關結果 · Threads ${threadsCount} 筆${threadsLoadError?' · Threads fallback 失敗：'+threadsLoadError:''}`
           : `沒有找到足夠接近的內容${threadsLoadError?' · Threads fallback 失敗：'+threadsLoadError:''}`;
-        render(d.groups,d.synthesis,d.graph);
+        render(d.groups,type==='rune_system'?null:d.synthesis,type==='rune_system'?null:d.graph);
       }catch(err){
         try{
-          const fallback=await localStaticSearch(q,{topK:50,type:apiType,source,period:el('period').value});
-          fallback.groups=enforceLiteralShortQuery(fallback.groups||{},q);
+          const fallback=await localStaticSearch(backendQuery,{topK:50,type:apiType,source,period:el('period').value});
+          fallback.groups=hints.explicitRune?(fallback.groups||{}):enforceLiteralShortQuery(fallback.groups||{},q);
           fallback.groups=applyPublicCategoryFilter(fallback.groups||{},type,hints.explicitRune||'');
           const total=Object.values(fallback.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
           if(total){
