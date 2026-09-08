@@ -639,8 +639,18 @@ function normalizeEra_(raw) {
     source_active_source: raw.source_active_source || '',
     source_event_id: raw.source_event_id || '',
     system_id: raw.system_id || 'lo3rwang',
+    definition_version: raw.definition_version || '',
     updated_at: stamp
   };
+}
+
+function ensureEraColumns_(sheet, requiredHeaders) {
+  const headers = getHeaders_(sheet);
+  const missing = requiredHeaders.filter(h => headers.indexOf(h) < 0);
+  if (!missing.length) return headers;
+  const start = headers.length + 1;
+  sheet.getRange(1, start, 1, missing.length).setValues([missing]);
+  return headers.concat(missing);
 }
 
 function updateEraById_(eraId, patch) {
@@ -648,7 +658,7 @@ function updateEraById_(eraId, patch) {
   lock.waitLock(10000);
   try {
     const sheet = getSheet_(ERA_SHEET);
-    const headers = getHeaders_(sheet);
+    const headers = ensureEraColumns_(sheet, ['definition_version']);
     const idCol = headers.indexOf('era_id');
     if (idCol < 0) throw new Error('Era has no era_id column');
     const values = sheet.getDataRange().getDisplayValues();
