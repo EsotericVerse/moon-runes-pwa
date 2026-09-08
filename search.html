@@ -1435,8 +1435,18 @@
       renderSourceSearchLinks();
       history.replaceState(null,'',location.pathname);
     }
+    function extractExplicitRuneQuery(query){
+      const q=String(query||'').trim();
+      const names=['靈','魂','彩','憶','界','域','鏡','核','向','斷','封','鍊','啟','分','悟','誤','生','老','病','死','心','愛','語','韻','樹','花','葉','草','根','種','實','枝','金','玉','晶','地','石','鑽','礦','塵','光','暗','水','火','風','土','雷','氣','日','月','星','辰','明','時','空','因','福','禍','無','夢','幻','緣','虛','果','玄','命'];
+      for(const name of names){
+        if(q.includes(name+'之符文')) return name;
+      }
+      return '';
+    }
+
     function inferNaturalSearchHints(query){
       const q=String(query||'').trim();
+      const explicitRune=extractExplicitRuneQuery(q);
       let source='';
       if(/\bIG\b|Instagram|インスタ/i.test(q)) source='instagram';
       else if(/Threads/i.test(q)) source='threads';
@@ -1447,12 +1457,13 @@
       // Only apply a content hint when the wording is explicit.
       // Otherwise keep all categories visible.
       let contentType='';
-      if(/文字|文章|貼文|小說|散文|日記|生活文字/i.test(q)) contentType='text_record';
+      if(explicitRune) contentType='rune_system';
+      else if(/文字|文章|貼文|小說|散文|日記|生活文字/i.test(q)) contentType='text_record';
       else if(/歌曲|歌詞|音樂|Suno/i.test(q)) contentType='lyrics_work';
       else if(/圖片|影像|照片|影音|影片|Instagram|\bIG\b/i.test(q)) contentType='multimedia';
       else if(/文件|知識庫|FAQ|規格/i.test(q)) contentType='knowledge';
 
-      return {source,contentType};
+      return {source,contentType,explicitRune};
     }
 
     function selectedText(id){
