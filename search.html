@@ -305,11 +305,20 @@
         const res=await fetch(SHEET_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'update_era',era}),redirect:'follow'});
         const data=await res.json();
         if(!res.ok||data?.ok===false)throw new Error(data?.error||'時期更新失敗');
-        Object.assign(current,data?.era||era);
         window.LOCPeriods.invalidate();
+        const verify=await window.LOCPeriods.load({force:true});
+        const saved=(verify.eras||[]).find(x=>String(x.period||'')===String(era.period||''));
+        const same=saved
+          && String(saved.name||'')===String(era.name||'')
+          && String(saved.start_date||'')===String(era.start_date||'')
+          && String(saved.end_date||'')===String(era.end_date||'')
+          && String(saved.status||'')===String(era.status||'')
+          && String(saved.description||'')===String(era.description||'');
+        if(!same)throw new Error('已送出，但重新讀取後內容不一致，未視為更新成功');
+        Object.assign(current,saved);
         await renderEraSettings();
         await facets();
-        status.textContent=(era.period||era.era_id)+' 已更新，所有時期 View 已重新載入。';
+        status.textContent=(era.period||era.era_id)+' 已更新並驗證成功。';
       }catch(err){
         status.textContent='時期更新失敗：'+String(err.message||err);
       }
