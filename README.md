@@ -6,7 +6,7 @@ LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋�
 
 > 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
 
-- **現行 Canon：0.5r**
+- **現行 Canon：1.0（正式版）**
 - **Web Build：0.5**
 - **公開網站：<https://loc.lo3rwang.cc/>**
 - **作者：Lucas Oscar Wang 政德**
@@ -20,7 +20,7 @@ LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋�
 
 - **LOC1**：66 符固定骨架、每日抽、單卡／雙卡／三卡／五卡與月相顯示已具備；OW3gs 十一張語法與案例資料已存在，但目前公開抽牌入口暫未開放連結。
 - **LOC2**：Context／Relation／Event／Graph 與 Semantic Playground 已有可展示實作；Graph 本體權責固定歸 LOC2。
-- **LOC3**：Suno corpus 已整理至 773 首；歌曲／歌詞搜尋與時期分析已有基礎，後續補新歌同步與分類。
+- **LOC3**：Suno corpus、歌曲／歌詞搜尋與時期分析已有基礎；作品數量屬流動資料，不列入 Canon。
 - **LOC4**：小說、文章、Pixnet、PTT、Threads 與 Facebook 等文字來源逐步納入統一 corpus；早期作品首次發表日期與後期潤稿版分開治理。
 - **LOC5 MultiMedia／多媒體**：Reels、圖像、影音與系統視覺資產已有實際成果；目前以 Registry、來源對應與搜尋整合為主。
 - **LOC6 Methodology／方法論**：治理是其中一種代表方法，現行治理內容集中在 `governance.html`；政德風是重要實例。
@@ -293,7 +293,7 @@ LOC6 是方法論；治理是其中一種代表方法，政德風則是重要的
 | 檔案 | 用途 |
 |---|---|
 | `LunaRune64.xlsx` | LunaRunes 母資料 / Single Source of Truth |
-| `docs/LOC_Canon.docx` | LOC Canon 0.5r |
+| `docs/LOC_Canon.docx` | LOC Canon 1.0 正式版 |
 | `docs/64LunaRune.docx` | 命運句語法圖鑑 |
 | `docs/LunarRunesCardCut.pdf` | 紙本符文卡輸出 |
 | `governance.html` | 系統、資料與 Repository 治理統一入口 |
