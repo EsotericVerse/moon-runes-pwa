@@ -204,7 +204,7 @@
       </form>
     </section>
     <section class="source-stats" id="sourceStats" aria-labelledby="sourceStatsTitle">
-      <div class="source-stats-head"><div><h2 id="sourceStatsTitle">搜尋資料總覽</h2><p>資料來源、文字總數與時間範圍</p></div><p id="sourceStatsUpdated">載入中…</p></div>
+      <div class="source-stats-head"><div><h2 id="sourceStatsTitle">搜尋資料總覽</h2><p>資料來源、文字紀錄數與時間範圍</p></div><p id="sourceStatsUpdated">載入中…</p></div>
       <div id="sourceStatsBody"><div class="empty">載入搜尋資料統計中…</div></div>
     </section>
     <div class="status" id="status" aria-live="polite"></div>
@@ -1039,8 +1039,8 @@
         el('sourceStatsUpdated').textContent=`更新：${data.generated_at||'—'}`;
         el('sourceStatsBody').innerHTML=`
           <div class="source-stats-summary">
-            <div class="source-stat-total"><strong>${Number(s.searchable_records||0).toLocaleString('zh-TW')}</strong><small>可搜尋文字總數</small></div>
-            <div class="source-stat-total"><strong>${spanLabel(s.start_date,s.end_date)}</strong><small>實際文字跨度</small></div>
+            <div class="source-stat-total"><strong>${Number(s.searchable_records||0).toLocaleString('zh-TW')} 筆</strong><small>可搜尋文字紀錄</small></div>
+            <div class="source-stat-total"><strong>${spanLabel(s.start_date,s.end_date)}</strong><small>實際資料跨度</small></div>
             <div class="source-stat-total"><strong>${esc(s.start_date||'—')} → ${esc(s.end_date||'—')}</strong><small>目前資料範圍</small></div>
           </div>
           <section class="source-era-overview">
