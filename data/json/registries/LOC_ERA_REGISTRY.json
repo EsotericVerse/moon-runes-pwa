@@ -79,14 +79,14 @@
       "era_id": "ERA-P5.1",
       "period": "P5.1",
       "order": 5.1,
-      "name": "《月語者》籌劃期",
-      "display_label": "P5.1｜《月語者》籌劃期",
+      "name": "Suno 啟用",
+      "display_label": "P5.1｜Suno 啟用",
       "start_date": "2025-02-21",
       "end_date": "2025-04-27",
       "status": "released",
       "period_type": "segment",
       "definition_version": "2.0",
-      "description": "《月語者》正式開始前的籌劃階段。"
+      "description": "Suno 開始啟用並進入音樂創作階段；目前可確認的最早作品建立於 2025-02-21。"
     },
     {
       "era_id": "ERA-P6.0",
