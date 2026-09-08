@@ -20,18 +20,21 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-ERA = [
-    ("P0", None, "2025-02-20"),
-    ("P0.5", "2025-02-21", "2025-05-06"),
-    ("P1", "2025-05-07", "2025-10-15"),
-    ("P2", "2025-10-16", "2026-01-14"),
-    ("P3", "2026-01-15", "2026-03-08"),
-    ("P4", "2026-03-09", "2026-06-09"),
-    ("P5", "2026-06-10", "2026-06-30"),
-    ("P6", "2026-07-01", "2026-07-31"),
-    ("P7", "2026-08-01", "2026-08-31"),
-    ("P8", "2026-09-01", None),
-]
+ERA_REGISTRY_PATH = Path("data/json/registries/LOC_ERA_REGISTRY.json")
+
+def load_eras() -> list[tuple[str, str | None, str | None]]:
+    raw = json.loads(ERA_REGISTRY_PATH.read_text(encoding="utf-8"))
+    eras = []
+    for row in raw.get("eras", []):
+        if row.get("period_type") == "parent":
+            continue
+        period = str(row.get("period") or "").strip()
+        if not period:
+            continue
+        eras.append((period, row.get("start_date") or None, row.get("end_date") or None))
+    return eras
+
+ERA = load_eras()
 
 def repair_meta_text(value: object) -> str:
     if not isinstance(value, str):
