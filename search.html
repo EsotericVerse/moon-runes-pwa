@@ -995,7 +995,7 @@
       const body=isThreads
         ? `<div class="summary" style="white-space:pre-wrap;line-height:1.8">${esc(text)}</div>`
         : (text?`<p class="summary">${esc(text)}</p>`:'');
-      return `<article class="card"><div class="meta"><span class="pill">${esc(publicLocLabel(r.primary_loc||"LOC6"))} · ${isThreads?"Threads":"Article"}</span><span class="pill">${esc(source)}</span>${periodLabel?`<span class="pill">${esc(periodLabel)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}${chars?`<span class="pill">${chars} 字</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${body}${terms.length?`<p class="summary"><strong>關鍵字／命中：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
+      return `<article class="card"><div class="meta"><span class="pill">${esc(publicLocLabel(r.primary_loc||"LOC6"))} · ${isThreads?"Threads":"Article"}</span><span class="pill">${esc(source)}</span>${periodLabel?`<span class="pill">${esc(periodLabel)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}${chars?`<span class="pill">${chars} 字</span>`:''}</div><h3>${esc(publicResultTitle(r))}</h3>${body}${terms.length?`<p class="summary"><strong>關鍵字／命中：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
     }
     function relationshipCard(r){
       const p=r.payload||{},src=p.source||{},targets=p.targets||[],kw=p.keywords||[],loc6=p.loc6_interpretation||{};
@@ -1128,13 +1128,27 @@
       return raw.split(/\s*\/\s*|\s*,\s*/).map(x=>{const key=(x.match(/LOC[1-8]/i)||[])[0]?.toUpperCase();return key?map[key]:x;}).join('／');
     }
 
+    function publicResultTitle(item){
+      const raw=String(item?.title||item?.result_id||'');
+      const isThreads=(item?.source_refs||[]).some(ref=>ref?.source_type==='threads');
+      // Legacy generated Threads titles embedded obsolete P0/P0.5 ERA labels.
+      // Public Search resolves period from date separately, so never expose them in the title.
+      return isThreads ? raw.replace(/｜P\d+(?:\.\d+)?｜/,'｜') : raw;
+    }
+
     function resultLocationOverview(groups){
       const cards=[];
       for(const key of resultOrderForQuery(el('query')?.value||'')){
         const items=groups?.[key]||[];
         if(!items.length) continue;
-        const meta=GROUP_LOCATION_META[key]||{loc:'LOC',label:labels[key]||key,desc:''};
-        const samples=items.slice(0,3).map(x=>x.title||x.result_id).filter(Boolean);
+        let meta=GROUP_LOCATION_META[key]||{loc:'LOC',label:labels[key]||key,desc:''};
+        if(key==='loc4_articles'){
+          const threadsCount=items.filter(x=>(x?.source_refs||[]).some(ref=>ref?.source_type==='threads')).length;
+          if(threadsCount===items.length){
+            meta={loc:'文字創作',label:'Threads 原文',desc:'作者 Threads 主貼文原文；方法論分析不混在這個分類。'};
+          }
+        }
+        const samples=items.slice(0,3).map(publicResultTitle).filter(Boolean);
         cards.push(`<article class="location-card">
           <strong>${esc(meta.loc)} · ${esc(meta.label)}</strong>
           <small>${esc(meta.desc)}</small>
