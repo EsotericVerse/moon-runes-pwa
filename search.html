@@ -519,7 +519,7 @@
         {q:'自我治理',title:'自我治理',desc:'演算法（知識庫） · 跨文件知識'}
       ]
     };
-    const labels={entities:'符文體系',scenarios:'符文脈絡',oracle:'符文籤詩',readings:'符文籤詩',runes:'符文體系',rune_songs:'符文體系',works:'自創歌曲(Suno)',textworks:'文字創作',relationships:'符文脈絡',governance:'方法論',loc4_articles:'文字／方法文章',text:'文字',media:'多媒體創作',knowledge:'演算法（知識庫）',timeline:'符文演化'};
+    const labels={entities:'月之符文母資料',scenarios:'符文脈絡',oracle:'占卜紀錄',readings:'占卜紀錄',runes:'月之符文母資料',rune_songs:'符文歌曲',works:'自創歌曲(Suno)',textworks:'符文文學',relationships:'符文脈絡',governance:'方法論',loc4_articles:'文字／方法文章',text:'文字',media:'多媒體創作',knowledge:'演算法（知識庫）',timeline:'符文演化'};
     const LOCAL_SEARCH_CACHE=new Map();
     async function localJson(path){
       if(LOCAL_SEARCH_CACHE.has(path))return LOCAL_SEARCH_CACHE.get(path);
@@ -1255,10 +1255,10 @@
         return {
           entities:g.entities||[],
           runes:g.runes||[],
-          scenarios:g.scenarios||[],
-          rune_songs:g.rune_songs||[],
-          media:(g.media||[]).filter(hasRuneRelation),
           textworks:(g.textworks||[]).filter(hasRuneRelation),
+          rune_songs:g.rune_songs||[],
+          oracle:g.oracle||[],
+          readings:g.readings||[],
           knowledge
         };
       }
