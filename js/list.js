@@ -144,8 +144,10 @@ document.addEventListener("DOMContentLoaded", () => {
       `<span class="pill">${esc(r.顯化形式)}</span>`
     ].join("");
     const runeName = String(r.符文名稱 || "").trim();
-    const searchUrl = `search.html?q=${encodeURIComponent(runeName)}`;
-    const methodUrl = `search.html?q=${encodeURIComponent(runeName + " 方法論")}`;
+    const searchQuery = `尋找目前${runeName}之符文的資料`;
+    const methodQuery = `符合${runeName}之符文演算法的文字`;
+    const searchUrl = `search.html?q=${encodeURIComponent(searchQuery)}`;
+    const methodUrl = `search.html?q=${encodeURIComponent(methodQuery)}`;
     modalData.innerHTML = fields
       .filter(([,key]) => r[key] !== undefined && r[key] !== null && String(r[key]).trim() !== "")
       .map(([label,key]) => `<div class="field"><dt>${esc(label)}</dt><dd>${esc(r[key])}</dd></div>`)
@@ -153,9 +155,9 @@ document.addEventListener("DOMContentLoaded", () => {
       `<div class="field">
         <dt>延伸查看</dt>
         <dd>
-          <a href="${searchUrl}">查看此符文的搜尋資料</a>
+          <a href="${searchUrl}">尋找目前「${esc(runeName)}」之符文的資料</a>
           <span aria-hidden="true"> · </span>
-          <a href="${methodUrl}">查看此符文的方法論</a>
+          <a href="${methodUrl}">尋找符合「${esc(runeName)}」之符文演算法的文字</a>
         </dd>
       </div>`;
     modal.showModal();
