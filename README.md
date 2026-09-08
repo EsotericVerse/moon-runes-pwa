@@ -22,9 +22,9 @@ LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋�
 - **LOC2**：Context／Relation／Event／Graph 與 Semantic Playground 已有可展示實作；Graph 本體權責固定歸 LOC2。
 - **LOC3**：Suno corpus 已整理至 773 首；歌曲／歌詞搜尋與時期分析已有基礎，後續補新歌同步與分類。
 - **LOC4**：小說、文章、Pixnet、PTT、Threads 與 Facebook 等文字來源逐步納入統一 corpus；早期作品首次發表日期與後期潤稿版分開治理。
-- **LOC5**：Reels、圖像、影音與系統視覺資產已有實際成果；目前以 Registry、來源對應與搜尋整合為主。
-- **LOC6**：治理內容已統一收斂到 `governance.html`；政德風進入 **6.1｜改名後・自我治理期**。
-- **LOC7**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與 Simple Text Analysis 已有作用中基礎；下一步是更新 FAQ 到現行 Canon／時期／頁面架構。
+- **LOC5 MultiMedia／多媒體**：Reels、圖像、影音與系統視覺資產已有實際成果；目前以 Registry、來源對應與搜尋整合為主。
+- **LOC6 Methodology／方法論**：治理是其中一種代表方法，現行治理內容集中在 `governance.html`；政德風是重要實例。
+- **LOC7 Algorithm／演算法（知識庫）**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與 Simple Text Analysis 已有作用中基礎。
 - **LOC8**：`evolution.html` 已統一承接 Period、Timeline、Trend、Trajectory；Facebook／Threads／Pixnet／PTT／Suno 等只作 source，不再建立平台專屬 Timeline 頁。
 
 ### Demo 前目前優先順序
@@ -63,9 +63,9 @@ LOC1–8 是**功能分隔與標準骨架**，不是版本、成熟度或高低�
 | LOC2 | Context 脈絡 | 節點、關係、Event、Graph、Semantic Playground |
 | LOC3 | Music 音樂 | Suno、歌曲、歌詞與音樂語意 |
 | LOC4 | Literary 文字創作 | 小說、文章、生活文字與創作 corpus |
-| LOC5 | Media 多媒體 | 圖像、影音、Reels、系統視覺化 |
-| LOC6 | Governance 治理 | 政德風、價值觀、治理句型與方法 |
-| LOC7 | Text Architecture 文字建築 | KM、搜尋、RAG、Graph RAG、文字結構與演算法 |
+| LOC5 | MultiMedia 多媒體 | 圖像、影音、Reels、系統視覺化 |
+| LOC6 | Methodology 方法論 | 治理、判讀、比較、分類與其他可重複方法 |
+| LOC7 | Algorithm 演算法（知識庫） | 方法組合、文字建築、KM、搜尋、RAG、Graph RAG 與文字分析 |
 | LOC8 | Evolution 推演 | 時期、時間線、趨勢、軌跡與跨來源時間分析 |
 
 LOC 的功能關係可概括為：
@@ -270,7 +270,7 @@ Corpus 是分析證據，不等於 Canon；Canon、原始作品、Registry、搜
 
 ## Governance / 政德風
 
-LOC6 承接治理原則、價值觀句型與政德風。
+LOC6 是方法論；治理是其中一種代表方法，政德風則是重要的個人方法／治理案例。
 
 目前政德風進入：
 
