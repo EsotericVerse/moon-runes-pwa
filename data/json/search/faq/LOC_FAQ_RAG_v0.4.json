@@ -8,7 +8,7 @@
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "由 LOC FAQ v0.4 同步產生；對齊 2026-09-08 Demo 收斂後的現行頁面、LOC1–8 分工、66 符文與時期治理。本檔為 retrieval derivative，不是 Canon。",
+    "description": "由 LOC FAQ v0.4 同步產生；LOC1–8 名稱與定位以 LOC_LANGUAGE_SYSTEM_REGISTRY.json canonical_loc_map 為唯一權威。本檔為 retrieval derivative，不是 Canon。",
     "source_dataset": "LOC_FAQ_v0.4.json",
     "parent_entry_count": 90,
     "chunk_count": 90,
@@ -556,7 +556,7 @@
         "八個LOC哪一個比較高階？",
         "第一次接觸LOC要從哪裡開始？"
       ],
-      "answer": "LOC1–8是同一套語言系統的功能責任區：LOC1 LunaRunes月之符文；LOC2 Context脈絡；LOC3 Music音樂；LOC4 Literary文字創作；LOC5 Media多媒體；LOC6 Governance治理；LOC7 Text Architecture文字建築／演算法；LOC8 Evolution推演。它們不是版本、等級或八個獨立產品。",
+      "answer": "LOC1–8不是版本、等級或八個獨立產品，而是同一套語言系統的功能責任區。現行固定為：LOC1 LunaRunes／月之符文，定位是符文語彙（Token）；LOC2 Context／脈絡；LOC3 Music／音樂；LOC4 Literary／文字創作；LOC5 MultiMedia／多媒體；LOC6 Methodology／方法論；LOC7 Algorithm／演算法（知識庫）；LOC8 Evolution／推演。其他文件與介面只能引用這套定義，不應另行改寫。",
       "keywords": [
         "LOC1–8",
         "框架",
@@ -565,11 +565,10 @@
         "Text Architecture",
         "Temporal Semantics"
       ],
-      "retrieval_text": "LOC1至LOC8是什麼關係？ LOC為什麼分成1到8？ LOC1到LOC8是版本順序嗎？ 八個LOC哪一個比較高階？ 第一次接觸LOC要從哪裡開始？ LOC1–8 框架 語言切分 Language Evolution Text Architecture Temporal Semantics LOC1–8是同一套語言系統的功能責任區：LOC1 LunaRunes月之符文；LOC2 Context脈絡；LOC3 Music音樂；LOC4 Literary文字創作；LOC5 Media多媒體；LOC6 Governance治理；LOC7 Text Architecture文字建築／演算法；LOC8 Evolution推演。它們不是版本、等級或八個獨立產品。",
+      "retrieval_text": "LOC1至LOC8是什麼關係？ LOC為什麼分成1到8？ LOC1到LOC8是版本順序嗎？ 八個LOC哪一個比較高階？ 第一次接觸LOC要從哪裡開始？ LOC1–8 框架 語言切分 Language Evolution Text Architecture Temporal Semantics LOC1–8不是版本、等級或八個獨立產品，而是同一套語言系統的功能責任區。現行固定為：LOC1 LunaRunes／月之符文，定位是符文語彙（Token）；LOC2 Context／脈絡；LOC3 Music／音樂；LOC4 Literary／文字創作；LOC5 MultiMedia／多媒體；LOC6 Methodology／方法論；LOC7 Algorithm／演算法（知識庫）；LOC8 Evolution／推演。其他文件與介面只能引用這套定義，不應另行改寫。",
       "related_ids": [],
       "source_refs": [
-        "index.html",
-        "README.md"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -1309,7 +1308,7 @@
         "Governance Distribution是什麼？",
         "LOC6是不是政德風？"
       ],
-      "answer": "LOC6 是 Governance & Interpretation 功能域，負責意義、價值判準、責任邊界、治理原則、風格狀態與政德風等分析。它回答的核心問題是「這代表什麼、應如何判斷與治理」。句法、文字結構與檢索架構主要由 LOC7 負責。",
+      "answer": "LOC6 是 Methodology／方法論，負責整理可以重複使用的理解、判讀、比較、分類、治理與處理方法。Governance／治理是 LOC6 中的一種代表方法，不等於 LOC6 全部；政德風則是其中重要的個人方法與治理案例。",
       "keywords": [
         "LOC6",
         "Governance",
@@ -1318,11 +1317,11 @@
         "價值判準",
         "責任邊界"
       ],
-      "retrieval_text": "LOC6是什麼？ LOC6主要做什麼？ Governance Distribution是什麼？ LOC6是不是政德風？ LOC6 Governance 語言治理 政德風 價值判準 責任邊界 LOC6 是 Governance & Interpretation 功能域，負責意義、價值判準、責任邊界、治理原則、風格狀態與政德風等分析。它回答的核心問題是「這代表什麼、應如何判斷與治理」。句法、文字結構與檢索架構主要由 LOC7 負責。",
+      "retrieval_text": "LOC6是什麼？ LOC6主要做什麼？ Governance Distribution是什麼？ LOC6是不是政德風？ LOC6 Governance 語言治理 政德風 價值判準 責任邊界 LOC6 是 Methodology／方法論，負責整理可以重複使用的理解、判讀、比較、分類、治理與處理方法。Governance／治理是 LOC6 中的一種代表方法，不等於 LOC6 全部；政德風則是其中重要的個人方法與治理案例。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09",
-        "zhengde-style:v1.0"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+        "governance.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -1392,7 +1391,7 @@
         "Text Architecture是什麼？",
         "文字建築學在LOC裡做什麼？"
       ],
-      "answer": "LOC7 是 Text Architecture／文字建築與演算法責任區，處理文字如何被切分、索引、檢索、建立關係與被搜尋。Search、FAQ/RAG、Graph RAG traversal 與相關文字處理能力屬於 LOC7 的實作，但不需要另外維護一份 LOC7_KM Markdown 才能成立。",
+      "answer": "LOC7 是 Algorithm／演算法（知識庫）。它把 LOC6 的多種方法結構化、組合、排序與條件化，形成可重複執行的流程；文字建築、Search、FAQ／RAG、Graph RAG traversal、文字分析與知識庫都屬 LOC7 的實作與承載。",
       "keywords": [
         "LOC7",
         "Text Architecture",
@@ -1400,11 +1399,11 @@
         "語意關係",
         "檢索"
       ],
-      "retrieval_text": "LOC7是什麼？ LOC7主要做什麼？ Text Architecture是什麼？ 文字建築學在LOC裡做什麼？ LOC7 Text Architecture 文字建築 語意關係 檢索 LOC7 是 Text Architecture／文字建築與演算法責任區，處理文字如何被切分、索引、檢索、建立關係與被搜尋。Search、FAQ/RAG、Graph RAG traversal 與相關文字處理能力屬於 LOC7 的實作，但不需要另外維護一份 LOC7_KM Markdown 才能成立。",
+      "retrieval_text": "LOC7是什麼？ LOC7主要做什麼？ Text Architecture是什麼？ 文字建築學在LOC裡做什麼？ LOC7 Text Architecture 文字建築 語意關係 檢索 LOC7 是 Algorithm／演算法（知識庫）。它把 LOC6 的多種方法結構化、組合、排序與條件化，形成可重複執行的流程；文字建築、Search、FAQ／RAG、Graph RAG traversal、文字分析與知識庫都屬 LOC7 的實作與承載。",
       "related_ids": [],
       "source_refs": [
-        "search.html",
-        "governance.html"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+        "search.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -1478,7 +1477,7 @@
         "Life Distribution是什麼？",
         "LOC8和其他LOC有什麼差別？"
       ],
-      "answer": "LOC8 是 Evolution／推演責任區，把作品、事件、每日符文與其他語言訊號放回時間，透過時期、Timeline、Trend 與 Trajectory 觀察它們如何改變。LOC8 管時間投影，不擁有 Graph 關係本體。",
+      "answer": "LOC8 是 Evolution／推演。它把前面累積的語彙、作品、脈絡、方法與演算法放回時間，透過時期、Timeline、Trend 與 Trajectory 觀察變化並形成後續推演。公開介面使用「時期」；Graph 本體 ownership 仍歸 LOC2。",
       "keywords": [
         "LOC8",
         "Life Event",
@@ -1487,10 +1486,12 @@
         "時間",
         "統合"
       ],
-      "retrieval_text": "LOC8是什麼？ LOC8主要做什麼？ Life Distribution是什麼？ LOC8和其他LOC有什麼差別？ LOC8 Life Event Temporal Semantics 事件 時間 統合 LOC8 是 Evolution／推演責任區，把作品、事件、每日符文與其他語言訊號放回時間，透過時期、Timeline、Trend 與 Trajectory 觀察它們如何改變。LOC8 管時間投影，不擁有 Graph 關係本體。",
+      "retrieval_text": "LOC8是什麼？ LOC8主要做什麼？ Life Distribution是什麼？ LOC8和其他LOC有什麼差別？ LOC8 Life Event Temporal Semantics 事件 時間 統合 LOC8 是 Evolution／推演。它把前面累積的語彙、作品、脈絡、方法與演算法放回時間，透過時期、Timeline、Trend 與 Trajectory 觀察變化並形成後續推演。公開介面使用「時期」；Graph 本體 ownership 仍歸 LOC2。",
       "related_ids": [],
       "source_refs": [
-        "evolution.html"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+        "evolution.html",
+        "context.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -1998,7 +1999,7 @@
         "LOC6 7 8差在哪？",
         "句型文法、文字建築和時間語意怎麼分？"
       ],
-      "answer": "最簡單的區分是：LOC6 Governance 問「這代表什麼、如何治理」；LOC7 Text Architecture 問「文字如何被組織、分析與找到」；LOC8 Evolution 問「它在時間中如何改變」。Graph／Relation 本體則屬 LOC2 Context。",
+      "answer": "最簡單的區分是：LOC6 Methodology 負責「有哪些可重複的方法」；LOC7 Algorithm／演算法（知識庫）負責「怎麼把多種方法組合成可執行流程並保存、檢索」；LOC8 Evolution 負責「這些語言、作品、方法與演算法在時間中如何變化」。Graph／Relation 本體屬 LOC2 Context。",
       "keywords": [
         "LOC6",
         "LOC7",
@@ -2007,13 +2008,10 @@
         "Text Architecture",
         "Temporal Semantics"
       ],
-      "retrieval_text": "LOC6、LOC7、LOC8最簡單怎麼區分？ LOC6 7 8差在哪？ 句型文法、文字建築和時間語意怎麼分？ LOC6 LOC7 LOC8 句型文法 Text Architecture Temporal Semantics 最簡單的區分是：LOC6 Governance 問「這代表什麼、如何治理」；LOC7 Text Architecture 問「文字如何被組織、分析與找到」；LOC8 Evolution 問「它在時間中如何改變」。Graph／Relation 本體則屬 LOC2 Context。",
+      "retrieval_text": "LOC6、LOC7、LOC8最簡單怎麼區分？ LOC6 7 8差在哪？ 句型文法、文字建築和時間語意怎麼分？ LOC6 LOC7 LOC8 句型文法 Text Architecture Temporal Semantics 最簡單的區分是：LOC6 Methodology 負責「有哪些可重複的方法」；LOC7 Algorithm／演算法（知識庫）負責「怎麼把多種方法組合成可執行流程並保存、檢索」；LOC8 Evolution 負責「這些語言、作品、方法與演算法在時間中如何變化」。Graph／Relation 本體屬 LOC2 Context。",
       "related_ids": [],
       "source_refs": [
-        "governance.html",
-        "search.html",
-        "evolution.html",
-        "context.html"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -2490,7 +2488,7 @@
         "方法論和演算法有什麼差別？",
         "推演在 LOC 哪裡？"
       ],
-      "answer": "公開介面以功能名稱為主，不要求使用者先理解 LOC 編號。內部 LOC1–8 仍作責任分工：LunaRunes、Context、Music、Literary、Media、Governance、Text Architecture、Evolution；技術層可保留 Search、RAG、Graph、Trend 等實作名稱。",
+      "answer": "公開介面以功能名稱為主；現行固定責任區為 LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm（知識庫）、Evolution。技術層可使用 Search、RAG、Graph、Trend 等實作名稱，但不能反過來改寫 LOC1–8 的正式定位。",
       "keywords": [
         "表達",
         "方法論",
@@ -2501,11 +2499,10 @@
         "符文演算",
         "符文演化"
       ],
-      "retrieval_text": "LOC 的公開 Tag 怎麼分？ LOC3到8怎麼分類？ 方法論和演算法有什麼差別？ 推演在 LOC 哪裡？ 表達 方法論 演算法 推演 符文籤詩 符文體系 符文演算 符文演化 公開介面以功能名稱為主，不要求使用者先理解 LOC 編號。內部 LOC1–8 仍作責任分工：LunaRunes、Context、Music、Literary、Media、Governance、Text Architecture、Evolution；技術層可保留 Search、RAG、Graph、Trend 等實作名稱。",
+      "retrieval_text": "LOC 的公開 Tag 怎麼分？ LOC3到8怎麼分類？ 方法論和演算法有什麼差別？ 推演在 LOC 哪裡？ 表達 方法論 演算法 推演 符文籤詩 符文體系 符文演算 符文演化 公開介面以功能名稱為主；現行固定責任區為 LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm（知識庫）、Evolution。技術層可使用 Search、RAG、Graph、Trend 等實作名稱，但不能反過來改寫 LOC1–8 的正式定位。",
       "related_ids": [],
       "source_refs": [
-        "index.html",
-        "search.html"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -2552,7 +2549,7 @@
         "LOC2為什麼是脈絡？",
         "LOC8為什麼叫推演？"
       ],
-      "answer": "現行分類是：LOC1 LunaRunes月之符文、LOC2 Context脈絡、LOC3 Music音樂、LOC4 Literary文字創作、LOC5 Media多媒體、LOC6 Governance治理、LOC7 Text Architecture文字建築／演算法、LOC8 Evolution推演。LOC1–8是功能責任分隔，不是版本或高低層級。",
+      "answer": "現行分類固定為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。這套名稱與定位以 LOC_LANGUAGE_SYSTEM_REGISTRY.json 的 canonical_loc_map 為唯一現行權威。",
       "keywords": [
         "LOC1",
         "LOC2",
@@ -2561,11 +2558,10 @@
         "演算法",
         "推演"
       ],
-      "retrieval_text": "LOC1–8 現在怎麼分類？ LOC最新八個分類是什麼？ LOC2為什麼是脈絡？ LOC8為什麼叫推演？ LOC1 LOC2 脈絡 方法論 演算法 推演 現行分類是：LOC1 LunaRunes月之符文、LOC2 Context脈絡、LOC3 Music音樂、LOC4 Literary文字創作、LOC5 Media多媒體、LOC6 Governance治理、LOC7 Text Architecture文字建築／演算法、LOC8 Evolution推演。LOC1–8是功能責任分隔，不是版本或高低層級。",
+      "retrieval_text": "LOC1–8 現在怎麼分類？ LOC最新八個分類是什麼？ LOC2為什麼是脈絡？ LOC8為什麼叫推演？ LOC1 LOC2 脈絡 方法論 演算法 推演 現行分類固定為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。這套名稱與定位以 LOC_LANGUAGE_SYSTEM_REGISTRY.json 的 canonical_loc_map 為唯一現行權威。",
       "related_ids": [],
       "source_refs": [
-        "index.html",
-        "README.md"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
