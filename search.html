@@ -332,11 +332,14 @@
         const rows=[...(data.text_sources||[]),...(data.media_sources||[])];
         const fmt=n=>Number.isFinite(Number(n))?Number(n).toLocaleString('zh-TW'):'—';
         const countLabel=row=>{
+          const counts=row.content_counts||{};
+          const labels={text:'文字',article:'文章',post:'貼文',song:'歌曲',lyrics:'歌詞',image:'圖片',video:'影片',reel:'Reels',audio:'音訊',media:'多媒體',document:'文件',reply:'回覆'};
+          const parts=Object.entries(counts)
+            .filter(([,v])=>Number(v)>0)
+            .map(([k,v])=>fmt(v)+' '+(labels[k]||k));
+          if(parts.length)return parts.join(' · ');
           const n=row.records??row.searchable_records??row.public_url_records;
-          if(row.source==='Suno 歌詞作品')return fmt(n)+' 首歌曲';
-          if(/圖片/.test(row.source||''))return fmt(n)+' 張／筆圖片';
-          if(/Instagram|Reels|多媒體/.test(row.source||''))return fmt(n)+' 筆多媒體';
-          return fmt(n)+' 篇／筆';
+          return fmt(n)+' 筆';
         };
         host.innerHTML=rows.map(row=>`
           <div class="ranking-row source-governance-row">
@@ -346,7 +349,7 @@
             <div class="metric"><strong>${row.char_count!=null?fmt(row.char_count):'待重算'}</strong><small>總字數</small></div>
             <div class="metric"><strong>${countLabel(row)}</strong><small>總數量</small></div>
           </div>`).join('');
-        status.textContent=`統計檔更新：${data.generated_at||'—'} · 「最新資料」是後續更新時的主要比對欄位。`;
+        status.textContent=`統計檔更新：${data.generated_at||'—'} · 每個來源可同時包含文字、文章、歌曲、圖片、影片或其他多媒體；「最新資料」是後續更新時的主要比對欄位。`;
       }catch(err){
         status.textContent='來源資料載入失敗：'+String(err.message||err);
         host.innerHTML='<div class="empty">目前無法讀取來源統計。</div>';
