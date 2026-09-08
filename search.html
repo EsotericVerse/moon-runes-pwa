@@ -503,6 +503,80 @@
       }
       return score;
     }
+    function isShortCjkLiteral(q){
+      const query=localNorm(q).replace(/\s+/g,'');
+      return query.length>0&&query.length<=3&&/[\u3400-\u9fff]/.test(query);
+    }
+    function resultLiteralText(r){
+      const p=r?.payload||{};
+      return localNorm([
+        r?.title,r?.summary,p.text,p.retrieval_text,p.title,p.summary,p.description,
+        ...(Array.isArray(p.tags)?p.tags:[]),
+        ...(Array.isArray(p.semantic_keywords)?p.semantic_keywords:[]),
+        ...(Array.isArray(p.keywords)?p.keywords:[])
+      ].filter(Boolean).join(' '));
+    }
+    function enforceLiteralShortQuery(groups,q){
+      if(!isShortCjkLiteral(q))return groups||{};
+      const query=localNorm(q).replace(/\s+/g,'');
+      const out={};
+      for(const [key,items] of Object.entries(groups||{})){
+        const kept=(items||[]).filter(r=>resultLiteralText(r).replace(/\s+/g,'').includes(query));
+        if(kept.length)out[key]=kept;
+      }
+      return out;
+    }
+    async function localGzipJson(path){
+      const cacheKey='gzip:'+path;
+      if(LOCAL_SEARCH_CACHE.has(cacheKey))return LOCAL_SEARCH_CACHE.get(cacheKey);
+      const p=(async()=>{
+        const r=await fetch(path,{cache:'no-store'});
+        if(!r.ok)throw new Error('local gzip dataset unavailable: '+path);
+        const encoding=String(r.headers.get('content-encoding')||'').toLowerCase();
+        if(encoding.includes('gzip')){
+          try{return await r.json()}catch(_){}
+        }
+        if(typeof DecompressionStream!=='function'||!r.body)throw new Error('browser gzip decompression unavailable');
+        const stream=r.body.pipeThrough(new DecompressionStream('gzip'));
+        return new Response(stream).json();
+      })();
+      LOCAL_SEARCH_CACHE.set(cacheKey,p);
+      return p;
+    }
+    async function localThreadsSearch(q,{topK=10,period='',start='',end=''}={}){
+      const query=localNorm(q).replace(/\s+/g,'');
+      if(!query)return [];
+      const manifest=await localJson('data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json');
+      const hits=[];
+      for(const shard of manifest.shards||[]){
+        const part=await localGzipJson(shard.path);
+        for(const doc of part.documents||[]){
+          if(doc.source_role!=='main_post')continue;
+          const date=String(doc.date||'').slice(0,10);
+          if(start&&date&&date<start)continue;
+          if(end&&date&&date>end)continue;
+          if(period){
+            const canonical=window.LOCPeriods.resolveDate(date,window.LOCPeriods.peek()?.eras);
+            if((canonical?.period||'')!==period)continue;
+          }
+          const text=String(doc.text||'');
+          const compact=localNorm(text).replace(/\s+/g,'');
+          if(!compact.includes(query))continue;
+          const headline=text.split(/[。！？!?\n]/,1)[0].trim();
+          hits.push({
+            result_id:doc.id,system_id:'lo3rwang',primary_loc:'LOC4',
+            related_locs:['LOC6','LOC7','LOC8'],content_type:'text_record',
+            title:'Threads｜'+(date||'undated')+(headline?'｜'+headline.slice(0,34)+(headline.length>34?'…':''):''),
+            summary:text,score:100,period:canonical?.period||doc.era||'',era_id:canonical?.era_id||(doc.era?'ERA-'+doc.era:''),
+            source_refs:[{source_type:'threads',source_id:doc.source_id,note:'primary main-post evidence'}],
+            payload:{...doc,km_source:'LOC4_THREADS_FULL_CORPUS',evidence_role:'primary'}
+          });
+          if(hits.length>=topK)break;
+        }
+        if(hits.length>=topK)break;
+      }
+      return hits;
+    }
     function localPush(scored,score,key,item){
       if(score>0)scored.push({score,key,item});
     }
@@ -607,6 +681,13 @@
           try{
             const fb=await window.LOCFacebookCorpus.search(q,{top_k:Math.max(topK,20)});
             for(const item of fb||[])localPush(scored,Number(item.score||20),'text',item);
+          }catch(_){}
+        }
+        if(!source||source==='threads'){
+          try{
+            const range=effectiveSearchRange();
+            const threads=await localThreadsSearch(q,{topK:Math.max(topK,20),period,start:range.start,end:range.end});
+            for(const item of threads)localPush(scored,Number(item.score||100),'loc4_articles',item);
           }catch(_){}
         }
       }
@@ -1346,6 +1427,20 @@
           }catch(_){}
         }
 
+        if((!source||source==='threads') && (!type||type==='all'||type==='text_record')){
+          const existing=Object.values(d.groups||{}).flat().some(item=>(item?.source_refs||[]).some(ref=>ref?.source_type==='threads'));
+          if(!existing){
+            try{
+              const threads=await localThreadsSearch(q,{topK:10,period:el('period').value,start:range.start,end:range.end});
+              if(threads.length){
+                d.groups=d.groups||{};
+                d.groups.loc4_articles=[...(d.groups.loc4_articles||[]),...threads];
+              }
+            }catch(_){}
+          }
+        }
+
+        d.groups=enforceLiteralShortQuery(d.groups||{},q);
         d.groups=applyPublicCategoryFilter(d.groups||{},type);
         const total=Object.values(d.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
         el('status').textContent=total?`找到 ${total} 筆相關結果。`:'沒有找到足夠接近的內容。';
@@ -1353,6 +1448,7 @@
       }catch(err){
         try{
           const fallback=await localStaticSearch(q,{topK:10,type:apiType,source,period:el('period').value});
+          fallback.groups=enforceLiteralShortQuery(fallback.groups||{},q);
           fallback.groups=applyPublicCategoryFilter(fallback.groups||{},type);
           const total=Object.values(fallback.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
           if(total){
