@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v158";
+const CACHE_NAME = "moon-runes-pwa-v159";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -86,6 +86,16 @@ self.addEventListener("fetch", (event) => {
 
   if (url.origin !== self.location.origin) {
     event.respondWith(fetch(request));
+    return;
+  }
+
+  // Search-critical data must never be served cache-first. These files are
+  // frequently regenerated and stale copies break corpus search.
+  if (
+    url.pathname === "/data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json" ||
+    url.pathname.startsWith("/data/json/generated/loc4/threads/main/")
+  ) {
+    event.respondWith(fetch(request, { cache: "no-store" }));
     return;
   }
 
