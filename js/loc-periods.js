@@ -113,6 +113,7 @@
     return n(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   }
   function invalidate(){memory=null;inflight=null}
+  function peek(){return memory}
 
-  window.LOCPeriods={REGISTRY_URL,SHEET_API,LEGACY_MAP,load,normalizePeriod,resolveDate,findPeriod,label,range,fillSelect,invalidate,merge};
+  window.LOCPeriods={REGISTRY_URL,SHEET_API,LEGACY_MAP,load,peek,normalizePeriod,resolveDate,findPeriod,label,range,fillSelect,invalidate,merge};
 })();
