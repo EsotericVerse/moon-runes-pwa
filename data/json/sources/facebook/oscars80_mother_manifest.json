@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "dataset": "LOC Facebook textual mother corpus",
+  "source": "Facebook",
+  "source_export": "facebook-oscars80-2026-9-8-MDkbqLd1.zip",
+  "source_member": "your_facebook_activity/posts/your_posts__check_ins__photos_and_videos_1.json",
+  "author_account": "oscars80",
+  "export_records_total": 733,
+  "text_records": 673,
+  "date_range_utc": {
+    "start": "2009-09-30T18:14:00Z",
+    "end": "2026-06-21T10:31:12Z"
+  },
+  "encoding_repair": "latin1_to_utf8_when_valid",
+  "provenance": {
+    "source_archive_sha256": "a7cd0b4ba0e24887efc9fdbd23aba6eec961d7717843f163597aaab243623e15",
+    "decoded_json_sha256": "436ee08993bfc13f48fd5f23172173d083da561698dbc4861f56c261d3a869f4",
+    "gzip_sha256": "8832a42404e61e02644163ff58f181cb3b985e9aa82e6d2ad4de74c98fc3ffea",
+    "base64_sha256": "2cb9d2ec6e6156b456fa51abd4f53fa4af07b9191e8a1d646b10813382224b90"
+  },
+  "storage": {
+    "format": "gzip(base64(JSON))",
+    "base64_length": 41404,
+    "gzip_bytes": 31051,
+    "decoded_json_bytes": 141012,
+    "parts": [
+      "oscars80_text_mother.json.gz.b64",
+      "oscars80_text_mother.part02.b64",
+      "oscars80_text_mother.part03.b64",
+      "oscars80_text_mother.part04.b64"
+    ],
+    "concatenate_without_separator": true,
+    "decoded_record_schema": {
+      "timestamp": "Facebook export Unix timestamp (UTC)",
+      "text": "encoding-repaired post text",
+      "author_account": "oscars80"
+    }
+  },
+  "analysis_policy": {
+    "source_label": "Facebook",
+    "merge_with_accounts": [
+      "sopa2306"
+    ],
+    "preserve_author_account": true,
+    "mother_data_before_derived_analysis": true
+  },
+  "status": "imported_mother",
+  "imported_at": "2026-09-08"
+}
