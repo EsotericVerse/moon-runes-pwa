@@ -11,6 +11,15 @@
       "label": "符文資料"
     },
     {
+      "id": "rune_reading",
+      "primary_loc": "LOC1",
+      "kind": "reading_record",
+      "label": "占卜結果",
+      "default_display_policy": "full",
+      "public_category": "占卜結果",
+      "classification_rule": "The record preserves an actual draw, rune positions/directions, and interpretation. OW3gs records preserve all 11 cards."
+    },
+    {
       "id": "scenario_event",
       "primary_loc": "LOC2",
       "kind": "scenario_corpus",
@@ -43,7 +52,9 @@
       "primary_loc": "LOC3",
       "kind": "work_subtype",
       "label": "符文歌曲",
-      "default_display_policy": "metadata_only"
+      "default_display_policy": "metadata_only",
+      "public_category": "符文歌曲",
+      "classification_rule": "The song text contains governed LunaRunes membership; OW3gs exact-11 records preserve exactly 11 distinct rune names."
     },
     {
       "id": "lyrics_work",
@@ -106,6 +117,15 @@
       "label": "符文文本",
       "default_display_policy": "snippet",
       "public_category": "文字創作"
+    },
+    {
+      "id": "rune_literature",
+      "primary_loc": "LOC4",
+      "kind": "work_subtype",
+      "label": "符文文學",
+      "default_display_policy": "snippet",
+      "public_category": "符文文學",
+      "classification_rule": "The literary text contains governed LunaRunes membership or a preserved rune configuration; title/theme alone is insufficient."
     },
     {
       "id": "worldbuilding",
@@ -285,7 +305,8 @@
     "Public category and source platform are separate dimensions: authored text defaults to public_category=文字創作 regardless of platform.",
     "content_type may preserve subtype such as novel, article, essay, journal, social_text_record, or text_record without changing the public category.",
     "source_platform records provenance such as Threads, Facebook, Instagram, X(Twitter), Vocus, or another actual source; source platform must not replace the public category.",
-    "X(Twitter) may be configured as a source label/test source without ingesting private or non-public posts."
+    "X(Twitter) may be configured as a source label/test source without ingesting private or non-public posts.",
+    "符文文學、符文歌曲與占卜結果必須由文本或保存紀錄中的實際符文成員支持；不得只因標題、月亮意象或主題推定。"
   ],
   "display_policy": {
     "allowed_values": [
