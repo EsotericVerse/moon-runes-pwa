@@ -1,30 +1,22 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "registry": "LOC6_RUNE_METHODOLOGY_REGISTRY",
   "authority": "LOC6",
   "basis": {
     "rune_authority": "LOC1 LunaRunes／月之符文",
-    "principle": "LOC6 的預設方法論直接使用月之符文的八組分類、第 0 符德，以及特殊符文命、玄作為固定分析座標；不另外建立與符文群組平行的情緒／理性分類體系。",
+    "principle": "LOC6 的預設方法論直接使用月之符文八組，再把第 0 符「德」與特殊符文「命／玄」合併為第九組「人生道理」；不另外建立與符文群組平行的情緒／理性分類體系。",
     "algorithm_scope": "符文演算不只包含抽牌與解牌，也包含以月之符文分類結構對文字、來源與方法進行可重複分析。"
   },
   "default_pipeline": [
     "原始文字／作品／來源資料",
     "關鍵字排行榜與來源分布作為共同統計入口",
-    "依月之符文八組＋德／命／玄進行多軸分類",
+    "依月之符文九群組方法論進行粗粒度分類",
+    "第九組「人生道理」內再區分德／命／玄三種語意",
     "LOC6 產生方法論分析結果",
     "關係型結果可提供 LOC2 Context 形成脈絡",
     "時間變化與趨勢交由 LOC8 Evolution／推演"
   ],
   "default_axes": [
-    {
-      "order": 0,
-      "id": "de",
-      "rune": "德",
-      "basis_type": "reference_rune",
-      "analysis_label": "治理／爭議性行為",
-      "description": "辨識責任、界線、公平、義務、倫理、規則與爭議性行為的語意結構。只負責描述與分類，不對行為作善惡評價、不鼓勵、不譴責，也不替使用者下道德結論。",
-      "governance_rule": "回答『這裡涉及什麼治理／道德議題』，不是『誰是對的』。"
-    },
     {
       "order": 1,
       "id": "soul",
@@ -40,7 +32,8 @@
         "核"
       ],
       "analysis_label": "個體感受",
-      "description": "分析個體內在狀態、自我感受、自我認知、記憶、界線與核心反應。"
+      "description": "分析個體內在狀態、自我感受、自我認知、記憶、界線與核心反應。",
+      "basis_type": "rune_group"
     },
     {
       "order": 2,
@@ -57,7 +50,8 @@
         "誤"
       ],
       "analysis_label": "關係陳述跟處理",
-      "description": "分析人與人、人與事、概念與概念之間的連結、分離、溝通、誤解與處理方式。"
+      "description": "分析人與人、人與事、概念與概念之間的連結、分離、溝通、誤解與處理方式。",
+      "basis_type": "rune_group"
     },
     {
       "order": 3,
@@ -74,7 +68,8 @@
         "韻"
       ],
       "analysis_label": "感性",
-      "description": "分析生命經驗、心情、愛、身體感受與感性表達。"
+      "description": "分析生命經驗、心情、愛、身體感受與感性表達。",
+      "basis_type": "rune_group"
     },
     {
       "order": 4,
@@ -91,7 +86,8 @@
         "枝"
       ],
       "analysis_label": "成長",
-      "description": "分析萌芽、累積、發展、成熟、結果與延伸。"
+      "description": "分析萌芽、累積、發展、成熟、結果與延伸。",
+      "basis_type": "rune_group"
     },
     {
       "order": 5,
@@ -108,7 +104,8 @@
         "塵"
       ],
       "analysis_label": "價值觀",
-      "description": "分析被重視、保留、交換、衡量或視為有價值的事物與判準。"
+      "description": "分析被重視、保留、交換、衡量或視為有價值的事物與判準。",
+      "basis_type": "rune_group"
     },
     {
       "order": 6,
@@ -125,7 +122,8 @@
         "氣"
       ],
       "analysis_label": "行動力",
-      "description": "分析推動、爆發、流動、阻力、方向與實際行動的動力。"
+      "description": "分析推動、爆發、流動、阻力、方向與實際行動的動力。",
+      "basis_type": "rune_group"
     },
     {
       "order": 7,
@@ -142,7 +140,8 @@
         "因"
       ],
       "analysis_label": "道理／規則",
-      "description": "分析定義、原則、因果、時間、邏輯、制度、理論與規則。"
+      "description": "分析定義、原則、因果、時間、邏輯、制度、理論與規則。",
+      "basis_type": "rune_group"
     },
     {
       "order": 8,
@@ -159,28 +158,44 @@
         "果"
       ],
       "analysis_label": "玩樂／愉悅／意外狀況",
-      "description": "分析玩樂、愉悅、偶然、想像、不確定性與意外發展。"
+      "description": "分析玩樂、愉悅、偶然、想像、不確定性與意外發展。",
+      "basis_type": "rune_group"
     },
     {
       "order": 9,
-      "id": "fate",
-      "rune": "命",
-      "basis_type": "special_rune",
-      "analysis_label": "命運",
-      "description": "分析具有命運性、既定走向或已形成之結果的語意。"
-    },
-    {
-      "order": 10,
-      "id": "chaos",
-      "rune": "玄",
-      "basis_type": "special_rune",
-      "analysis_label": "命中注定之外、但又在意料中的意外",
-      "description": "分析不屬於命中注定，但發生後又可理解為在某種意料之中的意外狀況。"
+      "id": "life_truth",
+      "group": "人生道理組",
+      "basis_type": "reference_and_special_runes",
+      "runes": [
+        "德",
+        "命",
+        "玄"
+      ],
+      "analysis_label": "人生道理",
+      "description": "分析文字中已形成的人生判斷、治理／爭議結構、命運感與意料之外但可理解的意外。作為第九組粗粒度方法，內部仍保留德、命、玄三種不同語意，不把三者混成同義詞。",
+      "submethods": [
+        {
+          "rune": "德",
+          "label": "治理／爭議性行為",
+          "description": "辨識責任、界線、公平、義務、倫理、規則與爭議性行為的語意結構。",
+          "governance_rule": "只負責描述與分類，不對行為作善惡評價、不鼓勵、不譴責，也不替使用者下道德結論；回答『這裡涉及什麼治理／道德議題』，不是『誰是對的』。"
+        },
+        {
+          "rune": "命",
+          "label": "命運",
+          "description": "分析具有命運性、既定走向或已形成之結果的語意。"
+        },
+        {
+          "rune": "玄",
+          "label": "命中注定之外、但又在意料中的意外",
+          "description": "分析不屬於命中注定，但發生後又可理解為在某種意料之中的意外狀況。"
+        }
+      ]
     }
   ],
   "ranking_method": {
     "role": "common_foundation",
-    "description": "關鍵字排行榜是 LOC6 最基本的共同分析入口，可做全體、來源別與時期別分布；排行榜本身不是額外的第十二類，而是提供十類／十一軸分析的統計基礎。",
+    "description": "關鍵字排行榜是 LOC6 最基本的共同分析入口，可做全體、來源別與時期別分布；排行榜本身不是額外群組，而是九群組方法論的統計基礎。",
     "views": [
       "總分布排行榜",
       "來源別排行榜",
@@ -196,5 +211,7 @@
     "LOC8": "比較時間、時期與趨勢；演化方法與趨勢推薦歸推演。"
   },
   "status": "current",
-  "updated_at": "2026-09-08"
+  "updated_at": "2026-09-08",
+  "group_count": 9,
+  "methodology_name": "月之符文九群組方法論"
 }
