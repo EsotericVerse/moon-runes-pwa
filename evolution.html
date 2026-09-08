@@ -164,8 +164,9 @@ Promise.all([
   const current=eras.find(e=>e.status==='current')||eras[eras.length-1];
   $('#eraCount').textContent=eras.length||'0'; $('#eraCurrent').textContent=current?.period||'—'; $('#eraStart').textContent=current?.start_date||'—';
   renderEraCrud();
-  const m3=new Map((loc3.periods||[]).map(x=>[window.LOCPeriods.normalizePeriod(String(x.period||'')),x]));
-  const m6=new Map((loc6.periods||[]).map(x=>[window.LOCPeriods.normalizePeriod(String(x.period||'')),x]));
+  const periodKey=x=>window.LOCPeriods.resolveDate(x?.start_date,eras)?.period||window.LOCPeriods.normalizePeriod(String(x?.period||''));
+  const m3=new Map((loc3.periods||[]).map(x=>[periodKey(x),x]));
+  const m6=new Map((loc6.periods||[]).map(x=>[periodKey(x),x]));
   $('#trendGrid').innerHTML=eras.map(e=>{
     const a=m3.get(String(e.period||''))||{}, b=m6.get(String(e.period||''))||{};
     const kws=[...(a.normalized_top_keywords||[]).slice(0,5).map(x=>x.term),...(b.keywords||[]).slice(0,5).map(x=>x.term)];
