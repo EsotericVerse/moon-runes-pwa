@@ -1218,28 +1218,30 @@
     {
       "id": "FAQ-041-A",
       "parent_id": "FAQ-041",
-      "category": "LOC5共鳴",
+      "category": "LOC5 多媒體",
       "intent": "LOC5是什麼",
       "question": "LOC5是什麼？",
       "aliases": [
         "LOC5主要做什麼？",
-        "Resonance Distribution是什麼？",
+        "MultiMedia是什麼？",
         "LOC5是不是影像分發？"
       ],
-      "answer": "LOC5是LOC的跨媒體共鳴功能域，處理同一個語意如何在影像、聲音、文字、Reels、MV與概念視覺化之間轉譯。重點不是單純做圖片，而是不同媒介是否仍能指向同一個語意核心。",
+      "answer": "LOC5 是 MultiMedia／多媒體，負責把語言延伸到圖像、影音、Reels、MV、系統視覺化等非純文字媒介。重點是跨媒介表達：同一個概念可以在文字、音樂與影像之間轉換，但 LOC5 的正式定位就是多媒體，不再使用 Resonance Distribution 作為現行名稱。",
       "keywords": [
         "LOC5",
-        "Resonance",
-        "跨媒體",
+        "MultiMedia",
+        "多媒體",
         "影像",
-        "聲音",
-        "文字",
-        "MV"
+        "影音",
+        "Reels",
+        "MV",
+        "系統視覺化",
+        "跨媒介表達"
       ],
-      "retrieval_text": "LOC5是什麼？ LOC5主要做什麼？ Resonance Distribution是什麼？ LOC5是不是影像分發？ LOC5 Resonance 跨媒體 影像 聲音 文字 MV LOC5是LOC的跨媒體共鳴功能域，處理同一個語意如何在影像、聲音、文字、Reels、MV與概念視覺化之間轉譯。重點不是單純做圖片，而是不同媒介是否仍能指向同一個語意核心。",
+      "retrieval_text": "LOC5是什麼？ LOC5主要做什麼？ MultiMedia是什麼？ LOC5是不是影像分發？ LOC5 MultiMedia 多媒體 影像 影音 Reels MV 系統視覺化 跨媒介表達 LOC5 是 MultiMedia／多媒體，負責把語言延伸到圖像、影音、Reels、MV、系統視覺化等非純文字媒介。重點是跨媒介表達：同一個概念可以在文字、音樂與影像之間轉換，但 LOC5 的正式定位就是多媒體，不再使用 Resonance Distribution 作為現行名稱。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
