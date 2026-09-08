@@ -867,7 +867,7 @@ async def unified_search_facets():
             "loc4_threads_total_main_posts": 4578,
             "loc4_threads_total_replies": 2430,
             "loc4_threads_indexed_posts": searcher._loc4_thread_document_count(),
-            "loc4_threads_full_index_ready": bool((getattr(searcher, "loc4_thread_full", {}) or {}).get("documents")),
+            "loc4_threads_full_index_ready": bool((getattr(searcher, "loc4_thread_manifest", {}) or {}).get("shards")),
             "facebook_corpus_available": FB_DATA_PATH.exists(),
             "facebook_search_loaded": FB_SEARCHER is not None,
             "facebook_posts_loaded": len(FB_SEARCHER.posts) if FB_SEARCHER else 0,
