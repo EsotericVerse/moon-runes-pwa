@@ -923,7 +923,7 @@
       if(!synthesis)return '';
 
       const locCoverage=(synthesis.loc_coverage||[]);
-      const locs=locCoverage.slice(0,6).map(x=>`<span class="pill">${esc(x.loc)} · ${esc(x.count)}</span>`).join('');
+      const locs=locCoverage.slice(0,8).map(x=>`<span class="pill">${esc(publicLocLabel(x.loc))} · ${esc(x.count)}</span>`).join('');
       const ev=(synthesis.evidence||[]).slice(0,8).map(x=>`<span class="pill">${esc(x.label)} · ${esc(x.count)}</span>`).join('');
       const periods=(synthesis.periods||[]).map(x=>`<span class="pill">${esc(publicPeriodLabel({period:x},{} )||x)}</span>`).join('');
 
