@@ -539,22 +539,35 @@
       const cacheKey='gzip:'+path;
       if(LOCAL_SEARCH_CACHE.has(cacheKey))return LOCAL_SEARCH_CACHE.get(cacheKey);
       const p=(async()=>{
-        const r=await fetch(path+'?v='+Date.now(),{cache:'no-store'});
-        if(!r.ok)throw new Error('Threads shard HTTP '+r.status+': '+path);
+        let r=null;
+        let source='site';
+        try{
+          r=await fetch(path+'?v='+Date.now(),{cache:'no-store'});
+          if(!r.ok)throw new Error('HTTP '+r.status);
+        }catch(siteErr){
+          source='github-raw';
+          const raw='https://raw.githubusercontent.com/EsotericVerse/moon-runes-pwa/main/'+path;
+          try{
+            r=await fetch(raw+'?v='+Date.now(),{cache:'no-store',mode:'cors'});
+            if(!r.ok)throw new Error('HTTP '+r.status);
+          }catch(rawErr){
+            throw new Error('Threads shard fetch failed (site: '+siteErr.message+'; github-raw: '+rawErr.message+'): '+path);
+          }
+        }
         const encoding=String(r.headers.get('content-encoding')||'').toLowerCase();
         if(encoding.includes('gzip')){
           try{return await r.json()}catch(err){
-            throw new Error('Threads shard JSON parse failed after HTTP gzip decode: '+path+' · '+err.message);
+            throw new Error('Threads shard JSON parse failed after HTTP gzip decode ['+source+']: '+path+' · '+err.message);
           }
         }
         if(typeof DecompressionStream!=='function'||!r.body){
-          throw new Error('Browser does not support DecompressionStream for Threads shard: '+path);
+          throw new Error('Browser does not support DecompressionStream for Threads shard ['+source+']: '+path);
         }
         try{
           const stream=r.body.pipeThrough(new DecompressionStream('gzip'));
           return await new Response(stream).json();
         }catch(err){
-          throw new Error('Threads shard gzip decode failed: '+path+' · '+err.message);
+          throw new Error('Threads shard gzip decode failed ['+source+']: '+path+' · '+err.message);
         }
       })();
       LOCAL_SEARCH_CACHE.set(cacheKey,p);
