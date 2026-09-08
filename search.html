@@ -653,7 +653,7 @@
           const headline=text.split(/[。！？!?\n]/,1)[0].trim();
           hits.push({
             result_id:doc.id,system_id:'lo3rwang',primary_loc:'LOC4',
-            related_locs:['LOC6','LOC7','LOC8'],content_type:'text_record',
+            related_locs:['LOC7','LOC8'],content_type:'text_record',
             title:'Threads｜'+(date||'undated')+(headline?'｜'+headline.slice(0,34)+(headline.length>34?'…':''):''),
             summary:text,score:100,period:canonical?.period||doc.era||'',era_id:canonical?.era_id||(doc.era?'ERA-'+doc.era:''),
             source_refs:[{source_type:'threads',source_id:doc.source_id,note:'primary main-post evidence'}],
@@ -1106,7 +1106,7 @@
       textworks:{loc:'文字創作',label:'文字創作',desc:'一般小說、文章與作者文字；有明確符文延伸者投影到符文體系'},
       media:{loc:'多媒體創作',label:'符文體系',desc:'符文延伸為圖像、影音、知識圖或其他多媒體表達'},
       governance:{loc:'方法論',label:'符文演算',desc:'Grammar、治理解牌方式、月相交互與正反向符文演算等方法論'},
-      loc4_articles:{loc:'文字創作／方法論',label:'文字／方法文章',desc:'作品原文與方法分析分開呈現'},
+      loc4_articles:{loc:'文字創作',label:'Threads 原文',desc:'作者 Threads 主貼文原文，歸屬文字創作；方法論內容另列方法論分類。'},
       knowledge:{loc:'演算法（知識庫）',label:'符文演算',desc:'符文 Grammar、方法、規格與可檢索知識'},
       timeline:{loc:'推演（時間／系統分析）',label:'符文演化',desc:'符文跨時間、時期、事件與關係的演化'},
       relationships:{loc:'跨分類',label:'符文脈絡',desc:'符文從語意種子延伸到作品、方法、媒體與時期的關係'},
@@ -1142,12 +1142,6 @@
         const items=groups?.[key]||[];
         if(!items.length) continue;
         let meta=GROUP_LOCATION_META[key]||{loc:'LOC',label:labels[key]||key,desc:''};
-        if(key==='loc4_articles'){
-          const threadsCount=items.filter(x=>(x?.source_refs||[]).some(ref=>ref?.source_type==='threads')).length;
-          if(threadsCount===items.length){
-            meta={loc:'文字創作',label:'Threads 原文',desc:'作者 Threads 主貼文原文；方法論分析不混在這個分類。'};
-          }
-        }
         const samples=items.slice(0,3).map(publicResultTitle).filter(Boolean);
         cards.push(`<article class="location-card">
           <strong>${esc(meta.loc)} · ${esc(meta.label)}</strong>
