@@ -84,6 +84,7 @@ class UnifiedSearchEngine:
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.loc4_analysis = self._load_json("LOC4_TEXT_ANALYSIS_REGISTRY.json")
         self.loc4_corpus_manifest = self._load_repo_json("data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json")
+        self.loc4_offline_history_manifest = self._load_repo_json("data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_MANIFEST.json")
         # LOC4 authored full text is streamed shard-by-shard on demand.
         try:
             self.loc4_moon_speaker_analysis = build_moon_speaker_chapter_analysis(repo_root)
@@ -188,6 +189,20 @@ class UnifiedSearchEngine:
             if isinstance(shard_count, int):
                 total += shard_count
         return total
+
+    def _iter_loc4_offline_history_documents(self):
+        for shard in (self.loc4_offline_history_manifest or {}).get("shards", []) or []:
+            part = self._load_repo_json(str(shard.get("path") or ""))
+            for doc in part.get("documents", []) or []:
+                classes = set(doc.get("classification") or [])
+                if doc.get("searchable") is False or "爭議文章" in classes:
+                    continue
+                yield doc
+            del part
+
+    def _loc4_offline_history_document_count(self) -> int:
+        value = (self.loc4_offline_history_manifest or {}).get("document_count")
+        return value if isinstance(value, int) else 0
 
 
     @staticmethod
@@ -1258,6 +1273,7 @@ class UnifiedSearchEngine:
 
         asset_scored: list[tuple[float, dict[str, Any], str]] = []
         thread_scored: list[tuple[float, dict[str, Any], str]] = []
+        history_scored: list[tuple[float, dict[str, Any], str]] = []
         query_terms = [
             term for term in re.split(r"[\s、，,；;：:／/｜|]+", _normalize(query))
             if term
@@ -1315,11 +1331,18 @@ class UnifiedSearchEngine:
                     thread_scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("id") or "")))
                     thread_scored = thread_scored[:max_thread_matches]
 
+        for doc in self._iter_loc4_offline_history_documents():
+            text = str(doc.get("text") or "")
+            score = _text_score(query, [doc.get("title"), text, doc.get("platform"), doc.get("author_id")])
+            if score >= 0.34:
+                history_scored.append((score * 0.97, doc, "offline_history"))
+        history_scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("id") or "")))
+
         # Preserve source diversity. Threads is a large LOC4 corpus and must
         # not compete for the same tiny top-k quota as maintained LOC6 assets.
         asset_scored.sort(key=lambda row: (-row[0], str(row[1].get("asset_id") or "")))
         thread_scored.sort(key=lambda row: (-row[0], str(row[1].get("date") or row[1].get("id") or "")))
-        selected = [*asset_scored[:top_k], *thread_scored[:top_k]]
+        selected = [*asset_scored[:top_k], *history_scored[:top_k], *thread_scored[:top_k]]
         out = []
         for score, item, source_kind in selected:
             if source_kind == "asset":
@@ -1334,6 +1357,17 @@ class UnifiedSearchEngine:
                     "summary": item.get("public_summary") or item.get("notes") or item.get("role") or "",
                     "score": round(score, 6),
                     "source_refs": [{"source_type": item.get("source_type"), "source_id": item.get("path"), "note": item.get("authority_level")}],
+                    "payload": item,
+                })
+            elif source_kind == "offline_history":
+                text = str(item.get("text") or "")
+                out.append({
+                    "result_id": item.get("id"), "system_id": "lo3rwang", "primary_loc": "LOC4",
+                    "related_locs": item.get("related_locs", ["LOC6", "LOC7", "LOC8"]),
+                    "content_type": "text_record", "group": "loc4_articles",
+                    "title": item.get("title") or "（無標題）", "summary": text,
+                    "display_policy": "full", "score": round(score, 6),
+                    "source_refs": [{"source_type": "offline_archive", "source_id": item.get("id"), "note": f"{item.get('platform')} 已關站離線史料"}],
                     "payload": item,
                 })
             else:
@@ -3187,7 +3221,7 @@ class UnifiedSearchEngine:
                 "LOC1": "live",
                 "LOC2": f"scenario-event-search-live; {len(self.loc2_events.get('records', []) or [])} scenario events",
                 "LOC3": "live",
-                "LOC4": f"creative-works+life-writing-live; {self._loc4_corpus_document_count()} authored corpus segments; {len((getattr(self, 'loc4_moon_speaker_analysis', {}) or {}).get('chapters', []))} MoonSpeaker chapter analyses",
+                "LOC4": f"creative-works+life-writing-live; {self._loc4_corpus_document_count()} authored corpus segments; {self._loc4_offline_history_document_count()} closed-platform full-text articles; {len((getattr(self, 'loc4_moon_speaker_analysis', {}) or {}).get('chapters', []))} MoonSpeaker chapter analyses",
                 "LOC5": "direct-media-registry-search-live",
                 "LOC6": "governance/style-derived-search-live",
                 "LOC4_threads_indexed": self._loc4_thread_document_count(),

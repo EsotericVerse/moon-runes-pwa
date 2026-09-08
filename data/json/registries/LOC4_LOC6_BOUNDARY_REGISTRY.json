@@ -33,7 +33,9 @@
         "includes": [
           "Facebook authored posts",
           "Threads authored main posts",
-          "Threads authored replies"
+          "Threads authored replies",
+          "KKCity os80 個人板離線文章",
+          "無名小站 sopa1980 離線文章"
         ],
         "owned_records": [
           "raw text",
@@ -101,6 +103,8 @@
   ],
   "search_rules": [
     "搜尋 Facebook/Threads 原文時 primary_loc = LOC4。",
+    "搜尋 KKCity／無名小站離線原文時 primary_loc = LOC4；不得虛構已關站文章 URL。",
+    "標記為爭議文章的記錄不得進入列表、全文搜尋、向量搜尋、RAG 或推薦。",
     "搜尋小說／文章原文與一般作品解析時 primary_loc = LOC4。",
     "搜尋政德風、價值觀、治理原則、style-state 或 governance interpretation 時 primary_loc = LOC6。",
     "同一 query 可同時回傳 LOC4 原文證據與 LOC6 解讀，但兩者必須是不同 records。"

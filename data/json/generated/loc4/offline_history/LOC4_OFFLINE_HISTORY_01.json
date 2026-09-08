@@ -1,0 +1,3050 @@
+{
+  "schema_version": "1.0",
+  "documents": [
+    {
+      "id": "kkcity:brd:A115MKJP",
+      "title": "朋友給的sc flash",
+      "date": "2005-04-12",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破百了, 向破月大關邁進.) 看板: os80\n標題: 朋友給的sc flash\n時間: Tue Apr 12 12:45:45 2005\n\n\nhttp://www.mfox.co.kr/gameshop/starcraft/movie/epi_out_1.swf\n\nhttp://www.mfox.co.kr/gameshop/starcraft/movie/epi_out_2.swf\n\nhttp://www.mfox.co.kr/gameshop/starcraft/movie/epi_out_3.swf\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐ＫＫＡＤＳＬ→六星級優質連線服務\n│         bbs.kkcity.com.tw          │┴  └─▇ 馬上申請帶你上網環遊全世界！\n└──《From:218.168.7.190      》──┘ KKADSL ┴  http://adsl.kkcity.com.tw \n",
+      "char_count": 440,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/P/A115MKJP",
+        "raw_sha256": "9bc37f2ee95771ca74a4fe1e261f3453da2d598c241e188fdfceac6fe69d6c47",
+        "normalized_sha256": "fd4543481b923884b87786d6e84a7e7911e9277a844af583a9e31126b4234176",
+        "source_aliases": [
+          {
+            "record_id": "kkcity:gem:A11DE8O8",
+            "source_path": "gem/brd/KKCity/os80/8/A11DE8O8"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kkcity:brd:A115MKLE",
+      "title": "[連結]勞保新舊制計算",
+      "date": "2005-04-12",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破百了, 向破月大關邁進.) 看板: os80\n標題: [連結]勞保新舊制計算\n時間: Tue Apr 12 12:46:38 2005\n\n勞保新制與舊制，您瞭解多少？\n提供了一些相關試算供您參考，希望對您有幫助\n\n\n1.「勞保試算」：\n   輸入您每個月被扣的「勞保費」可推算您的投保利益\n   （包含失業給付，傷病給付，死亡給付與退休給付等）\n                     ==>\n http://homepage13.seed.net.tw/web@3/olivertsai/e1/3.htm\n\n\n2.「退休準備金試算」：\n   輸入您的相關資料與需求，推估您每個月要提撥的準備金\n                     ==>\n http://homepage13.seed.net.tw/web@3/olivertsai/e1/4.htm\n\n\n3.「退休金試算」：\n   輸入您每個月提撥一退休準備金及投資報酬率\n    （ex：假設定存利率為1.8%），推估您在退休時可得到的金額\n                     ==>\n http://homepage13.seed.net.tw/web@3/olivertsai/e1/5.htm\n\n\n4.「勞工退休金試算」：\n   輸入您的相關資料，可計算出新制與舊制勞保下的退休金額，包含明細\n                     ==>\nhttp://homepage13.seed.net.tw/web@3/olivertsai/e1/6.htm\n\n\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢╱  只要你通過身份認證 ~    ◥█\n│         bbs.kkcity.com.tw          │ █▉─ 免經驗、五人連署即開班系板 ◥\n└──《From:218.168.7.190      》──┘   ◥╲  趕快為班上設個秘密基地吧! ◢\n",
+      "char_count": 841,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/E/A115MKLE",
+        "raw_sha256": "b69a37f5d81af780fb34336938e0743f08190e39bbb9070c9e14f2ea47a9edca",
+        "normalized_sha256": "3b1b9082373f268f5502548b599461d4ec455272d3d04a66878eabe55e25791d",
+        "source_aliases": [
+          {
+            "record_id": "kkcity:gem:A11DE8JQ",
+            "source_path": "gem/brd/KKCity/os80/Q/A11DE8JQ"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kkcity:brd:A115N5EP",
+      "title": "異動",
+      "date": "2005-04-12",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: 異動\n時間: Tue Apr 12 17:33:13 2005\n\n最近占星學說我最近周圍有很大的人事異動...\n\n本來還不太相信, 沒想到真的成真...\n\n\n\n跟自己很談的來的輔仔在這幾天已經離差了,\n瞬間釣到北部去,\n剩下來的軍官, 沒幾個可以相信的...\n\n很感慨, 剩下不到八十天的日子不知道怎麼過...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐     ■   KKBOX 可立刻 聽音樂 ■    \n│         bbs.kkcity.com.tw          │   ■■所有想找的歌通通不必等 ■■  \n└──《From:218.168.7.190      》──┘ ■■■http://www.kkbox.com.tw■■■\n",
+      "char_count": 368,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/P/A115N5EP",
+        "raw_sha256": "f8a759d348d4e246743ede706c76131bfece5218d452c0e92d1229daf3a66a8e",
+        "normalized_sha256": "d93dffe445f1d411114055da65619de13152ca19b21081c98e8201baa8c7089b",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A115NHKV",
+      "title": "[連結]我現在用的手機",
+      "date": "2005-04-12",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: [連結]我現在用的手機\n時間: Tue Apr 12 21:01:19 2005\n\nhttp://www.sogi.com.tw/park/content.asp?a_id=438\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ◢　◤   ★ 線上音樂新震撼 ★   ◢　◤\n│         bbs.kkcity.com.tw          │ ^_^ /  隨選隨播免等待  KKBOX◤  ^_^ / \n└──《From:218.168.7.190      》──┘  　 ◤ http://www.kkbox.com.tw  　  ◤\n",
+      "char_count": 314,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/V/A115NHKV",
+        "raw_sha256": "0156514a5d62591955c032f477e4813da445c63ceac1f70a4e54806fdfccf4d2",
+        "normalized_sha256": "869bd39c68d1661f5dc86d4ec5e36826a2e25653e6e4a575b1a4acba9f3aa8d5",
+        "source_aliases": [
+          {
+            "record_id": "kkcity:gem:A117TP9R",
+            "source_path": "gem/brd/KKCity/os80/R/A117TP9R"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kkcity:brd:A115NIU6",
+      "title": "[連結]X8 game DL",
+      "date": "2005-04-12",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: [連結]X8 game DL\n時間: Tue Apr 12 21:23:18 2005\n\nhttp://wap.qq.com\n\n用GPRS抓\n\n\n--\n不過很像蠻傷的=.=\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐     ■   KKBOX 可立刻 聽音樂 ■    \n│         bbs.kkcity.com.tw          │   ■■所有想找的歌通通不必等 ■■  \n└──《From:218.168.7.190      》──┘ ■■■http://www.kkbox.com.tw■■■\n",
+      "char_count": 299,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/6/A115NIU6",
+        "raw_sha256": "6b676213299e1b78659fe1029e520fe0ccdae988e909a5e831c7e8119fbae1da",
+        "normalized_sha256": "7a12da0bfffdd487676a9c46f1a6a21634b4b70af75b824f6690e7e24dbf9a01",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A115NKLV",
+      "title": "學長",
+      "date": "2005-04-12",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: 學長\n時間: Tue Apr 12 21:53:03 2005\n\n嗯...\n\n單位裡面最老的學長, 在這個單位待了快五年了.\n個性有點衝動, 但是很阿沙力,\n高中曾經拿過高雄市健美比賽的名次,\n二月份剛出生的小孩成為他常常掛在口邊的話題,\n不過自從他去年結婚之後, 加上軍中給他的\"荼毒\",\n胖了一些起來... ^^\"\n\n其實對於我們來說, 這個單位幾乎沒有學長學弟制,\n有部分是要歸功於這個年資最老的學長,\n不常對我們擺出學長的樣子的關係.\n\n\n---\n\n第二老的學長, 梯數比上面那個學長大了一期,\n不過比較晚來單位, 因為之前在外島待一陣子.\n\n這個學長嘛... 其實一開始曾經很積極的,\n後來被一堆軍官氣到, 很多事情就愛管不管的.\n\n不過大部分的時間, 還是跟我們這些義務役的士兵走的很近.\n打打鬧鬧倒是常有的事情.\n\n人呢... 也還好, 不好也不壞.\n至少對我還蠻照顧的.\n\n\n---\n\n義務役排名最老的學長, 比我大兩梯.\n稍微有點混混的, 應該說很多事情我們都會丟來丟去.\n但是比較不會像我反抗性這麼大, 一遇到不平的事情就不想去做.\n\n位置跟我一樣, 同樣身為單位參一的他,\n我休假他會忙到翻掉, 同樣他休假我也會忙到翻掉^^\"\"\n\n目前表面上是處的還好,\n私底下就... 勉強可以啦... ^^\"\"\"\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐ＫＫＡＤＳＬ→六星級優質連線服務\n│         bbs.kkcity.com.tw          │┴  └─▇ 馬上申請帶你上網環遊全世界！\n└──《From:218.168.7.190      》──┘ KKADSL ┴  http://adsl.kkcity.com.tw \n",
+      "char_count": 772,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/V/A115NKLV",
+        "raw_sha256": "0a34218fcd4e1fddbf92c658f3a9bca8f27c2dd9c787599b79cf368a000d239b",
+        "normalized_sha256": "04db4071d7ae3675e8109f8783d90b44839e8e371a68a97fae5ee03ab7aeb9ab",
+        "source_aliases": [
+          {
+            "record_id": "kkcity:gem:A117TPA0",
+            "source_path": "gem/brd/KKCity/os80/0/A117TPA0"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kkcity:brd:A115NLDN",
+      "title": "退伍",
+      "date": "2005-04-12",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: 退伍\n時間: Tue Apr 12 22:05:43 2005\n\n正式進入7x的開始...\n\n目前排名為義務役第三老.\n\n不過因為是管假的參一,\n很少人敢惹我.\n\n\n---\n\n數數, 日子過的不算快也不算慢.\n\n快的是, 92年12月入伍至今, 一年多的時間已經過去.\n\n慢的是, 94年 7月 1日退伍的日子, 距離現在似乎還有點遙遠...\n\n\n---\n\n確定沒有接我位子的學弟了,\n最近要退伍了仍然忙的跟新兵一樣,\n一邊要想營裡面的事情,\n另一邊則要計畫未來退伍的狀況.\n\n兩難.\n\n主官不去考量我的現況,\n只好慢慢開始消極的作事情.\n\n反正我要退伍了,\n身為參一的暴力權益,\n就是可以比任何人在退伍日前一個多月拿到退伍令.\n\n\n退伍令一拿到, 就差不多可以擺爛了.\n\n---\n\n對於這個單位, 我的心已經冷了.\n\n上一個老闆對我超級信任, 很多時後都私底下給我很多的通融跟福利.\n現在這個老闆就根本是亂來, 整天只會拿\"規定\"來壓人, 又不信任我們...\n\n該付出的時候就該付出, 也提過很多隱藏的問題,\n結果竟然置之不理, 連討論的空間都沒有.\n\n等到最近問題爆發了才又回頭怪我們不做好不處理好...\n\n很無奈.\n\n---\n\n是不是以後社會的環境也會跟這個鬼單位類似呢?\n\n至少, 我可以選擇離去與否吧...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢╱  只要你通過身份認證 ~    ◥█\n│         bbs.kkcity.com.tw          │ █▉─ 免經驗、五人連署即開班系板 ◥\n└──《From:218.168.7.190      》──┘   ◥╲  趕快為班上設個秘密基地吧! ◢\n",
+      "char_count": 758,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/N/A115NLDN",
+        "raw_sha256": "801ce4898d314ace52cb6d6f4aec7017fb0c4f1506abb0cacae1b7138bbdae2e",
+        "normalized_sha256": "0ff0f384198b6ddfe2e66eaf646c67ea6c33c7e833b11df718418bc9d0e619d8",
+        "source_aliases": [
+          {
+            "record_id": "kkcity:gem:A117TPA5",
+            "source_path": "gem/brd/KKCity/os80/5/A117TPA5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kkcity:brd:A115O4L6",
+      "title": "Re: 學長",
+      "date": "2005-04-13",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: Re: 學長\n時間: Wed Apr 13 02:25:42 2005\n\n※ 引述《yellowhuang (愚人節被一騙再騙=\"=)》之銘言：\n> 我也要跟你一樣吃學長買的消夜啦\n> 吼唷\n\n想的美, 嘿嘿...\n\n\n--\n乖, 等我退伍之後, 也許就有機會了 :pp\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ＫＫ免/費/撥/接 ◤\n│         bbs.kkcity.com.tw          │▏電話(1)：449◤1999 電話(2)：4058-6000\n└──《From:218.168.7.190      》──┘▏帳號：kkcity   密碼：kkcity\n",
+      "char_count": 334,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/6/A115O4L6",
+        "raw_sha256": "118320ad1d3d2c64ff57498bf8abc561f328fb4b3220af405cf133697bd2e346",
+        "normalized_sha256": "7447b5f82e35f6512d096c6d0316768bed167326df9c02f5f09c3c8171fd6c3d",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116N426",
+      "title": "遭竊",
+      "date": "2005-04-24",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: 遭竊\n時間: Sun Apr 24 20:25:42 2005\n\n拖了一段時間的休假，終於可以休了...\n\n不過回到家卻是另外一種狀況...\n\n\n我爸說這幾天我家遭小偷光顧,\n鎖被撬開, 我姐不見一台數位相機,\n我爸跟我媽不見的都是零錢,\n我的房間一團混亂...\n\n\n整理中...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐★☆ 數十萬首歌曲，22種音樂分類 ☆★\n│         bbs.kkcity.com.tw          │□□ 與各大唱片行同步的音樂收藏 □□\n└──《From:211.20.223.223     》──┘快來~KKBOX →http://www.kkbox.com.tw\n",
+      "char_count": 346,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/6/A116N426",
+        "raw_sha256": "4c864eedc3ae57d62af4d58b8ac9ce1f7fd72c3ec29a0543f13976c2379c9fa5",
+        "normalized_sha256": "d963f979115185f9fca87155df44a9eb2162002b89977218c644610a82260c2c",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116N4AE",
+      "title": "Re: 休假",
+      "date": "2005-04-24",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: Re: 休假\n時間: Sun Apr 24 20:30:06 2005\n\n※ 引述《weil (故鄉台南的陽光)》之銘言：\n> 加上某人的賴床還有兩人的猶豫不決\n> 所以行動全盤打亂  哈哈\n\n我就跟你說我是故意的... :)\n\n反正快退伍了, 暫時不會出事情就好了^^\"\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:211.20.223.223     》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n",
+      "char_count": 341,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/E/A116N4AE",
+        "raw_sha256": "490559e96fe33d2e24da14cf60c933fc3cf06c94c63f186f2f605902c6bc4ac2",
+        "normalized_sha256": "ab783d2cbb54939d2aef729964297fed7569b2f8af959b62377815ad504f9572",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116N4MP",
+      "title": "Re: 召回",
+      "date": "2005-04-24",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: Re: 召回\n時間: Sun Apr 24 20:36:41 2005\n\n※ 引述《weil (故鄉台南的陽光)》之銘言：\n> 其實我還滿希望你可以乖乖的就好\n> 不要想著要退伍了要怎麼搞死他們.......\n> 不是我怕事  只是身為一個愛你的人的立場來看\n> 我只覺得  好不容易要退伍了\n> 就不要多惹出一些有的沒的\n> 安安靜靜  慢慢的等退伍就好了.....真的\n> 我知道你在裡面有很多不合理的事情\n> 畢竟  都要離開了不是...\n> 我會站在你這邊的!!(大拍胸脯)\n\n某方面來說，我沒辦法安靜... ^^\"\"\n就好像你會抱怨公司的事情一樣的... :)\n\n對我來說, 那只是某種發洩情緒的抱怨... :)\n\n如果你希望我開始用很大聲的聲音亂吼亂叫的狂罵我是不反對啦,\n不過這樣不是很不好嗎 ^^\n\n最近我開始接受我學弟的建議,\n開始把重心往外面移啦, 反正我都要退伍了, 管太多也沒用... :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐★☆ 數十萬首歌曲，22種音樂分類 ☆★\n│         bbs.kkcity.com.tw          │□□ 與各大唱片行同步的音樂收藏 □□\n└──《From:211.20.223.223     》──┘快來~KKBOX →http://www.kkbox.com.tw\n",
+      "char_count": 613,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/P/A116N4MP",
+        "raw_sha256": "3b2f7b697d1b4b3ec7291db4acb3e296eb1f4e87b42292ff4036ea45df556ea9",
+        "normalized_sha256": "9f4c8a648ec2fe5810b5906df1461c297f001e12aeccc0d3ae6a698445683981",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116N4PK",
+      "title": "Re: 拜碼頭拜碼頭~~",
+      "date": "2005-04-24",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: Re: 拜碼頭拜碼頭~~\n時間: Sun Apr 24 20:38:12 2005\n\n※ 引述《singforyou ( 我想去天堂...)》之銘言：\n> 呵呵...不知道要寫什麼好\n> 最近心情糟得很\n> weil, 謝謝你老是愛搞笑, 雖然最近心情不好\n> 看你搞笑還有嘴賤的言語, 就讓我開心了不少~~ ^^\"\n> 暫時先降喔\n> 哪天想到什麼我再來po~~~\n> 掰掰掰\n\n\n(喀... )\n\n這裡很像是我們的家的說 ^^\"\"\n\n總而言之, 想寫啥就寫啥吧,\n反正我當海軍, 沒人在這個版灌很多水我也不能活 XDXD\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:211.20.223.223     》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n",
+      "char_count": 467,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/K/A116N4PK",
+        "raw_sha256": "cddfdd31eba728412e57d30dfc646b36bf37271778f3225d915e313a87b57c91",
+        "normalized_sha256": "0fc647aee19aba8965dd70028a74c76621d1dfa953d68d81ddc57f25d11b4fef",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116N5A5",
+      "title": "Re: 呼~",
+      "date": "2005-04-24",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: Re: 呼~\n時間: Sun Apr 24 20:47:01 2005\n\n※ 引述《weil (故鄉台南的陽光)》之銘言：\n> 剛回到家\n> 改裝算告一段落囉\n> 挖靠  真的很誇張\n> 整個情勢只能用亂來形容\n> 煙霧瀰漫  塵土飛揚 風沙浩蕩\n> 哈  還真累\n> 等之後再來PO文章好了\n> 因為等等下午三點要上班勒\n> 我想  我根本就是鐵人轉世吧\n\n已經跟你講很多次了, 身體狀況要顧,\n表面的體力很好, 某方面來說卻是一種很危險的事情...\n\n作息盡量正常一點啦！\n\n不要又玩PS模擬器玩過頭了^^\"\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐KKMAN團隊  全新力作  ◎◎KKBOX◎◎\n│         bbs.kkcity.com.tw          │知名歌手通通都有  所有新歌想聽就聽\n└──《From:211.20.223.223     》──┘※※ 內容豐富多元的線上音樂台 ※※\n",
+      "char_count": 450,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/5/A116N5A5",
+        "raw_sha256": "8ede966336602b37639830d1238becd924c3738017dbe47a01299b02e5a763c9",
+        "normalized_sha256": "4ebf0cb76cad3b43884f9544ea69736cefc7d4c7f82a4567838e09c3171edc98",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116N5T8",
+      "title": "學弟",
+      "date": "2005-04-24",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: 學弟\n時間: Sun Apr 24 20:57:12 2005\n\n這個學弟的感覺還真糟, 不過讓別人連帶有很討厭的影響...\n\n\n---\n\n很不幸的, 某次幫我們輔導長修電腦的時候,\n不小心看到一些新學弟的安全調查資料.\n其實對於專門收公文跟收信件的參一來說,\n很容易看到, 加上我之前又是政戰士 XD\n\nㄛ, 這傢伙在新訓中心就被驗出來有感染梅毒...\n然後下單位後還是煮菜的兵...\n\n我還在想說這傢伙感染梅毒的事情怎麼沒被傳出去,\n結果過陣子就出事情了...\n\n首先是這傢伙給我鬧逃兵,\n他們單位是我們的下屬單位,\n所以他們逃兵我要發一堆東西到憲兵隊跟警察局,\n造成我的困擾, 後來找到了, 又說他被雞姦,\n本來梅毒的指數是兩百多, 一下子跳到兩萬多...\n\n然後, 他們單位開始流竄著不安定的氣息,\n沒人知道會不會不感染, 他還是煮飯的...\n\n---\n\n怎麼說呢, 我一直覺得是處於無聊的恐懼當中.\n梅毒就我所知是病毒性感染, 接觸到體液或血液才會感染.\n\n不過如果周圍有這種人, 我也會怕.\n但是到不置於恐慌...\n\n然後單位裡面的人也開始八卦起來,\n然後又論到他被雞姦是假的, 又開始對gay 這個名詞說長道短...\n\n感覺還真糟, 看起來這群人的頭腦還真是不太會想...\n\n笑笑沒說啥也不想去辯解啥, 反正對他們來說就是這個樣子咩.\n不然又能怎樣呢, 不會因為我的一言一語去改變什麼...\n\n\n只是, 突然有種想趕快退伍, 逃離這個單位跟這個單位裡面的人的感覺...\n因為, 讓我感到厭惡...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ＫＫ免費撥接•上網不用錢 。。。───┐\n│         bbs.kkcity.com.tw          │電話:449-1999 帳號:kkcity 密碼:kkcity│\n└──《From:211.20.223.223     》──┘ 。。。──────────────＊╯\n",
+      "char_count": 861,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/8/A116N5T8",
+        "raw_sha256": "ccf92ccf80e6e6104644f0b2c1d6cdaeeb8a85ae80aeafec0cda940f9fd4619d",
+        "normalized_sha256": "2aa9627c160abe8c1c757407804a9dc1a0c6527ef9eb53e143227d13a253337f",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116NA46",
+      "title": "Re: 遭竊",
+      "date": "2005-04-24",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破80,距離退伍還是好遠) 看板: os80\n標題: Re: 遭竊\n時間: Sun Apr 24 22:09:10 2005\n\n初步統計沒損失什麼東西...\n\n不過房間變超亂, 衣服全部被翻出來...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐     ■   KKBOX 可立刻 聽音樂 ■    \n│         bbs.kkcity.com.tw          │   ■■所有想找的歌通通不必等 ■■  \n└──《From:211.20.223.223     》──┘ ■■■http://www.kkbox.com.tw■■■\n",
+      "char_count": 286,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/6/A116NA46",
+        "raw_sha256": "e8baa0c2a647e979386394440a91cf51e3e62e8092b343449279f37a43e317e8",
+        "normalized_sha256": "67483a6d94b7e0596df7ea8698424dae271b09321c3cdfb7000c38c3efb0b03f",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116NEI2",
+      "title": "67天的倒數",
+      "date": "2005-04-24",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 67天的倒數\n時間: Sun Apr 24 23:24:50 2005\n\n半小時後邁入倒數67天...\n\n\n其實10天還過的頗快的,\n隨便混混就過去了... ^^\"\"\n\n\n\n最近再看mysql 跟pgsql的轉換跟架設,\n想找時間去玩看看新的東西,\n總覺得pgsql 比mysql 耐操多了,\n該去動點程式來把頭腦變聰明一點了,\n而不是老是去煩那些學弟到底晉升一兵了沒有>\"<\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ＫＫ免/費/撥/接 ◤\n│         bbs.kkcity.com.tw          │▏電話(1)：449◤1999 電話(2)：4058-6000\n└──《From:211.20.223.223     》──┘▏帳號：kkcity   密碼：kkcity\n",
+      "char_count": 385,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/2/A116NEI2",
+        "raw_sha256": "03c804632f0324909fd2051e9bad979a38b6d136f30da96e4f9da3c3bda6b6f5",
+        "normalized_sha256": "1f2bf54a5c2ed055a4e825dd09c1c43381886f13e021f922e009be1889db4c7d",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116NENC",
+      "title": "報案",
+      "date": "2005-04-24",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 報案\n時間: Sun Apr 24 23:27:40 2005\n\n前幾天已經報案了...\n\n很扯, 大白天我老爸只是出去一下,\n回來就看到亂七八糟,\n然後我爸回來的時候, 小偷正在我房間,\n從我房間旁邊的便門逃出去...\n\n不排除是熟人或是認識的人做的,\n真的時間太扯了, 而且我家根本就是被盯上了...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐★☆ 數十萬首歌曲，22種音樂分類 ☆★\n│         bbs.kkcity.com.tw          │□□ 與各大唱片行同步的音樂收藏 □□\n└──《From:211.20.223.223     》──┘快來~KKBOX →http://www.kkbox.com.tw\n",
+      "char_count": 356,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/C/A116NENC",
+        "raw_sha256": "8fd29e2ab66221557777e14a6906df9336111eb1fd92e2357c56a5221556897b",
+        "normalized_sha256": "bb18ff32b720cb862e6da4190329e7468fb6d688d3093c8caeae1428d9650f3f",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116NEPV",
+      "title": "Re: 20050421 好想....",
+      "date": "2005-04-24",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 20050421 好想....\n時間: Sun Apr 24 23:29:03 2005\n\n改天我休假的時候來南部陪我吧... :)\n\n曬曬南部的陽光, 真的會讓心情變好很多... ^^\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:211.20.223.223     》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n",
+      "char_count": 300,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/V/A116NEPV",
+        "raw_sha256": "7f75056dcc564788eafeb89fea524dd0455bf867c240c7fe71dfd7f15dfe5ac6",
+        "normalized_sha256": "1625bfc1b9129b5593b3b3af77ccf3dd77d763d664b6200085dad9b3c92703d8",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116NEUM",
+      "title": "Re: 20050409 哪有這麼衰的啦....",
+      "date": "2005-04-24",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 20050409 哪有這麼衰的啦....\n時間: Sun Apr 24 23:31:34 2005\n\n半夜一點半到兩點大概是銀行連線維護的時間,\n這段時間盡量不要領錢就沒事情了... :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐     優質連線服務隆/重/豋/場!!\n│         bbs.kkcity.com.tw          │┴  └─▇   KKADSL 帶你環遊全世界\n└──《From:211.20.223.223     》──┘ KKADSL ┴ http://adsl.kkcity.com.tw\n",
+      "char_count": 311,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/M/A116NEUM",
+        "raw_sha256": "9e23001e459e338cd27ad0b47bd7110cc9dfd2faa35e0a1432d818346f85eaf3",
+        "normalized_sha256": "ca116cd46fe68d1e06014bc5896c1a8678c2c5b3bb0c926eb7637341d31ba609",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116ODS3",
+      "title": "計畫",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 計畫\n時間: Mon Apr 25 08:19:15 2005\n\n前幾天跟墾丁通的學長聊好久...\n\n\n目前應該是計畫好了怎麼玩比較好了,\n只差時間的問題... 還在想... ^^\"\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ＫＫ免費撥接•上網不用錢 。。。───┐\n│         bbs.kkcity.com.tw          │電話:449-1999 帳號:kkcity 密碼:kkcity│\n└──《From:211.20.223.223     》──┘ 。。。──────────────＊╯\n",
+      "char_count": 295,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/3/A116ODS3",
+        "raw_sha256": "3419c5e5640663171e91411f46689f10a0fda98410ee83a16c67d37b952cdff8",
+        "normalized_sha256": "2a5e53e7c50366f6511459ff102177903764e12158937dfa327b21146a464b13",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OE63",
+      "title": "Re: 拜碼頭拜碼頭~~",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 拜碼頭拜碼頭~~\n時間: Mon Apr 25 08:24:35 2005\n\n※ 引述《singforyou》之銘言：\n>     @@ 海軍? 台南有海軍基地喔?\n>     嗚...我都住了21年的地方居然不知道有海軍基地\n>     這邊是你們耍甜蜜的家~~我是第三者來亂的~~哇哈哈哇哈哈~~\n\n台南有啊, 不過那本來就是管制區,\n一般人不知道, 就算知道了也進不去... :)\n\n我是在高雄左營大本營裡面^^\"\"\n\n--\n第三者是吧, 那改天玩玩3P好了XDXDXDXDXDXD\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ◢　◤   ★ 線上音樂新震撼 ★   ◢　◤\n│         bbs.kkcity.com.tw          │ ^_^ /  隨選隨播免等待  KKBOX◤  ^_^ / \n└──《From:211.20.223.223     》──┘  　 ◤ http://www.kkbox.com.tw  　  ◤\n",
+      "char_count": 470,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/3/A116OE63",
+        "raw_sha256": "43ba4693d3eb82cfbcd3c2c592db415364a36beaf1a941ca772f006301a8771d",
+        "normalized_sha256": "f92c6c90bf576ba170061d615baa6cfb5b63d7e710a0b338f9bd5f37418a3fc4",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OEBL",
+      "title": "精華區",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 精華區\n時間: Mon Apr 25 08:27:33 2005\n\n我已經跟站方申請副版主了,\n有權限之後, 我在精華區裡面的連結你就看的到啦...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ◢　◤   ★ 線上音樂新震撼 ★   ◢　◤\n│         bbs.kkcity.com.tw          │ ^_^ /  隨選隨播免等待  KKBOX◤  ^_^ / \n└──《From:211.20.223.223     》──┘  　 ◤ http://www.kkbox.com.tw  　  ◤\n",
+      "char_count": 296,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/L/A116OEBL",
+        "raw_sha256": "df25e7ba71122176b83053d5f08209245ba5fddcea8f2a612a80c8254479293c",
+        "normalized_sha256": "48fdc111a625da51cbd1b914b80b5357fd7c84e3dcaf40cc2d8d08fd6fdf1ae6",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OEHD",
+      "title": "[Link]G-mail GET",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: [Link]G-mail GET\n時間: Mon Apr 25 08:30:37 2005\n\n其實現在也不太需要用\"gmail信箱邀請函\"強迫申請機\n\n只要在\n\nhttp://isnoop.net/gmail/\n\nrequest invite 的左邊空格 key in your email address\n\n應該一般情況都會很容易得gmail帳號\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐     ■   KKBOX 可立刻 聽音樂 ■    \n│         bbs.kkcity.com.tw          │   ■■所有想找的歌通通不必等 ■■  \n└──《From:211.20.223.223     》──┘ ■■■http://www.kkbox.com.tw■■■\n",
+      "char_count": 385,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/D/A116OEHD",
+        "raw_sha256": "288d35e497cf7fe4e7093afd52762f0b26116cc5fc06b2ce6412f735e89034c0",
+        "normalized_sha256": "85e1b1c869b4b2b44f17fad3766a248d531c78108141a228cd726ac2f1cbd1fb",
+        "source_aliases": [
+          {
+            "record_id": "kkcity:gem:A11DE8K8",
+            "source_path": "gem/brd/KKCity/os80/8/A11DE8K8"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OEJG",
+      "title": "Re: 20050421 好想....",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 20050421 好想....\n時間: Mon Apr 25 08:31:44 2005\n\n※ 引述《singforyou》之銘言：\n>     是啊~~~~\n>     所以我六月要回家一趟~~\n>     我差不多都變成兩個月回家一次了\n>     嗚.....我又想家了啦\n>     台南天氣最好了...而且東西又好吃...\n>     嗚.....我想回家.... >\"<\n\n混台南哪裡的啊 ^^\"\"\n\n話說之前休假, 到台南市閒晃了一下,\n發現這個六年沒仔細看的地方還真是改變的多了... @.@\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐ＫＫＡＤＳＬ→六星級優質連線服務\n│         bbs.kkcity.com.tw          │┴  └─▇ 馬上申請帶你上網環遊全世界！\n└──《From:211.20.223.223     》──┘ KKADSL ┴  http://adsl.kkcity.com.tw \n",
+      "char_count": 467,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/G/A116OEJG",
+        "raw_sha256": "b2e65820aa29ab1a210dc721296c0265edfad89fc65b5cc20f1aca88608e9515",
+        "normalized_sha256": "faad045b7f2ff3d1b95ef9b8c0b7e441b8799f5191db424a54172f51ff77e931",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OEVJ",
+      "title": "Re: 20050421 好想....",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 20050421 好想....\n時間: Mon Apr 25 08:38:11 2005\n\n※ 引述《singforyou》之銘言：\n> ※ 引述《os80 (破70,期待退伍中!)》之銘言：\n> > 混台南哪裡的啊 ^^\"\"\n>     混東區阿~~唉呀~~我朋友來台南我都是當人工導航系統咧\n>     嘿嘿~~下次在台南迷路可以打給我啊路痴~~~\n\n至少我也在台南念了六年的書好嗎... XD\n\n基本的路還知道怎麼走啦, 不過印象真的不深了 >.<\n\n> > 話說之前休假, 到台南市閒晃了一下,\n> > 發現這個六年沒仔細看的地方還真是改變的多了... @.@\n>     台南有改變嗎.. = =\" 我這次回去覺得還是一樣\n>     不過東西還是一樣好吃~~哇哈哈~~~\n\n我已經有六年的時間沒有仔細把這個地方看過一次啦,\n太久沒回來, 忘光光忘光光 :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢╱  只要你通過身份認證 ~    ◥█\n│         bbs.kkcity.com.tw          │ █▉─ 免經驗、五人連署即開班系板 ◥\n└──《From:211.20.223.223     》──┘   ◥╲  趕快為班上設個秘密基地吧! ◢\n",
+      "char_count": 586,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/J/A116OEVJ",
+        "raw_sha256": "cb899129531aef0b238c8530c08736bf0c97396fb2d7a88925207ad2ed2ddd95",
+        "normalized_sha256": "775cd45ea618742f2576b4af9b7169f435b46fecf49a7b6907cc1d3e6d47fba4",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OF8N",
+      "title": "Re: 20050421 好想....",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 20050421 好想....\n時間: Mon Apr 25 08:43:03 2005\n\n※ 引述《singforyou》之銘言：\n>     大學 + 研究所嗎?\n\n國中+高中\n\n>     下次我偷偷帶你去啊~~ XD\n>     (我一定會被某人揍!)\n\n去哪裡去哪裡? (眼睛發亮中)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ＫＫ免/費/撥/接 ◤\n│         bbs.kkcity.com.tw          │▏電話(1)：449◤1999 電話(2)：4058-6000\n└──《From:211.20.223.223     》──┘▏帳號：kkcity   密碼：kkcity\n",
+      "char_count": 348,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/N/A116OF8N",
+        "raw_sha256": "7c3545c0ef7d2e0a728a3607788364434cd432741cefc6fc42a99b84f8d3d53d",
+        "normalized_sha256": "cc498b123069c2dd6fc89c35158be6a5f73b216def70c5bc209d4e51fd9157e7",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OFLR",
+      "title": "Re: 20050421 好想....",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 20050421 好想....\n時間: Mon Apr 25 08:50:03 2005\n\n※ 引述《singforyou》之銘言：\n>     啥...你念哪個國中哪個高中啊....\n\n不告訴你!\n\n好啦, 提示是, 在成大附近 :)\n\n>     晚上去沒有人的地方可以亂搞呀~~~\n>     還可以帶你去釣男人~~ XD\n\n中山公園嗎?\n\n那邊不好玩, 感覺上很容易鬧鬼 =.=\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐★☆ 數十萬首歌曲，22種音樂分類 ☆★\n│         bbs.kkcity.com.tw          │□□ 與各大唱片行同步的音樂收藏 □□\n└──《From:211.20.223.223     》──┘快來~KKBOX →http://www.kkbox.com.tw\n",
+      "char_count": 401,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/R/A116OFLR",
+        "raw_sha256": "a3c3920710c3f6e03bea29c2f9dca45c54b1f171334435abc1b3c6801601bff1",
+        "normalized_sha256": "01814c3a32c49c2f4dabe7793431f5711c0a623fc80439cbe81b7f0de205c9ae",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OFTK",
+      "title": "[心理測驗]火鍋",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: [心理測驗]火鍋\n時間: Mon Apr 25 08:54:12 2005\n\n測驗開始：\n\n★你喜歡什麼季節吃火鍋？\nA 冬天 TO 2\nB 夏天 TO 5\nC 不分季節 TO 1\n　\n1. 你喜歡沾醬料吃嗎？\nA 喜歡 TO 2\nB 不喜歡 TO 5\n\n2. 你的醬料裡面會加雞蛋嗎？\nA 會 TO 3\nB 不會 TO 6\n\n3. 如果你吃到一半，發現裡面有一小截的煙蒂，你會怎麼辦？\nA 跟老闆吵架，要求換一鍋新的 TO 13\nB 不吃了，直接付錢走人 TO 10\n\n4. 你選擇火鍋店的標準是什麼？\nA 很有名氣 TO 7\nB 價格便宜 TO 8\n\n5. 火鍋店推出一種你完全沒看過的新式火鍋，你會勇於嚐試嗎？\nA 會 TO 6\nB 不會 TO 8\n\n6. 你喜歡幾個人一起吃火鍋？\nA 兩三個朋友 TO 9\nB 一大群朋友 TO 3\n\n7. 店裡已經坐滿了人，你會一直在那邊等、還是不想等，馬上換一家？\nA 等 TO 11\nB 換一家 TO 12\n\n8. 你喜歡加什麼樣的配料？\nA 加麵條 TO 9\nB 加冬粉 TO 7\n\n9. 你會先喝湯、還是先吃完所有的料再喝湯？\nA 先喝湯 TO 10\nB 先吃料 TO 12\n10如果老闆告訴你火鍋裡必須加某種奇怪的配料才會變得很可口，你願意試試看嗎？\nA 願意 TO 17\nB 不願意 TO 13\n\n11- 你會不會在吃完熱騰騰的火鍋之後，來一碗清涼的剉冰？\nA 會 TO 15\nB 不會 TO 14\n\n12吃火鍋的時候，你喜歡一開始就放肉、還是最後再放？\nA 一開始就放 TO 15\nB 最後才放 TO 11\n\n13你喜歡把配料通通丟進鍋子? 接，還是一樣一樣慢慢煮？\nA 一起煮 TO 17\nB 一樣一樣煮 TO 16\n\n14你喜歡配什麼飲料？\nA 烏龍茶 TO 16\nB 烏梅汁 TO A\n\n15你喜歡在家吃火鍋、還是喜歡在外面吃火鍋\nA 家裡 TO 16\nB 外面 TO 14\n16你快吃飽時，如果有下一個客人在後面等位子，你會在意嗎？\nA 會 TO B\nB 不會 TO C\n\n17你已經吃的很飽了，這時老闆突然說要再免費送你一鍋，你還會吃嗎？\nA 會 TO D\nB 不會 TO 16\n\n\n\n-------------------------------------------------------------------------------\n-\n\n\nA•涮涮鍋\n你的個性內向、有點自閉你的性格比較孤僻一點，\n喜歡一個人安安靜靜地待在家裡，\n對你來說，\n跟不認識的人交談是很困難的事，\n所以朋友並不多，\n不過還是會有一些知心朋友，\n你要好好珍惜這些關心你的人，\n不能因為是好朋友就疏於付出。\n你對自己的事情比較有興趣，\n一旦立定目標，\n就會一步步完成，\n即使再苦也沒關係。\n不過別把自己關在象牙塔裡，\n有些事情就算自己再有實力，\n沒有周圍的幫助，\n仍然無法完成，\n要學著打開心罪，\n跟不同的人交往，\n如果能認識人脈很廣的朋友，\n也可以增加與人接觸的機會喔！\n與人交往，不要覺得厭煩，應該主動示好，\n一般人都會炊然接受你，\n透過這些往來，\n說不定你會發現一個全新的自己正破殼而出呢！\n\nB•麻辣鍋\n個性有點偏激，\n喜惡分明你的性格比較火爆一點，\n好惡分明。\n遇到你喜歡的事情會馬上採取行動，\n一旦覺得討厭，\n就想馬上脫身。\n由於你先入為主的歡念，\n因此交友類型往往偏向某種人，\n不過一旦成為朋友，\n就會跟對方深入地往來。\n你很豪爽，當朋友遇到困難時，\n會馬上伸出援手，朋友都非? `依賴你? C\n因為你的個性陰晴不定，\n有時可能會因為一點芝麻小事而跟朋友鬧得不愉快，\n或在五分鐘熱度後改變初衷，\n這些情形都會讓你失去朋友的信賴，\n最好學習有條不紊地處理事情，堅持到最後。\n在與人相處的時候，\n不妨試著跟原本覺得合不來的人交往看看，\n而不定會因此發現對方的優點，\n這樣的嘗試可以慢慢增加你的朋友類型，\n讓你自己變得更有魅力、更受歡迎。\n\nC• 日式火鍋\n個性溫和，\n是隻溫馴的綿羊你的性情溫和要適應力強，\n容易跟大家打成一片，\n在社團或班級中非常活躍，\n幾乎沒人會說你的壞話。\n你討厭跟別人發生衝突，\n所以養成八面玲瓏的態度，\n對不同的人採取不同的說法，\n說好聽是適應力強，\n說難聽就是缺乏個性，\n雖是個老好人，\n卻缺乏個人魅力，\n表面上看來朋友雖然很多，\n一旦遇到困難，\no缺少真正交心的朋友，\n有時會感到孤獨。\n在團體之中你必須學會適時表達自己的意見，\n若因害怕衝突而一味配合對方，\n並不能讓對方更加瞭解自己。\n你協調能力很強，\n只要能勇夌表達心中的想法，\n不以中傷為目的，\n相信別人一定會接納你的意見。\n你就是你，凡事不需對別人唯唯諾諾、一味忍耐，\n要表現出自己的風格。\n\nD•鴛鴦鍋\n你的個性頑固、喜歡鑽牛角尖你的個性頑固，\n一旦快定的事、就算周圍的人反對到底，\n也絕不改變心意，\n往好處想，\n這種個性可以讓你發揮強韌意志，\n在團體中擔任有力的領導者，\n當家人或朋友遇到困難時，\n你會義不容辭地出面幫大家解決，\n因此深受朋友們的信賴。\n但是由於你非常 堅持自己的想法，\n完全無視於周圍的建議，\n因此經常樹立敵人，\n跟周圍發生許多摩擦。\n保持自己的風格固然不是一件壞事、但是過於頑固，\n完全不理會別人想法，\n會讓大家感到傷腦筋，\n因而漸漸失去朋友，\n最後說不定還會被孤立。\n你必須學會傾聽與自己相反的意見，\n尊重不同的價值觀跟思考方式，\n這樣或許就能增加彼此進一步瞭解的機會，\n人際關係也因此變得更廣闊。\n\n\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:211.20.223.223     》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n",
+      "char_count": 2493,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/K/A116OFTK",
+        "raw_sha256": "0e675e2602bb3a44e68087125a6aa0c0cca704decd0ae847fc434be96894ed61",
+        "normalized_sha256": "b4be3c3783ffead1a3786507baa079d57c7d38a8414da48861998b225b5d234d",
+        "source_aliases": [
+          {
+            "record_id": "kkcity:gem:A11DE8KD",
+            "source_path": "gem/brd/KKCity/os80/D/A11DE8KD"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OFTR",
+      "title": "Re: [心理測驗]火鍋",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: [心理測驗]火鍋\n時間: Mon Apr 25 08:54:19 2005\n\n我是B XD\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐     優質連線服務隆/重/豋/場!!\n│         bbs.kkcity.com.tw          │┴  └─▇   KKADSL 帶你環遊全世界\n└──《From:211.20.223.223     》──┘ KKADSL ┴ http://adsl.kkcity.com.tw\n",
+      "char_count": 262,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/R/A116OFTR",
+        "raw_sha256": "b9028cedfd9a89f8887d0e18f356c9b5836a7874dc8d36db9572a159b4efccfd",
+        "normalized_sha256": "7d55f02d268c2d23cc29c75e5445c798db04164825977fa0ee7932f8d5c9182f",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OGM1",
+      "title": "Re: 20050421 好想....",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 20050421 好想....\n時間: Mon Apr 25 09:07:13 2005\n\n※ 引述《singforyou》之銘言：\n>         那就是後甲國中跟南一中啊.. = =\"\n>         這是離成大最近的學校\n\n叭叭...\n\n都錯... ^^\"\"\"\"\"\n\n\n有段距離倒是真的, 不過算是在成大附近啦 :)\n\n>     不會耶, 我以前在台南跟我一個喜歡的人經常半夜去那邊\n>     都在那邊聊天吃東西耍幼稚\n>     不過...他始終不是喜歡我.... (嗚..我沒人要)\n\nㄛ.....\n\n還是乖乖抱我們家笨笨好了XD\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐KKMAN團隊  全新力作  ◎◎KKBOX◎◎\n│         bbs.kkcity.com.tw          │知名歌手通通都有  所有新歌想聽就聽\n└──《From:211.20.223.223     》──┘※※ 內容豐富多元的線上音樂台 ※※\n",
+      "char_count": 472,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/1/A116OGM1",
+        "raw_sha256": "b4f1ee5a1efaa05dd1e7285733fcbb430b27104d42cbce9d7e7ac7da1055ff37",
+        "normalized_sha256": "327c1db706726e4729496d5e47d4ee4be99c3bb7b689df18e4db551aabb0703f",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OISQ",
+      "title": "Re: 20050421 好想....",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 20050421 好想....\n時間: Mon Apr 25 09:44:58 2005\n\n※ 引述《singforyou》之銘言：\n>         不會是長榮吧.....\n>         因為我想只有私立學校會有笨笨的外地人來念.. :P\n\n好吧, 你答對了...\n\n\n--\n笨笨的外地人, 找死啊-,-\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ＫＫ免費撥接•上網不用錢 。。。───┐\n│         bbs.kkcity.com.tw          │電話:449-1999 帳號:kkcity 密碼:kkcity│\n└──《From:211.20.223.223     》──┘ 。。。──────────────＊╯\n",
+      "char_count": 365,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/Q/A116OISQ",
+        "raw_sha256": "4311f8bed6df82d0b83f0f91639f8943c78e2c22292138ceae33270e776f8bd8",
+        "normalized_sha256": "135af0083015eaa16038816ba4de1a41a5f5c7c60fe57ac7f096ee1e877c4fdd",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OIUN",
+      "title": "明天",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 明天\n時間: Mon Apr 25 09:45:59 2005\n\n我老爸要帶我奶奶去醫院看病..\n\n不知道到底怎麼了...\n\n\n\n有點擔心...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ◢　◤   ★ 線上音樂新震撼 ★   ◢　◤\n│         bbs.kkcity.com.tw          │ ^_^ /  隨選隨播免等待  KKBOX◤  ^_^ / \n└──《From:211.20.223.223     》──┘  　 ◤ http://www.kkbox.com.tw  　  ◤\n",
+      "char_count": 294,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/N/A116OIUN",
+        "raw_sha256": "4ac607c933e1e928b91ae065f96405a407760726eeaa25d57872f8753bf5fe26",
+        "normalized_sha256": "a299975476f14b7337e7d6218ac92cadae38ce3b4c45579c134261c89abc1823",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OJ8K",
+      "title": "Re: 20050421 好想....",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 20050421 好想....\n時間: Mon Apr 25 09:51:16 2005\n\n※ 引述《singforyou》之銘言：\n>     唷乎~~我又贏了~~~叭叭叭叭叭~~\n>     長榮是私立名校, 也是出了名的貴\n>     學生也是出了名的...機車.. = =\"\n>     我每次看到他們就覺得很OX....\n>     純屬個人意見..\n\n你就是硬要說我很機車就對了是吧 =.=\n\n可惡~~~~~ >.<\n\n\n--\n預設成為水桶名單 嘿嘿~~~\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐     ■   KKBOX 可立刻 聽音樂 ■    \n│         bbs.kkcity.com.tw          │   ■■所有想找的歌通通不必等 ■■  \n└──《From:211.20.223.223     》──┘ ■■■http://www.kkbox.com.tw■■■\n",
+      "char_count": 449,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/K/A116OJ8K",
+        "raw_sha256": "4b939aab39d0e1ddf4c9ba8bc2d366a6ca239f5e33e47c2a275642a10ce59da0",
+        "normalized_sha256": "4b00ee588400af8abb313016b0f4bb6a4c5ac0f0a37465574517e95fe9ebca27",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OJAP",
+      "title": "暫訂",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 暫訂\n時間: Mon Apr 25 09:52:25 2005\n\n八月一日到八月五日, 玩四天.\n\n行程計畫中...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐ＫＫＡＤＳＬ→六星級優質連線服務\n│         bbs.kkcity.com.tw          │┴  └─▇ 馬上申請帶你上網環遊全世界！\n└──《From:211.20.223.223     》──┘ KKADSL ┴  http://adsl.kkcity.com.tw \n",
+      "char_count": 267,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/P/A116OJAP",
+        "raw_sha256": "a7e2282b6abfb45219e34298c05e18a29b3a8ca87fc0f917401806ac353571a0",
+        "normalized_sha256": "9b6eb079a7b71a9a95bf19295b04be1c773f2d341814b9952ad170d5b49d39a6",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OK86",
+      "title": "Re: 暫訂",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 暫訂\n時間: Mon Apr 25 10:08:06 2005\n\n※ 引述《singforyou》之銘言：\n> ※ 引述《os80 (破70,期待退伍中!)》之銘言：\n> > 八月一日到八月五日, 玩四天.\n> > 行程計畫中...\n>     好好喔....\n>     我也想回家.......\n>     唉唷..打著打著眼淚都掉下來了... >\"<\n\n回家? @.@\n\n台南環境不錯啊^^\"\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢╱  只要你通過身份認證 ~    ◥█\n│         bbs.kkcity.com.tw          │ █▉─ 免經驗、五人連署即開班系板 ◥\n└──《From:211.20.223.223     》──┘   ◥╲  趕快為班上設個秘密基地吧! ◢\n",
+      "char_count": 401,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/6/A116OK86",
+        "raw_sha256": "990ae4302b0ac69518ca5ae37a08550fb636f3262be1d72037e517935756c43a",
+        "normalized_sha256": "1d7bd35187c41742c0e9af566c37f9a895d93a75a26cc3679a93ac0f022770fe",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116ONUO",
+      "title": "Re: 暫訂",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 暫訂\n時間: Mon Apr 25 11:11:20 2005\n\n※ 引述《singforyou》之銘言：\n>     對啊..我是想家啊........\n>     好想冬瓜茶, 還有很多好吃的東西\n>     我想家....\n>     還有想我喜歡的人... >\"<\n      ^^^^^^^^^^^^^^^^\n老實給我講, 最後這句話才是重點之中的重點吧, 嘿嘿嘿~~~~\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ＫＫ免/費/撥/接 ◤\n│         bbs.kkcity.com.tw          │▏電話(1)：449◤1999 電話(2)：4058-6000\n└──《From:211.20.223.223     》──┘▏帳號：kkcity   密碼：kkcity\n",
+      "char_count": 392,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/O/A116ONUO",
+        "raw_sha256": "f74b6039edbac8bfacae6e707f638786819090f276204a397132a0ea24b0d8b9",
+        "normalized_sha256": "54dda75f37d854e1f92c710766fe1259eed3fc0896f052a7b79f8ddf4a2b12b5",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OP75",
+      "title": "Re: 學長",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 學長\n時間: Mon Apr 25 11:32:53 2005\n\n※ 引述《yellowhuang (愚人節被一騙再騙=\"=)》之銘言：\n> 哈哈哈哈哈~~~\n> 學長真的很疼我ㄟ~~~(抱)\n> 打斷他滴腿\n> ㄎㄎㄎㄎ\n\n你確定嗎... =.=\n\n\n上個站都不跟我打招呼的啦,\n沒感情的小溪, 哼~~~~~~\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐★☆ 數十萬首歌曲，22種音樂分類 ☆★\n│         bbs.kkcity.com.tw          │□□ 與各大唱片行同步的音樂收藏 □□\n└──《From:211.20.223.223     》──┘快來~KKBOX →http://www.kkbox.com.tw\n",
+      "char_count": 364,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/5/A116OP75",
+        "raw_sha256": "9891723f12094a6d771c64b2c984895f65babe6c69d045a8eb7854cb05d3462d",
+        "normalized_sha256": "ec6e826f83ecfe41ad084091ddf8ac17e96b57ff8ba83194b8575cad3ed7219d",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OPJC",
+      "title": "五月預排",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 五月預排\n時間: Mon Apr 25 11:39:24 2005\n\n應該是六七號左右,\n然後之後都排一天半,\n要準備六月底的退伍假...\n\n\n話說最近我們主官提了一個新政策,\n因為我們單位每天都會有人廣播起床啊, 用餐啊,\n於是我們「偉大」的隊長說, 如果當天有人生日,\n起床的時候就要加下面這句廣播詞:\n「今天是某年某月某日星期某，營區全體官兵祝某某某生日快樂」\n\n\n我才不要啊！！！！！！！！！！\n\n超丟臉的！！！！！！！！！\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:211.20.223.223     》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n",
+      "char_count": 419,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/C/A116OPJC",
+        "raw_sha256": "9991c1b1d18cd1c5e31f1363f9914b58687413421dc88148774f56a4bc7d3747",
+        "normalized_sha256": "272232de7c0d98a5bfff0ecba645be9544e9f3e1bfa4cda07a81c3a3eb9d6ac0",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116OQ2Q",
+      "title": "[轉錄][分享]開車自助旅行必備工具--米其林地圖攻略",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: [轉錄][分享]開車自助旅行必備工具--米其林地圖攻略\n時間: Mon Apr 25 11:47:38 2005\n\n※ 本文轉錄自 [travel] 看板\n\n發信人: pedo.bbs@ptt.cc (qqq), 看板: travel\n標  題: [分享]開車自助旅行必備工具--米其林地圖攻略\n發信站: 批踢踢實業 (Sun Apr 24 18:34:10 2005)\n轉信站: KKCITY!news.kkcity.com.tw!bbs.ee.ntu!news.ntu!news.ee.ttu!netnews.csie.\nOrigin: sally.csie.ntu.edu.tw\n\n看到很多旅友在開車自助旅行時\n對於不熟的路況以及高速公路的行程安排\n以及點對點的路程資訊頭疼不已\n\nqqq想略盡微薄的心力回饋一下..\n感謝眾前輩們的經驗分享..\n\n小弟將米其林地圖網站所提供的行車資料\n以及米其林地圖的使用攻略\n以圖文解說的方式讓旅友們快速入手\n\n啥~~不知道qqq在說什麼東東???\n汗.....\n好吧...看了就知道...\n\n點選討論區\n\n【分享】開車自助旅行時..好用的米其林地圖使用攻略--含圖文解說\nhttp://pedo.hopto.org/html/modules/newbb/viewforum.php?forum=20\n\n希望大家喜歡..\n也歡迎大家來 小站坐坐 看看qqq拍的遊記及作品\nhttp://dent.idv.tw\n\n--\n※ 發信站: 批踢踢實業坊(ptt.cc)\n◆ From: 222.157.180.230\n",
+      "char_count": 711,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/Q/A116OQ2Q",
+        "raw_sha256": "3ab07e3dca1532785e891fb8db166fdabbe7132a138ae4a991ae37c4e7f2e1db",
+        "normalized_sha256": "935b7e30a4bb44b1d19d433a250004e484cadb5335ff4b781caab1e073f7833c",
+        "source_aliases": [
+          {
+            "record_id": "kkcity:gem:A11DE8KV",
+            "source_path": "gem/brd/KKCity/os80/V/A11DE8KV"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kkcity:brd:A116P2I9",
+      "title": "Re: 太  亂",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 太  亂\n時間: Mon Apr 25 14:12:25 2005\n\n※ 引述《weil (故鄉台南的陽光)》之銘言：\n> 也灌太多水了吧  版面很亂\n> 我討厭雜亂\n> 之後我想辦法會整理進精華區\n> 還有  不要說我壞話\n> 尤其是趁我睡覺的時候\n> 就降  謝謝收看\n\n版面雜亂是還好啦, 這跟我以前的個人版比較起來好很多倍了 :p\n反正精華區整齊就好啦 :)\n\n所以我很喜歡用[xxxx]當標題來標示重要事情...\n這些東西表示有些好或是有些重要, 可以選擇進精華區的^^\n\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐KKMAN團隊  全新力作  ◎◎KKBOX◎◎\n│         bbs.kkcity.com.tw          │知名歌手通通都有  所有新歌想聽就聽\n└──《From:211.20.223.223     》──┘※※ 內容豐富多元的線上音樂台 ※※\n",
+      "char_count": 437,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/9/A116P2I9",
+        "raw_sha256": "4e071c08111798c2aa6644530e4b35d5cb824dcbafbda6b2c4881b92fbcee563",
+        "normalized_sha256": "f65d91eaab800e6a82aec414ba7140a77d46ec92c30c168bf16c1e195dd3a2a6",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116P2S5",
+      "title": "Re: 暫訂",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 暫訂\n時間: Mon Apr 25 14:17:41 2005\n\n※ 引述《singforyou》之銘言：\n>     上次我就有說要去找他...\n>     他就說他正在期中考很煩, 叫我不要煩他\n>     他不想見面, 他想呆在研究所一整天....\n>     唉...隨便了\n\n如果是我碰到重要考試, 我也會這樣... ^^\"\n\n不過某人還是硬要過來, 我只好兩手攤開, 很無奈的等 =.=\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ＫＫ免費撥接•上網不用錢 。。。───┐\n│         bbs.kkcity.com.tw          │電話:449-1999 帳號:kkcity 密碼:kkcity│\n└──《From:211.20.223.223     》──┘ 。。。──────────────＊╯\n",
+      "char_count": 407,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/5/A116P2S5",
+        "raw_sha256": "d37577f18914f0b895eb6b23b5cebe9d413f6c45a79b15420e0652e4264b3391",
+        "normalized_sha256": "ebbf1f44d2bbcba5170a12f76666cce73a85065d93cafd86184b5bea7e534a5a",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116P98F",
+      "title": "Re: 報案",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 報案\n時間: Mon Apr 25 16:06:39 2005\n\n※ 引述《weil (故鄉台南的陽光)》之銘言：\n> 沒關係沒關係\n> 人  平安就好\n> 最近門戶要記得小心點就好\n\n我還在跟我老爸研究怎麼換鎖比較好,\n可能我家玻璃門要換成三段鎖會比較好...\n\n然後我房間後面的後門也裝了一些東西...\n\n很討厭的就是, 整理房間 >\"<\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ◢　◤   ★ 線上音樂新震撼 ★   ◢　◤\n│         bbs.kkcity.com.tw          │ ^_^ /  隨選隨播免等待  KKBOX◤  ^_^ / \n└──《From:211.20.223.223     》──┘  　 ◤ http://www.kkbox.com.tw  　  ◤\n吐 weil：廢話...因為整理房間都是我在作 你當然不喜歡                     [04/25]\n→ os80：可是你有整理過連衣櫃裡所有衣服都被翻出來的房間嗎=.=            [04/25]\n→ weil：我有整理過衣服都被丟在地上的房間 XD                            [04/27]\n",
+      "char_count": 572,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/F/A116P98F",
+        "raw_sha256": "dd9b225fe8bd445decc3211609a5e931200f3015f008810dce352d61ad17168d",
+        "normalized_sha256": "0af20c3c2c2fe2d42e181310b6e43ed75cff403f78443bcb3d6a8f4c2c11da7c",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116P9C8",
+      "title": "Re: 20050421 好想....",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 20050421 好想....\n時間: Mon Apr 25 16:08:40 2005\n\n※ 引述《weil (故鄉台南的陽光)》之銘言：\n> 車費來回 600x2=1200\n> 吃喝玩樂 2000\n> 最重要的是!!!\n> 不知道有沒有假可以放 XD\n> 不過  我還是很喜歡回去南部\n> 上次回去雖然很趕\n> 半夜坐車 早上到岡山\n> 再從岡山->高雄->鳳山->高雄->台南->桃園\n> 一日來回  還真他馬的有夠累\n> 可是也他馬的有夠爽\n\n看你啦, 不過記得看天氣預報,\n太差就不要來了, 最近有颱風, 還不知道會不會影響... ^^\"\"\n\n帶你去曬曬太陽咩, 不然老是當夜貓子,\n發黴了就不好啦 :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐     ■   KKBOX 可立刻 聽音樂 ■    \n│         bbs.kkcity.com.tw          │   ■■所有想找的歌通通不必等 ■■  \n└──《From:211.20.223.223     》──┘ ■■■http://www.kkbox.com.tw■■■\n",
+      "char_count": 522,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/8/A116P9C8",
+        "raw_sha256": "9e78eae37d19d7a670833b732472b1353f7a5813d617d00553d1d34fcd9c6455",
+        "normalized_sha256": "821cb243cbd9452f8cb06446f78f3075f3c31d8926b7353332343538e73874c9",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116PB96",
+      "title": "阿奇濃",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 阿奇濃\n時間: Mon Apr 25 16:41:10 2005\n\n老爸丟給我一罐...\n\n努力啃當中 ^^\"\"\n\n\n\n\n是覆盆子歐 :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐     ■   KKBOX 可立刻 聽音樂 ■    \n│         bbs.kkcity.com.tw          │   ■■所有想找的歌通通不必等 ■■  \n└──《From:211.20.223.223     》──┘ ■■■http://www.kkbox.com.tw■■■\n",
+      "char_count": 280,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/6/A116PB96",
+        "raw_sha256": "0f979033f9df701d1080a05b2a19c18c64b97c69593ba40cd765fc00eb538f30",
+        "normalized_sha256": "efbcded68942db9f3d29e4288cd0cbcd4e71cafc5ac6f6b1f01014c72269e502",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116PHIT",
+      "title": "呼呼呼",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 呼呼呼\n時間: Mon Apr 25 18:28:45 2005\n\n啦 啦 啦 ...\n\n大地之怒到手啦... ^^\"\"\"\n\n嘿嘿, 到處走透透當中 :)\n元控終於36了 ^O^\n\n--\n放假太無聊了, so =.=\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐ＫＫＡＤＳＬ→六星級優質連線服務\n│         bbs.kkcity.com.tw          │┴  └─▇ 馬上申請帶你上網環遊全世界！\n└──《From:211.20.223.223     》──┘ KKADSL ┴  http://adsl.kkcity.com.tw \n",
+      "char_count": 317,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/T/A116PHIT",
+        "raw_sha256": "c1f106be426b1b169b505e06e38c18a6e87bf8fd8f30add08fd90e22e053c57d",
+        "normalized_sha256": "9198221d877ea93ceb0b7e5d99afb824ee4ecd296d280fdc7ca203fa73f245ea",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116PS12",
+      "title": "[Link]桌布DL",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: [Link]桌布DL\n時間: Mon Apr 25 21:26:58 2005\n\nhttp://desktopstreet2.net/download/\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢╱  只要你通過身份認證 ~    ◥█\n│         bbs.kkcity.com.tw          │ █▉─ 免經驗、五人連署即開班系板 ◥\n└──《From:211.20.223.223     》──┘   ◥╲  趕快為班上設個秘密基地吧! ◢\n",
+      "char_count": 274,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/2/A116PS12",
+        "raw_sha256": "3fc1e518e8694d5b89d537f2a5f80d1e8599c7c5ef615c140d6c69c0c7333f43",
+        "normalized_sha256": "9df848cc310dd7def09f91f255ffa2fa03b1ffe15a2f6c4a41924991764fa588",
+        "source_aliases": [
+          {
+            "record_id": "kkcity:gem:A11DE8LB",
+            "source_path": "gem/brd/KKCity/os80/B/A11DE8LB"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kkcity:brd:A116PTGU",
+      "title": "Re: 遭竊",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 遭竊\n時間: Mon Apr 25 21:52:30 2005\n\n還有另外一個損失...\n\n記得那條去家樂福抽中的項鍊嗎...\n\n也不見了...\n\n\n\n我媽還保存的很好耶, 不過真的消失了 >.<\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ＫＫ免/費/撥/接 ◤\n│         bbs.kkcity.com.tw          │▏電話(1)：449◤1999 電話(2)：4058-6000\n└──《From:211.20.223.223     》──┘▏帳號：kkcity   密碼：kkcity\n",
+      "char_count": 299,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/U/A116PTGU",
+        "raw_sha256": "5adab8aae4031a1faa8c0e950ebad9c8c3573052cf0316618c105eb4e75634ff",
+        "normalized_sha256": "17124780315ad65ae2a5717719fc981037b23546b20ecd08610645289fbc4a67",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116PU2O",
+      "title": "ROSE",
+      "date": "2005-04-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: ROSE\n時間: Mon Apr 25 22:02:00 2005\n\nhttp://rose.joypark.com.tw/Event/940419_CB/index_CB.asp\n\nhttp://www.roseonline.co.kr/\n\n終於不是新幹線代理的了@.@\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐★☆ 數十萬首歌曲，22種音樂分類 ☆★\n│         bbs.kkcity.com.tw          │□□ 與各大唱片行同步的音樂收藏 □□\n└──《From:211.20.223.223     》──┘快來~KKBOX →http://www.kkbox.com.tw\n",
+      "char_count": 340,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/O/A116PU2O",
+        "raw_sha256": "26c6886ec4f77b5e0c2165bf8efa6e4a2f2c831954587871fae9cc8d23ac6aa5",
+        "normalized_sha256": "c929f6d6781c7931d98222e11570be43ea423edb21831f9522c684038ff2619d",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116Q6VJ",
+      "title": "[LINK]RO桌布",
+      "date": "2005-04-26",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: [LINK]RO桌布\n時間: Tue Apr 26 00:33:55 2005\n\nhttp://www.ragnarok.co.kr/ragnarok/Download/WallPaperList.asp\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:211.20.223.223     》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n",
+      "char_count": 305,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/J/A116Q6VJ",
+        "raw_sha256": "fd477b2e57bedbeb296ebf2038ce7ea15925967bfe4ebb75ff424806fc7bba04",
+        "normalized_sha256": "1c9ef1e24d133a93a0f0938060ce49c0e4c4a99a681b1aa3077d8472e25902ac",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116Q7I8",
+      "title": "Re: 呼呼呼",
+      "date": "2005-04-26",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 呼呼呼\n時間: Tue Apr 26 00:43:52 2005\n\n不過越玩越無聊... @.@\n\n剛剛打小王, 過了一隻,\n其他就還好...\n\n等級越高越沒錢買裝備...\n\n\n\n算了, 放棄 :p\n\n反正點數快光光了^^\"\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐     優質連線服務隆/重/豋/場!!\n│         bbs.kkcity.com.tw          │┴  └─▇   KKADSL 帶你環遊全世界\n└──《From:211.20.223.223     》──┘ KKADSL ┴ http://adsl.kkcity.com.tw\n",
+      "char_count": 329,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/8/A116Q7I8",
+        "raw_sha256": "731b362d0cdd0fac9defa65e124056bbd43ce776f3f9beffe7c553a61ae65422",
+        "normalized_sha256": "83d133c2efa3110f355bdca6ce0d102f8c85eecc83b20075042937f657fdbca3",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116RH7C",
+      "title": "我跟老姐的對話",
+      "date": "2005-04-26",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 我跟老姐的對話\n時間: Tue Apr 26 12:34:52 2005\n\n 09:01:17  [xxxx]可惡的小偷！  老姐-i+1  呵呵\n 09:01:37  [xxxx]可惡的小偷！  老姐-i+1  對了 我可能七月底八月初要跟你借車\n 09:01:45  老姐-i+1  [xxxx]可惡的小偷！  你要去哪\n 09:01:47  [xxxx]可惡的小偷！  老姐-i+1  打算退伍後要大玩幾天\n 09:01:53  [xxxx]可惡的小偷！  老姐-i+1  去墾丁\n 09:01:58  老姐-i+1  [xxxx]可惡的小偷！  你開過真的車嗎\n 09:02:02  [xxxx]可惡的小偷！  老姐-i+1  不過要花點時間熟悉一下=.=\n 09:02:08  老姐-i+1  [xxxx]可惡的小偷！  我先去保個險好了\n 09:02:13  [xxxx]可惡的小偷！  老姐-i+1  哈\n 09:02:32  老姐-i+1  [xxxx]可惡的小偷！  應該是可以吧 不過我不敢確定那幾天是否\n剛好要用車\n 09:02:36  [xxxx]可惡的小偷！  老姐-i+1  沒關係\n 09:02:43  老姐-i+1  [xxxx]可惡的小偷！  你日期確定了跟我說\n 09:02:47  [xxxx]可惡的小偷！  老姐-i+1  因為我還在計畫當中 時間應該是八月初\n 09:02:58  [xxxx]可惡的小偷！  老姐-i+1  暫時排八月一日到五日\n 09:03:00  老姐-i+1  [xxxx]可惡的小偷！  那你要怎麼先熟悉\n 09:03:13  老姐-i+1  [xxxx]可惡的小偷！  你一退伍就會馬上搬到台北嗎\n 09:03:17  [xxxx]可惡的小偷！  老姐-i+1  不會這麼快\n 09:03:25  [xxxx]可惡的小偷！  老姐-i+1  不過會慢慢準備要搬到北部就是\n 09:03:29  老姐-i+1  [xxxx]可惡的小偷！  所以你會在家裡先呆幾天就是了\n 09:03:36  [xxxx]可惡的小偷！  老姐-i+1  沒辦法\n 09:03:43  [xxxx]可惡的小偷！  老姐-i+1  退伍之後的證明資料要在戶籍地辦\n 09:03:56  [xxxx]可惡的小偷！  老姐-i+1  所以 應該七月中要到北部找房子\n 09:03:58  老姐-i+1  [xxxx]可惡的小偷！  沒關係啦 你就想 反正以後見面的機會比較\n少\n 09:04:08  老姐-i+1  [xxxx]可惡的小偷！  就先當乖兒子吧\n 09:04:20  老姐-i+1  [xxxx]可惡的小偷！  你要在那裡混\n 09:04:34  老姐-i+1  [xxxx]可惡的小偷！  那你退伍完再請你吃一頓好了\n 09:04:40  老姐-i+1  [xxxx]可惡的小偷！  我們去西提 耶耶\n 09:05:04  [xxxx]可惡的小偷！  老姐-i+1  沒意外\n 09:05:09  [xxxx]可惡的小偷！  老姐-i+1  應該在桃園 或是中永和\n 09:05:13  [xxxx]可惡的小偷！  老姐-i+1  這兩個地方選一個\n 09:05:21  老姐-i+1  [xxxx]可惡的小偷！  是喔 那桃園就很近耶\n 09:05:37  [xxxx]可惡的小偷！  老姐-i+1  應該會先在桃園火車站附近 要補個習 花半\n年時間考個證照\n 09:05:37  老姐-i+1  [xxxx]可惡的小偷！  我說離我這 搞不好我以後也要在桃園一帶\n鬼混\n 09:05:49  [xxxx]可惡的小偷！  老姐-i+1  因為現在出去找工作 剛好碰到畢業潮 難找\n\n 09:05:54  老姐-i+1  [xxxx]可惡的小偷！  桃竹苗一帶\n 09:06:16  [xxxx]可惡的小偷！  老姐-i+1  所以 一定要準備比較好的資歷 不然這段時\n間光是浪費在找工作的時間 會浪費調\n 09:06:25  [xxxx]可惡的小偷！  老姐-i+1  暫時打算先進修\n 09:06:29  老姐-i+1  [xxxx]可惡的小偷！  嗯恩 我想也是\n 09:06:37  老姐-i+1  [xxxx]可惡的小偷！  有人贊助你嗎\n 09:06:49  [xxxx]可惡的小偷！  老姐-i+1  而且 當兵會讓頭腦變笨 所以要把一些感覺\n抓回來\n 09:06:53  [xxxx]可惡的小偷！  老姐-i+1  應該是沒有啦XD\n 09:07:00  [xxxx]可惡的小偷！  老姐-i+1  可能要主動去找案子作\n 09:07:13  [xxxx]可惡的小偷！  老姐-i+1  不過暫時性可能還要靠家裡吧 近一年左右\n的時間\n 09:07:19  老姐-i+1  [xxxx]可惡的小偷！  你要是沒盤纏 我可以供應你一些\n 09:07:30  老姐-i+1  [xxxx]可惡的小偷！  只收20%利息\n 09:07:33  [xxxx]可惡的小偷！  老姐-i+1  還有兩萬到三萬多左右\n 09:07:45  老姐-i+1  [xxxx]可惡的小偷！  等你大副大櫃後要環我\n 09:07:47  [xxxx]可惡的小偷！  老姐-i+1  ㄛ 你家是開黑店的啊 比信用卡還貴=.=\n 09:08:20  [xxxx]可惡的小偷！  老姐-i+1  沒有啦 還在計畫\n 09:08:36  [xxxx]可惡的小偷！  老姐-i+1  因為退伍前一定還會再花點大錢請客 這是\n部隊習俗\n 09:08:54  [xxxx]可惡的小偷！  老姐-i+1  所以啦 目前很多東西都還在想當中\n 09:09:01  老姐-i+1  [xxxx]可惡的小偷！  請去吃lobentan就好了呀\n 09:09:04  [xxxx]可惡的小偷！  老姐-i+1  哈\n 09:09:40  老姐-i+1  [xxxx]可惡的小偷！  老闆 豆甘切一兩 參戎來一灌\n 09:09:49  [xxxx]可惡的小偷！  老姐-i+1  我會被海K到死XD\n 09:10:14  老姐-i+1  [xxxx]可惡的小偷！  反正看你是要來新竹給我請 還是回家給我\n請\n 09:10:18  [xxxx]可惡的小偷！  老姐-i+1  再看看啦\n 09:10:23  [xxxx]可惡的小偷！  老姐-i+1  退伍之後再說\n 09:10:23  老姐-i+1  [xxxx]可惡的小偷！  如果回家 我們就去吃西提\n 09:10:26  [xxxx]可惡的小偷！  老姐-i+1  因為還好久=.=\n 09:10:46  老姐-i+1  [xxxx]可惡的小偷！  在新竹 我們去吃日本料理吃到飽 想到口水\n快掉出來\n 09:10:54  [xxxx]可惡的小偷！  老姐-i+1  =.=\n\n\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐KKMAN團隊  全新力作  ◎◎KKBOX◎◎\n│         bbs.kkcity.com.tw          │知名歌手通通都有  所有新歌想聽就聽\n└──《From:211.20.223.223     》──┘※※ 內容豐富多元的線上音樂台 ※※\n",
+      "char_count": 3072,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/C/A116RH7C",
+        "raw_sha256": "435caec90b355c87120ced8a42da1e44d534f4d6fe6ef6562a122ff4161c1b0e",
+        "normalized_sha256": "54655fe7fbf4d9f6948a8bbf0e7497a84e02bb253eed1d509d40dab3ed835ffb",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116RHBK",
+      "title": "Re: 我跟老姐的對話",
+      "date": "2005-04-26",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 我跟老姐的對話\n時間: Tue Apr 26 12:37:08 2005\n\n※ 引述《os80 (破70,期待退伍中!)》之銘言：\n>  09:08:54  [xxxx]可惡的小偷！  老姐-i+1  所以啦 目前很多東西都還在想當中\n>  09:09:01  老姐-i+1  [xxxx]可惡的小偷！  請去吃lobentan就好了呀\n                                                 ^^^^^^^^\n>  09:09:04  [xxxx]可惡的小偷！  老姐-i+1  哈\n>  09:09:40  老姐-i+1  [xxxx]可惡的小偷！  老闆 豆甘切一兩 參戎來一灌\n\n我還一時反應不過來, 原來那是路邊攤 Orz.... ^^\"\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ＫＫ免費撥接•上網不用錢 。。。───┐\n│         bbs.kkcity.com.tw          │電話:449-1999 帳號:kkcity 密碼:kkcity│\n└──《From:211.20.223.223     》──┘ 。。。──────────────＊╯\n吐 weil：跟了我這麼久  連一點點簡單的英文都不會 嘖嘖                    [04/27]\n",
+      "char_count": 611,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/K/A116RHBK",
+        "raw_sha256": "fd466f37d039aeb7e6acf0d143f8edd371edcad3ac018ba980dfe5c7c418bb99",
+        "normalized_sha256": "7603354313a243ff87103cd0eda9d894c6f5d1ee62976ac432d7e713cf9d5f2a",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116RHHM",
+      "title": "[轉錄]Re: 嘖！今天被開紅單了 >,<..",
+      "date": "2005-04-26",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: [轉錄]Re: 嘖！今天被開紅單了 >,<..\n時間: Tue Apr 26 12:40:22 2005\n\n※ 本文轉錄自 [Taoyuan] 看板\n\n發信人: classs.bbs@bbs.mgt.ncu.edu.tw (我不愛下雨天~b), 看板: Taoyuan\n標  題: Re: 嘖！今天被開紅單了 >,<..\n發信站: 中央資管龍貓資訊天地 (Tue Apr 26 10:03:41 2005)\n轉信站: bark/5TaoYuan/116R8SU\nOrigin: bbs.mgt.ncu.edu.tw\n\n==> hongkun.bbs@bbs.wretch.cc (坤仔) 提到:\n: ※ 引述《david93g》之銘言：\n: > 可以吧~~我用過好幾次了\n:   現在真的還可以用嗎??\n:   因為之前好像有看到一篇文章好像說已經不能用抵押的方式了\n:   真是不想繳那$900.....\n可以押!!但是有條件....\n如果你有空,請親自到監理所二樓....最右邊的櫃檯...\n上面的招牌大字有寫著....吊扣駕照窗口....\n請大家不要亂傳了,現在還是可以押!!\n一千 押1個月\n二千 押2個月\n三千以上 三個月\n一次可以押兩張紅單,也就是有兩張超過三千的,最多只要六個月\n\n測速照相,如果有拍到人,開車是女生,就不能拿男生的駕照去押\n如果連面孔都看得出來,且是車主,那就只能押車主的駕照\n如果測速照相,還被警察欄下來簽名,那就只能拿簽名的人去押....\n\n另外補充  收到紅單之後,要在到期日之前去辦理押駕照\n然後要再過一個月,中途會先收到崔繳公文(別鳥他)\n之後會收到公文通知,可以拿當初申請的要押的駕照去押\n如果這個時候想不開,想要繳清...也是可以的.....\nP.S 公文通知會寄到要被押駕照的人的家裡唷...\n    如果是跟別人借來押...要先說明這點,不然會害人被家裡罵哦..(親身經驗=.=+)\n\n\n因為我四月初才去辦過....結果公文寄到要借我駕照的朋友家\n他被罵到定在牆壁上,駕照還被老媽沒收....\n而我....當然就去繳兩千二的超速紅單啦 看.........\n\n詳情請電或親洽桃園監理所\n\n--\n◎龍貓資訊天地(bbs.mgt.ncu.edu.tw)\n◎[classs]From: master.classs.net\n",
+      "char_count": 1018,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/M/A116RHHM",
+        "raw_sha256": "bb7860532ecbd93a7a5959bfb393e4aec5bcc0ff15037c24a6e9dcae5d13cbd2",
+        "normalized_sha256": "41d96b53c6edbde1c4c1b927c2c403709146a17a913bf9fef7305fa397480c65",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116RI26",
+      "title": "[Joke]偏心的7-11",
+      "date": "2005-04-26",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: [Joke]偏心的7-11\n時間: Tue Apr 26 12:49:10 2005\n\n朋友轉的 :)\n\n 一天小牛 小羊 小豬 小狗一起去7-11買東西\n\n 小牛先進去 被店員趕出來\n\n 小豬又進去 被店員用掃把掃出來\n\n 小狗再進去 被店員用 棍子打出來\n\n 最後小羊進去 可是卻沒有事情\n\n 為什麼 ???為什麼 天阿為什麼................................\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n 因為7-11....24小時\n\n\n\n\n\n\n 不~~打~~羊 ~~~\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐     ■   KKBOX 可立刻 聽音樂 ■    \n│         bbs.kkcity.com.tw          │   ■■所有想找的歌通通不必等 ■■  \n└──《From:211.20.223.223     》──┘ ■■■http://www.kkbox.com.tw■■■\n",
+      "char_count": 465,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/6/A116RI26",
+        "raw_sha256": "12ed1f74368e4848e42f45bd7b75c89d8e661e1cc1461b37ade860b50237b758",
+        "normalized_sha256": "a482377739eaa1cb686437ec6ccebec4af24dfed149195e9372b92a4fe4b147c",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116RI8C",
+      "title": "準備收假了",
+      "date": "2005-04-26",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 準備收假了\n時間: Tue Apr 26 12:52:28 2005\n\n晚上八點半之前要回去...\n\n\n下次放假是五月初, 還好久,\n而且還要趕著去整理一堆東西... @.@\n\n麻煩啊 >\"<\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐ＫＫＡＤＳＬ→六星級優質連線服務\n│         bbs.kkcity.com.tw          │┴  └─▇ 馬上申請帶你上網環遊全世界！\n└──《From:211.20.223.223     》──┘ KKADSL ┴  http://adsl.kkcity.com.tw \n",
+      "char_count": 305,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/C/A116RI8C",
+        "raw_sha256": "68a799859f5246844011e08985a9728131999a815d3fdaebd50f6cf4cadf7fb9",
+        "normalized_sha256": "bc159daebe2302e30ae66666fd323674b58ee0e159290180c23e70ab37d4ffe5",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116RJCF",
+      "title": "驟雨",
+      "date": "2005-04-26",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 驟雨\n時間: Tue Apr 26 13:11:43 2005\n\n自從遭小偷以來, 老媽神經變成超敏感的,\n一定要有人在家他才會放心...\n\n\n南部早上下了一場驟雨...\n\n\n本來要出去買午餐的,\n想想罷了, 不太知道附近怎麼跑,\n又怕又下雨, 不想騎車出去,\n那就隨意買個不打羊的地方隨便買東西肯就好了... :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢╱  只要你通過身份認證 ~    ◥█\n│         bbs.kkcity.com.tw          │ █▉─ 免經驗、五人連署即開班系板 ◥\n└──《From:211.20.223.223     》──┘   ◥╲  趕快為班上設個秘密基地吧! ◢\n",
+      "char_count": 356,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/F/A116RJCF",
+        "raw_sha256": "c1591c34ff0a13139791e725bead12a63ea951869759e82e982d36dda2e29a5c",
+        "normalized_sha256": "76fed0027ae33f5887cd88f4c090b4dcb15c03769f20c57e406542108f951af8",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116RNNU",
+      "title": "[LINK] 64bits windows",
+      "date": "2005-04-26",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: [LINK] 64bits windows\n時間: Tue Apr 26 14:26:06 2005\n\nhttp://taiwan.cnet.com/news/software/0,2000064574,20098578,00.htm\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ＫＫ免/費/撥/接 ◤\n│         bbs.kkcity.com.tw          │▏電話(1)：449◤1999 電話(2)：4058-6000\n└──《From:211.20.223.223     》──┘▏帳號：kkcity   密碼：kkcity\n",
+      "char_count": 314,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/U/A116RNNU",
+        "raw_sha256": "d517f00453a68eaadd6d6d933362cb0c87d93e14018141672e45c86aa08dee6c",
+        "normalized_sha256": "e6c24538adfb6dbb23699e28e5418f4d50592412497bb5bf3c40f6eefbd6adc7",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A116RV8M",
+      "title": "[轉錄]Re: 你們都去那拍新的身分證大頭照啊??",
+      "date": "2005-04-26",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 站內: os80\n標題: [轉錄]Re: 你們都去那拍新的身分證大頭照啊??\n時間: Tue Apr 26 16:34:30 2005\n\n※ 本文轉錄自 [motss] 看板\n\n作者: sadman (來拍照吧) 看板: Motss\n標題: Re: 你們都去那拍新的身分證大頭照啊??\n時間: Tue Apr 26 16:27:17 2005\n\n※ 引述《bigbird111 (台北陽光大屌猛男帥哥)》之銘言：\n> 可以推薦一下嗎??\n> 地點??\n> 價格??\n> 不滿意可以一直拍到滿意為止嗎??\n\n有數位相機的話自己拍拍看囉,\n相關軟體也很方便...\n自己排版成8張在4x6吋格式內,\n8張才3-4塊錢超划算....\n\n也可以請朋友協助互拍...\n自己拍絕對可以拍到自己滿意為止,\n相館大多是拍幾張讓你選一張....\n\n--\n\n自拍大頭照相關規定及軟體使用\n\n九十四年全面換發國民身分證相片規格\nhttp://www.taoyuan.gov.tw/new1.htm\n\n圖例說明\nhttp://www.taoyuan.gov.tw/0940318.jpg\n\n\n新身份證規格排版(PHOTOSHOP CS專用)\nhttp://homepage13.seed.net.tw/web@1/nn2000/new.atn\n\n身分證照剪裁模版(PhotoImpact 8.0-10.0)\nhttp://myweb.hinet.net/home9/cchseu/idphoto/crop.html\n\n我個人則是使用Photocap\nhttp://www.johnson-wang.idv.tw/\n\n\n\n--\n最近迷上用ＤＣ拍照，你願意當我MODEL嗎？\n\n下面是幫朋友拍的照片..   更新日期:2005/4/19\nhttp://www.wretch.cc/album/sadman\n--\n☆ [Origin: 新椰林風情] <ntu.kkcity.com.tw> [From: 61.229.153.185]\n",
+      "char_count": 874,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/M/A116RV8M",
+        "raw_sha256": "3881772bf537b73564ba72a3e451dc8621b988e08c7ca1761957c6a8fa512aa5",
+        "normalized_sha256": "452b4c58160d2cb48ca2f621acaaf921bc38b90d7435d8ceb3032cd321c4c1d3",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117Q35V",
+      "title": "Re: 20050504  新髮型",
+      "date": "2005-05-08",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 20050504  新髮型\n時間: Sun May  8 02:45:19 2005\n\n※ 引述《weil (故鄉台南的陽光)》之銘言：\n> 我很早就想去剪啦\n> 只是很難有時間去剪囉~~\n> 幹嘛換帳號阿......\n> 喔~~我知道了\n> 因為你在外面\n\n你答對了, 那時候再網咖,\n我學長在旁邊, 所以不方便^^\"\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:218.168.2.150      》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n",
+      "char_count": 367,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/V/A117Q35V",
+        "raw_sha256": "b794c8cc134aa0fa9e038d235f6277c44f4f2d380932c9b7876d8fd70d8e0763",
+        "normalized_sha256": "043e13dee7f880864140b2cfa4000b7e9529517eaeab851c751d623c43e00994",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117Q37D",
+      "title": "六月底",
+      "date": "2005-05-08",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 六月底\n時間: Sun May  8 02:46:05 2005\n\n六月底要連放八到十天的假,\n因為是退伍假 :p\n\n\n不過這次放假到六月底中間可能不能休幾天的假 @.@\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐     優質連線服務隆/重/豋/場!!\n│         bbs.kkcity.com.tw          │┴  └─▇   KKADSL 帶你環遊全世界\n└──《From:218.168.2.150      》──┘ KKADSL ┴ http://adsl.kkcity.com.tw\n",
+      "char_count": 298,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/D/A117Q37D",
+        "raw_sha256": "2bbc2cde1bbffb9e287e32c484a983000a69908404f0d65daa20a6ceb7fa3112",
+        "normalized_sha256": "2e758a44816f4d1f1f351d27d56b6e0854bc25b90baca93690b8647d0ce9cf1a",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117S30Q",
+      "title": "Re: 怪電腦",
+      "date": "2005-05-08",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 怪電腦\n時間: Sun May  8 20:54:50 2005\n\n剛剛重灌好了, 順便把裡面一堆灰塵清一清...\n\n\n我在猜可能是灰塵太多了,\n然後加上C 槽的壞軌太多,\n所以我把swap放到F 槽了 :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐KKMAN團隊  全新力作  ◎◎KKBOX◎◎\n│         bbs.kkcity.com.tw          │知名歌手通通都有  所有新歌想聽就聽\n└──《From:218.168.20.176     》──┘※※ 內容豐富多元的線上音樂台 ※※\n",
+      "char_count": 300,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/Q/A117S30Q",
+        "raw_sha256": "4a9156d34ecd4760de664c45b7ac08bffe0151d4697d9d6ccbc622165735eb39",
+        "normalized_sha256": "1685bd8adea33f9e65e04e0c04f67a295525f1b56e5b74f3486c8470be7f6045",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117S32N",
+      "title": "Re: [心情] (嘆~~)",
+      "date": "2005-05-08",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: [心情] (嘆~~)\n時間: Sun May  8 20:55:51 2005\n\n※ 引述《singforyou》之銘言：\n>     最近工作很怪, 都得偷偷摸摸的做\n>     因為新聞局有規定, 公文得要自己歸檔, 不可以經由第三者\n>     可是他們的藉口都是不會, 就叫別人來做\n>     這下好啦...這工作輪到俺來做了\n>     還得偷偷摸摸的........又不是上班時間偷看G片.. >\"<\n\n歸檔... ?\n我最近也在為這檔事情頭痛當中 >\"<\n\n話說我都馬是偷偷摸摸的發文的 XD\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ＫＫ免費撥接•上網不用錢 。。。───┐\n│         bbs.kkcity.com.tw          │電話:449-1999 帳號:kkcity 密碼:kkcity│\n└──《From:218.168.20.176     》──┘ 。。。──────────────＊╯\n",
+      "char_count": 462,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/N/A117S32N",
+        "raw_sha256": "6c265a0b00e329d3f018c6a7c083106e8eb7ded2a9998b9ead29ef6faa61cf26",
+        "normalized_sha256": "51651d8b0473afa99f5050ae2dabc13f0850528551b0dacd0430138e6f0df678",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117S349",
+      "title": "Re: Hello~~",
+      "date": "2005-05-08",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: Hello~~\n時間: Sun May  8 20:56:41 2005\n\n※ 引述《freiheitkino (好想捏一下我的可愛小B)》之銘言：\n> 來拜碼頭...哈哈~~\n> 哪時開版的，那個 w 開頭的仁兄也不說一聲，\n> 你看看你看看...竟然都已經到一百多篇了......\n> 吼~~\n\n歡迎光臨^^\n\n有空多來灌水歐 :)\n\n--\n接客歐 XD\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ◢　◤   ★ 線上音樂新震撼 ★   ◢　◤\n│         bbs.kkcity.com.tw          │ ^_^ /  隨選隨播免等待  KKBOX◤  ^_^ / \n└──《From:218.168.20.176     》──┘  　 ◤ http://www.kkbox.com.tw  　  ◤\n",
+      "char_count": 405,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/9/A117S349",
+        "raw_sha256": "879a0052cfce1e43daedb01dc177ee001c4d1cfc7dcde640aa8d40154cb49a56",
+        "normalized_sha256": "6d8fc3e7ff436ebd0d0ae9d7c193d0f23fa03cef578f88be1e61cf0583d487a4",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117S81P",
+      "title": "定案",
+      "date": "2005-05-08",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: 定案\n時間: Sun May  8 22:20:41 2005\n\n電腦暫時定案, 可能會先放在ptt 的附近...\n\n狀況未明就是...\n\n\n有點感慨起來... 唉...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐KKMAN團隊  全新力作  ◎◎KKBOX◎◎\n│         bbs.kkcity.com.tw          │知名歌手通通都有  所有新歌想聽就聽\n└──《From:218.168.20.176     》──┘※※ 內容豐富多元的線上音樂台 ※※\n",
+      "char_count": 277,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/P/A117S81P",
+        "raw_sha256": "ac498bb415f43c5288fbf11f38b6c5e8c11c72a9cd650c7916c1f47a3da7f9a3",
+        "normalized_sha256": "9c48d51b72ca22ae2de5806e10009ac8e0f0ad6672d12a8724ad237b85cdca96",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117TJ4E",
+      "title": "Re: 怪電腦",
+      "date": "2005-05-09",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破70,期待退伍中!) 看板: os80\n標題: Re: 怪電腦\n時間: Mon May  9 10:35:58 2005\n\n還是怪怪的, 看看是不是另外一個硬碟的問題...\n\n所以在買一個80G 的來跑看看...\n\n\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ＫＫ免費撥接•上網不用錢 。。。───┐\n│         bbs.kkcity.com.tw          │電話:449-1999 帳號:kkcity 密碼:kkcity│\n└──《From:218.168.9.25       》──┘ 。。。──────────────＊╯\n吐 weil：又浪費錢買東西了.........                                      [05/10]\n",
+      "char_count": 358,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/E/A117TJ4E",
+        "raw_sha256": "b590d58ffce115588d67f72c907746d3adc7288c285087a73385c8e6de2f378f",
+        "normalized_sha256": "058746b8b7701ec9b1a1bdd422b7fee613e3c902276bca5cb3e355034e82d0c7",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117TPAU",
+      "title": "精華區",
+      "date": "2005-05-09",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: 精華區\n時間: Mon May  9 12:21:50 2005\n\n先編一些^^\"\"\n這裡精華區功能還真不習慣的用>\"<\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ＫＫ免費撥接•上網不用錢 。。。───┐\n│         bbs.kkcity.com.tw          │電話:449-1999 帳號:kkcity 密碼:kkcity│\n└──《From:218.168.9.25       》──┘ 。。。──────────────＊╯\n",
+      "char_count": 266,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/U/A117TPAU",
+        "raw_sha256": "a8ad2a22be97e9ea1891477fe8bf13e4df044aabd40db90b016ec698699afe37",
+        "normalized_sha256": "7c6971c3d1ad63d3a232966d52c484d0da8e9b6f7c6678676a74678bd38c4f27",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117TPE5",
+      "title": "[公告]大家注意這裡一下",
+      "date": "2005-05-09",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: [公告]大家注意這裡一下\n時間: Mon May  9 12:23:33 2005\n\n\n原則上來說, 這裡沒什麼版規啦,\n\n要灌水要洗板或是亂po一些東西都可以.\n\n\n不過涉及人身攻擊以及一些非法連結的時候,\n\n請私底下用E-mail通知... ^^\"\n\n\n\n有問題請隨時發問 :)\n\n\n--\n不知道這裡有沒有小板主的設定, 正在摸索當中 :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ◢　◤   ★ 線上音樂新震撼 ★   ◢　◤\n│         bbs.kkcity.com.tw          │ ^_^ /  隨選隨播免等待  KKBOX◤  ^_^ / \n└──《From:218.168.9.25       》──┘  　 ◤ http://www.kkbox.com.tw  　  ◤\n→ weil：那我說王小鹿又胖了  這樣算人身攻擊嗎!!??  XD                   [05/10]\n",
+      "char_count": 457,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/5/A117TPE5",
+        "raw_sha256": "15f5be4a84d636b3ea00b3615ab5cc58ff0eb0c4f49293ce3f9ed5508e4fb617",
+        "normalized_sha256": "41ff03d87cf767f0351a4a1f84a6e002fce94e1902c238537ab50cefc48ba76b",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117U1FF",
+      "title": "Re: 怪電腦",
+      "date": "2005-05-09",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: Re: 怪電腦\n時間: Mon May  9 14:40:47 2005\n\n確定原因了, 記憶體的問題...\n\n用了十年的老記憶體快掛了...\n\n\n\n等一下去標一個好了...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐ＫＫＡＤＳＬ→六星級優質連線服務\n│         bbs.kkcity.com.tw          │┴  └─▇ 馬上申請帶你上網環遊全世界！\n└──《From:218.168.9.25       》──┘ KKADSL ┴  http://adsl.kkcity.com.tw \n",
+      "char_count": 298,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/F/A117U1FF",
+        "raw_sha256": "dab88433e625644cf7b420a260ef5bb1b07f02264a14e1c4edf3dbb8bf0e98b1",
+        "normalized_sha256": "3c2ac64cba9ef4bb194f537e3375331cec77f2fb38eae845df1f20bfa6039071",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117U2HQ",
+      "title": "freepops",
+      "date": "2005-05-09",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: freepops\n時間: Mon May  9 14:59:06 2005\n\n免費yahoo可以用outlook收信的service\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢╱  只要你通過身份認證 ~    ◥█\n│         bbs.kkcity.com.tw          │ █▉─ 免經驗、五人連署即開班系板 ◥\n└──《From:218.168.9.25       》──┘   ◥╲  趕快為班上設個秘密基地吧! ◢\n",
+      "char_count": 266,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/Q/A117U2HQ",
+        "raw_sha256": "4bb94cc9d3392b7d06f69cdb48fbf8a9a13d41b27c51b86bfc5798adc924e797",
+        "normalized_sha256": "eb0ae3041ae6d8cd666687298084f9de3fd8dd4476eacce3700ed28b826ea141",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117URPF",
+      "title": "唱歌",
+      "date": "2005-05-09",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: 唱歌\n時間: Mon May  9 22:09:51 2005\n\n就算是下雨還是要去唱歌!!! >\"<\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐     ■   KKBOX 可立刻 聽音樂 ■    \n│         bbs.kkcity.com.tw          │   ■■所有想找的歌通通不必等 ■■  \n└──《From:218.168.9.25       》──┘ ■■■http://www.kkbox.com.tw■■■\n吐 weil：我特地早下班　只為了他說想唱歌...然後現在他睡得要死            [05/10]\n",
+      "char_count": 318,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/F/A117URPF",
+        "raw_sha256": "b1989f20ba1e268977a0d26b12695aabf67819e732f9a1438c6faed5965fab1d",
+        "normalized_sha256": "59a3377677295d6dc189bd4cb50b11cddaa850bc2b0ccccb1810a66dee9c05fd",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117URRV",
+      "title": "Re: 怪電腦",
+      "date": "2005-05-09",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: Re: 怪電腦\n時間: Mon May  9 22:11:11 2005\n\n後來覺得不對, 搞不好是主機板上面那個插Ram 的插槽掛了...\n\n\n等有錢一點在更新電腦好了 >\"<\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐ＫＫＡＤＳＬ→六星級優質連線服務\n│         bbs.kkcity.com.tw          │┴  └─▇ 馬上申請帶你上網環遊全世界！\n└──《From:218.168.9.25       》──┘ KKADSL ┴  http://adsl.kkcity.com.tw \n",
+      "char_count": 300,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/V/A117URRV",
+        "raw_sha256": "65972024d51b0bb4ce573ef6583039aaa3973eb3b35a7d95ab4daddc11839f86",
+        "normalized_sha256": "20e875a79ca17b10dfb60195ca50ba05ac7525e07f9bbf4d02ca570d88e7f410",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117URTM",
+      "title": "找房子",
+      "date": "2005-05-09",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: 找房子\n時間: Mon May  9 22:12:06 2005\n\n計畫六月底來桃園找房子...\n\n現在暫時是動不了了, 還有一堆事情要處理...\n\n\n希望這幾天不要出亂子才好...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢╱  只要你通過身份認證 ~    ◥█\n│         bbs.kkcity.com.tw          │ █▉─ 免經驗、五人連署即開班系板 ◥\n└──《From:218.168.9.25       》──┘   ◥╲  趕快為班上設個秘密基地吧! ◢\n",
+      "char_count": 291,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/M/A117URTM",
+        "raw_sha256": "afbd16c9ef5e4dcb06546a39a8ca5eb6dd9201ea2b0dca0b92a3e3b619781aaf",
+        "normalized_sha256": "660715b1cb07474b5d295ef3712575c4e83605be3dc45fac7725412a3ea10bef",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117URVH",
+      "title": "想玩的遊戲排行",
+      "date": "2005-05-09",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: 想玩的遊戲排行\n時間: Mon May  9 22:13:05 2005\n\n1.Mabinogi\n2.飛天歷險\n3.ROSE\n\n--\n暫時沒帳號>\"<\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ＫＫ免/費/撥/接 ◤\n│         bbs.kkcity.com.tw          │▏電話(1)：449◤1999 電話(2)：4058-6000\n└──《From:218.168.9.25       》──┘▏帳號：kkcity   密碼：kkcity\n吐 weil：少玩點遊戲  多看點書  充實自己也多點裡子......                 [05/10]\n",
+      "char_count": 334,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/H/A117URVH",
+        "raw_sha256": "66132ab65c4cebe399c0a16675a97f14af77a0d292fcde170566c74bb2124629",
+        "normalized_sha256": "40bac8e10e1f67b6067d00c13d334ec51f4a0e3795fd6d39d8251649b2337ff2",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A117USN6",
+      "title": "Monster",
+      "date": "2005-05-09",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: Monster\n時間: Mon May  9 22:25:42 2005\n\nDreams Come True的Monster...\n\n\n這次寄上來, 一方面是怕再有小偷光顧,\n把CD給摔破掉(上次就有一點小損失了),\n另外一方面則是想拿出來聽聽...\n\n\n好久之前買的正版CD說,\n之後就很少買CD了, 清一色全部都是mp3 ^^\"\n\n\n不過這張還不錯聽歐, 回味中 :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐★☆ 數十萬首歌曲，22種音樂分類 ☆★\n│         bbs.kkcity.com.tw          │□□ 與各大唱片行同步的音樂收藏 □□\n└──《From:218.168.9.25       》──┘快來~KKBOX →http://www.kkbox.com.tw\n",
+      "char_count": 392,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/6/A117USN6",
+        "raw_sha256": "1a408a6cbd2d062f0367ed098fdd230ee54e858f6fce56319e931569c1a0fac0",
+        "normalized_sha256": "815951c596c4dc4ed99df3926ce0efaa70974efb2c23d094b6de745a62417ccf",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A11802OD",
+      "title": "Re: 想玩的遊戲排行",
+      "date": "2005-05-10",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: Re: 想玩的遊戲排行\n時間: Tue May 10 09:14:53 2005\n\n※ 引述《singforyou ( 我需要看心理醫生了..)》之銘言：\n>     我都玩日本的線上遊戲\n>     還滿讚的說\n>     而且是終身免費 XD\n>     哇哈哈哈~~~~~~~~~~~~\n\n對於日文很濫的我來說... annn.... >\"<\n\n不過日本人平均起來的禮貌真的比台灣人好太多 :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐ＫＫＡＤＳＬ→六星級優質連線服務\n│         bbs.kkcity.com.tw          │┴  └─▇ 馬上申請帶你上網環遊全世界！\n└──《From:218.168.9.25       》──┘ KKADSL ┴  http://adsl.kkcity.com.tw \n",
+      "char_count": 411,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/D/A11802OD",
+        "raw_sha256": "dbe4852b2271b2aa75688cfebb9a78cc5805a119c2ae9da5a9a9f5073cce0417",
+        "normalized_sha256": "aab65aef554699a0b10bfc10af08c6298bd5fd820fa781e56b08ef47b1863ec1",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A1181Q5C",
+      "title": "東森購物",
+      "date": "2005-05-11",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: 東森購物\n時間: Wed May 11 01:00:28 2005\n\n怎麼說呢, 就是很喜歡看這個,\n因為每次都有很好笑的事情發生 ^^\"\"\n\n\n特別愛看那種電腦類的, 講的話真的超級搞笑到一個不行XD\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢╱  只要你通過身份認證 ~    ◥█\n│         bbs.kkcity.com.tw          │ █▉─ 免經驗、五人連署即開班系板 ◥\n└──《From:218.168.9.25       》──┘   ◥╲  趕快為班上設個秘密基地吧! ◢\n",
+      "char_count": 301,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/C/A1181Q5C",
+        "raw_sha256": "401e930174ad35cf8dd8679093161ea813aec7600bace6b0cb22b2e3aaf0213a",
+        "normalized_sha256": "0d02dc99bc829b7fd221bed69b573e0e6d143d581f0cc33e16e1ab817492f232",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A1181QGP",
+      "title": "拋錨",
+      "date": "2005-05-11",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破60,過來是破月了@@) 看板: os80\n標題: 拋錨\n時間: Wed May 11 01:06:33 2005\n\n為了拿回主機, 所以只好騎車去台北.\n\n本來計畫好的是, 拿完主機直接送到朋友那邊去,\n無奈昨天下雨, 然後今天朋友跑去Friday吃東西錯開了...\n\n只好就這樣回桃園了...\n\n---\n\n在從台北回來的途中, 機車的皮帶斷掉,\n然後有個奇怪的阿伯經過, 幫我們弄個一個小時弄好...\n\n雖然我很質疑他的修車能力, 不過車已經拆了, 又不能不這樣子...\n\n而且那個阿伯好煩歐, 一直在repeat重複的話,\n那個當頭又不能說他煩, 只好一直點頭笑笑的(其實心裡面很幹XD)...\n\n\n某人在旁邊很抓狂, 皮帶真的是消耗品啦,\n不過我也覺得蠻奇怪的, 怎麼之前修車的時候,\n老闆沒有檢查到 @.@\n\n我之前在新莊修車的時候都會幫我檢查,\n然後給我建議的才對 >.<\n\n\n總而言之, 車子暫時修好了,\n明天要給另一家店作總檢查 ^^\"\n\n\n不過我也要回去收假了, 下次放假就是六月底的退伍假,\n中間應該會有一兩天的小假期, 準備要回高雄的家整理東西 :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ＫＫ免/費/撥/接 ◤\n│         bbs.kkcity.com.tw          │▏電話(1)：449◤1999 電話(2)：4058-6000\n└──《From:218.168.9.25       》──┘▏帳號：kkcity   密碼：kkcity\n",
+      "char_count": 659,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/P/A1181QGP",
+        "raw_sha256": "9f3c187ebed292b16037da69cc53fadc736f9057ff9f955be25138c2f36584f1",
+        "normalized_sha256": "ba404d450e873f6fba74ff6209a9772db4b935e059d3acd16a9fe4cef9e0057f",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A1181QN9",
+      "title": "50倒數",
+      "date": "2005-05-11",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 50倒數\n時間: Wed May 11 01:10:01 2005\n\n破50算不算久呢...\n\n\n其實還真的有點久 >.<\n\n\n\n實際在營天數剩下35天, 我的假期剩下15天...\n\n呼呼, 還有一個多月, 一定要撐過去@.@\n\n\n\n從好多人身上見證到, 退伍老兵八字比較輕.\n其實某部分應該是因為要退伍了,\n然後心情渙散的關係...\n\n要避免不要犯大錯就好了,\n全身而退, 然後從此之後跟部隊裡面的官僚不要在有連絡...\n\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐★☆ 數十萬首歌曲，22種音樂分類 ☆★\n│         bbs.kkcity.com.tw          │□□ 與各大唱片行同步的音樂收藏 □□\n└──《From:218.168.9.25       》──┘快來~KKBOX →http://www.kkbox.com.tw\n",
+      "char_count": 418,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/9/A1181QN9",
+        "raw_sha256": "6f836ef7bed3ea7a8e512b457ab9f8d6653a55a96301a6ce379ecf41b672bda1",
+        "normalized_sha256": "a3266ed7ebf0546efa3e4373d6362cfc3d38da5439cf6f52973651c46c961203",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A1181QRG",
+      "title": "哈根^O^",
+      "date": "2005-05-11",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 哈根^O^\n時間: Wed May 11 01:12:16 2005\n\n我的哈根來了, 感謝某人^O^\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:218.168.9.25       》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n推 singforyou：那麼晚吃冰淇淋, 會胖喔~~ XD                              [05/11]\n推 weil：他很難胖  就算胖了也不會比我胖...........                      [05/11]\n",
+      "char_count": 388,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/G/A1181QRG",
+        "raw_sha256": "e696b86fea921eec80eea217d44d71b08d9d7a5b7920c53cb41dcf370802a639",
+        "normalized_sha256": "89781797ed01cfeb97855164615ee81f3ca503bbc2331df636e4129b1ef32312",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A1198SH4",
+      "title": "偷跑",
+      "date": "2005-05-25",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 偷跑\n時間: Wed May 25 20:40:04 2005\n\n呼呼, 也許下禮拜一就可以放假了^O^\n\n現在在偷用電腦上網XD\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐     優質連線服務隆/重/豋/場!!\n│         bbs.kkcity.com.tw          │┴  └─▇   KKADSL 帶你環遊全世界\n└──《From:59.113.191.34      》──┘ KKADSL ┴ http://adsl.kkcity.com.tw\n",
+      "char_count": 280,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/4/A1198SH4",
+        "raw_sha256": "778753418ee0f4a85445cdc33ab943ff0409c90ec77145b76265d70c2424ad26",
+        "normalized_sha256": "63ef889c90a3ee8c067a44d116a5db9764e34969bea459ecd79f227e9cfb7237",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119GQ6O",
+      "title": "Re: 我娘說",
+      "date": "2005-05-28",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破月,退伍終於快到了=.=) 看板: os80\n標題: Re: 我娘說\n時間: Sat May 28 20:49:28 2005\n\n※ 引述《weil (嘿!今天好嗎)》之銘言：\n> 我抽到空軍\n> 朋友們都說那是爽兵\n> 那是什麼!?能吃嗎\n\n空軍有四分之一的爽兵,\n其他都很累....... =.=\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐KKMAN團隊  全新力作  ◎◎KKBOX◎◎\n│         bbs.kkcity.com.tw          │知名歌手通通都有  所有新歌想聽就聽\n└──《From:218.168.21.43      》──┘※※ 內容豐富多元的線上音樂台 ※※\n",
+      "char_count": 318,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/O/A119GQ6O",
+        "raw_sha256": "c25aa77116a4a76a66a28b031ec91a901beb9d9efb62535f8c3d7283e3d3f459",
+        "normalized_sha256": "d9c0c446a69dd516c15568ed425bec3179ab02425724de3cbdb108f90c504074",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119GU66",
+      "title": "keroro軍曹",
+      "date": "2005-05-28",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: keroro軍曹\n時間: Sat May 28 21:57:26 2005\n\n學弟在看cartoon network,\n我學長等一群人被搞笑內容笑到翻掉的同時,\n剛好我經過, 就... XD\n\n\n好可愛^O^\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐KKMAN團隊  全新力作  ◎◎KKBOX◎◎\n│         bbs.kkcity.com.tw          │知名歌手通通都有  所有新歌想聽就聽\n└──《From:218.168.21.43      》──┘※※ 內容豐富多元的線上音樂台 ※※\n",
+      "char_count": 298,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/6/A119GU66",
+        "raw_sha256": "de48b026794b93b128485b8a62c964e706a27ca89490c024c35a058a5cc05d26",
+        "normalized_sha256": "fb8a154fc698dcc3e6144bb4bbe5f3c91e08888eb29766fa8c4dce2876cb88f6",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119GUBN",
+      "title": "放假",
+      "date": "2005-05-28",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 放假\n時間: Sat May 28 22:00:23 2005\n\n本來預定30號的休假,\n被上面的逼迫提前休...\n\n沒什麼, 禮拜五早上跟上面的起了很嚴重的口角,\n這可是我從軍以來第一次氣到人當面破口大罵,\n而且還是紅著眼框...\n\n當下上面的人就強迫我休假去,\n說我是因為壓力太大所造成的,\n然後還跟我道歉...\n\n\n唉, 不太想管了,\n在營的天數只剩下18天...\n\n好多內幕歐, 改天爆個一兩條給報社知道好了...\n讓一些人死一死軍中才會改善吧...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ＫＫ免費撥接•上網不用錢 。。。───┐\n│         bbs.kkcity.com.tw          │電話:449-1999 帳號:kkcity 密碼:kkcity│\n└──《From:218.168.21.43      》──┘ 。。。──────────────＊╯\n",
+      "char_count": 435,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/N/A119GUBN",
+        "raw_sha256": "fb079b6b15ade44b59845c568b5fcdc486c652d9ba93dacef3f94efa630400c2",
+        "normalized_sha256": "0fd23a5798990bf006de4f48778c6f9384d55fdad6db1c22d96da1750b864436",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119GUGJ",
+      "title": "Re: 回來了",
+      "date": "2005-05-28",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: Re: 回來了\n時間: Sat May 28 22:02:59 2005\n\n好啦, 等你請假有空下來南部,\n我在帶你到處晃可以吧@.@\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ◢　◤   ★ 線上音樂新震撼 ★   ◢　◤\n│         bbs.kkcity.com.tw          │ ^_^ /  隨選隨播免等待  KKBOX◤  ^_^ / \n└──《From:218.168.21.43      》──┘  　 ◤ http://www.kkbox.com.tw  　  ◤\n",
+      "char_count": 291,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/J/A119GUGJ",
+        "raw_sha256": "612d0fc9ea194f386ea0c0c7f7705aac01d7f9ffd4f2138c62e948aa6af6d046",
+        "normalized_sha256": "7981938a4e82e1f4c3ce0d3922d8f9ae599c754999e5b7e53add141eb50e53db",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119GUKU",
+      "title": "94年3.4月的統一發票",
+      "date": "2005-05-28",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 94年3.4月的統一發票 \n時間: Sat May 28 22:05:18 2005\n\n94年3月∼4月\n特獎 15563981\n與上列號碼相同者獎金二百萬元\n頭獎 43519058\n59717638\n64296485\n與上列號碼相同者獎金二十萬元\n貳獎 與頭獎中獎號碼末七位相同者各得獎金四萬元\n參獎 與頭獎中獎號碼末六位相同者各得獎金一萬元\n肆獎 與頭獎中獎號碼末五位相同者各得獎金四千元\n伍獎 與頭獎中獎號碼末四位相同者各得獎金一千元\n陸獎 與頭獎中獎號碼末三位相同者各得獎金二百元\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐     ■   KKBOX 可立刻 聽音樂 ■    \n│         bbs.kkcity.com.tw          │   ■■所有想找的歌通通不必等 ■■  \n└──《From:218.168.21.43      》──┘ ■■■http://www.kkbox.com.tw■■■\n",
+      "char_count": 457,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/U/A119GUKU",
+        "raw_sha256": "5a3b31f2a9fac428e0e4d0fe4ad0c73fc7b5926f7d5e56a4fcbb1fa663180add",
+        "normalized_sha256": "629ed606c41629ea86009fef015201cfba89fd9c39d6c52863d893e41754b16d",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119H51F",
+      "title": "Re: 早起",
+      "date": "2005-05-28",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: Re: 早起\n時間: Sat May 28 23:54:23 2005\n\n※ 引述《weil (麗芙太熱)》之銘言：\n> 我覺得  會彈鋼琴的男生\n> 加一千分  哈哈\n\n+1\n\n> 腹肌??我還小雞雞勒.........................\n> 那種東西在我身上從來沒出現過  哈\n> 不過有在小鹿身上出現\"過\"\n\n還不是跟你在一起之後被養胖了 >.<\n\n現在還是勉強有一點點點點啦,\n自從上次連續兩三天做完仰臥起坐之後 @.@\n\n--\n要運動, 要運動 >.<\n現在好容易胖 @.@\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐ＫＫＡＤＳＬ→六星級優質連線服務\n│         bbs.kkcity.com.tw          │┴  └─▇ 馬上申請帶你上網環遊全世界！\n└──《From:218.168.21.43      》──┘ KKADSL ┴  http://adsl.kkcity.com.tw \n",
+      "char_count": 460,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/F/A119H51F",
+        "raw_sha256": "71f2b7bf5fdc91b2d0315427c0d290029fdf3e27146d521d6dc293bb9014b05b",
+        "normalized_sha256": "4fd86e48be906f5da02637190dc0596606a91870616c0e97f9ac770447dbed5c",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119H57H",
+      "title": "Re: 來修電腦",
+      "date": "2005-05-28",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: Re: 來修電腦\n時間: Sat May 28 23:57:37 2005\n\n先用看看, 我把一些硬體的設定值改了一點點點,\n看看放音樂跟影片的時候會不會跑的卡卡的...\n\n其他的還在觀察當中...\n\n在不成我就幫你買SP 2.3G , ok ? ^^\"\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢╱  只要你通過身份認證 ~    ◥█\n│         bbs.kkcity.com.tw          │ █▉─ 免經驗、五人連署即開班系板 ◥\n└──《From:218.168.21.43      》──┘   ◥╲  趕快為班上設個秘密基地吧! ◢\n",
+      "char_count": 327,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/H/A119H57H",
+        "raw_sha256": "e7b757f9e15af20ad572fc48b1ed17467a0f6e255f0ffd95128a052c96f0fc43",
+        "normalized_sha256": "1eeabca768d7783a1154505020dded6db03430770fc0a7a19d5f4c61aae33027",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119L1BG",
+      "title": "高中同學結婚了",
+      "date": "2005-05-30",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 高中同學結婚了\n時間: Mon May 30 11:16:00 2005\n\n聽說本來要拿炸彈炸我的,\n剛好我那陣子沒休假在裡面...\n\n時間過的還真快,\n不過我同學會結婚倒是有點出乎意外,\n因為他一直給我感覺蠻花的XD\n\n總而言之, 還是恭喜 :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ＫＫ免/費/撥/接 ◤\n│         bbs.kkcity.com.tw          │▏電話(1)：449◤1999 電話(2)：4058-6000\n└──《From:218.168.21.43      》──┘▏帳號：kkcity   密碼：kkcity\n",
+      "char_count": 323,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/G/A119L1BG",
+        "raw_sha256": "9d29d12cf5c3b0fad9dbfa18b20d6a82d7d9f223cecc69bbca4effa0bfdc30aa",
+        "normalized_sha256": "af97de4f4b7ee98076581784dbebbd4e7400e10214aebcc43b7dc7be99bea035",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119OB0D",
+      "title": "當機",
+      "date": "2005-05-31",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 當機\n時間: Tue May 31 17:19:09 2005\n\n真糟糕...\n\n本來有股衝動想幫某人換電腦的,\n不過某人把公共基金拿去繳水電費了...\n\n那就... 等一個月之後再換 :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ＫＫ免/費/撥/接 ◤\n│         bbs.kkcity.com.tw          │▏電話(1)：449◤1999 電話(2)：4058-6000\n└──《From:218.168.2.13       》──┘▏帳號：kkcity   密碼：kkcity\n",
+      "char_count": 294,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/D/A119OB0D",
+        "raw_sha256": "c93f47896882ab02e5169bac25b6133b9d1d7d332c49646de9ad3e8327a47a5a",
+        "normalized_sha256": "7b132fed6b0e95ad902f4b677dc7e6ea0184869789902baccf89be8db9b9bb34",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119OBG6",
+      "title": "厭惡",
+      "date": "2005-05-31",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 厭惡\n時間: Tue May 31 17:27:34 2005\n\n又是連環call...\n\n不管了, 前幾天還說要讓我好好休息,\n昨天我學長跟我說可能又要把我叫回去...\n\n挖哩勒ooxx...\n\n\n打死就是不接=.=\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐★☆ 數十萬首歌曲，22種音樂分類 ☆★\n│         bbs.kkcity.com.tw          │□□ 與各大唱片行同步的音樂收藏 □□\n└──《From:218.168.2.13       》──┘快來~KKBOX →http://www.kkbox.com.tw\n",
+      "char_count": 315,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/6/A119OBG6",
+        "raw_sha256": "5b299771a780a6ddbd43b00a182dd5fba630bf992fe084d538d2a28cbd4baed2",
+        "normalized_sha256": "ddb15a9ac1fb2d12d76912b6ef8100bda246ddec4b5bee5ba8a5a61fff3fc111",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119OHCK",
+      "title": "Re: 當機",
+      "date": "2005-05-31",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: Re: 當機\n時間: Tue May 31 19:08:04 2005\n\n換了一個插槽...\n\n感覺很像穩定了一些...\n\n\n再用看看一陣子就知道了 :)\n\n應該是沒有理由這麼容易壞才對=.=\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:218.168.2.13       》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n",
+      "char_count": 301,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/K/A119OHCK",
+        "raw_sha256": "52c8ce5a0ba470e360cc4b40cfbda710eef86b86b1ff8c131f1768e2c297dd07",
+        "normalized_sha256": "4a5006fb041dbd52be105421a5cd8b1b505808958ad0ebe8e3333fdb06f52458",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119OHJD",
+      "title": "Re: 當機",
+      "date": "2005-05-31",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: Re: 當機\n時間: Tue May 31 19:11:41 2005\n\n其實我另外一個懷疑是過熱...\n\n\n好吧, 這陣子試跑看看 :pp\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐KKMAN團隊  全新力作  ◎◎KKBOX◎◎\n│         bbs.kkcity.com.tw          │知名歌手通通都有  所有新歌想聽就聽\n└──《From:218.168.2.13       》──┘※※ 內容豐富多元的線上音樂台 ※※\n",
+      "char_count": 264,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/D/A119OHJD",
+        "raw_sha256": "17d4565c0c4a9a6a6b3fc43dd19ba421c9edec3db588b6e61e55f8afabd7f8ac",
+        "normalized_sha256": "9a918220b070ef15887967e47fa6de2ed113e479bcb56551d80fd8cb59a93715",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119OHPH",
+      "title": "大陸的小說",
+      "date": "2005-05-31",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 大陸的小說\n時間: Tue May 31 19:14:57 2005\n\n其實分隔開的軍網,\n好東西倒是不少...\n\n除了沒什麼G 圖之外其他都比民網豐富很多 XD\n\n\n---\n最近在看大陸的小說,\n只是想辦法把自己搞的不閒一點,\n只要上面的看到你在電腦前面而沒有亂跑,\n就認定你在作事情XD\n\n嗯, 葉戀的\"輔佐劉備\"還有不知名的\"亡靈聖魔導\",\n感覺上都蠻好看的...\n\n\n其實我覺得大陸小說為什麼好看,\n因為真的比較有深度,\n像是歷史小說就部分去考據歷史,\n一些描繪風景真的寫的很棒,\n不像台灣小說幾乎全部都是在愛來愛去的,\n前鎮子還頗喜歡, 到最近就有點膩了...\n\n努力的在翻小說當中 XD\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ＫＫ免費撥接•上網不用錢 。。。───┐\n│         bbs.kkcity.com.tw          │電話:449-1999 帳號:kkcity 密碼:kkcity│\n└──《From:218.168.2.13       》──┘ 。。。──────────────＊╯\n",
+      "char_count": 505,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/H/A119OHPH",
+        "raw_sha256": "87c8892d0f980da7b26aab3ed36dc3b8ba3aa21cbb6f5969e55ab60e48a3e052",
+        "normalized_sha256": "60b391c5c3566d71864986757fee49036dbfd282bf73f590876e3335e65f16cb",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119OHUM",
+      "title": "小朋友",
+      "date": "2005-05-31",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 小朋友\n時間: Tue May 31 19:17:42 2005\n\n某人最近半年應該會發現到我的某部分轉變 :p\n\n\n其實啊, 對我來說,\n我最近開始學會讓自己瘋狂,\n某部分來說, 只是覺得不太想太正經的作事情,\n就比較不會有太大的壓力存在...\n\n可以說我算是一種逃避吧^^\"\n\n可是也只有在某人面前會這樣,\n這樣子我會比較輕鬆一點, 至少很多事情跟很多反應,\n我都可以很誇張很瘋狂的表現出來,\n而不是悶在心理面死死的 :)\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐ ◢　◤   ★ 線上音樂新震撼 ★   ◢　◤\n│         bbs.kkcity.com.tw          │ ^_^ /  隨選隨播免等待  KKBOX◤  ^_^ / \n└──《From:218.168.2.13       》──┘  　 ◤ http://www.kkbox.com.tw  　  ◤\n",
+      "char_count": 437,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/M/A119OHUM",
+        "raw_sha256": "d87b34e2adb81ad04d3b131b70be69458397b73c43d907b5e43c8c6b87651365",
+        "normalized_sha256": "e53ddf7b5735227aba7fe500493f76bc46388461b0602fca0995d4f6128f3214",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119OI2H",
+      "title": "希望之詩",
+      "date": "2005-05-31",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 希望之詩\n時間: Tue May 31 19:19:45 2005\n\n開放申請了, 剛剛去搶了一個帳號XD\n\n\n官網\nhttp://www.mabinogi.com.tw\n\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐     ■   KKBOX 可立刻 聽音樂 ■    \n│         bbs.kkcity.com.tw          │   ■■所有想找的歌通通不必等 ■■  \n└──《From:218.168.2.13       》──┘ ■■■http://www.kkbox.com.tw■■■\n",
+      "char_count": 299,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/H/A119OI2H",
+        "raw_sha256": "55ca38b784a1a91ac5b50415ad6e1547cfb9942b0b18654c045500c64d95664a",
+        "normalized_sha256": "b902b8e4fd83016dfa84ea4dd10f70ed2c709e98bbca250d1c4cd66e35a2d618",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119OKIS",
+      "title": "Re: 當機",
+      "date": "2005-05-31",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: Re: 當機\n時間: Tue May 31 20:02:36 2005\n\n※ 引述《os80 (破50,過來是破月了@@)》之銘言：\n> 其實我另外一個懷疑是過熱...\n> 好吧, 這陣子試跑看看 :pp\n\n看起來是答對了...\n\n電風扇一不吹, 五分鐘後就當機...\n\n\n好吧, 暫時在觀察看看...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:218.168.2.13       》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n",
+      "char_count": 356,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/S/A119OKIS",
+        "raw_sha256": "ddd01903fd481e2b8a52191c95e7747cb8a409127c0884ea2bddc164e00405bb",
+        "normalized_sha256": "e38d0280bc7db17981e8198eb867751d38a985d172e259d8058a1277abc6cfd0",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119P4DL",
+      "title": "收假",
+      "date": "2005-06-01",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (破50,過來是破月了@@) 看板: os80\n標題: 收假\n時間: Wed Jun  1 00:32:53 2005\n\n明天中午準備收假...\n\n心情普通, 剩下的我只要撐過這十八天,\n這一切的討厭點將畫下一個句點...\n\n\n真希望那一天快點到來啊...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:218.168.2.13       》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n",
+      "char_count": 305,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/L/A119P4DL",
+        "raw_sha256": "bebf0cc3f5b89e6837101357855981f6256bdff4702681bb9461dd12d55b40c8",
+        "normalized_sha256": "dad3c50f45132bca832e63f374de4b2d29ca1b8a461c034fa7e50cbb36c706d8",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119P4OO",
+      "title": "Re: [心情] 真想大哭大叫...",
+      "date": "2005-06-01",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (退伍的倒數計時...) 看板: os80\n標題: Re: [心情] 真想大哭大叫...\n時間: Wed Jun  1 00:38:48 2005\n\n※ 引述《singforyou ( 好玩的第一堂課)》之銘言：\n>     靠!! 心情又不好了~~~~\n>     踹安哥跟小鹿.........(大哭大鬧ing)\n\n看第一次我還有點被嚇了一跳,\n我在想說我們兩個哪邊出狀況了...\n\n看到後面, 原來是打個招呼是吧^^\"\"\n\n>     我跟他要電話他居然不出聲的就走人\n>     是我太笨還是怎樣...這樣是很明顯的拒絕嗎?\n>     都已經喜歡他那麼久了, 也說過在一起\n>     現在這樣...我真的不知道要怎麼辦... (泣)\n>     抱歉...我又在無厘頭的發洩\n>     這種心情啊...還真的不是普通的痛苦....\n\n請發洩(這樣表明夠坦白了吧^^\")\n\n痛苦歐, 忍忍就過啦,\n既然他不願意那就不願意啊, 這還不簡單.\n也沒人規定一定要有手機才能聯絡咩...\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐   ◢ ╱  想要成立班系社團站台嗎?  \n│         bbs.kkcity.com.tw          │ █▉ ─  KKcity即日起開放BBS站申請囉!\n└──《From:218.168.2.13       》──┘   ◥ ╲  免程式技術、硬體成本的選擇!!\n",
+      "char_count": 622,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/O/A119P4OO",
+        "raw_sha256": "055e0ba498e445b28acfc55d70ef2eca5f66c7bae0833edbc0a8fdaa44c3bb5d",
+        "normalized_sha256": "291ee40d0faafb3b52dc3688488065069b5e244dad7ebc56da558c42a5a51a7f",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119P50V",
+      "title": "Re: 拋錨",
+      "date": "2005-06-01",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (退伍的倒數計時...) 看板: os80\n標題: Re: 拋錨\n時間: Wed Jun  1 00:43:11 2005\n\n※ 引述《weil (嘿!今天好嗎)》之銘言：\n> 一台摩托車就在我們面前發生車禍\n> 莫名其妙的是  根本沒人撞他\n> 他自己ㄎㄟˇ到安全島..........\n> 更好笑的是  他幹嘛騎內線道阿.....明明路上就沒車\n\n騎快車一定會騎到內線道去,\n原因很簡單, 第一個是閃車好閃(我只要閃目標明顯的大車而不用閃機車),\n第二個, 比較不會有路旁臨時有車子衝出來的情況...\n第三個, 在那個彎道, 原則上走內圈會比較好彎... :)\n\n> 呼~~騎車慢慢騎  不要亂亂撞\n> 40剛好  50就夠  60趕著用  70別亂衝  80發神經\n> (雖然我也有騎太快過  年少輕狂馬  哈)\n> 張阿理  假如你有看到的話  記得我也在提醒你阿  哈哈\n> 還有王小鹿  也不要再嘗試騎快車了\n> 你親愛的我不喜歡~尤其是當你當了太久了兵\n> 騎車技術已經退步的時候  呵呵\n\n哎呀, 我昨天載你才騎6x你就說太快>\"<\n\n我很習慣都是6x起跳的啊, 叫我熊熊降到4x我還嫌太慢的說...\n\n你也不看看你自己騎車的速度咩, 還敢說我 :p\n\n--\n除了桃園龜山往迴龍的省道之外, 我已經很努力控制在8x以下了啦=.=\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐▇─┐     優質連線服務隆/重/豋/場!!\n│         bbs.kkcity.com.tw          │┴  └─▇   KKADSL 帶你環遊全世界\n└──《From:218.168.2.13       》──┘ KKADSL ┴ http://adsl.kkcity.com.tw\n",
+      "char_count": 759,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/V/A119P50V",
+        "raw_sha256": "7cf9fdeab77f83ade2b6c8606df5e68084c1ea62ece6fd4adde16393ab930509",
+        "normalized_sha256": "5b3e551d9104b8654b8381872031c7119f9ac75b35b9c3aacf5f72840e1bd65b",
+        "source_aliases": []
+      }
+    },
+    {
+      "id": "kkcity:brd:A119P53H",
+      "title": "Re: 哈根^O^",
+      "date": "2005-06-01",
+      "author_id": "os80",
+      "platform": "KKCity",
+      "source_type": "offline_archive",
+      "source_role": "author_post",
+      "content_type": "text_record",
+      "primary_loc": "LOC4",
+      "related_locs": [
+        "LOC6",
+        "LOC7",
+        "LOC8"
+      ],
+      "display_policy": "full",
+      "searchable": true,
+      "classification": [],
+      "text": "作者: os80 (退伍的倒數計時...) 看板: os80\n標題: Re: 哈根^O^\n時間: Wed Jun  1 00:44:33 2005\n\n哈根理財法, 努力實施當中 XD\n\n\n--\n這可是我從電視上面看到的耶,\n今天竟然被刺激了 >\"<\n--\n┌─────◆ＫＫＣＩＴＹ◆─────┐KKMAN團隊  全新力作  ◎◎KKBOX◎◎\n│         bbs.kkcity.com.tw          │知名歌手通通都有  所有新歌想聽就聽\n└──《From:218.168.2.13       》──┘※※ 內容豐富多元的線上音樂台 ※※\n",
+      "char_count": 281,
+      "provenance": {
+        "offline_only": true,
+        "site_closed": true,
+        "external_url": null,
+        "source_path": "brd/KKCity/os80/H/A119P53H",
+        "raw_sha256": "dd1e34a7b3c5a847f424a81437b87d5d62785fb03b702573a1b732f72fb32cbb",
+        "normalized_sha256": "f763991b71ff9aa9b668574a69062b1a7b8346e5346de5cfd0a3bdb711fab821",
+        "source_aliases": []
+      }
+    }
+  ]
+}
