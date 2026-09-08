@@ -390,7 +390,7 @@
   </script>
 <script src="js/facebook-repo-corpus.js"></script>
   <script>
-    const SEARCH_BUILD='20260908-threads-v2';
+    const SEARCH_BUILD='20260908-threads-v3-plain-json';
     const API='https://moon-runes-pwa.onrender.com';
     const SOURCE_SEARCH_PROVIDERS=[
       {id:'threads',label:'Threads',url:q=>`https://www.threads.com/search?q=${encodeURIComponent(q)}`},
@@ -598,13 +598,13 @@
     async function localThreadsSearch(q,{topK=50,period='',start='',end=''}={}){
       const query=localNorm(q).replace(/\s+/g,'');
       if(!query)return [];
-      const manifestPath='data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json?v='+Date.now();
+      const manifestPath='data/json/generated/loc4/threads/LOC4_THREADS_BROWSER_MANIFEST.json?v='+Date.now();
       const manifestResponse=await fetch(manifestPath,{cache:'no-store'});
-      if(!manifestResponse.ok)throw new Error('Threads manifest HTTP '+manifestResponse.status);
+      if(!manifestResponse.ok)throw new Error('Threads browser manifest HTTP '+manifestResponse.status);
       const manifest=await manifestResponse.json();
       const hits=[];
       for(const shard of manifest.shards||[]){
-        const part=await localGzipJson(shard.path);
+        const part=await localJson(shard.path);
         for(const doc of part.documents||[]){
           if(doc.source_role!=='main_post')continue;
           const date=String(doc.date||'').slice(0,10);
