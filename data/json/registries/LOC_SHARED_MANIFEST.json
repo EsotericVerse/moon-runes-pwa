@@ -89,6 +89,12 @@
       "purpose": "Canonical governance, meaning, style-state and stage-interpretation records."
     },
     {
+      "id": "loc6_rune_methodology",
+      "path": "data/json/registries/LOC6_RUNE_METHODOLOGY_REGISTRY.json",
+      "authority": "LOC6",
+      "purpose": "Canonical default methodology based on LunaRunes eight groups plus 德／命／玄; broadens rune algorithms beyond divination into repeatable text/source analysis."
+    },
+    {
       "id": "loc4_threads_source_index",
       "path": "data/json/registries/LOC4_THREADS_KM_INDEX.json",
       "authority": "LOC4",
@@ -185,7 +191,9 @@
       "era_style_evidence": "403 indexed LOC3 works linked by ERA",
       "cross_media_relationship_interpretation": "connected",
       "threads_km_search": "source-text search is LOC4; LOC6 governance/style derived records remain LOC6",
-      "threads_source_counts": "evidence source only: 7008 LOC4 records / 4578 main / 2430 replies"
+      "threads_source_counts": "evidence source only: 7008 LOC4 records / 4578 main / 2430 replies",
+      "rune_methodology": "connected; default analysis uses LunaRunes eight groups + 德／命／玄",
+      "keyword_ranking": "common foundation; total/source/period/cross views"
     },
     "LOC7": {
       "linguistic_analysis_registry": "schema-ready",
@@ -259,7 +267,7 @@
       "LOC3": "lyrics/music retrieval",
       "LOC4": "creative works + Facebook/Threads life-writing raw text + work/chapter semantic analysis",
       "LOC5": "179 LOC5 media records after author-source backfill; 177 Reels URLs across 175 song-version rows; multiple Reels per song preserved",
-      "LOC6": "governance/Zhengde-style/value/rune interpretation derived from LOC4/LOC3/LOC8 evidence",
+      "LOC6": "LunaRunes-based default methodology + keyword/source ranking + governance/Zhengde-style/value/rune interpretation derived from evidence",
       "LOC7": "FAQ/KM retrieval",
       "LOC8": "ERA retrieval"
     },
@@ -277,7 +285,7 @@
       "purpose": "Recovered MoonSpeaker chapter three-rune/moon-phase evidence; missing rows are never inferred."
     }
   ],
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-08",
   "governance_layer": {
     "status": "consolidated",
     "core_document": "governance.html",
