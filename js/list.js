@@ -143,10 +143,21 @@ document.addEventListener("DOMContentLoaded", () => {
       `<span class="pill">${esc(r.月相)}</span>`,
       `<span class="pill">${esc(r.顯化形式)}</span>`
     ].join("");
+    const runeName = String(r.符文名稱 || "").trim();
+    const searchUrl = `search.html?q=${encodeURIComponent(runeName)}`;
+    const methodUrl = `search.html?q=${encodeURIComponent(runeName + " 方法論")}`;
     modalData.innerHTML = fields
       .filter(([,key]) => r[key] !== undefined && r[key] !== null && String(r[key]).trim() !== "")
       .map(([label,key]) => `<div class="field"><dt>${esc(label)}</dt><dd>${esc(r[key])}</dd></div>`)
-      .join("");
+      .join("") +
+      `<div class="field">
+        <dt>延伸查看</dt>
+        <dd>
+          <a href="${searchUrl}">查看此符文的搜尋資料</a>
+          <span aria-hidden="true"> · </span>
+          <a href="${methodUrl}">查看此符文的方法論</a>
+        </dd>
+      </div>`;
     modal.showModal();
   }
 
