@@ -1,0 +1,118 @@
+(() => {
+  'use strict';
+
+  const REGISTRY_URL='data/json/registries/LOC_ERA_REGISTRY.json';
+  const SHEET_API='https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec';
+  const LEGACY_MAP={P0:'P4.1','P0.5':'P4.2',P1:'P5.0',P2:'P5.1',P3:'P5.2',P4:'P5.3',P5:'P5.4',P6:'P5.5',P7:'P5.6',P8:'P5.7'};
+  let memory=null;
+  let inflight=null;
+
+  const n=v=>String(v??'').trim();
+  const order=v=>Number(v?.order??9999);
+  const clean=e=>{
+    const period=n(e?.period);
+    const name=n(e?.name);
+    return {
+      ...e,
+      era_id:n(e?.era_id)||('ERA-'+period),
+      period,
+      name,
+      display_label:n(e?.display_label)||(period&&name?period+'｜'+name:(name||period)),
+      start_date:n(e?.start_date),
+      end_date:n(e?.end_date)||null,
+      status:n(e?.status)||'released'
+    };
+  };
+  function normalizePeriod(period){
+    const p=n(period).replace(/^ERA-/i,'');
+    return LEGACY_MAP[p]||p;
+  }
+  function isPublicPeriod(period, baselineSet){
+    const p=n(period);
+    if(!p)return false;
+    if(baselineSet?.has(p))return true;
+    return /^P\d+\.\d+$/.test(p);
+  }
+  function merge(baseRows, remoteRows){
+    const baseline=(baseRows||[]).map(clean).filter(x=>x.period);
+    const baselineSet=new Set(baseline.map(x=>x.period));
+    const byPeriod=new Map(baseline.map(x=>[x.period,x]));
+    for(const raw of remoteRows||[]){
+      const row=clean(raw);
+      const p=normalizePeriod(row.period);
+      if(!isPublicPeriod(p,baselineSet))continue;
+      const existing=byPeriod.get(p)||{};
+      byPeriod.set(p,clean({...existing,...row,period:p,era_id:row.era_id&&/^ERA-P\d+\.\d+$/.test(row.era_id)?row.era_id:(existing.era_id||('ERA-'+p))}));
+    }
+    return [...byPeriod.values()].sort((a,b)=>order(a)-order(b)||a.period.localeCompare(b.period,undefined,{numeric:true}));
+  }
+  async function fetchJson(url){
+    const r=await fetch(url,{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json();
+  }
+  async function load({force=false}={}){
+    if(memory&&!force)return memory;
+    if(inflight&&!force)return inflight;
+    inflight=(async()=>{
+      let registry={eras:[],schema_version:'—'};
+      let remote={eras:[]};
+      try{registry=await fetchJson(REGISTRY_URL)}catch(_){}
+      try{
+        const u=new URL(SHEET_API);
+        u.searchParams.set('action','eras');
+        u.searchParams.set('user_id','lo3rwang');
+        const d=await fetchJson(u.toString());
+        remote=Array.isArray(d)?{eras:d}:d||{eras:[]};
+      }catch(_){}
+      const eras=merge(registry.eras||[],remote.eras||[]);
+      const current=eras.find(x=>x.status==='current')||eras[eras.length-1]||null;
+      const segmentCount=eras.filter(x=>x.period_type!=='parent').length;
+      memory={
+        version:n(registry.schema_version)||'—',
+        updated_at:n(registry.updated_at)||'',
+        eras,
+        current,
+        total_count:eras.length,
+        segment_count:segmentCount,
+        parent_count:eras.length-segmentCount,
+        legacy_map:{...(registry.legacy_period_map||LEGACY_MAP)},
+        source:remote.eras?.length?'registry+sheet':'registry'
+      };
+      return memory;
+    })();
+    try{return await inflight}finally{inflight=null}
+  }
+  function resolveDate(date,eras){
+    const d=n(date).slice(0,10);
+    if(!d)return null;
+    const rows=(eras||memory?.eras||[]).filter(x=>x.period_type!=='parent');
+    return rows.find(x=>(!x.start_date||d>=x.start_date)&&(!x.end_date||d<=x.end_date))||null;
+  }
+  function findPeriod(period,eras){
+    const p=normalizePeriod(period);
+    return (eras||memory?.eras||[]).find(x=>x.period===p)||null;
+  }
+  function label(period,date,eras){
+    const row=(date&&resolveDate(date,eras))||findPeriod(period,eras);
+    return row?.display_label||row?.period||'';
+  }
+  function range(period,eras){
+    const row=findPeriod(period,eras);
+    return row?{start:row.start_date||'',end:row.end_date||'',row}:{start:'',end:'',row:null};
+  }
+  async function fillSelect(select,{includeAll=true,allLabel='全部時期',selected}={}){
+    if(!select)return [];
+    const data=await load();
+    const current=selected??select.value;
+    select.innerHTML=(includeAll?'<option value="">'+allLabel+'</option>':'')+data.eras.map(e=>'<option value="'+escapeHtml(e.period)+'">'+escapeHtml(e.display_label)+'</option>').join('');
+    if([...select.options].some(o=>o.value===current))select.value=current;
+    return data.eras;
+  }
+  function escapeHtml(v){
+    return n(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  }
+  function invalidate(){memory=null;inflight=null}
+
+  window.LOCPeriods={REGISTRY_URL,SHEET_API,LEGACY_MAP,load,normalizePeriod,resolveDate,findPeriod,label,range,fillSelect,invalidate,merge};
+})();
