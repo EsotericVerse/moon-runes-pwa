@@ -1510,7 +1510,7 @@ class UnifiedSearchEngine:
             "related_locs": ["LOC2", "LOC7", "LOC8"],
             "content_type": "rune_record",
             "group": "runes",
-            "title": f"{number} · {name}",
+            "title": f"{name}之符文",
             "summary": rune.get("核心定義") or rune.get("定義") or rune.get("顯化形式") or rune.get("關鍵詞") or "",
             "score": round(score, 6),
             "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune64.xlsx", "note": None}],
