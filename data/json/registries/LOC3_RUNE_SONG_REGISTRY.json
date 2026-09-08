@@ -1,10 +1,10 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC3_RUNE_SONG_REGISTRY",
   "authority": "LOC3",
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-09",
   "purpose": "Identify songs actually derived from real LunaRunes draws. Rune imagery alone is insufficient.",
-  "definition": "符文歌曲＝以實際符文抽牌結果為創作來源，先形成語意／解讀，再轉化成歌曲；OW3gs 是其中的 11 張生成方法。",
+  "definition": "符文歌曲＝以實際 OW3gs 11 張抽牌結果為創作來源，先形成語意／解讀，再轉化成歌曲。所有符文歌曲均使用 OW3gs 11 抽。",
   "classification": {
     "confirmed": "Direct source record explicitly links a real draw to the song.",
     "high_candidate": "Strong multi-source match such as same date plus exact drawn-rune title, but missing explicit creation provenance.",
@@ -16,12 +16,11 @@
     "exact_11_scan": "Deprecated: exact-11 distinct-rune records are now classified as rune songs by author rule."
   },
   "rules": [
-    "Rune membership is counted by DISTINCT rune names; repeated occurrences of the same rune count once.",
-    "A song with exactly 11 distinct rune-name hits is classified as a rune song.",
-    "Those 11 distinct rune names are stored directly as the song's rune membership set; no reverse guessing is required.",
-    "Exactly-11 rune songs are surfaced by both OW3gs search and single-rune reverse lookup.",
-    "Songs with more than 11 distinct runes may be special rune songs deliberately filled with rune vocabulary; keep them separate from the exact-11 class.",
-    "Explicit author rejection overrides automatic classification."
+    "所有符文歌曲的生成方法固定為 OW3gs 11-card draw。",
+    "歌詞中出現的符文名稱只是文字內容特徵，不得反推為原始抽牌結果。",
+    "只有保存下來的原始 11 張抽牌紀錄，才能作為單符文反向搜尋的 rune membership 證據。",
+    "若歌曲已確認為符文歌曲但原始 11 抽尚未恢復，保留歌曲身分，但 rune cards / directions 留空，不猜測。",
+    "若原始抽牌紀錄存在，必須保留 11 張順序與方向。"
   ],
   "confirmed_records": [
     {
@@ -44,9 +43,14 @@
       },
       "created_date": "2026-03-23",
       "period": "P4",
-      "generation_method": "special_rune_song",
-      "rune_count": 32,
-      "runes": [
+      "generation_method": "OW3gs 11-card",
+      "rune_count": 11,
+      "runes": [],
+      "special_construction": true,
+      "search_policy": "surface_as_rune_song_only_until_draw_recovered",
+      "rune_song_flag": true,
+      "draw_provenance_status": "draw_not_yet_recovered",
+      "lyric_rune_hits": [
         "憶",
         "界",
         "核",
@@ -79,9 +83,7 @@
         "幻",
         "果",
         "命"
-      ],
-      "special_construction": true,
-      "search_policy": "surface_by_rune_membership_but_exclude_from_ow3gs_exact_11"
+      ]
     },
     {
       "work_id": "E0223",
@@ -102,9 +104,14 @@
       "created_date": "2026-02-15",
       "period": "P3",
       "era_name": "微月光",
-      "generation_method": "special_rune_song",
-      "rune_count": 20,
-      "runes": [
+      "generation_method": "OW3gs 11-card",
+      "rune_count": 11,
+      "runes": [],
+      "special_construction": true,
+      "search_policy": "surface_as_rune_song_only_until_draw_recovered",
+      "rune_song_flag": true,
+      "draw_provenance_status": "draw_not_yet_recovered",
+      "lyric_rune_hits": [
         "界",
         "鏡",
         "向",
@@ -125,9 +132,7 @@
         "禍",
         "緣",
         "果"
-      ],
-      "special_construction": true,
-      "search_policy": "surface_by_rune_membership_but_exclude_from_ow3gs_exact_11"
+      ]
     },
     {
       "work_id": "E0354",
@@ -142,9 +147,14 @@
         "statement": "界內之風是標準的符文歌曲沒錯。",
         "confirmed_in_current_review": true
       },
-      "generation_method": "special_rune_song",
-      "rune_count": 24,
-      "runes": [
+      "generation_method": "OW3gs 11-card",
+      "rune_count": 11,
+      "runes": [],
+      "special_construction": true,
+      "search_policy": "surface_as_rune_song_only_until_draw_recovered",
+      "rune_song_flag": true,
+      "draw_provenance_status": "draw_not_yet_recovered",
+      "lyric_rune_hits": [
         "界",
         "向",
         "斷",
@@ -169,9 +179,7 @@
         "虛",
         "果",
         "命"
-      ],
-      "special_construction": true,
-      "search_policy": "surface_by_rune_membership_but_exclude_from_ow3gs_exact_11"
+      ]
     },
     {
       "work_id": "E0364",
@@ -186,9 +194,14 @@
         "statement": "界外誤差是符文歌曲沒錯。",
         "confirmed_in_current_review": true
       },
-      "generation_method": "special_rune_song",
-      "rune_count": 25,
-      "runes": [
+      "generation_method": "OW3gs 11-card",
+      "rune_count": 11,
+      "runes": [],
+      "special_construction": true,
+      "search_policy": "surface_as_rune_song_only_until_draw_recovered",
+      "rune_song_flag": true,
+      "draw_provenance_status": "draw_not_yet_recovered",
+      "lyric_rune_hits": [
         "彩",
         "界",
         "向",
@@ -214,9 +227,7 @@
         "無",
         "幻",
         "果"
-      ],
-      "special_construction": true,
-      "search_policy": "surface_by_rune_membership_but_exclude_from_ow3gs_exact_11"
+      ]
     }
   ],
   "candidate_records": [],
@@ -281,7 +292,9 @@
     "confirmed_rune_songs": 4,
     "known_minimum_total": 4,
     "total_status": "incomplete",
-    "author_recollection": "Rune songs existed only within P2–P4; current recovered confirmed work-level records are incomplete."
+    "author_recollection": "Rune songs existed only within P2–P4; current recovered confirmed work-level records are incomplete.",
+    "exact_11_lyric_hit_classification_deprecated": true,
+    "note": "11 個歌詞符文字命中不等於 11 張抽牌；僅保留作 recovery clue。"
   },
   "dataset_pipeline": {
     "builder": "card_api/scripts/build_loc3_dataset.py",
@@ -305,8 +318,8 @@
   },
   "known_method": {
     "rune_song_creation_method": "OW3gs 11-card draw → interpretation → lyrics/song",
-    "source": "author recollection in current review",
-    "status": "confirmed_by_author"
+    "status": "confirmed_by_author",
+    "author_rule": "所有符文歌曲都是 OW3gs 11 抽。"
   },
   "recovery_status": {
     "confirmed_now": 4,
@@ -1033,14 +1046,15 @@
     "exact_11_rune_song_count": 37,
     "confirmed_special_rune_song_count": 4
   },
-  "ow3gs_records": [
+  "ow3gs_records": [],
+  "lexical_11_hit_candidates": [
     {
       "work_id": "E0334",
       "title": "自律域",
       "created_date": "2026-04-04",
       "period": "P4",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "核",
         "斷",
@@ -1053,15 +1067,9 @@
         "空",
         "無"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0048",
@@ -1069,7 +1077,7 @@
       "created_date": "2025-05-09",
       "period": "P1",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "靈",
         "界",
         "域",
@@ -1082,15 +1090,9 @@
         "無",
         "命"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0112",
@@ -1098,7 +1100,7 @@
       "created_date": "2025-12-21",
       "period": "P2",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "靈",
         "魂",
         "憶",
@@ -1111,15 +1113,9 @@
         "空",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0163",
@@ -1127,7 +1123,7 @@
       "created_date": "2026-01-21",
       "period": "P3",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "誤",
@@ -1140,15 +1136,9 @@
         "無",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0164",
@@ -1156,7 +1146,7 @@
       "created_date": "2026-01-21",
       "period": "P3",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "誤",
@@ -1169,15 +1159,9 @@
         "無",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0251",
@@ -1185,7 +1169,7 @@
       "created_date": "2026-02-22",
       "period": "P3",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "斷",
         "封",
@@ -1198,15 +1182,9 @@
         "空",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0353",
@@ -1214,7 +1192,7 @@
       "created_date": "2026-04-07",
       "period": "P4",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "憶",
         "分",
         "誤",
@@ -1227,15 +1205,9 @@
         "果",
         "命"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0462",
@@ -1243,7 +1215,7 @@
       "created_date": "2026-07-02",
       "period": "P6",
       "era_name": "人生月台",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "啟",
@@ -1256,15 +1228,9 @@
         "時",
         "無"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0499",
@@ -1272,7 +1238,7 @@
       "created_date": "2026-07-14",
       "period": "P6",
       "era_name": "順其自然",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "分",
@@ -1285,15 +1251,9 @@
         "無",
         "幻"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0130",
@@ -1301,7 +1261,7 @@
       "created_date": "2025-12-26",
       "period": "P2",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "向",
         "斷",
         "分",
@@ -1314,15 +1274,9 @@
         "因",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0306",
@@ -1330,7 +1284,7 @@
       "created_date": "2026-03-31",
       "period": "P4",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "斷",
         "死",
@@ -1343,15 +1297,9 @@
         "果",
         "命"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0350",
@@ -1359,7 +1307,7 @@
       "created_date": "2026-04-07",
       "period": "P4",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "域",
         "分",
@@ -1372,15 +1320,9 @@
         "空",
         "無"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0137",
@@ -1388,7 +1330,7 @@
       "created_date": "2025-12-27",
       "period": "P2",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "生",
@@ -1401,15 +1343,9 @@
         "果",
         "命"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0138",
@@ -1417,7 +1353,7 @@
       "created_date": "2025-12-27",
       "period": "P2",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "生",
@@ -1430,15 +1366,9 @@
         "果",
         "命"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0338",
@@ -1446,7 +1376,7 @@
       "created_date": "2026-04-04",
       "period": "P4",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "生",
@@ -1459,15 +1389,9 @@
         "無",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0429",
@@ -1475,7 +1399,7 @@
       "created_date": "2026-06-24",
       "period": "P5",
       "era_name": "人生月台",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "分",
@@ -1488,15 +1412,9 @@
         "時",
         "無"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0106",
@@ -1504,7 +1422,7 @@
       "created_date": "2025-12-18",
       "period": "P2",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "核",
         "向",
@@ -1517,15 +1435,9 @@
         "因",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0128",
@@ -1533,7 +1445,7 @@
       "created_date": "2025-12-25",
       "period": "P2",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "心",
         "實",
@@ -1546,15 +1458,9 @@
         "果",
         "命"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0129",
@@ -1562,7 +1468,7 @@
       "created_date": "2025-12-25",
       "period": "P2",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "生",
@@ -1575,15 +1481,9 @@
         "緣",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0135",
@@ -1591,7 +1491,7 @@
       "created_date": "2025-12-27",
       "period": "P2",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "生",
@@ -1604,15 +1504,9 @@
         "無",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0136",
@@ -1620,7 +1514,7 @@
       "created_date": "2025-12-27",
       "period": "P2",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "生",
@@ -1633,15 +1527,9 @@
         "無",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0235",
@@ -1649,7 +1537,7 @@
       "created_date": "2026-02-19",
       "period": "P3",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "光",
@@ -1662,15 +1550,9 @@
         "無",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0447",
@@ -1678,7 +1560,7 @@
       "created_date": "2026-06-28",
       "period": "P5",
       "era_name": "人生月台",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "心",
@@ -1691,15 +1573,9 @@
         "空",
         "無"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0489",
@@ -1707,7 +1583,7 @@
       "created_date": "2026-07-10",
       "period": "P6",
       "era_name": "順其自然",
-      "runes": [
+      "lyric_rune_hits": [
         "向",
         "封",
         "生",
@@ -1720,15 +1596,9 @@
         "果",
         "命"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0249",
@@ -1736,7 +1606,7 @@
       "created_date": "2026-02-21",
       "period": "P3",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "憶",
         "分",
         "生",
@@ -1749,15 +1619,9 @@
         "月",
         "明"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0454",
@@ -1765,7 +1629,7 @@
       "created_date": "2026-06-30",
       "period": "P5",
       "era_name": "人生月台",
-      "runes": [
+      "lyric_rune_hits": [
         "向",
         "啟",
         "生",
@@ -1778,15 +1642,9 @@
         "時",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0468",
@@ -1794,7 +1652,7 @@
       "created_date": "2026-07-03",
       "period": "P6",
       "era_name": "人生月台",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "分",
@@ -1807,15 +1665,9 @@
         "明",
         "命"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0099",
@@ -1823,7 +1675,7 @@
       "created_date": "2025-12-17",
       "period": "P2",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "向",
         "心",
         "光",
@@ -1836,15 +1688,9 @@
         "無",
         "夢"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0189",
@@ -1852,7 +1698,7 @@
       "created_date": "2026-01-26",
       "period": "P3",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "死",
@@ -1865,15 +1711,9 @@
         "空",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0248",
@@ -1881,7 +1721,7 @@
       "created_date": "2026-02-21",
       "period": "P3",
       "era_name": "白晝之月",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "心",
         "語",
@@ -1894,15 +1734,9 @@
         "時",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0269",
@@ -1910,7 +1744,7 @@
       "created_date": "2026-02-27",
       "period": "P3",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "心",
@@ -1923,15 +1757,9 @@
         "因",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0293",
@@ -1939,7 +1767,7 @@
       "created_date": "2026-03-29",
       "period": "P4",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "心",
@@ -1952,15 +1780,9 @@
         "果",
         "命"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0455",
@@ -1968,7 +1790,7 @@
       "created_date": "2026-06-30",
       "period": "P5",
       "era_name": "人生月台",
-      "runes": [
+      "lyric_rune_hits": [
         "界",
         "向",
         "心",
@@ -1981,15 +1803,9 @@
         "夢",
         "果"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0475",
@@ -1997,7 +1813,7 @@
       "created_date": "2026-07-04",
       "period": "P6",
       "era_name": "順其自然",
-      "runes": [
+      "lyric_rune_hits": [
         "向",
         "心",
         "石",
@@ -2010,15 +1826,9 @@
         "時",
         "無"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0113",
@@ -2026,7 +1836,7 @@
       "created_date": "2025-12-21",
       "period": "P2",
       "era_name": "微月光",
-      "runes": [
+      "lyric_rune_hits": [
         "心",
         "語",
         "地",
@@ -2039,15 +1849,9 @@
         "時",
         "無"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0260",
@@ -2055,7 +1859,7 @@
       "created_date": "2026-02-24",
       "period": "P3",
       "era_name": null,
-      "runes": [
+      "lyric_rune_hits": [
         "鏡",
         "生",
         "心",
@@ -2068,15 +1872,9 @@
         "明",
         "空"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     },
     {
       "work_id": "E0378",
@@ -2084,7 +1882,7 @@
       "created_date": "2026-06-11",
       "period": "P5",
       "era_name": "人生月台",
-      "runes": [
+      "lyric_rune_hits": [
         "向",
         "心",
         "種",
@@ -2097,15 +1895,9 @@
         "空",
         "夢"
       ],
-      "rune_count": 11,
-      "generation_method": "OW3gs",
-      "mapping_status": "exact_11_distinct_runes",
-      "record_type": "rune_song",
-      "provenance_status": "classified_by_author_rule",
-      "note": "Author rule: exactly 11 DISTINCT rune hits are classified as rune songs.",
-      "status": "confirmed",
-      "role": "exact_11_rune_song",
-      "rune_song_flag": true
+      "hit_count": 11,
+      "status": "lexical_feature_only",
+      "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     }
   ]
 }
