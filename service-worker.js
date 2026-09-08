@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v161";
+const CACHE_NAME = "moon-runes-pwa-v162";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -7,11 +7,8 @@ const ASSETS_TO_CACHE = [
   "/governance.html",
   "/loc2-game.html",
   "/lo3rwang.html",
-  "/search.html",
   "/tutorial01.html",
   "/tutorial02.html",
-  "/search.html?content_type=knowledge",
-  "/search.html?content_type=lyrics_work",
   "/evolution.html",
   "/css/style.css",
   "/js/loc-nav.js",
@@ -99,8 +96,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // LunaRunes is updated frequently. Never serve a cached HTML shell here.
-  if (url.pathname === "/runes.html") {
+  // Search and LunaRunes are updated frequently. Never serve cached HTML shells.
+  if (url.pathname === "/search.html" || url.pathname === "/runes.html") {
     event.respondWith(fetch(request, { cache: "no-store" }));
     return;
   }
