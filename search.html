@@ -230,6 +230,11 @@
         <div class="ranking-scope" id="searchRankingScope">載入時間跨度中…</div>
         <div class="ranking-list" id="searchRankingList"><div class="empty">切換到排行榜時會依目前時間跨度計算。</div></div>
       </section>
+      <section class="ranking-panel" style="margin-top:18px">
+        <div class="ranking-head"><div><h2>實際搜尋關鍵字</h2><p>統計這個瀏覽器實際送出的搜尋詞；不代表所有訪客的全站統計。</p></div></div>
+        <div class="ranking-scope" id="searchUsageScope">尚無搜尋紀錄。</div>
+        <div class="ranking-list" id="searchUsageList"><div class="empty">開始搜尋後會在這裡累積。</div></div>
+      </section>
     </div>
     
   </main>
@@ -242,6 +247,36 @@
     const SHEET_API_URL='https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec';
     let rankingSource='', rankingEra='', eraCache=null;
     const escRank=s=>String(s??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    const SEARCH_USAGE_KEY='loc-search-usage-v1';
+    function readSearchUsage(){
+      try{
+        const data=JSON.parse(localStorage.getItem(SEARCH_USAGE_KEY)||'{}');
+        return data&&typeof data==='object'?data:{};
+      }catch(_){return {};}
+    }
+    function recordSearchUsage(query){
+      const q=String(query||'').trim();
+      if(!q)return;
+      const data=readSearchUsage();
+      const key=q.toLowerCase();
+      const row=data[key]||{query:q,count:0,last_used:''};
+      row.query=q;
+      row.count=Number(row.count||0)+1;
+      row.last_used=new Date().toISOString();
+      data[key]=row;
+      localStorage.setItem(SEARCH_USAGE_KEY,JSON.stringify(data));
+    }
+    function renderSearchUsage(){
+      const list=qel('searchUsageList'),scope=qel('searchUsageScope');
+      if(!list||!scope)return;
+      const rows=Object.values(readSearchUsage()).sort((a,b)=>Number(b.count||0)-Number(a.count||0)||String(b.last_used||'').localeCompare(String(a.last_used||'')));
+      const total=rows.reduce((sum,row)=>sum+Number(row.count||0),0);
+      scope.textContent=rows.length?`累積 ${total} 次搜尋 · ${rows.length} 個不同搜尋詞 · 此瀏覽器`:'尚無搜尋紀錄。';
+      list.innerHTML=rows.length
+        ? rows.slice(0,20).map((row,i)=>`<div class="ranking-row"><div class="rank">#${i+1}</div><div class="term">${escRank(row.query)}</div><div class="metric">${Number(row.count||0)} 次</div><div class="metric secondary">${row.last_used?new Date(row.last_used).toLocaleString('zh-TW'):''}</div><button type="button" data-usage-query="${escRank(row.query)}">搜尋 →</button></div>`).join('')
+        : '<div class="empty">開始搜尋後會在這裡累積。</div>';
+      list.querySelectorAll('[data-usage-query]').forEach(btn=>btn.addEventListener('click',()=>{qel('query').value=btn.dataset.usageQuery||'';switchSearchView('query');qel('searchForm')?.requestSubmit();}));
+    }
     async function eraRows(force=false){
       try{
         const data=await window.LOCPeriods.load({force});
@@ -255,7 +290,7 @@
       qel('rankingView').hidden=name!=='ranking';
       document.querySelectorAll('[data-search-view]').forEach(b=>b.classList.toggle('active',b.dataset.searchView===name));
       if(name==='era')renderEraSettings();
-      if(name==='ranking')renderSearchRanking();
+      if(name==='ranking'){renderSearchRanking();renderSearchUsage();}
     }
     async function renderEraSettings(){
       const host=qel('eraSettingsList'),status=qel('eraSettingStatus'); if(!host)return;
@@ -952,13 +987,15 @@
     function card(r){const score=Number(r.score||0),p=r.payload||{},periodLabel=publicPeriodLabel(r,p);const fullText=p.text||p.content||p.body||p.full_text||'';const img=r.content_type==='knowledge_image'&&p.path?`<img class="knowledge-image" src="${esc(p.path)}" alt="${esc(r.title||'LOC 知識圖')}" loading="lazy" />`:'';return `<article class="card"><div class="meta"><span class="pill">${esc(publicLocLabel(r.primary_loc)||'LOC')}</span><span class="pill">${esc(r.content_type||'record')}</span>${periodLabel?`<span class="pill">${esc(periodLabel)}</span>`:''}${score?`<span class="pill">相關度 ${(score*100).toFixed(1)}%</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${img}${r.summary?`<p class="summary">${esc(r.summary)}</p>`:''}${fullText?`<details><summary>展開全文</summary><p class="summary">${esc(fullText)}</p></details>`:''}${linksFor(r)}</article>`}
     function textArticleCard(r){
       const p=r.payload||{},periodLabel=publicPeriodLabel(r,p);
-      const source=(p.source_role==='main_post'||p.evidence_role==='primary')?'Threads 主貼文':'方法論維護文章';
+      const isThreads=p.source_role==='main_post'||p.evidence_role==='primary'||(r.source_refs||[]).some(ref=>ref?.source_type==='threads');
+      const source=isThreads?'Threads 主貼文':'方法論維護文章';
       const terms=(p.matched_terms||p.keywords||[]).slice(0,8);
-      const text=r.summary||'';
-      const preview=text.length>220?text.slice(0,220)+'…':text;
-      const canExpand=text.length>220;
+      const text=String(p.text||r.summary||'');
       const chars=Number(p.char_count||text.length||0);
-      return `<article class="card"><div class="meta"><span class="pill">${esc(publicLocLabel(r.primary_loc||"LOC6"))} · ${r.primary_loc==="LOC4"?"Threads":"Article"}</span><span class="pill">${esc(source)}</span>${periodLabel?`<span class="pill">${esc(periodLabel)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}${chars?`<span class="pill">${chars} 字</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3><p class="summary">${esc(preview)}</p>${canExpand?`<details><summary>展開原文</summary><p class="summary">${esc(text)}</p></details>`:''}${terms.length?`<p class="summary"><strong>關鍵字／命中：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
+      const body=isThreads
+        ? `<div class="summary" style="white-space:pre-wrap;line-height:1.8">${esc(text)}</div>`
+        : (text?`<p class="summary">${esc(text)}</p>`:'');
+      return `<article class="card"><div class="meta"><span class="pill">${esc(publicLocLabel(r.primary_loc||"LOC6"))} · ${isThreads?"Threads":"Article"}</span><span class="pill">${esc(source)}</span>${periodLabel?`<span class="pill">${esc(periodLabel)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}${chars?`<span class="pill">${chars} 字</span>`:''}</div><h3>${esc(r.title||r.result_id)}</h3>${body}${terms.length?`<p class="summary"><strong>關鍵字／命中：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
     }
     function relationshipCard(r){
       const p=r.payload||{},src=p.source||{},targets=p.targets||[],kw=p.keywords||[],loc6=p.loc6_interpretation||{};
@@ -1434,6 +1471,7 @@
     el('searchForm').onsubmit=async e=>{
       e.preventDefault();
       const q=el('query').value.trim(); if(!q)return;
+      try{recordSearchUsage(q);}catch(_){}
       const hints=inferNaturalSearchHints(q);
       el('contentType').value=hints.contentType||'';
       el('sourceFilter').value=hints.source||'';
