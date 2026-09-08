@@ -1502,6 +1502,13 @@
     el('searchForm').onsubmit=async e=>{
       e.preventDefault();
       const q=el('query').value.trim(); if(!q)return;
+      const compactQ=q.replace(/\s+/g,'');
+      if(compactQ.length===1 && /[\u3400-\u9fff]/.test(compactQ)){
+        el('status').className='status error';
+        el('status').textContent='請輸入至少兩個字，或使用「靈之符文」這類完整關鍵字。單一中文字不執行搜尋。';
+        el('groups').innerHTML='';
+        return;
+      }
       try{recordSearchUsage(q);}catch(_){}
       const hints=inferNaturalSearchHints(q);
       el('contentType').value=hints.contentType||'';
