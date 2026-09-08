@@ -63,5 +63,60 @@
     "LOC6",
     "LOC7",
     "LOC8"
-  ]
+  ],
+  "browser_manifest": "data/json/generated/loc4/threads/LOC4_THREADS_BROWSER_MANIFEST.json",
+  "browser_shards": [
+    {
+      "shard": 1,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-001.json",
+      "document_count": 500
+    },
+    {
+      "shard": 2,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-002.json",
+      "document_count": 500
+    },
+    {
+      "shard": 3,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-003.json",
+      "document_count": 500
+    },
+    {
+      "shard": 4,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-004.json",
+      "document_count": 500
+    },
+    {
+      "shard": 5,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-005.json",
+      "document_count": 500
+    },
+    {
+      "shard": 6,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-006.json",
+      "document_count": 500
+    },
+    {
+      "shard": 7,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-007.json",
+      "document_count": 500
+    },
+    {
+      "shard": 8,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-008.json",
+      "document_count": 500
+    },
+    {
+      "shard": 9,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-009.json",
+      "document_count": 500
+    },
+    {
+      "shard": 10,
+      "path": "data/json/generated/loc4/threads/browser_v1/part-010.json",
+      "document_count": 78
+    }
+  ],
+  "browser_document_count": 4578,
+  "legacy_compressed_shards_status": "invalid_payload_do_not_use"
 }
