@@ -60,7 +60,7 @@
     return scored.slice(0,Math.max(1,Math.min(Number(top_k)||50,100))).map(({score,row})=>({
       result_id:row.record_id||row.id,
       system_id:'lo3rwang',
-      primary_loc:'LOC6',
+      primary_loc:'LOC4',
       related_locs:['LOC7','LOC8'],
       content_type:'text_record',
       group:'text',
