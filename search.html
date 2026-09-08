@@ -215,13 +215,13 @@
     </div>
     <div class="search-view" id="eraView" hidden>
       <header class="hero loc-header">
-        <p class="loc-header-meta">ERA · Period Settings</p>
-        <h1 class="loc-header-title">ERA 時期設定</h1>
+        <p class="loc-header-meta">Period Settings</p>
+        <h1 class="loc-header-title">時期設定</h1>
         <h2 class="loc-header-subtitle">用時間跨度區分作品與語言階段。</h2>
-        <p class="loc-header-copy">ERA 是連續時期的時間邊界。作品、文字與事件依日期落入對應 ERA；重要事件仍以 Milestone／Event 記錄，不另外切碎時期。</p>
+        <p class="loc-header-copy">時期是連續時間範圍的分析邊界。作品、文字與事件依日期落入對應時期；重要事件仍以 Milestone／Event 記錄，不另外切碎時期。</p>
       </header>
       <section class="ranking-panel">
-        <div class="era-setting-status" id="eraSettingStatus">載入 ERA Registry…</div>
+        <div class="era-setting-status" id="eraSettingStatus">載入時期資料…</div>
         <div class="era-settings-list" id="eraSettingsList"></div>
       </section>
     </div>
@@ -231,7 +231,7 @@
         <p class="loc-header-meta">Keyword Ranking</p>
         <h1 class="loc-header-title">排行榜</h1>
         <h2 class="loc-header-subtitle">用同一個時間跨度，比較哪些詞最常出現。</h2>
-        <p class="loc-header-copy">排行榜依 ERA Registry 的時間跨度觀察關鍵字分布；來源可切換，並可在查詢結果中查看實際證據。</p>
+        <p class="loc-header-copy">排行榜依現行時期邊界觀察關鍵字分布；來源可切換，並可在查詢結果中查看實際證據。</p>
       </header>
       <section class="ranking-panel">
         <div class="ranking-head"><div><h2>關鍵字 Top 10</h2><p>篇／件數與總命中次數分開計算；點關鍵字直接回到查詢查看證據。</p></div></div>
@@ -272,9 +272,9 @@
     }
     async function renderEraSettings(){
       const host=qel('eraSettingsList'),status=qel('eraSettingStatus'); if(!host)return;
-      host.innerHTML='<div class="empty">載入 ERA 設定中…</div>';
+      host.innerHTML='<div class="empty">載入時期設定中…</div>';
       const rows=await eraRows();
-      status.textContent=rows.length?`目前 ${rows.length} 個時期。`:'目前無 ERA 資料。';
+      status.textContent=rows.length?`目前 ${rows.length} 個時期。`:'目前無時期資料。';
       host.innerHTML=rows.map(row=>`
         <article class="era-setting-card" data-era-id="${escRank(row.era_id||'')}">
           <div class="era-setting-head">
@@ -311,11 +311,11 @@
       try{
         const res=await fetch(SHEET_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'update_era',era}),redirect:'follow'});
         const data=await res.json();
-        if(!res.ok||data?.ok===false)throw new Error(data?.error||'ERA 更新失敗');
+        if(!res.ok||data?.ok===false)throw new Error(data?.error||'時期更新失敗');
         Object.assign(current,data?.era||era);
         status.textContent=(era.period||era.era_id)+' 已更新。';
       }catch(err){
-        status.textContent='ERA 更新失敗：'+String(err.message||err);
+        status.textContent='時期更新失敗：'+String(err.message||err);
       }
     }
     async function rankingScope(){
@@ -345,7 +345,7 @@
       box=document.createElement('div'); box.id='searchRankingEraBox'; box.className='ranking-tabs';
       tabs.parentNode.insertBefore(box,tabs.nextSibling);
       const rows=await eraRows();
-      box.innerHTML='<button class="ranking-tab active" type="button" data-rank-era="">全部 ERA</button>'+rows.map(r=>`<button class="ranking-tab" type="button" data-rank-era="${escRank(r.period||'')}">${escRank(r.period||'')}</button>`).join('');
+      box.innerHTML='<button class="ranking-tab active" type="button" data-rank-era="">全部時期</button>'+rows.map(r=>`<button class="ranking-tab" type="button" data-rank-era="${escRank(r.period||'')}">${escRank(r.period||'')}</button>`).join('');
       box.addEventListener('click',e=>{const b=e.target.closest('[data-rank-era]');if(!b)return;rankingEra=b.dataset.rankEra||'';box.querySelectorAll('[data-rank-era]').forEach(x=>x.classList.toggle('active',x===b));renderSearchRanking();});
     }
     async function renderSearchRanking(){
@@ -353,7 +353,7 @@
       await ensureRankingEraControl();
       host.innerHTML='<div class="empty">計算關鍵字排行榜中…</div>';
       const scope=await rankingScope();
-      scopeEl.textContent=(scope.era?`ERA：${scope.era.display_label||scope.era.period}｜${scope.start||'—'} ～ ${scope.end||'現在'}`:'ERA：全部時期')+'｜排行榜快取：30 分鐘';
+      scopeEl.textContent=(scope.era?`ERA：${scope.era.display_label||scope.era.period}｜${scope.start||'—'} ～ ${scope.end||'現在'}`:'時期：全部')+'｜排行榜快取：30 分鐘';
       try{
         const sources=rankingSource?[rankingSource]:['facebook','threads','suno'];
         const settled=await Promise.allSettled(sources.map(async source=>({source,data:await fetchRank(source,scope.start,scope.end)})));
@@ -520,7 +520,7 @@
           localPush(scored,1000,'knowledge',{
             result_id:'ZHENGDE-STYLE',system_id:'lo3rwang',primary_loc:'LOC6',
             content_type:'knowledge_document',title:'政德風',
-            summary:'政德風正式說明文件：整理其感性／理性書寫、治理宣言、自我治理、ERA 變化與跨媒介語言特徵。',
+            summary:'政德風正式說明文件：整理其感性／理性書寫、治理宣言、自我治理、時期變化與跨媒介語言特徵。',
             score:1000,payload:{public_path:'governance.html#style',fixed_document:true}
           });
         }
@@ -955,7 +955,7 @@
 
     const GROUP_LOCATION_META={
       entities:{loc:'月之符文',label:'符文體系',desc:'符文本體與可延伸的基本語彙（token）／語意種子'},
-      scenarios:{loc:'月之符文沙盒',label:'符文脈絡',desc:'符文延伸到沙盒、情境與互動後形成的 Semantic Playground'},
+      scenarios:{loc:'脈絡沙盒遊戲',label:'符文脈絡',desc:'符文進入關係、情境與互動後形成的脈絡沙盒'},
       oracle:{loc:'月之符文',label:'符文籤詩',desc:'抽牌、籤詩與其結果'},
       readings:{loc:'月之符文',label:'符文籤詩',desc:'解牌與實際判讀紀錄；解牌屬於籤詩使用的一部分'},
       runes:{loc:'月之符文',label:'符文體系',desc:'基本符文、方向、語彙（token）與語意種子'},
@@ -966,7 +966,7 @@
       governance:{loc:'方法論',label:'符文演算',desc:'Grammar、治理解牌方式、月相交互與正反向符文演算等方法論'},
       loc4_articles:{loc:'文字創作／方法論',label:'文字／方法文章',desc:'作品原文與方法分析分開呈現'},
       knowledge:{loc:'演算法（知識庫）',label:'符文演算',desc:'符文 Grammar、方法、規格與可檢索知識'},
-      timeline:{loc:'推演（時間／趨勢分析）',label:'符文演化',desc:'符文跨時間、ERA、事件與趨勢的演變'},
+      timeline:{loc:'推演（時間／系統分析）',label:'符文演化',desc:'符文跨時間、時期、事件與關係的演化'},
       relationships:{loc:'跨分類',label:'符文脈絡',desc:'符文從語意種子延伸到作品、方法、媒體與時期的關係'},
       text:{loc:'文字創作',label:'文字創作',desc:'對外統一為文字創作；來源平台另作來源標示'}
     };
