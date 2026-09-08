@@ -266,7 +266,8 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "note": "Text Architecture 是 LOC7 Algorithm／演算法（知識庫）中的一種結構方法／實作，不等於 LOC7 正式名稱。"
         },
         {
           "term": "Semantic Chunk",
@@ -391,7 +392,8 @@
           "loc_scope": [
             "LOC6"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "note": "Governance／治理是 LOC6 Methodology／方法論中的一種代表方法，不等於 LOC6 正式名稱。"
         },
         {
           "term": "ERA",
@@ -523,20 +525,20 @@
         {
           "term": "LOC5",
           "aliases": [
-            "Resonance Distribution",
+            "MultiMedia",
+            "多媒體",
             "Reels",
             "Media Link",
-            "多媒體",
             "影音",
             "實體影片作品",
             "宣傳影片",
-            "跨媒體共振"
+            "跨媒體表達"
           ],
           "loc_scope": [
             "LOC5"
           ],
           "status": "Stable",
-          "note": "LOC5 已有實際影音作品與公開發布紀錄；至少兩支月之符文宣傳 Reels 可作為 LOC1×LOC5 的公開實體成果證據，另有既有 LOC3 關聯 Reels 與正在回收整理的本地影片資產。"
+          "note": "LOC5 canonical name is MultiMedia／多媒體。"
         },
         {
           "term": "Web Demo Alpha",
@@ -995,5 +997,6 @@
       "authority_level": "derived_overview",
       "note": "README is part of LOC retrieval scope but does not override Canon or mother data."
     }
-  ]
+  ],
+  "canonical_role_source": "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json#canonical_loc_map"
 }
