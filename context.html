@@ -160,6 +160,57 @@ button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:po
   <div class="context-pagination" id="contextRelationPagination" hidden><div class="context-page-info" id="contextRelationPageInfo"></div><div class="context-page-buttons" id="contextRelationPageButtons"></div></div>
 </section>
 </div></section>
+<section class="context-section" data-context-view="scenario" id="context-scenario"><div class="wrap">
+<div class="loc-header">
+<p class="loc-header-meta">Context / Scenario / Event</p>
+<h1 class="loc-header-title">情境 / Event</h1>
+<h2 class="loc-header-subtitle">把事件當成可以被描述、追蹤與連結的脈絡單位。</h2>
+<p class="loc-header-copy">這裡同時呈現 LOC2 的 32 個 Scenario/Event 原型，以及可新增、編輯、封存的 Context Event 紀錄。即使遠端資料暫時不可用，Scenario Corpus 仍會由 repository fallback 顯示。</p>
+</div>
+
+<section class="context-tool-card">
+  <div class="context-item-head"><div><h3>Scenario / Event Corpus</h3><p>LOC2 Alpha 的 32 個情境原型；用來描述「可能遇到什麼情境」，不是固定符文配對。</p></div><button class="context-btn ghost" type="button" id="contextScenarioRefresh">重新載入</button></div>
+  <div class="context-list" id="contextScenarioCorpusList"><div class="context-empty">正在載入 Event 32…</div></div>
+</section>
+
+<div class="context-tool-grid">
+<section class="context-tool-card" id="context-event-form">
+  <h3 id="contextEventFormTitle">新增事件</h3>
+  <p>建立一筆可追蹤的 Context Event；狀態與來源都保留，方便後續形成 Relation / Graph。</p>
+  <form id="contextEventForm">
+    <input type="hidden" id="contextEventId">
+    <div class="context-form-grid">
+      <label>日期<input id="contextEventDate" type="date" required></label>
+      <label>事件類型<select id="contextEventType"><option value="transition">transition</option><option value="milestone">milestone</option><option value="observation">observation</option><option value="decision">decision</option><option value="scenario">scenario</option></select></label>
+      <label>對象類型<select id="contextEventObjectType"><option value="person">Person</option><option value="concept">Concept</option><option value="work">Work</option><option value="song">Song</option><option value="rune">Rune</option><option value="state">State</option><option value="era">Period</option><option value="system">System</option></select></label>
+      <label>對象名稱<input id="contextEventObjectId" placeholder="例如：LOC、自由的月、界"></label>
+      <label class="full">事件標題<input id="contextEventTitle" required></label>
+      <label class="full">描述<textarea id="contextEventDescription"></textarea></label>
+      <label>State Before<input id="contextEventBefore"></label>
+      <label>State After<input id="contextEventAfter"></label>
+      <label>時期<input id="contextEventPeriod" placeholder="例如：P5.7"></label>
+      <label>狀態<select id="contextEventStatus"><option value="current">Current</option><option value="released">Released</option><option value="archived">Archived</option></select></label>
+      <label>可信度<select id="contextEventConfidence"><option value="recorded">Recorded</option><option value="reconstructed">Reconstructed</option><option value="inferred">Inferred</option><option value="unknown">Unknown</option></select></label>
+      <label>Tags<input id="contextEventTags" placeholder="逗號分隔"></label>
+      <label class="full">來源 / Evidence<input id="contextEventSource"></label>
+    </div>
+    <div class="context-actions"><button class="context-btn primary" type="submit" id="contextEventSubmit">儲存事件</button><button class="context-btn ghost" type="button" id="contextEventCancel" hidden>取消編輯</button><button class="context-btn ghost" type="button" id="contextEventRefresh">重新載入紀錄</button></div>
+  </form>
+</section>
+
+<section class="context-tool-card">
+  <h3>目前狀態</h3>
+  <p>從 Current Event 摘要目前對象、狀態、時期與最後事件。</p>
+  <div class="context-state" id="contextCurrentState"><div class="context-empty">正在準備事件資料…</div></div>
+</section>
+</div>
+
+<section class="context-tool-card" style="margin-top:16px">
+  <div class="context-item-head"><div><h3>Event 紀錄</h3><p>可直接編輯、封存或刪除既有 Context Event。</p></div></div>
+  <div class="context-list" id="contextEventList"><div class="context-empty">正在準備事件資料…</div></div>
+  <div class="context-pagination" id="contextEventPagination" hidden><div class="context-page-info" id="contextEventPageInfo"></div><div class="context-page-buttons" id="contextEventPageButtons"></div></div>
+</section>
+</div></section>
 <section class="context-section game-shell" data-context-view="sandbox-game" hidden>
 <div class="wrap"><h2>月之符文組合規則</h2><p class="intro">沙盒直接使用月之符文既有的組合語法：單張保留原意，雙卡表現因果，三卡使用「源－轉－合」，更多張數依各自既定規律處理。</p><div class="table"><table><thead><tr><th>卡數</th><th>語義結構</th><th>遊戲中的作用</th></tr></thead><tbody><tr><td>1</td><td>單符狀態</td><td>基本行為／狀態</td></tr><tr><td>2</td><td>因果</td><td>基本事件與交互關係</td></tr><tr><td>3</td><td>源－轉－合</td><td>完整事件回答與語義鏈</td></tr><tr><td>5</td><td>五卡規律</td><td>較完整局勢</td></tr><tr><td>11</td><td>OW3gs</td><td>大型語義組合</td></tr></tbody></table></div></div><section class="context-tool-card" style="margin-top:20px">
   <h3>沙盒遊戲文件</h3>
@@ -585,7 +636,24 @@ document.querySelector('#contextGraphForm')?.addEventListener('submit',ev=>{ev.p
 document.querySelector('#contextGraphNodes')?.addEventListener('click',ev=>{const b=ev.target.closest('[data-context-graph-node]');if(b)expandContextGraph(b.dataset.contextGraphNode)});
 document.querySelector('#contextGraphNodeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphEdgeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphReset')?.addEventListener('click',()=>{document.querySelector('#contextGraphNodeType').value='';document.querySelector('#contextGraphEdgeType').value='';renderContextGraph()});
 
-resetContextEvent();resetContextRelation();
+async function loadContextScenarioCorpus(){
+  const host=document.querySelector('#contextScenarioCorpusList');
+  if(!host)return;
+  host.innerHTML='<div class="context-empty">正在載入 Event 32…</div>';
+  try{
+    const r=await fetch('data/json/registries/LOC2_EVENT_REGISTRY.json',{cache:'no-store'});
+    if(!r.ok)throw new Error('registry request failed');
+    const d=await r.json();
+    const rows=Array.isArray(d.records)?d.records:[];
+    host.innerHTML=rows.length?rows.map(e=>`<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(e.event_id||'')} · ${cEsc(e.title||'未命名情境')}</h4><small>${cEsc(e.event_group||'')} · ${cEsc(e.requirement_signature||'')}</small></div><span class="badge">${cEsc(e.status||'working')}</span></div><p>${cEsc(e.description||'')}</p></article>`).join(''):'<div class="context-empty">Scenario Corpus 目前沒有資料。</div>';
+  }catch(e){
+    console.error(e);
+    host.innerHTML='<div class="context-empty">Event 32 暫時無法載入；請重新整理或稍後再試。</div>';
+  }
+}
+document.querySelector('#contextScenarioRefresh')?.addEventListener('click',loadContextScenarioCorpus);
+
+resetContextEvent();resetContextRelation();loadContextScenarioCorpus();
 const eventCacheAtStart=readContextCache(CONTEXT_EVENT_CACHE);
 const relationCacheAtStart=readContextCache(CONTEXT_RELATION_CACHE);
 loadContextEvents({remote:!Array.isArray(eventCacheAtStart?.data)});
