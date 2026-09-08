@@ -1405,6 +1405,7 @@
       const type=hints.contentType||'';
       const apiType=apiContentType(type);
       const source=hints.source||'';
+      let threadsLoadError='';
       el('submit').disabled=true;
       el('status').className='status';
       el('groups').innerHTML='';
@@ -1452,15 +1453,18 @@
               d.groups.loc4_articles=mergeUniqueResults(d.groups.loc4_articles||[],threads);
             }
           }catch(err){
-            el('status').className='status error';
-            el('status').textContent='Threads corpus 載入失敗：'+err.message;
+            threadsLoadError=err.message||String(err);
           }
         }
 
         d.groups=enforceLiteralShortQuery(d.groups||{},q);
         d.groups=applyPublicCategoryFilter(d.groups||{},type);
         const total=Object.values(d.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
-        el('status').textContent=total?`找到 ${total} 筆相關結果。`:'沒有找到足夠接近的內容。';
+        const threadsCount=Object.values(d.groups||{}).flat().filter(item=>(item?.source_refs||[]).some(ref=>ref?.source_type==='threads')).length;
+        el('status').className=threadsLoadError?'status error':'status';
+        el('status').textContent=total
+          ? `找到 ${total} 筆相關結果 · Threads ${threadsCount} 筆${threadsLoadError?' · Threads fallback 失敗：'+threadsLoadError:''}`
+          : `沒有找到足夠接近的內容${threadsLoadError?' · Threads fallback 失敗：'+threadsLoadError:''}`;
         render(d.groups,d.synthesis,d.graph);
       }catch(err){
         try{
