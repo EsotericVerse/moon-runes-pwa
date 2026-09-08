@@ -95,7 +95,7 @@ except Exception as e:
 FB_DATA_PATH = (
     Path(os.environ.get("LOC_FB_SEARCH_DATASET", "")).expanduser()
     if os.environ.get("LOC_FB_SEARCH_DATASET")
-    else Path(__file__).resolve().parents[1] / "data" / "json" / "facebook" / "manifest.json"
+    else Path(__file__).resolve().parents[1] / "data" / "json" / "sources" / "facebook" / "manifest.json"
 )
 FB_SEARCHER = None
 FB_LOAD_ERROR = None

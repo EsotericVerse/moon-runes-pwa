@@ -105,6 +105,8 @@ class FacebookSearchEngine:
         scored: list[tuple[float, int, dict[str, Any]]] = []
 
         for index, (post, vector) in enumerate(zip(self.posts, self._vectors)):
+            if post.get("searchable") is False or "爭議文章" in (post.get("classification") or []):
+                continue
             date = str(post.get("date") or "")
             if start_date and date[:10] < start_date:
                 continue

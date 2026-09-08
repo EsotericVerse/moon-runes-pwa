@@ -49,6 +49,7 @@
     const {posts}=await load();
     const scored=[];
     for(const row of posts){
+      if(row.searchable===false||(row.classification||[]).includes('爭議文章'))continue;
       const date=String(row.date||'').slice(0,10);
       if(year&&Number(row.year)!==Number(year))continue;
       if(start_date&&date&&date<start_date)continue;
