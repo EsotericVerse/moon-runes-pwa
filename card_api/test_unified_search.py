@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from unified_search import UnifiedSearchEngine
+from unified_search import UnifiedSearchEngine, _text_score
 
 
 class FakeResult:
@@ -82,6 +82,11 @@ class UnifiedSearchTests(unittest.TestCase):
             runes=[{"編號": 1, "名稱": "心", "關鍵詞": "自我 治理"}],
             repo_root=root,
         )
+
+
+    def test_short_cjk_query_requires_literal_phrase(self):
+        self.assertEqual(1.0, _text_score("生日", ["今年生日要吃蛋糕"]))
+        self.assertEqual(0.0, _text_score("生日", ["生活安排", "日常記事"]))
 
     def test_all_sources_share_one_envelope(self):
         result = self.make_engine().search("自我治理", top_k=5)
