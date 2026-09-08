@@ -539,15 +539,23 @@
       const cacheKey='gzip:'+path;
       if(LOCAL_SEARCH_CACHE.has(cacheKey))return LOCAL_SEARCH_CACHE.get(cacheKey);
       const p=(async()=>{
-        const r=await fetch(path,{cache:'no-store'});
-        if(!r.ok)throw new Error('local gzip dataset unavailable: '+path);
+        const r=await fetch(path+'?v='+Date.now(),{cache:'no-store'});
+        if(!r.ok)throw new Error('Threads shard HTTP '+r.status+': '+path);
         const encoding=String(r.headers.get('content-encoding')||'').toLowerCase();
         if(encoding.includes('gzip')){
-          try{return await r.json()}catch(_){}
+          try{return await r.json()}catch(err){
+            throw new Error('Threads shard JSON parse failed after HTTP gzip decode: '+path+' · '+err.message);
+          }
         }
-        if(typeof DecompressionStream!=='function'||!r.body)throw new Error('browser gzip decompression unavailable');
-        const stream=r.body.pipeThrough(new DecompressionStream('gzip'));
-        return new Response(stream).json();
+        if(typeof DecompressionStream!=='function'||!r.body){
+          throw new Error('Browser does not support DecompressionStream for Threads shard: '+path);
+        }
+        try{
+          const stream=r.body.pipeThrough(new DecompressionStream('gzip'));
+          return await new Response(stream).json();
+        }catch(err){
+          throw new Error('Threads shard gzip decode failed: '+path+' · '+err.message);
+        }
       })();
       LOCAL_SEARCH_CACHE.set(cacheKey,p);
       return p;
@@ -555,7 +563,10 @@
     async function localThreadsSearch(q,{topK=50,period='',start='',end=''}={}){
       const query=localNorm(q).replace(/\s+/g,'');
       if(!query)return [];
-      const manifest=await localJson('data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json');
+      const manifestPath='data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json?v='+Date.now();
+      const manifestResponse=await fetch(manifestPath,{cache:'no-store'});
+      if(!manifestResponse.ok)throw new Error('Threads manifest HTTP '+manifestResponse.status);
+      const manifest=await manifestResponse.json();
       const hits=[];
       for(const shard of manifest.shards||[]){
         const part=await localGzipJson(shard.path);
@@ -1440,7 +1451,10 @@
               d.groups=d.groups||{};
               d.groups.loc4_articles=mergeUniqueResults(d.groups.loc4_articles||[],threads);
             }
-          }catch(_){}
+          }catch(err){
+            el('status').className='status error';
+            el('status').textContent='Threads corpus 載入失敗：'+err.message;
+          }
         }
 
         d.groups=enforceLiteralShortQuery(d.groups||{},q);
