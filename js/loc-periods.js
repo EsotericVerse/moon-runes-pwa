@@ -33,12 +33,16 @@
     if(baselineSet?.has(p))return true;
     return /^P\d+\.\d+$/.test(p);
   }
-  function merge(baseRows, remoteRows, definitionVersion=''){
+  function merge(baseRows, remoteRows, definitionVersion='', registryUpdatedAt=''){
     const baseline=(baseRows||[]).map(clean).filter(x=>x.period);
     const baselineSet=new Set(baseline.map(x=>x.period));
     const byPeriod=new Map(baseline.map(x=>[x.period,x]));
+    const baselineDate=n(registryUpdatedAt).slice(0,10);
     for(const raw of remoteRows||[]){
-      if(definitionVersion && n(raw?.definition_version)!==n(definitionVersion)) continue;
+      const rawVersion=n(raw?.definition_version);
+      const updatedDate=n(raw?.updated_at).slice(0,10);
+      const recentVersionless=!rawVersion && updatedDate && (!baselineDate || updatedDate>=baselineDate);
+      if(definitionVersion && rawVersion!==n(definitionVersion) && !recentVersionless) continue;
       const row=clean(raw);
       const p=normalizePeriod(row.period);
       if(!isPublicPeriod(p,baselineSet))continue;
@@ -67,7 +71,7 @@
         remote=Array.isArray(d)?{eras:d}:d||{eras:[]};
       }catch(_){}
       const definitionVersion=n(registry.definition_version)||n(registry.schema_version);
-      const eras=merge(registry.eras||[],remote.eras||[],definitionVersion);
+      const eras=merge(registry.eras||[],remote.eras||[],definitionVersion,registry.updated_at||'');
       const current=eras.find(x=>x.status==='current')||eras[eras.length-1]||null;
       const segmentCount=eras.filter(x=>x.period_type!=='parent').length;
       memory={
