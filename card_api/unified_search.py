@@ -1358,7 +1358,7 @@ class UnifiedSearchEngine:
                     "related_locs": ["LOC6", "LOC7", "LOC8"],
                     "content_type": "text_record",
                     "group": "loc4_articles",
-                    "title": f"Threads｜{item.get('date') or 'undated'}｜{item.get('era') or 'ERA'}" + (f"｜{headline}" if headline else ""),
+                    "title": f"Threads｜{item.get('date') or 'undated'}" + (f"｜{headline}" if headline else ""),
                     "summary": text,
                     "score": round(score, 6),
                     "era_id": f"ERA-{item.get('era')}" if item.get("era") else None,
