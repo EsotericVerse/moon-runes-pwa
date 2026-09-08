@@ -282,6 +282,7 @@
               <option value="released" ${row.status==='released'?'selected':''}>Released</option>
               <option value="archived" ${row.status==='archived'?'selected':''}>Archived</option>
             </select></label>
+            <label style="grid-column:1/-1">內容說明<textarea name="description" rows="4">${escRank(row.description||'')}</textarea></label>
           </div>
           <div class="era-setting-actions"><button type="button" data-era-save>儲存時期設定</button></div>
         </article>`).join('');
@@ -296,7 +297,8 @@
         display_label:(current.period||'')+'｜'+pick('name').value.trim(),
         start_date:pick('start_date').value,
         end_date:pick('end_date').value||null,
-        status:pick('status').value
+        status:pick('status').value,
+        description:pick('description').value.trim()
       };
       const status=qel('eraSettingStatus'); status.textContent='儲存 '+(era.period||era.era_id)+'…';
       try{
