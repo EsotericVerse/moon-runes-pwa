@@ -195,4 +195,4 @@ Then query the normal Unified Search endpoint:
 }
 ```
 
-If the private corpus is not mounted, this request returns HTTP 503 rather than exposing or synthesizing archive text. Public aggregate trend data remains available to `facebook-timeline.html`.
+If the private corpus is not mounted, this request returns HTTP 503 rather than exposing or synthesizing archive text. Public aggregate trend data remains available to `evolution.html`.

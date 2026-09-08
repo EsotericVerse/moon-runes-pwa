@@ -3,11 +3,11 @@
   "registry": "LOC2_EVENT_REGISTRY",
   "authority": "LOC2",
   "status": "working",
-  "updated_at": "2026-09-05",
+  "updated_at": "2026-09-08",
   "purpose": "Structured Scenario Corpus / Event Corpus for LOC2. Events model situations people can encounter and are not limited to game-effect semantics.",
   "source_refs": [
     "context.html",
-    "docs/LOC2_SCENARIO_MODEL.md"
+    "loc2-game.html"
   ],
   "grammar_note": {
     "dual_card": "A → B causal structure is the minimal LOC2 scenario grammar.",

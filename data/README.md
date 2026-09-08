@@ -15,7 +15,7 @@ data/
    └─ inbox/
 ~~~
 
-See [Repository Governance](../docs/REPOSITORY_GOVERNANCE.md) and [JSON Data Map](../docs/JSON_DATA_MAP.md).
+Repository and data governance are maintained in [`governance.html`](../governance.html).
 
 Rules:
 

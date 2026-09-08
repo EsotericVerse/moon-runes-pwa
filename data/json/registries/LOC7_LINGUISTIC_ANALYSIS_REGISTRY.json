@@ -48,11 +48,8 @@
   "existing_knowledge_assets": [
     "data/json/search/faq/LOC_FAQ_v0.4.json",
     "data/json/search/faq/LOC_FAQ_RAG_v0.4.json",
-    "docs/LOC7_KM.md",
-    "docs/JSON_DATA_MAP.md",
-    "docs/DATA_ARCHITECTURE.md",
-    "docs/REPOSITORY_GOVERNANCE.md"
+    "governance.html"
   ],
   "boundary_note": "LOC7 analyzes how language is structured and engineered, including KM/retrieval architecture. Meaning/value/governance interpretation belongs primarily to LOC6; event/time ownership belongs primarily to LOC8.",
-  "updated_at": "2026-09-07"
+  "updated_at": "2026-09-08"
 }

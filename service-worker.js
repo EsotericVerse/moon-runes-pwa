@@ -1,8 +1,12 @@
-const CACHE_NAME = "moon-runes-pwa-v149";
+const CACHE_NAME = "moon-runes-pwa-v150";
 
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
+  "/context.html",
+  "/governance.html",
+  "/loc2-game.html",
+  "/lo3rwang.html",
   "/search.html",
   "/tutorial01.html",
   "/tutorial02.html",

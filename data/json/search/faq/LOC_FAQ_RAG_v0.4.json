@@ -4,15 +4,15 @@
     "id": "loc-faq-rag-v0.4",
     "title": "LOC FAQ RAG v0.4",
     "language": "zh-Hant-TW",
-    "canon_version": "0.5r",
+    "canon_version": "1.0",
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "由 LOC FAQ v0.4 同步產生；已對齊 2026-09-07 最新 LunaRune64.xlsx Grammar。本檔為 retrieval derivative，不是 Canon。",
+    "description": "由 LOC FAQ v0.4 同步產生；LOC1–8 名稱、定位與固定結構以 Canon 1.0 / LOC_LANGUAGE_SYSTEM_REGISTRY.json 為唯一現行權威。本檔為 retrieval derivative，不是 Canon。",
     "source_dataset": "LOC_FAQ_v0.4.json",
     "parent_entry_count": 90,
     "chunk_count": 90,
-    "chunk_policy": "每個 FAQ 條目先對應一個完整 Semantic Chunk；後續可由 LOC7_KM 再拆 Knowledge Object 或多意圖子 chunk。",
+    "chunk_policy": "每個 FAQ 條目對應一個完整 Semantic Chunk；需要更細粒度時由檢索層處理，不另要求 Markdown 知識文件。",
     "system_id": "lo3rwang",
     "primary_loc": "LOC7",
     "related_locs": [
@@ -24,7 +24,8 @@
       "era": "data/json/registries/LOC_ERA_REGISTRY.json",
       "analysis_types": "data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json",
       "loc7_analysis": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json"
-    }
+    },
+    "updated_at": "2026-09-08"
   },
   "chunks": [
     {
@@ -39,7 +40,7 @@
         "LOC到底在做什麼？",
         "可以簡單介紹LOC嗎？"
       ],
-      "answer": "LOC（Luna Codex／月典）是一套個人語言系統框架。它統合符文與籤詩、情境、音樂、文字、多媒體、治理、知識文件，以及事件與時期脈絡。LOC1–8各自保留資料權責，再透過共同檢索、關聯與時間結構，把分散內容整理成可理解、可追溯、可搜尋、可重用的整體。公開介面使用「時期」；內部穩定識別仍可保留 ERA-Px。",
+      "answer": "LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋並推演語言的語言系統框架。它以 LunaRunes（月之符文）作為語彙種子，延伸到脈絡、音樂、文字、多媒體、治理、文字建築與時間推演；LOC1–8各自保留功能與資料責任，再透過 Search、Context 與 Evolution 串接。",
       "keywords": [
         "LOC",
         "Luna Codex",
@@ -57,7 +58,7 @@
         "跨LOC關聯",
         "時間結構"
       ],
-      "retrieval_text": "LOC是什麼？ 什麼是LOC？ 月典是什麼？ LOC到底在做什麼？ 可以簡單介紹LOC嗎？ LOC Luna Codex 月典 個人語言系統 自我治理 語言框架 LOC1–8 不同型態的語言資料 創作文字 歌詞 多媒體影片 資料統整 共同檢索 跨LOC關聯 時間結構 LOC（Luna Codex／月典）是一套個人語言系統框架。它統合符文與籤詩、情境、音樂、文字、多媒體、治理、知識文件，以及事件與時期脈絡。LOC1–8各自保留資料權責，再透過共同檢索、關聯與時間結構，把分散內容整理成可理解、可追溯、可搜尋、可重用的整體。公開介面使用「時期」；內部穩定識別仍可保留 ERA-Px。",
+      "retrieval_text": "LOC是什麼？ 什麼是LOC？ 月典是什麼？ LOC到底在做什麼？ 可以簡單介紹LOC嗎？ LOC Luna Codex 月典 個人語言系統 自我治理 語言框架 LOC1–8 不同型態的語言資料 創作文字 歌詞 多媒體影片 資料統整 共同檢索 跨LOC關聯 時間結構 LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋並推演語言的語言系統框架。它以 LunaRunes（月之符文）作為語彙種子，延伸到脈絡、音樂、文字、多媒體、治理、文字建築與時間推演；LOC1–8各自保留功能與資料責任，再透過 Search、Context 與 Evolution 串接。",
       "related_ids": [],
       "source_refs": [
         "master-system:2026-09"
@@ -78,7 +79,7 @@
         "月符在LOC裡是什麼位置？",
         "為什麼說月符為種？"
       ],
-      "answer": "LOC 是框架，月之符文是基本語意參照。月符提供最小語意種子、方向與文件分類觀念；LOC 負責把這些語意承接到占卜、治理、情境、音樂、影像、文字、關係與時間。使用者不需要先理解符文或 LLM 才能使用 LOC。",
+      "answer": "LOC 是整體語言系統框架；LunaRunes（月之符文）是 LOC1 的固定 66 符語彙種子與 Reference Seed System。月之符文提供語彙、四向、月相與組合語法，但使用 LOC 不必先學會全部符文。",
       "keywords": [
         "月典",
         "Luna Codex",
@@ -90,11 +91,11 @@
         "月符為種",
         "框架"
       ],
-      "retrieval_text": "月典（LOC／Luna Codex）和月之符文（LunaRunes）有什麼關係？ LOC和月符是同一件事嗎？ 月典和月符有什麼差別？ Luna Codex與LunaRunes有什麼差別？ 月符在LOC裡是什麼位置？ 為什麼說月符為種？ 月典 Luna Codex LOC 月符 LunaRunes 基本參照 語意種子 月符為種 框架 LOC 是框架，月之符文是基本語意參照。月符提供最小語意種子、方向與文件分類觀念；LOC 負責把這些語意承接到占卜、治理、情境、音樂、影像、文字、關係與時間。使用者不需要先理解符文或 LLM 才能使用 LOC。",
+      "retrieval_text": "月典（LOC／Luna Codex）和月之符文（LunaRunes）有什麼關係？ LOC和月符是同一件事嗎？ 月典和月符有什麼差別？ Luna Codex與LunaRunes有什麼差別？ 月符在LOC裡是什麼位置？ 為什麼說月符為種？ 月典 Luna Codex LOC 月符 LunaRunes 基本參照 語意種子 月符為種 框架 LOC 是整體語言系統框架；LunaRunes（月之符文）是 LOC1 的固定 66 符語彙種子與 Reference Seed System。月之符文提供語彙、四向、月相與組合語法，但使用 LOC 不必先學會全部符文。",
       "related_ids": [],
       "source_refs": [
-        "docs/LOC_OVERVIEW.md",
-        "docs/LOC7_KM.md"
+        "index.html",
+        "runes.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -200,7 +201,7 @@
         "八組符文如何分配？",
         "月相和66符文有什麼關係？"
       ],
-      "answer": "現有符文資料以1–64為標準抽牌核心，另有65「玄（Chaos）」與66「命（Fate）」兩個作者特殊符。玄、命已有部分語意資料，但現階段列為例外，不按普通1–64的標準抽牌與解牌流程處理。第0符「德」則只作系統基準，不參與抽牌。",
+      "answer": "月之符文固定骨架共有66符：1–64是八組核心符文，65為「玄（Chaos）」、66為「命（Fate）」兩個特殊符文。現行一般抽牌 runtime 使用1–64；65／66保留特殊語意責任。第0符「德」是作者／系統基準，不列入66符牌組，也不參與抽取。",
       "keywords": [
         "64符文",
         "66符",
@@ -209,10 +210,11 @@
         "特殊符",
         "標準抽牌"
       ],
-      "retrieval_text": "為什麼月之符文共有66個符文？ 為什麼是66張符文？ 66符文是怎麼組成的？ 八組符文如何分配？ 月相和66符文有什麼關係？ 64符文 66符 玄 命 特殊符 標準抽牌 現有符文資料以1–64為標準抽牌核心，另有65「玄（Chaos）」與66「命（Fate）」兩個作者特殊符。玄、命已有部分語意資料，但現階段列為例外，不按普通1–64的標準抽牌與解牌流程處理。第0符「德」則只作系統基準，不參與抽牌。",
+      "retrieval_text": "為什麼月之符文共有66個符文？ 為什麼是66張符文？ 66符文是怎麼組成的？ 八組符文如何分配？ 月相和66符文有什麼關係？ 64符文 66符 玄 命 特殊符 標準抽牌 月之符文固定骨架共有66符：1–64是八組核心符文，65為「玄（Chaos）」、66為「命（Fate）」兩個特殊符文。現行一般抽牌 runtime 使用1–64；65／66保留特殊語意責任。第0符「德」是作者／系統基準，不列入66符牌組，也不參與抽取。",
       "related_ids": [],
       "source_refs": [
-        "creator-confirmed:2026-09-04"
+        "runes.html",
+        "LunaRune64.xlsx"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -230,7 +232,7 @@
         "德為什麼不在牌組裡？",
         "三個特殊符號有什麼差別？"
       ],
-      "answer": "第0符「德（De）」是系統基準，不列入實際抽牌；65「玄（Chaos）」與66「命（Fate）」是作者特殊例外符。玄與命已有部分資料，但未來預計更偏向加強整體語調、權重或敘事方向，而不是直接套用普通1–64的解牌法；具體特殊機制仍在設計中。",
+      "answer": "第0符「德（De）」是作者／系統基準，不參與抽牌；65「玄（Chaos）」與66「命（Fate）」是66符固定骨架中的特殊符文。玄代表混沌／不可完全歸因的生成條件，命代表 Fate；現行一般抽牌 runtime 使用1–64，65／66由特殊規則承接。",
       "keywords": [
         "德",
         "De",
@@ -241,11 +243,11 @@
         "例外符",
         "語調修飾"
       ],
-      "retrieval_text": "「德」、「玄」與「命」分別代表什麼？ 第0符德是什麼？ 第65符玄代表什麼？ 第66符命代表什麼？ 德為什麼不在牌組裡？ 三個特殊符號有什麼差別？ 德 De 玄 Chaos 命 Fate 例外符 語調修飾 第0符「德（De）」是系統基準，不列入實際抽牌；65「玄（Chaos）」與66「命（Fate）」是作者特殊例外符。玄與命已有部分資料，但未來預計更偏向加強整體語調、權重或敘事方向，而不是直接套用普通1–64的解牌法；具體特殊機制仍在設計中。",
+      "retrieval_text": "「德」、「玄」與「命」分別代表什麼？ 第0符德是什麼？ 第65符玄代表什麼？ 第66符命代表什麼？ 德為什麼不在牌組裡？ 三個特殊符號有什麼差別？ 德 De 玄 Chaos 命 Fate 例外符 語調修飾 第0符「德（De）」是作者／系統基準，不參與抽牌；65「玄（Chaos）」與66「命（Fate）」是66符固定骨架中的特殊符文。玄代表混沌／不可完全歸因的生成條件，命代表 Fate；現行一般抽牌 runtime 使用1–64，65／66由特殊規則承接。",
       "related_ids": [],
       "source_refs": [
-        "LOC_FAQ_RAG_v0.1",
-        "master-system:2026-09"
+        "runes.html",
+        "LunaRune64.xlsx"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -320,7 +322,7 @@
         "抽越多張越準嗎？",
         "多符文為什麼比較難解讀？"
       ],
-      "answer": "目前LOC1真正可運作的重點是三抽PWA；五抽現行只是2+3的過渡拼接，尚未完成獨立五卡語意引擎；OW3gs 11抽也尚未完成。概念上不同張數可承擔不同語意複雜度，但五抽與11抽仍屬後續工程與語法重構項目，不能當成已完成能力。",
+      "answer": "現行公開抽牌入口可使用單卡、雙卡、三卡與五卡；每日符文另有自己的流程。單卡看核心語意；雙卡是因→果；三卡是源→轉→合；五卡是過去→現在→未來顯化→周圍環境→自己心境。OW3gs 十一張的語法已定義為1–6因的描述層＋7–11果的判定層，但目前公開抽牌入口暫未開放連結。",
       "keywords": [
         "三抽",
         "五抽",
@@ -330,11 +332,11 @@
         "尚未完成",
         "LOC1進度"
       ],
-      "retrieval_text": "應該抽幾張牌？ 單張和多張抽牌有什麼差別？ 問題複雜時要抽幾張？ 抽越多張越準嗎？ 多符文為什麼比較難解讀？ 三抽 五抽 2+3 OW3gs 11抽 尚未完成 LOC1進度 目前LOC1真正可運作的重點是三抽PWA；五抽現行只是2+3的過渡拼接，尚未完成獨立五卡語意引擎；OW3gs 11抽也尚未完成。概念上不同張數可承擔不同語意複雜度，但五抽與11抽仍屬後續工程與語法重構項目，不能當成已完成能力。",
+      "retrieval_text": "應該抽幾張牌？ 單張和多張抽牌有什麼差別？ 問題複雜時要抽幾張？ 抽越多張越準嗎？ 多符文為什麼比較難解讀？ 三抽 五抽 2+3 OW3gs 11抽 尚未完成 LOC1進度 現行公開抽牌入口可使用單卡、雙卡、三卡與五卡；每日符文另有自己的流程。單卡看核心語意；雙卡是因→果；三卡是源→轉→合；五卡是過去→現在→未來顯化→周圍環境→自己心境。OW3gs 十一張的語法已定義為1–6因的描述層＋7–11果的判定層，但目前公開抽牌入口暫未開放連結。",
       "related_ids": [],
       "source_refs": [
-        "moon-syntax:v2.1",
-        "master-system:2026-09"
+        "runes.html",
+        "LunaRune64.xlsx#Grammar"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -408,7 +410,7 @@
         "實體卡牌和線上系統有什麼差別？",
         "LOC1要用卡片還是網站？"
       ],
-      "answer": "LOC1 的單卡、雙卡、三卡、五卡與 OW3gs 11 張抽牌流程都已有既有實作，不應再視為從零待開發。現階段主要改善點在多卡語意品質：五卡過去採 2+3 的過渡組合，11 張的高語意量也仍需要更完整的語意引擎與驗證資料。",
+      "answer": "LOC1 現行公開入口包含每日符文、單卡、雙卡、三卡與五卡，以及符文趨勢、基本文件、範例與66符資料。OW3gs 十一張的語法與案例資料已存在，但目前 runes.html 的11卡入口暫時停用，不能描述成公開可操作模式。",
       "keywords": [
         "LOC1",
         "PWA",
@@ -418,10 +420,10 @@
         "五抽",
         "11抽"
       ],
-      "retrieval_text": "LOC1有哪些使用形式？ LOC有實體卡牌嗎？ 可以在線上抽月之符文嗎？ 實體卡牌和線上系統有什麼差別？ LOC1要用卡片還是網站？ LOC1 PWA 每日抽牌 三抽 JSON 五抽 11抽 LOC1 的單卡、雙卡、三卡、五卡與 OW3gs 11 張抽牌流程都已有既有實作，不應再視為從零待開發。現階段主要改善點在多卡語意品質：五卡過去採 2+3 的過渡組合，11 張的高語意量也仍需要更完整的語意引擎與驗證資料。",
+      "retrieval_text": "LOC1有哪些使用形式？ LOC有實體卡牌嗎？ 可以在線上抽月之符文嗎？ 實體卡牌和線上系統有什麼差別？ LOC1要用卡片還是網站？ LOC1 PWA 每日抽牌 三抽 JSON 五抽 11抽 LOC1 現行公開入口包含每日符文、單卡、雙卡、三卡與五卡，以及符文趨勢、基本文件、範例與66符資料。OW3gs 十一張的語法與案例資料已存在，但目前 runes.html 的11卡入口暫時停用，不能描述成公開可操作模式。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09"
+        "runes.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -495,7 +497,7 @@
         "LOC2和一般卡牌遊戲有什麼不同？",
         "RAG怎麼變成桌遊？"
       ],
-      "answer": "LOC2 是 LOC 的遊戲形式，也可視為 Semantic Playground。世界提出情境，玩家使用同一套月符語言建構回答，再透過玩家互動形成這一輪的結果。LOC2 的事件卡同時也是情境語料，可被 LOC4、LOC6、LOC7、LOC8 引用；玩家本身不需要理解 RAG 或程式技術。",
+      "answer": "LOC2 的核心是 Context／脈絡：承接 Relation、Scenario、Event 與 Graph。Semantic Playground／桌遊是 LOC2 的互動實作之一，使用同一套 LunaRunes 語言讓玩家面對情境、組合回答並比較不同語意結果；LOC2 不等於只有桌遊。",
       "keywords": [
         "LOC2",
         "Semantic Playground",
@@ -504,11 +506,11 @@
         "語意互動",
         "RAG"
       ],
-      "retrieval_text": "LOC2是什麼？ Semantic Playground是什麼？ LOC2怎麼玩？ LOC2和一般卡牌遊戲有什麼不同？ RAG怎麼變成桌遊？ LOC2 Semantic Playground 桌遊 事件卡 語意互動 RAG LOC2 是 LOC 的遊戲形式，也可視為 Semantic Playground。世界提出情境，玩家使用同一套月符語言建構回答，再透過玩家互動形成這一輪的結果。LOC2 的事件卡同時也是情境語料，可被 LOC4、LOC6、LOC7、LOC8 引用；玩家本身不需要理解 RAG 或程式技術。",
+      "retrieval_text": "LOC2是什麼？ Semantic Playground是什麼？ LOC2怎麼玩？ LOC2和一般卡牌遊戲有什麼不同？ RAG怎麼變成桌遊？ LOC2 Semantic Playground 桌遊 事件卡 語意互動 RAG LOC2 的核心是 Context／脈絡：承接 Relation、Scenario、Event 與 Graph。Semantic Playground／桌遊是 LOC2 的互動實作之一，使用同一套 LunaRunes 語言讓玩家面對情境、組合回答並比較不同語意結果；LOC2 不等於只有桌遊。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09",
-        "LOC_FAQ_v0.1"
+        "context.html",
+        "loc2-game.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -554,7 +556,7 @@
         "八個LOC哪一個比較高階？",
         "第一次接觸LOC要從哪裡開始？"
       ],
-      "answer": "LOC1–8不是版本、等級或八個獨立產品，而是同一套語言系統的功能責任區。LOC1處理符文與抽取；LOC2是遊戲／情境延伸；LOC3音樂；LOC4文字；LOC5多媒體；LOC6治理、意義與政德風；LOC7文字建築、結構分析、KM與檢索；LOC8事件、時期、時間與跨LOC統合。資料可以被不同LOC引用，但 canonical ownership 不應重複。",
+      "answer": "LOC1–8不是版本、等級或八個獨立產品，而是同一套語言系統的功能責任區。現行固定為：LOC1 LunaRunes／月之符文，定位是符文語彙（Token）；LOC2 Context／脈絡；LOC3 Music／音樂；LOC4 Literary／文字創作；LOC5 MultiMedia／多媒體；LOC6 Methodology／方法論；LOC7 Algorithm／演算法（知識庫）；LOC8 Evolution／推演。其他文件與介面只能引用這套定義，不應另行改寫。",
       "keywords": [
         "LOC1–8",
         "框架",
@@ -563,12 +565,12 @@
         "Text Architecture",
         "Temporal Semantics"
       ],
-      "retrieval_text": "LOC1至LOC8是什麼關係？ LOC為什麼分成1到8？ LOC1到LOC8是版本順序嗎？ 八個LOC哪一個比較高階？ 第一次接觸LOC要從哪裡開始？ LOC1–8 框架 語言切分 Language Evolution Text Architecture Temporal Semantics LOC1–8不是版本、等級或八個獨立產品，而是同一套語言系統的功能責任區。LOC1處理符文與抽取；LOC2是遊戲／情境延伸；LOC3音樂；LOC4文字；LOC5多媒體；LOC6治理、意義與政德風；LOC7文字建築、結構分析、KM與檢索；LOC8事件、時期、時間與跨LOC統合。資料可以被不同LOC引用，但 canonical ownership 不應重複。",
+      "retrieval_text": "LOC1至LOC8是什麼關係？ LOC為什麼分成1到8？ LOC1到LOC8是版本順序嗎？ 八個LOC哪一個比較高階？ 第一次接觸LOC要從哪裡開始？ LOC1–8 框架 語言切分 Language Evolution Text Architecture Temporal Semantics LOC1–8不是版本、等級或八個獨立產品，而是同一套語言系統的功能責任區。現行固定為：LOC1 LunaRunes／月之符文，定位是符文語彙（Token）；LOC2 Context／脈絡；LOC3 Music／音樂；LOC4 Literary／文字創作；LOC5 MultiMedia／多媒體；LOC6 Methodology／方法論；LOC7 Algorithm／演算法（知識庫）；LOC8 Evolution／推演。其他文件與介面只能引用這套定義，不應另行改寫。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -584,7 +586,7 @@
         "AI在LOC裡負責什麼？",
         "RAG會改寫符文定義嗎？"
       ],
-      "answer": "LOC需要語意檢索，是因為作品、符文、治理句、文件、媒體與事件之間存在大量跨類型關係。現行 Unified Search 已把 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7 與 LOC8 的不同資料來源統一到同一個查詢入口；完整 Graph RAG／Knowledge Graph expansion 仍是後續方向，不能因已有 Registry 或 related_ids 就宣稱已完整部署。",
+      "answer": "LOC 使用語意檢索與 RAG，是為了讓符文、歌曲、文字、媒體、治理、Context 與時間資料能跨格式查找。現行 Cross-format Search 已可整合多種資料來源；Graph RAG 是關係 traversal／retrieval 的技術能力，Graph 本體 ownership 仍歸 LOC2 Context。",
       "keywords": [
         "RAG",
         "Graph RAG",
@@ -594,11 +596,11 @@
         "AI可選",
         "API"
       ],
-      "retrieval_text": "為什麼LOC需要語意向量與RAG？ LOC為什麼不能只用SQL？ OW3gs為什麼需要RAG？ 11張符文的組合要怎麼搜尋？ AI在LOC裡負責什麼？ RAG會改寫符文定義嗎？ RAG Graph RAG LOC7 KM 跨媒體 AI可選 API LOC需要語意檢索，是因為作品、符文、治理句、文件、媒體與事件之間存在大量跨類型關係。現行 Unified Search 已把 LOC1、LOC3、LOC4、LOC5、LOC6、LOC7 與 LOC8 的不同資料來源統一到同一個查詢入口；完整 Graph RAG／Knowledge Graph expansion 仍是後續方向，不能因已有 Registry 或 related_ids 就宣稱已完整部署。",
+      "retrieval_text": "為什麼LOC需要語意向量與RAG？ LOC為什麼不能只用SQL？ OW3gs為什麼需要RAG？ 11張符文的組合要怎麼搜尋？ AI在LOC裡負責什麼？ RAG會改寫符文定義嗎？ RAG Graph RAG LOC7 KM 跨媒體 AI可選 API LOC 使用語意檢索與 RAG，是為了讓符文、歌曲、文字、媒體、治理、Context 與時間資料能跨格式查找。現行 Cross-format Search 已可整合多種資料來源；Graph RAG 是關係 traversal／retrieval 的技術能力，Graph 本體 ownership 仍歸 LOC2 Context。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09",
-        "LOC_FAQ_RAG_v0.1"
+        "search.html",
+        "context.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -1216,30 +1218,32 @@
     {
       "id": "FAQ-041-A",
       "parent_id": "FAQ-041",
-      "category": "LOC5共鳴",
+      "category": "LOC5 多媒體",
       "intent": "LOC5是什麼",
       "question": "LOC5是什麼？",
       "aliases": [
         "LOC5主要做什麼？",
-        "Resonance Distribution是什麼？",
+        "MultiMedia是什麼？",
         "LOC5是不是影像分發？"
       ],
-      "answer": "LOC5是LOC的跨媒體共鳴功能域，處理同一個語意如何在影像、聲音、文字、Reels、MV與概念視覺化之間轉譯。重點不是單純做圖片，而是不同媒介是否仍能指向同一個語意核心。",
+      "answer": "LOC5 是 MultiMedia／多媒體，負責把語言延伸到圖像、影音、Reels、MV、系統視覺化等非純文字媒介。重點是跨媒介表達：同一個概念可以在文字、音樂與影像之間轉換，但 LOC5 的正式定位就是多媒體，不再使用 Resonance Distribution 作為現行名稱。",
       "keywords": [
         "LOC5",
-        "Resonance",
-        "跨媒體",
+        "MultiMedia",
+        "多媒體",
         "影像",
-        "聲音",
-        "文字",
-        "MV"
+        "影音",
+        "Reels",
+        "MV",
+        "系統視覺化",
+        "跨媒介表達"
       ],
-      "retrieval_text": "LOC5是什麼？ LOC5主要做什麼？ Resonance Distribution是什麼？ LOC5是不是影像分發？ LOC5 Resonance 跨媒體 影像 聲音 文字 MV LOC5是LOC的跨媒體共鳴功能域，處理同一個語意如何在影像、聲音、文字、Reels、MV與概念視覺化之間轉譯。重點不是單純做圖片，而是不同媒介是否仍能指向同一個語意核心。",
+      "retrieval_text": "LOC5是什麼？ LOC5主要做什麼？ MultiMedia是什麼？ LOC5是不是影像分發？ LOC5 MultiMedia 多媒體 影像 影音 Reels MV 系統視覺化 跨媒介表達 LOC5 是 MultiMedia／多媒體，負責把語言延伸到圖像、影音、Reels、MV、系統視覺化等非純文字媒介。重點是跨媒介表達：同一個概念可以在文字、音樂與影像之間轉換，但 LOC5 的正式定位就是多媒體，不再使用 Resonance Distribution 作為現行名稱。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1306,7 +1310,7 @@
         "Governance Distribution是什麼？",
         "LOC6是不是政德風？"
       ],
-      "answer": "LOC6 是 Governance & Interpretation 功能域，負責意義、價值判準、責任邊界、治理原則、風格狀態與政德風等分析。它回答的核心問題是「這代表什麼、應如何判斷與治理」。句法、文字結構與檢索架構主要由 LOC7 負責。",
+      "answer": "LOC6 是 Methodology／方法論，負責整理可以重複使用的理解、判讀、比較、分類、治理與處理方法。Governance／治理是 LOC6 中的一種代表方法，不等於 LOC6 全部；政德風則是其中重要的個人方法與治理案例。",
       "keywords": [
         "LOC6",
         "Governance",
@@ -1315,13 +1319,13 @@
         "價值判準",
         "責任邊界"
       ],
-      "retrieval_text": "LOC6是什麼？ LOC6主要做什麼？ Governance Distribution是什麼？ LOC6是不是政德風？ LOC6 Governance 語言治理 政德風 價值判準 責任邊界 LOC6 是 Governance & Interpretation 功能域，負責意義、價值判準、責任邊界、治理原則、風格狀態與政德風等分析。它回答的核心問題是「這代表什麼、應如何判斷與治理」。句法、文字結構與檢索架構主要由 LOC7 負責。",
+      "retrieval_text": "LOC6是什麼？ LOC6主要做什麼？ Governance Distribution是什麼？ LOC6是不是政德風？ LOC6 Governance 語言治理 政德風 價值判準 責任邊界 LOC6 是 Methodology／方法論，負責整理可以重複使用的理解、判讀、比較、分類、治理與處理方法。Governance／治理是 LOC6 中的一種代表方法，不等於 LOC6 全部；政德風則是其中重要的個人方法與治理案例。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09",
-        "zhengde-style:v1.0"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+        "governance.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1389,7 +1393,7 @@
         "Text Architecture是什麼？",
         "文字建築學在LOC裡做什麼？"
       ],
-      "answer": "LOC7 是 Text Architecture／文字建築與知識結構功能域，處理語言資料如何被切分、索引、檢索、連接、分群、版本化與建立關係。LOC7 也承接 KM、FAQ／RAG 與 Unified Search 的知識檢索結構；它不取代 LOC6 對治理語義的 ownership。",
+      "answer": "LOC7 是 Algorithm／演算法（知識庫）。它把 LOC6 的多種方法結構化、組合、排序與條件化，形成可重複執行的流程；文字建築、Search、FAQ／RAG、Graph RAG traversal、文字分析與知識庫都屬 LOC7 的實作與承載。",
       "keywords": [
         "LOC7",
         "Text Architecture",
@@ -1397,12 +1401,13 @@
         "語意關係",
         "檢索"
       ],
-      "retrieval_text": "LOC7是什麼？ LOC7主要做什麼？ Text Architecture是什麼？ 文字建築學在LOC裡做什麼？ LOC7 Text Architecture 文字建築 語意關係 檢索 LOC7 是 Text Architecture／文字建築與知識結構功能域，處理語言資料如何被切分、索引、檢索、連接、分群、版本化與建立關係。LOC7 也承接 KM、FAQ／RAG 與 Unified Search 的知識檢索結構；它不取代 LOC6 對治理語義的 ownership。",
+      "retrieval_text": "LOC7是什麼？ LOC7主要做什麼？ Text Architecture是什麼？ 文字建築學在LOC裡做什麼？ LOC7 Text Architecture 文字建築 語意關係 檢索 LOC7 是 Algorithm／演算法（知識庫）。它把 LOC6 的多種方法結構化、組合、排序與條件化，形成可重複執行的流程；文字建築、Search、FAQ／RAG、Graph RAG traversal、文字分析與知識庫都屬 LOC7 的實作與承載。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+        "search.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1416,7 +1421,7 @@
         "FAQ語意搜尋完成了嗎？",
         "LOC7現在可以展示什麼？"
       ],
-      "answer": "LOC7 現行 FAQ／RAG 已更新到 v0.4。FAQ 是維護型問答 View；RAG 是由 FAQ 衍生的檢索資料。Unified Search 則已能在同一入口查詢 LOC1 符文／籤詩、LOC3 音樂、LOC4 文字作品、LOC5 媒體、LOC6 治理語料、LOC7 知識與 LOC8 時期資料。",
+      "answer": "現行 FAQ／RAG 為 v0.4。FAQ 是可維護的問答資料，RAG 是由 FAQ 同步產生的 retrieval derivative；Cross-format Search 則是公開統一搜尋入口。FAQ/RAG 不取代 Canon、母資料或原始作品。",
       "keywords": [
         "LOC7",
         "FAQ",
@@ -1425,11 +1430,12 @@
         "chunk",
         "retrieval_text"
       ],
-      "retrieval_text": "LOC7目前的FAQ RAG做到什麼程度？ LOC FAQ RAG有多少資料？ FAQ語意搜尋完成了嗎？ LOC7現在可以展示什麼？ LOC7 FAQ RAG Embedding chunk retrieval_text LOC7 現行 FAQ／RAG 已更新到 v0.4。FAQ 是維護型問答 View；RAG 是由 FAQ 衍生的檢索資料。Unified Search 則已能在同一入口查詢 LOC1 符文／籤詩、LOC3 音樂、LOC4 文字作品、LOC5 媒體、LOC6 治理語料、LOC7 知識與 LOC8 時期資料。",
+      "retrieval_text": "LOC7目前的FAQ RAG做到什麼程度？ LOC FAQ RAG有多少資料？ FAQ語意搜尋完成了嗎？ LOC7現在可以展示什麼？ LOC7 FAQ RAG Embedding chunk retrieval_text 現行 FAQ／RAG 為 v0.4。FAQ 是可維護的問答資料，RAG 是由 FAQ 同步產生的 retrieval derivative；Cross-format Search 則是公開統一搜尋入口。FAQ/RAG 不取代 Canon、母資料或原始作品。",
       "related_ids": [],
       "source_refs": [
-        "LOC_FAQ_RAG_v0.1",
-        "master-system:2026-09"
+        "search.html",
+        "data/json/search/faq/LOC_FAQ_v0.4.json",
+        "data/json/search/faq/LOC_FAQ_RAG_v0.4.json"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -1445,7 +1451,7 @@
         "沒有知識圖譜LOC7算完成嗎？",
         "Graph RAG在LOC7是什麼位置？"
       ],
-      "answer": "不是。LOC7 已經可以由 KM、FAQ／RAG、Shared Registry、文字建築與 Unified Search 構成實作。完整 Graph RAG／Knowledge Graph expansion 是後續關係化方向，不是 LOC7 是否成立的唯一門檻。",
+      "answer": "不是。LOC7 的核心是 Text Architecture 與可重複的文字處理／檢索能力；Graph RAG 是其中一種 traversal／retrieval 技術，不是 LOC7 是否成立的唯一條件。Graph 關係本體由 LOC2 管理。",
       "keywords": [
         "Graph RAG",
         "知識圖譜",
@@ -1453,10 +1459,11 @@
         "Embedding",
         "RAG"
       ],
-      "retrieval_text": "Graph RAG是LOC7成立的必要條件嗎？ LOC7一定要做Graph RAG嗎？ 沒有知識圖譜LOC7算完成嗎？ Graph RAG在LOC7是什麼位置？ Graph RAG 知識圖譜 LOC7 Embedding RAG 不是。LOC7 已經可以由 KM、FAQ／RAG、Shared Registry、文字建築與 Unified Search 構成實作。完整 Graph RAG／Knowledge Graph expansion 是後續關係化方向，不是 LOC7 是否成立的唯一門檻。",
+      "retrieval_text": "Graph RAG是LOC7成立的必要條件嗎？ LOC7一定要做Graph RAG嗎？ 沒有知識圖譜LOC7算完成嗎？ Graph RAG在LOC7是什麼位置？ Graph RAG 知識圖譜 LOC7 Embedding RAG 不是。LOC7 的核心是 Text Architecture 與可重複的文字處理／檢索能力；Graph RAG 是其中一種 traversal／retrieval 技術，不是 LOC7 是否成立的唯一條件。Graph 關係本體由 LOC2 管理。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09"
+        "search.html",
+        "context.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -1472,7 +1479,7 @@
         "Life Distribution是什麼？",
         "LOC8和其他LOC有什麼差別？"
       ],
-      "answer": "LOC8 是 Integration & Temporal Management 功能域，負責事件、每日符文、時期、時間線、狀態軌跡與跨LOC統合。它讓同一個人的作品、事件與語言變化能放回時間脈絡中理解；LOC8 不取代 LOC6 的意義治理，也不取代 LOC7 的知識結構。",
+      "answer": "LOC8 是 Evolution／推演。它把前面累積的語彙、作品、脈絡、方法與演算法放回時間，透過時期、Timeline、Trend 與 Trajectory 觀察變化並形成後續推演。公開介面使用「時期」；Graph 本體 ownership 仍歸 LOC2。",
       "keywords": [
         "LOC8",
         "Life Event",
@@ -1481,12 +1488,14 @@
         "時間",
         "統合"
       ],
-      "retrieval_text": "LOC8是什麼？ LOC8主要做什麼？ Life Distribution是什麼？ LOC8和其他LOC有什麼差別？ LOC8 Life Event Temporal Semantics 事件 時間 統合 LOC8 是 Integration & Temporal Management 功能域，負責事件、每日符文、時期、時間線、狀態軌跡與跨LOC統合。它讓同一個人的作品、事件與語言變化能放回時間脈絡中理解；LOC8 不取代 LOC6 的意義治理，也不取代 LOC7 的知識結構。",
+      "retrieval_text": "LOC8是什麼？ LOC8主要做什麼？ Life Distribution是什麼？ LOC8和其他LOC有什麼差別？ LOC8 Life Event Temporal Semantics 事件 時間 統合 LOC8 是 Evolution／推演。它把前面累積的語彙、作品、脈絡、方法與演算法放回時間，透過時期、Timeline、Trend 與 Trajectory 觀察變化並形成後續推演。公開介面使用「時期」；Graph 本體 ownership 仍歸 LOC2。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+        "evolution.html",
+        "context.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1500,7 +1509,7 @@
         "LOC8 mockup是什麼？",
         "LOC8開發進度如何？"
       ],
-      "answer": "LOC8目前主要先從介面／PWA方向建立入口；Life Event與Temporal Semantics的正式資料模型仍需建設。它未來要記錄事件如何被感知、命名、理解，並連回符文、作品、句型與Graph。",
+      "answer": "LOC8 的主要功能已在 evolution.html 形成可操作介面：現行時期、Event Timeline、Trend、Trajectory，以及時期／事件的維護流程都已具備。現在重點是資料一致性、來源接入與分析品質，不是從零建立 Life／Timeline 入口。",
       "keywords": [
         "LOC8",
         "mockup",
@@ -1508,10 +1517,10 @@
         "Render API",
         "MVP"
       ],
-      "retrieval_text": "LOC8目前完成到什麼階段？ LOC8現在可以用了嗎？ LOC8 mockup是什麼？ LOC8開發進度如何？ LOC8 mockup PWA Render API MVP LOC8目前主要先從介面／PWA方向建立入口；Life Event與Temporal Semantics的正式資料模型仍需建設。它未來要記錄事件如何被感知、命名、理解，並連回符文、作品、句型與Graph。",
+      "retrieval_text": "LOC8目前完成到什麼階段？ LOC8現在可以用了嗎？ LOC8 mockup是什麼？ LOC8開發進度如何？ LOC8 mockup PWA Render API MVP LOC8 的主要功能已在 evolution.html 形成可操作介面：現行時期、Event Timeline、Trend、Trajectory，以及時期／事件的維護流程都已具備。現在重點是資料一致性、來源接入與分析品質，不是從零建立 Life／Timeline 入口。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09"
+        "evolution.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -1527,7 +1536,7 @@
         "第一版LOC8怎麼用？",
         "LOC8最小功能有哪些？"
       ],
-      "answer": "LOC8 已有可操作的 Life 頁面，包含每日符文、時期、事件紀錄與事件時間線／軌跡等視圖。現階段重點不是從零建立入口，而是持續改善資料同步、身份／多使用者架構、分析呈現與跨LOC引用。",
+      "answer": "LOC8 現行最小流程是：先累積有時間位置的 Event、作品或其他紀錄，再放入現行時期，透過 Timeline 看發生順序、Trend 比較跨時期訊號、Trajectory 看狀態如何轉變。系統可以提出 change signal，但正式時期邊界仍以證據與使用者確認為準。",
       "keywords": [
         "LOC8 MVP",
         "登入",
@@ -1536,10 +1545,10 @@
         "7天趨勢",
         "作品搜尋"
       ],
-      "retrieval_text": "LOC8第一版最小可用流程是什麼？ LOC8 MVP要做哪些功能？ 第一版LOC8怎麼用？ LOC8最小功能有哪些？ LOC8 MVP 登入 抽牌 歷史 7天趨勢 作品搜尋 LOC8 已有可操作的 Life 頁面，包含每日符文、時期、事件紀錄與事件時間線／軌跡等視圖。現階段重點不是從零建立入口，而是持續改善資料同步、身份／多使用者架構、分析呈現與跨LOC引用。",
+      "retrieval_text": "LOC8第一版最小可用流程是什麼？ LOC8 MVP要做哪些功能？ 第一版LOC8怎麼用？ LOC8最小功能有哪些？ LOC8 MVP 登入 抽牌 歷史 7天趨勢 作品搜尋 LOC8 現行最小流程是：先累積有時間位置的 Event、作品或其他紀錄，再放入現行時期，透過 Timeline 看發生順序、Trend 比較跨時期訊號、Trajectory 看狀態如何轉變。系統可以提出 change signal，但正式時期邊界仍以證據與使用者確認為準。",
       "related_ids": [],
       "source_refs": [
-        "master-system:2026-09"
+        "evolution.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -1929,14 +1938,14 @@
       "id": "FAQ-067-A",
       "parent_id": "FAQ-067",
       "category": "LOC7知識管理",
-      "intent": "LOC7_KM是什麼",
-      "question": "LOC7_KM是什麼？",
+      "intent": "LOC的知識管理現在放在哪裡",
+      "question": "LOC的知識管理現在放在哪裡？",
       "aliases": [
-        "KM知識庫歸LOC7還是LOC8？",
-        "LOC知識管理放在哪裡？",
-        "Knowledge Management在LOC哪一層？"
+        "LOC還有LOC7_KM文件嗎？",
+        "KM資料放在哪裡？",
+        "LOC怎麼管理知識？"
       ],
-      "answer": "LOC7_KM 是 LOC7 的知識管理核心，負責把 Canon、母資料、作品、治理／分析文件、Shared Registry、FAQ／RAG 與工作定義整理成可追溯、可版本化、可搜尋、可建立關係的知識資產。KM 不等於 FAQ，也不等於 Graph；它管理的是整條知識治理與檢索鏈。",
+      "answer": "LOC 不再要求用一份 LOC7_KM Markdown 承擔所有知識。現行知識分散在各自的正式承載位置：功能與說明由 index／runes／context／search／evolution／governance 等頁面負責；結構化知識由 Registry、FAQ/RAG 與 source data 保存；程式技術由實作本身維護。",
       "keywords": [
         "LOC7_KM",
         "Knowledge Management",
@@ -1944,10 +1953,12 @@
         "Knowledge Object",
         "LOC7"
       ],
-      "retrieval_text": "LOC7_KM是什麼？ KM知識庫歸LOC7還是LOC8？ LOC知識管理放在哪裡？ Knowledge Management在LOC哪一層？ LOC7_KM Knowledge Management 知識庫 Knowledge Object LOC7 LOC7_KM 是 LOC7 的知識管理核心，負責把 Canon、母資料、作品、治理／分析文件、Shared Registry、FAQ／RAG 與工作定義整理成可追溯、可版本化、可搜尋、可建立關係的知識資產。KM 不等於 FAQ，也不等於 Graph；它管理的是整條知識治理與檢索鏈。",
+      "retrieval_text": "LOC的知識管理現在放在哪裡？ LOC還有LOC7_KM文件嗎？ KM資料放在哪裡？ LOC怎麼管理知識？ LOC7_KM Knowledge Management 知識庫 Knowledge Object LOC7 LOC 不再要求用一份 LOC7_KM Markdown 承擔所有知識。現行知識分散在各自的正式承載位置：功能與說明由 index／runes／context／search／evolution／governance 等頁面負責；結構化知識由 Registry、FAQ/RAG 與 source data 保存；程式技術由實作本身維護。",
       "related_ids": [],
       "source_refs": [
-        "creator-confirmed:2026-09-04-conversation"
+        "search.html",
+        "governance.html",
+        "data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -1956,14 +1967,14 @@
       "id": "FAQ-068-A",
       "parent_id": "FAQ-068",
       "category": "LOC7知識管理",
-      "intent": "FAQ和LOC7_KM知識庫有什麼差別",
-      "question": "FAQ和LOC7_KM知識庫有什麼差別？",
+      "intent": "FAQ、RAG和原始資料有什麼差別",
+      "question": "FAQ、RAG和原始資料有什麼差別？",
       "aliases": [
-        "FAQ就是知識庫嗎？",
-        "RAG資料只有FAQ嗎？",
-        "KM和FAQ怎麼分？"
+        "FAQ跟RAG差在哪？",
+        "FAQ是不是Canon？",
+        "RAG會改寫原始資料嗎？"
       ],
-      "answer": "FAQ只是LOC7_KM的一種問答View，不是知識庫本體。KM還包含母資料／Canon權威鏈、原始作品、維護中的 Markdown 文件、Shared Registry、Knowledge Asset Registry、RAG衍生資料與應用 View；不同層級不能互相覆寫。",
+      "answer": "FAQ 是可維護的問答 View；RAG 是由 FAQ 或其他資料衍生的檢索格式；原始作品、Canon、母資料與 Registry 各自保留自己的 authority。FAQ、RAG、Embedding、搜尋索引與 AI 回答都是下游資料，不得反向覆寫上游來源。",
       "keywords": [
         "FAQ",
         "KM",
@@ -1971,10 +1982,11 @@
         "View",
         "RAG"
       ],
-      "retrieval_text": "FAQ和LOC7_KM知識庫有什麼差別？ FAQ就是知識庫嗎？ RAG資料只有FAQ嗎？ KM和FAQ怎麼分？ FAQ KM Knowledge Base View RAG FAQ只是LOC7_KM的一種問答View，不是知識庫本體。KM還包含母資料／Canon權威鏈、原始作品、維護中的 Markdown 文件、Shared Registry、Knowledge Asset Registry、RAG衍生資料與應用 View；不同層級不能互相覆寫。",
+      "retrieval_text": "FAQ、RAG和原始資料有什麼差別？ FAQ跟RAG差在哪？ FAQ是不是Canon？ RAG會改寫原始資料嗎？ FAQ KM Knowledge Base View RAG FAQ 是可維護的問答 View；RAG 是由 FAQ 或其他資料衍生的檢索格式；原始作品、Canon、母資料與 Registry 各自保留自己的 authority。FAQ、RAG、Embedding、搜尋索引與 AI 回答都是下游資料，不得反向覆寫上游來源。",
       "related_ids": [],
       "source_refs": [
-        "creator-confirmed:2026-09-04-conversation"
+        "governance.html",
+        "data/json/search/faq/LOC_FAQ_v0.4.json"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -1989,7 +2001,7 @@
         "LOC6 7 8差在哪？",
         "句型文法、文字建築和時間語意怎麼分？"
       ],
-      "answer": "最簡單的區分是：LOC6 擁有語義、治理、價值與政德風分析；LOC7 擁有文字建築、知識管理、檢索與關係結構；LOC8 擁有事件、時期、時間線與跨LOC統合。也就是 LOC6 問「這代表什麼」，LOC7 問「它如何被組織與找到」，LOC8 問「它何時發生、如何一路變化」。",
+      "answer": "最簡單的區分是：LOC6 Methodology 負責「有哪些可重複的方法」；LOC7 Algorithm／演算法（知識庫）負責「怎麼把多種方法組合成可執行流程並保存、檢索」；LOC8 Evolution 負責「這些語言、作品、方法與演算法在時間中如何變化」。Graph／Relation 本體屬 LOC2 Context。",
       "keywords": [
         "LOC6",
         "LOC7",
@@ -1998,12 +2010,12 @@
         "Text Architecture",
         "Temporal Semantics"
       ],
-      "retrieval_text": "LOC6、LOC7、LOC8最簡單怎麼區分？ LOC6 7 8差在哪？ 句型文法、文字建築和時間語意怎麼分？ LOC6 LOC7 LOC8 句型文法 Text Architecture Temporal Semantics 最簡單的區分是：LOC6 擁有語義、治理、價值與政德風分析；LOC7 擁有文字建築、知識管理、檢索與關係結構；LOC8 擁有事件、時期、時間線與跨LOC統合。也就是 LOC6 問「這代表什麼」，LOC7 問「它如何被組織與找到」，LOC8 問「它何時發生、如何一路變化」。",
+      "retrieval_text": "LOC6、LOC7、LOC8最簡單怎麼區分？ LOC6 7 8差在哪？ 句型文法、文字建築和時間語意怎麼分？ LOC6 LOC7 LOC8 句型文法 Text Architecture Temporal Semantics 最簡單的區分是：LOC6 Methodology 負責「有哪些可重複的方法」；LOC7 Algorithm／演算法（知識庫）負責「怎麼把多種方法組合成可執行流程並保存、檢索」；LOC8 Evolution 負責「這些語言、作品、方法與演算法在時間中如何變化」。Graph／Relation 本體屬 LOC2 Context。",
       "related_ids": [],
       "source_refs": [
-        "creator-confirmed:2026-09-04-conversation"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2315,7 +2327,7 @@
         "來源要先選Instagram或Threads嗎？",
         "進階搜尋要選什麼？"
       ],
-      "answer": "LOC Search 預設應以自然語言跨全部內容搜尋。內容類型與來源可直接寫進句子，例如「我想看我在 Instagram 發表過的文字」；Search 再自行判斷來源與內容意圖。進階篩選只保留日期與 ERA，作為額外時間限制。",
+      "answer": "多元搜尋預設以自然語言跨不同內容格式查詢；使用者不必先理解 LOC 編號。來源、內容類型與概念可直接寫進 query，再視需要使用日期與時期等篩選。公開介面使用「時期」，不要求使用者理解內部 ERA ID。",
       "keywords": [
         "自然語言搜尋",
         "Semantic Search",
@@ -2326,10 +2338,9 @@
         "時間篩選",
         "RAG"
       ],
-      "retrieval_text": "LOC Search 為什麼不需要先選內容類別？ 搜尋要先選歌曲或文字嗎？ 可以直接用一句話搜尋嗎？ 來源要先選Instagram或Threads嗎？ 進階搜尋要選什麼？ 自然語言搜尋 Semantic Search 跨類別 Instagram Threads ERA 時間篩選 RAG LOC Search 預設應以自然語言跨全部內容搜尋。內容類型與來源可直接寫進句子，例如「我想看我在 Instagram 發表過的文字」；Search 再自行判斷來源與內容意圖。進階篩選只保留日期與 ERA，作為額外時間限制。",
+      "retrieval_text": "LOC Search 為什麼不需要先選內容類別？ 搜尋要先選歌曲或文字嗎？ 可以直接用一句話搜尋嗎？ 來源要先選Instagram或Threads嗎？ 進階搜尋要選什麼？ 自然語言搜尋 Semantic Search 跨類別 Instagram Threads ERA 時間篩選 RAG 多元搜尋預設以自然語言跨不同內容格式查詢；使用者不必先理解 LOC 編號。來源、內容類型與概念可直接寫進 query，再視需要使用日期與時期等篩選。公開介面使用「時期」，不要求使用者理解內部 ERA ID。",
       "related_ids": [],
       "source_refs": [
-        "docs/LOC7_KM.md",
         "search.html"
       ],
       "canon_version": "0.5r",
@@ -2348,7 +2359,7 @@
         "符文交互在哪裡用？",
         "月符沙盒為什麼是平等關係？"
       ],
-      "answer": "以 LunaRune64.xlsx#Grammar 為準：兩卡＝因＋果＋月相交互；三卡＝源＋轉＋合＋月相交互；五卡＝過去＋現在＋未來顯化＋周圍環境＋自己心境＋月相交互。OW3gs 則由兩個符文模組組成：古模組 1–6 與今模組 7–11，核心原則是「鑑古知今」。讀取時先讀今模組 7–11，再回看古模組 1–6，最後套月相交互。符文交互現行限定月符沙盒專用。",
+      "answer": "一般牌陣與符文沙盒分工不同：雙卡＝因→果；三卡＝源→轉→合；五卡＝過去→現在→未來顯化→周圍環境→自己心境；OW3gs＝1–6因的描述層＋7–11果的判定層，先讀7–11再回看1–6。符文沙盒則處理 Relation／Context／Graph，不把抽牌卡位規則直接當成 Graph edge。",
       "keywords": [
         "Grammar",
         "兩卡",
@@ -2366,12 +2377,12 @@
         "鑑古知今",
         "兩個符文模組"
       ],
-      "retrieval_text": "一般兩卡、五卡、OW3gs 與符文沙盒 Graph 怎麼區分？ 兩卡怎麼解？ 五卡是不是2+3？ OW3gs 1到6和7到11怎麼讀？ 符文交互在哪裡用？ 月符沙盒為什麼是平等關係？ Grammar 兩卡 因果 三卡 源轉合 五卡 OW3gs 符文交互 月符沙盒 月相交互 治理解牌方式 古模組 今模組 鑑古知今 兩個符文模組 以 LunaRune64.xlsx#Grammar 為準：兩卡＝因＋果＋月相交互；三卡＝源＋轉＋合＋月相交互；五卡＝過去＋現在＋未來顯化＋周圍環境＋自己心境＋月相交互。OW3gs 則由兩個符文模組組成：古模組 1–6 與今模組 7–11，核心原則是「鑑古知今」。讀取時先讀今模組 7–11，再回看古模組 1–6，最後套月相交互。符文交互現行限定月符沙盒專用。",
+      "retrieval_text": "一般兩卡、五卡、OW3gs 與符文沙盒 Graph 怎麼區分？ 兩卡怎麼解？ 五卡是不是2+3？ OW3gs 1到6和7到11怎麼讀？ 符文交互在哪裡用？ 月符沙盒為什麼是平等關係？ Grammar 兩卡 因果 三卡 源轉合 五卡 OW3gs 符文交互 月符沙盒 月相交互 治理解牌方式 古模組 今模組 鑑古知今 兩個符文模組 一般牌陣與符文沙盒分工不同：雙卡＝因→果；三卡＝源→轉→合；五卡＝過去→現在→未來顯化→周圍環境→自己心境；OW3gs＝1–6因的描述層＋7–11果的判定層，先讀7–11再回看1–6。符文沙盒則處理 Relation／Context／Graph，不把抽牌卡位規則直接當成 Graph edge。",
       "related_ids": [],
       "source_refs": [
-        "LunaRune64.xlsx#Grammar",
-        "data/json/core/rune_grammar.json",
-        "docs/LOC7_KM.md"
+        "runes.html",
+        "context.html",
+        "LunaRune64.xlsx#Grammar"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -2400,7 +2411,7 @@
       "retrieval_text": "什麼是反向符文治理？ 可以從現況反推符文嗎？ 這個狀況像哪一張符文？ Reverse rune mapping是什麼？ 像福半正是什麼意思？ 反向符文治理 Reverse mapping 語意映射 福半正 符文方向 共同語意座標 反向符文治理是把已經發生的語句、事件、情緒或治理狀態映射回最接近的符文與方向，例如指出「這個狀況很像福半正的語意狀態」。它不是重新抽牌，而是把月符當作共同語意座標。",
       "related_ids": [],
       "source_refs": [
-        "docs/LOC7_KM.md",
+        "runes.html",
         "governance.html"
       ],
       "canon_version": "0.5r",
@@ -2417,7 +2428,7 @@
         "OW3gs 1–6 和 7–11 是兩個模組嗎？",
         "鑑古知今在 OW3gs 是什麼意思？"
       ],
-      "answer": "OW3gs 的核心不是把十一張牌當成同一層，而是分成兩個符文模組。古模組（1–6）用來回看形成問題的背景、條件與來源，負責「鑑古」；今模組（7–11）用來判讀現在與後續應如何理解、處理，負責「知今」。因此 OW3gs 的核心原則是「鑑古知今」。",
+      "answer": "OW3gs 不把十一張牌等權串接，而是分成兩個責任層：1–6 是因的描述層，用來補足背景、條件與來源；7–11 是果的判定層，形成主要結果與核心判定。讀取時先看7–11，再回看1–6，最後加入月相等低權重修飾。",
       "keywords": [
         "OW3gs",
         "古模組",
@@ -2427,12 +2438,11 @@
         "7–11",
         "符文模組"
       ],
-      "retrieval_text": "OW3gs 為什麼分成兩個符文模組？ OW3gs 的古和今是什麼？ OW3gs 1–6 和 7–11 是兩個模組嗎？ 鑑古知今在 OW3gs 是什麼意思？ OW3gs 古模組 今模組 鑑古知今 1–6 7–11 符文模組 OW3gs 的核心不是把十一張牌當成同一層，而是分成兩個符文模組。古模組（1–6）用來回看形成問題的背景、條件與來源，負責「鑑古」；今模組（7–11）用來判讀現在與後續應如何理解、處理，負責「知今」。因此 OW3gs 的核心原則是「鑑古知今」。",
+      "retrieval_text": "OW3gs 為什麼分成兩個符文模組？ OW3gs 的古和今是什麼？ OW3gs 1–6 和 7–11 是兩個模組嗎？ 鑑古知今在 OW3gs 是什麼意思？ OW3gs 古模組 今模組 鑑古知今 1–6 7–11 符文模組 OW3gs 不把十一張牌等權串接，而是分成兩個責任層：1–6 是因的描述層，用來補足背景、條件與來源；7–11 是果的判定層，形成主要結果與核心判定。讀取時先看7–11，再回看1–6，最後加入月相等低權重修飾。",
       "related_ids": [],
       "source_refs": [
-        "LunaRune64.xlsx#Grammar",
-        "data/json/core/rune_grammar.json",
-        "docs/LOC7_KM.md"
+        "runes.html",
+        "LunaRune64.xlsx#Grammar"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -2449,7 +2459,7 @@
         "符文歌曲和符文文學放哪裡？",
         "未來性放在哪裡？"
       ],
-      "answer": "符文籤詩負責抽牌、籤詩與解牌；符文脈絡負責符文之間或符文與事件／作品之間的關係、情境與 Graph，月符沙盒是代表性實作；符文體系收納符文本體及其文學、歌曲、影像、沙盒等延伸形式；符文演算收納 Grammar、治理解牌方式、月相交互與正反向符文治理等可重複規則；符文演化收納 ERA、Relation、Trajectory、Trend 與所有跨時期／未來性變化。",
+      "answer": "月之符文在 runes.html 內分成幾種不同工作：抽牌／籤詩處理實際判讀；符文資料保存66符本義與圖鑑；符文脈絡把符文放進 Context／Relation／Graph；符文演算處理可重複的組合與判讀規則；符文演化則觀察符文在時間、作品與使用方式中的變化。這些是月之符文的不同操作面，不是把「月之符文」本身再當成多元體系的一個類別。",
       "keywords": [
         "符文籤詩",
         "符文脈絡",
@@ -2459,11 +2469,12 @@
         "Graph",
         "月符沙盒"
       ],
-      "retrieval_text": "月符 Search 的符文籤詩、符文脈絡、符文體系、符文演算、符文演化怎麼分？ 月符搜尋有哪些分類？ 符文占卜為什麼改叫符文籤詩？ 符文歌曲和符文文學放哪裡？ 未來性放在哪裡？ 符文籤詩 符文脈絡 符文體系 符文演算 符文演化 Graph 月符沙盒 符文籤詩負責抽牌、籤詩與解牌；符文脈絡負責符文之間或符文與事件／作品之間的關係、情境與 Graph，月符沙盒是代表性實作；符文體系收納符文本體及其文學、歌曲、影像、沙盒等延伸形式；符文演算收納 Grammar、治理解牌方式、月相交互與正反向符文治理等可重複規則；符文演化收納 ERA、Relation、Trajectory、Trend 與所有跨時期／未來性變化。",
+      "retrieval_text": "月符 Search 的符文籤詩、符文脈絡、符文體系、符文演算、符文演化怎麼分？ 月符搜尋有哪些分類？ 符文占卜為什麼改叫符文籤詩？ 符文歌曲和符文文學放哪裡？ 未來性放在哪裡？ 符文籤詩 符文脈絡 符文體系 符文演算 符文演化 Graph 月符沙盒 月之符文在 runes.html 內分成幾種不同工作：抽牌／籤詩處理實際判讀；符文資料保存66符本義與圖鑑；符文脈絡把符文放進 Context／Relation／Graph；符文演算處理可重複的組合與判讀規則；符文演化則觀察符文在時間、作品與使用方式中的變化。這些是月之符文的不同操作面，不是把「月之符文」本身再當成多元體系的一個類別。",
       "related_ids": [],
       "source_refs": [
-        "docs/LOC7_KM.md",
-        "search.html"
+        "runes.html",
+        "context.html",
+        "evolution.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -2479,7 +2490,7 @@
         "方法論和演算法有什麼差別？",
         "推演在 LOC 哪裡？"
       ],
-      "answer": "LOC 對外 Tag 採一致抽象層級：LOC3／4／5 屬表達；LOC6 是方法論；LOC7 是演算法（知識庫）；LOC8 是推演（時間／趨勢分析）。月符另有符文籤詩、符文體系、符文演算、符文演化四個特化分類。技術層仍可保留 Governance、KM、Graph、Trend 等名稱。",
+      "answer": "公開介面以功能名稱為主；現行固定責任區為 LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm（知識庫）、Evolution。技術層可使用 Search、RAG、Graph、Trend 等實作名稱，但不能反過來改寫 LOC1–8 的正式定位。",
       "keywords": [
         "表達",
         "方法論",
@@ -2490,14 +2501,12 @@
         "符文演算",
         "符文演化"
       ],
-      "retrieval_text": "LOC 的公開 Tag 怎麼分？ LOC3到8怎麼分類？ 方法論和演算法有什麼差別？ 推演在 LOC 哪裡？ 表達 方法論 演算法 推演 符文籤詩 符文體系 符文演算 符文演化 LOC 對外 Tag 採一致抽象層級：LOC3／4／5 屬表達；LOC6 是方法論；LOC7 是演算法（知識庫）；LOC8 是推演（時間／趨勢分析）。月符另有符文籤詩、符文體系、符文演算、符文演化四個特化分類。技術層仍可保留 Governance、KM、Graph、Trend 等名稱。",
+      "retrieval_text": "LOC 的公開 Tag 怎麼分？ LOC3到8怎麼分類？ 方法論和演算法有什麼差別？ 推演在 LOC 哪裡？ 表達 方法論 演算法 推演 符文籤詩 符文體系 符文演算 符文演化 公開介面以功能名稱為主；現行固定責任區為 LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm（知識庫）、Evolution。技術層可使用 Search、RAG、Graph、Trend 等實作名稱，但不能反過來改寫 LOC1–8 的正式定位。",
       "related_ids": [],
       "source_refs": [
-        "docs/LOC7_KM.md",
-        "search.html",
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2524,8 +2533,8 @@
       "retrieval_text": "LOC 和月之符文到底是誰先形成的？ LOC是從月符來的嗎？ 月符是LOC框架的例子嗎？ LOC和月之符文是什麼關係？ LOC 月之符文 Reference Seed System 框架 實例 歷史關係 結構關係 兩種說法分別描述歷史與結構。歷史上，月之符文先累積語彙、籤詩、作品、方法與時間證據，LOC 再從這些實作中抽象整理出框架；結構上，LOC Framework 成立後，月之符文又可以被完整描述為其中一個實例／Reference Seed System。因此「月符先長出實例，LOC 再抽象出框架；框架成立後，再反過來描述月符」兩者並不矛盾。",
       "related_ids": [],
       "source_refs": [
-        "docs/LOC7_KM.md",
-        "docs/LOC_OVERVIEW.md",
+        "index.html",
+        "runes.html",
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
       "canon_version": "0.5r",
@@ -2542,7 +2551,7 @@
         "LOC2為什麼是脈絡？",
         "LOC8為什麼叫推演？"
       ],
-      "answer": "現行分類是：LOC1 月符／語彙（token）、LOC2 脈絡、LOC3 音樂、LOC4 文字創作、LOC5 多媒體、LOC6 方法論、LOC7 演算法（知識庫）、LOC8 推演。這是一套拆解、組織並重新表達文學語言的系統框架。",
+      "answer": "現行分類固定為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。這套名稱與定位以 LOC_LANGUAGE_SYSTEM_REGISTRY.json 的 canonical_loc_map 為唯一現行權威。",
       "keywords": [
         "LOC1",
         "LOC2",
@@ -2551,13 +2560,12 @@
         "演算法",
         "推演"
       ],
-      "retrieval_text": "LOC1–8 現在怎麼分類？ LOC最新八個分類是什麼？ LOC2為什麼是脈絡？ LOC8為什麼叫推演？ LOC1 LOC2 脈絡 方法論 演算法 推演 現行分類是：LOC1 月符／語彙（token）、LOC2 脈絡、LOC3 音樂、LOC4 文字創作、LOC5 多媒體、LOC6 方法論、LOC7 演算法（知識庫）、LOC8 推演。這是一套拆解、組織並重新表達文學語言的系統框架。",
+      "retrieval_text": "LOC1–8 現在怎麼分類？ LOC最新八個分類是什麼？ LOC2為什麼是脈絡？ LOC8為什麼叫推演？ LOC1 LOC2 脈絡 方法論 演算法 推演 現行分類固定為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。這套名稱與定位以 LOC_LANGUAGE_SYSTEM_REGISTRY.json 的 canonical_loc_map 為唯一現行權威。",
       "related_ids": [],
       "source_refs": [
-        "docs/LOC_OVERVIEW.md",
-        "docs/LOC7_KM.md"
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2570,7 +2578,7 @@
         "Graph屬於LOC2還是LOC8？",
         "Graph View為什麼還在LOC8頁面？"
       ],
-      "answer": "Graph 的關係／脈絡語意責任歸 LOC2，因為 Graph 本質是節點與 edge 所形成的脈絡。LOC7 負責 Graph RAG traversal／retrieval 演算法；LOC8 則把 Graph 投影到時間、ERA、Trajectory、Trend 做推演觀察。頁面位置可以維持 evolution.html，不等於資料 ownership 在 LOC8。",
+      "answer": "Graph 的節點與關係 ownership 歸 LOC2 Context，主要公開入口是 context.html。LOC7 可提供 Graph RAG traversal／retrieval；LOC8 Evolution 只消費 Graph 的時間投影來做時期、Timeline、Trend、Trajectory，不把 Graph 本體改歸 LOC8。",
       "keywords": [
         "Graph",
         "LOC2",
@@ -2580,11 +2588,12 @@
         "LOC8",
         "推演"
       ],
-      "retrieval_text": "Graph 為什麼歸 LOC2，但還顯示在 evolution.html？ Graph屬於LOC2還是LOC8？ Graph View為什麼還在LOC8頁面？ Graph LOC2 脈絡 LOC7 Graph RAG LOC8 推演 Graph 的關係／脈絡語意責任歸 LOC2，因為 Graph 本質是節點與 edge 所形成的脈絡。LOC7 負責 Graph RAG traversal／retrieval 演算法；LOC8 則把 Graph 投影到時間、ERA、Trajectory、Trend 做推演觀察。頁面位置可以維持 evolution.html，不等於資料 ownership 在 LOC8。",
+      "retrieval_text": "Graph 為什麼歸 LOC2，但還顯示在 evolution.html？ Graph屬於LOC2還是LOC8？ Graph View為什麼還在LOC8頁面？ Graph LOC2 脈絡 LOC7 Graph RAG LOC8 推演 Graph 的節點與關係 ownership 歸 LOC2 Context，主要公開入口是 context.html。LOC7 可提供 Graph RAG traversal／retrieval；LOC8 Evolution 只消費 Graph 的時間投影來做時期、Timeline、Trend、Trajectory，不把 Graph 本體改歸 LOC8。",
       "related_ids": [],
       "source_refs": [
-        "data/json/registries/LOC_GRAPH_SCHEMA.json",
-        "docs/LOC7_KM.md"
+        "context.html",
+        "evolution.html",
+        "data/json/registries/LOC_GRAPH_SCHEMA.json"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"
@@ -2599,7 +2608,7 @@
         "推演和符文演化有什麼差別？",
         "LOC8為什麼不是文學演化？"
       ],
-      "answer": "LOC8 的「推演」描述一個操作：根據既有時間、ERA、Event、Trajectory、Trend 與脈絡證據，觀察變化並推導後續方向；它不宣稱涵蓋整體文學史或文化史。月符的「符文演化」則描述符文本身跨時間、作品、關係與使用方式所發生的變化，所以仍保留「演化」。",
+      "answer": "LOC8 的「推演」是把既有事件、作品、時期、Trend 與 Trajectory 放回時間中觀察變化；月之符文的「符文演化」則特指符文本身跨時間、作品、脈絡與使用方式的變化。兩者共享時間觀察，但責任範圍不同。",
       "keywords": [
         "LOC8",
         "推演",
@@ -2608,11 +2617,11 @@
         "Trajectory",
         "Trend"
       ],
-      "retrieval_text": "為什麼 LOC8 叫推演，但月符仍叫符文演化？ 推演和符文演化有什麼差別？ LOC8為什麼不是文學演化？ LOC8 推演 符文演化 ERA Trajectory Trend LOC8 的「推演」描述一個操作：根據既有時間、ERA、Event、Trajectory、Trend 與脈絡證據，觀察變化並推導後續方向；它不宣稱涵蓋整體文學史或文化史。月符的「符文演化」則描述符文本身跨時間、作品、關係與使用方式所發生的變化，所以仍保留「演化」。",
+      "retrieval_text": "為什麼 LOC8 叫推演，但月符仍叫符文演化？ 推演和符文演化有什麼差別？ LOC8為什麼不是文學演化？ LOC8 推演 符文演化 ERA Trajectory Trend LOC8 的「推演」是把既有事件、作品、時期、Trend 與 Trajectory 放回時間中觀察變化；月之符文的「符文演化」則特指符文本身跨時間、作品、脈絡與使用方式的變化。兩者共享時間觀察，但責任範圍不同。",
       "related_ids": [],
       "source_refs": [
-        "docs/LOC8_KM.md",
-        "docs/LOC7_KM.md"
+        "evolution.html",
+        "runes.html"
       ],
       "canon_version": "0.5r",
       "status": "confirmed"

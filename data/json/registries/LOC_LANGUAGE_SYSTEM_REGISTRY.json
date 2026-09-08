@@ -1,7 +1,7 @@
 {
   "schema_version": "0.3",
   "registry": "LOC_LANGUAGE_SYSTEM_REGISTRY",
-  "authority": "LOC8",
+  "authority": "LOC",
   "systems": [
     {
       "system_id": "lo3rwang",
@@ -62,17 +62,17 @@
         "rule": "Luna Codex 不得作為月之符文的英文名稱；月之符文的正式英文名稱固定為 LunaRunes。"
       },
       "public_concept_map": {
-        "LOC1": "符文語彙（token）：基本文字語彙與語意種子",
-        "LOC2": "脈絡：關係、情境、事件與 Graph；月之符文沙盒是代表性實作",
-        "LOC3": "音樂：文字與語意延伸為歌曲、歌詞與聲音",
-        "LOC4": "文字創作：文章、小說、生活文字與敘事作品",
-        "LOC5": "多媒體：文字、音樂、圖像與影音的跨媒介表達",
-        "LOC6": "方法論：如何理解、判斷、處理；治理是其中一種方法",
-        "LOC7": "演算法（知識庫）：把方法結構化為可執行、可檢索、可關聯的文字建築與知識結構",
-        "LOC8": "推演：以時間、ERA、Event、Trajectory 與 Trend 為證據，觀察既有語言、作品、方法與風格的變化與後續方向"
+        "LOC1": "LunaRunes／月之符文；定位為符文語彙（Token），提供基本文字語彙與語意種子",
+        "LOC2": "Context／脈絡：關係、情境、事件與 Graph；月之符文沙盒是代表性實作",
+        "LOC3": "Music／音樂：文字與語意延伸為歌曲、歌詞與聲音",
+        "LOC4": "Literary／文字創作：文章、小說、生活文字與敘事作品",
+        "LOC5": "MultiMedia／多媒體：文字、音樂、圖像與影音的跨媒介表達",
+        "LOC6": "Methodology／方法論：如何理解、判斷、比較與處理；治理是其中一種方法",
+        "LOC7": "Algorithm／演算法（知識庫）：把多種方法結構化、組合並形成可執行、可檢索、可關聯的演算法與知識結構",
+        "LOC8": "Evolution／推演：以時間、時期、Event、Trajectory 與 Trend 為證據，觀察既有語言、作品、方法與風格的變化與後續方向"
       },
       "framework_chain": {
-        "loc": "LOC1 符文語彙（token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演",
+        "loc": "LOC1 符文語彙（Token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演",
         "luna_runes": "符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算 → 符文演化"
       },
       "framework_relation": {
@@ -85,7 +85,78 @@
         "符文體系": "符文本體及其文學、歌曲、影像、沙盒等延伸形式",
         "符文演算": "符文語彙（token）經位置、方向、Grammar、治理解牌方式與時間修飾後形成可重複判讀結果的規則",
         "符文演化": "符文跨時間、ERA、Relation、Trajectory、Trend 的變化；所有未來性統一視為演化"
+      },
+      "canonical_loc_map": {
+        "LOC1": {
+          "name": "LunaRunes",
+          "zh": "月之符文",
+          "role": "符文語彙（Token）"
+        },
+        "LOC2": {
+          "name": "Context",
+          "zh": "脈絡",
+          "role": "脈絡"
+        },
+        "LOC3": {
+          "name": "Music",
+          "zh": "音樂",
+          "role": "音樂"
+        },
+        "LOC4": {
+          "name": "Literary",
+          "zh": "文字創作",
+          "role": "文字創作"
+        },
+        "LOC5": {
+          "name": "MultiMedia",
+          "zh": "多媒體",
+          "role": "多媒體"
+        },
+        "LOC6": {
+          "name": "Methodology",
+          "zh": "方法論",
+          "role": "方法論"
+        },
+        "LOC7": {
+          "name": "Algorithm",
+          "zh": "演算法（知識庫）",
+          "role": "演算法（知識庫）"
+        },
+        "LOC8": {
+          "name": "Evolution",
+          "zh": "推演",
+          "role": "推演"
+        }
+      },
+      "canonical_loc_rule": "LOC1–8 的名稱與定位以 canonical_loc_map 為唯一現行權威。其他 README、FAQ、UI、Search、KM 與 Registry 只能引用或投影，不得自行重新定義。 Canon 1.0 起，LOC 固定只有 LOC1–LOC8，不存在 LOC9；固定名稱、中文對應、功能定位與 LunaRunes 映射不得由下游資料反向改寫。",
+      "lunarunes_loc_mapping": {
+        "LOC1": "月之符文",
+        "LOC2": "符文脈絡",
+        "LOC3": "符文體系（較基礎結構／三卡類比）",
+        "LOC4": "符文體系（更完整結構／五卡類比）",
+        "LOC5": "符文體系（多模組整合／OW3gs 類比）",
+        "LOC6": "符文解牌方法",
+        "LOC7": "符文演算",
+        "LOC8": "符文演化"
+      },
+      "lunarunes_chain": [
+        "月之符文",
+        "符文脈絡",
+        "符文體系",
+        "符文演算",
+        "符文演化"
+      ],
+      "fixed_constants": {
+        "loc_range": "LOC1–LOC8 only; LOC9 does not exist",
+        "lunarunes_count": 66,
+        "context_zh": "脈絡",
+        "context_typo_forbidden": "脈落"
       }
     }
-  ]
+  ],
+  "authority_scope": "global_framework",
+  "canonical_priority": "highest_for_LOC1_8_names_and_roles",
+  "updated_at": "2026-09-08",
+  "canon_version": "1.0",
+  "canon_status": "formal"
 }

@@ -2,7 +2,7 @@
   "schema_version": "0.1",
   "registry": "LOC_GOVERNANCE_TREND_REGISTRY",
   "status": "working",
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-08",
   "authorities": {
     "temporal": "LOC8",
     "interpretation": "LOC6",
@@ -156,7 +156,7 @@
       "status": "current",
       "evidence_refs": [
         "governance.html",
-        "docs/LOC8_KM.md",
+        "evolution.html",
         "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json"
       ]
     }

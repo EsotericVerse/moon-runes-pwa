@@ -681,7 +681,7 @@
       for(const key of Object.keys(groups))groups[key]=groups[key].slice(0,topK);
       return {groups,synthesis:null,graph:null,local_fallback:true};
     }
-    const locLabels={LOC1:'符文語彙（token）',LOC2:'脈絡',LOC3:'音樂',LOC4:'文字創作',LOC5:'多媒體',LOC6:'方法論',LOC7:'演算法（知識庫）',LOC8:'推演'};
+    const locLabels={LOC1:'符文語彙（token）',LOC2:'脈絡',LOC3:'音樂',LOC4:'文字創作',LOC5:'MultiMedia／多媒體',LOC6:'方法論',LOC7:'演算法（知識庫）',LOC8:'推演'};
     const el=id=>document.getElementById(id);
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
     function bootFromUrl(){
@@ -977,7 +977,7 @@
         LOC2:'脈絡',
         LOC3:'音樂',
         LOC4:'文字創作',
-        LOC5:'多媒體',
+        LOC5:'MultiMedia／多媒體',
         LOC6:'方法論',
         LOC7:'演算法（知識庫）',
         LOC8:'推演'
