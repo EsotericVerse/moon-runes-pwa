@@ -49,6 +49,10 @@
       "label": "外部平台"
     },
     {
+      "id": "offline_archive",
+      "label": "已關站平台離線史料"
+    },
+    {
       "id": "suno_song",
       "label": "Suno Song"
     },

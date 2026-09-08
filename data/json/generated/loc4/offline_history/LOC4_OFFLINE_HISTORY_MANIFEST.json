@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "dataset": "LOC4 closed-platform authored history",
+  "authority": "LOC4",
+  "status": "searchable_fulltext",
+  "generated_at": "2026-09-08",
+  "document_count": 999,
+  "excluded_restricted_count": 0,
+  "deduplication": "normalized full-text SHA-256; one canonical record per article",
+  "display_policy": "click_to_expand_full_text",
+  "line_break_policy": "preserve; HTML white-space: pre-wrap",
+  "closed_platforms": [
+    "KKCity",
+    "無名小站"
+  ],
+  "external_url_policy": "No URL required or fabricated for closed-platform offline archives.",
+  "restricted_classifications": [
+    "爭議文章"
+  ],
+  "shards": [
+    {
+      "path": "data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_01.json",
+      "document_count": 100
+    },
+    {
+      "path": "data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_02.json",
+      "document_count": 100
+    },
+    {
+      "path": "data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_03.json",
+      "document_count": 100
+    },
+    {
+      "path": "data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_04.json",
+      "document_count": 100
+    },
+    {
+      "path": "data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_05.json",
+      "document_count": 100
+    },
+    {
+      "path": "data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_06.json",
+      "document_count": 100
+    },
+    {
+      "path": "data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_07.json",
+      "document_count": 100
+    },
+    {
+      "path": "data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_08.json",
+      "document_count": 100
+    },
+    {
+      "path": "data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_09.json",
+      "document_count": 100
+    },
+    {
+      "path": "data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_10.json",
+      "document_count": 99
+    }
+  ]
+}
