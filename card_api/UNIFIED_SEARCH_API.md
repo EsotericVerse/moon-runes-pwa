@@ -32,7 +32,7 @@ Supported public content filters in v0.1 include:
 - `reel` / `video` / `multimedia` — LOC5 media registry
 - `governance_fragment` — LOC6 治理／政德風語料
 - `knowledge` / `faq` — LOC7 KM／FAQ
-- `facebook_post` — LOC6/LOC8 私有 Facebook 歷史文字 datasource；僅在部署環境掛載 `LOC_FB_SEARCH_DATASET` 時可查全文
+- `facebook_post` — LOC4 Facebook 歷史／生活文字 datasource；LOC6 可引用作治理／風格分析證據，但不擁有原文
 - `era` — LOC8 時期 registry（公開顯示為「時期」，machine ID 仍可使用 ERA-Px）
 - blank / `all` — query all live sources
 
@@ -81,9 +81,9 @@ Returns shared content types, period/ERA registry labels and currently available
 | LOC1 | Live: Lots/oracle + direct rune retrieval |
 | LOC2 | Knowledge View only; direct game corpus not yet routed as its own result group |
 | LOC3 | Live: direct lyrics/music retrieval |
-| LOC4 | Live: direct work registry search |
+| LOC4 | Live: direct work registry search + Facebook/Threads authored life-writing source text |
 | LOC5 | Live: direct media registry search |
-| LOC6 | Live: direct governance/政德風 registry search；可選擇掛載私人 Facebook 歷史文字 corpus |
+| LOC6 | Live: direct governance/政德風 registry search；可引用 LOC4 Facebook/Threads 原文作分析證據，但原文仍歸 LOC4 |
 | LOC7 | Live: FAQ/KM and registered knowledge assets |
 | LOC8 | Live: continuous period registry retrieval |
 
