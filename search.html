@@ -555,10 +555,8 @@
           const date=String(doc.date||'').slice(0,10);
           if(start&&date&&date<start)continue;
           if(end&&date&&date>end)continue;
-          if(period){
-            const canonical=window.LOCPeriods.resolveDate(date,window.LOCPeriods.peek()?.eras);
-            if((canonical?.period||'')!==period)continue;
-          }
+          const canonical=window.LOCPeriods.resolveDate(date,window.LOCPeriods.peek()?.eras);
+          if(period&&(canonical?.period||'')!==period)continue;
           const text=String(doc.text||'');
           const compact=localNorm(text).replace(/\s+/g,'');
           if(!compact.includes(query))continue;
