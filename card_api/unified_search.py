@@ -39,7 +39,15 @@ def _text_score(query: str, parts: list[Any]) -> float:
         return 0.0
     if q in haystack:
         return 1.0
-    # Conservative CJK/short-query recall. Avoid emitting unrelated records.
+
+    # Short CJK terms are literal keyword searches. Character-overlap recall
+    # turns a query such as "生日" into false matches whenever "生" and "日"
+    # appear separately in unrelated semantic summaries.
+    has_cjk = any("\u3400" <= ch <= "\u9fff" for ch in q)
+    if has_cjk and len(q) <= 3:
+        return 0.0
+
+    # Longer phrases may use conservative character-overlap recall.
     chars = [ch for ch in dict.fromkeys(q) if ch.strip()]
     if not chars:
         return 0.0
