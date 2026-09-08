@@ -1476,19 +1476,17 @@
       "question": "LOC8是什麼？",
       "aliases": [
         "LOC8主要做什麼？",
-        "Life Distribution是什麼？",
         "LOC8和其他LOC有什麼差別？"
       ],
       "answer": "LOC8 是 Evolution／推演。它把既有語彙、作品、脈絡、方法與演算法放回時間中，以時期、Event、Timeline、Trend 與 Trajectory 做系統分析並推測可能後續。中文固定使用「推演」，因為結果不是預言、命定、流行趨勢或必然演化；Graph 本體仍歸 LOC2。",
       "keywords": [
         "LOC8",
-        "Life Event",
         "Temporal Semantics",
         "事件",
         "時間",
         "統合"
       ],
-      "retrieval_text": "LOC8是什麼？ LOC8主要做什麼？ Life Distribution是什麼？ LOC8和其他LOC有什麼差別？ LOC8 Life Event Temporal Semantics 事件 時間 統合 LOC8 是 Evolution／推演。它把既有語彙、作品、脈絡、方法與演算法放回時間中，以時期、Event、Timeline、Trend 與 Trajectory 做系統分析並推測可能後續。中文固定使用「推演」，因為結果不是預言、命定、流行趨勢或必然演化；Graph 本體仍歸 LOC2。",
+      "retrieval_text": "LOC8是什麼？ LOC8主要做什麼？ LOC8和其他LOC有什麼差別？ LOC8 Temporal Semantics 事件 時間 統合 LOC8 是 Evolution／推演。它把既有語彙、作品、脈絡、方法與演算法放回時間中，以時期、Event、Timeline、Trend 與 Trajectory 做系統分析並推測可能後續。中文固定使用「推演」，因為結果不是預言、命定、流行趨勢或必然演化；Graph 本體仍歸 LOC2。",
       "related_ids": [],
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
@@ -2031,13 +2029,12 @@
       ],
       "answer": "事件本身不是語言；事件被感知、命名、描述、評價與重新理解之後，才進入個人語言系統。LOC8保存的重點是Event→Interpretation→Language→Relationship→Temporal Change，讓事件不只是一條年表紀錄。",
       "keywords": [
-        "Life Event",
         "事件",
         "語言化",
         "Temporal Semantics",
         "年表"
       ],
-      "retrieval_text": "事件為什麼也屬於語言系統？ 事件會變成語言嗎？ Life Event怎麼進LOC？ 人生事件如何被記錄？ Life Event 事件 語言化 Temporal Semantics 年表 事件本身不是語言；事件被感知、命名、描述、評價與重新理解之後，才進入個人語言系統。LOC8保存的重點是Event→Interpretation→Language→Relationship→Temporal Change，讓事件不只是一條年表紀錄。",
+      "retrieval_text": "事件為什麼也屬於語言系統？ 事件會變成語言嗎？ Life Event怎麼進LOC？ 人生事件如何被記錄？ 事件 語言化 Temporal Semantics 年表 事件本身不是語言；事件被感知、命名、描述、評價與重新理解之後，才進入個人語言系統。LOC8保存的重點是Event→Interpretation→Language→Relationship→Temporal Change，讓事件不只是一條年表紀錄。",
       "related_ids": [],
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
