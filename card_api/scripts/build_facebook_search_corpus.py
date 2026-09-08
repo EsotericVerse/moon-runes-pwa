@@ -15,7 +15,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data/json/sources/facebook"
-SHARD_SIZE = 500
+# Keep generated shards comfortably below connector/proxy payload limits.
+SHARD_SIZE = 200
 URL_RE = re.compile(r"https?://\S+", re.I)
 CJK_RE = re.compile(r"[\u3400-\u9fff]{2,}")
 LATIN_RE = re.compile(r"[A-Za-z][A-Za-z0-9_+-]{2,}")
