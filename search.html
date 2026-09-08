@@ -249,6 +249,7 @@
   </main>
   </div>
   
+  <script src="js/loc-periods.js"></script>
   <script>
   (()=>{ 
     const qel=id=>document.getElementById(id);
@@ -256,10 +257,10 @@
     let rankingSource='', rankingEra='', eraCache=null;
     const escRank=s=>String(s??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
     async function eraRows(force=false){
-      if(eraCache&&!force)return eraCache;
       try{
-        const r=await fetch('data/json/registries/LOC_ERA_REGISTRY.json',{cache:'no-store'});
-        const d=await r.json(); eraCache=Array.isArray(d.eras)?d.eras.slice().sort((a,b)=>Number(a.order||0)-Number(b.order||0)):[]; return eraCache;
+        const data=await window.LOCPeriods.load({force});
+        eraCache=data.eras||[];
+        return eraCache;
       }catch(_){eraCache=[];return eraCache;}
     }
     function switchSearchView(name){
@@ -273,8 +274,12 @@
     async function renderEraSettings(){
       const host=qel('eraSettingsList'),status=qel('eraSettingStatus'); if(!host)return;
       host.innerHTML='<div class="empty">載入時期設定中…</div>';
-      const rows=await eraRows();
-      status.textContent=rows.length?`目前 ${rows.length} 個時期。`:'目前無時期資料。';
+      const periodData=await window.LOCPeriods.load({force:true});
+      const rows=periodData.eras||[];
+      eraCache=rows;
+      status.textContent=rows.length
+        ? `時期定義 v${periodData.version} · 共 ${periodData.total_count} 個定義 · Segment ${periodData.segment_count} · Current：${periodData.current?.display_label||'—'} · ${periodData.source==='registry+sheet'?'Registry + Sheet':'Registry'}`
+        : '目前無時期資料。';
       host.innerHTML=rows.map(row=>`
         <article class="era-setting-card" data-era-id="${escRank(row.era_id||'')}">
           <div class="era-setting-head">
@@ -313,7 +318,10 @@
         const data=await res.json();
         if(!res.ok||data?.ok===false)throw new Error(data?.error||'時期更新失敗');
         Object.assign(current,data?.era||era);
-        status.textContent=(era.period||era.era_id)+' 已更新。';
+        window.LOCPeriods.invalidate();
+        await renderEraSettings();
+        await facets();
+        status.textContent=(era.period||era.era_id)+' 已更新，所有時期 View 已重新載入。';
       }catch(err){
         status.textContent='時期更新失敗：'+String(err.message||err);
       }
@@ -713,24 +721,6 @@
         el('query').focus();
       });
     }
-    const ERA_CACHE_KEY='loc-search-era-registry-v4';
-    const ERA_CACHE_TTL=24*60*60*1000;
-    const ERA_FALLBACK=[
-      {period:'P1.0',display_label:'P1.0｜早期／大學時代文字'},
-      {period:'P2.0',display_label:'P2.0｜當兵入伍到公開網路文字之前'},
-      {period:'P3.0',display_label:'P3.0｜公開網路文字期'},
-      {period:'P4.0',display_label:'P4.0｜Threads'},
-      {period:'P4.1',display_label:'P4.1｜Threads開始啟動'},
-      {period:'P4.2',display_label:'P4.2｜《月語者》籌劃期'},
-      {period:'P5.0',display_label:'P5.0｜月符到月典形成期'},
-      {period:'P5.1',display_label:'P5.1｜LOC啟動'},
-      {period:'P5.2',display_label:'P5.2｜微月光與關係敘事期'},
-      {period:'P5.3',display_label:'P5.3｜自我治理的啟動跟檢討'},
-      {period:'P5.4',display_label:'P5.4｜人生月台與療傷期'},
-      {period:'P5.5',display_label:'P5.5｜順其自然與劃清界線'},
-      {period:'P5.6',display_label:'P5.6｜自由的風的脫困期'},
-      {period:'P5.7',display_label:'P5.7｜自我治理與未來展望期'}
-    ];
     function renderCorpusStatus(corpus){
       if(!corpus){return;}
       const loc3=Number(corpus.loc3_searchable_works||0);
@@ -740,42 +730,12 @@
       const full=!!corpus.loc4_threads_full_index_ready;
       el('corpusStatus').textContent=`Corpus：自創歌曲 ${loc3} 首可搜尋作品 · Threads ${indexed} / ${total} 篇主貼文已索引 · ${replies} 筆 Reply 補充證據${full?' · 全文索引已就緒':' · 全文索引持續擴充中'}`;
     }
-    function applyEras(eras){
-      const select=el('period'),current=select.value;
-      select.innerHTML='<option value="">全部時期</option>';
-      for(const era of eras||[]){
-        const value=era.period||'';
-        if(!value)continue;
-        const o=document.createElement('option');
-        o.value=value;
-        o.textContent=era.display_label||era.label||era.name||value;
-        select.appendChild(o);
-      }
-      if([...select.options].some(o=>o.value===current))select.value=current;
-    }
-    function readEraCache(){
-      try{return JSON.parse(localStorage.getItem(ERA_CACHE_KEY)||'null')}catch(_){return null}
-    }
     async function facets(){
-      applyEras(ERA_FALLBACK);
-      const cached=readEraCache();
-      const cachedEras=Array.isArray(cached?.data?.eras)?cached.data.eras:[];
-      if(cachedEras.length)applyEras(cachedEras);
-      const fresh=cachedEras.length>0&&Date.now()-Number(cached.saved_at||0)<ERA_CACHE_TTL;
-      if(fresh)return;
       try{
-        const r=await fetch('data/json/registries/LOC_ERA_REGISTRY.json',{cache:'no-store'});
-        if(!r.ok)throw new Error('ERA registry unavailable');
-        const d=await r.json();
-        renderCorpusStatus(d.corpus);
-        if(Array.isArray(d.eras)&&d.eras.length){
-          applyEras(d.eras);
-          localStorage.setItem(ERA_CACHE_KEY,JSON.stringify({
-            saved_at:Date.now(),
-            schema_version:d.schema_version||'0.1',
-            data:{eras:d.eras}
-          }));
-        }
+        const data=await window.LOCPeriods.load({force:true});
+        await window.LOCPeriods.fillSelect(el('period'),{includeAll:true,allLabel:'全部時期'});
+        updateFilterSummary();
+        return data;
       }catch(_){}
     }
     function linksFor(r){
@@ -813,55 +773,20 @@
         ${p.interpretation_status?`<p class="summary"><small>${esc(p.interpretation_status)}</small></p>`:''}
       </article>`;
     }
-    const PUBLIC_PERIODS=[
-      {period:'P1.0',name:'早期／大學時代文字',start:'1980-06-23',end:'2003-12-15'},
-      {period:'P2.0',name:'當兵入伍到公開網路文字之前',start:'2003-12-16',end:'2009-03-24'},
-      {period:'P3.0',name:'公開網路文字期',start:'2009-03-25',end:'2024-11-17'},
-      {period:'P4.1',name:'Threads開始啟動',start:'2024-11-18',end:'2025-02-20'},
-      {period:'P4.2',name:'《月語者》籌劃期',start:'2025-02-21',end:'2025-04-27'},
-      {period:'P5.0',name:'月符到月典形成期',start:'2025-04-28',end:'2025-10-15'},
-      {period:'P5.1',name:'LOC啟動',start:'2025-10-16',end:'2026-01-14'},
-      {period:'P5.2',name:'微月光與關係敘事期',start:'2026-01-15',end:'2026-03-08'},
-      {period:'P5.3',name:'自我治理的啟動跟檢討',start:'2026-03-09',end:'2026-06-09'},
-      {period:'P5.4',name:'人生月台與療傷期',start:'2026-06-10',end:'2026-06-30'},
-      {period:'P5.5',name:'順其自然與劃清界線',start:'2026-07-01',end:'2026-07-31'},
-      {period:'P5.6',name:'自由的風的脫困期',start:'2026-08-01',end:'2026-08-31'},
-      {period:'P5.7',name:'自我治理與未來展望期',start:'2026-09-01',end:null}
-    ];
-    const LEGACY_PERIOD_MAP={P0:'P4.1','P0.5':'P4.2',P1:'P5.0',P2:'P5.1',P3:'P5.2',P4:'P5.3',P5:'P5.4',P6:'P5.5',P7:'P5.6',P8:'P5.7'};
-    const PERIOD_FILTER_RANGES=[
-      {period:'P1.0',start:'1980-06-23',end:'2003-12-15'},
-      {period:'P2.0',start:'2003-12-16',end:'2009-03-24'},
-      {period:'P3.0',start:'2009-03-25',end:'2024-11-17'},
-      {period:'P4.0',start:'2024-11-18',end:'2025-04-27'},
-      {period:'P4.1',start:'2024-11-18',end:'2025-02-20'},
-      {period:'P4.2',start:'2025-02-21',end:'2025-04-27'},
-      {period:'P5.0',start:'2025-04-28',end:'2025-10-15'},
-      {period:'P5.1',start:'2025-10-16',end:'2026-01-14'},
-      {period:'P5.2',start:'2026-01-15',end:'2026-03-08'},
-      {period:'P5.3',start:'2026-03-09',end:'2026-06-09'},
-      {period:'P5.4',start:'2026-06-10',end:'2026-06-30'},
-      {period:'P5.5',start:'2026-07-01',end:'2026-07-31'},
-      {period:'P5.6',start:'2026-08-01',end:'2026-08-31'},
-      {period:'P5.7',start:'2026-09-01',end:''}
-    ];
+    const LEGACY_PERIOD_MAP=window.LOCPeriods.LEGACY_MAP;
     function effectiveSearchRange(){
       const selected=String(el('period')?.value||'');
-      const row=PERIOD_FILTER_RANGES.find(x=>x.period===selected);
+      const range=window.LOCPeriods.range(selected,window.LOCPeriods.peek()?.eras);
       return {
-        start:el('startDate')?.value||(row?.start||''),
-        end:el('endDate')?.value||(row?.end||'')
+        start:el('startDate')?.value||(range.start||''),
+        end:el('endDate')?.value||(range.end||'')
       };
     }
     function publicPeriodLabel(r,p={}){
+      const data=window.LOCPeriods.peek();
+      const eras=data?.eras||[];
       const rawDate=String(p.date||p.created_date||p.creation_date||p.published_date||r.date||r.created_date||'').slice(0,10);
-      let row=rawDate?PUBLIC_PERIODS.find(x=>rawDate>=x.start&&(!x.end||rawDate<=x.end)):null;
-      if(!row){
-        const raw=String(r.period||p.period||'').trim();
-        const canonical=LEGACY_PERIOD_MAP[raw]||raw;
-        row=PUBLIC_PERIODS.find(x=>x.period===canonical)||null;
-      }
-      return row?row.period+'｜'+row.name:'';
+      return window.LOCPeriods.label(r.period||p.period,rawDate,eras);
     }
     function runeSongCard(r){
       const p=r.payload||{},runes=p.runes||[],periodLabel=publicPeriodLabel(r,p);
