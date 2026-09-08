@@ -1,291 +1,201 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "1.0",
   "registry": "LOC_ERA_REGISTRY",
   "authority": {
     "loc": "LOC8",
     "source_type": "Event",
-    "note": "ERA 現行文字與時間狀態以 LOC8 Event 紀錄為準；其他 LOC 僅引用。"
+    "note": "LOC-wide 時期唯一公開命名與時間邊界 authority；其他 LOC 僅引用。"
   },
   "language_system_id": "lo3rwang",
   "eras": [
     {
-      "era_id": "ERA-P0",
-      "period": "P0",
-      "order": 0,
-      "name": "月符前史",
-      "display_label": "P0｜月符前史",
+      "era_id": "ERA-P1.0",
+      "period": "P1.0",
+      "order": 1,
+      "name": "早期／大學時代文字",
+      "display_label": "P1.0｜早期／大學時代文字",
+      "start_date": "1980-06-23",
+      "end_date": "2003-12-15",
+      "status": "released",
+      "period_type": "segment",
+      "description": "早期到大學時代的文字與個人語言前史。"
+    },
+    {
+      "era_id": "ERA-P2.0",
+      "period": "P2.0",
+      "order": 2,
+      "name": "當兵入伍到公開網路文字之前",
+      "display_label": "P2.0｜當兵入伍到公開網路文字之前",
+      "start_date": "2003-12-16",
+      "end_date": "2009-03-24",
+      "status": "released",
+      "period_type": "segment",
+      "description": "入伍後到目前已確認最早公開網路文字之前的階段。"
+    },
+    {
+      "era_id": "ERA-P3.0",
+      "period": "P3.0",
+      "order": 3,
+      "name": "公開網路文字期",
+      "display_label": "P3.0｜公開網路文字期",
+      "start_date": "2009-03-25",
+      "end_date": "2024-11-17",
+      "status": "released",
+      "period_type": "segment",
+      "description": "以目前已確認最早 Pixnet 公開文字為起點，延伸到 Threads 啟動前。"
+    },
+    {
+      "era_id": "ERA-P4.0",
+      "period": "P4.0",
+      "order": 4,
+      "name": "Threads",
+      "display_label": "P4.0｜Threads",
+      "start_date": "2024-11-18",
+      "end_date": "2025-04-27",
+      "status": "released",
+      "period_type": "parent",
+      "description": "Threads 到《月語者》正式開始前的總括時期；公開介面可作上層時間範圍，實際日期歸屬優先落入 P4.1／P4.2。"
+    },
+    {
+      "era_id": "ERA-P4.1",
+      "period": "P4.1",
+      "order": 4.1,
+      "parent_period": "P4.0",
+      "name": "Threads開始啟動",
+      "display_label": "P4.1｜Threads開始啟動",
       "start_date": "2024-11-18",
       "end_date": "2025-02-20",
       "status": "released",
-      "source_event_id": "EV-ERA-P0",
-      "description": "目前可直接由 Threads corpus 驗證的前史區間為 2024-11-18～2025-02-20；它保存 LOC／月符形成前的公開語言基線。更早歷史資料日後可再向前補，不以現有 Threads 起點視為人生文字史的絕對起點。",
-      "state_before": "更早的 Pre-LOC 歷史資料／待補",
-      "state_after": "進入 P0.5 過渡期，月符與後續 LOC 的前置語言逐步靠近。",
-      "source_active_range": {
-        "start": "2024-11-18",
-        "end": "2025-02-20",
-        "source": "Threads / current verified public-language baseline"
-      },
-      "milestones": [
-        {
-          "date": "2024-11-28",
-          "title": "開始使用 Threads",
-          "type": "platform_start",
-          "note": "公開短文與日常語言紀錄的重要來源開始使用；ERA 邊界不因平台啟用日改變。"
-        }
-      ]
+      "period_type": "segment",
+      "description": "Threads 開始啟動的公開文字階段。"
     },
     {
-      "era_id": "ERA-P0.5",
-      "period": "P0.5",
-      "order": 0.5,
-      "name": "月符前史過渡期",
-      "display_label": "P0.5｜月符前史過渡期",
+      "era_id": "ERA-P4.2",
+      "period": "P4.2",
+      "order": 4.2,
+      "parent_period": "P4.0",
+      "name": "《月語者》籌劃期",
+      "display_label": "P4.2｜《月語者》籌劃期",
       "start_date": "2025-02-21",
-      "end_date": "2025-05-05",
+      "end_date": "2025-04-27",
       "status": "released",
-      "source_event_id": "EV-ERA-P0.5",
-      "description": "期間：2025-02-21～2025-05-05。介於一般前史與月之符文正式形成之間的過渡段；保留 Suno、Threads 與其他來源的早期創作／語言證據，不把後來的 LOC 定義反向覆寫到當時。",
-      "state_before": "P0 月符前史",
-      "state_after": "2025-05-06 進入 P1：月之符文開始形成。",
-      "source_active_range": {
-        "start": "2025-02-21",
-        "end": "2025-05-06",
-        "source": "Threads + Suno / transitional evidence"
-      }
+      "period_type": "segment",
+      "description": "《月語者》與後續月之符文形成前的籌劃階段。"
     },
     {
-      "era_id": "ERA-P1",
-      "period": "P1",
-      "order": 1,
+      "era_id": "ERA-P5.0",
+      "period": "P5.0",
+      "order": 5,
       "name": "月符到月典形成期",
-      "display_label": "P1｜月符到月典形成期",
-      "start_date": "2025-05-06",
+      "display_label": "P5.0｜月符到月典形成期",
+      "start_date": "2025-04-28",
       "end_date": "2025-10-15",
       "status": "released",
-      "source_event_id": "EV-ERA-P1",
-      "description": "期間：2025-05-06～2025-10-15。從月之符文開始形成，到月典／Luna Codex 概念即將出現前的形成區間。中間的重要完成日視為 Milestone／Event，不再額外切分 ERA。",
-      "state_before": "P0.5 月符前史過渡期",
-      "state_after": "月符從原型逐步完成為 66 符文，經《月語者》大型實作後，走到月典／Luna Codex 概念形成前夕。",
-      "source_active_range": {
-        "start": "2025-02-21",
-        "end": "2025-06-24",
-        "source": "Suno / original ERA segmentation"
-      },
-      "milestones": [
-        {
-          "date": "2025-05-06",
-          "title": "月之符文開始形成",
-          "type": "origin",
-          "note": "P1 起點。"
-        },
-        {
-          "date": "2025-06-28",
-          "title": "66 符文完成並正式投入使用",
-          "type": "system_milestone",
-          "note": "LOC66／66 符文完成，核心語彙進入實際使用。"
-        },
-        {
-          "date": "2025-07-25",
-          "title": "《月語者》完成",
-          "type": "work_milestone",
-          "note": "大型小說實作完成，成為月符發展中的明顯分水嶺。"
-        },
-        {
-          "date": "2025-10-15",
-          "title": "P1 結束",
-          "type": "era_boundary",
-          "note": "月符到月典形成區間結束；不視為 Luna Codex 首次文字出現日。"
-        }
-      ]
+      "period_type": "segment",
+      "description": "《月語者》開始寫作後，月之符文逐步形成並走向月典／Luna Codex 的階段。"
     },
     {
-      "era_id": "ERA-P2",
-      "period": "P2",
-      "order": 2,
-      "name": "重啟與格式形成期",
-      "display_label": "P2｜重啟與格式形成期",
+      "era_id": "ERA-P5.1",
+      "period": "P5.1",
+      "order": 5.1,
+      "name": "LOC啟動",
+      "display_label": "P5.1｜LOC啟動",
       "start_date": "2025-10-16",
       "end_date": "2026-01-14",
       "status": "released",
-      "source_event_id": "EV-ERA-P2",
-      "description": "系統時期：2025-10-16～2026-01-14。重啟與格式形成持續進行；同時出現 Luna Codex → LunarCodex → LOC 的命名收斂。這些日期是名稱演化 Milestone，不另切 ERA。",
-      "state_before": "P1 月符到月典形成期",
-      "state_after": "重啟與格式形成：開始形成較穩定的創作格式與表達方式",
-      "source_active_range": {
-        "start": "2025-10-16",
-        "end": "2025-12-28",
-        "source": "Suno / original ERA segmentation"
-      },
-      "milestones": [
-        {
-          "date": "2025-10-19",
-          "title": "Luna Codex 概念出現",
-          "type": "naming_milestone",
-          "note": "目前可確認的 LOC 概念史最早名稱證據。"
-        },
-        {
-          "date": "2025-12-19",
-          "title": "LunarCodex",
-          "type": "naming_milestone",
-          "note": "名稱演化紀錄。"
-        },
-        {
-          "date": "2025-12-21",
-          "title": "LOC",
-          "type": "naming_milestone",
-          "note": "LOC 縮寫名稱開始出現。"
-        }
-      ]
+      "period_type": "segment",
+      "description": "LOC 名稱與系統格式逐步收斂、啟動的階段。"
     },
     {
-      "era_id": "ERA-P3",
-      "period": "P3",
-      "order": 3,
+      "era_id": "ERA-P5.2",
+      "period": "P5.2",
+      "order": 5.2,
       "name": "微月光與關係敘事期",
-      "display_label": "P3｜微月光與關係敘事期",
+      "display_label": "P5.2｜微月光與關係敘事期",
       "start_date": "2026-01-15",
       "end_date": "2026-03-08",
       "status": "released",
-      "source_event_id": "EV-ERA-P3",
-      "description": "系統時期：2026-01-15～2026-03-08。自我認知與關係敘事持續發展；期間跨越 2026-01-30 正式改名，以及 2026-02-03「政德風 1.0」正式風格成立。兩者作為重要治理與風格 Milestone，不另切 ERA。",
-      "state_before": "P2 重啟與格式形成期",
-      "state_after": "微月光與關係敘事：自我認知提高，關係與陪伴成為主要敘事",
-      "source_active_range": {
-        "start": "2026-01-15",
-        "end": "2026-02-28",
-        "source": "Suno / original ERA segmentation"
-      },
-      "milestones": [
-        {
-          "date": "2026-01-30",
-          "title": "正式改名",
-          "type": "identity_governance",
-          "note": "名稱／身份治理的重要事件。"
-        },
-        {
-          "date": "2026-02-03",
-          "title": "政德風 1.0 正式風格成立",
-          "type": "style_milestone",
-          "note": "政德風正式風格版本的日期錨點。"
-        }
-      ]
+      "period_type": "segment",
+      "description": "微月光、關係敘事、自我認知與陪伴主題集中的階段。"
     },
     {
-      "era_id": "ERA-P4",
-      "period": "P4",
-      "order": 4,
-      "name": "現實壓力與治理轉折期",
-      "display_label": "P4｜現實壓力與治理轉折期",
+      "era_id": "ERA-P5.3",
+      "period": "P5.3",
+      "order": 5.3,
+      "name": "自我治理的啟動跟檢討",
+      "display_label": "P5.3｜自我治理的啟動跟檢討",
       "start_date": "2026-03-09",
       "end_date": "2026-06-09",
       "status": "released",
-      "source_event_id": "EV-ERA-P4",
-      "description": "系統時期：2026-03-09～2026-06-09。Suno 原始活躍範圍：2026-03-09～2026-04-13。治理關係的開始（正名後發展）。",
-      "state_before": "P3 微月光與關係敘事期",
-      "state_after": "現實壓力進入敘事，開始從情緒與關係轉向治理、界線與現實處理",
-      "source_active_range": {
-        "start": "2026-03-09",
-        "end": "2026-04-13",
-        "source": "Suno / original ERA segmentation"
-      }
+      "period_type": "segment",
+      "description": "現實壓力、界線與自我治理開始成為主要方法與語言的階段。"
     },
     {
-      "era_id": "ERA-P5",
-      "period": "P5",
-      "order": 5,
-      "name": "人生月台與語言重建期",
-      "display_label": "P5｜人生月台與語言重建期",
+      "era_id": "ERA-P5.4",
+      "period": "P5.4",
+      "order": 5.4,
+      "name": "人生月台與療傷期",
+      "display_label": "P5.4｜人生月台與療傷期",
       "start_date": "2026-06-10",
       "end_date": "2026-06-30",
       "status": "released",
-      "source_event_id": "EV-ERA-P5",
-      "description": "期間：2026-06-10～2026-06-30。人生月台的觀望。對於事物的等待無力感。盡力而為，靜觀其變。",
-      "state_before": "P4 現實壓力與治理轉折期",
-      "state_after": "人生月台與語言重建：進入觀望與重新整理語言、生活結構的階段",
-      "source_active_range": {
-        "start": "2026-06-10",
-        "end": "2026-06-30",
-        "source": "Suno / original ERA segmentation"
-      }
+      "period_type": "segment",
+      "description": "人生月台、等待、療傷與重新整理生活結構的階段。"
     },
     {
-      "era_id": "ERA-P6",
-      "period": "P6",
-      "order": 6,
-      "name": "順其自然與界線整合期",
-      "display_label": "P6｜順其自然與界線整合期",
+      "era_id": "ERA-P5.5",
+      "period": "P5.5",
+      "order": 5.5,
+      "name": "順其自然與劃清界線",
+      "display_label": "P5.5｜順其自然與劃清界線",
       "start_date": "2026-07-01",
       "end_date": "2026-07-31",
       "status": "released",
-      "source_event_id": "EV-ERA-P6",
-      "description": "期間：2026-07-01～2026-07-31。等待的關係空窗期。我允許一切未定義，很多事物不用一定要知道前因後果，保留未知的欄位是最好的。",
-      "state_before": "P5 人生月台與語言重建期",
-      "state_after": "順其自然與界線整合：降低對結果的強迫，開始把等待、界線與生活節奏整合",
-      "source_active_range": {
-        "start": "2026-07-01",
-        "end": "2026-07-31",
-        "source": "Suno / original ERA segmentation"
-      }
+      "period_type": "segment",
+      "description": "順其自然、降低預設結果並進一步劃清界線的階段。"
     },
     {
-      "era_id": "ERA-P7",
-      "period": "P7",
-      "order": 7,
-      "name": "自由的風 → 自由的月轉換期",
-      "display_label": "P7｜自由的風 → 自由的月轉換期",
+      "era_id": "ERA-P5.6",
+      "period": "P5.6",
+      "order": 5.6,
+      "name": "自由的風的脫困期",
+      "display_label": "P5.6｜自由的風的脫困期",
       "start_date": "2026-08-01",
       "end_date": "2026-08-31",
       "status": "released",
-      "source_event_id": "EV-ERA-P7",
-      "description": "期間：2026-08-01～2026-08-31。生活條件逐步落定，從脫困、起飛與重新擁有選擇權，進一步轉向自由之後的整理、斷捨離、邊界與自我治理。",
-      "state_before": "P6 順其自然與界線整合期",
-      "state_after": "脫困 → 起飛 → 自由 → 自我治理：自由的風逐步轉入自由的月。",
-      "source_active_range": {
-        "start": "2026-08-01",
-        "end": "2026-08-31",
-        "source": "Suno / original ERA segmentation"
-      },
-      "source_labels": [
-        "Suno",
-        "Instagram",
-        "Threads",
-        "Facebook",
-        "個人創作"
-      ]
+      "period_type": "segment",
+      "description": "脫困、起飛與重新取得選擇權的階段。"
     },
     {
-      "era_id": "ERA-P8",
-      "period": "P8",
-      "order": 8,
-      "name": "自由的月／治理自己期",
-      "display_label": "P8｜自由的月／治理自己期",
+      "era_id": "ERA-P5.7",
+      "period": "P5.7",
+      "order": 5.7,
+      "name": "自我治理與未來展望期",
+      "display_label": "P5.7｜自我治理與未來展望期",
       "start_date": "2026-09-01",
       "end_date": null,
       "status": "current",
-      "source_event_id": "EV-ERA-P8",
-      "description": "期間：2026-09-01～現在。自由已成為既定條件，重點轉向整理過往、完成未竟事項、建立邊界與秩序，並主動選擇下一步航向。",
-      "state_before": "P7 自由的風 → 自由的月轉換期",
-      "state_after": "自由的月：自由之後進入治理自己、整理歷史、建立秩序與選擇未來方向的 Current 階段。",
-      "source_active_range": {
-        "start": "2026-09-01",
-        "end": null,
-        "source": "Suno / original ERA segmentation"
-      },
-      "source_labels": [
-        "Suno",
-        "Instagram",
-        "Threads",
-        "Facebook",
-        "個人創作"
-      ]
+      "period_type": "segment",
+      "description": "自由之後進入治理自己、整理歷史、建立秩序並主動選擇未來方向的 Current 階段。"
     }
   ],
+  "legacy_period_map": {
+    "P0": "P4.1",
+    "P0.5": "P4.2",
+    "P1": "P5.0",
+    "P2": "P5.1",
+    "P3": "P5.2",
+    "P4": "P5.3",
+    "P5": "P5.4",
+    "P6": "P5.5",
+    "P7": "P5.6",
+    "P8": "P5.7"
+  },
   "periodization_rule": {
     "label": "連續時期",
-    "rule": "ERA 邊界維持既有 P0、P0.5、P1–P8 架構；重要日期以 Milestone／Event 疊加，不因單一平台、作品完成、改名或命名事件自動新增 ERA。P1 為 2025-05-06～2025-10-15 的「月符到月典形成期」。原始來源活躍範圍另存 source_active_range，不反向覆寫歷史紀錄。",
+    "rule": "公開時期以 P1.0–P5.7 為準。P4.0 是 Threads 上層總括範圍，日期實際歸屬優先使用 P4.1／P4.2。舊 P0／P0.5／P1–P8 僅保留 legacy_period_map 作資料遷移，不再作公開顯示。",
     "scope": "LOC-wide",
     "display_term": "時期",
-    "milestone_rule": "重要事件日期可落在 ERA 內部；ERA = 長期狀態階段，Milestone/Event = 階段內的重要事實日期。"
+    "milestone_rule": "重要事件日期以 Milestone／Event 疊加，不因單一平台、作品完成、改名或命名事件自動新增時期。"
   }
 }
