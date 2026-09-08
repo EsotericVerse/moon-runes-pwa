@@ -390,6 +390,7 @@
   </script>
 <script src="js/facebook-repo-corpus.js"></script>
   <script>
+    const SEARCH_BUILD='20260908-threads-v2';
     const API='https://moon-runes-pwa.onrender.com';
     const SOURCE_SEARCH_PROVIDERS=[
       {id:'threads',label:'Threads',url:q=>`https://www.threads.com/search?q=${encodeURIComponent(q)}`},
@@ -1475,6 +1476,7 @@
         const total=Object.values(d.groups||{}).reduce((n,items)=>n+(items?.length||0),0);
         const threadsCount=Object.values(d.groups||{}).flat().filter(item=>(item?.source_refs||[]).some(ref=>ref?.source_type==='threads')).length;
         el('status').className=threadsLoadError?'status error':'status';
+        if(threadsLoadError) threadsLoadError += ' · build '+SEARCH_BUILD;
         el('status').textContent=total
           ? `找到 ${total} 筆相關結果 · Threads ${threadsCount} 筆${threadsLoadError?' · Threads fallback 失敗：'+threadsLoadError:''}`
           : `沒有找到足夠接近的內容${threadsLoadError?' · Threads fallback 失敗：'+threadsLoadError:''}`;
