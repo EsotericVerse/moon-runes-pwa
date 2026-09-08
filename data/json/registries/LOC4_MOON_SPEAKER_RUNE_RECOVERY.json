@@ -1,12 +1,629 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "registry": "LOC4_MOON_SPEAKER_RUNE_RECOVERY",
   "authority": "LOC4",
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-09",
   "work_id": "LOC4-MOON-SPEAKER",
-  "purpose": "Recovered chapter-level three-rune/moon-phase evidence for MoonSpeaker. Missing rows must not be inferred.",
-  "record_count": 161,
+  "purpose": "MoonSpeaker chapter-level rune evidence. Rune count is variable. Original draws preserve orientation; retrospective semantic patches do not invent orientation.",
+  "record_count": 182,
   "records": [
+    {
+      "part": 1,
+      "chapter": 0,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "序章",
+      "runes": [
+        {
+          "legacy_name": "線",
+          "canonical_name": "鍊",
+          "canonical_names": [
+            "鍊"
+          ],
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "canonical_names": [
+            "愛"
+          ],
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "canonical_names": [
+            "空"
+          ],
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "滿月",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 50,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 1,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第一章",
+      "runes": [
+        {
+          "legacy_name": "草",
+          "canonical_name": "草",
+          "canonical_names": [
+            "草"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "canonical_names": [
+            "火"
+          ],
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "地",
+          "canonical_name": "地",
+          "canonical_names": [
+            "地"
+          ],
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "滿月",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 167,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 2,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第二章",
+      "runes": [
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "canonical_names": [
+            "星"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "canonical_names": [
+            "生"
+          ],
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "樹",
+          "canonical_name": "樹",
+          "canonical_names": [
+            "樹"
+          ],
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "滿月",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 186,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 3,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第三章",
+      "runes": [
+        {
+          "legacy_name": "意",
+          "canonical_name": null,
+          "canonical_names": [
+            "向",
+            "鍊"
+          ],
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "種",
+          "canonical_name": "種",
+          "canonical_names": [
+            "種"
+          ],
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "根",
+          "canonical_name": "根",
+          "canonical_names": [
+            "根"
+          ],
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 200,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 4,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第四章",
+      "runes": [
+        {
+          "legacy_name": "意",
+          "canonical_name": null,
+          "canonical_names": [
+            "向",
+            "鍊"
+          ],
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "暗",
+          "canonical_name": "暗",
+          "canonical_names": [
+            "暗"
+          ],
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "canonical_names": [
+            "星"
+          ],
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 222,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 5,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第五章",
+      "runes": [
+        {
+          "legacy_name": "混沌",
+          "canonical_name": null,
+          "canonical_names": [
+            "無",
+            "虛",
+            "空"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "canonical_names": [
+            "火"
+          ],
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "葉",
+          "canonical_name": "葉",
+          "canonical_names": [
+            "葉"
+          ],
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 244,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 6,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第六章",
+      "runes": [
+        {
+          "legacy_name": "花",
+          "canonical_name": "花",
+          "canonical_names": [
+            "花"
+          ],
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "靈",
+          "canonical_name": "靈",
+          "canonical_names": [
+            "靈"
+          ],
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "種",
+          "canonical_name": "種",
+          "canonical_names": [
+            "種"
+          ],
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 271,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 7,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第七章",
+      "runes": [
+        {
+          "legacy_name": "種",
+          "canonical_name": "種",
+          "canonical_names": [
+            "種"
+          ],
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "canonical_names": [
+            "生"
+          ],
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "canonical_names": [
+            "空"
+          ],
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 304,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 8,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第八章",
+      "runes": [
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "canonical_names": [
+            "火"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "種",
+          "canonical_name": "種",
+          "canonical_names": [
+            "種"
+          ],
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "靈",
+          "canonical_name": "靈",
+          "canonical_names": [
+            "靈"
+          ],
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 330,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 9,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第九章",
+      "runes": [
+        {
+          "legacy_name": "意",
+          "canonical_name": null,
+          "canonical_names": [
+            "向",
+            "鍊"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "暗",
+          "canonical_name": "暗",
+          "canonical_names": [
+            "暗"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "canonical_names": [
+            "空"
+          ],
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 354,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 10,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第十章",
+      "runes": [
+        {
+          "legacy_name": "時",
+          "canonical_name": "時",
+          "canonical_names": [
+            "時"
+          ],
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "光",
+          "canonical_name": "光",
+          "canonical_names": [
+            "光"
+          ],
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "生",
+          "canonical_name": "生",
+          "canonical_names": [
+            "生"
+          ],
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 383,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 11,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第十一章",
+      "runes": [
+        {
+          "legacy_name": "草",
+          "canonical_name": "草",
+          "canonical_names": [
+            "草"
+          ],
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "線",
+          "canonical_name": "鍊",
+          "canonical_names": [
+            "鍊"
+          ],
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "canonical_names": [
+            "水"
+          ],
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 401,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 12,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第十二章",
+      "runes": [
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "canonical_names": [
+            "風"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "葉",
+          "canonical_name": "葉",
+          "canonical_names": [
+            "葉"
+          ],
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "canonical_names": [
+            "愛"
+          ],
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 417,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 13,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第十三章",
+      "runes": [
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "canonical_names": [
+            "空"
+          ],
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "種",
+          "canonical_name": "種",
+          "canonical_names": [
+            "種"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "水",
+          "canonical_name": "水",
+          "canonical_names": [
+            "水"
+          ],
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 434,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 14,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第十四章",
+      "runes": [
+        {
+          "legacy_name": "火",
+          "canonical_name": "火",
+          "canonical_names": [
+            "火"
+          ],
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "canonical_names": [
+            "愛"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "canonical_names": [
+            "星"
+          ],
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 450,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 15,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第十五章",
+      "runes": [
+        {
+          "legacy_name": "夢",
+          "canonical_name": "夢",
+          "canonical_names": [
+            "夢"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "線",
+          "canonical_name": "鍊",
+          "canonical_names": [
+            "鍊"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "根",
+          "canonical_name": "根",
+          "canonical_names": [
+            "根"
+          ],
+          "orientation": "半逆位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 470,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 16,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "第十六章",
+      "runes": [
+        {
+          "legacy_name": "葉",
+          "canonical_name": "葉",
+          "canonical_names": [
+            "葉"
+          ],
+          "orientation": "逆位"
+        },
+        {
+          "legacy_name": "空",
+          "canonical_name": "空",
+          "canonical_names": [
+            "空"
+          ],
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "暗",
+          "canonical_name": "暗",
+          "canonical_names": [
+            "暗"
+          ],
+          "orientation": "半正位"
+        }
+      ],
+      "moon_phase": "下弦",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 490,
+      "source_type": "original_draw"
+    },
     {
       "part": 1,
       "chapter": 17,
@@ -16,22 +633,34 @@
         {
           "legacy_name": "渾沌",
           "canonical_name": null,
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "無",
+            "虛",
+            "空"
+          ]
         },
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "水"
+          ]
         },
         {
           "legacy_name": "線",
-          "canonical_name": null,
-          "orientation": "半逆位"
+          "canonical_name": "鍊",
+          "orientation": "半逆位",
+          "canonical_names": [
+            "鍊"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "第一篇大綱.txt",
-      "source_line": 515
+      "source_line": 515,
+      "source_type": "original_draw"
     },
     {
       "part": 1,
@@ -42,22 +671,32 @@
         {
           "legacy_name": "根",
           "canonical_name": "根",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "根"
+          ]
         },
         {
           "legacy_name": "靈",
           "canonical_name": "靈",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "靈"
+          ]
         },
         {
           "legacy_name": "光",
           "canonical_name": "光",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "光"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "第一篇大綱.txt",
-      "source_line": 532
+      "source_line": 532,
+      "source_type": "original_draw"
     },
     {
       "part": 1,
@@ -68,22 +707,34 @@
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "地"
+          ]
         },
         {
           "legacy_name": "混沌",
           "canonical_name": null,
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "無",
+            "虛",
+            "空"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "空"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "第一篇大綱.txt",
-      "source_line": 554
+      "source_line": 554,
+      "source_type": "original_draw"
     },
     {
       "part": 1,
@@ -94,22 +745,32 @@
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "星"
+          ]
         },
         {
           "legacy_name": "葉",
           "canonical_name": "葉",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "葉"
+          ]
         },
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "水"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "第一篇大綱.txt",
-      "source_line": 583
+      "source_line": 583,
+      "source_type": "original_draw"
     },
     {
       "part": 1,
@@ -120,22 +781,34 @@
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "根",
           "canonical_name": "根",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "根"
+          ]
         },
         {
           "legacy_name": "混沌",
           "canonical_name": null,
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "無",
+            "虛",
+            "空"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "第一篇大綱.txt",
-      "source_line": 596
+      "source_line": 596,
+      "source_type": "original_draw"
     },
     {
       "part": 1,
@@ -146,22 +819,32 @@
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "種",
           "canonical_name": "種",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "種"
+          ]
         },
         {
           "legacy_name": "光",
           "canonical_name": "光",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "光"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "第一篇大綱.txt",
-      "source_line": 611
+      "source_line": 611,
+      "source_type": "original_draw"
     },
     {
       "part": 1,
@@ -172,22 +855,32 @@
         {
           "legacy_name": "生",
           "canonical_name": "生",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "生"
+          ]
         },
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "水"
+          ]
         },
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "死"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "第一篇大綱.txt",
-      "source_line": 634
+      "source_line": 634,
+      "source_type": "original_draw"
     },
     {
       "part": 1,
@@ -198,22 +891,106 @@
         {
           "legacy_name": "雷",
           "canonical_name": "雷",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "雷"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "混沌",
           "canonical_name": null,
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "無",
+            "虛",
+            "空"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "第一篇大綱.txt",
-      "source_line": 651
+      "source_line": 651,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 1,
+      "chapter": 25,
+      "part_name": "現在．下弦之卷",
+      "chapter_marker": "終章",
+      "runes": [
+        {
+          "legacy_name": "靈",
+          "canonical_name": "靈",
+          "canonical_names": [
+            "靈"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "星",
+          "canonical_name": "星",
+          "canonical_names": [
+            "星"
+          ],
+          "orientation": "半正位"
+        },
+        {
+          "legacy_name": "風",
+          "canonical_name": "風",
+          "canonical_names": [
+            "風"
+          ],
+          "orientation": "正位"
+        }
+      ],
+      "moon_phase": "滿月",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 669,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 2,
+      "chapter": 0,
+      "part_name": "過去．新月之卷",
+      "chapter_marker": "序章",
+      "runes": [
+        {
+          "legacy_name": "花",
+          "canonical_name": "花",
+          "canonical_names": [
+            "花"
+          ],
+          "orientation": "正位"
+        },
+        {
+          "legacy_name": "種",
+          "canonical_name": "種",
+          "canonical_names": [
+            "種"
+          ],
+          "orientation": "半逆位"
+        },
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "canonical_names": [
+            "愛"
+          ],
+          "orientation": "逆位"
+        }
+      ],
+      "moon_phase": "滿月",
+      "source_outline": "第一篇大綱.txt",
+      "source_line": 678,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -224,22 +1001,32 @@
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "地"
+          ]
         },
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "風"
+          ]
         },
         {
           "legacy_name": "生",
           "canonical_name": "生",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "生"
+          ]
         }
       ],
       "moon_phase": null,
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 7
+      "source_line": 7,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -250,22 +1037,32 @@
         {
           "legacy_name": "根",
           "canonical_name": "根",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "根"
+          ]
         },
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "地"
+          ]
         },
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "星"
+          ]
         }
       ],
       "moon_phase": null,
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 21
+      "source_line": 21,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -276,22 +1073,32 @@
         {
           "legacy_name": "暗",
           "canonical_name": "暗",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "暗"
+          ]
         },
         {
           "legacy_name": "花",
           "canonical_name": "花",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "花"
+          ]
         },
         {
           "legacy_name": "種",
           "canonical_name": "種",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "種"
+          ]
         }
       ],
       "moon_phase": null,
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 38
+      "source_line": 38,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -302,22 +1109,32 @@
         {
           "legacy_name": "火",
           "canonical_name": "火",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "火"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "空"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "空"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 50
+      "source_line": 50,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -328,22 +1145,34 @@
         {
           "legacy_name": "雷",
           "canonical_name": "雷",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "雷"
+          ]
         },
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "水"
+          ]
         },
         {
           "legacy_name": "混沌",
           "canonical_name": null,
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "無",
+            "虛",
+            "空"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 66
+      "source_line": 66,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -354,22 +1183,32 @@
         {
           "legacy_name": "靈",
           "canonical_name": "靈",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "靈"
+          ]
         },
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "枝"
+          ]
         },
         {
           "legacy_name": "向",
           "canonical_name": "向",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "向"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 87
+      "source_line": 87,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -380,22 +1219,32 @@
         {
           "legacy_name": "氣",
           "canonical_name": "氣",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "氣"
+          ]
         },
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "星"
+          ]
         },
         {
           "legacy_name": "斷",
           "canonical_name": "斷",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "斷"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 111
+      "source_line": 111,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -406,22 +1255,32 @@
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "啟"
+          ]
         },
         {
           "legacy_name": "斷",
           "canonical_name": "斷",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "斷"
+          ]
         },
         {
           "legacy_name": "實",
           "canonical_name": "實",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "實"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 130
+      "source_line": 130,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -432,22 +1291,32 @@
         {
           "legacy_name": "雷",
           "canonical_name": "雷",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "雷"
+          ]
         },
         {
           "legacy_name": "封",
           "canonical_name": "封",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "封"
+          ]
         },
         {
           "legacy_name": "魂",
           "canonical_name": "魂",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "魂"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 156
+      "source_line": 156,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -458,22 +1327,32 @@
         {
           "legacy_name": "日",
           "canonical_name": "日",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "日"
+          ]
         },
         {
           "legacy_name": "時",
           "canonical_name": "時",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "時"
+          ]
         },
         {
           "legacy_name": "月",
           "canonical_name": "月",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "月"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 190
+      "source_line": 190,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -484,22 +1363,32 @@
         {
           "legacy_name": "樹",
           "canonical_name": "樹",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "樹"
+          ]
         },
         {
           "legacy_name": "夢",
           "canonical_name": "夢",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "夢"
+          ]
         },
         {
           "legacy_name": "明",
           "canonical_name": "明",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "明"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 225
+      "source_line": 225,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -510,22 +1399,32 @@
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "空"
+          ]
         },
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "死"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "心"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 265
+      "source_line": 265,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -536,22 +1435,32 @@
         {
           "legacy_name": "無",
           "canonical_name": "無",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "無"
+          ]
         },
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "枝"
+          ]
         },
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "星"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 301
+      "source_line": 301,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -562,22 +1471,32 @@
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "死"
+          ]
         },
         {
           "legacy_name": "月",
           "canonical_name": "月",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "月"
+          ]
         },
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "水"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 335
+      "source_line": 335,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -588,22 +1507,32 @@
         {
           "legacy_name": "鍊",
           "canonical_name": "鍊",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "鍊"
+          ]
         },
         {
           "legacy_name": "日",
           "canonical_name": "日",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "日"
+          ]
         },
         {
           "legacy_name": "無",
           "canonical_name": "無",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "無"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 368
+      "source_line": 368,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -614,22 +1543,32 @@
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "風"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "空"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 393
+      "source_line": 393,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -640,22 +1579,32 @@
         {
           "legacy_name": "無",
           "canonical_name": "無",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "無"
+          ]
         },
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "啟"
+          ]
         },
         {
           "legacy_name": "辰",
           "canonical_name": "辰",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "辰"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 443
+      "source_line": 443,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -666,22 +1615,32 @@
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "風"
+          ]
         },
         {
           "legacy_name": "樹",
           "canonical_name": "樹",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "樹"
+          ]
         },
         {
           "legacy_name": "彩",
           "canonical_name": "彩",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "彩"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 493
+      "source_line": 493,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -692,22 +1651,32 @@
         {
           "legacy_name": "實",
           "canonical_name": "實",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "實"
+          ]
         },
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "枝"
+          ]
         },
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "星"
+          ]
         }
       ],
       "moon_phase": null,
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 524
+      "source_line": 524,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -718,22 +1687,32 @@
         {
           "legacy_name": "生",
           "canonical_name": "生",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "生"
+          ]
         },
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "暗",
           "canonical_name": "暗",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "暗"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 571
+      "source_line": 571,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -744,22 +1723,32 @@
         {
           "legacy_name": "向",
           "canonical_name": "向",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "向"
+          ]
         },
         {
           "legacy_name": "月",
           "canonical_name": "月",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "月"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "空"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 617
+      "source_line": 617,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -770,22 +1759,32 @@
         {
           "legacy_name": "光",
           "canonical_name": "光",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "光"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "辰",
           "canonical_name": "辰",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "辰"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 684
+      "source_line": 684,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -796,22 +1795,32 @@
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "語"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "明",
           "canonical_name": "明",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "明"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 733
+      "source_line": 733,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -822,22 +1831,32 @@
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "樹",
           "canonical_name": "樹",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "樹"
+          ]
         },
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "風"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 774
+      "source_line": 774,
+      "source_type": "original_draw"
     },
     {
       "part": 2,
@@ -848,22 +1867,32 @@
         {
           "legacy_name": "時",
           "canonical_name": "時",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "時"
+          ]
         },
         {
           "legacy_name": "夢",
           "canonical_name": "夢",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "夢"
+          ]
         },
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "地"
+          ]
         }
       ],
       "moon_phase": "滿月",
       "source_outline": "二篇章節大綱.txt",
-      "source_line": 820
+      "source_line": 820,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -874,22 +1903,32 @@
         {
           "legacy_name": "時",
           "canonical_name": "時",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "時"
+          ]
         },
         {
           "legacy_name": "火",
           "canonical_name": "火",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "火"
+          ]
         },
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "語"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 4
+      "source_line": 4,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -900,22 +1939,32 @@
         {
           "legacy_name": "魂",
           "canonical_name": "魂",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "魂"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "空"
+          ]
         },
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "福"
+          ]
         }
       ],
       "moon_phase": "滿月",
       "source_outline": "三篇大綱.txt",
-      "source_line": 42
+      "source_line": 42,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -926,22 +1975,32 @@
         {
           "legacy_name": "夢",
           "canonical_name": "夢",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "夢"
+          ]
         },
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "星"
+          ]
         },
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "風"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 76
+      "source_line": 76,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -952,22 +2011,32 @@
         {
           "legacy_name": "幻",
           "canonical_name": "幻",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "幻"
+          ]
         },
         {
           "legacy_name": "鍊",
           "canonical_name": "鍊",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "鍊"
+          ]
         },
         {
           "legacy_name": "根",
           "canonical_name": "根",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "根"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 94
+      "source_line": 94,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -978,22 +2047,106 @@
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "枝"
+          ]
         },
         {
           "legacy_name": "時",
           "canonical_name": "時",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "時"
+          ]
         },
         {
           "legacy_name": "斷",
           "canonical_name": "斷",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "斷"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 120
+      "source_line": 120,
+      "source_type": "original_draw"
+    },
+    {
+      "part": 3,
+      "chapter": 5,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "第五章",
+      "runes": [
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "canonical_names": [
+            "愛"
+          ],
+          "orientation": null
+        },
+        {
+          "legacy_name": "鍊",
+          "canonical_name": "鍊",
+          "canonical_names": [
+            "鍊"
+          ],
+          "orientation": null
+        },
+        {
+          "legacy_name": "韻",
+          "canonical_name": "韻",
+          "canonical_names": [
+            "韻"
+          ],
+          "orientation": null
+        }
+      ],
+      "moon_phase": null,
+      "source_outline": null,
+      "source_line": null,
+      "source_type": "retrospective_semantic_patch",
+      "note": "事後反向解析；原始創作未以符文抽牌生成，因此不補方向。"
+    },
+    {
+      "part": 3,
+      "chapter": 6,
+      "part_name": "近未來．上弦之卷",
+      "chapter_marker": "第六章",
+      "runes": [
+        {
+          "legacy_name": "愛",
+          "canonical_name": "愛",
+          "canonical_names": [
+            "愛"
+          ],
+          "orientation": null
+        },
+        {
+          "legacy_name": "雷",
+          "canonical_name": "雷",
+          "canonical_names": [
+            "雷"
+          ],
+          "orientation": null
+        },
+        {
+          "legacy_name": "韻",
+          "canonical_name": "韻",
+          "canonical_names": [
+            "韻"
+          ],
+          "orientation": null
+        }
+      ],
+      "moon_phase": null,
+      "source_outline": null,
+      "source_line": null,
+      "source_type": "retrospective_semantic_patch",
+      "note": "事後反向解析；原始創作未以符文抽牌生成，因此不補方向。"
     },
     {
       "part": 3,
@@ -1004,22 +2157,32 @@
         {
           "legacy_name": "向",
           "canonical_name": "向",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "向"
+          ]
         },
         {
           "legacy_name": "夢",
           "canonical_name": "夢",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "夢"
+          ]
         },
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "地"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 192
+      "source_line": 192,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1030,22 +2193,32 @@
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "星"
+          ]
         },
         {
           "legacy_name": "明",
           "canonical_name": "明",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "明"
+          ]
         },
         {
           "legacy_name": "憶",
           "canonical_name": "憶",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "憶"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 217
+      "source_line": 217,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1056,22 +2229,32 @@
         {
           "legacy_name": "時",
           "canonical_name": "時",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "時"
+          ]
         },
         {
           "legacy_name": "樹",
           "canonical_name": "樹",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "樹"
+          ]
         },
         {
           "legacy_name": "雷",
           "canonical_name": "雷",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "雷"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 256
+      "source_line": 256,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1082,22 +2265,32 @@
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "星"
+          ]
         },
         {
           "legacy_name": "明",
           "canonical_name": "明",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "明"
+          ]
         },
         {
           "legacy_name": "憶",
           "canonical_name": "憶",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "憶"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 287
+      "source_line": 287,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1108,22 +2301,32 @@
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "風"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "空"
+          ]
         },
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "枝"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 315
+      "source_line": 315,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1134,22 +2337,32 @@
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "死"
+          ]
         },
         {
           "legacy_name": "鍊",
           "canonical_name": "鍊",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "鍊"
+          ]
         },
         {
           "legacy_name": "雷",
           "canonical_name": "雷",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "雷"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 355
+      "source_line": 355,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1160,22 +2373,32 @@
         {
           "legacy_name": "氣",
           "canonical_name": "氣",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "氣"
+          ]
         },
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "風"
+          ]
         },
         {
           "legacy_name": "生",
           "canonical_name": "生",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "生"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 392
+      "source_line": 392,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1186,22 +2409,32 @@
         {
           "legacy_name": "雷",
           "canonical_name": "雷",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "雷"
+          ]
         },
         {
           "legacy_name": "彩",
           "canonical_name": "彩",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "彩"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "心"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 431
+      "source_line": 431,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1212,22 +2445,32 @@
         {
           "legacy_name": "憶",
           "canonical_name": "憶",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "憶"
+          ]
         },
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "地"
+          ]
         },
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "水"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 458
+      "source_line": 458,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1238,22 +2481,32 @@
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "啟"
+          ]
         },
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "語"
+          ]
         },
         {
           "legacy_name": "種",
           "canonical_name": "種",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "種"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 502
+      "source_line": 502,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1264,22 +2517,32 @@
         {
           "legacy_name": "幻",
           "canonical_name": "幻",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "幻"
+          ]
         },
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "地"
+          ]
         },
         {
           "legacy_name": "火",
           "canonical_name": "火",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "火"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 534
+      "source_line": 534,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1290,22 +2553,32 @@
         {
           "legacy_name": "生",
           "canonical_name": "生",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "生"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "封",
           "canonical_name": "封",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "封"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 567
+      "source_line": 567,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1316,22 +2589,32 @@
         {
           "legacy_name": "暗",
           "canonical_name": "暗",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "暗"
+          ]
         },
         {
           "legacy_name": "辰",
           "canonical_name": "辰",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "辰"
+          ]
         },
         {
           "legacy_name": "葉",
           "canonical_name": "葉",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "葉"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 602
+      "source_line": 602,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1342,22 +2625,32 @@
         {
           "legacy_name": "火",
           "canonical_name": "火",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "火"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "暗",
           "canonical_name": "暗",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "暗"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 632
+      "source_line": 632,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1368,22 +2661,32 @@
         {
           "legacy_name": "明",
           "canonical_name": "明",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "明"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "幻",
           "canonical_name": "幻",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "幻"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 670
+      "source_line": 670,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1394,22 +2697,32 @@
         {
           "legacy_name": "向",
           "canonical_name": "向",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "向"
+          ]
         },
         {
           "legacy_name": "幻",
           "canonical_name": "幻",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "幻"
+          ]
         },
         {
           "legacy_name": "根",
           "canonical_name": "根",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "根"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 701
+      "source_line": 701,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1420,22 +2733,32 @@
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "語"
+          ]
         },
         {
           "legacy_name": "夢",
           "canonical_name": "夢",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "夢"
+          ]
         },
         {
           "legacy_name": "鍊",
           "canonical_name": "鍊",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "鍊"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 730
+      "source_line": 730,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1446,22 +2769,32 @@
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "明",
           "canonical_name": "明",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "明"
+          ]
         },
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "風"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 767
+      "source_line": 767,
+      "source_type": "original_draw"
     },
     {
       "part": 3,
@@ -1472,22 +2805,32 @@
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "星"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "死"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "三篇大綱.txt",
-      "source_line": 804
+      "source_line": 804,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1498,22 +2841,32 @@
         {
           "legacy_name": "鍊",
           "canonical_name": "鍊",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "鍊"
+          ]
         },
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "地"
+          ]
         },
         {
           "legacy_name": "日",
           "canonical_name": "日",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "日"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 4
+      "source_line": 4,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1524,22 +2877,32 @@
         {
           "legacy_name": "樹",
           "canonical_name": "樹",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "樹"
+          ]
         },
         {
           "legacy_name": "向",
           "canonical_name": "向",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "向"
+          ]
         },
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "啟"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 26
+      "source_line": 26,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1550,22 +2913,32 @@
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "水"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "枝"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 57
+      "source_line": 57,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1576,22 +2949,32 @@
         {
           "legacy_name": "彩",
           "canonical_name": "彩",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "彩"
+          ]
         },
         {
           "legacy_name": "靈",
           "canonical_name": "靈",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "靈"
+          ]
         },
         {
           "legacy_name": "向",
           "canonical_name": "向",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "向"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 88
+      "source_line": 88,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1602,22 +2985,32 @@
         {
           "legacy_name": "月",
           "canonical_name": "月",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "月"
+          ]
         },
         {
           "legacy_name": "魂",
           "canonical_name": "魂",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "魂"
+          ]
         },
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "星"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 115
+      "source_line": 115,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1628,22 +3021,32 @@
         {
           "legacy_name": "根",
           "canonical_name": "根",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "根"
+          ]
         },
         {
           "legacy_name": "日",
           "canonical_name": "日",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "日"
+          ]
         },
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "啟"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 148
+      "source_line": 148,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1654,22 +3057,32 @@
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "地"
+          ]
         },
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "愛"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 188
+      "source_line": 188,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1680,22 +3093,32 @@
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "雷",
           "canonical_name": "雷",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "雷"
+          ]
         },
         {
           "legacy_name": "向",
           "canonical_name": "向",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "向"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 221
+      "source_line": 221,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1706,22 +3129,32 @@
         {
           "legacy_name": "草",
           "canonical_name": "草",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "草"
+          ]
         },
         {
           "legacy_name": "夢",
           "canonical_name": "夢",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "夢"
+          ]
         },
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "啟"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 265
+      "source_line": 265,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1732,22 +3165,32 @@
         {
           "legacy_name": "雷",
           "canonical_name": "雷",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "雷"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "空"
+          ]
         },
         {
           "legacy_name": "暗",
           "canonical_name": "暗",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "暗"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 300
+      "source_line": 300,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1758,22 +3201,32 @@
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "夢",
           "canonical_name": "夢",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "夢"
+          ]
         },
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "風"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 334
+      "source_line": 334,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1784,22 +3237,32 @@
         {
           "legacy_name": "魂",
           "canonical_name": "魂",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "魂"
+          ]
         },
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "語"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 373
+      "source_line": 373,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1810,22 +3273,32 @@
         {
           "legacy_name": "光",
           "canonical_name": "光",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "光"
+          ]
         },
         {
           "legacy_name": "花",
           "canonical_name": "花",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "花"
+          ]
         },
         {
           "legacy_name": "生",
           "canonical_name": "生",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "生"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 408
+      "source_line": 408,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1836,22 +3309,32 @@
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "死"
+          ]
         },
         {
           "legacy_name": "辰",
           "canonical_name": "辰",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "辰"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "愛"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 452
+      "source_line": 452,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1862,22 +3345,32 @@
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "風"
+          ]
         },
         {
           "legacy_name": "火",
           "canonical_name": "火",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "火"
+          ]
         },
         {
           "legacy_name": "雷",
           "canonical_name": "雷",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "雷"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 494
+      "source_line": 494,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1888,22 +3381,32 @@
         {
           "legacy_name": "時",
           "canonical_name": "時",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "時"
+          ]
         },
         {
           "legacy_name": "日",
           "canonical_name": "日",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "日"
+          ]
         },
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "語"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 532
+      "source_line": 532,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1914,22 +3417,32 @@
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "語"
+          ]
         },
         {
           "legacy_name": "生",
           "canonical_name": "生",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "生"
+          ]
         },
         {
           "legacy_name": "靈",
           "canonical_name": "靈",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "靈"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 568
+      "source_line": 568,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1940,22 +3453,32 @@
         {
           "legacy_name": "靈",
           "canonical_name": "靈",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "靈"
+          ]
         },
         {
           "legacy_name": "幻",
           "canonical_name": "幻",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "幻"
+          ]
         },
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "風"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 611
+      "source_line": 611,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1966,22 +3489,32 @@
         {
           "legacy_name": "靈",
           "canonical_name": "靈",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "靈"
+          ]
         },
         {
           "legacy_name": "月",
           "canonical_name": "月",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "月"
+          ]
         },
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "星"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "四篇大綱.txt",
-      "source_line": 648
+      "source_line": 648,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -1992,22 +3525,32 @@
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "死"
+          ]
         },
         {
           "legacy_name": "月",
           "canonical_name": "月",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "月"
+          ]
         },
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "啟"
+          ]
         }
       ],
       "moon_phase": "下弦",
       "source_outline": "四篇大綱.txt",
-      "source_line": 669
+      "source_line": 669,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -2018,22 +3561,32 @@
         {
           "legacy_name": "樹",
           "canonical_name": "樹",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "樹"
+          ]
         },
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "啟"
+          ]
         },
         {
           "legacy_name": "花",
           "canonical_name": "花",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "花"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "四篇大綱.txt",
-      "source_line": 713
+      "source_line": 713,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -2044,22 +3597,32 @@
         {
           "legacy_name": "彩",
           "canonical_name": "彩",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "彩"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "死"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "四篇大綱.txt",
-      "source_line": 751
+      "source_line": 751,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -2070,22 +3633,32 @@
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "辰",
           "canonical_name": "辰",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "辰"
+          ]
         },
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "地"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "四篇大綱.txt",
-      "source_line": 799
+      "source_line": 799,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -2096,22 +3669,32 @@
         {
           "legacy_name": "向",
           "canonical_name": "向",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "向"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "空"
+          ]
         },
         {
           "legacy_name": "辰",
           "canonical_name": "辰",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "辰"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "四篇大綱.txt",
-      "source_line": 842
+      "source_line": 842,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -2122,22 +3705,32 @@
         {
           "legacy_name": "樹",
           "canonical_name": "樹",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "樹"
+          ]
         },
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "語"
+          ]
         },
         {
           "legacy_name": "葉",
           "canonical_name": "葉",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "葉"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "四篇大綱.txt",
-      "source_line": 878
+      "source_line": 878,
+      "source_type": "original_draw"
     },
     {
       "part": 4,
@@ -2148,22 +3741,32 @@
         {
           "legacy_name": "明",
           "canonical_name": "明",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "明"
+          ]
         },
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "星"
+          ]
         },
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "語"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "四篇大綱.txt",
-      "source_line": 923
+      "source_line": 923,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2174,22 +3777,32 @@
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "水"
+          ]
         },
         {
           "legacy_name": "月",
           "canonical_name": "月",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "月"
+          ]
         },
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "語"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 4
+      "source_line": 4,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2200,22 +3813,32 @@
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "辰",
           "canonical_name": "辰",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "辰"
+          ]
         },
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "水"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 27
+      "source_line": 27,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2226,22 +3849,32 @@
         {
           "legacy_name": "憶",
           "canonical_name": "憶",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "憶"
+          ]
         },
         {
           "legacy_name": "禍",
           "canonical_name": "禍",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "禍"
+          ]
         },
         {
           "legacy_name": "幻",
           "canonical_name": "幻",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "幻"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 54
+      "source_line": 54,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2252,22 +3885,32 @@
         {
           "legacy_name": "根",
           "canonical_name": "根",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "根"
+          ]
         },
         {
           "legacy_name": "夢",
           "canonical_name": "夢",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "夢"
+          ]
         },
         {
           "legacy_name": "向",
           "canonical_name": "向",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "向"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 82
+      "source_line": 82,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2278,22 +3921,32 @@
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "啟"
+          ]
         },
         {
           "legacy_name": "火",
           "canonical_name": "火",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "火"
+          ]
         },
         {
           "legacy_name": "樹",
           "canonical_name": "樹",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "樹"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 104
+      "source_line": 104,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2304,22 +3957,32 @@
         {
           "legacy_name": "彩",
           "canonical_name": "彩",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "彩"
+          ]
         },
         {
           "legacy_name": "幻",
           "canonical_name": "幻",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "幻"
+          ]
         },
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "啟"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 131
+      "source_line": 131,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2330,22 +3993,32 @@
         {
           "legacy_name": "實",
           "canonical_name": "實",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "實"
+          ]
         },
         {
           "legacy_name": "斷",
           "canonical_name": "斷",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "斷"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "空"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 161
+      "source_line": 161,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2356,22 +4029,32 @@
         {
           "legacy_name": "封",
           "canonical_name": "封",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "封"
+          ]
         },
         {
           "legacy_name": "靈",
           "canonical_name": "靈",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "靈"
+          ]
         },
         {
           "legacy_name": "彩",
           "canonical_name": "彩",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "彩"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 184
+      "source_line": 184,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2382,22 +4065,32 @@
         {
           "legacy_name": "明",
           "canonical_name": "明",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "明"
+          ]
         },
         {
           "legacy_name": "向",
           "canonical_name": "向",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "向"
+          ]
         },
         {
           "legacy_name": "斷",
           "canonical_name": "斷",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "斷"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 221
+      "source_line": 221,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2408,22 +4101,32 @@
         {
           "legacy_name": "彩",
           "canonical_name": "彩",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "彩"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "空"
+          ]
         },
         {
           "legacy_name": "雷",
           "canonical_name": "雷",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "雷"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 258
+      "source_line": 258,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2434,22 +4137,32 @@
         {
           "legacy_name": "火",
           "canonical_name": "火",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "火"
+          ]
         },
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "枝"
+          ]
         },
         {
           "legacy_name": "日",
           "canonical_name": "日",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "日"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 282
+      "source_line": 282,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2460,22 +4173,32 @@
         {
           "legacy_name": "斷",
           "canonical_name": "斷",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "斷"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "虛",
           "canonical_name": "虛",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "虛"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 314
+      "source_line": 314,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2486,22 +4209,32 @@
         {
           "legacy_name": "玉",
           "canonical_name": "玉",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "玉"
+          ]
         },
         {
           "legacy_name": "鏡",
           "canonical_name": "鏡",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "鏡"
+          ]
         },
         {
           "legacy_name": "光",
           "canonical_name": "光",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "光"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 344
+      "source_line": 344,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2512,22 +4245,32 @@
         {
           "legacy_name": "分",
           "canonical_name": "分",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "分"
+          ]
         },
         {
           "legacy_name": "緣",
           "canonical_name": "緣",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "緣"
+          ]
         },
         {
           "legacy_name": "韻",
           "canonical_name": "韻",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "韻"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 371
+      "source_line": 371,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2538,22 +4281,32 @@
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "枝"
+          ]
         },
         {
           "legacy_name": "誤",
           "canonical_name": "誤",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "誤"
+          ]
         },
         {
           "legacy_name": "金",
           "canonical_name": "金",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "金"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 402
+      "source_line": 402,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2564,22 +4317,32 @@
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "地"
+          ]
         },
         {
           "legacy_name": "老",
           "canonical_name": "老",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "老"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 440
+      "source_line": 440,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2590,22 +4353,32 @@
         {
           "legacy_name": "幻",
           "canonical_name": "幻",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "幻"
+          ]
         },
         {
           "legacy_name": "花",
           "canonical_name": "花",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "花"
+          ]
         },
         {
           "legacy_name": "生",
           "canonical_name": "生",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "生"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 467
+      "source_line": 467,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2616,22 +4389,32 @@
         {
           "legacy_name": "果",
           "canonical_name": "果",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "果"
+          ]
         },
         {
           "legacy_name": "魂",
           "canonical_name": "魂",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "魂"
+          ]
         },
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "死"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 491
+      "source_line": 491,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2642,22 +4425,32 @@
         {
           "legacy_name": "日",
           "canonical_name": "日",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "日"
+          ]
         },
         {
           "legacy_name": "種",
           "canonical_name": "種",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "種"
+          ]
         },
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "死"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 517
+      "source_line": 517,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2668,22 +4461,32 @@
         {
           "legacy_name": "實",
           "canonical_name": "實",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "實"
+          ]
         },
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "啟"
+          ]
         },
         {
           "legacy_name": "老",
           "canonical_name": "老",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "老"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 545
+      "source_line": 545,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2694,22 +4497,32 @@
         {
           "legacy_name": "鑽",
           "canonical_name": "鑽",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "鑽"
+          ]
         },
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "水"
+          ]
         },
         {
           "legacy_name": "果",
           "canonical_name": "果",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "果"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 570
+      "source_line": 570,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2720,22 +4533,32 @@
         {
           "legacy_name": "實",
           "canonical_name": "實",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "實"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "火",
           "canonical_name": "火",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "火"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 599
+      "source_line": 599,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2746,22 +4569,32 @@
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "夢",
           "canonical_name": "夢",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "夢"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 633
+      "source_line": 633,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2772,22 +4605,32 @@
         {
           "legacy_name": "時",
           "canonical_name": "時",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "時"
+          ]
         },
         {
           "legacy_name": "實",
           "canonical_name": "實",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "實"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "愛"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 663
+      "source_line": 663,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2798,22 +4641,32 @@
         {
           "legacy_name": "火",
           "canonical_name": "火",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "火"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "明",
           "canonical_name": "明",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "明"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 691
+      "source_line": 691,
+      "source_type": "original_draw"
     },
     {
       "part": 5,
@@ -2824,22 +4677,32 @@
         {
           "legacy_name": "誤",
           "canonical_name": "誤",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "誤"
+          ]
         },
         {
           "legacy_name": "花",
           "canonical_name": "花",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "花"
+          ]
         },
         {
           "legacy_name": "病",
           "canonical_name": "病",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "病"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "五篇大綱.txt",
-      "source_line": 718
+      "source_line": 718,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -2850,22 +4713,32 @@
         {
           "legacy_name": "月",
           "canonical_name": "月",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "月"
+          ]
         },
         {
           "legacy_name": "礦",
           "canonical_name": "礦",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "礦"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "空"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 4
+      "source_line": 4,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -2876,22 +4749,32 @@
         {
           "legacy_name": "氣",
           "canonical_name": "氣",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "氣"
+          ]
         },
         {
           "legacy_name": "虛",
           "canonical_name": "虛",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "虛"
+          ]
         },
         {
           "legacy_name": "草",
           "canonical_name": "草",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "草"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 34
+      "source_line": 34,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -2902,22 +4785,32 @@
         {
           "legacy_name": "彩",
           "canonical_name": "彩",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "彩"
+          ]
         },
         {
           "legacy_name": "夢",
           "canonical_name": "夢",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "夢"
+          ]
         },
         {
           "legacy_name": "花",
           "canonical_name": "花",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "花"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 65
+      "source_line": 65,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -2928,22 +4821,32 @@
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "鍊",
           "canonical_name": "鍊",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "鍊"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 89
+      "source_line": 89,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -2954,22 +4857,32 @@
         {
           "legacy_name": "老",
           "canonical_name": "老",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "老"
+          ]
         },
         {
           "legacy_name": "悟",
           "canonical_name": "悟",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "悟"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "心"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 120
+      "source_line": 120,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -2980,22 +4893,32 @@
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "啟"
+          ]
         },
         {
           "legacy_name": "幻",
           "canonical_name": "幻",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "幻"
+          ]
         },
         {
           "legacy_name": "悟",
           "canonical_name": "悟",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "悟"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 157
+      "source_line": 157,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3006,22 +4929,32 @@
         {
           "legacy_name": "明",
           "canonical_name": "明",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "明"
+          ]
         },
         {
           "legacy_name": "星",
           "canonical_name": "星",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "星"
+          ]
         },
         {
           "legacy_name": "實",
           "canonical_name": "實",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "實"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 197
+      "source_line": 197,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3032,22 +4965,32 @@
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "語"
+          ]
         },
         {
           "legacy_name": "鍊",
           "canonical_name": "鍊",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "鍊"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "愛"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 245
+      "source_line": 245,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3058,22 +5001,32 @@
         {
           "legacy_name": "界",
           "canonical_name": "界",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "界"
+          ]
         },
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "石",
           "canonical_name": "石",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "石"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 285
+      "source_line": 285,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3084,22 +5037,32 @@
         {
           "legacy_name": "草",
           "canonical_name": "草",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "草"
+          ]
         },
         {
           "legacy_name": "辰",
           "canonical_name": "辰",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "辰"
+          ]
         },
         {
           "legacy_name": "病",
           "canonical_name": "病",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "病"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 327
+      "source_line": 327,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3110,22 +5073,32 @@
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "界",
           "canonical_name": "界",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "界"
+          ]
         },
         {
           "legacy_name": "草",
           "canonical_name": "草",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "草"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 367
+      "source_line": 367,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3136,22 +5109,32 @@
         {
           "legacy_name": "彩",
           "canonical_name": "彩",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "彩"
+          ]
         },
         {
           "legacy_name": "老",
           "canonical_name": "老",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "老"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "心"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 404
+      "source_line": 404,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3162,22 +5145,32 @@
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "枝"
+          ]
         },
         {
           "legacy_name": "礦",
           "canonical_name": "礦",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "礦"
+          ]
         },
         {
           "legacy_name": "石",
           "canonical_name": "石",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "石"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 435
+      "source_line": 435,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3188,22 +5181,32 @@
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "風"
+          ]
         },
         {
           "legacy_name": "時",
           "canonical_name": "時",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "時"
+          ]
         },
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "語"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 469
+      "source_line": 469,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3214,22 +5217,32 @@
         {
           "legacy_name": "石",
           "canonical_name": "石",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "石"
+          ]
         },
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "枝"
+          ]
         },
         {
           "legacy_name": "光",
           "canonical_name": "光",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "光"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 498
+      "source_line": 498,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3240,22 +5253,32 @@
         {
           "legacy_name": "光",
           "canonical_name": "光",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "光"
+          ]
         },
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "金",
           "canonical_name": "金",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "金"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 541
+      "source_line": 541,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3266,22 +5289,32 @@
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "死"
+          ]
         },
         {
           "legacy_name": "因",
           "canonical_name": "因",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "因"
+          ]
         },
         {
           "legacy_name": "病",
           "canonical_name": "病",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "病"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 574
+      "source_line": 574,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3292,22 +5325,32 @@
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "枝"
+          ]
         },
         {
           "legacy_name": "日",
           "canonical_name": "日",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "日"
+          ]
         },
         {
           "legacy_name": "老",
           "canonical_name": "老",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "老"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 609
+      "source_line": 609,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3318,22 +5361,32 @@
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "魂",
           "canonical_name": "魂",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "魂"
+          ]
         },
         {
           "legacy_name": "種",
           "canonical_name": "種",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "種"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 643
+      "source_line": 643,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3344,22 +5397,32 @@
         {
           "legacy_name": "石",
           "canonical_name": "石",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "石"
+          ]
         },
         {
           "legacy_name": "樹",
           "canonical_name": "樹",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "樹"
+          ]
         },
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "啟"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 688
+      "source_line": 688,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3370,22 +5433,32 @@
         {
           "legacy_name": "土",
           "canonical_name": "土",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "土"
+          ]
         },
         {
           "legacy_name": "鍊",
           "canonical_name": "鍊",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "鍊"
+          ]
         },
         {
           "legacy_name": "金",
           "canonical_name": "金",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "金"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 727
+      "source_line": 727,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3396,22 +5469,32 @@
         {
           "legacy_name": "樹",
           "canonical_name": "樹",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "樹"
+          ]
         },
         {
           "legacy_name": "幻",
           "canonical_name": "幻",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "幻"
+          ]
         },
         {
           "legacy_name": "玉",
           "canonical_name": "玉",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "玉"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 766
+      "source_line": 766,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3422,22 +5505,32 @@
         {
           "legacy_name": "靈",
           "canonical_name": "靈",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "靈"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "塵",
           "canonical_name": "塵",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "塵"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 796
+      "source_line": 796,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3448,22 +5541,32 @@
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "韻",
           "canonical_name": "韻",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "韻"
+          ]
         },
         {
           "legacy_name": "土",
           "canonical_name": "土",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "土"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 828
+      "source_line": 828,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3474,22 +5577,32 @@
         {
           "legacy_name": "域",
           "canonical_name": "域",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "域"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "空"
+          ]
         },
         {
           "legacy_name": "分",
           "canonical_name": "分",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "分"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 859
+      "source_line": 859,
+      "source_type": "original_draw"
     },
     {
       "part": 6,
@@ -3500,22 +5613,32 @@
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "語"
+          ]
         },
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "水"
+          ]
         },
         {
           "legacy_name": "界",
           "canonical_name": "界",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "界"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "六篇大綱.txt",
-      "source_line": 894
+      "source_line": 894,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3526,22 +5649,32 @@
         {
           "legacy_name": "葉",
           "canonical_name": "葉",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "葉"
+          ]
         },
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "水"
+          ]
         },
         {
           "legacy_name": "鏡",
           "canonical_name": "鏡",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "鏡"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 5
+      "source_line": 5,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3552,22 +5685,32 @@
         {
           "legacy_name": "塵",
           "canonical_name": "塵",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "塵"
+          ]
         },
         {
           "legacy_name": "暗",
           "canonical_name": "暗",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "暗"
+          ]
         },
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "枝"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 89
+      "source_line": 89,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3578,22 +5721,32 @@
         {
           "legacy_name": "生",
           "canonical_name": "生",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "生"
+          ]
         },
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "塵",
           "canonical_name": "塵",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "塵"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 163
+      "source_line": 163,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3604,22 +5757,32 @@
         {
           "legacy_name": "啟",
           "canonical_name": "啟",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "啟"
+          ]
         },
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "花",
           "canonical_name": "花",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "花"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 235
+      "source_line": 235,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3630,22 +5793,32 @@
         {
           "legacy_name": "土",
           "canonical_name": "土",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "土"
+          ]
         },
         {
           "legacy_name": "誤",
           "canonical_name": "誤",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "誤"
+          ]
         },
         {
           "legacy_name": "老",
           "canonical_name": "老",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "老"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 307
+      "source_line": 307,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3656,22 +5829,32 @@
         {
           "legacy_name": "晶",
           "canonical_name": "晶",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "晶"
+          ]
         },
         {
           "legacy_name": "金",
           "canonical_name": "金",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "金"
+          ]
         },
         {
           "legacy_name": "葉",
           "canonical_name": "葉",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "葉"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 386
+      "source_line": 386,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3682,22 +5865,32 @@
         {
           "legacy_name": "病",
           "canonical_name": "病",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "病"
+          ]
         },
         {
           "legacy_name": "分",
           "canonical_name": "分",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "分"
+          ]
         },
         {
           "legacy_name": "石",
           "canonical_name": "石",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "石"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 474
+      "source_line": 474,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3708,22 +5901,32 @@
         {
           "legacy_name": "根",
           "canonical_name": "根",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "根"
+          ]
         },
         {
           "legacy_name": "月",
           "canonical_name": "月",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "月"
+          ]
         },
         {
           "legacy_name": "生",
           "canonical_name": "生",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "生"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 539
+      "source_line": 539,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3734,22 +5937,32 @@
         {
           "legacy_name": "封",
           "canonical_name": "封",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "封"
+          ]
         },
         {
           "legacy_name": "時",
           "canonical_name": "時",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "時"
+          ]
         },
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "地"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 628
+      "source_line": 628,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3760,22 +5973,32 @@
         {
           "legacy_name": "根",
           "canonical_name": "根",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "根"
+          ]
         },
         {
           "legacy_name": "老",
           "canonical_name": "老",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "老"
+          ]
         },
         {
           "legacy_name": "枝",
           "canonical_name": "枝",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "枝"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 695
+      "source_line": 695,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3786,22 +6009,32 @@
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "空"
+          ]
         },
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "死",
           "canonical_name": "死",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "死"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 771
+      "source_line": 771,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3812,22 +6045,32 @@
         {
           "legacy_name": "實",
           "canonical_name": "實",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "實"
+          ]
         },
         {
           "legacy_name": "葉",
           "canonical_name": "葉",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "葉"
+          ]
         },
         {
           "legacy_name": "土",
           "canonical_name": "土",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "土"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 875
+      "source_line": 875,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3838,22 +6081,32 @@
         {
           "legacy_name": "無",
           "canonical_name": "無",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "無"
+          ]
         },
         {
           "legacy_name": "福",
           "canonical_name": "福",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "福"
+          ]
         },
         {
           "legacy_name": "病",
           "canonical_name": "病",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "病"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 967
+      "source_line": 967,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3864,22 +6117,32 @@
         {
           "legacy_name": "病",
           "canonical_name": "病",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "病"
+          ]
         },
         {
           "legacy_name": "向",
           "canonical_name": "向",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "向"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "空"
+          ]
         }
       ],
       "moon_phase": "新月",
       "source_outline": "allCh7.txt",
-      "source_line": 1086
+      "source_line": 1086,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3890,22 +6153,32 @@
         {
           "legacy_name": "悟",
           "canonical_name": "悟",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "悟"
+          ]
         },
         {
           "legacy_name": "風",
           "canonical_name": "風",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "風"
+          ]
         },
         {
           "legacy_name": "地",
           "canonical_name": "地",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "地"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 1151
+      "source_line": 1151,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3916,22 +6189,32 @@
         {
           "legacy_name": "鏡",
           "canonical_name": "鏡",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "鏡"
+          ]
         },
         {
           "legacy_name": "心",
           "canonical_name": "心",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "心"
+          ]
         },
         {
           "legacy_name": "礦",
           "canonical_name": "礦",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "礦"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 1253
+      "source_line": 1253,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3942,22 +6225,32 @@
         {
           "legacy_name": "界",
           "canonical_name": "界",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "界"
+          ]
         },
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "語"
+          ]
         },
         {
           "legacy_name": "悟",
           "canonical_name": "悟",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "悟"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 1350
+      "source_line": 1350,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3968,22 +6261,32 @@
         {
           "legacy_name": "病",
           "canonical_name": "病",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "病"
+          ]
         },
         {
           "legacy_name": "果",
           "canonical_name": "果",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "果"
+          ]
         },
         {
           "legacy_name": "樹",
           "canonical_name": "樹",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "樹"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 1448
+      "source_line": 1448,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -3994,22 +6297,32 @@
         {
           "legacy_name": "時",
           "canonical_name": "時",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "時"
+          ]
         },
         {
           "legacy_name": "愛",
           "canonical_name": "愛",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "愛"
+          ]
         },
         {
           "legacy_name": "界",
           "canonical_name": "界",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "界"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 1551
+      "source_line": 1551,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -4020,22 +6333,32 @@
         {
           "legacy_name": "虛",
           "canonical_name": "虛",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "虛"
+          ]
         },
         {
           "legacy_name": "空",
           "canonical_name": "空",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "空"
+          ]
         },
         {
           "legacy_name": "塵",
           "canonical_name": "塵",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "塵"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 1642
+      "source_line": 1642,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -4046,22 +6369,32 @@
         {
           "legacy_name": "實",
           "canonical_name": "實",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "實"
+          ]
         },
         {
           "legacy_name": "鏡",
           "canonical_name": "鏡",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "鏡"
+          ]
         },
         {
           "legacy_name": "緣",
           "canonical_name": "緣",
-          "orientation": "逆位"
+          "orientation": "逆位",
+          "canonical_names": [
+            "緣"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 1728
+      "source_line": 1728,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -4072,22 +6405,32 @@
         {
           "legacy_name": "鏡",
           "canonical_name": "鏡",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "鏡"
+          ]
         },
         {
           "legacy_name": "塵",
           "canonical_name": "塵",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "塵"
+          ]
         },
         {
           "legacy_name": "因",
           "canonical_name": "因",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "因"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 1822
+      "source_line": 1822,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -4098,22 +6441,32 @@
         {
           "legacy_name": "韻",
           "canonical_name": "韻",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "韻"
+          ]
         },
         {
           "legacy_name": "水",
           "canonical_name": "水",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "水"
+          ]
         },
         {
           "legacy_name": "憶",
           "canonical_name": "憶",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "憶"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 1912
+      "source_line": 1912,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -4124,22 +6477,32 @@
         {
           "legacy_name": "鍊",
           "canonical_name": "鍊",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "鍊"
+          ]
         },
         {
           "legacy_name": "封",
           "canonical_name": "封",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "封"
+          ]
         },
         {
           "legacy_name": "果",
           "canonical_name": "果",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "果"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 2000
+      "source_line": 2000,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -4150,22 +6513,32 @@
         {
           "legacy_name": "時",
           "canonical_name": "時",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "時"
+          ]
         },
         {
           "legacy_name": "語",
           "canonical_name": "語",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "語"
+          ]
         },
         {
           "legacy_name": "幻",
           "canonical_name": "幻",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "幻"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 2084
+      "source_line": 2084,
+      "source_type": "original_draw"
     },
     {
       "part": 7,
@@ -4176,22 +6549,53 @@
         {
           "legacy_name": "分",
           "canonical_name": "分",
-          "orientation": "半逆位"
+          "orientation": "半逆位",
+          "canonical_names": [
+            "分"
+          ]
         },
         {
           "legacy_name": "日",
           "canonical_name": "日",
-          "orientation": "正位"
+          "orientation": "正位",
+          "canonical_names": [
+            "日"
+          ]
         },
         {
           "legacy_name": "緣",
           "canonical_name": "緣",
-          "orientation": "半正位"
+          "orientation": "半正位",
+          "canonical_names": [
+            "緣"
+          ]
         }
       ],
       "moon_phase": "上弦",
       "source_outline": "allCh7.txt",
-      "source_line": 2157
+      "source_line": 2157,
+      "source_type": "original_draw"
     }
-  ]
+  ],
+  "governance": {
+    "current_search_targets": "Base66 canonical rune names",
+    "legacy_mapping_rules": {
+      "混沌/渾沌": [
+        "無",
+        "虛",
+        "空"
+      ],
+      "意": [
+        "向",
+        "鍊"
+      ],
+      "線": [
+        "鍊"
+      ]
+    },
+    "source_type_rules": {
+      "original_draw": "原始章節符文紀錄；保留原始方向與月相（若有）。",
+      "retrospective_semantic_patch": "事後依既有章節反向解析；只補符文名稱，不補方向。"
+    }
+  }
 }
