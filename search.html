@@ -260,7 +260,7 @@
         <p class="loc-header-copy">資料時間採實際已匯入內容的最早與最新日期。之後更新來源時，以最新資料日期是否往後推進作為第一個檢查點。</p>
       </header>
       <section class="ranking-panel">
-        <div class="ranking-head"><div><h2>來源更新狀態</h2><p>平台｜最早資料｜最新資料｜總字數｜總文章／歌曲／圖片／多媒體數</p></div></div>
+        <div class="ranking-head"><div><h2>來源更新狀態</h2><p>平台｜最早資料｜最新資料｜總字數｜總文章／歌曲／圖片／多媒體數</p></div><button type="button" class="submit" id="addSourceRecord">新增來源</button></div>
         <div class="era-setting-status" id="sourceGovernanceStatus">載入來源資料…</div>
         <div class="ranking-list" id="sourceGovernanceList"><div class="empty">載入中…</div></div>
       </section>
@@ -341,19 +341,83 @@
           const n=row.records??row.searchable_records??row.public_url_records;
           return fmt(n)+' 筆';
         };
-        host.innerHTML=rows.map(row=>`
-          <div class="ranking-row source-governance-row">
-            <div class="term"><strong>${escRank(row.source||'未命名來源')}</strong><small>${escRank(row.status||'')}</small></div>
-            <div class="metric"><strong>${escRank(row.start_date||'—')}</strong><small>最早資料</small></div>
-            <div class="metric"><strong>${escRank(row.end_date||'—')}</strong><small>最新資料</small></div>
-            <div class="metric"><strong>${row.char_count!=null?fmt(row.char_count):'待重算'}</strong><small>總字數</small></div>
-            <div class="metric"><strong>${countLabel(row)}</strong><small>總數量</small></div>
-          </div>`).join('');
-        status.textContent=`統計檔更新：${data.generated_at||'—'} · 每個來源可同時包含文字、文章、歌曲、圖片、影片或其他多媒體；「最新資料」是後續更新時的主要比對欄位。`;
+        const editable=rows.map((row,idx)=>({...row,_idx:idx}));
+        host.innerHTML=editable.map(row=>`
+          <article class="era-setting-card source-edit-card" data-source-idx="${row._idx}">
+            <div class="era-setting-head">
+              <div><strong>${escRank(row.source||'未命名來源')}</strong><small>${escRank(row.status||'')}</small></div>
+              <span class="pill">${escRank(row.source_type||'來源')}</span>
+            </div>
+            <div class="era-setting-grid">
+              <label>平台／來源<input name="source" value="${escRank(row.source||'')}"></label>
+              <label>最早資料<input name="start_date" type="date" value="${escRank(row.start_date||'')}"></label>
+              <label>最新資料<input name="end_date" type="date" value="${escRank(row.end_date||'')}"></label>
+              <label>總字數<input name="char_count" type="number" min="0" value="${row.char_count!=null?escRank(row.char_count):''}" placeholder="待重算"></label>
+              <label>總數量<input name="records" type="number" min="0" value="${row.records!=null?escRank(row.records):''}"></label>
+              <label>狀態<input name="status" value="${escRank(row.status||'')}"></label>
+              <label style="grid-column:1/-1">內容類型 JSON<textarea name="content_counts" rows="3">${escRank(JSON.stringify(row.content_counts||{},null,2))}</textarea></label>
+            </div>
+            <div class="era-setting-actions">
+              <button type="button" data-source-save>儲存</button>
+              <button type="button" data-source-delete>刪除</button>
+            </div>
+          </article>`).join('');
+        host.querySelectorAll('[data-source-save]').forEach(btn=>btn.addEventListener('click',()=>saveSourceCard(btn.closest('.source-edit-card'),data)));
+        host.querySelectorAll('[data-source-delete]').forEach(btn=>btn.addEventListener('click',()=>deleteSourceCard(btn.closest('.source-edit-card'),data)));
+        qel('addSourceRecord')?.addEventListener('click',()=>addSourceRecord(data));
+        status.textContent=`統計檔更新：${data.generated_at||'—'} · 每個來源可新增、編輯、刪除；「最新資料」是後續更新時的主要比對欄位。`;
       }catch(err){
         status.textContent='來源資料載入失敗：'+String(err.message||err);
         host.innerHTML='<div class="empty">目前無法讀取來源統計。</div>';
       }
+    }
+
+    function sourceRowsFromData(data){
+      return [...(data.text_sources||[]),...(data.media_sources||[])];
+    }
+    async function persistSourceStats(data){
+      const payload={action:'update_source_stats',source_stats:data};
+      const res=await fetch(SHEET_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),redirect:'follow'});
+      const out=await res.json().catch(()=>({}));
+      if(!res.ok||out?.ok===false)throw new Error(out?.error||'來源資料更新失敗');
+      return out;
+    }
+    async function saveSourceCard(card,data){
+      const idx=Number(card.dataset.sourceIdx);
+      const rows=sourceRowsFromData(data);
+      const current=rows[idx]; if(!current)return;
+      const pick=n=>card.querySelector(`[name="${n}"]`);
+      let counts={};
+      try{counts=JSON.parse(pick('content_counts').value||'{}')}catch(_){throw new Error('內容類型 JSON 格式錯誤')}
+      const updated={...current,
+        source:pick('source').value.trim(),
+        start_date:pick('start_date').value||null,
+        end_date:pick('end_date').value||null,
+        char_count:pick('char_count').value===''?null:Number(pick('char_count').value),
+        records:pick('records').value===''?null:Number(pick('records').value),
+        status:pick('status').value.trim(),
+        content_counts:counts
+      };
+      const ti=(data.text_sources||[]).indexOf(current);
+      const mi=(data.media_sources||[]).indexOf(current);
+      if(ti>=0)data.text_sources[ti]=updated; else if(mi>=0)data.media_sources[mi]=updated;
+      await persistSourceStats(data);
+      await renderSourceGovernance();
+    }
+    async function deleteSourceCard(card,data){
+      const idx=Number(card.dataset.sourceIdx);
+      const rows=sourceRowsFromData(data);
+      const current=rows[idx]; if(!current)return;
+      data.text_sources=(data.text_sources||[]).filter(x=>x!==current);
+      data.media_sources=(data.media_sources||[]).filter(x=>x!==current);
+      await persistSourceStats(data);
+      await renderSourceGovernance();
+    }
+    async function addSourceRecord(data){
+      const row={source:'新來源',records:0,searchable_records:0,start_date:null,end_date:null,char_count:null,status:'待補資料',content_counts:{}};
+      data.text_sources=[...(data.text_sources||[]),row];
+      await persistSourceStats(data);
+      await renderSourceGovernance();
     }
 
     async function renderEraSettings(){
