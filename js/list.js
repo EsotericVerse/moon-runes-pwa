@@ -146,8 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const runeName = String(r.符文名稱 || "").trim();
     const searchQuery = `尋找目前${runeName}之符文的資料`;
     const methodQuery = `符合${runeName}之符文演算法的文字`;
-    const searchUrl = `search.html?q=${encodeURIComponent(searchQuery)}`;
-    const methodUrl = `search.html?q=${encodeURIComponent(methodQuery)}`;
+    const searchUrl = `search.html?content_type=rune_system&rune=${encodeURIComponent(runeName)}&q=${encodeURIComponent(runeName)}`;
+    const methodUrl = `search.html?content_type=rune_algorithm&rune=${encodeURIComponent(runeName)}&q=${encodeURIComponent(methodQuery)}`;
     modalData.innerHTML = fields
       .filter(([,key]) => r[key] !== undefined && r[key] !== null && String(r[key]).trim() !== "")
       .map(([label,key]) => `<div class="field"><dt>${esc(label)}</dt><dd>${esc(r[key])}</dd></div>`)
