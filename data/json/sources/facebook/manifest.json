@@ -1,8 +1,8 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "dataset": "LOC Facebook historical text corpus",
   "source": "Facebook export",
-  "records": 17656,
+  "records": 18329,
   "shards": [
     "facebook_posts_01.json",
     "facebook_posts_02.json",
@@ -12,7 +12,35 @@
     "facebook_posts_06.json",
     "facebook_posts_07.json",
     "facebook_posts_08.json",
-    "facebook_posts_09.json"
+    "facebook_posts_09.json",
+    "facebook_posts_10.json",
+    "facebook_posts_11.json",
+    "facebook_posts_12.json",
+    "facebook_posts_13.json",
+    "facebook_posts_14.json",
+    "facebook_posts_15.json",
+    "facebook_posts_16.json",
+    "facebook_posts_17.json",
+    "facebook_posts_18.json",
+    "facebook_posts_19.json",
+    "facebook_posts_20.json",
+    "facebook_posts_21.json",
+    "facebook_posts_22.json",
+    "facebook_posts_23.json",
+    "facebook_posts_24.json",
+    "facebook_posts_25.json",
+    "facebook_posts_26.json",
+    "facebook_posts_27.json",
+    "facebook_posts_28.json",
+    "facebook_posts_29.json",
+    "facebook_posts_30.json",
+    "facebook_posts_31.json",
+    "facebook_posts_32.json",
+    "facebook_posts_33.json",
+    "facebook_posts_34.json",
+    "facebook_posts_35.json",
+    "facebook_posts_36.json",
+    "facebook_posts_37.json"
   ],
   "mother_sources": [
     {
@@ -20,8 +48,15 @@
       "source": "Facebook",
       "manifest": "oscars80_mother_manifest.json",
       "text_records": 673,
-      "status": "imported_mother",
+      "status": "merged_searchable",
       "note": "Mother source is registered before derived runtime/search shards; keep author_account while analyzing Facebook accounts together."
     }
-  ]
+  ],
+  "accounts": {
+    "sopa2306": 17656,
+    "oscars80": 673
+  },
+  "duplicates_excluded": 0,
+  "keyword_policy": "existing concepts plus corpus TF-IDF CJK 2-4grams and Latin terms; retrieval aid only",
+  "search_status": "all_mother_sources_merged_searchable"
 }

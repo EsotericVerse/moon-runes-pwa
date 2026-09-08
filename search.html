@@ -989,16 +989,17 @@
       const p=r.payload||{},periodLabel=publicPeriodLabel(r,p);
       const isThreads=p.source_role==='main_post'||p.evidence_role==='primary'||(r.source_refs||[]).some(ref=>ref?.source_type==='threads');
       const isOffline=p.source_type==='offline_archive'||(r.source_refs||[]).some(ref=>ref?.source_type==='offline_archive');
-      const source=isOffline?`${p.platform||'已關站平台'}離線史料`:(isThreads?'Threads 主貼文':'方法論維護文章');
-      const terms=(p.matched_terms||p.keywords||[]).slice(0,8);
+      const isFacebook=p.source_platform==='facebook'||(r.source_refs||[]).some(ref=>ref?.source_type==='facebook');
+      const source=isOffline?`${p.platform||'已關站平台'}離線史料`:(isFacebook?`Facebook · ${p.author_account||'作者帳號'}`:(isThreads?'Threads 主貼文':'方法論維護文章'));
+      const terms=(p.matched_terms||p.keywords||p.semantic_keywords||[]).slice(0,8);
       const text=String(p.text||r.summary||'');
       const chars=Number(p.char_count||text.length||0);
-      const body=isOffline
+      const body=(isOffline||isFacebook)
         ? `<details><summary>展開全文</summary><div class="summary" style="white-space:pre-wrap;line-height:1.8">${esc(text)}</div></details>`
         : isThreads
         ? `<div class="summary" style="white-space:pre-wrap;line-height:1.8">${esc(text)}</div>`
         : (text?`<p class="summary">${esc(text)}</p>`:'');
-      return `<article class="card"><div class="meta"><span class="pill">${esc(publicLocLabel(r.primary_loc||"LOC6"))} · ${isOffline?"歷史全文":(isThreads?"Threads":"Article")}</span><span class="pill">${esc(source)}</span>${periodLabel?`<span class="pill">${esc(periodLabel)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}${chars?`<span class="pill">${chars} 字</span>`:''}</div><h3>${esc(publicResultTitle(r))}</h3>${body}${terms.length?`<p class="summary"><strong>關鍵字／命中：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
+      return `<article class="card"><div class="meta"><span class="pill">${esc(publicLocLabel(r.primary_loc||"LOC6"))} · ${isOffline?"歷史全文":(isFacebook?"Facebook 全文":(isThreads?"Threads":"Article"))}</span><span class="pill">${esc(source)}</span>${periodLabel?`<span class="pill">${esc(periodLabel)}</span>`:''}${p.date?`<span class="pill">${esc(p.date)}</span>`:''}${chars?`<span class="pill">${chars} 字</span>`:''}</div><h3>${esc(publicResultTitle(r))}</h3>${body}${terms.length?`<p class="summary"><strong>關鍵字／命中：</strong>${terms.map(esc).join(' · ')}</p>`:''}${linksFor(r)}</article>`;
     }
     function relationshipCard(r){
       const p=r.payload||{},src=p.source||{},targets=p.targets||[],kw=p.keywords||[],loc6=p.loc6_interpretation||{};
@@ -1260,7 +1261,7 @@
         (key==='rune_songs'?runeSongCard:
         (key==='relationships'?relationshipCard:
         (key==='works'?musicCard:
-        (key==='loc4_articles'?textArticleCard:card)))));
+        ((key==='loc4_articles'||key==='text')?textArticleCard:card)))));
     }
 
     function flattenGroups(groups,entityMode=false){
