@@ -128,10 +128,35 @@
           "role": "推演"
         }
       },
-      "canonical_loc_rule": "LOC1–8 的名稱與定位以 canonical_loc_map 為唯一現行權威。其他 README、FAQ、UI、Search、KM 與 Registry 只能引用或投影，不得自行重新定義。"
+      "canonical_loc_rule": "LOC1–8 的名稱與定位以 canonical_loc_map 為唯一現行權威。其他 README、FAQ、UI、Search、KM 與 Registry 只能引用或投影，不得自行重新定義。 Canon 1.0 起，LOC 固定只有 LOC1–LOC8，不存在 LOC9；固定名稱、中文對應、功能定位與 LunaRunes 映射不得由下游資料反向改寫。",
+      "lunarunes_loc_mapping": {
+        "LOC1": "月之符文",
+        "LOC2": "符文脈絡",
+        "LOC3": "符文體系（較基礎結構／三卡類比）",
+        "LOC4": "符文體系（更完整結構／五卡類比）",
+        "LOC5": "符文體系（多模組整合／OW3gs 類比）",
+        "LOC6": "符文解牌方法",
+        "LOC7": "符文演算",
+        "LOC8": "符文演化"
+      },
+      "lunarunes_chain": [
+        "月之符文",
+        "符文脈絡",
+        "符文體系",
+        "符文演算",
+        "符文演化"
+      ],
+      "fixed_constants": {
+        "loc_range": "LOC1–LOC8 only; LOC9 does not exist",
+        "lunarunes_count": 66,
+        "context_zh": "脈絡",
+        "context_typo_forbidden": "脈落"
+      }
     }
   ],
   "authority_scope": "global_framework",
   "canonical_priority": "highest_for_LOC1_8_names_and_roles",
-  "updated_at": "2026-09-08"
+  "updated_at": "2026-09-08",
+  "canon_version": "1.0",
+  "canon_status": "formal"
 }
