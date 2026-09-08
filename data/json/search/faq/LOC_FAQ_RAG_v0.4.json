@@ -8,7 +8,7 @@
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "由 LOC FAQ v0.4 同步產生；LOC1–8 名稱、定位與固定結構以 Canon 1.0 / LOC_LANGUAGE_SYSTEM_REGISTRY.json 為唯一現行權威。本檔為 retrieval derivative，不是 Canon。",
+    "description": "由 LOC FAQ v0.4 依 Canon 1.0 同步產生；本檔為 retrieval derivative，不是 Canon。",
     "source_dataset": "LOC_FAQ_v0.4.json",
     "parent_entry_count": 90,
     "chunk_count": 90,
@@ -40,7 +40,7 @@
         "LOC到底在做什麼？",
         "可以簡單介紹LOC嗎？"
       ],
-      "answer": "LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋並推演語言的語言系統框架。它以 LunaRunes（月之符文）作為語彙種子，延伸到脈絡、音樂、文字、多媒體、治理、文字建築與時間推演；LOC1–8各自保留功能與資料責任，再透過 Search、Context 與 Evolution 串接。",
+      "answer": "LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋並推演語言的語言系統框架。從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。LOC 固定只有 LOC1–LOC8，不存在 LOC9。",
       "keywords": [
         "LOC",
         "Luna Codex",
@@ -58,12 +58,12 @@
         "跨LOC關聯",
         "時間結構"
       ],
-      "retrieval_text": "LOC是什麼？ 什麼是LOC？ 月典是什麼？ LOC到底在做什麼？ 可以簡單介紹LOC嗎？ LOC Luna Codex 月典 個人語言系統 自我治理 語言框架 LOC1–8 不同型態的語言資料 創作文字 歌詞 多媒體影片 資料統整 共同檢索 跨LOC關聯 時間結構 LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋並推演語言的語言系統框架。它以 LunaRunes（月之符文）作為語彙種子，延伸到脈絡、音樂、文字、多媒體、治理、文字建築與時間推演；LOC1–8各自保留功能與資料責任，再透過 Search、Context 與 Evolution 串接。",
+      "retrieval_text": "LOC是什麼？ 什麼是LOC？ 月典是什麼？ LOC到底在做什麼？ 可以簡單介紹LOC嗎？ LOC Luna Codex 月典 個人語言系統 自我治理 語言框架 LOC1–8 不同型態的語言資料 創作文字 歌詞 多媒體影片 資料統整 共同檢索 跨LOC關聯 時間結構 LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋並推演語言的語言系統框架。從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。LOC 固定只有 LOC1–LOC8，不存在 LOC9。",
       "related_ids": [],
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -97,7 +97,7 @@
         "index.html",
         "runes.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -126,7 +126,7 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "derived"
     },
     {
@@ -155,7 +155,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -186,7 +186,7 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -216,7 +216,7 @@
         "runes.html",
         "LunaRune64.xlsx"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -249,7 +249,7 @@
         "runes.html",
         "LunaRune64.xlsx"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -278,7 +278,7 @@
       "source_refs": [
         "moon-syntax:v2.1"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -307,7 +307,7 @@
         "adoption-guide:v1",
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -338,7 +338,7 @@
         "runes.html",
         "LunaRune64.xlsx#Grammar"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -367,7 +367,7 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -395,7 +395,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -425,7 +425,7 @@
       "source_refs": [
         "runes.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -454,7 +454,7 @@
         "creator-confirmed:2026-09-02",
         "https://loc.lo3rwang.cc/"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -482,7 +482,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -512,13 +512,13 @@
         "context.html",
         "loc2-game.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
       "id": "FAQ-017-A",
       "parent_id": "FAQ-017",
-      "category": "LOC2桌遊",
+      "category": "LOC2 脈絡",
       "intent": "LOC2目前完成到什麼階段",
       "question": "LOC2目前完成到什麼階段？",
       "aliases": [
@@ -527,7 +527,7 @@
         "事件卡做好了嗎？",
         "LOC2什麼時候能實體測試？"
       ],
-      "answer": "LOC2已有規則與實體文件，但實體卡牌尚待正式印出；下一個關鍵階段是印卡後進行真人實體對戰，才能驗證規則、平衡性與實際遊戲感。現階段不能把紙面規則完成等同於玩法驗證完成。",
+      "answer": "LOC2 的核心是 Context／脈絡，承接 Relation、Scenario、Event 與 Graph。原 LOC2 遊戲現定位為「脈絡沙盒遊戲」：它是脈絡的互動沙盒，讓使用者操作並觀察語彙之間的關係，不是獨立 LOC。Graph／Relation 本體權責固定歸 LOC2。",
       "keywords": [
         "LOC2",
         "實體文件",
@@ -536,12 +536,12 @@
         "實體對戰",
         "平衡"
       ],
-      "retrieval_text": "LOC2目前完成到什麼階段？ LOC2現在可以玩了嗎？ LOC2開發進度如何？ 事件卡做好了嗎？ LOC2什麼時候能實體測試？ LOC2 實體文件 印卡 playtest 實體對戰 平衡 LOC2已有規則與實體文件，但實體卡牌尚待正式印出；下一個關鍵階段是印卡後進行真人實體對戰，才能驗證規則、平衡性與實際遊戲感。現階段不能把紙面規則完成等同於玩法驗證完成。",
+      "retrieval_text": "LOC2目前完成到什麼階段？ LOC2現在可以玩了嗎？ LOC2開發進度如何？ 事件卡做好了嗎？ LOC2什麼時候能實體測試？ LOC2 實體文件 印卡 playtest 實體對戰 平衡 LOC2 的核心是 Context／脈絡，承接 Relation、Scenario、Event 與 Graph。原 LOC2 遊戲現定位為「脈絡沙盒遊戲」：它是脈絡的互動沙盒，讓使用者操作並觀察語彙之間的關係，不是獨立 LOC。Graph／Relation 本體權責固定歸 LOC2。",
       "related_ids": [],
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -556,7 +556,7 @@
         "八個LOC哪一個比較高階？",
         "第一次接觸LOC要從哪裡開始？"
       ],
-      "answer": "LOC1–8不是版本、等級或八個獨立產品，而是同一套語言系統的功能責任區。現行固定為：LOC1 LunaRunes／月之符文，定位是符文語彙（Token）；LOC2 Context／脈絡；LOC3 Music／音樂；LOC4 Literary／文字創作；LOC5 MultiMedia／多媒體；LOC6 Methodology／方法論；LOC7 Algorithm／演算法（知識庫）；LOC8 Evolution／推演。其他文件與介面只能引用這套定義，不應另行改寫。",
+      "answer": "LOC1–8不是版本、等級或八個獨立產品，而是同一套語言系統固定的功能責任區。正式名稱固定為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。LOC 只有 1–8，不存在 LOC9。",
       "keywords": [
         "LOC1–8",
         "框架",
@@ -565,7 +565,7 @@
         "Text Architecture",
         "Temporal Semantics"
       ],
-      "retrieval_text": "LOC1至LOC8是什麼關係？ LOC為什麼分成1到8？ LOC1到LOC8是版本順序嗎？ 八個LOC哪一個比較高階？ 第一次接觸LOC要從哪裡開始？ LOC1–8 框架 語言切分 Language Evolution Text Architecture Temporal Semantics LOC1–8不是版本、等級或八個獨立產品，而是同一套語言系統的功能責任區。現行固定為：LOC1 LunaRunes／月之符文，定位是符文語彙（Token）；LOC2 Context／脈絡；LOC3 Music／音樂；LOC4 Literary／文字創作；LOC5 MultiMedia／多媒體；LOC6 Methodology／方法論；LOC7 Algorithm／演算法（知識庫）；LOC8 Evolution／推演。其他文件與介面只能引用這套定義，不應另行改寫。",
+      "retrieval_text": "LOC1至LOC8是什麼關係？ LOC為什麼分成1到8？ LOC1到LOC8是版本順序嗎？ 八個LOC哪一個比較高階？ 第一次接觸LOC要從哪裡開始？ LOC1–8 框架 語言切分 Language Evolution Text Architecture Temporal Semantics LOC1–8不是版本、等級或八個獨立產品，而是同一套語言系統固定的功能責任區。正式名稱固定為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。LOC 只有 1–8，不存在 LOC9。",
       "related_ids": [],
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
@@ -602,7 +602,7 @@
         "search.html",
         "context.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -633,7 +633,7 @@
         "creator-confirmed:2026-09-02",
         "https://github.com/EsotericVerse/moon-runes-pwa"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -665,7 +665,7 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -693,7 +693,7 @@
       "source_refs": [
         "moon-syntax:v2.1"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -721,7 +721,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -749,7 +749,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -778,7 +778,7 @@
       "source_refs": [
         "moon-syntax:v2.1"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -809,7 +809,7 @@
         "moon-syntax:v2.1",
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -838,7 +838,7 @@
       "source_refs": [
         "moon-syntax:v2.1"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -867,7 +867,7 @@
         "creator-confirmed:2026-09-02",
         "LunaRune64.xlsx"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -895,7 +895,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -924,7 +924,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -953,7 +953,7 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -981,7 +981,7 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1010,7 +1010,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1038,7 +1038,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1066,7 +1066,7 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "derived"
     },
     {
@@ -1096,7 +1096,7 @@
         "master-system:2026-09",
         "LOC4-index:v1.0"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1126,7 +1126,7 @@
         "LOC4-index:v1.0",
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1155,7 +1155,7 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "derived"
     },
     {
@@ -1184,7 +1184,7 @@
         "master-system:2026-09",
         "LOC4-index:v1.0"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1212,7 +1212,7 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1226,7 +1226,7 @@
         "MultiMedia是什麼？",
         "LOC5是不是影像分發？"
       ],
-      "answer": "LOC5 是 MultiMedia／多媒體，負責把語言延伸到圖像、影音、Reels、MV、系統視覺化等非純文字媒介。重點是跨媒介表達：同一個概念可以在文字、音樂與影像之間轉換，但 LOC5 的正式定位就是多媒體，不再使用 Resonance Distribution 作為現行名稱。",
+      "answer": "LOC5 是 MultiMedia／多媒體，負責非純文字媒介的語言表達與多模組整合，包括圖像、影音、Reels、MV、系統視覺化等。MultiMedia 是正式英文名稱；「多媒體」是正式中文名稱。",
       "keywords": [
         "LOC5",
         "MultiMedia",
@@ -1238,7 +1238,7 @@
         "系統視覺化",
         "跨媒介表達"
       ],
-      "retrieval_text": "LOC5是什麼？ LOC5主要做什麼？ MultiMedia是什麼？ LOC5是不是影像分發？ LOC5 MultiMedia 多媒體 影像 影音 Reels MV 系統視覺化 跨媒介表達 LOC5 是 MultiMedia／多媒體，負責把語言延伸到圖像、影音、Reels、MV、系統視覺化等非純文字媒介。重點是跨媒介表達：同一個概念可以在文字、音樂與影像之間轉換，但 LOC5 的正式定位就是多媒體，不再使用 Resonance Distribution 作為現行名稱。",
+      "retrieval_text": "LOC5是什麼？ LOC5主要做什麼？ MultiMedia是什麼？ LOC5是不是影像分發？ LOC5 MultiMedia 多媒體 影像 影音 Reels MV 系統視覺化 跨媒介表達 LOC5 是 MultiMedia／多媒體，負責非純文字媒介的語言表達與多模組整合，包括圖像、影音、Reels、MV、系統視覺化等。MultiMedia 是正式英文名稱；「多媒體」是正式中文名稱。",
       "related_ids": [],
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
@@ -1249,7 +1249,7 @@
     {
       "id": "FAQ-042-A",
       "parent_id": "FAQ-042",
-      "category": "LOC5共鳴",
+      "category": "LOC5 多媒體",
       "intent": "為什麼Reels也可以算LOC5作品",
       "question": "為什麼Reels也可以算LOC5作品？",
       "aliases": [
@@ -1270,13 +1270,13 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "derived"
     },
     {
       "id": "FAQ-043-A",
       "parent_id": "FAQ-043",
-      "category": "LOC5共鳴",
+      "category": "LOC5 多媒體",
       "intent": "LOC5目前還缺什麼代表成果",
       "question": "LOC5目前還缺什麼代表成果？",
       "aliases": [
@@ -1296,21 +1296,21 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
       "id": "FAQ-044-A",
       "parent_id": "FAQ-044",
-      "category": "LOC6治理",
+      "category": "LOC6 方法論",
       "intent": "LOC6是什麼",
       "question": "LOC6是什麼？",
       "aliases": [
         "LOC6主要做什麼？",
-        "Governance Distribution是什麼？",
+        "Methodology是什麼？",
         "LOC6是不是政德風？"
       ],
-      "answer": "LOC6 是 Methodology／方法論，負責整理可以重複使用的理解、判讀、比較、分類、治理與處理方法。Governance／治理是 LOC6 中的一種代表方法，不等於 LOC6 全部；政德風則是其中重要的個人方法與治理案例。",
+      "answer": "LOC6 是 Methodology／方法論，負責整理可重複使用的理解、判讀、比較、分類、治理與處理方法。Governance／治理只是 LOC6 中的一種代表方法；政德風則是其中重要的個人方法與治理案例，兩者都不等於 LOC6 全部。",
       "keywords": [
         "LOC6",
         "Governance",
@@ -1319,7 +1319,7 @@
         "價值判準",
         "責任邊界"
       ],
-      "retrieval_text": "LOC6是什麼？ LOC6主要做什麼？ Governance Distribution是什麼？ LOC6是不是政德風？ LOC6 Governance 語言治理 政德風 價值判準 責任邊界 LOC6 是 Methodology／方法論，負責整理可以重複使用的理解、判讀、比較、分類、治理與處理方法。Governance／治理是 LOC6 中的一種代表方法，不等於 LOC6 全部；政德風則是其中重要的個人方法與治理案例。",
+      "retrieval_text": "LOC6是什麼？ LOC6主要做什麼？ Methodology是什麼？ LOC6是不是政德風？ LOC6 Governance 語言治理 政德風 價值判準 責任邊界 LOC6 是 Methodology／方法論，負責整理可重複使用的理解、判讀、比較、分類、治理與處理方法。Governance／治理只是 LOC6 中的一種代表方法；政德風則是其中重要的個人方法與治理案例，兩者都不等於 LOC6 全部。",
       "related_ids": [],
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
@@ -1331,7 +1331,7 @@
     {
       "id": "FAQ-045-A",
       "parent_id": "FAQ-045",
-      "category": "LOC6治理",
+      "category": "LOC6 方法論",
       "intent": "政德風和LOC6有什麼差別",
       "question": "政德風和LOC6有什麼差別？",
       "aliases": [
@@ -1339,7 +1339,7 @@
         "Zhengde Style和Governance差在哪？",
         "LOC6如何使用政德風？"
       ],
-      "answer": "LOC6 是治理與意義分析的功能域；政德風是其中最主要的個人語言系統標籤與具體語料之一。LOC6 可以整理政德風的價值判準、語氣、邊界、治理句與歷時變化，但 LOC6 本身不等於只有政德風。",
+      "answer": "LOC6 是 Methodology／方法論；政德風是 LOC6 中重要的個人方法與治理案例。政德風可用來記錄個人語言、價值、界線、選擇與自我治理如何形成與變化，但 LOC6 不等於政德風，也不要求其他使用者接受同一套價值答案。",
       "keywords": [
         "政德風",
         "LOC6",
@@ -1347,18 +1347,18 @@
         "Style Guide",
         "語言表現"
       ],
-      "retrieval_text": "政德風和LOC6有什麼差別？ 政德風就是LOC6嗎？ Zhengde Style和Governance差在哪？ LOC6如何使用政德風？ 政德風 LOC6 Governance Style Guide 語言表現 LOC6 是治理與意義分析的功能域；政德風是其中最主要的個人語言系統標籤與具體語料之一。LOC6 可以整理政德風的價值判準、語氣、邊界、治理句與歷時變化，但 LOC6 本身不等於只有政德風。",
+      "retrieval_text": "政德風和LOC6有什麼差別？ 政德風就是LOC6嗎？ Zhengde Style和Governance差在哪？ LOC6如何使用政德風？ 政德風 LOC6 Governance Style Guide 語言表現 LOC6 是 Methodology／方法論；政德風是 LOC6 中重要的個人方法與治理案例。政德風可用來記錄個人語言、價值、界線、選擇與自我治理如何形成與變化，但 LOC6 不等於政德風，也不要求其他使用者接受同一套價值答案。",
       "related_ids": [],
       "source_refs": [
         "zhengde-style:v1.0"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
       "id": "FAQ-046-A",
       "parent_id": "FAQ-046",
-      "category": "LOC6治理",
+      "category": "LOC6 方法論",
       "intent": "完整的LOC6可以拆成哪些成果",
       "question": "完整的LOC6可以拆成哪些成果？",
       "aliases": [
@@ -1379,13 +1379,13 @@
       "source_refs": [
         "zhengde-style:v1.0"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
       "id": "FAQ-047-A",
       "parent_id": "FAQ-047",
-      "category": "LOC7文字建築",
+      "category": "LOC7 演算法（知識庫）",
       "intent": "LOC7是什麼",
       "question": "LOC7是什麼？",
       "aliases": [
@@ -1393,7 +1393,7 @@
         "Text Architecture是什麼？",
         "文字建築學在LOC裡做什麼？"
       ],
-      "answer": "LOC7 是 Algorithm／演算法（知識庫）。它把 LOC6 的多種方法結構化、組合、排序與條件化，形成可重複執行的流程；文字建築、Search、FAQ／RAG、Graph RAG traversal、文字分析與知識庫都屬 LOC7 的實作與承載。",
+      "answer": "LOC7 是 Algorithm／演算法（知識庫）。它把多種方法結構化、組合、排序與條件化，形成可重複執行、可檢索、可關聯的流程與知識結構。文字建築、Search、FAQ／RAG、Graph RAG traversal、文字分析與知識庫都是 LOC7 的實作或承載，不是 LOC7 的正式名稱。",
       "keywords": [
         "LOC7",
         "Text Architecture",
@@ -1401,7 +1401,7 @@
         "語意關係",
         "檢索"
       ],
-      "retrieval_text": "LOC7是什麼？ LOC7主要做什麼？ Text Architecture是什麼？ 文字建築學在LOC裡做什麼？ LOC7 Text Architecture 文字建築 語意關係 檢索 LOC7 是 Algorithm／演算法（知識庫）。它把 LOC6 的多種方法結構化、組合、排序與條件化，形成可重複執行的流程；文字建築、Search、FAQ／RAG、Graph RAG traversal、文字分析與知識庫都屬 LOC7 的實作與承載。",
+      "retrieval_text": "LOC7是什麼？ LOC7主要做什麼？ Text Architecture是什麼？ 文字建築學在LOC裡做什麼？ LOC7 Text Architecture 文字建築 語意關係 檢索 LOC7 是 Algorithm／演算法（知識庫）。它把多種方法結構化、組合、排序與條件化，形成可重複執行、可檢索、可關聯的流程與知識結構。文字建築、Search、FAQ／RAG、Graph RAG traversal、文字分析與知識庫都是 LOC7 的實作或承載，不是 LOC7 的正式名稱。",
       "related_ids": [],
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
@@ -1413,7 +1413,7 @@
     {
       "id": "FAQ-048-A",
       "parent_id": "FAQ-048",
-      "category": "LOC7文字建築",
+      "category": "LOC7 演算法（知識庫）",
       "intent": "LOC7目前的FAQ RAG做到什麼程度",
       "question": "LOC7目前的FAQ RAG做到什麼程度？",
       "aliases": [
@@ -1437,13 +1437,13 @@
         "data/json/search/faq/LOC_FAQ_v0.4.json",
         "data/json/search/faq/LOC_FAQ_RAG_v0.4.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
       "id": "FAQ-049-A",
       "parent_id": "FAQ-049",
-      "category": "LOC7文字建築",
+      "category": "LOC7 演算法（知識庫）",
       "intent": "Graph RAG是LOC7成立的必要條件嗎",
       "question": "Graph RAG是LOC7成立的必要條件嗎？",
       "aliases": [
@@ -1451,7 +1451,7 @@
         "沒有知識圖譜LOC7算完成嗎？",
         "Graph RAG在LOC7是什麼位置？"
       ],
-      "answer": "不是。LOC7 的核心是 Text Architecture 與可重複的文字處理／檢索能力；Graph RAG 是其中一種 traversal／retrieval 技術，不是 LOC7 是否成立的唯一條件。Graph 關係本體由 LOC2 管理。",
+      "answer": "不是。Graph RAG 是 LOC7 Algorithm／演算法（知識庫）中的一種 traversal／retrieval 技術，不是 LOC7 是否成立的必要條件。Graph／Relation 本體由 LOC2 Context／脈絡管理；LOC7 只負責對其進行演算法式檢索與處理。",
       "keywords": [
         "Graph RAG",
         "知識圖譜",
@@ -1459,19 +1459,19 @@
         "Embedding",
         "RAG"
       ],
-      "retrieval_text": "Graph RAG是LOC7成立的必要條件嗎？ LOC7一定要做Graph RAG嗎？ 沒有知識圖譜LOC7算完成嗎？ Graph RAG在LOC7是什麼位置？ Graph RAG 知識圖譜 LOC7 Embedding RAG 不是。LOC7 的核心是 Text Architecture 與可重複的文字處理／檢索能力；Graph RAG 是其中一種 traversal／retrieval 技術，不是 LOC7 是否成立的唯一條件。Graph 關係本體由 LOC2 管理。",
+      "retrieval_text": "Graph RAG是LOC7成立的必要條件嗎？ LOC7一定要做Graph RAG嗎？ 沒有知識圖譜LOC7算完成嗎？ Graph RAG在LOC7是什麼位置？ Graph RAG 知識圖譜 LOC7 Embedding RAG 不是。Graph RAG 是 LOC7 Algorithm／演算法（知識庫）中的一種 traversal／retrieval 技術，不是 LOC7 是否成立的必要條件。Graph／Relation 本體由 LOC2 Context／脈絡管理；LOC7 只負責對其進行演算法式檢索與處理。",
       "related_ids": [],
       "source_refs": [
         "search.html",
         "context.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
       "id": "FAQ-050-A",
       "parent_id": "FAQ-050",
-      "category": "LOC8事件與時間",
+      "category": "LOC8 推演",
       "intent": "LOC8是什麼",
       "question": "LOC8是什麼？",
       "aliases": [
@@ -1479,7 +1479,7 @@
         "Life Distribution是什麼？",
         "LOC8和其他LOC有什麼差別？"
       ],
-      "answer": "LOC8 是 Evolution／推演。它把前面累積的語彙、作品、脈絡、方法與演算法放回時間，透過時期、Timeline、Trend 與 Trajectory 觀察變化並形成後續推演。公開介面使用「時期」；Graph 本體 ownership 仍歸 LOC2。",
+      "answer": "LOC8 是 Evolution／推演。它把既有語彙、作品、脈絡、方法與演算法放回時間中，以時期、Event、Timeline、Trend 與 Trajectory 做系統分析並推測可能後續。中文固定使用「推演」，因為結果不是預言、命定、流行趨勢或必然演化；Graph 本體仍歸 LOC2。",
       "keywords": [
         "LOC8",
         "Life Event",
@@ -1488,7 +1488,7 @@
         "時間",
         "統合"
       ],
-      "retrieval_text": "LOC8是什麼？ LOC8主要做什麼？ Life Distribution是什麼？ LOC8和其他LOC有什麼差別？ LOC8 Life Event Temporal Semantics 事件 時間 統合 LOC8 是 Evolution／推演。它把前面累積的語彙、作品、脈絡、方法與演算法放回時間，透過時期、Timeline、Trend 與 Trajectory 觀察變化並形成後續推演。公開介面使用「時期」；Graph 本體 ownership 仍歸 LOC2。",
+      "retrieval_text": "LOC8是什麼？ LOC8主要做什麼？ Life Distribution是什麼？ LOC8和其他LOC有什麼差別？ LOC8 Life Event Temporal Semantics 事件 時間 統合 LOC8 是 Evolution／推演。它把既有語彙、作品、脈絡、方法與演算法放回時間中，以時期、Event、Timeline、Trend 與 Trajectory 做系統分析並推測可能後續。中文固定使用「推演」，因為結果不是預言、命定、流行趨勢或必然演化；Graph 本體仍歸 LOC2。",
       "related_ids": [],
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
@@ -1501,7 +1501,7 @@
     {
       "id": "FAQ-051-A",
       "parent_id": "FAQ-051",
-      "category": "LOC8事件與時間",
+      "category": "LOC8 推演",
       "intent": "LOC8目前完成到什麼階段",
       "question": "LOC8目前完成到什麼階段？",
       "aliases": [
@@ -1522,13 +1522,13 @@
       "source_refs": [
         "evolution.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
       "id": "FAQ-052-A",
       "parent_id": "FAQ-052",
-      "category": "LOC8事件與時間",
+      "category": "LOC8 推演",
       "intent": "LOC8第一版最小可用流程是什麼",
       "question": "LOC8第一版最小可用流程是什麼？",
       "aliases": [
@@ -1550,7 +1550,7 @@
       "source_refs": [
         "evolution.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1579,7 +1579,7 @@
       "source_refs": [
         "moon-syntax:v2.1"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1606,7 +1606,7 @@
       "source_refs": [
         "moon-syntax:v2.1"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1633,7 +1633,7 @@
       "source_refs": [
         "moon-syntax:v2.1"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1660,7 +1660,7 @@
       "source_refs": [
         "moon-syntax:v2.1"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1687,7 +1687,7 @@
       "source_refs": [
         "moon-syntax:v2.1"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1714,7 +1714,7 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1741,7 +1741,7 @@
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1755,7 +1755,7 @@
         "LOC是不是只是作品目錄？",
         "作品如何驗證語言系統？"
       ],
-      "answer": "因為這些作品不是後來硬塞進LOC的模組，而是由月符與作者語言長期使用自然分枝出的不同表達形式。LOC3音樂、LOC4文字、LOC5多媒體提供作品Corpus；LOC6分析其中的意義、治理與風格，LOC7處理文字建築與檢索關係，LOC8再加入事件與時期脈絡。",
+      "answer": "因為這些作品不是後來硬塞進LOC的模組，而是由月符與作者語言長期使用自然分枝出的不同表達形式。LOC3音樂、LOC4文字、LOC5多媒體提供作品Corpus；LOC6以方法論處理其中的判讀、治理與風格，LOC7以演算法（知識庫）處理文字建築、檢索與方法組合，LOC8再放回時間中進行推演。",
       "keywords": [
         "作品",
         "系統驗證",
@@ -1763,12 +1763,12 @@
         "LOC1–5",
         "語意轉譯"
       ],
-      "retrieval_text": "為什麼LOC把小說、歌曲、Reels和遊戲都視為系統的一部分？ 作品和LOC系統有什麼關係？ LOC是不是只是作品目錄？ 作品如何驗證語言系統？ 作品 系統驗證 跨媒介 LOC1–5 語意轉譯 因為這些作品不是後來硬塞進LOC的模組，而是由月符與作者語言長期使用自然分枝出的不同表達形式。LOC3音樂、LOC4文字、LOC5多媒體提供作品Corpus；LOC6分析其中的意義、治理與風格，LOC7處理文字建築與檢索關係，LOC8再加入事件與時期脈絡。",
+      "retrieval_text": "為什麼LOC把小說、歌曲、Reels和遊戲都視為系統的一部分？ 作品和LOC系統有什麼關係？ LOC是不是只是作品目錄？ 作品如何驗證語言系統？ 作品 系統驗證 跨媒介 LOC1–5 語意轉譯 因為這些作品不是後來硬塞進LOC的模組，而是由月符與作者語言長期使用自然分枝出的不同表達形式。LOC3音樂、LOC4文字、LOC5多媒體提供作品Corpus；LOC6以方法論處理其中的判讀、治理與風格，LOC7以演算法（知識庫）處理文字建築、檢索與方法組合，LOC8再放回時間中進行推演。",
       "related_ids": [],
       "source_refs": [
         "master-system:2026-09"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "derived"
     },
     {
@@ -1795,7 +1795,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1822,7 +1822,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1849,7 +1849,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1876,7 +1876,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1903,7 +1903,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -1931,13 +1931,13 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
       "id": "FAQ-067-A",
       "parent_id": "FAQ-067",
-      "category": "LOC7知識管理",
+      "category": "LOC7 演算法（知識庫）",
       "intent": "LOC的知識管理現在放在哪裡",
       "question": "LOC的知識管理現在放在哪裡？",
       "aliases": [
@@ -1960,13 +1960,13 @@
         "governance.html",
         "data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
       "id": "FAQ-068-A",
       "parent_id": "FAQ-068",
-      "category": "LOC7知識管理",
+      "category": "LOC7 演算法（知識庫）",
       "intent": "FAQ、RAG和原始資料有什麼差別",
       "question": "FAQ、RAG和原始資料有什麼差別？",
       "aliases": [
@@ -1988,7 +1988,7 @@
         "governance.html",
         "data/json/search/faq/LOC_FAQ_v0.4.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2001,7 +2001,7 @@
         "LOC6 7 8差在哪？",
         "句型文法、文字建築和時間語意怎麼分？"
       ],
-      "answer": "最簡單的區分是：LOC6 Methodology 負責「有哪些可重複的方法」；LOC7 Algorithm／演算法（知識庫）負責「怎麼把多種方法組合成可執行流程並保存、檢索」；LOC8 Evolution 負責「這些語言、作品、方法與演算法在時間中如何變化」。Graph／Relation 本體屬 LOC2 Context。",
+      "answer": "最簡單的區分是：LOC6 Methodology／方法論負責「有哪些可重複的方法」；LOC7 Algorithm／演算法（知識庫）負責「如何把多種方法組合成可執行、可檢索的流程與知識結構」；LOC8 Evolution／推演負責「把既有資料放回時間中做系統分析並推測可能後續」。Graph／Relation 本體屬 LOC2 Context／脈絡。",
       "keywords": [
         "LOC6",
         "LOC7",
@@ -2010,7 +2010,7 @@
         "Text Architecture",
         "Temporal Semantics"
       ],
-      "retrieval_text": "LOC6、LOC7、LOC8最簡單怎麼區分？ LOC6 7 8差在哪？ 句型文法、文字建築和時間語意怎麼分？ LOC6 LOC7 LOC8 句型文法 Text Architecture Temporal Semantics 最簡單的區分是：LOC6 Methodology 負責「有哪些可重複的方法」；LOC7 Algorithm／演算法（知識庫）負責「怎麼把多種方法組合成可執行流程並保存、檢索」；LOC8 Evolution 負責「這些語言、作品、方法與演算法在時間中如何變化」。Graph／Relation 本體屬 LOC2 Context。",
+      "retrieval_text": "LOC6、LOC7、LOC8最簡單怎麼區分？ LOC6 7 8差在哪？ 句型文法、文字建築和時間語意怎麼分？ LOC6 LOC7 LOC8 句型文法 Text Architecture Temporal Semantics 最簡單的區分是：LOC6 Methodology／方法論負責「有哪些可重複的方法」；LOC7 Algorithm／演算法（知識庫）負責「如何把多種方法組合成可執行、可檢索的流程與知識結構」；LOC8 Evolution／推演負責「把既有資料放回時間中做系統分析並推測可能後續」。Graph／Relation 本體屬 LOC2 Context／脈絡。",
       "related_ids": [],
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
@@ -2021,7 +2021,7 @@
     {
       "id": "FAQ-070-A",
       "parent_id": "FAQ-070",
-      "category": "LOC8事件與時間",
+      "category": "LOC8 推演",
       "intent": "事件為什麼也屬於語言系統",
       "question": "事件為什麼也屬於語言系統？",
       "aliases": [
@@ -2042,7 +2042,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2069,7 +2069,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2097,13 +2097,13 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
       "id": "FAQ-073-A",
       "parent_id": "FAQ-073",
-      "category": "LOC8使用體驗",
+      "category": "LOC8 推演",
       "intent": "如果使用者只說『今天心情不好，外面又下雨』，LOC可以做什麼",
       "question": "如果使用者只說『今天心情不好，外面又下雨』，LOC可以做什麼？",
       "aliases": [
@@ -2111,7 +2111,7 @@
         "自然語言可以直接搜尋嗎？",
         "心情不好可以抽牌嗎？"
       ],
-      "answer": "目前使用者可以直接在 LOC 搜尋引擎輸入一句自然語言，跨符文、作品、媒體、治理、知識與時期資料尋找相關內容。LOC8 Life 則負責每日符文、事件與時期紀錄；兩者是不同工作流，不應把尚未實作的自動情緒代理流程描述成既有功能。",
+      "answer": "目前使用者可以直接在 LOC 搜尋引擎輸入一句自然語言，跨符文、作品、媒體、治理、知識與時期資料尋找相關內容。LOC8 Evolution／推演 則負責每日符文、事件與時期紀錄；兩者是不同工作流，不應把尚未實作的自動情緒代理流程描述成既有功能。",
       "keywords": [
         "自然語言",
         "心情",
@@ -2119,12 +2119,12 @@
         "抽牌",
         "LOC8"
       ],
-      "retrieval_text": "如果使用者只說『今天心情不好，外面又下雨』，LOC可以做什麼？ LOC能理解心情嗎？ 自然語言可以直接搜尋嗎？ 心情不好可以抽牌嗎？ 自然語言 心情 跨媒體推薦 抽牌 LOC8 目前使用者可以直接在 LOC 搜尋引擎輸入一句自然語言，跨符文、作品、媒體、治理、知識與時期資料尋找相關內容。LOC8 Life 則負責每日符文、事件與時期紀錄；兩者是不同工作流，不應把尚未實作的自動情緒代理流程描述成既有功能。",
+      "retrieval_text": "如果使用者只說『今天心情不好，外面又下雨』，LOC可以做什麼？ LOC能理解心情嗎？ 自然語言可以直接搜尋嗎？ 心情不好可以抽牌嗎？ 自然語言 心情 跨媒體推薦 抽牌 LOC8 目前使用者可以直接在 LOC 搜尋引擎輸入一句自然語言，跨符文、作品、媒體、治理、知識與時期資料尋找相關內容。LOC8 Evolution／推演 則負責每日符文、事件與時期紀錄；兩者是不同工作流，不應把尚未實作的自動情緒代理流程描述成既有功能。",
       "related_ids": [],
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2151,7 +2151,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2177,7 +2177,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2204,7 +2204,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2231,7 +2231,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2258,7 +2258,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2285,7 +2285,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2312,7 +2312,7 @@
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2343,7 +2343,7 @@
       "source_refs": [
         "search.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2384,7 +2384,7 @@
         "context.html",
         "LunaRune64.xlsx#Grammar"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2414,7 +2414,7 @@
         "runes.html",
         "governance.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2444,39 +2444,37 @@
         "runes.html",
         "LunaRune64.xlsx#Grammar"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
       "id": "FAQ-085-A",
       "parent_id": "FAQ-085",
       "category": "月符分類",
-      "intent": "月符 Search 的符文籤詩、符文脈絡、符文體系、符文演算、符文演化怎麼分",
-      "question": "月符 Search 的符文籤詩、符文脈絡、符文體系、符文演算、符文演化怎麼分？",
+      "intent": "月之符文的「月之符文、符文脈絡、符文體系、符文演算、符文演化」怎麼分",
+      "question": "月之符文的「月之符文、符文脈絡、符文體系、符文演算、符文演化」怎麼分？",
       "aliases": [
-        "月符搜尋有哪些分類？",
-        "符文占卜為什麼改叫符文籤詩？",
-        "符文歌曲和符文文學放哪裡？",
-        "未來性放在哪裡？"
+        "月之符文五段運作鏈是什麼？",
+        "符文脈絡和符文體系差在哪？",
+        "符文演算和符文演化差在哪？"
       ],
-      "answer": "月之符文在 runes.html 內分成幾種不同工作：抽牌／籤詩處理實際判讀；符文資料保存66符本義與圖鑑；符文脈絡把符文放進 Context／Relation／Graph；符文演算處理可重複的組合與判讀規則；符文演化則觀察符文在時間、作品與使用方式中的變化。這些是月之符文的不同操作面，不是把「月之符文」本身再當成多元體系的一個類別。",
+      "answer": "LunaRunes 的固定五段運作鏈是：月之符文 → 符文脈絡 → 符文體系 → 符文演算 → 符文演化。月之符文是基本語彙；符文脈絡處理關係與情境；符文體系承接文學、歌曲、影像、沙盒等延伸表達；符文演算把位置、方向、Grammar、方法與脈絡組成可重複判讀流程；符文演化觀察符文語言與延伸體系在時間中的變化與可能後續。",
       "keywords": [
-        "符文籤詩",
+        "月之符文",
         "符文脈絡",
         "符文體系",
         "符文演算",
         "符文演化",
-        "Graph",
-        "月符沙盒"
+        "LunaRunes"
       ],
-      "retrieval_text": "月符 Search 的符文籤詩、符文脈絡、符文體系、符文演算、符文演化怎麼分？ 月符搜尋有哪些分類？ 符文占卜為什麼改叫符文籤詩？ 符文歌曲和符文文學放哪裡？ 未來性放在哪裡？ 符文籤詩 符文脈絡 符文體系 符文演算 符文演化 Graph 月符沙盒 月之符文在 runes.html 內分成幾種不同工作：抽牌／籤詩處理實際判讀；符文資料保存66符本義與圖鑑；符文脈絡把符文放進 Context／Relation／Graph；符文演算處理可重複的組合與判讀規則；符文演化則觀察符文在時間、作品與使用方式中的變化。這些是月之符文的不同操作面，不是把「月之符文」本身再當成多元體系的一個類別。",
+      "retrieval_text": "月之符文的「月之符文、符文脈絡、符文體系、符文演算、符文演化」怎麼分？ 月之符文五段運作鏈是什麼？ 符文脈絡和符文體系差在哪？ 符文演算和符文演化差在哪？ 月之符文 符文脈絡 符文體系 符文演算 符文演化 LunaRunes LunaRunes 的固定五段運作鏈是：月之符文 → 符文脈絡 → 符文體系 → 符文演算 → 符文演化。月之符文是基本語彙；符文脈絡處理關係與情境；符文體系承接文學、歌曲、影像、沙盒等延伸表達；符文演算把位置、方向、Grammar、方法與脈絡組成可重複判讀流程；符文演化觀察符文語言與延伸體系在時間中的變化與可能後續。",
       "related_ids": [],
       "source_refs": [
         "runes.html",
         "context.html",
         "evolution.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2490,7 +2488,7 @@
         "方法論和演算法有什麼差別？",
         "推演在 LOC 哪裡？"
       ],
-      "answer": "公開介面以功能名稱為主；現行固定責任區為 LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm（知識庫）、Evolution。技術層可使用 Search、RAG、Graph、Trend 等實作名稱，但不能反過來改寫 LOC1–8 的正式定位。",
+      "answer": "公開與資料治理都以 Canon 1.0 固定名稱為準：LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm、Evolution。Text Architecture、Governance、Graph RAG、Search、Trend 等都是方法、技術或實作名稱，不能反過來改寫 LOC1–8 的正式名稱。",
       "keywords": [
         "表達",
         "方法論",
@@ -2501,7 +2499,7 @@
         "符文演算",
         "符文演化"
       ],
-      "retrieval_text": "LOC 的公開 Tag 怎麼分？ LOC3到8怎麼分類？ 方法論和演算法有什麼差別？ 推演在 LOC 哪裡？ 表達 方法論 演算法 推演 符文籤詩 符文體系 符文演算 符文演化 公開介面以功能名稱為主；現行固定責任區為 LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm（知識庫）、Evolution。技術層可使用 Search、RAG、Graph、Trend 等實作名稱，但不能反過來改寫 LOC1–8 的正式定位。",
+      "retrieval_text": "LOC 的公開 Tag 怎麼分？ LOC3到8怎麼分類？ 方法論和演算法有什麼差別？ 推演在 LOC 哪裡？ 表達 方法論 演算法 推演 符文籤詩 符文體系 符文演算 符文演化 公開與資料治理都以 Canon 1.0 固定名稱為準：LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm、Evolution。Text Architecture、Governance、Graph RAG、Search、Trend 等都是方法、技術或實作名稱，不能反過來改寫 LOC1–8 的正式名稱。",
       "related_ids": [],
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
@@ -2537,7 +2535,7 @@
         "runes.html",
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2551,7 +2549,7 @@
         "LOC2為什麼是脈絡？",
         "LOC8為什麼叫推演？"
       ],
-      "answer": "現行分類固定為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。這套名稱與定位以 LOC_LANGUAGE_SYSTEM_REGISTRY.json 的 canonical_loc_map 為唯一現行權威。",
+      "answer": "Canon 1.0 固定分類為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。LOC 固定只有 1–8，不存在 LOC9。",
       "keywords": [
         "LOC1",
         "LOC2",
@@ -2560,7 +2558,7 @@
         "演算法",
         "推演"
       ],
-      "retrieval_text": "LOC1–8 現在怎麼分類？ LOC最新八個分類是什麼？ LOC2為什麼是脈絡？ LOC8為什麼叫推演？ LOC1 LOC2 脈絡 方法論 演算法 推演 現行分類固定為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。這套名稱與定位以 LOC_LANGUAGE_SYSTEM_REGISTRY.json 的 canonical_loc_map 為唯一現行權威。",
+      "retrieval_text": "LOC1–8 現在怎麼分類？ LOC最新八個分類是什麼？ LOC2為什麼是脈絡？ LOC8為什麼叫推演？ LOC1 LOC2 脈絡 方法論 演算法 推演 Canon 1.0 固定分類為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。LOC 固定只有 1–8，不存在 LOC9。",
       "related_ids": [],
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
@@ -2595,7 +2593,7 @@
         "evolution.html",
         "data/json/registries/LOC_GRAPH_SCHEMA.json"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     },
     {
@@ -2608,7 +2606,7 @@
         "推演和符文演化有什麼差別？",
         "LOC8為什麼不是文學演化？"
       ],
-      "answer": "LOC8 的「推演」是把既有事件、作品、時期、Trend 與 Trajectory 放回時間中觀察變化；月之符文的「符文演化」則特指符文本身跨時間、作品、脈絡與使用方式的變化。兩者共享時間觀察，但責任範圍不同。",
+      "answer": "LOC8 的正式中文名稱固定為「推演」，因為它做的是依既有資料與結構進行系統分析，提出可能後續，而不是宣告必然演化。LunaRunes 實例中的「符文演化」則是五段固定運作鏈的最後一段，特指符文語言與延伸體系在時間中的變化。兩者名稱不同是刻意的語意治理。",
       "keywords": [
         "LOC8",
         "推演",
@@ -2617,13 +2615,13 @@
         "Trajectory",
         "Trend"
       ],
-      "retrieval_text": "為什麼 LOC8 叫推演，但月符仍叫符文演化？ 推演和符文演化有什麼差別？ LOC8為什麼不是文學演化？ LOC8 推演 符文演化 ERA Trajectory Trend LOC8 的「推演」是把既有事件、作品、時期、Trend 與 Trajectory 放回時間中觀察變化；月之符文的「符文演化」則特指符文本身跨時間、作品、脈絡與使用方式的變化。兩者共享時間觀察，但責任範圍不同。",
+      "retrieval_text": "為什麼 LOC8 叫推演，但月符仍叫符文演化？ 推演和符文演化有什麼差別？ LOC8為什麼不是文學演化？ LOC8 推演 符文演化 ERA Trajectory Trend LOC8 的正式中文名稱固定為「推演」，因為它做的是依既有資料與結構進行系統分析，提出可能後續，而不是宣告必然演化。LunaRunes 實例中的「符文演化」則是五段固定運作鏈的最後一段，特指符文語言與延伸體系在時間中的變化。兩者名稱不同是刻意的語意治理。",
       "related_ids": [],
       "source_refs": [
         "evolution.html",
         "runes.html"
       ],
-      "canon_version": "0.5r",
+      "canon_version": "1.0",
       "status": "confirmed"
     }
   ]
