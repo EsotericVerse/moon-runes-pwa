@@ -3,7 +3,7 @@
   "registry": "LOC6_DUAL_RUNE_RELATION_REGISTRY",
   "authority": "LOC6",
   "status": "working",
-  "updated_at": "2026-09-05",
+  "updated_at": "2026-09-09",
   "purpose": "Central registry for neutral two-rune semantic relationships. This layer records what rune A and rune B mean together before a draw assigns cause/effect positions or directions.",
   "distinction": {
     "pair_relation": "Unoriented semantic relationship between two runes. No cause/effect role is implied.",
@@ -71,5 +71,6 @@
       "source_role": "cause/effect direction projection templates",
       "import_status": "reference_only_not_pair_relation"
     }
-  ]
+  ],
+  "authority_domain": "governance"
 }
