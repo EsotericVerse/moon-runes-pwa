@@ -139,16 +139,16 @@
     },
     {
       "id": "GR-EVAL-008",
-      "query": "P1",
+      "query": "P1.0",
       "expect": {
         "eras": [
-          "ERA-P1"
+          "ERA-P1.0"
         ],
         "forbidden_eras": [
           "ERA-P8"
         ]
       },
-      "note": "Direct historical ERA lookup must preserve temporal precision instead of defaulting to current."
+      "note": "Direct historical ERA lookup must follow the current ERA registry identifier and preserve temporal precision instead of defaulting to current."
     }
   ],
   "governance": [
@@ -156,5 +156,6 @@
     "A case may be updated only when the upstream registry/event/ERA authority changes.",
     "Private live Google Sheet Relation rows must never be required by the public evaluation set."
   ],
-  "authority_domain": "knowledge"
+  "authority_domain": "knowledge",
+  "updated_at": "2026-09-09"
 }
