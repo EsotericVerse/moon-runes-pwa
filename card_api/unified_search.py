@@ -1960,6 +1960,15 @@ class UnifiedSearchEngine:
                     event_era = era_by_period.get(period_match.group(1).upper(), "")
                 if not event_era:
                     event_era = era_by_label.get(_compact(raw_era), "")
+                if not event_era:
+                    event_date = str(event.get("date") or "").strip()
+                    if event_date:
+                        for era in eras:
+                            start = str(era.get("start_date") or "").strip()
+                            end = str(era.get("end_date") or "").strip()
+                            if start and event_date >= start and (not end or event_date <= end):
+                                event_era = str(era.get("era_id") or "")
+                                break
             if event_era:
                 add_edge(
                     f"EDGE-{eid}-ERA-{event_era}",
@@ -2426,6 +2435,7 @@ class UnifiedSearchEngine:
         # canonical/exact hit, do not let every low-relevance retrieval result
         # become a graph seed; that causes unrelated LOC/ERA over-traversal.
         q = _compact(query)
+        rune_q = re.sub(r"(半正位|半逆位|正位|逆位|半正|半逆|正|逆)$", "", q)
         strong_seed_ids: set[str] = set()
         exclusive_seed_ids: set[str] = set()
 
@@ -2449,7 +2459,9 @@ class UnifiedSearchEngine:
             if q:
                 if _compact(node.get("id") or "") == q or period == q or label == q:
                     strong = True
-                elif node_type in {"life_event", "era", "rune", "work"} and len(q) >= 2:
+                elif node_type == "rune" and rune_q:
+                    strong = _compact(node.get("rune_name") or "") == rune_q
+                elif node_type in {"life_event", "era", "work"} and len(q) >= 2:
                     strong = label.startswith(q) or (len(q) >= 3 and q in label)
 
                 # Only named/historical entities monopolize the seed set.
@@ -2460,7 +2472,7 @@ class UnifiedSearchEngine:
                         exclusive = True
                     elif node_type == "life_event" and object_type in {"system", "work"}:
                         exclusive = True
-                    elif node_type == "rune" and label == q:
+                    elif node_type == "rune" and rune_q and _compact(node.get("rune_name") or "") == rune_q:
                         exclusive = True
                     elif node_type == "character" and label == q:
                         exclusive = True
