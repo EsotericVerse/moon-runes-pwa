@@ -1,18 +1,21 @@
-// runeLibrary.js - 統一 fetch 和 cache 邏輯
+// runeLibrary.js - unified LunaRunes66 runtime access
 
-
-import { rune } from './runes66.js';
+import { rune, groups } from './runes66.js';
 import { allData } from './rune_all_data_all.js';
 
 export function getRunes66() {
-  return rune; // 同步返回陣列
+  return rune;
+}
+
+export function getRuneGroups() {
+  return groups;
 }
 
 export function getAllData() {
   return allData;
 }
 
-
-// 暴露到 window，讓其他 JS 用
-window.getRunes64 = getRunes64;
+// Expose canonical runtime accessors for non-module consumers.
+window.getRunes66 = getRunes66;
+window.getRuneGroups = getRuneGroups;
 window.getAllData = getAllData;
