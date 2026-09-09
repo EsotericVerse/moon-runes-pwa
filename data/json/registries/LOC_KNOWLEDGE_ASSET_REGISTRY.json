@@ -51,7 +51,13 @@
         "德和LunaRunes66是什麼關係"
       ],
       "notes": "Primary public route is governance.html#de-rune; runes.html is the secondary record/list view. Searchability must not imply drawability.",
-      "category_label": "治理：德之符文"
+      "category_label": "治理：德之符文",
+      "related_domains": [
+        "runes",
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-PERSON-LO3RWANG-001",
@@ -97,7 +103,12 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "notes": "Official public identity profile is maintained directly in lo3rwang.html; duplicate Markdown profile removed."
+      "notes": "Official public identity profile is maintained directly in lo3rwang.html; duplicate Markdown profile removed.",
+      "domain": "knowledge",
+      "related_domains": [
+        "governance",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC-OVERVIEW-001",
@@ -152,7 +163,17 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "notes": "Public LOC overview is maintained directly in index.html and summarized in README.md; duplicate Markdown overview removed."
+      "notes": "Public LOC overview is maintained directly in index.html and summarized in README.md; duplicate Markdown overview removed.",
+      "domain": "knowledge",
+      "related_domains": [
+        "runes",
+        "context",
+        "music",
+        "literary",
+        "media",
+        "governance",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-README-001",
@@ -180,7 +201,17 @@
         "maintained_in_repo": true
       },
       "notes": "README summarizes current LOC architecture, implementation status, public entry points, and cross-LOC progress. It should be indexed by KM with provenance retained, but must not override Canon or mother data.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "knowledge",
+      "related_domains": [
+        "runes",
+        "context",
+        "music",
+        "literary",
+        "media",
+        "governance",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC6-RUNE-001",
@@ -207,7 +238,13 @@
         "source_corpus": "seven uploaded 月語者 outline files"
       },
       "notes": "182 chapter slots. 180 contain explicit three-rune records; V3 Ch5 and Ch6 are confirmed intentional no-draw combat-writing workflow exceptions, not missing data.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "governance",
+      "related_domains": [
+        "runes",
+        "literary",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC2-EVENT-001",
@@ -236,7 +273,15 @@
         "source": "context.html Alpha Event 32"
       },
       "notes": "Preserves the 32 current Alpha Event titles, requirement signatures and descriptions as scenario prototypes. Requirement signatures are not silently converted into fixed rune-pair mappings.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "context",
+      "related_domains": [
+        "runes",
+        "literary",
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC6-DUAL-001",
@@ -268,7 +313,14 @@
         ]
       },
       "notes": "Stores neutral A+B relationships only. Cause/effect order, directions and question context are applied later by the LOC1 two-card interpretation layer.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "governance",
+      "related_domains": [
+        "runes",
+        "context",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC6-ZD-001",
@@ -295,7 +347,14 @@
         "maintained_in_repo": true
       },
       "notes": "Uses LOC8 ERA-P1 through ERA-P8 as the primary evolution axis for Zhengde Style. Governance content and style state remain separate; age-based views are secondary projections. Text-level historical evidence is added per ERA with provenance.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "governance",
+      "related_domains": [
+        "music",
+        "literary",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-ERA-001",
@@ -321,7 +380,13 @@
         "maintained_in_repo": true
       },
       "notes": "Authoritative ERA timeline. LOC6 references this registry to compare Zhengde Style evolution; LOC6 does not redefine ERA dates or names.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "evolution",
+      "related_domains": [
+        "music",
+        "governance",
+        "knowledge"
+      ]
     },
     {
       "asset_id": "KA-LOC3-RUNE-SONG-001",
@@ -349,7 +414,15 @@
         "maintained_in_repo": true
       },
       "notes": "Rune-song provenance registry. Candidate generation is restricted to P2–P4; keyword recovery uses distinct rune-name hits only. Current confirmed work-level records: E0223, E0285, E0354, E0364. 《界線之內》 remains title-confirmed but work-ID unresolved because current P5/P6 mappings conflict with the period rule. Current LOC5 media audit found no matching Reels/MV for the four confirmed work-level records.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "music",
+      "related_domains": [
+        "runes",
+        "governance",
+        "knowledge",
+        "evolution",
+        "media"
+      ]
     },
     {
       "asset_id": "KA-LOC6-ERA-EVIDENCE-001",
@@ -375,7 +448,13 @@
         "maintained_in_repo": true,
         "source": "LOC3 403-work indexed corpus"
       },
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "governance",
+      "related_domains": [
+        "music",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC6-ZD-ANALYSIS-001",
@@ -425,7 +504,15 @@
       "public_summary": "政德風是王政德長期作品、生活紀錄、歌曲與文章中逐步形成的個人語言表現；其演變可從感性書寫、理性命題、界線建立，一路追蹤到現行的自我治理。",
       "presentation": "public_article",
       "exposure_policy": "public_full_text",
-      "public_reading_note": "政德風介紹屬可公開閱讀的風格描述；允許完整文章頁公開，不套用 corpus preview-only 限制。"
+      "public_reading_note": "政德風介紹屬可公開閱讀的風格描述；允許完整文章頁公開，不套用 corpus preview-only 限制。",
+      "domain": "governance",
+      "related_domains": [
+        "music",
+        "literary",
+        "media",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC1-RUNES-001",
@@ -468,7 +555,17 @@
         "maintained_in_repo": true
       },
       "notes": "Single maintained basic rune lookup projection derived from LunaRune64.xlsx. Consumers that only need rune identity/keywords/group/moon phase/four orientations should use this file rather than clone the full rune dataset.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "runes",
+      "related_domains": [
+        "context",
+        "music",
+        "literary",
+        "media",
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC1-DIRECTION-001",
@@ -506,7 +603,16 @@
         "maintained_in_repo": true
       },
       "notes": "Searchable four-direction wording for each rune; it remains subordinate to the canonical mother data.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "runes",
+      "related_domains": [
+        "context",
+        "music",
+        "literary",
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC1-LOTS-001",
@@ -548,7 +654,17 @@
         "maintained_in_repo": true
       },
       "notes": "Structured Lots answers used by oracle mode and normal LOC RAG retrieval. The spreadsheet mother source remains authoritative.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "runes",
+      "related_domains": [
+        "context",
+        "music",
+        "literary",
+        "media",
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-IMG-LOC-FRAMEWORK-001",
@@ -585,7 +701,17 @@
         "LunaRunes"
       ],
       "notes": "月典整體框架視覺總覽；適合搜尋 LOC 架構、LOC1–8 與月之符文關係時直接顯示。",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "knowledge",
+      "related_domains": [
+        "runes",
+        "context",
+        "music",
+        "literary",
+        "media",
+        "governance",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-IMG-LUNAR-RUNES-001",
@@ -615,7 +741,12 @@
         "Seed Corpus"
       ],
       "notes": "66 月符的完整視覺總覽，作為 LOC Reference Seed System 的圖片型知識資產。",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "runes",
+      "related_domains": [
+        "media",
+        "knowledge"
+      ]
     },
     {
       "asset_id": "KA-IMG-LOC-SYSTEM-001",
@@ -650,7 +781,17 @@
         "RAG"
       ],
       "notes": "LOC 全系統資訊圖，適合做整體系統介紹與搜尋結果中的視覺知識摘要。",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "knowledge",
+      "related_domains": [
+        "runes",
+        "context",
+        "music",
+        "literary",
+        "media",
+        "governance",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-IMG-LOC-CYCLE-001",
@@ -687,7 +828,15 @@
         "關係"
       ],
       "notes": "以視覺方式呈現從未知、月符、作品、治理、知識到事件與時間再重新理解的循環；可作 LOC8 關係／趨勢分析的視覺知識資產。",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "evolution",
+      "related_domains": [
+        "runes",
+        "music",
+        "literary",
+        "governance",
+        "knowledge"
+      ]
     },
     {
       "asset_id": "KA-TUTORIAL-LOC-001",
@@ -734,7 +883,17 @@
       "related_views": [
         "tutorial01.html"
       ],
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "knowledge",
+      "related_domains": [
+        "runes",
+        "context",
+        "music",
+        "literary",
+        "media",
+        "governance",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-TUTORIAL-LOC-001-WEB",
@@ -779,7 +938,17 @@
         ]
       },
       "notes": "Searchable web application view of Tutorial 01. Designed as a KM output: publication PDF remains the source tutorial asset, while this HTML view improves discoverability, linking and reuse without becoming Canon.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "knowledge",
+      "related_domains": [
+        "runes",
+        "context",
+        "music",
+        "literary",
+        "media",
+        "governance",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-FAQ-004",
@@ -810,7 +979,17 @@
         "revision_from": "data/json/archive/faq/LOC_FAQ_v0.3.json"
       },
       "notes": "Maintained FAQ view of current KM knowledge. It does not override Canon, mother data, or Shared Registry.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "knowledge",
+      "related_domains": [
+        "runes",
+        "context",
+        "music",
+        "literary",
+        "media",
+        "governance",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-FAQ-RAG-004",
@@ -836,7 +1015,12 @@
         "source_dataset": "data/json/search/faq/LOC_FAQ_v0.4.json"
       },
       "notes": "Runtime FAQ retrieval dataset derived from FAQ v0.4; not a Canon source.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "knowledge",
+      "related_domains": [
+        "governance",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC3-PERIOD-KW-001",
@@ -863,7 +1047,12 @@
         "period_registry": "data/json/registries/LOC_ERA_REGISTRY.json"
       },
       "notes": "LOC3 owns keyword evidence; LOC8 owns period boundaries; LOC7 may index this normalized period analysis. v0.2 adds document-frequency normalization and adjacent-period emergence/rise/persistence/decline signals.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "music",
+      "related_domains": [
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC6-THREADS-001",
@@ -901,7 +1090,12 @@
         "maintained_in_repo": true
       },
       "notes": "Searchable LOC4 Threads source index expanded to 138 representative long-form main posts from the 7008-record deduplicated corpus. Main posts are primary evidence; replies remain supplemental in LOC4_THREADS_KM_INDEX.json. Full corpus migration remains in progress.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "governance",
+      "related_domains": [
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC-GOV-CORE-001",
@@ -948,7 +1142,17 @@
         ]
       },
       "notes": "Common governance baseline. Separates system governance from personal worldview and defines boundary-based, versioned, auditable governance.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "governance",
+      "related_domains": [
+        "runes",
+        "context",
+        "music",
+        "literary",
+        "media",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC-GOV-HISTORY-001",
@@ -988,7 +1192,12 @@
         ]
       },
       "notes": "Describes governance evolution without ranking old/new versions as morally better or worse.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "governance",
+      "related_domains": [
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LUNA66-GOV-001",
@@ -1030,7 +1239,13 @@
         ]
       },
       "notes": "Governance interpretation of the mature 66-rune design; does not override the rune mother source.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "runes",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-LOC-GOV-TREND-001",
@@ -1069,7 +1284,12 @@
         ]
       },
       "notes": "Trend projection only; does not automatically rank historical stages as progress/regression.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "evolution",
+      "related_domains": [
+        "governance",
+        "knowledge"
+      ]
     },
     {
       "asset_id": "KA-COPYLEFT-001",
@@ -1104,7 +1324,12 @@
         "maintained_in_repo": true
       },
       "notes": "Records the author's current copyleft/share-alike intent while keeping upstream Canon identity and third-party rights boundaries explicit.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "governance",
+      "related_domains": [
+        "runes",
+        "knowledge"
+      ]
     },
     {
       "asset_id": "KA-LOC1-INTERPRET-001",
@@ -1138,7 +1363,13 @@
         "maintained_in_repo": true
       },
       "notes": "Single maintained expanded rune interpretation projection. The former engine full-copy dataset was removed as duplicate.",
-      "presentation": "internal_source"
+      "presentation": "internal_source",
+      "domain": "runes",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "asset_id": "KA-RUNE-GRAMMAR",
@@ -1178,7 +1409,14 @@
       },
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "knowledge",
+      "related_domains": [
+        "runes",
+        "context",
+        "governance"
+      ]
     }
-  ]
+  ],
+  "authority_domain": "knowledge"
 }
