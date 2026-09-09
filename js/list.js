@@ -1,44 +1,7 @@
-import { rune, groups } from './runes66.js';
-
 document.addEventListener("DOMContentLoaded", async () => {
-  const drawable = (rune || [])
-    .filter(r => r && Number(r.編號) >= 1 && Number(r.編號) <= 66)
-    .sort((a,b) => Number(a.編號) - Number(b.編號));
-
-  let deRune = null;
-  try {
-    const response = await fetch("data/json/core/runes66.json");
-    if (response.ok) {
-      const payload = await response.json();
-      const rows = Array.isArray(payload) ? payload : (payload.runes || []);
-      const de = rows.find(r => Number(r.編號 ?? r.id) === 0);
-      if (de) {
-        const specialMeta = groups.find(g => g.group_zh === "特殊") || null;
-        deRune = {
-          ...de,
-          編號: 0,
-          符文名稱: de.符文名稱 ?? de.名稱 ?? de.name ?? "德",
-          英文: de.英文 ?? de.english ?? "Virtue",
-          所屬分組: "特殊",
-          分組說明: specialMeta?.description ?? "",
-          月相: de.月相 ?? de.moon_phase ?? "不適用",
-          顯化形式: de.顯化形式 ?? de.keyword ?? "作者誌銘・治理・集合",
-          關鍵詞: de.關鍵詞 ?? de.keyword ?? "",
-          Spec: de.Spec ?? de.spec ?? "",
-          符文變化歷史: de.history?.符文變化歷史 ?? de.符文變化歷史 ?? "",
-          drawable: false,
-          圖檔名稱: null
-        };
-      }
-    }
-  } catch (error) {
-    console.warn("Rune 0 德資料載入失敗，66 枚可抽取符文仍可正常顯示。", error);
-  }
-
-  const all = deRune ? [...drawable, deRune] : drawable;
   const grid = document.querySelector("#rune-grid");
   const count = document.querySelector("#rune-count");
-  const groupFilter = document.querySelector("#group-filter");
+  const toolbar = document.querySelector("#group-filter")?.closest(".toolbar");
   const modal = document.querySelector("#rune-modal");
   const closeBtn = document.querySelector("#modal-close");
   const modalTitle = document.querySelector("#modal-title");
@@ -46,16 +9,71 @@ document.addEventListener("DOMContentLoaded", async () => {
   const modalSummary = document.querySelector("#modal-summary");
   const modalData = document.querySelector("#modal-data");
 
-  // Group membership is canonical and fixed. It is not a user-selectable filter.
-  groupFilter?.remove();
+  // Library is a fixed one-page catalogue. Group selection is not part of this view.
+  toolbar?.remove();
 
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[ch]));
 
+  let runeRows = [];
+  let groups = [];
+  try {
+    const [runeResponse, groupResponse] = await Promise.all([
+      fetch("data/json/core/runes66.json", { cache: "no-store" }),
+      fetch("data/json/core/runes66groups.json", { cache: "no-store" })
+    ]);
+    if (!runeResponse.ok) throw new Error(`runes66.json HTTP ${runeResponse.status}`);
+    if (!groupResponse.ok) throw new Error(`runes66groups.json HTTP ${groupResponse.status}`);
+
+    const runePayload = await runeResponse.json();
+    const groupPayload = await groupResponse.json();
+    runeRows = Array.isArray(runePayload) ? runePayload : (runePayload.runes || []);
+    groups = Array.isArray(groupPayload) ? groupPayload : (groupPayload.groups || []);
+  } catch (error) {
+    console.error("Rune library data load failed", error);
+    if (grid) grid.innerHTML = '<div class="empty">符文資料載入失敗，請重新整理頁面。</div>';
+    return;
+  }
+
+  const groupByRuneId = new Map();
+  for (const meta of groups) {
+    for (const member of meta.runes || []) {
+      const id = Number(member.id);
+      if (Number.isInteger(id)) groupByRuneId.set(id, meta);
+    }
+  }
+
+  function normalize(row){
+    const id = Number(row.編號 ?? row.id);
+    const meta = groupByRuneId.get(id) || null;
+    const name = row.符文名稱 ?? row.名稱 ?? row.name ?? meta?.runes?.find(x => Number(x.id) === id)?.zh ?? "";
+    return {
+      ...row,
+      編號: id,
+      符文名稱: name,
+      英文: row.英文 ?? row.english ?? meta?.runes?.find(x => Number(x.id) === id)?.en ?? "",
+      所屬分組: meta?.group_zh ?? row.所屬分組 ?? row.group ?? "",
+      分組說明: meta?.description ?? row.分組說明 ?? "",
+      月相: row.月相 ?? row.moon_phase ?? "",
+      顯化形式: row.顯化形式 ?? row.keyword ?? "",
+      關鍵詞: row.關鍵詞 ?? row.keyword ?? "",
+      Spec: row.Spec ?? row.spec ?? "",
+      符文變化歷史: row.history?.符文變化歷史 ?? row.符文變化歷史 ?? "",
+      神話故事: row.history?.神話故事 ?? row.神話故事 ?? "",
+      圖檔名稱: row.image ?? row.圖檔名稱 ?? (id > 0 && name ? `${String(id).padStart(2,"0")}_${name}.png` : null),
+      drawable: row.drawable ?? (id >= 1 && id <= 66),
+      group_meta: meta
+    };
+  }
+
+  const all = runeRows
+    .map(normalize)
+    .filter(r => Number.isInteger(r.編號) && r.編號 >= 0 && r.編號 <= 66);
+
   function tile(r){
-    const isDe = Number(r.編號) === 0;
-    const special = isDe || Number(r.編號) >= 65 ? " special" : "";
+    const isDe = r.編號 === 0;
+    const special = isDe || r.編號 >= 65 ? " special" : "";
     const n = String(r.編號).padStart(2,"0");
     const visual = isDe
       ? `<button class="rune-image-button" type="button" data-rune="0" aria-label="查看 德 第零符資料"><div class="rune-thumb rune-thumb-de" aria-hidden="true">德</div></button>`
@@ -71,11 +89,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     </article>`;
   }
 
-  function groupBox(meta, items){
+  function groupBox(meta){
+    const ids = new Set((meta.runes || []).map(member => Number(member.id)));
+    const items = all.filter(r => ids.has(r.編號));
+    if (meta.group_zh === "特殊") {
+      const order = new Map([[65,0],[66,1],[0,2]]);
+      items.sort((a,b) => (order.get(a.編號) ?? 99) - (order.get(b.編號) ?? 99));
+    } else {
+      items.sort((a,b) => a.編號 - b.編號);
+    }
+
     const tone = Array.isArray(meta.possible_tone) ? meta.possible_tone.join("、") : String(meta.possible_tone || "");
     const styleText = Array.isArray(meta.style) ? meta.style.join(" / ") : String(meta.style || "");
-    const drawableCount = items.filter(r => Number(r.編號) !== 0).length;
-    const hasDe = items.some(r => Number(r.編號) === 0);
+    const drawableCount = items.filter(r => r.編號 !== 0).length;
+    const hasDe = items.some(r => r.編號 === 0);
     const countText = meta.group_zh === "特殊"
       ? `${drawableCount} 枚特殊符文${hasDe ? " + 1 枚誌銘" : ""}`
       : `${drawableCount} 枚符文`;
@@ -94,19 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     </section>`;
   }
 
-  const sections = groups.map(meta => {
-    const ids = new Set((meta.runes || []).map(member => Number(member.id)));
-    const items = all.filter(r => ids.has(Number(r.編號)));
-    if (meta.group_zh === "特殊") {
-      const order = new Map([[65,0],[66,1],[0,2]]);
-      items.sort((a,b) => (order.get(Number(a.編號)) ?? 99) - (order.get(Number(b.編號)) ?? 99));
-    } else {
-      items.sort((a,b) => Number(a.編號) - Number(b.編號));
-    }
-    return groupBox(meta, items);
-  });
-
-  grid.innerHTML = sections.join("");
+  if (grid) grid.innerHTML = groups.map(groupBox).join("");
   if (count) count.textContent = "9 組 · 66 枚可抽取符文 + 第 0 符德";
 
   const fields = [
@@ -119,8 +134,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   function openRune(r){
     if (!modal) return;
     modalTitle.textContent = `#${String(r.編號).padStart(2,"0")} · ${r.符文名稱}`;
-    const isDe = Number(r.編號) === 0;
-    if(isDe){
+    const isDe = r.編號 === 0;
+
+    if (isDe) {
       modalImage.removeAttribute("src");
       modalImage.alt = "";
       modalImage.hidden = true;
@@ -129,6 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       modalImage.src = "64images/" + encodeURIComponent(r.圖檔名稱);
       modalImage.alt = `${r.符文名稱}符文卡面`;
     }
+
     modalSummary.innerHTML = isDe ? [
       '<span class="pill">特殊</span>',
       '<span class="pill">作者誌銘</span>',
@@ -139,10 +156,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       `<span class="pill">${esc(r.顯化形式 || r.關鍵詞 || "")}</span>`
     ].join("");
 
-    if(isDe){
+    if (isDe) {
       modalData.innerHTML = [
-        ['英文', r.英文],['所屬分組', '特殊 Special'],['定位', '作者／月語者個人誌銘；不參與抽牌'],
-        ['基本定義', r.Spec],['分組說明', r.分組說明],['History', r.符文變化歷史]
+        ["英文", r.英文],
+        ["所屬分組", "特殊 Special"],
+        ["定位", "作者／月語者個人誌銘；不參與抽牌"],
+        ["基本定義", r.Spec],
+        ["分組說明", r.分組說明],
+        ["History", r.符文變化歷史]
       ].filter(([,value]) => value).map(([label,value]) => `<div class="field"><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("");
       modal.showModal();
       return;
@@ -158,15 +179,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     modal.showModal();
   }
 
-  grid?.addEventListener("click", e => {
-    const btn = e.target.closest("[data-rune]");
-    if(!btn) return;
-    const r = all.find(x => Number(x.編號) === Number(btn.dataset.rune));
-    if(r) openRune(r);
+  grid?.addEventListener("click", event => {
+    const button = event.target.closest("[data-rune]");
+    if (!button) return;
+    const selected = all.find(r => r.編號 === Number(button.dataset.rune));
+    if (selected) openRune(selected);
   });
 
   closeBtn?.addEventListener("click", () => modal.close());
-  modal?.addEventListener("click", e => { if(e.target === modal) modal.close(); });
+  modal?.addEventListener("click", event => { if (event.target === modal) modal.close(); });
   modal?.addEventListener("close", () => {
     modalImage.removeAttribute("src");
     modalImage.alt = "";
