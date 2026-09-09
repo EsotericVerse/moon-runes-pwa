@@ -64,8 +64,9 @@ except Exception as e:
     THREE_CARD_COMBINATIONS = {}
     print(f"Warning: Failed to load three_card_combinations.json: {e}")
 
-# 建立符文編號到資料的映射
-RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES.get("runes", []), 1)}
+# 建立符文編號到資料的映射；相容母資料投影為陣列或 {"runes": [...]} 兩種格式
+RUNES_LIST = RUNES.get("runes", []) if isinstance(RUNES, dict) else (RUNES if isinstance(RUNES, list) else [])
+RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES_LIST, 1)}
 RUNE_SINGLE_MAP = {r.get("符文名稱", f"rune_{i}"): r for i, r in enumerate(RUNE_SINGLE)}
 
 # LOC7 FAQ 資料（全局，一次載入）
@@ -125,7 +126,7 @@ try:
     UNIFIED_SEARCHER = UnifiedSearchEngine(
         faq_searcher=FAQ_SEARCHER,
         loc3_searcher=LOC3_SEARCHER,
-        runes=RUNES.get("runes", []),
+        runes=RUNES_LIST,
         repo_root=REPO_ROOT,
     )
     UNIFIED_LOAD_ERROR = None
