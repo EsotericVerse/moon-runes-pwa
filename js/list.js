@@ -8,21 +8,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const response = await fetch("data/json/core/runes66.json");
     if (response.ok) {
       const payload = await response.json();
-      const de = (payload.runes || []).find(r => Number(r.id) === 0);
+      const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
+      const de = items.find(r => Number(r.編號 ?? r.id) === 0);
       if (de) {
         deRune = {
-          編號: 0,
-          名稱: de.name,
-          符文名稱: de.name,
-          英文: de.english,
-          圖騰: de.icon || "",
-          顯化形式: de.keyword || "作者誌銘・治理・集合",
-          關鍵詞: de.keyword || "",
-          所屬分組: de.group || "治理",
-          月相: de.moon_phase || "不適用",
-          解牌基本極性: de.card_attribute || "中立",
-          Spec: de.spec || "",
-          符文變化歷史: de.history?.符文變化歷史 || "",
+          ...de,
+          名稱: de.符文名稱,
+          顯化形式: de.關鍵詞 || "",
+          解牌基本極性: de.卡片屬性 || "",
+          Spec: de.特別說明 || "",
           drawable: false,
           圖檔名稱: null
         };
@@ -176,7 +170,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const fields = [
-    ["英文","英文"],["圖騰","圖騰"],["顯化形式","顯化形式"],["所屬分組","所屬分組"],["月相","月相"],
+    ["英文","英文"],["圖騰","圖騰"],["顯化形式","顯化形式"],["關鍵詞","關鍵詞"],["反向關鍵詞","反向關鍵詞"],
+    ["特別說明","特別說明"],["所屬分組","所屬分組"],["月相","月相"],["卡片屬性","卡片屬性"],
+    ["人格原型","人格原型"],["角色行動","角色行動"],
     ["月相輔助說明","月相輔助說明"],["靈魂咒語","靈魂咒語"],["靈魂課題","靈魂課題"],
     ["實踐挑戰","實踐挑戰"],["分組說明","分組說明"],["符文變化歷史","符文變化歷史"],
     ["神話故事","神話故事"],["配套儀式建議","配套儀式建議"],["能量調和建議","能量調和建議"]
