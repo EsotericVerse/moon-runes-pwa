@@ -24,17 +24,6 @@
         "source_references": [],
         "provenance_note": "預留協作、共享、影響與來源欄位；目前系統以單一個人語言系統為基準。"
       },
-      "framework_definition": "LOC／月典現行定位為 Language Model（LM）；原有 framework 並未消失，而是成為 LM 的底層 architecture。月之符文提供基本文字語彙（token）與語意種子。歷史上 LOC 從 LunaRunes66 的實際使用、作品延伸與資料整理中逐步抽象成形；結構上，LunaRunes66 是 LOC Language Model 的成熟實例／Reference Seed System。",
-      "framework_principles": [
-        "LOC1–8 是同一套語言系統的責任分工，不是八套獨立產品，也不是版本或成熟度排序。",
-        "穩定的是模型架構與治理邊界，不是語言本身：identity、schema、ownership、provenance 與治理流程可穩定，meaning、relation、context 與 interpretation 可演化。",
-        "不同資料型態保留各自 canonical ownership；跨 LOC 以 reference / consume / propose change 為原則，不直接覆寫。",
-        "LOC 對觀點保持中立，但對 domain、rights、privacy、permission、responsibility boundary 不保持中立。",
-        "歷史原始紀錄保留；後來的解釋可 version / supersede，但不得靜默回寫過去。",
-        "不同意見與 competing interpretation 可以並存；異議本身不是錯誤。",
-        "AI 推論、semantic similarity 與衍生 View 不得自動升格為 Canon。",
-        "LOC Search / Graph / Trend 的目的之一，是讓使用者看見語言如何改變，再自行決定如何治理下一個版本。"
-      ],
       "governance": {
         "core_document": "governance.html",
         "history_document": "governance.html",
@@ -70,15 +59,6 @@
         "LOC6": "Methodology／方法論：以月之符文九群組作為預設分析座標；前八組沿用月之符文八組，第九組「人生道理」由德／命／玄構成。整理關鍵字／來源分布、文字判讀、設計與治理方法；治理是其中一種方法。",
         "LOC7": "Algorithm／演算法（知識庫）：把多種方法結構化、組合並形成可執行、可檢索、可關聯的演算法與知識結構",
         "LOC8": "Evolution／推演：以時間、時期、Event、Trajectory 與 Trend 為證據，觀察既有語言、作品、方法與風格的變化與後續方向"
-      },
-      "framework_chain": {
-        "loc": "LOC1 符文語彙（Token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演",
-        "luna_runes": "符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算（抽牌解牌＋九群組方法論分析） → 符文演化"
-      },
-      "framework_relation": {
-        "historical": "LunaRunes66 先累積實作；LOC 再從這些實作中抽象整理出可重複使用的 framework，並進一步成長為 Language Model。",
-        "structural": "LOC 現行為 Language Model；原有 framework 是其底層 architecture。LunaRunes66 是第一套成熟、可治理、可推演的 Reference Seed System，用來證明 LOC 的模型性。",
-        "scope": "LunaRunes66 是根與成熟實例，但不是 LOC 唯一可能使用的符文／語彙系統；其他系統也可依 LOC architecture 建立自己的實作。"
       },
       "rune_public_concept_map": {
         "符文籤詩": "抽牌、籤詩與解牌",
@@ -129,7 +109,6 @@
           "role": "推演"
         }
       },
-      "canonical_loc_rule": "LOC1–8 are a homepage guide map only. They may explain the model visually, but they are not canonical backend IDs or engineering ownership keys.",
       "lunarunes_loc_mapping": {
         "LOC1": "月之符文",
         "LOC2": "符文脈絡",
@@ -157,7 +136,7 @@
       },
       "model_type": "language_model",
       "model_name": "LOC Language Model",
-      "model_definition": "LOC／月典是一套可模組化、可治理、可推演的 Language Model（LM）。LunaRunes66 是其最成熟的 Reference Seed System 與實作證明；原有 framework 保留為 LM 的底層 architecture，LOC1–8 的責任分工不變。",
+      "model_definition": "LOC／月典現行定位為 Language Model（LM）；原有 model 並未消失，而是成為 LM 的底層 architecture。月之符文提供基本文字語彙（token）與語意種子。歷史上 LOC 從 LunaRunes66 的實際使用、作品延伸與資料整理中逐步抽象成形；結構上，LunaRunes66 是 LOC Language Model 的成熟實例／Reference Seed System。",
       "public_concept_map_usage": "homepage_only",
       "public_concept_map_note": "LOC1–8 are retained only for homepage explanation and visual navigation. Backend schemas, APIs, registries, KM, FAQ and engineering variables must use semantic domain names instead.",
       "backend_domains": {
@@ -170,7 +149,27 @@
         "knowledge": "Knowledge／Algorithm／KM",
         "evolution": "Evolution／推演",
         "global": "System-wide"
-      }
+      },
+      "model_principles": [
+        "LOC1–8 是同一套語言系統的責任分工，不是八套獨立產品，也不是版本或成熟度排序。",
+        "穩定的是模型架構與治理邊界，不是語言本身：identity、schema、ownership、provenance 與治理流程可穩定，meaning、relation、context 與 interpretation 可演化。",
+        "不同資料型態保留各自 canonical ownership；跨 LOC 以 reference / consume / propose change 為原則，不直接覆寫。",
+        "LOC 對觀點保持中立，但對 domain、rights、privacy、permission、responsibility boundary 不保持中立。",
+        "歷史原始紀錄保留；後來的解釋可 version / supersede，但不得靜默回寫過去。",
+        "不同意見與 competing interpretation 可以並存；異議本身不是錯誤。",
+        "AI 推論、semantic similarity 與衍生 View 不得自動升格為 Canon。",
+        "LOC Search / Graph / Trend 的目的之一，是讓使用者看見語言如何改變，再自行決定如何治理下一個版本。"
+      ],
+      "model_chain": {
+        "loc": "LOC1 符文語彙（Token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演",
+        "luna_runes": "符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算（抽牌解牌＋九群組方法論分析） → 符文演化"
+      },
+      "model_relation": {
+        "historical": "LunaRunes66 先累積實作；LOC 再從這些實作中抽象整理出可重複使用的 model，並進一步成長為 Language Model。",
+        "structural": "LOC 現行為 Language Model；原有 model 是其底層 architecture。LunaRunes66 是第一套成熟、可治理、可推演的 Reference Seed System，用來證明 LOC 的模型性。",
+        "scope": "LunaRunes66 是根與成熟實例，但不是 LOC 唯一可能使用的符文／語彙系統；其他系統也可依 LOC architecture 建立自己的實作。"
+      },
+      "homepage_guide_rule": "LOC1–8 are a homepage guide map only. They may explain the model visually, but they are not canonical backend IDs or engineering ownership keys."
     }
   ],
   "authority_scope": "global_language_model",
