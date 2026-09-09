@@ -8,6 +8,14 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Model referenc
 
 **術語治理：LOC 整體固定稱為 Language System Model／語言系統模型；LOC1–8 可稱功能模組（functional modules）；framework／框架只用於描述底層 architecture 或歷史稱呼，不再作為 LOC 現行主分類。**
 
+### 主要定位
+
+> LOC is a reusable language system model. LunaRunes demonstrates that the model can be implemented as a working symbolic language model.
+>
+> LOC is fully open source. Commercial value comes from consulting, system architecture, governance design, and case-specific implementation.
+
+中文：LOC 是一套可重複使用的語言系統模型。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言模型。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。
+
 > 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
 
 - **現行 Canon：1.0（正式版）**
