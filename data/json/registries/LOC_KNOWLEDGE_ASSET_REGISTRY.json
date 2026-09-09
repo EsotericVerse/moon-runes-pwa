@@ -14,20 +14,21 @@
   ],
   "assets": [
     {
-      "asset_id": "KA-LOC6-DE-RUNE-001",
+      "asset_id": "KA-DE-RUNE-001",
       "title": "德之符文｜第 0 符 De",
       "path": "governance.html#de-rune",
       "source_type": "public_page",
       "content_type": "governance_document",
-      "primary_loc": "LOC6",
+      "primary_loc": "global",
       "related_locs": [
         "LOC1",
+        "LOC6",
         "LOC7",
         "LOC8"
       ],
       "role": "governance_anchor",
       "searchable": true,
-      "public_summary": "第0符「德」位於 LOC6 Methodology／方法論中的 Governance／治理分類：德之符文。它是作者／月語者的個人誌銘，也是 LunaRunes66 的集合起點、治理與遞迴錨點；不參與抽牌，也沒有卡面。",
+      "public_summary": "「治理：德之符文」是 KM 的直接說明分類。第0符「德」是作者／月語者誌銘，也是 LunaRunes66 的集合起點、治理與遞迴錨點。LOC1–8 只作方便分類與說明，不構成其階級歸屬；德不參與抽牌，也沒有卡面。",
       "keywords": [
         "德之符文",
         "德符文",
@@ -50,7 +51,6 @@
         "德和LunaRunes66是什麼關係"
       ],
       "notes": "Primary public route is governance.html#de-rune; runes.html is the secondary record/list view. Searchability must not imply drawability.",
-      "methodology_category": "Governance",
       "category_label": "治理：德之符文"
     },
     {
