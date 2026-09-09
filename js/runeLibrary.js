@@ -1,12 +1,15 @@
 // runeLibrary.js - 統一 fetch 和 cache 邏輯
 
 
-import { rune } from './runes64.js';
+import { rune } from './runes66.js';
 import { allData } from './rune_all_data_all.js';
 
-export function getRunes64() {
+export function getRunes66() {
   return rune; // 同步返回陣列
 }
+
+// Legacy compatibility only. New code must use getRunes66().
+export const getRunes64 = getRunes66;
 
 export function getAllData() {
   return allData;
