@@ -4,7 +4,7 @@
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
   "status": "CoreCreativeWorksAndMoonSpeakerChapterBaselineComplete",
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-09",
   "purpose": "Structured semantic analysis for LOC4 creative works. Core creative works are analyzed at work level. 月語者 additionally has a complete 182-chapter baseline generated from full chapter text, with recovered three-rune/moon-phase evidence attached only where source data exists.",
   "scope_policy": {
     "current": "LOC4 創作作品",
@@ -113,7 +113,13 @@
       "period": "P1",
       "era_id": "ERA-P1",
       "period_name": "月符到月典形成期",
-      "semantic_families": []
+      "semantic_families": [],
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "analysis_id": "LOC4-A-WRONG-PERSON",
@@ -198,7 +204,13 @@
       "period": "P1",
       "era_id": "ERA-P1",
       "period_name": "月符到月典形成期",
-      "semantic_families": []
+      "semantic_families": [],
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "analysis_id": "LOC4-A-MILK-PAPER-BOAT",
@@ -283,6 +295,12 @@
       "period_name": "微月光與關係敘事期",
       "semantic_families": [
         "光月意象"
+      ],
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
       ]
     },
     {
@@ -888,5 +906,6 @@
       "三符文／月相僅採已恢復來源；缺少的21章不由正文或章名推測。",
       "章級 themes / entities 為 deterministic text evidence，可重現並可後續疊加人工解析。"
     ]
-  }
+  },
+  "authority_domain": "literary"
 }
