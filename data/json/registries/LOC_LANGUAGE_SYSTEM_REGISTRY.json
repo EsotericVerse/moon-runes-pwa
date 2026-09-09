@@ -169,7 +169,14 @@
         "structural": "LOC 現行為 Language System Model（LM）；LunaRunes 是第一個成熟、可治理、可推演的 Symbolic Language Model reference implementation，用來證明 LOC 的模型可實作性。",
         "scope": "LunaRunes 是根與成熟實例，但不是 LOC 唯一可能使用的符文／語彙系統；其他系統也可依 LOC architecture 建立自己的實作。"
       },
-      "homepage_guide_rule": "LOC1–8 are a homepage guide map only. They may explain the model visually, but they are not canonical backend IDs or engineering ownership keys."
+      "homepage_guide_rule": "LOC1–8 are a homepage guide map only. They may explain the model visually, but they are not canonical backend IDs or engineering ownership keys.",
+      "terminology_governance": {
+        "loc_system": "Language System Model / 語言系統模型",
+        "loc_abbreviation": "LM",
+        "loc_components": "LOC1–8 may be described as functional modules / 功能模組",
+        "framework_usage": "framework / 框架 is reserved for underlying architecture or historical terminology; it is not the current classification of LOC itself",
+        "lunarunes": "LunaRunes is the first Symbolic Language Model reference implementation of LOC"
+      }
     }
   ],
   "authority_scope": "global_language_model",
