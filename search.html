@@ -820,8 +820,8 @@
         }
         if(['德之符文','德符文','第零符','第0符','0號符文','rune 0','de rune','德 de'].some(term=>query.includes(localNorm(term)))){
           localPush(scored,1200,'knowledge',{
-            result_id:'DE-RUNE-GOVERNANCE-HUB',system_id:'lo3rwang',primary_loc:'global',
-            related_locs:['LOC1','LOC6','LOC7','LOC8'],
+            result_id:'DE-RUNE-GOVERNANCE-HUB',system_id:'lo3rwang',domain:'governance',
+            related_domains:['runes','knowledge','evolution'],
             content_type:'knowledge_document',title:'治理：德之符文｜第 0 符 De',
             summary:'第 0 符是作者／月語者誌銘、66 符集合起點與治理／遞迴錨點；LOC1–8 只作分類與說明，不構成其階級歸屬。德不參與抽牌、沒有卡面。',
             score:1200,payload:{public_path:'governance.html#de-rune',fixed_document:true,drawable:false}
@@ -858,8 +858,8 @@
             const aliases=id===0?['德之符文','德符文','第零符','第0符','0號符文','Rune 0','De Rune','作者符文','治理錨點']:[];
             const score=localScore(q,[name,english,manifest,keyword,group,...aliases,rune.正向表示,rune.半正向表示,rune.半逆向表示,rune.逆向表示]);
             localPush(scored,id===0?score*1.15:score,'runes',{
-              result_id:'RUNE-'+id,system_id:'lo3rwang',primary_loc:id===0?'global':'LOC1',
-              related_locs:id===0?['LOC1','LOC6','LOC7','LOC8']:[],
+              result_id:'RUNE-'+id,system_id:'lo3rwang',domain:id===0?'governance':'runes',
+              related_domains:id===0?['runes','knowledge','evolution']:[],
               content_type:'rune_record',title:String(id).padStart(2,'0')+' · '+name,
               summary:id===0?'治理：德之符文。作者／月語者誌銘與治理錨點；不參與抽牌、沒有卡面。':[manifest,keyword].filter(Boolean).join('｜'),
               score:id===0?score*1.15:score,
