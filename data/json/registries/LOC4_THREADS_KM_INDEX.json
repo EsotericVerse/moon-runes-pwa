@@ -726,5 +726,12 @@
   ],
   "authority": "LOC4",
   "storage_note": "Canonical LOC4 life-writing source index. LOC6 consumes these records only as evidence for separate governance/style interpretations.",
-  "governance": "Raw post/reply text remains LOC4. Derived governance/style interpretations are separate LOC6 records."
+  "governance": "Raw post/reply text remains LOC4. Derived governance/style interpretations are separate LOC6 records.",
+  "domain": "literary",
+  "related_domains": [
+    "governance",
+    "knowledge",
+    "evolution"
+  ],
+  "authority_domain": "literary"
 }

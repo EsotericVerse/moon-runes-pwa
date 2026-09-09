@@ -1,32 +1,35 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "schema": "LOC_SHARED_SCHEMA",
-  "authority": "LOC8",
-  "purpose": "Define shared identifiers, references, provenance, rights, and cross-LOC linkage fields. Domain-specific content remains owned by its primary LOC.",
+  "authority": "system_governance",
+  "purpose": "Define shared identifiers, semantic domains, references, provenance and rights without using LOC1–8 as backend ownership keys. LOC1–8 are homepage/documentation guide labels only.",
   "required_common_fields": {
     "system_id": {
       "type": "string",
       "description": "Canonical language-system identifier. Current system: lo3rwang."
     },
-    "primary_loc": {
+    "domain": {
       "type": "string",
       "enum": [
-        "LOC1",
-        "LOC2",
-        "LOC3",
-        "LOC4",
-        "LOC5",
-        "LOC6",
-        "LOC7",
-        "LOC8"
+        "runes",
+        "context",
+        "music",
+        "literary",
+        "media",
+        "governance",
+        "knowledge",
+        "evolution",
+        "global"
       ],
-      "description": "Primary responsibility owner for the record."
+      "description": "Semantic responsibility domain. Use this in backend, registries, APIs and new data instead of LOC1–8 identifiers."
     }
   },
   "optional_common_fields": {
     "related_locs": {
       "type": "array[string]",
-      "description": "Other LOC domains that analyze, reference, or consume this record."
+      "deprecated": true,
+      "replacement": "related_domains",
+      "description": "Legacy compatibility only. Do not add to new records."
     },
     "era_id": {
       "type": [
@@ -146,17 +149,28 @@
         "replacement_id": "string|null"
       },
       "description": "Optional shared governance envelope. Domain records may reference a separate governance-event log rather than embedding full history."
+    },
+    "related_domains": {
+      "type": "array[string]",
+      "description": "Other semantic domains that analyze, reference or consume this record."
+    },
+    "primary_loc": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "deprecated": true,
+      "replacement": "domain",
+      "description": "Legacy compatibility only. Do not add to new records."
     }
   },
   "governance_rules": [
+    "LOC1–8 may appear on the homepage as a human-readable guide only.",
+    "Backend, registries, APIs, KM, FAQ, Search and engineering variables should use semantic domain names rather than LOC1–8 identifiers.",
+    "New records use domain and related_domains. primary_loc and related_locs are deprecated compatibility fields only.",
     "Authority defines canonical values; consumers reference them.",
-    "Do not duplicate canonical ERA names, time boundaries, or language-system identity in downstream modules when a registry reference is available.",
-    "Influence, contribution, and rights are separate concepts and must not be inferred from one another.",
-    "Mixed-domain records use primary_loc plus related_locs instead of forcing exclusive classification.",
-    "LOC8 owns integration, registry, temporal management, and unresolved misc placement; analysis remains owned by LOC6 or LOC7 according to analysis type.",
     "Original evidence and current interpretation are separate layers; later interpretation must not silently rewrite historical source records.",
-    "Cross-domain consumers may reference or propose changes but must not overwrite another domain's authoritative record.",
-    "Deletion from active use should preserve a tombstone/history record unless a stronger privacy/security deletion requirement applies."
+    "Cross-domain consumers may reference or propose changes but must not overwrite another domain's authoritative record."
   ],
-  "updated_at": "2026-09-07"
+  "updated_at": "2026-09-09"
 }

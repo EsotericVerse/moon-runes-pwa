@@ -4,7 +4,7 @@
   "authority": "LOC7",
   "language_system_id": "lo3rwang",
   "status": "Working",
-  "updated_at": "2026-09-06",
+  "updated_at": "2026-09-09",
   "purpose": "Normalize near-duplicate semantic tags across LOC3/LOC4/LOC5 for cross-period comparison while preserving named concepts as separate dimensions.",
   "rules": [
     "Named concepts are never collapsed into generic semantic families.",
@@ -29,5 +29,6 @@
       ],
       "note": "泛指月亮、月光與一般光線視覺意象；「微光」若承擔希望語義，歸入「希望」；不包含 LOC3 專有名詞「微月光」。"
     }
-  ]
+  ],
+  "authority_domain": "knowledge"
 }

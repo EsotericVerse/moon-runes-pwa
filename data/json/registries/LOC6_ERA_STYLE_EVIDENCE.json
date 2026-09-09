@@ -2,7 +2,7 @@
   "schema_version": "0.1",
   "registry": "LOC6_ERA_STYLE_EVIDENCE",
   "authority": "LOC6",
-  "updated_at": "2026-09-05",
+  "updated_at": "2026-09-09",
   "purpose": "Aggregate LOC3 work metadata back into LOC6 ERA style analysis. ERA dates/names remain owned by LOC8.",
   "source_dataset": {
     "manifest": "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json",
@@ -2071,5 +2071,6 @@
       "reasoning_discourse_count": 0,
       "admonition_discourse_count": 0
     }
-  ]
+  ],
+  "authority_domain": "governance"
 }

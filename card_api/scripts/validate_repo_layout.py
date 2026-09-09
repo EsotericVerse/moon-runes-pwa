@@ -72,39 +72,19 @@ PUBLIC_MD_LINK_RE = re.compile(
     re.IGNORECASE,
 )
 
-CANONICAL_LOC_MAP = {
-    "LOC1": {"name": "LunaRunes", "zh": "月之符文", "role": "符文語彙（Token）"},
-    "LOC2": {"name": "Context", "zh": "脈絡", "role": "脈絡"},
-    "LOC3": {"name": "Music", "zh": "音樂", "role": "音樂"},
-    "LOC4": {"name": "Literary", "zh": "文字創作", "role": "文字創作"},
-    "LOC5": {"name": "MultiMedia", "zh": "多媒體", "role": "多媒體"},
-    "LOC6": {"name": "Methodology", "zh": "方法論", "role": "方法論"},
-    "LOC7": {"name": "Algorithm", "zh": "演算法（知識庫）", "role": "演算法（知識庫）"},
-    "LOC8": {"name": "Evolution", "zh": "推演", "role": "推演"},
+SEMANTIC_DOMAINS = {
+    "runes",
+    "context",
+    "music",
+    "literary",
+    "media",
+    "governance",
+    "knowledge",
+    "evolution",
+    "global",
 }
 
-CANONICAL_SURFACE_SNIPPETS = {
-    "README.md": [
-        "| LOC1 | LunaRunes 月之符文 |",
-        "| LOC5 | MultiMedia 多媒體 |",
-        "| LOC6 | Methodology 方法論 |",
-        "| LOC7 | Algorithm 演算法（知識庫） |",
-        "| LOC8 | Evolution 推演 |",
-    ],
-    "index.html": [
-        "kicker:'LOC1 · LunaRunes'",
-        "kicker:'LOC5 · MultiMedia'",
-        "kicker:'LOC6 · Methodology'",
-        "kicker:'LOC7 · Algorithm'",
-        "kicker:'LOC8 · Evolution'",
-    ],
-    "data/json/search/faq/LOC_FAQ_v0.4.json": [
-        "LOC5 MultiMedia／多媒體",
-        "LOC6 Methodology／方法論",
-        "LOC7 Algorithm／演算法（知識庫）",
-        "LOC8 Evolution／推演",
-    ],
-}
+HOMEPAGE_LOC_LABELS = tuple(f"LOC{i}" for i in range(1, 9))
 
 
 def rel(path: Path) -> str:
@@ -122,42 +102,45 @@ def main() -> int:
         if not path.exists():
             failures.append(f"required path missing: {rel(path)}")
 
-    # LOC1–8 naming/role Canon must be single-source and exact.
+    # LOC1–8 are explanatory classification labels only.
+    # Backend governance must use semantic domains instead of LOC-number ownership.
     language_registry_path = ROOT / "data" / "json" / "registries" / "LOC_LANGUAGE_SYSTEM_REGISTRY.json"
+    shared_schema_path = ROOT / "data" / "json" / "registries" / "LOC_SHARED_SCHEMA.json"
     try:
         language_registry = json.loads(language_registry_path.read_text(encoding="utf-8"))
         system = (language_registry.get("systems") or [None])[0] or {}
-        actual_map = system.get("canonical_loc_map")
-        if actual_map != CANONICAL_LOC_MAP:
-            failures.append(
-                "LOC1-8 canonical map drifted from validator contract: "
-                "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
-            )
-        if language_registry.get("canonical_priority") != "highest_for_LOC1_8_names_and_roles":
-            failures.append("LOC1-8 canonical priority is not locked in language-system registry")
-        if language_registry.get("canon_version") != "1.0" or language_registry.get("canon_status") != "formal":
-            failures.append("current LOC Canon is not locked to formal 1.0")
         constants = system.get("fixed_constants") or {}
-        if constants.get("loc_range") != "LOC1–LOC8 only; LOC9 does not exist":
-            failures.append("LOC range constant drifted: LOC must remain LOC1–LOC8 only")
+
         if constants.get("lunarunes_count") != 66:
             failures.append("LunaRunes fixed count drifted from 66")
-        if constants.get("context_zh") != "脈絡":
-            failures.append("LOC2 canonical Chinese term must remain 脈絡")
-    except Exception as exc:
-        failures.append(f"failed to validate LOC1-8 canonical map: {exc}")
 
-    # Key current surfaces must project the Canon instead of inventing another mapping.
-    for rp, snippets in CANONICAL_SURFACE_SNIPPETS.items():
-        path = ROOT / rp
-        try:
-            content = path.read_text(encoding="utf-8")
-        except Exception as exc:
-            failures.append(f"failed to read canonical surface {rp}: {exc}")
-            continue
-        for snippet in snippets:
-            if snippet not in content:
-                failures.append(f"canonical LOC label missing from {rp}: {snippet!r}")
+        homepage_usage = system.get("public_concept_map_usage")
+        if homepage_usage != "homepage_only":
+            failures.append("LOC1-8 classification labels must remain homepage-only explanatory metadata")
+
+        homepage_note = str(system.get("public_concept_map_note") or "")
+        if "homepage" not in homepage_note.lower():
+            failures.append("language-system registry must state that LOC1-8 are explanatory homepage labels only")
+
+        backend_domains = system.get("backend_domains") or {}
+        invalid_domains = sorted(
+            {str(k) for k in backend_domains.keys() if str(k) not in SEMANTIC_DOMAINS}
+        )
+        if invalid_domains:
+            failures.append(f"invalid backend semantic domain ids in language-system registry: {invalid_domains}")
+
+        shared_schema = json.loads(shared_schema_path.read_text(encoding="utf-8"))
+        domain_spec = ((shared_schema.get("required_common_fields") or {}).get("domain")
+                       or (shared_schema.get("properties") or {}).get("domain")
+                       or {})
+        enum_values = set(domain_spec.get("enum") or [])
+        if enum_values and enum_values != SEMANTIC_DOMAINS:
+            failures.append(
+                "shared schema semantic domain enum drifted from governance contract: "
+                f"{sorted(enum_values)}"
+            )
+    except Exception as exc:
+        failures.append(f"failed to validate semantic-domain governance: {exc}")
 
     for path in ROOT.rglob("*"):
         if not path.is_file() or path.suffix.lower() not in TEXT_SUFFIXES:
@@ -199,7 +182,8 @@ def main() -> int:
     print("- no stale runtime/document references")
     print("- every repository-relative JSON reference resolves to an existing file")
     print("- no public HTML/JS links expose raw Markdown files")
-    print("- LOC1-8 canonical naming/roles are locked and projected consistently")
+    print("- LOC1-8 remain explanatory homepage classification labels only")
+    print("- backend governance uses semantic domains")
     return 0
 
 

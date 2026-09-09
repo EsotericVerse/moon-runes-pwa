@@ -9,7 +9,7 @@
   ],
   "status": "Working",
   "created_at": "2026-09-06",
-  "updated_at": "2026-09-08",
+  "updated_at": "2026-09-09",
   "source": {
     "corpus": "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json",
     "corpus_version": "0.1.9",
@@ -2782,5 +2782,10 @@
       ]
     }
   ],
-  "normalization_note": "v0.4 UI/display layer removes named concepts from generic semantic lists and collapses near-duplicate light/moon imagery under 光月意象. Raw source tags remain unchanged."
+  "normalization_note": "v0.4 UI/display layer removes named concepts from generic semantic lists and collapses near-duplicate light/moon imagery under 光月意象. Raw source tags remain unchanged.",
+  "domain": "music",
+  "related_domains": [
+    "knowledge",
+    "evolution"
+  ]
 }

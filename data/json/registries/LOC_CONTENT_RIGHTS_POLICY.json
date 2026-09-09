@@ -74,7 +74,7 @@
     "graph_mode": "metadata_only_without_center",
     "graph_neighborhood": "bounded_node_id_depth_1_to_3"
   },
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-09",
   "boundary_model": {
     "principle": "Rights governance is a domain boundary, not a moral ranking of content.",
     "domains": [
@@ -89,5 +89,6 @@
     "governance.html",
     "data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json"
   ],
-  "dispute_rule": "A rights or attribution objection creates a review/dispute state; disputed content should not be silently deleted or publicly promoted while unresolved."
+  "dispute_rule": "A rights or attribution objection creates a review/dispute state; disputed content should not be silently deleted or publicly promoted while unresolved.",
+  "authority_domain": "evolution"
 }

@@ -69,5 +69,6 @@
       "label": "YouTube"
     }
   ],
-  "rule": "source_type identifies provenance channel only; it does not determine authorship, ownership, or trust by itself."
+  "rule": "source_type identifies provenance channel only; it does not determine authorship, ownership, or trust by itself.",
+  "authority_domain": "evolution"
 }

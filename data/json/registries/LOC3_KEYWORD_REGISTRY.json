@@ -8,7 +8,7 @@
     "LOC8"
   ],
   "status": "Working",
-  "updated_at": "2026-09-08",
+  "updated_at": "2026-09-09",
   "rules": [
     "命名概念與一般語義／意象分層治理。",
     "自我治理為 canonical term；治理自己為 alias / creative-stage label。",
@@ -61,5 +61,10 @@
       ],
       "status": "Stable"
     }
+  ],
+  "domain": "music",
+  "related_domains": [
+    "knowledge",
+    "evolution"
   ]
 }

@@ -32,7 +32,8 @@
         "primary_loc": "LOC3",
         "work_ref": "E0189",
         "title": "已讀不回",
-        "content_type": "lyrics_work"
+        "content_type": "lyrics_work",
+        "domain": "music"
       },
       "targets": [
         {
@@ -41,7 +42,8 @@
           "title": "已讀不回",
           "content_type": "article_series",
           "chapter_count": 6,
-          "relation_label": "歌曲延伸為六章文章"
+          "relation_label": "歌曲延伸為六章文章",
+          "domain": "literary"
         },
         {
           "primary_loc": "LOC5",
@@ -49,7 +51,8 @@
           "title": "已讀不回 Reels",
           "content_type": "reel_collection",
           "media_status": "link_pending",
-          "relation_label": "跨媒介 Reels 展開"
+          "relation_label": "跨媒介 Reels 展開",
+          "domain": "media"
         }
       ],
       "relation_type": "song_to_article_expansion",
@@ -80,5 +83,6 @@
       "evidence_status": "author_confirmed",
       "updated_at": "2026-09-05"
     }
-  ]
+  ],
+  "authority_domain": "context"
 }

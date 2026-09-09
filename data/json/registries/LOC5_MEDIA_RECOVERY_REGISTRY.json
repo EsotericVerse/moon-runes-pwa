@@ -3,7 +3,7 @@
   "registry": "LOC5_MEDIA_RECOVERY_REGISTRY",
   "authority": "LOC5",
   "status": "author_source_imported",
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-09",
   "purpose": "Evidence-backed recovery queue for historical LOC5 media. Threads life-writing posts are searched for Suno/media links, then cross-checked against LOC3 song data and LOC5 media registry. A Suno link alone proves a song reference, not an Instagram/YouTube media asset.",
   "recovery_method": [
     "search LOC4 Threads source text for Suno/share/media URLs",
@@ -81,5 +81,6 @@
     "rows_without_preview": 3,
     "semantic_linked_rows": 162,
     "rule": "same song multiple Reels preserved; different song_id versions kept separate; blanks never guessed"
-  }
+  },
+  "authority_domain": "media"
 }

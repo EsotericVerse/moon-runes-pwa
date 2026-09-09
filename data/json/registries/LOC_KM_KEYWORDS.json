@@ -3,7 +3,7 @@
   "registry": "LOC_KM_KEYWORDS",
   "source": "search.html + governance.html + structured registries",
   "source_version": "LOC Canon 1.0 + LOC7 KM",
-  "updated_at": "2026-09-08",
+  "updated_at": "2026-09-09",
   "purpose": "Shared keyword and alias registry for LOC7 Knowledge Management, FAQ/RAG retrieval, Unified Search, and future Knowledge Object alignment.",
   "governance": {
     "authority": "LOC7_KM",
@@ -29,7 +29,10 @@
           "loc_scope": [
             "global"
           ],
-          "status": "Canonical"
+          "status": "Canonical",
+          "domain_scope": [
+            "global"
+          ]
         },
         {
           "term": "月符",
@@ -44,7 +47,12 @@
             "LOC2",
             "LOC7"
           ],
-          "status": "Canonical"
+          "status": "Canonical",
+          "domain_scope": [
+            "runes",
+            "context",
+            "knowledge"
+          ]
         },
         {
           "term": "LOC1–8",
@@ -57,7 +65,10 @@
           "loc_scope": [
             "global"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "global"
+          ]
         },
         {
           "term": "語言演化",
@@ -73,7 +84,15 @@
             "LOC6",
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "runes",
+            "music",
+            "literary",
+            "media",
+            "governance",
+            "knowledge"
+          ]
         },
         {
           "term": "數位神秘學",
@@ -83,7 +102,10 @@
           "loc_scope": [
             "global"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "global"
+          ]
         },
         {
           "term": "語意錨點",
@@ -93,7 +115,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "knowledge"
+          ]
         }
       ]
     },
@@ -112,7 +137,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Knowledge Base",
@@ -123,7 +151,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Knowledge Object",
@@ -135,7 +166,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Knowledge Graph",
@@ -146,7 +180,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Knowledge Relation",
@@ -158,7 +195,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Knowledge Provenance",
@@ -170,7 +210,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Knowledge Versioning",
@@ -183,7 +226,11 @@
             "LOC7",
             "LOC8"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge",
+            "evolution"
+          ]
         },
         {
           "term": "Knowledge Neighborhood",
@@ -195,7 +242,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Personal Graph",
@@ -208,7 +258,11 @@
             "LOC7",
             "LOC8"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "knowledge",
+            "evolution"
+          ]
         },
         {
           "term": "Interpersonal Graph",
@@ -219,7 +273,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Proposed"
+          "status": "Proposed",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Life Philosophy Topology",
@@ -232,7 +289,12 @@
             "LOC7",
             "LOC8"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "governance",
+            "knowledge",
+            "evolution"
+          ]
         },
         {
           "term": "README.md",
@@ -248,7 +310,11 @@
             "global"
           ],
           "status": "Stable",
-          "note": "README 是可檢索的系統總覽與進度視圖；屬衍生總覽，不取代 Canon 或母資料。"
+          "note": "README 是可檢索的系統總覽與進度視圖；屬衍生總覽，不取代 Canon 或母資料。",
+          "domain_scope": [
+            "knowledge",
+            "global"
+          ]
         }
       ]
     },
@@ -267,7 +333,10 @@
             "LOC7"
           ],
           "status": "Stable",
-          "note": "Text Architecture／文字建築是 LOC7 Algorithm／演算法（知識庫）中的結構方法／實作，不等於 LOC7 正式名稱。"
+          "note": "Text Architecture／文字建築是 LOC7 Algorithm／演算法（知識庫）中的結構方法／實作，不等於 LOC7 正式名稱。",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Semantic Chunk",
@@ -279,7 +348,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Semantic Search",
@@ -290,7 +362,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Keyword Search",
@@ -301,7 +376,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Unified Search",
@@ -313,7 +391,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "RAG",
@@ -324,7 +405,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Graph RAG",
@@ -336,7 +420,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Proposed"
+          "status": "Proposed",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Embedding",
@@ -347,7 +434,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "knowledge"
+          ]
         }
       ]
     },
@@ -355,6 +445,31 @@
       "id": "governance_style",
       "label": "治理與政德風",
       "keywords": [
+        {
+          "term": "德之符文",
+          "aliases": [
+            "德符文",
+            "第零符",
+            "第0符",
+            "0號符文",
+            "Rune 0",
+            "De Rune",
+            "德 De",
+            "作者符文",
+            "治理錨點"
+          ],
+          "loc_scope": [
+            "global"
+          ],
+          "status": "Canonical",
+          "primary_path": "governance.html#de-rune",
+          "secondary_path": "runes.html",
+          "note": "「治理：德之符文」是 KM 的直接說明分類。LOC1–8 只作方便分類與說明，不構成德之符文的階級歸屬。第0符是作者／月語者誌銘、66符集合起點與治理／遞迴錨點；可搜尋與關聯，但不參與抽牌、沒有卡面。",
+          "display_category": "治理：德之符文",
+          "domain_scope": [
+            "global"
+          ]
+        },
         {
           "term": "政德風",
           "aliases": [
@@ -366,7 +481,11 @@
             "LOC6",
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "governance",
+            "knowledge"
+          ]
         },
         {
           "term": "自我治理",
@@ -380,7 +499,12 @@
             "LOC7",
             "LOC8"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "governance",
+            "knowledge",
+            "evolution"
+          ]
         },
         {
           "term": "Governance",
@@ -393,7 +517,10 @@
             "LOC6"
           ],
           "status": "Stable",
-          "note": "Governance／治理是 LOC6 Methodology／方法論中的代表方法，不等於 LOC6 正式名稱。"
+          "note": "Governance／治理是 LOC6 Methodology／方法論中的代表方法，不等於 LOC6 正式名稱。",
+          "domain_scope": [
+            "governance"
+          ]
         },
         {
           "term": "ERA",
@@ -410,7 +537,14 @@
             "LOC8"
           ],
           "status": "Stable",
-          "note": "ERA 僅可保留作內部 stable ID／歷史欄位；公開中文統一使用「時期」。"
+          "note": "ERA 僅可保留作內部 stable ID／歷史欄位；公開中文統一使用「時期」。",
+          "domain_scope": [
+            "music",
+            "literary",
+            "media",
+            "governance",
+            "evolution"
+          ]
         },
         {
           "term": "自由的風",
@@ -422,7 +556,11 @@
             "LOC6",
             "LOC8"
           ],
-          "status": "Historical"
+          "status": "Historical",
+          "domain_scope": [
+            "governance",
+            "evolution"
+          ]
         },
         {
           "term": "自我治理與未來展望期",
@@ -435,7 +573,11 @@
             "LOC6",
             "LOC8"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "governance",
+            "evolution"
+          ]
         }
       ]
     },
@@ -454,7 +596,11 @@
             "LOC8",
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "evolution",
+            "knowledge"
+          ]
         },
         {
           "term": "Temporal Semantics",
@@ -467,7 +613,11 @@
             "LOC8",
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "evolution",
+            "knowledge"
+          ]
         },
         {
           "term": "Trajectory",
@@ -478,7 +628,10 @@
           "loc_scope": [
             "LOC8"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "evolution"
+          ]
         },
         {
           "term": "Trend",
@@ -489,7 +642,10 @@
           "loc_scope": [
             "LOC8"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "evolution"
+          ]
         }
       ]
     },
@@ -508,7 +664,10 @@
           "loc_scope": [
             "LOC3"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "music"
+          ]
         },
         {
           "term": "LOC4",
@@ -521,7 +680,10 @@
           "loc_scope": [
             "LOC4"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "literary"
+          ]
         },
         {
           "term": "LOC5",
@@ -539,7 +701,10 @@
             "LOC5"
           ],
           "status": "Stable",
-          "note": "LOC5 正式名稱固定為 MultiMedia／多媒體。"
+          "note": "LOC5 正式名稱固定為 MultiMedia／多媒體。",
+          "domain_scope": [
+            "media"
+          ]
         },
         {
           "term": "Web Demo Alpha",
@@ -551,7 +716,10 @@
           "loc_scope": [
             "global"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "global"
+          ]
         },
         {
           "term": "LOC5 實體影音作品",
@@ -566,7 +734,10 @@
             "LOC5"
           ],
           "status": "Stable",
-          "note": "指已實際製作完成或公開發布的影音作品，不等同於未來規劃或概念 mockup。"
+          "note": "指已實際製作完成或公開發布的影音作品，不等同於未來規劃或概念 mockup。",
+          "domain_scope": [
+            "media"
+          ]
         },
         {
           "term": "LOC1×LOC5",
@@ -581,7 +752,11 @@
             "LOC5"
           ],
           "status": "Stable",
-          "note": "月之符文內容透過 LOC5 影音形式對外呈現；目前已有兩支公開 Instagram Reels 可驗證。"
+          "note": "月之符文內容透過 LOC5 影音形式對外呈現；目前已有兩支公開 Instagram Reels 可驗證。",
+          "domain_scope": [
+            "runes",
+            "media"
+          ]
         }
       ]
     },
@@ -601,7 +776,11 @@
             "LOC7"
           ],
           "status": "Stable / Special Rule",
-          "note": "LOC1 系統內部語意規則，不等同天文瞬時月相。"
+          "note": "LOC1 系統內部語意規則，不等同天文瞬時月相。",
+          "domain_scope": [
+            "runes",
+            "knowledge"
+          ]
         },
         {
           "term": "新月",
@@ -611,7 +790,10 @@
           "loc_scope": [
             "LOC1"
           ],
-          "status": "Stable / Special Rule"
+          "status": "Stable / Special Rule",
+          "domain_scope": [
+            "runes"
+          ]
         },
         {
           "term": "上弦",
@@ -621,7 +803,10 @@
           "loc_scope": [
             "LOC1"
           ],
-          "status": "Stable / Special Rule"
+          "status": "Stable / Special Rule",
+          "domain_scope": [
+            "runes"
+          ]
         },
         {
           "term": "滿月",
@@ -631,7 +816,10 @@
           "loc_scope": [
             "LOC1"
           ],
-          "status": "Stable / Special Rule"
+          "status": "Stable / Special Rule",
+          "domain_scope": [
+            "runes"
+          ]
         },
         {
           "term": "下弦",
@@ -641,7 +829,10 @@
           "loc_scope": [
             "LOC1"
           ],
-          "status": "Stable / Special Rule"
+          "status": "Stable / Special Rule",
+          "domain_scope": [
+            "runes"
+          ]
         },
         {
           "term": "空亡",
@@ -652,7 +843,10 @@
           "loc_scope": [
             "LOC1"
           ],
-          "status": "Stable / Special Rule"
+          "status": "Stable / Special Rule",
+          "domain_scope": [
+            "runes"
+          ]
         },
         {
           "term": "卡片月相",
@@ -663,7 +857,10 @@
           "loc_scope": [
             "LOC1"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "runes"
+          ]
         },
         {
           "term": "月相交互",
@@ -676,7 +873,11 @@
             "LOC7"
           ],
           "status": "Reserved / Controlled Logic",
-          "note": "保留既有規則；LOC1 RAG 完成前不擴張或重寫。"
+          "note": "保留既有規則；LOC1 RAG 完成前不擴張或重寫。",
+          "domain_scope": [
+            "runes",
+            "knowledge"
+          ]
         }
       ]
     },
@@ -693,7 +894,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Canonical"
+          "status": "Canonical",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Stable",
@@ -703,7 +907,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Working",
@@ -714,7 +921,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Proposed",
@@ -725,7 +935,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Experimental",
@@ -735,7 +948,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Deprecated",
@@ -745,7 +961,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Historical",
@@ -755,7 +974,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Primary",
@@ -766,7 +988,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Derived",
@@ -777,7 +1002,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Inferred",
@@ -787,7 +1015,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "AI Generated",
@@ -798,7 +1029,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "External",
@@ -808,7 +1042,10 @@
           "loc_scope": [
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge"
+          ]
         }
       ]
     },
@@ -829,7 +1066,12 @@
             "LOC7",
             "LOC8"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "governance",
+            "knowledge",
+            "evolution"
+          ]
         },
         {
           "term": "Equal Standing",
@@ -842,7 +1084,11 @@
             "LOC6",
             "LOC7"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "governance",
+            "knowledge"
+          ]
         },
         {
           "term": "Contextual Validity",
@@ -855,7 +1101,11 @@
             "LOC6",
             "LOC8"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "governance",
+            "evolution"
+          ]
         },
         {
           "term": "Governed Evolution",
@@ -870,7 +1120,13 @@
             "LOC7",
             "LOC8"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "runes",
+            "governance",
+            "knowledge",
+            "evolution"
+          ]
         },
         {
           "term": "Self-Governance as Versioning",
@@ -883,7 +1139,11 @@
             "LOC6",
             "LOC8"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "governance",
+            "evolution"
+          ]
         },
         {
           "term": "Historical Integrity",
@@ -897,7 +1157,12 @@
             "LOC7",
             "LOC8"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "governance",
+            "knowledge",
+            "evolution"
+          ]
         },
         {
           "term": "Governance Audit",
@@ -910,7 +1175,11 @@
             "LOC7",
             "LOC8"
           ],
-          "status": "Stable"
+          "status": "Stable",
+          "domain_scope": [
+            "knowledge",
+            "evolution"
+          ]
         },
         {
           "term": "Dispute Review",
@@ -924,7 +1193,12 @@
             "LOC7",
             "LOC8"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "governance",
+            "knowledge",
+            "evolution"
+          ]
         },
         {
           "term": "Tombstone",
@@ -937,7 +1211,11 @@
             "LOC7",
             "LOC8"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "knowledge",
+            "evolution"
+          ]
         },
         {
           "term": "Publication Governance",
@@ -950,7 +1228,11 @@
             "LOC7",
             "LOC8"
           ],
-          "status": "Working"
+          "status": "Working",
+          "domain_scope": [
+            "knowledge",
+            "evolution"
+          ]
         }
       ]
     }

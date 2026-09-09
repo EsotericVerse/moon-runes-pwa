@@ -28,7 +28,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const selectedIndex = fateArray[Math.floor(Math.random() * fateArray.length)];
   const runeKey = selectedIndex.toString().padStart(2, "0");
 
-  const runes = getRunes64(); // 同步
+  const runes = getRunes66(); // 同步
   const allData = getAllData(); // 改成 allData 以匹配後續使用
 
   const rune = runes[selectedIndex] || { /* 預設值 */ };
