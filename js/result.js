@@ -1,4 +1,4 @@
-import { rune } from "./runes64.js";
+import { rune } from "./runes66.js";
 import { direction } from "./direction64.js";
 import { allData } from "./rune_all_data_all.js";
 
@@ -35,7 +35,7 @@ async function loadRuneHints() {
     const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
     runeHintMap = new Map(items.map(item => [Number(item.編號), item]));
   } catch (error) {
-    console.warn("LOC1 rune hint JSON unavailable; using local JS fallback.", error);
+    console.warn("LunaRunes rune hint JSON unavailable; using local JS fallback.", error);
     runeHintMap = new Map();
   }
 }
@@ -43,35 +43,35 @@ async function loadRuneHints() {
 const MODE_CONFIG = {
   single: {
     title: "單卡",
-    kicker: "LOC1 · Single Rune",
+    kicker: "LunaRunes · Single Rune",
     count: 1,
     labels: ["核心"],
     note: "目前以單卡既有資料進行基礎解讀。"
   },
   daily: {
     title: "每日抽牌",
-    kicker: "LOC1 · Daily Rune",
+    kicker: "LunaRunes · Daily Rune",
     count: 1,
     labels: ["今日"],
     note: "每日模式沿用現有的每日提醒資料。"
   },
   "2card": {
     title: "雙卡 · 因 → 果",
-    kicker: "LOC1 · Two Cards",
+    kicker: "LunaRunes · Two Cards",
     count: 2,
     labels: ["因", "果"],
     note: "雙卡目前先維持既有的因果結構。"
   },
   "3card": {
     title: "三卡 · 源 → 轉 → 合",
-    kicker: "LOC1 · Three Cards",
+    kicker: "LunaRunes · Three Cards",
     count: 3,
     labels: ["源", "轉", "合"],
     note: "三卡目前先維持既有的源、轉、合結構。"
   },
   "5card": {
     title: "五卡 · 情境展開",
-    kicker: "LOC1 · Five Cards",
+    kicker: "LunaRunes · Five Cards",
     count: 5,
     labels: ["過去", "現在", "未來", "外在", "內在"],
     note: "五卡以「過去 → 現在 → 未來」為時間主線，外在與內在作為同時作用的兩個條件層。"
@@ -476,7 +476,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   sessionStorage.setItem("realPhase", realPhase);
 
-  document.title = `LOC1｜${config.title}`;
+  document.title = `LunaRunes｜${config.title}`;
   document.getElementById("mode-title").textContent = config.title;
   document.getElementById("mode-kicker").textContent = config.kicker;
   const moonPhase = document.getElementById("moon-phase");
