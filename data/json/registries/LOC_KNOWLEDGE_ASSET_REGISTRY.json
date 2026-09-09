@@ -27,7 +27,7 @@
       ],
       "role": "governance_anchor",
       "searchable": true,
-      "public_summary": "第0符「德」是作者／月語者的個人誌銘，也是 LunaRunes66 的集合起點、治理與遞迴錨點。它可作為跨 LOC 的搜尋入口，但不參與抽牌，也沒有卡面。",
+      "public_summary": "第0符「德」位於 LOC6 Methodology／方法論中的 Governance／治理分類：德之符文。它是作者／月語者的個人誌銘，也是 LunaRunes66 的集合起點、治理與遞迴錨點；不參與抽牌，也沒有卡面。",
       "keywords": [
         "德之符文",
         "德符文",
@@ -49,7 +49,9 @@
         "德跟政德有什麼關係",
         "德和LunaRunes66是什麼關係"
       ],
-      "notes": "Primary public route is governance.html#de-rune; runes.html is the secondary record/list view. Searchability must not imply drawability."
+      "notes": "Primary public route is governance.html#de-rune; runes.html is the secondary record/list view. Searchability must not imply drawability.",
+      "methodology_category": "Governance",
+      "category_label": "治理：德之符文"
     },
     {
       "asset_id": "KA-PERSON-LO3RWANG-001",
