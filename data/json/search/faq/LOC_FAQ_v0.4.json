@@ -74,7 +74,7 @@
         "LOC到底在做什麼？",
         "可以簡單介紹LOC嗎？"
       ],
-      "answer": "LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋、治理並推演語言的語言模型（Language Model, LM）。從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。LOC 固定只有 LOC1–LOC8，不存在 LOC9。",
+      "answer": "LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋、治理並推演語言的語言系統模組（Language System Module）。從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。LOC 固定只有 LOC1–LOC8，不存在 LOC9。",
       "keywords": [
         "LOC",
         "Luna Codex",
@@ -109,7 +109,7 @@
         "月符在LOC裡是什麼位置？",
         "為什麼說月符為種？"
       ],
-      "answer": "LOC 是整體語言模型；LunaRunes（月之符文）是 LOC1 的固定 66 符語彙種子與 Reference Seed System。月之符文提供語彙、四向、月相與組合語法，但使用 LOC 不必先學會全部符文。",
+      "answer": "LOC 是整體語言系統模組；LunaRunes（月之符文）是 LOC1 的固定 66 符語彙種子與 Reference Seed System。月之符文提供語彙、四向、月相與組合語法，但使用 LOC 不必先學會全部符文。",
       "keywords": [
         "月典",
         "Luna Codex",
@@ -188,7 +188,7 @@
         "LOC和桌遊有什麼關係？",
         "LOC有哪些應用面向？"
       ],
-      "answer": "LOC本體是一套個人語言模型。符文抽取、遊戲情境、歌曲與歌詞、創作文字、文章／小說、多媒體影片與圖像、治理語句、知識文件，以及生命事件與時間語意，都是不同型態的語言資料。LOC1–8負責保存與處理各自資料，再由同一套框架統合、搜尋與建立關聯，而不是八個彼此獨立後再硬合併的產品。",
+      "answer": "LOC本體是一套個人語言系統模組。符文抽取、遊戲情境、歌曲與歌詞、創作文字、文章／小說、多媒體影片與圖像、治理語句、知識文件，以及生命事件與時間語意，都是不同型態的語言資料。LOC1–8負責保存與處理各自資料，再由同一套框架統合、搜尋與建立關聯，而不是八個彼此獨立後再硬合併的產品。",
       "keywords": [
         "語言系統",
         "LOC1–8",
@@ -2251,20 +2251,20 @@
       "id": "FAQ-091",
       "category": "LOC 基本定義",
       "intent": "為什麼 LOC 稱為 LM 而不是小型語言架構",
-      "question": "為什麼 LOC 稱為 Language Model，而不是「小型語言架構」？",
+      "question": "為什麼 LOC 稱為 Language System Module，而不是「小型語言架構」？",
       "aliases": [
         "LOC為什麼不是小型語言架構？",
         "LOC是LM還是framework？",
         "LOC是MLM嗎？"
       ],
-      "answer": "LOC 的正式定位是 Language Model（LM）。「小型」只描述某個時間點的資料規模，LOC 可以由小型模組開始，也可以持續整合 corpus、脈絡、治理規則與其他 LOC 模組而擴大；原有 framework 並沒有消失，而是成為 LM 的底層 architecture。LOC 的主名稱維持 LM；需要描述架構特性時可稱 modular language model，但不以 MLM 作主縮寫，以避免與 Masked Language Model 混淆。",
+      "answer": "LOC 的正式定位是 Language System Module。「小型」只描述某個時間點的資料規模，LOC 可以由小型模組開始，也可以持續整合 corpus、脈絡、治理規則與其他 LOC 模組而擴大；原有 framework 並沒有消失，而是成為 LM 的底層 architecture。LOC 的主名稱維持 LM；需要描述架構特性時可稱 modular language system module，但不以 MLM 作主縮寫，以避免與 Masked Language System Module 混淆。",
       "keywords": [
-        "Language Model",
+        "Language System Module",
         "LM",
         "modular",
         "framework",
         "architecture",
-        "語言模型",
+        "語言系統模組",
         "模組化"
       ],
       "related_ids": [],
