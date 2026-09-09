@@ -1899,5 +1899,6 @@
       "status": "lexical_feature_only",
       "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     }
-  ]
+  ],
+  "authority_domain": "music"
 }
