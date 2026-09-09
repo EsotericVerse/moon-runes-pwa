@@ -3,11 +3,11 @@
   "registry": "LOC_KM_KEYWORDS",
   "source": "search.html + governance.html + structured registries",
   "source_version": "LOC Canon 1.0 + LOC7 KM",
-  "updated_at": "2026-09-09",
+  "updated_at": "2026-09-10",
   "purpose": "Shared keyword and alias registry for LOC7 Knowledge Management, FAQ/RAG retrieval, Unified Search, and future Knowledge Object alignment.",
   "governance": {
     "authority": "LOC7_KM",
-    "note": "Keywords are retrieval aids, not Canon definitions. Canon, Stable, Working, Proposed, Reserved and Historical states must remain distinguishable. Repository KM documentation is Markdown-first.",
+    "note": "Keywords are retrieval aids, not Canon definitions. Canon, Stable, Working, Proposed, Reserved and Historical states must remain distinguishable. Repository KM documentation is Markdown-first. 月之符文群組名以 LunaRune66.xlsx 為準；現行正式九組為 Soul / Connection / Life / Nature / Mineral / Element / Order / Disorder / Special。舊稱、舊英文或衍生分類不得覆蓋現行群組名。",
     "controlled_logic": [
       "LOC1 真實月相判定規則",
       "真實月相 × 卡片月相交互規則"
@@ -57,10 +57,9 @@
         {
           "term": "LOC1–8",
           "aliases": [
-            "八分發",
-            "Eight Distributions",
-            "八個框架",
-            "語言處理責任"
+            "LOC1–8 分類",
+            "LOC1–8 功能分類",
+            "Structure of LOC"
           ],
           "loc_scope": [
             "global"
@@ -117,6 +116,31 @@
           ],
           "status": "Working",
           "domain_scope": [
+            "knowledge"
+          ]
+        },
+        {
+          "term": "月之符文九群組",
+          "aliases": [
+            "靈魂 Soul",
+            "連結 Connection",
+            "生命 Life",
+            "自然 Nature",
+            "礦物 Mineral",
+            "元素 Element",
+            "秩序 Order",
+            "無序 Disorder",
+            "特殊 Special"
+          ],
+          "loc_scope": [
+            "LOC1",
+            "LOC6",
+            "LOC7"
+          ],
+          "status": "Canonical",
+          "domain_scope": [
+            "runes",
+            "governance",
             "knowledge"
           ]
         }
