@@ -1034,6 +1034,8 @@
         ]);
         const s=data.text_summary||{},search=data.search_summary||{};
         const sources=[...(data.text_sources||[]),...(data.media_sources||[])].map(row=>row.source).filter(Boolean);
+        const textRecords=Number(s.searchable_records||0);
+        const mediaRecords=Math.max(0,Number(search.comparable_records||0)-textRecords);
         const sourceTableRows=[...(data.text_sources||[]).filter(row=>!String(row.source||'').includes('Suno')),...(data.media_sources||[]),...(data.text_sources||[]).filter(row=>String(row.source||'').includes('Suno'))];
         const eras=(eraData.eras||[]).filter(x=>x.status==='released'||x.status==='current');
         const eraHtml=eras.length?`<div class="source-era-strip">${eras.map(x=>`<span class="filter-chip" title="${esc((x.start_date||'')+' → '+(x.end_date||'現在'))}">${esc(x.display_label||x.name||x.period)}</span>`).join('')}</div>`:'<div class="empty">目前沒有可顯示的時期資料。</div>';
@@ -1041,7 +1043,7 @@
         el('sourceStatsBody').innerHTML=`
           <div class="source-stats-summary">
             <div class="source-stat-total"><strong>${sources.length} 類</strong><small>搜尋資料來源：${esc(sources.join('、'))}</small></div>
-            <div class="source-stat-total"><strong>${Number(search.comparable_records||0).toLocaleString('zh-TW')} 筆</strong><small>可比對總筆數</small></div>
+            <div class="source-stat-total"><strong>${Number(search.comparable_records||0).toLocaleString('zh-TW')} 筆</strong><small>文章／歌詞 ${textRecords.toLocaleString('zh-TW')} 筆・多媒體 ${mediaRecords.toLocaleString('zh-TW')} 筆</small></div>
             <div class="source-stat-total"><strong>${Number(search.char_count||s.char_count||0).toLocaleString('zh-TW')} 字</strong><small>總字數（圖片／影片不計字數）</small></div>
             <div class="source-stat-total"><strong>${esc(s.start_date||'—')} → ${esc(s.end_date||'現在')}</strong><small>文字時間（開始 → 結束）</small></div>
           </div>
