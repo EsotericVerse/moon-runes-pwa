@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <span class="num">#${n}</span>
         <span class="name">${esc(r.符文名稱)}${r.英文 ? ` <span class="en" style="display:inline">${esc(r.英文)}</span>` : ""}</span>
         ${keywordPanel}
-        <span class="meta">${isDe ? '<span class="pill">誌銘</span>' : `<span class="pill">${esc(r.月相)}</span>`}</span>
+        <span class="meta">${isDe ? '<span class="pill">誌銘</span>' : `<span class="pill">卡片月相：${esc(r.月相)}</span>`}</span>
       </div>
     </article>`;
   }
@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       '<span class="pill">不參與抽牌</span>'
     ].join("") : [
       `<span class="pill">${esc(r.所屬分組)}</span>`,
-      `<span class="pill">${esc(r.月相)}</span>`,
+      `<span class="pill">卡片月相：${esc(r.月相)}</span>`,
       `<span class="pill">${esc(r.顯化形式 || r.關鍵詞 || "")}</span>`
     ].join("");
 
