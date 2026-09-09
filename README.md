@@ -1,22 +1,23 @@
 # 🌕 LOC｜月典（Luna Codex）
 
-LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的語言系統模組（Language System Module）。
+LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的語言系統模型（Language System Model，LM）。
 
-原有 framework 並未消失，而是成為 LOC Language System Module 的底層 architecture。首頁保留一組人類可讀的導覽編號；文件與工程層一律使用語意 domain。
+原有 framework 並未消失，而是成為 LOC Language System Model 的底層 architecture。首頁保留一組人類可讀的導覽編號；文件與工程層一律使用語意 domain。
 
-系統以 LunaRunes（月之符文）作為語彙種子，從語彙延伸到脈絡、文字創作、多媒體、治理、文字建築與時間推演。月之符文是重要的 Reference Seed System，但不是使用 LOC 的門檻。
+LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Model reference implementation：以 66 枚中文單字為核心語彙，實作脈絡、Graph、Grammar、治理、搜尋與演化。月之符文用來證明 LOC 可被實作，但不是使用 LOC 的門檻。
 
 > 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
 
 - **現行 Canon：1.0（正式版）**
 - **Web Build：0.5**
+- **LOC GPT Skills：1.0.0**
 - **公開網站：<https://loc.lo3rwang.cc/>**
 - **作者：Lucas Oscar Wang 政德**
 - **GitHub：<https://github.com/EsotericVerse/moon-runes-pwa>**
 
 ---
 
-## 目前進度｜2026-09-08
+## 目前進度｜2026-09-10
 
 目前已進入 **Demo 收斂與功能驗收階段**。核心骨架不再擴張，優先處理功能完整性、資料一致性與公開入口。
 
@@ -52,6 +53,47 @@ LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋�
 新手導覽：
 - [tutorial01.html](https://loc.lo3rwang.cc/tutorial01.html)
 - [tutorial02.html](https://loc.lo3rwang.cc/tutorial02.html)
+
+---
+
+## LOC GPT Skills
+
+LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重複調用的 AI Skills。它們不是獨立於 LOC 的另一套理論，而是 LOC Language System Model 的 callable implementations。
+
+### v1.0.0
+
+| Skill | 用途 |
+|---|---|
+| `loc-km-governance` | 檢查 Canon、KM、FAQ、Registry、Base66、術語一致性、資料權威與舊版污染 |
+| `loc-repo-health-check` | 檢查 Repository 結構、路徑、runtime projection、API／Search、legacy dependency、部署與效能風險 |
+
+兩個 Skill 共用現行 LOC 治理原則：
+
+```text
+Language System Model
+        ↓
+Authority / Canon
+        ↓
+Registry / Structured Data
+        ↓
+Context / Graph / Grammar / Evolution
+        ↓
+API / Search / UI / AI Skill
+```
+
+其中 LunaRunes 是 LOC 的 Symbolic Language Model reference implementation；Skills 則把已形成的方法與治理能力轉成 GPT／Agent 可重複使用的工作流程。
+
+- **公開套件：** [LOC-GPT-Skills-v1.0.0-bundle.zip](https://loc.lo3rwang.cc/LOC-GPT-Skills-v1.0.0-bundle.zip)
+- **版本：** 1.0.0
+- **發布方式：** 原始 Skill 結構與可執行 validator 採開放方式提供，bundle 作為安裝／交換用發布包。
+
+典型使用情境：
+
+```text
+Use loc-km-governance to audit this repository against the current LOC Language System Model.
+
+Use loc-repo-health-check to verify whether legacy projections can be removed without breaking runtime.
+```
 
 ---
 
@@ -308,6 +350,7 @@ moon-runes-pwa/
 ├── js/                  # 前端邏輯
 ├── css/                 # 前端樣式
 ├── tools/               # builders / importers / utilities
+├── skills/              # LOC GPT Skills source directories
 ├── 64images/            # 66 符文卡面
 ├── pics/                # 系統視覺資產
 ├── reels/               # 多媒體資產
@@ -322,6 +365,7 @@ moon-runes-pwa/
 ├── tutorial01.html
 ├── tutorial02.html
 ├── LunaRune66.xlsx
+├── LOC-GPT-Skills-v1.0.0-bundle.zip
 ├── manifest.json
 ├── service-worker.js
 ├── COPYLEFT.md
@@ -347,6 +391,14 @@ moon-runes-pwa/
 - JSON registries
 - Semantic / keyword retrieval
 - RAG / Graph RAG
+
+### GPT / Agent Skills
+- `loc-km-governance`
+- `loc-repo-health-check`
+- Markdown Skill specification
+- Structured JSON output
+- Python validators
+- LOC model-aware governance rules
 
 ### Data governance
 
