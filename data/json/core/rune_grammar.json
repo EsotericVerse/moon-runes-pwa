@@ -1,9 +1,9 @@
 {
   "schema_version": "0.2",
-  "source": "LunaRune64.xlsx#Grammar",
-  "source_authority": "mother_workbook",
+  "source": "Author-confirmed Grammar specification (2026-09-07)",
+  "source_authority": "author_confirmed_specification",
   "projection_role": "runtime_core",
-  "source_note": "依使用者於 2026-09-07 提供的最新 Grammar 工作表畫面同步；對外將「治理原則」統一表述為「治理解牌方式」，避免與一般系統治理混淆。若本 JSON 與 LunaRune64.xlsx#Grammar 衝突，以母資料為準。",
+  "source_note": "依作者於 2026-09-07 提供並確認的 Grammar 工作表內容同步；對外將「治理原則」統一表述為「治理解牌方式」，避免與一般系統治理混淆。符文基本定義若與 LunaRune66.xlsx 衝突，以母資料為準。",
   "governance": {
     "global_layering": "詞彙層 → 卡片位置層 → 治理層 → 時間修飾層",
     "global_rule": "後層時間的月相交互只作修飾，不覆蓋符文本義。",

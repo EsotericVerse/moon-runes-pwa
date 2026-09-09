@@ -104,7 +104,7 @@ LOC 的功能關係可概括為：
 
 1–64 每個八符組內，新月、上弦、滿月、下弦各出現兩次。
 
-`LunaRune64.xlsx` 是符文母資料與最高優先來源；JSON、JavaScript、搜尋索引與畫面內容均屬衍生資料。
+`LunaRune66.xlsx` 是符文母資料與最高優先來源；JSON、JavaScript、搜尋索引與畫面內容均屬衍生資料。
 
 ---
 
@@ -288,7 +288,7 @@ Governance／治理直接作為語意 domain 使用；政德風是重要的個�
 
 | 檔案 | 用途 |
 |---|---|
-| `LunaRune64.xlsx` | LunaRunes 母資料 / Single Source of Truth |
+| `LunaRune66.xlsx` | LunaRunes 母資料 / Single Source of Truth |
 | `docs/LOC_Canon.docx` | LOC Canon 1.0 正式版 |
 | `docs/64LunaRune.docx` | 命運句語法圖鑑 |
 | `docs/LunarRunesCardCut.pdf` | 紙本符文卡輸出 |
@@ -321,7 +321,7 @@ moon-runes-pwa/
 ├── lo3rwang.html
 ├── tutorial01.html
 ├── tutorial02.html
-├── LunaRune64.xlsx
+├── LunaRune66.xlsx
 ├── manifest.json
 ├── service-worker.js
 ├── COPYLEFT.md

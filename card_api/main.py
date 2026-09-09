@@ -43,11 +43,11 @@ app.add_middleware(
 
 # 載入資料（全局，一次載入）
 try:
-    with open(core_json("runes64.json"), 'r', encoding='utf-8') as f:
+    with open(core_json("runes66.json"), 'r', encoding='utf-8') as f:
         RUNES = json.load(f)
 except Exception as e:
     RUNES = {"runes": []}
-    print(f"Warning: Failed to load runes64.json: {e}")
+    print(f"Warning: Failed to load runes66.json: {e}")
 
 try:
     with open(core_json("rune_interpretations.json"), 'r', encoding='utf-8') as f:
@@ -66,7 +66,7 @@ except Exception as e:
 
 # 建立符文編號到資料的映射；相容母資料投影為陣列或 {"runes": [...]} 兩種格式
 RUNES_LIST = RUNES.get("runes", []) if isinstance(RUNES, dict) else (RUNES if isinstance(RUNES, list) else [])
-RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES_LIST, 1)}
+RUNES_MAP = {r.get("編號", r.get("id", i)): r for i, r in enumerate(RUNES_LIST, 1)}
 RUNE_SINGLE_MAP = {r.get("符文名稱", f"rune_{i}"): r for i, r in enumerate(RUNE_SINGLE)}
 
 # LOC7 FAQ 資料（全局，一次載入）

@@ -517,7 +517,7 @@
     {
       "asset_id": "KA-LOC1-RUNES-001",
       "title": "LOC1 月符基本資料 Seed Corpus",
-      "path": "data/json/core/runes64.json",
+      "path": "data/json/core/runes66.json",
       "source_type": "structured_seed_corpus",
       "content_type": "rune_seed_corpus",
       "primary_loc": "LOC1",
@@ -550,11 +550,11 @@
         "LunaRunes"
       ],
       "provenance": {
-        "mother_source": "LunaRune64.xlsx",
+        "mother_source": "LunaRune66.xlsx",
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "notes": "Single maintained basic rune lookup projection derived from LunaRune64.xlsx. Consumers that only need rune identity/keywords/group/moon phase/four orientations should use this file rather than clone the full rune dataset.",
+      "notes": "Single maintained basic rune lookup projection derived from LunaRune66.xlsx. Consumers that only need rune identity/keywords/group/moon phase/four orientations should use this file rather than clone the full rune dataset.",
       "presentation": "internal_source",
       "domain": "runes",
       "related_domains": [
@@ -598,7 +598,7 @@
         "方向語意"
       ],
       "provenance": {
-        "mother_source": "LunaRune64.xlsx",
+        "mother_source": "LunaRune66.xlsx",
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
@@ -649,7 +649,7 @@
         "逆位"
       ],
       "provenance": {
-        "mother_source": "LunaRune64.xlsx#Lots",
+        "mother_source": "LunaRune66.xlsx#Lots",
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
@@ -1235,7 +1235,7 @@
         "maintained_in_repo": true,
         "derived_from": [
           "creator-confirmed LunaRunes 66 design rationale",
-          "LunaRune64.xlsx canonical structure"
+          "LunaRune66.xlsx canonical structure"
         ]
       },
       "notes": "Governance interpretation of the mature 66-rune design; does not override the rune mother source.",
@@ -1358,7 +1358,7 @@
         "rune interpretations"
       ],
       "provenance": {
-        "mother_source": "LunaRune64.xlsx",
+        "mother_source": "LunaRune66.xlsx",
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
@@ -1382,7 +1382,7 @@
       ],
       "content_type": "knowledge_document",
       "title": "月之符文 Grammar／符文治理規則",
-      "summary": "LunaRune64.xlsx Grammar 工作表的機器可讀投影，涵蓋語法分層、單卡、兩卡、三卡、五卡、OW3gs、符文交互與月相交互。",
+      "summary": "作者於 2026-09-07 確認之 Grammar 規格的機器可讀投影，涵蓋語法分層、單卡、兩卡、三卡、五卡、OW3gs、符文交互與月相交互。",
       "keywords": [
         "Grammar",
         "符文治理",
@@ -1397,13 +1397,14 @@
       ],
       "source_refs": [
         {
-          "source_type": "spreadsheet",
-          "source_id": "LunaRune64.xlsx#Grammar"
+          "source_type": "author_confirmed_specification",
+          "source_id": "Grammar specification (2026-09-07)"
         }
       ],
       "public_path": null,
       "provenance": {
-        "mother_source": "LunaRune64.xlsx#Grammar",
+        "mother_source": "LunaRune66.xlsx",
+        "specification_source": "Author-confirmed Grammar (2026-09-07)",
         "projection": "data/json/core/rune_grammar.json",
         "updated_at": "2026-09-07"
       },
