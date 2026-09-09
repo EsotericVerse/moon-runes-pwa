@@ -1,6 +1,7 @@
 import { rune } from "./runes66.js";
-import { direction } from "./direction64.js";
 import { allData } from "./rune_all_data_all.js";
+
+const direction = rune;
 
 const DIRECTIONS = ["正位", "半正位", "半逆位", "逆位"];
 const ROTATIONS = ["rotate(0deg)", "rotate(90deg)", "rotate(-90deg)", "rotate(180deg)"];
