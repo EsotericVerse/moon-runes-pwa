@@ -266,7 +266,7 @@
         "特殊組有哪些符文？",
         "德為什麼不在66符牌組裡？"
       ],
-      "answer": "母資料的正式群組名稱是「特殊（Special）」。第0符「德（Virtue）」是誌銘，也是作者／系統基準，不參與抽牌；65「玄（Chaos）」與66「命（Fate）」則屬於66符固定骨架中的兩個特殊符文。玄＝Chaos，不是 Mystery；命＝Fate。三者同屬特殊組，但功能與語意不同。",
+      "answer": "母資料的正式群組名稱是「特殊（Special）」。第0符「德（Virtue）」是誌銘，也是作者／系統基準，不參與抽牌；65「玄（Chaos）」與66「命（Fate）」則屬於66符固定骨架中的兩個特殊符文。玄＝Chaos；命＝Fate。三者同屬特殊組，但功能與語意不同。",
       "keywords": [
         "特殊",
         "Special",
@@ -357,7 +357,7 @@
       ],
       "source_refs": [
         "runes.html",
-        "LunaRune64.xlsx#Grammar"
+        "LunaRune66.xlsx#Grammar"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
@@ -2126,7 +2126,7 @@
       "source_refs": [
         "runes.html",
         "context.html",
-        "LunaRune64.xlsx#Grammar"
+        "LunaRune66.xlsx#Grammar"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
@@ -2178,7 +2178,7 @@
       ],
       "source_refs": [
         "runes.html",
-        "LunaRune64.xlsx#Grammar"
+        "LunaRune66.xlsx#Grammar"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
