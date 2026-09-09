@@ -1034,7 +1034,7 @@
         ]);
         const s=data.text_summary||{},search=data.search_summary||{};
         const sources=[...(data.text_sources||[]),...(data.media_sources||[])].map(row=>row.source).filter(Boolean);
-        const articleChars=(data.text_sources||[]).filter(row=>row.source_type==='text').reduce((sum,row)=>sum+Number(row.char_count||0),0);
+        const articleChars=(data.text_sources||[]).filter(row=>row.source_type!=='lyrics').reduce((sum,row)=>sum+Number(row.char_count||0),0);
         const lyricsChars=(data.text_sources||[]).filter(row=>row.source_type==='lyrics').reduce((sum,row)=>sum+Number(row.char_count||0),0);
         const km=data.knowledge_summary||{};
         const kmChars=Number(km.knowledge_document_characters||0);
