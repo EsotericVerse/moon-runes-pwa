@@ -1,4 +1,4 @@
-import { rune } from './runes64.js';
+import { rune } from './runes66.js';
 import { direction } from './direction64.js';
 import { allData } from './rune_all_data_all.js';
 
