@@ -8,7 +8,7 @@
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "LOC Canon 1.0 現行 FAQ。固定名稱、LOC1–8 結構、LunaRunes 映射與治理原則以 Canon 1.0／LOC_LANGUAGE_SYSTEM_REGISTRY.json 為唯一權威；FAQ 是檢索投影，不得反向改寫 Canon。",
+    "description": "LOC Canon 1.0 現行 FAQ。固定名稱、首頁 LOC1–8 導覽、LunaRunes 映射與治理原則以 Canon 1.0／LOC_LANGUAGE_SYSTEM_REGISTRY.json 為唯一權威；FAQ 是檢索投影，不得反向改寫 Canon。",
     "entry_count": 90,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
@@ -22,9 +22,9 @@
         "66：命（Fate）"
       ],
       "special_exception_note": "65「玄」與66「命」是66符固定骨架中的特殊符文；現行一般抽牌 runtime 使用1–64。第0符「德」只作作者／系統基準，不參與抽取。",
-      "loc_range": "LOC1–LOC8",
+      "loc_range": "LOC1–LOC8 homepage guide only",
       "loc9_exists": false,
-      "framework_note": "LOC1–8 的名稱與定位以 LOC_LANGUAGE_SYSTEM_REGISTRY.json canonical_loc_map 為唯一現行權威；FAQ、README、UI、Search 與其他 Registry 不得自行重新定義。"
+      "framework_note": "LOC1–8 only describe the public homepage guide map. FAQ/KM/Search/backend must use semantic domains and must not create new LOC-number ownership fields."
     },
     "retrieval_guidance": {
       "embedding_fields": [
@@ -43,21 +43,16 @@
         "confirmed": "有現行文件或創作者確認直接支持",
         "derived": "由多份現行資料整理出的對外標準答案，未新增Canon規則"
       },
-      "answer_policy": "檢索系統應優先回傳已確認或可追溯的標準答案。AI可檢索、排序與整合，但不得自行改寫66符文Canon、LOC1–8固定骨架，亦不得補造缺失歷史資料。"
+      "answer_policy": "檢索系統應優先回傳已確認或可追溯的標準答案。AI可檢索、排序與整合，但不得自行改寫66符文Canon，也不得把首頁 LOC1–8 導覽重新升格為底層分類。"
     },
     "system_id": "lo3rwang",
-    "primary_loc": "LOC7",
-    "related_locs": [
-      "LOC6",
-      "LOC8"
-    ],
     "shared_registries": {
       "language_system": "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
       "era": "data/json/registries/LOC_ERA_REGISTRY.json",
       "analysis_types": "data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json",
       "loc7_analysis": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json"
     },
-    "updated_at": "2026-09-08",
+    "updated_at": "2026-09-09",
     "fixed_rules": {
       "loc_range": "LOC1–LOC8 only; LOC9 does not exist",
       "context_spelling": "脈絡",
@@ -66,7 +61,12 @@
       "loc6": "Methodology／方法論",
       "loc7": "Algorithm／演算法（知識庫）",
       "loc8": "Evolution／推演"
-    }
+    },
+    "domain": "knowledge",
+    "related_domains": [
+      "governance",
+      "evolution"
+    ]
   },
   "faq": [
     {
