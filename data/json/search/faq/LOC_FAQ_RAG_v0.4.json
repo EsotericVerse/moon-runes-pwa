@@ -8,24 +8,24 @@
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "由 LOC FAQ v0.4 依 Canon 1.0 同步產生；本檔為 retrieval derivative，不是 Canon。",
+    "description": "由現行 LOC FAQ 同步產生的 retrieval derivative；使用語意 domain，不以 LOC1–8 作底層分類。",
     "source_dataset": "LOC_FAQ_v0.4.json",
     "parent_entry_count": 90,
-    "chunk_count": 90,
+    "chunk_count": 89,
     "chunk_policy": "每個 FAQ 條目對應一個完整 Semantic Chunk；需要更細粒度時由檢索層處理，不另要求 Markdown 知識文件。",
     "system_id": "lo3rwang",
-    "primary_loc": "LOC7",
-    "related_locs": [
-      "LOC6",
-      "LOC8"
-    ],
     "shared_registries": {
       "language_system": "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
       "era": "data/json/registries/LOC_ERA_REGISTRY.json",
       "analysis_types": "data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json",
       "loc7_analysis": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json"
     },
-    "updated_at": "2026-09-08"
+    "updated_at": "2026-09-09",
+    "domain": "knowledge",
+    "related_domains": [
+      "governance",
+      "evolution"
+    ]
   },
   "chunks": [
     {
@@ -2475,36 +2475,6 @@
       "status": "confirmed"
     },
     {
-      "id": "FAQ-086-A",
-      "parent_id": "FAQ-086",
-      "category": "LOC 分類",
-      "intent": "LOC 的公開 Tag 怎麼分",
-      "question": "LOC 的公開 Tag 怎麼分？",
-      "aliases": [
-        "LOC3到8怎麼分類？",
-        "方法論和演算法有什麼差別？",
-        "推演在 LOC 哪裡？"
-      ],
-      "answer": "公開與資料治理都以 Canon 1.0 固定名稱為準：LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm、Evolution。Text Architecture、Governance、Graph RAG、Search、Trend 等都是方法、技術或實作名稱，不能反過來改寫 LOC1–8 的正式名稱。",
-      "keywords": [
-        "表達",
-        "方法論",
-        "演算法",
-        "推演",
-        "符文籤詩",
-        "符文體系",
-        "符文演算",
-        "符文演化"
-      ],
-      "retrieval_text": "LOC 的公開 Tag 怎麼分？ LOC3到8怎麼分類？ 方法論和演算法有什麼差別？ 推演在 LOC 哪裡？ 表達 方法論 演算法 推演 符文籤詩 符文體系 符文演算 符文演化 公開與資料治理都以 Canon 1.0 固定名稱為準：LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm、Evolution。Text Architecture、Governance、Graph RAG、Search、Trend 等都是方法、技術或實作名稱，不能反過來改寫 LOC1–8 的正式名稱。",
-      "related_ids": [],
-      "source_refs": [
-        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
-      ],
-      "canon_version": "1.0",
-      "status": "confirmed"
-    },
-    {
       "id": "FAQ-087-A",
       "parent_id": "FAQ-087",
       "category": "LOC 基本定義",
@@ -2530,34 +2500,6 @@
       "source_refs": [
         "index.html",
         "runes.html",
-        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
-      ],
-      "canon_version": "1.0",
-      "status": "confirmed"
-    },
-    {
-      "id": "FAQ-088-A",
-      "parent_id": "FAQ-088",
-      "category": "LOC 基本定義",
-      "intent": "LOC1–8 現在怎麼分類",
-      "question": "LOC1–8 現在怎麼分類？",
-      "aliases": [
-        "LOC最新八個分類是什麼？",
-        "LOC2為什麼是脈絡？",
-        "LOC8為什麼叫推演？"
-      ],
-      "answer": "Canon 1.0 固定分類為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。LOC 固定只有 1–8，不存在 LOC9。",
-      "keywords": [
-        "LOC1",
-        "LOC2",
-        "脈絡",
-        "方法論",
-        "演算法",
-        "推演"
-      ],
-      "retrieval_text": "LOC1–8 現在怎麼分類？ LOC最新八個分類是什麼？ LOC2為什麼是脈絡？ LOC8為什麼叫推演？ LOC1 LOC2 脈絡 方法論 演算法 推演 Canon 1.0 固定分類為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。LOC 固定只有 1–8，不存在 LOC9。",
-      "related_ids": [],
-      "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
       "canon_version": "1.0",
