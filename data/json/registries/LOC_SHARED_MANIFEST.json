@@ -320,7 +320,7 @@
     "data_governance": "data/json/registries/LOC_DATA_GOVERNANCE.json",
     "shared_schema": "data/json/registries/LOC_SHARED_SCHEMA.json",
     "reference_model": "data/json/registries/LOC_REFERENCE_MODEL.json",
-    "principle": "Framework governance is cross-LOC; canonical ownership remains domain-specific.",
+    "principle": "Model governance is cross-domain; canonical ownership remains domain-specific.",
     "trend_registry": "data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json"
   },
   "loc5_media_backfill": {
