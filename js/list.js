@@ -80,19 +80,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     const visual = isDe
       ? `<button class="rune-image-button" type="button" data-rune="0" aria-label="查看 德 第零符資料"><div class="rune-thumb rune-thumb-de" aria-hidden="true">德</div></button>`
       : `<button class="rune-image-button" type="button" data-rune="${r.編號}" aria-label="查看 ${esc(r.符文名稱)} 符文資料"><img class="rune-thumb" src="64images/${encodeURIComponent(r.圖檔名稱)}" alt="${esc(r.符文名稱)}符文卡面縮圖" loading="lazy" decoding="async" /></button>`;
-    const keywordLine = r.關鍵詞
-      ? `<span class="en"><strong>關鍵詞：</strong>${esc(r.關鍵詞)}</span>`
+    const keywordBlock = r.關鍵詞
+      ? `<span class="en" style="display:block"><strong style="display:block">關鍵詞</strong><span style="display:block">${esc(r.關鍵詞)}</span></span>`
       : "";
-    const reverseKeywordLine = r.反向關鍵字
-      ? `<span class="en"><strong>反向關鍵詞：</strong>${esc(r.反向關鍵字)}</span>`
+    const reverseKeywordBlock = r.反向關鍵字
+      ? `<span class="en" style="display:block"><strong style="display:block">反向關鍵詞</strong><span style="display:block">${esc(r.反向關鍵字)}</span></span>`
       : "";
     return `<article class="rune-tile${special}">
       ${visual}
       <div class="rune-info">
         <span class="num">#${n}</span>
         <span class="name">${esc(r.符文名稱)}${r.英文 ? ` <span class="en" style="display:inline">${esc(r.英文)}</span>` : ""}</span>
-        ${keywordLine}
-        ${reverseKeywordLine}
+        ${keywordBlock}
+        ${reverseKeywordBlock}
         <span class="meta"><span class="pill">${esc(r.所屬分組)}</span>${isDe ? '<span class="pill">誌銘</span>' : `<span class="pill">${esc(r.月相)}</span>`}</span>
       </div>
     </article>`;
