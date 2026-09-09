@@ -135,8 +135,8 @@
         "reference_rune": "0 德（De）：作者／月語者誌銘與治理錨點；不參與抽牌、無卡面"
       },
       "model_type": "language_model",
-      "model_name": "LOC Language System Module",
-      "model_definition": "LOC／月典現行定位為 Language System Module；原有 model 並未消失，而是成為 LM 的底層 architecture。月之符文提供基本文字語彙（token）與語意種子。歷史上 LOC 從 LunaRunes66 的實際使用、作品延伸與資料整理中逐步抽象成形；結構上，LunaRunes66 是 LOC Language System Module 的成熟實例／Reference Seed System。",
+      "model_name": "LOC Language System Model",
+      "model_definition": "LOC／月典現行定位為 Language System Model（LM）；原有 framework 成為模型的底層 architecture。歷史上 LOC 從 LunaRunes 的實際使用、作品延伸、脈絡、治理與時間資料中逐步抽象成形；結構上，LunaRunes 是 LOC 的第一個 Symbolic Language Model reference implementation，用來證明 LOC 可被實作、治理與推演。",
       "public_concept_map_usage": "homepage_only",
       "public_concept_map_note": "LOC1–8 are retained only for homepage explanation and visual navigation. Backend schemas, APIs, registries, KM, FAQ and engineering variables must use semantic domain names instead.",
       "backend_domains": {
@@ -165,16 +165,16 @@
         "luna_runes": "符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算（抽牌解牌＋九群組方法論分析） → 符文演化"
       },
       "model_relation": {
-        "historical": "LunaRunes66 先累積實作；LOC 再從這些實作中抽象整理出可重複使用的 model，並進一步成長為 Language System Module。",
-        "structural": "LOC 現行為 Language System Module；原有 model 是其底層 architecture。LunaRunes66 是第一套成熟、可治理、可推演的 Reference Seed System，用來證明 LOC 的模型性。",
-        "scope": "LunaRunes66 是根與成熟實例，但不是 LOC 唯一可能使用的符文／語彙系統；其他系統也可依 LOC architecture 建立自己的實作。"
+        "historical": "LunaRunes 先累積實作；LOC 再從這些實作中抽象整理出可重複使用的 Language System Model。",
+        "structural": "LOC 現行為 Language System Model（LM）；LunaRunes 是第一個成熟、可治理、可推演的 Symbolic Language Model reference implementation，用來證明 LOC 的模型可實作性。",
+        "scope": "LunaRunes 是根與成熟實例，但不是 LOC 唯一可能使用的符文／語彙系統；其他系統也可依 LOC architecture 建立自己的實作。"
       },
       "homepage_guide_rule": "LOC1–8 are a homepage guide map only. They may explain the model visually, but they are not canonical backend IDs or engineering ownership keys."
     }
   ],
   "authority_scope": "global_language_model",
   "canonical_priority": "homepage_guide_only_for_LOC1_8; backend_uses_semantic_domains",
-  "updated_at": "2026-09-09",
+  "updated_at": "2026-09-10",
   "canon_version": "1.0",
   "canon_status": "formal"
 }
