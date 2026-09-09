@@ -19,7 +19,7 @@
       "query": "自我治理",
       "expect": {
         "eras": [
-          "ERA-P8"
+          "ERA-P7.2"
         ],
         "locs": [
           "LOC6",
@@ -32,7 +32,7 @@
           "evolution"
         ]
       },
-      "note": "Current governance concept should stay anchored in P8 and cross governance/context/search."
+      "note": "Current self-governance concept should stay anchored in the current self-governance ERA and relevant governed domains."
     },
     {
       "id": "GR-EVAL-002",
@@ -42,7 +42,7 @@
           "EV-HIST-LUNACODEX"
         ],
         "eras": [
-          "ERA-P2"
+          "ERA-P6.1"
         ],
         "locs": [
           "LOC8"
@@ -51,7 +51,7 @@
           "evolution"
         ]
       },
-      "note": "Naming-history query should recover the recorded temporal event rather than infer a new origin."
+      "note": "Luna Codex naming-history query should recover the recorded milestone and align with the current LOC-start ERA authority."
     },
     {
       "id": "GR-EVAL-003",
@@ -61,7 +61,7 @@
           "EV-HIST-MOON-SPEAKER"
         ],
         "eras": [
-          "ERA-P1"
+          "ERA-P6.0"
         ],
         "locs": [
           "LOC4",
@@ -72,14 +72,14 @@
           "evolution"
         ]
       },
-      "note": "Work milestone should connect narrative work history to its governed ERA."
+      "note": "Moon Speaker milestone should connect the narrative work history to the current Moon Speaker/LunaRunes ERA authority."
     },
     {
       "id": "GR-EVAL-004",
       "query": "心半正",
       "expect": {
         "nodes": [
-          "RUNE-1"
+          "RUNE-21"
         ],
         "locs": [
           "LOC1",
@@ -90,17 +90,17 @@
           "evolution"
         ]
       },
-      "note": "Rune query should reach LOC1 rune anchor and LOC8 observations where recorded."
+      "note": "Rune query should reach the governed rune anchor for 心 and recorded temporal observations."
     },
     {
       "id": "GR-EVAL-005",
-      "query": "P8",
+      "query": "P7.2",
       "expect": {
         "nodes": [
-          "ERA-P8"
+          "ERA-P7.2"
         ],
         "eras": [
-          "ERA-P8"
+          "ERA-P7.2"
         ],
         "locs": [
           "LOC8"
@@ -109,33 +109,33 @@
           "evolution"
         ]
       },
-      "note": "Direct ERA query should stay on the governed temporal backbone."
+      "note": "Direct current ERA query should stay on the governed temporal backbone."
     },
     {
       "id": "GR-EVAL-006",
       "query": "Luna Codex",
       "expect": {
         "forbidden_eras": [
-          "ERA-P8"
+          "ERA-P7.2"
         ],
         "forbidden_nodes": [
           "EV-ERA-P8"
         ]
       },
-      "note": "Naming-origin lookup must not collapse onto the current P8 governance era."
+      "note": "Naming-origin lookup must not collapse onto the current self-governance ERA."
     },
     {
       "id": "GR-EVAL-007",
       "query": "月語者",
       "expect": {
         "forbidden_eras": [
-          "ERA-P8"
+          "ERA-P7.2"
         ],
         "forbidden_locs": [
           "LOC3"
         ]
       },
-      "note": "The recorded novel milestone belongs to LOC4/LOC8 history and must not be misrouted as music/current-era evidence."
+      "note": "The recorded novel milestone must not be misrouted as current self-governance-era evidence."
     },
     {
       "id": "GR-EVAL-008",
@@ -145,10 +145,10 @@
           "ERA-P1.0"
         ],
         "forbidden_eras": [
-          "ERA-P8"
+          "ERA-P7.2"
         ]
       },
-      "note": "Direct historical ERA lookup must follow the current ERA registry identifier and preserve temporal precision instead of defaulting to current."
+      "note": "Direct historical ERA lookup must preserve temporal precision instead of defaulting to the current self-governance ERA."
     }
   ],
   "governance": [
