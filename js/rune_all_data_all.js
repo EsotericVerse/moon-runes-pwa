@@ -1,4 +1,4 @@
-import { direction } from './direction64.js';
+import { rune } from './runes66.js';
 
 const PHASES = ['新月', '上弦', '滿月', '下弦', '空亡'];
 const DIRECTIONS = [
@@ -29,12 +29,12 @@ function buildAdvice(runeName, directionName, directionText, realPhase, runePhas
   };
 }
 
-export const allData = direction
+export const allData = rune
   .filter((item) => item && item.符文名稱)
   .map((item) => ({
     編號: item.編號,
     符文名稱: item.符文名稱,
-    符文月相: item.符文月相,
+    符文月相: item.月相,
     卡牌方向: DIRECTIONS.map(({ name, field }) => ({
       方向: name,
       表示: item[field],
@@ -43,7 +43,7 @@ export const allData = direction
         name,
         item[field],
         phase,
-        item.符文月相
+        item.月相
       ))
     }))
   }));
