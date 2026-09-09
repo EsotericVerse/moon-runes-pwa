@@ -391,7 +391,7 @@ class UnifiedSearchEngine:
             "title": f"{name} · {direction} · {category}",
             "summary": poem,
             "score": 1.0,
-            "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune64.xlsx#Lots", "note": "via data/json/core/lots.json"}],
+            "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune66.xlsx#Lots", "note": "via data/json/core/lots.json"}],
             "payload": {
                 "rune_number": lots_item.get("編號"),
                 "rune_name": name,
@@ -1513,7 +1513,7 @@ class UnifiedSearchEngine:
             "title": f"{name}之符文",
             "summary": rune.get("核心定義") or rune.get("定義") or rune.get("顯化形式") or rune.get("關鍵詞") or "",
             "score": round(score, 6),
-            "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune64.xlsx", "note": None}],
+            "source_refs": [{"source_type": "spreadsheet", "source_id": "LunaRune66.xlsx", "note": None}],
             "payload": rune,
         } for score, number, name, rune in scored[:top_k]]
 
