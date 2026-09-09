@@ -4,14 +4,14 @@
   "authority": "LOC6",
   "basis": {
     "rune_authority": "LOC1 LunaRunes／月之符文",
-    "principle": "LOC6 的預設方法論直接使用月之符文八組，再把第 0 符「德」與特殊符文「命／玄」合併為第九組「人生道理」；不另外建立與符文群組平行的情緒／理性分類體系。",
+    "principle": "LOC6 的預設方法論直接使用月之符文母資料的九個正式群組：靈魂（Soul）、連結（Connection）、生命（Life）、自然（Nature）、礦物（Mineral）、元素（Element）、秩序（Order）、無序（Disorder）、特殊（Special）；不另外創造與母資料平行或取代母資料的群組名稱。",
     "algorithm_scope": "符文演算不只包含抽牌與解牌，也包含以月之符文分類結構對文字、來源與方法進行可重複分析。"
   },
   "default_pipeline": [
     "原始文字／作品／來源資料",
     "關鍵字排行榜與來源分布作為共同統計入口",
     "依月之符文九群組方法論進行粗粒度分類",
-    "第九組「人生道理」內再區分德／命／玄三種語意",
+    "第九組「特殊（Special）」內保留德／玄／命各自不同的語意責任",
     "LOC6 產生方法論分析結果",
     "關係型結果可提供 LOC2 Context 形成脈絡",
     "時間變化與趨勢交由 LOC8 Evolution／推演"
@@ -33,7 +33,8 @@
       ],
       "analysis_label": "個體感受",
       "description": "分析個體內在狀態、自我感受、自我認知、記憶、界線與核心反應。",
-      "basis_type": "rune_group"
+      "basis_type": "rune_group",
+      "group_en": "Soul"
     },
     {
       "order": 2,
@@ -51,7 +52,8 @@
       ],
       "analysis_label": "關係陳述跟處理",
       "description": "分析人與人、人與事、概念與概念之間的連結、分離、溝通、誤解與處理方式。",
-      "basis_type": "rune_group"
+      "basis_type": "rune_group",
+      "group_en": "Connection"
     },
     {
       "order": 3,
@@ -69,7 +71,8 @@
       ],
       "analysis_label": "感性",
       "description": "分析生命經驗、心情、愛、身體感受與感性表達。",
-      "basis_type": "rune_group"
+      "basis_type": "rune_group",
+      "group_en": "Life"
     },
     {
       "order": 4,
@@ -87,7 +90,8 @@
       ],
       "analysis_label": "成長",
       "description": "分析萌芽、累積、發展、成熟、結果與延伸。",
-      "basis_type": "rune_group"
+      "basis_type": "rune_group",
+      "group_en": "Nature"
     },
     {
       "order": 5,
@@ -105,7 +109,8 @@
       ],
       "analysis_label": "價值觀",
       "description": "分析被重視、保留、交換、衡量或視為有價值的事物與判準。",
-      "basis_type": "rune_group"
+      "basis_type": "rune_group",
+      "group_en": "Mineral"
     },
     {
       "order": 6,
@@ -123,7 +128,8 @@
       ],
       "analysis_label": "行動力",
       "description": "分析推動、爆發、流動、阻力、方向與實際行動的動力。",
-      "basis_type": "rune_group"
+      "basis_type": "rune_group",
+      "group_en": "Element"
     },
     {
       "order": 7,
@@ -141,7 +147,8 @@
       ],
       "analysis_label": "道理／規則",
       "description": "分析定義、原則、因果、時間、邏輯、制度、理論與規則。",
-      "basis_type": "rune_group"
+      "basis_type": "rune_group",
+      "group_en": "Order"
     },
     {
       "order": 8,
@@ -159,20 +166,21 @@
       ],
       "analysis_label": "玩樂／愉悅／意外狀況",
       "description": "分析玩樂、愉悅、偶然、想像、不確定性與意外發展。",
-      "basis_type": "rune_group"
+      "basis_type": "rune_group",
+      "group_en": "Disorder"
     },
     {
       "order": 9,
-      "id": "life_truth",
-      "group": "人生道理組",
+      "id": "special",
+      "group": "特殊組",
       "basis_type": "reference_and_special_runes",
       "runes": [
         "德",
-        "命",
-        "玄"
+        "玄",
+        "命"
       ],
-      "analysis_label": "人生道理",
-      "description": "分析文字中已形成的人生判斷、治理／爭議結構、命運感與意料之外但可理解的意外。作為第九組粗粒度方法，內部仍保留德、命、玄三種不同語意，不把三者混成同義詞。",
+      "analysis_label": "特殊",
+      "description": "母資料正式特殊組。包含第0符「德（Virtue）」、65「玄（Chaos）」與66「命（Fate）」；三者同組但語意責任不同，不合併成「人生道理」或其他替代群組。",
       "submethods": [
         {
           "rune": "德",
@@ -190,12 +198,13 @@
           "label": "命中注定之外、但又在意料中的意外",
           "description": "分析不屬於命中注定，但發生後又可理解為在某種意料之中的意外狀況。"
         }
-      ]
+      ],
+      "group_en": "Special"
     }
   ],
   "ranking_method": {
     "role": "common_foundation",
-    "description": "關鍵字排行榜是 LOC6 最基本的共同分析入口，可做全體、來源別與時期別分布；排行榜本身不是額外群組，而是九群組方法論的統計基礎。",
+    "description": "關鍵字排行榜是 LOC6 最基本的共同分析入口，可做全體、來源別與時期別分布；排行榜本身不是額外群組，而是九個正式群組方法論的統計基礎。",
     "views": [
       "總分布排行榜",
       "來源別排行榜",
@@ -211,7 +220,7 @@
     "LOC8": "比較時間、時期與趨勢；演化方法與趨勢推薦歸推演。"
   },
   "status": "current",
-  "updated_at": "2026-09-09",
+  "updated_at": "2026-09-10",
   "group_count": 9,
   "methodology_name": "月之符文九群組方法論",
   "authority_domain": "governance"
