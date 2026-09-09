@@ -1,8 +1,8 @@
 # 🌕 LOC｜月典（Luna Codex）
 
-LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的語言模型（Language Model, LM）。
+LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的語言系統模組（Language System Module）。
 
-原有 framework 並未消失，而是成為 LOC Language Model 的底層 architecture。首頁保留一組人類可讀的導覽編號；文件與工程層一律使用語意 domain。
+原有 framework 並未消失，而是成為 LOC Language System Module 的底層 architecture。首頁保留一組人類可讀的導覽編號；文件與工程層一律使用語意 domain。
 
 系統以 LunaRunes（月之符文）作為語彙種子，從語彙延伸到脈絡、文字創作、多媒體、治理、文字建築與時間推演。月之符文是重要的 Reference Seed System，但不是使用 LOC 的門檻。
 
