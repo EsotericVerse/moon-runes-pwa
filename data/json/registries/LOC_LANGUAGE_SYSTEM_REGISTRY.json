@@ -24,10 +24,10 @@
         "source_references": [],
         "provenance_note": "預留協作、共享、影響與來源欄位；目前系統以單一個人語言系統為基準。"
       },
-      "framework_definition": "LOC／月典是一套拆解、組織並重新表達文學語言的系統框架。月之符文提供基本文字語彙（token）與語意種子。歷史上 LOC 從月之符文的實際使用、作品延伸與資料整理中逐步抽象成形；結構上，月之符文可作為 LOC Framework 的完整實例／Reference Seed System。",
+      "framework_definition": "LOC／月典現行定位為 Language Model（LM）；原有 framework 並未消失，而是成為 LM 的底層 architecture。月之符文提供基本文字語彙（token）與語意種子。歷史上 LOC 從 LunaRunes66 的實際使用、作品延伸與資料整理中逐步抽象成形；結構上，LunaRunes66 是 LOC Language Model 的成熟實例／Reference Seed System。",
       "framework_principles": [
         "LOC1–8 是同一套語言系統的責任分工，不是八套獨立產品，也不是版本或成熟度排序。",
-        "穩定的是框架，不是語言：identity、schema、ownership、provenance 與治理流程可穩定，meaning、relation、context 與 interpretation 可演化。",
+        "穩定的是模型架構與治理邊界，不是語言本身：identity、schema、ownership、provenance 與治理流程可穩定，meaning、relation、context 與 interpretation 可演化。",
         "不同資料型態保留各自 canonical ownership；跨 LOC 以 reference / consume / propose change 為原則，不直接覆寫。",
         "LOC 對觀點保持中立，但對 domain、rights、privacy、permission、responsibility boundary 不保持中立。",
         "歷史原始紀錄保留；後來的解釋可 version / supersede，但不得靜默回寫過去。",
@@ -76,8 +76,9 @@
         "luna_runes": "符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算（抽牌解牌＋九群組方法論分析） → 符文演化"
       },
       "framework_relation": {
-        "historical": "月之符文先累積實作；LOC 再從實作中抽象出可重複使用的框架。",
-        "structural": "LOC Framework 成立後，月之符文可被完整描述為其中一個實例／Reference Seed System。"
+        "historical": "LunaRunes66 先累積實作；LOC 再從這些實作中抽象整理出可重複使用的 framework，並進一步成長為 Language Model。",
+        "structural": "LOC 現行為 Language Model；原有 framework 是其底層 architecture。LunaRunes66 是第一套成熟、可治理、可推演的 Reference Seed System，用來證明 LOC 的模型性。",
+        "scope": "LunaRunes66 是根與成熟實例，但不是 LOC 唯一可能使用的符文／語彙系統；其他系統也可依 LOC architecture 建立自己的實作。"
       },
       "rune_public_concept_map": {
         "符文籤詩": "抽牌、籤詩與解牌",
@@ -150,13 +151,18 @@
         "loc_range": "LOC1–LOC8 only; LOC9 does not exist",
         "lunarunes_count": 66,
         "context_zh": "脈絡",
-        "context_typo_forbidden": "脈落"
-      }
+        "context_typo_forbidden": "脈落",
+        "lunarunes_record_count": 67,
+        "reference_rune": "0 德（De）：作者／月語者誌銘與治理錨點；不參與抽牌、無卡面"
+      },
+      "model_type": "language_model",
+      "model_name": "LOC Language Model",
+      "model_definition": "LOC／月典是一套可模組化、可治理、可推演的 Language Model（LM）。LunaRunes66 是其最成熟的 Reference Seed System 與實作證明；原有 framework 保留為 LM 的底層 architecture，LOC1–8 的責任分工不變。"
     }
   ],
-  "authority_scope": "global_framework",
+  "authority_scope": "global_language_model",
   "canonical_priority": "highest_for_LOC1_8_names_and_roles",
-  "updated_at": "2026-09-08",
+  "updated_at": "2026-09-09",
   "canon_version": "1.0",
   "canon_status": "formal"
 }
