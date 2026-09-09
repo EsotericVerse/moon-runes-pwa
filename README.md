@@ -2,7 +2,7 @@
 
 LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的語言模型（Language Model, LM）。
 
-原有 framework 並未消失，而是成為 LOC Language Model 的底層 architecture；LOC1–8 的分工維持不變。
+原有 framework 並未消失，而是成為 LOC Language Model 的底層 architecture。LOC1–8 僅保留在首頁作導覽說明；文件與工程層使用語意 domain。
 
 系統以 LunaRunes（月之符文）作為語彙種子，從語彙延伸到脈絡、文字創作、多媒體、治理、文字建築與時間推演。月之符文是重要的 Reference Seed System，但不是使用 LOC 的門檻。
 
@@ -20,14 +20,14 @@ LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋�
 
 目前已進入 **Demo 收斂與功能驗收階段**。核心骨架不再擴張，優先處理功能完整性、資料一致性與公開入口。
 
-- **LOC1**：66 符固定骨架、每日抽、單卡／雙卡／三卡／五卡與月相顯示已具備；OW3gs 十一張語法與案例資料已存在，但目前公開抽牌入口暫未開放連結。
-- **LOC2**：Context／Relation／Event／Graph 與 Semantic Playground 已有可展示實作；Graph 本體權責固定歸 LOC2。
-- **LOC3**：Suno corpus、歌曲／歌詞搜尋與時期分析已有基礎；作品數量屬流動資料，不列入 Canon。
-- **LOC4**：小說、文章、Pixnet、PTT、Threads 與 Facebook 等文字來源逐步納入統一 corpus；早期作品首次發表日期與後期潤稿版分開治理。
-- **LOC5 MultiMedia／多媒體**：Reels、圖像、影音與系統視覺資產已有實際成果；目前以 Registry、來源對應與搜尋整合為主。
-- **LOC6 Methodology／方法論**：治理是其中一種代表方法，現行治理內容集中在 `governance.html`；政德風是重要實例。
-- **LOC7 Algorithm／演算法（知識庫）**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與 Simple Text Analysis 已有作用中基礎。
-- **LOC8**：`evolution.html` 已統一承接 Period、Timeline、Trend、Trajectory；Facebook／Threads／Pixnet／PTT／Suno 等只作 source，不再建立平台專屬 Timeline 頁。
+- **LunaRunes／月之符文**：66 枚可抽取符文、籤詩與第 0 符「德」資料。
+- **Context／脈絡**：Relation、Event、Graph 與 Semantic Playground。
+- **Music／音樂**：Suno corpus、歌曲／歌詞搜尋與時期分析。
+- **Literary／文字創作**：小說、文章、生活文字與歷史 corpus。
+- **MultiMedia／多媒體**：Reels、圖像、影音與跨媒介資產。
+- **Governance／治理**：治理原則、政德風與「治理：德之符文」。
+- **Knowledge／知識**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與分析。
+- **Evolution／推演**：Period、Timeline、Trend、Trajectory 與時間投影。
 
 ### Demo 前目前優先順序
 
