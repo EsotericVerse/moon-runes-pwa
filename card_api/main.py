@@ -406,7 +406,7 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
             }
             result["語意彙總"] = semantic_group_summary(
                 semantic_states,
-                position_weights=[0.8, 1.0, 1.0, 0.8, 0.8],
+                position_weights=[1.0] * 5,
             )
             result["現在月相"] = real_moon
 
@@ -1216,7 +1216,7 @@ async def semantic_divination(input: SemanticDivinationInput):
 
     if input.mode == "5":
         labels = ["過去", "現在", "未來顯化", "周圍環境", "自己心境"]
-        weights = [0.8, 1.0, 1.0, 0.8, 0.8]
+        weights = [1.0] * 5
         positions = [
             {"位置": label, **state}
             for label, state in zip(labels, states)
@@ -1248,7 +1248,7 @@ async def semantic_divination(input: SemanticDivinationInput):
         "果的判定層": present,
         "因的描述層": ancient,
         "果層彙總": semantic_group_summary(states[6:], [1.0] * 5),
-        "因層彙總": semantic_group_summary(states[:6], [0.6] * 6),
+        "因層彙總": semantic_group_summary(states[:6], [1.0] * 6),
         "rule": "OW3gs不做11張等權線性串接；7–11形成主要判定，1–6補足背景、條件與來源。",
         "timestamp": datetime.now().isoformat(),
     }
