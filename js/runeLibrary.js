@@ -8,9 +8,6 @@ export function getRunes66() {
   return rune; // 同步返回陣列
 }
 
-// Legacy compatibility only. New code must use getRunes66().
-export const getRunes64 = getRunes66;
-
 export function getAllData() {
   return allData;
 }
