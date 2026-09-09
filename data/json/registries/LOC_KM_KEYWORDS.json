@@ -3,7 +3,7 @@
   "registry": "LOC_KM_KEYWORDS",
   "source": "search.html + governance.html + structured registries",
   "source_version": "LOC Canon 1.0 + LOC7 KM",
-  "updated_at": "2026-09-08",
+  "updated_at": "2026-09-09",
   "purpose": "Shared keyword and alias registry for LOC7 Knowledge Management, FAQ/RAG retrieval, Unified Search, and future Knowledge Object alignment.",
   "governance": {
     "authority": "LOC7_KM",
@@ -355,6 +355,30 @@
       "id": "governance_style",
       "label": "治理與政德風",
       "keywords": [
+        {
+          "term": "德之符文",
+          "aliases": [
+            "德符文",
+            "第零符",
+            "第0符",
+            "0號符文",
+            "Rune 0",
+            "De Rune",
+            "德 De",
+            "作者符文",
+            "治理錨點"
+          ],
+          "loc_scope": [
+            "LOC1",
+            "LOC6",
+            "LOC7",
+            "LOC8"
+          ],
+          "status": "Canonical",
+          "primary_path": "governance.html#de-rune",
+          "secondary_path": "runes.html",
+          "note": "第0符「德」是作者／月語者誌銘、66符集合起點與治理／遞迴錨點。可被搜尋與關聯，但不參與66枚符文抽牌、沒有卡面。"
+        },
         {
           "term": "政德風",
           "aliases": [
