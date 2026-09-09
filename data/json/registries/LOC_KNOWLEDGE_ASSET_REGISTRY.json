@@ -112,7 +112,7 @@
     },
     {
       "asset_id": "KA-LOC-OVERVIEW-001",
-      "title": "LOC／月典：語言系統模組介紹",
+      "title": "LOC／月典：語言系統模型介紹",
       "path": "index.html",
       "source_type": "public_page",
       "content_type": "knowledge_document",
@@ -149,7 +149,7 @@
         "Luna Codex"
       ],
       "public_path": "index.html",
-      "public_summary": "LOC／月典是一套把語言、作品、治理與時間脈絡整理成可搜尋、可關聯、可演化結構的語言系統模組。",
+      "public_summary": "LOC／月典是一套把語言、作品、治理與時間脈絡整理成可搜尋、可關聯、可演化結構的語言系統模型。",
       "presentation": "public_article",
       "exposure_policy": "public_full_text",
       "intent_aliases": [
@@ -693,7 +693,7 @@
         "LOC",
         "月典",
         "框架",
-        "語言系統模組",
+        "語言系統模型",
         "LOC1–8",
         "月之符文",
         "架構圖",
@@ -840,7 +840,7 @@
     },
     {
       "asset_id": "KA-TUTORIAL-LOC-001",
-      "title": "LOC Tutorial 01：語言系統模組入門",
+      "title": "LOC Tutorial 01：語言系統模型入門",
       "path": "docs/LOC_Tutorial_01_語言系統框架入門.pdf",
       "source_type": "document",
       "content_type": "knowledge_document",
@@ -864,7 +864,7 @@
       "keywords": [
         "LOC",
         "月典",
-        "語言系統模組",
+        "語言系統模型",
         "新手教學",
         "LOC1",
         "月之符文",
@@ -897,7 +897,7 @@
     },
     {
       "asset_id": "KA-TUTORIAL-LOC-001-WEB",
-      "title": "LOC Tutorial 01 Web View：語言系統模組入門",
+      "title": "LOC Tutorial 01 Web View：語言系統模型入門",
       "path": "tutorial01.html",
       "source_type": "application_view",
       "content_type": "knowledge_view",
@@ -921,7 +921,7 @@
       "keywords": [
         "LOC",
         "月典",
-        "語言系統模組",
+        "語言系統模型",
         "新手教學",
         "Web Tutorial",
         "LOC1–8",
