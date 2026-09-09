@@ -1023,13 +1023,20 @@
         if(parts.length)return parts.join(' · ');
         return row.records!=null?fmt(row.records)+' 筆':'—';
       };
-      return `<div class="source-table-wrap"><table class="source-table"><thead><tr><th>資料來源</th><th>總字數</th><th>內容數量</th><th>最早資料</th><th>最新資料</th><th>狀態</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.source)}</td><td>${row.char_count!=null?fmt(row.char_count)+' 字':(row.char_count_applicable===false?'不計字數':'待重算')}</td><td>${esc(countText(row))}</td><td>${esc(row.start_date||'—')}</td><td>${esc(row.end_date||'—')}</td><td>${esc(row.status||'')}</td></tr>`).join('')}</tbody></table></div>`;
+      const timeText=row=>`${row.start_date||'—'} → ${row.end_date||'現在'}`;
+      return `<div class="source-table-wrap"><table class="source-table"><thead><tr><th>資料來源</th><th>總字數</th><th>內容數量</th><th>時間（前 → 後）</th><th>狀態</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.source)}</td><td>${row.char_count!=null?fmt(row.char_count)+' 字':(row.char_count_applicable===false?'不計字數':'待重算')}</td><td>${esc(countText(row))}</td><td>${esc(timeText(row))}</td><td>${esc(row.status||'')}</td></tr>`).join('')}</tbody></table></div>`;
     }
     async function renderSourceStats(){
       try{
-        const data=await localJson('data/json/generated/search/SEARCH_SOURCE_STATS.json');
+        const [data,eraData]=await Promise.all([
+          localJson('data/json/generated/search/SEARCH_SOURCE_STATS.json'),
+          localJson('data/json/registries/LOC_ERA_REGISTRY.json')
+        ]);
         const s=data.text_summary||{},search=data.search_summary||{};
         const sources=[...(data.text_sources||[]),...(data.media_sources||[])].map(row=>row.source).filter(Boolean);
+        const sourceTableRows=[...(data.text_sources||[]).filter(row=>!String(row.source||'').includes('Suno')),...(data.media_sources||[]),...(data.text_sources||[]).filter(row=>String(row.source||'').includes('Suno'))];
+        const eras=(eraData.eras||[]).filter(x=>x.status==='released'||x.status==='current');
+        const eraHtml=eras.length?`<div class="source-era-strip">${eras.map(x=>`<span class="filter-chip" title="${esc((x.start_date||'')+' → '+(x.end_date||'現在'))}">${esc(x.display_label||x.name||x.period)}</span>`).join('')}</div>`:'<div class="empty">目前沒有可顯示的時期資料。</div>';
         el('sourceStatsUpdated').textContent=`更新：${data.generated_at||'—'}`;
         el('sourceStatsBody').innerHTML=`
           <div class="source-stats-summary">
@@ -1038,7 +1045,15 @@
             <div class="source-stat-total"><strong>${Number(search.char_count||s.char_count||0).toLocaleString('zh-TW')} 字</strong><small>總字數（圖片／影片不計字數）</small></div>
             <div class="source-stat-total"><strong>${esc(s.start_date||'—')}</strong><small>文字開始日期</small></div>
             <div class="source-stat-total"><strong>${esc(s.end_date||'—')}</strong><small>文字結束日期</small></div>
-          </div>`;
+          </div>
+          <section class="source-era-overview">
+            <div class="source-search-head"><strong>ERA 時期</strong><small>搜尋總表依現行時期分組；點選上方「時期」可篩選結果</small></div>
+            ${eraHtml}
+          </section>
+          <section class="source-era-overview">
+            <div class="source-search-head"><strong>搜尋資料總表</strong><small>時間以「前 → 後」單欄顯示；Suno／LOC3 列於最下方</small></div>
+            ${sourceRows(sourceTableRows)}
+          </section>`;
       }catch(_){el('sourceStatsBody').innerHTML='<div class="empty">搜尋資料統計暫時無法載入。</div>'}
     }
         async function facets(){
