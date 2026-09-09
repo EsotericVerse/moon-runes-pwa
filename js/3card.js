@@ -80,7 +80,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const rune2Index = fateArray[1];
     const rune3Index = fateArray[2];
 
-    const runes = getRunes64();
+    const runes = getRunes66();
     const rune1 = runes[rune1Index];
     const rune2 = runes[rune2Index];
     const rune3 = runes[rune3Index];
