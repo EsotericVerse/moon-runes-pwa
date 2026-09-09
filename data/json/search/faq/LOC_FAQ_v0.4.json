@@ -21,7 +21,7 @@
         "65：玄（Chaos）",
         "66：命（Fate）"
       ],
-      "special_exception_note": "65「玄」與66「命」是66符固定骨架中的特殊符文；現行一般抽牌 runtime 使用1–64。第0符「德」只作作者／系統基準，不參與抽取。",
+      "special_exception_note": "母資料正式群組共有九組；其中「特殊（Special）」包含第0符「德（Virtue）」、65「玄（Chaos）」與66「命（Fate）」。1–64仍維持八組×八符的核心平衡；第0符不列入66符牌組且不參與抽取。",
       "loc_range": "LOC1–LOC8 homepage guide only",
       "loc9_exists": false,
       "model_note": "LOC1–8 only describe the public homepage guide map. FAQ/KM/Search/backend must use semantic domains and must not create new LOC-number ownership fields."
@@ -52,10 +52,27 @@
       "analysis_types": "data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json",
       "loc7_analysis": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json"
     },
-    "updated_at": "2026-09-09",
+    "updated_at": "2026-09-10",
     "fixed_rules": {
       "context_spelling": "脈絡",
-      "lunarunes_count": 66
+      "lunarunes_count": 66,
+      "rune_group_names": {
+        "靈魂": "Soul",
+        "連結": "Connection",
+        "生命": "Life",
+        "自然": "Nature",
+        "礦物": "Mineral",
+        "元素": "Element",
+        "秩序": "Order",
+        "無序": "Disorder",
+        "特殊": "Special"
+      },
+      "rune_group_count": 9,
+      "special_group_members": [
+        "0：德（Virtue）",
+        "65：玄（Chaos）",
+        "66：命（Fate）"
+      ]
     },
     "domain": "knowledge",
     "related_domains": [
@@ -208,25 +225,32 @@
     {
       "id": "FAQ-006",
       "category": "符文結構",
-      "question": "為什麼月之符文共有66個符文？",
+      "question": "為什麼月之符文共有66個符文？九個群組又是怎麼分的？",
       "aliases": [
         "為什麼是66張符文？",
         "66符文是怎麼組成的？",
-        "八組符文如何分配？",
+        "九個群組如何分配？",
+        "八組核心符文和特殊組有什麼關係？",
         "月相和66符文有什麼關係？"
       ],
-      "answer": "月之符文固定骨架共有66符：1–64是八組核心符文，65為「玄（Chaos）」、66為「命（Fate）」兩個特殊符文。現行一般抽牌 runtime 使用1–64；65／66保留特殊語意責任。第0符「德」是作者／系統基準，不列入66符牌組，也不參與抽取。",
+      "answer": "月之符文固定骨架共有66符：1–64維持八組×八符的核心平衡，65「玄（Chaos）」與66「命（Fate）」屬於正式的「特殊（Special）」組。母資料另有第0符「德（Virtue）」作為誌銘／作者與系統基準，同樣歸入特殊組，但第0符不列入66符牌組，也不參與抽取。因此母資料正式群組共有九組，而66符本體仍是64個核心符文加上玄、命兩個特殊符文。",
       "keywords": [
         "64符文",
         "66符",
+        "九群組",
+        "八組核心",
+        "特殊",
+        "Special",
+        "德",
+        "Virtue",
         "玄",
+        "Chaos",
         "命",
-        "特殊符",
-        "標準抽牌"
+        "Fate"
       ],
       "source_refs": [
-        "runes.html",
-        "LunaRune64.xlsx"
+        "LunaRune66.xlsx",
+        "data/json/core/runes66.json"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
@@ -234,28 +258,29 @@
     {
       "id": "FAQ-007",
       "category": "特殊符文",
-      "question": "「德」、「玄」與「命」分別代表什麼？",
+      "question": "特殊（Special）組的「德」、「玄」與「命」分別代表什麼？",
       "aliases": [
         "第0符德是什麼？",
         "第65符玄代表什麼？",
         "第66符命代表什麼？",
-        "德為什麼不在牌組裡？",
-        "三個特殊符號有什麼差別？"
+        "特殊組有哪些符文？",
+        "德為什麼不在66符牌組裡？"
       ],
-      "answer": "第0符「德（De）」是作者／系統基準，不參與抽牌；65「玄（Chaos）」與66「命（Fate）」是66符固定骨架中的特殊符文。玄代表混沌／不可完全歸因的生成條件，命代表 Fate；現行一般抽牌 runtime 使用1–64，65／66由特殊規則承接。",
+      "answer": "母資料的正式群組名稱是「特殊（Special）」。第0符「德（Virtue）」是誌銘，也是作者／系統基準，不參與抽牌；65「玄（Chaos）」與66「命（Fate）」則屬於66符固定骨架中的兩個特殊符文。玄＝Chaos，不是 Mystery；命＝Fate。三者同屬特殊組，但功能與語意不同。",
       "keywords": [
+        "特殊",
+        "Special",
         "德",
-        "De",
+        "Virtue",
+        "誌銘",
         "玄",
         "Chaos",
         "命",
-        "Fate",
-        "例外符",
-        "語調修飾"
+        "Fate"
       ],
       "source_refs": [
-        "runes.html",
-        "LunaRune64.xlsx"
+        "LunaRune66.xlsx",
+        "data/json/core/runes66.json"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
@@ -595,27 +620,39 @@
     {
       "id": "FAQ-021",
       "category": "符文結構",
-      "question": "月之符文的八個組別分別是什麼？",
+      "question": "月之符文的九個正式群組及英文名稱是什麼？",
       "aliases": [
+        "月之符文有哪些群組？",
+        "九個群組的名稱是什麼？",
+        "月之符文群組英文怎麼說？",
         "66符文分成哪些組？",
-        "月之符文有哪八組？",
-        "八組符文的名稱是什麼？",
         "核心64符文如何分組？"
       ],
-      "answer": "64張核心符文分成八組：靈魂、連結、自然、生命、元素、礦物、秩序、無序；每組八張。65玄與66命是另外的特殊符文，不納入這八組的64張核心平衡結構。",
+      "answer": "月之符文母資料共有九個正式群組：靈魂（Soul）、連結（Connection）、生命（Life）、自然（Nature）、礦物（Mineral）、元素（Element）、秩序（Order）、無序（Disorder）、特殊（Special）。前八組各有八個核心符文，形成1–64的八組×八符平衡；特殊組包含第0符「德（Virtue）」、65「玄（Chaos）」與66「命（Fate）」，其中第0符不列入66符牌組且不參與抽取。",
       "keywords": [
-        "八組",
+        "九群組",
         "靈魂",
+        "Soul",
         "連結",
-        "自然",
+        "Connection",
         "生命",
-        "元素",
+        "Life",
+        "自然",
+        "Nature",
         "礦物",
+        "Mineral",
+        "元素",
+        "Element",
         "秩序",
-        "無序"
+        "Order",
+        "無序",
+        "Disorder",
+        "特殊",
+        "Special"
       ],
       "source_refs": [
-        "master-system:2026-09"
+        "LunaRune66.xlsx",
+        "data/json/core/runes66.json"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
@@ -776,20 +813,22 @@
       "aliases": [
         "LOC的母資料是哪一份？",
         "符文資料衝突時要相信哪個檔案？",
-        "LunaRune64.xlsx是什麼？",
+        "LunaRune66.xlsx是什麼？",
         "哪份文件是66符文的最高優先來源？"
       ],
-      "answer": "66符文以LunaRune64.xlsx為最高優先母資料。符文名稱、編號、組別及其他正式定義，都應以這份資料為基準。其他文件、JavaScript資料及應用程式內容，應由母資料同步或依其內容修正。",
+      "answer": "66符文的正式定義以現行 LunaRune66.xlsx 母資料為最高優先來源；機器可讀版本由 data/json/core/runes66.json 承接。符文名稱、編號、群組、英文、關鍵詞、方向語句與其他正式定義若與舊文件或舊對話衝突，應以現行母資料為準；歷史資料只能保留演變紀錄，不得反向覆蓋現行 Canon。",
       "keywords": [
-        "LunaRune64.xlsx",
+        "LunaRune66.xlsx",
+        "runes66.json",
         "母資料",
         "最高優先來源",
         "資料治理",
-        "符文定義"
+        "符文定義",
+        "現行Canon"
       ],
       "source_refs": [
-        "creator-confirmed:2026-09-02",
-        "LunaRune64.xlsx"
+        "LunaRune66.xlsx",
+        "data/json/core/runes66.json"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
