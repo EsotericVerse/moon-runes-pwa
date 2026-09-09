@@ -14,5 +14,5 @@ export function getAllData() {
 
 
 // 暴露到 window，讓其他 JS 用
-window.getRunes64 = getRunes64;
+window.getRunes66 = getRunes66;
 window.getAllData = getAllData;
