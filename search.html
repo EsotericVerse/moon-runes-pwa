@@ -51,7 +51,7 @@
     .source-search-link:hover,.source-search-link:focus-visible{border-color:var(--mint);outline:none}
     .source-stats{margin:18px 0 6px;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
     .source-stats-head{display:flex;justify-content:space-between;gap:14px;align-items:end;margin-bottom:13px}.source-stats-head h2{margin:0;font-size:1rem}.source-stats-head p{margin:0;color:var(--muted);font-size:.76rem}
-    .source-stats-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:13px}.source-stat-total{padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--soft)}.source-stat-total strong{display:block;font-size:1.35rem}.source-stat-total small{color:var(--muted)}
+    .source-stats-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.source-stat-total{padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--soft)}.source-stat-total strong{display:block;font-size:1.18rem}.source-stat-total small{display:block;margin-top:3px;color:var(--muted)}
     .source-table-wrap{overflow-x:auto}.source-table{width:100%;border-collapse:collapse;font-size:.82rem}.source-table th,.source-table td{padding:9px 10px;border-top:1px solid var(--line);text-align:left;white-space:nowrap}.source-table th{color:var(--muted);font-size:.72rem}.source-table td:last-child{white-space:normal;color:var(--muted);min-width:210px}
     .source-stats details{margin-top:11px}.source-stats summary{cursor:pointer;font-weight:800;color:var(--mint)}
     footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
@@ -204,7 +204,7 @@
       </form>
     </section>
     <section class="source-stats" id="sourceStats" aria-labelledby="sourceStatsTitle">
-      <div class="source-stats-head"><div><h2 id="sourceStatsTitle">搜尋資料總覽</h2><p>資料來源、文字紀錄數與時間範圍</p></div><p id="sourceStatsUpdated">載入中…</p></div>
+      <div class="source-stats-head"><div><h2 id="sourceStatsTitle">搜尋資料</h2><p>詳細分項請至左側「資料來源」查看</p></div><p id="sourceStatsUpdated">載入中…</p></div>
       <div id="sourceStatsBody"><div class="empty">載入搜尋資料統計中…</div></div>
     </section>
     <div class="status" id="status" aria-live="polite"></div>
@@ -1023,38 +1023,22 @@
         if(parts.length)return parts.join(' · ');
         return row.records!=null?fmt(row.records)+' 筆':'—';
       };
-      return `<div class="source-table-wrap"><table class="source-table"><thead><tr><th>資料來源</th><th>總字數</th><th>內容數量</th><th>最早資料</th><th>最新資料</th><th>狀態</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.source)}</td><td>${row.char_count!=null?fmt(row.char_count)+' 字':'待重算'}</td><td>${esc(countText(row))}</td><td>${esc(row.start_date||'—')}</td><td>${esc(row.end_date||'—')}</td><td>${esc(row.status||'')}</td></tr>`).join('')}</tbody></table></div>`;
+      return `<div class="source-table-wrap"><table class="source-table"><thead><tr><th>資料來源</th><th>總字數</th><th>內容數量</th><th>最早資料</th><th>最新資料</th><th>狀態</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.source)}</td><td>${row.char_count!=null?fmt(row.char_count)+' 字':(row.char_count_applicable===false?'不計字數':'待重算')}</td><td>${esc(countText(row))}</td><td>${esc(row.start_date||'—')}</td><td>${esc(row.end_date||'—')}</td><td>${esc(row.status||'')}</td></tr>`).join('')}</tbody></table></div>`;
     }
     async function renderSourceStats(){
       try{
-        const [data,eraData]=await Promise.all([
-          localJson('data/json/generated/search/SEARCH_SOURCE_STATS.json'),
-          localJson('data/json/registries/LOC_ERA_REGISTRY.json')
-        ]);
-        const s=data.text_summary||{};
-        const spanLabel=(start,end)=>{
-          if(!start||!end)return '—';
-          const a=new Date(start+'T00:00:00'),b=new Date(end+'T00:00:00');
-          let months=(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth());
-          if(b.getDate()<a.getDate())months--;
-          const years=Math.floor(Math.max(0,months)/12);
-          const rest=Math.max(0,months)%12;
-          return years+' 年'+(rest?' '+rest+' 個月':'');
-        };
-        const eras=(eraData.eras||[]).filter(x=>x.status==='released'||x.status==='current');
-        const eraHtml=eras.length?`<div class="source-era-strip">${eras.map(x=>`<span class="filter-chip" title="${esc((x.start_date||'')+' → '+(x.end_date||'現在'))}">${esc(x.display_label||x.name||x.period)}</span>`).join('')}</div>`:'';
+        const data=await localJson('data/json/generated/search/SEARCH_SOURCE_STATS.json');
+        const s=data.text_summary||{},search=data.search_summary||{};
+        const sources=[...(data.text_sources||[]),...(data.media_sources||[])].map(row=>row.source).filter(Boolean);
         el('sourceStatsUpdated').textContent=`更新：${data.generated_at||'—'}`;
         el('sourceStatsBody').innerHTML=`
           <div class="source-stats-summary">
-            <div class="source-stat-total"><strong>${Number(s.searchable_records||0).toLocaleString('zh-TW')} 筆</strong><small>可搜尋文字紀錄</small></div>
-            <div class="source-stat-total"><strong>${spanLabel(s.start_date,s.end_date)}</strong><small>實際資料跨度</small></div>
-            <div class="source-stat-total"><strong>${esc(s.start_date||'—')} → ${esc(s.end_date||'—')}</strong><small>目前資料範圍</small></div>
-          </div>
-          <section class="source-era-overview">
-            <div class="source-search-head"><strong>時期</strong><small>依現行時期定義展示整體文字時間軸</small></div>
-            ${eraHtml}
-          </section>
-          <details><summary>查看來源文章數與搜尋狀態</summary>${sourceRows(data.text_sources||[])}</details>`;
+            <div class="source-stat-total"><strong>${sources.length} 類</strong><small>搜尋資料來源：${esc(sources.join('、'))}</small></div>
+            <div class="source-stat-total"><strong>${Number(search.comparable_records||0).toLocaleString('zh-TW')} 筆</strong><small>可比對總筆數</small></div>
+            <div class="source-stat-total"><strong>${Number(search.char_count||s.char_count||0).toLocaleString('zh-TW')} 字</strong><small>總字數（圖片／影片不計字數）</small></div>
+            <div class="source-stat-total"><strong>${esc(s.start_date||'—')}</strong><small>文字開始日期</small></div>
+            <div class="source-stat-total"><strong>${esc(s.end_date||'—')}</strong><small>文字結束日期</small></div>
+          </div>`;
       }catch(_){el('sourceStatsBody').innerHTML='<div class="empty">搜尋資料統計暫時無法載入。</div>'}
     }
         async function facets(){
