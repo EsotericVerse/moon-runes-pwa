@@ -64,8 +64,9 @@ except Exception as e:
     THREE_CARD_COMBINATIONS = {}
     print(f"Warning: Failed to load three_card_combinations.json: {e}")
 
-# 建立符文編號到資料的映射
-RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES.get("runes", []), 1)}
+# 建立符文編號到資料的映射；相容母資料投影為陣列或 {"runes": [...]} 兩種格式
+RUNES_LIST = RUNES.get("runes", []) if isinstance(RUNES, dict) else (RUNES if isinstance(RUNES, list) else [])
+RUNES_MAP = {r.get("編號", i): r for i, r in enumerate(RUNES_LIST, 1)}
 RUNE_SINGLE_MAP = {r.get("符文名稱", f"rune_{i}"): r for i, r in enumerate(RUNE_SINGLE)}
 
 # LOC7 FAQ 資料（全局，一次載入）
@@ -125,7 +126,7 @@ try:
     UNIFIED_SEARCHER = UnifiedSearchEngine(
         faq_searcher=FAQ_SEARCHER,
         loc3_searcher=LOC3_SEARCHER,
-        runes=RUNES.get("runes", []),
+        runes=RUNES_LIST,
         repo_root=REPO_ROOT,
     )
     UNIFIED_LOAD_ERROR = None
@@ -254,6 +255,83 @@ def adjust_three_direction_combination(rune1_dir, rune2_dir, rune3_dir):
     key = f"{dir_map[rune1_dir]} + {dir_map[rune2_dir]} + {dir_map[rune3_dir]}"
     return THREE_CARD_COMBINATIONS.get(key, {"能量模式": "中性", "圖景意涵": ""})
 
+
+DIRECTION_LABELS = {1: "正位", 2: "半正位", 3: "半逆位", 4: "逆位"}
+DIRECTION_COEFFICIENTS = {1: 1.0, 2: 0.5, 3: -0.5, 4: -1.0}
+
+def _split_semantic_keywords(value):
+    return [item.strip() for item in str(value or "").split("・") if item.strip()]
+
+def semantic_state(rune_data, direction_value):
+    """Return the governed semantic pole for one rune/direction.
+
+    Positive runes: upright -> positive pole, reversed -> negative pole.
+    Negative runes: upright -> negative pole, reversed -> positive pole.
+    Neutral runes: direction itself selects positive/negative manifestation.
+    Unknown runes: expose both poles and keep score undefined.
+    """
+    polarity = str(rune_data.get("解牌基本極性") or "中平").strip()
+    coefficient = DIRECTION_COEFFICIENTS.get(direction_value, 0.0)
+    pos = _split_semantic_keywords(rune_data.get("正面關鍵詞"))
+    neg = _split_semantic_keywords(rune_data.get("負面關鍵詞"))
+
+    if polarity == "未知":
+        selected = pos if coefficient >= 0 else neg
+        score = None
+        pole = "未知"
+    elif polarity == "負面":
+        selected = neg if coefficient >= 0 else pos
+        score = -coefficient
+        pole = "負面" if coefficient >= 0 else "正面"
+    elif polarity == "正面":
+        selected = pos if coefficient >= 0 else neg
+        score = coefficient
+        pole = "正面" if coefficient >= 0 else "負面"
+    else:
+        selected = pos if coefficient >= 0 else neg
+        score = coefficient
+        pole = "正面" if coefficient >= 0 else "負面"
+
+    if not selected:
+        fallback = (
+            _split_semantic_keywords(rune_data.get("關鍵詞"))
+            or _split_semantic_keywords(rune_data.get("反向關鍵字"))
+            or [str(rune_data.get("名稱") or "未知")]
+        )
+        selected = fallback
+
+    return {
+        "符文": rune_data.get("名稱", "未知"),
+        "基本極性": polarity,
+        "方向": DIRECTION_LABELS.get(direction_value, "未知"),
+        "方向係數": coefficient,
+        "顯化極": pole,
+        "語意關鍵詞": selected,
+        "核心詞": selected[0] if selected else "未知",
+        "語意分數": score,
+        "不定性": polarity == "未知",
+    }
+
+def semantic_group_summary(states, position_weights=None):
+    position_weights = position_weights or [1.0] * len(states)
+    scored = []
+    unknown = []
+    weighted_total = 0.0
+    weight_total = 0.0
+    for state, weight in zip(states, position_weights):
+        if state["語意分數"] is None:
+            unknown.append(state["符文"])
+            continue
+        value = float(state["語意分數"]) * float(weight)
+        scored.append(value)
+        weighted_total += value
+        weight_total += abs(float(weight))
+    return {
+        "加權傾向": round(weighted_total / weight_total, 4) if weight_total else None,
+        "未知符文": unknown,
+        "有效計分張數": len(scored),
+    }
+
 def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id=None, rune3_dir=None, rune4_id=None, rune4_dir=None, rune5_id=None, rune5_dir=None, debug=False):
     if mode not in ["2", "2d", "3", "3d", "5", "5d"]:
         raise ValueError("僅支援模式 2, 2d, 3, 3d, 5 或 5d")
@@ -291,17 +369,7 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
         labels5 = ["過去", "現在", "未來顯化", "周圍環境", "自己心境"]
 
         def five_card_core(rune_data, direction_value):
-            forward = direction_value in [1, 2]
-            source_fields = ["顯化形式", "關鍵詞"] if forward else ["陰暗面", "反向關鍵詞"]
-            candidates = []
-            for field in source_fields:
-                candidates.extend(str(rune_data.get(field, "")).split("・"))
-            candidates = [item.strip() for item in candidates if item.strip()]
-            if candidates:
-                return candidates[0]
-            if not forward:
-                return str(rune_data.get("反向含義", "")).strip() or "需要重新整理"
-            return str(rune_data.get("名稱", "")).strip() or "目前狀態"
+            return semantic_state(rune_data, direction_value)["核心詞"]
 
         position_lines = []
         for label, rune_data, direction_value in zip(labels5, runes5, dirs5):
@@ -331,6 +399,15 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
                 }
                 for label, rune_data, direction_value in zip(labels5, runes5, dirs5)
             }
+            semantic_states = [semantic_state(r, d) for r, d in zip(runes5, dirs5)]
+            result["語意向量"] = {
+                label: state
+                for label, state in zip(labels5, semantic_states)
+            }
+            result["語意彙總"] = semantic_group_summary(
+                semantic_states,
+                position_weights=[1.0] * 5,
+            )
             result["現在月相"] = real_moon
 
         return result
@@ -443,6 +520,16 @@ def generate_divination(mode, rune1_id, rune1_dir, rune2_id, rune2_dir, rune3_id
         return result
 
 # 定義輸入模型
+
+class SemanticRuneDraw(BaseModel):
+    rune_id: int
+    direction: int
+
+class SemanticDivinationInput(BaseModel):
+    mode: str = Field(description="5 或 11")
+    cards: list[SemanticRuneDraw]
+    debug: bool = False
+
 class RuneInput(BaseModel):
     mode: str
     rune1_id: int
@@ -1107,6 +1194,65 @@ async def loc3_search(input: LOC3SearchInput):
         raise HTTPException(status_code=400, detail=str(e))
 
 # API 端點
+@app.post("/divination/semantic")
+async def semantic_divination(input: SemanticDivinationInput):
+    if input.mode not in {"5", "11"}:
+        raise HTTPException(status_code=400, detail="mode僅支援5或11")
+    expected = 5 if input.mode == "5" else 11
+    if len(input.cards) != expected:
+        raise HTTPException(status_code=400, detail=f"模式{input.mode}需要{expected}張符文")
+    ids = [card.rune_id for card in input.cards]
+    if len(set(ids)) != len(ids):
+        raise HTTPException(status_code=400, detail="符文不可重複")
+    if any(rune_id not in range(1, 67) for rune_id in ids):
+        raise HTTPException(status_code=400, detail="符文編號必須在1-66之間")
+    if any(card.direction not in {1, 2, 3, 4} for card in input.cards):
+        raise HTTPException(status_code=400, detail="無效的方向")
+
+    states = [
+        semantic_state(RUNES_MAP.get(card.rune_id, {}), card.direction)
+        for card in input.cards
+    ]
+
+    if input.mode == "5":
+        labels = ["過去", "現在", "未來顯化", "周圍環境", "自己心境"]
+        weights = [1.0] * 5
+        positions = [
+            {"位置": label, **state}
+            for label, state in zip(labels, states)
+        ]
+        return {
+            "success": True,
+            "mode": "5",
+            "reading_order": labels,
+            "positions": positions,
+            "summary": semantic_group_summary(states, weights),
+            "rule": "先以現在為核心，回看過去成因，再看環境與心境如何共同影響未來顯化。",
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    ancient_labels = ["背景", "現在", "資源", "意向", "外部擾動", "尚未成形因素"]
+    present_labels = ["成因", "現在", "未來", "環境", "心境"]
+    ancient = [
+        {"位置": label, **state}
+        for label, state in zip(ancient_labels, states[:6])
+    ]
+    present = [
+        {"位置": label, **state}
+        for label, state in zip(present_labels, states[6:])
+    ]
+    return {
+        "success": True,
+        "mode": "11",
+        "reading_order": "先7–11果的判定層，再回看1–6因的描述層",
+        "果的判定層": present,
+        "因的描述層": ancient,
+        "果層彙總": semantic_group_summary(states[6:], [1.0] * 5),
+        "因層彙總": semantic_group_summary(states[:6], [1.0] * 6),
+        "rule": "OW3gs不做11張等權線性串接；7–11形成主要判定，1–6補足背景、條件與來源。",
+        "timestamp": datetime.now().isoformat(),
+    }
+
 @app.post("/divination")
 async def divination(input: RuneInput):
     try:
