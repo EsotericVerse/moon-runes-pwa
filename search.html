@@ -51,7 +51,7 @@
     .source-search-link:hover,.source-search-link:focus-visible{border-color:var(--mint);outline:none}
     .source-stats{margin:18px 0 6px;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
     .source-stats-head{display:flex;justify-content:space-between;gap:14px;align-items:end;margin-bottom:13px}.source-stats-head h2{margin:0;font-size:1rem}.source-stats-head p{margin:0;color:var(--muted);font-size:.76rem}
-    .source-stats-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.source-stat-total{padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--soft)}.source-stat-total strong{display:block;font-size:1.18rem}.source-stat-total small{display:block;margin-top:3px;color:var(--muted)}
+    .source-stats-summary{display:grid;gap:0}.source-stat-line{margin:0;padding:10px 0;border-top:1px solid var(--line)}.source-stat-line:first-child{border-top:0}.source-stat-line>summary{cursor:pointer;color:var(--text);font-weight:800;line-height:1.6}.source-stat-label{color:var(--muted);font-size:.76rem;font-weight:800}.source-stat-value{display:block;margin-top:2px;font-size:1.2rem}.source-stat-detail{padding:7px 0 0;color:var(--muted);font-size:.8rem;line-height:1.7}.source-stat-detail>div+div{margin-top:4px}
     .source-table-wrap{overflow-x:auto}.source-table{width:100%;border-collapse:collapse;font-size:.82rem}.source-table th,.source-table td{padding:9px 10px;border-top:1px solid var(--line);text-align:left;white-space:nowrap}.source-table th{color:var(--muted);font-size:.72rem}.source-table td:last-child{white-space:normal;color:var(--muted);min-width:210px}
     .source-stats details{margin-top:11px}.source-stats summary{cursor:pointer;font-weight:800;color:var(--mint)}
     footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
@@ -1024,7 +1024,7 @@
         return row.records!=null?fmt(row.records)+' 筆':'—';
       };
       const timeText=row=>`${row.start_date||'—'} → ${row.end_date||'現在'}`;
-      return `<div class="source-table-wrap"><table class="source-table"><thead><tr><th>資料來源</th><th>總字數</th><th>內容數量</th><th>時間（前 → 後）</th><th>狀態</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.source)}</td><td>${row.char_count!=null?fmt(row.char_count)+' 字':(row.char_count_applicable===false?'不計字數':'待重算')}</td><td>${esc(countText(row))}</td><td>${esc(timeText(row))}</td><td>${esc(row.status||'')}</td></tr>`).join('')}</tbody></table></div>`;
+      return `<div class="source-table-wrap"><table class="source-table"><thead><tr><th>資料來源</th><th>來源種類</th><th>總字數</th><th>內容數量</th><th>時間（前 → 後）</th><th>狀態</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.source)}</td><td>${esc(row.source_category||'—')}</td><td>${row.char_count!=null?fmt(row.char_count)+' 字':(row.char_count_applicable===false?'不計字數':'待重算')}</td><td>${esc(countText(row))}</td><td>${esc(timeText(row))}</td><td>${esc(row.status||'')}</td></tr>`).join('')}</tbody></table></div>`;
     }
     async function renderSourceStats(){
       try{
@@ -1034,18 +1034,38 @@
         ]);
         const s=data.text_summary||{},search=data.search_summary||{};
         const sources=[...(data.text_sources||[]),...(data.media_sources||[])].map(row=>row.source).filter(Boolean);
-        const textRecords=Number(s.searchable_records||0);
-        const mediaRecords=Math.max(0,Number(search.comparable_records||0)-textRecords);
+        const articleChars=(data.text_sources||[]).filter(row=>row.source_type!=='lyrics').reduce((sum,row)=>sum+Number(row.char_count||0),0);
+        const lyricsChars=(data.text_sources||[]).filter(row=>row.source_type==='lyrics').reduce((sum,row)=>sum+Number(row.char_count||0),0);
+        const km=data.knowledge_summary||{};
+        const kmChars=Number(km.knowledge_document_characters||0);
+        const kmDocuments=Number(km.knowledge_document_records||0);
+        const totalChars=articleChars+lyricsChars+kmChars;
         const sourceTableRows=[...(data.text_sources||[]).filter(row=>!String(row.source||'').includes('Suno')),...(data.media_sources||[]),...(data.text_sources||[]).filter(row=>String(row.source||'').includes('Suno'))];
         const eras=(eraData.eras||[]).filter(x=>x.status==='released'||x.status==='current');
         const eraHtml=eras.length?`<div class="source-era-strip">${eras.map(x=>`<span class="filter-chip" title="${esc((x.start_date||'')+' → '+(x.end_date||'現在'))}">${esc(x.display_label||x.name||x.period)}</span>`).join('')}</div>`:'<div class="empty">目前沒有可顯示的時期資料。</div>';
         el('sourceStatsUpdated').textContent=`更新：${data.generated_at||'—'}`;
         el('sourceStatsBody').innerHTML=`
           <div class="source-stats-summary">
-            <div class="source-stat-total"><strong>${sources.length} 類</strong><small>搜尋資料來源：${esc(sources.join('、'))}</small></div>
-            <div class="source-stat-total"><strong>${Number(search.comparable_records||0).toLocaleString('zh-TW')} 筆</strong><small>文章／歌詞 ${textRecords.toLocaleString('zh-TW')} 筆・多媒體 ${mediaRecords.toLocaleString('zh-TW')} 筆</small></div>
-            <div class="source-stat-total"><strong>${Number(search.char_count||s.char_count||0).toLocaleString('zh-TW')} 字</strong><small>總字數（圖片／影片不計字數）</small></div>
-            <div class="source-stat-total"><strong>${esc(s.start_date||'—')} → ${esc(s.end_date||'現在')}</strong><small>文字時間（開始 → 結束）</small></div>
+            <details class="source-stat-line">
+              <summary>總字數｜${totalChars.toLocaleString('zh-TW')} 字</summary>
+              <div class="source-stat-detail">文章 ${articleChars.toLocaleString('zh-TW')} 字・歌詞 ${lyricsChars.toLocaleString('zh-TW')} 字・KM 知識庫 ${kmChars.toLocaleString('zh-TW')} 字</div>
+            </details>
+            <details class="source-stat-line">
+              <summary>總筆數｜${Number(search.comparable_records||0).toLocaleString('zh-TW')} 筆</summary>
+              <div class="source-stat-detail">文章與歌詞索引 24,309 筆，其中歌詞作品 403 筆；多媒體可比對紀錄 200 筆。另有圖片 802 張、歌曲 530 個版本、Instagram Reels／貼文 196 筆，以及 KM 知識庫 ${kmDocuments.toLocaleString('zh-TW')} 份唯一文件；不同單位不重複加進 24,509 筆。</div>
+            </details>
+            <details class="source-stat-line">
+              <summary>搜尋資料來源｜共 ${sources.length} 個</summary>
+              <div class="source-stat-detail">
+                <div><strong>Meta</strong>｜Facebook、Threads、Instagram；X 為平台對應，尚無匯入資料。另有 Facebook 圖片貼文資料源。</div>
+                <div><strong>多媒體網站</strong>｜Suno</div>
+                <div><strong>社群網站</strong>｜KKCity（已關站）、無名小站（已關站）</div>
+              </div>
+            </details>
+            <details class="source-stat-line">
+              <summary>時間跨度｜${esc(s.start_date||'—')} → ${esc(s.end_date||'現在')}</summary>
+              <div class="source-stat-detail">各來源的起訖時間與資料狀態請展開下方「搜尋資料總表」查看。</div>
+            </details>
           </div>
           <section class="source-era-overview">
             <div class="source-search-head"><strong>ERA 時期</strong><small>搜尋總表依現行時期分組；點選上方「時期」可篩選結果</small></div>
