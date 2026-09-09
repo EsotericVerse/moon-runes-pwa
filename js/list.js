@@ -47,17 +47,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   function normalize(row){
     const id = Number(row.編號 ?? row.id);
     const meta = groupByRuneId.get(id) || null;
-    const name = row.符文名稱 ?? row.名稱 ?? row.name ?? meta?.runes?.find(x => Number(x.id) === id)?.zh ?? "";
+    const member = meta?.runes?.find(x => Number(x.id) === id);
+    const name = row.符文名稱 ?? row.名稱 ?? row.name ?? member?.zh ?? "";
     return {
       ...row,
       編號: id,
       符文名稱: name,
-      英文: row.英文 ?? row.english ?? meta?.runes?.find(x => Number(x.id) === id)?.en ?? "",
+      英文: row.英文 ?? row.english ?? member?.en ?? "",
       所屬分組: meta?.group_zh ?? row.所屬分組 ?? row.group ?? "",
       分組說明: meta?.description ?? row.分組說明 ?? "",
       月相: row.月相 ?? row.moon_phase ?? "",
       顯化形式: row.顯化形式 ?? row.keyword ?? "",
       關鍵詞: row.關鍵詞 ?? row.keyword ?? "",
+      反向關鍵字: row.反向關鍵字 ?? row.反向關鍵詞 ?? row.reverse_keyword ?? "",
       Spec: row.Spec ?? row.spec ?? "",
       符文變化歷史: row.history?.符文變化歷史 ?? row.符文變化歷史 ?? "",
       神話故事: row.history?.神話故事 ?? row.神話故事 ?? "",
@@ -78,12 +80,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     const visual = isDe
       ? `<button class="rune-image-button" type="button" data-rune="0" aria-label="查看 德 第零符資料"><div class="rune-thumb rune-thumb-de" aria-hidden="true">德</div></button>`
       : `<button class="rune-image-button" type="button" data-rune="${r.編號}" aria-label="查看 ${esc(r.符文名稱)} 符文資料"><img class="rune-thumb" src="64images/${encodeURIComponent(r.圖檔名稱)}" alt="${esc(r.符文名稱)}符文卡面縮圖" loading="lazy" decoding="async" /></button>`;
+    const keywordLine = r.關鍵詞
+      ? `<span class="en"><strong>關鍵詞：</strong>${esc(r.關鍵詞)}</span>`
+      : "";
+    const reverseKeywordLine = r.反向關鍵字
+      ? `<span class="en"><strong>反向關鍵詞：</strong>${esc(r.反向關鍵字)}</span>`
+      : "";
     return `<article class="rune-tile${special}">
       ${visual}
       <div class="rune-info">
         <span class="num">#${n}</span>
-        <span class="name">${esc(r.符文名稱)}</span>
-        <span class="en">${esc(r.英文)}</span>
+        <span class="name">${esc(r.符文名稱)}${r.英文 ? ` <span class="en" style="display:inline">${esc(r.英文)}</span>` : ""}</span>
+        ${keywordLine}
+        ${reverseKeywordLine}
         <span class="meta"><span class="pill">${esc(r.所屬分組)}</span>${isDe ? '<span class="pill">誌銘</span>' : `<span class="pill">${esc(r.月相)}</span>`}</span>
       </div>
     </article>`;
@@ -125,7 +134,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (count) count.textContent = "9 組 · 66 枚可抽取符文 + 第 0 符德";
 
   const fields = [
-    ["英文","英文"],["圖騰","圖騰"],["顯化形式","顯化形式"],["所屬分組","所屬分組"],["月相","月相"],
+    ["英文","英文"],["關鍵詞","關鍵詞"],["反向關鍵詞","反向關鍵字"],["圖騰","圖騰"],["顯化形式","顯化形式"],["所屬分組","所屬分組"],["月相","月相"],
     ["月相輔助說明","月相輔助說明"],["靈魂咒語","靈魂咒語"],["靈魂課題","靈魂課題"],
     ["實踐挑戰","實踐挑戰"],["分組說明","分組說明"],["符文變化歷史","符文變化歷史"],
     ["神話故事","神話故事"],["配套儀式建議","配套儀式建議"],["能量調和建議","能量調和建議"]
@@ -133,7 +142,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function openRune(r){
     if (!modal) return;
-    modalTitle.textContent = `#${String(r.編號).padStart(2,"0")} · ${r.符文名稱}`;
+    modalTitle.textContent = `#${String(r.編號).padStart(2,"0")} · ${r.符文名稱}${r.英文 ? ` · ${r.英文}` : ""}`;
     const isDe = r.編號 === 0;
 
     if (isDe) {
@@ -159,6 +168,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (isDe) {
       modalData.innerHTML = [
         ["英文", r.英文],
+        ["關鍵詞", r.關鍵詞],
+        ["反向關鍵詞", r.反向關鍵字],
         ["所屬分組", "特殊 Special"],
         ["定位", "作者／月語者個人誌銘；不參與抽牌"],
         ["基本定義", r.Spec],
