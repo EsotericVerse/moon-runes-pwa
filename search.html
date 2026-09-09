@@ -51,7 +51,7 @@
     .source-search-link:hover,.source-search-link:focus-visible{border-color:var(--mint);outline:none}
     .source-stats{margin:18px 0 6px;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
     .source-stats-head{display:flex;justify-content:space-between;gap:14px;align-items:end;margin-bottom:13px}.source-stats-head h2{margin:0;font-size:1rem}.source-stats-head p{margin:0;color:var(--muted);font-size:.76rem}
-    .source-stats-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.source-stat-total{padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--soft)}.source-stat-total strong{display:block;font-size:1.18rem}.source-stat-total small{display:block;margin-top:3px;color:var(--muted)}
+    .source-stats-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.source-stat-total{padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--soft)}.source-stat-total strong{display:block;font-size:1.18rem}.source-stat-total small{display:block;margin-top:3px;color:var(--muted)}
     .source-table-wrap{overflow-x:auto}.source-table{width:100%;border-collapse:collapse;font-size:.82rem}.source-table th,.source-table td{padding:9px 10px;border-top:1px solid var(--line);text-align:left;white-space:nowrap}.source-table th{color:var(--muted);font-size:.72rem}.source-table td:last-child{white-space:normal;color:var(--muted);min-width:210px}
     .source-stats details{margin-top:11px}.source-stats summary{cursor:pointer;font-weight:800;color:var(--mint)}
     footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
@@ -1043,8 +1043,7 @@
             <div class="source-stat-total"><strong>${sources.length} 類</strong><small>搜尋資料來源：${esc(sources.join('、'))}</small></div>
             <div class="source-stat-total"><strong>${Number(search.comparable_records||0).toLocaleString('zh-TW')} 筆</strong><small>可比對總筆數</small></div>
             <div class="source-stat-total"><strong>${Number(search.char_count||s.char_count||0).toLocaleString('zh-TW')} 字</strong><small>總字數（圖片／影片不計字數）</small></div>
-            <div class="source-stat-total"><strong>${esc(s.start_date||'—')}</strong><small>文字開始日期</small></div>
-            <div class="source-stat-total"><strong>${esc(s.end_date||'—')}</strong><small>文字結束日期</small></div>
+            <div class="source-stat-total"><strong>${esc(s.start_date||'—')} → ${esc(s.end_date||'現在')}</strong><small>文字時間（開始 → 結束）</small></div>
           </div>
           <section class="source-era-overview">
             <div class="source-search-head"><strong>ERA 時期</strong><small>搜尋總表依現行時期分組；點選上方「時期」可篩選結果</small></div>
