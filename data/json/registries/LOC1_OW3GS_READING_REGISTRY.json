@@ -2,7 +2,7 @@
   "schema_version": "0.2",
   "registry": "LOC1_OW3GS_READING_REGISTRY",
   "authority": "LOC1",
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-09",
   "source_document": "OW3gs_占卜結果與解析_本對話整理_20260907.txt",
   "purpose": "Maintain a small, curated set of complete Base66 OW3gs 11-card readings as interpretation reference cases and real-world validation evidence. This is not a bulk divination log.",
   "reading_model": {
@@ -561,5 +561,6 @@
       "verification": "2026-09-07 時九月才剛開始，資料不足，暫不做事後驗證。",
       "validation_note": "月底或更晚再回測，避免提前宣告命中。"
     }
-  ]
+  ],
+  "authority_domain": "runes"
 }
