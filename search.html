@@ -848,15 +848,15 @@
       if(wants('rune_record','oracle')){
         try{
           const d=await localJson('data/json/core/runes66.json');
-          for(const rune of d.runes||[]){
+          for(const rune of (Array.isArray(d)?d:(d.runes||[]))){
             const id=Number(rune.編號 ?? rune.id);
-            const name=rune.名稱 ?? rune.name;
+            const name=rune.符文名稱 ?? rune.名稱 ?? rune.name;
             const english=rune.英文 ?? rune.english;
             const group=rune.所屬分組 ?? rune.group;
             const keyword=rune.關鍵詞 ?? rune.keyword;
-            const manifest=rune.顯化形式 ?? rune.spec;
+            const manifest=rune.特別說明 ?? rune.顯化形式 ?? rune.spec;
             const aliases=id===0?['德之符文','德符文','第零符','第0符','0號符文','Rune 0','De Rune','作者符文','治理錨點']:[];
-            const score=localScore(q,[name,english,manifest,keyword,group,...aliases,rune.正向表示,rune.半正向表示,rune.半逆向表示,rune.逆向表示]);
+            const score=localScore(q,[name,english,manifest,keyword,rune.反向關鍵詞,rune.人格原型,group,...aliases,rune.正向表示,rune.半正向表示,rune.半逆向表示,rune.逆向表示]);
             localPush(scored,id===0?score*1.15:score,'runes',{
               result_id:'RUNE-'+id,system_id:'lo3rwang',domain:id===0?'governance':'runes',
               related_domains:id===0?['runes','knowledge','evolution']:[],
