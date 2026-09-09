@@ -16,8 +16,35 @@
     ],
     "note": "History preserves semantic evolution and must not override current Canon meanings."
   },
-  "count": 66,
+  "count": 67,
   "runes": [
+    {
+      "id": 0,
+      "name": "德",
+      "english": "De",
+      "icon": null,
+      "group": "治理",
+      "moon_phase": null,
+      "card_attribute": "中立",
+      "keyword": "作者誌銘・治理・集合",
+      "spec": "德是66種符文的開始也是集合。第0符代表作者／月語者本人與治理起點，不參與抽牌；作者的人生軌跡與最終選擇由作者自己決定。",
+      "drawable": false,
+      "image": null,
+      "role": [
+        "author_inscription",
+        "governance_anchor",
+        "recursive_anchor"
+      ],
+      "history": {
+        "編號": 0,
+        "名稱": "德",
+        "圖騰": "",
+        "所屬分組": "治理",
+        "月相": "不適用",
+        "符文變化歷史": "第0符為作者／月語者的個人誌銘。命名來源之一為作者改名「政德」，其二為長期進行語言治理與語言管理；用來標記作者與系統治理起點，不列入66枚可抽取符文。",
+        "神話故事": ""
+      }
+    },
     {
       "id": 1,
       "name": "靈",
@@ -1338,5 +1365,9 @@
         "神話故事": "當最後一符落定，命符自虛空中浮現，成為終極總章，連結萬象、統攝全局的靈魂秩序。"
       }
     }
-  ]
+  ],
+  "drawable_count": 66,
+  "record_count": 67,
+  "range": "0-66",
+  "note": "Filename runes66 refers to the 66 drawable LunaRunes. Dataset contains 67 records because Rune 0 德 is a non-drawable author/governance inscription."
 }
