@@ -1,7 +1,7 @@
-import { rune } from "./runes64.js";
+import { rune } from "./runes66.js";
 
 const API = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
-const CACHE_KEY = "loc1-physical-daily-draw-cache-v1";
+const CACHE_KEY = "lunarunes-physical-daily-draw-cache-v2";
 const $ = s => document.querySelector(s);
 const PAGE_SIZE = 20;
 let currentPage = 1;
