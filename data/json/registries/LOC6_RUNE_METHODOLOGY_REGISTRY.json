@@ -211,7 +211,8 @@
     "LOC8": "比較時間、時期與趨勢；演化方法與趨勢推薦歸推演。"
   },
   "status": "current",
-  "updated_at": "2026-09-08",
+  "updated_at": "2026-09-09",
   "group_count": 9,
-  "methodology_name": "月之符文九群組方法論"
+  "methodology_name": "月之符文九群組方法論",
+  "authority_domain": "governance"
 }

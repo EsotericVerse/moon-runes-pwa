@@ -8,24 +8,24 @@
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "由 LOC FAQ v0.4 依 Canon 1.0 同步產生；本檔為 retrieval derivative，不是 Canon。",
+    "description": "由現行 LOC FAQ 同步產生的 retrieval derivative；使用語意 domain，不以 LOC1–8 作底層分類。",
     "source_dataset": "LOC_FAQ_v0.4.json",
     "parent_entry_count": 90,
-    "chunk_count": 90,
+    "chunk_count": 89,
     "chunk_policy": "每個 FAQ 條目對應一個完整 Semantic Chunk；需要更細粒度時由檢索層處理，不另要求 Markdown 知識文件。",
     "system_id": "lo3rwang",
-    "primary_loc": "LOC7",
-    "related_locs": [
-      "LOC6",
-      "LOC8"
-    ],
     "shared_registries": {
       "language_system": "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
       "era": "data/json/registries/LOC_ERA_REGISTRY.json",
       "analysis_types": "data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json",
       "loc7_analysis": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json"
     },
-    "updated_at": "2026-09-08"
+    "updated_at": "2026-09-09",
+    "domain": "knowledge",
+    "related_domains": [
+      "governance",
+      "evolution"
+    ]
   },
   "chunks": [
     {
@@ -40,7 +40,7 @@
         "LOC到底在做什麼？",
         "可以簡單介紹LOC嗎？"
       ],
-      "answer": "LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋並推演語言的語言系統框架。從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。LOC 固定只有 LOC1–LOC8，不存在 LOC9。",
+      "answer": "LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋、治理並推演語言的語言模型（Language Model, LM）。從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。LOC 固定只有 LOC1–LOC8，不存在 LOC9。",
       "keywords": [
         "LOC",
         "Luna Codex",
@@ -58,7 +58,7 @@
         "跨LOC關聯",
         "時間結構"
       ],
-      "retrieval_text": "LOC是什麼？ 什麼是LOC？ 月典是什麼？ LOC到底在做什麼？ 可以簡單介紹LOC嗎？ LOC Luna Codex 月典 個人語言系統 自我治理 語言框架 LOC1–8 不同型態的語言資料 創作文字 歌詞 多媒體影片 資料統整 共同檢索 跨LOC關聯 時間結構 LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋並推演語言的語言系統框架。從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。LOC 固定只有 LOC1–LOC8，不存在 LOC9。",
+      "retrieval_text": "LOC是什麼？ 什麼是LOC？ 月典是什麼？ LOC到底在做什麼？ 可以簡單介紹LOC嗎？ LOC Luna Codex 月典 個人語言系統 自我治理 語言框架 LOC1–8 不同型態的語言資料 創作文字 歌詞 多媒體影片 資料統整 共同檢索 跨LOC關聯 時間結構 LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋、治理並推演語言的語言模型（Language Model, LM）。從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。LOC 固定只有 LOC1–LOC8，不存在 LOC9。",
       "related_ids": [],
       "source_refs": [
         "master-system:2026-09"
@@ -79,7 +79,7 @@
         "月符在LOC裡是什麼位置？",
         "為什麼說月符為種？"
       ],
-      "answer": "LOC 是整體語言系統框架；LunaRunes（月之符文）是 LOC1 的固定 66 符語彙種子與 Reference Seed System。月之符文提供語彙、四向、月相與組合語法，但使用 LOC 不必先學會全部符文。",
+      "answer": "LOC 是整體語言模型；LunaRunes（月之符文）是 LOC1 的固定 66 符語彙種子與 Reference Seed System。月之符文提供語彙、四向、月相與組合語法，但使用 LOC 不必先學會全部符文。",
       "keywords": [
         "月典",
         "Luna Codex",
@@ -91,7 +91,7 @@
         "月符為種",
         "框架"
       ],
-      "retrieval_text": "月典（LOC／Luna Codex）和月之符文（LunaRunes）有什麼關係？ LOC和月符是同一件事嗎？ 月典和月符有什麼差別？ Luna Codex與LunaRunes有什麼差別？ 月符在LOC裡是什麼位置？ 為什麼說月符為種？ 月典 Luna Codex LOC 月符 LunaRunes 基本參照 語意種子 月符為種 框架 LOC 是整體語言系統框架；LunaRunes（月之符文）是 LOC1 的固定 66 符語彙種子與 Reference Seed System。月之符文提供語彙、四向、月相與組合語法，但使用 LOC 不必先學會全部符文。",
+      "retrieval_text": "月典（LOC／Luna Codex）和月之符文（LunaRunes）有什麼關係？ LOC和月符是同一件事嗎？ 月典和月符有什麼差別？ Luna Codex與LunaRunes有什麼差別？ 月符在LOC裡是什麼位置？ 為什麼說月符為種？ 月典 Luna Codex LOC 月符 LunaRunes 基本參照 語意種子 月符為種 框架 LOC 是整體語言模型；LunaRunes（月之符文）是 LOC1 的固定 66 符語彙種子與 Reference Seed System。月之符文提供語彙、四向、月相與組合語法，但使用 LOC 不必先學會全部符文。",
       "related_ids": [],
       "source_refs": [
         "index.html",
@@ -112,7 +112,7 @@
         "LOC原本是做什麼的？",
         "創作LOC的起點是什麼？"
       ],
-      "answer": "LOC不是先拼出八個模組再加入符文，而是由月符的長期使用自然生長而來。符文先被用來描述未知、抽牌、創作與組合語意，之後才逐步長出歌曲、小說、多媒體、句型解析、文字建築、事件與時間語意等框架。LOC的建立也源於把原本依賴直覺的理解方式逐步顯性化、記錄化與系統化。",
+      "answer": "LOC不是先拼出八個模組再加入符文，而是由月符的長期使用自然生長而來。符文先被用來描述未知、抽牌、創作與組合語意，之後才逐步長出歌曲、小說、多媒體、句型解析、文字建築、事件與時間語意等模型。LOC的建立也源於把原本依賴直覺的理解方式逐步顯性化、記錄化與系統化。",
       "keywords": [
         "創作背景",
         "月符",
@@ -121,7 +121,7 @@
         "系統化",
         "語言演化"
       ],
-      "retrieval_text": "為什麼會創作LOC？ LOC是怎麼誕生的？ 月之符文最早從哪裡來？ LOC原本是做什麼的？ 創作LOC的起點是什麼？ 創作背景 月符 自然生長 直覺 系統化 語言演化 LOC不是先拼出八個模組再加入符文，而是由月符的長期使用自然生長而來。符文先被用來描述未知、抽牌、創作與組合語意，之後才逐步長出歌曲、小說、多媒體、句型解析、文字建築、事件與時間語意等框架。LOC的建立也源於把原本依賴直覺的理解方式逐步顯性化、記錄化與系統化。",
+      "retrieval_text": "為什麼會創作LOC？ LOC是怎麼誕生的？ 月之符文最早從哪裡來？ LOC原本是做什麼的？ 創作LOC的起點是什麼？ 創作背景 月符 自然生長 直覺 系統化 語言演化 LOC不是先拼出八個模組再加入符文，而是由月符的長期使用自然生長而來。符文先被用來描述未知、抽牌、創作與組合語意，之後才逐步長出歌曲、小說、多媒體、句型解析、文字建築、事件與時間語意等模型。LOC的建立也源於把原本依賴直覺的理解方式逐步顯性化、記錄化與系統化。",
       "related_ids": [],
       "source_refs": [
         "master-system:2026-09"
@@ -170,7 +170,7 @@
         "LOC和桌遊有什麼關係？",
         "LOC有哪些應用面向？"
       ],
-      "answer": "LOC本體是一套個人語言系統框架。符文抽取、遊戲情境、歌曲與歌詞、創作文字、文章／小說、多媒體影片與圖像、治理語句、知識文件，以及生命事件與時間語意，都是不同型態的語言資料。LOC1–8負責保存與處理各自資料，再由同一套框架統合、搜尋與建立關聯，而不是八個彼此獨立後再硬合併的產品。",
+      "answer": "LOC本體是一套個人語言模型。符文抽取、遊戲情境、歌曲與歌詞、創作文字、文章／小說、多媒體影片與圖像、治理語句、知識文件，以及生命事件與時間語意，都是不同型態的語言資料。LOC1–8負責保存與處理各自資料，再由同一套框架統合、搜尋與建立關聯，而不是八個彼此獨立後再硬合併的產品。",
       "keywords": [
         "語言系統",
         "LOC1–8",
@@ -181,7 +181,7 @@
         "跨媒體",
         "統合框架"
       ],
-      "retrieval_text": "LOC是占卜、語言系統，還是桌遊？ LOC究竟是哪一類系統？ LOC只是一套占卜工具嗎？ LOC和桌遊有什麼關係？ LOC有哪些應用面向？ 語言系統 LOC1–8 個人語言 框架 自然形成 不同型態的語言資料 跨媒體 統合框架 LOC本體是一套個人語言系統框架。符文抽取、遊戲情境、歌曲與歌詞、創作文字、文章／小說、多媒體影片與圖像、治理語句、知識文件，以及生命事件與時間語意，都是不同型態的語言資料。LOC1–8負責保存與處理各自資料，再由同一套框架統合、搜尋與建立關聯，而不是八個彼此獨立後再硬合併的產品。",
+      "retrieval_text": "LOC是占卜、語言系統，還是桌遊？ LOC究竟是哪一類系統？ LOC只是一套占卜工具嗎？ LOC和桌遊有什麼關係？ LOC有哪些應用面向？ 語言系統 LOC1–8 個人語言 框架 自然形成 不同型態的語言資料 跨媒體 統合框架 LOC本體是一套個人語言模型。符文抽取、遊戲情境、歌曲與歌詞、創作文字、文章／小說、多媒體影片與圖像、治理語句、知識文件，以及生命事件與時間語意，都是不同型態的語言資料。LOC1–8負責保存與處理各自資料，再由同一套框架統合、搜尋與建立關聯，而不是八個彼此獨立後再硬合併的產品。",
       "related_ids": [],
       "source_refs": [
         "master-system:2026-09"
@@ -1807,7 +1807,7 @@
         "政德風和LOC有什麼關係？",
         "作者的個人語言叫什麼？"
       ],
-      "answer": "政德風不是單純文體，而是作者王政德在LOC中長期累積、被解析與關聯後形成的個人語言紀錄，包括詞彙、句型、風格、價值觀、作品與人生階段變化。LOC是框架；政德風是作者自己的語言實例。",
+      "answer": "政德風不是單純文體，而是作者王政德在LOC中長期累積、被解析與關聯後形成的個人語言紀錄，包括詞彙、句型、風格、價值觀、作品與人生階段變化。LOC是模型；政德風是作者自己的語言實例。",
       "keywords": [
         "政德風",
         "作者語言",
@@ -1815,7 +1815,7 @@
         "風格",
         "LOC"
       ],
-      "retrieval_text": "政德風在LOC裡是什麼？ 政德風只是文風嗎？ 政德風和LOC有什麼關係？ 作者的個人語言叫什麼？ 政德風 作者語言 個人語言 風格 LOC 政德風不是單純文體，而是作者王政德在LOC中長期累積、被解析與關聯後形成的個人語言紀錄，包括詞彙、句型、風格、價值觀、作品與人生階段變化。LOC是框架；政德風是作者自己的語言實例。",
+      "retrieval_text": "政德風在LOC裡是什麼？ 政德風只是文風嗎？ 政德風和LOC有什麼關係？ 作者的個人語言叫什麼？ 政德風 作者語言 個人語言 風格 LOC 政德風不是單純文體，而是作者王政德在LOC中長期累積、被解析與關聯後形成的個人語言紀錄，包括詞彙、句型、風格、價值觀、作品與人生階段變化。LOC是模型；政德風是作者自己的語言實例。",
       "related_ids": [],
       "source_refs": [
         "creator-confirmed:2026-09-04-conversation"
@@ -2475,36 +2475,6 @@
       "status": "confirmed"
     },
     {
-      "id": "FAQ-086-A",
-      "parent_id": "FAQ-086",
-      "category": "LOC 分類",
-      "intent": "LOC 的公開 Tag 怎麼分",
-      "question": "LOC 的公開 Tag 怎麼分？",
-      "aliases": [
-        "LOC3到8怎麼分類？",
-        "方法論和演算法有什麼差別？",
-        "推演在 LOC 哪裡？"
-      ],
-      "answer": "公開與資料治理都以 Canon 1.0 固定名稱為準：LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm、Evolution。Text Architecture、Governance、Graph RAG、Search、Trend 等都是方法、技術或實作名稱，不能反過來改寫 LOC1–8 的正式名稱。",
-      "keywords": [
-        "表達",
-        "方法論",
-        "演算法",
-        "推演",
-        "符文籤詩",
-        "符文體系",
-        "符文演算",
-        "符文演化"
-      ],
-      "retrieval_text": "LOC 的公開 Tag 怎麼分？ LOC3到8怎麼分類？ 方法論和演算法有什麼差別？ 推演在 LOC 哪裡？ 表達 方法論 演算法 推演 符文籤詩 符文體系 符文演算 符文演化 公開與資料治理都以 Canon 1.0 固定名稱為準：LunaRunes、Context、Music、Literary、MultiMedia、Methodology、Algorithm、Evolution。Text Architecture、Governance、Graph RAG、Search、Trend 等都是方法、技術或實作名稱，不能反過來改寫 LOC1–8 的正式名稱。",
-      "related_ids": [],
-      "source_refs": [
-        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
-      ],
-      "canon_version": "1.0",
-      "status": "confirmed"
-    },
-    {
       "id": "FAQ-087-A",
       "parent_id": "FAQ-087",
       "category": "LOC 基本定義",
@@ -2515,7 +2485,7 @@
         "月符是LOC框架的例子嗎？",
         "LOC和月之符文是什麼關係？"
       ],
-      "answer": "兩種說法分別描述歷史與結構。歷史上，月之符文先累積語彙、籤詩、作品、方法與時間證據，LOC 再從這些實作中抽象整理出框架；結構上，LOC Framework 成立後，月之符文又可以被完整描述為其中一個實例／Reference Seed System。因此「月符先長出實例，LOC 再抽象出框架；框架成立後，再反過來描述月符」兩者並不矛盾。",
+      "answer": "兩種說法分別描述歷史與結構。歷史上，月之符文先累積語彙、籤詩、作品、方法與時間證據，LOC 再從這些實作中抽象整理出模型；結構上，LOC Model 成立後，月之符文又可以被完整描述為其中一個實例／Reference Seed System。因此「月符先長出實例，LOC 再抽象出模型；模型成立後，再反過來描述月符」兩者並不矛盾。",
       "keywords": [
         "LOC",
         "月之符文",
@@ -2525,39 +2495,11 @@
         "歷史關係",
         "結構關係"
       ],
-      "retrieval_text": "LOC 和月之符文到底是誰先形成的？ LOC是從月符來的嗎？ 月符是LOC框架的例子嗎？ LOC和月之符文是什麼關係？ LOC 月之符文 Reference Seed System 框架 實例 歷史關係 結構關係 兩種說法分別描述歷史與結構。歷史上，月之符文先累積語彙、籤詩、作品、方法與時間證據，LOC 再從這些實作中抽象整理出框架；結構上，LOC Framework 成立後，月之符文又可以被完整描述為其中一個實例／Reference Seed System。因此「月符先長出實例，LOC 再抽象出框架；框架成立後，再反過來描述月符」兩者並不矛盾。",
+      "retrieval_text": "LOC 和月之符文到底是誰先形成的？ LOC是從月符來的嗎？ 月符是LOC框架的例子嗎？ LOC和月之符文是什麼關係？ LOC 月之符文 Reference Seed System 框架 實例 歷史關係 結構關係 兩種說法分別描述歷史與結構。歷史上，月之符文先累積語彙、籤詩、作品、方法與時間證據，LOC 再從這些實作中抽象整理出模型；結構上，LOC Model 成立後，月之符文又可以被完整描述為其中一個實例／Reference Seed System。因此「月符先長出實例，LOC 再抽象出模型；模型成立後，再反過來描述月符」兩者並不矛盾。",
       "related_ids": [],
       "source_refs": [
         "index.html",
         "runes.html",
-        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
-      ],
-      "canon_version": "1.0",
-      "status": "confirmed"
-    },
-    {
-      "id": "FAQ-088-A",
-      "parent_id": "FAQ-088",
-      "category": "LOC 基本定義",
-      "intent": "LOC1–8 現在怎麼分類",
-      "question": "LOC1–8 現在怎麼分類？",
-      "aliases": [
-        "LOC最新八個分類是什麼？",
-        "LOC2為什麼是脈絡？",
-        "LOC8為什麼叫推演？"
-      ],
-      "answer": "Canon 1.0 固定分類為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。LOC 固定只有 1–8，不存在 LOC9。",
-      "keywords": [
-        "LOC1",
-        "LOC2",
-        "脈絡",
-        "方法論",
-        "演算法",
-        "推演"
-      ],
-      "retrieval_text": "LOC1–8 現在怎麼分類？ LOC最新八個分類是什麼？ LOC2為什麼是脈絡？ LOC8為什麼叫推演？ LOC1 LOC2 脈絡 方法論 演算法 推演 Canon 1.0 固定分類為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。LOC 固定只有 1–8，不存在 LOC9。",
-      "related_ids": [],
-      "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
       ],
       "canon_version": "1.0",
@@ -2620,6 +2562,37 @@
       ],
       "canon_version": "1.0",
       "status": "confirmed"
+    },
+    {
+      "id": "FAQ-091-A",
+      "category": "LOC 基本定義",
+      "intent": "為什麼 LOC 稱為 LM 而不是小型語言架構",
+      "question": "為什麼 LOC 稱為 Language Model，而不是「小型語言架構」？",
+      "aliases": [
+        "LOC為什麼不是小型語言架構？",
+        "LOC是LM還是framework？",
+        "LOC是MLM嗎？"
+      ],
+      "answer": "LOC 的正式定位是 Language Model（LM）。「小型」只描述某個時間點的資料規模，LOC 可以由小型模組開始，也可以持續整合 corpus、脈絡、治理規則與其他 LOC 模組而擴大；原有 framework 並沒有消失，而是成為 LM 的底層 architecture。LOC 的主名稱維持 LM；需要描述架構特性時可稱 modular language model，但不以 MLM 作主縮寫，以避免與 Masked Language Model 混淆。",
+      "keywords": [
+        "Language Model",
+        "LM",
+        "modular",
+        "framework",
+        "architecture",
+        "語言模型",
+        "模組化"
+      ],
+      "related_ids": [],
+      "source_refs": [
+        "index.html",
+        "README.md",
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
+      ],
+      "canon_version": "1.0",
+      "status": "confirmed",
+      "parent_id": "FAQ-091",
+      "retrieval_text": "為什麼 LOC 稱為 Language Model，而不是「小型語言架構」？ LOC為什麼不是小型語言架構？ LOC是LM還是framework？ LOC是MLM嗎？ Language Model LM modular framework architecture 語言模型 模組化 LOC 的正式定位是 Language Model（LM）。「小型」只描述某個時間點的資料規模，LOC 可以由小型模組開始，也可以持續整合 corpus、脈絡、治理規則與其他 LOC 模組而擴大；原有 framework 並沒有消失，而是成為 LM 的底層 architecture。LOC 的主名稱維持 LM；需要描述架構特性時可稱 modular language model，但不以 MLM 作主縮寫，以避免與 Masked Language Model 混淆。"
     }
   ]
 }

@@ -2,7 +2,7 @@
   "schema_version": "0.1",
   "registry": "LOC3_REASONING_SCHEMA",
   "authority": "LOC3",
-  "updated_at": "2026-09-05",
+  "updated_at": "2026-09-09",
   "purpose": "Analyze proposition-level meaning in songs whose primary value is reasoning, judgment, boundary-setting, governance, causality, or reflective statements rather than affect.",
   "principle": "Emotion is not mandatory evidence. Rational songs may carry weak affect but strong propositions.",
   "analysis_dimensions": [
@@ -182,5 +182,6 @@
       "rule": "Describes how the lyrics communicate meaning. It is independent from provenance."
     },
     "orthogonality_rule": "A rune_song may also be 思辨論述型、治理宣言型、感性情緒型等；the rune_song flag remains separately visible and searchable."
-  }
+  },
+  "authority_domain": "music"
 }

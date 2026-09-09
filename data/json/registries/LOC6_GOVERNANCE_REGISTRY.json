@@ -41,7 +41,12 @@
         "inferred",
         "unknown"
       ],
-      "lifecycle": "shared lifecycle object"
+      "lifecycle": "shared lifecycle object",
+      "domain": "governance",
+      "related_domains": [
+        "knowledge",
+        "evolution"
+      ]
     }
   },
   "fragments": [
@@ -67,7 +72,13 @@
       "confidence": "recorded",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "music",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "fragment_id": "GF-ZD-002",
@@ -91,7 +102,13 @@
       "confidence": "recorded",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "music",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "fragment_id": "GF-ZD-003",
@@ -115,7 +132,13 @@
       "confidence": "recorded",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "music",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "fragment_id": "GF-ZD-004",
@@ -139,7 +162,13 @@
       "confidence": "recorded",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "music",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "fragment_id": "GF-ZD-005",
@@ -163,7 +192,13 @@
       "confidence": "recorded",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "music",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "fragment_id": "GF-ZD-006",
@@ -187,7 +222,13 @@
       "confidence": "recorded",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "music",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "fragment_id": "GF-ZD-007",
@@ -211,7 +252,13 @@
       "confidence": "recorded",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "music",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "fragment_id": "GF-ZD-P8-001",
@@ -235,7 +282,13 @@
       "confidence": "recorded",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "music",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "fragment_id": "GF-GOV-HIST-001",
@@ -259,7 +312,12 @@
       "confidence": "reconstructed",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "fragment_id": "GF-GOV-HIST-002",
@@ -283,7 +341,12 @@
       "confidence": "reconstructed",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "fragment_id": "GF-GOV-CURRENT-001",
@@ -308,7 +371,13 @@
       "confidence": "recorded",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "runes",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "fragment_id": "GF-GOV-CURRENT-002",
@@ -331,7 +400,12 @@
       "confidence": "recorded",
       "lifecycle": {
         "status": "current"
-      }
+      },
+      "domain": "governance",
+      "related_domains": [
+        "knowledge",
+        "evolution"
+      ]
     }
   ],
   "rights_governance_scope": [
@@ -342,7 +416,7 @@
     "collaboration principles"
   ],
   "boundary_note": "LOC6 owns derived meaning/governance/Zhengde-style/style-state/rune interpretation records. Raw authored text (including Facebook/Threads), creative works, and ordinary work/chapter literary-semantic analysis remain LOC4. A source statement copied into a LOC6 fragment is evidence only and must retain source_refs.",
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-09",
   "rune_interpretation_corpus": {
     "registry": "data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
     "work": "月語者",
@@ -1564,5 +1638,6 @@
       "confidence",
       "lifecycle"
     ]
-  }
+  },
+  "authority_domain": "governance"
 }

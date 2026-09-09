@@ -6597,5 +6597,6 @@
       "original_draw": "原始章節符文紀錄；保留原始方向與月相（若有）。",
       "retrospective_semantic_patch": "事後依既有章節反向解析；只補符文名稱，不補方向。"
     }
-  }
+  },
+  "authority_domain": "literary"
 }

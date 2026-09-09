@@ -145,5 +145,6 @@
       "LOC8 Graph View consumes the public bounded projection; it does not become the canonical graph authority.",
       "Live private LOC8 Relation rows remain outside public Graph unless explicitly governed into a public registry/snapshot."
     ]
-  }
+  },
+  "authority_domain": "context"
 }

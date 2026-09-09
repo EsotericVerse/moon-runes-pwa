@@ -42,7 +42,8 @@
       "period_name": "LOC8 public period name",
       "period_assignment": "mapping rule and evidence for temporal assignment",
       "public_category": "default public display category; new authored text defaults to 文字創作",
-      "source_platform": "actual source platform/provenance, independent from public_category"
+      "source_platform": "actual source platform/provenance, independent from public_category",
+      "domain": "literary"
     },
     "defaults": {
       "public_category": "文字創作"
@@ -68,7 +69,8 @@
       "period_assignment": {
         "authority": "LOC8",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
-        "evidence": "author-confirmed Vocus publication date"
+        "evidence": "author-confirmed Vocus publication date",
+        "authority_domain": "evolution"
       },
       "summary": "《月語者》長篇系列；共七大篇，每篇 26 章。以第一篇序章在方格子的首次發布日期作為 LOC4 創作時間基準。",
       "tags": [
@@ -95,7 +97,13 @@
         "status": "catalogued",
         "updated_at": "2026-09-06"
       },
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "work_id": "LOC4-ONE-DAY-LOVER",
@@ -116,7 +124,8 @@
       "period_assignment": {
         "authority": "LOC8",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
-        "evidence": "author-confirmed Vocus publication date"
+        "evidence": "author-confirmed Vocus publication date",
+        "authority_domain": "evolution"
       },
       "summary": "《一日情人》五章作品；以第一章在方格子的首次發布日期作為 LOC4 創作時間基準。",
       "tags": [
@@ -141,7 +150,13 @@
         "status": "catalogued",
         "updated_at": "2026-09-06"
       },
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "work_id": "LOC4-READ-RECEIPT",
@@ -163,7 +178,8 @@
       "period_assignment": {
         "authority": "LOC8",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
-        "evidence": "author-confirmed Vocus publication date"
+        "evidence": "author-confirmed Vocus publication date",
+        "authority_domain": "evolution"
       },
       "summary": "由同名歌曲核心語意延伸成六章文章；文字與歌曲共同處理等待、訊息、回應與關係中的沉默。",
       "tags": [
@@ -206,7 +222,14 @@
         "status": "catalogued",
         "updated_at": "2026-09-06"
       },
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary",
+      "related_domains": [
+        "music",
+        "media",
+        "governance",
+        "knowledge"
+      ]
     },
     {
       "work_id": "LOC4-BEFORE-AFTER-YOU",
@@ -227,7 +250,8 @@
       "period_assignment": {
         "authority": "LOC8",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
-        "evidence": "author-confirmed Vocus publication date"
+        "evidence": "author-confirmed Vocus publication date",
+        "authority_domain": "evolution"
       },
       "summary": "20 章關係敘事系列；以第一章在方格子的首次發布日期作為 LOC4 創作時間基準。",
       "tags": [
@@ -366,7 +390,13 @@
           }
         ]
       },
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "work_id": "LOC4-MMM-RELATIONSHIP",
@@ -387,7 +417,8 @@
       "period_assignment": {
         "authority": "LOC8",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
-        "evidence": "author-confirmed Vocus publication date"
+        "evidence": "author-confirmed Vocus publication date",
+        "authority_domain": "evolution"
       },
       "summary": "20 章關係敘事系列；以第一章在方格子的首次發布日期作為 LOC4 創作時間基準。",
       "tags": [
@@ -419,7 +450,13 @@
         "status": "catalogued",
         "updated_at": "2026-09-06"
       },
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "work_id": "LOC4-WRONG-PERSON",
@@ -440,7 +477,8 @@
       "period_assignment": {
         "authority": "LOC8",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
-        "evidence": "author-confirmed Vocus publication date"
+        "evidence": "author-confirmed Vocus publication date",
+        "authority_domain": "evolution"
       },
       "summary": "單篇作品；以方格子首次發布日期作為 LOC4 創作時間基準。",
       "tags": [
@@ -466,7 +504,13 @@
         "status": "catalogued",
         "updated_at": "2026-09-06"
       },
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "work_id": "LOC4-MILK-PAPER-BOAT",
@@ -487,7 +531,8 @@
       "period_assignment": {
         "authority": "LOC8",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
-        "evidence": "author-confirmed Vocus publication date"
+        "evidence": "author-confirmed Vocus publication date",
+        "authority_domain": "evolution"
       },
       "summary": "單篇作品；以方格子首次發布日期作為 LOC4 創作時間基準。",
       "tags": [
@@ -518,7 +563,13 @@
         "status": "catalogued",
         "updated_at": "2026-09-06"
       },
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "work_id": "LOC4-GRAY-RELATIONSHIP",
@@ -539,7 +590,8 @@
       "period_assignment": {
         "authority": "LOC8",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
-        "evidence": "author-confirmed Vocus publication date"
+        "evidence": "author-confirmed Vocus publication date",
+        "authority_domain": "evolution"
       },
       "summary": "單篇作品；與 LOC3 同名歌曲對應，以方格子首次發布日期作為 LOC4 創作時間基準。",
       "tags": [
@@ -569,7 +621,13 @@
         "status": "catalogued",
         "updated_at": "2026-09-06"
       },
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "work_id": "LOC4-PROPHET-PERSON",
@@ -590,7 +648,8 @@
       "period_assignment": {
         "authority": "LOC8",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
-        "evidence": "author-confirmed Vocus publication date"
+        "evidence": "author-confirmed Vocus publication date",
+        "authority_domain": "evolution"
       },
       "summary": "連載中作品；以方格子前言首次發布日期作為 LOC4 創作時間基準。",
       "tags": [
@@ -616,7 +675,13 @@
         "status": "catalogued",
         "updated_at": "2026-09-06"
       },
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     },
     {
       "work_id": "LOC4-PSEUDO-SINGLE",
@@ -666,7 +731,13 @@
         "status": "catalogued_and_indexed",
         "updated_at": "2026-09-07"
       },
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary",
+      "related_domains": [
+        "governance",
+        "knowledge",
+        "evolution"
+      ]
     }
   ],
   "migration_note": "Core authored plain-text corpus is now imported and searchable. Facebook/Threads authored life-writing remains in source-specific corpora and is referenced by LOC4; it is not duplicated.",
@@ -794,5 +865,6 @@
     ],
     "LOC6_relation": "LOC6 reads LOC4 records as evidence and publishes separate governance/style interpretations by reference."
   },
-  "updated_at": "2026-09-07"
+  "updated_at": "2026-09-09",
+  "authority_domain": "literary"
 }

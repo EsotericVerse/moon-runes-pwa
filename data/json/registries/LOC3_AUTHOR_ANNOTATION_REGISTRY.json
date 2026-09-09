@@ -2,7 +2,7 @@
   "schema_version": "0.1",
   "registry": "LOC3_AUTHOR_ANNOTATION_REGISTRY",
   "authority": "LOC3",
-  "updated_at": "2026-09-05",
+  "updated_at": "2026-09-09",
   "purpose": "Author-confirmed overrides and semantic notes for LOC3 works. These records override heuristic missing-tag flags without inventing unsupported labels.",
   "emotion_model": {
     "rule": "Emotion is optional. Rational/expository/system-observation songs may be complete without an emotion tag.",
@@ -262,7 +262,10 @@
       ],
       "loc4_relation": "《月語者》開場場景／OP",
       "recommendation_policy": "promote",
-      "author_note": "這是特色曲。小說月語者的一開始就是這一幕。算是 OP。"
+      "author_note": "這是特色曲。小說月語者的一開始就是這一幕。算是 OP。",
+      "related_domains": [
+        "literary"
+      ]
     },
     {
       "work_id": "E0213",
@@ -467,5 +470,6 @@
       "rule": "Classical Chinese works must be interpreted/paraphrased before modern Chinese keyword analysis.",
       "handling": "defer_keyword_analysis_until_explained"
     }
-  }
+  },
+  "authority_domain": "music"
 }

@@ -25,6 +25,11 @@
           "LOC6",
           "LOC7",
           "LOC8"
+        ],
+        "domains": [
+          "governance",
+          "knowledge",
+          "evolution"
         ]
       },
       "note": "Current governance concept should stay anchored in P8 and cross governance/context/search."
@@ -41,6 +46,9 @@
         ],
         "locs": [
           "LOC8"
+        ],
+        "domains": [
+          "evolution"
         ]
       },
       "note": "Naming-history query should recover the recorded temporal event rather than infer a new origin."
@@ -58,6 +66,10 @@
         "locs": [
           "LOC4",
           "LOC8"
+        ],
+        "domains": [
+          "literary",
+          "evolution"
         ]
       },
       "note": "Work milestone should connect narrative work history to its governed ERA."
@@ -72,6 +84,10 @@
         "locs": [
           "LOC1",
           "LOC8"
+        ],
+        "domains": [
+          "runes",
+          "evolution"
         ]
       },
       "note": "Rune query should reach LOC1 rune anchor and LOC8 observations where recorded."
@@ -88,6 +104,9 @@
         ],
         "locs": [
           "LOC8"
+        ],
+        "domains": [
+          "evolution"
         ]
       },
       "note": "Direct ERA query should stay on the governed temporal backbone."
@@ -136,5 +155,6 @@
     "Evaluation cases assert graph structure and provenance only; they do not promote semantic similarity into canonical edges.",
     "A case may be updated only when the upstream registry/event/ERA authority changes.",
     "Private live Google Sheet Relation rows must never be required by the public evaluation set."
-  ]
+  ],
+  "authority_domain": "knowledge"
 }

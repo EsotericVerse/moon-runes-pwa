@@ -1,7 +1,38 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const all = (window.getRunes64?.() || [])
+document.addEventListener("DOMContentLoaded", async () => {
+  const drawable = (window.getRunes66?.() || [])
     .filter(r => r && Number(r.編號) >= 1 && Number(r.編號) <= 66)
     .sort((a,b) => Number(a.編號) - Number(b.編號));
+
+  let deRune = null;
+  try {
+    const response = await fetch("data/json/core/runes66.json");
+    if (response.ok) {
+      const payload = await response.json();
+      const de = (payload.runes || []).find(r => Number(r.id) === 0);
+      if (de) {
+        deRune = {
+          編號: 0,
+          名稱: de.name,
+          符文名稱: de.name,
+          英文: de.english,
+          圖騰: de.icon || "",
+          顯化形式: de.keyword || "作者誌銘・治理・集合",
+          關鍵詞: de.keyword || "",
+          所屬分組: de.group || "治理",
+          月相: de.moon_phase || "不適用",
+          解牌基本極性: de.card_attribute || "中立",
+          Spec: de.spec || "",
+          符文變化歷史: de.history?.符文變化歷史 || "",
+          drawable: false,
+          圖檔名稱: null
+        };
+      }
+    }
+  } catch (error) {
+    console.warn("Rune 0 德資料載入失敗，66 枚可抽取符文仍可正常顯示。", error);
+  }
+
+  const all = deRune ? [deRune, ...drawable] : drawable;
 
   const grid = document.querySelector("#rune-grid");
   const group = document.querySelector("#group-filter");
@@ -18,12 +49,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }[ch]));
 
   function tile(r){
-    const special = Number(r.編號) >= 65 ? " special" : "";
+    const isDe = Number(r.編號) === 0;
+    const special = isDe || Number(r.編號) >= 65 ? " special" : "";
     const n = String(r.編號).padStart(2,"0");
+    const visual = isDe
+      ? `<button class="rune-image-button" type="button" data-rune="0" aria-label="查看 德 第零符資料"><div class="rune-thumb rune-thumb-de" aria-hidden="true">德</div></button>`
+      : `<button class="rune-image-button" type="button" data-rune="${r.編號}" aria-label="查看 ${esc(r.符文名稱)} 符文資料"><img class="rune-thumb" src="64images/${encodeURIComponent(r.圖檔名稱)}" alt="${esc(r.符文名稱)}符文卡面縮圖" loading="lazy" decoding="async" /></button>`;
     return `<article class="rune-tile${special}">
-      <button class="rune-image-button" type="button" data-rune="${r.編號}" aria-label="查看 ${esc(r.符文名稱)} 符文資料">
-        <img class="rune-thumb" src="64images/${encodeURIComponent(r.圖檔名稱)}" alt="${esc(r.符文名稱)}符文卡面縮圖" loading="lazy" decoding="async" />
-      </button>
+      ${visual}
       <div class="rune-info">
         <span class="num">#${n}</span>
         <span class="name">${esc(r.符文名稱)}</span>
@@ -90,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const g = group.value;
     const filtered = all.filter(r => !g || r.所屬分組 === g);
 
-    count.textContent = `${filtered.length} / ${all.length}`;
+    count.textContent = g ? `${filtered.length} / 66 可抽取符文` : `${all.length} 筆資料 · 66 枚可抽取符文`;
 
     if(!filtered.length){
       grid.innerHTML = '<div class="empty">沒有符合條件的符文。</div>';
@@ -98,6 +131,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const sections = [];
+    const de = !g ? filtered.find(r => Number(r.編號) === 0) : null;
+    if(de){
+      sections.push(`<section class="rune-group" aria-label="第零符 德">
+        <div class="group-head">
+          <div class="group-title">
+            <strong>第零符 · 德</strong>
+            <div class="group-tone"><b>作者誌銘／治理錨點</b> · 不參與抽牌</div>
+            <span class="group-note">德是 66 種符文的開始也是集合；用來留下作者／月語者的個人誌銘與治理起點。</span>
+          </div>
+          <span class="group-count">1 筆資料</span>
+        </div>
+        <div class="group-row">${tile(de)}</div>
+      </section>`);
+    }
+
     groupOrder.forEach(name => {
       const items = filtered.filter(r => r.所屬分組 === name && Number(r.編號) <= 64);
       if(items.length){
@@ -136,14 +184,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function openRune(r){
     modalTitle.textContent = `#${String(r.編號).padStart(2,"0")} · ${r.符文名稱}`;
-    modalImage.src = "64images/" + encodeURIComponent(r.圖檔名稱);
-    modalImage.alt = `${r.符文名稱}符文卡面`;
-    modalSummary.innerHTML = [
+    const isDe = Number(r.編號) === 0;
+    if(isDe){
+      modalImage.removeAttribute("src");
+      modalImage.alt = "";
+      modalImage.hidden = true;
+    } else {
+      modalImage.hidden = false;
+      modalImage.src = "64images/" + encodeURIComponent(r.圖檔名稱);
+      modalImage.alt = `${r.符文名稱}符文卡面`;
+    }
+    modalSummary.innerHTML = isDe ? [
+      '<span class="pill">作者誌銘</span>',
+      '<span class="pill">治理錨點</span>',
+      '<span class="pill">不參與抽牌</span>'
+    ].join("") : [
       `<span class="pill">${esc(r.所屬分組)}</span>`,
       `<span class="pill">${esc(r.月相)}</span>`,
       `<span class="pill">${esc(r.顯化形式)}</span>`
     ].join("");
     const runeName = String(r.符文名稱 || "").trim();
+    if(isDe){
+      modalData.innerHTML = [
+        ['英文', r.英文],
+        ['定位', '作者／月語者個人誌銘；LOC 治理錨點'],
+        ['抽取', '不參與 66 枚符文抽牌'],
+        ['圖片', '無；第零符不是卡面'],
+        ['基本定義', r.Spec],
+        ['History', r.符文變化歷史]
+      ].filter(([,value]) => value).map(([label,value]) => `<div class="field"><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("");
+      modal.showModal();
+      return;
+    }
     const searchQuery = `尋找目前${runeName}之符文的資料`;
     const methodQuery = `符合${runeName}之符文演算法的文字`;
     const searchUrl = `search.html?q=${encodeURIComponent(runeName + "之符文")}`;
@@ -178,6 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
   modal.addEventListener("close", () => {
     modalImage.removeAttribute("src");
     modalImage.alt = "";
+    modalImage.hidden = false;
   });
 
   render();

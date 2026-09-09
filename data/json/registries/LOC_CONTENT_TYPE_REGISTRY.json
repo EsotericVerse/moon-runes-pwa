@@ -8,56 +8,64 @@
       "id": "rune_record",
       "primary_loc": "LOC1",
       "kind": "semantic_core",
-      "label": "符文資料"
+      "label": "符文資料",
+      "domain": "runes"
     },
     {
       "id": "scenario_event",
       "primary_loc": "LOC2",
       "kind": "scenario_corpus",
       "label": "情境事件",
-      "public_category": "脈絡"
+      "public_category": "脈絡",
+      "domain": "context"
     },
     {
       "id": "game_rule",
       "primary_loc": "LOC2",
       "kind": "interactive_system",
       "label": "遊戲規則",
-      "public_category": "脈絡"
+      "public_category": "脈絡",
+      "domain": "context"
     },
     {
       "id": "game_document",
       "primary_loc": "LOC2",
       "kind": "document",
       "label": "遊戲文件",
-      "public_category": "脈絡"
+      "public_category": "脈絡",
+      "domain": "context"
     },
     {
       "id": "song",
       "primary_loc": "LOC3",
       "kind": "work",
       "label": "歌曲",
-      "default_display_policy": "metadata_only"
+      "default_display_policy": "metadata_only",
+      "domain": "music"
     },
     {
       "id": "rune_song",
       "primary_loc": "LOC3",
       "kind": "work_subtype",
       "label": "符文歌曲",
-      "default_display_policy": "metadata_only"
+      "default_display_policy": "metadata_only",
+      "domain": "music"
     },
     {
       "id": "lyrics_work",
       "primary_loc": "LOC3",
       "kind": "work",
       "label": "歌詞作品",
-      "default_display_policy": "snippet"
+      "default_display_policy": "snippet",
+      "domain": "music"
     },
     {
       "id": "music_version",
       "primary_loc": "LOC3",
       "kind": "version",
       "label": "音樂版本",
-      "default_display_policy": "metadata_only"
+      "default_display_policy": "metadata_only",
+      "domain": "music"
     },
     {
       "id": "novel",
@@ -65,7 +73,8 @@
       "kind": "work",
       "label": "小說",
       "default_display_policy": "snippet",
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary"
     },
     {
       "id": "article",
@@ -73,7 +82,8 @@
       "kind": "work",
       "label": "文章",
       "default_display_policy": "snippet",
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary"
     },
     {
       "id": "essay",
@@ -81,7 +91,8 @@
       "kind": "work",
       "label": "散文",
       "default_display_policy": "snippet",
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary"
     },
     {
       "id": "journal",
@@ -89,7 +100,8 @@
       "kind": "record",
       "label": "生活紀錄",
       "default_display_policy": "snippet",
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary"
     },
     {
       "id": "lyrics_draft",
@@ -97,7 +109,8 @@
       "kind": "work",
       "label": "歌詞原稿",
       "default_display_policy": "snippet",
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary"
     },
     {
       "id": "rune_text",
@@ -105,14 +118,16 @@
       "kind": "work",
       "label": "符文文本",
       "default_display_policy": "snippet",
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary"
     },
     {
       "id": "worldbuilding",
       "primary_loc": "LOC4",
       "kind": "work",
       "label": "世界觀",
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary"
     },
     {
       "id": "character",
@@ -120,37 +135,43 @@
       "kind": "entity",
       "label": "角色",
       "default_display_policy": "metadata_only",
-      "ownership_note": "Character identity belongs to the authored LOC4 work; LOC7 may project it into Graph/Search."
+      "ownership_note": "Character identity belongs to the authored LOC4 work; LOC7 may project it into Graph/Search.",
+      "domain": "literary"
     },
     {
       "id": "reel",
       "primary_loc": "LOC5",
       "kind": "media",
-      "label": "Reel"
+      "label": "Reel",
+      "domain": "media"
     },
     {
       "id": "mv",
       "primary_loc": "LOC5",
       "kind": "media",
-      "label": "MV"
+      "label": "MV",
+      "domain": "media"
     },
     {
       "id": "video",
       "primary_loc": "LOC5",
       "kind": "media",
-      "label": "影片"
+      "label": "影片",
+      "domain": "media"
     },
     {
       "id": "image",
       "primary_loc": "LOC5",
       "kind": "media",
-      "label": "圖像"
+      "label": "圖像",
+      "domain": "media"
     },
     {
       "id": "audio_visual",
       "primary_loc": "LOC5",
       "kind": "media",
-      "label": "影音作品"
+      "label": "影音作品",
+      "domain": "media"
     },
     {
       "id": "governance_fragment",
@@ -159,7 +180,8 @@
       "label": "治理片段",
       "default_display_policy": "full",
       "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities.",
-      "public_category": "方法論"
+      "public_category": "方法論",
+      "domain": "governance"
     },
     {
       "id": "governance_article",
@@ -168,35 +190,40 @@
       "label": "治理文章",
       "default_display_policy": "snippet",
       "ownership_note": "Derived governance/style/meaning interpretation. Source excerpts remain evidence references to LOC4 or other authorities.",
-      "public_category": "方法論"
+      "public_category": "方法論",
+      "domain": "governance"
     },
     {
       "id": "dual_rune_relation",
       "primary_loc": "LOC2",
       "kind": "context_relation",
       "label": "雙符文關係",
-      "public_category": "脈絡"
+      "public_category": "脈絡",
+      "domain": "context"
     },
     {
       "id": "rune_interpretation",
       "primary_loc": "LOC6",
       "kind": "analysis_record",
       "label": "符文解析實證",
-      "public_category": "方法論"
+      "public_category": "方法論",
+      "domain": "governance"
     },
     {
       "id": "linguistic_analysis",
       "primary_loc": "LOC7",
       "kind": "analysis_record",
       "label": "語言結構分析",
-      "public_category": "演算法（知識庫）"
+      "public_category": "演算法（知識庫）",
+      "domain": "knowledge"
     },
     {
       "id": "knowledge_object",
       "primary_loc": "LOC7",
       "kind": "knowledge",
       "label": "知識物件",
-      "public_category": "演算法（知識庫）"
+      "public_category": "演算法（知識庫）",
+      "domain": "knowledge"
     },
     {
       "id": "knowledge_document",
@@ -204,7 +231,8 @@
       "kind": "knowledge",
       "label": "知識文件",
       "default_display_policy": "full",
-      "public_category": "演算法（知識庫）"
+      "public_category": "演算法（知識庫）",
+      "domain": "knowledge"
     },
     {
       "id": "faq",
@@ -212,28 +240,32 @@
       "kind": "knowledge_view",
       "label": "FAQ",
       "default_display_policy": "full",
-      "public_category": "演算法（知識庫）"
+      "public_category": "演算法（知識庫）",
+      "domain": "knowledge"
     },
     {
       "id": "event",
       "primary_loc": "LOC8",
       "kind": "temporal_record",
       "label": "事件",
-      "public_category": "文學演化"
+      "public_category": "文學演化",
+      "domain": "evolution"
     },
     {
       "id": "era",
       "primary_loc": "LOC8",
       "kind": "temporal_registry",
       "label": "ERA",
-      "public_category": "文學演化"
+      "public_category": "文學演化",
+      "domain": "evolution"
     },
     {
       "id": "registry",
       "primary_loc": "LOC8",
       "kind": "integration",
       "label": "Registry",
-      "public_category": "文學演化"
+      "public_category": "文學演化",
+      "domain": "evolution"
     },
     {
       "id": "facebook_post",
@@ -242,7 +274,8 @@
       "default_display_policy": "snippet",
       "kind": "life_writing_record",
       "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it.",
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary"
     },
     {
       "id": "social_text_record",
@@ -251,7 +284,8 @@
       "label": "社群生活文字",
       "default_display_policy": "snippet",
       "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it.",
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary"
     },
     {
       "id": "text_record",
@@ -260,7 +294,8 @@
       "label": "文字紀錄",
       "default_display_policy": "snippet",
       "ownership_note": "Raw authored/life-writing text. LOC6 may reference it as evidence but does not own it.",
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary"
     },
     {
       "id": "work_analysis",
@@ -269,7 +304,8 @@
       "label": "作品解析",
       "default_display_policy": "full",
       "ownership_note": "General work/chapter literary-semantic analysis belongs to LOC4; governance projection of that analysis is a separate LOC6 record.",
-      "public_category": "文字創作"
+      "public_category": "文字創作",
+      "domain": "literary"
     }
   ],
   "rules": [
@@ -305,5 +341,6 @@
       "full allows full public text only when rights/visibility governance also permits it.",
       "metadata_only returns bibliographic/source metadata without body text."
     ]
-  }
+  },
+  "authority_domain": "evolution"
 }

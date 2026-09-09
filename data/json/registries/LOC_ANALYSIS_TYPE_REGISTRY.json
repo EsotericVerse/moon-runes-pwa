@@ -7,78 +7,94 @@
     {
       "id": "meaning",
       "primary_loc": "LOC6",
-      "label": "意義解讀"
+      "label": "意義解讀",
+      "domain": "governance"
     },
     {
       "id": "value",
       "primary_loc": "LOC6",
-      "label": "價值判讀"
+      "label": "價值判讀",
+      "domain": "governance"
     },
     {
       "id": "governance",
       "primary_loc": "LOC6",
-      "label": "治理分析"
+      "label": "治理分析",
+      "domain": "governance"
     },
     {
       "id": "style_state",
       "primary_loc": "LOC6",
-      "label": "風格狀態"
+      "label": "風格狀態",
+      "domain": "governance"
     },
     {
       "id": "stage_comparison",
       "primary_loc": "LOC6",
-      "label": "階段比較"
+      "label": "階段比較",
+      "domain": "governance"
     },
     {
       "id": "rights_governance",
       "primary_loc": "LOC6",
-      "label": "權利治理"
+      "label": "權利治理",
+      "domain": "governance"
     },
     {
       "id": "grammar",
       "primary_loc": "LOC7",
-      "label": "文法分析"
+      "label": "文法分析",
+      "domain": "knowledge"
     },
     {
       "id": "syntax",
       "primary_loc": "LOC7",
-      "label": "句法分析"
+      "label": "句法分析",
+      "domain": "knowledge"
     },
     {
       "id": "lexicon",
       "primary_loc": "LOC7",
-      "label": "詞彙分析"
+      "label": "詞彙分析",
+      "domain": "knowledge"
     },
     {
       "id": "semantic_structure",
       "primary_loc": "LOC7",
-      "label": "語意結構"
+      "label": "語意結構",
+      "domain": "knowledge"
     },
     {
       "id": "text_architecture",
       "primary_loc": "LOC7",
-      "label": "文字建築"
+      "label": "文字建築",
+      "domain": "knowledge"
     },
     {
       "id": "retrieval",
       "primary_loc": "LOC7",
-      "label": "檢索工程"
+      "label": "檢索工程",
+      "domain": "knowledge"
     },
     {
       "id": "km",
       "primary_loc": "LOC7",
-      "label": "Knowledge Management"
+      "label": "Knowledge Management",
+      "domain": "knowledge"
     },
     {
       "id": "rag",
       "primary_loc": "LOC7",
-      "label": "RAG"
+      "label": "RAG",
+      "domain": "knowledge"
     },
     {
       "id": "graph_relation",
       "primary_loc": "LOC7",
-      "label": "Graph Relation"
+      "label": "Graph Relation",
+      "domain": "knowledge"
     }
   ],
-  "rule": "Mixed analyses use one primary type plus related_locs/references; LOC8 only routes and integrates."
+  "rule": "Mixed analyses use one primary type plus related_locs/references; LOC8 only routes and integrates.",
+  "authority_domain": "evolution"
 }
