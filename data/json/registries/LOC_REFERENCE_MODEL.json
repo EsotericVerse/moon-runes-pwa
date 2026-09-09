@@ -71,5 +71,5 @@
     "A governance event may change lifecycle or interpretation without changing the stable identity of the historical source record.",
     "Superseded records keep their stable IDs and point to replacement/successor IDs rather than being silently renumbered."
   ],
-  "updated_at": "2026-09-07"
+  "updated_at": "2026-09-09"
 }
