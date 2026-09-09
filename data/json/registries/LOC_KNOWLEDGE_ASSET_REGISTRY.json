@@ -2,7 +2,7 @@
   "schema_version": "0.3",
   "registry": "LOC_KNOWLEDGE_ASSET_REGISTRY",
   "authority": "LOC7",
-  "updated_at": "2026-09-08",
+  "updated_at": "2026-09-09",
   "purpose": "Register searchable human-readable and structured knowledge assets without requiring duplicate Markdown documentation.",
   "rules": [
     "Registration as a knowledge asset does not make every statement Canon.",
@@ -13,6 +13,44 @@
     "Derived JSON, retrieval indexes, application views, and AI inference must not overwrite upstream Canon, mother data, or primary records."
   ],
   "assets": [
+    {
+      "asset_id": "KA-LOC6-DE-RUNE-001",
+      "title": "德之符文｜第 0 符 De",
+      "path": "governance.html#de-rune",
+      "source_type": "public_page",
+      "content_type": "governance_document",
+      "primary_loc": "LOC6",
+      "related_locs": [
+        "LOC1",
+        "LOC7",
+        "LOC8"
+      ],
+      "role": "governance_anchor",
+      "searchable": true,
+      "public_summary": "第0符「德」是作者／月語者的個人誌銘，也是 LunaRunes66 的集合起點、治理與遞迴錨點。它可作為跨 LOC 的搜尋入口，但不參與抽牌，也沒有卡面。",
+      "keywords": [
+        "德之符文",
+        "德符文",
+        "第零符",
+        "第0符",
+        "Rune 0",
+        "De Rune",
+        "作者符文",
+        "治理錨點",
+        "月語者",
+        "政德",
+        "LunaRunes66",
+        "de′ = de"
+      ],
+      "intent_aliases": [
+        "德之符文是什麼",
+        "為什麼德是第零符",
+        "德為什麼不能抽",
+        "德跟政德有什麼關係",
+        "德和LunaRunes66是什麼關係"
+      ],
+      "notes": "Primary public route is governance.html#de-rune; runes.html is the secondary record/list view. Searchability must not imply drawability."
+    },
     {
       "asset_id": "KA-PERSON-LO3RWANG-001",
       "title": "王政德（Lucas Oscar Wang / lo3rwang）",
