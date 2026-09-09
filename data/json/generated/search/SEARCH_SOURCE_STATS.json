@@ -4,8 +4,13 @@
   "search_summary": {
     "comparable_records": 24509,
     "comparable_scope": "24309 text or lyrics-work records plus 200 multimedia records",
-    "char_count": 2553218,
-    "char_count_scope": "searchable authored full-text body plus 400 available Suno lyrics; images and video contribute records but not characters"
+    "char_count": 2939214,
+    "char_count_scope": "article body, available Suno lyrics, and unique KM knowledge-document body; images and video contribute records but not characters",
+    "char_count_breakdown": {
+      "articles": 2356594,
+      "lyrics": 196624,
+      "knowledge_documents": 385996
+    }
   },
   "text_summary": {
     "catalogued_records": 26739,
@@ -27,6 +32,7 @@
       "status": "全文可搜尋",
       "char_count": 1352152,
       "source_type": "text",
+      "source_category": "Meta",
       "content_counts": {"article": 18329}
     },
     {
@@ -38,6 +44,7 @@
       "status": "主貼文 4,578 筆可搜尋；回覆 2,430 筆待母檔回補",
       "char_count": 539996,
       "source_type": "text",
+      "source_category": "Meta",
       "content_counts": {"post": 4578, "reply": 2430}
     },
     {
@@ -49,6 +56,7 @@
       "status": "離線史料全文可搜尋",
       "char_count": 421187,
       "source_type": "text",
+      "source_category": "社群網站",
       "content_counts": {"article": 940}
     },
     {
@@ -60,6 +68,7 @@
       "status": "離線史料全文可搜尋",
       "char_count": 43259,
       "source_type": "text",
+      "source_category": "社群網站",
       "content_counts": {"article": 59}
     },
     {
@@ -77,6 +86,7 @@
       "missing_fulltext_titles": ["白晝也有月光", "清空舊航線", "人生月台"],
       "char_count_source": "Suno_500_LOC3治理補全_v0.3.3-20260905.xlsx / 500公開作品主表 / 歌詞字數"
       ,"source_type": "lyrics"
+      ,"source_category": "多媒體網站"
       ,"content_counts": {"lyrics": 403}
     }
   ],
@@ -89,6 +99,7 @@
       "end_date": "2026-08-29",
       "status": "183 筆具公開 URL；13 筆待補"
       ,"source_type": "media"
+      ,"source_category": "Meta"
       ,"content_counts": {"media": 196}
       ,"char_count_applicable": false
     },
@@ -100,6 +111,7 @@
       "end_date": "2026-08-29",
       "status": "匯出媒體路徑已保留；公開 URL 待補"
       ,"source_type": "media"
+      ,"source_category": "Meta"
       ,"content_counts": {"image": 802}
       ,"char_count_applicable": false
     }
@@ -112,6 +124,9 @@
     "indexed_source_characters_raw": 1180877,
     "indexed_source_characters_deduplicated": 1094339,
     "deduplication_note": "LOC_FAQ_RAG_v0.4.json is excluded from deduplicated KM source volume because it is a retrieval projection of the same 90 FAQ items.",
-    "counting_note": "KM source character volume is kept separate from authored full-text body character count because structured JSON/JS sources contain metadata and schema text."
+    "counting_note": "KM source character volume is kept separate from knowledge-document body count because structured JSON/JS sources contain metadata and schema text.",
+    "knowledge_document_records": 26,
+    "knowledge_document_characters": 385996,
+    "knowledge_document_counting_note": "Counts readable body text from unique current KM documents and semantic structured knowledge values. Excludes retrieval projections, article projections, images, technical metadata keys, duplicate document views, and the self-referential homepage statistics view."
   }
 }
