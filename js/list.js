@@ -1,9 +1,9 @@
+import { rune, groups } from './runes66.js';
+
 document.addEventListener("DOMContentLoaded", async () => {
-  const drawable = (window.getRunes66?.() || [])
+  const drawable = (rune || [])
     .filter(r => r && Number(r.編號) >= 1 && Number(r.編號) <= 66)
     .sort((a,b) => Number(a.編號) - Number(b.編號));
-
-  const groups = (window.getRuneGroups?.() || []).filter(Boolean);
 
   let deRune = null;
   try {
@@ -19,19 +19,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           編號: 0,
           符文名稱: de.符文名稱 ?? de.名稱 ?? de.name ?? "德",
           英文: de.英文 ?? de.english ?? "Virtue",
-          圖騰: de.圖騰 ?? de.icon ?? "",
+          所屬分組: "特殊",
+          分組說明: specialMeta?.description ?? "",
+          月相: de.月相 ?? de.moon_phase ?? "不適用",
           顯化形式: de.顯化形式 ?? de.keyword ?? "作者誌銘・治理・集合",
           關鍵詞: de.關鍵詞 ?? de.keyword ?? "",
-          所屬分組: "特殊",
-          分組英文: specialMeta?.group_en ?? "Special",
-          分組說明: specialMeta?.description ?? "",
-          群組特質: specialMeta?.trait ?? "",
-          風格模組: specialMeta?.style_module ?? "",
-          可能語氣: specialMeta?.possible_tone ?? [],
-          group_style: specialMeta?.style ?? [],
-          group_meta: specialMeta,
-          月相: de.月相 ?? de.moon_phase ?? "不適用",
-          解牌基本極性: de.解牌基本極性 ?? de.card_attribute ?? "中立",
           Spec: de.Spec ?? de.spec ?? "",
           符文變化歷史: de.history?.符文變化歷史 ?? de.符文變化歷史 ?? "",
           drawable: false,
@@ -44,10 +36,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const all = deRune ? [...drawable, deRune] : drawable;
-
   const grid = document.querySelector("#rune-grid");
-  const groupFilter = document.querySelector("#group-filter");
   const count = document.querySelector("#rune-count");
+  const groupFilter = document.querySelector("#group-filter");
   const modal = document.querySelector("#rune-modal");
   const closeBtn = document.querySelector("#modal-close");
   const modalTitle = document.querySelector("#modal-title");
@@ -55,16 +46,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const modalSummary = document.querySelector("#modal-summary");
   const modalData = document.querySelector("#modal-data");
 
-  const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&":"&amp;","<":"&lt;","/":"&#47;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[ch]));
+  // Group membership is canonical and fixed. It is not a user-selectable filter.
+  groupFilter?.remove();
 
-  // Keep the existing HTML filter compatible while making Special canonical.
-  const legacySpecialOption = groupFilter?.querySelector('option[value="個人"]');
-  if (legacySpecialOption) {
-    legacySpecialOption.value = "特殊";
-    legacySpecialOption.textContent = "特殊";
-  }
+  const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[ch]));
 
   function tile(r){
     const isDe = Number(r.編號) === 0;
@@ -86,12 +73,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function groupBox(meta, items){
     const tone = Array.isArray(meta.possible_tone) ? meta.possible_tone.join("、") : String(meta.possible_tone || "");
-    const style = Array.isArray(meta.style) ? meta.style.join(" / ") : String(meta.style || "");
-    const runeCount = items.filter(r => Number(r.編號) !== 0).length;
-    const deCount = items.some(r => Number(r.編號) === 0) ? 1 : 0;
+    const styleText = Array.isArray(meta.style) ? meta.style.join(" / ") : String(meta.style || "");
+    const drawableCount = items.filter(r => Number(r.編號) !== 0).length;
+    const hasDe = items.some(r => Number(r.編號) === 0);
     const countText = meta.group_zh === "特殊"
-      ? `${runeCount} 枚特殊符文${deCount ? " + 1 枚誌銘" : ""}`
-      : `${runeCount} 枚符文`;
+      ? `${drawableCount} 枚特殊符文${hasDe ? " + 1 枚誌銘" : ""}`
+      : `${drawableCount} 枚符文`;
 
     return `<section class="rune-group" aria-label="${esc(meta.group_zh)} ${esc(meta.group_en)}">
       <div class="group-head">
@@ -99,7 +86,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <strong>${esc(meta.group_zh)} ${esc(meta.group_en)}</strong>
           <div class="group-tone"><b>${esc(meta.trait)}</b> · ${esc(meta.style_module)}</div>
           <span class="group-note">${esc(meta.description)}</span>
-          <span class="group-note">可能語氣：${esc(tone)} · style：${esc(style)}</span>
+          <span class="group-note">可能語氣：${esc(tone)} · style：${esc(styleText)}</span>
         </div>
         <span class="group-count">${esc(countText)}</span>
       </div>
@@ -107,36 +94,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     </section>`;
   }
 
-  function render(){
-    const selected = groupFilter?.value || "";
-    const selectedGroups = selected ? groups.filter(g => g.group_zh === selected) : groups;
-    const sections = [];
-
-    for (const meta of selectedGroups) {
-      const ids = new Set((meta.runes || []).map(member => Number(member.id)));
-      const items = all
-        .filter(r => ids.has(Number(r.編號)))
-        .sort((a,b) => {
-          if (meta.group_zh === "特殊") {
-            const order = new Map([[65,0],[66,1],[0,2]]);
-            return (order.get(Number(a.編號)) ?? 99) - (order.get(Number(b.編號)) ?? 99);
-          }
-          return Number(a.編號) - Number(b.編號);
-        });
-      if (items.length) sections.push(groupBox(meta, items));
+  const sections = groups.map(meta => {
+    const ids = new Set((meta.runes || []).map(member => Number(member.id)));
+    const items = all.filter(r => ids.has(Number(r.編號)));
+    if (meta.group_zh === "特殊") {
+      const order = new Map([[65,0],[66,1],[0,2]]);
+      items.sort((a,b) => (order.get(Number(a.編號)) ?? 99) - (order.get(Number(b.編號)) ?? 99));
+    } else {
+      items.sort((a,b) => Number(a.編號) - Number(b.編號));
     }
+    return groupBox(meta, items);
+  });
 
-    const shown = selected
-      ? all.filter(r => r.所屬分組 === selected)
-      : all;
-    count.textContent = selected
-      ? `${shown.filter(r => Number(r.編號) !== 0).length} 枚符文${shown.some(r => Number(r.編號) === 0) ? " + 1 枚誌銘" : ""}`
-      : `9 組 · 66 枚可抽取符文 + 第 0 符德`;
-
-    grid.innerHTML = sections.length
-      ? sections.join("")
-      : '<div class="empty">沒有符合條件的符文。</div>';
-  }
+  grid.innerHTML = sections.join("");
+  if (count) count.textContent = "9 組 · 66 枚可抽取符文 + 第 0 符德";
 
   const fields = [
     ["英文","英文"],["圖騰","圖騰"],["顯化形式","顯化形式"],["所屬分組","所屬分組"],["月相","月相"],
@@ -146,6 +117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   ];
 
   function openRune(r){
+    if (!modal) return;
     modalTitle.textContent = `#${String(r.編號).padStart(2,"0")} · ${r.符文名稱}`;
     const isDe = Number(r.編號) === 0;
     if(isDe){
@@ -167,55 +139,37 @@ document.addEventListener("DOMContentLoaded", async () => {
       `<span class="pill">${esc(r.顯化形式 || r.關鍵詞 || "")}</span>`
     ].join("");
 
-    const runeName = String(r.符文名稱 || "").trim();
     if(isDe){
       modalData.innerHTML = [
-        ['英文', r.英文],
-        ['所屬分組', '特殊 Special'],
-        ['定位', '作者／月語者個人誌銘；不參與抽牌'],
-        ['基本定義', r.Spec],
-        ['分組說明', r.分組說明],
-        ['History', r.符文變化歷史]
+        ['英文', r.英文],['所屬分組', '特殊 Special'],['定位', '作者／月語者個人誌銘；不參與抽牌'],
+        ['基本定義', r.Spec],['分組說明', r.分組說明],['History', r.符文變化歷史]
       ].filter(([,value]) => value).map(([label,value]) => `<div class="field"><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("");
       modal.showModal();
       return;
     }
 
-    const methodQuery = `符合${runeName}之符文演算法的文字`;
+    const runeName = String(r.符文名稱 || "").trim();
     const searchUrl = `search.html?q=${encodeURIComponent(runeName + "之符文")}`;
-    const methodUrl = `search.html?content_type=rune_algorithm&q=${encodeURIComponent(methodQuery)}`;
+    const methodUrl = `search.html?content_type=rune_algorithm&q=${encodeURIComponent(`符合${runeName}之符文演算法的文字`)}`;
     modalData.innerHTML = fields
       .filter(([,key]) => r[key] !== undefined && r[key] !== null && String(r[key]).trim() !== "")
       .map(([label,key]) => `<div class="field"><dt>${esc(label)}</dt><dd>${esc(r[key])}</dd></div>`)
-      .join("") +
-      `<div class="field">
-        <dt>延伸查看</dt>
-        <dd>
-          <a href="${searchUrl}">尋找目前「${esc(runeName)}」之符文的資料</a>
-          <span aria-hidden="true"> · </span>
-          <a href="${methodUrl}">尋找符合「${esc(runeName)}」之符文演算法的文字</a>
-        </dd>
-      </div>`;
+      .join("") + `<div class="field"><dt>延伸查看</dt><dd><a href="${searchUrl}">尋找目前「${esc(runeName)}」之符文的資料</a><span aria-hidden="true"> · </span><a href="${methodUrl}">尋找符合「${esc(runeName)}」之符文演算法的文字</a></dd></div>`;
     modal.showModal();
   }
 
-  grid.addEventListener("click", e => {
+  grid?.addEventListener("click", e => {
     const btn = e.target.closest("[data-rune]");
     if(!btn) return;
     const r = all.find(x => Number(x.編號) === Number(btn.dataset.rune));
     if(r) openRune(r);
   });
 
-  groupFilter?.addEventListener("change", render);
   closeBtn?.addEventListener("click", () => modal.close());
-  modal?.addEventListener("click", e => {
-    if(e.target === modal) modal.close();
-  });
+  modal?.addEventListener("click", e => { if(e.target === modal) modal.close(); });
   modal?.addEventListener("close", () => {
     modalImage.removeAttribute("src");
     modalImage.alt = "";
     modalImage.hidden = false;
   });
-
-  render();
 });
