@@ -3,7 +3,7 @@
   "registry": "LOC_SOURCE_ACTIVITY_REGISTRY",
   "authority": "LOC8",
   "purpose": "Source-specific activity / analyzable date ranges used by trend and ranking UI. Source ranges do not replace LOC ERA boundaries.",
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-09",
   "sources": [
     {
       "id": "facebook",
@@ -30,5 +30,6 @@
       "basis": "LOC_ERA_REGISTRY source_active_range",
       "note": "Current analyzable Suno corpus snapshot ends at 2026-09-06. Do not present as real-time/current unless the source snapshot is refreshed."
     }
-  ]
+  ],
+  "authority_domain": "evolution"
 }
