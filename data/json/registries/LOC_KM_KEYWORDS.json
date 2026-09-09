@@ -369,7 +369,6 @@
             "治理錨點"
           ],
           "loc_scope": [
-            "LOC1",
             "LOC6",
             "LOC7",
             "LOC8"
@@ -377,7 +376,13 @@
           "status": "Canonical",
           "primary_path": "governance.html#de-rune",
           "secondary_path": "runes.html",
-          "note": "第0符「德」是作者／月語者誌銘、66符集合起點與治理／遞迴錨點。可被搜尋與關聯，但不參與66枚符文抽牌、沒有卡面。"
+          "note": "德之符文屬於 LOC6 Methodology 之下的 Governance／治理分類，不等同 Methodology 本身。它同時是作者／月語者誌銘、66符集合起點與治理／遞迴錨點；可被搜尋與關聯，但不參與抽牌、沒有卡面。",
+          "category_path": [
+            "LOC6 Methodology",
+            "Governance",
+            "德之符文"
+          ],
+          "methodology_relation": "治理：德之符文"
         },
         {
           "term": "政德風",
