@@ -124,10 +124,10 @@ def main() -> int:
 
         backend_domains = system.get("backend_domains") or {}
         invalid_domains = sorted(
-            {str(v) for v in backend_domains.values() if str(v) not in SEMANTIC_DOMAINS}
+            {str(k) for k in backend_domains.keys() if str(k) not in SEMANTIC_DOMAINS}
         )
         if invalid_domains:
-            failures.append(f"invalid backend semantic domains in language-system registry: {invalid_domains}")
+            failures.append(f"invalid backend semantic domain ids in language-system registry: {invalid_domains}")
 
         shared_schema = json.loads(shared_schema_path.read_text(encoding="utf-8"))
         domain_spec = ((shared_schema.get("required_common_fields") or {}).get("domain")
