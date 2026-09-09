@@ -1035,8 +1035,6 @@
         const s=data.text_summary||{},search=data.search_summary||{};
         const sources=[...(data.text_sources||[]),...(data.media_sources||[])].map(row=>row.source).filter(Boolean);
         const allSources=[...sources,'系統 KM'];
-        const textRecords=Number(s.searchable_records||0);
-        const mediaRecords=Math.max(0,Number(search.comparable_records||0)-textRecords);
         const articleChars=(data.text_sources||[]).filter(row=>row.source_type==='text').reduce((sum,row)=>sum+Number(row.char_count||0),0);
         const kmUnits=Number((data.knowledge_summary||{}).searchable_unit_floor||0);
         const totalUnits=Number(search.comparable_records||0)+kmUnits;
