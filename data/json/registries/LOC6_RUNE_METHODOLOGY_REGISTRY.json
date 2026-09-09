@@ -180,7 +180,7 @@
         "命"
       ],
       "analysis_label": "特殊",
-      "description": "母資料正式特殊組。包含第0符「德（Virtue）」、65「玄（Chaos）」與66「命（Fate）」；三者同組但語意責任不同，不合併成「人生道理」或其他替代群組。",
+      "description": "母資料正式特殊組。包含第0符「德（Virtue）」、65「玄（Chaos）」與66「命（Fate）」；三者同組但各自保留不同的語意責任。",
       "submethods": [
         {
           "rune": "德",
