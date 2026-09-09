@@ -1046,11 +1046,10 @@
         el('sourceStatsUpdated').textContent=`更新：${data.generated_at||'—'}`;
         el('sourceStatsBody').innerHTML=`
           <div class="source-stats-summary">
-            <div class="source-stat-line">
-              <div class="source-stat-label">總字數</div>
-              <strong class="source-stat-value">${totalChars.toLocaleString('zh-TW')} 字</strong>
+            <details class="source-stat-line">
+              <summary>總字數｜${totalChars.toLocaleString('zh-TW')} 字</summary>
               <div class="source-stat-detail">文章 ${articleChars.toLocaleString('zh-TW')} 字・歌詞 ${lyricsChars.toLocaleString('zh-TW')} 字・KM 知識庫 ${kmChars.toLocaleString('zh-TW')} 字</div>
-            </div>
+            </details>
             <details class="source-stat-line">
               <summary>總筆數｜${Number(search.comparable_records||0).toLocaleString('zh-TW')} 筆</summary>
               <div class="source-stat-detail">文章與歌詞索引 24,309 筆，其中歌詞作品 403 筆；多媒體可比對紀錄 200 筆。另有圖片 802 張、歌曲 530 個版本、Instagram Reels／貼文 196 筆，以及 KM 知識庫 ${kmDocuments.toLocaleString('zh-TW')} 份唯一文件；不同單位不重複加進 24,509 筆。</div>
@@ -1063,10 +1062,10 @@
                 <div><strong>社群網站</strong>｜KKCity（已關站）、無名小站（已關站）</div>
               </div>
             </details>
-            <div class="source-stat-line">
-              <div class="source-stat-label">時間跨度</div>
-              <strong class="source-stat-value">${esc(s.start_date||'—')} → ${esc(s.end_date||'現在')}</strong>
-            </div>
+            <details class="source-stat-line">
+              <summary>時間跨度｜${esc(s.start_date||'—')} → ${esc(s.end_date||'現在')}</summary>
+              <div class="source-stat-detail">各來源的起訖時間與資料狀態請展開下方「搜尋資料總表」查看。</div>
+            </details>
           </div>
           <section class="source-era-overview">
             <div class="source-search-head"><strong>ERA 時期</strong><small>搜尋總表依現行時期分組；點選上方「時期」可篩選結果</small></div>
