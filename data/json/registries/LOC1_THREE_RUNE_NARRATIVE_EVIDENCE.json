@@ -12,7 +12,7 @@
     "rune_semantic_authority": "LOC1",
     "retrieval_structure": "LOC7",
     "rules": [
-      "Evidence only; never overwrite LunaRune64.xlsx or fixed rune definitions.",
+      "Evidence only; never overwrite LunaRune66.xlsx or fixed rune definitions.",
       "Preserve rune order exactly as recorded; do not silently assign 源／轉／合 roles.",
       "Legacy rune names and direction spellings stay in raw fields.",
       "Intentional no-draw chapters remain explicit workflow exceptions."

@@ -226,7 +226,7 @@
       ],
       "source_refs": [
         "runes.html",
-        "LunaRune64.xlsx"
+        "LunaRune66.xlsx"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
@@ -255,7 +255,7 @@
       ],
       "source_refs": [
         "runes.html",
-        "LunaRune64.xlsx"
+        "LunaRune66.xlsx"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
@@ -332,7 +332,7 @@
       ],
       "source_refs": [
         "runes.html",
-        "LunaRune64.xlsx#Grammar"
+        "Grammar specification (2026-09-07)"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
@@ -776,12 +776,12 @@
       "aliases": [
         "LOC的母資料是哪一份？",
         "符文資料衝突時要相信哪個檔案？",
-        "LunaRune64.xlsx是什麼？",
+        "LunaRune66.xlsx是什麼？",
         "哪份文件是66符文的最高優先來源？"
       ],
-      "answer": "66符文以LunaRune64.xlsx為最高優先母資料。符文名稱、編號、組別及其他正式定義，都應以這份資料為基準。其他文件、JavaScript資料及應用程式內容，應由母資料同步或依其內容修正。",
+      "answer": "66符文以LunaRune66.xlsx為最高優先母資料。符文名稱、編號、組別及其他正式定義，都應以這份資料為基準。其他文件、JavaScript資料及應用程式內容，應由母資料同步或依其內容修正。",
       "keywords": [
-        "LunaRune64.xlsx",
+        "LunaRune66.xlsx",
         "母資料",
         "最高優先來源",
         "資料治理",
@@ -789,7 +789,7 @@
       ],
       "source_refs": [
         "creator-confirmed:2026-09-02",
-        "LunaRune64.xlsx"
+        "LunaRune66.xlsx"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
@@ -2087,7 +2087,7 @@
       "source_refs": [
         "runes.html",
         "context.html",
-        "LunaRune64.xlsx#Grammar"
+        "Grammar specification (2026-09-07)"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
@@ -2139,7 +2139,7 @@
       ],
       "source_refs": [
         "runes.html",
-        "LunaRune64.xlsx#Grammar"
+        "Grammar specification (2026-09-07)"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
