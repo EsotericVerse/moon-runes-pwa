@@ -73,6 +73,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     .map(normalize)
     .filter(r => Number.isInteger(r.編號) && r.編號 >= 0 && r.編號 <= 66);
 
+  function infoBox(label, value){
+    if (!value) return "";
+    return `<div style="padding:9px 10px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025);font-size:.74rem;line-height:1.5">
+      <strong style="display:block;color:var(--gold);font-size:.72rem">${esc(label)}</strong>
+      <span style="display:block;color:var(--muted);margin-top:2px">${esc(value)}</span>
+    </div>`;
+  }
+
   function tile(r){
     const isDe = r.編號 === 0;
     const special = isDe || r.編號 >= 65 ? " special" : "";
@@ -81,20 +89,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       ? `<button class="rune-image-button" type="button" data-rune="0" aria-label="查看 德 第零符資料"><div class="rune-thumb rune-thumb-de" aria-hidden="true">德</div></button>`
       : `<button class="rune-image-button" type="button" data-rune="${r.編號}" aria-label="查看 ${esc(r.符文名稱)} 符文資料"><img class="rune-thumb" src="64images/${encodeURIComponent(r.圖檔名稱)}" alt="${esc(r.符文名稱)}符文卡面縮圖" loading="lazy" decoding="async" /></button>`;
 
-    const keywordPanel = (r.關鍵詞 || r.反向關鍵字)
-      ? `<div style="margin-top:9px;padding:9px 10px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025);font-size:.74rem;line-height:1.5">
-          ${r.關鍵詞 ? `<strong style="display:block;color:var(--gold);font-size:.72rem">關鍵詞</strong><span style="display:block;color:var(--muted);margin-top:2px">${esc(r.關鍵詞)}</span>` : ""}
-          ${r.反向關鍵字 ? `<strong style="display:block;color:var(--gold);font-size:.72rem;margin-top:8px">反向關鍵詞</strong><span style="display:block;color:var(--muted);margin-top:2px">${esc(r.反向關鍵字)}</span>` : ""}
-        </div>`
-      : "";
+    const infoPanel = `<div style="display:grid;gap:7px;margin-top:9px">
+      ${isDe ? infoBox("定位", "誌銘") : infoBox("卡片月相", r.月相)}
+      ${infoBox("關鍵詞", r.關鍵詞)}
+      ${infoBox("反向關鍵詞", r.反向關鍵字)}
+    </div>`;
 
     return `<article class="rune-tile${special}">
       ${visual}
       <div class="rune-info">
         <span class="num">#${n}</span>
-        <span class="name">${esc(r.符文名稱)}${r.英文 ? ` <span class="en" style="display:inline">${esc(r.英文)}</span>` : ""}</span>
-        ${keywordPanel}
-        <span class="meta">${isDe ? '<span class="pill">誌銘</span>' : `<span class="pill">卡片月相：${esc(r.月相)}</span>`}</span>
+        <div style="display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;color:var(--gold);margin-top:2px">
+          <strong style="font-size:1.16rem;line-height:1.25">${esc(r.符文名稱)}</strong>
+          ${r.英文 ? `<span style="font-size:.76rem;font-weight:700;line-height:1.25;color:var(--gold);opacity:.88">${esc(r.英文)}</span>` : ""}
+        </div>
+        ${infoPanel}
       </div>
     </article>`;
   }
