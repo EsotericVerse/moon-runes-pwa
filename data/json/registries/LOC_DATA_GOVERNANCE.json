@@ -114,7 +114,8 @@
       "contextual comparison",
       "self-governance decision",
       "new language/event"
-    ]
+    ],
+    "authority_domain": "evolution"
   },
   "loc4_loc6_boundary": {
     "registry": "data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json",
