@@ -1,4 +1,4 @@
-/* LunaRunes66 runtime dataset. Legacy source renamed from runes64.js; draw-range rules are handled separately. */
+/* LunaRunes66 runtime dataset. Draw-range rules are handled separately. */
 export const rune = [null,
   {
     "編號": 1,
