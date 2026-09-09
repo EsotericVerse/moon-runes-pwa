@@ -176,6 +176,19 @@
         "loc_components": "LOC1–8 may be described as functional modules / 功能模組",
         "framework_usage": "framework / 框架 is reserved for underlying architecture or historical terminology; it is not the current classification of LOC itself",
         "lunarunes": "LunaRunes is the first Symbolic Language Model reference implementation of LOC"
+      },
+      "primary_positioning": {
+        "status": "frozen",
+        "effective_date": "2026-09-10",
+        "english": [
+          "LOC is a reusable language system model. LunaRunes demonstrates that the model can be implemented as a working symbolic language model.",
+          "LOC is fully open source. Commercial value comes from consulting, system architecture, governance design, and case-specific implementation."
+        ],
+        "zh_hant": [
+          "LOC 是一套可重複使用的語言系統模型。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言模型。",
+          "LOC 完全開源。它的商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。"
+        ],
+        "governance_rule": "This is the primary public and KM positioning. Later documentation may elaborate on it but must not replace or contradict it without an explicit governance revision."
       }
     }
   ],
