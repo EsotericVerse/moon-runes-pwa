@@ -6,6 +6,8 @@ LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋�
 
 LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Model reference implementation：以 66 枚中文單字為核心語彙，實作脈絡、Graph、Grammar、治理、搜尋與演化。月之符文用來證明 LOC 可被實作，但不是使用 LOC 的門檻。
 
+**術語治理：LOC 整體固定稱為 Language System Model／語言系統模型；LOC1–8 可稱功能模組（functional modules）；framework／框架只用於描述底層 architecture 或歷史稱呼，不再作為 LOC 現行主分類。**
+
 > 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
 
 - **現行 Canon：1.0（正式版）**
