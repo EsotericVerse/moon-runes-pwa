@@ -129,7 +129,7 @@
           "role": "推演"
         }
       },
-      "canonical_loc_rule": "LOC1–8 的名稱與定位以 canonical_loc_map 為唯一現行權威。其他 README、FAQ、UI、Search、KM 與 Registry 只能引用或投影，不得自行重新定義。 Canon 1.0 起，LOC 固定只有 LOC1–LOC8，不存在 LOC9；固定名稱、中文對應、功能定位與 LunaRunes 映射不得由下游資料反向改寫。",
+      "canonical_loc_rule": "LOC1–8 are a homepage guide map only. They may explain the model visually, but they are not canonical backend IDs or engineering ownership keys.",
       "lunarunes_loc_mapping": {
         "LOC1": "月之符文",
         "LOC2": "符文脈絡",
@@ -148,7 +148,7 @@
         "符文演化"
       ],
       "fixed_constants": {
-        "loc_range": "LOC1–LOC8 only; LOC9 does not exist",
+        "loc_range": "Homepage guide only: LOC1–LOC8",
         "lunarunes_count": 66,
         "context_zh": "脈絡",
         "context_typo_forbidden": "脈落",
@@ -157,11 +157,24 @@
       },
       "model_type": "language_model",
       "model_name": "LOC Language Model",
-      "model_definition": "LOC／月典是一套可模組化、可治理、可推演的 Language Model（LM）。LunaRunes66 是其最成熟的 Reference Seed System 與實作證明；原有 framework 保留為 LM 的底層 architecture，LOC1–8 的責任分工不變。"
+      "model_definition": "LOC／月典是一套可模組化、可治理、可推演的 Language Model（LM）。LunaRunes66 是其最成熟的 Reference Seed System 與實作證明；原有 framework 保留為 LM 的底層 architecture，LOC1–8 的責任分工不變。",
+      "public_concept_map_usage": "homepage_only",
+      "public_concept_map_note": "LOC1–8 are retained only for homepage explanation and visual navigation. Backend schemas, APIs, registries, KM, FAQ and engineering variables must use semantic domain names instead.",
+      "backend_domains": {
+        "runes": "LunaRunes／月之符文",
+        "context": "Context／脈絡",
+        "music": "Music／音樂",
+        "literary": "Literary／文字創作",
+        "media": "MultiMedia／多媒體",
+        "governance": "Governance／治理",
+        "knowledge": "Knowledge／Algorithm／KM",
+        "evolution": "Evolution／推演",
+        "global": "System-wide"
+      }
     }
   ],
   "authority_scope": "global_language_model",
-  "canonical_priority": "highest_for_LOC1_8_names_and_roles",
+  "canonical_priority": "homepage_guide_only_for_LOC1_8; backend_uses_semantic_domains",
   "updated_at": "2026-09-09",
   "canon_version": "1.0",
   "canon_status": "formal"
