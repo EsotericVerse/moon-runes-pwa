@@ -80,20 +80,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     const visual = isDe
       ? `<button class="rune-image-button" type="button" data-rune="0" aria-label="查看 德 第零符資料"><div class="rune-thumb rune-thumb-de" aria-hidden="true">德</div></button>`
       : `<button class="rune-image-button" type="button" data-rune="${r.編號}" aria-label="查看 ${esc(r.符文名稱)} 符文資料"><img class="rune-thumb" src="64images/${encodeURIComponent(r.圖檔名稱)}" alt="${esc(r.符文名稱)}符文卡面縮圖" loading="lazy" decoding="async" /></button>`;
-    const keywordBlock = r.關鍵詞
-      ? `<span class="en" style="display:block"><strong style="display:block">關鍵詞</strong><span style="display:block">${esc(r.關鍵詞)}</span></span>`
+
+    const keywordPanel = (r.關鍵詞 || r.反向關鍵字)
+      ? `<div style="margin-top:9px;padding:9px 10px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025);font-size:.74rem;line-height:1.5">
+          ${r.關鍵詞 ? `<strong style="display:block;color:var(--gold);font-size:.72rem">關鍵詞</strong><span style="display:block;color:var(--muted);margin-top:2px">${esc(r.關鍵詞)}</span>` : ""}
+          ${r.反向關鍵字 ? `<strong style="display:block;color:var(--gold);font-size:.72rem;margin-top:8px">反向關鍵詞</strong><span style="display:block;color:var(--muted);margin-top:2px">${esc(r.反向關鍵字)}</span>` : ""}
+        </div>`
       : "";
-    const reverseKeywordBlock = r.反向關鍵字
-      ? `<span class="en" style="display:block"><strong style="display:block">反向關鍵詞</strong><span style="display:block">${esc(r.反向關鍵字)}</span></span>`
-      : "";
+
     return `<article class="rune-tile${special}">
       ${visual}
       <div class="rune-info">
         <span class="num">#${n}</span>
         <span class="name">${esc(r.符文名稱)}${r.英文 ? ` <span class="en" style="display:inline">${esc(r.英文)}</span>` : ""}</span>
-        ${keywordBlock}
-        ${reverseKeywordBlock}
-        <span class="meta"><span class="pill">${esc(r.所屬分組)}</span>${isDe ? '<span class="pill">誌銘</span>' : `<span class="pill">${esc(r.月相)}</span>`}</span>
+        ${keywordPanel}
+        <span class="meta">${isDe ? '<span class="pill">誌銘</span>' : `<span class="pill">${esc(r.月相)}</span>`}</span>
       </div>
     </article>`;
   }
