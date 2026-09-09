@@ -2,7 +2,7 @@
 
 LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的語言模型（Language Model, LM）。
 
-原有 framework 並未消失，而是成為 LOC Language Model 的底層 architecture。LOC1–8 僅保留在首頁作導覽說明；文件與工程層使用語意 domain。
+原有 framework 並未消失，而是成為 LOC Language Model 的底層 architecture。首頁保留一組人類可讀的導覽編號；文件與工程層一律使用語意 domain。
 
 系統以 LunaRunes（月之符文）作為語彙種子，從語彙延伸到脈絡、文字創作、多媒體、治理、文字建築與時間推演。月之符文是重要的 Reference Seed System，但不是使用 LOC 的門檻。
 
@@ -46,7 +46,7 @@ LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋�
 | 多元搜尋 | [search.html](https://loc.lo3rwang.cc/search.html) | Cross-format Search：文字、音樂、多媒體、符文、脈絡與知識 |
 | 推演 | [evolution.html](https://loc.lo3rwang.cc/evolution.html) | 時期、Timeline、Trend、Trajectory |
 | 治理 | [governance.html](https://loc.lo3rwang.cc/governance.html) | 政德風、治理原則與方法 |
-| LOC2 遊戲 | [loc2-game.html](https://loc.lo3rwang.cc/loc2-game.html) | Semantic Playground |
+| Context Sandbox | [loc2-game.html](https://loc.lo3rwang.cc/loc2-game.html) | Semantic Playground |
 | 作者 | [lo3rwang.html](https://loc.lo3rwang.cc/lo3rwang.html) | Lucas Oscar Wang 政德 |
 
 新手導覽：
@@ -224,7 +224,7 @@ Facebook、PTT、Pixnet、Threads、Suno、小說與其他作品都視為不同 
 | 在你之前在你之後 | 2016-06-23 | 在你之前，在你之後 |
 | 浮木 | 2021-03-12 | 錯的人 |
 
-其中〈老鼠〉是第一篇正式發表小說。這些作品屬於 LOC4 早期一般文字創作，**不是符文文學**。後期版本是在既有故事脈絡上進行潤稿、擴寫、改名與正式發行。
+其中〈老鼠〉是第一篇正式發表小說。這些作品屬於早期一般文字創作 corpus，**不是符文文學**。後期版本是在既有故事脈絡上進行潤稿、擴寫、改名與正式發行。
 
 ---
 
@@ -245,7 +245,7 @@ Facebook、PTT、Pixnet、Threads、Suno、小說與其他作品都視為不同 
 
 技術面由 `card_api/` 提供作用中的 FastAPI 與搜尋 API；資料集中於 `data/json/`，實驗性向量／語意程式保留在 `engine/`。
 
-Graph RAG 的關係資料所有權仍歸 Context；LOC7 負責檢索、文字建築與演算法。
+Graph RAG 的關係資料所有權仍歸 Context；Knowledge domain 負責檢索、文字建築與演算法。
 
 ---
 
@@ -266,7 +266,7 @@ Corpus 是分析證據，不等於 Canon；Canon、原始作品、Registry、搜
 
 ## Governance / 政德風
 
-LOC6 是方法論；治理是其中一種代表方法，政德風則是重要的個人方法／治理案例。
+Governance／治理直接作為語意 domain 使用；政德風是重要的個人治理案例。
 
 目前政德風進入：
 
