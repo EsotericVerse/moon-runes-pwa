@@ -137,7 +137,7 @@
         "LOC",
         "月典",
         "語言系統",
-        "語言框架",
+        "語言系統模型",
         "LOC1",
         "LOC2",
         "LOC3",
@@ -668,7 +668,7 @@
     },
     {
       "asset_id": "KA-IMG-LOC-FRAMEWORK-001",
-      "title": "LOC／月典框架總覽圖",
+      "title": "LOC／月典模型總覽圖",
       "path": "pics/loc_framework_map.jpg",
       "source_type": "image",
       "content_type": "knowledge_image",
@@ -682,7 +682,7 @@
         "LOC6",
         "LOC8"
       ],
-      "role": "loc_framework_overview_visual",
+      "role": "loc_model_overview_visual",
       "status": "current",
       "authority_level": "derived_overview",
       "searchable": true,
