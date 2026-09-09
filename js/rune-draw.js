@@ -1,14 +1,10 @@
 import { rune } from "./runes66.js";
 
-let direction = {};
+let direction = rune;
 let allData = [];
 
 async function ensureLocalData(mode) {
   if (mode === "5card") return;
-  if (!Object.keys(direction).length) {
-    const mod = await import("./direction64.js");
-    direction = mod.direction || {};
-  }
   if ((mode === "single" || mode === "daily") && !allData.length) {
     const mod = await import("./rune_all_data_all.js");
     allData = mod.allData || [];
