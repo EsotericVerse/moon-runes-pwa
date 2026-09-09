@@ -9,7 +9,7 @@
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
     "description": "LOC 現行 FAQ。LunaRunes、治理、脈絡、作品、知識與推演等概念以語意名稱檢索；LOC1–8 僅保留於首頁導覽，不作 FAQ 底層分類。",
-    "entry_count": 89,
+    "entry_count": 90,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
       "reference_rune": "0：德（De）",
@@ -52,7 +52,7 @@
       "analysis_types": "data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json",
       "loc7_analysis": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json"
     },
-    "updated_at": "2026-09-09",
+    "updated_at": "2026-09-10",
     "fixed_rules": {
       "context_spelling": "脈絡",
       "lunarunes_count": 66
@@ -2272,6 +2272,37 @@
         "index.html",
         "README.md",
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
+      ],
+      "canon_version": "1.0",
+      "status": "confirmed"
+    },
+    {
+      "id": "FAQ-092",
+      "category": "LOC 基本定位",
+      "intent": "LOC 的主要定位與商業模式",
+      "question": "LOC 的主要定位與商業模式是什麼？",
+      "aliases": [
+        "LOC最主要的定位是什麼？",
+        "LunaRunes和LOC的關係是什麼？",
+        "LOC怎麼商業化？",
+        "LOC開源後靠什麼收費？"
+      ],
+      "answer": "LOC 是一套可重複使用的語言系統模型。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言模型。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。",
+      "keywords": [
+        "LOC",
+        "Language System Model",
+        "語言系統模型",
+        "LunaRunes",
+        "Symbolic Language Model",
+        "開源",
+        "顧問服務",
+        "系統架構",
+        "治理設計",
+        "客製化實作"
+      ],
+      "source_refs": [
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+        "creator-confirmed:2026-09-10-conversation"
       ],
       "canon_version": "1.0",
       "status": "confirmed"
