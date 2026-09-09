@@ -20,7 +20,7 @@ FORBIDDEN_PATHS = [
 ]
 
 REQUIRED_PATHS = [
-    ROOT / "data" / "json" / "core" / "runes64.json",
+    ROOT / "data" / "json" / "core" / "runes66.json",
     ROOT / "data" / "json" / "core" / "rune_interpretations.json",
     ROOT / "data" / "json" / "core" / "three_card_combinations.json",
     ROOT / "data" / "json" / "core" / "lots.json",

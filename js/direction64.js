@@ -1,11 +1,8 @@
-/* LunaRunes direction runtime.
- * Direction text is loaded from the canonical rich rune JSON so Direction
- * changes are not duplicated manually in JS.
- */
+/* LunaRunes direction runtime loaded from the unified LunaRunes66 JSON. */
 
-const response = await fetch(new URL('../data/json/core/runes64.json', import.meta.url));
+const response = await fetch(new URL('../data/json/core/runes66.json', import.meta.url));
 if (!response.ok) {
-  throw new Error(`Failed to load runes64.json: HTTP ${response.status}`);
+  throw new Error(`Failed to load runes66.json: HTTP ${response.status}`);
 }
 
 const payload = await response.json();
