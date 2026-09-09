@@ -1,3 +1,5 @@
+import { mountQuickSelector } from './quick-selector.js';
+
 document.addEventListener("DOMContentLoaded", async () => {
   const grid = document.querySelector("#rune-grid");
   const count = document.querySelector("#rune-count");
@@ -85,13 +87,37 @@ document.addEventListener("DOMContentLoaded", async () => {
   function groupBox(meta){
     const ids = new Set((meta.runes || []).map(member => Number(member.id)).filter(id => id >= 1 && id <= 64));
     const items = all.filter(r => ids.has(r.編號)).sort((a,b) => a.編號 - b.編號);
-    return `<section class="rune-group" aria-label="${esc(meta.group_zh)} ${esc(meta.group_en)}"><div class="group-head"><div class="group-title"><strong>${esc(meta.group_zh)} ${esc(meta.group_en)}</strong><span class="group-note">${esc(meta.description)}</span></div><span class="group-count">${items.length} 枚符文</span></div><div class="group-row">${items.map(tile).join("")}</div></section>`;
+    return `<section class="rune-group" id="rune-group-${esc(meta.id || meta.group_en || meta.group_zh)}" aria-label="${esc(meta.group_zh)} ${esc(meta.group_en)}"><div class="group-head"><div class="group-title"><strong>${esc(meta.group_zh)} ${esc(meta.group_en)}</strong><span class="group-note">${esc(meta.description)}</span></div><span class="group-count">${items.length} 枚符文</span></div><div class="group-row">${items.map(tile).join("")}</div></section>`;
   }
 
   const coreGroups = groups.filter(meta => (meta.runes || []).some(member => Number(member.id) >= 1 && Number(member.id) <= 64));
   const specialRunes = all.filter(r => r.編號 === 65 || r.編號 === 66).sort((a,b) => a.編號 - b.編號);
 
-  if (grid) grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">點選符文圖片可查看進階文字說明。</p>${coreGroups.map(groupBox).join("")}${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之後額外列出。</span></div></div><div class="group-row">${specialRunes.map(tile).join("")}</div></section>` : ""}`;
+  if (grid) {
+    const quickHost = document.createElement('div');
+    quickHost.id = 'rune-group-quick-selector';
+    grid.before(quickHost);
+
+    mountQuickSelector({
+      target: quickHost,
+      items: coreGroups.map(meta => {
+        const members = (meta.runes || []).filter(member => Number(member.id) >= 1 && Number(member.id) <= 64);
+        const memberText = members.map(member => `${member.zh} ${member.en}`).join('、');
+        return {
+          id: meta.id || meta.group_en || meta.group_zh,
+          label: meta.group_zh,
+          kicker: `${meta.group_zh} · ${meta.group_en}`,
+          title: meta.trait || meta.group_zh,
+          description: meta.description,
+          extra: [meta.style_module, memberText],
+          href: `search.html?q=${encodeURIComponent(`${meta.group_zh}群組 方法論`)}`,
+          linkLabel: `搜尋${meta.group_zh}群組方法論`
+        };
+      })
+    });
+
+    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">點選符文圖片可查看進階文字說明。</p>${coreGroups.map(groupBox).join("")}${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之後額外列出。</span></div></div><div class="group-row">${specialRunes.map(tile).join("")}</div></section>` : ""}`;
+  }
   if (count) count.textContent = "8 組 · 64 枚基本符文 + 2 枚特殊符文";
 
   const fields = [["英文","英文"],["關鍵詞","關鍵詞"],["反向關鍵詞","反向關鍵字"],["圖騰","圖騰"],["顯化形式","顯化形式"],["所屬分組","所屬分組"],["月相","月相"],["月相輔助說明","月相輔助說明"],["靈魂咒語","靈魂咒語"],["靈魂課題","靈魂課題"],["實踐挑戰","實踐挑戰"],["分組說明","分組說明"],["符文變化歷史","符文變化歷史"],["神話故事","神話故事"],["配套儀式建議","配套儀式建議"],["能量調和建議","能量調和建議"]];
