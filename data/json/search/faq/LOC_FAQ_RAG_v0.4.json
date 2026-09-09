@@ -11,7 +11,7 @@
     "description": "由現行 LOC FAQ 同步產生的 retrieval derivative；使用語意 domain，不以 LOC1–8 作底層分類。",
     "source_dataset": "LOC_FAQ_v0.4.json",
     "parent_entry_count": 90,
-    "chunk_count": 89,
+    "chunk_count": 90,
     "chunk_policy": "每個 FAQ 條目對應一個完整 Semantic Chunk；需要更細粒度時由檢索層處理，不另要求 Markdown 知識文件。",
     "system_id": "lo3rwang",
     "shared_registries": {
@@ -20,7 +20,7 @@
       "analysis_types": "data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json",
       "loc7_analysis": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json"
     },
-    "updated_at": "2026-09-09",
+    "updated_at": "2026-09-10",
     "domain": "knowledge",
     "related_domains": [
       "governance",
@@ -2593,6 +2593,40 @@
       "status": "confirmed",
       "parent_id": "FAQ-091",
       "retrieval_text": "為什麼 LOC 稱為 Language System Model，而不是只稱為 framework？ LOC為什麼不只是一個framework？ LOC是LM還是framework？ LOC的LM和一般LLM有什麼不同？ Language System Model LM modular framework architecture 語言系統模型 模組化 LOC 的正式定位是 Language System Model（LM）。framework 仍存在，但負責描述底層 architecture；LOC 之所以提升為 model，是因為它不只定義靜態結構，還把 corpus、Context、Graph、Grammar、Governance、Algorithm 與 Evolution 組成可重複處理與推演的語言系統。這裡的 LM 指 Language System Model，不等同於以機率式 next-token prediction 為核心的 LLM。LunaRunes 則是 LOC 的第一個 Symbolic Language Model reference implementation。"
+    },
+    {
+      "id": "FAQ-092-A",
+      "parent_id": "FAQ-092",
+      "category": "LOC 基本定位",
+      "intent": "LOC 的主要定位與商業模式",
+      "question": "LOC 的主要定位與商業模式是什麼？",
+      "aliases": [
+        "LOC最主要的定位是什麼？",
+        "LunaRunes和LOC的關係是什麼？",
+        "LOC怎麼商業化？",
+        "LOC開源後靠什麼收費？"
+      ],
+      "answer": "LOC 是一套可重複使用的語言系統模型。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言模型。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。",
+      "keywords": [
+        "LOC",
+        "Language System Model",
+        "語言系統模型",
+        "LunaRunes",
+        "Symbolic Language Model",
+        "開源",
+        "顧問服務",
+        "系統架構",
+        "治理設計",
+        "客製化實作"
+      ],
+      "retrieval_text": "LOC 的主要定位與商業模式是什麼？ LOC最主要的定位是什麼？ LunaRunes和LOC的關係是什麼？ LOC怎麼商業化？ LOC開源後靠什麼收費？ LOC Language System Model 語言系統模型 LunaRunes Symbolic Language Model 開源 顧問服務 系統架構 治理設計 客製化實作 LOC 是一套可重複使用的語言系統模型。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言模型。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。",
+      "related_ids": [],
+      "source_refs": [
+        "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+        "creator-confirmed:2026-09-10-conversation"
+      ],
+      "canon_version": "1.0",
+      "status": "confirmed"
     }
   ]
 }
