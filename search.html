@@ -1050,10 +1050,10 @@
             <div class="source-search-head"><strong>ERA 時期</strong><small>搜尋總表依現行時期分組；點選上方「時期」可篩選結果</small></div>
             ${eraHtml}
           </section>
-          <section class="source-era-overview">
-            <div class="source-search-head"><strong>搜尋資料總表</strong><small>時間以「前 → 後」單欄顯示；Suno／LOC3 列於最下方</small></div>
+          <details>
+            <summary>搜尋資料總表</summary>
             ${sourceRows(sourceTableRows)}
-          </section>`;
+          </details>`;
       }catch(_){el('sourceStatsBody').innerHTML='<div class="empty">搜尋資料統計暫時無法載入。</div>'}
     }
         async function facets(){
