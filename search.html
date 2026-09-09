@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#081522" />
-  <meta name="description" content="多元搜尋｜跨文字、音樂、多媒體、符文、脈絡與知識搜尋。" />
+  <meta name="description" content="多元搜尋｜跨文字創作、多元體系、歷史文字、符文、占卜、脈絡與知識搜尋。" />
   <title>多元搜尋｜LOC 月典</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="favicon.ico" />
@@ -108,7 +108,7 @@
     <nav class="workspace-nav" aria-label="搜尋功能">
       <div class="workspace-nav-group">
         <div class="workspace-nav-label">01 · 搜尋</div>
-        <button class="workspace-switch active" type="button" data-search-view="query"><strong>多元搜尋</strong><small>跨文字、音樂、多媒體、符文、脈絡與知識</small></button>
+        <button class="workspace-switch active" type="button" data-search-view="query"><strong>多元搜尋</strong><small>跨文字創作、多元體系、符文、占卜與知識</small></button>
       </div>
       <div class="workspace-nav-group">
         <div class="workspace-nav-label">02 · 時期</div>
@@ -123,15 +123,15 @@
         <button class="workspace-switch" type="button" data-search-view="sources"><strong>資料來源</strong><small>檢查平台資料時間與更新狀態</small></button>
       </div>
     </nav>
-    <div class="workspace-foot">多元搜尋、時期設定、排行榜、資料來源各自分工；資料來源以最早／最新資料日期作為更新判斷基準。</div>
+    <div class="workspace-foot">多元搜尋、時期設定、排行榜、資料來源各自分工；線上平台與離線史料統一以實際匯入日期與可搜尋狀態管理。</div>
   </aside>
   <main class="page workspace-main">
     <div class="search-view" id="queryView">
     <header class="hero loc-header">
       <p class="loc-header-meta">Cross-format Search</p>
       <h1 class="loc-header-title">多元搜尋</h1>
-      <h2 class="loc-header-subtitle">跨文字、音樂、多媒體、符文、脈絡與知識搜尋。</h2>
-      <p class="loc-header-copy">輸入一個詞、一句話或一個情境，從文字、音樂、圖片、影音、符文與文件中找出相關內容。</p>
+      <h2 class="loc-header-subtitle">文字創作、多元體系、跨格式搜尋。</h2>
+      <p class="loc-header-copy">輸入一個詞、一句話或一個情境，從公開文字史料、作品、歌曲、多媒體、月之符文、占卜紀錄、脈絡與知識庫中找出相關內容。</p>
     </header>
     <section class="search-panel">
       <form id="searchForm">
@@ -193,18 +193,18 @@
             <span>點一下只會填入搜尋框，再按「搜尋」</span>
           </div>
           <div class="suggestion-grid" id="quick">
-            <button type="button" class="suggestion-card" data-q="已讀不回"><strong>已讀不回</strong><small>歌曲 · 關係 · 文章</small></button>
-            <button type="button" class="suggestion-card" data-q="人生月台"><strong>人生月台</strong><small>作品 · 時期 · 狀態</small></button>
             <button type="button" class="suggestion-card" data-q="自我治理"><strong>自我治理</strong><small>治理 · 政德風 · 時期</small></button>
-            <button type="button" class="suggestion-card" data-q="界線"><strong>界線</strong><small>作品 · 治理 · 多媒體</small></button>
-            <button type="button" class="suggestion-card" data-q="月之符文"><strong>月之符文</strong><small>符文 · 知識 · 系統</small></button>
-            <button type="button" class="suggestion-card" data-q="自由的風"><strong>自由的風</strong><small>歌曲 · 時期 · 狀態</small></button>
+            <button type="button" class="suggestion-card" data-q="月之符文"><strong>月之符文</strong><small>母資料 · 符文 · 系統</small></button>
+            <button type="button" class="suggestion-card" data-q="符文歌曲"><strong>符文歌曲</strong><small>符文 · 歌曲 · 關聯</small></button>
+            <button type="button" class="suggestion-card" data-q="符文文學"><strong>符文文學</strong><small>符文 · 文字創作</small></button>
+            <button type="button" class="suggestion-card" data-q="占卜結果"><strong>占卜結果</strong><small>占卜紀錄 · 判讀</small></button>
+            <button type="button" class="suggestion-card" data-q="自由"><strong>自由</strong><small>2005–2026 · 長期文字史料</small></button>
           </div>
         </div>
       </form>
     </section>
     <section class="source-stats" id="sourceStats" aria-labelledby="sourceStatsTitle">
-      <div class="source-stats-head"><div><h2 id="sourceStatsTitle">搜尋資料總覽</h2><p>資料來源、文字紀錄數與時間範圍</p></div><p id="sourceStatsUpdated">載入中…</p></div>
+      <div class="source-stats-head"><div><h2 id="sourceStatsTitle">搜尋資料現況</h2><p>公開文字史料、作品、資料來源與時間跨度</p></div><p id="sourceStatsUpdated">載入中…</p></div>
       <div id="sourceStatsBody"><div class="empty">載入搜尋資料統計中…</div></div>
     </section>
     <div class="status" id="status" aria-live="polite"></div>
@@ -256,8 +256,8 @@
       <header class="hero loc-header">
         <p class="loc-header-meta">Source Status</p>
         <h1 class="loc-header-title">資料來源</h1>
-        <h2 class="loc-header-subtitle">查看每個平台目前匯入到哪一天。</h2>
-        <p class="loc-header-copy">資料時間採實際已匯入內容的最早與最新日期。之後更新來源時，以最新資料日期是否往後推進作為第一個檢查點。</p>
+        <h2 class="loc-header-subtitle">查看線上平台與離線史料目前匯入到哪一天。</h2>
+        <p class="loc-header-copy">資料時間採實際已匯入內容的最早與最新日期；KKCity、無名小站等已關站來源以離線史料保存並納入搜尋。後續更新仍以最新資料日期與可搜尋狀態作為主要檢查點。</p>
       </header>
       <section class="ranking-panel">
         <div class="ranking-head"><div><h2>來源更新狀態</h2><p>平台｜最早資料｜最新資料｜總字數｜總文章／歌曲／圖片／多媒體數</p></div><button type="button" class="submit" id="addSourceRecord">新增來源</button></div>
@@ -553,7 +553,7 @@
   </script>
 <script src="js/facebook-repo-corpus.js"></script>
   <script>
-    const SEARCH_BUILD='20260908-threads-v3-plain-json';
+    const SEARCH_BUILD='20260909-search-home-historical-corpus-v1';
     const API='https://moon-runes-pwa.onrender.com';
     const SOURCE_SEARCH_PROVIDERS=[
       {id:'threads',label:'Threads',url:q=>`https://www.threads.com/search?q=${encodeURIComponent(q)}`},
@@ -575,12 +575,12 @@
     }
     const promptSets={
       default:[
-        {q:'已讀不回',title:'已讀不回',desc:'歌曲 · 關係 · 文章'},
-        {q:'人生月台',title:'人生月台',desc:'作品 · 時期 · 狀態'},
         {q:'自我治理',title:'自我治理',desc:'治理 · 政德風 · 時期'},
-        {q:'界線',title:'界線',desc:'作品 · 治理 · 多媒體'},
-        {q:'月之符文',title:'月之符文',desc:'符文 · 知識 · 系統'},
-        {q:'自由的風',title:'自由的風',desc:'歌曲 · 時期 · 狀態'}
+        {q:'月之符文',title:'月之符文',desc:'母資料 · 符文 · 系統'},
+        {q:'符文歌曲',title:'符文歌曲',desc:'符文 · 歌曲 · 關聯'},
+        {q:'符文文學',title:'符文文學',desc:'符文 · 文字創作'},
+        {q:'占卜結果',title:'占卜結果',desc:'占卜紀錄 · 判讀'},
+        {q:'自由',title:'自由',desc:'2005–2026 · 長期文字史料'}
       ],
       lyrics_work:[
         {q:'已讀不回',title:'已讀不回',desc:'自創歌曲(Suno) · 歌曲／歌詞'},
