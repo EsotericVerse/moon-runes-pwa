@@ -22,14 +22,14 @@ async function loadLots() {
     const items = Array.isArray(payload?.items) ? payload.items : [];
     lotsMap = new Map(items.map(item => [Number(item.編號), item]));
   } catch (error) {
-    console.warn("LOC1 Lots JSON unavailable; hiding Lots summary.", error);
+    console.warn("LunaRunes Lots JSON unavailable; hiding Lots summary.", error);
     lotsMap = new Map();
   }
 }
 
 async function loadRuneHints() {
   try {
-    const response = await fetch("data/json/core/runes64.json");
+    const response = await fetch("data/json/core/runes66.json");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
