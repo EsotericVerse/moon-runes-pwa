@@ -41,7 +41,12 @@
         "inferred",
         "unknown"
       ],
-      "lifecycle": "shared lifecycle object"
+      "lifecycle": "shared lifecycle object",
+      "domain": "knowledge",
+      "related_domains": [
+        "governance",
+        "evolution"
+      ]
     }
   },
   "analyses": [],
@@ -51,5 +56,6 @@
     "governance.html"
   ],
   "boundary_note": "LOC7 analyzes how language is structured and engineered, including KM/retrieval architecture. Meaning/value/governance interpretation belongs primarily to LOC6; event/time ownership belongs primarily to LOC8.",
-  "updated_at": "2026-09-08"
+  "updated_at": "2026-09-09",
+  "authority_domain": "knowledge"
 }
