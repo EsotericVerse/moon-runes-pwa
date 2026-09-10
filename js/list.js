@@ -5,12 +5,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const count = document.querySelector("#rune-count");
   const toolbar = document.querySelector("#group-filter")?.closest(".toolbar");
   const overviewLink = document.querySelector('.overview-image-link');
-  const modal = document.querySelector("#rune-modal");
-  const closeBtn = document.querySelector("#modal-close");
-  const modalTitle = document.querySelector("#modal-title");
-  const modalImage = document.querySelector("#modal-image");
-  const modalSummary = document.querySelector("#modal-summary");
-  const modalData = document.querySelector("#modal-data");
 
   toolbar?.remove();
 
@@ -74,14 +68,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       符文名稱: name,
       英文: row.英文 ?? row.english ?? member?.en ?? "",
       所屬分組: meta?.group_zh ?? row.所屬分組 ?? row.group ?? "",
-      分組說明: meta?.description ?? row.分組說明 ?? "",
       月相: row.月相 ?? row.moon_phase ?? "",
       顯化形式: row.顯化形式 ?? row.keyword ?? "",
       關鍵詞: row.關鍵詞 ?? row.keyword ?? "",
       反向關鍵字: row.反向關鍵字 ?? row.反向關鍵詞 ?? row.reverse_keyword ?? "",
-      Spec: row.Spec ?? row.spec ?? "",
       符文變化歷史: row.history?.符文變化歷史 ?? row.符文變化歷史 ?? "",
-      神話故事: row.history?.神話故事 ?? row.神話故事 ?? "",
       圖檔名稱: row.image ?? row.圖檔名稱 ?? (id > 0 && name ? `${String(id).padStart(2,"0")}_${name}.png` : null),
       drawable: row.drawable ?? (id >= 1 && id <= 66),
       group_meta: meta
@@ -97,21 +88,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function tile(r){
     const n = String(r.編號).padStart(2,"0");
-    const visual = `<button class="rune-image-button" type="button" data-rune="${r.編號}" aria-label="查看 ${esc(r.符文名稱)} 符文進階文字說明"><img class="rune-thumb" src="64images/${encodeURIComponent(r.圖檔名稱)}" alt="${esc(r.符文名稱)}符文卡面縮圖" loading="lazy" decoding="async" /></button>`;
-    const infoPanel = `<div style="display:grid;gap:7px;margin-top:9px">${infoBox("卡片月相", r.月相)}${infoBox("關鍵詞", r.關鍵詞)}${infoBox("反向關鍵詞", r.反向關鍵字)}</div>`;
+    const visual = `<img class="rune-thumb" src="64images/${encodeURIComponent(r.圖檔名稱)}" alt="${esc(r.符文名稱)}符文卡面縮圖" loading="lazy" decoding="async" />`;
+    const infoPanel = `<div style="display:grid;gap:7px;margin-top:9px">${infoBox("卡片月相", r.月相)}${infoBox("關鍵詞", r.關鍵詞)}${infoBox("反向關鍵詞", r.反向關鍵字)}${infoBox("符文變化歷史", r.符文變化歷史)}</div>`;
     return `<article class="rune-tile">${visual}<div class="rune-info"><span class="num">#${n}</span><div style="display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;color:var(--gold);margin-top:2px"><strong style="font-size:1.16rem;line-height:1.25">${esc(r.符文名稱)}</strong>${r.英文 ? `<span style="font-size:.76rem;font-weight:700;line-height:1.25;color:var(--gold);opacity:.88">${esc(r.英文)}</span>` : ""}</div>${infoPanel}</div></article>`;
   }
 
   const coreGroups = groups.filter(meta => (meta.runes || []).some(member => Number(member.id) >= 1 && Number(member.id) <= 64));
   const specialRunes = all.filter(r => r.編號 === 65 || r.編號 === 66).sort((a,b) => a.編號 - b.編號);
-  let groupQuickView = null;
 
   if (overviewLink && coreGroups.length) {
     const quickHost = document.createElement('div');
     quickHost.id = 'rune-group-quick-selector';
     overviewLink.after(quickHost);
 
-    groupQuickView = mountQuickSelector({
+    mountQuickSelector({
       target: quickHost,
       imageTarget: overviewLink,
       display: 'modal',
@@ -139,38 +129,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (grid) {
-    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">點選總覽圖上的八個群組按鈕，會開啟浮動快速說明；在視窗中可查看該組 8 枚符文，點選符文圖片可再查看單一符文說明。</p>${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之外額外列出。</span></div></div><div class="group-row">${specialRunes.map(tile).join("")}</div></section>` : ""}`;
+    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">點選總覽圖上的八個群組按鈕，會開啟浮動快速說明；每枚符文的卡面、月相、關鍵詞、反向關鍵詞與變化歷史都直接顯示在同一層。</p>${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之外額外列出。</span></div></div><div class="group-row">${specialRunes.map(tile).join("")}</div></section>` : ""}`;
   }
   if (count) count.textContent = "8 組 · 64 枚基本符文 + 2 枚特殊符文";
-
-  const fields = [["英文","英文"],["關鍵詞","關鍵詞"],["反向關鍵詞","反向關鍵字"],["圖騰","圖騰"],["顯化形式","顯化形式"],["所屬分組","所屬分組"],["月相","月相"],["月相輔助說明","月相輔助說明"],["靈魂咒語","靈魂咒語"],["靈魂課題","靈魂課題"],["實踐挑戰","實踐挑戰"],["分組說明","分組說明"],["符文變化歷史","符文變化歷史"],["神話故事","神話故事"],["配套儀式建議","配套儀式建議"],["能量調和建議","能量調和建議"]];
-
-  function openRune(r){
-    if (!modal) return;
-    if (groupQuickView?.modal?.open) groupQuickView.modal.close();
-    modalTitle.textContent = `#${String(r.編號).padStart(2,"0")} · ${r.符文名稱}${r.英文 ? ` · ${r.英文}` : ""}`;
-    modalImage.hidden = false;
-    modalImage.src = "64images/" + encodeURIComponent(r.圖檔名稱);
-    modalImage.alt = `${r.符文名稱}符文卡面`;
-    modalSummary.innerHTML = [`<span class="pill">${esc(r.所屬分組)}</span>`,`<span class="pill">卡片月相：${esc(r.月相)}</span>`,`<span class="pill">${esc(r.顯化形式 || r.關鍵詞 || "")}</span>`].join("");
-    const runeName = String(r.符文名稱 || "").trim();
-    const searchUrl = `search.html?q=${encodeURIComponent(runeName + "之符文")}`;
-    const methodUrl = `search.html?content_type=rune_algorithm&q=${encodeURIComponent(`符合${runeName}之符文演算法的文字`)}`;
-    modalData.innerHTML = fields.filter(([,key]) => r[key] !== undefined && r[key] !== null && String(r[key]).trim() !== "").map(([label,key]) => `<div class="field"><dt>${esc(label)}</dt><dd>${esc(r[key])}</dd></div>`).join("") + `<div class="field"><dt>延伸查看</dt><dd><a href="${searchUrl}">尋找目前「${esc(runeName)}」之符文的資料</a><span aria-hidden="true"> · </span><a href="${methodUrl}">尋找符合「${esc(runeName)}」之符文演算法的文字</a></dd></div>`;
-    modal.showModal();
-  }
-
-  const runeClickHandler = event => {
-    const button = event.target.closest("[data-rune]");
-    if (!button) return;
-    const selected = all.find(r => r.編號 === Number(button.dataset.rune));
-    if (selected) openRune(selected);
-  };
-
-  groupQuickView?.modal?.addEventListener('click', runeClickHandler);
-  grid?.addEventListener("click", runeClickHandler);
-
-  closeBtn?.addEventListener("click", () => modal.close());
-  modal?.addEventListener("click", event => { if (event.target === modal) modal.close(); });
-  modal?.addEventListener("close", () => { modalImage.removeAttribute("src"); modalImage.alt = ""; modalImage.hidden = false; });
 });
