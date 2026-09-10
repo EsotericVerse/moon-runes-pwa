@@ -84,7 +84,15 @@
         "果",
         "命"
       ],
-      "group_statistics_status": "pending_actual_11_rune_draw"
+      "group_statistics_status": "pending_actual_11_rune_draw",
+      "rune_system": {
+        "category": "符文體系",
+        "content_type": "音樂",
+        "tag": "符文體系｜音樂",
+        "specific_system_status": "confirmed",
+        "basis": "confirmed_rune_song_provenance",
+        "group_status": "pending_actual_11_rune_draw"
+      }
     },
     {
       "work_id": "E0223",
@@ -134,7 +142,15 @@
         "緣",
         "果"
       ],
-      "group_statistics_status": "pending_actual_11_rune_draw"
+      "group_statistics_status": "pending_actual_11_rune_draw",
+      "rune_system": {
+        "category": "符文體系",
+        "content_type": "音樂",
+        "tag": "符文體系｜音樂",
+        "specific_system_status": "confirmed",
+        "basis": "confirmed_rune_song_provenance",
+        "group_status": "pending_actual_11_rune_draw"
+      }
     },
     {
       "work_id": "E0354",
@@ -182,7 +198,15 @@
         "果",
         "命"
       ],
-      "group_statistics_status": "pending_actual_11_rune_draw"
+      "group_statistics_status": "pending_actual_11_rune_draw",
+      "rune_system": {
+        "category": "符文體系",
+        "content_type": "音樂",
+        "tag": "符文體系｜音樂",
+        "specific_system_status": "confirmed",
+        "basis": "confirmed_rune_song_provenance",
+        "group_status": "pending_actual_11_rune_draw"
+      }
     },
     {
       "work_id": "E0364",
@@ -231,7 +255,15 @@
         "幻",
         "果"
       ],
-      "group_statistics_status": "pending_actual_11_rune_draw"
+      "group_statistics_status": "pending_actual_11_rune_draw",
+      "rune_system": {
+        "category": "符文體系",
+        "content_type": "音樂",
+        "tag": "符文體系｜音樂",
+        "specific_system_status": "confirmed",
+        "basis": "confirmed_rune_song_provenance",
+        "group_status": "pending_actual_11_rune_draw"
+      }
     }
   ],
   "candidate_records": [],
