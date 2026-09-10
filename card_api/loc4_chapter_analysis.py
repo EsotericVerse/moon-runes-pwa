@@ -50,60 +50,76 @@ _PART_NAMES = {
     7: "無限．迴夢之卷",
 }
 
-_TEXT_SEMANTIC_GROUP_MAP = {
-    "命運": "特殊組",
-    "責任": "特殊組",
-    "選擇／方向": "連結組",
-    "因果": "秩序組",
-    "夢境／幻象": "無序組",
-    "靈魂": "靈魂組",
-    "記憶": "靈魂組",
-    "彼岸／輪迴": "無序組",
-    "意志": "靈魂組",
-    "虛／空洞": "無序組",
-    "生命／死亡": "生命組",
-    "愛／關係": "生命組",
-    "誓言／連結": "連結組",
-    "守護／邊界": "連結組",
-    "真相／理解": "連結組",
-    "時間": "秩序組",
-    "自然／生長": "自然組",
-    "火／衝突": "元素組",
-    "水／冰": "元素組",
-    "光／暗": "元素組",
-}
-
 _TEXT_SEMANTIC_GROUP_ORDER = [
     "靈魂組", "連結組", "生命組", "自然組", "礦物組",
     "元素組", "秩序組", "無序組", "特殊組",
 ]
 
+_RUNE_GROUP_LABEL = {
+    "靈魂": "靈魂組", "連結": "連結組", "生命": "生命組",
+    "自然": "自然組", "礦物": "礦物組", "元素": "元素組",
+    "秩序": "秩序組", "無序": "無序組", "特殊": "特殊組",
+}
 
-def _text_semantic_groups(themes: list[dict[str, Any]]) -> dict[str, Any]:
-    counts = {group: 0 for group in _TEXT_SEMANTIC_GROUP_ORDER}
-    evidence: dict[str, list[dict[str, Any]]] = {group: [] for group in _TEXT_SEMANTIC_GROUP_ORDER}
-    for item in themes:
-        label = str(item.get("label") or "")
-        group = _TEXT_SEMANTIC_GROUP_MAP.get(label)
+
+def _rune_keyword_lexicon(repo_root: Path) -> list[dict[str, Any]]:
+    payload = _load_json(repo_root / "data/json/core/runes66.json")
+    rows = []
+    for rune in payload.get("runes", []):
+        number = int(rune.get("編號") if rune.get("編號") is not None else rune.get("id") or -1)
+        if number <= 0:
+            continue
+        group = _RUNE_GROUP_LABEL.get(str(rune.get("所屬分組") or rune.get("group") or ""))
         if not group:
             continue
-        count = int(item.get("count") or 0)
-        counts[group] += count
-        evidence[group].append({"concept": label, "count": count})
+        raw = str(rune.get("關鍵詞") or rune.get("keyword") or "")
+        keywords = [x.strip() for x in re.split(r"[・、，,；;／/\s]+", raw) if x.strip()]
+        rows.append({
+            "number": number,
+            "rune": str(rune.get("名稱") or rune.get("name") or ""),
+            "group": group,
+            "keywords": keywords,
+        })
+    return rows
+
+
+def _text_semantic_groups(body: str, lexicon: list[dict[str, Any]]) -> dict[str, Any]:
+    counts = {group: 0 for group in _TEXT_SEMANTIC_GROUP_ORDER}
+    evidence: dict[str, list[dict[str, Any]]] = {group: [] for group in _TEXT_SEMANTIC_GROUP_ORDER}
+    rune_scores = []
+    for rune in lexicon:
+        hits = {keyword: body.count(keyword) for keyword in rune["keywords"]}
+        hits = {keyword: count for keyword, count in hits.items() if count}
+        score = sum(hits.values())
+        if not score:
+            continue
+        group = rune["group"]
+        counts[group] += score
+        row = {
+            "number": rune["number"],
+            "rune": rune["rune"],
+            "score": score,
+            "hits": hits,
+        }
+        evidence[group].append(row)
+        rune_scores.append({**row, "group": group})
 
     maximum = max(counts.values(), default=0)
     highest = [group for group, count in counts.items() if count == maximum and count > 0]
+    for rows in evidence.values():
+        rows.sort(key=lambda row: (-row["score"], row["number"]))
+    rune_scores.sort(key=lambda row: (-row["score"], row["number"]))
     return {
-        "basis": "full_chapter_text_semantics",
-        "source": "deterministic_theme_evidence",
+        "basis": "full_chapter_body_semantics",
+        "source": "Base66_current_three_keyword_exact_match",
         "counts": counts,
         "highest_groups": highest,
         "maximum_count": maximum,
         "status": "disputed_tie" if len(highest) > 1 else ("single_max" if highest else "no_signal"),
         "evidence": {group: rows for group, rows in evidence.items() if rows},
-        "note": "只由完成後正文的語意概念映射九群組；不讀原始抽牌結果，不用 rune_configuration 反推正文語意。",
+        "top_runes": rune_scores[:12],
+        "note": "只分析完成後正文；不計章名、不使用單字符文名稱、不讀原始抽牌結果。語義詞庫直接取現行 runes66.json 三關鍵詞。",
     }
-
 
 def _load_json(path: Path) -> dict[str, Any]:
     if not path.exists():
@@ -251,6 +267,7 @@ def _load_rune_map(repo_root: Path) -> dict[tuple[int, int], dict[str, Any]]:
 def build_moon_speaker_chapter_analysis(repo_root: Path) -> dict[str, Any]:
     texts = _load_work_texts(repo_root)
     rune_map = _load_rune_map(repo_root)
+    rune_lexicon = _rune_keyword_lexicon(repo_root)
     chapters: list[dict[str, Any]] = []
     part_stats = []
 
@@ -276,7 +293,7 @@ def build_moon_speaker_chapter_analysis(repo_root: Path) -> dict[str, Any]:
             chapter = int(row["chapter"])
             themes = _themes(row["body"], row["title"])
             entities = _entities(row["body"])
-            text_semantic_groups = _text_semantic_groups(themes)
+            text_semantic_groups = _text_semantic_groups(row["body"], rune_lexicon)
             rune = rune_map.get((part, chapter))
             chapters.append({
                 "chapter_id": f"LOC4-MOON-SPEAKER-P{part}-C{chapter:02d}",
