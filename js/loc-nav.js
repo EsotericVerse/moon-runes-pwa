@@ -258,8 +258,8 @@
         aboutCopy.innerHTML = "月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用。<br>它採取不帶神秘學預設的中立態度，重在文字本身，不預設道德判斷。<br><br>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的語言模型框架；<br>而月之符文，也在這個過程中演變成了符號式語言模型。<br><br>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，<br>而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構模型。<br><br>人總是要進步。過去雖不可改變，仍可以從過去截取經驗，才能進一步面對未來的各種可能。<br><br>月典提供一套方便的解析模組，不強迫接受，但可以參考。<br><br>只希望每個人都能藉由這些，更有效率、更輕鬆地整理自己的數位資產與語言紀錄。";
       }
 
-      const page = document.querySelector('.loc-page');
-      if (page && aboutSection && aboutSection.parentElement === page) {
+      const page = document.querySelector('main.loc-page');
+      if (page && aboutSection) {
         page.appendChild(aboutSection);
       }
     }
