@@ -12,7 +12,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (metaDescription) {
     metaDescription.setAttribute(
       "content",
-      "LOC（月典）是一套可重複使用的語言系統模型（Language System Model），由 LOC1–LOC8 語言系統模組組成。月之符文（LunaRunes）以 66 個中文單字建立可實際運作的符號式語言模型（Symbolic Language Model）。"
+      "LOC（月典）是一套用來分析、整理、搜尋並推演語言的語言模型框架（Language Model Framework），由 LOC1–LOC8 語言系統模組組成。月之符文（LunaRunes）則演變為可實際運作的符號式語言模型（Symbolic Language Model）。"
     );
   }
 
@@ -23,7 +23,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const heroCopy = document.querySelector(".hero .loc-header-copy");
   if (heroCopy) {
-    heroCopy.textContent = "月典是一套用來分析、整理、搜尋並推演語言的語言系統模型。LOC1–LOC8 是組成模型的語言系統模組；月之符文則提供可實際運作的符號式語言模型實作。";
+    heroCopy.textContent = "月典是一套用來分析、整理、搜尋並推演語言的語言模型框架。LOC1–LOC8 是組成框架的語言系統模組；月之符文則是可實際運作的符號式語言模型。";
   }
 
   const heroNote = document.querySelector(".hero-note");
@@ -166,12 +166,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const frameworkCopy = document.querySelector("#framework-map .loc-header-copy");
   if (frameworkCopy) {
-    frameworkCopy.textContent = "LOC 是可重複使用的語言系統模型（Language System Model）。LOC1–LOC8 是組成模型的八個語言系統模組，分別為 LunaRunes、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution。";
+    frameworkCopy.textContent = "LOC 是一套語言模型框架（Language Model Framework）。LOC1–LOC8 是組成框架的八個語言系統模組，分別為 LunaRunes、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution。";
+  }
+
+  const aboutTitle = document.getElementById("about-title");
+  if (aboutTitle) {
+    aboutTitle.textContent = "治理過去的已知，是為了把時間還給現在的未知，才有更充裕的未來。";
   }
 
   const aboutCopy = document.querySelector('[aria-labelledby="about-title"] > p');
   if (aboutCopy) {
-    aboutCopy.textContent = "LOC 從細小語言單元開始，逐步建立分類、脈絡、作品、演算法與可重用模組，再放回時間中持續推演。LunaRunes 則證明這套模型能被實作成可運作的符號式語言模型。";
+    aboutCopy.innerHTML = "月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用。<br>它採取不帶神秘學預設的中立態度，重在文字本身，不預設道德判斷。<br><br>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的語言模型框架；<br>而月之符文，也在這個過程中演變成了符號式語言模型。<br><br>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，<br>而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構模型。<br><br>人總是要進步。過去雖不可改變，仍可以從過去截取經驗，才能進一步面對未來的各種可能。<br><br>月典提供一套方便的解析模組，不強迫接受，但可以參考。<br><br>只希望每個人都能藉由這些，更有效率、更輕鬆地整理自己的數位資產與語言紀錄。";
   }
 
   const frameworkInfo = {
