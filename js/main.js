@@ -47,19 +47,19 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   const runeEyebrow = document.querySelector("#rune-entry .rune-entry-eyebrow");
-  if (runeEyebrow) runeEyebrow.textContent = "LOC1 · LunaRunes Module · 月之符文語言模組";
+  if (runeEyebrow) runeEyebrow.textContent = "LOC1 · LunaRunes";
 
   const runeTitle = document.querySelector("#rune-entry #rune-title");
-  if (runeTitle) runeTitle.textContent = "問一件事，或讓語言自己推演成長，最後讓你選擇成為什麼樣子。";
+  if (runeTitle) runeTitle.textContent = "問一件事，或讓語言自己推演成長";
 
   const runeSectionLead = document.querySelector("#rune-entry .section-heading > p");
   if (runeSectionLead) {
-    runeSectionLead.textContent = "直接從一個問題開始，選擇想要的抽取方式，讓月之符文提供一個新的語言起點，它將會推演出一個實用的指示。";
+    runeSectionLead.textContent = "直接從一個問題開始，選擇想要的抽取方式，讓月之符文提供一個新的語言起點，推演出一個實用的指示；最後仍由你選擇怎麼走。";
   }
 
   const runeIntro = document.querySelector("#rune-entry .rune-intro");
   if (runeIntro) {
-    runeIntro.innerHTML = "<strong>月之符文由基本語彙（Token）出發。</strong>進入關係脈絡分析（Context），並與占卜使用的演算法模組及 LOC 其他模組相輔相成，最後進化為符號式語言模型（Symbolic Language Model）。";
+    runeIntro.innerHTML = "<strong>LOC1 是 LunaRunes Module（月之符文語言模組）。</strong>月之符文由基本語彙（Token）出發，進入關係脈絡分析（Context），並與占卜使用的演算法模組及 LOC 其他模組相輔相成，最後進化為符號式語言模型（Symbolic Language Model）。";
   }
 
   const attributes = document.getElementById("attributes");
@@ -148,7 +148,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const evolutionSteps = [...document.querySelectorAll("#language-evolution .evolution-step")];
   const evolutionContent = [
-    { english: "LunaRunes Module", title: "月之符文語言模組", copy: "LOC1 對應月之符文。LunaRunes 從基本語彙（Token）出發，作為符文語言與互動的起點。" },
+    { english: "LunaRunes", title: "月之符文", copy: "LOC1 · LunaRunes Module（月之符文語言模組）。月之符文從基本語彙（Token）出發，作為符文語言與互動的起點。" },
     { english: "Context", title: "脈絡", copy: "LOC2 對應符文脈絡，把符文、作品、事件與概念放進關係、情境與關係圖（Graph）中。" },
     { english: "Music", title: "音樂", copy: "LOC3 對應較基礎的符文體系，可用三卡結構作為複雜度類比；目前主要音樂實作來源為 Suno。" },
     { english: "Literary", title: "文字創作", copy: "LOC4 對應更完整的符文體系，可用五卡結構作為複雜度類比，承接小說、文章與其他文字作品。" },
@@ -171,7 +171,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const frameworkCopy = document.querySelector("#framework-map .loc-header-copy");
   if (frameworkCopy) {
-    frameworkCopy.textContent = "LOC 為可進化的語言系統模型；LOC1–LOC8 是語言系統模型（Model）的相關模組架構（Module Structure）：LunaRunes Module、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution。";
+    frameworkCopy.textContent = "LOC 為可進化的語言系統模型；LOC1–LOC8 是語言系統模型（Model）的相關模組架構（Module Structure）。八個模組依序為 LunaRunes Module、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution。";
   }
 
   const aboutCopy = document.querySelector('[aria-labelledby="about-title"] > p');
@@ -181,7 +181,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const frameworkInfo = {
     LOC1: {
-      english: "LunaRunes Module", title: "月之符文語言模組", tab: "月之符文語言模組", category: "月之符文",
+      english: "LunaRunes", title: "月之符文", tab: "月之符文", category: "LunaRunes Module｜月之符文語言模組",
       copy: "LOC1 是 LunaRunes Module（月之符文語言模組）。LunaRunes 從 66 個中文單字（Token）出發，透過四向、月相與不同抽牌結構形成可組合、可判讀的語言，並與 LOC 其他模組相輔相成，進化為符號式語言模型（Symbolic Language Model）。",
       extra: ["66 個月之符文構成固定語彙骨架。","四向描述同一符文在不同狀態下的表現。","單卡、雙卡、三卡、五卡與 OW3gs 各有自己的語法。","LunaRunes 是符號式語言模型；LOC1 是承載它的 LunaRunes Module。"]
     },
