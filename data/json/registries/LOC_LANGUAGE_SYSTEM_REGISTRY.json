@@ -189,7 +189,411 @@
           "LOC 完全開源。它的商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。"
         ],
         "governance_rule": "This is the primary public and KM positioning. Later documentation may elaborate on it but must not replace or contradict it without an explicit governance revision."
-      }
+      },
+      "rune_system_tags": [
+        {
+          "rune_id": 0,
+          "rune_name": "德",
+          "category": "符文體系",
+          "tag": "符文體系｜德之符文"
+        },
+        {
+          "rune_id": 1,
+          "rune_name": "靈",
+          "category": "符文體系",
+          "tag": "符文體系｜靈之符文"
+        },
+        {
+          "rune_id": 2,
+          "rune_name": "魂",
+          "category": "符文體系",
+          "tag": "符文體系｜魂之符文"
+        },
+        {
+          "rune_id": 3,
+          "rune_name": "彩",
+          "category": "符文體系",
+          "tag": "符文體系｜彩之符文"
+        },
+        {
+          "rune_id": 4,
+          "rune_name": "憶",
+          "category": "符文體系",
+          "tag": "符文體系｜憶之符文"
+        },
+        {
+          "rune_id": 5,
+          "rune_name": "界",
+          "category": "符文體系",
+          "tag": "符文體系｜界之符文"
+        },
+        {
+          "rune_id": 6,
+          "rune_name": "域",
+          "category": "符文體系",
+          "tag": "符文體系｜域之符文"
+        },
+        {
+          "rune_id": 7,
+          "rune_name": "鏡",
+          "category": "符文體系",
+          "tag": "符文體系｜鏡之符文"
+        },
+        {
+          "rune_id": 8,
+          "rune_name": "核",
+          "category": "符文體系",
+          "tag": "符文體系｜核之符文"
+        },
+        {
+          "rune_id": 9,
+          "rune_name": "向",
+          "category": "符文體系",
+          "tag": "符文體系｜向之符文"
+        },
+        {
+          "rune_id": 10,
+          "rune_name": "斷",
+          "category": "符文體系",
+          "tag": "符文體系｜斷之符文"
+        },
+        {
+          "rune_id": 11,
+          "rune_name": "封",
+          "category": "符文體系",
+          "tag": "符文體系｜封之符文"
+        },
+        {
+          "rune_id": 12,
+          "rune_name": "鍊",
+          "category": "符文體系",
+          "tag": "符文體系｜鍊之符文"
+        },
+        {
+          "rune_id": 13,
+          "rune_name": "啟",
+          "category": "符文體系",
+          "tag": "符文體系｜啟之符文"
+        },
+        {
+          "rune_id": 14,
+          "rune_name": "分",
+          "category": "符文體系",
+          "tag": "符文體系｜分之符文"
+        },
+        {
+          "rune_id": 15,
+          "rune_name": "悟",
+          "category": "符文體系",
+          "tag": "符文體系｜悟之符文"
+        },
+        {
+          "rune_id": 16,
+          "rune_name": "誤",
+          "category": "符文體系",
+          "tag": "符文體系｜誤之符文"
+        },
+        {
+          "rune_id": 17,
+          "rune_name": "生",
+          "category": "符文體系",
+          "tag": "符文體系｜生之符文"
+        },
+        {
+          "rune_id": 18,
+          "rune_name": "老",
+          "category": "符文體系",
+          "tag": "符文體系｜老之符文"
+        },
+        {
+          "rune_id": 19,
+          "rune_name": "病",
+          "category": "符文體系",
+          "tag": "符文體系｜病之符文"
+        },
+        {
+          "rune_id": 20,
+          "rune_name": "死",
+          "category": "符文體系",
+          "tag": "符文體系｜死之符文"
+        },
+        {
+          "rune_id": 21,
+          "rune_name": "心",
+          "category": "符文體系",
+          "tag": "符文體系｜心之符文"
+        },
+        {
+          "rune_id": 22,
+          "rune_name": "愛",
+          "category": "符文體系",
+          "tag": "符文體系｜愛之符文"
+        },
+        {
+          "rune_id": 23,
+          "rune_name": "語",
+          "category": "符文體系",
+          "tag": "符文體系｜語之符文"
+        },
+        {
+          "rune_id": 24,
+          "rune_name": "韻",
+          "category": "符文體系",
+          "tag": "符文體系｜韻之符文"
+        },
+        {
+          "rune_id": 25,
+          "rune_name": "樹",
+          "category": "符文體系",
+          "tag": "符文體系｜樹之符文"
+        },
+        {
+          "rune_id": 26,
+          "rune_name": "花",
+          "category": "符文體系",
+          "tag": "符文體系｜花之符文"
+        },
+        {
+          "rune_id": 27,
+          "rune_name": "葉",
+          "category": "符文體系",
+          "tag": "符文體系｜葉之符文"
+        },
+        {
+          "rune_id": 28,
+          "rune_name": "草",
+          "category": "符文體系",
+          "tag": "符文體系｜草之符文"
+        },
+        {
+          "rune_id": 29,
+          "rune_name": "根",
+          "category": "符文體系",
+          "tag": "符文體系｜根之符文"
+        },
+        {
+          "rune_id": 30,
+          "rune_name": "種",
+          "category": "符文體系",
+          "tag": "符文體系｜種之符文"
+        },
+        {
+          "rune_id": 31,
+          "rune_name": "實",
+          "category": "符文體系",
+          "tag": "符文體系｜實之符文"
+        },
+        {
+          "rune_id": 32,
+          "rune_name": "枝",
+          "category": "符文體系",
+          "tag": "符文體系｜枝之符文"
+        },
+        {
+          "rune_id": 33,
+          "rune_name": "金",
+          "category": "符文體系",
+          "tag": "符文體系｜金之符文"
+        },
+        {
+          "rune_id": 34,
+          "rune_name": "玉",
+          "category": "符文體系",
+          "tag": "符文體系｜玉之符文"
+        },
+        {
+          "rune_id": 35,
+          "rune_name": "晶",
+          "category": "符文體系",
+          "tag": "符文體系｜晶之符文"
+        },
+        {
+          "rune_id": 36,
+          "rune_name": "地",
+          "category": "符文體系",
+          "tag": "符文體系｜地之符文"
+        },
+        {
+          "rune_id": 37,
+          "rune_name": "石",
+          "category": "符文體系",
+          "tag": "符文體系｜石之符文"
+        },
+        {
+          "rune_id": 38,
+          "rune_name": "鑽",
+          "category": "符文體系",
+          "tag": "符文體系｜鑽之符文"
+        },
+        {
+          "rune_id": 39,
+          "rune_name": "礦",
+          "category": "符文體系",
+          "tag": "符文體系｜礦之符文"
+        },
+        {
+          "rune_id": 40,
+          "rune_name": "塵",
+          "category": "符文體系",
+          "tag": "符文體系｜塵之符文"
+        },
+        {
+          "rune_id": 41,
+          "rune_name": "光",
+          "category": "符文體系",
+          "tag": "符文體系｜光之符文"
+        },
+        {
+          "rune_id": 42,
+          "rune_name": "暗",
+          "category": "符文體系",
+          "tag": "符文體系｜暗之符文"
+        },
+        {
+          "rune_id": 43,
+          "rune_name": "水",
+          "category": "符文體系",
+          "tag": "符文體系｜水之符文"
+        },
+        {
+          "rune_id": 44,
+          "rune_name": "火",
+          "category": "符文體系",
+          "tag": "符文體系｜火之符文"
+        },
+        {
+          "rune_id": 45,
+          "rune_name": "風",
+          "category": "符文體系",
+          "tag": "符文體系｜風之符文"
+        },
+        {
+          "rune_id": 46,
+          "rune_name": "土",
+          "category": "符文體系",
+          "tag": "符文體系｜土之符文"
+        },
+        {
+          "rune_id": 47,
+          "rune_name": "雷",
+          "category": "符文體系",
+          "tag": "符文體系｜雷之符文"
+        },
+        {
+          "rune_id": 48,
+          "rune_name": "氣",
+          "category": "符文體系",
+          "tag": "符文體系｜氣之符文"
+        },
+        {
+          "rune_id": 49,
+          "rune_name": "日",
+          "category": "符文體系",
+          "tag": "符文體系｜日之符文"
+        },
+        {
+          "rune_id": 50,
+          "rune_name": "月",
+          "category": "符文體系",
+          "tag": "符文體系｜月之符文"
+        },
+        {
+          "rune_id": 51,
+          "rune_name": "星",
+          "category": "符文體系",
+          "tag": "符文體系｜星之符文"
+        },
+        {
+          "rune_id": 52,
+          "rune_name": "辰",
+          "category": "符文體系",
+          "tag": "符文體系｜辰之符文"
+        },
+        {
+          "rune_id": 53,
+          "rune_name": "明",
+          "category": "符文體系",
+          "tag": "符文體系｜明之符文"
+        },
+        {
+          "rune_id": 54,
+          "rune_name": "時",
+          "category": "符文體系",
+          "tag": "符文體系｜時之符文"
+        },
+        {
+          "rune_id": 55,
+          "rune_name": "空",
+          "category": "符文體系",
+          "tag": "符文體系｜空之符文"
+        },
+        {
+          "rune_id": 56,
+          "rune_name": "因",
+          "category": "符文體系",
+          "tag": "符文體系｜因之符文"
+        },
+        {
+          "rune_id": 57,
+          "rune_name": "福",
+          "category": "符文體系",
+          "tag": "符文體系｜福之符文"
+        },
+        {
+          "rune_id": 58,
+          "rune_name": "禍",
+          "category": "符文體系",
+          "tag": "符文體系｜禍之符文"
+        },
+        {
+          "rune_id": 59,
+          "rune_name": "無",
+          "category": "符文體系",
+          "tag": "符文體系｜無之符文"
+        },
+        {
+          "rune_id": 60,
+          "rune_name": "夢",
+          "category": "符文體系",
+          "tag": "符文體系｜夢之符文"
+        },
+        {
+          "rune_id": 61,
+          "rune_name": "幻",
+          "category": "符文體系",
+          "tag": "符文體系｜幻之符文"
+        },
+        {
+          "rune_id": 62,
+          "rune_name": "緣",
+          "category": "符文體系",
+          "tag": "符文體系｜緣之符文"
+        },
+        {
+          "rune_id": 63,
+          "rune_name": "虛",
+          "category": "符文體系",
+          "tag": "符文體系｜虛之符文"
+        },
+        {
+          "rune_id": 64,
+          "rune_name": "果",
+          "category": "符文體系",
+          "tag": "符文體系｜果之符文"
+        },
+        {
+          "rune_id": 65,
+          "rune_name": "玄",
+          "category": "符文體系",
+          "tag": "符文體系｜玄之符文"
+        },
+        {
+          "rune_id": 66,
+          "rune_name": "命",
+          "category": "符文體系",
+          "tag": "符文體系｜命之符文"
+        }
+      ]
     }
   ],
   "authority_scope": "global_language_model",
