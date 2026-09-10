@@ -6,10 +6,49 @@
   let events=[];
 
   function viewName(){return (location.hash||'#ranking').slice(1)||'ranking';}
+
+  function navMarkup(name){
+    if(name==='rune-trend'){
+      return `
+        <div class="nav-group"><div class="nav-label">01 · RAG</div><a href="runes.html#rag"><strong>符文 RAG</strong><small>專用搜尋 · 分類</small></a></div>
+        <div class="nav-group"><div class="nav-label">02 · 分類</div><a href="runes.html#classification"><strong>符文分類</strong><small>語意 · 群組 · 來源</small></a></div>
+        <div class="nav-group"><div class="nav-label">03 · 演算法</div><a href="runes.html#algorithm"><strong>符文演算法</strong><small>規則 · Grammar · OW3gs</small></a></div>
+        <div class="nav-group"><div class="nav-label">04 · 延伸</div><a href="runes.html#systems"><strong>延伸體系</strong><small>歌曲 · 文學 · 多媒體</small></a></div>
+        <div class="nav-group"><div class="nav-label">05 · Lots</div><a href="lots.html"><strong>符文牌與抽牌</strong><small>圖鑑 · 群組 · 列印 · 抽牌</small></a></div>
+        <div class="nav-group"><div class="nav-label">06 · 趨勢</div><a class="active" href="#rune-trend" data-statics-nav="rune-trend"><strong>每日符文</strong><small>紀錄 · 統計 · 趨勢</small></a></div>`;
+    }
+    if(name==='timeline'){
+      return `
+        <div class="nav-group"><div class="nav-label">01 · 總覽</div><a href="evolution.html"><strong>推演總覽</strong><small>時期 · Current · 時間跨度</small></a></div>
+        <div class="nav-group"><div class="nav-label">02 · 時間線</div><a class="active" href="#timeline" data-statics-nav="timeline"><strong>時間線</strong><small>事件 · State Before / After</small></a></div>
+        <div class="nav-group"><div class="nav-label">03 · 趨勢</div><a href="evolution.html#trend"><strong>時期趨勢</strong><small>跨時期關鍵字脈絡</small></a></div>
+        <div class="nav-group"><div class="nav-label">04 · 軌跡</div><a href="evolution.html#trajectory"><strong>軌跡</strong><small>時期轉折 · 關鍵字升降</small></a></div>`;
+    }
+    return `
+      <div class="nav-group"><div class="nav-label">01 · 排行榜</div><a href="#ranking" data-statics-nav="ranking"><strong>排行榜</strong><small>關鍵字 · 曲風 · 符文</small></a></div>
+      <div class="nav-group"><div class="nav-label">02 · 時期</div><a href="#era" data-statics-nav="era"><strong>時期設定</strong><small>ERA · 起訖 · 狀態</small></a></div>
+      <div class="nav-group"><div class="nav-label">03 · 資料</div><a href="#sources" data-statics-nav="sources"><strong>資料來源</strong><small>平台 · 日期 · 字數 · 筆數</small></a></div>
+      <div class="nav-group"><div class="nav-label">04 · 匯入</div><a class="statics-placeholder" href="#import" aria-disabled="true" tabindex="-1"><strong>匯入</strong><small>暫時不開放</small></a></div>`;
+  }
+
+  function paintSecondaryNav(name){
+    const nav=$('.sidebar .nav');
+    const brand=$('.sidebar .brand');
+    if(!nav)return;
+    nav.innerHTML=navMarkup(name);
+    if(brand){
+      if(name==='rune-trend')brand.innerHTML='<h1>LunaRunes</h1><p>月之符文</p>';
+      else if(name==='timeline')brand.innerHTML='<h1>Evolution</h1><p>推演</p>';
+      else brand.innerHTML='<h1>Statics</h1><p>統計</p>';
+    }
+    bindNav();
+  }
+
   function switchView(name,update=true){
     const valid=['ranking','era','sources','rune-trend','timeline'];
     if(!valid.includes(name))name='ranking';
     $$('.statics-view').forEach(v=>v.hidden=v.dataset.view!==name);
+    paintSecondaryNav(name);
     $$('[data-statics-nav]').forEach(a=>a.classList.toggle('active',a.dataset.staticsNav===name));
     if(update)history.replaceState(null,'','statics.html#'+name);
     loadView(name);
@@ -21,12 +60,15 @@
     if(loaded.has('ranking'))return;loaded.add('ranking');
     const host=$('#keywordRankingList');
     try{
-      const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),10000);
       const sources=['facebook','threads','suno'];
       const settled=await Promise.allSettled(sources.map(async source=>{
-        const r=await fetch('https://moon-runes-pwa.onrender.com/analysis/keywords',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source,start_date:'',end_date:'',top_k:50}),signal:controller.signal});
-        const d=await r.json();if(!r.ok)throw new Error(d.detail||source+' 載入失敗');return {source,data:d};
-      }));clearTimeout(timer);
+        const controller=new AbortController();
+        const timer=setTimeout(()=>controller.abort(),10000);
+        try{
+          const r=await fetch('https://moon-runes-pwa.onrender.com/analysis/keywords',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source,start_date:'',end_date:'',top_k:50}),signal:controller.signal});
+          const d=await r.json();if(!r.ok)throw new Error(d.detail||source+' 載入失敗');return {source,data:d};
+        } finally { clearTimeout(timer); }
+      }));
       const merged=new Map();
       for(const x of settled.filter(x=>x.status==='fulfilled').map(x=>x.value))for(const item of x.data.items||[]){const term=String(item.term||'').trim();if(!term)continue;const row=merged.get(term)||{term,document_count:0,hit_count:0};row.document_count+=Number(item.document_count||0);row.hit_count+=Number(item.hit_count||0);merged.set(term,row)}
       const rows=[...merged.values()].sort((a,b)=>b.document_count-a.document_count||b.hit_count-a.hit_count).slice(0,10);
@@ -36,12 +78,27 @@
     loadScript('js/rune-frequency-ranking.js','rune-frequency-ranking');
   }
 
-  function loadScript(src,key){if(document.querySelector(`script[data-static-module="${key}"]`))return;const s=document.createElement('script');s.src=src;s.dataset.staticModule=key;document.body.appendChild(s)}
+  function loadScript(src,key){
+    if(document.querySelector(`script[data-static-module="${key}"]`))return Promise.resolve();
+    return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.dataset.staticModule=key;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)});
+  }
+
+  async function ensureSourceStats(){
+    if(window.LOC_SEARCH_SOURCE_STATS)return window.LOC_SEARCH_SOURCE_STATS;
+    await loadScript('js/search-source-stats.js','search-source-stats');
+    return window.LOC_SEARCH_SOURCE_STATS;
+  }
 
   async function loadSources(){
     if(loaded.has('sources'))return;loaded.add('sources');
     const host=$('#sourceList');
-    try{const d=await fetchJson('data/json/generated/search/SEARCH_SOURCE_STATS.json');const rows=[...(d.text_sources||[]),...(d.media_sources||[])];const fmt=n=>Number.isFinite(Number(n))?Number(n).toLocaleString('zh-TW'):'—';host.innerHTML=rows.map(r=>`<article class="source-card"><strong>${esc(r.source||'未命名來源')}</strong><small>${esc(r.start_date||'—')} ～ ${esc(r.end_date||'—')}</small><div>${fmt(r.char_count)} 字 · ${fmt(r.records??r.searchable_records??r.public_url_records)} 筆</div></article>`).join('')||'<div class="empty">尚無來源資料。</div>';$('#sourceUpdated').textContent=d.generated_at?'更新：'+d.generated_at:'讀取靜態來源統計';}catch(err){host.innerHTML='<div class="empty">資料來源載入失敗：'+esc(err.message)+'</div>'}
+    try{
+      const d=await ensureSourceStats();
+      const rows=[...(d?.text_sources||[]),...(d?.media_sources||[])];
+      const fmt=n=>Number.isFinite(Number(n))?Number(n).toLocaleString('zh-TW'):'—';
+      host.innerHTML=rows.map(r=>`<article class="source-card"><strong>${esc(r.source||'未命名來源')}</strong><small>${esc(r.start_date||'—')} ～ ${esc(r.end_date||'—')}</small><div>${r.char_count_applicable===false?'非文字':fmt(r.char_count)+' 字'} · ${fmt(r.records??r.searchable_records??r.public_url_records)} 筆</div></article>`).join('')||'<div class="empty">尚無來源資料。</div>';
+      $('#sourceUpdated').textContent=d?.generated_at?'更新：'+d.generated_at:'讀取 JS 靜態來源統計';
+    }catch(err){host.innerHTML='<div class="empty">資料來源載入失敗：'+esc(err.message)+'</div>'}
   }
 
   async function loadEra(){
@@ -64,7 +121,7 @@
   $('#timelineEventList')?.addEventListener('click',async ev=>{const eb=ev.target.closest('[data-event-edit]');if(eb){const e=events.find(x=>String(x.id)===eb.dataset.eventEdit);if(e)fillEvent(e);return}const db=ev.target.closest('[data-event-delete]');if(db&&confirm('刪除這筆事件？')){await postEvent('delete_event',{id:db.dataset.eventDelete,user_id:'lo3rwang'});loaded.delete('timeline');loadTimeline()}});
 
   async function loadView(name){if(name==='ranking')return loadRanking();if(name==='era')return loadEra();if(name==='sources')return loadSources();if(name==='rune-trend')return loadRuneTrend();if(name==='timeline')return loadTimeline()}
-  $$('[data-statics-nav]').forEach(a=>a.addEventListener('click',ev=>{if(a.origin===location.origin&&a.pathname===location.pathname){ev.preventDefault();switchView(a.dataset.staticsNav)}}));
+  function bindNav(){$$('[data-statics-nav]').forEach(a=>a.addEventListener('click',ev=>{ev.preventDefault();switchView(a.dataset.staticsNav)}))}
   window.addEventListener('hashchange',()=>switchView(viewName(),false));
   switchView(viewName(),false);
 })();
