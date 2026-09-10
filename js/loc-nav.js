@@ -141,12 +141,12 @@
 
       const aboutTitle = document.getElementById("about-title");
       if (aboutTitle) {
-        aboutTitle.textContent = "把留下來的語言，變成更容易理解與重新使用的資料。";
+        aboutTitle.textContent = "治理已知，是為了把時間還給未知。";
       }
 
       const aboutCopy = document.querySelector('[aria-labelledby="about-title"] > p');
       if (aboutCopy) {
-        aboutCopy.textContent = "人會用語言記錄經驗、事件、關係、作品、判斷與選擇。資料累積得越多，越需要一套簡單的方式把它們分組、建立關係並重新整理。LOC 提供這套分組與模組化框架，讓複雜語言資料更容易被分類、解析、比較、組織與推演，也讓已經留下的內容能再次被理解與使用。";
+        aboutCopy.textContent = "月典最初從月之符文開始，之後逐步形成脈絡、作品與多元體系、方法論、演算法（知識庫）與時間中的推演。它不是為了把人生固定，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可重用的結構。";
       }
     }
 
