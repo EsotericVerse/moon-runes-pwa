@@ -12,7 +12,7 @@
         <div class="nav-group"><a href="tutorial01.html"><strong>新手上路</strong><small>月之符文入門</small></a></div>
         <div class="nav-group"><a href="lots.html#draw"><strong>占卜抽籤</strong><small>線上即時抽牌引擎</small></a></div>
         <div class="nav-group"><a href="lots.html#library"><strong>符文總覽</strong><small>66 符 · 群組</small></a></div>
-        <div class="nav-group"><a class="active" href="#rune-trend" data-statics-nav="rune-trend"><strong>每日符文</strong><small>紀錄 · 統計 · 趨勢</small></a></div>
+        <div class="nav-group"><a class="active" href="#rune-trend" data-statics-nav="rune-trend"><strong>符文統計</strong><small>每日符文 · 紀錄 · 趨勢</small></a></div>
         <div class="nav-group"><a href="runes.html#rag"><strong>符文知識庫</strong><small>RAG · 占卜解析 · 演算法</small></a></div>`;
     }
     return `
