@@ -3,7 +3,7 @@
   "registry": "LOC3_FULL_LYRICS_SEMANTIC_ANALYSIS",
   "authority": "LOC3",
   "generated_at": "2026-09-10",
-  "status": "complete_chinese_public_corpus_baseline",
+  "status": "invalidated_keyword_count_baseline",
   "source": {
     "file": "Suno_500_LOC3治理補全_v0.3.3.xlsx",
     "sheet": "500公開作品主表"
@@ -69,5 +69,21 @@
       "特殊組": 10
     }
   },
-  "note": "472 首中文公開作品已完成完整歌詞 Base66 九群組 baseline。28 首非中文作品保留待跨語言語意層；逐首分析結果可由同一 deterministic pipeline 重建。"
+  "note": "本檔原 472 首中文公開作品之 keyword-count aggregate 已廢止。後續需以個體符文語意分析重建。",
+  "invalidated_at": "2026-09-10",
+  "invalidated_reason": "舊版以 Base66 關鍵詞 exact-match 統計群組，未以個體符文語意作主判定，且未保存逐首逐符文可稽核結果；不得再作 ERA、方法論或語意演化結論依據。",
+  "replacement_method": {
+    "primary_unit": "individual_rune_semantics",
+    "flow": [
+      "分析每首完整歌詞的語意",
+      "逐枚判定 Base66 個體符文的語意關聯與證據",
+      "保存每首 rune-level 結果",
+      "由已判定個體符文再彙總九群組",
+      "保存 group-level derived result",
+      "再連接日期與 ERA 進行時間演化分析"
+    ],
+    "keyword_role": "關鍵詞僅作 evidence / retrieval hint，不作主判定器",
+    "group_rule": "群組只能由個體符文結果彙總，不得跳過符文直接判群組"
+  },
+  "aggregate_status": "deprecated_do_not_use"
 }
