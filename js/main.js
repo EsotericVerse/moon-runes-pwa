@@ -8,16 +8,16 @@ window.addEventListener("DOMContentLoaded", () => {
   if (moonText) moonText.textContent = `月相：無 / 真實月相：${realPhase}`;
   if (card) card.addEventListener("click", () => { window.location.href = "runes.html#draw"; });
 
-  // Canon model hierarchy:
-  // LOC = Evolvable Language System Model
-  // LOC1–8 = Module Structure of the Language System Model
+  // Canon framework hierarchy:
+  // LOC = Evolvable Language Module Framework
+  // LOC1–8 = Module Structure of the framework
   // LOC1 = LunaRunes Module
   // LunaRunes = Symbolic Language Model
   const metaDescription = document.querySelector('meta[name="description"]');
   if (metaDescription) {
     metaDescription.setAttribute(
       "content",
-      "LOC（月典）是一套分析拆解、組織彙整、搜尋並推演語言的可進化語言系統模型（Language System Model）。LOC1–LOC8 是語言系統模型（Model）的相關模組架構（Module Structure）。月之符文（LunaRunes）從語彙單字（Token）出發，與 LOC 相輔相成，最後進化為符號式語言模型（Symbolic Language Model）。"
+      "LOC（月典）是一套可進化、可重複使用的語言模組框架（Language Module Framework），用來將細小語言單元組織成可解析、分類、連結、重組與推演的模組。月之符文（LunaRunes）由基本語彙（Token）逐步建立符文結構、關係與處理方式，並發展為符號式語言模型（Symbolic Language Model）。"
     );
   }
 
@@ -28,14 +28,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const heroCopy = document.querySelector(".hero .loc-header-copy");
   if (heroCopy) {
-    heroCopy.textContent = "月典是一套用來分析、整理、搜尋與推演語言的系統。它從月之符文開始，把文字、作品、脈絡與時間串起來，讓累積的資料可以繼續被理解、比較與推演。";
+    heroCopy.textContent = "月典是一套用來分析、整理、搜尋與推演語言的模組化框架。它從細小的語言單元開始，把文字、作品、脈絡、規則與時間組織起來，讓複雜內容可以更輕量地被理解、比較與重組。";
   }
 
   const heroNote = document.querySelector(".hero-note");
   if (heroNote) {
     heroNote.innerHTML = `<div class="moon" aria-hidden="true"></div>
       <strong>月之符文是種子，但不是使用門檻。</strong>
-      <p>不必先知道或學會所有符文，也不用先會解牌，更不需要先理解什麼是語言系統。你可以先抽牌、找作品、看脈絡分析、看關鍵字排行；想深入時，LOC 再把其模組架構展開給你。</p>`;
+      <p>不必先知道或學會所有符文，也不用先會解牌，更不需要先理解完整架構。你可以先抽牌、找作品、看脈絡分析、看關鍵字排行；想深入時，LOC 再把模組結構展開給你。</p>`;
   }
 
   const startCopy = document.querySelector('[aria-labelledby="start-title"] .section-heading > p');
@@ -59,7 +59,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const runeIntro = document.querySelector("#rune-entry .rune-intro");
   if (runeIntro) {
-    runeIntro.innerHTML = "<strong>LOC1 是 LunaRunes Module（月之符文語言模組）。</strong>月之符文由基本語彙（Token）出發，進入關係脈絡分析（Context），並與占卜使用的演算法模組及 LOC 其他模組相輔相成，最後進化為符號式語言模型（Symbolic Language Model）。";
+    runeIntro.innerHTML = "<strong>LOC1 是 LunaRunes Module（月之符文語言模組）。</strong>基本語彙（Token）可視為原子級的語彙單位；月之符文將相關語意分組並結構化，再透過符文語言模組建立分類、關係與處理方式，並與 LOC 其他模組相互作用，發展為符號式語言模型（Symbolic Language Model）。";
   }
 
   const attributes = document.getElementById("attributes");
@@ -148,14 +148,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const evolutionSteps = [...document.querySelectorAll("#language-evolution .evolution-step")];
   const evolutionContent = [
-    { english: "LunaRunes", title: "月之符文", copy: "LOC1 · LunaRunes Module（月之符文語言模組）。月之符文從基本語彙（Token）出發，作為符文語言與互動的起點。" },
+    { english: "LunaRunes", title: "月之符文", copy: "LOC1 · LunaRunes Module（月之符文語言模組）。月之符文把基本語彙（Token）進行語意分組與結構化，作為符文語言與互動的起點。" },
     { english: "Context", title: "脈絡", copy: "LOC2 對應符文脈絡，把符文、作品、事件與概念放進關係、情境與關係圖（Graph）中。" },
     { english: "Music", title: "音樂", copy: "LOC3 對應較基礎的符文體系，可用三卡結構作為複雜度類比；目前主要音樂實作來源為 Suno。" },
     { english: "Literary", title: "文字創作", copy: "LOC4 對應更完整的符文體系，可用五卡結構作為複雜度類比，承接小說、文章與其他文字作品。" },
     { english: "Multimedia", title: "多媒體", copy: "LOC5 對應多模組整合的符文體系，可用 OW3gs 結構作為複雜度類比，整合文字、音樂、圖像與影音。" },
     { english: "Algorithm", title: "演算法", copy: "LOC6 對應符文演算法，把判讀、比較、治理、組合與分析方法整理成可重複執行、可檢查的規則與流程。" },
     { english: "Module", title: "演算模組", copy: "LOC7 對應符文模組，把演算法、資料、知識與功能封裝成可組合、重用與替換的演算模組。" },
-    { english: "Evolution", title: "推演引擎", copy: "LOC8 對應符文演化，把模型、模組、作品、事件與語言放回時間中觀察，推演可能方向，累積後再選擇是否進化。" }
+    { english: "Evolution", title: "推演引擎", copy: "LOC8 對應符文演化，把模組、作品、事件與語言放回時間中觀察，推演可能方向，累積後再選擇是否進化。" }
   ];
 
   evolutionSteps.forEach((step, index) => {
@@ -171,19 +171,19 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const frameworkCopy = document.querySelector("#framework-map .loc-header-copy");
   if (frameworkCopy) {
-    frameworkCopy.textContent = "LOC 為可進化的語言系統模型；LOC1–LOC8 是語言系統模型（Model）的相關模組架構（Module Structure）。八個模組依序為 LunaRunes Module、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution。";
+    frameworkCopy.textContent = "LOC 是可進化、可重複使用的語言模組框架（Language Module Framework）。LOC1–LOC8 將不同語言責任拆成八個可組合的模組，依序為 LunaRunes Module、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution；框架本身保持輕量，但可以把解析粒度下探到細小語言單元。";
   }
 
   const aboutCopy = document.querySelector('[aria-labelledby="about-title"] > p');
   if (aboutCopy) {
-    aboutCopy.textContent = "從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演；系統根據累積資料提出演化方向，再由使用者選擇是否進化。月之符文由基本語彙（Token）出發，進入關係脈絡分析（Context）與占卜使用的演算法模組，並與 LOC 相輔相成，最後進化為符號式語言模型（Symbolic Language Model）。";
+    aboutCopy.textContent = "LOC 不取代完整語言系統，而是提供一套模組化的組織方式：從細小語言單元開始，逐步建立分類、脈絡、作品、演算法與可重用模組，再放回時間中持續推演。月之符文則沿著這條路徑發展為可實際運作的符號式語言模型（Symbolic Language Model）。";
   }
 
   const frameworkInfo = {
     LOC1: {
       english: "LunaRunes", title: "月之符文", tab: "月之符文", category: "LunaRunes Module｜月之符文語言模組",
-      copy: "LOC1 是 LunaRunes Module（月之符文語言模組）。LunaRunes 從 66 個中文單字（Token）出發，透過四向、月相與不同抽牌結構形成可組合、可判讀的語言，並與 LOC 其他模組相輔相成，進化為符號式語言模型（Symbolic Language Model）。",
-      extra: ["66 個月之符文構成固定語彙骨架。","四向描述同一符文在不同狀態下的表現。","單卡、雙卡、三卡、五卡與 OW3gs 各有自己的語法。","LunaRunes 是符號式語言模型；LOC1 是承載它的 LunaRunes Module。"]
+      copy: "LOC1 是 LunaRunes Module（月之符文語言模組）。基本語彙（Token）是原子級的語彙單位；月之符文將相關語意分組與結構化，再透過符文語言模組建立分類、關係與處理方式，並與 LOC 其他模組共同運作。",
+      extra: ["66 個月之符文構成固定語彙骨架。","四向描述同一符文在不同狀態下的表現。","單卡、雙卡、三卡、五卡與 OW3gs 各有自己的語法。","LunaRunes 已發展為符號式語言模型；LOC1 是承載其符文語言結構的模組。"]
     },
     LOC2: {
       english: "Context", title: "脈絡", tab: "脈絡", category: "符文脈絡",
@@ -217,7 +217,7 @@ window.addEventListener("DOMContentLoaded", () => {
     },
     LOC8: {
       english: "Evolution", title: "推演引擎", tab: "推演引擎", category: "符文演化",
-      copy: "處理『它在時間中怎麼改變』。把模型、模組、作品、事件與語言放回不同時期，觀察前後差異與變化方向，並根據累積結果提出可選擇的演化路徑。",
+      copy: "處理『它在時間中怎麼改變』。把模組、作品、事件與語言放回不同時期，觀察前後差異與變化方向，並根據累積結果提出可選擇的演化路徑。",
       extra: ["時期用來區分相對穩定的狀態。","時間線整理事件與作品出現的位置。","趨勢比較不同時期的語言與作品變化。","推演提供演化方向；最終是否進化仍由使用者選擇。"]
     }
   };
