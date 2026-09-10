@@ -2,7 +2,7 @@
   "schema_version": "0.3",
   "registry": "LOC3_RUNE_SONG_REGISTRY",
   "authority": "LOC3",
-  "updated_at": "2026-09-09",
+  "updated_at": "2026-09-10",
   "purpose": "Identify songs actually derived from real LunaRunes draws. Rune imagery alone is insufficient.",
   "definition": "符文歌曲＝以實際 OW3gs 11 張抽牌結果為創作來源，先形成語意／解讀，再轉化成歌曲。所有符文歌曲均使用 OW3gs 11 抽。",
   "classification": {
@@ -83,7 +83,8 @@
         "幻",
         "果",
         "命"
-      ]
+      ],
+      "group_statistics_status": "pending_actual_11_rune_draw"
     },
     {
       "work_id": "E0223",
@@ -132,7 +133,8 @@
         "禍",
         "緣",
         "果"
-      ]
+      ],
+      "group_statistics_status": "pending_actual_11_rune_draw"
     },
     {
       "work_id": "E0354",
@@ -179,7 +181,8 @@
         "虛",
         "果",
         "命"
-      ]
+      ],
+      "group_statistics_status": "pending_actual_11_rune_draw"
     },
     {
       "work_id": "E0364",
@@ -227,7 +230,8 @@
         "無",
         "幻",
         "果"
-      ]
+      ],
+      "group_statistics_status": "pending_actual_11_rune_draw"
     }
   ],
   "candidate_records": [],
@@ -281,7 +285,27 @@
           "direction": "正位"
         }
       ],
-      "provenance": "recorded LOC history / user-confirmed draw record"
+      "provenance": "recorded LOC history / user-confirmed draw record",
+      "group_statistics": {
+        "counts": {
+          "靈魂組": 1,
+          "連結組": 1,
+          "生命組": 2,
+          "自然組": 1,
+          "礦物組": 1,
+          "元素組": 1,
+          "秩序組": 2,
+          "無序組": 1,
+          "特殊組": 1
+        },
+        "maximum_count": 2,
+        "highest_groups": [
+          "生命組",
+          "秩序組"
+        ],
+        "status": "disputed_tie",
+        "interpretation": "descriptive_only"
+      }
     }
   ],
   "corpus_scan": {
@@ -1900,5 +1924,13 @@
       "note": "歌詞中恰有 11 個 distinct 符文字；不得視為原始 OW3gs 抽牌結果。"
     }
   ],
-  "authority_domain": "music"
+  "authority_domain": "music",
+  "group_statistics_rule": {
+    "basis": "actual_11_rune_draw_only",
+    "group_count_mode": "raw_count",
+    "interpretation": "descriptive_only",
+    "highest_group_policy": "single_max_or_disputed_tie",
+    "disputed_rule": "two_or_more_groups_share_the_maximum_count",
+    "note_zh": "只統計每首符文歌曲實際 11 符落入九群組的數量；不以歌詞字面命中代替。最高同票列入爭議區，不強制判定。"
+  }
 }
