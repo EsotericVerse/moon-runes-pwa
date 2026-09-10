@@ -78,7 +78,51 @@
     });
   }
 
+  const TERMINOLOGY_REPLACEMENTS = [
+    ["一套從月之符文與脈絡出發，延伸到音樂、文字創作、多媒體、方法論、演算法（知識庫）與時間推演的語言系統模型", "一套從細小語言單元出發，透過脈絡、作品、演算法與演算模組進行組織，並在時間中持續推演的語言模組框架"],
+    ["系統分別處理月之符文與籤詩、脈絡、音樂、文字、多媒體、方法論、演算法，以及時間中的推演", "框架分別組織月之符文、脈絡、音樂、文字、多媒體、演算法、演算模組與推演引擎"],
+    ["方法論、演算法（知識庫）與時間推演", "演算法、演算模組與推演引擎"],
+    ["LOC6 · Methodology", "LOC6 · Algorithm"],
+    ["LOC7 · Algorithm", "LOC7 · Module"],
+    ["Methodology／方法論", "Algorithm／演算法"],
+    ["Algorithm／演算法（知識庫）", "Module／演算模組"],
+    ["Evolution／推演", "Evolution／推演引擎"],
+    ["Language System Model", "Language Module Framework"],
+    ["語言系統模型", "語言模組框架"],
+    ["MultiMedia", "Multimedia"]
+  ];
+
+  function normalizeTerminology(value) {
+    let next = String(value ?? "");
+    TERMINOLOGY_REPLACEMENTS.forEach(([from, to]) => {
+      next = next.split(from).join(to);
+    });
+    return next;
+  }
+
+  function normalizeWebsiteTerminology() {
+    document.title = normalizeTerminology(document.title);
+    document.querySelectorAll('meta[name="description"], meta[property="og:title"], meta[property="og:description"], meta[name="twitter:title"], meta[name="twitter:description"]').forEach(node => {
+      if (node.content) node.content = normalizeTerminology(node.content);
+    });
+
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const parent = node.parentElement;
+        if (!parent || parent.closest("script,style,noscript,textarea")) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(node => {
+      const next = normalizeTerminology(node.nodeValue);
+      if (next !== node.nodeValue) node.nodeValue = next;
+    });
+  }
+
   window.addEventListener("DOMContentLoaded", () => {
+    normalizeWebsiteTerminology();
     document.querySelectorAll("[data-loc-nav]").forEach(renderNav);
     renderBuildLabel();
     loadPageEnhancements();
