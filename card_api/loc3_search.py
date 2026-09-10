@@ -6,6 +6,7 @@ import re
 import unicodedata
 from collections import Counter
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 from paths import registry_json, search_json
@@ -14,7 +15,6 @@ from typing import Any
 
 _SPACE_RE = re.compile(r"\s+")
 _TOKEN_RE = re.compile(r"[a-z0-9]+|[\u3400-\u9fff]")
-_STYLE_SPLIT_RE = re.compile(r"\s*(?:／|/|,|，|;|；|\|)\s*")
 
 # Small, author-governed concept bridge. It improves natural-language recall
 # without introducing another language or changing the lyric-work ranking unit.
@@ -70,8 +70,37 @@ def _values(value: Any) -> set[str]:
     return {_normalize(str(value))} if str(value or "").strip() else set()
 
 
+@lru_cache(maxsize=1)
+def _style_registry() -> tuple[list[tuple[str, tuple[str, ...]]], dict[str, tuple[str, ...]]]:
+    """Load the author-governed LOC3 style vocabulary once per process."""
+    path = registry_json("LOC3_STYLE_TAG_REGISTRY.json")
+    if not path.exists():
+        return [], {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    rules: list[tuple[str, tuple[str, ...]]] = []
+    for item in payload.get("tags", []):
+        tag = str(item.get("tag") or "").strip()
+        aliases = tuple(_normalize(str(alias)) for alias in item.get("aliases", []) if str(alias).strip())
+        if tag and aliases:
+            rules.append((tag, aliases))
+    legacy = {
+        _normalize(str(item.get("raw") or "")): tuple(str(tag) for tag in item.get("tags", []) if str(tag).strip())
+        for item in payload.get("legacy_bucket_aliases", [])
+        if str(item.get("raw") or "").strip()
+    }
+    return rules, legacy
+
+
+def _contains_style_alias(raw: str, alias: str) -> bool:
+    """Match explicit style terms without allowing short aliases inside unrelated words."""
+    if not alias:
+        return False
+    pattern = rf"(?<![a-z0-9]){re.escape(alias)}(?![a-z0-9])"
+    return re.search(pattern, raw) is not None
+
+
 def _style_tags(work: dict[str, Any]) -> list[str]:
-    """Return normalized display tags without semantic analysis or API calls."""
+    """Return deterministic controlled-vocabulary style tags; no semantic inference/API calls."""
     raw_values: list[str] = []
     style = work.get("style")
     if style:
@@ -81,15 +110,24 @@ def _style_tags(work: dict[str, Any]) -> list[str]:
         if prompt:
             raw_values.append(str(prompt))
 
+    rules, legacy = _style_registry()
     tags: list[str] = []
     seen: set[str] = set()
-    for raw in raw_values:
-        for part in _STYLE_SPLIT_RE.split(raw):
-            tag = part.strip()
-            normalized = _normalize(tag)
-            if tag and normalized and normalized not in seen:
-                seen.add(normalized)
-                tags.append(tag)
+
+    def add(tag: str) -> None:
+        normalized = _normalize(tag)
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            tags.append(tag)
+
+    for raw_value in raw_values:
+        normalized_raw = _normalize(raw_value)
+        for tag in legacy.get(normalized_raw, ()):
+            add(tag)
+        for tag, aliases in rules:
+            if any(_contains_style_alias(normalized_raw, alias) for alias in aliases):
+                add(tag)
+
     return tags
 
 
@@ -372,6 +410,8 @@ class LOC3SearchEngine:
         style_counts: Counter[str] = Counter()
         display_names: dict[str, str] = {}
         for work in self.works:
+            # One work contributes at most once to each style tag, even if several
+            # Suno versions repeat the same style prompt.
             for tag in _style_tags(work):
                 normalized = _normalize(tag)
                 if normalized:
