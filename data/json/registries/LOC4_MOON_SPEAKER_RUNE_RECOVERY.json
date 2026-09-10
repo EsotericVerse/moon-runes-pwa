@@ -2,7 +2,7 @@
   "schema_version": "1.1",
   "registry": "LOC4_MOON_SPEAKER_RUNE_RECOVERY",
   "authority": "LOC4",
-  "updated_at": "2026-09-09",
+  "updated_at": "2026-09-10",
   "work_id": "LOC4-MOON-SPEAKER",
   "purpose": "MoonSpeaker chapter-level rune evidence. Rune count is variable. Original draws preserve orientation; retrospective semantic patches do not invent orientation.",
   "record_count": 182,
@@ -15,8 +15,9 @@
       "runes": [
         {
           "legacy_name": "線",
-          "canonical_name": "鍊",
+          "canonical_name": "向",
           "canonical_names": [
+            "向",
             "鍊"
           ],
           "orientation": "逆位"
@@ -424,8 +425,9 @@
         },
         {
           "legacy_name": "線",
-          "canonical_name": "鍊",
+          "canonical_name": "向",
           "canonical_names": [
+            "向",
             "鍊"
           ],
           "orientation": "半逆位"
@@ -568,8 +570,9 @@
         },
         {
           "legacy_name": "線",
-          "canonical_name": "鍊",
+          "canonical_name": "向",
           "canonical_names": [
+            "向",
             "鍊"
           ],
           "orientation": "正位"
@@ -650,9 +653,10 @@
         },
         {
           "legacy_name": "線",
-          "canonical_name": "鍊",
+          "canonical_name": "向",
           "orientation": "半逆位",
           "canonical_names": [
+            "向",
             "鍊"
           ]
         }
