@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const grid = document.querySelector("#rune-grid");
   const count = document.querySelector("#rune-count");
   const toolbar = document.querySelector("#group-filter")?.closest(".toolbar");
+  const overviewLink = document.querySelector('.overview-image-link');
   const modal = document.querySelector("#rune-modal");
   const closeBtn = document.querySelector("#modal-close");
   const modalTitle = document.querySelector("#modal-title");
@@ -87,21 +88,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   const coreGroups = groups.filter(meta => (meta.runes || []).some(member => Number(member.id) >= 1 && Number(member.id) <= 64));
   const specialRunes = all.filter(r => r.編號 === 65 || r.編號 === 66).sort((a,b) => a.編號 - b.編號);
 
-  if (grid) {
+  if (overviewLink && coreGroups.length) {
     const quickHost = document.createElement('div');
     quickHost.id = 'rune-group-quick-selector';
-    grid.before(quickHost);
+    overviewLink.after(quickHost);
 
     mountQuickSelector({
       target: quickHost,
+      imageTarget: overviewLink,
       items: coreGroups.map(meta => ({
         id: meta.id || meta.group_en || meta.group_zh,
         label: meta.group_zh,
-        kicker: `${meta.group_zh} · ${meta.group_en}`,
-        title: meta.trait || meta.group_zh,
+        kicker: `LunaRunes · ${meta.group_en}`,
+        title: `${meta.group_zh} ${meta.group_en}`,
         description: meta.description,
-        extra: meta.style_module,
-        href: `search.html?q=${encodeURIComponent(`${meta.group_zh}群組 方法論`)}`,
+        extra: [
+          meta.trait ? `特質：${meta.trait}` : '',
+          meta.style_module ? `風格模組：${meta.style_module}` : '',
+          Array.isArray(meta.possible_tone) && meta.possible_tone.length ? `可能語氣：${meta.possible_tone.join('、')}` : ''
+        ].filter(Boolean),
+        href: `search.html?q=${encodeURIComponent(`月之符文 ${meta.group_zh}群組 方法論`)}`,
         linkLabel: `搜尋${meta.group_zh}群組方法論`,
         runeIds: (meta.runes || []).map(member => Number(member.id)).filter(id => id >= 1 && id <= 64)
       })),
@@ -111,8 +117,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         return `<div class="group-row">${items.map(tile).join("")}</div>`;
       }
     });
+  }
 
-    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">八個基本群組的符文顯示於上方快速選單；點選符文圖片可查看進階文字說明。</p>${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之外額外列出。</span></div></div><div class="group-row">${specialRunes.map(tile).join("")}</div></section>` : ""}`;
+  if (grid) {
+    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">點選總覽圖上的八個群組按鈕，可在圖下快速切換該組 8 枚符文；點選符文圖片可查看進階文字說明。</p>${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之外額外列出。</span></div></div><div class="group-row">${specialRunes.map(tile).join("")}</div></section>` : ""}`;
   }
   if (count) count.textContent = "8 組 · 64 枚基本符文 + 2 枚特殊符文";
 
