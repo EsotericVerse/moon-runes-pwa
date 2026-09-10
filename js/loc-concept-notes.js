@@ -11,6 +11,21 @@
   `;
   document.head.appendChild(style);
 
+  function addGovernanceNote(){
+    if(document.getElementById('loc-governance-neutral-note')) return;
+    const host = document.getElementById('principles');
+    if(!host) return;
+    const box = document.createElement('div');
+    box.id = 'loc-governance-neutral-note';
+    box.className = 'loc-concept-note';
+    box.innerHTML = `
+      <small>Neutrality · De-mystification</small>
+      <p><strong>LOC 的角色是中立地切分語言：把模糊問題拆成模組、方法與演算法，不替使用者決定哪個答案必然正確。</strong></p>
+      <p>月之符文則是一套具體的語言系統。它以「月」作為主體與識別，但盡可能公正、客觀地描述語言本身；籤詩的「指引」只是把不確定性整理成可以理解、比較與選擇的可能，不等於神諭、預言或命定。</p>
+      <p>可以把它想成：<strong>把申論題先整理成選擇題。</strong> 系統負責提供可辨認的路徑，人仍保有最後的判斷與選擇。</p>`;
+    host.appendChild(box);
+  }
+
   function addRunesNote(){
     if(document.getElementById('loc-runes-modular-note')) return;
     const host = document.querySelector('.rune-basics') || document.querySelector('.daily-entry') || document.querySelector('main');
@@ -42,6 +57,7 @@
     hero.after(box);
   }
 
+  if(file === 'governance.html') addGovernanceNote();
   if(file === 'runes.html' || file === 'lots.html') addRunesNote();
   if(file === 'evolution.html') addEvolutionNote();
 })();
