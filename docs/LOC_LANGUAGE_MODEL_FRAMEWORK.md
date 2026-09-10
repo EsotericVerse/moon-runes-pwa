@@ -1,59 +1,65 @@
-# LOC Language Model Framework
+# LOC Language Module Framework
 
-## 1. Positioning
+## 1. Core concept
 
-LOC（Luna Codex／月典）正式定位為 **Language Model Framework／語言模型框架**。
+LOC（Luna Codex／月典）以 **Language Module Framework／語言模組框架** 作為核心框架概念。
 
-LOC 本身不是一個固定語彙集合，也不是某一個特定符號模型。它提供一套可重複使用的基本結構，用來把語言資料組織成可運作、可搜尋、可治理、可推演、可進化的語言模型。
+這不是願景式命名，也不是事後替系統升格，而是把 LOC 與 LunaRunes 既有結構之間原本就存在、且可互相驗證的關係明文化。
 
-核心關係：
+語言像物質世界，語言系統像元素，Token 則更接近原子級的語彙單位。
+
+符文是對這些「語言原子」進行分組與結構化的一種方式；LOC 則提供語言的模組化框架，用來組織這些細小單元。符文語言模組則進一步對符文所涵蓋的語言原子進行分類、建立關係，並定義其處理方式。
+
+LOC 不直接宣稱自己包辦整個「語言世界」，而是提供一套將細小語言單元組織成可操作模組的方法。框架可以很小，但解析粒度可以很細。
+
+語言模組框架的目的，不是取代語言系統，而是讓複雜語言系統的解析、分類、組織與重組變得更輕量、更清楚。
+
+---
+
+## 2. LOC and LunaRunes are mutually validating
+
+LOC 與 LunaRunes 是相輔相成的關係，不是單向依附。
+
+LOC 提供模組化的分析與組織方式；LunaRunes 則提供一套已存在的符號語彙、固定分組、脈絡結構、演算法、延伸資料與推演結果，讓 LOC 的模組化方法可以被實際檢驗。
+
+同時，LOC 又能反過來把 LunaRunes 既有的語彙、群組、脈絡、演算法與演化關係整理成更清楚、可操作、可搜尋與可治理的結構。
+
+因此這不是「理論證明實作」或「實作證明理論」的單向關係，而是：
 
 ```text
-LOC = Language Model Framework
-LunaRunes = Symbolic Language Model implemented with LOC
+LOC framework
+  <-> LunaRunes symbolic structure
+  <-> structured data
+  <-> algorithms
+  <-> implementation
+  <-> evolution results
 ```
 
-LunaRunes 是 LOC 的第一個 reference implementation，但 LOC 不綁定 LunaRunes。其他作者可以定義自己的 symbolic vocabulary、grouping、context、algorithm、module 與 evolution，形成不同的 LOC implementation，例如 `LOC + SunRunes`。
+彼此可以對照、互相驗證。
 
 ---
 
-## 2. Framework principle
+## 3. Rune definition in the framework
 
-LOC 的基本方法不是依賴大型語言模型猜測分類，而是先建立可治理的結構：
+在這個框架裡，Token 可視為原子級語彙單位。
 
-```text
-Define vocabulary
-  -> build context
-  -> extend into systems / works
-  -> define algorithms
-  -> form language modules
-  -> project and evolve recursively
-```
+LunaRunes 的 rune 並不是單純把一個中文字直接等同於一個 Token，而是對相關語言原子進行分組、壓縮與結構化後形成的符號單位。
 
-因此 LOC 可以從 deterministic structure 開始，再視需要加入 semantic vector、embedding 或 LLM。這些 AI／向量能力是 enhancement layer，不是 LOC 成立的必要條件。
+因此符文可以視為：
 
----
+> 對語言原子進行分組與結構化後形成的可操作符號單位。
 
-## 3. LOC1-8 framework
+而符文語言模組則是：
 
-| LOC | Framework role | LunaRunes reference implementation |
-|---|---|---|
-| LOC1 | Vocabulary | 符文語彙 / Rune Symbolic Vocabulary：66 枚符文本身 |
-| LOC2 | Context | 符文脈絡 / Rune Symbolic Context：2／3／5／11 組合與位置關係 |
-| LOC3 | Extension I | 符文延伸體系：音樂 / Rune Symbolic Extension: Music |
-| LOC4 | Extension II | 符文延伸體系：文學 / Rune Symbolic Extension: Literary |
-| LOC5 | Extension III | 符文延伸體系：多媒體 / Rune Symbolic Extension: Multimedia |
-| LOC6 | System Algorithm | 符文系統演算法 / Rune Symbolic System Algorithm：解牌與系統規則 |
-| LOC7 | Language Module | 符文語言模組 / Rune Symbolic Language Module：固定符文群組與模組分類 |
-| LOC8 | Evolution Engine | 符文進化推演引擎 / Rune Evolution Engine：遞迴推演與系統狀態進化 |
+> 對符文所涵蓋的語言原子與符號關係進一步分類、建立關係，並定義其處理方式。
 
-LOC1–8 是功能切分，不代表版本、成熟度或高低階級。
+這也是 LunaRunes 能夠從單一符文延伸到多符文脈絡、延伸作品、演算法與推演的基礎。
 
 ---
 
-## 4. LunaRunes as reference implementation
+## 4. LunaRunes implementation structure
 
-LunaRunes 使用作者指定的 66 枚符文作為封閉且可治理的 symbolic vocabulary。
+LunaRunes 使用作者定義的 66 枚符文作為 canonical symbolic vocabulary。
 
 基本結構：
 
@@ -69,114 +75,75 @@ LunaRunes 使用作者指定的 66 枚符文作為封閉且可治理的 symbolic
 65-66  特殊符文：玄、命
 ```
 
-1–64 以 **8** 作為基本分組單位。這個 grouping 是 LunaRunes 的作者定義與符號系統結構，不是 embedding、clustering 或 AI 自動生成的結果。
+1–64 以 8 為基本分組單位。這套分組不是 embedding、clustering 或 AI 自動生成的結果，而是 LunaRunes 既有的作者定義與系統結構。
 
 Rune 0 德為作者／治理錨點，不列入 66 枚可抽取符文。
 
 ---
 
-## 5. Deterministic base algorithm
+## 5. LOC1–8 as an observable module path
 
-LunaRunes 的基本分類可只依賴 canonical 66-rune data。
+LunaRunes 既有內容可以沿 LOC1–8 被拆解與對照：
+
+| LOC | LunaRunes implementation |
+|---|---|
+| LOC1 | 符文語彙 / Rune Symbolic Vocabulary |
+| LOC2 | 符文脈絡 / Rune Symbolic Context |
+| LOC3 | 符文延伸體系：音樂 / Rune Symbolic Extension: Music |
+| LOC4 | 符文延伸體系：文學 / Rune Symbolic Extension: Literary |
+| LOC5 | 符文延伸體系：多媒體 / Rune Symbolic Extension: Multimedia |
+| LOC6 | 符文系統演算法 / Rune Symbolic System Algorithm |
+| LOC7 | 符文語言模組 / Rune Symbolic Language Module |
+| LOC8 | 符文進化推演引擎 / Rune Evolution Engine |
+
+這張對照表不是為 LunaRunes 事後硬套的新分類，而是把原本存在於資料與實作中的功能邊界明文化，並用 LOC 重新觀察 LunaRunes；同時 LunaRunes 的實際內容又反過來驗證 LOC 的模組化切分確實可以運作。
+
+---
+
+## 6. Deterministic base and fine-grained analysis
+
+LunaRunes 的基本分類可以直接依賴 canonical rune data，不需要先使用 semantic vector、embedding 或外部 API。
 
 最小流程：
 
 ```text
-JSON / structured record
-  -> resolve rune id or exact rune name
-  -> join canonical runes66.json
-  -> retrieve canonical group
-  -> assign LOC1 vocabulary
-  -> assign LOC7 language module
+structured record
+  -> resolve rune id / rune name
+  -> match canonical rune
+  -> read canonical group
+  -> map rune vocabulary
+  -> map rune language module
   -> preserve provenance
 ```
 
-因此基礎層可以 **No API Key / No Embedding / No Semantic Vector** 運作。
+這個基礎層的價值在於：框架本身可以很小，但因為從原子級語彙單位、符文分組與明確模組開始，解析粒度可以很細。
 
-這不是主張所有語意分析永遠不需要 AI，而是明確區分：
-
-- 已有固定結構的問題，優先使用 deterministic rule。
-- 自由文字中的隱含語意、相似作品、潛在主題與模糊跨符文關係，可使用 semantic vector / LLM 作增強。
-- AI 結果不得覆蓋 canonical authority；有衝突時進入 governance review。
+語意向量、embedding 與 LLM 可以用來處理自由文字中的隱含語意、相似度或模糊關係，但它們是 enhancement layer，而不是符文模組化成立的前提。
 
 ---
 
-## 6. Classification versus inference
+## 7. Evolution as reciprocal verification
 
-LOC 要區分兩種不同工作：
-
-### Classification
-
-已知資料結構或明確符號時，依規則直接分類。
-
-例如：
+LOC8 的推演不是單純 timeline。既有資料經過分類、脈絡、演算法與模組分析後，可以產生新的結構化觀察；經治理確認後，再回寫為新的系統狀態。
 
 ```text
-空 -> rune id 55 -> 秩序 -> LOC1 符文語彙 + LOC7 符文語言模組｜秩序群組
-```
-
-這一層不需要語意向量。
-
-### Semantic inference
-
-當來源只有自由文字，沒有 rune id、rune name、group 或既有關聯欄位時，才需要分析該文字可能包含哪些 rune semantics。
-
-推論結果應被視為 derived metadata，而不是新的 Canon。
-
----
-
-## 7. Evolution engine
-
-LOC8 的核心不是單純 timeline，而是可以把前一輪結構化結果重新作為下一輪輸入。
-
-```text
-source data
-  -> classification
-  -> context
-  -> algorithm
-  -> language module
-  -> statistics / temporal comparison
+existing data
+  -> module analysis
+  -> context / algorithm relation
+  -> projection
   -> governed write-back
   -> new system state
-  -> next projection
+  -> next analysis
 ```
 
-這個循環使語言系統可以反覆推演。理論上可持續遞迴；工程上則由資料變更、版本、事件或治理條件觸發。
-
-因此 Evolution 不只是「分析資料如何變」，還包含：當推演結果被確認後，允許它反過來修正 taxonomy、module definition、search projection、relationship 或其他 system metadata。
+這個循環也構成 LOC 與 LunaRunes 的另一層互證：LunaRunes 提供真實資料與演化歷程，LOC 提供可重複的分析框架；每一輪結果都可以回頭檢查原有分組、關係與模組是否仍然成立。
 
 ---
 
 ## 8. Human authorship and AI role
 
-LOC 的分類框架、LunaRunes 66-rune vocabulary、八組 grouping、LOC1–8 對應與 Evolution Engine 的方法論，屬於作者的系統分析與設計。
+LunaRunes 的 66-rune vocabulary、八組 grouping、符文語意、組合規則與相關系統分析均為作者既有設計。
 
-AI 可以：
+LOC 對這些既有內容進行模組化整理，並使其能被更一致地分析與實作。
 
-- parse structured data
-- execute deterministic mapping
-- inspect consistency
-- propose classifications under defined rules
-- assist semantic inference when requested
-- validate write-back against governance rules
-
-AI 不應被描述為 LOC taxonomy 或 LunaRunes grouping 的原始設計者。
-
----
-
-## 9. Generalization beyond LunaRunes
-
-LOC 的可重用性來自「框架與實作分離」。
-
-另一套 symbolic language model 可以使用不同數量、不同分組方式、不同符號與不同演算法，只要它建立自己的 canonical vocabulary 與治理規則即可。
-
-例如：
-
-```text
-LOC + LunaRunes -> LunaRunes Symbolic Language Model
-LOC + SunRunes  -> another Symbolic Language Model
-```
-
-SunRunes 不需要採用 LunaRunes 的 66 枚、8 枚一組或相同語意；那些是 LunaRunes implementation rules，不是 LOC framework 的硬性限制。
-
-這一點使 LOC 能作為語言模型的基本框架，而 LunaRunes 則持續作為第一個完整的實作與驗證案例。
+AI 可以協助 parse 資料、執行規則、檢查一致性、進行可選的語意推論與驗證，但不應把既有符文分組、語意或 LOC–LunaRunes 關係描述成 AI 所創造的 taxonomy。
