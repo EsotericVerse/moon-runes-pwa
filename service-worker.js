@@ -1,8 +1,12 @@
-const CACHE_NAME = "moon-runes-pwa-v176";
+const CACHE_NAME = "moon-runes-pwa-v177";
 
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
+  "/search.html",
+  "/runes.html",
+  "/lots.html",
+  "/statics.html",
   "/context.html",
   "/governance.html",
   "/loc2-game.html",
@@ -12,8 +16,8 @@ const ASSETS_TO_CACHE = [
   "/evolution.html",
   "/css/style.css",
   "/js/loc-nav.js",
-  "/js/keyword-ranking-fetch-guard.js",
   "/js/loc-periods.js",
+  "/js/statics-workspace.js",
   "/css/loc-nav.css",
   "/css/loc-responsive.css",
   "/css/rune-draw.css",
@@ -36,7 +40,7 @@ const ASSETS_TO_CACHE = [
   "/js/main.js",
   "/js/locMoonPhase.js",
   "/js/rune-draw.js?v=20260908-4",
-  "/js/rune-daily-records.js?v=20260908-1",
+  "/js/rune-daily-records.js?v=20260910-statics",
   "/js/runeLibrary.js?v=20260905-3",
   "/js/runes66.js",
   "/js/direction64.js",
@@ -57,42 +61,30 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE)));
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((cacheNames) =>
-        Promise.all(
-          cacheNames
-            .filter((cacheName) => cacheName !== CACHE_NAME)
-            .map((cacheName) => caches.delete(cacheName))
-        )
-      )
-      .then(() => self.clients.claim())
+    caches.keys().then((cacheNames) => Promise.all(
+      cacheNames.filter((cacheName) => cacheName !== CACHE_NAME).map((cacheName) => caches.delete(cacheName))
+    )).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
-
   if (request.method !== "GET") return;
-
   if (url.origin !== self.location.origin) {
     event.respondWith(fetch(request));
     return;
   }
 
-  // Search-critical data must never be served cache-first. These files are
-  // frequently regenerated and stale copies break corpus search.
   if (
     url.pathname === "/data/json/generated/search/SEARCH_SOURCE_STATS.json" ||
+    url.pathname === "/data/json/generated/LOC_RUNE_FREQUENCY_STATS.json" ||
     url.pathname === "/data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json" ||
     url.pathname.startsWith("/data/json/generated/loc4/threads/main/")
   ) {
@@ -100,18 +92,12 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Search and LunaRunes are updated frequently. Never serve cached HTML shells.
-  if (url.pathname === "/search.html" || url.pathname === "/runes.html") {
-    event.respondWith(fetch(request, { cache: "no-store" }));
+  if (["/search.html","/runes.html","/lots.html","/statics.html"].includes(url.pathname)) {
+    event.respondWith(fetch(request, { cache: "no-store" }).catch(() => caches.match(request)));
     return;
   }
 
-  if (
-    request.mode === "navigate" ||
-    url.pathname.endsWith(".js") ||
-    url.pathname.endsWith(".html") ||
-    url.pathname.endsWith("/")
-  ) {
+  if (request.mode === "navigate" || url.pathname.endsWith(".js") || url.pathname.endsWith(".html") || url.pathname.endsWith("/")) {
     event.respondWith(
       fetch(request, { cache: "no-store" })
         .then((networkResponse) => {
@@ -124,7 +110,5 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => cachedResponse || fetch(request))
-  );
+  event.respondWith(caches.match(request).then((cachedResponse) => cachedResponse || fetch(request)));
 });
