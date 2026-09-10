@@ -33,6 +33,14 @@
       script.dataset.loc3StyleRanking = 'true';
       document.body.appendChild(script);
     }
+
+    if (file === "search.html" && !document.querySelector('script[data-km-concepts-search]')) {
+      const script = document.createElement('script');
+      script.src = 'js/km-concepts-search.js';
+      script.defer = true;
+      script.dataset.kmConceptsSearch = 'true';
+      document.body.appendChild(script);
+    }
   }
 
   const DEFAULT_NAV = [
