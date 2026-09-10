@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v178";
+const CACHE_NAME = "moon-runes-pwa-v179";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -8,8 +8,8 @@ const ASSETS_TO_CACHE = [
   "/lots.html",
   "/statics.html",
   "/context.html",
+  "/game.html",
   "/governance.html",
-  "/loc2-game.html",
   "/lo3rwang.html",
   "/tutorial01.html",
   "/tutorial02.html",
@@ -67,46 +67,27 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => Promise.all(
-      cacheNames.filter((cacheName) => cacheName !== CACHE_NAME).map((cacheName) => caches.delete(cacheName))
-    )).then(() => self.clients.claim())
-  );
+  event.waitUntil(caches.keys().then((cacheNames) => Promise.all(cacheNames.filter((cacheName) => cacheName !== CACHE_NAME).map((cacheName) => caches.delete(cacheName)))).then(() => self.clients.claim()));
 });
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== "GET") return;
-  if (url.origin !== self.location.origin) {
-    event.respondWith(fetch(request));
-    return;
-  }
+  if (url.origin !== self.location.origin) { event.respondWith(fetch(request)); return; }
 
-  if (
-    url.pathname === "/data/json/generated/LOC_RUNE_FREQUENCY_STATS.json" ||
-    url.pathname === "/data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json" ||
-    url.pathname.startsWith("/data/json/generated/loc4/threads/main/")
-  ) {
+  if (url.pathname === "/data/json/generated/LOC_RUNE_FREQUENCY_STATS.json" || url.pathname === "/data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json" || url.pathname.startsWith("/data/json/generated/loc4/threads/main/")) {
     event.respondWith(fetch(request, { cache: "no-store" }));
     return;
   }
 
-  if (["/search.html","/runes.html","/lots.html","/statics.html"].includes(url.pathname)) {
+  if (["/search.html","/runes.html","/lots.html","/statics.html","/evolution.html","/game.html"].includes(url.pathname)) {
     event.respondWith(fetch(request, { cache: "no-store" }).catch(() => caches.match(request)));
     return;
   }
 
   if (request.mode === "navigate" || url.pathname.endsWith(".js") || url.pathname.endsWith(".html") || url.pathname.endsWith("/")) {
-    event.respondWith(
-      fetch(request, { cache: "no-store" })
-        .then((networkResponse) => {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
-          return networkResponse;
-        })
-        .catch(() => caches.match(request))
-    );
+    event.respondWith(fetch(request, { cache: "no-store" }).then((networkResponse) => {const responseClone = networkResponse.clone();caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));return networkResponse;}).catch(() => caches.match(request)));
     return;
   }
 
