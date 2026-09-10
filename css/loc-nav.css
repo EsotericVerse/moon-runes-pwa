@@ -1,134 +1,118 @@
-/* LOC shared navigation and workspace contract
-   Single source of truth for:
-   1) global top navigation
-   2) public header hierarchy
-   3) workspace left function rail
-   Page-specific styles should not change workspace direction. */
+/* LOC shared navigation contract
+   1) global NAV
+   2) page-level NAV
+   3) contextual NAV
+   Sidebars are deprecated and must not render. */
 
 :root{
   --loc-touch-min:44px;
-  --loc-nav-height:64px;
-  --loc-rail-width:220px;
-  --loc-rail-mobile:88px;
+  --loc-nav-height:58px;
 }
 
 .loc-global-shell{
-  width:min(1120px,calc(100% - 32px));
+  width:min(1180px,calc(100% - 28px));
   margin:0 auto;
 }
+
 .loc-global-nav{
-  position:sticky;
-  top:0;
+  position:relative;
   z-index:50;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:18px;
+  gap:16px;
   min-height:var(--loc-nav-height);
   width:100%;
-  padding:14px 0;
-  margin:0;
-  background:linear-gradient(180deg,rgba(7,24,45,.98),rgba(7,24,45,.88) 72%,rgba(7,24,45,.35));
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
+  padding:10px 0 8px;
+  background:rgba(7,24,45,.96);
 }
+
 .loc-global-brand{
-  display:block;
   flex:0 0 auto;
   color:var(--text,var(--loc-text,#f5f1ff));
-  font-size:1rem;
+  font-size:.96rem;
   font-weight:800;
-  letter-spacing:.08em;
+  letter-spacing:.07em;
   text-decoration:none;
   white-space:nowrap;
 }
-.loc-global-links{
+
+.loc-global-links,
+.loc-nav-tier-inner{
   display:flex;
-  flex-wrap:wrap;
-  justify-content:flex-end;
   align-items:center;
   gap:12px;
+  min-width:0;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  scrollbar-width:none;
 }
-.loc-global-link{
-  position:relative;
+.loc-global-links::-webkit-scrollbar,
+.loc-nav-tier-inner::-webkit-scrollbar{display:none}
+
+.loc-global-link,
+.loc-nav-tier-link{
+  flex:0 0 auto;
   display:inline-flex;
   align-items:center;
   justify-content:center;
   min-height:36px;
-  padding:5px 1px;
-  font-size:.88rem;
-  font-weight:500;
+  padding:5px 4px;
   border:0;
-  background:transparent;
+  border-bottom:1px solid transparent;
   color:var(--muted,var(--loc-muted,#b9bfd0));
+  background:transparent;
   text-decoration:none;
+  font-size:.84rem;
+  font-weight:650;
   white-space:nowrap;
 }
-.loc-global-link::after{
-  content:"";
-  position:absolute;
-  left:0;right:0;bottom:1px;
-  height:1px;
-  background:var(--gold,var(--loc-gold,#e7c27d));
-  transform:scaleX(0);
-  transform-origin:center;
-  transition:transform .16s ease;
-  opacity:.9;
-}
-.loc-global-link:hover,
-.loc-global-link:focus-visible,
-.loc-global-link[aria-current="page"]{
+.loc-global-link:hover,.loc-global-link:focus-visible,.loc-global-link[aria-current="page"],
+.loc-nav-tier-link:hover,.loc-nav-tier-link:focus-visible,.loc-nav-tier-link[aria-current="true"]{
   color:var(--text,var(--loc-text,#f5f1ff));
+  border-bottom-color:var(--gold,var(--loc-gold,#e7c27d));
   outline:none;
 }
-.loc-global-link:hover::after,
-.loc-global-link:focus-visible::after,
-.loc-global-link[aria-current="page"]::after{transform:scaleX(1)}
 
-/* Public text-block hierarchy. */
-.loc-header,.loc-page-hero{margin-block:0 24px;padding-block:28px 0}
-.loc-header .loc-header-meta{
-  margin:0 0 9px;
-  color:var(--accent,var(--mint,var(--loc-purple,#b49eff)));
-  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
-  font-size:.76rem;font-weight:800;line-height:1.45;letter-spacing:.14em;
-}
-.loc-header .loc-header-title,.loc-page-title{
-  margin:0;max-width:920px;color:var(--text,var(--loc-text,#f5f1ff));
-  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
-  font-size:clamp(3.15rem,7.5vw,5.4rem);font-weight:800;line-height:1;letter-spacing:-.05em;
-}
-.loc-header .loc-header-subtitle,.loc-page-subtitle{
-  max-width:800px;margin:15px 0 0;color:var(--text,var(--loc-text,#f5f1ff));
-  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
-  font-size:clamp(1.35rem,2.7vw,2rem);font-weight:650;line-height:1.35;letter-spacing:-.02em;
-}
-.loc-header .loc-header-copy,.loc-page-intro{
-  max-width:800px;margin:12px 0 0;color:var(--muted,var(--loc-muted,#b9bfd0));font-size:1rem;line-height:1.75;
+.loc-global-search{flex:0 0 auto;margin:0}
+.loc-global-search input{
+  width:clamp(118px,16vw,210px);
+  height:34px;
+  padding:6px 10px;
+  border:1px solid rgba(180,158,255,.24);
+  border-radius:8px;
+  color:var(--text,var(--loc-text,#f5f1ff));
+  background:rgba(4,16,33,.58);
+  font:inherit;
+  font-size:.82rem;
 }
 
-/* Workspace: first level is top NAV; page function controls stay in a left rail. */
-body .app-shell{
-  width:min(1500px,100%);
-  margin:0 auto;
-  padding:22px;
-  display:grid !important;
-  grid-template-columns:var(--loc-rail-width) minmax(0,1fr) !important;
-  gap:20px;
-  align-items:start;
+.loc-nav-tiers{
+  position:sticky;
+  top:0;
+  z-index:45;
+  background:rgba(7,24,45,.96);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-top:1px solid rgba(180,158,255,.12);
+  border-bottom:1px solid rgba(180,158,255,.16);
 }
+.loc-nav-tier{width:min(1180px,calc(100% - 28px));margin:0 auto}
+.loc-nav-tier[data-tier="2"] .loc-nav-tier-inner{min-height:42px}
+.loc-nav-tier[data-tier="3"]{border-top:1px solid rgba(180,158,255,.1)}
+.loc-nav-tier[data-tier="3"] .loc-nav-tier-inner{min-height:38px}
+.loc-nav-tier[data-tier="3"] .loc-nav-tier-link{font-size:.78rem;color:var(--muted,var(--loc-muted,#b9bfd0))}
+
+/* Old workspace rail must never reappear. */
+.workspace-sidebar,
 body .app-shell > .workspace-sidebar{
-  position:sticky !important;
-  top:calc(var(--loc-nav-height) + 12px) !important;
-  align-self:start !important;
-  width:auto !important;
-  min-width:0 !important;
-  min-height:calc(100vh - var(--loc-nav-height) - 36px) !important;
-  max-height:calc(100vh - var(--loc-nav-height) - 24px) !important;
-  padding:16px 12px !important;
-  overflow-x:hidden !important;
-  overflow-y:auto !important;
-  overscroll-behavior:contain;
+  display:none !important;
+}
+body .app-shell{
+  width:min(1180px,calc(100% - 28px)) !important;
+  margin:0 auto !important;
+  padding:18px 0 36px !important;
+  display:block !important;
 }
 body .app-shell > .workspace-main,
 body .app-shell > main,
@@ -137,129 +121,37 @@ body .app-shell > .page{
   min-width:0 !important;
   margin:0 !important;
 }
-body .app-shell > .workspace-sidebar .workspace-nav{
-  display:grid !important;
-  grid-template-columns:1fr !important;
-  gap:12px !important;
-  width:100% !important;
-  overflow:visible !important;
-}
-body .app-shell > .workspace-sidebar .workspace-nav-group{
-  display:grid !important;
-  grid-template-columns:1fr !important;
-  gap:6px !important;
-  min-width:0 !important;
-}
-body .app-shell > .workspace-sidebar .workspace-nav-label{
-  grid-column:auto !important;
-}
-body .app-shell > .workspace-sidebar .workspace-switch,
-body .app-shell > .workspace-sidebar a.workspace-switch,
-body .app-shell > .workspace-sidebar button.workspace-switch{
-  width:100% !important;
-  min-width:0 !important;
-  min-height:var(--loc-touch-min) !important;
-  padding:10px 11px !important;
-  text-align:left !important;
-  touch-action:manipulation;
-}
 
-@media(max-width:900px){
-  :root{--loc-rail-width:108px}
-  body .app-shell{
-    grid-template-columns:var(--loc-rail-width) minmax(0,1fr) !important;
-    gap:12px !important;
-    padding:12px !important;
-  }
-  body .app-shell > .workspace-sidebar{
-    top:calc(var(--loc-nav-height) + 8px) !important;
-    min-height:0 !important;
-    max-height:calc(100vh - var(--loc-nav-height) - 20px) !important;
-    padding:10px 8px !important;
-  }
-  body .app-shell > .workspace-sidebar .workspace-brand,
-  body .app-shell > .workspace-sidebar .workspace-foot,
-  body .app-shell > .workspace-sidebar [data-web-build]{display:none !important}
-  body .app-shell > .workspace-sidebar .workspace-nav{gap:8px !important}
-  body .app-shell > .workspace-sidebar .workspace-nav-group{gap:4px !important}
-  body .app-shell > .workspace-sidebar .workspace-nav-label{
-    padding:0 4px !important;
-    font-size:9px !important;
-    letter-spacing:.06em !important;
-  }
-  body .app-shell > .workspace-sidebar .workspace-switch,
-  body .app-shell > .workspace-sidebar a.workspace-switch,
-  body .app-shell > .workspace-sidebar button.workspace-switch{
-    min-height:46px !important;
-    padding:8px 7px !important;
-    border-radius:10px !important;
-  }
-  body .app-shell > .workspace-sidebar .workspace-switch strong{font-size:12px !important;line-height:1.25 !important}
-  body .app-shell > .workspace-sidebar .workspace-switch small{display:none !important}
+/* Public text hierarchy. */
+.loc-header,.loc-page-hero{margin-block:0 24px;padding-block:28px 0}
+.loc-header .loc-header-meta{
+  margin:0 0 9px;
+  color:var(--accent,var(--mint,var(--loc-purple,#b49eff)));
+  font-size:.76rem;font-weight:800;line-height:1.45;letter-spacing:.14em;
+}
+.loc-header .loc-header-title,.loc-page-title{
+  margin:0;max-width:920px;color:var(--text,var(--loc-text,#f5f1ff));
+  font-size:clamp(3rem,7.2vw,5.2rem);font-weight:800;line-height:1;letter-spacing:-.05em;
+}
+.loc-header .loc-header-subtitle,.loc-page-subtitle{
+  max-width:800px;margin:15px 0 0;color:var(--text,var(--loc-text,#f5f1ff));
+  font-size:clamp(1.3rem,2.6vw,1.95rem);font-weight:650;line-height:1.35;
+}
+.loc-header .loc-header-copy,.loc-page-intro{
+  max-width:800px;margin:12px 0 0;color:var(--muted,var(--loc-muted,#b9bfd0));font-size:1rem;line-height:1.75;
 }
 
 @media(max-width:720px){
-  :root{--loc-nav-height:54px;--loc-rail-width:var(--loc-rail-mobile)}
-  .loc-global-shell{width:min(100% - 18px,1120px)}
-  .loc-global-nav{
-    min-height:var(--loc-nav-height);
-    padding:7px 0;
-    gap:9px;
-  }
-  .loc-global-brand{font-size:.88rem}
-  .loc-global-links{
-    min-width:0;
-    flex:1 1 auto;
-    flex-wrap:nowrap;
-    justify-content:flex-start;
-    gap:10px;
-    overflow-x:auto;
-    overscroll-behavior-x:contain;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
-  }
-  .loc-global-links::-webkit-scrollbar{display:none}
-  .loc-global-link{flex:0 0 auto;min-height:40px;font-size:.82rem}
-
+  :root{--loc-nav-height:52px}
+  .loc-global-shell,.loc-nav-tier,body .app-shell{width:min(100% - 18px,1180px)!important}
+  .loc-global-nav{gap:8px;padding:6px 0}
+  .loc-global-brand{font-size:.84rem}
+  .loc-global-links,.loc-nav-tier-inner{gap:9px}
+  .loc-global-link,.loc-nav-tier-link{min-height:40px;font-size:.8rem}
+  .loc-global-search input{width:112px;height:34px}
+  .loc-nav-tier[data-tier="3"] .loc-nav-tier-link{font-size:.75rem}
   .loc-header,.loc-page-hero{padding-top:16px;margin-bottom:16px}
-  .loc-header .loc-header-meta{font-size:.68rem;letter-spacing:.1em}
-  .loc-header .loc-header-title,.loc-page-title{font-size:clamp(2.15rem,11vw,3.2rem);line-height:1.04}
-  .loc-header .loc-header-subtitle,.loc-page-subtitle{font-size:clamp(1.08rem,5.2vw,1.38rem);line-height:1.4;margin-top:9px}
-  .loc-header .loc-header-copy,.loc-page-intro{font-size:.9rem;line-height:1.62;margin-top:8px}
-
-  body .app-shell{
-    width:100% !important;
-    grid-template-columns:var(--loc-rail-width) minmax(0,1fr) !important;
-    gap:8px !important;
-    padding:8px !important;
-  }
-  body .app-shell > .workspace-sidebar{
-    top:calc(var(--loc-nav-height) + 6px) !important;
-    max-height:calc(100vh - var(--loc-nav-height) - 14px) !important;
-    padding:8px 5px !important;
-    border-radius:14px !important;
-  }
-  body .app-shell > .workspace-sidebar .workspace-nav-label{
-    padding:0 2px !important;
-    font-size:8px !important;
-    line-height:1.25 !important;
-  }
-  body .app-shell > .workspace-sidebar .workspace-switch,
-  body .app-shell > .workspace-sidebar a.workspace-switch,
-  body .app-shell > .workspace-sidebar button.workspace-switch{
-    min-height:46px !important;
-    padding:7px 5px !important;
-    text-align:center !important;
-    justify-items:center !important;
-  }
-  body .app-shell > .workspace-sidebar .workspace-switch strong{
-    font-size:11px !important;
-    line-height:1.25 !important;
-    overflow-wrap:anywhere;
-  }
-}
-
-@media(max-width:420px){
-  :root{--loc-rail-mobile:82px}
-  body .app-shell{gap:6px !important;padding:6px !important}
+  .loc-header .loc-header-title,.loc-page-title{font-size:clamp(2.1rem,11vw,3.15rem)}
+  .loc-header .loc-header-subtitle,.loc-page-subtitle{font-size:clamp(1.05rem,5vw,1.35rem)}
+  .loc-header .loc-header-copy,.loc-page-intro{font-size:.9rem;line-height:1.62}
 }
