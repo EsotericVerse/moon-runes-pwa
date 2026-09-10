@@ -1,4 +1,17 @@
-/* LOC shared global navigation — single interface for index/list/loc2/search/life */
+/* LOC shared navigation and workspace contract
+   Single source of truth for:
+   1) global top navigation
+   2) public header hierarchy
+   3) workspace left function rail
+   Page-specific styles should not change workspace direction. */
+
+:root{
+  --loc-touch-min:44px;
+  --loc-nav-height:64px;
+  --loc-rail-width:220px;
+  --loc-rail-mobile:88px;
+}
+
 .loc-global-shell{
   width:min(1120px,calc(100% - 32px));
   margin:0 auto;
@@ -11,7 +24,7 @@
   align-items:center;
   justify-content:space-between;
   gap:18px;
-  min-height:64px;
+  min-height:var(--loc-nav-height);
   width:100%;
   padding:14px 0;
   margin:0;
@@ -40,23 +53,21 @@
   position:relative;
   display:inline-flex;
   align-items:center;
-  min-height:34px;
+  justify-content:center;
+  min-height:36px;
   padding:5px 1px;
   font-size:.88rem;
   font-weight:500;
   border:0;
-  border-radius:0;
   background:transparent;
   color:var(--muted,var(--loc-muted,#b9bfd0));
   text-decoration:none;
-  transition:color .16s ease;
+  white-space:nowrap;
 }
 .loc-global-link::after{
   content:"";
   position:absolute;
-  left:0;
-  right:0;
-  bottom:1px;
+  left:0;right:0;bottom:1px;
   height:1px;
   background:var(--gold,var(--loc-gold,#e7c27d));
   transform:scaleX(0);
@@ -65,58 +76,16 @@
   opacity:.9;
 }
 .loc-global-link:hover,
-.loc-global-link:focus-visible{
+.loc-global-link:focus-visible,
+.loc-global-link[aria-current="page"]{
   color:var(--text,var(--loc-text,#f5f1ff));
   outline:none;
 }
 .loc-global-link:hover::after,
 .loc-global-link:focus-visible::after,
-.loc-global-link[aria-current="page"]::after{
-  transform:scaleX(1);
-}
-.loc-global-link[aria-current="page"]{
-  color:var(--text,var(--loc-text,#f5f1ff));
-}
+.loc-global-link[aria-current="page"]::after{transform:scaleX(1)}
 
-@media(max-width:720px){
-  .loc-global-shell{width:min(100% - 22px,1120px)}
-  .loc-global-nav{
-    position:sticky;
-    top:0;
-    align-items:center;
-    flex-direction:row;
-    min-height:54px;
-    padding:8px 0;
-    gap:10px;
-    background:linear-gradient(180deg,rgba(7,24,45,.98),rgba(7,24,45,.94));
-    backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);
-  }
-  .loc-global-brand{font-size:.9rem}
-  .loc-global-links{
-    width:auto;
-    min-width:0;
-    flex:1 1 auto;
-    flex-wrap:nowrap;
-    justify-content:flex-start;
-    gap:12px;
-    overflow-x:auto;
-    overscroll-behavior-x:contain;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
-  }
-  .loc-global-links::-webkit-scrollbar{display:none}
-  .loc-global-link{
-    flex:0 0 auto;
-    min-height:40px;
-    padding:7px 2px;
-    white-space:nowrap;
-    font-size:.84rem;
-  }
-  .loc-home-link{margin-left:0}
-}
-
-/* LOC public header contract */
+/* Public text-block hierarchy. */
 .loc-header,.loc-page-hero{margin-block:0 24px;padding-block:28px 0}
 .loc-header .loc-header-meta{
   margin:0 0 9px;
@@ -137,138 +106,160 @@
 .loc-header .loc-header-copy,.loc-page-intro{
   max-width:800px;margin:12px 0 0;color:var(--muted,var(--loc-muted,#b9bfd0));font-size:1rem;line-height:1.75;
 }
-@media(max-width:560px){
-  .loc-header,.loc-page-hero{padding-top:20px}
-  .loc-header .loc-header-meta{font-size:.7rem;letter-spacing:.11em}
-  .loc-header .loc-header-title,.loc-page-title{font-size:clamp(2.75rem,14vw,4rem)}
-  .loc-header .loc-header-subtitle,.loc-page-subtitle{font-size:clamp(1.25rem,6.4vw,1.7rem)}
-}
 
-/* Workspace navigation contract
-   Row 1 = global navigation.
-   Row 2 = page-function navigation.
-   No desktop sidebar: runes/context/search/evolution all use the same horizontal second level. */
-body .app-shell,
-body.loc-page-life .app{
-  display:block !important;
-  width:min(1120px,calc(100% - 30px)) !important;
-  margin:0 auto !important;
-  padding:0 0 60px !important;
+/* Workspace: first level is top NAV; page function controls stay in a left rail. */
+body .app-shell{
+  width:min(1500px,100%);
+  margin:0 auto;
+  padding:22px;
+  display:grid !important;
+  grid-template-columns:var(--loc-rail-width) minmax(0,1fr) !important;
+  gap:20px;
+  align-items:start;
 }
-
-body .app-shell > .workspace-sidebar,
-body.loc-page-life .app > .sidebar{
+body .app-shell > .workspace-sidebar{
   position:sticky !important;
-  top:64px !important;
-  z-index:46 !important;
-  width:100% !important;
-  min-height:0 !important;
-  max-height:none !important;
-  margin:0 0 18px !important;
-  padding:8px 0 !important;
-  border:0 !important;
-  border-radius:0 !important;
-  background:rgba(7,24,45,.94) !important;
-  box-shadow:none !important;
-  backdrop-filter:blur(14px) !important;
-  -webkit-backdrop-filter:blur(14px) !important;
-  overflow:hidden !important;
-}
-
-body .app-shell > .workspace-sidebar .workspace-brand,
-body.loc-page-life .app > .sidebar .brand,
-body .app-shell > .workspace-sidebar .workspace-nav-label,
-body.loc-page-life .app > .sidebar .nav-label,
-body .app-shell > .workspace-sidebar .workspace-foot,
-body.loc-page-life .app > .sidebar .sidebar-foot,
-body .app-shell > .workspace-sidebar [data-web-build]{display:none !important}
-
-body .app-shell > .workspace-sidebar .workspace-nav,
-body.loc-page-life .app > .sidebar .nav{
-  display:flex !important;
-  flex-wrap:nowrap !important;
-  align-items:stretch !important;
-  justify-content:flex-start !important;
-  gap:8px !important;
-  width:100% !important;
-  margin:0 !important;
-  padding:0 !important;
-  overflow-x:auto !important;
-  overflow-y:hidden !important;
-  overscroll-behavior-x:contain;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-}
-body .app-shell > .workspace-sidebar .workspace-nav::-webkit-scrollbar,
-body.loc-page-life .app > .sidebar .nav::-webkit-scrollbar{display:none}
-
-body .app-shell > .workspace-sidebar .workspace-nav-group,
-body.loc-page-life .app > .sidebar .nav-group{
-  display:block !important;
-  flex:0 0 auto !important;
-  min-width:0 !important;
-  margin:0 !important;
-}
-
-body .app-shell > .workspace-sidebar .workspace-switch,
-body .app-shell > .workspace-sidebar a.workspace-switch,
-body .app-shell > .workspace-sidebar button.workspace-switch,
-body.loc-page-life .app > .sidebar .view-switch{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
+  top:calc(var(--loc-nav-height) + 12px) !important;
+  align-self:start !important;
   width:auto !important;
-  min-width:82px !important;
-  min-height:42px !important;
-  margin:0 !important;
-  padding:8px 14px !important;
-  border-radius:10px !important;
-  text-align:center !important;
-  touch-action:manipulation;
-  white-space:nowrap !important;
+  min-width:0 !important;
+  min-height:calc(100vh - var(--loc-nav-height) - 36px) !important;
+  max-height:calc(100vh - var(--loc-nav-height) - 24px) !important;
+  padding:16px 12px !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
 }
-
-body .app-shell > .workspace-sidebar .workspace-switch strong,
-body.loc-page-life .app > .sidebar .view-switch strong{
-  display:block !important;
-  font-size:13px !important;
-  line-height:1.25 !important;
-  white-space:nowrap !important;
-}
-body .app-shell > .workspace-sidebar .workspace-switch small,
-body.loc-page-life .app > .sidebar .view-switch small{display:none !important}
-
 body .app-shell > .workspace-main,
 body .app-shell > main,
-body .app-shell > .page,
-body.loc-page-life .app > main{
+body .app-shell > .page{
   width:100% !important;
   min-width:0 !important;
   margin:0 !important;
+}
+body .app-shell > .workspace-sidebar .workspace-nav{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:12px !important;
+  width:100% !important;
+  overflow:visible !important;
+}
+body .app-shell > .workspace-sidebar .workspace-nav-group{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:6px !important;
+  min-width:0 !important;
+}
+body .app-shell > .workspace-sidebar .workspace-nav-label{
+  grid-column:auto !important;
+}
+body .app-shell > .workspace-sidebar .workspace-switch,
+body .app-shell > .workspace-sidebar a.workspace-switch,
+body .app-shell > .workspace-sidebar button.workspace-switch{
+  width:100% !important;
+  min-width:0 !important;
+  min-height:var(--loc-touch-min) !important;
+  padding:10px 11px !important;
+  text-align:left !important;
+  touch-action:manipulation;
+}
+
+@media(max-width:900px){
+  :root{--loc-rail-width:108px}
+  body .app-shell{
+    grid-template-columns:var(--loc-rail-width) minmax(0,1fr) !important;
+    gap:12px !important;
+    padding:12px !important;
+  }
+  body .app-shell > .workspace-sidebar{
+    top:calc(var(--loc-nav-height) + 8px) !important;
+    min-height:0 !important;
+    max-height:calc(100vh - var(--loc-nav-height) - 20px) !important;
+    padding:10px 8px !important;
+  }
+  body .app-shell > .workspace-sidebar .workspace-brand,
+  body .app-shell > .workspace-sidebar .workspace-foot,
+  body .app-shell > .workspace-sidebar [data-web-build]{display:none !important}
+  body .app-shell > .workspace-sidebar .workspace-nav{gap:8px !important}
+  body .app-shell > .workspace-sidebar .workspace-nav-group{gap:4px !important}
+  body .app-shell > .workspace-sidebar .workspace-nav-label{
+    padding:0 4px !important;
+    font-size:9px !important;
+    letter-spacing:.06em !important;
+  }
+  body .app-shell > .workspace-sidebar .workspace-switch,
+  body .app-shell > .workspace-sidebar a.workspace-switch,
+  body .app-shell > .workspace-sidebar button.workspace-switch{
+    min-height:46px !important;
+    padding:8px 7px !important;
+    border-radius:10px !important;
+  }
+  body .app-shell > .workspace-sidebar .workspace-switch strong{font-size:12px !important;line-height:1.25 !important}
+  body .app-shell > .workspace-sidebar .workspace-switch small{display:none !important}
 }
 
 @media(max-width:720px){
-  body .app-shell,
-  body.loc-page-life .app{
+  :root{--loc-nav-height:54px;--loc-rail-width:var(--loc-rail-mobile)}
+  .loc-global-shell{width:min(100% - 18px,1120px)}
+  .loc-global-nav{
+    min-height:var(--loc-nav-height);
+    padding:7px 0;
+    gap:9px;
+  }
+  .loc-global-brand{font-size:.88rem}
+  .loc-global-links{
+    min-width:0;
+    flex:1 1 auto;
+    flex-wrap:nowrap;
+    justify-content:flex-start;
+    gap:10px;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .loc-global-links::-webkit-scrollbar{display:none}
+  .loc-global-link{flex:0 0 auto;min-height:40px;font-size:.82rem}
+
+  .loc-header,.loc-page-hero{padding-top:16px;margin-bottom:16px}
+  .loc-header .loc-header-meta{font-size:.68rem;letter-spacing:.1em}
+  .loc-header .loc-header-title,.loc-page-title{font-size:clamp(2.15rem,11vw,3.2rem);line-height:1.04}
+  .loc-header .loc-header-subtitle,.loc-page-subtitle{font-size:clamp(1.08rem,5.2vw,1.38rem);line-height:1.4;margin-top:9px}
+  .loc-header .loc-header-copy,.loc-page-intro{font-size:.9rem;line-height:1.62;margin-top:8px}
+
+  body .app-shell{
     width:100% !important;
-    padding:0 10px 48px !important;
+    grid-template-columns:var(--loc-rail-width) minmax(0,1fr) !important;
+    gap:8px !important;
+    padding:8px !important;
   }
-  body .app-shell > .workspace-sidebar,
-  body.loc-page-life .app > .sidebar{
-    top:54px !important;
-    margin-bottom:10px !important;
-    padding:6px 0 !important;
+  body .app-shell > .workspace-sidebar{
+    top:calc(var(--loc-nav-height) + 6px) !important;
+    max-height:calc(100vh - var(--loc-nav-height) - 14px) !important;
+    padding:8px 5px !important;
+    border-radius:14px !important;
   }
-  body .app-shell > .workspace-sidebar .workspace-nav,
-  body.loc-page-life .app > .sidebar .nav{gap:5px !important}
+  body .app-shell > .workspace-sidebar .workspace-nav-label{
+    padding:0 2px !important;
+    font-size:8px !important;
+    line-height:1.25 !important;
+  }
   body .app-shell > .workspace-sidebar .workspace-switch,
   body .app-shell > .workspace-sidebar a.workspace-switch,
-  body .app-shell > .workspace-sidebar button.workspace-switch,
-  body.loc-page-life .app > .sidebar .view-switch{
-    min-width:72px !important;
-    min-height:40px !important;
-    padding:7px 10px !important;
+  body .app-shell > .workspace-sidebar button.workspace-switch{
+    min-height:46px !important;
+    padding:7px 5px !important;
+    text-align:center !important;
+    justify-items:center !important;
   }
-  body .app-shell > .workspace-sidebar .workspace-switch strong,
-  body.loc-page-life .app > .sidebar .view-switch strong{font-size:11px !important}
+  body .app-shell > .workspace-sidebar .workspace-switch strong{
+    font-size:11px !important;
+    line-height:1.25 !important;
+    overflow-wrap:anywhere;
+  }
+}
+
+@media(max-width:420px){
+  :root{--loc-rail-mobile:82px}
+  body .app-shell{gap:6px !important;padding:6px !important}
 }
