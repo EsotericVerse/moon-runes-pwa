@@ -252,14 +252,14 @@
           "category": "符文體系",
           "content_type": "文章創作",
           "tag": "符文體系｜文章創作",
-          "purpose": "收納已知符文文學／文章創作紀錄；後續可再掛現行符文細標籤。"
+          "purpose": "收納已知符文文學／文章創作紀錄；現行九群組回填已完成實例驗證，可持續加入現行符文細標籤。"
         },
         {
           "branch_id": "music",
           "category": "符文體系",
           "content_type": "音樂",
           "tag": "符文體系｜音樂",
-          "purpose": "收納已知符文歌曲／音樂創作紀錄；後續可再掛現行符文細標籤。"
+          "purpose": "收納已知符文歌曲／音樂創作紀錄；實際 OW3gs 11 符九群組統計已完成實例驗證，可持續回填作品資料。"
         }
       ],
       "rune_system_content_group_tags": [
@@ -389,7 +389,26 @@
           "group_name": "特殊",
           "tag": "符文體系｜音樂｜特殊組"
         }
-      ]
+      ],
+      "rune_system_implementation_status": {
+        "status": "instance_verified",
+        "verified_at": "2026-09-10",
+        "scope": [
+          "符文文學／文章創作可由既有符文來源回填至現行九群組",
+          "符文歌曲可由實際 OW3gs 11 符來源統計至現行九群組",
+          "歷史符文名稱可透過明確 extension mapping 正規化後納入現行 Canon 分析"
+        ],
+        "evidence": {
+          "literary": "《月語者》182章符文來源已完成群組實例分析",
+          "music": "實際 OW3gs 11符案例已完成九群組 raw-count 實例統計",
+          "historical_extension": [
+            "線 → 向＋鍊",
+            "意 → 向",
+            "混沌／渾沌 → 無＋虛＋空"
+          ]
+        },
+        "note": "此狀態代表符文體系的分類／統計實作已由真實資料驗證可運作，不再列為待做。"
+      }
     }
   ],
   "authority_scope": "global_language_model",
