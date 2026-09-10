@@ -5,8 +5,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const count = document.querySelector("#rune-count");
   const toolbar = document.querySelector("#group-filter")?.closest(".toolbar");
   const overviewLink = document.querySelector('.overview-image-link');
+  const overviewHead = document.querySelector('.rune-overview-head');
   const overviewCopy = document.querySelector('.rune-overview-head p');
   const downloadSection = document.querySelector('.physical-card-download');
+  const headerCopies = Array.from(document.querySelectorAll('.loc-header-copy'));
 
   toolbar?.remove();
 
@@ -55,6 +57,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     .special-rune-meta{display:grid;gap:10px;}
     .special-rune-meta p{margin:0;color:var(--muted);font-size:.82rem;line-height:1.65;}
     .special-rune-meta strong{display:block;margin-bottom:2px;color:var(--gold);font-size:.74rem;}
+    .rune-overview-summary{margin:0 0 8px;color:var(--muted);line-height:1.7;}
 
     @media (max-width:760px){
       .quick-selector-modal .group-row{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -150,8 +153,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const coreGroups = groups.filter(meta => (meta.runes || []).some(member => Number(member.id) >= 1 && Number(member.id) <= 64));
   const specialRunes = all.filter(r => r.編號 === 65 || r.編號 === 66).sort((a,b) => a.編號 - b.編號);
 
+  if (overviewHead) {
+    const summary = document.createElement('p');
+    summary.className = 'rune-overview-summary';
+    summary.innerHTML = `資料共 67 筆：1–64 為八個基本群組，65「玄」與 66「命」為特殊符文；第 0 符「德」為作者／月語者誌銘，不參與抽牌、沒有卡面。<a href="governance.html#de-rune">了解德之符文的治理定位 →</a>`;
+    overviewHead.insertBefore(summary, overviewCopy || null);
+  }
+
+  headerCopies.forEach(node => node.remove());
+
   if (overviewCopy) {
-    overviewCopy.textContent = "點選圖上的八個群組查看該組符文；玄與命列於總覽下方。";
+    overviewCopy.textContent = "點選圖上的八個群組，可查看各組說明與符文資料。";
   }
 
   if (overviewLink && coreGroups.length) {
