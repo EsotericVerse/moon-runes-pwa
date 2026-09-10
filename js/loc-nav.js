@@ -17,14 +17,22 @@
 
   function loadPageEnhancements() {
     const file = location.pathname.split("/").pop() || "index.html";
-    if (file !== "evolution.html") return;
-    if (document.querySelector('script[data-life-draw-history]')) return;
 
-    const script = document.createElement('script');
-    script.src = 'js/life-daily-draw-history.js';
-    script.defer = true;
-    script.dataset.lifeDrawHistory = 'true';
-    document.body.appendChild(script);
+    if (file === "evolution.html" && !document.querySelector('script[data-life-draw-history]')) {
+      const script = document.createElement('script');
+      script.src = 'js/life-daily-draw-history.js';
+      script.defer = true;
+      script.dataset.lifeDrawHistory = 'true';
+      document.body.appendChild(script);
+    }
+
+    if (file === "search.html" && !document.querySelector('script[data-loc3-style-ranking]')) {
+      const script = document.createElement('script');
+      script.src = 'js/loc3-style-ranking.js';
+      script.defer = true;
+      script.dataset.loc3StyleRanking = 'true';
+      document.body.appendChild(script);
+    }
   }
 
   const DEFAULT_NAV = [
