@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.4",
+  "schema_version": "1.5",
   "component": "LOC_GLOBAL_NAV",
   "brand": {
     "label": "LOC月典",
@@ -7,41 +7,11 @@
     "subtitle": "Luna Codex"
   },
   "items": [
-    {
-      "id": "runes",
-      "label": "月之符文",
-      "href": "runes.html",
-      "description": ""
-    },
-    {
-      "id": "game",
-      "label": "遊戲",
-      "href": "game.html",
-      "description": ""
-    },
-    {
-      "id": "context",
-      "label": "脈絡",
-      "href": "context.html",
-      "description": ""
-    },
-    {
-      "id": "evolution",
-      "label": "推演",
-      "href": "evolution.html",
-      "description": ""
-    },
-    {
-      "id": "statics",
-      "label": "統計",
-      "href": "search.html#rankingView",
-      "description": "統計頁建立前暫時導向排行榜"
-    },
-    {
-      "id": "search",
-      "label": "搜尋",
-      "href": "search.html",
-      "description": ""
-    }
+    {"id":"runes","label":"月之符文","href":"runes.html","description":""},
+    {"id":"game","label":"遊戲","href":"game.html","description":""},
+    {"id":"context","label":"脈絡","href":"context.html","description":""},
+    {"id":"evolution","label":"推演","href":"evolution.html","description":""},
+    {"id":"statics","label":"統計","href":"statics.htm","description":""},
+    {"id":"search","label":"搜尋","href":"search.html","description":""}
   ]
 }
