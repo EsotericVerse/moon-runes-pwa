@@ -19,8 +19,40 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     .quick-selector-modal .rune-tile{min-width:0;width:100%;}
     .quick-selector-modal .rune-thumb{width:100%;height:auto;display:block;}
+
+    .special-rune-row{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:20px;
+      margin-top:18px;
+    }
+    .special-rune-card{
+      display:grid;
+      grid-template-columns:minmax(128px,180px) minmax(0,1fr);
+      gap:18px;
+      align-items:start;
+      padding:18px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(255,255,255,.025);
+    }
+    .special-rune-card .rune-thumb{width:100%;height:auto;display:block;border-radius:10px;}
+    .special-rune-copy{min-width:0;}
+    .special-rune-name{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;color:var(--gold);margin:2px 0 12px;}
+    .special-rune-name strong{font-size:1.35rem;line-height:1.25;}
+    .special-rune-name span{font-size:.8rem;font-weight:700;opacity:.88;}
+    .special-rune-meta{display:grid;gap:10px;}
+    .special-rune-meta p{margin:0;color:var(--muted);font-size:.82rem;line-height:1.65;}
+    .special-rune-meta strong{display:block;margin-bottom:2px;color:var(--gold);font-size:.74rem;}
+
     @media (max-width:760px){
       .quick-selector-modal .group-row{grid-template-columns:repeat(2,minmax(0,1fr));}
+      .special-rune-row{grid-template-columns:1fr;}
+      .special-rune-card{grid-template-columns:minmax(110px,150px) minmax(0,1fr);}
+    }
+    @media (max-width:520px){
+      .special-rune-card{grid-template-columns:1fr;}
+      .special-rune-card .rune-thumb{max-width:220px;margin:0 auto;}
     }
   `;
   document.head.appendChild(layoutStyle);
@@ -93,6 +125,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `<article class="rune-tile">${visual}<div class="rune-info"><span class="num">#${n}</span><div style="display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;color:var(--gold);margin-top:2px"><strong style="font-size:1.16rem;line-height:1.25">${esc(r.符文名稱)}</strong>${r.英文 ? `<span style="font-size:.76rem;font-weight:700;line-height:1.25;color:var(--gold);opacity:.88">${esc(r.英文)}</span>` : ""}</div>${infoPanel}</div></article>`;
   }
 
+  function specialTile(r){
+    const n = String(r.編號).padStart(2,"0");
+    const meta = [
+      ["卡片月相", r.月相],
+      ["關鍵詞", r.關鍵詞],
+      ["反向關鍵詞", r.反向關鍵字],
+      ["符文變化歷史", r.符文變化歷史]
+    ].filter(([,value]) => value && String(value).trim());
+    return `<article class="special-rune-card"><img class="rune-thumb" src="64images/${encodeURIComponent(r.圖檔名稱)}" alt="${esc(r.符文名稱)}符文卡面" loading="lazy" decoding="async" /><div class="special-rune-copy"><span class="num">#${n}</span><div class="special-rune-name"><strong>${esc(r.符文名稱)}</strong>${r.英文 ? `<span>${esc(r.英文)}</span>` : ""}</div><div class="special-rune-meta">${meta.map(([label,value]) => `<p><strong>${esc(label)}</strong>${esc(value)}</p>`).join("")}</div></div></article>`;
+  }
+
   const coreGroups = groups.filter(meta => (meta.runes || []).some(member => Number(member.id) >= 1 && Number(member.id) <= 64));
   const specialRunes = all.filter(r => r.編號 === 65 || r.編號 === 66).sort((a,b) => a.編號 - b.編號);
 
@@ -129,7 +172,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (grid) {
-    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">點選總覽圖上的八個群組按鈕，會開啟浮動快速說明；每枚符文的卡面、月相、關鍵詞、反向關鍵詞與變化歷史都直接顯示在同一層。</p>${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之外額外列出。</span></div></div><div class="group-row">${specialRunes.map(tile).join("")}</div></section>` : ""}`;
+    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">點選總覽圖上的八個群組按鈕，會開啟浮動快速說明；每枚符文的卡面、月相、關鍵詞、反向關鍵詞與變化歷史都直接顯示在同一層。</p>${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之外額外列出。</span></div></div><div class="special-rune-row">${specialRunes.map(specialTile).join("")}</div></section>` : ""}`;
   }
   if (count) count.textContent = "8 組 · 64 枚基本符文 + 2 枚特殊符文";
 });
