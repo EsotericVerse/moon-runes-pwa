@@ -1,0 +1,47 @@
+{
+  "schema_version": "0.1",
+  "dataset": "LOC3 full-lyrics real-text semantic baseline",
+  "generated_at": "2026-09-10",
+  "status": "11_song_baseline_complete",
+  "selection_basis": "current compact 11-song sample recovered from latest Suno catalog",
+  "method": {
+    "basis": "Base66 current three-keyword exact match",
+    "source_text": "Suno latest raw metadata metadata.prompt full lyrics",
+    "rules": [
+      "Analyze completed lyrics only.",
+      "Do not use source rune draw/provenance to classify lyric semantics.",
+      "Do not use single-character rune names as semantic hits.",
+      "Use only current runes66.json three-keyword fields.",
+      "Shared keywords may contribute to more than one rune/group and remain visible as ambiguity."
+    ],
+    "interpretation": "deterministic baseline; later embedding/LLM/manual semantic analysis may be layered without overwriting."
+  },
+  "aggregate": {
+    "song_count": 11,
+    "total_keyword_hits": 92,
+    "group_counts": {
+      "靈魂組": 4,
+      "連結組": 12,
+      "生命組": 13,
+      "自然組": 1,
+      "礦物組": 7,
+      "元素組": 21,
+      "秩序組": 15,
+      "無序組": 18,
+      "特殊組": 1
+    }
+  },
+  "records": [
+    {"title":"月光把影子拉長","song_id":"b899100f-e2ec-4cbb-97f1-a1d598047297","group_counts":{"靈魂組":0,"連結組":2,"生命組":0,"自然組":0,"礦物組":1,"元素組":2,"秩序組":2,"無序組":1,"特殊組":0},"highest_groups":["連結組","元素組","秩序組"],"status":"disputed_tie","top_runes":[["星",2],["向",2],["風",1],["緣",1],["氣",1]]},
+    {"title":"一個人也能走遠","song_id":"09b827f7-373b-4a1e-a8b5-bc7f55f48ba0","group_counts":{"靈魂組":0,"連結組":1,"生命組":2,"自然組":0,"礦物組":0,"元素組":0,"秩序組":0,"無序組":4,"特殊組":0},"highest_groups":["無序組"],"status":"single_max","top_runes":[["果",4],["生",2],["向",1]]},
+    {"title":"灰色關係","song_id":"a9142db6-6444-45f2-9faa-bd81b28fa6a0","group_counts":{"靈魂組":0,"連結組":0,"生命組":3,"自然組":0,"礦物組":0,"元素組":0,"秩序組":1,"無序組":1,"特殊組":0},"highest_groups":["生命組"],"status":"single_max","top_runes":[["生",2],["緣",1],["時",1],["愛",1]]},
+    {"title":"答案不用現在","song_id":"7f913cd4-6d81-419f-81db-3c55548c1b8a","group_counts":{"靈魂組":0,"連結組":2,"生命組":1,"自然組":0,"礦物組":4,"元素組":3,"秩序組":1,"無序組":4,"特殊組":0},"highest_groups":["礦物組","無序組"],"status":"disputed_tie","top_runes":[["風",2],["金",2],["礦",2],["果",2],["誤",1]]},
+    {"title":"各憑本事","song_id":"b1789afd-4b15-4e09-9e9c-6b10b1896213","group_counts":{"靈魂組":0,"連結組":2,"生命組":2,"自然組":0,"礦物組":1,"元素組":0,"秩序組":4,"無序組":4,"特殊組":0},"highest_groups":["秩序組","無序組"],"status":"disputed_tie","top_runes":[["緣",3],["時",3],["心",2],["向",2],["果",1]]},
+    {"title":"若你願意停留","song_id":"29d4630e-e8a7-4912-b19f-b411872be945","group_counts":{"靈魂組":2,"連結組":0,"生命組":3,"自然組":0,"礦物組":0,"元素組":0,"秩序組":2,"無序組":1,"特殊組":0},"highest_groups":["生命組"],"status":"single_max","top_runes":[["心",2],["韻",1],["靈",1],["界",1],["無",1]]},
+    {"title":"自己的高度","song_id":"53f7d5c1-ea98-4a1d-bccc-9fbf0dfbca84","group_counts":{"靈魂組":2,"連結組":1,"生命組":0,"自然組":0,"礦物組":1,"元素組":4,"秩序組":1,"無序組":2,"特殊組":0},"highest_groups":["元素組"],"status":"single_max","top_runes":[["風",4],["緣",2],["界",1],["核",1],["星",1]]},
+    {"title":"微月光知道","song_id":"611c9156-2d03-4104-a44b-d6d776bcbc2c","group_counts":{"靈魂組":0,"連結組":3,"生命組":0,"自然組":0,"礦物組":0,"元素組":3,"秩序組":1,"無序組":0,"特殊組":0},"highest_groups":["連結組","元素組"],"status":"disputed_tie","top_runes":[["風",3],["星",1],["悟",1],["啟",1],["向",1]]},
+    {"title":"只是普通人","song_id":"9ffc83d3-ce2d-4f72-9a26-96f4917b8d7c","group_counts":{"靈魂組":0,"連結組":0,"生命組":1,"自然組":0,"礦物組":0,"元素組":1,"秩序組":0,"無序組":1,"特殊組":0},"highest_groups":["生命組","元素組","無序組"],"status":"disputed_tie","top_runes":[["風",1],["病",1],["夢",1]]},
+    {"title":"自由的月","song_id":"d583b308-bf96-4f64-a583-f2f0492b90ad","group_counts":{"靈魂組":0,"連結組":0,"生命組":1,"自然組":1,"礦物組":0,"元素組":4,"秩序組":1,"無序組":0,"特殊組":1},"highest_groups":["元素組"],"status":"single_max","top_runes":[["風",3],["生",1],["樹",1],["星",1],["命",1]]},
+    {"title":"展翅高飛","song_id":"282257e3-0e62-4b9a-a2fa-f5bb02c9bbf1","group_counts":{"靈魂組":0,"連結組":1,"生命組":0,"自然組":0,"礦物組":0,"元素組":4,"秩序組":2,"無序組":0,"特殊組":0},"highest_groups":["元素組"],"status":"single_max","top_runes":[["風",4],["時",1],["星",1],["啟",1]]}
+  ]
+}
