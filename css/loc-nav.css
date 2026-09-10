@@ -1,7 +1,7 @@
 /* LOC shared navigation contract
    1) global NAV
    2) page-level NAV
-   3) contextual NAV
+   Local sub-controls live inside their own content sections.
    Sidebars are deprecated and must not render. */
 
 :root{
@@ -38,7 +38,8 @@
 }
 
 .loc-global-links,
-.loc-nav-tier-inner{
+.loc-nav-tier-inner,
+.loc-section-menu-inner{
   display:flex;
   align-items:center;
   gap:12px;
@@ -48,7 +49,8 @@
   scrollbar-width:none;
 }
 .loc-global-links::-webkit-scrollbar,
-.loc-nav-tier-inner::-webkit-scrollbar{display:none}
+.loc-nav-tier-inner::-webkit-scrollbar,
+.loc-section-menu-inner::-webkit-scrollbar{display:none}
 
 .loc-global-link,
 .loc-nav-tier-link{
@@ -98,10 +100,20 @@
   border-bottom:1px solid rgba(180,158,255,.16);
 }
 .loc-nav-tier{width:min(1180px,calc(100% - 28px));margin:0 auto}
-.loc-nav-tier[data-tier="2"] .loc-nav-tier-inner{min-height:42px}
-.loc-nav-tier[data-tier="3"]{border-top:1px solid rgba(180,158,255,.1)}
-.loc-nav-tier[data-tier="3"] .loc-nav-tier-inner{min-height:38px}
-.loc-nav-tier[data-tier="3"] .loc-nav-tier-link{font-size:.78rem;color:var(--muted,var(--loc-muted,#b9bfd0))}
+.loc-nav-tier .loc-nav-tier-inner{min-height:42px}
+
+.loc-section-menu{
+  margin:0 0 18px;
+  padding:10px 12px;
+  border:1px solid rgba(180,158,255,.18);
+  border-radius:14px;
+  background:rgba(4,16,33,.48);
+}
+.loc-section-menu .loc-nav-tier-link{
+  min-height:34px;
+  font-size:.78rem;
+}
+
 body .app-shell,
 body .app{
   width:min(1180px,calc(100% - 28px)) !important;
@@ -142,10 +154,11 @@ body .app > main{
   .loc-global-shell,.loc-nav-tier,body .app-shell,body .app{width:min(100% - 18px,1180px)!important}
   .loc-global-nav{gap:8px;padding:6px 0}
   .loc-global-brand{font-size:.84rem}
-  .loc-global-links,.loc-nav-tier-inner{gap:9px}
+  .loc-global-links,.loc-nav-tier-inner,.loc-section-menu-inner{gap:9px}
   .loc-global-link,.loc-nav-tier-link{min-height:40px;font-size:.8rem}
   .loc-global-search input{width:112px;height:34px}
-  .loc-nav-tier[data-tier="3"] .loc-nav-tier-link{font-size:.75rem}
+  .loc-section-menu{margin-bottom:14px;padding:8px 10px}
+  .loc-section-menu .loc-nav-tier-link{font-size:.75rem}
   .loc-header,.loc-page-hero{padding-top:16px;margin-bottom:16px}
   .loc-header .loc-header-title,.loc-page-title{font-size:clamp(2.1rem,11vw,3.15rem)}
   .loc-header .loc-header-subtitle,.loc-page-subtitle{font-size:clamp(1.05rem,5vw,1.35rem)}
