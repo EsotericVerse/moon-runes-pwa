@@ -45,8 +45,20 @@
     node.innerHTML=`${brand}<div class="loc-global-links">${links}<form class="loc-global-search" action="search.html" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="搜尋" /><button class="loc-global-search-submit" type="submit">搜尋</button></form></div>`;
   }
 
+  function loadConceptNotes(){
+    const file=fileName();
+    if(!["governance.html","runes.html","lots.html","evolution.html"].includes(file)) return;
+    if(document.querySelector('script[data-loc-concept-notes]')) return;
+    const script=document.createElement('script');
+    script.src='js/loc-concept-notes.js';
+    script.defer=true;
+    script.dataset.locConceptNotes='true';
+    document.body.appendChild(script);
+  }
+
   function mountAll(){
     document.querySelectorAll("[data-loc-nav]").forEach(render);
+    loadConceptNotes();
   }
 
   window.LOCNav1 = Object.freeze({mountAll});
