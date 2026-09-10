@@ -1,6 +1,6 @@
 (() => {
   const NAV_URL = "data/json/registries/LOC_NAV.json";
-  const WEB_BUILD = "0.5";
+  const WEB_BUILD = "0.6";
 
   function esc(value) {
     return String(value ?? "").replace(/[&<>"']/g, ch => ({
@@ -23,6 +23,14 @@
       script.src = 'js/life-daily-draw-history.js';
       script.defer = true;
       script.dataset.lifeDrawHistory = 'true';
+      document.body.appendChild(script);
+    }
+
+    if (file === "search.html" && !document.querySelector('script[data-keyword-ranking-fetch-guard]')) {
+      const script = document.createElement('script');
+      script.src = 'js/keyword-ranking-fetch-guard.js';
+      script.defer = true;
+      script.dataset.keywordRankingFetchGuard = 'true';
       document.body.appendChild(script);
     }
 
