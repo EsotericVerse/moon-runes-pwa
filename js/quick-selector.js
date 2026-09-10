@@ -15,13 +15,14 @@ function ensureStyle(){
     .quick-selector-title{margin:4px 0 6px;color:var(--gold,var(--loc-gold,#e7c27d));font-size:1rem;line-height:1.4}
     .quick-selector-copy{margin:0;color:var(--muted,var(--loc-muted,#b9bfd0));font-size:.84rem;line-height:1.65}
     .quick-selector-extra{margin-top:8px;color:var(--muted,var(--loc-muted,#b9bfd0));font-size:.78rem;line-height:1.6}
+    .quick-selector-content{margin-top:12px}
     .quick-selector-link{display:inline-flex;margin-top:10px;color:var(--gold,var(--loc-gold,#e7c27d));font-size:.8rem;font-weight:800;text-decoration:none}
     @media(max-width:720px){.quick-selector-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
   `;
   document.head.appendChild(style);
 }
 
-export function mountQuickSelector({ target, items = [], initialId = null, onSelect = null }){
+export function mountQuickSelector({ target, items = [], initialId = null, onSelect = null, renderContent = null }){
   const root = typeof target === 'string' ? document.querySelector(target) : target;
   if (!root || !Array.isArray(items) || !items.length) return null;
   ensureStyle();
@@ -39,7 +40,16 @@ export function mountQuickSelector({ target, items = [], initialId = null, onSel
 
   function renderDetail(item){
     const extra = Array.isArray(item.extra) ? item.extra.filter(Boolean).join(' · ') : (item.extra || '');
-    detail.innerHTML = `${item.kicker ? `<div class="quick-selector-kicker">${esc(item.kicker)}</div>` : ''}<h3 class="quick-selector-title">${esc(item.title || '')}</h3>${item.description ? `<p class="quick-selector-copy">${esc(item.description)}</p>` : ''}${extra ? `<div class="quick-selector-extra">${esc(extra)}</div>` : ''}${item.href ? `<a class="quick-selector-link" href="${esc(item.href)}">${esc(item.linkLabel || '延伸查看')} →</a>` : ''}`;
+    detail.innerHTML = `${item.kicker ? `<div class="quick-selector-kicker">${esc(item.kicker)}</div>` : ''}<h3 class="quick-selector-title">${esc(item.title || '')}</h3>${item.description ? `<p class="quick-selector-copy">${esc(item.description)}</p>` : ''}${extra ? `<div class="quick-selector-extra">${esc(extra)}</div>` : ''}<div class="quick-selector-content"></div>${item.href ? `<a class="quick-selector-link" href="${esc(item.href)}">${esc(item.linkLabel || '延伸查看')} →</a>` : ''}`;
+    const contentHost = detail.querySelector('.quick-selector-content');
+    if (typeof renderContent === 'function' && contentHost) {
+      const rendered = renderContent(item, contentHost);
+      if (typeof rendered === 'string') contentHost.innerHTML = rendered;
+      else if (rendered instanceof Node) contentHost.replaceChildren(rendered);
+      if (!contentHost.childNodes.length) contentHost.remove();
+    } else {
+      contentHost?.remove();
+    }
   }
 
   function select(id){
