@@ -88,13 +88,17 @@
       let registry={eras:[],schema_version:'—'};
       let remote={eras:[]};
       try{registry=await fetchJson(REGISTRY_URL)}catch(_){}
-      try{
-        const u=new URL(SHEET_API);
-        u.searchParams.set('action','eras');
-        u.searchParams.set('user_id','lo3rwang');
-        const d=await fetchJson(u.toString());
-        remote=Array.isArray(d)?{eras:d}:d||{eras:[]};
-      }catch(_){}
+      // Search only needs the small local ERA registry for filters. Do not hit the
+      // remote Sheet during page boot; editing/synchronization belongs to Statics.
+      if(currentFile!=='search.html'){
+        try{
+          const u=new URL(SHEET_API);
+          u.searchParams.set('action','eras');
+          u.searchParams.set('user_id','lo3rwang');
+          const d=await fetchJson(u.toString());
+          remote=Array.isArray(d)?{eras:d}:d||{eras:[]};
+        }catch(_){}
+      }
       const definitionVersion=n(registry.definition_version)||n(registry.schema_version);
       const eras=merge(registry.eras||[],remote.eras||[],definitionVersion,registry.updated_at||'');
       const current=eras.find(x=>x.status==='current')||eras[eras.length-1]||null;
