@@ -1,6 +1,7 @@
 (() => {
   const NAV_URL = "data/json/registries/LOC_NAV.json";
   const WEB_BUILD = "0.8";
+  const GROUPS = ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"];
 
   const fileName = () => location.pathname.split("/").pop() || "index.html";
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
@@ -115,10 +116,7 @@
       link("推演引擎","#framework-map")
     ],"LOC架構圖模組");
 
-    const syncNav3 = () => {
-      nav3.hidden = location.hash !== "#framework-map";
-    };
-
+    const syncNav3 = () => { nav3.hidden = location.hash !== "#framework-map"; };
     host.append(nav2,nav3);
     syncNav3();
     nav2.addEventListener("click", event => {
@@ -130,13 +128,50 @@
   }
 
   function buildRunes(host) {
-    host.appendChild(tier(2,[
+    const nav2 = tier(2,[
       button("新手上路",{"data-runes-view":"beginner"}),
       button("占卜抽籤",{"data-runes-view":"draw"}),
       button("符文總覽",{"data-runes-view":"library"}),
       link("符文統計","statics.htm#runes"),
       button("符文知識庫",{"data-runes-view":"reference"})
-    ],"月之符文功能"));
+    ],"月之符文功能");
+
+    const nav3 = tier(3,[],"月之符文子導覽");
+    const inner = nav3.querySelector(".loc-nav-tier-inner");
+
+    const renderNav3 = mode => {
+      inner.replaceChildren();
+      if (mode === "draw") {
+        [["單卡","single"],["每日","daily"],["雙卡","2card"],["三卡","3card"],["五卡","5card"],["11卡","ow3gs"]]
+          .forEach(([label,value]) => inner.appendChild(link(label,`runes.html?mode=${value}#draw`)));
+        inner.appendChild(link("說明","runes.html#draw-help"));
+      } else if (mode === "library") {
+        GROUPS.forEach(group => inner.appendChild(link(group,`runes.html?group=${encodeURIComponent(group)}#library`,{"data-rune-group-shortcut":group})));
+      }
+      nav3.hidden = inner.children.length === 0;
+    };
+
+    const syncFromLocation = () => {
+      const params = new URLSearchParams(location.search);
+      if (location.hash === "#library" || params.has("group")) renderNav3("library");
+      else if (location.hash === "#draw" || location.hash === "#draw-help" || params.has("mode")) renderNav3("draw");
+      else renderNav3("");
+    };
+
+    host.append(nav2,nav3);
+    syncFromLocation();
+
+    nav2.addEventListener("click", event => {
+      const control = event.target.closest("[data-runes-view]");
+      if (!control) {
+        if (event.target.closest("a")) renderNav3("");
+        return;
+      }
+      const mode = control.dataset.runesView;
+      renderNav3(mode === "draw" ? "draw" : mode === "library" ? "library" : "");
+    });
+    window.addEventListener("hashchange", syncFromLocation);
+    window.addEventListener("popstate", syncFromLocation);
   }
 
   function buildContext(host) {
