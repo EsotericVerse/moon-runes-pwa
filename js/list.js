@@ -99,8 +99,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       items: coreGroups.map(meta => ({
         id: meta.id || meta.group_en || meta.group_zh,
         label: meta.group_zh,
-        kicker: `LunaRunes · ${meta.group_en}`,
-        title: `${meta.group_zh} ${meta.group_en}`,
+        kicker: meta.group_en,
+        title: meta.group_zh,
         description: meta.description,
         extra: [
           meta.trait ? `特質：${meta.trait}` : '',
