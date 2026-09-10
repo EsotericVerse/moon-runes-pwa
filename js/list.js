@@ -84,12 +84,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `<article class="rune-tile">${visual}<div class="rune-info"><span class="num">#${n}</span><div style="display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;color:var(--gold);margin-top:2px"><strong style="font-size:1.16rem;line-height:1.25">${esc(r.符文名稱)}</strong>${r.英文 ? `<span style="font-size:.76rem;font-weight:700;line-height:1.25;color:var(--gold);opacity:.88">${esc(r.英文)}</span>` : ""}</div>${infoPanel}</div></article>`;
   }
 
-  function groupBox(meta){
-    const ids = new Set((meta.runes || []).map(member => Number(member.id)).filter(id => id >= 1 && id <= 64));
-    const items = all.filter(r => ids.has(r.編號)).sort((a,b) => a.編號 - b.編號);
-    return `<section class="rune-group" id="rune-group-${esc(meta.id || meta.group_en || meta.group_zh)}" aria-label="${esc(meta.group_zh)} ${esc(meta.group_en)}"><div class="group-head"><div class="group-title"><strong>${esc(meta.group_zh)} ${esc(meta.group_en)}</strong><span class="group-note">${esc(meta.description)}</span></div><span class="group-count">${items.length} 枚符文</span></div><div class="group-row">${items.map(tile).join("")}</div></section>`;
-  }
-
   const coreGroups = groups.filter(meta => (meta.runes || []).some(member => Number(member.id) >= 1 && Number(member.id) <= 64));
   const specialRunes = all.filter(r => r.編號 === 65 || r.編號 === 66).sort((a,b) => a.編號 - b.編號);
 
@@ -100,23 +94,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     mountQuickSelector({
       target: quickHost,
-      items: coreGroups.map(meta => {
-        const members = (meta.runes || []).filter(member => Number(member.id) >= 1 && Number(member.id) <= 64);
-        const memberText = members.map(member => `${member.zh} ${member.en}`).join('、');
-        return {
-          id: meta.id || meta.group_en || meta.group_zh,
-          label: meta.group_zh,
-          kicker: `${meta.group_zh} · ${meta.group_en}`,
-          title: meta.trait || meta.group_zh,
-          description: meta.description,
-          extra: [meta.style_module, memberText],
-          href: `search.html?q=${encodeURIComponent(`${meta.group_zh}群組 方法論`)}`,
-          linkLabel: `搜尋${meta.group_zh}群組方法論`
-        };
-      })
+      items: coreGroups.map(meta => ({
+        id: meta.id || meta.group_en || meta.group_zh,
+        label: meta.group_zh,
+        kicker: `${meta.group_zh} · ${meta.group_en}`,
+        title: meta.trait || meta.group_zh,
+        description: meta.description,
+        extra: meta.style_module,
+        href: `search.html?q=${encodeURIComponent(`${meta.group_zh}群組 方法論`)}`,
+        linkLabel: `搜尋${meta.group_zh}群組方法論`,
+        runeIds: (meta.runes || []).map(member => Number(member.id)).filter(id => id >= 1 && id <= 64)
+      })),
+      renderContent: item => {
+        const ids = new Set(item.runeIds || []);
+        const items = all.filter(r => ids.has(r.編號)).sort((a,b) => a.編號 - b.編號);
+        return `<div class="group-row">${items.map(tile).join("")}</div>`;
+      }
     });
 
-    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">點選符文圖片可查看進階文字說明。</p>${coreGroups.map(groupBox).join("")}${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之後額外列出。</span></div></div><div class="group-row">${specialRunes.map(tile).join("")}</div></section>` : ""}`;
+    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">八個基本群組的符文顯示於上方快速選單；點選符文圖片可查看進階文字說明。</p>${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之外額外列出。</span></div></div><div class="group-row">${specialRunes.map(tile).join("")}</div></section>` : ""}`;
   }
   if (count) count.textContent = "8 組 · 64 枚基本符文 + 2 枚特殊符文";
 
@@ -136,12 +132,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     modal.showModal();
   }
 
-  grid?.addEventListener("click", event => {
+  const runeClickHandler = event => {
     const button = event.target.closest("[data-rune]");
     if (!button) return;
     const selected = all.find(r => r.編號 === Number(button.dataset.rune));
     if (selected) openRune(selected);
-  });
+  };
+
+  document.querySelector('#rune-group-quick-selector')?.addEventListener('click', runeClickHandler);
+  grid?.addEventListener("click", runeClickHandler);
 
   closeBtn?.addEventListener("click", () => modal.close());
   modal?.addEventListener("click", event => { if (event.target === modal) modal.close(); });
