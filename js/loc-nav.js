@@ -1,5 +1,5 @@
 (() => {
-  const WEB_BUILD = "1.0";
+  const WEB_BUILD = "1.1";
   const currentFile = location.pathname.split("/").pop() || "index.html";
 
   if (currentFile === "runes.html") {
@@ -16,29 +16,41 @@
     if (location.hash === "#daily") { location.replace("statics.html#rune-trend"); return; }
   }
   if (currentFile === "search.html") {
-    const routes = {"#ranking":"ranking","#rankingView":"ranking","#era":"era","#sources":"sources"};
+    const routes = {"#ranking":"ranking","#rankingView":"ranking","#sources":"sources","#era":"period"};
     if (routes[location.hash]) {
-      location.replace("statics.html#" + routes[location.hash]);
+      const target = routes[location.hash] === 'period' ? 'evolution.html#period' : 'statics.html#' + routes[location.hash];
+      location.replace(target);
       return;
     }
   }
 
-  function esc(value) {
-    return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
-  }
-
   const GLOBAL_ITEMS = [
     {id:"runes",label:"月之符文",href:"runes.html"},
+    {id:"game",label:"遊戲",href:"loc2-game.html"},
     {id:"context",label:"脈絡",href:"context.html"},
     {id:"evolution",label:"推演",href:"evolution.html"},
     {id:"statics",label:"統計",href:"statics.html"}
   ];
 
+  const RUNE_NAV = `
+    <div class="workspace-nav-group"><div class="workspace-nav-label">01</div><a class="workspace-link" href="tutorial01.html"><strong>新手上路</strong><small>月之符文入門</small></a></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">02</div><a class="workspace-link" href="lots.html#draw"><strong>占卜抽籤</strong><small>線上即時抽牌引擎</small></a></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">03</div><a class="workspace-link" href="lots.html#library"><strong>符文總覽</strong><small>66 符 · 群組 · 固定資料</small></a></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">04</div><a class="workspace-link" href="statics.html#rune-trend"><strong>每日符文</strong><small>紀錄 · 統計 · 趨勢</small></a></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">05</div><a class="workspace-link" href="runes.html#rag"><strong>符文知識庫</strong><small>RAG · 占卜解析 · 符文演算法</small></a></div>`;
+
+  const CONTEXT_NAV = `
+    <div class="workspace-nav-group"><div class="workspace-nav-label">01</div><button class="workspace-switch active" type="button" data-context-target="graph"><strong>關係圖</strong><small>Graph</small></button></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">02</div><button class="workspace-switch" type="button" data-context-target="nodes"><strong>節點</strong><small>Node</small></button></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">03</div><button class="workspace-switch" type="button" data-context-target="relations"><strong>關聯</strong><small>Relation</small></button></div>
+    <div class="workspace-nav-group"><div class="workspace-nav-label">04</div><button class="workspace-switch" type="button" data-context-target="scenarios"><strong>情境</strong><small>Scenario</small></button></div>`;
+
   function activeId(node){
     const explicit=node?.dataset?.page;
-    if(explicit==='game')return 'context';
+    if(explicit==='game')return currentFile==='context.html'?'context':'game';
     if(explicit)return explicit;
-    if(currentFile==='context.html'||currentFile==='loc2-game.html'||currentFile==='game.html')return 'context';
+    if(currentFile==='loc2-game.html'||currentFile==='game.html')return 'game';
+    if(currentFile==='context.html')return 'context';
     if(currentFile==='statics.html')return 'statics';
     if(currentFile==='evolution.html')return 'evolution';
     if(currentFile==='runes.html'||currentFile==='lots.html')return 'runes';
@@ -81,115 +93,67 @@
     if(currentFile!=='index.html')return;
     const nav=document.querySelector('.topbar .nav-links');
     if(nav)nav.innerHTML=navMarkup('');
-
     const topbar=document.querySelector('.topbar');
     if(topbar&&!document.querySelector('.home-section-nav')){
       const sub=document.createElement('nav');
       sub.className='home-section-nav';
       sub.setAttribute('aria-label','首頁功能導覽');
-      sub.innerHTML=`
-        <a href="#home-intro">LOC月典簡介</a>
-        <a href="#start-title">新手上路</a>
-        <a href="#framework-map">LOC架構圖</a>
-        <a href="#home-progress">目前進度</a>
-        <a href="statics.html">統計</a>
-        <a href="#home-other">其他</a>`;
+      sub.innerHTML=`<a href="#home-intro">LOC月典簡介</a><a href="#start-title">新手上路</a><a href="#framework-map">LOC架構圖</a><a href="#home-progress">目前進度</a><a href="statics.html">統計</a><a href="#home-other">其他</a>`;
       topbar.after(sub);
     }
-
-    const hero=document.querySelector('header.hero');
-    if(hero&&!hero.id)hero.id='home-intro';
-    [...document.querySelectorAll('section')].forEach(section=>{
-      const text=section.querySelector('h2')?.textContent?.trim()||'';
-      if(!document.getElementById('home-progress')&&(text.includes('目前進度')||text.includes('進度')))section.id='home-progress';
-      if(!document.getElementById('home-other')&&(text.includes('其他')||text.includes('關於')))section.id='home-other';
-    });
-    if(!document.getElementById('home-progress')){
-      const candidates=[...document.querySelectorAll('section')];
-      const match=candidates.find(s=>/已完成|進度|目前/.test(s.textContent||''));
-      if(match)match.id='home-progress';
-    }
-    if(!document.getElementById('home-other')){
-      const sections=[...document.querySelectorAll('section')];
-      if(sections.length)sections[sections.length-1].id='home-other';
-    }
+    const hero=document.querySelector('header.hero'); if(hero&&!hero.id)hero.id='home-intro';
+    [...document.querySelectorAll('section')].forEach(section=>{const text=section.querySelector('h2')?.textContent?.trim()||'';if(!document.getElementById('home-progress')&&(text.includes('目前進度')||text.includes('進度')))section.id='home-progress';if(!document.getElementById('home-other')&&(text.includes('其他')||text.includes('關於')))section.id='home-other';});
   }
 
-  const FRAMEWORK_LABELS={
-    LOC1:'月之符文模組',LOC2:'脈絡',LOC3:'音樂',LOC4:'文字創作',LOC5:'多媒體',LOC6:'演算法',LOC7:'演算模組',LOC8:'推演引擎'
-  };
-  function patchFrameworkDetail(key){
-    const label=FRAMEWORK_LABELS[key];
-    if(!label)return;
-    const modal=document.querySelector('.framework-modal');
-    const title=modal?.querySelector('.framework-detail h3');
-    const kicker=modal?.querySelector('.framework-detail .kicker');
-    if(title)title.textContent=label;
-    if(kicker)kicker.textContent=`${key} · ${label}`;
-  }
+  const FRAMEWORK_LABELS={LOC1:'月之符文模組',LOC2:'脈絡',LOC3:'音樂',LOC4:'文字創作',LOC5:'多媒體',LOC6:'演算法',LOC7:'演算模組',LOC8:'推演引擎'};
   function patchFrameworkNav(){
     if(currentFile!=='index.html')return;
-    document.querySelectorAll('.framework-tab').forEach(btn=>{
-      const key=btn.dataset.locKey;
-      if(FRAMEWORK_LABELS[key])btn.textContent=FRAMEWORK_LABELS[key];
-      btn.addEventListener('click',()=>setTimeout(()=>patchFrameworkDetail(key),0));
-    });
-    document.querySelectorAll('[data-loc-open]').forEach(btn=>{
-      const key=btn.dataset.locOpen;
-      if(FRAMEWORK_LABELS[key]){
-        const label=btn.querySelector('.text-title,strong')||btn;
-        if(label&&label!==btn)label.textContent=FRAMEWORK_LABELS[key];
-      }
-      btn.addEventListener('click',()=>setTimeout(()=>patchFrameworkDetail(key),0));
-    });
+    document.querySelectorAll('.framework-tab').forEach(btn=>{const key=btn.dataset.locKey;if(FRAMEWORK_LABELS[key])btn.textContent=FRAMEWORK_LABELS[key];});
   }
 
   function pruneSearchWorkspace(){
     if(currentFile!=="search.html")return;
     ['eraView','rankingView','sourcesView'].forEach(id=>document.getElementById(id)?.remove());
-    const sidebar=document.querySelector('.workspace-sidebar');
-    sidebar?.remove();
-    const shell=document.querySelector('.app-shell');
-    if(shell){shell.style.gridTemplateColumns='minmax(0,1fr)';shell.style.maxWidth='1180px';}
-    const main=document.querySelector('.workspace-main');
-    if(main){main.style.width='100%';main.style.maxWidth='1120px';main.style.margin='0 auto';}
+    document.querySelector('.workspace-sidebar')?.remove();
+    const shell=document.querySelector('.app-shell'); if(shell){shell.style.gridTemplateColumns='minmax(0,1fr)';shell.style.maxWidth='1180px';}
+    const main=document.querySelector('.workspace-main'); if(main){main.style.width='100%';main.style.maxWidth='1120px';main.style.margin='0 auto';}
   }
 
-  function renderBuildLabel() {
+  function patchRuneNav(){
+    if(!['runes.html','lots.html'].includes(currentFile))return;
+    const nav=document.querySelector('.workspace-sidebar .workspace-nav');
+    if(nav)nav.innerHTML=RUNE_NAV;
+  }
+
+  function patchContextNav(){
+    if(currentFile!=='context.html')return;
+    const nav=document.querySelector('.workspace-sidebar .workspace-nav');
+    if(!nav)return;
+    nav.innerHTML=CONTEXT_NAV;
+    nav.querySelectorAll('[data-context-target]').forEach(btn=>btn.addEventListener('click',()=>{
+      const target=btn.dataset.contextTarget;
+      document.querySelectorAll('[data-context-view]').forEach(section=>section.hidden=section.dataset.contextView!==target);
+      nav.querySelectorAll('[data-context-target]').forEach(x=>x.classList.toggle('active',x===btn));
+      history.replaceState(null,'','context.html#'+target);
+    }));
+    const hash=location.hash.replace('#','');
+    const initial=['graph','nodes','relations','scenarios'].includes(hash)?hash:'graph';
+    nav.querySelector(`[data-context-target="${initial}"]`)?.click();
+  }
+
+  function renderBuildLabel(){
     if(currentFile==='search.html')return;
-    document.querySelectorAll(".workspace-sidebar,.sidebar").forEach(sidebar => {
-      if (sidebar.querySelector("[data-web-build]")) return;
-      const label = document.createElement("div");
-      label.dataset.webBuild = "true";
-      label.textContent = "Web Build " + WEB_BUILD;
-      label.style.marginTop = "14px";
-      label.style.paddingTop = "10px";
-      label.style.borderTop = "1px solid rgba(127,135,148,.18)";
-      label.style.fontSize = "11px";
-      label.style.letterSpacing = ".08em";
-      label.style.opacity = ".58";
-      label.style.textAlign = "center";
-      sidebar.appendChild(label);
-    });
+    document.querySelectorAll('.workspace-sidebar,.sidebar').forEach(sidebar=>{if(sidebar.querySelector('[data-web-build]'))return;const label=document.createElement('div');label.dataset.webBuild='true';label.textContent='Web Build '+WEB_BUILD;label.style.cssText='margin-top:14px;padding-top:10px;border-top:1px solid rgba(127,135,148,.18);font-size:11px;letter-spacing:.08em;opacity:.58;text-align:center';sidebar.appendChild(label);});
   }
 
-  function loadPageEnhancements() {
-    if (currentFile === "search.html" && !document.querySelector('script[data-km-concepts-search]')) {
-      const script = document.createElement('script');
-      script.src = 'js/km-concepts-search.js';
-      script.defer = true;
-      script.dataset.kmConceptsSearch = 'true';
-      document.body.appendChild(script);
-    }
-  }
-
-  window.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener('DOMContentLoaded',()=>{
     ensureNavStyle();
-    document.querySelectorAll("[data-loc-nav]").forEach(paintGlobalNav);
+    document.querySelectorAll('[data-loc-nav]').forEach(paintGlobalNav);
     paintHomeTopbar();
     pruneSearchWorkspace();
+    patchRuneNav();
+    patchContextNav();
     renderBuildLabel();
-    loadPageEnhancements();
     setTimeout(patchFrameworkNav,0);
   });
 })();
