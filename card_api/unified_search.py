@@ -107,6 +107,7 @@ class UnifiedSearchEngine:
         self.rune_literature = self._load_json("RUNE_LITERATURE_REGISTRY.json")
         self.rune_songs = self._load_json("LOC3_RUNE_SONG_REGISTRY.json")
         self.ow3gs_readings = self._load_json("LOC1_OW3GS_READING_REGISTRY.json")
+        self.moon_speaker_runes = self._load_json("LOC4_MOON_SPEAKER_RUNE_RECOVERY.json")
 
     def _load_json(self, name: str) -> dict[str, Any]:
         path = self.registry_root / name
@@ -409,6 +410,65 @@ class UnifiedSearchEngine:
         }
 
         return [result], extension_terms[:20]
+
+    def _rune_system_group_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
+        """Search derived rune-system group tags from verified literary provenance."""
+        if wanted not in {"", "all", "text", "textwork", "literary"}:
+            return []
+        q = _compact(query)
+        prefix = _compact("符文體系｜文章創作｜")
+        if prefix not in q:
+            return []
+        group_defs = {
+            "靈魂組": {"靈","魂","彩","憶","界","域","鏡","核"},
+            "連結組": {"向","斷","封","鍊","啟","分","悟","誤"},
+            "生命組": {"生","老","病","死","心","愛","語","韻"},
+            "自然組": {"樹","花","葉","草","根","種","實","枝"},
+            "礦物組": {"金","玉","晶","地","石","鑽","礦","塵"},
+            "元素組": {"光","暗","水","火","風","土","雷","氣"},
+            "秩序組": {"日","月","星","辰","明","時","空","因"},
+            "無序組": {"福","禍","無","夢","幻","緣","虛","果"},
+            "特殊組": {"德","玄","命"},
+        }
+        target = next((g for g in group_defs if _compact(g) in q), "")
+        if not target:
+            return []
+        results = []
+        for row in self.moon_speaker_runes.get("records", []) or []:
+            runes = []
+            for item in row.get("runes", []) or []:
+                legacy = str(item.get("legacy_name") or "")
+                canonical = str(item.get("canonical_name") or "")
+                # Historical-only rune names are provenance, not current classification.
+                if legacy == canonical and legacy in group_defs[target]:
+                    runes.append(legacy)
+            if not runes:
+                continue
+            title = f"月語者｜{row.get('part_name') or ''}｜{row.get('chapter_marker') or ''}"
+            results.append({
+                "result_id": f"RSG-LIT-{row.get('part')}-{row.get('chapter')}-{target}",
+                "system_id": "lo3rwang",
+                "primary_loc": "LOC4",
+                "related_locs": ["LOC3", "LOC5", "LOC7"],
+                "content_type": "textwork",
+                "group": "textworks",
+                "title": title,
+                "summary": f"符文體系｜文章創作｜{target} · 命中：{'、'.join(runes)}",
+                "score": 1.0,
+                "source_refs": [{"source_type":"registry","source_id":"LOC4_MOON_SPEAKER_RUNE_RECOVERY.json","note":"verified rune provenance"}],
+                "payload": {
+                    "taxonomy_tag": f"符文體系｜文章創作｜{target}",
+                    "rune_group": target,
+                    "matched_runes": runes,
+                    "work_id": "月語者",
+                    "part": row.get("part"),
+                    "chapter": row.get("chapter"),
+                    "part_name": row.get("part_name"),
+                    "chapter_marker": row.get("chapter_marker"),
+                    "source_type": row.get("source_type"),
+                },
+            })
+        return results[:top_k]
 
     def _knowledge_asset_results(self, query: str, top_k: int, wanted: str) -> list[dict[str, Any]]:
         if wanted not in {"", "all", "knowledge", "knowledge_document", "knowledge_image"}:
@@ -3171,7 +3231,8 @@ class UnifiedSearchEngine:
             music = list(music_by_id.values())[:top_k]
             textworks = self._loc4_results(query, top_k, wanted)
             rune_literature = self._rune_literature_results(query, top_k, wanted)
-            textworks = [*textworks, *rune_literature][:top_k]
+            rune_system_groups = self._rune_system_group_results(query, top_k, wanted)
+            textworks = [*rune_system_groups, *textworks, *rune_literature][:top_k]
             direct_media = self._media_registry_results(query, top_k, wanted)
             media_by_id = {}
             for item in [*direct_media, *linked_media]:
