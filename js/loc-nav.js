@@ -21,7 +21,7 @@
     if (document.getElementById("loc-canonical-nav-runtime")) return;
     const style = document.createElement("style");
     style.id = "loc-canonical-nav-runtime";
-    style.textContent = `.runes-third-nav{display:none!important}`;
+    style.textContent = `.runes-third-nav{display:none!important}.loc-guidance-note{margin:14px 0;padding:14px 16px;border:1px solid rgba(180,158,255,.22);border-radius:16px;background:rgba(23,43,72,.52);color:#dce6f7;line-height:1.7}.loc-guidance-note strong{color:#e7c27d}`;
     document.head.appendChild(style);
   }
 
@@ -187,6 +187,47 @@
     else if (file === "governance.html") buildGovernance(host);
   }
 
+  function installThemeGuidance(){
+    const file=fileName();
+    if(file==="governance.html"){
+      const principles=document.getElementById("principles");
+      if(principles && !document.getElementById("daily-theme-governance")){
+        const p=document.createElement("p");
+        p.id="daily-theme-governance";
+        p.innerHTML="<strong>每日抽牌是中立立場的直接演示：</strong>沒有預設問題時，隨機抽取一張符文，先產生『今天的主題』作為語意切入點。它不是預言，也不是指示使用者今天一定要做什麼，而是一種從無生有的指引式籤詩：先給主題，再由使用者依現實脈絡觀察、理解與決定。";
+        principles.appendChild(p);
+      }
+    }
+
+    if(file==="tutorial01.html"){
+      const s3=document.querySelector("#s3 .slide-inner > div:first-child");
+      if(s3 && !document.getElementById("daily-theme-tutorial")){
+        const p=document.createElement("p");
+        p.id="daily-theme-tutorial";
+        p.className="copy";
+        p.style.marginTop="3%";
+        p.innerHTML="<strong>為什麼沒事也可以抽一張？</strong> 每日抽牌不是先問問題，而是先抽出『今天的主題』。沒有預設答案，也不要求照著做；它只是先給一個語意提示，讓你觀察今天，或在不知道怎麼開始時得到第一個切入點。";
+        const first=s3.querySelector("p.copy");
+        if(first) first.after(p); else s3.appendChild(p);
+      }
+    }
+
+    if(file==="lots.html"){
+      const params=new URLSearchParams(location.search);
+      if(params.get("mode")==="daily"){
+        const drawView=document.getElementById("drawView");
+        if(drawView && !document.getElementById("daily-theme-note")){
+          const note=document.createElement("div");
+          note.id="daily-theme-note";
+          note.className="loc-guidance-note";
+          note.innerHTML="<strong>每日抽牌看的是『今天的主題』。</strong> 沒有問題也可以抽一張：它不是告訴你今天一定要做什麼，而是先給一個語意主題，讓你觀察今天；如果暫時不知道怎麼做，也可以把它當成一個切入提示。單卡則是針對當下問題或情境的一張回應。";
+          const menu=drawView.querySelector(":scope > .loc-section-menu");
+          if(menu) menu.after(note); else drawView.prepend(note);
+        }
+      }
+    }
+  }
+
   function cleanupContextGameEmbed() {
     if (fileName() !== "context.html") return;
     const frame = document.querySelector(".game-frame");
@@ -208,6 +249,7 @@
     loadNav1();
     cleanupContextGameEmbed();
     buildTiers();
+    installThemeGuidance();
     loadEnhancements();
   });
 })();
