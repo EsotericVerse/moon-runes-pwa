@@ -106,21 +106,23 @@
       const response = await fetch("data/json/generated/search/SEARCH_SOURCE_STATS.json", { cache: "no-store" });
       if (!response.ok) throw new Error("stats unavailable");
       const data = await response.json();
-      const count = Number(data?.search_summary?.comparable_records || 0).toLocaleString("zh-TW");
+      const chars = Number(data?.search_summary?.char_count || 0).toLocaleString("zh-TW");
       const start = data?.text_summary?.start_date || "";
       const end = data?.text_summary?.end_date || "";
-      const sourceNames = [...(data?.text_sources || []), ...(data?.media_sources || [])]
-        .map(item => item?.source)
-        .filter(Boolean);
-      const sourceText = sourceNames.length ? sourceNames.join(" / ") : "";
+      const categories = [...new Set(
+        [...(data?.text_sources || []), ...(data?.media_sources || [])]
+          .map(item => item?.source_category)
+          .filter(Boolean)
+      )];
+      const categoryText = categories.length ? `來源：${categories.join(" / ")}` : "";
       const dateText = start && end ? `${start}–${end}` : (start || end);
       summary.textContent = [
-        `搜尋資料｜${count} 筆`,
+        `搜尋資料｜${chars} 字`,
         dateText,
-        sourceText
+        categoryText
       ].filter(Boolean).join(" · ");
     } catch (_) {
-      summary.textContent = "搜尋資料｜點開查看資料總數、日期與來源";
+      summary.textContent = "搜尋資料｜點開查看總文字數、日期與來源類別";
     }
   }
 
