@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v182";
+const CACHE_NAME = "moon-runes-pwa-v183";
 
 // Keep precache intentionally small. Feature pages now own their own data lifecycle.
 // Large registries, analysis snapshots, rune datasets and page-specific scripts are
