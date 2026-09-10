@@ -42,7 +42,7 @@
     if (document.getElementById("loc-canonical-nav-runtime")) return;
     const style = document.createElement("style");
     style.id = "loc-canonical-nav-runtime";
-    style.textContent = `.workspace-sidebar,.sidebar{display:none!important}.runes-third-nav{display:none!important}.loc-global-search{display:flex!important;align-items:center;gap:6px}.loc-global-search-submit{min-height:34px;padding:5px 8px;border:1px solid rgba(180,158,255,.24);border-radius:8px;background:transparent;color:var(--muted,#b9bfd0);font:inherit;font-size:.8rem;cursor:pointer}`;
+    style.textContent = `.runes-third-nav{display:none!important}.loc-global-search{display:flex!important;align-items:center;gap:6px}.loc-global-search-submit{min-height:34px;padding:5px 8px;border:1px solid rgba(180,158,255,.24);border-radius:8px;background:transparent;color:var(--muted,#b9bfd0);font:inherit;font-size:.8rem;cursor:pointer}`;
     document.head.appendChild(style);
   }
 
@@ -187,6 +187,5 @@
     cleanupContextGameEmbed();
     buildTiers();
     loadEnhancements();
-    document.querySelectorAll(".workspace-sidebar,.sidebar").forEach(node => node.remove());
   });
 })();

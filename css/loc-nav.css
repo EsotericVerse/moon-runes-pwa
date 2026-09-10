@@ -102,52 +102,6 @@
 .loc-nav-tier[data-tier="3"]{border-top:1px solid rgba(180,158,255,.1)}
 .loc-nav-tier[data-tier="3"] .loc-nav-tier-inner{min-height:38px}
 .loc-nav-tier[data-tier="3"] .loc-nav-tier-link{font-size:.78rem;color:var(--muted,var(--loc-muted,#b9bfd0))}
-
-.loc-nav-tier .workspace-nav,
-.loc-nav-tier .nav{
-  display:flex !important;
-  flex-wrap:nowrap !important;
-  align-items:center !important;
-  gap:10px !important;
-  width:100% !important;
-  margin:0 !important;
-  padding:0 !important;
-  overflow-x:auto !important;
-  overflow-y:hidden !important;
-  background:transparent !important;
-}
-.loc-nav-tier .workspace-nav-group,
-.loc-nav-tier .nav-group{
-  display:block !important;
-  flex:0 0 auto !important;
-  margin:0 !important;
-}
-.loc-nav-tier .workspace-switch,
-.loc-nav-tier .view-switch{
-  width:auto !important;
-  min-width:0 !important;
-  margin:0 !important;
-  padding:5px 4px !important;
-  border:0 !important;
-  border-bottom:1px solid transparent !important;
-  border-radius:0 !important;
-  background:transparent !important;
-  box-shadow:none !important;
-  text-align:center !important;
-}
-.loc-nav-tier .workspace-switch.active,
-.loc-nav-tier .view-switch.active{
-  color:var(--text,var(--loc-text,#f5f1ff)) !important;
-  border-bottom-color:var(--gold,var(--loc-gold,#e7c27d)) !important;
-}
-
-/* Old workspace rail must never reappear. */
-.workspace-sidebar,
-.sidebar,
-body .app-shell > .workspace-sidebar,
-body .app > .sidebar{
-  display:none !important;
-}
 body .app-shell,
 body .app{
   width:min(1180px,calc(100% - 28px)) !important;
