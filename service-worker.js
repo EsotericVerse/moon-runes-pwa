@@ -1,9 +1,10 @@
-const CACHE_NAME = "moon-runes-pwa-v185";
+const CACHE_NAME = "moon-runes-pwa-v186";
 
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
   "/search.html",
+  "/statics.htm",
   "/runes.html",
   "/context.html",
   "/game.html",
@@ -65,23 +66,14 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE)));
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((cacheNames) =>
-        Promise.all(
-          cacheNames
-            .filter((cacheName) => cacheName !== CACHE_NAME)
-            .map((cacheName) => caches.delete(cacheName))
-        )
-      )
+    caches.keys()
+      .then((cacheNames) => Promise.all(cacheNames.filter((cacheName) => cacheName !== CACHE_NAME).map((cacheName) => caches.delete(cacheName))))
       .then(() => self.clients.claim())
   );
 });
@@ -89,9 +81,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
-
   if (request.method !== "GET") return;
-
   if (url.origin !== self.location.origin) {
     event.respondWith(fetch(request));
     return;
@@ -121,6 +111,7 @@ self.addEventListener("fetch", (event) => {
     request.mode === "navigate" ||
     url.pathname.endsWith(".js") ||
     url.pathname.endsWith(".html") ||
+    url.pathname.endsWith(".htm") ||
     url.pathname.endsWith("/")
   ) {
     event.respondWith(
@@ -135,7 +126,5 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => cachedResponse || fetch(request))
-  );
+  event.respondWith(caches.match(request).then((cachedResponse) => cachedResponse || fetch(request)));
 });
