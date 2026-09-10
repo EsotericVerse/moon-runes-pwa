@@ -130,7 +130,11 @@ window.addEventListener("DOMContentLoaded", () => {
   const extra = document.getElementById("framework-detail-extra");
   const detailLinks = document.getElementById("framework-detail-links");
 
-  if (modalTitle) modalTitle.textContent = "快速說明";
+  // Keep the modal heading in the same bilingual text-block convention:
+  // English/category line first, Chinese title second.
+  if (modalTitle) {
+    modalTitle.innerHTML = `<span style="display:block;color:var(--loc-purple);font-size:.72rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;">ARCHITECTURE</span><span style="display:block;margin-top:4px;color:var(--loc-gold);font-size:1.18rem;">快速說明</span>`;
+  }
 
   // The eight choices are navigation tags, so keep them at the very end
   // of the detail block instead of mixing them into the descriptive content.
