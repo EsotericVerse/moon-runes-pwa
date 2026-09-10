@@ -168,6 +168,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     .quick-selector-modal .rune-tile{min-width:0;width:100%;}
     .quick-selector-modal .rune-thumb{width:100%;height:auto;display:block;}
+    .rune-result-name{display:flex;align-items:baseline;gap:.5em;flex-wrap:wrap;}
+    .rune-result-name small{display:inline;margin:0;}
+    .rune-result-group-link{color:var(--gold);font-weight:800;text-decoration:none;}
+    .rune-result-group-link:hover,.rune-result-group-link:focus-visible{text-decoration:underline;}
+    .ritual-left .rune-result-card{margin:0;}
+    .ritual-left .rune-result-image{max-width:260px;margin:0 auto;}
 
     .special-rune-section{
       margin:18px 0;
@@ -271,6 +277,72 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const all = runeRows.map(normalize).filter(r => Number.isInteger(r.編號) && r.編號 >= 0 && r.編號 <= 66);
+  const runeByName = new Map(all.filter(r => r.符文名稱).map(r => [r.符文名稱, r]));
+
+  function keywordForDirection(runeRow, directionName){
+    const negative = directionName === '逆位' || directionName === '半逆位';
+    if (negative) return runeRow?.負面關鍵詞 || runeRow?.反向關鍵字 || runeRow?.反向關鍵詞 || runeRow?.關鍵詞 || '—';
+    return runeRow?.正面關鍵詞 || runeRow?.關鍵詞 || '—';
+  }
+
+  function renderRitualPreview(){
+    const host = document.querySelector('#ritual-view .ritual-left');
+    const r = all.find(item => item.編號 === 65);
+    if (!host || !r) return;
+    const realPhase = window.LOCMoonPhase?.getRealPhase?.() || sessionStorage.getItem('realPhase') || '未知';
+    const keyword = keywordForDirection(r, '正位');
+    host.innerHTML = `
+      <article class="rune-result-card" data-density="full">
+        <div class="rune-result-image"><img src="64images/${esc(r.圖檔名稱)}" alt="玄之符文" /></div>
+        <div class="rune-result-body">
+          <h2 class="rune-result-name">${esc(r.符文名稱)}${r.英文 ? `<small>${esc(r.英文)}</small>` : ''}</h2>
+          <div class="rune-result-grid">
+            <div class="rune-result-field"><span class="rune-result-label">卡片方向</span><span class="rune-result-value">正位</span></div>
+            <div class="rune-result-field"><span class="rune-result-label">關鍵詞</span><span class="rune-result-value">${esc(keyword)}</span></div>
+            <div class="rune-result-field"><span class="rune-result-label">所屬分組</span><span class="rune-result-value">特殊</span></div>
+            <div class="rune-result-field moon"><span class="rune-result-label">卡片月相</span><span class="rune-result-value">${esc(r.月相 || '無')} / 真實月相：${esc(realPhase)}</span></div>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function enhanceDrawCards(){
+    document.querySelectorAll('#cards-grid .rune-result-card').forEach(card => {
+      const nameNode = card.querySelector('.rune-result-name');
+      const name = nameNode?.childNodes?.[0]?.textContent?.trim() || '';
+      const runeRow = runeByName.get(name);
+      if (!runeRow) return;
+
+      const fields = [...card.querySelectorAll('.rune-result-field')];
+      const directionField = fields.find(field => field.querySelector('.rune-result-label')?.textContent.trim() === '卡片方向');
+      const directionName = directionField?.querySelector('.rune-result-value')?.textContent.trim() || '';
+
+      if (directionField && !fields.some(field => field.querySelector('.rune-result-label')?.textContent.trim() === '關鍵詞')) {
+        const keywordField = document.createElement('div');
+        keywordField.className = 'rune-result-field';
+        keywordField.innerHTML = `<span class="rune-result-label">關鍵詞</span><span class="rune-result-value">${esc(keywordForDirection(runeRow, directionName))}</span>`;
+        directionField.after(keywordField);
+      }
+
+      const groupField = [...card.querySelectorAll('.rune-result-field')].find(field => field.querySelector('.rune-result-label')?.textContent.trim() === '所屬分組');
+      const groupValue = groupField?.querySelector('.rune-result-value');
+      if (groupValue && !groupValue.querySelector('a')) {
+        const groupName = runeRow.所屬分組 || '';
+        if (['靈魂','連結','生命','自然','礦物','元素','秩序','無序'].includes(groupName)) {
+          groupValue.innerHTML = `<a class="rune-result-group-link" href="runes.html?group=${encodeURIComponent(groupName)}#library">${esc(groupName)}組</a>`;
+        } else {
+          groupValue.textContent = groupName === '特殊' || runeRow.編號 >= 65 ? '特殊' : groupName;
+        }
+      }
+    });
+  }
+
+  renderRitualPreview();
+  const cardsGrid = document.getElementById('cards-grid');
+  if (cardsGrid) {
+    new MutationObserver(enhanceDrawCards).observe(cardsGrid, { childList:true, subtree:true });
+    enhanceDrawCards();
+  }
 
   function infoBox(label, value){
     if (!value) return "";
@@ -316,31 +388,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     quickHost.id = 'rune-group-quick-selector';
     overviewLink.after(quickHost);
 
-    mountQuickSelector({
+    const quickItems = coreGroups.map(meta => ({
+      id: meta.id || meta.group_en || meta.group_zh,
+      label: meta.group_zh,
+      kicker: meta.group_en,
+      title: meta.group_zh,
+      description: meta.description,
+      extra: [
+        meta.trait ? `特質：${meta.trait}` : '',
+        meta.style_module ? `風格模組：${meta.style_module}` : '',
+        Array.isArray(meta.possible_tone) && meta.possible_tone.length ? `可能語氣：${meta.possible_tone.join('、')}` : ''
+      ].filter(Boolean),
+      href: `search.html?q=${encodeURIComponent(`月之符文 ${meta.group_zh}群組 方法論`)}`,
+      linkLabel: `搜尋${meta.group_zh}群組方法論`,
+      runeIds: (meta.runes || []).map(member => Number(member.id)).filter(id => id >= 1 && id <= 64)
+    }));
+
+    const quickSelector = mountQuickSelector({
       target: quickHost,
       imageTarget: overviewLink,
       display: 'modal',
-      items: coreGroups.map(meta => ({
-        id: meta.id || meta.group_en || meta.group_zh,
-        label: meta.group_zh,
-        kicker: meta.group_en,
-        title: meta.group_zh,
-        description: meta.description,
-        extra: [
-          meta.trait ? `特質：${meta.trait}` : '',
-          meta.style_module ? `風格模組：${meta.style_module}` : '',
-          Array.isArray(meta.possible_tone) && meta.possible_tone.length ? `可能語氣：${meta.possible_tone.join('、')}` : ''
-        ].filter(Boolean),
-        href: `search.html?q=${encodeURIComponent(`月之符文 ${meta.group_zh}群組 方法論`)}`,
-        linkLabel: `搜尋${meta.group_zh}群組方法論`,
-        runeIds: (meta.runes || []).map(member => Number(member.id)).filter(id => id >= 1 && id <= 64)
-      })),
+      items: quickItems,
       renderContent: item => {
         const ids = new Set(item.runeIds || []);
         const items = all.filter(r => ids.has(r.編號)).sort((a,b) => a.編號 - b.編號);
         return `<div class="group-row">${items.map(tile).join("")}</div>`;
       }
     });
+
+    const requestedGroup = new URLSearchParams(location.search).get('group');
+    if (requestedGroup && quickSelector) {
+      const requestedItem = quickItems.find(item => item.label === requestedGroup || item.id === requestedGroup);
+      if (requestedItem) setTimeout(() => quickSelector.select(requestedItem.id, true), 0);
+    }
   }
 
   if (specialRunes.length) {
