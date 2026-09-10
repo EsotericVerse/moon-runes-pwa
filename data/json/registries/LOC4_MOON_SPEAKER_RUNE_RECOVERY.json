@@ -124,10 +124,9 @@
       "runes": [
         {
           "legacy_name": "意",
-          "canonical_name": null,
+          "canonical_name": "向",
           "canonical_names": [
-            "向",
-            "鍊"
+            "向"
           ],
           "orientation": "逆位"
         },
@@ -161,10 +160,9 @@
       "runes": [
         {
           "legacy_name": "意",
-          "canonical_name": null,
+          "canonical_name": "向",
           "canonical_names": [
-            "向",
-            "鍊"
+            "向"
           ],
           "orientation": "半正位"
         },
@@ -344,10 +342,9 @@
       "runes": [
         {
           "legacy_name": "意",
-          "canonical_name": null,
+          "canonical_name": "向",
           "canonical_names": [
-            "向",
-            "鍊"
+            "向"
           ],
           "orientation": "正位"
         },
