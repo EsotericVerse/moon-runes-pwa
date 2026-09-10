@@ -1,6 +1,31 @@
 (() => {
   'use strict';
 
+  const currentFile=location.pathname.split('/').pop()||'index.html';
+  const SEARCH_SOURCE_STATS_PATH='data/json/generated/search/SEARCH_SOURCE_STATS.json';
+
+  // Search uses a tiny JS snapshot instead of fetching the generated JSON at runtime.
+  // The compatibility fetch shim keeps existing search.html rendering code untouched.
+  if(currentFile==='search.html'&&!window.LOC_SEARCH_SOURCE_STATS&&document.readyState==='loading'){
+    document.write('<script src="js/search-source-stats.js"><\/script>');
+  }
+  if(currentFile==='search.html'&&window.LOC_SEARCH_SOURCE_STATS&&!window.__LOC_SEARCH_STATS_FETCH_SHIM__){
+    const nativeFetch=window.fetch.bind(window);
+    window.fetch=(input,init)=>{
+      const raw=typeof input==='string'?input:(input?.url||'');
+      let pathname='';
+      try{pathname=new URL(raw,location.href).pathname.replace(/^\//,'');}catch(_){pathname=String(raw||'').replace(/^\//,'');}
+      if(pathname===SEARCH_SOURCE_STATS_PATH){
+        return Promise.resolve(new Response(JSON.stringify(window.LOC_SEARCH_SOURCE_STATS),{
+          status:200,
+          headers:{'Content-Type':'application/json;charset=utf-8','X-LOC-Static-Source':'js'}
+        }));
+      }
+      return nativeFetch(input,init);
+    };
+    window.__LOC_SEARCH_STATS_FETCH_SHIM__=true;
+  }
+
   const REGISTRY_URL='data/json/registries/LOC_ERA_REGISTRY.json';
   const SHEET_API='https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec';
   const LEGACY_MAP={P0:'P5.0','P0.5':'P5.1',P1:'P6.0',P2:'P6.1',P3:'P6.2',P4:'P7.0',P5:'P7.0',P6:'P7.0',P7:'P7.1',P8:'P7.2'};
