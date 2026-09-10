@@ -50,6 +50,60 @@ _PART_NAMES = {
     7: "無限．迴夢之卷",
 }
 
+_TEXT_SEMANTIC_GROUP_MAP = {
+    "命運": "特殊組",
+    "責任": "特殊組",
+    "選擇／方向": "連結組",
+    "因果": "秩序組",
+    "夢境／幻象": "無序組",
+    "靈魂": "靈魂組",
+    "記憶": "靈魂組",
+    "彼岸／輪迴": "無序組",
+    "意志": "靈魂組",
+    "虛／空洞": "無序組",
+    "生命／死亡": "生命組",
+    "愛／關係": "生命組",
+    "誓言／連結": "連結組",
+    "守護／邊界": "連結組",
+    "真相／理解": "連結組",
+    "時間": "秩序組",
+    "自然／生長": "自然組",
+    "火／衝突": "元素組",
+    "水／冰": "元素組",
+    "光／暗": "元素組",
+}
+
+_TEXT_SEMANTIC_GROUP_ORDER = [
+    "靈魂組", "連結組", "生命組", "自然組", "礦物組",
+    "元素組", "秩序組", "無序組", "特殊組",
+]
+
+
+def _text_semantic_groups(themes: list[dict[str, Any]]) -> dict[str, Any]:
+    counts = {group: 0 for group in _TEXT_SEMANTIC_GROUP_ORDER}
+    evidence: dict[str, list[dict[str, Any]]] = {group: [] for group in _TEXT_SEMANTIC_GROUP_ORDER}
+    for item in themes:
+        label = str(item.get("label") or "")
+        group = _TEXT_SEMANTIC_GROUP_MAP.get(label)
+        if not group:
+            continue
+        count = int(item.get("count") or 0)
+        counts[group] += count
+        evidence[group].append({"concept": label, "count": count})
+
+    maximum = max(counts.values(), default=0)
+    highest = [group for group, count in counts.items() if count == maximum and count > 0]
+    return {
+        "basis": "full_chapter_text_semantics",
+        "source": "deterministic_theme_evidence",
+        "counts": counts,
+        "highest_groups": highest,
+        "maximum_count": maximum,
+        "status": "disputed_tie" if len(highest) > 1 else ("single_max" if highest else "no_signal"),
+        "evidence": {group: rows for group, rows in evidence.items() if rows},
+        "note": "只由完成後正文的語意概念映射九群組；不讀原始抽牌結果，不用 rune_configuration 反推正文語意。",
+    }
+
 
 def _load_json(path: Path) -> dict[str, Any]:
     if not path.exists():
@@ -222,6 +276,7 @@ def build_moon_speaker_chapter_analysis(repo_root: Path) -> dict[str, Any]:
             chapter = int(row["chapter"])
             themes = _themes(row["body"], row["title"])
             entities = _entities(row["body"])
+            text_semantic_groups = _text_semantic_groups(themes)
             rune = rune_map.get((part, chapter))
             chapters.append({
                 "chapter_id": f"LOC4-MOON-SPEAKER-P{part}-C{chapter:02d}",
@@ -240,6 +295,7 @@ def build_moon_speaker_chapter_analysis(repo_root: Path) -> dict[str, Any]:
                     f"{'、'.join(x['label'] for x in themes[:3]) or '敘事推進'}；"
                     f"結構位置為「{_narrative_function(chapter)}」。"
                 ),
+                "text_semantic_groups": text_semantic_groups,
                 "metrics": _metrics(row["body"]),
                 "rune_configuration": {
                     "status": "restored_from_outline",
@@ -287,7 +343,7 @@ def build_moon_speaker_chapter_analysis(repo_root: Path) -> dict[str, Any]:
         },
         "analysis_dimensions": [
             "chapter_boundary", "title_signals", "narrative_function", "themes",
-            "key_entities", "semantic_summary", "text_metrics",
+            "key_entities", "semantic_summary", "text_semantic_groups", "text_metrics",
             "rune_configuration", "source_provenance",
         ],
         "chapters": chapters,
