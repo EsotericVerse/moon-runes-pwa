@@ -1,4 +1,4 @@
-/* LOC shared global navigation — single interface for index/list/loc2/search/life */
+/* LOC shared global navigation */
 .loc-global-shell{
   width:min(1120px,calc(100% - 32px));
   margin:0 auto;
@@ -64,96 +64,87 @@
   transition:transform .16s ease;
   opacity:.9;
 }
-.loc-global-link:hover,
-.loc-global-link:focus-visible{
-  color:var(--text,var(--loc-text,#f5f1ff));
-  outline:none;
+.loc-global-link:hover,.loc-global-link:focus-visible{color:var(--text,var(--loc-text,#f5f1ff));outline:none}
+.loc-global-link:hover::after,.loc-global-link:focus-visible::after,.loc-global-link[aria-current="page"]::after{transform:scaleX(1)}
+.loc-global-link[aria-current="page"]{color:var(--text,var(--loc-text,#f5f1ff))}
+
+/* NAV2 / NAV3: one horizontal navigation model across desktop and mobile. */
+.loc-secondary-shell,.loc-tertiary-shell{
+  width:min(1120px,calc(100% - 32px));
+  margin:0 auto;
 }
-.loc-global-link:hover::after,
-.loc-global-link:focus-visible::after,
-.loc-global-link[aria-current="page"]::after{
-  transform:scaleX(1);
+.loc-secondary-nav,.loc-tertiary-nav,.home-section-nav{
+  display:flex !important;
+  align-items:center;
+  gap:8px !important;
+  overflow-x:auto;
+  white-space:nowrap;
+  width:100%;
+  margin:0 !important;
+  padding:8px 0 10px !important;
+  border:0 !important;
+  border-bottom:1px solid rgba(180,158,255,.15) !important;
+  background:transparent !important;
+  scrollbar-width:thin;
 }
-.loc-global-link[aria-current="page"]{
-  color:var(--text,var(--loc-text,#f5f1ff));
+.loc-secondary-nav .workspace-nav-group,.loc-secondary-nav .nav-group{
+  display:block !important;
+  flex:0 0 auto;
+  margin:0 !important;
 }
+.loc-secondary-nav .workspace-nav-label,.loc-secondary-nav .nav-label{display:none !important}
+.loc-secondary-nav a,.loc-secondary-nav button,.home-section-nav a,
+.loc-tertiary-nav a,.loc-tertiary-nav button{
+  display:inline-flex !important;
+  align-items:center;
+  min-height:34px;
+  width:auto !important;
+  padding:6px 10px !important;
+  margin:0 !important;
+  border:1px solid transparent !important;
+  border-radius:999px !important;
+  background:transparent !important;
+  color:var(--muted,var(--loc-muted,#b9bfd0)) !important;
+  text-decoration:none !important;
+  font:inherit;
+  font-size:.8rem !important;
+  font-weight:700;
+  box-shadow:none !important;
+  cursor:pointer;
+}
+.loc-secondary-nav a:hover,.loc-secondary-nav button:hover,
+.loc-secondary-nav a.active,.loc-secondary-nav button.active,
+.loc-secondary-nav [aria-current="page"],.home-section-nav a:hover,
+.loc-tertiary-nav a:hover,.loc-tertiary-nav button:hover,.loc-tertiary-nav .active{
+  color:var(--text,var(--loc-text,#f5f1ff)) !important;
+  border-color:rgba(180,158,255,.22) !important;
+  background:rgba(180,158,255,.08) !important;
+}
+.loc-secondary-nav strong{font-size:inherit !important;font-weight:800 !important}
+.loc-secondary-nav small{display:none !important}
+
+/* Sidebar is retired. Content always uses the full page width. */
+body .workspace-sidebar,body .sidebar{display:none !important}
+body .app-shell,body .app,body .workspace-layout{
+  grid-template-columns:minmax(0,1fr) !important;
+  width:min(1120px,calc(100% - 32px)) !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+body .workspace-main,body main{min-width:0}
 
 @media(max-width:720px){
-  .loc-global-shell{width:min(100% - 22px,1120px)}
-  .loc-global-nav{
-    position:relative;
-    align-items:flex-start;
-    flex-direction:column;
-    min-height:auto;
-    padding:14px 0 10px;
-    background:transparent;
-    backdrop-filter:none;
-    -webkit-backdrop-filter:none;
-  }
-  .loc-global-links{
-    width:100%;
-    justify-content:flex-start;
-    gap:10px 14px;
-  }
-  .loc-home-link{margin-left:0}
+  .loc-global-shell,.loc-secondary-shell,.loc-tertiary-shell{width:min(100% - 22px,1120px)}
+  .loc-global-nav{position:relative;align-items:flex-start;flex-direction:column;min-height:auto;padding:14px 0 10px;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
+  .loc-global-links{width:100%;justify-content:flex-start;gap:10px 14px}
+  .loc-secondary-nav,.loc-tertiary-nav,.home-section-nav{padding-bottom:8px !important}
+  body .app-shell,body .app,body .workspace-layout{width:min(100% - 22px,1120px) !important;padding-left:0 !important;padding-right:0 !important}
 }
 
-
-/* LOC public header contract
-   .loc-header-meta     = small: LOC classification + technology
-   .loc-header-title    = largest: exact public/navigation function name
-   .loc-header-subtitle = medium: one-line functional explanation
-   .loc-header-copy     = optional supporting paragraph */
-.loc-header,
-.loc-page-hero{
-  margin-block:0 24px;
-  padding-block:28px 0;
-}
-.loc-header .loc-header-meta{
-  margin:0 0 9px;
-  color:var(--accent,var(--mint,var(--loc-purple,#b49eff)));
-  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
-  font-size:.76rem;
-  font-weight:800;
-  line-height:1.45;
-  letter-spacing:.14em;
-}
-.loc-header .loc-header-title,
-.loc-page-title{
-  margin:0;
-  max-width:920px;
-  color:var(--text,var(--loc-text,#f5f1ff));
-  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
-  font-size:clamp(3.15rem,7.5vw,5.4rem);
-  font-weight:800;
-  line-height:1;
-  letter-spacing:-.05em;
-}
-.loc-header .loc-header-subtitle,
-.loc-page-subtitle{
-  max-width:800px;
-  margin:15px 0 0;
-  color:var(--text,var(--loc-text,#f5f1ff));
-  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
-  font-size:clamp(1.35rem,2.7vw,2rem);
-  font-weight:650;
-  line-height:1.35;
-  letter-spacing:-.02em;
-}
-.loc-header .loc-header-copy,
-.loc-page-intro{
-  max-width:800px;
-  margin:12px 0 0;
-  color:var(--muted,var(--loc-muted,#b9bfd0));
-  font-size:1rem;
-  line-height:1.75;
-}
-@media(max-width:560px){
-  .loc-header,
-  .loc-page-hero{padding-top:20px}
-  .loc-header .loc-header-meta{font-size:.7rem;letter-spacing:.11em}
-  .loc-header .loc-header-title,
-  .loc-page-title{font-size:clamp(2.75rem,14vw,4rem)}
-  .loc-header .loc-header-subtitle,
-  .loc-page-subtitle{font-size:clamp(1.25rem,6.4vw,1.7rem)}
-}
+/* LOC public header contract */
+.loc-header,.loc-page-hero{margin-block:0 24px;padding-block:28px 0}
+.loc-header .loc-header-meta{margin:0 0 9px;color:var(--accent,var(--mint,var(--loc-purple,#b49eff)));font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:.76rem;font-weight:800;line-height:1.45;letter-spacing:.14em}
+.loc-header .loc-header-title,.loc-page-title{margin:0;max-width:920px;color:var(--text,var(--loc-text,#f5f1ff));font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:clamp(3.15rem,7.5vw,5.4rem);font-weight:800;line-height:1;letter-spacing:-.05em}
+.loc-header .loc-header-subtitle,.loc-page-subtitle{max-width:800px;margin:15px 0 0;color:var(--text,var(--loc-text,#f5f1ff));font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:clamp(1.35rem,2.7vw,2rem);font-weight:650;line-height:1.35;letter-spacing:-.02em}
+.loc-header .loc-header-copy,.loc-page-intro{max-width:800px;margin:12px 0 0;color:var(--muted,var(--loc-muted,#b9bfd0));font-size:1rem;line-height:1.75}
+@media(max-width:560px){.loc-header,.loc-page-hero{padding-top:20px}.loc-header .loc-header-meta{font-size:.7rem;letter-spacing:.11em}.loc-header .loc-header-title,.loc-page-title{font-size:clamp(2.75rem,14vw,4rem)}.loc-header .loc-header-subtitle,.loc-page-subtitle{font-size:clamp(1.25rem,6.4vw,1.7rem)}}
