@@ -1,5 +1,5 @@
 (() => {
-  const WEB_BUILD = "1.1";
+  const WEB_BUILD = "1.2";
   const currentFile = location.pathname.split("/").pop() || "index.html";
 
   if (currentFile === "runes.html") {
@@ -26,7 +26,7 @@
 
   const GLOBAL_ITEMS = [
     {id:"runes",label:"月之符文",href:"runes.html"},
-    {id:"game",label:"遊戲",href:"loc2-game.html"},
+    {id:"game",label:"遊戲",href:"game.html"},
     {id:"context",label:"脈絡",href:"context.html"},
     {id:"evolution",label:"推演",href:"evolution.html"},
     {id:"statics",label:"統計",href:"statics.html"}
@@ -49,7 +49,7 @@
     const explicit=node?.dataset?.page;
     if(explicit==='game')return currentFile==='context.html'?'context':'game';
     if(explicit)return explicit;
-    if(currentFile==='loc2-game.html'||currentFile==='game.html')return 'game';
+    if(currentFile==='game.html'||currentFile==='loc2-game.html')return 'game';
     if(currentFile==='context.html')return 'context';
     if(currentFile==='statics.html')return 'statics';
     if(currentFile==='evolution.html')return 'evolution';
@@ -84,32 +84,18 @@
     document.head.appendChild(s);
   }
 
-  function paintGlobalNav(node){
-    const active=activeId(node);
-    node.innerHTML=`<a class="loc-global-brand" href="index.html" aria-label="回到 LOC月典首頁">LOC月典</a><div class="loc-global-links">${navMarkup(active)}</div>`;
-  }
+  function paintGlobalNav(node){const active=activeId(node);node.innerHTML=`<a class="loc-global-brand" href="index.html" aria-label="回到 LOC月典首頁">LOC月典</a><div class="loc-global-links">${navMarkup(active)}</div>`;}
 
   function paintHomeTopbar(){
     if(currentFile!=='index.html')return;
-    const nav=document.querySelector('.topbar .nav-links');
-    if(nav)nav.innerHTML=navMarkup('');
+    const nav=document.querySelector('.topbar .nav-links'); if(nav)nav.innerHTML=navMarkup('');
     const topbar=document.querySelector('.topbar');
-    if(topbar&&!document.querySelector('.home-section-nav')){
-      const sub=document.createElement('nav');
-      sub.className='home-section-nav';
-      sub.setAttribute('aria-label','首頁功能導覽');
-      sub.innerHTML=`<a href="#home-intro">LOC月典簡介</a><a href="#start-title">新手上路</a><a href="#framework-map">LOC架構圖</a><a href="#home-progress">目前進度</a><a href="statics.html">統計</a><a href="#home-other">其他</a>`;
-      topbar.after(sub);
-    }
+    if(topbar&&!document.querySelector('.home-section-nav')){const sub=document.createElement('nav');sub.className='home-section-nav';sub.setAttribute('aria-label','首頁功能導覽');sub.innerHTML=`<a href="#home-intro">LOC月典簡介</a><a href="#start-title">新手上路</a><a href="#framework-map">LOC架構圖</a><a href="#home-progress">目前進度</a><a href="statics.html">統計</a><a href="#home-other">其他</a>`;topbar.after(sub);}
     const hero=document.querySelector('header.hero'); if(hero&&!hero.id)hero.id='home-intro';
-    [...document.querySelectorAll('section')].forEach(section=>{const text=section.querySelector('h2')?.textContent?.trim()||'';if(!document.getElementById('home-progress')&&(text.includes('目前進度')||text.includes('進度')))section.id='home-progress';if(!document.getElementById('home-other')&&(text.includes('其他')||text.includes('關於')))section.id='home-other';});
   }
 
   const FRAMEWORK_LABELS={LOC1:'月之符文模組',LOC2:'脈絡',LOC3:'音樂',LOC4:'文字創作',LOC5:'多媒體',LOC6:'演算法',LOC7:'演算模組',LOC8:'推演引擎'};
-  function patchFrameworkNav(){
-    if(currentFile!=='index.html')return;
-    document.querySelectorAll('.framework-tab').forEach(btn=>{const key=btn.dataset.locKey;if(FRAMEWORK_LABELS[key])btn.textContent=FRAMEWORK_LABELS[key];});
-  }
+  function patchFrameworkNav(){if(currentFile!=='index.html')return;document.querySelectorAll('.framework-tab').forEach(btn=>{const key=btn.dataset.locKey;if(FRAMEWORK_LABELS[key])btn.textContent=FRAMEWORK_LABELS[key];});}
 
   function pruneSearchWorkspace(){
     if(currentFile!=="search.html")return;
@@ -119,41 +105,16 @@
     const main=document.querySelector('.workspace-main'); if(main){main.style.width='100%';main.style.maxWidth='1120px';main.style.margin='0 auto';}
   }
 
-  function patchRuneNav(){
-    if(!['runes.html','lots.html'].includes(currentFile))return;
-    const nav=document.querySelector('.workspace-sidebar .workspace-nav');
-    if(nav)nav.innerHTML=RUNE_NAV;
-  }
+  function patchRuneNav(){if(!['runes.html','lots.html'].includes(currentFile))return;const nav=document.querySelector('.workspace-sidebar .workspace-nav');if(nav)nav.innerHTML=RUNE_NAV;}
 
   function patchContextNav(){
     if(currentFile!=='context.html')return;
-    const nav=document.querySelector('.workspace-sidebar .workspace-nav');
-    if(!nav)return;
-    nav.innerHTML=CONTEXT_NAV;
-    nav.querySelectorAll('[data-context-target]').forEach(btn=>btn.addEventListener('click',()=>{
-      const target=btn.dataset.contextTarget;
-      document.querySelectorAll('[data-context-view]').forEach(section=>section.hidden=section.dataset.contextView!==target);
-      nav.querySelectorAll('[data-context-target]').forEach(x=>x.classList.toggle('active',x===btn));
-      history.replaceState(null,'','context.html#'+target);
-    }));
-    const hash=location.hash.replace('#','');
-    const initial=['graph','nodes','relations','scenarios'].includes(hash)?hash:'graph';
-    nav.querySelector(`[data-context-target="${initial}"]`)?.click();
+    const nav=document.querySelector('.workspace-sidebar .workspace-nav'); if(!nav)return; nav.innerHTML=CONTEXT_NAV;
+    nav.querySelectorAll('[data-context-target]').forEach(btn=>btn.addEventListener('click',()=>{const target=btn.dataset.contextTarget;document.querySelectorAll('[data-context-view]').forEach(section=>section.hidden=section.dataset.contextView!==target);nav.querySelectorAll('[data-context-target]').forEach(x=>x.classList.toggle('active',x===btn));history.replaceState(null,'','context.html#'+target);}));
+    const hash=location.hash.replace('#','');const initial=['graph','nodes','relations','scenarios'].includes(hash)?hash:'graph';nav.querySelector(`[data-context-target="${initial}"]`)?.click();
   }
 
-  function renderBuildLabel(){
-    if(currentFile==='search.html')return;
-    document.querySelectorAll('.workspace-sidebar,.sidebar').forEach(sidebar=>{if(sidebar.querySelector('[data-web-build]'))return;const label=document.createElement('div');label.dataset.webBuild='true';label.textContent='Web Build '+WEB_BUILD;label.style.cssText='margin-top:14px;padding-top:10px;border-top:1px solid rgba(127,135,148,.18);font-size:11px;letter-spacing:.08em;opacity:.58;text-align:center';sidebar.appendChild(label);});
-  }
+  function renderBuildLabel(){if(currentFile==='search.html')return;document.querySelectorAll('.workspace-sidebar,.sidebar').forEach(sidebar=>{if(sidebar.querySelector('[data-web-build]'))return;const label=document.createElement('div');label.dataset.webBuild='true';label.textContent='Web Build '+WEB_BUILD;label.style.cssText='margin-top:14px;padding-top:10px;border-top:1px solid rgba(127,135,148,.18);font-size:11px;letter-spacing:.08em;opacity:.58;text-align:center';sidebar.appendChild(label);});}
 
-  window.addEventListener('DOMContentLoaded',()=>{
-    ensureNavStyle();
-    document.querySelectorAll('[data-loc-nav]').forEach(paintGlobalNav);
-    paintHomeTopbar();
-    pruneSearchWorkspace();
-    patchRuneNav();
-    patchContextNav();
-    renderBuildLabel();
-    setTimeout(patchFrameworkNav,0);
-  });
+  window.addEventListener('DOMContentLoaded',()=>{ensureNavStyle();document.querySelectorAll('[data-loc-nav]').forEach(paintGlobalNav);paintHomeTopbar();pruneSearchWorkspace();patchRuneNav();patchContextNav();renderBuildLabel();setTimeout(patchFrameworkNav,0);});
 })();
