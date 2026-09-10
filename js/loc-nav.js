@@ -98,7 +98,7 @@
 
   function buildIndex(host) {
     host.append(
-      tier(2,[link("LOC月典簡介","#top"),link("新手上路","#start"),link("LOC架構圖","#framework-map"),link("目前進度","#progress"),link("其他","#about-title")],"首頁快速選單"),
+      tier(2,[link("LOC月典簡介","#top"),link("新手上路","#start"),link("LOC架構圖","#framework-map"),link("目前進度","#progress"),link("作者的話","#about-title")],"首頁快速選單"),
       tier(3,[link("月之符文模組","#framework-map"),link("脈絡","#framework-map"),link("音樂","#framework-map"),link("文字創作","#framework-map"),link("多媒體","#framework-map"),link("演算法","#framework-map"),link("演算模組","#framework-map"),link("推演引擎","#framework-map")],"LOC1–8 模組")
     );
   }
