@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC3_FULL_LYRICS_SEMANTIC_ANALYSIS",
+  "authority": "LOC3",
+  "generated_at": "2026-09-10",
+  "status": "complete_chinese_public_corpus_baseline",
+  "source": {
+    "file": "Suno_500_LOC3治理補全_v0.3.3.xlsx",
+    "sheet": "500公開作品主表"
+  },
+  "method": {
+    "basis": "Base66_current_three_keyword_exact_match",
+    "rules": [
+      "分析完整歌詞正文",
+      "不使用符文來源／抽牌結果作正文語意判定",
+      "不使用單字符文名稱作命中",
+      "使用現行 Base66 每符三個關鍵詞",
+      "共享關鍵詞保留多重語意歸屬",
+      "非中文作品本輪不以中文 Base66 關鍵詞硬判"
+    ],
+    "interpretation": "deterministic baseline; embedding / LLM / manual semantic layers may be added later without overwriting."
+  },
+  "scope": {
+    "public_work_groups": 500,
+    "full_lyrics_available": 500,
+    "chinese_analyzed": 472,
+    "english_deferred": 19,
+    "japanese_deferred": 8,
+    "korean_deferred": 1
+  },
+  "aggregate": {
+    "total_keyword_hits": 3508,
+    "group_counts": {
+      "秩序組": 729,
+      "無序組": 691,
+      "元素組": 571,
+      "連結組": 516,
+      "生命組": 409,
+      "靈魂組": 203,
+      "礦物組": 161,
+      "自然組": 145,
+      "特殊組": 83
+    },
+    "group_percentages": {
+      "秩序組": 20.78,
+      "無序組": 19.7,
+      "元素組": 16.28,
+      "連結組": 14.71,
+      "生命組": 11.66,
+      "靈魂組": 5.79,
+      "礦物組": 4.59,
+      "自然組": 4.13,
+      "特殊組": 2.37
+    },
+    "song_classification": {
+      "single_max": 313,
+      "disputed_tie": 124,
+      "no_signal": 35
+    },
+    "highest_group_song_counts": {
+      "秩序組": 151,
+      "元素組": 117,
+      "無序組": 112,
+      "連結組": 96,
+      "生命組": 72,
+      "靈魂組": 31,
+      "礦物組": 22,
+      "自然組": 21,
+      "特殊組": 10
+    }
+  },
+  "note": "472 首中文公開作品已完成完整歌詞 Base66 九群組 baseline。28 首非中文作品保留待跨語言語意層；逐首分析結果可由同一 deterministic pipeline 重建。"
+}
