@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v195";
+const CACHE_NAME = "moon-runes-pwa-v196";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -77,5 +77,44 @@ self.addEventListener("activate", (event) => {
     caches.keys()
       .then((cacheNames) => Promise.all(cacheNames.filter((cacheName) => cacheName !== CACHE_NAME).map((cacheName) => caches.delete(cacheName))))
       .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+
+  const url = new URL(request.url);
+  const isNavigation = request.mode === "navigate";
+  const isJs = url.pathname.endsWith(".js");
+  const isHtml = url.pathname.endsWith(".html") || url.pathname.endsWith(".htm") || url.pathname === "/";
+  const isCoreRuneData = [
+    "/data/json/core/runes66.json",
+    "/data/json/core/runes66groups.json"
+  ].includes(url.pathname);
+
+  if (isNavigation || isJs || isHtml || isCoreRuneData) {
+    event.respondWith(
+      fetch(request, {cache:"no-store"})
+        .then((response) => {
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match("/index.html")))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+      if (response && response.ok && url.origin === location.origin) {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+      }
+      return response;
+    }))
   );
 });
