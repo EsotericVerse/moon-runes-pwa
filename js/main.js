@@ -6,7 +6,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const moonText = document.getElementById("moon-phase-index");
 
   if (moonText) moonText.textContent = `月相：無 / 真實月相：${realPhase}`;
-  if (card) card.addEventListener("click", () => { window.location.href = "runes.html#draw"; });
+  if (card) card.addEventListener("click", () => { window.location.href = "lots.html#draw"; });
 
   const metaDescription = document.querySelector('meta[name="description"]');
   if (metaDescription) {

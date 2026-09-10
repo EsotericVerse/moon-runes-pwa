@@ -329,7 +329,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (groupValue && !groupValue.querySelector('a')) {
         const groupName = runeRow.所屬分組 || '';
         if (['靈魂','連結','生命','自然','礦物','元素','秩序','無序'].includes(groupName)) {
-          groupValue.innerHTML = `<a class="rune-result-group-link" href="runes.html?group=${encodeURIComponent(groupName)}#library">${esc(groupName)}組</a>`;
+          groupValue.innerHTML = `<a class="rune-result-group-link" href="lots.html?group=${encodeURIComponent(groupName)}#library">${esc(groupName)}組</a>`;
         } else {
           groupValue.textContent = groupName === '特殊' || runeRow.編號 >= 65 ? '特殊' : groupName;
         }

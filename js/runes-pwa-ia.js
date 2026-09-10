@@ -69,7 +69,7 @@
     view.className="runes-view runes-beginner-shell";
     view.id="beginnerView";
     view.hidden=true;
-    view.innerHTML=`<header class="hero loc-header"><p class="loc-header-meta">LunaRunes · Beginner Guide</p><h1 class="loc-header-title">新手入門</h1><h2 class="loc-header-subtitle">66 語言種子符文 × 八組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</h2></header><div class="runes-beginner-actions"><a class="runes-beginner-action primary" href="runes.html?mode=daily#draw">先抽一張</a><a class="runes-beginner-action" href="runes.html#library" data-runes-jump="library">月之符文66 圖鑑</a><a class="runes-beginner-action" href="docs/LOC_Tutorial_02_月之符文入門.pdf" target="_blank" rel="noopener">PDF 教材</a></div><div id="runesBeginnerContent"><div class="empty">載入新手入門…</div></div>`;
+    view.innerHTML=`<header class="hero loc-header"><p class="loc-header-meta">LunaRunes · Beginner Guide</p><h1 class="loc-header-title">新手入門</h1><h2 class="loc-header-subtitle">66 語言種子符文 × 八組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</h2></header><div class="runes-beginner-actions"><a class="runes-beginner-action primary" href="lots.html?mode=daily#draw">先抽一張</a><a class="runes-beginner-action" href="lots.html#library" data-runes-jump="library">月之符文66 圖鑑</a><a class="runes-beginner-action" href="docs/LOC_Tutorial_02_月之符文入門.pdf" target="_blank" rel="noopener">PDF 教材</a></div><div id="runesBeginnerContent"><div class="empty">載入新手入門…</div></div>`;
     main.prepend(view);
     try{
       const r=await fetch("data/html/runes-beginner.html",{cache:"force-cache"});
@@ -86,7 +86,7 @@
     const beginner=document.getElementById("beginnerView");
     document.querySelectorAll(".runes-view").forEach(view=>view.hidden=view!==beginner);
     document.querySelectorAll("[data-runes-view]").forEach(button=>button.classList.toggle("active",button.dataset.runesView==="beginner"));
-    if(updateUrl)history.replaceState(null,"","runes.html#beginner");
+    if(updateUrl)history.replaceState(null,"","lots.html#beginner");
   }
 
   function jumpExistingView(name){
@@ -105,14 +105,14 @@
       if(other){const beginner=document.getElementById("beginnerView");if(beginner)beginner.hidden=true;return}
       const jump=event.target.closest("[data-runes-jump]");
       if(jump){event.preventDefault();jumpExistingView(jump.dataset.runesJump);return}
-      const anchor=event.target.closest('a[href^="runes.html#"]');
+      const anchor=event.target.closest('a[href^="lots.html#"]');
       if(anchor){
         const hash=new URL(anchor.href,location.href).hash.replace(/^#/,"");
         if(["library","reference","systems","daily","draw"].includes(hash)){event.preventDefault();jumpExistingView(hash)}
       }
     },true);
 
-    document.querySelectorAll('a[href="tutorial02.html"],a[href$="/tutorial02.html"]').forEach(anchor=>{anchor.href="runes.html#beginner";anchor.removeAttribute("target");anchor.removeAttribute("rel")});
+    document.querySelectorAll('a[href="tutorial02.html"],a[href$="/tutorial02.html"]').forEach(anchor=>{anchor.href="lots.html#beginner";anchor.removeAttribute("target");anchor.removeAttribute("rel")});
     window.addEventListener("hashchange",()=>{
       if(location.hash==="#beginner")showBeginner(false);
     });
@@ -125,7 +125,7 @@
     const nav=document.createElement("nav");
     nav.id="drawThirdNav";nav.className="runes-third-nav";nav.setAttribute("aria-label","抽牌數量快速選單");
     const mode=new URLSearchParams(location.search).get("mode")||"";
-    nav.innerHTML='<span class="runes-third-nav-label">LOTS</span>'+DRAW_MODES.map(([value,label])=>`<a class="runes-third-link${mode===value?" active":""}" href="runes.html?mode=${value}#draw">${label}</a>`).join("")+'<span class="runes-third-link" aria-disabled="true" title="目前公開抽牌入口尚未啟用 OW3gs">OW3gs 11</span>';
+    nav.innerHTML='<span class="runes-third-nav-label">LOTS</span>'+DRAW_MODES.map(([value,label])=>`<a class="runes-third-link${mode===value?" active":""}" href="lots.html?mode=${value}#draw">${label}</a>`).join("")+'<span class="runes-third-link" aria-disabled="true" title="目前公開抽牌入口尚未啟用 OW3gs">OW3gs 11</span>';
     selector.before(nav);
   }
 
@@ -159,7 +159,7 @@
   }
 
   async function init(){
-    if((location.pathname.split("/").pop()||"")!=="runes.html")return;
+    if((location.pathname.split("/").pop()||"")!=="lots.html")return;
     addStyles();normalizeWorkspaceNav();await ensureBeginnerView();normalizeWorkspaceNav();wireNavigation();addDrawThirdLevel();addLibraryThirdLevel();bindGroupShortcuts();setTimeout(normalizeWorkspaceNav,250);
   }
 
