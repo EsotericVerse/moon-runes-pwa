@@ -9,7 +9,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (card) card.addEventListener("click", () => { window.location.href = "runes.html#draw"; });
 
   // Canon model hierarchy:
-  // LOC = Evolvable Language Model
+  // LOC = Evolvable Language System Model
   // LOC1–8 = Language System Modules
   // LOC1 = LunaRunes Module
   // LunaRunes = Symbolic Language Model
@@ -17,17 +17,17 @@ window.addEventListener("DOMContentLoaded", () => {
   if (metaDescription) {
     metaDescription.setAttribute(
       "content",
-      "LOC（月典）是一套分析拆解、組織彙整、搜尋並推演語言的可自動進化語言模型。它由 LOC1–LOC8 八個語言系統模組構成，以月之符文作為語彙（Token）的種子，經由脈絡、作品、演算法與時間推演持續累積並進化。"
+      "LOC（月典）是一套分析拆解、組織彙整、搜尋並推演語言的可進化語言系統模型（Language System Model）。LOC1–LOC8 是語言系統模型（Model）的相關模組架構（Module Structure）。月之符文（LunaRunes）從語彙單字（Token）出發，與 LOC 相輔相成，最後進化為符號式語言模型（Symbolic Language Model）。"
     );
   }
 
   const heroCopy = document.querySelector(".hero .loc-header-copy");
   if (heroCopy) {
-    heroCopy.textContent = "從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，自我選擇演化，累積後便可以進化。月典（LOC，Luna Codex）是一套分析拆解、組織彙整、搜尋並推演語言的可自動進化語言模型。它以月之符文作為語彙（Token）的種子，經過脈絡分析、創作文字與延伸體系、整合規則的演算法，最後放回時間中觀察，並在推演演化後選擇進化。";
+    heroCopy.textContent = "從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，自我選擇演化，累積後便可以進化。月典（LOC，Luna Codex）是一套分析拆解、組織彙整、搜尋並推演語言的可自動進化語言模型。它以月之符文作為語彙（Token）的種子，經過脈絡分析、創作文字與延伸體系、整合規則的演算法模組，最後放回時間中觀察，並在推演演化後選擇進化。";
   }
 
   const heroNoteStrong = document.querySelector(".hero-note strong");
-  if (heroNoteStrong) heroNoteStrong.textContent = "LOC 現行定位為可自動進化語言模型；LOC1–LOC8 是構成它的語言系統模組（Language System Modules）。";
+  if (heroNoteStrong) heroNoteStrong.textContent = "LOC 為可進化的語言系統模型；LOC1–LOC8 是語言系統模型（Model）的相關模組架構（Module Structure）。";
 
   const runeEyebrow = document.querySelector("#rune-entry .rune-entry-eyebrow");
   if (runeEyebrow) runeEyebrow.textContent = "LOC1 · LunaRunes Module · 月之符文語言模組";
@@ -153,7 +153,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const frameworkCopy = document.querySelector("#framework-map .loc-header-copy");
   if (frameworkCopy) {
-    frameworkCopy.textContent = "LOC 是一套可自動進化語言模型；LOC1–LOC8 是構成它的八個語言系統模組（Language System Modules）：LunaRunes Module、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution。";
+    frameworkCopy.textContent = "LOC 為可進化的語言系統模型；LOC1–LOC8 是語言系統模型（Model）的相關模組架構（Module Structure）：LunaRunes Module、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution。";
   }
 
   const aboutCopy = document.querySelector('[aria-labelledby="about-title"] > p');
