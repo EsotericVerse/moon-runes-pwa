@@ -1,270 +1,97 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>治理｜政德風與語言治理方法｜LOC</title><meta name="description" content="LOC 治理主頁：整理治理規則、治理文件的功能與必要性，以及政德風如何從個人語言實作中形成自我治理方法。">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07182d">
+<title>治理｜LOC 月典</title>
+<meta name="description" content="LOC 治理入口：原則、版權、政德風治理理念與延伸治理文件。">
+<link rel="canonical" href="https://loc.lo3rwang.cc/governance.html">
 <link rel="stylesheet" href="css/loc-nav.css">
 <style>
-:root{--bg:#f5f5f3;--card:#fff;--text:#181818;--muted:#666;--line:#d9d9d4}
-@media(prefers-color-scheme:dark){:root{--bg:#111;--card:#181818;--text:#f2f2f2;--muted:#aaa;--line:#343434}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.85}
-body{min-height:100vh} .app-shell{display:grid;grid-template-columns:260px minmax(0,1fr);gap:22px;width:min(1180px,calc(100% - 28px));margin:0 auto;padding:22px 0 64px}.workspace-main{min-width:0}.governance-view[hidden]{display:none!important}article{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(24px,5vw,52px)}@media(max-width:860px){.app-shell{grid-template-columns:1fr}}@media(max-width:560px){}
-h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.2;margin:.2rem 0 1rem}h2{margin-top:2.2rem;padding-top:1.25rem;border-top:1px solid var(--line)}h3{margin-top:1.6rem}
-p{margin:.8rem 0}ul{padding-left:1.35rem}.eyebrow{font-size:.82rem;letter-spacing:.08em;color:var(--muted)}.lead{font-size:1.08rem;color:var(--muted)}.back{display:inline-block;margin-top:2rem;color:inherit;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:.55rem .9rem}
-</style><style id="loc-site-footer-style">
-.loc-site-footer{margin-top:32px;padding:20px 16px;text-align:center;font-size:13px;line-height:1.6;color:var(--muted,#7f8794);border-top:1px solid var(--line,rgba(127,135,148,.22))}
-.loc-site-footer a{color:inherit;text-decoration:none}
-.loc-site-footer a:hover{text-decoration:underline}
-.loc-site-footer span{margin:0 8px;opacity:.7}
+:root{color-scheme:dark;--bg:#07182d;--surface:rgba(13,31,56,.88);--surface2:rgba(23,43,72,.72);--line:rgba(180,158,255,.22);--text:#f5f1ff;--muted:#b9bfd0;--purple:#b49eff;--gold:#e7c27d;--shadow:0 24px 70px rgba(0,0,0,.32)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--text);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.75;background:radial-gradient(circle at 10% 8%,rgba(103,75,171,.24),transparent 30rem),radial-gradient(circle at 88% 88%,rgba(35,105,135,.18),transparent 30rem),linear-gradient(180deg,#07182d 0%,#091729 62%,#06111f 100%)}
+a{color:var(--gold)}
+.app-shell{width:min(1180px,calc(100% - 28px));margin:0 auto;padding:28px 0 64px}
+.workspace-main{min-width:0}
+.hero{padding:10px 4px 22px}
+.eyebrow{font-size:.82rem;letter-spacing:.08em;color:var(--purple);font-weight:800}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.2;margin:.25rem 0 .8rem}
+.lead{max-width:860px;margin:0;color:var(--muted);font-size:1rem}
+.governance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:10px}
+.gov-card{scroll-margin-top:130px;padding:22px;border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:var(--shadow)}
+.gov-card .kicker{display:block;margin-bottom:6px;color:var(--purple);font-size:.78rem;font-weight:800;letter-spacing:.06em}
+.gov-card h2{margin:0 0 10px;color:var(--gold);font-size:1.25rem}
+.gov-card p{margin:.65rem 0;color:#dce6f7}
+.gov-card p:last-child{margin-bottom:0}
+.gov-card strong{color:var(--text)}
+.gov-card ul{margin:.75rem 0 0;padding-left:1.2rem;color:#dce6f7}
+.gov-card li+li{margin-top:.35rem}
+.doc-links{display:grid;gap:10px;margin-top:14px}
+.doc-link{display:block;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface2);color:var(--text);text-decoration:none}
+.doc-link strong{display:block;color:var(--gold)}
+.doc-link span{display:block;margin-top:3px;color:var(--muted);font-size:.82rem}
+.loc-site-footer{margin-top:32px;padding:20px 16px;text-align:center;font-size:13px;line-height:1.7;color:var(--muted);border-top:1px solid var(--line)}
+.loc-site-footer a{color:inherit;text-decoration:none}.loc-site-footer a:hover{text-decoration:underline}
+@media(max-width:760px){.governance-grid{grid-template-columns:1fr}.app-shell{width:min(100% - 18px,1180px);padding-top:18px}.gov-card{padding:18px}}
 </style>
-</head><body>
+</head>
+<body>
 <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav aria-label="全站導覽"></nav></div>
 <div class="app-shell">
-  
-  <main class="workspace-main">
-    <section class="governance-view" id="governanceView"><article>
-<div class="eyebrow">Governance · Canonical Public View</div>
+<main class="workspace-main">
+<header class="hero" id="top">
+<div class="eyebrow">Governance</div>
 <h1>治理</h1>
-<p class="lead">治理負責讓語言、資料、規則與作品在長期使用中保持一致、可追溯、可修正與可延續。穩定的是框架，不是語言。</p>
+<p class="lead">治理處理 LOC 與月之符文如何被使用、引用、延伸與修正。這裡先保留四個入口：原則、版權、理念與文件。</p>
+</header>
 
-<h2>一、治理定位</h2>
-<p>LOC 是語言系統模型，不是教義，也不要求使用者接受特定人生觀。治理處理的是 representation、relationship、scope、lifecycle、provenance、rights 與 boundary：誰負責什麼、資料從哪裡來、哪些內容可以公開、變更如何留下歷史，以及衝突如何被處理。</p>
-<p><strong>治理觀點可以不同，但邊界、權責、來源與歷史不能含糊。</strong></p>
-
-<section id="de-rune" aria-labelledby="de-rune-title">
-<h2 id="de-rune-title">治理：德之符文｜第 0 符 De</h2>
-<p><strong>德之符文</strong>在 KM 與公開說明中以「治理：德之符文」呈現。LOC1–8 只作方便分類與說明，不構成它的階級歸屬。它是 LunaRunes66 的作者誌銘與治理錨點。它不是第 67 張可抽取卡，而是 66 種符文的開始與集合：66 枚符文從德展開，抽取與推演後的結果仍可回到德，作為下一輪治理與演化的起點。</p>
-<p>第 0 符代表作者／月語者本人。名稱同時連結作者改名「政德」以及長期進行語言治理與語言管理的實作。它沒有卡面、不參與抽牌，也不替使用者作人生決定；模型可以提出與解析可能性，最終選擇仍由人自行決定。</p>
-<p><strong>搜尋定位：</strong>「德之符文／德符文／第零符／Rune 0／De Rune」皆導向本節作為主要治理入口；<a href="runes.html">月之符文66 圖鑑</a>保留第 0 符的資料紀錄入口。</p>
+<div class="governance-grid">
+<section class="gov-card" id="principles">
+<span class="kicker">Principles</span>
+<h2>原則</h2>
+<p><strong>去神格化、中立、不道德綁架。</strong></p>
+<p>月之符文保留符文、抽籤與籤詩的文化與創作形式，但 LOC 不預設超自然力量、神授權威或唯一正解，也不替使用者判定信仰、人生觀或價值選擇的正確性。</p>
+<p>系統可以分析語言、語意、脈絡、關係與可能性，但分析不是命令；不得把多數意見、社會期待、道德壓力或情緒施壓升格成使用者必須服從的答案。</p>
 </section>
 
-<h2>二、兩種治理</h2>
-<p><strong>政德風</strong>是 方法論中的重要個人方法與治理案例。它用來記錄個人語言、價值、界線、選擇與自我治理如何形成、變化與被重新檢視；它可以作為方法論實例，但不等同全部方法論，也不構成所有使用者必須接受的價值答案。</p>
-<h3>System Governance</h3>
-<ul><li>資料權責與母資料優先序。</li><li>命名、版本、來源與 Canon 狀態。</li><li>功能邊界與跨域關係。</li><li>公開、隱私、權利與 publication gate。</li><li>異議、review、supersede、withdraw 與歷史留痕。</li></ul>
-<h3>Personal Governance</h3>
-<p>個人可以用 LOC 回顧自己的語言、價值、界線、選擇與責任，形成自我治理。這是可被分享與比較的方法，但不會自動變成所有使用者必須採用的規則。</p>
-<p><strong>分享方法，不輸出服從。</strong></p>
+<section class="gov-card" id="copyright">
+<span class="kicker">Copyright · Copyleft</span>
+<h2>版權</h2>
+<p>LOC 與 LunaRunes 採 <strong>Copyleft</strong> 思路公開核心內容：可以閱讀、研究、引用與依授權條件衍生，但來源、作者與原始系統關係必須被保留。</p>
+<p>衍生作品若使用月之符文的核心資料、結構或語意設計，不應把來源抹除或改寫成無來源的自有創作。商業顧問、系統架構、治理設計與個案實作則屬於另外的服務與合作範圍。</p>
+<div class="doc-links"><a class="doc-link" href="COPYLEFT.md"><strong>Copyleft 文件</strong><span>查看目前的授權、引用與衍生使用說明。</span></a></div>
+</section>
 
-<h2>三、核心原則</h2>
-<ul>
-<li><strong>中立：</strong>不預設政治、宗教、文化、道德或個人價值為唯一正解。</li>
-<li><strong>尊重：</strong>不同意不等於錯誤；異議進入 review，而不是直接刪除。</li>
-<li><strong>界與域：</strong>明確定義 scope、ownership、permission、responsibility 與交界。</li>
-<li><strong>身分平等：</strong>職稱、地位、信仰或角色不會自動取得更高真值。</li>
-<li><strong>脈絡適用：</strong>舊版本不等於錯，新版本也不等於永恆正確。</li>
-<li><strong>多重描述：</strong>同一節點可以存在不同 interpretation 與 relation。</li>
-<li><strong>可追溯：</strong>新增、修改、刪除、異議、發布與撤回都應留下歷史。</li>
-<li><strong>Evidence before Canon：</strong>AI 推論、相似度或單一資料點不能直接升格 Canon。</li>
-<li><strong>第一人稱經驗權：</strong>人生事件與自身狀態以本人確認優先於系統推測。</li>
-<li><strong>分析不等於命令：</strong>LOC 的分析、Trend 與推演用來描述資料與結構上的可能變化，不得把流行趨勢、多數意見、社會期待、道德壓力或情緒施壓升格為使用者應服從的答案。系統提供分析，最終判斷與選擇仍屬於使用者。</li>
-</ul>
+<section class="gov-card" id="philosophy">
+<span class="kicker">Zhengde Style · Governance</span>
+<h2>理念</h2>
+<p><strong>政德風</strong>是王政德的個人綜合 IP 風格；治理只是其中一個面向。</p>
+<p>政德風的治理理念以<strong>校準與治理</strong>為核心：先辨認語意、位置、權責與邊界，再決定保留、修正、分流或留下歷史。治理不是把目前版本變成永恆答案，而是讓改變有來源、有脈絡、有邊界，也能被再次檢視。</p>
+<p>可以把過去當資料，但不把過去當枷鎖；可以修正現在，但不必抹除曾經存在的版本。</p>
+</section>
 
-<h2>四、版本與歷史完整性</h2>
-<p>LOC 採近似 append-only 的歷史治理：原始事件與原始語句保留；後續 interpretation 可以修正、取代或標記為 historical / superseded，但不反向改寫原始證據。</p>
-<p><strong>原始紀錄 → interpretation v1 → interpretation v2 / dispute / supersede → Current View</strong></p>
-<ul><li>AI rewrite 不得冒充歷史原文。</li><li>Delete 預設是從 active use 移除，不代表歷史消失。</li><li>現行規則可以更新，但舊版本需保留可追溯關係。</li></ul>
-
-<h2>五、Create / Update / Delete</h2>
-<ul><li><strong>Create：</strong>保存建立者、時間、來源、權責與 initial status。</li><li><strong>Update：</strong>保存 before / after、理由、證據、actor 與版本關係。</li><li><strong>Delete：</strong>預設轉為 archived / tombstoned 等治理狀態，而不是靜默抹除。</li></ul>
-
-<h2>六、治理生命週期</h2>
-<p><strong>Propose / Create → Review → Rights / Evidence / Boundary Check → Accept / Publish → Active → Dispute / Change Request → Re-review → Keep / Amend / Alternative / Restrict / Withdraw / Supersede / Tombstone</strong></p>
-<p>治理狀態描述的是 evidence 與 lifecycle，不是思想對錯。</p>
-
-<h2>七、資料與功能權責</h2>
-<p>核心模型是：<strong>Authority → Registry → Reference → Consumer</strong>。母資料與權威來源優先於衍生檔與展示層；跨域只能 reference、consume 或 propose change，不直接覆寫另一個 domain 的 authoritative record。</p>
-<ul><li>原始作者文字與作品本體保留在原始資料責任區。</li><li>治理、價值觀、政德風、style-state 與治理 interpretation 由治理層承接。</li><li>Search、Graph、推演可以消費治理資料，但不能反向成為治理權威。</li><li>公開 UI 不需要反覆暴露內部 LOC 編號；編號主要作為資料治理識別。</li></ul>
-
-<h2>八、資料架構與 Repository 治理</h2>
-<p>資料與檔案治理採 <strong>One authority, many purpose-specific projections</strong>：同一份權威資料可以產生多種用途的 projection，但不建立多份互相競爭的母資料。</p>
-<h3>資料權威順序</h3>
-<p><strong>Canon / Mother Source → Registry / Core Projection → Search / Generated Index → API / UI / Analysis</strong></p>
-<ul>
-<li><strong>LunaRune66.xlsx</strong> 是 LunaRunes 結構化符文母資料；runtime JSON 是 projection，不取代母資料。</li>
-<li><strong>core</strong>：穩定 runtime projection；<strong>registries</strong>：跨系統結構化紀錄與權責；<strong>sources</strong>：來源 corpus；<strong>search</strong>：檢索用資料；<strong>generated</strong>：可重建輸出；<strong>archive</strong>：歷史資料；<strong>experimental</strong>：未進 current runtime 的實驗資料。</li>
-<li>衍生索引、Embedding、RAG chunk、UI cache 與 AI 推論不得反向覆寫 Canon、母資料或原始作品。</li>
-<li>未知 provenance、日期、作者、來源或權利狀態不得自行補造。</li>
-</ul>
-<h3>Repository 變更規則</h3>
-<ul>
-<li>搬移或刪除檔案時，路徑、程式引用、文件引用、快取、部署設定與驗證應一起處理。</li>
-<li>公開 URL 敏感項目（根目錄 HTML、符文圖卡、PWA icon、manifest、service worker）不得只為目錄美觀任意搬動。</li>
-<li>舊資料若仍有歷史價值應進 archive；完全重複、已被正式入口承接且無獨立責任的說明文件可直接刪除。</li>
-<li>Repository 結構的目標是讓檔案的 authority、lifecycle 與 runtime responsibility 從位置即可判讀。</li>
-</ul>
-
-<h3>基礎文字解析治理</h3>
-<p>基礎文字解析應可在不依賴外部 LLM／Embedding API Key 的情況下運作。文字清理、關鍵字候選、規則式分類、日期／來源索引與基本 Trend projection 屬可本機執行的基礎能力；LLM、Embedding、clustering 與外部模型分類是 optional enrichment。</p>
-<ul>
-<li>人工應主要負責校正、例外處理與治理，不應成為一般資料匯入的必要執行層。</li>
-<li>基礎解析結果是 derived data，不是 Canon，也不得覆寫原始 corpus。</li>
-<li>API 實作與 endpoint 細節由 <code>card_api/</code> 程式本身維護，不另建立重複治理文件。</li>
-</ul>
-
-<h2>九、Relation / Graph 治理</h2>
-<p><strong>脈絡沙盒遊戲</strong>是原脈絡遊戲的現行定位，屬於脈絡的互動實作。它讓使用者在 Relation、Scenario、Event 與 Graph 的框架中操作與觀察語彙之間的關係，因此本質上是「脈絡的沙盒」，不是獨立的 LOC，也不改變 Graph／Relation 由脈絡承接的權責。</p>
-<ul><li>semantic similarity 只能選 seed，不能自行創造 canonical edge。</li><li>relation 必須保留 source、target、type、direction、source refs 與 evidence status。</li><li>不同 relation 可以並存；錯誤 relation 應修改、redirect、dispute 或 withdraw，而不是抹除歷史。</li><li>private relation 不因同步而自動公開。</li><li>Graph node 是權威資料的 reference，不反向取代原始來源。</li></ul>
-
-<h2>十、預設方法論與符文演算</h2>
-<p>預設分析方法直接以月之符文為底，不另建立一套與符文群組平行的情緒／理性分類。共同入口先做關鍵字與來源分布，再用<strong>月之符文九群組方法論</strong>做第一層風格解析。</p>
-<ul>
-<li><strong>靈魂組：</strong>個體感受。</li>
-<li><strong>連結組：</strong>關係陳述跟處理。</li>
-<li><strong>生命組：</strong>感性。</li>
-<li><strong>自然組：</strong>成長。</li>
-<li><strong>礦物組：</strong>價值觀。</li>
-<li><strong>元素組：</strong>行動力。</li>
-<li><strong>秩序組：</strong>道理／規則。</li>
-<li><strong>無序組：</strong>玩樂、愉悅或意外狀況。</li>
-<li><strong>人生道理組：</strong>由「德／命／玄」構成。德處理治理與爭議性行為；命處理命運與既定走向；玄處理命中注定之外、但又在意料中的意外。三者屬同一大分類，但仍保留各自語意。</li>
-</ul>
-<p>「德」只負責說明責任、界線、公平、義務、倫理與規則等爭議結構，不對行為作善惡評價、不鼓勵、不譴責，也不替使用者下道德結論。</p>
-<p>因此「符文演算」包含兩條路徑：<strong>抽牌／解牌演算</strong>與<strong>文字／來源方法論分析</strong>。第一層先看九群組分布，之後可再深入到 66 個個體符文方法；關係型分析可形成脈絡，時間上的變化與趨勢則交由推演。</p>
-
-<h2>十一、月之符文治理</h2>
-<p>月之符文的核心語義與 Grammar 以母資料為最高優先來源。符文提供語言，不提供權威；抽牌提供入口，判讀仍需回到問題脈絡與現實證據。</p>
-<ul>
-<li>單卡：符文本義 + 卡牌方向 + 月相交互。</li>
-<li>雙卡：因 + 果 + 月相交互。</li>
-<li>三卡：源 + 轉 + 合 + 月相交互。</li>
-<li>五卡：過去 + 現在 + 未來顯化 + 周圍環境 + 自己心境 + 月相交互；不是 2+3 拼接。</li>
-<li>OW3gs：1–6 為因的描述層、7–11 為果的判定層；先讀 7–11，再回看 1–6，最後套月相交互。</li>
-<li>符文交互限定沙盒；月相交互只作低權重時間修飾。</li>
-<li>醫療、法律、工作、合約、金錢與他人意願等現實事項，以現實證據與程序優先。</li>
-</ul>
-
-<h2>十二、月之符文治理設計補充</h2>
-<h3>Equal Access — 平等使用</h3>
-<ul>
-<li>不因職業、地位、階級、信仰或特殊身分改變基本符義。</li>
-<li>不存在天然擁有更高解釋權的使用者。</li>
-<li>使用者可以不同意某個解讀，最終判斷權仍保留給使用者。</li>
-</ul>
-<h3>66 結構的治理成熟</h3>
-<p>66 符文的成熟不只來自數量固定，也來自語義責任分割：靈魂／連結分開，自我狀態與關係狀態不混用；「界／域」提供 boundary / domain language；礦物組把價值、資源、物質條件與交換帶回現實層；「悟」則描述理解後的修正與適應。</p>
-<p><strong>Stable Rune Model + Mutable Context / Relation / Interpretation → Governed Change</strong></p>
-<p>允許變化，但不失去結構。新的理解應透過 context、relation、version、evidence 與 history 被記錄，而不是任意改寫母資料。</p>
-<h3>Self-Governance, not Rule by Divination</h3>
-<p>抽籤結果是語言輸入，不是命令：Random draw → governed rune meaning → orientation / combination / context → interpretation → user reflection → user decision。</p>
-<h3>Non-mystical Governance Position</h3>
-<p>月之符文可以保留「符文」「抽籤」「籤詩」等文化與創作形式，但系統本身不需要假定超自然力量、神授解讀權、身分特權、絕對預言或單一不可反駁答案。</p>
-<h3>四層成熟</h3>
-<ul>
-<li><strong>Semantic maturity：</strong>固定位置、核心定義、組別與四向語意。</li>
-<li><strong>Structural maturity：</strong>八組、抽取、雙卡因果、三卡源－轉－合、五卡與 OW3gs。</li>
-<li><strong>Application maturity：</strong>已有抽牌、小說、歌曲、遊戲、Search、Relation、時期與跨功能使用證據。</li>
-<li><strong>Governance maturity：</strong>平等使用、中立描述、界／域、物質價值、自我治理與使用者最終決策權。</li>
-</ul>
-<p><strong>成熟不是已經給出永恆答案，而是已有足夠穩定的規則，可以安全容納新的理解。</strong></p>
-
-<h2>十三、內容權利、隱私與公開</h2>
-<p>資料能被匯入，不代表能被公開；能被分析，也不等於能被全文展示或 bulk export。</p>
-<p><strong>公開最小條件：</strong>ownership / permission 有效、visibility = public、rights_status = cleared。</p>
-<ul><li>私人通訊、未授權第三方內容、review_required 資料不得自動公開。</li><li>Public Browse 只提供 preview；Public Search 只提供與查詢直接相關的有限結果。</li><li>完整第一方 corpus 不應透過匿名公開端點整批交付。</li><li>display policy 分為 snippet / full / metadata_only。</li><li>搜尋、分類、Graph、RAG 與推演可以在授權範圍內使用完整內容，但展示層仍受公開規則限制。</li></ul>
-
-<h2>十四、自我治理</h2>
-<p>自我治理不是道德審判，也不是把目前版本變成永恆正解。</p>
-<p><strong>回顧 → 比較 → 發現變化 → 理解當時脈絡 → 辨認自己的域與他人的域 → 修正 → 留痕 → 承擔選擇 → 前進</strong></p>
-<p><strong>拿過去的自己當資料，不拿過去的自己當枷鎖。</strong></p>
-
-<h2>十五、治理語言的變化</h2>
-<p>治理語言目前可觀察到這條轉移：</p>
-<p><strong>外部劇本／防衛 → 權責辨識 → 界線與位置 → 等待、重建與接受未知 → 界線內化 → 自由與選擇 → 自我治理、收尾與航向</strong></p>
-<p>這不是「早期錯、後期對」，而是治理焦點與語彙在時間中的變化。歷史使用過的「底線」保留；現行治理更偏向「界／域／domain boundary／scope／ownership／permission／responsibility」。</p>
-
-<h2>十六、治理完成的判定</h2>
-<p>任何功能要宣稱治理完成，至少要回答四層：</p>
-<p><strong>Principle → Policy → Executable Control → Evidence / Audit Trail</strong></p>
-<ul><li>是否有明確 domain / ownership。</li><li>是否支援 Create / Update / Delete。</li><li>是否保留 before / after / history。</li><li>是否有 dispute / review。</li><li>是否有 rights / publication gate。</li><li>是否有 provenance。</li><li>是否能 supersede 而不重寫歷史。</li><li>是否把推論與 Canon 分離。</li></ul>
-
-<h2>十七、治理頁為什麼獨立存在</h2>
-<p>治理是特殊層。不是每一個功能都因為有資料或統計就應新增獨立頁面；治理需要獨立頁，是因為它本身負責規則、權責、版本、邊界、變更依據與可稽核性。</p>
-<p>governance.html 因此是治理的正式公開入口。治理相關正文以此頁為主；Markdown 只保留確實需要的技術規格、schema、API、資料結構或機器治理文件。</p>
-</article></section><section class="governance-view" id="styleView" hidden><article>
-<div class="eyebrow">Zhengde Style · Fixed Governance Document</div>
-<h1>政德風</h1>
-<p class="lead">政德風是已整理完成的固定說明文件。它記錄王政德如何把經驗、感受、判斷、界線、責任與選擇逐步整理成可再次使用的語言。</p>
-
-<h2>一、核心公式</h2>
-<p><strong>把經驗整理成可以再次使用的語言。</strong></p>
-<p>看見情境 → 拆解預設 → 確認權責 → 建立界線 → 保留選擇 → 做出取捨 → 回到可治理的日常。</p>
-
-<h2>二、治理內容與風格狀態分開</h2>
-<h3>Governance Content</h3>
-<p>回答「相信什麼、怎麼判斷、界線在哪裡」：價值判準、主權、權責、尊重、界線、自我治理、收尾與航向。</p>
-<h3>Style State</h3>
-<p>回答「同一個意思，在某個時期會怎麼說」：句子長短、感性／理性比例、意象密度、反問與反轉、克制度、外部拆解或內部治理。</p>
-<p>價值可能延續，但說法會隨時期改變，因此兩者不能混成同一資料。</p>
-
-<h2>三、長期並存的理性與感性</h2>
-<p>感性書寫多從個人經驗、身體感受、等待、失落、孤獨、愛與希望出發，常使用月光、微光、風、夜晚、道路、月台等意象。</p>
-<p>理性書寫則直接提出命題、界線、責任與判斷。這些文字後來也大量進入歌曲，使部分作品形成近似「文章被音樂化」的表達。</p>
-
-<h2>四、三種論述方向</h2>
-<ul><li><strong>思辨論述型：</strong>理解問題、重框、提出觀點。</li><li><strong>治理宣言型：</strong>面向自己，從看見問題走到確認責任、建立界線、做出選擇。</li><li><strong>勸戒論述型：</strong>面向他人或群體，提出提醒、責任與後果。</li></ul>
-
-<h2>五、核心治理模組</h2>
-<ul><li><strong>價值與判準：</strong>用自己的價值標準判斷，而不是因權威或群體劇本直接接受。</li><li><strong>主權與選擇：</strong>保留回答、拒絕、失敗、修改與重新決定的權利。</li><li><strong>權責與界線：</strong>先確認位置、責任與義務，再決定是否介入。</li><li><strong>防衛而不失控：</strong>必要時停止被侵入、被定義或被拖進不屬於自己的責任。</li><li><strong>幽默與反轉：</strong>以短句、反問、雙關或現實落差快速重設語境。</li></ul>
-
-<h2>六、代表治理句</h2>
-<ul><li>「價值觀的價值。」</li><li>「我允許錯誤發生，只要錯的有價值。」</li><li>「免錢的最貴。」</li><li>「我不跟你走劇本。」</li><li>「你在玩話術，我在改規則。」</li><li>「我不是要當王，我只要系統能跑。」</li><li>「慈悲不是投降。」</li></ul>
-
-<h2>七、現行階段：治理自己</h2>
-<p>目前重心已從「取得自由」移到「自由之後如何治理自由」：整理過往、完成未竟之事、確認責任、斷捨離、重新歸檔並選擇下一段航向。</p>
-<p><strong>從「拆別人的劇本」逐漸移向「治理自己的日子」。</strong></p>
-
-<h2>八、時期與風格變化</h2>
-<p>政德風的主要時間座標是時期，而不是直接用年齡切分。年齡只能作為時期與歷史語料之上的次級 View。</p>
-<p>目前可概括為：探索與試錯 → 感性／關係敘事 → 界線與治理轉折 → 等待與重建 → 界線整合 → 自由與前行 → 自我治理。</p>
-
-<h2>九、時期細部變化</h2>
-<ul>
-<li><strong>P5.0：</strong>探索與試錯，月符到月典逐步形成。</li>
-<li><strong>P5.1：</strong>LOC 啟動與格式形成，語言系統開始穩定整理。</li>
-<li><strong>P5.2：</strong>微月光與關係敘事，自省、陪伴、愛與界線開始並存。</li>
-<li><strong>P5.3：</strong>自我治理啟動與檢討，界線、現實選擇與治理宣言明顯上升。</li>
-<li><strong>P5.4：</strong>人生月台與療傷，轉向等待、看清現實、允許暫停與保留希望。</li>
-<li><strong>P5.5：</strong>順其自然與劃清界線，界線從防衛工具逐漸內化為日常治理。</li>
-<li><strong>P5.6：</strong>自由的風與脫困，語言轉向自由、選擇、可能性與前行。</li>
-<li><strong>P5.7：</strong>自我治理與未來展望，整理、收尾、責任、歸檔與航向成為核心。</li>
-</ul>
-<p>時期的風格判斷是可更新的 interpretation；歷史原文與當時語境仍保留，不因後期分類而被改寫。</p>
-
-<h2>十、跨媒介證據</h2>
-<p>政德風不只存在於單一文章。歌曲、文章、生活文字、Reels、多媒體與時期資料都可能成為證據。同一概念可以由短句形成歌曲，再擴寫為文章，最後轉成影音或其他表達。</p>
-<p>原始文本仍屬原始資料來源；治理頁只保存經確認的治理與風格 interpretation，不反向覆寫原文。</p>
-
-<h2>十一、政德風治理規則</h2>
-<ol><li>原始語句保留原文，不以後期說法覆寫。</li><li>代表句與後設解讀分開保存。</li><li>AI 重寫不能冒充歷史原文。</li><li>風格推論需要來源與 confidence。</li><li>不因一句話「很像政德風」就自動升格為核心原則。</li><li>現行階段可以更新，歷史階段不得被新版本抹除。</li><li>自我治理是版本管理，不是道德審判。</li></ol>
-
-<h2>十二、治理頁的角色</h2>
-<p>政德風是治理主頁中的固定個人治理文件；搜尋「政德風」時應優先顯示這份正式說明，再列歌曲、Threads、文章與其他語料作為證據。</p>
-<p><a class="back" href="search.html?q=%E6%94%BF%E5%BE%B7%E9%A2%A8">查看政德風相關證據 →</a></p>
-</article></section>
-  </main>
+<section class="gov-card" id="documents">
+<span class="kicker">Documents</span>
+<h2>文件</h2>
+<p>治理首頁只放基本原則。較完整的法律、資料、版本、語意、Repository 與系統治理內容，整理成延伸文件，不在這一頁全部攤開。</p>
+<div class="doc-links">
+<a class="doc-link" href="COPYLEFT.md"><strong>COPYLEFT.md</strong><span>版權、授權、引用與衍生使用。</span></a>
+<a class="doc-link" href="README.md"><strong>README.md</strong><span>Repository 與公開專案的總入口。</span></a>
+<a class="doc-link" href="docs/LOC_Canon.docx"><strong>LOC Canon</strong><span>LOC 現行架構、定義與治理基準。</span></a>
 </div>
-<script>
-(()=>{
-  const buttons=[...document.querySelectorAll('[data-governance-view]')];
-  const views={governance:document.getElementById('governanceView'),style:document.getElementById('styleView')};
-  function switchView(name){
-    Object.entries(views).forEach(([key,view])=>view.hidden=key!==name);
-    buttons.forEach(btn=>btn.classList.toggle('active',btn.dataset.governanceView===name));
-    history.replaceState(null,'',name==='governance'?'governance.html':'governance.html#style');
-  }
-  buttons.forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.governanceView)));
-  if(location.hash==='#style') switchView('style');
-})();
-</script>
-<script src="js/loc-nav.js"></script>
+</section>
+</div>
+</main>
+</div>
 
-
-
-<footer class="loc-site-footer" style="margin-top:32px;padding:20px 16px;text-align:center;font-size:13px;line-height:1.7;color:var(--muted,#7f8794);border-top:1px solid var(--line,rgba(127,135,148,.22))">
-  <div><a href="index.html" style="color:inherit;text-decoration:none">LOC月典(LunaCodex)</a></div>
-  <div>By <a href="lo3rwang.html" style="color:inherit;text-decoration:none">Lucas Oscar Wang 政德</a></div>
-  <div><a href="mailto:sopa2306@gmail.com" style="color:inherit;text-decoration:none">意見信箱</a></div>
-  <div>in EsotericVerse 秘藝文域（籌備中）</div>
+<footer class="loc-site-footer">
+<div><a href="index.html">LOC月典(LunaCodex)</a></div>
+<div>By <a href="lo3rwang.html">Lucas Oscar Wang 政德</a></div>
+<div><a href="mailto:sopa2306@gmail.com">意見信箱</a></div>
 </footer>
-</body></html>
+<script src="js/loc-nav.js"></script>
+</body>
+</html>
