@@ -1036,5 +1036,339 @@
       "note": "此為可重現的 deterministic semantic baseline。Embedding／LLM 深層語意可後續疊加，不覆寫本版。"
     }
   },
-  "authority_domain": "literary"
+  "authority_domain": "literary",
+  "additional_novel_real_text_semantics": {
+    "status": "complete",
+    "generated_at": "2026-09-10",
+    "method": "Base66_current_three_keyword_exact_match",
+    "rules": [
+      "只分析小說正文，不使用作品既有符文來源作正文語意判定",
+      "不使用單字符文名稱作命中",
+      "使用現行 Base66 每符三個關鍵詞",
+      "共享關鍵詞保留多重語意歸屬"
+    ],
+    "corpus_summary": {
+      "work_count": 5,
+      "text_unit_count": 55,
+      "text_characters": 80437,
+      "keyword_hits": 447,
+      "group_statistics": {
+        "秩序組": {
+          "count": 132,
+          "pct": 29.53
+        },
+        "無序組": {
+          "count": 74,
+          "pct": 16.55
+        },
+        "元素組": {
+          "count": 63,
+          "pct": 14.09
+        },
+        "生命組": {
+          "count": 55,
+          "pct": 12.3
+        },
+        "礦物組": {
+          "count": 41,
+          "pct": 9.17
+        },
+        "靈魂組": {
+          "count": 32,
+          "pct": 7.16
+        },
+        "連結組": {
+          "count": 32,
+          "pct": 7.16
+        },
+        "自然組": {
+          "count": 15,
+          "pct": 3.36
+        },
+        "特殊組": {
+          "count": 3,
+          "pct": 0.67
+        }
+      }
+    },
+    "works": [
+      {
+        "work_id": "LOC4-MMM-RELATIONSHIP",
+        "title": "男男男關係",
+        "source_file": "男男男關係.txt",
+        "text_unit_count": 20,
+        "text_characters": 24074,
+        "highest_groups": [
+          "秩序組"
+        ],
+        "group_counts": {
+          "靈魂組": 9,
+          "連結組": 9,
+          "生命組": 13,
+          "自然組": 5,
+          "礦物組": 9,
+          "元素組": 22,
+          "秩序組": 54,
+          "無序組": 27,
+          "特殊組": 2
+        },
+        "top_runes": [
+          [
+            "時",
+            36
+          ],
+          [
+            "星",
+            12
+          ],
+          [
+            "虛",
+            11
+          ],
+          [
+            "土",
+            10
+          ],
+          [
+            "悟",
+            8
+          ],
+          [
+            "果",
+            8
+          ],
+          [
+            "無",
+            7
+          ],
+          [
+            "老",
+            5
+          ]
+        ]
+      },
+      {
+        "work_id": "LOC4-BEFORE-AFTER-YOU",
+        "title": "在你之前，在你之後",
+        "source_file": "BeforeAfter_OOOO(20260903-212344).txt",
+        "text_unit_count": 20,
+        "text_characters": 37689,
+        "highest_groups": [
+          "秩序組"
+        ],
+        "group_counts": {
+          "靈魂組": 17,
+          "連結組": 13,
+          "生命組": 30,
+          "自然組": 6,
+          "礦物組": 23,
+          "元素組": 25,
+          "秩序組": 43,
+          "無序組": 20,
+          "特殊組": 0
+        },
+        "top_runes": [
+          [
+            "星",
+            19
+          ],
+          [
+            "時",
+            17
+          ],
+          [
+            "地",
+            14
+          ],
+          [
+            "憶",
+            12
+          ],
+          [
+            "生",
+            12
+          ],
+          [
+            "氣",
+            11
+          ],
+          [
+            "無",
+            10
+          ],
+          [
+            "悟",
+            7
+          ]
+        ]
+      },
+      {
+        "work_id": "LOC4-ONE-DAY-LOVER",
+        "title": "一日情人",
+        "source_file": "一日情人文本.txt",
+        "text_unit_count": 5,
+        "text_characters": 8015,
+        "highest_groups": [
+          "元素組",
+          "無序組"
+        ],
+        "group_counts": {
+          "靈魂組": 3,
+          "連結組": 3,
+          "生命組": 3,
+          "自然組": 0,
+          "礦物組": 4,
+          "元素組": 9,
+          "秩序組": 8,
+          "無序組": 9,
+          "特殊組": 0
+        },
+        "top_runes": [
+          [
+            "氣",
+            7
+          ],
+          [
+            "地",
+            4
+          ],
+          [
+            "時",
+            4
+          ],
+          [
+            "虛",
+            4
+          ],
+          [
+            "憶",
+            3
+          ],
+          [
+            "星",
+            3
+          ],
+          [
+            "無",
+            2
+          ],
+          [
+            "向",
+            1
+          ]
+        ]
+      },
+      {
+        "work_id": "LOC4-PSEUDO-SINGLE",
+        "title": "假性單身",
+        "source_file": "假性單身.txt",
+        "text_unit_count": 4,
+        "text_characters": 2002,
+        "highest_groups": [
+          "秩序組"
+        ],
+        "group_counts": {
+          "靈魂組": 0,
+          "連結組": 2,
+          "生命組": 2,
+          "自然組": 0,
+          "礦物組": 2,
+          "元素組": 0,
+          "秩序組": 8,
+          "無序組": 3,
+          "特殊組": 1
+        },
+        "top_runes": [
+          [
+            "星",
+            4
+          ],
+          [
+            "時",
+            3
+          ],
+          [
+            "無",
+            3
+          ],
+          [
+            "心",
+            2
+          ],
+          [
+            "鑽",
+            2
+          ],
+          [
+            "鍊",
+            1
+          ],
+          [
+            "悟",
+            1
+          ],
+          [
+            "空",
+            1
+          ]
+        ]
+      },
+      {
+        "work_id": "LOC4-WRONG-PERSON",
+        "title": "錯的人：命運的錯位者",
+        "source_file": "錯的人的新版.txt",
+        "text_unit_count": 6,
+        "text_characters": 8657,
+        "highest_groups": [
+          "秩序組"
+        ],
+        "group_counts": {
+          "靈魂組": 3,
+          "連結組": 5,
+          "生命組": 7,
+          "自然組": 4,
+          "礦物組": 3,
+          "元素組": 7,
+          "秩序組": 19,
+          "無序組": 15,
+          "特殊組": 0
+        },
+        "top_runes": [
+          [
+            "時",
+            9
+          ],
+          [
+            "星",
+            8
+          ],
+          [
+            "無",
+            5
+          ],
+          [
+            "虛",
+            5
+          ],
+          [
+            "果",
+            5
+          ],
+          [
+            "生",
+            4
+          ],
+          [
+            "土",
+            4
+          ],
+          [
+            "悟",
+            3
+          ]
+        ]
+      }
+    ],
+    "note": "此批為五部已整理小說的全文 deterministic semantic baseline；與《月語者》182章分析方法一致，可直接比較。"
+  }
 }
