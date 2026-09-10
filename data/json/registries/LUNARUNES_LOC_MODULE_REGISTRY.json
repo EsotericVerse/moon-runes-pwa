@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "system_id": "LunaRunes",
+  "model_type": "Symbolic Language Model",
+  "purpose": "Deterministic LOC module classification for LunaRunes records using the canonical 66-rune dataset as the minimum authority.",
+  "authority": {
+    "minimum_source": "data/json/core/runes66.json",
+    "api_required": false,
+    "embedding_required": false,
+    "semantic_vector_required": false,
+    "rule": "A rune record can be classified from its canonical rune id/name and group. Additional metadata may enrich the result but is not required for basic module classification."
+  },
+  "loc_mapping": [
+    {
+      "loc": "LOC1",
+      "name_zh": "符文語彙",
+      "name_en": "Rune Symbolic Vocabulary",
+      "role": "The 66 drawable LunaRunes themselves and their canonical lexical definitions.",
+      "minimum_match": ["rune_id", "rune_name"]
+    },
+    {
+      "loc": "LOC2",
+      "name_zh": "符文脈絡",
+      "name_en": "Rune Symbolic Context",
+      "role": "Relationships and positional context formed by 2, 3, 5, or 11-rune structures.",
+      "structures": [2, 3, 5, 11]
+    },
+    {
+      "loc": "LOC3",
+      "name_zh": "符文延伸體系：音樂",
+      "name_en": "Rune Symbolic Extension: Music",
+      "role": "Lyrics, songs, music styles, and music metadata derived from or associated with rune symbols."
+    },
+    {
+      "loc": "LOC4",
+      "name_zh": "符文延伸體系：文學",
+      "name_en": "Rune Symbolic Extension: Literary",
+      "role": "Literary text and writing works derived from or associated with rune symbols."
+    },
+    {
+      "loc": "LOC5",
+      "name_zh": "符文延伸體系：多媒體",
+      "name_en": "Rune Symbolic Extension: Multimedia",
+      "role": "Image, video, reel, MV, and other multimedia works derived from or associated with rune symbols."
+    },
+    {
+      "loc": "LOC6",
+      "name_zh": "符文系統演算法",
+      "name_en": "Rune Symbolic System Algorithm",
+      "role": "Reading logic, direction logic, moon-phase interaction, Grammar, and OW3gs interpretation rules."
+    },
+    {
+      "loc": "LOC7",
+      "name_zh": "符文語言模組",
+      "name_en": "Rune Symbolic Language Module",
+      "role": "Rune-group modules derived directly from the canonical grouping of the 66-rune dataset.",
+      "group_mapping": {
+        "靈魂": "靈魂群組",
+        "連結": "連結群組",
+        "生命": "生命群組",
+        "自然": "自然群組",
+        "礦物": "礦物群組",
+        "元素": "元素群組",
+        "秩序": "秩序群組",
+        "無序": "無序群組",
+        "特殊": "特殊符文"
+      }
+    },
+    {
+      "loc": "LOC8",
+      "name_zh": "符文進化推演引擎",
+      "name_en": "Rune Evolution Engine",
+      "role": "Recursive projection over classified rune data, relationships, rules, modules, time, and newly written-back system states."
+    }
+  ],
+  "basic_classification": {
+    "input_priority": ["rune_id", "rune_name", "group"],
+    "fallback_aliases": {
+      "id": "rune_id",
+      "編號": "rune_id",
+      "name": "rune_name",
+      "名稱": "rune_name",
+      "符文名稱": "rune_name",
+      "group": "group",
+      "所屬分組": "group"
+    },
+    "rules": [
+      "If a record resolves to one of rune ids 1-66, classify the rune itself as LOC1 / 符文語彙.",
+      "Use the canonical group field from runes66.json to additionally classify the rune under LOC7 / 符文語言模組.",
+      "Rune ids 1-64 map to the eight fixed groups of eight runes each.",
+      "Rune 65 玄 and rune 66 命 are special runes and map to 特殊符文 for module display.",
+      "Rune 0 德 is a governance/author anchor and is not part of the 66 drawable rune vocabulary.",
+      "Do not infer LOC3-LOC6 or LOC8 from rune membership alone; those require the record's actual content role or system relation."
+    ]
+  },
+  "design_principle": {
+    "base_unit": 8,
+    "statement": "For the 1-64 canonical rune matrix, eight runes form the basic grouping unit. The grouping is structural metadata of the symbolic language model, not a semantic-vector result.",
+    "recursive_evolution": "Classification output may be written back as structured metadata and reused by later Context, Algorithm, Module, Search, and Evolution passes."
+  }
+}
