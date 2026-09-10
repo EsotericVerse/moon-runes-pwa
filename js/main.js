@@ -35,11 +35,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const startCopy = document.querySelector('[aria-labelledby="start-title"] .section-heading > p');
   if (startCopy) {
-    startCopy.textContent = "完全的新手可以看「新手教學」。第一次使用可直接抽取每日符文。想查月之符文資料可進入「月之符文」。想理解整體則查看「LOC1–8 模組架構」。";
+    startCopy.textContent = "完全的新手可以看「新手教學」。第一次使用可直接抽取每日符文。想查月之符文資料可進入「月之符文」。想理解整體則查看「LOC架構圖」。";
   }
-  document.querySelectorAll('a[href="#framework-map"]').forEach(link => {
-    if (link.textContent.includes("LOC")) link.textContent = "LOC1–8 模組架構";
-  });
 
   const runeEyebrow = document.querySelector("#rune-entry .rune-entry-eyebrow");
   if (runeEyebrow) runeEyebrow.textContent = "LOC1 · LunaRunes";
