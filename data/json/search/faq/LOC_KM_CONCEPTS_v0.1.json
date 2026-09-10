@@ -1,0 +1,193 @@
+{
+  "schema_version": "0.1",
+  "dataset": {
+    "id": "loc-km-concepts-v0.1",
+    "title": "LOC KM Concepts v0.1",
+    "language": "zh-Hant-TW",
+    "author": "Lucas Oscar Wang 政德",
+    "system_id": "lo3rwang",
+    "domain": "knowledge",
+    "updated_at": "2026-09-10",
+    "purpose": "Record current conceptual clarifications for LOC and LunaRunes as searchable KM knowledge without rewriting historical source records."
+  },
+  "chunks": [
+    {
+      "id": "KM-LOC-CONCEPT-001",
+      "category": "核心概念",
+      "intent": "LOC 是什麼與目前實際用途",
+      "question": "LOC 是什麼？",
+      "aliases": [
+        "LOC 的核心定位是什麼？",
+        "月典是什麼？",
+        "LOC 現在實際在做什麼？",
+        "Language Module Framework 是什麼？",
+        "什麼是語言模組框架？",
+        "LOC 是語言系統模型嗎？",
+        "LOC 是語言模型框架嗎？"
+      ],
+      "answer": "LOC 是 lo3rwang 長期累積的數位思想資產與語言模組框架（Language Module Framework）。它把既有的分類方式、語言結構、符文系統、脈絡判讀、演算法與推演方法整理成可重複使用的結構化方法。LOC 不替所有人定義世界，也不要求不同領域使用相同的語彙、分組與規則；它提供的是分類參考與模組化處理方法。",
+      "keywords": [
+        "LOC",
+        "月典",
+        "Luna Codex",
+        "Language Module Framework",
+        "語言模組框架",
+        "lo3rwang",
+        "數位思想資產",
+        "思想資產",
+        "分類參考",
+        "結構化方法",
+        "模組化",
+        "語言解析"
+      ],
+      "status": "creator-confirmed",
+      "updated_at": "2026-09-10"
+    },
+    {
+      "id": "KM-LOC-CONCEPT-002",
+      "category": "語言與紀錄",
+      "intent": "語言除了傳達也用來記錄人生與世界資料",
+      "question": "LOC 為什麼把語言視為可被整理的資料？",
+      "aliases": [
+        "語言除了傳達還有什麼功能？",
+        "語言如何記錄人生？",
+        "人生資料怎麼用 LOC 整理？",
+        "為什麼需要語言模組框架？",
+        "語言紀錄和 LOC 有什麼關係？"
+      ],
+      "answer": "語言的功能不只有傳達，也會具體留下人存在於世的資料，例如事件、作品、關係、價值判斷、制度、群體記錄與時間脈絡。當這些資料長期累積後，解析與整理本身會變得複雜。LOC 提供一套分組與模組化框架建議，協助把細小語言單元整理成可操作的模組，使後續的解析、分類、組織、重組與推演更簡單、更輕量。",
+      "keywords": [
+        "語言功能",
+        "傳達",
+        "紀錄",
+        "人生資料",
+        "存在紀錄",
+        "事件",
+        "作品",
+        "關係",
+        "價值判斷",
+        "時間脈絡",
+        "分組框架",
+        "語言解析",
+        "輕量解析"
+      ],
+      "status": "creator-confirmed",
+      "updated_at": "2026-09-10"
+    },
+    {
+      "id": "KM-LOC-CONCEPT-003",
+      "category": "跨尺度應用",
+      "intent": "LOC 可依符文人生團體宗教等不同領域重新定義單元與模組",
+      "question": "LOC 可以用在符文以外的領域嗎？",
+      "aliases": [
+        "LOC 可以分析人生嗎？",
+        "LOC 可以分析團體嗎？",
+        "LOC 可以分析宗教嗎？",
+        "不同領域要使用同一套符文嗎？",
+        "LOC 是否跨尺度？",
+        "LOC 是否跨領域？"
+      ],
+      "answer": "可以。LOC 的框架保持一致，但實際內容會依資料與問題調整。分析符文、人生、團體、宗教或其他領域時，都可以重新定義該領域的基本單元、分類方式、關係與處理規則。LOC 的重點不是要求所有領域套用 LunaRunes 的 66 符或固定群組，而是提供一套可跨尺度、跨領域使用的語言模組化參考。",
+      "keywords": [
+        "跨尺度",
+        "跨領域",
+        "符文",
+        "人生",
+        "團體",
+        "宗教",
+        "基本單元",
+        "分類方式",
+        "關係",
+        "處理規則",
+        "模組化框架"
+      ],
+      "status": "creator-confirmed",
+      "updated_at": "2026-09-10"
+    },
+    {
+      "id": "KM-LOC-CONCEPT-004",
+      "category": "符文結構",
+      "intent": "Token 符文與符文語言模組的粒度關係",
+      "question": "Token、符文與符文語言模組有什麼關係？",
+      "aliases": [
+        "符文是不是 Token？",
+        "什麼是語言原子？",
+        "符文如何對語言原子分組？",
+        "符文語言模組是什麼？",
+        "符文如何結構化語言？"
+      ],
+      "answer": "可以把語言比作物質世界：Token 更接近原子級的語彙單位。符文是對這些語言原子進行分組與結構化的一種方式；符文語言模組則進一步對符文所涵蓋的語言原子進行分類、建立關係，並定義其處理方式。這是一種高解析粒度的模組化處理思路，而不是宣稱符文本身等同所有語言。",
+      "keywords": [
+        "Token",
+        "語言原子",
+        "原子級語彙單位",
+        "符文",
+        "符文分組",
+        "符文結構化",
+        "符文語言模組",
+        "解析粒度",
+        "高解析粒度"
+      ],
+      "status": "creator-confirmed",
+      "updated_at": "2026-09-10"
+    },
+    {
+      "id": "KM-LOC-CONCEPT-005",
+      "category": "LOC 與 LunaRunes",
+      "intent": "LOC 與 LunaRunes 相輔相成並互相驗證",
+      "question": "LOC 和 LunaRunes 為什麼說是相輔相成？",
+      "aliases": [
+        "LOC 和月之符文如何互相驗證？",
+        "月之符文如何驗證 LOC？",
+        "LOC 如何幫助月之符文？",
+        "LunaRunes 是 LOC 的願景嗎？",
+        "LunaRunes 是 LOC 的實證嗎？"
+      ],
+      "answer": "LOC 與 LunaRunes（月之符文）不是單向從屬關係，而是相輔相成。LOC 提供分類、脈絡、演算法、模組與推演的結構化方法；LunaRunes 則以既有 66 符資料、分組、組合脈絡、作品、解讀規則與推演紀錄提供具體實作。兩者可以互相對照、互相驗證：LOC 讓 LunaRunes 的既有結構更容易被看見與整理，LunaRunes 也反過來證明 LOC 的模組化方法可以實際運作。這不是願景或事後幻想，而是把原本已在運作的關係用明確文字說清楚。",
+      "keywords": [
+        "LOC",
+        "LunaRunes",
+        "月之符文",
+        "相輔相成",
+        "互相驗證",
+        "雙向驗證",
+        "實證",
+        "66符",
+        "分組",
+        "脈絡",
+        "演算法",
+        "推演"
+      ],
+      "status": "creator-confirmed",
+      "updated_at": "2026-09-10"
+    },
+    {
+      "id": "KM-LOC-CONCEPT-006",
+      "category": "LunaRunes 實證",
+      "intent": "LunaRunes 作為目前最完整具體的 LOC 實證案例之一",
+      "question": "LunaRunes 在 LOC 中扮演什麼角色？",
+      "aliases": [
+        "月之符文在 LOC 裡是什麼？",
+        "LunaRunes 是 LOC 的 reference implementation 嗎？",
+        "月之符文是不是 LOC 唯一的內容？",
+        "LunaRunes 如何展示語言模組化？"
+      ],
+      "answer": "LunaRunes 是目前最完整、最具體的 LOC 實證案例之一。它展示語言單元如何被分組、建立關係、形成演算法與模組，並持續進入推演與演化。LunaRunes 的 66 符與固定群組屬於這個實證案例自身的規則，不是 LOC 要求所有領域共同採用的普遍規格。",
+      "keywords": [
+        "LunaRunes",
+        "月之符文",
+        "實證案例",
+        "reference implementation",
+        "語言單元",
+        "符文分組",
+        "關係",
+        "演算法",
+        "語言模組",
+        "推演",
+        "演化"
+      ],
+      "status": "creator-confirmed",
+      "updated_at": "2026-09-10"
+    }
+  ]
+}
