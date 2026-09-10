@@ -4,7 +4,7 @@
   "authority": "LOC4",
   "language_system_id": "lo3rwang",
   "status": "CoreCreativeWorksAndMoonSpeakerChapterBaselineComplete",
-  "updated_at": "2026-09-09",
+  "updated_at": "2026-09-10",
   "purpose": "Structured semantic analysis for LOC4 creative works. Core creative works are analyzed at work level. 月語者 additionally has a complete 182-chapter baseline generated from full chapter text, with recovered three-rune/moon-phase evidence attached only where source data exists.",
   "scope_policy": {
     "current": "LOC4 創作作品",
@@ -875,7 +875,17 @@
         "author-provided allCh1–allCh7 plain-text files",
         "MoonSpeaker_章節三卡_恢復資料.csv"
       ],
-      "rule": "七篇與182章 baseline 已完成；後續若新增人工／LLM 深層註解，應疊加而非覆寫來源證據。"
+      "rule": "七篇與182章 baseline 已完成；後續若新增人工／LLM 深層註解，應疊加而非覆寫來源證據。",
+      "rune_system": {
+        "category": "符文體系",
+        "content_type": "文章創作",
+        "tag": "符文體系｜文章創作",
+        "specific_system_status": "confirmed",
+        "basis": "chapter_generation_provenance",
+        "group_status": "group_statistics_available",
+        "group_statistics_source": "LOC4_MOON_SPEAKER_RUNE_RECOVERY.json",
+        "note": "屬於已確認的符文體系文字創作樣本；群組統計與後續正文語意分析分開保存。"
+      }
     }
   },
   "chapter_level_analysis": {
