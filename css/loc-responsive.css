@@ -29,6 +29,29 @@ body.loc-responsive-page code{max-width:100%;overflow-wrap:anywhere}
 body.loc-responsive-page .table{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 body.loc-responsive-page table{max-width:100%}
 
+/* Search PWA summary: one compact touch row; full detail only after open. */
+body.loc-page-search .source-stats[data-pwa-summary="true"]{
+  margin:0 0 12px;
+  padding:0;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:none;
+}
+body.loc-page-search .source-stats-pwa-summary{
+  display:block;
+  min-height:var(--loc-touch-min);
+  padding:10px 36px 10px 12px;
+  font-size:.82rem;
+  font-weight:800;
+  line-height:24px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  cursor:pointer;
+}
+body.loc-page-search .source-stats-pwa-body{padding:4px 12px 12px}
+body.loc-page-search .source-stats-pwa-details:not([open]) .source-stats-pwa-body{display:none}
+
 @media(max-width:960px){
   body.loc-page-home .hero,
   body.loc-page-home .loc6-panel{grid-template-columns:1fr}
@@ -90,6 +113,7 @@ body.loc-responsive-page table{max-width:100%}
   body.loc-page-search .meta{gap:5px;margin-bottom:8px}
   body.loc-page-search .pill{padding:2px 7px;font-size:.69rem}
   body.loc-page-search .summary{font-size:.9rem;line-height:1.58}
+  body.loc-page-search .source-stats-pwa-summary{font-size:.76rem;padding-left:10px}
 
   body.loc-page-home .loc-page{padding:10px 0 36px}
   body.loc-page-home .hero{gap:16px;padding:18px 0 20px}
