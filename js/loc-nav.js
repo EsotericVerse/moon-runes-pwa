@@ -9,28 +9,52 @@
   }
 
   function currentId(node, items) {
+    const file = location.pathname.split("/").pop() || "index.html";
+    if (file === "context.html") return "context";
+    if (file === "game.html" || file === "loc2-game.html") return "game";
     const explicit = node.dataset.page;
     if (explicit) return explicit;
-    const file = location.pathname.split("/").pop() || "index.html";
     return items.find(item => item.href === file)?.id || "";
+  }
+
+  function appendScript(src, datasetKey) {
+    if (document.querySelector(`script[data-${datasetKey}]`)) return;
+    const script = document.createElement("script");
+    script.src = src;
+    script.defer = true;
+    script.dataset[datasetKey.replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = "true";
+    document.body.appendChild(script);
+  }
+
+  function cleanupContextGameEmbed() {
+    if ((location.pathname.split("/").pop() || "") !== "context.html") return;
+    document.querySelector('[data-context-switch="sandbox-game"]')?.closest('.workspace-nav-group')?.remove();
+    const frame = document.querySelector('.game-frame');
+    const view = frame?.closest('[data-context-view]');
+    if (view) view.remove();
+    else {
+      document.querySelector('.game-frame-wrap')?.remove();
+      document.querySelector('.game-open')?.remove();
+    }
+    document.querySelectorAll('a[href="loc2-game.html"]').forEach(a => {
+      a.href = "game.html";
+      a.removeAttribute("target");
+      a.removeAttribute("rel");
+    });
   }
 
   function loadPageEnhancements() {
     const file = location.pathname.split("/").pop() || "index.html";
-    if (file !== "evolution.html") return;
-    if (document.querySelector('script[data-life-draw-history]')) return;
-
-    const script = document.createElement('script');
-    script.src = 'js/life-daily-draw-history.js';
-    script.defer = true;
-    script.dataset.lifeDrawHistory = 'true';
-    document.body.appendChild(script);
+    if (file === "evolution.html") appendScript("js/life-daily-draw-history.js", "life-draw-history");
+    if (file === "runes.html") appendScript("js/runes-pwa-ia.js", "runes-pwa-ia");
+    if (file === "context.html") cleanupContextGameEmbed();
   }
 
   const DEFAULT_NAV = [
     {id:"runes",label:"月之符文",href:"runes.html"},
-    {id:"game",label:"脈絡",href:"context.html"},
+    {id:"context",label:"脈絡",href:"context.html"},
     {id:"search",label:"搜尋",href:"search.html"},
+    {id:"game",label:"遊戲",href:"game.html"},
     {id:"evolution",label:"推演",href:"evolution.html"}
   ];
 
@@ -106,23 +130,24 @@
       const response = await fetch("data/json/generated/search/SEARCH_SOURCE_STATS.json", { cache: "no-store" });
       if (!response.ok) throw new Error("stats unavailable");
       const data = await response.json();
-      const chars = Number(data?.search_summary?.char_count || 0).toLocaleString("zh-TW");
+      const count = Number(data?.search_summary?.comparable_records || data?.text_summary?.searchable_records || 0).toLocaleString("zh-TW");
       const start = data?.text_summary?.start_date || "";
       const end = data?.text_summary?.end_date || "";
-      const categories = [...new Set(
-        [...(data?.text_sources || []), ...(data?.media_sources || [])]
-          .map(item => item?.source_category)
-          .filter(Boolean)
-      )];
-      const categoryText = categories.length ? `來源：${categories.join(" / ")}` : "";
+      const categories = [];
+      const textSources = data?.text_sources || [];
+      const mediaSources = data?.media_sources || [];
+      if (textSources.some(item => item?.source_type !== "lyrics")) categories.push("文字");
+      if (textSources.some(item => item?.source_type === "lyrics")) categories.push("音樂");
+      if (mediaSources.length) categories.push("多媒體");
+      if (Number(data?.knowledge_summary?.knowledge_document_records || 0) > 0) categories.push("知識");
       const dateText = start && end ? `${start}–${end}` : (start || end);
       summary.textContent = [
-        `搜尋資料｜${chars} 字`,
+        `搜尋資料｜${count} 筆`,
         dateText,
-        categoryText
+        categories.join(" / ")
       ].filter(Boolean).join(" · ");
     } catch (_) {
-      summary.textContent = "搜尋資料｜點開查看總文字數、日期與來源類別";
+      summary.textContent = "搜尋資料｜點開查看總數、日期與來源";
     }
   }
 
