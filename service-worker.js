@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v180";
+const CACHE_NAME = "moon-runes-pwa-v181";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -6,11 +6,10 @@ const ASSETS_TO_CACHE = [
   "/search.html",
   "/runes.html",
   "/context.html",
+  "/game.html",
   "/governance.html",
-  "/loc2-game.html",
   "/lo3rwang.html",
   "/tutorial01.html",
-  "/tutorial02.html",
   "/evolution.html",
   "/css/style.css",
   "/js/loc-nav.js",
@@ -38,6 +37,7 @@ const ASSETS_TO_CACHE = [
   "/js/main.js",
   "/js/locMoonPhase.js",
   "/js/facebook-repo-corpus.js",
+  "/js/runes-pwa-ia.js",
   "/js/rune-draw.js?v=20260908-4",
   "/js/rune-daily-records.js?v=20260908-1",
   "/js/runeLibrary.js?v=20260905-3",
@@ -46,6 +46,7 @@ const ASSETS_TO_CACHE = [
   "/js/rune_all_data_all.js",
   "/js/quick-selector.js",
   "/js/list.js?v=20260905-5",
+  "/js/loc2-game.js",
   "/64images/65_玄.png",
   "/64images/66_命.png",
   "/icons/icon-192x192.png",
@@ -92,8 +93,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Search-critical generated data stays network-first, but falls back to the
-  // most recent cached copy when the device is offline or the network is poor.
   if (
     url.pathname === "/data/json/generated/search/SEARCH_SOURCE_STATS.json" ||
     url.pathname === "/data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json" ||
