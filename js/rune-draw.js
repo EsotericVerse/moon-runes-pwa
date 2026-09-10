@@ -107,8 +107,8 @@ function shuffle(values) {
 
 function drawCards(count) {
   const ids = shuffle(
-    Array.from({ length: 64 }, (_, i) => i + 1)
-      .filter(id => rune[id]?.符文名稱)
+    Array.from({ length: 66 }, (_, i) => i + 1)
+      .filter(id => rune[id]?.符文名稱 && rune[id]?.drawable !== false)
   ).slice(0, count);
 
   return ids.map(id => {
@@ -124,7 +124,7 @@ function drawCards(count) {
 
 function getDirectionText(card) {
   const item = direction[card.id];
-  return item?.[DIRECTION_FIELDS[card.direction]] || "目前沒有對應方向說明。";
+  return item?.[DIRECTION_FIELDS[card.direction]] || card.rune?.[DIRECTION_FIELDS[card.direction]] || "目前沒有對應方向說明。";
 }
 
 function getPhaseInfo(card, realPhase) {
@@ -478,8 +478,11 @@ async function requestRenderFive(cards) {
 
 async function renderResult(mode, config, realPhase) {
   const cards = drawCards(config.count);
+  if (cards.length !== config.count) throw new Error("可抽取符文資料不足，請重新整理後再試。");
+
   const grid = document.getElementById("cards-grid");
   const reading = document.getElementById("reading");
+  if (!grid || !reading) throw new Error("抽牌結果區不存在。");
 
   grid.dataset.count = String(config.count);
   const density = config.count === 1 ? "full" : (config.count === 5 ? "minimal" : "medium");
@@ -511,9 +514,12 @@ async function renderResult(mode, config, realPhase) {
       : buildMultiReading(cards, config.labels, realPhase);
   }
 
-  document.getElementById("mode-note").textContent = config.note;
-  document.getElementById("ritual-view").hidden = true;
-  document.getElementById("result-view").hidden = false;
+  const modeNote = document.getElementById("mode-note");
+  if (modeNote) modeNote.textContent = config.note;
+  const ritualView = document.getElementById("ritual-view");
+  const resultView = document.getElementById("result-view");
+  if (ritualView) ritualView.hidden = true;
+  if (resultView) resultView.hidden = false;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -522,34 +528,89 @@ async function executeDraw(mode, config, realPhase) {
   const ritualView = document.getElementById("ritual-view");
   const resultView = document.getElementById("result-view");
 
-  if (panel) panel.hidden = false;
+  if (!panel) throw new Error("抽牌執行區不存在。");
+  panel.hidden = false;
   if (resultView) resultView.hidden = true;
   if (ritualView) ritualView.hidden = false;
 
-  document.getElementById("mode-title").textContent = config.title;
-  document.getElementById("mode-kicker").textContent = config.kicker;
+  const modeTitle = document.getElementById("mode-title");
+  const modeKicker = document.getElementById("mode-kicker");
+  if (modeTitle) modeTitle.textContent = config.title;
+  if (modeKicker) modeKicker.textContent = config.kicker;
 
   const ritualPhase = document.getElementById("ritual-phase");
   if (ritualPhase) ritualPhase.textContent = `月相：無 / 真實月相：${realPhase}`;
 
-  panel?.scrollIntoView({behavior:"smooth", block:"start"});
+  panel.scrollIntoView({behavior:"smooth", block:"start"});
 
-  const loaders = [runRitual(mode, config), ensureLocalData(mode)];
-  if (mode !== "5card") loaders.push(loadRuneHints());
-  if (mode === "single" || mode === "daily") loaders.push(loadLots());
-  await Promise.all(loaders);
+  const dataTasks = [];
+  if (mode !== "5card") dataTasks.push(ensureLocalData(mode));
+  if (mode !== "5card") dataTasks.push(loadRuneHints());
+  if (mode === "single" || mode === "daily") dataTasks.push(loadLots());
+
+  await Promise.all([
+    runRitual(mode, config),
+    Promise.allSettled(dataTasks).then(results => {
+      results.forEach(result => {
+        if (result.status === "rejected") console.warn("Optional rune draw data failed to load; continuing with canonical rune data.", result.reason);
+      });
+    })
+  ]);
+
   await renderResult(mode, config, realPhase);
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
-  const params = new URLSearchParams(window.location.search);
-  const requestedMode = params.get("mode");
-  if (!requestedMode) return;
+function showDrawError(error) {
+  console.error("Rune draw failed", error);
+  document.body.dataset.drawing = "false";
+  const panel = document.getElementById("draw-result-panel");
+  const ritualView = document.getElementById("ritual-view");
+  const resultView = document.getElementById("result-view");
+  const reading = document.getElementById("reading");
+  if (panel) panel.hidden = false;
+  if (ritualView) ritualView.hidden = true;
+  if (resultView) resultView.hidden = false;
+  if (reading) reading.innerHTML = `<div class="reading-lead"><strong>抽牌暫時無法完成</strong>${error?.message || "請重新整理頁面後再試。"}</div>`;
+}
 
-  const mode = normalizeMode(requestedMode);
+async function startDraw(modeValue, updateUrl = false) {
+  const mode = normalizeMode(modeValue);
   const config = MODE_CONFIG[mode];
   const realPhase = window.LOCMoonPhase?.getRealPhase() || "未知";
   sessionStorage.setItem("realPhase", realPhase);
 
-  await executeDraw(mode, config, realPhase);
-});
+  const selector = document.getElementById("draw-mode-selector");
+  if (selector) selector.hidden = true;
+
+  if (updateUrl) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("mode", mode);
+    url.hash = "draw";
+    history.replaceState(null, "", url);
+  }
+
+  try {
+    await executeDraw(mode, config, realPhase);
+  } catch (error) {
+    showDrawError(error);
+  }
+}
+
+function initRuneDraw() {
+  document.querySelectorAll('a.draw-mode-card[href*="mode="]').forEach(link => {
+    link.addEventListener("click", event => {
+      event.preventDefault();
+      const url = new URL(link.href, window.location.href);
+      startDraw(url.searchParams.get("mode"), true);
+    });
+  });
+
+  const requestedMode = new URLSearchParams(window.location.search).get("mode");
+  if (requestedMode) startDraw(requestedMode, false);
+}
+
+if (document.readyState === "loading") {
+  window.addEventListener("DOMContentLoaded", initRuneDraw, { once: true });
+} else {
+  initRuneDraw();
+}
