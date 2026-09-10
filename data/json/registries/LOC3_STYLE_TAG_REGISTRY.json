@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "system_id": "lo3rwang",
+  "primary_loc": "LOC3",
+  "purpose": "Deterministic music-style tag normalization for search facets and rankings. Raw Suno style prompts remain unchanged.",
+  "governance": {
+    "ranking_unit": "work",
+    "api_required": false,
+    "semantic_inference": false,
+    "rule": "Only emit a canonical tag when its canonical name or an explicit alias appears in the raw style/style_prompt text. Do not infer J-Pop from Anime Pop or vice versa."
+  },
+  "tags": [
+    {"tag": "Mandopop", "aliases": ["mandopop", "mandarin pop", "chinese pop"]},
+    {"tag": "Anime Pop", "aliases": ["anime pop"]},
+    {"tag": "Anime", "aliases": ["anime"]},
+    {"tag": "J-Pop", "aliases": ["j-pop", "j pop", "jpop"]},
+    {"tag": "J-Rock", "aliases": ["j-rock", "j rock", "jrock"]},
+    {"tag": "City Pop", "aliases": ["city pop"]},
+    {"tag": "Dream Pop", "aliases": ["dream pop"]},
+    {"tag": "Atmospheric Pop", "aliases": ["atmospheric pop"]},
+    {"tag": "Art Pop", "aliases": ["art pop"]},
+    {"tag": "Indie Pop", "aliases": ["indie pop"]},
+    {"tag": "Pop Rock", "aliases": ["pop rock"]},
+    {"tag": "Alternative Rock", "aliases": ["alternative rock", "alt rock"]},
+    {"tag": "Synthpop", "aliases": ["synthpop", "synth pop"]},
+    {"tag": "Synthwave", "aliases": ["synthwave", "synth wave"]},
+    {"tag": "Synth Rock", "aliases": ["synth rock"]},
+    {"tag": "Electro Pop", "aliases": ["electro pop", "electropop"]},
+    {"tag": "Industrial Pop", "aliases": ["industrial pop"]},
+    {"tag": "Ballad", "aliases": ["ballad"]},
+    {"tag": "Vocaloid", "aliases": ["vocaloid"]},
+    {"tag": "Rap", "aliases": ["rap"]},
+    {"tag": "Hip-Hop", "aliases": ["hip-hop", "hip hop", "hiphop"]},
+    {"tag": "Soul", "aliases": ["soul"]}
+  ],
+  "legacy_bucket_aliases": [
+    {"raw": "Alternative／Art／Indie", "tags": ["Alternative Rock", "Art Pop", "Indie Pop"]},
+    {"raw": "Synth／Electro／Industrial", "tags": ["Synthpop", "Electro Pop", "Industrial Pop"]},
+    {"raw": "Anime／J-Pop／J-Rock", "tags": ["Anime", "J-Pop", "J-Rock"]},
+    {"raw": "Dream／Atmospheric Pop", "tags": ["Dream Pop", "Atmospheric Pop"]},
+    {"raw": "Rap／Hip-Hop／Soul", "tags": ["Rap", "Hip-Hop", "Soul"]}
+  ]
+}
