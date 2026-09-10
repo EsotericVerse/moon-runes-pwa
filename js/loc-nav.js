@@ -134,9 +134,44 @@
         heroCopy.textContent = "月典是一套用來分析、整理、搜尋與推演語言的模組化框架。它從細小的語言單元開始，把文字、作品、脈絡、規則與時間組織起來，讓複雜內容可以更輕量地被理解、比較與重組。";
       }
 
+      const progressHeadingCopy = document.querySelector('#current-progress .section-heading > p');
+      if (progressHeadingCopy) {
+        progressHeadingCopy.textContent = "目前已能從月之符文、作品與歷史文字資料出發，進行搜尋、統計、脈絡連結與時間比較；更深一層的符文語意分析與推演則建立在同一套資料結構上。";
+      }
+
+      const progressSection = document.getElementById("current-progress");
+      if (progressSection && !document.getElementById("current-progress-summary")) {
+        const summary = document.createElement("div");
+        summary.id = "current-progress-summary";
+        summary.className = "loc-note";
+        summary.innerHTML = "<strong>目前進度：</strong> LunaRunes 66 符核心語意、分組與關鍵詞已完成校準；多元搜尋、關鍵字排行與資料來源追溯已可使用；Context／Graph 已能呈現資料之間的脈絡；曲風、標籤與其他明確欄位可直接統計，不需要 API；符文 RAG 的前置資料與語意規則已準備完成，後續可在這些基礎上進一步分析作品中的符文語意與群組分布。";
+        const actions = progressSection.querySelector(".hero-actions, .start-actions");
+        if (actions) progressSection.insertBefore(summary, actions);
+        else progressSection.appendChild(summary);
+      }
+
+      const frameworkSection = document.getElementById("framework-map");
+      if (frameworkSection && !document.getElementById("framework-bridge")) {
+        const bridge = document.createElement("section");
+        bridge.id = "framework-bridge";
+        bridge.className = "section";
+        bridge.setAttribute("aria-labelledby", "framework-bridge-title");
+        bridge.innerHTML = `
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">From Use to Structure</p>
+              <h2 id="framework-bridge-title">從「可以做什麼」，再往下看「它怎麼做到」。</h2>
+            </div>
+          </div>
+          <p style="margin:0;color:var(--loc-muted);max-width:900px;">前面的抽牌、搜尋、排行、脈絡與推演不是彼此獨立的功能。LOC 先把語言資料拆成較容易處理的單元，再依需要建立分類、關係與規則；成熟的處理規則可以進一步形成演算法與模組，讓不同資料使用相同方法，也能保留各自的差異。</p>
+          <div class="loc-note"><strong>這是一套參考方法，不是世界的唯一答案。</strong> LOC 保持中立：它提供分類、組織、解析與推演的方法，但不預設某一套價值、信仰或分類必然正確。不同領域可以重新定義自己的單元、分組、關係與規則。</div>
+        `;
+        frameworkSection.parentNode.insertBefore(bridge, frameworkSection);
+      }
+
       const frameworkCopy = document.querySelector("#framework-map .loc-header-copy");
       if (frameworkCopy) {
-        frameworkCopy.textContent = "LOC 提供跨尺度、跨領域的分組框架建議。不同領域可以重新定義自己的單元、分類、關係與規則；框架不要求外部資料服從 LunaRunes 的 66 符或八組結構，而是讓複雜語言資料可以用較輕量、清楚的方式被組織與解析。";
+        frameworkCopy.textContent = "LOC 提供跨尺度、跨領域的分組框架建議。不同領域可以重新定義自己的單元、分類、關係與規則；這些分類與規則是分析參考，不是替世界建立唯一答案。框架讓複雜語言資料可以用較輕量、清楚的方式被組織與解析。";
       }
 
       const aboutTitle = document.getElementById("about-title");
@@ -146,7 +181,7 @@
 
       const aboutCopy = document.querySelector('[aria-labelledby="about-title"] > p');
       if (aboutCopy) {
-        aboutCopy.textContent = "月典最初從月之符文開始，之後逐步形成脈絡、作品與多元體系、方法論、演算法與知識庫模組，整理為語言模型，再放回時間中持續推演。它不是為了把人生固定，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可重用，也能整理出風格並進一步推演的語言架構。";
+        aboutCopy.textContent = "月典最初從月之符文開始，之後逐步形成脈絡、作品與多元體系、方法論、演算法與知識庫模組，整理為語言模型，再放回時間中持續推演。它不是為了把人生固定，也不是用一套分類替世界下定義，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可重用，也能整理出風格並進一步推演的語言架構。";
       }
     }
   }
