@@ -7,6 +7,7 @@
     {id:"game",label:"遊戲",href:"game.html"},
     {id:"context",label:"脈絡",href:"context.html"},
     {id:"evolution",label:"推演",href:"evolution.html"},
+    {id:"governance",label:"治理",href:"governance.html"},
     {id:"statics",label:"統計",href:"statics.htm"}
   ]);
 
@@ -18,6 +19,7 @@
     "loc2-game.html":"game",
     "context.html":"context",
     "evolution.html":"evolution",
+    "governance.html":"governance",
     "statics.htm":"statics",
     "statics.html":"statics",
     "search.html":"search"
