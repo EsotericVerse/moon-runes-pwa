@@ -1,6 +1,30 @@
 (() => {
   const NAV_URL = "data/json/registries/LOC_NAV.json";
-  const WEB_BUILD = "0.8";
+  const WEB_BUILD = "0.9";
+  const currentFile = location.pathname.split("/").pop() || "index.html";
+
+  // Compatibility routing after the lightweight page split.
+  // Old links continue to work without forcing every historical page to be rewritten at once.
+  if (currentFile === "runes.html") {
+    const params = new URLSearchParams(location.search);
+    if (params.has("mode")) {
+      const target = new URL("lots.html", location.href);
+      target.search = location.search;
+      target.hash = "draw";
+      location.replace(target.href);
+      return;
+    }
+    if (location.hash === "#draw") { location.replace("lots.html#draw"); return; }
+    if (location.hash === "#library") { location.replace("lots.html#library"); return; }
+    if (location.hash === "#daily") { location.replace("statics.html#rune-trend"); return; }
+  }
+  if (currentFile === "search.html") {
+    const routes = {"#ranking":"ranking","#era":"era","#sources":"sources"};
+    if (routes[location.hash]) {
+      location.replace("statics.html#" + routes[location.hash]);
+      return;
+    }
+  }
 
   function esc(value) {
     return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
@@ -9,8 +33,7 @@
   function currentId(node, items) {
     const explicit = node.dataset.page;
     if (explicit) return explicit;
-    const file = location.pathname.split("/").pop() || "index.html";
-    return items.find(item => item.href === file)?.id || "";
+    return items.find(item => item.href === currentFile)?.id || "";
   }
 
   const DEFAULT_NAV = [
@@ -48,8 +71,7 @@
   }
 
   function pruneSearchWorkspace(){
-    const file=location.pathname.split('/').pop()||'index.html';
-    if(file!=="search.html")return;
+    if(currentFile!=="search.html")return;
     document.querySelectorAll('[data-search-view]').forEach(btn=>{
       if(btn.dataset.searchView!=='query') btn.closest('.workspace-nav-group')?.remove();
     });
@@ -61,8 +83,7 @@
   }
 
   function loadPageEnhancements() {
-    const file = location.pathname.split("/").pop() || "index.html";
-    if (file === "search.html" && !document.querySelector('script[data-km-concepts-search]')) {
+    if (currentFile === "search.html" && !document.querySelector('script[data-km-concepts-search]')) {
       const script = document.createElement('script');
       script.src = 'js/km-concepts-search.js';
       script.defer = true;
