@@ -8,34 +8,29 @@ window.addEventListener("DOMContentLoaded", () => {
   if (moonText) moonText.textContent = `月相：無 / 真實月相：${realPhase}`;
   if (card) card.addEventListener("click", () => { window.location.href = "runes.html#draw"; });
 
-  // Canon framework hierarchy:
-  // LOC = Evolvable Language Module Framework
-  // LOC1–8 = Module Structure of the framework
-  // LOC1 = LunaRunes Module
-  // LunaRunes = Symbolic Language Model
   const metaDescription = document.querySelector('meta[name="description"]');
   if (metaDescription) {
     metaDescription.setAttribute(
       "content",
-      "LOC（月典）是一套可進化、可重複使用的語言模組框架（Language Module Framework），用來將細小語言單元組織成可解析、分類、連結、重組與推演的模組。月之符文（LunaRunes）由基本語彙（Token）逐步建立符文結構、關係與處理方式，並發展為符號式語言模型（Symbolic Language Model）。"
+      "LOC（月典）是一套可重複使用的語言系統模型（Language System Model），由 LOC1–LOC8 語言系統模組組成。月之符文（LunaRunes）以 66 個中文單字建立可實際運作的符號式語言模型（Symbolic Language Model）。"
     );
   }
 
   const heroSubtitle = document.querySelector(".hero .loc-header-subtitle");
   if (heroSubtitle) {
-    heroSubtitle.textContent = "從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，累積後再選擇怎麼進化。";
+    heroSubtitle.textContent = "從語彙開始，讓脈絡、作品、演算法與時間彼此連結，再持續推演。";
   }
 
   const heroCopy = document.querySelector(".hero .loc-header-copy");
   if (heroCopy) {
-    heroCopy.textContent = "月典是一套用來分析、整理、搜尋與推演語言的模組化框架。它從細小的語言單元開始，把文字、作品、脈絡、規則與時間組織起來，讓複雜內容可以更輕量地被理解、比較與重組。";
+    heroCopy.textContent = "月典是一套用來分析、整理、搜尋並推演語言的語言系統模型。LOC1–LOC8 是組成模型的語言系統模組；月之符文則提供可實際運作的符號式語言模型實作。";
   }
 
   const heroNote = document.querySelector(".hero-note");
   if (heroNote) {
     heroNote.innerHTML = `<div class="moon" aria-hidden="true"></div>
       <strong>月之符文是種子，但不是使用門檻。</strong>
-      <p>不必先知道或學會所有符文，也不用先會解牌，更不需要先理解完整架構。你可以先抽牌、找作品、看脈絡分析、看關鍵字排行；想深入時，LOC 再把模組結構展開給你。</p>`;
+      <p>不必先知道或學會所有符文，也不用先會解牌。你可以先抽牌、找作品、看脈絡分析或關鍵字排行；想深入時，LOC 再把底層結構展開。</p>`;
   }
 
   const startCopy = document.querySelector('[aria-labelledby="start-title"] .section-heading > p');
@@ -50,16 +45,16 @@ window.addEventListener("DOMContentLoaded", () => {
   if (runeEyebrow) runeEyebrow.textContent = "LOC1 · LunaRunes";
 
   const runeTitle = document.querySelector("#rune-entry #rune-title");
-  if (runeTitle) runeTitle.textContent = "問一件事，或讓語言自己推演成長";
+  if (runeTitle) runeTitle.textContent = "問一件事，或直接抽取一個語言起點";
 
   const runeSectionLead = document.querySelector("#rune-entry .section-heading > p");
   if (runeSectionLead) {
-    runeSectionLead.textContent = "直接從一個問題開始，選擇想要的抽取方式，讓月之符文提供一個新的語言起點，推演出一個實用的指示；最後仍由你選擇怎麼走。";
+    runeSectionLead.textContent = "月之符文由 66 個中文單字構成。可以先抽牌，再依需要查看符文本義、方向、脈絡與延伸內容。";
   }
 
   const runeIntro = document.querySelector("#rune-entry .rune-intro");
   if (runeIntro) {
-    runeIntro.innerHTML = "<strong>LOC1 是 LunaRunes Module（月之符文語言模組）。</strong>基本語彙（Token）可視為原子級的語彙單位；月之符文將相關語意分組並結構化，再透過符文語言模組建立分類、關係與處理方式，並與 LOC 其他模組相互作用，發展為符號式語言模型（Symbolic Language Model）。";
+    runeIntro.innerHTML = "<strong>LOC1 · LunaRunes（月之符文）</strong>是 LOC 的符號式語言模型實作，以 66 個中文單字作為固定語彙基底。";
   }
 
   const attributes = document.getElementById("attributes");
@@ -72,7 +67,7 @@ window.addEventListener("DOMContentLoaded", () => {
     style.textContent = `
       #attributes .rune66-kicker{display:block;color:var(--loc-purple);font-size:.72rem;font-weight:900;letter-spacing:.12em;line-height:1.35}
       #attributes .rune66-title{display:block;margin-top:4px;color:var(--loc-gold);font-size:1.18rem;font-weight:850;line-height:1.35}
-      #attributes .rune66-spec{margin:10px 0 0;color:var(--loc-text);font-size:.9rem;line-height:1.65}
+      #attributes .rune66-note{margin:10px 0 0;color:var(--loc-text);font-size:.9rem;line-height:1.65}
       #attributes .rune66-details{display:grid;gap:5px;margin-top:12px;padding-top:12px;border-top:1px solid var(--loc-border)}
       #attributes .rune66-detail{margin:0;color:var(--loc-muted);font-size:.78rem;line-height:1.5}
       #attributes .rune66-detail strong{color:var(--loc-text);font-weight:800}
@@ -96,9 +91,9 @@ window.addEventListener("DOMContentLoaded", () => {
       const group = row.所屬分組 ?? row.group ?? "";
       const phase = row.月相 ?? row.moon_phase ?? "無";
       const attribute = row.卡片屬性 ?? row.card_attribute ?? "";
-      const manifestation = row.顯化形式 ?? "";
       const keywords = row.關鍵詞 ?? row.keyword ?? "";
-      const spec = row.spec ?? "";
+      const archetype = row.人格原型 ?? "";
+      const note = row.特別說明 ?? "";
       const image = row.image ?? row.圖檔名稱 ?? (id && name ? `${String(id).padStart(2, "0")}_${name}.png` : "");
 
       if (runeImage && image) {
@@ -109,10 +104,10 @@ window.addEventListener("DOMContentLoaded", () => {
       attributes.innerHTML = `
         <span class="rune66-kicker">${escapeHtml(String(english))}</span>
         <strong class="rune66-title">${escapeHtml(name)}之符文</strong>
-        ${spec ? `<p class="rune66-spec">${escapeHtml(spec)}</p>` : ""}
+        ${note ? `<p class="rune66-note">${escapeHtml(note)}</p>` : ""}
         <div class="rune66-details">
-          ${manifestation ? `<p class="rune66-detail"><strong>顯化形式：</strong>${escapeHtml(manifestation)}</p>` : ""}
           ${keywords ? `<p class="rune66-detail"><strong>關鍵詞：</strong>${escapeHtml(keywords)}</p>` : ""}
+          ${archetype ? `<p class="rune66-detail"><strong>人格原型：</strong>${escapeHtml(archetype)}</p>` : ""}
           ${group ? `<p class="rune66-detail"><strong>所屬分組：</strong>${escapeHtml(group)}</p>` : ""}
           ${attribute ? `<p class="rune66-detail"><strong>卡片屬性：</strong>${escapeHtml(attribute)}</p>` : ""}
           <p class="rune66-detail"><strong>月相：</strong>${escapeHtml(phase || "無")} / <strong>真實月相：</strong>${escapeHtml(realPhase)}</p>
@@ -148,14 +143,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const evolutionSteps = [...document.querySelectorAll("#language-evolution .evolution-step")];
   const evolutionContent = [
-    { english: "LunaRunes", title: "月之符文", copy: "LOC1 · LunaRunes Module（月之符文語言模組）。月之符文把基本語彙（Token）進行語意分組與結構化，作為符文語言與互動的起點。" },
-    { english: "Context", title: "脈絡", copy: "LOC2 對應符文脈絡，把符文、作品、事件與概念放進關係、情境與關係圖（Graph）中。" },
-    { english: "Music", title: "音樂", copy: "LOC3 對應較基礎的符文體系，可用三卡結構作為複雜度類比；目前主要音樂實作來源為 Suno。" },
-    { english: "Literary", title: "文字創作", copy: "LOC4 對應更完整的符文體系，可用五卡結構作為複雜度類比，承接小說、文章與其他文字作品。" },
-    { english: "Multimedia", title: "多媒體", copy: "LOC5 對應多模組整合的符文體系，可用 OW3gs 結構作為複雜度類比，整合文字、音樂、圖像與影音。" },
-    { english: "Algorithm", title: "演算法", copy: "LOC6 對應符文演算法，把判讀、比較、治理、組合與分析方法整理成可重複執行、可檢查的規則與流程。" },
-    { english: "Module", title: "演算模組", copy: "LOC7 對應符文模組，把演算法、資料、知識與功能封裝成可組合、重用與替換的演算模組。" },
-    { english: "Evolution", title: "推演引擎", copy: "LOC8 對應符文演化，把模組、作品、事件與語言放回時間中觀察，推演可能方向，累積後再選擇是否進化。" }
+    { english: "LunaRunes", title: "月之符文", copy: "LOC1 · LunaRunes。以 66 個中文單字作為固定語彙基底，提供符號式語言模型的起點。" },
+    { english: "Context", title: "脈絡", copy: "LOC2 · Context。把符文、作品、事件與概念放進關係、情境與 Graph 中。" },
+    { english: "Music", title: "音樂", copy: "LOC3 · Music。讓語言進入音樂、歌詞、曲風與創作時期。" },
+    { english: "Literary", title: "文字創作", copy: "LOC4 · Literary。承接小說、文章與其他文字作品。" },
+    { english: "Multimedia", title: "多媒體", copy: "LOC5 · Multimedia。整合文字、音樂、圖像與影音。" },
+    { english: "Algorithm", title: "演算法", copy: "LOC6 · Algorithm。把判讀、比較、治理、組合與分析整理成可重複執行的規則。" },
+    { english: "Module", title: "演算模組", copy: "LOC7 · Module。把演算法、資料、知識與功能封裝成可組合與重用的模組。" },
+    { english: "Evolution", title: "推演引擎", copy: "LOC8 · Evolution。把模組、作品、事件與語言放回時間中觀察與推演。" }
   ];
 
   evolutionSteps.forEach((step, index) => {
@@ -171,54 +166,54 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const frameworkCopy = document.querySelector("#framework-map .loc-header-copy");
   if (frameworkCopy) {
-    frameworkCopy.textContent = "LOC 是可進化、可重複使用的語言模組框架（Language Module Framework）。LOC1–LOC8 將不同語言責任拆成八個可組合的模組，依序為 LunaRunes Module、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution；框架本身保持輕量，但可以把解析粒度下探到細小語言單元。";
+    frameworkCopy.textContent = "LOC 是可重複使用的語言系統模型（Language System Model）。LOC1–LOC8 是組成模型的八個語言系統模組，分別為 LunaRunes、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution。";
   }
 
   const aboutCopy = document.querySelector('[aria-labelledby="about-title"] > p');
   if (aboutCopy) {
-    aboutCopy.textContent = "LOC 不取代完整語言系統，而是提供一套模組化的組織方式：從細小語言單元開始，逐步建立分類、脈絡、作品、演算法與可重用模組，再放回時間中持續推演。月之符文則沿著這條路徑發展為可實際運作的符號式語言模型（Symbolic Language Model）。";
+    aboutCopy.textContent = "LOC 從細小語言單元開始，逐步建立分類、脈絡、作品、演算法與可重用模組，再放回時間中持續推演。LunaRunes 則證明這套模型能被實作成可運作的符號式語言模型。";
   }
 
   const frameworkInfo = {
     LOC1: {
-      english: "LunaRunes", title: "月之符文", tab: "月之符文", category: "LunaRunes Module｜月之符文語言模組",
-      copy: "LOC1 是 LunaRunes Module（月之符文語言模組）。基本語彙（Token）是原子級的語彙單位；月之符文將相關語意分組與結構化，再透過符文語言模組建立分類、關係與處理方式，並與 LOC 其他模組共同運作。",
-      extra: ["66 個月之符文構成固定語彙骨架。","四向描述同一符文在不同狀態下的表現。","單卡、雙卡、三卡、五卡與 OW3gs 各有自己的語法。","LunaRunes 已發展為符號式語言模型；LOC1 是承載其符文語言結構的模組。"]
+      english: "LunaRunes", title: "月之符文", tab: "月之符文", category: "LunaRunes｜月之符文",
+      copy: "LOC1 是 LunaRunes（月之符文）。以 66 個中文單字作為固定語彙基底，並透過分組、方向與多卡語法形成可運作的符號式語言模型。",
+      extra: ["66 個月之符文構成固定語彙骨架。","四向描述同一符文在不同狀態下的表現。","單卡、雙卡、三卡、五卡與 OW3gs 各有自己的語法。"]
     },
     LOC2: {
-      english: "Context", title: "脈絡", tab: "脈絡", category: "符文脈絡",
-      copy: "處理『彼此怎麼連』。把符文、作品、事件與概念放進關係與情境中，讓單一內容能看見它和其他內容之間的脈絡。",
-      extra: ["關係描述兩個內容之間如何連接。","情境與事件把關係放進具體脈絡中。","關係圖（Graph）把大量內容與關係組成可觀察的整體。","脈絡沙盒遊戲是其中一種互動實作。"]
+      english: "Context", title: "脈絡", tab: "脈絡", category: "Context｜脈絡",
+      copy: "處理彼此怎麼連。把符文、作品、事件與概念放進關係與情境中，讓單一內容能看見它和其他內容之間的脈絡。",
+      extra: ["關係描述兩個內容之間如何連接。","情境與事件把關係放進具體脈絡中。","關係圖（Graph）把大量內容與關係組成可觀察的整體。"]
     },
     LOC3: {
-      english: "Music", title: "音樂", tab: "音樂", category: "符文體系（較基礎結構／三卡類比）",
-      copy: "讓語言進入聲音。歌曲、歌詞、曲風、角色與創作時期都能成為可搜尋、可比較，也能和其他作品彼此連結的語言資料。",
+      english: "Music", title: "音樂", tab: "音樂", category: "Music｜音樂",
+      copy: "讓語言進入聲音。歌曲、歌詞、曲風與創作時期都能成為可搜尋、可比較的語言資料。",
       extra: ["目前主要音樂來源為 Suno。","歌曲與歌詞保留作品、主題與時期資訊。","曲風與既有標籤可以直接成為搜尋與統計資料。"]
     },
     LOC4: {
-      english: "Literary", title: "文字創作", tab: "文字創作", category: "符文體系（更完整結構／五卡類比）",
-      copy: "承接小說、文章、生活文字與其他文字作品。除了保存作品本身，也保留來源、版本、首次發表與後續改寫之間的關係。",
+      english: "Literary", title: "文字創作", tab: "文字創作", category: "Literary｜文字創作",
+      copy: "承接小說、文章、生活文字與其他文字作品，並保留來源、版本、首次發表與後續改寫之間的關係。",
       extra: ["包含小說、文章、散文與生活文字。","原始文本與後續版本分開保存。","文字作品可以進一步進入脈絡、搜尋與語意分析。"]
     },
     LOC5: {
-      english: "Multimedia", title: "多媒體", tab: "多媒體", category: "符文體系（多模組整合／OW3gs 類比）",
+      english: "Multimedia", title: "多媒體", tab: "多媒體", category: "Multimedia｜多媒體",
       copy: "把語言延伸到圖像、影音與其他視覺形式，並整合不同媒介中的語意與功能。",
-      extra: ["包含圖像、短影音（Reels）、影片、音樂錄影帶（MV）與系統視覺化。","多媒體是語言的跨媒介表達，不只是素材分類。","不同媒介可以共享標籤、脈絡與語意關係。"]
+      extra: ["包含圖像、短影音、影片、MV 與系統視覺化。","多媒體是語言的跨媒介表達，不只是素材分類。","不同媒介可以共享標籤、脈絡與語意關係。"]
     },
     LOC6: {
-      english: "Algorithm", title: "演算法", tab: "演算法", category: "符文演算法",
-      copy: "把『怎麼理解、怎麼判讀、怎麼比較、怎麼處理』整理成可以重複執行、可以檢查的規則與流程。",
-      extra: ["整理判讀、比較、治理與分析時可重複使用的規則。","演算法描述如何處理，不等於單一價值答案。","成熟演算法可以交由 LOC7 封裝成演算模組。"]
+      english: "Algorithm", title: "演算法", tab: "演算法", category: "Algorithm｜演算法",
+      copy: "把怎麼理解、判讀、比較與處理整理成可以重複執行、可以檢查的規則與流程。",
+      extra: ["整理判讀、比較、治理與分析時可重複使用的規則。","演算法描述如何處理，不等於單一價值答案。"]
     },
     LOC7: {
-      english: "Module", title: "演算模組", tab: "演算模組", category: "符文模組",
+      english: "Module", title: "演算模組", tab: "演算模組", category: "Module｜演算模組",
       copy: "把演算法、資料、知識與功能封裝成可以組合、重用與替換的演算模組。",
-      extra: ["演算模組可以整合搜尋、KM、RAG、Graph、文字分析或其他功能。","一個演算模組內可以使用一個或多個演算法。","LOC7 處理的是演算法如何被封裝與組合，不等於 LOC1–LOC8 的總稱。"]
+      extra: ["演算模組可以整合搜尋、KM、RAG、Graph、文字分析或其他功能。","一個演算模組內可以使用一個或多個演算法。"]
     },
     LOC8: {
-      english: "Evolution", title: "推演引擎", tab: "推演引擎", category: "符文演化",
-      copy: "處理『它在時間中怎麼改變』。把模組、作品、事件與語言放回不同時期，觀察前後差異與變化方向，並根據累積結果提出可選擇的演化路徑。",
-      extra: ["時期用來區分相對穩定的狀態。","時間線整理事件與作品出現的位置。","趨勢比較不同時期的語言與作品變化。","推演提供演化方向；最終是否進化仍由使用者選擇。"]
+      english: "Evolution", title: "推演引擎", tab: "推演引擎", category: "Evolution｜推演",
+      copy: "把模組、作品、事件與語言放回不同時期，觀察前後差異與變化方向，並提出可選擇的推演路徑。",
+      extra: ["時期用來區分相對穩定的狀態。","時間線整理事件與作品出現的位置。","趨勢比較不同時期的語言與作品變化。"]
     }
   };
 

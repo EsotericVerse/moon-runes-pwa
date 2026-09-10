@@ -6,14 +6,19 @@ CORE_DIR = ROOT / "data" / "json" / "core"
 EXP_DIR = ROOT / "data" / "json" / "experimental" / "engine"
 EXP_DIR.mkdir(parents=True, exist_ok=True)
 
-RUNES_EXTENDED = EXP_DIR / "runes_extended.json"
+RUNES66 = CORE_DIR / "runes66.json"
 RUNE_INTERPRETATIONS = CORE_DIR / "rune_interpretations.json"
 OUTPUT = EXP_DIR / "training_data.json"
 
 train_data: list[dict[str, str]] = []
 
-runes = json.loads(RUNES_EXTENDED.read_text(encoding="utf-8"))
+# Canonical LunaRunes66 source only. Legacy experimental rune definitions must not feed semantics.
+runes_payload = json.loads(RUNES66.read_text(encoding="utf-8"))
+runes = runes_payload if isinstance(runes_payload, list) else runes_payload.get("runes", [])
 for rune in runes:
+    rune_name = rune.get("符文名稱") or rune.get("名稱") or rune.get("name")
+    if not rune_name or rune_name == "德":
+        continue
     for direction, field in [
         ("正位", "正向表示"),
         ("半正位", "半正向表示"),
@@ -23,9 +28,9 @@ for rune in runes:
         completion = str(rune.get(field) or "").strip()
         if completion:
             prompt = (
-                f"符文名稱：{rune.get('名稱')}，英文名稱：{rune.get('英文')}，"
-                f"所屬分組：{rune.get('所屬分組')}，符文月相：{rune.get('月相')}，"
-                f"方向：{direction}。"
+                f"符文名稱：{rune_name}，英文名稱：{rune.get('英文') or rune.get('english')}，"
+                f"所屬分組：{rune.get('所屬分組') or rune.get('group')}，"
+                f"符文月相：{rune.get('月相') or rune.get('moon_phase')}，方向：{direction}。"
             )
             train_data.append({"prompt": prompt, "completion": completion})
 

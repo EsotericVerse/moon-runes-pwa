@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v182";
+const CACHE_NAME = "moon-runes-pwa-v183";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -97,6 +97,9 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (
+    url.pathname === "/data/json/core/runes66.json" ||
+    url.pathname === "/data/json/core/runes66groups.json" ||
+    url.pathname === "/data/json/core/lots.json" ||
     url.pathname === "/data/json/generated/search/SEARCH_SOURCE_STATS.json" ||
     url.pathname === "/data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json" ||
     url.pathname.startsWith("/data/json/generated/loc4/threads/main/")
