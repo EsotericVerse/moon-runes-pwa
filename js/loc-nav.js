@@ -139,9 +139,14 @@
         frameworkCopy.textContent = "LOC 提供跨尺度、跨領域的分組框架建議。不同領域可以重新定義自己的單元、分類、關係與規則；框架不要求外部資料服從 LunaRunes 的 66 符或八組結構，而是讓複雜語言資料可以用較輕量、清楚的方式被組織與解析。";
       }
 
+      const aboutTitle = document.getElementById("about-title");
+      if (aboutTitle) {
+        aboutTitle.textContent = "把留下來的語言，變成更容易理解與重新使用的資料。";
+      }
+
       const aboutCopy = document.querySelector('[aria-labelledby="about-title"] > p');
       if (aboutCopy) {
-        aboutCopy.textContent = "LOC 是 lo3rwang 的數位思想資產與語言模組框架，用來提供跨尺度、跨領域的分類、組織、解析與推演參考。LunaRunes（月之符文）是其中最完整、最具體的實證案例之一；其他領域可以依自身資料重新建立語言單元、分組、關係與處理方式。";
+        aboutCopy.textContent = "人會用語言記錄經驗、事件、關係、作品、判斷與選擇。資料累積得越多，越需要一套簡單的方式把它們分組、建立關係並重新整理。LOC 提供這套分組與模組化框架，讓複雜語言資料更容易被分類、解析、比較、組織與推演，也讓已經留下的內容能再次被理解與使用。";
       }
     }
 
