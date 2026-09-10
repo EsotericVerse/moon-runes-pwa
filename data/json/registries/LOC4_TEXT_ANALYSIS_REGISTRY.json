@@ -885,6 +885,14 @@
         "group_status": "group_statistics_available",
         "group_statistics_source": "LOC4_MOON_SPEAKER_RUNE_RECOVERY.json",
         "note": "屬於已確認的符文體系文字創作樣本；群組統計與後續正文語意分析分開保存。"
+      },
+      "real_text_semantics": {
+        "status": "implemented",
+        "engine": "card_api/loc4_chapter_analysis.py",
+        "scope": "182 chapters",
+        "view": "真實文字體系",
+        "comparison_target": "符文體系／原始符文來源",
+        "rule": "正文語意與創作來源符文並列比較，不將來源符文直接當成正文語意。"
       }
     }
   },
@@ -909,13 +917,28 @@
       "semantic_summary",
       "text_metrics",
       "rune_configuration",
-      "source_provenance"
+      "source_provenance",
+      "text_semantic_groups"
     ],
     "governance": [
       "182章均直接從作者提供的完整章節正文切分。",
       "三符文／月相僅採已恢復來源；缺少的21章不由正文或章名推測。",
       "章級 themes / entities 為 deterministic text evidence，可重現並可後續疊加人工解析。"
-    ]
+    ],
+    "text_semantic_group_analysis": {
+      "status": "implemented",
+      "scope": "182_chapter_runtime_analysis",
+      "basis": "full_chapter_text_semantics",
+      "group_count": 9,
+      "provenance_separation": "原始抽牌 rune_configuration 與正文 text_semantic_groups 分開保存；互不反推。",
+      "output": [
+        "counts",
+        "highest_groups",
+        "status",
+        "evidence"
+      ],
+      "note": "第一版為 deterministic theme-to-group baseline；後續 66 符關鍵詞／embedding 深層語意分析可疊加，不覆寫此基準。"
+    }
   },
   "authority_domain": "literary"
 }
