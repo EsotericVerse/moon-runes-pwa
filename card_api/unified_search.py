@@ -458,6 +458,9 @@ class UnifiedSearchEngine:
                 for item in (chapter_semantic.get("themes", []) or [])
                 if item.get("label")
             ][:6]
+            text_group_analysis = chapter_semantic.get("text_semantic_groups") or {}
+            text_group_counts = text_group_analysis.get("counts") or {}
+            text_highest_groups = text_group_analysis.get("highest_groups") or []
             semantic_summary = str(chapter_semantic.get("semantic_summary") or "")
             narrative_function = str(chapter_semantic.get("narrative_function") or "")
             title = f"月語者｜{row.get('part_name') or ''}｜{row.get('chapter_marker') or ''}"
@@ -498,6 +501,10 @@ class UnifiedSearchEngine:
                         "text_system": {
                             "label": "真實文字體系",
                             "themes": semantic_themes,
+                            "group_counts": text_group_counts,
+                            "highest_groups": text_highest_groups,
+                            "group_status": text_group_analysis.get("status"),
+                            "group_evidence": text_group_analysis.get("evidence") or {},
                             "semantic_summary": semantic_summary,
                             "narrative_function": narrative_function,
                             "basis": "full_chapter_text_semantics",
