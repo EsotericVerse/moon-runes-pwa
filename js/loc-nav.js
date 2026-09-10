@@ -18,7 +18,7 @@
     const file = fileName();
     if (file === "context.html") return "context";
     if (file === "game.html" || file === "loc2-game.html") return "game";
-    if (file === "statics.htm" || file === "statics.html") return "runes";
+    if (file === "statics.htm" || file === "statics.html") return "statics";
     if (file === "lots.html") return "runes";
     if (node?.dataset?.page) return node.dataset.page;
     return items.find(item => item.href === file)?.id || "";

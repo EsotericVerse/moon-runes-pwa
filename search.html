@@ -91,6 +91,7 @@
 .loc-site-footer a:hover{text-decoration:underline}
 .loc-site-footer span{margin:0 8px;opacity:.7}
 </style>
+  <script src="js/search-sources.js"></script>
 </head>
 <body class="loc-responsive-page loc-page-search">
   <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="search" aria-label="全站導覽"></nav></div>
@@ -802,7 +803,7 @@
 
       if(wants('scenario_event','knowledge','game_document','game_rule')){
         try{
-          const d=await localJson('data/json/registries/LOC2_EVENT_REGISTRY.json');
+          const d=await localJson(window.LOC_SEARCH_SOURCES["data/json/registries/LOC2_EVENT_REGISTRY.json"]);
           for(const row of d.records||[]){
             const score=localScore(q,[row.event_id,row.title,row.event_group,row.requirement_signature,row.description,row.content_type]);
             localPush(scored,score,'scenarios',{
@@ -818,7 +819,7 @@
 
       if(wants('rune_record','oracle')){
         try{
-          const d=await localJson('data/json/core/runes66.json');
+          const d=await localJson(window.LOC_SEARCH_SOURCES["data/json/core/runes66.json"]);
           for(const rune of d.runes||[]){
             const id=Number(rune.編號 ?? rune.id);
             const name=rune.名稱 ?? rune.name;
@@ -842,7 +843,7 @@
 
       if(wants('lyrics_work','suno_song','multimedia','reel','video')){
         try{
-          const manifest=await localJson('data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json');
+          const manifest=await localJson(window.LOC_SEARCH_SOURCES["data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json"]);
           const shardNames=Array.isArray(manifest.shards)?manifest.shards:[];
           const shards=await Promise.all(shardNames.map(name=>localJson('data/json/search/loc3/'+name).catch(()=>({works:[]}))));
           const works=shards.flatMap(d=>d.works||[]);
@@ -871,7 +872,7 @@
 
       if(wants('text_work','text_record')){
         try{
-          const d=await localJson('data/json/registries/LOC4_WRITING_REGISTRY.json');
+          const d=await localJson(window.LOC_SEARCH_SOURCES["data/json/registries/LOC4_WRITING_REGISTRY.json"]);
           for(const work of d.works||[]){
             if(period&&String(work.period||'')!==period)continue;
             const score=localScore(q,[work.title,work.summary,(work.tags||[]).join(' '),work.content_type,work.period_name]);
@@ -899,7 +900,7 @@
 
       if(wants('governance_fragment','governance_article','text_record')){
         try{
-          const d=await localJson('data/json/registries/LOC6_GOVERNANCE_REGISTRY.json');
+          const d=await localJson(window.LOC_SEARCH_SOURCES["data/json/registries/LOC6_GOVERNANCE_REGISTRY.json"]);
           for(const row of d.fragments||[]){
             if(period&&row.era_id){const raw=String(row.era_id).replace(/^ERA-/,'');const canonical=LEGACY_PERIOD_MAP[raw]||raw;if(canonical!==period)continue;}
             const score=localScore(q,[row.topic,row.statement,row.interpretation,row.governance_principle,(row.style_features||[]).join(' ')]);
@@ -914,7 +915,7 @@
 
       if(wants('multimedia','reel','video','knowledge_image')){
         try{
-          const d=await localJson('data/json/registries/LOC_MEDIA_REGISTRY.json');
+          const d=await localJson(window.LOC_SEARCH_SOURCES["data/json/registries/LOC_MEDIA_REGISTRY.json"]);
           for(const row of d.items||[]){
             const sem=row.semantic_descriptor||{};
             const score=localScore(q,[row.title,row.media_type,row.platform,sem.visual_summary,(sem.scene_keywords||[]).join(' '),(sem.visual_motifs||[]).join(' '),(sem.manual_tags||[]).join(' '),(sem.generated_tags||[]).join(' ')]);
@@ -928,7 +929,7 @@
 
       if(wants('knowledge','knowledge_document','faq','relationship')){
         try{
-          const d=await localJson('data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json');
+          const d=await localJson(window.LOC_SEARCH_SOURCES["data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json"]);
           for(const row of d.assets||[]){
             if(row.searchable===false)continue;
             const score=localScore(q,[row.title,row.public_summary,row.role,row.notes,(row.keywords||[]).join(' '),(row.intent_aliases||[]).join(' ')]);
@@ -939,7 +940,7 @@
           }
         }catch(_){}
         try{
-          const d=await localJson('data/json/search/faq/LOC_FAQ_RAG_v0.4.json');
+          const d=await localJson(window.LOC_SEARCH_SOURCES["data/json/search/faq/LOC_FAQ_RAG_v0.4.json"]);
           for(const row of d.chunks||[]){
             const score=localScore(q,[row.intent,row.question,(row.aliases||[]).join(' '),row.answer,(row.keywords||[]).join(' '),row.retrieval_text]);
             localPush(scored,score,'knowledge',{
@@ -952,7 +953,7 @@
 
       if(wants('era')){
         try{
-          const d=await localJson('data/json/registries/LOC_ERA_REGISTRY.json');
+          const d=await localJson(window.LOC_SEARCH_SOURCES["data/json/registries/LOC_ERA_REGISTRY.json"]);
           for(const row of d.eras||[]){
             if(period&&((LEGACY_PERIOD_MAP[String(row.period||'')]||String(row.period||''))!==period))continue;
             const score=localScore(q,[row.period,row.name,row.display_label,row.description,row.state_before,row.state_after]);
@@ -1019,8 +1020,8 @@
     async function renderSourceStats(){
       try{
         const [data,eraData]=await Promise.all([
-          localJson('data/json/generated/search/SEARCH_SOURCE_STATS.json'),
-          localJson('data/json/registries/LOC_ERA_REGISTRY.json')
+          localJson(window.LOC_SEARCH_SOURCES["data/json/generated/search/SEARCH_SOURCE_STATS.json"]),
+          localJson(window.LOC_SEARCH_SOURCES["data/json/registries/LOC_ERA_REGISTRY.json"])
         ]);
         const s=data.text_summary||{},search=data.search_summary||{};
         const sources=[...(data.text_sources||[]),...(data.media_sources||[])].map(row=>row.source).filter(Boolean);
