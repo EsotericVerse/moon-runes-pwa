@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const count = document.querySelector("#rune-count");
   const toolbar = document.querySelector("#group-filter")?.closest(".toolbar");
   const overviewLink = document.querySelector('.overview-image-link');
+  const overviewCopy = document.querySelector('.rune-overview-head p');
+  const downloadSection = document.querySelector('.physical-card-download');
 
   toolbar?.remove();
 
@@ -20,11 +22,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     .quick-selector-modal .rune-tile{min-width:0;width:100%;}
     .quick-selector-modal .rune-thumb{width:100%;height:auto;display:block;}
 
+    .special-rune-section{
+      margin:18px 0;
+      padding:18px 20px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:rgba(11,27,49,.56);
+    }
+    .special-rune-section h2{margin:0;color:var(--gold);font-size:1.08rem;}
+    .special-rune-section>p{margin:4px 0 0;color:var(--muted);font-size:.82rem;line-height:1.6;}
     .special-rune-row{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:20px;
-      margin-top:18px;
+      margin-top:16px;
     }
     .special-rune-card{
       display:grid;
@@ -139,6 +150,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const coreGroups = groups.filter(meta => (meta.runes || []).some(member => Number(member.id) >= 1 && Number(member.id) <= 64));
   const specialRunes = all.filter(r => r.編號 === 65 || r.編號 === 66).sort((a,b) => a.編號 - b.編號);
 
+  if (overviewCopy) {
+    overviewCopy.textContent = "點選圖上的八個群組查看該組符文；玄與命列於總覽下方。";
+  }
+
   if (overviewLink && coreGroups.length) {
     const quickHost = document.createElement('div');
     quickHost.id = 'rune-group-quick-selector';
@@ -171,8 +186,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  if (specialRunes.length) {
+    const specialSection = document.createElement('section');
+    specialSection.className = 'special-rune-section';
+    specialSection.setAttribute('aria-label', '特殊符文');
+    specialSection.innerHTML = `<h2>特殊符文</h2><p>玄與命位於 1–64 八組之外。</p><div class="special-rune-row">${specialRunes.map(specialTile).join("")}</div>`;
+    if (downloadSection) downloadSection.before(specialSection);
+    else overviewLink?.closest('.rune-overview')?.after(specialSection);
+  }
+
   if (grid) {
-    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">點選總覽圖上的八個群組按鈕，會開啟浮動快速說明；每枚符文的卡面、月相、關鍵詞、反向關鍵詞與變化歷史都直接顯示在同一層。</p>${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之外額外列出。</span></div></div><div class="special-rune-row">${specialRunes.map(specialTile).join("")}</div></section>` : ""}`;
+    grid.innerHTML = "";
+    grid.hidden = true;
   }
   if (count) count.textContent = "8 組 · 64 枚基本符文 + 2 枚特殊符文";
 });
