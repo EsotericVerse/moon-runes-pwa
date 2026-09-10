@@ -1,0 +1,68 @@
+name: One-shot legacy sidebar cleanup
+
+on:
+  push:
+    paths:
+      - '.github/workflows/sidebar-cleanup.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Remove legacy sidebar markup and rail layout
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          targets = [
+              Path('runes.html'),
+              Path('context.html'),
+              Path('search.html'),
+              Path('evolution.html'),
+              Path('governance.html'),
+          ]
+
+          aside_re = re.compile(
+              r'<aside\b[^>]*class=(?P<q>["\'])[^"\']*(?:workspace-sidebar|sidebar)[^"\']*(?P=q)[^>]*>.*?</aside>',
+              re.I | re.S,
+          )
+
+          for path in targets:
+              if not path.exists():
+                  continue
+              text = path.read_text(encoding='utf-8')
+              text, removed = aside_re.subn('', text)
+              text = text.replace('grid-template-columns:240px minmax(0,1fr)', 'grid-template-columns:1fr')
+              text = text.replace('grid-template-columns:220px minmax(0,1fr)', 'grid-template-columns:1fr')
+              text = text.replace('grid-template-columns:var(--loc-rail-width) minmax(0,1fr)', 'grid-template-columns:1fr')
+              path.write_text(text, encoding='utf-8')
+              print(f'{path}: removed_asides={removed}')
+
+          leftovers = []
+          for path in targets:
+              if path.exists():
+                  text = path.read_text(encoding='utf-8')
+                  if re.search(r'<aside\b[^>]*class=["\'][^"\']*(?:workspace-sidebar|sidebar)', text, re.I):
+                      leftovers.append(str(path))
+          if leftovers:
+              raise SystemExit('Legacy sidebar markup remains: ' + ', '.join(leftovers))
+
+      - name: Commit cleanup and remove one-shot workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/sidebar-cleanup.yml
+          git add runes.html context.html search.html evolution.html governance.html
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Remove legacy sidebar markup from public pages"
+          git push
