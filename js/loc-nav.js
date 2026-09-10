@@ -78,6 +78,52 @@
     });
   }
 
+  async function enhanceSearchSummary() {
+    const file = location.pathname.split("/").pop() || "index.html";
+    if (file !== "search.html") return;
+
+    const queryView = document.getElementById("queryView");
+    const sourceStats = document.getElementById("sourceStats");
+    const searchPanel = queryView?.querySelector(".search-panel");
+    if (!queryView || !sourceStats || !searchPanel || sourceStats.dataset.pwaSummary === "true") return;
+
+    sourceStats.dataset.pwaSummary = "true";
+    queryView.insertBefore(sourceStats, searchPanel);
+
+    const originalChildren = Array.from(sourceStats.childNodes);
+    const details = document.createElement("details");
+    details.className = "source-stats-pwa-details";
+    const summary = document.createElement("summary");
+    summary.className = "source-stats-pwa-summary";
+    summary.textContent = "搜尋資料｜載入中…";
+    const body = document.createElement("div");
+    body.className = "source-stats-pwa-body";
+    originalChildren.forEach(node => body.appendChild(node));
+    details.append(summary, body);
+    sourceStats.appendChild(details);
+
+    try {
+      const response = await fetch("data/json/generated/search/SEARCH_SOURCE_STATS.json", { cache: "no-store" });
+      if (!response.ok) throw new Error("stats unavailable");
+      const data = await response.json();
+      const count = Number(data?.search_summary?.comparable_records || 0).toLocaleString("zh-TW");
+      const start = data?.text_summary?.start_date || "";
+      const end = data?.text_summary?.end_date || "";
+      const sourceNames = [...(data?.text_sources || []), ...(data?.media_sources || [])]
+        .map(item => item?.source)
+        .filter(Boolean);
+      const sourceText = sourceNames.length ? sourceNames.join(" / ") : "";
+      const dateText = start && end ? `${start}–${end}` : (start || end);
+      summary.textContent = [
+        `搜尋資料｜${count} 筆`,
+        dateText,
+        sourceText
+      ].filter(Boolean).join(" · ");
+    } catch (_) {
+      summary.textContent = "搜尋資料｜點開查看資料總數、日期與來源";
+    }
+  }
+
   const TERMINOLOGY_REPLACEMENTS = [
     ["一套從月之符文與脈絡出發，延伸到音樂、文字創作、多媒體、方法論、演算法（知識庫）與時間推演的語言系統模型", "一套從細小語言單元出發，透過脈絡、作品、演算法與演算模組進行組織，並在時間中持續推演的語言模組框架"],
     ["系統分別處理月之符文與籤詩、脈絡、音樂、文字、多媒體、方法論、演算法，以及時間中的推演", "框架分別組織月之符文、脈絡、音樂、文字、多媒體、演算法、演算模組與推演引擎"],
@@ -191,6 +237,7 @@
     document.querySelectorAll("[data-loc-nav]").forEach(renderNav);
     renderBuildLabel();
     loadPageEnhancements();
+    enhanceSearchSummary();
     setTimeout(applyCurrentPageCopy, 0);
   });
 })();
