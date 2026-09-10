@@ -1,6 +1,6 @@
 (() => {
   const NAV_URL = "data/json/registries/LOC_NAV.json";
-  const WEB_BUILD = "0.7";
+  const WEB_BUILD = "0.8";
 
   function esc(value) {
     return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
@@ -22,11 +22,7 @@
 
   function paintNav(node, items = DEFAULT_NAV) {
     const active = currentId(node, items);
-    node.innerHTML = `
-      <a class="loc-global-brand" href="index.html" aria-label="回到 LOC月典首頁">LOC月典</a>
-      <div class="loc-global-links">
-        ${items.map(item => `<a class="loc-global-link" href="${esc(item.href)}"${item.id === active ? ' aria-current="page"' : ""}>${esc(item.label)}</a>`).join("")}
-      </div>`;
+    node.innerHTML = `<a class="loc-global-brand" href="index.html" aria-label="回到 LOC月典首頁">LOC月典</a><div class="loc-global-links">${items.map(item => `<a class="loc-global-link" href="${esc(item.href)}"${item.id === active ? ' aria-current="page"' : ""}>${esc(item.label)}</a>`).join("")}</div>`;
   }
 
   async function renderNav(node) {
@@ -64,32 +60,8 @@
     if(foot)foot.textContent='Search 只負責跨資料搜尋；統計、時期與來源管理已移至獨立 Statics。';
   }
 
-  function routeEvolutionTimeline(){
-    const file=location.pathname.split('/').pop()||'index.html';
-    if(file!=="evolution.html")return;
-    const btn=document.querySelector('[data-view="timeline"]');
-    if(btn){
-      const group=btn.closest('.nav-group');
-      if(group){
-        const link=document.createElement('a');
-        link.className='view-switch';
-        link.href='statics.html#timeline';
-        link.style.textDecoration='none';
-        link.innerHTML='<strong>時間線</strong><small>事件 · 新增 · 編輯 · 刪除</small>';
-        btn.replaceWith(link);
-      }
-    }
-  }
-
   function loadPageEnhancements() {
     const file = location.pathname.split("/").pop() || "index.html";
-    if (file === "evolution.html" && !document.querySelector('script[data-life-draw-history]')) {
-      const script = document.createElement('script');
-      script.src = 'js/life-daily-draw-history.js';
-      script.defer = true;
-      script.dataset.lifeDrawHistory = 'true';
-      document.body.appendChild(script);
-    }
     if (file === "search.html" && !document.querySelector('script[data-km-concepts-search]')) {
       const script = document.createElement('script');
       script.src = 'js/km-concepts-search.js';
@@ -119,7 +91,6 @@
   window.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("[data-loc-nav]").forEach(renderNav);
     pruneSearchWorkspace();
-    routeEvolutionTimeline();
     renderBuildLabel();
     loadPageEnhancements();
   });
