@@ -245,6 +245,22 @@
           "category": "符文體系",
           "tag": "符文體系｜特殊群組"
         }
+      ],
+      "rune_system_content_branches": [
+        {
+          "branch_id": "literary",
+          "category": "符文體系",
+          "content_type": "文章創作",
+          "tag": "符文體系｜文章創作",
+          "purpose": "收納已知符文文學／文章創作紀錄；後續可再掛現行符文細標籤。"
+        },
+        {
+          "branch_id": "music",
+          "category": "符文體系",
+          "content_type": "音樂",
+          "tag": "符文體系｜音樂",
+          "purpose": "收納已知符文歌曲／音樂創作紀錄；後續可再掛現行符文細標籤。"
+        }
       ]
     }
   ],
