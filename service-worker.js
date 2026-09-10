@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v177";
+const CACHE_NAME = "moon-runes-pwa-v178";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -18,6 +18,7 @@ const ASSETS_TO_CACHE = [
   "/js/loc-nav.js",
   "/js/loc-periods.js",
   "/js/statics-workspace.js",
+  "/js/search-source-stats.js",
   "/css/loc-nav.css",
   "/css/loc-responsive.css",
   "/css/rune-draw.css",
@@ -83,7 +84,6 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (
-    url.pathname === "/data/json/generated/search/SEARCH_SOURCE_STATS.json" ||
     url.pathname === "/data/json/generated/LOC_RUNE_FREQUENCY_STATS.json" ||
     url.pathname === "/data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json" ||
     url.pathname.startsWith("/data/json/generated/loc4/threads/main/")
