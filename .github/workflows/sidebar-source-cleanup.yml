@@ -1,0 +1,102 @@
+name: Final all-page sidebar source cleanup
+
+on:
+  push:
+    paths:
+      - '.github/workflows/sidebar-source-cleanup.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Purge sidebar markup and legacy sidebar CSS from all pages
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          pages = list(Path('.').rglob('*.html')) + list(Path('.').rglob('*.htm'))
+          aside_re = re.compile(r'<aside\b[^>]*class=(?P<q>["\'])[^"\']*sidebar[^"\']*(?P=q)[^>]*>.*?</aside>', re.I | re.S)
+          legacy_classes = (
+              '.workspace-sidebar', '.workspace-brand', '.workspace-nav',
+              '.workspace-nav-group', '.workspace-nav-label', '.workspace-switch',
+              '.workspace-foot', '.sidebar', '.sidebar-foot', '.nav-group',
+              '.nav-label', '.view-switch'
+          )
+          rule_re = re.compile(r'(?P<selector>[^{}]+)\{(?P<body>[^{}]*)\}')
+
+          def strip_legacy_rules(text):
+              def repl(match):
+                  selector = match.group('selector')
+                  if any(cls in selector for cls in legacy_classes):
+                      return ''
+                  return match.group(0)
+              previous = None
+              while previous != text:
+                  previous = text
+                  text = rule_re.sub(repl, text)
+              return text
+
+          changed = []
+          for path in pages:
+              text = path.read_text(encoding='utf-8')
+              original = text
+              text = aside_re.sub('', text)
+              text = text.replace('grid-template-columns:240px minmax(0,1fr)', 'grid-template-columns:1fr')
+              text = text.replace('grid-template-columns:220px minmax(0,1fr)', 'grid-template-columns:1fr')
+              text = strip_legacy_rules(text)
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+                  changed.append(str(path))
+
+          nav_js = Path('js/loc-nav.js')
+          if nav_js.exists():
+              text = nav_js.read_text(encoding='utf-8')
+              original = text
+              text = text.replace('.workspace-sidebar,.sidebar{display:none!important}', '')
+              text = re.sub(r'\n\s*document\.querySelectorAll\("\.workspace-sidebar,\.sidebar"\)\.forEach\(node => node\.remove\(\)\);', '', text)
+              if text != original:
+                  nav_js.write_text(text, encoding='utf-8')
+                  changed.append(str(nav_js))
+
+          nav_css = Path('css/loc-nav.css')
+          if nav_css.exists():
+              text = nav_css.read_text(encoding='utf-8')
+              original = text
+              text = strip_legacy_rules(text)
+              text = text.replace('/* Old workspace rail must never reappear. */', '')
+              if text != original:
+                  nav_css.write_text(text, encoding='utf-8')
+                  changed.append(str(nav_css))
+
+          leftovers = []
+          for path in pages:
+              text = path.read_text(encoding='utf-8')
+              if re.search(r'<aside\b[^>]*class=["\'][^"\']*sidebar', text, re.I):
+                  leftovers.append(f'{path}: sidebar markup')
+              if '.workspace-sidebar' in text:
+                  leftovers.append(f'{path}: workspace-sidebar CSS')
+          if leftovers:
+              raise SystemExit('Sidebar remnants remain:\n' + '\n'.join(leftovers))
+
+          print('Changed files:')
+          print('\n'.join(changed) if changed else '(none)')
+
+      - name: Commit final source cleanup and remove one-shot workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/sidebar-source-cleanup.yml
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Purge legacy sidebar source across all web pages"
+          git push
