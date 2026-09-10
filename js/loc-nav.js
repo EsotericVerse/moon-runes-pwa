@@ -167,7 +167,12 @@
   }
 
   function buildContextTier(host) {
-    const controls = [["關係圖",['[data-context-switch="graph"]']],["節點",['[data-context-switch="nodes"]']],["關聯",['[data-context-switch="edges"]','[data-context-switch="relations"]']],["情境",['[data-context-switch="scenarios"]','[data-context-switch="scenario"]','[data-context-switch="context"]']]].map(([labelText,selectors],index => relabelControl(firstControl(selectors,index),labelText) || link(labelText,`context.html#${index}`));
+    const controls = [
+      ["關係圖", ['[data-context-switch="graph"]']],
+      ["節點", ['[data-context-switch="nodes"]']],
+      ["關聯", ['[data-context-switch="edges"]','[data-context-switch="relations"]']],
+      ["情境", ['[data-context-switch="scenarios"]','[data-context-switch="scenario"]','[data-context-switch="context"]']]
+    ].map(([labelText, selectors], index) => relabelControl(firstControl(selectors, index), labelText) || link(labelText, `context.html#${index}`));
     host.appendChild(tier(2, controls, "脈絡功能"));
   }
 
