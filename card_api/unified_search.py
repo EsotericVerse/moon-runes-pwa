@@ -437,11 +437,11 @@ class UnifiedSearchEngine:
         for row in self.moon_speaker_runes.get("records", []) or []:
             runes = []
             for item in row.get("runes", []) or []:
-                legacy = str(item.get("legacy_name") or "")
-                canonical = str(item.get("canonical_name") or "")
-                # Historical-only rune names are provenance, not current classification.
-                if legacy == canonical and legacy in group_defs[target]:
-                    runes.append(legacy)
+                names = item.get("canonical_names") or [item.get("canonical_name")]
+                for canonical in names:
+                    canonical = str(canonical or "")
+                    if canonical in group_defs[target] and canonical not in runes:
+                        runes.append(canonical)
             if not runes:
                 continue
             title = f"月語者｜{row.get('part_name') or ''}｜{row.get('chapter_marker') or ''}"
