@@ -14,6 +14,7 @@ from typing import Any
 
 _SPACE_RE = re.compile(r"\s+")
 _TOKEN_RE = re.compile(r"[a-z0-9]+|[\u3400-\u9fff]")
+_STYLE_SPLIT_RE = re.compile(r"\s*(?:／|/|,|，|;|；|\|)\s*")
 
 # Small, author-governed concept bridge. It improves natural-language recall
 # without introducing another language or changing the lyric-work ranking unit.
@@ -69,6 +70,29 @@ def _values(value: Any) -> set[str]:
     return {_normalize(str(value))} if str(value or "").strip() else set()
 
 
+def _style_tags(work: dict[str, Any]) -> list[str]:
+    """Return normalized display tags without semantic analysis or API calls."""
+    raw_values: list[str] = []
+    style = work.get("style")
+    if style:
+        raw_values.append(str(style))
+    for version in work.get("versions", []):
+        prompt = version.get("style_prompt")
+        if prompt:
+            raw_values.append(str(prompt))
+
+    tags: list[str] = []
+    seen: set[str] = set()
+    for raw in raw_values:
+        for part in _STYLE_SPLIT_RE.split(raw):
+            tag = part.strip()
+            normalized = _normalize(tag)
+            if tag and normalized and normalized not in seen:
+                seen.add(normalized)
+                tags.append(tag)
+    return tags
+
+
 @dataclass(frozen=True)
 class LOC3Result:
     rank: int
@@ -94,6 +118,7 @@ class LOC3Result:
             "era_name": work.get("era_name"),
             "playlists": work.get("playlists", []),
             "style": work.get("style"),
+            "style_tags": _style_tags(work),
             "summary": work.get("summary"),
             "category": work.get("category"),
             "lyric_type": work.get("lyric_type") or work.get("category"),
@@ -200,7 +225,14 @@ class LOC3SearchEngine:
         self.works = works
         # Feature counters are only an initialization buffer. Keeping them after
         # vectors are built duplicates the LOC3 search representation in RAM.
-        features_by_work = [_features(str(work.get("retrieval_text", ""))) for work in works]
+        features_by_work = [
+            _features(" ".join([
+                str(work.get("retrieval_text", "")),
+                str(work.get("style", "")),
+                " ".join(_style_tags(work)),
+            ]))
+            for work in works
+        ]
         document_frequency: Counter[str] = Counter()
         for features in features_by_work:
             document_frequency.update(features.keys())
@@ -231,21 +263,26 @@ class LOC3SearchEngine:
     def _matches_filters(work: dict[str, Any], filters: dict[str, str]) -> bool:
         mapping = {
             "period": "period", "era": "era", "playlist": "playlists",
-            "category": "category", "style": "style",
+            "category": "category",
         }
         for request_key, work_key in mapping.items():
             expected = _normalize(filters.get(request_key, ""))
             if expected and expected not in _values(work.get(work_key)):
                 return False
+        expected_style = _normalize(filters.get("style", ""))
+        if expected_style and expected_style not in {_normalize(tag) for tag in _style_tags(work)}:
+            return False
         return True
 
     @staticmethod
     def _matched_terms(query: str, work: dict[str, Any]) -> list[str]:
+        style_tags = _style_tags(work)
         haystack = _normalize(" ".join([
             str(work.get("summary", "")), str(work.get("category", "")),
             str(work.get("start_state", "")), str(work.get("turn_method", "")),
             str(work.get("final_state", "")), " ".join(work.get("tags", [])),
-            " ".join(work.get("reasoning_tags", [])),
+            " ".join(work.get("reasoning_tags", [])), str(work.get("style", "")),
+            " ".join(style_tags),
         ]))
         normalized_query = _normalize(query)
         terms = []
@@ -253,7 +290,7 @@ class LOC3SearchEngine:
             if any(term in normalized_query for term in group):
                 terms.extend(term for term in group if term in haystack)
         # Direct keyword/proposition matches are especially important for rational songs.
-        for term in work.get("semantic_keywords", work.get("tags", [])):
+        for term in [*work.get("semantic_keywords", work.get("tags", [])), *style_tags]:
             normalized_term = _normalize(str(term))
             if normalized_term and (normalized_term in normalized_query or normalized_query in normalized_term):
                 terms.append(str(term))
@@ -324,11 +361,25 @@ class LOC3SearchEngine:
         return bundles
 
     def facets(self) -> dict[str, list[dict[str, Any]]]:
-        fields = {"periods": "period", "eras": "era_name", "playlists": "playlists", "categories": "category", "styles": "style"}
+        fields = {"periods": "period", "eras": "era_name", "playlists": "playlists", "categories": "category"}
         output = {}
         for name, field in fields.items():
             counts: Counter[str] = Counter()
             for work in self.works:
                 counts.update(_values(work.get(field)))
             output[name] = [{"value": value, "count": count} for value, count in counts.most_common() if value]
+
+        style_counts: Counter[str] = Counter()
+        display_names: dict[str, str] = {}
+        for work in self.works:
+            for tag in _style_tags(work):
+                normalized = _normalize(tag)
+                if normalized:
+                    style_counts[normalized] += 1
+                    display_names.setdefault(normalized, tag)
+        output["styles"] = [
+            {"value": display_names[value], "count": count}
+            for value, count in style_counts.most_common()
+            if value
+        ]
         return output
