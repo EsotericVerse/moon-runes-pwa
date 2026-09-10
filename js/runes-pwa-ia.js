@@ -119,25 +119,6 @@
     if(location.hash==="#beginner")setTimeout(()=>showBeginner(false),0);
   }
 
-  function addDrawThirdLevel(){
-    const selector=document.getElementById("draw-mode-selector");
-    if(!selector||document.getElementById("drawThirdNav"))return;
-    const nav=document.createElement("nav");
-    nav.id="drawThirdNav";nav.className="runes-third-nav";nav.setAttribute("aria-label","抽牌數量快速選單");
-    const mode=new URLSearchParams(location.search).get("mode")||"";
-    nav.innerHTML='<span class="runes-third-nav-label">LOTS</span>'+DRAW_MODES.map(([value,label])=>`<a class="runes-third-link${mode===value?" active":""}" href="lots.html?mode=${value}#draw">${label}</a>`).join("")+'<span class="runes-third-link" aria-disabled="true" title="目前公開抽牌入口尚未啟用 OW3gs">OW3gs 11</span>';
-    selector.before(nav);
-  }
-
-  function addLibraryThirdLevel(){
-    const library=document.getElementById("libraryView");
-    if(!library||document.getElementById("libraryThirdNav"))return;
-    const header=library.querySelector(".loc-header");
-    const nav=document.createElement("nav");
-    nav.id="libraryThirdNav";nav.className="runes-third-nav";nav.setAttribute("aria-label","符文群組快速選單");
-    nav.innerHTML='<span class="runes-third-nav-label">GROUPS</span>'+GROUPS.map(group=>`<a class="runes-third-link" href="runes.html?group=${encodeURIComponent(group)}#library" data-rune-group-shortcut="${group}">${group}</a>`).join("");
-    if(header)header.after(nav);else library.prepend(nav);
-  }
 
   function bindGroupShortcuts(){
     document.addEventListener("click",event=>{
@@ -160,7 +141,7 @@
 
   async function init(){
     if((location.pathname.split("/").pop()||"")!=="lots.html")return;
-    addStyles();normalizeWorkspaceNav();await ensureBeginnerView();normalizeWorkspaceNav();wireNavigation();addDrawThirdLevel();addLibraryThirdLevel();bindGroupShortcuts();setTimeout(normalizeWorkspaceNav,250);
+    addStyles();normalizeWorkspaceNav();await ensureBeginnerView();normalizeWorkspaceNav();wireNavigation();bindGroupShortcuts();setTimeout(normalizeWorkspaceNav,250);
   }
 
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();

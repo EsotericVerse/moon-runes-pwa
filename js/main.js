@@ -109,7 +109,7 @@ window.addEventListener("DOMContentLoaded", () => {
           ${attribute ? `<p class="rune66-detail"><strong>卡片屬性：</strong>${escapeHtml(attribute)}</p>` : ""}
           <p class="rune66-detail"><strong>月相：</strong>${escapeHtml(phase || "無")} / <strong>真實月相：</strong>${escapeHtml(realPhase)}</p>
         </div>
-        <a class="rune-data-cta" href="runes.html#library">
+        <a class="rune-data-cta" href="lots.html#library">
           <span>
             <strong>查看完整月之符文資料</strong>
             <small>月之符文66 圖鑑 · 八組分類 · 卡片詳細說明</small>

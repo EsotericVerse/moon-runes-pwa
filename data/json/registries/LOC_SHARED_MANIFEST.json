@@ -278,7 +278,7 @@
     "ui": {
       "primary_search": "search.html",
       "specialist_views": [
-        "runes.html#library",
+        "lots.html#library",
         "evolution.html"
       ],
       "redirected_views": [

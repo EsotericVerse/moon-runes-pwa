@@ -98,7 +98,7 @@ Primary integrated interface:
 Specialist views remain available where they still represent distinct workflows:
 
 - `/search.html?content_type=knowledge`
-- `/runes.html#library`
+- `/lots.html#library`
 - `/evolution.html`
 
 `/search.html?content_type=lyrics_work` is now a compatibility redirect to `/search.html?content_type=lyrics_work`. LOC3 remains the canonical music/lyrics data authority, but search presentation is consolidated into Unified Search.

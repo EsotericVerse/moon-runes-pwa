@@ -1078,7 +1078,7 @@
     }
     function linksFor(r){
       const p=r.payload||{}; const out=[];
-      if(r.content_type==='rune_record'){const n=String(r.result_id||'').replace('RUNE-','');out.push(`<a class="secondary" href="runes.html#library#${esc(n)}">查看符文資料</a>`)}
+      if(r.content_type==='rune_record'){const n=String(r.result_id||'').replace('RUNE-','');out.push(`<a class="secondary" href="lots.html#library#${esc(n)}">查看符文資料</a>`)}
       if(r.content_type==='lyrics_work'||r.content_type==='rune_song'||r.content_type==='rune_song_association'){const v=p.recommended_version||{};if(v.suno_url)out.push(`<a class="play" href="${esc(v.suno_url)}" target="_blank" rel="noopener">Suno 播放 ↗</a>`);if(v.ig_preview_url)out.push(`<a class="secondary" href="${esc(v.ig_preview_url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`)}
       if(r.content_type==='reel'&&p.url)out.push(`<a class="play" href="${esc(p.url)}" target="_blank" rel="noopener">觀看 Reels ↗</a>`);
       if(p.public_path)out.push(`<a class="secondary" href="${esc(p.public_path)}">閱讀介紹文章</a>`);
