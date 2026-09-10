@@ -45,6 +45,7 @@
 
   function loadPageEnhancements() {
     const file = location.pathname.split("/").pop() || "index.html";
+    if (file === "index.html") appendScript("js/home-canonical.js", "home-canonical");
     if (file === "evolution.html") appendScript("js/life-daily-draw-history.js", "life-draw-history");
     if (file === "runes.html") appendScript("js/runes-pwa-ia.js", "runes-pwa-ia");
     if (file === "context.html") cleanupContextGameEmbed();
@@ -55,7 +56,7 @@
     {id:"game",label:"遊戲",href:"game.html"},
     {id:"context",label:"脈絡",href:"context.html"},
     {id:"evolution",label:"推演",href:"evolution.html"},
-    {id:"statics",label:"統計",href:"statics.html"},
+    {id:"statics",label:"統計",href:"search.html#rankingView"},
     {id:"search",label:"搜尋",href:"search.html"}
   ];
 
