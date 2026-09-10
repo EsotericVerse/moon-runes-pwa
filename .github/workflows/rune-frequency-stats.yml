@@ -1,0 +1,37 @@
+name: Rune Frequency Stats
+
+on:
+  push:
+    paths:
+      - 'data/json/registries/**'
+      - 'data/json/core/runes66.json'
+      - 'tools/build_rune_frequency_stats.py'
+      - '!data/json/generated/LOC_RUNE_FREQUENCY_STATS.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-rune-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build rune statistics
+        run: python tools/build_rune_frequency_stats.py
+      - name: Commit refreshed statistics
+        run: |
+          if git diff --quiet -- data/json/generated/LOC_RUNE_FREQUENCY_STATS.json; then
+            echo 'Rune statistics unchanged.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/json/generated/LOC_RUNE_FREQUENCY_STATS.json
+          git commit -m 'Update LunaRunes frequency statistics'
+          git push
