@@ -59,7 +59,7 @@
     @media(max-width:720px){.source-stats-summary{grid-template-columns:1fr}.pagination{align-items:stretch}.pagination-pages{width:100%;justify-content:center}.pagination-info{width:100%;text-align:center}.suggestion-grid{grid-template-columns:1fr 1fr}.primary-actions{display:grid;grid-template-columns:1fr 1fr}.submit,.clear-btn,.browse-btn{width:100%}.filter-tabs{grid-template-columns:1fr 1fr 1fr}.filter-tab{font-size:.78rem;padding:10px 6px}.time-grid{grid-template-columns:1fr}.browse-inline{align-items:stretch;flex-direction:column}.topbar{align-items:flex-start;flex-direction:column}}
   
 /* Unified LOC workspace shell */
-.app-shell{width:min(1500px,100%);margin:0 auto;padding:22px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px}
+.app-shell{width:min(1500px,100%);margin:0 auto;padding:22px;display:grid;grid-template-columns:1fr;gap:20px}
 .workspace-sidebar{position:sticky;top:22px;align-self:start;min-height:calc(100vh - 44px);padding:20px 16px;border:1px solid var(--line);background:rgba(6,15,28,.75);backdrop-filter:blur(18px);border-radius:24px;box-shadow:0 18px 50px rgba(0,0,0,.25)}
 .workspace-brand{padding:4px 6px 18px;border-bottom:1px solid var(--line);margin-bottom:16px}
 .workspace-brand h1{margin:0;font-size:18px;letter-spacing:.04em}.workspace-brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
@@ -103,28 +103,7 @@
 <body class="loc-responsive-page loc-page-search">
   <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="search" aria-label="全站導覽"></nav></div>
   <div class="app-shell">
-  <aside class="workspace-sidebar">
-    <div class="workspace-brand"><h1>Search</h1><p>多元搜尋</p></div>
-    <nav class="workspace-nav" aria-label="搜尋功能">
-      <div class="workspace-nav-group">
-        <div class="workspace-nav-label">01 · 搜尋</div>
-        <button class="workspace-switch active" type="button" data-search-view="query"><strong>多元搜尋</strong><small>跨文字、音樂、多媒體、符文、脈絡與知識</small></button>
-      </div>
-      <div class="workspace-nav-group">
-        <div class="workspace-nav-label">02 · 時期</div>
-        <button class="workspace-switch" type="button" data-search-view="era"><strong>時期設定</strong><small>設定作品的時間跨度</small></button>
-      </div>
-      <div class="workspace-nav-group">
-        <div class="workspace-nav-label">03 · 排行</div>
-        <button class="workspace-switch" type="button" data-search-view="ranking"><strong>排行榜</strong><small>依時間跨度觀察關鍵字</small></button>
-      </div>
-      <div class="workspace-nav-group">
-        <div class="workspace-nav-label">04 · 資料</div>
-        <button class="workspace-switch" type="button" data-search-view="sources"><strong>資料來源</strong><small>檢查平台資料時間與更新狀態</small></button>
-      </div>
-    </nav>
-    <div class="workspace-foot">多元搜尋、時期設定、排行榜、資料來源各自分工；資料來源以最早／最新資料日期作為更新判斷基準。</div>
-  </aside>
+  
   <main class="page workspace-main">
     <div class="search-view" id="queryView">
     <header class="hero loc-header">

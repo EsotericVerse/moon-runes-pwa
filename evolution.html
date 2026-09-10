@@ -11,7 +11,7 @@
 <style>
 :root{--line:rgba(196,216,255,.14);--line2:rgba(196,216,255,.28);--text:#edf4ff;--muted:#9fb1ca;--accent:#a9c7ff;--shadow:0 18px 50px rgba(0,0,0,.25)}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:radial-gradient(circle at 15% 10%,rgba(90,130,210,.18),transparent 30%),linear-gradient(180deg,#081222,#060d18)}
-.app{width:min(1500px,100%);margin:0 auto;padding:22px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px}.sidebar{position:sticky;top:22px;align-self:start;min-height:calc(100vh - 44px);padding:20px 16px;border:1px solid var(--line);background:rgba(6,15,28,.75);backdrop-filter:blur(18px);border-radius:24px;box-shadow:var(--shadow)}
+.app{width:min(1500px,100%);margin:0 auto;padding:22px;display:grid;grid-template-columns:1fr;gap:20px}.sidebar{position:sticky;top:22px;align-self:start;min-height:calc(100vh - 44px);padding:20px 16px;border:1px solid var(--line);background:rgba(6,15,28,.75);backdrop-filter:blur(18px);border-radius:24px;box-shadow:var(--shadow)}
 .brand{padding:4px 6px 18px;border-bottom:1px solid var(--line);margin-bottom:16px}.brand h1{margin:0;font-size:18px}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.nav{display:grid;gap:14px}.nav-group{display:grid;gap:6px}.nav-label{padding:0 9px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.12em}
 .view-switch{width:100%;display:grid;gap:3px;text-align:left;cursor:pointer;padding:10px 11px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--muted);font:inherit}.view-switch:hover,.view-switch.active{color:var(--text);border-color:var(--line);background:rgba(169,199,255,.08)}.view-switch.active{box-shadow:inset 2px 0 0 var(--accent)}.view-switch strong{font-size:13px}.view-switch small{font-size:10px;line-height:1.35}.sidebar-foot{margin-top:18px;padding:14px 8px 2px;color:var(--muted);font-size:12px;line-height:1.6}
 main{min-width:0}.view[hidden]{display:none!important}.hero{padding:28px 0 18px}.hero h1{margin:0;font-size:clamp(2rem,5vw,4rem)}.hero h2{margin:8px 0 0;font-size:1.15rem}.hero p{color:var(--muted);line-height:1.7;max-width:880px}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.card{border:1px solid var(--line);background:linear-gradient(180deg,rgba(18,33,56,.82),rgba(10,21,37,.78));border-radius:18px;box-shadow:var(--shadow);padding:16px}.metric small{color:var(--muted)}.metric strong{display:block;margin-top:6px;font-size:1.6rem}.timeline,.keyword-grid{display:grid;gap:10px;margin-top:16px}.keyword-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -28,16 +28,7 @@ main{min-width:0}.view[hidden]{display:none!important}.hero{padding:28px 0 18px}
 <body class="loc-responsive-page loc-page-life">
 <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="evolution" aria-label="全站導覽"></nav></div>
 <div class="app">
-<aside class="sidebar">
-  <div class="brand"><h1>Evolution</h1><p>推演</p></div>
-  <nav class="nav" aria-label="推演功能">
-    <div class="nav-group"><div class="nav-label">01 · 總覽</div><button class="view-switch active" type="button" data-view="overview"><strong>推演總覽</strong><small>時期 · Current · 時間跨度</small></button></div>
-    <div class="nav-group"><div class="nav-label">02 · 時間線</div><button class="view-switch" type="button" data-view="timeline"><strong>時間線</strong><small>事件 · 新增 · 編輯 · 刪除</small></button></div>
-    <div class="nav-group"><div class="nav-label">03 · 趨勢</div><button class="view-switch" type="button" data-view="trend"><strong>時期趨勢</strong><small>跨時期關鍵字脈絡</small></button></div>
-    <div class="nav-group"><div class="nav-label">04 · 軌跡</div><button class="view-switch" type="button" data-view="trajectory"><strong>軌跡</strong><small>時期轉折 · 關鍵字升降</small></button></div>
-  </nav>
-  <div class="sidebar-foot">從時間、時期與事件變化中，觀察語言與作品如何一路演變。</div>
-</aside>
+
 <main>
 <section class="view" id="overviewView">
   <div class="hero"><h1>推演</h1><h2>把既有語言放回時間，觀察它如何改變。</h2><p>透過時期、事件與作品的前後變化，整理出不同階段的特徵與發展方向。</p></div>

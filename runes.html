@@ -83,7 +83,7 @@
     @media(max-width:700px){.group-row{grid-template-columns:repeat(3,minmax(0,1fr))}.modal-body{grid-template-columns:1fr}.card-side{position:static}.count{width:100%;margin-left:0}.physical-card-download,.daily-entry{grid-template-columns:1fr}.download-btn{width:100%}.daily-entry .daily-actions{justify-content:flex-start}.daily-entry a{flex:1}}
     @media(max-width:470px){.group-row{grid-template-columns:repeat(2,minmax(0,1fr))}.basic-grid{grid-template-columns:1fr}.page{width:min(100% - 18px,1180px)}}
   
-    .app-shell{width:min(1500px,100%);margin:0 auto;padding:22px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px}
+    .app-shell{width:min(1500px,100%);margin:0 auto;padding:22px;display:grid;grid-template-columns:1fr;gap:20px}
     .workspace-sidebar{position:sticky;top:22px;align-self:start;min-height:calc(100vh - 44px);padding:20px 16px;border:1px solid var(--line);background:rgba(6,15,28,.75);backdrop-filter:blur(18px);border-radius:24px;box-shadow:var(--shadow)}
     .workspace-brand{padding:4px 6px 18px;border-bottom:1px solid var(--line);margin-bottom:16px}.workspace-brand h1{margin:0;font-size:18px}.workspace-brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
     .workspace-nav{display:grid;gap:14px}.workspace-nav-group{display:grid;gap:6px}.workspace-nav-label{padding:0 9px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.12em;opacity:.72}
@@ -138,36 +138,7 @@
 <body>
   <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="runes" aria-label="全站導覽"></nav></div>
   <div class="app-shell">
-    <aside class="workspace-sidebar">
-      <div class="workspace-brand"><h1>LunaRunes</h1><p>月之符文</p></div>
-      <nav class="workspace-nav" aria-label="月之符文功能">
-        <div class="workspace-nav-group">
-          <div class="workspace-nav-label">01 · 抽牌</div>
-          <button class="workspace-switch active" type="button" data-runes-view="draw"><strong>抽牌</strong><small>單卡 · 雙卡 · 三卡 · 五卡 · OW3gs</small></button>
-        </div>
-        <div class="workspace-nav-group">
-          <div class="workspace-nav-label">02 · 趨勢</div>
-          <button class="workspace-switch" type="button" data-runes-view="daily"><strong>符文趨勢分析</strong><small>紀錄 · 統計 · 長期趨勢</small></button>
-        </div>
-        <div class="workspace-nav-group">
-          <div class="workspace-nav-label">03 · 文件</div>
-          <button class="workspace-switch" type="button" data-runes-view="reference"><strong>基本文件</strong><small>新手入門 · 判讀規則 · 命運句</small></button>
-        </div>
-        <div class="workspace-nav-group">
-          <div class="workspace-nav-label">04 · 範例</div>
-          <button class="workspace-switch" type="button" data-runes-view="examples"><strong>占卜結果範例</strong><small>固定案例 · 命運句練習</small></button>
-        </div>
-        <div class="workspace-nav-group">
-          <div class="workspace-nav-label">05 · 體系</div>
-          <button class="workspace-switch" type="button" data-runes-view="systems"><strong>多元體系</strong><small>脈絡 · 體系 · 演算 · 演化</small></button>
-        </div>
-        <div class="workspace-nav-group">
-          <div class="workspace-nav-label">06 · 資料</div>
-          <button class="workspace-switch" type="button" data-runes-view="library"><strong>符文資料</strong><small>66 圖鑑 · 基礎資料 · 實體卡</small></button>
-        </div>
-      </nav>
-      <div class="workspace-foot">抽牌、每日符文趨勢分析、基本文件、占卜結果範例、多元體系與符文資料都在同一頁。</div>
-    </aside>
+    
     <main class="page workspace-main">
       <div class="runes-view" id="referenceView" hidden>
 <header class="hero loc-header">
