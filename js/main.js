@@ -128,12 +128,17 @@ window.addEventListener("DOMContentLoaded", () => {
   const title = document.getElementById("framework-detail-title");
   const copy = document.getElementById("framework-detail-copy");
   const extra = document.getElementById("framework-detail-extra");
+  const detailLinks = document.getElementById("framework-detail-links");
 
   if (modalTitle) modalTitle.textContent = "快速說明";
 
-  if (tabs && copy?.parentNode) {
-    copy.insertAdjacentElement("afterend", tabs);
+  // The eight choices are navigation tags, so keep them at the very end
+  // of the detail block instead of mixing them into the descriptive content.
+  if (tabs) {
+    const detail = copy?.closest(".framework-detail");
+    if (detail) detail.appendChild(tabs);
     tabs.setAttribute("aria-label", "分類");
+    tabs.setAttribute("data-ui-role", "tags");
   }
 
   document.querySelectorAll(".framework-tab").forEach(btn => {
