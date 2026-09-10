@@ -1,24 +1,26 @@
 /* LunaRunes66 runtime dataset.
  * Canonical rune data: data/json/core/runes66.json
  * Canonical group metadata: data/json/core/runes66groups.json
- * Group descriptions and classification fields are resolved here so runtime
- * consumers do not need to duplicate group-level data on every rune.
+ *
+ * Rune data is required for drawing. Group metadata is supplementary and must
+ * never make the draw runtime fail when it is unavailable or stale in cache.
  */
 
-const [canonicalResponse, groupsResponse] = await Promise.all([
-  fetch(new URL('../data/json/core/runes66.json', import.meta.url)),
-  fetch(new URL('../data/json/core/runes66groups.json', import.meta.url))
-]);
-
+const canonicalResponse = await fetch(new URL('../data/json/core/runes66.json', import.meta.url));
 if (!canonicalResponse.ok) {
   throw new Error(`Failed to load runes66.json: HTTP ${canonicalResponse.status}`);
 }
-if (!groupsResponse.ok) {
-  throw new Error(`Failed to load runes66groups.json: HTTP ${groupsResponse.status}`);
-}
 
 const canonicalPayload = await canonicalResponse.json();
-const groupsPayload = await groupsResponse.json();
+
+let groupsPayload = { groups: [] };
+try {
+  const groupsResponse = await fetch(new URL('../data/json/core/runes66groups.json', import.meta.url));
+  if (groupsResponse.ok) groupsPayload = await groupsResponse.json();
+  else console.warn(`LunaRunes group metadata unavailable: HTTP ${groupsResponse.status}`);
+} catch (error) {
+  console.warn('LunaRunes group metadata unavailable; rune draw continues with canonical rune data.', error);
+}
 
 const canonicalRows = Array.isArray(canonicalPayload)
   ? canonicalPayload
