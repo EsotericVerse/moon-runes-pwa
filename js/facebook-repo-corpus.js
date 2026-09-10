@@ -1,28 +1,42 @@
 (() => {
   const BASE='data/json/sources/facebook/';
-  let cache=null;
-  let loading=null;
+  const DEFAULT_TOP_K=50;
+  const MAX_TOP_K=100;
+  const SHARD_CONCURRENCY=2;
+  let manifestCache=null;
+  let manifestLoading=null;
 
   function norm(s){return String(s||'').normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim()}
 
+  async function loadManifest(){
+    if(manifestCache)return manifestCache;
+    if(manifestLoading)return manifestLoading;
+    manifestLoading=fetch(BASE+'manifest.json',{cache:'force-cache'}).then(r=>{
+      if(!r.ok)throw new Error('Facebook corpus manifest unavailable');
+      return r.json();
+    }).then(manifest=>{
+      manifestCache=manifest;
+      return manifest;
+    });
+    try{return await manifestLoading}finally{manifestLoading=null}
+  }
+
+  async function loadShard(name){
+    const response=await fetch(BASE+name,{cache:'force-cache'});
+    if(!response.ok)throw new Error('Facebook corpus shard unavailable: '+name);
+    return response.json();
+  }
+
+  // Compatibility helper: callers that explicitly need the whole corpus can still
+  // request it, but normal PWA search never uses this path.
   async function load(){
-    if(cache)return cache;
-    if(loading)return loading;
-    loading=(async()=>{
-      const manifest=await fetch(BASE+'manifest.json',{cache:'force-cache'}).then(r=>{
-        if(!r.ok)throw new Error('Facebook corpus manifest unavailable');
-        return r.json();
-      });
-      const parts=await Promise.all((manifest.shards||[]).map(name=>
-        fetch(BASE+name,{cache:'force-cache'}).then(r=>{
-          if(!r.ok)throw new Error('Facebook corpus shard unavailable: '+name);
-          return r.json();
-        })
-      ));
-      cache={manifest,posts:parts.flat()};
-      return cache;
-    })();
-    try{return await loading}finally{loading=null}
+    const manifest=await loadManifest();
+    const posts=[];
+    for(const name of manifest.shards||[]){
+      const rows=await loadShard(name);
+      if(Array.isArray(rows))posts.push(...rows);
+    }
+    return {manifest,posts};
   }
 
   function scoreRow(row,query){
@@ -45,20 +59,48 @@
     return score;
   }
 
-  async function search(query,{year=null,start_date='',end_date='',top_k=50}={}){
-    const {posts}=await load();
-    const scored=[];
-    for(const row of posts){
-      if(row.searchable===false||(row.classification||[]).includes('爭議文章'))continue;
-      const date=String(row.date||'').slice(0,10);
-      if(year&&Number(row.year)!==Number(year))continue;
-      if(start_date&&date&&date<start_date)continue;
-      if(end_date&&date&&date>end_date)continue;
-      const score=scoreRow(row,query);
-      if(score>0)scored.push({score,row});
-    }
+  function keepBest(scored,entry,limit){
+    scored.push(entry);
+    if(scored.length<=limit*2)return;
     scored.sort((a,b)=>b.score-a.score||String(b.row.date||'').localeCompare(String(a.row.date||'')));
-    return scored.slice(0,Math.max(1,Math.min(Number(top_k)||50,100))).map(({score,row})=>({
+    scored.length=limit;
+  }
+
+  async function search(query,{year=null,start_date='',end_date='',top_k=DEFAULT_TOP_K}={}){
+    const manifest=await loadManifest();
+    const limit=Math.max(1,Math.min(Number(top_k)||DEFAULT_TOP_K,MAX_TOP_K));
+    const scored=[];
+    const shards=[...(manifest.shards||[])];
+    let cursor=0;
+
+    async function worker(){
+      while(cursor<shards.length){
+        const name=shards[cursor++];
+        let rows;
+        try{
+          rows=await loadShard(name);
+        }catch(error){
+          console.warn(error);
+          continue;
+        }
+        for(const row of Array.isArray(rows)?rows:[]){
+          if(row.searchable===false||(row.classification||[]).includes('爭議文章'))continue;
+          const date=String(row.date||'').slice(0,10);
+          if(year&&Number(row.year)!==Number(year))continue;
+          if(start_date&&date&&date<start_date)continue;
+          if(end_date&&date&&date>end_date)continue;
+          const score=scoreRow(row,query);
+          if(score>0)keepBest(scored,{score,row},limit);
+        }
+        // Yield between shards so long searches do not monopolize the mobile UI thread.
+        await new Promise(resolve=>setTimeout(resolve,0));
+      }
+    }
+
+    await Promise.all(Array.from({length:Math.min(SHARD_CONCURRENCY,Math.max(1,shards.length))},worker));
+    scored.sort((a,b)=>b.score-a.score||String(b.row.date||'').localeCompare(String(a.row.date||'')));
+
+    return scored.slice(0,limit).map(({score,row})=>({
       result_id:row.record_id||row.id,
       system_id:'lo3rwang',
       primary_loc:'LOC4',
@@ -74,8 +116,8 @@
   }
 
   async function info(){
-    const d=await load();
-    return {count:d.posts.length,manifest:d.manifest};
+    const manifest=await loadManifest();
+    return {count:Number(manifest.records||0),manifest};
   }
 
   window.LOCFacebookCorpus={load,search,info};
