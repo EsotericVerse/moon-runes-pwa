@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v174";
+const CACHE_NAME = "moon-runes-pwa-v175";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -31,6 +31,7 @@ const ASSETS_TO_CACHE = [
   "/data/json/registries/LOC_KEYWORD_GOVERNANCE.json",
   "/data/json/core/lots.json",
   "/data/json/core/runes66.json",
+  "/data/json/core/runes66groups.json",
   "/js/main.js",
   "/js/locMoonPhase.js",
   "/js/rune-draw.js?v=20260908-4",
@@ -39,6 +40,7 @@ const ASSETS_TO_CACHE = [
   "/js/runes66.js",
   "/js/direction64.js",
   "/js/rune_all_data_all.js",
+  "/js/quick-selector.js",
   "/js/list.js?v=20260905-5",
   "/64images/65_玄.png",
   "/64images/66_命.png",
