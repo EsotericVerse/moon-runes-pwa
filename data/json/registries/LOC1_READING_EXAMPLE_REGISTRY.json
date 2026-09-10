@@ -1,0 +1,37 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC1_READING_EXAMPLE_REGISTRY",
+  "authority": "LOC1",
+  "updated_at": "2026-09-10",
+  "purpose": "Curated LunaRunes divination examples across draw formats and media. This registry complements the formal OW3gs 11-card reading registry and may reference LOC5 media without duplicating media ownership.",
+  "governance": [
+    "LOC5 remains the canonical owner of media assets; LOC1 stores only reading-example references and rune provenance.",
+    "Do not infer missing runes or orientations. Preserve author-provided rune order and direction exactly when available.",
+    "Public/mass-divination examples are kept separate from personal OW3gs validation cases."
+  ],
+  "records": [
+    {
+      "id": "READING-EXAMPLE-001",
+      "title": "你最近卡關了嗎？給你一些突破建議！",
+      "example_type": "大眾占卜",
+      "spread_type": "LunaRunes public reading",
+      "status": "confirmed",
+      "date": "2025-07-12",
+      "media_ref": {
+        "media_id": "MEDIA-0195",
+        "platform": "instagram",
+        "instagram_media_id": "18018479150721730",
+        "url": "https://www.instagram.com/reel/DMA9yDAzeRK/",
+        "primary_loc": "LOC5"
+      },
+      "cards": [
+        {"position": 1, "rune": "風", "direction": "正位"},
+        {"position": 2, "rune": "憶", "direction": "半正位"},
+        {"position": 3, "rune": "火", "direction": "逆位"},
+        {"position": 4, "rune": "語", "direction": "正位"}
+      ],
+      "rune_count": 4,
+      "source_note": "Author-confirmed LOC5 mass-divination Reel. Current supplied rune detail contains four runes; no fifth rune is inferred."
+    }
+  ]
+}
