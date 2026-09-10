@@ -926,18 +926,114 @@
       "章級 themes / entities 為 deterministic text evidence，可重現並可後續疊加人工解析。"
     ],
     "text_semantic_group_analysis": {
-      "status": "implemented",
-      "scope": "182_chapter_runtime_analysis",
-      "basis": "full_chapter_text_semantics",
-      "group_count": 9,
-      "provenance_separation": "原始抽牌 rune_configuration 與正文 text_semantic_groups 分開保存；互不反推。",
-      "output": [
-        "counts",
-        "highest_groups",
-        "status",
-        "evidence"
+      "status": "complete_182_chapters",
+      "scope": "182_chapter_full_text_analysis",
+      "basis": "Base66_current_three_keyword_exact_match",
+      "source_scope": "Library allCh1.txt–allCh7.txt, 7 parts × 26 chapters",
+      "chapter_count": 182,
+      "text_characters": 230057,
+      "keyword_hits": 2990,
+      "scoring_rules": [
+        "只分析章節正文，不計章名",
+        "不使用單字符文名稱作命中",
+        "只使用現行 runes66.json 每符三個關鍵詞",
+        "不讀原始抽牌 rune_configuration 作正文語意判定",
+        "同一關鍵詞若由多枚符文共享，保留其多重語意歸屬"
       ],
-      "note": "第一版為 deterministic theme-to-group baseline；後續 66 符關鍵詞／embedding 深層語意分析可疊加，不覆寫此基準。"
+      "group_statistics": {
+        "靈魂組": {
+          "count": 674,
+          "pct": 22.54
+        },
+        "秩序組": {
+          "count": 597,
+          "pct": 19.97
+        },
+        "生命組": {
+          "count": 380,
+          "pct": 12.71
+        },
+        "連結組": {
+          "count": 338,
+          "pct": 11.3
+        },
+        "無序組": {
+          "count": 322,
+          "pct": 10.77
+        },
+        "元素組": {
+          "count": 310,
+          "pct": 10.37
+        },
+        "礦物組": {
+          "count": 160,
+          "pct": 5.35
+        },
+        "自然組": {
+          "count": 121,
+          "pct": 4.05
+        },
+        "特殊組": {
+          "count": 88,
+          "pct": 2.94
+        }
+      },
+      "chapter_classification": {
+        "single_max": 134,
+        "disputed_tie": 48
+      },
+      "top_runes": [
+        [
+          "憶",
+          230
+        ],
+        [
+          "核",
+          173
+        ],
+        [
+          "空",
+          170
+        ],
+        [
+          "星",
+          161
+        ],
+        [
+          "時",
+          131
+        ],
+        [
+          "韻",
+          127
+        ],
+        [
+          "靈",
+          118
+        ],
+        [
+          "啟",
+          107
+        ],
+        [
+          "氣",
+          104
+        ],
+        [
+          "果",
+          101
+        ],
+        [
+          "無",
+          99
+        ],
+        [
+          "土",
+          93
+        ]
+      ],
+      "provenance_separation": "符文體系與真實文字體系分開保存並並列比較；互不反推。",
+      "note": "此為可重現的 deterministic semantic baseline。Embedding／LLM 深層語意可後續疊加，不覆寫本版。"
     }
   },
   "authority_domain": "literary"
