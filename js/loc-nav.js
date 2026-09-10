@@ -4,8 +4,6 @@
   const fileName = () => location.pathname.split("/").pop() || "index.html";
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 
-
-
   function loadNav1(){
     const mount=()=>window.LOCNav1?.mountAll?.();
     if(window.LOCNav1){mount();return;}
@@ -115,7 +113,7 @@
 
   function buildRunes(host) {
     host.appendChild(tier([
-      link("新手上路","lots.html#beginner"),
+      link("新手上路","runes.html#beginner"),
       link("占卜抽籤","lots.html#draw"),
       link("符文總覽","lots.html#library"),
       link("符文統計","statics.htm#runes"),
@@ -177,7 +175,6 @@
     else if (file === "runes.html" || file === "lots.html" || file === "statics.htm" || file === "statics.html") buildRunes(host);
     else if (file === "context.html") buildContext(host);
     else if (file === "evolution.html") buildEvolution(host);
-    
   }
 
   function cleanupContextGameEmbed() {
@@ -192,7 +189,7 @@
   function loadEnhancements() {
     const file = fileName();
     if (file === "index.html") appendScript("js/home-canonical.js","home-canonical");
-    if (file === "lots.html") appendScript("js/runes-pwa-ia.js","runes-pwa-ia");
+    if (file === "runes.html" || file === "lots.html") appendScript("js/runes-pwa-ia.js","runes-pwa-ia");
     if (file === "evolution.html") appendScript("js/life-daily-draw-history.js","life-draw-history");
   }
 
