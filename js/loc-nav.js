@@ -194,7 +194,7 @@
       if(principles && !document.getElementById("daily-theme-governance")){
         const p=document.createElement("p");
         p.id="daily-theme-governance";
-        p.innerHTML="<strong>每日抽牌是中立立場的直接演示：</strong>沒有預設問題時，隨機抽取一張符文，先產生『今天的主題』作為語意切入點。它不是預言，也不是指示使用者今天一定要做什麼，而是一種從無生有的指引式籤詩：先給主題，再由使用者依現實脈絡觀察、理解與決定。";
+        p.innerHTML="<strong>每日抽牌是中立立場的直接演示：</strong>沒有預設問題時，從無中生有地抽出一個『今天的主題』，作為語言遞迴的起點。這個語意可以在後續觀察、書寫與脈絡中繼續成長；使用者可以選擇如何灌溉、修剪與延伸它，而不是把抽牌當成命定未來或必須服從的決定。";
         principles.appendChild(p);
       }
     }
@@ -206,7 +206,7 @@
         p.id="daily-theme-tutorial";
         p.className="copy";
         p.style.marginTop="3%";
-        p.innerHTML="<strong>為什麼沒事也可以抽一張？</strong> 每日抽牌不是先問問題，而是先抽出『今天的主題』。沒有預設答案，也不要求照著做；它只是先給一個語意提示，讓你觀察今天，或在不知道怎麼開始時得到第一個切入點。";
+        p.innerHTML="<strong>為什麼沒事也可以抽一張？</strong> 因為每日抽牌可以從無中生有地先長出一個『今天的主題』，作為語言遞迴的起點。它不是替你決定未來，而是先給一顆語意種子；接下來要怎麼理解、灌溉、延伸或修剪，仍由你依今天真正發生的事情決定。";
         const first=s3.querySelector("p.copy");
         if(first) first.after(p); else s3.appendChild(p);
       }
@@ -220,7 +220,7 @@
           const note=document.createElement("div");
           note.id="daily-theme-note";
           note.className="loc-guidance-note";
-          note.innerHTML="<strong>每日抽牌看的是『今天的主題』。</strong> 沒有問題也可以抽一張：它不是告訴你今天一定要做什麼，而是先給一個語意主題，讓你觀察今天；如果暫時不知道怎麼做，也可以把它當成一個切入提示。單卡則是針對當下問題或情境的一張回應。";
+          note.innerHTML="<strong>每日抽牌看的是『今天的主題』。</strong> 沒有問題也可以抽一張：先從無中生有地得到一個語意種子，讓語言開始遞迴成長。你可以依今天的現實脈絡決定怎麼灌溉、延伸或修剪它；它不是命定未來，也不是指示你一定要做什麼。單卡則是針對當下問題或情境的一張回應。";
           const menu=drawView.querySelector(":scope > .loc-section-menu");
           if(menu) menu.after(note); else drawView.prepend(note);
         }
