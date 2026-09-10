@@ -408,6 +408,58 @@
           ]
         },
         "note": "此狀態代表符文體系的分類／統計實作已由真實資料驗證可運作，不再列為待做。"
+      },
+      "rune_system_confirmed_samples": {
+        "status": "active",
+        "updated_at": "2026-09-10",
+        "policy": "Only backfill works whose rune-system membership is already confirmed by provenance/author evidence; do not infer membership from text alone.",
+        "samples": [
+          {
+            "work_id": "LOC4-MOON-SPEAKER",
+            "title": "月語者",
+            "content_type": "文章創作",
+            "tag": "符文體系｜文章創作",
+            "status": "confirmed",
+            "evidence": "chapter_generation_provenance",
+            "group_data": "available"
+          },
+          {
+            "work_id": "E0285",
+            "title": "在塵裡長出的光",
+            "content_type": "音樂",
+            "tag": "符文體系｜音樂",
+            "status": "confirmed",
+            "evidence": "confirmed_rune_song_provenance",
+            "group_data": "pending_actual_11_rune_draw"
+          },
+          {
+            "work_id": "E0223",
+            "title": "日蝕之前的顯現",
+            "content_type": "音樂",
+            "tag": "符文體系｜音樂",
+            "status": "confirmed",
+            "evidence": "confirmed_rune_song_provenance",
+            "group_data": "pending_actual_11_rune_draw"
+          },
+          {
+            "work_id": "E0354",
+            "title": "界內之風",
+            "content_type": "音樂",
+            "tag": "符文體系｜音樂",
+            "status": "confirmed",
+            "evidence": "confirmed_rune_song_provenance",
+            "group_data": "pending_actual_11_rune_draw"
+          },
+          {
+            "work_id": "E0364",
+            "title": "界外誤差",
+            "content_type": "音樂",
+            "tag": "符文體系｜音樂",
+            "status": "confirmed",
+            "evidence": "confirmed_rune_song_provenance",
+            "group_data": "pending_actual_11_rune_draw"
+          }
+        ]
       }
     }
   ],
