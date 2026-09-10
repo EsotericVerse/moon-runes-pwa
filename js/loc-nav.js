@@ -1,5 +1,5 @@
 (() => {
-  const WEB_BUILD = "1.3";
+  const WEB_BUILD = "1.4";
   const currentFile = location.pathname.split("/").pop() || "index.html";
 
   if (currentFile === "runes.html") {
@@ -36,7 +36,7 @@
     <div class="workspace-nav-group"><a class="workspace-link" href="tutorial01.html"><strong>新手上路</strong><small>月之符文入門</small></a></div>
     <div class="workspace-nav-group"><a class="workspace-link" href="lots.html#draw"><strong>占卜抽籤</strong><small>線上即時抽牌引擎</small></a></div>
     <div class="workspace-nav-group"><a class="workspace-link" href="lots.html#library"><strong>符文總覽</strong><small>66 符 · 群組 · 固定資料</small></a></div>
-    <div class="workspace-nav-group"><a class="workspace-link" href="statics.html#rune-trend"><strong>每日符文</strong><small>紀錄 · 統計 · 趨勢</small></a></div>
+    <div class="workspace-nav-group"><a class="workspace-link" href="statics.html#rune-trend"><strong>符文統計</strong><small>每日符文 · 紀錄 · 趨勢</small></a></div>
     <div class="workspace-nav-group"><a class="workspace-link" href="runes.html#rag"><strong>符文知識庫</strong><small>RAG · 占卜解析 · 符文演算法</small></a></div>`;
 
   const CONTEXT_NAV = `
@@ -51,7 +51,7 @@
     if(explicit)return explicit;
     if(currentFile==='game.html'||currentFile==='loc2-game.html')return 'game';
     if(currentFile==='context.html')return 'context';
-    if(currentFile==='statics.html')return 'statics';
+    if(currentFile==='statics.html')return location.hash==='#rune-trend'?'runes':'statics';
     if(currentFile==='evolution.html')return 'evolution';
     if(currentFile==='runes.html'||currentFile==='lots.html')return 'runes';
     return '';
@@ -135,6 +135,37 @@
     if(global)global.after(shell); else document.body.prepend(shell);
   }
 
+  function lotsThirdNav(){
+    if(currentFile!=='lots.html')return;
+    const params=new URLSearchParams(location.search);
+    const group=params.get('group')||'';
+    const isLibrary=location.hash==='#library'||!!group;
+    const shell=document.createElement('div');
+    shell.className='loc-tertiary-shell';
+    const nav=document.createElement('nav');
+    nav.className='loc-tertiary-nav';
+    nav.setAttribute('aria-label',isLibrary?'符文群組':'抽牌模式');
+    if(isLibrary){
+      const groups=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
+      nav.innerHTML=groups.map(name=>`<a href="lots.html?group=${encodeURIComponent(name)}#library"${name===group?' aria-current="page"':''}>${name}</a>`).join('');
+      window.addEventListener('load',()=>{
+        if(!group)return;
+        document.querySelectorAll('.rune-group').forEach(card=>{
+          const title=card.querySelector('.group-head strong')?.textContent?.trim()||'';
+          card.hidden=!title.includes(group);
+        });
+        document.getElementById('library')?.scrollIntoView({block:'start'});
+      },{once:true});
+    }else{
+      const mode=params.get('mode')||'';
+      const modes=[['single','單卡'],['daily','每日'],['2card','雙卡'],['3card','三卡'],['5card','五卡'],['11card','11卡']];
+      nav.innerHTML=modes.map(([key,label])=>`<a href="lots.html?mode=${key}#draw"${mode===key?' aria-current="page"':''}>${label}</a>`).join('')+`<a href="lots.html#examples">說明</a>`;
+    }
+    shell.appendChild(nav);
+    const second=document.querySelector('.loc-secondary-shell');
+    if(second)second.after(shell); else document.querySelector('.loc-global-shell')?.after(shell);
+  }
+
   window.addEventListener('DOMContentLoaded',()=>{
     ensureNavStyle();
     document.querySelectorAll('[data-loc-nav]').forEach(paintGlobalNav);
@@ -143,6 +174,7 @@
     patchRuneNav();
     patchContextNav();
     promoteSecondaryNav();
+    lotsThirdNav();
     setTimeout(patchFrameworkNav,0);
   });
 })();
