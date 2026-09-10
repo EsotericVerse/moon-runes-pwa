@@ -131,7 +131,7 @@
     if (file === "index.html") {
       const heroCopy = document.querySelector(".hero .loc-header-copy");
       if (heroCopy) {
-        heroCopy.textContent = "語言除了傳達，也用來記錄人存在於世界中的資料。LOC 是 lo3rwang 的 Language Module Framework／語言模組框架，提供分組與模組化方法，讓這些語言資料更容易被分類、解析、組織與推演。";
+        heroCopy.textContent = "月典是一套用來分析、整理、搜尋與推演語言的工具。它從細小的語言單元開始，把文字、作品、脈絡、規則與時間整理起來，讓複雜內容更容易被理解、比較與重新組合。";
       }
 
       const frameworkCopy = document.querySelector("#framework-map .loc-header-copy");
