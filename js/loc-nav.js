@@ -41,6 +41,14 @@
       script.dataset.kmConceptsSearch = 'true';
       document.body.appendChild(script);
     }
+
+    if (file === "search.html" && !document.querySelector('script[data-rune-frequency-ranking]')) {
+      const script = document.createElement('script');
+      script.src = 'js/rune-frequency-ranking.js';
+      script.defer = true;
+      script.dataset.runeFrequencyRanking = 'true';
+      document.body.appendChild(script);
+    }
   }
 
   const DEFAULT_NAV = [
