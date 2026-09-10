@@ -41,6 +41,87 @@ window.addEventListener("DOMContentLoaded", () => {
     runeIntro.innerHTML = "<strong>不知道怎麼說，也沒關係。</strong>LunaRunes 可以成為語意起點：問事、整理感受，或在沒有靈感時提供新的創作路徑。";
   }
 
+  // Homepage rune text must come from the canonical runes66 dataset, not from
+  // legacy hard-coded fields in index.html.
+  const attributes = document.getElementById("attributes");
+  const runeImage = document.getElementById("rune-image");
+
+  const runeStyleId = "home-rune66-text-style";
+  if (!document.getElementById(runeStyleId)) {
+    const style = document.createElement("style");
+    style.id = runeStyleId;
+    style.textContent = `
+      #attributes .rune66-kicker{display:block;color:var(--loc-purple);font-size:.72rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;line-height:1.35}
+      #attributes .rune66-title{display:block;margin-top:4px;color:var(--loc-gold);font-size:1.18rem;font-weight:850;line-height:1.35}
+      #attributes .rune66-spec{margin:10px 0 0;color:var(--loc-text);font-size:.9rem;line-height:1.65}
+      #attributes .rune66-details{display:grid;gap:5px;margin-top:12px;padding-top:12px;border-top:1px solid var(--loc-border)}
+      #attributes .rune66-detail{margin:0;color:var(--loc-muted);font-size:.78rem;line-height:1.5}
+      #attributes .rune66-detail strong{color:var(--loc-text);font-weight:800}
+    `;
+    document.head.appendChild(style);
+  }
+
+  async function renderHomepageRune66(runeId = 65) {
+    if (!attributes) return;
+    try {
+      const response = await fetch("data/json/core/runes66.json", { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      const rows = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
+      const row = rows.find(item => Number(item?.編號 ?? item?.id) === runeId);
+      if (!row) throw new Error(`Rune ${runeId} not found`);
+
+      const id = Number(row.編號 ?? row.id);
+      const name = row.符文名稱 ?? row.名稱 ?? row.name ?? "";
+      const english = row.英文 ?? row.english ?? "";
+      const group = row.所屬分組 ?? row.group ?? "";
+      const phase = row.月相 ?? row.moon_phase ?? "無";
+      const attribute = row.卡片屬性 ?? row.card_attribute ?? "";
+      const manifestation = row.顯化形式 ?? "";
+      const keywords = row.關鍵詞 ?? row.keyword ?? "";
+      const spec = row.spec ?? "";
+      const image = row.image ?? row.圖檔名稱 ?? (id && name ? `${String(id).padStart(2, "0")}_${name}.png` : "");
+
+      if (runeImage && image) {
+        runeImage.src = image.includes("/") ? image : `64images/${image}`;
+        runeImage.alt = `${name}之符文`;
+      }
+
+      attributes.innerHTML = `
+        <span class="rune66-kicker">${escapeHtml(String(english).toUpperCase())}</span>
+        <strong class="rune66-title">${escapeHtml(name)}之符文</strong>
+        ${spec ? `<p class="rune66-spec">${escapeHtml(spec)}</p>` : ""}
+        <div class="rune66-details">
+          ${manifestation ? `<p class="rune66-detail"><strong>顯化形式：</strong>${escapeHtml(manifestation)}</p>` : ""}
+          ${keywords ? `<p class="rune66-detail"><strong>關鍵詞：</strong>${escapeHtml(keywords)}</p>` : ""}
+          ${group ? `<p class="rune66-detail"><strong>所屬分組：</strong>${escapeHtml(group)}</p>` : ""}
+          ${attribute ? `<p class="rune66-detail"><strong>卡片屬性：</strong>${escapeHtml(attribute)}</p>` : ""}
+          <p class="rune66-detail"><strong>月相：</strong>${escapeHtml(phase || "無")} / <strong>真實月相：</strong>${escapeHtml(realPhase)}</p>
+        </div>
+        <a class="rune-data-cta" href="runes.html#library">
+          <span>
+            <strong>查看完整月之符文資料</strong>
+            <small>月之符文66 圖鑑 · 八組分類 · 卡片詳細說明</small>
+          </span>
+          <span aria-hidden="true">→</span>
+        </a>
+      `;
+    } catch (error) {
+      console.error("Failed to render homepage rune from runes66.json", error);
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  renderHomepageRune66(65);
+
   const evolutionLead = document.querySelector("#language-evolution .section-heading > p");
   if (evolutionLead) {
     evolutionLead.textContent = "LunaRunes 以符號式語言模型為基礎，進入脈絡與不同表達體系，再由演算法形成可重複規則、由模組整合功能，最後放回時間中持續推演。";
@@ -48,46 +129,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const evolutionSteps = [...document.querySelectorAll("#language-evolution .evolution-step")];
   const evolutionContent = [
-    {
-      english: "LunaRunes",
-      title: "月之符文",
-      copy: "LunaRunes 是由 66 個月之符文、四向、月相與組合語法構成的符號式語言模型（Symbolic Language Model）。"
-    },
-    {
-      english: "Context",
-      title: "符文脈絡",
-      copy: "把符文、作品、事件與概念放進關係、情境與脈絡圖（Graph）中，形成可觀察、可互動的語言脈絡。"
-    },
-    {
-      english: "Music",
-      title: "音樂",
-      copy: "讓語言進入歌曲、歌詞、曲風與聲音；在符文系統的結構類比中，可視為較基礎的符文體系／三卡結構。"
-    },
-    {
-      english: "Literary",
-      title: "文字創作",
-      copy: "讓語言進入小說、文章與其他文字作品；在符文系統的結構類比中，可視為更完整的符文體系／五卡結構。"
-    },
-    {
-      english: "Multimedia",
-      title: "多媒體",
-      copy: "整合文字、音樂、圖像、影音與其他媒介；在符文系統的結構類比中，可視為多模組整合／OW3gs 結構。"
-    },
-    {
-      english: "Algorithm",
-      title: "演算法",
-      copy: "把判讀、比較、治理、組合與分析方法整理成可重複執行、可檢查的規則與流程；月之符文在此對應符文演算法。"
-    },
-    {
-      english: "Module",
-      title: "模組",
-      copy: "把演算法、資料、知識與功能封裝並組合成可重用的語言系統模組；LOC1–LOC8 本身就是構成 LOC 模型的八個模組。"
-    },
-    {
-      english: "Evolution",
-      title: "推演",
-      copy: "把模型、模組、作品、事件與語言放回時間、時期、軌跡與趨勢中觀察變化，形成符文演化與系統推演。"
-    }
+    { english: "LunaRunes", title: "月之符文", copy: "LunaRunes 是由 66 個月之符文、四向、月相與組合語法構成的符號式語言模型（Symbolic Language Model）。" },
+    { english: "Context", title: "符文脈絡", copy: "把符文、作品、事件與概念放進關係、情境與脈絡圖（Graph）中，形成可觀察、可互動的語言脈絡。" },
+    { english: "Music", title: "音樂", copy: "讓語言進入歌曲、歌詞、曲風與聲音；在符文系統的結構類比中，可視為較基礎的符文體系／三卡結構。" },
+    { english: "Literary", title: "文字創作", copy: "讓語言進入小說、文章與其他文字作品；在符文系統的結構類比中，可視為更完整的符文體系／五卡結構。" },
+    { english: "Multimedia", title: "多媒體", copy: "整合文字、音樂、圖像、影音與其他媒介；在符文系統的結構類比中，可視為多模組整合／OW3gs 結構。" },
+    { english: "Algorithm", title: "演算法", copy: "把判讀、比較、治理、組合與分析方法整理成可重複執行、可檢查的規則與流程；月之符文在此對應符文演算法。" },
+    { english: "Module", title: "模組", copy: "把演算法、資料、知識與功能封裝並組合成可重用的語言系統模組；LOC1–LOC8 本身就是構成 LOC 模型的八個模組。" },
+    { english: "Evolution", title: "推演", copy: "把模型、模組、作品、事件與語言放回時間、時期、軌跡與趨勢中觀察變化，形成符文演化與系統推演。" }
   ];
 
   evolutionSteps.forEach((step, index) => {
@@ -111,9 +160,6 @@ window.addEventListener("DOMContentLoaded", () => {
     aboutCopy.textContent = "月典最初從 LunaRunes（月之符文）這套符號式語言模型開始，之後逐步形成脈絡、音樂、文字創作、多媒體、演算法、模組與時間中的推演。LOC 不是單一模組，而是由 LOC1–LOC8 八個語言系統模組共同構成的語言系統模型。";
   }
 
-  // Canon presentation rule:
-  // English kicker -> Chinese gold title -> reader-facing Chinese explanation -> details -> tags last.
-  // Engineering vocabulary is kept out of the public quick explanation unless it is necessary to the concept.
   const frameworkInfo = {
     LOC1: {
       english: "LunaRunes", title: "月之符文", tab: "月之符文", category: "月之符文（符文籤詩 Lots）",
