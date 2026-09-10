@@ -131,7 +131,7 @@
     if (file === "index.html") {
       const heroCopy = document.querySelector(".hero .loc-header-copy");
       if (heroCopy) {
-        heroCopy.textContent = "月典是一套用來分析、整理、搜尋與推演語言的工具。它從細小的語言單元開始，把文字、作品、脈絡、規則與時間整理起來，讓複雜內容更容易被理解、比較與重新組合。";
+        heroCopy.textContent = "月典是一套用來分析、整理、搜尋與推演語言的模組化框架。它從細小的語言單元開始，把文字、作品、脈絡、規則與時間組織起來，讓複雜內容可以更輕量地被理解、比較與重組。";
       }
 
       const frameworkCopy = document.querySelector("#framework-map .loc-header-copy");
@@ -147,33 +147,6 @@
       const aboutCopy = document.querySelector('[aria-labelledby="about-title"] > p');
       if (aboutCopy) {
         aboutCopy.textContent = "月典最初從月之符文開始，之後逐步形成脈絡、作品與多元體系、方法論、演算法與知識庫模組，整理為語言模型，再放回時間中持續推演。它不是為了把人生固定，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可重用，也能整理出風格並進一步推演的語言架構。";
-      }
-    }
-
-    if (file === "lo3rwang.html") {
-      const headings = [...document.querySelectorAll("h2")];
-      const workHeading = headings.find(node => node.textContent.includes("他主要在做什麼"));
-      if (workHeading) {
-        const first = workHeading.nextElementSibling;
-        const second = first?.nextElementSibling;
-        if (first?.tagName === "P") {
-          first.innerHTML = "主要工作重心不是單純的社群內容創作，而是建立與整理 <strong>LOC／月典（Luna Codex）</strong>。LOC 是 lo3rwang 的數位思想資產與 <strong>Language Module Framework／語言模組框架</strong>，把長期累積的分類方式、語言結構、符文系統、脈絡判讀、演算法與推演方法整理成可重複使用的框架。";
-        }
-        if (second?.tagName === "P") {
-          second.textContent = "語言除了傳達，也用來記錄人存在於世界中的資料。LOC 提供分組與模組化方法，讓作品、生活文字、事件、關係與其他語言資料更容易被分類、解析、組織與推演。";
-        }
-      }
-
-      const locHeading = headings.find(node => node.textContent.trim() === "LOC／月典");
-      if (locHeading) {
-        const first = locHeading.nextElementSibling;
-        const second = first?.nextElementSibling;
-        if (first?.tagName === "P") {
-          first.innerHTML = "LOC 是 <strong>Language Module Framework／語言模組框架</strong>。它提供跨尺度、跨領域的分類、組織、解析與推演參考；不同領域可以依自己的資料重新定義單元、分組、關係與規則。";
-        }
-        if (second?.tagName === "P") {
-          second.textContent = "LOC 提供的是框架，不強迫外部資料服從 LunaRunes 的 66 符或八組結構。LunaRunes 是其中最完整、最具體的實證案例之一。";
-        }
       }
     }
   }
