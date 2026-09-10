@@ -6,6 +6,7 @@ on:
       - 'data/json/registries/**'
       - 'data/json/core/runes66.json'
       - 'tools/build_rune_frequency_stats.py'
+      - '.github/workflows/rune-frequency-stats.yml'
       - '!data/json/generated/LOC_RUNE_FREQUENCY_STATS.json'
   workflow_dispatch:
 
