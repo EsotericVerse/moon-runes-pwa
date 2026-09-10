@@ -16,13 +16,13 @@ window.addEventListener("DOMContentLoaded", () => {
   if (metaDescription) {
     metaDescription.setAttribute(
       "content",
-      "LOC（月典）是一套由八個語言系統模組組合而成的語言系統模型；LunaRunes（月之符文）本身是一套可實際運作的符號式語言模型，並藉由 LOC 各模組相輔相成。LOC1–8涵蓋月之符文、脈絡、音樂、文字創作、多媒體、演算法、模組與推演。"
+      "LOC（月典）是一套由 LOC1–LOC8 八個語言系統模組組合而成的語言系統模型。LunaRunes（月之符文）從語彙單字（Token）出發，經由 LOC 的脈絡、創作與延伸體系、演算法與時間推演相輔相成，最後成長為符號式語言模型（Symbolic Language Model）。"
     );
   }
 
   const heroCopy = document.querySelector(".hero .loc-header-copy");
   if (heroCopy) {
-    heroCopy.textContent = "月典（LOC，Luna Codex）是一套分析拆解、組織彙整、搜尋並推演語言的語言系統模型（Language System Model），由 LOC1–LOC8 八個語言系統模組（Language System Modules）組合而成。LunaRunes（月之符文）本身就是一套符號式語言模型（Symbolic Language Model），並藉由 LOC 的脈絡、作品、演算法、模組與時間推演相輔相成、持續延伸。";
+    heroCopy.textContent = "月典（LOC，Luna Codex）是一套分析拆解、組織彙整、搜尋並推演語言的語言系統模型（Language System Model），由 LOC1–LOC8 八個語言系統模組（Language System Modules）組合而成。月之符文(LunaRunes)一開始只是語彙單字(Token)，經過脈絡分析、創作文字跟延伸體系、整合規則的演算法模型，最後放回時間中觀察並推演，與本來的LOC相輔相成，最後成長為符號式語言模型（Symbolic Language Model）。";
   }
 
   const heroNoteStrong = document.querySelector(".hero-note strong");
