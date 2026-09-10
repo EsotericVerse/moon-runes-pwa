@@ -1,6 +1,6 @@
 (() => {
   const NAV_URL = "data/json/registries/LOC_NAV.json";
-  const WEB_BUILD = "0.5";
+  const WEB_BUILD = "0.6";
 
   function esc(value) {
     return String(value ?? "").replace(/[&<>"']/g, ch => ({
@@ -12,6 +12,7 @@
     const file = location.pathname.split("/").pop() || "index.html";
     if (file === "context.html") return "context";
     if (file === "game.html" || file === "loc2-game.html") return "game";
+    if (file === "search.html" && location.hash === "#rankingView") return "statics";
     const explicit = node.dataset.page;
     if (explicit) return explicit;
     return items.find(item => item.href === file)?.id || "";
@@ -90,24 +91,87 @@
     }
   }
 
-  function renderBuildLabel() {
-    document.querySelectorAll(".workspace-sidebar").forEach(sidebar => {
-      if (sidebar.querySelector("[data-web-build]")) return;
-      const label = document.createElement("div");
-      label.dataset.webBuild = "true";
-      label.textContent = "Web Build " + WEB_BUILD;
-      label.style.marginTop = "14px";
-      label.style.paddingTop = "10px";
-      label.style.borderTop = "1px solid rgba(127,135,148,.18)";
-      label.style.fontSize = "11px";
-      label.style.letterSpacing = ".08em";
-      label.style.opacity = ".58";
-      label.style.textAlign = "center";
-      sidebar.appendChild(label);
+  function getTierHost() {
+    let host = document.querySelector(".loc-nav-tiers");
+    if (host) return host;
+    const globalShell = document.querySelector(".loc-global-shell");
+    if (!globalShell) return null;
+    host = document.createElement("div");
+    host.className = "loc-nav-tiers";
+    globalShell.after(host);
+    return host;
+  }
+
+  function promoteWorkspaceNav() {
+    const host = getTierHost();
+    if (!host) return;
+
+    const sidebars = [...document.querySelectorAll(".workspace-sidebar, .sidebar")];
+    const moved = new Set();
+
+    sidebars.forEach(sidebar => {
+      const nav = sidebar.querySelector(".workspace-nav, .nav");
+      if (!nav || moved.has(nav)) return;
+      moved.add(nav);
+
+      const tier = document.createElement("nav");
+      tier.className = "loc-nav-tier";
+      tier.dataset.tier = "2";
+      tier.setAttribute("aria-label", nav.getAttribute("aria-label") || "頁面功能導覽");
+
+      nav.classList.add("loc-nav-tier-inner");
+      nav.querySelectorAll(".workspace-nav-label,.nav-label").forEach(label => label.remove());
+      nav.querySelectorAll(".workspace-switch,.view-switch,a,button").forEach(control => {
+        control.classList.add("loc-nav-tier-link");
+        const strong = control.querySelector("strong");
+        if (strong) {
+          const text = strong.textContent.trim();
+          control.replaceChildren(document.createTextNode(text));
+        } else {
+          control.querySelectorAll("small").forEach(small => small.remove());
+        }
+      });
+
+      tier.appendChild(nav);
+      host.appendChild(tier);
     });
   }
 
-  async function enhanceSearchSummary() {
+  function addIndexTiers() {
+    const file = location.pathname.split("/").pop() || "index.html";
+    if (file !== "index.html") return;
+    const host = getTierHost();
+    if (!host || host.querySelector('[data-page-tier="index"]')) return;
+
+    const tier2 = document.createElement("nav");
+    tier2.className = "loc-nav-tier";
+    tier2.dataset.tier = "2";
+    tier2.dataset.pageTier = "index";
+    tier2.innerHTML = `<div class="loc-nav-tier-inner">
+      <a class="loc-nav-tier-link" href="#top">LOC月典簡介</a>
+      <a class="loc-nav-tier-link" href="#start">新手上路</a>
+      <a class="loc-nav-tier-link" href="#framework-map">LOC架構圖</a>
+      <a class="loc-nav-tier-link" href="#progress">目前進度</a>
+      <a class="loc-nav-tier-link" href="#about-title">其他</a>
+    </div>`;
+
+    const tier3 = document.createElement("nav");
+    tier3.className = "loc-nav-tier";
+    tier3.dataset.tier = "3";
+    tier3.innerHTML = `<div class="loc-nav-tier-inner">
+      <a class="loc-nav-tier-link" href="#rune-entry">月之符文模組</a>
+      <a class="loc-nav-tier-link" href="#language-evolution">脈絡</a>
+      <a class="loc-nav-tier-link" href="#language-evolution">音樂</a>
+      <a class="loc-nav-tier-link" href="#language-evolution">文字創作</a>
+      <a class="loc-nav-tier-link" href="#language-evolution">多媒體</a>
+      <a class="loc-nav-tier-link" href="#language-evolution">演算法</a>
+      <a class="loc-nav-tier-link" href="#language-evolution">演算模組</a>
+      <a class="loc-nav-tier-link" href="#language-evolution">推演引擎</a>
+    </div>`;
+    host.append(tier2, tier3);
+  }
+
+  function enhanceSearchSummary() {
     const file = location.pathname.split("/").pop() || "index.html";
     if (file !== "search.html") return;
     const queryView = document.getElementById("queryView");
@@ -129,30 +193,33 @@
     details.append(summary, body);
     sourceStats.appendChild(details);
 
-    try {
-      const response = await fetch("data/json/generated/search/SEARCH_SOURCE_STATS.json", { cache: "no-store" });
-      if (!response.ok) throw new Error("stats unavailable");
-      const data = await response.json();
-      const count = Number(data?.search_summary?.comparable_records || data?.text_summary?.searchable_records || 0).toLocaleString("zh-TW");
-      const start = data?.text_summary?.start_date || "";
-      const end = data?.text_summary?.end_date || "";
-      const categories = [];
-      const textSources = data?.text_sources || [];
-      const mediaSources = data?.media_sources || [];
-      if (textSources.some(item => item?.source_type !== "lyrics")) categories.push("文字");
-      if (textSources.some(item => item?.source_type === "lyrics")) categories.push("音樂");
-      if (mediaSources.length) categories.push("多媒體");
-      if (Number(data?.knowledge_summary?.knowledge_document_records || 0) > 0) categories.push("知識");
-      const dateText = start && end ? `${start}–${end}` : (start || end);
-      summary.textContent = [`搜尋資料｜${count} 筆`, dateText, categories.join(" / ")].filter(Boolean).join(" · ");
-    } catch (_) {
-      summary.textContent = "搜尋資料｜點開查看總數、日期與來源";
-    }
+    fetch("data/json/generated/search/SEARCH_SOURCE_STATS.json", { cache: "no-store" })
+      .then(response => {
+        if (!response.ok) throw new Error("stats unavailable");
+        return response.json();
+      })
+      .then(data => {
+        const count = Number(data?.search_summary?.comparable_records || data?.text_summary?.searchable_records || 0).toLocaleString("zh-TW");
+        const start = data?.text_summary?.start_date || "";
+        const end = data?.text_summary?.end_date || "";
+        const categories = [];
+        const textSources = data?.text_sources || [];
+        const mediaSources = data?.media_sources || [];
+        if (textSources.some(item => item?.source_type !== "lyrics")) categories.push("文字");
+        if (textSources.some(item => item?.source_type === "lyrics")) categories.push("音樂");
+        if (mediaSources.length) categories.push("多媒體");
+        if (Number(data?.knowledge_summary?.knowledge_document_records || 0) > 0) categories.push("知識");
+        const dateText = start && end ? `${start}–${end}` : (start || end);
+        summary.textContent = [`搜尋資料｜${count} 筆`, dateText, categories.join(" / ")].filter(Boolean).join(" · ");
+      })
+      .catch(() => { summary.textContent = "搜尋資料｜點開查看總數、日期與來源"; });
   }
 
   window.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("[data-loc-nav]").forEach(renderNav);
-    renderBuildLabel();
+    cleanupContextGameEmbed();
+    promoteWorkspaceNav();
+    addIndexTiers();
     loadPageEnhancements();
     enhanceSearchSummary();
   });
