@@ -1,6 +1,6 @@
 (() => {
   const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-  const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const esc=s=>String(s??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
   const loaded=new Set();
 
   function viewName(){return (location.hash||'#ranking').slice(1)||'ranking';}
@@ -9,20 +9,35 @@
   function navMarkup(name){
     if(name==='rune-trend'){
       return `
-        <div class="nav-group"><div class="nav-label">01</div><a href="tutorial01.html"><strong>新手上路</strong><small>月之符文入門</small></a></div>
-        <div class="nav-group"><div class="nav-label">02</div><a href="lots.html#draw"><strong>占卜抽籤</strong><small>線上即時抽牌引擎</small></a></div>
-        <div class="nav-group"><div class="nav-label">03</div><a href="lots.html#library"><strong>符文總覽</strong><small>66 符 · 群組</small></a></div>
-        <div class="nav-group"><div class="nav-label">04</div><a class="active" href="#rune-trend" data-statics-nav="rune-trend"><strong>每日符文</strong><small>紀錄 · 統計 · 趨勢</small></a></div>
-        <div class="nav-group"><div class="nav-label">05</div><a href="runes.html#rag"><strong>符文知識庫</strong><small>RAG · 占卜解析 · 演算法</small></a></div>`;
+        <div class="nav-group"><a href="tutorial01.html"><strong>新手上路</strong><small>月之符文入門</small></a></div>
+        <div class="nav-group"><a href="lots.html#draw"><strong>占卜抽籤</strong><small>線上即時抽牌引擎</small></a></div>
+        <div class="nav-group"><a href="lots.html#library"><strong>符文總覽</strong><small>66 符 · 群組</small></a></div>
+        <div class="nav-group"><a class="active" href="#rune-trend" data-statics-nav="rune-trend"><strong>每日符文</strong><small>紀錄 · 統計 · 趨勢</small></a></div>
+        <div class="nav-group"><a href="runes.html#rag"><strong>符文知識庫</strong><small>RAG · 占卜解析 · 演算法</small></a></div>`;
     }
     return `
-      <div class="nav-group"><div class="nav-label">01</div><a href="#ranking" data-statics-nav="ranking"><strong>排行榜</strong><small>關鍵字 · 曲風 · 符文</small></a></div>
-      <div class="nav-group"><div class="nav-label">02</div><a href="#sources" data-statics-nav="sources"><strong>資料來源</strong><small>平台 · 日期 · 字數 · 筆數</small></a></div>
-      <div class="nav-group"><div class="nav-label">03</div><a class="statics-placeholder" href="#import" aria-disabled="true" tabindex="-1"><strong>匯入</strong><small>暫時不開放</small></a></div>`;
+      <div class="nav-group"><a href="#ranking" data-statics-nav="ranking"><strong>排行榜</strong><small>關鍵字 · 曲風 · 符文</small></a></div>
+      <div class="nav-group"><a href="#sources" data-statics-nav="sources"><strong>資料來源</strong><small>平台 · 日期 · 字數 · 筆數</small></a></div>
+      <div class="nav-group"><a class="statics-placeholder" href="#import" aria-disabled="true" tabindex="-1"><strong>匯入</strong><small>暫時不開放</small></a></div>`;
   }
 
-  function paintSecondaryNav(name){const nav=$('.sidebar .nav'),brand=$('.sidebar .brand');if(!nav)return;nav.innerHTML=navMarkup(name);if(brand)brand.innerHTML=name==='rune-trend'?'<h1>LunaRunes</h1><p>月之符文</p>':'<h1>Statics</h1><p>統計</p>';bindNav();}
-  function switchView(name,update=true){const valid=['ranking','sources','rune-trend'];if(!valid.includes(name))name='ranking';$$('.statics-view').forEach(v=>v.hidden=v.dataset.view!==name);paintSecondaryNav(name);$$('[data-statics-nav]').forEach(a=>a.classList.toggle('active',a.dataset.staticsNav===name));if(update)history.replaceState(null,'','statics.html#'+name);loadView(name);}
+  function navNode(){return $('.loc-secondary-nav')||$('.sidebar .nav');}
+  function paintSecondaryNav(name){
+    const nav=navNode();
+    if(!nav)return;
+    nav.innerHTML=navMarkup(name);
+    nav.classList.add('loc-secondary-nav');
+    bindNav();
+  }
+  function switchView(name,update=true){
+    const valid=['ranking','sources','rune-trend'];
+    if(!valid.includes(name))name='ranking';
+    $$('.statics-view').forEach(v=>v.hidden=v.dataset.view!==name);
+    paintSecondaryNav(name);
+    $$('[data-statics-nav]').forEach(a=>a.classList.toggle('active',a.dataset.staticsNav===name));
+    if(update)history.replaceState(null,'','statics.html#'+name);
+    loadView(name);
+  }
 
   async function loadRanking(){
     if(loaded.has('ranking'))return;loaded.add('ranking');const host=$('#keywordRankingList');
@@ -38,5 +53,6 @@
 
   async function loadView(name){if(name==='ranking')return loadRanking();if(name==='sources')return loadSources();if(name==='rune-trend')return loadRuneTrend()}
   function bindNav(){$$('[data-statics-nav]').forEach(a=>a.addEventListener('click',ev=>{ev.preventDefault();switchView(a.dataset.staticsNav)}));}
-  window.addEventListener('hashchange',()=>switchView(viewName(),false));switchView(viewName(),false);
+  window.addEventListener('hashchange',()=>switchView(viewName(),false));
+  switchView(viewName(),false);
 })();
