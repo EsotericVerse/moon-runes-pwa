@@ -87,15 +87,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const coreGroups = groups.filter(meta => (meta.runes || []).some(member => Number(member.id) >= 1 && Number(member.id) <= 64));
   const specialRunes = all.filter(r => r.編號 === 65 || r.編號 === 66).sort((a,b) => a.編號 - b.編號);
+  let groupQuickView = null;
 
   if (overviewLink && coreGroups.length) {
     const quickHost = document.createElement('div');
     quickHost.id = 'rune-group-quick-selector';
     overviewLink.after(quickHost);
 
-    mountQuickSelector({
+    groupQuickView = mountQuickSelector({
       target: quickHost,
       imageTarget: overviewLink,
+      display: 'modal',
       items: coreGroups.map(meta => ({
         id: meta.id || meta.group_en || meta.group_zh,
         label: meta.group_zh,
@@ -120,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (grid) {
-    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">點選總覽圖上的八個群組按鈕，可在圖下快速切換該組 8 枚符文；點選符文圖片可查看進階文字說明。</p>${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之外額外列出。</span></div></div><div class="group-row">${specialRunes.map(tile).join("")}</div></section>` : ""}`;
+    grid.innerHTML = `<p style="margin:0 0 14px;color:var(--muted);font-size:.82rem;">點選總覽圖上的八個群組按鈕，會開啟浮動快速說明；在視窗中可查看該組 8 枚符文，點選符文圖片可再查看單一符文說明。</p>${specialRunes.length ? `<section class="rune-group" aria-label="特殊符文"><div class="group-head"><div class="group-title"><strong>特殊符文</strong><span class="group-note">玄與命不屬於 1–64 的八個基本群組，於八組之外額外列出。</span></div></div><div class="group-row">${specialRunes.map(tile).join("")}</div></section>` : ""}`;
   }
   if (count) count.textContent = "8 組 · 64 枚基本符文 + 2 枚特殊符文";
 
@@ -128,6 +130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function openRune(r){
     if (!modal) return;
+    if (groupQuickView?.modal?.open) groupQuickView.modal.close();
     modalTitle.textContent = `#${String(r.編號).padStart(2,"0")} · ${r.符文名稱}${r.英文 ? ` · ${r.英文}` : ""}`;
     modalImage.hidden = false;
     modalImage.src = "64images/" + encodeURIComponent(r.圖檔名稱);
@@ -147,7 +150,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (selected) openRune(selected);
   };
 
-  document.querySelector('#rune-group-quick-selector')?.addEventListener('click', runeClickHandler);
+  groupQuickView?.modal?.addEventListener('click', runeClickHandler);
   grid?.addEventListener("click", runeClickHandler);
 
   closeBtn?.addEventListener("click", () => modal.close());
