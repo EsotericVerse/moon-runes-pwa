@@ -25,6 +25,32 @@
     document.head.appendChild(style);
   }
 
+  function installGovernanceStyles(){
+    if(fileName()!=="governance.html" || document.getElementById("loc-governance-canonical-style")) return;
+    const style=document.createElement("style");
+    style.id="loc-governance-canonical-style";
+    style.textContent=`
+      :root{color-scheme:dark;--bg:#07182d!important;--card:rgba(13,31,56,.88)!important;--text:#f5f1ff!important;--muted:#b9bfd0!important;--line:rgba(180,158,255,.22)!important;--purple:#b49eff;--gold:#e7c27d;--surface2:rgba(23,43,72,.72)}
+      body{background:radial-gradient(circle at 10% 8%,rgba(103,75,171,.24),transparent 30rem),radial-gradient(circle at 88% 88%,rgba(35,105,135,.18),transparent 30rem),linear-gradient(180deg,#07182d 0%,#091729 62%,#06111f 100%)!important;color:var(--text)!important;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif!important;line-height:1.7!important}
+      .app-shell{display:block!important;width:min(1180px,calc(100% - 28px))!important;margin:0 auto!important;padding:18px 0 64px!important}
+      .workspace-main{min-width:0}
+      .governance-view article{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important}
+      .governance-view .eyebrow{color:var(--purple)!important;font-size:.78rem!important;font-weight:800!important;letter-spacing:.08em!important;text-transform:none!important}
+      .governance-view h1{margin:.25rem 0 .7rem!important;font-size:clamp(2rem,5vw,3.1rem)!important;line-height:1.18!important;color:var(--text)!important}
+      .governance-view .lead{margin:0 0 20px!important;color:var(--muted)!important;font-size:1rem!important;line-height:1.75!important}
+      .governance-view h2{margin:18px 0 0!important;padding:16px 18px 6px!important;border:1px solid var(--line)!important;border-bottom:0!important;border-radius:18px 18px 0 0!important;background:rgba(11,27,49,.58)!important;color:var(--gold)!important;font-size:1.08rem!important}
+      .governance-view h2 + p,.governance-view h2 + ul,.governance-view h2 + ol,.governance-view h2 + h3{margin-top:0!important}
+      .governance-view h3{margin:0!important;padding:12px 18px 4px!important;border-left:1px solid var(--line)!important;border-right:1px solid var(--line)!important;background:rgba(11,27,49,.58)!important;color:var(--purple)!important;font-size:.92rem!important}
+      .governance-view p,.governance-view ul,.governance-view ol{margin:0!important;padding:8px 18px 14px!important;border-left:1px solid var(--line)!important;border-right:1px solid var(--line)!important;background:rgba(11,27,49,.58)!important;color:#dce6f7!important}
+      .governance-view ul,.governance-view ol{padding-left:38px!important}
+      .governance-view h2 ~ p:last-child,.governance-view section>p:last-child{border-bottom:1px solid var(--line)!important;border-radius:0 0 18px 18px!important}
+      .governance-view a{color:var(--gold)!important}
+      .governance-view .back{display:inline-flex!important;margin-top:16px!important;padding:9px 13px!important;border:1px solid var(--line)!important;border-radius:999px!important;background:rgba(180,158,255,.06)!important;text-decoration:none!important}
+      @media(max-width:560px){.app-shell{width:min(100% - 18px,1180px)!important}.governance-view h2{padding:14px 14px 5px!important}.governance-view h3,.governance-view p,.governance-view ul,.governance-view ol{padding-left:14px!important;padding-right:14px!important}.governance-view ul,.governance-view ol{padding-left:32px!important}}
+    `;
+    document.head.appendChild(style);
+  }
+
   function appendScript(src, key) {
     if (document.querySelector(`script[data-${key}]`)) return;
     const script = document.createElement("script");
@@ -166,6 +192,14 @@
     ],"統計功能"));
   }
 
+  function buildGovernance(host){
+    host.appendChild(tier([
+      link("中立立場","governance.html#governanceView"),
+      link("Copyleft","COPYLEFT.md"),
+      link("政德風治理理念","governance.html#style")
+    ],"治理內容"));
+  }
+
   function buildTiers() {
     const host = getTierHost();
     if (!host) return;
@@ -175,6 +209,7 @@
     else if (file === "runes.html" || file === "lots.html" || file === "statics.htm" || file === "statics.html") buildRunes(host);
     else if (file === "context.html") buildContext(host);
     else if (file === "evolution.html") buildEvolution(host);
+    else if (file === "governance.html") buildGovernance(host);
   }
 
   function cleanupContextGameEmbed() {
@@ -195,6 +230,7 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     installStyles();
+    installGovernanceStyles();
     loadNav1();
     cleanupContextGameEmbed();
     buildTiers();
