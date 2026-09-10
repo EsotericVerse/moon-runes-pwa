@@ -1,0 +1,80 @@
+name: Finalize canonical site split
+on:
+  push:
+    paths:
+      - '.github/workflows/finalize-canonical-site-split.yml'
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Finalize split
+        shell: python
+        run: |
+          from pathlib import Path
+          import re, json
+
+          # loc-nav: statics keeps global active=statics while sharing runes NAV2.
+          p=Path('js/loc-nav.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('if (file === "statics.htm" || file === "statics.html") return "runes";', 'if (file === "statics.htm" || file === "statics.html") return "statics";')
+          p.write_text(s,encoding='utf-8')
+
+          # lots.html: canonical URL and source-clean responsibility split.
+          p=Path('lots.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('<link rel="canonical" href="https://loc.lo3rwang.cc/runes.html" />','<link rel="canonical" href="https://loc.lo3rwang.cc/lots.html" />')
+          # Remove reference/examples/systems blocks: Lots owns beginner/draw/library only.
+          s=re.sub(r'<div class="runes-view" id="referenceView"[\s\S]*?(?=<div class="runes-view" id="libraryView")','',s,count=1)
+          # Remove daily records/trend view: that responsibility moves to statics.
+          s=re.sub(r'<div class="runes-view" id="dailyView"[\s\S]*?(?=<div class="runes-view" id="drawView")','',s,count=1)
+          p.write_text(s,encoding='utf-8')
+
+          # Search source registry must be JS, not a JSON registry.
+          sp=Path('search.html')
+          search=sp.read_text(encoding='utf-8')
+          paths=[]
+          for m in re.finditer(r"localJson\((['\"])(data/json/[^'\"]+)\1\)",search):
+              if m.group(2) not in paths: paths.append(m.group(2))
+          js='''// Canonical browser-side search source registry.\n// Search data remains in its governed source files; this JS owns the browser source routing.\nwindow.LOC_SEARCH_SOURCES = Object.freeze({\n'''
+          for path in paths:
+              js += '  '+json.dumps(path,ensure_ascii=False)+': '+json.dumps(path,ensure_ascii=False)+',\n'
+          js += '});\n\nwindow.addEventListener("DOMContentLoaded",()=>{\n  const status=document.querySelector(".status");\n  const results=document.querySelector(".groups");\n  if(status&&results&&results.parentNode) results.after(status);\n});\n'
+          Path('js/search-sources.js').write_text(js,encoding='utf-8')
+          search=re.sub(r"localJson\((['\"])(data/json/[^'\"]+)\1\)",lambda m:'localJson(window.LOC_SEARCH_SOURCES['+json.dumps(m.group(2),ensure_ascii=False)+'])',search)
+          if 'js/search-sources.js' not in search:
+              search=search.replace('</head>','  <script src="js/search-sources.js"></script>\n</head>',1)
+          sp.write_text(search,encoding='utf-8')
+
+          # statics: add Daily Rune records here; import remains placeholder.
+          p=Path('statics.htm')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('data-page="statics"','data-page="statics"')
+          if 'id="daily"' not in s:
+              daily='''\n<section id="daily"><h2>每日符文</h2><div class="card">\n<p>每日符文的手動紀錄與趨勢統計集中在這裡；線上即時抽牌仍由 Lots 處理。</p>\n<div class="daily-record-grid">\n<form class="daily-record-form" id="dailyRecordForm">\n<h3>手動記錄實體牌</h3>\n<div class="daily-form-grid">\n<label>日期<input id="dailyRecordDate" type="date" required></label>\n<label>類型<select id="dailyRecordKind"><option value="daily_draw">主抽</option><option value="daily_draw_supplement">補抽</option></select></label>\n<label>符文<select id="dailyRecordRune" required><option value="">選擇符文</option></select></label>\n<label>方向<select id="dailyRecordDirection"><option>正位</option><option>半正位</option><option>半逆位</option><option>逆位</option></select></label>\n<label class="full">備註<input id="dailyRecordNote" type="text" placeholder="可留空"></label>\n</div><button class="daily-record-submit" type="submit">儲存紀錄</button><div class="daily-record-status" id="dailyRecordStatus">尚未寫入任何資料。</div>\n</form>\n<div class="daily-stats-panel"><h3>每日符文趨勢統計</h3><p id="dailyStatsStatus">載入已記錄的每日符文資料…</p>\n<div class="daily-metrics"><div><small>紀錄數</small><strong id="dailyMetricCount">—</strong></div><div><small>主抽</small><strong id="dailyMetricPrimary">—</strong></div><div><small>補抽</small><strong id="dailyMetricSupplement">—</strong></div></div>\n<div class="daily-history-list" id="dailyHistoryList"></div><div class="daily-history-pagination" id="dailyHistoryPagination" hidden><div id="dailyHistoryPageInfo"></div><div id="dailyHistoryPages"></div></div>\n</div></div></div></section>\n'''
+              s=s.replace('<section id="import">',daily+'<section id="import">',1)
+          extra_css='''\n.daily-record-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.daily-record-form,.daily-stats-panel{padding:16px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.12)}.daily-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.daily-form-grid label{display:grid;gap:5px;color:var(--muted);font-size:.8rem}.daily-form-grid .full{grid-column:1/-1}.daily-form-grid input,.daily-form-grid select{min-height:40px;padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:#0b1d31;color:var(--text)}.daily-record-submit{margin-top:12px;padding:9px 13px;border:0;border-radius:9px;background:var(--gold);color:#17120a;font-weight:800}.daily-record-status{margin-top:9px;color:var(--muted);font-size:.8rem}.daily-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.daily-metrics>div{padding:10px;border:1px solid var(--line);border-radius:10px}.daily-metrics small,.daily-metrics strong{display:block}.daily-history-list{display:grid;gap:7px}.daily-history-row{display:grid;grid-template-columns:110px 1fr auto;gap:8px;padding:8px;border-bottom:1px solid var(--line)}.daily-history-pagination{margin-top:12px}.daily-history-pages{display:flex;gap:5px;flex-wrap:wrap}.daily-page-btn{padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--text)}@media(max-width:720px){.daily-record-grid,.daily-form-grid{grid-template-columns:1fr}.daily-form-grid .full{grid-column:auto}.daily-history-row{grid-template-columns:1fr}}\n'''
+          if '.daily-record-grid{' not in s:
+              s=s.replace('</style>',extra_css+'</style>',1)
+          if 'js/rune-daily-records.js' not in s:
+              s=s.replace('<script src="js/loc-nav.js" defer></script>','<script src="js/loc-nav.js" defer></script>\n<script type="module" src="js/rune-daily-records.js?v=20260908-1"></script>',1)
+          p.write_text(s,encoding='utf-8')
+
+          # Service worker: cache the JS registry; remove stale daily view dependency from lots remains handled by page itself.
+          p=Path('service-worker.js')
+          s=p.read_text(encoding='utf-8')
+          s=re.sub(r'moon-runes-pwa-v\d+','moon-runes-pwa-v193',s,count=1)
+          if '"/js/search-sources.js"' not in s:
+              s=s.replace('"/search.html",','"/search.html",\n  "/js/search-sources.js",',1)
+          p.write_text(s,encoding='utf-8')
+
+          Path('.github/workflows/finalize-canonical-site-split.yml').unlink()
+      - name: Commit finalized architecture
+        run: |
+          git config user.name "EsotericVerse"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Finalize canonical page responsibilities and JS search sources"
+          git push
