@@ -9,7 +9,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (card) card.addEventListener("click", () => { window.location.href = "runes.html#draw"; });
 
   // Canon model hierarchy:
-  // LOC = Language System Model
+  // LOC = Evolvable Language Model
   // LOC1–8 = Language System Modules
   // LOC1 = LunaRunes Module
   // LunaRunes = Symbolic Language Model
@@ -17,29 +17,29 @@ window.addEventListener("DOMContentLoaded", () => {
   if (metaDescription) {
     metaDescription.setAttribute(
       "content",
-      "LOC（月典）是一套由 LOC1–LOC8 八個語言系統模組組合而成的語言系統模型。LunaRunes（月之符文）從語彙單字（Token）出發，經由 LOC 的脈絡、創作與延伸體系、演算法與時間推演相輔相成，最後成長為符號式語言模型（Symbolic Language Model）。"
+      "LOC（月典）是一套分析拆解、組織彙整、搜尋並推演語言的可自動進化語言模型。它由 LOC1–LOC8 八個語言系統模組構成，以月之符文作為語彙（Token）的種子，經由脈絡、作品、演算法與時間推演持續累積並進化。"
     );
   }
 
   const heroCopy = document.querySelector(".hero .loc-header-copy");
   if (heroCopy) {
-    heroCopy.textContent = "月典（LOC，Luna Codex）是一套分析拆解、組織彙整、搜尋並推演語言的語言系統模型（Language System Model），由 LOC1–LOC8 八個語言系統模組（Language System Modules）組合而成。月之符文(LunaRunes)一開始只是語彙單字(Token)，經過脈絡分析、創作文字跟延伸體系、整合規則的演算法模型，最後放回時間中觀察並推演，與本來的LOC相輔相成，最後成長為符號式語言模型（Symbolic Language Model）。";
+    heroCopy.textContent = "從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，自我選擇演化，累積後便可以進化。月典（LOC，Luna Codex）是一套分析拆解、組織彙整、搜尋並推演語言的可自動進化語言模型。它以月之符文作為語彙（Token）的種子，經過脈絡分析、創作文字與延伸體系、整合規則的演算法，最後放回時間中觀察，並在推演演化後選擇進化。";
   }
 
   const heroNoteStrong = document.querySelector(".hero-note strong");
-  if (heroNoteStrong) heroNoteStrong.textContent = "月之符文從語彙單字（Token）出發，並與 LOC 各語言系統模組相輔相成。";
+  if (heroNoteStrong) heroNoteStrong.textContent = "LOC 現行定位為可自動進化語言模型；LOC1–LOC8 是構成它的語言系統模組（Language System Modules）。";
 
   const runeEyebrow = document.querySelector("#rune-entry .rune-entry-eyebrow");
   if (runeEyebrow) runeEyebrow.textContent = "LOC1 · LunaRunes Module · 月之符文語言模組";
 
   const runeSectionLead = document.querySelector("#rune-entry .section-heading > p");
   if (runeSectionLead) {
-    runeSectionLead.textContent = "月之符文由 66 個中文單一字構成，透過四向、月相與多卡語法形成可組合、可判讀的符號式語言模型。可以從一個問題開始，也可以沒有問題直接抽取。";
+    runeSectionLead.textContent = "月之符文由基本語彙（Token）出發，進入關係脈絡分析（Context），並與占卜使用的演算法模組及 LOC 其他模組相輔相成，逐步成長為一套符號式語言模型（Symbolic Language Model）。";
   }
 
   const runeIntro = document.querySelector("#rune-entry .rune-intro");
   if (runeIntro) {
-    runeIntro.innerHTML = "<strong>不知道怎麼說，也沒關係。</strong>LunaRunes 可以成為語意起點：問事、整理感受，或在沒有靈感時提供新的創作路徑。";
+    runeIntro.innerHTML = "<strong>月之符文是種子，但不是使用門檻。</strong>不必先學會所有符文、解牌方式或語言系統。你可以先抽牌、找作品、看脈絡分析或關鍵字排行；想深入時，LOC 再把模組架構展開給你。";
   }
 
   // Homepage rune text must come from the canonical runes66 dataset, not from
@@ -125,7 +125,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const evolutionLead = document.querySelector("#language-evolution .section-heading > p");
   if (evolutionLead) {
-    evolutionLead.textContent = "LunaRunes 從語彙單字（Token）出發，經過脈絡、創作與延伸體系、演算法與演算模組，最後放回時間中由推演引擎持續觀察與推演，並與 LOC 相輔相成。";
+    evolutionLead.textContent = "月之符文從語彙單字（Token）出發，經過脈絡、創作與延伸體系、演算法與演算模組，最後交由推演引擎放回時間中觀察、推演與累積，形成可以持續進化的語言模型。";
   }
 
   const evolutionSteps = [...document.querySelectorAll("#language-evolution .evolution-step")];
@@ -137,7 +137,7 @@ window.addEventListener("DOMContentLoaded", () => {
     { english: "Multimedia", title: "多媒體", copy: "整合文字、音樂、圖像、影音與其他媒介，形成跨媒介的語言延伸體系。" },
     { english: "Algorithm", title: "演算法", copy: "把判讀、比較、治理、組合與分析方法整理成可重複執行、可檢查的規則與流程。" },
     { english: "Module", title: "演算模組", copy: "把演算法、資料、知識與功能封裝成可組合、重用與替換的演算模組。" },
-    { english: "Evolution", title: "推演引擎", copy: "把模型、模組、作品、事件與語言放回時間、時期、軌跡與趨勢中持續觀察與推演。" }
+    { english: "Evolution", title: "推演引擎", copy: "把模型、模組、作品、事件與語言放回時間、時期、軌跡與趨勢中觀察，推演可能方向，累積後再選擇是否進化。" }
   ];
 
   evolutionSteps.forEach((step, index) => {
@@ -153,12 +153,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const frameworkCopy = document.querySelector("#framework-map .loc-header-copy");
   if (frameworkCopy) {
-    frameworkCopy.textContent = "LOC 是整體語言系統模型（Language System Model）；LOC1–LOC8 是構成模型的八個語言系統模組（Language System Modules）：LunaRunes Module、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution。";
+    frameworkCopy.textContent = "LOC 是一套可自動進化語言模型；LOC1–LOC8 是構成它的八個語言系統模組（Language System Modules）：LunaRunes Module、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution。";
   }
 
   const aboutCopy = document.querySelector('[aria-labelledby="about-title"] > p');
   if (aboutCopy) {
-    aboutCopy.textContent = "LOC 由 LOC1–LOC8 八個語言系統模組共同構成。LunaRunes 從語彙單字（Token）開始，經過脈絡、創作與延伸體系、演算法、演算模組與推演引擎，與 LOC 相輔相成，最後成長為符號式語言模型（Symbolic Language Model）。";
+    aboutCopy.textContent = "從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演；系統根據累積資料提出演化方向，再由使用者選擇是否進化。月之符文作為最初的語彙種子，與 LOC 各模組相輔相成，最後成長為符號式語言模型（Symbolic Language Model）。";
   }
 
   const frameworkInfo = {
@@ -199,8 +199,8 @@ window.addEventListener("DOMContentLoaded", () => {
     },
     LOC8: {
       english: "Evolution", title: "推演引擎", tab: "推演引擎", category: "推演引擎",
-      copy: "處理『它在時間中怎麼改變』。把模型、模組、作品、事件與語言放回不同時期，觀察前後差異、變化方向與一路形成的軌跡。",
-      extra: ["時期用來區分相對穩定的狀態。","時間線整理事件與作品出現的位置。","趨勢比較不同時期的語言與作品變化。","推演建立在既有資料上，不等於預言。"]
+      copy: "處理『它在時間中怎麼改變』。把模型、模組、作品、事件與語言放回不同時期，觀察前後差異與變化方向，並根據累積結果提出可選擇的演化路徑。",
+      extra: ["時期用來區分相對穩定的狀態。","時間線整理事件與作品出現的位置。","趨勢比較不同時期的語言與作品變化。","推演提供演化方向；最終是否進化仍由使用者選擇。"]
     }
   };
 
