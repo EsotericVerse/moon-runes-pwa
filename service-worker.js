@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v181";
+const CACHE_NAME = "moon-runes-pwa-v182";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -7,9 +7,11 @@ const ASSETS_TO_CACHE = [
   "/runes.html",
   "/context.html",
   "/game.html",
+  "/loc2-game.html",
   "/governance.html",
   "/lo3rwang.html",
   "/tutorial01.html",
+  "/tutorial02.html",
   "/evolution.html",
   "/css/style.css",
   "/js/loc-nav.js",
@@ -17,6 +19,7 @@ const ASSETS_TO_CACHE = [
   "/css/loc-nav.css",
   "/css/loc-responsive.css",
   "/css/rune-draw.css",
+  "/data/html/runes-beginner.html",
   "/data/json/registries/LOC_NAV.json",
   "/data/json/registries/LOC_KM_KEYWORDS.json",
   "/data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json",
