@@ -1,0 +1,61 @@
+name: Fix homepage NAV architecture and canonical copy
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/fix-home-nav-and-copy.yml']
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fix homepage NAV and copy
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Remove the obsolete in-page topbar so only canonical NAV1/NAV2/NAV3 remains.
+          s, n = re.subn(r'\n\s*<div class="topbar">.*?</div>\s*(?=<header class="hero">)', '\n', s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit(f'expected one legacy topbar, removed {n}')
+
+          # Canonical homepage wording supplied by the author.
+          s = s.replace('<title>LOC月典｜語言系統模型</title>', '<title>LOC月典｜語言模組框架</title>')
+          s = s.replace('LOC（月典）是一套分析拆解、組織彙整、搜尋並推演語言的語言系統模型：從月之符文、脈絡、音樂、文字、多媒體，到方法論、演算法（知識庫）與推演。', 'LOC（月典／Luna Codex）是一套可進化、可重複使用的語言模組框架（Language Module Framework），由 LOC1–LOC8 八個語言系統模組組合而成。')
+          s = s.replace('LOC · Luna Codex · Language System Model', 'LOC · Luna Codex · Language Module Framework')
+          s = s.replace('從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，自我選擇演化，累積後便可以進化。', '從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，累積後再選擇怎麼進化。')
+          s = s.replace('月典（LOC，Luna Codex）是一套分析拆解、組織彙整、搜尋並推演語言的可推演、可演化的語言系統模型。它以月之符文作為語彙（Token）的種子，經過脈絡分析、創作文字與延伸體系、整合規則的演算法，最後放回時間中觀察，並在推演演化後選擇進化。', '月典是一套用來分析、整理、搜尋與推演語言的系統。它從月之符文開始，把文字、作品、脈絡與時間串起來，讓累積的資料可以繼續被理解、比較與推演。')
+          s = s.replace('查看關鍵字排行</a>', '查看關鍵字排行</a>')
+          s = s.replace('href="search.html#rankingView">查看關鍵字排行', 'href="statics.htm#ranking">查看關鍵字排行')
+          s = s.replace('"description":"由王政德（Lucas Oscar Wang / lo3rwang）創作與設計的語言系統模型。"', '"description":"由王政德（Lucas Oscar Wang / lo3rwang）創作與設計的語言模組框架。"')
+
+          # Guard: homepage must have canonical mount and no legacy topbar nav.
+          if 'data-loc-nav data-page="home"' not in s:
+              raise SystemExit('homepage canonical NAV mount missing')
+          if '<div class="topbar">' in s or 'aria-label="主要導覽"' in s:
+              raise SystemExit('legacy homepage topbar still present')
+
+          p.write_text(s, encoding='utf-8')
+
+          sw = Path('service-worker.js')
+          t = sw.read_text(encoding='utf-8')
+          m = re.search(r'moon-runes-pwa-v(\d+)', t)
+          if not m:
+              raise SystemExit('cache version not found')
+          t = t[:m.start()] + f'moon-runes-pwa-v{int(m.group(1))+1}' + t[m.end():]
+          sw.write_text(t, encoding='utf-8')
+          PY
+      - name: Commit and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/fix-home-nav-and-copy.yml
+          git add index.html service-worker.js
+          git commit -m "Fix homepage canonical NAV and copy"
+          git push
