@@ -1,5 +1,5 @@
 (() => {
-  const WEB_BUILD = "1.2";
+  const WEB_BUILD = "1.3";
   const currentFile = location.pathname.split("/").pop() || "index.html";
 
   if (currentFile === "runes.html") {
@@ -33,17 +33,17 @@
   ];
 
   const RUNE_NAV = `
-    <div class="workspace-nav-group"><div class="workspace-nav-label">01</div><a class="workspace-link" href="tutorial01.html"><strong>新手上路</strong><small>月之符文入門</small></a></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">02</div><a class="workspace-link" href="lots.html#draw"><strong>占卜抽籤</strong><small>線上即時抽牌引擎</small></a></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">03</div><a class="workspace-link" href="lots.html#library"><strong>符文總覽</strong><small>66 符 · 群組 · 固定資料</small></a></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">04</div><a class="workspace-link" href="statics.html#rune-trend"><strong>每日符文</strong><small>紀錄 · 統計 · 趨勢</small></a></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">05</div><a class="workspace-link" href="runes.html#rag"><strong>符文知識庫</strong><small>RAG · 占卜解析 · 符文演算法</small></a></div>`;
+    <div class="workspace-nav-group"><a class="workspace-link" href="tutorial01.html"><strong>新手上路</strong><small>月之符文入門</small></a></div>
+    <div class="workspace-nav-group"><a class="workspace-link" href="lots.html#draw"><strong>占卜抽籤</strong><small>線上即時抽牌引擎</small></a></div>
+    <div class="workspace-nav-group"><a class="workspace-link" href="lots.html#library"><strong>符文總覽</strong><small>66 符 · 群組 · 固定資料</small></a></div>
+    <div class="workspace-nav-group"><a class="workspace-link" href="statics.html#rune-trend"><strong>每日符文</strong><small>紀錄 · 統計 · 趨勢</small></a></div>
+    <div class="workspace-nav-group"><a class="workspace-link" href="runes.html#rag"><strong>符文知識庫</strong><small>RAG · 占卜解析 · 符文演算法</small></a></div>`;
 
   const CONTEXT_NAV = `
-    <div class="workspace-nav-group"><div class="workspace-nav-label">01</div><button class="workspace-switch active" type="button" data-context-target="graph"><strong>關係圖</strong><small>Graph</small></button></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">02</div><button class="workspace-switch" type="button" data-context-target="nodes"><strong>節點</strong><small>Node</small></button></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">03</div><button class="workspace-switch" type="button" data-context-target="relations"><strong>關聯</strong><small>Relation</small></button></div>
-    <div class="workspace-nav-group"><div class="workspace-nav-label">04</div><button class="workspace-switch" type="button" data-context-target="scenarios"><strong>情境</strong><small>Scenario</small></button></div>`;
+    <div class="workspace-nav-group"><button class="workspace-switch active" type="button" data-context-target="graph"><strong>關係圖</strong><small>Graph</small></button></div>
+    <div class="workspace-nav-group"><button class="workspace-switch" type="button" data-context-target="nodes"><strong>節點</strong><small>Node</small></button></div>
+    <div class="workspace-nav-group"><button class="workspace-switch" type="button" data-context-target="relations"><strong>關聯</strong><small>Relation</small></button></div>
+    <div class="workspace-nav-group"><button class="workspace-switch" type="button" data-context-target="scenarios"><strong>情境</strong><small>Scenario</small></button></div>`;
 
   function activeId(node){
     const explicit=node?.dataset?.page;
@@ -75,9 +75,6 @@
       .loc-global-search{display:flex;align-items:center;gap:6px;margin:0}
       .loc-global-search input{width:clamp(120px,18vw,220px);min-height:34px;padding:6px 10px;border:1px solid rgba(180,158,255,.22);border-radius:999px;background:rgba(8,22,40,.72);color:inherit;font:inherit;font-size:.8rem}
       .loc-global-search button{min-height:34px;padding:6px 10px;border:1px solid rgba(180,158,255,.22);border-radius:999px;background:rgba(180,158,255,.08);color:inherit;font:inherit;font-size:.78rem;font-weight:800;cursor:pointer}
-      .home-section-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;padding:10px 0;border-bottom:1px solid rgba(180,158,255,.15)}
-      .home-section-nav a{padding:5px 9px;border-radius:999px;color:var(--loc-muted,#b9bfd0);text-decoration:none;font-size:.78rem}
-      .home-section-nav a:hover{color:var(--loc-text,#f5f1ff);background:rgba(180,158,255,.08)}
       .statics-placeholder{opacity:.45;pointer-events:none}
       @media(max-width:720px){.loc-global-search{width:100%}.loc-global-search input{flex:1;width:auto;min-width:0}}
     `;
@@ -90,12 +87,23 @@
     if(currentFile!=='index.html')return;
     const nav=document.querySelector('.topbar .nav-links'); if(nav)nav.innerHTML=navMarkup('');
     const topbar=document.querySelector('.topbar');
-    if(topbar&&!document.querySelector('.home-section-nav')){const sub=document.createElement('nav');sub.className='home-section-nav';sub.setAttribute('aria-label','首頁功能導覽');sub.innerHTML=`<a href="#home-intro">LOC月典簡介</a><a href="#start-title">新手上路</a><a href="#framework-map">LOC架構圖</a><a href="#home-progress">目前進度</a><a href="statics.html">統計</a><a href="#home-other">其他</a>`;topbar.after(sub);}
+    if(topbar&&!document.querySelector('.home-section-nav')){
+      const sub=document.createElement('nav');
+      sub.className='home-section-nav';
+      sub.setAttribute('aria-label','首頁快速選單');
+      sub.innerHTML=`<a href="#home-intro">LOC月典簡介</a><a href="#start-title">新手上路</a><a href="#framework-map">LOC架構圖</a><a href="#home-progress">目前進度</a><a href="#home-other">其他</a>`;
+      topbar.after(sub);
+    }
     const hero=document.querySelector('header.hero'); if(hero&&!hero.id)hero.id='home-intro';
   }
 
   const FRAMEWORK_LABELS={LOC1:'月之符文模組',LOC2:'脈絡',LOC3:'音樂',LOC4:'文字創作',LOC5:'多媒體',LOC6:'演算法',LOC7:'演算模組',LOC8:'推演引擎'};
-  function patchFrameworkNav(){if(currentFile!=='index.html')return;document.querySelectorAll('.framework-tab').forEach(btn=>{const key=btn.dataset.locKey;if(FRAMEWORK_LABELS[key])btn.textContent=FRAMEWORK_LABELS[key];});}
+  function patchFrameworkNav(){
+    if(currentFile!=='index.html')return;
+    const tabs=document.querySelector('.framework-tabs');
+    if(tabs){tabs.classList.add('loc-tertiary-nav');tabs.setAttribute('aria-label','LOC 架構模組');}
+    document.querySelectorAll('.framework-tab').forEach(btn=>{const key=btn.dataset.locKey;if(FRAMEWORK_LABELS[key])btn.textContent=FRAMEWORK_LABELS[key];});
+  }
 
   function pruneSearchWorkspace(){
     if(currentFile!=="search.html")return;
@@ -114,7 +122,27 @@
     const hash=location.hash.replace('#','');const initial=['graph','nodes','relations','scenarios'].includes(hash)?hash:'graph';nav.querySelector(`[data-context-target="${initial}"]`)?.click();
   }
 
-  function renderBuildLabel(){if(currentFile==='search.html')return;document.querySelectorAll('.workspace-sidebar,.sidebar').forEach(sidebar=>{if(sidebar.querySelector('[data-web-build]'))return;const label=document.createElement('div');label.dataset.webBuild='true';label.textContent='Web Build '+WEB_BUILD;label.style.cssText='margin-top:14px;padding-top:10px;border-top:1px solid rgba(127,135,148,.18);font-size:11px;letter-spacing:.08em;opacity:.58;text-align:center';sidebar.appendChild(label);});}
+  function promoteSecondaryNav(){
+    if(currentFile==='index.html'||currentFile==='search.html'||currentFile==='game.html'||currentFile==='loc2-game.html')return;
+    const source=document.querySelector('.workspace-sidebar .workspace-nav,.sidebar .nav');
+    if(!source||document.querySelector('.loc-secondary-shell'))return;
+    const shell=document.createElement('div');
+    shell.className='loc-secondary-shell';
+    source.classList.add('loc-secondary-nav');
+    source.setAttribute('aria-label',source.getAttribute('aria-label')||'第二層導覽');
+    shell.appendChild(source);
+    const global=document.querySelector('.loc-global-shell');
+    if(global)global.after(shell); else document.body.prepend(shell);
+  }
 
-  window.addEventListener('DOMContentLoaded',()=>{ensureNavStyle();document.querySelectorAll('[data-loc-nav]').forEach(paintGlobalNav);paintHomeTopbar();pruneSearchWorkspace();patchRuneNav();patchContextNav();renderBuildLabel();setTimeout(patchFrameworkNav,0);});
+  window.addEventListener('DOMContentLoaded',()=>{
+    ensureNavStyle();
+    document.querySelectorAll('[data-loc-nav]').forEach(paintGlobalNav);
+    paintHomeTopbar();
+    pruneSearchWorkspace();
+    patchRuneNav();
+    patchContextNav();
+    promoteSecondaryNav();
+    setTimeout(patchFrameworkNav,0);
+  });
 })();
