@@ -2,6 +2,7 @@
   if (window.LOCNav1) return;
 
   const ITEMS = Object.freeze([
+    {id:"home",label:"首頁",href:"index.html"},
     {id:"runes",label:"月之符文",href:"runes.html"},
     {id:"game",label:"遊戲",href:"game.html"},
     {id:"context",label:"脈絡",href:"context.html"},
@@ -32,9 +33,7 @@
 
   function render(node){
     const current=currentGroup(node);
-    const brand=current==="home"
-      ? '<span class="loc-global-brand loc-global-current" aria-current="page">LOC月典</span>'
-      : '<a class="loc-global-brand" href="index.html" aria-label="回到 LOC月典首頁">LOC月典</a>';
+    const brand='<span class="loc-global-brand">LOC月典</span>';
 
     const links=ITEMS.map(item => item.id===current
       ? `<span class="loc-global-link loc-global-current" aria-current="page">${esc(item.label)}</span>`
