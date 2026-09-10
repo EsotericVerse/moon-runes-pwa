@@ -17,7 +17,7 @@
     if (heroNote) heroNote.innerHTML = '<div class="moon" aria-hidden="true"></div><strong>月之符文是種子，但不是使用門檻。</strong><p>不必先知道或學會所有符文，也不用先會解牌，更不需要先理解什麼是語言系統。你可以先抽牌、找作品、看脈絡分析、看關鍵字排行；想深入時，LOC 再把其模組架構展開給你。</p>';
 
     const startCopy = document.querySelector('[aria-labelledby="start-title"] .section-heading > p');
-    if (startCopy) startCopy.textContent = '完全的新手可以看「新手教學」。第一次使用可直接抽取每日符文。想查月之符文資料可進入「月之符文」。想理解整體則查看「LOC1–8 模組架構」。';
+    if (startCopy) startCopy.textContent = '完全的新手可以看「新手教學」。第一次使用可直接抽取每日符文。想查月之符文資料可進入「月之符文」。想理解整體則查看「LOC架構圖」。';
 
     const frameworkSection = document.getElementById('framework-map');
     if (frameworkSection) {
