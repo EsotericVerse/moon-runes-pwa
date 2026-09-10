@@ -4,9 +4,29 @@
 
 Classify text-derived JSON records into the LunaRunes implementation of LOC using deterministic structure first.
 
+LOC is treated here as a **Language Model Framework**. LunaRunes is its first **Symbolic Language Model** reference implementation.
+
 This Skill is designed primarily for personal language digital-legacy archives: long-term text, works, media metadata, rules, and derived records that need a stable first-pass structure before semantic-vector or LLM analysis.
 
 The classification method is based on the author's LOC system analysis and the LunaRunes symbolic language model. AI may execute, validate, or explain the rules, but the LOC1-8 mapping and LunaRunes grouping are defined system rules rather than model-generated taxonomy.
+
+## Framework / implementation boundary
+
+```text
+LOC = Language Model Framework
+LunaRunes = Symbolic Language Model implemented with LOC
+```
+
+Do not treat LunaRunes-specific rules as mandatory LOC framework rules. Another implementation may use a different vocabulary, symbol count, grouping method, or algorithm while still using LOC as the framework.
+
+Example:
+
+```text
+LOC + LunaRunes -> LunaRunes Symbolic Language Model
+LOC + SunRunes  -> another symbolic language model
+```
+
+The LunaRunes implementation uses 66 canonical runes and eight-rune grouping for 1-64 because those are author-defined LunaRunes rules.
 
 ## Core principle
 
@@ -136,6 +156,15 @@ The base classification problem is structural, not similarity-based. LunaRunes a
 
 Semantic vectors may be added later for tasks such as implicit rune-semantic detection in long-form text, similarity between works, latent themes, or cross-rune semantic overlap. They are an enhancement layer, not a prerequisite for the base symbolic model.
 
+## Classification versus semantic inference
+
+Do not confuse deterministic classification with semantic inference.
+
+- **Classification:** explicit id/name/group/type/relationship -> fixed rule -> LOC assignment.
+- **Semantic inference:** free text -> possible rune semantics -> derived metadata that may require review.
+
+For example, an explicit `空` rune record deterministically maps to LOC1 and LOC7 / 秩序群組. A paragraph that merely appears semantically related to 空 does not become canonical 空 data unless the relevant semantic-analysis rule is intentionally invoked.
+
 ## Evolution loop
 
 LOC8 may reuse prior structured outputs as new input:
@@ -153,6 +182,14 @@ source data
 
 This makes the evolution process recursively reusable while preserving provenance and human governance.
 
+A confirmed evolution result may update taxonomy, module definitions, search projections, relationships, or other derived system metadata. Such write-back creates a new system state that can be analyzed again.
+
+## Human authorship
+
+The LOC framework structure, LunaRunes 66-rune vocabulary, eight-rune grouping, LOC1-8 LunaRunes mapping, and evolution method are author-defined system analysis and design.
+
+AI may execute the method, validate consistency, help parse data, or assist with optional semantic inference. Do not describe the taxonomy itself as AI-generated.
+
 ## Guardrails
 
 - Do not invent rune meanings or groups.
@@ -161,3 +198,4 @@ This makes the evolution process recursively reusable while preserving provenanc
 - Do not overwrite raw source data.
 - Do not treat semantic-vector output as higher authority than canonical rune data.
 - Do not automatically write back an inferred classification when evidence is ambiguous; flag it for review.
+- Do not impose LunaRunes-specific 66/8 grouping rules on other LOC implementations unless their author explicitly adopts them.
