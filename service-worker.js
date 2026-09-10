@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v190";
+const CACHE_NAME = "moon-runes-pwa-v191";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -76,55 +76,4 @@ self.addEventListener("activate", (event) => {
       .then((cacheNames) => Promise.all(cacheNames.filter((cacheName) => cacheName !== CACHE_NAME).map((cacheName) => caches.delete(cacheName))))
       .then(() => self.clients.claim())
   );
-});
-
-self.addEventListener("fetch", (event) => {
-  const request = event.request;
-  const url = new URL(request.url);
-  if (request.method !== "GET") return;
-  if (url.origin !== self.location.origin) {
-    event.respondWith(fetch(request));
-    return;
-  }
-
-  if (
-    url.pathname === "/data/json/core/runes66.json" ||
-    url.pathname === "/data/json/core/runes66groups.json" ||
-    url.pathname === "/data/json/core/lots.json" ||
-    url.pathname === "/data/json/generated/search/SEARCH_SOURCE_STATS.json" ||
-    url.pathname === "/data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json" ||
-    url.pathname.startsWith("/data/json/generated/loc4/threads/main/")
-  ) {
-    event.respondWith(
-      fetch(request, { cache: "no-store" })
-        .then((networkResponse) => {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
-          return networkResponse;
-        })
-        .catch(() => caches.match(request))
-    );
-    return;
-  }
-
-  if (
-    request.mode === "navigate" ||
-    url.pathname.endsWith(".js") ||
-    url.pathname.endsWith(".html") ||
-    url.pathname.endsWith(".htm") ||
-    url.pathname.endsWith("/")
-  ) {
-    event.respondWith(
-      fetch(request, { cache: "no-store" })
-        .then((networkResponse) => {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
-          return networkResponse;
-        })
-        .catch(() => caches.match(request))
-    );
-    return;
-  }
-
-  event.respondWith(caches.match(request).then((cachedResponse) => cachedResponse || fetch(request)));
 });
