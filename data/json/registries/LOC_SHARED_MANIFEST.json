@@ -184,7 +184,7 @@
       "language_system_registry": "schema-ready",
       "media_registry": "connected",
       "shared_result_refs": "connected",
-      "rune_song_registry": "connected; confirmed provenance records currently pending",
+      "rune_song_registry": "connected; rune-system 11-rune group statistics instance-verified",
       "reasoning_proposition_layer": "connected",
       "cross_relationship_registry": "connected",
       "ui": "Unified Search only; search.html?content_type=lyrics_work compatibility redirect"
@@ -200,7 +200,8 @@
       "moon_speaker_analysis": "182-chapter baseline complete; 161 restored rune configs / 21 explicitly unrecovered",
       "moon_speaker_search": "connected",
       "work_analysis_search": "connected; novel title queries return structured LOC4 analysis records",
-      "threads_source_counts": "7008 deduplicated / 4578 main / 2430 replies"
+      "threads_source_counts": "7008 deduplicated / 4578 main / 2430 replies",
+      "rune_system_group_analysis": "instance-verified on 182-chapter Moon Speaker provenance corpus"
     },
     "LOC5": "media-authority-established; cross-relationship-registry-connected",
     "LOC6": {
@@ -263,7 +264,8 @@
     "note": "Shared foundation is complete enough to begin corpus migration and later interface consolidation. Domain corpora may still be pending without changing the shared schema.",
     "content_rights_policy": "complete",
     "governance_core": "documented",
-    "governance_runtime_controls": "partial"
+    "governance_runtime_controls": "partial",
+    "rune_system_implementation": "instance_verified"
   },
   "integration_stage": {
     "name": "unified-search-v0.1",
@@ -310,7 +312,7 @@
       "authority_domain": "literary"
     }
   ],
-  "updated_at": "2026-09-09",
+  "updated_at": "2026-09-10",
   "governance_layer": {
     "status": "consolidated",
     "core_document": "governance.html",
