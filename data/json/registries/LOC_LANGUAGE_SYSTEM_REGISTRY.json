@@ -261,6 +261,134 @@
           "tag": "符文體系｜音樂",
           "purpose": "收納已知符文歌曲／音樂創作紀錄；後續可再掛現行符文細標籤。"
         }
+      ],
+      "rune_system_content_group_tags": [
+        {
+          "category": "符文體系",
+          "content_type": "文章創作",
+          "group_id": 1,
+          "group_name": "靈魂",
+          "tag": "符文體系｜文章創作｜靈魂組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "文章創作",
+          "group_id": 2,
+          "group_name": "連結",
+          "tag": "符文體系｜文章創作｜連結組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "文章創作",
+          "group_id": 3,
+          "group_name": "生命",
+          "tag": "符文體系｜文章創作｜生命組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "文章創作",
+          "group_id": 4,
+          "group_name": "自然",
+          "tag": "符文體系｜文章創作｜自然組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "文章創作",
+          "group_id": 5,
+          "group_name": "礦物",
+          "tag": "符文體系｜文章創作｜礦物組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "文章創作",
+          "group_id": 6,
+          "group_name": "元素",
+          "tag": "符文體系｜文章創作｜元素組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "文章創作",
+          "group_id": 7,
+          "group_name": "秩序",
+          "tag": "符文體系｜文章創作｜秩序組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "文章創作",
+          "group_id": 8,
+          "group_name": "無序",
+          "tag": "符文體系｜文章創作｜無序組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "文章創作",
+          "group_id": 9,
+          "group_name": "特殊",
+          "tag": "符文體系｜文章創作｜特殊組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "音樂",
+          "group_id": 1,
+          "group_name": "靈魂",
+          "tag": "符文體系｜音樂｜靈魂組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "音樂",
+          "group_id": 2,
+          "group_name": "連結",
+          "tag": "符文體系｜音樂｜連結組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "音樂",
+          "group_id": 3,
+          "group_name": "生命",
+          "tag": "符文體系｜音樂｜生命組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "音樂",
+          "group_id": 4,
+          "group_name": "自然",
+          "tag": "符文體系｜音樂｜自然組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "音樂",
+          "group_id": 5,
+          "group_name": "礦物",
+          "tag": "符文體系｜音樂｜礦物組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "音樂",
+          "group_id": 6,
+          "group_name": "元素",
+          "tag": "符文體系｜音樂｜元素組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "音樂",
+          "group_id": 7,
+          "group_name": "秩序",
+          "tag": "符文體系｜音樂｜秩序組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "音樂",
+          "group_id": 8,
+          "group_name": "無序",
+          "tag": "符文體系｜音樂｜無序組"
+        },
+        {
+          "category": "符文體系",
+          "content_type": "音樂",
+          "group_id": 9,
+          "group_name": "特殊",
+          "tag": "符文體系｜音樂｜特殊組"
+        }
       ]
     }
   ],
