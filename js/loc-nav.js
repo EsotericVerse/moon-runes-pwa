@@ -1,49 +1,29 @@
 (() => {
-  const NAV_URL = "data/json/registries/LOC_NAV.json";
-  const WEB_BUILD = "0.8";
   const GROUPS = ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"];
 
   const fileName = () => location.pathname.split("/").pop() || "index.html";
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 
-  const DEFAULT_NAV = [
-    {id:"runes",label:"月之符文",href:"runes.html"},
-    {id:"game",label:"遊戲",href:"game.html"},
-    {id:"context",label:"脈絡",href:"context.html"},
-    {id:"evolution",label:"推演",href:"evolution.html"},
-    {id:"statics",label:"統計",href:"statics.htm"}
-  ];
 
-  function currentId(node, items) {
-    const file = fileName();
-    if (file === "context.html") return "context";
-    if (file === "game.html" || file === "loc2-game.html") return "game";
-    if (file === "statics.htm" || file === "statics.html") return "statics";
-    if (file === "lots.html") return "runes";
-    if (node?.dataset?.page) return node.dataset.page;
-    return items.find(item => item.href === file)?.id || "";
-  }
 
-  function paintNav(node, items = DEFAULT_NAV) {
-    const active = currentId(node, items);
-    node.innerHTML = `<a class="loc-global-brand" href="index.html" aria-label="回到 LOC月典首頁">LOC月典</a><div class="loc-global-links">${items.filter(item => item.id !== "search").map(item => `<a class="loc-global-link" href="${esc(item.href)}"${item.id === active ? ' aria-current="page"' : ""}>${esc(item.label)}</a>`).join("")}<form class="loc-global-search" action="search.html" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="搜尋" /><button class="loc-global-search-submit" type="submit">搜尋</button></form></div>`;
-  }
-
-  async function renderNav(node) {
-    paintNav(node);
-    try {
-      const response = await fetch(NAV_URL, {cache:"no-store"});
-      if (!response.ok) return;
-      const data = await response.json();
-      paintNav(node, Array.isArray(data.items) && data.items.length ? data.items : DEFAULT_NAV);
-    } catch (error) { console.warn(error); }
+  function loadNav1(){
+    const mount=()=>window.LOCNav1?.mountAll?.();
+    if(window.LOCNav1){mount();return;}
+    const existing=document.querySelector('script[data-loc-nav1-module]');
+    if(existing){existing.addEventListener('load',mount,{once:true});return;}
+    const script=document.createElement('script');
+    script.src='js/loc-nav1.js';
+    script.defer=true;
+    script.dataset.locNav1Module='true';
+    script.addEventListener('load',mount,{once:true});
+    document.head.appendChild(script);
   }
 
   function installStyles() {
     if (document.getElementById("loc-canonical-nav-runtime")) return;
     const style = document.createElement("style");
     style.id = "loc-canonical-nav-runtime";
-    style.textContent = `.runes-third-nav{display:none!important}.loc-global-search{display:flex!important;align-items:center;gap:6px}.loc-global-search-submit{min-height:34px;padding:5px 8px;border:1px solid rgba(180,158,255,.24);border-radius:8px;background:transparent;color:var(--muted,#b9bfd0);font:inherit;font-size:.8rem;cursor:pointer}`;
+    style.textContent = `.runes-third-nav{display:none!important}`;
     document.head.appendChild(style);
   }
 
@@ -218,7 +198,7 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     installStyles();
-    document.querySelectorAll("[data-loc-nav]").forEach(renderNav);
+    loadNav1();
     cleanupContextGameEmbed();
     buildTiers();
     loadEnhancements();
