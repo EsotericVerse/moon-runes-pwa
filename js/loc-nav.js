@@ -66,16 +66,28 @@
     return host;
   }
 
-  function tier(level, items, label) {
+  function tier(items, label) {
     const nav = document.createElement("nav");
     nav.className = "loc-nav-tier";
-    nav.dataset.tier = String(level);
+    nav.dataset.tier = "2";
     nav.setAttribute("aria-label", label);
     const inner = document.createElement("div");
     inner.className = "loc-nav-tier-inner";
     items.forEach(item => inner.appendChild(item));
     nav.appendChild(inner);
     return nav;
+  }
+
+  function sectionMenu(items, label) {
+    const box = document.createElement("div");
+    box.className = "loc-section-menu";
+    box.setAttribute("role", "navigation");
+    box.setAttribute("aria-label", label);
+    const inner = document.createElement("div");
+    inner.className = "loc-section-menu-inner";
+    items.forEach(item => inner.appendChild(item));
+    box.appendChild(inner);
+    return box;
   }
 
   function link(label, href, attrs = {}) {
@@ -97,85 +109,59 @@
   }
 
   function buildIndex(host) {
-    const nav2 = tier(2,[
+    host.appendChild(tier([
       link("LOC月典簡介","#top"),
       link("新手上路","#start"),
-      link("LOC架構圖","#framework-map",{"data-home-framework-link":"true"}),
+      link("LOC架構圖","#framework-map"),
       link("目前進度","#progress"),
       link("作者的話","#about-title")
-    ],"首頁快速選單");
+    ],"首頁快速選單"));
 
-    const nav3 = tier(3,[
-      link("月之符文模組","#framework-map"),
-      link("脈絡","#framework-map"),
-      link("音樂","#framework-map"),
-      link("文字創作","#framework-map"),
-      link("多媒體","#framework-map"),
-      link("演算法","#framework-map"),
-      link("演算模組","#framework-map"),
-      link("推演引擎","#framework-map")
-    ],"LOC架構圖模組");
-
-    const syncNav3 = () => { nav3.hidden = location.hash !== "#framework-map"; };
-    host.append(nav2,nav3);
-    syncNav3();
-    nav2.addEventListener("click", event => {
-      const target = event.target.closest("a");
-      if (!target) return;
-      nav3.hidden = target.getAttribute("href") !== "#framework-map";
-    });
-    window.addEventListener("hashchange", syncNav3);
+    const framework = document.getElementById("framework-map");
+    if (framework && !framework.querySelector(":scope > .loc-section-menu")) {
+      framework.prepend(sectionMenu([
+        link("月之符文模組","#framework-map"),
+        link("脈絡","#framework-map"),
+        link("音樂","#framework-map"),
+        link("文字創作","#framework-map"),
+        link("多媒體","#framework-map"),
+        link("演算法","#framework-map"),
+        link("演算模組","#framework-map"),
+        link("推演引擎","#framework-map")
+      ],"LOC架構圖快速切換"));
+    }
   }
 
   function buildRunes(host) {
-    const nav2 = tier(2,[
+    host.appendChild(tier([
       button("新手上路",{"data-runes-view":"beginner"}),
       button("占卜抽籤",{"data-runes-view":"draw"}),
       button("符文總覽",{"data-runes-view":"library"}),
       link("符文統計","statics.htm#runes"),
       button("符文知識庫",{"data-runes-view":"reference"})
-    ],"月之符文功能");
+    ],"月之符文功能"));
 
-    const nav3 = tier(3,[],"月之符文子導覽");
-    const inner = nav3.querySelector(".loc-nav-tier-inner");
+    const drawView = document.getElementById("drawView");
+    if (drawView && !drawView.querySelector(":scope > .loc-section-menu")) {
+      drawView.prepend(sectionMenu([
+        link("單卡","runes.html?mode=single#draw"),
+        link("每日","runes.html?mode=daily#draw"),
+        link("雙卡","runes.html?mode=2card#draw"),
+        link("三卡","runes.html?mode=3card#draw"),
+        link("五卡","runes.html?mode=5card#draw"),
+        link("11卡","runes.html?mode=ow3gs#draw"),
+        link("說明","runes.html#draw-help")
+      ],"抽牌快速選單"));
+    }
 
-    const renderNav3 = mode => {
-      inner.replaceChildren();
-      if (mode === "draw") {
-        [["單卡","single"],["每日","daily"],["雙卡","2card"],["三卡","3card"],["五卡","5card"],["11卡","ow3gs"]]
-          .forEach(([label,value]) => inner.appendChild(link(label,`runes.html?mode=${value}#draw`)));
-        inner.appendChild(link("說明","runes.html#draw-help"));
-      } else if (mode === "library") {
-        GROUPS.forEach(group => inner.appendChild(link(group,`runes.html?group=${encodeURIComponent(group)}#library`,{"data-rune-group-shortcut":group})));
-      }
-      nav3.hidden = inner.children.length === 0;
-    };
-
-    const syncFromLocation = () => {
-      const params = new URLSearchParams(location.search);
-      if (location.hash === "#library" || params.has("group")) renderNav3("library");
-      else if (location.hash === "#draw" || location.hash === "#draw-help" || params.has("mode")) renderNav3("draw");
-      else renderNav3("");
-    };
-
-    host.append(nav2,nav3);
-    syncFromLocation();
-
-    nav2.addEventListener("click", event => {
-      const control = event.target.closest("[data-runes-view]");
-      if (!control) {
-        if (event.target.closest("a")) renderNav3("");
-        return;
-      }
-      const mode = control.dataset.runesView;
-      renderNav3(mode === "draw" ? "draw" : mode === "library" ? "library" : "");
-    });
-    window.addEventListener("hashchange", syncFromLocation);
-    window.addEventListener("popstate", syncFromLocation);
+    const libraryView = document.getElementById("libraryView");
+    if (libraryView && !libraryView.querySelector(":scope > .loc-section-menu")) {
+      libraryView.prepend(sectionMenu(GROUPS.map(group => link(group,`runes.html?group=${encodeURIComponent(group)}#library`,{"data-rune-group-shortcut":group})),"符文群組快速選單"));
+    }
   }
 
   function buildContext(host) {
-    host.appendChild(tier(2,[
+    host.appendChild(tier([
       button("關係圖",{"data-context-switch":"graph"}),
       button("節點",{"data-context-switch":"nodes"}),
       button("關聯",{"data-context-switch":"edges"}),
@@ -184,7 +170,7 @@
   }
 
   function buildEvolution(host) {
-    host.appendChild(tier(2,[
+    host.appendChild(tier([
       button("時期",{"data-view":"overview"}),
       button("時間線",{"data-view":"timeline"}),
       button("趨勢",{"data-view":"trend"}),
@@ -193,7 +179,12 @@
   }
 
   function buildStatics(host) {
-    host.appendChild(tier(2,[link("排行榜","statics.htm#ranking"),link("符文統計","statics.htm#runes"),link("來源管理","statics.htm#sources"),link("匯入","statics.htm#import")],"統計功能"));
+    host.appendChild(tier([
+      link("排行榜","statics.htm#ranking"),
+      link("符文統計","statics.htm#runes"),
+      link("來源管理","statics.htm#sources"),
+      link("匯入","statics.htm#import")
+    ],"統計功能"));
   }
 
   function buildTiers() {
