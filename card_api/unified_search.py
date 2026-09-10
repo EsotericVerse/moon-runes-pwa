@@ -433,6 +433,11 @@ class UnifiedSearchEngine:
         target = next((g for g in group_defs if _compact(g) in q), "")
         if not target:
             return []
+        chapter_semantics = {
+            (int(item.get("part") or -1), int(item.get("chapter") or -1)): item
+            for item in (self.loc4_moon_speaker_analysis.get("chapters", []) or [])
+            if item.get("part") is not None and item.get("chapter") is not None
+        }
         results = []
         for row in self.moon_speaker_runes.get("records", []) or []:
             runes = []
@@ -444,7 +449,23 @@ class UnifiedSearchEngine:
                         runes.append(canonical)
             if not runes:
                 continue
+            chapter_semantic = chapter_semantics.get((
+                int(row.get("part") or -1),
+                int(row.get("chapter") or -1),
+            ), {})
+            semantic_themes = [
+                str(item.get("label") or "")
+                for item in (chapter_semantic.get("themes", []) or [])
+                if item.get("label")
+            ][:6]
+            semantic_summary = str(chapter_semantic.get("semantic_summary") or "")
+            narrative_function = str(chapter_semantic.get("narrative_function") or "")
             title = f"月語者｜{row.get('part_name') or ''}｜{row.get('chapter_marker') or ''}"
+            rune_line = f"符文體系｜文章創作｜{target} · 命中：{'、'.join(runes)}"
+            text_line = (
+                "真實文字體系｜"
+                + ("主題：" + "、".join(semantic_themes) if semantic_themes else "正文語意：待補")
+            )
             results.append({
                 "result_id": f"RSG-LIT-{row.get('part')}-{row.get('chapter')}-{target}",
                 "system_id": "lo3rwang",
@@ -453,7 +474,7 @@ class UnifiedSearchEngine:
                 "content_type": "textwork",
                 "group": "textworks",
                 "title": title,
-                "summary": f"符文體系｜文章創作｜{target} · 命中：{'、'.join(runes)}",
+                "summary": f"{rune_line}；{text_line}",
                 "score": 1.0,
                 "source_refs": [{"source_type":"registry","source_id":"LOC4_MOON_SPEAKER_RUNE_RECOVERY.json","note":"verified rune provenance"}],
                 "payload": {
@@ -466,6 +487,22 @@ class UnifiedSearchEngine:
                     "part_name": row.get("part_name"),
                     "chapter_marker": row.get("chapter_marker"),
                     "source_type": row.get("source_type"),
+                    "dual_system_view": {
+                        "rune_system": {
+                            "label": "符文體系",
+                            "taxonomy_tag": f"符文體系｜文章創作｜{target}",
+                            "group": target,
+                            "matched_runes": runes,
+                            "basis": "verified_rune_provenance",
+                        },
+                        "text_system": {
+                            "label": "真實文字體系",
+                            "themes": semantic_themes,
+                            "semantic_summary": semantic_summary,
+                            "narrative_function": narrative_function,
+                            "basis": "full_chapter_text_semantics",
+                        },
+                    },
                 },
             })
         return results[:top_k]
