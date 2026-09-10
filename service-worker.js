@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v179";
+const CACHE_NAME = "moon-runes-pwa-v180";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -92,6 +92,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Search-critical generated data stays network-first, but falls back to the
+  // most recent cached copy when the device is offline or the network is poor.
   if (
     url.pathname === "/data/json/generated/search/SEARCH_SOURCE_STATS.json" ||
     url.pathname === "/data/json/generated/loc4/threads/LOC4_THREADS_DOCUMENT_MANIFEST.json" ||
