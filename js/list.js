@@ -14,6 +14,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   toolbar?.remove();
 
+  const layoutStyle = document.createElement('style');
+  layoutStyle.id = 'rune-group-modal-layout-style';
+  layoutStyle.textContent = `
+    .quick-selector-modal .group-row{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      align-items:start;
+    }
+    .quick-selector-modal .rune-tile{min-width:0;width:100%;}
+    .quick-selector-modal .rune-thumb{width:100%;height:auto;display:block;}
+    @media (max-width:760px){
+      .quick-selector-modal .group-row{grid-template-columns:repeat(2,minmax(0,1fr));}
+    }
+  `;
+  document.head.appendChild(layoutStyle);
+
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[ch]));
