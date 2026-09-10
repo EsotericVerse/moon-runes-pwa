@@ -9,7 +9,7 @@ CORE_DIR = ROOT / "data" / "json" / "core"
 EXP_DIR = ROOT / "data" / "json" / "experimental" / "engine"
 EXP_DIR.mkdir(parents=True, exist_ok=True)
 
-RUNES_EXTENDED = EXP_DIR / "runes_extended.json"
+RUNES66 = CORE_DIR / "runes66.json"
 RUNE_INTERPRETATIONS = CORE_DIR / "rune_interpretations.json"
 EMBEDDINGS_PATH = ROOT / "engine" / "combined_embeddings.npy"
 META_PATH = EXP_DIR / "combined_meta.json"
@@ -18,9 +18,13 @@ SENTENCES_PATH = EXP_DIR / "sentences.json"
 sentences: list[str] = []
 meta: list[dict] = []
 
-# Experimental extended rune annotations.
-runes = json.loads(RUNES_EXTENDED.read_text(encoding="utf-8"))
+# Canonical LunaRunes66 source only. Legacy experimental rune definitions must not feed semantics.
+runes_payload = json.loads(RUNES66.read_text(encoding="utf-8"))
+runes = runes_payload if isinstance(runes_payload, list) else runes_payload.get("runes", [])
 for rune in runes:
+    rune_name = rune.get("符文名稱") or rune.get("名稱") or rune.get("name")
+    if not rune_name or rune_name == "德":
+        continue
     for direction, field in [
         ("正位", "正向表示"),
         ("半正位", "半正向表示"),
@@ -32,11 +36,11 @@ for rune in runes:
             continue
         sentences.append(value)
         meta.append({
-            "來源": "runes_extended",
-            "符文名稱": rune.get("名稱"),
+            "來源": "runes66",
+            "符文名稱": rune_name,
             "方向": direction,
-            "所屬分組": rune.get("所屬分組"),
-            "月相": rune.get("月相"),
+            "所屬分組": rune.get("所屬分組") or rune.get("group"),
+            "月相": rune.get("月相") or rune.get("moon_phase"),
         })
 
 # Canon-governed runtime projection. Do not duplicate it under engine/.
