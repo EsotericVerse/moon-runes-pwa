@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "registry": "LOC_TERMINOLOGY_CANON",
   "status": "canonical",
   "effective_date": "2026-09-11",
@@ -43,6 +43,36 @@
       "to": "LOC7 Module / 演算模組"
     }
   ],
+  "migration_status": {
+    "directly_migrated": [
+      "README.md",
+      "js/home-canonical.js",
+      "js/public-terminology.js",
+      "js/loc-concept-notes.js",
+      "skills/loc-lunarunes-semantic-classifier/references/LOC_LUNARUNES_SEMANTIC_CLASSIFICATION_SPEC.md"
+    ],
+    "runtime_canon_overrides": [
+      "data/json/search/faq/LOC_FAQ_RAG_v0.4.json via data/json/search/faq/LOC_FAQ_CANON_OVERRIDES.json + card_api/faq_rag.py",
+      "dynamic public DOM and href values via js/public-terminology.js"
+    ],
+    "legacy_source_debt": [
+      "data/json/search/faq/LOC_FAQ_v0.4.json",
+      "data/json/search/faq/LOC_FAQ_RAG_v0.4.json",
+      "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+      "data/json/registries/LOC_KM_KEYWORDS.json",
+      "data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json",
+      "index.html",
+      "js/main.js",
+      "lo3rwang.html",
+      "context.html",
+      "data/json/registries/LOC2_EVENT_REGISTRY.json"
+    ],
+    "legacy_path_migration": {
+      "current": ["game.html", "statics.html"],
+      "compatibility_redirects": ["loc2-game.html", "statics.htm"],
+      "runtime_normalization": "js/loc-nav.js + js/public-terminology.js"
+    }
+  },
   "migration_rule": "Consumers must prefer current values in this registry and LOC_DATA_GOVERNANCE over superseded current-positioning strings found in older README, FAQ/RAG, KM or registry snapshots. Do not rewrite historical evidence silently; mark it historical or superseded instead.",
   "display_rule": "Public current-facing copy must use the current terminology. LOC1–LOC8 are module names and navigation/explanation labels, not maturity levels or versions."
 }
