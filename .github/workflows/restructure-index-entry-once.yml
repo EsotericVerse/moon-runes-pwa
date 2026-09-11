@@ -1,0 +1,27 @@
+name: Restructure homepage entry once
+on:
+  push:
+    paths:
+      - 'tools/restructure_index_entry_once.py'
+      - '.github/workflows/restructure-index-entry-once.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/restructure_index_entry_once.py
+      - run: |
+          ! grep -q 'aria-labelledby="start-title"' index.html
+          grep -q 'href="tutorial01.html">新手教學' index.html
+          grep -q 'href="#framework-map">查看架構' index.html
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "refactor: simplify homepage entry hierarchy"
+          git push
