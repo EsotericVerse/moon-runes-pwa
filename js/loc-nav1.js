@@ -70,7 +70,6 @@
 
   function mountAll(){
     document.querySelectorAll("[data-loc-nav]").forEach(render);
-    loadScript('js/public-terminology.js','loc-public-terminology');
     loadScript('js/nav-current.js','loc-nav-current');
     loadConceptNotes();
     loadRuneDisplayGovernance();
