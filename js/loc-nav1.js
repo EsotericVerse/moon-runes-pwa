@@ -70,6 +70,7 @@
     document.querySelectorAll("[data-loc-nav]").forEach(render);
     installAnchorGovernance();
     loadScript('js/public-terminology.js','loc-public-terminology');
+    loadScript('js/nav-current.js','loc-nav-current');
     loadConceptNotes();
   }
 
