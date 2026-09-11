@@ -1,0 +1,28 @@
+name: Fix rune phase label once
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/fix-rune-phase-label-once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python tools/fix_rune_phase_label_once.py
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/rune.js
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: preserve raw no-moon rune phase label"
+          git push
