@@ -1,14 +1,16 @@
 /* LunaRunes66 runtime dataset.
- * Canonical rune data: data/json/core/runes66.json
+ * Canonical rune projection: data/json/core/runes.json
+ * Canonical mother source: LunaRune66.xlsx
  * Canonical group metadata: data/json/core/runes66groups.json
  *
- * Rune data is required for drawing. Group metadata is supplementary and must
- * never make the draw runtime fail when it is unavailable or stale in cache.
+ * This module is a derived runtime view only. Rune semantics must come from
+ * runes.json, which is generated from LunaRune66.xlsx. Group metadata is
+ * supplementary and must never override canonical rune fields.
  */
 
-const canonicalResponse = await fetch(new URL('../data/json/core/runes66.json', import.meta.url));
+const canonicalResponse = await fetch(new URL('../data/json/core/runes.json', import.meta.url));
 if (!canonicalResponse.ok) {
-  throw new Error(`Failed to load runes66.json: HTTP ${canonicalResponse.status}`);
+  throw new Error(`Failed to load runes.json: HTTP ${canonicalResponse.status}`);
 }
 
 const canonicalPayload = await canonicalResponse.json();
@@ -54,7 +56,7 @@ function toRuntimeRow(row) {
   const history = row.history || {};
   const name = row.符文名稱 ?? row.名稱 ?? row.name;
   const groupMeta = resolveGroup(row, id);
-  const groupName = groupMeta?.group_zh ?? row.所屬分組 ?? row.group;
+  const groupName = row.所屬分組 ?? row.group ?? groupMeta?.group_zh;
 
   return {
     ...row,
