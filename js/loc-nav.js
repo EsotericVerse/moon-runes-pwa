@@ -118,7 +118,7 @@
         link("多媒體 Multimedia","#framework-map"),
         link("演算法 Algorithm","#framework-map"),
         link("演算模組 Module","#framework-map"),
-        link("推演引擎 Evolution","#framework-map")
+        link("推演 Evolution","#framework-map")
       ],"LOC架構圖快速切換"));
     }
   }
@@ -126,10 +126,10 @@
   function buildRunes(host) {
     host.appendChild(tier([
       link("新手上路","runes.html#beginner"),
-      link("占卜抽籤 Lots","lots.html#draw"),
-      link("符文總覽 LunaRunes","lots.html#library"),
-      link("符文統計 Statistics","statics.htm#runes"),
-      link("符文知識庫 Knowledge Base","runes.html#reference")
+      link("占卜抽籤","lots.html#draw"),
+      link("符文總覽","lots.html#library"),
+      link("符文統計","statics.htm#runes"),
+      link("符文知識庫","runes.html#reference")
     ],"月之符文功能"));
 
     const drawView = fileName() === "lots.html" ? document.getElementById("drawView") : null;
@@ -171,19 +171,19 @@
 
   function buildStatics(host) {
     host.appendChild(tier([
-      link("排行榜 Ranking","statics.htm#ranking"),
-      link("符文統計 Rune Statistics","statics.htm#runes"),
-      link("來源管理 Sources","statics.htm#sources"),
-      link("匯入 Import","statics.htm#import")
+      link("排行榜","statics.htm#ranking"),
+      link("符文統計","statics.htm#runes"),
+      link("來源管理","statics.htm#sources"),
+      link("匯入","statics.htm#import")
     ],"統計功能"));
   }
 
   function buildGovernance(host){
     host.appendChild(tier([
-      link("原則 Principles","governance.html#principles"),
-      link("版權 Copyright","governance.html#copyright"),
-      link("理念 Philosophy","governance.html#philosophy"),
-      link("文件 Documents","governance.html#documents")
+      link("原則","governance.html#principles"),
+      link("版權","governance.html#copyright"),
+      link("理念","governance.html#philosophy"),
+      link("文件","governance.html#documents")
     ],"治理內容"));
   }
 
