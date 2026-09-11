@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "registry": "LOC_DATA_GOVERNANCE",
   "language_system_id": "lo3rwang",
   "canonical_positioning": {
@@ -39,6 +39,11 @@
     "legacy_loc_rule": "Existing LOC1–8 fields may remain temporarily for compatibility during migration, but no new backend dependency may be introduced."
   },
   "authorities": {
+    "terminology": {
+      "authority": "global",
+      "registry": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
+      "rule": "Current-facing public copy, FAQ/RAG, KM, Skills and runtime projections must prefer this registry over superseded terminology in legacy source snapshots."
+    },
     "language_system_identity": {
       "authority": "global",
       "registry": "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
