@@ -51,15 +51,9 @@
     document.body.appendChild(script);
   }
 
-  function loadConceptNotes(){
-    const file=fileName();
-    if(!["governance.html","runes.html","lots.html","evolution.html"].includes(file)) return;
-    loadScript('js/loc-concept-notes.js','loc-concept-notes');
-  }
-
   function loadRuneDisplayGovernance(){
     const file=fileName();
-    if(!["index.html","runes.html","lots.html","search.html"].includes(file)) return;
+    if(!["runes.html","lots.html","search.html"].includes(file)) return;
     loadScript('js/rune-display-governance.js','loc-rune-display-governance');
   }
 
@@ -71,7 +65,6 @@
   function mountAll(){
     document.querySelectorAll("[data-loc-nav]").forEach(render);
     loadScript('js/nav-current.js','loc-nav-current');
-    loadConceptNotes();
     loadRuneDisplayGovernance();
     loadSearchDisplayGovernance();
   }
