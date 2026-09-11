@@ -1,0 +1,32 @@
+name: Retire legacy pages once
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/retire-legacy-pages-once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  retire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Retire legacy paths
+        run: python tools/retire_legacy_pages_once.py
+      - name: Validate repository
+        run: python card_api/scripts/validate_repo_layout.py
+      - name: Commit cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: retire legacy statics and game paths"
+          git push
