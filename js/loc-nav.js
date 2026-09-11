@@ -268,7 +268,6 @@
 
   function loadEnhancements() {
     const file = fileName();
-    if (file === "index.html") appendScript("js/home-canonical.js","home-canonical");
     if (file === "runes.html" || file === "lots.html") appendScript("js/runes-pwa-ia.js","runes-pwa-ia");
     if (file === "evolution.html") appendScript("js/life-daily-draw-history.js","life-draw-history");
   }
