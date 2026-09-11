@@ -18,14 +18,6 @@
     document.head.appendChild(script);
   }
 
-  function installStyles() {
-    if (document.getElementById("loc-canonical-nav-runtime")) return;
-    const style = document.createElement("style");
-    style.id = "loc-canonical-nav-runtime";
-    style.textContent = `.sidebar,.side-bar,.side-nav,.left-nav,.app-sidebar,.workspace-sidebar,.loc2-local-header{display:none!important}.runes-third-nav{display:none!important}.loc-guidance-note{margin:14px 0;padding:14px 16px;border:1px solid rgba(180,158,255,.22);border-radius:16px;background:rgba(23,43,72,.52);color:#dce6f7;line-height:1.7}.loc-guidance-note strong{color:#e7c27d}`;
-    document.head.appendChild(style);
-  }
-
   function appendScript(src, key) {
     if (document.querySelector(`script[data-${key}]`)) return;
     const script = document.createElement("script");
@@ -235,7 +227,6 @@
         const p=document.createElement("p");
         p.id="daily-theme-tutorial";
         p.className="copy";
-        p.style.marginTop="3%";
         p.innerHTML="<strong>為什麼沒事也可以抽一張？</strong> 因為每日抽牌可以從無中生有地先長出一個『今天的主題』，作為語言遞迴的起點。它不是替你決定未來，而是先給一顆語意種子；接下來要怎麼理解、灌溉、延伸或修剪，仍由你依今天真正發生的事情決定。";
         const first=s3.querySelector("p.copy");
         if(first) first.after(p); else s3.appendChild(p);
@@ -273,7 +264,6 @@
   }
 
   window.addEventListener("DOMContentLoaded", () => {
-    installStyles();
     loadNav1();
     normalizeLegacyLinks(document);
     cleanupContextGameEmbed();
