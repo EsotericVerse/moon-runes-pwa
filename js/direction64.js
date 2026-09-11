@@ -1,6 +1,9 @@
 /* LunaRunes direction runtime loaded from the unified LunaRunes66 JSON. */
 
-const response = await fetch(new URL('../data/json/core/runes66.json', import.meta.url));
+const response = await fetch(
+  new URL('../data/json/core/runes66.json', import.meta.url),
+  { cache: 'no-store' }
+);
 if (!response.ok) {
   throw new Error(`Failed to load runes66.json: HTTP ${response.status}`);
 }
