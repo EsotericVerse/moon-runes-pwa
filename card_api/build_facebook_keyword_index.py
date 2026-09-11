@@ -16,6 +16,10 @@ OUTPUT_DIR = CARD_API_ROOT / "generated"
 OUTPUT_PATH = OUTPUT_DIR / "facebook_keyword_index.sqlite3"
 
 
+def _normalize_search_text(value: str) -> str:
+    return " ".join(str(value or "").lower().split())
+
+
 def build_index(
     manifest_path: Path = MANIFEST_PATH,
     governance_path: Path = GOVERNANCE_PATH,
@@ -63,12 +67,23 @@ def build_index(
                 document_count INTEGER NOT NULL,
                 hit_count INTEGER NOT NULL
             );
+            CREATE TABLE search_documents (
+                ordinal INTEGER PRIMARY KEY,
+                record_id TEXT,
+                date TEXT,
+                year INTEGER,
+                retrieval_text TEXT NOT NULL,
+                keyword_text TEXT NOT NULL,
+                payload_json TEXT NOT NULL
+            );
             """
         )
 
         total_df: Counter[str] = Counter()
         total_hits: Counter[str] = Counter()
         total_documents = 0
+        search_documents = 0
+        ordinal = 0
         date_min = ""
         date_max = ""
 
@@ -88,7 +103,39 @@ def build_index(
                 if row.get("searchable") is False or "爭議文章" in (row.get("classification") or []):
                     continue
 
-                date = str(row.get("date") or row.get("created_date") or "")[:10]
+                ordinal += 1
+                raw_date = str(row.get("date") or row.get("created_date") or "")
+                date = raw_date[:10]
+                year_value = row.get("year")
+                if not isinstance(year_value, int):
+                    try:
+                        year_value = int(str(year_value)) if year_value not in (None, "") else None
+                    except ValueError:
+                        year_value = None
+                if year_value is None and len(date) >= 4 and date[:4].isdigit():
+                    year_value = int(date[:4])
+
+                retrieval_text = _normalize_search_text(
+                    str(row.get("retrieval_text") or row.get("text") or "")
+                )
+                keyword_text = _normalize_search_text(
+                    " ".join(str(item) for item in (row.get("semantic_keywords") or []))
+                )
+                conn.execute(
+                    "INSERT INTO search_documents(ordinal, record_id, date, year, retrieval_text, keyword_text, payload_json) "
+                    "VALUES(?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        ordinal,
+                        str(row.get("record_id") or ""),
+                        date,
+                        year_value,
+                        retrieval_text,
+                        keyword_text,
+                        json.dumps(row, ensure_ascii=False, separators=(",", ":")),
+                    ),
+                )
+                search_documents += 1
+
                 if not date:
                     continue
 
@@ -136,20 +183,23 @@ def build_index(
             ],
         )
         meta = {
-            "schema_version": "0.1",
+            "schema_version": "0.2",
             "source": "facebook",
             "document_count": str(total_documents),
+            "search_document_count": str(search_documents),
             "date_start": date_min,
             "date_end": date_max,
             "manifest_records": str(manifest.get("records") or ""),
         }
         conn.executemany("INSERT INTO meta(key, value) VALUES(?, ?)", meta.items())
         conn.execute("CREATE INDEX idx_daily_stats_date ON daily_stats(date)")
+        conn.execute("CREATE INDEX idx_search_documents_date ON search_documents(date)")
+        conn.execute("CREATE INDEX idx_search_documents_year ON search_documents(year)")
         conn.commit()
     finally:
         conn.close()
 
-    print(f"Built Facebook keyword index: {output_path}")
+    print(f"Built Facebook keyword/search index: {output_path}")
     return output_path
 
 
