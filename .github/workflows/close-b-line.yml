@@ -1,0 +1,35 @@
+name: Close B-line terminology cleanup
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/close_b_line.py
+      - .github/workflows/close-b-line.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Apply B-line closeout
+        run: python scripts/close_b_line.py
+      - name: Verify current-facing terminology
+        run: |
+          ! grep -q "語言模組框架" index.html
+          grep -q "語言系統模組框架" index.html
+          test ! -e scripts/close_b_line.py
+          test ! -e .github/workflows/close-b-line.yml
+      - name: Commit closeout
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: close B-line terminology governance"
+          git push
