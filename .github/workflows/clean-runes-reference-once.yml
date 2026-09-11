@@ -1,0 +1,32 @@
+name: Clean runes reference once
+on:
+  push:
+    paths:
+      - 'tools/clean_runes_reference_once.py'
+      - '.github/workflows/clean-runes-reference-once.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/clean_runes_reference_once.py
+      - run: |
+          grep -q 'id="referenceView"' runes.html
+          grep -q 'id="examplesView"' runes.html
+          grep -q 'id="systemsView"' runes.html
+          ! grep -q 'id="libraryView"' runes.html
+          ! grep -q 'id="dailyView"' runes.html
+          ! grep -q 'id="drawView"' runes.html
+          ! grep -q 'id="rune-modal"' runes.html
+          grep -q 'link("每日符文","statics.html#daily")' js/loc-nav.js
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add runes.html js/loc-nav.js
+          git commit -m "refactor: isolate LunaRunes reference runtime"
+          git push
