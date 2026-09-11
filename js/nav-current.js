@@ -47,7 +47,7 @@
     }
 
     if (file === 'context.html') {
-      const allowed = new Set(['graph','nodes','edges','scenarios']);
+      const allowed = new Set(['graph','nodes','relations','scenario']);
       const key = allowed.has(location.hash.slice(1)) ? location.hash.slice(1) : 'graph';
       activate(nav.querySelector(`[data-context-switch="${key}"]`));
       return;
