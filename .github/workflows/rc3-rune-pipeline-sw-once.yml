@@ -1,0 +1,43 @@
+name: RC3 Rune Pipeline SW Once
+on:
+  push:
+    paths:
+      - 'tools/rc3_rune_pipeline_sw_once.py'
+      - '.github/workflows/rc3-rune-pipeline-sw-once.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Update service worker
+        run: python tools/rc3_rune_pipeline_sw_once.py
+      - name: Verify
+        run: |
+          node --check service-worker.js
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('service-worker.js').read_text(encoding='utf-8')
+          assert 'moon-runes-pwa-v218' in s
+          assert s.count('"/js/rune-analytics.js"') == 1
+          assert s.count('"/js/rune-context-graph.js"') == 1
+          print('verify ok')
+          PY
+      - name: Commit
+        run: |
+          if git diff --quiet; then
+            echo 'No changes'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add service-worker.js
+          git commit -m 'chore: cache RC3 rune graph and analytics runtime'
+          git push
