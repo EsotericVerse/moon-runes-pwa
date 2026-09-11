@@ -96,3 +96,5 @@ jobs:
           git add -A
           git commit -m "refactor: consolidate LunaRunes runtime as rune.js" || exit 0
           git push
+
+# trigger
