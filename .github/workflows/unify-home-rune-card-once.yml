@@ -1,12 +1,12 @@
 name: Unify homepage rune card once
 
-# Triggered after registration; rerun after structural matcher fix.
 on:
   push:
     branches:
       - main
     paths:
       - ".github/workflows/unify-home-rune-card-once.yml"
+      - "tools/unify_home_rune_card_once.py"
 
 permissions:
   contents: write
