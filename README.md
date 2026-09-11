@@ -19,7 +19,7 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module referen
 > 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
 
 - **現行 Canon：1.0（正式版）**
-- **Web Build：0.5**
+- **Web Build：1.0-RC3**
 - **LOC GPT Skills：1.0.0**
 - **公開網站：<https://loc.lo3rwang.cc/>**
 - **作者：Lucas Oscar Wang 政德**
@@ -27,9 +27,9 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module referen
 
 ---
 
-## 目前進度｜2026-09-11
+## 目前進度｜2026-09-12
 
-目前已進入 **Demo 收斂與功能驗收階段**。核心骨架不再擴張，優先處理功能完整性、資料一致性與公開入口。
+目前已進入 **RC3（Data-backed Release Candidate）收斂與功能驗收階段**。RC3 的關鍵不是再增加骨架，而是主要公開功能已開始由正式資料驅動：LunaRunes Canon 現在直接支援符文脈絡、Graph、統計、排行榜與推演資料。核心骨架不再擴張，優先處理效能、資料一致性、runtime 穩定性與公開入口。
 
 - **LunaRunes／月之符文**：66 枚可抽取符文、籤詩與第 0 符「德」資料。
 - **Context／脈絡**：Relation、Event、Graph 與 Semantic Playground。
@@ -39,6 +39,26 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module referen
 - **Governance／治理**：治理原則、政德風與「治理：德之符文」。
 - **Knowledge／知識**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與分析。
 - **Evolution／推演**：Period、Timeline、Trend、Trajectory 與時間投影。
+
+### RC3｜正式資料開始進入系統
+
+**RC3 = Data-backed release candidate。**
+
+目前以 LunaRunes 作為第一套完整資料來源，主要資料鏈已實際成立：
+
+```text
+LunaRunes Canon
+→ 正向／反向關鍵詞
+→ 符文
+→ 唯一群組
+→ Graph
+→ 統計／排行榜
+→ 歷程／時間線／趨勢／軌跡
+```
+
+符文脈絡與符文分析核心採 **No API**：直接使用 repository 既有 `runes.json` 與現行規則，不呼叫外部 API、不重掃文章建立第二套關鍵詞，也不建立第二套 Canon。
+
+RC3 已讓 `runes.html`、`context.html`、`statics.html`、`evolution.html` 有實際資料可展示與分析；完整 RC3 說明見 [`docs/RC3.md`](docs/RC3.md)。
 
 ### Demo 前目前優先順序
 
@@ -52,10 +72,12 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module referen
 | 功能 | 頁面 | 說明 |
 |---|---|---|
 | 首頁 | [index.html](https://loc.lo3rwang.cc/) | LOC 總覽與主要入口 |
-| 月之符文 | [runes.html](https://loc.lo3rwang.cc/runes.html) | 66 符、抽牌、每日抽、雙卡／三卡／五卡／OW3gs |
-| 脈絡 | [context.html](https://loc.lo3rwang.cc/context.html) | 節點、關係式、Event、Graph、沙盒 |
+| 月之符文 | [lots.html](https://loc.lo3rwang.cc/lots.html) | LunaRunes 主頁、66 符資料、圖鑑與抽牌 |
+| 符文知識庫 | [runes.html](https://loc.lo3rwang.cc/runes.html) | 判讀規則、案例與符文脈絡 Graph · No API |
+| 統計 | [statics.html](https://loc.lo3rwang.cc/statics.html) | 排行榜、符文關鍵詞排行榜、符文統計與每日符文 |
+| 脈絡 | [context.html](https://loc.lo3rwang.cc/context.html) | 符文脈絡 Graph · No API、節點、關係式與 Event |
 | 多元搜尋 | [search.html](https://loc.lo3rwang.cc/search.html) | Cross-format Search：文字、音樂、多媒體、符文、脈絡與知識 |
-| 推演 | [evolution.html](https://loc.lo3rwang.cc/evolution.html) | 時期、Timeline、Trend、Trajectory |
+| 推演 | [evolution.html](https://loc.lo3rwang.cc/evolution.html) | 時期、Timeline、Trend、Trajectory 與符文資料歷程 |
 | 治理 | [governance.html](https://loc.lo3rwang.cc/governance.html) | 政德風、治理原則與方法 |
 | Context Sandbox | [game.html](https://loc.lo3rwang.cc/game.html) | Semantic Playground |
 | 作者 | [lo3rwang.html](https://loc.lo3rwang.cc/lo3rwang.html) | Lucas Oscar Wang 政德 |
@@ -189,6 +211,7 @@ Context 負責回答：
 
 現行功能包含：
 
+- 符文脈絡 Graph · No API（由現有 LunaRunes 關鍵詞、符文、唯一群組與規則直接建立）
 - 節點
 - 關係式
 - Event
@@ -214,6 +237,10 @@ Context Graph × Time × Period × Event × Works → Evolution
 - Timeline
 - Trend
 - Trajectory
+- 符文資料歷程 · No API
+- 符文結構時間線
+- 符文關鍵詞趨勢
+- 符文群組軌跡
 - 時期資料由 Search → 時期設定統一管理
 - Event 新增／編輯／刪除
 
