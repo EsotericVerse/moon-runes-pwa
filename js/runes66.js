@@ -1,5 +1,5 @@
 /* LunaRunes66 runtime dataset.
- * Canonical rune data: data/json/core/runes66.json
+ * Canonical rune data: data/json/core/runes.json
  * Canonical group metadata: data/json/core/runes66groups.json
  *
  * Rune data is required for drawing. Group metadata is supplementary and must
@@ -7,11 +7,11 @@
  */
 
 const canonicalResponse = await fetch(
-  new URL('../data/json/core/runes66.json', import.meta.url),
+  new URL('../data/json/core/runes.json', import.meta.url),
   { cache: 'no-store' }
 );
 if (!canonicalResponse.ok) {
-  throw new Error(`Failed to load runes66.json: HTTP ${canonicalResponse.status}`);
+  throw new Error(`Failed to load runes.json: HTTP ${canonicalResponse.status}`);
 }
 
 const canonicalPayload = await canonicalResponse.json();
@@ -78,7 +78,8 @@ function toRuntimeRow(row) {
     group_meta: groupMeta,
     月相: row.月相 ?? row.moon_phase ?? null,
     卡片屬性: row.卡片屬性 ?? row.card_attribute,
-    關鍵詞: row.關鍵詞 ?? row.keyword,
+    符文說明: row.符文說明 ?? row.特別說明 ?? row.description,
+    關鍵詞: row.正向關鍵詞 ?? row.關鍵詞 ?? row.keyword,
     符文變化歷史: history.符文變化歷史 ?? row.符文變化歷史,
     神話故事: history.神話故事 ?? row.神話故事,
     圖檔名稱: row.image ?? row.圖檔名稱 ?? (id > 0 && name ? `${String(id).padStart(2, '0')}_${name}.png` : null),

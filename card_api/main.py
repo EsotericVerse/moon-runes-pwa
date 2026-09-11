@@ -43,11 +43,11 @@ app.add_middleware(
 
 # 載入資料（全局，一次載入）
 try:
-    with open(core_json("runes66.json"), 'r', encoding='utf-8') as f:
+    with open(core_json("runes.json"), 'r', encoding='utf-8') as f:
         RUNES = json.load(f)
 except Exception as e:
     RUNES = {"runes": []}
-    print(f"Warning: Failed to load runes66.json: {e}")
+    print(f"Warning: Failed to load runes.json: {e}")
 
 try:
     with open(core_json("rune_interpretations.json"), 'r', encoding='utf-8') as f:

@@ -20,11 +20,12 @@ FORBIDDEN_PATHS = [
     ROOT / "statics.htm",
     ROOT / "statics.htmll",
     ROOT / "loc2-game.html",
+    ROOT / "data" / "json" / "core" / "runes66.json",
 ]
 
 REQUIRED_PATHS = [
     ROOT / "statics.html",
-    ROOT / "data" / "json" / "core" / "runes66.json",
+    ROOT / "data" / "json" / "core" / "runes.json",
     ROOT / "data" / "json" / "core" / "rune_interpretations.json",
     ROOT / "data" / "json" / "core" / "three_card_combinations.json",
     ROOT / "data" / "json" / "core" / "lots.json",
@@ -53,6 +54,7 @@ STALE_TOKENS = [
     "data/json/runtime/card_api/",
     "data/json/facebook/",
     "data/json/fb-semantic-summary.json",
+    "runes66.json",
 ]
 
 TEXT_SUFFIXES = {".py", ".js", ".html", ".md", ".json", ".yml", ".yaml", ".xml", ".txt"}
@@ -62,6 +64,7 @@ SKIP_PREFIXES = (
 SKIP_FILES = {
     "card_api/scripts/validate_repo_layout.py",
     "engine/README.md",
+    "tools/remove_legacy_runes66_json_once.py",
 }
 SKIP_JSON_TARGET_PREFIXES = (
     "data/json/inbox/",

@@ -6,7 +6,7 @@ CORE_DIR = ROOT / "data" / "json" / "core"
 EXP_DIR = ROOT / "data" / "json" / "experimental" / "engine"
 EXP_DIR.mkdir(parents=True, exist_ok=True)
 
-RUNES66 = CORE_DIR / "runes66.json"
+RUNES66 = CORE_DIR / "runes.json"
 RUNE_INTERPRETATIONS = CORE_DIR / "rune_interpretations.json"
 OUTPUT = EXP_DIR / "training_data.json"
 
