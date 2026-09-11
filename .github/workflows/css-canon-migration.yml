@@ -1,0 +1,75 @@
+name: CSS Canon Migration
+
+on:
+  push:
+    paths:
+      - 'css/loc-nav.css'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Consolidate stylesheet references
+        shell: python
+        run: |
+          from pathlib import Path
+          targets = [
+              'index.html',
+              'runes.html',
+              'context.html',
+              'search.html',
+              'evolution.html',
+          ]
+          old_refs = (
+              '<link rel="stylesheet" href="css/loc-nav.css" />',
+              '<link rel="stylesheet" href="css/loc-nav.css">',
+              '<link rel="stylesheet" href="css/loc-responsive.css" />',
+              '<link rel="stylesheet" href="css/loc-responsive.css">',
+              '<link rel="stylesheet" href="css/rune-draw.css" />',
+              '<link rel="stylesheet" href="css/rune-draw.css">',
+          )
+          canonical = '<link rel="stylesheet" href="css/style.css" />'
+          for name in targets:
+              p = Path(name)
+              text = p.read_text(encoding='utf-8')
+              for ref in old_refs:
+                  text = text.replace(ref, '')
+              # collapse accidental duplicate canonical stylesheet links
+              first = text.find(canonical)
+              if first < 0:
+                  marker = '</title>'
+                  pos = text.find(marker)
+                  if pos < 0:
+                      raise SystemExit(f'{name}: missing </title>')
+                  pos += len(marker)
+                  text = text[:pos] + '\n  ' + canonical + text[pos:]
+              else:
+                  before = text[:first + len(canonical)]
+                  after = text[first + len(canonical):].replace(canonical, '')
+                  text = before + after
+              p.write_text(text, encoding='utf-8')
+
+          # Verify all public HTML files use no retired stylesheet names.
+          retired = ('css/loc-nav.css', 'css/loc-responsive.css', 'css/rune-draw.css')
+          offenders = []
+          for p in Path('.').rglob('*.html'):
+              text = p.read_text(encoding='utf-8', errors='ignore')
+              if any(x in text for x in retired):
+                  offenders.append(str(p))
+          if offenders:
+              raise SystemExit('retired CSS references remain: ' + ', '.join(offenders))
+      - name: Remove retired CSS files
+        run: git rm -f css/loc-nav.css css/loc-responsive.css css/rune-draw.css
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html runes.html context.html search.html evolution.html
+          git commit -m "refactor: finalize single CSS canon" || exit 0
+          git push
