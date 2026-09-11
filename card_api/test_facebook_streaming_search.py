@@ -2,7 +2,9 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import facebook_search
 from facebook_search import FacebookSearchEngine
 
 
@@ -18,6 +20,7 @@ class FacebookStreamingSearchTests(unittest.TestCase):
                     "year": 2026,
                     "text": "月光與自我治理",
                     "retrieval_text": "月光 自我治理",
+                    "semantic_keywords": ["月光", "自我治理"],
                     "searchable": True,
                 },
                 {
@@ -26,6 +29,7 @@ class FacebookStreamingSearchTests(unittest.TestCase):
                     "year": 2026,
                     "text": "完全無關的日常紀錄",
                     "retrieval_text": "日常 紀錄",
+                    "semantic_keywords": ["日常紀錄"],
                     "searchable": True,
                 },
             ],
@@ -36,6 +40,7 @@ class FacebookStreamingSearchTests(unittest.TestCase):
                     "year": 2026,
                     "text": "治理自己的月光",
                     "retrieval_text": "治理 自己 月光",
+                    "semantic_keywords": ["治理自己", "月光"],
                     "searchable": True,
                 }
             ],
@@ -77,6 +82,34 @@ class FacebookStreamingSearchTests(unittest.TestCase):
         try:
             results = engine.search("月光", top_k=10, start_date="2026-01-03")
             self.assertEqual(["FB-3"], [row["result_id"] for row in results])
+        finally:
+            tmp.cleanup()
+
+    def test_prefilter_skips_vectorization_for_unrelated_records(self):
+        tmp, engine = self.make_engine()
+        try:
+            original = facebook_search._vectorize
+            calls = []
+
+            def counting_vectorize(features):
+                calls.append(features)
+                return original(features)
+
+            with patch("facebook_search._vectorize", side_effect=counting_vectorize):
+                results = engine.search("月光", top_k=10)
+
+            self.assertEqual({"FB-1", "FB-3"}, {row["result_id"] for row in results})
+            # One query vector + two matching document vectors. FB-2 is filtered
+            # before expensive feature-vector scoring.
+            self.assertEqual(3, len(calls))
+        finally:
+            tmp.cleanup()
+
+    def test_semantic_keyword_can_enter_candidate_set(self):
+        tmp, engine = self.make_engine()
+        try:
+            results = engine.search("日常紀錄", top_k=10)
+            self.assertEqual(["FB-2"], [row["result_id"] for row in results])
         finally:
             tmp.cleanup()
 
