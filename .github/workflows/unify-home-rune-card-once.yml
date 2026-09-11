@@ -1,6 +1,6 @@
 name: Unify homepage rune card once
 
-# Triggered after registration so the one-shot migration runs on main.
+# Triggered after registration; rerun after structural matcher fix.
 on:
   push:
     branches:
