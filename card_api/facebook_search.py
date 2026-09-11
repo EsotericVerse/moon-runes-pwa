@@ -41,13 +41,7 @@ def _vectorize(features: Counter[str]) -> dict[str, float]:
 
 
 def _prefilter_terms(value: str) -> list[str]:
-    """Return cheap literal candidates before expensive n-gram scoring.
-
-    Latin words are kept whole. CJK queries contribute 2-4 character windows so
-    a longer phrase can still find records containing its meaningful subphrases.
-    This is deliberately lightweight: it narrows CPU work without building a
-    resident corpus-wide index.
-    """
+    """Return cheap literal candidates before expensive n-gram scoring."""
     normalized = _normalize(value)
     terms: list[str] = []
 
@@ -68,6 +62,16 @@ def _prefilter_terms(value: str) -> list[str]:
     return list(dict.fromkeys(term for term in terms if term))
 
 
+class _FacebookPostStream:
+    """Reusable iterable over manifest-backed Facebook shards."""
+
+    def __init__(self, engine: "FacebookSearchEngine"):
+        self.engine = engine
+
+    def __iter__(self) -> Iterator[dict[str, Any]]:
+        return self.engine._iter_posts()
+
+
 class FacebookSearchEngine:
     """Memory-bounded Facebook corpus searcher.
 
@@ -77,6 +81,9 @@ class FacebookSearchEngine:
 
     A cheap literal/semantic-keyword prefilter runs before n-gram vectorization,
     so normal queries do not recompute expensive features for all 18k+ records.
+    The public ``posts`` attribute remains iterable for analysis endpoints, but
+    manifest-backed datasets expose a reusable stream rather than a materialized
+    list, allowing keyword rankings to aggregate shard-by-shard.
     """
 
     def __init__(self, dataset_path: Path):
@@ -84,7 +91,7 @@ class FacebookSearchEngine:
         payload = json.loads(dataset_path.read_text(encoding="utf-8"))
 
         self.shards: list[str] = []
-        self.posts: list[dict[str, Any]] | None = None
+        self.posts: Any = None
 
         if isinstance(payload, dict) and isinstance(payload.get("shards"), list):
             self.shards = [str(name) for name in payload["shards"]]
@@ -94,6 +101,7 @@ class FacebookSearchEngine:
                 "source": payload.get("source"),
                 "concept_bridge": payload.get("concept_bridge", {}),
             }
+            self.posts = _FacebookPostStream(self)
         else:
             posts = payload.get("posts") if isinstance(payload, dict) else None
             if not isinstance(posts, list):
@@ -178,9 +186,6 @@ class FacebookSearchEngine:
             if year and post.get("year") != year:
                 continue
 
-            # Most records are rejected here using substring checks only. This
-            # avoids rebuilding character n-gram vectors for the full corpus on
-            # every query, the main source of Facebook-search timeouts.
             if not self._passes_prefilter(post, prefilter_terms):
                 continue
 
