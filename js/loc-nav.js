@@ -250,6 +250,7 @@
     else if(file==="statics.html") host.appendChild(tier([
       link("排行榜","statics.html#ranking"),
       link("符文統計","statics.html#runes"),
+      link("每日符文","statics.html#daily"),
       link("來源管理","statics.html#sources"),
       link("匯入","statics.html#import")
     ],"統計功能"));

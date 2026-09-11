@@ -177,222 +177,28 @@
           <p style="margin-top:14px">歷史名稱與來源照原文保存；未知日期、來源或關聯不得自行補造。結構化資料由 Registry 保存，本頁負責說明其意義。</p>
         </section>
       </div>
-      <div class="runes-view" id="libraryView" hidden>
-        <header class="hero loc-header">
-      <p class="loc-header-meta">LunaRunes · Rune Library</p>
-      <h1 class="loc-header-title">符文資料</h1>
-      <h2 class="loc-header-subtitle">月之符文66 圖鑑</h2>
-      <p class="loc-header-copy">資料共 67 筆：第 0 符「德」為作者／月語者誌銘與治理錨點，不參與抽牌、沒有卡面；其餘 1–66 為 66 枚可抽取符文。<a href="governance.html#de-rune">了解德之符文的治理定位 →</a></p>
-      <p class="loc-header-copy">這裡是符文資料展示，不是抽牌。1–64 依八個組別排列成 8×8；65「玄」與 66「命」另列為特殊符文。點擊卡片圖片即可浮出完整卡面與符文基礎資料。</p>
-    </header>
 
-    
-        <section class="rune-basics" aria-labelledby="rune-basics-title">
-      <h2 id="rune-basics-title">月之符文卡是什麼？</h2>
-      <p>月之符文是一套把概念、狀態與變化整理成可抽取語言的符文卡。你可以把它當成抽籤、語意提示或創作起點；重點不是先接受某種神秘學立場，而是從抽到的文字重新觀看正在思考的事情。</p>
-      <div class="basic-grid">
-        <div class="basic-item"><strong>66 個符文</strong><span>1–64 為主要符文；65「玄」與 66「命」是特殊符文，共同構成目前固定的 66 符文系統。</span></div>
-        <div class="basic-item"><strong>每張都有自己的語意</strong><span>卡片包含名稱、英文、圖騰、分組、月相、顯化形式，以及延伸的課題、咒語與實踐提示。</span></div>
-        <div class="basic-item"><strong>四種方向</strong><span>實際抽牌時可出現正位、半正位、半逆位與逆位；方向會改變同一符文在當下語境中的表現方式。</span></div>
-        <div class="basic-item"><strong>圖鑑與抽牌分開</strong><span>這一頁用來認識卡片本身；真正的單卡、雙卡、三卡、五卡與 OW3gs，則由抽牌頁處理組合與語意。</span></div>
-      </div>
-      <a class="learn-more" href="tutorial02.html">閱讀 LOC Tutorial 02：月之符文入門 →</a>
-    </section>
-
-    
-        <section class="rune-overview" aria-labelledby="rune-overview-title">
-      <div class="rune-overview-head">
-        <h2 id="rune-overview-title">月之符文66 全符文總覽</h2>
-        <p>完整觀看目前固定的 66 張月之符文卡面。下方圖鑑再依八個組別逐列展示，方便比較同組符文的視覺與語意差異。</p>
-      </div>
-      <a class="overview-image-link" href="pics/loc_runes_66_overview.jpg" target="_blank" rel="noopener" aria-label="開啟 66 月之符文全符文總覽原圖">
-        <img class="overview-image" src="pics/loc_runes_66_overview.jpg" alt="LOC 月之符文 66 張全符文總覽" loading="lazy" decoding="async" />
-      </a>
-    </section>
-
-    
-        <section class="physical-card-download" aria-labelledby="physical-card-title">
-      <div>
-        <h2 id="physical-card-title">想把月之符文變成實體卡片？</h2>
-        <p>可下載完整實體卡片 PDF，自行列印、裁切並護貝，就能做成一套可實際使用的月之符文卡牌。</p>
-      </div>
-      <a class="download-btn" href="docs/LunarRunesCardCut.pdf" download>下載全符文實體卡片 PDF ↓</a>
-    </section>
-
-    
-        <section aria-label="符文清單">
-      <p style="margin:0 0 12px;color:var(--muted);font-size:.86rem;">八個組別不只分類符文主題，也會影響解讀時的語氣與敘述方向。以下每一列都標示其主要語氣特徵。</p>
-      <div class="toolbar">
-        <select class="filter" id="group-filter" aria-label="依分組瀏覽">
-          <option value="">全部分組</option>
-          <option value="靈魂">靈魂</option><option value="連結">連結</option><option value="生命">生命</option><option value="自然">自然</option>
-          <option value="礦物">礦物</option><option value="元素">元素</option><option value="秩序">秩序</option><option value="無序">無序</option>
-          <option value="個人">特殊符文</option>
-        </select>
-        <span class="count" id="rune-count">66 / 66</span>
-      </div>
-      <div class="rune-grid" id="rune-grid" aria-live="polite"></div>
-    </section>
-
-    
-      </div>
-      <div class="runes-view" id="dailyView" hidden>
-        <header class="hero loc-header">
-          <p class="loc-header-meta">LunaRunes · Daily Trend</p>
-          <h1 class="loc-header-title">每日符文趨勢分析</h1>
-          <h2 class="loc-header-subtitle">把每日符文紀錄放回時間中，觀察重複、方向與長期變化。</h2>
-          <p class="loc-header-copy">這裡只負責紀錄、統計與趨勢分析；每日符文抽牌已統一放在「抽牌」功能中。</p>
-        </header>
-<section class="rune-basics" aria-labelledby="daily-record-title">
-          <h2 id="daily-record-title">每日符文紀錄與趨勢</h2>
-          <p>完成每日實體牌抽取後再手動記錄。資料會用於下方統計與後續趨勢觀察；線上抽牌不會自動寫入。</p>
-          <div class="daily-record-grid">
-            <form class="daily-record-form" id="dailyRecordForm">
-              <h3>手動記錄實體牌</h3>
-              <p>來源固定視為實體牌紀錄。</p>
-              <div class="daily-form-grid">
-                <label>日期<input id="dailyRecordDate" type="date" required></label>
-                <label>類型<select id="dailyRecordKind"><option value="daily_draw">主抽</option><option value="daily_draw_supplement">補抽</option></select></label>
-                <label>符文<select id="dailyRecordRune" required><option value="">選擇符文</option></select></label>
-                <label>方向<select id="dailyRecordDirection"><option>正位</option><option>半正位</option><option>半逆位</option><option>逆位</option></select></label>
-                <label class="full">備註<input id="dailyRecordNote" type="text" placeholder="可留空"></label>
-              </div>
-              <button class="daily-record-submit" type="submit">儲存紀錄</button>
-              <div class="daily-record-status" id="dailyRecordStatus">尚未寫入任何資料。</div>
-            </form>
-
-            <div class="daily-stats-panel">
-              <h3>每日符文趨勢統計</h3>
-              <p id="dailyStatsStatus">載入已記錄的每日符文資料…</p>
-              <div class="daily-metrics">
-                <div class="daily-metric"><small>紀錄數</small><strong id="dailyMetricCount">—</strong></div>
-                <div class="daily-metric"><small>主抽</small><strong id="dailyMetricPrimary">—</strong></div>
-                <div class="daily-metric"><small>補抽</small><strong id="dailyMetricSupplement">—</strong></div>
-              </div>
-              <div class="daily-history-list" id="dailyHistoryList"></div><div class="daily-history-pagination" id="dailyHistoryPagination" hidden><div class="daily-history-page-info" id="dailyHistoryPageInfo"></div><div class="daily-history-pages" id="dailyHistoryPages"></div></div>
-            </div>
-          </div>
-        </section>
-      </div>
-      <div class="runes-view" id="drawView">
-        <section class="rune-basics" id="draw-mode-selector">
-          <h2>選擇抽牌數量</h2>
-          <p>選擇這次要使用的抽牌方式。</p>
-          <div class="draw-mode-grid">
-            <a class="draw-mode-card" href="lots.html?mode=daily#draw"><strong>每日符文</strong><span>今日節奏、提醒與月相對應；不是一般單卡解讀。</span></a>
-            <a class="draw-mode-card" href="lots.html?mode=single#draw"><strong>單卡</strong><span>單一語意種子。</span></a>
-            <a class="draw-mode-card" href="lots.html?mode=2card#draw"><strong>雙卡</strong><span>因 → 果。</span></a>
-            <a class="draw-mode-card" href="lots.html?mode=3card#draw"><strong>三卡</strong><span>源 → 轉 → 合。</span></a>
-            <a class="draw-mode-card" href="lots.html?mode=5card#draw"><strong>五卡</strong><span>過去 → 現在 → 未來顯化 → 環境 → 心境。</span></a>
-            <div class="draw-mode-card" aria-disabled="true"><strong>OW3gs · 11 卡</strong><span>十一張符文：1–6 因的描述層＋7–11 果的判定層。</span></div>
-          </div>
-        </section>
-
-        <section class="panel" id="draw-result-panel" data-draw-execution hidden>
-          <div class="head">
-            <div>
-              <p class="eyebrow" id="mode-kicker">LunaRunes · Rune Draw</p>
-              <h1 id="mode-title">選擇抽牌方式</h1>
-            </div>
-          </div>
-          <div class="ritual" id="ritual-view" hidden>
-            <div class="ritual-layout">
-              <div class="ritual-left">
-                <div class="ritual-rune"><img src="64images/65_玄.png" alt="玄之符文" /></div>
-                <div class="ritual-phase-box">
-                  <p>卡牌面向：正位</p>
-                  <p>介紹：「玄」，月之符文所揭示</p>
-                  <p>所屬分組：它就是全部</p>
-                  <p id="ritual-phase">月相：無 / 真實月相：計算中...</p>
-                </div>
-              </div>
-              <div class="ritual-right">
-                <div class="ritual-text-box">
-                  <div class="wait-notice" role="status" aria-live="polite"><strong>正在抽牌，請等待約 5 秒。</strong></div>
-                  <div class="ritual-message" id="ritual-message">正在準備抽牌……</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div id="result-view" hidden>
-            <section class="result-block">
-              <div class="result-section-head"><h2>本次牌面</h2><span class="phase-chip" id="result-real-phase">真實月相｜計算中...</span></div>
-              <div class="five-card-schema" id="five-card-schema" hidden><strong>過去</strong><span>→</span><strong>現在</strong><span>→</span><strong>未來顯化</strong><span>／</span><strong>周圍環境</strong><span>・</span><strong>自己心境</strong></div>
-              <div class="result-card-stage"><div class="cards-grid" id="cards-grid"></div></div>
-            </section>
-            <section class="result-block">
-              <div class="result-section-head"><h2>本次解讀</h2><p id="mode-note"></p></div>
-              <div class="reading" id="reading"></div>
-            </section>
-            <div class="actions">
-              <a class="action-card primary-action" id="retry-button" href="runes.html"><span><strong>重新抽牌</strong><small>回到抽牌數量選擇</small></span></a>
-            </div>
-          </div>
-        </section>
-      </div>
-      
   </main>
   </div>
-  <dialog id="rune-modal" aria-labelledby="modal-title">
-    <div class="modal-head">
-      <h2 class="modal-title" id="modal-title">符文資料</h2>
-      <button class="close" id="modal-close" type="button" aria-label="關閉">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="card-side"><img class="card-image" id="modal-image" src="" alt="" /></div>
-      <div class="data-side">
-        <div class="summary" id="modal-summary"></div>
-        <dl id="modal-data"></dl>
-      </div>
-    </div>
-  </dialog>
-
-            <script src="js/loc-nav.js"></script>
+  <script src="js/loc-nav.js"></script>
 
   <script>
-  (()=> {
+  (()=>{
     const buttons=[...document.querySelectorAll('[data-runes-view]')];
     const views={
       reference:document.getElementById('referenceView'),
       examples:document.getElementById('examplesView'),
-      systems:document.getElementById('systemsView'),
-      library:document.getElementById('libraryView'),
-      daily:document.getElementById('dailyView'),
-      draw:document.getElementById('drawView')
+      systems:document.getElementById('systemsView')
     };
     function switchView(name,updateUrl=true){
-      Object.entries(views).forEach(([key,view])=>view.hidden=key!==name);
-      buttons.forEach(btn=>btn.classList.toggle('active',btn.dataset.runesView===name));
-      if(updateUrl){
-        const params=new URLSearchParams(location.search);
-        const suffix=name==='draw'?'':('#'+name);
-        history.replaceState(null,'','runes.html'+(params.toString()?'?'+params.toString():'')+suffix);
-      }
+      const safe=views[name]?name:'reference';
+      Object.entries(views).forEach(([key,view])=>{ if(view) view.hidden=key!==safe; });
+      buttons.forEach(btn=>btn.classList.toggle('active',btn.dataset.runesView===safe));
+      if(updateUrl) history.replaceState(null,'','runes.html#'+safe);
     }
-    buttons.forEach(btn=>btn.addEventListener('click',()=>{
-      const name=btn.dataset.runesView;
-      if(name==='draw' && new URLSearchParams(location.search).has('mode')){
-        location.href='runes.html';
-        return;
-      }
-      switchView(name);
-    }));
-    document.querySelectorAll('[data-open-view]').forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.openView)));
-    const hasMode=new URLSearchParams(location.search).has('mode');
-    const mode=new URLSearchParams(location.search).get('mode');
-    const execution=document.querySelector('[data-draw-execution]');
-    const selector=document.getElementById('draw-mode-selector');
-    // 抽牌模式頁由 rune-draw.js 同時開啟等待面板與 ritual，
-    // 避免先閃出預設的「選擇抽牌方式」標題。
-    if(selector) selector.hidden=hasMode;
-    if(mode==='daily') switchView('draw',false);
-    else if(location.hash==='#daily') switchView('daily',false);
-    else if(hasMode||location.hash==='#draw') switchView('draw',false);
-    else if(location.hash==='#reference') switchView('reference',false);
-    else if(location.hash==='#examples') switchView('examples',false);
-    else if(location.hash==='#systems') switchView('systems',false);
-    else if(location.hash==='#library') switchView('library',false);
-    else switchView('draw',false);
+    buttons.forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.runesView)));
+    const hash=location.hash.slice(1);
+    switchView(views[hash]?hash:'reference',false);
   })();
   </script>
 
