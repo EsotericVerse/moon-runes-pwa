@@ -6,7 +6,10 @@
  * never make the draw runtime fail when it is unavailable or stale in cache.
  */
 
-const canonicalResponse = await fetch(new URL('../data/json/core/runes66.json', import.meta.url));
+const canonicalResponse = await fetch(
+  new URL('../data/json/core/runes66.json', import.meta.url),
+  { cache: 'no-store' }
+);
 if (!canonicalResponse.ok) {
   throw new Error(`Failed to load runes66.json: HTTP ${canonicalResponse.status}`);
 }
@@ -15,7 +18,10 @@ const canonicalPayload = await canonicalResponse.json();
 
 let groupsPayload = { groups: [] };
 try {
-  const groupsResponse = await fetch(new URL('../data/json/core/runes66groups.json', import.meta.url));
+  const groupsResponse = await fetch(
+    new URL('../data/json/core/runes66groups.json', import.meta.url),
+    { cache: 'no-store' }
+  );
   if (groupsResponse.ok) groupsPayload = await groupsResponse.json();
   else console.warn(`LunaRunes group metadata unavailable: HTTP ${groupsResponse.status}`);
 } catch (error) {
