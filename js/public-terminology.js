@@ -54,6 +54,19 @@
     return next;
   }
 
+  function normalizeHref(element) {
+    if (!element?.matches?.('a[href]')) return;
+    const current = element.getAttribute('href') || '';
+    let next = current;
+    if (next.includes('statics.htm')) next = next.replaceAll('statics.htm', 'statics.html');
+    if (next.includes('loc2-game.html')) next = next.replaceAll('loc2-game.html', 'game.html');
+    if (next !== current) {
+      element.setAttribute('href', next);
+      element.removeAttribute('target');
+      element.removeAttribute('rel');
+    }
+  }
+
   function normalizeTextNode(node) {
     if (!node || node.nodeType !== Node.TEXT_NODE) return;
     const raw = node.nodeValue;
@@ -75,6 +88,9 @@
       normalizeTextNode(root);
       return;
     }
+
+    if (root.nodeType === Node.ELEMENT_NODE) normalizeHref(root);
+    root.querySelectorAll?.('a[href]').forEach(normalizeHref);
 
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode(node) {
