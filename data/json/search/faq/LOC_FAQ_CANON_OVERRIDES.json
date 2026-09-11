@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
-  "purpose": "Apply current LOC terminology to FAQ retrieval without rewriting historical FAQ/RAG source files in place.",
+  "purpose": "Apply current LOC terminology and public source paths to FAQ retrieval without rewriting historical FAQ/RAG source files in place.",
   "phrase_replacements": [
     ["語言系統模型（Language System Model）", "語言系統模組框架（Language Module Framework）"],
     ["Language System Model／語言系統模型", "Language Module Framework／語言系統模組框架"],
@@ -14,7 +14,9 @@
     ["LOC6 Methodology／方法論", "LOC6 Algorithm／演算法"],
     ["LOC7 Algorithm／演算法（知識庫）", "LOC7 Module／演算模組"],
     ["LOC6 Methodology", "LOC6 Algorithm"],
-    ["LOC7 Algorithm", "LOC7 Module"]
+    ["LOC7 Algorithm", "LOC7 Module"],
+    ["loc2-game.html", "game.html"],
+    ["statics.htm", "statics.html"]
   ],
   "parent_overrides": {
     "FAQ-001": {
