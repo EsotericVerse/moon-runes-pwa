@@ -68,17 +68,8 @@
     loadScript('js/search-display-governance.js','loc-search-display-governance');
   }
 
-  function installAnchorGovernance(){
-    if(document.getElementById('loc-anchor-governance')) return;
-    const style=document.createElement('style');
-    style.id='loc-anchor-governance';
-    style.textContent='[id]{scroll-margin-top:64px}@media(max-width:720px){[id]{scroll-margin-top:58px}}';
-    document.head.appendChild(style);
-  }
-
   function mountAll(){
     document.querySelectorAll("[data-loc-nav]").forEach(render);
-    installAnchorGovernance();
     loadScript('js/public-terminology.js','loc-public-terminology');
     loadScript('js/nav-current.js','loc-nav-current');
     loadConceptNotes();
