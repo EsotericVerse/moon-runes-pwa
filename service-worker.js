@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v218";
+const CACHE_NAME = "moon-runes-pwa-v219";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -86,16 +86,18 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   const isNavigation = request.mode === "navigate";
-  const isJs = url.pathname.endsWith(".js");
   const isHtml = url.pathname.endsWith(".html") || url.pathname.endsWith(".htm") || url.pathname === "/";
   const isCoreRuneData = [
     "/data/json/core/runes.json",
     "/data/json/core/runes66groups.json"
   ].includes(url.pathname);
 
-  if (isNavigation || isJs || isHtml || isCoreRuneData) {
+  // HTML/navigation and current rune semantics remain freshness-first. Use
+  // HTTP revalidation instead of no-store so unchanged files can return 304
+  // rather than being transferred again in full.
+  if (isNavigation || isHtml || isCoreRuneData) {
     event.respondWith(
-      fetch(request, {cache:"no-store"})
+      fetch(request, {cache:"no-cache"})
         .then((response) => {
           if (response && response.ok) {
             const copy = response.clone();
@@ -108,6 +110,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Versioned/static assets, including JS, are cache-first. A new service
+  // worker cache version refreshes them on deployment, avoiding a network hit
+  // on every page view while preserving deterministic PWA assets.
   event.respondWith(
     caches.match(request).then((cached) => cached || fetch(request).then((response) => {
       if (response && response.ok && url.origin === location.origin) {
