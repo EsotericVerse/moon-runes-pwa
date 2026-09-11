@@ -35,12 +35,23 @@
     }
   }
 
+  function normalizePageLinks(nav, file) {
+    if (file !== 'lots.html') return;
+    nav.querySelectorAll('a.loc-nav-tier-link').forEach(a => {
+      if (a.textContent.trim() !== '新手上路') return;
+      a.setAttribute('href','lots.html#beginner');
+      a.dataset.originalHref='lots.html#beginner';
+    });
+  }
+
   function sync() {
     const nav = document.querySelector('.loc-nav-tier[data-tier="2"]');
     if (!nav) return;
-    reset(nav);
 
     const file = fileName();
+    normalizePageLinks(nav,file);
+    reset(nav);
+
     if (file === 'lo3rwang.html') {
       activate(nav.querySelector('[data-static-current="true"], [aria-current="true"]'));
       return;
