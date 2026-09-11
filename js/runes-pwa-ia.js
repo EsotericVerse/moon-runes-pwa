@@ -12,6 +12,10 @@
       .runes-beginner-actions{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
       .runes-beginner-action{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;color:var(--text);text-decoration:none;font-size:.78rem;font-weight:800;background:rgba(255,255,255,.03)}
       .runes-beginner-action.primary{background:linear-gradient(135deg,#c7b7ff,#e8c57f);color:#171021;border:0}
+      .runes-beginner-video{margin:0 0 20px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025)}
+      .runes-beginner-video strong{display:block;margin-bottom:5px;color:var(--gold)}
+      .runes-beginner-video p{margin:0;color:var(--muted);font-size:.86rem;line-height:1.65}
+      .runes-beginner-video a{display:inline-flex;margin-top:10px;color:var(--text);font-weight:800;text-decoration:none;border-bottom:1px solid var(--gold)}
       .runes-beginner-deck{display:grid;gap:20px}
       .beginner-slide{position:relative;min-height:clamp(360px,52vw,650px);overflow:hidden;border:1px solid var(--line);border-radius:20px;background:radial-gradient(circle at 80% 12%,rgba(78,190,255,.12),transparent 25%),radial-gradient(circle at 18% 80%,rgba(55,109,164,.16),transparent 30%),linear-gradient(135deg,#09233f 0%,#06182d 68%,#03101f 100%)}
       .beginner-slide:before{content:"☾";position:absolute;left:4%;top:3%;font-size:clamp(2.4rem,6vw,6rem);color:var(--gold);opacity:.95}.beginner-slide:after{content:"✦  ✦  ✦";position:absolute;right:4%;top:5%;color:var(--gold);letter-spacing:.65rem;font-size:clamp(.65rem,1.3vw,1.1rem);opacity:.9}
@@ -36,7 +40,7 @@
     view.className="runes-view runes-beginner-shell";
     view.id="beginnerView";
     view.hidden=true;
-    view.innerHTML=`<header class="hero loc-header"><p class="loc-header-meta">LunaRunes · Beginner Guide</p><h1 class="loc-header-title">新手上路</h1><h2 class="loc-header-subtitle">66 語言種子符文 × 八組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</h2></header><div class="runes-beginner-actions"><a class="runes-beginner-action primary" href="lots.html?mode=daily#draw">先抽一張</a><a class="runes-beginner-action" href="lots.html#library">月之符文66 圖鑑</a><a class="runes-beginner-action" href="docs/LOC_Tutorial_02_月之符文入門.pdf" target="_blank" rel="noopener">PDF 教材</a></div><div id="runesBeginnerContent"><div class="empty">載入新手上路…</div></div>`;
+    view.innerHTML=`<header class="hero loc-header"><p class="loc-header-meta">LunaRunes · Beginner Guide</p><h1 class="loc-header-title">新手上路</h1><h2 class="loc-header-subtitle">66 語言種子符文 × 八組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</h2></header><div class="runes-beginner-actions"><a class="runes-beginner-action primary" href="lots.html?mode=daily#draw">先抽一張</a><a class="runes-beginner-action" href="lots.html#library">月之符文66 圖鑑</a><a class="runes-beginner-action" href="docs/LOC_Tutorial_02_月之符文入門.pdf" target="_blank" rel="noopener">PDF 教材</a></div><div class="runes-beginner-video"><strong>先看一個實際例子</strong><p>這支短影片用月之符文做一次大眾占卜示範，可以先看牌怎麼被抽出、排列與解讀，再往下讀完整教學。</p><a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener">觀看 Instagram Reels 短影片 →</a></div><div id="runesBeginnerContent"><div class="empty">載入新手上路…</div></div>`;
     main.prepend(view);
     try{
       const r=await fetch("data/html/runes-beginner.html",{cache:"force-cache"});
