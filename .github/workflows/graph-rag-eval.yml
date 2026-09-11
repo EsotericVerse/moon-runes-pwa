@@ -33,6 +33,7 @@ jobs:
       - run: python -m compileall -q .
       - run: python build_threads_search_index.py
       - run: python build_loc4_runtime_index.py
+      - run: python scripts/check_runtime_budget.py
       - run: python scripts/validate_repo_layout.py
       - run: python -m unittest discover -p "test_*.py"
       - run: python scripts/evaluate_graph_rag.py
