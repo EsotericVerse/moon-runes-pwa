@@ -1,0 +1,48 @@
+name: Emphasize No API Rune Graph Once
+on:
+  push:
+    paths:
+      - 'tools/emphasize_no_api_rune_graph_once.py'
+      - '.github/workflows/emphasize-no-api-rune-graph-once.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply emphasis
+        run: python tools/emphasize_no_api_rune_graph_once.py
+      - name: Verify shared rune graph
+        run: |
+          node --check js/rune-context-graph.js
+          python - <<'PY'
+          from pathlib import Path
+          js=Path('js/rune-context-graph.js').read_text(encoding='utf-8')
+          assert 'data/json/core/runes.json' in js
+          assert 'LOC4_TEXT_CORPUS' not in js
+          for p in ['runes.html','context.html']:
+              s=Path(p).read_text(encoding='utf-8')
+              assert s.count('id="runeSemanticGraph"') == 1
+              assert s.count('js/rune-context-graph.js') == 1
+              assert '符文脈絡 Graph · No API' in s
+              assert '不呼叫外部 API' in s
+          print('verify ok')
+          PY
+      - name: Commit
+        run: |
+          if git diff --quiet; then
+            echo 'No changes'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add runes.html context.html
+          git commit -m 'docs: emphasize no-API rune context graph'
+          git push
