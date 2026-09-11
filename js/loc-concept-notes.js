@@ -1,16 +1,6 @@
 (() => {
   const file = location.pathname.split('/').pop() || 'index.html';
 
-  const style = document.createElement('style');
-  style.textContent = `
-    .loc-concept-note{margin:16px 0;padding:18px 20px;border:1px solid rgba(180,158,255,.22);border-radius:18px;background:rgba(13,31,56,.78);color:#dce6f7;line-height:1.72}
-    .loc-concept-note small{display:block;margin-bottom:5px;color:#b49eff;font-weight:800;letter-spacing:.06em}
-    .loc-concept-note strong{color:#e7c27d}
-    .loc-concept-note p{margin:.55rem 0}
-    .loc-concept-note p:last-child{margin-bottom:0}
-  `;
-  document.head.appendChild(style);
-
   function addGovernanceNote(){
     if(document.getElementById('loc-governance-neutral-note')) return;
     const host = document.getElementById('principles');
