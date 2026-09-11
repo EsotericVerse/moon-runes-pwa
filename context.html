@@ -1,60 +1,8 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07182d"><title>脈絡｜LOC</title>
-  <link rel="stylesheet" href="css/style.css" /><meta name="description" content="脈絡：語彙之間的關係、Context、Scenario、Event 與 Graph。脈絡沙盒遊戲是其中一個互動實作。" ><link rel="canonical" href="https://loc.lo3rwang.cc/context.html"><style>
-:root{color-scheme:dark;--bg:#07182d;--panel:#10233c;--soft:#172f50;--line:rgba(190,174,255,.2);--text:#f7f3ff;--muted:#b8c1d2;--purple:#b49eff;--gold:#e7c27d;--max:1180px}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 8% 5%,rgba(114,83,184,.22),transparent 30rem),linear-gradient(180deg,#07182d,#07111f);color:var(--text);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 32px));margin:auto}header{position:sticky;top:0;z-index:10;background:rgba(7,24,45,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.loc2-local-nav{min-height:54px;display:flex;align-items:center;gap:14px;overflow:auto;white-space:nowrap}.loc2-local-nav strong{margin-right:auto;font-size:.92rem}.loc2-local-nav a{color:var(--muted);font-size:.84rem}.hero{padding:30px 0 42px;border-bottom:1px solid var(--line)}.section-title,h2{max-width:900px;font-size:clamp(1.45rem,2.5vw,2rem);line-height:1.3;margin:0 0 12px;letter-spacing:-.015em}h3{font-size:1.05rem;line-height:1.45;margin:0 0 8px}.lead{max-width:760px;margin:12px 0 0;color:#dde4ef;font-size:1rem;line-height:1.75}section{padding:50px 0;border-bottom:1px solid var(--line)}.intro{max-width:780px;margin:0 0 20px;color:var(--muted);font-size:1rem;line-height:1.75}.flow{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0}.flow span{padding:8px 12px;border:1px solid var(--line);background:var(--soft);border-radius:999px;font-size:.9rem}.flow b{color:var(--muted);align-self:center}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.panel,.card{background:linear-gradient(180deg,rgba(23,47,80,.92),rgba(16,35,60,.92));border:1px solid var(--line);border-radius:18px;padding:18px 19px}.panel p,.card p{margin:6px 0 0;line-height:1.7}.metric strong{display:block;color:var(--gold);font-size:1rem}.metric span,.card p,.panel p,li,dd{color:var(--muted)}table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line)}th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#132943}.table{overflow:auto;border-radius:14px}.callout{margin-top:20px;border-left:3px solid var(--gold);padding:16px 18px;background:rgba(231,194,125,.07);border-radius:0 12px 12px 0;color:#e9e2cd}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.topline{display:flex;justify-content:space-between;gap:10px;align-items:center}.topline span{display:inline-grid;place-items:center;min-width:38px;height:28px;padding:0 8px;background:#213958;border-radius:8px;font-weight:800}.topline small,.card h3 small{color:var(--muted)}.req,.gold{color:var(--gold)!important;font-weight:800}dl{display:grid;grid-template-columns:62px 1fr;gap:5px 8px;margin:0}dt{color:var(--muted)}dd{margin:0}.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.controls input{flex:1;min-width:240px;background:#091522;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px 13px;font:inherit}.hidden{display:none!important}.foot{padding:36px 0 60px;color:var(--muted);text-align:center}@media(max-width:900px){.grid4,.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}@media(max-width:560px){.wrap{width:min(100% - 22px,1120px)}.grid4,.cards{grid-template-columns:1fr}.loc2-local-nav strong{display:none}.hero{padding:20px 0 34px}section{padding:40px 0}h2{font-size:clamp(1.35rem,6vw,1.75rem)}}
-.visual-inline{margin:16px 0 0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:rgba(0,0,0,.18)}.visual-inline img{display:block;width:100%;height:auto}.visual-inline figcaption{padding:10px 12px;color:var(--muted);font-size:.84rem}.loc2-local-header{position:sticky;top:0;z-index:9;background:rgba(7,24,45,.9);backdrop-filter:blur(14px);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.loc2-local-nav a:hover,.loc2-local-nav a:focus-visible{color:var(--text)}.loc2-local-nav .local-label{color:var(--gold);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase}.loc2-local-nav .play-link{color:var(--gold);font-weight:800}
-.app-shell{width:min(1500px,100%);margin:0 auto;padding:22px;display:grid;grid-template-columns:1fr;gap:20px}
-.workspace-main{min-width:0}.context-section[hidden],.context-docs[hidden]{display:none!important}
-.workspace-main>.context-section{padding-top:28px}.workspace-main>.context-section.hero{padding-top:30px}
-.game-shell{padding:22px 0 0}.game-frame-wrap{height:calc(100vh - 86px);min-height:720px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#07111f}.game-frame{display:block;width:100%;height:100%;border:0;background:#07111f}.game-open{display:flex;justify-content:flex-end;margin:0 0 10px}.game-open a{padding:8px 12px;border:1px solid var(--line);border-radius:999px;color:var(--gold);font-size:.8rem}
-.doc-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.doc-category{border:1px solid var(--line);border-radius:18px;padding:18px 19px;background:linear-gradient(180deg,rgba(23,47,80,.92),rgba(16,35,60,.92))}
-.doc-category h3{color:var(--gold)}.doc-links{display:grid;gap:8px;margin-top:12px}.doc-links a{padding:9px 11px;border:1px solid var(--line);border-radius:10px;color:var(--text);background:rgba(255,255,255,.025)}.doc-links a:hover{border-color:rgba(231,194,125,.48)}
-@media(max-width:900px){.app-shell{grid-template-columns:1fr;padding:14px}}
-@media(max-width:620px){.doc-category-grid{grid-template-columns:1fr}}
-
-/* Context CRUD / Graph */
-.context-tool-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:16px;margin-top:18px}
-.context-tool-card{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.025);padding:16px}
-.context-tool-card h3{margin:0 0 6px}.context-tool-card>p{margin:0 0 14px;color:var(--muted)}
-.context-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.context-form-grid .full{grid-column:1/-1}
-.context-form-grid label{display:grid;gap:5px;color:var(--muted);font-size:12px}
-.context-form-grid input,.context-form-grid select,.context-form-grid textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#091525;color:var(--text);font:inherit}
-.context-form-grid textarea{min-height:84px;resize:vertical}
-.context-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.context-btn{border:1px solid var(--line);border-radius:10px;background:rgba(169,199,255,.08);color:var(--text);padding:8px 11px;font:inherit;cursor:pointer}
-.context-btn.primary{background:rgba(169,199,255,.18)}.context-btn.ghost{background:transparent;color:var(--muted)}
-.context-list{display:grid;gap:9px;margin-top:12px}
-.context-item{border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:rgba(255,255,255,.02)}
-.context-item-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.context-item h4{margin:0}.context-item small,.context-item-meta{color:var(--muted);font-size:11px}.context-item p{margin:7px 0 0;line-height:1.55}
-.context-state{display:grid;gap:8px}.context-state-row{display:grid;grid-template-columns:100px 1fr;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
-.context-state-row:last-child{border-bottom:0}.context-state-row b{color:var(--muted);font-size:12px}
-.context-graph-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 100px auto;gap:9px;align-items:end;margin-top:16px}
-.context-graph-toolbar label{display:grid;gap:5px;color:var(--muted);font-size:12px}
-.context-graph-toolbar input,.context-graph-toolbar select,.context-graph-filter select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#091525;color:var(--text)}
-.context-graph-status{margin-top:8px;color:var(--muted);font-size:12px}
-.context-graph-filter{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.context-graph-filter select{width:auto;min-width:150px}
-.context-graph-layout{display:grid;grid-template-columns:minmax(240px,.75fr) minmax(0,1.25fr);gap:12px}
-.context-graph-panel{border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.02)}
-.context-graph-node,.context-graph-edge{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:rgba(255,255,255,.025)}
-button.context-graph-node{width:100%;text-align:left;color:var(--text);cursor:pointer}.context-graph-node strong{display:block}.context-graph-node small{color:var(--muted)}
-.context-graph-edge-path{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:7px;align-items:center}.context-graph-edge-type{color:var(--accent);font-size:11px}
-.context-empty{border:1px dashed var(--line);border-radius:12px;padding:14px;color:var(--muted);text-align:center}
-@media(max-width:820px){.context-tool-grid,.context-graph-layout{grid-template-columns:1fr}.context-form-grid{grid-template-columns:1fr}.context-form-grid .full{grid-column:auto}.context-graph-toolbar{grid-template-columns:1fr}.context-graph-edge-path{grid-template-columns:1fr}}
-
-.context-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
-.context-pagination[hidden]{display:none!important}.context-page-info{color:var(--muted);font-size:11px}.context-page-buttons{display:flex;gap:6px;flex-wrap:wrap}
-.context-page-btn{min-width:34px;min-height:34px;padding:6px 9px;border:1px solid var(--line);border-radius:9px;background:rgba(169,199,255,.05);color:var(--text);font:inherit;font-size:11px;cursor:pointer}
-.context-page-btn.active{background:rgba(169,199,255,.2);border-color:var(--line-strong)}.context-page-btn:disabled{opacity:.35;cursor:not-allowed}
-</style>
+  <link rel="stylesheet" href="css/style.css" /><meta name="description" content="脈絡：語彙之間的關係、Context、Scenario、Event 與 Graph。脈絡沙盒遊戲是其中一個互動實作。" ><link rel="canonical" href="https://loc.lo3rwang.cc/context.html">
   
-<style id="loc-site-footer-style">
-.loc-site-footer{margin-top:32px;padding:20px 16px;text-align:center;font-size:13px;line-height:1.6;color:var(--muted,#7f8794);border-top:1px solid var(--line,rgba(127,135,148,.22))}
-.loc-site-footer a{color:inherit;text-decoration:none}
-.loc-site-footer a:hover{text-decoration:underline}
-.loc-site-footer span{margin:0 8px;opacity:.7}
-</style>
-</head><body class="loc-responsive-page loc-page-game"><div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="game" aria-label="全站導覽"></nav></div><div class="app-shell">
+
+</head><body class="loc-responsive-page loc-page-game loc-page-context"><div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="game" aria-label="全站導覽"></nav></div><div class="app-shell">
 
 <main class="workspace-main">
 <section class="hero context-section" data-context-view="graph" id="context-entry"><div class="wrap loc-header">
