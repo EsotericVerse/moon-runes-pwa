@@ -2,7 +2,7 @@
   "schema_version": "0.1",
   "status": "experimental_audit",
   "created_at": "2026-09-11",
-  "source_head_checked_before_write": "8e7145592455206e251362fdffe598836236bbc7",
+  "source_head_checked_before_write": "5b2e7dad10387eb16e0a7fb75cae5fafe4b092bc",
   "scope": "A-line semantic pollution, Base66/Canon consistency, legacy source debt. Read-first audit; no production semantics changed by this file.",
   "safe_nonissues": [
     {"term":"Mystery","classification":"governance_negative_example","note":"Current hits state 玄 = Chaos, never Mystery; do not delete."},
@@ -63,29 +63,46 @@
       "runes":["星","無"],
       "finding":"Both current keyword triplets contain 可能: 星=潛在・希望・可能; 無=未定・開放・可能.",
       "severity":"high_semantic_collision",
-      "action":"author_review_required",
-      "reason":"Exact keyword overlap conflicts with the current differentiation/keyword governance goal."
+      "action":"resolved_patch_spec",
+      "resolution":{
+        "星":{"關鍵詞":"潛在・希望・可期"},
+        "無":{"關鍵詞":"未定・開放・未知"}
+      },
+      "reason":"Exact keyword overlap conflicts with differentiation governance. 星 keeps positive future potential; 無 keeps unfixed/open unknown state."
     },
     {
       "runes":["月","暗"],
       "finding":"Current Base66 still uses 暗面／陰暗面 language heavily for 月 while 暗 is Shadow; descriptions attempt to distinguish symbol vs layer but remain semantically entangled.",
       "severity":"high_boundary_review",
-      "action":"author_review_required",
-      "reason":"Recent governance explicitly separates 月 from generic darkness/暗."
+      "action":"boundary_rewrite_required",
+      "reason":"This is not safely solved by replacing one keyword. 月 must describe a layer/state under rule or eclipse; 暗 remains shadow/low-profile/inward style. Rewrite the whole boundary together before production edit."
     },
     {
       "runes":["鑽"],
       "finding":"Current keywords remain 壓力・稀有・淬鍊 while current special note emphasizes pressure/rarity.",
       "severity":"medium_semantic_residue",
-      "action":"author_review_required",
-      "reason":"Recent governance questioned 淬鍊 and emphasized pressure + rarity/hardness."
+      "action":"resolved_patch_spec",
+      "resolution":{"關鍵詞":"壓力・稀有・硬度"},
+      "reason":"Use three distinct dimensions: formation pressure, rarity, and material hardness. 淬鍊 is a derived process/result metaphor, not a core physical-semantic axis."
+    },
+    {
+      "runes":["火"],
+      "finding":"Current positive keywords and reverse keywords both contain 暴躁: 熱忱・衝動・暴躁 vs 暴躁・灼傷・失控.",
+      "severity":"high_polarity_collision",
+      "action":"resolved_patch_spec",
+      "resolution":{
+        "關鍵詞":"熱忱・衝動・炙熱",
+        "反向關鍵詞":"暴躁・灼傷・失控"
+      },
+      "reason":"Positive/reverse lexical polarity must help priority resolution. 火 can still cover passion, impulse, heat and irritability without duplicating the same keyword on both sides."
     },
     {
       "runes":["因"],
-      "finding":"English remains Reason in runes66 and runes66groups, while Chinese keywords are 原因・成因・起因 and note explicitly says not Chinese 理由.",
+      "finding":"English remains Reason while Chinese keywords are 原因・成因・起因 and note explicitly says not Chinese 理由.",
       "severity":"medium_translation_review",
-      "action":"author_review_required",
-      "reason":"Possible Cause/Reason calibration issue; do not guess translation."
+      "action":"resolved_patch_spec",
+      "resolution":{"英文":"Cause"},
+      "reason":"Cause maps directly to 原因／成因／起因 and avoids reintroducing 理由 through Reason."
     },
     {
       "runes":["明"],
@@ -94,6 +111,10 @@
       "action":"review_after_high_priority_items"
     }
   ],
+  "keyword_governance_observation": {
+    "rule":"Keywords should cover distinct semantic dimensions rather than repeat near-synonyms. Reverse keywords should express the reverse-side lexical direction and must not duplicate a positive keyword when that duplication destroys polarity priority.",
+    "priority":"lexical role / polarity direction -> group subjectivity -> rune semantic ownership -> direct-expression-over-opposite-side inference for remaining collisions"
+  },
   "confirmed_current_semantics": [
     "水 = Water; 流動核心歸氣",
     "氣 = Air; 流動／氣流／呼吸",
@@ -115,7 +136,8 @@
     "rule":"Do not count metadata-summary classification as full-lyrics classification."
   },
   "next_actions": [
-    "Resolve Base66 review items with author/current master source before editing runes66.json.",
+    "Apply resolved Base66 patch spec through the canonical mother-data workflow, then regenerate dependent runtime projections instead of hand-editing multiple copies.",
+    "Rewrite 月／暗 boundary as one governed semantic change before production edit.",
     "Locate or intentionally create a governed LOC3 full-text input layer before large classifier trial.",
     "Inventory legacy source debt fields before any migration; preserve historical records and regenerate derived RAG where appropriate.",
     "Patch card_api/main.py legacy 陰暗面 access only through a safe full-file patch workflow.",
