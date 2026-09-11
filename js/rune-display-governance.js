@@ -113,17 +113,19 @@
     return `<span class="loc-rune-english">${esc(english)}</span><span class="loc-rune-title">${esc(name)}之符文</span>`;
   }
 
-  function fields(rune){
+  function fields(rune, direction=''){
     const phase=valueOf(rune,'月相','moon_phase');
-    return [
+    const rows=[
       ['說明', valueOf(rune,'特別說明','說明','description')],
       ['關鍵詞', valueOf(rune,'關鍵詞','keyword')],
       ['反向關鍵詞', valueOf(rune,'反向關鍵詞','反向關鍵字','reverse_keyword')],
       ['人格原型', valueOf(rune,'人格原型','archetype')],
       ['所屬分組', valueOf(rune,'所屬分組','group')],
-      ['卡片詞性', valueOf(rune,'卡片屬性','card_attribute')],
-      ['卡片月相', `${phase} / 真實月相：${realMoonPhase()}`]
+      ['卡片詞性', valueOf(rune,'卡片屬性','card_attribute')]
     ];
+    if(clean(direction)) rows.push(['卡片方向', clean(direction)]);
+    rows.push(['卡片月相', `${phase} / 真實月相：${realMoonPhase()}`]);
+    return rows;
   }
 
   function fieldHtml(label,value){
@@ -159,10 +161,14 @@
     const heading=card.querySelector('.rune-result-name');
     if(!rune || !grid || !heading) return;
 
+    const originalFields=[...grid.querySelectorAll(':scope > .rune-result-field')];
+    const directionField=originalFields.find(field=>clean(field.querySelector('.rune-result-label')?.textContent).replace(/：$/,'')==='卡片方向');
+    const direction=clean(directionField?.querySelector('.rune-result-value')?.textContent);
+
     heading.classList.add('loc-rune-heading');
     heading.innerHTML=titleHtml(rune);
     grid.classList.add('loc-rune-info-grid');
-    grid.innerHTML=fields(rune).map(([label,value])=>fieldHtml(label,value)).join('');
+    grid.innerHTML=fields(rune,direction).map(([label,value])=>fieldHtml(label,value)).join('');
     markGoverned(card);
   }
 
