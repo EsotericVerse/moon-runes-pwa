@@ -1512,11 +1512,14 @@
             <img src="64images/65_玄.png" alt="玄之符文" id="rune-image" />
           </div>
 
-          <div class="card-attributes" id="attributes">
-            <p>卡牌面向：正位</p>
-            <p>介紹：「玄」，月之符文所揭示</p>
-            <p>所屬分組：特殊</p>
-            <p id="moon-phase-index">月相：無 / 真實月相：計算中...</p>
+          <div class="card-attributes rune-result-card" id="attributes">
+            <div class="rune-result-name" data-rune-name="玄">玄</div>
+            <div class="rune-result-grid">
+              <div class="rune-result-field">
+                <span class="rune-result-label">卡片位向：</span>
+                <span class="rune-result-value">正位</span>
+              </div>
+            </div>
             <a class="rune-data-cta" href="lots.html#library">
               <span>
                 <strong>查看完整月之符文資料</strong>
@@ -1980,6 +1983,7 @@
   <script src="js/loc-nav.js"></script>
   <script src="js/locMoonPhase.js"></script>
   <script src="js/main.js"></script>
+  <script type="module" src="js/rune.js"></script>
 
   <script>
     (() => {
