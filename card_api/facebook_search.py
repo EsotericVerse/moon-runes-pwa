@@ -67,6 +67,7 @@ class _FacebookPostStream:
 
     def __init__(self, engine: "FacebookSearchEngine"):
         self.engine = engine
+        self.keyword_index_path = engine.keyword_index_path
 
     def __iter__(self) -> Iterator[dict[str, Any]]:
         return self.engine._iter_posts()
@@ -83,11 +84,13 @@ class FacebookSearchEngine:
     so normal queries do not recompute expensive features for all 18k+ records.
     The public ``posts`` attribute remains iterable for analysis endpoints, but
     manifest-backed datasets expose a reusable stream rather than a materialized
-    list, allowing keyword rankings to aggregate shard-by-shard.
+    list, allowing keyword rankings to aggregate shard-by-shard or use the
+    build-time SQLite ranking index when present.
     """
 
     def __init__(self, dataset_path: Path):
         self.dataset_path = dataset_path
+        self.keyword_index_path = Path(__file__).resolve().parent / "generated" / "facebook_keyword_index.sqlite3"
         payload = json.loads(dataset_path.read_text(encoding="utf-8"))
 
         self.shards: list[str] = []
