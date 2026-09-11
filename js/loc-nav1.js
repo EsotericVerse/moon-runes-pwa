@@ -19,7 +19,6 @@
     "evolution.html":"evolution",
     "governance.html":"governance",
     "statics.html":"statics",
-    "statics.htm":"statics",
     "search.html":"search",
     "lo3rwang.html":"author"
   });
@@ -60,7 +59,7 @@
 
   function loadRuneDisplayGovernance(){
     const file=fileName();
-    if(!["runes.html","lots.html","search.html"].includes(file)) return;
+    if(!["index.html","runes.html","lots.html","search.html"].includes(file)) return;
     loadScript('js/rune-display-governance.js','loc-rune-display-governance');
   }
 
