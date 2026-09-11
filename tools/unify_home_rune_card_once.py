@@ -1,21 +1,9 @@
 from pathlib import Path
+import re
 
 index_path = Path('index.html')
 index = index_path.read_text(encoding='utf-8')
 
-old = '''          <div class="card-attributes" id="attributes">
-            <p>卡牌面向：正位</p>
-            <p>介紹：「玄」，月之符文所揭示</p>
-            <p>所屬分組：特殊</p>
-            <p id="moon-phase-index">月相：無 / 真實月相：計算中...</p>
-            <a class="rune-data-cta" href="lots.html#library">
-              <span>
-                <strong>查看完整月之符文資料</strong>
-                <small>月之符文66 圖鑑 · 八組分類 · 卡片詳細說明</small>
-              </span>
-              <span aria-hidden="true">→</span>
-            </a>
-          </div>'''
 new = '''          <div class="card-attributes rune-result-card" id="attributes">
             <div class="rune-result-name" data-rune-name="玄">玄</div>
             <div class="rune-result-grid">
@@ -32,9 +20,11 @@ new = '''          <div class="card-attributes rune-result-card" id="attributes"
               <span aria-hidden="true">→</span>
             </a>
           </div>'''
-if old not in index:
-    raise SystemExit('homepage rune attributes block not found')
-index = index.replace(old, new, 1)
+
+pat = re.compile(r'          <div class="card-attributes" id="attributes">.*?          </div>', re.S)
+index, n = pat.subn(new, index, count=1)
+if n != 1:
+    raise SystemExit(f'homepage rune attributes container replacement count={n}')
 
 script_anchor = '  <script src="js/main.js"></script>'
 module_tag = '  <script type="module" src="js/rune.js"></script>'
@@ -47,35 +37,17 @@ index_path.write_text(index, encoding='utf-8')
 
 main_path = Path('js/main.js')
 main = main_path.read_text(encoding='utf-8')
-old_main = '''window.addEventListener("DOMContentLoaded", () => {
-  const card = document.getElementById("rune-card");
-  const moonText = document.getElementById("moon-phase-index");
-
-  if (moonText) {
-    const cardPhase = moonText.dataset.cardPhase || "無";
-    moonText.textContent = `月相：${cardPhase} / 真實月相：${realPhase}`;
-  }
-
-  if (card) {
-    card.addEventListener("click", () => {
-      window.location.href = "lots.html#draw";
-    });
-  }
-});'''
-new_main = '''window.addEventListener("DOMContentLoaded", () => {
-  const card = document.getElementById("rune-card");
-  if (card) {
-    card.addEventListener("click", () => {
-      window.location.href = "lots.html#draw";
-    });
-  }
-});'''
-if old_main not in main:
-    raise SystemExit('legacy homepage moon text block not found')
-main = main.replace(old_main, new_main, 1)
+main = re.sub(
+    r'window\.addEventListener\("DOMContentLoaded", \(\) => \{\n  const card = document\.getElementById\("rune-card"\);\n  const moonText = document\.getElementById\("moon-phase-index"\);\n\n  if \(moonText\) \{.*?\n  \}\n\n  if \(card\) \{',
+    'window.addEventListener("DOMContentLoaded", () => {\n  const card = document.getElementById("rune-card");\n  if (card) {',
+    main,
+    count=1,
+    flags=re.S
+)
+if 'moonText' in main or 'moon-phase-index' in main:
+    raise SystemExit('legacy homepage moon text logic remains in main.js')
 main_path.write_text(main, encoding='utf-8')
 
-# Contract checks.
 check = index_path.read_text(encoding='utf-8')
 for required in ['rune-result-card','rune-result-name','rune-result-grid','data-rune-name="玄"','js/rune.js']:
     if required not in check:
