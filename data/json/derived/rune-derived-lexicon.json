@@ -1,0 +1,19 @@
+{
+  "schema_version": "0.1",
+  "dataset": "LunaRunes Derived Lexicon",
+  "authority": "derived_from_governance",
+  "canonical_source": "data/json/core/runes.json",
+  "api_used": false,
+  "note": "Derived lexicon entries extend Graph coverage without becoming canonical rune keywords. Multi-rune terms preserve surface components and an explicit resolved semantic owner.",
+  "entries": [
+    {
+      "term": "鏡花水月",
+      "source_type": "成語",
+      "surface_components": ["鏡", "花", "水", "月"],
+      "resolved_rune": "幻",
+      "relation": "derived_resolved",
+      "confidence": "high",
+      "rationale": "字面由鏡、花、水、月構成；固定成語義為虛幻而不可得，整體語意主歸屬為幻。"
+    }
+  ]
+}
