@@ -1,5 +1,6 @@
 (() => {
   const GROUPS = ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"];
+  const NAV3_ALLOW = new Set(["lots:draw", "lots:library"]);
 
   const fileName = () => location.pathname.split("/").pop() || "index.html";
 
@@ -56,10 +57,12 @@
     return nav;
   }
 
-  function nav3(items, label) {
+  function nav3(key, items, label) {
+    if (!NAV3_ALLOW.has(key)) return null;
     const box = document.createElement("nav");
     box.className = "loc-nav3";
     box.dataset.tier = "3";
+    box.dataset.nav3 = key;
     box.setAttribute("aria-label", label);
     const inner = document.createElement("div");
     inner.className = "loc-nav3-inner";
@@ -82,7 +85,10 @@
     b.type = "button";
     b.className = "loc-nav-tier-link";
     b.textContent = label;
-    Object.entries(attrs).forEach(([key,value]) => b.setAttribute(key,value));
+    Object.entries(attrs).forEach(([key,value]) => {
+      if (key === "disabled") b.disabled = true;
+      else b.setAttribute(key,value);
+    });
     return b;
   }
 
@@ -119,7 +125,7 @@
 
     const drawView = fileName() === "lots.html" ? document.getElementById("drawView") : null;
     if (drawView && !drawView.querySelector(":scope > .loc-nav3")) {
-      drawView.appendChild(nav3([
+      const menu = nav3("lots:draw", [
         link("單卡","lots.html?mode=single#draw"),
         link("每日","lots.html?mode=daily#draw"),
         link("雙卡","lots.html?mode=2card#draw"),
@@ -127,12 +133,14 @@
         link("五卡","lots.html?mode=5card#draw"),
         link("11卡 OW3gs","lots.html?mode=ow3gs#draw"),
         link("說明","lots.html#draw-help")
-      ],"抽牌快速選單"));
+      ],"抽牌快速選單");
+      if (menu) drawView.appendChild(menu);
     }
 
     const libraryView = fileName() === "lots.html" ? document.getElementById("libraryView") : null;
     if (libraryView && !libraryView.querySelector(":scope > .loc-nav3")) {
-      libraryView.appendChild(nav3(GROUPS.map(group => link(group,`lots.html?group=${encodeURIComponent(group)}#library`,{"data-rune-group-shortcut":group})),"符文群組快速選單"));
+      const menu = nav3("lots:library", GROUPS.map(group => link(group,`lots.html?group=${encodeURIComponent(group)}#library`,{"data-rune-group-shortcut":group})),"符文群組快速選單");
+      if (menu) libraryView.appendChild(menu);
     }
   }
 
@@ -172,6 +180,12 @@
     ],"治理內容"));
   }
 
+  function buildAuthor(host){
+    host.appendChild(tier([
+      button("作者個人網頁介紹",{"aria-current":"true",disabled:""})
+    ],"作者頁"));
+  }
+
   function buildTiers() {
     const host = getTierHost();
     if (!host) return;
@@ -183,6 +197,7 @@
     else if (file === "evolution.html") buildEvolution(host);
     else if (file === "governance.html") buildGovernance(host);
     else if (file === "statics.html" || file === "statics.htm") buildStatics(host);
+    else if (file === "lo3rwang.html") buildAuthor(host);
   }
 
   function installThemeGuidance(){
