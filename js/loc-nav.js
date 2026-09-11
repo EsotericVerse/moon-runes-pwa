@@ -175,12 +175,9 @@
   }
 
 
-  function buildIndex(host){
+  function buildIndex(){
     const top=document.getElementById("top")||document.querySelector("main,.loc-page");
     if(top&&!top.id) top.id="top";
-    host.appendChild(tier([
-      link("模組",sectionHref("framework-map"))
-    ],"首頁模組入口"));
   }
 
   function buildRunes(host){

@@ -2190,3 +2190,10 @@ html[data-theme-resolved="day"] body .loc-header-copy,html[data-theme-resolved="
 .loc-theme-control span{font-weight:700}
 .loc-theme-control select{height:32px;min-width:66px;padding:3px 22px 3px 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface2);color:var(--text);font:inherit;font-size:.72rem;cursor:pointer}
 @media(max-width:760px){.loc-theme-control span{display:none}.loc-theme-control select{min-width:58px}.loc-theme-control+.loc-global-home{margin-left:0}}
+
+
+/* THEME CONTROL NEUTRAL UI */
+.loc-theme-control{color:var(--muted)!important}
+.loc-theme-control select{border-color:var(--line)!important;background:transparent!important;color:var(--muted)!important;box-shadow:none!important}
+.loc-theme-control select:hover,.loc-theme-control select:focus{border-color:var(--line-strong)!important;background:var(--surface2)!important;color:var(--text)!important;outline:none}
+html[data-theme-resolved="day"] body .loc-theme-control select{background:rgba(255,255,255,.36)!important;color:var(--muted)!important}
