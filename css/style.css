@@ -2197,3 +2197,15 @@ html[data-theme-resolved="day"] body .loc-header-copy,html[data-theme-resolved="
 .loc-theme-control select{border-color:var(--line)!important;background:transparent!important;color:var(--muted)!important;box-shadow:none!important}
 .loc-theme-control select:hover,.loc-theme-control select:focus{border-color:var(--line-strong)!important;background:var(--surface2)!important;color:var(--text)!important;outline:none}
 html[data-theme-resolved="day"] body .loc-theme-control select{background:rgba(255,255,255,.36)!important;color:var(--muted)!important}
+
+
+/* NAV1 COLOR CANON */
+html body .loc-global-shell .loc-global-link,
+html body .loc-global-shell .loc-global-home{color:var(--text)!important}
+html body .loc-global-shell .loc-global-link:hover,
+html body .loc-global-shell .loc-global-link:focus-visible,
+html body .loc-global-shell .loc-global-link[aria-current="page"],
+html body .loc-global-shell .loc-global-home:hover,
+html body .loc-global-shell .loc-global-home:focus-visible{color:var(--text)!important;border-bottom-color:var(--gold)!important}
+html[data-theme-resolved="day"] body .loc-global-shell .loc-global-link,
+html[data-theme-resolved="day"] body .loc-global-shell .loc-global-home{color:#27384a!important}
