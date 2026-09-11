@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "registry": "LOC_TERMINOLOGY_CANON",
   "status": "canonical",
   "effective_date": "2026-09-11",
@@ -77,14 +77,12 @@
   "migration_status": {
     "directly_migrated": [
       "README.md",
-      "js/home-canonical.js",
-      "js/public-terminology.js",
-      "js/loc-concept-notes.js",
-      "skills/loc-lunarunes-semantic-classifier/references/LOC_LUNARUNES_SEMANTIC_CLASSIFICATION_SPEC.md"
+      "index.html",
+      "manifest.json",
+      "data/json/search/faq/LOC_FAQ_CANON_OVERRIDES.json"
     ],
     "runtime_canon_overrides": [
-      "data/json/search/faq/LOC_FAQ_RAG_v0.4.json via data/json/search/faq/LOC_FAQ_CANON_OVERRIDES.json + card_api/faq_rag.py",
-      "dynamic public DOM and href values via js/public-terminology.js"
+      "data/json/search/faq/LOC_FAQ_RAG_v0.4.json via data/json/search/faq/LOC_FAQ_CANON_OVERRIDES.json + card_api/faq_rag.py"
     ],
     "legacy_source_debt": [
       "data/json/search/faq/LOC_FAQ_v0.4.json",
@@ -92,7 +90,6 @@
       "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
       "data/json/registries/LOC_KM_KEYWORDS.json",
       "data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json",
-      "index.html",
       "js/main.js",
       "lo3rwang.html",
       "context.html",
@@ -110,7 +107,11 @@
         "loc2-game.html"
       ],
       "runtime_normalization": "canonical HTML paths only; historical migration aliases remain in governance records"
-    }
+    },
+    "retired_runtime_shims": [
+      "js/home-canonical.js",
+      "js/public-terminology.js"
+    ]
   },
   "migration_rule": "Consumers must prefer current values in this registry and LOC_DATA_GOVERNANCE over superseded current-positioning strings found in older README, FAQ/RAG, KM or registry snapshots. Do not rewrite historical evidence silently; mark it historical or superseded instead.",
   "display_rule": "Public current-facing copy must use the current terminology. LOC1–LOC8 are module names and navigation/explanation labels, not maturity levels or versions."
