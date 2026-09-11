@@ -21,10 +21,16 @@
     ['Documents', '文件（Documents）'],
     ['Ranking', '排行榜（Ranking）'],
     ['Sources', '來源（Sources）'],
-    ['Import', '匯入（Import）']
+    ['Import', '匯入（Import）'],
+    ['LOC · Luna Codex · Language Module Framework', 'LOC 月典 · Luna Codex · 語言系統模型 Language System Model']
   ]);
 
   const PHRASE_TEXT = [
+    ['語言模組框架（Language Module Framework）', '語言系統模型（Language System Model）'],
+    ['語言模型框架（Language Model Framework）', '語言系統模型（Language System Model）'],
+    ['語言模型框架', '語言系統模型'],
+    ['Language Module Framework', 'Language System Model'],
+    ['Language Model Framework', 'Language System Model'],
     ['Search → 時期設定', '搜尋（Search）→ 時期設定'],
     ['Evolution 只讀取並進行時間分析', '推演（Evolution）只讀取並進行時間分析'],
     ['State →', '變更後狀態（State After）→']
@@ -68,12 +74,24 @@
     nodes.forEach(normalizeTextNode);
   }
 
+  function normalizeMetadata() {
+    const file = location.pathname.split('/').pop() || 'index.html';
+    if (file !== 'index.html') return;
+    document.title = 'LOC月典｜語言系統模型';
+    const description = document.querySelector('meta[name="description"]');
+    if (description) {
+      description.setAttribute('content', 'LOC（月典／Luna Codex）是一套可進化、可重複使用的語言系統模型（Language System Model），由 LOC1–LOC8 功能模組組合而成。');
+    }
+  }
+
   function install() {
+    normalizeMetadata();
     normalizeElement(document.body);
     const observer = new MutationObserver(records => {
       for (const record of records) {
         for (const node of record.addedNodes) normalizeElement(node);
       }
+      normalizeMetadata();
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
