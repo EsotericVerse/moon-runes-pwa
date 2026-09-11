@@ -1,0 +1,42 @@
+name: RC3 CSS cleanup once
+on:
+  push:
+    paths:
+      - 'tools/rc3_css_cleanup_once.py'
+      - '.github/workflows/rc3-css-cleanup-once.yml'
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/rc3_css_cleanup_once.py
+      - name: Verify stylesheet loading and core page integrity
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          pages=['index.html','lots.html','runes.html','statics.html']
+          for page in pages:
+              s=Path(page).read_text(encoding='utf-8')
+              assert s.count('href="css/style.css"') == 1, (page, 'style.css load count')
+              assert '<style' not in s.lower(), (page, 'inline style block returned')
+          css=Path('css/style.css').read_text(encoding='utf-8')
+          assert css.count('{') == css.count('}')
+          assert 'body.loc-page-lots .daily-record-grid' not in css
+          assert 'body.loc-page-lots .daily-record-form' not in css
+          assert 'body.loc-page-lots .daily-stats-panel' not in css
+          assert 'body.loc-page-runes #libraryView' not in css
+          assert 'body.loc-page-runes #dailyView' not in css
+          assert 'body.loc-page-runes #drawView' not in css
+          assert 'body.loc-page-runes #rune-modal' not in css
+          PY
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add css/style.css
+          git commit -m "refactor: remove stale CSS before RC3"
+          git push
