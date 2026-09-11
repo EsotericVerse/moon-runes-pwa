@@ -30,8 +30,9 @@ jobs:
               assert s.lower().rstrip().endswith('</html>'), page
               assert s.count('href="css/style.css"') == 1, (page,'style.css count')
               assert '<style' not in s.lower(), (page,'inline style block')
-              # check relative href/src targets that should map to files
               for attr,val in re.findall(r'''\b(href|src)=["']([^"']+)["']''',s,re.I):
+                  if '${' in val:
+                      continue
                   if val.startswith(('http://','https://','mailto:','tel:','data:','#','javascript:')):
                       continue
                   path=val.split('#',1)[0].split('?',1)[0]
@@ -39,7 +40,6 @@ jobs:
                       continue
                   if path.startswith('/'):
                       path=path[1:]
-                  # anchor-only routing to generated endpoints is excluded above
                   if path and not (root/path).exists():
                       missing.append((page,val))
           assert not missing, f'missing relative targets: {missing[:30]}'
