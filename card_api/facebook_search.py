@@ -4,6 +4,7 @@ import heapq
 import json
 import math
 import re
+import sqlite3
 import unicodedata
 from collections import Counter
 from pathlib import Path
@@ -41,7 +42,6 @@ def _vectorize(features: Counter[str]) -> dict[str, float]:
 
 
 def _prefilter_terms(value: str) -> list[str]:
-    """Return cheap literal candidates before expensive n-gram scoring."""
     normalized = _normalize(value)
     terms: list[str] = []
 
@@ -62,9 +62,11 @@ def _prefilter_terms(value: str) -> list[str]:
     return list(dict.fromkeys(term for term in terms if term))
 
 
-class _FacebookPostStream:
-    """Reusable iterable over manifest-backed Facebook shards."""
+def _escape_like(value: str) -> str:
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
+
+class _FacebookPostStream:
     def __init__(self, engine: "FacebookSearchEngine"):
         self.engine = engine
         self.keyword_index_path = engine.keyword_index_path
@@ -78,20 +80,6 @@ class _FacebookPostStream:
 
 
 class FacebookSearchEngine:
-    """Memory-bounded Facebook corpus searcher.
-
-    Manifest-backed corpora are streamed one shard at a time. The service does
-    not keep all Facebook posts, document features, or document vectors resident
-    in memory. Search retains only a fixed-size global Top-K heap.
-
-    A cheap literal/semantic-keyword prefilter runs before n-gram vectorization,
-    so normal queries do not recompute expensive features for all 18k+ records.
-    The public ``posts`` attribute remains iterable for analysis endpoints, but
-    manifest-backed datasets expose a reusable stream rather than a materialized
-    list, allowing keyword rankings to aggregate shard-by-shard or use the
-    build-time SQLite ranking index when present.
-    """
-
     def __init__(self, dataset_path: Path):
         self.dataset_path = dataset_path
         self.keyword_index_path = Path(__file__).resolve().parent / "generated" / "facebook_keyword_index.sqlite3"
@@ -133,6 +121,59 @@ class FacebookSearchEngine:
 
         for post in self.posts or []:
             yield post
+
+    def _search_index_available(self) -> bool:
+        path = self.keyword_index_path
+        if not path.exists():
+            return False
+        try:
+            with sqlite3.connect(path) as conn:
+                row = conn.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type='table' AND name='search_documents'"
+                ).fetchone()
+            return bool(row)
+        except sqlite3.Error:
+            return False
+
+    def _iter_index_posts(
+        self,
+        terms: list[str],
+        *,
+        start_date: str = "",
+        end_date: str = "",
+        year: int | None = None,
+    ) -> Iterator[dict[str, Any]]:
+        clauses: list[str] = []
+        params: list[Any] = []
+
+        if start_date:
+            clauses.append("date >= ?")
+            params.append(start_date)
+        if end_date:
+            clauses.append("date <= ?")
+            params.append(end_date)
+        if year:
+            clauses.append("year = ?")
+            params.append(int(year))
+
+        if terms:
+            term_clauses: list[str] = []
+            for term in terms:
+                pattern = f"%{_escape_like(term)}%"
+                term_clauses.append("(retrieval_text LIKE ? ESCAPE '\\' OR keyword_text LIKE ? ESCAPE '\\')")
+                params.extend([pattern, pattern])
+            clauses.append("(" + " OR ".join(term_clauses) + ")")
+
+        sql = "SELECT payload_json FROM search_documents"
+        if clauses:
+            sql += " WHERE " + " AND ".join(clauses)
+        sql += " ORDER BY ordinal"
+
+        with sqlite3.connect(self.keyword_index_path) as conn:
+            for (payload_json,) in conn.execute(sql, params):
+                post = json.loads(payload_json)
+                if isinstance(post, dict):
+                    yield post
 
     @staticmethod
     def _cosine(left: dict[str, float], right: dict[str, float]) -> float:
@@ -181,7 +222,17 @@ class FacebookSearchEngine:
         normalized_query = _normalize(query)
         heap: list[tuple[float, int, dict[str, Any], list[str]]] = []
 
-        for index, post in enumerate(self._iter_posts()):
+        if self._search_index_available():
+            source = self._iter_index_posts(
+                prefilter_terms,
+                start_date=start_date,
+                end_date=end_date,
+                year=year,
+            )
+        else:
+            source = self._iter_posts()
+
+        for index, post in enumerate(source):
             if post.get("searchable") is False or "爭議文章" in (post.get("classification") or []):
                 continue
 
