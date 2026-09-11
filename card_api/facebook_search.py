@@ -40,12 +40,43 @@ def _vectorize(features: Counter[str]) -> dict[str, float]:
     return {feature: value / norm for feature, value in weighted.items()}
 
 
+def _prefilter_terms(value: str) -> list[str]:
+    """Return cheap literal candidates before expensive n-gram scoring.
+
+    Latin words are kept whole. CJK queries contribute 2-4 character windows so
+    a longer phrase can still find records containing its meaningful subphrases.
+    This is deliberately lightweight: it narrows CPU work without building a
+    resident corpus-wide index.
+    """
+    normalized = _normalize(value)
+    terms: list[str] = []
+
+    for token in re.findall(r"[a-z0-9]+", normalized):
+        if len(token) >= 2:
+            terms.append(token)
+
+    cjk = "".join(ch for ch in normalized if "\u3400" <= ch <= "\u9fff")
+    if cjk:
+        if len(cjk) <= 4:
+            terms.append(cjk)
+        for size in (4, 3, 2):
+            if len(cjk) < size:
+                continue
+            for start in range(len(cjk) - size + 1):
+                terms.append(cjk[start:start + size])
+
+    return list(dict.fromkeys(term for term in terms if term))
+
+
 class FacebookSearchEngine:
     """Memory-bounded Facebook corpus searcher.
 
     Manifest-backed corpora are streamed one shard at a time. The service does
     not keep all Facebook posts, document features, or document vectors resident
     in memory. Search retains only a fixed-size global Top-K heap.
+
+    A cheap literal/semantic-keyword prefilter runs before n-gram vectorization,
+    so normal queries do not recompute expensive features for all 18k+ records.
     """
 
     def __init__(self, dataset_path: Path):
@@ -102,6 +133,19 @@ class FacebookSearchEngine:
                 additions.extend(group)
         return " ".join([normalized, *dict.fromkeys(additions)])
 
+    @staticmethod
+    def _passes_prefilter(post: dict[str, Any], terms: list[str]) -> bool:
+        if not terms:
+            return True
+
+        retrieval_text = _normalize(str(post.get("retrieval_text") or post.get("text") or ""))
+        if any(term in retrieval_text for term in terms):
+            return True
+
+        keywords = post.get("semantic_keywords") or []
+        keyword_text = _normalize(" ".join(str(item) for item in keywords))
+        return any(term in keyword_text for term in terms)
+
     def search(
         self,
         query: str,
@@ -116,7 +160,9 @@ class FacebookSearchEngine:
             raise ValueError("query must not be blank")
 
         limit = max(1, min(top_k, 50))
-        query_vector = _vectorize(_features(self._expand_query(query)))
+        expanded_query = self._expand_query(query)
+        query_vector = _vectorize(_features(expanded_query))
+        prefilter_terms = _prefilter_terms(expanded_query)
         normalized_query = _normalize(query)
         heap: list[tuple[float, int, dict[str, Any], list[str]]] = []
 
@@ -130,6 +176,12 @@ class FacebookSearchEngine:
             if end_date and date[:10] > end_date:
                 continue
             if year and post.get("year") != year:
+                continue
+
+            # Most records are rejected here using substring checks only. This
+            # avoids rebuilding character n-gram vectors for the full corpus on
+            # every query, the main source of Facebook-search timeouts.
+            if not self._passes_prefilter(post, prefilter_terms):
                 continue
 
             retrieval_text = str(post.get("retrieval_text") or post.get("text") or "")
