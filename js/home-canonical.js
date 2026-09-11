@@ -3,15 +3,15 @@
     const file = location.pathname.split('/').pop() || 'index.html';
     if (file !== 'index.html') return;
 
-    document.title = 'LOC月典｜語言系統模型';
+    document.title = 'LOC月典｜語言系統模組框架';
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.content = 'LOC（月典／Luna Codex）是一套可進化、可重複使用的語言系統模型；LunaRunes（月之符文）則是具有原創性的符號型語言模型，提供從入門使用到語言治理、RAG、知識架構與長期推演的完整實作。';
+    if (meta) meta.content = 'LOC（月典／Luna Codex）是一套可進化、可重複使用的語言系統模組框架（Language Module Framework）；LunaRunes（月之符文）則是具有原創性的符號式語言模組，提供從入門使用到語言治理、RAG、知識架構與長期推演的完整實作。';
 
     const heroSubtitle = document.querySelector('.hero .loc-header-subtitle');
     if (heroSubtitle) heroSubtitle.textContent = '先從一張符文開始理解，再逐步看見脈絡、作品、演算法、治理與時間如何連成一個可運作的語言系統。';
 
     const heroCopy = document.querySelector('.hero .loc-header-copy');
-    if (heroCopy) heroCopy.textContent = 'LOC 是一套用來分析、整理、搜尋、治理並推演語言的 Language System Model。LunaRunes（月之符文）是其中可實際運作的 Symbolic Language Model；新手可以直接使用，專業使用者則可以往資料、RAG、Graph、演算法與治理層深入。';
+    if (heroCopy) heroCopy.textContent = 'LOC 是一套用來分析、整理、搜尋、治理並推演語言的 Language Module Framework。LunaRunes（月之符文）是其中可實際運作的 Symbolic Language Module；新手可以直接使用，專業使用者則可以往資料、RAG、Graph、演算法與治理層深入。';
 
     const heroNote = document.querySelector('.hero-note');
     if (heroNote) heroNote.innerHTML = '<div class="moon" aria-hidden="true"></div><strong>不用先學完整套系統。</strong><p>第一次來，可以先抽一張每日符文，看看 66 個中文字如何形成可操作的語意起點；有興趣再看新手教學、脈絡、搜尋與推演。想長期使用時，可將網站加入主畫面，或下載 LOC GPT Skills，把治理方法帶進自己的工作流程。</p>';
@@ -24,7 +24,7 @@
       frameworkSection.hidden = false;
       frameworkSection.style.display = '';
       const frameworkCopy = frameworkSection.querySelector('.loc-header-copy');
-      if (frameworkCopy) frameworkCopy.textContent = 'LOC（月典／Luna Codex）是一套由多個 Language System Modules 組成的 Language System Model。LunaRunes 提供符號型語言模型的語彙基底，其他模組再把語彙放入脈絡、作品、演算法、知識與時間中。';
+      if (frameworkCopy) frameworkCopy.textContent = 'LOC（月典／Luna Codex）是一套由多個語言系統模組組成的 Language Module Framework。LunaRunes 提供符號式語言模組的語彙基底，其他模組再把語彙放入脈絡、作品、演算法、知識與時間中。';
     }
 
     const aboutSection = document.querySelector('[aria-labelledby="about-title"]');
