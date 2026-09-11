@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Trigger one-shot rename after workflow creation.
 ROOT = Path(__file__).resolve().parents[1]
 old_group = ROOT / 'data/json/core/runes66groups.json'
 new_group = ROOT / 'data/json/core/runesgroup.json'
