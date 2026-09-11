@@ -87,13 +87,25 @@
     return b;
   }
 
+  function sectionHref(targetId, sectionId = targetId) {
+    const target = document.getElementById(targetId);
+    if (!target) return `#${targetId}`;
+    const section = target.matches("section,.section,[data-context-view],[data-view]") ? target : target.closest("section,.section,[data-context-view],[data-view]");
+    if (!section || section === target) return `#${targetId}`;
+    if (!section.id) section.id = sectionId;
+    return `#${section.id}`;
+  }
+
   function buildIndex(host) {
+    const top = document.getElementById("top") || document.querySelector("main,.loc-page");
+    if (top && !top.id) top.id = "top";
+    const aboutHref = sectionHref("about-title", "about");
     host.appendChild(tier([
-      link("LOC月典簡介","#top"),
-      link("新手上路","#start"),
-      link("LOC架構圖","#framework-map"),
-      link("目前進度","#progress"),
-      link("作者的話","#about-title")
+      link("LOC月典簡介",sectionHref("top")),
+      link("新手上路",sectionHref("start")),
+      link("LOC架構圖",sectionHref("framework-map")),
+      link("目前進度",sectionHref("progress")),
+      link("作者的話",aboutHref)
     ],"首頁快速選單"));
 
     const framework = document.getElementById("framework-map");
@@ -181,7 +193,7 @@
     host.replaceChildren();
     const file = fileName();
     if (file === "index.html") buildIndex(host);
-    else if (file === "runes.html" || file === "lots.html" || file === "statics.htm" || file === "statics.html") buildRunes(host);
+    else if (file === "runes.html" || file === "lots.html" || file === "statics.htm") buildRunes(host);
     else if (file === "context.html") buildContext(host);
     else if (file === "evolution.html") buildEvolution(host);
     else if (file === "governance.html") buildGovernance(host);
