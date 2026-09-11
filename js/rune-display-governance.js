@@ -6,6 +6,23 @@
   const clean = value => String(value ?? '').trim();
   let runeMap = new Map();
 
+  function installStyle(){
+    if(document.getElementById('loc-rune-semantic-authority-style')) return;
+    const style=document.createElement('style');
+    style.id='loc-rune-semantic-authority-style';
+    style.textContent=`
+      [data-semantic-authority="spec"]{border-color:rgba(231,194,125,.5)!important;background:rgba(231,194,125,.07)!important;}
+      [data-semantic-authority="spec"] .rune-result-label,
+      [data-semantic-authority="spec"] strong{font-weight:900!important;letter-spacing:.01em;}
+      [data-semantic-authority="keywords"]{opacity:.96;}
+      [data-semantic-authority="direction"]{opacity:.88;}
+      [data-semantic-authority="extension"]{opacity:.78;}
+      article.card [data-semantic-authority="spec"]{padding:.7rem .8rem;border:1px solid rgba(231,194,125,.35);border-radius:12px;}
+      article.card [data-semantic-authority="keywords"]{margin-top:.55rem;}
+    `;
+    document.head.appendChild(style);
+  }
+
   function runeNameFromHeading(node){
     if (!node) return '';
     const clone = node.cloneNode(true);
@@ -33,7 +50,7 @@
     if(!grid) return;
 
     let fields=[...grid.querySelectorAll(':scope > .rune-result-field')];
-    let spec=fields.find(f=>['Spec','顯化形式'].includes(fieldLabel(f)));
+    let spec=fields.find(f=>['Spec','顯化形式','Spec／顯化形式'].includes(fieldLabel(f)));
     if(!spec && clean(rune.顯化形式)){
       spec=makeDrawField('Spec／顯化形式',rune.顯化形式,'spec');
       grid.prepend(spec);
@@ -51,7 +68,6 @@
     if(direction) direction.dataset.semanticAuthority='direction';
 
     const ordered=[spec,keyword,direction].filter(Boolean);
-    ordered.forEach(node=>grid.appendChild(node));
     const rest=[...grid.querySelectorAll(':scope > .rune-result-field')].filter(node=>!ordered.includes(node));
     ordered.concat(rest).forEach(node=>grid.appendChild(node));
   }
@@ -89,7 +105,6 @@
     if(keyword) keyword.dataset.semanticAuthority='keywords';
     const reverse=children.find(node=>labelOf(node)==='反向關鍵詞');
     const moon=children.find(node=>labelOf(node)==='卡片月相');
-    [spec,keyword,reverse,moon].filter(Boolean).forEach(node=>host.appendChild(node));
     const ordered=[spec,keyword,reverse,moon].filter(Boolean);
     const rest=[...host.children].filter(node=>!ordered.includes(node));
     ordered.concat(rest).forEach(node=>host.appendChild(node));
@@ -144,6 +159,7 @@
 
   async function start(){
     try{
+      installStyle();
       const response=await fetch('data/json/core/runes66.json',{cache:'no-store'});
       if(!response.ok) return;
       const payload=await response.json();
