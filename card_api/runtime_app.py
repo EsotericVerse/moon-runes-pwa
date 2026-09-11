@@ -1,14 +1,20 @@
 from __future__ import annotations
 
+import json
 import os
+import sqlite3
 import time
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.responses import JSONResponse
 
 import main as core
+
+
+THREADS_INDEX_PATH = Path(__file__).resolve().parent / "generated" / "threads_search_index.sqlite3"
 
 
 def _env_int(name: str, default: int, minimum: int = 1) -> int:
@@ -19,7 +25,7 @@ def _env_int(name: str, default: int, minimum: int = 1) -> int:
 
 
 def _install_unified_search_cache(searcher: Any) -> Any:
-    """Cache immutable deployment-scoped structures without changing search semantics."""
+    """Install deployment-scoped performance caches without changing search semantics."""
     if searcher is None or getattr(searcher, "_runtime_performance_cache_installed", False):
         return searcher
 
@@ -27,6 +33,83 @@ def _install_unified_search_cache(searcher: Any) -> Any:
     if callable(original_canonical_graph):
         cached_canonical_graph = lru_cache(maxsize=1)(original_canonical_graph)
         searcher._canonical_graph = cached_canonical_graph
+
+    # Threads browser shards are build-time indexed on Render. Read compact
+    # SQLite rows at request time and keep the existing JSON-shard iterator as
+    # a compatibility fallback for local/older deployments.
+    original_threads_iterator = getattr(searcher, "_iter_loc4_article_documents", None)
+    if callable(original_threads_iterator):
+        def indexed_threads_iterator():
+            if not THREADS_INDEX_PATH.exists():
+                yield from original_threads_iterator()
+                return
+            uri = f"file:{THREADS_INDEX_PATH.as_posix()}?mode=ro&immutable=1"
+            try:
+                with sqlite3.connect(uri, uri=True) as connection:
+                    rows = connection.execute(
+                        """
+                        SELECT id, source_id, date, era, source_role, text,
+                               char_count, matched_terms_json
+                        FROM documents
+                        ORDER BY ordinal
+                        """
+                    )
+                    for row in rows:
+                        try:
+                            matched_terms = json.loads(row[7] or "[]")
+                        except (TypeError, ValueError, json.JSONDecodeError):
+                            matched_terms = []
+                        yield {
+                            "id": row[0],
+                            "source_id": row[1],
+                            "date": row[2],
+                            "era": row[3],
+                            "source_role": row[4],
+                            "text": row[5],
+                            "char_count": row[6],
+                            "matched_terms": matched_terms,
+                        }
+                return
+            except sqlite3.Error:
+                yield from original_threads_iterator()
+
+        searcher._iter_loc4_article_documents = indexed_threads_iterator
+
+    # text_record and governance_article currently share the same LOC4 article
+    # retrieval implementation. Cache that immutable ranking result once per
+    # query/filter tuple so a text bundle does not rescan the Threads corpus.
+    original_article_results = getattr(searcher, "_loc4_article_results", None)
+    if callable(original_article_results):
+        cache_size = _env_int("LOC_THREADS_RESULT_CACHE_SIZE", 128)
+
+        @lru_cache(maxsize=cache_size)
+        def cached_article_results(query: str, top_k: int, filter_items: tuple[tuple[str, str], ...]):
+            filters = dict(filter_items)
+            return original_article_results(query, top_k, "text_record", filters)
+
+        def article_results(query: str, top_k: int, wanted: str, filters=None):
+            if wanted not in {"", "all", "governance_article", "text_record"}:
+                return original_article_results(query, top_k, wanted, filters)
+            if wanted in {"", "all"}:
+                # Broad search semantics include other source types; preserve
+                # the original path rather than conflating it with text_record.
+                return original_article_results(query, top_k, wanted, filters)
+            filter_items = tuple(sorted(
+                (str(key), str(value or ""))
+                for key, value in (filters or {}).items()
+                if value
+            ))
+            return cached_article_results(str(query), int(top_k), filter_items)
+
+        searcher._loc4_article_results = article_results
+
+    # Knowledge assets are deployment-static. Repeated questions should not
+    # reopen the same registered files on every request.
+    original_knowledge_results = getattr(searcher, "_knowledge_asset_results", None)
+    if callable(original_knowledge_results):
+        cache_size = _env_int("LOC_KNOWLEDGE_RESULT_CACHE_SIZE", 128)
+        cached_knowledge_results = lru_cache(maxsize=cache_size)(original_knowledge_results)
+        searcher._knowledge_asset_results = cached_knowledge_results
 
     searcher._runtime_performance_cache_installed = True
     return searcher
