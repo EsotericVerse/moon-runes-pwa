@@ -10,7 +10,8 @@
     'runes.html':'#beginner',
     'lots.html':'#draw',
     'statics.html':'#ranking',
-    'governance.html':'#principles'
+    'governance.html':'#principles',
+    'lo3rwang.html':'#author-intro'
   });
 
   function reset(nav) {
@@ -55,11 +56,6 @@
     const file = fileName();
     normalizePageLinks(nav,file);
     reset(nav);
-
-    if (file === 'lo3rwang.html') {
-      activate(nav.querySelector('[data-static-current="true"], [aria-current="true"]'));
-      return;
-    }
 
     if (file === 'context.html') {
       const allowed = new Set(['graph','nodes','relations','scenario']);
