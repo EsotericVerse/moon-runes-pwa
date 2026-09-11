@@ -26,8 +26,8 @@
           ${card('全文搜尋筆數',(t.fulltext_records||0).toLocaleString())}
           ${card('時間範圍',`${t.start_date||'—'} ～ ${t.end_date||'—'}`)}
         </div>
-        <div class="stats-table-wrap"><table class="stats-table"><thead><tr><th>來源</th><th>類別</th><th>總筆數</th><th>可搜尋</th><th>時間</th><th>狀態</th></tr></thead><tbody>
-        ${rows.map(row=>`<tr><td>${esc(row.source)}</td><td>${esc(row.source_category||row.source_type||'')}</td><td>${Number(row.records||0).toLocaleString()}</td><td>${Number(row.searchable_records ?? row.public_url_records ?? 0).toLocaleString()}</td><td>${esc(`${row.start_date||'—'} ～ ${row.end_date||'—'}`)}</td><td>${esc(row.status||'')}</td></tr>`).join('')}
+        <div class="stats-table-wrap"><table class="stats-table"><thead><tr><th>來源</th><th>類別</th><th>總筆數</th><th>可搜尋</th><th>文字量</th><th>時間</th><th>狀態</th></tr></thead><tbody>
+        ${rows.map(row=>`<tr><td>${esc(row.source)}</td><td>${esc(row.source_category||row.source_type||'')}</td><td>${Number(row.records||0).toLocaleString()}</td><td>${Number(row.searchable_records ?? row.public_url_records ?? 0).toLocaleString()}</td><td>${row.char_count_applicable===false?'—':`${Number(row.char_count||0).toLocaleString()} 字`}</td><td>${esc(`${row.start_date||'—'} ～ ${row.end_date||'—'}`)}</td><td>${esc(row.status||'')}</td></tr>`).join('')}
         </tbody></table></div>`;
     }catch(error){host.innerHTML=`<p class="stats-error">來源統計載入失敗：${esc(error.message)}</p>`;}
   }
