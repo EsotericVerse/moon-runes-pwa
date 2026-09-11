@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1",
+  "status": "experimental_audit",
+  "created_at": "2026-09-11",
+  "source_head_checked_before_write": "8e7145592455206e251362fdffe598836236bbc7",
+  "scope": "A-line semantic pollution, Base66/Canon consistency, legacy source debt. Read-first audit; no production semantics changed by this file.",
+  "safe_nonissues": [
+    {"term":"Mystery","classification":"governance_negative_example","note":"Current hits state 玄 = Chaos, never Mystery; do not delete."},
+    {"term":"Flow","classification":"mixed_legitimate_usage","note":"Hits include CSS/JS identifiers, workflow/data field names, and governance text Water not Flow. No global replacement."},
+    {"term":"runes64","classification":"historical_or_validator_only","note":"No active runtime data dependency found; remaining hits document removed legacy paths or forbid them."},
+    {"term":"月之陰暗面研究室","classification":"creative_source_text","note":"LOC4 authored fiction; preserve source text and do not treat it as schema vocabulary."}
+  ],
+  "migration_debt": [
+    {
+      "path":"card_api/main.py",
+      "finding":"Legacy rune.get(\"陰暗面\") lookup remains in runtime logic.",
+      "severity":"medium",
+      "action":"defer_safe_patch",
+      "reason":"Current Base66 primarily exposes 反向關鍵詞 and the connector returns this large file truncated; do not overwrite from incomplete content."
+    },
+    {
+      "path":"data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+      "finding":"Contains mixed current/superseded positioning: LOC6 Methodology, LOC7 Algorithm/knowledge base, Language System Model, Symbolic Language Model, older LOC1 Token wording, and old ninth-group descriptions.",
+      "severity":"high_source_debt",
+      "action":"structured_migration_later",
+      "runtime_protection":"LOC_TERMINOLOGY_CANON + public/runtime overrides"
+    },
+    {
+      "path":"data/json/registries/LOC_KM_KEYWORDS.json",
+      "finding":"Contains old current-looking LOC6 Methodology / LOC7 Algorithm terminology.",
+      "severity":"medium_source_debt",
+      "action":"structured_migration_later"
+    },
+    {
+      "path":"data/json/search/faq/LOC_FAQ_v0.4.json",
+      "finding":"Raw FAQ still contains superseded current terminology.",
+      "severity":"medium_source_debt",
+      "action":"preserve_source_then_regenerate_or_migrate",
+      "runtime_protection":"LOC_FAQ_CANON_OVERRIDES.json + faq_rag.py"
+    },
+    {
+      "path":"data/json/search/faq/LOC_FAQ_RAG_v0.4.json",
+      "finding":"Raw RAG records still contain superseded current terminology.",
+      "severity":"medium_source_debt",
+      "action":"regenerate_after_source_governance",
+      "runtime_protection":"LOC_FAQ_CANON_OVERRIDES.json + faq_rag.py"
+    },
+    {
+      "path":"data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json",
+      "finding":"Listed by LOC_TERMINOLOGY_CANON as legacy source debt; requires field-level migration review, not wholesale replacement.",
+      "severity":"medium_source_debt",
+      "action":"field_inventory_then_migrate"
+    },
+    {
+      "path":"data/json/registries/LOC2_EVENT_REGISTRY.json",
+      "finding":"Listed by LOC_TERMINOLOGY_CANON as legacy source debt.",
+      "severity":"medium_source_debt",
+      "action":"field_inventory_then_migrate"
+    }
+  ],
+  "base66_review": [
+    {
+      "runes":["星","無"],
+      "finding":"Both current keyword triplets contain 可能: 星=潛在・希望・可能; 無=未定・開放・可能.",
+      "severity":"high_semantic_collision",
+      "action":"author_review_required",
+      "reason":"Exact keyword overlap conflicts with the current differentiation/keyword governance goal."
+    },
+    {
+      "runes":["月","暗"],
+      "finding":"Current Base66 still uses 暗面／陰暗面 language heavily for 月 while 暗 is Shadow; descriptions attempt to distinguish symbol vs layer but remain semantically entangled.",
+      "severity":"high_boundary_review",
+      "action":"author_review_required",
+      "reason":"Recent governance explicitly separates 月 from generic darkness/暗."
+    },
+    {
+      "runes":["鑽"],
+      "finding":"Current keywords remain 壓力・稀有・淬鍊 while current special note emphasizes pressure/rarity.",
+      "severity":"medium_semantic_residue",
+      "action":"author_review_required",
+      "reason":"Recent governance questioned 淬鍊 and emphasized pressure + rarity/hardness."
+    },
+    {
+      "runes":["因"],
+      "finding":"English remains Reason in runes66 and runes66groups, while Chinese keywords are 原因・成因・起因 and note explicitly says not Chinese 理由.",
+      "severity":"medium_translation_review",
+      "action":"author_review_required",
+      "reason":"Possible Cause/Reason calibration issue; do not guess translation."
+    },
+    {
+      "runes":["明"],
+      "finding":"Core keywords and note are clearly clarity-focused, but one direction sentence still mentions 明暗交替.",
+      "severity":"low_residue",
+      "action":"review_after_high_priority_items"
+    }
+  ],
+  "confirmed_current_semantics": [
+    "水 = Water; 流動核心歸氣",
+    "氣 = Air; 流動／氣流／呼吸",
+    "玄 = Chaos; not Mystery",
+    "命 = Fate",
+    "辰 = period/phase",
+    "時 = time; not timing/opportunity",
+    "緣 = timing/opportunity conditions",
+    "無 = Blank",
+    "虛 = Void",
+    "空 = Space",
+    "暗 = Shadow",
+    "誤 = Error"
+  ],
+  "classifier_input_audit": {
+    "loc3_status":"blocked_fulltext_missing_in_repo",
+    "finding":"LOC3 search shards expose work metadata/summary/tags but sampled records do not expose full lyric bodies. The documented builder source is an external Suno_500 workbook not present in the repository tree.",
+    "repo_evidence":"SEARCH_SOURCE_STATS references Suno_500_LOC3治理補全_v0.3.3-20260905.xlsx; repository tree contains LunaRune66.xlsx and all.xlsx but not that Suno_500 workbook.",
+    "rule":"Do not count metadata-summary classification as full-lyrics classification."
+  },
+  "next_actions": [
+    "Resolve Base66 review items with author/current master source before editing runes66.json.",
+    "Locate or intentionally create a governed LOC3 full-text input layer before large classifier trial.",
+    "Inventory legacy source debt fields before any migration; preserve historical records and regenerate derived RAG where appropriate.",
+    "Patch card_api/main.py legacy 陰暗面 access only through a safe full-file patch workflow.",
+    "Keep Render live latency/RAM items in Verify until real deployment can be exercised."
+  ]
+}
