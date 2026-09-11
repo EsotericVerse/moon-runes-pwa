@@ -211,6 +211,7 @@
     else if (file === "governance.html") buildGovernance(host);
     else if (file === "statics.html" || file === "statics.htm") buildStatics(host);
     else if (file === "lo3rwang.html") buildAuthor(host);
+    if (!host.childElementCount) host.remove();
   }
 
   function installThemeGuidance(){
