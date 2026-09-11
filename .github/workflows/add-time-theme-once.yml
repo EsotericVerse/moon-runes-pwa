@@ -1,0 +1,132 @@
+name: Add time theme once
+
+on:
+  push:
+    paths:
+      - '.github/workflows/add-time-theme-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add Auto Day Night theme system
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          nav_path=Path('js/loc-nav.js')
+          nav=nav_path.read_text(encoding='utf-8')
+          marker='const THEME_STORAGE_KEY = "loc-theme";'
+          if marker in nav:
+              raise SystemExit('theme system already present')
+
+          anchor='  const fileName = () => location.pathname.split("/").pop() || "index.html";\n'
+          theme_code='''  const THEME_STORAGE_KEY = "loc-theme";\n  const THEME_MODES = new Set(["auto", "day", "night"]);\n  const DAY_START_HOUR = 6;\n  const NIGHT_START_HOUR = 18;\n\n  function getThemeMode(){\n    try {\n      const saved=localStorage.getItem(THEME_STORAGE_KEY);\n      return THEME_MODES.has(saved) ? saved : "auto";\n    } catch {\n      return "auto";\n    }\n  }\n\n  function resolveAutoTheme(now=new Date()){\n    const hour=now.getHours();\n    return hour>=DAY_START_HOUR && hour<NIGHT_START_HOUR ? "day" : "night";\n  }\n\n  function syncThemeControls(){\n    const active=getThemeMode();\n    document.querySelectorAll("[data-loc-theme]").forEach(button=>{\n      const selected=button.dataset.locTheme===active;\n      button.setAttribute("aria-pressed", selected ? "true" : "false");\n      button.classList.toggle("is-active", selected);\n    });\n  }\n\n  function applyTheme(mode=getThemeMode()){\n    const safeMode=THEME_MODES.has(mode) ? mode : "auto";\n    const resolved=safeMode==="auto" ? resolveAutoTheme() : safeMode;\n    const root=document.documentElement;\n    root.dataset.theme=safeMode;\n    root.dataset.themeResolved=resolved;\n    root.style.colorScheme=resolved==="day" ? "light" : "dark";\n    syncThemeControls();\n  }\n\n  function setThemeMode(mode){\n    if(!THEME_MODES.has(mode)) return;\n    try { localStorage.setItem(THEME_STORAGE_KEY,mode); } catch {}\n    applyTheme(mode);\n  }\n\n  function themeControlHtml(){\n    return `<div class="loc-theme-switch" role="group" aria-label="顯示風格"><button type="button" class="loc-theme-btn" data-loc-theme="auto" aria-pressed="false">自動</button><button type="button" class="loc-theme-btn" data-loc-theme="day" aria-pressed="false">白天</button><button type="button" class="loc-theme-btn" data-loc-theme="night" aria-pressed="false">夜間</button></div>`;\n  }\n\n'''
+          if anchor not in nav:
+              raise SystemExit('loc-nav anchor missing')
+          nav=nav.replace(anchor,anchor+theme_code,1)
+
+          old='      node.innerHTML=`<div class="loc-global-links">${links}</div>${search}${home}`;'
+          new='      node.innerHTML=`<div class="loc-global-links">${links}</div>${search}${themeControlHtml()}${home}`;'
+          if old not in nav:
+              raise SystemExit('renderNav1 anchor missing')
+          nav=nav.replace(old,new,1)
+
+          click_anchor='  document.addEventListener("click",event=>{\n    const control=event.target.closest(\'.loc-nav-tier[data-tier="2"] .loc-nav-tier-link\');'
+          click_repl='''  document.addEventListener("click",event=>{\n    const themeButton=event.target.closest("[data-loc-theme]");\n    if(themeButton){\n      setThemeMode(themeButton.dataset.locTheme);\n      return;\n    }\n    const control=event.target.closest('.loc-nav-tier[data-tier="2"] .loc-nav-tier-link');'''
+          if click_anchor not in nav:
+              raise SystemExit('click anchor missing')
+          nav=nav.replace(click_anchor,click_repl,1)
+
+          dom_anchor='''  window.addEventListener("hashchange",syncCurrent);\n  window.addEventListener("DOMContentLoaded",()=>{\n    renderNav1();'''
+          dom_repl='''  applyTheme();\n  window.setInterval(()=>{ if(getThemeMode()==="auto") applyTheme("auto"); },60000);\n  window.addEventListener("storage",event=>{ if(event.key===THEME_STORAGE_KEY) applyTheme(); });\n  window.addEventListener("hashchange",syncCurrent);\n  window.addEventListener("DOMContentLoaded",()=>{\n    renderNav1();\n    syncThemeControls();'''
+          if dom_anchor not in nav:
+              raise SystemExit('DOMContentLoaded anchor missing')
+          nav=nav.replace(dom_anchor,dom_repl,1)
+          nav_path.write_text(nav,encoding='utf-8')
+
+          css_path=Path('css/style.css')
+          css=css_path.read_text(encoding='utf-8')
+          css_marker='/* TIME THEME SYSTEM · Auto / Day / Night */'
+          if css_marker in css:
+              raise SystemExit('theme CSS already present')
+          css_add=r'''
+
+/* TIME THEME SYSTEM · Auto / Day / Night */
+html[data-theme-resolved="night"]{color-scheme:dark}
+html[data-theme-resolved="day"]{color-scheme:light}
+html[data-theme-resolved="day"] body{
+  --bg:#eef3f7;
+  --surface:rgba(255,255,255,.94);
+  --surface2:rgba(235,241,247,.96);
+  --soft:rgba(230,237,245,.92);
+  --panel:#f8fafc;
+  --line:rgba(55,75,96,.18);
+  --line-strong:rgba(55,75,96,.34);
+  --border:rgba(55,75,96,.18);
+  --text:#172334;
+  --muted:#5f7082;
+  --purple:#625095;
+  --gold:#8b682b;
+  --accent:#376c98;
+  --accent-2:#8b682b;
+  --shadow:0 18px 48px rgba(43,61,79,.14);
+  color:var(--text)!important;
+  background:radial-gradient(circle at 10% 8%,rgba(119,105,169,.13),transparent 30rem),radial-gradient(circle at 88% 88%,rgba(91,151,176,.11),transparent 30rem),linear-gradient(180deg,#f4f7fa 0%,#edf3f7 62%,#e7eef4 100%)!important;
+}
+html[data-theme-resolved="day"] body .loc-global-nav,
+html[data-theme-resolved="day"] body .loc-nav-tiers{background:rgba(244,247,250,.95)!important}
+html[data-theme-resolved="day"] body .loc-global-search input,
+html[data-theme-resolved="day"] body input,
+html[data-theme-resolved="day"] body select,
+html[data-theme-resolved="day"] body textarea{color:var(--text);background:rgba(255,255,255,.72)}
+html[data-theme-resolved="day"] body .card,
+html[data-theme-resolved="day"] body .panel,
+html[data-theme-resolved="day"] body .search-panel,
+html[data-theme-resolved="day"] body .gov-card,
+html[data-theme-resolved="day"] body .rune-group,
+html[data-theme-resolved="day"] body .rune-tile,
+html[data-theme-resolved="day"] body .context-tool-card,
+html[data-theme-resolved="day"] body .context-graph-panel,
+html[data-theme-resolved="day"] body .era,
+html[data-theme-resolved="day"] body .keyword-card,
+html[data-theme-resolved="day"] body .trajectory-card,
+html[data-theme-resolved="day"] body .event-card,
+html[data-theme-resolved="day"] body .daily-record-form,
+html[data-theme-resolved="day"] body .daily-stats-panel,
+html[data-theme-resolved="day"] body .stats-metric,
+html[data-theme-resolved="day"] body article{background:var(--surface)!important;border-color:var(--line)!important;box-shadow:var(--shadow)}
+html[data-theme-resolved="day"] body .loc-guidance-note,
+html[data-theme-resolved="day"] body .loc-concept-note,
+html[data-theme-resolved="day"] body .quick-selector,
+html[data-theme-resolved="day"] body .quick-selector-detail{background:var(--surface2)!important;color:var(--text)!important}
+html[data-theme-resolved="day"] body .loc-header-copy,
+html[data-theme-resolved="day"] body .lead,
+html[data-theme-resolved="day"] body .intro,
+html[data-theme-resolved="day"] body .muted,
+html[data-theme-resolved="day"] body .summary{color:var(--muted)!important}
+.loc-theme-switch{flex:0 0 auto;display:inline-flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--line);border-radius:999px;background:var(--surface2)}
+.loc-theme-btn{min-height:30px;padding:4px 8px;border:0;border-radius:999px;background:transparent;color:var(--muted);font:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.loc-theme-btn:hover,.loc-theme-btn:focus-visible{color:var(--text);outline:none}
+.loc-theme-btn.is-active,.loc-theme-btn[aria-pressed="true"]{background:var(--gold);color:var(--bg)}
+@media(max-width:760px){.loc-theme-switch{order:4}.loc-theme-btn{padding-inline:7px}.loc-theme-switch+.loc-global-home{margin-left:0}}
+'''
+          css_path.write_text(css.rstrip()+css_add+'\n',encoding='utf-8')
+          PY
+      - name: Verify theme integration
+        run: |
+          grep -q 'THEME_STORAGE_KEY' js/loc-nav.js
+          grep -q 'data-theme-resolved="day"' css/style.css
+          grep -q 'data-loc-theme="auto"' js/loc-nav.js
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/loc-nav.js css/style.css
+          git commit -m "feat: add automatic day night theme modes"
+          git push
