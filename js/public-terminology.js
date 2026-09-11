@@ -1,6 +1,8 @@
 (() => {
   if (window.LOCPublicTerminology) return;
 
+  const LEGACY_STATICS_RE = /(^|\/)statics\.htm(?:ll)?(?=([?#]|$))/;
+
   const EXACT_TEXT = new Map([
     ['State Before', '變更前狀態（State Before）'],
     ['State After', '變更後狀態（State After）'],
@@ -61,7 +63,7 @@
     if (!element?.matches?.('a[href]')) return;
     const current = element.getAttribute('href') || '';
     let next = current;
-    if (next.includes('statics.htm')) next = next.replaceAll('statics.htm', 'statics.html');
+    next = next.replace(LEGACY_STATICS_RE, '$1statics.html');
     if (next.includes('loc2-game.html')) next = next.replaceAll('loc2-game.html', 'game.html');
     if (next !== current) {
       element.setAttribute('href', next);
