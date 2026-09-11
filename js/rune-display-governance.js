@@ -7,7 +7,9 @@
   }[ch]));
   const clean = value => String(value ?? '').trim();
   const GOVERNED = 'locRuneDisplayGoverned';
+  const PHASES = new Set(['新月','上弦','滿月','下弦','空亡']);
   let runeMap = new Map();
+  let groupByRuneId = new Map();
 
   function realMoonPhase(){
     return window.LOCMoonPhase?.getRealPhase?.() || sessionStorage.getItem('realPhase') || '未知';
@@ -21,43 +23,44 @@
     return '—';
   }
 
+  function runeId(rune){
+    const id=Number(rune?.編號 ?? rune?.id);
+    return Number.isInteger(id) ? id : null;
+  }
+
+  function cardAttribute(rune){
+    const raw=valueOf(rune,'卡片屬性','card_attribute');
+    if(['正面','正向'].includes(raw)) return '正面';
+    if(['負面','負向'].includes(raw)) return '負面';
+    if(['中平','中性','中立'].includes(raw)) return '中立';
+    return '未知';
+  }
+
+  function cardPhase(rune){
+    const raw=valueOf(rune,'月相','moon_phase');
+    if(raw === '無' || raw === '空亡') return '空亡';
+    return PHASES.has(raw) ? raw : '空亡';
+  }
+
+  function groupLabel(rune){
+    const meta=groupByRuneId.get(runeId(rune));
+    const zh=clean(meta?.group_zh) || valueOf(rune,'所屬分組','group');
+    const en=clean(meta?.group_en);
+    return en ? `${zh} ${en}` : zh;
+  }
+
   function installStyle(){
     if(document.getElementById('loc-rune-card-unified-style')) return;
     const style=document.createElement('style');
     style.id='loc-rune-card-unified-style';
     style.textContent=`
-      .loc-rune-english,
-      #attributes .rune66-kicker{
-        display:block!important;
-        margin:0!important;
-        color:var(--gold,var(--loc-purple,#b49eff))!important;
-        font-size:.76rem!important;
-        font-weight:900!important;
-        letter-spacing:.08em!important;
-        line-height:1.35!important;
-      }
-      .loc-rune-title,
-      #attributes .rune66-title{
-        display:block!important;
-        margin:4px 0 0!important;
-        color:var(--gold,var(--loc-gold,#e7c27d))!important;
-        font-size:1.18rem!important;
-        font-weight:850!important;
-        line-height:1.35!important;
-      }
-      .rune-result-name.loc-rune-heading{
-        display:flex!important;
-        flex-direction:column!important;
-        align-items:flex-start!important;
-        gap:0!important;
-      }
       .loc-rune-info-grid,
       .rune-result-grid.loc-rune-info-grid,
       #attributes .rune66-details.loc-rune-info-grid{
         display:grid!important;
         grid-template-columns:1fr!important;
         gap:8px!important;
-        margin-top:12px!important;
+        margin-top:10px!important;
         padding:0!important;
         border:0!important;
       }
@@ -65,6 +68,8 @@
       .rune-result-grid.loc-rune-info-grid > .rune-result-field,
       #attributes .rune66-detail.loc-rune-info-bubble{
         display:block!important;
+        box-sizing:border-box!important;
+        width:100%!important;
         margin:0!important;
         padding:9px 11px!important;
         border:1px solid var(--line,var(--loc-border,rgba(180,158,255,.22)))!important;
@@ -73,6 +78,22 @@
         color:var(--muted,var(--loc-muted,#b9bfd0))!important;
         font-size:.78rem!important;
         line-height:1.55!important;
+      }
+      .loc-rune-title-bubble,
+      .rune-result-name.loc-rune-title-bubble,
+      #attributes .loc-rune-title-bubble{
+        display:block!important;
+        box-sizing:border-box!important;
+        width:100%!important;
+        margin:0!important;
+        padding:10px 12px!important;
+        border:1px solid rgba(231,194,125,.42)!important;
+        border-radius:12px!important;
+        background:rgba(231,194,125,.065)!important;
+        color:var(--gold,var(--loc-gold,#e7c27d))!important;
+        font-size:.93rem!important;
+        font-weight:900!important;
+        line-height:1.5!important;
       }
       .loc-rune-info-bubble strong,
       .rune-result-grid.loc-rune-info-grid .rune-result-label,
@@ -87,6 +108,19 @@
         margin-left:.35em!important;
         color:var(--muted,var(--loc-muted,#b9bfd0))!important;
       }
+      .loc-rune-position-bubble,
+      .rune-result-grid.loc-rune-info-grid > .loc-rune-position-bubble{
+        padding:11px 13px!important;
+        border-color:rgba(231,194,125,.52)!important;
+        background:rgba(231,194,125,.085)!important;
+        font-size:.86rem!important;
+        font-weight:850!important;
+      }
+      .loc-rune-position-bubble .rune-result-label,
+      .loc-rune-position-bubble .rune-result-value{
+        color:var(--gold,var(--loc-gold,#e7c27d))!important;
+        font-weight:900!important;
+      }
       .special-rune-meta.loc-rune-info-grid p,
       .rune-info .loc-rune-info-grid > div{margin:0!important;}
       article.card [data-semantic-authority="direction"]{opacity:.88;}
@@ -100,40 +134,49 @@
 
   function runeNameFromHeading(node){
     if(!node) return '';
-    const explicit=node.querySelector?.('.loc-rune-title')?.textContent || '';
-    if(explicit) return clean(explicit.replace(/之符文$/,''));
+    const explicit=clean(node.dataset?.runeName);
+    if(explicit) return explicit;
     const clone=node.cloneNode(true);
     clone.querySelectorAll('small,span').forEach(el=>el.remove());
-    return clean(clone.textContent).replace(/之符文$/,'');
+    return clean(clone.textContent)
+      .replace(/^符文名稱\s*[：:]\s*/,'')
+      .replace(/\s*\([^)]*\)\s*$/,'')
+      .replace(/之符文$/,'');
   }
 
-  function titleHtml(rune){
-    const english=valueOf(rune,'英文','english');
+  function titleText(rune){
     const name=valueOf(rune,'符文名稱','名稱','name');
-    return `<span class="loc-rune-english">${esc(english)}</span><span class="loc-rune-title">${esc(name)}之符文</span>`;
+    const english=valueOf(rune,'英文','english');
+    return `符文名稱：${name}之符文 (${english})`;
   }
 
   function fields(rune, direction=''){
-    const phase=valueOf(rune,'月相','moon_phase');
+    const note=valueOf(rune,'特別說明','說明','description');
+    const archetype=valueOf(rune,'人格原型','archetype');
+    const keyword=valueOf(rune,'關鍵詞','keyword');
+    const reverse=valueOf(rune,'反向關鍵詞','反向關鍵字','reverse_keyword');
     const rows=[
-      ['說明', valueOf(rune,'特別說明','說明','description')],
-      ['關鍵詞', valueOf(rune,'關鍵詞','keyword')],
-      ['反向關鍵詞', valueOf(rune,'反向關鍵詞','反向關鍵字','reverse_keyword')],
-      ['人格原型', valueOf(rune,'人格原型','archetype')],
-      ['所屬分組', valueOf(rune,'所屬分組','group')],
-      ['卡片詞性', valueOf(rune,'卡片屬性','card_attribute')]
+      ['說明', `${note} / ${archetype}`],
+      ['關鍵詞', `${keyword} / ${reverse}`],
+      ['所屬分組', groupLabel(rune)],
+      ['卡片詞性', cardAttribute(rune)],
+      ['月相', `卡片 ${cardPhase(rune)} / 目前 ${realMoonPhase()}`]
     ];
-    if(clean(direction)) rows.push(['卡片方向', clean(direction)]);
-    rows.push(['卡片月相', `${phase} / 真實月相：${realMoonPhase()}`]);
+    if(clean(direction)) rows.push(['卡片位向', clean(direction), 'position']);
     return rows;
   }
 
-  function fieldHtml(label,value){
-    return `<div class="rune-result-field loc-rune-info-bubble"><span class="rune-result-label">${esc(label)}：</span><span class="rune-result-value">${esc(value)}</span></div>`;
+  function fieldHtml(label,value,type=''){
+    const emphasis=type === 'position' ? ' loc-rune-position-bubble' : '';
+    return `<div class="rune-result-field loc-rune-info-bubble${emphasis}"><span class="rune-result-label">${esc(label)}：</span><span class="rune-result-value">${esc(value)}</span></div>`;
   }
 
-  function infoGridHtml(rune){
-    return `<div class="loc-rune-info-grid">${fields(rune).map(([label,value])=>`<div class="loc-rune-info-bubble"><strong>${esc(label)}：</strong>${esc(value)}</div>`).join('')}</div>`;
+  function infoGridHtml(rune, direction=''){
+    return `<div class="loc-rune-info-grid">${fields(rune,direction).map(([label,value,type])=>`<div class="loc-rune-info-bubble${type === 'position' ? ' loc-rune-position-bubble' : ''}"><strong>${esc(label)}：</strong>${esc(value)}</div>`).join('')}</div>`;
+  }
+
+  function titleBubbleHtml(rune){
+    return `<div class="loc-rune-title-bubble" data-rune-name="${esc(valueOf(rune,'符文名稱','名稱','name'))}">${esc(titleText(rune))}</div>`;
   }
 
   function governHomepage(){
@@ -142,11 +185,8 @@
     const rune=runeMap.get('玄');
     if(!rune) return;
     host.innerHTML=`
-      <span class="rune66-kicker">${esc(valueOf(rune,'英文','english'))}</span>
-      <strong class="rune66-title">${esc(valueOf(rune,'符文名稱','名稱','name'))}之符文</strong>
-      <div class="rune66-details loc-rune-info-grid">
-        ${fields(rune).map(([label,value])=>`<p class="rune66-detail loc-rune-info-bubble"><strong>${esc(label)}：</strong>${esc(value)}</p>`).join('')}
-      </div>
+      ${titleBubbleHtml(rune)}
+      ${infoGridHtml(rune)}
       <a class="rune-data-cta" href="lots.html#library">
         <span><strong>查看完整月之符文資料</strong><small>月之符文66 圖鑑 · 八組分類 · 卡片詳細說明</small></span>
         <span aria-hidden="true">→</span>
@@ -156,19 +196,23 @@
 
   function governDrawCard(card){
     if(isGoverned(card)) return;
-    const rune=runeMap.get(runeNameFromHeading(card.querySelector('.rune-result-name')));
-    const grid=card.querySelector('.rune-result-grid');
     const heading=card.querySelector('.rune-result-name');
+    const rune=runeMap.get(runeNameFromHeading(heading));
+    const grid=card.querySelector('.rune-result-grid');
     if(!rune || !grid || !heading) return;
 
     const originalFields=[...grid.querySelectorAll(':scope > .rune-result-field')];
-    const directionField=originalFields.find(field=>clean(field.querySelector('.rune-result-label')?.textContent).replace(/：$/,'')==='卡片方向');
+    const directionField=originalFields.find(field=>{
+      const label=clean(field.querySelector('.rune-result-label')?.textContent).replace(/[：:]$/,'');
+      return label === '卡片方向' || label === '卡片位向';
+    });
     const direction=clean(directionField?.querySelector('.rune-result-value')?.textContent);
 
-    heading.classList.add('loc-rune-heading');
-    heading.innerHTML=titleHtml(rune);
+    heading.className='rune-result-name loc-rune-title-bubble';
+    heading.dataset.runeName=valueOf(rune,'符文名稱','名稱','name');
+    heading.textContent=titleText(rune);
     grid.classList.add('loc-rune-info-grid');
-    grid.innerHTML=fields(rune,direction).map(([label,value])=>fieldHtml(label,value)).join('');
+    grid.innerHTML=fields(rune,direction).map(([label,value,type])=>fieldHtml(label,value,type)).join('');
     markGoverned(card);
   }
 
@@ -181,11 +225,11 @@
     if(tile.matches('.special-rune-card')){
       const copy=tile.querySelector('.special-rune-copy');
       if(!copy) return;
-      copy.innerHTML=`<div class="special-rune-name loc-rune-heading">${titleHtml(rune)}</div>${infoGridHtml(rune)}`;
+      copy.innerHTML=`${titleBubbleHtml(rune)}${infoGridHtml(rune)}`;
     }else{
       const info=tile.querySelector('.rune-info');
       if(!info) return;
-      info.innerHTML=`<div class="loc-rune-heading">${titleHtml(rune)}</div>${infoGridHtml(rune)}`;
+      info.innerHTML=`${titleBubbleHtml(rune)}${infoGridHtml(rune)}`;
     }
     markGoverned(tile);
   }
@@ -221,11 +265,27 @@
   async function start(){
     try{
       installStyle();
-      const response=await fetch('data/json/core/runes66.json',{cache:'no-store'});
-      if(!response.ok) return;
-      const payload=await response.json();
-      const rows=Array.isArray(payload)?payload:(payload.runes||payload.items||[]);
+      const [runeResponse,groupResponse]=await Promise.all([
+        fetch('data/json/core/runes66.json',{cache:'no-store'}),
+        fetch('data/json/core/runes66groups.json',{cache:'no-store'})
+      ]);
+      if(!runeResponse.ok) return;
+      const runePayload=await runeResponse.json();
+      const rows=Array.isArray(runePayload)?runePayload:(runePayload.runes||runePayload.items||[]);
       runeMap=new Map(rows.map(row=>[clean(row.符文名稱||row.名稱||row.name),row]).filter(([name])=>name));
+
+      if(groupResponse.ok){
+        const groupPayload=await groupResponse.json();
+        const groups=Array.isArray(groupPayload)?groupPayload:(groupPayload.groups||[]);
+        groupByRuneId=new Map();
+        groups.forEach(group=>{
+          (group.runes||[]).forEach(member=>{
+            const id=Number(member.id);
+            if(Number.isInteger(id)) groupByRuneId.set(id,group);
+          });
+        });
+      }
+
       govern(document);
       new MutationObserver(records=>{
         for(const record of records){
