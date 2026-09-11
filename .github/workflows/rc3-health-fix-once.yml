@@ -1,0 +1,82 @@
+name: RC3 health fix once
+on:
+  push:
+    paths:
+      - 'tools/rc3_health_fix_once.py'
+      - '.github/workflows/rc3-health-fix-once.yml'
+permissions:
+  contents: write
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/rc3_health_fix_once.py
+      - name: Verify RC3 core health
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          root=Path('.')
+          pages=['index.html','lots.html','runes.html','statics.html','context.html','game.html','governance.html','evolution.html','search.html','lo3rwang.html']
+          missing=[]
+          for page in pages:
+              s=Path(page).read_text(encoding='utf-8')
+              assert s.lower().count('<!doctype html>') == 1, page
+              assert s.lower().rstrip().endswith('</html>'), page
+              assert s.count('href="css/style.css"') == 1, (page,'style.css count')
+              assert '<style' not in s.lower(), (page,'inline style block')
+              # check relative href/src targets that should map to files
+              for attr,val in re.findall(r'''\b(href|src)=["']([^"']+)["']''',s,re.I):
+                  if val.startswith(('http://','https://','mailto:','tel:','data:','#','javascript:')):
+                      continue
+                  path=val.split('#',1)[0].split('?',1)[0]
+                  if not path or path=='/':
+                      continue
+                  if path.startswith('/'):
+                      path=path[1:]
+                  # anchor-only routing to generated endpoints is excluded above
+                  if path and not (root/path).exists():
+                      missing.append((page,val))
+          assert not missing, f'missing relative targets: {missing[:30]}'
+
+          lots=Path('lots.html').read_text(encoding='utf-8')
+          assert 'rune-daily-records.js' not in lots
+          assert "reference:document.getElementById('referenceView')" not in lots
+          assert "daily:document.getElementById('dailyView')" not in lots
+          assert "library:document.getElementById('libraryView')" in lots
+          assert "draw:document.getElementById('drawView')" in lots
+
+          runes=Path('runes.html').read_text(encoding='utf-8')
+          assert 'js/rune-draw.js' not in runes
+          assert 'js/runeLibrary.js' not in runes
+          assert 'id="dailyView"' not in runes
+          assert 'id="drawView"' not in runes
+
+          statics=Path('statics.html').read_text(encoding='utf-8')
+          assert 'id="daily"' in statics
+          assert 'rune-daily-records.js?v=20260913-1' in statics
+
+          sw=Path('service-worker.js').read_text(encoding='utf-8')
+          assert 'moon-runes-pwa-v217' in sw
+          assert '/js/rune-daily-records.js?v=20260913-1' in sw
+          assert '/css/style.css' in sw
+
+          manifest=Path('manifest.json').read_text(encoding='utf-8')
+          assert '"display": "standalone"' in manifest
+          assert '"start_url": "/"' in manifest
+
+          css=Path('css/style.css').read_text(encoding='utf-8')
+          assert css.count('{')==css.count('}')
+          print('RC3 health check PASS')
+          PY
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lots.html service-worker.js
+          git commit -m "fix: harden RC3 runtime and PWA cache"
+          git push
