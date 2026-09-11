@@ -4,7 +4,6 @@
 
   const GROUPS = ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"];
   const NAV3_ALLOW = new Set(["lots:draw", "lots:library"]);
-  const LEGACY_STATICS_RE = /(^|\/)statics\.htm(?:ll)?(?=([?#]|$))/;
   const fileName = () => location.pathname.split("/").pop() || "index.html";
   const baseName = path => String(path || "").split("/").pop() || "index.html";
 
@@ -134,18 +133,6 @@
     return host;
   }
 
-  function normalizeLegacyLinks(root=document){
-    root.querySelectorAll("a[href]").forEach(a=>{
-      const current=a.getAttribute("href")||"";
-      let next=current.replace(LEGACY_STATICS_RE,"$1statics.html");
-      next=next.replaceAll("loc2-game.html","game.html");
-      if(next!==current){
-        a.setAttribute("href",next);
-        a.removeAttribute("target");
-        a.removeAttribute("rel");
-      }
-    });
-  }
 
   function buildIndex(host){
     const top=document.getElementById("top")||document.querySelector("main,.loc-page");
@@ -324,7 +311,6 @@
   window.addEventListener("hashchange",syncCurrent);
   window.addEventListener("DOMContentLoaded",()=>{
     renderNav1();
-    normalizeLegacyLinks(document);
     cleanupContextGameEmbed();
     buildTiers();
     syncCurrent();

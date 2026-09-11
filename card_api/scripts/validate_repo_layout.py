@@ -19,6 +19,7 @@ FORBIDDEN_PATHS = [
     ROOT / "js" / "runes_all_data.js",
     ROOT / "statics.htm",
     ROOT / "statics.htmll",
+    ROOT / "loc2-game.html",
 ]
 
 REQUIRED_PATHS = [

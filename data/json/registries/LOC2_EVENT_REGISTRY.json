@@ -7,7 +7,7 @@
   "purpose": "Structured Scenario Corpus / Event Corpus for LOC2. Events model situations people can encounter and are not limited to game-effect semantics.",
   "source_refs": [
     "context.html",
-    "loc2-game.html"
+    "game.html"
   ],
   "grammar_note": {
     "dual_card": "A → B causal structure is the minimal LOC2 scenario grammar.",

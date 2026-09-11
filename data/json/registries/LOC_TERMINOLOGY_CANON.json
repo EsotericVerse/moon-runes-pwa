@@ -7,23 +7,54 @@
   "purpose": "Single current terminology source for public copy, KM, FAQ/RAG, Skills and migration checks. Historical records may retain superseded terms only when explicitly marked historical.",
   "current": {
     "LOC": {
-      "canonical_names": ["LOC", "Luna Codex", "月典"],
+      "canonical_names": [
+        "LOC",
+        "Luna Codex",
+        "月典"
+      ],
       "zh": "語言系統模組框架",
       "en": "Language Module Framework"
     },
     "LunaRunes": {
-      "canonical_names": ["LunaRunes", "月之符文"],
+      "canonical_names": [
+        "LunaRunes",
+        "月之符文"
+      ],
       "zh": "符號式語言模組",
       "en": "Symbolic Language Module"
     },
-    "LOC1": {"en": "LunaRunes", "zh": "月之符文"},
-    "LOC2": {"en": "Context", "zh": "脈絡"},
-    "LOC3": {"en": "Music", "zh": "音樂"},
-    "LOC4": {"en": "Literary", "zh": "文字創作"},
-    "LOC5": {"en": "Multimedia", "zh": "多媒體"},
-    "LOC6": {"en": "Algorithm", "zh": "演算法"},
-    "LOC7": {"en": "Module", "zh": "演算模組"},
-    "LOC8": {"en": "Evolution", "zh": "推演"}
+    "LOC1": {
+      "en": "LunaRunes",
+      "zh": "月之符文"
+    },
+    "LOC2": {
+      "en": "Context",
+      "zh": "脈絡"
+    },
+    "LOC3": {
+      "en": "Music",
+      "zh": "音樂"
+    },
+    "LOC4": {
+      "en": "Literary",
+      "zh": "文字創作"
+    },
+    "LOC5": {
+      "en": "Multimedia",
+      "zh": "多媒體"
+    },
+    "LOC6": {
+      "en": "Algorithm",
+      "zh": "演算法"
+    },
+    "LOC7": {
+      "en": "Module",
+      "zh": "演算模組"
+    },
+    "LOC8": {
+      "en": "Evolution",
+      "zh": "推演"
+    }
   },
   "superseded_current_terms": [
     {
@@ -68,10 +99,17 @@
       "data/json/registries/LOC2_EVENT_REGISTRY.json"
     ],
     "legacy_path_migration": {
-      "current": ["game.html", "statics.html"],
-      "compatibility_redirects": ["loc2-game.html"],
-      "retired_paths": ["statics.htm", "statics.htmll"],
-      "runtime_normalization": "js/loc-nav.js + js/public-terminology.js"
+      "current": [
+        "game.html",
+        "statics.html"
+      ],
+      "compatibility_redirects": [],
+      "retired_paths": [
+        "statics.htm",
+        "statics.htmll",
+        "loc2-game.html"
+      ],
+      "runtime_normalization": "canonical HTML paths only; historical migration aliases remain in governance records"
     }
   },
   "migration_rule": "Consumers must prefer current values in this registry and LOC_DATA_GOVERNANCE over superseded current-positioning strings found in older README, FAQ/RAG, KM or registry snapshots. Do not rewrite historical evidence silently; mark it historical or superseded instead.",

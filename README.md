@@ -371,7 +371,6 @@ moon-runes-pwa/
 ├── evolution.html
 ├── governance.html
 ├── game.html
-├── loc2-game.html       # legacy compatibility redirect
 ├── lo3rwang.html
 ├── tutorial01.html      # legacy compatibility redirect → index.html#start
 ├── tutorial02.html      # legacy compatibility redirect → lots.html#beginner
