@@ -3,7 +3,7 @@
   window.__LOC_RUNE_DISPLAY_GOVERNANCE__ = true;
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'
   }[ch]));
   const clean = value => String(value ?? '').trim();
   const GOVERNED = 'locRuneDisplayGoverned';
@@ -47,86 +47,6 @@
     const zh=clean(meta?.group_zh) || valueOf(rune,'所屬分組','group');
     const en=clean(meta?.group_en);
     return en ? `${zh} ${en}` : zh;
-  }
-
-  function installStyle(){
-    if(document.getElementById('loc-rune-card-unified-style')) return;
-    const style=document.createElement('style');
-    style.id='loc-rune-card-unified-style';
-    style.textContent=`
-      .loc-rune-info-grid,
-      .rune-result-grid.loc-rune-info-grid,
-      #attributes .rune66-details.loc-rune-info-grid{
-        display:grid!important;
-        grid-template-columns:1fr!important;
-        gap:8px!important;
-        margin-top:10px!important;
-        padding:0!important;
-        border:0!important;
-      }
-      .loc-rune-info-bubble,
-      .rune-result-grid.loc-rune-info-grid > .rune-result-field,
-      #attributes .rune66-detail.loc-rune-info-bubble{
-        display:block!important;
-        box-sizing:border-box!important;
-        width:100%!important;
-        margin:0!important;
-        padding:9px 11px!important;
-        border:1px solid var(--line,var(--loc-border,rgba(180,158,255,.22)))!important;
-        border-radius:12px!important;
-        background:rgba(255,255,255,.035)!important;
-        color:var(--muted,var(--loc-muted,#b9bfd0))!important;
-        font-size:.78rem!important;
-        line-height:1.55!important;
-      }
-      .loc-rune-title-bubble,
-      .rune-result-name.loc-rune-title-bubble,
-      #attributes .loc-rune-title-bubble{
-        display:block!important;
-        box-sizing:border-box!important;
-        width:100%!important;
-        margin:0!important;
-        padding:10px 12px!important;
-        border:1px solid rgba(231,194,125,.42)!important;
-        border-radius:12px!important;
-        background:rgba(231,194,125,.065)!important;
-        color:var(--gold,var(--loc-gold,#e7c27d))!important;
-        font-size:.93rem!important;
-        font-weight:900!important;
-        line-height:1.5!important;
-      }
-      .loc-rune-info-bubble strong,
-      .rune-result-grid.loc-rune-info-grid .rune-result-label,
-      #attributes .rune66-detail.loc-rune-info-bubble strong{
-        display:inline!important;
-        margin:0!important;
-        color:var(--gold,var(--loc-text,#f5f1ff))!important;
-        font-weight:850!important;
-      }
-      .rune-result-grid.loc-rune-info-grid .rune-result-value{
-        display:inline!important;
-        margin-left:.35em!important;
-        color:var(--muted,var(--loc-muted,#b9bfd0))!important;
-      }
-      .loc-rune-position-bubble,
-      .rune-result-grid.loc-rune-info-grid > .loc-rune-position-bubble{
-        padding:11px 13px!important;
-        border-color:rgba(231,194,125,.52)!important;
-        background:rgba(231,194,125,.085)!important;
-        font-size:.86rem!important;
-        font-weight:850!important;
-      }
-      .loc-rune-position-bubble .rune-result-label,
-      .loc-rune-position-bubble .rune-result-value{
-        color:var(--gold,var(--loc-gold,#e7c27d))!important;
-        font-weight:900!important;
-      }
-      .special-rune-meta.loc-rune-info-grid p,
-      .rune-info .loc-rune-info-grid > div{margin:0!important;}
-      article.card [data-semantic-authority="direction"]{opacity:.88;}
-      article.card [data-semantic-authority="extension"]{opacity:.78;}
-    `;
-    document.head.appendChild(style);
   }
 
   function isGoverned(node){ return node?.dataset?.[GOVERNED] === '1'; }
@@ -264,7 +184,6 @@
 
   async function start(){
     try{
-      installStyle();
       const [runeResponse,groupResponse]=await Promise.all([
         fetch('data/json/core/runes66.json',{cache:'no-store'}),
         fetch('data/json/core/runes66groups.json',{cache:'no-store'})
