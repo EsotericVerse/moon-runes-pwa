@@ -63,7 +63,7 @@
     if(!["runes.html","lots.html"].includes(file))return;
     addStyles();
     await ensureBeginnerView();
-    if(file==="runes.html" && (!location.hash || location.hash==="#beginner")) showBeginner();
+    if((file==="runes.html" && (!location.hash || location.hash==="#beginner")) || (file==="lots.html" && location.hash==="#beginner")) showBeginner();
   }
 
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
