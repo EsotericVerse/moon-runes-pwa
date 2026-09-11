@@ -116,7 +116,7 @@ else initRunePage();
   window.__LOC_RUNE_DISPLAY_GOVERNANCE__ = true;
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[ch]));
   const clean = value => String(value ?? '').trim();
   const GOVERNED = 'locRuneDisplayGoverned';
@@ -124,8 +124,14 @@ else initRunePage();
   let runeMap = new Map();
   let groupByRuneId = new Map();
 
+  function phaseCategory(value){
+    const raw=clean(value);
+    if(raw === '無' || raw === '空亡') return '空亡';
+    return PHASES.has(raw) ? raw : (raw || '未知');
+  }
+
   function realMoonPhase(){
-    return window.LOCMoonPhase?.getRealPhase?.() || sessionStorage.getItem('realPhase') || '未知';
+    return phaseCategory(window.LOCMoonPhase?.getRealPhase?.() || sessionStorage.getItem('realPhase') || '未知');
   }
 
   function valueOf(rune, ...keys){
@@ -151,8 +157,7 @@ else initRunePage();
 
   function cardPhase(rune){
     const raw=valueOf(rune,'月相','moon_phase');
-    if(raw === '無' || raw === '空亡') return '空亡';
-    return PHASES.has(raw) ? raw : '空亡';
+    return phaseCategory(raw) === '未知' ? '空亡' : phaseCategory(raw);
   }
 
   function groupLabel(rune){
@@ -183,20 +188,23 @@ else initRunePage();
     return `符文名稱：${name}之符文 (${english})`;
   }
 
-  function fields(rune, direction=''){
+  function primaryFields(rune){
     const note=valueOf(rune,'特別說明','說明','description');
     const archetype=valueOf(rune,'人格原型','archetype');
+    return [
+      ['說明', `${note} / ${archetype}`],
+      ['所屬分組', groupLabel(rune)]
+    ];
+  }
+
+  function detailFields(rune){
     const keyword=valueOf(rune,'關鍵詞','keyword');
     const reverse=valueOf(rune,'反向關鍵詞','反向關鍵字','reverse_keyword');
-    const rows=[
-      ['說明', `${note} / ${archetype}`],
+    return [
       ['關鍵詞', `${keyword} / ${reverse}`],
-      ['所屬分組', groupLabel(rune)],
       ['卡片詞性', cardAttribute(rune)],
       ['月相', `卡片 ${cardPhase(rune)} / 目前 ${realMoonPhase()}`]
     ];
-    if(clean(direction)) rows.push(['卡片位向', clean(direction), 'position']);
-    return rows;
   }
 
   function fieldHtml(label,value,type=''){
@@ -204,8 +212,14 @@ else initRunePage();
     return `<div class="rune-result-field loc-rune-info-bubble${emphasis}"><span class="rune-result-label">${esc(label)}：</span><span class="rune-result-value">${esc(value)}</span></div>`;
   }
 
+  function detailsHtml(rune){
+    return `<details class="loc-rune-details"><summary>關鍵詞 · 卡片詞性 · 月相</summary><div class="loc-rune-details-body">${detailFields(rune).map(([label,value])=>fieldHtml(label,value)).join('')}</div></details>`;
+  }
+
   function infoGridHtml(rune, direction=''){
-    return `<div class="loc-rune-info-grid">${fields(rune,direction).map(([label,value,type])=>`<div class="loc-rune-info-bubble${type === 'position' ? ' loc-rune-position-bubble' : ''}"><strong>${esc(label)}：</strong>${esc(value)}</div>`).join('')}</div>`;
+    const primary=primaryFields(rune).map(([label,value])=>`<div class="loc-rune-info-bubble"><strong>${esc(label)}：</strong>${esc(value)}</div>`).join('');
+    const position=clean(direction) ? `<div class="loc-rune-info-bubble loc-rune-position-bubble"><strong>卡片位向：</strong>${esc(clean(direction))}</div>` : '';
+    return `<div class="loc-rune-info-grid">${primary}${detailsHtml(rune)}${position}</div>`;
   }
 
   function titleBubbleHtml(rune){
@@ -230,7 +244,9 @@ else initRunePage();
     heading.dataset.runeName=valueOf(rune,'符文名稱','名稱','name');
     heading.textContent=titleText(rune);
     grid.classList.add('loc-rune-info-grid');
-    grid.innerHTML=fields(rune,direction).map(([label,value,type])=>fieldHtml(label,value,type)).join('');
+    const primary=primaryFields(rune).map(([label,value])=>fieldHtml(label,value)).join('');
+    const position=clean(direction) ? fieldHtml('卡片位向',clean(direction),'position') : '';
+    grid.innerHTML=`${primary}${detailsHtml(rune)}${position}`;
     markGoverned(card);
   }
 

@@ -359,3 +359,11 @@ footer{margin-top:24px;text-align:center;color:var(--muted);font-size:.82rem}
 .cards-grid[data-count="2"] .rune-result-grid.loc-rune-info-grid .rune-result-field,.cards-grid[data-count="3"] .rune-result-grid.loc-rune-info-grid .rune-result-field,.cards-grid[data-count="5"] .rune-result-grid.loc-rune-info-grid .rune-result-field,.cards-grid[data-count="11"] .rune-result-grid.loc-rune-info-grid .rune-result-field{border-radius:12px!important;text-align:left!important}
 article.card [data-semantic-authority="direction"]{opacity:.88}
 article.card [data-semantic-authority="extension"]{opacity:.78}
+
+
+/* LunaRunes collapsible detail bubbles */
+.loc-rune-details{width:100%;margin:0;border:0}
+.loc-rune-details>summary{box-sizing:border-box;width:100%;padding:9px 11px;border:1px solid var(--line,var(--loc-border,rgba(180,158,255,.22)));border-radius:12px;background:rgba(255,255,255,.035);color:var(--gold,var(--loc-gold,#e7c27d));font-size:.78rem;font-weight:800;line-height:1.55;cursor:pointer;list-style-position:inside}
+.loc-rune-details[open]>summary{margin-bottom:8px}
+.loc-rune-details-body{display:grid;grid-template-columns:1fr;gap:8px}
+.loc-rune-position-bubble{font-size:.9rem!important;font-weight:900!important;color:var(--gold,var(--loc-gold,#e7c27d))!important}
