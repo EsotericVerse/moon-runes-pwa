@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v216";
+const CACHE_NAME = "moon-runes-pwa-v217";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -44,7 +44,7 @@ const ASSETS_TO_CACHE = [
   "/js/facebook-repo-corpus.js",
   "/js/runes-pwa-ia.js",
   "/js/rune-draw.js?v=20260908-4",
-  "/js/rune-daily-records.js?v=20260908-1",
+  "/js/rune-daily-records.js?v=20260913-1",
   "/js/runeLibrary.js?v=20260905-3",
   "/js/runes66.js",
   "/js/direction64.js",

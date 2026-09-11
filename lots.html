@@ -159,18 +159,13 @@
   <script type="module" src="js/rune.js?v=20260911-1"></script>
   <script src="js/locMoonPhase.js"></script>
   <script type="module" src="js/rune-draw.js?v=20260908-4"></script>
-  <script type="module" src="js/rune-daily-records.js?v=20260908-1"></script>
   <script src="js/loc-nav.js"></script>
 
   <script>
   (()=> {
     const buttons=[...document.querySelectorAll('[data-runes-view]')];
     const views={
-      reference:document.getElementById('referenceView'),
-      examples:document.getElementById('examplesView'),
-      systems:document.getElementById('systemsView'),
       library:document.getElementById('libraryView'),
-      daily:document.getElementById('dailyView'),
       draw:document.getElementById('drawView')
     };
     function switchView(name,updateUrl=true){
@@ -198,12 +193,7 @@
     // 抽牌模式頁由 rune-draw.js 同時開啟等待面板與 ritual，
     // 避免先閃出預設的「選擇抽牌方式」標題。
     if(selector) selector.hidden=hasMode;
-    if(mode==='daily') switchView('draw',false);
-    else if(location.hash==='#daily') switchView('daily',false);
-    else if(hasMode||location.hash==='#draw') switchView('draw',false);
-    else if(location.hash==='#reference') switchView('reference',false);
-    else if(location.hash==='#examples') switchView('examples',false);
-    else if(location.hash==='#systems') switchView('systems',false);
+    if(hasMode||location.hash==='#draw') switchView('draw',false);
     else if(location.hash==='#library') switchView('library',false);
     else switchView('draw',false);
   })();
