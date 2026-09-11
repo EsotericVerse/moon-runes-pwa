@@ -1,0 +1,33 @@
+name: Fix canonical statics links
+
+on:
+  push:
+    branches:
+      - recovery/1.0rc2-current
+    paths:
+      - .github/workflows/fix-statics-links.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Normalize statics links
+        run: python scripts/fix_statics_links.py
+      - name: Verify canonical statics route
+        run: |
+          test -f statics.html
+          test -f statics.htm
+          grep -q "url=statics.html" statics.htm
+          ! grep -R --exclude=statics.htm --exclude=LOC_TERMINOLOGY_CANON.json --exclude=LOC_FAQ_CANON_OVERRIDES.json --exclude-dir=.git "statics.htm" .
+      - name: Commit normalized links
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Normalize statics links to statics.html"
+          git push
