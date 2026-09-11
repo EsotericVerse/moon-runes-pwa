@@ -99,21 +99,6 @@
     return `<div class="loc-rune-title-bubble" data-rune-name="${esc(valueOf(rune,'符文名稱','名稱','name'))}">${esc(titleText(rune))}</div>`;
   }
 
-  function governHomepage(){
-    const host=document.getElementById('attributes');
-    if(!host || isGoverned(host)) return;
-    const rune=runeMap.get('玄');
-    if(!rune) return;
-    host.innerHTML=`
-      ${titleBubbleHtml(rune)}
-      ${infoGridHtml(rune)}
-      <a class="rune-data-cta" href="lots.html#library">
-        <span><strong>查看完整月之符文資料</strong><small>月之符文66 圖鑑 · 八組分類 · 卡片詳細說明</small></span>
-        <span aria-hidden="true">→</span>
-      </a>`;
-    markGoverned(host);
-  }
-
   function governDrawCard(card){
     if(isGoverned(card)) return;
     const heading=card.querySelector('.rune-result-name');
@@ -168,14 +153,12 @@
   }
 
   function governElement(node){
-    if(node.matches?.('#attributes')) governHomepage();
     if(node.matches?.('.rune-result-card')) governDrawCard(node);
     if(node.matches?.('.rune-tile,.special-rune-card')) governLibraryTile(node);
     if(node.matches?.('article.card')) governSearchOracle(node);
   }
 
   function govern(root=document){
-    governHomepage();
     if(root?.nodeType===Node.ELEMENT_NODE) governElement(root);
     root.querySelectorAll?.('.rune-result-card').forEach(governDrawCard);
     root.querySelectorAll?.('.rune-tile,.special-rune-card').forEach(governLibraryTile);
