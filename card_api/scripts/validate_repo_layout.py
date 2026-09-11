@@ -79,6 +79,8 @@ PUBLIC_MD_LINK_RE = re.compile(
     re.IGNORECASE,
 )
 
+KEYWORD_SPLIT_RE = re.compile(r"[、,，・]+")
+
 SEMANTIC_DOMAINS = {
     "runes",
     "context",
@@ -98,6 +100,51 @@ def rel(path: Path) -> str:
     return path.relative_to(ROOT).as_posix()
 
 
+def split_keywords(value: object) -> list[str]:
+    if not isinstance(value, str):
+        return []
+    return [term.strip() for term in KEYWORD_SPLIT_RE.split(value) if term.strip()]
+
+
+def validate_rune_keyword_uniqueness(failures: list[str]) -> None:
+    """Reject exact keyword ownership collisions in the current LunaRunes core."""
+    path = ROOT / "data" / "json" / "core" / "runes.json"
+    try:
+        records = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        failures.append(f"failed to load rune keyword source: {exc}")
+        return
+
+    ownership: dict[str, list[tuple[str, str]]] = {}
+    for record in records:
+        rune = str(record.get("符文名稱") or "").strip()
+        if not rune:
+            continue
+        polarity_terms: dict[str, set[str]] = {}
+        for field in ("正向關鍵詞", "反向關鍵詞"):
+            terms = split_keywords(record.get(field))
+            duplicates = sorted({term for term in terms if terms.count(term) > 1})
+            if duplicates:
+                failures.append(f"duplicate keyword inside {rune}/{field}: {duplicates}")
+            term_set = set(terms)
+            polarity_terms[field] = term_set
+            for term in term_set:
+                ownership.setdefault(term, []).append((rune, field))
+
+        overlap = sorted(
+            polarity_terms.get("正向關鍵詞", set())
+            & polarity_terms.get("反向關鍵詞", set())
+        )
+        if overlap:
+            failures.append(f"same rune positive/reverse keyword collision {rune}: {overlap}")
+
+    for term, owners in sorted(ownership.items()):
+        runes = {rune for rune, _field in owners}
+        if len(runes) > 1:
+            owner_text = ", ".join(f"{rune}/{field}" for rune, field in sorted(owners))
+            failures.append(f"cross-rune keyword collision {term!r}: {owner_text}")
+
+
 def main() -> int:
     failures: list[str] = []
 
@@ -113,6 +160,10 @@ def main() -> int:
     for path in REQUIRED_PATHS:
         if not path.exists():
             failures.append(f"required path missing: {rel(path)}")
+
+    # LunaRunes keyword ownership is unique at the exact-term level.
+    # Semantic near-synonyms remain a governance review rather than a build-time heuristic.
+    validate_rune_keyword_uniqueness(failures)
 
     # LOC1–8 are explanatory classification labels only.
     # Backend governance must use semantic domains instead of LOC-number ownership.
@@ -195,6 +246,7 @@ def main() -> int:
     print("- no stale runtime/document references")
     print("- every repository-relative JSON reference resolves to an existing file")
     print("- no public HTML/JS links expose raw Markdown files")
+    print("- LunaRunes exact keywords have unique rune ownership")
     print("- LOC1-8 remain explanatory homepage classification labels only")
     print("- backend governance uses semantic domains")
     return 0
