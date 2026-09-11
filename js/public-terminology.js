@@ -19,7 +19,7 @@
     ['LunaRunes · Beginner Guide', 'LunaRunes · 新手指南 · Beginner Guide'],
     ['LunaRunes · Reading Examples', 'LunaRunes · 解讀範例 · Reading Examples'],
     ['LunaRunes · Rune Library', 'LunaRunes · 符文資料庫 · Rune Library'],
-    ['LOC · Luna Codex · Language Module Framework', 'LOC · Luna Codex · 語言模組框架 Language Module Framework'],
+    ['LOC · Luna Codex · Language Module Framework', 'LOC · Luna Codex · 語言系統模組框架 · Language Module Framework'],
     ['Graph', '關係圖（Graph）'],
     ['Nodes', '節點（Nodes）'],
     ['Edges', '關聯（Edges）'],
@@ -27,9 +27,7 @@
   ]);
 
   const PHRASE_TEXT = [
-    ['語言模型框架（Language Model Framework）', '語言系統模型（Language System Model）'],
-    ['語言模型框架', '語言系統模型'],
-    ['Language Model Framework', 'Language System Model'],
+    ['語言模型框架（Language Model Framework）', '語言系統模組框架（Language Module Framework）'],
     ['Search → 時期設定', '搜尋（Search）→ 時期設定'],
     ['Evolution 只讀取並進行時間分析', '推演（Evolution）只讀取並進行時間分析'],
     ['State →', '變更後狀態（State After）→']
