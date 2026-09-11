@@ -2,7 +2,7 @@
 
 ## 定位
 
-LunaRunes（月之符文）是 LOC 的 Symbolic Language Model。符文分類不是「看到某個中文字就判定某張符文」，而是先理解文本的語意，再依 LunaRunes 的 Canon、Spec、群組主體性與排他規則進行治理式分類。
+LunaRunes（月之符文）是 LOC 的 Symbolic Language Module。符文分類不是「看到某個中文字就判定某張符文」，而是先理解文本的語意，再依 LunaRunes 的 Canon、Spec、群組主體性與排他規則進行治理式分類。
 
 本規格的第一個目標不是直接預測單一符文，而是先回答：
 
