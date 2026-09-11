@@ -5,8 +5,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 import facebook_search
+from build_facebook_keyword_index import build_index
 from facebook_search import FacebookSearchEngine
-from keyword_analysis import rank_keyword_documents
+from keyword_analysis import load_governance, rank_keyword_documents
 
 
 class FacebookStreamingSearchTests(unittest.TestCase):
@@ -120,6 +121,39 @@ class FacebookStreamingSearchTests(unittest.TestCase):
             result = rank_keyword_documents(engine.posts, top_k=10)
             self.assertEqual(3, result["document_count"])
             self.assertTrue(result["items"])
+        finally:
+            tmp.cleanup()
+
+    def test_keyword_ranking_uses_build_time_sqlite_index(self):
+        tmp, engine = self.make_engine()
+        try:
+            root = engine.dataset_path.parent
+            governance_path = root / "keyword_governance.json"
+            governance_path.write_text(
+                json.dumps({"min_term_length": 2, "max_term_length": 4, "min_document_frequency": 1}),
+                encoding="utf-8",
+            )
+            output_path = root / "facebook_keyword_index.sqlite3"
+            built = build_index(engine.dataset_path, governance_path, output_path)
+            self.assertEqual(output_path, built)
+            engine.posts.keyword_index_path = output_path
+            governance = load_governance(governance_path)
+
+            # Once the SQLite aggregate exists, ranking must not reopen any
+            # Facebook shard at request time.
+            with patch.object(engine, "_iter_posts", side_effect=AssertionError("ranking rescanned shards")):
+                result = rank_keyword_documents(
+                    engine.posts,
+                    start_date="2026-01-03",
+                    end_date="2026-01-03",
+                    top_k=10,
+                    governance=governance,
+                )
+
+            self.assertEqual(1, result["document_count"])
+            self.assertEqual("2026-01-03", result["date_start"])
+            self.assertEqual("2026-01-03", result["date_end"])
+            self.assertIn("月光", {row["term"] for row in result["items"]})
         finally:
             tmp.cleanup()
 
