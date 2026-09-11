@@ -16,6 +16,10 @@
     const heroNote = document.querySelector('.hero-note');
     if (heroNote) heroNote.innerHTML = '<div class="moon" aria-hidden="true"></div><strong>不用先學完整套系統。</strong><p>第一次來，可以先抽一張每日符文，看看 66 個中文字如何形成可操作的語意起點；有興趣再看新手教學、脈絡、搜尋與推演。想長期使用時，可將網站加入主畫面，或下載 LOC GPT Skills，把治理方法帶進自己的工作流程。</p>';
 
+    document.querySelectorAll('a[href="tutorial01.html"],a[href="tutorial02.html"]').forEach(link => {
+      link.setAttribute('href', 'lots.html#beginner');
+    });
+
     const startCopy = document.querySelector('[aria-labelledby="start-title"] .section-heading > p');
     if (startCopy) startCopy.textContent = '新手建議從每日符文或單卡開始，再依興趣進入符文資料、新手教學、脈絡分析、全文搜尋與推演；不需要先理解全部理論，也可以一邊使用、一邊學習。';
 
