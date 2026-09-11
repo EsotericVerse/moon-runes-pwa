@@ -101,6 +101,17 @@
     return `#${section.id}`;
   }
 
+  function normalizeLegacyLinks(root=document) {
+    root.querySelectorAll('a[href*="statics.htm"]').forEach(a => {
+      a.setAttribute("href", a.getAttribute("href").replace("statics.htm", "statics.html"));
+    });
+    root.querySelectorAll('a[href*="loc2-game.html"]').forEach(a => {
+      a.setAttribute("href", a.getAttribute("href").replace("loc2-game.html", "game.html"));
+      a.removeAttribute("target");
+      a.removeAttribute("rel");
+    });
+  }
+
   function buildIndex(host) {
     const top = document.getElementById("top") || document.querySelector("main,.loc-page");
     if (top && !top.id) top.id = "top";
@@ -247,7 +258,6 @@
     const view = frame?.closest("[data-context-view]");
     if (view) view.remove();
     else { document.querySelector(".game-frame-wrap")?.remove(); document.querySelector(".game-open")?.remove(); }
-    document.querySelectorAll('a[href="loc2-game.html"]').forEach(a => { a.href="game.html"; a.removeAttribute("target"); a.removeAttribute("rel"); });
   }
 
   function loadEnhancements() {
@@ -260,6 +270,7 @@
   window.addEventListener("DOMContentLoaded", () => {
     installStyles();
     loadNav1();
+    normalizeLegacyLinks(document);
     cleanupContextGameEmbed();
     buildTiers();
     installThemeGuidance();
