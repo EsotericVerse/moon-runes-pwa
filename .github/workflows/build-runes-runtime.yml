@@ -1,0 +1,41 @@
+name: Build LunaRunes static runtime
+
+on:
+  push:
+    branches:
+      - fix/remove-runes66-duplicate
+    paths:
+      - data/json/core/runes.json
+      - scripts/build_runes_runtime.py
+      - .github/workflows/build-runes-runtime.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate static rune runtime
+        run: python scripts/build_runes_runtime.py
+
+      - name: Verify runtime has no rune JSON fetch dependency
+        run: |
+          ! grep -R "runes66.json" js/runes66.js js/direction64.js
+          ! grep -R "fetch(.*runes.json" js/runes66.js js/direction64.js
+
+      - name: Commit generated runtime
+        run: |
+          if git diff --quiet -- js/runes66.js js/direction64.js; then
+            echo "Generated runtime is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/runes66.js js/direction64.js
+          git commit -m "Generate static rune runtime from runes.json"
+          git push
