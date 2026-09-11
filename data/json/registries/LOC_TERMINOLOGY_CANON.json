@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC_TERMINOLOGY_CANON",
+  "status": "canonical",
+  "effective_date": "2026-09-11",
+  "authority": "LOC_DATA_GOVERNANCE",
+  "purpose": "Single current terminology source for public copy, KM, FAQ/RAG, Skills and migration checks. Historical records may retain superseded terms only when explicitly marked historical.",
+  "current": {
+    "LOC": {
+      "canonical_names": ["LOC", "Luna Codex", "月典"],
+      "zh": "語言系統模組框架",
+      "en": "Language Module Framework"
+    },
+    "LunaRunes": {
+      "canonical_names": ["LunaRunes", "月之符文"],
+      "zh": "符號式語言模組",
+      "en": "Symbolic Language Module"
+    },
+    "LOC1": {"en": "LunaRunes", "zh": "月之符文"},
+    "LOC2": {"en": "Context", "zh": "脈絡"},
+    "LOC3": {"en": "Music", "zh": "音樂"},
+    "LOC4": {"en": "Literary", "zh": "文字創作"},
+    "LOC5": {"en": "Multimedia", "zh": "多媒體"},
+    "LOC6": {"en": "Algorithm", "zh": "演算法"},
+    "LOC7": {"en": "Module", "zh": "演算模組"},
+    "LOC8": {"en": "Evolution", "zh": "推演"}
+  },
+  "superseded_current_terms": [
+    {
+      "from": "Language System Model / 語言系統模型",
+      "to": "Language Module Framework / 語言系統模組框架"
+    },
+    {
+      "from": "Symbolic Language Model / 符號式語言模型 / 符號型語言模型",
+      "to": "Symbolic Language Module / 符號式語言模組"
+    },
+    {
+      "from": "LOC6 Methodology / 方法論",
+      "to": "LOC6 Algorithm / 演算法"
+    },
+    {
+      "from": "LOC7 Algorithm / 演算法（知識庫）",
+      "to": "LOC7 Module / 演算模組"
+    }
+  ],
+  "migration_rule": "Consumers must prefer current values in this registry and LOC_DATA_GOVERNANCE over superseded current-positioning strings found in older README, FAQ/RAG, KM or registry snapshots. Do not rewrite historical evidence silently; mark it historical or superseded instead.",
+  "display_rule": "Public current-facing copy must use the current terminology. LOC1–LOC8 are module names and navigation/explanation labels, not maturity levels or versions."
+}
