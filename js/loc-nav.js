@@ -115,19 +115,21 @@
   function buildIndex(host) {
     const top = document.getElementById("top") || document.querySelector("main,.loc-page");
     if (top && !top.id) top.id = "top";
+    const startHref = sectionHref("start-title", "start");
     const aboutHref = sectionHref("about-title", "about");
     host.appendChild(tier([
       link("LOC月典簡介",sectionHref("top")),
-      link("新手上路",sectionHref("start")),
+      link("新手上路",startHref),
       link("LOC架構圖",sectionHref("framework-map")),
-      link("目前進度",sectionHref("progress")),
+      link("目前進度",sectionHref("current-progress")),
       link("作者的話",aboutHref)
     ],"首頁快速選單"));
   }
 
   function buildRunes(host) {
+    const beginnerHref = fileName() === "lots.html" ? "lots.html#beginner" : "runes.html#beginner";
     host.appendChild(tier([
-      link("新手上路","runes.html#beginner"),
+      link("新手上路",beginnerHref),
       link("占卜抽籤","lots.html#draw"),
       link("符文總覽","lots.html#library"),
       link("符文統計","statics.html#runes"),
@@ -143,7 +145,7 @@
         link("三卡","lots.html?mode=3card#draw"),
         link("五卡","lots.html?mode=5card#draw"),
         link("11卡 OW3gs","lots.html?mode=ow3gs#draw"),
-        link("說明","lots.html#draw-help")
+        link("說明","lots.html#beginner")
       ],"抽牌快速選單");
       if (menu) drawView.appendChild(menu);
     }
