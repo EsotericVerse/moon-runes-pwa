@@ -35,6 +35,57 @@ def _features(text: str) -> Counter[str]:
     return features
 
 
+def _apply_phrase_replacements(value: Any, replacements: list[list[str]]) -> Any:
+    if isinstance(value, str):
+        for old, new in replacements:
+            value = value.replace(old, new)
+        return value
+    if isinstance(value, list):
+        return [_apply_phrase_replacements(item, replacements) for item in value]
+    if isinstance(value, dict):
+        return {
+            key: _apply_phrase_replacements(item, replacements)
+            for key, item in value.items()
+        }
+    return value
+
+
+def _load_canon_overrides(dataset_path: Path) -> dict[str, Any]:
+    override_path = dataset_path.with_name("LOC_FAQ_CANON_OVERRIDES.json")
+    if not override_path.exists():
+        return {}
+    payload = json.loads(override_path.read_text(encoding="utf-8"))
+    return payload if isinstance(payload, dict) else {}
+
+
+def _apply_canon_overrides(
+    chunks: list[dict[str, Any]],
+    overrides: dict[str, Any],
+) -> list[dict[str, Any]]:
+    replacements = overrides.get("phrase_replacements") or []
+    parent_overrides = overrides.get("parent_overrides") or {}
+    migrated: list[dict[str, Any]] = []
+
+    for raw_chunk in chunks:
+        chunk = _apply_phrase_replacements(dict(raw_chunk), replacements)
+        parent_id = str(chunk.get("parent_id") or "")
+        patch = parent_overrides.get(parent_id)
+        if isinstance(patch, dict):
+            chunk.update(patch)
+
+        retrieval_parts = [
+            str(chunk.get("intent") or ""),
+            str(chunk.get("question") or ""),
+            " ".join(str(item) for item in chunk.get("aliases", []) or []),
+            " ".join(str(item) for item in chunk.get("keywords", []) or []),
+            str(chunk.get("answer") or ""),
+        ]
+        chunk["retrieval_text"] = " ".join(part for part in retrieval_parts if part).strip()
+        migrated.append(chunk)
+
+    return migrated
+
+
 @dataclass(frozen=True)
 class SearchResult:
     rank: int
@@ -69,6 +120,9 @@ class FAQSearchEngine:
         chunks = payload.get("chunks")
         if not isinstance(chunks, list) or not chunks:
             raise ValueError("FAQ dataset must contain a non-empty chunks array")
+
+        overrides = _load_canon_overrides(dataset_path)
+        chunks = _apply_canon_overrides(chunks, overrides)
 
         ids = [chunk.get("id") for chunk in chunks]
         if any(not chunk_id for chunk_id in ids) or len(ids) != len(set(ids)):
@@ -176,16 +230,11 @@ class FAQSearchEngine:
             selected.append(result)
             return True
 
-        # Multi-intent queries should retrieve each clause independently before
-        # global ranking. Otherwise one strong topic can occupy all top slots
-        # and hide the second requested source.
         clauses = [
             part.strip(" ，,。！？!?")
             for part in re.split(r"(?:以及|還有|同時|或者|與|和)", query)
             if part.strip(" ，,。！？!?")
         ]
-        # Shared interrogative tails semantically apply to every coordinated
-        # clause: "A 和 B 是什麼？" means "A 是什麼？" + "B 是什麼？".
         shared_tail = ""
         tail_match = re.search(r"(是什麼|是甚麼|做什麼|有什麼|怎麼運作|怎麼使用|如何運作|如何使用)[？?]?$", query)
         if tail_match:
@@ -199,10 +248,6 @@ class FAQSearchEngine:
                 clause_results = self.search(subquery, top_k=top_k)
                 clause_relevant = [result for result in clause_results if result.score >= 0.08]
 
-                # Prefer the concrete noun phrase requested by the clause over
-                # a generic module definition. Example: "LOC3的歌曲是什麼"
-                # should prefer a FAQ whose question is about 歌曲, not merely
-                # "LOC3是什麼".
                 focus = _normalize(subquery)
                 focus = re.sub(r"loc\s*\d+", "", focus, flags=re.I)
                 focus = re.sub(
@@ -224,8 +269,6 @@ class FAQSearchEngine:
                 if len(selected) == intent_limit:
                     break
 
-        # Fill remaining slots from the full-query ranking while preserving
-        # distinct source parents/answers.
         if len(selected) < intent_limit:
             for result in relevant:
                 add_result(result)
