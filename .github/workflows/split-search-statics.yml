@@ -1,0 +1,59 @@
+name: Split Search and Statics responsibilities
+on:
+  push:
+    paths:
+      - '.github/workflows/split-search-statics.yml'
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wire pure Search and Statics dashboard
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          # Search: keep engine intact, add responsibility gate.
+          p=Path('search.html')
+          s=p.read_text(encoding='utf-8')
+          if 'js/search-pure.js' not in s:
+              s=s.replace('</body>','<script src="js/search-pure.js" defer></script>\n</body>',1)
+          p.write_text(s,encoding='utf-8')
+
+          # Statics: replace placeholders with functional dashboard hosts.
+          p=Path('statics.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('<section id="ranking"><h2>排行榜</h2><div class="card"><p>現有排行榜功能仍可從 <a href="search.html#rankingView">搜尋資料排行榜</a> 開啟；後續統一搬入此頁。</p></div></section>',
+                      '<section id="ranking"><h2>排行榜</h2><div class="card"><p>跨時期關鍵字排行榜集中於此；可切換文字／Threads 與音樂／LOC3。</p><div id="rankingDashboard" class="stats-dashboard">載入排行榜…</div></div></section>')
+          s=s.replace('<section id="runes"><h2>符文統計</h2><div class="card"><p>符文統計集中入口。月之符文頁的「符文統計」導覽會指向此區。</p></div></section>',
+                      '<section id="runes"><h2>符文統計</h2><div class="card"><p>顯示月之符文群組與可抽符文的結構統計。</p><div id="runesDashboard" class="stats-dashboard">載入符文統計…</div></div></section>')
+          s=s.replace('<section id="sources"><h2>來源管理</h2><div class="card"><p>集中檢視搜尋資料來源、筆數、時間範圍與分類。</p></div></section>',
+                      '<section id="sources"><h2>來源管理</h2><div class="card"><p>集中檢視搜尋資料來源、可搜尋筆數、文字量、時間範圍與目前資料狀態。</p><div id="sourcesDashboard" class="stats-dashboard">載入來源資料…</div></div></section>')
+          css='''\n.stats-dashboard{margin-top:16px}.stats-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.stats-metric{padding:13px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.14)}.stats-metric small,.stats-metric span{display:block;color:var(--muted);font-size:.75rem}.stats-metric strong{display:block;margin:3px 0;font-size:1.2rem}.stats-table-wrap{overflow-x:auto;margin-top:14px}.stats-table{width:100%;border-collapse:collapse;font-size:.8rem}.stats-table th,.stats-table td{padding:9px 10px;border-top:1px solid var(--line);text-align:left;vertical-align:top}.stats-table th{color:var(--muted);font-size:.72rem}.stats-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.stats-tabs button{padding:7px 11px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--text);cursor:pointer}.stats-tabs button[aria-current="true"]{border-color:var(--gold);color:var(--gold)}.ranking-list{display:grid;gap:6px}.ranking-row{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-top:1px solid var(--line)}.ranking-row span{color:var(--muted)}.ranking-row em{font-style:normal;color:var(--gold)}.rune-group-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.rune-group-stats>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.12)}.rune-group-stats strong,.rune-group-stats span,.rune-group-stats small{display:block}.rune-group-stats span{color:var(--gold);font-size:.82rem}.rune-group-stats small{margin-top:4px;color:var(--muted);font-size:.74rem}.stats-error{color:#ffb4ad}@media(max-width:720px){.stats-metrics,.rune-group-stats{grid-template-columns:1fr}.stats-table{min-width:760px}}\n'''
+          if '.stats-dashboard{' not in s:
+              s=s.replace('</style>',css+'</style>',1)
+          if 'js/statics-dashboard.js' not in s:
+              s=s.replace('<script src="js/loc-nav.js" defer></script>','<script src="js/loc-nav.js" defer></script>\n<script src="js/statics-dashboard.js" defer></script>',1)
+          p.write_text(s,encoding='utf-8')
+
+          # Cache new modules and bump.
+          p=Path('service-worker.js')
+          s=p.read_text(encoding='utf-8')
+          s=re.sub(r'moon-runes-pwa-v\d+','moon-runes-pwa-v202',s,count=1)
+          for asset in ['/js/search-pure.js','/js/statics-dashboard.js']:
+              quoted=f'  "{asset}",\n'
+              if quoted not in s:
+                  s=s.replace('  "/js/search-sources.js",\n','  "/js/search-sources.js",\n'+quoted,1)
+          p.write_text(s,encoding='utf-8')
+
+          Path('.github/workflows/split-search-statics.yml').unlink()
+      - name: Commit split
+        run: |
+          git config user.name "EsotericVerse"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Split Search from Statics dashboard responsibilities"
+          git push
