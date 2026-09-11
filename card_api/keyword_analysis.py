@@ -5,7 +5,7 @@ import re
 import unicodedata
 from collections import Counter
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 _SPACE_RE = re.compile(r"\s+")
 _CJK_RUN_RE = re.compile(r"[\u3400-\u9fff]+")
@@ -47,7 +47,7 @@ def _extract_fallback(text: str, min_len: int, max_len: int) -> Counter[str]:
     return counts
 
 def rank_keyword_documents(
-    documents: list[dict[str, Any]],
+    documents: Iterable[dict[str, Any]],
     *,
     start_date: str = "",
     end_date: str = "",
