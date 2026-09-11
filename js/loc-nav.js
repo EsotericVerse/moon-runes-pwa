@@ -138,12 +138,8 @@
     const top=document.getElementById("top")||document.querySelector("main,.loc-page");
     if(top&&!top.id) top.id="top";
     host.appendChild(tier([
-      link("LOC月典簡介",sectionHref("top")),
-      link("新手上路",sectionHref("start-title","start")),
-      link("LOC架構圖",sectionHref("framework-map")),
-      link("目前進度",sectionHref("current-progress")),
-      link("作者的話",sectionHref("about-title","about"))
-    ],"首頁快速選單"));
+      link("模組",sectionHref("framework-map"))
+    ],"首頁模組入口"));
   }
 
   function buildRunes(host){
