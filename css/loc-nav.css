@@ -1,217 +1,59 @@
 /* LOC shared navigation contract
-   1) global NAV
-   2) page-level NAV
-   Local sub-controls live inside their own content sections.
-   Sidebars are deprecated and must not render. */
+   NAV1: shared global navigation.
+   NAV2: page-level navigation, left aligned.
+   NAV3: optional local navigation at the bottom of its page/view.
+   Left sidebars are deprecated and must not render. */
 
-:root{
-  --loc-touch-min:44px;
-  --loc-nav-height:58px;
-}
+:root{--loc-touch-min:44px;--loc-nav-height:58px}
+.sidebar,.side-bar,.side-nav,.left-nav,.app-sidebar,.workspace-sidebar{display:none!important}
+.loc-global-shell{width:min(1180px,calc(100% - 28px));margin:0 auto}
+.loc-global-nav{position:relative;z-index:50;display:flex;align-items:center;justify-content:flex-start;gap:12px;min-height:var(--loc-nav-height);width:100%;padding:10px 0 8px;background:rgba(7,24,45,.96)}
+.loc-global-links,.loc-nav-tier-inner,.loc-nav3-inner{display:flex;align-items:center;gap:12px;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+.loc-global-links{flex:1 1 auto}
+.loc-global-links::-webkit-scrollbar,.loc-nav-tier-inner::-webkit-scrollbar,.loc-nav3-inner::-webkit-scrollbar{display:none}
+.loc-global-link,.loc-nav-tier-link,.loc-global-home{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:5px 4px;border:0;border-bottom:1px solid transparent;color:var(--muted,var(--loc-muted,#b9bfd0));background:transparent;text-decoration:none;font-size:.84rem;font-weight:650;white-space:nowrap}
+.loc-global-link:hover,.loc-global-link:focus-visible,.loc-global-link[aria-current="page"],.loc-nav-tier-link:hover,.loc-nav-tier-link:focus-visible,.loc-nav-tier-link[aria-current="true"],.loc-global-home:hover,.loc-global-home:focus-visible{color:var(--text,var(--loc-text,#f5f1ff));border-bottom-color:var(--gold,var(--loc-gold,#e7c27d));outline:none}
+.loc-global-current{pointer-events:none;cursor:default}
+.loc-global-search{flex:0 0 auto;display:flex;align-items:center;gap:6px;margin:0}
+.loc-global-search input{width:clamp(118px,16vw,210px);height:34px;padding:6px 10px;border:1px solid rgba(180,158,255,.24);border-radius:8px;color:var(--text,var(--loc-text,#f5f1ff));background:rgba(4,16,33,.58);font:inherit;font-size:.82rem}
+.loc-global-search-submit{min-height:34px;padding:5px 8px;border:1px solid rgba(180,158,255,.24);border-radius:8px;background:transparent;color:var(--muted,var(--loc-muted,#b9bfd0));font:inherit;font-size:.8rem;font-weight:650;cursor:pointer}
+.loc-global-home{margin-left:auto;color:var(--text,var(--loc-text,#f5f1ff));font-weight:800}
 
-.loc-global-shell{
-  width:min(1180px,calc(100% - 28px));
-  margin:0 auto;
-}
+.loc-nav-tiers{position:sticky;top:0;z-index:45;background:rgba(7,24,45,.96);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(180,158,255,.12);border-bottom:1px solid rgba(180,158,255,.16)}
+.loc-nav-tier{width:min(1180px,calc(100% - 28px));margin:0 auto;text-align:left}
+.loc-nav-tier .loc-nav-tier-inner{min-height:42px;justify-content:flex-start}
 
-.loc-global-nav{
-  position:relative;
-  z-index:50;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  min-height:var(--loc-nav-height);
-  width:100%;
-  padding:10px 0 8px;
-  background:rgba(7,24,45,.96);
-}
+.loc-nav3{margin:22px 0 0;padding:10px 12px;border-top:1px solid rgba(180,158,255,.18)}
+.loc-nav3-inner{justify-content:flex-start}
+.loc-nav3 .loc-nav-tier-link{min-height:34px;font-size:.78rem}
 
-.loc-global-brand{
-  flex:0 0 auto;
-  color:var(--text,var(--loc-text,#f5f1ff));
-  font-size:.96rem;
-  font-weight:800;
-  letter-spacing:.07em;
-  text-decoration:none;
-  white-space:nowrap;
-}
+body .app-shell,body .app{width:min(1180px,calc(100% - 28px))!important;margin:0 auto!important;padding:18px 0 36px!important;display:block!important}
+body .app-shell>.workspace-main,body .app-shell>main,body .app-shell>.page,body .app>main{width:100%!important;min-width:0!important;margin:0!important}
 
-.loc-global-links,
-.loc-nav-tier-inner,
-.loc-section-menu-inner{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width:0;
-  overflow-x:auto;
-  overscroll-behavior-x:contain;
-  scrollbar-width:none;
-}
-.loc-global-links::-webkit-scrollbar,
-.loc-nav-tier-inner::-webkit-scrollbar,
-.loc-section-menu-inner::-webkit-scrollbar{display:none}
-
-.loc-global-link,
-.loc-nav-tier-link{
-  flex:0 0 auto;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-height:36px;
-  padding:5px 4px;
-  border:0;
-  border-bottom:1px solid transparent;
-  color:var(--muted,var(--loc-muted,#b9bfd0));
-  background:transparent;
-  text-decoration:none;
-  font-size:.84rem;
-  font-weight:650;
-  white-space:nowrap;
-}
-.loc-global-link:hover,.loc-global-link:focus-visible,.loc-global-link[aria-current="page"],
-.loc-nav-tier-link:hover,.loc-nav-tier-link:focus-visible,.loc-nav-tier-link[aria-current="true"]{
-  color:var(--text,var(--loc-text,#f5f1ff));
-  border-bottom-color:var(--gold,var(--loc-gold,#e7c27d));
-  outline:none;
-}
-
-.loc-global-search{flex:0 0 auto;margin:0}
-.loc-global-search input{
-  width:clamp(118px,16vw,210px);
-  height:34px;
-  padding:6px 10px;
-  border:1px solid rgba(180,158,255,.24);
-  border-radius:8px;
-  color:var(--text,var(--loc-text,#f5f1ff));
-  background:rgba(4,16,33,.58);
-  font:inherit;
-  font-size:.82rem;
-}
-
-.loc-nav-tiers{
-  position:sticky;
-  top:0;
-  z-index:45;
-  background:rgba(7,24,45,.96);
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  border-top:1px solid rgba(180,158,255,.12);
-  border-bottom:1px solid rgba(180,158,255,.16);
-}
-.loc-nav-tier{width:min(1180px,calc(100% - 28px));margin:0 auto}
-.loc-nav-tier .loc-nav-tier-inner{min-height:42px}
-
-.loc-section-menu{
-  margin:0 0 18px;
-  padding:10px 12px;
-  border:1px solid rgba(180,158,255,.18);
-  border-radius:14px;
-  background:rgba(4,16,33,.48);
-}
-.loc-section-menu .loc-nav-tier-link{
-  min-height:34px;
-  font-size:.78rem;
-}
-
-body .app-shell,
-body .app{
-  width:min(1180px,calc(100% - 28px)) !important;
-  margin:0 auto !important;
-  padding:18px 0 36px !important;
-  display:block !important;
-}
-body .app-shell > .workspace-main,
-body .app-shell > main,
-body .app-shell > .page,
-body .app > main{
-  width:100% !important;
-  min-width:0 !important;
-  margin:0 !important;
-}
-
-/* Public text hierarchy. */
 .loc-header,.loc-page-hero{margin-block:0 24px;padding-block:28px 0}
-.loc-header .loc-header-meta{
-  margin:0 0 9px;
-  color:var(--accent,var(--mint,var(--loc-purple,#b49eff)));
-  font-size:.76rem;font-weight:800;line-height:1.45;letter-spacing:.14em;
-}
-.loc-header .loc-header-title,.loc-page-title{
-  margin:0;max-width:920px;color:var(--text,var(--loc-text,#f5f1ff));
-  font-size:clamp(3rem,7.2vw,5.2rem);font-weight:800;line-height:1;letter-spacing:-.05em;
-}
-.loc-header .loc-header-subtitle,.loc-page-subtitle{
-  max-width:800px;margin:15px 0 0;color:var(--text,var(--loc-text,#f5f1ff));
-  font-size:clamp(1.3rem,2.6vw,1.95rem);font-weight:650;line-height:1.35;
-}
-.loc-header .loc-header-copy,.loc-page-intro{
-  max-width:800px;margin:12px 0 0;color:var(--muted,var(--loc-muted,#b9bfd0));font-size:1rem;line-height:1.75;
-}
+.loc-header .loc-header-meta{margin:0 0 9px;color:var(--accent,var(--mint,var(--loc-purple,#b49eff)));font-size:.76rem;font-weight:800;line-height:1.45;letter-spacing:.14em}
+.loc-header .loc-header-title,.loc-page-title{margin:0;max-width:920px;color:var(--text,var(--loc-text,#f5f1ff));font-size:clamp(3rem,7.2vw,5.2rem);font-weight:800;line-height:1;letter-spacing:-.05em}
+.loc-header .loc-header-subtitle,.loc-page-subtitle{max-width:800px;margin:15px 0 0;color:var(--text,var(--loc-text,#f5f1ff));font-size:clamp(1.3rem,2.6vw,1.95rem);font-weight:650;line-height:1.35}
+.loc-header .loc-header-copy,.loc-page-intro{max-width:800px;margin:12px 0 0;color:var(--muted,var(--loc-muted,#b9bfd0));font-size:1rem;line-height:1.75}
+
+html body .loc-global-shell .loc-global-nav{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif!important;font-size:16px!important;font-weight:400!important;line-height:1.4!important}
+html body .loc-global-shell .loc-global-link,html body .loc-global-shell .loc-global-home{font-family:inherit!important;font-size:.84rem!important;font-weight:650!important;line-height:1.4!important;min-height:36px!important;padding:5px 4px!important;margin-top:0!important;margin-bottom:0!important;border-top:0!important;border-left:0!important;border-right:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;text-transform:none!important}
+html body .loc-global-shell .loc-global-search input{font-family:inherit!important;font-size:.82rem!important;font-weight:400!important;line-height:1.4!important}
+html body .loc-global-shell .loc-global-search-submit{font-family:inherit!important}
 
 @media(max-width:720px){
   :root{--loc-nav-height:52px}
   .loc-global-shell,.loc-nav-tier,body .app-shell,body .app{width:min(100% - 18px,1180px)!important}
-  .loc-global-nav{gap:8px;padding:6px 0}
-  .loc-global-brand{font-size:.84rem}
-  .loc-global-links,.loc-nav-tier-inner,.loc-section-menu-inner{gap:9px}
-  .loc-global-link,.loc-nav-tier-link{min-height:40px;font-size:.8rem}
-  .loc-global-search input{width:112px;height:34px}
-  .loc-section-menu{margin-bottom:14px;padding:8px 10px}
-  .loc-section-menu .loc-nav-tier-link{font-size:.75rem}
+  .loc-global-nav{gap:8px;padding:6px 0;flex-wrap:wrap}
+  .loc-global-links,.loc-nav-tier-inner,.loc-nav3-inner{gap:9px}
+  .loc-global-link,.loc-nav-tier-link,.loc-global-home{min-height:40px;font-size:.8rem}
+  .loc-global-search{order:2;flex:1 1 auto}
+  .loc-global-search input{width:min(210px,52vw);height:34px}
+  .loc-global-home{order:2;margin-left:auto}
+  .loc-nav3{margin-top:18px;padding:8px 0}
+  .loc-nav3 .loc-nav-tier-link{font-size:.75rem}
   .loc-header,.loc-page-hero{padding-top:16px;margin-bottom:16px}
   .loc-header .loc-header-title,.loc-page-title{font-size:clamp(2.1rem,11vw,3.15rem)}
   .loc-header .loc-header-subtitle,.loc-page-subtitle{font-size:clamp(1.05rem,5vw,1.35rem)}
   .loc-header .loc-header-copy,.loc-page-intro{font-size:.9rem;line-height:1.62}
-}
-
-/* NAV1 is a single shared module. Page CSS must not alter its typography or spacing. */
-html body .loc-global-shell .loc-global-nav{
-  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif !important;
-  font-size:16px !important;
-  font-weight:400 !important;
-  line-height:1.4 !important;
-}
-html body .loc-global-shell .loc-global-brand{
-  font-family:inherit !important;
-  font-size:.96rem !important;
-  font-weight:800 !important;
-  line-height:1.4 !important;
-  letter-spacing:.07em !important;
-  padding:0 !important;
-  margin:0 !important;
-}
-html body .loc-global-shell .loc-global-link{
-  font-family:inherit !important;
-  font-size:.84rem !important;
-  font-weight:650 !important;
-  line-height:1.4 !important;
-  min-height:36px !important;
-  padding:5px 4px !important;
-  margin:0 !important;
-  border-top:0 !important;
-  border-left:0 !important;
-  border-right:0 !important;
-  border-radius:0 !important;
-  background:transparent !important;
-  box-shadow:none !important;
-  text-transform:none !important;
-}
-html body .loc-global-shell .loc-global-links{gap:12px !important;}
-html body .loc-global-shell .loc-global-search{
-  display:flex !important;align-items:center !important;gap:6px !important;margin:0 !important;
-}
-html body .loc-global-shell .loc-global-search input{
-  font-family:inherit !important;font-size:.82rem !important;font-weight:400 !important;line-height:1.4 !important;
-}
-html body .loc-global-shell .loc-global-search-submit{
-  min-height:34px !important;padding:5px 8px !important;border:1px solid rgba(180,158,255,.24) !important;
-  border-radius:8px !important;background:transparent !important;color:var(--muted,var(--loc-muted,#b9bfd0)) !important;
-  font-family:inherit !important;font-size:.8rem !important;font-weight:650 !important;line-height:1.4 !important;cursor:pointer !important;
-}
-html body .loc-global-shell .loc-global-current{pointer-events:none !important;cursor:default !important;text-decoration:none !important;}
-@media(max-width:720px){
-  html body .loc-global-shell .loc-global-brand{font-size:.84rem !important;}
-  html body .loc-global-shell .loc-global-link{font-size:.8rem !important;min-height:40px !important;}
-  html body .loc-global-shell .loc-global-links{gap:9px !important;}
 }
