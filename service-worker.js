@@ -5,6 +5,8 @@ const ASSETS_TO_CACHE = [
   "/index.html",
   "/search.html",
   "/js/search-sources.js",
+  "/js/statics-dashboard.js",
+  "/js/search-pure.js",
   "/statics.html",
   "/runes.html",
   "/lots.html",
