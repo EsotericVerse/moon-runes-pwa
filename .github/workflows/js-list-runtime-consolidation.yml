@@ -48,3 +48,5 @@ jobs:
           git add js/list.js
           git commit -m "refactor: limit list runtime to library data" || exit 0
           git push
+
+# trigger
