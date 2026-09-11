@@ -72,6 +72,10 @@ class _FacebookPostStream:
     def __iter__(self) -> Iterator[dict[str, Any]]:
         return self.engine._iter_posts()
 
+    def __len__(self) -> int:
+        value = self.engine.dataset.get("records")
+        return int(value) if isinstance(value, int) or str(value).isdigit() else 0
+
 
 class FacebookSearchEngine:
     """Memory-bounded Facebook corpus searcher.
