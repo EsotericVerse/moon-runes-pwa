@@ -29,8 +29,10 @@
   const PHRASE_TEXT = [
     ['語言模型框架（Language Model Framework）', '語言系統模組框架（Language Module Framework）'],
     ['Language System Model', 'Language Module Framework'],
+    ['language system model', 'language module framework'],
     ['語言系統模型', '語言系統模組框架'],
     ['Symbolic Language Model', 'Symbolic Language Module'],
+    ['symbolic language model', 'symbolic language module'],
     ['符號式語言模型', '符號式語言模組'],
     ['符號型語言模型', '符號式語言模組'],
     ['LOC6 Methodology／方法論', 'LOC6 Algorithm／演算法'],
@@ -44,6 +46,14 @@
     ['State →', '變更後狀態（State After）→']
   ];
 
+  function normalizeString(value) {
+    let next = String(value ?? '');
+    for (const [from, to] of PHRASE_TEXT) {
+      if (next.includes(from)) next = next.replaceAll(from, to);
+    }
+    return next;
+  }
+
   function normalizeTextNode(node) {
     if (!node || node.nodeType !== Node.TEXT_NODE) return;
     const raw = node.nodeValue;
@@ -55,10 +65,7 @@
       return;
     }
 
-    let next = raw;
-    for (const [from, to] of PHRASE_TEXT) {
-      if (next.includes(from)) next = next.replaceAll(from, to);
-    }
+    const next = normalizeString(raw);
     if (next !== raw) node.nodeValue = next;
   }
 
@@ -82,7 +89,40 @@
     nodes.forEach(normalizeTextNode);
   }
 
+  function normalizeJSON(value) {
+    if (typeof value === 'string') return normalizeString(value);
+    if (Array.isArray(value)) return value.map(normalizeJSON);
+    if (value && typeof value === 'object') {
+      Object.keys(value).forEach(key => {
+        value[key] = normalizeJSON(value[key]);
+      });
+    }
+    return value;
+  }
+
+  function normalizeMetadata() {
+    document.title = normalizeString(document.title);
+    document.querySelectorAll('meta[content]').forEach(meta => {
+      const current = meta.getAttribute('content') || '';
+      const next = normalizeString(current);
+      if (next !== current) meta.setAttribute('content', next);
+    });
+
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(script => {
+      const raw = script.textContent || '';
+      if (!raw.trim()) return;
+      try {
+        const parsed = JSON.parse(raw);
+        script.textContent = JSON.stringify(normalizeJSON(parsed));
+      } catch {
+        const next = normalizeString(raw);
+        if (next !== raw) script.textContent = next;
+      }
+    });
+  }
+
   function install() {
+    normalizeMetadata();
     normalizeElement(document.body);
     const observer = new MutationObserver(records => {
       for (const record of records) {
@@ -92,7 +132,7 @@
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  window.LOCPublicTerminology = Object.freeze({ normalize: normalizeElement });
+  window.LOCPublicTerminology = Object.freeze({ normalize: normalizeElement, normalizeMetadata });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install, { once: true });
   else install();
 })();
