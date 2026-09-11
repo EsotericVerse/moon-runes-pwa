@@ -1,20 +1,20 @@
 # 🌕 LOC｜月典（Luna Codex）
 
-LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的語言系統模型（Language System Model，LM）。
+LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的語言系統模組框架（Language Module Framework）。
 
-原有 framework 並未消失，而是成為 LOC Language System Model 的底層 architecture。首頁保留一組人類可讀的導覽編號；文件與工程層一律使用語意 domain。
+LOC 由多個可重複使用的語言系統模組組成；首頁保留一組人類可讀的 LOC1–8 導覽編號，文件與工程層則依語意 domain 與實際責任治理。
 
-LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Model reference implementation：以 66 枚中文單字為核心語彙，實作脈絡、Graph、Grammar、治理、搜尋與演化。月之符文用來證明 LOC 可被實作，但不是使用 LOC 的門檻。
+LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module reference implementation：以 66 枚中文單字為核心語彙，實作脈絡、Graph、Grammar、治理、搜尋與演化。月之符文用來證明 LOC 的模組方法可被實作，但不是使用 LOC 的門檻。
 
-**術語治理：LOC 整體固定稱為 Language System Model／語言系統模型；LOC1–8 可稱功能模組（functional modules）；framework／框架只用於描述底層 architecture 或歷史稱呼，不再作為 LOC 現行主分類。**
+**術語治理：LOC 整體固定稱為 Language Module Framework／語言系統模組框架；LOC1–8 是語言系統模組的功能分隔；LunaRunes 固定稱為 Symbolic Language Module／符號式語言模組。**
 
 ### 主要定位
 
-> LOC is a reusable language system model. LunaRunes demonstrates that the model can be implemented as a working symbolic language model.
+> LOC is a reusable language module framework. LunaRunes demonstrates that the framework can be implemented as a working symbolic language module.
 >
 > LOC is fully open source. Commercial value comes from consulting, system architecture, governance design, and case-specific implementation.
 
-中文：LOC 是一套可重複使用的語言系統模型。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言模型。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。
+中文：LOC 是一套可重複使用的語言系統模組框架。LunaRunes（月之符文）證明了這套框架可以被實作為一個實際運作的符號式語言模組。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。
 
 > 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
 
@@ -27,7 +27,7 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Model referenc
 
 ---
 
-## 目前進度｜2026-09-10
+## 目前進度｜2026-09-11
 
 目前已進入 **Demo 收斂與功能驗收階段**。核心骨架不再擴張，優先處理功能完整性、資料一致性與公開入口。
 
@@ -45,7 +45,7 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Model referenc
 1. FAQ／KM 同步現行定義
 2. 核心頁面功能驗收
 3. 搜尋、Context、Evolution 的資料與 fallback 一致性
-4. 最後再更新 tutorial01 / tutorial02
+4. 整合式新手導覽與公開文件同步
 
 ## Demo 入口
 
@@ -57,18 +57,18 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Model referenc
 | 多元搜尋 | [search.html](https://loc.lo3rwang.cc/search.html) | Cross-format Search：文字、音樂、多媒體、符文、脈絡與知識 |
 | 推演 | [evolution.html](https://loc.lo3rwang.cc/evolution.html) | 時期、Timeline、Trend、Trajectory |
 | 治理 | [governance.html](https://loc.lo3rwang.cc/governance.html) | 政德風、治理原則與方法 |
-| Context Sandbox | [loc2-game.html](https://loc.lo3rwang.cc/loc2-game.html) | Semantic Playground |
+| Context Sandbox | [game.html](https://loc.lo3rwang.cc/game.html) | Semantic Playground |
 | 作者 | [lo3rwang.html](https://loc.lo3rwang.cc/lo3rwang.html) | Lucas Oscar Wang 政德 |
 
-新手導覽：
-- [tutorial01.html](https://loc.lo3rwang.cc/tutorial01.html)
-- [tutorial02.html](https://loc.lo3rwang.cc/tutorial02.html)
+新手導覽已整合進正式功能頁：
+- [LOC 新手上路](https://loc.lo3rwang.cc/#start)
+- [LunaRunes 新手上路](https://loc.lo3rwang.cc/lots.html#beginner)
 
 ---
 
 ## LOC GPT Skills
 
-LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重複調用的 AI Skills。它們不是獨立於 LOC 的另一套理論，而是 LOC Language System Model 的 callable implementations。
+LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重複調用的 AI Skills。它們不是獨立於 LOC 的另一套理論，而是 LOC Language Module Framework 的 callable implementations。
 
 ### v1.0.0
 
@@ -80,7 +80,7 @@ LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重
 兩個 Skill 共用現行 LOC 治理原則：
 
 ```text
-Language System Model
+Language Module Framework
         ↓
 Authority / Canon
         ↓
@@ -91,7 +91,7 @@ Context / Graph / Grammar / Evolution
 API / Search / UI / AI Skill
 ```
 
-其中 LunaRunes 是 LOC 的 Symbolic Language Model reference implementation；Skills 則把已形成的方法與治理能力轉成 GPT／Agent 可重複使用的工作流程。
+其中 LunaRunes 是 LOC 的 Symbolic Language Module reference implementation；Skills 則把已形成的方法與治理能力轉成 GPT／Agent 可重複使用的工作流程。
 
 - **公開套件：** [LOC-GPT-Skills-v1.0.0-bundle.zip](https://loc.lo3rwang.cc/LOC-GPT-Skills-v1.0.0-bundle.zip)
 - **版本：** 1.0.0
@@ -100,7 +100,7 @@ API / Search / UI / AI Skill
 典型使用情境：
 
 ```text
-Use loc-km-governance to audit this repository against the current LOC Language System Model.
+Use loc-km-governance to audit this repository against the current LOC Language Module Framework.
 
 Use loc-repo-health-check to verify whether legacy projections can be removed without breaking runtime.
 ```
@@ -118,8 +118,8 @@ LOC1–8 是**功能分隔與標準骨架**，不是版本、成熟度或高低�
 | LOC3 | Music 音樂 | Suno、歌曲、歌詞與音樂語意 |
 | LOC4 | Literary 文字創作 | 小說、文章、生活文字與創作 corpus |
 | LOC5 | MultiMedia 多媒體 | 圖像、影音、Reels、系統視覺化 |
-| LOC6 | Methodology 方法論 | 治理、判讀、比較、分類與其他可重複方法 |
-| LOC7 | Algorithm 演算法（知識庫） | 方法組合、文字建築、KM、搜尋、RAG、Graph RAG 與文字分析 |
+| LOC6 | Algorithm 演算法 | 治理、判讀、比較、分類與其他可重複規則 |
+| LOC7 | Module 演算模組 | 演算法、資料、文字建築、KM、搜尋、RAG、Graph RAG 與功能封裝 |
 | LOC8 | Evolution 推演 | 時期、時間線、趨勢、軌跡與跨來源時間分析 |
 
 LOC 的功能關係可概括為：
@@ -131,7 +131,7 @@ LOC 的功能關係可概括為：
   ↓
 脈絡與關係
   ↓
-演算法與文字建築
+演算法與演算模組
   ↓
 時間中的推演
 ```
@@ -168,7 +168,7 @@ LOC 的功能關係可概括為：
 - 雙卡
 - 三卡
 - 五卡
-- OW3gs 十一張（語法已定義；目前公開抽牌入口暫未開放）
+- OW3gs 十一張
 
 OW3gs 的結構：
 
@@ -297,7 +297,7 @@ Facebook、PTT、Pixnet、Threads、Suno、小說與其他作品都視為不同 
 
 技術面由 `card_api/` 提供作用中的 FastAPI 與搜尋 API；資料集中於 `data/json/`，實驗性向量／語意程式保留在 `engine/`。
 
-Graph RAG 的關係資料所有權仍歸 Context；Knowledge domain 負責檢索、文字建築與演算法。
+Graph RAG 的關係資料所有權仍歸 Context；Knowledge domain 負責檢索、文字建築與演算模組。
 
 ---
 
@@ -370,10 +370,11 @@ moon-runes-pwa/
 ├── search.html
 ├── evolution.html
 ├── governance.html
-├── loc2-game.html
+├── game.html
+├── loc2-game.html       # legacy compatibility redirect
 ├── lo3rwang.html
-├── tutorial01.html
-├── tutorial02.html
+├── tutorial01.html      # legacy compatibility redirect → index.html#start
+├── tutorial02.html      # legacy compatibility redirect → lots.html#beginner
 ├── LunaRune66.xlsx
 ├── LOC-GPT-Skills-v1.0.0-bundle.zip
 ├── manifest.json
@@ -382,7 +383,7 @@ moon-runes-pwa/
 └── README.md
 ```
 
-根目錄 HTML 只保留目前仍有明確功能或展示責任的頁面；舊的單一平台 Timeline、舊 Projection、內部 KM Upload 與重複介紹頁已移除。
+根目錄 HTML 只保留目前仍有明確功能或相容責任的頁面；舊的單一平台 Timeline、舊 Projection、內部 KM Upload 與重複介紹頁已移除。
 
 ---
 
@@ -408,7 +409,7 @@ moon-runes-pwa/
 - Markdown Skill specification
 - Structured JSON output
 - Python validators
-- LOC model-aware governance rules
+- LOC framework-aware governance rules
 
 ### Data governance
 
