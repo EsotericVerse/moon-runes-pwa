@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const overviewHead = document.querySelector('.rune-overview-head');
   const overviewCopy = document.querySelector('.rune-overview-head p');
   const downloadSection = document.querySelector('.physical-card-download');
-  const headerCopies = Array.from(document.querySelectorAll('.loc-header-copy'));
 
   toolbar?.remove();
 
@@ -51,53 +50,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const all = runeRows.map(normalize).filter(r => Number.isInteger(r.編號) && r.編號 >= 0 && r.編號 <= 66);
   const runeByName = new Map(all.filter(r => r.符文名稱).map(r => [r.符文名稱, r]));
 
-  function keywordForDirection(runeRow, directionName){
-    const negative = directionName === '逆位' || directionName === '半逆位';
-    if (negative) return runeRow?.負面關鍵詞 || runeRow?.反向關鍵字 || runeRow?.反向關鍵詞 || runeRow?.關鍵詞 || '—';
-    return runeRow?.正面關鍵詞 || runeRow?.關鍵詞 || '—';
-  }
-
-  function renderRitualPreview(){
-    const host = document.querySelector('#ritual-view .ritual-left');
-    const r = all.find(item => item.編號 === 65);
-    if (!host || !r) return;
-    const realPhase = window.LOCMoonPhase?.getRealPhase?.() || sessionStorage.getItem('realPhase') || '未知';
-    const keyword = keywordForDirection(r, '正位');
-    host.innerHTML = `<article class="rune-result-card" data-density="full"><div class="rune-result-image"><img src="64images/${esc(r.圖檔名稱)}" alt="玄之符文" /></div><div class="rune-result-body"><h2 class="rune-result-name">${esc(r.符文名稱)}${r.英文 ? `<small>${esc(r.英文)}</small>` : ''}</h2><div class="rune-result-grid"><div class="rune-result-field"><span class="rune-result-label">卡片方向</span><span class="rune-result-value">正位</span></div><div class="rune-result-field"><span class="rune-result-label">關鍵詞</span><span class="rune-result-value">${esc(keyword)}</span></div><div class="rune-result-field"><span class="rune-result-label">所屬分組</span><span class="rune-result-value">特殊</span></div><div class="rune-result-field moon"><span class="rune-result-label">卡片月相</span><span class="rune-result-value">${esc(r.月相 || '無')} / 真實月相：${esc(realPhase)}</span></div></div></div></article>`;
-  }
-
-  function enhanceDrawCards(){
-    document.querySelectorAll('#cards-grid .rune-result-card').forEach(card => {
-      const nameNode = card.querySelector('.rune-result-name');
-      const name = nameNode?.childNodes?.[0]?.textContent?.trim() || '';
-      const runeRow = runeByName.get(name);
-      if (!runeRow) return;
-      const fields = [...card.querySelectorAll('.rune-result-field')];
-      const directionField = fields.find(field => field.querySelector('.rune-result-label')?.textContent.trim() === '卡片方向');
-      const directionName = directionField?.querySelector('.rune-result-value')?.textContent.trim() || '';
-      if (directionField && !fields.some(field => field.querySelector('.rune-result-label')?.textContent.trim() === '關鍵詞')) {
-        const keywordField = document.createElement('div');
-        keywordField.className = 'rune-result-field';
-        keywordField.innerHTML = `<span class="rune-result-label">關鍵詞</span><span class="rune-result-value">${esc(keywordForDirection(runeRow, directionName))}</span>`;
-        directionField.after(keywordField);
-      }
-      const groupField = [...card.querySelectorAll('.rune-result-field')].find(field => field.querySelector('.rune-result-label')?.textContent.trim() === '所屬分組');
-      const groupValue = groupField?.querySelector('.rune-result-value');
-      if (groupValue && !groupValue.querySelector('a')) {
-        const groupName = runeRow.所屬分組 || '';
-        if (['靈魂','連結','生命','自然','礦物','元素','秩序','無序'].includes(groupName)) groupValue.innerHTML = `<a class="rune-result-group-link" href="lots.html?group=${encodeURIComponent(groupName)}#library">${esc(groupName)}組</a>`;
-        else groupValue.textContent = groupName === '特殊' || runeRow.編號 >= 65 ? '特殊' : groupName;
-      }
-    });
-  }
-
-  renderRitualPreview();
-  const cardsGrid = document.getElementById('cards-grid');
-  if (cardsGrid) {
-    new MutationObserver(enhanceDrawCards).observe(cardsGrid, { childList:true, subtree:true });
-    enhanceDrawCards();
-  }
-
   function infoBox(label, value){
     if (!value) return "";
     return `<div class="loc-rune-info-bubble"><strong>${esc(label)}</strong><span>${esc(value)}</span></div>`;
@@ -126,8 +78,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     overviewHead.insertBefore(summary, overviewCopy || null);
   }
 
-  headerCopies.forEach(node => node.remove());
-  if (overviewCopy) overviewCopy.textContent = "點選圖上的八個群組，可查看各組說明與符文資料。";
 
   if (overviewLink && coreGroups.length) {
     const quickHost = document.createElement('div');
