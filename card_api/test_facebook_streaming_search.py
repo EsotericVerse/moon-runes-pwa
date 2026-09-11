@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import facebook_search
 from facebook_search import FacebookSearchEngine
+from keyword_analysis import rank_keyword_documents
 
 
 class FacebookStreamingSearchTests(unittest.TestCase):
@@ -63,8 +64,10 @@ class FacebookStreamingSearchTests(unittest.TestCase):
     def test_manifest_does_not_materialize_all_posts(self):
         tmp, engine = self.make_engine()
         try:
-            self.assertIsNone(engine.posts)
+            self.assertNotIsInstance(engine.posts, list)
             self.assertEqual(2, len(engine.shards))
+            self.assertEqual(3, len(list(engine.posts)))
+            self.assertEqual(3, len(list(engine.posts)))
         finally:
             tmp.cleanup()
 
@@ -99,8 +102,6 @@ class FacebookStreamingSearchTests(unittest.TestCase):
                 results = engine.search("月光", top_k=10)
 
             self.assertEqual({"FB-1", "FB-3"}, {row["result_id"] for row in results})
-            # One query vector + two matching document vectors. FB-2 is filtered
-            # before expensive feature-vector scoring.
             self.assertEqual(3, len(calls))
         finally:
             tmp.cleanup()
@@ -110,6 +111,15 @@ class FacebookStreamingSearchTests(unittest.TestCase):
         try:
             results = engine.search("日常紀錄", top_k=10)
             self.assertEqual(["FB-2"], [row["result_id"] for row in results])
+        finally:
+            tmp.cleanup()
+
+    def test_keyword_ranking_accepts_streamed_posts(self):
+        tmp, engine = self.make_engine()
+        try:
+            result = rank_keyword_documents(engine.posts, top_k=10)
+            self.assertEqual(3, result["document_count"])
+            self.assertTrue(result["items"])
         finally:
             tmp.cleanup()
 
