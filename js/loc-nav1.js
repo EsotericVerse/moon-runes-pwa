@@ -64,6 +64,11 @@
     loadScript('js/rune-display-governance.js','loc-rune-display-governance');
   }
 
+  function loadSearchDisplayGovernance(){
+    if(fileName()!=="search.html") return;
+    loadScript('js/search-display-governance.js','loc-search-display-governance');
+  }
+
   function installAnchorGovernance(){
     if(document.getElementById('loc-anchor-governance')) return;
     const style=document.createElement('style');
@@ -79,6 +84,7 @@
     loadScript('js/nav-current.js','loc-nav-current');
     loadConceptNotes();
     loadRuneDisplayGovernance();
+    loadSearchDisplayGovernance();
   }
 
   window.LOCNav1 = Object.freeze({mountAll});
