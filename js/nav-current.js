@@ -42,6 +42,10 @@
       a.setAttribute('href','lots.html#beginner');
       a.dataset.originalHref='lots.html#beginner';
     });
+    document.querySelectorAll('.loc-nav3 a[href="lots.html#draw-help"]').forEach(a => {
+      a.setAttribute('href','lots.html#beginner');
+      a.dataset.originalHref='lots.html#beginner';
+    });
   }
 
   function sync() {
