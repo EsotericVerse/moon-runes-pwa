@@ -1,0 +1,30 @@
+name: Restore homepage intro and Skills once
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/restore-home-intro-skills-once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Apply homepage copy restore
+        run: python tools/restore_home_intro_skills_once.py
+      - name: Commit homepage copy
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "home: restore intro and Skills explanation"
+          git push
