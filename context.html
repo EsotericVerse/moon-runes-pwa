@@ -10,25 +10,29 @@
 <h1 class="loc-header-title">總覽</h1>
 <h2 class="loc-header-subtitle">把節點與關係組合起來，查看局部脈絡。</h2>
 <p class="loc-header-copy">Graph 只負責搜尋、展開與閱讀；節點與關係式分別在各自功能中管理。</p>
-<section class="context-tool-card">
-    <h3>關係圖探索器</h3>
-    <p>從一個概念、作品、事件或符文出發，查看它周圍的節點與關係。</p>
-    <form id="contextGraphForm" class="context-graph-toolbar">
-      <label>搜尋<input id="contextGraphQuery" placeholder="例如：自我治理、界、人生月台"></label>
-      <label>Depth<select id="contextGraphDepth"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select></label>
-      <button class="context-btn primary" type="submit">搜尋關係</button>
-    </form>
-    <div class="context-graph-status" id="contextGraphStatus">尚未查詢。</div>
-    <div class="context-graph-filter">
-      <select id="contextGraphNodeType"><option value="">全部節點類型</option></select>
-      <select id="contextGraphEdgeType"><option value="">全部關係類型</option></select>
-      <button class="context-btn ghost" type="button" id="contextGraphReset">清除篩選</button>
-    </div>
-    <div class="context-graph-layout">
-      <div class="context-graph-panel"><h3>Nodes</h3><div class="context-list" id="contextGraphNodes"><div class="context-empty">先搜尋一個概念。</div></div><div class="context-pagination" id="contextGraphNodePagination" hidden><div class="context-page-info" id="contextGraphNodePageInfo"></div><div class="context-page-buttons" id="contextGraphNodePageButtons"></div></div></div>
-      <div class="context-graph-panel"><h3>Edges</h3><div class="context-list" id="contextGraphEdges"><div class="context-empty">尚無關係。</div></div><div class="context-pagination" id="contextGraphEdgePagination" hidden><div class="context-page-info" id="contextGraphEdgePageInfo"></div><div class="context-page-buttons" id="contextGraphEdgePageButtons"></div></div></div>
-    </div>
-  </section>
+
+<section class="context-tool-card" id="runeSemanticGraph">
+  <div class="context-item-head"><div>
+    <h2>符文脈絡 Graph</h2>
+    <p>直接由現有 LunaRunes 資料建立：關鍵詞／反向關鍵詞 → 符文 → 唯一群組，並納入既有額外規則與 ownership。No API，不建立第二套 Canon。</p>
+  </div></div>
+  <form class="context-graph-toolbar">
+    <label>搜尋<input id="runeGraphQuery" placeholder="例如：光明、清晰、暴躁、光、元素"></label>
+    <button class="context-btn primary" type="submit">搜尋符文脈絡</button>
+  </form>
+  <div class="context-graph-status" id="runeGraphStatus">正在建立符文 Graph…</div>
+  <div class="context-graph-filter">
+    <select id="runeGraphGroup"><option value="">全部群組</option></select>
+    <select id="runeGraphEdgeType"><option value="">全部關係</option></select>
+    <button class="context-btn ghost" type="button" id="runeGraphReset">清除篩選</button>
+  </div>
+  <div class="context-graph-layout">
+    <div class="context-graph-panel"><h3>Nodes</h3><div class="context-list" id="runeGraphNodes"><div class="context-empty">正在載入符文節點…</div></div></div>
+    <div class="context-graph-panel"><h3>Edges</h3><div class="context-list" id="runeGraphEdges"><div class="context-empty">正在載入符文關係…</div></div></div>
+  </div>
+  <p class="context-graph-status">分類治理：未判定語意初始為「特殊」；正式分類依詞類／句內語意角色 → 群組主體性 → 唯一群組 → 個別符文 → 正反面／衝突校準。</p>
+</section>
+
 </div></section>
 
 <section class="context-section" data-context-view="nodes" id="context-nodes"><div class="wrap">
@@ -605,4 +609,5 @@ loadContextRelations({remote:!Array.isArray(relationCacheAtStart?.data)});
   <div><a href="mailto:sopa2306@gmail.com" style="color:inherit;text-decoration:none">意見信箱</a></div>
   <div>in EsotericVerse 秘藝文域（籌備中）</div>
 </footer>
+<script src="js/rune-context-graph.js" defer></script>
 </body></html>
