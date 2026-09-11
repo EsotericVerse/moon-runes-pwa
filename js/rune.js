@@ -157,7 +157,9 @@ else initRunePage();
 
   function cardPhase(rune){
     const raw=valueOf(rune,'月相','moon_phase');
-    return phaseCategory(raw) === '未知' ? '空亡' : phaseCategory(raw);
+    if(raw === '無') return '無';
+    if(PHASES.has(raw)) return raw;
+    return raw || '未知';
   }
 
   function groupLabel(rune){
