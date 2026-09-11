@@ -5,6 +5,47 @@
   const GROUPS = ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"];
   const NAV3_ALLOW = new Set(["lots:draw", "lots:library"]);
   const fileName = () => location.pathname.split("/").pop() || "index.html";
+  const THEME_STORAGE_KEY = "loc-theme";
+  const THEME_MODES = new Set(["auto","day","night"]);
+  const DAY_START_HOUR = 6;
+  const NIGHT_START_HOUR = 18;
+
+  function getThemeMode(){
+    try {
+      const saved=localStorage.getItem(THEME_STORAGE_KEY);
+      return THEME_MODES.has(saved) ? saved : "auto";
+    } catch { return "auto"; }
+  }
+
+  function resolveAutoTheme(now=new Date()){
+    const hour=now.getHours();
+    return hour>=DAY_START_HOUR && hour<NIGHT_START_HOUR ? "day" : "night";
+  }
+
+  function syncThemeControl(){
+    const select=document.querySelector("[data-loc-theme-select]");
+    if(select) select.value=getThemeMode();
+  }
+
+  function applyTheme(mode=getThemeMode()){
+    const safe=THEME_MODES.has(mode) ? mode : "auto";
+    const resolved=safe==="auto" ? resolveAutoTheme() : safe;
+    document.documentElement.dataset.theme=safe;
+    document.documentElement.dataset.themeResolved=resolved;
+    document.documentElement.style.colorScheme=resolved==="day" ? "light" : "dark";
+    syncThemeControl();
+  }
+
+  function setThemeMode(mode){
+    if(!THEME_MODES.has(mode)) return;
+    try { localStorage.setItem(THEME_STORAGE_KEY,mode); } catch {}
+    applyTheme(mode);
+  }
+
+  function themeControlHtml(){
+    return `<label class="loc-theme-control"><span>風格</span><select data-loc-theme-select aria-label="即時風格"><option value="auto">自動</option><option value="day">白天</option><option value="night">夜間</option></select></label>`;
+  }
+
   const baseName = path => String(path || "").split("/").pop() || "index.html";
 
   const NAV1 = Object.freeze([
@@ -57,7 +98,7 @@
       ).join("");
       const search=`<form class="loc-global-search" action="search.html" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" /><button class="loc-global-search-submit" type="submit">搜尋</button></form>`;
       const home=current==="home"?"":"<a class=\"loc-global-home\" href=\"index.html\">回月典首頁</a>";
-      node.innerHTML=`<div class="loc-global-links">${links}</div>${search}${home}`;
+      node.innerHTML=`<div class="loc-global-links">${links}</div>${search}${themeControlHtml()}${home}`;
     });
   }
 
@@ -294,6 +335,11 @@
     if(file==="search.html") appendScript("js/search-display-governance.js","loc-search-display-governance");
   }
 
+  document.addEventListener("change",event=>{
+    const select=event.target.closest("[data-loc-theme-select]");
+    if(select) setThemeMode(select.value);
+  });
+
   document.addEventListener("click",event=>{
     const control=event.target.closest('.loc-nav-tier[data-tier="2"] .loc-nav-tier-link');
     if(!control || control.getAttribute("aria-disabled")==="true") return;
@@ -304,9 +350,13 @@
     }
   });
 
+  applyTheme();
+  window.setInterval(()=>{ if(getThemeMode()==="auto") applyTheme("auto"); },60000);
+  window.addEventListener("storage",event=>{ if(event.key===THEME_STORAGE_KEY) applyTheme(); });
   window.addEventListener("hashchange",syncCurrent);
   window.addEventListener("DOMContentLoaded",()=>{
     renderNav1();
+    syncThemeControl();
     cleanupContextGameEmbed();
     buildTiers();
     syncCurrent();
