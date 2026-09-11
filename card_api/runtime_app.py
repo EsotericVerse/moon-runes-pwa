@@ -14,7 +14,9 @@ from starlette.responses import JSONResponse
 import main as core
 
 
-THREADS_INDEX_PATH = Path(__file__).resolve().parent / "generated" / "threads_search_index.sqlite3"
+GENERATED_DIR = Path(__file__).resolve().parent / "generated"
+THREADS_INDEX_PATH = GENERATED_DIR / "threads_search_index.sqlite3"
+LOC4_INDEX_PATH = GENERATED_DIR / "loc4_runtime_index.sqlite3"
 
 
 def _env_int(name: str, default: int, minimum: int = 1) -> int:
@@ -22,6 +24,18 @@ def _env_int(name: str, default: int, minimum: int = 1) -> int:
         return max(minimum, int(os.environ.get(name, str(default))))
     except (TypeError, ValueError):
         return default
+
+
+def _json_list(value: Any) -> list[Any]:
+    try:
+        parsed = json.loads(str(value or "[]"))
+        return parsed if isinstance(parsed, list) else []
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return []
+
+
+def _readonly_sqlite_uri(path: Path) -> str:
+    return f"file:{path.as_posix()}?mode=ro&immutable=1"
 
 
 def _install_unified_search_cache(searcher: Any) -> Any:
@@ -43,9 +57,8 @@ def _install_unified_search_cache(searcher: Any) -> Any:
             if not THREADS_INDEX_PATH.exists():
                 yield from original_threads_iterator()
                 return
-            uri = f"file:{THREADS_INDEX_PATH.as_posix()}?mode=ro&immutable=1"
             try:
-                with sqlite3.connect(uri, uri=True) as connection:
+                with sqlite3.connect(_readonly_sqlite_uri(THREADS_INDEX_PATH), uri=True) as connection:
                     rows = connection.execute(
                         """
                         SELECT id, source_id, date, era, source_role, text,
@@ -55,10 +68,6 @@ def _install_unified_search_cache(searcher: Any) -> Any:
                         """
                     )
                     for row in rows:
-                        try:
-                            matched_terms = json.loads(row[7] or "[]")
-                        except (TypeError, ValueError, json.JSONDecodeError):
-                            matched_terms = []
                         yield {
                             "id": row[0],
                             "source_id": row[1],
@@ -67,13 +76,100 @@ def _install_unified_search_cache(searcher: Any) -> Any:
                             "source_role": row[4],
                             "text": row[5],
                             "char_count": row[6],
-                            "matched_terms": matched_terms,
+                            "matched_terms": _json_list(row[7]),
                         }
                 return
             except sqlite3.Error:
                 yield from original_threads_iterator()
 
         searcher._iter_loc4_article_documents = indexed_threads_iterator
+
+    # LOC4 authored corpus and closed-platform history are also deployment-static.
+    # Build-time SQLite removes repeated JSON parsing/opening of 16 source shards.
+    original_corpus_iterator = getattr(searcher, "_iter_loc4_corpus_documents", None)
+    if callable(original_corpus_iterator):
+        def indexed_corpus_iterator():
+            if not LOC4_INDEX_PATH.exists():
+                yield from original_corpus_iterator()
+                return
+            try:
+                with sqlite3.connect(_readonly_sqlite_uri(LOC4_INDEX_PATH), uri=True) as connection:
+                    rows = connection.execute(
+                        """
+                        SELECT id, work_id, title, section, segment, date,
+                               source_file, source_type, content_type, primary_loc,
+                               related_locs_json, display_policy, text, retrieval_text
+                        FROM authored_documents
+                        ORDER BY ordinal
+                        """
+                    )
+                    for row in rows:
+                        yield {
+                            "id": row[0],
+                            "work_id": row[1],
+                            "title": row[2],
+                            "section": row[3],
+                            "segment": row[4],
+                            "date": row[5],
+                            "source_file": row[6],
+                            "source_type": row[7],
+                            "content_type": row[8],
+                            "primary_loc": row[9],
+                            "related_locs": _json_list(row[10]),
+                            "display_policy": row[11],
+                            "text": row[12],
+                            "retrieval_text": row[13],
+                        }
+                return
+            except sqlite3.Error:
+                yield from original_corpus_iterator()
+
+        searcher._iter_loc4_corpus_documents = indexed_corpus_iterator
+
+    original_history_iterator = getattr(searcher, "_iter_loc4_offline_history_documents", None)
+    if callable(original_history_iterator):
+        def indexed_history_iterator():
+            if not LOC4_INDEX_PATH.exists():
+                yield from original_history_iterator()
+                return
+            try:
+                with sqlite3.connect(_readonly_sqlite_uri(LOC4_INDEX_PATH), uri=True) as connection:
+                    rows = connection.execute(
+                        """
+                        SELECT id, title, date, author_id, platform, source_type,
+                               source_role, content_type, primary_loc,
+                               related_locs_json, display_policy, searchable,
+                               classification_json, text, char_count
+                        FROM offline_documents
+                        ORDER BY ordinal
+                        """
+                    )
+                    for row in rows:
+                        classification = _json_list(row[12])
+                        if not row[11] or "爭議文章" in set(classification):
+                            continue
+                        yield {
+                            "id": row[0],
+                            "title": row[1],
+                            "date": row[2],
+                            "author_id": row[3],
+                            "platform": row[4],
+                            "source_type": row[5],
+                            "source_role": row[6],
+                            "content_type": row[7],
+                            "primary_loc": row[8],
+                            "related_locs": _json_list(row[9]),
+                            "display_policy": row[10],
+                            "searchable": bool(row[11]),
+                            "classification": classification,
+                            "text": row[13],
+                            "char_count": row[14],
+                        }
+                return
+            except sqlite3.Error:
+                yield from original_history_iterator()
+
+        searcher._iter_loc4_offline_history_documents = indexed_history_iterator
 
     # text_record and governance_article currently share the same LOC4 article
     # retrieval implementation. Cache that immutable ranking result once per
@@ -91,8 +187,6 @@ def _install_unified_search_cache(searcher: Any) -> Any:
             if wanted not in {"", "all", "governance_article", "text_record"}:
                 return original_article_results(query, top_k, wanted, filters)
             if wanted in {"", "all"}:
-                # Broad search semantics include other source types; preserve
-                # the original path rather than conflating it with text_record.
                 return original_article_results(query, top_k, wanted, filters)
             filter_items = tuple(sorted(
                 (str(key), str(value or ""))
@@ -108,15 +202,12 @@ def _install_unified_search_cache(searcher: Any) -> Any:
     original_knowledge_results = getattr(searcher, "_knowledge_asset_results", None)
     if callable(original_knowledge_results):
         cache_size = _env_int("LOC_KNOWLEDGE_RESULT_CACHE_SIZE", 128)
-        cached_knowledge_results = lru_cache(maxsize=cache_size)(original_knowledge_results)
-        searcher._knowledge_asset_results = cached_knowledge_results
+        searcher._knowledge_asset_results = lru_cache(maxsize=cache_size)(original_knowledge_results)
 
     searcher._runtime_performance_cache_installed = True
     return searcher
 
 
-# Patch the lazy accessor as well as the instance created during main import.
-# This keeps fallback/recovery initialization on the same cached path.
 _original_get_unified_searcher = core.get_unified_searcher
 
 
@@ -129,8 +220,6 @@ _install_unified_search_cache(getattr(core, "UNIFIED_SEARCHER", None))
 
 app = core.app
 
-# Compress larger JSON responses. Search/Graph responses are text-heavy and
-# compress efficiently, reducing bandwidth without changing response schemas.
 app.add_middleware(
     GZipMiddleware,
     minimum_size=max(512, _env_int("LOC_GZIP_MIN_SIZE", 1024)),
@@ -138,8 +227,6 @@ app.add_middleware(
 )
 
 
-# Per-client fixed-window limits protect the small Render instance from burst
-# traffic. Values are intentionally generous and remain environment-tunable.
 _RATE_POLICIES = {
     "/search": ("LOC_RATE_SEARCH_PER_MIN", 120),
     "/faq/search": ("LOC_RATE_FAQ_SEARCH_PER_MIN", 120),
@@ -151,9 +238,6 @@ _RATE_POLICIES = {
     "/km/import": ("LOC_RATE_KM_IMPORT_PER_MIN", 4),
 }
 
-# Body limits are transport guards, not semantic limits. They are set above the
-# endpoint's normal payload envelope so valid requests keep their current API
-# contract while oversized abuse is rejected before expensive JSON processing.
 _BODY_LIMITS = {
     "/search": 512 * 1024,
     "/faq/search": 512 * 1024,
@@ -214,10 +298,7 @@ async def performance_traffic_guard(request, call_next):
         if raw_length:
             try:
                 if int(raw_length) > max_body:
-                    return JSONResponse(
-                        status_code=413,
-                        content={"detail": "request body too large"},
-                    )
+                    return JSONResponse(status_code=413, content={"detail": "request body too large"})
             except ValueError:
                 return JSONResponse(status_code=400, content={"detail": "invalid content-length"})
 
