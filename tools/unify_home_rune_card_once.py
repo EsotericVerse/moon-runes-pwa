@@ -1,6 +1,7 @@
 from pathlib import Path
 import re
 
+# One-shot migration: homepage rune sample must use the shared LunaRunes card renderer.
 index_path = Path('index.html')
 index = index_path.read_text(encoding='utf-8')
 
