@@ -2,13 +2,12 @@
   if (window.LOCNav1) return;
 
   const ITEMS = Object.freeze([
-    {id:"home",label:"首頁",href:"index.html"},
     {id:"runes",label:"月之符文",href:"runes.html"},
     {id:"game",label:"遊戲",href:"game.html"},
     {id:"context",label:"脈絡",href:"context.html"},
-    {id:"evolution",label:"推演",href:"evolution.html"},
     {id:"governance",label:"治理",href:"governance.html"},
-    {id:"statics",label:"統計",href:"statics.htm"}
+    {id:"statics",label:"統計",href:"statics.html"},
+    {id:"evolution",label:"推演",href:"evolution.html"}
   ]);
 
   const PAGE_GROUP = Object.freeze({
@@ -16,12 +15,13 @@
     "lots.html":"runes",
     "runes.html":"runes",
     "game.html":"game",
-    "loc2-game.html":"game",
     "context.html":"context",
     "evolution.html":"evolution",
     "governance.html":"governance",
+    "statics.html":"statics",
     "statics.htm":"statics",
-    "search.html":"search"
+    "search.html":"search",
+    "lo3rwang.html":"author"
   });
 
   const fileName = () => location.pathname.split("/").pop() || "index.html";
@@ -34,14 +34,13 @@
 
   function render(node){
     const current=currentGroup(node);
-    const brand='<span class="loc-global-brand">LOC月典</span>';
-
     const links=ITEMS.map(item => item.id===current
       ? `<span class="loc-global-link loc-global-current" aria-current="page">${esc(item.label)}</span>`
       : `<a class="loc-global-link" href="${esc(item.href)}">${esc(item.label)}</a>`
     ).join("");
-
-    node.innerHTML=`${brand}<div class="loc-global-links">${links}<form class="loc-global-search" action="search.html" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="搜尋" /><button class="loc-global-search-submit" type="submit">搜尋</button></form></div>`;
+    const search=`<form class="loc-global-search" action="search.html" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" /><button class="loc-global-search-submit" type="submit">搜尋</button></form>`;
+    const home=current==="home"?"":'<a class="loc-global-home" href="index.html">回月典首頁</a>';
+    node.innerHTML=`<div class="loc-global-links">${links}</div>${search}${home}`;
   }
 
   function loadScript(src,key){
