@@ -2,7 +2,6 @@
   const GROUPS = ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"];
 
   const fileName = () => location.pathname.split("/").pop() || "index.html";
-  const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 
   function loadNav1(){
     const mount=()=>window.LOCNav1?.mountAll?.();
@@ -21,7 +20,7 @@
     if (document.getElementById("loc-canonical-nav-runtime")) return;
     const style = document.createElement("style");
     style.id = "loc-canonical-nav-runtime";
-    style.textContent = `.runes-third-nav{display:none!important}.loc-guidance-note{margin:14px 0;padding:14px 16px;border:1px solid rgba(180,158,255,.22);border-radius:16px;background:rgba(23,43,72,.52);color:#dce6f7;line-height:1.7}.loc-guidance-note strong{color:#e7c27d}`;
+    style.textContent = `.sidebar,.side-bar,.side-nav,.left-nav,.app-sidebar,.workspace-sidebar{display:none!important}.runes-third-nav{display:none!important}.loc-guidance-note{margin:14px 0;padding:14px 16px;border:1px solid rgba(180,158,255,.22);border-radius:16px;background:rgba(23,43,72,.52);color:#dce6f7;line-height:1.7}.loc-guidance-note strong{color:#e7c27d}`;
     document.head.appendChild(style);
   }
 
@@ -57,13 +56,13 @@
     return nav;
   }
 
-  function sectionMenu(items, label) {
-    const box = document.createElement("div");
-    box.className = "loc-section-menu";
-    box.setAttribute("role", "navigation");
+  function nav3(items, label) {
+    const box = document.createElement("nav");
+    box.className = "loc-nav3";
+    box.dataset.tier = "3";
     box.setAttribute("aria-label", label);
     const inner = document.createElement("div");
-    inner.className = "loc-section-menu-inner";
+    inner.className = "loc-nav3-inner";
     items.forEach(item => inner.appendChild(item));
     box.appendChild(inner);
     return box;
@@ -107,20 +106,6 @@
       link("目前進度",sectionHref("progress")),
       link("作者的話",aboutHref)
     ],"首頁快速選單"));
-
-    const framework = document.getElementById("framework-map");
-    if (framework && !framework.querySelector(":scope > .loc-section-menu")) {
-      framework.prepend(sectionMenu([
-        link("月之符文模組 LunaRunes","#framework-map"),
-        link("脈絡 Context","#framework-map"),
-        link("音樂 Music","#framework-map"),
-        link("文字創作 Literary","#framework-map"),
-        link("多媒體 Multimedia","#framework-map"),
-        link("演算法 Algorithm","#framework-map"),
-        link("演算模組 Module","#framework-map"),
-        link("推演 Evolution","#framework-map")
-      ],"LOC架構圖快速切換"));
-    }
   }
 
   function buildRunes(host) {
@@ -128,13 +113,13 @@
       link("新手上路","runes.html#beginner"),
       link("占卜抽籤","lots.html#draw"),
       link("符文總覽","lots.html#library"),
-      link("符文統計","statics.htm#runes"),
+      link("符文統計","statics.html#runes"),
       link("符文知識庫","runes.html#reference")
     ],"月之符文功能"));
 
     const drawView = fileName() === "lots.html" ? document.getElementById("drawView") : null;
-    if (drawView && !drawView.querySelector(":scope > .loc-section-menu")) {
-      drawView.prepend(sectionMenu([
+    if (drawView && !drawView.querySelector(":scope > .loc-nav3")) {
+      drawView.appendChild(nav3([
         link("單卡","lots.html?mode=single#draw"),
         link("每日","lots.html?mode=daily#draw"),
         link("雙卡","lots.html?mode=2card#draw"),
@@ -146,8 +131,8 @@
     }
 
     const libraryView = fileName() === "lots.html" ? document.getElementById("libraryView") : null;
-    if (libraryView && !libraryView.querySelector(":scope > .loc-section-menu")) {
-      libraryView.prepend(sectionMenu(GROUPS.map(group => link(group,`lots.html?group=${encodeURIComponent(group)}#library`,{"data-rune-group-shortcut":group})),"符文群組快速選單"));
+    if (libraryView && !libraryView.querySelector(":scope > .loc-nav3")) {
+      libraryView.appendChild(nav3(GROUPS.map(group => link(group,`lots.html?group=${encodeURIComponent(group)}#library`,{"data-rune-group-shortcut":group})),"符文群組快速選單"));
     }
   }
 
@@ -171,10 +156,10 @@
 
   function buildStatics(host) {
     host.appendChild(tier([
-      link("排行榜","statics.htm#ranking"),
-      link("符文統計","statics.htm#runes"),
-      link("來源管理","statics.htm#sources"),
-      link("匯入","statics.htm#import")
+      link("排行榜","statics.html#ranking"),
+      link("符文統計","statics.html#runes"),
+      link("來源管理","statics.html#sources"),
+      link("匯入","statics.html#import")
     ],"統計功能"));
   }
 
@@ -193,10 +178,11 @@
     host.replaceChildren();
     const file = fileName();
     if (file === "index.html") buildIndex(host);
-    else if (file === "runes.html" || file === "lots.html" || file === "statics.htm") buildRunes(host);
+    else if (file === "runes.html" || file === "lots.html") buildRunes(host);
     else if (file === "context.html") buildContext(host);
     else if (file === "evolution.html") buildEvolution(host);
     else if (file === "governance.html") buildGovernance(host);
+    else if (file === "statics.html" || file === "statics.htm") buildStatics(host);
   }
 
   function installThemeGuidance(){
@@ -233,8 +219,8 @@
           note.id="daily-theme-note";
           note.className="loc-guidance-note";
           note.innerHTML="<strong>每日抽牌看的是『今天的主題』。</strong> 沒有問題也可以抽一張：先從無中生有地得到一個語意種子，讓語言開始遞迴成長。你可以依今天的現實脈絡決定怎麼灌溉、延伸或修剪它；它不是命定未來，也不是指示你一定要做什麼。單卡則是針對當下問題或情境的一張回應。";
-          const menu=drawView.querySelector(":scope > .loc-section-menu");
-          if(menu) menu.after(note); else drawView.prepend(note);
+          const menu=drawView.querySelector(":scope > .loc-nav3");
+          if(menu) drawView.insertBefore(note,menu); else drawView.appendChild(note);
         }
       }
     }
