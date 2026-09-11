@@ -14,6 +14,14 @@
     'lo3rwang.html':'#author-intro'
   });
 
+  const AUTHOR_SECTIONS = Object.freeze([
+    {label:'介紹', match:'他主要在做什麼', id:'author-intro'},
+    {label:'主要身份', match:'主要身份', id:'author-identity'},
+    {label:'工作與合作', match:'工作與合作方向', id:'author-work'},
+    {label:'作者自述', match:'作者自述', id:'author-self'},
+    {label:'LOC月典', match:'LOC／月典', id:'author-loc'}
+  ]);
+
   function reset(nav) {
     nav.querySelectorAll('.loc-nav-tier-link').forEach(el => {
       if (el.dataset.staticCurrent === 'true') return;
@@ -49,12 +57,33 @@
     });
   }
 
+  function ensureAuthorNav(nav, file) {
+    if (file !== 'lo3rwang.html' || nav.dataset.authorNavReady === 'true') return;
+    const inner = nav.querySelector('.loc-nav-tier-inner');
+    if (!inner) return;
+    const headings = [...document.querySelectorAll('main article h2')];
+    const links = AUTHOR_SECTIONS.map(item => {
+      const heading = headings.find(h => h.textContent.trim().includes(item.match));
+      if (!heading) return null;
+      if (!heading.id) heading.id = item.id;
+      const a = document.createElement('a');
+      a.className = 'loc-nav-tier-link';
+      a.href = `#${heading.id}`;
+      a.textContent = item.label;
+      return a;
+    }).filter(Boolean);
+    if (!links.length) return;
+    inner.replaceChildren(...links);
+    nav.dataset.authorNavReady = 'true';
+  }
+
   function sync() {
     const nav = document.querySelector('.loc-nav-tier[data-tier="2"]');
     if (!nav) return;
 
     const file = fileName();
     normalizePageLinks(nav,file);
+    ensureAuthorNav(nav,file);
     reset(nav);
 
     if (file === 'context.html') {
