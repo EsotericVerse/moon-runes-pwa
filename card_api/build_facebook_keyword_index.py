@@ -16,23 +16,28 @@ OUTPUT_DIR = CARD_API_ROOT / "generated"
 OUTPUT_PATH = OUTPUT_DIR / "facebook_keyword_index.sqlite3"
 
 
-def build_index() -> Path | None:
-    if not MANIFEST_PATH.exists():
-        print(f"Facebook manifest not found; skip keyword index: {MANIFEST_PATH}")
+def build_index(
+    manifest_path: Path = MANIFEST_PATH,
+    governance_path: Path = GOVERNANCE_PATH,
+    output_path: Path = OUTPUT_PATH,
+) -> Path | None:
+    if not manifest_path.exists():
+        print(f"Facebook manifest not found; skip keyword index: {manifest_path}")
         return None
 
-    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    facebook_root = manifest_path.parent
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     shards = manifest.get("shards") or []
     if not isinstance(shards, list) or not shards:
         print("Facebook manifest has no shards; skip keyword index")
         return None
 
-    governance = load_governance(GOVERNANCE_PATH)
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    if OUTPUT_PATH.exists():
-        OUTPUT_PATH.unlink()
+    governance = load_governance(governance_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    if output_path.exists():
+        output_path.unlink()
 
-    conn = sqlite3.connect(OUTPUT_PATH)
+    conn = sqlite3.connect(output_path)
     try:
         conn.executescript(
             """
@@ -68,7 +73,7 @@ def build_index() -> Path | None:
         date_max = ""
 
         for shard_name in shards:
-            shard_path = FACEBOOK_ROOT / str(shard_name)
+            shard_path = facebook_root / str(shard_name)
             rows = json.loads(shard_path.read_text(encoding="utf-8"))
             if not isinstance(rows, list):
                 raise ValueError(f"Facebook shard must be a list: {shard_name}")
@@ -144,8 +149,8 @@ def build_index() -> Path | None:
     finally:
         conn.close()
 
-    print(f"Built Facebook keyword index: {OUTPUT_PATH}")
-    return OUTPUT_PATH
+    print(f"Built Facebook keyword index: {output_path}")
+    return output_path
 
 
 if __name__ == "__main__":
