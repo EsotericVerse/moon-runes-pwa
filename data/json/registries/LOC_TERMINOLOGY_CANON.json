@@ -69,7 +69,8 @@
     ],
     "legacy_path_migration": {
       "current": ["game.html", "statics.html"],
-      "compatibility_redirects": ["loc2-game.html", "statics.htm"],
+      "compatibility_redirects": ["loc2-game.html"],
+      "retired_paths": ["statics.htm", "statics.htmll"],
       "runtime_normalization": "js/loc-nav.js + js/public-terminology.js"
     }
   },
