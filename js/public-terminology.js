@@ -28,6 +28,17 @@
 
   const PHRASE_TEXT = [
     ['語言模型框架（Language Model Framework）', '語言系統模組框架（Language Module Framework）'],
+    ['Language System Model', 'Language Module Framework'],
+    ['語言系統模型', '語言系統模組框架'],
+    ['Symbolic Language Model', 'Symbolic Language Module'],
+    ['符號式語言模型', '符號式語言模組'],
+    ['符號型語言模型', '符號式語言模組'],
+    ['LOC6 Methodology／方法論', 'LOC6 Algorithm／演算法'],
+    ['LOC6 · Methodology', 'LOC6 · Algorithm'],
+    ['LOC6 Methodology', 'LOC6 Algorithm'],
+    ['LOC7 Algorithm／演算法（知識庫）', 'LOC7 Module／演算模組'],
+    ['LOC7 · Algorithm', 'LOC7 · Module'],
+    ['LOC7 Algorithm', 'LOC7 Module'],
     ['Search → 時期設定', '搜尋（Search）→ 時期設定'],
     ['Evolution 只讀取並進行時間分析', '推演（Evolution）只讀取並進行時間分析'],
     ['State →', '變更後狀態（State After）→']
