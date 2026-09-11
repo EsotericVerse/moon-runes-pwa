@@ -4,48 +4,20 @@ sessionStorage.setItem("realPhase", realPhase);
 window.addEventListener("DOMContentLoaded", () => {
   const card = document.getElementById("rune-card");
   const moonText = document.getElementById("moon-phase-index");
+  const attributes = document.getElementById("attributes");
+  const runeImage = document.getElementById("rune-image");
 
   if (moonText) moonText.textContent = `月相：無 / 真實月相：${realPhase}`;
   if (card) card.addEventListener("click", () => { window.location.href = "lots.html#draw"; });
 
-  const metaDescription = document.querySelector('meta[name="description"]');
-  if (metaDescription) {
-    metaDescription.setAttribute(
-      "content",
-      "LOC（月典）是一套用來分析、整理、搜尋並推演語言的語言模型框架（Language Model Framework），由 LOC1–LOC8 語言系統模組組成。月之符文（LunaRunes）則演變為可實際運作的符號式語言模型（Symbolic Language Model）。"
-    );
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
-
-  const heroSubtitle = document.querySelector(".hero .loc-header-subtitle");
-  if (heroSubtitle) heroSubtitle.textContent = "從語彙開始，讓脈絡、作品、演算法與時間彼此連結，再持續推演。";
-
-  const heroCopy = document.querySelector(".hero .loc-header-copy");
-  if (heroCopy) heroCopy.textContent = "月典是一套用來分析、整理、搜尋並推演語言的語言模型框架。LOC1–LOC8 是組成框架的語言系統模組；月之符文則是可實際運作的符號式語言模型。";
-
-  const heroNote = document.querySelector(".hero-note");
-  if (heroNote) {
-    heroNote.innerHTML = `<div class="moon" aria-hidden="true"></div>
-      <strong>月之符文是種子，但不是使用門檻。</strong>
-      <p>不必先知道或學會所有符文，也不用先會解牌。你可以先抽牌、找作品、看脈絡分析或關鍵字排行；想深入時，LOC 再把底層結構展開。</p>`;
-  }
-
-  const startCopy = document.querySelector('[aria-labelledby="start-title"] .section-heading > p');
-  if (startCopy) startCopy.textContent = "完全的新手可以看「新手教學」。第一次使用可直接抽取每日符文。想查月之符文資料可進入「月之符文」。想理解整體則查看「LOC架構圖」。";
-
-  const runeEyebrow = document.querySelector("#rune-entry .rune-entry-eyebrow");
-  if (runeEyebrow) runeEyebrow.textContent = "LOC1 · LunaRunes";
-
-  const runeTitle = document.querySelector("#rune-entry #rune-title");
-  if (runeTitle) runeTitle.textContent = "問一件事，或直接抽取一個語言起點";
-
-  const runeSectionLead = document.querySelector("#rune-entry .section-heading > p");
-  if (runeSectionLead) runeSectionLead.textContent = "月之符文由 66 個中文單字構成。可以先抽牌，再依需要查看符文本義、方向、脈絡與延伸內容。";
-
-  const runeIntro = document.querySelector("#rune-entry .rune-intro");
-  if (runeIntro) runeIntro.innerHTML = "<strong>LOC1 · LunaRunes（月之符文）</strong>是 LOC 的符號式語言模型實作，以 66 個中文單字作為固定語彙基底。";
-
-  const attributes = document.getElementById("attributes");
-  const runeImage = document.getElementById("rune-image");
 
   async function renderHomepageRune66(runeId = 65) {
     if (!attributes) return;
@@ -74,7 +46,7 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       attributes.innerHTML = `
-        <span class="rune66-kicker">${escapeHtml(String(english))}</span>
+        <span class="rune66-kicker">${escapeHtml(english)}</span>
         <strong class="rune66-title">${escapeHtml(name)}之符文</strong>
         ${note ? `<p class="rune66-note">${escapeHtml(note)}</p>` : ""}
         <div class="rune66-details">
@@ -93,53 +65,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   renderHomepageRune66(65);
-
-  const evolutionLead = document.querySelector("#language-evolution .section-heading > p");
-  if (evolutionLead) evolutionLead.textContent = "從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。";
-
-  const evolutionSteps = [...document.querySelectorAll("#language-evolution .evolution-step")];
-  const evolutionContent = [
-    { english: "LunaRunes", title: "月之符文", copy: "LOC1 · LunaRunes。以 66 個中文單字作為固定語彙基底，提供符號式語言模型的起點。" },
-    { english: "Context", title: "脈絡", copy: "LOC2 · Context。把符文、作品、事件與概念放進關係、情境與 Graph 中。" },
-    { english: "Music", title: "音樂", copy: "LOC3 · Music。讓語言進入音樂、歌詞、曲風與創作時期。" },
-    { english: "Literary", title: "文字創作", copy: "LOC4 · Literary。承接小說、文章與其他文字作品。" },
-    { english: "Multimedia", title: "多媒體", copy: "LOC5 · Multimedia。整合文字、音樂、圖像與影音。" },
-    { english: "Algorithm", title: "演算法", copy: "LOC6 · Algorithm。把判讀、比較、治理、組合與分析整理成可重複執行的規則。" },
-    { english: "Module", title: "演算模組", copy: "LOC7 · Module。把演算法、資料、知識與功能封裝成可組合與重用的模組。" },
-    { english: "Evolution", title: "推演引擎", copy: "LOC8 · Evolution。把模組、作品、事件與語言放回時間中觀察與推演。" }
-  ];
-
-  evolutionSteps.forEach((step, index) => {
-    const item = evolutionContent[index];
-    if (!item) return;
-    const english = step.querySelector("small.text-category");
-    const title = step.querySelector("strong.text-title");
-    const copy = step.querySelector("p");
-    if (english) english.textContent = item.english;
-    if (title) title.textContent = item.title;
-    if (copy) copy.textContent = item.copy;
-  });
-
-  const frameworkCopy = document.querySelector("#framework-map .loc-header-copy");
-  if (frameworkCopy) frameworkCopy.textContent = "LOC 是一套語言模型框架（Language Model Framework）。LOC1–LOC8 是組成框架的八個語言系統模組，分別為 LunaRunes、Context、Music、Literary、Multimedia、Algorithm、Module 與 Evolution。";
-
-  const aboutTitle = document.getElementById("about-title");
-  if (aboutTitle) aboutTitle.textContent = "治理過去的已知，是為了把時間還給現在的未知，才有更充裕的未來。";
-
-  const aboutCopy = document.querySelector('[aria-labelledby="about-title"] > p');
-  if (aboutCopy) {
-    aboutCopy.innerHTML = "月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用。<br>它採取不帶神秘學預設的中立態度，重在文字本身，不預設道德判斷。<br><br>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的語言模型框架；<br>而月之符文，也在這個過程中演變成了符號式語言模型。<br><br>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，<br>而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構模型。<br><br>人總是要進步。過去雖不可改變，仍可以從過去截取經驗，才能進一步面對未來的各種可能。<br><br>月典提供一套方便的解析模組，不強迫接受，但可以參考。<br><br>只希望每個人都能藉由這些，更有效率、更輕鬆地整理自己的數位資產與語言紀錄。";
-  }
 
   const frameworkInfo = {
     LOC1: { english:"LunaRunes", title:"月之符文", tab:"月之符文", category:"LunaRunes｜月之符文", copy:"LOC1 是 LunaRunes（月之符文）。以 66 個中文單字作為固定語彙基底，並透過分組、方向與多卡語法形成可運作的符號式語言模型。", extra:["66 個月之符文構成固定語彙骨架。","四向描述同一符文在不同狀態下的表現。","單卡、雙卡、三卡、五卡與 OW3gs 各有自己的語法。"] },
@@ -152,34 +78,11 @@ window.addEventListener("DOMContentLoaded", () => {
     LOC8: { english:"Evolution", title:"推演引擎", tab:"推演引擎", category:"Evolution｜推演", copy:"把模組、作品、事件與語言放回不同時期，觀察前後差異與變化方向，並提出可選擇的推演路徑。", extra:["時期用來區分相對穩定的狀態。","時間線整理事件與作品出現的位置。","趨勢比較不同時期的語言與作品變化。"] }
   };
 
-  const modalTitle = document.getElementById("framework-modal-title");
   const tabs = document.getElementById("framework-tabs");
   const kicker = document.getElementById("framework-detail-kicker");
   const title = document.getElementById("framework-detail-title");
   const copy = document.getElementById("framework-detail-copy");
   const extra = document.getElementById("framework-detail-extra");
-
-  if (modalTitle) modalTitle.innerHTML = '<span class="text-block-kicker">Architecture</span><span class="text-block-title">快速說明</span>';
-
-  if (tabs) {
-    const detail = copy?.closest(".framework-detail");
-    if (detail) detail.appendChild(tabs);
-    tabs.setAttribute("aria-label", "分類");
-    tabs.setAttribute("data-ui-role", "tags");
-  }
-
-  document.querySelectorAll(".framework-tab").forEach(btn => {
-    const item = frameworkInfo[btn.dataset.locKey];
-    if (item) btn.textContent = item.tab;
-  });
-
-  document.querySelectorAll("[data-loc-open]").forEach(btn => {
-    const item = frameworkInfo[btn.dataset.locOpen];
-    if (item) {
-      btn.textContent = item.tab;
-      btn.setAttribute("aria-label", `查看${item.tab}說明`);
-    }
-  });
 
   function applyFrameworkInfo(key) {
     const item = frameworkInfo[key] || frameworkInfo.LOC1;
@@ -187,13 +90,26 @@ window.addEventListener("DOMContentLoaded", () => {
     if (title) title.textContent = item.title;
     if (copy) copy.textContent = item.copy;
     if (extra) {
-      const details = (item.extra || []).map(text => `<li>${text}</li>`).join("");
-      extra.innerHTML = `<li><strong>分類：</strong>${item.category}</li>${details}`;
+      const details = (item.extra || []).map(text => `<li>${escapeHtml(text)}</li>`).join("");
+      extra.innerHTML = `<li><strong>分類：</strong>${escapeHtml(item.category)}</li>${details}`;
     }
   }
 
-  document.querySelectorAll(".framework-tab").forEach(btn => btn.addEventListener("click", () => applyFrameworkInfo(btn.dataset.locKey)));
-  document.querySelectorAll("[data-loc-open]").forEach(btn => btn.addEventListener("click", () => applyFrameworkInfo(btn.dataset.locOpen)));
+  if (tabs) {
+    tabs.setAttribute("aria-label", "分類");
+    document.querySelectorAll(".framework-tab").forEach(btn => {
+      const item = frameworkInfo[btn.dataset.locKey];
+      if (item) btn.textContent = item.tab;
+      btn.addEventListener("click", () => applyFrameworkInfo(btn.dataset.locKey));
+    });
+  }
+
+  document.querySelectorAll("[data-loc-open]").forEach(btn => {
+    const item = frameworkInfo[btn.dataset.locOpen];
+    if (item) btn.setAttribute("aria-label", `查看${item.tab}說明`);
+    btn.addEventListener("click", () => applyFrameworkInfo(btn.dataset.locOpen));
+  });
+
   applyFrameworkInfo("LOC1");
 });
 
