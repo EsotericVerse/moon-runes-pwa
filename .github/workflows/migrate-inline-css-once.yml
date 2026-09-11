@@ -1,0 +1,222 @@
+name: Migrate inline CSS once
+
+on:
+  push:
+    paths:
+      - '.github/workflows/migrate-inline-css-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Move inline style blocks into canonical CSS
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          targets = [
+              'index.html','lots.html','runes.html','context.html','search.html',
+              'evolution.html','governance.html','game.html','statics.html','lo3rwang.html'
+          ]
+          style_path = Path('css/style.css')
+          css_canon = style_path.read_text(encoding='utf-8')
+          marker = '/* INLINE STYLE MIGRATION 2026-09-12 */'
+          if marker in css_canon:
+              raise SystemExit('Migration marker already exists; aborting to prevent duplicate CSS.')
+
+          def find_matching_brace(text, start):
+              depth = 0
+              i = start
+              quote = None
+              comment = False
+              while i < len(text):
+                  if comment:
+                      if text.startswith('*/', i):
+                          comment = False; i += 2; continue
+                      i += 1; continue
+                  if quote:
+                      if text[i] == '\\':
+                          i += 2; continue
+                      if text[i] == quote:
+                          quote = None
+                      i += 1; continue
+                  if text.startswith('/*', i):
+                      comment = True; i += 2; continue
+                  ch = text[i]
+                  if ch in ('"', "'"):
+                      quote = ch; i += 1; continue
+                  if ch == '{': depth += 1
+                  elif ch == '}':
+                      depth -= 1
+                      if depth == 0: return i
+                  i += 1
+              raise ValueError('Unbalanced CSS braces')
+
+          def split_selectors(header):
+              out, buf = [], []
+              paren = bracket = 0
+              quote = None
+              i = 0
+              while i < len(header):
+                  ch = header[i]
+                  if quote:
+                      buf.append(ch)
+                      if ch == '\\' and i + 1 < len(header):
+                          i += 1; buf.append(header[i])
+                      elif ch == quote:
+                          quote = None
+                  else:
+                      if ch in ('"', "'"): quote = ch; buf.append(ch)
+                      elif ch == '(': paren += 1; buf.append(ch)
+                      elif ch == ')': paren = max(0, paren - 1); buf.append(ch)
+                      elif ch == '[': bracket += 1; buf.append(ch)
+                      elif ch == ']': bracket = max(0, bracket - 1); buf.append(ch)
+                      elif ch == ',' and paren == 0 and bracket == 0:
+                          out.append(''.join(buf).strip()); buf = []
+                      else: buf.append(ch)
+                  i += 1
+              if buf: out.append(''.join(buf).strip())
+              return [x for x in out if x]
+
+          def scope_selector(sel, scope):
+              s = sel.strip()
+              if not s: return s
+              if s == ':root': return scope
+              if s.startswith(':root'):
+                  return scope + s[len(':root'):]
+              if s == 'body': return scope
+              if re.match(r'^body(?=[\s.#:\[])', s):
+                  return re.sub(r'^body', scope, s, count=1)
+              if re.match(r'^html\s+body(?=[\s.#:\[])', s):
+                  return re.sub(r'^html\s+body', 'html ' + scope, s, count=1)
+              if s == 'html':
+                  return 'html'
+              if s == '*':
+                  return scope + ' *'
+              return scope + ' ' + s
+
+          def scope_css(text, scope):
+              result = []
+              pos = 0
+              n = len(text)
+              while pos < n:
+                  # preserve leading whitespace/comments before each rule
+                  brace = None
+                  i = pos
+                  quote = None
+                  comment = False
+                  while i < n:
+                      if comment:
+                          if text.startswith('*/', i): comment = False; i += 2; continue
+                          i += 1; continue
+                      if quote:
+                          if text[i] == '\\': i += 2; continue
+                          if text[i] == quote: quote = None
+                          i += 1; continue
+                      if text.startswith('/*', i): comment = True; i += 2; continue
+                      ch = text[i]
+                      if ch in ('"', "'"): quote = ch; i += 1; continue
+                      if ch == '{': brace = i; break
+                      i += 1
+                  if brace is None:
+                      result.append(text[pos:]); break
+                  header = text[pos:brace]
+                  close = find_matching_brace(text, brace)
+                  body = text[brace+1:close]
+                  stripped = header.strip()
+                  lead = header[:len(header)-len(header.lstrip())]
+                  if stripped.startswith(('@media','@supports','@container','@layer','@document')):
+                      result.append(lead + stripped + '{' + scope_css(body, scope) + '}')
+                  elif stripped.startswith(('@keyframes','@-webkit-keyframes','@font-face','@property','@page')):
+                      result.append(header + '{' + body + '}')
+                  elif stripped.startswith('@'):
+                      result.append(header + '{' + body + '}')
+                  else:
+                      scoped = ','.join(scope_selector(s, scope) for s in split_selectors(stripped))
+                      result.append(lead + scoped + '{' + body + '}')
+                  pos = close + 1
+              return ''.join(result)
+
+          style_re = re.compile(r'<style(?P<attrs>[^>]*)>(?P<css>.*?)</style>', re.I | re.S)
+          migrated = []
+
+          for name in targets:
+              path = Path(name)
+              html = path.read_text(encoding='utf-8')
+              matches = list(style_re.finditer(html))
+              page_css = []
+              for m in matches:
+                  attrs = m.group('attrs') or ''
+                  css = m.group('css') or ''
+                  if 'loc-site-footer-style' in attrs:
+                      continue
+                  if css.strip(): page_css.append(css.strip())
+
+              if matches:
+                  html = style_re.sub('', html)
+
+              stem = path.stem.replace('_','-')
+              page_class = f'loc-page-{stem}'
+              body_match = re.search(r'<body\b([^>]*)>', html, re.I)
+              if not body_match:
+                  raise RuntimeError(f'{name}: missing <body>')
+              attrs = body_match.group(1)
+              class_match = re.search(r'\bclass=("|\')(.*?)\1', attrs, re.I | re.S)
+              if class_match:
+                  classes = class_match.group(2).split()
+                  if page_class not in classes:
+                      classes.append(page_class)
+                  new_class = 'class="' + ' '.join(classes) + '"'
+                  new_attrs = attrs[:class_match.start()] + new_class + attrs[class_match.end():]
+              else:
+                  new_attrs = attrs + f' class="{page_class}"'
+              html = html[:body_match.start()] + '<body' + new_attrs + '>' + html[body_match.end():]
+
+              link_count = len(re.findall(r'<link\b[^>]*href=("|\')css/style\.css\1[^>]*>', html, re.I))
+              if link_count != 1:
+                  raise RuntimeError(f'{name}: expected exactly one css/style.css link, found {link_count}')
+
+              path.write_text(html, encoding='utf-8')
+              if page_css:
+                  scoped = '\n\n'.join(scope_css(c, f'body.{page_class}') for c in page_css)
+                  migrated.append(f'\n/* {name} */\n{scoped}\n')
+
+          footer_css = '''\n/* Shared site footer */\n.loc-site-footer{margin-top:32px;padding:20px 16px;text-align:center;font-size:13px;line-height:1.65;color:var(--muted,#7f8794);border-top:1px solid var(--line,rgba(127,135,148,.22))}\n.loc-site-footer a{color:inherit;text-decoration:none}\n.loc-site-footer a:hover{text-decoration:underline}\n.loc-site-footer span{margin:0 8px;opacity:.7}\n'''
+          additions = ['\n\n' + marker + '\n']
+          if '.loc-site-footer{' not in css_canon.replace(' ', ''):
+              additions.append(footer_css)
+          additions.extend(migrated)
+          style_path.write_text(css_canon.rstrip() + ''.join(additions) + '\n', encoding='utf-8')
+
+          # Final structural assertions: no inline <style>, exactly one canonical CSS link.
+          for name in targets:
+              html = Path(name).read_text(encoding='utf-8')
+              if re.search(r'<style\b', html, re.I):
+                  raise RuntimeError(f'{name}: inline <style> remains')
+              links = re.findall(r'<link\b[^>]*href=("|\')css/style\.css\1[^>]*>', html, re.I)
+              if len(links) != 1:
+                  raise RuntimeError(f'{name}: canonical stylesheet link count={len(links)}')
+          print(f'Migrated inline CSS from {len(targets)} pages into css/style.css')
+          PY
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add css/style.css index.html lots.html runes.html context.html search.html evolution.html governance.html game.html statics.html lo3rwang.html
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "refactor: centralize inline CSS into canonical stylesheet"
+            git push
+          fi
