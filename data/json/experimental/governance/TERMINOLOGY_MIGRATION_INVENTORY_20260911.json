@@ -1,0 +1,120 @@
+{
+  "schema_version": "0.1",
+  "status": "experimental_inventory",
+  "created_at": "2026-09-11",
+  "source_head_checked_before_write": "68f5dac61009ed8903c2d3270d0daf0c9c22ae36",
+  "authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
+  "purpose": "Field-level inventory for legacy terminology migration. This file does not change production data.",
+  "migration_policy": [
+    "Current-facing fields migrate to current terminology.",
+    "Historical evidence stays unchanged or is explicitly marked historical/superseded.",
+    "Derived RAG/search projections should be regenerated after source governance rather than hand-edited when practical.",
+    "Compatibility paths and retrieval aliases are reviewed individually; old strings may be intentionally retained for discoverability.",
+    "No whole-file replacement of large registries from truncated connector output."
+  ],
+  "files": [
+    {
+      "path": "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+      "classification": "current_source_mixed_with_superseded_content",
+      "priority": "high",
+      "migrate_current_facing": [
+        "public_concept_map.LOC6: Methodology／方法論 → Algorithm／演算法",
+        "public_concept_map.LOC7: Algorithm／演算法（知識庫） → Module／演算模組",
+        "canonical_loc_map.LOC6 name/zh/role",
+        "canonical_loc_map.LOC7 name/zh/role",
+        "model_type/model_name/model_definition where Language System Model is asserted as current",
+        "terminology_governance.loc_system where Language System Model is asserted as current",
+        "terminology_governance.lunarunes where Symbolic Language Model is asserted as current",
+        "primary_positioning english/zh_hant where old model positioning is marked frozen/current",
+        "model_chain current LOC6/LOC7 role labels",
+        "model_relation.structural current classification"
+      ],
+      "review_before_migrate": [
+        "LOC1 role 符文語彙（Token）: current terminology canon only fixes LOC1 name, so role wording requires semantic governance review rather than blind replacement.",
+        "rune_public_concept_map / lunarunes_loc_mapping: distinguish historical conceptual mapping from current terminology.",
+        "ninth-group 人生道理 descriptions: semantic architecture debt, not only terminology replacement."
+      ],
+      "preserve_or_mark_historical": [
+        "historical evolution statements explaining earlier model/framework stages, if explicitly historical",
+        "provenance/version context"
+      ]
+    },
+    {
+      "path": "data/json/registries/LOC_KM_KEYWORDS.json",
+      "classification": "retrieval_registry_with_current_facing_debt",
+      "priority": "high",
+      "migrate_current_facing": [
+        "groups[id=loc7_km].label: LOC7 Algorithm／演算法（知識庫） → LOC7 Module／演算模組",
+        "Text Architecture keyword note: LOC7 Algorithm／演算法（知識庫） → LOC7 Module／演算模組",
+        "Governance keyword note: LOC6 Methodology／方法論 → LOC6 Algorithm／演算法"
+      ],
+      "review_before_migrate": [
+        "LOC1–8 aliases 八分發 / Eight Distributions / 八個框架: may remain retrieval aliases for legacy queries even though they are not current labels.",
+        "Personal Language System / 個人語言系統 aliases: retrieval value may justify retention even if not current LOC type."
+      ],
+      "preserve": [
+        "keyword/alias entries that exist specifically for legacy retrieval, when clearly treated as aliases rather than definitions"
+      ]
+    },
+    {
+      "path": "data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json",
+      "classification": "knowledge_index_with_current_metadata_debt",
+      "priority": "high",
+      "migrate_current_facing": [
+        "KA-LOC-OVERVIEW-001.title: LOC／月典：語言系統模型介紹 → current Language Module Framework wording",
+        "KA-LOC-OVERVIEW-001.keywords entry 語言系統模型: retain only as legacy retrieval alias if needed, not current descriptor",
+        "KA-LOC-OVERVIEW-001.public_summary: 語言系統模型 → 語言系統模組框架",
+        "asset metadata/notes that describe LOC6 as Methodology or LOC7 as Algorithm when they are current-facing"
+      ],
+      "review_before_migrate": [
+        "primary_loc / related_locs values are stable IDs and should not be renamed merely because human-readable role labels changed.",
+        "Historical document titles should not be silently rewritten if they refer to fixed artifacts."
+      ]
+    },
+    {
+      "path": "data/json/search/faq/LOC_FAQ_v0.4.json",
+      "classification": "source_content_with_superseded_current_answers",
+      "priority": "high",
+      "migrate_or_supersede_source": [
+        "FAQ answers that state LOC6 Methodology / LOC7 Algorithm as current",
+        "FAQ answers that state LOC = Language System Model or LunaRunes = Symbolic Language Model as current",
+        "current architecture answers that call LOC1 符文語彙 Token when that wording is no longer intended as current"
+      ],
+      "preserve_historical": [
+        "questions explicitly asking about earlier terminology/evolution; answer should distinguish historical vs current rather than erase history"
+      ],
+      "note": "Runtime is currently protected by LOC_FAQ_CANON_OVERRIDES.json + faq_rag.py. Source governance should precede removal of overrides."
+    },
+    {
+      "path": "data/json/search/faq/LOC_FAQ_RAG_v0.4.json",
+      "classification": "derived_retrieval_projection",
+      "priority": "after_faq_source",
+      "action": "regenerate_after_LOC_FAQ_v0.4_governance",
+      "do_not": "Do not manually mass-replace independently of source FAQ; retrieval_text and answer projections should remain reproducible.",
+      "runtime_protection": "LOC_FAQ_CANON_OVERRIDES.json + faq_rag.py"
+    },
+    {
+      "path": "data/json/registries/LOC2_EVENT_REGISTRY.json",
+      "classification": "working_registry_with_small_path_and_role_debt",
+      "priority": "medium",
+      "migrate_current_facing": [
+        "source_refs loc2-game.html → review whether canonical game.html should replace it while compatibility redirect remains available"
+      ],
+      "review_before_migrate": [
+        "related_locs LOC6/LOC7 are stable relationship IDs; do not remove or rename based solely on human-readable terminology changes.",
+        "related_domains governance/knowledge already use semantic domains and are not terminology pollution."
+      ],
+      "preserve": [
+        "32 Alpha event titles, event groups, requirement signatures and descriptions unless separately governed"
+      ]
+    }
+  ],
+  "recommended_order": [
+    "1. Resolve LOC_LANGUAGE_SYSTEM_REGISTRY current-facing fields and semantic architecture debt.",
+    "2. Update KM and Knowledge Asset current-facing labels/summaries while retaining governed legacy retrieval aliases.",
+    "3. Govern LOC_FAQ_v0.4 source answers against current terminology and historical distinctions.",
+    "4. Regenerate LOC_FAQ_RAG_v0.4 from governed source; then reassess whether runtime phrase overrides can be reduced.",
+    "5. Review LOC2_EVENT_REGISTRY canonical source path separately; do not conflate LOC IDs with labels.",
+    "6. Run semantic pollution audit again after migration before changing any compatibility layer."
+  ]
+}
