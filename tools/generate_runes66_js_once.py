@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 
+# One-shot generator: canonical source is always data/json/core/runes.json.
 ROOT = Path(__file__).resolve().parents[1]
 source = ROOT / 'data/json/core/runes.json'
 target = ROOT / 'js/runes66.js'
