@@ -32,6 +32,7 @@
     <div class="card metric"><small>目前起點</small><strong id="eraStart">—</strong></div>
   </div>
   <div class="source-note">時期定義由 Search → 時期設定統一管理；Evolution 只讀取並進行時間分析。</div>
+  <section class="card" style="margin-top:16px"><h3>符文資料歷程 · No API</h3><p>目前先用現有 LunaRunes Canon 填入推演基底；直接讀取 runes.json，不呼叫外部 API。</p><div id="runeEvolutionOverview" class="stats-dashboard">載入符文歷程摘要…</div></section>
   <div class="timeline" id="eraTimeline"><div class="empty">載入時期…</div></div>
 </section>
 <section class="view" id="timelineView" hidden>
@@ -54,15 +55,18 @@
     </div>
   </form>
   <div class="event-list" id="timelineEventList"><div class="empty">載入事件…</div></div>
+  <section class="card" style="margin-top:18px"><h3>符文結構時間線 · No API</h3><p>依現有符文編號與唯一群組呈現結構序列；這是符文資料歷程，不虛構真實日期。</p><div class="event-list" id="runeEvolutionTimeline"><div class="empty">載入符文結構時間線…</div></div></section>
 </section>
 <section class="view" id="trendView" hidden>
   <div class="hero"><h1>時期趨勢</h1><h2>比較不同時期中語言與作品關鍵字的變化。</h2><p>透過不同時期的關鍵字、主題與作品分布，觀察語言重心如何移動。</p></div>
   <div class="source-note">資料來源：LOC3_PERIOD_KEYWORD_ANALYSIS.json + LOC6_PERIOD_KEYWORD_ANALYSIS.json（靜態）</div>
+  <section class="card" style="margin-top:16px"><h3>符文關鍵詞趨勢 · No API</h3><p>按唯一群組比較現有正向／反向關鍵詞數與語意分布。</p><div class="keyword-grid" id="runeTrendGrid"><div class="empty">載入符文趨勢…</div></div></section>
   <div class="keyword-grid" id="trendGrid"><div class="empty">載入時期分析…</div></div>
 </section>
 <section class="view" id="trajectoryView" hidden>
   <div class="hero"><h1>軌跡</h1><h2>觀察一個時期如何轉變成下一個時期。</h2><p>把各時期依時間串接，並比較相鄰時期的語意關鍵字變化，找出每一次轉折的方向。</p></div>
   <div class="source-note">資料來源：時期資料＋音樂／方法論時期分析；只呈現現有資料可支持的變化。</div>
+  <section class="card" style="margin-top:16px"><h3>符文群組軌跡 · No API</h3><p>以現有 1–66 編號順序與唯一群組，呈現群組之間的結構轉換；不把序列誤當成真實時間。</p><div class="trajectory-list" id="runeTrajectoryList"><div class="empty">載入符文群組軌跡…</div></div></section>
   <div class="trajectory-list" id="trajectoryList"><div class="empty">載入軌跡…</div></div>
 </section>
 </main>
@@ -192,6 +196,7 @@ Promise.all([
   $('#trajectoryList').innerHTML=trajectory.join('')||'<div class="empty">目前沒有足夠的時期資料可形成軌跡。</div>';
 }).catch(err=>{$('#eraTimeline').innerHTML='<div class="empty">靜態資料載入失敗：'+esc(err.message)+'</div>';$('#trendGrid').innerHTML='<div class="empty">靜態資料載入失敗。</div>';$('#trajectoryList').innerHTML='<div class="empty">軌跡資料載入失敗。</div>'});
 </script>
+<script src="js/rune-analytics.js" defer></script>
 <script src="js/loc-nav.js"></script>
 
 
