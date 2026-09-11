@@ -1,0 +1,87 @@
+{
+  "schema_version": "0.1",
+  "status": "experimental",
+  "created_at": "2026-09-11",
+  "ruleset_version": "trial-0.1",
+  "api_used": false,
+  "source_head_checked_before_write": "6d43a21e38a414fc5f88c2ac87a891df19822915",
+  "purpose": "Third real-corpus batch covering FAQ and KM/governance text. Tests whether technical terms such as structure, boundary, framework and rules are treated as semantic evidence rather than direct group triggers.",
+  "units": [
+    {
+      "source_id": "FAQ-001-CANON",
+      "source_type": "faq",
+      "source_path": "data/json/search/faq/LOC_FAQ_CANON_OVERRIDES.json",
+      "text": "LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋、治理並推演語言的語言系統模組框架（Language Module Framework）。它由 LOC1–LOC8 八個語言系統模組組成，讓不同型態的語言資料可以被整理、連結、搜尋與推演。",
+      "group": "秩序",
+      "distribution": {"靈魂":0.03,"連結":0.12,"生命":0.01,"自然":0.00,"礦物":0.01,"元素":0.00,"秩序":0.48,"無序":0.02,"特殊":0.33},
+      "disputed": true,
+      "candidates": [{"group":"秩序","score":0.48},{"group":"特殊","score":0.33},{"group":"連結","score":0.12}],
+      "reason": "主體是把語言資料拆解、組織、治理並放入固定模組架構，結構與規則責任明確，因此秩序取得主導；但這是系統定位文本，特殊仍保留高次候選。",
+      "evidence": ["組織與治理", "固定模組架構", "整理與推演流程"],
+      "exclusions": ["文字中的『連結』是系統操作之一，不能只因單字出現就直接判連結組。"]
+    },
+    {
+      "source_id": "FAQ-002-CANON",
+      "source_type": "faq",
+      "source_path": "data/json/search/faq/LOC_FAQ_CANON_OVERRIDES.json",
+      "text": "LOC 是整體語言系統模組框架；LunaRunes（月之符文）是其中第一個成熟的符號式語言模組。月之符文提供 66 符、四向、月相與組合語法作為可實際運作的參考實作，但使用 LOC 不必先學會全部符文。",
+      "group": "特殊",
+      "distribution": {"靈魂":0.03,"連結":0.14,"生命":0.01,"自然":0.00,"礦物":0.00,"元素":0.00,"秩序":0.29,"無序":0.01,"特殊":0.52},
+      "disputed": true,
+      "candidates": [{"group":"特殊","score":0.52},{"group":"秩序","score":0.29},{"group":"連結","score":0.14}],
+      "reason": "文本主要在做系統身份與產品層級說明，不是自然語意事件、人格狀態或關係變化；雖含模組與語法結構，但不足以讓秩序組完全取代特殊 fallback。",
+      "evidence": ["框架與模組身份定義", "參考實作說明", "使用門檻說明"],
+      "exclusions": ["『其中』與框架／模組的包含關係不等於連結組核心語意。", "『月相』只是系統組件名稱，不代表秩序組日月星辰語意。"]
+    },
+    {
+      "source_id": "KM-LOC7-PURPOSE",
+      "source_type": "km",
+      "source_path": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json",
+      "text": "Canonical registry for grammar, syntax, linguistic structure, semantic engineering, Text Architecture, retrieval structure, and KM/RAG analysis.",
+      "group": "秩序",
+      "distribution": {"靈魂":0.01,"連結":0.06,"生命":0.00,"自然":0.00,"礦物":0.00,"元素":0.00,"秩序":0.57,"無序":0.01,"特殊":0.35},
+      "disputed": true,
+      "candidates": [{"group":"秩序","score":0.57},{"group":"特殊","score":0.35},{"group":"連結","score":0.06}],
+      "reason": "文本主體就是語法、句法、結構、工程與檢索架構的規範化知識組織；秩序性是正文功能而非字面偶遇，因此可判秩序。",
+      "evidence": ["grammar / syntax", "linguistic structure", "Text Architecture", "retrieval structure"],
+      "exclusions": ["Architecture 不代表礦物或自然中的實體建築。"]
+    },
+    {
+      "source_id": "KM-LOC7-BOUNDARY",
+      "source_type": "km",
+      "source_path": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json",
+      "text": "LOC7 analyzes how language is structured and engineered, including KM/retrieval architecture. Meaning/value/governance interpretation belongs primarily to LOC6; event/time ownership belongs primarily to LOC8.",
+      "group": "秩序",
+      "distribution": {"靈魂":0.06,"連結":0.11,"生命":0.00,"自然":0.00,"礦物":0.00,"元素":0.00,"秩序":0.55,"無序":0.01,"特殊":0.27},
+      "disputed": false,
+      "candidates": [{"group":"秩序","score":0.55},{"group":"特殊","score":0.27},{"group":"連結","score":0.11}],
+      "reason": "主體是職責邊界、所有權與模組分工規則，屬明確的結構性治理；『boundary/ownership』在此是制度角色，不應被字面映射到界／域。",
+      "evidence": ["responsibility boundary", "ownership", "LOC6/7/8 role allocation"],
+      "exclusions": ["邊界是系統職責邊界，不是靈魂組『界』的自我／內外邊界。", "event/time 字樣是責任分工描述，不等於直接觸發秩序組的時。"]
+    }
+  ],
+  "aggregate": {
+    "unit_count": 4,
+    "group_counts": {"靈魂":0,"連結":0,"生命":0,"自然":0,"礦物":0,"元素":0,"秩序":3,"無序":0,"特殊":1},
+    "disputed_count": 3,
+    "disputed_rate": 0.75,
+    "observed_confusion_pairs": [
+      {"pair":["秩序","特殊"],"reason":"技術／治理文件經常描述結構與規則；需判斷這是否為正文主體，否則應回特殊。"},
+      {"pair":["秩序","連結"],"reason":"系統文件中的 link/relationship/包含關係常只是架構描述，不等於連結組核心。"},
+      {"pair":["秩序","靈魂"],"reason":"boundary/domain/ownership 等工程治理詞彙不能字面觸發界／域。"}
+    ]
+  },
+  "governance_findings": [
+    "技術文件不能因出現 structure、rule、boundary、domain、link 等詞就直接映射符文或群組；仍需先判句內角色與文本主體。",
+    "當正文真正以規則、責任分工、語法或結構治理為主時，秩序組可以取得主導。",
+    "純系統身份或產品定位說明即使包含模組、語法與架構詞，也可能仍應落特殊，避免秩序組吞噬所有技術文本。",
+    "FAQ/KM 批次的 disputed 比例高，顯示 production classifier 必須保存分配與爭議資訊，不能只輸出唯一 group 而丟失判斷證據。"
+  ],
+  "input_debt": [
+    {
+      "source": "LOC3",
+      "status": "blocked_fulltext_missing_in_repo",
+      "detail": "Current repository search layer exposes LOC3 metadata/summary/style information, but the audited classifier input still lacks a governed full lyric body source. Do not substitute metadata classification for full-lyrics classification."
+    }
+  ]
+}
