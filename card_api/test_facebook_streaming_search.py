@@ -67,6 +67,7 @@ class FacebookStreamingSearchTests(unittest.TestCase):
         try:
             self.assertNotIsInstance(engine.posts, list)
             self.assertEqual(2, len(engine.shards))
+            self.assertEqual(3, len(engine.posts))
             self.assertEqual(3, len(list(engine.posts)))
             self.assertEqual(3, len(list(engine.posts)))
         finally:
