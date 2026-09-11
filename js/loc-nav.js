@@ -21,7 +21,7 @@
     if (document.getElementById("loc-canonical-nav-runtime")) return;
     const style = document.createElement("style");
     style.id = "loc-canonical-nav-runtime";
-    style.textContent = `.sidebar,.side-bar,.side-nav,.left-nav,.app-sidebar,.workspace-sidebar{display:none!important}.runes-third-nav{display:none!important}.loc-guidance-note{margin:14px 0;padding:14px 16px;border:1px solid rgba(180,158,255,.22);border-radius:16px;background:rgba(23,43,72,.52);color:#dce6f7;line-height:1.7}.loc-guidance-note strong{color:#e7c27d}`;
+    style.textContent = `.sidebar,.side-bar,.side-nav,.left-nav,.app-sidebar,.workspace-sidebar,.loc2-local-header{display:none!important}.runes-third-nav{display:none!important}.loc-guidance-note{margin:14px 0;padding:14px 16px;border:1px solid rgba(180,158,255,.22);border-radius:16px;background:rgba(23,43,72,.52);color:#dce6f7;line-height:1.7}.loc-guidance-note strong{color:#e7c27d}`;
     document.head.appendChild(style);
   }
 
