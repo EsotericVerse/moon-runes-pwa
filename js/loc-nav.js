@@ -159,8 +159,8 @@
     host.appendChild(tier([
       button("關係圖 Graph",{"data-context-switch":"graph"}),
       button("節點 Nodes",{"data-context-switch":"nodes"}),
-      button("關聯 Edges",{"data-context-switch":"edges"}),
-      button("情境 Scenarios",{"data-context-switch":"scenarios"})
+      button("關聯 Edges",{"data-context-switch":"relations"}),
+      button("情境 Scenarios",{"data-context-switch":"scenario"})
     ],"脈絡功能"));
   }
 
