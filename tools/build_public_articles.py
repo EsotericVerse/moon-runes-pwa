@@ -120,7 +120,7 @@ def template(title: str, body: str, asset: dict) -> str:
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{html.escape(title)}｜LOC</title>
   <meta name="description" content="{html.escape(desc, quote=True)}">
-  <link rel="stylesheet" href="css/loc-nav.css">
+  <link rel="stylesheet" href="css/style.css">
   <style>
     :root{{--bg:#f5f5f3;--card:#fff;--text:#181818;--muted:#666;--line:#d9d9d4}}
     @media(prefers-color-scheme:dark){{:root{{--bg:#111;--card:#181818;--text:#f2f2f2;--muted:#aaa;--line:#343434}}}}
