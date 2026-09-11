@@ -1,0 +1,33 @@
+name: Generate runes66 JS once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/generate_runes66_js_once.py"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate JS from canonical runes.json
+        run: python tools/generate_runes66_js_once.py
+      - name: Commit generated runtime
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/runes66.js
+          git commit -m "build: regenerate runes66.js from canonical runes.json"
+          git push
