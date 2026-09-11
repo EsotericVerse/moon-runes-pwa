@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+# Generator contract v1: runes.json is build input only, never a browser dependency.
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "data" / "json" / "core" / "runes.json"
 RUNES_JS = ROOT / "js" / "runes66.js"
