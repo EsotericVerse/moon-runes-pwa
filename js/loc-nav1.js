@@ -21,7 +21,6 @@
     "evolution.html":"evolution",
     "governance.html":"governance",
     "statics.htm":"statics",
-    "statics.html":"statics",
     "search.html":"search"
   });
 
@@ -45,19 +44,33 @@
     node.innerHTML=`${brand}<div class="loc-global-links">${links}<form class="loc-global-search" action="search.html" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="搜尋" /><button class="loc-global-search-submit" type="submit">搜尋</button></form></div>`;
   }
 
+  function loadScript(src,key){
+    if(document.querySelector(`script[data-${key}]`)) return;
+    const script=document.createElement('script');
+    script.src=src;
+    script.defer=true;
+    script.dataset[key.replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]='true';
+    document.body.appendChild(script);
+  }
+
   function loadConceptNotes(){
     const file=fileName();
     if(!["governance.html","runes.html","lots.html","evolution.html"].includes(file)) return;
-    if(document.querySelector('script[data-loc-concept-notes]')) return;
-    const script=document.createElement('script');
-    script.src='js/loc-concept-notes.js';
-    script.defer=true;
-    script.dataset.locConceptNotes='true';
-    document.body.appendChild(script);
+    loadScript('js/loc-concept-notes.js','loc-concept-notes');
+  }
+
+  function installAnchorGovernance(){
+    if(document.getElementById('loc-anchor-governance')) return;
+    const style=document.createElement('style');
+    style.id='loc-anchor-governance';
+    style.textContent='[id]{scroll-margin-top:64px}@media(max-width:720px){[id]{scroll-margin-top:58px}}';
+    document.head.appendChild(style);
   }
 
   function mountAll(){
     document.querySelectorAll("[data-loc-nav]").forEach(render);
+    installAnchorGovernance();
+    loadScript('js/public-terminology.js','loc-public-terminology');
     loadConceptNotes();
   }
 
