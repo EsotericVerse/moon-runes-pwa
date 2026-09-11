@@ -67,23 +67,6 @@
     const host = document.querySelector('#daily-draw .body');
     if (!host || document.querySelector('#daily-draw-history-static')) return;
 
-    const style = document.createElement('style');
-    style.textContent = `
-      .draw-archive{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
-      .draw-archive-head{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:12px}
-      .draw-archive-head h4{margin:0;font-size:15px}
-      .draw-archive-head p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
-      .draw-archive-list{display:grid;gap:8px}
-      .draw-archive-day{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:11px 13px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.02)}
-      .draw-archive-date{color:var(--muted);font-size:12px;padding-top:2px}
-      .draw-archive-items{display:flex;gap:8px;flex-wrap:wrap}
-      .draw-archive-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;border:1px solid var(--line-strong);font-size:12px;background:rgba(169,199,255,.06)}
-      .draw-archive-chip.supplement{border-style:dashed;color:var(--accent-2)}
-      .draw-archive-kind{color:var(--muted);font-size:11px}
-      @media (max-width:760px){.draw-archive-day{grid-template-columns:1fr}.draw-archive-items{gap:6px}}
-    `;
-    document.head.appendChild(style);
-
     const section = document.createElement('section');
     section.id = 'daily-draw-history-static';
     section.className = 'draw-archive';
@@ -114,9 +97,6 @@
     host.appendChild(section);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', render, { once:true });
-  } else {
-    render();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render, { once:true });
+  else render();
 })();
