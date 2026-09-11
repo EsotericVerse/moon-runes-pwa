@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v205";
+const CACHE_NAME = "moon-runes-pwa-v206";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -22,6 +22,7 @@ const ASSETS_TO_CACHE = [
   "/js/loc-nav1.js",
   "/js/nav-current.js",
   "/js/public-terminology.js",
+  "/js/rune-display-governance.js",
   "/js/home-canonical.js",
   "/js/loc-periods.js",
   "/css/loc-nav.css",
