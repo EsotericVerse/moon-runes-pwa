@@ -17,9 +17,12 @@ FORBIDDEN_PATHS = [
     ROOT / "data" / "json" / "facebook",
     ROOT / "data" / "json" / "fb-semantic-summary.json",
     ROOT / "js" / "runes_all_data.js",
+    ROOT / "statics.htm",
+    ROOT / "statics.htmll",
 ]
 
 REQUIRED_PATHS = [
+    ROOT / "statics.html",
     ROOT / "data" / "json" / "core" / "runes66.json",
     ROOT / "data" / "json" / "core" / "rune_interpretations.json",
     ROOT / "data" / "json" / "core" / "three_card_combinations.json",
@@ -97,6 +100,11 @@ def main() -> int:
     for path in FORBIDDEN_PATHS:
         if path.exists():
             failures.append(f"forbidden path exists: {rel(path)}")
+
+    # statics.html is the only allowed statistics-page filename.
+    for candidate in ROOT.glob("statics.htm*"):
+        if candidate.is_file() and candidate.name != "statics.html":
+            failures.append(f"duplicate/malformed statics page exists: {rel(candidate)}")
 
     for path in REQUIRED_PATHS:
         if not path.exists():
@@ -177,6 +185,7 @@ def main() -> int:
         return 1
 
     print("Repository layout validation PASS")
+    print("- statics.html is the only allowed statistics-page filename")
     print("- JSON roles: core / registries / sources / search / generated / archive / experimental / inbox")
     print("- no forbidden legacy data paths")
     print("- no stale runtime/document references")
