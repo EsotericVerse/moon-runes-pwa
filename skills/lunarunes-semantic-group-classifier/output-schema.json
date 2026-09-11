@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LunaRunes Semantic Group Classifier Output",
+  "type": "object",
+  "required": ["analysis_mode", "api_used", "ruleset_version", "units", "summary"],
+  "properties": {
+    "analysis_mode": {"const": "lunarunes_semantic_group_classifier"},
+    "api_used": {"const": false},
+    "ruleset_version": {"type": "string"},
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["text", "group", "distribution", "disputed", "reason", "api_used"],
+        "properties": {
+          "source_id": {"type": ["string", "number", "null"]},
+          "text": {"type": "string"},
+          "group": {
+            "enum": ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"]
+          },
+          "distribution": {
+            "type": "object",
+            "required": ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"],
+            "properties": {
+              "靈魂": {"type": "number", "minimum": 0, "maximum": 1},
+              "連結": {"type": "number", "minimum": 0, "maximum": 1},
+              "生命": {"type": "number", "minimum": 0, "maximum": 1},
+              "自然": {"type": "number", "minimum": 0, "maximum": 1},
+              "礦物": {"type": "number", "minimum": 0, "maximum": 1},
+              "元素": {"type": "number", "minimum": 0, "maximum": 1},
+              "秩序": {"type": "number", "minimum": 0, "maximum": 1},
+              "無序": {"type": "number", "minimum": 0, "maximum": 1},
+              "特殊": {"type": "number", "minimum": 0, "maximum": 1}
+            },
+            "additionalProperties": false
+          },
+          "disputed": {"type": "boolean"},
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["group", "score"],
+              "properties": {
+                "group": {"enum": ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"]},
+                "score": {"type": "number", "minimum": 0, "maximum": 1}
+              }
+            }
+          },
+          "reason": {"type": "string"},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "exclusions": {"type": "array", "items": {"type": "string"}},
+          "api_used": {"const": false}
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["unit_count", "group_counts", "disputed_count"],
+      "properties": {
+        "unit_count": {"type": "integer", "minimum": 0},
+        "group_counts": {
+          "type": "object",
+          "required": ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"]
+        },
+        "disputed_count": {"type": "integer", "minimum": 0},
+        "disputed_units": {"type": "array"}
+      }
+    }
+  }
+}
