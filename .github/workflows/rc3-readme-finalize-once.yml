@@ -1,0 +1,43 @@
+name: RC3 README Finalize Once
+on:
+  push:
+    paths:
+      - 'tools/rc3_readme_finalize_once.py'
+      - '.github/workflows/rc3-readme-finalize-once.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Finalize RC3 README
+        run: python tools/rc3_readme_finalize_once.py
+      - name: Verify RC3 wording
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('README.md').read_text(encoding='utf-8')
+          assert '**Web Build：1.0-RC3**' in s
+          assert 'RC3（Data-backed Release Candidate）' in s
+          assert '符文脈絡 Graph · No API' in s
+          assert 'docs/RC3.md' in s
+          print('verify ok')
+          PY
+      - name: Commit README
+        run: |
+          if git diff --quiet; then
+            echo 'No changes'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md
+          git commit -m 'docs: define RC3 as data-backed release candidate'
+          git push
