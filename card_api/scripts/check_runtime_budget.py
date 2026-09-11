@@ -3,15 +3,19 @@ from __future__ import annotations
 import os
 import resource
 import sqlite3
+import sys
 import time
 from pathlib import Path
 
+
+CARD_API = Path(__file__).resolve().parents[1]
+if str(CARD_API) not in sys.path:
+    sys.path.insert(0, str(CARD_API))
 
 START = time.perf_counter()
 import runtime_app  # noqa: E402
 
 
-CARD_API = Path(__file__).resolve().parents[1]
 GENERATED = CARD_API / "generated"
 MAX_STARTUP_SECONDS = float(os.environ.get("LOC_CI_MAX_STARTUP_SECONDS", "20"))
 MAX_RSS_MB = float(os.environ.get("LOC_CI_MAX_RSS_MB", "480"))
