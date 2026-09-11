@@ -1,0 +1,26 @@
+name: Refine homepage Start Here once
+on:
+  push:
+    paths:
+      - 'tools/refine_index_start_here_once.py'
+      - '.github/workflows/refine-index-start-here-once.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/refine_index_start_here_once.py
+      - run: |
+          grep -q 'id="start-guide"' index.html
+          grep -q 'statics.html#ranking">排行榜</a>' index.html
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "refactor: turn Start Here into novice guidance"
+          git push
