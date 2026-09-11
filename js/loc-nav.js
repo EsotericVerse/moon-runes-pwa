@@ -1,6 +1,7 @@
 (() => {
   const GROUPS = ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"];
   const NAV3_ALLOW = new Set(["lots:draw", "lots:library"]);
+  const LEGACY_STATICS_RE = /(^|\/)statics\.htm(?:ll)?(?=([?#]|$))/;
 
   const fileName = () => location.pathname.split("/").pop() || "index.html";
 
@@ -102,8 +103,10 @@
   }
 
   function normalizeLegacyLinks(root=document) {
-    root.querySelectorAll('a[href*="statics.htm"]').forEach(a => {
-      a.setAttribute("href", a.getAttribute("href").replace("statics.htm", "statics.html"));
+    root.querySelectorAll('a[href]').forEach(a => {
+      const current = a.getAttribute("href") || "";
+      const next = current.replace(LEGACY_STATICS_RE, "$1statics.html");
+      if (next !== current) a.setAttribute("href", next);
     });
     root.querySelectorAll('a[href*="loc2-game.html"]').forEach(a => {
       a.setAttribute("href", a.getAttribute("href").replace("loc2-game.html", "game.html"));
@@ -209,7 +212,7 @@
     else if (file === "context.html") buildContext(host);
     else if (file === "evolution.html") buildEvolution(host);
     else if (file === "governance.html") buildGovernance(host);
-    else if (file === "statics.html" || file === "statics.htm") buildStatics(host);
+    else if (file === "statics.html") buildStatics(host);
     else if (file === "lo3rwang.html") buildAuthor(host);
     if (!host.childElementCount) host.remove();
   }
