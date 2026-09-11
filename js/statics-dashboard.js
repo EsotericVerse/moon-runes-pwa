@@ -58,15 +58,39 @@
     return [...map.values()].sort((a,b)=>b.count-a.count).slice(0,30);
   }
 
+  function splitStyle(value){
+    return String(value||'').split(/[｜|,，;/；\n]+/).map(item=>item.trim()).filter(Boolean);
+  }
+
+  async function aggregateStyles(){
+    const manifestPath = 'data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json';
+    const manifest = await getJSON(manifestPath);
+    const names = Array.isArray(manifest.shards) ? manifest.shards : [];
+    const base = manifestPath.slice(0,manifestPath.lastIndexOf('/')+1);
+    const map = new Map();
+    for (const name of names) {
+      const payload = await getJSON(`${base}${name}`);
+      for (const work of payload.works || []) {
+        const seen = new Set(splitStyle(work.style));
+        for (const term of seen) map.set(term,(map.get(term)||0)+1);
+      }
+    }
+    return [...map.entries()].map(([term,count])=>({term,count})).sort((a,b)=>b.count-a.count || a.term.localeCompare(b.term,'zh-Hant')).slice(0,30);
+  }
+
   async function renderRanking(source='threads'){
     const host = document.getElementById('rankingDashboard');
     if (!host) return;
     host.innerHTML = '<p>載入排行榜…</p>';
     try{
-      const music = source === 'music';
-      const data = await getJSON(music ? 'data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json' : 'data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json');
-      const rows = music ? aggregateMusic(data) : aggregateThreads(data);
-      host.innerHTML = `<div class="stats-tabs"><button type="button" data-stats-rank="threads" ${source==='threads'?'aria-current="true"':''}>文字／Threads</button><button type="button" data-stats-rank="music" ${source==='music'?'aria-current="true"':''}>音樂／LOC3</button></div><div class="ranking-list">${rows.map((row,i)=>`<div class="ranking-row"><span>${i+1}</span><strong>${esc(row.term)}</strong><em>${Number(row.count||0).toLocaleString()}</em></div>`).join('')}</div>`;
+      let rows = [];
+      if (source === 'styles') rows = await aggregateStyles();
+      else {
+        const music = source === 'music';
+        const data = await getJSON(music ? 'data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json' : 'data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json');
+        rows = music ? aggregateMusic(data) : aggregateThreads(data);
+      }
+      host.innerHTML = `<div class="stats-tabs"><button type="button" data-stats-rank="threads" ${source==='threads'?'aria-current="true"':''}>文字／Threads</button><button type="button" data-stats-rank="music" ${source==='music'?'aria-current="true"':''}>音樂關鍵字</button><button type="button" data-stats-rank="styles" ${source==='styles'?'aria-current="true"':''}>曲風</button></div><div class="ranking-list">${rows.map((row,i)=>`<div class="ranking-row"><span>${i+1}</span><strong>${esc(row.term)}</strong><em>${Number(row.count||0).toLocaleString()}</em></div>`).join('')}</div>`;
     }catch(error){host.innerHTML=`<p class="stats-error">排行榜載入失敗：${esc(error.message)}</p>`;}
   }
 
