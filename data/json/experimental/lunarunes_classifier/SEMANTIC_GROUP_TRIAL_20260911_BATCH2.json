@@ -1,0 +1,106 @@
+{
+  "schema_version": "0.1",
+  "status": "experimental",
+  "created_at": "2026-09-11",
+  "ruleset_version": "trial-0.1",
+  "api_used": false,
+  "source_head_checked_before_write": "e0324cd48295bb991016b7d78243b0c3db8e1300",
+  "purpose": "Second real-corpus batch designed to test lexical false positives and safe Special fallback. No production behavior changes.",
+  "units": [
+    {
+      "source_id": "FB-OSCARS80-20091115-fffd3f25d6",
+      "source_type": "facebook",
+      "source_path": "data/json/sources/facebook/facebook_posts_02.json",
+      "text": "說 氣死人了 一大早被電話吵醒 連續三通 還給我電話留言 來源是威寶的 我明明就沒什麼朋友在用威寶啊 對方好像是按到 只是很煩 一大早六點多電話一直響",
+      "group": "特殊",
+      "distribution": {"靈魂":0.05,"連結":0.22,"生命":0.15,"自然":0.01,"礦物":0.01,"元素":0.01,"秩序":0.12,"無序":0.09,"特殊":0.34},
+      "disputed": true,
+      "candidates": [{"group":"特殊","score":0.34},{"group":"連結","score":0.22},{"group":"生命","score":0.15}],
+      "reason": "主體是一次具體電話干擾事件與煩躁反應，沒有足夠證據讓一般八組取得明確主導。",
+      "evidence": ["電話干擾事件", "人際來源不明", "煩躁反應"],
+      "exclusions": ["開頭『氣死人』中的氣是慣用語，不是元素組的氣。"]
+    },
+    {
+      "source_id": "FB-OSCARS80-20091115-b3667b06ce",
+      "source_type": "facebook",
+      "source_path": "data/json/sources/facebook/facebook_posts_02.json",
+      "text": "說 除濕機壞了 浴室一整個很潮濕的狀態 無奈的只好掏錢準備去買另外一台新的",
+      "group": "特殊",
+      "distribution": {"靈魂":0.02,"連結":0.03,"生命":0.08,"自然":0.01,"礦物":0.03,"元素":0.25,"秩序":0.13,"無序":0.08,"特殊":0.37},
+      "disputed": true,
+      "candidates": [{"group":"特殊","score":0.37},{"group":"元素","score":0.25},{"group":"秩序","score":0.13}],
+      "reason": "文本主體是家電故障後的採購處置；潮濕是事件條件，不足以把整段直接分類為元素。",
+      "evidence": ["除濕機故障", "潮濕環境", "購買替代設備"],
+      "exclusions": ["潮濕與水分相關，但不能因環境條件出現水意象就直接判元素。"]
+    },
+    {
+      "source_id": "FB-OSCARS80-20091116-121c7ffad0",
+      "source_type": "facebook",
+      "source_path": "data/json/sources/facebook/facebook_posts_02.json",
+      "text": "中央氣象局：台北11/16 今日白天 多雲轉陰短暫陣雨 溫度 21~28 降雨機率40%",
+      "group": "元素",
+      "distribution": {"靈魂":0.01,"連結":0.01,"生命":0.01,"自然":0.03,"礦物":0.01,"元素":0.55,"秩序":0.27,"無序":0.03,"特殊":0.08},
+      "disputed": false,
+      "candidates": [{"group":"元素","score":0.55},{"group":"秩序","score":0.27}],
+      "reason": "主體就是天氣與水氣／降雨狀態，元素性質是正文內容；日期、溫度與機率形成秩序次候選。",
+      "evidence": ["天氣狀態", "降雨", "雲與水氣"],
+      "exclusions": ["『陰』是氣象描述，不是暗之符文的 Shadow 語意。"]
+    },
+    {
+      "source_id": "THR-899f45f097f0",
+      "source_type": "threads",
+      "source_path": "data/json/generated/loc4/threads/browser_v1/part-010.json",
+      "text": "我是到45歲，才比較知道怎麼裝可愛的。一直以來都是很嚴肅的風格，只有到了去年，放下很多事情以後，才回歸到初心的小孩子想法。反正個性下的柔軟，絕大部分的人看不到，我也沒必要躲藏什麼。應該說，學會身段放軟這一點很重要。很多時候就是太硬了導致衝突。",
+      "group": "靈魂",
+      "distribution": {"靈魂":0.43,"連結":0.22,"生命":0.12,"自然":0.02,"礦物":0.04,"元素":0.02,"秩序":0.06,"無序":0.03,"特殊":0.06},
+      "disputed": false,
+      "candidates": [{"group":"靈魂","score":0.43},{"group":"連結","score":0.22}],
+      "reason": "主體是自我風格、內在柔軟與自我呈現的重新辨認；衝突與他人關係是結果層。",
+      "evidence": ["自我風格", "初心", "內在柔軟", "不再躲藏"],
+      "exclusions": ["『太硬』是性格比喻，不是礦物硬度。"]
+    },
+    {
+      "source_id": "THR-d0a53cbda9ef",
+      "source_type": "threads",
+      "source_path": "data/json/generated/loc4/threads/browser_v1/part-010.json",
+      "text": "已經達到ChatGPT Work使用上限。所以要等待三個小時。希望是可以保持現在的進度啦，不然老是一直回朔跟系統整理，其實也蠻累的。很多東西之前都有再做延伸，今天只是一直在做整併而已。",
+      "group": "秩序",
+      "distribution": {"靈魂":0.03,"連結":0.08,"生命":0.08,"自然":0.01,"礦物":0.01,"元素":0.01,"秩序":0.47,"無序":0.07,"特殊":0.24},
+      "disputed": true,
+      "candidates": [{"group":"秩序","score":0.47},{"group":"特殊","score":0.24}],
+      "reason": "主體是使用上限、等待時間、進度保存、回朔與整併流程，具有明確限制與工作結構。",
+      "evidence": ["使用上限", "等待三小時", "進度", "系統整理", "整併"],
+      "exclusions": ["疲累是附帶感受，不足以讓生命組成為主體。"]
+    },
+    {
+      "source_id": "LOC4-DOC-01-0001-DORM-EXCERPT",
+      "source_type": "literary",
+      "source_path": "data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_01.json",
+      "text": "不到三分鐘，我的宿舍分配被更改。『這間不適合你，太平靜了。』他說完便離去，沒給我任何辯解的機會。我被趕出了原本的宿舍，手中只剩一張空白房號的更動通知單。當我站在校園一隅不知該往哪裡去時，一道聲音從後方傳來：『那裡我知道，有個地方你可以住。』",
+      "group": "連結",
+      "distribution": {"靈魂":0.06,"連結":0.36,"生命":0.03,"自然":0.01,"礦物":0.02,"元素":0.01,"秩序":0.30,"無序":0.08,"特殊":0.13},
+      "disputed": true,
+      "candidates": [{"group":"連結","score":0.36},{"group":"秩序","score":0.30}],
+      "reason": "事件核心是原有住宿關係被切斷、分配被改變，再建立新的去處；制度與分配規則形成很強的秩序次候選。",
+      "evidence": ["宿舍關係中止", "分配更改", "新住宿連結"],
+      "exclusions": ["『空白房號』中的空白是文件狀態，不是無之符文；校園樹木等場景亦不是自然組主體。"]
+    }
+  ],
+  "aggregate": {
+    "unit_count": 6,
+    "group_counts": {"靈魂":1,"連結":1,"生命":0,"自然":0,"礦物":0,"元素":1,"秩序":1,"無序":0,"特殊":2},
+    "disputed_count": 4,
+    "disputed_rate": 0.6667,
+    "observed_confusion_pairs": [
+      {"pair":["特殊","元素"],"reason":"環境條件出現潮濕／水分，但文本主體可能是生活處置。"},
+      {"pair":["秩序","特殊"],"reason":"工作流程或限制具有結構，但一般生活流程不一定足以取得秩序組。"},
+      {"pair":["連結","秩序"],"reason":"制度分配改變同時牽涉關係切斷／建立與規則結構。"}
+    ]
+  },
+  "governance_findings": [
+    "字面『氣』、『陰』、『潮濕』、『硬』、『空白』不能直接觸發氣、暗、水、礦物、無等符文／群組；句內角色與文本主體必須先判斷。",
+    "氣象文本本身以天氣元素為主時，元素組可以取得高分；相同詞彙出現在生活處置文本時則不應自動分類為元素。",
+    "第二批 disputed 比例高，說明第一階段應保留分配與爭議資訊，不能只存單一 group 後丟掉邊界證據。",
+    "特殊組在電話干擾、家電採購等普通生活事件上仍然有必要，避免秩序／元素組被過度擴張。"
+  ]
+}
