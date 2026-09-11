@@ -1,17 +1,24 @@
 {
-  "schema_version": "1.5",
+  "schema_version": "1.6",
   "component": "LOC_GLOBAL_NAV",
-  "brand": {
-    "label": "LOC月典",
-    "href": "index.html",
-    "subtitle": "Luna Codex"
-  },
   "items": [
     {"id":"runes","label":"月之符文","href":"runes.html","description":""},
     {"id":"game","label":"遊戲","href":"game.html","description":""},
     {"id":"context","label":"脈絡","href":"context.html","description":""},
-    {"id":"evolution","label":"推演","href":"evolution.html","description":""},
-    {"id":"statics","label":"統計","href":"statics.htm","description":""},
-    {"id":"search","label":"搜尋","href":"search.html","description":""}
-  ]
+    {"id":"governance","label":"治理","href":"governance.html","description":""},
+    {"id":"statics","label":"統計","href":"statics.html","description":""},
+    {"id":"evolution","label":"推演","href":"evolution.html","description":""}
+  ],
+  "search": {
+    "type": "text_input",
+    "action": "search.html",
+    "parameter": "q",
+    "label": "搜尋"
+  },
+  "home": {
+    "label": "回月典首頁",
+    "href": "index.html",
+    "placement": "right"
+  },
+  "current_page_rule": "Current page item is not a link; it may render as inactive text or be hidden according to page layout."
 }
