@@ -1,0 +1,35 @@
+name: Remove legacy runes66 JSON once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/remove_legacy_runes66_json_once.py"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Remove legacy runes66 JSON and redirect references
+        run: python tools/remove_legacy_runes66_json_once.py
+      - name: Validate repository layout
+        run: python card_api/scripts/validate_repo_layout.py
+      - name: Commit migration
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: restore runes.json as sole canonical rune source"
+          git push
