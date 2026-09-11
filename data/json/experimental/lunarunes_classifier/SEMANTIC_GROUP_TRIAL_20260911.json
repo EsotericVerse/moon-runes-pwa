@@ -1,0 +1,110 @@
+{
+  "schema_version": "0.1",
+  "status": "experimental",
+  "created_at": "2026-09-11",
+  "ruleset_version": "trial-0.1",
+  "api_used": false,
+  "purpose": "First real-corpus pilot for lunarunes-semantic-group-classifier. This file is governance evidence only and must not rewrite Base66 or production Search/RAG behavior.",
+  "source_head_checked_before_write": "92da90e2dbfccea6c3040d9366c14b8f2d2adeb8",
+  "input_debt": [
+    {
+      "source": "LOC3",
+      "status": "blocked_fulltext_missing",
+      "detail": "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1*.json exposes work metadata, summaries, tags and versions, but the sampled records do not expose full lyric body text. Do not treat summary classification as full-lyrics classification."
+    }
+  ],
+  "units": [
+    {
+      "source_id": "FB-OSCARS80-20091001-77ecb1d32a",
+      "source_type": "facebook",
+      "source_path": "data/json/sources/facebook/facebook_posts_01.json",
+      "text": "主要都在噗浪 這邊不留言了 雙向弄好像很重複 來去種菜",
+      "group": "連結",
+      "distribution": {"靈魂":0.04,"連結":0.43,"生命":0.04,"自然":0.03,"礦物":0.01,"元素":0.02,"秩序":0.23,"無序":0.06,"特殊":0.14},
+      "disputed": false,
+      "candidates": [{"group":"連結","score":0.43},{"group":"秩序","score":0.23}],
+      "reason": "主體是兩個社群平台之間的雙向使用與重複關係，核心是關係／連結配置，不是單純時間或情緒。",
+      "evidence": ["雙向", "平台間重複使用", "留言／不留言的連結操作"],
+      "exclusions": ["雖提到重複與安排，但不是以規則結構為主體，因此不以秩序為主。"]
+    },
+    {
+      "source_id": "LOC4-DOC-01-0001",
+      "source_type": "literary",
+      "source_path": "data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_01.json",
+      "text": "從很小的時候開始，我就常常做類似的夢。是一系列有著相似場景、類似氣息、甚至延續感的夢境。夢的起點，幾乎永遠是一樣的。",
+      "group": "無序",
+      "distribution": {"靈魂":0.28,"連結":0.04,"生命":0.05,"自然":0.02,"礦物":0.01,"元素":0.03,"秩序":0.10,"無序":0.40,"特殊":0.07},
+      "disputed": true,
+      "candidates": [{"group":"無序","score":0.40},{"group":"靈魂","score":0.28}],
+      "reason": "語意主體是反覆夢境與夢中經驗，首先落在無序組的夢；但長期記憶與內在感受使靈魂組形成明顯次候選。",
+      "evidence": ["夢境", "反覆出現", "內在記憶感"],
+      "exclusions": ["出現月亮、光等意象不代表元素／秩序主體；它們在此是夢境場景。"]
+    },
+    {
+      "source_id": "THR-95dfeb750ecf",
+      "source_type": "threads",
+      "source_path": "data/json/generated/loc4/threads/browser_v1/part-010.json",
+      "text": "只是這次我是真的因為無奈的關係，導致內褲要重買，所以也趁機重新規劃方式。",
+      "group": "特殊",
+      "distribution": {"靈魂":0.05,"連結":0.09,"生命":0.16,"自然":0.01,"礦物":0.02,"元素":0.01,"秩序":0.25,"無序":0.10,"特殊":0.31},
+      "disputed": true,
+      "candidates": [{"group":"特殊","score":0.31},{"group":"秩序","score":0.25},{"group":"生命","score":0.16}],
+      "reason": "這是具體生活採購與重新規劃，九群中沒有足夠強的單一語意場域。依治理規則應保留特殊，而不是為了覆蓋率硬塞進秩序。",
+      "evidence": ["生活採購", "重新規劃", "無明確符文群組主體"],
+      "exclusions": ["重新規劃具有秩序色彩，但不是文本唯一或明確主體。"]
+    },
+    {
+      "source_id": "FAQ-SAMPLE-LOC6-STYLE",
+      "source_type": "faq",
+      "source_path": "data/json/search/faq/LOC_FAQ_v0.4.json",
+      "text": "政德風可用來記錄個人語言、價值、界線、選擇與自我治理如何形成與變化，但不要求其他使用者接受同一套價值答案。",
+      "group": "秩序",
+      "distribution": {"靈魂":0.17,"連結":0.08,"生命":0.05,"自然":0.01,"礦物":0.01,"元素":0.01,"秩序":0.47,"無序":0.05,"特殊":0.15},
+      "disputed": false,
+      "candidates": [{"group":"秩序","score":0.47},{"group":"靈魂","score":0.17}],
+      "reason": "主體是治理方法、邊界與使用規則，屬可描述與約束的規則結構；個人價值與界線是內容，不是主要分類主體。",
+      "evidence": ["治理", "界線", "不要求他人接受", "方法邊界"],
+      "exclusions": ["界線一詞本身不能直接觸發靈魂組；句內功能是治理規則的一部分。"]
+    },
+    {
+      "source_id": "KM-GOVERNANCE-NOTE",
+      "source_type": "km",
+      "source_path": "data/json/registries/LOC_KM_KEYWORDS.json",
+      "text": "Keywords are retrieval aids, not Canon definitions. Canon, Stable, Working, Proposed, Reserved and Historical states must remain distinguishable.",
+      "group": "秩序",
+      "distribution": {"靈魂":0.03,"連結":0.07,"生命":0.01,"自然":0.01,"礦物":0.01,"元素":0.01,"秩序":0.67,"無序":0.03,"特殊":0.16},
+      "disputed": false,
+      "candidates": [{"group":"秩序","score":0.67},{"group":"特殊","score":0.16}],
+      "reason": "文本核心是狀態分類、權威層級與可區分規則，典型屬於秩序組的結構與規則語意。",
+      "evidence": ["state classification", "Canon authority", "must remain distinguishable"],
+      "exclusions": ["retrieval/keyword 是技術語彙，不代表連結組主體。"]
+    }
+  ],
+  "excluded_nonfulltext_probe": {
+    "source_id": "LW0002",
+    "source_type": "loc3_summary_only",
+    "source_path": "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.part1.json",
+    "summary": "以孤獨陪伴、等待時機為主題，帶有平靜、希望情緒。",
+    "provisional_group": "無序",
+    "provisional_distribution": {"靈魂":0.12,"連結":0.14,"生命":0.29,"自然":0.01,"礦物":0.01,"元素":0.03,"秩序":0.07,"無序":0.30,"特殊":0.03},
+    "disputed": true,
+    "note": "Excluded from aggregate because this is metadata summary, not lyric body. The 無序／生命 near-tie is useful only as an input-quality warning."
+  },
+  "aggregate": {
+    "analysis_mode": "lunarunes_semantic_group_classifier",
+    "unit_count": 5,
+    "group_counts": {"靈魂":0,"連結":1,"生命":0,"自然":0,"礦物":0,"元素":0,"秩序":2,"無序":1,"特殊":1},
+    "disputed_count": 2,
+    "disputed_rate": 0.4,
+    "observed_confusion_pairs": [
+      {"pair":["無序","靈魂"],"reason":"夢境與記憶／內在經驗交疊"},
+      {"pair":["特殊","秩序"],"reason":"一般生活規劃具有結構語意，但未必足以取得秩序組"}
+    ]
+  },
+  "governance_findings": [
+    "特殊作為安全預設在一般生活文本上是必要的；否則分類器會為覆蓋率過度使用秩序組。",
+    "夢境文本應先判斷夢是否為主體，再處理記憶、月亮、光等意象，避免字面命中污染。",
+    "FAQ/KM 的規則性文字容易大量落入秩序組；大規模試跑時需按 corpus 分層統計，不能把 FAQ/KM 比例直接和文學／生活文字混在一起。",
+    "LOC3 full-text input source尚未定位前，不應宣告已完成歌詞 classifier 試跑。"
+  ]
+}
