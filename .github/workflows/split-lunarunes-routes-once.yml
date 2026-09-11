@@ -1,0 +1,30 @@
+name: Split LunaRunes routes once
+on:
+  push:
+    paths:
+      - 'tools/split_lunarunes_routes_once.py'
+      - '.github/workflows/split-lunarunes-routes-once.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/split_lunarunes_routes_once.py
+      - run: |
+          grep -q '{id:"runes",label:"月之符文",href:"lots.html"}' js/loc-nav.js
+          grep -q '66 符資料' js/loc-nav.js
+          grep -q '月之符文知識庫' runes.html
+          grep -q 'href="lots.html#library"' runes.html
+          ! grep -q 'js/rune-draw.js' runes.html
+          ! grep -q 'js/runeLibrary.js' runes.html
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/loc-nav.js index.html runes.html
+          git commit -m "refactor: split LunaRunes main and reference routes"
+          git push
