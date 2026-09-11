@@ -20,10 +20,10 @@ async function initRunePage() {
   let groups = [];
   try {
     const [runeResponse, groupResponse] = await Promise.all([
-      fetch("data/json/core/runes66.json", { cache: "no-store" }),
+      fetch("data/json/core/runes.json", { cache: "no-store" }),
       fetch("data/json/core/runes66groups.json", { cache: "no-store" })
     ]);
-    if (!runeResponse.ok) throw new Error(`runes66.json HTTP ${runeResponse.status}`);
+    if (!runeResponse.ok) throw new Error(`runes.json HTTP ${runeResponse.status}`);
     if (!groupResponse.ok) throw new Error(`runes66groups.json HTTP ${groupResponse.status}`);
     const runePayload = await runeResponse.json();
     const groupPayload = await groupResponse.json();
@@ -46,7 +46,7 @@ async function initRunePage() {
     const meta = groupByRuneId.get(id) || null;
     const member = meta?.runes?.find(x => Number(x.id) === id);
     const name = row.符文名稱 ?? row.名稱 ?? row.name ?? member?.zh ?? "";
-    return {...row,編號:id,符文名稱:name,英文:row.英文 ?? row.english ?? member?.en ?? "",所屬分組:meta?.group_zh ?? row.所屬分組 ?? row.group ?? "",月相:row.月相 ?? row.moon_phase ?? "",顯化形式:row.顯化形式 ?? row.keyword ?? "",關鍵詞:row.關鍵詞 ?? row.keyword ?? "",反向關鍵字:row.反向關鍵字 ?? row.反向關鍵詞 ?? row.reverse_keyword ?? "",符文變化歷史:row.history?.符文變化歷史 ?? row.符文變化歷史 ?? "",圖檔名稱:row.image ?? row.圖檔名稱 ?? (id > 0 && name ? `${String(id).padStart(2,"0")}_${name}.png` : null),drawable:row.drawable ?? (id >= 1 && id <= 66),group_meta:meta};
+    return {...row,編號:id,符文名稱:name,英文:row.英文 ?? row.english ?? member?.en ?? "",所屬分組:meta?.group_zh ?? row.所屬分組 ?? row.group ?? "",月相:row.月相 ?? row.moon_phase ?? "",顯化形式:row.顯化形式 ?? row.keyword ?? "",關鍵詞:row.正向關鍵詞 ?? row.關鍵詞 ?? row.keyword ?? "",反向關鍵字:row.反向關鍵字 ?? row.反向關鍵詞 ?? row.reverse_keyword ?? "",符文變化歷史:row.history?.符文變化歷史 ?? row.符文變化歷史 ?? "",圖檔名稱:row.image ?? row.圖檔名稱 ?? (id > 0 && name ? `${String(id).padStart(2,"0")}_${name}.png` : null),drawable:row.drawable ?? (id >= 1 && id <= 66),group_meta:meta};
   }
 
   const all = runeRows.map(normalize).filter(r => Number.isInteger(r.編號) && r.編號 >= 0 && r.編號 <= 66);
@@ -191,7 +191,7 @@ else initRunePage();
   }
 
   function primaryFields(rune){
-    const note=valueOf(rune,'特別說明','說明','description');
+    const note=valueOf(rune,'符文說明','特別說明','說明','description');
     const archetype=valueOf(rune,'人格原型','archetype');
     return [
       ['說明', `${note} / ${archetype}`],
@@ -200,7 +200,7 @@ else initRunePage();
   }
 
   function detailFields(rune){
-    const keyword=valueOf(rune,'關鍵詞','keyword');
+    const keyword=valueOf(rune,'正向關鍵詞','關鍵詞','keyword');
     const reverse=valueOf(rune,'反向關鍵詞','反向關鍵字','reverse_keyword');
     return [
       ['關鍵詞', `${keyword} / ${reverse}`],
@@ -299,7 +299,7 @@ else initRunePage();
   async function start(){
     try{
       const [runeResponse,groupResponse]=await Promise.all([
-        fetch('data/json/core/runes66.json',{cache:'no-store'}),
+        fetch('data/json/core/runes.json',{cache:'no-store'}),
         fetch('data/json/core/runes66groups.json',{cache:'no-store'})
       ]);
       if(!runeResponse.ok) return;

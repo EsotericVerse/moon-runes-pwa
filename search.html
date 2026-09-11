@@ -820,7 +820,7 @@
 
       if(wants('rune_record','oracle')){
         try{
-          const d=await localJson(window.LOC_SEARCH_SOURCES["data/json/core/runes66.json"]);
+          const d=await localJson(window.LOC_SEARCH_SOURCES["data/json/core/runes.json"]);
           for(const rune of d.runes||[]){
             const id=Number(rune.編號 ?? rune.id);
             const name=rune.名稱 ?? rune.name;

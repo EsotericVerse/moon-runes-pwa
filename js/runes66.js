@@ -1,17 +1,18 @@
-/* LunaRunes66 runtime dataset.
- * Canonical rune data: data/json/core/runes66.json
- * Canonical group metadata: data/json/core/runes66groups.json
+/* LunaRunes66 runtime adapter.
+ * Canonical rune data: data/json/core/runes.json
+ * Group metadata: data/json/core/runes66groups.json
  *
- * Rune data is required for drawing. Group metadata is supplementary and must
- * never make the draw runtime fail when it is unavailable or stale in cache.
+ * runes.json is the sole manually governed rune-data authority.
+ * This file does not own rune semantics; it only normalizes canonical fields
+ * for the 66-rune draw runtime and keeps limited compatibility aliases.
  */
 
 const canonicalResponse = await fetch(
-  new URL('../data/json/core/runes66.json', import.meta.url),
+  new URL('../data/json/core/runes.json', import.meta.url),
   { cache: 'no-store' }
 );
 if (!canonicalResponse.ok) {
-  throw new Error(`Failed to load runes66.json: HTTP ${canonicalResponse.status}`);
+  throw new Error(`Failed to load runes.json: HTTP ${canonicalResponse.status}`);
 }
 
 const canonicalPayload = await canonicalResponse.json();
@@ -62,6 +63,10 @@ function toRuntimeRow(row) {
   const groupMeta = resolveGroup(row, id);
   const groupName = groupMeta?.group_zh ?? row.所屬分組 ?? row.group;
 
+  const runeDescription = row.符文說明 ?? row.特別說明 ?? row.description ?? null;
+  const positiveKeywords = row.正向關鍵詞 ?? row.關鍵詞 ?? row.keyword ?? null;
+  const reverseKeywords = row.反向關鍵詞 ?? row.反向關鍵字 ?? row.reverse_keyword ?? null;
+
   return {
     ...row,
     編號: id,
@@ -76,9 +81,27 @@ function toRuntimeRow(row) {
     可能語氣: groupMeta?.possible_tone ?? [],
     group_style: groupMeta?.style ?? [],
     group_meta: groupMeta,
+
     月相: row.月相 ?? row.moon_phase ?? null,
     卡片屬性: row.卡片屬性 ?? row.card_attribute,
-    關鍵詞: row.關鍵詞 ?? row.keyword,
+
+    // Current manually governed rune schema.
+    符文說明: runeDescription,
+    人格原型: row.人格原型 ?? row.archetype ?? null,
+    角色行動: row.角色行動 ?? row.role_action ?? null,
+    正向關鍵詞: positiveKeywords,
+    反向關鍵詞: reverseKeywords,
+    額外規則: row.額外規則 ?? row.extra_rule ?? null,
+    額外留意: row.額外留意 ?? row.extra_note ?? null,
+    正向表示: row.正向表示 ?? row.upright ?? null,
+    半正向表示: row.半正向表示 ?? row.half_upright ?? null,
+    半逆向表示: row.半逆向表示 ?? row.half_reversed ?? null,
+    逆向表示: row.逆向表示 ?? row.reversed ?? null,
+
+    // Compatibility aliases only; canonical field names above take precedence.
+    關鍵詞: positiveKeywords,
+    反向關鍵字: reverseKeywords,
+
     符文變化歷史: history.符文變化歷史 ?? row.符文變化歷史,
     神話故事: history.神話故事 ?? row.神話故事,
     圖檔名稱: row.image ?? row.圖檔名稱 ?? (id > 0 && name ? `${String(id).padStart(2, '0')}_${name}.png` : null),

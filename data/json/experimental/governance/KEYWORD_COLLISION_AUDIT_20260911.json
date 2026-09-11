@@ -3,7 +3,7 @@
   "status": "experimental_audit",
   "created_at": "2026-09-11",
   "source_head_checked_before_write": "6b5ad081c29af2153922437f243f30851a52b508",
-  "source": "data/json/core/runes66.json",
+  "source": "data/json/core/runes.json",
   "scope": "Exact keyword collisions plus near-synonym diversity review. This file does not change production semantics.",
   "governance": {
     "keyword_rule": "Each rune keeps three two-character keywords, but the three should cover distinct semantic dimensions rather than merely repeat synonyms.",
@@ -142,5 +142,5 @@
       "status": "review_needed"
     }
   ],
-  "next_action": "Review candidate replacements in semantic groups, then apply approved changes first to LunaRune66.xlsx mother data and regenerate runes66.json / runtime projections."
+  "next_action": "Review candidate replacements in semantic groups, then apply approved changes first to LunaRune66.xlsx mother data and regenerate runes.json / runtime projections."
 }

@@ -18,7 +18,7 @@ from paths import core_json, registry_json, search_json
 def build_engine() -> UnifiedSearchEngine:
     faq = FAQSearchEngine(search_json("faq", "LOC_FAQ_RAG_v0.4.json"))
     loc3 = LOC3SearchEngine(search_json("loc3", "LOC3_LYRICS_SEARCH_v0.1.json"))
-    runes_payload = json.loads(core_json("runes66.json").read_text(encoding="utf-8"))
+    runes_payload = json.loads(core_json("runes.json").read_text(encoding="utf-8"))
     runes = runes_payload if isinstance(runes_payload, list) else runes_payload.get("runes", [])
     return UnifiedSearchEngine(faq_searcher=faq, loc3_searcher=loc3, runes=runes, repo_root=ROOT)
 

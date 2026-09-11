@@ -42,7 +42,7 @@ async function loadLots() {
 
 async function loadRuneHints() {
   try {
-    const response = await fetch("data/json/core/runes66.json");
+    const response = await fetch("data/json/core/runes.json");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);

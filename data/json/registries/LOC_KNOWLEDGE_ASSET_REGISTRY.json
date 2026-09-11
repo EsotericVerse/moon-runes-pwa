@@ -517,7 +517,7 @@
     {
       "asset_id": "KA-LOC1-RUNES-001",
       "title": "LOC1 月符基本資料 Seed Corpus",
-      "path": "data/json/core/runes66.json",
+      "path": "data/json/core/runes.json",
       "source_type": "structured_seed_corpus",
       "content_type": "rune_seed_corpus",
       "primary_loc": "LOC1",

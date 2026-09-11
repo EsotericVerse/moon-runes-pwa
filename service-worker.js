@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v215";
+const CACHE_NAME = "moon-runes-pwa-v216";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -36,7 +36,7 @@ const ASSETS_TO_CACHE = [
   "/data/json/registries/LOC_SOURCE_ACTIVITY_REGISTRY.json",
   "/data/json/registries/LOC_KEYWORD_GOVERNANCE.json",
   "/data/json/core/lots.json",
-  "/data/json/core/runes66.json",
+  "/data/json/core/runes.json",
   "/data/json/core/runes66groups.json",
   "/data/json/sources/facebook/manifest.json",
   "/js/main.js",
@@ -87,7 +87,7 @@ self.addEventListener("fetch", (event) => {
   const isJs = url.pathname.endsWith(".js");
   const isHtml = url.pathname.endsWith(".html") || url.pathname.endsWith(".htm") || url.pathname === "/";
   const isCoreRuneData = [
-    "/data/json/core/runes66.json",
+    "/data/json/core/runes.json",
     "/data/json/core/runes66groups.json"
   ].includes(url.pathname);
 

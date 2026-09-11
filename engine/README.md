@@ -8,7 +8,7 @@ Experimental scripts must not keep full authoritative rune copies inside `engine
 
 They read:
 
-- `data/json/core/runes66.json`
+- `data/json/core/runes.json`
 - `data/json/core/rune_interpretations.json`
 
 Experimental-only annotations and generated JSON are stored under:
