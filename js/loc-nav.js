@@ -308,7 +308,6 @@
     const file=fileName();
     if(file==="runes.html"||file==="lots.html") appendScript("js/runes-pwa-ia.js","runes-pwa-ia");
     if(file==="evolution.html") appendScript("js/life-daily-draw-history.js","life-draw-history");
-    if(["runes.html","lots.html","search.html"].includes(file)) appendScript("js/rune-display-governance.js","loc-rune-display-governance");
     if(file==="search.html") appendScript("js/search-display-governance.js","loc-search-display-governance");
   }
 
