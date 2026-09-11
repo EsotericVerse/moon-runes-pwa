@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import unicodedata
 from collections import Counter
 from pathlib import Path
 
@@ -17,7 +18,8 @@ OUTPUT_PATH = OUTPUT_DIR / "facebook_keyword_index.sqlite3"
 
 
 def _normalize_search_text(value: str) -> str:
-    return " ".join(str(value or "").lower().split())
+    value = unicodedata.normalize("NFKC", str(value or "")).lower()
+    return " ".join(value.split())
 
 
 def build_index(
