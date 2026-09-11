@@ -1,7 +1,8 @@
 import { rune } from "./runes66.js";
 
 const API = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
-const CACHE_KEY = "lunarunes-physical-daily-draw-cache-v2";
+const REPO_HISTORY = "data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json";
+const CACHE_KEY = "lunarunes-physical-daily-draw-cache-v3";
 const $ = s => document.querySelector(s);
 const PAGE_SIZE = 20;
 let currentPage = 1;
@@ -25,6 +26,24 @@ function normalize(row={}) {
   };
 }
 
+function rowKey(row={}) {
+  const x=normalize(row);
+  return [x.date,x.draw_kind,x.rune,x.direction].join("|");
+}
+
+function mergeRows(...groups) {
+  const map=new Map();
+  for(const group of groups){
+    for(const raw of Array.isArray(group)?group:[]){
+      const row=normalize(raw);
+      if(!row.date||!row.rune) continue;
+      const key=rowKey(row);
+      map.set(key,{...(map.get(key)||{}),...row});
+    }
+  }
+  return [...map.values()];
+}
+
 function readCache() {
   try {
     const v=JSON.parse(localStorage.getItem(CACHE_KEY)||"[]");
@@ -34,6 +53,17 @@ function readCache() {
 
 function writeCache(rows) {
   try { localStorage.setItem(CACHE_KEY,JSON.stringify(rows)); } catch (_) {}
+}
+
+async function loadRepoHistory(){
+  try{
+    const res=await fetch(REPO_HISTORY,{cache:"no-store"});
+    if(!res.ok) throw new Error("repo history unavailable");
+    const data=await res.json();
+    return Array.isArray(data?.daily_draws)?data.daily_draws.map(normalize):[];
+  }catch(_){
+    return [];
+  }
 }
 
 function pageNumbers(current,total){
@@ -108,11 +138,17 @@ function render(rows) {
 }
 
 async function loadRecords() {
+  const repoRows=await loadRepoHistory();
   const cached=readCache();
-  if(cached.length){
-    render(cached);
-    $("#dailyStatsStatus").textContent="先顯示最近快取；正在同步已記錄資料。";
+  const localRows=mergeRows(repoRows,cached);
+
+  if(localRows.length){
+    render(localRows);
+    $("#dailyStatsStatus").textContent=repoRows.length
+      ?"已載入 Repo 每日符文歷史；正在同步後端紀錄。"
+      :"先顯示最近快取；正在同步已記錄資料。";
   }
+
   try{
     const url=new URL(API);
     url.searchParams.set("action","daily_draws");
@@ -120,12 +156,23 @@ async function loadRecords() {
     const res=await fetch(url.toString(),{method:"GET",cache:"no-store",redirect:"follow"});
     const data=await res.json();
     if(!res.ok||data?.ok===false) throw new Error(data?.error||"載入失敗");
-    const rows=Array.isArray(data.daily_draws)?data.daily_draws.map(normalize):[];
-    writeCache(rows);
-    render(rows);
-    $("#dailyStatsStatus").textContent="統計只包含已明確儲存的實體牌紀錄。";
+    const apiRows=Array.isArray(data.daily_draws)?data.daily_draws.map(normalize):[];
+    const merged=mergeRows(repoRows,apiRows);
+    writeCache(merged);
+    render(merged);
+    $("#dailyStatsStatus").textContent=repoRows.length
+      ?`已合併 Repo 歷史與後端紀錄，共 ${merged.length} 筆。`
+      :"統計只包含已明確儲存的實體牌紀錄。";
   }catch(_){
-    $("#dailyStatsStatus").textContent=cached.length?"即時資料未回應，顯示最近快取。":"每日符文紀錄暫時無法載入。";
+    if(localRows.length){
+      writeCache(localRows);
+      render(localRows);
+      $("#dailyStatsStatus").textContent=repoRows.length
+        ?`後端暫未回應；目前顯示 Repo 歷史，共 ${localRows.length} 筆。`
+        :"即時資料未回應，顯示最近快取。";
+    }else{
+      $("#dailyStatsStatus").textContent="每日符文紀錄暫時無法載入。";
+    }
   }
 }
 
