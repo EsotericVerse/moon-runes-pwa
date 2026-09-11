@@ -1,7 +1,30 @@
 {
-  "schema_version": "0.4",
+  "schema_version": "0.5",
   "registry": "LOC_DATA_GOVERNANCE",
   "language_system_id": "lo3rwang",
+  "canonical_positioning": {
+    "loc": {
+      "name": "LOC / Luna Codex / 月典",
+      "zh": "語言系統模組框架",
+      "en": "Language Module Framework"
+    },
+    "lunarunes": {
+      "name": "LunaRunes / 月之符文",
+      "zh": "符號式語言模組",
+      "en": "Symbolic Language Module"
+    },
+    "loc_modules": {
+      "LOC1": "LunaRunes / 月之符文",
+      "LOC2": "Context / 脈絡",
+      "LOC3": "Music / 音樂",
+      "LOC4": "Literary / 文字創作",
+      "LOC5": "Multimedia / 多媒體",
+      "LOC6": "Algorithm / 演算法",
+      "LOC7": "Module / 演算模組",
+      "LOC8": "Evolution / 推演"
+    },
+    "rule": "Current public and governance terminology must use Language Module Framework for LOC and Symbolic Language Module for LunaRunes. Language System Model, LOC6 Methodology, and LOC7 Algorithm are superseded current-positioning terms and may remain only in explicit historical records."
+  },
   "principles": {
     "model": "Authority -> Registry -> Reference -> Consumer",
     "ui_rule": "LOC1–8 are retained only as homepage guide labels for human explanation. They are not backend taxonomy, ownership IDs, API fields, KM categories, FAQ ownership, or engineering variable names.",
@@ -50,18 +73,18 @@
     }
   },
   "analysis_boundary": {
-    "LOC6": "Methodology: meaning, judgment, governance, Zhengde Style and interpretation methods derived from source evidence.",
-    "LOC7": "Algorithms/knowledge base: text architecture, KM, retrieval, RAG, Graph RAG traversal, validation and semantic engineering.",
-    "LOC8": "Literary evolution: time, ERA, Event timeline, Trajectory and Trend projections. It may display Graph views but does not own graph relation semantics.",
+    "LOC6": "Algorithm: repeatable semantic analysis, judgment, governance, Zhengde Style interpretation, classification and decision rules derived from source evidence.",
+    "LOC7": "Module: reusable computation and knowledge modules that organize text architecture, KM, retrieval, RAG, Graph RAG traversal, validation and semantic engineering.",
+    "LOC8": "Evolution: time, period, Event timeline, Trajectory and Trend projections. It may display Graph views but does not own graph relation semantics.",
     "LOC4": "Creative/life-writing text authority plus work-level and chapter-level literary/semantic analysis.",
     "LOC2": "Context, relationship, Scenario/Event relation and Canonical Graph semantics."
   },
   "rights_boundary": {
-    "LOC6": "Defines governance principles for authorship, attribution, sharing, licensing, and collaboration.",
+    "LOC6": "Defines or executes governance-related algorithms and principles for authorship, attribution, sharing, licensing, and collaboration.",
     "LOC8": "Maintains shared rights/provenance references and identity linkage.",
     "LOC3_LOC4_LOC5": "Attach concrete work/media rights and provenance values by reference."
   },
-  "updated_at": "2026-09-09",
+  "updated_at": "2026-09-11",
   "governance_control_plane": {
     "lifecycle": [
       "proposed",
@@ -121,7 +144,7 @@
     "registry": "data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json",
     "source_owner": "LOC4",
     "interpretation_owner": "LOC6",
-    "rule": "Raw authored text and ordinary work/chapter analysis remain LOC4. Governance/value/Zhengde-style interpretations derived from those texts are LOC6.",
+    "rule": "Raw authored text and ordinary work/chapter analysis remain LOC4. Governance/value/Zhengde-style interpretations derived from those texts are LOC6 algorithm outputs.",
     "platform_rule": "Facebook/Threads are LOC4 life-writing sources; platform does not make them LOC6.",
     "no_overwrite": "LOC6 references LOC4 evidence and creates separate derived records; it never changes LOC4 canonical text."
   },
@@ -132,7 +155,7 @@
     "literary": "Literary / authored text and works",
     "media": "Media / image / video / cross-media assets",
     "governance": "Governance / values / rules / Zhengde-style interpretation",
-    "knowledge": "Knowledge / KM / retrieval / algorithms / RAG",
+    "knowledge": "Knowledge / KM / retrieval / reusable modules / RAG",
     "evolution": "Evolution / time / period / trend / trajectory",
     "global": "System-wide identity or cross-domain governance"
   }
