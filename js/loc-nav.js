@@ -111,14 +111,14 @@
     const framework = document.getElementById("framework-map");
     if (framework && !framework.querySelector(":scope > .loc-section-menu")) {
       framework.prepend(sectionMenu([
-        link("月之符文模組","#framework-map"),
-        link("脈絡","#framework-map"),
-        link("音樂","#framework-map"),
-        link("文字創作","#framework-map"),
-        link("多媒體","#framework-map"),
-        link("演算法","#framework-map"),
-        link("演算模組","#framework-map"),
-        link("推演引擎","#framework-map")
+        link("月之符文模組 LunaRunes","#framework-map"),
+        link("脈絡 Context","#framework-map"),
+        link("音樂 Music","#framework-map"),
+        link("文字創作 Literary","#framework-map"),
+        link("多媒體 Multimedia","#framework-map"),
+        link("演算法 Algorithm","#framework-map"),
+        link("演算模組 Module","#framework-map"),
+        link("推演引擎 Evolution","#framework-map")
       ],"LOC架構圖快速切換"));
     }
   }
@@ -126,10 +126,10 @@
   function buildRunes(host) {
     host.appendChild(tier([
       link("新手上路","runes.html#beginner"),
-      link("占卜抽籤","lots.html#draw"),
-      link("符文總覽","lots.html#library"),
-      link("符文統計","statics.htm#runes"),
-      link("符文知識庫","runes.html#reference")
+      link("占卜抽籤 Lots","lots.html#draw"),
+      link("符文總覽 LunaRunes","lots.html#library"),
+      link("符文統計 Statistics","statics.htm#runes"),
+      link("符文知識庫 Knowledge Base","runes.html#reference")
     ],"月之符文功能"));
 
     const drawView = fileName() === "lots.html" ? document.getElementById("drawView") : null;
@@ -140,7 +140,7 @@
         link("雙卡","lots.html?mode=2card#draw"),
         link("三卡","lots.html?mode=3card#draw"),
         link("五卡","lots.html?mode=5card#draw"),
-        link("11卡","lots.html?mode=ow3gs#draw"),
+        link("11卡 OW3gs","lots.html?mode=ow3gs#draw"),
         link("說明","lots.html#draw-help")
       ],"抽牌快速選單"));
     }
@@ -153,37 +153,37 @@
 
   function buildContext(host) {
     host.appendChild(tier([
-      button("關係圖",{"data-context-switch":"graph"}),
-      button("節點",{"data-context-switch":"nodes"}),
-      button("關聯",{"data-context-switch":"edges"}),
-      button("情境",{"data-context-switch":"scenarios"})
+      button("關係圖 Graph",{"data-context-switch":"graph"}),
+      button("節點 Nodes",{"data-context-switch":"nodes"}),
+      button("關聯 Edges",{"data-context-switch":"edges"}),
+      button("情境 Scenarios",{"data-context-switch":"scenarios"})
     ],"脈絡功能"));
   }
 
   function buildEvolution(host) {
     host.appendChild(tier([
-      button("時期",{"data-view":"overview"}),
-      button("時間線",{"data-view":"timeline"}),
-      button("趨勢",{"data-view":"trend"}),
-      button("軌跡",{"data-view":"trajectory"})
+      button("時期 Period",{"data-view":"overview"}),
+      button("時間線 Timeline",{"data-view":"timeline"}),
+      button("趨勢 Trend",{"data-view":"trend"}),
+      button("軌跡 Trajectory",{"data-view":"trajectory"})
     ],"推演功能"));
   }
 
   function buildStatics(host) {
     host.appendChild(tier([
-      link("排行榜","statics.htm#ranking"),
-      link("符文統計","statics.htm#runes"),
-      link("來源管理","statics.htm#sources"),
-      link("匯入","statics.htm#import")
+      link("排行榜 Ranking","statics.htm#ranking"),
+      link("符文統計 Rune Statistics","statics.htm#runes"),
+      link("來源管理 Sources","statics.htm#sources"),
+      link("匯入 Import","statics.htm#import")
     ],"統計功能"));
   }
 
   function buildGovernance(host){
     host.appendChild(tier([
-      link("原則","governance.html#principles"),
-      link("版權","governance.html#copyright"),
-      link("理念","governance.html#philosophy"),
-      link("文件","governance.html#documents")
+      link("原則 Principles","governance.html#principles"),
+      link("版權 Copyright","governance.html#copyright"),
+      link("理念 Philosophy","governance.html#philosophy"),
+      link("文件 Documents","governance.html#documents")
     ],"治理內容"));
   }
 
