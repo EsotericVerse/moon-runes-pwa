@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#07182d" />
-  <title>月之符文｜LOC 月典</title>
-  <meta name="description" content="月之符文：66 個基本文字語彙（Token）、四向、圖鑑、每日符文與多種抽牌方式。" />
+  <title>月之符文知識庫｜LOC 月典</title>
+  <meta name="description" content="月之符文知識庫：判讀規則、命運句結構、案例、延伸體系與 Reference。66 符完整資料與圖鑑集中於 lots.html。" />
   <link rel="canonical" href="https://loc.lo3rwang.cc/runes.html" />
   <link rel="stylesheet" href="css/style.css" />
   
@@ -20,10 +20,10 @@
     <main class="page workspace-main">
       <div class="runes-view" id="referenceView" hidden>
 <header class="hero loc-header">
-          <p class="loc-header-meta">LunaRunes · Beginner</p>
-          <h1 class="loc-header-title">新手入門</h1>
-          <h2 class="loc-header-subtitle">不用先學會所有符文，也可以直接開始。</h2>
-          <p class="loc-header-copy">月之符文是 LOC 的語彙種子。第一次使用可以先抽牌，遇到想深入的符文再回到資料圖鑑查看定義、方向與月相。</p>
+          <p class="loc-header-meta">LunaRunes · Reference</p>
+          <h1 class="loc-header-title">月之符文知識庫</h1>
+          <h2 class="loc-header-subtitle">判讀規則、案例與延伸體系集中於此。</h2>
+          <p class="loc-header-copy">這一頁負責月之符文的判讀規則、案例與延伸知識；66 符完整資料、圖鑑、分組與抽牌功能統一由月之符文首頁 lots.html 提供。</p>
         </header>
         <section class="rune-basics">
           <h2>先知道四件事</h2>
@@ -35,7 +35,7 @@
           </div>
           <div class="draw-mode-grid">
             <a class="draw-mode-card" href="lots.html?mode=daily#draw"><strong>今天先抽一張</strong><span>從每日符文開始。</span></a>
-            <button class="draw-mode-card" type="button" data-open-view="library"><strong>查看符文資料</strong><span>瀏覽 66 符文圖鑑。</span></button>
+            <a class="draw-mode-card" href="lots.html#library"><strong>查看 66 符資料</strong><span>前往月之符文首頁瀏覽完整圖鑑。</span></a>
             <a class="draw-mode-card" href="tutorial02.html"><strong>完整新手教學</strong><span>LOC Tutorial 02。</span></a>
           </div>
         </section>
@@ -51,7 +51,7 @@
 
         <section class="rune-basics">
           <h2>基本文件</h2>
-          <p>月之符文的現行使用、判讀、範例與資料分層統一集中在本頁；不再另外維護重複的舊版 Rune Markdown 說明文件。</p>
+          <p>月之符文的判讀規則、範例與延伸知識集中在本頁；66 符資料、圖鑑與抽牌功能集中在 lots.html，避免功能與 runtime 重複。</p>
         </section>
 
         <section class="rune-basics">
@@ -347,12 +347,7 @@
     </div>
   </dialog>
 
-  <script type="module" src="js/runeLibrary.js?v=20260905-3"></script>
-  <script type="module" src="js/rune.js?v=20260911-1"></script>
-  <script src="js/locMoonPhase.js"></script>
-  <script type="module" src="js/rune-draw.js?v=20260908-4"></script>
-  <script type="module" src="js/rune-daily-records.js?v=20260908-1"></script>
-  <script src="js/loc-nav.js"></script>
+            <script src="js/loc-nav.js"></script>
 
   <script>
   (()=> {

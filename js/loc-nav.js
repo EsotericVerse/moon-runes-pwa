@@ -49,7 +49,7 @@
   const baseName = path => String(path || "").split("/").pop() || "index.html";
 
   const NAV1 = Object.freeze([
-    {id:"runes",label:"月之符文",href:"runes.html"},
+    {id:"runes",label:"月之符文",href:"lots.html"},
     {id:"game",label:"遊戲",href:"game.html"},
     {id:"context",label:"脈絡",href:"context.html"},
     {id:"governance",label:"治理",href:"governance.html"},
@@ -72,7 +72,7 @@
 
   const DEFAULT_HASH = Object.freeze({
     "index.html":"#top",
-    "runes.html":"#beginner",
+    "runes.html":"#reference",
     "lots.html":"#draw",
     "statics.html":"#ranking",
     "governance.html":"#principles",
@@ -181,11 +181,11 @@
   }
 
   function buildRunes(host){
-    const beginnerHref=fileName()==="lots.html"?"lots.html#beginner":"runes.html#beginner";
+    const beginnerHref="lots.html#beginner";
     host.appendChild(tier([
       link("新手上路",beginnerHref),
       link("占卜抽籤","lots.html#draw"),
-      link("符文總覽","lots.html#library"),
+      link("66 符資料","lots.html#library"),
       link("符文統計","statics.html#runes"),
       link("符文知識庫","runes.html#reference")
     ],"月之符文功能"));
