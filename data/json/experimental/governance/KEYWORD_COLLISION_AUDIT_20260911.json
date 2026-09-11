@@ -1,0 +1,146 @@
+{
+  "schema_version": "0.1",
+  "status": "experimental_audit",
+  "created_at": "2026-09-11",
+  "source_head_checked_before_write": "6b5ad081c29af2153922437f243f30851a52b508",
+  "source": "data/json/core/runes66.json",
+  "scope": "Exact keyword collisions plus near-synonym diversity review. This file does not change production semantics.",
+  "governance": {
+    "keyword_rule": "Each rune keeps three two-character keywords, but the three should cover distinct semantic dimensions rather than merely repeat synonyms.",
+    "collision_rule": "Exact keyword reuse across different runes should be removed when it weakens semantic ownership. Positive and reverse keyword sets must not reuse the same token when that destroys polarity priority.",
+    "classification_priority": "lexical role / polarity direction -> group subjectivity -> rune semantic ownership -> direct-expression-over-opposite-side inference"
+  },
+  "summary": {
+    "positive_exact_collision_terms": 5,
+    "reverse_exact_collision_terms": 0,
+    "positive_reverse_exact_collision_terms": 1
+  },
+  "positive_exact_collisions": [
+    {
+      "term": "多元",
+      "runes": ["魂", "彩"],
+      "ownership": "彩",
+      "reason": "彩直接描述多元色彩與層次；魂的核心是多種靈性聚合成承載體。",
+      "candidate_patch": {"魂": "載體・複合・聚合", "彩": "多元・色彩・層次"},
+      "status": "candidate_review"
+    },
+    {
+      "term": "分支",
+      "runes": ["分", "枝"],
+      "ownership": "枝",
+      "reason": "枝直接表達 branching；分應聚焦拆分／區分行為。",
+      "candidate_patch": {"分": "分離・分割・分類", "枝": "分支・枝杈・開展"},
+      "status": "candidate_review"
+    },
+    {
+      "term": "成熟",
+      "runes": ["老", "樹"],
+      "ownership": "樹",
+      "reason": "樹目前明確定位為成熟個體與表率；老描述歲月與生命歷程。",
+      "candidate_patch": {"老": "歲月・年長・閱歷", "樹": "成熟・表率・茂盛"},
+      "status": "candidate_review"
+    },
+    {
+      "term": "警告",
+      "runes": ["雷", "禍"],
+      "ownership": "雷",
+      "reason": "雷直接描述突發衝擊／警醒／警告；禍應描述災禍、危機與風險本身。",
+      "candidate_patch": {"雷": "衝擊・驚醒・警告", "禍": "災禍・危機・風險"},
+      "status": "candidate_review"
+    },
+    {
+      "term": "可能",
+      "runes": ["星", "無"],
+      "ownership": "none_after_patch",
+      "reason": "The generic token is too broad. 星 needs positive future potential; 無 needs unfixed/open unknown state.",
+      "candidate_patch": {"星": "潛在・希望・可期", "無": "未定・開放・未知"},
+      "status": "resolved_patch_spec"
+    }
+  ],
+  "positive_reverse_exact_collisions": [
+    {
+      "term": "暴躁",
+      "positive_rune": "火",
+      "reverse_rune": "火",
+      "current_positive": "熱忱・衝動・暴躁",
+      "current_reverse": "暴躁・灼傷・失控",
+      "candidate_patch": {"關鍵詞": "熱忱・衝動・炙熱", "反向關鍵詞": "暴躁・灼傷・失控"},
+      "status": "resolved_patch_spec"
+    }
+  ],
+  "near_synonym_review": [
+    {
+      "rune": "域",
+      "current": "範圍・領域・疆域",
+      "finding": "Three terms mostly restate domain/range; classifier gains little extra dimension.",
+      "status": "review_needed"
+    },
+    {
+      "rune": "核",
+      "current": "核心・中心・內核",
+      "finding": "Three center/core synonyms; consider one core noun plus importance/essence dimensions.",
+      "status": "review_needed"
+    },
+    {
+      "rune": "向",
+      "current": "方向・朝向・指向",
+      "finding": "Three direction synonyms; should preserve direction ownership while adding a distinct orientation dimension.",
+      "status": "review_needed"
+    },
+    {
+      "rune": "斷",
+      "current": "切斷・中止・斷絕",
+      "finding": "Closely clustered ending/severing terms; check whether permanence, immediacy, and severance can be represented separately.",
+      "status": "review_needed"
+    },
+    {
+      "rune": "悟",
+      "current": "領悟・體悟・頓悟",
+      "finding": "Three realization synonyms; should distinguish insight, internalization, and sudden realization if retained.",
+      "status": "review_needed"
+    },
+    {
+      "rune": "死",
+      "current": "死亡・終止・終結",
+      "finding": "Strong overlap around ending; may benefit from death / closure / irreversible endpoint dimensions.",
+      "status": "review_needed"
+    },
+    {
+      "rune": "風",
+      "current": "自由・灑脫・不拘",
+      "finding": "All three describe unconstraint; consider preserving freedom plus one physical/style dimension without invading 氣=流動.",
+      "status": "review_needed"
+    },
+    {
+      "rune": "辰",
+      "current": "時期・階段・期間",
+      "finding": "Three period/stage synonyms; should remain distinct from 時=time and 緣=timing while adding one structural period dimension.",
+      "status": "review_needed"
+    },
+    {
+      "rune": "明",
+      "current": "清晰・明確・清楚",
+      "finding": "Three clarity synonyms; direct core is correct but keyword diversity is weak.",
+      "status": "review_needed"
+    },
+    {
+      "rune": "時",
+      "current": "時間・時刻・計時",
+      "finding": "All time-related; less severe because they represent continuum, point, and measurement, but keep under review.",
+      "status": "monitor"
+    },
+    {
+      "rune": "因",
+      "current": "原因・成因・起因",
+      "finding": "Three cause synonyms. English Cause is resolved, but Chinese keyword diversity still needs a separate semantic pass.",
+      "status": "review_needed"
+    },
+    {
+      "rune": "虛",
+      "current": "虛缺・絕跡・缺少",
+      "finding": "虛缺 and 缺少 overlap; keep distinction from 空=Space and 無=Blank as the governing constraint.",
+      "status": "review_needed"
+    }
+  ],
+  "next_action": "Review candidate replacements in semantic groups, then apply approved changes first to LunaRune66.xlsx mother data and regenerate runes66.json / runtime projections."
+}
