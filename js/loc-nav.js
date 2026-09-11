@@ -4,17 +4,41 @@
   const LEGACY_STATICS_RE = /(^|\/)statics\.htm(?:ll)?(?=([?#]|$))/;
   const fileName = () => location.pathname.split("/").pop() || "index.html";
 
-  function loadNav1(){
-    const mount=()=>window.LOCNav1?.mountAll?.();
-    if(window.LOCNav1){ mount(); return; }
-    const existing=document.querySelector('script[data-loc-nav1-module]');
-    if(existing){ existing.addEventListener('load',mount,{once:true}); return; }
-    const script=document.createElement('script');
-    script.src='js/loc-nav1.js';
-    script.defer=true;
-    script.dataset.locNav1Module='true';
-    script.addEventListener('load',mount,{once:true});
-    document.head.appendChild(script);
+  const NAV1 = Object.freeze([
+    {id:"runes",label:"月之符文",href:"runes.html"},
+    {id:"game",label:"遊戲",href:"game.html"},
+    {id:"context",label:"脈絡",href:"context.html"},
+    {id:"governance",label:"治理",href:"governance.html"},
+    {id:"statics",label:"統計",href:"statics.html"},
+    {id:"evolution",label:"推演",href:"evolution.html"}
+  ]);
+
+  const PAGE_GROUP = Object.freeze({
+    "index.html":"home",
+    "lots.html":"runes",
+    "runes.html":"runes",
+    "game.html":"game",
+    "context.html":"context",
+    "evolution.html":"evolution",
+    "governance.html":"governance",
+    "statics.html":"statics",
+    "search.html":"search",
+    "lo3rwang.html":"author"
+  });
+
+  const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+
+  function renderNav1(){
+    const current=PAGE_GROUP[fileName()]||"";
+    document.querySelectorAll('[data-loc-nav]').forEach(node=>{
+      const links=NAV1.map(item=>item.id===current
+        ? `<span class="loc-global-link loc-global-current" aria-current="page">${esc(item.label)}</span>`
+        : `<a class="loc-global-link" href="${esc(item.href)}">${esc(item.label)}</a>`
+      ).join('');
+      const search=`<form class="loc-global-search" action="search.html" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" /><button class="loc-global-search-submit" type="submit">搜尋</button></form>`;
+      const home=current==='home'?'':'<a class="loc-global-home" href="index.html">回月典首頁</a>';
+      node.innerHTML=`<div class="loc-global-links">${links}</div>${search}${home}`;
+    });
   }
 
   function appendScript(src,key){
@@ -200,7 +224,7 @@
   }
 
   window.addEventListener('DOMContentLoaded',()=>{
-    loadNav1();
+    renderNav1();
     normalizeLegacyLinks(document);
     cleanupContextGameEmbed();
     buildTiers();
