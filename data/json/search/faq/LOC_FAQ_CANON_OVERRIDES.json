@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
+  "purpose": "Apply current LOC terminology to FAQ retrieval without rewriting historical FAQ/RAG source files in place.",
+  "phrase_replacements": [
+    ["語言系統模型（Language System Model）", "語言系統模組框架（Language Module Framework）"],
+    ["Language System Model／語言系統模型", "Language Module Framework／語言系統模組框架"],
+    ["Language System Model", "Language Module Framework"],
+    ["語言系統模型", "語言系統模組框架"],
+    ["符號式語言模型（Symbolic Language Model）", "符號式語言模組（Symbolic Language Module）"],
+    ["Symbolic Language Model／符號式語言模型", "Symbolic Language Module／符號式語言模組"],
+    ["Symbolic Language Model", "Symbolic Language Module"],
+    ["符號式語言模型", "符號式語言模組"],
+    ["LOC6 Methodology／方法論", "LOC6 Algorithm／演算法"],
+    ["LOC7 Algorithm／演算法（知識庫）", "LOC7 Module／演算模組"],
+    ["LOC6 Methodology", "LOC6 Algorithm"],
+    ["LOC7 Algorithm", "LOC7 Module"]
+  ],
+  "parent_overrides": {
+    "FAQ-001": {
+      "answer": "LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋、治理並推演語言的語言系統模組框架（Language Module Framework）。它由 LOC1–LOC8 八個語言系統模組組成，讓不同型態的語言資料可以被整理、連結、搜尋與推演。"
+    },
+    "FAQ-002": {
+      "answer": "LOC 是整體語言系統模組框架；LunaRunes（月之符文）是其中第一個成熟的符號式語言模組。月之符文提供 66 符、四向、月相與組合語法作為可實際運作的參考實作，但使用 LOC 不必先學會全部符文。"
+    },
+    "FAQ-005": {
+      "answer": "LOC 本體是一套語言系統模組框架。符文抽取、遊戲情境、歌曲與歌詞、文字創作、多媒體、治理語句、知識文件，以及事件與時間語意，都是可被各模組處理的不同型態語言資料；LOC1–8 是同一框架中的責任分工，不是八個彼此獨立的產品。"
+    },
+    "FAQ-018": {
+      "answer": "LOC1–8 不是版本、等級或八個獨立產品，而是同一套語言系統模組框架中的八個語言系統模組。正式名稱為：LOC1 LunaRunes／月之符文、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Algorithm／演算法、LOC7 Module／演算模組、LOC8 Evolution／推演。"
+    },
+    "FAQ-091": {
+      "intent": "為什麼 LOC 定位為 Language Module Framework",
+      "question": "為什麼 LOC 定位為 Language Module Framework／語言系統模組框架？",
+      "aliases": [
+        "LOC為什麼是Language Module Framework？",
+        "LOC為什麼是語言系統模組框架？",
+        "LOC是模型還是框架？"
+      ],
+      "answer": "LOC 的核心價值不是把自己包裝成大型生成式語言模型，而是把語言分析、脈絡、創作、演算法、模組與推演整理成可重複使用、可治理、可組合的架構，因此現行定位固定為 Language Module Framework／語言系統模組框架。LunaRunes 則是其中可實際運作的 Symbolic Language Module／符號式語言模組。"
+    }
+  }
+}
