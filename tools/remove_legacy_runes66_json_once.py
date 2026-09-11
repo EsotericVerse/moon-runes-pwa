@@ -95,10 +95,11 @@ sw.write_text(text, encoding="utf-8")
 # Delete only after all active consumers and governance rules are rewired.
 LEGACY.unlink()
 
-# Final guard: no active text file may still name the retired JSON.
+# Final guard: no active runtime/document file may still name the retired JSON.
+# The validator itself is allowed to name it only to forbid its return.
 remaining: list[str] = []
 for path in ROOT.rglob("*"):
-    if not path.is_file() or path.suffix.lower() not in TEXT_SUFFIXES or path == SELF:
+    if not path.is_file() or path.suffix.lower() not in TEXT_SUFFIXES or path in {SELF, validator}:
         continue
     rel = path.relative_to(ROOT).as_posix()
     if rel.startswith(ARCHIVE_PREFIX):
