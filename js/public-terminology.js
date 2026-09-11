@@ -28,6 +28,9 @@
 
   const PHRASE_TEXT = [
     ['語言模型框架（Language Model Framework）', '語言系統模組框架（Language Module Framework）'],
+    ['語言模型框架', '語言系統模組框架'],
+    ['Language Model Framework', 'Language Module Framework'],
+    ['language model framework', 'language module framework'],
     ['Language System Model', 'Language Module Framework'],
     ['language system model', 'language module framework'],
     ['語言系統模型', '語言系統模組框架'],
