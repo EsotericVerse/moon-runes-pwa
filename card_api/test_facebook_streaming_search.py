@@ -62,6 +62,20 @@ class FacebookStreamingSearchTests(unittest.TestCase):
         path.write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
         return tmp, FacebookSearchEngine(path)
 
+    def build_test_index(self, engine):
+        root = engine.dataset_path.parent
+        governance_path = root / "keyword_governance.json"
+        governance_path.write_text(
+            json.dumps({"min_term_length": 2, "max_term_length": 4, "min_document_frequency": 1}),
+            encoding="utf-8",
+        )
+        output_path = root / "facebook_keyword_index.sqlite3"
+        built = build_index(engine.dataset_path, governance_path, output_path)
+        self.assertEqual(output_path, built)
+        engine.keyword_index_path = output_path
+        engine.posts.keyword_index_path = output_path
+        return governance_path, output_path
+
     def test_manifest_does_not_materialize_all_posts(self):
         tmp, engine = self.make_engine()
         try:
@@ -116,6 +130,16 @@ class FacebookStreamingSearchTests(unittest.TestCase):
         finally:
             tmp.cleanup()
 
+    def test_search_uses_build_time_sqlite_candidates(self):
+        tmp, engine = self.make_engine()
+        try:
+            self.build_test_index(engine)
+            with patch.object(engine, "_iter_posts", side_effect=AssertionError("search rescanned shards")):
+                results = engine.search("月光", top_k=10, start_date="2026-01-03")
+            self.assertEqual(["FB-3"], [row["result_id"] for row in results])
+        finally:
+            tmp.cleanup()
+
     def test_keyword_ranking_accepts_streamed_posts(self):
         tmp, engine = self.make_engine()
         try:
@@ -128,20 +152,9 @@ class FacebookStreamingSearchTests(unittest.TestCase):
     def test_keyword_ranking_uses_build_time_sqlite_index(self):
         tmp, engine = self.make_engine()
         try:
-            root = engine.dataset_path.parent
-            governance_path = root / "keyword_governance.json"
-            governance_path.write_text(
-                json.dumps({"min_term_length": 2, "max_term_length": 4, "min_document_frequency": 1}),
-                encoding="utf-8",
-            )
-            output_path = root / "facebook_keyword_index.sqlite3"
-            built = build_index(engine.dataset_path, governance_path, output_path)
-            self.assertEqual(output_path, built)
-            engine.posts.keyword_index_path = output_path
+            governance_path, output_path = self.build_test_index(engine)
             governance = load_governance(governance_path)
 
-            # Once the SQLite aggregate exists, ranking must not reopen any
-            # Facebook shard at request time.
             with patch.object(engine, "_iter_posts", side_effect=AssertionError("ranking rescanned shards")):
                 result = rank_keyword_documents(
                     engine.posts,
