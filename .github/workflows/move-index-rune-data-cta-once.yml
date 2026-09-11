@@ -1,0 +1,34 @@
+name: Move homepage rune data CTA once
+on:
+  push:
+    paths:
+      - 'tools/move_index_rune_data_cta_once.py'
+      - '.github/workflows/move-index-rune-data-cta-once.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/move_index_rune_data_cta_once.py
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert s.count('查看完整月之符文資料') == 1
+          left=s.find('<div class="left-panel">')
+          right=s.find('<div class="right-panel">')
+          cta=s.find('查看完整月之符文資料')
+          assert right < cta
+          assert not (left < cta < right)
+          PY
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "refactor: move rune data CTA out of sample card"
+          git push
