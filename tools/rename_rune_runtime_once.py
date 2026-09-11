@@ -1,46 +1,33 @@
 from pathlib import Path
 
-# Trigger one-shot rename after workflow creation.
 ROOT = Path(__file__).resolve().parents[1]
 old_group = ROOT / 'data/json/core/runes66groups.json'
 new_group = ROOT / 'data/json/core/runesgroup.json'
-old_loader = ROOT / 'js/runes66.js'
-new_loader = ROOT / 'js/runes.js'
+loader = ROOT / 'js/runes66.js'
 
 if not old_group.is_file():
     raise SystemExit('missing data/json/core/runes66groups.json')
 if new_group.exists():
     raise SystemExit('data/json/core/runesgroup.json already exists')
-if not old_loader.is_file():
+if not loader.is_file():
     raise SystemExit('missing js/runes66.js')
-if new_loader.exists():
-    raise SystemExit('js/runes.js already exists')
 
 # Rename group metadata without changing bytes.
 new_group.write_bytes(old_group.read_bytes())
 old_group.unlink()
 
-# Rename runtime loader and update only naming/path references.
-loader = old_loader.read_text(encoding='utf-8')
-loader = loader.replace('/* LunaRunes66 runtime dataset.', '/* LunaRunes runtime dataset.')
-loader = loader.replace('data/json/core/runes66groups.json', 'data/json/core/runesgroup.json')
-loader = loader.replace("../data/json/core/runes66groups.json", "../data/json/core/runesgroup.json")
-new_loader.write_text(loader, encoding='utf-8')
-old_loader.unlink()
+# Keep js/runes66.js as the 66-rune runtime loader, but align its content with canonical runes.json.
+text = loader.read_text(encoding='utf-8')
+text = text.replace('/* LunaRunes66 runtime dataset.', '/* LunaRunes 66-rune runtime loader.')
+text = text.replace('data/json/core/runes66groups.json', 'data/json/core/runesgroup.json')
+text = text.replace("../data/json/core/runes66groups.json", "../data/json/core/runesgroup.json")
+loader.write_text(text, encoding='utf-8')
 
+# Update all active group metadata references. Do not rename js/runes66.js.
 replacements = {
-    'js/runeLibrary.js': [
-        ('// runeLibrary.js - unified LunaRunes66 runtime access', '// runeLibrary.js - unified LunaRunes runtime access'),
-        ("./runes66.js", "./runes.js"),
-    ],
-    'js/rune-draw.js': [("./runes66.js", "./runes.js")],
     'js/rune.js': [('data/json/core/runes66groups.json', 'data/json/core/runesgroup.json')],
-    'service-worker.js': [
-        ('/data/json/core/runes66groups.json', '/data/json/core/runesgroup.json'),
-        ('/js/runes66.js', '/js/runes.js'),
-    ],
+    'service-worker.js': [('/data/json/core/runes66groups.json', '/data/json/core/runesgroup.json')],
 }
-
 for rel, pairs in replacements.items():
     path = ROOT / rel
     text = path.read_text(encoding='utf-8')
@@ -48,7 +35,7 @@ for rel, pairs in replacements.items():
         text = text.replace(old, new)
     path.write_text(text, encoding='utf-8')
 
-# Cache bump so old loader/group names disappear from clients.
+# Cache bump so clients stop requesting the retired group filename.
 sw = ROOT / 'service-worker.js'
 text = sw.read_text(encoding='utf-8')
 import re
@@ -58,23 +45,22 @@ if m:
     text = text[:m.start()] + f'moon-runes-pwa-v{n}' + text[m.end():]
 sw.write_text(text, encoding='utf-8')
 
-# Repository governance: new files required, old names forbidden/stale.
+# Repository governance: new group file required; old group name forbidden/stale.
 validator = ROOT / 'card_api/scripts/validate_repo_layout.py'
 text = validator.read_text(encoding='utf-8')
 if 'ROOT / "data" / "json" / "core" / "runes66groups.json"' not in text:
     anchor = '    ROOT / "data" / "json" / "core" / "runes66.json",\n'
     if anchor in text:
-        text = text.replace(anchor, anchor + '    ROOT / "data" / "json" / "core" / "runes66groups.json",\n    ROOT / "js" / "runes66.js",\n', 1)
+        text = text.replace(anchor, anchor + '    ROOT / "data" / "json" / "core" / "runes66groups.json",\n', 1)
 if 'ROOT / "data" / "json" / "core" / "runesgroup.json"' not in text:
     anchor = '    ROOT / "data" / "json" / "core" / "runes.json",\n'
-    text = text.replace(anchor, anchor + '    ROOT / "data" / "json" / "core" / "runesgroup.json",\n    ROOT / "js" / "runes.js",\n', 1)
+    text = text.replace(anchor, anchor + '    ROOT / "data" / "json" / "core" / "runesgroup.json",\n', 1)
 if '    "runes66groups.json",\n' not in text:
     anchor = '    "runes66.json",\n'
-    text = text.replace(anchor, anchor + '    "runes66groups.json",\n    "runes66.js",\n', 1)
+    text = text.replace(anchor, anchor + '    "runes66groups.json",\n', 1)
 validator.write_text(text, encoding='utf-8')
 
-# Final active-reference guard, excluding validator because it intentionally forbids old names.
-old_tokens = ('runes66groups.json', 'runes66.js')
+# Final guard: no active file may still reference the retired group filename.
 remaining = []
 for path in ROOT.rglob('*'):
     if not path.is_file():
@@ -88,11 +74,11 @@ for path in ROOT.rglob('*'):
         body = path.read_text(encoding='utf-8')
     except UnicodeDecodeError:
         continue
-    if any(token in body for token in old_tokens):
+    if 'runes66groups.json' in body:
         remaining.append(rel)
 if remaining:
-    raise SystemExit('old rune naming still referenced by: ' + ', '.join(sorted(remaining)))
+    raise SystemExit('retired group filename still referenced by: ' + ', '.join(sorted(remaining)))
 
 print('Renamed runes66groups.json -> runesgroup.json')
-print('Renamed runes66.js -> runes.js')
-print('Updated active imports/fetch/cache/governance references')
+print('Updated js/runes66.js to use canonical runes.json + runesgroup.json')
+print('Updated active fetch/cache/governance references')
