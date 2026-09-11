@@ -27,8 +27,8 @@ LunaRunes Canon
 ## RC3 已資料化的功能
 
 - **LunaRunes / Rune Graph**：由現有正向關鍵詞、反向關鍵詞、符文、唯一群組與既有規則建立符文脈絡。
-- **Context / 脈絡**：`context.html` 直接顯示同一套符文 Graph，不再以空白 Graph 作為主要示範。
-- **Runes / 符文知識庫**：`runes.html` 同步提供「符文脈絡 Graph · No API」入口與資料。
+- **Runes / 符文知識庫**：`runes.html` 是目前符文脈絡 Graph 的主要展示頁，直接呈現 LunaRunes 專屬知識與關係資料。
+- **Context / 脈絡**：`context.html` 現階段允許顯示與 `runes.html` 相同的符文 Graph。這不是重複資料來源，而是共用同一套正式資料；因目前成熟的 Context 資料只有 LunaRunes，所以先以符文 Graph 作為第一個完整實例。未來新增其他脈絡資料來源後，`context.html` 再逐步擴展為跨資料來源的通用 Graph，而 `runes.html` 保持 LunaRunes 專屬展示。
 - **Statistics / 統計**：加入符文關鍵詞排行榜與符文結構統計。
 - **Evolution / 推演**：加入符文資料歷程、符文結構時間線、群組關鍵詞趨勢與群組軌跡。
 - **PWA**：Graph 與 analytics runtime 已納入 Service Worker cache。
