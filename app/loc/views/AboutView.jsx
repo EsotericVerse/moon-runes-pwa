@@ -1,36 +1,51 @@
+const modules=[
+  ['LOC1','LunaRunes／月之符文','66 個中文單一字構成的符號式語言模型；提供圖鑑、方向、抽牌與籤詩指引。','/runes'],
+  ['LOC2','Context／脈絡','把語彙放進事件、關係與 Graph，觀察語意如何在脈絡中形成連結。','/context'],
+  ['LOC3','Music／音樂','收納歌曲、歌詞、ERA、曲風與創作脈絡，讓作品可搜尋、比較與分析。','/search'],
+  ['LOC4','Literary／文字創作','小說、文字作品與符文延伸文本進入同一個可檢索、可分析的語料層。','/search'],
+  ['LOC5','Media／多媒體','把影像、影音、作品連結與文字資料放回同一套語言脈絡。','/library'],
+  ['LOC6','Algorithm／演算法','治理分類、關鍵詞、語意邊界與演算規則，讓系統知道如何判斷而不是只會搜尋。','/governance'],
+  ['LOC7','Module／模組','把可重複使用的語言能力整理成模組，供分類、Library、Graph 與其他工具共用。','/classify'],
+  ['LOC8','Evolution／推演','把資料重新放回時間，觀察時期、趨勢與演化，再決定下一步如何調整。','/evolution']
+];
+
+const starts=[
+  ['01','先使用','完全不懂 LOC 也沒關係，先從月之符文或遊戲開始，先用再理解。','/runes','月之符文'],
+  ['02','再找資料','搜尋作品、關鍵詞與內容，看看 LOC 已經整理了哪些語料。','/search','搜尋'],
+  ['03','看脈絡','進一步看 Graph、事件與關係，理解資料不是單獨存在。','/context','脈絡'],
+  ['04','最後看治理','需要深入時再看分類、語意邊界、資料治理與演算法。','/governance','治理']
+];
+
 export default function AboutView(){
   return <section className="loc-view">
     <header className="loc-hero">
-      <div>
-        <p className="loc-eyebrow">月典（LOC, Luna Codex）&gt; 語言模型框架(Language Model Framework)</p>
-        <h1>LOC月典</h1>
-        <p className="loc-core-line">從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，累積後再選擇怎麼進化。</p>
-        <p>月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演語言的系統。月之符文(LunaRunes)是一套有自己獨立的語言方式。月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，讓累積的資料可以繼續被理解、比較分析與推演。</p>
-        <div className="loc-actions">
-          <a className="loc-button primary" href="/runes">月之符文</a>
-          <a className="loc-button" href="/search">搜尋作品</a>
-          <a className="loc-button" href="/statics">查看統計</a>
-          <a className="loc-button" href="/governance">治理原則</a>
-        </div>
+      <p className="loc-eyebrow">LOC · Luna Codex · Language System Model</p>
+      <h1>LOC 月典</h1>
+      <p className="loc-core-line">從語彙開始，讓脈絡、作品與時間彼此連結，最後形成可搜尋、可分析、可治理、可推演的語言系統。</p>
+      <p>LOC（月典／Luna Codex）是一套用來分析、整理、搜尋與推演語言的 Language System Model。月之符文 LunaRunes 是它最早的語彙種子，也是目前可直接運作的 Symbolic Language Model；但使用 LOC 不需要先學會符文或理解完整理論。</p>
+      <div className="loc-actions">
+        <a className="loc-button primary" href="/runes">月之符文</a>
+        <a className="loc-button" href="/search">搜尋作品</a>
+        <a className="loc-button" href="/statics">查看統計</a>
+        <a className="loc-button" href="/governance">治理原則</a>
       </div>
-
-      <aside className="hero-note" aria-label="核心概念">
-        <div className="moon" aria-hidden="true"></div>
-        <strong>月之符文是種子，但不是使用門檻。</strong>
-        <p>不必先知道月之符文，不必先懂得解牌，也不必先理解什麼是語言系統。你可以先抽牌、找作品、看脈絡分析、看關鍵字統計排行；想深入時，月典(LOC)再把底層結構展開給你。</p>
-      </aside>
     </header>
 
     <section className="loc-card">
       <p className="loc-eyebrow">Start Here</p>
-      <h2>不知道從哪邊開始？沒關係！</h2>
-      <p>不用先了解或知道什麼，抽張牌就知道！</p>
+      <h2>第一次來，可以照這個順序開始</h2>
+      <p>月之符文是種子，但不是使用門檻。你可以先抽牌、玩遊戲、找作品、看脈絡或排行榜；想深入時，再讓 LOC 把底層結構展開。</p>
+      <div className="loc-grid two">
+        {starts.map(([no,title,copy,href,label])=><article className="loc-card" key={no}>
+          <p className="loc-eyebrow">{no}</p><h2>{title}</h2><p>{copy}</p><a className="loc-button" href={href}>{label}</a>
+        </article>)}
+      </div>
     </section>
 
     <section className="loc-card">
-      <p className="loc-eyebrow">LunaRunes · 月之符文籤詩系統</p>
-      <h2>問一件事，或讓語言自己成長</h2>
-      <p>月之符文由 66 個中文單一字構成。可以從一個問題開始，也可以沒有問題直接抽取，再依需要選擇不同的抽牌方式。</p>
+      <p className="loc-eyebrow">LunaRunes</p>
+      <h2>月之符文：66 個中文單一字構成的語言入口</h2>
+      <p>可以從一個問題開始，也可以沒有問題直接抽取。單卡提供語意起點；雙卡讀因 → 果；三卡讀源 → 轉 → 合；五卡加入過去、現在、未來顯化、周圍環境與自己心境；OW3gs 11 卡則以 7–11 為核心判定層。</p>
       <div className="loc-actions">
         <a className="loc-button primary" href="/runes">開始抽牌／查看圖鑑</a>
         <a className="loc-button" href="/context">查看符文脈絡</a>
@@ -38,14 +53,14 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card">
-      <strong>不知道怎麼說，也沒關係。</strong>
-      <p>月之符文可以成為語意起點：問事、整理感受，或在沒有靈感時提供新的創作路徑。</p>
-    </section>
-
-    <section className="loc-card">
-      <p className="loc-eyebrow">LunaRunes Context Evolution</p>
-      <h2>月之符文的語言脈絡</h2>
-      <p>月之符文由基本語彙出發，進入關係與脈絡分析，結合占卜使用的方法體系，演化出全新的語言表達作品。</p>
+      <p className="loc-eyebrow">Structure of LOC</p>
+      <h2>LOC1–8 語言系統模組</h2>
+      <p>八個模組不是層級，而是同一套 Language System Model 的八種功能分工。資料可以從任一入口進入，再依需要跨模組流動。</p>
+      <div className="loc-grid two">
+        {modules.map(([id,title,copy,href])=><a className="loc-link-card" href={href} key={id}>
+          <strong>{id} · {title}</strong><span>{copy}</span>
+        </a>)}
+      </div>
     </section>
 
     <section className="loc-grid two">
