@@ -8,8 +8,22 @@
 @import url("./night.css");
 
 /* STATE VISIBILITY CANON
-   UI sections are visible by default and are hidden only through the semantic
-   [hidden] state set by HTML/JavaScript. Legacy CSS must not hard-hide active views. */
+   Functional visibility is controlled only by the semantic [hidden] state.
+   Legacy CSS must not independently hide an active view. */
+[hidden]{
+  display:none!important;
+}
+body :where(.runes-view,.search-view,.view,[data-context-view])[hidden],
+body [data-draw-execution][hidden]{
+  display:none!important;
+}
+body .runes-view:not([hidden]),
+body .search-view:not([hidden]),
+body .view:not([hidden]),
+body [data-context-view]:not([hidden]),
+body [data-draw-execution]:not([hidden]){
+  display:block!important;
+}
 body.loc-page-lots #draw-mode-selector:not([hidden]){
   display:block!important;
 }
