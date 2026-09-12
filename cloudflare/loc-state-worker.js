@@ -297,7 +297,10 @@ export default {
           return json({ ok: true, build: BUILD, daily_draws: await listDaily(env, limit) }, { headers: cors });
         }
         if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized', build: BUILD }, { status: 401, headers: cors });
-        if (request.method === 'POST') return json({ ok: true, build: BUILD, daily_draw: await saveDaily(env, (await request.json()).daily_draw || await request.json()) }, { headers: cors });
+        if (request.method === 'POST') {
+          const body = await request.json();
+          return json({ ok: true, build: BUILD, daily_draw: await saveDaily(env, body.daily_draw || body) }, { headers: cors });
+        }
       }
 
       if (path === '/context') {
