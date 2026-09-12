@@ -6,6 +6,7 @@ import { getSearchCollection, SEARCH_COLLECTION_ORDER, SEARCH_COLLECTIONS } from
 
 const norm=value=>String(value??'').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 const snippet=(text,q)=>{const raw=String(text||'').replace(/\s+/g,' ').trim();const i=norm(raw).indexOf(norm(q));const start=Math.max(0,(i<0?0:i)-70);return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;};
+const manifestDir=path=>path.slice(0,path.lastIndexOf('/')+1);
 function objectsFrom(value,out=[],depth=0){if(depth>4)return out;if(Array.isArray(value)){for(const item of value){if(item&&typeof item==='object'&&!Array.isArray(item))out.push(item);else objectsFrom(item,out,depth+1);}return out;}if(value&&typeof value==='object')for(const child of Object.values(value))if(Array.isArray(child))objectsFrom(child,out,depth+1);return out;}
 function genericResult(item,source,q){const hay=JSON.stringify(item);if(!norm(hay).includes(norm(q)))return null;const title=item.title||item.name||item['符文名稱']||item['名稱']||item.question||item.label||item.id||item.work_id||source;const body=item.text||item.content||item.answer||item.summary||item.description||item.retrieval_text||hay;return {key:`${source}-${title}-${body.slice(0,30)}`,source,title,date:item.date||item.created_date||item.updated_at||'',snippet:snippet(body,q),href:item.url||item.href||''};}
 
@@ -51,7 +52,7 @@ export default function SearchView(){
         manifestRequests.forEach((item,index)=>{if(item.key==='text')textManifest=manifestData[index];else musicManifest=manifestData[index];});
       }
       if(textManifest)for(const shard of textManifest.shards||[])requests.push({path:'/'+String(shard.path||'').replace(/^\//,''),kind:'text',label:'文字創作'});
-      if(musicManifest)for(const shard of musicManifest.shards||[])requests.push({path:`/data/json/search/loc3/${shard}`,kind:'music',label:'音樂'});
+      if(musicManifest){const base=manifestDir(LOC_DATA.MUSIC_SEARCH_MANIFEST);for(const shard of musicManifest.shards||[])requests.push({path:`${base}${shard}`,kind:'music',label:'音樂'});}
       const data=await fetchLocJsonBatch(requests,{concurrency:2});
       if(id!==searchId.current)return;
       const found=[];
