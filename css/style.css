@@ -6,3 +6,13 @@
 @import url("./style-base.css");
 @import url("./day.css");
 @import url("./night.css");
+
+/* STATE VISIBILITY CANON
+   UI sections are visible by default and are hidden only through the semantic
+   [hidden] state set by HTML/JavaScript. Legacy CSS must not hard-hide active views. */
+body.loc-page-lots #draw-mode-selector:not([hidden]){
+  display:block!important;
+}
+body.loc-page-lots #draw-mode-selector[hidden]{
+  display:none!important;
+}
