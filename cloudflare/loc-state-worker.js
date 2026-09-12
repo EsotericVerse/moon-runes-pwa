@@ -3,9 +3,12 @@ const DAILY_PREFIX = 'loc:daily-rune:';
 const DAILY_INDEX_KEY = 'loc:daily-rune:index';
 const CONTEXT_EVENTS_KEY = 'loc:context:events';
 const CONTEXT_RELATIONS_KEY = 'loc:context:relations';
+const EVOLUTION_SHARED_KEY = 'loc:evolution:shared';
+const EVOLUTION_RUNES_KEY = 'loc:evolution:runes';
+const EVOLUTION_LANGUAGE_KEY = 'loc:evolution:language';
 const ADMIN_COOKIE = 'loc_admin';
 const ADMIN_TTL = 60 * 60 * 8;
-const BUILD = '2026-09-12-kv-context-v4';
+const BUILD = '2026-09-12-kv-evolution-v1';
 
 const json = (data, init = {}) => new Response(JSON.stringify(data), {
   ...init,
@@ -187,6 +190,11 @@ async function writeCollection(env, key, field, rows) {
   return body[field];
 }
 
+async function readEvolutionSnapshot(env, key) {
+  const snapshot = await env.LOC_KV.get(key, 'json');
+  return snapshot && typeof snapshot === 'object' ? snapshot : null;
+}
+
 async function readDailyIndex(env) {
   const data = await env.LOC_KV.get(DAILY_INDEX_KEY, 'json');
   return Array.isArray(data?.daily_draws) ? data.daily_draws : [];
@@ -301,6 +309,24 @@ export default {
           const body = await request.json();
           return json({ ok: true, build: BUILD, daily_draw: await saveDaily(env, body.daily_draw || body) }, { headers: cors });
         }
+      }
+
+      if (path === '/evolution' || path === '/evolution/shared') {
+        if (request.method !== 'GET') return json({ ok: false, error: 'method not allowed', build: BUILD }, { status: 405, headers: cors });
+        const shared = await readEvolutionSnapshot(env, EVOLUTION_SHARED_KEY);
+        if (path === '/evolution/shared') return json({ ok: true, build: BUILD, seeded: !!shared, snapshot: shared }, { headers: cors });
+        const [runes, language] = await Promise.all([
+          readEvolutionSnapshot(env, EVOLUTION_RUNES_KEY),
+          readEvolutionSnapshot(env, EVOLUTION_LANGUAGE_KEY)
+        ]);
+        return json({ ok: true, build: BUILD, seeded: !!(shared || runes || language), shared, runes, language }, { headers: cors });
+      }
+
+      if (path === '/evolution/runes' || path === '/evolution/language') {
+        if (request.method !== 'GET') return json({ ok: false, error: 'method not allowed', build: BUILD }, { status: 405, headers: cors });
+        const key = path.endsWith('/runes') ? EVOLUTION_RUNES_KEY : EVOLUTION_LANGUAGE_KEY;
+        const snapshot = await readEvolutionSnapshot(env, key);
+        return json({ ok: true, build: BUILD, seeded: !!snapshot, snapshot }, { headers: cors });
       }
 
       if (path === '/context') {
