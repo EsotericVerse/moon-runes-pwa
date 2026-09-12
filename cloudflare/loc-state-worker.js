@@ -3,6 +3,7 @@ const DAILY_PREFIX = 'loc:daily-rune:';
 const DAILY_INDEX_KEY = 'loc:daily-rune:index';
 const ADMIN_COOKIE = 'loc_admin';
 const ADMIN_TTL = 60 * 60 * 8;
+const BUILD = '2026-09-12-admin-v2';
 
 const json = (data, init = {}) => new Response(JSON.stringify(data), {
   ...init,
@@ -115,7 +116,7 @@ function adminHtml(loggedIn, message = '') {
   const body = loggedIn
     ? `<p>LOC KV 管理登入有效。</p><form method="post"><input type="hidden" name="action" value="logout"><button type="submit">登出</button></form>`
     : `<form method="post"><label>LOC_WRITE_TOKEN <input name="token" type="password" autocomplete="current-password" required></label><button type="submit">登入</button></form>`;
-  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LOC KV Admin</title><main style="max-width:520px;margin:48px auto;font:16px/1.6 system-ui;padding:0 20px"><h1>LOC KV Admin</h1>${note}${body}</main>`;
+  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LOC KV Admin</title><main style="max-width:520px;margin:48px auto;font:16px/1.6 system-ui;padding:0 20px"><h1>LOC KV Admin</h1><p>Build: ${BUILD}</p>${note}${body}</main>`;
 }
 
 async function handleAdmin(request, env) {
@@ -227,25 +228,25 @@ export default {
     const cors = corsHeaders(request, env);
 
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
-    if (!env.LOC_KV) return json({ ok: false, error: 'LOC_KV binding missing' }, { status: 503, headers: cors });
+    if (!env.LOC_KV) return json({ ok: false, error: 'LOC_KV binding missing', build: BUILD }, { status: 503, headers: cors });
 
     try {
-      if (url.pathname === '/api/loc-state/admin') return handleAdmin(request, env);
+      if (url.pathname === '/api/loc-state/admin' || url.pathname === '/api/loc-state/admin/') return handleAdmin(request, env);
 
       if (url.pathname === '/api/loc-state/health') {
-        return json({ ok: true, service: 'loc-state', kv: true }, { headers: cors });
+        return json({ ok: true, service: 'loc-state', kv: true, build: BUILD }, { headers: cors });
       }
 
       if (url.pathname === '/api/loc-state/eras') {
         if (request.method === 'GET') {
           const data = await readEras(env);
-          return json({ ok: true, ...data }, { headers: cors });
+          return json({ ok: true, build: BUILD, ...data }, { headers: cors });
         }
-        if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized' }, { status: 401, headers: cors });
+        if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized', build: BUILD }, { status: 401, headers: cors });
         if (request.method === 'PUT') {
           const body = await request.json();
           const data = await writeEras(env, body);
-          return json({ ok: true, ...data }, { headers: cors });
+          return json({ ok: true, build: BUILD, ...data }, { headers: cors });
         }
         if (request.method === 'POST') {
           const body = await request.json();
@@ -253,31 +254,31 @@ export default {
           const eras = [...existing.eras];
           if (body.action === 'delete') {
             const period = String(body.period || body.era?.period || '');
-            return json({ ok: true, ...(await writeEras(env, { eras: eras.filter(x => String(x.period) !== period) })) }, { headers: cors });
+            return json({ ok: true, build: BUILD, ...(await writeEras(env, { eras: eras.filter(x => String(x.period) !== period) })) }, { headers: cors });
           }
           const era = normalizeEra(body.era || body);
           const i = eras.findIndex(x => String(x.period) === era.period);
           if (i >= 0) eras[i] = { ...eras[i], ...era }; else eras.push(era);
-          return json({ ok: true, ...(await writeEras(env, { eras })) }, { headers: cors });
+          return json({ ok: true, build: BUILD, ...(await writeEras(env, { eras })) }, { headers: cors });
         }
       }
 
       if (url.pathname === '/api/loc-state/daily-runes') {
         if (request.method === 'GET') {
           const limit = Math.max(1, Math.min(1000, Number(url.searchParams.get('limit') || 400)));
-          return json({ ok: true, daily_draws: await listDaily(env, limit) }, { headers: cors });
+          return json({ ok: true, build: BUILD, daily_draws: await listDaily(env, limit) }, { headers: cors });
         }
-        if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized' }, { status: 401, headers: cors });
+        if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized', build: BUILD }, { status: 401, headers: cors });
         if (request.method === 'POST') {
           const body = await request.json();
           const row = await saveDaily(env, body.daily_draw || body);
-          return json({ ok: true, daily_draw: row }, { headers: cors });
+          return json({ ok: true, build: BUILD, daily_draw: row }, { headers: cors });
         }
       }
 
-      return json({ ok: false, error: 'not found' }, { status: 404, headers: cors });
+      return json({ ok: false, error: 'not found', build: BUILD, path: url.pathname }, { status: 404, headers: cors });
     } catch (error) {
-      return json({ ok: false, error: String(error?.message || error) }, { status: 500, headers: cors });
+      return json({ ok: false, error: String(error?.message || error), build: BUILD }, { status: 500, headers: cors });
     }
   }
 };
