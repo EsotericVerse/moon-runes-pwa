@@ -1,611 +1,101 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07182d"><title>脈絡｜LOC</title>
-  <link rel="stylesheet" href="css/style.css" /><meta name="description" content="脈絡：語彙之間的關係、Context、Scenario、Event 與 Graph。脈絡沙盒遊戲是其中一個互動實作。" ><link rel="canonical" href="https://loc.lo3rwang.cc/context.html">
-  
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07182d">
+<title>脈絡｜LOC</title>
+<link rel="stylesheet" href="css/style.css" />
+<meta name="description" content="脈絡：分析與統計既有事件、關係、Scenario 與符文語意 Graph。">
+<link rel="canonical" href="https://loc.lo3rwang.cc/context.html">
+</head>
+<body class="loc-responsive-page loc-page-game loc-page-context">
+<div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="context" aria-label="全站導覽"></nav></div>
+<div class="app-shell"><main class="workspace-main">
 
-</head><body class="loc-responsive-page loc-page-game loc-page-context"><div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="game" aria-label="全站導覽"></nav></div><div class="app-shell">
+<section class="hero context-section" id="context-entry"><div class="wrap loc-header">
+<p class="loc-header-meta">Context · Analyze & Measure</p>
+<h1 class="loc-header-title">脈絡</h1>
+<h2 class="loc-header-subtitle">把已存在的資料整理成可以觀察、比較與統計的結構。</h2>
+<p class="loc-header-copy">Context 負責分析與統計；不替資料來源建立第二套 authority。正式資料由各自 JSON 管理，瀏覽器只讀 generated static JS。</p>
+</div></section>
 
-<main class="workspace-main">
-<section class="hero context-section" data-context-view="graph" id="context-entry"><div class="wrap loc-header">
-<p class="loc-header-meta">Graph Overview</p>
-<h1 class="loc-header-title">總覽</h1>
-<h2 class="loc-header-subtitle">把節點與關係組合起來，查看局部脈絡。</h2>
-<p class="loc-header-copy">Graph 只負責搜尋、展開與閱讀；節點與關係式分別在各自功能中管理。</p>
+<section class="context-section"><div class="wrap">
+<div class="loc-header"><p class="loc-header-meta">Context / Statistics</p><h1 class="loc-header-title">脈絡統計</h1><h2 class="loc-header-subtitle">先看資料結構，再往下看事件、關係與語意 Graph。</h2></div>
+<div class="metrics">
+  <div class="card metric"><small>歷史事件</small><strong id="contextMetricEvents">—</strong></div>
+  <div class="card metric"><small>關係式</small><strong id="contextMetricRelations">—</strong></div>
+  <div class="card metric"><small>Scenario</small><strong id="contextMetricScenarios">—</strong></div>
+  <div class="card metric"><small>Scenario 群組</small><strong id="contextMetricGroups">—</strong></div>
+</div>
+<section class="context-tool-card" style="margin-top:16px"><h3>Scenario 群組分布</h3><div class="chips" id="contextScenarioStats"><span class="chip">載入中…</span></div></section>
+</div></section>
 
+<section class="context-section" id="context-events"><div class="wrap">
+<div class="loc-header"><p class="loc-header-meta">Context / Event</p><h1 class="loc-header-title">事件</h1><h2 class="loc-header-subtitle">已發生事件的靜態脈絡紀錄。</h2><p class="loc-header-copy">歷史標記會保留；現行時期依日期與 ERA authority 映射。</p></div>
+<section class="context-tool-card"><div class="context-list" id="contextEventList"><div class="context-empty">載入事件…</div></div><div class="context-pagination" id="contextEventPagination"></div></section>
+</div></section>
+
+<section class="context-section" id="context-relations"><div class="wrap">
+<div class="loc-header"><p class="loc-header-meta">Context / Relation</p><h1 class="loc-header-title">關係式</h1><h2 class="loc-header-subtitle">描述資料之間已確認的跨作品、跨媒介或語意關係。</h2><p class="loc-header-copy">Relation 只讀正式 Context authority；Graph 由這些正式資料推導，不人工養第二套 node database。</p></div>
+<section class="context-tool-card"><div class="context-list" id="contextRelationList"><div class="context-empty">載入關係…</div></div></section>
+</div></section>
+
+<section class="context-section" id="context-scenarios"><div class="wrap">
+<div class="loc-header"><p class="loc-header-meta">Context / Scenario</p><h1 class="loc-header-title">Scenario Corpus</h1><h2 class="loc-header-subtitle">32 個情境原型，用來描述可能遇到的語意情境。</h2><p class="loc-header-copy">Scenario 是分析框架，不是固定符文配對，也不是自動替現實做決策。</p></div>
+<section class="context-tool-card"><div class="context-graph-filter"><select id="contextScenarioGroup"><option value="">全部群組</option></select><input id="contextScenarioQuery" placeholder="搜尋情境"></div><div class="context-list" id="contextScenarioList"><div class="context-empty">載入 Scenario…</div></div><div class="context-pagination" id="contextScenarioPagination"></div></section>
+</div></section>
+
+<section class="context-section"><div class="wrap">
+<div class="loc-header"><p class="loc-header-meta">Context / Semantic Graph</p><h1 class="loc-header-title">符文語意 Graph</h1><h2 class="loc-header-subtitle">由同一份 LunaRunes runtime 資料推導節點與關係。</h2><p class="loc-header-copy">No API、No RAG、No second Canon。Graph 與符文分析共用同一份 runtime，不再另外抓一次 runes.json。</p></div>
 <section class="context-tool-card" id="runeSemanticGraph">
-  <div class="context-item-head"><div>
-    <h2>符文脈絡 Graph · No API</h2>
-    <p>No API：直接使用現有 LunaRunes 的關鍵詞、反向關鍵詞、符文、唯一群組、主體性轉移與既有規則建立 Graph；衍生詞與 Canon 分離，不呼叫外部 API，也不建立第二套 Canon。</p>
-  </div></div>
-  <form class="context-graph-toolbar">
-    <label>搜尋<input id="runeGraphQuery" placeholder="例如：光明、清晰、暴躁、光、元素"></label>
-    <button class="context-btn primary" type="submit">搜尋符文脈絡</button>
-  </form>
+  <div class="context-item-head"><div><h2>LunaRunes Semantic Graph · No API</h2><p>依現有符文、關鍵詞、反向關鍵詞、群組與治理衍生關係建立。</p></div></div>
+  <form class="context-graph-toolbar"><label>搜尋<input id="runeGraphQuery" placeholder="例如：光明、清晰、暴躁、光、元素"></label><button class="context-btn primary" type="submit">搜尋符文脈絡</button></form>
   <div class="context-graph-status" id="runeGraphStatus">正在建立符文 Graph…</div>
-  <div class="context-graph-filter">
-    <select id="runeGraphGroup"><option value="">全部群組</option></select>
-    <select id="runeGraphEdgeType"><option value="">全部關係</option></select>
-    <button class="context-btn ghost" type="button" id="runeGraphReset">清除篩選</button>
-  </div>
-  <div class="context-graph-layout">
-    <div class="context-graph-panel"><h3>Nodes</h3><div class="context-list" id="runeGraphNodes"><div class="context-empty">正在載入符文節點…</div></div></div>
-    <div class="context-graph-panel"><h3>Edges</h3><div class="context-list" id="runeGraphEdges"><div class="context-empty">正在載入符文關係…</div></div></div>
-  </div>
-  <p class="context-graph-status">分類治理：未判定語意初始為「特殊」；正式分類依詞類／句內語意角色 → 群組主體性 → 唯一群組 → 個別符文 → 正反面／衝突校準。</p>
-</section>
-
-</div></section>
-
-<section class="context-section" data-context-view="nodes" id="context-nodes"><div class="wrap">
-<div class="loc-header">
-<p class="loc-header-meta">Context / Node</p>
-<h1 class="loc-header-title">節點</h1>
-<h2 class="loc-header-subtitle">管理 Graph 中可以被連結的基本單位。</h2>
-<p class="loc-header-copy">節點代表概念、時期、人物、作品、符文、事件或狀態；它本身不是關係式。</p>
-</div>
-<section class="context-tool-card">
-  <div class="context-item-head"><div><h3>節點列表</h3><p>目前先由既有 Relation 資料彙整唯一節點，與關係式分開顯示。</p></div></div>
-  <div class="context-graph-filter">
-    <select id="contextNodeLibraryType"><option value="">全部節點類型</option></select>
-  </div>
-  <div class="context-list" id="contextNodeLibraryList"><div class="context-empty">正在準備節點資料…</div></div>
-  <div class="context-pagination" id="contextNodeLibraryPagination" hidden><div class="context-page-info" id="contextNodeLibraryPageInfo"></div><div class="context-page-buttons" id="contextNodeLibraryPageButtons"></div></div>
+  <div class="context-graph-filter"><select id="runeGraphGroup"><option value="">全部群組</option></select><select id="runeGraphEdgeType"><option value="">全部關係</option></select><button class="context-btn ghost" type="button" id="runeGraphReset">清除篩選</button></div>
+  <div class="context-graph-layout"><div class="context-graph-panel"><h3>Nodes</h3><div class="context-list" id="runeGraphNodes"><div class="context-empty">正在載入節點…</div></div></div><div class="context-graph-panel"><h3>Edges</h3><div class="context-list" id="runeGraphEdges"><div class="context-empty">正在載入關係…</div></div></div></div>
+  <p class="context-graph-status">分類治理：詞類／句內語意角色 → 群組主體性 → 唯一群組 → 個別符文 → 正反面／衝突校準；未判定時維持特殊。</p>
 </section>
 </div></section>
 
-<section class="context-section" data-context-view="relations" id="context-relations"><div class="wrap">
-<div class="loc-header">
-<p class="loc-header-meta">Context / Relation</p>
-<h1 class="loc-header-title">關係式</h1>
-<h2 class="loc-header-subtitle">描述兩個節點之間的連結。</h2>
-<p class="loc-header-copy">Relation 只負責 source → relation → target，以及日期、方向、摘要、證據與可信度。</p>
-</div>
-<section class="context-tool-card" id="relation-library">
-
-    <h3 id="contextRelationFormTitle">新增關係</h3>
-    <p>建立來源節點、目標節點與它們之間的關係。</p>
-    <form id="contextRelationForm">
-      <input type="hidden" id="contextRelationId">
-      <div class="context-form-grid">
-        <label>日期<input id="contextRelationDate" type="date" required></label>
-        <label>關係類型<select id="contextRelationType">
-          <option value="transitions_to">transitions_to · 轉變為</option><option value="evolves_from">evolves_from · 演化自</option>
-          <option value="extends">extends · 延伸</option><option value="reframes">reframes · 重新定義</option>
-          <option value="contradicts">contradicts · 衝突</option><option value="integrates">integrates · 整合</option>
-          <option value="expresses">expresses · 表達</option><option value="belongs_to">belongs_to · 歸屬</option>
-          <option value="influences">influences · 影響</option><option value="references">references · 引用</option>
-          <option value="corresponds_to">corresponds_to · 對應</option><option value="causes">causes · 導致</option>
-        </select></label>
-        <label>來源類型<select id="contextRelationSourceType"><option value="concept">Concept</option><option value="event">Event</option><option value="work">Work</option><option value="song">Song</option><option value="rune">Rune</option><option value="person">Person</option><option value="state">State</option><option value="era">Period</option></select></label>
-        <label>來源名稱<input id="contextRelationSourceId" required></label>
-        <label>目標類型<select id="contextRelationTargetType"><option value="concept">Concept</option><option value="event">Event</option><option value="work">Work</option><option value="song">Song</option><option value="rune">Rune</option><option value="person">Person</option><option value="state">State</option><option value="era">Period</option></select></label>
-        <label>目標名稱<input id="contextRelationTargetId" required></label>
-        <label>方向<select id="contextRelationDirection"><option value="forward">forward</option><option value="bidirectional">bidirectional</option><option value="reverse">reverse</option></select></label>
-        <label>可信度<select id="contextRelationConfidence"><option value="recorded">Recorded</option><option value="reconstructed">Reconstructed</option><option value="inferred">Inferred</option><option value="unknown">Unknown</option></select></label>
-        <label class="full">關係摘要<textarea id="contextRelationSummary"></textarea></label>
-        <label>時期<select id="contextRelationPeriod"><option value="">未指定</option></select></label>
-        <label>狀態<select id="contextRelationStatus"><option value="current">Current</option><option value="released">Released</option><option value="archived">Archived</option></select></label>
-        <label class="full">來源 / Evidence<input id="contextRelationEvidence"></label>
-      </div>
-      <div class="context-actions"><button class="context-btn primary" type="submit" id="contextRelationSubmit">新增關係</button><button class="context-btn ghost" type="button" id="contextRelationCancel" hidden>取消編輯</button></div>
-    </form>
-  
-</section>
-<section class="context-tool-card" style="margin-top:16px">
-  <div class="context-item-head"><div><h3>關係列表</h3><p>可直接編輯或刪除既有關係。</p></div></div>
-  <div class="context-list" id="contextRelationList"><div class="context-empty">正在準備關係資料…</div></div>
-  <div class="context-pagination" id="contextRelationPagination" hidden><div class="context-page-info" id="contextRelationPageInfo"></div><div class="context-page-buttons" id="contextRelationPageButtons"></div></div>
-</section>
-</div></section>
-<section class="context-section" data-context-view="scenario" id="context-scenario"><div class="wrap">
-<div class="loc-header">
-<p class="loc-header-meta">Context / Scenario / Event</p>
-<h1 class="loc-header-title">情境 / Event</h1>
-<h2 class="loc-header-subtitle">把事件當成可以被描述、追蹤與連結的脈絡單位。</h2>
-<p class="loc-header-copy">這裡同時呈現脈絡的 32 個 Scenario/Event 原型，以及可新增、編輯、封存的 Context Event 紀錄。即使遠端資料暫時不可用，Scenario Corpus 仍會由 repository fallback 顯示。</p>
-</div>
-
-<section class="context-tool-card">
-  <div class="context-item-head"><div><h3>Scenario / Event Corpus</h3><p>脈絡沙盒的 32 個情境原型；用來描述「可能遇到什麼情境」，不是固定符文配對。</p></div><button class="context-btn ghost" type="button" id="contextScenarioRefresh">重新載入</button></div>
-  <div class="context-list" id="contextScenarioCorpusList"><div class="context-empty">正在載入 Event 32…</div></div>
-</section>
-
-<div class="context-tool-grid">
-<section class="context-tool-card" id="context-event-form">
-  <h3 id="contextEventFormTitle">新增事件</h3>
-  <p>建立一筆可追蹤的 Context Event；狀態與來源都保留，方便後續形成 Relation / Graph。</p>
-  <form id="contextEventForm">
-    <input type="hidden" id="contextEventId">
-    <div class="context-form-grid">
-      <label>日期<input id="contextEventDate" type="date" required></label>
-      <label>事件類型<select id="contextEventType"><option value="transition">transition</option><option value="milestone">milestone</option><option value="observation">observation</option><option value="decision">decision</option><option value="scenario">scenario</option></select></label>
-      <label>對象類型<select id="contextEventObjectType"><option value="person">Person</option><option value="concept">Concept</option><option value="work">Work</option><option value="song">Song</option><option value="rune">Rune</option><option value="state">State</option><option value="era">Period</option><option value="system">System</option></select></label>
-      <label>對象名稱<input id="contextEventObjectId" placeholder="例如：LOC、自由的月、界"></label>
-      <label class="full">事件標題<input id="contextEventTitle" required></label>
-      <label class="full">描述<textarea id="contextEventDescription"></textarea></label>
-      <label>State Before<input id="contextEventBefore"></label>
-      <label>State After<input id="contextEventAfter"></label>
-      <label>時期<select id="contextEventPeriod"><option value="">未指定</option></select></label>
-      <label>狀態<select id="contextEventStatus"><option value="current">Current</option><option value="released">Released</option><option value="archived">Archived</option></select></label>
-      <label>可信度<select id="contextEventConfidence"><option value="recorded">Recorded</option><option value="reconstructed">Reconstructed</option><option value="inferred">Inferred</option><option value="unknown">Unknown</option></select></label>
-      <label>Tags<input id="contextEventTags" placeholder="逗號分隔"></label>
-      <label class="full">來源 / Evidence<input id="contextEventSource"></label>
-    </div>
-    <div class="context-actions"><button class="context-btn primary" type="submit" id="contextEventSubmit">儲存事件</button><button class="context-btn ghost" type="button" id="contextEventCancel" hidden>取消編輯</button><button class="context-btn ghost" type="button" id="contextEventRefresh">重新載入紀錄</button></div>
-  </form>
-</section>
-
-<section class="context-tool-card">
-  <h3>目前狀態</h3>
-  <p>從 Current Event 摘要目前對象、狀態、時期與最後事件。</p>
-  <div class="context-state" id="contextCurrentState"><div class="context-empty">正在準備事件資料…</div></div>
-</section>
-</div>
-
-<section class="context-tool-card" style="margin-top:16px">
-  <div class="context-item-head"><div><h3>Event 紀錄</h3><p>可直接編輯、封存或刪除既有 Context Event。</p></div></div>
-  <div class="context-list" id="contextEventList"><div class="context-empty">正在準備事件資料…</div></div>
-  <div class="context-pagination" id="contextEventPagination" hidden><div class="context-page-info" id="contextEventPageInfo"></div><div class="context-page-buttons" id="contextEventPageButtons"></div></div>
-</section>
-</div></section>
-<section class="context-section game-shell" data-context-view="sandbox-game" hidden>
-<div class="wrap"><h2>月之符文組合規則</h2><p class="intro">沙盒直接使用月之符文既有的組合語法：單張保留原意，雙卡表現因果，三卡使用「源－轉－合」，更多張數依各自既定規律處理。</p><div class="table"><table><thead><tr><th>卡數</th><th>語義結構</th><th>遊戲中的作用</th></tr></thead><tbody><tr><td>1</td><td>單符狀態</td><td>基本行為／狀態</td></tr><tr><td>2</td><td>因果</td><td>基本事件與交互關係</td></tr><tr><td>3</td><td>源－轉－合</td><td>完整事件回答與語義鏈</td></tr><tr><td>5</td><td>五卡規律</td><td>較完整局勢</td></tr><tr><td>11</td><td>OW3gs</td><td>大型語義組合</td></tr></tbody></table></div></div><section class="context-tool-card" style="margin-top:20px">
-  <h3>沙盒遊戲文件</h3>
-  <p>這裡只保留脈絡沙盒遊戲的玩法與規則來源，不作為 Context 的一般文件中心。</p>
-  <div class="doc-links">
-    <a href="search.html?q=%E8%84%88%E7%B5%A1%20Event%2032">Event 32 →</a>
-    <a href="search.html?q=%E8%84%88%E7%B5%A1%20RP%2016%E2%98%85%200%E2%80%B2">RP / 16★ / 0′ →</a>
-    <a href="game.html" target="_blank" rel="noopener">另開沙盒遊戲 ↗</a>
-  </div>
-
-
-  <div class="wrap">
-    <div class="game-open"><a href="game.html" target="_blank" rel="noopener">另開遊戲畫面 ↗</a></div>
-    <div class="game-frame-wrap">
-      <iframe class="game-frame" src="game.html" title="脈絡沙盒遊戲" loading="lazy"></iframe>
-    </div>
-  </div>
-
-</section>
-
-</main></div><script>
-function switchContextView(name){
-  document.querySelectorAll('[data-context-view]').forEach(el=>el.hidden=el.dataset.contextView!==name);
-  document.querySelectorAll('[data-context-switch]').forEach(btn=>btn.classList.toggle('active',btn.dataset.contextSwitch===name));
-  history.replaceState(null,'',name==='graph'?'context.html':'context.html#'+name);
-}
-document.querySelectorAll('[data-context-switch]').forEach(btn=>btn.addEventListener('click',()=>switchContextView(btn.dataset.contextSwitch)));
-const initialContextView=['nodes','relations','scenario','sandbox-game'].includes(location.hash.slice(1))?location.hash.slice(1):'graph';
-switchContextView(initialContextView);
-function bindSearch(inputId,gridId){const input=document.getElementById(inputId),grid=document.getElementById(gridId);if(!input||!grid)return;input.addEventListener("input",()=>{const q=input.value.trim().toLowerCase();grid.querySelectorAll(".card").forEach(c=>c.classList.toggle("hidden",q&&!c.dataset.search.includes(q)))})}bindSearch("eventSearch","eventGrid");bindSearch("runeSearch","runeGrid");
-</script><script src="js/loc-periods.js"></script><script src="js/loc-nav.js"></script>
+</main></div>
+<script src="data/js/loc-event-data.js"></script>
+<script src="data/js/loc-relation-data.js"></script>
+<script src="data/js/loc-scenario-data.js"></script>
 <script>
-const CONTEXT_KV_API='https://api.lo3rwang.cc/context';
-const CONTEXT_LOC_API='https://moon-runes-pwa.onrender.com';
-const CONTEXT_EVENT_CACHE='context-events-cache-v1';
-const CONTEXT_RELATION_CACHE='context-relations-cache-v1';
-const CONTEXT_GRAPH_CACHE_PREFIX='context-graph-cache-v1:';
-const CONTEXT_CACHE_TTL=6*60*60*1000;
 const cEsc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const cUid=()=>crypto?.randomUUID?.()||('ctx-'+Date.now()+'-'+Math.random().toString(36).slice(2));
-let contextEvents=[],contextRelations=[],contextGraph={nodes:[],edges:[]};
-
-
-const CONTEXT_EVENT_PAGE_SIZE=10, CONTEXT_RELATION_PAGE_SIZE=10, CONTEXT_GRAPH_PAGE_SIZE=10;
-let contextEventPage=1, contextRelationPage=1, contextGraphNodePage=1, contextGraphEdgePage=1, contextNodeLibraryPage=1;
-let contextEventsRemoteLoaded=false, contextRelationsRemoteLoaded=false;
-
-function readContextCache(key){
-  try{
-    const raw=JSON.parse(localStorage.getItem(key)||'null');
-    if(!raw||typeof raw!=='object') return null;
-    return {data:raw.data,age:Date.now()-Number(raw.saved_at||0)};
-  }catch(_){return null;}
+const PAGE_SIZE=10;
+function pager(host,total,page,onPage){
+  if(!host)return;const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));if(total<=PAGE_SIZE){host.innerHTML='';return;}page=Math.min(Math.max(1,page),pages);
+  host.innerHTML=`<div class="context-page-info">第 ${page} / ${pages} 頁 · 共 ${total} 筆</div><div class="context-page-buttons"><button class="context-page-btn" data-page="${page-1}" ${page===1?'disabled':''}>上一頁</button><button class="context-page-btn" data-page="${page+1}" ${page===pages?'disabled':''}>下一頁</button></div>`;
+  host.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>{if(!btn.disabled)onPage(Number(btn.dataset.page));}));
 }
-function writeContextCache(key,data){
-  try{localStorage.setItem(key,JSON.stringify({saved_at:Date.now(),data}));}catch(_){}
-}
-function contextGraphCacheKey(kind,value,depth=''){
-  return CONTEXT_GRAPH_CACHE_PREFIX+kind+':'+encodeURIComponent(String(value||''))+':'+String(depth||'');
-}
-function contextPost(action,key,payload){
-  return fetch(CONTEXT_KV_API,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,[key]:payload})}).then(async r=>{if(!r.ok)throw new Error('request failed');const d=await r.json();if(d&&d.ok===false)throw new Error(d.error||'request failed');return d});
-}
-async function loadContextEvents({remote=false}={}){
-  const cached=readContextCache(CONTEXT_EVENT_CACHE);
-  if(Array.isArray(cached?.data)){
-    contextEvents=cached.data;
-    renderContextEvents();
-    syncOverviewGraph();
-  }else if(!remote){
-    contextEvents=[];
-    renderContextEvents();
-  }
+const eventRows=[...((window.LOC_EVENT_DATA&&window.LOC_EVENT_DATA.events)||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+const relationDoc=window.LOC_RELATION_DATA||{};
+const relationRows=Array.isArray(relationDoc.relationships)?relationDoc.relationships:[];
+const scenarioRows=Array.isArray(window.LOC_SCENARIO_DATA?.records)?window.LOC_SCENARIO_DATA.records:[];
 
-  if(!remote) return;
+document.querySelector('#contextMetricEvents').textContent=eventRows.length;
+document.querySelector('#contextMetricRelations').textContent=relationRows.length;
+document.querySelector('#contextMetricScenarios').textContent=scenarioRows.length;
+const groupCounts=new Map();scenarioRows.forEach(x=>groupCounts.set(x.event_group,(groupCounts.get(x.event_group)||0)+1));
+document.querySelector('#contextMetricGroups').textContent=groupCounts.size;
+document.querySelector('#contextScenarioStats').innerHTML=[...groupCounts].map(([g,n])=>`<span class="chip">${cEsc(g)} ${n}</span>`).join('')||'<span class="chip">尚無資料</span>';
 
-  try{
-    const u=new URL(CONTEXT_KV_API);
-    u.searchParams.set('action','events');
-    const r=await fetch(u,{cache:'no-store',credentials:'include'});
-    const d=await r.json();
-    contextEvents=(Array.isArray(d)?d:(d.events||[]));
-    contextEventsRemoteLoaded=true;
-    writeContextCache(CONTEXT_EVENT_CACHE,contextEvents);
-    renderContextEvents();
-    syncOverviewGraph();
-  }catch(e){
-    console.error(e);
-    if(!Array.isArray(cached?.data)){
-      contextEvents=[];
-      renderContextEvents();
-    }
-  }
-}
+let eventPage=1;
+function renderEvents(){const host=document.querySelector('#contextEventList'),start=(eventPage-1)*PAGE_SIZE,rows=eventRows.slice(start,start+PAGE_SIZE);host.innerHTML=rows.length?rows.map(e=>`<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(e.event_title||e.title||'未命名事件')}</h4><small>${cEsc(e.date||'')} · ${cEsc(e.event_type||'')}${e.era_label?' · '+cEsc(e.era_label):''}</small></div><span class="badge">${cEsc(e.status||'recorded')}</span></div>${e.description?`<p>${cEsc(e.description)}</p>`:''}${e.state_after?`<p><strong>State →</strong> ${cEsc(e.state_after)}</p>`:''}${e.legacy_era?`<p class="source-note">歷史標記：${cEsc(e.legacy_era)}</p>`:''}</article>`).join(''):'<div class="context-empty">尚無事件。</div>';pager(document.querySelector('#contextEventPagination'),eventRows.length,eventPage,p=>{eventPage=p;renderEvents();});}
+renderEvents();
 
-function contextPageNums(current,totalPages){
-  const out=[],start=Math.max(1,Math.min(current-2,Math.max(1,totalPages-4))),end=Math.min(totalPages,Math.max(5,current+2));
-  for(let i=start;i<=end;i++)out.push(i); return out;
-}
-function renderContextPager(kind,total,page,pageSize,onPage){
-  const map={
-    event:['#contextEventPagination','#contextEventPageInfo','#contextEventPageButtons'],
-    relation:['#contextRelationPagination','#contextRelationPageInfo','#contextRelationPageButtons'],
-    node:['#contextGraphNodePagination','#contextGraphNodePageInfo','#contextGraphNodePageButtons'],
-    edge:['#contextGraphEdgePagination','#contextGraphEdgePageInfo','#contextGraphEdgePageButtons'],
-    nodeLibrary:['#contextNodeLibraryPagination','#contextNodeLibraryPageInfo','#contextNodeLibraryPageButtons']
-  };
-  const [navSel,infoSel,buttonsSel]=map[kind]||[]; if(!navSel)return;
-  const nav=document.querySelector(navSel),info=document.querySelector(infoSel),buttons=document.querySelector(buttonsSel); if(!nav||!info||!buttons)return;
-  if(total<=0){nav.hidden=true;buttons.innerHTML='';info.textContent='';return;}
-  const totalPages=Math.max(1,Math.ceil(total/pageSize)),safe=Math.min(Math.max(1,page),totalPages);
-  const from=(safe-1)*pageSize+1,to=Math.min(total,safe*pageSize);
-  info.textContent=`第 ${from}–${to} 筆，共 ${total} 筆 · 第 ${safe} / ${totalPages} 頁`;
-  const nums=contextPageNums(safe,totalPages);
-  let html=`<button class="context-page-btn" data-context-page="${safe-1}" ${safe===1?'disabled':''}>上一頁</button>`;
-  if(nums[0]>1){html+='<button class="context-page-btn" data-context-page="1">1</button>';if(nums[0]>2)html+='<span class="context-page-info">…</span>';}
-  html+=nums.map(n=>`<button class="context-page-btn ${n===safe?'active':''}" data-context-page="${n}">${n}</button>`).join('');
-  if(nums[nums.length-1]<totalPages){if(nums[nums.length-1]<totalPages-1)html+='<span class="context-page-info">…</span>';html+=`<button class="context-page-btn" data-context-page="${totalPages}">${totalPages}</button>`;}
-  html+=`<button class="context-page-btn" data-context-page="${safe+1}" ${safe===totalPages?'disabled':''}>下一頁</button>`;
-  buttons.innerHTML=html;nav.hidden=false;
-  buttons.querySelectorAll('[data-context-page]').forEach(btn=>btn.addEventListener('click',()=>{if(btn.disabled)return;const next=Number(btn.dataset.contextPage||1);if(next<1||next>totalPages||next===safe)return;onPage(next);}));
-}
-function renderContextEvents(){
-  const list=document.querySelector('#contextEventList'); if(!list)return;
-  const sorted=[...contextEvents].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
-  const totalPages=Math.max(1,Math.ceil(sorted.length/CONTEXT_EVENT_PAGE_SIZE));
-  contextEventPage=Math.min(Math.max(1,contextEventPage),totalPages);
-  const pageRows=sorted.slice((contextEventPage-1)*CONTEXT_EVENT_PAGE_SIZE,contextEventPage*CONTEXT_EVENT_PAGE_SIZE);
-  list.innerHTML=pageRows.length?pageRows.map(e=>`<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(e.event_title||e.title||'未命名事件')}</h4><small>${cEsc(e.date||'')} · ${cEsc(e.object_type||'')} ${e.object_id?'· '+cEsc(e.object_id):''}</small></div><span class="badge">${cEsc(e.status||'current')}</span></div>${e.description?`<p>${cEsc(e.description)}</p>`:''}${e.state_after?`<p><strong>State →</strong> ${cEsc(e.state_after)}</p>`:''}<div class="context-actions"><button class="context-btn ghost" data-context-event="edit" data-id="${cEsc(e.id)}">編輯</button>${e.status!=='archived'?`<button class="context-btn ghost" data-context-event="archive" data-id="${cEsc(e.id)}">封存</button>`:''}<button class="context-btn ghost" data-context-event="delete" data-id="${cEsc(e.id)}">刪除</button></div></article>`).join(''):'<div class="context-empty">尚無事件。</div>';
-  renderContextPager('event',Math.max(sorted.length, contextEventsRemoteLoaded ? sorted.length : CONTEXT_EVENT_PAGE_SIZE+1),contextEventPage,CONTEXT_EVENT_PAGE_SIZE,async next=>{
-    if(next>1 && !contextEventsRemoteLoaded){
-      await loadContextEvents({remote:true});
-    }
-    const totalPages=Math.max(1,Math.ceil(contextEvents.length/CONTEXT_EVENT_PAGE_SIZE));
-    contextEventPage=Math.min(next,totalPages);
-    renderContextEvents();
-    document.querySelector('#contextEventList')?.scrollIntoView({behavior:'smooth',block:'start'});
-  });
-  const current=[...sorted].find(e=>e.status==='current');
-  const box=document.querySelector('#contextCurrentState');
-  const currentPeriod=current?window.LOCPeriods.label(current.era||current.period,current.date,window.LOCPeriods.peek()?.eras||[]):'';box.innerHTML=current?`<div class="context-state-row"><b>對象</b><span>${cEsc(current.object_id||current.object_type||'—')}</span></div><div class="context-state-row"><b>目前狀態</b><span>${cEsc(current.state_after||current.description||'—')}</span></div><div class="context-state-row"><b>時期</b><span>${cEsc(currentPeriod||'—')}</span></div><div class="context-state-row"><b>最後事件</b><span>${cEsc(current.event_title||current.title||'—')} · ${cEsc(current.date||'')}</span></div>`:'<div class="context-empty">目前沒有 Current 事件。</div>';
-}
-function resetContextEvent(){
-  document.querySelector('#contextEventForm')?.reset();document.querySelector('#contextEventId').value='';document.querySelector('#contextEventDate').value=new Date().toISOString().slice(0,10);document.querySelector('#contextEventFormTitle').textContent='新增事件';document.querySelector('#contextEventSubmit').textContent='儲存事件';document.querySelector('#contextEventCancel').hidden=true;
-}
-function editContextEvent(id){
-  const e=contextEvents.find(x=>String(x.id)===String(id));if(!e)return;
-  document.querySelector('#contextEventId').value=e.id||'';document.querySelector('#contextEventDate').value=e.date||'';document.querySelector('#contextEventObjectType').value=e.object_type||'person';document.querySelector('#contextEventObjectId').value=e.object_id||'';document.querySelector('#contextEventType').value=e.event_type||'transition';document.querySelector('#contextEventTitle').value=e.event_title||e.title||'';document.querySelector('#contextEventDescription').value=e.description||'';document.querySelector('#contextEventBefore').value=e.state_before||'';document.querySelector('#contextEventAfter').value=e.state_after||'';document.querySelector('#contextEventPeriod').value=window.LOCPeriods.normalizePeriod(e.era||e.period||'');document.querySelector('#contextEventStatus').value=e.status||'current';document.querySelector('#contextEventConfidence').value=e.confidence||'recorded';document.querySelector('#contextEventTags').value=Array.isArray(e.tags)?e.tags.join(', '):(e.tags||'');document.querySelector('#contextEventSource').value=e.source||'';document.querySelector('#contextEventFormTitle').textContent='編輯事件';document.querySelector('#contextEventSubmit').textContent='更新事件';document.querySelector('#contextEventCancel').hidden=false;document.querySelector('#context-event-form')?.scrollIntoView({behavior:'smooth'});
-}
-document.querySelector('#contextEventForm')?.addEventListener('submit',async ev=>{ev.preventDefault();const id=document.querySelector('#contextEventId').value;const event={id:id||cUid(),user_id:'lo3rwang',date:document.querySelector('#contextEventDate').value,object_type:document.querySelector('#contextEventObjectType').value,object_id:document.querySelector('#contextEventObjectId').value.trim(),event_type:document.querySelector('#contextEventType').value,event_title:document.querySelector('#contextEventTitle').value.trim(),description:document.querySelector('#contextEventDescription').value.trim(),state_before:document.querySelector('#contextEventBefore').value.trim(),state_after:document.querySelector('#contextEventAfter').value.trim(),era:document.querySelector('#contextEventPeriod').value.trim(),status:document.querySelector('#contextEventStatus').value,confidence:document.querySelector('#contextEventConfidence').value,tags:document.querySelector('#contextEventTags').value.split(',').map(x=>x.trim()).filter(Boolean),source:document.querySelector('#contextEventSource').value.trim(),system_id:'lo3rwang',primary_loc:'LOC2',related_locs:['LOC8']};try{await contextPost(id?'update_event':'event','event',event);resetContextEvent();await loadContextEvents({remote:true})}catch(e){alert('事件儲存失敗：'+e.message)}});
-document.querySelector('#contextEventCancel')?.addEventListener('click',resetContextEvent);
-document.querySelector('#contextEventRefresh')?.addEventListener('click',()=>{contextEventPage=1;loadContextEvents({remote:true})});
-document.querySelector('#contextEventList')?.addEventListener('click',async ev=>{const b=ev.target.closest('[data-context-event]');if(!b)return;const id=b.dataset.id,a=b.dataset.contextEvent;if(a==='edit')return editContextEvent(id);if(a==='archive'){if(!confirm('封存這筆事件？'))return;await contextPost('archive_event','event',{id,user_id:'lo3rwang'});await loadContextEvents({remote:true})}if(a==='delete'){if(!confirm('刪除這筆事件？'))return;await contextPost('delete_event','event',{id,user_id:'lo3rwang'});await loadContextEvents({remote:true})}});
+const relationHost=document.querySelector('#contextRelationList');
+relationHost.innerHTML=relationRows.length?relationRows.map(r=>{const source=r.source||{},targets=Array.isArray(r.targets)?r.targets:[];return `<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(source.title||source.work_ref||r.canonical_key||r.relationship_id)}</h4><small>${cEsc(r.relation_type||'relationship')} · ${cEsc(r.direction||'')}</small></div><span class="badge">${cEsc(r.evidence_status||'recorded')}</span></div><p>${cEsc(r.relation_summary||'')}</p><div class="chips">${targets.map(t=>`<span class="chip">→ ${cEsc(t.title||t.work_ref||'target')}</span>`).join('')}</div></article>`;}).join(''):'<div class="context-empty">尚無正式關係資料。</div>';
 
-async function loadContextRelations({remote=false}={}){
-  const cached=readContextCache(CONTEXT_RELATION_CACHE);
-  if(Array.isArray(cached?.data)){
-    contextRelations=cached.data;
-    renderContextRelations();
-    renderContextNodeLibrary();
-    syncDefaultGraphFromRelations();
-  }else if(!remote){
-    contextRelations=[];
-    renderContextRelations();
-    renderContextNodeLibrary();
-  }
-
-  if(!remote) return;
-
-  try{
-    const u=new URL(CONTEXT_KV_API);
-    u.searchParams.set('action','relations');
-    const r=await fetch(u,{cache:'no-store',credentials:'include'});
-    const d=await r.json();
-    contextRelations=d.relations||[];
-    contextRelationsRemoteLoaded=true;
-    writeContextCache(CONTEXT_RELATION_CACHE,contextRelations);
-    renderContextRelations();
-    renderContextNodeLibrary();
-    syncDefaultGraphFromRelations();
-  }catch(e){
-    console.error(e);
-    if(!Array.isArray(cached?.data)){
-      contextRelations=[];
-      renderContextRelations();
-    }
-  }
-}
-function graphFromRelations(relations){
-  const nodesById=new Map();
-  const edges=[];
-  for(const r of relations||[]){
-    const source=String(r.source_id||'').trim();
-    const target=String(r.target_id||'').trim();
-    if(!source||!target) continue;
-    if(!nodesById.has(source)) nodesById.set(source,{id:source,label:source,type:r.source_type||'unknown'});
-    if(!nodesById.has(target)) nodesById.set(target,{id:target,label:target,type:r.target_type||'unknown',date:r.date||''});
-    else if(r.date && !nodesById.get(target).date) nodesById.get(target).date=r.date;
-    edges.push({source,target,type:r.relation_type||'related_to'});
-  }
-  return {nodes:[...nodesById.values()],edges};
-}
-function graphFromEvents(events){
-  const nodesById=new Map();
-  const edges=[];
-  for(const e of events||[]){
-    const eventId='event:'+String(e.id||'').trim();
-    if(eventId==='event:') continue;
-    const title=e.event_title||e.title||e.event_type||e.id;
-    nodesById.set(eventId,{
-      id:eventId,
-      label:title,
-      type:'event',
-      date:e.date||'',
-      note:e.description||e.state_after||''
-    });
-
-    const objectId=String(e.object_id||'').trim();
-    if(objectId){
-      if(!nodesById.has(objectId)) nodesById.set(objectId,{
-        id:objectId,label:objectId,type:e.object_type||'unknown'
-      });
-      edges.push({
-        source:eventId,
-        target:objectId,
-        type:e.event_type||'event_of'
-      });
-    }
-
-    const eraId=String(e.era_id||e.era||'').trim();
-    if(eraId){
-      const normalizedEra=/^ERA-/i.test(eraId)?eraId:eraId;
-      if(!nodesById.has(normalizedEra)) nodesById.set(normalizedEra,{
-        id:normalizedEra,label:normalizedEra,type:'era'
-      });
-      edges.push({
-        source:eventId,
-        target:normalizedEra,
-        type:'occurs_in'
-      });
-    }
-  }
-  return {nodes:[...nodesById.values()],edges};
-}
-function overviewGraph(){
-  return mergeContextGraphs(
-    graphFromRelations(contextRelations),
-    graphFromEvents(contextEvents)
-  );
-}
-function syncOverviewGraph(){
-  const g=overviewGraph();
-  if(!g.nodes.length&&!g.edges.length)return;
-  contextGraph=g;
-  contextGraphNodePage=1;
-  contextGraphEdgePage=1;
-  updateContextGraphFilters();
-  renderContextGraph(`Overview · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
-}
-
-function syncDefaultGraphFromRelations(){ syncOverviewGraph(); }
-
-function renderContextNodeLibrary(){
-  const list=document.querySelector('#contextNodeLibraryList');
-  const typeSel=document.querySelector('#contextNodeLibraryType');
-  if(!list||!typeSel)return;
-  const all=graphFromRelations(contextRelations).nodes.sort((a,b)=>graphNodeLabel(a).localeCompare(graphNodeLabel(b),'zh-Hant'));
-  const types=[...new Set(all.map(graphNodeType))].sort();
-  const current=typeSel.value;
-  typeSel.innerHTML='<option value="">全部節點類型</option>'+types.map(x=>`<option value="${cEsc(x)}">${cEsc(x)}</option>`).join('');
-  if(types.includes(current))typeSel.value=current;
-  const rows=all.filter(n=>!typeSel.value||graphNodeType(n)===typeSel.value);
-  const pages=Math.max(1,Math.ceil(rows.length/CONTEXT_GRAPH_PAGE_SIZE));
-  contextNodeLibraryPage=Math.min(Math.max(1,contextNodeLibraryPage),pages);
-  const pageRows=rows.slice((contextNodeLibraryPage-1)*CONTEXT_GRAPH_PAGE_SIZE,contextNodeLibraryPage*CONTEXT_GRAPH_PAGE_SIZE);
-  list.innerHTML=pageRows.length?pageRows.map(n=>`<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(graphNodeLabel(n))}</h4><small>${cEsc(graphNodeType(n))} · ${cEsc(graphNodeId(n))}</small></div></div></article>`).join(''):'<div class="context-empty">目前沒有節點資料。</div>';
-  renderContextPager('nodeLibrary',rows.length,contextNodeLibraryPage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextNodeLibraryPage=next;renderContextNodeLibrary();});
-}
-document.querySelector('#contextNodeLibraryType')?.addEventListener('change',()=>{contextNodeLibraryPage=1;renderContextNodeLibrary()});
-
-function renderContextRelations(){
-  const list=document.querySelector('#contextRelationList');
-  if(!list)return;
-  const sorted=[...contextRelations].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
-  const totalPages=Math.max(1,Math.ceil(sorted.length/CONTEXT_RELATION_PAGE_SIZE));
-  contextRelationPage=Math.min(Math.max(1,contextRelationPage),totalPages);
-  const pageRows=sorted.slice((contextRelationPage-1)*CONTEXT_RELATION_PAGE_SIZE,contextRelationPage*CONTEXT_RELATION_PAGE_SIZE);
-
-  list.innerHTML=pageRows.length?pageRows.map(r=>`<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(r.source_id)} → ${cEsc(r.target_id)}</h4><small>${cEsc(r.relation_type||'related_to')} · ${cEsc(r.date||'')}</small></div><span class="badge">${cEsc(r.status||'current')}</span></div>${r.summary?`<p>${cEsc(r.summary)}</p>`:''}<div class="context-actions"><button class="context-btn ghost" data-context-relation="edit" data-id="${cEsc(r.id)}">編輯</button><button class="context-btn ghost" data-context-relation="delete" data-id="${cEsc(r.id)}">刪除</button></div></article>`).join(''):'<div class="context-empty">目前沒有關係資料。</div>';
-
-  renderContextPager('relation',Math.max(sorted.length, contextRelationsRemoteLoaded ? sorted.length : CONTEXT_RELATION_PAGE_SIZE+1),contextRelationPage,CONTEXT_RELATION_PAGE_SIZE,async next=>{
-    if(next>1 && !contextRelationsRemoteLoaded){
-      await loadContextRelations({remote:true});
-    }
-    const pages=Math.max(1,Math.ceil(contextRelations.length/CONTEXT_RELATION_PAGE_SIZE));
-    contextRelationPage=Math.min(next,pages);
-    renderContextRelations();
-    document.querySelector('#contextRelationList')?.scrollIntoView({behavior:'smooth',block:'start'});
-  });
-}
-function resetContextRelation(){document.querySelector('#contextRelationForm')?.reset();document.querySelector('#contextRelationId').value='';document.querySelector('#contextRelationDate').value=new Date().toISOString().slice(0,10);document.querySelector('#contextRelationFormTitle').textContent='新增關係';document.querySelector('#contextRelationSubmit').textContent='新增關係';document.querySelector('#contextRelationCancel').hidden=true}
-function editContextRelation(id){const r=contextRelations.find(x=>String(x.id)===String(id));if(!r)return;document.querySelector('#contextRelationId').value=r.id||'';document.querySelector('#contextRelationDate').value=r.date||'';document.querySelector('#contextRelationType').value=r.relation_type||'transitions_to';document.querySelector('#contextRelationSourceType').value=r.source_type||'concept';document.querySelector('#contextRelationSourceId').value=r.source_id||'';document.querySelector('#contextRelationTargetType').value=r.target_type||'concept';document.querySelector('#contextRelationTargetId').value=r.target_id||'';document.querySelector('#contextRelationDirection').value=r.direction||'forward';document.querySelector('#contextRelationConfidence').value=r.confidence||'recorded';document.querySelector('#contextRelationSummary').value=r.summary||'';document.querySelector('#contextRelationPeriod').value=window.LOCPeriods.normalizePeriod(r.era||r.period||'');document.querySelector('#contextRelationStatus').value=r.status||'current';document.querySelector('#contextRelationEvidence').value=r.evidence||'';document.querySelector('#contextRelationFormTitle').textContent='編輯關係';document.querySelector('#contextRelationSubmit').textContent='更新關係';document.querySelector('#contextRelationCancel').hidden=false;document.querySelector('#relation-library')?.scrollIntoView({behavior:'smooth'})}
-document.querySelector('#contextRelationForm')?.addEventListener('submit',async ev=>{ev.preventDefault();const id=document.querySelector('#contextRelationId').value;const relation={id:id||cUid(),user_id:'lo3rwang',date:document.querySelector('#contextRelationDate').value,relation_type:document.querySelector('#contextRelationType').value,source_type:document.querySelector('#contextRelationSourceType').value,source_id:document.querySelector('#contextRelationSourceId').value.trim(),target_type:document.querySelector('#contextRelationTargetType').value,target_id:document.querySelector('#contextRelationTargetId').value.trim(),direction:document.querySelector('#contextRelationDirection').value,confidence:document.querySelector('#contextRelationConfidence').value,summary:document.querySelector('#contextRelationSummary').value.trim(),era:document.querySelector('#contextRelationPeriod').value.trim(),status:document.querySelector('#contextRelationStatus').value,evidence:document.querySelector('#contextRelationEvidence').value.trim(),system_id:'lo3rwang',primary_loc:'LOC2',related_locs:['LOC8']};try{await contextPost(id?'update_relation':'relation','relation',relation);resetContextRelation();await loadContextRelations({remote:true})}catch(e){alert('關係儲存失敗：'+e.message)}});
-document.querySelector('#contextRelationCancel')?.addEventListener('click',resetContextRelation);
-document.querySelector('#contextRelationList')?.addEventListener('click',async ev=>{const b=ev.target.closest('[data-context-relation]');if(!b)return;const id=b.dataset.id;if(b.dataset.contextRelation==='edit')return editContextRelation(id);if(b.dataset.contextRelation==='delete'){if(!confirm('刪除這條關係？'))return;await contextPost('delete_relation','relation',{id,user_id:'lo3rwang'});await loadContextRelations({remote:true})}});
-
-const graphNodeId=n=>String(n?.id||n?.node_id||''),graphNodeLabel=n=>String(n?.label||n?.title||n?.name||graphNodeId(n)||'—'),graphNodeType=n=>String(n?.type||n?.node_type||'unknown'),graphEdgeType=e=>String(e?.type||e?.relation_type||'related_to');
-function updateContextGraphFilters(){const nt=[...new Set(contextGraph.nodes.map(graphNodeType))].sort(),et=[...new Set(contextGraph.edges.map(graphEdgeType))].sort();document.querySelector('#contextGraphNodeType').innerHTML='<option value="">全部節點類型</option>'+nt.map(x=>`<option>${cEsc(x)}</option>`).join('');document.querySelector('#contextGraphEdgeType').innerHTML='<option value="">全部關係類型</option>'+et.map(x=>`<option>${cEsc(x)}</option>`).join('')}
-function renderContextGraph(status=''){const nf=document.querySelector('#contextGraphNodeType').value,ef=document.querySelector('#contextGraphEdgeType').value;const nodes=contextGraph.nodes.filter(n=>!nf||graphNodeType(n)===nf),ids=new Set(nodes.map(graphNodeId));const edges=contextGraph.edges.filter(e=>(!ef||graphEdgeType(e)===ef)&&(!nf||ids.has(String(e.source||''))||ids.has(String(e.target||''))));
-const nodePages=Math.max(1,Math.ceil(nodes.length/CONTEXT_GRAPH_PAGE_SIZE)),edgePages=Math.max(1,Math.ceil(edges.length/CONTEXT_GRAPH_PAGE_SIZE));contextGraphNodePage=Math.min(Math.max(1,contextGraphNodePage),nodePages);contextGraphEdgePage=Math.min(Math.max(1,contextGraphEdgePage),edgePages);const pageNodes=nodes.slice((contextGraphNodePage-1)*CONTEXT_GRAPH_PAGE_SIZE,contextGraphNodePage*CONTEXT_GRAPH_PAGE_SIZE),pageEdges=edges.slice((contextGraphEdgePage-1)*CONTEXT_GRAPH_PAGE_SIZE,contextGraphEdgePage*CONTEXT_GRAPH_PAGE_SIZE);
-document.querySelector('#contextGraphNodes').innerHTML=pageNodes.length?pageNodes.map(n=>`<button type="button" class="context-graph-node" data-context-graph-node="${cEsc(graphNodeId(n))}"><small>${cEsc(graphNodeType(n))}${n.date?' · '+cEsc(n.date):''}</small><strong>${cEsc(graphNodeLabel(n))}</strong><small>${cEsc(n.note||graphNodeId(n))}</small></button>`).join(''):'<div class="context-empty">沒有符合的節點。</div>';document.querySelector('#contextGraphEdges').innerHTML=pageEdges.length?pageEdges.map(e=>`<article class="context-graph-edge"><div class="context-graph-edge-path"><span>${cEsc(e.source||'—')}</span><span class="context-graph-edge-type">→ ${cEsc(graphEdgeType(e))} →</span><span>${cEsc(e.target||'—')}</span></div></article>`).join(''):'<div class="context-empty">沒有符合的關係。</div>';renderContextPager('node',nodes.length,contextGraphNodePage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextGraphNodePage=next;renderContextGraph();});renderContextPager('edge',edges.length,contextGraphEdgePage,CONTEXT_GRAPH_PAGE_SIZE,next=>{contextGraphEdgePage=next;renderContextGraph();});if(status)document.querySelector('#contextGraphStatus').textContent=status}
-function relationSearchGraph(q){
-  const query=String(q||'').trim().toLowerCase();
-  if(!query) return {nodes:[],edges:[]};
-  const matched=contextRelations.filter(r=>{
-    const hay=[r.source_id,r.target_id,r.relation_type,r.summary,r.evidence,r.era,r.era_id,r.source_type,r.target_type]
-      .filter(Boolean).join(' ').toLowerCase();
-    return hay.includes(query);
-  });
-  return graphFromRelations(matched);
-}
-function eventSearchGraph(q){
-  const query=String(q||'').trim().toLowerCase();
-  if(!query) return {nodes:[],edges:[]};
-  const matched=contextEvents.filter(e=>{
-    const hay=[e.id,e.event_title,e.title,e.description,e.state_before,e.state_after,e.object_type,e.object_id,e.event_type,e.era,e.era_id,e.tags,e.source]
-      .flat().filter(Boolean).join(' ').toLowerCase();
-    return hay.includes(query);
-  });
-  return graphFromEvents(matched);
-}
-function mergeContextGraphs(...graphs){
-  const nodes=new Map(),edges=new Map();
-  for(const g of graphs){
-    for(const n of g?.nodes||[]){
-      const id=graphNodeId(n); if(!id)continue;
-      nodes.set(id,{...(nodes.get(id)||{}),...n});
-    }
-    for(const e of g?.edges||[]){
-      const key=[e.source,e.target,graphEdgeType(e)].join('|');
-      if(!e.source||!e.target)continue;
-      edges.set(key,{...(edges.get(key)||{}),...e});
-    }
-  }
-  return {nodes:[...nodes.values()],edges:[...edges.values()]};
-}
-
-async function searchContextGraph(q,{remote=true}={}){
-  if(!q)return;
-  const key=contextGraphCacheKey('search',q);
-  const cached=readContextCache(key);
-  const relationGraph=relationSearchGraph(q);
-  const eventGraph=eventSearchGraph(q);
-  const localGraph=mergeContextGraphs(relationGraph,eventGraph);
-  const hasRelation=relationGraph.nodes.length||relationGraph.edges.length;
-  const hasEvent=eventGraph.nodes.length||eventGraph.edges.length;
-  const hasLocal=localGraph.nodes.length||localGraph.edges.length;
-
-  if(hasLocal){
-    contextGraph=localGraph;
-    contextGraphNodePage=1;contextGraphEdgePage=1;
-    updateContextGraphFilters();
-    const localKinds=[hasRelation?'Relation':'',hasEvent?'Event':''].filter(Boolean).join('＋');
-    renderContextGraph(`「${q}」· ${localKinds} · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
-  }else if(cached?.data&&Array.isArray(cached.data.nodes)){
-    contextGraph=cached.data;
-    contextGraphNodePage=1;contextGraphEdgePage=1;
-    updateContextGraphFilters();
-    renderContextGraph(`「${q}」· 快取 · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
-    if(!remote) return;
-  }else if(!remote){
-    renderContextGraph('目前沒有這個查詢的脈絡資料或快取。');
-    return;
-  }else{
-    document.querySelector('#contextGraphStatus').textContent='搜尋中…';
-  }
-
-  if(!remote)return;
-
-  try{
-    const r=await fetch(CONTEXT_LOC_API+'/search',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({query:q,top_k:6})
-    });
-    const d=await r.json();
-    const remoteGraph={nodes:d.graph?.nodes||[],edges:d.graph?.edges||[]};
-    contextGraph=mergeContextGraphs(localGraph,remoteGraph);
-    writeContextCache(key,contextGraph);
-    contextGraphNodePage=1;contextGraphEdgePage=1;
-    updateContextGraphFilters();
-    const source=hasLocal?'Context＋Graph RAG':'Graph RAG';
-    renderContextGraph(`「${q}」· ${source} · ${contextGraph.nodes.length} nodes / ${contextGraph.edges.length} edges`);
-  }catch(e){
-    if(!hasLocal && !cached?.data) renderContextGraph('目前沒有找到 Context 資料，Graph RAG 也暫時無法取得。');
-  }
-}
-async function expandContextGraph(id){
-  const depth=document.querySelector('#contextGraphDepth').value;
-  const key=contextGraphCacheKey('node',id,depth);
-  const cached=readContextCache(key);
-  if(cached?.data&&Array.isArray(cached.data.nodes)){
-    contextGraph=cached.data;
-    contextGraphNodePage=1;contextGraphEdgePage=1;
-    updateContextGraphFilters();
-    renderContextGraph(`${id} · depth ${depth} · 快取`);
-  }
-  try{
-    const u=new URL(CONTEXT_LOC_API+'/search/graph');u.searchParams.set('node_id',id);u.searchParams.set('depth',depth);
-    const r=await fetch(u,{cache:'no-store'});const d=await r.json();
-    contextGraph={nodes:d.nodes||[],edges:d.edges||[]};
-    writeContextCache(key,contextGraph);
-    contextGraphNodePage=1;contextGraphEdgePage=1;
-    updateContextGraphFilters();
-    renderContextGraph(`${id} · depth ${depth}`);
-  }catch(e){
-    if(!cached?.data) document.querySelector('#contextGraphStatus').textContent='無法展開節點。';
-  }
-}
-document.querySelector('#contextGraphForm')?.addEventListener('submit',ev=>{ev.preventDefault();searchContextGraph(document.querySelector('#contextGraphQuery').value.trim())});
-document.querySelector('#contextGraphNodes')?.addEventListener('click',ev=>{const b=ev.target.closest('[data-context-graph-node]');if(b)expandContextGraph(b.dataset.contextGraphNode)});
-document.querySelector('#contextGraphNodeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphEdgeType')?.addEventListener('change',()=>{contextGraphNodePage=1;contextGraphEdgePage=1;renderContextGraph()});document.querySelector('#contextGraphReset')?.addEventListener('click',()=>{document.querySelector('#contextGraphNodeType').value='';document.querySelector('#contextGraphEdgeType').value='';renderContextGraph()});
-
-async function loadContextScenarioCorpus(){
-  const host=document.querySelector('#contextScenarioCorpusList');
-  if(!host)return;
-  host.innerHTML='<div class="context-empty">正在載入 Event 32…</div>';
-  try{
-    const r=await fetch('data/json/registries/LOC2_EVENT_REGISTRY.json',{cache:'no-store'});
-    if(!r.ok)throw new Error('registry request failed');
-    const d=await r.json();
-    const rows=Array.isArray(d.records)?d.records:[];
-    host.innerHTML=rows.length?rows.map(e=>`<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(e.event_id||'')} · ${cEsc(e.title||'未命名情境')}</h4><small>${cEsc(e.event_group||'')} · ${cEsc(e.requirement_signature||'')}</small></div><span class="badge">${cEsc(e.status||'working')}</span></div><p>${cEsc(e.description||'')}</p></article>`).join(''):'<div class="context-empty">Scenario Corpus 目前沒有資料。</div>';
-  }catch(e){
-    console.error(e);
-    host.innerHTML='<div class="context-empty">Event 32 暫時無法載入；請重新整理或稍後再試。</div>';
-  }
-}
-document.querySelector('#contextScenarioRefresh')?.addEventListener('click',loadContextScenarioCorpus);
-
-window.LOCPeriods.load({force:true}).then(()=>{
-  window.LOCPeriods.fillSelect(document.querySelector('#contextEventPeriod'),{includeAll:true,allLabel:'未指定'});
-  window.LOCPeriods.fillSelect(document.querySelector('#contextRelationPeriod'),{includeAll:true,allLabel:'未指定'});
-  renderContextEvents();
-  renderContextRelations();
-}).catch(()=>{});
-resetContextEvent();resetContextRelation();loadContextScenarioCorpus();
-const eventCacheAtStart=readContextCache(CONTEXT_EVENT_CACHE);
-const relationCacheAtStart=readContextCache(CONTEXT_RELATION_CACHE);
-loadContextEvents({remote:!Array.isArray(eventCacheAtStart?.data)});
-loadContextRelations({remote:!Array.isArray(relationCacheAtStart?.data)});
+const scenarioGroup=document.querySelector('#contextScenarioGroup'),scenarioQuery=document.querySelector('#contextScenarioQuery');
+scenarioGroup.innerHTML='<option value="">全部群組</option>'+[...groupCounts.keys()].map(g=>`<option value="${cEsc(g)}">${cEsc(g)}</option>`).join('');
+let scenarioPage=1;
+function filteredScenarios(){const g=scenarioGroup.value,q=scenarioQuery.value.trim().toLowerCase();return scenarioRows.filter(x=>(!g||x.event_group===g)&&(!q||[x.event_id,x.title,x.event_group,x.requirement_signature,x.description].join(' ').toLowerCase().includes(q)));}
+function renderScenarios(){const rows=filteredScenarios(),host=document.querySelector('#contextScenarioList'),start=(scenarioPage-1)*PAGE_SIZE,pageRows=rows.slice(start,start+PAGE_SIZE);host.innerHTML=pageRows.length?pageRows.map(e=>`<article class="context-item"><div class="context-item-head"><div><h4>${cEsc(e.event_id)} · ${cEsc(e.title)}</h4><small>${cEsc(e.event_group)} · ${cEsc(e.requirement_signature)}</small></div></div><p>${cEsc(e.description)}</p></article>`).join(''):'<div class="context-empty">沒有符合的 Scenario。</div>';pager(document.querySelector('#contextScenarioPagination'),rows.length,scenarioPage,p=>{scenarioPage=p;renderScenarios();});}
+scenarioGroup.addEventListener('change',()=>{scenarioPage=1;renderScenarios();});scenarioQuery.addEventListener('input',()=>{scenarioPage=1;renderScenarios();});renderScenarios();
 </script>
-
-
-<footer class="loc-site-footer" style="margin-top:32px;padding:20px 16px;text-align:center;font-size:13px;line-height:1.7;color:var(--muted,#7f8794);border-top:1px solid var(--line,rgba(127,135,148,.22))">
-  <div><a href="index.html" style="color:inherit;text-decoration:none">LOC月典(LunaCodex)</a></div>
-  <div>By <a href="lo3rwang.html" style="color:inherit;text-decoration:none">Lucas Oscar Wang 政德</a></div>
-  <div><a href="mailto:sopa2306@gmail.com" style="color:inherit;text-decoration:none">意見信箱</a></div>
-  <div>in EsotericVerse 秘藝文域（籌備中）</div>
-</footer>
-<script src="js/rune-context-graph.js" defer></script>
+<script src="js/rune-analytics.js"></script>
+<script src="js/rune-context-graph.js"></script>
+<script src="js/loc-nav.js"></script>
+<footer class="loc-site-footer" style="margin-top:32px;padding:20px 16px;text-align:center;font-size:13px;line-height:1.7;color:var(--muted,#7f8794);border-top:1px solid var(--line,rgba(127,135,148,.22))"><div><a href="index.html" style="color:inherit;text-decoration:none">LOC月典(LunaCodex)</a></div><div>By <a href="lo3rwang.html" style="color:inherit;text-decoration:none">Lucas Oscar Wang 政德</a></div><div><a href="mailto:sopa2306@gmail.com" style="color:inherit;text-decoration:none">意見信箱</a></div></footer>
 </body></html>
