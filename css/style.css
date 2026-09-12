@@ -136,10 +136,7 @@ html[data-theme-resolved="day"] body.loc-page-statics .stats-metric span,
 html[data-theme-resolved="day"] body.loc-page-statics .ranking-row span,
 html[data-theme-resolved="day"] body.loc-page-statics .rune-group-stats small{color:var(--muted)!important}
 
-/* GLOBAL DAY-THEME COMPATIBILITY LAYER
-   All HTML pages that load css/style.css must share one visual vocabulary.
-   Legacy page-local aliases are normalized here so future text/feature analysis is
-   not polluted by page-specific night palettes or arbitrary presentation weight. */
+/* GLOBAL DAY-THEME COMPATIBILITY LAYER */
 html[data-theme-resolved="day"] body{
   color-scheme:light;
   --panel:var(--surface);
@@ -160,86 +157,42 @@ html[data-theme-resolved="day"] body{
   --loc-shadow:var(--shadow);
 }
 
-/* Canonical text surfaces: primary containers use --surface; nested/supporting
-   containers use --surface2. These selectors intentionally target semantic text
-   containers rather than artwork, rune imagery, media thumbnails or canvases. */
 html[data-theme-resolved="day"] body :where(
-  article,
-  .panel,
-  .card,
-  .gov-card,
-  .profile-block,
-  .search-panel,
-  .filter-panel,
-  .hero-note,
-  .section,
-  .event-card,
-  .trajectory-card,
-  .keyword-card,
-  .era,
-  .daily-record-form,
-  .daily-stats-panel,
-  .stats-metric,
-  .loc-concept-note,
-  .loc-guidance-note,
-  .quick-selector,
-  .quick-selector-detail
+  article,.panel,.card,.gov-card,.profile-block,.search-panel,.filter-panel,
+  .hero-note,.section,.event-card,.trajectory-card,.keyword-card,.era,
+  .daily-record-form,.daily-stats-panel,.stats-metric,.loc-concept-note,
+  .loc-guidance-note,.quick-selector,.quick-selector-detail
 ){
   border-color:var(--line)!important;
   color:var(--text)!important;
 }
 
 html[data-theme-resolved="day"] body :where(
-  .panel,
-  .card,
-  .gov-card,
-  .profile-block,
-  .search-panel,
-  .hero-note,
-  .section,
-  .event-card,
-  .trajectory-card,
-  .keyword-card,
-  .era,
-  .daily-record-form,
-  .daily-stats-panel,
-  .stats-metric
+  .panel,.card,.gov-card,.profile-block,.search-panel,.hero-note,.section,
+  .event-card,.trajectory-card,.keyword-card,.era,.daily-record-form,
+  .daily-stats-panel,.stats-metric
 ){background:var(--surface)!important}
 
 html[data-theme-resolved="day"] body :where(
-  .filter-panel,
-  .loc-concept-note,
-  .loc-guidance-note,
-  .quick-selector,
-  .quick-selector-detail,
-  .core-line,
-  .doc-link,
-  .status,
-  .legend div,
-  .metric,
-  .trajectory-box
+  .filter-panel,.loc-concept-note,.loc-guidance-note,.quick-selector,
+  .quick-selector-detail,.core-line,.doc-link,.status,.legend div,.metric,.trajectory-box
 ){
   background:var(--surface2)!important;
   border-color:var(--line)!important;
   color:var(--text)!important;
 }
 
-/* Form controls are text surfaces too; do not leave night-blue islands in day mode. */
 html[data-theme-resolved="day"] body :where(input,textarea,select){
   background:var(--surface2)!important;
   color:var(--text)!important;
   border-color:var(--line)!important;
 }
 html[data-theme-resolved="day"] body :where(input,textarea)::placeholder{color:var(--muted)!important}
-
-/* Canonical text hierarchy. Explicit semantic accent classes remain accented. */
 html[data-theme-resolved="day"] body :where(p,li,dd,dt,label,td,th){color:var(--text)}
 html[data-theme-resolved="day"] body :where(.muted,.lead,.meta,.source-note,small){color:var(--muted)}
 html[data-theme-resolved="day"] body :where(strong,b){color:var(--text)}
 
-/* DAY PALETTE CANON · neutral surfaces
-   Day mode must be neutral white/gray, not blue-gray. All semantic text surfaces
-   inherit these tokens, so the rule applies consistently across every HTML page. */
+/* DAY PALETTE CANON · neutral surfaces */
 html[data-theme-resolved="day"] body{
   --bg:#f3f3f1;
   --surface:rgba(255,255,255,.97);
@@ -264,20 +217,20 @@ html[data-theme-resolved="day"] body{
   background:linear-gradient(180deg,#f7f7f5 0%,#f0f0ed 100%)!important;
 }
 
-/* The text boxes visible in the homepage onboarding area are explicitly semantic
-   surfaces. Keep them neutral even if older selectors contain literal blue fills. */
 html[data-theme-resolved="day"] body :where(
-  .loc-guidance-note,
-  .loc-concept-note,
-  .quick-selector,
-  .quick-selector-detail,
-  .quick-selector-card,
-  .action-card,
-  .work-item,
-  .loc6-core,
-  .loc6-quotes
+  .loc-guidance-note,.loc-concept-note,.quick-selector,.quick-selector-detail,
+  .quick-selector-card,.action-card,.work-item,.loc6-core,.loc6-quotes
 ){
   background:var(--surface2)!important;
   border-color:var(--line)!important;
   color:var(--text)!important;
+}
+
+/* HOMEPAGE RUNE STAGE · day theme
+   The homepage card preview used a hard-coded night radial/black surface in the
+   legacy index CSS. Keep the rune artwork unchanged, but neutralize its stage. */
+html[data-theme-resolved="day"] body.loc-page-index #rune-card.card-display{
+  background:var(--surface2)!important;
+  border-color:var(--line)!important;
+  box-shadow:none!important;
 }
