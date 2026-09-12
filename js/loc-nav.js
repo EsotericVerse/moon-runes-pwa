@@ -263,7 +263,7 @@
       link("新手上路","tutorial02.html"),
       link("占卜抽籤","runes.html#draw"),
       link("66 符資料","runes.html#library"),
-      link("符文脈絡","runes.html#graph"),
+      link("符文脈絡","runes.html#reference"),
       link("符文統計","statics.html#runes"),
       link("符文知識庫","runes.html#reference")
     ],"月之符文功能"));
