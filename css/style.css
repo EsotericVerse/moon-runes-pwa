@@ -31,6 +31,34 @@ body.loc-page-lots #draw-mode-selector[hidden]{
   display:none!important;
 }
 
+/* SHARED LAYOUT UTILITIES
+   Page HTML declares semantic classes only; spacing/color belongs here. */
+.loc-section-gap-sm{margin-top:14px;}
+.loc-section-gap{margin-top:16px;}
+.loc-section-gap-lg{margin-top:18px;}
+.loc-rune-group-note{
+  margin:0 0 12px;
+  color:var(--muted);
+  font-size:.86rem;
+}
+.loc-site-footer{
+  margin-top:32px;
+  padding:20px 16px;
+  text-align:center;
+  font-size:13px;
+  line-height:1.7;
+  color:var(--muted);
+  border-top:1px solid var(--line);
+}
+.loc-site-footer a{
+  color:inherit;
+  text-decoration:none;
+}
+.loc-site-footer a:hover,
+.loc-site-footer a:focus-visible{
+  text-decoration:underline;
+}
+
 /* GOVERNANCE THEME CONSISTENCY
    Governance copy must follow theme tokens instead of the old hard-coded light text. */
 body.loc-page-governance .gov-card p,
