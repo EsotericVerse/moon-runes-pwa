@@ -50,7 +50,7 @@ const runeAdapter = readFileSync(runeAdapterPath, 'utf8');
 if (!runeAdapter.includes("../data/json/core/runes.json")) failures.push('lib/runes.js: must import data/json/core/runes.json');
 if (/canonicalRows\s*=\s*\[/.test(runeAdapter)) failures.push('lib/runes.js: embedded duplicate canonical rune rows');
 
-const allowedCanonicalRefs = new Set(['app/loc/data.js', 'lib/runes.js']);
+const allowedCanonicalRefs = new Set(['app/loc/data-paths.mjs', 'lib/runes.js']);
 const runtimeCanonicalRef = /(?:from\s*|import\s*\(|require\s*\(|fetch\s*\()\s*['"`][^'"`]*data\/json\/core\/runes\.json\b/;
 function verifyRuntimeRefs(scanRoot) {
   walk(resolve(root, scanRoot), path => {
@@ -63,6 +63,14 @@ function verifyRuntimeRefs(scanRoot) {
 }
 verifyRuntimeRefs('app');
 verifyRuntimeRefs('lib');
+
+// All Next view data endpoints must come through LOC_DATA so public staging can be exact.
+walk(resolve(root, 'app/loc/views'), path => {
+  if (!/\.(?:js|jsx|mjs)$/.test(path)) return;
+  const rel = relative(root, path).replaceAll('\\', '/');
+  const text = readFileSync(path, 'utf8');
+  if (/['"`]\/data\/json\//.test(text)) failures.push(`${rel}: hardcoded /data/json path; register it in LOC_DATA`);
+});
 
 const dataRuntime = readFileSync(resolve(root, 'app/loc/data.js'), 'utf8');
 if (!/DEFAULT_GLOBAL_CONCURRENCY\s*=\s*2\b/.test(dataRuntime)) failures.push('app/loc/data.js: global JSON concurrency budget must remain 2');
