@@ -18,6 +18,15 @@ window.addEventListener("DOMContentLoaded", () => {
     if (paragraph) paragraph.textContent = "不知道從哪邊開始？沒關係！不用先了解或知道什麼，抽張牌就知道！";
   }
 
+  // Restore the original rune-entry wording as one coherent introduction.
+  const runeEntry = document.querySelector("body.loc-page-index #rune-entry");
+  if (runeEntry) {
+    const title = runeEntry.querySelector("#rune-title");
+    if (title) title.textContent = "問一件事，或讓語言自己推演成長，最後讓你選擇成為什麼樣子。";
+    const intro = runeEntry.querySelector(".section-heading > p");
+    if (intro) intro.textContent = "直接從一個問題開始，選擇想要的抽取方式，讓月之符文提供一個新的語言起點，它將會推演出一個實用的指示。";
+  }
+
   // The old Learn → Try → Explore → Understand flow duplicated the homepage and
   // contradicted the no-prerequisite entry principle, so remove it from the rendered page.
   document.querySelector("body.loc-page-index #start-guide")?.remove();
