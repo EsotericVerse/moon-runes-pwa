@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC_EVOLUTION_SHARED_REGISTRY",
+  "authority": "LOC Evolution shared data layer",
+  "purpose": "提供符文演化與語言推演共同引用的時間、事件、關係與來源契約；共用資料只定義一次，不在兩條演化資料中複製。",
+  "updated_at": "2026-09-12",
+  "shared_authorities": {
+    "eras": {
+      "registry": "data/json/registries/LOC_ERA_REGISTRY.json",
+      "kv_key": "loc:era:registry",
+      "ownership": "Search / Period Definition",
+      "rule": "符文演化與語言推演只引用 ERA，不各自重建時期。"
+    },
+    "events": {
+      "kv_key": "loc:context:events",
+      "ownership": "Context",
+      "rule": "可被兩條演化引用的事件使用同一 Event identity；演化只增加觀察與解讀，不覆寫原事件。"
+    },
+    "relations": {
+      "kv_key": "loc:context:relations",
+      "ownership": "Context",
+      "rule": "跨符文、作品、事件、時期與治理資料的關係共用同一 Relation identity。"
+    }
+  },
+  "tracks": {
+    "rune_evolution": {
+      "label": "符文演化",
+      "scope": "LunaRunes 本體、規模、語意拆分、治理規則、衍生詞主體性與關係演化",
+      "primary_registry": "data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json",
+      "supporting_registries": [
+        "data/json/core/runes.json",
+        "data/json/core/runes66groups.json",
+        "data/json/registries/LUNARUNE_DERIVED_LEXICON.json",
+        "data/json/registries/LOC_KEYWORD_GOVERNANCE.json"
+      ],
+      "kv_key": "loc:evolution:runes",
+      "data_status": "active"
+    },
+    "language_evolution": {
+      "label": "語言推演",
+      "scope": "跨時期觀察文字、作品、關鍵詞、語意重心、風格、治理與方法如何改變",
+      "primary_registry": "data/json/registries/LOC_LANGUAGE_EVOLUTION_REGISTRY.json",
+      "supporting_registries": [
+        "data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json",
+        "data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json",
+        "data/json/registries/LOC4_WRITING_REGISTRY.json",
+        "data/json/registries/LOC3_RUNE_SONG_REGISTRY.json",
+        "data/json/registries/LOC_MEDIA_REGISTRY.json",
+        "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json"
+      ],
+      "kv_key": "loc:evolution:language",
+      "data_status": "partial_waiting_for_large_corpus"
+    }
+  },
+  "shared_dimensions": [
+    "era",
+    "date",
+    "event",
+    "relation",
+    "source",
+    "provenance",
+    "status",
+    "confidence"
+  ],
+  "governance": {
+    "no_duplicate_authority": true,
+    "historical_records_are_immutable": true,
+    "derived_analysis_does_not_overwrite_source": true,
+    "missing_large_corpus_must_not_be_fabricated": true,
+    "track_specific_interpretation_may_differ": true,
+    "rule": "同一原始資料可被兩條演化共同引用，但符文演化與語言推演的 interpretation 分開保存。"
+  }
+}
