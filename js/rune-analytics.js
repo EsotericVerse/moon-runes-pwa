@@ -49,7 +49,7 @@
   async function load(){
     if(window.__LOC_RUNE_ANALYTICS_DATA__) return window.__LOC_RUNE_ANALYTICS_DATA__;
     const [runeModule,evolution]=await Promise.all([
-      import('./runes66.js'),
+      import('./runes.js'),
       loadEvolution()
     ]);
     const rows=[...(Array.isArray(runeModule?.rune)?runeModule.rune.filter(Boolean):[])].sort(byNumber);

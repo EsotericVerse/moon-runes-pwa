@@ -1,5 +1,5 @@
 import { mountQuickSelector } from './quick-selector.js';
-import { rune as runtimeRunes, groups as runtimeGroups } from './runes66.js';
+import { rune as runtimeRunes, groups as runtimeGroups } from './runes.js';
 
 async function initRunePage() {
   const file = location.pathname.split("/").pop() || "";

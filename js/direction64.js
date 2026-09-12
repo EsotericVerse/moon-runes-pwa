@@ -1,5 +1,5 @@
 /* LunaRunes direction view derived from the shared static runtime. */
-import { rune } from './runes66.js';
+import { rune } from './runes.js';
 
 export const direction = [null];
 
