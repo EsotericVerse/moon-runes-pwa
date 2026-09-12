@@ -37,7 +37,7 @@ export const LOC_DATA = Object.freeze({
 // - Derived/search JSON stays split so large corpora can be loaded only when needed.
 // - All LOC views share this request cache and one global concurrency gate.
 const cache = new Map();
-const DEFAULT_GLOBAL_CONCURRENCY = 4;
+const DEFAULT_GLOBAL_CONCURRENCY = 2;
 let activeRequests = 0;
 const waiters = [];
 
