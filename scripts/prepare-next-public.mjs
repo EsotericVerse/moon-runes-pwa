@@ -1,93 +1,35 @@
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  rmSync,
-  statSync
-} from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { LOC_DATA } from '../app/loc/data-paths.mjs';
+import { cp, mkdir, rm } from 'node:fs/promises';
+import path from 'node:path';
 
-const root = process.cwd();
-const publicRoot = resolve(root, 'public');
-const dataRoot = resolve(root, 'data/json');
+const ROOT = process.cwd();
+const PUBLIC = path.join(ROOT, 'public');
 
-function bytesInTree(path) {
-  if (!existsSync(path)) return 0;
-  const stat = statSync(path);
-  if (stat.isFile()) return stat.size;
-  return readdirSync(path).reduce((total, name) => total + bytesInTree(resolve(path, name)), 0);
-}
-
-function normalizeRepoPath(value) {
-  return String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');
-}
-
-function copyRepoFile(repoPath) {
-  const normalized = normalizeRepoPath(repoPath);
-  const source = resolve(root, normalized);
-  const target = resolve(publicRoot, normalized);
-  if (!existsSync(source) || !statSync(source).isFile()) {
-    throw new Error(`[next-public] required runtime asset missing: ${normalized}`);
-  }
-  mkdirSync(dirname(target), { recursive: true });
-  copyFileSync(source, target);
-  return statSync(source).size;
-}
-
-function readJson(repoPath) {
-  return JSON.parse(readFileSync(resolve(root, normalizeRepoPath(repoPath)), 'utf8'));
-}
-
-function manifestShards(repoPath) {
-  const manifest = readJson(repoPath);
-  const entries = Array.isArray(manifest?.shards) ? manifest.shards : [];
-  const baseDir = dirname(normalizeRepoPath(repoPath)).replaceAll('\\', '/');
-  return entries.map(entry => {
-    if (typeof entry === 'string') return normalizeRepoPath(`${baseDir}/${entry}`);
-    if (entry && typeof entry.path === 'string') return normalizeRepoPath(entry.path);
-    throw new Error(`[next-public] unsupported shard entry in ${repoPath}`);
-  });
-}
-
-// Generated public payload must never retain stale copies from an older full-tree build.
-for (const rel of ['data/json', 'docs', 'assets']) {
-  rmSync(resolve(publicRoot, rel), { recursive: true, force: true });
-}
-
-const runtimeJson = new Set(
-  Object.values(LOC_DATA)
-    .map(normalizeRepoPath)
-    .filter(path => path.startsWith('data/json/'))
-);
-
-// Search corpora stay split. Only manifest-declared shards are published.
-for (const manifestPath of [
-  normalizeRepoPath(LOC_DATA.TEXT_CORPUS_MANIFEST),
-  normalizeRepoPath(LOC_DATA.MUSIC_SEARCH_MANIFEST)
-]) {
-  for (const shardPath of manifestShards(manifestPath)) runtimeJson.add(shardPath);
-}
-
-let stagedJsonBytes = 0;
-for (const path of [...runtimeJson].sort()) stagedJsonBytes += copyRepoFile(path);
-
-// Only explicitly public LOC documents are staged for the Next runtime.
-const runtimeDocs = [
-  'docs/LOC_Canon_1.0.docx',
-  'docs/ZHENGDE_STYLE_PUBLIC_KM.md'
+const allow = [
+  ['assets/lunarunes/cards', 'assets/lunarunes/cards'],
+  ['assets/lunarunes/reference', 'assets/lunarunes/reference'],
+  ['assets/site/diagrams', 'assets/site/diagrams'],
+  ['assets/site/icons', 'assets/site/icons'],
+  ['data/html/runes-beginner.html', 'data/html/runes-beginner.html'],
+  ['data/json/core', 'data/json/core'],
+  ['data/json/derived', 'data/json/derived'],
+  ['data/json/generated/search', 'data/json/generated/search'],
+  ['data/json/registries', 'data/json/registries'],
+  ['data/json/search/faq', 'data/json/search/faq'],
+  ['data/json/search/loc3', 'data/json/search/loc3'],
+  ['docs/LOC_Canon_1.0.docx', 'docs/LOC_Canon_1.0.docx'],
+  ['apple-touch-icon.png', 'apple-touch-icon.png'],
+  ['favicon.ico', 'favicon.ico'],
+  ['manifest.json', 'manifest.json']
 ];
-let stagedDocBytes = 0;
-for (const path of runtimeDocs) stagedDocBytes += copyRepoFile(path);
 
-const sourceJsonBytes = bytesInTree(dataRoot);
-const reduction = sourceJsonBytes
-  ? ((1 - stagedJsonBytes / sourceJsonBytes) * 100)
-  : 0;
-const mib = bytes => (bytes / 1024 / 1024).toFixed(2);
+await rm(PUBLIC, { recursive: true, force: true });
+await mkdir(PUBLIC, { recursive: true });
 
-console.log(`[next-public] JSON: ${runtimeJson.size} runtime files, ${mib(stagedJsonBytes)} MiB staged / ${mib(sourceJsonBytes)} MiB source (${reduction.toFixed(1)}% excluded)`);
-console.log(`[next-public] Docs: ${runtimeDocs.length} files, ${mib(stagedDocBytes)} MiB staged`);
-console.log('[next-public] Assets: 0 files staged (no current Next runtime consumer)');
+for (const [sourceRel, targetRel] of allow) {
+  const source = path.join(ROOT, sourceRel);
+  const target = path.join(PUBLIC, targetRel);
+  await mkdir(path.dirname(target), { recursive: true });
+  await cp(source, target, { recursive: true });
+}
+
+console.log(`Prepared Next public payload with ${allow.length} allowlisted sources.`);
