@@ -1,8 +1,11 @@
-export default function GovernanceView() {
-  return (
-    <section className="loc-next-view">
-      <div className="hero"><p>LOC6 · Governance</p><h1>治理</h1><p>Canon、命名、分類、版本、版權與系統治理規則集中於此。治理頁維持輕量，不預載其他分析模組。</p></div>
-      <div className="card"><h2>Independent view</h2><p>治理內容與其他 runtime 解耦，可獨立更新，不再要求整個 LOC 應用重新初始化。</p></div>
-    </section>
-  );
+export default function GovernanceView(){
+  return <section className="loc-view">
+    <header className="loc-hero" id="top"><p className="loc-eyebrow">Governance</p><h1>治理</h1><p>治理處理 LOC 如何被使用、引用、延伸與修正。LOC 有自己的框架、特性與調性，但不要求任何人接受或使用；所有內容均可作為分析、參考與延伸思考的材料。</p></header>
+    <div className="loc-grid two">
+      <section className="loc-card" id="principles"><p className="loc-eyebrow">Principles</p><h2>原則</h2><p className="loc-core-line">尊重 · 和平 · 包容 · 友善</p><p><strong>LOC 本身保持客觀與中立。</strong> 它不預設宗教、政治、道德或人生價值立場，也不要求使用者接受作者本人的信仰、觀念或生活方式。</p><p><strong>歷史保留，解釋可校準。</strong> 事件、來源與版本應保留；定義、方法與解釋可依證據、脈絡與需求重新檢視。</p><p><strong>Spec 優先。</strong> 高歧義或容易被字面直覺帶偏的符文，必須先以 Spec 明確界定語意邊界，再進入關鍵詞、方向與延伸描述。</p><p><strong>先判斷詞彙本身的詞類，再判斷群組的主體性。</strong> RAG 基礎分類先辨認詞彙在文本中的實際功能，再依群組所代表的語意場域與主體性判斷符文歸屬。</p><p><strong>優先使用不需 API key 的可解釋分類。</strong> 能以固定資料、詞類、群組主體性、關鍵詞與規則完成的基礎分類先在本地完成；規則不足時才進入更高階語意分析。</p><p><strong>文字顯示也屬於治理。</strong> 顯示順序服從語意權威；不得因排版讓低層級文字看起來比上位定義更具權威。</p><p><strong>先治理，再實作。</strong> 語意定義、分類規則與文字呈現原則先確定，再套用到資料、RAG、介面與功能。</p><aside className="loc-note"><small>Neutrality · De-mystification／中立 · 去神秘化</small><p><strong>LOC 以中立方式切分與治理語言，把模糊問題拆成可處理的規則、模組與演算法，不替使用者決定哪個答案必然正確。</strong></p><p>系統負責提供可辨認、可比較的路徑；使用者保有最後判斷。</p></aside></section>
+      <section className="loc-card" id="copyright"><p className="loc-eyebrow">Copyright · Copyleft</p><h2>版權</h2><p>LOC 採 <strong>Copyleft</strong> 思路公開核心內容。歡迎閱讀、研究、參考與依既有授權條件延伸，但來源、作者姓名與原始系統關係應被保留。</p><p>可以延伸、不同意或建立自己的版本，但不應把源自 LOC 的核心資料、結構或語意設計改寫成無來源的自有創作。</p><p>商業顧問、系統架構、治理設計、解析介面與個案實作，屬另外的服務與合作範圍。</p><a className="loc-link-card" href="https://github.com/EsotericVerse/moon-runes-pwa"><strong>Repository 文件入口</strong><span>COPYLEFT、README 與治理文件由 Repository 統一管理。</span></a></section>
+      <section className="loc-card" id="philosophy"><p className="loc-eyebrow">Tone · Governance</p><h2>治理態度</h2><p><strong>尊重、和平、包容、友善。</strong></p><p>這四個詞描述 LOC 對外互動的基本態度，而不是要求他人遵守的人生教條。框架可以有明確邊界，分析可以有清楚規則，但不以強迫採用或建立唯一正統為目標。</p><p>可以參考，不必服從；可以延伸，不必成為同一套思想；使用與引用時尊重來源與授權即可。</p></section>
+      <section className="loc-card" id="documents"><p className="loc-eyebrow">Documents</p><h2>文件</h2><p>治理首頁放基本原則；較完整的法律、資料、版本、語意、Repository 與系統治理內容，由文件層統一管理。</p><div className="loc-link-list"><a className="loc-link-card" href="https://github.com/EsotericVerse/moon-runes-pwa"><strong>Repository</strong><span>核心文件與版本紀錄。</span></a><a className="loc-link-card" href="/docs/LOC_Canon_1.0.docx"><strong>LOC Canon</strong><span>LOC 現行架構、定義與治理基準。</span></a></div></section>
+    </div>
+  </section>;
 }
