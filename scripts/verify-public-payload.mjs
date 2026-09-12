@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
-import { LOC_DATA } from '../app/loc/data.js';
+import { LOC_DATA } from '../app/loc/data-paths.mjs';
 
 const root = process.cwd();
 const publicRoot = resolve(root, 'public');
