@@ -16,8 +16,8 @@ export default function RunesPage() {
         <p>統一入口：抽牌、每日符文、66 符資料、新手上路、FAQ、脈絡、治理與推演將逐步由既有頁面搬入此 route。</p>
       </header>
       <section className="card">
-        <h2>Canonical Rune Module</h2>
-        <p>可抽符文 {drawable.length} 枚；群組 {groups.length} 組。資料直接 import JS module，不經 runtime JSON parse。</p>
+        <h2>Canonical Rune Data</h2>
+        <p>可抽符文 {drawable.length} 枚；群組 {groups.length} 組。最高級資料來源固定為 data/json/core/runes.json，Next build 只在建置階段產生需要的 runtime shape，不再維護第二份符文 JS 資料。</p>
       </section>
     </main>
   );
