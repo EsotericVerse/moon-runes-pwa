@@ -7,11 +7,9 @@ lo3rwang.cc          root brand / portal
 whoami.lo3rwang.cc   author identity
 loc.lo3rwang.cc      LOC model, knowledge, governance, search, context, evolution
 lrunes.lo3rwang.cc   LunaRunes product identity and rune reference
-a pp.lo3rwang.cc      interactive applications and workspace
+app.lo3rwang.cc      interactive applications and workspace
 api.lo3rwang.cc      machine-service interface
 ```
-
-> Note: the intended application hostname is `app.lo3rwang.cc` (without a space); the architecture rule below uses that canonical hostname.
 
 ## Canonical domains
 
