@@ -28,10 +28,11 @@ for (const name of ['engine', 'css', 'js']) {
   if (existsSync(resolve(root, name))) warnings.push(`${name}/ -> legacy migration debt`);
 }
 
+// Only files that are operational governance contracts are mandatory Markdown.
+// Public site maps, release narratives and user-facing KM belong in routes/structured data.
 for (const path of [
   'docs/REPO_DIRECTORY_GOVERNANCE.md',
   'docs/DOMAIN_ARCHITECTURE.md',
-  'docs/SITE_MAP.md',
   'assets/README.md',
   'services/README.md',
   'data/lunarunes/source/LunaRune66.xlsx',
