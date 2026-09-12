@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v219";
+const CACHE_NAME = "moon-runes-pwa-v220";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -37,6 +37,8 @@ const ASSETS_TO_CACHE = [
   "/data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json",
   "/data/json/registries/LOC_SOURCE_ACTIVITY_REGISTRY.json",
   "/data/json/registries/LOC_KEYWORD_GOVERNANCE.json",
+  "/data/json/registries/LUNARUNE_DERIVED_LEXICON.json",
+  "/data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json",
   "/data/json/core/lots.json",
   "/data/json/core/runes.json",
   "/data/json/core/runes66groups.json",
@@ -89,7 +91,9 @@ self.addEventListener("fetch", (event) => {
   const isHtml = url.pathname.endsWith(".html") || url.pathname.endsWith(".htm") || url.pathname === "/";
   const isCoreRuneData = [
     "/data/json/core/runes.json",
-    "/data/json/core/runes66groups.json"
+    "/data/json/core/runes66groups.json",
+    "/data/json/registries/LUNARUNE_DERIVED_LEXICON.json",
+    "/data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json"
   ].includes(url.pathname);
 
   // HTML/navigation and current rune semantics remain freshness-first. Use
