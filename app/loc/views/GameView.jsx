@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { fetchLocJson, fetchLocJsonBatch, LOC_DATA } from '../data';
+import { fetchLocJsonBatch, LOC_DATA } from '../data';
 import { createCards, createEvents, coverage, deltaFor, drawToFive, shuffle } from '../model/game-data';
 
-const EVENT_REGISTRY = '/data/json/registries/LOC2_EVENT_REGISTRY.json';
 const playerName = index => index ? 'B' : 'A';
 
 function freshPlayer(cards) {
@@ -32,7 +31,7 @@ export default function GameView() {
 
   useEffect(() => {
     let live = true;
-    fetchLocJsonBatch([LOC_DATA.RUNES, EVENT_REGISTRY], { concurrency: 2 })
+    fetchLocJsonBatch([LOC_DATA.RUNES, LOC_DATA.LOC2_EVENT_REGISTRY], { concurrency: 2 })
       .then(([runes, eventRegistry]) => {
         if (!live) return;
         const cards = createCards(runes);
