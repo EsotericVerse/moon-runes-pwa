@@ -17,8 +17,6 @@ function localPath(fromFile, specifier) {
   if (!clean || /^(?:https?:|data:|mailto:|tel:|\/\/)/i.test(clean)) return null;
   if (clean.startsWith('/')) return normalizeRel(clean.slice(1));
 
-  // Browser scripts such as appendScript('js/foo.js') are site-root relative in
-  // this project, while ESM imports such as './foo.js' are module relative.
   const rootCandidate = normalizeRel(clean);
   if (!clean.startsWith('.') && existsSync(resolve(root, rootCandidate))) return rootCandidate;
   return normalizeRel(join(dirname(fromFile), clean));
@@ -63,24 +61,29 @@ while (queue.length) {
   }
 }
 
+function scanRetiredFile(path) {
+  if (!existsSync(path) || !statSync(path).isFile()) return;
+  if (!/\.(?:html|js|jsx|mjs)$/i.test(path)) return;
+  const text = readFileSync(path, 'utf8');
+  if (/\blots\.html(?:[?#]|\b)/i.test(text)) retiredLinkViolations.push(relative(root, path));
+}
+
 function scanRetiredLinks(dir) {
-  if (!existsSync(dir)) return;
+  if (!existsSync(dir) || !statSync(dir).isDirectory()) return;
   for (const name of readdirSync(dir)) {
     const path = join(dir, name);
     const stat = statSync(path);
     if (stat.isDirectory()) {
       if (name === 'node_modules' || name === '.next' || name === 'out' || name === 'public') continue;
       scanRetiredLinks(path);
-      continue;
+    } else {
+      scanRetiredFile(path);
     }
-    if (!/\.(?:html|js|jsx|mjs)$/i.test(name)) continue;
-    const text = readFileSync(path, 'utf8');
-    if (/\blots\.html(?:[?#]|\b)/i.test(text)) retiredLinkViolations.push(relative(root, path));
   }
 }
 
 for (const scope of ['app', 'lib', 'js']) scanRetiredLinks(resolve(root, scope));
-for (const name of readdirSync(root)) if (/\.html$/i.test(name)) scanRetiredLinks(resolve(root, name));
+for (const name of readdirSync(root)) if (/\.html$/i.test(name)) scanRetiredFile(resolve(root, name));
 
 const jsDir = resolve(root, 'js');
 const allJs = existsSync(jsDir)
