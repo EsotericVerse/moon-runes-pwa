@@ -1,0 +1,60 @@
+{
+  "version": "1.0-rc1",
+  "title": "LunaRunes Evolution Analysis",
+  "source_history": "data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json",
+  "source_history_version": "1.4-rc4",
+  "status": "complete_for_current_corpus",
+  "purpose": "把既有符文變化史轉成可被 Evolution 與後續 LOC8 推演直接消費的分析層；只描述現有證據，不補造不存在的日期或歷史事件。",
+  "scale_analysis": {
+    "start_rune_count": 14,
+    "current_rune_count": 66,
+    "absolute_growth": 52,
+    "growth_multiple": 4.7143,
+    "growth_percent": 371.43,
+    "transitions": [
+      {"from":14,"to":24,"delta":10,"growth_percent":71.43,"share_of_total_growth_percent":19.23},
+      {"from":24,"to":32,"delta":8,"growth_percent":33.33,"share_of_total_growth_percent":15.38},
+      {"from":32,"to":42,"delta":10,"growth_percent":31.25,"share_of_total_growth_percent":19.23},
+      {"from":42,"to":66,"delta":24,"growth_percent":57.14,"share_of_total_growth_percent":46.15}
+    ],
+    "observation": "系統不是線性等幅增加；42→66 單次新增 24 枚，占現行相對於 Base14 全部增量約 46%，顯示後期曾出現一次大幅語意覆蓋擴張。"
+  },
+  "semantic_resolution_analysis": {
+    "case_count": 22,
+    "derived_lexicon_case_count": 21,
+    "history_only_case_count": 1,
+    "macro_distribution": [
+      {"id":"surface_to_semantic_resolution","label":"由字面組成轉向語意主體","count":13,"case_orders":[2,3,4,5,6,9,10,11,12,13,14,16,21],"signal":"完整詞義、head ownership、lexicalized meaning 或語意覆寫，逐步取代逐字同權解析。"},
+      {"id":"ambiguity_or_out_of_domain","label":"保留歧義或拒絕硬分類","count":4,"case_orders":[7,8,15,22],"signal":"系統允許 ambiguous／特殊／非適用域作為有效結果，而不是為覆蓋率強迫唯一答案。"},
+      {"id":"context_or_higher_order_resolution","label":"完整語境與高階統攝","count":4,"case_orders":[17,18,19,20],"signal":"phrase > subphrase，且同組總體不自動得到同一答案，而由完整語境與最高統攝語意裁決。"},
+      {"id":"historical_split","label":"歷史拆分與正名","count":1,"case_orders":[1],"signal":"演化史保留舊狀態，但現行 Canon 僅顯示正式定義。"}
+    ],
+    "dominant_signal": "LunaRunes 的主要演化不是單純增加詞彙，而是從表面字形命中轉向語意主體、完整詞義與可拒絕分類的治理。"
+  },
+  "governance_analysis": {
+    "governance_step_count": 8,
+    "phases": [
+      {"label":"語意錨定","orders":[1],"direction":"由同義詞堆疊轉為獨特關鍵詞與穩定語意錨點。"},
+      {"label":"分類順序與唯一性","orders":[2,3],"direction":"詞類／句內角色先於群組主體性，並以唯一群組加特殊預設避免強迫分類。"},
+      {"label":"衝突裁決","orders":[4],"direction":"只在多個有效候選真正同時成立時才啟動最高級衝突規則。"},
+      {"label":"主體性與詞彙化","orders":[5,6],"direction":"由符文對照表轉向 surface composition、semantic owner、head ownership 與 lexicalized shift。"},
+      {"label":"完整詞組與最高原則","orders":[7,8],"direction":"建立 phrase > subphrase、最高統攝原則與適用域限制。"}
+    ],
+    "trajectory": "治理規則持續由字面比對走向結構化語意解析，同時提高對語境、詞彙化、適用域與不確定性的處理能力。"
+  },
+  "evolution_signals": [
+    {"id":"coverage_expansion","label":"語意覆蓋擴張","evidence":"Base14 → Base66，共增加 52 枚；後期 42→66 的增量最大。"},
+    {"id":"governance_deepening","label":"治理深化","evidence":"8 次治理演化逐步從關鍵詞唯一性擴展到詞組、主體性、衝突裁決與適用域。"},
+    {"id":"semantic_non_literalization","label":"非字面化解析","evidence":"22 個歷史案例中，13 個主要案例直接呈現字面組成與語意主體不相等。"},
+    {"id":"uncertainty_preservation","label":"保留不確定性","evidence":"光暗、花枝、地雷、明星等案例證明歧義、特殊與非適用域是合法結果。"},
+    {"id":"higher_order_semantics","label":"高階語意形成","evidence":"生老病死、風火雷土、日月星辰等案例證明多符文組合可形成不同於個別符文的高階主體。"}
+  ],
+  "projection_readiness": {
+    "historical_analysis": "ready",
+    "rule_based_projection": "ready",
+    "time_velocity_projection": "limited",
+    "reason": "目前已能從系統尺度、治理規則與語意解析案例推導方向性；但早期 Base 階段缺少完整日期，因此不應虛構每個階段的時間速度。",
+    "allowed_projection_dimensions": ["語意覆蓋是否持續擴張","治理規則是否持續由字面轉向語境／主體性","歧義保留與特殊預設是否增加","高階語意與詞組解析是否持續增長","衍生詞 ownership 類型是否出現新的穩定模式"],
+    "blocked_projection_dimensions": ["缺乏日期證據時的精確成長速度","缺乏外部語料證據時的文化語義變動幅度"]
+  }
+}

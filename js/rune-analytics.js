@@ -6,6 +6,7 @@
   const RUNES_URL='data/json/core/runes.json';
   const DERIVED_URL='data/json/registries/LUNARUNE_DERIVED_LEXICON.json';
   const EVOLUTION_URL='data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json';
+  const ANALYSIS_URL='data/json/registries/LUNARUNE_EVOLUTION_ANALYSIS.json';
   const EVOLUTION_KV_URL='https://api.lo3rwang.cc/evolution/runes';
   const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
   const KEYWORD_PAGE_SIZE=8;
@@ -23,8 +24,11 @@
     const kv=await optionalJson(EVOLUTION_KV_URL,null);
     const kvData=kv?.snapshot?.data;
     if(kv?.ok&&kv?.seeded&&kvData&&typeof kvData==='object') return {...kvData,__source:'kv'};
-    const local=await optionalJson(EVOLUTION_URL,{system_stages:[],governance_evolution:[],semantic_history_cases:[]});
-    return {...local,__source:'registry'};
+    const [local,analysis]=await Promise.all([
+      optionalJson(EVOLUTION_URL,{system_stages:[],governance_evolution:[],semantic_history_cases:[]}),
+      optionalJson(ANALYSIS_URL,null)
+    ]);
+    return {...local,...(analysis?{analysis}:{}),__source:'registry'};
   }
 
   async function load(){
@@ -72,8 +76,15 @@
     const pos=d.keywords.filter(x=>x.polarity==='正向').length,neg=d.keywords.length-pos;
     const stages=Array.isArray(d.evolution?.system_stages)?d.evolution.system_stages:[];
     const stageLine=stages.map(x=>x.label).join(' → ');
+    const a=d.evolution?.analysis||{};
+    const scale=a?.scale_analysis||{};
+    const semantic=a?.semantic_resolution_analysis||{};
+    const governance=a?.governance_analysis||{};
     const source=d.evolution?.__source==='kv'?'KV snapshot':'靜態治理 registry fallback';
-    host.innerHTML=`<div class="stats-metrics">${metric('符文數',d.rows.length)}${metric('唯一群組',[...d.groups.values()].filter(x=>x.length).length)}${metric('正向關鍵詞',pos)}${metric('反向關鍵詞',neg)}${metric('Ownership 規則',d.ownership.length)}${metric('高價值衍生詞',d.derivedEntries.length)}${metric('主體性轉移',d.shifts.length)}${metric('對等歧義',d.ambiguous.length)}</div>${stageLine?`<p><strong>系統演化：</strong>${esc(stageLine)}</p>`:''}<p class="source-note">No API · Base66 與衍生詞讀取正式治理資料；符文演化優先讀取 ${esc(source)}。</p>`;
+    const analysisMetrics=(scale.absolute_growth!==undefined||semantic.case_count!==undefined||governance.governance_step_count!==undefined)
+      ?`<div class="stats-metrics">${metric('Base14→66',`+${scale.absolute_growth??''}`,'符文淨增量')}${metric('整體擴張',scale.growth_multiple?`${Number(scale.growth_multiple).toFixed(2)}×`:'')}${metric('語意演化案例',semantic.case_count??'')}${metric('治理演化',governance.governance_step_count??'')}</div>`:'';
+    const dominant=semantic.dominant_signal?`<p><strong>演化主訊號：</strong>${esc(semantic.dominant_signal)}</p>`:'';
+    host.innerHTML=`<div class="stats-metrics">${metric('符文數',d.rows.length)}${metric('唯一群組',[...d.groups.values()].filter(x=>x.length).length)}${metric('正向關鍵詞',pos)}${metric('反向關鍵詞',neg)}${metric('Ownership 規則',d.ownership.length)}${metric('高價值衍生詞',d.derivedEntries.length)}${metric('主體性轉移',d.shifts.length)}${metric('對等歧義',d.ambiguous.length)}</div>${analysisMetrics}${stageLine?`<p><strong>系統演化：</strong>${esc(stageLine)}</p>`:''}${dominant}<p class="source-note">No API · Base66 與衍生詞讀取正式治理資料；符文演化優先讀取 ${esc(source)}。</p>`;
   }
 
   async function renderTimeline(host){
@@ -91,12 +102,15 @@
     const d=await load();
     const stages=[...(d.evolution?.system_stages||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
     const governance=[...(d.evolution?.governance_evolution||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+    const a=d.evolution?.analysis||{};
     const scale=stages.map((s,i)=>{const prev=i?Number(stages[i-1]?.rune_count||0):0;const delta=Number(s.rune_count||0)-prev;return `<article class="card"><h3>Base ${esc(s.label)}</h3><p>${esc(s.rune_count)} 枚${i?` · +${esc(delta)}`:' · 起點'}</p><div class="chips"><span class="chip">${esc(s.note||'')}</span></div></article>`}).join('');
     const governanceHtml=governance.map(g=>`<article class="card"><h3>${esc(g.title)}</h3><p>${esc(g.after||'')}</p><div class="chips"><span class="chip">${esc(g.effect||'')}</span></div></article>`).join('');
     const relationCounts=new Map();
     for(const e of d.derivedEntries){const k=e?.relation||'derived';relationCounts.set(k,(relationCounts.get(k)||0)+1)}
     const relationHtml=[...relationCounts.entries()].map(([k,v])=>`<span class="chip">${esc(k)} ${esc(v)}</span>`).join('');
-    host.innerHTML=`${scale}${governanceHtml}${relationHtml?`<article class="card"><h3>目前衍生關係分布</h3><div class="chips">${relationHtml}</div></article>`:''}`;
+    const macro=(a?.semantic_resolution_analysis?.macro_distribution||[]).map(x=>`<span class="chip">${esc(x.label)} ${esc(x.count)}</span>`).join('');
+    const signals=(a?.evolution_signals||[]).map(x=>`<article class="card"><h3>${esc(x.label)}</h3><p>${esc(x.evidence||'')}</p></article>`).join('');
+    host.innerHTML=`${scale}${governanceHtml}${macro?`<article class="card"><h3>語意演化型態</h3><div class="chips">${macro}</div><p>${esc(a?.semantic_resolution_analysis?.dominant_signal||'')}</p></article>`:''}${relationHtml?`<article class="card"><h3>目前衍生關係分布</h3><div class="chips">${relationHtml}</div></article>`:''}${signals}`;
   }
 
   async function renderTrajectory(host){
@@ -104,6 +118,7 @@
     const d=await load();
     const stages=[...(d.evolution?.system_stages||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
     const governance=[...(d.evolution?.governance_evolution||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+    const a=d.evolution?.analysis||{};
     const out=[];
     for(let i=0;i<stages.length-1;i++){
       const from=stages[i],to=stages[i+1],delta=Number(to.rune_count||0)-Number(from.rune_count||0);
@@ -112,6 +127,12 @@
     for(let i=0;i<governance.length;i++){
       const g=governance[i];
       out.push(`<article class="trajectory-card"><div class="trajectory-head"><strong>治理演化 ${i+1} · ${esc(g.title)}</strong><small>rule evolution</small></div><div class="trajectory-delta"><div class="trajectory-box"><b>Before</b><p>${esc(g.before||'')}</p></div><div class="trajectory-box"><b>After</b><p>${esc(g.after||'')}</p></div></div><div class="trajectory-note">${esc(g.effect||'')}</div></article>`);
+    }
+    const readiness=a?.projection_readiness;
+    if(readiness){
+      const allowed=(readiness.allowed_projection_dimensions||[]).map(x=>`<span class="chip">${esc(x)}</span>`).join('');
+      const blocked=(readiness.blocked_projection_dimensions||[]).map(x=>`<span class="chip">${esc(x)}</span>`).join('');
+      out.push(`<article class="trajectory-card"><div class="trajectory-head"><strong>推演準備度</strong><small>${esc(readiness.rule_based_projection||'')}</small></div><p>${esc(readiness.reason||'')}</p><div class="trajectory-delta"><div class="trajectory-box"><b>可推演</b><div class="chips">${allowed}</div></div><div class="trajectory-box"><b>目前不推</b><div class="chips">${blocked}</div></div></div></article>`);
     }
     host.innerHTML=out.join('')||'<div class="empty">尚無可形成的符文演化軌跡。</div>';
   }
