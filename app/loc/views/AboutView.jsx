@@ -11,12 +11,6 @@ export default function AboutView(){
       </div>
     </header>
 
-    <section className="loc-card home-copy-block">
-      <p className="loc-eyebrow">Start Here</p>
-      <h2>不知道從哪邊開始？沒關係！</h2>
-      <p>不用先了解或知道什麼，抽張牌就知道！</p>
-    </section>
-
     <section className="loc-card home-copy-block home-rune-section">
       <div className="home-section-heading">
         <p className="loc-eyebrow">LunaRunes · 月之符文籤詩系統</p>
