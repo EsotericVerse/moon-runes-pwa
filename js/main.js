@@ -4,9 +4,21 @@ sessionStorage.setItem("realPhase", realPhase);
 window.addEventListener("DOMContentLoaded", () => {
   const card = document.getElementById("rune-card");
   if (card) {
+    const image = card.querySelector("#rune-image");
+    if (image) {
+      image.src = "64images/66_命.png";
+      image.alt = "命之符文";
+    }
     card.addEventListener("click", () => {
       window.location.href = "lots.html#draw";
     });
+  }
+
+  // Homepage uses Fate as the fixed showcase rune; the actual draw ritual keeps Chaos.
+  const showcaseRune = document.querySelector("body.loc-page-index .rune-result-card .rune-result-name");
+  if (showcaseRune) {
+    showcaseRune.dataset.runeName = "命";
+    showcaseRune.textContent = "命";
   }
 
   // Homepage entry governance: no prerequisite learning order.
