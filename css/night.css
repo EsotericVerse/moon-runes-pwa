@@ -1,0 +1,36 @@
+/* LOC NIGHT THEME CANON
+   Loaded only through css/style.css. Night mode owns palette tokens only; component
+   geometry and structure remain in the shared stylesheet. */
+
+html[data-theme-resolved="night"]{color-scheme:dark}
+
+html[data-theme-resolved="night"] body{
+  color-scheme:dark;
+  --bg:#07182d;
+  --surface:rgba(13,31,56,.92);
+  --surface2:rgba(23,43,72,.72);
+  --soft:rgba(23,43,72,.72);
+  --panel:#0c1d2b;
+  --line:rgba(180,158,255,.22);
+  --line-strong:rgba(180,158,255,.42);
+  --line2:var(--line-strong);
+  --border:var(--line);
+  --text:#f5f1ff;
+  --muted:#b9bfd0;
+  --purple:#b49eff;
+  --gold:#e7c27d;
+  --accent:#a9c7ff;
+  --accent-2:#e7c27d;
+  --mint:var(--accent);
+  --ok:var(--accent);
+  --shadow:0 24px 70px rgba(0,0,0,.32);
+  --loc-bg:var(--bg);
+  --loc-surface:var(--surface);
+  --loc-surface-soft:var(--surface2);
+  --loc-border:var(--line);
+  --loc-text:var(--text);
+  --loc-muted:var(--muted);
+  --loc-purple:var(--purple);
+  --loc-gold:var(--gold);
+  --loc-shadow:var(--shadow);
+}
