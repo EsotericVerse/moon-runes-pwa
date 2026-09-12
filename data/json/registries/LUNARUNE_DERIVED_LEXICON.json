@@ -1,11 +1,12 @@
 {
-  "version": "1.0-rc3",
+  "version": "1.1-rc3",
   "title": "LunaRunes Derived Lexicon",
-  "purpose": "只收錄會改變字面拆解判定的高價值衍生詞；不作一般同義詞字典，不回寫 Base66 Canon。",
+  "purpose": "只收錄會改變字面拆解判定、主體性或詞類的高價值衍生詞；不作一般同義詞字典，不回寫 Base66 Canon。",
   "governance": {
     "canonical_keywords_remain_narrow": true,
     "derived_terms_do_not_modify_canon": true,
     "special_is_default_when_unresolved": true,
+    "discovery_scope": "先找自然存在且常用的 2 字符文組合；只保留主體性轉移、詞類轉移、第三符文歸屬或對等歧義，再延伸到 3–4 字。",
     "classification_order": [
       "詞類／句內語意角色",
       "群組主體性",
@@ -73,13 +74,14 @@
     {
       "term": "花枝",
       "surface_runes": ["花", "枝"],
-      "lexical_class": "固定名詞",
+      "lexical_class": "多義固定名詞",
       "relation": "lexicalized_shift",
       "resolved_rune": null,
-      "status": "special",
-      "source": "治理實作範例",
-      "evidence": "固定名詞義會脫離植物『花＋枝』的字面拆解。",
-      "note": "詞類先介入；不能因包含花、枝就強迫歸入任一符文。"
+      "status": "contextual",
+      "source": "教育部《重編國語辭典修訂本》",
+      "reference_url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=83496&la=0&powerMode=0",
+      "evidence": "『花枝』除花的枝幹外，也可指墨魚；固定名詞義會脫離植物『花＋枝』的字面拆解。",
+      "note": "典型詞類／詞義先介入案例；沒有語境時不強迫歸入花或枝。"
     },
     {
       "term": "光暗",
@@ -93,14 +95,99 @@
       "note": "典型對等衝突；保留歧義，不硬判唯一符文。"
     },
     {
+      "term": "水晶",
+      "surface_runes": ["水", "晶"],
+      "lexical_class": "固定名詞",
+      "relation": "lexicalized_shift",
+      "resolved_rune": "晶",
+      "status": "confirmed",
+      "source": "教育部《重編國語辭典修訂本》",
+      "reference_url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=134371&la=0&powerMode=0",
+      "evidence": "『水晶』指具有結晶外形的石英；『水』不再是液態水語意，整體主體落在晶體。",
+      "note": "典型 AB → B，但 A 的原符文語意失效。"
+    },
+    {
+      "term": "星辰",
+      "surface_runes": ["星", "辰"],
+      "lexical_class": "名詞",
+      "relation": "lexicalized_shift",
+      "resolved_rune": "星",
+      "status": "confirmed",
+      "source": "教育部《重編國語辭典修訂本》",
+      "reference_url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=110450&la=0&powerMode=0",
+      "evidence": "辭典將『星辰』釋為星的通稱；現行辰符文的『時期』語意在此不成立。",
+      "note": "典型 AB → A；B 的 Canon 語意被固定詞義覆寫。"
+    },
+    {
+      "term": "空氣",
+      "surface_runes": ["空", "氣"],
+      "lexical_class": "名詞",
+      "relation": "ownership_shift",
+      "resolved_rune": "氣",
+      "status": "confirmed",
+      "source": "教育部《重編國語辭典修訂本》",
+      "reference_url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=78859&la=0&powerMode=0",
+      "evidence": "『空氣』基本義為包圍地球表面的氣體；整體主體是氣，不是空間。",
+      "note": "典型 AB → B；可用來驗證名詞主體性。"
+    },
+    {
+      "term": "病因",
+      "surface_runes": ["病", "因"],
+      "lexical_class": "名詞",
+      "relation": "head_ownership",
+      "resolved_rune": "因",
+      "status": "confirmed",
+      "source": "教育部《國語辭典簡編本》",
+      "reference_url": "https://dict.concised.moe.edu.tw/dictView.jsp?ID=1857&la=0&powerMode=0",
+      "evidence": "『病因』即生病的原因；病是限定範圍，語意主體為因。",
+      "note": "不屬第三符文轉移，但可驗證組合詞主體性優先於字面同權。"
+    },
+    {
+      "term": "緣分",
+      "surface_runes": ["緣", "分"],
+      "lexical_class": "名詞",
+      "relation": "lexicalized_shift",
+      "resolved_rune": "緣",
+      "status": "confirmed",
+      "source": "教育部《重編國語辭典修訂本》",
+      "reference_url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=165301&la=0&powerMode=0",
+      "evidence": "『緣分』指人與人相投契合的定分；分在此不是分離／切分的符文核心語意。",
+      "note": "典型 AB → A；固定詞義使第二字脫離分符文核心。"
+    },
+    {
+      "term": "語病",
+      "surface_runes": ["語", "病"],
+      "lexical_class": "名詞",
+      "relation": "semantic_ownership_shift",
+      "resolved_rune": "誤",
+      "status": "confirmed",
+      "source": "教育部《重編國語辭典修訂本》",
+      "reference_url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=163742",
+      "evidence": "『語病』是語文中措詞失當、語序錯誤等問題；整體不是疾病，而是語言錯誤。",
+      "note": "典型 AB → C；語＋病組合後主體轉移到誤。"
+    },
+    {
+      "term": "地雷",
+      "surface_runes": ["地", "雷"],
+      "lexical_class": "固定名詞",
+      "relation": "lexicalized_shift",
+      "resolved_rune": null,
+      "status": "special",
+      "source": "教育部《國語辭典簡編本》",
+      "reference_url": "https://dict.concised.moe.edu.tw/dictView.jsp?ID=8441&la=0&powerMode=0",
+      "evidence": "『地雷』是埋設於地面、以爆炸造成殺傷的武器；整體詞義不是地或雷的 Canon 語意。",
+      "note": "典型 AB → 非 Base66 既有語意主體；保留特殊，不為了覆蓋率硬分類。"
+    },
+    {
       "term": "鏡花水月",
       "surface_runes": ["鏡", "花", "水", "月"],
       "lexical_class": "成語",
       "relation": "semantic_ownership_shift",
       "resolved_rune": "幻",
       "status": "confirmed",
-      "source": "治理實作範例",
-      "evidence": "四個表面符文共同構成固定詞，但整體語意主體是虛幻景象。",
+      "source": "教育部《成語典》＋治理實作範例",
+      "reference_url": "https://dict.idioms.moe.edu.tw/idiomView.jsp?ID=660&la=0&webMd=1",
+      "evidence": "『鏡花水月』比喻空幻不實在；四個表面符文共同構成固定詞，但整體語意主體是幻。",
       "note": "典型 ABCD → E；用來證明 surface composition 不等於 semantic owner。"
     }
   ]
