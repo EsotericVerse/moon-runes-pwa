@@ -2,6 +2,8 @@ export const LOC_DATA = Object.freeze({
   // Canonical / semantic core
   RUNES: '/data/json/core/runes.json',
   LOTS: '/data/json/core/lots.json',
+  HISTORY: '/data/json/core/history.json',
+  HARMONY: '/data/json/core/harmony.json',
   RUNE_GRAMMAR: '/data/json/core/rune_grammar.json',
   RUNE_INTERPRETATIONS: '/data/json/core/rune_interpretations.json',
   THREE_CARD_COMBINATIONS: '/data/json/core/three_card_combinations.json',
@@ -31,6 +33,7 @@ export const LOC_DATA = Object.freeze({
 
 // Runtime data policy:
 // - runes.json is the canonical rune source; never duplicate canonical rows here.
+// - lots/history/harmony are canonical companion datasets keyed by rune identity.
 // - Derived/search JSON stays split so large corpora can be loaded only when needed.
 // - All LOC views share this request cache and one global concurrency gate.
 const cache = new Map();
