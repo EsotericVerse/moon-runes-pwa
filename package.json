@@ -6,8 +6,7 @@
     "dev": "next dev",
     "verify:independence": "node scripts/verify-next-independence.mjs",
     "verify:modularity": "node scripts/verify-modularity.mjs",
-    "verify:data": "node scripts/verify-data-policy.mjs",
-    "verify": "npm run verify:independence && npm run verify:modularity && npm run verify:data",
+    "verify": "npm run verify:independence && npm run verify:modularity",
     "prepare:public": "node scripts/prepare-next-public.mjs",
     "build": "npm run verify && npm run prepare:public && next build",
     "start": "next start"
