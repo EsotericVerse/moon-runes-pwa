@@ -1,0 +1,76 @@
+name: RC3 correct highest principle once
+
+on:
+  push:
+    paths:
+      - '.github/workflows/rc3-correct-highest-principle-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Correct derived semantic ownership
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          lex_path = Path('data/json/registries/LUNARUNE_DERIVED_LEXICON.json')
+          evo_path = Path('data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json')
+
+          lex = json.loads(lex_path.read_text(encoding='utf-8'))
+          g = lex.setdefault('governance', {})
+          g.pop('group_totality_rule', None)
+          g['group_totality_resolution'] = '同組多符文形成整體後，不自動歸命；先判完整詞組的最高原則。若其中某符文本身就是該整體的最高統攝原則，主體歸該符文；若表達生命必然循環可歸命；若表達多力交互與不確定性可歸玄。'
+          g['highest_principle_rule'] = '完整詞組若存在能直接統攝整體語意的最高原則符文，該符文優先於一般群組總體提升。例：日月星辰皆為天體，最高原則歸星。'
+
+          for e in lex.get('entries', []):
+              t = e.get('term')
+              if t == '風火雷土':
+                  e['relation'] = 'group_totality_resolution'
+                  e['resolved_rune'] = '玄'
+                  e['evidence'] = '風、火、雷、土皆為元素；四者作為多種自然力量共同作用的整體時，主體不是其中任一元素，而是不確定、混沌的總體狀態，歸玄。'
+                  e['note'] = '同組總體不自動歸命；此例依整體不確定性歸玄。'
+              elif t == '日月星辰':
+                  e['relation'] = 'highest_principle_resolution'
+                  e['resolved_rune'] = '星'
+                  e['evidence'] = '日、月、星、辰皆屬天體／天象脈絡；完整四字的最高統攝原則是星，因此整體主體歸星。'
+                  e['note'] = '最高原則優先；完整詞組雖含「星辰→星」子詞，但此處不是子詞捷徑，而是四字整體本身由星統攝。'
+
+          lex['version'] = '1.3-rc3'
+          lex_path.write_text(json.dumps(lex, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          evo = json.loads(evo_path.read_text(encoding='utf-8'))
+          for item in evo.get('governance_evolution', []):
+              if item.get('title') == '完整詞組與同組總體律':
+                  item['title'] = '完整詞組與最高原則'
+                  item['after'] = '先判完整詞組；同組多符文不自動歸命，而由整體最高統攝原則決定主體。'
+                  item['effect'] = '建立 phrase > subphrase 與 highest-principle resolution，避免把所有同組總體誤判為命。'
+          for c in evo.get('semantic_history_cases', []):
+              if c.get('title') == '風火雷土 → 命':
+                  c['title'] = '風火雷土 → 玄'
+                  c['kind'] = 'group_totality_resolution'
+                  c['after'] = '多種自然力量共同作用時，整體呈現不確定與混沌，主體歸玄。'
+                  c['note'] = '總體性不是命的充分條件；先判整體最高語意。'
+              elif c.get('title') == '日月星辰 → 命':
+                  c['title'] = '日月星辰 → 星'
+                  c['kind'] = 'highest_principle_resolution'
+                  c['after'] = '完整四字皆為天體／天象脈絡，最高統攝原則歸星。'
+                  c['note'] = '星作為最高原則直接統攝日、月、星、辰；不是一般群組總體提升到命。'
+          evo['version'] = '1.3-rc3'
+          evo_path.write_text(json.dumps(evo, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Commit correction
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/json/registries/LUNARUNE_DERIVED_LEXICON.json data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json
+          git commit -m 'fix(graph): apply highest-principle resolution' || exit 0
+          git push
