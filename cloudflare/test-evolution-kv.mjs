@@ -15,9 +15,12 @@ function summarize(name, payload) {
       kv: payload?.kv === true
     };
   }
-  const data = payload?.data;
+
+  const snapshot = payload?.snapshot;
+  const data = snapshot?.data;
   const populated = !!data && typeof data === 'object' && Object.keys(data).length > 0;
   let detail = {};
+
   if (name === 'runes') {
     detail = {
       system_stages: Array.isArray(data?.system_stages) ? data.system_stages.length : 0,
@@ -27,21 +30,22 @@ function summarize(name, payload) {
   } else if (name === 'language') {
     detail = {
       status: data?.status || '',
-      source_count: Array.isArray(data?.sources) ? data.sources.length : 0,
-      track_count: Array.isArray(data?.tracks) ? data.tracks.length : 0
+      source_count: Array.isArray(data?.available_evidence) ? data.available_evidence.length : 0,
+      track_count: Array.isArray(data?.analysis_dimensions) ? data.analysis_dimensions.length : 0
     };
   } else if (name === 'shared') {
     detail = {
-      authority_count: data?.authorities && typeof data.authorities === 'object' ? Object.keys(data.authorities).length : 0,
-      track_count: data?.tracks && typeof data.tracks === 'object' ? Object.keys(data.tracks).length : 0
+      authority_count: snapshot?.data?.shared_authorities && typeof snapshot.data.shared_authorities === 'object' ? Object.keys(snapshot.data.shared_authorities).length : 0,
+      track_count: snapshot?.data?.tracks && typeof snapshot.data.tracks === 'object' ? Object.keys(snapshot.data.tracks).length : 0
     };
   }
+
   return {
     ok: payload?.ok === true,
+    seeded: payload?.seeded === true,
     populated,
-    key: payload?.key || '',
-    source_registry: payload?.source_registry || '',
-    updated_at: payload?.updated_at || '',
+    source_registry: snapshot?.source_registry || '',
+    updated_at: snapshot?.updated_at || '',
     ...detail
   };
 }
@@ -52,7 +56,7 @@ for (const [name, path] of checks) {
     const response = await fetch(base + path, { headers: { accept: 'application/json' } });
     const payload = await response.json().catch(() => ({}));
     const summary = summarize(name, payload);
-    const pass = response.ok && summary.ok && (name === 'health' || summary.populated);
+    const pass = response.ok && summary.ok && (name === 'health' || (summary.seeded && summary.populated));
     if (!pass) failed = true;
     console.log(JSON.stringify({ name, path, http: response.status, pass, ...summary }, null, 2));
   } catch (error) {
