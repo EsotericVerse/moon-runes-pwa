@@ -17,6 +17,7 @@ const sources = [
   {
     label: 'LunaRunes evolution history',
     path: join(registryDir, 'LUNARUNE_EVOLUTION_HISTORY.json'),
+    analysisPath: join(registryDir, 'LUNARUNE_EVOLUTION_ANALYSIS.json'),
     key: 'loc:evolution:runes'
   },
   {
@@ -43,10 +44,15 @@ try {
   for (const source of sources) {
     const raw = await readFile(source.path, 'utf8');
     const data = JSON.parse(raw);
+    if (source.analysisPath) {
+      const analysisRaw = await readFile(source.analysisPath, 'utf8');
+      data.analysis = JSON.parse(analysisRaw);
+    }
     const body = {
       schema_version: 'kv-1',
       updated_at: new Date().toISOString(),
       source_registry: source.path.slice(repoRoot.length + 1).replaceAll('\\', '/'),
+      ...(source.analysisPath ? { analysis_registry: source.analysisPath.slice(repoRoot.length + 1).replaceAll('\\', '/') } : {}),
       data
     };
     const temp = join(tmpdir(), `loc-evolution-${stamp}-${source.key.split(':').at(-1)}.json`);
