@@ -1,5 +1,5 @@
 {
-  "version": "1.3-rc3",
+  "version": "1.4-rc3",
   "title": "LunaRunes Derived Lexicon",
   "purpose": "只收錄會改變字面拆解判定、主體性或詞類的高價值衍生詞；不作一般同義詞字典，不回寫 Base66 Canon。",
   "governance": {
@@ -39,7 +39,8 @@
     "whole_expression_precedence": "完整詞組的整體詞義與主體性優先於內部子詞；例如「日月星辰」不能因「星辰→星」就停在星。",
     "derived_keyword_rule": "超過 Canon 固定關鍵詞格式、但能穩定指向單一符文的固定詞或成語，列為衍生關鍵詞進 Graph，不回寫 Base66 Canon 關鍵詞。",
     "group_totality_resolution": "同組多符文形成整體後，不自動歸命；先判完整詞組的最高原則。若其中某符文本身就是該整體的最高統攝原則，主體歸該符文；若表達生命必然循環可歸命；若表達多力交互與不確定性可歸玄。",
-    "highest_principle_rule": "完整詞組若存在能直接統攝整體語意的最高原則符文，該符文優先於一般群組總體提升。例：日月星辰皆為天體，最高原則歸星。"
+    "highest_principle_rule": "完整詞組若存在能直接統攝整體語意的最高原則符文，該符文優先於一般群組總體提升。星作為最高原則時，前提是「星」仍保有天體／天象語意；若完整詞已詞彙化成非天體義，先依完整詞義判斷。例：日月星辰→星；明星不因含星而歸星。",
+    "star_boundary_rule": "星通常可統攝天體／天象語意，但固定詞可覆寫：星火屬禍；明星為非天體義，不套用星的最高原則。"
   },
   "entries": [
     {
@@ -321,6 +322,34 @@
       "source": "治理實作範例",
       "evidence": "日、月、星、辰皆屬天體／天象脈絡；完整四字的最高統攝原則是星，因此整體主體歸星。",
       "note": "最高原則優先；完整詞組雖含「星辰→星」子詞，但此處不是子詞捷徑，而是四字整體本身由星統攝。"
+    },
+    {
+      "term": "星火",
+      "surface_runes": [
+        "星",
+        "火"
+      ],
+      "lexical_class": "固定詞／名詞",
+      "relation": "semantic_ownership_shift",
+      "resolved_rune": "禍",
+      "status": "confirmed",
+      "source": "治理實作範例",
+      "evidence": "「星火」雖含星、火，但屬現行治理特例，整體主體歸禍。",
+      "note": "星的天體最高原則在固定詞「星火」中不適用；完整詞義優先。"
+    },
+    {
+      "term": "明星",
+      "surface_runes": [
+        "明",
+        "星"
+      ],
+      "lexical_class": "固定名詞",
+      "relation": "lexicalized_out_of_celestial_domain",
+      "resolved_rune": null,
+      "status": "special",
+      "source": "治理實作範例",
+      "evidence": "「明星」現代常用義指知名人物，不是天體；不能因含「星」就套用天體最高原則。",
+      "note": "用來限制星的最高原則適用域：先判完整詞義，再判星是否仍為天體語義。"
     }
   ]
 }

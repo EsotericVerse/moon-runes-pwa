@@ -1,5 +1,5 @@
 {
-  "version": "1.3-rc3",
+  "version": "1.4-rc3",
   "title": "LunaRunes Evolution History",
   "purpose": "把符文系統自身演化、語意治理演化與可重現實例分開呈現；不把文化時代語義漂移回寫 Base66 Canon。",
   "system_stages": [
@@ -88,6 +88,13 @@
       "before": "二字主體性規則若直接套入四字詞，可能被子詞判定綁住。",
       "after": "先判完整詞組；同組多符文不自動歸命，而由整體最高統攝原則決定主體。",
       "effect": "建立 phrase > subphrase 與 highest-principle resolution，避免把所有同組總體誤判為命。"
+    },
+    {
+      "order": 8,
+      "title": "最高原則的適用域",
+      "before": "只要詞中出現星，容易把星的最高原則過度套用。",
+      "after": "先確認星是否仍保有天體／天象語義；固定詞若已詞彙化改義，完整詞義優先。",
+      "effect": "保留日月星辰→星，同時正確處理星火→禍與明星非天體義。"
     }
   ],
   "semantic_history_cases": [
@@ -186,6 +193,22 @@
       "before": "內部子詞「星辰」可先解析為星。",
       "after": "完整四字皆為天體／天象脈絡，最高統攝原則歸星。",
       "note": "星作為最高原則直接統攝日、月、星、辰；不是一般群組總體提升到命。"
+    },
+    {
+      "title": "星火 → 禍",
+      "kind": "semantic_ownership_shift",
+      "before": "表面含星與火，若只看字面可能誤套星或火。",
+      "after": "完整固定詞依治理規則主體歸禍。",
+      "note": "最高原則有適用域；完整詞義可覆寫單字原則。",
+      "order": 13
+    },
+    {
+      "title": "明星 → 非天體義",
+      "kind": "lexicalized_out_of_domain",
+      "before": "表面含明與星。",
+      "after": "現代常用義指知名人物，不屬天體語義，因此不套用星的最高原則。",
+      "note": "詞彙化會限制符文最高原則的適用範圍。",
+      "order": 14
     }
   ],
   "language_time_policy": {
