@@ -1,66 +1,30 @@
 'use client';
 
-const DB_NAME='loc-local';
-const DB_VERSION=1;
-const STORE='records';
-
-function openDb(){
-  return new Promise((resolve,reject)=>{
-    const request=indexedDB.open(DB_NAME,DB_VERSION);
-    request.onupgradeneeded=()=>{
-      const db=request.result;
-      if(!db.objectStoreNames.contains(STORE)){
-        const store=db.createObjectStore(STORE,{keyPath:'id'});
-        store.createIndex('type','type',{unique:false});
-      }
-    };
-    request.onsuccess=()=>resolve(request.result);
-    request.onerror=()=>reject(request.error);
-  });
-}
-
-function requestResult(request){
-  return new Promise((resolve,reject)=>{
-    request.onsuccess=()=>resolve(request.result);
-    request.onerror=()=>reject(request.error);
-  });
-}
+import { clear, del, entries, get, set } from 'idb-keyval';
 
 export async function putLocalRecord(record){
-  const db=await openDb();
-  try{
-    const tx=db.transaction(STORE,'readwrite');
-    await requestResult(tx.objectStore(STORE).put(record));
-    return record;
-  }finally{db.close();}
+  if(!record?.id)throw new Error('record.id is required');
+  await set(record.id,record);
+  return record;
 }
 
-export async function deleteLocalRecord(id){
-  const db=await openDb();
-  try{
-    const tx=db.transaction(STORE,'readwrite');
-    await requestResult(tx.objectStore(STORE).delete(id));
-  }finally{db.close();}
+export function getLocalRecord(id){
+  return get(id);
+}
+
+export function deleteLocalRecord(id){
+  return del(id);
 }
 
 export async function getLocalRecords(type){
-  const db=await openDb();
-  try{
-    const store=db.transaction(STORE,'readonly').objectStore(STORE);
-    if(type)return requestResult(store.index('type').getAll(type));
-    return requestResult(store.getAll());
-  }finally{db.close();}
+  const rows=await entries();
+  return rows.map(([,value])=>value).filter(value=>!type||value?.type===type);
 }
 
 export async function clearLocalRecords(type){
-  const db=await openDb();
-  try{
-    const tx=db.transaction(STORE,'readwrite');
-    const store=tx.objectStore(STORE);
-    if(!type){await requestResult(store.clear());return;}
-    const rows=await requestResult(store.index('type').getAllKeys(type));
-    await Promise.all(rows.map(id=>requestResult(store.delete(id))));
-  }finally{db.close();}
+  if(!type)return clear();
+  const rows=await entries();
+  await Promise.all(rows.filter(([,value])=>value?.type===type).map(([key])=>del(key)));
 }
 
 export function downloadJsonFile(data,filename='loc-local-data.json'){
