@@ -23,8 +23,8 @@ export default function AboutView(){
 
     <section className="loc-card">
       <p className="loc-eyebrow">Start Here</p>
-      <h2>第一次來，可以照這個順序開始</h2>
-      <p>這裡不是再放一次首頁入口，而是給第一次接觸 LOC 的使用順序：先理解，再試用，再往資料與架構深入。</p>
+      <h2>不知道從哪邊開始？沒關係！</h2>
+      <p>不用先了解或知道什麼，抽張牌就知道！</p>
     </section>
 
     <section className="loc-card">
