@@ -4,11 +4,9 @@ export default function AboutView(){
       <p className="loc-eyebrow">月典（LOC, Luna Codex）&gt; 語言模型框架(Language Model Framework)</p>
       <p className="loc-core-line">從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，累積後再選擇怎麼進化。</p>
       <div className="loc-hero-copy">
-        <p>月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演語言的系統，始於月之符文。</p>
+        <p>月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演語言的系統。</p>
         <p>月之符文(LunaRunes)是一套有自己獨立的語言方式。</p>
         <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，讓累積的資料可以繼續被理解、比較分析與推演。</p>
-        <p>不必先知道月之符文，不必先懂得解牌，也不必先理解什麼是語言系統。</p>
-        <p>你可以先抽牌、找作品、看脈絡分析、看關鍵字統計排行；想深入時，月典(LOC)再把底層結構展開給你。</p>
       </div>
     </header>
 
@@ -16,9 +14,6 @@ export default function AboutView(){
       <p className="loc-eyebrow">Start Here</p>
       <h2>不知道從哪邊開始？沒關係！</h2>
       <p>不用先了解或知道什麼，抽張牌就知道！</p>
-      <div className="loc-actions">
-        <a className="loc-button primary" href="/runes">抽張牌</a>
-      </div>
     </section>
 
     <section className="loc-card home-copy-block home-rune-section">
