@@ -17,7 +17,7 @@ function periodRows(value){
   for(const key of ['periods','period_analysis','period_keyword_analysis','results'])if(Array.isArray(value[key]))return value[key];
   return [];
 }
-function keywordsOf(row){return row?.keywords||row?.semantic_keywords||row?.top_keywords||[];}
+function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row?.semantic_keywords||row?.top_keywords||[];}
 
 export default function EvolutionView(){
   const [tab,setTab]=useState('overview');
