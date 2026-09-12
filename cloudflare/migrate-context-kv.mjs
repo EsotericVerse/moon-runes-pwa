@@ -70,10 +70,10 @@ function countRows(doc, field) {
   return Array.isArray(doc?.[field]) ? doc[field].length : 0;
 }
 
-async function verifyCrudOnEvents() {
+async function verifyEventCrud() {
   const original = getRemoteJson(EVENTS_KEY) || { schema_version: 'kv-1', updated_at: '', events: [] };
   const backup = JSON.stringify(original);
-  const id = `KV-CRUD-TEST-${Date.now()}`;
+  const id = `KV-EVENT-CRUD-TEST-${Date.now()}`;
 
   try {
     const created = structuredClone(original);
@@ -83,7 +83,7 @@ async function verifyCrudOnEvents() {
       user_id: 'lo3rwang',
       date: '2099-01-01',
       event_type: 'test',
-      event_title: 'KV CRUD TEST CREATE',
+      event_title: 'KV EVENT CRUD TEST CREATE',
       object_type: 'system',
       object_id: 'LOC',
       description: 'temporary verification row',
@@ -94,35 +94,92 @@ async function verifyCrudOnEvents() {
       confidence: 'recorded'
     });
     created.updated_at = new Date().toISOString();
-    await putRemoteJson(EVENTS_KEY, created, 'crud-create');
+    await putRemoteJson(EVENTS_KEY, created, 'event-create');
     let remote = getRemoteJson(EVENTS_KEY);
     if (!remote?.events?.some(x => String(x.id) === id && x.state_after === 'created')) {
-      throw new Error('CRUD create verification failed');
+      throw new Error('Event CREATE verification failed');
     }
 
     const edited = structuredClone(remote);
     const row = edited.events.find(x => String(x.id) === id);
-    row.event_title = 'KV CRUD TEST EDIT';
+    row.event_title = 'KV EVENT CRUD TEST EDIT';
     row.state_after = 'edited';
     edited.updated_at = new Date().toISOString();
-    await putRemoteJson(EVENTS_KEY, edited, 'crud-edit');
+    await putRemoteJson(EVENTS_KEY, edited, 'event-edit');
     remote = getRemoteJson(EVENTS_KEY);
-    if (!remote?.events?.some(x => String(x.id) === id && x.state_after === 'edited' && x.event_title === 'KV CRUD TEST EDIT')) {
-      throw new Error('CRUD edit verification failed');
+    if (!remote?.events?.some(x => String(x.id) === id && x.state_after === 'edited' && x.event_title === 'KV EVENT CRUD TEST EDIT')) {
+      throw new Error('Event EDIT verification failed');
     }
 
     const deleted = structuredClone(remote);
     deleted.events = deleted.events.filter(x => String(x.id) !== id);
     deleted.updated_at = new Date().toISOString();
-    await putRemoteJson(EVENTS_KEY, deleted, 'crud-delete');
+    await putRemoteJson(EVENTS_KEY, deleted, 'event-delete');
     remote = getRemoteJson(EVENTS_KEY);
     if (remote?.events?.some(x => String(x.id) === id)) {
-      throw new Error('CRUD delete verification failed');
+      throw new Error('Event DELETE verification failed');
     }
 
-    console.log('CRUD verification: CREATE ✓  EDIT ✓  DELETE ✓');
+    console.log('Event CRUD: CREATE ✓  EDIT ✓  DELETE ✓');
   } finally {
-    await putRemoteJson(EVENTS_KEY, JSON.parse(backup), 'crud-restore');
+    await putRemoteJson(EVENTS_KEY, JSON.parse(backup), 'event-restore');
+  }
+}
+
+async function verifyRelationCrud() {
+  const original = getRemoteJson(RELATIONS_KEY) || { schema_version: 'kv-1', updated_at: '', relations: [] };
+  const backup = JSON.stringify(original);
+  const id = `KV-RELATION-CRUD-TEST-${Date.now()}`;
+
+  try {
+    const created = structuredClone(original);
+    created.relations = Array.isArray(created.relations) ? created.relations : [];
+    created.relations.push({
+      id,
+      user_id: 'lo3rwang',
+      date: '2099-01-01',
+      relation_type: 'references',
+      source_type: 'system',
+      source_id: 'LOC',
+      target_type: 'system',
+      target_id: 'KV-CRUD-TEST',
+      direction: 'forward',
+      confidence: 'recorded',
+      summary: 'created',
+      era: '',
+      status: 'current',
+      evidence: 'temporary verification row'
+    });
+    created.updated_at = new Date().toISOString();
+    await putRemoteJson(RELATIONS_KEY, created, 'relation-create');
+    let remote = getRemoteJson(RELATIONS_KEY);
+    if (!remote?.relations?.some(x => String(x.id) === id && x.summary === 'created')) {
+      throw new Error('Relation CREATE verification failed');
+    }
+
+    const edited = structuredClone(remote);
+    const row = edited.relations.find(x => String(x.id) === id);
+    row.summary = 'edited';
+    row.target_id = 'KV-CRUD-TEST-EDITED';
+    edited.updated_at = new Date().toISOString();
+    await putRemoteJson(RELATIONS_KEY, edited, 'relation-edit');
+    remote = getRemoteJson(RELATIONS_KEY);
+    if (!remote?.relations?.some(x => String(x.id) === id && x.summary === 'edited' && x.target_id === 'KV-CRUD-TEST-EDITED')) {
+      throw new Error('Relation EDIT verification failed');
+    }
+
+    const deleted = structuredClone(remote);
+    deleted.relations = deleted.relations.filter(x => String(x.id) !== id);
+    deleted.updated_at = new Date().toISOString();
+    await putRemoteJson(RELATIONS_KEY, deleted, 'relation-delete');
+    remote = getRemoteJson(RELATIONS_KEY);
+    if (remote?.relations?.some(x => String(x.id) === id)) {
+      throw new Error('Relation DELETE verification failed');
+    }
+
+    console.log('Relation CRUD: CREATE ✓  EDIT ✓  DELETE ✓');
+  } finally {
+    await putRemoteJson(RELATIONS_KEY, JSON.parse(backup), 'relation-restore');
   }
 }
 
@@ -144,18 +201,19 @@ const [legacyEvents, legacyRelations] = await Promise.all([
   fetchLegacy('relations')
 ]);
 
+const migratedAt = new Date().toISOString();
 const eventsDoc = {
   schema_version: 'kv-1',
   migrated_from: 'google-sheets',
-  migrated_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  migrated_at: migratedAt,
+  updated_at: migratedAt,
   events: legacyEvents
 };
 const relationsDoc = {
   schema_version: 'kv-1',
   migrated_from: 'google-sheets',
-  migrated_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  migrated_at: migratedAt,
+  updated_at: migratedAt,
   relations: legacyRelations
 };
 
@@ -176,5 +234,6 @@ if (migratedRelationCount !== legacyRelations.length) {
 }
 
 console.log(`Migration count verification: events=${migratedEventCount} ✓, relations=${migratedRelationCount} ✓`);
-await verifyCrudOnEvents();
-console.log('Context KV migration and CRUD verification complete. No test row remains.');
+await verifyEventCrud();
+await verifyRelationCrud();
+console.log('Context KV migration and CRUD verification complete. No test rows remain.');
