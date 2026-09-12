@@ -1,15 +1,13 @@
 name = "loc-state"
-main = "cloudflare/loc-state-worker.js"
+main = "services/cloudflare/loc-state-worker.js"
 compatibility_date = "2026-09-12"
 workers_dev = true
 preview_urls = false
 
-# Dedicated Worker origin. Cloudflare creates/manages DNS and TLS for this hostname.
 [[routes]]
 pattern = "api.lo3rwang.cc"
 custom_domain = true
 
-# Temporary compatibility route. Keep until api.lo3rwang.cc is verified in production.
 [[routes]]
 pattern = "loc.lo3rwang.cc/api/loc-state/*"
 zone_name = "lo3rwang.cc"
@@ -36,5 +34,4 @@ enabled = false
 head_sampling_rate = 1
 persist = true
 
-# Never commit LOC_WRITE_TOKEN here.
-# Keep it as a Cloudflare Worker secret.
+# LOC_WRITE_TOKEN stays in Cloudflare Worker secrets and must never be committed.

@@ -24,112 +24,31 @@ body [data-context-view]:not([hidden]),
 body [data-draw-execution]:not([hidden]){
   display:block!important;
 }
-body.loc-page-lots #draw-mode-selector:not([hidden]){
-  display:block!important;
-}
-body.loc-page-lots #draw-mode-selector[hidden]{
-  display:none!important;
-}
 
-/* GOVERNANCE THEME CONSISTENCY
-   Governance copy must follow theme tokens instead of the old hard-coded light text. */
-body.loc-page-governance .gov-card p,
-body.loc-page-governance .gov-card ul,
-body.loc-page-governance .gov-card li{
-  color:var(--text)!important;
-}
-body.loc-page-governance .gov-card .doc-link span,
-body.loc-page-governance .lead{
-  color:var(--muted)!important;
-}
-
-/* HOMEPAGE LABEL CASING
-   Visible English labels use their authored casing; only true acronyms stay uppercase. */
-body.loc-page-index .eyebrow,
-body.loc-page-index .text-category,
-body.loc-page-index .mode-kicker,
-body.loc-page-index .kicker{
-  text-transform:none!important;
-}
-
-/* LUNARUNES DRAW DETAIL GOVERNANCE
-   Single-card detail keeps only useful governed information. */
-body.loc-page-lots .card-details .rune-result-section.reverse{
-  display:none!important;
-}
-body.loc-page-lots .card-details .rune-result-section.group::before{
-  content:"所屬分組";
-  display:block;
-  margin:0 0 4px;
+/* SHARED LAYOUT UTILITIES
+   Page HTML declares semantic classes only; spacing/color belongs here. */
+.loc-section-gap-sm{margin-top:14px;}
+.loc-section-gap{margin-top:16px;}
+.loc-section-gap-lg{margin-top:18px;}
+.loc-rune-group-note{
+  margin:0 0 12px;
   color:var(--muted);
-  font-size:.76rem;
-  font-weight:700;
+  font-size:.86rem;
 }
-body.loc-page-lots .card-details .rune-result-section.group>strong{
-  display:block;
-  margin:0 0 10px;
-  color:var(--gold);
-  font-size:1rem;
-}
-body.loc-page-lots .card-details .rune-result-section.group>strong::after{
-  content:"意義";
-  display:block;
-  margin:10px 0 4px;
+.loc-site-footer{
+  margin-top:32px;
+  padding:20px 16px;
+  text-align:center;
+  font-size:13px;
+  line-height:1.7;
   color:var(--muted);
-  font-size:.76rem;
-  font-weight:700;
+  border-top:1px solid var(--line);
 }
-body.loc-page-lots .card-details .rune-result-section.lots>strong{
-  display:block;
-  margin-bottom:10px;
+.loc-site-footer a{
+  color:inherit;
+  text-decoration:none;
 }
-body.loc-page-lots .card-details .rune-lots-grid{
-  display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:10px;
-}
-body.loc-page-lots .card-details .rune-lots-item{
-  display:flex!important;
-  flex-direction:column;
-  align-items:flex-start;
-  gap:4px;
-  min-width:0;
-  padding:12px 14px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:rgba(255,255,255,.025);
-}
-body.loc-page-lots .card-details .rune-lots-item>span{
-  color:var(--muted);
-  font-size:.76rem;
-  font-weight:700;
-}
-body.loc-page-lots .card-details .rune-lots-item>strong{
-  color:var(--text);
-  font-size:.9rem;
-  line-height:1.65;
-  font-weight:650;
-}
-@media(max-width:680px){
-  body.loc-page-lots .card-details .rune-lots-grid{
-    grid-template-columns:1fr;
-  }
-}
-
-/* DAYTIME HOMEPAGE DECORATIVE PALETTE
-   The moon is an identity illustration, not a neutral UI surface. Keep it visibly
-   lunar and warm in daylight instead of letting the light palette wash it to white. */
-html[data-theme-resolved="day"] body.loc-page-index .hero-note{
-  background:
-    radial-gradient(circle at 72% 24%,rgba(190,137,49,.13),transparent 11rem),
-    linear-gradient(145deg,#fffdf7 0%,#f4efe3 100%)!important;
-}
-html[data-theme-resolved="day"] body.loc-page-index .moon{
-  background:
-    radial-gradient(circle at 34% 31%,#fff6d8 0 9%,#efd99f 30%,#d0a85d 62%,#9a7335 100%)!important;
-  box-shadow:
-    0 0 0 1px rgba(139,104,43,.16),
-    0 12px 34px rgba(139,104,43,.20),
-    0 0 64px rgba(204,157,78,.16)!important;
-  opacity:1!important;
+.loc-site-footer a:hover,
+.loc-site-footer a:focus-visible{
+  text-decoration:underline;
 }

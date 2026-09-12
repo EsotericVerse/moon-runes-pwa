@@ -1,0 +1,41 @@
+# LOC FAQ API
+
+LOC FAQ／RAG 的公開 API。現行 runtime 使用 FAQ/RAG v0.4：90 題 FAQ source view 與其檢索資料。
+模組與既有 FastAPI 服務共同部署，不修改 `/divination` 的抽牌流程。
+
+FAQ 是可維護的問答 View，RAG JSON 是檢索衍生資料，不取代 Canon、母資料或原始作品；資料與權責治理統一見 `../../governance.html`。
+
+## `POST /faq/search`
+
+搜尋最相關的 FAQ 片段，`top_k` 可設定為 1–10。
+
+```json
+{
+  "query": "第零符會抽到嗎？",
+  "top_k": 5
+}
+```
+
+回應包含相似度分數、FAQ／Chunk ID、問題、答案、分類與 Canon 版本。
+
+## `POST /faq/ask`
+
+檢索後以已確認的 FAQ 原文組合答案，並保留 `[FAQ-000-A]` 格式的依據標記。
+目前採用不需外部 API 金鑰的 extractive 模式；資料不足時不自行推測。
+
+```json
+{
+  "query": "LOC是什麼？要去哪裡使用？",
+  "top_k": 5
+}
+```
+
+## 實作方式
+
+- 繁體中文文字正規化
+- 1–4 字元 n-gram TF-IDF
+- 問句、別名與關鍵詞混合加權
+- 服務啟動時載入一次資料與索引
+- 僅使用 Python 標準函式庫，不增加 Render 建置負擔
+
+資料來源：`../../data/json/search/faq/LOC_FAQ_RAG_v0.4.json`

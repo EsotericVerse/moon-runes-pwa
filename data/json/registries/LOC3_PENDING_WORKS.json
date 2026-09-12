@@ -130,15 +130,15 @@
       ]
     },
     {
-      "pending_id": "PENDING-20260904-01",
+      "pending_id": "PENDING-DATE-01",
       "title": "潮來潮往",
-      "created_date": "2026-09-04",
+      "created_date": null,
       "period": "P8",
       "era_id": "ERA-P8",
       "era_name": "自我治理與未來展望期",
       "creative_stage": "治理自己",
       "playlist": "6.治理自己",
-      "status": "lyrics_pending",
+      "status": "lyrics_and_date_pending",
       "lyrics_status": "pending",
       "suno_status": "confirmed",
       "search_status": "excluded_until_lyrics_sync",
@@ -150,7 +150,7 @@
           "source_type": "suno_song",
           "source_id": "e0caf2f0-870a-4503-9c75-06bc31226c86",
           "url": "https://suno.com/song/e0caf2f0-870a-4503-9c75-06bc31226c86",
-          "note": "author-confirmed Suno song URL and creation date"
+          "note": "author-confirmed Suno song URL; creation date pending"
         }
       ]
     }

@@ -3,31 +3,37 @@ name: Repository Governance
 on:
   pull_request:
     paths:
-      - "card_api/**"
+      - "app/**"
       - "engine/**"
       - "tools/**"
+      - "scripts/**"
       - "data/**"
       - "docs/**"
+      - "css/**"
       - "js/**"
       - "*.html"
       - "*.htm"
       - "*.htmll"
       - "service-worker.js"
+      - "package.json"
       - "README.md"
       - ".github/workflows/repo-governance.yml"
   push:
     branches: [main]
     paths:
-      - "card_api/**"
+      - "app/**"
       - "engine/**"
       - "tools/**"
+      - "scripts/**"
       - "data/**"
       - "docs/**"
+      - "css/**"
       - "js/**"
       - "*.html"
       - "*.htm"
       - "*.htmll"
       - "service-worker.js"
+      - "package.json"
       - "README.md"
       - ".github/workflows/repo-governance.yml"
   workflow_dispatch:
@@ -37,10 +43,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Validate repository layout
-        run: python card_api/scripts/validate_repo_layout.py
-      - name: Compile active and experimental Python
-        run: python -m compileall -q card_api engine tools
+        run: node scripts/verify-directory-governance.mjs
+      - name: Validate RC4 canonical integrity
+        run: node scripts/verify-rc4-integrity.mjs
+      - name: Validate legacy static runtime boundary
+        run: python tools/check_static_runtime.py
+      - name: Compile active Python tools
+        run: python -m compileall -q engine tools

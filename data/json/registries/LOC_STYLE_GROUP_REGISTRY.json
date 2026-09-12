@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.2",
+  "registry": "LOC_STYLE_GROUP_REGISTRY",
+  "authority": "user",
+  "purpose": "Local-only exact-match group definitions for personal text classification. LunaRunes is an optional symbolic language template, not a required taxonomy.",
+  "updated_at": "2026-09-13",
+  "storage": {
+    "mode": "local_only",
+    "sync": false,
+    "server_persistence": false,
+    "portable_via_json": true
+  },
+  "limits": {
+    "custom_groups": 8,
+    "fallback_groups": 1,
+    "normal_keywords_per_group": 64,
+    "nor_keywords_per_group": 8
+  },
+  "matching": {
+    "mode": "exact",
+    "fuzzy": false,
+    "weights": false,
+    "levels": false,
+    "nor_precedence": true
+  },
+  "principles": [
+    "LOC defines the mechanism, not the user's meaning.",
+    "The system provides up to eight editable groups plus one fallback group.",
+    "All group names, descriptions, keywords and NOR terms are user-defined.",
+    "LunaRunes may be used as a symbolic language template, but its group meanings are optional and may be replaced entirely.",
+    "NOR excludes the current group only; it is not a global blacklist.",
+    "Unmatched text falls back to the reserved fallback group. Its display name and description are editable, but its fallback role is fixed.",
+    "All editing, classification, reclassification, import and export are local-first and require no API, account or cloud sync."
+  ],
+  "groups": [
+    {
+      "id": "special",
+      "name": "特殊",
+      "description": "預設承接未命中其他群組的內容；名稱與說明可自行修改。",
+      "is_fallback": true,
+      "keywords": [],
+      "nor": []
+    }
+  ]
+}

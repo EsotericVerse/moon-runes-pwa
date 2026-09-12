@@ -3,44 +3,56 @@
   if(window.__LOC_RUNE_ANALYTICS__) return;
   window.__LOC_RUNE_ANALYTICS__=true;
 
-  const RUNES_URL='data/json/core/runes.json';
-  const DERIVED_URL='data/json/registries/LUNARUNE_DERIVED_LEXICON.json';
-  const EVOLUTION_URL='data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json';
-  const ANALYSIS_URL='data/json/registries/LUNARUNE_EVOLUTION_ANALYSIS.json';
-  const EVOLUTION_KV_URL='https://api.lo3rwang.cc/evolution/runes';
+  const EVOLUTION_JS='data/js/lunarune-evolution-data.js';
   const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
   const KEYWORD_PAGE_SIZE=8;
   let keywordPage=1;
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
   const split=v=>String(v||'').split(/[、,，;；/]/).map(s=>s.trim()).filter(Boolean);
   const parseOwnership=v=>String(v||'').split(/[、,，;；]/).map(s=>s.trim()).filter(Boolean).filter(s=>/^.+?(屬|歸).+?$/.test(s));
   const byNumber=(a,b)=>Number(a?.編號||0)-Number(b?.編號||0);
 
-  async function optionalJson(url,fallback){
-    try{const r=await fetch(url,{cache:'no-store'});return r.ok?await r.json():fallback}catch{return fallback}
+  function loadScript(src,globalName){
+    if(window[globalName]) return Promise.resolve(window[globalName]);
+    return new Promise((resolve,reject)=>{
+      const existing=document.querySelector(`script[data-loc-runtime="${src}"]`);
+      if(existing){
+        existing.addEventListener('load',()=>resolve(window[globalName]),{once:true});
+        existing.addEventListener('error',()=>reject(new Error(`runtime JS load failed: ${src}`)),{once:true});
+        return;
+      }
+      const s=document.createElement('script');
+      s.src=src;s.defer=true;s.dataset.locRuntime=src;
+      s.onload=()=>window[globalName]?resolve(window[globalName]):reject(new Error(`runtime global missing: ${globalName}`));
+      s.onerror=()=>reject(new Error(`runtime JS load failed: ${src}`));
+      document.head.appendChild(s);
+    });
+  }
+
+  function derivedFromEvolution(history){
+    return (history?.semantic_history_cases||[]).filter(x=>x?.title&&x.title!=='混沌三兄弟').map(x=>{
+      const parts=String(x.title).split('→').map(v=>v.trim());
+      const target=parts.length>1?parts[parts.length-1]:'';
+      const resolvedRune=/^[靈魂彩憶界域鏡核向斷封鍊啟分悟誤生老病死心愛語韻樹花葉草根種實枝金玉晶地石鑽礦塵光暗水火風土雷氣日月星辰明時空因福禍無夢幻緣虛果玄命]$/.test(target)?target:null;
+      const relation=x.kind||'derived';
+      const status=relation==='balanced_ambiguity'?'ambiguous':relation.includes('out_of_domain')?'special':'confirmed';
+      return {term:parts[0]||x.title,relation,resolved_rune:resolvedRune,status,note:x.note||'',source:'LUNARUNE_EVOLUTION_HISTORY'};
+    });
   }
 
   async function loadEvolution(){
-    const kv=await optionalJson(EVOLUTION_KV_URL,null);
-    const kvData=kv?.snapshot?.data;
-    if(kv?.ok&&kv?.seeded&&kvData&&typeof kvData==='object') return {...kvData,__source:'kv'};
-    const [local,analysis]=await Promise.all([
-      optionalJson(EVOLUTION_URL,{system_stages:[],governance_evolution:[],semantic_history_cases:[]}),
-      optionalJson(ANALYSIS_URL,null)
-    ]);
-    return {...local,...(analysis?{analysis}:{}),__source:'registry'};
+    const payload=await loadScript(EVOLUTION_JS,'LUNARUNE_EVOLUTION_DATA');
+    const history=payload?.history||{system_stages:[],governance_evolution:[],semantic_history_cases:[]};
+    return {...history,...(payload?.analysis?{analysis:payload.analysis}:{}),__source:'static-js'};
   }
 
   async function load(){
     if(window.__LOC_RUNE_ANALYTICS_DATA__) return window.__LOC_RUNE_ANALYTICS_DATA__;
-    const [r,derived,evolution]=await Promise.all([
-      fetch(RUNES_URL,{cache:'no-store'}),
-      optionalJson(DERIVED_URL,{entries:[]}),
+    const [runeModule,evolution]=await Promise.all([
+      import('./runes.js'),
       loadEvolution()
     ]);
-    if(!r.ok) throw new Error(`runes.json HTTP ${r.status}`);
-    const runes=await r.json();
-    const rows=[...(Array.isArray(runes)?runes:[])].sort(byNumber);
+    const rows=[...(Array.isArray(runeModule?.rune)?runeModule.rune.filter(Boolean):[])].sort(byNumber);
     const groups=new Map(GROUP_ORDER.map(g=>[g,[]]));
     const keywords=[];
     const ownership=[];
@@ -60,7 +72,7 @@
       cur.runes.add(row.rune);cur.groups.add(row.group);keywordFreq.set(row.term,cur);
     }
     const ranking=[...keywordFreq.values()].map(x=>({...x,runes:[...x.runes],groups:[...x.groups]})).sort((a,b)=>b.count-a.count||b.runes.length-a.runes.length||a.term.localeCompare(b.term,'zh-Hant'));
-    const derivedEntries=Array.isArray(derived?.entries)?derived.entries:[];
+    const derivedEntries=derivedFromEvolution(evolution);
     const shifts=derivedEntries.filter(x=>['ownership_shift','semantic_ownership_shift','semantic_override','lexicalized_shift'].includes(x?.relation));
     const ambiguous=derivedEntries.filter(x=>x?.status==='ambiguous');
     const data={rows,groups,keywords,ownership,ranking,derivedEntries,shifts,ambiguous,evolution};
@@ -80,11 +92,10 @@
     const scale=a?.scale_analysis||{};
     const semantic=a?.semantic_resolution_analysis||{};
     const governance=a?.governance_analysis||{};
-    const source=d.evolution?.__source==='kv'?'KV snapshot':'靜態治理 registry fallback';
     const analysisMetrics=(scale.absolute_growth!==undefined||semantic.case_count!==undefined||governance.governance_step_count!==undefined)
       ?`<div class="stats-metrics">${metric('Base14→66',`+${scale.absolute_growth??''}`,'符文淨增量')}${metric('整體擴張',scale.growth_multiple?`${Number(scale.growth_multiple).toFixed(2)}×`:'')}${metric('語意演化案例',semantic.case_count??'')}${metric('治理演化',governance.governance_step_count??'')}</div>`:'';
     const dominant=semantic.dominant_signal?`<p><strong>演化主訊號：</strong>${esc(semantic.dominant_signal)}</p>`:'';
-    host.innerHTML=`<div class="stats-metrics">${metric('符文數',d.rows.length)}${metric('唯一群組',[...d.groups.values()].filter(x=>x.length).length)}${metric('正向關鍵詞',pos)}${metric('反向關鍵詞',neg)}${metric('Ownership 規則',d.ownership.length)}${metric('高價值衍生詞',d.derivedEntries.length)}${metric('主體性轉移',d.shifts.length)}${metric('對等歧義',d.ambiguous.length)}</div>${analysisMetrics}${stageLine?`<p><strong>系統演化：</strong>${esc(stageLine)}</p>`:''}${dominant}<p class="source-note">No API · Base66 與衍生詞讀取正式治理資料；符文演化優先讀取 ${esc(source)}。</p>`;
+    host.innerHTML=`<div class="stats-metrics">${metric('符文數',d.rows.length)}${metric('唯一群組',[...d.groups.values()].filter(x=>x.length).length)}${metric('正向關鍵詞',pos)}${metric('反向關鍵詞',neg)}${metric('Ownership 規則',d.ownership.length)}${metric('高價值衍生詞',d.derivedEntries.length)}${metric('主體性轉移',d.shifts.length)}${metric('對等歧義',d.ambiguous.length)}</div>${analysisMetrics}${stageLine?`<p><strong>系統演化：</strong>${esc(stageLine)}</p>`:''}${dominant}<p class="source-note">No API · runtime 只讀 generated static JS；JSON 僅作正式資料來源。</p>`;
   }
 
   async function renderTimeline(host){

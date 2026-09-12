@@ -1,0 +1,25 @@
+{
+  "name": "loc-next-architecture",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "verify:independence": "node scripts/verify-next-independence.mjs",
+    "verify:modularity": "node scripts/verify-modularity.mjs",
+    "verify:static": "node scripts/verify-static-entrypoints.mjs",
+    "verify:directories": "node scripts/verify-directory-governance.mjs",
+    "verify:public": "node scripts/verify-public-payload.mjs",
+    "verify:rc4": "node scripts/verify-rc4-integrity.mjs",
+    "verify": "npm run verify:independence && npm run verify:modularity && npm run verify:static && npm run verify:directories && npm run verify:rc4",
+    "prepare:public": "node scripts/prepare-next-public.mjs",
+    "build": "npm run verify && npm run prepare:public && npm run verify:public && next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "idb-keyval": "^6.3.0",
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "use-local-storage-state": "^20.0.0"
+  }
+}

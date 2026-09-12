@@ -1,21 +1,10 @@
-/* LunaRunes direction runtime loaded from the unified LunaRunes66 JSON. */
-
-const response = await fetch(
-  new URL('../data/json/core/runes.json', import.meta.url),
-  { cache: 'no-store' }
-);
-if (!response.ok) {
-  throw new Error(`Failed to load runes.json: HTTP ${response.status}`);
-}
-
-const payload = await response.json();
-const rows = Array.isArray(payload)
-  ? payload
-  : (Array.isArray(payload?.runes) ? payload.runes : []);
+/* LunaRunes direction view derived from the shared static runtime. */
+import { rune } from './runes.js';
 
 export const direction = [null];
 
-for (const row of rows) {
+for (const row of rune) {
+  if (!row) continue;
   const id = Number(row?.編號 ?? row?.id);
   if (!Number.isInteger(id) || id < 1 || id > 66) continue;
 

@@ -72,8 +72,7 @@ RC3 已讓 `runes.html`、`context.html`、`statics.html`、`evolution.html` 有
 | 功能 | 頁面 | 說明 |
 |---|---|---|
 | 首頁 | [index.html](https://loc.lo3rwang.cc/) | LOC 總覽與主要入口 |
-| 月之符文 | [lots.html](https://loc.lo3rwang.cc/lots.html) | LunaRunes 主頁、66 符資料、圖鑑與抽牌 |
-| 符文知識庫 | [runes.html](https://loc.lo3rwang.cc/runes.html) | 判讀規則、案例與符文脈絡 Graph · No API |
+| 月之符文 | [runes.html](https://loc.lo3rwang.cc/runes.html) | LunaRunes 主頁、66 符資料、圖鑑、抽牌、判讀規則、案例與符文脈絡 Graph · No API |
 | 統計 | [statics.html](https://loc.lo3rwang.cc/statics.html) | 排行榜、符文關鍵詞排行榜、符文統計與每日符文 |
 | 脈絡 | [context.html](https://loc.lo3rwang.cc/context.html) | 符文脈絡 Graph · No API、節點、關係式與 Event |
 | 多元搜尋 | [search.html](https://loc.lo3rwang.cc/search.html) | Cross-format Search：文字、音樂、多媒體、符文、脈絡與知識 |
@@ -83,8 +82,8 @@ RC3 已讓 `runes.html`、`context.html`、`statics.html`、`evolution.html` 有
 | 作者 | [lo3rwang.html](https://loc.lo3rwang.cc/lo3rwang.html) | Lucas Oscar Wang 政德 |
 
 新手導覽已整合進正式功能頁：
-- [LOC 新手上路](https://loc.lo3rwang.cc/#start)
-- [LunaRunes 新手上路](https://loc.lo3rwang.cc/lots.html#beginner)
+- [LOC 新手上路](https://loc.lo3rwang.cc/#start-guide)
+- [LunaRunes 新手上路](https://loc.lo3rwang.cc/runes.html#library)
 
 ---
 
@@ -399,8 +398,8 @@ moon-runes-pwa/
 ├── governance.html
 ├── game.html
 ├── lo3rwang.html
-├── tutorial01.html      # legacy compatibility redirect → index.html#start
-├── tutorial02.html      # legacy compatibility redirect → lots.html#beginner
+├── tutorial01.html      # legacy compatibility redirect → index.html#start-guide
+├── tutorial02.html      # legacy compatibility redirect → runes.html#library
 ├── LunaRune66.xlsx
 ├── LOC-GPT-Skills-v1.0.0-bundle.zip
 ├── manifest.json
