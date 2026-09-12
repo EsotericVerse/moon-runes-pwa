@@ -1,0 +1,207 @@
+/* LOC DAY THEME CANON
+   Loaded only through css/style.css. HTML and JavaScript must not own presentation CSS.
+   Day mode defaults to neutral white/gray UI surfaces. Dark presentation is allowed
+   only for actual media/artwork/backdrops explicitly excluded from the UI surface canon. */
+
+html[data-theme-resolved="day"]{color-scheme:light}
+
+html[data-theme-resolved="day"] body{
+  color-scheme:light;
+  --bg:#f3f3f1;
+  --surface:rgba(255,255,255,.97);
+  --surface2:rgba(244,244,241,.98);
+  --soft:rgba(239,239,235,.98);
+  --panel:var(--surface);
+  --card:var(--surface);
+  --box:var(--surface2);
+  --line:rgba(37,43,49,.16);
+  --line-strong:rgba(37,43,49,.28);
+  --line2:var(--line-strong);
+  --border:var(--line);
+  --text:#1f2933;
+  --muted:#67717c;
+  --purple:#625095;
+  --gold:#8b682b;
+  --accent:#376c98;
+  --accent-2:#8b682b;
+  --mint:var(--accent);
+  --ok:var(--accent);
+  --shadow:0 18px 48px rgba(40,44,48,.10);
+  --loc-bg:var(--bg);
+  --loc-surface:var(--surface);
+  --loc-surface-soft:var(--surface2);
+  --loc-border:var(--line);
+  --loc-text:var(--text);
+  --loc-muted:var(--muted);
+  --loc-purple:var(--purple);
+  --loc-gold:var(--gold);
+  --loc-shadow:var(--shadow);
+  color:var(--text)!important;
+  background:linear-gradient(180deg,#f7f7f5 0%,#f0f0ed 100%)!important;
+}
+
+/* Global navigation and controls */
+html[data-theme-resolved="day"] body .loc-global-nav,
+html[data-theme-resolved="day"] body .loc-nav-tiers,
+html[data-theme-resolved="day"] body.loc-page-context header,
+html[data-theme-resolved="day"] body.loc-page-context .loc2-local-header{
+  background:rgba(247,247,245,.96)!important;
+  border-color:var(--line)!important;
+}
+html[data-theme-resolved="day"] body .loc-theme-control select{background:rgba(255,255,255,.55)!important;color:var(--muted)!important}
+html[data-theme-resolved="day"] body .loc-global-shell .loc-global-link,
+html[data-theme-resolved="day"] body .loc-global-shell .loc-global-home{color:#27384a!important}
+
+/* Canonical UI surfaces. These are application/text/data containers, not media. */
+html[data-theme-resolved="day"] body :where(
+  article,.panel,.card,.gov-card,.profile-block,.search-panel,.filter-panel,
+  .hero-note,.section,.event-card,.trajectory-card,.keyword-card,.era,
+  .daily-record-form,.daily-stats-panel,.stats-metric,.loc-concept-note,
+  .loc-guidance-note,.quick-selector,.quick-selector-detail,.action-card,
+  .work-item,.loc6-core,.loc6-quotes,.rune-group,.rune-tile,.rune-overview,
+  .rune-basics,.basic-item,.reading-ref-card,.context-tool-card,.context-graph-panel,
+  .context-graph-node,.context-graph-edge,.doc-category,.source-stats,.pagination,
+  .location-card,.evidence-section,.source-search,.ranking-panel,.ranking-row,
+  .era-setting-card,.daily-entry,.physical-card-download,.special-rune-section,
+  .special-rune-card,.reading,.card-details,.reading-details,.mode-link,
+  .rune-result-card,.ritual-phase-box,.ritual-text-box,.wait-notice,.status,
+  .legend div,.metric,.trajectory-box,.core-line,.doc-link,.framework-item,
+  .framework-map-section,.framework-map-stage,.framework-resource-link,
+  .framework-extra li,.draw-mode,.rune-intro,#attributes,#description
+){
+  border-color:var(--line)!important;
+  color:var(--text)!important;
+}
+
+html[data-theme-resolved="day"] body :where(
+  article,.panel,.card,.gov-card,.profile-block,.search-panel,.hero-note,.section,
+  .event-card,.trajectory-card,.keyword-card,.era,.daily-record-form,
+  .daily-stats-panel,.stats-metric,.rune-group,.rune-overview,.rune-basics,
+  .context-tool-card,.context-graph-panel,.doc-category,.source-stats,.pagination,
+  .ranking-panel,.special-rune-section,.reading
+){background:var(--surface)!important}
+
+html[data-theme-resolved="day"] body :where(
+  .filter-panel,.loc-concept-note,.loc-guidance-note,.quick-selector,
+  .quick-selector-detail,.action-card,.work-item,.loc6-core,.loc6-quotes,
+  .rune-tile,.basic-item,.reading-ref-card,.context-graph-node,.context-graph-edge,
+  .location-card,.evidence-section,.source-search,.ranking-row,.era-setting-card,
+  .special-rune-card,.card-details,.reading-details,.mode-link,.rune-result-card,
+  .ritual-phase-box,.ritual-text-box,.wait-notice,.status,.legend div,.metric,
+  .trajectory-box,.core-line,.doc-link,.framework-item,.framework-map-section,
+  .framework-map-stage,.framework-resource-link,.framework-extra li,.draw-mode,
+  .rune-intro,#attributes,#description
+){background:var(--surface2)!important}
+
+/* Page-specific legacy dark UI that used literal colors/gradients. */
+html[data-theme-resolved="day"] body.loc-page-index #rune-card.card-display,
+html[data-theme-resolved="day"] body.loc-page-index .evolution-proof-item,
+html[data-theme-resolved="day"] body.loc-page-index .loc6-quote,
+html[data-theme-resolved="day"] body.loc-page-index .visual-card{
+  background:var(--surface2)!important;
+  border-color:var(--line)!important;
+  box-shadow:none!important;
+}
+html[data-theme-resolved="day"] body.loc-page-index .framework-modal-shell,
+html[data-theme-resolved="day"] body.loc-page-index .framework-modal-head,
+html[data-theme-resolved="day"] body.loc-page-index .modal-head{
+  background:var(--surface)!important;
+  color:var(--text)!important;
+  border-color:var(--line)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-index .framework-hotspot{
+  background:rgba(255,255,255,.88)!important;
+  color:var(--text)!important;
+  border-color:var(--line)!important;
+}
+
+html[data-theme-resolved="day"] body.loc-page-lots :where(
+  .filter,.group-head,.daily-entry,.physical-card-download,dialog,.modal-head,
+  .draw-mode-card,.daily-history-row,.reading-ref-card
+),
+html[data-theme-resolved="day"] body.loc-page-runes :where(
+  .filter,.group-head,.daily-entry,.physical-card-download,dialog,.modal-head,
+  .draw-mode-card,.daily-record-form,.daily-stats-panel,.daily-history-row,
+  .reading-ref-card
+){
+  background:var(--surface2)!important;
+  color:var(--text)!important;
+  border-color:var(--line)!important;
+}
+
+html[data-theme-resolved="day"] body.loc-page-context :where(
+  .panel,.card,table,th,.topline span,.controls input,.context-form-grid input,
+  .context-form-grid select,.context-form-grid textarea,.context-graph-toolbar input,
+  .context-graph-toolbar select,.context-graph-filter select,.context-page-btn,
+  .doc-category,.doc-links a
+){
+  background:var(--surface2)!important;
+  color:var(--text)!important;
+  border-color:var(--line)!important;
+}
+
+html[data-theme-resolved="day"] body.loc-page-search :where(
+  textarea,.suggestion-card,.clear-btn,.browse-btn,.filter-toggle,.filter-panel,
+  .filter-tab.active,select,input[type="date"],.card,.location-card,
+  .evidence-section,.synthesis-findings li,.source-search,.source-search-link,
+  .source-stats,.source-stat-line,.pagination,.page-btn,.ranking-panel,.ranking-tab,
+  .ranking-row,.era-setting-card,.era-setting-grid input,.era-setting-grid select,
+  .source-search
+){
+  background:var(--surface2)!important;
+  color:var(--text)!important;
+  border-color:var(--line)!important;
+}
+
+html[data-theme-resolved="day"] body.loc-page-evolution :where(
+  .card,.era,.keyword-card,.trajectory-card,.event-card,.trajectory-box,
+  .era-editor input,.era-editor textarea,.era-editor select,.event-form input,
+  .event-form textarea,.event-form select
+){
+  background:var(--surface2)!important;
+  color:var(--text)!important;
+  border-color:var(--line)!important;
+}
+
+html[data-theme-resolved="day"] body.loc-page-game :where(
+  .hero,.panel,.player,.event,.log,.rune,.tag,.btn,.status,.legend div
+){
+  background:var(--surface2)!important;
+  color:var(--text)!important;
+  border-color:var(--line)!important;
+}
+
+html[data-theme-resolved="day"] body.loc-page-statics :where(
+  .card,.daily-record-form,.daily-stats-panel,.stats-metric,.rune-group-stats>div,
+  .daily-form-grid input,.daily-form-grid select
+){
+  background:var(--surface2)!important;
+  color:var(--text)!important;
+  border-color:var(--line)!important;
+}
+
+html[data-theme-resolved="day"] body.loc-page-lo3rwang :where(article,.profile-block){
+  background:var(--surface)!important;
+  color:var(--text)!important;
+  border-color:var(--line)!important;
+}
+
+/* Form controls are UI surfaces too. */
+html[data-theme-resolved="day"] body :where(input,textarea,select){
+  background:var(--surface2)!important;
+  color:var(--text)!important;
+  border-color:var(--line)!important;
+}
+html[data-theme-resolved="day"] body :where(input,textarea)::placeholder{color:var(--muted)!important}
+
+/* Canonical text hierarchy. */
+html[data-theme-resolved="day"] body :where(p,li,dd,dt,label,td,th){color:var(--text)}
+html[data-theme-resolved="day"] body :where(.muted,.lead,.meta,.source-note,small){color:var(--muted)!important}
+html[data-theme-resolved="day"] body :where(strong,b){color:var(--text)}
+
+/* Explicit exceptions: actual artwork/media and full-screen backdrops may stay dark. */
+html[data-theme-resolved="day"] body :where(
+  .rune-result-image,.rune-image-button,.rune-thumb,.rune-thumb-de,
+  .loc5-reel-visual,.beginner-slide,.image-modal,.framework-modal::backdrop,
+  dialog::backdrop,.quick-selector-modal::backdrop
+){color-scheme:dark}
