@@ -6,7 +6,8 @@
     "dev": "next dev",
     "verify:independence": "node scripts/verify-next-independence.mjs",
     "verify:modularity": "node scripts/verify-modularity.mjs",
-    "verify": "npm run verify:independence && npm run verify:modularity",
+    "verify:static": "node scripts/verify-static-entrypoints.mjs",
+    "verify": "npm run verify:independence && npm run verify:modularity && npm run verify:static",
     "prepare:public": "node scripts/prepare-next-public.mjs",
     "build": "npm run verify && npm run prepare:public && next build",
     "start": "next start"
