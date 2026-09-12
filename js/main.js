@@ -5,7 +5,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const card = document.getElementById("rune-card");
   if (card) {
     card.addEventListener("click", () => {
-      window.location.href = "lots.html#draw";
+      window.location.href = "runes.html#draw";
     });
   }
 });
