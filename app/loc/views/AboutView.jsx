@@ -9,13 +9,6 @@ const modules=[
   ['LOC8','Evolution／推演','把資料重新放回時間，觀察時期、趨勢與演化，再決定下一步如何調整。','/evolution']
 ];
 
-const starts=[
-  ['01','先使用','完全不懂 LOC 也沒關係，先從月之符文或遊戲開始，先用再理解。','/runes','月之符文'],
-  ['02','再找資料','搜尋作品、關鍵詞與內容，看看 LOC 已經整理了哪些語料。','/search','搜尋'],
-  ['03','看脈絡','進一步看 Graph、事件與關係，理解資料不是單獨存在。','/context','脈絡'],
-  ['04','最後看治理','需要深入時再看分類、語意邊界、資料治理與演算法。','/governance','治理']
-];
-
 export default function AboutView(){
   return <section className="loc-view">
     <header className="loc-hero">
@@ -33,12 +26,9 @@ export default function AboutView(){
 
     <section className="loc-card">
       <p className="loc-eyebrow">Start Here</p>
-      <h2>第一次來，可以照這個順序開始</h2>
-      <p>月之符文是種子，但不是使用門檻。你可以先抽牌、玩遊戲、找作品、看脈絡或排行榜；想深入時，再讓 LOC 把底層結構展開。</p>
-      <div className="loc-grid two">
-        {starts.map(([no,title,copy,href,label])=><article className="loc-card" key={no}>
-          <p className="loc-eyebrow">{no}</p><h2>{title}</h2><p>{copy}</p><a className="loc-button" href={href}>{label}</a>
-        </article>)}
+      <h2>不知道從哪邊開始？沒關係！不用先了解或知道什麼，抽張牌就知道！</h2>
+      <div className="loc-actions">
+        <a className="loc-button primary" href="/runes">抽張牌</a>
       </div>
     </section>
 
