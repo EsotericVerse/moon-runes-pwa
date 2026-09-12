@@ -3,7 +3,15 @@
   --loc-bg:#061526;
   --loc-panel:#0a2037;
   --loc-panel-2:#0d2945;
+  --loc-panel-strong:rgba(10,32,55,.84);
+  --loc-panel-nav:rgba(6,21,38,.88);
+  --loc-panel-tab:rgba(10,32,55,.78);
+  --loc-rune-bg:#0a1d31;
+  --loc-rune-selected-bg:#21324a;
   --loc-line:rgba(180,205,230,.22);
+  --loc-line-soft:rgba(180,205,230,.11);
+  --loc-line-softer:rgba(180,205,230,.13);
+  --loc-line-faint:rgba(180,205,230,.14);
   --loc-text:#edf5fb;
   --loc-muted:#9fb6c9;
   --loc-gold:#d9b96e;
@@ -12,9 +20,28 @@
   --loc-radius:18px;
   --loc-radius-sm:12px;
   --loc-shadow:0 20px 55px rgba(0,0,0,.22);
+  --loc-shadow-card:0 12px 35px rgba(0,0,0,.14);
   --loc-surface:rgba(10,32,55,.82);
   --loc-surface-soft:rgba(255,255,255,.025);
+  --loc-surface-faint:rgba(255,255,255,.018);
   --loc-surface-status:rgba(255,255,255,.035);
+  --loc-accent-surface:rgba(134,200,255,.055);
+  --loc-accent-surface-strong:rgba(134,200,255,.11);
+  --loc-accent-border:rgba(134,200,255,.55);
+  --loc-accent-border-soft:rgba(134,200,255,.45);
+  --loc-accent-border-faint:rgba(134,200,255,.5);
+  --loc-gold-surface:rgba(217,185,110,.09);
+  --loc-gold-surface-soft:rgba(217,185,110,.06);
+  --loc-gold-border:rgba(217,185,110,.62);
+  --loc-gold-border-soft:rgba(217,185,110,.55);
+  --loc-gold-border-faint:rgba(217,185,110,.45);
+  --loc-gold-ring:rgba(217,185,110,.30);
+  --loc-gold-ring-soft:rgba(217,185,110,.18);
+  --loc-danger-border:rgba(255,183,183,.35);
+  --loc-primary-start:#1a557f;
+  --loc-primary-end:#1b3f67;
+  --loc-hero-start:rgba(15,45,75,.92);
+  --loc-hero-end:rgba(7,25,44,.90);
 }
 
 *{box-sizing:border-box}
