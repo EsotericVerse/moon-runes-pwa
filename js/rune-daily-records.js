@@ -1,7 +1,7 @@
 import { rune } from "./runes66.js";
 
 const LEGACY_API = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
-const KV_API = "/api/loc-state/daily-runes";
+const KV_API = "https://api.lo3rwang.cc/daily-runes";
 const REPO_HISTORY = "data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json";
 const CACHE_KEY = "lunarunes-physical-daily-draw-cache-v3";
 const $ = s => document.querySelector(s);
@@ -71,7 +71,7 @@ async function loadKVHistory(){
   try{
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),3500);
-    const res=await fetch(`${KV_API}?limit=1000`,{cache:"no-store",signal:controller.signal,credentials:"same-origin"});
+    const res=await fetch(`${KV_API}?limit=1000`,{cache:"no-store",signal:controller.signal,credentials:"include"});
     clearTimeout(timeout);
     if(!res.ok) return [];
     const data=await res.json();
@@ -84,7 +84,7 @@ async function loadKVHistory(){
 async function saveKV(dailyDraw){
   const res=await fetch(KV_API,{
     method:"POST",
-    credentials:"same-origin",
+    credentials:"include",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({daily_draw:dailyDraw})
   });
