@@ -12,12 +12,18 @@ const EvolutionView = dynamic(() => import('./views/EvolutionView'),{ssr:false,l
 const SearchView = dynamic(() => import('./views/SearchView'),{ssr:false,loading});
 const GovernanceView = dynamic(() => import('./views/GovernanceView'),{ssr:false,loading});
 const StyleGroupsView = dynamic(() => import('./views/StyleGroupsView'),{ssr:false,loading});
+const ClassifyView = dynamic(() => import('./views/ClassifyView'),{ssr:false,loading});
+const LibraryView = dynamic(() => import('./views/LibraryView'),{ssr:false,loading});
+const MyStyleView = dynamic(() => import('./views/MyStyleView'),{ssr:false,loading});
 
 const VIEWS = {
   home: AboutView,
   about: AboutView,
   game: GameView,
   context: ContextView,
+  classify: ClassifyView,
+  library: LibraryView,
+  'my-style': MyStyleView,
   statics: StaticsView,
   evolution: EvolutionView,
   search: SearchView,
@@ -28,6 +34,9 @@ const VIEWS = {
 const NAV = [
   ['game', '遊戲'],
   ['context', '脈絡'],
+  ['classify', '分類'],
+  ['library', 'Library'],
+  ['my-style', '我的風格'],
   ['style-groups', '群組設定'],
   ['search', '搜尋'],
   ['statics', '統計'],
