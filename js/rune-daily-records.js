@@ -1,6 +1,5 @@
 import { rune } from "./runes66.js";
 
-const LEGACY_API = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
 const KV_API = "/api/loc-state/daily-runes";
 const REPO_HISTORY = "data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json";
 const CACHE_KEY = "lunarunes-physical-daily-draw-cache-v3";
@@ -103,18 +102,6 @@ async function saveKV(dailyDraw){
   return data?.daily_draw||dailyDraw;
 }
 
-async function saveLegacy(dailyDraw){
-  const res=await fetch(LEGACY_API,{
-    method:"POST",
-    headers:{"Content-Type":"text/plain;charset=utf-8"},
-    body:JSON.stringify({action:"daily_draw",daily_draw:dailyDraw}),
-    redirect:"follow"
-  });
-  const data=await res.json();
-  if(!res.ok||data?.ok===false) throw new Error(data?.error||"Google Sheet 同步失敗");
-  return data;
-}
-
 function pageNumbers(current,total){
   const out=[];
   const start=Math.max(1,Math.min(current-2,Math.max(1,total-4)));
@@ -187,7 +174,6 @@ function render(rows) {
 }
 
 // Read order: versioned repo history + KV live records + local optimistic fallback.
-// Google Sheet is no longer part of the public read path.
 async function loadRecords() {
   const [repoRows,kvRows]=await Promise.all([loadRepoHistory(),loadKVHistory()]);
   const cached=readCache();
@@ -252,16 +238,8 @@ async function saveRecord(ev){
     render(merged);
     status.textContent="實體牌紀錄已儲存至 KV。";
     $("#dailyRecordNote").value="";
-    return;
   }catch(kvErr){
-    try{
-      await saveLegacy(dailyDraw);
-      status.textContent="KV 尚未啟用寫入；已暫時同步既有 Google Sheet。";
-      $("#dailyRecordNote").value="";
-      return;
-    }catch(sheetErr){
-      status.textContent="已保留本機紀錄；KV／舊同步來源皆失敗："+(kvErr?.message||"")+" / "+(sheetErr?.message||"");
-    }
+    status.textContent="已保留本機紀錄；KV 同步失敗："+(kvErr?.message||"");
   }
 }
 
