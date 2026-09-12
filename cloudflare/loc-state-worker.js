@@ -1,5 +1,6 @@
 const ERA_KEY = 'loc:era:registry';
 const DAILY_PREFIX = 'loc:daily-rune:';
+const DAILY_INDEX_KEY = 'loc:daily-rune:index';
 
 const json = (data, init = {}) => new Response(JSON.stringify(data), {
   ...init,
@@ -36,6 +37,36 @@ const normalizeDaily = row => ({
   updated_at: new Date().toISOString()
 });
 
+function dailyIdentity(row = {}) {
+  return [
+    String(row.date || ''),
+    String(row.draw_kind || 'daily_draw'),
+    String(row.rune || ''),
+    String(row.direction || '')
+  ].join('|');
+}
+
+function sortDaily(rows) {
+  return rows.sort((a, b) =>
+    String(b.date || '').localeCompare(String(a.date || '')) ||
+    String(b.updated_at || '').localeCompare(String(a.updated_at || '')) ||
+    String(b.id || '').localeCompare(String(a.id || ''))
+  );
+}
+
+function mergeDaily(...groups) {
+  const map = new Map();
+  for (const group of groups) {
+    for (const raw of Array.isArray(group) ? group : []) {
+      const row = normalizeDaily(raw);
+      if (!row.date || !row.rune) continue;
+      const key = dailyIdentity(row);
+      map.set(key, { ...(map.get(key) || {}), ...row });
+    }
+  }
+  return sortDaily([...map.values()]);
+}
+
 function corsHeaders(request, env) {
   const origin = request.headers.get('Origin') || '';
   const allowed = String(env.PUBLIC_ORIGIN || 'https://loc.lo3rwang.cc');
@@ -69,29 +100,52 @@ async function writeEras(env, payload) {
   return body;
 }
 
-async function listDaily(env, limit = 400) {
+async function readDailyIndex(env) {
+  const data = await env.LOC_KV.get(DAILY_INDEX_KEY, 'json');
+  return Array.isArray(data?.daily_draws) ? data.daily_draws : [];
+}
+
+async function writeDailyIndex(env, rows) {
+  const body = {
+    schema_version: 'kv-1',
+    updated_at: new Date().toISOString(),
+    daily_draws: sortDaily(rows)
+  };
+  await env.LOC_KV.put(DAILY_INDEX_KEY, JSON.stringify(body));
+  return body.daily_draws;
+}
+
+async function listDailyLegacy(env, limit = 400) {
   const rows = [];
   let cursor;
   do {
     const listed = await env.LOC_KV.list({ prefix: DAILY_PREFIX, limit: Math.min(1000, limit), cursor });
     for (const key of listed.keys) {
+      if (key.name === DAILY_INDEX_KEY) continue;
       const value = await env.LOC_KV.get(key.name, 'json');
       if (value) rows.push(value);
       if (rows.length >= limit) break;
     }
     cursor = listed.list_complete ? undefined : listed.cursor;
   } while (cursor && rows.length < limit);
-  rows.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || String(b.updated_at || '').localeCompare(String(a.updated_at || '')));
-  return rows;
+  return sortDaily(rows);
+}
+
+async function listDaily(env, limit = 400) {
+  const indexed = await readDailyIndex(env);
+  if (indexed.length) return sortDaily(indexed).slice(0, limit);
+  return (await listDailyLegacy(env, limit)).slice(0, limit);
 }
 
 async function saveDaily(env, raw) {
   const row = normalizeDaily(raw);
   if (!row.date || !row.rune) throw new Error('date and rune are required');
-  const safeId = row.id.replace(/[^A-Za-z0-9._-]/g, '-');
-  const key = `${DAILY_PREFIX}${row.date}:${row.draw_kind}:${safeId}`;
-  await env.LOC_KV.put(key, JSON.stringify(row));
-  return row;
+
+  const current = await readDailyIndex(env);
+  const merged = mergeDaily(current, [row]);
+  await writeDailyIndex(env, merged);
+
+  return merged.find(item => dailyIdentity(item) === dailyIdentity(row)) || row;
 }
 
 export default {
