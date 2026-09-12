@@ -1,4 +1,4 @@
-import { rune } from "./runes66.js";
+import { rune } from "./runes.js";
 
 let direction = {};
 let allData = [];
