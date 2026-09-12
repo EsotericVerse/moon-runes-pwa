@@ -2,14 +2,15 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
+import AboutView from './views/AboutView';
 
-const AboutView = dynamic(() => import('./views/AboutView'));
-const GameView = dynamic(() => import('./views/GameView'));
-const ContextView = dynamic(() => import('./views/ContextView'));
-const StaticsView = dynamic(() => import('./views/StaticsView'));
-const EvolutionView = dynamic(() => import('./views/EvolutionView'));
-const SearchView = dynamic(() => import('./views/SearchView'));
-const GovernanceView = dynamic(() => import('./views/GovernanceView'));
+const loadOptions={ssr:false,loading:()=> <div className="loc-loading">載入功能模組…</div>};
+const GameView = dynamic(() => import('./views/GameView'),loadOptions);
+const ContextView = dynamic(() => import('./views/ContextView'),loadOptions);
+const StaticsView = dynamic(() => import('./views/StaticsView'),loadOptions);
+const EvolutionView = dynamic(() => import('./views/EvolutionView'),loadOptions);
+const SearchView = dynamic(() => import('./views/SearchView'),loadOptions);
+const GovernanceView = dynamic(() => import('./views/GovernanceView'),loadOptions);
 
 const VIEWS = {
   home: AboutView,
