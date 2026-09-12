@@ -1,5 +1,5 @@
 {
-  "version": "1.0-rc3",
+  "version": "1.1-rc3",
   "title": "LunaRunes Evolution History",
   "purpose": "把符文系統自身演化、語意治理演化與可重現實例分開呈現；不把文化時代語義漂移回寫 Base66 Canon。",
   "system_stages": [
@@ -22,7 +22,7 @@
       "title": "詞類先於群組主體性",
       "before": "只看字面命中容易把固定名詞或複合詞拆錯。",
       "after": "先判詞類／句內語意角色，再判群組主體性與符文歸屬。",
-      "effect": "可處理花枝等詞彙化轉移。"
+      "effect": "可處理花枝、地雷等詞彙化轉移。"
     },
     {
       "order": 3,
@@ -42,8 +42,15 @@
       "order": 5,
       "title": "衍生詞主體性轉移",
       "before": "Graph 主要呈現符文、關鍵詞與群組關係。",
-      "after": "另外記錄 surface composition、semantic owner、ambiguous 與 lexicalized shift。",
+      "after": "另外記錄 surface composition、semantic owner、ambiguous、head ownership 與 lexicalized shift。",
       "effect": "Graph 從對照表升級為可觀察語意依存與主體性轉移的符號式語言模組。"
+    },
+    {
+      "order": 6,
+      "title": "二字自然詞驗證",
+      "before": "只靠人工列出少數已知轉移案例。",
+      "after": "先驗證自然存在的二字詞，再只保留會改變主體性、詞類或唯一歸屬的高價值案例；三字詞建立在此基礎上延伸。",
+      "effect": "不做排列組合、不堆同義詞，以少量實例驗證規則能否泛化。"
     }
   ],
   "semantic_history_cases": [
@@ -65,6 +72,38 @@
     },
     {
       "order": 3,
+      "title": "語病 → 誤",
+      "kind": "semantic_ownership_shift",
+      "before": "表面可拆為語、病。",
+      "after": "固定詞指語言表述中的錯誤，整體主體轉移至誤。",
+      "note": "AB → C；證明組合詞可產生第三符文語意。"
+    },
+    {
+      "order": 4,
+      "title": "水晶 → 晶",
+      "kind": "lexicalized_shift",
+      "before": "表面可拆為水、晶。",
+      "after": "固定名詞指結晶石英，水的液態語意退出，主體歸晶。",
+      "note": "AB → B；字面符文並非永遠同權。"
+    },
+    {
+      "order": 5,
+      "title": "星辰 → 星",
+      "kind": "lexicalized_shift",
+      "before": "表面可拆為星、辰。",
+      "after": "固定詞是星的通稱，辰的現行『時期』語意在此不成立。",
+      "note": "展示現代固定詞義可以覆寫單字 Canon 語意。"
+    },
+    {
+      "order": 6,
+      "title": "地雷 → 特殊",
+      "kind": "lexicalized_out_of_domain",
+      "before": "表面可拆為地、雷。",
+      "after": "固定名詞實際指爆炸武器，沒有足夠理由硬歸地或雷。",
+      "note": "不能分類也是有效結果；特殊保留語意邊界。"
+    },
+    {
+      "order": 7,
       "title": "鏡花水月 → 幻",
       "kind": "semantic_ownership_shift",
       "before": "表面直接包含鏡、花、水、月四個符文。",
@@ -72,7 +111,7 @@
       "note": "ABCD → E；surface composition 不等於 semantic owner。"
     },
     {
-      "order": 4,
+      "order": 8,
       "title": "光暗",
       "kind": "balanced_ambiguity",
       "before": "光與暗兩個候選都直接成立。",
