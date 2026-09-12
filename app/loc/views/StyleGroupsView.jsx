@@ -1,8 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { fetchLocJson, LOC_DATA } from '../data';
 import { useLocalStore, removeById, updateById } from '../local-store';
 import { downloadJsonFile, readJsonFile } from '../local-db';
+import { buildRuneSuggestionRegistry, classifyText } from '../model/style-classifier';
 
 const STORAGE_KEY='loc-style-groups-v1';
 const MAX_GROUPS=8;
@@ -25,7 +27,7 @@ const INITIAL_STATE={
   fallback:{id:'special',name:'特殊',description:'未命中其他群組的內容會進入這裡。',keywords:[],nor:[],is_fallback:true}
 };
 
-const parseTerms=(value,max)=>[...new Set(String(value||'').split(/[\n、,，]/).map(x=>x.trim()).filter(Boolean))].slice(0,max);
+const parseTerms=(value,max)=>[...new Set(String(value||'').split(/[\n、,，・]/).map(x=>x.trim()).filter(Boolean))].slice(0,max);
 const termsText=value=>(value||[]).join('\n');
 
 function validateImport(data){
@@ -53,13 +55,25 @@ function validateImport(data){
 export default function StyleGroupsView(){
   const {value:data,setValue:setData,reset,isPersistent}=useLocalStore(STORAGE_KEY,INITIAL_STATE);
   const [message,setMessage]=useState('');
+  const [suggestions,setSuggestions]=useState([]);
+  const [testText,setTestText]=useState('');
   const groups=data?.groups||[];
   const fallback=data?.fallback||INITIAL_STATE.fallback;
+
+  useEffect(()=>{
+    let live=true;
+    fetchLocJson(LOC_DATA.RUNES)
+      .then(runes=>live&&setSuggestions(buildRuneSuggestionRegistry(runes)))
+      .catch(()=>live&&setSuggestions([]));
+    return()=>{live=false};
+  },[]);
+
   const stats=useMemo(()=>({
     groups:groups.length,
     keywords:groups.reduce((sum,g)=>sum+(g.keywords?.length||0),0),
     nor:groups.reduce((sum,g)=>sum+(g.nor?.length||0),0)
   }),[groups]);
+  const testResult=useMemo(()=>testText.trim()?classifyText(testText,data):null,[testText,data]);
 
   const updateGroup=(id,patch)=>setData(current=>({...current,groups:updateById(current.groups,id,patch)}));
   const updateFallback=patch=>setData(current=>({...current,fallback:{...current.fallback,...patch,id:'special',is_fallback:true}}));
@@ -70,8 +84,12 @@ export default function StyleGroupsView(){
     setData(current=>({...current,groups:[...current.groups,{...makeGroup(n-1),id:`group-${n}`}]}));
   };
   const useTemplate=()=>{
-    setData(current=>({...current,groups:TEMPLATE_GROUPS.map((name,index)=>({...makeGroup(index,name),description:`月之符文符號型語言模板：${name}組`}))}));
-    setMessage('已套用月之符文八組模板。');
+    const suggestionMap=new Map(suggestions.map(item=>[item.name,item]));
+    setData(current=>({...current,groups:TEMPLATE_GROUPS.map((name,index)=>{
+      const source=suggestionMap.get(name)||{};
+      return {...makeGroup(index,name),description:`月之符文符號型語言模板：${name}組`,keywords:(source.keywords||[]).slice(0,MAX_KEYWORDS),nor:(source.nor||[]).slice(0,MAX_NOR)};
+    })}));
+    setMessage(suggestions.length?'已套用月之符文八組模板與 canonical 關鍵詞建議。':'已套用月之符文八組模板；關鍵詞建議尚未載入。');
   };
   const importFile=async event=>{
     try{setData(validateImport(await readJsonFile(event.target.files?.[0])));setMessage('已從本機檔案匯入設定。');}
@@ -80,7 +98,7 @@ export default function StyleGroupsView(){
   };
 
   return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Local Style Groups</p><h1>群組設定</h1><p>8 個可自訂群組 + 第 9 預設承接組。設定只存在本機；每組最多 64 個關鍵詞、8 個 NOR，採 exact match。</p></header>
+    <header className="loc-hero"><p className="loc-eyebrow">Local Style Groups</p><h1>群組設定</h1><p>8 個可自訂群組 + 第 9 預設承接組。設定只存在本機；每組最多 64 個關鍵詞、8 個 NOR，採 exact match。月之符文只提供可刪改的符號型語言模板。</p></header>
     <section className="loc-card">
       <div className="loc-actions">
         <button className="loc-button primary" onClick={addGroup} disabled={groups.length>=MAX_GROUPS}>＋新增群組</button>
@@ -92,6 +110,13 @@ export default function StyleGroupsView(){
       <div className="loc-metrics"><div><small>群組</small><strong>{stats.groups}/{MAX_GROUPS}</strong></div><div><small>關鍵詞</small><strong>{stats.keywords}</strong></div><div><small>NOR</small><strong>{stats.nor}</strong></div></div>
       <p className="loc-status">{isPersistent?'本機持久化中':'目前瀏覽器無法持久化，設定只保留於本次工作階段。'}</p>
       {message&&<p className="loc-status">{message}</p>}
+    </section>
+
+    <section className="loc-card">
+      <p className="loc-eyebrow">Exact-match test</p>
+      <h2>本機分類測試</h2>
+      <textarea className="loc-textarea" rows="4" value={testText} onChange={e=>setTestText(e.target.value)} placeholder="輸入一段文字，立即用目前群組設定比對。"/>
+      {testResult&&<div className="loc-chip-list">{testResult.matches.map(item=><span key={item.id}>{item.name}{item.hits.length?` · ${item.hits.join('、')}`:' · fallback'}</span>)}</div>}
     </section>
 
     <div className="loc-context-list">
