@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, join, normalize, relative, resolve } from 'node:path';
+import { dirname, join, normalize, resolve } from 'node:path';
 
 const root = process.cwd();
 const entrypoints = ['runes.html', 'lo3rwang.html'];
@@ -7,15 +7,24 @@ const reachable = new Set();
 const missing = [];
 const queue = [];
 
+function normalizeRel(path) {
+  return normalize(path).replaceAll('\\', '/');
+}
+
 function localPath(fromFile, specifier) {
   const clean = String(specifier || '').split(/[?#]/, 1)[0];
   if (!clean || /^(?:https?:|data:|mailto:|tel:|\/\/)/i.test(clean)) return null;
-  if (clean.startsWith('/')) return normalize(clean.slice(1)).replaceAll('\\', '/');
-  return normalize(join(dirname(fromFile), clean)).replaceAll('\\', '/');
+  if (clean.startsWith('/')) return normalizeRel(clean.slice(1));
+
+  // Browser scripts such as appendScript('js/foo.js') are site-root relative in
+  // this project, while ESM imports such as './foo.js' are module relative.
+  const rootCandidate = normalizeRel(clean);
+  if (!clean.startsWith('.') && existsSync(resolve(root, rootCandidate))) return rootCandidate;
+  return normalizeRel(join(dirname(fromFile), clean));
 }
 
 function enqueue(path, parent) {
-  const rel = normalize(path).replaceAll('\\', '/');
+  const rel = normalizeRel(path);
   if (reachable.has(rel)) return;
   const abs = resolve(root, rel);
   if (!existsSync(abs)) {
