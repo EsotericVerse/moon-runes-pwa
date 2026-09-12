@@ -13,12 +13,37 @@
       "符文語意歸屬",
       "正反面／衝突校準"
     ],
-    "highest_conflict_rule": "只有同一語意單位出現兩個以上有效符文候選時才啟動最高級衝突裁決。"
+    "highest_conflict_rule": "只有同一語意單位出現兩個以上有效符文候選時才啟動最高級衝突裁決。",
+    "graph_projection": {
+      "principle": "少量 Canon 與高價值衍生詞，透過關係投影擴張 Graph；不以大量同義詞灌資料。",
+      "generated_nodes": [
+        "lexical_class",
+        "relation_type",
+        "status"
+      ],
+      "generated_edges": [
+        "surface_component_of",
+        "surface_group",
+        "cross_group_composition",
+        "has_lexical_class",
+        "uses_relation",
+        "has_status",
+        "resolved_to",
+        "resolved_group",
+        "ambiguous_with",
+        "remains_special"
+      ],
+      "materialization": "runtime-derived",
+      "source_of_truth": "Base66 Canon + LUNARUNE_DERIVED_LEXICON.json"
+    }
   },
   "entries": [
     {
       "term": "靈魂",
-      "surface_runes": ["靈", "魂"],
+      "surface_runes": [
+        "靈",
+        "魂"
+      ],
       "lexical_class": "名詞",
       "relation": "ownership_shift",
       "resolved_rune": "魂",
@@ -29,7 +54,10 @@
     },
     {
       "term": "界域",
-      "surface_runes": ["界", "域"],
+      "surface_runes": [
+        "界",
+        "域"
+      ],
       "lexical_class": "名詞",
       "relation": "ownership_shift",
       "resolved_rune": "域",
@@ -40,7 +68,9 @@
     },
     {
       "term": "暫斷",
-      "surface_runes": ["斷"],
+      "surface_runes": [
+        "斷"
+      ],
       "lexical_class": "動作概念",
       "relation": "semantic_override",
       "resolved_rune": "封",
@@ -62,7 +92,10 @@
     },
     {
       "term": "水土",
-      "surface_runes": ["水", "土"],
+      "surface_runes": [
+        "水",
+        "土"
+      ],
       "lexical_class": "名詞",
       "relation": "semantic_ownership_shift",
       "resolved_rune": "地",
@@ -73,7 +106,10 @@
     },
     {
       "term": "花枝",
-      "surface_runes": ["花", "枝"],
+      "surface_runes": [
+        "花",
+        "枝"
+      ],
       "lexical_class": "多義固定名詞",
       "relation": "lexicalized_shift",
       "resolved_rune": null,
@@ -85,7 +121,10 @@
     },
     {
       "term": "光暗",
-      "surface_runes": ["光", "暗"],
+      "surface_runes": [
+        "光",
+        "暗"
+      ],
       "lexical_class": "並列概念",
       "relation": "balanced_ambiguity",
       "resolved_rune": null,
@@ -96,7 +135,10 @@
     },
     {
       "term": "水晶",
-      "surface_runes": ["水", "晶"],
+      "surface_runes": [
+        "水",
+        "晶"
+      ],
       "lexical_class": "固定名詞",
       "relation": "lexicalized_shift",
       "resolved_rune": "晶",
@@ -108,7 +150,10 @@
     },
     {
       "term": "星辰",
-      "surface_runes": ["星", "辰"],
+      "surface_runes": [
+        "星",
+        "辰"
+      ],
       "lexical_class": "名詞",
       "relation": "lexicalized_shift",
       "resolved_rune": "星",
@@ -120,7 +165,10 @@
     },
     {
       "term": "空氣",
-      "surface_runes": ["空", "氣"],
+      "surface_runes": [
+        "空",
+        "氣"
+      ],
       "lexical_class": "名詞",
       "relation": "ownership_shift",
       "resolved_rune": "氣",
@@ -132,7 +180,10 @@
     },
     {
       "term": "病因",
-      "surface_runes": ["病", "因"],
+      "surface_runes": [
+        "病",
+        "因"
+      ],
       "lexical_class": "名詞",
       "relation": "head_ownership",
       "resolved_rune": "因",
@@ -144,7 +195,10 @@
     },
     {
       "term": "緣分",
-      "surface_runes": ["緣", "分"],
+      "surface_runes": [
+        "緣",
+        "分"
+      ],
       "lexical_class": "名詞",
       "relation": "lexicalized_shift",
       "resolved_rune": "緣",
@@ -156,7 +210,10 @@
     },
     {
       "term": "語病",
-      "surface_runes": ["語", "病"],
+      "surface_runes": [
+        "語",
+        "病"
+      ],
       "lexical_class": "名詞",
       "relation": "semantic_ownership_shift",
       "resolved_rune": "誤",
@@ -168,7 +225,10 @@
     },
     {
       "term": "地雷",
-      "surface_runes": ["地", "雷"],
+      "surface_runes": [
+        "地",
+        "雷"
+      ],
       "lexical_class": "固定名詞",
       "relation": "lexicalized_shift",
       "resolved_rune": null,
@@ -180,7 +240,12 @@
     },
     {
       "term": "鏡花水月",
-      "surface_runes": ["鏡", "花", "水", "月"],
+      "surface_runes": [
+        "鏡",
+        "花",
+        "水",
+        "月"
+      ],
       "lexical_class": "成語",
       "relation": "semantic_ownership_shift",
       "resolved_rune": "幻",

@@ -107,6 +107,24 @@
         source:String(entry?.source||DERIVED_URL)
       });
 
+      const lexicalClass=String(entry?.lexical_class||'').trim();
+      if(lexicalClass){
+        const classId=nodeId('lexical_class',lexicalClass);
+        addNode(nodes,{id:classId,label:lexicalClass,type:'lexical_class',group:DEFAULT_GROUP});
+        addEdge(edges,{source:tid,target:classId,type:'has_lexical_class',source_field:'lexical_class',evidence:lexicalClass});
+      }
+
+      const relationType=String(entry?.relation||'derived').trim()||'derived';
+      const relationId=nodeId('relation_type',relationType);
+      addNode(nodes,{id:relationId,label:relationType,type:'relation_type',group:DEFAULT_GROUP});
+      addEdge(edges,{source:tid,target:relationId,type:'uses_relation',source_field:'relation',evidence:relationType});
+
+      const statusValue=String(entry?.status||'special').trim()||'special';
+      const statusId=nodeId('status',statusValue);
+      addNode(nodes,{id:statusId,label:statusValue,type:'status',group:DEFAULT_GROUP});
+      addEdge(edges,{source:tid,target:statusId,type:'has_status',source_field:'status',evidence:statusValue});
+
+      const surfaceGroups=new Set();
       for(const part of entry?.surface_runes||[]){
         const name=String(part||'').trim();
         if(!runeNames.has(name))continue;
@@ -114,6 +132,18 @@
           source:nodeId('rune',name),target:tid,type:'surface_component_of',
           source_field:'surface_runes',evidence:`${name} ∈ ${term}`
         });
+        const sg=runeGroup.get(name);
+        if(sg)surfaceGroups.add(sg);
+      }
+      for(const sg of surfaceGroups){
+        addEdge(edges,{source:tid,target:nodeId('group',sg),type:'surface_group',source_field:'surface_runes',evidence:`${term} 表面涉及 ${sg}組`});
+      }
+      if(surfaceGroups.size>1){
+        addEdge(edges,{source:tid,target:relationId,type:'cross_group_composition',source_field:'surface_runes',evidence:[...surfaceGroups].join(' × ')});
+      }
+
+      if(ownerGroup){
+        addEdge(edges,{source:tid,target:nodeId('group',ownerGroup),type:'resolved_group',source_field:'semantic_owner',evidence:`${term} → ${ownerGroup}組`});
       }
 
       if(owner&&runeNames.has(owner)){
@@ -133,7 +163,7 @@
     }
 
     return {
-      version:'runes-json-derived-v3',
+      version:'runes-json-derived-v4',
       api_used:false,
       default_group:DEFAULT_GROUP,
       groups:GROUPS,
@@ -147,7 +177,8 @@
         special_is_default:true,
         canonical_source:RUNES_URL,
         derived_source:DERIVED_URL,
-        derived_does_not_modify_canon:true
+        derived_does_not_modify_canon:true,
+        graph_projection:'small_primitives_expand_via_relations'
       },
       derived_count:derivedEntries.length,
       nodes:[...nodes.values()],
