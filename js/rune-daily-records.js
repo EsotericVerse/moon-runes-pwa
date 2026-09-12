@@ -5,7 +5,7 @@ const KV_API = "https://api.lo3rwang.cc/daily-runes";
 const REPO_HISTORY = "data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json";
 const CACHE_KEY = "lunarunes-physical-daily-draw-cache-v3";
 const $ = s => document.querySelector(s);
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 let currentPage = 1;
 let currentRows = [];
 

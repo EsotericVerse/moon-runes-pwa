@@ -48,13 +48,26 @@
 
   const baseName = path => String(path || "").split("/").pop() || "index.html";
 
+  const DEFAULT_HASH = Object.freeze({
+    "index.html":"#top",
+    "runes.html":"#reference",
+    "lots.html":"#draw",
+    "game.html":"#main",
+    "context.html":"#graph",
+    "evolution.html":"#overview",
+    "statics.html":"#main",
+    "governance.html":"#principles",
+    "search.html":"#main",
+    "lo3rwang.html":"#author-intro"
+  });
+
   const NAV1 = Object.freeze([
-    {id:"runes",label:"月之符文",href:"lots.html"},
-    {id:"game",label:"遊戲",href:"game.html"},
-    {id:"context",label:"脈絡",href:"context.html"},
-    {id:"governance",label:"治理",href:"governance.html"},
-    {id:"statics",label:"統計",href:"statics.html"},
-    {id:"evolution",label:"推演",href:"evolution.html"}
+    {id:"runes",label:"月之符文",href:"lots.html#draw"},
+    {id:"game",label:"遊戲",href:"game.html#main"},
+    {id:"context",label:"脈絡",href:"context.html#graph"},
+    {id:"governance",label:"治理",href:"governance.html#principles"},
+    {id:"statics",label:"統計",href:"statics.html#main"},
+    {id:"evolution",label:"推演",href:"evolution.html#overview"}
   ]);
 
   const PAGE_GROUP = Object.freeze({
@@ -70,15 +83,6 @@
     "lo3rwang.html":"author"
   });
 
-  const DEFAULT_HASH = Object.freeze({
-    "index.html":"#top",
-    "runes.html":"#reference",
-    "lots.html":"#draw",
-    "statics.html":"#ranking",
-    "governance.html":"#principles",
-    "lo3rwang.html":"#author-intro"
-  });
-
   const AUTHOR_SECTIONS = Object.freeze([
     {label:"介紹",match:"他主要在做什麼",id:"author-intro"},
     {label:"主要身份",match:"主要身份",id:"author-identity"},
@@ -89,15 +93,28 @@
 
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 
+  function currentRouteKey(){
+    const hash=location.hash||DEFAULT_HASH[fileName()]||"#main";
+    return `${location.pathname}${location.search}${hash}`;
+  }
+
+  function targetRouteKey(href){
+    const url=new URL(href,location.href);
+    const page=baseName(url.pathname);
+    if(!url.hash) url.hash=DEFAULT_HASH[page]||"#main";
+    return `${url.pathname}${url.search}${url.hash}`;
+  }
+
   function renderNav1(){
     const current=PAGE_GROUP[fileName()]||"";
+    const route=currentRouteKey();
     document.querySelectorAll("[data-loc-nav]").forEach(node=>{
-      const links=NAV1.map(item=>item.id===current
+      const links=NAV1.map(item=>item.id===current && targetRouteKey(item.href)===route
         ? `<span class="loc-global-link loc-global-current" aria-current="page">${esc(item.label)}</span>`
         : `<a class="loc-global-link" href="${esc(item.href)}">${esc(item.label)}</a>`
       ).join("");
-      const search=`<form class="loc-global-search" action="search.html" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" /><button class="loc-global-search-submit" type="submit">搜尋</button></form>`;
-      const home=current==="home"?"":"<a class=\"loc-global-home\" href=\"index.html\">回月典首頁</a>";
+      const search=`<form class="loc-global-search" action="search.html#main" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" /><button class="loc-global-search-submit" type="submit">搜尋</button></form>`;
+      const home=current==="home"?"":"<a class=\"loc-global-home\" href=\"index.html#top\">回月典首頁</a>";
       node.innerHTML=`<div class="loc-global-links">${links}</div>${search}${themeControlHtml()}${home}`;
     });
   }
@@ -163,6 +180,68 @@
     return `#${section.id}`;
   }
 
+  function ensureAnchor(id,target){
+    if(!id || document.getElementById(id) || !target) return;
+    const anchor=document.createElement("span");
+    anchor.id=id;
+    anchor.className="loc-anchor-target";
+    anchor.setAttribute("aria-hidden","true");
+    target.prepend(anchor);
+  }
+
+  function ensurePageAnchors(){
+    const file=fileName();
+    if(file==="lots.html"){
+      ensureAnchor("draw",document.getElementById("drawView"));
+      ensureAnchor("library",document.getElementById("libraryView"));
+    }else if(file==="game.html"){
+      ensureAnchor("main",document.querySelector("main"));
+    }else if(file==="context.html"){
+      ["graph","nodes","relations","scenario"].forEach(key=>ensureAnchor(key,document.querySelector(`[data-context-view="${key}"]`)));
+    }else if(file==="evolution.html"){
+      ensureAnchor("overview",document.getElementById("overviewView"));
+      ensureAnchor("timeline",document.getElementById("timelineView"));
+      ensureAnchor("trend",document.getElementById("trendView"));
+      ensureAnchor("trajectory",document.getElementById("trajectoryView"));
+    }else if(file==="statics.html"){
+      ensureAnchor("main",document.querySelector("[data-statics-overview],main"));
+    }else if(file==="search.html"){
+      ensureAnchor("main",document.querySelector("main,.page"));
+    }else{
+      const defaultHash=DEFAULT_HASH[file];
+      if(defaultHash && !document.getElementById(defaultHash.slice(1))) ensureAnchor(defaultHash.slice(1),document.querySelector("main,.page"));
+    }
+  }
+
+  function normalizeInternalPageLinks(root=document){
+    root.querySelectorAll?.('a[href]').forEach(a=>{
+      const raw=a.getAttribute('href');
+      if(!raw || raw.startsWith('#') || /^(?:mailto:|tel:|javascript:)/i.test(raw)) return;
+      let url;
+      try{ url=new URL(raw,location.href); }catch{return;}
+      if(url.origin!==location.origin || !/\.html$/i.test(url.pathname) || url.hash) return;
+      const page=baseName(url.pathname);
+      a.setAttribute('href',`${raw}${DEFAULT_HASH[page]||'#main'}`);
+    });
+  }
+
+  function anchorOffset(){
+    const global=document.querySelector('.loc-global-shell')?.getBoundingClientRect().height||0;
+    const tiers=document.querySelector('.loc-nav-tiers')?.getBoundingClientRect().height||0;
+    return global+tiers+16;
+  }
+
+  function alignCurrentHash(){
+    if(!location.hash) return;
+    const id=decodeURIComponent(location.hash.slice(1));
+    const target=document.getElementById(id);
+    if(!target) return;
+    requestAnimationFrame(()=>{
+      const top=Math.max(0,window.scrollY+target.getBoundingClientRect().top-anchorOffset());
+      window.scrollTo({top,behavior:'auto'});
+    });
+  }
+
   function getTierHost(){
     let host=document.querySelector(".loc-nav-tiers");
     if(host) return host;
@@ -173,7 +252,6 @@
     shell.after(host);
     return host;
   }
-
 
   function buildIndex(){
     const top=document.getElementById("top")||document.querySelector("main,.loc-page");
@@ -249,6 +327,7 @@
       button("軌跡 Trajectory",{"data-view":"trajectory"})
     ],"推演功能"));
     else if(file==="statics.html") host.appendChild(tier([
+      link("總覽","statics.html#main"),
       link("排行榜","statics.html#ranking"),
       link("符文統計","statics.html#runes"),
       link("每日符文","statics.html#daily"),
@@ -307,7 +386,7 @@
       return;
     }
 
-    const wantedHash=location.hash||DEFAULT_HASH[file]||"";
+    const wantedHash=location.hash||DEFAULT_HASH[file]||"#main";
     nav.querySelectorAll("a.loc-nav-tier-link").forEach(a=>{
       const href=a.dataset.originalHref||a.getAttribute("href");
       if(!href) return;
@@ -352,13 +431,20 @@
   applyTheme();
   window.setInterval(()=>{ if(getThemeMode()==="auto") applyTheme("auto"); },60000);
   window.addEventListener("storage",event=>{ if(event.key===THEME_STORAGE_KEY) applyTheme(); });
-  window.addEventListener("hashchange",syncCurrent);
+  window.addEventListener("hashchange",()=>{
+    syncCurrent();
+    alignCurrentHash();
+    renderNav1();
+  });
   window.addEventListener("DOMContentLoaded",()=>{
+    ensurePageAnchors();
     renderNav1();
     syncThemeControl();
     cleanupContextGameEmbed();
     buildTiers();
+    normalizeInternalPageLinks();
     syncCurrent();
     loadEnhancements();
+    alignCurrentHash();
   });
 })();

@@ -7,6 +7,8 @@
   const DERIVED_URL='data/json/registries/LUNARUNE_DERIVED_LEXICON.json';
   const EVOLUTION_URL='data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json';
   const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
+  const KEYWORD_PAGE_SIZE=8;
+  let keywordPage=1;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const split=v=>String(v||'').split(/[、,，;；/]/).map(s=>s.trim()).filter(Boolean);
   const parseOwnership=v=>String(v||'').split(/[、,，;；]/).map(s=>s.trim()).filter(Boolean).filter(s=>/^.+?(屬|歸).+?$/.test(s));
@@ -104,15 +106,48 @@
     host.innerHTML=out.join('')||'<div class="empty">尚無可形成的符文演化軌跡。</div>';
   }
 
-  async function renderKeywordRanking(host,limit=50){
+  function pageButtons(current,total){
+    if(total<=1)return '';
+    const buttons=[];
+    for(let i=1;i<=total;i++) buttons.push(`<button class="daily-page-btn ${i===current?'active':''}" type="button" data-rune-keyword-page="${i}" ${i===current?'aria-current="true"':''}>${i}</button>`);
+    return `<div><button class="daily-page-btn" type="button" data-rune-keyword-page="${Math.max(1,current-1)}" ${current===1?'disabled':''}>上一頁</button>${buttons.join('')}<button class="daily-page-btn" type="button" data-rune-keyword-page="${Math.min(total,current+1)}" ${current===total?'disabled':''}>下一頁</button></div>`;
+  }
+
+  async function renderKeywordRanking(host,limit=50,page=keywordPage){
     if(!host)return;
     const d=await load();
-    const rows=d.ranking.slice(0,limit);
-    const derived=d.derivedEntries.map(x=>{
+    const ranked=d.ranking.slice(0,limit).map((row,i)=>({kind:'rank',row,rank:i+1}));
+    const derived=d.derivedEntries.map(row=>({kind:'derived',row}));
+    const items=[...ranked,...derived];
+    const totalPages=Math.max(1,Math.ceil(items.length/KEYWORD_PAGE_SIZE));
+    keywordPage=Math.min(Math.max(1,Number(page)||1),totalPages);
+    const start=(keywordPage-1)*KEYWORD_PAGE_SIZE;
+    const pageItems=items.slice(start,start+KEYWORD_PAGE_SIZE);
+    const rows=pageItems.map(item=>{
+      if(item.kind==='rank'){
+        const row=item.row;
+        return `<div class="ranking-row"><span>${item.rank}</span><strong>${esc(row.term)}</strong><em>${row.count} 關聯 · ${esc(row.runes.join('／'))}</em></div>`;
+      }
+      const x=item.row;
       const target=x.resolved_rune?` → ${x.resolved_rune}`:x.status==='ambiguous'?' → 歧義':' → 特殊';
       return `<div class="ranking-row"><span>↳</span><strong>${esc(x.term)}</strong><em>${esc(x.relation||'derived')}${esc(target)}</em></div>`;
     }).join('');
-    host.innerHTML=`<div class="ranking-list">${rows.map((row,i)=>`<div class="ranking-row"><span>${i+1}</span><strong>${esc(row.term)}</strong><em>${row.count} 關聯 · ${esc(row.runes.join('／'))}</em></div>`).join('')}${derived?`<div class="ranking-row"><span>—</span><strong>主體性衍生詞</strong><em>${d.derivedEntries.length} 筆</em></div>${derived}`:''}</div><p class="source-note">No API · 正式關鍵詞排名與高價值衍生詞分開呈現；衍生詞不回寫 Canon 關鍵詞。</p>`;
+    const to=Math.min(items.length,start+KEYWORD_PAGE_SIZE);
+    host.innerHTML=`<div class="ranking-list">${rows||'<div class="empty">尚無符文統計資料。</div>'}</div><div class="daily-history-pagination"><div class="daily-history-page-info">第 ${items.length?start+1:0}–${to} 筆，共 ${items.length} 筆 · 第 ${keywordPage} / ${totalPages} 頁</div>${pageButtons(keywordPage,totalPages)}</div><p class="source-note">No API · 正式關鍵詞排名與高價值衍生詞分開呈現；衍生詞不回寫 Canon 關鍵詞。</p>`;
+  }
+
+  function bindKeywordPagination(){
+    if(window.__LOC_RUNE_KEYWORD_PAGING_BOUND__)return;
+    window.__LOC_RUNE_KEYWORD_PAGING_BOUND__=true;
+    document.addEventListener('click',event=>{
+      const btn=event.target.closest('[data-rune-keyword-page]');
+      if(!btn||btn.disabled)return;
+      const next=Number(btn.dataset.runeKeywordPage||1);
+      if(!Number.isFinite(next)||next<1)return;
+      keywordPage=next;
+      const host=document.getElementById('runeKeywordRanking');
+      if(host)renderKeywordRanking(host,50,keywordPage);
+    });
   }
 
   async function start(){
@@ -120,6 +155,7 @@
       ['runeEvolutionOverview',renderOverview],['runeEvolutionTimeline',renderTimeline],['runeTrendGrid',renderTrend],['runeTrajectoryList',renderTrajectory],['runeKeywordRanking',renderKeywordRanking]
     ];
     for(const [id,fn] of jobs){const el=document.getElementById(id);if(el)try{await fn(el)}catch(e){el.innerHTML=`<div class="empty">符文資料載入失敗：${esc(e.message)}</div>`;}}
+    bindKeywordPagination();
   }
 
   window.LOCRuneAnalytics={load,renderOverview,renderTimeline,renderTrend,renderTrajectory,renderKeywordRanking,start};

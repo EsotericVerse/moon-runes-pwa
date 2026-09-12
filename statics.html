@@ -5,15 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07182d">
 <title>統計｜LOC 月典</title>
-<meta name="description" content="LOC 統計：排行榜、符文統計、來源管理與匯入入口。">
+<meta name="description" content="LOC 統計：排行榜、符文統計、來源管理、每日符文與匯入入口。">
 <link rel="canonical" href="https://loc.lo3rwang.cc/statics.html">
 <link rel="stylesheet" href="css/style.css">
-
 </head>
 <body class="loc-responsive-page loc-page-statics">
 <div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="statics" aria-label="全站導覽"></nav></div>
 <main class="page">
-<header class="hero"><h1>統計</h1><p>把排行榜、符文統計與資料來源管理集中到同一頁；匯入功能目前保留位置，暫不開放。</p></header>
+<header class="hero" data-statics-overview><h1>統計</h1><p>把排行榜、符文統計、來源管理、每日符文與匯入功能集中在同一個統計入口；各功能以獨立 hash 視圖切換。</p></header>
 <section id="ranking"><h2>排行榜</h2><div class="card"><p>跨時期關鍵字排行榜集中於此；可切換文字／Threads 與音樂／LOC3。</p><div id="rankingDashboard" class="stats-dashboard">載入排行榜…</div></div><div class="card" style="margin-top:16px"><h3>符文關鍵詞排行榜 · No API</h3><p>正式排名直接統計 runes.json 的正向／反向關鍵詞；下方另列主體性衍生詞，不重掃文章，也不把衍生詞寫回 Canon。</p><div id="runeKeywordRanking" class="stats-dashboard">載入符文關鍵詞排行榜…</div></div></section>
 <section id="runes"><h2>符文統計</h2><div class="card"><p>顯示月之符文群組與可抽符文的結構統計。</p><div id="runesDashboard" class="stats-dashboard">載入符文統計…</div></div></section>
 <section id="sources"><h2>來源管理</h2><div class="card"><p>集中檢視搜尋資料來源、可搜尋筆數、文字量、時間範圍與目前資料狀態。</p><div id="sourcesDashboard" class="stats-dashboard">載入來源資料…</div></div></section>
@@ -22,7 +21,7 @@
 </main>
 <script src="js/loc-nav.js" defer></script>
 <script src="js/rune-analytics.js" defer></script>
-<script src="js/statics-dashboard.js" defer></script>
-<script type="module" src="js/rune-daily-records.js?v=20260913-1"></script>
+<script src="js/statics-dashboard.js?v=20260912-focus1" defer></script>
+<script type="module" src="js/rune-daily-records.js?v=20260912-daily-page2"></script>
 </body>
 </html>
