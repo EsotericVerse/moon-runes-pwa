@@ -3,7 +3,7 @@ const DAILY_PREFIX = 'loc:daily-rune:';
 const DAILY_INDEX_KEY = 'loc:daily-rune:index';
 const ADMIN_COOKIE = 'loc_admin';
 const ADMIN_TTL = 60 * 60 * 8;
-const BUILD = '2026-09-12-admin-v2';
+const BUILD = '2026-09-12-admin-v3';
 
 const json = (data, init = {}) => new Response(JSON.stringify(data), {
   ...init,
@@ -135,7 +135,7 @@ async function handleAdmin(request, env) {
       headers: {
         'content-type': 'text/html; charset=utf-8',
         'cache-control': 'no-store',
-        'set-cookie': `${ADMIN_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/api/loc-state; Max-Age=0`
+        'set-cookie': `${ADMIN_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`
       }
     });
   }
@@ -153,7 +153,7 @@ async function handleAdmin(request, env) {
     headers: {
       'content-type': 'text/html; charset=utf-8',
       'cache-control': 'no-store',
-      'set-cookie': `${ADMIN_COOKIE}=${session}; HttpOnly; Secure; SameSite=Strict; Path=/api/loc-state; Max-Age=${ADMIN_TTL}`
+      'set-cookie': `${ADMIN_COOKIE}=${session}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${ADMIN_TTL}`
     }
   });
 }
@@ -222,22 +222,30 @@ async function saveDaily(env, raw) {
   return merged.find(item => dailyIdentity(item) === dailyIdentity(row)) || row;
 }
 
+function routePath(pathname) {
+  const legacyPrefix = '/api/loc-state';
+  if (pathname === legacyPrefix || pathname === `${legacyPrefix}/`) return '/';
+  if (pathname.startsWith(`${legacyPrefix}/`)) return pathname.slice(legacyPrefix.length) || '/';
+  return pathname;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const path = routePath(url.pathname);
     const cors = corsHeaders(request, env);
 
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     if (!env.LOC_KV) return json({ ok: false, error: 'LOC_KV binding missing', build: BUILD }, { status: 503, headers: cors });
 
     try {
-      if (url.pathname === '/api/loc-state/admin' || url.pathname === '/api/loc-state/admin/') return handleAdmin(request, env);
+      if (path === '/admin' || path === '/admin/') return handleAdmin(request, env);
 
-      if (url.pathname === '/api/loc-state/health') {
+      if (path === '/' || path === '/health') {
         return json({ ok: true, service: 'loc-state', kv: true, build: BUILD }, { headers: cors });
       }
 
-      if (url.pathname === '/api/loc-state/eras') {
+      if (path === '/eras') {
         if (request.method === 'GET') {
           const data = await readEras(env);
           return json({ ok: true, build: BUILD, ...data }, { headers: cors });
@@ -263,7 +271,7 @@ export default {
         }
       }
 
-      if (url.pathname === '/api/loc-state/daily-runes') {
+      if (path === '/daily-runes') {
         if (request.method === 'GET') {
           const limit = Math.max(1, Math.min(1000, Number(url.searchParams.get('limit') || 400)));
           return json({ ok: true, build: BUILD, daily_draws: await listDaily(env, limit) }, { headers: cors });
