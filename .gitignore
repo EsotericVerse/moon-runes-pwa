@@ -4,3 +4,6 @@ __pycache__/
 
 # Private runtime corpora (never commit personal archives)
 data/private/
+
+# Local Cloudflare deployment config. Keep namespace ids / local deployment settings out of git.
+cloudflare/wrangler.toml
