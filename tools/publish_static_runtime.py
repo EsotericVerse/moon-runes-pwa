@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Publish current LOC JSON authorities to compact static browser JS.
+"""Publish editable LOC authorities to compact static browser JS.
 
 RC3 runtime rule:
-    JSON = editable/versioned authority
-    JS   = browser runtime
+    Editable source data -> static JS runtime projection.
+    Governance-locked fixed data (for example LunaRunes core) lives directly in JS
+    and is intentionally outside this publisher.
 
-The publisher intentionally performs no network I/O and has no third-party
-requirements. Historical snapshots remain historical inputs; current runtime
-output is normalized against current authorities before publishing.
+The publisher performs no network I/O and has no third-party requirements.
+Historical snapshots remain historical inputs; current runtime output is normalized
+against current editable authorities before publishing.
 """
 from __future__ import annotations
 
@@ -141,7 +142,6 @@ def dump_compact_period_analysis() -> None:
 
 def main() -> int:
     dump_global("data/json/registries/LOC_ERA_REGISTRY.json", "data/js/loc-era-data.js", "LOC_ERA_DATA")
-    dump_global("data/json/core/runes66groups.json", "data/js/lunarune-groups-data.js", "LUNARUNE_GROUPS_DATA")
     dump_combined(
         {"history": "data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json", "analysis": "data/json/registries/LUNARUNE_EVOLUTION_ANALYSIS.json"},
         "data/js/lunarune-evolution-data.js", "LUNARUNE_EVOLUTION_DATA",
