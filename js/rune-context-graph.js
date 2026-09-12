@@ -117,7 +117,8 @@
   async function init(){
     const root=document.querySelector('#runeSemanticGraph');if(!root)return;
     try{
-      if(!window.LOCRuneAnalytics?.load)throw new Error('shared rune analytics runtime unavailable');
+      if(!window.LOCRuneAnalytics?.load) await import('./rune-analytics.js');
+      if(!window.LOCRuneAnalytics?.load) throw new Error('shared rune analytics runtime unavailable');
       const data=await window.LOCRuneAnalytics.load();
       const graph=buildGraph(data.rows,data.derivedEntries);window.LunaRuneSemanticGraph=graph;mount(graph);
     }catch(err){const status=document.querySelector('#runeGraphStatus');if(status)status.textContent='符文 Graph 載入失敗：'+err.message;}
