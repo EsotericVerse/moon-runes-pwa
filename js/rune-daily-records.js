@@ -1,8 +1,10 @@
 import { rune } from "./runes66.js";
 
-const API = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
+const LEGACY_API = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec";
+const KV_API = "/api/loc-state/daily-runes";
 const REPO_HISTORY = "data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json";
 const CACHE_KEY = "lunarunes-physical-daily-draw-cache-v3";
+const KV_TOKEN_KEY = "loc-kv-write-token";
 const $ = s => document.querySelector(s);
 const PAGE_SIZE = 20;
 let currentPage = 1;
@@ -55,6 +57,14 @@ function writeCache(rows) {
   try { localStorage.setItem(CACHE_KEY,JSON.stringify(rows)); } catch (_) {}
 }
 
+function readWriteToken(){
+  try{return sessionStorage.getItem(KV_TOKEN_KEY)||""}catch(_){return ""}
+}
+
+function setWriteToken(token){
+  try{token?sessionStorage.setItem(KV_TOKEN_KEY,String(token)):sessionStorage.removeItem(KV_TOKEN_KEY)}catch(_){}
+}
+
 async function loadRepoHistory(){
   try{
     const res=await fetch(REPO_HISTORY,{cache:"default"});
@@ -64,6 +74,45 @@ async function loadRepoHistory(){
   }catch(_){
     return [];
   }
+}
+
+async function loadKVHistory(){
+  try{
+    const res=await fetch(`${KV_API}?limit=1000`,{cache:"no-store"});
+    if(!res.ok) return [];
+    const data=await res.json();
+    return data?.ok&&Array.isArray(data?.daily_draws)?data.daily_draws.map(normalize):[];
+  }catch(_){
+    return [];
+  }
+}
+
+async function saveKV(dailyDraw){
+  const token=readWriteToken();
+  if(!token) throw new Error("KV write token not configured");
+  const res=await fetch(KV_API,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer "+token
+    },
+    body:JSON.stringify({daily_draw:dailyDraw})
+  });
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok||data?.ok===false) throw new Error(data?.error||"KV 同步失敗");
+  return data?.daily_draw||dailyDraw;
+}
+
+async function saveLegacy(dailyDraw){
+  const res=await fetch(LEGACY_API,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify({action:"daily_draw",daily_draw:dailyDraw}),
+    redirect:"follow"
+  });
+  const data=await res.json();
+  if(!res.ok||data?.ok===false) throw new Error(data?.error||"Google Sheet 同步失敗");
+  return data;
 }
 
 function pageNumbers(current,total){
@@ -137,20 +186,24 @@ function render(rows) {
   renderPagination(currentRows.length);
 }
 
-// Daily rune reads are repo/local only. Google Sheet is not part of the public read path.
-// This keeps Lots usable even when Apps Script is unavailable or rate-limited.
+// Read order: versioned repo history + KV live records + local optimistic fallback.
+// Google Sheet is no longer part of the public read path.
 async function loadRecords() {
-  const repoRows=await loadRepoHistory();
+  const [repoRows,kvRows]=await Promise.all([loadRepoHistory(),loadKVHistory()]);
   const cached=readCache();
-  const rows=mergeRows(repoRows,cached);
+  const rows=mergeRows(repoRows,kvRows,cached);
 
   writeCache(rows);
   render(rows);
-  $("#dailyStatsStatus").textContent=repoRows.length
-    ?`已載入 Repo 每日符文歷史，共 ${rows.length} 筆。`
-    :rows.length
-      ?"Repo 歷史暫未回應；目前顯示本機已記錄資料。"
-      :"每日符文歷史暫時無法載入。";
+  if(kvRows.length){
+    $("#dailyStatsStatus").textContent=`已載入 Repo 歷史＋KV 現行紀錄，共 ${rows.length} 筆。`;
+  }else if(repoRows.length){
+    $("#dailyStatsStatus").textContent=`已載入 Repo 每日符文歷史，共 ${rows.length} 筆；KV 尚未提供新紀錄。`;
+  }else if(rows.length){
+    $("#dailyStatsStatus").textContent="遠端歷史暫未回應；目前顯示本機已記錄資料。";
+  }else{
+    $("#dailyStatsStatus").textContent="每日符文歷史暫時無法載入。";
+  }
 }
 
 function populateRunes(){
@@ -187,29 +240,32 @@ async function saveRecord(ev){
     return;
   }
 
-  // Make the newly entered record immediately available locally first.
   const optimistic=mergeRows(currentRows,[dailyDraw]);
   writeCache(optimistic);
   render(optimistic);
-  status.textContent="實體牌紀錄已先儲存在本機；正在同步來源。";
+  status.textContent="實體牌紀錄已先儲存在本機；正在同步 KV。";
 
-  // Temporary write path: keep the existing Sheet writer until KV/editor write-through is deployed.
-  // Public reads never depend on this request.
   try{
-    const res=await fetch(API,{
-      method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify({action:"daily_draw",daily_draw:dailyDraw}),
-      redirect:"follow"
-    });
-    const data=await res.json();
-    if(!res.ok||data?.ok===false) throw new Error(data?.error||"同步失敗");
-    status.textContent="實體牌紀錄已儲存；公開讀取不依賴 Google Sheet。";
+    const saved=await saveKV(dailyDraw);
+    const merged=mergeRows(currentRows,[saved]);
+    writeCache(merged);
+    render(merged);
+    status.textContent="實體牌紀錄已儲存至 KV。";
     $("#dailyRecordNote").value="";
-  }catch(err){
-    status.textContent="已保留本機紀錄；遠端同步失敗："+err.message;
+    return;
+  }catch(kvErr){
+    try{
+      await saveLegacy(dailyDraw);
+      status.textContent="KV 尚未啟用寫入；已暫時同步既有 Google Sheet。";
+      $("#dailyRecordNote").value="";
+      return;
+    }catch(sheetErr){
+      status.textContent="已保留本機紀錄；KV／舊同步來源皆失敗："+(kvErr?.message||"")+" / "+(sheetErr?.message||"");
+    }
   }
 }
+
+window.LOC8DailyRuneKV={KV_API,setWriteToken,loadRecords};
 
 window.addEventListener("DOMContentLoaded",()=>{
   const form=$("#dailyRecordForm");
