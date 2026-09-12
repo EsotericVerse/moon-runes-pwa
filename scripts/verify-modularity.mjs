@@ -68,6 +68,20 @@ function verifyRuntimeRefs(scanRoot) {
 verifyRuntimeRefs('app');
 verifyRuntimeRefs('lib');
 
+// Performance budgets: no eager heavy-data loading on feature entry and bounded global fan-out.
+const dataRuntime = readFileSync(resolve(root, 'app/loc/data.js'), 'utf8');
+if (!/DEFAULT_GLOBAL_CONCURRENCY\s*=\s*2\b/.test(dataRuntime)) failures.push('app/loc/data.js: global JSON concurrency budget must remain 2');
+
+const searchView = readFileSync(resolve(root, 'app/loc/views/SearchView.jsx'), 'utf8');
+if (/useEffect\s*\([^)]*fetchLocJson\s*\(\s*LOC_DATA\.(?:TEXT_CORPUS_MANIFEST|MUSIC_SEARCH_MANIFEST)/s.test(searchView)) failures.push('SearchView: manifests must not load eagerly on mount');
+if (!/fetchLocJsonBatch\(requests,\{concurrency:2\}\)/.test(searchView)) failures.push('SearchView: search shard concurrency must remain 2');
+
+const contextView = readFileSync(resolve(root, 'app/loc/views/ContextView.jsx'), 'utf8');
+if (/tab===['"]overview['"][\s\S]{0,180}fetchLocJson/.test(contextView)) failures.push('ContextView: overview must remain zero-data');
+
+const evolutionView = readFileSync(resolve(root, 'app/loc/views/EvolutionView.jsx'), 'utf8');
+if (/tab===['"]overview['"][\s\S]{0,240}LUNARUNE_EVOLUTION_HISTORY/.test(evolutionView)) failures.push('EvolutionView: overview must not preload rune evolution history');
+
 // Legacy HTML remains transitional. Report presentation debt until those files become redirects/deleted.
 for (const name of readdirSync(root).filter(name => name.endsWith('.html'))) {
   const path = resolve(root, name);
@@ -82,4 +96,4 @@ if (failures.length) {
   console.error('[modularity] violations:\n' + failures.join('\n'));
   process.exit(1);
 }
-console.log('[modularity] Next presentation/data modularity verified');
+console.log('[modularity] Next presentation/data/performance budgets verified');
