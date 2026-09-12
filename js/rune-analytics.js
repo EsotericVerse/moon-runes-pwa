@@ -7,7 +7,6 @@
   const DERIVED_URL='data/json/registries/LUNARUNE_DERIVED_LEXICON.json';
   const EVOLUTION_URL='data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json';
   const ANALYSIS_URL='data/json/registries/LUNARUNE_EVOLUTION_ANALYSIS.json';
-  const EVOLUTION_KV_URL='https://api.lo3rwang.cc/evolution/runes';
   const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
   const KEYWORD_PAGE_SIZE=8;
   let keywordPage=1;
@@ -16,26 +15,23 @@
   const parseOwnership=v=>String(v||'').split(/[、,，;；]/).map(s=>s.trim()).filter(Boolean).filter(s=>/^.+?(屬|歸).+?$/.test(s));
   const byNumber=(a,b)=>Number(a?.編號||0)-Number(b?.編號||0);
 
-  async function optionalJson(url,fallback){
-    try{const r=await fetch(url,{cache:'no-store'});return r.ok?await r.json():fallback}catch{return fallback}
+  async function json(url,fallback){
+    try{const r=await fetch(url);return r.ok?await r.json():fallback}catch{return fallback}
   }
 
   async function loadEvolution(){
-    const kv=await optionalJson(EVOLUTION_KV_URL,null);
-    const kvData=kv?.snapshot?.data;
-    if(kv?.ok&&kv?.seeded&&kvData&&typeof kvData==='object') return {...kvData,__source:'kv'};
-    const [local,analysis]=await Promise.all([
-      optionalJson(EVOLUTION_URL,{system_stages:[],governance_evolution:[],semantic_history_cases:[]}),
-      optionalJson(ANALYSIS_URL,null)
+    const [history,analysis]=await Promise.all([
+      json(EVOLUTION_URL,{system_stages:[],governance_evolution:[],semantic_history_cases:[]}),
+      json(ANALYSIS_URL,null)
     ]);
-    return {...local,...(analysis?{analysis}:{}),__source:'registry'};
+    return {...history,...(analysis?{analysis}:{}),__source:'json'};
   }
 
   async function load(){
     if(window.__LOC_RUNE_ANALYTICS_DATA__) return window.__LOC_RUNE_ANALYTICS_DATA__;
     const [r,derived,evolution]=await Promise.all([
-      fetch(RUNES_URL,{cache:'no-store'}),
-      optionalJson(DERIVED_URL,{entries:[]}),
+      fetch(RUNES_URL),
+      json(DERIVED_URL,{entries:[]}),
       loadEvolution()
     ]);
     if(!r.ok) throw new Error(`runes.json HTTP ${r.status}`);
@@ -80,11 +76,10 @@
     const scale=a?.scale_analysis||{};
     const semantic=a?.semantic_resolution_analysis||{};
     const governance=a?.governance_analysis||{};
-    const source=d.evolution?.__source==='kv'?'KV snapshot':'靜態治理 registry fallback';
     const analysisMetrics=(scale.absolute_growth!==undefined||semantic.case_count!==undefined||governance.governance_step_count!==undefined)
       ?`<div class="stats-metrics">${metric('Base14→66',`+${scale.absolute_growth??''}`,'符文淨增量')}${metric('整體擴張',scale.growth_multiple?`${Number(scale.growth_multiple).toFixed(2)}×`:'')}${metric('語意演化案例',semantic.case_count??'')}${metric('治理演化',governance.governance_step_count??'')}</div>`:'';
     const dominant=semantic.dominant_signal?`<p><strong>演化主訊號：</strong>${esc(semantic.dominant_signal)}</p>`:'';
-    host.innerHTML=`<div class="stats-metrics">${metric('符文數',d.rows.length)}${metric('唯一群組',[...d.groups.values()].filter(x=>x.length).length)}${metric('正向關鍵詞',pos)}${metric('反向關鍵詞',neg)}${metric('Ownership 規則',d.ownership.length)}${metric('高價值衍生詞',d.derivedEntries.length)}${metric('主體性轉移',d.shifts.length)}${metric('對等歧義',d.ambiguous.length)}</div>${analysisMetrics}${stageLine?`<p><strong>系統演化：</strong>${esc(stageLine)}</p>`:''}${dominant}<p class="source-note">No API · Base66 與衍生詞讀取正式治理資料；符文演化優先讀取 ${esc(source)}。</p>`;
+    host.innerHTML=`<div class="stats-metrics">${metric('符文數',d.rows.length)}${metric('唯一群組',[...d.groups.values()].filter(x=>x.length).length)}${metric('正向關鍵詞',pos)}${metric('反向關鍵詞',neg)}${metric('Ownership 規則',d.ownership.length)}${metric('高價值衍生詞',d.derivedEntries.length)}${metric('主體性轉移',d.shifts.length)}${metric('對等歧義',d.ambiguous.length)}</div>${analysisMetrics}${stageLine?`<p><strong>系統演化：</strong>${esc(stageLine)}</p>`:''}${dominant}<p class="source-note">No API · 直接讀取 repo JSON 正式資料。</p>`;
   }
 
   async function renderTimeline(host){
