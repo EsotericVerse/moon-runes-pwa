@@ -91,11 +91,13 @@
     for(const entry of derivedEntries){
       const term=String(entry?.term||'').trim();
       if(!term)continue;
-      const tid=nodeId('derived',term);
+      const canonicalTid=nodeId('term',term);
+      const tid=nodes.has(canonicalTid)?canonicalTid:nodeId('derived',term);
       const owner=String(entry?.resolved_rune||'').trim();
       const ownerGroup=owner?runeGroup.get(owner):null;
+      const currentType=nodes.get(tid)?.type||'derived';
       addNode(nodes,{
-        id:tid,label:term,type:'derived',group:ownerGroup||DEFAULT_GROUP,
+        id:tid,label:term,type:currentType,group:ownerGroup||DEFAULT_GROUP,
         term_status:String(entry?.status||'special'),
         relation:String(entry?.relation||'derived'),
         lexical_class:String(entry?.lexical_class||''),
@@ -177,7 +179,7 @@
   function resolveTerm(graph,query){
     const term=String(query||'').trim();
     if(!term)return null;
-    const derived=graph.nodes.find(n=>n.type==='derived'&&n.label===term);
+    const derived=graph.nodes.find(n=>(n.type==='derived'||n.type==='term')&&n.label===term&&n.relation);
     if(derived){
       return {
         term,status:derived.term_status||'special',relation:derived.relation||'derived',
