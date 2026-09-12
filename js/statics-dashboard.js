@@ -3,9 +3,11 @@
   window.__LOC_STATICS_DASHBOARD__ = true;
 
   const GENERAL_PAGE_SIZE = 10;
+  const RUNE_PAGE_SIZE = 8;
   const state = {
     ranking: { source: 'threads', page: 1, rows: [] },
-    sources: { page: 1, rows: [] }
+    sources: { page: 1, rows: [] },
+    runes: { page: 1, rows: [], drawable: 0 }
   };
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -154,14 +156,25 @@
     }catch(error){host.innerHTML=`<p class="stats-error">排行榜載入失敗：${esc(error.message)}</p>`;}
   }
 
+  function renderRunesPage(host){
+    const rows=state.runes.rows;
+    const totalPages=Math.max(1,Math.ceil(rows.length/RUNE_PAGE_SIZE));
+    state.runes.page=Math.min(Math.max(1,state.runes.page),totalPages);
+    const start=(state.runes.page-1)*RUNE_PAGE_SIZE;
+    const pageRows=rows.slice(start,start+RUNE_PAGE_SIZE);
+    host.innerHTML = `<div class="stats-metrics">${card('可抽符文',state.runes.drawable)}${card('基本八組',8)}${card('特殊符文',2,'玄／命')}${card('治理基準',1,'德，不抽')}</div><div class="rune-group-stats">${pageRows.map(g=>`<div><strong>${esc(g.group_zh)}</strong><span>${(g.runes||[]).filter(r=>Number(r.id)>0).length} 枚</span><small>${esc(g.trait||g.description||'')}</small></div>`).join('')}</div>${paginationHtml('runes',state.runes.page,rows.length,RUNE_PAGE_SIZE)}`;
+  }
+
   async function renderRunes(){
     const host = document.getElementById('runesDashboard');
     if (!host) return;
     try{
       const data = await getJSON('data/json/core/runes66groups.json');
       const groups = data.groups || [];
-      const drawable = groups.reduce((sum,g)=>sum+(g.runes||[]).filter(r=>Number(r.id)>0).length,0);
-      host.innerHTML = `<div class="stats-metrics">${card('可抽符文',drawable)}${card('基本八組',8)}${card('特殊符文',2,'玄／命')}${card('治理基準',1,'德，不抽')}</div><div class="rune-group-stats">${groups.map(g=>`<div><strong>${esc(g.group_zh)}</strong><span>${(g.runes||[]).filter(r=>Number(r.id)>0).length} 枚</span><small>${esc(g.trait||g.description||'')}</small></div>`).join('')}</div>`;
+      state.runes.rows=groups;
+      state.runes.page=1;
+      state.runes.drawable=groups.reduce((sum,g)=>sum+(g.runes||[]).filter(r=>Number(r.id)>0).length,0);
+      renderRunesPage(host);
     }catch(error){host.innerHTML=`<p class="stats-error">符文統計載入失敗：${esc(error.message)}</p>`;}
   }
 
@@ -182,6 +195,10 @@
         state.sources.page=page;
         const host=document.getElementById('sourcesDashboard');
         if(host)renderSourcesPage(host,host.dataset.metrics||'');
+      }else if(kind==='runes'){
+        state.runes.page=page;
+        const host=document.getElementById('runesDashboard');
+        if(host)renderRunesPage(host);
       }
     });
   }
