@@ -8,6 +8,7 @@ on:
       - "tools/**"
       - "data/**"
       - "docs/**"
+      - "css/**"
       - "js/**"
       - "*.html"
       - "*.htm"
@@ -23,6 +24,7 @@ on:
       - "tools/**"
       - "data/**"
       - "docs/**"
+      - "css/**"
       - "js/**"
       - "*.html"
       - "*.htm"
@@ -42,5 +44,7 @@ jobs:
           python-version: "3.12"
       - name: Validate repository layout
         run: python card_api/scripts/validate_repo_layout.py
+      - name: Validate RC3 static runtime
+        run: python tools/check_static_runtime.py
       - name: Compile active and experimental Python
         run: python -m compileall -q card_api engine tools
