@@ -1,4 +1,4 @@
-const CACHE_NAME = "moon-runes-pwa-v220";
+const CACHE_NAME = "moon-runes-pwa-v221";
 
 const ASSETS_TO_CACHE = [
   "/",
@@ -89,6 +89,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   const isNavigation = request.mode === "navigate";
   const isHtml = url.pathname.endsWith(".html") || url.pathname.endsWith(".htm") || url.pathname === "/";
+  const isStylesheet = request.destination === "style" || url.pathname.endsWith(".css");
   const isCoreRuneData = [
     "/data/json/core/runes.json",
     "/data/json/core/runes66groups.json",
@@ -96,10 +97,10 @@ self.addEventListener("fetch", (event) => {
     "/data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json"
   ].includes(url.pathname);
 
-  // HTML/navigation and current rune semantics remain freshness-first. Use
-  // HTTP revalidation instead of no-store so unchanged files can return 304
-  // rather than being transferred again in full.
-  if (isNavigation || isHtml || isCoreRuneData) {
+  // Navigation, HTML, stylesheets, and current rune semantics are freshness-first.
+  // Stylesheets must not be cache-first because new HTML paired with stale CSS
+  // causes a broken first paint that only corrects after a second reload.
+  if (isNavigation || isHtml || isStylesheet || isCoreRuneData) {
     event.respondWith(
       fetch(request, {cache:"no-cache"})
         .then((response) => {
