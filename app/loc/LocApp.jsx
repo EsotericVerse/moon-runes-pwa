@@ -23,7 +23,6 @@ const VIEWS = {
 };
 
 const NAV = [
-  ['home', '月典'],
   ['game', '遊戲'],
   ['context', '脈絡'],
   ['search', '搜尋'],
@@ -55,10 +54,11 @@ export default function LocApp() {
       <header className="loc-next-header">
         <a className="loc-next-brand" href="#home">LOC 月典</a>
         <nav className="loc-next-nav" aria-label="LOC 功能導覽">
-          <a href="/runes.html">月之符文</a>
-          {NAV.slice(1).map(([id, label]) => (
+          {NAV.map(([id, label]) => (
             <a key={id} href={`#${id}`} aria-current={view === id ? 'page' : undefined}>{label}</a>
           ))}
+          <a href="https://lrunes.lo3rwang.cc/">月之符文</a>
+          <a href="https://whoami.lo3rwang.cc/">作者</a>
         </nav>
       </header>
       <main className="loc-next-main" data-loc-view={view}>
