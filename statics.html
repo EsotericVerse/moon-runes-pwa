@@ -3,25 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#07182d">
-<title>統計｜LOC 月典</title>
-<meta name="description" content="LOC 統計：排行榜、符文統計、來源管理、每日符文與匯入入口。">
-<link rel="canonical" href="https://loc.lo3rwang.cc/statics.html">
-<link rel="stylesheet" href="css/style.css">
+<meta http-equiv="refresh" content="0;url=/#statics">
+<link rel="canonical" href="https://loc.lo3rwang.cc/#statics">
+<title>統計｜LOC</title>
+<script>location.replace('/#statics');</script>
 </head>
-<body class="loc-responsive-page loc-page-statics">
-<div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="statics" aria-label="全站導覽"></nav></div>
-<main class="page">
-<header class="hero" data-statics-overview><h1>統計</h1><p>把排行榜、符文統計、來源管理、每日符文與匯入功能集中在同一個統計入口；各功能以獨立 hash 視圖切換。</p></header>
-<section id="ranking"><h2>排行榜</h2><div class="card"><p>跨時期關鍵字排行榜集中於此；可切換文字／Threads 與音樂／LOC3。</p><div id="rankingDashboard" class="stats-dashboard">載入排行榜…</div></div><div class="card" style="margin-top:16px"><h3>符文關鍵詞排行榜 · No API</h3><p>正式排名直接統計 runes.json 的正向／反向關鍵詞；下方另列主體性衍生詞，不重掃文章，也不把衍生詞寫回 Canon。</p><div id="runeKeywordRanking" class="stats-dashboard">載入符文關鍵詞排行榜…</div></div></section>
-<section id="runes"><h2>符文統計</h2><div class="card"><p>顯示月之符文群組與可抽符文的結構統計。</p><div id="runesDashboard" class="stats-dashboard">載入符文統計…</div></div></section>
-<section id="sources"><h2>來源管理</h2><div class="card"><p>集中檢視搜尋資料來源、可搜尋筆數、文字量、時間範圍與目前資料狀態。</p><div id="sourcesDashboard" class="stats-dashboard">載入來源資料…</div></div></section>
-<section id="daily"><h2>每日符文</h2><div class="card"><p>每日符文的手動紀錄與趨勢統計集中在這裡；線上即時抽牌仍由 Lots 處理。</p><div class="daily-record-grid"><form class="daily-record-form" id="dailyRecordForm"><h3>手動記錄實體牌</h3><div class="daily-form-grid"><label>日期<input id="dailyRecordDate" type="date" required></label><label>類型<select id="dailyRecordKind"><option value="daily_draw">主抽</option><option value="daily_draw_supplement">補抽</option></select></label><label>符文<select id="dailyRecordRune" required><option value="">選擇符文</option></select></label><label>方向<select id="dailyRecordDirection"><option>正位</option><option>半正位</option><option>半逆位</option><option>逆位</option></select></label><label class="full">備註<input id="dailyRecordNote" type="text" placeholder="可留空"></label></div><button class="daily-record-submit" type="submit">儲存紀錄</button><div class="daily-record-status" id="dailyRecordStatus">尚未寫入任何資料。</div></form><div class="daily-stats-panel"><h3>每日符文趨勢統計</h3><p id="dailyStatsStatus">載入已記錄的每日符文資料…</p><div class="daily-metrics"><div><small>紀錄數</small><strong id="dailyMetricCount">—</strong></div><div><small>主抽</small><strong id="dailyMetricPrimary">—</strong></div><div><small>補抽</small><strong id="dailyMetricSupplement">—</strong></div></div><div class="daily-history-list" id="dailyHistoryList"></div><div class="daily-history-pagination" id="dailyHistoryPagination" hidden><div id="dailyHistoryPageInfo"></div><div id="dailyHistoryPages"></div></div></div></div></div></section>
-<section id="import"><h2>匯入</h2><div class="card"><p>匯入網頁暫時不開放，先保留功能位置。</p></div></section>
-</main>
-<script src="js/loc-nav.js" defer></script>
-<script src="js/rune-analytics.js" defer></script>
-<script src="js/statics-dashboard.js?v=20260912-focus1" defer></script>
-<script type="module" src="js/rune-daily-records.js?v=20260912-daily-page2"></script>
-</body>
+<body><p><a href="/#statics">前往 LOC 統計</a></p></body>
 </html>
