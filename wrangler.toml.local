@@ -1,6 +1,7 @@
 name = "loc-state"
-main = "loc-state-worker.js"
+main = "cloudflare/loc-state-worker.js"
 compatibility_date = "2026-09-12"
+workers_dev = true
 
 routes = [
   { pattern = "loc.lo3rwang.cc/api/loc-state/*", zone_name = "lo3rwang.cc" }
