@@ -1,9 +1,11 @@
 const ERA_KEY = 'loc:era:registry';
 const DAILY_PREFIX = 'loc:daily-rune:';
 const DAILY_INDEX_KEY = 'loc:daily-rune:index';
+const CONTEXT_EVENTS_KEY = 'loc:context:events';
+const CONTEXT_RELATIONS_KEY = 'loc:context:relations';
 const ADMIN_COOKIE = 'loc_admin';
 const ADMIN_TTL = 60 * 60 * 8;
-const BUILD = '2026-09-12-admin-v3';
+const BUILD = '2026-09-12-kv-context-v4';
 
 const json = (data, init = {}) => new Response(JSON.stringify(data), {
   ...init,
@@ -40,21 +42,51 @@ const normalizeDaily = row => ({
   updated_at: new Date().toISOString()
 });
 
+const normalizeEvent = row => ({
+  ...row,
+  id: String(row?.id || crypto.randomUUID()),
+  date: String(row?.date || ''),
+  event_type: String(row?.event_type || 'observation'),
+  event_title: String(row?.event_title || row?.title || ''),
+  object_type: String(row?.object_type || ''),
+  object_id: String(row?.object_id || ''),
+  description: String(row?.description || ''),
+  state_before: String(row?.state_before || ''),
+  state_after: String(row?.state_after || ''),
+  era: String(row?.era || row?.period || ''),
+  status: String(row?.status || 'current'),
+  confidence: String(row?.confidence || 'recorded'),
+  updated_at: new Date().toISOString()
+});
+
+const normalizeRelation = row => ({
+  ...row,
+  id: String(row?.id || crypto.randomUUID()),
+  date: String(row?.date || ''),
+  relation_type: String(row?.relation_type || 'related_to'),
+  source_type: String(row?.source_type || ''),
+  source_id: String(row?.source_id || ''),
+  target_type: String(row?.target_type || ''),
+  target_id: String(row?.target_id || ''),
+  direction: String(row?.direction || 'forward'),
+  confidence: String(row?.confidence || 'recorded'),
+  summary: String(row?.summary || ''),
+  era: String(row?.era || row?.period || ''),
+  status: String(row?.status || 'current'),
+  evidence: String(row?.evidence || ''),
+  updated_at: new Date().toISOString()
+});
+
 function dailyIdentity(row = {}) {
-  return [
-    String(row.date || ''),
-    String(row.draw_kind || 'daily_draw'),
-    String(row.rune || ''),
-    String(row.direction || '')
-  ].join('|');
+  return [String(row.date || ''), String(row.draw_kind || 'daily_draw'), String(row.rune || ''), String(row.direction || '')].join('|');
 }
 
 function sortDaily(rows) {
-  return rows.sort((a, b) =>
-    String(b.date || '').localeCompare(String(a.date || '')) ||
-    String(b.updated_at || '').localeCompare(String(a.updated_at || '')) ||
-    String(b.id || '').localeCompare(String(a.id || ''))
-  );
+  return rows.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || String(b.updated_at || '').localeCompare(String(a.updated_at || '')) || String(b.id || '').localeCompare(String(a.id || '')));
+}
+
+function sortByDate(rows) {
+  return rows.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || String(b.updated_at || '').localeCompare(String(a.updated_at || '')) || String(b.id || '').localeCompare(String(a.id || '')));
 }
 
 function mergeDaily(...groups) {
@@ -121,41 +153,15 @@ function adminHtml(loggedIn, message = '') {
 
 async function handleAdmin(request, env) {
   const loggedIn = await authorized(request, env);
-  if (request.method === 'GET') {
-    return new Response(adminHtml(loggedIn), {
-      headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }
-    });
-  }
+  if (request.method === 'GET') return new Response(adminHtml(loggedIn), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
   if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
-
   const form = await request.formData();
   const action = String(form.get('action') || 'login');
-  if (action === 'logout') {
-    return new Response(adminHtml(false, '已登出。'), {
-      headers: {
-        'content-type': 'text/html; charset=utf-8',
-        'cache-control': 'no-store',
-        'set-cookie': `${ADMIN_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`
-      }
-    });
-  }
-
+  if (action === 'logout') return new Response(adminHtml(false, '已登出。'), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'set-cookie': `${ADMIN_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0` } });
   const token = String(form.get('token') || '');
-  if (!env.LOC_WRITE_TOKEN || token !== env.LOC_WRITE_TOKEN) {
-    return new Response(adminHtml(false, '登入失敗。'), {
-      status: 401,
-      headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }
-    });
-  }
-
+  if (!env.LOC_WRITE_TOKEN || token !== env.LOC_WRITE_TOKEN) return new Response(adminHtml(false, '登入失敗。'), { status: 401, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
   const session = await adminSessionValue(env);
-  return new Response(adminHtml(true, '登入成功。'), {
-    headers: {
-      'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'no-store',
-      'set-cookie': `${ADMIN_COOKIE}=${session}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${ADMIN_TTL}`
-    }
-  });
+  return new Response(adminHtml(true, '登入成功。'), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'set-cookie': `${ADMIN_COOKIE}=${session}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${ADMIN_TTL}` } });
 }
 
 async function readEras(env) {
@@ -165,13 +171,20 @@ async function readEras(env) {
 
 async function writeEras(env, payload) {
   const eras = (payload?.eras || []).map(normalizeEra).filter(x => x.period);
-  const body = {
-    schema_version: 'kv-1',
-    updated_at: new Date().toISOString(),
-    eras
-  };
+  const body = { schema_version: 'kv-1', updated_at: new Date().toISOString(), eras };
   await env.LOC_KV.put(ERA_KEY, JSON.stringify(body));
   return body;
+}
+
+async function readCollection(env, key, field) {
+  const data = await env.LOC_KV.get(key, 'json');
+  return Array.isArray(data?.[field]) ? data[field] : [];
+}
+
+async function writeCollection(env, key, field, rows) {
+  const body = { schema_version: 'kv-1', updated_at: new Date().toISOString(), [field]: sortByDate(rows) };
+  await env.LOC_KV.put(key, JSON.stringify(body));
+  return body[field];
 }
 
 async function readDailyIndex(env) {
@@ -180,11 +193,7 @@ async function readDailyIndex(env) {
 }
 
 async function writeDailyIndex(env, rows) {
-  const body = {
-    schema_version: 'kv-1',
-    updated_at: new Date().toISOString(),
-    daily_draws: sortDaily(rows)
-  };
+  const body = { schema_version: 'kv-1', updated_at: new Date().toISOString(), daily_draws: sortDaily(rows) };
   await env.LOC_KV.put(DAILY_INDEX_KEY, JSON.stringify(body));
   return body.daily_draws;
 }
@@ -214,12 +223,34 @@ async function listDaily(env, limit = 400) {
 async function saveDaily(env, raw) {
   const row = normalizeDaily(raw);
   if (!row.date || !row.rune) throw new Error('date and rune are required');
-
   const current = await readDailyIndex(env);
   const merged = mergeDaily(current, [row]);
   await writeDailyIndex(env, merged);
-
   return merged.find(item => dailyIdentity(item) === dailyIdentity(row)) || row;
+}
+
+async function mutateEvents(env, action, raw) {
+  const rows = await readCollection(env, CONTEXT_EVENTS_KEY, 'events');
+  const id = String(raw?.id || raw?.event?.id || '');
+  if (action === 'delete_event' || action === 'delete') return writeCollection(env, CONTEXT_EVENTS_KEY, 'events', rows.filter(x => String(x.id) !== id));
+  if (action === 'archive_event' || action === 'archive') {
+    const next = rows.map(x => String(x.id) === id ? normalizeEvent({ ...x, status: 'archived' }) : x);
+    return writeCollection(env, CONTEXT_EVENTS_KEY, 'events', next);
+  }
+  const row = normalizeEvent(raw?.event || raw);
+  const i = rows.findIndex(x => String(x.id) === row.id);
+  if (i >= 0) rows[i] = { ...rows[i], ...row }; else rows.push(row);
+  return writeCollection(env, CONTEXT_EVENTS_KEY, 'events', rows);
+}
+
+async function mutateRelations(env, action, raw) {
+  const rows = await readCollection(env, CONTEXT_RELATIONS_KEY, 'relations');
+  const id = String(raw?.id || raw?.relation?.id || '');
+  if (action === 'delete_relation' || action === 'delete') return writeCollection(env, CONTEXT_RELATIONS_KEY, 'relations', rows.filter(x => String(x.id) !== id));
+  const row = normalizeRelation(raw?.relation || raw);
+  const i = rows.findIndex(x => String(x.id) === row.id);
+  if (i >= 0) rows[i] = { ...rows[i], ...row }; else rows.push(row);
+  return writeCollection(env, CONTEXT_RELATIONS_KEY, 'relations', rows);
 }
 
 function routePath(pathname) {
@@ -234,28 +265,17 @@ export default {
     const url = new URL(request.url);
     const path = routePath(url.pathname);
     const cors = corsHeaders(request, env);
-
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     if (!env.LOC_KV) return json({ ok: false, error: 'LOC_KV binding missing', build: BUILD }, { status: 503, headers: cors });
 
     try {
       if (path === '/admin' || path === '/admin/') return handleAdmin(request, env);
-
-      if (path === '/' || path === '/health') {
-        return json({ ok: true, service: 'loc-state', kv: true, build: BUILD }, { headers: cors });
-      }
+      if (path === '/' || path === '/health') return json({ ok: true, service: 'loc-state', kv: true, build: BUILD }, { headers: cors });
 
       if (path === '/eras') {
-        if (request.method === 'GET') {
-          const data = await readEras(env);
-          return json({ ok: true, build: BUILD, ...data }, { headers: cors });
-        }
+        if (request.method === 'GET') return json({ ok: true, build: BUILD, ...(await readEras(env)) }, { headers: cors });
         if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized', build: BUILD }, { status: 401, headers: cors });
-        if (request.method === 'PUT') {
-          const body = await request.json();
-          const data = await writeEras(env, body);
-          return json({ ok: true, build: BUILD, ...data }, { headers: cors });
-        }
+        if (request.method === 'PUT') return json({ ok: true, build: BUILD, ...(await writeEras(env, await request.json())) }, { headers: cors });
         if (request.method === 'POST') {
           const body = await request.json();
           const existing = await readEras(env);
@@ -277,10 +297,33 @@ export default {
           return json({ ok: true, build: BUILD, daily_draws: await listDaily(env, limit) }, { headers: cors });
         }
         if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized', build: BUILD }, { status: 401, headers: cors });
+        if (request.method === 'POST') return json({ ok: true, build: BUILD, daily_draw: await saveDaily(env, (await request.json()).daily_draw || await request.json()) }, { headers: cors });
+      }
+
+      if (path === '/context') {
+        const action = String(url.searchParams.get('action') || '');
+        if (request.method === 'GET') {
+          if (action === 'relations') return json({ ok: true, build: BUILD, relations: await readCollection(env, CONTEXT_RELATIONS_KEY, 'relations') }, { headers: cors });
+          return json({ ok: true, build: BUILD, events: await readCollection(env, CONTEXT_EVENTS_KEY, 'events') }, { headers: cors });
+        }
+        if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized', build: BUILD }, { status: 401, headers: cors });
         if (request.method === 'POST') {
           const body = await request.json();
-          const row = await saveDaily(env, body.daily_draw || body);
-          return json({ ok: true, build: BUILD, daily_draw: row }, { headers: cors });
+          const a = String(body.action || '');
+          if (a.includes('relation')) return json({ ok: true, build: BUILD, relations: await mutateRelations(env, a, body) }, { headers: cors });
+          if (a === 'era' || a === 'update_era' || a === 'delete_era') {
+            const existing = await readEras(env);
+            const eras = [...existing.eras];
+            if (a === 'delete_era') {
+              const period = String(body.era?.period || body.period || '');
+              return json({ ok: true, build: BUILD, ...(await writeEras(env, { eras: eras.filter(x => String(x.period) !== period) })) }, { headers: cors });
+            }
+            const era = normalizeEra(body.era || body);
+            const i = eras.findIndex(x => String(x.period) === era.period);
+            if (i >= 0) eras[i] = { ...eras[i], ...era }; else eras.push(era);
+            return json({ ok: true, build: BUILD, ...(await writeEras(env, { eras })) }, { headers: cors });
+          }
+          return json({ ok: true, build: BUILD, events: await mutateEvents(env, a, body) }, { headers: cors });
         }
       }
 
