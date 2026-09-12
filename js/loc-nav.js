@@ -3,7 +3,7 @@
   window.__LOC_NAV__ = true;
 
   const GROUPS = ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "特殊"];
-  const NAV3_ALLOW = new Set(["lots:draw", "lots:library"]);
+  const NAV3_ALLOW = new Set(["runes:draw", "runes:library"]);
   const fileName = () => location.pathname.split("/").pop() || "index.html";
   const THEME_STORAGE_KEY = "loc-theme";
   const THEME_MODES = new Set(["auto","day","night"]);
@@ -50,8 +50,7 @@
 
   const DEFAULT_HASH = Object.freeze({
     "index.html":"#top",
-    "runes.html":"#reference",
-    "lots.html":"#draw",
+    "runes.html":"#draw",
     "game.html":"#main",
     "context.html":"#graph",
     "evolution.html":"#overview",
@@ -62,7 +61,7 @@
   });
 
   const NAV1 = Object.freeze([
-    {id:"runes",label:"月之符文",href:"lots.html#draw"},
+    {id:"runes",label:"月之符文",href:"runes.html#draw"},
     {id:"game",label:"遊戲",href:"game.html#main"},
     {id:"context",label:"脈絡",href:"context.html#graph"},
     {id:"governance",label:"治理",href:"governance.html#principles"},
@@ -72,7 +71,6 @@
 
   const PAGE_GROUP = Object.freeze({
     "index.html":"home",
-    "lots.html":"runes",
     "runes.html":"runes",
     "game.html":"game",
     "context.html":"context",
@@ -191,9 +189,11 @@
 
   function ensurePageAnchors(){
     const file=fileName();
-    if(file==="lots.html"){
+    if(file==="runes.html"){
       ensureAnchor("draw",document.getElementById("drawView"));
+      ensureAnchor("daily",document.getElementById("drawView"));
       ensureAnchor("library",document.getElementById("libraryView"));
+      ensureAnchor("reference",document.getElementById("referenceView"));
     }else if(file==="game.html"){
       ensureAnchor("main",document.querySelector("main"));
     }else if(file==="context.html"){
@@ -259,34 +259,33 @@
   }
 
   function buildRunes(host){
-    const beginnerHref="lots.html#beginner";
     host.appendChild(tier([
-      link("新手上路",beginnerHref),
-      link("占卜抽籤","lots.html#draw"),
-      link("66 符資料","lots.html#library"),
+      link("新手上路","tutorial02.html"),
+      link("占卜抽籤","runes.html#draw"),
+      link("66 符資料","runes.html#library"),
       link("符文脈絡","runes.html#graph"),
       link("符文統計","statics.html#runes"),
       link("符文知識庫","runes.html#reference")
     ],"月之符文功能"));
 
-    if(fileName()!=="lots.html") return;
+    if(fileName()!=="runes.html") return;
     const drawView=document.getElementById("drawView");
     if(drawView&&!drawView.querySelector(":scope > .loc-nav3")){
-      const menu=nav3("lots:draw",[
-        link("單卡","lots.html?mode=single#draw"),
-        link("每日","lots.html?mode=daily#draw"),
-        link("雙卡","lots.html?mode=2card#draw"),
-        link("三卡","lots.html?mode=3card#draw"),
-        link("五卡","lots.html?mode=5card#draw"),
-        link("11卡 OW3gs","lots.html?mode=ow3gs#draw"),
-        link("說明","lots.html#beginner")
+      const menu=nav3("runes:draw",[
+        link("單卡","runes.html?mode=single#draw"),
+        link("每日","runes.html?mode=daily#daily"),
+        link("雙卡","runes.html?mode=2card#draw"),
+        link("三卡","runes.html?mode=3card#draw"),
+        link("五卡","runes.html?mode=5card#draw"),
+        link("11卡 OW3gs","runes.html?mode=ow3gs#draw"),
+        link("說明","tutorial02.html")
       ],"抽牌快速選單");
       if(menu) drawView.appendChild(menu);
     }
 
     const libraryView=document.getElementById("libraryView");
     if(libraryView&&!libraryView.querySelector(":scope > .loc-nav3")){
-      const menu=nav3("lots:library",GROUPS.map(group=>link(group,`lots.html?group=${encodeURIComponent(group)}#library`,{"data-rune-group-shortcut":group})),"符文群組快速選單");
+      const menu=nav3("runes:library",GROUPS.map(group=>link(group,`runes.html?group=${encodeURIComponent(group)}#library`,{"data-rune-group-shortcut":group})),"符文群組快速選單");
       if(menu) libraryView.appendChild(menu);
     }
   }
@@ -313,7 +312,7 @@
     host.replaceChildren();
     const file=fileName();
     if(file==="index.html") buildIndex(host);
-    else if(file==="runes.html"||file==="lots.html") buildRunes(host);
+    else if(file==="runes.html") buildRunes(host);
     else if(file==="context.html") host.appendChild(tier([
       button("關係圖 Graph",{"data-context-switch":"graph"}),
       button("節點 Nodes",{"data-context-switch":"nodes"}),
@@ -408,7 +407,7 @@
 
   function loadEnhancements(){
     const file=fileName();
-    if(file==="runes.html"||file==="lots.html") appendScript("js/runes-pwa-ia.js","runes-pwa-ia");
+    if(file==="runes.html") appendScript("js/runes-pwa-ia.js","runes-pwa-ia");
     if(file==="evolution.html") appendScript("js/life-daily-draw-history.js","life-draw-history");
     if(file==="search.html") appendScript("js/search-display-governance.js","loc-search-display-governance");
   }
