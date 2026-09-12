@@ -57,7 +57,7 @@ function writeCache(rows) {
 
 async function loadRepoHistory(){
   try{
-    const res=await fetch(REPO_HISTORY,{cache:"no-store"});
+    const res=await fetch(REPO_HISTORY,{cache:"default"});
     if(!res.ok) throw new Error("repo history unavailable");
     const data=await res.json();
     return Array.isArray(data?.daily_draws)?data.daily_draws.map(normalize):[];
@@ -137,43 +137,20 @@ function render(rows) {
   renderPagination(currentRows.length);
 }
 
+// Daily rune reads are repo/local only. Google Sheet is not part of the public read path.
+// This keeps Lots usable even when Apps Script is unavailable or rate-limited.
 async function loadRecords() {
   const repoRows=await loadRepoHistory();
   const cached=readCache();
-  const localRows=mergeRows(repoRows,cached);
+  const rows=mergeRows(repoRows,cached);
 
-  if(localRows.length){
-    render(localRows);
-    $("#dailyStatsStatus").textContent=repoRows.length
-      ?"已載入 Repo 每日符文歷史；正在同步後端紀錄。"
-      :"先顯示最近快取；正在同步已記錄資料。";
-  }
-
-  try{
-    const url=new URL(API);
-    url.searchParams.set("action","daily_draws");
-    url.searchParams.set("user_id","lo3rwang");
-    const res=await fetch(url.toString(),{method:"GET",cache:"no-store",redirect:"follow"});
-    const data=await res.json();
-    if(!res.ok||data?.ok===false) throw new Error(data?.error||"載入失敗");
-    const apiRows=Array.isArray(data.daily_draws)?data.daily_draws.map(normalize):[];
-    const merged=mergeRows(repoRows,apiRows);
-    writeCache(merged);
-    render(merged);
-    $("#dailyStatsStatus").textContent=repoRows.length
-      ?`已合併 Repo 歷史與後端紀錄，共 ${merged.length} 筆。`
-      :"統計只包含已明確儲存的實體牌紀錄。";
-  }catch(_){
-    if(localRows.length){
-      writeCache(localRows);
-      render(localRows);
-      $("#dailyStatsStatus").textContent=repoRows.length
-        ?`後端暫未回應；目前顯示 Repo 歷史，共 ${localRows.length} 筆。`
-        :"即時資料未回應，顯示最近快取。";
-    }else{
-      $("#dailyStatsStatus").textContent="每日符文紀錄暫時無法載入。";
-    }
-  }
+  writeCache(rows);
+  render(rows);
+  $("#dailyStatsStatus").textContent=repoRows.length
+    ?`已載入 Repo 每日符文歷史，共 ${rows.length} 筆。`
+    :rows.length
+      ?"Repo 歷史暫未回應；目前顯示本機已記錄資料。"
+      :"每日符文歷史暫時無法載入。";
 }
 
 function populateRunes(){
@@ -194,39 +171,43 @@ async function saveRecord(ev){
   const status=$("#dailyRecordStatus");
   const select=$("#dailyRecordRune");
   const selected=select?.selectedOptions?.[0];
-  const payload={
-    action:"daily_draw",
-    daily_draw:{
-      user_id:"lo3rwang",
-      date:$("#dailyRecordDate").value,
-      draw_kind:$("#dailyRecordKind").value,
-      rune_id:selected?.dataset?.runeId||"",
-      rune:select.value,
-      direction:$("#dailyRecordDirection").value,
-      note:$("#dailyRecordNote").value.trim(),
-      source:"physical-card-manual-entry",
-      confidence:"recorded"
-    }
+  const dailyDraw={
+    user_id:"lo3rwang",
+    date:$("#dailyRecordDate").value,
+    draw_kind:$("#dailyRecordKind").value,
+    rune_id:selected?.dataset?.runeId||"",
+    rune:select.value,
+    direction:$("#dailyRecordDirection").value,
+    note:$("#dailyRecordNote").value.trim(),
+    source:"physical-card-manual-entry",
+    confidence:"recorded"
   };
-  if(!payload.daily_draw.date||!payload.daily_draw.rune){
+  if(!dailyDraw.date||!dailyDraw.rune){
     status.textContent="請先選擇日期與實體牌結果。";
     return;
   }
-  status.textContent="正在儲存實體牌紀錄…";
+
+  // Make the newly entered record immediately available locally first.
+  const optimistic=mergeRows(currentRows,[dailyDraw]);
+  writeCache(optimistic);
+  render(optimistic);
+  status.textContent="實體牌紀錄已先儲存在本機；正在同步來源。";
+
+  // Temporary write path: keep the existing Sheet writer until KV/editor write-through is deployed.
+  // Public reads never depend on this request.
   try{
     const res=await fetch(API,{
       method:"POST",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload),
+      body:JSON.stringify({action:"daily_draw",daily_draw:dailyDraw}),
       redirect:"follow"
     });
     const data=await res.json();
-    if(!res.ok||data?.ok===false) throw new Error(data?.error||"儲存失敗");
-    status.textContent="實體牌紀錄已儲存。";
+    if(!res.ok||data?.ok===false) throw new Error(data?.error||"同步失敗");
+    status.textContent="實體牌紀錄已儲存；公開讀取不依賴 Google Sheet。";
     $("#dailyRecordNote").value="";
-    await loadRecords();
   }catch(err){
-    status.textContent="儲存失敗："+err.message;
+    status.textContent="已保留本機紀錄；遠端同步失敗："+err.message;
   }
 }
 
