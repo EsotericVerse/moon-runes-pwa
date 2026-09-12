@@ -4,7 +4,6 @@ const LEGACY_API = "https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9D
 const KV_API = "/api/loc-state/daily-runes";
 const REPO_HISTORY = "data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json";
 const CACHE_KEY = "lunarunes-physical-daily-draw-cache-v3";
-const KV_TOKEN_KEY = "loc-kv-write-token";
 const $ = s => document.querySelector(s);
 const PAGE_SIZE = 20;
 let currentPage = 1;
@@ -57,14 +56,6 @@ function writeCache(rows) {
   try { localStorage.setItem(CACHE_KEY,JSON.stringify(rows)); } catch (_) {}
 }
 
-function readWriteToken(){
-  try{return sessionStorage.getItem(KV_TOKEN_KEY)||""}catch(_){return ""}
-}
-
-function setWriteToken(token){
-  try{token?sessionStorage.setItem(KV_TOKEN_KEY,String(token)):sessionStorage.removeItem(KV_TOKEN_KEY)}catch(_){}
-}
-
 async function loadRepoHistory(){
   try{
     const res=await fetch(REPO_HISTORY,{cache:"default"});
@@ -80,7 +71,7 @@ async function loadKVHistory(){
   try{
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),3500);
-    const res=await fetch(`${KV_API}?limit=1000`,{cache:"no-store",signal:controller.signal});
+    const res=await fetch(`${KV_API}?limit=1000`,{cache:"no-store",signal:controller.signal,credentials:"same-origin"});
     clearTimeout(timeout);
     if(!res.ok) return [];
     const data=await res.json();
@@ -91,14 +82,10 @@ async function loadKVHistory(){
 }
 
 async function saveKV(dailyDraw){
-  const token=readWriteToken();
-  if(!token) throw new Error("KV write token not configured");
   const res=await fetch(KV_API,{
     method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization":"Bearer "+token
-    },
+    credentials:"same-origin",
+    headers:{"Content-Type":"application/json"},
     body:JSON.stringify({daily_draw:dailyDraw})
   });
   const data=await res.json().catch(()=>({}));
@@ -264,7 +251,7 @@ async function saveRecord(ev){
   }catch(kvErr){
     try{
       await saveLegacy(dailyDraw);
-      status.textContent="KV 尚未啟用寫入；已暫時同步既有 Google Sheet。";
+      status.textContent="KV 管理登入尚未有效；已暫時同步既有 Google Sheet。";
       $("#dailyRecordNote").value="";
       return;
     }catch(sheetErr){
@@ -273,7 +260,7 @@ async function saveRecord(ev){
   }
 }
 
-window.LOC8DailyRuneKV={KV_API,setWriteToken,loadRecords};
+window.LOC8DailyRuneKV={KV_API,loadRecords};
 
 window.addEventListener("DOMContentLoaded",()=>{
   const form=$("#dailyRecordForm");
