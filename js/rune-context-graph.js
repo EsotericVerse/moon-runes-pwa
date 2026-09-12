@@ -133,14 +133,17 @@
     }
 
     return {
-      version:'runes-json-derived-v2',
+      version:'runes-json-derived-v3',
       api_used:false,
       default_group:DEFAULT_GROUP,
       groups:GROUPS,
       governance:{
         group_unique:true,
-        classification_order:['詞類／句內語意角色','群組主體性','符文語意歸屬','正反面／衝突校準'],
-        highest_conflict_rule:'兩個以上有效符文候選同時成立時才啟動',
+        classification_order:['詞類／句內語意角色','群組主體性','唯一群組','個別符文','正反面／衝突校準'],
+        candidate_priority:['明確語意歸屬規則','直接關鍵詞','反向關鍵詞'],
+        direct_over_reverse:true,
+        direct_over_reverse_rule:'直接表達該語意方向的符文，優先於透過相反符文的反面間接表達。',
+        highest_conflict_rule:'同一優先層仍有兩個以上有效符文候選時才啟動衝突裁決',
         special_is_default:true,
         canonical_source:RUNES_URL,
         derived_source:DERIVED_URL,
@@ -176,26 +179,78 @@
     return {nodes:graph.nodes.filter(n=>ids.has(n.id)),edges:[...edgeMap.values()]};
   }
 
+  function uniqueRuneNames(edges){
+    return [...new Set((edges||[]).map(e=>e.target).filter(x=>x.startsWith('rune:')).map(x=>x.slice(5)))];
+  }
+
+  function resolveCanonicalTargets(graph,exact){
+    const outgoing=adjacent(graph,exact.id).edges.filter(e=>e.source===exact.id);
+    const ownership=outgoing.filter(e=>e.type==='ownership'&&e.target.startsWith('rune:'));
+    const direct=outgoing.filter(e=>e.type==='keyword_of'&&e.target.startsWith('rune:'));
+    const reverse=outgoing.filter(e=>e.type==='reverse_keyword_of'&&e.target.startsWith('rune:'));
+    const tiers=[
+      {name:'明確語意歸屬規則',relation:'ownership',edges:ownership},
+      {name:'直接關鍵詞',relation:'keyword_of',edges:direct},
+      {name:'反向關鍵詞',relation:'reverse_keyword_of',edges:reverse}
+    ];
+    const chosen=tiers.find(t=>t.edges.length)||null;
+    if(!chosen)return null;
+    const runes=uniqueRuneNames(chosen.edges);
+    return {chosen,runes,ignored:tiers.filter(t=>t!==chosen&&t.edges.length)};
+  }
+
   function resolveTerm(graph,query){
     const term=String(query||'').trim();
     if(!term)return null;
     const derived=graph.nodes.find(n=>(n.type==='derived'||n.type==='term')&&n.label===term&&n.relation);
     if(derived){
+      const resolvedRune=derived.resolved_rune||null;
       return {
         term,status:derived.term_status||'special',relation:derived.relation||'derived',
-        resolved_rune:derived.resolved_rune||null,group:derived.group||DEFAULT_GROUP,
-        evidence:derived.evidence||derived.definition||''
+        lexical_class:derived.lexical_class||'',
+        resolved_rune:resolvedRune,group:resolvedRune?(derived.group||DEFAULT_GROUP):DEFAULT_GROUP,
+        evidence:derived.evidence||derived.definition||'',
+        decision_trace:[
+          derived.lexical_class?`詞類／句內語意角色：${derived.lexical_class}`:'詞類／句內語意角色：未指定',
+          `群組主體性：${resolvedRune?'依整體詞義判定':'不足以判定'}`,
+          `唯一群組：${resolvedRune?(derived.group||DEFAULT_GROUP):DEFAULT_GROUP}`,
+          `個別符文：${resolvedRune||'未決'}`,
+          `正反面／衝突校準：${derived.term_status||'special'}`
+        ]
       };
     }
     const exact=graph.nodes.find(n=>n.type==='term'&&n.label===term);
     if(exact){
-      const a=adjacent(graph,exact.id);
-      const targets=a.edges.filter(e=>e.source===exact.id&&['keyword_of','reverse_keyword_of','ownership'].includes(e.type));
-      const runes=[...new Set(targets.map(e=>e.target).filter(x=>x.startsWith('rune:')).map(x=>x.slice(5)))];
-      return {term,status:runes.length>1?'ambiguous':'confirmed',relation:'canonical_or_rule',resolved_rune:runes.length===1?runes[0]:null,group:runes.length===1?(graph.nodes.find(n=>n.id===`rune:${runes[0]}`)?.group||DEFAULT_GROUP):DEFAULT_GROUP,evidence:targets.map(e=>e.evidence).filter(Boolean).join('；')};
+      const resolution=resolveCanonicalTargets(graph,exact);
+      if(!resolution){
+        return {term,status:'unresolved',relation:'canonical_without_owner',resolved_rune:null,group:DEFAULT_GROUP,evidence:'已有詞節點，但尚無可用符文歸屬。',decision_trace:['詞類／句內語意角色：未指定','群組主體性：不足以判定',`唯一群組：${DEFAULT_GROUP}`,'個別符文：未決','正反面／衝突校準：無候選']};
+      }
+      const {chosen,runes,ignored}=resolution;
+      const resolvedRune=runes.length===1?runes[0]:null;
+      const group=resolvedRune?(graph.nodes.find(n=>n.id===`rune:${resolvedRune}`)?.group||DEFAULT_GROUP):DEFAULT_GROUP;
+      const ignoredText=ignored.length?`；較低優先層已忽略：${ignored.map(x=>x.name).join('、')}`:'';
+      return {
+        term,
+        status:runes.length>1?'ambiguous':'confirmed',
+        relation:chosen.relation,
+        resolved_rune:resolvedRune,
+        group,
+        evidence:chosen.edges.map(e=>e.evidence).filter(Boolean).join('；')+ignoredText,
+        decision_trace:[
+          '詞類／句內語意角色：Canon 關鍵詞／規則',
+          `群組主體性：採 ${chosen.name}`,
+          `唯一群組：${group}`,
+          `個別符文：${resolvedRune||runes.join('、')||'未決'}`,
+          `正反面／衝突校準：${ignored.length?'已依直接語意優先規則排除較低層候選':(runes.length>1?'同優先層多候選，保留歧義':'無衝突')}`
+        ]
+      };
     }
     const runeChars=[...term].filter(ch=>graph.nodes.some(n=>n.type==='rune'&&n.label===ch));
-    return runeChars.length>1?{term,status:'unresolved',relation:'surface_only',resolved_rune:null,group:DEFAULT_GROUP,evidence:`表面符文：${[...new Set(runeChars)].join('、')}；尚無衍生詞規則，不強迫判定。`}:null;
+    return runeChars.length>1?{
+      term,status:'unresolved',relation:'surface_only',resolved_rune:null,group:DEFAULT_GROUP,
+      evidence:`表面符文：${[...new Set(runeChars)].join('、')}；尚無衍生詞規則，不強迫判定。`,
+      decision_trace:['詞類／句內語意角色：未知','群組主體性：未知',`唯一群組：${DEFAULT_GROUP}`,'個別符文：未決','正反面／衝突校準：不啟動；僅有表面字形候選']
+    }:null;
   }
 
   function renderList(el,rows,empty){
@@ -234,7 +289,8 @@
       renderList(nodesEl,shownNodes.map(n=>`<button type="button" class="context-graph-node rune-graph-node" data-rune-graph-node="${esc(n.id)}"><small>${esc(n.type)} · ${esc(n.group||DEFAULT_GROUP)}${n.term_status?` · ${esc(n.term_status)}`:''}</small><strong>${esc(n.label)}</strong><small>${esc(n.definition||n.english||n.id)}</small></button>`),'沒有符合的節點。');
       renderList(edgesEl,shownEdges.map(e=>`<article class="context-graph-edge"><div class="context-graph-edge-path"><span>${esc(e.source.replace(/^[^:]+:/,''))}</span><span class="context-graph-edge-type">→ ${esc(e.type)} →</span><span>${esc(e.target.replace(/^[^:]+:/,''))}</span></div><small>${esc(e.source_field||'derived')} · ${esc(e.evidence||'')}</small></article>`),'沒有符合的關係。');
       const resolved=q?resolveTerm(graph,q):null;
-      const resolution=resolved?` · 判定 ${resolved.status}${resolved.resolved_rune?` → ${resolved.resolved_rune}`:''}`:'';
+      const trace=resolved?.decision_trace?.length?` · ${resolved.decision_trace.join(' → ')}`:'';
+      const resolution=resolved?` · 判定 ${resolved.status}${resolved.resolved_rune?` → ${resolved.resolved_rune}`:''} · 群組 ${resolved.group||DEFAULT_GROUP}${trace}`:'';
       status.textContent=`No API · ${view.nodes.length} nodes / ${view.edges.length} edges · 衍生詞 ${graph.derived_count||0}${resolution}`+(view.nodes.length>PAGE||view.edges.length>PAGE?` · 畫面先顯示前 ${PAGE} 筆`:``);
     }
 
@@ -252,14 +308,14 @@
   }
 
   async function optionalJson(url,fallback){
-    try{const r=await fetch(url,{cache:'no-store'});return r.ok?await r.json():fallback}catch{return fallback}
+    try{const r=await fetch(url);return r.ok?await r.json():fallback}catch{return fallback}
   }
 
   async function init(){
     const root=document.querySelector('#runeSemanticGraph');
     if(!root)return;
     try{
-      const [res,derived]=await Promise.all([fetch(RUNES_URL,{cache:'no-store'}),optionalJson(DERIVED_URL,{entries:[]})]);
+      const [res,derived]=await Promise.all([fetch(RUNES_URL),optionalJson(DERIVED_URL,{entries:[]})]);
       if(!res.ok)throw new Error(`HTTP ${res.status}`);
       const runes=await res.json();
       const graph=buildGraph(runes,derived);
