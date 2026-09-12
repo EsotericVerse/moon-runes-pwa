@@ -1,7 +1,8 @@
 /* LOC SITE-WIDE CSS CANON ENTRYPOINT
    The previous canonical stylesheet is preserved byte-for-byte in style-base.css.
    Keep all presentation CSS under css/; this entrypoint imports the base and applies
-   the day-theme correction below so page-local --loc-* tokens cannot pin night colors. */
+   the day-theme correction below so page-local tokens and hard-coded night colors
+   cannot pin text-heavy pages to the night palette. */
 @import url("./style-base.css");
 
 /* DAY THEME TOKEN BRIDGE · 2026-09-12
@@ -31,4 +32,72 @@ html[data-theme-resolved="day"] body.loc-page-index .framework-modal{
   background:var(--loc-surface)!important;
   color:var(--loc-text)!important;
   border-color:var(--loc-border)!important;
+}
+
+/* TEXT-HEAVY PAGE DAY THEME · lo3rwang.html
+   The author page still contains legacy night-only literal colors. Keep its identity
+   accents, but let body copy, emphasis and profile blocks follow the canonical day
+   hierarchy. */
+html[data-theme-resolved="day"] body.loc-page-lo3rwang{
+  color-scheme:light;
+  --panel:var(--surface);
+  --mint:var(--accent);
+  --gold:var(--accent-2);
+}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang article{
+  background:var(--surface)!important;
+  border-color:var(--line)!important;
+  color:var(--text)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang p,
+html[data-theme-resolved="day"] body.loc-page-lo3rwang li{
+  color:var(--text)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang .lead{
+  color:var(--muted)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang strong{
+  color:var(--text)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang .profile-block{
+  background:var(--surface2)!important;
+  border-color:var(--line)!important;
+  color:var(--text)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang .profile-block .block-kicker{
+  color:var(--purple)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang .profile-block h3{
+  color:var(--gold)!important;
+}
+
+/* TEXT-HEAVY PAGE DAY THEME · governance.html
+   Governance is a semantic hierarchy page; its display hierarchy must follow the
+   same authority order in both themes instead of retaining night-only body colors. */
+html[data-theme-resolved="day"] body.loc-page-governance{
+  color-scheme:light;
+}
+html[data-theme-resolved="day"] body.loc-page-governance .gov-card{
+  background:var(--surface)!important;
+  border-color:var(--line)!important;
+  color:var(--text)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-governance .gov-card p,
+html[data-theme-resolved="day"] body.loc-page-governance .gov-card ul,
+html[data-theme-resolved="day"] body.loc-page-governance .gov-card li{
+  color:var(--text)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-governance .gov-card strong{
+  color:var(--text)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-governance .core-line,
+html[data-theme-resolved="day"] body.loc-page-governance .doc-link,
+html[data-theme-resolved="day"] body.loc-page-governance .loc-concept-note{
+  background:var(--surface2)!important;
+  border-color:var(--line)!important;
+  color:var(--text)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-governance .doc-link span,
+html[data-theme-resolved="day"] body.loc-page-governance .lead{
+  color:var(--muted)!important;
 }
