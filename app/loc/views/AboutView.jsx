@@ -21,8 +21,8 @@ export default function AboutView(){
     <header className="loc-hero">
       <p className="loc-eyebrow">LOC · Luna Codex · Language System Model</p>
       <h1>LOC 月典</h1>
-      <p className="loc-core-line">從語彙開始，讓脈絡、作品與時間彼此連結，最後形成可搜尋、可分析、可治理、可推演的語言系統。</p>
-      <p>LOC（月典／Luna Codex）是一套用來分析、整理、搜尋與推演語言的 Language System Model。月之符文 LunaRunes 是它最早的語彙種子，也是目前可直接運作的 Symbolic Language Model；但使用 LOC 不需要先學會符文或理解完整理論。</p>
+      <p className="loc-core-line">從語彙開始，延伸到脈絡、創作、演算法、模組與時間中的推演，形成可分析、可組織、可搜尋、可治理、可持續演化的語言系統模型。</p>
+      <p>月典（LOC／Luna Codex）是一套可重複使用的語言系統模型（Language System Model），由 LOC1–LOC8 等語言系統模組組合而成。月之符文（LunaRunes）由 66 個中文單一字構成，是一套可實際運作的符號式語言模型（Symbolic Language Model），也證明 LOC 可以被實作成具體可運作的語言模型。月之符文是 LOC 的起點，但不是使用門檻。</p>
       <div className="loc-actions">
         <a className="loc-button primary" href="/runes">月之符文</a>
         <a className="loc-button" href="/search">搜尋作品</a>
