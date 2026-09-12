@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const root = process.cwd();
@@ -10,24 +10,17 @@ for (const name of requiredRoots) {
   if (!existsSync(resolve(root, name))) failures.push(`missing canonical root: ${name}/`);
 }
 
-// These aliases are intentionally forbidden for new root-level use.
-for (const name of ['images', 'image', 'pic', 'cloudflare', 'api', 'apps', 'loc8-api']) {
-  if (existsSync(resolve(root, name))) failures.push(`ambiguous root directory is forbidden: ${name}/`);
+// Ambiguous or already-migrated roots must not be recreated.
+for (const name of [
+  'images', 'image', 'pic', 'cloudflare', 'api', 'apps', 'loc8-api',
+  '64images', 'pics', 'icons', 'card_api', 'loc8_api'
+]) {
+  if (existsSync(resolve(root, name))) failures.push(`forbidden root directory: ${name}/`);
 }
 
-// Legacy roots remain temporarily while consumers are migrated.
-for (const name of ['64images', 'pics', 'icons', 'card_api', 'loc8_api', 'engine', 'css', 'js']) {
+// Remaining static-runtime roots are still migration debt until Next promotion is complete.
+for (const name of ['engine', 'css', 'js']) {
   if (existsSync(resolve(root, name))) warnings.push(`${name}/ -> legacy migration debt`);
-}
-
-const cardApi = resolve(root, 'card_api');
-if (existsSync(cardApi)) {
-  for (const name of readdirSync(cardApi)) {
-    const path = resolve(cardApi, name);
-    if (statSync(path).isFile() && /\.(?:md|mdx)$/i.test(name)) {
-      failures.push(`API documentation must live under docs/api/: card_api/${name}`);
-    }
-  }
 }
 
 for (const path of [
@@ -45,4 +38,4 @@ if (failures.length) {
   console.error('[directory-governance] violations:\n' + failures.join('\n'));
   process.exit(1);
 }
-console.log('[directory-governance] canonical roots and migration boundaries verified');
+console.log('[directory-governance] canonical roots and migrated-root boundaries verified');

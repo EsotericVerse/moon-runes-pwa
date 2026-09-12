@@ -62,19 +62,23 @@ A module may define search collections, schemas, classification rules, presentat
 
 ### Services
 
-Target structure:
+Current canonical structure:
 
 ```text
 services/
   api/
+    card/
+    loc8/
   cloudflare/
 ```
 
-`card_api/` and `loc8_api/` are legacy responsibility names and are migration targets, not patterns for new top-level directories.
+Historical top-level API directories have been migrated. Deployable runtime stays under `services/api/`; repository-facing build and migration entrypoints belong under `scripts/`; API documentation belongs under `docs/api/`.
+
+Service-owned index compilers may remain colocated with their runtime implementation when they directly import service modules, but normal repository invocation must go through `scripts/` so repo-root and output paths are explicit rather than inferred from file depth.
 
 ### Assets
 
-Do not create parallel `images/`, `pics/`, `64images/` style roots. Use:
+Do not create parallel image roots. Use:
 
 ```text
 assets/source/          original non-public source assets
@@ -83,21 +87,23 @@ assets/site/            shared branding/site assets
 public/                 only selected runtime delivery assets
 ```
 
-## Current legacy debt and target
+## Migration ledger
 
-| Current | Status | Target |
+| Historical location | Status | Canonical destination |
 |---|---|---|
-| `64images/` | migrate | `assets/lunarunes/cards/` |
-| `pics/` | migrate | classify into `assets/site/`, `assets/source/`, or domain assets |
-| `icons/` | migrate | `assets/site/icons/` or domain-specific asset path |
-| `card_api/` | migrate | runtime → `services/api/`; docs → `docs/api/`; offline builders → `scripts/` |
-| `loc8_api/` | migrate | `services/api/` after endpoint/consumer audit |
+| `64images/` | migrated | `assets/lunarunes/cards/` |
+| `pics/` | migrated | classified into `assets/site/`, `assets/source/`, or domain assets |
+| `icons/` | migrated | `assets/site/icons/` or domain-specific asset path |
+| `card_api/` | migrated | runtime → `services/api/card/`; repository entrypoints → `scripts/card-api/`; docs → `docs/api/` |
+| `loc8_api/` | migrated | `services/api/loc8/`; docs → `docs/api/` |
 | `engine/` | audit | `lib/`, `modules/`, or `services/` by responsibility |
 | root `LunaRune66.xlsx` | migrate | `data/lunarunes/source/` |
 | root `all.xlsx` | audit/migrate | `data/source/` or retire if superseded |
 | root PWA icons/manifest/service worker | legacy | move/retire as Next/PWA migration completes |
 | root redirect HTML | temporary compatibility | retire after Next production promotion |
 | root `css/` and `js/` | legacy static runtime | retire after remaining static entrypoints migrate |
+
+Migrated roots are now forbidden by CI and must not be recreated as compatibility directories.
 
 ## Migration order
 

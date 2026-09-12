@@ -53,7 +53,7 @@ function manifestShards(repoPath) {
 }
 
 // Generated public payload must never retain stale copies from an older full-tree build.
-for (const rel of ['data/json', 'docs', 'pics']) {
+for (const rel of ['data/json', 'docs', 'assets']) {
   rmSync(resolve(publicRoot, rel), { recursive: true, force: true });
 }
 
@@ -87,4 +87,4 @@ const mib = bytes => (bytes / 1024 / 1024).toFixed(2);
 
 console.log(`[next-public] JSON: ${runtimeJson.size} runtime files, ${mib(stagedJsonBytes)} MiB staged / ${mib(sourceJsonBytes)} MiB source (${reduction.toFixed(1)}% excluded)`);
 console.log(`[next-public] Docs: ${runtimeDocs.length} file, ${mib(stagedDocBytes)} MiB staged`);
-console.log('[next-public] Pics: 0 files staged (no current Next runtime consumer)');
+console.log('[next-public] Assets: 0 files staged (no current Next runtime consumer)');
