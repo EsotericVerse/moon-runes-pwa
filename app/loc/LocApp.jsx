@@ -57,7 +57,7 @@ export default function LocApp() {
           {NAV.map(([id, label]) => (
             <a key={id} href={`#${id}`} aria-current={view === id ? 'page' : undefined}>{label}</a>
           ))}
-          <a href="https://lrunes.lo3rwang.cc/">月之符文</a>
+          <a href="/runes.html">月之符文</a>
           <a href="https://whoami.lo3rwang.cc/">作者</a>
         </nav>
       </header>
