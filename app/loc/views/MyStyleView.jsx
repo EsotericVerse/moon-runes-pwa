@@ -5,6 +5,8 @@ import { getLocalRecords } from '../local-db';
 import { useLocalStore } from '../local-store';
 import { INITIAL_MY_STYLE, INITIAL_STYLE_PROFILE, LIBRARY_RECORD_TYPE, MY_STYLE_STORAGE_KEY, STYLE_STORAGE_KEY } from '../model/style-profile';
 
+const STYLE_NOTE = `政德風不是固定模板，而是從長期文字中觀察出的個人語言傾向。核心特徵包括感性與理性交錯、畫面意象、短句節奏、自省探究，以及對時間、身體感與治理邊界的重視。近年的表達更偏向克制、清楚、可回看與可治理。這些描述只作為作者公開參考，不作為任何使用者必須接受的分類標準。`;
+
 export default function MyStyleView(){
   const {value:profile}=useLocalStore(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
   const {value:meta,setValue:setMeta}=useLocalStore(MY_STYLE_STORAGE_KEY,INITIAL_MY_STYLE);
@@ -47,8 +49,13 @@ export default function MyStyleView(){
       <div className="loc-actions">
         <a className="loc-button primary" href="/library">打開 Library</a>
         <a className="loc-button" href="/style-groups">調整群組設定</a>
-        <a className="loc-button" href="/docs/ZHENGDE_STYLE_PUBLIC_KM.md" target="_blank" rel="noreferrer">政德風公開 KM</a>
       </div>
+    </section>
+
+    <section className="loc-card">
+      <p className="loc-eyebrow">Author Reference</p>
+      <h2>政德風公開說明</h2>
+      <p>{STYLE_NOTE}</p>
     </section>
 
     <section className="loc-card">
