@@ -63,7 +63,7 @@
 
   async function fetchKV(){
     try{
-      const response=await fetch(KV_URL,{cache:'no-store'});
+      const response=await fetch(KV_URL,{cache:'no-store',credentials:'same-origin'});
       if(!response.ok)return null;
       const data=await response.json();
       return data?.ok&&Array.isArray(data?.eras)?data:null;
@@ -72,16 +72,11 @@
     }
   }
 
-  function writeToken(){
-    try{return sessionStorage.getItem('loc-kv-write-token')||''}catch(_){return ''}
-  }
-
   async function writeKV(payload,method='POST'){
-    const token=writeToken();
-    if(!token)throw new Error('KV write token not configured');
     const response=await fetch(KV_URL,{
       method,
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      credentials:'same-origin',
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload)
     });
     const data=await response.json().catch(()=>({}));
@@ -158,7 +153,6 @@
 
   function invalidate(){memory=null;inflight=null}
   function peek(){return memory}
-  function setWriteToken(token){try{token?sessionStorage.setItem('loc-kv-write-token',String(token)):sessionStorage.removeItem('loc-kv-write-token')}catch(_){}}
 
-  window.LOCPeriods={REGISTRY_URL,KV_URL,LEGACY_MAP,load,peek,normalizePeriod,resolveDate,findPeriod,label,range,fillSelect,invalidate,merge,upsert,remove,setWriteToken};
+  window.LOCPeriods={REGISTRY_URL,KV_URL,LEGACY_MAP,load,peek,normalizePeriod,resolveDate,findPeriod,label,range,fillSelect,invalidate,merge,upsert,remove};
 })();
