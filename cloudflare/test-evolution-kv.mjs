@@ -25,7 +25,10 @@ function summarize(name, payload) {
     detail = {
       system_stages: Array.isArray(data?.system_stages) ? data.system_stages.length : 0,
       governance_evolution: Array.isArray(data?.governance_evolution) ? data.governance_evolution.length : 0,
-      semantic_history_cases: Array.isArray(data?.semantic_history_cases) ? data.semantic_history_cases.length : 0
+      semantic_history_cases: Array.isArray(data?.semantic_history_cases) ? data.semantic_history_cases.length : 0,
+      analysis_status: data?.analysis?.status || '',
+      evolution_signal_count: Array.isArray(data?.analysis?.evolution_signals) ? data.analysis.evolution_signals.length : 0,
+      projection_ready: data?.analysis?.projection_readiness?.rule_based_projection === 'ready'
     };
   } else if (name === 'language') {
     detail = {
@@ -45,6 +48,7 @@ function summarize(name, payload) {
     seeded: payload?.seeded === true,
     populated,
     source_registry: snapshot?.source_registry || '',
+    analysis_registry: snapshot?.analysis_registry || '',
     updated_at: snapshot?.updated_at || '',
     ...detail
   };
@@ -56,7 +60,8 @@ for (const [name, path] of checks) {
     const response = await fetch(base + path, { headers: { accept: 'application/json' } });
     const payload = await response.json().catch(() => ({}));
     const summary = summarize(name, payload);
-    const pass = response.ok && summary.ok && (name === 'health' || (summary.seeded && summary.populated));
+    let pass = response.ok && summary.ok && (name === 'health' || (summary.seeded && summary.populated));
+    if (name === 'runes') pass = pass && summary.analysis_status === 'complete_for_current_corpus' && summary.evolution_signal_count > 0 && summary.projection_ready === true;
     if (!pass) failed = true;
     console.log(JSON.stringify({ name, path, http: response.status, pass, ...summary }, null, 2));
   } catch (error) {
