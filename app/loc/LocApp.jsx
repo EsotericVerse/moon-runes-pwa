@@ -31,17 +31,20 @@ const VIEWS = {
   'style-groups': StyleGroupsView
 };
 
-const NAV = [
+const PRIMARY_NAV = [
   ['game', '遊戲'],
   ['context', '脈絡'],
+  ['governance', '治理'],
+  ['statics', '統計'],
+  ['evolution', '推演'],
+  ['search', '搜尋']
+];
+
+const TOOL_NAV = [
   ['classify', '分類'],
   ['library', 'Library'],
   ['my-style', '我的風格'],
-  ['style-groups', '群組設定'],
-  ['search', '搜尋'],
-  ['statics', '統計'],
-  ['evolution', '推演'],
-  ['governance', '治理']
+  ['style-groups', '群組設定']
 ];
 
 function readView() {
@@ -55,6 +58,10 @@ function readView() {
 function navHref(id){
   if(typeof window!=='undefined'&&window.location.pathname.startsWith('/loc'))return `#${id}`;
   return `/${id}`;
+}
+
+function NavLinks({items,view}){
+  return items.map(([id,label])=><a key={id} href={navHref(id)} aria-current={view===id?'page':undefined}>{label}</a>);
 }
 
 export default function LocApp() {
@@ -74,13 +81,16 @@ export default function LocApp() {
     <>
       <header className="loc-next-header">
         <a className="loc-next-brand" href="/loc/">LOC 月典</a>
-        <nav className="loc-next-nav" aria-label="LOC 功能導覽">
-          {NAV.map(([id, label]) => (
-            <a key={id} href={navHref(id)} aria-current={view === id ? 'page' : undefined}>{label}</a>
-          ))}
-          <a href="/runes">月之符文</a>
-          <a href="https://whoami.lo3rwang.cc/">作者</a>
-        </nav>
+        <div className="loc-next-nav-stack">
+          <nav className="loc-next-nav" aria-label="LOC 主要導覽">
+            <a href="/runes">月之符文</a>
+            <NavLinks items={PRIMARY_NAV} view={view}/>
+            <a href="https://whoami.lo3rwang.cc/">作者</a>
+          </nav>
+          <nav className="loc-next-nav loc-next-subnav" aria-label="LOC 本機工具">
+            <NavLinks items={TOOL_NAV} view={view}/>
+          </nav>
+        </div>
       </header>
       <main className="loc-next-main" data-loc-view={view}>
         <ActiveView />
