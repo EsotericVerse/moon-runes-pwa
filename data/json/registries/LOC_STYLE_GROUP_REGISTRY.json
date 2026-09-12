@@ -1,13 +1,20 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_STYLE_GROUP_REGISTRY",
   "authority": "user",
-  "purpose": "Lightweight API-free exact-match group definitions for personal text classification. LunaRunes may provide optional keyword suggestions but does not define user meaning.",
+  "purpose": "Local-only exact-match group definitions for personal text classification. LunaRunes is an optional symbolic language template, not a required taxonomy.",
   "updated_at": "2026-09-13",
+  "storage": {
+    "mode": "local_only",
+    "sync": false,
+    "server_persistence": false,
+    "portable_via_json": true
+  },
   "limits": {
-    "normal_keywords_per_group": 160,
-    "nor_keywords_per_group": 40,
-    "total_keywords_per_group": 200
+    "custom_groups": 8,
+    "fallback_groups": 1,
+    "normal_keywords_per_group": 64,
+    "nor_keywords_per_group": 8
   },
   "matching": {
     "mode": "exact",
@@ -16,33 +23,22 @@
     "levels": false,
     "nor_precedence": true
   },
-  "keyword_roles": [
-    "core",
-    "positive",
-    "negative",
-    "extended"
-  ],
   "principles": [
     "LOC defines the mechanism, not the user's meaning.",
+    "The system provides up to eight editable groups plus one fallback group.",
     "All group names, descriptions, keywords and NOR terms are user-defined.",
-    "LunaRunes suggestions are optional references only and may be accepted, edited, deleted or ignored entirely.",
-    "NOR means this term excludes the current group only; it is not a global blacklist.",
-    "The four normal keyword roles are descriptive labels only and do not carry numeric weight.",
-    "A group may contain zero LunaRunes-derived suggestions and zero keywords while being edited.",
-    "Unmatched text falls back to the reserved group id special. The display name and description of that fallback group are editable."
+    "LunaRunes may be used as a symbolic language template, but its group meanings are optional and may be replaced entirely.",
+    "NOR excludes the current group only; it is not a global blacklist.",
+    "Unmatched text falls back to the reserved fallback group. Its display name and description are editable, but its fallback role is fixed.",
+    "All editing, classification, reclassification, import and export are local-first and require no API, account or cloud sync."
   ],
   "groups": [
     {
       "id": "special",
       "name": "特殊",
-      "description": "預設保留層。未命中其他群組的內容可歸入此群組；名稱與說明可自行修改。",
+      "description": "預設承接未命中其他群組的內容；名稱與說明可自行修改。",
       "is_fallback": true,
-      "keywords": {
-        "core": [],
-        "positive": [],
-        "negative": [],
-        "extended": []
-      },
+      "keywords": [],
       "nor": []
     }
   ]
