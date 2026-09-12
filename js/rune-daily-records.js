@@ -78,7 +78,10 @@ async function loadRepoHistory(){
 
 async function loadKVHistory(){
   try{
-    const res=await fetch(`${KV_API}?limit=1000`,{cache:"no-store"});
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),3500);
+    const res=await fetch(`${KV_API}?limit=1000`,{cache:"no-store",signal:controller.signal});
+    clearTimeout(timeout);
     if(!res.ok) return [];
     const data=await res.json();
     return data?.ok&&Array.isArray(data?.daily_draws)?data.daily_draws.map(normalize):[];
@@ -186,24 +189,29 @@ function render(rows) {
   renderPagination(currentRows.length);
 }
 
-// Read order: versioned repo history + KV live records + local optimistic fallback.
-// Google Sheet is no longer part of the public read path.
+// Static-first: render repo/local immediately, then overlay KV when available.
 async function loadRecords() {
-  const [repoRows,kvRows]=await Promise.all([loadRepoHistory(),loadKVHistory()]);
   const cached=readCache();
-  const rows=mergeRows(repoRows,kvRows,cached);
+  const repoRows=await loadRepoHistory();
+  const baseRows=mergeRows(repoRows,cached);
+  writeCache(baseRows);
+  render(baseRows);
 
-  writeCache(rows);
-  render(rows);
-  if(kvRows.length){
-    $("#dailyStatsStatus").textContent=`已載入 Repo 歷史＋KV 現行紀錄，共 ${rows.length} 筆。`;
-  }else if(repoRows.length){
-    $("#dailyStatsStatus").textContent=`已載入 Repo 每日符文歷史，共 ${rows.length} 筆；KV 尚未提供新紀錄。`;
-  }else if(rows.length){
-    $("#dailyStatsStatus").textContent="遠端歷史暫未回應；目前顯示本機已記錄資料。";
+  if(repoRows.length){
+    $("#dailyStatsStatus").textContent=`已載入 Repo 每日符文歷史，共 ${baseRows.length} 筆；正在同步 KV 現行紀錄。`;
+  }else if(baseRows.length){
+    $("#dailyStatsStatus").textContent="Repo 歷史暫未回應；目前先顯示本機已記錄資料。";
   }else{
     $("#dailyStatsStatus").textContent="每日符文歷史暫時無法載入。";
   }
+
+  const kvRows=await loadKVHistory();
+  if(!kvRows.length) return;
+
+  const rows=mergeRows(repoRows,kvRows,cached);
+  writeCache(rows);
+  render(rows);
+  $("#dailyStatsStatus").textContent=`已載入 Repo 歷史＋KV 現行紀錄，共 ${rows.length} 筆。`;
 }
 
 function populateRunes(){
