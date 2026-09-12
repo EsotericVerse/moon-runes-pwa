@@ -1,10 +1,11 @@
 (() => {
   'use strict';
 
-  const REGISTRY_URL='data/json/registries/LOC_ERA_REGISTRY.json';
+  const DATA_JS_URL='data/js/loc-era-data.js';
   const LEGACY_MAP={P0:'P5.0','P0.5':'P5.1',P1:'P6.0',P2:'P6.1',P3:'P6.2',P4:'P7.0',P5:'P7.0',P6:'P7.0',P7:'P7.1',P8:'P7.2'};
   let memory=null;
   let inflight=null;
+  let dataLoadPromise=null;
 
   const n=v=>String(v??'').trim();
   const order=v=>Number(v?.order??9999);
@@ -36,17 +37,31 @@
     return normalizeRows(baseRows);
   }
 
-  async function fetchRegistry(){
-    const response=await fetch(REGISTRY_URL);
-    if(!response.ok)throw new Error('HTTP '+response.status);
-    return response.json();
+  function ensureStaticData(){
+    if(window.LOC_ERA_DATA)return Promise.resolve(window.LOC_ERA_DATA);
+    if(dataLoadPromise)return dataLoadPromise;
+    dataLoadPromise=new Promise((resolve,reject)=>{
+      const existing=document.querySelector(`script[src="${DATA_JS_URL}"]`);
+      if(existing){
+        existing.addEventListener('load',()=>window.LOC_ERA_DATA?resolve(window.LOC_ERA_DATA):reject(new Error('ERA static data unavailable')),{once:true});
+        existing.addEventListener('error',()=>reject(new Error('ERA static data load failed')),{once:true});
+        return;
+      }
+      const script=document.createElement('script');
+      script.src=DATA_JS_URL;
+      script.async=false;
+      script.onload=()=>window.LOC_ERA_DATA?resolve(window.LOC_ERA_DATA):reject(new Error('ERA static data unavailable'));
+      script.onerror=()=>reject(new Error('ERA static data load failed'));
+      document.head.appendChild(script);
+    });
+    return dataLoadPromise;
   }
 
   async function load({force=false}={}){
     if(memory&&!force)return memory;
     if(inflight&&!force)return inflight;
     inflight=(async()=>{
-      const registry=await fetchRegistry();
+      const registry=await ensureStaticData();
       const eras=normalizeRows(registry.eras||[]);
       const current=eras.find(x=>x.status==='current')||eras[eras.length-1]||null;
       const segmentCount=eras.filter(x=>x.period_type!=='parent').length;
@@ -59,7 +74,7 @@
         segment_count:segmentCount,
         parent_count:eras.length-segmentCount,
         legacy_map:{...(registry.legacy_period_map||LEGACY_MAP)},
-        source:'registry'
+        source:'static-js'
       };
       return memory;
     })();
@@ -103,8 +118,8 @@
 
   function invalidate(){memory=null;inflight=null}
   function peek(){return memory}
-  async function upsert(){throw new Error('ERA 使用靜態 LOC_ERA_REGISTRY.json；目前不使用遠端寫入。')}
-  async function remove(){throw new Error('ERA 使用靜態 LOC_ERA_REGISTRY.json；目前不使用遠端寫入。')}
+  async function upsert(){throw new Error('ERA 正式資料由 JSON 編輯後重新發布為靜態 JS；runtime 不做遠端寫入。')}
+  async function remove(){throw new Error('ERA 正式資料由 JSON 編輯後重新發布為靜態 JS；runtime 不做遠端寫入。')}
 
-  window.LOCPeriods={REGISTRY_URL,LEGACY_MAP,load,peek,normalizePeriod,resolveDate,findPeriod,label,range,fillSelect,invalidate,merge,upsert,remove};
+  window.LOCPeriods={DATA_JS_URL,LEGACY_MAP,load,peek,normalizePeriod,resolveDate,findPeriod,label,range,fillSelect,invalidate,merge,upsert,remove};
 })();
