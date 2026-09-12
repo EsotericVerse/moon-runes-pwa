@@ -361,6 +361,11 @@
           <span class="text-content">可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。</span>
         </div>
         <div class="evolution-proof-item">
+          <small class="text-category">Runtime</small>
+          <strong class="text-title">可變資料已由 Cloudflare KV 接管</strong>
+          <span class="text-content">時期、每日符文、Context Event 與 Relation 已完成 Cloudflare KV 化；Context 舊資料已由 Google Sheets 搬移並完成筆數核對，以及新增、編輯、刪除 CRUD 驗證。前端 runtime 不再依賴 Google Sheets。</span>
+        </div>
+        <div class="evolution-proof-item">
           <small class="text-category">Governance</small>
           <strong class="text-title">全文分析與公開展示分離</strong>
           <span class="text-content">授權內容可以用全文做搜尋與分析；公開結果則依內容治理顯示片段、全文或僅 metadata。Facebook 與 Threads 預設採片段展示，歌詞不直接公開全文。</span>
