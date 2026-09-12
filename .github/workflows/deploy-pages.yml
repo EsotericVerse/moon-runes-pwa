@@ -1,9 +1,9 @@
-name: Deploy RC4 Next to GitHub Pages
+name: Deploy Main Next to GitHub Pages
 
 on:
   push:
     branches:
-      - "rc/1.0rc4"
+      - "main"
   workflow_dispatch:
 
 permissions:
