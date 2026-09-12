@@ -67,6 +67,11 @@ def main() -> int:
         "LUNARUNE_EVOLUTION_DATA",
     )
     dump_global(
+        "data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json",
+        "data/js/lunarune-daily-data.js",
+        "LUNARUNE_DAILY_DATA",
+    )
+    dump_global(
         "data/json/registries/LOC8_EVENT_SNAPSHOT.json",
         "data/js/loc-event-data.js",
         "LOC_EVENT_DATA",
@@ -75,6 +80,11 @@ def main() -> int:
         "data/json/registries/LOC2_EVENT_REGISTRY.json",
         "data/js/loc-scenario-data.js",
         "LOC_SCENARIO_DATA",
+    )
+    dump_global(
+        "data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json",
+        "data/js/loc-relation-data.js",
+        "LOC_RELATION_DATA",
     )
     dump_combined(
         {
