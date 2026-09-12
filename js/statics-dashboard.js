@@ -4,7 +4,9 @@
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const getJSON = async path => {
-    const r = await fetch(path,{cache:'no-store'});
+    // Static generated data: let the browser/CDN reuse it, but revalidate so
+    // updated repo snapshots become visible without Service Worker staleness.
+    const r = await fetch(path,{cache:'no-cache'});
     if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
     return r.json();
   };
