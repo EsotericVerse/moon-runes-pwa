@@ -6,6 +6,7 @@
   const RUNES_URL='data/json/core/runes.json';
   const DERIVED_URL='data/json/registries/LUNARUNE_DERIVED_LEXICON.json';
   const EVOLUTION_URL='data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json';
+  const EVOLUTION_KV_URL='https://api.lo3rwang.cc/evolution/runes';
   const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
   const KEYWORD_PAGE_SIZE=8;
   let keywordPage=1;
@@ -18,12 +19,20 @@
     try{const r=await fetch(url,{cache:'no-store'});return r.ok?await r.json():fallback}catch{return fallback}
   }
 
+  async function loadEvolution(){
+    const kv=await optionalJson(EVOLUTION_KV_URL,null);
+    const kvData=kv?.snapshot?.data;
+    if(kv?.ok&&kv?.seeded&&kvData&&typeof kvData==='object') return {...kvData,__source:'kv'};
+    const local=await optionalJson(EVOLUTION_URL,{system_stages:[],governance_evolution:[],semantic_history_cases:[]});
+    return {...local,__source:'registry'};
+  }
+
   async function load(){
     if(window.__LOC_RUNE_ANALYTICS_DATA__) return window.__LOC_RUNE_ANALYTICS_DATA__;
     const [r,derived,evolution]=await Promise.all([
       fetch(RUNES_URL,{cache:'no-store'}),
       optionalJson(DERIVED_URL,{entries:[]}),
-      optionalJson(EVOLUTION_URL,{system_stages:[],governance_evolution:[],semantic_history_cases:[]})
+      loadEvolution()
     ]);
     if(!r.ok) throw new Error(`runes.json HTTP ${r.status}`);
     const runes=await r.json();
@@ -63,7 +72,8 @@
     const pos=d.keywords.filter(x=>x.polarity==='正向').length,neg=d.keywords.length-pos;
     const stages=Array.isArray(d.evolution?.system_stages)?d.evolution.system_stages:[];
     const stageLine=stages.map(x=>x.label).join(' → ');
-    host.innerHTML=`<div class="stats-metrics">${metric('符文數',d.rows.length)}${metric('唯一群組',[...d.groups.values()].filter(x=>x.length).length)}${metric('正向關鍵詞',pos)}${metric('反向關鍵詞',neg)}${metric('Ownership 規則',d.ownership.length)}${metric('高價值衍生詞',d.derivedEntries.length)}${metric('主體性轉移',d.shifts.length)}${metric('對等歧義',d.ambiguous.length)}</div>${stageLine?`<p><strong>系統演化：</strong>${esc(stageLine)}</p>`:''}<p class="source-note">No API · Base66、衍生詞與演化紀錄皆讀取靜態治理資料；Graph runtime 不呼叫外部 API。</p>`;
+    const source=d.evolution?.__source==='kv'?'KV snapshot':'靜態治理 registry fallback';
+    host.innerHTML=`<div class="stats-metrics">${metric('符文數',d.rows.length)}${metric('唯一群組',[...d.groups.values()].filter(x=>x.length).length)}${metric('正向關鍵詞',pos)}${metric('反向關鍵詞',neg)}${metric('Ownership 規則',d.ownership.length)}${metric('高價值衍生詞',d.derivedEntries.length)}${metric('主體性轉移',d.shifts.length)}${metric('對等歧義',d.ambiguous.length)}</div>${stageLine?`<p><strong>系統演化：</strong>${esc(stageLine)}</p>`:''}<p class="source-note">No API · Base66 與衍生詞讀取正式治理資料；符文演化優先讀取 ${esc(source)}。</p>`;
   }
 
   async function renderTimeline(host){
