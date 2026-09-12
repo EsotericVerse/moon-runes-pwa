@@ -18,6 +18,11 @@ for (const name of [
   if (existsSync(resolve(root, name))) failures.push(`forbidden root directory: ${name}/`);
 }
 
+// Mother/source spreadsheets belong under governed data roots, not repository root.
+for (const name of ['LunaRune66.xlsx', 'all.xlsx']) {
+  if (existsSync(resolve(root, name))) failures.push(`forbidden root data file: ${name}`);
+}
+
 // Remaining static-runtime roots are still migration debt until Next promotion is complete.
 for (const name of ['engine', 'css', 'js']) {
   if (existsSync(resolve(root, name))) warnings.push(`${name}/ -> legacy migration debt`);
@@ -28,7 +33,9 @@ for (const path of [
   'docs/DOMAIN_ARCHITECTURE.md',
   'docs/SITE_MAP.md',
   'assets/README.md',
-  'services/README.md'
+  'services/README.md',
+  'data/lunarunes/source/LunaRune66.xlsx',
+  'data/source/all.xlsx'
 ]) {
   if (!existsSync(resolve(root, path))) failures.push(`missing governance file: ${path}`);
 }

@@ -33,6 +33,7 @@ Target structure:
 
 ```text
 data/lunarunes/
+  source/LunaRune66.xlsx
   canonical/runes.json
   companions/lots.json
   companions/history.json
@@ -97,13 +98,13 @@ public/                 only selected runtime delivery assets
 | `card_api/` | migrated | runtime → `services/api/card/`; repository entrypoints → `scripts/card-api/`; docs → `docs/api/` |
 | `loc8_api/` | migrated | `services/api/loc8/`; docs → `docs/api/` |
 | `engine/` | audit | `lib/`, `modules/`, or `services/` by responsibility |
-| root `LunaRune66.xlsx` | migrate | `data/lunarunes/source/` |
-| root `all.xlsx` | audit/migrate | `data/source/` or retire if superseded |
+| root `LunaRune66.xlsx` | migrated | `data/lunarunes/source/LunaRune66.xlsx` |
+| root `all.xlsx` | migrated/preserved | `data/source/all.xlsx`; retire only after explicit supersession audit |
 | root PWA icons/manifest/service worker | legacy | move/retire as Next/PWA migration completes |
 | root redirect HTML | temporary compatibility | retire after Next production promotion |
 | root `css/` and `js/` | legacy static runtime | retire after remaining static entrypoints migrate |
 
-Migrated roots are now forbidden by CI and must not be recreated as compatibility directories.
+Migrated roots and migrated root data files are now forbidden by CI and must not be recreated as compatibility locations.
 
 ## Migration order
 
@@ -126,4 +127,4 @@ Migrated roots are now forbidden by CI and must not be recreated as compatibilit
 
 ## Root rule
 
-New domain-specific folders must not be added at repository root. New work belongs under `app/`, `lib/`, `modules/`, `assets/`, `data/`, `docs/`, `schemas/`, `services/`, `scripts/`, or `skills/`.
+New domain-specific folders or source datasets must not be added at repository root. New work belongs under `app/`, `lib/`, `modules/`, `assets/`, `data/`, `docs/`, `schemas/`, `services/`, `scripts/`, or `skills/`.
