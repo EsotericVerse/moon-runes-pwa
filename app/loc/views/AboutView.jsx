@@ -2,6 +2,7 @@ export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero">
       <p className="loc-eyebrow">月典（LOC, Luna Codex）&gt; 語言模型框架(Language Model Framework)</p>
+      <h1>LOC月典</h1>
       <p className="loc-core-line">從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，累積後再選擇怎麼進化。</p>
       <div className="loc-hero-copy">
         <p>月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演語言的系統。</p>
