@@ -34,10 +34,7 @@ html[data-theme-resolved="day"] body.loc-page-index .framework-modal{
   border-color:var(--loc-border)!important;
 }
 
-/* TEXT-HEAVY PAGE DAY THEME · lo3rwang.html
-   The author page still contains legacy night-only literal colors. Keep its identity
-   accents, but let body copy, emphasis and profile blocks follow the canonical day
-   hierarchy. */
+/* TEXT-HEAVY PAGE DAY THEME · lo3rwang.html */
 html[data-theme-resolved="day"] body.loc-page-lo3rwang{
   color-scheme:light;
   --panel:var(--surface);
@@ -50,33 +47,19 @@ html[data-theme-resolved="day"] body.loc-page-lo3rwang article{
   color:var(--text)!important;
 }
 html[data-theme-resolved="day"] body.loc-page-lo3rwang p,
-html[data-theme-resolved="day"] body.loc-page-lo3rwang li{
-  color:var(--text)!important;
-}
-html[data-theme-resolved="day"] body.loc-page-lo3rwang .lead{
-  color:var(--muted)!important;
-}
-html[data-theme-resolved="day"] body.loc-page-lo3rwang strong{
-  color:var(--text)!important;
-}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang li{color:var(--text)!important}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang .lead{color:var(--muted)!important}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang strong{color:var(--text)!important}
 html[data-theme-resolved="day"] body.loc-page-lo3rwang .profile-block{
   background:var(--surface2)!important;
   border-color:var(--line)!important;
   color:var(--text)!important;
 }
-html[data-theme-resolved="day"] body.loc-page-lo3rwang .profile-block .block-kicker{
-  color:var(--purple)!important;
-}
-html[data-theme-resolved="day"] body.loc-page-lo3rwang .profile-block h3{
-  color:var(--gold)!important;
-}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang .profile-block .block-kicker{color:var(--purple)!important}
+html[data-theme-resolved="day"] body.loc-page-lo3rwang .profile-block h3{color:var(--gold)!important}
 
-/* TEXT-HEAVY PAGE DAY THEME · governance.html
-   Governance is a semantic hierarchy page; its display hierarchy must follow the
-   same authority order in both themes instead of retaining night-only body colors. */
-html[data-theme-resolved="day"] body.loc-page-governance{
-  color-scheme:light;
-}
+/* TEXT-HEAVY PAGE DAY THEME · governance.html */
+html[data-theme-resolved="day"] body.loc-page-governance{color-scheme:light}
 html[data-theme-resolved="day"] body.loc-page-governance .gov-card{
   background:var(--surface)!important;
   border-color:var(--line)!important;
@@ -84,12 +67,8 @@ html[data-theme-resolved="day"] body.loc-page-governance .gov-card{
 }
 html[data-theme-resolved="day"] body.loc-page-governance .gov-card p,
 html[data-theme-resolved="day"] body.loc-page-governance .gov-card ul,
-html[data-theme-resolved="day"] body.loc-page-governance .gov-card li{
-  color:var(--text)!important;
-}
-html[data-theme-resolved="day"] body.loc-page-governance .gov-card strong{
-  color:var(--text)!important;
-}
+html[data-theme-resolved="day"] body.loc-page-governance .gov-card li,
+html[data-theme-resolved="day"] body.loc-page-governance .gov-card strong{color:var(--text)!important}
 html[data-theme-resolved="day"] body.loc-page-governance .core-line,
 html[data-theme-resolved="day"] body.loc-page-governance .doc-link,
 html[data-theme-resolved="day"] body.loc-page-governance .loc-concept-note{
@@ -98,13 +77,9 @@ html[data-theme-resolved="day"] body.loc-page-governance .loc-concept-note{
   color:var(--text)!important;
 }
 html[data-theme-resolved="day"] body.loc-page-governance .doc-link span,
-html[data-theme-resolved="day"] body.loc-page-governance .lead{
-  color:var(--muted)!important;
-}
+html[data-theme-resolved="day"] body.loc-page-governance .lead{color:var(--muted)!important}
 
-/* FUNCTION PAGE DAY THEME · game.html
-   Interactive regions keep their hierarchy while all ordinary surfaces and text
-   follow the shared day palette. */
+/* FUNCTION PAGE DAY THEME · game.html */
 html[data-theme-resolved="day"] body.loc-page-game{
   color-scheme:light;
   --panel:var(--surface);
@@ -126,22 +101,13 @@ html[data-theme-resolved="day"] body.loc-page-game .btn{
   border-color:var(--line)!important;
   color:var(--text)!important;
 }
-html[data-theme-resolved="day"] body.loc-page-game .tag{
-  background:var(--soft)!important;
-  color:var(--text)!important;
-}
+html[data-theme-resolved="day"] body.loc-page-game .tag{background:var(--soft)!important;color:var(--text)!important}
 html[data-theme-resolved="day"] body.loc-page-game .status,
 html[data-theme-resolved="day"] body.loc-page-game .log p,
-html[data-theme-resolved="day"] body.loc-page-game .muted{
-  color:var(--muted)!important;
-}
-html[data-theme-resolved="day"] body.loc-page-game .status{
-  background:var(--surface2)!important;
-}
+html[data-theme-resolved="day"] body.loc-page-game .muted{color:var(--muted)!important}
+html[data-theme-resolved="day"] body.loc-page-game .status{background:var(--surface2)!important}
 
-/* FUNCTION PAGE DAY THEME · statics.html
-   Dashboard cards, forms and controls use the same shared surface hierarchy as the
-   rest of LOC instead of retaining night-only literals. */
+/* FUNCTION PAGE DAY THEME · statics.html */
 html[data-theme-resolved="day"] body.loc-page-statics{
   color-scheme:light;
   --panel:var(--surface);
@@ -168,6 +134,105 @@ html[data-theme-resolved="day"] body.loc-page-statics .daily-record-status,
 html[data-theme-resolved="day"] body.loc-page-statics .stats-metric small,
 html[data-theme-resolved="day"] body.loc-page-statics .stats-metric span,
 html[data-theme-resolved="day"] body.loc-page-statics .ranking-row span,
-html[data-theme-resolved="day"] body.loc-page-statics .rune-group-stats small{
-  color:var(--muted)!important;
+html[data-theme-resolved="day"] body.loc-page-statics .rune-group-stats small{color:var(--muted)!important}
+
+/* GLOBAL DAY-THEME COMPATIBILITY LAYER
+   All HTML pages that load css/style.css must share one visual vocabulary.
+   Legacy page-local aliases are normalized here so future text/feature analysis is
+   not polluted by page-specific night palettes or arbitrary presentation weight. */
+html[data-theme-resolved="day"] body{
+  color-scheme:light;
+  --panel:var(--surface);
+  --soft:var(--surface2);
+  --card:var(--surface);
+  --box:var(--surface2);
+  --line2:var(--line-strong);
+  --mint:var(--accent);
+  --ok:var(--accent);
+  --loc-bg:var(--bg);
+  --loc-surface:var(--surface);
+  --loc-surface-soft:var(--surface2);
+  --loc-border:var(--line);
+  --loc-text:var(--text);
+  --loc-muted:var(--muted);
+  --loc-purple:var(--purple);
+  --loc-gold:var(--gold);
+  --loc-shadow:var(--shadow);
 }
+
+/* Canonical text surfaces: primary containers use --surface; nested/supporting
+   containers use --surface2. These selectors intentionally target semantic text
+   containers rather than artwork, rune imagery, media thumbnails or canvases. */
+html[data-theme-resolved="day"] body :where(
+  article,
+  .panel,
+  .card,
+  .gov-card,
+  .profile-block,
+  .search-panel,
+  .filter-panel,
+  .hero-note,
+  .section,
+  .event-card,
+  .trajectory-card,
+  .keyword-card,
+  .era,
+  .daily-record-form,
+  .daily-stats-panel,
+  .stats-metric,
+  .loc-concept-note,
+  .loc-guidance-note,
+  .quick-selector,
+  .quick-selector-detail
+){
+  border-color:var(--line)!important;
+  color:var(--text)!important;
+}
+
+html[data-theme-resolved="day"] body :where(
+  .panel,
+  .card,
+  .gov-card,
+  .profile-block,
+  .search-panel,
+  .hero-note,
+  .section,
+  .event-card,
+  .trajectory-card,
+  .keyword-card,
+  .era,
+  .daily-record-form,
+  .daily-stats-panel,
+  .stats-metric
+){background:var(--surface)!important}
+
+html[data-theme-resolved="day"] body :where(
+  .filter-panel,
+  .loc-concept-note,
+  .loc-guidance-note,
+  .quick-selector,
+  .quick-selector-detail,
+  .core-line,
+  .doc-link,
+  .status,
+  .legend div,
+  .metric,
+  .trajectory-box
+){
+  background:var(--surface2)!important;
+  border-color:var(--line)!important;
+  color:var(--text)!important;
+}
+
+/* Form controls are text surfaces too; do not leave night-blue islands in day mode. */
+html[data-theme-resolved="day"] body :where(input,textarea,select){
+  background:var(--surface2)!important;
+  color:var(--text)!important;
+  border-color:var(--line)!important;
+}
+html[data-theme-resolved="day"] body :where(input,textarea)::placeholder{color:var(--muted)!important}
+
+/* Canonical text hierarchy. Explicit semantic accent classes remain accented. */
+html[data-theme-resolved="day"] body :where(p,li,dd,dt,label,td,th){color:var(--text)}
+html[data-theme-resolved="day"] body :where(.muted,.lead,.meta,.source-note,small){color:var(--muted)}
+html[data-theme-resolved="day"] body :where(strong,b){color:var(--text)}
