@@ -179,7 +179,7 @@ switchContextView(initialContextView);
 function bindSearch(inputId,gridId){const input=document.getElementById(inputId),grid=document.getElementById(gridId);if(!input||!grid)return;input.addEventListener("input",()=>{const q=input.value.trim().toLowerCase();grid.querySelectorAll(".card").forEach(c=>c.classList.toggle("hidden",q&&!c.dataset.search.includes(q)))})}bindSearch("eventSearch","eventGrid");bindSearch("runeSearch","runeGrid");
 </script><script src="js/loc-periods.js"></script><script src="js/loc-nav.js"></script>
 <script>
-const CONTEXT_SHEET_API='https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec';
+const CONTEXT_KV_API='https://api.lo3rwang.cc/context';
 const CONTEXT_LOC_API='https://moon-runes-pwa.onrender.com';
 const CONTEXT_EVENT_CACHE='context-events-cache-v1';
 const CONTEXT_RELATION_CACHE='context-relations-cache-v1';
@@ -208,7 +208,7 @@ function contextGraphCacheKey(kind,value,depth=''){
   return CONTEXT_GRAPH_CACHE_PREFIX+kind+':'+encodeURIComponent(String(value||''))+':'+String(depth||'');
 }
 function contextPost(action,key,payload){
-  return fetch(CONTEXT_SHEET_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,[key]:payload}),redirect:'follow'}).then(async r=>{if(!r.ok)throw new Error('request failed');const d=await r.json();if(d&&d.ok===false)throw new Error(d.error||'request failed');return d});
+  return fetch(CONTEXT_KV_API,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,[key]:payload})}).then(async r=>{if(!r.ok)throw new Error('request failed');const d=await r.json();if(d&&d.ok===false)throw new Error(d.error||'request failed');return d});
 }
 async function loadContextEvents({remote=false}={}){
   const cached=readContextCache(CONTEXT_EVENT_CACHE);
@@ -224,10 +224,9 @@ async function loadContextEvents({remote=false}={}){
   if(!remote) return;
 
   try{
-    const u=new URL(CONTEXT_SHEET_API);
+    const u=new URL(CONTEXT_KV_API);
     u.searchParams.set('action','events');
-    u.searchParams.set('user_id','lo3rwang');
-    const r=await fetch(u,{cache:'no-store',redirect:'follow'});
+    const r=await fetch(u,{cache:'no-store',credentials:'include'});
     const d=await r.json();
     contextEvents=(Array.isArray(d)?d:(d.events||[]));
     contextEventsRemoteLoaded=true;
@@ -318,10 +317,9 @@ async function loadContextRelations({remote=false}={}){
   if(!remote) return;
 
   try{
-    const u=new URL(CONTEXT_SHEET_API);
+    const u=new URL(CONTEXT_KV_API);
     u.searchParams.set('action','relations');
-    u.searchParams.set('user_id','lo3rwang');
-    const r=await fetch(u,{cache:'no-store',redirect:'follow'});
+    const r=await fetch(u,{cache:'no-store',credentials:'include'});
     const d=await r.json();
     contextRelations=d.relations||[];
     contextRelationsRemoteLoaded=true;
