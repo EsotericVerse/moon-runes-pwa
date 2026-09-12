@@ -7,8 +7,8 @@ import {
   rmSync,
   statSync
 } from 'node:fs';
-import { dirname, relative, resolve } from 'node:path';
-import { LOC_DATA } from '../app/loc/data.js';
+import { dirname, resolve } from 'node:path';
+import { LOC_DATA } from '../app/loc/data-paths.mjs';
 
 const root = process.cwd();
 const publicRoot = resolve(root, 'public');
