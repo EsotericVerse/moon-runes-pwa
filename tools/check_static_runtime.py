@@ -1,54 +1,70 @@
 #!/usr/bin/env python3
 """RC3 static-runtime governance check.
 
-This is intentionally small and dependency-free. It prevents the legacy
-remote/cache architecture from silently returning to current public runtime.
-It scans only current runtime surfaces, not archived/history/API source.
+Current public runtime is static PWA only:
+- JSON is authoring/canonical data.
+- Browser runtime consumes generated JS.
+- Google Sheets, KV, legacy Render/state APIs and browser data caches are not
+  allowed in current static surfaces.
+- card_api/ is intentionally excluded: it is the near-term api.lo3rwang.cc
+  RAG/Graph/Search workspace, not current PWA runtime.
+- Presentation authority lives in css/, not inline HTML styles.
 """
 from __future__ import annotations
 
 import re
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-RUNTIME_FILES = [
+HTML_RUNTIME = [
     "index.html",
+    "lots.html",
     "runes.html",
     "context.html",
     "evolution.html",
     "search.html",
     "game.html",
     "statics.html",
+]
+JS_RUNTIME = [
     "js/loc-periods.js",
+    "js/rune.js",
+    "js/direction64.js",
+    "js/runes66.js",
     "js/rune-analytics.js",
     "js/rune-daily-records.js",
     "js/rune-context-graph.js",
-    "js/runes66.js",
+    "js/facebook-repo-corpus.js",
 ]
+RUNTIME_FILES = HTML_RUNTIME + JS_RUNTIME
 
-# API/Graph/RAG may return later behind api.lo3rwang.cc, but RC3 static pages
-# must not require them to render or search their canonical datasets.
 FORBIDDEN = {
+    "Google Sheets runtime": re.compile(r"script\.google\.com|SHEET_API_URL", re.I),
     "legacy Render runtime": re.compile(r"moon-runes-pwa\.onrender\.com", re.I),
-    "legacy state API runtime": re.compile(r"api\.lo3rwang\.cc/(?:context|daily-runes|eras|evolution)", re.I),
-    "data cache in localStorage": re.compile(r"localStorage\.(?:getItem|setItem)\([^\n]{0,120}(?:cache|context|rune|era)", re.I),
+    "legacy state/KV runtime": re.compile(
+        r"api\.lo3rwang\.cc/(?:context|daily-runes|eras|evolution)|LOC_KV|wrangler",
+        re.I,
+    ),
+    "browser data cache/state": re.compile(
+        r"localStorage\.(?:getItem|setItem)\(", re.I
+    ),
 }
 
-# Canonical JSON may be authored and built, but current browser runtime should
-# consume generated JS for these known authorities.
-FORBIDDEN_JSON_RUNTIME = [
-    "data/json/core/runes.json",
-    "data/json/core/runes66groups.json",
-    "data/json/registries/LOC_ERA_REGISTRY.json",
-    "data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json",
-    "data/json/registries/LUNARUNE_EVOLUTION_ANALYSIS.json",
-    "data/json/registries/LUNARUNE_DERIVED_LEXICON.json",
-    "data/json/registries/LOC8_EVENT_SNAPSHOT.json",
-    "data/json/registries/LOC2_EVENT_REGISTRY.json",
-    "data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json",
-    "data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json",
+JSON_FETCH = re.compile(
+    r"fetch\s*\([^\n;]{0,260}?(?:\.json|data/json/)[^\n;]{0,260}?\)",
+    re.I | re.S,
+)
+INLINE_STYLE = re.compile(r"\sstyle\s*=\s*['\"]", re.I)
+
+# Deployment mechanisms removed from RC3 must remain physically absent.
+MUST_NOT_EXIST = [
+    "wrangler.toml",
+    "cloudflare",
+    ".wrangler",
+    "render.yaml",
+    "Procfile",
+    "Dockerfile",
 ]
 
 
@@ -59,29 +75,32 @@ def line_of(text: str, offset: int) -> int:
 def main() -> int:
     failures: list[str] = []
     checked = 0
+
+    for rel in MUST_NOT_EXIST:
+        if (ROOT / rel).exists():
+            failures.append(f"{rel}: obsolete deployment/runtime path must not exist")
+
     for rel in RUNTIME_FILES:
         path = ROOT / rel
         if not path.exists():
             continue
         checked += 1
         text = path.read_text(encoding="utf-8", errors="replace")
+
         for label, pattern in FORBIDDEN.items():
             for match in pattern.finditer(text):
                 failures.append(f"{rel}:{line_of(text, match.start())}: {label}")
-        for needle in FORBIDDEN_JSON_RUNTIME:
-            start = 0
-            while True:
-                pos = text.find(needle, start)
-                if pos < 0:
-                    break
-                # Header/source comments in generated JS are documentation,
-                # not browser I/O. Only flag when the path appears near fetch().
-                window = text[max(0, pos - 180):pos + len(needle) + 40]
-                if re.search(r"fetch\s*\(", window, re.I):
-                    failures.append(
-                        f"{rel}:{line_of(text, pos)}: canonical JSON fetched at runtime: {needle}"
-                    )
-                start = pos + len(needle)
+
+        for match in JSON_FETCH.finditer(text):
+            failures.append(
+                f"{rel}:{line_of(text, match.start())}: runtime JSON fetch; publish JSON to JS first"
+            )
+
+        if rel.endswith(".html"):
+            for match in INLINE_STYLE.finditer(text):
+                failures.append(
+                    f"{rel}:{line_of(text, match.start())}: inline style; move presentation to css/"
+                )
 
     if failures:
         print("RC3 static runtime governance: FAIL")
