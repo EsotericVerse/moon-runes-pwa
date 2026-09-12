@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { fetchLocJson, LOC_DATA } from '../data';
 
 const TABS=[['ranking','排行榜'],['runes','符文統計'],['sources','來源管理'],['daily','每日符文'],['import','匯入']];
-const json=async path=>{const r=await fetch(path,{cache:'force-cache'});if(!r.ok)throw new Error(`${path}: HTTP ${r.status}`);return r.json();};
-const split=v=>String(v||'').split(/[、,，]/).map(x=>x.trim()).filter(Boolean);
+const PERIODS='/data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json';
+const SOURCE_STATS='/data/json/generated/search/SEARCH_SOURCE_STATS.json';
+const DAILY_HISTORY='/data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json';
+const split=value=>String(value||'').split(/[、,，]/).map(x=>x.trim()).filter(Boolean);
 
 export default function StaticsView(){
   const [tab,setTab]=useState('ranking');
@@ -14,17 +17,27 @@ export default function StaticsView(){
   const [daily,setDaily]=useState(null);
   const [error,setError]=useState('');
 
-  useEffect(()=>{let live=true;Promise.all([json('/data/json/generated/search/SEARCH_SOURCE_STATS.json'),json('/data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json')]).then(([s,p])=>{if(live){setSources(s);setPeriods(p);}}).catch(e=>live&&setError(e.message));return()=>{live=false};},[]);
-  useEffect(()=>{if((tab==='runes'||tab==='ranking')&&!runes)json('/data/json/core/runes.json').then(setRunes).catch(e=>setError(e.message));if(tab==='daily'&&!daily)json('/data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json').then(setDaily).catch(e=>setError(e.message));},[tab,runes,daily]);
+  useEffect(()=>{
+    let live=true;
+    const load=(path,setter)=>fetchLocJson(path).then(data=>live&&setter(data)).catch(e=>live&&setError(e.message));
+    if(tab==='ranking'){
+      if(!periods)load(PERIODS,setPeriods);
+      if(!runes)load(LOC_DATA.RUNES,setRunes);
+    }
+    if(tab==='runes'&&!runes)load(LOC_DATA.RUNES,setRunes);
+    if(tab==='sources'&&!sources)load(SOURCE_STATS,setSources);
+    if(tab==='daily'&&!daily)load(DAILY_HISTORY,setDaily);
+    return()=>{live=false};
+  },[tab,periods,runes,sources,daily]);
 
-  const groups=useMemo(()=>{const out={};for(const r of runes||[]){const g=r['所屬分組']||'特殊';out[g]=(out[g]||0)+1;}return Object.entries(out);},[runes]);
-  const keywordRanks=useMemo(()=>{const count=new Map();for(const r of runes||[])for(const term of [...split(r['正向關鍵詞']),...split(r['反向關鍵詞'])])count.set(term,(count.get(term)||0)+1);return [...count.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'zh-Hant')).slice(0,24);},[runes]);
+  const groups=useMemo(()=>{const out={};for(const rune of runes||[]){const group=rune['所屬分組']||'特殊';out[group]=(out[group]||0)+1;}return Object.entries(out);},[runes]);
+  const keywordRanks=useMemo(()=>{const count=new Map();for(const rune of runes||[])for(const term of [...split(rune['正向關鍵詞']),...split(rune['反向關鍵詞'])])count.set(term,(count.get(term)||0)+1);return [...count.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'zh-Hant')).slice(0,24);},[runes]);
   const latestPeriod=periods?.periods?.at(-1);
   const draws=daily?.daily_draws||[];
   const primary=draws.filter(x=>x.draw_kind==='daily_draw').length;
 
   return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">LOC Statistics</p><h1>統計</h1><p>排行榜、符文統計、來源管理與每日符文集中於此。資料依功能載入，不再進站時一次掃描所有 corpus／音樂 shards。</p></header>
+    <header className="loc-hero"><p className="loc-eyebrow">LOC Statistics</p><h1>統計</h1><p>排行榜、符文統計、來源管理與每日符文集中於此。每個 tab 只載入自己的資料，不在進站時掃描其他 corpus。</p></header>
     <nav className="loc-tabs" aria-label="統計功能">{TABS.map(([id,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}>{label}</button>)}</nav>
     {error&&<div className="loc-status error">{error}</div>}
     {tab==='ranking'&&<div className="loc-grid two"><section className="loc-card"><p className="loc-eyebrow">Period Keywords</p><h2>跨時期關鍵字</h2>{latestPeriod?<><p>最新分析：{latestPeriod.period} · {latestPeriod.document_count?.toLocaleString()} 筆文件</p><div className="loc-ranking">{latestPeriod.keywords?.slice(0,15).map((x,i)=><div key={x.term}><b>{i+1}. {x.term}</b><span>{x.document_count} 篇 · {x.percent}%</span></div>)}</div></>:<p>載入中…</p>}</section><section className="loc-card"><p className="loc-eyebrow">Rune Keywords · No API</p><h2>符文關鍵詞</h2>{runes?<div className="loc-ranking">{keywordRanks.map(([term,n],i)=><div key={term}><b>{i+1}. {term}</b><span>{n} 次</span></div>)}</div>:<p>載入中…</p>}</section></div>}
