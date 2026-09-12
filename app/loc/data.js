@@ -36,6 +36,7 @@ export const LOC_DATA = Object.freeze({
 // - lots/history/harmony are canonical companion datasets keyed by rune identity.
 // - Derived/search JSON stays split so large corpora can be loaded only when needed.
 // - All LOC views share this request cache and one global concurrency gate.
+// - Concurrency is deliberately capped at 2 to avoid burst memory/network pressure.
 const cache = new Map();
 const DEFAULT_GLOBAL_CONCURRENCY = 2;
 let activeRequests = 0;
