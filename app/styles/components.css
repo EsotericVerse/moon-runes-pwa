@@ -20,6 +20,50 @@
 .loc-card h2,.loc-panel h2,.loc-bubble h2{margin:.18rem 0 .72rem;font-size:1.32rem;line-height:1.35}
 .loc-card p,.loc-panel p,.loc-bubble p{color:var(--loc-text)}
 .loc-card strong,.loc-panel strong,.loc-bubble strong{color:var(--loc-text)}
+
+/* Unified text-block semantics: English name → Chinese title → subtitle → body. */
+.loc-card,.loc-panel{color:var(--loc-text)}
+.loc-card>.loc-eyebrow,
+.loc-panel>.loc-eyebrow,
+.home-section-heading>.loc-eyebrow{
+  color:var(--loc-gold)!important;
+  font-size:.82rem;
+  font-weight:750;
+  letter-spacing:.08em;
+  text-transform:none;
+}
+.loc-card>h1,.loc-card>h2,.loc-card>h3,
+.loc-panel>h1,.loc-panel>h2,.loc-panel>h3,
+.home-section-heading>h1,.home-section-heading>h2,.home-section-heading>h3{
+  color:var(--loc-text);
+}
+.loc-subtitle,
+.loc-card>h1+p,.loc-card>h2+p,.loc-card>h3+p,
+.loc-panel>h1+p,.loc-panel>h2+p,.loc-panel>h3+p,
+.home-section-heading>h1+p,.home-section-heading>h2+p,.home-section-heading>h3+p{
+  color:var(--loc-accent)!important;
+  font-size:.9rem;
+  line-height:1.65;
+}
+.loc-card>p:not(.loc-eyebrow):not(.loc-subtitle),
+.loc-panel>p:not(.loc-eyebrow):not(.loc-subtitle),
+.home-section-heading>p:not(.loc-eyebrow):not(.loc-subtitle){
+  color:var(--loc-text);
+}
+
+/* Text bubbles are content-only; heading classes do not create a second hierarchy. */
+.loc-bubble{color:var(--loc-text)}
+.loc-bubble>.loc-eyebrow,
+.loc-bubble>.loc-subtitle,
+.loc-bubble>h1,.loc-bubble>h2,.loc-bubble>h3{
+  margin:0;
+  color:var(--loc-text)!important;
+  font:inherit;
+  letter-spacing:normal;
+  text-transform:none;
+}
+.loc-bubble>p{margin:0;color:var(--loc-text)}
+
 .loc-grid{display:grid;gap:1rem}
 .loc-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
 .loc-actions{display:flex;flex-wrap:wrap;gap:.65rem}
