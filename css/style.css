@@ -16,3 +16,21 @@ body.loc-page-lots #draw-mode-selector:not([hidden]){
 body.loc-page-lots #draw-mode-selector[hidden]{
   display:none!important;
 }
+
+/* DAYTIME HOMEPAGE DECORATIVE PALETTE
+   The moon is an identity illustration, not a neutral UI surface. Keep it visibly
+   lunar and warm in daylight instead of letting the light palette wash it to white. */
+html[data-theme-resolved="day"] body.loc-page-index .hero-note{
+  background:
+    radial-gradient(circle at 72% 24%,rgba(190,137,49,.13),transparent 11rem),
+    linear-gradient(145deg,#fffdf7 0%,#f4efe3 100%)!important;
+}
+html[data-theme-resolved="day"] body.loc-page-index .moon{
+  background:
+    radial-gradient(circle at 34% 31%,#fff6d8 0 9%,#efd99f 30%,#d0a85d 62%,#9a7335 100%)!important;
+  box-shadow:
+    0 0 0 1px rgba(139,104,43,.16),
+    0 12px 34px rgba(139,104,43,.20),
+    0 0 64px rgba(204,157,78,.16)!important;
+  opacity:1!important;
+}
