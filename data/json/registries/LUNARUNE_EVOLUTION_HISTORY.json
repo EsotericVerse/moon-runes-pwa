@@ -1,0 +1,88 @@
+{
+  "version": "1.0-rc3",
+  "title": "LunaRunes Evolution History",
+  "purpose": "把符文系統自身演化、語意治理演化與可重現實例分開呈現；不把文化時代語義漂移回寫 Base66 Canon。",
+  "system_stages": [
+    {"order": 1, "label": "14", "rune_count": 14, "kind": "system_scale", "note": "早期符文集合"},
+    {"order": 2, "label": "24", "rune_count": 24, "kind": "system_scale", "note": "擴充語意覆蓋"},
+    {"order": 3, "label": "32", "rune_count": 32, "kind": "system_scale", "note": "持續拆分與補足語意邊界"},
+    {"order": 4, "label": "42", "rune_count": 42, "kind": "system_scale", "note": "中期結構擴充"},
+    {"order": 5, "label": "66", "rune_count": 66, "kind": "system_scale", "note": "現行 Base66"}
+  ],
+  "governance_evolution": [
+    {
+      "order": 1,
+      "title": "關鍵詞由描述轉為語意錨點",
+      "before": "關鍵詞容易因相近語意持續增加。",
+      "after": "關鍵詞必須具有獨特性；避免用大量同義詞取代治理。",
+      "effect": "降低語意污染，讓 No API 判定有穩定錨點。"
+    },
+    {
+      "order": 2,
+      "title": "詞類先於群組主體性",
+      "before": "只看字面命中容易把固定名詞或複合詞拆錯。",
+      "after": "先判詞類／句內語意角色，再判群組主體性與符文歸屬。",
+      "effect": "可處理花枝等詞彙化轉移。"
+    },
+    {
+      "order": 3,
+      "title": "唯一群組與特殊預設",
+      "before": "不確定語意容易同時落入多組。",
+      "after": "未判定先為特殊；完成判斷後只保留唯一群組。",
+      "effect": "避免為了覆蓋率強迫分類。"
+    },
+    {
+      "order": 4,
+      "title": "最高級衝突裁決",
+      "before": "多符文同時命中時容易靠人工補詞。",
+      "after": "只有兩個以上有效候選同時成立時才啟動最高級衝突規則。",
+      "effect": "把少數真正衝突留給規則，不讓規則干擾一般單一命中。"
+    },
+    {
+      "order": 5,
+      "title": "衍生詞主體性轉移",
+      "before": "Graph 主要呈現符文、關鍵詞與群組關係。",
+      "after": "另外記錄 surface composition、semantic owner、ambiguous 與 lexicalized shift。",
+      "effect": "Graph 從對照表升級為可觀察語意依存與主體性轉移的符號式語言模組。"
+    }
+  ],
+  "semantic_history_cases": [
+    {
+      "order": 1,
+      "title": "混沌三兄弟",
+      "kind": "semantic_split",
+      "before": "早期相近或重疊的混沌相關語意尚未充分拆分。",
+      "after": "經過拆分、正名與語意邊界治理後，現行 Canon 各自維持獨立定義。",
+      "note": "歷史狀態保留於演化紀錄；Base66 只顯示現行正式定義。"
+    },
+    {
+      "order": 2,
+      "title": "水土 → 地",
+      "kind": "semantic_ownership_shift",
+      "before": "字面可拆為水、土兩個符文。",
+      "after": "組合後整體主體轉移為地。",
+      "note": "AB → C 的主體性轉移實例。"
+    },
+    {
+      "order": 3,
+      "title": "鏡花水月 → 幻",
+      "kind": "semantic_ownership_shift",
+      "before": "表面直接包含鏡、花、水、月四個符文。",
+      "after": "固定詞整體語意主體歸幻。",
+      "note": "ABCD → E；surface composition 不等於 semantic owner。"
+    },
+    {
+      "order": 4,
+      "title": "光暗",
+      "kind": "balanced_ambiguity",
+      "before": "光與暗兩個候選都直接成立。",
+      "after": "保留對等歧義，只有更完整語境出現時才繼續裁決。",
+      "note": "不為追求唯一答案而強迫判定。"
+    }
+  ],
+  "language_time_policy": {
+    "culture_shift_is_observable": true,
+    "culture_shift_changes_base66": false,
+    "note": "古今詞義與文化轉移可放入時間分析，但不由 LunaRunes Base66 本體直接處理。"
+  }
+}
