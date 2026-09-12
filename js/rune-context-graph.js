@@ -2,6 +2,7 @@
   'use strict';
 
   const RUNES_URL='data/json/core/runes.json';
+  const DERIVED_URL='data/json/registries/LUNARUNE_DERIVED_LEXICON.json';
   const GROUPS=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
   const DEFAULT_GROUP='特殊';
   const GROUP_SET=new Set(GROUPS);
@@ -24,19 +25,20 @@
     const out=[];
     const chunks=String(raw||'').split(/[、,，;；]/).map(x=>x.trim()).filter(Boolean);
     for(const chunk of chunks){
-      const m=chunk.match(/^(.+?)屬(.+?)$/);
+      const m=chunk.match(/^(.+?)(屬|歸)(.+?)$/);
       if(!m)continue;
-      const source=m[1].trim(), target=m[2].trim();
+      const source=m[1].trim(), verb=m[2], target=m[3].trim();
       if(!source||!target)continue;
       const targetRune=runeNames.has(target)?target:null;
-      out.push({source,target,targetRune,raw:chunk});
+      out.push({source,target,targetRune,verb,raw:chunk});
     }
     return out;
   }
 
-  function buildGraph(runes){
+  function buildGraph(runes,derivedLexicon={}){
     const nodes=new Map(),edges=new Map();
     const runeNames=new Set((runes||[]).map(r=>String(r?.符文名稱||'').trim()).filter(Boolean));
+    const runeGroup=new Map();
 
     for(const group of GROUPS){
       addNode(nodes,{id:nodeId('group',group),label:group,type:'group',group});
@@ -48,6 +50,7 @@
       const num=Number(rune?.編號);
       const rawGroup=String(rune?.所屬分組||'').trim();
       const group=GROUP_SET.has(rawGroup)?rawGroup:DEFAULT_GROUP;
+      runeGroup.set(name,group);
       const rid=nodeId('rune',name);
       addNode(nodes,{
         id:rid,label:name,type:'rune',group,
@@ -57,7 +60,7 @@
         archetype:String(rune?.人格原型||''),
         polarity:String(rune?.卡片屬性||''),
         moon_phase:String(rune?.月相||''),
-        source:'data/json/core/runes.json'
+        source:RUNES_URL
       });
       addEdge(edges,{
         source:rid,target:nodeId('group',group),type:'belongs_to_group',
@@ -66,44 +69,82 @@
 
       for(const term of splitTerms(rune?.正向關鍵詞)){
         const tid=nodeId('term',term);
-        addNode(nodes,{id:tid,label:term,type:'term',group:DEFAULT_GROUP});
-        addEdge(edges,{
-          source:tid,target:rid,type:'keyword_of',
-          source_field:'正向關鍵詞',evidence:term
-        });
+        addNode(nodes,{id:tid,label:term,type:'term',group:DEFAULT_GROUP,term_status:'canonical'});
+        addEdge(edges,{source:tid,target:rid,type:'keyword_of',source_field:'正向關鍵詞',evidence:term});
       }
       for(const term of splitTerms(rune?.反向關鍵詞)){
         const tid=nodeId('term',term);
-        addNode(nodes,{id:tid,label:term,type:'term',group:DEFAULT_GROUP});
-        addEdge(edges,{
-          source:tid,target:rid,type:'reverse_keyword_of',
-          source_field:'反向關鍵詞',evidence:term
-        });
+        addNode(nodes,{id:tid,label:term,type:'term',group:DEFAULT_GROUP,term_status:'canonical'});
+        addEdge(edges,{source:tid,target:rid,type:'reverse_keyword_of',source_field:'反向關鍵詞',evidence:term});
       }
 
       for(const rule of parseOwnershipRules(rune?.額外規則,runeNames)){
-        const sid=nodeId(rule.targetRune&&rule.source===rule.targetRune?'rune':'term',rule.source);
-        if(!nodes.has(sid))addNode(nodes,{id:sid,label:rule.source,type:'term',group:DEFAULT_GROUP});
+        const sid=nodeId('term',rule.source);
+        if(!nodes.has(sid))addNode(nodes,{id:sid,label:rule.source,type:'term',group:DEFAULT_GROUP,term_status:'rule'});
         const targetId=rule.targetRune?nodeId('rune',rule.targetRune):nodeId('term',rule.target);
-        if(!nodes.has(targetId))addNode(nodes,{id:targetId,label:rule.target,type:rule.targetRune?'rune':'term',group:DEFAULT_GROUP});
+        if(!nodes.has(targetId))addNode(nodes,{id:targetId,label:rule.target,type:rule.targetRune?'rune':'term',group:rule.targetRune?(runeGroup.get(rule.targetRune)||DEFAULT_GROUP):DEFAULT_GROUP});
+        addEdge(edges,{source:sid,target:targetId,type:'ownership',source_field:'額外規則',evidence:rule.raw});
+      }
+    }
+
+    const derivedEntries=Array.isArray(derivedLexicon?.entries)?derivedLexicon.entries:[];
+    for(const entry of derivedEntries){
+      const term=String(entry?.term||'').trim();
+      if(!term)continue;
+      const tid=nodeId('derived',term);
+      const owner=String(entry?.resolved_rune||'').trim();
+      const ownerGroup=owner?runeGroup.get(owner):null;
+      addNode(nodes,{
+        id:tid,label:term,type:'derived',group:ownerGroup||DEFAULT_GROUP,
+        term_status:String(entry?.status||'special'),
+        relation:String(entry?.relation||'derived'),
+        lexical_class:String(entry?.lexical_class||''),
+        resolved_rune:owner,
+        definition:String(entry?.note||entry?.evidence||''),
+        evidence:String(entry?.evidence||''),
+        source:String(entry?.source||DERIVED_URL)
+      });
+
+      for(const part of entry?.surface_runes||[]){
+        const name=String(part||'').trim();
+        if(!runeNames.has(name))continue;
         addEdge(edges,{
-          source:sid,target:targetId,type:'ownership',
-          source_field:'額外規則',evidence:rule.raw
+          source:nodeId('rune',name),target:tid,type:'surface_component_of',
+          source_field:'surface_runes',evidence:`${name} ∈ ${term}`
         });
+      }
+
+      if(owner&&runeNames.has(owner)){
+        addEdge(edges,{
+          source:tid,target:nodeId('rune',owner),type:'resolved_to',
+          source_field:'semantic_owner',evidence:String(entry?.evidence||entry?.note||owner)
+        });
+      }else if(entry?.status==='ambiguous'){
+        for(const part of entry?.surface_runes||[]){
+          const name=String(part||'').trim();
+          if(!runeNames.has(name))continue;
+          addEdge(edges,{source:tid,target:nodeId('rune',name),type:'ambiguous_with',source_field:'最高級衝突規則',evidence:String(entry?.evidence||'多候選並存')});
+        }
+      }else{
+        addEdge(edges,{source:tid,target:nodeId('group',DEFAULT_GROUP),type:'remains_special',source_field:'治理',evidence:String(entry?.evidence||'尚無穩定唯一歸屬')});
       }
     }
 
     return {
-      version:'runes-json-derived-v1',
+      version:'runes-json-derived-v2',
       api_used:false,
       default_group:DEFAULT_GROUP,
       groups:GROUPS,
       governance:{
         group_unique:true,
         classification_order:['詞類／句內語意角色','群組主體性','符文語意歸屬','正反面／衝突校準'],
+        highest_conflict_rule:'兩個以上有效符文候選同時成立時才啟動',
         special_is_default:true,
-        canonical_source:RUNES_URL
+        canonical_source:RUNES_URL,
+        derived_source:DERIVED_URL,
+        derived_does_not_modify_canon:true
       },
+      derived_count:derivedEntries.length,
       nodes:[...nodes.values()],
       edges:[...edges.values()]
     };
@@ -120,7 +161,7 @@
     const q=String(query||'').trim().toLowerCase();
     if(!q)return graph;
     const matched=graph.nodes.filter(n=>[
-      n.label,n.english,n.definition,n.archetype,n.group,n.polarity
+      n.label,n.english,n.definition,n.archetype,n.group,n.polarity,n.lexical_class,n.relation,n.term_status,n.resolved_rune,n.evidence
     ].filter(Boolean).join(' ').toLowerCase().includes(q));
     const ids=new Set();
     const edges=[];
@@ -131,6 +172,28 @@
     }
     const edgeMap=new Map(edges.map(e=>[[e.source,e.type,e.target].join('|'),e]));
     return {nodes:graph.nodes.filter(n=>ids.has(n.id)),edges:[...edgeMap.values()]};
+  }
+
+  function resolveTerm(graph,query){
+    const term=String(query||'').trim();
+    if(!term)return null;
+    const derived=graph.nodes.find(n=>n.type==='derived'&&n.label===term);
+    if(derived){
+      return {
+        term,status:derived.term_status||'special',relation:derived.relation||'derived',
+        resolved_rune:derived.resolved_rune||null,group:derived.group||DEFAULT_GROUP,
+        evidence:derived.evidence||derived.definition||''
+      };
+    }
+    const exact=graph.nodes.find(n=>n.type==='term'&&n.label===term);
+    if(exact){
+      const a=adjacent(graph,exact.id);
+      const targets=a.edges.filter(e=>e.source===exact.id&&['keyword_of','reverse_keyword_of','ownership'].includes(e.type));
+      const runes=[...new Set(targets.map(e=>e.target).filter(x=>x.startsWith('rune:')).map(x=>x.slice(5)))];
+      return {term,status:runes.length>1?'ambiguous':'confirmed',relation:'canonical_or_rule',resolved_rune:runes.length===1?runes[0]:null,group:runes.length===1?(graph.nodes.find(n=>n.id===`rune:${runes[0]}`)?.group||DEFAULT_GROUP):DEFAULT_GROUP,evidence:targets.map(e=>e.evidence).filter(Boolean).join('；')};
+    }
+    const runeChars=[...term].filter(ch=>graph.nodes.some(n=>n.type==='rune'&&n.label===ch));
+    return runeChars.length>1?{term,status:'unresolved',relation:'surface_only',resolved_rune:null,group:DEFAULT_GROUP,evidence:`表面符文：${[...new Set(runeChars)].join('、')}；尚無衍生詞規則，不強迫判定。`}:null;
   }
 
   function renderList(el,rows,empty){
@@ -160,28 +223,25 @@
       const group=groupSel.value, edgeType=edgeSel.value;
       if(group){
         const allowed=new Set(view.nodes.filter(n=>n.group===group||n.label===group).map(n=>n.id));
-        for(const e of view.edges){
-          if(allowed.has(e.source)||allowed.has(e.target)){allowed.add(e.source);allowed.add(e.target)}
-        }
+        for(const e of view.edges){if(allowed.has(e.source)||allowed.has(e.target)){allowed.add(e.source);allowed.add(e.target)}}
         view={nodes:view.nodes.filter(n=>allowed.has(n.id)),edges:view.edges.filter(e=>allowed.has(e.source)&&allowed.has(e.target))};
       }
       if(edgeType)view={nodes:view.nodes,edges:view.edges.filter(e=>e.type===edgeType)};
 
-      const shownNodes=view.nodes.slice(0,PAGE);
-      const shownEdges=view.edges.slice(0,PAGE);
-      renderList(nodesEl,shownNodes.map(n=>`<button type="button" class="context-graph-node rune-graph-node" data-rune-graph-node="${esc(n.id)}"><small>${esc(n.type)} · ${esc(n.group||DEFAULT_GROUP)}</small><strong>${esc(n.label)}</strong><small>${esc(n.definition||n.english||n.id)}</small></button>`),'沒有符合的節點。');
+      const shownNodes=view.nodes.slice(0,PAGE),shownEdges=view.edges.slice(0,PAGE);
+      renderList(nodesEl,shownNodes.map(n=>`<button type="button" class="context-graph-node rune-graph-node" data-rune-graph-node="${esc(n.id)}"><small>${esc(n.type)} · ${esc(n.group||DEFAULT_GROUP)}${n.term_status?` · ${esc(n.term_status)}`:''}</small><strong>${esc(n.label)}</strong><small>${esc(n.definition||n.english||n.id)}</small></button>`),'沒有符合的節點。');
       renderList(edgesEl,shownEdges.map(e=>`<article class="context-graph-edge"><div class="context-graph-edge-path"><span>${esc(e.source.replace(/^[^:]+:/,''))}</span><span class="context-graph-edge-type">→ ${esc(e.type)} →</span><span>${esc(e.target.replace(/^[^:]+:/,''))}</span></div><small>${esc(e.source_field||'derived')} · ${esc(e.evidence||'')}</small></article>`),'沒有符合的關係。');
-      status.textContent=`No API · ${view.nodes.length} nodes / ${view.edges.length} edges`+(view.nodes.length>PAGE||view.edges.length>PAGE?` · 畫面先顯示前 ${PAGE} 筆`:``);
+      const resolved=q?resolveTerm(graph,q):null;
+      const resolution=resolved?` · 判定 ${resolved.status}${resolved.resolved_rune?` → ${resolved.resolved_rune}`:''}`:'';
+      status.textContent=`No API · ${view.nodes.length} nodes / ${view.edges.length} edges · 衍生詞 ${graph.derived_count||0}${resolution}`+(view.nodes.length>PAGE||view.edges.length>PAGE?` · 畫面先顯示前 ${PAGE} 筆`:``);
     }
 
     root.addEventListener('click',ev=>{
       const btn=ev.target.closest('[data-rune-graph-node]');
       if(!btn)return;
-      const id=btn.dataset.runeGraphNode;
-      const node=graph.nodes.find(n=>n.id===id);
+      const id=btn.dataset.runeGraphNode,node=graph.nodes.find(n=>n.id===id);
       if(!node)return;
-      input.value=node.label;
-      apply();
+      input.value=node.label;apply();
     });
     root.querySelector('form')?.addEventListener('submit',ev=>{ev.preventDefault();apply()});
     [groupSel,edgeSel].forEach(el=>el?.addEventListener('change',apply));
@@ -189,14 +249,18 @@
     apply();
   }
 
+  async function optionalJson(url,fallback){
+    try{const r=await fetch(url,{cache:'no-store'});return r.ok?await r.json():fallback}catch{return fallback}
+  }
+
   async function init(){
     const root=document.querySelector('#runeSemanticGraph');
     if(!root)return;
     try{
-      const res=await fetch(RUNES_URL,{cache:'no-store'});
+      const [res,derived]=await Promise.all([fetch(RUNES_URL,{cache:'no-store'}),optionalJson(DERIVED_URL,{entries:[]})]);
       if(!res.ok)throw new Error(`HTTP ${res.status}`);
       const runes=await res.json();
-      const graph=buildGraph(runes);
+      const graph=buildGraph(runes,derived);
       window.LunaRuneSemanticGraph=graph;
       mount(graph);
     }catch(err){
@@ -205,7 +269,7 @@
     }
   }
 
-  window.LunaRuneGraph={buildGraph,searchGraph,init};
+  window.LunaRuneGraph={buildGraph,searchGraph,resolveTerm,init};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
   else init();
 })();
