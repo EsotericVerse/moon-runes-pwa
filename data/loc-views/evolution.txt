@@ -1,1 +1,155 @@
-TEMP
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>推演｜LOC 月典</title>
+<link rel="stylesheet" href="css/style.css" />
+<meta name="description" content="推演：以時期、事件與語言分析觀察作品、風格、治理與符文如何隨時間改變。">
+<link rel="canonical" href="https://loc.lo3rwang.cc/evolution.html">
+</head>
+<body class="loc-responsive-page loc-page-life loc-page-evolution">
+<div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="evolution" aria-label="全站導覽"></nav></div>
+<div class="app"><main>
+<section class="view" id="overviewView">
+  <div class="hero"><h1>推演</h1><h2>把既有語言放回時間，觀察它如何改變。</h2><p>比較不同時期的語言、作品、風格、治理與符文演化；推演的是分析方式與可能路徑，不替人決定未來。</p></div>
+  <section id="loc-evolution-uncertainty-note" class="loc-concept-note">
+    <small>Evolution · Structured Possibility／推演 · 結構化可能性</small>
+    <p><strong>推演不是預測命運，而是把不確定性拆成可以理解、比較與選擇的可能。</strong></p>
+    <p>月之符文提供一個實際例子：符文先提供分析問題的語意角度，再由使用者依現實、脈絡與證據建立連結。符文提供角度，不提供結論；推演提供方法，不替人決策。</p>
+  </section>
+  <div class="metrics">
+    <div class="card metric"><small>時期總數</small><strong id="eraCount">—</strong></div>
+    <div class="card metric"><small>目前時期</small><strong id="eraCurrent">—</strong></div>
+    <div class="card metric"><small>目前起點</small><strong id="eraStart">—</strong></div>
+  </div>
+  <div class="source-note">現行時期由 LOC_ERA_REGISTRY 定義；歷史分析切片保留原 Period，但統一映射至現行時期，不回寫或覆蓋現行治理。</div>
+  <section class="card" style="margin-top:16px"><h3>符文資料歷程 · No API</h3><p>LunaRunes 作為 reference implementation，呈現系統規模、語意治理與主體性轉移如何演化。</p><div id="runeEvolutionOverview" class="stats-dashboard">載入符文歷程摘要…</div></section>
+  <div class="timeline" id="eraTimeline"><div class="empty">載入時期…</div></div>
+</section>
+
+<section class="view" id="timelineView" hidden>
+  <div class="hero"><h1>時間線</h1><h2>把已發生的事件放回現行時期閱讀。</h2><p>事件保留原始歷史標記，但畫面依日期套用目前正式時期；歷史不刪，現行不被舊版覆蓋。</p></div>
+  <div class="event-list" id="timelineEventList"><div class="empty">載入事件…</div></div>
+  <section class="card" style="margin-top:18px"><h3>符文演化時間線 · No API</h3><p>呈現 14 → 24 → 32 → 42 → 66、語意拆分與治理事件；沒有日期的歷史不虛構日期。</p><div class="event-list" id="runeEvolutionTimeline"><div class="empty">載入符文結構時間線…</div></div></section>
+</section>
+
+<section class="view" id="trendView" hidden>
+  <div class="hero"><h1>時期風格</h1><h2>比較不同時期、不同資料來源的語言重心。</h2><p>同一現行時期可以包含多個歷史分析切片；切片保留，並列比較，不再用後一筆覆蓋前一筆。</p></div>
+  <div class="source-note">Runtime 只載入 compact static JS；原始 LOC3／LOC6 分析 JSON 留在建置與治理層。</div>
+  <section class="card" style="margin-top:16px"><h3>符文系統／治理趨勢 · No API</h3><p>比較系統規模、治理規則與衍生關係如何逐步收斂。</p><div class="keyword-grid" id="runeTrendGrid"><div class="empty">載入符文趨勢…</div></div></section>
+  <div class="keyword-grid" id="trendGrid"><div class="empty">載入時期分析…</div></div>
+</section>
+
+<section class="view" id="trajectoryView" hidden>
+  <div class="hero"><h1>軌跡</h1><h2>觀察一個時期如何轉變成下一個時期。</h2><p>把現行時期依時間串接，比較相鄰時期的語言重心變化；資料不足時不虛構推論。</p></div>
+  <div class="source-note">軌跡使用既有時期分析結果；LunaRunes 演化另以其正式歷史與治理紀錄呈現。</div>
+  <section class="card" style="margin-top:16px"><h3>符文演化軌跡 · No API</h3><p>串接 14 → 24 → 32 → 42 → 66 與治理原則演化。</p><div class="trajectory-list" id="runeTrajectoryList"><div class="empty">載入符文群組軌跡…</div></div></section>
+  <div class="trajectory-list" id="trajectoryList"><div class="empty">載入軌跡…</div></div>
+</section>
+</main></div>
+
+<script src="data/js/loc-event-data.js"></script>
+<script src="data/js/loc-period-analysis-data.js"></script>
+<script src="js/loc-periods.js"></script>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+let evolutionEras=[];
+
+function switchView(name){
+  $('#overviewView').hidden=name!=='overview';
+  $('#timelineView').hidden=name!=='timeline';
+  $('#trendView').hidden=name!=='trend';
+  $('#trajectoryView').hidden=name!=='trajectory';
+  $$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  const hash=name==='overview'?'':'#'+name;
+  history.replaceState(null,'','evolution.html'+hash);
+}
+$$('[data-view]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+if(location.hash==='#timeline')switchView('timeline'); else if(location.hash==='#trend')switchView('trend'); else if(location.hash==='#trajectory')switchView('trajectory');
+
+function renderEraTimeline(eras){
+  const host=$('#eraTimeline');
+  host.innerHTML=eras.length?eras.map(e=>`<article class="era ${e.status==='current'?'current':''}"><div class="era-head"><strong>${esc(e.display_label||e.period)}</strong><small>${esc(e.start_date||'—')} ～ ${esc(e.end_date||'現在')}</small></div><p>${esc(e.description||'')}</p></article>`).join(''):'<div class="empty">尚無時期資料。</div>';
+}
+
+function renderTimelineEvents(){
+  const host=$('#timelineEventList'); if(!host)return;
+  const rows=[...((window.LOC_EVENT_DATA&&window.LOC_EVENT_DATA.events)||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+  host.innerHTML=rows.length?rows.map(e=>`<article class="event-card"><div class="event-head"><div><strong>${esc(e.event_title||e.title||'未命名事件')}</strong><small>${esc(e.date||'')} · ${esc(e.event_type||'')}${e.era_label?' · '+esc(e.era_label):''}</small></div><small>${esc(e.status||'recorded')}</small></div>${e.description?`<p>${esc(e.description)}</p>`:''}${e.state_after?`<p><strong>State →</strong> ${esc(e.state_after)}</p>`:''}${e.legacy_era?`<p class="source-note">歷史標記：${esc(e.legacy_era)}；現行顯示依日期映射。</p>`:''}</article>`).join(''):'<div class="empty">尚無事件資料。</div>';
+}
+
+function sourceRows(source,period){
+  const data=window.LOC_PERIOD_ANALYSIS_DATA||{};
+  return (data[source]||[]).filter(x=>x.canonical_period===period);
+}
+function sourceCard(label,row){
+  const weight=row.work_count??row.document_count??0;
+  return `<div class="trajectory-box"><b>${esc(label)} · ${esc(row.period)}</b><small>${weight?`樣本 ${esc(weight)}`:'歷史切片'}</small><div class="chips">${(row.keywords||[]).map(k=>`<span class="chip">${esc(k.term)} ${esc(k.percent)}%</span>`).join('')}</div></div>`;
+}
+function renderTrend(eras){
+  const host=$('#trendGrid'); if(!host)return;
+  host.innerHTML=eras.map(era=>{
+    const music=sourceRows('loc3',era.period),text=sourceRows('loc6',era.period);
+    const blocks=[...music.map(x=>sourceCard('LOC3',x)),...text.map(x=>sourceCard('LOC6',x))].join('');
+    return `<article class="keyword-card"><strong>${esc(era.display_label||era.period)}</strong><small>${esc(era.start_date||'—')} ～ ${esc(era.end_date||'現在')}</small>${blocks||'<div class="chips"><span class="chip">尚無分析資料</span></div>'}</article>`;
+  }).join('');
+}
+
+function weightedVector(rows){
+  const acc=new Map(),den=new Map();
+  for(const row of rows){
+    const w=Number(row.work_count??row.document_count??1)||1;
+    for(const k of row.keywords||[]){
+      const term=String(k.term||''); if(!term)continue;
+      acc.set(term,(acc.get(term)||0)+Number(k.percent||0)*w);
+      den.set(term,(den.get(term)||0)+w);
+    }
+  }
+  return new Map([...acc].map(([term,sum])=>[term,Number((sum/(den.get(term)||1)).toFixed(1))]));
+}
+function eraVector(period){
+  const music=sourceRows('loc3',period);
+  if(music.length)return weightedVector(music);
+  return weightedVector(sourceRows('loc6',period));
+}
+function delta(from,to){
+  const terms=new Set([...from.keys(),...to.keys()]);
+  const rows=[...terms].map(term=>({term,delta:Number(((to.get(term)||0)-(from.get(term)||0)).toFixed(1))}));
+  return {up:rows.filter(x=>x.delta>0).sort((a,b)=>b.delta-a.delta).slice(0,4),down:rows.filter(x=>x.delta<0).sort((a,b)=>a.delta-b.delta).slice(0,4)};
+}
+function renderTrajectory(eras){
+  const host=$('#trajectoryList'); if(!host)return;
+  const cards=[];
+  for(let i=1;i<eras.length;i++){
+    const fromEra=eras[i-1],toEra=eras[i],a=eraVector(fromEra.period),b=eraVector(toEra.period);
+    if(!a.size||!b.size)continue;
+    const d=delta(a,b),chip=(x,up)=>`<span class="chip">${esc(x.term)} ${up?'+':''}${esc(x.delta)}pt</span>`;
+    cards.push(`<article class="trajectory-card"><div class="trajectory-head"><strong>${esc(fromEra.display_label||fromEra.period)} → ${esc(toEra.display_label||toEra.period)}</strong><small>${esc(toEra.start_date||'—')}</small></div><div class="trajectory-delta"><div class="trajectory-box"><b>比重上升</b><div class="chips">${d.up.length?d.up.map(x=>chip(x,true)).join(''):'<span class="chip">無明顯上升</span>'}</div></div><div class="trajectory-box"><b>比重下降</b><div class="chips">${d.down.length?d.down.map(x=>chip(x,false)).join(''):'<span class="chip">無明顯下降</span>'}</div></div></div><div class="trajectory-note">${esc(toEra.description||'')}</div></article>`);
+  }
+  host.innerHTML=cards.join('')||'<div class="empty">目前沒有足夠的相鄰時期分析資料可形成軌跡。</div>';
+}
+
+window.LOCPeriods.load({force:true}).then(periodData=>{
+  const eras=[...(periodData.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+  evolutionEras=eras;
+  const current=eras.find(e=>e.status==='current')||eras[eras.length-1];
+  $('#eraCount').textContent=eras.length||'0';
+  $('#eraCurrent').textContent=current?.period||'—';
+  $('#eraStart').textContent=current?.start_date||'—';
+  renderEraTimeline(eras);renderTimelineEvents();renderTrend(eras);renderTrajectory(eras);
+}).catch(err=>{
+  $('#eraTimeline').innerHTML='<div class="empty">靜態資料載入失敗：'+esc(err.message)+'</div>';
+  $('#trendGrid').innerHTML='<div class="empty">靜態資料載入失敗。</div>';
+  $('#trajectoryList').innerHTML='<div class="empty">軌跡資料載入失敗。</div>';
+});
+</script>
+<script src="js/rune-analytics.js" defer></script>
+<script src="js/loc-nav.js"></script>
+<footer class="loc-site-footer" style="margin-top:32px;padding:20px 16px;text-align:center;font-size:13px;line-height:1.7;color:var(--muted,#7f8794);border-top:1px solid var(--line,rgba(127,135,148,.22))">
+  <div><a href="index.html" style="color:inherit;text-decoration:none">LOC月典(LunaCodex)</a></div>
+  <div>By <a href="lo3rwang.html" style="color:inherit;text-decoration:none">Lucas Oscar Wang 政德</a></div>
+  <div><a href="mailto:sopa2306@gmail.com" style="color:inherit;text-decoration:none">意見信箱</a></div>
+</footer>
+</body></html>
