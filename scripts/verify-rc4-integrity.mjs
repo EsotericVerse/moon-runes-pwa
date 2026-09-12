@@ -20,8 +20,11 @@ function verifyRows(label, path, nameKey, requiredKeys = []) {
     failures.push(`${label}: expected array`);
     return [];
   }
-  if (rows.length !== 66) failures.push(`${label}: expected 66 rows, got ${rows.length}`);
+  if (rows.length !== 67) failures.push(`${label}: expected 67 rows (De #0 + 66 drawable runes), got ${rows.length}`);
   const byId = new Map(rows.map(row => [Number(row?.編號), row]));
+  const de = byId.get(0);
+  if (!de) failures.push(`${label}: missing rune #0 德`);
+  else if (String(de?.[nameKey] ?? '') !== '德') failures.push(`${label}: #0 name mismatch (${de?.[nameKey]} != 德)`);
   names.forEach((name, index) => {
     const id = index + 1;
     const row = byId.get(id);
@@ -69,4 +72,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`RC4 integrity OK: 66 runes + lots + history + harmony + cards; ${cases.length} evolution cases; ${works.length} LOC4 works.`);
+console.log(`RC4 integrity OK: De #0 + 66 drawable runes; lots + history + harmony + cards complete; ${cases.length} evolution cases; ${works.length} LOC4 works.`);

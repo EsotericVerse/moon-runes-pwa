@@ -6,6 +6,7 @@ import { fetchLocJson, fetchLocJsonBatch, LOC_DATA } from '../data';
 const TABS=[['overview','總覽'],['timeline','時間線'],['trend','時期風格'],['trajectory','軌跡']];
 function periodRows(value){if(!value||typeof value!=='object')return [];for(const key of ['periods','period_analysis','period_keyword_analysis','results'])if(Array.isArray(value[key]))return value[key];return [];}
 function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row?.semantic_keywords||row?.top_keywords||[];}
+function drawableRows(value){return Array.isArray(value)?value.filter(row=>{const id=Number(row?.編號);return id>=1&&id<=66;}):[];}
 
 export default function EvolutionView(){
   const [tab,setTab]=useState('overview');
@@ -32,8 +33,8 @@ export default function EvolutionView(){
   const eraRows=useMemo(()=>[...(eras?.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[eras]);
   const currentEra=eraRows.find(item=>item.status==='current')||eraRows.at(-1);
   const eventRows=useMemo(()=>[...(events?.events||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))),[events]);
-  const coreRows=useMemo(()=>Array.isArray(coreHistory)?[...coreHistory].sort((a,b)=>Number(a.編號)-Number(b.編號)):[],[coreHistory]);
-  const runeRows=Array.isArray(runes)?runes:[];
+  const coreRows=useMemo(()=>drawableRows(coreHistory).sort((a,b)=>Number(a.編號)-Number(b.編號)),[coreHistory]);
+  const runeRows=useMemo(()=>drawableRows(runes),[runes]);
   const completeRuneHistory=coreRows.filter(item=>String(item?.符文變化歷史||'').trim()&&String(item?.神話故事||'').trim()).length;
   const loc3Rows=periodRows(loc3);const loc6Rows=periodRows(loc6);const trajectories=loc6?.trajectories||[];
   const stages=runeHistory?.system_stages||[];const governance=runeHistory?.governance_evolution||[];const semanticCases=runeHistory?.semantic_history_cases||[];
@@ -49,7 +50,7 @@ export default function EvolutionView(){
       <section className="loc-card"><p className="loc-eyebrow">Deferred history</p><h2>符文演化資料延後載入</h2><p>66 符逐枚歷程只在時間線頁籤下載；治理案例則由 Evolution registry 提供，避免首頁預先讀取完整 history。</p></section>
     </>}</>}
 
-    {tab==='timeline'&&<>{!runeHistory||!coreHistory||!runes?<div className="loc-loading">載入完整符文演化…</div>:<div className="loc-metrics"><div><small>現行符文</small><strong>{runeRows.length}/66</strong></div><div><small>逐符歷程完整</small><strong>{completeRuneHistory}/66</strong></div><div><small>治理案例</small><strong>{semanticCases.length}</strong></div></div>}
+    {tab==='timeline'&&<>{!runeHistory||!coreHistory||!runes?<div className="loc-loading">載入完整符文演化…</div>:<div className="loc-metrics"><div><small>現行可抽符文</small><strong>{runeRows.length}/66</strong></div><div><small>逐符歷程完整</small><strong>{completeRuneHistory}/66</strong></div><div><small>治理案例</small><strong>{semanticCases.length}</strong></div></div>}
       <div className="loc-grid two">
       <section className="loc-card"><p className="loc-eyebrow">LOC Timeline</p><h2>已發生事件</h2>{!events?<p>載入事件…</p>:<div className="loc-context-list">{eventRows.slice(0,80).map(item=><article className="loc-context-item" key={item.id}><div className="loc-result-meta"><time>{item.date}</time><span>{item.event_type||item.status}</span></div><h3>{item.title}</h3><p>{item.description}</p>{item.state_after&&<p><strong>State →</strong> {item.state_after}</p>}</article>)}</div>}</section>
       <section className="loc-card"><p className="loc-eyebrow">LunaRunes Timeline</p><h2>語意與治理演化</h2>{!runeHistory?<p>載入符文演化…</p>:<div className="loc-context-list">{semanticCases.map(item=><article className="loc-context-item" key={item.order}><div className="loc-result-meta"><span>{item.kind}</span><span>#{item.order}</span></div><h3>{item.title}</h3><p>{item.after}</p><small>{item.note}</small></article>)}</div>}</section>
@@ -65,7 +66,7 @@ export default function EvolutionView(){
 
     {tab==='trajectory'&&<>{!loc6||!runeHistory?<div className="loc-loading">載入軌跡…</div>:<div className="loc-grid two">
       <section className="loc-card"><p className="loc-eyebrow">Language Trajectory</p><h2>語彙軌跡</h2>{trajectories.length?<div className="loc-context-list">{trajectories.slice(0,24).map(item=><div className="loc-trajectory" key={item.term}><h3>{item.term}</h3><p>峰值 {item.peak_period} · {item.peak_percent}%</p><div>{item.points?.map(point=><span key={`${item.term}-${point.period}`}>{point.period}<b>{point.percent}%</b></span>)}</div></div>)}</div>:<p>目前 registry 尚無 trajectory。</p>}</section>
-      <section className="loc-card"><p className="loc-eyebrow">LunaRunes Trajectory</p><h2>14 → 24 → 32 → 42 → 66</h2><div className="loc-stage-line vertical">{stages.map(item=><div key={item.order}><strong>{item.label}</strong><span>{item.rune_count} 符</span><small>{item.note}</small></div>)}</div><p className="loc-note">符文歷史只顯示演化紀錄；現行正式定義仍以 canonical runes.json 為準。</p></section>
+      <section className="loc-card"><p className="loc-eyebrow">LunaRunes Trajectory</p><h2>14 → 24 → 32 → 42 → 66</h2><div className="loc-stage-line vertical">{stages.map(item=><div key={item.order}><strong>{item.label}</strong><span>{item.rune_count} 符</span><small>{item.note}</small></div>)}</div><p className="loc-note">符文歷史只顯示演化紀錄；現行正式定義仍以 canonical runes.json 為準。第 0 符「德」保留於母資料作治理錨點，不列入 66 枚可抽符文。</p></section>
     </div>}</>}
   </section>;
 }
