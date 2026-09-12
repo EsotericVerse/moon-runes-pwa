@@ -1,7 +1,7 @@
 from pathlib import Path
 
 CARD_API_DIR = Path(__file__).resolve().parent
-REPO_ROOT = CARD_API_DIR.parent
+REPO_ROOT = CARD_API_DIR.parents[2]
 
 DATA_ROOT = REPO_ROOT / "data"
 DATA_JSON_ROOT = DATA_ROOT / "json"

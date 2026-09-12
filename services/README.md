@@ -2,12 +2,16 @@
 
 Deployable machine/edge services belong here.
 
-Target layout:
+Current layout:
 
 ```text
 services/
   api/
+    card/
+    loc8/
   cloudflare/
 ```
 
-Do not create new top-level feature-specific API directories. Existing `card_api/` and `loc8_api/` are legacy migration targets and remain in place until their runtime consumers are audited.
+Repository/build/migration helpers belong under `scripts/`. API documentation belongs under `docs/api/`.
+
+Legacy top-level `card_api/` and `loc8_api/` have been migrated; do not recreate feature-specific API directories at repository root.
