@@ -2,10 +2,10 @@
 """RC3 static-runtime governance check.
 
 Current public runtime is static PWA only:
-- JSON is authoring/canonical data.
-- Browser runtime consumes generated JS.
-- Google Sheets, KV, legacy Render/state APIs and browser data caches are not
-  allowed in current static surfaces.
+- Fixed governed data such as LunaRunes lives directly in static JS.
+- Editable datasets may publish a static JS runtime projection from their authoring source.
+- Browser runtime must not fetch rune JSON, Google Sheets, KV, legacy Render/state APIs,
+  or keep user data caches as implicit runtime state.
 - card_api/ is intentionally excluded: it is the near-term api.lo3rwang.cc
   RAG/Graph/Search workspace, not current PWA runtime.
 - Presentation authority lives in css/, not inline HTML styles.
@@ -31,7 +31,8 @@ JS_RUNTIME = [
     "js/loc-periods.js",
     "js/rune.js",
     "js/direction64.js",
-    "js/runes66.js",
+    "js/runes.js",
+    "js/galaxy.js",
     "js/rune-analytics.js",
     "js/rune-daily-records.js",
     "js/rune-context-graph.js",
@@ -48,6 +49,10 @@ FORBIDDEN = {
     ),
     "browser data cache/state": re.compile(
         r"localStorage\.(?:getItem|setItem)\(", re.I
+    ),
+    "retired rune runtime": re.compile(
+        r"(?:runes66\.js|data/json/core/runes(?:66groups)?\.json|lunarune-groups-data\.js)",
+        re.I,
     ),
 }
 
@@ -93,7 +98,7 @@ def main() -> int:
 
         for match in JSON_FETCH.finditer(text):
             failures.append(
-                f"{rel}:{line_of(text, match.start())}: runtime JSON fetch; publish JSON to JS first"
+                f"{rel}:{line_of(text, match.start())}: runtime JSON fetch; publish/load static JS instead"
             )
 
         if rel.endswith(".html"):
@@ -101,6 +106,15 @@ def main() -> int:
                 failures.append(
                     f"{rel}:{line_of(text, match.start())}: inline style; move presentation to css/"
                 )
+
+    # The canonical rune core must itself remain network-free and source-file independent.
+    runes_path = ROOT / "js/runes.js"
+    if runes_path.exists():
+        text = runes_path.read_text(encoding="utf-8", errors="replace")
+        if re.search(r"\bfetch\s*\(", text):
+            failures.append("js/runes.js: rune core must not fetch at runtime")
+        if re.search(r"\.json\b", text, re.I):
+            failures.append("js/runes.js: rune core must not depend on JSON")
 
     if failures:
         print("RC3 static runtime governance: FAIL")
