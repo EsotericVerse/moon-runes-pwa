@@ -31,6 +31,18 @@ body.loc-page-lots #draw-mode-selector[hidden]{
   display:none!important;
 }
 
+/* GOVERNANCE THEME CONSISTENCY
+   Governance copy must follow theme tokens instead of the old hard-coded light text. */
+body.loc-page-governance .gov-card p,
+body.loc-page-governance .gov-card ul,
+body.loc-page-governance .gov-card li{
+  color:var(--text)!important;
+}
+body.loc-page-governance .gov-card .doc-link span,
+body.loc-page-governance .lead{
+  color:var(--muted)!important;
+}
+
 /* DAYTIME HOMEPAGE DECORATIVE PALETTE
    The moon is an identity illustration, not a neutral UI surface. Keep it visibly
    lunar and warm in daylight instead of letting the light palette wash it to white. */
