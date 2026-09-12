@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC_LANGUAGE_EVOLUTION_REGISTRY",
+  "track": "language_evolution",
+  "label": "語言推演",
+  "status": "partial_waiting_for_large_corpus",
+  "purpose": "以既有 ERA 與跨來源資料觀察語言、作品、關鍵詞、風格、治理與方法在時間中的變化；大批歷史文本未完整進場前，只保存已存在且可追溯的分析來源，不補造缺失資料。",
+  "updated_at": "2026-09-12",
+  "shared_registry": "data/json/registries/LOC_EVOLUTION_SHARED_REGISTRY.json",
+  "era_registry": "data/json/registries/LOC_ERA_REGISTRY.json",
+  "available_evidence": [
+    {
+      "type": "period_keyword_analysis",
+      "domain": "music",
+      "registry": "data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json",
+      "status": "available"
+    },
+    {
+      "type": "period_keyword_analysis",
+      "domain": "governance",
+      "registry": "data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json",
+      "status": "available"
+    },
+    {
+      "type": "writing_corpus_index",
+      "domain": "literary",
+      "registry": "data/json/registries/LOC4_WRITING_REGISTRY.json",
+      "status": "available_partial"
+    },
+    {
+      "type": "music_corpus_index",
+      "domain": "music",
+      "registry": "data/json/registries/LOC3_RUNE_SONG_REGISTRY.json",
+      "status": "available_partial"
+    },
+    {
+      "type": "media_index",
+      "domain": "media",
+      "registry": "data/json/registries/LOC_MEDIA_REGISTRY.json",
+      "status": "available_partial"
+    },
+    {
+      "type": "governance_history",
+      "domain": "governance",
+      "registry": "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json",
+      "status": "available"
+    }
+  ],
+  "analysis_dimensions": [
+    {
+      "id": "keyword_shift",
+      "label": "關鍵詞重心",
+      "status": "available_partial"
+    },
+    {
+      "id": "semantic_family_shift",
+      "label": "語意群組重心",
+      "status": "available_partial"
+    },
+    {
+      "id": "style_shift",
+      "label": "語言／風格變化",
+      "status": "waiting_for_large_corpus"
+    },
+    {
+      "id": "work_distribution_shift",
+      "label": "作品與媒介分布",
+      "status": "available_partial"
+    },
+    {
+      "id": "governance_shift",
+      "label": "治理與方法變化",
+      "status": "available_partial"
+    },
+    {
+      "id": "trajectory",
+      "label": "跨時期軌跡",
+      "status": "available_partial"
+    }
+  ],
+  "large_corpus_pending": {
+    "status": "pending",
+    "rule": "歷史大文本、早期網站／社群文字、完整歌詞與其他長時間跨度資料進場後，再補全各 ERA 的語意、風格與軌跡分析。",
+    "must_preserve_source_time": true,
+    "must_preserve_original_text": true,
+    "must_not_backfill_without_evidence": true
+  },
+  "kv": {
+    "key": "loc:evolution:language",
+    "mode": "registry_snapshot",
+    "source_of_truth": "repository registries + shared ERA/Event/Relation authorities"
+  }
+}
