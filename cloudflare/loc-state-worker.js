@@ -1,6 +1,8 @@
 const ERA_KEY = 'loc:era:registry';
 const DAILY_PREFIX = 'loc:daily-rune:';
 const DAILY_INDEX_KEY = 'loc:daily-rune:index';
+const ADMIN_COOKIE = 'loc_admin';
+const ADMIN_TTL = 60 * 60 * 8;
 
 const json = (data, init = {}) => new Response(JSON.stringify(data), {
   ...init,
@@ -74,14 +76,85 @@ function corsHeaders(request, env) {
     'access-control-allow-origin': origin === allowed ? origin : allowed,
     'access-control-allow-methods': 'GET,POST,PUT,DELETE,OPTIONS',
     'access-control-allow-headers': 'content-type,authorization',
+    'access-control-allow-credentials': 'true',
     'vary': 'Origin'
   };
 }
 
-function authorized(request, env) {
+function parseCookies(request) {
+  const raw = request.headers.get('Cookie') || '';
+  const out = {};
+  for (const part of raw.split(';')) {
+    const i = part.indexOf('=');
+    if (i < 0) continue;
+    const key = part.slice(0, i).trim();
+    const value = part.slice(i + 1).trim();
+    if (key) out[key] = value;
+  }
+  return out;
+}
+
+async function adminSessionValue(env) {
+  if (!env.LOC_WRITE_TOKEN) return '';
+  const bytes = new TextEncoder().encode(`loc-state-admin:${env.LOC_WRITE_TOKEN}`);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+async function authorized(request, env) {
   if (!env.LOC_WRITE_TOKEN) return false;
   const auth = request.headers.get('Authorization') || '';
-  return auth === `Bearer ${env.LOC_WRITE_TOKEN}`;
+  if (auth === `Bearer ${env.LOC_WRITE_TOKEN}`) return true;
+  const cookies = parseCookies(request);
+  const expected = await adminSessionValue(env);
+  return !!expected && cookies[ADMIN_COOKIE] === expected;
+}
+
+function adminHtml(loggedIn, message = '') {
+  const note = message ? `<p>${message}</p>` : '';
+  const body = loggedIn
+    ? `<p>LOC KV 管理登入有效。</p><form method="post"><input type="hidden" name="action" value="logout"><button type="submit">登出</button></form>`
+    : `<form method="post"><label>LOC_WRITE_TOKEN <input name="token" type="password" autocomplete="current-password" required></label><button type="submit">登入</button></form>`;
+  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LOC KV Admin</title><main style="max-width:520px;margin:48px auto;font:16px/1.6 system-ui;padding:0 20px"><h1>LOC KV Admin</h1>${note}${body}</main>`;
+}
+
+async function handleAdmin(request, env) {
+  const loggedIn = await authorized(request, env);
+  if (request.method === 'GET') {
+    return new Response(adminHtml(loggedIn), {
+      headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }
+    });
+  }
+  if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+
+  const form = await request.formData();
+  const action = String(form.get('action') || 'login');
+  if (action === 'logout') {
+    return new Response(adminHtml(false, '已登出。'), {
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'no-store',
+        'set-cookie': `${ADMIN_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/api/loc-state; Max-Age=0`
+      }
+    });
+  }
+
+  const token = String(form.get('token') || '');
+  if (!env.LOC_WRITE_TOKEN || token !== env.LOC_WRITE_TOKEN) {
+    return new Response(adminHtml(false, '登入失敗。'), {
+      status: 401,
+      headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }
+    });
+  }
+
+  const session = await adminSessionValue(env);
+  return new Response(adminHtml(true, '登入成功。'), {
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'no-store',
+      'set-cookie': `${ADMIN_COOKIE}=${session}; HttpOnly; Secure; SameSite=Strict; Path=/api/loc-state; Max-Age=${ADMIN_TTL}`
+    }
+  });
 }
 
 async function readEras(env) {
@@ -157,6 +230,8 @@ export default {
     if (!env.LOC_KV) return json({ ok: false, error: 'LOC_KV binding missing' }, { status: 503, headers: cors });
 
     try {
+      if (url.pathname === '/api/loc-state/admin') return handleAdmin(request, env);
+
       if (url.pathname === '/api/loc-state/health') {
         return json({ ok: true, service: 'loc-state', kv: true }, { headers: cors });
       }
@@ -166,7 +241,7 @@ export default {
           const data = await readEras(env);
           return json({ ok: true, ...data }, { headers: cors });
         }
-        if (!authorized(request, env)) return json({ ok: false, error: 'unauthorized' }, { status: 401, headers: cors });
+        if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized' }, { status: 401, headers: cors });
         if (request.method === 'PUT') {
           const body = await request.json();
           const data = await writeEras(env, body);
@@ -192,7 +267,7 @@ export default {
           const limit = Math.max(1, Math.min(1000, Number(url.searchParams.get('limit') || 400)));
           return json({ ok: true, daily_draws: await listDaily(env, limit) }, { headers: cors });
         }
-        if (!authorized(request, env)) return json({ ok: false, error: 'unauthorized' }, { status: 401, headers: cors });
+        if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized' }, { status: 401, headers: cors });
         if (request.method === 'POST') {
           const body = await request.json();
           const row = await saveDaily(env, body.daily_draw || body);
