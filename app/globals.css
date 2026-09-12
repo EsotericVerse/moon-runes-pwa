@@ -1,0 +1,8 @@
+@import "../css/style.css";
+
+/* Next migration layer only. Existing LOC visual canon stays in css/style.css
+   until each feature is moved into scoped CSS Modules. */
+
+.next-migration-shell {
+  min-height: 100vh;
+}

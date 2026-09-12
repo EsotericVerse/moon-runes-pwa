@@ -7,6 +7,8 @@ data/private/
 
 # Local dependency/build/runtime artifacts
 node_modules/
+.next/
+out/
 .wrangler/
 dist/
 build/

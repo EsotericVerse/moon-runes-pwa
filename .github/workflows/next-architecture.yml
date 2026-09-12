@@ -1,0 +1,33 @@
+name: Next Architecture Build
+
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "lib/**"
+      - "package.json"
+      - "next.config.mjs"
+      - ".github/workflows/next-architecture.yml"
+  push:
+    branches:
+      - "refactor/static-pwa-cleanup"
+    paths:
+      - "app/**"
+      - "lib/**"
+      - "package.json"
+      - "next.config.mjs"
+      - ".github/workflows/next-architecture.yml"
+  workflow_dispatch:
+
+jobs:
+  build-next-architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build static export
+        run: npm run build
