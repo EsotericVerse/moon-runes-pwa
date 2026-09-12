@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "verify:independence": "node scripts/verify-next-independence.mjs",
+    "verify:modularity": "node scripts/verify-modularity.mjs",
+    "verify": "npm run verify:independence && npm run verify:modularity",
     "prepare:public": "node scripts/prepare-next-public.mjs",
-    "build": "npm run prepare:public && next build",
+    "build": "npm run verify && npm run prepare:public && next build",
     "start": "next start"
   },
   "dependencies": {
