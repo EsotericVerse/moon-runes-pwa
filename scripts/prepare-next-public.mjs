@@ -74,8 +74,11 @@ for (const manifestPath of [
 let stagedJsonBytes = 0;
 for (const path of [...runtimeJson].sort()) stagedJsonBytes += copyRepoFile(path);
 
-// Next currently exposes only the canonical public LOC document. Repository-only docs stay out.
-const runtimeDocs = ['docs/LOC_Canon_1.0.docx'];
+// Only explicitly public LOC documents are staged for the Next runtime.
+const runtimeDocs = [
+  'docs/LOC_Canon_1.0.docx',
+  'docs/ZHENGDE_STYLE_PUBLIC_KM.md'
+];
 let stagedDocBytes = 0;
 for (const path of runtimeDocs) stagedDocBytes += copyRepoFile(path);
 
@@ -86,5 +89,5 @@ const reduction = sourceJsonBytes
 const mib = bytes => (bytes / 1024 / 1024).toFixed(2);
 
 console.log(`[next-public] JSON: ${runtimeJson.size} runtime files, ${mib(stagedJsonBytes)} MiB staged / ${mib(sourceJsonBytes)} MiB source (${reduction.toFixed(1)}% excluded)`);
-console.log(`[next-public] Docs: ${runtimeDocs.length} file, ${mib(stagedDocBytes)} MiB staged`);
+console.log(`[next-public] Docs: ${runtimeDocs.length} files, ${mib(stagedDocBytes)} MiB staged`);
 console.log('[next-public] Assets: 0 files staged (no current Next runtime consumer)');
