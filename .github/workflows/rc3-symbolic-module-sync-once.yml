@@ -1,3 +1,4 @@
+# one-shot: remove after successful page copy sync
 name: RC3 symbolic module copy sync once
 
 on:
