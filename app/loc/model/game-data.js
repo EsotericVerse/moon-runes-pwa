@@ -1,6 +1,3 @@
-import runes from '../../../data/json/core/runes.json';
-import eventRegistry from '../../../data/json/registries/LOC2_EVENT_REGISTRY.json';
-
 const ASPECT = Object.freeze({
   靈魂: 'SL',
   生命: 'SL',
@@ -12,24 +9,28 @@ const ASPECT = Object.freeze({
   無序: 'OC'
 });
 
-export const EVENTS = Object.freeze((eventRegistry.records || []).map(record => ({
-  id: record.event_id,
-  name: record.title,
-  req: String(record.requirement_signature || '')
-    .split('+')
-    .map(value => value.trim())
-    .filter(Boolean),
-  desc: record.description || ''
-})));
+export function createEvents(eventRegistry) {
+  return (eventRegistry?.records || []).map(record => ({
+    id: record.event_id,
+    name: record.title,
+    req: String(record.requirement_signature || '')
+      .split('+')
+      .map(value => value.trim())
+      .filter(Boolean),
+    desc: record.description || ''
+  }));
+}
 
-export const CARDS = Object.freeze(runes
-  .filter(rune => rune['編號'] >= 1 && rune['編號'] <= 64)
-  .map(rune => ({
-    id: rune['編號'],
-    name: rune['符文名稱'],
-    group: rune['所屬分組'],
-    aspect: ASPECT[rune['所屬分組']] || 'OC'
-  })));
+export function createCards(runes) {
+  return (runes || [])
+    .filter(rune => rune['編號'] >= 1 && rune['編號'] <= 64)
+    .map(rune => ({
+      id: rune['編號'],
+      name: rune['符文名稱'],
+      group: rune['所屬分組'],
+      aspect: ASPECT[rune['所屬分組']] || 'OC'
+    }));
+}
 
 export function shuffle(list) {
   const next = [...list];
