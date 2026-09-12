@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""LOC static runtime publisher.
+"""Publish an editable JSON dataset as static browser JS.
 
-Governance:
-- JSON is the editable / versioned source of truth.
-- Generated JS is the browser runtime representation.
-- Runtime pages load JS only; they do not fetch JSON, KV, Render, or API data.
-- Run this only when source JSON changes.
+Use this helper only for data whose authoring workflow actually uses JSON (or an
+upstream editable source that is intentionally represented as JSON). Governance-
+locked fixed modules such as ``js/runes.js`` are maintained directly in JS and
+must not be routed through this converter.
 
+Runtime pages load the generated JS representation rather than fetching the JSON.
 This tool intentionally stays small and dependency-free.
 """
 from __future__ import annotations
@@ -28,7 +28,7 @@ def publish(source: Path, target: Path, global_name: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Publish JSON as static browser JS")
+    parser = argparse.ArgumentParser(description="Publish editable JSON as static browser JS")
     parser.add_argument("source", type=Path)
     parser.add_argument("target", type=Path)
     parser.add_argument("global_name")
