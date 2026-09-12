@@ -1,11 +1,12 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, join, normalize, resolve } from 'node:path';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { dirname, join, normalize, relative, resolve } from 'node:path';
 
 const root = process.cwd();
 const entrypoints = ['runes.html', 'lo3rwang.html'];
 const reachable = new Set();
 const missing = [];
 const queue = [];
+const retiredLinkViolations = [];
 
 function normalizeRel(path) {
   return normalize(path).replaceAll('\\', '/');
@@ -62,6 +63,25 @@ while (queue.length) {
   }
 }
 
+function scanRetiredLinks(dir) {
+  if (!existsSync(dir)) return;
+  for (const name of readdirSync(dir)) {
+    const path = join(dir, name);
+    const stat = statSync(path);
+    if (stat.isDirectory()) {
+      if (name === 'node_modules' || name === '.next' || name === 'out' || name === 'public') continue;
+      scanRetiredLinks(path);
+      continue;
+    }
+    if (!/\.(?:html|js|jsx|mjs)$/i.test(name)) continue;
+    const text = readFileSync(path, 'utf8');
+    if (/\blots\.html(?:[?#]|\b)/i.test(text)) retiredLinkViolations.push(relative(root, path));
+  }
+}
+
+for (const scope of ['app', 'lib', 'js']) scanRetiredLinks(resolve(root, scope));
+for (const name of readdirSync(root)) if (/\.html$/i.test(name)) scanRetiredLinks(resolve(root, name));
+
 const jsDir = resolve(root, 'js');
 const allJs = existsSync(jsDir)
   ? readdirSync(jsDir).filter(name => name.endsWith('.js')).map(name => `js/${name}`).sort()
@@ -72,6 +92,11 @@ if (missing.length) {
   console.error('[static-entrypoints] missing runtime dependencies:\n' + missing.join('\n'));
   process.exit(1);
 }
+if (retiredLinkViolations.length) {
+  console.error('[static-entrypoints] retired lots.html links found; use runes.html:\n' + retiredLinkViolations.join('\n'));
+  process.exit(1);
+}
 
 console.log(`[static-entrypoints] verified ${entrypoints.length} active static entrypoints; ${[...reachable].filter(path => path.endsWith('.js')).length} JS files reachable`);
+console.log('[static-entrypoints] retired lots.html link guard passed');
 if (unreachable.length) console.log('[static-entrypoints] unreachable legacy JS candidates:\n' + unreachable.join('\n'));
