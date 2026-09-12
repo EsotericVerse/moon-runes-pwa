@@ -3,29 +3,9 @@
 
   const REGISTRY_URL='data/json/registries/LOC_ERA_REGISTRY.json';
   const KV_URL='https://api.lo3rwang.cc/eras';
-  const CONTEXT_KV_URL='https://api.lo3rwang.cc/context';
   const LEGACY_MAP={P0:'P5.0','P0.5':'P5.1',P1:'P6.0',P2:'P6.1',P3:'P6.2',P4:'P7.0',P5:'P7.0',P6:'P7.0',P7:'P7.1',P8:'P7.2'};
   let memory=null;
   let inflight=null;
-
-  // RC4 compatibility bridge: old Context/Evolution code may still hold the Apps Script URL,
-  // but runtime traffic is redirected to the Cloudflare KV API. No Google Sheets request is sent.
-  if(!window.__LOC_KV_CONTEXT_FETCH_BRIDGE__){
-    const nativeFetch=window.fetch.bind(window);
-    window.fetch=(input,init={})=>{
-      try{
-        const raw=typeof input==='string'?input:input?.url;
-        if(raw&&/^https:\/\/script\.google\.com\/macros\/s\//i.test(raw)){
-          const oldUrl=new URL(raw,location.href);
-          const next=new URL(CONTEXT_KV_URL);
-          oldUrl.searchParams.forEach((v,k)=>next.searchParams.set(k,v));
-          return nativeFetch(next.toString(),{...init,credentials:'include'});
-        }
-      }catch(_){}
-      return nativeFetch(input,init);
-    };
-    window.__LOC_KV_CONTEXT_FETCH_BRIDGE__=true;
-  }
 
   const n=v=>String(v??'').trim();
   const order=v=>Number(v?.order??9999);
@@ -174,5 +154,5 @@
   function invalidate(){memory=null;inflight=null}
   function peek(){return memory}
 
-  window.LOCPeriods={REGISTRY_URL,KV_URL,CONTEXT_KV_URL,LEGACY_MAP,load,peek,normalizePeriod,resolveDate,findPeriod,label,range,fillSelect,invalidate,merge,upsert,remove};
+  window.LOCPeriods={REGISTRY_URL,KV_URL,LEGACY_MAP,load,peek,normalizePeriod,resolveDate,findPeriod,label,range,fillSelect,invalidate,merge,upsert,remove};
 })();
