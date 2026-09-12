@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 
 const here = dirname(fileURLToPath(import.meta.url));
+const repoRoot = join(here, '..');
 const LEGACY_CONTEXT_API = 'https://script.google.com/macros/s/AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei/exec';
 const EVENTS_KEY = 'loc:context:events';
 const RELATIONS_KEY = 'loc:context:relations';
@@ -12,7 +13,7 @@ const FORCE = process.argv.includes('--force');
 
 function runCapture(args) {
   const result = spawnSync('npx', args, {
-    cwd: here,
+    cwd: repoRoot,
     encoding: 'utf8',
     shell: process.platform === 'win32'
   });
@@ -25,7 +26,7 @@ function runCapture(args) {
 
 function runInherit(args) {
   const result = spawnSync('npx', args, {
-    cwd: here,
+    cwd: repoRoot,
     stdio: 'inherit',
     shell: process.platform === 'win32'
   });
