@@ -43,6 +43,15 @@ body.loc-page-governance .lead{
   color:var(--muted)!important;
 }
 
+/* HOMEPAGE LABEL CASING
+   Visible English labels use their authored casing; only true acronyms stay uppercase. */
+body.loc-page-index .eyebrow,
+body.loc-page-index .text-category,
+body.loc-page-index .mode-kicker,
+body.loc-page-index .kicker{
+  text-transform:none!important;
+}
+
 /* DAYTIME HOMEPAGE DECORATIVE PALETTE
    The moon is an identity illustration, not a neutral UI surface. Keep it visibly
    lunar and warm in daylight instead of letting the light palette wash it to white. */
