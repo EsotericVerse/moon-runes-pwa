@@ -4,9 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchLocJson, LOC_DATA } from '../data';
 
 const TABS=[['ranking','排行榜'],['runes','符文統計'],['sources','來源管理'],['daily','每日符文'],['import','匯入']];
-const PERIODS='/data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json';
-const SOURCE_STATS='/data/json/generated/search/SEARCH_SOURCE_STATS.json';
-const DAILY_HISTORY='/data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json';
 const DAILY_PAGE_SIZE=10;
 const split=value=>String(value||'').split(/[、,，]/).map(x=>x.trim()).filter(Boolean);
 const today=()=>new Date().toISOString().slice(0,10);
@@ -36,13 +33,13 @@ export default function StaticsView(){
     let live=true;
     const load=(path,setter)=>fetchLocJson(path).then(data=>live&&setter(data)).catch(e=>live&&setError(e.message));
     if(tab==='ranking'){
-      if(!periods)load(PERIODS,setPeriods);
+      if(!periods)load(LOC_DATA.LOC6_PERIOD_KEYWORD_ANALYSIS,setPeriods);
       if(!runes)load(LOC_DATA.RUNES,setRunes);
     }
     if(tab==='runes'&&!runes)load(LOC_DATA.RUNES,setRunes);
-    if(tab==='sources'&&!sources)load(SOURCE_STATS,setSources);
+    if(tab==='sources'&&!sources)load(LOC_DATA.SEARCH_SOURCE_STATS,setSources);
     if(tab==='daily'){
-      if(!daily)load(DAILY_HISTORY,setDaily);
+      if(!daily)load(LOC_DATA.LOC8_DAILY_RUNE_REPO_HISTORY,setDaily);
       if(!runes)load(LOC_DATA.RUNES,setRunes);
     }
     return()=>{live=false};
