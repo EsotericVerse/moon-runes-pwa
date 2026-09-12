@@ -1,5 +1,5 @@
 {
-  "version": "1.1-rc3",
+  "version": "1.2-rc3",
   "title": "LunaRunes Derived Lexicon",
   "purpose": "只收錄會改變字面拆解判定、主體性或詞類的高價值衍生詞；不作一般同義詞字典，不回寫 Base66 Canon。",
   "governance": {
@@ -35,7 +35,10 @@
       ],
       "materialization": "runtime-derived",
       "source_of_truth": "Base66 Canon + LUNARUNE_DERIVED_LEXICON.json"
-    }
+    },
+    "whole_expression_precedence": "完整詞組的整體詞義與主體性優先於內部子詞；例如「日月星辰」不能因「星辰→星」就停在星。",
+    "group_totality_rule": "同組多符文組合若整體語意明確指向該群組的循環、總體規律或生命定律，整體主體歸「命」；不是任意同組排列自動歸命，仍須先判斷完整詞組是否具有總體性。",
+    "derived_keyword_rule": "超過 Canon 固定關鍵詞格式、但能穩定指向單一符文的固定詞或成語，列為衍生關鍵詞進 Graph，不回寫 Base66 Canon 關鍵詞。"
   },
   "entries": [
     {
@@ -254,6 +257,69 @@
       "reference_url": "https://dict.idioms.moe.edu.tw/idiomView.jsp?ID=660&la=0&webMd=1",
       "evidence": "『鏡花水月』比喻空幻不實在；四個表面符文共同構成固定詞，但整體語意主體是幻。",
       "note": "典型 ABCD → E；用來證明 surface composition 不等於 semantic owner。"
+    },
+    {
+      "term": "花枝招展",
+      "surface_runes": [
+        "花",
+        "枝"
+      ],
+      "lexical_class": "成語／形容語",
+      "relation": "derived_keyword",
+      "resolved_rune": "花",
+      "status": "confirmed",
+      "keyword_role": "derived_keyword",
+      "source": "治理實作範例",
+      "evidence": "完整詞「花枝招展」描述如花枝般鮮明盛放的姿態；此處「花枝」不是動物名，整體主體歸花。",
+      "note": "四字完整詞可消除「花枝」二字的多義性；完整詞組語境優先於子詞。"
+    },
+    {
+      "term": "生老病死",
+      "surface_runes": [
+        "生",
+        "老",
+        "病",
+        "死"
+      ],
+      "lexical_class": "並列總稱／生命循環",
+      "relation": "group_totality_to_fate",
+      "resolved_rune": "命",
+      "status": "confirmed",
+      "source": "治理實作範例",
+      "evidence": "生、老、病、死同屬生命組；四者合起來描述生命不可避免的整體循環與定律，主體上升為命。",
+      "note": "典型同組 ABCD → 命；不是四字相加，而是群組總體規律。"
+    },
+    {
+      "term": "風火雷土",
+      "surface_runes": [
+        "風",
+        "火",
+        "雷",
+        "土"
+      ],
+      "lexical_class": "並列總稱／自然元素規律",
+      "relation": "group_totality_to_fate",
+      "resolved_rune": "命",
+      "status": "confirmed",
+      "source": "治理實作範例",
+      "evidence": "風、火、雷、土皆屬元素組；當四者作為同組整體規律來理解時，主體上升為命。",
+      "note": "同組多符文共同表達世界運作的總體定律時，歸命。"
+    },
+    {
+      "term": "日月星辰",
+      "surface_runes": [
+        "日",
+        "月",
+        "星",
+        "辰"
+      ],
+      "lexical_class": "並列總稱／天時秩序",
+      "relation": "group_totality_to_fate",
+      "resolved_rune": "命",
+      "status": "confirmed",
+      "source": "治理實作範例",
+      "evidence": "日、月、星、辰皆屬秩序組；完整四字表達天體與時序的總體規律，主體上升為命。",
+      "note": "完整詞組優先於內部「星辰→星」的二字規則；ABCD 整體可重新決定主體。"
     }
   ]
 }

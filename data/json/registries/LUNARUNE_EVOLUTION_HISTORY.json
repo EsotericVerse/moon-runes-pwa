@@ -1,13 +1,43 @@
 {
-  "version": "1.1-rc3",
+  "version": "1.2-rc3",
   "title": "LunaRunes Evolution History",
   "purpose": "把符文系統自身演化、語意治理演化與可重現實例分開呈現；不把文化時代語義漂移回寫 Base66 Canon。",
   "system_stages": [
-    {"order": 1, "label": "14", "rune_count": 14, "kind": "system_scale", "note": "早期符文集合"},
-    {"order": 2, "label": "24", "rune_count": 24, "kind": "system_scale", "note": "擴充語意覆蓋"},
-    {"order": 3, "label": "32", "rune_count": 32, "kind": "system_scale", "note": "持續拆分與補足語意邊界"},
-    {"order": 4, "label": "42", "rune_count": 42, "kind": "system_scale", "note": "中期結構擴充"},
-    {"order": 5, "label": "66", "rune_count": 66, "kind": "system_scale", "note": "現行 Base66"}
+    {
+      "order": 1,
+      "label": "14",
+      "rune_count": 14,
+      "kind": "system_scale",
+      "note": "早期符文集合"
+    },
+    {
+      "order": 2,
+      "label": "24",
+      "rune_count": 24,
+      "kind": "system_scale",
+      "note": "擴充語意覆蓋"
+    },
+    {
+      "order": 3,
+      "label": "32",
+      "rune_count": 32,
+      "kind": "system_scale",
+      "note": "持續拆分與補足語意邊界"
+    },
+    {
+      "order": 4,
+      "label": "42",
+      "rune_count": 42,
+      "kind": "system_scale",
+      "note": "中期結構擴充"
+    },
+    {
+      "order": 5,
+      "label": "66",
+      "rune_count": 66,
+      "kind": "system_scale",
+      "note": "現行 Base66"
+    }
   ],
   "governance_evolution": [
     {
@@ -51,6 +81,13 @@
       "before": "只靠人工列出少數已知轉移案例。",
       "after": "先驗證自然存在的二字詞，再只保留會改變主體性、詞類或唯一歸屬的高價值案例；三字詞建立在此基礎上延伸。",
       "effect": "不做排列組合、不堆同義詞，以少量實例驗證規則能否泛化。"
+    },
+    {
+      "order": 7,
+      "title": "完整詞組與同組總體律",
+      "before": "二字主體性規則若直接套入四字詞，可能被子詞判定綁住。",
+      "after": "先判完整詞組；若同組多符文共同表達循環、總體規律或生命定律，主體可上升至命。",
+      "effect": "建立 phrase > subphrase 的判定層級，讓少量規則可處理四字整體語意。"
     }
   ],
   "semantic_history_cases": [
@@ -117,6 +154,38 @@
       "before": "光與暗兩個候選都直接成立。",
       "after": "保留對等歧義，只有更完整語境出現時才繼續裁決。",
       "note": "不為追求唯一答案而強迫判定。"
+    },
+    {
+      "order": 9,
+      "title": "花枝招展 → 花",
+      "kind": "context_disambiguation",
+      "before": "子詞「花枝」本身具有植物與動物名等多義性。",
+      "after": "進入完整詞「花枝招展」後，多義被完整語境解除，整體主體歸花。",
+      "note": "完整詞組可以反向消除二字詞的歧義。"
+    },
+    {
+      "order": 10,
+      "title": "生老病死 → 命",
+      "kind": "group_totality_to_fate",
+      "before": "生、老、病、死可分別判為四個生命組符文。",
+      "after": "四者作為生命整體循環時，主體上升為命。",
+      "note": "同組多符文的總體性可產生高一層語意主體。"
+    },
+    {
+      "order": 11,
+      "title": "風火雷土 → 命",
+      "kind": "group_totality_to_fate",
+      "before": "風、火、雷、土分別是元素組中的個別符文。",
+      "after": "作為元素整體規律時，主體上升為命。",
+      "note": "命在此表示世界運作的總體定律，而不是其中任一元素。"
+    },
+    {
+      "order": 12,
+      "title": "日月星辰 → 命",
+      "kind": "whole_expression_override",
+      "before": "內部子詞「星辰」可先解析為星。",
+      "after": "完整四字描述天時與秩序總體規律時，完整詞組優先，主體改判為命。",
+      "note": "明確證明 phrase-level ownership 可覆寫 subphrase ownership。"
     }
   ],
   "language_time_policy": {
