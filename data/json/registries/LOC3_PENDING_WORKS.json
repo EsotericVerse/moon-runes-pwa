@@ -2,7 +2,7 @@
   "schema_version": "0.1",
   "registry": "LOC3_PENDING_WORKS",
   "authority": "LOC3",
-  "purpose": "New LOC3 works known by title/date but not yet fully synchronized with lyrics/Suno metadata. Pending works are catalogued but excluded from searchable lyrics corpus until complete.",
+  "purpose": "New LOC3 works known by title and/or Suno metadata but not yet fully synchronized with lyrics/search metadata. Pending works are catalogued but excluded from searchable lyrics corpus until complete.",
   "works": [
     {
       "pending_id": "PENDING-20260905-01",
@@ -28,8 +28,133 @@
           "note": "author-confirmed Suno song URL"
         }
       ]
+    },
+    {
+      "pending_id": "PENDING-20260913-01",
+      "title": "微月光照新上",
+      "created_date": "2026-09-13",
+      "period": "P8",
+      "era_id": "ERA-P8",
+      "era_name": "自我治理與未來展望期",
+      "creative_stage": "治理自己",
+      "playlist": "6.治理自己",
+      "status": "lyrics_pending",
+      "lyrics_status": "pending",
+      "suno_status": "confirmed",
+      "search_status": "excluded_until_lyrics_sync",
+      "source": "author_confirmed_title_and_suno_url",
+      "song_id": "8ee6eea5-cf38-4b03-b4d5-8823bd1869d3",
+      "suno_url": "https://suno.com/song/8ee6eea5-cf38-4b03-b4d5-8823bd1869d3",
+      "source_refs": [
+        {
+          "source_type": "suno_song",
+          "source_id": "8ee6eea5-cf38-4b03-b4d5-8823bd1869d3",
+          "url": "https://suno.com/song/8ee6eea5-cf38-4b03-b4d5-8823bd1869d3",
+          "note": "author-confirmed Suno song URL"
+        }
+      ]
+    },
+    {
+      "pending_id": "PENDING-20260913-02",
+      "title": "晚一點也會到",
+      "created_date": "2026-09-13",
+      "period": "P8",
+      "era_id": "ERA-P8",
+      "era_name": "自我治理與未來展望期",
+      "creative_stage": "治理自己",
+      "playlist": "6.治理自己",
+      "status": "lyrics_pending",
+      "lyrics_status": "pending",
+      "suno_status": "confirmed",
+      "search_status": "excluded_until_lyrics_sync",
+      "source": "author_confirmed_title_and_suno_url",
+      "song_id": "c33c32ae-a5db-4503-9876-3d96475cd2e4",
+      "suno_url": "https://suno.com/song/c33c32ae-a5db-4503-9876-3d96475cd2e4",
+      "source_refs": [
+        {
+          "source_type": "suno_song",
+          "source_id": "c33c32ae-a5db-4503-9876-3d96475cd2e4",
+          "url": "https://suno.com/song/c33c32ae-a5db-4503-9876-3d96475cd2e4",
+          "note": "author-confirmed Suno song URL"
+        }
+      ]
+    },
+    {
+      "pending_id": "PENDING-20260913-03",
+      "title": "我還活著",
+      "created_date": "2026-09-13",
+      "period": "P8",
+      "era_id": "ERA-P8",
+      "era_name": "自我治理與未來展望期",
+      "creative_stage": "治理自己",
+      "playlist": "6.治理自己",
+      "status": "lyrics_pending",
+      "lyrics_status": "pending",
+      "suno_status": "confirmed",
+      "search_status": "excluded_until_lyrics_sync",
+      "source": "author_confirmed_title_and_suno_url",
+      "song_id": "f5006bf5-0ed5-49f9-81b6-0fe244ba894e",
+      "suno_url": "https://suno.com/song/f5006bf5-0ed5-49f9-81b6-0fe244ba894e",
+      "source_refs": [
+        {
+          "source_type": "suno_song",
+          "source_id": "f5006bf5-0ed5-49f9-81b6-0fe244ba894e",
+          "url": "https://suno.com/song/f5006bf5-0ed5-49f9-81b6-0fe244ba894e",
+          "note": "author-confirmed Suno song URL"
+        }
+      ]
+    },
+    {
+      "pending_id": "PENDING-20260913-04",
+      "title": "好久不見",
+      "created_date": "2026-09-13",
+      "period": "P8",
+      "era_id": "ERA-P8",
+      "era_name": "自我治理與未來展望期",
+      "creative_stage": "治理自己",
+      "playlist": "6.治理自己",
+      "status": "lyrics_pending",
+      "lyrics_status": "pending",
+      "suno_status": "confirmed",
+      "search_status": "excluded_until_lyrics_sync",
+      "source": "author_confirmed_title_and_suno_url",
+      "song_id": "dd5a3861-d926-4d5d-9662-a5e87b39027c",
+      "suno_url": "https://suno.com/song/dd5a3861-d926-4d5d-9662-a5e87b39027c",
+      "source_refs": [
+        {
+          "source_type": "suno_song",
+          "source_id": "dd5a3861-d926-4d5d-9662-a5e87b39027c",
+          "url": "https://suno.com/song/dd5a3861-d926-4d5d-9662-a5e87b39027c",
+          "note": "author-confirmed Suno song URL"
+        }
+      ]
+    },
+    {
+      "pending_id": "PENDING-DATE-01",
+      "title": "潮來潮往",
+      "created_date": null,
+      "period": "P8",
+      "era_id": "ERA-P8",
+      "era_name": "自我治理與未來展望期",
+      "creative_stage": "治理自己",
+      "playlist": "6.治理自己",
+      "status": "lyrics_and_date_pending",
+      "lyrics_status": "pending",
+      "suno_status": "confirmed",
+      "search_status": "excluded_until_lyrics_sync",
+      "source": "author_confirmed_title_and_suno_url",
+      "song_id": "e0caf2f0-870a-4503-9c75-06bc31226c86",
+      "suno_url": "https://suno.com/song/e0caf2f0-870a-4503-9c75-06bc31226c86",
+      "source_refs": [
+        {
+          "source_type": "suno_song",
+          "source_id": "e0caf2f0-870a-4503-9c75-06bc31226c86",
+          "url": "https://suno.com/song/e0caf2f0-870a-4503-9c75-06bc31226c86",
+          "note": "author-confirmed Suno song URL; creation date pending"
+        }
+      ]
     }
   ],
-  "updated_at": "2026-09-09",
+  "updated_at": "2026-09-13",
   "authority_domain": "music"
 }
