@@ -39,7 +39,8 @@ for (const rel of [
   'docs/LOC_Canon_1.0.docx',
   'apple-touch-icon.png',
   'favicon.ico',
-  'manifest.json'
+  'manifest.json',
+  'CNAME'
 ]) await copyPath(rel);
 
 // Runtime JSON is an explicit allowlist derived from the paths the Next app actually uses.
