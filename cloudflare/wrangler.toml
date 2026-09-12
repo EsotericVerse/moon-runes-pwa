@@ -12,3 +12,7 @@ id = "69132df38f8f43a6a40cae39ebfe5460"
 
 [vars]
 PUBLIC_ORIGIN = "https://loc.lo3rwang.cc"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
