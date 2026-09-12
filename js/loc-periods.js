@@ -2,6 +2,7 @@
   'use strict';
 
   const REGISTRY_URL='data/json/registries/LOC_ERA_REGISTRY.json';
+  const KV_URL='/api/loc-state/eras';
   const LEGACY_MAP={P0:'P5.0','P0.5':'P5.1',P1:'P6.0',P2:'P6.1',P3:'P6.2',P4:'P7.0',P5:'P7.0',P6:'P7.0',P7:'P7.1',P8:'P7.2'};
   let memory=null;
   let inflight=null;
@@ -60,25 +61,60 @@
     return response.json();
   }
 
+  async function fetchKV(){
+    try{
+      const response=await fetch(KV_URL,{cache:'no-store'});
+      if(!response.ok)return null;
+      const data=await response.json();
+      return data?.ok&&Array.isArray(data?.eras)?data:null;
+    }catch(_){
+      return null;
+    }
+  }
+
+  function writeToken(){
+    try{return sessionStorage.getItem('loc-kv-write-token')||''}catch(_){return ''}
+  }
+
+  async function writeKV(payload,method='POST'){
+    const token=writeToken();
+    if(!token)throw new Error('KV write token not configured');
+    const response=await fetch(KV_URL,{
+      method,
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify(payload)
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||data?.ok===false)throw new Error(data?.error||('HTTP '+response.status));
+    invalidate();
+    return data;
+  }
+
+  async function upsert(era){return writeKV({action:'upsert',era},'POST')}
+  async function remove(period){return writeKV({action:'delete',period},'POST')}
+
   async function load({force=false}={}){
     if(memory&&!force)return memory;
     if(inflight&&!force)return inflight;
     inflight=(async()=>{
       const registry=await fetchRegistry();
-      const eras=(registry.eras||[]).map(clean).filter(x=>x.period)
-        .sort((a,b)=>order(a)-order(b)||a.period.localeCompare(b.period,undefined,{numeric:true}));
+      const kv=await fetchKV();
+      const base=(registry.eras||[]).map(clean).filter(x=>x.period);
+      const eras=kv?.eras?.length
+        ?merge(base,kv.eras,n(registry.definition_version),n(registry.updated_at))
+        :base.sort((a,b)=>order(a)-order(b)||a.period.localeCompare(b.period,undefined,{numeric:true}));
       const current=eras.find(x=>x.status==='current')||eras[eras.length-1]||null;
       const segmentCount=eras.filter(x=>x.period_type!=='parent').length;
       memory={
         version:n(registry.definition_version)||n(registry.schema_version)||'—',
-        updated_at:n(registry.updated_at)||'',
+        updated_at:n(kv?.updated_at)||n(registry.updated_at)||'',
         eras,
         current,
         total_count:eras.length,
         segment_count:segmentCount,
         parent_count:eras.length-segmentCount,
         legacy_map:{...(registry.legacy_period_map||LEGACY_MAP)},
-        source:'registry'
+        source:kv?.eras?.length?'kv+registry':'registry'
       };
       return memory;
     })();
@@ -122,6 +158,7 @@
 
   function invalidate(){memory=null;inflight=null}
   function peek(){return memory}
+  function setWriteToken(token){try{token?sessionStorage.setItem('loc-kv-write-token',String(token)):sessionStorage.removeItem('loc-kv-write-token')}catch(_){}}
 
-  window.LOCPeriods={REGISTRY_URL,LEGACY_MAP,load,peek,normalizePeriod,resolveDate,findPeriod,label,range,fillSelect,invalidate,merge};
+  window.LOCPeriods={REGISTRY_URL,KV_URL,LEGACY_MAP,load,peek,normalizePeriod,resolveDate,findPeriod,label,range,fillSelect,invalidate,merge,upsert,remove,setWriteToken};
 })();
