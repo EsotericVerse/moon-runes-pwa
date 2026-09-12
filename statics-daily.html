@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07182d">
+<title>每日符文統計｜LOC 月典</title>
+<meta name="description" content="LOC 每日符文統計：手動記錄實體牌、檢視歷史紀錄與趨勢。">
+<link rel="canonical" href="https://loc.lo3rwang.cc/statics-daily.html">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="loc-responsive-page loc-page-statics">
+<div class="loc-global-shell"><nav class="loc-global-nav" data-loc-nav data-page="statics" aria-label="全站導覽"></nav></div>
+<main class="page">
+<header class="hero"><h1>每日符文統計</h1><p>每日實體牌紀錄、歷史分頁與趨勢統計；此頁隸屬「統計」。</p><p><a href="statics.html">← 回統計總覽</a></p></header>
+<section id="daily"><div class="card"><div class="daily-record-grid"><form class="daily-record-form" id="dailyRecordForm"><h3>手動記錄實體牌</h3><div class="daily-form-grid"><label>日期<input id="dailyRecordDate" type="date" required></label><label>類型<select id="dailyRecordKind"><option value="daily_draw">主抽</option><option value="daily_draw_supplement">補抽</option></select></label><label>符文<select id="dailyRecordRune" required><option value="">選擇符文</option></select></label><label>方向<select id="dailyRecordDirection"><option>正位</option><option>半正位</option><option>半逆位</option><option>逆位</option></select></label><label class="full">備註<input id="dailyRecordNote" type="text" placeholder="可留空"></label></div><button class="daily-record-submit" type="submit">儲存紀錄</button><div class="daily-record-status" id="dailyRecordStatus">尚未寫入任何資料。</div></form><div class="daily-stats-panel"><h3>每日符文趨勢統計</h3><p id="dailyStatsStatus">載入已記錄的每日符文資料…</p><div class="daily-metrics"><div><small>紀錄數</small><strong id="dailyMetricCount">—</strong></div><div><small>主抽</small><strong id="dailyMetricPrimary">—</strong></div><div><small>補抽</small><strong id="dailyMetricSupplement">—</strong></div></div><div class="daily-history-list" id="dailyHistoryList"></div><div class="daily-history-pagination" id="dailyHistoryPagination" hidden><div id="dailyHistoryPageInfo"></div><div id="dailyHistoryPages"></div></div></div></div></div></section>
+</main>
+<script src="js/loc-nav.js" defer></script>
+<script type="module" src="js/rune-daily-records.js?v=20260912-daily-page1"></script>
+</body>
+</html>
