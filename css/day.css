@@ -42,9 +42,7 @@ html[data-theme-resolved="day"] body{
 
 /* Global navigation and controls */
 html[data-theme-resolved="day"] body .loc-global-nav,
-html[data-theme-resolved="day"] body .loc-nav-tiers,
-html[data-theme-resolved="day"] body.loc-page-context header,
-html[data-theme-resolved="day"] body.loc-page-context .loc2-local-header{
+html[data-theme-resolved="day"] body .loc-nav-tiers{
   background:rgba(247,247,245,.96)!important;
   border-color:var(--line)!important;
 }
@@ -93,87 +91,11 @@ html[data-theme-resolved="day"] body :where(
   .rune-intro,#attributes,#description
 ){background:var(--surface2)!important}
 
-/* Page-specific legacy dark UI that used literal colors/gradients. */
-html[data-theme-resolved="day"] body.loc-page-index #rune-card.card-display,
-html[data-theme-resolved="day"] body.loc-page-index .evolution-proof-item,
-html[data-theme-resolved="day"] body.loc-page-index .loc6-quote,
-html[data-theme-resolved="day"] body.loc-page-index .visual-card{
-  background:var(--surface2)!important;
-  border-color:var(--line)!important;
-  box-shadow:none!important;
-}
-html[data-theme-resolved="day"] body.loc-page-index .framework-modal-shell,
-html[data-theme-resolved="day"] body.loc-page-index .framework-modal-head,
-html[data-theme-resolved="day"] body.loc-page-index .modal-head{
-  background:var(--surface)!important;
-  color:var(--text)!important;
-  border-color:var(--line)!important;
-}
-html[data-theme-resolved="day"] body.loc-page-index .framework-hotspot{
-  background:rgba(255,255,255,.88)!important;
-  color:var(--text)!important;
-  border-color:var(--line)!important;
-}
-
-html[data-theme-resolved="day"] body.loc-page-lots :where(
-  .filter,.group-head,.daily-entry,.physical-card-download,dialog,.modal-head,
-  .draw-mode-card,.daily-history-row,.reading-ref-card
-),
+/* Active legacy LunaRunes route. */
 html[data-theme-resolved="day"] body.loc-page-runes :where(
   .filter,.group-head,.daily-entry,.physical-card-download,dialog,.modal-head,
   .draw-mode-card,.daily-record-form,.daily-stats-panel,.daily-history-row,
   .reading-ref-card
-){
-  background:var(--surface2)!important;
-  color:var(--text)!important;
-  border-color:var(--line)!important;
-}
-
-html[data-theme-resolved="day"] body.loc-page-context :where(
-  .panel,.card,table,th,.topline span,.controls input,.context-form-grid input,
-  .context-form-grid select,.context-form-grid textarea,.context-graph-toolbar input,
-  .context-graph-toolbar select,.context-graph-filter select,.context-page-btn,
-  .doc-category,.doc-links a
-){
-  background:var(--surface2)!important;
-  color:var(--text)!important;
-  border-color:var(--line)!important;
-}
-
-html[data-theme-resolved="day"] body.loc-page-search :where(
-  textarea,.suggestion-card,.clear-btn,.browse-btn,.filter-toggle,.filter-panel,
-  .filter-tab.active,select,input[type="date"],.card,.location-card,
-  .evidence-section,.synthesis-findings li,.source-search,.source-search-link,
-  .source-stats,.source-stat-line,.pagination,.page-btn,.ranking-panel,.ranking-tab,
-  .ranking-row,.era-setting-card,.era-setting-grid input,.era-setting-grid select,
-  .source-search
-){
-  background:var(--surface2)!important;
-  color:var(--text)!important;
-  border-color:var(--line)!important;
-}
-
-html[data-theme-resolved="day"] body.loc-page-evolution :where(
-  .card,.era,.keyword-card,.trajectory-card,.event-card,.trajectory-box,
-  .era-editor input,.era-editor textarea,.era-editor select,.event-form input,
-  .event-form textarea,.event-form select
-){
-  background:var(--surface2)!important;
-  color:var(--text)!important;
-  border-color:var(--line)!important;
-}
-
-html[data-theme-resolved="day"] body.loc-page-game :where(
-  .hero,.panel,.player,.event,.log,.rune,.tag,.btn,.status,.legend div
-){
-  background:var(--surface2)!important;
-  color:var(--text)!important;
-  border-color:var(--line)!important;
-}
-
-html[data-theme-resolved="day"] body.loc-page-statics :where(
-  .card,.daily-record-form,.daily-stats-panel,.stats-metric,.rune-group-stats>div,
-  .daily-form-grid input,.daily-form-grid select
 ){
   background:var(--surface2)!important;
   color:var(--text)!important;
