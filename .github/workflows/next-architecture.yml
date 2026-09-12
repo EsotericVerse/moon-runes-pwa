@@ -5,6 +5,8 @@ on:
     paths:
       - "app/**"
       - "lib/**"
+      - "js/**"
+      - "*.html"
       - "scripts/**"
       - "data/json/core/runes.json"
       - "package.json"
@@ -16,6 +18,8 @@ on:
     paths:
       - "app/**"
       - "lib/**"
+      - "js/**"
+      - "*.html"
       - "scripts/**"
       - "data/json/core/runes.json"
       - "package.json"
