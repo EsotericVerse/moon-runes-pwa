@@ -1,0 +1,31 @@
+:root{
+  color-scheme:dark;
+  --loc-bg:#061526;
+  --loc-panel:#0a2037;
+  --loc-panel-2:#0d2945;
+  --loc-line:rgba(180,205,230,.22);
+  --loc-text:#edf5fb;
+  --loc-muted:#9fb6c9;
+  --loc-gold:#d9b96e;
+  --loc-accent:#86c8ff;
+  --loc-danger:#ffb7b7;
+  --loc-radius:18px;
+  --loc-radius-sm:12px;
+  --loc-shadow:0 20px 55px rgba(0,0,0,.22);
+  --loc-surface:rgba(10,32,55,.82);
+  --loc-surface-soft:rgba(255,255,255,.025);
+  --loc-surface-status:rgba(255,255,255,.035);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:radial-gradient(circle at 50% -10%,#12365b 0,#07192c 30rem,var(--loc-bg) 55rem);
+  color:var(--loc-text);
+  font-family:Inter,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  line-height:1.65;
+}
+a{color:inherit}
+button,input,select,textarea{font:inherit}
+.next-migration-shell{min-height:100vh}
