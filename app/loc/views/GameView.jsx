@@ -1,18 +1,20 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { CARDS, EVENTS, coverage, deltaFor, drawToFive, shuffle } from '../model/game-data';
+import { useEffect, useMemo, useState } from 'react';
+import { fetchLocJson, fetchLocJsonBatch, LOC_DATA } from '../data';
+import { createCards, createEvents, coverage, deltaFor, drawToFive, shuffle } from '../model/game-data';
 
+const EVENT_REGISTRY = '/data/json/registries/LOC2_EVENT_REGISTRY.json';
 const playerName = index => index ? 'B' : 'A';
 
-function freshPlayer() {
-  return drawToFive({ de: 0, deck: shuffle(CARDS), hand: [], selected: [], acted: false });
+function freshPlayer(cards) {
+  return drawToFive({ de: 0, deck: shuffle(cards), hand: [], selected: [], acted: false });
 }
 
-function freshGame() {
-  const eventDeck = shuffle(EVENTS);
+function freshGame(events, cards) {
+  const eventDeck = shuffle(events);
   return {
-    players: [freshPlayer(), freshPlayer()],
+    players: [freshPlayer(cards), freshPlayer(cards)],
     eventDeck,
     event: eventDeck[eventDeck.length - 1],
     turn: 0,
@@ -24,18 +26,38 @@ function freshGame() {
 }
 
 export default function GameView() {
+  const [data, setData] = useState(null);
+  const [loadError, setLoadError] = useState('');
   const [state, setState] = useState(null);
+
+  useEffect(() => {
+    let live = true;
+    fetchLocJsonBatch([LOC_DATA.RUNES, EVENT_REGISTRY], { concurrency: 2 })
+      .then(([runes, eventRegistry]) => {
+        if (!live) return;
+        const cards = createCards(runes);
+        const events = createEvents(eventRegistry);
+        if (!cards.length || !events.length) throw new Error('遊戲資料不完整。');
+        setData({ cards, events });
+      })
+      .catch(error => live && setLoadError(error.message));
+    return () => { live = false; };
+  }, []);
+
   const active = state?.players[state.turn];
   const canNext = state?.resolved.every(Boolean) && state?.winner === null;
 
   const status = useMemo(() => {
+    if (loadError) return '遊戲資料載入失敗。';
+    if (!data) return '載入符文與事件資料…';
     if (!state) return '按「開始新遊戲」建立牌局。';
     if (state.winner !== null) return `Player ${playerName(state.winner)} 已達 16 De，取得本 Alpha 對局勝利。`;
     return `目前：Player ${playerName(state.turn)}。請選三張符文回答事件。`;
-  }, [state]);
+  }, [data, loadError, state]);
 
   function start() {
-    setState(freshGame());
+    if (!data) return;
+    setState(freshGame(data.events, data.cards));
   }
 
   function toggleCard(playerIndex, cardIndex) {
@@ -110,10 +132,10 @@ export default function GameView() {
 
   function nextEvent() {
     setState(previous => {
-      if (!previous || !previous.resolved.every(Boolean)) return previous;
+      if (!previous || !previous.resolved.every(Boolean) || !data) return previous;
       let deck = [...previous.eventDeck];
       deck.pop();
-      if (!deck.length) deck = shuffle(EVENTS);
+      if (!deck.length) deck = shuffle(data.events);
       const event = deck[deck.length - 1];
       const players = previous.players.map(player => drawToFive({ ...player, selected: [], acted: false }));
       return {
@@ -133,13 +155,13 @@ export default function GameView() {
     <header className="loc-hero">
       <p className="loc-eyebrow">LOC2 · Semantic Playground</p>
       <h1>脈絡沙盒遊戲</h1>
-      <p>兩位玩家各自使用 1–64 符文牌庫回答事件；先取得並守住 16 De 的玩家勝利。遊戲資料與狀態只在進入此 View 時載入。</p>
+      <p>兩位玩家各自使用 1–64 符文牌庫回答事件；先取得並守住 16 De 的玩家勝利。符文資料直接讀取 canonical runes.json，遊戲邏輯不保存第二份符文資料。</p>
     </header>
     <div className="loc-actions">
-      <button className="loc-button primary" onClick={start}>開始新遊戲</button>
+      <button className="loc-button primary" onClick={start} disabled={!data}>開始新遊戲</button>
       <button className="loc-button" onClick={nextEvent} disabled={!canNext}>下一事件</button>
     </div>
-    <p className="loc-status">{status}</p>
+    <p className={`loc-status ${loadError ? 'error' : ''}`}>{loadError || status}</p>
     <div className="loc-legend">
       <span><b>SL</b> 靈魂／生命</span>
       <span><b>ML</b> 連結／礦物</span>
