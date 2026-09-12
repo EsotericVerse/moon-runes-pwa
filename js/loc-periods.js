@@ -2,7 +2,7 @@
   'use strict';
 
   const REGISTRY_URL='data/json/registries/LOC_ERA_REGISTRY.json';
-  const KV_URL='/api/loc-state/eras';
+  const KV_URL='https://api.lo3rwang.cc/eras';
   const LEGACY_MAP={P0:'P5.0','P0.5':'P5.1',P1:'P6.0',P2:'P6.1',P3:'P6.2',P4:'P7.0',P5:'P7.0',P6:'P7.0',P7:'P7.1',P8:'P7.2'};
   let memory=null;
   let inflight=null;
@@ -63,7 +63,7 @@
 
   async function fetchKV(){
     try{
-      const response=await fetch(KV_URL,{cache:'no-store',credentials:'same-origin'});
+      const response=await fetch(KV_URL,{cache:'no-store',credentials:'include'});
       if(!response.ok)return null;
       const data=await response.json();
       return data?.ok&&Array.isArray(data?.eras)?data:null;
@@ -75,7 +75,7 @@
   async function writeKV(payload,method='POST'){
     const response=await fetch(KV_URL,{
       method,
-      credentials:'same-origin',
+      credentials:'include',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload)
     });
