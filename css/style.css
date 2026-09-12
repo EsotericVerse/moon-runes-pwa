@@ -236,3 +236,48 @@ html[data-theme-resolved="day"] body :where(input,textarea)::placeholder{color:v
 html[data-theme-resolved="day"] body :where(p,li,dd,dt,label,td,th){color:var(--text)}
 html[data-theme-resolved="day"] body :where(.muted,.lead,.meta,.source-note,small){color:var(--muted)}
 html[data-theme-resolved="day"] body :where(strong,b){color:var(--text)}
+
+/* DAY PALETTE CANON · neutral surfaces
+   Day mode must be neutral white/gray, not blue-gray. All semantic text surfaces
+   inherit these tokens, so the rule applies consistently across every HTML page. */
+html[data-theme-resolved="day"] body{
+  --bg:#f3f3f1;
+  --surface:rgba(255,255,255,.97);
+  --surface2:rgba(244,244,241,.98);
+  --soft:rgba(239,239,235,.98);
+  --panel:var(--surface);
+  --card:var(--surface);
+  --box:var(--surface2);
+  --line:rgba(37,43,49,.16);
+  --line-strong:rgba(37,43,49,.28);
+  --border:var(--line);
+  --text:#1f2933;
+  --muted:#67717c;
+  --shadow:0 18px 48px rgba(40,44,48,.10);
+  --loc-bg:var(--bg);
+  --loc-surface:var(--surface);
+  --loc-surface-soft:var(--surface2);
+  --loc-border:var(--line);
+  --loc-text:var(--text);
+  --loc-muted:var(--muted);
+  --loc-shadow:var(--shadow);
+  background:linear-gradient(180deg,#f7f7f5 0%,#f0f0ed 100%)!important;
+}
+
+/* The text boxes visible in the homepage onboarding area are explicitly semantic
+   surfaces. Keep them neutral even if older selectors contain literal blue fills. */
+html[data-theme-resolved="day"] body :where(
+  .loc-guidance-note,
+  .loc-concept-note,
+  .quick-selector,
+  .quick-selector-detail,
+  .quick-selector-card,
+  .action-card,
+  .work-item,
+  .loc6-core,
+  .loc6-quotes
+){
+  background:var(--surface2)!important;
+  border-color:var(--line)!important;
+  color:var(--text)!important;
+}
