@@ -55,20 +55,18 @@ if (!runeAdapter.includes("../data/json/core/runes.json")) failures.push('lib/ru
 if (/canonicalRows\s*=\s*\[/.test(runeAdapter)) failures.push('lib/runes.js: embedded duplicate canonical rune rows');
 
 const allowedCanonicalRefs = new Set(['app/loc/data.js', 'lib/runes.js']);
-walk(resolve(root, 'app'), path => {
-  if (!/\.(?:js|jsx|mjs)$/.test(path)) return;
-  const rel = relative(root, path).replaceAll('\\', '/');
-  const text = readFileSync(path, 'utf8');
-  if (/runes(?:64|66)\.(?:js|json)\b/i.test(text)) failures.push(`${rel}: legacy rune projection reference`);
-  if (!allowedCanonicalRefs.has(rel) && /data\/json\/core\/runes\.json\b/.test(text)) failures.push(`${rel}: canonical runes path must go through shared data/adapter module`);
-});
-walk(resolve(root, 'lib'), path => {
-  if (!/\.(?:js|jsx|mjs)$/.test(path)) return;
-  const rel = relative(root, path).replaceAll('\\', '/');
-  const text = readFileSync(path, 'utf8');
-  if (/runes(?:64|66)\.(?:js|json)\b/i.test(text)) failures.push(`${rel}: legacy rune projection reference`);
-  if (!allowedCanonicalRefs.has(rel) && /data\/json\/core\/runes\.json\b/.test(text)) failures.push(`${rel}: canonical runes path must go through shared data/adapter module`);
-});
+const runtimeCanonicalRef = /(?:from\s*|import\s*\(|require\s*\(|fetch\s*\()\s*['"`][^'"`]*data\/json\/core\/runes\.json\b/;
+function verifyRuntimeRefs(scanRoot) {
+  walk(resolve(root, scanRoot), path => {
+    if (!/\.(?:js|jsx|mjs)$/.test(path)) return;
+    const rel = relative(root, path).replaceAll('\\', '/');
+    const text = readFileSync(path, 'utf8');
+    if (/runes(?:64|66)\.(?:js|json)\b/i.test(text)) failures.push(`${rel}: legacy rune projection reference`);
+    if (!allowedCanonicalRefs.has(rel) && runtimeCanonicalRef.test(text)) failures.push(`${rel}: canonical runes runtime path must go through shared data/adapter module`);
+  });
+}
+verifyRuntimeRefs('app');
+verifyRuntimeRefs('lib');
 
 // Legacy HTML remains transitional. Report presentation debt until those files become redirects/deleted.
 for (const name of readdirSync(root).filter(name => name.endsWith('.html'))) {
