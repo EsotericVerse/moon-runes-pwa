@@ -1,6 +1,6 @@
 // runeLibrary.js - unified LunaRunes66 runtime access
 
-import { rune, groups } from './runes66.js';
+import { rune, groups } from './runes.js';
 import { allData } from './rune_all_data_all.js';
 
 export function getRunes66() {
