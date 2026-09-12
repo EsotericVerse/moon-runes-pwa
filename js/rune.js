@@ -3,7 +3,7 @@ import { rune as runtimeRunes, groups as runtimeGroups } from './runes.js';
 
 async function initRunePage() {
   const file = location.pathname.split("/").pop() || "";
-  if (!["runes.html", "lots.html"].includes(file)) return;
+  if (file !== "runes.html") return;
 
   const grid = document.querySelector("#rune-grid");
   const count = document.querySelector("#rune-count");
