@@ -1,6 +1,6 @@
 import { rune } from "./runes66.js";
 
-const REPO_HISTORY = "data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json";
+const RUNTIME_DATA = "data/js/lunarune-daily-data.js";
 const $ = s => document.querySelector(s);
 const PAGE_SIZE = 10;
 let currentPage = 1;
@@ -43,17 +43,35 @@ function mergeRows(...groups) {
   return [...map.values()];
 }
 
+function loadRuntimeScript(){
+  if(window.LUNARUNE_DAILY_DATA) return Promise.resolve(window.LUNARUNE_DAILY_DATA);
+  return new Promise((resolve,reject)=>{
+    const existing=document.querySelector(`script[data-loc-runtime="${RUNTIME_DATA}"]`);
+    if(existing){
+      existing.addEventListener("load",()=>resolve(window.LUNARUNE_DAILY_DATA),{once:true});
+      existing.addEventListener("error",()=>reject(new Error("每日符文靜態資料載入失敗")),{once:true});
+      return;
+    }
+    const script=document.createElement("script");
+    script.src=RUNTIME_DATA;
+    script.defer=true;
+    script.dataset.locRuntime=RUNTIME_DATA;
+    script.onload=()=>window.LUNARUNE_DAILY_DATA?resolve(window.LUNARUNE_DAILY_DATA):reject(new Error("每日符文 runtime data missing"));
+    script.onerror=()=>reject(new Error("每日符文靜態資料載入失敗"));
+    document.head.appendChild(script);
+  });
+}
+
 async function loadRepoHistory(){
-  const res=await fetch(REPO_HISTORY);
-  if(!res.ok) throw new Error(`每日符文歷史 HTTP ${res.status}`);
-  const data=await res.json();
-  repoDocument=data&&typeof data==='object'?data:{daily_draws:[]};
+  const data=await loadRuntimeScript();
+  repoDocument=data&&typeof data==='object'?structuredClone(data):{daily_draws:[]};
   return Array.isArray(repoDocument.daily_draws)?repoDocument.daily_draws.map(normalize):[];
 }
 
 function downloadJsonFile(rows){
   const output={
     ...repoDocument,
+    role:"canonical daily rune history",
     updated_at:new Date().toISOString(),
     daily_draws:rows.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)))
   };
@@ -126,7 +144,7 @@ async function loadRecords() {
   try{
     const rows=await loadRepoHistory();
     render(rows);
-    if(status)status.textContent=`已直接載入靜態每日符文歷史，共 ${rows.length} 筆。No API · No KV · No cache。`;
+    if(status)status.textContent=`已載入 generated static JS，每日符文共 ${rows.length} 筆。No API · No KV · No data cache。`;
   }catch(err){
     render([]);
     if(status)status.textContent=`每日符文歷史載入失敗：${err.message}`;
@@ -168,11 +186,11 @@ function saveRecord(ev){
   currentPage=1;
   render(rows);
   downloadJsonFile(rows);
-  status.textContent="已更新目前畫面，並輸出最新 LOC8_DAILY_RUNE_REPO_HISTORY.json 本機檔案；沒有寫入遠端或暫存。";
+  status.textContent="已更新目前畫面，並輸出最新 LOC8_DAILY_RUNE_REPO_HISTORY.json；正式資料更新後再執行 JSON→JS publisher。";
   $("#dailyRecordNote").value="";
 }
 
-window.LOC8DailyRuneStatic={REPO_HISTORY,loadRecords};
+window.LOC8DailyRuneStatic={RUNTIME_DATA,loadRecords};
 
 window.addEventListener("DOMContentLoaded",()=>{
   const form=$("#dailyRecordForm");
