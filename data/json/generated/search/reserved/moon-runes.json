@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "snapshot_type": "reserved_search_first_page",
+  "query": "月之符文",
+  "generated_at": "2026-09-12",
+  "runtime_search_required": false,
+  "guide": {
+    "eyebrow": "Reserved Search · LunaRunes",
+    "title": "月之符文",
+    "subtitle": "先從固定導覽理解月之符文，再決定是否需要繼續搜尋。",
+    "summary": "月之符文是一套由 66 個中文單一字符文構成的符號式語言模型，並以抽籤、脈絡、作品與治理資料形成可搜尋、可比較的語言系統。這一頁是版本化網站快照，不需要即時呼叫 Render。",
+    "links": [
+      {"label": "開始抽籤", "href": "lots.html", "note": "單抽、雙抽、三抽、五抽與 OW3gs 11 抽"},
+      {"label": "查看 66 符文", "href": "runes.html", "note": "符文、群組、關鍵詞與 Canon 資料"},
+      {"label": "查看符文脈絡", "href": "context.html", "note": "No API Graph、節點與關係"},
+      {"label": "查看治理原則", "href": "governance.html", "note": "分類、語意、版本與資料治理"}
+    ]
+  },
+  "first_page": [
+    {
+      "category": "月之符文",
+      "title": "月之符文｜抽籤入口",
+      "summary": "直接開始使用月之符文。抽牌模式包含單抽、雙抽、三抽、五抽與 OW3gs 11 抽。",
+      "href": "lots.html",
+      "source": "public_page"
+    },
+    {
+      "category": "符文體系",
+      "title": "66 符文總覽",
+      "summary": "查看 66 枚正式符文、八個基本群組與特殊符文玄／命；德為治理基準符，不參與抽牌。",
+      "href": "runes.html",
+      "source": "canonical_static_data"
+    },
+    {
+      "category": "符文脈絡",
+      "title": "LunaRunes Context Graph · No API",
+      "summary": "直接使用現有關鍵詞、反向關鍵詞、唯一群組、主體性轉移與既有規則建立符文脈絡，不呼叫外部 API。",
+      "href": "context.html#context-entry",
+      "source": "public_page"
+    },
+    {
+      "category": "符文演算",
+      "title": "月之符文治理與分類原則",
+      "summary": "詞類／句內語意角色 → 群組主體性 → 唯一群組 → 個別符文 → 正反面與衝突校準。",
+      "href": "governance.html",
+      "source": "governance"
+    },
+    {
+      "category": "語言系統",
+      "title": "LOC／月典與 LunaRunes",
+      "summary": "LOC 是可重用的語言系統模型；LunaRunes 是其中可實際運作的符號式語言模型。",
+      "href": "index.html",
+      "source": "public_overview"
+    }
+  ]
+}
