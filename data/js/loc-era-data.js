@@ -1,0 +1,25 @@
+(() => {
+  'use strict';
+  window.LOC_ERA_DATA = {
+    schema_version: '2.0',
+    definition_version: '2.0',
+    registry: 'LOC_ERA_REGISTRY',
+    updated_at: '2026-09-09',
+    language_system_id: 'lo3rwang',
+    eras: [
+      {era_id:'ERA-P1.0',period:'P1.0',order:1,name:'學生時代',display_label:'P1.0｜學生時代',start_date:'1980-06-23',end_date:'2003-12-15',status:'released',period_type:'segment',definition_version:'2.0',description:'學生時代的文字與個人語言前史。'},
+      {era_id:'ERA-P2.0',period:'P2.0',order:2,name:'當兵入伍到公開網路文字之前',display_label:'P2.0｜當兵入伍到公開網路文字之前',start_date:'2003-12-16',end_date:'2009-03-24',status:'released',period_type:'segment',definition_version:'2.0',description:'入伍後到目前已確認最早公開網路文字之前的階段。'},
+      {era_id:'ERA-P3.0',period:'P3.0',order:3,name:'公開網路文字前期',display_label:'P3.0｜公開網路文字前期',start_date:'2009-03-25',end_date:'2017-06-22',status:'released',period_type:'segment',definition_version:'2.0',description:'以目前已確認最早 Pixnet 公開文字為起點，到 2017-06-22 的公開網路文字階段。'},
+      {era_id:'ERA-P4.0',period:'P4.0',order:4,name:'2017-06-23 起',display_label:'P4.0｜2017-06-23 起',start_date:'2017-06-23',end_date:'2024-11-17',status:'released',period_type:'segment',definition_version:'2.0',description:'2017-06-23 起到 Threads 啟動前的公開文字階段。'},
+      {era_id:'ERA-P5.0',period:'P5.0',order:5,name:'Threads',display_label:'P5.0｜Threads',start_date:'2024-11-18',end_date:'2025-02-20',status:'released',period_type:'segment',definition_version:'2.0',description:'Threads 開始啟動後的公開文字階段。'},
+      {era_id:'ERA-P5.1',period:'P5.1',order:5.1,name:'Suno 啟用',display_label:'P5.1｜Suno 啟用',start_date:'2025-02-21',end_date:'2025-04-27',status:'released',period_type:'segment',definition_version:'2.0',description:'Suno 開始啟用並進入音樂創作階段；目前可確認的最早作品建立於 2025-02-21。'},
+      {era_id:'ERA-P6.0',period:'P6.0',order:6,name:'《月語者》與月之符文開始',display_label:'P6.0｜《月語者》與月之符文開始',start_date:'2025-04-28',end_date:'2025-10-15',status:'released',period_type:'segment',definition_version:'2.0',description:'《月語者》小說開始，並進入月之符文相關內容形成的階段。'},
+      {era_id:'ERA-P6.1',period:'P6.1',order:6.1,name:'LOC啟動',display_label:'P6.1｜LOC啟動',start_date:'2025-10-16',end_date:'2026-01-14',status:'released',period_type:'segment',definition_version:'2.0',description:'LOC 名稱與系統格式逐步收斂、啟動的階段。'},
+      {era_id:'ERA-P6.2',period:'P6.2',order:6.2,name:'微月光與關係敘事期',display_label:'P6.2｜微月光與關係敘事期',start_date:'2026-01-15',end_date:'2026-03-08',status:'released',period_type:'segment',definition_version:'2.0',description:'微月光、關係敘事、自我認知與陪伴主題集中的階段。'},
+      {era_id:'ERA-P7.0',period:'P7.0',order:7,name:'政德風',display_label:'P7.0｜政德風',start_date:'2026-03-09',end_date:'2026-07-31',status:'released',period_type:'segment',definition_version:'2.0',description:'政德風正式成為主要治理與語言方法的階段，包含自我檢討、人生月台、順其自然與界線整理。'},
+      {era_id:'ERA-P7.1',period:'P7.1',order:7.1,name:'自由的風',display_label:'P7.1｜自由的風',start_date:'2026-08-01',end_date:'2026-08-31',status:'released',period_type:'segment',definition_version:'2.0',description:'脫困、起飛、自由、選擇與重新取得主動權的階段。'},
+      {era_id:'ERA-P7.2',period:'P7.2',order:7.2,name:'自我治理',display_label:'P7.2｜自我治理',start_date:'2026-09-01',end_date:null,status:'current',period_type:'segment',definition_version:'2.0',description:'自由之後進入治理自己、整理歷史、建立秩序並主動選擇未來方向的 Current 階段。'}
+    ],
+    legacy_period_map: {P0:'P5.0','P0.5':'P5.1',P1:'P6.0',P2:'P6.1',P3:'P6.2',P4:'P7.0',P5:'P7.0',P6:'P7.0',P7:'P7.1',P8:'P7.2'}
+  };
+})();
