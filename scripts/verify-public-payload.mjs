@@ -52,7 +52,10 @@ const actualJson = new Set(walkFiles(resolve(publicRoot, 'data/json')));
 for (const path of expectedJson) if (!actualJson.has(path)) failures.push(`missing staged JSON: ${path}`);
 for (const path of actualJson) if (!expectedJson.has(path)) failures.push(`unexpected staged JSON: ${path}`);
 
-const expectedDocs = new Set(['docs/LOC_Canon_1.0.docx']);
+const expectedDocs = new Set([
+  'docs/LOC_Canon_1.0.docx',
+  'docs/ZHENGDE_STYLE_PUBLIC_KM.md'
+]);
 const actualDocs = new Set(walkFiles(resolve(publicRoot, 'docs')));
 for (const path of expectedDocs) if (!actualDocs.has(path)) failures.push(`missing staged doc: ${path}`);
 for (const path of actualDocs) if (!expectedDocs.has(path)) failures.push(`unexpected staged doc: ${path}`);
@@ -64,4 +67,4 @@ if (failures.length) {
   console.error('[public-payload] violations:\n' + failures.join('\n'));
   process.exit(1);
 }
-console.log(`[public-payload] verified ${actualJson.size} JSON files, ${actualDocs.size} doc, 0 pics`);
+console.log(`[public-payload] verified ${actualJson.size} JSON files, ${actualDocs.size} docs, 0 pics`);
