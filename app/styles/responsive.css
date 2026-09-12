@@ -1,5 +1,6 @@
 @media(max-width:900px){
-  .loc-next-header{align-items:flex-start;flex-direction:column}
+  .loc-next-header{align-items:stretch;flex-direction:column}
+  .loc-next-nav-stack{width:100%;justify-items:stretch}
   .loc-next-nav{width:100%}
   .loc-grid.two{grid-template-columns:1fr}
   .loc-game-board{grid-template-columns:1fr;grid-template-areas:"event" "a" "b"}
@@ -10,6 +11,7 @@
 @media(max-width:560px){
   .loc-next-main{width:min(100% - 1rem,1180px)}
   .loc-next-header{padding:.65rem .55rem}
+  .loc-next-brand{padding-top:0}
   .loc-hero,.loc-card,.loc-panel,.loc-bubble,.loc-player,.loc-event{border-radius:14px}
   .loc-hand{grid-template-columns:1fr}
   .loc-legend,.loc-metrics{grid-template-columns:1fr}
