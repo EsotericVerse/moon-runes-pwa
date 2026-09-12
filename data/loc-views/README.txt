@@ -1,0 +1,1 @@
+Internal source snapshots used by loc.html during static-PWA consolidation. Public navigation must not link directly to these files.
