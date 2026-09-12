@@ -4,6 +4,7 @@
 
   const GENERAL_PAGE_SIZE = 10;
   const RUNE_PAGE_SIZE = 8;
+  const VIEW_IDS = new Set(['ranking','runes','daily','sources','import']);
   const state = {
     ranking: { source: 'threads', page: 1, rows: [] },
     sources: { page: 1, rows: [] },
@@ -46,6 +47,23 @@
     }
     buttons+=`<button class="daily-page-btn" type="button" data-stats-page-kind="${kind}" data-stats-page="${current+1}" ${current===totalPages?'disabled':''}>下一頁</button>`;
     return `<div class="daily-history-pagination"><div class="daily-history-page-info">第 ${from}–${to} 筆，共 ${total} 筆 · 第 ${current} / ${totalPages} 頁</div><div>${buttons}</div></div>`;
+  }
+
+  function applyView(){
+    const raw=location.hash.slice(1);
+    const view=VIEW_IDS.has(raw)?raw:'main';
+    document.body.dataset.staticsView=view;
+    const overview=document.querySelector('[data-statics-overview]');
+    if(overview) overview.hidden=view!=='main';
+    document.querySelectorAll('main.page > section[id]').forEach(section=>{
+      section.hidden=view!=='main' && section.id!==view;
+      if(view!=='main' && section.id===view && !section.querySelector(':scope > .statics-back-link')){
+        const back=document.createElement('p');
+        back.className='statics-back-link';
+        back.innerHTML='<a href="statics.html#main">← 回統計總覽</a>';
+        section.prepend(back);
+      }
+    });
   }
 
   function renderSourcesPage(host,metrics){
@@ -203,7 +221,14 @@
     });
   }
 
-  function start(){renderRanking();renderSources();renderRunes();bind();}
+  function start(){
+    applyView();
+    renderRanking();
+    renderSources();
+    renderRunes();
+    bind();
+  }
+  window.addEventListener('hashchange',applyView);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',start,{once:true});
   else start();
 })();
