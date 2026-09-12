@@ -8,15 +8,6 @@ window.addEventListener("DOMContentLoaded", () => {
       window.location.href = "runes.html#draw";
     });
   }
-
-  const page = location.pathname.split("/").pop() || "index.html";
-  if (page === "loc.html" && !document.querySelector('script[data-loc-merged-router]')) {
-    const script = document.createElement("script");
-    script.src = "js/loc-merged-router.js";
-    script.defer = true;
-    script.dataset.locMergedRouter = "true";
-    document.body.appendChild(script);
-  }
 });
 
 if ("serviceWorker" in navigator) {
