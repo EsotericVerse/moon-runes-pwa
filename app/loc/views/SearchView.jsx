@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { fetchLocJson } from '../data';
+import { fetchLocJson, fetchLocJsonBatch, LOC_DATA } from '../data';
 
 const SMALL_SOURCES=[
-  ['/data/json/core/runes.json','月之符文資料'],
+  [LOC_DATA.RUNES,'月之符文資料'],
   ['/data/json/registries/LOC2_EVENT_REGISTRY.json','事件'],
   ['/data/json/registries/LOC4_WRITING_REGISTRY.json','文字創作'],
   ['/data/json/registries/LOC6_GOVERNANCE_REGISTRY.json','治理'],
@@ -19,20 +19,22 @@ function genericResult(item,source,q){const hay=JSON.stringify(item);if(!norm(ha
 
 export default function SearchView(){
   const [manifests,setManifests]=useState(null);const [query,setQuery]=useState('');const [results,setResults]=useState([]);const [status,setStatus]=useState('輸入文字後才會載入 corpus shards。');const [error,setError]=useState('');const searchId=useRef(0);
-  useEffect(()=>{let live=true;Promise.all([fetchLocJson('/data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json'),fetchLocJson('/data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json')]).then(([text,music])=>live&&setManifests({text,music})).catch(e=>live&&setError(e.message));return()=>{live=false};},[]);
+  useEffect(()=>{let live=true;Promise.all([fetchLocJson(LOC_DATA.TEXT_CORPUS_MANIFEST),fetchLocJson(LOC_DATA.MUSIC_SEARCH_MANIFEST)]).then(([text,music])=>live&&setManifests({text,music})).catch(e=>live&&setError(e.message));return()=>{live=false};},[]);
 
   async function runSearch(event){event.preventDefault();const q=query.trim();if(!q)return;const id=++searchId.current;setError('');setResults([]);
-    if(norm(q)===norm('月之符文')){try{setStatus('載入月之符文保留詞快照…');const snap=await fetchLocJson('/data/json/generated/search/reserved/moon-runes.json');if(id!==searchId.current)return;const rows=(snap.first_page||[]).map((x,i)=>({key:`reserved-${i}`,source:'月之符文',title:x.title||'月之符文',snippet:x.summary||'',href:x.href?.replace(/^runes\.html/,'https://lrunes.lo3rwang.cc/')||'https://lrunes.lo3rwang.cc/'}));setResults(rows);setStatus(`保留詞快照 · ${rows.length} 筆；月之符文完整功能位於獨立站。`);return;}catch(e){setError(e.message);}}
+    if(norm(q)===norm('月之符文')){try{setStatus('載入月之符文保留詞快照…');const snap=await fetchLocJson(LOC_DATA.RUNE_RESERVED_SNAPSHOT);if(id!==searchId.current)return;const rows=(snap.first_page||[]).map((x,i)=>({key:`reserved-${i}`,source:'月之符文',title:x.title||'月之符文',snippet:x.summary||'',href:x.href?.replace(/^runes\.html/,'https://lrunes.lo3rwang.cc/')||'https://lrunes.lo3rwang.cc/'}));setResults(rows);setStatus(`保留詞快照 · ${rows.length} 筆；月之符文完整功能位於獨立站。`);return;}catch(e){setError(e.message);}}
     if(!manifests){setStatus('搜尋 manifest 尚在載入。');return;}
-    setStatus('搜尋中：依需要載入文字、音樂與治理資料…');
+    setStatus('搜尋中：分批載入文字、音樂與治理資料…');
     try{
       const textPaths=(manifests.text.shards||[]).map(x=>'/'+x.path.replace(/^\//,''));
       const musicPaths=(manifests.music.shards||[]).map(x=>`/data/json/search/loc3/${x}`);
-      const payloads=await Promise.all([
-        ...SMALL_SOURCES.map(async([path,label])=>({kind:'generic',label,data:await fetchLocJson(path)})),
-        ...textPaths.map(async path=>({kind:'text',label:'文字創作',data:await fetchLocJson(path)})),
-        ...musicPaths.map(async path=>({kind:'music',label:'音樂',data:await fetchLocJson(path)}))
-      ]);
+      const requests=[
+        ...SMALL_SOURCES.map(([path,label])=>({path,kind:'generic',label})),
+        ...textPaths.map(path=>({path,kind:'text',label:'文字創作'})),
+        ...musicPaths.map(path=>({path,kind:'music',label:'音樂'}))
+      ];
+      const data=await fetchLocJsonBatch(requests,{concurrency:4});
+      const payloads=requests.map((request,index)=>({...request,data:data[index]}));
       if(id!==searchId.current)return;
       const found=[];
       for(const p of payloads){
@@ -42,7 +44,7 @@ export default function SearchView(){
         if(found.length>=120)break;
       }
       const unique=[];const seen=new Set();for(const r of found){const k=`${r.source}|${r.title}|${r.snippet}`;if(!seen.has(k)){seen.add(k);unique.push(r);}if(unique.length>=60)break;}
-      setResults(unique);setStatus(`「${q}」找到 ${unique.length} 筆顯示結果；大型資料只在這次搜尋時載入。`);
+      setResults(unique);setStatus(`「${q}」找到 ${unique.length} 筆顯示結果；大型資料採受控併發載入。`);
     }catch(e){if(id===searchId.current){setError(e.message);setStatus('搜尋失敗。');}}
   }
 
