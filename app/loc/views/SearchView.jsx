@@ -5,12 +5,12 @@ import { fetchLocJson, fetchLocJsonBatch, LOC_DATA } from '../data';
 
 const SMALL_SOURCES=[
   [LOC_DATA.RUNES,'月之符文資料'],
-  ['/data/json/registries/LOC2_EVENT_REGISTRY.json','事件'],
-  ['/data/json/registries/LOC4_WRITING_REGISTRY.json','文字創作'],
-  ['/data/json/registries/LOC6_GOVERNANCE_REGISTRY.json','治理'],
-  ['/data/json/registries/LOC_MEDIA_REGISTRY.json','多媒體'],
-  ['/data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json','知識庫'],
-  ['/data/json/search/faq/LOC_FAQ_RAG_v0.4.json','FAQ']
+  [LOC_DATA.LOC2_EVENT_REGISTRY,'事件'],
+  [LOC_DATA.LOC4_WRITING_REGISTRY,'文字創作'],
+  [LOC_DATA.LOC6_GOVERNANCE_REGISTRY,'治理'],
+  [LOC_DATA.LOC_MEDIA_REGISTRY,'多媒體'],
+  [LOC_DATA.LOC_KNOWLEDGE_ASSET_REGISTRY,'知識庫'],
+  [LOC_DATA.LOC_FAQ,'FAQ']
 ];
 const norm=value=>String(value??'').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 const snippet=(text,q)=>{const raw=String(text||'').replace(/\s+/g,' ').trim();const i=norm(raw).indexOf(norm(q));const start=Math.max(0,(i<0?0:i)-70);return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;};
