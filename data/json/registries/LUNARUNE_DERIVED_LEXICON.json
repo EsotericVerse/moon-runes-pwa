@@ -1,0 +1,107 @@
+{
+  "version": "1.0-rc3",
+  "title": "LunaRunes Derived Lexicon",
+  "purpose": "只收錄會改變字面拆解判定的高價值衍生詞；不作一般同義詞字典，不回寫 Base66 Canon。",
+  "governance": {
+    "canonical_keywords_remain_narrow": true,
+    "derived_terms_do_not_modify_canon": true,
+    "special_is_default_when_unresolved": true,
+    "classification_order": [
+      "詞類／句內語意角色",
+      "群組主體性",
+      "符文語意歸屬",
+      "正反面／衝突校準"
+    ],
+    "highest_conflict_rule": "只有同一語意單位出現兩個以上有效符文候選時才啟動最高級衝突裁決。"
+  },
+  "entries": [
+    {
+      "term": "靈魂",
+      "surface_runes": ["靈", "魂"],
+      "lexical_class": "名詞",
+      "relation": "ownership_shift",
+      "resolved_rune": "魂",
+      "status": "confirmed",
+      "source": "runes.json 額外規則",
+      "evidence": "靈魂屬魂",
+      "note": "兩個符文同時出現，但整體主體歸魂。"
+    },
+    {
+      "term": "界域",
+      "surface_runes": ["界", "域"],
+      "lexical_class": "名詞",
+      "relation": "ownership_shift",
+      "resolved_rune": "域",
+      "status": "confirmed",
+      "source": "runes.json 額外規則",
+      "evidence": "界域屬域",
+      "note": "組合後由域取得整體主體性。"
+    },
+    {
+      "term": "暫斷",
+      "surface_runes": ["斷"],
+      "lexical_class": "動作概念",
+      "relation": "semantic_override",
+      "resolved_rune": "封",
+      "status": "confirmed",
+      "source": "runes.json 額外規則",
+      "evidence": "暫斷屬封",
+      "note": "雖含斷，但『暫時』改變語意主體，歸封而不是永久切斷的斷。"
+    },
+    {
+      "term": "潛意識",
+      "surface_runes": [],
+      "lexical_class": "名詞",
+      "relation": "semantic_ownership",
+      "resolved_rune": "夢",
+      "status": "confirmed",
+      "source": "runes.json 額外規則",
+      "evidence": "潛意識歸夢",
+      "note": "非字面符文組合，但屬現行明確語意歸屬規則。"
+    },
+    {
+      "term": "水土",
+      "surface_runes": ["水", "土"],
+      "lexical_class": "名詞",
+      "relation": "semantic_ownership_shift",
+      "resolved_rune": "地",
+      "status": "confirmed",
+      "source": "治理實作範例",
+      "evidence": "水＋土形成整體環境／土地語意時，主體轉移至地。",
+      "note": "典型 AB → C；用來驗證主體性轉移。"
+    },
+    {
+      "term": "花枝",
+      "surface_runes": ["花", "枝"],
+      "lexical_class": "固定名詞",
+      "relation": "lexicalized_shift",
+      "resolved_rune": null,
+      "status": "special",
+      "source": "治理實作範例",
+      "evidence": "固定名詞義會脫離植物『花＋枝』的字面拆解。",
+      "note": "詞類先介入；不能因包含花、枝就強迫歸入任一符文。"
+    },
+    {
+      "term": "光暗",
+      "surface_runes": ["光", "暗"],
+      "lexical_class": "並列概念",
+      "relation": "balanced_ambiguity",
+      "resolved_rune": null,
+      "status": "ambiguous",
+      "source": "治理實作範例",
+      "evidence": "光與暗皆為直接有效候選，沒有天然單一主體。",
+      "note": "典型對等衝突；保留歧義，不硬判唯一符文。"
+    },
+    {
+      "term": "鏡花水月",
+      "surface_runes": ["鏡", "花", "水", "月"],
+      "lexical_class": "成語",
+      "relation": "semantic_ownership_shift",
+      "resolved_rune": "幻",
+      "status": "confirmed",
+      "source": "治理實作範例",
+      "evidence": "四個表面符文共同構成固定詞，但整體語意主體是虛幻景象。",
+      "note": "典型 ABCD → E；用來證明 surface composition 不等於 semantic owner。"
+    }
+  ]
+}
