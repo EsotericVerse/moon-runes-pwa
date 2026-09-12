@@ -2,7 +2,7 @@ import { rune } from "./runes66.js";
 
 const KV_API = "https://api.lo3rwang.cc/daily-runes";
 const REPO_HISTORY = "data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json";
-const CACHE_KEY = "lunarunes-physical-daily-draw-cache-v3";
+const CACHE_KEY = "lunarunes-physical-daily-draw-cache-v4";
 const $ = s => document.querySelector(s);
 const PAGE_SIZE = 10;
 let currentPage = 1;
@@ -164,27 +164,37 @@ function render(rows) {
 }
 
 async function loadRecords() {
-  const cached=readCache();
   const repoRows=await loadRepoHistory();
-  const baseRows=mergeRows(repoRows,cached);
-  writeCache(baseRows);
-  render(baseRows);
+  render(repoRows);
 
   if(repoRows.length){
-    $("#dailyStatsStatus").textContent=`已載入 Repo 每日符文歷史，共 ${baseRows.length} 筆；正在同步 KV 現行紀錄。`;
-  }else if(baseRows.length){
-    $("#dailyStatsStatus").textContent="Repo 歷史暫未回應；目前先顯示本機已記錄資料。";
+    $("#dailyStatsStatus").textContent=`已載入 Repo 每日符文歷史，共 ${repoRows.length} 筆；正在讀取 KV 現行紀錄。`;
   }else{
-    $("#dailyStatsStatus").textContent="每日符文歷史暫時無法載入。";
+    $("#dailyStatsStatus").textContent="正在讀取 KV 每日符文紀錄。";
   }
 
   const kvRows=await loadKVHistory();
-  if(!kvRows.length) return;
+  if(kvRows.length){
+    const rows=mergeRows(repoRows,kvRows);
+    writeCache(rows);
+    render(rows);
+    $("#dailyStatsStatus").textContent=`已載入 Repo 歷史＋KV 正式紀錄，共 ${rows.length} 筆。`;
+    return;
+  }
 
-  const rows=mergeRows(repoRows,kvRows,cached);
-  writeCache(rows);
-  render(rows);
-  $("#dailyStatsStatus").textContent=`已載入 Repo 歷史＋KV 現行紀錄，共 ${rows.length} 筆。`;
+  if(repoRows.length){
+    writeCache(repoRows);
+    $("#dailyStatsStatus").textContent=`KV 暫時無法讀取；目前只顯示 Repo 正式歷史，共 ${repoRows.length} 筆。`;
+    return;
+  }
+
+  const cached=readCache();
+  if(cached.length){
+    render(cached);
+    $("#dailyStatsStatus").textContent=`正式資料來源暫時無法讀取；目前僅顯示上次已確認同步的離線快取，共 ${cached.length} 筆。`;
+  }else{
+    $("#dailyStatsStatus").textContent="每日符文正式資料目前無法載入。";
+  }
 }
 
 function populateRunes(){
@@ -221,20 +231,17 @@ async function saveRecord(ev){
     return;
   }
 
-  const optimistic=mergeRows(currentRows,[dailyDraw]);
-  writeCache(optimistic);
-  render(optimistic);
-  status.textContent="實體牌紀錄已先儲存在本機；正在同步 KV。";
+  status.textContent="正在寫入 KV；完成前不會建立本機假紀錄。";
 
   try{
     const saved=await saveKV(dailyDraw);
     const merged=mergeRows(currentRows,[saved]);
     writeCache(merged);
     render(merged);
-    status.textContent="實體牌紀錄已儲存至 KV。";
+    status.textContent="實體牌紀錄已正式寫入 KV。";
     $("#dailyRecordNote").value="";
   }catch(kvErr){
-    status.textContent="KV 儲存失敗；本機紀錄已保留。請確認 KV 管理登入狀態："+(kvErr?.message||"");
+    status.textContent="儲存失敗，未建立任何新紀錄："+(kvErr?.message||"");
   }
 }
 
