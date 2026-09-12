@@ -1,0 +1,69 @@
+name: RC3 symbolic module copy sync once
+
+on:
+  push:
+    paths:
+      - '.github/workflows/rc3-symbolic-module-sync-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Sync visible copy with data-backed symbolic module
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          jobs = {
+              'runes.html': [
+                  ('直接用現有關鍵詞、符文與唯一群組建立關係。',
+                   '直接用現有關鍵詞、主體性轉移、符文與唯一群組建立關係。'),
+                  ('No API：直接使用現有 LunaRunes 的關鍵詞、反向關鍵詞、符文、唯一群組與既有規則建立 Graph，不呼叫外部 API，也不建立第二套 Canon。',
+                   'No API：直接使用現有 LunaRunes 的關鍵詞、反向關鍵詞、符文、唯一群組、主體性轉移與既有規則建立 Graph；衍生詞與 Canon 分離，不呼叫外部 API，也不建立第二套 Canon。'),
+              ],
+              'context.html': [
+                  ('No API：直接使用現有 LunaRunes 的關鍵詞、反向關鍵詞、符文、唯一群組與既有規則建立 Graph，不呼叫外部 API，也不建立第二套 Canon。',
+                   'No API：直接使用現有 LunaRunes 的關鍵詞、反向關鍵詞、符文、唯一群組、主體性轉移與既有規則建立 Graph；衍生詞與 Canon 分離，不呼叫外部 API，也不建立第二套 Canon。'),
+              ],
+              'evolution.html': [
+                  ('目前先用現有 LunaRunes Canon 填入推演基底；直接讀取 runes.json，不呼叫外部 API。',
+                   '直接讀取 LunaRunes Canon、衍生詞與演化紀錄，呈現系統規模、語意治理與主體性轉移；正式推演仍可 No API 運作。'),
+                  ('符文結構時間線 · No API', '符文演化時間線 · No API'),
+                  ('依現有符文編號與唯一群組呈現結構序列；這是符文資料歷程，不虛構真實日期。',
+                   '依既有演化紀錄呈現 14 → 24 → 32 → 42 → 66、語意拆分與治理事件；沒有日期的歷史不虛構日期。'),
+                  ('符文關鍵詞趨勢 · No API', '符文系統／治理趨勢 · No API'),
+                  ('按唯一群組比較現有正向／反向關鍵詞數與語意分布。',
+                   '比較系統規模、治理規則與衍生關係如何逐步收斂。'),
+                  ('符文群組軌跡 · No API', '符文演化軌跡 · No API'),
+                  ('以現有 1–66 編號順序與唯一群組，呈現群組之間的結構轉換；不把序列誤當成真實時間。',
+                   '串接 14 → 24 → 32 → 42 → 66 與治理原則演化，呈現分析結果如何回饋規則並形成新的語意關係。'),
+              ],
+          }
+
+          for filename, replacements in jobs.items():
+              path = Path(filename)
+              text = path.read_text(encoding='utf-8')
+              for old, new in replacements:
+                  count = text.count(old)
+                  if count != 1:
+                      raise SystemExit(f'{filename}: expected 1 occurrence, found {count}: {old}')
+                  text = text.replace(old, new, 1)
+              path.write_text(text, encoding='utf-8')
+          PY
+          git diff --check
+      - name: Commit synchronized copy
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add runes.html context.html evolution.html
+          git commit -m "docs: sync symbolic language module copy"
+          git push
