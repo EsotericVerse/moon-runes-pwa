@@ -34,8 +34,15 @@ const NAV = [
 
 function readView() {
   if (typeof window === 'undefined') return 'home';
-  const raw = decodeURIComponent(window.location.hash.slice(1)).split('/')[0];
-  return VIEWS[raw] ? raw : 'home';
+  const hash = decodeURIComponent(window.location.hash.slice(1)).split('/')[0];
+  if (VIEWS[hash]) return hash;
+  const route = window.location.pathname.split('/').filter(Boolean).at(-1) || '';
+  return VIEWS[route] ? route : 'home';
+}
+
+function navHref(id){
+  if(typeof window!=='undefined'&&window.location.pathname.startsWith('/loc'))return `#${id}`;
+  return `/${id}`;
 }
 
 export default function LocApp() {
@@ -45,7 +52,8 @@ export default function LocApp() {
     const sync = () => setView(readView());
     sync();
     window.addEventListener('hashchange', sync);
-    return () => window.removeEventListener('hashchange', sync);
+    window.addEventListener('popstate', sync);
+    return () => {window.removeEventListener('hashchange', sync);window.removeEventListener('popstate', sync);};
   }, []);
 
   const ActiveView = useMemo(() => VIEWS[view] || AboutView, [view]);
@@ -53,10 +61,10 @@ export default function LocApp() {
   return (
     <>
       <header className="loc-next-header">
-        <a className="loc-next-brand" href="#home">LOC 月典</a>
+        <a className="loc-next-brand" href="/loc/">LOC 月典</a>
         <nav className="loc-next-nav" aria-label="LOC 功能導覽">
           {NAV.map(([id, label]) => (
-            <a key={id} href={`#${id}`} aria-current={view === id ? 'page' : undefined}>{label}</a>
+            <a key={id} href={navHref(id)} aria-current={view === id ? 'page' : undefined}>{label}</a>
           ))}
           <a href="/runes.html">月之符文</a>
           <a href="https://whoami.lo3rwang.cc/">作者</a>
