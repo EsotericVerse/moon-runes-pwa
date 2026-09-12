@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-"""RC3 static-runtime governance check.
+"""Legacy static-runtime boundary check for RC4.
 
-Current public runtime is static PWA only:
-- Fixed governed data such as LunaRunes lives directly in static JS.
+Current public runtime keeps the legacy static PWA boundary isolated while the Next
+architecture is verified separately:
+- Fixed governed data such as LunaRunes may remain in static JS for legacy pages.
 - Editable datasets may publish a static JS runtime projection from their authoring source.
-- Browser runtime must not fetch rune JSON, Google Sheets, KV, legacy Render/state APIs,
-  or keep user data caches as implicit runtime state.
-- card_api/ is intentionally excluded: it is the near-term api.lo3rwang.cc
-  RAG/Graph/Search workspace, not current PWA runtime.
+- Legacy browser runtime must not fetch rune JSON, Google Sheets, KV, or old Render/state APIs.
 - Presentation authority lives in css/, not inline HTML styles.
+
+This check applies only to the retained legacy static entrypoints. New local-first Next
+features (Library, style groups, classification, My Style) are verified by the Next build
+and are intentionally not constrained by the legacy localStorage rule below.
 """
 from __future__ import annotations
 
@@ -47,7 +49,7 @@ FORBIDDEN = {
         r"api\.lo3rwang\.cc/(?:context|daily-runes|eras|evolution)|LOC_KV|wrangler",
         re.I,
     ),
-    "browser data cache/state": re.compile(
+    "legacy browser data cache/state": re.compile(
         r"localStorage\.(?:getItem|setItem)\(", re.I
     ),
     "retired rune runtime": re.compile(
@@ -62,7 +64,6 @@ JSON_FETCH = re.compile(
 )
 INLINE_STYLE = re.compile(r"\sstyle\s*=\s*['\"]", re.I)
 
-# Deployment mechanisms removed from RC3 must remain physically absent.
 MUST_NOT_EXIST = [
     "wrangler.toml",
     "cloudflare",
@@ -107,7 +108,6 @@ def main() -> int:
                     f"{rel}:{line_of(text, match.start())}: inline style; move presentation to css/"
                 )
 
-    # The canonical rune core must itself remain network-free and source-file independent.
     runes_path = ROOT / "js/runes.js"
     if runes_path.exists():
         text = runes_path.read_text(encoding="utf-8", errors="replace")
@@ -117,13 +117,13 @@ def main() -> int:
             failures.append("js/runes.js: rune core must not depend on JSON")
 
     if failures:
-        print("RC3 static runtime governance: FAIL")
+        print("RC4 legacy static runtime boundary: FAIL")
         for item in failures:
             print(" -", item)
         print(f"{len(failures)} violation(s) across {checked} runtime file(s).")
         return 1
 
-    print(f"RC3 static runtime governance: PASS ({checked} runtime files checked)")
+    print(f"RC4 legacy static runtime boundary: PASS ({checked} runtime files checked)")
     return 0
 
 
