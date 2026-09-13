@@ -1,7 +1,7 @@
 .home-rune-layout{
   display:grid;
-  grid-template-columns:minmax(260px,340px) minmax(0,1fr);
-  gap:1.4rem;
+  grid-template-columns:minmax(240px,320px) minmax(0,1fr);
+  gap:1.2rem;
   align-items:start;
   min-width:0;
 }
@@ -14,20 +14,19 @@
 .home-rune-card-title .home-rune-glyph{font-size:1.15rem;color:var(--loc-gold)}
 .home-rune-direction{text-align:center;margin-top:.25rem!important;color:var(--loc-text)!important}
 .home-rune-direction strong{font-size:1.35rem;color:var(--loc-accent)!important}
-.home-rune-copy-plain{align-content:start;padding:.15rem 0;min-width:0}
+.home-rune-copy-plain{display:grid;align-content:start;gap:.55rem;padding:.15rem 0;min-width:0}
 .home-rune-copy-plain p{margin:0;font-size:1rem;line-height:1.8;color:var(--loc-text);overflow-wrap:anywhere}
 .home-rune-copy-plain a{color:var(--loc-accent);font-weight:700}
 .home-rune-section{min-width:0;overflow:hidden}
 .home-draw-bubbles{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(min(9rem,100%),1fr));
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:.65rem;
   width:100%;
   max-width:100%;
   min-width:0;
-  margin-top:1.1rem;
+  margin-top:.4rem;
   box-sizing:border-box;
-  overflow:hidden;
 }
 .home-draw-bubbles .loc-bubble{
   display:flex;
@@ -47,29 +46,27 @@
 }
 .home-draw-bubbles .loc-bubble:hover{border-color:var(--loc-accent-border);transform:translateY(-1px)}
 .home-rune-links{
-  display:flex;
-  flex-wrap:wrap;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:.65rem;
   width:100%;
   max-width:100%;
   min-width:0;
-  margin-top:.85rem;
+  margin-top:.2rem;
   padding-top:.85rem;
   box-sizing:border-box;
   border-top:1px solid var(--loc-line);
-  overflow:hidden;
 }
 .home-rune-links .loc-button{
-  flex:1 1 10rem;
+  width:100%;
   min-width:0;
   max-width:100%;
   box-sizing:border-box;
   text-align:center;
   overflow-wrap:anywhere;
 }
-@media (max-width:900px){
+@media (max-width:620px){
   .home-rune-layout{grid-template-columns:1fr}
-}
-@media (max-width:680px){
   .home-draw-bubbles{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .home-rune-links .loc-button{flex-basis:100%}
+  .home-rune-links{grid-template-columns:1fr}
 }
