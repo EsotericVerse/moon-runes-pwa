@@ -2,7 +2,7 @@
 
 const GROUP_META={
   靈魂:{english:'Soul',image:'/pics/01.soul.jpg',description:'由靈、魂、彩、憶、界、域、鏡、核構成，聚焦精神本源、記憶、內外界線、自我映照與核心。'},
-  連結:{english:'Connection',image:'/pics/02_link.jpg',description:'由向、斷、封、鍊、啟、分、悟、誤構成，描述方向、連結、切斷、封閉、啟動、分化、理解與誤解。'},
+  連結:{english:'Connection',image:'/pics/02_connection.jpg',description:'由向、斷、封、鍊、啟、分、悟、誤構成，描述方向、連結、切斷、封閉、啟動、分化、理解與誤解。'},
   生命:{english:'Life',image:'/pics/03_life.jpg',description:'由生、老、病、死、心、愛、語、韻構成，涵蓋生命歷程，以及情感、語言與韻律所形成的人類經驗。'},
   自然:{english:'Nature',image:'/pics/04_nature.jpg',description:'由樹、花、葉、草、根、種、實、枝構成，以植物生命的根、萌發、生長、展開與結果呈現自然結構。'},
   礦物:{english:'Mineral',image:'/pics/05_mineral.jpg',description:'由金、玉、晶、地、石、鑽、礦、塵構成，從地質、材質、結晶與壓力呈現物質形成與凝聚。'},
