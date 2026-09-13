@@ -21,7 +21,7 @@ import {
 
 const DRIVE_FILE='loc-style-groups.json';
 
-export default function StyleGroupsView(){
+export default function StyleGroupsView({embedded=false}){
   const {value:data,setValue:setData,reset,isPersistent}=useLocalStore(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
   const [message,setMessage]=useState('');
   const [suggestions,setSuggestions]=useState([]);
@@ -75,8 +75,9 @@ export default function StyleGroupsView(){
     catch(error){setMessage(`Google Drive 讀取失敗：${error.message}`);}
   };
 
-  return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Local Style Groups</p><h1>群組設定</h1><p>8 個可自訂群組 + 第 9 預設承接組。設定以本機為主；每組最多 64 個關鍵詞、8 個 NOR，採 exact match。月之符文只提供可刪改的符號型語言模板。</p></header>
+  return <section className={embedded?'':'loc-view'}>
+    {!embedded&&<header className="loc-hero"><p className="loc-eyebrow">Local Style Groups</p><h1>群組設定</h1><p>8 個可自訂群組 + 第 9 預設承接組。設定以本機為主；每組最多 64 個關鍵詞、8 個 NOR，採 exact match。月之符文只提供可刪改的符號型語言模板。</p></header>}
+    {embedded&&<section className="loc-card"><p className="loc-eyebrow">Groups · 群組</p><h2>群組設定</h2><p>8 個可自訂群組 + 第 9 預設承接組。群組屬於個人設定的一部分；每組最多 64 個關鍵詞、8 個 NOR，採 exact match。</p></section>}
     <section className="loc-card">
       <div className="loc-actions">
         <button className="loc-button primary" onClick={addGroup} disabled={groups.length>=MAX_STYLE_GROUPS}>＋新增群組</button>
