@@ -1,18 +1,19 @@
 const contextProgressItems = [
-  '總字數包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，以及 26 份唯一 KM 知識文件共 385,996 字；圖片與影片不計字數。筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。'
+  ['可比對資料 24,509 筆・總文字 2,939,214 字','總字數包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，以及 26 份唯一 KM 知識文件共 385,996 字；圖片與影片不計字數。筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。']
 ];
 
 const cultureProgressItems = [
-  '可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。',
-  '排行榜可先看全部，再切 Facebook、Threads、Suno，並依現行時期邊界動態重新聚合；時期日期微調時不必重做固定排行。',
-  '時期、每日符文、Context Event 與 Relation 已完成 Cloudflare KV 化；Context 舊資料已由 Google Sheets 搬移並完成筆數核對，以及新增、編輯、刪除 CRUD 驗證。前端 runtime 不再依賴 Google Sheets。',
-  '授權內容可以用全文做搜尋與分析；公開結果則依內容治理顯示片段、全文或僅 metadata。Facebook 與 Threads 預設採片段展示，歌詞不直接公開全文。',
-  '已建立系統治理、資料權責、內容版權／公開邊界與月之符文66治理文件；目前也把全文分析與公開展示、來源日期、時期動態聚合等規則納入治理層。'
+  ['結合搜尋跟脈絡圖關聯','可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。'],
+  ['來源 × 時期 動態 Top 10','排行榜可先看全部，再切 Facebook、Threads、Suno，並依現行時期邊界動態重新聚合；時期日期微調時不必重做固定排行。'],
+  ['可變資料已由 Cloudflare KV 接管','時期、每日符文、Context Event 與 Relation 已完成 Cloudflare KV 化；Context 舊資料已由 Google Sheets 搬移並完成筆數核對，以及新增、編輯、刪除 CRUD 驗證。前端 runtime 不再依賴 Google Sheets。'],
+  ['全文分析與公開展示分離','授權內容可以用全文做搜尋與分析；公開結果則依內容治理顯示片段、全文或僅 metadata。Facebook 與 Threads 預設採片段展示，歌詞不直接公開全文。'],
+  ['治理文件','已建立系統治理、資料權責、內容版權／公開邊界與月之符文66治理文件；目前也把全文分析與公開展示、來源日期、時期動態聚合等規則納入治理層。']
 ];
 
 function ProgressGrid({items,label}){
   return <div className="home-progress-grid" aria-label={label}>
-    {items.map((copy,index)=><article className="home-progress-item" key={index}>
+    {items.map(([title,copy],index)=><article className="home-progress-item" key={`${title}-${index}`}>
+      <strong>{title}</strong>
       <span>{copy}</span>
     </article>)}
   </div>;
