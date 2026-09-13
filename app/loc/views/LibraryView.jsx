@@ -1,8 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { googleDriveConfigured, loadJsonFromGoogleDrive, saveJsonToGoogleDrive } from '../google-drive';
-import { deleteLocalRecord, downloadJsonFile, getLocalRecords, putLocalRecord, readJsonFile } from '../local-db';
+import {
+  backupLocalRecordsToGoogleDrive,
+  exportRecordsJson,
+  googleDriveStorage,
+  localRecordStorage,
+  mergeGoogleDriveRecordsToLocal,
+  readRecordsJsonFile
+} from '../storage';
 import { useLocalStore } from '../local-store';
 import { classifyRecords } from '../model/style-classifier';
 import { createLibraryRecord, INITIAL_STYLE_PROFILE, LIBRARY_RECORD_TYPE, STYLE_STORAGE_KEY } from '../model/style-profile';
@@ -22,11 +28,11 @@ export default function LibraryView(){
   const [message,setMessage]=useState('');
   const [progress,setProgress]=useState(null);
   const [page,setPage]=useState(1);
-  const driveReady=googleDriveConfigured();
+  const driveReady=googleDriveStorage.configured();
   const pageSize=LIST_PAGE_OPTIONS.includes(Number(uiSettings?.list_page_size))?Number(uiSettings.list_page_size):10;
 
   async function reload(){
-    const rows=await getLocalRecords(LIBRARY_RECORD_TYPE);
+    const rows=await localRecordStorage.list(LIBRARY_RECORD_TYPE);
     setRecords(rows.sort(byNewest));
   }
   useEffect(()=>{reload()},[]);
@@ -49,7 +55,7 @@ export default function LibraryView(){
   useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
 
   async function remove(id){
-    await deleteLocalRecord(id);
+    await localRecordStorage.remove(id);
     await reload();
     setMessage('已從本機 Library 刪除。');
   }
@@ -58,7 +64,7 @@ export default function LibraryView(){
     const targets=mode==='missing'?records.filter(record=>!record.classification):records;
     setProgress({processed:0,total:targets.length,percent:targets.length?0:100});
     const classified=await classifyRecords(targets,profile,{getText:item=>item.text,onProgress:setProgress});
-    for(const item of classified)await putLocalRecord({...item,updated_at:new Date().toISOString()});
+    for(const item of classified)await localRecordStorage.put({...item,updated_at:new Date().toISOString()});
     await reload();
     setMessage(`重新分類完成：${classified.length} 筆。`);
   }
@@ -72,7 +78,7 @@ export default function LibraryView(){
         ?{...raw,type:LIBRARY_RECORD_TYPE,updated_at:new Date().toISOString()}
         :createLibraryRecord({title:raw?.title,text:raw?.text??raw?.content,source:raw?.source||sourceName,classification:raw?.classification||null});
       if(!record.text)continue;
-      await putLocalRecord(record);count+=1;
+      await localRecordStorage.put(record);count+=1;
     }
     await reload();
     return count;
@@ -82,19 +88,24 @@ export default function LibraryView(){
     const file=event.target.files?.[0];
     if(!file)return;
     try{
-      const count=await storeRows(await readJsonFile(file),`import:${file.name}`);
+      const count=await storeRows(await readRecordsJsonFile(file),`import:${file.name}`);
       setMessage(`已匯入 ${count} 筆 Library 資料。`);
     }catch(error){setMessage(`匯入失敗：${error.message}`);}
     event.target.value='';
   }
 
   async function saveDrive(){
-    try{await saveJsonToGoogleDrive(DRIVE_FILE,{version:1,records});setMessage(`已備份 ${records.length} 筆到自己的 Google Drive。`)}
-    catch(error){setMessage(`Google Drive 備份失敗：${error.message}`)}
+    try{
+      const result=await backupLocalRecordsToGoogleDrive(DRIVE_FILE,{type:LIBRARY_RECORD_TYPE,meta:{version:1}});
+      setMessage(`已備份 ${result.record_count} 筆到自己的 Google Drive。`);
+    }catch(error){setMessage(`Google Drive 備份失敗：${error.message}`)}
   }
   async function loadDrive(){
-    try{const count=await storeRows(await loadJsonFromGoogleDrive(DRIVE_FILE),'google-drive');setMessage(`已從自己的 Google Drive 讀回 ${count} 筆。`)}
-    catch(error){setMessage(`Google Drive 讀取失敗：${error.message}`)}
+    try{
+      const result=await mergeGoogleDriveRecordsToLocal(DRIVE_FILE);
+      await reload();
+      setMessage(`已從自己的 Google Drive 讀回 ${result.total} 筆。`);
+    }catch(error){setMessage(`Google Drive 讀取失敗：${error.message}`)}
   }
 
   return <section className="loc-view">
@@ -107,7 +118,7 @@ export default function LibraryView(){
     <section className="loc-card">
       <div className="loc-actions">
         <a className="loc-button primary" href="/classify">＋新增／分類文字</a>
-        <button className="loc-button" onClick={()=>downloadJsonFile({version:1,records},DRIVE_FILE)} disabled={!records.length}>匯出 JSON</button>
+        <button className="loc-button" onClick={()=>exportRecordsJson({version:1,records},DRIVE_FILE)} disabled={!records.length}>匯出 JSON</button>
         <label className="loc-button">匯入 JSON<input className="loc-hidden-input" type="file" accept="application/json,.json" onChange={importJson}/></label>
         <button className="loc-button" onClick={saveDrive} disabled={!driveReady||!records.length}>備份到 Google Drive</button>
         <button className="loc-button" onClick={loadDrive} disabled={!driveReady}>從 Google Drive 讀回</button>
