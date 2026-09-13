@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import ThemeControl from '../ThemeControl';
 import { getLocalRecords } from '../local-db';
 import { useLocalStore } from '../local-store';
 import { INITIAL_MY_STYLE, INITIAL_STYLE_PROFILE, LIBRARY_RECORD_TYPE, MY_STYLE_STORAGE_KEY, STYLE_STORAGE_KEY } from '../model/style-profile';
@@ -54,17 +55,25 @@ export default function MyStyleView(){
     <header className="loc-hero">
       <p className="loc-eyebrow">My Style · Local Profile</p>
       <h1>{meta?.name||'我的風格'}</h1>
-      <p>{meta?.description||'由本機 Library 的分類結果統計形成。'} 不另建語意資料庫；Library 是來源，群組設定是規則。</p>
+      <p>{meta?.description||'由本機資料庫的分類結果統計形成。'} 不另建語意資料庫；Database 是來源，群組設定是規則。</p>
     </header>
+
+    <section className="loc-card">
+      <p className="loc-eyebrow">Display · 顯示</p>
+      <h2>顯示風格</h2>
+      <ThemeControl />
+      <div className="loc-actions">
+        <a className="loc-button" href="/style-groups">群組設定</a>
+        <a className="loc-button" href="/library">Database · 資料庫</a>
+        <a className="loc-button" href="/classify">分類</a>
+        <a className="loc-button" href="/governance">治理</a>
+      </div>
+    </section>
 
     <section className="loc-card">
       <div className="loc-record-form">
         <label>風格名稱<input value={meta?.name||''} onChange={e=>setMeta(current=>({...current,name:e.target.value}))}/></label>
         <label>說明<input value={meta?.description||''} onChange={e=>setMeta(current=>({...current,description:e.target.value}))}/></label>
-      </div>
-      <div className="loc-actions">
-        <a className="loc-button primary" href="/library">打開 Library</a>
-        <a className="loc-button" href="/style-groups">調整群組設定</a>
       </div>
     </section>
 
@@ -88,8 +97,8 @@ export default function MyStyleView(){
     </section>
 
     <section className="loc-card">
-      <div className="loc-metrics"><div><small>Library</small><strong>{records.length}</strong></div><div><small>已分類</small><strong>{stats.classified}</strong></div><div><small>Fallback</small><strong>{stats.fallback}</strong></div></div>
-      {!records.length&&<p className="loc-status">先把文字存進 Library；有資料後這裡才會形成你的風格分布。</p>}
+      <div className="loc-metrics"><div><small>Database</small><strong>{records.length}</strong></div><div><small>已分類</small><strong>{stats.classified}</strong></div><div><small>Fallback</small><strong>{stats.fallback}</strong></div></div>
+      {!records.length&&<p className="loc-status">先把文字存進 Database；有資料後這裡才會形成你的風格分布。</p>}
     </section>
 
     <section className="loc-card">
