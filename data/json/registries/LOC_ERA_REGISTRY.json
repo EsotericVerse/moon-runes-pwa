@@ -2,11 +2,11 @@
   "schema_version": "2.0",
   "definition_version": "2.0",
   "registry": "LOC_ERA_REGISTRY",
-  "updated_at": "2026-09-09",
+  "updated_at": "2026-09-14",
   "authority": {
-    "loc": "Search",
+    "loc": "Culture",
     "source_type": "Period Definition",
-    "note": "LOC-wide 時期唯一公開命名與時間邊界 authority。Search 負責定義與編輯；Context / Evolution / Graph / corpus builder 僅引用與消費。"
+    "note": "LOC-wide 時期唯一公開命名與時間邊界 authority。Culture 負責定義與治理；Search / Context / Graph / corpus builder 僅引用與消費。"
   },
   "language_system_id": "lo3rwang",
   "eras": [
