@@ -61,10 +61,11 @@ for (const path of actualJson) if (!expectedJson.has(path)) failures.push(`unexp
 // Verify build-time version and delivery-tier metadata against the exact staged runtime JSON payload.
 const versionManifestPath = resolve(publicRoot, 'loc-data-version.json');
 let totalRuntimeJsonBytes = 0;
+let versionManifest = null;
 if (!existsSync(versionManifestPath)) {
   failures.push('missing runtime data version manifest: loc-data-version.json');
 } else {
-  const versionManifest = JSON.parse(readFileSync(versionManifestPath, 'utf8'));
+  versionManifest = JSON.parse(readFileSync(versionManifestPath, 'utf8'));
   const manifestFiles = versionManifest?.files && typeof versionManifest.files === 'object'
     ? versionManifest.files
     : {};
@@ -109,6 +110,75 @@ if (!existsSync(versionManifestPath)) {
   const expectedVersion = createHash('sha256').update(versionInput.join('\n')).digest('hex');
   if (versionManifest?.schema !== 1) failures.push(`unsupported runtime data version schema: ${versionManifest?.schema}`);
   if (versionManifest?.version !== expectedVersion) failures.push('runtime data aggregate version mismatch');
+}
+
+// Hierarchical index must cover every runtime JSON exactly once as either a manifest or a segment.
+const dataIndexPath = resolve(publicRoot, 'loc-data-index.json');
+if (!existsSync(dataIndexPath)) {
+  failures.push('missing runtime data index: loc-data-index.json');
+} else if (versionManifest) {
+  const dataIndex = JSON.parse(readFileSync(dataIndexPath, 'utf8'));
+  const datasets = dataIndex?.datasets && typeof dataIndex.datasets === 'object' ? dataIndex.datasets : {};
+  const indexedPaths = new Map();
+  let segmentCount = 0;
+  let segmentBytes = 0;
+  let coreBytes = 0;
+  let onDemandBytes = 0;
+
+  function verifyIndexedEntry(entry, label) {
+    if (!entry?.path) {
+      failures.push(`runtime data index missing path: ${label}`);
+      return;
+    }
+    const repoPath = normalizeRepoPath(entry.path);
+    const publicPath = `/${repoPath}`;
+    const versionEntry = versionManifest.files?.[publicPath];
+    indexedPaths.set(repoPath, (indexedPaths.get(repoPath) || 0) + 1);
+    if (!versionEntry) {
+      failures.push(`runtime data index references unknown JSON: ${entry.path}`);
+      return;
+    }
+    if (entry.hash !== versionEntry.hash) failures.push(`runtime data index hash mismatch: ${entry.path}`);
+    if (entry.bytes !== versionEntry.bytes) failures.push(`runtime data index byte mismatch: ${entry.path}`);
+    if (entry.tier !== versionEntry.tier) failures.push(`runtime data index tier mismatch: ${entry.path}`);
+  }
+
+  for (const [datasetId, dataset] of Object.entries(datasets)) {
+    if (!['core', 'on-demand'].includes(dataset?.tier)) failures.push(`runtime data index invalid dataset tier: ${datasetId}`);
+    if (dataset?.manifest) verifyIndexedEntry(dataset.manifest, `${datasetId}.manifest`);
+
+    const segments = Array.isArray(dataset?.segments) ? dataset.segments : [];
+    const sequences = [];
+    for (const segment of segments) {
+      verifyIndexedEntry(segment, `${datasetId}.${segment?.id || 'segment'}`);
+      segmentCount += 1;
+      segmentBytes += Number(segment?.bytes || 0);
+      if (segment?.tier === 'core') coreBytes += Number(segment?.bytes || 0);
+      else onDemandBytes += Number(segment?.bytes || 0);
+      sequences.push(Number(segment?.sequence));
+    }
+    const expectedSequences = Array.from({ length: segments.length }, (_, index) => index + 1);
+    if (sequences.some((value, index) => value !== expectedSequences[index])) {
+      failures.push(`runtime data index non-contiguous sequence: ${datasetId}`);
+    }
+  }
+
+  for (const path of expectedJson) {
+    const count = indexedPaths.get(path) || 0;
+    if (count === 0) failures.push(`runtime data index missing JSON: /${path}`);
+    if (count > 1) failures.push(`runtime data index duplicates JSON: /${path}`);
+  }
+  for (const path of indexedPaths.keys()) {
+    if (!expectedJson.has(path)) failures.push(`runtime data index has unexpected JSON: /${path}`);
+  }
+
+  if (dataIndex?.schema !== 1) failures.push(`unsupported runtime data index schema: ${dataIndex?.schema}`);
+  if (dataIndex?.data_version !== versionManifest.version) failures.push('runtime data index version mismatch');
+  if (dataIndex?.totals?.datasets !== Object.keys(datasets).length) failures.push('runtime data index dataset count mismatch');
+  if (dataIndex?.totals?.segments !== segmentCount) failures.push('runtime data index segment count mismatch');
+  if (dataIndex?.totals?.bytes !== segmentBytes) failures.push('runtime data index segment byte total mismatch');
+  if (dataIndex?.totals?.core_bytes !== coreBytes) failures.push('runtime data index core byte total mismatch');
+  if (dataIndex?.totals?.on_demand_bytes !== onDemandBytes) failures.push('runtime data index on-demand byte total mismatch');
 }
 
 if (totalRuntimeJsonBytes > maxRuntimeJsonBytes) {
