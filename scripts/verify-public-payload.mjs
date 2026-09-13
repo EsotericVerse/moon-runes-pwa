@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { LOC_DATA } from '../app/loc/data-paths.mjs';
@@ -5,6 +6,7 @@ import { LOC_DATA } from '../app/loc/data-paths.mjs';
 const root = process.cwd();
 const publicRoot = resolve(root, 'public');
 const failures = [];
+const maxRuntimeJsonBytes = Number(process.env.LOC_CI_MAX_RUNTIME_JSON_BYTES || 512 * 1024 * 1024);
 
 function normalizeRepoPath(value) {
   return String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');
@@ -52,6 +54,49 @@ const actualJson = new Set(walkFiles(resolve(publicRoot, 'data/json')));
 for (const path of expectedJson) if (!actualJson.has(path)) failures.push(`missing staged JSON: ${path}`);
 for (const path of actualJson) if (!expectedJson.has(path)) failures.push(`unexpected staged JSON: ${path}`);
 
+// Verify build-time version metadata against the exact staged runtime JSON payload.
+const versionManifestPath = resolve(publicRoot, 'loc-data-version.json');
+let totalRuntimeJsonBytes = 0;
+if (!existsSync(versionManifestPath)) {
+  failures.push('missing runtime data version manifest: loc-data-version.json');
+} else {
+  const versionManifest = JSON.parse(readFileSync(versionManifestPath, 'utf8'));
+  const manifestFiles = versionManifest?.files && typeof versionManifest.files === 'object'
+    ? versionManifest.files
+    : {};
+  const versionInput = [];
+
+  for (const path of [...expectedJson].sort()) {
+    const publicPath = `/${path}`;
+    const stagedPath = resolve(publicRoot, path);
+    if (!existsSync(stagedPath)) continue;
+    const bytes = readFileSync(stagedPath);
+    const hash = createHash('sha256').update(bytes).digest('hex');
+    const entry = manifestFiles[publicPath];
+    totalRuntimeJsonBytes += bytes.byteLength;
+    versionInput.push(`${publicPath}:${hash}`);
+
+    if (!entry) failures.push(`version manifest missing JSON: ${publicPath}`);
+    else {
+      if (entry.hash !== hash) failures.push(`version hash mismatch: ${publicPath}`);
+      if (entry.bytes !== bytes.byteLength) failures.push(`version byte count mismatch: ${publicPath}`);
+    }
+  }
+
+  for (const publicPath of Object.keys(manifestFiles)) {
+    const repoPath = normalizeRepoPath(publicPath);
+    if (!expectedJson.has(repoPath)) failures.push(`version manifest has unexpected JSON: ${publicPath}`);
+  }
+
+  const expectedVersion = createHash('sha256').update(versionInput.join('\n')).digest('hex');
+  if (versionManifest?.schema !== 1) failures.push(`unsupported runtime data version schema: ${versionManifest?.schema}`);
+  if (versionManifest?.version !== expectedVersion) failures.push('runtime data aggregate version mismatch');
+}
+
+if (totalRuntimeJsonBytes > maxRuntimeJsonBytes) {
+  failures.push(`runtime JSON budget exceeded: ${totalRuntimeJsonBytes} bytes > ${maxRuntimeJsonBytes} bytes`);
+}
+
 // User-facing governance/KM lives in routes or structured data; only the Canon doc is staged here.
 const expectedDocs = new Set(['docs/LOC_Canon_1.0.docx']);
 const actualDocs = new Set(walkFiles(resolve(publicRoot, 'docs')));
@@ -88,4 +133,7 @@ if (failures.length) {
   console.error('[public-payload] violations:\n' + failures.join('\n'));
   process.exit(1);
 }
-console.log(`[public-payload] verified ${actualJson.size} JSON files, ${actualDocs.size} docs, ${actualPics.size} formal pics and printable card PDF`);
+console.log(
+  `[public-payload] verified ${actualJson.size} JSON files (${totalRuntimeJsonBytes} bytes), ` +
+  `${actualDocs.size} docs, ${actualPics.size} formal pics and printable card PDF`
+);
