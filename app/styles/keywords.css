@@ -1,0 +1,15 @@
+/* Shared keyword emphasis for LOC concept/group names.
+   This is visual emphasis only: it does not change heading semantics or SEO structure. */
+.loc-keyword-emphasis{
+  font-size:1.08em;
+  font-weight:700;
+  letter-spacing:.01em;
+}
+
+/* Inside headings, keep the keyword subordinate to the page-title hierarchy. */
+h1 .loc-keyword-emphasis,
+h2 .loc-keyword-emphasis,
+h3 .loc-keyword-emphasis{
+  font-size:1.06em;
+  font-weight:800;
+}
