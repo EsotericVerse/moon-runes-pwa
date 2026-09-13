@@ -26,7 +26,7 @@ export function normalizeLocRecord(record={},defaults={}){
     source:clean(merged.source)||'local',
     person:clean(merged.person),
     family:clean(merged.family),
-    updated_at:new Date().toISOString()
+    updated_at:clean(merged.updated_at)||new Date().toISOString()
   };
 }
 
@@ -48,4 +48,11 @@ export function normalizeRecordForStorage(record={}){
   const drawKind=clean(record.draw_kind);
   if(type===LOC_RECORD_TYPES.DAILY_RUNE||drawKind==='daily_draw')return normalizeDailyRuneRecord(record);
   return normalizeLocRecord(record);
+}
+
+export function prepareLocRecordForWrite(record={}){
+  return {
+    ...normalizeRecordForStorage(record),
+    updated_at:new Date().toISOString()
+  };
 }
