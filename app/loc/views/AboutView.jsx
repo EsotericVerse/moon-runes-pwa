@@ -4,7 +4,7 @@ export default function AboutView(){
       <p className="loc-eyebrow">LOC · 月典 · Language Model Framework</p>
       <div className="home-title-row">
         <h1>LOC月典</h1>
-        <p className="loc-core-line">從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，累積後再選擇怎麼進化。</p>
+        <p className="loc-core-line">把語言整理成可理解、可搜尋、可推演的結構。</p>
       </div>
       <div className="loc-hero-copy">
         <p>月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演語言的系統。月之符文(LunaRunes)是一套有自己獨立的語言方式。</p>
