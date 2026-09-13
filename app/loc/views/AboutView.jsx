@@ -137,7 +137,7 @@ export default function AboutView(){
     <section className="loc-card home-framework" id="framework-map">
       <p className="loc-eyebrow">Structure of LOC</p>
       <h2>結構</h2>
-      <p className="loc-subtitle">LunaRunes · Context · Music · Literary · Multimedia · Algorithm · Module · Evolution</p>
+      <p className="loc-subtitle">八個功能責任區與彼此關係</p>
       <p>它們不是八個彼此獨立的產品，也不是版本先後；而是 LOC 的八個功能責任區：月之符文、脈絡、音樂、文字創作、多媒體、演算法、演算模組與推演。</p>
       <figure className="home-framework-figure">
         <img src="/pics/LOC-structure.png" alt="月典結構圖與流程圖" loading="lazy" />
