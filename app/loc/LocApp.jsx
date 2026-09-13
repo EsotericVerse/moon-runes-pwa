@@ -33,7 +33,6 @@ const VIEWS = {
 };
 
 const PRIMARY_NAV = [
-  ['game', '遊戲'],
   ['context', '脈絡'],
   ['statics', '統計'],
   ['evolution', '推演']
