@@ -7,6 +7,8 @@ const root = process.cwd();
 const publicRoot = resolve(root, 'public');
 const failures = [];
 const maxRuntimeJsonBytes = Number(process.env.LOC_CI_MAX_RUNTIME_JSON_BYTES || 512 * 1024 * 1024);
+const partitionScopeFields = new Set(['person', 'family', 'generation', 'era', 'source', 'corpus', 'language', 'culture']);
+const scopeRequiredDatasets = new Set(['loc4-text-corpus', 'loc3-lyrics-search']);
 
 function normalizeRepoPath(value) {
   return String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');
@@ -143,6 +145,25 @@ if (!existsSync(dataIndexPath)) {
     if (entry.tier !== versionEntry.tier) failures.push(`runtime data index tier mismatch: ${entry.path}`);
   }
 
+  function verifySegmentScope(scope, label, required) {
+    if (scope == null) {
+      if (required) failures.push(`runtime data index missing partition scope: ${label}`);
+      return;
+    }
+    if (typeof scope !== 'object' || Array.isArray(scope)) {
+      failures.push(`runtime data index invalid partition scope object: ${label}`);
+      return;
+    }
+    for (const [field, values] of Object.entries(scope)) {
+      if (!partitionScopeFields.has(field)) failures.push(`runtime data index unknown partition scope field: ${label}.${field}`);
+      if (!Array.isArray(values)) {
+        failures.push(`runtime data index partition scope must be array: ${label}.${field}`);
+        continue;
+      }
+      if (values.some(value => typeof value !== 'string')) failures.push(`runtime data index partition scope must contain strings: ${label}.${field}`);
+    }
+  }
+
   for (const [datasetId, dataset] of Object.entries(datasets)) {
     if (!['core', 'on-demand'].includes(dataset?.tier)) failures.push(`runtime data index invalid dataset tier: ${datasetId}`);
     if (dataset?.manifest) verifyIndexedEntry(dataset.manifest, `${datasetId}.manifest`);
@@ -150,7 +171,9 @@ if (!existsSync(dataIndexPath)) {
     const segments = Array.isArray(dataset?.segments) ? dataset.segments : [];
     const sequences = [];
     for (const segment of segments) {
-      verifyIndexedEntry(segment, `${datasetId}.${segment?.id || 'segment'}`);
+      const label = `${datasetId}.${segment?.id || 'segment'}`;
+      verifyIndexedEntry(segment, label);
+      verifySegmentScope(segment?.scope, label, scopeRequiredDatasets.has(datasetId));
       segmentCount += 1;
       segmentBytes += Number(segment?.bytes || 0);
       if (segment?.tier === 'core') coreBytes += Number(segment?.bytes || 0);
