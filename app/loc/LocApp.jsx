@@ -84,10 +84,6 @@ export default function LocApp() {
       <main className="loc-next-main" data-loc-view={view}>
         <ActiveView />
       </main>
-      <footer className="loc-next-footer">
-        <a href="/governance">治理</a>
-        <a href="https://whoami.lo3rwang.cc/">lo3rwang</a>
-      </footer>
     </>
   );
 }
