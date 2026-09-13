@@ -20,9 +20,12 @@
 
 - [ ] 設定新增「頁面語系／Locale Theme」：中文、台語、英文、日文四種；設定入口只存在於 LOC／月典 shell。
 - [ ] 建立共用 locale dictionary／變數層，統一 Header、Footer、NAV、Page title、Section title 與常用介面文字，避免各頁硬編碼標題。
+- [ ] 建立 Title/Theme Token Layer：所有 H1／主要 H2／頁面大標題改用穩定 semantic key（例如 `page.home.title`、`page.runes.title`、`section.context.title`），不在 JSX 直接寫死顯示文字。
+- [ ] Title token 分成內容與風格兩層：locale dictionary 決定文字；style token 決定字級、字重、字距、大小寫、顏色、對齊與間距。切換語系與切換風格彼此獨立。
+- [ ] Header、Footer、NAV、Page title、Section title 共用同一套 semantic title keys；同一 key 在 LOC、LunaRunes、個人網站可套不同 shell theme，但不複製內容邏輯。
 - [ ] 將各 Next.js page metadata/title 改為由共用 page-title key 產生，讓切換語系時可使用同一組頁面識別而不是重寫路由。
 - [ ] locale 與 shell 分離：LOC、LunaRunes、個人網站可有不同預設／鎖定策略，但底層共用同一套字典與元件；LunaRunes 與個人網站不提供設定入口。
-- [ ] locale 設定先存本機，設計時保持可直接遷移到未來正式 App 的 local settings storage；PWA 不建立另一套網頁專用狀態模型。
+- [ ] locale／title style 設定先存本機，設計時保持可直接遷移到未來正式 App 的 local settings storage；PWA 不建立另一套網頁專用狀態模型。
 - [ ] 自動語意顯示：分析結果直接控制字級、字重與連結。
 - [ ] 顯示優先層級：保留／品牌詞 → 系統核心詞 → 群組 → 文字／符文／複合語意 → 例外保護 → 爭議層。
 - [ ] Protected Phrase 設定層，避免單字切割污染（例如公司名、人名、專名）。
