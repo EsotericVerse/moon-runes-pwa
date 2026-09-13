@@ -117,7 +117,7 @@ export default function AboutView(){
       <div className="home-author-copy">
         <p>LOC 把脈絡重新放回時間中，透過時期、事件、趨勢與語彙軌跡，觀察語言如何累積、改變與延伸。</p>
         <p>過去與現在可以整理，未來仍然有變數；因此月典不是替未來下定論，而是治理已知、觀察演化，再推演可能。</p>
-        <p><a href="/statics">排行榜</a>可先看全部，再切 Facebook、Threads、Suno，並依現行時期邊界動態重新聚合；時期日期微調時不必重做固定排行。</p>
+        <p><a href="/statics">排行榜</a>可先看全部，再切 Facebook、Threads、Suno，並依來源與時期觀察語彙變化。</p>
       </div>
       <div className="home-progress-grid" aria-label="文化搜尋、治理與演化">
         <article className="home-progress-item">
@@ -126,11 +126,7 @@ export default function AboutView(){
         </article>
         <article className="home-progress-item">
           <strong>治理</strong>
-          <span>授權內容可以用全文做搜尋與分析；公開結果則依內容治理顯示片段、全文或僅 metadata。Facebook 與 Threads 預設採片段展示，歌詞不直接公開全文。已建立系統治理、資料權責、內容版權／公開邊界與月之符文66治理文件；目前也把全文分析與公開展示、來源日期、時期動態聚合等規則納入治理層。</span>
-        </article>
-        <article className="home-progress-item">
-          <strong>來源 × 時期 動態 Top 10</strong>
-          <span>排行榜可先看全部，再切 Facebook、Threads、Suno，並依現行時期邊界動態重新聚合；時期日期微調時不必重做固定排行。</span>
+          <span>授權內容可用全文做搜尋與分析；公開結果則依內容治理決定顯示全文、片段或僅 metadata。Facebook、Threads 預設只顯示片段，歌詞不直接公開全文；系統並以治理文件約束資料權責、版權與公開邊界。</span>
         </article>
       </div>
     </section>
