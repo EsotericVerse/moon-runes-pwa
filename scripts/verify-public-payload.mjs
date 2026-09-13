@@ -58,11 +58,17 @@ const actualDocs = new Set(walkFiles(resolve(publicRoot, 'docs')));
 for (const path of expectedDocs) if (!actualDocs.has(path)) failures.push(`missing staged doc: ${path}`);
 for (const path of actualDocs) if (!expectedDocs.has(path)) failures.push(`unexpected staged doc: ${path}`);
 
-const picFiles = walkFiles(resolve(publicRoot, 'pics'));
-if (picFiles.length) failures.push(`pics must not be staged for current Next runtime (${picFiles.length} files found)`);
+// Frozen homepage/source diagrams are intentionally staged for Next parity.
+const expectedPics = new Set([
+  'pics/LOC-FrameworkPic.png',
+  'pics/LOC-structure.png'
+]);
+const actualPics = new Set(walkFiles(resolve(publicRoot, 'pics')));
+for (const path of expectedPics) if (!actualPics.has(path)) failures.push(`missing staged pic: ${path}`);
+for (const path of actualPics) if (!expectedPics.has(path)) failures.push(`unexpected staged pic: ${path}`);
 
 if (failures.length) {
   console.error('[public-payload] violations:\n' + failures.join('\n'));
   process.exit(1);
 }
-console.log(`[public-payload] verified ${actualJson.size} JSON files, ${actualDocs.size} docs, 0 pics`);
+console.log(`[public-payload] verified ${actualJson.size} JSON files, ${actualDocs.size} docs, ${actualPics.size} frozen pics`);
