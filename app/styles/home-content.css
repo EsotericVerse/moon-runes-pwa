@@ -43,23 +43,23 @@
   height:auto;
 }
 .home-beginner .home-rune-layout{
-  grid-template-columns:minmax(0,1fr) minmax(260px,320px);
-  gap:2rem;
+  grid-template-columns:minmax(0,1.38fr) minmax(0,1fr);
+  gap:1.35rem;
   align-items:start;
 }
 .home-beginner .home-framework-figure{
   width:100%;
-  max-width:320px;
+  max-width:none;
   margin:0;
-  justify-self:end;
+  justify-self:stretch;
   align-self:start;
 }
 .home-beginner .home-framework-figure img{
   display:block;
-  width:auto;
-  max-width:100%;
+  width:100%;
+  max-width:none;
   height:auto;
-  margin:0 auto;
+  margin:0;
   object-fit:contain;
 }
 .home-author-copy{
