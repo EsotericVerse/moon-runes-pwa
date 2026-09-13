@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchLocJson, fetchLocJsonBatch, LOC_DATA } from '../data';
 
-const TABS=[['overview','總覽'],['timeline','時間線'],['trend','時期風格'],['trajectory','軌跡']];
+const TABS=[['overview','總覽'],['eras','時期設定'],['timeline','時間線'],['trend','時期風格'],['trajectory','軌跡']];
 function periodRows(value){if(!value||typeof value!=='object')return [];for(const key of ['periods','period_analysis','period_keyword_analysis','results'])if(Array.isArray(value[key]))return value[key];return [];}
 function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row?.semantic_keywords||row?.top_keywords||[];}
 function drawableRows(value){return Array.isArray(value)?value.filter(row=>{const id=Number(row?.編號);return id>=1&&id<=66;}):[];}
@@ -13,7 +13,7 @@ export default function EvolutionView(){
   const [eras,setEras]=useState(null);const [events,setEvents]=useState(null);const [loc3,setLoc3]=useState(null);const [loc6,setLoc6]=useState(null);const [runeHistory,setRuneHistory]=useState(null);const [coreHistory,setCoreHistory]=useState(null);const [runes,setRunes]=useState(null);const [error,setError]=useState('');
 
   useEffect(()=>{let live=true;const load=(path,setter)=>fetchLocJson(path).then(data=>live&&setter(data)).catch(e=>live&&setError(e.message));setError('');
-    if(tab==='overview'&&!eras)load(LOC_DATA.LOC_ERA_REGISTRY,setEras);
+    if((tab==='overview'||tab==='eras')&&!eras)load(LOC_DATA.LOC_ERA_REGISTRY,setEras);
     if(tab==='timeline'){
       if(!events)load(LOC_DATA.LOC8_EVENT_SNAPSHOT,setEvents);
       if(!runeHistory)load(LOC_DATA.LUNARUNE_EVOLUTION_HISTORY,setRuneHistory);
@@ -40,14 +40,19 @@ export default function EvolutionView(){
   const stages=runeHistory?.system_stages||[];const governance=runeHistory?.governance_evolution||[];const semanticCases=runeHistory?.semantic_history_cases||[];
 
   return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Evolution · 推演</p><h1><span className="loc-keyword-emphasis">推演</span></h1><p>ERA、事件、時期風格、軌跡與 LunaRunes <span className="loc-keyword-emphasis">演化</span>依頁籤按需載入；總覽只讀取小型 ERA registry。</p></header>
-    <nav className="loc-tabs" aria-label="推演功能">{TABS.map(([id,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}>{label}</button>)}</nav>
+    <header className="loc-hero"><p className="loc-eyebrow">Culture · 文化</p><h1><span className="loc-keyword-emphasis">文化</span></h1><p>文化由風格、時期、事件、價值與語意變化沿時間累積形成；此處整合 ERA、事件、時期風格、軌跡與 LunaRunes <span className="loc-keyword-emphasis">演化</span>觀察。</p></header>
+    <nav className="loc-tabs" aria-label="文化功能">{TABS.map(([id,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}>{label}</button>)}</nav>
     {error&&<div className="loc-status error">{error}</div>}
 
-    {tab==='overview'&&<>{!eras?<div className="loc-loading">載入時期總覽…</div>:<>
+    {tab==='overview'&&<>{!eras?<div className="loc-loading">載入文化時期總覽…</div>:<>
       <div className="loc-metrics"><div><small>時期總數</small><strong>{eraRows.length}</strong></div><div><small>目前時期</small><strong>{currentEra?.period||'—'}</strong></div><div><small>目前起點</small><strong>{currentEra?.start_date||'—'}</strong></div></div>
-      <section className="loc-card"><p className="loc-eyebrow">ERA Timeline · 時期時間線</p><h2>現行時期</h2><div className="loc-timeline">{eraRows.map(item=><article key={item.era_id||item.period}><div><b>{item.display_label||`${item.period}｜${item.name||''}`}</b><span>{item.start_date||'—'} → {item.end_date||'現在'}</span></div><p>{item.description}</p></article>)}</div></section>
-      <section className="loc-card"><p className="loc-eyebrow">Deferred History · 延後載入</p><h2>符文<span className="loc-keyword-emphasis">演化</span>資料延後載入</h2><p>66 符逐枚歷程只在時間線頁籤下載；治理案例則由 Evolution registry 提供，避免首頁預先讀取完整 history。</p></section>
+      <section className="loc-card"><p className="loc-eyebrow">Culture ERA · 文化時期</p><h2>現行時期</h2><div className="loc-timeline">{eraRows.map(item=><article key={item.era_id||item.period}><div><b>{item.display_label||`${item.period}｜${item.name||''}`}</b><span>{item.start_date||'—'} → {item.end_date||'現在'}</span></div><p>{item.description}</p></article>)}</div></section>
+      <section className="loc-card"><p className="loc-eyebrow">Deferred History · 延後載入</p><h2>符文<span className="loc-keyword-emphasis">演化</span>資料延後載入</h2><p>66 符逐枚歷程只在時間線頁籤下載；治理案例由治理資料提供，避免文化首頁預先讀取完整 history。</p></section>
+    </>}</>}
+
+    {tab==='eras'&&<>{!eras?<div className="loc-loading">載入時期設定…</div>:<>
+      <section className="loc-card"><p className="loc-eyebrow">ERA Governance · 時期治理</p><h2>文化時期設定</h2><p>時期是文化形成與語意變化的時間維度。LOC 的公開時期名稱與時間邊界由 <code>LOC_ERA_REGISTRY</code> 統一治理；搜尋、脈絡、Graph 與 corpus builder 僅引用這份設定。</p>{eras?.authority?.note&&<p className="loc-note">{eras.authority.note}</p>}</section>
+      <div className="loc-context-list">{eraRows.map(item=><article className="loc-context-item" key={item.era_id||item.period}><div className="loc-result-meta"><span>{item.period}</span><span>{item.status||'historical'}</span></div><h3>{item.display_label||item.name}</h3><p>{item.start_date||'—'} → {item.end_date||'現在'}</p><p>{item.description}</p></article>)}</div>
     </>}</>}
 
     {tab==='timeline'&&<>{!runeHistory||!coreHistory||!runes?<div className="loc-loading">載入完整符文演化…</div>:<div className="loc-metrics"><div><small>現行可抽符文</small><strong>{runeRows.length}/66</strong></div><div><small>逐符歷程完整</small><strong>{completeRuneHistory}/66</strong></div><div><small>治理案例</small><strong>{semanticCases.length}</strong></div></div>}
