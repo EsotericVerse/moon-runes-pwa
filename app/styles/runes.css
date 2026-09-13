@@ -45,12 +45,20 @@
 .runes-atlas-intro{display:grid;grid-template-columns:128px minmax(0,1fr);gap:1rem;align-items:center;margin:1rem 0 1.25rem;padding:.9rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-surface-soft)}
 .runes-atlas-intro img{display:block;width:128px;height:128px;object-fit:cover;border-radius:var(--loc-radius-sm);background:var(--loc-panel-2)}
 .runes-atlas-intro p{margin:0;color:var(--loc-muted);line-height:1.7}
+.runes-group-filter-head{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-top:.25rem}
+.runes-group-filter-head h3{margin:0;color:var(--loc-gold)}
+.runes-group-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem;margin-top:.8rem}
+.runes-group-choice{display:grid;grid-template-columns:112px minmax(0,1fr);gap:.75rem;align-items:center;min-width:0;padding:.65rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);color:var(--loc-text);background:var(--loc-surface-soft);font:inherit;text-align:left;cursor:pointer}
+.runes-group-choice:hover,.runes-group-choice:focus-visible{border-color:var(--loc-gold);background:var(--loc-gold-surface-soft)}
+.runes-group-choice.active{border-color:var(--loc-gold);box-shadow:0 0 0 1px var(--loc-gold);background:var(--loc-gold-surface-soft)}
+.runes-group-choice img{display:block;width:112px;height:76px;object-fit:cover;border-radius:calc(var(--loc-radius-sm) - 2px);background:var(--loc-panel-2)}
+.runes-group-choice-copy{display:grid;gap:.25rem;min-width:0}
+.runes-group-choice-copy strong{font-size:.95rem;line-height:1.35;color:var(--loc-gold)}
+.runes-group-choice-copy small{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:3;color:var(--loc-muted);font-size:.74rem;line-height:1.45}
 .runes-group-list{display:grid;gap:1.25rem;margin-top:1rem}
 .runes-group-section{display:grid;gap:.8rem;padding:1rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-surface-soft)}
-.runes-group-head{display:grid;grid-template-columns:112px minmax(0,1fr);gap:1rem;align-items:center}
-.runes-group-head img{display:block;width:112px;height:112px;object-fit:cover;border-radius:var(--loc-radius-sm);background:var(--loc-panel-2)}
-.runes-group-head h3{margin:0 0 .35rem;font-size:1.15rem;color:var(--loc-gold)}
-.runes-group-head p{margin:0;color:var(--loc-muted);line-height:1.65}
+.runes-group-title h3{margin:0 0 .35rem;font-size:1.15rem;color:var(--loc-gold)}
+.runes-group-title p{margin:0;color:var(--loc-muted);line-height:1.65}
 .runes-library-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem}
 .runes-library-card{display:grid;gap:.4rem;min-width:0;padding:.75rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel-2)}
 .runes-library-card strong{font-size:1rem;line-height:1.4;color:var(--loc-text)}
@@ -72,6 +80,7 @@
 .runes-reference-grid figure{margin:0;overflow:hidden;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-surface-soft)}
 .runes-reference-grid img{display:block;width:100%;height:auto}
 .runes-reference-grid figcaption{padding:.7rem .85rem;color:var(--loc-muted);font-size:.82rem}
+@media(max-width:1100px){.runes-group-picker{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:980px){.runes-library-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.runes-graph-controls{grid-template-columns:minmax(0,1fr) 1fr 1fr}}
 @media(max-width:700px){
   .loc-draw-grid{grid-template-columns:1fr}
@@ -80,9 +89,10 @@
   .runes-graph-controls{grid-template-columns:1fr}
   .runes-atlas-intro{grid-template-columns:84px minmax(0,1fr)}
   .runes-atlas-intro img{width:84px;height:84px}
-  .runes-group-head{grid-template-columns:86px minmax(0,1fr)}
-  .runes-group-head img{width:86px;height:86px}
+  .runes-group-picker{grid-template-columns:1fr}
+  .runes-group-choice{grid-template-columns:96px minmax(0,1fr)}
+  .runes-group-choice img{width:96px;height:68px}
   .runes-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .runes-print-card .loc-button{width:100%;text-align:center}
 }
-@media(max-width:460px){.runes-atlas-intro,.runes-group-head{grid-template-columns:1fr}.runes-atlas-intro img,.runes-group-head img{width:100%;height:auto;max-height:180px}.runes-library-grid{grid-template-columns:1fr}}
+@media(max-width:460px){.runes-atlas-intro{grid-template-columns:1fr}.runes-atlas-intro img{width:100%;height:auto;max-height:180px}.runes-group-filter-head{align-items:flex-start;flex-direction:column}.runes-group-choice{grid-template-columns:82px minmax(0,1fr)}.runes-group-choice img{width:82px;height:62px}.runes-library-grid{grid-template-columns:1fr}}
