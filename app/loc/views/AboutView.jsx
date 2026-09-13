@@ -88,13 +88,14 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-context" id="context">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Context · 脈絡</p>
-        <h2>脈絡，文字的關係與分析</h2>
+        <h2>脈絡</h2>
+        <p className="loc-subtitle">文字的關係與分析</p>
       </div>
       <div className="home-author-copy">
         <p>不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再回到原始內容確認證據。</p>
         <p>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p>
+        <p>可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。</p>
       </div>
-      <p className="loc-subtitle">可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。</p>
       <div className="home-progress-grid" aria-label="脈絡資料與知識">
         <article className="home-progress-item">
           <strong>可比對資料</strong>
