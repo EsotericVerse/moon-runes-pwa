@@ -82,16 +82,31 @@ export default function AboutView(){
       </div>
     </section>
 
+    <section className="loc-card home-copy-block home-context" id="context">
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">Context · 脈絡</p>
+        <h2>語言放進關係，才會形成脈絡。</h2>
+        <p className="loc-subtitle">把語彙放進關係、情境、事件與 Graph，形成可觀察、可互動的脈絡。</p>
+      </div>
+      <div className="home-author-copy">
+        <p>單一的字詞只是一個語意起點。當它出現在不同的人、作品、事件與情境裡，會和其他文字建立關係，也會產生不同的作用與解讀。</p>
+        <p>LOC 會把這些關係整理成事件、關係式、情境與 Graph，讓原本分散的文字可以被連起來，看見它從哪裡來、和什麼有關，以及在什麼情況下改變。</p>
+        <div className="loc-actions">
+          <a className="loc-button" href="/context">查看脈絡</a>
+        </div>
+      </div>
+    </section>
+
     <section className="loc-card home-copy-block home-culture" id="culture">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Culture · 文化</p>
-        <h2>文字經過時間，才形成文化。</h2>
-        <p className="loc-subtitle">單字 → 脈絡 → 治理 → 文化 → 語言體系 → 語言</p>
+        <h2>風格加上時間，形成文化。</h2>
+        <p className="loc-subtitle">文字留下風格，風格經過時間累積，才看得見文化的變化。</p>
       </div>
       <div className="home-author-copy">
-        <p>文化不是單純的文風，也不是一組固定關鍵詞。風格加上時間、事件、價值與語意變化，才會形成某個時期可以被辨認、比較與回看的文化。</p>
-        <p>因此 LOC 會把個人語意設定、分類、脈絡、搜尋與顯示重新放回時間中觀察。過去與現在可以整理，未來仍然無常；重點不是宣稱唯一答案，而是治理既有語意、觀察演化，再推演可能。</p>
-        <p>月之符文是這套理論的符號式語言模型實例：66 個單字符文作為最底層語意錨點，向上形成詞、句型、脈絡與文化。LOC 則把這些層次模組化，讓文字可以被搜尋、比較、治理與持續演化。</p>
+        <p>文化不是單純的文風，也不是固定的關鍵詞。相同的字詞、作品與價值，在不同時期、事件與環境裡，會留下不同的使用方式與風格。</p>
+        <p>LOC 把脈絡重新放回時間中，透過時期、事件、趨勢與語彙軌跡，觀察語言如何累積、改變與延伸。</p>
+        <p>過去與現在可以整理，未來仍然有變數；因此月典不是替未來下定論，而是治理已知、觀察演化，再推演可能。</p>
         <div className="loc-actions">
           <a className="loc-button" href="/evolution">查看文化</a>
         </div>
