@@ -158,8 +158,11 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-author-words" id="author-words">
-      <p className="loc-eyebrow">作者的話</p>
-      <h2>治理過去的已知，是為了把時間還給現在的未知，才有更充裕的未來。</h2>
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">About me</p>
+        <h2>作者的話</h2>
+        <p className="loc-subtitle">治理已知的過去</p>
+      </div>
       <div className="home-author-copy">
         <p>月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用，採取的是不帶神秘學預設的中立態度，重在文字本身而不論道德。</p>
         <p>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的語言系統；而月之符文，也在這個過程中演變成可被分析、治理與推演的符號式語言系統。</p>
