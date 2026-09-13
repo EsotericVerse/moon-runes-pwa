@@ -38,6 +38,14 @@ const PRIMARY_NAV = [
   ['my-style', '風格']
 ];
 
+const HOME_TABS = [
+  ['/runes#intro', '新手上路'],
+  ['#framework-map', 'LOC架構圖'],
+  ['/governance', '治理'],
+  ['#current-progress', '目前進度'],
+  ['#author-words', '作者的話']
+];
+
 function readView() {
   if (typeof window === 'undefined') return 'home';
   const hash = decodeURIComponent(window.location.hash.slice(1)).split('/')[0];
@@ -81,6 +89,9 @@ export default function LocApp() {
             </form>
             <a className="loc-next-home" href="/loc/" aria-current={view==='home'?'page':undefined}>回月典首頁</a>
           </nav>
+          {view==='home'&&<nav className="loc-next-nav loc-next-subnav" aria-label="首頁快速頁簽">
+            {HOME_TABS.map(([href,label])=><a key={label} href={href}>{label}</a>)}
+          </nav>}
         </div>
       </header>
       <main className="loc-next-main" data-loc-view={view}>
