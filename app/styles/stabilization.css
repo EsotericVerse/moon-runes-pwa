@@ -1,0 +1,41 @@
+/* Stabilize shared text-box semantics after the Next migration.
+   Body paragraphs are body text unless explicitly marked .loc-subtitle. */
+.loc-card>h1+p:not(.loc-subtitle),
+.loc-card>h2+p:not(.loc-subtitle),
+.loc-card>h3+p:not(.loc-subtitle),
+.loc-panel>h1+p:not(.loc-subtitle),
+.loc-panel>h2+p:not(.loc-subtitle),
+.loc-panel>h3+p:not(.loc-subtitle),
+.loc-home>.loc-hero>h1+p:not(.loc-subtitle):not(.loc-core-line),
+.loc-home>.loc-hero>h2+p:not(.loc-subtitle):not(.loc-core-line),
+.loc-home>.loc-hero>h3+p:not(.loc-subtitle):not(.loc-core-line),
+.home-section-heading>h1+p:not(.loc-subtitle),
+.home-section-heading>h2+p:not(.loc-subtitle),
+.home-section-heading>h3+p:not(.loc-subtitle){
+  display:block;
+  margin:.45rem 0 0!important;
+  padding:0;
+  border:0;
+  color:var(--loc-text)!important;
+  font-size:1rem!important;
+  font-weight:400;
+  line-height:1.8!important;
+}
+
+.loc-subtitle{
+  display:block;
+  margin:.35rem 0 .7rem!important;
+  padding:0;
+  border:0;
+  color:var(--loc-accent)!important;
+  font-size:.9rem!important;
+  font-weight:600;
+  line-height:1.65!important;
+}
+
+.loc-next-nav-stack{width:100%}
+.loc-next-subnav{justify-content:flex-end}
+
+@media(max-width:900px){
+  .loc-next-subnav{justify-content:flex-start}
+}
