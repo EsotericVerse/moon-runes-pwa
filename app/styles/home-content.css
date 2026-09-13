@@ -55,8 +55,12 @@
   align-self:start;
 }
 .home-beginner .home-framework-figure img{
-  width:100%;
+  display:block;
+  width:auto;
+  max-width:100%;
   height:auto;
+  margin:0 auto;
+  object-fit:contain;
 }
 .home-author-copy{
   display:grid;
