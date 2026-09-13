@@ -40,13 +40,6 @@ const PRIMARY_NAV = [
   ['search', '搜尋']
 ];
 
-const TOOL_NAV = [
-  ['classify', '分類'],
-  ['library', 'Library'],
-  ['my-style', '我的風格'],
-  ['style-groups', '群組設定']
-];
-
 function readView() {
   if (typeof window === 'undefined') return 'home';
   const hash = decodeURIComponent(window.location.hash.slice(1)).split('/')[0];
@@ -86,9 +79,6 @@ export default function LocApp() {
             <a href="/runes">月之符文</a>
             <NavLinks items={PRIMARY_NAV} view={view}/>
             <a href="https://whoami.lo3rwang.cc/">作者</a>
-          </nav>
-          <nav className="loc-next-nav loc-next-subnav" aria-label="LOC 本機工具">
-            <NavLinks items={TOOL_NAV} view={view}/>
           </nav>
         </div>
       </header>
