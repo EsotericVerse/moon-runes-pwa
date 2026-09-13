@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 
 const FRAMEWORK_ITEMS={
-  LOC1:{kicker:'LOC1 · LunaRunes',title:'月之符文',copy:'月之符文是月典的起點，但不是使用月典的門檻。它以 66 個月之符文形成可閱讀、可比較、可組合的符號式語言。',extra:['66 個月之符文構成固定語意骨架。','四向描述同一符文在不同狀態下的表現。','單卡、雙卡、三卡、五卡與 OW3gs 使用不同組合語法。'],href:'/runes',label:'月之符文'},
-  LOC2:{kicker:'LOC2 · Context',title:'脈絡',copy:'把語彙、作品、事件與概念放回關係與情境中，讓單一內容能和前後文、其他節點與事件一起被理解。',extra:['Graph／關係圖呈現節點與連結。','Context／脈絡補上語意所處的情境。','事件與關係可被搜尋、比較與重新連結。'],href:'/context',label:'脈絡'},
-  LOC3:{kicker:'LOC3 · Music',title:'音樂',copy:'把歌詞、作品、曲風與創作時期納入語言資料，使聲音作品可以被搜尋、比較，並和其他文本建立連結。',extra:['歌詞是可分析的文本資料。','曲風與標籤可以進入統計與分類。','作品可和文字、多媒體、時期與脈絡交叉分析。'],href:'/search?q=音樂',label:'搜尋音樂'},
-  LOC4:{kicker:'LOC4 · Literary',title:'文字創作',copy:'保存與分析小說、文章、散文及其他文字作品，並保留來源、版本、發表與改寫之間的關係。',extra:['原始文本與後續版本可以分開治理。','同一主題可跨作品與時期持續發展。','文字內容可進一步進入搜尋、脈絡與文化觀察。'],href:'/search?q=文字創作',label:'搜尋文字'},
-  LOC5:{kicker:'LOC5 · Multimedia',title:'多媒體',copy:'把語言延伸到圖像、影音與其他媒介，觀察同一概念如何在文字、聲音與畫面之間轉換與重組。',extra:['包含圖像、Reels、影片、MV 與系統視覺化。','多媒體不是單純素材分類，而是跨媒介語意表達。','同一概念可以同時存在文字、音樂與影像版本。'],href:'/search?q=多媒體',label:'搜尋多媒體'},
-  LOC6:{kicker:'LOC6 · Algorithm',title:'演算法',copy:'把語言治理原則轉成可重複判斷與處理的規則，負責分類、比較、排序、判定與其他可解釋的處理流程。',extra:['治理原則先確定，再轉成可執行規則。','可採無 API 的確定性分類，也可接入其他技術。','演算法負責把既有規則穩定地重複執行。'],href:'/governance',label:'演算法與治理'},
-  LOC7:{kicker:'LOC7 · Module',title:'模組',copy:'把演算法、資料來源與介面組成可重複使用的功能模組，讓搜尋、分類、關聯與分析可以獨立組裝與延伸。',extra:['模組負責封裝可重用的演算能力。','Search、RAG、Graph 與分類器可以是不同模組。','模組可被替換、組合與重用，不綁定單一模型或 API。'],href:'/search',label:'查看模組實作'},
-  LOC8:{kicker:'LOC8 · Culture',title:'文化（文字演化）',copy:'把語言、作品與事件放回時間中，治理已知、觀察文化，再決定可能；文化是文字累積後形成的演化結果。',extra:['Period／時期區分相對穩定的狀態。','Timeline／時間線定位事件與作品。','Trend／趨勢比較不同時期的變化。','文化觀察建立在既有資料上，不等於預言。'],href:'/evolution',label:'符文文化'}
+  LOC1:{english:'LunaRunes',title:'月之符文',tab:'月之符文',copy:'月之符文是月典的起點，但不是使用月典的門檻。它以 66 個月之符文形成可閱讀、可比較、可組合的符號式語言。',extra:['66 個月之符文構成固定語意骨架。','四向描述同一符文在不同狀態下的表現。','單卡、雙卡、三卡、五卡與 OW3gs 使用不同組合語法。','月之符文是月典的起點，但不是使用月典的門檻。'],href:'/runes',label:'月之符文'},
+  LOC2:{english:'Context',title:'脈絡',tab:'脈絡',copy:'把語彙、作品、事件與概念放回關係與情境中，讓單一內容能和前後文、其他節點與事件一起被理解。',extra:['Graph／關係圖呈現節點與連結。','Context／脈絡補上語意所處的情境。','事件與關係可被搜尋、比較與重新連結。','脈絡沙盒遊戲是脈絡的互動實作之一。'],href:'/context',label:'脈絡'},
+  LOC3:{english:'Music',title:'音樂',tab:'音樂',copy:'把歌詞、作品、曲風與創作時期納入語言資料，使聲音作品可以被搜尋、比較，並和其他文本建立連結。',extra:['歌詞是可分析的文本資料。','曲風與標籤可以進入統計與分類。','作品可和文字、多媒體、時期與脈絡交叉分析。'],href:'/search?q=音樂',label:'搜尋音樂'},
+  LOC4:{english:'Literary',title:'文字創作',tab:'文字創作',copy:'保存與分析小說、文章、散文及其他文字作品，並保留來源、版本、發表與改寫之間的關係。',extra:['原始文本與後續版本可以分開治理。','同一主題可跨作品與時期持續發展。','文字內容可進一步進入搜尋、脈絡與文化觀察。'],href:'/search?q=文字創作',label:'搜尋文字'},
+  LOC5:{english:'Multimedia',title:'多媒體',tab:'多媒體',copy:'把語言延伸到圖像、影音與其他媒介，觀察同一概念如何在文字、聲音與畫面之間轉換與重組。',extra:['包含圖像、Reels、影片、MV 與系統視覺化。','多媒體不是單純素材分類，而是跨媒介語意表達。','同一概念可以同時存在文字、音樂與影像版本。'],href:'/search?q=多媒體',label:'搜尋多媒體'},
+  LOC6:{english:'Algorithm',title:'演算法',tab:'演算法',copy:'把語言治理原則轉成可重複判斷與處理的規則，負責分類、比較、排序、判定與其他可解釋的處理流程。',extra:['治理原則先確定，再轉成可執行規則。','分類、比較、排序與判定都應能重複執行並說明依據。','可採無 API 的確定性分類，也可接入其他技術。'],href:'/governance',label:'演算法與治理'},
+  LOC7:{english:'Module',title:'模組',tab:'模組',copy:'把演算法、資料來源與介面組成可重複使用的功能模組，讓搜尋、分類、關聯與分析可以獨立組裝與延伸。',extra:['模組負責封裝可重用的演算能力。','Search、RAG、Graph 與分類器可以是不同模組。','模組可被替換、組合與重用，不綁定單一模型或 API。'],href:'/search',label:'查看模組實作'},
+  LOC8:{english:'Culture',title:'文化',tab:'文化',copy:'把語言、作品與事件放回時間中，治理已知、觀察文化，再決定可能；文化是文字累積後形成的演化結果。',extra:['Period／時期區分相對穩定的狀態。','Timeline／時間線定位事件與作品。','Trend／趨勢比較不同時期的變化。','文化觀察建立在既有資料上，不等於預言。'],href:'/evolution',label:'符文文化'}
 };
 
 export default function AboutView(){
@@ -159,9 +159,9 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-framework" id="framework-map">
-      <div className="home-framework-stage" aria-label="LOC1–8 快速選單">
-        <img src="/pics/LOC-structure.png" alt="月典結構圖與流程圖。圖上可點選 LOC1 到 LOC8 查看快速說明。" loading="lazy" />
-        {Object.keys(FRAMEWORK_ITEMS).map((key,index)=><button key={key} className={`framework-hotspot h${index+1}`} type="button" onClick={()=>setActiveLoc(key)} aria-label={`開啟 ${key} 快速說明`}>{key}</button>)}
+      <div className="home-framework-stage" aria-label="月典快速選單">
+        <img src="/pics/LOC-structure.png" alt="月典結構圖與流程圖。圖上可點選八個分類查看快速說明。" loading="lazy" />
+        {Object.entries(FRAMEWORK_ITEMS).map(([key,item],index)=><button key={key} className={`framework-hotspot h${index+1}`} type="button" onClick={()=>setActiveLoc(key)} aria-label={`開啟${item.tab}快速說明`}>{item.tab}</button>)}
       </div>
     </section>
 
@@ -202,17 +202,17 @@ export default function AboutView(){
     {activeItem&&<div className="framework-modal" role="dialog" aria-modal="true" aria-labelledby="framework-modal-title" onClick={event=>{if(event.target===event.currentTarget)setActiveLoc(null);}}>
       <div className="framework-modal-shell">
         <div className="framework-modal-head">
-          <h2 id="framework-modal-title">LOC1–8 快速說明</h2>
-          <button className="framework-modal-close" type="button" onClick={()=>setActiveLoc(null)} aria-label="關閉 LOC1–8 快速選單">×</button>
+          <h2 id="framework-modal-title">快速說明</h2>
+          <button className="framework-modal-close" type="button" onClick={()=>setActiveLoc(null)} aria-label="關閉快速選單">×</button>
         </div>
-        <div className="framework-tabs" aria-label="LOC1–8">
-          {Object.keys(FRAMEWORK_ITEMS).map(key=><button key={key} className={`framework-tab${activeLoc===key?' active':''}`} type="button" onClick={()=>setActiveLoc(key)}>{key}</button>)}
+        <div className="framework-tabs" aria-label="快速選單分類">
+          {Object.entries(FRAMEWORK_ITEMS).map(([key,item])=><button key={key} className={`framework-tab${activeLoc===key?' active':''}`} type="button" onClick={()=>setActiveLoc(key)} style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'2px',lineHeight:1.25}}><span>{item.tab}</span><small style={{fontSize:'.66rem',fontWeight:600,opacity:.78}}>{item.english}</small></button>)}
         </div>
         <div className="framework-detail">
-          <div className="framework-kicker">{activeItem.kicker}</div>
+          <div className="framework-kicker">{activeItem.english}</div>
           <h3>{activeItem.title}</h3>
           <p className="framework-copy">{activeItem.copy}</p>
-          <ul className="framework-extra">{activeItem.extra.map(text=><li key={text}>{text}</li>)}</ul>
+          <ul className="framework-extra" style={{display:'grid',gridTemplateColumns:'1fr',gap:'8px'}}>{activeItem.extra.map(text=><li key={text} style={{borderRadius:'11px',padding:'9px 11px',width:'100%'}}>{text}</li>)}</ul>
           <div className="framework-detail-links"><a className="framework-detail-link" href={activeItem.href}>{activeItem.label} →</a></div>
         </div>
       </div>
