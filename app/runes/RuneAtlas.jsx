@@ -1,6 +1,9 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
+
 const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
+const PAGE_SIZE=8;
 const GROUP_META={
   靈魂:{english:'Soul',image:'/pics/01.soul.jpg',description:'由靈、魂、彩、憶、界、域、鏡、核構成，聚焦精神本源、記憶、內外界線、自我映照與核心。'},
   連結:{english:'Connection',image:'/pics/02_connection.jpg',description:'由向、斷、封、鍊、啟、分、悟、誤構成，描述方向、連結、切斷、封閉、啟動、分化、理解與誤解。'},
@@ -25,31 +28,40 @@ function RuneQuickCard({card}){
 }
 
 export default function RuneAtlas({runes=[],groups=[],group='全部',setGroup}){
+  const [page,setPage]=useState(1);
   const availableGroups=new Set(groups.filter(name=>name&&name!=='全部'));
   const groupNames=[...GROUP_ORDER.filter(name=>availableGroups.has(name)),...Array.from(availableGroups).filter(name=>!GROUP_ORDER.includes(name)).sort((a,b)=>String(a).localeCompare(String(b),'zh-Hant'))];
-  const visibleGroups=(group==='全部'?groupNames:[group]).filter(name=>groupNames.includes(name));
-  const sortedRunes=[...runes].sort((a,b)=>Number(a?.編號||0)-Number(b?.編號||0));
+  const sortedRunes=useMemo(()=>[...runes].sort((a,b)=>Number(a?.編號||0)-Number(b?.編號||0)),[runes]);
+  const filteredRunes=useMemo(()=>group==='全部'?sortedRunes:sortedRunes.filter(card=>card?.所屬分組===group),[sortedRunes,group]);
+  const pageCount=Math.max(1,Math.ceil(filteredRunes.length/PAGE_SIZE));
+  const pageRunes=filteredRunes.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
+  const visibleGroups=groupNames.filter(name=>pageRunes.some(card=>card?.所屬分組===name));
+  useEffect(()=>setPage(1),[group]);
+  useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
+  const chooseGroup=name=>{setPage(1);setGroup?.(name)};
+
   return <section className="loc-card" id="library">
     <p className="loc-eyebrow">Rune Atlas · 符文圖鑑</p>
     <h2>符文圖鑑</h2>
     <div className="runes-atlas-intro">
       <img src="/pics/LunaRunes.jpg" alt="月之符文概念圖" width="128" height="128" loading="lazy" decoding="async"/>
-      <p>以群組快速查找 66 枚符文。每張簡卡只保留名稱、圖騰、英文、定義與人格原型；先從下方群組分類選擇，再查看該組符文。</p>
+      <p>以群組快速查找 66 枚符文。符文圖鑑固定每頁 8 枚；每張簡卡只保留名稱、圖騰、英文、定義與人格原型。</p>
     </div>
 
     <div className="runes-group-filter-head">
       <h3>群組分類</h3>
-      <button type="button" className={`loc-button ${group==='全部'?'primary':''}`} onClick={()=>setGroup?.('全部')}>全部群組</button>
+      <button type="button" className={`loc-button ${group==='全部'?'primary':''}`} onClick={()=>chooseGroup('全部')}>全部群組</button>
     </div>
-    <div className="runes-group-picker">{groupNames.map(name=>{const meta=GROUP_META[name]||{english:name,image:'',description:''};return <button key={name} type="button" className={`runes-group-choice ${group===name?'active':''}`} aria-pressed={group===name} onClick={()=>setGroup?.(name)}>
+    <div className="runes-group-picker">{groupNames.map(name=>{const meta=GROUP_META[name]||{english:name,image:'',description:''};return <button key={name} type="button" className={`runes-group-choice ${group===name?'active':''}`} aria-pressed={group===name} onClick={()=>chooseGroup(name)}>
       {meta.image&&<img src={meta.image} alt={`${name}組概念圖`} width="144" height="96" loading="lazy" decoding="async"/>}
       <span className="runes-group-choice-copy"><strong>{name} ({meta.english}) 組</strong><small>{meta.description}</small></span>
     </button>})}</div>
 
-    <div className="runes-group-list">{visibleGroups.map(name=>{const meta=GROUP_META[name]||{english:name,description:''};const items=sortedRunes.filter(card=>card?.所屬分組===name);return <section className="runes-group-section" key={name} data-rune-group={name}>
+    <div className="runes-group-list">{visibleGroups.map(name=>{const meta=GROUP_META[name]||{english:name,description:''};const items=pageRunes.filter(card=>card?.所屬分組===name);return <section className="runes-group-section" key={name} data-rune-group={name}>
       <header className="runes-group-title"><h3>{name} ({meta.english}) 組</h3><p>{meta.description}</p></header>
       <div className="runes-library-grid">{items.map(card=><RuneQuickCard card={card} key={card.編號}/>)}</div>
     </section>})}</div>
+    <div className="runes-pager"><button type="button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button><span>{page} / {pageCount} · 每頁固定 8 枚</span><button type="button" disabled={page>=pageCount} onClick={()=>setPage(value=>Math.min(pageCount,value+1))}>下一頁</button></div>
     <div className="runes-print-card"><div><strong>實體卡片印製／裁切 PDF</strong><p>這是月之符文實體卡製作用原始排版檔，不是新手教學文件。</p></div><a className="loc-button primary" href="/LunarRunesCardCut.pdf">開啟實體卡印製 PDF</a></div>
   </section>;
 }
