@@ -71,6 +71,23 @@
   line-height:var(--loc-line-subtitle)!important;
 }
 
+/* Homepage Context heading keeps its short title and explanation on one row. */
+.home-context .home-section-heading>h2{
+  display:inline-block;
+  margin:.12rem 0 .72rem;
+  padding:0 .8rem .6rem 0;
+  border-bottom:1px solid var(--loc-line);
+  vertical-align:baseline;
+}
+.home-context .home-section-heading>.loc-subtitle{
+  display:inline-block;
+  margin:.12rem 0 .72rem!important;
+  padding:0 0 .6rem .8rem;
+  border-left:1px solid var(--loc-line);
+  border-bottom:1px solid var(--loc-line);
+  vertical-align:baseline;
+}
+
 .loc-card>p:not(.loc-eyebrow):not(.loc-subtitle):not(.loc-core-line),
 .loc-panel>p:not(.loc-eyebrow):not(.loc-subtitle):not(.loc-core-line),
 .loc-hero-copy p{
@@ -222,6 +239,13 @@
     padding-left:0!important;
     padding-right:0!important;
     border-left:0!important;
+  }
+  .home-context .home-section-heading>h2,
+  .home-context .home-section-heading>.loc-subtitle{
+    display:block;
+    padding-left:0;
+    padding-right:0;
+    border-left:0;
   }
 }
 
