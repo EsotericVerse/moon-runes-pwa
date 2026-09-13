@@ -16,11 +16,24 @@ for(const path of [
 ]) requireFile(path);
 if(existsSync(resolve(root,'lib')))failures.push('lib/ must not be recreated; shared JavaScript belongs in js/');
 
-// Homepage blocks 1 and 2 are temporarily unfrozen while their final layout is being revised.
-// GlobalFooter is temporarily unfrozen while its final two-row layout is being corrected.
+// Homepage blocks 1 and 2 remain temporarily unfrozen while their final layout is being revised.
+// GlobalFooter is frozen to the verified two-row layout: navigation + theme on row 1, identity/contact/studio on row 2.
 // Block 3 and later remain intentionally outside homepage parity freezing.
 
 requireText('app/layout.jsx',['GlobalNav','GlobalFooter']);
+requireText('app/GlobalFooter.jsx',[
+  'loc-site-footer-row loc-site-footer-row-primary',
+  'ThemeSelect',
+  '月典','月之符文','治理',
+  'Lucas Oscar Wang 政德','聯絡方式：sopa2306@gmail.com','秘藝文域（EsotericVerse）（籌備中）'
+]);
+requireText('app/styles/home-content.css',[
+  '.loc-site-footer-row-primary{',
+  'grid-template-columns:minmax(0,1fr) auto;',
+  '.loc-site-footer-row-primary>.loc-theme-control{',
+  'justify-self:end;',
+  '.loc-site-footer-row+.loc-site-footer-row{'
+]);
 forbidText('app/loc/LocApp.jsx',['loc-next-footer']);
 
 requireText('app/runes/RunesClient.jsx',[
@@ -38,4 +51,4 @@ requireText('scripts/prepare-next-public.mjs',["'pics'","'LunarRunesCardCut.pdf'
 requireText('scripts/verify-public-payload.mjs',['pics/LOC-FrameworkPic.png','pics/LOC-structure.png','LunarRunesCardCut.pdf']);
 
 if(failures.length){console.error('[known-parity] migration regressions found:\n'+failures.map(item=>`- ${item}`).join('\n'));process.exit(1);}
-console.log('[known-parity] Runes, Graph and frozen-source regressions are guarded; homepage blocks 1-2 and GlobalFooter are temporarily unfrozen');
+console.log('[known-parity] verified two-row GlobalFooter, Runes, Graph and frozen-source regressions are guarded; homepage blocks 1-2 remain temporarily unfrozen');
