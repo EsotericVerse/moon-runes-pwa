@@ -33,6 +33,24 @@ export default function AboutView(){
       </figure>
     </header>
 
+    <section className="loc-card home-copy-block home-beginner" id="beginner">
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">Start Here · 新手上路</p>
+        <h2>第一次來，從你看得懂的地方開始。</h2>
+        <p className="loc-subtitle">不用先學會月典，也不用先記住 66 個符文。</p>
+      </div>
+      <div className="home-author-copy">
+        <p>你可以直接抽一張月之符文、看看文字彼此怎麼形成脈絡、從統計觀察哪些語彙最常出現，或把文字放回時間裡看文化怎麼改變。</p>
+        <p>如果已經知道自己要找什麼，就直接搜尋；如果只是想先看看，也可以從月之符文開始。等需要更深入時，再往下看月典的架構與治理方式。</p>
+        <div className="loc-actions">
+          <a className="loc-button primary" href="/runes">從月之符文開始</a>
+          <a className="loc-button" href="/context">看脈絡</a>
+          <a className="loc-button" href="/statics">看統計</a>
+          <a className="loc-button" href="/evolution">看文化</a>
+        </div>
+      </div>
+    </section>
+
     <section className="loc-card home-copy-block home-rune-section">
       <div className="home-section-heading">
         <p className="loc-eyebrow">LunaRunes · 月之符文</p>
@@ -110,21 +128,6 @@ export default function AboutView(){
         <div className="loc-actions">
           <a className="loc-button" href="/evolution">查看文化</a>
         </div>
-      </div>
-    </section>
-
-    <section className="loc-card home-copy-block home-custom-runes" id="custom-runes">
-      <div className="home-section-heading">
-        <p className="loc-eyebrow">Personal Culture · 個人文化</p>
-        <h2>我可以自製符文嗎？</h2>
-        <p className="loc-subtitle">文化，就是文字加上時間以後形成的演化敘述。</p>
-      </div>
-      <div className="home-author-copy">
-        <p>可以。月之符文並不要求所有人先理解完整的符文脈絡，也不要求所有人接受同一套分類。它更希望提供一種可以參考的表現方式，讓每個人找出屬於自己的風格關鍵詞，整理自己的語意，也可以製作自己的符文與符號系統。</p>
-        <p>每個時期都有每個時期的個人風格。因此加入時期設定，再配合風格設定，把時間維度放進脈絡分析，就能看見文字如何隨時間累積、改變與延伸，也更有助於了解自己的個人獨特文化。</p>
-        <p>作者自己的實例，就是把作者風格與政德文化放進同一套時期與風格治理中。政德文化不再只是單一文風名稱，而是文字、創作、價值選擇與不同時期長期累積後形成的個人文化。</p>
-        <p>把這些文字與時期重新歸納整理之後，可以進一步看見未來的可能，再由自己選擇想要演化的風向。當改變持續累積，足夠的演化產生質變，再形成進化——這就是我的文字進化論。</p>
-        <p>月之符文是這套方法的根基與代表實例；月典則是承載它的框架與模組。兩者組合起來，是一套可以自行選擇方向、持續累積與演化的文化引擎。</p>
       </div>
     </section>
 
