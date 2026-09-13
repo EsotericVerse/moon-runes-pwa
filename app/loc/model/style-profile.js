@@ -8,8 +8,8 @@ export const TEMPLATE_STYLE_GROUPS=['靈魂','連結','生命','自然','礦物'
 
 /* Group-name keyword specification
    1. group.name is itself a canonical visible keyword, e.g. 微月光.
-   2. Matching is longest-name-first, so 符文演算法 wins before 演算法.
-   3. Once a longer match claims a text range, shorter names may not rematch that range.
+   2. Matching rule: 長詞優先，短詞後判；已被長詞命中的文字區段，不得再重複加入短詞。
+   3. A short name may still match elsewhere when that text range has not already been claimed by a longer name.
    4. Existing links and already-enhanced keyword nodes are excluded from enhancement.
    5. The goal is one semantic match -> one visual emphasis -> one link, with no nested or duplicate links. */
 export const sortGroupNamesLongestFirst=groups=>[...(groups||[])]
