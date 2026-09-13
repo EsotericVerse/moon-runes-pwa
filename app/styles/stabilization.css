@@ -14,9 +14,9 @@
   padding:0;
   border:0;
   color:var(--loc-text)!important;
-  font-size:1rem!important;
-  font-weight:400;
-  line-height:1.8!important;
+  font-size:var(--loc-type-body)!important;
+  font-weight:var(--loc-weight-body);
+  line-height:var(--loc-line-body)!important;
 }
 
 /* One type system for all migrated LOC pages and controls. */
@@ -34,22 +34,30 @@
 .loc-view button,
 .loc-view select,
 .loc-view textarea{
-  font-family:inherit;
+  font-family:var(--loc-font-family);
 }
 
 .loc-eyebrow{
-  font-size:.82rem!important;
-  font-weight:750!important;
+  font-size:var(--loc-type-eyebrow)!important;
+  font-weight:var(--loc-weight-eyebrow)!important;
   line-height:1.45!important;
   letter-spacing:.08em!important;
+}
+
+/* First title of every page is the largest title on that page. */
+.loc-view>.loc-hero>h1,
+.loc-view>.loc-hero>.home-title-row>h1{
+  font-size:var(--loc-type-page-title)!important;
+  font-weight:var(--loc-weight-page-title)!important;
+  line-height:var(--loc-line-page-title)!important;
 }
 
 .loc-card>h1,.loc-card>h2,.loc-card>h3,
 .loc-panel>h1,.loc-panel>h2,.loc-panel>h3,
 .home-section-heading>h1,.home-section-heading>h2,.home-section-heading>h3{
-  font-size:1.32rem;
-  font-weight:700;
-  line-height:1.35;
+  font-size:var(--loc-type-section-title);
+  font-weight:var(--loc-weight-section-title);
+  line-height:var(--loc-line-section-title);
 }
 
 .loc-subtitle{
@@ -58,17 +66,17 @@
   padding:0;
   border:0;
   color:var(--loc-accent)!important;
-  font-size:.9rem!important;
-  font-weight:600;
-  line-height:1.65!important;
+  font-size:var(--loc-type-subtitle)!important;
+  font-weight:var(--loc-weight-subtitle);
+  line-height:var(--loc-line-subtitle)!important;
 }
 
 .loc-card>p:not(.loc-eyebrow):not(.loc-subtitle):not(.loc-core-line),
 .loc-panel>p:not(.loc-eyebrow):not(.loc-subtitle):not(.loc-core-line),
 .loc-hero-copy p{
-  font-size:1rem;
-  font-weight:400;
-  line-height:1.8;
+  font-size:var(--loc-type-body);
+  font-weight:var(--loc-weight-body);
+  line-height:var(--loc-line-body);
 }
 
 /* Homepage first box: line 2 title stays left, line 3 explanation is fixed on the right. */
@@ -85,9 +93,6 @@
   border:0!important;
   border-bottom:1px solid var(--loc-line)!important;
   color:var(--loc-text)!important;
-  font-size:clamp(2rem,6vw,4rem)!important;
-  font-weight:700!important;
-  line-height:1.08!important;
 }
 .loc-home>.loc-hero>.home-title-row>.loc-core-line{
   margin:0!important;
@@ -96,9 +101,9 @@
   border-left:1px solid var(--loc-line)!important;
   border-bottom:1px solid var(--loc-line)!important;
   color:var(--loc-accent)!important;
-  font-size:1.15rem!important;
-  font-weight:700!important;
-  line-height:1.7!important;
+  font-size:var(--loc-type-subtitle)!important;
+  font-weight:var(--loc-weight-subtitle)!important;
+  line-height:var(--loc-line-subtitle)!important;
 }
 .loc-home>.loc-hero>.loc-hero-copy{
   display:grid;
@@ -115,8 +120,8 @@
 .loc-next-nav,
 .loc-button,
 .loc-next-search input{
-  font-size:.95rem;
-  font-weight:500;
+  font-size:var(--loc-type-ui);
+  font-weight:var(--loc-weight-ui);
 }
 
 .loc-next-nav-stack{width:100%}
