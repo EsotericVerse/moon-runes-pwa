@@ -109,6 +109,22 @@ export default function AboutView(){
         <p>把文字找出關聯性，才會可以統計跟分析。</p>
         <p>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p>
       </div>
+      <div className="home-progress" id="current-progress">
+        <p className="loc-eyebrow">Current Progress</p>
+        <h2>目前已經可以做到什麼？</h2>
+        <p className="loc-subtitle">不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再回到原始內容確認證據。</p>
+        <div className="home-progress-grid" aria-label="目前可操作功能">
+          {progressItems.map(([category,title,copy],index)=><article className="home-progress-item" key={`${category}-${index}`}>
+            <small>{category}</small>
+            <strong>{title}</strong>
+            <span>{copy}</span>
+          </article>)}
+        </div>
+        <div className="loc-actions home-progress-actions">
+          <a className="loc-button primary" href="/search">試用綜合搜尋</a>
+          <a className="loc-button" href="/statics">查看關鍵字排行</a>
+        </div>
+      </div>
     </section>
 
     <section className="loc-card home-copy-block home-culture" id="culture">
@@ -121,23 +137,6 @@ export default function AboutView(){
         <p>文化不是單純的文風，也不是固定的關鍵詞。相同的字詞、作品與價值，在不同時期、事件與環境裡，會留下不同的使用方式與風格。</p>
         <p>LOC 把脈絡重新放回時間中，透過時期、事件、趨勢與語彙軌跡，觀察語言如何累積、改變與延伸。</p>
         <p>過去與現在可以整理，未來仍然有變數；因此月典不是替未來下定論，而是治理已知、觀察演化，再推演可能。</p>
-      </div>
-    </section>
-
-    <section className="loc-card home-progress" id="current-progress">
-      <p className="loc-eyebrow">Current Progress</p>
-      <h2>目前已經可以做到什麼？</h2>
-      <p className="loc-subtitle">不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再回到原始內容確認證據。</p>
-      <div className="home-progress-grid" aria-label="目前可操作功能">
-        {progressItems.map(([category,title,copy],index)=><article className="home-progress-item" key={`${category}-${index}`}>
-          <small>{category}</small>
-          <strong>{title}</strong>
-          <span>{copy}</span>
-        </article>)}
-      </div>
-      <div className="loc-actions home-progress-actions">
-        <a className="loc-button primary" href="/search">試用綜合搜尋</a>
-        <a className="loc-button" href="/statics">查看關鍵字排行</a>
       </div>
     </section>
 
