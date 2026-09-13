@@ -1,17 +1,17 @@
 /* Stabilize shared text-box semantics after the Next migration.
    Body paragraphs are body text unless explicitly marked .loc-subtitle. */
-.loc-card>h1+p:not(.loc-subtitle),
-.loc-card>h2+p:not(.loc-subtitle),
-.loc-card>h3+p:not(.loc-subtitle),
-.loc-panel>h1+p:not(.loc-subtitle),
-.loc-panel>h2+p:not(.loc-subtitle),
-.loc-panel>h3+p:not(.loc-subtitle),
+.loc-card>h1+p:not(.loc-subtitle):not(.loc-core-line),
+.loc-card>h2+p:not(.loc-subtitle):not(.loc-core-line),
+.loc-card>h3+p:not(.loc-subtitle):not(.loc-core-line),
+.loc-panel>h1+p:not(.loc-subtitle):not(.loc-core-line),
+.loc-panel>h2+p:not(.loc-subtitle):not(.loc-core-line),
+.loc-panel>h3+p:not(.loc-subtitle):not(.loc-core-line),
 .loc-home>.loc-hero>h1+p:not(.loc-subtitle):not(.loc-core-line),
 .loc-home>.loc-hero>h2+p:not(.loc-subtitle):not(.loc-core-line),
 .loc-home>.loc-hero>h3+p:not(.loc-subtitle):not(.loc-core-line),
-.home-section-heading>h1+p:not(.loc-subtitle),
-.home-section-heading>h2+p:not(.loc-subtitle),
-.home-section-heading>h3+p:not(.loc-subtitle){
+.home-section-heading>h1+p:not(.loc-subtitle):not(.loc-core-line),
+.home-section-heading>h2+p:not(.loc-subtitle):not(.loc-core-line),
+.home-section-heading>h3+p:not(.loc-subtitle):not(.loc-core-line){
   display:block;
   margin:.45rem 0 0!important;
   padding:0;
@@ -31,6 +31,58 @@
   font-size:.9rem!important;
   font-weight:600;
   line-height:1.65!important;
+}
+
+/* Homepage Hero is a dedicated display component, not a generic text card. */
+.loc-home>.loc-hero{
+  padding:clamp(1.5rem,4vw,2.7rem)!important;
+  border:1px solid var(--loc-line)!important;
+  border-radius:calc(var(--loc-radius) + 6px)!important;
+  background:linear-gradient(145deg,var(--loc-hero-start),var(--loc-hero-end))!important;
+  box-shadow:var(--loc-shadow)!important;
+}
+.loc-home>.loc-hero>.loc-eyebrow{
+  display:block!important;
+  margin:0 0 .35rem!important;
+  padding:0!important;
+  border:0!important;
+  color:var(--loc-gold)!important;
+  font-size:.82rem!important;
+  font-weight:750!important;
+  letter-spacing:.08em!important;
+}
+.loc-home>.loc-hero>h1{
+  display:block!important;
+  margin:.12em 0!important;
+  padding:0!important;
+  border:0!important;
+  color:var(--loc-text)!important;
+  font-size:clamp(2rem,6vw,4rem)!important;
+  line-height:1.08!important;
+}
+.loc-home>.loc-hero>.loc-core-line{
+  display:block!important;
+  margin:.5rem 0!important;
+  padding:0!important;
+  border:0!important;
+  color:var(--loc-accent)!important;
+  font-size:1.15rem!important;
+  font-weight:750!important;
+  line-height:1.7!important;
+}
+.loc-home>.loc-hero>.loc-hero-copy{
+  display:grid;
+  gap:.45rem;
+  margin-top:.35rem;
+}
+.loc-home>.loc-hero>.loc-hero-copy p{
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  color:var(--loc-text)!important;
+  font-size:1rem!important;
+  font-weight:400!important;
+  line-height:1.8!important;
 }
 
 .loc-next-nav-stack{width:100%}
