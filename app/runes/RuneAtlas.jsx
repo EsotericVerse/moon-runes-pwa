@@ -25,12 +25,36 @@ function RuneQuickCard({card}){
   const name=runeName(card);
   const definition=card?.符文說明||'';
   const archetype=card?.人格原型||'';
+  const detailId=`rune-${number}`;
+  const openDetail=event=>{
+    event.preventDefault();
+    const detail=document.getElementById(detailId);
+    if(detail){detail.open=true;detail.scrollIntoView({behavior:'smooth',block:'center'});window.history.replaceState({},'',`#${detailId}`);}
+  };
   return <article className="runes-library-card" data-rune-id={card?.編號}>
     <img className="runes-library-thumb" src={runeImage(card)} alt={`${name}之符文卡圖`} width="72" height="72" loading="lazy" decoding="async"/>
     <div className="runes-library-card-copy">
-      <strong>{number}. <span className="runes-rune-link">{name}之符文</span> {card?.圖騰||''} {card?.英文?`(${card.英文})`:''}</strong>
+      <strong>{number}. <a className="runes-rune-link" href={`#${detailId}`} onClick={openDetail}>{name}之符文</a> {card?.圖騰||''} {card?.英文?`(${card.英文})`:''}</strong>
       <span>{[definition,archetype].filter(Boolean).join(' ／ ')}</span>
     </div>
+    <details className="runes-rune-detail" id={detailId}>
+      <summary>查看符文細部</summary>
+      <div className="runes-rune-detail-grid">
+        <span><strong>所屬分組</strong>{card?.所屬分組||'—'}</span>
+        <span><strong>月相</strong>{card?.月相||'—'}</span>
+        <span><strong>卡片屬性</strong>{card?.卡片屬性||'—'}</span>
+        <span><strong>正向關鍵詞</strong>{card?.正向關鍵詞||'—'}</span>
+        <span><strong>反向關鍵詞</strong>{card?.反向關鍵詞||'—'}</span>
+        {card?.額外規則&&<span><strong>額外規則</strong>{card.額外規則}</span>}
+        {card?.額外留意&&<span><strong>額外留意</strong>{card.額外留意}</span>}
+      </div>
+      <div className="runes-rune-directions">
+        <p><strong>正位：</strong>{card?.正向表示||'—'}</p>
+        <p><strong>半正位：</strong>{card?.半正向表示||'—'}</p>
+        <p><strong>半逆位：</strong>{card?.半逆向表示||'—'}</p>
+        <p><strong>逆位：</strong>{card?.逆向表示||'—'}</p>
+      </div>
+    </details>
   </article>;
 }
 
@@ -54,7 +78,7 @@ function GroupDetails({name,cards}){
   const meta=GROUP_META[name]||{english:name,description:''};
   const runeNames=cards.map(runeName).filter(Boolean).join('、');
   const english=cards.map(card=>card?.英文).filter(Boolean).join('、');
-  const keywords=[...new Set(cards.flatMap(card=>fieldText(card?.關鍵詞).split(/[、,，/]/)).map(value=>value.trim()).filter(Boolean))].slice(0,16).join('、');
+  const keywords=[...new Set(cards.flatMap(card=>[fieldText(card?.正向關鍵詞),fieldText(card?.反向關鍵詞)].flatMap(value=>value.split(/[、,，/]/))).map(value=>value.trim()).filter(Boolean))].slice(0,24).join('、');
   const archetypes=[...new Set(cards.map(card=>fieldText(card?.人格原型)).filter(Boolean))].slice(0,8).join('、');
   return <section className="runes-group-detail" aria-label={`${name}組資訊`}>
     <header className="runes-group-title"><p className="loc-eyebrow">{meta.english} · Rune Group</p><h3>{name}組</h3><p>{meta.description}</p></header>
@@ -83,6 +107,10 @@ export default function RuneAtlas({runes=[],groups=[],group='全部',setGroup}){
   return <section className="loc-card" id="library">
     <p className="loc-eyebrow">Rune Atlas · 符文圖鑑</p>
     <h2>符文圖鑑</h2>
+    <figure className="runes-atlas-overview">
+      <img src="/assets/lunarunes/reference/loc_runes_66_overview.jpg" alt="月之符文66總表" loading="lazy" decoding="async"/>
+      <figcaption>月之符文 66 符總表</figcaption>
+    </figure>
     <p className="loc-subtitle">先選群組，再看關聯與符文；首頁不直接展開全部 66 枚。</p>
 
     <div className="runes-group-filter-head">
@@ -101,6 +129,10 @@ export default function RuneAtlas({runes=[],groups=[],group='全部',setGroup}){
       </section></div>
       {pageCount>1&&<div className="runes-pager"><button type="button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button><span>{page} / {pageCount} · 每頁固定 8 枚</span><button type="button" disabled={page>=pageCount} onClick={()=>setPage(value=>Math.min(pageCount,value+1))}>下一頁</button></div>}
     </>}
-    <div className="runes-print-card"><div><strong>實體卡片印製／裁切 PDF</strong><p>這是月之符文實體卡製作用原始排版檔，不是新手教學文件。</p></div><a className="loc-button primary" href="/LunarRunesCardCut.pdf">開啟實體卡印製 PDF</a></div>
+    <div className="runes-print-card">
+      <div className="runes-print-preview" aria-label="實體符文卡預覽">{sortedRunes.slice(0,4).map(card=><img key={card.編號} src={runeImage(card)} alt={`${runeName(card)}之符文卡`} loading="lazy" decoding="async"/>)}</div>
+      <div><strong>實體卡片印製／裁切 PDF</strong><p>這是月之符文實體卡製作用原始排版檔，不是新手教學文件。</p></div>
+      <a className="loc-button primary" href="/LunarRunesCardCut.pdf">開啟實體卡印製 PDF</a>
+    </div>
   </section>;
 }
