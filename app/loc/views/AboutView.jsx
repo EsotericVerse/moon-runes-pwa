@@ -1,4 +1,31 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+const FRAMEWORK_ITEMS={
+  LOC1:{kicker:'LOC1 · LunaRunes',title:'月之符文',copy:'月之符文是月典的起點，但不是使用月典的門檻。它以 66 個月之符文形成可閱讀、可比較、可組合的符號式語言。',extra:['66 個月之符文構成固定語意骨架。','四向描述同一符文在不同狀態下的表現。','單卡、雙卡、三卡、五卡與 OW3gs 使用不同組合語法。'],href:'/runes',label:'月之符文'},
+  LOC2:{kicker:'LOC2 · Context',title:'脈絡',copy:'把語彙、作品、事件與概念放回關係與情境中，讓單一內容能和前後文、其他節點與事件一起被理解。',extra:['Graph／關係圖呈現節點與連結。','Context／脈絡補上語意所處的情境。','事件與關係可被搜尋、比較與重新連結。'],href:'/context',label:'脈絡'},
+  LOC3:{kicker:'LOC3 · Music',title:'音樂',copy:'把歌詞、作品、曲風與創作時期納入語言資料，使聲音作品可以被搜尋、比較，並和其他文本建立連結。',extra:['歌詞是可分析的文本資料。','曲風與標籤可以進入統計與分類。','作品可和文字、多媒體、時期與脈絡交叉分析。'],href:'/search?q=音樂',label:'搜尋音樂'},
+  LOC4:{kicker:'LOC4 · Literary',title:'文字創作',copy:'保存與分析小說、文章、散文及其他文字作品，並保留來源、版本、發表與改寫之間的關係。',extra:['原始文本與後續版本可以分開治理。','同一主題可跨作品與時期持續發展。','文字內容可進一步進入搜尋、脈絡與文化觀察。'],href:'/search?q=文字創作',label:'搜尋文字'},
+  LOC5:{kicker:'LOC5 · Multimedia',title:'多媒體',copy:'把語言延伸到圖像、影音與其他媒介，觀察同一概念如何在文字、聲音與畫面之間轉換與重組。',extra:['包含圖像、Reels、影片、MV 與系統視覺化。','多媒體不是單純素材分類，而是跨媒介語意表達。','同一概念可以同時存在文字、音樂與影像版本。'],href:'/search?q=多媒體',label:'搜尋多媒體'},
+  LOC6:{kicker:'LOC6 · Algorithm',title:'演算法',copy:'把語言治理原則轉成可重複判斷與處理的規則，負責分類、比較、排序、判定與其他可解釋的處理流程。',extra:['治理原則先確定，再轉成可執行規則。','可採無 API 的確定性分類，也可接入其他技術。','演算法負責把既有規則穩定地重複執行。'],href:'/governance',label:'演算法與治理'},
+  LOC7:{kicker:'LOC7 · Module',title:'模組',copy:'把演算法、資料來源與介面組成可重複使用的功能模組，讓搜尋、分類、關聯與分析可以獨立組裝與延伸。',extra:['模組負責封裝可重用的演算能力。','Search、RAG、Graph 與分類器可以是不同模組。','模組可被替換、組合與重用，不綁定單一模型或 API。'],href:'/search',label:'查看模組實作'},
+  LOC8:{kicker:'LOC8 · Culture',title:'文化（文字演化）',copy:'把語言、作品與事件放回時間中，治理已知、觀察文化，再決定可能；文化是文字累積後形成的演化結果。',extra:['Period／時期區分相對穩定的狀態。','Timeline／時間線定位事件與作品。','Trend／趨勢比較不同時期的變化。','文化觀察建立在既有資料上，不等於預言。'],href:'/evolution',label:'符文文化'}
+};
+
 export default function AboutView(){
+  const [activeLoc,setActiveLoc]=useState(null);
+  const activeItem=activeLoc?FRAMEWORK_ITEMS[activeLoc]:null;
+
+  useEffect(()=>{
+    if(!activeLoc)return undefined;
+    const previousOverflow=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    const onKeyDown=event=>{if(event.key==='Escape')setActiveLoc(null);};
+    document.addEventListener('keydown',onKeyDown);
+    return ()=>{document.body.style.overflow=previousOverflow;document.removeEventListener('keydown',onKeyDown);};
+  },[activeLoc]);
+
   return <section className="loc-view loc-home">
     <header className="loc-hero">
       <p className="loc-eyebrow">LOC · 月典 · Language Model Framework</p>
@@ -132,13 +159,10 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-framework" id="framework-map">
-      <p className="loc-eyebrow">Structure of LOC</p>
-      <h2>結構</h2>
-      <p className="loc-subtitle">八個功能責任區與彼此關係</p>
-      <p>它們不是八個彼此獨立的產品，也不是版本先後；而是 LOC 的八個功能責任區：月之符文、脈絡、音樂、文字創作、多媒體、演算法、演算模組與推演。</p>
-      <figure className="home-framework-figure">
-        <img src="/pics/LOC-structure.png" alt="月典結構圖與流程圖" loading="lazy" />
-      </figure>
+      <div className="home-framework-stage" aria-label="LOC1–8 快速選單">
+        <img src="/pics/LOC-structure.png" alt="月典結構圖與流程圖。圖上可點選 LOC1 到 LOC8 查看快速說明。" loading="lazy" />
+        {Object.keys(FRAMEWORK_ITEMS).map((key,index)=><button key={key} className={`framework-hotspot h${index+1}`} type="button" onClick={()=>setActiveLoc(key)} aria-label={`開啟 ${key} 快速說明`}>{key}</button>)}
+      </div>
     </section>
 
     <section className="loc-card home-copy-block home-skills" id="skills">
@@ -174,5 +198,24 @@ export default function AboutView(){
         </figure>
       </div>
     </section>
+
+    {activeItem&&<div className="framework-modal" role="dialog" aria-modal="true" aria-labelledby="framework-modal-title" onClick={event=>{if(event.target===event.currentTarget)setActiveLoc(null);}}>
+      <div className="framework-modal-shell">
+        <div className="framework-modal-head">
+          <h2 id="framework-modal-title">LOC1–8 快速說明</h2>
+          <button className="framework-modal-close" type="button" onClick={()=>setActiveLoc(null)} aria-label="關閉 LOC1–8 快速選單">×</button>
+        </div>
+        <div className="framework-tabs" aria-label="LOC1–8">
+          {Object.keys(FRAMEWORK_ITEMS).map(key=><button key={key} className={`framework-tab${activeLoc===key?' active':''}`} type="button" onClick={()=>setActiveLoc(key)}>{key}</button>)}
+        </div>
+        <div className="framework-detail">
+          <div className="framework-kicker">{activeItem.kicker}</div>
+          <h3>{activeItem.title}</h3>
+          <p className="framework-copy">{activeItem.copy}</p>
+          <ul className="framework-extra">{activeItem.extra.map(text=><li key={text}>{text}</li>)}</ul>
+          <div className="framework-detail-links"><a className="framework-detail-link" href={activeItem.href}>{activeItem.label} →</a></div>
+        </div>
+      </div>
+    </div>}
   </section>;
 }
