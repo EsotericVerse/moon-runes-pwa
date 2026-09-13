@@ -3,7 +3,6 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import AboutView from './views/AboutView';
-import ThemeControl from './ThemeControl';
 
 const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const GameView = dynamic(() => import('./views/GameView'),{ssr:false,loading});
@@ -35,15 +34,8 @@ const VIEWS = {
 const PRIMARY_NAV = [
   ['context', '脈絡'],
   ['statics', '統計'],
-  ['evolution', '推演']
-];
-
-const TOOL_NAV = [
-  ['governance', '治理'],
-  ['classify', '分類'],
-  ['library', 'Library'],
-  ['my-style', '我的風格'],
-  ['style-groups', '群組設定']
+  ['evolution', '推演'],
+  ['my-style', '風格']
 ];
 
 function readView() {
@@ -88,10 +80,6 @@ export default function LocApp() {
               <button type="submit">搜尋</button>
             </form>
             <a className="loc-next-home" href="/loc/" aria-current={view==='home'?'page':undefined}>回月典首頁</a>
-          </nav>
-          <nav className="loc-next-nav loc-next-subnav" aria-label="LOC 次要導覽">
-            <NavLinks items={TOOL_NAV} view={view}/>
-            <ThemeControl />
           </nav>
         </div>
       </header>
