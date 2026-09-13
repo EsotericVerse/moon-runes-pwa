@@ -1,5 +1,5 @@
 /* Stabilize shared text-box semantics after the Next migration.
-   Body paragraphs are body text unless explicitly marked .loc-subtitle. */
+   Body paragraphs are body text unless explicitly marked .loc-subtitle or .loc-core-line. */
 .loc-card>h1+p:not(.loc-subtitle):not(.loc-core-line),
 .loc-card>h2+p:not(.loc-subtitle):not(.loc-core-line),
 .loc-card>h3+p:not(.loc-subtitle):not(.loc-core-line),
@@ -33,24 +33,7 @@
   line-height:1.65!important;
 }
 
-/* Homepage Hero is a dedicated display component, not a generic text card. */
-.loc-home>.loc-hero{
-  padding:clamp(1.5rem,4vw,2.7rem)!important;
-  border:1px solid var(--loc-line)!important;
-  border-radius:calc(var(--loc-radius) + 6px)!important;
-  background:linear-gradient(145deg,var(--loc-hero-start),var(--loc-hero-end))!important;
-  box-shadow:var(--loc-shadow)!important;
-}
-.loc-home>.loc-hero>.loc-eyebrow{
-  display:block!important;
-  margin:0 0 .35rem!important;
-  padding:0!important;
-  border:0!important;
-  color:var(--loc-gold)!important;
-  font-size:.82rem!important;
-  font-weight:750!important;
-  letter-spacing:.08em!important;
-}
+/* Homepage Hero follows the same surface system as the homepage, but keeps its own content hierarchy. */
 .loc-home>.loc-hero>h1{
   display:block!important;
   margin:.12em 0!important;
