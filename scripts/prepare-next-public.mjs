@@ -1,4 +1,5 @@
-import { cp, mkdir, readFile, rm } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { LOC_DATA } from '../app/loc/data-paths.mjs';
 
@@ -24,6 +25,25 @@ async function manifestShards(repoPath) {
     if (entry && typeof entry.path === 'string') return normalize(entry.path);
     throw new Error(`[prepare-public] unsupported shard entry in ${rel}`);
   });
+}
+
+async function buildDataVersionManifest(jsonFiles) {
+  const files = {};
+  const versionInput = [];
+  const sorted = [...jsonFiles].sort();
+
+  for (const rel of sorted) {
+    const bytes = await readFile(path.join(ROOT, rel));
+    const hash = createHash('sha256').update(bytes).digest('hex');
+    const publicPath = `/${normalize(rel)}`;
+    files[publicPath] = { hash, bytes: bytes.byteLength };
+    versionInput.push(`${publicPath}:${hash}`);
+  }
+
+  const version = createHash('sha256').update(versionInput.join('\n')).digest('hex');
+  const manifest = { schema: 1, version, files };
+  await writeFile(path.join(PUBLIC, 'loc-data-version.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  return manifest;
 }
 
 await rm(PUBLIC, { recursive: true, force: true });
@@ -56,4 +76,5 @@ for (const manifestPath of [LOC_DATA.TEXT_CORPUS_MANIFEST, LOC_DATA.MUSIC_SEARCH
 }
 for (const rel of jsonFiles) await copyPath(rel);
 
-console.log(`Prepared Next public payload with ${jsonFiles.size} explicit JSON files and public assets.`);
+const versionManifest = await buildDataVersionManifest(jsonFiles);
+console.log(`Prepared Next public payload with ${jsonFiles.size} explicit JSON files; data version ${versionManifest.version.slice(0, 12)}.`);
