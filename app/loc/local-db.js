@@ -1,7 +1,7 @@
 'use client';
 
 import { entries as legacyEntries } from 'idb-keyval';
-import { prepareLocRecordForWrite } from './model/record-model';
+import { normalizeRecordForStorage, prepareLocRecordForWrite } from './model/record-model';
 
 const DB_NAME='loc-local-records';
 const DB_VERSION=1;
@@ -77,13 +77,21 @@ async function recordsStore(mode='readonly'){
   return {tx,store:tx.objectStore(RECORD_STORE)};
 }
 
-export async function putLocalRecord(record){
+async function writeLocalRecord(record,{preserveUpdatedAt=false}={}){
   if(!record?.id)throw new Error('record.id is required');
-  const normalized=prepareLocRecordForWrite(record);
+  const normalized=preserveUpdatedAt?normalizeRecordForStorage(record):prepareLocRecordForWrite(record);
   const {tx,store}=await recordsStore('readwrite');
   store.put(normalized);
   await transactionDone(tx);
   return normalized;
+}
+
+export async function putLocalRecord(record){
+  return writeLocalRecord(record);
+}
+
+export async function importLocalRecord(record){
+  return writeLocalRecord(record,{preserveUpdatedAt:true});
 }
 
 export async function getLocalRecord(id){
