@@ -1,6 +1,7 @@
 'use client';
 
 import { entries as legacyEntries } from 'idb-keyval';
+import { normalizeLocRecord } from './model/record-model';
 
 const DB_NAME='loc-local-records';
 const DB_VERSION=1;
@@ -78,10 +79,11 @@ async function recordsStore(mode='readonly'){
 
 export async function putLocalRecord(record){
   if(!record?.id)throw new Error('record.id is required');
+  const normalized=normalizeLocRecord(record);
   const {tx,store}=await recordsStore('readwrite');
-  store.put(record);
+  store.put(normalized);
   await transactionDone(tx);
-  return record;
+  return normalized;
 }
 
 export async function getLocalRecord(id){
