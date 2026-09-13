@@ -79,7 +79,6 @@ export default function LocApp() {
             <button type="submit">搜尋</button>
           </form>
           <a className="loc-next-home" href="/loc/" aria-current={view==='home'?'page':undefined}>回月典首頁</a>
-          <a href="/LOC-GPT-Skills-v1.0.0-bundle.zip">Skills</a>
         </nav>
       </header>
       <main className="loc-next-main" data-loc-view={view}>
