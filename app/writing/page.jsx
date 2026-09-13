@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { writingWorks, publicSourceRefs } from '../../lib/writing.js';
+import { writingWorks, publicSourceRefs } from '../../js/writing.js';
 
 export const metadata = {
   title: '文字創作｜LOC',
