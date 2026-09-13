@@ -24,20 +24,27 @@ function RuneQuickCard({card}){
 }
 
 export default function RuneAtlas({runes=[],groups=[],group='全部',setGroup}){
-  const visibleGroups=(group==='全部'?groups.filter(name=>name!=='全部'):[group]).filter(Boolean);
+  const groupNames=groups.filter(name=>name&&name!=='全部');
+  const visibleGroups=(group==='全部'?groupNames:[group]).filter(Boolean);
   return <section className="loc-card" id="library">
     <p className="loc-eyebrow">Rune Atlas · 符文圖鑑</p>
     <h2>符文圖鑑</h2>
     <div className="runes-atlas-intro">
       <img src="/pics/LunaRunes.jpg" alt="月之符文概念圖" width="128" height="128" loading="lazy" decoding="async"/>
-      <p>以群組快速查找 66 枚符文。每張簡卡只保留名稱、圖騰、英文、定義與人格原型；群組本身提供中英文名稱與概要說明。</p>
+      <p>以群組快速查找 66 枚符文。每張簡卡只保留名稱、圖騰、英文、定義與人格原型；先從下方群組分類選擇，再查看該組符文。</p>
     </div>
-    <div className="loc-actions runes-library-actions">{groups.map(name=><button key={name} type="button" className={`loc-button ${group===name?'primary':''}`} onClick={()=>setGroup?.(name)}>{name}</button>)}</div>
-    <div className="runes-group-list">{visibleGroups.map(name=>{const meta=GROUP_META[name]||{english:name,image:'',description:''};const items=runes.filter(card=>card?.所屬分組===name);return <section className="runes-group-section" key={name} data-rune-group={name}>
-      <header className="runes-group-head">
-        {meta.image?<img src={meta.image} alt={`${name}組概念圖`} width="112" height="112" loading="lazy" decoding="async"/>:<span/>}
-        <div><h3>{name} ({meta.english}) 組</h3><p>{meta.description}</p></div>
-      </header>
+
+    <div className="runes-group-filter-head">
+      <h3>群組分類</h3>
+      <button type="button" className={`loc-button ${group==='全部'?'primary':''}`} onClick={()=>setGroup?.('全部')}>全部群組</button>
+    </div>
+    <div className="runes-group-picker">{groupNames.map(name=>{const meta=GROUP_META[name]||{english:name,image:'',description:''};return <button key={name} type="button" className={`runes-group-choice ${group===name?'active':''}`} aria-pressed={group===name} onClick={()=>setGroup?.(name)}>
+      {meta.image&&<img src={meta.image} alt={`${name}組概念圖`} width="144" height="96" loading="lazy" decoding="async"/>}
+      <span className="runes-group-choice-copy"><strong>{name} ({meta.english}) 組</strong><small>{meta.description}</small></span>
+    </button>})}</div>
+
+    <div className="runes-group-list">{visibleGroups.map(name=>{const meta=GROUP_META[name]||{english:name,description:''};const items=runes.filter(card=>card?.所屬分組===name);return <section className="runes-group-section" key={name} data-rune-group={name}>
+      <header className="runes-group-title"><h3>{name} ({meta.english}) 組</h3><p>{meta.description}</p></header>
       <div className="runes-library-grid">{items.map(card=><RuneQuickCard card={card} key={card.編號}/>)}</div>
     </section>})}</div>
     <div className="runes-print-card"><div><strong>實體卡片印製／裁切 PDF</strong><p>這是月之符文實體卡製作用原始排版檔，不是新手教學文件。</p></div><a className="loc-button primary" href="/LunarRunesCardCut.pdf">開啟實體卡印製 PDF</a></div>
