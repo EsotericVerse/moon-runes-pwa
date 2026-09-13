@@ -74,7 +74,9 @@ if (!/DEFAULT_GLOBAL_CONCURRENCY\s*=\s*2\b/.test(dataRuntime)) failures.push('ap
 
 const searchView = readFileSync(resolve(root, 'app/loc/views/SearchView.jsx'), 'utf8');
 if (/useEffect\s*\([^)]*fetchLocJson\s*\(\s*LOC_DATA\.(?:TEXT_CORPUS_MANIFEST|MUSIC_SEARCH_MANIFEST)/s.test(searchView)) failures.push('SearchView: manifests must not load eagerly on mount');
-if (!/fetchLocJsonBatch\(requests,\{concurrency:2\}\)/.test(searchView)) failures.push('SearchView: search shard concurrency must remain 2');
+if (!/fetchLocJsonBatch\(smallRequests,\{concurrency:2\}\)/.test(searchView)) failures.push('SearchView: small-source concurrency must remain 2');
+if (!/SEGMENT_BATCH_SIZE\s*=\s*2\b/.test(searchView)) failures.push('SearchView: corpus segment batch size must remain 2');
+if (!/fetchLocDataSegments\(datasetId,\{segmentIds:chunk\.map\(segment=>segment\.id\),maxSegments:SEGMENT_BATCH_SIZE\}\)/.test(searchView)) failures.push('SearchView: corpus data must use bounded incremental segment loading');
 
 const contextView = readFileSync(resolve(root, 'app/loc/views/ContextView.jsx'), 'utf8');
 if (/if\s*\(tab===['"]overview['"][^\n]*\)\s*load\(/.test(contextView)) failures.push('ContextView: overview must remain zero-data');
