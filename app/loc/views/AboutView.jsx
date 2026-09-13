@@ -58,11 +58,5 @@ export default function AboutView(){
         </div>
       </div>
     </section>
-
-    <section className="loc-card home-copy-block">
-      <p className="loc-eyebrow">LunaRunes Context Evolution</p>
-      <h2>月之符文的語言脈絡</h2>
-      <p>月之符文由基本語彙出發，進入關係與脈絡分析，結合占卜使用的方法體系，演化出全新的語言表達作品。</p>
-    </section>
   </section>;
 }
