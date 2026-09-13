@@ -23,7 +23,11 @@ export default function AboutView(){
           <div className="home-rune-card-data">
             <div className="home-rune-card-title"><strong>命之符文</strong><span className="home-rune-glyph">⟁</span><span>(Fate)</span></div>
             <p>定論的所有可能 / 命定者</p>
-            <p>關鍵詞：定論、必然、法則 / 負面關鍵詞：—</p>
+            <details className="home-rune-keywords">
+              <summary>關鍵詞（點擊展開）</summary>
+              <p>正面：定論、必然、法則</p>
+              <p>負面：—</p>
+            </details>
             <p>所屬分組：特殊 / 卡片屬性：未知</p>
             <p>卡片月相：無 / 真實月相：空亡</p>
             <p className="home-rune-direction">卡片面向：<strong>正位</strong></p>
