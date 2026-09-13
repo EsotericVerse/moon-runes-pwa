@@ -19,10 +19,10 @@ export default function AboutView(){
       <div className="home-section-heading">
         <p className="loc-eyebrow">Start Here · 新手上路</p>
         <h2>新手上路</h2>
+        <p className="loc-subtitle">不知道怎麼開始沒關係，就抽一張牌吧！</p>
       </div>
       <div className="home-rune-layout">
         <div className="home-author-copy">
-          <p><strong>不知道怎麼開始沒關係，就抽一張牌吧！</strong></p>
           <p>不用管符文是什麼，抽了就知道！可以是問事，可以是生活風格主題的每日符文。</p>
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
           <p>你也可以完全不抽牌，直接在符文面跳過，往下看或看上面連結的脈絡、統計、文化，或直接搜尋自己有興趣的文字與資料。</p>
