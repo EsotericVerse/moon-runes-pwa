@@ -103,31 +103,21 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-context" id="context">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Context · 脈絡</p>
-        <h2>語言放進關係，才會形成脈絡。</h2>
-        <p className="loc-subtitle">把語彙放進關係、情境、事件與 Graph，形成可觀察、可互動的脈絡。</p>
-      </div>
-      <div className="home-author-copy">
-        <p>單一的字詞只是一個語意起點。當它出現在不同的人、作品、事件與情境裡，會和其他文字建立關係，也會產生不同的作用與解讀。</p>
-        <p>LOC 會把這些關係整理成事件、關係式、情境與 Graph，讓原本分散的文字可以被連起來，看見它從哪裡來、和什麼有關，以及在什麼情況下改變。</p>
-        <div className="loc-actions">
-          <a className="loc-button" href="/context">查看脈絡</a>
-        </div>
+        <h2>脈絡，文字的關係與分析</h2>
+        <p className="loc-subtitle">把文字找出關聯性，才會可以統計跟分析。<br/>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p>
       </div>
     </section>
 
     <section className="loc-card home-copy-block home-culture" id="culture">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Culture · 文化</p>
-        <h2>風格加上時間，形成文化。</h2>
+        <h2>文化，文字的演化</h2>
         <p className="loc-subtitle">文字留下風格，風格經過時間累積，才看得見文化的變化。</p>
       </div>
       <div className="home-author-copy">
         <p>文化不是單純的文風，也不是固定的關鍵詞。相同的字詞、作品與價值，在不同時期、事件與環境裡，會留下不同的使用方式與風格。</p>
         <p>LOC 把脈絡重新放回時間中，透過時期、事件、趨勢與語彙軌跡，觀察語言如何累積、改變與延伸。</p>
         <p>過去與現在可以整理，未來仍然有變數；因此月典不是替未來下定論，而是治理已知、觀察演化，再推演可能。</p>
-        <div className="loc-actions">
-          <a className="loc-button" href="/evolution">查看文化</a>
-        </div>
       </div>
     </section>
 
