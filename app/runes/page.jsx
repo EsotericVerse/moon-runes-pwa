@@ -1,3 +1,4 @@
+import './rune-atlas-governance.css';
 import RunesClient from './RunesClient';
 
 export const metadata = {
