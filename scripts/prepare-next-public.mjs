@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { LOC_DATA } from '../app/loc/data-paths.mjs';
+import { buildSegmentScopeCatalog } from './partition-catalog.mjs';
 
 const ROOT = process.cwd();
 const PUBLIC = path.join(ROOT, 'public');
@@ -87,6 +88,12 @@ async function buildDataIndex(versionManifest) {
   const loc3ManifestPath = normalize(LOC_DATA.MUSIC_SEARCH_MANIFEST);
   const loc4ShardEntries = await manifestShardEntries(loc4ManifestPath);
   const loc3ShardEntries = await manifestShardEntries(loc3ManifestPath);
+  const segmentScopeCatalog = await buildSegmentScopeCatalog(ROOT, {
+    loc4ShardEntries,
+    loc3ShardEntries,
+    eraRegistryPath: normalize(LOC_DATA.LOC_ERA_REGISTRY),
+    loc3ManifestPath
+  });
   const reservedSegmentPaths = new Set([
     loc4ManifestPath,
     loc3ManifestPath,
@@ -118,6 +125,7 @@ async function buildDataIndex(versionManifest) {
       id: `loc4-${String(entry.sequence).padStart(2, '0')}`,
       sequence: entry.sequence,
       ...(Number.isFinite(Number(entry.document_count)) ? { document_count: Number(entry.document_count) } : {}),
+      scope: segmentScopeCatalog[entry.path] || {},
       ...fileMeta(versionManifest, entry.path)
     }))
   };
@@ -129,6 +137,7 @@ async function buildDataIndex(versionManifest) {
     segments: loc3ShardEntries.map(entry => ({
       id: `loc3-${String(entry.sequence).padStart(2, '0')}`,
       sequence: entry.sequence,
+      scope: segmentScopeCatalog[entry.path] || {},
       ...fileMeta(versionManifest, entry.path)
     }))
   };
