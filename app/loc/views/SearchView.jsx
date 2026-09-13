@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchLocDataSegments, fetchLocJsonBatch, getLocDataDataset } from '../data';
 import { recordSearchSegmentHits, rankSearchSegments } from '../search-routing';
+import { partitionSegmentsByScope, readSearchScope } from '../search-scope';
 import { recordSearchTelemetry } from '../search-telemetry';
 import { useLocalStore } from '../local-store';
 import { getSearchCollection, SEARCH_COLLECTION_ORDER, SEARCH_COLLECTIONS } from '../search-collections';
@@ -55,6 +56,7 @@ export default function SearchView(){
     const q=query.trim();
     if(!q)return;
     const collection=getSearchCollection(collectionId);
+    const activeScope=readSearchScope(new URL(window.location.href).searchParams,collection.scopeProfile);
     syncUrl(collection.id,q);
     const id=++searchId.current;
     setPage(1);setError('');setResults([]);setStatus(`搜尋「${collection.label}」資料…`);
@@ -75,7 +77,9 @@ export default function SearchView(){
         const started=performance.now();
         const dataset=await getLocDataDataset(datasetId);
         const sourceSegments=Array.isArray(dataset?.segments)?dataset.segments:[];
-        const segments=await rankSearchSegments(datasetId,sourceSegments,q);
+        const partitioned=partitionSegmentsByScope(sourceSegments,activeScope);
+        const scopedSegments=[...partitioned.matched,...partitioned.unknown];
+        const segments=await rankSearchSegments(datasetId,scopedSegments,q);
         let loadedSegments=0;
         let loadedBytes=0;
         let datasetHits=0;
