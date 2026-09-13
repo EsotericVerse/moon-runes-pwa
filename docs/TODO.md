@@ -26,6 +26,13 @@
 
 ### Large Data Performance / 家族級與超大語料遠景
 
+#### Runtime migration note
+
+- [x] 早期 Large Data、shard、cache 與延後載入設計，有相當一部分是為了避免 Render 後端讀取大型資料時超出 server RAM；現況已不再依賴 Render 作為主要 runtime data backend。
+- [x] 現行架構改為 Next.js 靜態輸出 + browser/runtime on-demand loading + segment index + IndexedDB/cache；因此舊有「因 Render RAM 限制而存在」的 workaround 必須逐項重新檢查，能簡化者簡化，仍具一般大型資料價值者保留。
+- [ ] 清查並移除只為 Render backend 記憶體限制而存在、但 Next.js 現行 runtime 已不需要的 legacy code / fallback / timeout / cache workaround；不得誤刪仍有 browser RAM、JSON parse、network working-set 或大型 DOM 控制價值的分片、索引與 I/O budget。
+- [x] 架構判斷原則更新：不再以 Render server RAM 作為設計上限；但 Next.js 並不代表可以一次載入全部資料，browser memory、JSON parse、network、IndexedDB 與 DOM working set 仍必須維持小而可控。
+
 - [ ] 架構預設目標從「千萬字可運作」提升為可持續擴張的 family-scale corpus：單人 → 多人 → 家族 → 多世代 → 多文化／多來源；總文字量可進入 100M、1B+ 級距，不能假設整體資料可一次載入、一次搜尋或一次重建。
 - [ ] 建立 Light / Standard / Heavy / Archive 四級工作模式：日常查詢永遠走輕量索引；跨人物、跨年代、跨文化總體分析才進入重量管線；Archive 層只保存與定向取回，不參與一般熱路徑。
 - [ ] 資料分區鍵至少預留 person / family / generation / era / source / corpus / language / culture；搜尋與統計先縮小 partition，再進入 shard / document，不允許預設跨全庫。
