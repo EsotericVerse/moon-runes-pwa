@@ -1,8 +1,8 @@
-import LocApp from '../loc/LocApp';
+import SettingsHubView from '../loc/views/SettingsHubView';
 
 export const metadata={
-  title:'我的風格｜LOC 月典',
-  description:'由本機 Library 分類結果形成的個人風格統計。'
+  title:'設定｜LOC 月典',
+  description:'顯示、個人化、時期與資料操作設定。'
 };
 
-export default function MyStylePage(){return <LocApp/>;}
+export default function SettingsPage(){return <main className="loc-next-main"><SettingsHubView/></main>;}
