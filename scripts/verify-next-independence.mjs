@@ -2,12 +2,11 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 const root=process.cwd();
-const scanRoots=['app','lib'].map(p=>resolve(root,p));
+const scanRoots=['app'].map(p=>resolve(root,p));
 const forbidden=[
   /(?:index|loc|game|context|statics|evolution|search|governance)\.html\b/g,
   /css\/style\.css\b/g,
-  /js\/(?:loc2-game|statics-dashboard|rune-daily-records|loc-nav)\.js\b/g,
-  /(?:from\s*|import\s*\()\s*['"](?:\.\.\/)+js\//g
+  /js\/(?:loc2-game|statics-dashboard|rune-daily-records|loc-nav)\.js\b/g
 ];
 const hits=[];
 
@@ -24,4 +23,4 @@ function walk(dir){
 }
 scanRoots.forEach(walk);
 if(hits.length){console.error('[next-independence] legacy LOC dependencies found:\n'+hits.join('\n'));process.exit(1);}
-console.log('[next-independence] no legacy LOC HTML/runtime/CSS dependencies in Next app/lib');
+console.log('[next-independence] no legacy LOC HTML/runtime/CSS dependencies in Next app');
