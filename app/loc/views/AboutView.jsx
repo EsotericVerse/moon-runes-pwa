@@ -13,7 +13,7 @@ const progressItems = [
 export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero">
-      <p className="loc-eyebrow">LOC · 月典 · (Language Model Framework)</p>
+      <p className="loc-eyebrow">LOC · 月典 · Language Model Framework</p>
       <div className="home-title-row">
         <h1>LOC月典</h1>
         <p className="loc-core-line">從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，累積後再選擇怎麼進化。</p>
