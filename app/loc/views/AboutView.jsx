@@ -15,10 +15,6 @@ export default function AboutView(){
         <p className="loc-eyebrow">LunaRunes · 月之符文</p>
         <h2>符文籤詩系統</h2>
         <p className="loc-subtitle">問一件事，或讓語言自己成長</p>
-        <p>不知道怎麼開始沒關係，就抽一張牌吧！</p>
-        <p>可以是問事。可以是生活風格主題。</p>
-        <p>不知道怎麼說的話，抽就對了！</p>
-        <p>符文會給你提示籤詩，指引你的未知路線方式。</p>
       </div>
 
       <div className="home-rune-layout">
@@ -32,14 +28,32 @@ export default function AboutView(){
 
         <div className="home-rune-copy">
           <div className="rune-intro-note">
-            <strong>不知道怎麼說，也沒關係。</strong>
-            <p>月之符文可以成為語意起點：問事、整理感受，或在沒有靈感時提供新的創作路徑。</p>
+            <strong>不知道怎麼開始沒關係，就抽一張牌吧！</strong>
+            <p>可以是問事，可以是生活風格主題。</p>
+            <p>不知道怎麼說的話，<a href="/runes">抽牌</a>就對了！</p>
+            <p>月之符文的66符文字會給你提示籤詩，指引你的未知路線方式。</p>
           </div>
-          <div className="loc-actions">
-            <a className="loc-button primary" href="/runes">開始抽牌／查看圖鑑</a>
-            <a className="loc-button" href="/context">查看符文脈絡</a>
+
+          <div className="loc-copy">
+            <p>抽牌讓這語意種子，成為語意起點，</p>
+            <p>用你想要的方式，成長成為完整語意的成熟果實。</p>
+          </div>
+
+          <div className="loc-panel">
+            <h3>抽牌</h3>
+            <p>可以從一個問題開始，也可以沒有問題直接抽取，再依需要選擇不同的抽牌方式。</p>
+            <h3>選擇抽牌方式</h3>
+            <div className="loc-chip-list">
+              <span>單張</span><span>每日指示</span><span>兩張</span><span>三張</span><span>五張</span><span>11張</span>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div className="loc-actions home-rune-links">
+        <a className="loc-button" href="/runes">符文圖鑑</a>
+        <a className="loc-button" href="/context">符文脈絡</a>
+        <a className="loc-button" href="/governance">符文規則</a>
       </div>
     </section>
 
