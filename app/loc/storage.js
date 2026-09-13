@@ -15,6 +15,14 @@ import {
   loadJsonFromGoogleDrive,
   saveJsonToGoogleDrive
 } from './google-drive';
+import {
+  getKvContext,
+  getKvDailyRunes,
+  getKvEras,
+  getKvEvolution,
+  getKvStateHealth,
+  kvStateConfigured
+} from './kv-state';
 import { normalizeLocRecord } from './model/record-model';
 
 function normalizeRecordList(records){
@@ -24,6 +32,7 @@ function normalizeRecordList(records){
 export const localRecordStorage=Object.freeze({
   id:'indexeddb',
   kind:'local-record-store',
+  writable:true,
   async put(record){return putLocalRecord(record)},
   async get(id){return getLocalRecord(id)},
   async list(type){return getLocalRecords(type)},
@@ -35,6 +44,7 @@ export const localRecordStorage=Object.freeze({
 export const googleDriveStorage=Object.freeze({
   id:'google-drive',
   kind:'user-owned-snapshot-store',
+  writable:true,
   configured:googleDriveConfigured,
   authorize:authorizeGoogleDrive,
   clearSession:clearGoogleDriveSession,
@@ -57,9 +67,22 @@ export const googleDriveStorage=Object.freeze({
   }
 });
 
+export const kvStateStorage=Object.freeze({
+  id:'kv-state',
+  kind:'remote-state-store',
+  writable:false,
+  configured:kvStateConfigured,
+  health:getKvStateHealth,
+  listDailyRunes:getKvDailyRunes,
+  listEras:getKvEras,
+  getContext:getKvContext,
+  getEvolution:getKvEvolution
+});
+
 export const STORAGE_ADAPTERS=Object.freeze({
   indexeddb:localRecordStorage,
-  googleDrive:googleDriveStorage
+  googleDrive:googleDriveStorage,
+  kvState:kvStateStorage
 });
 
 export function getStorageAdapter(id){
