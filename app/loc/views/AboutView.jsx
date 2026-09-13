@@ -161,7 +161,7 @@ export default function AboutView(){
       <div className="home-section-heading">
         <p className="loc-eyebrow">About me</p>
         <h2>作者的話</h2>
-        <p className="loc-subtitle">治理已知，是為了把時間還給未知。</p>
+        <p className="loc-subtitle">治理過去的已知，是為了把時間還給現在的未知，才有更充裕的未來。</p>
       </div>
       <div className="home-about-layout">
         <div className="home-author-copy">
