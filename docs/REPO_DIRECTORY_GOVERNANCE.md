@@ -2,64 +2,76 @@
 
 ## Goal
 
-Keep one repository while separating five responsibilities clearly: application routes, shared runtime, domain data, source/public assets, and deployable services.
+Keep one repository while separating application routes, JavaScript runtime, domain data, source/public assets, documentation, and deployable services clearly.
 
-The repository root must not become a storage area for domain-specific files. New work should be placed by responsibility, not by file extension or historical feature name.
+Directory cleanup must never delete or relocate a still-used source merely because a replacement directory exists. Migration order is always: inventory consumers → copy/move → update consumers → parity check → remove retired location.
 
 ## Canonical top-level structure
 
 ```text
 app/        Next.js routes and UI
-lib/        shared runtime adapters and reusable logic
-modules/    language-module definitions and adapters
-assets/     source/domain assets that are not public by default
-public/     generated or explicitly selected browser-delivery assets
+js/         JavaScript runtime modules and shared browser/runtime logic
+assets/     governed domain/site assets
+pics/       frozen approved source diagrams still used by the site
 data/       canonical, companion, registry, source and generated datasets
-docs/       governance, architecture and API documentation
-schemas/    data contracts and validation schemas
+docs/       governance, architecture, API documentation and governed document copies
 services/   API/edge/deployment services
 scripts/    repository/build/migration scripts
 skills/     GPT/agent skills
 .github/    CI and repository automation
 ```
 
-`public/` is a delivery boundary, not a source-of-truth directory. Build scripts decide what enters it.
+`lib/` is retired. JavaScript belongs in `js/`; do not recreate a parallel JavaScript root.
+
+## Frozen root sources
+
+The following files are intentionally protected in place and are excluded from ordinary directory migration:
+
+```text
+LunaRune66.xlsx                 LunaRunes mother workbook / canonical source
+LunarRunesCardCut.pdf           physical card printing and cutting source PDF
+pics/LOC-FrameworkPic.png       approved framework diagram source
+pics/LOC-structure.png          approved structure diagram source
+```
+
+A governed mirror or runtime derivative does **not** authorize deletion, replacement, or relocation of these frozen originals. Any future change to a frozen source location requires explicit approval.
 
 ## Domain rules
 
 ### LunaRunes
 
-Target structure:
+`LunaRune66.xlsx` is the frozen mother workbook. Runtime JSON under `data/json/` is derived/maintained runtime data and must not silently replace the mother workbook.
+
+A governed workbook copy may also exist under:
 
 ```text
-data/lunarunes/
-  source/LunaRune66.xlsx
-  canonical/runes.json
-  companions/lots.json
-  companions/history.json
-  companions/harmony.json
-  grammar/
-  evolution/
-
-assets/lunarunes/
-  cards/
-  icons/
+data/lunarunes/source/LunaRune66.xlsx
 ```
 
-LunaRunes is a language module inside LOC; its datasets must not define the global meaning of `core` for the entire repository.
+The presence of that copy does not make the root mother workbook disposable.
 
-### Language modules
-
-Target structure:
+LunaRunes assets currently include:
 
 ```text
-modules/
-  lunarunes/
-  zhengde-style/
-  ...future modules
+assets/lunarunes/cards/        runtime card images
+assets/lunarunes/reference/    overview/reference images
 ```
 
-A module may define search collections, schemas, classification rules, presentation metadata and governance, but should not duplicate shared runtime infrastructure.
+Do not collapse distinct large-card, small-card/overview, printable-card, or reference assets merely because they depict the same rune system. Their delivery and performance roles must be audited separately.
+
+### JavaScript
+
+All repository JavaScript modules live under `js/` unless they are route-local code under `app/`, service code under `services/`, or build tooling under `scripts/`.
+
+Examples:
+
+```text
+js/runes-core.js
+js/galaxy.js
+js/writing.js
+```
+
+Do not recreate `lib/` for shared runtime modules.
 
 ### Services
 
@@ -73,48 +85,47 @@ services/
   cloudflare/
 ```
 
-Historical top-level API directories have been migrated. Deployable runtime stays under `services/api/`; repository-facing build and migration entrypoints belong under `scripts/`; API documentation belongs under `docs/api/`.
-
-Service-owned index compilers may remain colocated with their runtime implementation when they directly import service modules, but normal repository invocation must go through `scripts/` so repo-root and output paths are explicit rather than inferred from file depth.
+Repository-facing build and migration entrypoints belong under `scripts/`; API documentation belongs under `docs/api/`.
 
 ### Assets
 
-Do not create parallel image roots. Use:
+Asset migration is not complete until every consumer is updated and visual/function parity is verified. In particular:
 
-```text
-assets/source/          original non-public source assets
-assets/lunarunes/       LunaRunes domain assets
-assets/site/            shared branding/site assets
-public/                 only selected runtime delivery assets
-```
+- `pics/` is currently an approved frozen source directory and is **not** a forbidden legacy root.
+- `64images/` is retired only because its consumers are expected to use governed LunaRunes image paths; missing alternate-size assets must be restored rather than silently discarded.
+- `LunarRunesCardCut.pdf` is a physical-card production asset, not beginner documentation.
 
 ## Migration ledger
 
-| Historical location | Status | Canonical destination |
+| Historical/current location | Status | Rule |
 |---|---|---|
-| `64images/` | migrated | `assets/lunarunes/cards/` |
-| `pics/` | migrated | classified into `assets/site/`, `assets/source/`, or domain assets |
-| `icons/` | migrated | `assets/site/icons/` or domain-specific asset path |
+| `lib/` | retired | JavaScript belongs in `js/` |
+| `js/` | canonical | shared/runtime JavaScript root |
+| `64images/` | retired pending parity audit | card assets must exist under governed LunaRunes paths before retirement is considered valid |
+| `pics/` | active/frozen | retain approved source diagrams; do not delete by migration rule |
+| `icons/` | migrated/audit | verify all consumers before retirement is considered complete |
 | `card_api/` | migrated | runtime → `services/api/card/`; repository entrypoints → `scripts/card-api/`; docs → `docs/api/` |
 | `loc8_api/` | migrated | `services/api/loc8/`; docs → `docs/api/` |
-| `engine/` | audit | `lib/`, `modules/`, or `services/` by responsibility |
-| root `LunaRune66.xlsx` | migrated | `data/lunarunes/source/LunaRune66.xlsx` |
+| `engine/` | audit | retain until consumers and parity are verified |
+| root `LunaRune66.xlsx` | frozen canonical source | must remain in place unless explicitly approved otherwise |
+| `data/lunarunes/source/LunaRune66.xlsx` | governed copy | does not supersede/delete the frozen root workbook |
+| root `LunarRunesCardCut.pdf` | frozen production source | physical card printing/cutting PDF |
+| `docs/LunarRunesCardCut.pdf` | governed document copy | does not redefine the PDF as tutorial content |
 | root `all.xlsx` | migrated/preserved | `data/source/all.xlsx`; retire only after explicit supersession audit |
-| root PWA icons/manifest/service worker | legacy | move/retire as Next/PWA migration completes |
-| root redirect HTML | temporary compatibility | retire after Next production promotion |
-| root `css/` and `js/` | legacy static runtime | retire after remaining static entrypoints migrate |
-
-Migrated roots and migrated root data files are now forbidden by CI and must not be recreated as compatibility locations.
+| root redirect HTML | compatibility | retire only after Next production parity validation |
+| root `css/` | migration debt | retire only after remaining visual parity is verified |
 
 ## Migration order
 
-1. Establish canonical roots and CI governance.
-2. Move documentation and files with no runtime dependency.
-3. Audit service consumers, then migrate API/runtime code.
-4. Migrate source/domain assets and update consumers.
-5. Migrate LunaRunes data paths through the shared `LOC_DATA` registry.
-6. Retire legacy HTML/CSS/JS after production validation.
-7. Remove compatibility directories only after CI and browser smoke tests pass.
+1. Inventory every source file, consumer, visible section, interaction and asset variant.
+2. Freeze canonical/source assets that must not move.
+3. Create the destination without deleting the source.
+4. Update every consumer and reference.
+5. Verify content, behavior, visual, asset and wording parity.
+6. Confirm build/CI after parity checks.
+7. Remove an old location only when it is proven unused and removal is authorized.
+
+Build success, route existence, modularity, or independence from legacy runtime is not by itself migration completion.
 
 ## Next.js performance and modularity rules
 
@@ -122,9 +133,9 @@ Migrated roots and migrated root data files are now forbidden by CI and must not
 - Feature JavaScript, CSS and JSON should load only for the feature that consumes them.
 - Data paths must be registered centrally before use.
 - Static export remains preferred for public LOC pages unless a server feature is required.
-- `app.lo3rwang.cc` is for interactive applications; `api.lo3rwang.cc` is the machine-service boundary.
-- Personal/daily-life data remains local-only and outside public App/API deployment.
+- Performance optimization must preserve intentional small/large asset variants rather than replacing all uses with the largest file.
+- Legacy source pages remain parity evidence until their approved content and behavior have been accounted for.
 
 ## Root rule
 
-New domain-specific folders or source datasets must not be added at repository root. New work belongs under `app/`, `lib/`, `modules/`, `assets/`, `data/`, `docs/`, `schemas/`, `services/`, `scripts/`, or `skills/`.
+New arbitrary domain folders should not be added at repository root. The frozen root exceptions above are intentional canonical/production sources and must not be moved by automated directory governance. Any future exception requires explicit governance approval.
