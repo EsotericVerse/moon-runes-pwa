@@ -12,6 +12,10 @@ function normalizeRepoPath(value) {
   return String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');
 }
 
+function expectedTier(path) {
+  return normalizeRepoPath(path).startsWith('data/json/core/') ? 'core' : 'on-demand';
+}
+
 function walkFiles(dir, out = []) {
   if (!existsSync(dir)) return out;
   for (const name of readdirSync(dir)) {
@@ -54,7 +58,7 @@ const actualJson = new Set(walkFiles(resolve(publicRoot, 'data/json')));
 for (const path of expectedJson) if (!actualJson.has(path)) failures.push(`missing staged JSON: ${path}`);
 for (const path of actualJson) if (!expectedJson.has(path)) failures.push(`unexpected staged JSON: ${path}`);
 
-// Verify build-time version metadata against the exact staged runtime JSON payload.
+// Verify build-time version and delivery-tier metadata against the exact staged runtime JSON payload.
 const versionManifestPath = resolve(publicRoot, 'loc-data-version.json');
 let totalRuntimeJsonBytes = 0;
 if (!existsSync(versionManifestPath)) {
@@ -65,6 +69,7 @@ if (!existsSync(versionManifestPath)) {
     ? versionManifest.files
     : {};
   const versionInput = [];
+  const tierTotals = { core: { files: 0, bytes: 0 }, 'on-demand': { files: 0, bytes: 0 } };
 
   for (const path of [...expectedJson].sort()) {
     const publicPath = `/${path}`;
@@ -72,20 +77,33 @@ if (!existsSync(versionManifestPath)) {
     if (!existsSync(stagedPath)) continue;
     const bytes = readFileSync(stagedPath);
     const hash = createHash('sha256').update(bytes).digest('hex');
+    const tier = expectedTier(path);
     const entry = manifestFiles[publicPath];
     totalRuntimeJsonBytes += bytes.byteLength;
+    tierTotals[tier].files += 1;
+    tierTotals[tier].bytes += bytes.byteLength;
     versionInput.push(`${publicPath}:${hash}`);
 
     if (!entry) failures.push(`version manifest missing JSON: ${publicPath}`);
     else {
       if (entry.hash !== hash) failures.push(`version hash mismatch: ${publicPath}`);
       if (entry.bytes !== bytes.byteLength) failures.push(`version byte count mismatch: ${publicPath}`);
+      if (entry.tier !== tier) failures.push(`delivery tier mismatch: ${publicPath} expected ${tier}, found ${entry.tier}`);
     }
   }
 
   for (const publicPath of Object.keys(manifestFiles)) {
     const repoPath = normalizeRepoPath(publicPath);
     if (!expectedJson.has(repoPath)) failures.push(`version manifest has unexpected JSON: ${publicPath}`);
+  }
+
+  for (const tier of ['core', 'on-demand']) {
+    const declared = versionManifest?.tiers?.[tier];
+    if (!declared) failures.push(`version manifest missing tier summary: ${tier}`);
+    else {
+      if (declared.files !== tierTotals[tier].files) failures.push(`tier file count mismatch: ${tier}`);
+      if (declared.bytes !== tierTotals[tier].bytes) failures.push(`tier byte count mismatch: ${tier}`);
+    }
   }
 
   const expectedVersion = createHash('sha256').update(versionInput.join('\n')).digest('hex');
