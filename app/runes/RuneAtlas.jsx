@@ -10,7 +10,7 @@ function runeName(card){return String(card?.符文名稱||'').replace(/之符文
 function runeImage(card){const number=String(Number(card?.編號)||0).padStart(2,'0');return `/assets/lunarunes/cards/${number}_${runeName(card)}.png`}
 function fieldText(value){return Array.isArray(value)?value.filter(Boolean).join('、'):String(value||'').trim()}
 function uniqueText(cards,field,limit=24){return [...new Set(cards.map(card=>fieldText(card?.[field])).filter(Boolean))].slice(0,limit).join('、')}
-function splitUnique(cards,field,limit=24){return [...new Set(cards.flatMap(card=>fieldText(card?.[field]).split(/[、,，/])).map(value=>value.trim()).filter(Boolean))].slice(0,limit).join('、')}
+function splitUnique(cards,field,limit=24){return [...new Set(cards.flatMap(card=>fieldText(card?.[field]).split(/[、,，/]/)).map(value=>value.trim()).filter(Boolean))].slice(0,limit).join('、')}
 
 function RuneQuickCard({card}){
   const number=String(card?.編號??'').padStart(2,'0');
