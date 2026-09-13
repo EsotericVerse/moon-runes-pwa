@@ -5,7 +5,7 @@ const root = process.cwd();
 const failures = [];
 const warnings = [];
 
-const requiredRoots = ['app', 'assets', 'data', 'docs', 'lib', 'scripts', 'services', 'skills'];
+const requiredRoots = ['app', 'assets', 'data', 'docs', 'js', 'scripts', 'services', 'skills'];
 for (const name of requiredRoots) {
   if (!existsSync(resolve(root, name))) failures.push(`missing canonical root: ${name}/`);
 }
@@ -13,7 +13,7 @@ for (const name of requiredRoots) {
 // Ambiguous or already-migrated roots must not be recreated.
 for (const name of [
   'images', 'image', 'pic', 'cloudflare', 'api', 'apps', 'loc8-api',
-  '64images', 'pics', 'icons', 'card_api', 'loc8_api'
+  '64images', 'pics', 'icons', 'card_api', 'loc8_api', 'lib'
 ]) {
   if (existsSync(resolve(root, name))) failures.push(`forbidden root directory: ${name}/`);
 }
@@ -24,7 +24,7 @@ for (const name of ['LunaRune66.xlsx', 'all.xlsx']) {
 }
 
 // Remaining static-runtime roots are still migration debt until Next promotion is complete.
-for (const name of ['engine', 'css', 'js']) {
+for (const name of ['engine', 'css']) {
   if (existsSync(resolve(root, name))) warnings.push(`${name}/ -> legacy migration debt`);
 }
 
