@@ -16,16 +16,17 @@
 .runes-group-relation figcaption strong{color:var(--loc-gold);font-size:1rem}
 .runes-group-relation figcaption span{color:var(--loc-muted);font-size:.78rem}
 .runes-relation-map{position:relative;display:grid;place-items:center;min-height:390px;overflow:hidden;border-radius:var(--loc-radius-sm);background:radial-gradient(circle at center,var(--loc-gold-surface-soft),transparent 42%)}
-.runes-relation-map::before{content:"";position:absolute;inset:50%;width:1px;height:42%;background:var(--loc-line);transform-origin:top center;box-shadow:0 0 0 1px transparent}
 .runes-relation-center{z-index:2;display:grid;place-items:center;width:116px;height:116px;border:1px solid var(--loc-gold);border-radius:50%;background:var(--loc-panel);box-shadow:0 0 26px var(--loc-gold-surface-soft)}
 .runes-relation-center span{color:var(--loc-gold);font-size:1.35rem;font-weight:900}
 .runes-relation-center small{color:var(--loc-muted);font-size:.7rem}
 .runes-relation-nodes{position:absolute;inset:0}
-.runes-relation-node{--angle:calc((360deg / var(--rune-count)) * var(--rune-index) - 90deg);position:absolute;left:50%;top:50%;display:grid;grid-template-columns:52px auto;grid-template-rows:auto auto;column-gap:.45rem;align-items:center;min-width:118px;padding:.38rem .5rem;border:1px solid var(--loc-line);border-radius:999px;background:var(--loc-panel);transform:translate(-50%,-50%) rotate(var(--angle)) translateY(-150px) rotate(calc(-1 * var(--angle)))}
+.runes-relation-node{--angle:0deg;position:absolute;left:50%;top:50%;display:grid;grid-template-columns:52px auto;grid-template-rows:auto auto;column-gap:.45rem;align-items:center;min-width:118px;padding:.38rem .5rem;border:1px solid var(--loc-line);border-radius:999px;background:var(--loc-panel);transform:translate(-50%,-50%) rotate(var(--angle)) translateY(-150px) rotate(calc(-1 * var(--angle)))}
 .runes-relation-node::before{content:"";position:absolute;right:100%;top:50%;width:44px;height:1px;background:var(--loc-line)}
 .runes-relation-node img{grid-row:1 / span 2;width:52px;height:52px;object-fit:contain;border-radius:50%;background:var(--loc-surface-soft)}
 .runes-relation-node strong{color:var(--loc-text);font-size:.9rem}
 .runes-relation-node small{color:var(--loc-muted);font-size:.68rem}
+.rune-count-8 .rune-node-1{--angle:-90deg}.rune-count-8 .rune-node-2{--angle:-45deg}.rune-count-8 .rune-node-3{--angle:0deg}.rune-count-8 .rune-node-4{--angle:45deg}.rune-count-8 .rune-node-5{--angle:90deg}.rune-count-8 .rune-node-6{--angle:135deg}.rune-count-8 .rune-node-7{--angle:180deg}.rune-count-8 .rune-node-8{--angle:225deg}
+.rune-count-2 .rune-node-1{--angle:-90deg}.rune-count-2 .rune-node-2{--angle:90deg}
 .runes-relation-map.compact .runes-relation-node{transform:translate(-50%,-50%) rotate(var(--angle)) translateY(-112px) rotate(calc(-1 * var(--angle)))}
 .runes-group-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
 .runes-group-meta-grid article{display:grid;gap:.3rem;padding:.75rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel-2)}
