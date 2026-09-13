@@ -1,11 +1,24 @@
 const GROUPS=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
 const DEFAULT_GROUP='特殊';
 const GROUP_SET=new Set(GROUPS);
+const TYPE_ORDER=['群組','符文','關鍵詞','延伸詞','時期','文學','音樂','角色','多媒體','資料'];
 const splitTerms=value=>String(value||'').split(/[、,，;；/]/).map(x=>x.trim()).filter(Boolean);
 const nodeId=(type,label)=>`${type}:${label}`;
 const publicType=type=>({
   rune:'符文',group:'群組',term:'關鍵詞',derived:'延伸詞',music_work:'音樂',literary_work:'文學',media:'多媒體',knowledge_asset:'資料',era:'時期',character:'角色'
 }[type]||type);
+const groupRank=value=>{const index=GROUPS.indexOf(String(value||''));return index<0?GROUPS.length:index;};
+const typeRank=value=>{const index=TYPE_ORDER.indexOf(String(value||''));return index<0?TYPE_ORDER.length:index;};
+function compareNodes(a,b){
+  const typeDiff=typeRank(a?.type)-typeRank(b?.type);if(typeDiff)return typeDiff;
+  const groupDiff=groupRank(a?.group||a?.label)-groupRank(b?.group||b?.label);if(groupDiff)return groupDiff;
+  const numberA=Number(a?.number),numberB=Number(b?.number);
+  if(Number.isFinite(numberA)&&Number.isFinite(numberB)&&numberA!==numberB)return numberA-numberB;
+  return String(a?.label||a?.id||'').localeCompare(String(b?.label||b?.id||''),'zh-Hant');
+}
+function compareEdges(a,b){
+  return String(a?.type||'').localeCompare(String(b?.type||''),'en')||String(a?.source||'').localeCompare(String(b?.source||''),'zh-Hant')||String(a?.target||'').localeCompare(String(b?.target||''),'zh-Hant');
+}
 
 function addNode(map,node){if(node?.id)map.set(node.id,{...(map.get(node.id)||{}),...node});}
 function addEdge(map,edge){if(!edge?.source||!edge?.target||!edge?.type)return;const key=[edge.source,edge.type,edge.target,edge.source_type||''].join('|');if(!map.has(key))map.set(key,edge);}
@@ -133,7 +146,7 @@ export function buildRuneGraph(runes,derivedEntries=[],registries={}){
   }
 
   addRegistryGraph(nodes,edges,registries);
-  return {groups:GROUPS,defaultGroup:DEFAULT_GROUP,nodes:[...nodes.values()],edges:[...edges.values()]};
+  return {groups:GROUPS,defaultGroup:DEFAULT_GROUP,nodes:[...nodes.values()].sort(compareNodes),edges:[...edges.values()].sort(compareEdges)};
 }
 
 export function searchRuneGraph(graph,query='',group=''){
@@ -143,5 +156,5 @@ export function searchRuneGraph(graph,query='',group=''){
   const ids=new Set(nodes.map(node=>node.id));
   const edges=(graph?.edges||[]).filter(edge=>ids.has(edge.source)||ids.has(edge.target));
   edges.forEach(edge=>{ids.add(edge.source);ids.add(edge.target)});
-  return {nodes:(graph?.nodes||[]).filter(node=>ids.has(node.id)),edges};
+  return {nodes:(graph?.nodes||[]).filter(node=>ids.has(node.id)).sort(compareNodes),edges:[...edges].sort(compareEdges)};
 }
