@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { fetchLocDataSegments, fetchLocJsonBatch, getLocDataDataset } from '../data';
+import { recordSearchSegmentHits, rankSearchSegments } from '../search-routing';
 import { useLocalStore } from '../local-store';
 import { getSearchCollection, SEARCH_COLLECTION_ORDER, SEARCH_COLLECTIONS } from '../search-collections';
 
@@ -71,15 +72,19 @@ export default function SearchView(){
       async function scanDataset(datasetId,kind){
         if(found.length>=MAX_RAW_RESULTS)return;
         const dataset=await getLocDataDataset(datasetId);
-        const segments=Array.isArray(dataset?.segments)?dataset.segments:[];
+        const sourceSegments=Array.isArray(dataset?.segments)?dataset.segments:[];
+        const segments=await rankSearchSegments(datasetId,sourceSegments,q);
         for(let offset=0;offset<segments.length&&found.length<MAX_RAW_RESULTS;offset+=SEGMENT_BATCH_SIZE){
           if(id!==searchId.current)return;
           const chunk=segments.slice(offset,offset+SEGMENT_BATCH_SIZE);
           const loaded=await fetchLocDataSegments(datasetId,{segmentIds:chunk.map(segment=>segment.id),maxSegments:SEGMENT_BATCH_SIZE});
           if(id!==searchId.current)return;
           for(const item of loaded){
+            const before=found.length;
             if(kind==='text')collectText(item.data,q,found);
             else if(kind==='music')collectMusic(item.data,q,found);
+            const hits=found.length-before;
+            if(hits>0)await recordSearchSegmentHits(datasetId,item.segment.id,q,hits);
             if(found.length>=MAX_RAW_RESULTS)break;
           }
         }
