@@ -1,15 +1,3 @@
-const progressItems = [
-  ['Data','可比對資料 24,509 筆・總文字 2,939,214 字','總字數包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，以及 26 份唯一 KM 知識文件共 385,996 字；圖片與影片不計字數。筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。'],
-  ['LunaRunes','66 符語意治理與 RAG 預備完成','月之符文66已完成現行母資料正名與核心語意治理；語意引擎的極性與關鍵詞已確認，符文 RAG 的前置資料亦已完成整理。目前持續進行舊版語意污染清理與 64→66 資料路徑收斂。'],
-  ['Knowledge','系統內建 KM 至少 515 個知識單元','目前已登記 31 個 Knowledge Assets；FAQ 單獨即有 90 條。去除檢索投影、文章投影、圖片、重複文件版本與首頁統計展示後，目前有 26 份唯一 KM 知識文件，共 385,996 字。'],
-  ['Evolution','來源 × 時期 動態 Top 10','排行榜可先看全部，再切 Facebook、Threads、Suno，並依現行時期邊界動態重新聚合；時期日期微調時不必重做固定排行。'],
-  ['Search','綜合搜尋＋脈絡圖（Graph）關聯','可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。'],
-  ['Runtime','可變資料已由 Cloudflare KV 接管','時期、每日符文、Context Event 與 Relation 已完成 Cloudflare KV 化；Context 舊資料已由 Google Sheets 搬移並完成筆數核對，以及新增、編輯、刪除 CRUD 驗證。前端 runtime 不再依賴 Google Sheets。'],
-  ['Governance','全文分析與公開展示分離','授權內容可以用全文做搜尋與分析；公開結果則依內容治理顯示片段、全文或僅 metadata。Facebook 與 Threads 預設採片段展示，歌詞不直接公開全文。'],
-  ['Tutorial','新手教學文件','已提供「語言模型框架入門」與「月之符文入門」兩份新手教學 Web View，讓第一次接觸 LOC 的使用者可以先理解整體架構，再進入月之符文與多卡語法。'],
-  ['Governance','治理文件','已建立系統治理、資料權責、內容版權／公開邊界與月之符文66治理文件；目前也把全文分析與公開展示、來源日期、時期動態聚合等規則納入治理層。']
-];
-
 export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero">
@@ -23,7 +11,6 @@ export default function AboutView(){
         <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，讓累積的資料可以繼續被理解、比較分析與推演。</p>
         <div className="home-intro-links" aria-label="首頁快速入口">
           <a className="loc-bubble" href="#framework-map">架構圖</a>
-          <a className="loc-bubble" href="#current-progress">目前進度</a>
           <a className="loc-bubble" href="/governance">治理</a>
           <a className="loc-bubble" href="#author-words">作者的話</a>
         </div>
@@ -32,6 +19,23 @@ export default function AboutView(){
         <img src="/pics/LOC-PicAll.png" alt="LOC 月典語言模型框架視覺理念圖" loading="eager" />
       </figure>
     </header>
+
+    <section className="loc-card home-copy-block home-beginner" id="beginner">
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">Start Here · 新手上路</p>
+      </div>
+      <div className="home-author-copy">
+        <p><strong>不知道怎麼開始沒關係，就抽一張牌吧！</strong></p>
+        <p>不用管符文是什麼，抽了就知道！<br/>可以是問事，可以是生活風格主題的每日符文。</p>
+        <p>抽到之後再看當下的文字、方向與說明就可以；<br/>想多了解一點，再慢慢往下看。</p>
+        <p>你也可以完全不抽牌，直接在符文面跳過，<br/>往下看或看上面連結的脈絡、統計、文化，<br/>或直接搜尋自己有興趣的文字與資料。</p>
+        <p><strong>那就開始吧！</strong></p>
+        <div className="loc-actions">
+          <a className="loc-button primary" href="/runes">抽牌</a>
+          <a className="loc-button" href="/statics">排行榜</a>
+        </div>
+      </div>
+    </section>
 
     <section className="loc-card home-copy-block home-rune-section">
       <div className="home-section-heading">
@@ -58,8 +62,6 @@ export default function AboutView(){
         </div>
 
         <div className="home-rune-copy home-rune-copy-plain">
-          <p><strong>不知道怎麼開始沒關係，就抽一張牌吧！</strong></p>
-          <p>可以是問事，可以是生活風格主題。</p>
           <p>不知道怎麼說的話，<a href="/runes">抽牌</a>就對了！</p>
           <p>月之符文的66符文字會給你提示籤詩，指引你的未知路線方式。</p>
           <p>抽牌讓這語意種子，成為語意起點，<br/>用你想要的方式，成長成為完整語意的成熟果實。</p>
@@ -85,63 +87,49 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-context" id="context">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Context · 脈絡</p>
-        <h2>語言放進關係，才會形成脈絡。</h2>
-        <p className="loc-subtitle">把語彙放進關係、情境、事件與 Graph，形成可觀察、可互動的脈絡。</p>
+        <h2>脈絡，文字的關係與分析</h2>
       </div>
       <div className="home-author-copy">
-        <p>單一的字詞只是一個語意起點。當它出現在不同的人、作品、事件與情境裡，會和其他文字建立關係，也會產生不同的作用與解讀。</p>
-        <p>LOC 會把這些關係整理成事件、關係式、情境與 Graph，讓原本分散的文字可以被連起來，看見它從哪裡來、和什麼有關，以及在什麼情況下改變。</p>
-        <div className="loc-actions">
-          <a className="loc-button" href="/context">查看脈絡</a>
-        </div>
+        <p>不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再回到原始內容確認證據。</p>
+        <p>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p>
+      </div>
+      <p className="loc-subtitle">可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。</p>
+      <div className="home-progress-grid" aria-label="脈絡資料與知識">
+        <article className="home-progress-item">
+          <strong>可比對資料</strong>
+          <span>總文字 2,939,214 字，內有24,509 筆資料。<br/>包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，<br/>以及 26 份唯一 KM 知識文件共 385,996 字；<br/>圖片與影片不計字數。筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。</span>
+        </article>
+        <article className="home-progress-item">
+          <strong>系統內建 KM 至少 515 個知識單元</strong>
+          <span>目前已登記 31 個 Knowledge Assets；FAQ 單獨即有 90 條。去除檢索投影、文章投影、圖片、重複文件版本與首頁統計展示後，目前有 26 份唯一 KM 知識文件，共 385,996 字。</span>
+        </article>
       </div>
     </section>
 
     <section className="loc-card home-copy-block home-culture" id="culture">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Culture · 文化</p>
-        <h2>風格加上時間，形成文化。</h2>
+        <h2>文化，文字的演化</h2>
         <p className="loc-subtitle">文字留下風格，風格經過時間累積，才看得見文化的變化。</p>
       </div>
       <div className="home-author-copy">
-        <p>文化不是單純的文風，也不是固定的關鍵詞。相同的字詞、作品與價值，在不同時期、事件與環境裡，會留下不同的使用方式與風格。</p>
         <p>LOC 把脈絡重新放回時間中，透過時期、事件、趨勢與語彙軌跡，觀察語言如何累積、改變與延伸。</p>
         <p>過去與現在可以整理，未來仍然有變數；因此月典不是替未來下定論，而是治理已知、觀察演化，再推演可能。</p>
-        <div className="loc-actions">
-          <a className="loc-button" href="/evolution">查看文化</a>
-        </div>
+        <p><a href="/statics">排行榜</a>可先看全部，再切 Facebook、Threads、Suno，並依現行時期邊界動態重新聚合；時期日期微調時不必重做固定排行。</p>
       </div>
-    </section>
-
-    <section className="loc-card home-copy-block home-custom-runes" id="custom-runes">
-      <div className="home-section-heading">
-        <p className="loc-eyebrow">Personal Culture · 個人文化</p>
-        <h2>我可以自製符文嗎？</h2>
-        <p className="loc-subtitle">文化，就是文字加上時間以後形成的演化敘述。</p>
-      </div>
-      <div className="home-author-copy">
-        <p>可以。月之符文並不要求所有人先理解完整的符文脈絡，也不要求所有人接受同一套分類。它更希望提供一種可以參考的表現方式，讓每個人找出屬於自己的風格關鍵詞，整理自己的語意，也可以製作自己的符文與符號系統。</p>
-        <p>每個時期都有每個時期的個人風格。因此加入時期設定，再配合風格設定，把時間維度放進脈絡分析，就能看見文字如何隨時間累積、改變與延伸，也更有助於了解自己的個人獨特文化。</p>
-        <p>作者自己的實例，就是把作者風格與政德文化放進同一套時期與風格治理中。政德文化不再只是單一文風名稱，而是文字、創作、價值選擇與不同時期長期累積後形成的個人文化。</p>
-        <p>把這些文字與時期重新歸納整理之後，可以進一步看見未來的可能，再由自己選擇想要演化的風向。當改變持續累積，足夠的演化產生質變，再形成進化——這就是我的文字進化論。</p>
-        <p>月之符文是這套方法的根基與代表實例；月典則是承載它的框架與模組。兩者組合起來，是一套可以自行選擇方向、持續累積與演化的文化引擎。</p>
-      </div>
-    </section>
-
-    <section className="loc-card home-progress" id="current-progress">
-      <p className="loc-eyebrow">Current Progress</p>
-      <h2>目前已經可以做到什麼？</h2>
-      <p className="loc-subtitle">不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再回到原始內容確認證據。</p>
-      <div className="home-progress-grid" aria-label="目前可操作功能">
-        {progressItems.map(([category,title,copy],index)=><article className="home-progress-item" key={`${category}-${index}`}>
-          <small>{category}</small>
-          <strong>{title}</strong>
-          <span>{copy}</span>
-        </article>)}
-      </div>
-      <div className="loc-actions home-progress-actions">
-        <a className="loc-button primary" href="/search">試用綜合搜尋</a>
-        <a className="loc-button" href="/statics">查看關鍵字排行</a>
+      <div className="home-progress-grid" aria-label="文化搜尋、治理與演化">
+        <article className="home-progress-item">
+          <strong>結合搜尋跟脈絡圖關聯</strong>
+          <span>可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。</span>
+        </article>
+        <article className="home-progress-item">
+          <strong>治理</strong>
+          <span>授權內容可以用全文做搜尋與分析；公開結果則依內容治理顯示片段、全文或僅 metadata。Facebook 與 Threads 預設採片段展示，歌詞不直接公開全文。已建立系統治理、資料權責、內容版權／公開邊界與月之符文66治理文件；目前也把全文分析與公開展示、來源日期、時期動態聚合等規則納入治理層。</span>
+        </article>
+        <article className="home-progress-item">
+          <strong>來源 × 時期 動態 Top 10</strong>
+          <span>排行榜可先看全部，再切 Facebook、Threads、Suno，並依現行時期邊界動態重新聚合；時期日期微調時不必重做固定排行。</span>
+        </article>
       </div>
     </section>
 
@@ -153,6 +141,22 @@ export default function AboutView(){
       <figure className="home-framework-figure">
         <img src="/pics/LOC-structure.png" alt="月典結構圖與流程圖" loading="lazy" />
       </figure>
+    </section>
+
+    <section className="loc-card home-copy-block home-skills" id="skills">
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">LOC GPT Skills</p>
+        <h2>Skills，把月典的方法變成可以重複使用的工作流程。</h2>
+        <p className="loc-subtitle">把語言治理與 Repository 治理封裝成可直接調用的 AI Skills。</p>
+      </div>
+      <div className="home-author-copy">
+        <p><strong>loc-km-governance</strong>：檢查 Canon、KM、FAQ、Registry、Base66、術語一致性、資料權威與舊版污染。</p>
+        <p><strong>loc-repo-health-check</strong>：檢查 Repository 結構、路徑、runtime projection、API／Search、legacy dependency、部署與效能風險。</p>
+        <p>Skills 不是另一套理論，而是把 LOC 已形成的治理方法，轉成 GPT／Agent 可以重複執行的工作流程。</p>
+        <div className="loc-actions">
+          <a className="loc-button primary" href="/LOC-GPT-Skills-v1.0.0-bundle.zip">下載 LOC GPT Skills v1.0.0</a>
+        </div>
+      </div>
     </section>
 
     <section className="loc-card home-author-words" id="author-words">

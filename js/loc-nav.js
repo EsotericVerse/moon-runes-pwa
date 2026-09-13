@@ -13,16 +13,27 @@
   const baseName=path=>String(path||'').split('/').pop()||'index.html';
   const DEFAULT_HASH=Object.freeze({'runes.html':'#draw','lo3rwang.html':'#author-intro','loc.html':'#home'});
 
-  const NAV1=Object.freeze([
-    {id:'runes',label:'月之符文',href:'runes.html#draw'},
-    {id:'game',label:'遊戲',href:'loc.html#game'},
-    {id:'context',label:'脈絡',href:'loc.html#context'},
-    {id:'search',label:'搜尋',href:'loc.html#search'},
-    {id:'statics',label:'統計',href:'loc.html#statics'},
-    {id:'evolution',label:'推演',href:'loc.html#evolution'},
-    {id:'governance',label:'治理',href:'loc.html#governance'}
+  const DEFAULT_NAV1=Object.freeze([
+    {label:'月之符文',href:'/runes'},
+    {label:'脈絡',href:'/context'},
+    {label:'統計',href:'/statics'},
+    {label:'文化',href:'/evolution'},
+    {label:'設定',href:'/my-style'}
   ]);
-  const PAGE_GROUP=Object.freeze({'runes.html':'runes','lo3rwang.html':'author'});
+  const RUNES_NAV1=Object.freeze([
+    {label:'月典',href:'/'},
+    {label:'符文遊戲',href:'/game'},
+    {label:'符文脈絡',href:'/context'},
+    {label:'符文統計',href:'/statics'},
+    {label:'符文文化',href:'/evolution'}
+  ]);
+  const AUTHOR_NAV1=Object.freeze([
+    {label:'月典',href:'/'},
+    {label:'月之符文',href:'/runes'},
+    {label:'脈絡',href:'/context'},
+    {label:'統計',href:'/statics'},
+    {label:'文化',href:'/evolution'}
+  ]);
   const AUTHOR_SECTIONS=Object.freeze([
     {label:'介紹',match:'他主要在做什麼',id:'author-intro'},
     {label:'主要身份',match:'主要身份',id:'author-identity'},
@@ -56,30 +67,21 @@
     try{localStorage.setItem(THEME_STORAGE_KEY,mode);}catch{}
     applyTheme(mode);
   }
-  function themeControlHtml(){
-    return '<label class="loc-theme-control"><span>風格</span><select data-loc-theme-select aria-label="即時風格"><option value="auto">自動</option><option value="day">白天</option><option value="night">夜間</option></select></label>';
-  }
 
-  function currentRouteKey(){
-    const hash=location.hash||DEFAULT_HASH[fileName()]||'#main';
-    return `${location.pathname}${location.search}${hash}`;
-  }
-  function targetRouteKey(href){
-    const url=new URL(href,location.href);
-    const page=baseName(url.pathname);
-    if(!url.hash) url.hash=DEFAULT_HASH[page]||'#main';
-    return `${url.pathname}${url.search}${url.hash}`;
+  function navItems(){
+    if(fileName()==='runes.html') return RUNES_NAV1;
+    if(fileName()==='lo3rwang.html') return AUTHOR_NAV1;
+    return DEFAULT_NAV1;
   }
   function renderNav1(){
-    const current=PAGE_GROUP[fileName()]||'';
-    const route=currentRouteKey();
+    const items=navItems();
     document.querySelectorAll('[data-loc-nav]').forEach(node=>{
-      const links=NAV1.map(item=>item.id===current&&targetRouteKey(item.href)===route
-        ? `<span class="loc-global-link loc-global-current" aria-current="page">${esc(item.label)}</span>`
-        : `<a class="loc-global-link" href="${esc(item.href)}">${esc(item.label)}</a>`).join('');
-      const search='<form class="loc-global-search" action="loc.html#search" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" /><button class="loc-global-search-submit" type="submit">搜尋</button></form>';
-      const home='<a class="loc-global-home" href="loc.html#home">回月典首頁</a>';
-      node.innerHTML=`<div class="loc-global-links">${links}</div>${search}${themeControlHtml()}${home}`;
+      const links=items.map(item=>`<a class="loc-global-link" href="${esc(item.href)}">${esc(item.label)}</a>`).join('');
+      const search='<form class="loc-global-search" action="/search" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" /><button class="loc-global-search-submit" type="submit">搜尋</button></form>';
+      const home=fileName()==='runes.html'
+        ? '<a class="loc-global-home" href="runes.html#draw">回符文首頁</a>'
+        : '<a class="loc-global-home" href="/">回月典首頁</a>';
+      node.innerHTML=`<div class="loc-global-links">${links}</div>${search}${home}`;
     });
   }
 
@@ -147,7 +149,7 @@
       link('占卜抽籤','runes.html#draw'),
       link('66 符資料','runes.html#library'),
       link('符文脈絡','runes.html#reference'),
-      link('符文統計','loc.html#statics'),
+      link('符文統計','/statics'),
       link('符文知識庫','runes.html#reference')
     ],'月之符文功能'));
 

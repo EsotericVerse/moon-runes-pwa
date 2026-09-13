@@ -127,6 +127,10 @@
 .loc-rule-list{margin:.4rem 0 0;padding-left:1.25rem}
 .loc-rule-list li{margin:.45rem 0;color:var(--loc-muted)}
 
+.loc-theme-control{display:inline-flex;align-items:center;gap:.5rem;color:var(--loc-muted);font-size:.9rem}
+.loc-theme-control select{min-height:2.2rem;padding:.35rem 2rem .35rem .65rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel-2);color:var(--loc-text);font:inherit;cursor:pointer}
+.loc-theme-control select:focus{outline:2px solid var(--loc-accent-border);outline-offset:2px}
+
 .loc-hero-with-note{
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(280px,360px);
