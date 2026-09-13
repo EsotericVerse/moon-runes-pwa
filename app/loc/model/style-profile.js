@@ -15,10 +15,36 @@ export const TEMPLATE_STYLE_GROUPS=['靈魂','連結','生命','自然','礦物'
    6. Exclude nav, anchors, buttons, form controls, code/pre, status/control UI, tables, Graph nodes, and game UI.
    7. Do not use MutationObserver for continuous rescanning and do not rescan on every React render.
    8. A text node is processed at most once; dynamic components must opt in explicitly if they need enhancement.
-   9. The goal is one semantic match -> one visual emphasis -> one link, with no nested or duplicate links. */
+   9. One semantic match -> one visual emphasis -> one link, with no nested or duplicate links.
+   10. Group-name emphasis is enabled by default and uses one shared visual style across the site.
+   11. A configured link wins. Otherwise known system names use their canonical route; all other names fall back to Search. */
 export const sortGroupNamesLongestFirst=groups=>[...(groups||[])]
   .filter(group=>String(group?.name||'').trim())
   .sort((a,b)=>String(b.name).length-String(a.name).length||String(a.name).localeCompare(String(b.name),'zh-Hant'));
+
+const SYSTEM_GROUP_ROUTES=new Map([
+  ['LOC','/'],
+  ['月典','/'],
+  ['月之符文','/runes'],
+  ['LunaRunes','/runes'],
+  ['脈絡','/context'],
+  ['統計','/statics'],
+  ['推演','/evolution'],
+  ['演化','/evolution'],
+  ['治理','/governance'],
+  ['設定','/my-style']
+]);
+
+export function defaultStyleGroupLink(name){
+  const term=String(name||'').trim();
+  if(!term)return '';
+  return SYSTEM_GROUP_ROUTES.get(term)||`/search?q=${encodeURIComponent(term)}`;
+}
+
+export function styleGroupLink(group){
+  const configured=String(group?.link||'').trim();
+  return configured||defaultStyleGroupLink(group?.name);
+}
 
 export const makeStyleGroup=(index,name=`群組 ${index+1}`)=>({
   id:`group-${index+1}`,
@@ -27,13 +53,14 @@ export const makeStyleGroup=(index,name=`群組 ${index+1}`)=>({
   keywords:[],
   nor:[],
   link:'',
+  emphasis:true,
   is_fallback:false
 });
 
 export const INITIAL_STYLE_PROFILE={
-  version:1,
+  version:2,
   groups:TEMPLATE_STYLE_GROUPS.map((name,index)=>makeStyleGroup(index,name)),
-  fallback:{id:'special',name:'特殊',description:'未命中其他群組的內容會進入這裡。',keywords:[],nor:[],link:'',is_fallback:true}
+  fallback:{id:'special',name:'特殊',description:'未命中其他群組的內容會進入這裡。',keywords:[],nor:[],link:'',emphasis:true,is_fallback:true}
 };
 
 export const INITIAL_MY_STYLE={
@@ -54,16 +81,17 @@ export function normalizeStyleProfile(data){
     keywords:parseStyleTerms(Array.isArray(group.keywords)?group.keywords.join('\n'):group.keywords,MAX_STYLE_KEYWORDS),
     nor:parseStyleTerms(Array.isArray(group.nor)?group.nor.join('\n'):group.nor,MAX_STYLE_NOR),
     link:String(group.link||''),
+    emphasis:group.emphasis!==false,
     is_fallback:false
   }));
   return {
-    version:1,
+    version:2,
     groups,
     fallback:{
       id:'special',
       name:String(data.fallback?.name||'特殊'),
       description:String(data.fallback?.description||'未命中其他群組的內容會進入這裡。'),
-      keywords:[],nor:[],link:String(data.fallback?.link||''),is_fallback:true
+      keywords:[],nor:[],link:String(data.fallback?.link||''),emphasis:data.fallback?.emphasis!==false,is_fallback:true
     }
   };
 }
