@@ -42,8 +42,15 @@
   width:100%;
   height:auto;
 }
+.home-beginner .home-rune-layout{
+  grid-template-columns:minmax(0,1fr) minmax(260px,320px);
+  gap:2rem;
+  align-items:start;
+}
 .home-beginner .home-framework-figure{
-  width:min(100%,380px);
+  width:100%;
+  max-width:320px;
+  margin:0;
   justify-self:end;
   align-self:start;
 }
@@ -97,11 +104,20 @@
 }
 @media(max-width:900px){
   .home-progress-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .home-beginner .home-rune-layout{
+    grid-template-columns:minmax(0,1fr) minmax(220px,280px);
+    gap:1.25rem;
+  }
+  .home-beginner .home-framework-figure{max-width:280px}
 }
 @media(max-width:620px){
   .home-progress-grid{grid-template-columns:1fr}
+  .home-beginner .home-rune-layout{
+    grid-template-columns:1fr;
+  }
   .home-beginner .home-framework-figure{
-    width:min(82vw,300px);
+    width:min(82vw,280px);
+    max-width:280px;
     justify-self:center;
     margin-top:.6rem;
   }
