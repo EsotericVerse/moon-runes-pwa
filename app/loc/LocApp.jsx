@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import AboutView from './views/AboutView';
+import ThemeControl from './ThemeControl';
 
 const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const GameView = dynamic(() => import('./views/GameView'),{ssr:false,loading});
@@ -91,6 +92,7 @@ export default function LocApp() {
           </nav>
           <nav className="loc-next-nav loc-next-subnav" aria-label="LOC 次要導覽">
             <NavLinks items={TOOL_NAV} view={view}/>
+            <ThemeControl />
           </nav>
         </div>
       </header>
