@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchLocJsonBatch, LOC_DATA } from '../loc/data';
-import ThemeControl from '../loc/ThemeControl';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
 import { allData as adviceData } from '../../js/rune_all_data_all.js';
 import { buildRuneGraph, searchRuneGraph } from '../../js/rune-graph-core.js';
@@ -55,7 +54,7 @@ export default function RunesClient(){
   const ritualMessages=RITUAL_MESSAGES[modeKey]||RITUAL_MESSAGES.single;const nodePages=Math.max(1,Math.ceil(graphView.nodes.length/PAGE_SIZE)),edgePages=Math.max(1,Math.ceil(graphView.edges.length/PAGE_SIZE));const shownNodes=graphView.nodes.slice((nodePage-1)*PAGE_SIZE,nodePage*PAGE_SIZE),shownEdges=graphView.edges.slice((edgePage-1)*PAGE_SIZE,edgePage*PAGE_SIZE);
 
   return <>
-    <header className="loc-next-header"><div className="loc-next-nav-stack"><nav className="loc-next-nav loc-next-nav-primary" aria-label="LOC 主要導覽"><a href="/runes" aria-current="page">月之符文</a><a href="/game">遊戲</a><a href="/context">脈絡</a><a href="/statics">統計</a><a href="/evolution">推演</a><form className="loc-next-search" action="/search" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字"/><button type="submit">搜尋</button></form><a className="loc-next-home" href="/">回月典首頁</a></nav><nav className="loc-next-nav loc-next-subnav" aria-label="顯示設定"><ThemeControl/></nav></div></header>
+    <header className="loc-next-header"><div className="loc-next-nav-stack"><nav className="loc-next-nav loc-next-nav-primary" aria-label="LOC 主要導覽"><a href="/runes" aria-current="page">月之符文</a><a href="/game">遊戲</a><a href="/context">脈絡</a><a href="/statics">統計</a><a href="/evolution">推演</a><a href="/my-style">設定</a><form className="loc-next-search" action="/search" method="get" role="search"><input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字"/><button type="submit">搜尋</button></form><a className="loc-next-home" href="/">回月典首頁</a></nav></div></header>
     <nav className="runes-subnav" aria-label="月之符文功能導覽"><a href="#intro">新手上路</a><a href="#draw">占卜抽籤</a><a href="#library">66 符資料</a><a href="#reference">符文脈絡</a><a href="/statics">符文統計</a><a href="#reference">符文知識庫</a></nav>
     <main className="loc-next-main"><section className="loc-view">
       <header className="loc-hero" id="intro"><p className="loc-eyebrow">LunaRunes · 月之符文</p><h1>月之符文</h1><p>由 66 個中文單一字構成。可以問一件事，也可以沒有問題直接抽取；抽牌、加權與籤詩指引都在瀏覽器本機完成，不需要外部 API。</p></header>
