@@ -1,9 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { fetchLocJson, fetchLocJsonBatch, LOC_DATA } from '../data';
+import { fetchLocJsonBatch, LOC_DATA } from '../data';
+import { useLocalStore } from '../local-store';
 import { getSearchCollection, SEARCH_COLLECTION_ORDER, SEARCH_COLLECTIONS } from '../search-collections';
 
+const UI_SETTINGS_KEY='loc-ui-settings-v1';
+const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
+const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
 const norm=value=>String(value??'').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 const snippet=(text,q)=>{const raw=String(text||'').replace(/\s+/g,' ').trim();const i=norm(raw).indexOf(norm(q));const start=Math.max(0,(i<0?0:i)-70);return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;};
 const manifestDir=path=>path.slice(0,path.lastIndexOf('/')+1);
@@ -11,12 +15,17 @@ function objectsFrom(value,out=[],depth=0){if(depth>4)return out;if(Array.isArra
 function genericResult(item,source,q){const hay=JSON.stringify(item);if(!norm(hay).includes(norm(q)))return null;const title=item.title||item.name||item['符文名稱']||item['名稱']||item.question||item.label||item.id||item.work_id||source;const body=item.text||item.content||item.answer||item.summary||item.description||item.retrieval_text||hay;return {key:`${source}-${title}-${body.slice(0,30)}`,source,title,date:item.date||item.created_date||item.updated_at||'',snippet:snippet(body,q),href:item.url||item.href||''};}
 
 export default function SearchView(){
+  const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [query,setQuery]=useState('');
   const [collectionId,setCollectionId]=useState('all');
   const [results,setResults]=useState([]);
   const [status,setStatus]=useState('輸入文字後才會載入搜尋資料。');
   const [error,setError]=useState('');
+  const [page,setPage]=useState(1);
   const searchId=useRef(0);
+  const pageSize=LIST_PAGE_OPTIONS.includes(Number(uiSettings?.list_page_size))?Number(uiSettings.list_page_size):10;
+  const pageCount=Math.max(1,Math.ceil(results.length/pageSize));
+  const shownResults=results.slice((page-1)*pageSize,page*pageSize);
 
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
@@ -25,6 +34,8 @@ export default function SearchView(){
     setCollectionId(getSearchCollection(requested).id);
     setQuery(q);
   },[]);
+  useEffect(()=>setPage(1),[collectionId,pageSize]);
+  useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
 
   function syncUrl(nextCollection,nextQuery){
     const url=new URL(window.location.href);
@@ -40,7 +51,7 @@ export default function SearchView(){
     const collection=getSearchCollection(collectionId);
     syncUrl(collection.id,q);
     const id=++searchId.current;
-    setError('');setResults([]);setStatus(`搜尋「${collection.label}」資料…`);
+    setPage(1);setError('');setResults([]);setStatus(`搜尋「${collection.label}」資料…`);
     try{
       const requests=collection.smallSources.map(([path,label])=>({path,kind:'generic',label}));
       let textManifest=null;let musicManifest=null;
@@ -77,7 +88,8 @@ export default function SearchView(){
       <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="輸入關鍵字，例如：治理、月、自由" aria-label="搜尋文字"/>
       <button className="loc-button primary" type="submit">搜尋</button>
     </form>
-    <p className="loc-status">{status}</p>{error&&<p className="loc-status error">{error}</p>}
-    <div className="loc-search-results">{results.map(r=><article className="loc-card" key={r.key}><div className="loc-result-meta"><span>{r.source}</span>{r.date&&<time>{r.date}</time>}</div><h2>{r.title}</h2><p>{r.snippet}</p>{r.href&&<a href={r.href} target={/^https?:/.test(r.href)?'_blank':undefined} rel={/^https?:/.test(r.href)?'noreferrer':undefined}>查看來源</a>}</article>)}</div>
+    <p className="loc-status">{status}{results.length?` · 每頁 ${pageSize} 筆`:''}</p>{error&&<p className="loc-status error">{error}</p>}
+    <div className="loc-search-results">{shownResults.map(r=><article className="loc-card" key={r.key}><div className="loc-result-meta"><span>{r.source}</span>{r.date&&<time>{r.date}</time>}</div><h2>{r.title}</h2><p>{r.snippet}</p>{r.href&&<a href={r.href} target={/^https?:/.test(r.href)?'_blank':undefined} rel={/^https?:/.test(r.href)?'noreferrer':undefined}>查看來源</a>}</article>)}</div>
+    {!!results.length&&<div className="runes-pager"><button type="button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button><span>{page} / {pageCount}</span><button type="button" disabled={page>=pageCount} onClick={()=>setPage(value=>Math.min(pageCount,value+1))}>下一頁</button></div>}
   </section>;
 }
