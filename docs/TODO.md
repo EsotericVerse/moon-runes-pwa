@@ -15,6 +15,12 @@
 - [x] 抽籤紀錄採本機 IndexedDB；只有使用者主動按「記錄」才保存。
 - [x] 每日模式記到「每日紀錄」，其他模式記到「一般抽牌」，兩類都可刪除。
 - [x] 「一般列表每頁筆數」已套用到 Search、Library、Context、Culture、Statistics 等 Next.js 列表；符文圖鑑維持固定每頁 8 枚，排行榜與群組統計維持統計型展示。
+- [x] Runtime JSON loader 加入全域 concurrency=2、單檔／batch I/O budget、LRU memory hot-cache；大型 JSON 不再無上限常駐記憶體。
+- [x] 建立 `loc-data-version.json`：逐檔 SHA-256／bytes／delivery tier，未變資料沿用 persistent HTTP cache；CI 驗證 hash、bytes、aggregate version 與 runtime payload budget。
+- [x] 建立 `loc-data-index.json` 階層索引：dataset → segment；LOC3／LOC4 現有 shards 可按 segment ID／sequence 增量取得，不必先下載完整 corpus。
+- [x] Search 改為每批 2 segments 漸進掃描，結果足夠即停止；不再預設把所有 text/music corpus shards 一次下載、parse 後才搜尋。
+- [x] Search 加入 adaptive segment routing：僅保存 hashed query token → 命中 segment score，不保存原始查詢文字；重複／相近查詢優先讀可能命中的 segments，並保留完整 fallback 掃描。
+- [x] `prepare-next-public.mjs` 將 runtime JSON 分為 `core` / `on-demand` delivery tier；部署可取得不再等同預載，CI 同步驗證 tier 與階層 index 完整性。
 
 ## Next
 
