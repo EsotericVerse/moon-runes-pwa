@@ -148,6 +148,22 @@ export default function AboutView(){
       </figure>
     </section>
 
+    <section className="loc-card home-copy-block home-skills" id="skills">
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">LOC GPT Skills</p>
+        <h2>Skills，把月典的方法變成可以重複使用的工作流程。</h2>
+        <p className="loc-subtitle">把語言治理與 Repository 治理封裝成可直接調用的 AI Skills。</p>
+      </div>
+      <div className="home-author-copy">
+        <p><strong>loc-km-governance</strong>：檢查 Canon、KM、FAQ、Registry、Base66、術語一致性、資料權威與舊版污染。</p>
+        <p><strong>loc-repo-health-check</strong>：檢查 Repository 結構、路徑、runtime projection、API／Search、legacy dependency、部署與效能風險。</p>
+        <p>Skills 不是另一套理論，而是把 LOC 已形成的治理方法，轉成 GPT／Agent 可以重複執行的工作流程。</p>
+        <div className="loc-actions">
+          <a className="loc-button primary" href="/LOC-GPT-Skills-v1.0.0-bundle.zip">下載 LOC GPT Skills v1.0.0</a>
+        </div>
+      </div>
+    </section>
+
     <section className="loc-card home-author-words" id="author-words">
       <p className="loc-eyebrow">作者的話</p>
       <h2>治理過去的已知，是為了把時間還給現在的未知，才有更充裕的未來。</h2>
