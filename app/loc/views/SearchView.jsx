@@ -71,7 +71,7 @@ export default function SearchView(){
   }
 
   const collection=getSearchCollection(collectionId);
-  return <section className="loc-view"><header className="loc-hero"><p className="loc-eyebrow">LOC Search</p><h1>搜尋</h1><p>{collection.description} 大型 manifest 與 corpus shards 只有送出查詢後才下載。</p></header>
+  return <section className="loc-view"><header className="loc-hero"><p className="loc-eyebrow">Search · 搜尋</p><h1>搜尋</h1><p>{collection.description} 大型資料清單（manifest）與資料分片（corpus shards）只有送出查詢後才下載。</p></header>
     <form className="loc-search-form" onSubmit={runSearch}>
       <select value={collectionId} onChange={e=>{setCollectionId(e.target.value);syncUrl(e.target.value,query)}} aria-label="搜尋集合">{SEARCH_COLLECTION_ORDER.map(id=><option key={id} value={id}>{SEARCH_COLLECTIONS[id].label}</option>)}</select>
       <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="輸入關鍵字，例如：治理、月、自由" aria-label="搜尋文字"/>
