@@ -26,11 +26,8 @@ export default function RootLayout({ children }) {
         <GlobalNav />
         {children}
         <footer className="loc-site-footer">
-          <div><a href="/">LOC月典(LunaCodex)</a></div>
-          <div><a href="/governance">治理</a> · <a href="https://whoami.lo3rwang.cc/">我的個人首頁</a></div>
-          <div>By <a href="https://whoami.lo3rwang.cc/">Lucas Oscar Wang 政德</a></div>
-          <div><a href="mailto:sopa2306@gmail.com">意見信箱</a></div>
-          <div>in EsotericVerse 秘藝文域（籌備中）</div>
+          <div><a href="/">月典</a>｜<a href="/governance">治理</a></div>
+          <div><a href="https://whoami.lo3rwang.cc/">作者</a>｜<a href="mailto:sopa2306@gmail.com">聯絡方式</a>｜公司(秘藝文域 籌備中)</div>
         </footer>
       </body>
     </html>
