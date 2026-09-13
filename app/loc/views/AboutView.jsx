@@ -104,7 +104,10 @@ export default function AboutView(){
       <div className="home-section-heading">
         <p className="loc-eyebrow">Context · 脈絡</p>
         <h2>脈絡，文字的關係與分析</h2>
-        <p className="loc-subtitle">把文字找出關聯性，才會可以統計跟分析。<br/>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p>
+      </div>
+      <div className="home-author-copy">
+        <p>把文字找出關聯性，才會可以統計跟分析。</p>
+        <p>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p>
       </div>
     </section>
 
