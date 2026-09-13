@@ -35,7 +35,7 @@ const PRIMARY_NAV = [
   ['context', '脈絡'],
   ['statics', '統計'],
   ['evolution', '推演'],
-  ['my-style', '風格']
+  ['my-style', '設定']
 ];
 
 const HOME_TABS = [
