@@ -8,16 +8,22 @@ import { classifyRecords } from '../model/style-classifier';
 import { createLibraryRecord, INITIAL_STYLE_PROFILE, LIBRARY_RECORD_TYPE, STYLE_STORAGE_KEY } from '../model/style-profile';
 
 const DRIVE_FILE='loc-library.json';
+const UI_SETTINGS_KEY='loc-ui-settings-v1';
+const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
+const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
 const byNewest=(a,b)=>String(b.updated_at||b.created_at||'').localeCompare(String(a.updated_at||a.created_at||''));
 
 export default function LibraryView(){
   const {value:profile}=useLocalStore(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
+  const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [records,setRecords]=useState([]);
   const [query,setQuery]=useState('');
   const [group,setGroup]=useState('');
   const [message,setMessage]=useState('');
   const [progress,setProgress]=useState(null);
+  const [page,setPage]=useState(1);
   const driveReady=googleDriveConfigured();
+  const pageSize=LIST_PAGE_OPTIONS.includes(Number(uiSettings?.list_page_size))?Number(uiSettings.list_page_size):10;
 
   async function reload(){
     const rows=await getLocalRecords(LIBRARY_RECORD_TYPE);
@@ -37,6 +43,10 @@ export default function LibraryView(){
     const groupMatch=!group||record.classification?.matches?.some(match=>match.name===group);
     return textMatch&&groupMatch;
   }),[records,query,group]);
+  const pageCount=Math.max(1,Math.ceil(filtered.length/pageSize));
+  const shownRecords=filtered.slice((page-1)*pageSize,page*pageSize);
+  useEffect(()=>setPage(1),[query,group,pageSize]);
+  useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
 
   async function remove(id){
     await deleteLocalRecord(id);
@@ -106,7 +116,7 @@ export default function LibraryView(){
       </div>
       <div className="loc-metrics"><div><small>Library</small><strong>{records.length}</strong></div><div><small>目前顯示</small><strong>{filtered.length}</strong></div><div><small>已分類</small><strong>{records.filter(r=>r.classification).length}</strong></div></div>
       {progress&&<div className="loc-progress"><progress value={progress.processed} max={Math.max(progress.total,1)}/><span>{progress.processed} / {progress.total} · {progress.percent}%</span></div>}
-      <p className="loc-status">{driveReady?'Google Drive OAuth 已可用；不做背景同步。':'Google Drive OAuth 尚未設定 client ID；本機功能不受影響。'}</p>
+      <p className="loc-status">{driveReady?'Google Drive OAuth 已可用；不做背景同步。':'Google Drive OAuth 尚未設定 client ID；本機功能不受影響。'} 每頁 {pageSize} 筆。</p>
       {message&&<p className="loc-status">{message}</p>}
     </section>
 
@@ -119,12 +129,13 @@ export default function LibraryView(){
 
     <div className="loc-context-list">
       {!filtered.length&&<section className="loc-card"><p className="loc-status">Library 目前沒有符合條件的資料。</p></section>}
-      {filtered.map(record=><article className="loc-card loc-library-record" key={record.id}>
+      {shownRecords.map(record=><article className="loc-card loc-library-record" key={record.id}>
         <div className="loc-result-meta"><span>{record.source||'manual'} · {record.created_at?.slice(0,10)||''}</span><button className="loc-button" onClick={()=>remove(record.id)}>刪除</button></div>
         <h2>{record.title}</h2>
         <p className="loc-library-snippet">{record.text?.slice(0,500)}{record.text?.length>500?'…':''}</p>
         <div className="loc-chip-list">{record.classification?.matches?.map(match=><span key={`${record.id}-${match.id}`}>{match.name}{match.hits?.length?` · ${match.hits.join('、')}`:' · fallback'}</span>)||<span>尚未分類</span>}</div>
       </article>)}
     </div>
+    {!!filtered.length&&<div className="runes-pager"><button type="button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button><span>{page} / {pageCount}</span><button type="button" disabled={page>=pageCount} onClick={()=>setPage(value=>Math.min(pageCount,value+1))}>下一頁</button></div>}
   </section>;
 }
