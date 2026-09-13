@@ -58,10 +58,22 @@ const actualDocs = new Set(walkFiles(resolve(publicRoot, 'docs')));
 for (const path of expectedDocs) if (!actualDocs.has(path)) failures.push(`missing staged doc: ${path}`);
 for (const path of actualDocs) if (!expectedDocs.has(path)) failures.push(`unexpected staged doc: ${path}`);
 
-// Frozen homepage/source diagrams are intentionally staged for Next parity.
+// Formal homepage, framework and LunaRunes concept/group visuals staged from the preserved pics/ source directory.
 const expectedPics = new Set([
+  'pics/01.soul.jpg',
+  'pics/02_connection.jpg',
+  'pics/03_life.jpg',
+  'pics/04_nature.jpg',
+  'pics/05_mineral.jpg',
+  'pics/06_element.jpg',
+  'pics/07_order.jpg',
+  'pics/08_disorder.jpg',
+  'pics/09_specia.jpg',
   'pics/LOC-FrameworkPic.png',
-  'pics/LOC-structure.png'
+  'pics/LOC-PicAll.png',
+  'pics/LOC-structure.png',
+  'pics/LunaRunes.jpg',
+  'pics/loc_runes_66_overview.jpg'
 ]);
 const actualPics = new Set(walkFiles(resolve(publicRoot, 'pics')));
 for (const path of expectedPics) if (!actualPics.has(path)) failures.push(`missing staged pic: ${path}`);
@@ -75,4 +87,4 @@ if (failures.length) {
   console.error('[public-payload] violations:\n' + failures.join('\n'));
   process.exit(1);
 }
-console.log(`[public-payload] verified ${actualJson.size} JSON files, ${actualDocs.size} docs, ${actualPics.size} frozen pics and printable card PDF`);
+console.log(`[public-payload] verified ${actualJson.size} JSON files, ${actualDocs.size} docs, ${actualPics.size} formal pics and printable card PDF`);
