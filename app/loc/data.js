@@ -6,14 +6,19 @@ export { LOC_DATA } from './data-paths.mjs';
 // - Derived/search JSON stays split so large corpora can be loaded only when needed.
 // - All LOC views share this request cache and one global concurrency gate.
 // - Persistent HTTP cache keys are versioned by build-time SHA-256 metadata.
+// - Large datasets are discovered through the hierarchical data index and fetched by segment.
 const memoryCache = new Map();
 const DATA_VERSION_MANIFEST = '/loc-data-version.json';
+const DATA_INDEX_MANIFEST = '/loc-data-index.json';
 const DEFAULT_GLOBAL_CONCURRENCY = 2;
 const DEFAULT_MAX_BATCH_ITEMS = 24;
 const DEFAULT_MAX_RESPONSE_BYTES = 128 * 1024 * 1024;
 const DEFAULT_MEMORY_CACHE_ENTRIES = 24;
+const DEFAULT_MAX_SEGMENTS = 8;
+const DEFAULT_MAX_SEGMENT_BATCH_BYTES = 192 * 1024 * 1024;
 let activeRequests = 0;
 let versionManifestPromise;
+let dataIndexPromise;
 const waiters = [];
 
 function acquireSlot(limit = DEFAULT_GLOBAL_CONCURRENCY) {
@@ -61,6 +66,24 @@ async function loadVersionManifest() {
       .catch(() => ({ schema: 0, version: null, files: {} }));
   }
   return versionManifestPromise;
+}
+
+async function loadDataIndex() {
+  if (!dataIndexPromise) {
+    dataIndexPromise = loadVersionManifest()
+      .then(versionManifest => {
+        const version = versionManifest?.version;
+        const requestPath = version
+          ? `${DATA_INDEX_MANIFEST}?v=${encodeURIComponent(version.slice(0, 16))}`
+          : DATA_INDEX_MANIFEST;
+        return fetch(requestPath, { cache: version ? 'force-cache' : 'no-cache' });
+      })
+      .then(response => {
+        if (!response.ok) throw new Error(`${DATA_INDEX_MANIFEST}: HTTP ${response.status}`);
+        return response.json();
+      });
+  }
+  return dataIndexPromise;
 }
 
 function versionedPath(path, entry) {
@@ -145,6 +168,61 @@ export async function fetchLocJsonBatch(items, {
   return results;
 }
 
+export async function getLocDataIndex() {
+  return loadDataIndex();
+}
+
+export async function getLocDataDataset(datasetId) {
+  const index = await loadDataIndex();
+  const dataset = index?.datasets?.[datasetId];
+  if (!dataset) throw new Error(`Unknown LOC data dataset: ${datasetId}`);
+  return dataset;
+}
+
+export async function fetchLocDataSegments(datasetId, {
+  segmentIds,
+  fromSequence,
+  toSequence,
+  maxSegments = DEFAULT_MAX_SEGMENTS,
+  maxTotalBytes = DEFAULT_MAX_SEGMENT_BATCH_BYTES,
+  maxResponseBytes = DEFAULT_MAX_RESPONSE_BYTES,
+  memory = true
+} = {}) {
+  const dataset = await getLocDataDataset(datasetId);
+  let segments = Array.isArray(dataset?.segments) ? dataset.segments : [];
+
+  if (Array.isArray(segmentIds) && segmentIds.length) {
+    const wanted = new Set(segmentIds);
+    segments = segments.filter(segment => wanted.has(segment.id));
+  }
+  if (Number.isFinite(Number(fromSequence))) {
+    segments = segments.filter(segment => Number(segment.sequence) >= Number(fromSequence));
+  }
+  if (Number.isFinite(Number(toSequence))) {
+    segments = segments.filter(segment => Number(segment.sequence) <= Number(toSequence));
+  }
+
+  segments = [...segments].sort((a, b) => Number(a.sequence || 0) - Number(b.sequence || 0));
+  if (segments.length > maxSegments) {
+    throw new Error(`LOC dataset ${datasetId} selected ${segments.length} segments; segment budget allows ${maxSegments}`);
+  }
+
+  const totalBytes = segments.reduce((sum, segment) => sum + Number(segment.bytes || 0), 0);
+  if (totalBytes > maxTotalBytes) {
+    throw new Error(`LOC dataset ${datasetId} selected ${totalBytes} bytes; segment I/O budget allows ${maxTotalBytes}`);
+  }
+
+  const data = await fetchLocJsonBatch(
+    segments.map(segment => ({
+      path: segment.path,
+      maxResponseBytes: Math.min(maxResponseBytes, Number(segment.bytes || maxResponseBytes))
+    })),
+    { maxItems: maxSegments, maxResponseBytes, memory }
+  );
+
+  return segments.map((segment, index) => ({ segment, data: data[index] }));
+}
+
 export function clearLocJsonCache(path) {
   if (path) memoryCache.delete(path);
   else memoryCache.clear();
@@ -152,12 +230,20 @@ export function clearLocJsonCache(path) {
 
 export function refreshLocDataVersionManifest() {
   versionManifestPromise = undefined;
+  dataIndexPromise = undefined;
   return loadVersionManifest();
+}
+
+export function refreshLocDataIndex() {
+  dataIndexPromise = undefined;
+  return loadDataIndex();
 }
 
 export const LOC_IO_BUDGET = Object.freeze({
   maxBatchItems: DEFAULT_MAX_BATCH_ITEMS,
   maxConcurrentRequests: DEFAULT_GLOBAL_CONCURRENCY,
   maxResponseBytes: DEFAULT_MAX_RESPONSE_BYTES,
-  maxMemoryEntries: DEFAULT_MEMORY_CACHE_ENTRIES
+  maxMemoryEntries: DEFAULT_MEMORY_CACHE_ENTRIES,
+  maxSegments: DEFAULT_MAX_SEGMENTS,
+  maxSegmentBatchBytes: DEFAULT_MAX_SEGMENT_BATCH_BYTES
 });
