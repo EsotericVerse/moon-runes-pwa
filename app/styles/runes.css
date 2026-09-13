@@ -19,8 +19,15 @@
 .loc-draw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1rem}
 .loc-draw-card{display:grid;gap:.45rem;align-content:start}
 .loc-rune-card-image{display:block;width:min(100%,260px);aspect-ratio:1/1;object-fit:contain;margin:.2rem auto .35rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel-2);transition:transform .2s ease}
+.rune-rotate-0{transform:rotate(0deg)}
+.rune-rotate-90{transform:rotate(90deg)}
+.rune-rotate-n90{transform:rotate(-90deg)}
+.rune-rotate-180{transform:rotate(180deg)}
 .loc-draw-card>b{font-size:1.15rem;text-align:center}
 .loc-draw-card>span,.loc-draw-card>small{text-align:center}
+.runes-draw-keywords{display:grid;gap:.35rem;margin-top:.35rem;padding-top:.55rem;border-top:1px solid var(--loc-line)}
+.runes-draw-keywords>span{display:grid;gap:.15rem;font-size:.78rem;line-height:1.5;color:var(--loc-muted);text-align:left}
+.runes-draw-keywords strong{color:var(--loc-gold);font-size:.72rem}
 .runes-ritual{display:grid;grid-template-columns:minmax(180px,280px) minmax(0,1fr);gap:1.5rem;align-items:center}
 .runes-ritual-card{display:grid;justify-items:center;gap:.35rem}
 .runes-ritual-card img{display:block;width:min(100%,260px);aspect-ratio:1/1;object-fit:contain;border-radius:var(--loc-radius-sm);background:var(--loc-panel-2)}
