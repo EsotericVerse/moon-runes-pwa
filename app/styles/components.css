@@ -15,7 +15,19 @@
 .loc-hero{padding:clamp(1.25rem,4vw,2.7rem);border:1px solid var(--loc-line);border-radius:calc(var(--loc-radius) + 6px);background:linear-gradient(145deg,var(--loc-hero-start),var(--loc-hero-end));box-shadow:var(--loc-shadow)}
 .loc-hero h1{margin:.12em 0;font-size:clamp(2rem,6vw,4rem);line-height:1.08}
 .loc-hero p{max-width:72ch;margin:.5rem 0;color:var(--loc-text)}
-.loc-home .loc-hero p{max-width:none}
+.loc-home>.loc-hero{
+  display:block!important;
+  grid-template-columns:none!important;
+  gap:0!important;
+  padding:1.15rem 1.25rem;
+  border-radius:var(--loc-radius);
+  background:var(--loc-surface);
+  box-shadow:var(--loc-shadow-card);
+  color:var(--loc-text);
+}
+.loc-home>.loc-hero::before,.loc-home>.loc-hero::after{content:none!important;display:none!important}
+.loc-home>.loc-hero p{max-width:none}
+.loc-home>.loc-hero>.loc-hero-copy p{color:var(--loc-text)}
 .loc-eyebrow{margin:0!important;color:var(--loc-gold)!important;font-size:.82rem;font-weight:750;letter-spacing:.08em;text-transform:none}
 .loc-card,.loc-panel,.loc-bubble{padding:1.15rem 1.25rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius);background:var(--loc-surface);box-shadow:var(--loc-shadow-card)}
 .loc-card h2,.loc-panel h2,.loc-bubble h2{margin:.18rem 0 .72rem;font-size:1.32rem;line-height:1.35}
@@ -23,9 +35,10 @@
 .loc-card strong,.loc-panel strong,.loc-bubble strong{color:var(--loc-text)}
 
 /* Unified text-block semantics: English name → Chinese title → subtitle → body. */
-.loc-card,.loc-panel{color:var(--loc-text)}
+.loc-card,.loc-panel,.loc-home>.loc-hero{color:var(--loc-text)}
 .loc-card>.loc-eyebrow,
 .loc-panel>.loc-eyebrow,
+.loc-home>.loc-hero>.loc-eyebrow,
 .home-section-heading>.loc-eyebrow{
   color:var(--loc-gold)!important;
   font-size:.82rem;
@@ -35,12 +48,14 @@
 }
 .loc-card>h1,.loc-card>h2,.loc-card>h3,
 .loc-panel>h1,.loc-panel>h2,.loc-panel>h3,
+.loc-home>.loc-hero>h1,.loc-home>.loc-hero>h2,.loc-home>.loc-hero>h3,
 .home-section-heading>h1,.home-section-heading>h2,.home-section-heading>h3{
   color:var(--loc-text);
 }
 .loc-subtitle,
 .loc-card>h1+p,.loc-card>h2+p,.loc-card>h3+p,
 .loc-panel>h1+p,.loc-panel>h2+p,.loc-panel>h3+p,
+.loc-home>.loc-hero>h1+p,.loc-home>.loc-hero>h2+p,.loc-home>.loc-hero>h3+p,
 .home-section-heading>h1+p,.home-section-heading>h2+p,.home-section-heading>h3+p{
   color:var(--loc-accent)!important;
   font-size:.9rem;
@@ -48,6 +63,7 @@
 }
 .loc-card>p:not(.loc-eyebrow):not(.loc-subtitle),
 .loc-panel>p:not(.loc-eyebrow):not(.loc-subtitle),
+.loc-home>.loc-hero>p:not(.loc-eyebrow):not(.loc-subtitle):not(.loc-core-line),
 .home-section-heading>p:not(.loc-eyebrow):not(.loc-subtitle){
   color:var(--loc-text);
 }
@@ -94,6 +110,7 @@
   gap:28px;
   align-items:center;
 }
+.loc-home>.loc-hero.loc-hero-with-note{display:block!important;grid-template-columns:none!important;gap:0!important}
 .loc-hero .hero-note{
   position:relative;
   padding:28px;
