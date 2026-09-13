@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getWritingWork, publicSourceRefs, writingWorks } from '../../../lib/writing.js';
+import { getWritingWork, publicSourceRefs, writingWorks } from '../../../js/writing.js';
 
 export function generateStaticParams(){
   return writingWorks.map(work=>({workId:work.work_id}));
