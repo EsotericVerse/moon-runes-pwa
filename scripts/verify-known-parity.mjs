@@ -20,7 +20,7 @@ if(existsSync(resolve(root,'lib')))failures.push('lib/ must not be recreated; sh
 // Block 3 and later remain intentionally outside homepage parity freezing.
 
 requireText('app/layout.jsx',['GlobalNav','GlobalFooter']);
-requireText('app/GlobalFooter.jsx',['月典','月之符文','治理','lo3rwang（Lucas Oscar Wang 政德）','秘藝文域（EsotericVerse）（籌備中）']);
+requireText('app/GlobalFooter.jsx',['月典','月之符文','治理','Lucas Oscar Wang 政德','聯絡方式','秘藝文域（EsotericVerse）（籌備中）']);
 forbidText('app/loc/LocApp.jsx',['loc-next-footer']);
 
 requireText('app/runes/RunesClient.jsx',[
