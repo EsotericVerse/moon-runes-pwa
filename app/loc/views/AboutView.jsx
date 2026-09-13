@@ -28,6 +28,9 @@ export default function AboutView(){
           <a className="loc-bubble" href="#author-words">作者的話</a>
         </div>
       </div>
+      <figure className="home-hero-visual">
+        <img src="/pics/LOC-PicAll.png" alt="LOC 月典語言模型框架視覺理念圖" loading="eager" />
+      </figure>
     </header>
 
     <section className="loc-card home-copy-block home-rune-section">
