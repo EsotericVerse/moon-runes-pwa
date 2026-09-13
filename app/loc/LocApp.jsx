@@ -34,10 +34,8 @@ const VIEWS = {
 const PRIMARY_NAV = [
   ['game', '遊戲'],
   ['context', '脈絡'],
-  ['governance', '治理'],
   ['statics', '統計'],
-  ['evolution', '推演'],
-  ['search', '搜尋']
+  ['evolution', '推演']
 ];
 
 function readView() {
@@ -73,18 +71,23 @@ export default function LocApp() {
   return (
     <>
       <header className="loc-next-header">
-        <a className="loc-next-brand" href="/loc/">LOC 月典</a>
-        <div className="loc-next-nav-stack">
-          <nav className="loc-next-nav" aria-label="LOC 主要導覽">
-            <a href="/runes">月之符文</a>
-            <NavLinks items={PRIMARY_NAV} view={view}/>
-            <a href="https://whoami.lo3rwang.cc/">作者</a>
-          </nav>
-        </div>
+        <nav className="loc-next-nav loc-next-nav-primary" aria-label="LOC 主要導覽">
+          <a href="/runes">月之符文</a>
+          <NavLinks items={PRIMARY_NAV} view={view}/>
+          <form className="loc-next-search" action="/search" method="get" role="search">
+            <input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" />
+            <button type="submit">搜尋</button>
+          </form>
+          <a className="loc-next-home" href="/loc/" aria-current={view==='home'?'page':undefined}>回月典首頁</a>
+        </nav>
       </header>
       <main className="loc-next-main" data-loc-view={view}>
         <ActiveView />
       </main>
+      <footer className="loc-next-footer">
+        <a href="/governance">治理</a>
+        <a href="https://whoami.lo3rwang.cc/">lo3rwang</a>
+      </footer>
     </>
   );
 }
