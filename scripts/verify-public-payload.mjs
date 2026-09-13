@@ -58,7 +58,7 @@ const actualDocs = new Set(walkFiles(resolve(publicRoot, 'docs')));
 for (const path of expectedDocs) if (!actualDocs.has(path)) failures.push(`missing staged doc: ${path}`);
 for (const path of actualDocs) if (!expectedDocs.has(path)) failures.push(`unexpected staged doc: ${path}`);
 
-// Formal homepage, framework and LunaRunes concept/group visuals staged from the preserved pics/ source directory.
+// Formal homepage, framework, author and LunaRunes concept/group visuals staged from the preserved pics/ source directory.
 const expectedPics = new Set([
   'pics/01.soul.jpg',
   'pics/02_connection.jpg',
@@ -73,6 +73,7 @@ const expectedPics = new Set([
   'pics/LOC-PicAll.png',
   'pics/LOC-structure.png',
   'pics/LunaRunes.jpg',
+  'pics/aboutme.png',
   'pics/loc_runes_66_overview.jpg'
 ]);
 const actualPics = new Set(walkFiles(resolve(publicRoot, 'pics')));
