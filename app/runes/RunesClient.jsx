@@ -33,6 +33,12 @@ function sampleUnique(items,count){
   return pool.slice(0,count);
 }
 
+function runeCardImage(card){
+  const number=String(Number(card?.['編號'])||0).padStart(2,'0');
+  const name=String(card?.['符文名稱']||'').replace(/之符文$/,'').trim();
+  return `/assets/lunarunes/cards/${number}_${name}.png`;
+}
+
 export default function RunesClient(){
   const [data,setData]=useState(null);
   const [error,setError]=useState('');
@@ -84,8 +90,9 @@ export default function RunesClient(){
         <section className="loc-card">
           <div className="loc-result-meta"><span>{selectedMode.label}</span><span>本機 deterministic guidance</span></div>
           <div className="loc-draw-grid">
-            {draw.cards.map((card,index)=><article className="loc-context-item compact" key={`${card['編號']}-${index}`}>
+            {draw.cards.map((card,index)=><article className="loc-context-item compact loc-draw-card" key={`${card['編號']}-${index}`}>
               <small>{selectedMode.positions[index]||`第 ${index+1} 張`}</small>
+              <img className="loc-rune-card-image" src={runeCardImage(card)} alt={`${card['符文名稱']}符文卡`} />
               <b>{card['符文名稱']}</b>
               <span>{draw.directions[index]} · {card['卡片屬性']||'中平'}</span>
               <small>{card['符文說明']}</small>
