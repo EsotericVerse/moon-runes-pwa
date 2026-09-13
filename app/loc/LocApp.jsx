@@ -38,6 +38,14 @@ const PRIMARY_NAV = [
   ['evolution', '推演']
 ];
 
+const TOOL_NAV = [
+  ['governance', '治理'],
+  ['classify', '分類'],
+  ['library', 'Library'],
+  ['my-style', '我的風格'],
+  ['style-groups', '群組設定']
+];
+
 function readView() {
   if (typeof window === 'undefined') return 'home';
   const hash = decodeURIComponent(window.location.hash.slice(1)).split('/')[0];
@@ -71,15 +79,20 @@ export default function LocApp() {
   return (
     <>
       <header className="loc-next-header">
-        <nav className="loc-next-nav loc-next-nav-primary" aria-label="LOC 主要導覽">
-          <a href="/runes">月之符文</a>
-          <NavLinks items={PRIMARY_NAV} view={view}/>
-          <form className="loc-next-search" action="/search" method="get" role="search">
-            <input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" />
-            <button type="submit">搜尋</button>
-          </form>
-          <a className="loc-next-home" href="/loc/" aria-current={view==='home'?'page':undefined}>回月典首頁</a>
-        </nav>
+        <div className="loc-next-nav-stack">
+          <nav className="loc-next-nav loc-next-nav-primary" aria-label="LOC 主要導覽">
+            <a href="/runes">月之符文</a>
+            <NavLinks items={PRIMARY_NAV} view={view}/>
+            <form className="loc-next-search" action="/search" method="get" role="search">
+              <input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" />
+              <button type="submit">搜尋</button>
+            </form>
+            <a className="loc-next-home" href="/loc/" aria-current={view==='home'?'page':undefined}>回月典首頁</a>
+          </nav>
+          <nav className="loc-next-nav loc-next-subnav" aria-label="LOC 次要導覽">
+            <NavLinks items={TOOL_NAV} view={view}/>
+          </nav>
+        </div>
       </header>
       <main className="loc-next-main" data-loc-view={view}>
         <ActiveView />
