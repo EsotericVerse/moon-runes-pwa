@@ -1,5 +1,6 @@
 /* Text-box governance: only an explicit .loc-subtitle is title explanation.
-   Ordinary first body paragraphs must remain body copy. */
+   Ordinary first body paragraphs must remain body copy.
+   Frozen homepage blocks use their existing home-specific heading rules and are intentionally excluded here. */
 .loc-card>h1+p:not(.loc-subtitle),
 .loc-card>h2+p:not(.loc-subtitle),
 .loc-card>h3+p:not(.loc-subtitle),
@@ -8,10 +9,7 @@
 .loc-panel>h3+p:not(.loc-subtitle),
 .loc-home>.loc-hero>h1+p:not(.loc-subtitle):not(.loc-core-line),
 .loc-home>.loc-hero>h2+p:not(.loc-subtitle):not(.loc-core-line),
-.loc-home>.loc-hero>h3+p:not(.loc-subtitle):not(.loc-core-line),
-.home-section-heading>h1+p:not(.loc-subtitle),
-.home-section-heading>h2+p:not(.loc-subtitle),
-.home-section-heading>h3+p:not(.loc-subtitle){
+.loc-home>.loc-hero>h3+p:not(.loc-subtitle):not(.loc-core-line){
   display:block;
   margin:.55rem 0!important;
   padding:0;
@@ -24,8 +22,7 @@
 }
 .loc-card>.loc-subtitle,
 .loc-panel>.loc-subtitle,
-.loc-home>.loc-hero>.loc-subtitle,
-.home-section-heading>.loc-subtitle{
+.loc-home>.loc-hero>.loc-subtitle{
   display:inline-block;
   margin:.12rem 0 .72rem!important;
   padding:0 0 .6rem .8rem;
@@ -40,8 +37,7 @@
 @media(max-width:680px){
   .loc-card>.loc-subtitle,
   .loc-panel>.loc-subtitle,
-  .loc-home>.loc-hero>.loc-subtitle,
-  .home-section-heading>.loc-subtitle{
+  .loc-home>.loc-hero>.loc-subtitle{
     display:block;
     border-left:0;
     padding-left:0;
