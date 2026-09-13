@@ -6,9 +6,6 @@
 .loc-panel>h1+p:not(.loc-subtitle):not(.loc-core-line),
 .loc-panel>h2+p:not(.loc-subtitle):not(.loc-core-line),
 .loc-panel>h3+p:not(.loc-subtitle):not(.loc-core-line),
-.loc-home>.loc-hero>h1+p:not(.loc-subtitle):not(.loc-core-line),
-.loc-home>.loc-hero>h2+p:not(.loc-subtitle):not(.loc-core-line),
-.loc-home>.loc-hero>h3+p:not(.loc-subtitle):not(.loc-core-line),
 .home-section-heading>h1+p:not(.loc-subtitle):not(.loc-core-line),
 .home-section-heading>h2+p:not(.loc-subtitle):not(.loc-core-line),
 .home-section-heading>h3+p:not(.loc-subtitle):not(.loc-core-line){
@@ -22,6 +19,39 @@
   line-height:1.8!important;
 }
 
+/* One type system for all migrated LOC pages and controls. */
+.loc-next-header,
+.loc-next-main,
+.loc-view,
+.loc-card,
+.loc-panel,
+.loc-bubble,
+.loc-button,
+.loc-status,
+.loc-table,
+.loc-next-search input,
+.loc-view input,
+.loc-view button,
+.loc-view select,
+.loc-view textarea{
+  font-family:inherit;
+}
+
+.loc-eyebrow{
+  font-size:.82rem!important;
+  font-weight:750!important;
+  line-height:1.45!important;
+  letter-spacing:.08em!important;
+}
+
+.loc-card>h1,.loc-card>h2,.loc-card>h3,
+.loc-panel>h1,.loc-panel>h2,.loc-panel>h3,
+.home-section-heading>h1,.home-section-heading>h2,.home-section-heading>h3{
+  font-size:1.32rem;
+  font-weight:700;
+  line-height:1.35;
+}
+
 .loc-subtitle{
   display:block;
   margin:.35rem 0 .7rem!important;
@@ -33,34 +63,45 @@
   line-height:1.65!important;
 }
 
-/* Homepage title row uses the same left-title / right-explanation framing as other text boxes. */
-.loc-home>.loc-hero>h1{
-  display:inline-block!important;
-  margin:.12rem 0 .72rem!important;
+.loc-card>p:not(.loc-eyebrow):not(.loc-subtitle):not(.loc-core-line),
+.loc-panel>p:not(.loc-eyebrow):not(.loc-subtitle):not(.loc-core-line),
+.loc-hero-copy p{
+  font-size:1rem;
+  font-weight:400;
+  line-height:1.8;
+}
+
+/* Homepage first box: line 2 title stays left, line 3 explanation is fixed on the right. */
+.loc-home>.loc-hero>.home-title-row{
+  display:grid;
+  grid-template-columns:max-content minmax(0,1fr);
+  align-items:end;
+  width:100%;
+  margin:.12rem 0 .72rem;
+}
+.loc-home>.loc-hero>.home-title-row>h1{
+  margin:0!important;
   padding:0 .8rem .6rem 0!important;
   border:0!important;
   border-bottom:1px solid var(--loc-line)!important;
   color:var(--loc-text)!important;
   font-size:clamp(2rem,6vw,4rem)!important;
+  font-weight:700!important;
   line-height:1.08!important;
-  vertical-align:baseline;
 }
-.loc-home>.loc-hero>.loc-core-line{
-  display:inline-block!important;
-  margin:.12rem 0 .72rem!important;
+.loc-home>.loc-hero>.home-title-row>.loc-core-line{
+  margin:0!important;
   padding:0 0 .6rem .8rem!important;
   border:0!important;
   border-left:1px solid var(--loc-line)!important;
   border-bottom:1px solid var(--loc-line)!important;
   color:var(--loc-accent)!important;
   font-size:1.15rem!important;
-  font-weight:750!important;
+  font-weight:700!important;
   line-height:1.7!important;
-  vertical-align:baseline;
 }
 .loc-home>.loc-hero>.loc-hero-copy{
   display:grid;
-  clear:both;
   gap:.45rem;
   margin-top:.35rem;
 }
@@ -69,9 +110,13 @@
   padding:0!important;
   border:0!important;
   color:var(--loc-text)!important;
-  font-size:1rem!important;
-  font-weight:400!important;
-  line-height:1.8!important;
+}
+
+.loc-next-nav,
+.loc-button,
+.loc-next-search input{
+  font-size:.95rem;
+  font-weight:500;
 }
 
 .loc-next-nav-stack{width:100%}
@@ -92,9 +137,12 @@
 }
 
 @media(max-width:680px){
-  .loc-home>.loc-hero>h1,
-  .loc-home>.loc-hero>.loc-core-line{
-    display:block!important;
+  .loc-home>.loc-hero>.home-title-row{
+    grid-template-columns:1fr;
+    align-items:start;
+  }
+  .loc-home>.loc-hero>.home-title-row>h1,
+  .loc-home>.loc-hero>.home-title-row>.loc-core-line{
     padding-left:0!important;
     padding-right:0!important;
     border-left:0!important;
