@@ -82,6 +82,22 @@ export default function AboutView(){
       </div>
     </section>
 
+    <section className="loc-card home-copy-block home-culture" id="culture">
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">Culture · 文化</p>
+        <h2>文字經過時間，才形成文化。</h2>
+        <p className="loc-subtitle">單字 → 脈絡 → 治理 → 文化 → 語言體系 → 語言</p>
+      </div>
+      <div className="home-author-copy">
+        <p>文化不是單純的文風，也不是一組固定關鍵詞。風格加上時間、事件、價值與語意變化，才會形成某個時期可以被辨認、比較與回看的文化。</p>
+        <p>因此 LOC 會把個人語意設定、分類、脈絡、搜尋與顯示重新放回時間中觀察。過去與現在可以整理，未來仍然無常；重點不是宣稱唯一答案，而是治理既有語意、觀察演化，再推演可能。</p>
+        <p>月之符文是這套理論的符號式語言模型實例：66 個單字符文作為最底層語意錨點，向上形成詞、句型、脈絡與文化。LOC 則把這些層次模組化，讓文字可以被搜尋、比較、治理與持續演化。</p>
+        <div className="loc-actions">
+          <a className="loc-button" href="/evolution">查看文化</a>
+        </div>
+      </div>
+    </section>
+
     <section className="loc-card home-copy-block home-custom-runes" id="custom-runes">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Personal Culture · 個人文化</p>
