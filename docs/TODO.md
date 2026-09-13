@@ -66,3 +66,13 @@
 - [ ] Search 加入群組優先卡與正式群組描述。
 - [ ] Semantic enhancer 維持單向、每層一次，避免 DOM recursive re-enhance。
 - [ ] 每批完成後檢查 Repository Governance 與 Pages build。
+
+### Game UI 2.0 / 下一階段
+
+- [ ] 目前先不新增遊戲規則；完成現行 Shell / Settings / Search / Cache / Semantic Governance 收尾後，再進入 Game UI 2.0。
+- [ ] 將現有 GameView 從 dashboard 式平面介面改為真正 card battle board：玩家區、事件卡、手牌、出牌區、De 與回合狀態要有明確空間層次。
+- [ ] 將 RuneCard / EventCard / PlayerBoard / DeMeter / ActionPanel / BattleLog 元件化，沿用 canonical runes / event data，不建立第二份遊戲專用符文資料。
+- [ ] 保留現行事件 → 三張符文回答 → 語意覆蓋 → De → 共振／干擾 → 16 De 勝利規則，先強化互動與視覺，不在 UI 重構時改動規則基底。
+- [ ] 將遊戲流程逐步收斂為明確 phase/state：draw → choose → reveal → resolve → interact → endTurn → nextEvent，為後續職業、特殊規則與 PvP 擴充預留接口。
+- [ ] 使用 Next.js / React 的 dynamic import、route prefetch 與 client-state 分層，讓遊戲只在進入遊戲時載入較重互動模組，不拖累月之符文與 LOC 一般頁面。
+- [ ] Game UI 2.0 完成並驗證後，再正式把遊戲作為月典分支中的成熟互動模組呈現。
