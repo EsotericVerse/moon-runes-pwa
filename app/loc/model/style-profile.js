@@ -12,13 +12,14 @@ export const makeStyleGroup=(index,name=`群組 ${index+1}`)=>({
   description:'',
   keywords:[],
   nor:[],
+  link:'',
   is_fallback:false
 });
 
 export const INITIAL_STYLE_PROFILE={
   version:1,
   groups:TEMPLATE_STYLE_GROUPS.map((name,index)=>makeStyleGroup(index,name)),
-  fallback:{id:'special',name:'特殊',description:'未命中其他群組的內容會進入這裡。',keywords:[],nor:[],is_fallback:true}
+  fallback:{id:'special',name:'特殊',description:'未命中其他群組的內容會進入這裡。',keywords:[],nor:[],link:'',is_fallback:true}
 };
 
 export const INITIAL_MY_STYLE={
@@ -38,6 +39,7 @@ export function normalizeStyleProfile(data){
     description:String(group.description||''),
     keywords:parseStyleTerms(Array.isArray(group.keywords)?group.keywords.join('\n'):group.keywords,MAX_STYLE_KEYWORDS),
     nor:parseStyleTerms(Array.isArray(group.nor)?group.nor.join('\n'):group.nor,MAX_STYLE_NOR),
+    link:String(group.link||''),
     is_fallback:false
   }));
   return {
@@ -47,7 +49,7 @@ export function normalizeStyleProfile(data){
       id:'special',
       name:String(data.fallback?.name||'特殊'),
       description:String(data.fallback?.description||'未命中其他群組的內容會進入這裡。'),
-      keywords:[],nor:[],is_fallback:true
+      keywords:[],nor:[],link:String(data.fallback?.link||''),is_fallback:true
     }
   };
 }
