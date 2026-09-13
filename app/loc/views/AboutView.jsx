@@ -26,16 +26,13 @@ export default function AboutView(){
       </div>
       <div className="home-author-copy">
         <p><strong>不知道怎麼開始沒關係，就抽一張牌吧！</strong></p>
-        <p>可以是問事，可以是生活風格主題的每日符文。<br/>不知道怎麼說的話，<a href="/runes">抽牌</a>就對了！</p>
-        <p>不用管符文是什麼，抽了就知道！<br/>抽到之後再看當下的文字、方向與說明就可以；<br/>想多了解一點，再慢慢往下看。</p>
-        <p>你也可以完全不抽牌，直接看關係脈絡、統計、文化，<br/>或直接搜尋自己有興趣的文字與資料。</p>
+        <p>不用管符文是什麼，抽了就知道！<br/>可以是問事，可以是生活風格主題的每日符文。</p>
+        <p>抽到之後再看當下的文字、方向與說明就可以；<br/>想多了解一點，再慢慢往下看。</p>
+        <p>你也可以完全不抽牌，直接在符文面跳過，<br/>往下看或看上面連結的脈絡、統計、文化，<br/>或直接搜尋自己有興趣的文字與資料。</p>
         <p><strong>那就開始吧！</strong></p>
         <div className="loc-actions">
-          <a className="loc-button primary" href="/runes">直接抽牌</a>
-          <a className="loc-button" href="/context">看脈絡</a>
-          <a className="loc-button" href="/statics">看統計</a>
-          <a className="loc-button" href="/evolution">看文化</a>
-          <a className="loc-button" href="/search">直接搜尋</a>
+          <a className="loc-button primary" href="/runes">抽牌</a>
+          <a className="loc-button" href="/statics">排行榜</a>
         </div>
       </div>
     </section>
@@ -101,6 +98,8 @@ export default function AboutView(){
         <article className="home-progress-item">
           <strong>可比對資料</strong>
           <span>總文字 2,939,214 字，內有24,509 筆資料。<br/>包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，<br/>以及 26 份唯一 KM 知識文件共 385,996 字；<br/>圖片與影片不計字數。筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。</span>
+        </article>
+        <article className="home-progress-item">
           <strong>系統內建 KM 至少 515 個知識單元</strong>
           <span>目前已登記 31 個 Knowledge Assets；FAQ 單獨即有 90 條。去除檢索投影、文章投影、圖片、重複文件版本與首頁統計展示後，目前有 26 份唯一 KM 知識文件，共 385,996 字。</span>
         </article>
