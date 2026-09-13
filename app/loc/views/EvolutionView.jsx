@@ -13,7 +13,8 @@ export default function EvolutionView(){
   const [eras,setEras]=useState(null);const [events,setEvents]=useState(null);const [loc3,setLoc3]=useState(null);const [loc6,setLoc6]=useState(null);const [runeHistory,setRuneHistory]=useState(null);const [coreHistory,setCoreHistory]=useState(null);const [runes,setRunes]=useState(null);const [error,setError]=useState('');
 
   useEffect(()=>{let live=true;const load=(path,setter)=>fetchLocJson(path).then(data=>live&&setter(data)).catch(e=>live&&setError(e.message));setError('');
-    if((tab==='overview'||tab==='eras')&&!eras)load(LOC_DATA.LOC_ERA_REGISTRY,setEras);
+    if(tab==='overview'&&!eras)load(LOC_DATA.LOC_ERA_REGISTRY,setEras);
+    if(tab==='eras'&&!eras)load(LOC_DATA.LOC_ERA_REGISTRY,setEras);
     if(tab==='timeline'){
       if(!events)load(LOC_DATA.LOC8_EVENT_SNAPSHOT,setEvents);
       if(!runeHistory)load(LOC_DATA.LUNARUNE_EVOLUTION_HISTORY,setRuneHistory);
