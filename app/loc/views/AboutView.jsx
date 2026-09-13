@@ -1,7 +1,5 @@
 const contextProgressItems = [
-  '總字數包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，以及 26 份唯一 KM 知識文件共 385,996 字；圖片與影片不計字數。筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。',
-  '月之符文66已完成現行母資料正名與核心語意治理；語意引擎的極性與關鍵詞已確認，符文 RAG 的前置資料亦已完成整理。目前持續進行舊版語意污染清理與 64→66 資料路徑收斂。',
-  '目前已登記 31 個 Knowledge Assets；FAQ 單獨即有 90 條。去除檢索投影、文章投影、圖片、重複文件版本與首頁統計展示後，目前有 26 份唯一 KM 知識文件，共 385,996 字。'
+  '總字數包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，以及 26 份唯一 KM 知識文件共 385,996 字；圖片與影片不計字數。筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。'
 ];
 
 const cultureProgressItems = [
@@ -116,19 +114,11 @@ export default function AboutView(){
         <h2>脈絡，文字的關係與分析</h2>
         <p className="loc-subtitle">把文字找出關聯性，才會可以統計跟分析。</p>
       </div>
-      <div className="home-author-copy">
+      <div className="home-author-copy" id="current-progress">
+        <p>不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再回到原始內容確認證據。</p>
         <p>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p>
       </div>
-      <div className="home-progress" id="current-progress">
-        <div className="home-section-heading">
-          <p className="loc-eyebrow">Current Progress</p>
-          <h2>目前已經可以做到什麼？</h2>
-        </div>
-        <div className="home-author-copy">
-          <p>不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再回到原始內容確認證據。</p>
-        </div>
-        <ProgressGrid items={contextProgressItems} label="脈絡目前進度" />
-      </div>
+      <ProgressGrid items={contextProgressItems} label="脈絡目前進度" />
     </section>
 
     <section className="loc-card home-copy-block home-culture" id="culture">
