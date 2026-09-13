@@ -21,12 +21,12 @@ export default function AboutView(){
       <div className="loc-hero-copy">
         <p>月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演語言的系統。月之符文(LunaRunes)是一套有自己獨立的語言方式。</p>
         <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，讓累積的資料可以繼續被理解、比較分析與推演。</p>
-        <p className="home-intro-links">
-          <a href="#framework-map">{'<架構圖>'}</a>{' '}
-          <a href="#current-progress">{'<目前進度>'}</a>{' '}
-          <a href="/governance">{'<治理>'}</a>{' '}
-          <a href="#author-words">{'<作者的話>'}</a>
-        </p>
+        <div className="home-intro-links" aria-label="首頁快速入口">
+          <a className="loc-bubble" href="#framework-map">架構圖</a>
+          <a className="loc-bubble" href="#current-progress">目前進度</a>
+          <a className="loc-bubble" href="/governance">治理</a>
+          <a className="loc-bubble" href="#author-words">作者的話</a>
+        </div>
       </div>
     </header>
 
