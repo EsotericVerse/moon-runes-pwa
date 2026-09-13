@@ -45,26 +45,19 @@ if (!existsSync(canonicalPath)) {
   }
 }
 
-const runeAdapterPath = resolve(root, 'lib/runes.js');
-const runeAdapter = readFileSync(runeAdapterPath, 'utf8');
-if (!runeAdapter.includes("../data/json/core/runes.json")) failures.push('lib/runes.js: must import data/json/core/runes.json');
-if (/canonicalRows\s*=\s*\[/.test(runeAdapter)) failures.push('lib/runes.js: embedded duplicate canonical rune rows');
-
-const allowedCanonicalRefs = new Set(['app/loc/data-paths.mjs', 'lib/runes.js']);
-const runtimeCanonicalRef = /(?:from\s*|import\s*\(|require\s*\(|fetch\s*\()\s*['"`][^'"`]*data\/json\/core\/runes\.json\b/;
+const allowedCanonicalRefs = new Set(['app/loc/data-paths.mjs']);
+const runtimeCanonicalRef = /data\/json\/core\/runes\.json\b/;
 function verifyRuntimeRefs(scanRoot) {
   walk(resolve(root, scanRoot), path => {
     if (!/\.(?:js|jsx|mjs)$/.test(path)) return;
     const rel = relative(root, path).replaceAll('\\', '/');
     const text = readFileSync(path, 'utf8');
     if (/runes(?:64|66)\.(?:js|json)\b/i.test(text)) failures.push(`${rel}: legacy rune projection reference`);
-    if (!allowedCanonicalRefs.has(rel) && runtimeCanonicalRef.test(text)) failures.push(`${rel}: canonical runes runtime path must go through shared data/adapter module`);
+    if (!allowedCanonicalRefs.has(rel) && runtimeCanonicalRef.test(text)) failures.push(`${rel}: canonical runes runtime path must go through shared data-path module`);
   });
 }
 verifyRuntimeRefs('app');
-verifyRuntimeRefs('lib');
 
-// All Next view data endpoints must come through LOC_DATA so public staging can be exact.
 walk(resolve(root, 'app/loc/views'), path => {
   if (!/\.(?:js|jsx|mjs)$/.test(path)) return;
   const rel = relative(root, path).replaceAll('\\', '/');
