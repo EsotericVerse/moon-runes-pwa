@@ -6,6 +6,16 @@ export const MAX_STYLE_KEYWORDS=64;
 export const MAX_STYLE_NOR=8;
 export const TEMPLATE_STYLE_GROUPS=['靈魂','連結','生命','自然','礦物','元素','秩序','無序'];
 
+/* Group-name keyword specification
+   1. group.name is itself a canonical visible keyword, e.g. 微月光.
+   2. Matching is longest-name-first, so 符文演算法 wins before 演算法.
+   3. Once a longer match claims a text range, shorter names may not rematch that range.
+   4. Existing links and already-enhanced keyword nodes are excluded from enhancement.
+   5. The goal is one semantic match -> one visual emphasis -> one link, with no nested or duplicate links. */
+export const sortGroupNamesLongestFirst=groups=>[...(groups||[])]
+  .filter(group=>String(group?.name||'').trim())
+  .sort((a,b)=>String(b.name).length-String(a.name).length||String(a.name).localeCompare(String(b.name),'zh-Hant'));
+
 export const makeStyleGroup=(index,name=`群組 ${index+1}`)=>({
   id:`group-${index+1}`,
   name,
