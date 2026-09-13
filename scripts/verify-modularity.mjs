@@ -67,6 +67,9 @@ walk(resolve(root, 'app/loc/views'), path => {
   const rel = relative(root, path).replaceAll('\\', '/');
   const text = readFileSync(path, 'utf8');
   if (/['"`]\/data\/json\//.test(text)) failures.push(`${rel}: hardcoded /data/json path; register it in LOC_DATA`);
+  if (/from\s+['"]\.\.\/(?:local-db|google-drive|kv-state)['"]/.test(text)) {
+    failures.push(`${rel}: storage providers must be accessed through ../storage facade`);
+  }
 });
 
 const dataRuntime = readFileSync(resolve(root, 'app/loc/data.js'), 'utf8');
@@ -98,4 +101,4 @@ if (failures.length) {
   console.error('[modularity] violations:\n' + failures.join('\n'));
   process.exit(1);
 }
-console.log('[modularity] Next presentation/data/performance budgets verified');
+console.log('[modularity] Next presentation/data/performance/storage boundaries verified');
