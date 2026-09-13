@@ -18,25 +18,31 @@
 
 ## Next
 
-### Large Data Performance / 千萬字級預防
+### Large Data Performance / 家族級與超大語料遠景
 
-- [ ] Search 改為 index-first：禁止每次查詢把所有 corpus shards 全部排入下載／parse／全文掃描；先查輕量本機索引，再只讀命中的 shard / document。
+- [ ] 架構預設目標從「千萬字可運作」提升為可持續擴張的 family-scale corpus：單人 → 多人 → 家族 → 多世代 → 多文化／多來源；總文字量可進入 100M、1B+ 級距，不能假設整體資料可一次載入、一次搜尋或一次重建。
+- [ ] 建立 Light / Standard / Heavy / Archive 四級工作模式：日常查詢永遠走輕量索引；跨人物、跨年代、跨文化總體分析才進入重量管線；Archive 層只保存與定向取回，不參與一般熱路徑。
+- [ ] 資料分區鍵至少預留 person / family / generation / era / source / corpus / language / culture；搜尋與統計先縮小 partition，再進入 shard / document，不允許預設跨全庫。
+- [ ] Search 改為 hierarchical index-first：global catalog → scope index → partition index → shard/document index → content fetch；禁止每次查詢把所有 corpus shards 全部排入下載／parse／全文掃描。
 - [ ] 建立搜尋索引格式，至少保存 term/token → document/shard id、來源、必要 ranking metadata；原文內容與搜尋索引分離。
-- [ ] 為 LOC Search、LunaRunes Search、Personal Search 建立不同 search scope / index profile，但共用同一搜尋引擎與 cache engine。
-- [ ] IndexedDB 改為可索引 store；`getLocalRecords(type)` 不得先 `entries()` 讀完整 DB 再 filter，應直接依 type / id / date / source 等 index 查詢。
+- [ ] 為 LOC Search、LunaRunes Search、Personal Search、未來 Family Search 建立不同 search scope / index profile，但共用同一搜尋引擎與 cache engine。
+- [ ] 建立「延伸體系」資料模型：新增人物／年代／作品時可新增 partition/index segment，不因整體語料成長而重寫舊資料或重建整個索引。
+- [ ] 索引與統計採增量更新；新增 1% 資料時不得重新 parse / tokenize / classify 100% corpus。支援 segment merge / compaction，但不得阻塞日常查詢。
+- [ ] IndexedDB 改為可索引 store；`getLocalRecords(type)` 不得先 `entries()` 讀完整 DB 再 filter，應直接依 type / id / date / source / person / family 等 index 查詢。
 - [ ] `clearLocalRecords(type)` 改用 IndexedDB index/cursor 定向刪除，避免先 full-scan 全庫再逐筆 delete。
-- [ ] 設定 I/O Budget：限制單次查詢最多讀取 shard 數、單次 transaction 筆數、單次 JSON parse 體積與背景 index rebuild 工作量。
-- [ ] 建立 memory hot-cache：canonical rune data、manifest、search metadata、常用 registry 在同一 App session 內不得反覆讀磁碟／反覆 JSON parse。
-- [ ] 建立 persistent cache version/hash：資料版本未變時不重建本機索引；只重建變更 shard / source。
+- [ ] 設定 I/O Budget：限制單次查詢最多讀取 shard 數、單次 transaction 筆數、單次 JSON parse 體積與背景 index rebuild 工作量；重量工作必須可分批、可中止、可續跑。
+- [ ] 建立 memory hot-cache：canonical rune data、manifest、search metadata、常用 registry 在同一 App session 內不得反覆讀磁碟／反覆 JSON parse；超大資料不得常駐 RAM。
+- [ ] 建立 persistent cache version/hash：資料版本未變時不重建本機索引；只重建變更 partition / shard / source。
 - [ ] PWA runtime cache 分級：core 小資料可優先快取；大型 corpus / graph / media metadata 只在實際使用時 cache，不做整包 precache。
-- [ ] 為大型 cache 設容量與淘汰策略（LRU / last-access / version cleanup），避免 Cache Storage / IndexedDB 無限制成長。
+- [ ] 為大型 cache 設容量與淘汰策略（LRU / last-access / version cleanup），避免 Cache Storage / IndexedDB 無限制成長；cache policy 必須能依 Light / Heavy 模式不同。
 - [ ] Search、Scenario、Library 等輸入搜尋加入 debounce / deferred update；禁止每個 key stroke 對大型資料做完整 `.filter().includes()` 掃描。
 - [ ] 大型排序／統計改成增量或預計算 index；避免每次 render 對完整集合重新 `sort/filter/map`。
 - [ ] React 大型結果頁採 windowing / virtualization 或 page-by-id；即使資料已在記憶體，也不得同時建立大量 DOM nodes。
-- [ ] Graph 若未來超出 LunaRunes 66 節點，改成 adjacency/index 查詢與局部展開；禁止 O(n²) 即時計算所有 pair edges。
+- [ ] Graph 若未來超出 LunaRunes 66 節點，改成 adjacency/index 查詢與局部展開；禁止 O(n²) 即時計算所有 pair edges。家族總體 Graph 必須按人物／時間／關係範圍局部展開。
 - [ ] `prepare-next-public.mjs` 將「部署可用資料」與「預載資料」分級；避免搜尋 corpus 成長後所有 shards 都被視為同等 runtime payload / cache 對象。
-- [ ] 建立 large-data benchmark：至少測試 1M、10M、50M 中文字元資料級距，記錄 cold search、warm search、IndexedDB read、JSON parse、memory peak、build/export size。
+- [ ] 建立 large-data benchmark：至少測試 1M、10M、50M、100M、1B 中文字元級距；100M+ 可使用 synthetic/index benchmark，不要求完整 corpus 常駐瀏覽器。記錄 cold search、warm search、IndexedDB read、JSON parse、memory peak、build/export size、index size 與 incremental update cost。
 - [ ] 設效能回歸門檻：CI / benchmark 若超出既定 memory、I/O、搜尋 latency 或 build payload budget，視為性能回歸，不讓資料量成長默默拖慢系統。
+- [ ] 架構原則：總資料量可以極大，但任何單次互動的 working set 必須小；系統擴張靠分區、索引、分片、增量與局部載入，而不是靠更大的 RAM 或一次掃更多資料。
 
 ### Locale / Theme / Shell
 
