@@ -30,6 +30,33 @@
   gap:.55rem;
 }
 .runes-draw-action,.runes-retry{margin-top:.85rem}
+.loc-draw-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:1rem;
+}
+.loc-draw-card{
+  display:grid;
+  gap:.45rem;
+  align-content:start;
+}
+.loc-rune-card-image{
+  display:block;
+  width:min(100%,260px);
+  aspect-ratio:1/1;
+  object-fit:contain;
+  margin:.2rem auto .35rem;
+  border:1px solid var(--loc-line);
+  border-radius:var(--loc-radius-sm);
+  background:var(--loc-panel-2);
+}
+.loc-draw-card>b{
+  font-size:1.15rem;
+  text-align:center;
+}
+.loc-draw-card>span,.loc-draw-card>small{
+  text-align:center;
+}
 .runes-library-grid{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
@@ -88,6 +115,8 @@
 .runes-reference-grid figcaption{padding:.7rem .85rem;color:var(--loc-muted);font-size:.82rem}
 @media(max-width:980px){.runes-library-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){
+  .loc-draw-grid{grid-template-columns:1fr}
+  .loc-rune-card-image{width:min(100%,300px)}
   .runes-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .runes-reference-grid,.runes-print-card{grid-template-columns:1fr}
   .runes-print-card .loc-button{width:100%;text-align:center}
