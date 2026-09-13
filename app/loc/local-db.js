@@ -7,6 +7,7 @@ const DB_VERSION=1;
 const RECORD_STORE='records';
 const META_STORE='meta';
 const LEGACY_MIGRATION_KEY='legacy-idb-keyval-migrated';
+const RECORD_INDEXES=new Set(['type','date','source','person','family']);
 
 let dbPromise;
 let migrationPromise;
@@ -96,10 +97,18 @@ export async function deleteLocalRecord(id){
   await transactionDone(tx);
 }
 
-export async function getLocalRecords(type){
+export async function getLocalRecordsBy(field,value){
+  if(!RECORD_INDEXES.has(field))throw new Error(`Unsupported local record index: ${field}`);
   const {tx,store}=await recordsStore();
-  const request=type?store.index('type').getAll(type):store.getAll();
-  const values=await requestToPromise(request);
+  const values=await requestToPromise(store.index(field).getAll(value));
+  await transactionDone(tx);
+  return values;
+}
+
+export async function getLocalRecords(type){
+  if(type)return getLocalRecordsBy('type',type);
+  const {tx,store}=await recordsStore();
+  const values=await requestToPromise(store.getAll());
   await transactionDone(tx);
   return values;
 }
