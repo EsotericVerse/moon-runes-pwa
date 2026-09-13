@@ -3,11 +3,13 @@
 import {
   clearLocalRecords,
   deleteLocalRecord,
+  downloadJsonFile,
   getLocalRecord,
   getLocalRecords,
   getLocalRecordsBy,
   importLocalRecord,
-  putLocalRecord
+  putLocalRecord,
+  readJsonFile
 } from './local-db';
 import {
   authorizeGoogleDrive,
@@ -95,6 +97,14 @@ export const STORAGE_ADAPTERS=Object.freeze({
 export function getStorageAdapter(id){
   const key=String(id||'').trim();
   return STORAGE_ADAPTERS[key]||null;
+}
+
+export function exportRecordsJson(data,filename='loc-local-data.json'){
+  return downloadJsonFile(data,filename);
+}
+
+export function readRecordsJsonFile(file){
+  return readJsonFile(file);
 }
 
 export async function backupLocalRecordsToGoogleDrive(name='loc-records.json',{type='',meta={}}={}){
