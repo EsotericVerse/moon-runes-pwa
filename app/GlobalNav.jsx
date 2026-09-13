@@ -7,7 +7,6 @@ export default function GlobalNav(){
         <a href="/context">脈絡</a>
         <a href="/statics">統計</a>
         <a href="/evolution">推演</a>
-        <a href="/governance">治理</a>
         <a href="/my-style">設定</a>
         <form className="loc-next-search" action="/search" method="get" role="search">
           <input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" />
