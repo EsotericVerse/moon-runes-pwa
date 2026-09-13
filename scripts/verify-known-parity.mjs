@@ -19,7 +19,7 @@ if(existsSync(resolve(root,'lib')))failures.push('lib/ must not be recreated; sh
 // Homepage block 1 remains adjustable while mobile proportions are still being reviewed.
 // Homepage block 2 (Start Here) and block 3 (LunaRunes) are frozen and must not change incidentally.
 // Block 3 is a fixed reference block and receives priority protection.
-// GlobalFooter remains outside this specific homepage block freeze.
+// Global navigation and footer are now frozen independently and must not change incidentally.
 
 requireText('app/loc/views/AboutView.jsx',[
   '<section className="loc-card home-copy-block home-beginner" id="beginner">',
@@ -67,6 +67,33 @@ requireText('app/styles/home-content.css',[
   '.home-beginner .home-framework-figure img{'
 ]);
 
+// Frozen global navigation: preserve current links, route-specific branches, search and home-return behavior.
+requireText('app/GlobalNav.jsx',[
+  "const isRunes=pathname==='/runes'||pathname.startsWith('/runes/');",
+  "const isGovernance=pathname==='/governance'||pathname.startsWith('/governance/');",
+  '<a href="/">月典</a>',
+  '<a href="/game">符文遊戲</a>',
+  '<a href="/context">符文脈絡</a>',
+  '<a href="/statics">符文統計</a>',
+  '<a href="/evolution">符文文化</a>',
+  '<a href="/runes">月之符文</a>',
+  '<a href="/my-style">設定</a>',
+  '<SearchBox />',
+  '<a className="loc-next-home" href="/runes">回符文首頁</a>',
+  '<a className="loc-next-home" href="/">回月典首頁</a>',
+  '<nav className="loc-next-nav loc-next-nav-primary" aria-label={ariaLabel}>'
+]);
+
+// Frozen global footer: preserve route-aware home link, governance, theme control and author/contact line.
+requireText('app/GlobalFooter.jsx',[
+  "const isRunes=pathname==='/runes'||pathname.startsWith('/runes/');",
+  '<footer className="loc-site-footer">',
+  '<a href={isRunes?\'/runes\':\'/\'}>{isRunes?\'月之符文\':\'月典\'}</a>｜<a href="/governance">治理</a>｜<ThemeSelect />',
+  '<a href="https://whoami.lo3rwang.cc/">Lucas Oscar Wang 政德</a>',
+  '<a href="mailto:sopa2306@gmail.com">聯絡方式</a>',
+  '秘藝文域（EsotericVerse）（籌備中）'
+]);
+
 requireText('app/layout.jsx',['GlobalNav','GlobalFooter']);
 forbidText('app/loc/LocApp.jsx',['loc-next-footer']);
 
@@ -85,4 +112,4 @@ requireText('scripts/prepare-next-public.mjs',["'pics'","'LunarRunesCardCut.pdf'
 requireText('scripts/verify-public-payload.mjs',['pics/LOC-FrameworkPic.png','pics/LOC-structure.png','LunarRunesCardCut.pdf']);
 
 if(failures.length){console.error('[known-parity] migration regressions found:\n'+failures.map(item=>`- ${item}`).join('\n'));process.exit(1);}
-console.log('[known-parity] Runes, Graph, protected sources, and homepage blocks 2-3 are guarded; block 3 is fixed');
+console.log('[known-parity] Runes, Graph, protected sources, homepage blocks 2-3, global nav, and global footer are guarded; block 3 is fixed');
