@@ -52,7 +52,7 @@ const actualJson = new Set(walkFiles(resolve(publicRoot, 'data/json')));
 for (const path of expectedJson) if (!actualJson.has(path)) failures.push(`missing staged JSON: ${path}`);
 for (const path of actualJson) if (!expectedJson.has(path)) failures.push(`unexpected staged JSON: ${path}`);
 
-// User-facing governance/KM lives in routes or structured data; only the Canon doc is staged.
+// User-facing governance/KM lives in routes or structured data; only the Canon doc is staged here.
 const expectedDocs = new Set(['docs/LOC_Canon_1.0.docx']);
 const actualDocs = new Set(walkFiles(resolve(publicRoot, 'docs')));
 for (const path of expectedDocs) if (!actualDocs.has(path)) failures.push(`missing staged doc: ${path}`);
@@ -67,8 +67,12 @@ const actualPics = new Set(walkFiles(resolve(publicRoot, 'pics')));
 for (const path of expectedPics) if (!actualPics.has(path)) failures.push(`missing staged pic: ${path}`);
 for (const path of actualPics) if (!expectedPics.has(path)) failures.push(`unexpected staged pic: ${path}`);
 
+// Physical card production PDF is a public Runes asset, not tutorial content.
+const printablePdf = resolve(publicRoot, 'LunarRunesCardCut.pdf');
+if (!existsSync(printablePdf)) failures.push('missing staged printable card PDF: LunarRunesCardCut.pdf');
+
 if (failures.length) {
   console.error('[public-payload] violations:\n' + failures.join('\n'));
   process.exit(1);
 }
-console.log(`[public-payload] verified ${actualJson.size} JSON files, ${actualDocs.size} docs, ${actualPics.size} frozen pics`);
+console.log(`[public-payload] verified ${actualJson.size} JSON files, ${actualDocs.size} docs, ${actualPics.size} frozen pics and printable card PDF`);
