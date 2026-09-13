@@ -28,8 +28,8 @@
 - [ ] 為 LOC Search、LunaRunes Search、Personal Search、未來 Family Search 建立不同 search scope / index profile，但共用同一搜尋引擎與 cache engine。
 - [ ] 建立「延伸體系」資料模型：新增人物／年代／作品時可新增 partition/index segment，不因整體語料成長而重寫舊資料或重建整個索引。
 - [ ] 索引與統計採增量更新；新增 1% 資料時不得重新 parse / tokenize / classify 100% corpus。支援 segment merge / compaction，但不得阻塞日常查詢。
-- [ ] IndexedDB 改為可索引 store；`getLocalRecords(type)` 不得先 `entries()` 讀完整 DB 再 filter，應直接依 type / id / date / source / person / family 等 index 查詢。
-- [ ] `clearLocalRecords(type)` 改用 IndexedDB index/cursor 定向刪除，避免先 full-scan 全庫再逐筆 delete。
+- [x] IndexedDB 改為可索引 store；`getLocalRecords(type)` 不得先 `entries()` 讀完整 DB 再 filter，應直接依 type / id / date / source / person / family 等 index 查詢。
+- [x] `clearLocalRecords(type)` 改用 IndexedDB index/cursor 定向刪除，避免先 full-scan 全庫再逐筆 delete。
 - [ ] 設定 I/O Budget：限制單次查詢最多讀取 shard 數、單次 transaction 筆數、單次 JSON parse 體積與背景 index rebuild 工作量；重量工作必須可分批、可中止、可續跑。
 - [ ] 建立 memory hot-cache：canonical rune data、manifest、search metadata、常用 registry 在同一 App session 內不得反覆讀磁碟／反覆 JSON parse；超大資料不得常駐 RAM。
 - [ ] 建立 persistent cache version/hash：資料版本未變時不重建本機索引；只重建變更 partition / shard / source。
