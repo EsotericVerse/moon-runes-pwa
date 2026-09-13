@@ -4,21 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 
 const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
 const PAGE_SIZE=8;
-const GROUP_META={
-  靈魂:{english:'Soul',description:'聚焦精神本源、記憶、內外界線、自我映照與核心。'},
-  連結:{english:'Connection',description:'描述方向、連結、切斷、封閉、啟動、分化、理解與誤解。'},
-  生命:{english:'Life',description:'涵蓋生命歷程，以及情感、語言與韻律所形成的人類經驗。'},
-  自然:{english:'Nature',description:'以植物生命的根、萌發、生長、展開與結果呈現自然結構。'},
-  礦物:{english:'Mineral',description:'從地質、材質、結晶與壓力呈現物質形成與凝聚。'},
-  元素:{english:'Element',description:'呈現不同自然元素各自的性質、力量與交互作用。'},
-  秩序:{english:'Order',description:'描述天體、時序、空間、清晰與因果等可辨識的秩序結構。'},
-  無序:{english:'Disorder',description:'處理偶然、轉折、虛實、緣起與結果等較不穩定的變化。'},
-  特殊:{english:'Special',description:'玄對應 Chaos、命對應 Fate，位於八個常規群組之外。'}
-};
+const GROUP_ENGLISH={靈魂:'Soul',連結:'Connection',生命:'Life',自然:'Nature',礦物:'Mineral',元素:'Element',秩序:'Order',無序:'Disorder',特殊:'Special'};
 
 function runeName(card){return String(card?.符文名稱||'').replace(/之符文$/,'').trim()}
 function runeImage(card){const number=String(Number(card?.編號)||0).padStart(2,'0');return `/assets/lunarunes/cards/${number}_${runeName(card)}.png`}
 function fieldText(value){return Array.isArray(value)?value.filter(Boolean).join('、'):String(value||'').trim()}
+function uniqueText(cards,field,limit=24){return [...new Set(cards.map(card=>fieldText(card?.[field])).filter(Boolean))].slice(0,limit).join('、')}
+function splitUnique(cards,field,limit=24){return [...new Set(cards.flatMap(card=>fieldText(card?.[field]).split(/[、,，/])).map(value=>value.trim()).filter(Boolean))].slice(0,limit).join('、')}
 
 function RuneQuickCard({card}){
   const number=String(card?.編號??'').padStart(2,'0');
@@ -59,12 +51,12 @@ function RuneQuickCard({card}){
 }
 
 function GroupRelationMap({name,cards}){
-  const meta=GROUP_META[name]||{english:name};
+  const english=GROUP_ENGLISH[name]||name;
   const count=Math.max(cards.length,1);
   return <figure className="runes-group-relation" aria-label={`${name}組符文關聯圖`}>
-    <figcaption><strong>{name} · {meta.english}</strong><span>群組與所屬符文的語意關聯</span></figcaption>
+    <figcaption><strong>{name} · {english}</strong><span>群組與所屬符文的語意關聯</span></figcaption>
     <div className={`runes-relation-map ${cards.length<=2?'compact':''} rune-count-${count}`}>
-      <div className="runes-relation-center"><span>{name}</span><small>{meta.english}</small></div>
+      <div className="runes-relation-center"><span>{name}</span><small>{english}</small></div>
       <div className="runes-relation-nodes">{cards.map((card,index)=><div className={`runes-relation-node rune-node-${index+1}`} key={card.編號}>
         <img src={runeImage(card)} alt="" width="52" height="52" loading="lazy" decoding="async"/>
         <strong>{runeName(card)}</strong>
@@ -76,19 +68,29 @@ function GroupRelationMap({name,cards}){
 
 function GroupDetails({name,cards}){
   if(!name||name==='全部')return null;
-  const meta=GROUP_META[name]||{english:name,description:''};
+  const english=GROUP_ENGLISH[name]||name;
   const runeNames=cards.map(runeName).filter(Boolean).join('、');
-  const english=cards.map(card=>card?.英文).filter(Boolean).join('、');
-  const keywords=[...new Set(cards.flatMap(card=>[fieldText(card?.正向關鍵詞),fieldText(card?.反向關鍵詞)].flatMap(value=>value.split(/[、,，/]/))).map(value=>value.trim()).filter(Boolean))].slice(0,24).join('、');
-  const archetypes=[...new Set(cards.map(card=>fieldText(card?.人格原型)).filter(Boolean))].slice(0,8).join('、');
+  const englishNames=cards.map(card=>card?.英文).filter(Boolean).join('、');
+  const definitions=uniqueText(cards,'符文說明',12);
+  const keywords=[splitUnique(cards,'正向關鍵詞',24),splitUnique(cards,'反向關鍵詞',24)].filter(Boolean).join(' ／ ');
+  const archetypes=uniqueText(cards,'人格原型',12);
+  const moonPhases=uniqueText(cards,'月相',8);
+  const properties=uniqueText(cards,'卡片屬性',8);
+  const rules=uniqueText(cards,'額外規則',12);
+  const notices=uniqueText(cards,'額外留意',12);
   return <section className="runes-group-detail" aria-label={`${name}組資訊`}>
-    <header className="runes-group-title"><p className="loc-eyebrow">{meta.english} · Rune Group</p><h3>{name}組</h3><p>{meta.description}</p></header>
+    <header className="runes-group-title"><p className="loc-eyebrow">{english} · Rune Group</p><h3>{name}組</h3><p>{cards.length} 枚符文：{runeNames||'—'}</p></header>
     <GroupRelationMap name={name} cards={cards}/>
     <div className="runes-group-meta-grid">
       <article><strong>符文構成</strong><span>{runeNames||'—'}</span></article>
-      <article><strong>英文語意</strong><span>{english||'—'}</span></article>
-      <article><strong>關鍵詞彙</strong><span>{keywords||'—'}</span></article>
+      <article><strong>英文名稱</strong><span>{englishNames||'—'}</span></article>
+      <article><strong>符文說明</strong><span>{definitions||'—'}</span></article>
       <article><strong>人格原型</strong><span>{archetypes||'—'}</span></article>
+      <article><strong>關鍵詞彙</strong><span>{keywords||'—'}</span></article>
+      <article><strong>月相</strong><span>{moonPhases||'—'}</span></article>
+      <article><strong>卡片屬性</strong><span>{properties||'—'}</span></article>
+      {rules&&<article><strong>額外規則</strong><span>{rules}</span></article>}
+      {notices&&<article><strong>額外留意</strong><span>{notices}</span></article>}
     </div>
   </section>;
 }
@@ -118,14 +120,14 @@ export default function RuneAtlas({runes=[],groups=[],group='全部',setGroup}){
       <h3>群組分類</h3>
       {group!=='全部'&&<button type="button" className="loc-button" onClick={()=>chooseGroup('全部')}>收起群組</button>}
     </div>
-    <div className="runes-group-picker">{groupNames.map(name=>{const meta=GROUP_META[name]||{english:name,description:''};return <button key={name} type="button" className={`runes-group-choice ${group===name?'active':''}`} aria-pressed={group===name} onClick={()=>chooseGroup(name)}>
-      <span className="runes-group-choice-copy"><strong>{name} <small>{meta.english}</small></strong><span>{meta.description}</span></span>
+    <div className="runes-group-picker">{groupNames.map(name=>{const cards=sortedRunes.filter(card=>card?.所屬分組===name);return <button key={name} type="button" className={`runes-group-choice ${group===name?'active':''}`} aria-pressed={group===name} onClick={()=>chooseGroup(name)}>
+      <span className="runes-group-choice-copy"><strong>{name} <small>{GROUP_ENGLISH[name]||name}</small></strong><span>{cards.map(runeName).join('、')}</span></span>
     </button>})}</div>
 
     {group==='全部'?<p className="runes-atlas-empty">選擇一個群組後，才會顯示該群組的關聯圖、群組資料與符文列表。</p>:<>
       <GroupDetails name={group} cards={filteredRunes}/>
       <div className="runes-group-list"><section className="runes-group-section" data-rune-group={group}>
-        <header className="runes-group-title"><h3>{group}組符文</h3><p>每張簡卡保留正式卡圖、名稱、圖騰、英文、定義與人格原型。</p></header>
+        <header className="runes-group-title"><h3>{group}組符文</h3><p>{filteredRunes.length} 枚；資料直接取自現行符文母資料投影。</p></header>
         <div className="runes-library-grid">{pageRunes.map(card=><RuneQuickCard card={card} key={card.編號}/>)}</div>
       </section></div>
       {pageCount>1&&<div className="runes-pager"><button type="button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button><span>{page} / {pageCount} · 每頁固定 8 枚</span><button type="button" disabled={page>=pageCount} onClick={()=>setPage(value=>Math.min(pageCount,value+1))}>下一頁</button></div>}
