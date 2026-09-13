@@ -16,13 +16,8 @@ for(const path of [
 ]) requireFile(path);
 if(existsSync(resolve(root,'lib')))failures.push('lib/ must not be recreated; shared JavaScript belongs in js/');
 
-// Homepage freeze scope: block 1 only while block 2 is being revised.
-// Block 2 and later are intentionally not parity-frozen during this edit.
-requireText('app/loc/views/AboutView.jsx',[
-  'LOC月典',
-  '從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，累積後再選擇怎麼進化。',
-  '/pics/LOC-PicAll.png'
-]);
+// Homepage blocks 1 and 2 are temporarily unfrozen while their final layout is being revised.
+// Block 3 and later remain intentionally outside homepage parity freezing.
 
 requireText('app/layout.jsx',['GlobalNav','GlobalFooter']);
 requireText('app/GlobalFooter.jsx',['月典','月之符文','治理','lo3rwang（Lucas Oscar Wang 政德）','秘藝文域（EsotericVerse）（籌備中）']);
@@ -43,4 +38,4 @@ requireText('scripts/prepare-next-public.mjs',["'pics'","'LunarRunesCardCut.pdf'
 requireText('scripts/verify-public-payload.mjs',['pics/LOC-FrameworkPic.png','pics/LOC-structure.png','LunarRunesCardCut.pdf']);
 
 if(failures.length){console.error('[known-parity] migration regressions found:\n'+failures.map(item=>`- ${item}`).join('\n'));process.exit(1);}
-console.log('[known-parity] homepage block 1, modular footer, Runes, Graph and frozen-source regressions are guarded');
+console.log('[known-parity] modular footer, Runes, Graph and frozen-source regressions are guarded; homepage blocks 1-2 are temporarily unfrozen');
