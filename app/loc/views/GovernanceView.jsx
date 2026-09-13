@@ -3,12 +3,13 @@ export default function GovernanceView(){
     <header className="loc-hero" id="top">
       <p className="loc-eyebrow">Governance</p>
       <h1>治理</h1>
+      <p className="loc-subtitle">分類、判斷、歷史保存與語意邊界</p>
       <p>LOC 的治理不是把規則藏在文件裡，而是直接說明系統怎麼分類、怎麼判斷、怎麼保存歷史、怎麼避免語意污染，以及哪些地方由使用者保留最後決定權。</p>
     </header>
 
     <div className="loc-grid two">
       <section className="loc-card" id="principles">
-        <p className="loc-eyebrow">Principles</p><h2>基本原則</h2>
+        <p className="loc-eyebrow">Principles</p><h2>基本原則</h2><p className="loc-subtitle">先確定治理邊界，再進入資料與實作</p>
         <p className="loc-core-line">尊重 · 和平 · 包容 · 友善</p>
         <p><strong>LOC 保持客觀與中立。</strong> 不預設宗教、政治、道德或人生價值立場，也不要求任何人接受作者的信仰、觀念或生活方式。</p>
         <p><strong>分析不等於命令。</strong> 月之符文保留符文、抽籤與籤詩的文化形式，但結果只是把不確定性整理成可理解、可比較、可選擇的可能；最後決定仍由使用者自己做。</p>
@@ -18,8 +19,8 @@ export default function GovernanceView(){
       </section>
 
       <section className="loc-card" id="classification">
-        <p className="loc-eyebrow">Classification Governance</p><h2>分類治理</h2>
-        <p><strong>分類不是看到字就直接命中。</strong> 符文名稱、關鍵詞與反向關鍵詞都只是 evidence，不是 trigger。真正判斷要先看文字中的功能與主體，再決定群組與符文。</p>
+        <p className="loc-eyebrow">Classification Governance</p><h2>分類治理</h2><p className="loc-subtitle">先看文字功能與主體，再決定群組與符文</p>
+        <p><strong>分類不是看到字就直接命中。</strong> 符文名稱、關鍵詞與反向關鍵詞都只是 evidence，不是 trigger。</p>
         <p className="loc-core-line">詞類 → 主體性 → 群組 → 符文</p>
         <p>第一步先確認詞彙在句內扮演什麼角色；第二步確認描述的主體；第三步才決定八個一般群組或特殊組；最後才映射個別符文。</p>
         <p><strong>每個語意單位只有一個正式群組值。</strong> 可以保留候選與分布，但正式 `group` 只能有一個。若沒有足夠證據，就留在「特殊」，不為了提高覆蓋率強迫分類。</p>
@@ -28,8 +29,8 @@ export default function GovernanceView(){
       </section>
 
       <section className="loc-card" id="keyword-governance">
-        <p className="loc-eyebrow">Keyword Governance</p><h2>關鍵詞治理</h2>
-        <p>關鍵詞資料庫的目的，是<strong>縮小候選範圍</strong>，不是替文字下最後定義。它提供候選、排除與可解釋證據，複雜推演再交給 Graph、規則或外部 AI。</p>
+        <p className="loc-eyebrow">Keyword Governance</p><h2>關鍵詞治理</h2><p className="loc-subtitle">關鍵詞用來縮小候選，不替文字下最後定義</p>
+        <p>關鍵詞資料庫提供候選、排除與可解釋證據，複雜推演再交給 Graph、規則或外部 AI。</p>
         <p><strong>不要把三個近義詞塞滿同一個符文。</strong> 關鍵詞應表現該字的不同語意面向，而不是重複堆同義詞。</p>
         <p><strong>NOR 是群組內排除。</strong> 它只否決目前群組，不是全域黑名單。</p>
         <p><strong>使用者可完全換掉分類意義。</strong> 系統提供八組結構，不規定八組意義。LunaRunes 只是符號型語言模板；群組名稱、說明、keywords 與 NOR 都可以由使用者自己定義。</p>
@@ -37,8 +38,7 @@ export default function GovernanceView(){
       </section>
 
       <section className="loc-card" id="semantic-boundaries">
-        <p className="loc-eyebrow">Semantic Boundaries</p><h2>語意邊界</h2>
-        <p>Canon 與現行 Spec 高於一般字面直覺。以下是目前重要的排他例：</p>
+        <p className="loc-eyebrow">Semantic Boundaries</p><h2>語意邊界</h2><p className="loc-subtitle">Canon 與現行 Spec 高於一般字面直覺</p>
         <div className="loc-rule-list">
           <p><strong>水 = Water</strong>；「流動」核心歸氣，不因出現流動就判水。</p>
           <p><strong>氣 = Air</strong>；<strong>暗 = Shadow</strong>；<strong>空 = Space</strong>。</p>
@@ -51,27 +51,27 @@ export default function GovernanceView(){
       </section>
 
       <section className="loc-card" id="local-first">
-        <p className="loc-eyebrow">Local-first</p><h2>本機優先與可重跑</h2>
-        <p>基礎分類能在本機完成就不呼叫 API。固定資料、詞類、群組主體性、關鍵詞與規則先完成初步分類，再進入統計、Search、Graph 或更高階分析。</p>
+        <p className="loc-eyebrow">Local-first</p><h2>本機優先與可重跑</h2><p className="loc-subtitle">基礎分類能在本機完成就不呼叫 API</p>
+        <p>固定資料、詞類、群組主體性、關鍵詞與規則先完成初步分類，再進入統計、Search、Graph 或更高階分析。</p>
         <p>分類結果應保留 `group`、候選、證據、排除、爭議標記與規則版本，讓同一份原文在規則更新後可以重新分類，而<strong>不修改原始資料</strong>。</p>
         <p>個人 Library、群組設定與我的風格以 local-first 為主；遠端存讀只作使用者主動啟用的 OAuth 備份，不建立會員資料庫與背景同步。</p>
       </section>
 
       <section className="loc-card" id="flow">
-        <p className="loc-eyebrow">System Flow</p><h2>分類到推演</h2>
+        <p className="loc-eyebrow">System Flow</p><h2>分類到推演</h2><p className="loc-subtitle">簡單層保留證據，複雜層處理關係與可能路徑</p>
         <p className="loc-core-line">原始文字 → 候選關鍵詞 → 群組分類 → 符文候選 → 結構化狀態 → Graph / 規則 / AI → 推演</p>
         <p>簡單層負責把資料整理乾淨、保留證據與爭議；複雜層只在需要時處理關係、前後因果、衝突、轉折與可能路徑。這樣複雜模型不會反過來覆蓋前面的治理。</p>
       </section>
 
       <section className="loc-card" id="copyright">
-        <p className="loc-eyebrow">Copyright · Copyleft</p><h2>版權</h2>
+        <p className="loc-eyebrow">Copyright · Copyleft</p><h2>版權</h2><p className="loc-subtitle">公開核心內容，同時保留來源、作者與 Canon 關係</p>
         <p>LOC 與 LunaRunes 採 Copyleft 思路公開核心內容。歡迎閱讀、研究、參考與依既有授權條件延伸，但來源、作者與原始系統關係應保留。</p>
         <p>衍生版本可以不同意、修改或擴充，但不會自動成為 upstream Canon。商業顧問、系統架構、治理設計與個案實作屬另外的合作範圍。</p>
         <a className="loc-link-card" href="https://github.com/EsotericVerse/moon-runes-pwa"><strong>Repository</strong><span>原始碼、COPYLEFT 與版本紀錄。</span></a>
       </section>
 
       <section className="loc-card" id="documents">
-        <p className="loc-eyebrow">Canonical References</p><h2>必要規格</h2>
+        <p className="loc-eyebrow">Canonical References</p><h2>必要規格</h2><p className="loc-subtitle">網站與 machine-readable JSON 是現行治理入口</p>
         <p>治理內容以網站與 machine-readable JSON 為主，不再把一般規則拆成大量 Markdown。需要閱讀完整模型定義時，使用 Canon；需要程式判斷時，使用 Registry / JSON。</p>
         <div className="loc-link-list">
           <a className="loc-link-card" href="/docs/LOC_Canon_1.0.docx"><strong>LOC Canon</strong><span>現行架構、定義與治理基準。</span></a>
