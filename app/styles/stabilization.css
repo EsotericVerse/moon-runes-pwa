@@ -71,6 +71,21 @@
 .loc-next-nav-stack{width:100%}
 .loc-next-subnav{justify-content:flex-end}
 
+/* NAV search is a compact text command: placeholder explains usage, Enter submits. */
+.loc-next-search{display:flex;align-items:center;flex:0 0 auto}
+.loc-next-search input{
+  width:9.5rem;
+  min-width:0;
+  padding:.42rem .65rem;
+}
+.loc-next-search button{display:none}
+
 @media(max-width:900px){
   .loc-next-subnav{justify-content:flex-start}
+  .loc-next-search input{width:8rem}
+}
+
+@media(max-width:560px){
+  .loc-next-search{flex:1 0 10rem}
+  .loc-next-search input{width:100%}
 }
