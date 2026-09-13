@@ -1,5 +1,6 @@
 'use client';
 
+const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
 const GROUP_META={
   靈魂:{english:'Soul',image:'/pics/01.soul.jpg',description:'由靈、魂、彩、憶、界、域、鏡、核構成，聚焦精神本源、記憶、內外界線、自我映照與核心。'},
   連結:{english:'Connection',image:'/pics/02_connection.jpg',description:'由向、斷、封、鍊、啟、分、悟、誤構成，描述方向、連結、切斷、封閉、啟動、分化、理解與誤解。'},
@@ -24,8 +25,10 @@ function RuneQuickCard({card}){
 }
 
 export default function RuneAtlas({runes=[],groups=[],group='全部',setGroup}){
-  const groupNames=groups.filter(name=>name&&name!=='全部');
-  const visibleGroups=(group==='全部'?groupNames:[group]).filter(Boolean);
+  const availableGroups=new Set(groups.filter(name=>name&&name!=='全部'));
+  const groupNames=[...GROUP_ORDER.filter(name=>availableGroups.has(name)),...Array.from(availableGroups).filter(name=>!GROUP_ORDER.includes(name)).sort((a,b)=>String(a).localeCompare(String(b),'zh-Hant'))];
+  const visibleGroups=(group==='全部'?groupNames:[group]).filter(name=>groupNames.includes(name));
+  const sortedRunes=[...runes].sort((a,b)=>Number(a?.編號||0)-Number(b?.編號||0));
   return <section className="loc-card" id="library">
     <p className="loc-eyebrow">Rune Atlas · 符文圖鑑</p>
     <h2>符文圖鑑</h2>
@@ -43,7 +46,7 @@ export default function RuneAtlas({runes=[],groups=[],group='全部',setGroup}){
       <span className="runes-group-choice-copy"><strong>{name} ({meta.english}) 組</strong><small>{meta.description}</small></span>
     </button>})}</div>
 
-    <div className="runes-group-list">{visibleGroups.map(name=>{const meta=GROUP_META[name]||{english:name,description:''};const items=runes.filter(card=>card?.所屬分組===name);return <section className="runes-group-section" key={name} data-rune-group={name}>
+    <div className="runes-group-list">{visibleGroups.map(name=>{const meta=GROUP_META[name]||{english:name,description:''};const items=sortedRunes.filter(card=>card?.所屬分組===name);return <section className="runes-group-section" key={name} data-rune-group={name}>
       <header className="runes-group-title"><h3>{name} ({meta.english}) 組</h3><p>{meta.description}</p></header>
       <div className="runes-library-grid">{items.map(card=><RuneQuickCard card={card} key={card.編號}/>)}</div>
     </section>})}</div>
