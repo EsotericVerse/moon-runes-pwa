@@ -161,7 +161,7 @@ export default function AboutView(){
       <div className="home-section-heading">
         <p className="loc-eyebrow">About me</p>
         <h2>作者的話</h2>
-        <p className="loc-subtitle">治理已知的過去</p>
+        <p className="loc-subtitle">治理已知，是為了把時間還給未知。</p>
       </div>
       <div className="home-about-layout">
         <div className="home-author-copy">
@@ -170,7 +170,7 @@ export default function AboutView(){
           <p>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構，才能進一步面對未來的各種可能。</p>
         </div>
         <figure className="home-about-figure">
-          <img src="/pics/aboutme.png" alt="作者 Lucas Oscar Wang 政德" loading="lazy" />
+          <img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" />
         </figure>
       </div>
     </section>
