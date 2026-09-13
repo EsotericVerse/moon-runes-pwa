@@ -1,7 +1,7 @@
 export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero">
-      <p className="loc-eyebrow">月典（LOC, Luna Codex）&gt; 語言模型框架(Language Model Framework)</p>
+      <p className="loc-eyebrow">LOC · 月典 · (Language Model Framework)</p>
       <h1>LOC月典</h1>
       <p className="loc-core-line">從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，累積後再選擇怎麼進化。</p>
       <div className="loc-hero-copy">
@@ -12,10 +12,13 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-rune-section">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">LunaRunes · 月之符文籤詩系統</p>
-        <h2>問一件事，或讓語言自己成長</h2>
-        <p>月之符文由 66 個中文單一字構成。</p>
-        <p>可以從一個問題開始，也可以沒有問題直接抽取，再依需要選擇不同的抽牌方式。</p>
+        <p className="loc-eyebrow">LunaRunes · 月之符文</p>
+        <h2>符文籤詩系統</h2>
+        <p className="loc-subtitle">問一件事，或讓語言自己成長</p>
+        <p>不知道怎麼開始沒關係，就抽一張牌吧！</p>
+        <p>可以是問事。可以是生活風格主題。</p>
+        <p>不知道怎麼說的話，抽就對了！</p>
+        <p>符文會給你提示籤詩，指引你的未知路線方式。</p>
       </div>
 
       <div className="home-rune-layout">
