@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { fetchLocJsonBatch, LOC_DATA } from '../loc/data';
+import ThemeControl from '../loc/ThemeControl';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
 
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
@@ -106,18 +107,21 @@ export default function RunesClient(){
 
   return <>
     <header className="loc-next-header">
-      <nav className="loc-next-nav loc-next-nav-primary" aria-label="LOC 主要導覽">
-        <a href="/runes" aria-current="page">月之符文</a>
-        <a href="/game">遊戲</a>
-        <a href="/context">脈絡</a>
-        <a href="/statics">統計</a>
-        <a href="/evolution">推演</a>
-        <form className="loc-next-search" action="/search" method="get" role="search">
-          <input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" />
-          <button type="submit">搜尋</button>
-        </form>
-        <a className="loc-next-home" href="/">回月典首頁</a>
-      </nav>
+      <div className="loc-next-nav-stack">
+        <nav className="loc-next-nav loc-next-nav-primary" aria-label="LOC 主要導覽">
+          <a href="/runes" aria-current="page">月之符文</a>
+          <a href="/game">遊戲</a>
+          <a href="/context">脈絡</a>
+          <a href="/statics">統計</a>
+          <a href="/evolution">推演</a>
+          <form className="loc-next-search" action="/search" method="get" role="search">
+            <input name="q" type="search" aria-label="搜尋文字" placeholder="輸入文字" />
+            <button type="submit">搜尋</button>
+          </form>
+          <a className="loc-next-home" href="/">回月典首頁</a>
+        </nav>
+        <nav className="loc-next-nav loc-next-subnav" aria-label="顯示設定"><ThemeControl /></nav>
+      </div>
     </header>
 
     <nav className="runes-subnav" aria-label="月之符文功能導覽">
@@ -165,9 +169,9 @@ export default function RunesClient(){
           </section>
 
           <section className="loc-card">
-            <p className="loc-eyebrow">Semantic Guidance · 語意判定</p>
-            <h2>趨勢：{draw.evaluation.range.label}</h2>
-            <p>加權分數 {draw.evaluation.score.toFixed(3)}。分數由卡片語意、位向轉折與牌位權重計算，不額外生成不存在於資料中的語意。</p>
+            <p className="loc-eyebrow">Semantic Guidance · 語意指示</p>
+            <h2>整體趨勢：{draw.evaluation.range.label}</h2>
+            <p>指示分數：{draw.evaluation.score.toFixed(3)}。依符文詞性、卡片位向與牌位權重計算目前組合的整體語意傾向；分數不代表吉凶、好壞或結果機率。</p>
             <div className="loc-table-wrap"><table className="loc-table"><thead><tr><th>位置</th><th>符文</th><th>詞性</th><th>位向</th><th>權重</th><th>加權值</th></tr></thead><tbody>
               {draw.evaluation.rows.map((row,index)=><tr key={`${row.card['編號']}-${index}`}><td>{selectedMode.positions[index]||index+1}</td><td>{row.card['符文名稱']}</td><td>{row.card['卡片屬性']||'中平'}</td><td>{row.direction}</td><td>{row.weight}</td><td>{row.weighted.toFixed(2)}</td></tr>)}
             </tbody></table></div>
