@@ -116,6 +116,18 @@
   border:0!important;
   color:var(--loc-text)!important;
 }
+.loc-home>.loc-hero>.loc-hero-copy>.home-intro-links{
+  display:flex!important;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:.65rem .75rem;
+  margin-top:.85rem!important;
+  padding-top:.1rem!important;
+}
+.loc-home>.loc-hero>.loc-hero-copy>.home-intro-links>.loc-bubble{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
 
 .loc-next-nav,
 .loc-button,
@@ -157,4 +169,8 @@
 @media(max-width:560px){
   .loc-next-search{flex:1 0 10rem}
   .loc-next-search input{width:100%}
+  .loc-home>.loc-hero>.loc-hero-copy>.home-intro-links{
+    gap:.55rem;
+    margin-top:1rem!important;
+  }
 }

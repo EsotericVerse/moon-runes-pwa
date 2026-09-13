@@ -23,7 +23,7 @@ requireText('app/layout.jsx',['LOC月典(LunaCodex)','By <a href=','Lucas Oscar 
 forbidText('app/loc/LocApp.jsx',['loc-next-footer']);
 
 requireText('app/runes/RunesClient.jsx',[
-  "key:'daily'","key:'ow3gs'",'新手上路','占卜抽籤','66 符資料','符文脈絡','符文統計','符文知識庫',
+  "key:'daily'","key:'ow3gs'",'新手上路','占卜抽籤','符文圖鑑','符文脈絡','符文統計','符文知識庫',
   'id="library"','id="reference"','/LunarRunesCardCut.pdf','真實月相','玄之符文','RITUAL_MESSAGES',
   '每日占卜提醒','愛情建議','事業建議','心理建議','健康建議','生活建議',
   '因 → 果','源 → 轉 → 合','時間主線 × 內外作用','第 7–11 張為核心判定',
