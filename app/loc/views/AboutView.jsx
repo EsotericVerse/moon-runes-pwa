@@ -20,40 +20,38 @@ export default function AboutView(){
       <div className="home-rune-layout">
         <div className="home-rune-preview" aria-label="命之符文示例">
           <img src="/assets/lunarunes/cards/66_命.png" alt="命之符文" />
-          <div className="home-rune-meta">
-            <strong>命</strong>
-            <span>卡片位向：正位</span>
+          <div className="home-rune-card-data">
+            <div className="home-rune-card-title"><strong>命之符文</strong><span className="home-rune-glyph">⟁</span><span>(Fate)</span></div>
+            <p>符文說明：定論的所有可能 / 人格原型：命定者</p>
+            <p>關鍵詞：定論、必然、法則 / 負面關鍵詞：—</p>
+            <p>所屬分組：特殊 / 卡片屬性：未知</p>
+            <p>卡片月相：無 / 真實月相：空亡</p>
+            <p className="home-rune-direction">卡片面向：<strong>正位</strong></p>
           </div>
         </div>
 
-        <div className="home-rune-copy">
-          <div className="rune-intro-note">
-            <strong>不知道怎麼開始沒關係，就抽一張牌吧！</strong>
-            <p>可以是問事，可以是生活風格主題。</p>
-            <p>不知道怎麼說的話，<a href="/runes">抽牌</a>就對了！</p>
-            <p>月之符文的66符文字會給你提示籤詩，指引你的未知路線方式。</p>
-          </div>
-
-          <div className="loc-copy">
-            <p>抽牌讓這語意種子，成為語意起點，</p>
-            <p>用你想要的方式，成長成為完整語意的成熟果實。</p>
-          </div>
-
-          <div className="loc-panel">
-            <h3>抽牌</h3>
-            <p>可以從一個問題開始，也可以沒有問題直接抽取，再依需要選擇不同的抽牌方式。</p>
-            <h3>選擇抽牌方式</h3>
-            <div className="loc-chip-list">
-              <span>單張</span><span>每日指示</span><span>兩張</span><span>三張</span><span>五張</span><span>11張</span>
-            </div>
-          </div>
+        <div className="home-rune-copy home-rune-copy-plain">
+          <p><strong>不知道怎麼開始沒關係，就抽一張牌吧！</strong></p>
+          <p>可以是問事，可以是生活風格主題。</p>
+          <p>不知道怎麼說的話，<a href="/runes">抽牌</a>就對了！</p>
+          <p>月之符文的66符文字會給你提示籤詩，指引你的未知路線方式。</p>
+          <p>抽牌讓這語意種子，成為語意起點，<br/>用你想要的方式，成長成為完整語意的成熟果實。</p>
         </div>
       </div>
 
+      <div className="home-draw-bubbles" aria-label="選擇抽牌方式">
+        <a className="loc-bubble" href="/runes?mode=single">抽單張</a>
+        <a className="loc-bubble" href="/runes?mode=daily">抽每日指示</a>
+        <a className="loc-bubble" href="/runes?mode=2card">抽兩張</a>
+        <a className="loc-bubble" href="/runes?mode=3card">抽三張</a>
+        <a className="loc-bubble" href="/runes?mode=5card">抽五張</a>
+        <a className="loc-bubble" href="/runes?mode=ow3gs">抽11張</a>
+      </div>
+
       <div className="loc-actions home-rune-links">
-        <a className="loc-button" href="/runes">符文圖鑑</a>
-        <a className="loc-button" href="/context">符文脈絡</a>
+        <a className="loc-button" href="/runes#library">符文圖鑑</a>
         <a className="loc-button" href="/governance">符文規則</a>
+        <a className="loc-button" href="/context">符文脈絡</a>
       </div>
     </section>
 
