@@ -70,7 +70,7 @@ export default function EvolutionView(){
     </>}</>}
 
     {tab==='trajectory'&&<>{!loc6||!runeHistory?<div className="loc-loading">載入軌跡…</div>:<div className="loc-grid two">
-      <section className="loc-card"><p className="loc-eyebrow">Language Trajectory · 語言軌跡</p><h2>語彙軌跡</h2>{trajectories.length?<div className="loc-context-list">{trajectories.slice(0,24).map(item=><div className="loc-trajectory" key={item.term}><h3>{item.term}</h3><p>峰值 {item.peak_period} · {item.peak_percent}%</p><div>{item.points?.map(point=><span key={`${item.term}-${point.period}`}>{point.period}<b>{point.percent}%</b></span>)}</div></div>:<p>目前 registry 尚無 trajectory。</p>}</section>
+      <section className="loc-card"><p className="loc-eyebrow">Language Trajectory · 語言軌跡</p><h2>語彙軌跡</h2>{trajectories.length?<div className="loc-context-list">{trajectories.slice(0,24).map(item=><div className="loc-trajectory" key={item.term}><h3>{item.term}</h3><p>峰值 {item.peak_period} · {item.peak_percent}%</p><div>{item.points?.map(point=><span key={`${item.term}-${point.period}`}>{point.period}<b>{point.percent}%</b></span>)}</div></div>)}</div>:<p>目前 registry 尚無 trajectory。</p>}</section>
       <section className="loc-card"><p className="loc-eyebrow">LunaRunes Trajectory · 月之符文軌跡</p><h2>14 → 24 → 32 → 42 → 66</h2><div className="loc-stage-line vertical">{stages.map(item=><div key={item.order}><strong>{item.label}</strong><span>{item.rune_count} 符</span><small>{item.note}</small></div>)}</div><p className="loc-note">符文歷史只顯示<span className="loc-keyword-emphasis">演化</span>紀錄；現行正式定義仍以 canonical runes.json 為準。第 0 符「德」保留於母資料作治理錨點，不列入 66 枚可抽符文。</p></section>
     </div>}</>}
   </section>;
