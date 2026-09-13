@@ -23,9 +23,9 @@ export default function AboutView(){
       <div className="home-rune-layout">
         <div className="home-author-copy">
           <p><strong>不知道怎麼開始沒關係，就抽一張牌吧！</strong></p>
-          <p>不用管符文是什麼，抽了就知道！<br/>可以是問事，可以是生活風格主題的每日符文。</p>
-          <p>抽到之後再看當下的文字、方向與說明就可以；<br/>想多了解一點，再慢慢往下看。</p>
-          <p>你也可以完全不抽牌，直接在符文面跳過，<br/>往下看或看上面連結的脈絡、統計、文化，<br/>或直接搜尋自己有興趣的文字與資料。</p>
+          <p>不用管符文是什麼，抽了就知道！可以是問事，可以是生活風格主題的每日符文。</p>
+          <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
+          <p>你也可以完全不抽牌，直接在符文面跳過，往下看或看上面連結的脈絡、統計、文化，或直接搜尋自己有興趣的文字與資料。</p>
           <p><strong>那就開始吧！</strong></p>
           <div className="loc-actions">
             <a className="loc-button primary" href="/runes">抽牌</a>
