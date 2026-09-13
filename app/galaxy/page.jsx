@@ -1,4 +1,4 @@
-import { galaxy, groups } from '../../lib/galaxy.js';
+import { galaxy, groups } from '../../js/galaxy.js';
 
 export const metadata = {
   title: 'Galaxy｜LOC',
