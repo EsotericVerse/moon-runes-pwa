@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "role": "repo-backed daily rune history fallback",
   "source": "confirmed conversation records",
-  "updated_at": "2026-09-13",
+  "updated_at": "2026-09-15",
   "daily_draws": [
     {"id":"DD-20260805-P-分","date":"2026-08-05","draw_kind":"daily_draw","rune_id":"14","rune":"分","direction":"正位","note":"","source":"confirmed-history","confidence":"recorded"},
     {"id":"DD-20260806-P-風","date":"2026-08-06","draw_kind":"daily_draw","rune_id":"45","rune":"風","direction":"逆位","note":"","source":"confirmed-history","confidence":"recorded"},
@@ -54,6 +54,8 @@
     {"id":"DD-20260910-S-無","date":"2026-09-10","draw_kind":"daily_draw_supplement","rune_id":"59","rune":"無","direction":"半正位","note":"","source":"confirmed-history","confidence":"recorded"},
     {"id":"DD-20260911-P-樹","date":"2026-09-11","draw_kind":"daily_draw","rune_id":"25","rune":"樹","direction":"正位","note":"","source":"confirmed-history","confidence":"recorded"},
     {"id":"DD-20260912-P-核","date":"2026-09-12","draw_kind":"daily_draw","rune_id":"8","rune":"核","direction":"逆位","note":"","source":"confirmed-history","confidence":"recorded"},
-    {"id":"DD-20260913-P-玉","date":"2026-09-13","draw_kind":"daily_draw","rune_id":"34","rune":"玉","direction":"正位","note":"","source":"confirmed-history","confidence":"recorded"}
+    {"id":"DD-20260913-P-玉","date":"2026-09-13","draw_kind":"daily_draw","rune_id":"34","rune":"玉","direction":"正位","note":"","source":"confirmed-history","confidence":"recorded"},
+    {"id":"DD-20260914-P-火","date":"2026-09-14","draw_kind":"daily_draw","rune_id":"44","rune":"火","direction":"半正位","note":"","source":"confirmed-history","confidence":"recorded"},
+    {"id":"DD-20260915-P-根","date":"2026-09-15","draw_kind":"daily_draw","rune_id":"29","rune":"根","direction":"正位","note":"","source":"confirmed-history","confidence":"recorded"}
   ]
 }
