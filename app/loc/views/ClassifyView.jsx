@@ -35,7 +35,7 @@ export default function ClassifyView(){
 
   return <section className="loc-view">
     <header className="loc-hero">
-      <p className="loc-eyebrow">Local Classifier</p>
+      <p className="loc-eyebrow">Local Classifier · 本機分類</p>
       <h1>分類</h1>
       <p>使用「群組設定」目前的 exact-match 規則在本機分類。結果可以直接存進 Library；不呼叫 Render，也不需要 API。</p>
     </header>
@@ -55,7 +55,7 @@ export default function ClassifyView(){
     </section>
 
     <section className="loc-card">
-      <p className="loc-eyebrow">Classification Result</p>
+      <p className="loc-eyebrow">Classification Result · 分類結果</p>
       <h2>分類結果</h2>
       {!result?<p className="loc-status">輸入文字後會立即顯示結果。</p>:<>
         <div className="loc-chip-list">{result.matches.map(item=><span key={item.id}>{item.name}{item.hits.length?` · ${item.hits.join('、')}`:' · fallback'}</span>)}</div>
