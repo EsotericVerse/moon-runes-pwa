@@ -1,3 +1,15 @@
+const progressItems = [
+  ['Data','可比對資料 24,509 筆・總文字 2,939,214 字','總字數包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，以及 26 份唯一 KM 知識文件共 385,996 字；圖片與影片不計字數。筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。'],
+  ['LunaRunes','66 符語意治理與 RAG 預備完成','月之符文66已完成現行母資料正名與核心語意治理；語意引擎的極性與關鍵詞已確認，符文 RAG 的前置資料亦已完成整理。目前持續進行舊版語意污染清理與 64→66 資料路徑收斂。'],
+  ['Knowledge','系統內建 KM 至少 515 個知識單元','目前已登記 31 個 Knowledge Assets；FAQ 單獨即有 90 條。去除檢索投影、文章投影、圖片、重複文件版本與首頁統計展示後，目前有 26 份唯一 KM 知識文件，共 385,996 字。'],
+  ['Evolution','來源 × 時期 動態 Top 10','排行榜可先看全部，再切 Facebook、Threads、Suno，並依現行時期邊界動態重新聚合；時期日期微調時不必重做固定排行。'],
+  ['Search','綜合搜尋＋脈絡圖（Graph）關聯','可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。'],
+  ['Runtime','可變資料已由 Cloudflare KV 接管','時期、每日符文、Context Event 與 Relation 已完成 Cloudflare KV 化；Context 舊資料已由 Google Sheets 搬移並完成筆數核對，以及新增、編輯、刪除 CRUD 驗證。前端 runtime 不再依賴 Google Sheets。'],
+  ['Governance','全文分析與公開展示分離','授權內容可以用全文做搜尋與分析；公開結果則依內容治理顯示片段、全文或僅 metadata。Facebook 與 Threads 預設採片段展示，歌詞不直接公開全文。'],
+  ['Tutorial','新手教學文件','已提供「語言模型框架入門」與「月之符文入門」兩份新手教學 Web View，讓第一次接觸 LOC 的使用者可以先理解整體架構，再進入月之符文與多卡語法。'],
+  ['Governance','治理文件','已建立系統治理、資料權責、內容版權／公開邊界與月之符文66治理文件；目前也把全文分析與公開展示、來源日期、時期動態聚合等規則納入治理層。']
+];
+
 export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero">
@@ -53,9 +65,46 @@ export default function AboutView(){
           <div className="loc-actions home-rune-links">
             <a className="loc-button" href="/runes#library">符文圖鑑</a>
             <a className="loc-button" href="/governance">符文規則</a>
-            <a className="loc-button" href="/context">符文脈絡</a>
+            <a className="loc-button" href="/runes#reference">符文脈絡</a>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section className="loc-card home-progress" id="current-progress">
+      <p className="loc-eyebrow">Current Progress</p>
+      <h2>目前已經可以做到什麼？</h2>
+      <p className="loc-subtitle">不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再回到原始內容確認證據。</p>
+      <div className="home-progress-grid" aria-label="目前可操作功能">
+        {progressItems.map(([category,title,copy],index)=><article className="home-progress-item" key={`${category}-${index}`}>
+          <small>{category}</small>
+          <strong>{title}</strong>
+          <span>{copy}</span>
+        </article>)}
+      </div>
+      <div className="loc-actions home-progress-actions">
+        <a className="loc-button primary" href="/search">試用綜合搜尋</a>
+        <a className="loc-button" href="/statics">查看關鍵字排行</a>
+      </div>
+    </section>
+
+    <section className="loc-card home-framework" id="framework-map">
+      <p className="loc-eyebrow">Structure of LOC</p>
+      <h2>結構</h2>
+      <p className="loc-subtitle">LunaRunes · Context · Music · Literary · Multimedia · Algorithm · Module · Evolution</p>
+      <p>它們不是八個彼此獨立的產品，也不是版本先後；而是 LOC 的八個功能責任區：月之符文、脈絡、音樂、文字創作、多媒體、演算法、演算模組與推演。</p>
+      <figure className="home-framework-figure">
+        <img src="/pics/LOC-structure.png" alt="月典結構圖與流程圖" loading="lazy" />
+      </figure>
+    </section>
+
+    <section className="loc-card home-author-words">
+      <p className="loc-eyebrow">作者的話</p>
+      <h2>治理過去的已知，是為了把時間還給現在的未知，才有更充裕的未來。</h2>
+      <div className="home-author-copy">
+        <p>月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用，採取的是不帶神秘學預設的中立態度，重在文字本身而不論道德。</p>
+        <p>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的語言系統；而月之符文，也在這個過程中演變成可被分析、治理與推演的符號式語言系統。</p>
+        <p>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構，才能進一步面對未來的各種可能。</p>
       </div>
     </section>
   </section>;
