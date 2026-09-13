@@ -42,6 +42,15 @@
   width:100%;
   height:auto;
 }
+.home-beginner .home-framework-figure{
+  width:min(100%,380px);
+  justify-self:end;
+  align-self:start;
+}
+.home-beginner .home-framework-figure img{
+  width:100%;
+  height:auto;
+}
 .home-author-copy{
   display:grid;
   gap:.8rem;
@@ -74,4 +83,9 @@
 }
 @media(max-width:620px){
   .home-progress-grid{grid-template-columns:1fr}
+  .home-beginner .home-framework-figure{
+    width:min(82vw,300px);
+    justify-self:center;
+    margin-top:.6rem;
+  }
 }
