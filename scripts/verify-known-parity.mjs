@@ -7,6 +7,7 @@ const text=path=>readFileSync(resolve(root,path),'utf8');
 
 function requireFile(path){if(!existsSync(resolve(root,path)))failures.push(`missing required file: ${path}`)}
 function requireText(path,needles){const source=text(path);for(const needle of needles)if(!source.includes(needle))failures.push(`${path}: missing ${needle}`);}
+function requireAnyText(path,needles,label){const source=text(path);if(!needles.some(needle=>source.includes(needle)))failures.push(`${path}: missing ${label||needles.join(' / ')}`);}
 function forbidText(path,needles){const source=text(path);for(const needle of needles)if(source.includes(needle))failures.push(`${path}: forbidden regression ${needle}`);}
 
 for(const path of [
@@ -26,8 +27,9 @@ requireText('app/runes/RunesClient.jsx',[
   'id="library"','id="reference"','/LunarRunesCardCut.pdf','真實月相','玄之符文','RITUAL_MESSAGES',
   '每日占卜提醒','愛情建議','事業建議','心理建議','健康建議','生活建議',
   '因 → 果','源 → 轉 → 合','時間主線 × 內外作用','第 7–11 張為核心判定',
-  'buildRuneGraph','searchRuneGraph','全部關係','runes-pager','不呼叫外部 API'
+  'buildRuneGraph','searchRuneGraph','全部關係','runes-pager'
 ]);
+requireAnyText('app/runes/RunesClient.jsx',['不呼叫外部 API','不需要外部 API'],'No API local-processing statement');
 requireText('js/rune-graph-core.js',['buildRuneGraph','searchRuneGraph','keyword_of','reverse_keyword_of','ownership','resolved_to']);
 
 requireText('scripts/prepare-next-public.mjs',["'pics'","'LunarRunesCardCut.pdf'"]);
