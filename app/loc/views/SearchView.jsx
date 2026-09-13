@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchLocDataSegments, fetchLocJsonBatch, getLocDataDataset } from '../data';
 import { recordSearchSegmentHits, rankSearchSegments } from '../search-routing';
+import { recordSearchTelemetry } from '../search-telemetry';
 import { useLocalStore } from '../local-store';
 import { getSearchCollection, SEARCH_COLLECTION_ORDER, SEARCH_COLLECTIONS } from '../search-collections';
 
@@ -71,23 +72,31 @@ export default function SearchView(){
 
       async function scanDataset(datasetId,kind){
         if(found.length>=MAX_RAW_RESULTS)return;
+        const started=performance.now();
         const dataset=await getLocDataDataset(datasetId);
         const sourceSegments=Array.isArray(dataset?.segments)?dataset.segments:[];
         const segments=await rankSearchSegments(datasetId,sourceSegments,q);
+        let loadedSegments=0;
+        let loadedBytes=0;
+        let datasetHits=0;
         for(let offset=0;offset<segments.length&&found.length<MAX_RAW_RESULTS;offset+=SEGMENT_BATCH_SIZE){
           if(id!==searchId.current)return;
           const chunk=segments.slice(offset,offset+SEGMENT_BATCH_SIZE);
           const loaded=await fetchLocDataSegments(datasetId,{segmentIds:chunk.map(segment=>segment.id),maxSegments:SEGMENT_BATCH_SIZE});
           if(id!==searchId.current)return;
+          loadedSegments+=loaded.length;
+          loadedBytes+=loaded.reduce((sum,item)=>sum+Number(item.segment?.bytes||0),0);
           for(const item of loaded){
             const before=found.length;
             if(kind==='text')collectText(item.data,q,found);
             else if(kind==='music')collectMusic(item.data,q,found);
             const hits=found.length-before;
+            datasetHits+=hits;
             if(hits>0)await recordSearchSegmentHits(datasetId,item.segment.id,q,hits);
             if(found.length>=MAX_RAW_RESULTS)break;
           }
         }
+        recordSearchTelemetry({collection:collection.id,dataset:datasetId,segments:loadedSegments,bytes:loadedBytes,hits:datasetHits,elapsedMs:performance.now()-started});
       }
 
       if(collection.includeTextCorpus)await scanDataset('loc4-text-corpus','text');
