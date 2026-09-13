@@ -11,7 +11,11 @@ export const TEMPLATE_STYLE_GROUPS=['靈魂','連結','生命','自然','礦物'
    2. Matching rule: 長詞優先，短詞後判；已被長詞命中的文字區段，不得再重複加入短詞。
    3. A short name may still match elsewhere when that text range has not already been claimed by a longer name.
    4. Existing links and already-enhanced keyword nodes are excluded from enhancement.
-   5. The goal is one semantic match -> one visual emphasis -> one link, with no nested or duplicate links. */
+   5. Keyword enhancement is bounded and non-recursive: scan content regions only, never the whole document.
+   6. Exclude nav, anchors, buttons, form controls, code/pre, status/control UI, tables, Graph nodes, and game UI.
+   7. Do not use MutationObserver for continuous rescanning and do not rescan on every React render.
+   8. A text node is processed at most once; dynamic components must opt in explicitly if they need enhancement.
+   9. The goal is one semantic match -> one visual emphasis -> one link, with no nested or duplicate links. */
 export const sortGroupNamesLongestFirst=groups=>[...(groups||[])]
   .filter(group=>String(group?.name||'').trim())
   .sort((a,b)=>String(b.name).length-String(a.name).length||String(a.name).localeCompare(String(b.name),'zh-Hant'));
