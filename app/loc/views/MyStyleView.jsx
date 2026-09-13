@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import ThemeControl from '../ThemeControl';
-import { getLocalRecords } from '../local-db';
+import { localRecordStorage } from '../storage';
 import { useLocalStore } from '../local-store';
 import { INITIAL_MY_STYLE, INITIAL_STYLE_PROFILE, LIBRARY_RECORD_TYPE, MY_STYLE_STORAGE_KEY, STYLE_STORAGE_KEY } from '../model/style-profile';
 import StyleGroupsView from './StyleGroupsView';
@@ -34,7 +34,7 @@ export default function MyStyleView(){
   const {value:uiSettings,setValue:setUiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [records,setRecords]=useState([]);
 
-  useEffect(()=>{getLocalRecords(LIBRARY_RECORD_TYPE).then(setRecords)},[]);
+  useEffect(()=>{localRecordStorage.list(LIBRARY_RECORD_TYPE).then(setRecords)},[]);
 
   const stats=useMemo(()=>{
     const groupCounts=new Map();
