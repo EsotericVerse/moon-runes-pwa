@@ -33,28 +33,34 @@
   line-height:1.65!important;
 }
 
-/* Homepage Hero follows the same surface system as the homepage, but keeps its own content hierarchy. */
+/* Homepage title row uses the same left-title / right-explanation framing as other text boxes. */
 .loc-home>.loc-hero>h1{
-  display:block!important;
-  margin:.12em 0!important;
-  padding:0!important;
+  display:inline-block!important;
+  margin:.12rem 0 .72rem!important;
+  padding:0 .8rem .6rem 0!important;
   border:0!important;
+  border-bottom:1px solid var(--loc-line)!important;
   color:var(--loc-text)!important;
   font-size:clamp(2rem,6vw,4rem)!important;
   line-height:1.08!important;
+  vertical-align:baseline;
 }
 .loc-home>.loc-hero>.loc-core-line{
-  display:block!important;
-  margin:.5rem 0!important;
-  padding:0!important;
+  display:inline-block!important;
+  margin:.12rem 0 .72rem!important;
+  padding:0 0 .6rem .8rem!important;
   border:0!important;
+  border-left:1px solid var(--loc-line)!important;
+  border-bottom:1px solid var(--loc-line)!important;
   color:var(--loc-accent)!important;
   font-size:1.15rem!important;
   font-weight:750!important;
   line-height:1.7!important;
+  vertical-align:baseline;
 }
 .loc-home>.loc-hero>.loc-hero-copy{
   display:grid;
+  clear:both;
   gap:.45rem;
   margin-top:.35rem;
 }
@@ -83,6 +89,16 @@
 @media(max-width:900px){
   .loc-next-subnav{justify-content:flex-start}
   .loc-next-search input{width:8rem}
+}
+
+@media(max-width:680px){
+  .loc-home>.loc-hero>h1,
+  .loc-home>.loc-hero>.loc-core-line{
+    display:block!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    border-left:0!important;
+  }
 }
 
 @media(max-width:560px){
