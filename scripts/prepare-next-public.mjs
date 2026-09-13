@@ -7,6 +7,7 @@ const ROOT = process.cwd();
 const PUBLIC = path.join(ROOT, 'public');
 
 const normalize = value => String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');
+const dataTier = rel => normalize(rel).startsWith('data/json/core/') ? 'core' : 'on-demand';
 
 async function copyPath(sourceRel, targetRel = sourceRel) {
   const source = path.join(ROOT, normalize(sourceRel));
@@ -30,18 +31,22 @@ async function manifestShards(repoPath) {
 async function buildDataVersionManifest(jsonFiles) {
   const files = {};
   const versionInput = [];
+  const tiers = { core: { files: 0, bytes: 0 }, 'on-demand': { files: 0, bytes: 0 } };
   const sorted = [...jsonFiles].sort();
 
   for (const rel of sorted) {
     const bytes = await readFile(path.join(ROOT, rel));
     const hash = createHash('sha256').update(bytes).digest('hex');
     const publicPath = `/${normalize(rel)}`;
-    files[publicPath] = { hash, bytes: bytes.byteLength };
+    const tier = dataTier(rel);
+    files[publicPath] = { hash, bytes: bytes.byteLength, tier };
+    tiers[tier].files += 1;
+    tiers[tier].bytes += bytes.byteLength;
     versionInput.push(`${publicPath}:${hash}`);
   }
 
   const version = createHash('sha256').update(versionInput.join('\n')).digest('hex');
-  const manifest = { schema: 1, version, files };
+  const manifest = { schema: 1, version, tiers, files };
   await writeFile(path.join(PUBLIC, 'loc-data-version.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   return manifest;
 }
@@ -65,7 +70,9 @@ for (const rel of [
   'CNAME'
 ]) await copyPath(rel);
 
-// Runtime JSON is an explicit allowlist derived from the paths the Next app actually uses.
+// Runtime JSON is an explicit deployment allowlist. Delivery tier is separate:
+// canonical core data is eligible for light/core loading, while registries,
+// search projections and corpus shards remain on-demand.
 const jsonFiles = new Set(
   Object.values(LOC_DATA)
     .map(normalize)
@@ -77,4 +84,8 @@ for (const manifestPath of [LOC_DATA.TEXT_CORPUS_MANIFEST, LOC_DATA.MUSIC_SEARCH
 for (const rel of jsonFiles) await copyPath(rel);
 
 const versionManifest = await buildDataVersionManifest(jsonFiles);
-console.log(`Prepared Next public payload with ${jsonFiles.size} explicit JSON files; data version ${versionManifest.version.slice(0, 12)}.`);
+console.log(
+  `Prepared Next public payload with ${jsonFiles.size} explicit JSON files; ` +
+  `core=${versionManifest.tiers.core.files}, on-demand=${versionManifest.tiers['on-demand'].files}; ` +
+  `data version ${versionManifest.version.slice(0, 12)}.`
+);
