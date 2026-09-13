@@ -36,17 +36,19 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-beginner" id="beginner">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Start Here · 新手上路</p>
-        <h2>第一次來，從你看得懂的地方開始。</h2>
-        <p className="loc-subtitle">不用先學會月典，也不用先記住 66 個符文。</p>
+        <h2>不用先懂，先從你想看的地方開始。</h2>
+        <p className="loc-subtitle">不懂月典沒關係，不懂月之符文也沒關係；先用、先看，一個一個慢慢來。</p>
       </div>
       <div className="home-author-copy">
-        <p>你可以直接抽一張月之符文、看看文字彼此怎麼形成脈絡、從統計觀察哪些語彙最常出現，或把文字放回時間裡看文化怎麼改變。</p>
-        <p>如果已經知道自己要找什麼，就直接搜尋；如果只是想先看看，也可以從月之符文開始。等需要更深入時，再往下看月典的架構與治理方式。</p>
+        <p>你可以直接抽牌，不需要先記住 66 個符文，也不需要先知道每一張牌代表什麼。抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
+        <p>你也可以完全不抽牌，直接看脈絡、統計、文化，或直接搜尋自己有興趣的文字與資料。月之符文是月典的起點，但不是使用月典的門檻。</p>
+        <p>如果你想用自己的方式整理語意，也可以。月之符文提供的是一套可參考的表現方式，不要求所有人接受同一套分類；你可以找出自己的風格關鍵詞、整理自己的語意，甚至建立自己的符文或符號系統。</p>
         <div className="loc-actions">
-          <a className="loc-button primary" href="/runes">從月之符文開始</a>
+          <a className="loc-button primary" href="/runes">直接抽牌</a>
           <a className="loc-button" href="/context">看脈絡</a>
           <a className="loc-button" href="/statics">看統計</a>
           <a className="loc-button" href="/evolution">看文化</a>
+          <a className="loc-button" href="/search">直接搜尋</a>
         </div>
       </div>
     </section>
