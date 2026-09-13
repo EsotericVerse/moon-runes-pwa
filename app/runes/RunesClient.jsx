@@ -95,7 +95,7 @@ export default function RunesClient(){
   return <main className="loc-next-main"><section className="loc-view">
     <header className="loc-hero" id="intro"><p className="loc-eyebrow">LunaRunes · 月之符文</p><h1>月之符文</h1><p>由 66 個中文單一字構成。可以問一件事，也可以沒有問題直接抽取；抽牌、加權、籤詩指引與選擇性紀錄都在瀏覽器本機完成，不需要外部 API。</p></header>
     <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey}>
-      <p className="loc-eyebrow">Draw · 抽籤</p><h2>選擇抽牌方式</h2>
+      <p className="loc-eyebrow">Draw · 抽籤</p><h2>占卜抽籤</h2>
       <div className="runes-mode-nav">{MODES.map(item=><button key={item.key} data-draw-mode={item.key} className={`loc-button ${modeKey===item.key?'primary':''}`} onClick={()=>chooseMode(item.key)}>{item.label}</button>)}</div>
       <div className="loc-actions runes-draw-action"><button className="loc-button primary" data-draw-action="execute" onClick={executeDraw} disabled={!data||ritualStep>=0}>{ritualStep>=0?'占卜中…':'抽牌'}</button></div>
       <p className={`loc-status ${error?'error':''}`}>{error||(!data?'載入月之符文資料中…':`${selectedMode.label}：${selectedMode.positions.join(' → ')}${modeKey==='daily'?`／真實月相：${moonPhase}`:''}／${instantDraw?'即時反應':'4 秒儀式等待'}`)}</p>
