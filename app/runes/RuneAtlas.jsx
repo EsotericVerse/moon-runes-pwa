@@ -60,11 +60,12 @@ function RuneQuickCard({card}){
 
 function GroupRelationMap({name,cards}){
   const meta=GROUP_META[name]||{english:name};
+  const count=Math.max(cards.length,1);
   return <figure className="runes-group-relation" aria-label={`${name}組符文關聯圖`}>
     <figcaption><strong>{name} · {meta.english}</strong><span>群組與所屬符文的語意關聯</span></figcaption>
-    <div className={`runes-relation-map ${cards.length<=2?'compact':''}`}>
+    <div className={`runes-relation-map ${cards.length<=2?'compact':''} rune-count-${count}`}>
       <div className="runes-relation-center"><span>{name}</span><small>{meta.english}</small></div>
-      <div className="runes-relation-nodes">{cards.map((card,index)=><div className="runes-relation-node" key={card.編號} style={{'--rune-index':index,'--rune-count':Math.max(cards.length,1)}}>
+      <div className="runes-relation-nodes">{cards.map((card,index)=><div className={`runes-relation-node rune-node-${index+1}`} key={card.編號}>
         <img src={runeImage(card)} alt="" width="52" height="52" loading="lazy" decoding="async"/>
         <strong>{runeName(card)}</strong>
         <small>{card?.英文||''}</small>
