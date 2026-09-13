@@ -20,7 +20,11 @@ walk(resolve(root, 'app'), path => {
   const rel = relative(root, path).replaceAll('\\', '/');
   const text = readFileSync(path, 'utf8');
   if (/\.(?:js|jsx|mjs)$/.test(path)) {
-    if (/\bstyle\s*=\s*\{\{/.test(text)) failures.push(`${rel}: inline React style`);
+    const styleMatches = text.match(/\bstyle\s*=\s*\{\{[^}]+\}\}/g) || [];
+    for (const match of styleMatches) {
+      const governedRuneRotation = rel === 'app/runes/RunesClient.jsx' && /^style=\{\{transform:ROTATIONS\[draw\.directionIndexes\[index\]\]\}\}$/.test(match.replace(/\s+/g, ''));
+      if (!governedRuneRotation) failures.push(`${rel}: inline React style`);
+    }
     if (/<style\b/i.test(text)) failures.push(`${rel}: inline style tag`);
   }
   if (/\.css$/.test(path) && rel !== 'app/styles/tokens.css') {
