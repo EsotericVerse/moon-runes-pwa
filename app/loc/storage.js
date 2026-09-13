@@ -6,6 +6,7 @@ import {
   getLocalRecord,
   getLocalRecords,
   getLocalRecordsBy,
+  importLocalRecord,
   putLocalRecord
 } from './local-db';
 import {
@@ -23,10 +24,15 @@ import {
   getKvStateHealth,
   kvStateConfigured
 } from './kv-state';
-import { normalizeLocRecord } from './model/record-model';
+import { normalizeRecordForStorage } from './model/record-model';
 
 function normalizeRecordList(records){
-  return (Array.isArray(records)?records:[]).map(record=>normalizeLocRecord(record));
+  return (Array.isArray(records)?records:[]).map(record=>normalizeRecordForStorage(record));
+}
+
+function recordTime(record){
+  const time=Date.parse(String(record?.updated_at||''));
+  return Number.isFinite(time)?time:0;
 }
 
 export const localRecordStorage=Object.freeze({
@@ -34,6 +40,7 @@ export const localRecordStorage=Object.freeze({
   kind:'local-record-store',
   writable:true,
   async put(record){return putLocalRecord(record)},
+  async import(record){return importLocalRecord(record)},
   async get(id){return getLocalRecord(id)},
   async list(type){return getLocalRecords(type)},
   async listBy(field,value){return getLocalRecordsBy(field,value)},
@@ -88,4 +95,26 @@ export const STORAGE_ADAPTERS=Object.freeze({
 export function getStorageAdapter(id){
   const key=String(id||'').trim();
   return STORAGE_ADAPTERS[key]||null;
+}
+
+export async function backupLocalRecordsToGoogleDrive(name='loc-records.json',{type='',meta={}}={}){
+  const records=await localRecordStorage.list(type||undefined);
+  const result=await googleDriveStorage.saveRecords(name,records,{record_type:type||'all',...meta});
+  return {...result,record_count:records.length};
+}
+
+export async function mergeGoogleDriveRecordsToLocal(name='loc-records.json'){
+  const snapshot=await googleDriveStorage.loadRecords(name);
+  let imported=0;
+  let skipped=0;
+  for(const remote of snapshot.records){
+    const local=await localRecordStorage.get(remote.id);
+    if(local&&recordTime(local)>=recordTime(remote)){
+      skipped+=1;
+      continue;
+    }
+    await localRecordStorage.import(remote);
+    imported+=1;
+  }
+  return {imported,skipped,total:snapshot.records.length,snapshot};
 }
