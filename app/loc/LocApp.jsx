@@ -34,7 +34,7 @@ const VIEWS = {
 const PRIMARY_NAV = [
   ['context', '脈絡'],
   ['statics', '統計'],
-  ['evolution', '推演'],
+  ['evolution', '文化'],
   ['my-style', '設定']
 ];
 
