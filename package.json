@@ -10,7 +10,8 @@
     "verify:directories": "node scripts/verify-directory-governance.mjs",
     "verify:public": "node scripts/verify-public-payload.mjs",
     "verify:rc4": "node scripts/verify-rc4-integrity.mjs",
-    "verify": "npm run verify:independence && npm run verify:modularity && npm run verify:static && npm run verify:directories && npm run verify:rc4",
+    "verify:parity": "node scripts/verify-known-parity.mjs",
+    "verify": "npm run verify:independence && npm run verify:modularity && npm run verify:static && npm run verify:directories && npm run verify:rc4 && npm run verify:parity",
     "prepare:public": "node scripts/prepare-next-public.mjs",
     "build": "npm run verify && npm run prepare:public && npm run verify:public && next build",
     "start": "next start"
