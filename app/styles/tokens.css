@@ -44,6 +44,25 @@
   --loc-hero-end:rgba(7,25,44,.90);
   --loc-body-glow:#12365b;
   --loc-body-mid:#07192c;
+
+  /* Semantic typography tokens: themes may override these as one coherent set. */
+  --loc-font-family:Inter,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --loc-type-page-title:clamp(2rem,6vw,4rem);
+  --loc-type-section-title:1.32rem;
+  --loc-type-subtitle:.9rem;
+  --loc-type-body:1rem;
+  --loc-type-eyebrow:.82rem;
+  --loc-type-ui:.95rem;
+  --loc-weight-page-title:700;
+  --loc-weight-section-title:700;
+  --loc-weight-subtitle:600;
+  --loc-weight-body:400;
+  --loc-weight-eyebrow:750;
+  --loc-weight-ui:500;
+  --loc-line-page-title:1.08;
+  --loc-line-section-title:1.35;
+  --loc-line-subtitle:1.65;
+  --loc-line-body:1.8;
 }
 
 @media (prefers-color-scheme: light){
@@ -148,7 +167,7 @@ body{
   margin:0;
   background:radial-gradient(circle at 50% -10%,var(--loc-body-glow) 0,var(--loc-body-mid) 30rem,var(--loc-bg) 55rem);
   color:var(--loc-text);
-  font-family:Inter,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  font-family:var(--loc-font-family);
   line-height:1.65;
 }
 a{color:inherit}
