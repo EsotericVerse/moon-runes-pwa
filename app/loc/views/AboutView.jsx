@@ -4,16 +4,11 @@ export default function AboutView(){
       <p className="loc-eyebrow">LOC · 月典 · Language Model Framework</p>
       <div className="home-title-row">
         <h1>LOC月典</h1>
-        <p className="loc-core-line">從語彙開始，讓脈絡、作品與時間彼此連結，最後產生推演，累積後再選擇怎麼進化。</p>
+        <p className="loc-core-line">把語言整理成可理解、可搜尋、可推演的結構。</p>
       </div>
       <div className="loc-hero-copy">
-        <p>月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演語言的系統。月之符文(LunaRunes)是一套有自己獨立的語言方式。</p>
-        <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，讓累積的資料可以繼續被理解、比較分析與推演。</p>
-        <div className="home-intro-links" aria-label="首頁快速入口">
-          <a className="loc-bubble" href="#framework-map">架構圖</a>
-          <a className="loc-bubble" href="/governance">治理</a>
-          <a className="loc-bubble" href="#author-words">作者的話</a>
-        </div>
+        <p>月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演語言的系統。<br/>月之符文(LunaRunes)是一套有自己獨立的語言方式。</p>
+        <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，<br/>讓累積的資料可以繼續被理解、比較分析與推演。</p>
       </div>
       <figure className="home-hero-visual">
         <img src="/pics/LOC-PicAll.png" alt="LOC 月典語言模型框架視覺理念圖" loading="eager" />
@@ -23,17 +18,23 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-beginner" id="beginner">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Start Here · 新手上路</p>
+        <h2>新手上路</h2>
+        <p className="loc-subtitle">不知道怎麼開始沒關係，就抽一張牌吧！</p>
       </div>
-      <div className="home-author-copy">
-        <p><strong>不知道怎麼開始沒關係，就抽一張牌吧！</strong></p>
-        <p>不用管符文是什麼，抽了就知道！<br/>可以是問事，可以是生活風格主題的每日符文。</p>
-        <p>抽到之後再看當下的文字、方向與說明就可以；<br/>想多了解一點，再慢慢往下看。</p>
-        <p>你也可以完全不抽牌，直接在符文面跳過，<br/>往下看或看上面連結的脈絡、統計、文化，<br/>或直接搜尋自己有興趣的文字與資料。</p>
-        <p><strong>那就開始吧！</strong></p>
-        <div className="loc-actions">
-          <a className="loc-button primary" href="/runes">抽牌</a>
-          <a className="loc-button" href="/statics">排行榜</a>
+      <div className="home-rune-layout">
+        <div className="home-author-copy">
+          <p>不用管符文是什麼，抽了就知道！可以是問事，可以是生活風格主題的每日符文。</p>
+          <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
+          <p>你也可以完全不抽牌，直接在符文面跳過，往下看或看上面連結的脈絡、統計、文化，<br/>或直接搜尋自己有興趣的文字與資料。</p>
+          <p><strong>那就開始吧！</strong></p>
+          <div className="loc-actions">
+            <a className="loc-button primary" href="/runes">抽牌</a>
+            <a className="loc-button" href="/statics">排行榜</a>
+          </div>
         </div>
+        <figure className="home-framework-figure">
+          <img src="/pics/LOC-FrameworkPic.png" alt="LOC 框架步驟圖" loading="lazy" />
+        </figure>
       </div>
     </section>
 
@@ -87,13 +88,14 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-context" id="context">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Context · 脈絡</p>
-        <h2>脈絡，文字的關係與分析</h2>
+        <h2>脈絡</h2>
+        <p className="loc-subtitle">文字的關係與分析</p>
       </div>
       <div className="home-author-copy">
         <p>不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再回到原始內容確認證據。</p>
         <p>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p>
+        <p>可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。</p>
       </div>
-      <p className="loc-subtitle">可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。</p>
       <div className="home-progress-grid" aria-label="脈絡資料與知識">
         <article className="home-progress-item">
           <strong>可比對資料</strong>
@@ -115,7 +117,7 @@ export default function AboutView(){
       <div className="home-author-copy">
         <p>LOC 把脈絡重新放回時間中，透過時期、事件、趨勢與語彙軌跡，觀察語言如何累積、改變與延伸。</p>
         <p>過去與現在可以整理，未來仍然有變數；因此月典不是替未來下定論，而是治理已知、觀察演化，再推演可能。</p>
-        <p><a href="/statics">排行榜</a>可先看全部，再切 Facebook、Threads、Suno，並依現行時期邊界動態重新聚合；時期日期微調時不必重做固定排行。</p>
+        <p><a href="/statics">排行榜</a>可先看全部，再切 Facebook、Threads、Suno，並依來源與時期觀察語彙變化。</p>
       </div>
       <div className="home-progress-grid" aria-label="文化搜尋、治理與演化">
         <article className="home-progress-item">
@@ -124,11 +126,7 @@ export default function AboutView(){
         </article>
         <article className="home-progress-item">
           <strong>治理</strong>
-          <span>授權內容可以用全文做搜尋與分析；公開結果則依內容治理顯示片段、全文或僅 metadata。Facebook 與 Threads 預設採片段展示，歌詞不直接公開全文。已建立系統治理、資料權責、內容版權／公開邊界與月之符文66治理文件；目前也把全文分析與公開展示、來源日期、時期動態聚合等規則納入治理層。</span>
-        </article>
-        <article className="home-progress-item">
-          <strong>來源 × 時期 動態 Top 10</strong>
-          <span>排行榜可先看全部，再切 Facebook、Threads、Suno，並依現行時期邊界動態重新聚合；時期日期微調時不必重做固定排行。</span>
+          <span>授權內容可用全文做搜尋與分析；公開結果則依內容治理決定顯示全文、片段或僅 metadata。Facebook、Threads 預設只顯示片段，歌詞不直接公開全文；系統並以治理文件約束資料權責、版權與公開邊界。</span>
         </article>
       </div>
     </section>
@@ -136,7 +134,7 @@ export default function AboutView(){
     <section className="loc-card home-framework" id="framework-map">
       <p className="loc-eyebrow">Structure of LOC</p>
       <h2>結構</h2>
-      <p className="loc-subtitle">LunaRunes · Context · Music · Literary · Multimedia · Algorithm · Module · Evolution</p>
+      <p className="loc-subtitle">八個功能責任區與彼此關係</p>
       <p>它們不是八個彼此獨立的產品，也不是版本先後；而是 LOC 的八個功能責任區：月之符文、脈絡、音樂、文字創作、多媒體、演算法、演算模組與推演。</p>
       <figure className="home-framework-figure">
         <img src="/pics/LOC-structure.png" alt="月典結構圖與流程圖" loading="lazy" />
@@ -160,8 +158,11 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-author-words" id="author-words">
-      <p className="loc-eyebrow">作者的話</p>
-      <h2>治理過去的已知，是為了把時間還給現在的未知，才有更充裕的未來。</h2>
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">About me</p>
+        <h2>作者的話</h2>
+        <p className="loc-subtitle">治理已知的過去</p>
+      </div>
       <div className="home-author-copy">
         <p>月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用，採取的是不帶神秘學預設的中立態度，重在文字本身而不論道德。</p>
         <p>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的語言系統；而月之符文，也在這個過程中演變成可被分析、治理與推演的符號式語言系統。</p>
