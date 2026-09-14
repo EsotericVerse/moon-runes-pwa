@@ -1,0 +1,21 @@
+/* Homepage heading spacing: keep explanations visually attached to their headings. */
+.home-title-row{
+  grid-template-columns:max-content minmax(0,1fr);
+  column-gap:1.5rem;
+}
+.home-title-row>.loc-subtitle{
+  justify-self:start;
+}
+.home-section-heading{
+  grid-template-columns:max-content minmax(0,1fr);
+  column-gap:1.5rem;
+}
+.home-section-heading>.loc-subtitle{
+  justify-self:start;
+}
+@media(max-width:720px){
+  .home-title-row,
+  .home-section-heading{
+    grid-template-columns:1fr;
+  }
+}
