@@ -30,8 +30,11 @@ function writeStore(store){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(s
 async function candidateSegments(datasetId,segments,keys){
   let dataset;
   try{dataset=await getLocDataDataset(datasetId);}catch{return segments;}
-  const index=dataset?.routing_index?.keys;
+  const routingIndex=dataset?.routing_index;
+  const index=routingIndex?.keys;
   if(!index||typeof index!=='object')return segments;
+  const truncated=new Set(Array.isArray(routingIndex?.truncated_keys)?routingIndex.truncated_keys:[]);
+  if(keys.some(key=>truncated.has(key)))return segments;
   const ids=new Set();
   for(const key of keys){
     for(const id of Array.isArray(index[key])?index[key]:[])ids.add(id);
