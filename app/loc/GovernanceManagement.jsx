@@ -24,7 +24,7 @@ export default function GovernanceManagement(){
   const login = async()=>{
     setState(current=>({ ...current, error:'' }));
     try{
-      await signInManagementWithGoogle('/governance');
+      await signInManagementWithGoogle('/management');
     }catch(error){
       setState(current=>({ ...current, error:String(error?.message || error) }));
     }
