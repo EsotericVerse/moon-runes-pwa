@@ -18,7 +18,7 @@ export default function ClassifyView(){
     if(!text.trim())return;
     const record=createLibraryRecord({title,text,source,classification:result});
     await localRecordStorage.put(record);
-    setMessage(`已存入 Library：${record.title}`);
+    setMessage(`已存入資料庫：${record.title}`);
   }
 
   async function loadTextFile(event){
@@ -28,16 +28,16 @@ export default function ClassifyView(){
       setTitle(file.name.replace(/\.[^.]+$/,''));
       setSource(`file:${file.name}`);
       setText(await file.text());
-      setMessage(`已載入 ${file.name}，尚未存入 Library。`);
+      setMessage(`已載入 ${file.name}，尚未存入資料庫。`);
     }catch(error){setMessage(`讀取失敗：${error.message}`);}
     event.target.value='';
   }
 
   return <section className="loc-view">
     <header className="loc-hero">
-      <p className="loc-eyebrow">Local Classifier · 本機分類</p>
+      <p className="loc-eyebrow">Local Classifier</p>
       <h1>分類</h1>
-      <p>使用「群組設定」目前的 exact-match 規則在本機分類。結果可以直接存進 Library；不呼叫 Render，也不需要 API。</p>
+      <p className="loc-subtitle">依目前群組規則在本機分析文字，結果可直接存入資料庫。</p>
     </header>
 
     <section className="loc-card">
@@ -48,15 +48,16 @@ export default function ClassifyView(){
       </div>
       <div className="loc-actions">
         <label className="loc-button">載入 TXT／MD<input className="loc-hidden-input" type="file" accept="text/plain,text/markdown,.txt,.md" onChange={loadTextFile}/></label>
-        <button className="loc-button primary" onClick={save} disabled={!text.trim()}>分類後存入 Library</button>
+        <button className="loc-button primary" onClick={save} disabled={!text.trim()}>分類後存入資料庫</button>
         <button className="loc-button" onClick={()=>{setTitle('');setText('');setSource('manual');setMessage('')}}>清除</button>
       </div>
       {message&&<p className="loc-status">{message}</p>}
     </section>
 
     <section className="loc-card">
-      <p className="loc-eyebrow">Classification Result · 分類結果</p>
+      <p className="loc-eyebrow">Classification Result</p>
       <h2>分類結果</h2>
+      <p className="loc-subtitle">顯示文字命中的群組與關鍵詞，並保留預設承接結果。</p>
       {!result?<p className="loc-status">輸入文字後會立即顯示結果。</p>:<>
         <div className="loc-chip-list">{result.matches.map(item=><span key={item.id}>{item.name}{item.hits.length?` · ${item.hits.join('、')}`:' · fallback'}</span>)}</div>
         <p className="loc-status">{result.fallback?'沒有命中自訂群組，進入預設承接組。':'只顯示實際命中的群組與關鍵詞。'}</p>
