@@ -156,7 +156,7 @@ async function proxyManagedState(request, env, url) {
   }
 
   const suffix = url.pathname.slice(MANAGEMENT_STATE_PATH.length) || '/';
-  if (!['/eras', '/daily-runes', '/context'].some(path => suffix === path || suffix.startsWith(`${path}?`))) {
+  if (!['/eras', '/daily-runes', '/context'].includes(suffix)) {
     return json({ ok: false, error: 'state_path_not_allowed', build: BUILD }, { status: 404, headers: corsHeaders(request, env) });
   }
 
@@ -174,7 +174,7 @@ async function proxyManagedState(request, env, url) {
   const response = await fetch(target, {
     method: request.method,
     headers,
-    body: request.method === 'DELETE' ? request.body : request.body,
+    body: request.body,
     redirect: 'manual'
   });
   return withCors(response, request, env);
@@ -205,14 +205,15 @@ export default {
 
     if (url.pathname === '/management/session') {
       const { session, authorized } = await getManagementSession(request, env);
+      const allowed = authorized;
       return json({
-        ok: authorized,
+        ok: allowed,
         authenticated: Boolean(session),
-        authorized,
-        user: authorized ? { name: session.user.name || '', email: session.user.email || '' } : null,
-        session_expires_at: authorized ? session.session?.expiresAt || null : null,
+        authorized: allowed,
+        user: allowed ? { name: session.user.name || '', email: session.user.email || '' } : null,
+        session_expires_at: allowed ? session.session?.expiresAt || null : null,
         build: BUILD
-      }, { status: authorized ? 200 : 401, headers: cors });
+      }, { status: allowed ? 200 : 401, headers: cors });
     }
 
     if (url.pathname === MANAGEMENT_STATE_PATH || url.pathname.startsWith(`${MANAGEMENT_STATE_PATH}/`)) {
