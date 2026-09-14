@@ -9,6 +9,7 @@ const failures = [];
 const maxRuntimeJsonBytes = Number(process.env.LOC_CI_MAX_RUNTIME_JSON_BYTES || 512 * 1024 * 1024);
 const partitionScopeFields = new Set(['person', 'family', 'generation', 'era', 'source', 'corpus', 'language', 'culture']);
 const scopeRequiredDatasets = new Set(['loc4-text-corpus', 'loc3-lyrics-search']);
+const maxRoutingPrefixShards = 8;
 
 function normalizeRepoPath(value) {
   return String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');
@@ -60,7 +61,6 @@ const actualJson = new Set(walkFiles(resolve(publicRoot, 'data/json')));
 for (const path of expectedJson) if (!actualJson.has(path)) failures.push(`missing staged JSON: ${path}`);
 for (const path of actualJson) if (!expectedJson.has(path)) failures.push(`unexpected staged JSON: ${path}`);
 
-// Verify build-time version and delivery-tier metadata against the exact staged runtime JSON payload.
 const versionManifestPath = resolve(publicRoot, 'loc-data-version.json');
 let totalRuntimeJsonBytes = 0;
 let versionManifest = null;
@@ -114,7 +114,6 @@ if (!existsSync(versionManifestPath)) {
   if (versionManifest?.version !== expectedVersion) failures.push('runtime data aggregate version mismatch');
 }
 
-// Hierarchical index must cover every runtime JSON exactly once as either a manifest or a segment.
 const dataIndexPath = resolve(publicRoot, 'loc-data-index.json');
 if (!existsSync(dataIndexPath)) {
   failures.push('missing runtime data index: loc-data-index.json');
@@ -164,9 +163,44 @@ if (!existsSync(dataIndexPath)) {
     }
   }
 
+  function verifyRoutingIndex(dataset, datasetId) {
+    const routing = dataset?.routing_index;
+    if (!routing) return;
+    if (routing.schema === 2 && routing.strategy === 'prefix-sharded') {
+      const prefixLength = Number(routing.prefix_length);
+      if (!Number.isInteger(prefixLength) || prefixLength < 1) failures.push(`invalid routing prefix length: ${datasetId}`);
+      const shards = routing.shards && typeof routing.shards === 'object' ? routing.shards : null;
+      if (!shards) {
+        failures.push(`missing routing shards map: ${datasetId}`);
+        return;
+      }
+      for (const [prefix, publicPath] of Object.entries(shards)) {
+        if (typeof publicPath !== 'string' || !publicPath.startsWith('/loc-routing-index/')) {
+          failures.push(`invalid routing shard path: ${datasetId}.${prefix}`);
+          continue;
+        }
+        const repoPath = normalizeRepoPath(publicPath);
+        const staged = resolve(publicRoot, repoPath);
+        if (!existsSync(staged)) failures.push(`missing routing shard: ${publicPath}`);
+        else {
+          const shard = JSON.parse(readFileSync(staged, 'utf8'));
+          if (shard?.schema !== 2 || shard?.dataset !== datasetId || shard?.prefix !== prefix) failures.push(`routing shard metadata mismatch: ${publicPath}`);
+        }
+      }
+      const prefixes = Object.keys(shards);
+      if (prefixes.length > 0 && !Number.isInteger(prefixLength)) return;
+      for (const prefix of prefixes) {
+        if (prefix.length > prefixLength) failures.push(`routing prefix exceeds configured length: ${datasetId}.${prefix}`);
+      }
+    } else if (routing.schema !== 1 || typeof routing.keys !== 'object') {
+      failures.push(`unsupported routing index schema: ${datasetId}`);
+    }
+  }
+
   for (const [datasetId, dataset] of Object.entries(datasets)) {
     if (!['core', 'on-demand'].includes(dataset?.tier)) failures.push(`runtime data index invalid dataset tier: ${datasetId}`);
     if (dataset?.manifest) verifyIndexedEntry(dataset.manifest, `${datasetId}.manifest`);
+    verifyRoutingIndex(dataset, datasetId);
 
     const segments = Array.isArray(dataset?.segments) ? dataset.segments : [];
     const sequences = [];
@@ -179,6 +213,7 @@ if (!existsSync(dataIndexPath)) {
       if (segment?.tier === 'core') coreBytes += Number(segment?.bytes || 0);
       else onDemandBytes += Number(segment?.bytes || 0);
       sequences.push(Number(segment?.sequence));
+      if (Array.isArray(segment?.routing_keys)) failures.push(`segment retains duplicated routing_keys: ${label}`);
     }
     const expectedSequences = Array.from({ length: segments.length }, (_, index) => index + 1);
     if (sequences.some((value, index) => value !== expectedSequences[index])) {
@@ -208,13 +243,11 @@ if (totalRuntimeJsonBytes > maxRuntimeJsonBytes) {
   failures.push(`runtime JSON budget exceeded: ${totalRuntimeJsonBytes} bytes > ${maxRuntimeJsonBytes} bytes`);
 }
 
-// User-facing governance/KM lives in routes or structured data; only the Canon doc is staged here.
 const expectedDocs = new Set(['docs/LOC_Canon_1.0.docx']);
 const actualDocs = new Set(walkFiles(resolve(publicRoot, 'docs')));
 for (const path of expectedDocs) if (!actualDocs.has(path)) failures.push(`missing staged doc: ${path}`);
 for (const path of actualDocs) if (!expectedDocs.has(path)) failures.push(`unexpected staged doc: ${path}`);
 
-// Formal homepage, framework, author and LunaRunes concept/group visuals staged from the preserved pics/ source directory.
 const expectedPics = new Set([
   'pics/01.soul.jpg',
   'pics/02_connection.jpg',
@@ -236,7 +269,6 @@ const actualPics = new Set(walkFiles(resolve(publicRoot, 'pics')));
 for (const path of expectedPics) if (!actualPics.has(path)) failures.push(`missing staged pic: ${path}`);
 for (const path of actualPics) if (!expectedPics.has(path)) failures.push(`unexpected staged pic: ${path}`);
 
-// Physical card production PDF is a public Runes asset, not tutorial content.
 const printablePdf = resolve(publicRoot, 'LunarRunesCardCut.pdf');
 if (!existsSync(printablePdf)) failures.push('missing staged printable card PDF: LunarRunesCardCut.pdf');
 
