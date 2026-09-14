@@ -10,6 +10,8 @@ export const SEARCH_COLLECTIONS = Object.freeze({
     scopeProfile:Object.freeze({id:'loc',fields:SEARCH_SCOPE_FIELDS}),
     smallSources: [
       [LOC_DATA.RUNES, '月之符文'],
+      [LOC_DATA.RUNE_GRAMMAR, '符文演算法'],
+      [LOC_DATA.RUNE_INTERPRETATIONS, '每日符文'],
       [LOC_DATA.LOC2_EVENT_REGISTRY, '事件'],
       [LOC_DATA.LOC4_WRITING_REGISTRY, '文字創作'],
       [LOC_DATA.LOC6_GOVERNANCE_REGISTRY, '治理'],
@@ -23,10 +25,12 @@ export const SEARCH_COLLECTIONS = Object.freeze({
   '月之符文': Object.freeze({
     id: '月之符文',
     label: '月之符文',
-    description: '只搜尋 LunaRunes 主資料與 Lots／History／Harmony companion datasets。',
+    description: '搜尋 LunaRunes 核心資料、抽牌語法、每日解讀與 Lots／History／Harmony companion datasets。',
     scopeProfile:Object.freeze({id:'lunarunes',fields:Object.freeze(['source','corpus','language','culture'])}),
     smallSources: [
       [LOC_DATA.RUNES, '月之符文'],
+      [LOC_DATA.RUNE_GRAMMAR, '符文演算法'],
+      [LOC_DATA.RUNE_INTERPRETATIONS, '每日符文'],
       [LOC_DATA.LOTS, '籤詩'],
       [LOC_DATA.HISTORY, '符文歷史'],
       [LOC_DATA.HARMONY, '符文調和']
