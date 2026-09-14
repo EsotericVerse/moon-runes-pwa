@@ -11,6 +11,7 @@ function SearchBox(){
 
 export default function GlobalNav(){
   const pathname=usePathname()||'/';
+  const isRunes=pathname==='/runes'||pathname.startsWith('/runes/');
   const isWhoami=pathname.startsWith('/whoami');
   const isGovernance=pathname==='/governance'||pathname.startsWith('/governance/');
 
@@ -22,6 +23,7 @@ export default function GlobalNav(){
     <a href="/governance">治理</a>
     <SearchBox />
     <a href="https://whoami.lo3rwang.cc/">作者介紹</a>
+    {isRunes && <a href="#">回月之符文首頁</a>}
     {isWhoami && <a href="#">回作者首頁</a>}
     {isGovernance && <a href="#">回治理首頁</a>}
     <a className="loc-next-home" href="/">回月典首頁</a>
