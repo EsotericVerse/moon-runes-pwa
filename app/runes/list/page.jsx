@@ -1,4 +1,9 @@
-import runes from '../../../data/json/core/runes.json';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { LOC_DATA } from '../../loc/data-paths.mjs';
+
+const runeSourcePath = resolve(process.cwd(), LOC_DATA.RUNES.replace(/^\//, ''));
+const runes = JSON.parse(readFileSync(runeSourcePath, 'utf8'));
 
 export const metadata = {
   title: '所有符文列表｜月之符文｜LOC',
