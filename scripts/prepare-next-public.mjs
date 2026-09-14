@@ -154,7 +154,11 @@ await rm(PUBLIC, { recursive: true, force: true });
 await mkdir(PUBLIC, { recursive: true });
 
 for (const rel of [
-  'assets/lunarunes/cards', 'assets/lunarunes/reference', 'assets/site/diagrams', 'assets/site/icons', 'pics',
+  'assets/lunarunes/cards', 'assets/lunarunes/reference', 'assets/site/diagrams', 'assets/site/icons',
+  'pics/01.soul.jpg', 'pics/02_connection.jpg', 'pics/03_life.jpg', 'pics/04_nature.jpg',
+  'pics/05_mineral.jpg', 'pics/06_element.jpg', 'pics/07_order.jpg', 'pics/08_disorder.jpg',
+  'pics/09_specia.jpg', 'pics/LOC-FrameworkPic.png', 'pics/LOC-PicAll.png', 'pics/LOC-structure.png',
+  'pics/LunaRunes.jpg', 'pics/aboutme.png', 'pics/lrunes66_overview.jpg',
   'data/html/runes-beginner.html', 'docs/LOC_Canon_1.0.docx', 'LunarRunesCardCut.pdf',
   'apple-touch-icon.png', 'favicon.ico', 'manifest.json', 'CNAME'
 ]) await copyPath(rel);
