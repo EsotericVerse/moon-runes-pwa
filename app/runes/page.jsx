@@ -9,7 +9,7 @@ export const metadata = {
 export default function RunesPage() {
   return <>
     <nav className="loc-card" aria-label="月之符文功能入口">
-      <a href="/runes">抽牌</a> · <a id="library" href="/library">符文圖鑑</a> · <a id="reference" href="/library">符文參考</a> · <a href="/runes/history">抽籤紀錄</a>
+      <a href="/runes">抽牌</a> · <a id="library" href="/runes/list">所有符文列表</a> · <a id="reference" href="/runes/list">符文參考</a> · <a href="/runes/history">抽籤紀錄</a>
     </nav>
     <RuneDrawClient/>
   </>;
