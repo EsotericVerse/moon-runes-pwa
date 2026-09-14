@@ -30,10 +30,16 @@ export async function rankSearchSegments(datasetId,segments,query){
   const keys=await queryKeys(query);
   if(!keys.length)return segments;
   const store=readStore();
-  return [...segments].sort((a,b)=>{
-    const score=segment=>keys.reduce((sum,key)=>sum+Number(store?.[datasetId]?.[key]?.[segment.id]||0),0);
-    return score(b)-score(a)||Number(a.sequence||0)-Number(b.sequence||0);
-  });
+  const buildKeySets=new Map(
+    segments.map(segment=>[segment.id,new Set(Array.isArray(segment.routing_keys)?segment.routing_keys:[])])
+  );
+  const buildScore=segment=>keys.reduce((sum,key)=>sum+(buildKeySets.get(segment.id)?.has(key)?1:0),0);
+  const learnedScore=segment=>keys.reduce((sum,key)=>sum+Number(store?.[datasetId]?.[key]?.[segment.id]||0),0);
+  return [...segments].sort((a,b)=>
+    buildScore(b)-buildScore(a)
+    ||learnedScore(b)-learnedScore(a)
+    ||Number(a.sequence||0)-Number(b.sequence||0)
+  );
 }
 
 export async function recordSearchSegmentHits(datasetId,segmentId,query,hitCount){
