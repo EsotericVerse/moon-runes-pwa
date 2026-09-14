@@ -36,7 +36,6 @@ async function candidateSegments(datasetId,segments,keys){
   for(const key of keys){
     for(const id of Array.isArray(index[key])?index[key]:[])ids.add(id);
   }
-  // No index hit means the build hint is inconclusive; preserve full-scan recall.
   if(!ids.size)return segments;
   return segments.filter(segment=>ids.has(segment.id));
 }
