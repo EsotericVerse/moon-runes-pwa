@@ -1,6 +1,7 @@
 import './globals.css';
 import GlobalNav from './GlobalNav';
 import GlobalFooter from './GlobalFooter';
+import TitleGovernance from './TitleGovernance';
 
 export const metadata = {
   title: 'LOC 月典',
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className="next-migration-shell">
         <GlobalNav />
+        <TitleGovernance />
         {children}
         <GlobalFooter />
       </body>
