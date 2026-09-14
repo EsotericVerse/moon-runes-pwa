@@ -158,10 +158,11 @@ for (const rel of [
   'pics/01.soul.jpg', 'pics/02_connection.jpg', 'pics/03_life.jpg', 'pics/04_nature.jpg',
   'pics/05_mineral.jpg', 'pics/06_element.jpg', 'pics/07_order.jpg', 'pics/08_disorder.jpg',
   'pics/09_specia.jpg', 'pics/LOC-FrameworkPic.png', 'pics/LOC-PicAll.png', 'pics/LOC-structure.png',
-  'pics/LunaRunes.jpg', 'pics/aboutme.png', 'pics/lrunes66_overview.jpg',
+  'pics/LunaRunes.jpg', 'pics/aboutme.png',
   'data/html/runes-beginner.html', 'docs/LOC_Canon_1.0.docx', 'LunarRunesCardCut.pdf',
   'apple-touch-icon.png', 'favicon.ico', 'manifest.json', 'CNAME'
 ]) await copyPath(rel);
+await copyPath('pics/lrunes66_overview.jpg', 'pics/loc_runes_66_overview.jpg');
 
 const jsonFiles = new Set(Object.values(LOC_DATA).map(normalize).filter(rel => rel.startsWith('data/json/')));
 for (const manifestPath of [LOC_DATA.TEXT_CORPUS_MANIFEST, LOC_DATA.MUSIC_SEARCH_MANIFEST]) {
