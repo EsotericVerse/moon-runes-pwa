@@ -26,6 +26,7 @@ export default function GlobalNav(){
       <a href="/statics">符文統計</a>
       <a href="/evolution">符文文化</a>
       <a href="/runes#history">抽籤紀錄</a>
+      <a href="/governance">治理</a>
       <SearchBox />
       <a className="loc-next-home" href="/">回月典首頁</a>
     </>;
@@ -35,7 +36,7 @@ export default function GlobalNav(){
       <a href="/context">脈絡</a>
       <a href="/statics">統計</a>
       <a href="/evolution">文化</a>
-      <a href="/my-style">設定</a>
+      <a href="/governance">治理</a>
       <SearchBox />
       <a className="loc-next-home" href="/">回月典首頁</a>
     </>;
