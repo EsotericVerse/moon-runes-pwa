@@ -6,6 +6,7 @@ import { buildSegmentCatalog } from './partition-catalog.mjs';
 
 const ROOT = process.cwd();
 const PUBLIC = path.join(ROOT, 'public');
+const MAX_ROUTING_INDEX_SEGMENTS_PER_KEY = 24;
 
 const normalize = value => String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');
 const dataTier = rel => normalize(rel).startsWith('data/json/core/') ? 'core' : 'on-demand';
@@ -83,6 +84,24 @@ function fileMeta(versionManifest, repoPath) {
   };
 }
 
+function buildRoutingIndex(segments) {
+  const keys = new Map();
+  for (const segment of segments) {
+    for (const key of Array.isArray(segment.routing_keys) ? segment.routing_keys : []) {
+      const bucket = keys.get(key) || [];
+      if (!bucket.includes(segment.id) && bucket.length < MAX_ROUTING_INDEX_SEGMENTS_PER_KEY) {
+        bucket.push(segment.id);
+      }
+      keys.set(key, bucket);
+    }
+  }
+  return {
+    schema: 1,
+    max_segments_per_key: MAX_ROUTING_INDEX_SEGMENTS_PER_KEY,
+    keys: Object.fromEntries([...keys.entries()].sort(([left], [right]) => left.localeCompare(right)))
+  };
+}
+
 async function buildDataIndex(versionManifest) {
   const loc4ManifestPath = normalize(LOC_DATA.TEXT_CORPUS_MANIFEST);
   const loc3ManifestPath = normalize(LOC_DATA.MUSIC_SEARCH_MANIFEST);
@@ -117,37 +136,43 @@ async function buildDataIndex(versionManifest) {
     }))
   };
 
+  const loc4Segments = loc4ShardEntries.map(entry => {
+    const catalogEntry = segmentCatalog[entry.path] || {};
+    return {
+      id: `loc4-${String(entry.sequence).padStart(2, '0')}`,
+      sequence: entry.sequence,
+      ...(Number.isFinite(Number(entry.document_count)) ? { document_count: Number(entry.document_count) } : {}),
+      scope: catalogEntry.scope || {},
+      routing_keys: catalogEntry.routing_keys || [],
+      ...fileMeta(versionManifest, entry.path)
+    };
+  });
+
   datasets['loc4-text-corpus'] = {
     tier: 'on-demand',
     strategy: 'manifest-shards',
     manifest: fileMeta(versionManifest, loc4ManifestPath),
-    segments: loc4ShardEntries.map(entry => {
-      const catalogEntry = segmentCatalog[entry.path] || {};
-      return {
-        id: `loc4-${String(entry.sequence).padStart(2, '0')}`,
-        sequence: entry.sequence,
-        ...(Number.isFinite(Number(entry.document_count)) ? { document_count: Number(entry.document_count) } : {}),
-        scope: catalogEntry.scope || {},
-        routing_keys: catalogEntry.routing_keys || [],
-        ...fileMeta(versionManifest, entry.path)
-      };
-    })
+    routing_index: buildRoutingIndex(loc4Segments),
+    segments: loc4Segments
   };
+
+  const loc3Segments = loc3ShardEntries.map(entry => {
+    const catalogEntry = segmentCatalog[entry.path] || {};
+    return {
+      id: `loc3-${String(entry.sequence).padStart(2, '0')}`,
+      sequence: entry.sequence,
+      scope: catalogEntry.scope || {},
+      routing_keys: catalogEntry.routing_keys || [],
+      ...fileMeta(versionManifest, entry.path)
+    };
+  });
 
   datasets['loc3-lyrics-search'] = {
     tier: 'on-demand',
     strategy: 'manifest-shards',
     manifest: fileMeta(versionManifest, loc3ManifestPath),
-    segments: loc3ShardEntries.map(entry => {
-      const catalogEntry = segmentCatalog[entry.path] || {};
-      return {
-        id: `loc3-${String(entry.sequence).padStart(2, '0')}`,
-        sequence: entry.sequence,
-        scope: catalogEntry.scope || {},
-        routing_keys: catalogEntry.routing_keys || [],
-        ...fileMeta(versionManifest, entry.path)
-      };
-    })
+    routing_index: buildRoutingIndex(loc3Segments),
+    segments: loc3Segments
   };
 
   const singletonPaths = Object.values(LOC_DATA)
