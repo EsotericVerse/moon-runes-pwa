@@ -100,6 +100,15 @@ export default function MyStyleView(){
 
     <StyleGroupsView embedded />
 
+    <section className="loc-card" id="author-method">
+      <p className="loc-eyebrow">Author Method · 作者中心理念</p>
+      <h2>用自己的工具建立自己的風格</h2>
+      <p><strong>政德風是 LOC 的作者範例，也是作者自己的 IP 實作。</strong> 我先用自己的文字資料建立文化設定與分類規則，再由工具持續統計關鍵詞、群組、作品與時期分布，形成可以回查、比較與更新的個人風格。</p>
+      <p><strong>風格不是先寫好答案，再要求資料符合。</strong> 設定提供觀察座標，資料留下實際紀錄；當時間持續累積，就能看見風格如何形成、改變與延伸。</p>
+      <p><strong>月之符文展示的是同一方法的另一套標準。</strong> 它證明 LOC 的文化定位不必只描述作者本人：分類標準可以是一個人、一套理念、一種作品風格或其他文化體系。不同標準可以使用相同模組框架，各自留下自己的文化紀錄。</p>
+      <p className="loc-core-line">文化設定 → 分類與統計 → 時期比較 → 文化紀錄 → 風格定位 → 趨勢觀察</p>
+    </section>
+
     <section className="loc-card">
       <p className="loc-eyebrow">Author Reference</p>
       <h2>政德風公開說明</h2>
