@@ -32,6 +32,16 @@ export async function signOutManagement(){
 
 export async function getManagementSession(){
   if(!managementAuthConfigured()) return null;
-  const result = await authClient.getSession();
-  return result?.data || null;
+  const response = await fetch(`${authBaseUrl()}/management/session`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      accept: 'application/json'
+    },
+    cache: 'no-store'
+  });
+  if(response.status === 401) return null;
+  if(!response.ok) throw new Error(`management_session_failed:${response.status}`);
+  const data = await response.json();
+  return data?.authorized ? data : null;
 }
