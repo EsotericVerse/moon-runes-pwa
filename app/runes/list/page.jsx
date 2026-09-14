@@ -1,13 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { LOC_DATA } from '../../loc/data-paths.mjs';
+import LunaRunesNav from '../LunaRunesNav';
 
 const runeSourcePath = resolve(process.cwd(), LOC_DATA.RUNES.replace(/^\//, ''));
 const runes = JSON.parse(readFileSync(runeSourcePath, 'utf8'));
 
 export const metadata = {
-  title: '所有符文列表｜月之符文｜LOC',
-  description: '月之符文 1–66 完整列表。'
+  title: '符文圖鑑｜月之符文｜LOC',
+  description: '月之符文 1–66 完整圖鑑。'
 };
 
 function runeCardImage(card) {
@@ -25,13 +26,11 @@ export default function RuneListPage() {
     <section className="loc-view">
       <header className="loc-hero">
         <p className="loc-eyebrow">LunaRunes · 月之符文</p>
-        <h1>所有符文列表</h1>
+        <h1>符文圖鑑</h1>
         <p>月之符文 1–66 的完整列表。資料直接取自現行核心符文資料，不另建副本。</p>
       </header>
 
-      <nav className="loc-card" aria-label="月之符文功能入口">
-        <a href="/runes">抽牌</a> · <strong>所有符文列表</strong> · <a href="/runes/history">抽籤紀錄</a>
-      </nav>
+      <LunaRunesNav current="/runes/list" />
 
       <section className="loc-card" id="rune-list">
         <p className="loc-eyebrow">66 Runes · 完整列表</p>
