@@ -14,7 +14,8 @@
     "verify:parity": "node scripts/verify-known-parity.mjs",
     "verify": "npm run verify:independence && npm run verify:modularity && npm run verify:modules && npm run verify:static && npm run verify:directories && npm run verify:rc4 && npm run verify:parity",
     "prepare:public": "node scripts/prepare-next-public.mjs",
-    "build": "npm run verify && npm run prepare:public && npm run verify:public && next build",
+    "prepare:routing": "node scripts/shard-routing-index.mjs",
+    "build": "npm run verify && npm run prepare:public && npm run prepare:routing && npm run verify:public && next build",
     "start": "next start"
   },
   "dependencies": {
