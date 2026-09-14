@@ -7,34 +7,38 @@ import unicodedata
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from paths import registry_json, search_json
-from typing import Any
 
 
 _SPACE_RE = re.compile(r"\s+")
 _TOKEN_RE = re.compile(r"[a-z0-9]+|[\u3400-\u9fff]")
 
-# Small, author-governed concept bridge. It improves natural-language recall
-# without introducing another language or changing the lyric-work ranking unit.
-_CONCEPTS = (
-    ("界線", "底線", "邊界", "拒絕", "止損", "離開", "斷捨離", "不再消耗", "保護自己"),
-    ("自由", "選擇", "航向", "起飛", "前進", "展翅", "自我治理", "為自己負責"),
-    ("放下", "釋懷", "告別", "離去", "結束", "鬆手", "不再等待"),
-    ("孤獨", "寂寞", "一個人", "獨自", "無人理解", "陪伴"),
-    ("背叛", "欺騙", "辜負", "月蝕", "失信", "傷害"),
-    ("死亡", "離世", "永別", "日蝕", "失去至愛", "追思", "紀念"),
-    ("幸福", "甜蜜", "溫柔", "相守", "日常", "安心", "被愛"),
-    ("希望", "微光", "月光", "黎明", "重新開始", "還能前行", "未來"),
-    ("憂鬱", "低潮", "無力", "疲憊", "窒息", "撐不住", "黑暗"),
-    ("自我價值", "配得感", "相信自己", "肯定自己", "不再否定", "主權"),
-    ("祝福", "生日", "朋友", "紀念日", "願望", "陪你長大"),
-    ("現實", "壓力", "責任", "工作", "生存", "治理", "承擔"),
-)
 
-_OUT_OF_DOMAIN_RE = re.compile(
-    r"(?:天氣|氣溫|幾度|降雨機率|颱風|地震|股票|匯率|新聞|路況|台北.*下雨|明天.*下雨)"
-)
+def _load_search_governance() -> tuple[tuple[tuple[str, ...], ...], re.Pattern[str], tuple[tuple[tuple[str, ...], str, float], ...]]:
+    path = registry_json("LOC_SEARCH_GOVERNANCE.json")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    concepts = tuple(
+        tuple(str(term) for term in item.get("terms", []) if str(term).strip())
+        for item in payload.get("concept_bridge", [])
+        if item.get("terms")
+    )
+    out_of_domain = re.compile(str(payload.get("out_of_domain_regex") or r"(?!x)x"))
+    intent_boosts = tuple(
+        (
+            tuple(str(term) for term in item.get("query_terms", []) if str(term).strip()),
+            str(item.get("category_contains") or ""),
+            float(item.get("weight") or 0.0),
+        )
+        for item in payload.get("intent_boosts", [])
+    )
+    if not concepts:
+        raise ValueError("LOC_SEARCH_GOVERNANCE concept_bridge must not be empty")
+    return concepts, out_of_domain, intent_boosts
+
+
+_CONCEPTS, _OUT_OF_DOMAIN_RE, _INTENT_BOOSTS = _load_search_governance()
 
 
 def _normalize(value: str) -> str:
@@ -263,13 +267,12 @@ class LOC3SearchEngine:
     def _intent_boost(query: str, work: dict[str, Any]) -> float:
         query = _normalize(query)
         category = _normalize(str(work.get("category", "")))
-        boosts = (
-            (("幸福", "甜蜜", "安穩", "相守"), "幸福甜美", 0.055),
-            (("生日", "祝福", "紀念"), "祝福紀念", 0.06),
-            (("治理", "主權", "底線", "界線", "拒絕"), "治理宣言", 0.045),
-        )
         return max(
-            (weight for terms, label, weight in boosts if any(term in query for term in terms) and label in category),
+            (
+                weight
+                for terms, label, weight in _INTENT_BOOSTS
+                if any(term in query for term in terms) and _normalize(label) in category
+            ),
             default=0.0,
         )
 
