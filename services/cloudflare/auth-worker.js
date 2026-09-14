@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 
 const SESSION_TTL_SECONDS = 60 * 60 * 2;
 const AUTH_PATH = '/api/auth';
-const BUILD = '2026-09-14-better-auth-google-v1';
+const BUILD = '2026-09-14-better-auth-google-v2';
 
 function splitList(value = '') {
   return String(value)
@@ -65,7 +65,8 @@ function createAuth(env) {
     socialProviders: {
       google: {
         clientId: env.GOOGLE_CLIENT_ID,
-        clientSecret: env.GOOGLE_CLIENT_SECRET
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+        requireEmailVerification: true
       }
     },
     user: {
@@ -87,7 +88,6 @@ function createAuth(env) {
     },
     session: {
       expiresIn: SESSION_TTL_SECONDS,
-      updateAge: SESSION_TTL_SECONDS,
       disableSessionRefresh: true,
       cookieCache: {
         enabled: true,
