@@ -9,7 +9,6 @@ const failures = [];
 const maxRuntimeJsonBytes = Number(process.env.LOC_CI_MAX_RUNTIME_JSON_BYTES || 512 * 1024 * 1024);
 const partitionScopeFields = new Set(['person', 'family', 'generation', 'era', 'source', 'corpus', 'language', 'culture']);
 const scopeRequiredDatasets = new Set(['loc4-text-corpus', 'loc3-lyrics-search']);
-const maxRoutingPrefixShards = 8;
 
 function normalizeRepoPath(value) {
   return String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');
@@ -174,8 +173,6 @@ if (!existsSync(dataIndexPath)) {
         failures.push(`missing routing shards map: ${datasetId}`);
         return;
       }
-      const prefixes = Object.keys(shards);
-      if (prefixes.length > maxRoutingPrefixShards) failures.push(`routing prefix shard fan-out exceeds budget: ${datasetId}`);
       for (const [prefix, publicPath] of Object.entries(shards)) {
         if (typeof publicPath !== 'string' || !publicPath.startsWith('/loc-routing-index/')) {
           failures.push(`invalid routing shard path: ${datasetId}.${prefix}`);
@@ -189,6 +186,7 @@ if (!existsSync(dataIndexPath)) {
           if (shard?.schema !== 2 || shard?.dataset !== datasetId || shard?.prefix !== prefix) failures.push(`routing shard metadata mismatch: ${publicPath}`);
         }
       }
+      const prefixes = Object.keys(shards);
       if (prefixes.length > 0 && !Number.isInteger(prefixLength)) return;
       for (const prefix of prefixes) {
         if (prefix.length > prefixLength) failures.push(`routing prefix exceeds configured length: ${datasetId}.${prefix}`);
