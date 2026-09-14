@@ -9,9 +9,9 @@ const DRAW_LINKS = [
 const FEATURE_LINKS = [
   { href: '/runes/list', label: '符文圖鑑' },
   { href: '/runes?mode=daily', label: '每日符文' },
-  { href: '/context', label: '符文脈絡' },
+  { href: '/context', label: '符文語意圖' },
   { href: '/statics', label: '符文統計' },
-  { href: '/runes#algorithm', label: '符文演算法' }
+  { href: '/evolution', label: '符文軌跡（文化）' }
 ];
 
 export default function LunaRunesNav({ current = '' }) {
