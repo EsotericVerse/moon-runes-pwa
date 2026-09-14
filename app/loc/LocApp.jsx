@@ -33,9 +33,17 @@ const VIEWS = {
 
 function readView() {
   if (typeof window === 'undefined') return 'home';
-  const hash = decodeURIComponent(window.location.hash.slice(1)).split('/')[0];
-  if (VIEWS[hash]) return hash;
-  const route = window.location.pathname.split('/').filter(Boolean).at(-1) || '';
+  const pathname = window.location.pathname.replace(/\/$/, '') || '/';
+  const route = pathname.split('/').filter(Boolean).at(-1) || 'home';
+
+  // Real Next routes always win over hash state. Hash sections are only
+  // used inside the route that explicitly owns them (home or /runes).
+  if (route !== 'home' && VIEWS[route]) return route;
+  if (pathname === '/runes') {
+    const hash = decodeURIComponent(window.location.hash.slice(1)).split('/')[0];
+    if (['history','library','reference'].includes(hash)) return 'runes';
+  }
+  if (route === 'home') return 'home';
   return VIEWS[route] ? route : 'home';
 }
 
