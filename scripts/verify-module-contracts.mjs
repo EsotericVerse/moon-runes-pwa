@@ -29,6 +29,8 @@ walk(resolve(root,'app'),path=>{
 
 for(const path of [
   'app/runes/RunesClient.jsx',
+  'app/loc/data.js',
+  'app/loc/data-local.js',
   'app/loc/data-paths.mjs',
   'data/json/core/runes.json',
   'data/json/core/lots.json',
@@ -38,13 +40,17 @@ for(const path of [
 ]) if(!existsSync(resolve(root,path)))failures.push(`missing module contract file: ${path}`);
 
 const runesClient=readFileSync(resolve(root,'app/runes/RunesClient.jsx'),'utf8');
-for(const token of ['LOC_DATA.RUNES','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
-const runeLoadIndex=runesClient.indexOf('fetchLocJson(LOC_DATA.RUNES)');
-const lotsLoadIndex=runesClient.indexOf('fetchLocJson(LOC_DATA.LOTS)');
-if(runeLoadIndex<0)failures.push('RunesClient: canonical RUNES must load directly from local Next data path');
-if(lotsLoadIndex<0)failures.push('RunesClient: local LOTS load contract missing');
-if(runeLoadIndex>=0&&lotsLoadIndex>=0&&runeLoadIndex>lotsLoadIndex)failures.push('RunesClient: RUNES must unblock draw before LOTS companion data loads');
-if(/fetchLocJsonBatch\(\[LOC_DATA\.RUNES,LOC_DATA\.LOTS\]/.test(runesClient))failures.push('RunesClient: RUNES must not wait on LOTS batch loading');
+for(const token of ['LOC_DATA.RUNES','LOC_DATA.LOTS','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
+
+const dataLoader=readFileSync(resolve(root,'app/loc/data.js'),'utf8');
+const localLoader=readFileSync(resolve(root,'app/loc/data-local.js'),'utf8');
+for(const token of ['getFreshLocalDataSegment','putLocalDataSegment','fetchLocJson','fetchLocJsonBatch'])if(!dataLoader.includes(token))failures.push(`LOC data loader: missing local-first contract ${token}`);
+if(!localLoader.includes('indexedDB'))failures.push('LOC data loader: IndexedDB local store contract missing');
+
+const coreBatch=/fetchLocJsonBatch\(\[LOC_DATA\.RUNES,LOC_DATA\.LOTS,LOC_DATA\.RUNE_INTERPRETATIONS\]/.test(runesClient);
+const directRunes=runesClient.includes('fetchLocJson(LOC_DATA.RUNES)');
+const directLots=runesClient.includes('fetchLocJson(LOC_DATA.LOTS)');
+if(!(coreBatch||(directRunes&&directLots)))failures.push('RunesClient: canonical RUNES/LOTS must load through the local-first Next data loader');
 
 if(failures.length){console.error('[module-contracts] failures:\n'+failures.map(item=>`- ${item}`).join('\n'));process.exit(1);}
-console.log('[module-contracts] imports, critical routes and LunaRunes draw contracts verified');
+console.log('[module-contracts] imports, critical routes and LunaRunes local-first draw contracts verified');
