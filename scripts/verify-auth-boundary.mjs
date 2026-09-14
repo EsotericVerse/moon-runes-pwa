@@ -2,7 +2,7 @@ import fs from 'node:fs';
 
 const auth=fs.readFileSync('services/cloudflare/auth-worker.js','utf8');
 const state=fs.readFileSync('services/cloudflare/loc-state-worker.js','utf8');
-const client=fs.readFileSync('app/loc/management-auth.js','utf8');
+const client=fs.readFileSync('app/loc/auth-client.js','utf8');
 const failures=[];
 
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
