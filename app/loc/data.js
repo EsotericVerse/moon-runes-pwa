@@ -1,9 +1,11 @@
+import { getFreshLocalDataSegment, putLocalDataSegment } from './data-local.js';
 export { LOC_DATA } from './data-paths.mjs';
 
 // Runtime data policy:
 // - runes.json is the canonical rune source; never duplicate canonical rows here.
 // - lots/history/harmony are canonical companion datasets keyed by rune identity.
 // - Derived/search JSON stays split so large corpora can be loaded only when needed.
+// - Browser reads prefer fresh IndexedDB segments; network is fallback/update transport.
 // - All LOC views share this request cache and one global concurrency gate.
 // - Persistent HTTP cache keys are versioned by build-time SHA-256 metadata.
 // - Large datasets are discovered through the hierarchical data index and fetched by segment.
@@ -99,6 +101,14 @@ async function fetchJsonOnce(path, { maxResponseBytes = DEFAULT_MAX_RESPONSE_BYT
     throw new Error(`${path}: declared size ${entry.bytes} exceeds I/O budget ${maxResponseBytes}`);
   }
 
+  if (typeof window !== 'undefined') {
+    const local = await getFreshLocalDataSegment(path, {
+      hash: entry?.hash || '',
+      version: manifest?.version || ''
+    });
+    if (local) return local.data;
+  }
+
   await acquireSlot();
   try {
     const requestPath = versionedPath(path, entry);
@@ -109,7 +119,18 @@ async function fetchJsonOnce(path, { maxResponseBytes = DEFAULT_MAX_RESPONSE_BYT
     if (declaredBytes && declaredBytes > maxResponseBytes) {
       throw new Error(`${path}: response size ${declaredBytes} exceeds I/O budget ${maxResponseBytes}`);
     }
-    return response.json();
+    const data = await response.json();
+    if (typeof window !== 'undefined') {
+      await putLocalDataSegment({
+        path,
+        dataset: '',
+        hash: entry?.hash || '',
+        bytes: entry?.bytes || declaredBytes || 0,
+        source_version: manifest?.version || '',
+        data
+      });
+    }
+    return data;
   } finally {
     releaseSlot();
   }
