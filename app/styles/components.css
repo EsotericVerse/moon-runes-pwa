@@ -34,10 +34,7 @@
 .loc-card p,.loc-panel p,.loc-bubble p{color:var(--loc-text)}
 .loc-card strong,.loc-panel strong,.loc-bubble strong{color:var(--loc-text)}
 
-/* Unified text-box semantics:
-   line 1 = gold English name
-   line 2 = Chinese title | blue title explanation
-   body = normal content below the heading row. */
+/* Unified text-box semantics. Page content keeps explicit copy; CSS only controls presentation. */
 .loc-card,.loc-panel,.loc-home>.loc-hero,.home-section-heading{color:var(--loc-text)}
 .loc-card>.loc-eyebrow,
 .loc-panel>.loc-eyebrow,
@@ -62,21 +59,35 @@
   color:var(--loc-text);
   vertical-align:baseline;
 }
-.loc-subtitle,
-.loc-card>h1+p,.loc-card>h2+p,.loc-card>h3+p,
-.loc-panel>h1+p,.loc-panel>h2+p,.loc-panel>h3+p,
-.loc-home>.loc-hero>h1+p,.loc-home>.loc-hero>h2+p,.loc-home>.loc-hero>h3+p,
-.home-section-heading>h1+p,.home-section-heading>h2+p,.home-section-heading>h3+p{
+.loc-subtitle{
+  color:var(--loc-accent)!important;
+  font-size:.9rem!important;
+  font-weight:600;
+  line-height:1.65!important;
+}
+.loc-card>.loc-subtitle,
+.loc-panel>.loc-subtitle,
+.loc-home>.loc-hero>.loc-subtitle{
   display:inline-block;
   margin:.12rem 0 .72rem!important;
   padding:0 0 .6rem .8rem;
   border-left:1px solid var(--loc-line);
   border-bottom:1px solid var(--loc-line);
-  color:var(--loc-accent)!important;
-  font-size:.9rem!important;
-  font-weight:600;
-  line-height:1.65!important;
   vertical-align:baseline;
+}
+.loc-card>h1+p:not(.loc-subtitle),.loc-card>h2+p:not(.loc-subtitle),.loc-card>h3+p:not(.loc-subtitle),
+.loc-panel>h1+p:not(.loc-subtitle),.loc-panel>h2+p:not(.loc-subtitle),.loc-panel>h3+p:not(.loc-subtitle),
+.loc-home>.loc-hero>h1+p:not(.loc-subtitle),.loc-home>.loc-hero>h2+p:not(.loc-subtitle),.loc-home>.loc-hero>h3+p:not(.loc-subtitle),
+.home-section-heading>h1+p:not(.loc-subtitle),.home-section-heading>h2+p:not(.loc-subtitle),.home-section-heading>h3+p:not(.loc-subtitle){
+  display:block;
+  margin:.55rem 0!important;
+  padding:0;
+  border:0;
+  color:var(--loc-text)!important;
+  font-size:1rem!important;
+  font-weight:400;
+  line-height:1.8!important;
+  vertical-align:initial;
 }
 .loc-card>p:not(.loc-eyebrow):not(.loc-subtitle),
 .loc-panel>p:not(.loc-eyebrow):not(.loc-subtitle),
