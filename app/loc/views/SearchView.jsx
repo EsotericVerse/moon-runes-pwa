@@ -39,8 +39,12 @@ export default function SearchView(){
     const params=new URLSearchParams(window.location.search);
     const requested=params.get('c')||'all';
     const q=params.get('q')||'';
-    setCollectionId(getSearchCollection(requested).id);
+    const nextCollection=getSearchCollection(requested).id;
+    setCollectionId(nextCollection);
     setQuery(q);
+    if(q.trim()){
+      window.setTimeout(()=>document.getElementById('loc-search-form')?.requestSubmit(),0);
+    }
   },[]);
   useEffect(()=>setPage(1),[collectionId,pageSize]);
   useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
@@ -121,7 +125,7 @@ export default function SearchView(){
 
   const collection=getSearchCollection(collectionId);
   return <section className="loc-view"><header className="loc-hero"><p className="loc-eyebrow">Search · 搜尋</p><h1>搜尋</h1><p>{collection.description} 大型資料清單（manifest）與資料分片（corpus shards）只有送出查詢後才下載。</p></header>
-    <form className="loc-search-form" onSubmit={runSearch}>
+    <form id="loc-search-form" className="loc-search-form" onSubmit={runSearch}>
       <select value={collectionId} onChange={e=>{setCollectionId(e.target.value);syncUrl(e.target.value,query)}} aria-label="搜尋集合">{SEARCH_COLLECTION_ORDER.map(id=><option key={id} value={id}>{SEARCH_COLLECTIONS[id].label}</option>)}</select>
       <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="輸入關鍵字，例如：治理、月、自由" aria-label="搜尋文字"/>
       <button className="loc-button primary" type="submit">搜尋</button>
