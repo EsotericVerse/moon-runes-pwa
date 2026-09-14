@@ -7,41 +7,56 @@ export const metadata = {
   description: '月之符文抽牌、分類參考與基本使用方式。'
 };
 
+function HighlightGrid({ items, label }) {
+  return <div className="runes-highlight-grid" aria-label={label}>
+    {items.map(item => {
+      const body = <>
+        <strong>{item.label}</strong>
+        <span>{item.text}</span>
+      </>;
+      return item.href
+        ? <a className="runes-highlight-bubble interactive" href={item.href} key={item.label}>{body}</a>
+        : <article className="runes-highlight-bubble" key={item.label}>{body}</article>;
+    })}
+  </div>;
+}
+
+function ContentSection({ data, level = 2, id }) {
+  const Heading = level === 1 ? 'h1' : 'h2';
+  const headingId = `${id}-title`;
+  return <section className="loc-card runes-content-section" aria-labelledby={headingId}>
+    <div className="runes-content-heading">
+      <p className="loc-eyebrow">{data.eyebrow}</p>
+      <Heading id={headingId}>{data.title}</Heading>
+      {data.subtitle ? <p className="loc-subtitle">{data.subtitle}</p> : null}
+    </div>
+
+    <div className="runes-content-group">
+      <h3>重點提示</h3>
+      <HighlightGrid items={data.highlights} label={`${data.title}重點提示`} />
+    </div>
+
+    <div className="runes-content-group runes-description">
+      <h3>文字說明</h3>
+      {data.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+      {data.note ? <p className="runes-home-note"><strong>{data.note}</strong></p> : null}
+    </div>
+  </section>;
+}
+
 function RunesIntro() {
   const { relation, modes, reference } = RUNES_HOME_CONTENT;
   return <>
-    <section className="loc-card" aria-labelledby="runes-relation-title">
-      <p className="loc-eyebrow">{relation.eyebrow}</p>
-      <h1 id="runes-relation-title">{relation.title}</h1>
-      {relation.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-      <p><strong>{relation.note}</strong></p>
-    </section>
-
-    <section className="loc-card" aria-labelledby="runes-modes-title">
-      <p className="loc-eyebrow">{modes.eyebrow}</p>
-      <h2 id="runes-modes-title">{modes.title}</h2>
-      <p>{modes.intro}</p>
-      <div className="runes-mode-overview">
-        {modes.items.map(item => <article key={item.label}>
-          <strong>{item.label}</strong>
-          <span>{item.text}</span>
-        </article>)}
-      </div>
-      <p className="runes-home-note">{modes.note}</p>
-    </section>
-
-    <section className="loc-card" aria-labelledby="runes-reference-title">
-      <p className="loc-eyebrow">{reference.eyebrow}</p>
-      <h2 id="runes-reference-title">{reference.title}</h2>
-      <p>{reference.text}</p>
-    </section>
+    <ContentSection data={relation} level={1} id="runes-relation" />
+    <ContentSection data={modes} id="runes-modes" />
+    <ContentSection data={reference} id="runes-reference" />
   </>;
 }
 
 export default function RunesPage() {
   return <>
     <RunesIntro />
-    <nav className="loc-card" aria-label="月之符文功能入口">
+    <nav className="loc-card runes-function-nav" aria-label="月之符文功能入口">
       <a href="/runes">抽牌</a> · <a href="/runes/list">所有符文列表</a> · <a href="/runes/history">抽籤紀錄</a>
     </nav>
     <RuneDrawClient/>
