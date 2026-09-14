@@ -6,6 +6,7 @@ const STORAGE_KEY='loc-search-segment-routing-v1';
 const MAX_KEYS=256;
 const MAX_SEGMENTS_PER_KEY=12;
 const ROUTING_PREFIX_LENGTH=2;
+const MAX_ROUTING_PREFIX_SHARDS=8;
 
 function tokens(value){
   const text=String(value||'').normalize('NFKC').toLocaleLowerCase('zh-Hant');
@@ -37,6 +38,7 @@ async function candidateSegments(datasetId,segments,keys){
   if(routingIndex.schema===2&&routingIndex.strategy==='prefix-sharded'&&routingIndex.shards){
     const prefixLength=Number(routingIndex.prefix_length)||ROUTING_PREFIX_LENGTH;
     const prefixes=[...new Set(keys.map(key=>key.slice(0,prefixLength)))];
+    if(prefixes.length>MAX_ROUTING_PREFIX_SHARDS)return {segments,buildScores:new Map()};
     const paths=prefixes.map(prefix=>routingIndex.shards[prefix]).filter(Boolean);
     if(paths.length!==prefixes.length)return {segments,buildScores:new Map()};
     try{
