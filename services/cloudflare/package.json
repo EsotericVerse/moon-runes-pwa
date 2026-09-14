@@ -1,0 +1,12 @@
+{
+  "name": "loc-cloudflare-auth",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy:auth": "npx wrangler@latest deploy --config wrangler.auth.jsonc",
+    "dev:auth": "npx wrangler@latest dev --config wrangler.auth.jsonc"
+  },
+  "dependencies": {
+    "better-auth": "^1.7.4"
+  }
+}
