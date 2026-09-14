@@ -16,7 +16,7 @@ export default function GlobalNav(){
   const isGovernance=pathname==='/governance'||pathname.startsWith('/governance/');
 
   const links=<>
-    <a href="#">語彙</a>
+    <a href={isRunes?'/runes':'/runes'}>{isRunes?'語彙':'月之符文'}</a>
     <a href="/context">脈絡</a>
     <a href="/statics">統計</a>
     <a href="/evolution">文化</a>
