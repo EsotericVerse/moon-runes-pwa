@@ -1,12 +1,12 @@
 export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero">
-      <p className="loc-eyebrow">LOC · 月典 · Language Model Framework</p>
       <div className="home-title-row">
         <h1>LOC月典</h1>
-        <p className="loc-core-line">把語言整理成可理解、可搜尋、可推演的結構。</p>
+        <p className="loc-subtitle">語言模型框架（Language Model Framework）</p>
       </div>
       <div className="loc-hero-copy">
+        <p className="loc-core-line">把語言整理成可理解、可搜尋、可推演的結構。</p>
         <p>月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演語言的系統。<br/>月之符文(LunaRunes)是一套有自己獨立的語言方式。</p>
         <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，<br/>讓累積的資料可以繼續被理解、比較分析與推演。</p>
       </div>
@@ -17,7 +17,7 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-beginner" id="beginner">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">Start here</p>
+        <p className="loc-eyebrow">Start Here · 新手上路</p>
         <h2>新手上路</h2>
         <p className="loc-subtitle">不知道怎麼開始沒關係，就抽一張牌吧！</p>
       </div>
@@ -40,7 +40,7 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-rune-section">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">LunaRunes</p>
+        <p className="loc-eyebrow">LunaRunes · 月之符文</p>
         <h2>符文籤詩系統</h2>
         <p className="loc-subtitle">問一件事，或讓語言自己成長</p>
       </div>
@@ -87,7 +87,7 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-context" id="context">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">Context</p>
+        <p className="loc-eyebrow">Context · 脈絡</p>
         <h2>脈絡</h2>
         <p className="loc-subtitle">文字的關係與分析</p>
       </div>
@@ -110,7 +110,7 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-culture" id="culture">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">Culture</p>
+        <p className="loc-eyebrow">Culture · 文化</p>
         <h2>文化，文字的演化</h2>
         <p className="loc-subtitle">文字留下風格，風格經過時間累積，才看得見文化的變化。</p>
       </div>
@@ -139,7 +139,7 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-skills" id="skills">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">Skills</p>
+        <p className="loc-eyebrow">LOC GPT Skills</p>
         <h2>Skills，把月典的方法變成可以重複使用的工作流程。</h2>
         <p className="loc-subtitle">把語言治理與 Repository 治理封裝成可直接調用的 AI Skills。</p>
       </div>
