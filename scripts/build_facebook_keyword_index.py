@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import sys
 import unicodedata
 from collections import Counter
 from pathlib import Path
 
-from keyword_analysis import keyword_counts_for_row, load_governance
+REPO_ROOT = Path(__file__).resolve().parents[1]
+CARD_API_ROOT = REPO_ROOT / "services" / "api" / "card"
+if str(CARD_API_ROOT) not in sys.path:
+    sys.path.insert(0, str(CARD_API_ROOT))
 
-CARD_API_ROOT = Path(__file__).resolve().parent
-REPO_ROOT = CARD_API_ROOT.parent
+from keyword_analysis import keyword_counts_for_row, load_governance  # noqa: E402
+
 FACEBOOK_ROOT = REPO_ROOT / "data" / "json" / "sources" / "facebook"
 MANIFEST_PATH = FACEBOOK_ROOT / "manifest.json"
 GOVERNANCE_PATH = REPO_ROOT / "data" / "json" / "registries" / "LOC_KEYWORD_GOVERNANCE.json"

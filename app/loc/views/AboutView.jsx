@@ -132,13 +132,9 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-framework" id="framework-map">
-      <p className="loc-eyebrow">Structure of LOC</p>
-      <h2>結構</h2>
-      <p className="loc-subtitle">八個功能責任區與彼此關係</p>
-      <p>它們不是八個彼此獨立的產品，也不是版本先後；而是 LOC 的八個功能責任區：月之符文、脈絡、音樂、文字創作、多媒體、演算法、演算模組與推演。</p>
-      <figure className="home-framework-figure">
+      <div className="home-framework-stage">
         <img src="/pics/LOC-structure.png" alt="月典結構圖與流程圖" loading="lazy" />
-      </figure>
+      </div>
     </section>
 
     <section className="loc-card home-copy-block home-skills" id="skills">
@@ -161,12 +157,17 @@ export default function AboutView(){
       <div className="home-section-heading">
         <p className="loc-eyebrow">About me</p>
         <h2>作者的話</h2>
-        <p className="loc-subtitle">治理已知的過去</p>
+        <p className="loc-subtitle">治理過去的已知，是為了把時間還給現在的未知，才有更充裕的未來。</p>
       </div>
-      <div className="home-author-copy">
-        <p>月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用，採取的是不帶神秘學預設的中立態度，重在文字本身而不論道德。</p>
-        <p>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的語言系統；而月之符文，也在這個過程中演變成可被分析、治理與推演的符號式語言系統。</p>
-        <p>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構，才能進一步面對未來的各種可能。</p>
+      <div className="home-about-layout">
+        <div className="home-author-copy">
+          <p>月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用，採取的是不帶神秘學預設的中立態度，重在文字本身而不論道德。</p>
+          <p>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的語言系統；而月之符文，也在這個過程中演變成可被分析、治理與推演的符號式語言。</p>
+          <p>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構，才能進一步面對未來的各種可能。</p>
+        </div>
+        <figure className="home-about-figure">
+          <img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" />
+        </figure>
       </div>
     </section>
   </section>;

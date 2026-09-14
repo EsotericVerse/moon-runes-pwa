@@ -1,18 +1,26 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { fetchLocJsonBatch, LOC_DATA } from '../data';
+import { fetchLocDataSegments, fetchLocJson, fetchLocJsonBatch, getLocDataDataset, LOC_DATA } from '../data';
 import { useLocalStore } from '../local-store';
 import { getSearchCollection, SEARCH_COLLECTION_ORDER, SEARCH_COLLECTIONS } from '../search-collections';
+import { applySearchGovernance, firstGovernedMatch } from '../search-governance';
+import { recordSearchSegmentHits, rankSearchSegments } from '../search-routing';
+import { partitionSegmentsByScope, readSearchScope } from '../search-scope';
+import { recordSearchTelemetry } from '../search-telemetry';
 
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
+const MAX_RAW_RESULTS=120;
+const SEGMENT_BATCH_SIZE=2;
 const norm=value=>String(value??'').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 const snippet=(text,q)=>{const raw=String(text||'').replace(/\s+/g,' ').trim();const i=norm(raw).indexOf(norm(q));const start=Math.max(0,(i<0?0:i)-70);return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;};
-const manifestDir=path=>path.slice(0,path.lastIndexOf('/')+1);
 function objectsFrom(value,out=[],depth=0){if(depth>4)return out;if(Array.isArray(value)){for(const item of value){if(item&&typeof item==='object'&&!Array.isArray(item))out.push(item);else objectsFrom(item,out,depth+1);}return out;}if(value&&typeof value==='object')for(const child of Object.values(value))if(Array.isArray(child))objectsFrom(child,out,depth+1);return out;}
-function genericResult(item,source,q){const hay=JSON.stringify(item);if(!norm(hay).includes(norm(q)))return null;const title=item.title||item.name||item['符文名稱']||item['名稱']||item.question||item.label||item.id||item.work_id||source;const body=item.text||item.content||item.answer||item.summary||item.description||item.retrieval_text||hay;return {key:`${source}-${title}-${body.slice(0,30)}`,source,title,date:item.date||item.created_date||item.updated_at||'',snippet:snippet(body,q),href:item.url||item.href||''};}
+function genericResult(item,source,terms,displayQuery){const hay=JSON.stringify(item);const matched=firstGovernedMatch(hay,terms);if(!matched)return null;const title=item.title||item.name||item['符文名稱']||item['名稱']||item.question||item.label||item.id||item.work_id||source;const body=item.text||item.content||item.answer||item.summary||item.description||item.retrieval_text||hay;return {key:`${source}-${title}-${body.slice(0,30)}`,source,title,date:item.date||item.created_date||item.updated_at||'',snippet:snippet(body,matched||displayQuery),href:item.url||item.href||''};}
+function collectText(data,terms,displayQuery,found){for(const d of data?.documents||[]){const hay=`${d.title||''} ${d.section||''} ${d.retrieval_text||d.text||''}`;const matched=firstGovernedMatch(hay,terms);if(matched)found.push({key:d.id,source:'文字創作',title:[d.title,d.section].filter(Boolean).join(' · '),date:d.date||'',snippet:snippet(d.text||d.retrieval_text,matched||displayQuery)});if(found.length>=MAX_RAW_RESULTS)return;}}
+function collectMusic(data,terms,displayQuery,found){for(const w of data?.works||[]){const hay=`${w.title||''} ${w.summary||''} ${w.style||''} ${(w.tags||[]).join(' ')} ${w.retrieval_text||''}`;const matched=firstGovernedMatch(hay,terms);if(matched)found.push({key:w.work_id,source:'音樂',title:w.title,date:w.created_date||'',snippet:snippet(w.summary||w.retrieval_text,matched||displayQuery),href:w.versions?.[0]?.suno_url||''});if(found.length>=MAX_RAW_RESULTS)return;}}
+function collectGeneric(data,label,terms,displayQuery,found){for(const item of objectsFrom(data)){const r=genericResult(item,label,terms,displayQuery);if(r)found.push(r);if(found.length>=MAX_RAW_RESULTS)return;}}
 
 export default function SearchView(){
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
@@ -49,33 +57,63 @@ export default function SearchView(){
     const q=query.trim();
     if(!q)return;
     const collection=getSearchCollection(collectionId);
+    const activeScope=readSearchScope(new URL(window.location.href).searchParams,collection.scopeProfile);
     syncUrl(collection.id,q);
     const id=++searchId.current;
     setPage(1);setError('');setResults([]);setStatus(`搜尋「${collection.label}」資料…`);
     try{
-      const requests=collection.smallSources.map(([path,label])=>({path,kind:'generic',label}));
-      let textManifest=null;let musicManifest=null;
-      const manifestRequests=[];
-      if(collection.includeTextCorpus)manifestRequests.push({key:'text',path:LOC_DATA.TEXT_CORPUS_MANIFEST});
-      if(collection.includeMusic)manifestRequests.push({key:'music',path:LOC_DATA.MUSIC_SEARCH_MANIFEST});
-      if(manifestRequests.length){
-        const manifestData=await fetchLocJsonBatch(manifestRequests,{concurrency:2});
-        manifestRequests.forEach((item,index)=>{if(item.key==='text')textManifest=manifestData[index];else musicManifest=manifestData[index];});
-      }
-      if(textManifest)for(const shard of textManifest.shards||[])requests.push({path:'/'+String(shard.path||'').replace(/^\//,''),kind:'text',label:'文字創作'});
-      if(musicManifest){const base=manifestDir(LOC_DATA.MUSIC_SEARCH_MANIFEST);for(const shard of musicManifest.shards||[])requests.push({path:`${base}${shard}`,kind:'music',label:'音樂'});}
-      const data=await fetchLocJsonBatch(requests,{concurrency:2});
+      const governance=await fetchLocJson(LOC_DATA.LOC_SEARCH_GOVERNANCE);
       if(id!==searchId.current)return;
+      const governed=applySearchGovernance(q,governance);
+      if(governed.outOfDomain){setStatus(`「${collection.label}」中的「${q}」找到 0 筆顯示結果。`);return;}
+      const searchTerms=governed.terms;
+      const routingQuery=governed.routingQuery||q;
       const found=[];
-      for(let index=0;index<requests.length;index+=1){
-        const p={...requests[index],data:data[index]};
-        if(p.kind==='text'){
-          for(const d of p.data.documents||[]){const hay=`${d.title||''} ${d.section||''} ${d.retrieval_text||d.text||''}`;if(norm(hay).includes(norm(q)))found.push({key:d.id,source:'文字創作',title:[d.title,d.section].filter(Boolean).join(' · '),date:d.date||'',snippet:snippet(d.text||d.retrieval_text,q)});}
-        }else if(p.kind==='music'){
-          for(const w of p.data.works||[]){const hay=`${w.title||''} ${w.summary||''} ${w.style||''} ${(w.tags||[]).join(' ')} ${w.retrieval_text||''}`;if(norm(hay).includes(norm(q)))found.push({key:w.work_id,source:'音樂',title:w.title,date:w.created_date||'',snippet:snippet(w.summary||w.retrieval_text,q),href:w.versions?.[0]?.suno_url||''});}
-        }else for(const item of objectsFrom(p.data)){const r=genericResult(item,p.label,q);if(r)found.push(r);}
-        if(found.length>=120)break;
+      const smallRequests=collection.smallSources.map(([path,label])=>({path,label}));
+      if(smallRequests.length){
+        const smallData=await fetchLocJsonBatch(smallRequests,{concurrency:2});
+        if(id!==searchId.current)return;
+        for(let index=0;index<smallRequests.length;index+=1){
+          collectGeneric(smallData[index],smallRequests[index].label,searchTerms,q,found);
+          if(found.length>=MAX_RAW_RESULTS)break;
+        }
       }
+
+      async function scanDataset(datasetId,kind){
+        if(found.length>=MAX_RAW_RESULTS)return;
+        const started=performance.now();
+        const dataset=await getLocDataDataset(datasetId);
+        const sourceSegments=Array.isArray(dataset?.segments)?dataset.segments:[];
+        const partitioned=partitionSegmentsByScope(sourceSegments,activeScope);
+        const scopedSegments=[...partitioned.matched,...partitioned.unknown];
+        const segments=await rankSearchSegments(datasetId,scopedSegments,routingQuery);
+        let loadedSegments=0;
+        let loadedBytes=0;
+        let datasetHits=0;
+        for(let offset=0;offset<segments.length&&found.length<MAX_RAW_RESULTS;offset+=SEGMENT_BATCH_SIZE){
+          if(id!==searchId.current)return;
+          const chunk=segments.slice(offset,offset+SEGMENT_BATCH_SIZE);
+          const loaded=await fetchLocDataSegments(datasetId,{segmentIds:chunk.map(segment=>segment.id),maxSegments:SEGMENT_BATCH_SIZE});
+          if(id!==searchId.current)return;
+          loadedSegments+=loaded.length;
+          loadedBytes+=loaded.reduce((sum,item)=>sum+Number(item.segment?.bytes||0),0);
+          for(const item of loaded){
+            const before=found.length;
+            if(kind==='text')collectText(item.data,searchTerms,q,found);
+            else if(kind==='music')collectMusic(item.data,searchTerms,q,found);
+            const hits=found.length-before;
+            datasetHits+=hits;
+            if(hits>0)await recordSearchSegmentHits(datasetId,item.segment.id,routingQuery,hits);
+            if(found.length>=MAX_RAW_RESULTS)break;
+          }
+        }
+        recordSearchTelemetry({collection:collection.id,dataset:datasetId,segments:loadedSegments,bytes:loadedBytes,hits:datasetHits,elapsedMs:performance.now()-started});
+      }
+
+      if(collection.includeTextCorpus)await scanDataset('loc4-text-corpus','text');
+      if(collection.includeMusic)await scanDataset('loc3-lyrics-search','music');
+      if(id!==searchId.current)return;
+
       const unique=[];const seen=new Set();for(const r of found){const k=`${r.source}|${r.title}|${r.snippet}`;if(!seen.has(k)){seen.add(k);unique.push(r);}if(unique.length>=60)break;}
       setResults(unique);setStatus(`「${collection.label}」中的「${q}」找到 ${unique.length} 筆顯示結果。`);
     }catch(e){if(id===searchId.current){setError(e.message);setStatus('搜尋失敗。');}}

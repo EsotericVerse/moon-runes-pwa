@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { putLocalRecord } from '../local-db';
+import { localRecordStorage } from '../storage';
 import { useLocalStore } from '../local-store';
 import { classifyText } from '../model/style-classifier';
 import { createLibraryRecord, INITIAL_STYLE_PROFILE, STYLE_STORAGE_KEY } from '../model/style-profile';
@@ -17,7 +17,7 @@ export default function ClassifyView(){
   async function save(){
     if(!text.trim())return;
     const record=createLibraryRecord({title,text,source,classification:result});
-    await putLocalRecord(record);
+    await localRecordStorage.put(record);
     setMessage(`已存入 Library：${record.title}`);
   }
 

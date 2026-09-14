@@ -1,10 +1,13 @@
 import { LOC_DATA } from './data';
 
+export const SEARCH_SCOPE_FIELDS=Object.freeze(['person','family','generation','era','source','corpus','language','culture']);
+
 export const SEARCH_COLLECTIONS = Object.freeze({
   all: Object.freeze({
     id: 'all',
     label: '全部',
     description: '跨 LOC 文字、音樂、治理、事件、知識庫與月之符文資料搜尋。',
+    scopeProfile:Object.freeze({id:'loc',fields:SEARCH_SCOPE_FIELDS}),
     smallSources: [
       [LOC_DATA.RUNES, '月之符文'],
       [LOC_DATA.LOC2_EVENT_REGISTRY, '事件'],
@@ -21,6 +24,7 @@ export const SEARCH_COLLECTIONS = Object.freeze({
     id: '月之符文',
     label: '月之符文',
     description: '只搜尋 LunaRunes 主資料與 Lots／History／Harmony companion datasets。',
+    scopeProfile:Object.freeze({id:'lunarunes',fields:Object.freeze(['source','corpus','language','culture'])}),
     smallSources: [
       [LOC_DATA.RUNES, '月之符文'],
       [LOC_DATA.LOTS, '籤詩'],
@@ -34,6 +38,7 @@ export const SEARCH_COLLECTIONS = Object.freeze({
     id: '政德風',
     label: '政德風',
     description: '以文字創作與治理資料為主的作者風格搜尋視角。',
+    scopeProfile:Object.freeze({id:'personal',fields:Object.freeze(['person','era','source','corpus','language','culture'])}),
     smallSources: [
       [LOC_DATA.LOC4_WRITING_REGISTRY, '文字創作'],
       [LOC_DATA.LOC6_GOVERNANCE_REGISTRY, '治理']
@@ -48,4 +53,8 @@ export const SEARCH_COLLECTION_ORDER = Object.freeze(['all', '月之符文', '�
 export function getSearchCollection(value) {
   const key = String(value || '').trim();
   return SEARCH_COLLECTIONS[key] || SEARCH_COLLECTIONS.all;
+}
+
+export function getSearchScopeProfile(value){
+  return getSearchCollection(value).scopeProfile;
 }

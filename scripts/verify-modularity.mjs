@@ -34,11 +34,13 @@ walk(resolve(root, 'app'), path => {
 });
 
 const canonicalPath = resolve(root, 'data/json/core/runes.json');
+let canonicalRunes = [];
 if (!existsSync(canonicalPath)) {
   failures.push('data/json/core/runes.json: missing canonical rune source');
 } else {
   try {
     const rows = JSON.parse(readFileSync(canonicalPath, 'utf8'));
+    canonicalRunes = Array.isArray(rows) ? rows : [];
     if (!Array.isArray(rows) || rows.length < 66) failures.push(`data/json/core/runes.json: expected at least 66 rows, got ${Array.isArray(rows) ? rows.length : 'non-array'}`);
     else {
       const ids = new Set(rows.map(row => Number(row.編號)));
@@ -46,6 +48,33 @@ if (!existsSync(canonicalPath)) {
     }
   } catch (error) {
     failures.push(`data/json/core/runes.json: invalid JSON (${error.message})`);
+  }
+}
+
+const unifiedSearchPath = resolve(root, 'services/api/card/unified_search.py');
+if (existsSync(unifiedSearchPath) && canonicalRunes.length) {
+  const text = readFileSync(unifiedSearchPath, 'utf8');
+  const block = text.match(/group_defs\s*=\s*\{([\s\S]*?)\n\s*\}/)?.[1] || '';
+  if (block) {
+    const actual = new Map();
+    for (const match of block.matchAll(/"([^"]+組)"\s*:\s*\{([^}]*)\}/g)) {
+      actual.set(match[1], new Set([...match[2].matchAll(/"([^"]+)"/g)].map(item => item[1])));
+    }
+    const expected = new Map();
+    for (const rune of canonicalRunes) {
+      const group = String(rune?.所屬分組 || '').trim();
+      const name = String(rune?.符文名稱 || rune?.名稱 || '').trim();
+      if (!group || !name) continue;
+      const key = group.endsWith('組') ? group : `${group}組`;
+      if (!expected.has(key)) expected.set(key, new Set());
+      expected.get(key).add(name);
+    }
+    const groups = new Set([...actual.keys(), ...expected.keys()]);
+    for (const group of groups) {
+      const left = [...(actual.get(group) || new Set())].sort().join('|');
+      const right = [...(expected.get(group) || new Set())].sort().join('|');
+      if (left !== right) failures.push(`services/api/card/unified_search.py: ${group} rune membership diverges from canonical runes.json`);
+    }
   }
 }
 
@@ -67,6 +96,9 @@ walk(resolve(root, 'app/loc/views'), path => {
   const rel = relative(root, path).replaceAll('\\', '/');
   const text = readFileSync(path, 'utf8');
   if (/['"`]\/data\/json\//.test(text)) failures.push(`${rel}: hardcoded /data/json path; register it in LOC_DATA`);
+  if (/from\s+['"]\.\.\/(?:local-db|google-drive|kv-state)['"]/.test(text)) {
+    failures.push(`${rel}: storage providers must be accessed through ../storage facade`);
+  }
 });
 
 const dataRuntime = readFileSync(resolve(root, 'app/loc/data.js'), 'utf8');
@@ -74,7 +106,9 @@ if (!/DEFAULT_GLOBAL_CONCURRENCY\s*=\s*2\b/.test(dataRuntime)) failures.push('ap
 
 const searchView = readFileSync(resolve(root, 'app/loc/views/SearchView.jsx'), 'utf8');
 if (/useEffect\s*\([^)]*fetchLocJson\s*\(\s*LOC_DATA\.(?:TEXT_CORPUS_MANIFEST|MUSIC_SEARCH_MANIFEST)/s.test(searchView)) failures.push('SearchView: manifests must not load eagerly on mount');
-if (!/fetchLocJsonBatch\(requests,\{concurrency:2\}\)/.test(searchView)) failures.push('SearchView: search shard concurrency must remain 2');
+if (!/fetchLocJsonBatch\(smallRequests,\{concurrency:2\}\)/.test(searchView)) failures.push('SearchView: small-source concurrency must remain 2');
+if (!/SEGMENT_BATCH_SIZE\s*=\s*2\b/.test(searchView)) failures.push('SearchView: corpus segment batch size must remain 2');
+if (!/fetchLocDataSegments\(datasetId,\{segmentIds:chunk\.map\(segment=>segment\.id\),maxSegments:SEGMENT_BATCH_SIZE\}\)/.test(searchView)) failures.push('SearchView: corpus data must use bounded incremental segment loading');
 
 const contextView = readFileSync(resolve(root, 'app/loc/views/ContextView.jsx'), 'utf8');
 if (/if\s*\(tab===['"]overview['"][^\n]*\)\s*load\(/.test(contextView)) failures.push('ContextView: overview must remain zero-data');
@@ -96,4 +130,4 @@ if (failures.length) {
   console.error('[modularity] violations:\n' + failures.join('\n'));
   process.exit(1);
 }
-console.log('[modularity] Next presentation/data/performance budgets verified');
+console.log('[modularity] Next presentation/data/performance/storage/canonical parity boundaries verified');

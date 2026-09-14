@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-OUTPUT_PATH = Path(__file__).resolve().parent / "generated" / "loc4_runtime_index.sqlite3"
+OUTPUT_PATH = REPO_ROOT / "services" / "api" / "card" / "generated" / "loc4_runtime_index.sqlite3"
 CORPUS_MANIFEST = REPO_ROOT / "data" / "json" / "generated" / "loc4" / "corpus" / "LOC4_TEXT_CORPUS_MANIFEST.json"
 HISTORY_MANIFEST = REPO_ROOT / "data" / "json" / "generated" / "loc4" / "offline_history" / "LOC4_OFFLINE_HISTORY_MANIFEST.json"
 

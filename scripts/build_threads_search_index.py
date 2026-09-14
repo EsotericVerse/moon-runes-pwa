@@ -7,7 +7,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = REPO_ROOT / "data" / "json" / "generated" / "loc4" / "threads" / "LOC4_THREADS_DOCUMENT_MANIFEST.json"
-OUTPUT_PATH = Path(__file__).resolve().parent / "generated" / "threads_search_index.sqlite3"
+OUTPUT_PATH = REPO_ROOT / "services" / "api" / "card" / "generated" / "threads_search_index.sqlite3"
 
 
 def main() -> None:

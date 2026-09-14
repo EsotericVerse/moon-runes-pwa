@@ -15,10 +15,24 @@
 - [x] 抽籤紀錄採本機 IndexedDB；只有使用者主動按「記錄」才保存。
 - [x] 每日模式記到「每日紀錄」，其他模式記到「一般抽牌」，兩類都可刪除。
 - [x] 「一般列表每頁筆數」已套用到 Search、Library、Context、Culture、Statistics 等 Next.js 列表；符文圖鑑維持固定每頁 8 枚，排行榜與群組統計維持統計型展示。
+- [x] Runtime JSON loader 加入全域 concurrency=2、單檔／batch I/O budget、LRU memory hot-cache；大型 JSON 不再無上限常駐記憶體。
+- [x] 建立 `loc-data-version.json`：逐檔 SHA-256／bytes／delivery tier，未變資料沿用 persistent HTTP cache；CI 驗證 hash、bytes、aggregate version 與 runtime payload budget。
+- [x] 建立 `loc-data-index.json` 階層索引：dataset → segment；LOC3／LOC4 現有 shards 可按 segment ID／sequence 增量取得，不必先下載完整 corpus。
+- [x] Search 改為每批 2 segments 漸進掃描，結果足夠即停止；不再預設把所有 text/music corpus shards 一次下載、parse 後才搜尋。
+- [x] Search 加入 adaptive segment routing：僅保存 hashed query token → 命中 segment score，不保存原始查詢文字；重複／相近查詢優先讀可能命中的 segments，並保留完整 fallback 掃描。
+- [x] `prepare-next-public.mjs` 將 runtime JSON 分為 `core` / `on-demand` delivery tier；部署可取得不再等同預載，CI 同步驗證 tier 與階層 index 完整性。
 
 ## Next
 
 ### Large Data Performance / 家族級與超大語料遠景
+
+#### Runtime migration note
+
+- [x] 早期 Large Data、shard、cache 與延後載入設計，有相當一部分是為了避免 Render 後端讀取大型資料時超出 server RAM；目前網站運作階段不需要 Render 參與主要 runtime data path，但未來仍可依功能需求接回 Render 或其他 backend。
+- [x] 引進 Next.js 後，現階段可改用靜態輸出 + browser/runtime on-demand loading + segment index + IndexedDB/cache，以較直接、較輕量的方式處理資料；因此舊有「只為 Render RAM 限制而存在」的 workaround 要逐項重新檢查，能簡化者簡化，仍具一般大型資料價值者保留。
+- [ ] 清查並移除只為 Render backend 記憶體限制而存在、但 Next.js 現行 runtime 已不需要的 legacy code / fallback / timeout / cache workaround；不得誤刪仍有 browser RAM、JSON parse、network working-set 或大型 DOM 控制價值的分片、索引與 I/O budget。
+- [x] Backend independence 原則：Render／其他 backend 未來若再接回，應經 adapter / service layer 接入，不讓前端資料模型與搜尋流程重新被特定 backend 綁死。
+- [x] 架構判斷原則更新：目前不再以 Render server RAM 作為唯一設計限制；但 Next.js 並不代表可以一次載入全部資料，browser memory、JSON parse、network、IndexedDB 與 DOM working set 仍必須維持小而可控。
 
 - [ ] 架構預設目標從「千萬字可運作」提升為可持續擴張的 family-scale corpus：單人 → 多人 → 家族 → 多世代 → 多文化／多來源；總文字量可進入 100M、1B+ 級距，不能假設整體資料可一次載入、一次搜尋或一次重建。
 - [ ] 建立 Light / Standard / Heavy / Archive 四級工作模式：日常查詢永遠走輕量索引；跨人物、跨年代、跨文化總體分析才進入重量管線；Archive 層只保存與定向取回，不參與一般熱路徑。
@@ -28,8 +42,8 @@
 - [ ] 為 LOC Search、LunaRunes Search、Personal Search、未來 Family Search 建立不同 search scope / index profile，但共用同一搜尋引擎與 cache engine。
 - [ ] 建立「延伸體系」資料模型：新增人物／年代／作品時可新增 partition/index segment，不因整體語料成長而重寫舊資料或重建整個索引。
 - [ ] 索引與統計採增量更新；新增 1% 資料時不得重新 parse / tokenize / classify 100% corpus。支援 segment merge / compaction，但不得阻塞日常查詢。
-- [ ] IndexedDB 改為可索引 store；`getLocalRecords(type)` 不得先 `entries()` 讀完整 DB 再 filter，應直接依 type / id / date / source / person / family 等 index 查詢。
-- [ ] `clearLocalRecords(type)` 改用 IndexedDB index/cursor 定向刪除，避免先 full-scan 全庫再逐筆 delete。
+- [x] IndexedDB 改為可索引 store；`getLocalRecords(type)` 不得先 `entries()` 讀完整 DB 再 filter，應直接依 type / id / date / source / person / family 等 index 查詢。
+- [x] `clearLocalRecords(type)` 改用 IndexedDB index/cursor 定向刪除，避免先 full-scan 全庫再逐筆 delete。
 - [ ] 設定 I/O Budget：限制單次查詢最多讀取 shard 數、單次 transaction 筆數、單次 JSON parse 體積與背景 index rebuild 工作量；重量工作必須可分批、可中止、可續跑。
 - [ ] 建立 memory hot-cache：canonical rune data、manifest、search metadata、常用 registry 在同一 App session 內不得反覆讀磁碟／反覆 JSON parse；超大資料不得常駐 RAM。
 - [ ] 建立 persistent cache version/hash：資料版本未變時不重建本機索引；只重建變更 partition / shard / source。
