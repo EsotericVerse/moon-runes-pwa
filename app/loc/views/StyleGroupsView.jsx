@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { fetchLocJson, LOC_DATA } from '../data';
-import { googleDriveConfigured, loadJsonFromGoogleDrive, saveJsonToGoogleDrive } from '../google-drive';
-import { downloadJsonFile, readJsonFile } from '../local-db';
 import { useLocalStore, removeById, updateById } from '../local-store';
 import { buildRuneSuggestionRegistry, classifyText } from '../model/style-classifier';
 import {
@@ -18,6 +16,7 @@ import {
   parseStyleTerms,
   styleTermsText
 } from '../model/style-profile';
+import { exportRecordsJson, googleDriveStorage, readRecordsJsonFile } from '../storage';
 
 const DRIVE_FILE='loc-style-groups.json';
 
@@ -28,7 +27,7 @@ export default function StyleGroupsView({embedded=false}){
   const [testText,setTestText]=useState('');
   const groups=data?.groups||[];
   const fallback=data?.fallback||INITIAL_STYLE_PROFILE.fallback;
-  const driveReady=googleDriveConfigured();
+  const driveReady=googleDriveStorage.configured();
 
   useEffect(()=>{
     let live=true;
@@ -62,16 +61,16 @@ export default function StyleGroupsView({embedded=false}){
     setMessage(suggestions.length?'已套用月之符文八組模板與 canonical 關鍵詞建議。':'已套用月之符文八組模板；關鍵詞建議尚未載入。');
   };
   const importFile=async event=>{
-    try{setData(normalizeStyleProfile(await readJsonFile(event.target.files?.[0])));setMessage('已從本機檔案匯入設定。');}
+    try{setData(normalizeStyleProfile(await readRecordsJsonFile(event.target.files?.[0])));setMessage('已從本機檔案匯入設定。');}
     catch(error){setMessage(`匯入失敗：${error.message}`);}
     event.target.value='';
   };
   const saveDrive=async()=>{
-    try{await saveJsonToGoogleDrive(DRIVE_FILE,data);setMessage('已存到自己的 Google Drive appDataFolder。');}
+    try{await googleDriveStorage.saveJson(DRIVE_FILE,data);setMessage('已存到自己的 Google Drive appDataFolder。');}
     catch(error){setMessage(`Google Drive 儲存失敗：${error.message}`);}
   };
   const loadDrive=async()=>{
-    try{setData(normalizeStyleProfile(await loadJsonFromGoogleDrive(DRIVE_FILE)));setMessage('已從自己的 Google Drive 讀回群組設定。');}
+    try{setData(normalizeStyleProfile(await googleDriveStorage.loadJson(DRIVE_FILE)));setMessage('已從自己的 Google Drive 讀回群組設定。');}
     catch(error){setMessage(`Google Drive 讀取失敗：${error.message}`);}
   };
 
@@ -82,7 +81,7 @@ export default function StyleGroupsView({embedded=false}){
       <div className="loc-actions">
         <button className="loc-button primary" onClick={addGroup} disabled={groups.length>=MAX_STYLE_GROUPS}>＋新增群組</button>
         <button className="loc-button" onClick={useTemplate}>套用月之符文模板</button>
-        <button className="loc-button" onClick={()=>downloadJsonFile(data,DRIVE_FILE)}>匯出 JSON</button>
+        <button className="loc-button" onClick={()=>exportRecordsJson(data,DRIVE_FILE)}>匯出 JSON</button>
         <label className="loc-button">匯入 JSON<input className="loc-hidden-input" type="file" accept="application/json,.json" onChange={importFile}/></label>
         <button className="loc-button" onClick={saveDrive} disabled={!driveReady}>存到 Google Drive</button>
         <button className="loc-button" onClick={loadDrive} disabled={!driveReady}>從 Google Drive 讀取</button>
