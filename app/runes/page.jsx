@@ -1,11 +1,11 @@
 import './rune-atlas-governance.css';
-import RunesClient from './RunesClient';
+import RuneDrawClient from './RuneDrawClient';
 
 export const metadata = {
   title: '月之符文｜LOC',
-  description: 'LunaRunes local draw and guidance route.'
+  description: 'LunaRunes draw and guidance route.'
 };
 
 export default function RunesPage() {
-  return <RunesClient/>;
+  return <RuneDrawClient/>;
 }
