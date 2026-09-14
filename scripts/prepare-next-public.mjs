@@ -6,6 +6,7 @@ import { buildSegmentCatalog } from './partition-catalog.mjs';
 
 const ROOT = process.cwd();
 const PUBLIC = path.join(ROOT, 'public');
+const MAX_ROUTING_INDEX_SEGMENTS_PER_KEY = 24;
 
 const normalize = value => String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');
 const dataTier = rel => normalize(rel).startsWith('data/json/core/') ? 'core' : 'on-demand';
@@ -28,17 +29,10 @@ async function manifestShardEntries(repoPath) {
   const baseDir = path.posix.dirname(rel);
   return entries.map((entry, index) => {
     if (typeof entry === 'string') {
-      return {
-        path: normalize(path.posix.join(baseDir, entry)),
-        sequence: index + 1
-      };
+      return { path: normalize(path.posix.join(baseDir, entry)), sequence: index + 1 };
     }
     if (entry && typeof entry.path === 'string') {
-      return {
-        ...entry,
-        path: normalize(entry.path),
-        sequence: index + 1
-      };
+      return { ...entry, path: normalize(entry.path), sequence: index + 1 };
     }
     throw new Error(`[prepare-public] unsupported shard entry in ${rel}`);
   });
@@ -53,7 +47,6 @@ async function buildDataVersionManifest(jsonFiles) {
   const versionInput = [];
   const tiers = { core: { files: 0, bytes: 0 }, 'on-demand': { files: 0, bytes: 0 } };
   const sorted = [...jsonFiles].sort();
-
   for (const rel of sorted) {
     const bytes = await readFile(path.join(ROOT, rel));
     const hash = createHash('sha256').update(bytes).digest('hex');
@@ -64,7 +57,6 @@ async function buildDataVersionManifest(jsonFiles) {
     tiers[tier].bytes += bytes.byteLength;
     versionInput.push(`${publicPath}:${hash}`);
   }
-
   const version = createHash('sha256').update(versionInput.join('\n')).digest('hex');
   const manifest = { schema: 1, version, tiers, files };
   await writeFile(path.join(PUBLIC, 'loc-data-version.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
@@ -75,11 +67,28 @@ function fileMeta(versionManifest, repoPath) {
   const publicPath = `/${normalize(repoPath)}`;
   const entry = versionManifest.files[publicPath];
   if (!entry) throw new Error(`[prepare-public] missing version metadata for ${publicPath}`);
+  return { path: publicPath, hash: entry.hash, bytes: entry.bytes, tier: entry.tier };
+}
+
+function buildRoutingIndex(segments) {
+  const keys = new Map();
+  const truncated = new Set();
+  for (const segment of segments) {
+    for (const key of Array.isArray(segment.routing_keys) ? segment.routing_keys : []) {
+      const bucket = keys.get(key) || [];
+      if (!bucket.includes(segment.id) && bucket.length < MAX_ROUTING_INDEX_SEGMENTS_PER_KEY) {
+        bucket.push(segment.id);
+      } else if (!bucket.includes(segment.id)) {
+        truncated.add(key);
+      }
+      keys.set(key, bucket);
+    }
+  }
   return {
-    path: publicPath,
-    hash: entry.hash,
-    bytes: entry.bytes,
-    tier: entry.tier
+    schema: 1,
+    max_segments_per_key: MAX_ROUTING_INDEX_SEGMENTS_PER_KEY,
+    truncated_keys: [...truncated].sort(),
+    keys: Object.fromEntries([...keys.entries()].sort(([left], [right]) => left.localeCompare(right)))
   };
 }
 
@@ -100,89 +109,43 @@ async function buildDataIndex(versionManifest) {
     ...loc4ShardEntries.map(entry => entry.path),
     ...loc3ShardEntries.map(entry => entry.path)
   ]);
-
   const datasets = {};
-  const corePaths = Object.values(LOC_DATA)
-    .map(normalize)
-    .filter(rel => rel.startsWith('data/json/core/'))
-    .sort();
+  const corePaths = Object.values(LOC_DATA).map(normalize).filter(rel => rel.startsWith('data/json/core/')).sort();
 
   datasets.core = {
-    tier: 'core',
-    strategy: 'canonical-core',
-    segments: corePaths.map((rel, index) => ({
-      id: `core-${String(index + 1).padStart(2, '0')}`,
-      sequence: index + 1,
-      ...fileMeta(versionManifest, rel)
-    }))
+    tier: 'core', strategy: 'canonical-core',
+    segments: corePaths.map((rel, index) => ({ id: `core-${String(index + 1).padStart(2, '0')}`, sequence: index + 1, ...fileMeta(versionManifest, rel) }))
   };
 
-  datasets['loc4-text-corpus'] = {
-    tier: 'on-demand',
-    strategy: 'manifest-shards',
-    manifest: fileMeta(versionManifest, loc4ManifestPath),
-    segments: loc4ShardEntries.map(entry => {
-      const catalogEntry = segmentCatalog[entry.path] || {};
-      return {
-        id: `loc4-${String(entry.sequence).padStart(2, '0')}`,
-        sequence: entry.sequence,
-        ...(Number.isFinite(Number(entry.document_count)) ? { document_count: Number(entry.document_count) } : {}),
-        scope: catalogEntry.scope || {},
-        routing_keys: catalogEntry.routing_keys || [],
-        ...fileMeta(versionManifest, entry.path)
-      };
-    })
-  };
+  const loc4Segments = loc4ShardEntries.map(entry => {
+    const catalogEntry = segmentCatalog[entry.path] || {};
+    return {
+      id: `loc4-${String(entry.sequence).padStart(2, '0')}`,
+      sequence: entry.sequence,
+      ...(Number.isFinite(Number(entry.document_count)) ? { document_count: Number(entry.document_count) } : {}),
+      scope: catalogEntry.scope || {}, routing_keys: catalogEntry.routing_keys || [], ...fileMeta(versionManifest, entry.path)
+    };
+  });
+  datasets['loc4-text-corpus'] = { tier: 'on-demand', strategy: 'manifest-shards', manifest: fileMeta(versionManifest, loc4ManifestPath), routing_index: buildRoutingIndex(loc4Segments), segments: loc4Segments };
 
-  datasets['loc3-lyrics-search'] = {
-    tier: 'on-demand',
-    strategy: 'manifest-shards',
-    manifest: fileMeta(versionManifest, loc3ManifestPath),
-    segments: loc3ShardEntries.map(entry => {
-      const catalogEntry = segmentCatalog[entry.path] || {};
-      return {
-        id: `loc3-${String(entry.sequence).padStart(2, '0')}`,
-        sequence: entry.sequence,
-        scope: catalogEntry.scope || {},
-        routing_keys: catalogEntry.routing_keys || [],
-        ...fileMeta(versionManifest, entry.path)
-      };
-    })
-  };
+  const loc3Segments = loc3ShardEntries.map(entry => {
+    const catalogEntry = segmentCatalog[entry.path] || {};
+    return { id: `loc3-${String(entry.sequence).padStart(2, '0')}`, sequence: entry.sequence, scope: catalogEntry.scope || {}, routing_keys: catalogEntry.routing_keys || [], ...fileMeta(versionManifest, entry.path) };
+  });
+  datasets['loc3-lyrics-search'] = { tier: 'on-demand', strategy: 'manifest-shards', manifest: fileMeta(versionManifest, loc3ManifestPath), routing_index: buildRoutingIndex(loc3Segments), segments: loc3Segments };
 
-  const singletonPaths = Object.values(LOC_DATA)
-    .map(normalize)
-    .filter(rel => rel.startsWith('data/json/'))
-    .filter(rel => dataTier(rel) === 'on-demand')
-    .filter(rel => !reservedSegmentPaths.has(rel))
-    .sort();
-
-  datasets['on-demand-singletons'] = {
-    tier: 'on-demand',
-    strategy: 'single-file-segments',
-    segments: singletonPaths.map((rel, index) => ({
-      id: `single-${String(index + 1).padStart(2, '0')}`,
-      sequence: index + 1,
-      ...fileMeta(versionManifest, rel)
-    }))
-  };
+  const singletonPaths = Object.values(LOC_DATA).map(normalize).filter(rel => rel.startsWith('data/json/')).filter(rel => dataTier(rel) === 'on-demand').filter(rel => !reservedSegmentPaths.has(rel)).sort();
+  datasets['on-demand-singletons'] = { tier: 'on-demand', strategy: 'single-file-segments', segments: singletonPaths.map((rel, index) => ({ id: `single-${String(index + 1).padStart(2, '0')}`, sequence: index + 1, ...fileMeta(versionManifest, rel) })) };
 
   const totals = Object.values(datasets).reduce((acc, dataset) => {
     for (const segment of dataset.segments) {
-      acc.segments += 1;
-      acc.bytes += segment.bytes || 0;
-      if (segment.tier === 'core') acc.core_bytes += segment.bytes || 0;
-      else acc.on_demand_bytes += segment.bytes || 0;
+      acc.segments += 1; acc.bytes += segment.bytes || 0;
+      if (segment.tier === 'core') acc.core_bytes += segment.bytes || 0; else acc.on_demand_bytes += segment.bytes || 0;
     }
     return acc;
   }, { datasets: Object.keys(datasets).length, segments: 0, bytes: 0, core_bytes: 0, on_demand_bytes: 0 });
 
-  const index = {
-    schema: 1,
-    data_version: versionManifest.version,
-    totals,
-    datasets
-  };
+  const index = { schema: 1, data_version: versionManifest.version, totals, datasets };
   await writeFile(path.join(PUBLIC, 'loc-data-index.json'), `${JSON.stringify(index, null, 2)}\n`, 'utf8');
   return index;
 }
@@ -190,30 +153,13 @@ async function buildDataIndex(versionManifest) {
 await rm(PUBLIC, { recursive: true, force: true });
 await mkdir(PUBLIC, { recursive: true });
 
-// Static presentation assets that are intentionally public.
 for (const rel of [
-  'assets/lunarunes/cards',
-  'assets/lunarunes/reference',
-  'assets/site/diagrams',
-  'assets/site/icons',
-  'pics',
-  'data/html/runes-beginner.html',
-  'docs/LOC_Canon_1.0.docx',
-  'LunarRunesCardCut.pdf',
-  'apple-touch-icon.png',
-  'favicon.ico',
-  'manifest.json',
-  'CNAME'
+  'assets/lunarunes/cards', 'assets/lunarunes/reference', 'assets/site/diagrams', 'assets/site/icons', 'pics',
+  'data/html/runes-beginner.html', 'docs/LOC_Canon_1.0.docx', 'LunarRunesCardCut.pdf',
+  'apple-touch-icon.png', 'favicon.ico', 'manifest.json', 'CNAME'
 ]) await copyPath(rel);
 
-// Runtime JSON is an explicit deployment allowlist. Delivery tier is separate:
-// canonical core data is eligible for light/core loading, while registries,
-// search projections and corpus shards remain on-demand.
-const jsonFiles = new Set(
-  Object.values(LOC_DATA)
-    .map(normalize)
-    .filter(rel => rel.startsWith('data/json/'))
-);
+const jsonFiles = new Set(Object.values(LOC_DATA).map(normalize).filter(rel => rel.startsWith('data/json/')));
 for (const manifestPath of [LOC_DATA.TEXT_CORPUS_MANIFEST, LOC_DATA.MUSIC_SEARCH_MANIFEST]) {
   for (const shard of await manifestShards(manifestPath)) jsonFiles.add(shard);
 }
@@ -221,9 +167,4 @@ for (const rel of jsonFiles) await copyPath(rel);
 
 const versionManifest = await buildDataVersionManifest(jsonFiles);
 const dataIndex = await buildDataIndex(versionManifest);
-console.log(
-  `Prepared Next public payload with ${jsonFiles.size} explicit JSON files; ` +
-  `core=${versionManifest.tiers.core.files}, on-demand=${versionManifest.tiers['on-demand'].files}; ` +
-  `datasets=${dataIndex.totals.datasets}, segments=${dataIndex.totals.segments}; ` +
-  `data version ${versionManifest.version.slice(0, 12)}.`
-);
+console.log(`Prepared Next public payload with ${jsonFiles.size} explicit JSON files; core=${versionManifest.tiers.core.files}, on-demand=${versionManifest.tiers['on-demand'].files}; datasets=${dataIndex.totals.datasets}, segments=${dataIndex.totals.segments}; data version ${versionManifest.version.slice(0, 12)}.`);
