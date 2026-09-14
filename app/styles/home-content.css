@@ -282,6 +282,56 @@
 .loc-site-footer a:focus-visible{
   text-decoration:underline;
 }
+
+/* Homepage title hierarchy: left title, right short explanation. */
+.home-title-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(180px,.62fr);
+  gap:1.5rem;
+  align-items:start;
+}
+.home-title-row h1{margin:0}
+.home-title-row>.loc-subtitle{
+  justify-self:end;
+  max-width:26ch;
+  margin:.25rem 0 0!important;
+  text-align:left;
+}
+.home-section-heading{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(180px,.48fr);
+  column-gap:1.5rem;
+  align-items:start;
+}
+.home-section-heading>.loc-eyebrow,
+.home-section-heading>h2,
+.home-section-heading>h3{
+  grid-column:1;
+}
+.home-section-heading>.loc-eyebrow{grid-row:1}
+.home-section-heading>h2,
+.home-section-heading>h3{grid-row:2}
+.home-section-heading>.loc-subtitle{
+  grid-column:2;
+  grid-row:1 / span 2;
+  justify-self:end;
+  max-width:28ch;
+  margin:.1rem 0 0!important;
+}
+.home-section-heading>h2{margin-top:.2rem}
+@media(max-width:720px){
+  .home-title-row,
+  .home-section-heading{grid-template-columns:1fr}
+  .home-title-row>.loc-subtitle,
+  .home-section-heading>.loc-subtitle{
+    grid-column:1;
+    grid-row:auto;
+    justify-self:start;
+    max-width:none;
+    margin-top:.4rem!important;
+  }
+}
+
 @media(max-width:900px){
   .home-progress-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .home-beginner .home-rune-layout{
