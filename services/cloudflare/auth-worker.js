@@ -2,7 +2,8 @@ import { betterAuth } from 'better-auth';
 
 const SESSION_TTL_SECONDS = 60 * 60 * 2;
 const AUTH_PATH = '/api/auth';
-const BUILD = '2026-09-14-better-auth-google-v2';
+const MANAGEMENT_STATE_PATH = '/management/state';
+const BUILD = '2026-09-14-better-auth-google-v3';
 
 function splitList(value = '') {
   return String(value)
@@ -34,7 +35,7 @@ function corsHeaders(request, env) {
   const selected = allowed.includes(origin) ? origin : allowed[0] || 'https://loc.lo3rwang.cc';
   return {
     'access-control-allow-origin': selected,
-    'access-control-allow-methods': 'GET,POST,OPTIONS',
+    'access-control-allow-methods': 'GET,POST,PUT,DELETE,OPTIONS',
     'access-control-allow-headers': 'content-type,authorization',
     'access-control-allow-credentials': 'true',
     'vary': 'Origin'
@@ -128,6 +129,57 @@ function withCors(response, request, env) {
   });
 }
 
+async function getManagementSession(request, env) {
+  const auth = createAuth(env);
+  const session = await auth.api.getSession({ headers: request.headers });
+  const email = String(session?.user?.email || '').trim().toLowerCase();
+  const authorized = Boolean(email && adminEmailSet(env).has(email));
+  return { session, authorized };
+}
+
+function stateProxyConfig(env) {
+  return {
+    baseURL: String(env.LOC_STATE_URL || '').trim().replace(/\/+$/, ''),
+    writeToken: String(env.LOC_WRITE_TOKEN || '').trim()
+  };
+}
+
+async function proxyManagedState(request, env, url) {
+  const { session, authorized } = await getManagementSession(request, env);
+  if (!session || !authorized) {
+    return json({ ok: false, error: 'management_access_denied', build: BUILD }, { status: 401, headers: corsHeaders(request, env) });
+  }
+
+  const { baseURL, writeToken } = stateProxyConfig(env);
+  if (!baseURL || !writeToken) {
+    return json({ ok: false, error: 'state_proxy_not_configured', build: BUILD }, { status: 503, headers: corsHeaders(request, env) });
+  }
+
+  const suffix = url.pathname.slice(MANAGEMENT_STATE_PATH.length) || '/';
+  if (!['/eras', '/daily-runes', '/context'].some(path => suffix === path || suffix.startsWith(`${path}?`))) {
+    return json({ ok: false, error: 'state_path_not_allowed', build: BUILD }, { status: 404, headers: corsHeaders(request, env) });
+  }
+
+  if (!['POST', 'PUT', 'DELETE'].includes(request.method)) {
+    return json({ ok: false, error: 'method_not_allowed', build: BUILD }, { status: 405, headers: corsHeaders(request, env) });
+  }
+
+  const target = new URL(`${baseURL}${suffix}`);
+  target.search = url.search;
+  const headers = new Headers();
+  headers.set('authorization', `Bearer ${writeToken}`);
+  const contentType = request.headers.get('content-type');
+  if (contentType) headers.set('content-type', contentType);
+
+  const response = await fetch(target, {
+    method: request.method,
+    headers,
+    body: request.method === 'DELETE' ? request.body : request.body,
+    redirect: 'manual'
+  });
+  return withCors(response, request, env);
+}
+
 export default {
   async fetch(request, env) {
     const cors = corsHeaders(request, env);
@@ -140,22 +192,31 @@ export default {
 
     const url = new URL(request.url);
     if (url.pathname === '/' || url.pathname === '/health') {
-      return json({ ok: true, service: 'loc-auth', provider: 'google', session_ttl_seconds: SESSION_TTL_SECONDS, build: BUILD }, { headers: cors });
+      const stateProxy = stateProxyConfig(env);
+      return json({
+        ok: true,
+        service: 'loc-auth',
+        provider: 'google',
+        session_ttl_seconds: SESSION_TTL_SECONDS,
+        management_state_proxy: Boolean(stateProxy.baseURL && stateProxy.writeToken),
+        build: BUILD
+      }, { headers: cors });
     }
 
     if (url.pathname === '/management/session') {
-      const auth = createAuth(env);
-      const session = await auth.api.getSession({ headers: request.headers });
-      const email = String(session?.user?.email || '').trim().toLowerCase();
-      const allowed = Boolean(email && adminEmailSet(env).has(email));
+      const { session, authorized } = await getManagementSession(request, env);
       return json({
-        ok: allowed,
+        ok: authorized,
         authenticated: Boolean(session),
-        authorized: allowed,
-        user: allowed ? { name: session.user.name || '', email: session.user.email || '' } : null,
-        session_expires_at: allowed ? session.session?.expiresAt || null : null,
+        authorized,
+        user: authorized ? { name: session.user.name || '', email: session.user.email || '' } : null,
+        session_expires_at: authorized ? session.session?.expiresAt || null : null,
         build: BUILD
-      }, { status: allowed ? 200 : 401, headers: cors });
+      }, { status: authorized ? 200 : 401, headers: cors });
+    }
+
+    if (url.pathname === MANAGEMENT_STATE_PATH || url.pathname.startsWith(`${MANAGEMENT_STATE_PATH}/`)) {
+      return proxyManagedState(request, env, url);
     }
 
     if (url.pathname === AUTH_PATH || url.pathname.startsWith(`${AUTH_PATH}/`)) {
