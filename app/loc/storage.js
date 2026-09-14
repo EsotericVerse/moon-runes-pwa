@@ -57,6 +57,8 @@ export const googleDriveStorage=Object.freeze({
   configured:googleDriveConfigured,
   authorize:authorizeGoogleDrive,
   clearSession:clearGoogleDriveSession,
+  async saveJson(name,payload){return saveJsonToGoogleDrive(name,payload)},
+  async loadJson(name){return loadJsonFromGoogleDrive(name)},
   async saveRecords(name,records,meta={}){
     const payload={
       schema_version:'loc-storage-snapshot-v1',
