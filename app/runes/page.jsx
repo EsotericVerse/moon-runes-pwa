@@ -1,4 +1,5 @@
 import './rune-atlas-governance.css';
+import './runes-content.css';
 import RuneDrawClient from './RuneDrawClient';
 import { RUNES_HOME_CONTENT } from './home-content';
 
