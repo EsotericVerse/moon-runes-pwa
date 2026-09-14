@@ -19,9 +19,12 @@ export const authClient = createAuthClient({
 
 export async function signInManagementWithGoogle(callbackURL = '/management'){
   if(!managementAuthConfigured()) throw new Error('尚未設定 NEXT_PUBLIC_LOC_AUTH_URL');
+  const resolvedCallbackURL = typeof window !== 'undefined'
+    ? new URL(callbackURL, window.location.origin).toString()
+    : callbackURL;
   return authClient.signIn.social({
     provider: 'google',
-    callbackURL
+    callbackURL: resolvedCallbackURL
   });
 }
 
