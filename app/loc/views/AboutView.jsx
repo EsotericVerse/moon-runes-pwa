@@ -3,7 +3,7 @@ export default function AboutView(){
     <header className="loc-hero">
       <div className="home-title-row">
         <h1>LOC月典</h1>
-        <p className="loc-subtitle">語言模型框架（Language Model Framework）</p>
+        <p className="loc-subtitle">語言模型框架（Language Model Framework）。<br/>把語言整理成可理解、可搜尋、可推演的結構。</p>
       </div>
       <div className="loc-hero-copy">
         <p className="loc-core-line">把語言整理成可理解、可搜尋、可推演的結構。</p>
@@ -41,8 +41,9 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-rune-section">
       <div className="home-section-heading">
         <p className="loc-eyebrow">LunaRunes</p>
-        <h2>符文籤詩系統</h2>
-        <p className="loc-subtitle">問一件事，或讓語言自己成長</p>
+        <h2>月之符文籤詩系統</h2>
+        <p className="loc-subtitle">本系統不涉及神秘學，為單純的指引籤詩，不保證一定就是註定。<br/>
+		只是希望這樣的解析方式，可以讓你在困惑時找到答案。</p>
       </div>
 
       <div className="home-rune-layout">
@@ -64,7 +65,7 @@ export default function AboutView(){
 
         <div className="home-rune-copy home-rune-copy-plain">
           <p>不知道怎麼說的話，<a href="/runes">抽牌</a>就對了！</p>
-          <p>月之符文的66符文字會給你提示籤詩，指引你的未知路線方式。</p>
+          <p>月之符文的66符文字會給你提示籤詩，指引你的可能未來，可能是祝福可能是警告，你當然擁有選擇權。</p>
           <p>抽牌讓這語意種子，成為語意起點，<br/>用你想要的方式，成長成為完整語意的成熟果實。</p>
 
           <div className="home-draw-bubbles" aria-label="選擇抽牌方式">
@@ -78,7 +79,7 @@ export default function AboutView(){
 
           <div className="loc-actions home-rune-links">
             <a className="loc-button" href="/runes#library">符文圖鑑</a>
-            <a className="loc-button" href="/governance">符文規則</a>
+            <a className="loc-button" href="/runes#governance">符文規則</a>
             <a className="loc-button" href="/runes#reference">符文脈絡</a>
           </div>
         </div>
@@ -111,12 +112,12 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-culture" id="culture">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Culture</p>
-        <h2>文化，文字的演化</h2>
-        <p className="loc-subtitle">文字留下風格，風格經過時間累積，才看得見文化的變化。</p>
+        <h2>文化</h2>
+        <p className="loc-subtitle">文化，是文字的演化。<br/>文字留下風格，風格經過時間累積，才看得見文字風格的變化。</p>
       </div>
       <div className="home-author-copy">
         <p>LOC 把脈絡重新放回時間中，透過時期、事件、趨勢與語彙軌跡，觀察語言如何累積、改變與延伸。</p>
-        <p>過去與現在可以整理，未來仍然有變數；因此月典不是替未來下定論，而是治理已知、觀察演化，再推演可能。</p>
+        <p>過去與現在可以整理，未來仍然有變數；因此不是替未來下定論，而是治理已知、觀察演化，再推演可能。</p>
         <p><a href="/statics">排行榜</a>可先看全部，再切 Facebook、Threads、Suno，並依來源與時期觀察語彙變化。</p>
       </div>
       <div className="home-progress-grid" aria-label="文化搜尋、治理與演化">
@@ -132,16 +133,21 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-framework" id="framework-map">
+	  <div className="home-section-heading">
+        <p className="loc-eyebrow">LOC Structure</p>
+        <h2>月典架構圖</h2>
+        <p className="loc-subtitle">月典各模組架構圖。</p>
+      </div>
       <div className="home-framework-stage">
-        <img src="/pics/LOC-structure.png" alt="月典結構圖與流程圖" loading="lazy" />
+        <img src="/pics/LOC-structure.png" alt="月典架構圖" loading="lazy" />
       </div>
     </section>
 
     <section className="loc-card home-copy-block home-skills" id="skills">
       <div className="home-section-heading">
         <p className="loc-eyebrow">LOC GPT Skills</p>
-        <h2>Skills，把月典的方法變成可以重複使用的工作流程。</h2>
-        <p className="loc-subtitle">把語言治理與 Repository 治理封裝成可直接調用的 AI Skills。</p>
+        <h2>Skills</h2>
+        <p className="loc-subtitle">把月典的方法變成可以重複使用的工作流程。<br/>把語言治理與 Repository 治理封裝成可直接調用的 AI Skills。</p>
       </div>
       <div className="home-author-copy">
         <p><strong>loc-km-governance</strong>：檢查 Canon、KM、FAQ、Registry、Base66、術語一致性、資料權威與舊版污染。</p>
