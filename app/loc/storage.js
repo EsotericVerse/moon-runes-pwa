@@ -12,6 +12,13 @@ import {
   readJsonFile
 } from './local-db';
 import {
+  clearLocalData,
+  getLocalDataSegment,
+  getLocalDataVersion,
+  listLocalDataSegments
+} from './data-local';
+import { inspectLocDataSync, syncLocData, LOC_DATA_SYNC_POLICY } from './data-sync';
+import {
   authorizeGoogleDrive,
   clearGoogleDriveSession,
   googleDriveConfigured,
@@ -48,6 +55,19 @@ export const localRecordStorage=Object.freeze({
   async listBy(field,value){return getLocalRecordsBy(field,value)},
   async remove(id){return deleteLocalRecord(id)},
   async clear(type){return clearLocalRecords(type)}
+});
+
+export const localDatasetStorage=Object.freeze({
+  id:'indexeddb-dataset',
+  kind:'local-dataset-store',
+  writable:true,
+  policy:LOC_DATA_SYNC_POLICY,
+  getVersion:getLocalDataVersion,
+  getSegment:getLocalDataSegment,
+  listSegments:listLocalDataSegments,
+  clear:clearLocalData,
+  inspectSync:inspectLocDataSync,
+  sync:syncLocData
 });
 
 export const googleDriveStorage=Object.freeze({
@@ -92,6 +112,7 @@ export const kvStateStorage=Object.freeze({
 
 export const STORAGE_ADAPTERS=Object.freeze({
   indexeddb:localRecordStorage,
+  indexeddbDataset:localDatasetStorage,
   googleDrive:googleDriveStorage,
   kvState:kvStateStorage
 });
