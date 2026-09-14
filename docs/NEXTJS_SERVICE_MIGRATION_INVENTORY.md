@@ -22,7 +22,8 @@ Current state:
 - Google Drive OAuth remains user-owned `drive.appdata` storage.
 - Next.js provides non-destructive IndexedDB → Drive backup and Drive → IndexedDB newest-wins merge.
 - Cloudflare KV has a read-only browser adapter controlled by `NEXT_PUBLIC_LOC_STATE_URL`; no provider write token is exposed to the browser.
-- `LibraryView`, `MyStyleView`, and `ClassifyView` now consume the storage facade rather than importing storage providers directly.
+- `LibraryView`, `MyStyleView`, `ClassifyView`, and `StyleGroupsView` now consume the storage facade rather than importing storage providers directly.
+- `scripts/verify-modularity.mjs` blocks `app/loc/views/*` from directly importing `local-db`, `google-drive`, or `kv-state`; provider access must go through `storage.js`.
 - Canonical/static views such as Context and Evolution continue to use the canonical data loader; they are not forced through storage adapters when no user-state storage is involved.
 
 ```text
@@ -32,6 +33,21 @@ Shared record model
         ↓
 IndexedDB adapter | KV adapter | Google Drive OAuth adapter | future backend adapter
 ```
+
+## Shared Search Governance
+
+`data/json/registries/LOC_SEARCH_GOVERNANCE.json` is now the provider-neutral authority for governed semantic query bridges that were previously trapped in `loc3_search.py`.
+
+Current state:
+
+- The registry contains the existing author-governed concept bridge, out-of-domain regex, and intent-boost rules without changing their terms.
+- `services/api/card/loc3_search.py` loads concept bridge, out-of-domain behavior, and intent boosts from the shared registry instead of hardcoding a second copy.
+- `app/loc/search-governance.js` provides the Next.js query-governance helper.
+- `SearchView` loads the same registry only when a search is submitted, expands matching concepts as OR terms, keeps the original query for display, uses governed terms for content matching, and uses the expanded routing query for segment routing.
+- Existing Next.js search performance rules remain intact: global/small-source concurrency 2, segment batch size 2, bounded incremental segment loading, scope partitioning, adaptive segment routing, and telemetry.
+- Search Governance is registered in `LOC_DATA`, so build-time public payload/version/index generation treats it as an on-demand singleton rather than adding a separate deployment path.
+
+The shared registry is governance data, not a provider implementation. Python and Next.js may use different ranking/search engines while reading the same governed semantic authority.
 
 ## services/cloudflare/loc-state-worker.js
 
@@ -64,8 +80,8 @@ The Python service remains an optional backend capability. It is not the primary
 | `runtime_app.py` | Render/deployment-specific performance wrapper | **Legacy-workaround candidate.** It installs SQLite/lru-cache patches specifically to avoid repeated JSON parsing and small Render instance memory cost. Repository deployment configuration does not currently reference it, but an external Render dashboard may; do not delete without confirming external deployment state. |
 | `runtime_text_bundle.py` | Render-era FastAPI route monkey patch | **Legacy-workaround candidate.** It patches an existing `/search` route to avoid repeated server scans. Next.js segment Search supersedes this hot-path optimization. Repository deployment configuration does not currently reference it, but external service configuration must be checked before deletion. |
 | `facebook_search.py` | optional heavy/server search engine | Preserve as optional server capability for large historical corpus / SQLite search. It must not become a second primary UI search stack. |
-| `faq_rag.py` | optional dependency-free retrieval engine | Preserve until Next.js retrieval parity is explicit. Longer term either expose as optional server analysis or port the governed retrieval/index logic into shared build/runtime modules. |
-| `loc3_search.py` | duplicated LOC3 search/ranking logic | Next.js Search is primary; preserve temporarily because concept expansion/ranking may not yet have full parity. Move governed concept mappings out of Python constants before retirement. |
+| `faq_rag.py` | optional dependency-free retrieval engine | Preserve until Next.js retrieval parity is explicit. Canon overrides are already externalized in the FAQ data area; continue separating governed data from retrieval implementation before deciding whether to port or retain server retrieval. |
+| `loc3_search.py` | optional LOC3 ranking/search engine | **Governance duplication removed.** It now reads `LOC_SEARCH_GOVERNANCE.json` for concept bridges, out-of-domain rules, and intent boosts. Preserve the optional Python TF-IDF/ranking implementation until ranking parity and future server need are understood. |
 | `corpus_analysis.py` | heavy/offline analysis | Preserve as server/build analysis capability. This is appropriate outside the browser for large corpora. It should not own UI/runtime state. |
 | `keyword_analysis.py` | analysis/build utility | Candidate to move under `scripts/` or a shared Python analysis package. Keep server imports working until callers are separated. |
 | `loc4_chapter_analysis.py` | offline/heavy content analysis | Preserve as build/server analysis. Prefer precomputed output consumed by Next.js when results are deployment-static. |
@@ -83,28 +99,46 @@ The Python service remains an optional backend capability. It is not the primary
 2. IndexedDB write/import semantics separated so synchronization preserves timestamps correctly.
 3. Google Drive OAuth, IndexedDB, and read-only KV are registered behind the Next.js storage facade.
 4. Google Drive backup and newest-wins merge orchestration centralized in Next.js.
-5. `LibraryView`, `MyStyleView`, and `ClassifyView` no longer import provider storage modules directly.
-6. Three build-only Python index generators moved from `services/api/card` into `scripts/`, while preserving backend-generated output locations.
+5. `LibraryView`, `MyStyleView`, `ClassifyView`, and `StyleGroupsView` no longer import provider storage modules directly.
+6. CI now enforces the storage-facade boundary for LOC views.
+7. Three build-only Python index generators moved from `services/api/card` into `scripts/`, while preserving backend-generated output locations.
+8. Provider-neutral LOC3 semantic search governance moved from Python constants into `LOC_SEARCH_GOVERNANCE.json`.
+9. Python LOC3 search and Next.js Search now consume the same governed semantic authority while retaining implementation-specific ranking/loading behavior.
 
 ### Next convergence steps
 
-1. Compare `loc3_search.py`, `faq_rag.py`, `facebook_search.py`, and `unified_search.py` behavior against current Next.js Search before retiring any backend search capability.
-2. Identify governed concept/ranking data still trapped in Python constants and move only provider-neutral rules into canonical/shared data where appropriate.
+1. Compare `faq_rag.py`, `facebook_search.py`, and `unified_search.py` behavior against current Next.js Search before retiring any backend search capability.
+2. Identify additional governed data still trapped in Python code; move only provider-neutral rules into canonical/shared data where appropriate, not implementation-specific scoring mechanics merely for symmetry.
 3. Confirm external Render deployment configuration before deactivating `runtime_app.py` or `runtime_text_bundle.py`.
-4. Inspect `services/api/loc8` and keep only genuine server/provider responsibilities there.
-5. Preserve `corpus_analysis.py`, chapter analysis, and genuinely heavy processing as optional server/build work rather than forcing them into the browser.
-6. Add authenticated remote-write adapters only when a real user auth/session flow exists; never expose backend write tokens in client code.
+4. Preserve `corpus_analysis.py`, chapter analysis, and genuinely heavy processing as optional server/build work rather than forcing them into the browser.
+5. Add authenticated remote-write adapters only when a real user auth/session flow exists; never expose backend write tokens in client code.
 
 ## services/api/loc8
 
-Keep as an optional service boundary until its remaining responsibilities are inspected. Any generic application logic should converge toward shared modules; provider/server-only work can remain a service adapter.
+`services/api/loc8` has been inspected. It is a Google Apps Script + Google Sheets remote CRUD provider, not merely an obsolete static API.
+
+Current provider responsibilities include:
+
+- remote `User`, `Event`, `Era`, `Runes` daily draw, `History`, and `Relation` sheets;
+- GET health/diagnostics and remote reads;
+- create/update/delete for events, eras, daily draws, and relations;
+- batch daily-draw update/delete;
+- legacy daily-draw migration and CRUD smoke testing.
+
+Decision:
+
+- Preserve the provider while it may still be useful for remote Sheets-based state or migration.
+- It is not part of the current Next.js hot path and no current Next.js import/reference was found.
+- Do not expand Apps Script into a parallel UI/application layer.
+- If LOC8 remote state is reactivated in the application, expose it through a Next.js/provider adapter and converge record shapes toward shared models rather than duplicating application rules.
+- Do not delete or structurally split `Code.gs` until external Apps Script deployment usage is known.
 
 ## Migration order
 
 1. Keep current site stable.
 2. Centralize active application behavior in Next.js.
 3. Define canonical record/model modules independent of storage provider.
-4. Wrap IndexedDB, KV, Google Drive OAuth, Render, or future services behind adapters.
+4. Wrap IndexedDB, KV, Google Drive OAuth, Render, Apps Script, or future services behind adapters.
 5. Migrate duplicated business rules toward shared modules only after parity is understood.
 6. Remove only provider-specific workaround code that has no remaining runtime, compatibility, or future service value.
 
@@ -112,6 +146,7 @@ Keep as an optional service boundary until its remaining responsibilities are in
 
 - Do not remove Render capability permanently.
 - Do not remove KV capability permanently.
+- Do not remove Apps Script capability merely because it is not in the current hot path.
 - Do not force all heavy work into the browser.
 - Do not make Next.js the canonical data source.
 - Do not keep parallel application stacks merely because they existed historically.
