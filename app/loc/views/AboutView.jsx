@@ -17,7 +17,7 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-beginner" id="beginner">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">Start Here · 新手上路</p>
+        <p className="loc-eyebrow">Start here</p>
         <h2>新手上路</h2>
         <p className="loc-subtitle">不知道怎麼開始沒關係，就抽一張牌吧！</p>
       </div>
@@ -40,7 +40,7 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-rune-section">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">LunaRunes · 月之符文</p>
+        <p className="loc-eyebrow">LunaRunes</p>
         <h2>符文籤詩系統</h2>
         <p className="loc-subtitle">問一件事，或讓語言自己成長</p>
       </div>
@@ -87,7 +87,7 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-context" id="context">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">Context · 脈絡</p>
+        <p className="loc-eyebrow">Context</p>
         <h2>脈絡</h2>
         <p className="loc-subtitle">文字的關係與分析</p>
       </div>
@@ -110,7 +110,7 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-culture" id="culture">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">Culture · 文化</p>
+        <p className="loc-eyebrow">Culture</p>
         <h2>文化，文字的演化</h2>
         <p className="loc-subtitle">文字留下風格，風格經過時間累積，才看得見文化的變化。</p>
       </div>
