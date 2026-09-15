@@ -11,3 +11,13 @@
 @import "./styles/keywords.css";
 @import "./styles/nav1.css";
 @import "./styles/text-box-governance.css";
+
+/* Keep the Start Here LunaRunes concept image secondary to the copy. */
+.home-beginner .home-framework-figure{
+  width:min(100%,420px);
+  justify-self:center;
+}
+.home-beginner .home-framework-figure img{
+  width:100%;
+  height:auto;
+}

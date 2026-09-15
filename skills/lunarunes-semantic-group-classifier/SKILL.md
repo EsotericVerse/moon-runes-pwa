@@ -6,6 +6,21 @@ Classify text into exactly one LunaRunes semantic group while preserving a full 
 
 This Skill is intended as a trial layer before the classifier is promoted into shared LOC runtime modules.
 
+## Governance scope — highest priority
+
+This Skill operates **inside the LunaRunes cultural/system context**. LunaRunes Canon governs LunaRunes; it is not a universal standard for judging other cultures, language systems, author systems, or cultural frameworks.
+
+Governance is culture-scoped:
+
+1. Identify the culture/system being analyzed before applying governance rules.
+2. Use that culture/system's own established governance when it exists.
+3. Do not use LunaRunes Canon to declare another culture correct, incorrect, valid, invalid, superior, or inferior.
+4. When comparing cultures/systems, describe differences, context, provenance, history, and disputed interpretations without converting one culture's rules into another culture's authority.
+5. If the target culture/system has no established governance, analyze descriptively and preserve uncertainty; do not invent governance on its behalf.
+6. A Skill executes applicable governance rules; a Skill does not create governance authority by itself.
+
+For this classifier, the requested output is specifically a **LunaRunes semantic projection** of supplied text. Therefore the LunaRunes Canon may determine the resulting LunaRunes group classification, but that classification must not be presented as a judgment on the source culture itself.
+
 ## Non-negotiable constraints
 
 1. **No external API calls.**
@@ -52,8 +67,8 @@ This Skill is intended as a trial layer before the classifier is promoted into s
    - Use qualitative judgment and, when useful, a temporary score-gap heuristic.
    - Mark uncertain cases rather than pretending false precision.
 
-8. **Current Canon overrides historical meanings.**
-   Apply current semantic governance, including:
+8. **Current LunaRunes Canon overrides historical LunaRunes meanings.**
+   Apply current semantic governance within the LunaRunes scope, including:
    - 水 = Water, not Flow.
    - 流動 belongs primarily to 氣, not 水.
    - 氣 = Air.
@@ -70,20 +85,20 @@ This Skill is intended as a trial layer before the classifier is promoted into s
 
 For each semantic unit:
 
-1. Read the unit as a whole.
+1. Read the unit as a whole and identify its source culture/system when that context is available.
 2. Identify its main subject and semantic role.
 3. Distinguish literal wording, metaphor, modifier and actual semantic focus.
-4. Compare the unit with the nine group domains.
-5. Use the current rune Canon, Spec, keyword relations, reverse-keyword relations and exclusion rules as evidence.
+4. Compare the unit with the nine LunaRunes group domains as a LunaRunes semantic projection.
+5. Use the current LunaRunes Canon, Spec, keyword relations, reverse-keyword relations and exclusion rules as evidence.
 6. Build a nine-way distribution.
 7. Apply disambiguation and exclusions.
 8. Select exactly one final group.
 9. Mark disputes and retain alternative candidates.
-10. Explain why the winning group was chosen and why nearby groups were not.
+10. Explain why the winning LunaRunes group was chosen and why nearby groups were not, without turning the result into a judgment of the source culture.
 
 ## Group subjectivity guide
 
-These are first-pass group domains, not keyword lists. Always defer to current rune-level Canon when a boundary is unclear.
+These are first-pass LunaRunes group domains, not keyword lists. Always defer to current rune-level Canon when a LunaRunes boundary is unclear.
 
 - **靈魂**: inner self, spirit, memory, boundary, personal domain, reflection, core.
 - **連結**: direction and relationship operations such as connecting, maintaining, severing, separating, initiating, understanding and error in relation/context.
@@ -174,15 +189,17 @@ Aggregate summary:
 
 ## Governance behavior
 
+- Apply LunaRunes governance only to the LunaRunes projection/classification produced by this Skill.
+- Never use a LunaRunes classification result to judge the correctness or legitimacy of the source culture/system.
 - When a case is ambiguous, preserve the ambiguity instead of silently forcing a result.
-- When a classification depends on a weak or provisional rule, say so.
-- When a new recurring dispute pattern appears, recommend updating the semantic rules rather than patching individual outputs.
+- When a classification depends on a weak or provisional LunaRunes rule, say so.
+- When a new recurring dispute pattern appears, recommend reviewing the relevant culture/system governance or LunaRunes semantic rules at the correct scope rather than patching individual outputs.
 - Never rewrite Base66 meanings from classifier output alone.
-- Treat disputed records as future calibration material.
+- Treat disputed LunaRunes records as future calibration material.
 
 ## Relationship to LOC
 
-This Skill is a modular first-stage classifier:
+This Skill is a modular first-stage LunaRunes classifier:
 
 ```text
 Text
@@ -193,11 +210,11 @@ LunaRunes group classification
   ↓
 Rune candidates
   ↓
-Search / RAG / Graph / Evolution
+Search / RAG / Graph / Culture
 ```
 
-The primary benefit is to reduce the search space before rune-level analysis while keeping the result explainable and governable.
+The primary benefit is to reduce the search space before rune-level analysis while keeping the result explainable and governable. The projection belongs to LunaRunes analysis; it does not transfer LunaRunes governance authority to the source culture.
 
 ## Authoritative principle document
 
-Use `docs/LUNARUNES_SEMANTIC_GROUP_CLASSIFICATION.md` as the human-readable governing specification for this trial Skill.
+Use the current LunaRunes governance/Canon documents as the governing specification for LunaRunes classification. If a referenced historical document conflicts with current Canon or an explicit later governance decision, current governance takes precedence.
