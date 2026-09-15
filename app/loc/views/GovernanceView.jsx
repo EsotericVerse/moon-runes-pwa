@@ -12,10 +12,29 @@ export default function GovernanceView(){
         <p className="loc-eyebrow">Principles</p><h2>基本原則</h2><p className="loc-subtitle">先確定治理邊界，再進入資料與實作</p>
         <p className="loc-core-line">尊重 · 和平 · 包容 · 友善</p>
         <p><strong>LOC 保持客觀與中立。</strong> 不預設宗教、政治、道德或人生價值立場，也不要求任何人接受作者的信仰、觀念或生活方式。</p>
+        <p><strong>客觀是為了保留主體性。</strong> 系統先整理可觀察的資料、脈絡與變化，讓使用者看見自己的位置，再由使用者決定什麼適合自己；適合一個人的方向，不必成為適合所有人的規則。</p>
+        <p><strong>工具，不是理念傳達系統。</strong> LOC 作為模組化語言框架，負責依資料與規則整理、比較、歸納、分析並顯示結果；即使進一步比較不同時期的軌跡與趨勢，也只呈現由已知紀錄可觀察到的未來可能，不主動批判、定義或宣告未來應該是什麼。</p>
+        <p><strong>每個人都有自己的文化定位與未來。</strong> 系統提供可查閱、可比較的結果與參考座標；如何命名、分類、理解與選擇，仍屬於使用者自己的設定與判斷。</p>
         <p><strong>分析不等於命令。</strong> 月之符文保留符文、抽籤與籤詩的文化形式，但結果只是把不確定性整理成可理解、可比較、可選擇的可能；最後決定仍由使用者自己做。</p>
         <p><strong>歷史保留，現行定義優先。</strong> 舊版本、事件與來源保留，但不得因為歷史存在，就把舊名或舊語意重新污染現行 Canon。</p>
         <p><strong>Spec 優先。</strong> 高歧義字詞先界定主體與語意邊界，再進入關鍵詞、方向與延伸說明。</p>
         <p><strong>先治理，再實作。</strong> 語意、分類與顯示規則先確定，再套進資料、Search、Graph、RAG、介面與推演。</p>
+      </section>
+
+      <section className="loc-card" id="temporal-oscillation">
+        <p className="loc-eyebrow">Temporal Oscillation</p><h2>軌跡與擺盪</h2><p className="loc-subtitle">脈絡經過遞迴形成軌跡，軌跡經過時間顯出擺盪</p>
+        <p><strong>過去不可竄改，現在可以重新解析。</strong> 原始紀錄與當時狀態保留；當分類規則、文化座標或治理版本改變，可以用現行規則重新分析同一份歷史資料，但不得覆寫原始來源。</p>
+        <p><strong>現在是一個持續移動的觀測位置。</strong> 同一個詞、分類或文化定位可能在不同時期上升、下降、拆分、合併、反轉或回歸。LOC 記錄不同時間點的結果，觀察變化本身，而不宣告其中某一個位置永遠正確。</p>
+        <p><strong>Oscillation 是軌跡中的可觀察變化。</strong> 遞迴分析既有脈絡，保留各時期的分類與規則版本，讓變化累積成可回查的軌跡；再由軌跡整理過去的趨勢、理解現在的位置，並看見未來可能發展的方向。</p>
+        <p className="loc-core-line">遞迴脈絡分析 → 時間軌跡 → Oscillation → 現在位置 → 未來可能</p>
+      </section>
+
+      <section className="loc-card" id="culture-positioning">
+        <p className="loc-eyebrow">Cultural Positioning</p><h2>文化定位與風格</h2><p className="loc-subtitle">同一套框架，可以使用不同的文化分類標準</p>
+        <p><strong>月之符文是參考實作，不是唯一標準。</strong> 它用一套符號、群組與關鍵詞展示 LOC 如何建立文化定位；相同方法也可以套用在一個人、一套理念、一種作品風格或其他文化分類體系。</p>
+        <p><strong>文化定位來自可治理的設定。</strong> 使用者可以建立自己的關鍵詞、群組與規則，再讓 LOC 對資料進行一致的分類與統計。系統顯示的是依該設定得到的結果，而不是把某一套文化觀點宣告成普遍真理。</p>
+        <p><strong>文化紀錄形成風格軌跡。</strong> 當同一套設定持續作用於不同時期的資料，就可以比較關鍵詞、群組與作品分布的變化，形成可回查的文化紀錄與風格軌跡。</p>
+        <p className="loc-core-line">文化設定 → 資料分類 → 統計比較 → 時期文化 → 歷史軌跡 → 現在觀察 → 未來可能</p>
       </section>
 
       <section className="loc-card" id="classification">
@@ -75,8 +94,8 @@ export default function GovernanceView(){
         <p>治理內容以網站與 machine-readable JSON 為主，不再把一般規則拆成大量 Markdown。需要閱讀完整模型定義時，使用 Canon；需要程式判斷時，使用 Registry / JSON。</p>
         <div className="loc-link-list">
           <a className="loc-link-card" href="/docs/LOC_Canon_1.0.docx"><strong>LOC Canon</strong><span>現行架構、定義與治理基準。</span></a>
-          <a className="loc-link-card" href="/style-groups"><strong>群組設定</strong><span>本機自訂分類規則。</span></a>
-          <a className="loc-link-card" href="/classify"><strong>分類</strong><span>直接測試目前分類規則。</span></a>
+          <a className="loc-link-card" href="/data/loc-governance.json"><strong>Governance Registry</strong><span>頁面、資料、責任與治理入口。</span></a>
+          <a className="loc-link-card" href="/data/loc-module-registry.json"><strong>Module Registry</strong><span>LOC1–LOC8 模組與責任邊界。</span></a>
         </div>
       </section>
     </div>

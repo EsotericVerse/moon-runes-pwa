@@ -5,6 +5,7 @@ import { fetchLocJson, fetchLocJsonBatch, LOC_DATA } from '../loc/data';
 import { deleteLocalRecord, getLocalRecords, putLocalRecord } from '../loc/local-db';
 import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
+import { realMoonPhase } from '../loc/model/moon-phase';
 import { buildRuneGraph, searchRuneGraph } from '../../js/rune-graph-core.js';
 import RuneAtlas from './RuneAtlas';
 
@@ -34,7 +35,6 @@ const RITUAL_MESSAGES={
 function randomInt(max){if(max<=1)return 0;if(globalThis.crypto?.getRandomValues){const limit=Math.floor(0x100000000/max)*max;const value=new Uint32Array(1);do{globalThis.crypto.getRandomValues(value)}while(value[0]>=limit);return value[0]%max;}return Math.floor(Math.random()*max);}
 function sampleUnique(items,count){const pool=[...items];for(let i=pool.length-1;i>0;i--){const j=randomInt(i+1);[pool[i],pool[j]]=[pool[j],pool[i]];}return pool.slice(0,count);}
 function runeCardImage(card){const number=String(Number(card?.編號)||0).padStart(2,'0');const name=String(card?.符文名稱||'').replace(/之符文$/,'').trim();return `/assets/lunarunes/cards/${number}_${name}.png`;}
-function realMoonPhase(date=new Date()){try{const formatter=new Intl.DateTimeFormat('zh-TW-u-ca-chinese',{year:'numeric',month:'numeric',day:'numeric'});const day=Number(formatter.formatToParts(date).find(part=>part.type==='day')?.value);if(day<=7)return '新月';if(day<=14)return '上弦';if(day<=21)return '滿月';if(day<=28)return '下弦';if(day<=30)return '空亡';}catch{}return '未知';}
 function initialMode(){if(typeof window==='undefined')return 'single';const value=new URLSearchParams(window.location.search).get('mode')||'single';return MODES.some(item=>item.key===value)?value:'single';}
 function initialSection(){if(typeof window==='undefined')return 'draw';const hash=window.location.hash.replace(/^#/,'');return ['history','library','reference'].includes(hash)?hash:'draw';}
 function directionText(card,direction){const field=({'正位':'正向表示','半正位':'半正向表示','半逆位':'半逆向表示','逆位':'逆向表示'})[direction];return card?.[field]||'';}
