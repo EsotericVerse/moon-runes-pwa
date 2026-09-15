@@ -1,3 +1,5 @@
+import ModelArchitectureExplorer from './ModelArchitectureExplorer';
+
 const MODEL_MODULES=[
   {
     key:'runes',
@@ -42,27 +44,27 @@ const MODEL_MODULES=[
     href:'/search?q=多媒體'
   },
   {
-    key:'methodology',
-    name:'Methodology',
-    zh:'方法論',
-    summary:'分析座標與判讀程序',
-    detail:'定義分類座標、判讀順序、證據門檻與異議處理；治理是跨資料域套用這些方法的架構能力，而非額外功能模組。',
-    href:'/governance'
-  },
-  {
     key:'algorithm',
     name:'Algorithm',
     zh:'演算法',
-    summary:'可重現處理與知識組合',
-    detail:'把分類、聚合、搜尋、Graph traversal 與符文組合規則封裝為可獨立測試的處理單元；相同輸入、版本與規則產生可重現輸出。KM、RAG 或外部模型只能消費受治理資料與提出衍生結果，不越過 responsibility boundary 回寫 Canon。',
+    summary:'治理、判讀、比較與分類規則',
+    detail:'將治理、理解、判讀、比較、分類與其他規則整理為可重現的處理單元；相同輸入、版本與規則產生可驗證的輸出。',
+    href:'/governance'
+  },
+  {
+    key:'module',
+    name:'Module',
+    zh:'演算模組',
+    summary:'資料、知識與功能封裝',
+    detail:'組合演算法、資料、文字建築、KM、搜尋、RAG、Graph RAG 與功能實作；模組只消費受治理資料並保留來源，不越過 responsibility boundary 回寫 Canon。',
     href:'/search',
     depth:'deep'
   },
   {
-    key:'culture',
-    name:'Culture',
-    zh:'文化',
-    summary:'時間、軌跡與 Oscillation',
+    key:'evolution',
+    name:'Evolution',
+    zh:'推演',
+    summary:'時期、時間線、趨勢與軌跡',
     detail:'把語彙、作品、事件與治理版本重新投影到 ERA／Timeline，比較跨期狀態、Trajectory、Trend 與 Oscillation。此層描述文化累積與往返變化，保留史實、分析與未來推演的證據邊界；流程箭頭本身不代表演化。',
     href:'/evolution',
     depth:'deep'
@@ -104,7 +106,7 @@ export default function AboutView(){
           </div>
         </div>
         <figure className="home-framework-figure">
-          <img src="/pics/LOC-FrameworkPic.png" alt="LOC 框架步驟圖" loading="lazy" />
+          <img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" />
         </figure>
       </div>
     </section>
@@ -213,13 +215,7 @@ export default function AboutView(){
         <p className="loc-subtitle">八個功能模組共享治理邊界，依資料、處理與組合關係協作。</p>
       </div>
       <div className="home-framework-stage" aria-label="LOC 八個功能模組與治理架構">
-        <div className="model-module-grid">
-          {MODEL_MODULES.map(module=><a className={`model-module model-module-${module.key}${module.depth?' is-deep':''}`} href={module.href} key={module.key}>
-            <span className="model-module-name">{module.name}｜{module.zh}</span>
-            <strong>{module.summary}</strong>
-            <p>{module.detail}</p>
-          </a>)}
-        </div>
+        <ModelArchitectureExplorer modules={MODEL_MODULES} />
         <div className="model-relationship" aria-label="架構關係">
           <span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間投影</span>
         </div>

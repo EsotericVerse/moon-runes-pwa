@@ -228,6 +228,7 @@ const expectedPics = new Set([
   'pics/LOC-FrameworkPic.png',
   'pics/LOC-PicAll.png',
   'pics/LOC-structure.png',
+  'pics/LunaRunes.jpg',
   'pics/aboutme.png'
 ]);
 const actualPics = new Set(walkFiles(resolve(publicRoot, 'pics')));
