@@ -1,3 +1,74 @@
+const MODEL_MODULES=[
+  {
+    key:'runes',
+    name:'LunaRunes',
+    zh:'月之符文',
+    summary:'符號語彙與參考實作',
+    detail:'以 Base66 為 Canon 語彙層，將 66 符、九群組、四向、月相、卡位與組合語法分離治理；抽取結果只消費固定定義，不反向改寫母資料。作為 LOC 第一個 Symbolic Language Model reference implementation，驗證語彙可被組合、追溯與重複運算。',
+    href:'/runes',
+    depth:'deep'
+  },
+  {
+    key:'context',
+    name:'Context',
+    zh:'脈絡',
+    summary:'關係、情境與遞迴連結',
+    detail:'以 node／edge、來源與事件識別建立 Graph；跨作品、時期與資料域僅以 reference／consume 關係連結。查詢可由命中內容遞迴展開到原始證據、相鄰節點與其他脈絡，而不複製 Canon 或把推論升格為事實。',
+    href:'/context',
+    depth:'deep'
+  },
+  {
+    key:'music',
+    name:'Music',
+    zh:'音樂',
+    summary:'聲音作品與歌詞語料',
+    detail:'保存作品、歌詞、曲風、時期與來源識別；讓聲音表達可被檢索並與文字、事件及媒體建立受治理的跨域關係。',
+    href:'/search?q=音樂'
+  },
+  {
+    key:'literary',
+    name:'Literary',
+    zh:'文字創作',
+    summary:'原文、版本與敘事資產',
+    detail:'以作品為 canonical owner，區分原稿、公開版本、分析投影與摘要；衍生資料保留 provenance，不取代或靜默覆寫原文。',
+    href:'/search?q=文字創作'
+  },
+  {
+    key:'media',
+    name:'MultiMedia',
+    zh:'多媒體',
+    summary:'跨媒介表達與來源映射',
+    detail:'治理圖像、影音與平台來源，透過穩定識別把同一語意在文字、聲音與畫面間的轉譯關係接回作品層。',
+    href:'/search?q=多媒體'
+  },
+  {
+    key:'methodology',
+    name:'Methodology',
+    zh:'方法論',
+    summary:'分析座標與判讀程序',
+    detail:'定義分類座標、判讀順序、證據門檻與異議處理；治理是跨資料域套用這些方法的架構能力，而非額外功能模組。',
+    href:'/governance'
+  },
+  {
+    key:'algorithm',
+    name:'Algorithm',
+    zh:'演算法',
+    summary:'可重現處理與知識組合',
+    detail:'把分類、聚合、搜尋、Graph traversal 與符文組合規則封裝為可獨立測試的處理單元；相同輸入、版本與規則產生可重現輸出。KM、RAG 或外部模型只能消費受治理資料與提出衍生結果，不越過 responsibility boundary 回寫 Canon。',
+    href:'/search',
+    depth:'deep'
+  },
+  {
+    key:'culture',
+    name:'Culture',
+    zh:'文化',
+    summary:'時間、軌跡與 Oscillation',
+    detail:'把語彙、作品、事件與治理版本重新投影到 ERA／Timeline，比較跨期狀態、Trajectory、Trend 與 Oscillation。此層描述文化累積與往返變化，保留史實、分析與未來推演的證據邊界；流程箭頭本身不代表演化。',
+    href:'/evolution',
+    depth:'deep'
+  }
+];
+
 export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero">
@@ -137,12 +208,34 @@ export default function AboutView(){
 
     <section className="loc-card home-framework" id="framework-map">
 	  <div className="home-section-heading">
-        <p className="loc-eyebrow">LOC Structure</p>
-        <h2>月典架構圖</h2>
-        <p className="loc-subtitle">月典各模組架構圖。以此架構來讓已知語言分類處置。</p>
+        <p className="loc-eyebrow">LOC Model Architecture</p>
+        <h2>LOC Model Architecture｜月典模型架構</h2>
+        <p className="loc-subtitle">八個功能模組共享治理邊界，依資料、處理與組合關係協作。</p>
       </div>
-      <div className="home-framework-stage">
-        <img src="/pics/LOC-structure.png" alt="月典架構圖" loading="lazy" />
+      <div className="home-framework-stage" aria-label="LOC 八個功能模組與治理架構">
+        <div className="model-module-grid">
+          {MODEL_MODULES.map(module=><a className={`model-module model-module-${module.key}${module.depth?' is-deep':''}`} href={module.href} key={module.key}>
+            <span className="model-module-name">{module.name}｜{module.zh}</span>
+            <strong>{module.summary}</strong>
+            <p>{module.detail}</p>
+          </a>)}
+        </div>
+        <div className="model-relationship" aria-label="架構關係">
+          <span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間投影</span>
+        </div>
+        <aside className="model-governance-layer">
+          <div>
+            <span className="model-governance-kicker">Governance｜治理架構層</span>
+            <strong>Identity · Schema · Ownership · Provenance · Versioning · Permission</strong>
+            <p>Canon／Base66、來源紀錄、Registry 與衍生 View 各自保有權責；跨模組以資料契約交換，遞迴分析只新增可追溯關係，不覆寫上游事實。</p>
+          </div>
+          <dl className="model-engineering-evidence" aria-label="目前 repository 工程治理證據">
+            <div><dt>20</dt><dd>Next.js routes</dd></div>
+            <div><dt>10</dt><dd>lazy-loaded feature views</dd></div>
+            <div><dt>27</dt><dd>central data-path contracts</dd></div>
+            <div><dt>11</dt><dd>verification commands</dd></div>
+          </dl>
+        </aside>
       </div>
     </section>
 
