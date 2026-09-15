@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { deleteLocalRecord, getLocalRecords } from '../../loc/local-db';
 
+const PAGE_SIZE=20;
+
 function formatTime(value){
   try{return new Intl.DateTimeFormat('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(value));}
   catch{return String(value||'—');}
@@ -12,6 +14,7 @@ export default function HistoryClient(){
   const [records,setRecords]=useState([]);
   const [status,setStatus]=useState('載入本機抽籤紀錄中…');
   const [filter,setFilter]=useState('all');
+  const [page,setPage]=useState(1);
 
   async function reload(){
     try{
@@ -23,7 +26,12 @@ export default function HistoryClient(){
 
   useEffect(()=>{reload();},[]);
 
-  const visible=useMemo(()=>records.filter(record=>filter==='all'||record.record_kind===filter),[records,filter]);
+  const filtered=useMemo(()=>records.filter(record=>filter==='all'||record.record_kind===filter),[records,filter]);
+  const pageCount=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
+  const visible=useMemo(()=>filtered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE),[filtered,page]);
+
+  useEffect(()=>{setPage(1);},[filter]);
+  useEffect(()=>{setPage(current=>Math.min(current,pageCount));},[pageCount]);
 
   async function remove(id){
     try{await deleteLocalRecord(id);await reload();}
@@ -52,7 +60,12 @@ export default function HistoryClient(){
           <div className="loc-actions"><button type="button" className="loc-button" onClick={()=>remove(record.id)}>刪除這筆</button></div>
         </article>)}
       </div>
-      {!status&&!visible.length?<p className="loc-note">這個分類目前沒有紀錄。</p>:null}
+      {!status&&!filtered.length?<p className="loc-note">這個分類目前沒有紀錄。</p>:null}
+      {filtered.length>PAGE_SIZE?<div className="runes-pager" aria-label="抽籤紀錄分頁">
+        <button type="button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button>
+        <span>{page} / {pageCount} · 每頁 {PAGE_SIZE} 筆</span>
+        <button type="button" disabled={page>=pageCount} onClick={()=>setPage(value=>Math.min(pageCount,value+1))}>下一頁</button>
+      </div>:null}
     </section>
   </section>;
 }

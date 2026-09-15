@@ -239,7 +239,7 @@ export default function RuneDrawClient() {
     }
   }
 
-  return <main className="loc-next-main">
+  return <div className="runes-draw-surface">
     <section className="loc-view">
       <header className="loc-hero" id="intro">
         <p className="loc-eyebrow">LunaRunes · 月之符文</p>
@@ -308,5 +308,5 @@ export default function RuneDrawClient() {
         </section>
       </>}
     </section>
-  </main>;
+  </div>;
 }

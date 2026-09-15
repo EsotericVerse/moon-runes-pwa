@@ -52,18 +52,20 @@ requireText('app/GlobalFooter.jsx', [
 ]);
 
 requireText('app/runes/page.jsx', [
-  'RUNES_HOME_CONTENT', 'id="runes-relation"', 'id="runes-modes"', 'id="runes-reference"',
+  'RUNES_HOME_CONTENT', '<main className="loc-next-main">', 'id="runes-relation"', 'id="runes-modes"', 'id="runes-reference"',
   'href="#draw"', 'href="/runes/list"', 'href="/runes/history"', '<RuneDrawClient/>'
 ]);
 requireText('app/runes/RuneDrawClient.jsx', [
-  "key: 'daily'", "key: 'ow3gs'", 'realMoonPhase', '每日占卜提醒',
+  "key: 'daily'", "key: 'ow3gs'", '<div className="runes-draw-surface">', 'realMoonPhase', '每日占卜提醒',
   '因 → 果', '源 → 轉 → 合', '時間主線 × 內外作用', '第 7–11 張為核心判定'
 ]);
+requireText('app/runes/home-content.js', ['?mode=single#draw', '?mode=daily#draw', '?mode=ow3gs#draw']);
+requireText('app/runes/history/HistoryClient.jsx', ['const PAGE_SIZE=20', 'filtered.slice', '抽籤紀錄分頁']);
 requireText('app/loc/model/moon-phase.js', [
   'day >= 1 && day <= 7', "return '新月'", "return '上弦'", "return '滿月'", "return '下弦'", "return '空亡'"
 ]);
 requireText('docs/LOC_Canon_1.1.md', ['「卡片月相」與「真實月相」是兩個不同欄位', '29–30 日空亡']);
-requireText('scripts/prepare-next-public.mjs', ["'pics'", "'LunarRunesCardCut.pdf'"]);
+requireText('scripts/prepare-next-public.mjs', ['PUBLIC_PICS', "'LunarRunesCardCut.pdf'"]);
 requireText('scripts/verify-public-payload.mjs', ['pics/LOC-FrameworkPic.png', 'pics/LOC-structure.png', 'LunarRunesCardCut.pdf']);
 
 if (failures.length) {

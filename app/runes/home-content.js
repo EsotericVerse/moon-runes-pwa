@@ -19,12 +19,12 @@ export const RUNES_HOME_CONTENT = {
     title: '抽牌方式一次展開',
     subtitle: '每個模式先說用途，直接選擇，不用先讀一整段規則。',
     highlights: [
-      { label: '單卡', text: '看一個核心焦點。', href: '/runes?mode=single' },
-      { label: '每日', text: '以今天為單位，作為日常的一張指示。', href: '/runes?mode=daily' },
-      { label: '雙卡', text: '以「因 → 果」觀察兩者關係。', href: '/runes?mode=2card' },
-      { label: '三卡', text: '以「源 → 轉 → 合」觀察基本結構。', href: '/runes?mode=3card' },
-      { label: '五卡', text: '展開過去、現在、未來與內外狀態。', href: '/runes?mode=5card' },
-      { label: '11 卡 OW3gs', text: '用較完整的結構觀察事件描述與核心判定。', href: '/runes?mode=ow3gs' }
+      { label: '單卡', text: '看一個核心焦點。', href: '/runes?mode=single#draw' },
+      { label: '每日', text: '以今天為單位，作為日常的一張指示。', href: '/runes?mode=daily#draw' },
+      { label: '雙卡', text: '以「因 → 果」觀察兩者關係。', href: '/runes?mode=2card#draw' },
+      { label: '三卡', text: '以「源 → 轉 → 合」觀察基本結構。', href: '/runes?mode=3card#draw' },
+      { label: '五卡', text: '展開過去、現在、未來與內外狀態。', href: '/runes?mode=5card#draw' },
+      { label: '11 卡 OW3gs', text: '用較完整的結構觀察事件描述與核心判定。', href: '/runes?mode=ow3gs#draw' }
     ],
     paragraphs: [
       '不需要先學會全部符文。依照想觀察的範圍，直接選擇需要的卡數即可。',

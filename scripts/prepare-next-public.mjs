@@ -7,6 +7,12 @@ import { buildSegmentCatalog } from './partition-catalog.mjs';
 const ROOT = process.cwd();
 const PUBLIC = path.join(ROOT, 'public');
 const MAX_ROUTING_INDEX_SEGMENTS_PER_KEY = 24;
+const PUBLIC_PICS = [
+  '01.soul.jpg', '02_connection.jpg', '03_life.jpg', '04_nature.jpg',
+  '05_mineral.jpg', '06_element.jpg', '07_order.jpg', '08_disorder.jpg',
+  '09_specia.jpg', 'LOC-FrameworkPic.png', 'LOC-PicAll.png',
+  'LOC-structure.png', 'aboutme.png'
+];
 
 const normalize = value => String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');
 const dataTier = rel => normalize(rel).startsWith('data/json/core/') ? 'core' : 'on-demand';
@@ -154,10 +160,11 @@ await rm(PUBLIC, { recursive: true, force: true });
 await mkdir(PUBLIC, { recursive: true });
 
 for (const rel of [
-  'assets/lunarunes/cards', 'assets/lunarunes/reference', 'assets/site/diagrams', 'assets/site/icons', 'pics',
+  'assets/lunarunes/cards', 'assets/lunarunes/reference', 'assets/site/diagrams', 'assets/site/icons',
   'data/html/runes-beginner.html', 'docs/LOC_Canon_1.0.docx', 'LunarRunesCardCut.pdf',
   'apple-touch-icon.png', 'favicon.ico', 'manifest.json', 'CNAME'
 ]) await copyPath(rel);
+for (const name of PUBLIC_PICS) await copyPath(`pics/${name}`);
 
 const jsonFiles = new Set(Object.values(LOC_DATA).map(normalize).filter(rel => rel.startsWith('data/json/')));
 for (const manifestPath of [LOC_DATA.TEXT_CORPUS_MANIFEST, LOC_DATA.MUSIC_SEARCH_MANIFEST]) {

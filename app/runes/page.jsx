@@ -55,11 +55,11 @@ function RunesIntro() {
 }
 
 export default function RunesPage() {
-  return <>
+  return <main className="loc-next-main">
     <RunesIntro />
     <nav className="loc-card runes-function-nav" aria-label="月之符文功能入口">
       <a href="#draw">抽牌</a> · <a href="/runes/list">符文圖鑑</a> · <a href="/game">遊戲</a> · <a href="/context">符文脈絡</a> · <a href="/statics">符文統計</a> · <a href="/evolution">符文文化</a> · <a href="/runes/history">抽籤紀錄</a>
     </nav>
     <RuneDrawClient/>
-  </>;
+  </main>;
 }
