@@ -211,27 +211,14 @@ export default function AboutView(){
     <section className="loc-card home-framework" id="framework-map">
 	  <div className="home-section-heading">
         <p className="loc-eyebrow">LOC Model Architecture</p>
-        <h2>LOC Model Architecture｜月典模型架構</h2>
+        <h2>月典模型架構</h2>
         <p className="loc-subtitle">八個功能模組共享治理邊界，依資料、處理與組合關係協作。</p>
       </div>
-      <div className="home-framework-stage" aria-label="LOC 八個功能模組與治理架構">
+      <div className="home-framework-stage" aria-label="LOC 八個功能模組架構">
         <ModelArchitectureExplorer modules={MODEL_MODULES} />
         <div className="model-relationship" aria-label="架構關係">
           <span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間投影</span>
         </div>
-        <aside className="model-governance-layer">
-          <div>
-            <span className="model-governance-kicker">Governance｜治理架構層</span>
-            <strong>Identity · Schema · Ownership · Provenance · Versioning · Permission</strong>
-            <p>Canon／Base66、來源紀錄、Registry 與衍生 View 各自保有權責；跨模組以資料契約交換，遞迴分析只新增可追溯關係，不覆寫上游事實。</p>
-          </div>
-          <dl className="model-engineering-evidence" aria-label="目前 repository 工程治理證據">
-            <div><dt>20</dt><dd>Next.js routes</dd></div>
-            <div><dt>10</dt><dd>lazy-loaded feature views</dd></div>
-            <div><dt>27</dt><dd>central data-path contracts</dd></div>
-            <div><dt>11</dt><dd>verification commands</dd></div>
-          </dl>
-        </aside>
       </div>
     </section>
 
