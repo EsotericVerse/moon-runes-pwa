@@ -1,3 +1,5 @@
+// Invoked by npm run verify:ui within the verified Next build.
+// These source-text checks do not replace browser or deployment health checks.
 import fs from 'node:fs';
 const home=fs.readFileSync('app/loc/views/AboutView.jsx','utf8');
 const nav=fs.readFileSync('app/GlobalNav.jsx','utf8');
