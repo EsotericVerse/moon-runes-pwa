@@ -5,6 +5,7 @@ import { fetchLocJsonBatch, LOC_DATA } from '../loc/data';
 import { putLocalRecord } from '../loc/local-db';
 import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
+import { realMoonPhase } from '../loc/model/moon-phase';
 
 const DIRECTIONS = ['正位', '半正位', '半逆位', '逆位'];
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
@@ -51,19 +52,6 @@ function runeCardImage(card) {
   const number = String(Number(card?.編號) || 0).padStart(2, '0');
   const name = String(card?.符文名稱 || '').replace(/之符文$/, '').trim();
   return `/assets/lunarunes/cards/${number}_${name}.png`;
-}
-
-function realMoonPhase(date = new Date()) {
-  // Astronomical synodic-month estimate anchored to the known 2000-01-06 new moon.
-  const anchor = Date.UTC(2000, 0, 6, 18, 14, 0);
-  const synodicDays = 29.530588853;
-  const age = ((date.getTime() - anchor) / 86400000) % synodicDays;
-  const normalizedAge = age < 0 ? age + synodicDays : age;
-  if (normalizedAge < 7.3826) return '新月';
-  if (normalizedAge < 14.7653) return '上弦';
-  if (normalizedAge < 22.1479) return '滿月';
-  if (normalizedAge < 29.5306) return '下弦';
-  return '空亡';
 }
 
 function initialMode() {
@@ -251,7 +239,7 @@ export default function RuneDrawClient() {
     }
   }
 
-  return <main className="loc-next-main">
+  return <div className="runes-draw-surface">
     <section className="loc-view">
       <header className="loc-hero" id="intro">
         <p className="loc-eyebrow">LunaRunes · 月之符文</p>
@@ -320,5 +308,5 @@ export default function RuneDrawClient() {
         </section>
       </>}
     </section>
-  </main>;
+  </div>;
 }

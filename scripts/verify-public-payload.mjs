@@ -228,9 +228,7 @@ const expectedPics = new Set([
   'pics/LOC-FrameworkPic.png',
   'pics/LOC-PicAll.png',
   'pics/LOC-structure.png',
-  'pics/LunaRunes.jpg',
-  'pics/aboutme.png',
-  'pics/loc_runes_66_overview.jpg'
+  'pics/aboutme.png'
 ]);
 const actualPics = new Set(walkFiles(resolve(publicRoot, 'pics')));
 for (const path of expectedPics) if (!actualPics.has(path)) failures.push(`missing staged pic: ${path}`);
