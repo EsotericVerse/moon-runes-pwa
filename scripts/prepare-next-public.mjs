@@ -11,7 +11,7 @@ const PUBLIC_PICS = [
   '01.soul.jpg', '02_connection.jpg', '03_life.jpg', '04_nature.jpg',
   '05_mineral.jpg', '06_element.jpg', '07_order.jpg', '08_disorder.jpg',
   '09_specia.jpg', 'LOC-FrameworkPic.png', 'LOC-PicAll.png',
-  'LOC-structure.png', 'aboutme.png'
+  'LOC-structure.png', 'LunaRunes.jpg', 'aboutme.png'
 ];
 
 const normalize = value => String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');

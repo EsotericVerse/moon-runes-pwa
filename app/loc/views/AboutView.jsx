@@ -104,7 +104,7 @@ export default function AboutView(){
           </div>
         </div>
         <figure className="home-framework-figure">
-          <img src="/pics/LOC-FrameworkPic.png" alt="LOC 框架步驟圖" loading="lazy" />
+          <img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" />
         </figure>
       </div>
     </section>
@@ -213,6 +213,9 @@ export default function AboutView(){
         <p className="loc-subtitle">八個功能模組共享治理邊界，依資料、處理與組合關係協作。</p>
       </div>
       <div className="home-framework-stage" aria-label="LOC 八個功能模組與治理架構">
+        <figure className="model-architecture-figure">
+          <img src="/pics/LOC-FrameworkPic.png" alt="LOC 月典語言系統框架關係流程圖" loading="lazy" />
+        </figure>
         <div className="model-module-grid">
           {MODEL_MODULES.map(module=><a className={`model-module model-module-${module.key}${module.depth?' is-deep':''}`} href={module.href} key={module.key}>
             <span className="model-module-name">{module.name}｜{module.zh}</span>

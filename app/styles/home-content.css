@@ -103,6 +103,18 @@
     radial-gradient(circle at 88% 20%,var(--loc-accent-surface-strong),transparent 32%),
     var(--loc-surface-soft);
 }
+.model-architecture-figure{
+  margin:0 0 1rem;
+  overflow:hidden;
+  border:1px solid var(--loc-line);
+  border-radius:var(--loc-radius-sm);
+  background:var(--loc-panel-strong);
+}
+.model-architecture-figure img{
+  display:block;
+  width:100%;
+  height:auto;
+}
 .model-module-grid{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));

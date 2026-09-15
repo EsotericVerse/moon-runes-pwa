@@ -29,7 +29,9 @@ requireText('app/loc/views/AboutView.jsx', [
   '<a className="loc-bubble" href="/runes?mode=3card">抽三張</a>',
   '<a className="loc-bubble" href="/runes?mode=5card">抽五張</a>',
   '<a className="loc-bubble" href="/runes?mode=ow3gs">抽11張</a>',
+  '<img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" />',
   '<h2>LOC Model Architecture｜月典模型架構</h2>',
+  '<img src="/pics/LOC-FrameworkPic.png" alt="LOC 月典語言系統框架關係流程圖" loading="lazy" />',
   'Governance｜治理架構層',
   'Base66'
 ]);
