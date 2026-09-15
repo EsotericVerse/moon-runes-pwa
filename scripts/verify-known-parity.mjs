@@ -31,9 +31,13 @@ requireText('app/loc/views/AboutView.jsx', [
   '<a className="loc-bubble" href="/runes?mode=ow3gs">抽11張</a>',
   '<img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" />',
   '<h2>LOC Model Architecture｜月典模型架構</h2>',
-  '<img src="/pics/LOC-FrameworkPic.png" alt="LOC 月典語言系統框架關係流程圖" loading="lazy" />',
+  '<ModelArchitectureExplorer modules={MODEL_MODULES} />',
   'Governance｜治理架構層',
   'Base66'
+]);
+requireText('app/loc/views/ModelArchitectureExplorer.jsx', [
+  "'use client'", 'aria-expanded={expanded}', '點圖展開八個模組',
+  'model-module-overlay', 'LOC 八個功能模組選單', '關閉八個模組選單'
 ]);
 
 requireText('app/GlobalNav.jsx', [
