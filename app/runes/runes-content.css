@@ -17,6 +17,8 @@
 .runes-description strong{font-weight:800;color:var(--loc-text)}
 .runes-home-note{padding:.7rem .8rem;border-left:3px solid var(--loc-gold);background:var(--loc-surface-soft)}
 .runes-home-note strong{display:inline;font-weight:800;color:var(--loc-text)}
-.runes-function-nav{margin-top:1rem}
+.runes-function-nav{display:flex;flex-wrap:wrap;gap:.45rem .75rem;margin-top:1rem}
+.runes-function-nav a{font-weight:700}
+.runes-function-nav+.loc-next-main .loc-hero{display:none}
 @media(max-width:900px){.runes-highlight-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.runes-highlight-grid{grid-template-columns:1fr}.runes-content-section{gap:1rem}.runes-highlight-bubble{padding:.8rem}.runes-description p{font-size:.93rem;line-height:1.78}}
