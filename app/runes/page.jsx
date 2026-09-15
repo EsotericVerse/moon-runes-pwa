@@ -25,7 +25,7 @@ function HighlightGrid({ items, label }) {
 function ContentSection({ data, level = 2, id }) {
   const Heading = level === 1 ? 'h1' : 'h2';
   const headingId = `${id}-title`;
-  return <section className="loc-card runes-content-section" aria-labelledby={headingId}>
+  return <section className="loc-card runes-content-section" id={id} aria-labelledby={headingId}>
     <div className="runes-content-heading">
       <p className="loc-eyebrow">{data.eyebrow}</p>
       <Heading id={headingId}>{data.title}</Heading>
@@ -58,7 +58,7 @@ export default function RunesPage() {
   return <>
     <RunesIntro />
     <nav className="loc-card runes-function-nav" aria-label="月之符文功能入口">
-      <a href="/runes">抽牌</a> · <a href="/runes/list">所有符文列表</a> · <a href="/runes/history">抽籤紀錄</a>
+      <a href="#draw">抽牌</a> · <a href="/runes/list">符文圖鑑</a> · <a href="/game">遊戲</a> · <a href="/context">符文脈絡</a> · <a href="/statics">符文統計</a> · <a href="/evolution">符文文化</a> · <a href="/runes/history">抽籤紀錄</a>
     </nav>
     <RuneDrawClient/>
   </>;
