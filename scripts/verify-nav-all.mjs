@@ -13,3 +13,4 @@ import './nav-current-contract-check.mjs';
 import './nav-minimal-invariants-check.mjs';
 import './nav-contract-version-check.mjs';
 import './nav-regression-summary-check.mjs';
+import './nav-scope-registry-check.mjs';
