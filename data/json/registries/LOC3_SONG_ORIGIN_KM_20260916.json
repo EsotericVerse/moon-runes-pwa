@@ -1,0 +1,62 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC3_SONG_ORIGIN_KM_20260916",
+  "purpose": "Preserve recent song creation pairs as two distinct but linked records: the author's original outline/real wording and the generated song lyrics. The two layers must never be collapsed because the outline is authored source text while the lyrics are a transformed creative work.",
+  "governance": {
+    "pairing_rule": "Each song has exactly one author_source_text record and one generated_lyrics record in this capture.",
+    "ownership_rule": "author_source_text is raw authored text and belongs to LOC4 provenance; generated_lyrics is a lyrics_work and belongs to LOC3. KM/Search/Graph may index both while preserving ownership and relation.",
+    "display_rule": "Do not replace the author's source wording with the generated lyrics, and do not treat the generated lyrics as the author's verbatim original text.",
+    "link_status": "Suno URLs may be added later; missing links must not block KM capture."
+  },
+  "period": "P8",
+  "era_id": "ERA-P8",
+  "era_name": "自由的月",
+  "creative_stage": "治理自己",
+  "playlist": "6.治理自己",
+  "songs": [
+    {
+      "pair_id": "SONGPAIR-20260916-01",
+      "title": "先替明天備戰",
+      "created_date": "2026-09-16",
+      "author_source_text": {
+        "record_id": "LOC4-SOURCE-20260916-01",
+        "content_type": "text_record",
+        "primary_loc": "LOC4",
+        "source_role": "author_original_outline",
+        "text": "再一首，這首會著重在憂鬱的狀態以及最後崛起的希望。大綱：又是沒有緣由的心情低落，別人總說要想開，但腦中血清素不夠自然就會產生難過，無法抗拒而必須被強迫接受。我也想要能夠振作，我也不想要生病，但病徵就是這樣出現了，我也想要好好的過自己生活，但它卻依舊進跟著我不放。我猶豫躊躇，拼命內耗，一步也無法往前，只有腦中不知道從何想起的異音，告訴我不該這樣，但我知道我不喜歡這樣，我想要他們早點離開。終於努力撐過，睡了各好覺平復心情，如果這樣的征戰用無止盡，我只能拼命的先做好準備。"
+      },
+      "generated_lyrics": {
+        "record_id": "LOC3-LYRICS-20260916-01",
+        "content_type": "lyrics_work",
+        "primary_loc": "LOC3",
+        "title": "先替明天備戰",
+        "lyrics": "【Verse 1】\n又是沒有理由的低落\n早晨醒來天空沒錯\n窗外一切照常運作\n只有心像突然墜落\n\n別人總說　想開一點\n好像一句就能改變\n可腦中像少了某種訊號\n悲傷自己漫過界線\n\n我也想笑　我也想走\n我也不想困在裡頭\n不是故意把自己關住\n只是身體先按下停留\n\n【Pre-Chorus】\n我知道陽光還在外面\n我知道日子還會向前\n可是知道和做到之間\n今晚隔著好遠好遠\n\n【Chorus 1】\n我也想要振作起來\n我也想好好過我的現在\n可是那些病徵沒有問我\n就突然闖進腦海\n\n它跟著我　不肯離開\n把每一步都變得好難\n我拼命告訴自己再走一步\n雙腳卻像沉進深海\n\n不是我選擇了悲傷\n是悲傷今天選中了我\n所以若我只能先撐著\n那就撐過這一刻再說\n\n【Verse 2】\n猶豫　躊躇　反覆思量\n每個念頭互相碰撞\n明明只是很小的選擇\n卻能耗掉整晚時光\n\n一步都還沒有走出去\n心裡已經跑了千里\n那些不知道從哪裡冒出的異音\n又開始擾亂呼吸\n\n它們說著不該這樣\n不該停下　不該迷惘\n可是我比誰都更清楚\n我也不喜歡現在模樣\n\n【Rap】\n我知道　我知道\n不用再提醒我做到\n如果能靠一句加油\n誰會願意困在低潮\n\n我不想病\n我也不想逃\n我也想每天正常起床\n吃飯工作然後睡好\n\n可有時候腦袋突然失速\n所有出口一起模糊\n一句話能轉十幾個彎\n最後全部變成自我衝突\n\n停\n再停\n再停一下\n\n不是投降\n只是現在真的走不動啦\n\n那些異音拜託早點散場\n讓房間重新恢復安詳\n我只想把自己的腦袋\n還給一個普通的晚上\n\n【Bridge】\n後來我終於睡了一覺\n醒來天色沒有那麼糟\n胸口那塊沉重的石頭\n似乎也稍微變小\n\n沒有奇蹟\n沒有煙火\n我只是終於能夠呼吸了\n\n原來撐過一個晚上\n有時也值得替自己記得\n\n【Chorus 2】\n如果這場征戰還會再來\n我就先替明天做好安排\n把能依靠的東西放近一點\n把出口一個一個留下來\n\n我知道低潮可能重返\n也知道自己還會害怕\n但這一次我已經知道\n黑夜不一定就是回答\n\n不能前進就先休息\n不能奔跑就慢慢站起\n如果今天只能活到今天\n那今天就已經值得珍惜\n\n我不需要一次戰勝所有\n也不用證明自己多勇敢\n只要下一次風暴來以前\n我比昨天多準備一點答案\n\n【Final Chorus】\n所以來吧\n如果你還會來\n\n我不保證\n每一次都能很快站起來\n\n可是我會記得\n我曾經走出這片陰霾\n\n會睡覺\n會等待\n會替自己留下能呼吸的窗台\n\n那些聲音終究不是全部的我\n那些低落也不能替我決定未來\n\n如果征戰真的沒有終點\n那我就一天一天——\n把自己帶回來\n\n【Outro】\n今晚先睡吧\n\n剩下的仗\n明天再打\n\n如果明天又下雨\n至少我已經知道——\n\n雨會來\n也會停"
+      },
+      "meta_tags": ["政德風","自由的月","治理自己","憂鬱","低潮","內耗","異音","休息","備戰","希望轉折","自我治理","復原","夢幻流行","另類流行","電影感合成搖滾","男聲A3-D4","雙副歌","Rap"],
+      "suno_url": null
+    },
+    {
+      "pair_id": "SONGPAIR-20260916-02",
+      "title": "海市蜃樓之外",
+      "created_date": "2026-09-16",
+      "author_source_text": {
+        "record_id": "LOC4-SOURCE-20260916-02",
+        "content_type": "text_record",
+        "primary_loc": "LOC4",
+        "source_role": "author_original_outline",
+        "text": "再一首，描述妄想症，但重點讓在於最後的希望轉折，大綱：我知道有些夢，努力久了終將實現只是慢了些，我知道某些結果不是期待就會實現，但總是有不切實際的想過，若這些事情真的成真，又會是如何呈現。所以我踏入了幻想的海市蜃樓，不自覺的去想成真以後，卻忘記現在的狀態不夠，而好高騖遠的越想越多。該停下了，人總要認清楚現實，不是夢想一定不能實現，我允許未來是不確定的，不是一定好或不好，也不是一切可能或不可能，只要保持信心自會分曉，而不是將時間耗在內耗。所以沒必要現在去確認什麼，很多事情終究會來只是早晚，利於我者必利於我，很多時候失去本身也是一種獲得。"
+      },
+      "generated_lyrics": {
+        "record_id": "LOC3-LYRICS-20260916-02",
+        "content_type": "lyrics_work",
+        "primary_loc": "LOC3",
+        "title": "海市蜃樓之外",
+        "lyrics": "【Verse 1】\n我知道有些夢走得很慢\n走得夠久也可能抵達彼岸\n我也知道不是每個期盼\n最後都會照著想像展開\n\n可我還是偷偷想過幾萬遍\n如果那一天真的突然出現\n會是什麼聲音　什麼畫面\n誰站在身邊　誰看著我的臉\n\n只是想著想著越走越遠\n還沒發生就寫好了明天\n把一點可能放大成世界\n忘了現在還站在起點\n\n【Pre-Chorus】\n夢沒有錯\n希望也沒有錯\n\n錯的是我太急著\n替未來寫下結果\n\n【Chorus 1】\n我走進海市蜃樓裡面\n把還沒發生的事看得太真切\n一層一層堆高了想念\n卻忘了腳下還需要時間\n\n不是夢想不能實現\n只是現在不必急著兌現\n未來可以好　也可以改變\n它本來就沒有義務提前揭曉答案\n\n所以停一下\n看清眼前\n別讓想像耗盡今天\n\n【Verse 2】\n我曾把每個細小徵兆\n拼成自己期待的記號\n越想越多　越走越高\n最後連地面都快看不到\n\n不是世界一定會照我想\n也不是希望全部都荒唐\n有些事情只是還不知道\n有些答案本來就需要成長\n\n人總要認清現在位置\n才能知道下一步怎麼開始\n不是把夢砍掉才叫理智\n而是讓夢和現實保持距離\n\n【Rap】\n不用現在確認\n不用現在證明\n不用把每個可能\n都逼成某種注定\n\n不是一定成功\n也不是一定失去\n不是所有門都會打開\n也不是所有路都封閉\n\n我允許未知\n我允許遲疑\n我允許明天跟今天想得不一樣也可以\n\n少一點預演\n少一點內耗\n把力氣留給真正能做得到\n\n今天能走一步\n那就走一步\n今天只能停著\n也不用急著認輸\n\n真正適合我的\n會慢慢留下痕跡\n失去若讓我看懂方向\n它也可能換一種方式成為獲益\n\n【Bridge】\n所以不必現在知道\n哪一扇門最後會開\n也不必替還沒發生的故事\n預先歡喜　預先悲哀\n\n信心不是篤定答案\n而是答案未明仍願意走下來\n\n【Chorus 2】\n我走出海市蜃樓外面\n重新看看腳下真正的世界\n遠方還在　夢也沒有熄滅\n只是不用今天就抵達終點\n\n未來可以好　也可以改變\n有些事情來得早　有些晚一些\n不用把「可能」說成「一定」\n也不用因為未知就先否定明天\n\n我只需要守住現在\n把能做的事情做好一點\n真正的答案交給時間\n它終究會慢慢浮出水面\n\n【Final Chorus】\n所以我不再追著幻影跑\n也不再逼著未來立刻報到\n有些得到要等很久\n有些失去反而替我清掉舊航道\n\n我還是相信遠方\n只是學會不替遠方說謊\n不提前宣布成功\n也不提前宣判失望\n\n今天就走今天的路\n明天自然會有明天的光\n\n夢可以留著\n心也可以亮著\n\n只是雙腳——\n要踩在地上\n\n【Outro】\n海市蜃樓還在遠方\n\n我看見了\n卻不再追趕\n\n如果有一天\n它真的成為風景\n\n那時候\n我自然會知道"
+      },
+      "meta_tags": ["政德風","自由的月","治理自己","妄想","幻想","海市蜃樓","現實校準","未知","信心","內耗","失去也是獲得","利於我者必利於我","希望轉折","自我治理","藝術流行","夢幻流行","電影感合成搖滾","男聲A3-D4","雙副歌","Rap"],
+      "suno_url": null
+    }
+  ],
+  "updated_at": "2026-09-16",
+  "authority_domain": "music_and_authored_source_provenance"
+}
