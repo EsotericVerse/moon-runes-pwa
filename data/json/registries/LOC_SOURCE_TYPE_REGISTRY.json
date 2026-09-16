@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "registry": "LOC_SOURCE_TYPE_REGISTRY",
   "authority": "LOC8",
   "purpose": "Normalize source_refs/provenance source types across LOC1-8.",
@@ -49,6 +49,14 @@
       "label": "外部平台"
     },
     {
+      "id": "live_snapshot",
+      "label": "即時公開來源快照"
+    },
+    {
+      "id": "backup_export",
+      "label": "平台備份匯出"
+    },
+    {
       "id": "offline_archive",
       "label": "已關站平台離線史料"
     },
@@ -65,10 +73,23 @@
       "label": "Instagram"
     },
     {
+      "id": "threads",
+      "label": "Threads"
+    },
+    {
+      "id": "facebook",
+      "label": "Facebook"
+    },
+    {
       "id": "youtube",
       "label": "YouTube"
+    },
+    {
+      "id": "x",
+      "label": "X"
     }
   ],
-  "rule": "source_type identifies provenance channel only; it does not determine authorship, ownership, or trust by itself.",
-  "authority_domain": "evolution"
+  "rule": "source_type identifies provenance channel only; it does not determine authorship, ownership, trust, LOC ownership, or search eligibility by itself.",
+  "sync_policy": "data/json/registries/LOC_SOURCE_SYNC_POLICY.json",
+  "authority_domain": "culture"
 }

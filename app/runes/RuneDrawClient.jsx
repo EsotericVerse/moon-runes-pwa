@@ -39,13 +39,26 @@ function randomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
-function sampleUnique(items, count) {
-  const pool = [...items];
-  for (let i = pool.length - 1; i > 0; i -= 1) {
-    const j = randomInt(i + 1);
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+// RUNE_DRAW_ALGORITHM_INVARIANT — DO NOT OPTIMIZE INTO SHUFFLE/BATCH RANDOM.
+// Drawing N runes means exactly N independent rune-selection calls. Each call
+// decides only the current card; that card is removed before the next call.
+// This is sequential sampling without replacement, so duplicates are impossible
+// without retry/random-call inflation. Direction randomization is a separate domain.
+function drawRunesSequentially(items, count, selectIndex = randomInt) {
+  if (!Number.isInteger(count) || count < 0 || count > items.length) {
+    throw new Error(`無效的抽牌數量：${count}`);
   }
-  return pool.slice(0, count);
+  const pool = [...items];
+  const selected = [];
+  for (let drawIndex = 0; drawIndex < count; drawIndex += 1) {
+    const index = selectIndex(pool.length);
+    if (!Number.isInteger(index) || index < 0 || index >= pool.length) {
+      throw new Error(`第 ${drawIndex + 1} 次符文亂數超出候選池範圍。`);
+    }
+    const [card] = pool.splice(index, 1);
+    selected.push(card);
+  }
+  return selected;
 }
 
 function runeCardImage(card) {
@@ -176,7 +189,7 @@ export default function RuneDrawClient() {
       if (!data?.runes?.length) throw new Error('符文資料尚未載入完成。');
       if (data.runes.length < selectedMode.count) throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);
       if (modeKey === 'daily' && !interpretations.length) throw new Error('每日符文解讀資料尚未載入完成。');
-      const cards = sampleUnique(data.runes, selectedMode.count);
+      const cards = drawRunesSequentially(data.runes, selectedMode.count);
       const directionIndexes = cards.map(() => randomInt(4));
       const directions = directionIndexes.map(index => DIRECTIONS[index]);
       const evaluation = evaluateSpread(cards, directions);
