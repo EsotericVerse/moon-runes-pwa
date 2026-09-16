@@ -1,0 +1,60 @@
+{
+  "schema_version": "0.1",
+  "authority": "LOC5 generated projection",
+  "source": "data/json/registries/LOC_MEDIA_REGISTRY.json",
+  "generator": "scripts/generate_loc5_data.py",
+  "generated_at": "2026-09-16T17:19:28+00:00",
+  "semantic_policy": "priority + exclusion + fallback + dispute; no numeric weights",
+  "registry": "LOC5_MEDIA_ANALYSIS_REPORT",
+  "summary": {
+    "total_media_records": 200,
+    "with_verified_or_canonical_url_field": 187,
+    "without_url_historical_or_pending": 13,
+    "linked_to_semantic_index": 168,
+    "not_linked_to_semantic_index": 32,
+    "with_visual_summary": 15,
+    "with_manual_tags": 4,
+    "with_generated_tags": 0,
+    "classification_status": {
+      "classified": 200
+    },
+    "primary_class": {
+      "music_media": 183,
+      "rune_system_media": 6,
+      "visual_personal_media": 11
+    },
+    "platform": {
+      "instagram": 196,
+      "youtube": 4
+    },
+    "media_type": {
+      "instagram_post": 2,
+      "instagram_reel": 15,
+      "instagram_reels_preview": 177,
+      "instagram_reels_unresolved": 2,
+      "youtube_music_video": 4
+    },
+    "relation_provenance": {
+      "canonical_explicit": 704,
+      "source_observed": 556,
+      "system_derived": 200
+    },
+    "relation_type": {
+      "in_era": 169,
+      "linked_song": 179,
+      "linked_work": 167,
+      "primary_multimedia_class": 200,
+      "related_loc": 189,
+      "source_reference": 556
+    }
+  },
+  "disputed_media_ids": [],
+  "fallback_media_ids": [],
+  "governance_notes": [
+    "No semantic numeric weights or scores are generated.",
+    "Explicit LOC relations take priority over governed purpose and generic media type.",
+    "Missing URL does not remove or downgrade a historical LOC5 media record.",
+    "No URL is inferred, generated, or promoted by this analyzer.",
+    "Multiple explicit LOC relations are preserved as dispute candidates instead of being numerically ranked."
+  ]
+}
