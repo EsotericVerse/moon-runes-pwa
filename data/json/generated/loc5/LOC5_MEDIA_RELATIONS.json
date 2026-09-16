@@ -1,9 +1,11 @@
 {
   "schema_version": "0.1",
-  "authority": "LOC5 generated projection",
+  "authority": null,
+  "projection_status": "generated_projection_without_governance_authority",
+  "authoritative_source": "data/json/registries/LOC_MEDIA_REGISTRY.json",
   "source": "data/json/registries/LOC_MEDIA_REGISTRY.json",
   "generator": "scripts/generate_loc5_data.py",
-  "generated_at": "2026-09-16T17:19:28+00:00",
+  "generated_at": "2026-09-16T17:38:48+00:00",
   "semantic_policy": "priority + exclusion + fallback + dispute; no numeric weights",
   "registry": "LOC5_MEDIA_RELATIONS",
   "relation_count": 1460,

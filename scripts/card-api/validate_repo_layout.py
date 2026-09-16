@@ -165,8 +165,8 @@ def main() -> int:
     # Semantic near-synonyms remain a governance review rather than a build-time heuristic.
     validate_rune_keyword_uniqueness(failures)
 
-    # LOC1–8 are explanatory classification labels only.
-    # Backend governance must use semantic domains instead of LOC-number ownership.
+    # LOC1–8 are historical/provenance identifiers only.
+    # Current governance must use Scope + Feature composition and semantic domains.
     language_registry_path = ROOT / "data" / "json" / "registries" / "LOC_LANGUAGE_SYSTEM_REGISTRY.json"
     shared_schema_path = ROOT / "data" / "json" / "registries" / "LOC_SHARED_SCHEMA.json"
     try:
@@ -178,12 +178,12 @@ def main() -> int:
             failures.append("LunaRunes fixed count drifted from 66")
 
         homepage_usage = system.get("public_concept_map_usage")
-        if homepage_usage != "homepage_only":
-            failures.append("LOC1-8 classification labels must remain homepage-only explanatory metadata")
+        if homepage_usage != "historical_provenance_only":
+            failures.append("LOC1-8 identifiers must remain historical/provenance-only metadata")
 
         homepage_note = str(system.get("public_concept_map_note") or "")
-        if "homepage" not in homepage_note.lower():
-            failures.append("language-system registry must state that LOC1-8 are explanatory homepage labels only")
+        if "provenance" not in homepage_note.lower():
+            failures.append("language-system registry must state that LOC1-8 are historical/provenance identifiers only")
 
         backend_domains = system.get("backend_domains") or {}
         invalid_domains = sorted(
@@ -247,7 +247,7 @@ def main() -> int:
     print("- every repository-relative JSON reference resolves to an existing file")
     print("- no public HTML/JS links expose raw Markdown files")
     print("- LunaRunes exact keywords have unique rune ownership")
-    print("- LOC1-8 remain explanatory homepage classification labels only")
+    print("- LOC1-8 remain historical/provenance identifiers only")
     print("- backend governance uses semantic domains")
     return 0
 

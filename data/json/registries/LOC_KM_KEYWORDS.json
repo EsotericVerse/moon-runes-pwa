@@ -1281,9 +1281,9 @@
       "note": "README is part of LOC retrieval scope but does not override Canon or mother data."
     }
   ],
-  "canonical_role_source": "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json#canonical_loc_map",
-  "canon_version": "1.0",
-  "canonical_lunarunes_mapping": {
+  "canonical_role_source": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
+  "canon_version": "2.0",
+  "historical_provenance_lunarunes_mapping": {
     "LOC1": "月之符文",
     "LOC2": "符文脈絡",
     "LOC3": "符文體系（較基礎結構／三卡類比）",
@@ -1293,7 +1293,7 @@
     "LOC7": "符文演算",
     "LOC8": "符文演化"
   },
-  "canonical_lunarunes_chain": [
+  "historical_provenance_lunarunes_chain": [
     "月之符文",
     "符文脈絡",
     "符文體系",
@@ -1301,11 +1301,13 @@
     "符文演化"
   ],
   "canonical_rules": [
-    "LOC 固定只有 LOC1–LOC8，不存在 LOC9。",
-    "LOC1–8 正式英文名稱、中文名稱與功能定位不得由下游資料重新定義。",
+    "LOC／月典的 Current 身份是 Language Module Framework／語言系統模組框架。",
+    "LunaRunes／月之符文的 Current 身份是 Symbolic Language Module／符號式語言模組。",
+    "Current 架構為 Scope Model × Feature Model → Page Composition。",
+    "LOC1–8 僅可作歷史／來源識別，不得作 Current 架構、Scope、模組權責、導覽分類或 Canon source。",
     "「脈絡」為唯一正字；其他錯字形式不作 alias。",
     "LunaRunes 固定 66 符；第 0 符德不屬於 66。",
-    "LunaRunes 對 LOC1–8 的映射固定。",
-    "FAQ/RAG 是知識投影，不是 Canon 本身。"
+    "LunaRunes 對 LOC1–8 的舊映射只保留為 historical provenance。",
+    "FAQ/RAG/generated data 是知識投影，不是 Canon 本身。"
   ]
 }

@@ -4,9 +4,23 @@
   "status": "current",
   "updated_at": "2026-09-16",
   "identity": {
-    "loc": "Portable Language Module Framework",
-    "lunarunes": "Independent Symbolic Language Module and reference implementation"
+    "loc": "LOC／月典 = Language Module Framework／語言系統模組框架",
+    "lunarunes": "LunaRunes／月之符文 = Symbolic Language Module／符號式語言模組"
   },
+  "current_architecture": {
+    "formula": "Scope Model × Feature Model → Page Composition",
+    "scope_model": "The governed data and authority boundary of an instance.",
+    "feature_model": "Reusable capabilities that consume a Scope without taking ownership of it.",
+    "page_composition": "A UI page composes a Scope with Features; navigation is a frozen interface and is not the Canon source.",
+    "numbered_loc_boundary": "LOC1–8 are Historical/provenance identifiers only. They do not define Current architecture, scope, module ownership, navigation taxonomy or Canon authority."
+  },
+  "authority_chain": [
+    "LOC_DATA_GOVERNANCE",
+    "LOC_TERMINOLOGY_CANON",
+    "Current domain registries",
+    "generated projections",
+    "Search/RAG/UI consumers"
+  ],
   "authority_model": ["scope", "authoritative_source", "current_status", "conflict_resolution"],
   "principles": {
     "objective_neutral": true,
@@ -17,7 +31,8 @@
     "historical_records_immutable": true,
     "cross_scope_write_requires_review": true,
     "portable_vendor_neutral": true,
-    "conflicts_are_not_guessed": true
+    "conflicts_are_not_guessed": true,
+    "generated_data_has_governance_authority": false
   },
   "scope_governance": {
     "mutable": true,
@@ -49,5 +64,6 @@
     "paid_parsing_and_inference_allowed": true,
     "standard_license_selected": false
   },
-  "historical_boundary": "Retired numbered architecture and numbered navigation layers may appear only in explicitly Historical records."
+  "historical_boundary": "LOC1–8 and retired numbered navigation layers may appear only as explicitly Historical/provenance identifiers; they cannot govern Current architecture or ownership.",
+  "navigation_boundary": "NAV is a Frozen Interface. It may change only through an explicit user-requested NAV change; Canon, generators and features must adapt to the existing NAV rather than rewriting it."
 }

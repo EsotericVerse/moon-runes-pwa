@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Generate LOC5 classification, relation, and analysis projections.
+"""Generate multimedia classification, relation, and analysis projections.
 
 Principles:
 - priority / exclusion / fallback only
 - no numeric semantic weights or scores
 - no URL inference
-- canonical LOC_MEDIA_REGISTRY.json remains authoritative
+- LOC_MEDIA_REGISTRY.json remains the authoritative source
 - generated files are disposable projections and may be rebuilt
+- generated files never carry governance authority
 """
 
 from __future__ import annotations
@@ -51,16 +52,16 @@ def classify(item: dict) -> dict:
     if "LOC4" in related:
         explicit.append("literary_media")
 
-    # Priority 1: explicit canonical LOC relations.
+    # Priority 1: explicit historical provenance relations retained by the source.
     if "rune_system_media" in explicit:
         primary = "rune_system_media"
-        matched.append("explicit_LOC1_relation")
+        matched.append("historical_provenance_LOC1_relation")
     elif "music_media" in explicit:
         primary = "music_media"
-        matched.append("explicit_LOC3_relation_or_linked_song")
+        matched.append("historical_provenance_LOC3_relation_or_linked_song")
     elif "literary_media" in explicit:
         primary = "literary_media"
-        matched.append("explicit_LOC4_relation")
+        matched.append("historical_provenance_LOC4_relation")
     # Priority 2: governed purpose.
     elif any(k in purpose for k in ("rune", "lunarune", "divination")):
         primary = "rune_system_media"
@@ -82,11 +83,11 @@ def classify(item: dict) -> dict:
         primary = "other_multimedia"
         matched.append("unresolved_fallback")
 
-    # Explicit multiple LOC relations are retained as dispute candidates rather than scored.
+    # Multiple historical LOC provenance relations are retained as dispute candidates rather than scored.
     candidates = [c for c in explicit if c != primary]
     status = "disputed" if candidates else ("fallback" if primary == "other_multimedia" else "classified")
 
-    # Exclusions are rule-based, not weighted. Generic media type cannot override explicit LOC relation.
+    # Exclusions are rule-based, not weighted. Generic media type cannot override explicit provenance.
     if explicit and primary != "visual_personal_media" and any(k in media_type for k in ("image", "photo", "design", "graphic")):
         excluded.append("visual_personal_media:generic_media_type_cannot_override_explicit_LOC_relation")
     if item.get("url") in (None, ""):
@@ -200,7 +201,9 @@ def generate(source: Path, outdir: Path) -> dict:
     generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     common = {
         "schema_version": "0.1",
-        "authority": "LOC5 generated projection",
+        "authority": None,
+        "projection_status": "generated_projection_without_governance_authority",
+        "authoritative_source": "data/json/registries/LOC_MEDIA_REGISTRY.json",
         "source": "data/json/registries/LOC_MEDIA_REGISTRY.json",
         "generator": "scripts/generate_loc5_data.py",
         "generated_at": generated_at,
@@ -242,7 +245,7 @@ def generate(source: Path, outdir: Path) -> dict:
         "fallback_media_ids": [row["media_id"] for row in classifications if row["status"] == "fallback"],
         "governance_notes": [
             "No semantic numeric weights or scores are generated.",
-            "Explicit LOC relations take priority over governed purpose and generic media type.",
+            "Historical LOC provenance relations are preserved as source evidence; they do not define Current architecture or ownership.",
             "Missing URL does not remove or downgrade a historical LOC5 media record.",
             "No URL is inferred, generated, or promoted by this analyzer.",
             "Multiple explicit LOC relations are preserved as dispute candidates instead of being numerically ranked.",

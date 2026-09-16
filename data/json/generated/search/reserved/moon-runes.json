@@ -8,12 +8,28 @@
     "eyebrow": "Reserved Search · LunaRunes",
     "title": "月之符文",
     "subtitle": "先從固定導覽理解月之符文，再決定是否需要繼續搜尋。",
-    "summary": "月之符文是一套由 66 個中文單一字符文構成的符號式語言模型，並以抽籤、脈絡、作品與治理資料形成可搜尋、可比較的語言系統。這一頁是版本化網站快照，不需要即時呼叫 Render。",
+    "summary": "月之符文是一套由 66 個中文單一字符文構成的符號式語言模組，並以抽籤、脈絡、作品與治理資料形成可搜尋、可比較的語言系統。這一頁是版本化網站快照，不需要即時呼叫 Render。",
     "links": [
-      {"label": "開始抽籤", "href": "lots.html", "note": "單抽、雙抽、三抽、五抽與 OW3gs 11 抽"},
-      {"label": "查看 66 符文", "href": "runes.html", "note": "符文、群組、關鍵詞與 Canon 資料"},
-      {"label": "查看符文脈絡", "href": "context.html", "note": "No API Graph、節點與關係"},
-      {"label": "查看治理原則", "href": "governance.html", "note": "分類、語意、版本與資料治理"}
+      {
+        "label": "開始抽籤",
+        "href": "lots.html",
+        "note": "單抽、雙抽、三抽、五抽與 OW3gs 11 抽"
+      },
+      {
+        "label": "查看 66 符文",
+        "href": "runes.html",
+        "note": "符文、群組、關鍵詞與 Canon 資料"
+      },
+      {
+        "label": "查看符文脈絡",
+        "href": "context.html",
+        "note": "No API Graph、節點與關係"
+      },
+      {
+        "label": "查看治理原則",
+        "href": "governance.html",
+        "note": "分類、語意、版本與資料治理"
+      }
     ]
   },
   "first_page": [
@@ -48,7 +64,7 @@
     {
       "category": "語言系統",
       "title": "LOC／月典與 LunaRunes",
-      "summary": "LOC 是可重用的語言系統模型；LunaRunes 是其中可實際運作的符號式語言模型。",
+      "summary": "LOC 是可重用的語言系統模組框架；LunaRunes 是其中可實際運作的符號式語言模組。",
       "href": "index.html",
       "source": "public_overview"
     }
