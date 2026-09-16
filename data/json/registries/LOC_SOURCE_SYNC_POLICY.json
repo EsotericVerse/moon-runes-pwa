@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC_SOURCE_SYNC_POLICY",
+  "authority": "LOC8",
+  "updated_at": "2026-09-16",
+  "purpose": "Define platform-agnostic ingestion and reconciliation between live/public sources and historical backup exports without moving canonical ownership away from LOC domain registries.",
+  "principles": [
+    "Platform is a source adapter, not the LOC data model.",
+    "Live/public sources and backup exports coexist; neither replaces the other.",
+    "Live/public sources provide freshness, current metadata and presentation URLs.",
+    "Backup exports provide historical completeness, recovery evidence and content that may no longer have a public URL.",
+    "Canonical LOC registries remain the only runtime authority after reconciliation.",
+    "A connector failure may delay the next sync but must not break LOC API search or existing canonical data.",
+    "Candidate or calculated URLs are never promoted as canonical permalinks without observed or verified source evidence."
+  ],
+  "source_modes": {
+    "live_snapshot": {
+      "role": [
+        "freshness",
+        "current public metadata",
+        "public presentation URL",
+        "delta detection"
+      ],
+      "mutability": "replaceable snapshot",
+      "runtime_authority": false
+    },
+    "backup_export": {
+      "role": [
+        "historical completeness",
+        "recovery",
+        "deleted-or-unlinked content evidence",
+        "offline analysis"
+      ],
+      "mutability": "append/archive evidence",
+      "runtime_authority": false
+    },
+    "canonical_registry": {
+      "role": [
+        "stable identity",
+        "governed relations",
+        "search and API projection"
+      ],
+      "runtime_authority": true
+    }
+  },
+  "visibility_gates": {
+    "suno": {
+      "rule": "Only author-public songs are eligible for LOC3 live ingestion and analysis. Private, unlisted, draft or otherwise non-public songs are excluded from analysis by default.",
+      "reason": "Non-public status is an author decision and must not be overridden by automated ingestion."
+    },
+    "default": {
+      "rule": "Only public content or author-approved content may be promoted from a live source into public/searchable LOC projections. Backup evidence may remain private or non-searchable."
+    }
+  },
+  "url_policy": {
+    "role": "presentation + provenance anchor",
+    "missing_url": "does_not_invalidate_backup_evidence",
+    "candidate_url": "evidence_only_until_observed_or_verified",
+    "verified_or_observed_live_url": "eligible_for_canonical_reconciliation",
+    "runtime": "LOC APIs return stored canonical URLs; they do not call external platforms during a search request"
+  },
+  "reconciliation": {
+    "match_priority": [
+      "platform + stable external id",
+      "exact canonical/public URL",
+      "exact date + normalized text hash",
+      "exact date + normalized text"
+    ],
+    "ambiguous": "keep unresolved and require additional evidence",
+    "never_infer": [
+      "public permalink from an unrelated export asset id",
+      "song/media relation from a shared date alone",
+      "cross-platform identity without evidence"
+    ],
+    "relation_provenance": [
+      "author_confirmed",
+      "source_observed",
+      "system_derived"
+    ]
+  },
+  "adapter_contract": {
+    "platforms": [
+      "suno",
+      "instagram",
+      "threads",
+      "facebook",
+      "youtube",
+      "x"
+    ],
+    "recommended_fields": [
+      "platform",
+      "external_id",
+      "canonical_url",
+      "created_at",
+      "title",
+      "text",
+      "visibility",
+      "media",
+      "source_status",
+      "last_synced_at"
+    ],
+    "note": "Adapters may expose platform-specific metadata, but downstream LOC ownership is determined by content function, not by platform."
+  },
+  "loc_routing_examples": {
+    "suno_song": "LOC3",
+    "authored_text_post": "LOC4",
+    "image_video_reel": "LOC5",
+    "cross_media_relation": "LOC2 relation over canonical LOC objects",
+    "search_projection": "LOC7"
+  },
+  "implementation": {
+    "reconciliation_script": "scripts/reconcile_live_backup_sources.py",
+    "canonical_media_registry": "data/json/registries/LOC_MEDIA_REGISTRY.json",
+    "rule": "The reconciliation script emits an evidence report only and never mutates canonical registries automatically."
+  },
+  "authority_domain": "culture"
+}
