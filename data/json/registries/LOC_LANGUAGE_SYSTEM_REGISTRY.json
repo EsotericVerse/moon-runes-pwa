@@ -1,5 +1,5 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "3.1",
   "registry": "LOC_LANGUAGE_SYSTEM_REGISTRY",
   "status": "current",
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
@@ -15,10 +15,12 @@
       "rights": {"ip_name":"政德風","ip_status":"personal_ip","rights_holder_id":"lo3rwang","copyright_status":"author_owned"},
       "provenance": {"collaboration_status":"solo","contributors":[],"shared_with":[],"influences":[],"source_references":[],"provenance_note":"預留協作、共享、影響與來源欄位；目前系統以單一個人語言系統為基準。"},
       "governance": {
-        "core_document":"governance.html",
-        "history_document":"governance.html",
-        "luna_runes_66_document":"governance.html",
+        "loc_governance":"/governance",
+        "lunarunes_governance":"/runes/governance",
+        "author_governance":"/author/governance",
+        "history_query":"/governance/history",
         "rights_document":"data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json",
+        "scope_separation_rule":"LOC Governance may summarize all scopes and provide cross-scope history lookup. LunaRunes Governance owns rune-specific authority and history. Author Governance owns author identity, Zhengde Style, works, keywords, personal ERA and author history. Cross-scope visibility does not transfer ownership.",
         "system_vs_personal":"LOC system governance defines representation, authority, boundary and lifecycle; Zhengde Style/self-governance remains a personal governance corpus and example, not a mandatory worldview.",
         "stance":"share methods and language without requiring belief or obedience"
       },
@@ -29,9 +31,11 @@
       },
       "current_architecture": {
         "formula":"Scope Model × Feature Model → Page Composition",
+        "authority_flow":"Current Canon → Scope Model → Feature Model → Page Composition → UI/Search/RAG/Analysis",
         "scope_rule":"Scope is the governed data/authority boundary of an instance. Scopes are mutable and instance-specific; this registry does not define a permanent universal scope list.",
         "feature_rule":"Features are reusable capabilities that consume a Scope without taking ownership of it.",
         "page_rule":"Pages compose a Scope with Features. Page/UI/Search/RAG projections do not create Canon authority.",
+        "historical_rule":"Historical records may explain provenance, rationale and lineage, but cannot override Current authority. Historical data itself is not contamination; contamination occurs only when historical semantics are promoted into Current authority.",
         "nav_rule":"NAV is a Frozen Interface and may change only through an explicit user-requested NAV change."
       },
       "lunarunes_feature_concepts": {
@@ -52,14 +56,15 @@
       },
       "historical_provenance": {
         "status":"historical_provenance_only",
-        "loc1_8_rule":"LOC1–8 may identify historical records and source lineage only. They do not define Current architecture, Scope, Feature ownership, navigation taxonomy or Canon authority.",
+        "loc1_8_rule":"LOC1–8 may remain as functional mappings, historical identifiers and source-lineage metadata. The mappings are valid and are not contamination. LOC1–8 do not define Current information architecture, Scope boundaries, Feature ownership, navigation taxonomy or Canon authority.",
         "legacy_domain_rule":"Older runes/context/music/literary/media/governance/knowledge/evolution domain labels may remain as historical routing metadata but are not the Current architecture model."
       },
       "model_principles": [
-        "LOC1–8 僅是歷史／來源識別碼，不是 Current 架構、Scope、功能模組、導覽分類或權責。",
+        "Current Canon 是唯一現行權威；下游 UI、Search、RAG、Generated data、舊 FAQ、舊 README 與歷史文件不得反向覆寫。",
         "Current 架構固定採 Scope Model × Feature Model → Page Composition。",
-        "穩定的是治理邊界與可追溯資料，不是把舊模組編號永久化。",
+        "LOC1–8 可保留作為功能映射、歷史識別與來源 lineage；映射本身不是污染，只有被誤升格為 Current 架構或權威才是污染。",
         "Scope 保有資料與權威；Feature 可跨 Scope 重用但不取得所有權。",
+        "LOC Governance 可總覽全部並提供跨 Scope 歷史查詢；LunaRunes 的歸 LunaRunes Governance；作者與政德風的歸 Author Governance。",
         "歷史原始紀錄保留；後來的解釋可 version / supersede，但不得靜默回寫過去。",
         "不同意見與 competing interpretation 可以並存；異議本身不是錯誤。",
         "AI 推論、semantic similarity、Generated data、Search、RAG 與 UI View 不得自動升格為 Canon。",
