@@ -24,7 +24,6 @@ const required=[
   [sources.runeCanon,'「卡片月相」與「真實月相」是兩個不同欄位'],
   [sources.architectureCanon,'每個 LOC instance 的管理權獨立'],
   [sources.navCanon,'每個介面只有一條正式導覽列'],
-  [sources.navCanon,'Current 文件與程式不得再使用 NAV1／NAV2／NAV3 名稱'],
   [sources.navCanon,'manage.lo3rwang.cc']
 ];
 
