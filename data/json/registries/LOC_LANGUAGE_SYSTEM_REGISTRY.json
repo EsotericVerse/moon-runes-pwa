@@ -1,5 +1,5 @@
 {
-  "schema_version": "3.1",
+  "schema_version": "3.2",
   "registry": "LOC_LANGUAGE_SYSTEM_REGISTRY",
   "status": "current",
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
@@ -20,7 +20,9 @@
         "author_governance":"/author/governance",
         "history_query":"/governance/history",
         "rights_document":"data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json",
+        "shared_principle_rule":"LOC provides the common governance and classification principles. LunaRunes, Author and other Scopes may use the same principles while governing different subjects, data, authority and history.",
         "scope_separation_rule":"LOC Governance may summarize all scopes and provide cross-scope history lookup. LunaRunes Governance owns rune-specific authority and history. Author Governance owns author identity, Zhengde Style, works, keywords, personal ERA and author history. Cross-scope visibility does not transfer ownership.",
+        "progressive_disclosure_rule":"Users do not need to understand the entire LOC framework, all LunaRunes or the author's complete corpus before using the system. They may enter through any relevant Feature and progressively open deeper context, governance and history only when interested.",
         "system_vs_personal":"LOC system governance defines representation, authority, boundary and lifecycle; Zhengde Style/self-governance remains a personal governance corpus and example, not a mandatory worldview.",
         "stance":"share methods and language without requiring belief or obedience"
       },
@@ -33,7 +35,7 @@
         "formula":"Scope Model × Feature Model → Page Composition",
         "authority_flow":"Current Canon → Scope Model → Feature Model → Page Composition → UI/Search/RAG/Analysis",
         "scope_rule":"Scope is the governed data/authority boundary of an instance. Scopes are mutable and instance-specific; this registry does not define a permanent universal scope list.",
-        "feature_rule":"Features are reusable capabilities that consume a Scope without taking ownership of it.",
+        "feature_rule":"Features are reusable capabilities that consume a Scope without taking ownership of it. Features are also valid user entry points and do not require prior knowledge of the whole Scope.",
         "page_rule":"Pages compose a Scope with Features. Page/UI/Search/RAG projections do not create Canon authority.",
         "historical_rule":"Historical records may explain provenance, rationale and lineage, but cannot override Current authority. Historical data itself is not contamination; contamination occurs only when historical semantics are promoted into Current authority.",
         "nav_rule":"NAV is a Frozen Interface and may change only through an explicit user-requested NAV change."
@@ -44,6 +46,10 @@
         "符文體系":"符文本體及其文學、歌曲、影像、沙盒與方法論分析等延伸形式；月之符文是種子，但不是使用門檻。",
         "符文演算":"可重複規則：抽牌／解牌 Grammar，以及以 frozen Current 九群組作為座標的文字／來源分析。",
         "符文文化":"把符文、作品、語言與治理放回時間中觀察其形成、變化與文化脈絡。"
+      },
+      "example_entry_features": {
+        "lunarunes":["Reels","抽牌","符文卡","Graph","作品"],
+        "author":["文筆／政德風介紹","單篇作品","關鍵字","ERA","作品列表"]
       },
       "fixed_constants": {
         "lunarunes_count":66,
@@ -61,7 +67,9 @@
       },
       "model_principles": [
         "Current Canon 是唯一現行權威；下游 UI、Search、RAG、Generated data、舊 FAQ、舊 README 與歷史文件不得反向覆寫。",
+        "LOC 是框架與分類工具；LunaRunes、Author 與其他 Scope 主體不同，但可共用相同治理原則。",
         "Current 架構固定採 Scope Model × Feature Model → Page Composition。",
+        "使用者不需先理解全 LOC、全部 LunaRunes 或作者全部作品；可從有興趣的 Feature 進入，再逐步展開更多脈絡、治理與歷史。",
         "LOC1–8 可保留作為功能映射、歷史識別與來源 lineage；映射本身不是污染，只有被誤升格為 Current 架構或權威才是污染。",
         "Scope 保有資料與權威；Feature 可跨 Scope 重用但不取得所有權。",
         "LOC Governance 可總覽全部並提供跨 Scope 歷史查詢；LunaRunes 的歸 LunaRunes Governance；作者與政德風的歸 Author Governance。",
