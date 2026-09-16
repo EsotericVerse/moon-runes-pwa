@@ -1,4 +1,4 @@
-/* Canonical NAV1 lives in RootLayout. Local page headers remain in source for compatibility but are not rendered visually. */
+/* Canonical NAV lives in RootLayout. Local page headers remain in source for compatibility but are not rendered visually. */
 .loc-next-header:not(.loc-global-header){display:none}
 .loc-global-header{align-items:center}
 .loc-global-header .loc-next-nav-stack{width:100%;justify-items:stretch}
