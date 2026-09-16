@@ -1,0 +1,99 @@
+{
+  "schema_version": "0.1",
+  "registry": "LOC_OW3GS_KM_REGISTRY",
+  "updated_at": "2026-09-16",
+  "status": "current",
+  "authority_scope": "KM classification and retrieval; Canon remains upstream authority",
+  "source_refs": [
+    "docs/LOC_Canon_1.1.md",
+    "docs/km/OW3gs_綜合情景模組與延伸體系.md",
+    "data/json/registries/rune-literature/RLIT-20260916-凌晨兩點四十七分.json"
+  ],
+  "classification": {
+    "LOC": {
+      "type": "framework",
+      "canonical_role": "語言系統模組框架",
+      "responsibility": ["分析拆解", "組織彙整", "搜尋", "模組化", "治理"]
+    },
+    "LunaRunes": {
+      "type": "symbolic_language_reference_implementation",
+      "canonical_role": "符號式語言與可能情景具體模擬",
+      "decision_authority": false,
+      "output_role": ["可能情景", "參考籤詩", "明確語意", "關鍵字"]
+    },
+    "OW3gs": {
+      "type": "11_card_composite_scenario_module",
+      "card_count": 11,
+      "unique_runes_per_draw": true,
+      "prime_structure_note": "11 在本方法中作為完整但可內部組合的質數結構；11 不是容量，而是結構。",
+      "layers": [
+        {"range": "1-6", "role": "context/cause description field"},
+        {"range": "7-11", "role": "core five-card composite field"}
+      ],
+      "output_pipeline": ["draw", "position_orientation", "composite_context", "semantic_keywords", "search_km", "extension_system"],
+      "moon_phase_interaction": {
+        "status": "reserved_optional_refinement",
+        "weight": "low",
+        "note": "保留資料與介面；目前不增加核心 OW3gs 複雜度。"
+      },
+      "governance": "增加可能情景解析度，不增加替人決定的權力。"
+    },
+    "ZhengdeStyle": {
+      "type": "author_culture",
+      "owner": "Lucas Oscar Wang 政德",
+      "universal_rule": false
+    },
+    "DeRune": {
+      "type": "author_governance_and_culture_anchor",
+      "rune_number": 0,
+      "in_draw_pool": false,
+      "card_face": false,
+      "records": "政德風與作者文化衍生物的 provenance / culture relations"
+    }
+  },
+  "upper_governance": {
+    "principle": "月之符文只提供特定天時與脈絡下可供參考的可能情景，不判定人的選擇是否正確。",
+    "time_context": "不同的人在不同時間閱讀同一文字、歌曲或事件，其 Context 不同。",
+    "human_agency": "最終理解、選擇與責任屬於使用者。"
+  },
+  "game_boundary": {
+    "LOC2_uses_orientation": false,
+    "note": "LOC2 卡片遊戲可共享符文與模組規則，但不使用正位／半正位／半逆位／逆位；OW3gs 文學應用的四向是規則延伸，不回寫 LOC2。"
+  },
+  "work_data_layers": {
+    "draw_layer": "保存創作來源抽牌、順序、四向、draw mode 與 provenance",
+    "content_analysis_layer": "作品完成後重新分析實際內容符文語意；不等同原始抽牌"
+  },
+  "literary_extension": {
+    "classification": "Rune Symbolic Extension: Literary",
+    "ow3gs_compatible": true,
+    "generation_model": "OW3gs 11 draw -> composite scenario/keywords -> narrative rise/fall -> literary concretization",
+    "representative_example": {
+      "record_id": "RLIT-20260916-001",
+      "title": "凌晨兩點四十七分",
+      "source_path": "data/json/registries/rune-literature/RLIT-20260916-凌晨兩點四十七分.json",
+      "draw": [
+        [1, "鏡", "半正位"],
+        [2, "月", "逆位"],
+        [3, "果", "半逆位"],
+        [4, "花", "正位"],
+        [5, "誤", "半逆位"],
+        [6, "空", "半正位"],
+        [7, "語", "正位"],
+        [8, "心", "半正位"],
+        [9, "光", "正位"],
+        [10, "愛", "逆位"],
+        [11, "緣", "半正位"]
+      ],
+      "example_role": "OW3gs 11 抽 -> 綜合情景 -> 符文文學標準應用範例",
+      "author_culture_relation": {
+        "ZhengdeStyle": true,
+        "DeRune_record": true,
+        "note": "符文文學分類與德之符文作者文化 relation 並存，不互相取代。"
+      }
+    }
+  },
+  "retrieval_keywords": [
+    "OW3gs", "11抽", "質數11", "11不是容量而是結構", "綜合情景", "情景模擬", "可能籤詩", "天時", "人類選擇權", "關鍵字搜尋", "符文文學", "Rune Symbolic Extension Literary", "凌晨兩點四十七分", "政德風", "德之符文", "作者文化", "Draw Layer", "Content Analysis Layer", "LOC2沒有面向", "月相交互微調"
+  ]
+}
