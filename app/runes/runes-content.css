@@ -18,5 +18,6 @@
 .runes-function-nav{display:flex;flex-wrap:wrap;gap:.45rem .75rem;margin-top:1rem}
 .runes-function-nav a{font-weight:700}
 .runes-draw-surface .loc-hero{display:none}
+.runes-draw-surface .runes-retry button:not([data-draw-action="retry"]){display:none!important}
 @media(max-width:900px){.runes-highlight-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.runes-highlight-grid{grid-template-columns:1fr}.runes-content-section{gap:1rem}.runes-highlight-bubble{padding:.8rem}.runes-description p{font-size:.93rem;line-height:1.78}}
