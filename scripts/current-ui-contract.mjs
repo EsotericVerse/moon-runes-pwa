@@ -1,3 +1,5 @@
+// Invoked by npm run verify:ui within the verified Next build.
+// These source-text checks do not replace browser or deployment health checks.
 import fs from 'node:fs';
 
 const sources={
@@ -6,30 +8,28 @@ const sources={
   governance:fs.readFileSync('app/loc/views/GovernanceView.jsx','utf8'),
   runeGovernance:fs.readFileSync('app/runes/governance/page.jsx','utf8'),
   personal:fs.readFileSync('lo3rwang.html','utf8'),
-  canon:fs.readFileSync('docs/LOC_Canon_1.2.md','utf8'),
+  runeCanon:fs.readFileSync('docs/LOC_Canon_1.1.md','utf8'),
+  architectureCanon:fs.readFileSync('docs/LOC_Canon_1.2.md','utf8'),
   navCanon:fs.readFileSync('docs/NAV_GOVERNANCE.md','utf8')
 };
 
 const required=[
-  [sources.home,'LOC月典'],
-  [sources.nav,'/governance'],
-  [sources.nav,'/runes/governance'],
-  [sources.governance,'客觀與中立'],
-  [sources.governance,'可移植（Portable）'],
-  [sources.governance,'Copyleft'],
-  [sources.governance,'/management'],
-  [sources.governance,'/governance/history'],
-  [sources.runeGovernance,'LunaRunes Scope'],
-  [sources.runeGovernance,'Master Data／Base66'],
-  [sources.personal,'這是政德的個人首頁'],
-  [sources.personal,'data-personal-nav-setting'],
-  [sources.canon,'每個 LOC instance 的管理權獨立'],
+  ...['LOC月典','語言模型框架（Language Model Framework）','/pics/LunaRunes.jpg','月典模型架構','ModelArchitectureExplorer',"name:'LunaRunes'","name:'Context'","name:'Music'","name:'Literary'","name:'MultiMedia'","name:'Algorithm'","name:'Module'","name:'Culture'",'Base66','卡片月相：無 / 真實月相：空亡'].map(token=>[sources.home,token]),
+  ...['月之符文','脈絡','統計','文化','設定','抽牌','符文圖鑑','遊戲','符文脈絡','符文統計','符文文化','抽籤紀錄','搜尋','回月典首頁','/governance','/runes/governance'].map(token=>[sources.nav,token]),
+  ...['客觀與中立','可移植（Portable）','Copyleft','/management','/governance/history'].map(token=>[sources.governance,token]),
+  ...['LunaRunes Scope','Master Data／Base66'].map(token=>[sources.runeGovernance,token]),
+  ...['這是政德的個人首頁','data-personal-nav-setting'].map(token=>[sources.personal,token]),
+  [sources.runeCanon,'「卡片月相」與「真實月相」是兩個不同欄位'],
+  [sources.architectureCanon,'每個 LOC instance 的管理權獨立'],
   [sources.navCanon,'每個介面只有一條正式導覽列']
 ];
 
+const forbiddenHome=["name:'Methodology'","name:'Evolution'",'Governance｜治理架構層','Governance Architecture'];
 const missing=required.filter(([source,token])=>!source.includes(token)).map(([,token])=>token);
-if(missing.length){
-  console.error('Missing Current UI contract: '+missing.join(', '));
+const forbidden=forbiddenHome.filter(token=>sources.home.includes(token));
+if(missing.length||forbidden.length){
+  if(missing.length) console.error('Missing Current UI contract: '+missing.join(', '));
+  if(forbidden.length) console.error('Forbidden stale UI contract: '+forbidden.join(', '));
   process.exit(1);
 }
 console.log('Current UI contract verified.');
