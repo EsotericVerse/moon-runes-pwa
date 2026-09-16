@@ -1,2 +1,2 @@
-export const metadata={title:'符文搜尋｜月之符文'};
-export default function RuneSearchPage({searchParams}){const q=searchParams?.q||'';return <main className="loc-next-main"><section className="loc-card"><h1>符文搜尋</h1>{q?<p>搜尋「{q}」時只使用月之符文 Scope 的資料。</p>:<p>搜尋範圍限定為月之符文 Scope。</p>}</section></main>}
+export const metadata={title:'搜尋｜月之符文',description:'搜尋月之符文資料。'};
+export default function Page({searchParams}){const q=searchParams?.q||'';return <main className="loc-next-main"><section className="loc-card"><h1>搜尋</h1><form action="/runes/search" method="get"><input name="q" type="search" defaultValue={q} aria-label="搜尋月之符文"/><button type="submit">搜尋</button></form><p>搜尋範圍只包含月之符文資料。</p></section></main>}
