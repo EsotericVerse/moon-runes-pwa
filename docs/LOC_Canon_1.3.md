@@ -4,6 +4,13 @@
 **Date:** 2026-09-16  
 **Supersedes:** LOC Canon 1.2 for Current Scope/Feature architecture. Older Canon remains Historical and must not be rewritten.
 
+## 0. Highest Principle — 不替使用者裁定
+LOC 的最高治理原則是：**提供可檢驗的資訊、規則、來源、脈絡、差異、不確定性與爭議，但不替使用者裁定觀點或決定何者必然正確。** 使用者可以贊同，也可以反對；LOC 的責任是讓判斷依據可見，而不是要求使用者先接受 LOC 的分析、風格、符文理論或治理觀。
+
+LOC 以客觀與中立為治理目標，但**不宣稱自己能達成完全客觀**。資料選擇、Scope 劃分、分類、命名、權重與解釋都可能包含觀察者與治理者的判斷。因此系統必須盡可能揭露依據、範圍、來源、規則、限制、爭議與不確定性，並允許不同解讀存在；不得把治理結果包裝成不可質疑的唯一正解。
+
+這項原則高於展示順序、分類結果、Feature 行為與個別 Scope 規則。治理是維持一致性、可追溯性與可解釋性的底層機制，**不是使用門檻，也不是價值接受門檻**。首頁與主要入口應優先提供實際作品或可直接使用的功能；分析與治理供需要深入理解的人再進入。例如作者首頁先呈現作品，而非要求先閱讀風格分析；LunaRunes 可直接進入抽牌或符文圖鑑，而非要求先理解 Current、Canon 或符文理論。
+
 ## 1. Identity
 LOC（月典）是可公開、可移植的語言模組框架（Language Module Framework）。LunaRunes（月之符文）是具有自己 Master Data、Canon 與治理權威的符號式語言模組，也是參考實作；它不等於 LOC 全域。Canon 定義原則、權威、責任與邊界，不綁定 Next.js、Vercel、Cloudflare、資料庫或其他 implementation。
 
@@ -45,8 +52,13 @@ ERA 屬於各自 Scope。Context 可顯示／分析 ERA；Governance 修改該 S
 ## 9. Current and Historical
 Current 只使用目前有效名稱、定義、規則與資料狀態。Historical 不改寫；更正以新紀錄 supersede。已廢止的 LOC1–8 只能存在於明確 Historical 資料，不得回到 Current 架構、導覽、欄位或責任識別。
 
+### Semantic Migration Integrity
+Current Canon 的架構、術語、資料模型或關係一旦正式變更，所有 Current implementation、UI、route、contract、test、schema、documentation 與 derived artifacts 必須同步遷移。舊語意只能存在於明確標示的 Historical／Legacy 範圍，不得繼續作為 Current 驗證或執行依據。
+
+治理流程為 **Canon change → dependency impact → semantic migration → stale-semantic scan → tests → build**。歷史不可抹除，但 Current 可以演進；凍結保護目前權威基準，不禁止經治理程序產生新的 Current。新 Current 生效後，舊 Current 轉入 Historical，不得反向綁定現行架構。
+
 ## 10. LunaRunes boundary
-LunaRunes 由 Master Data／Base66、Current Canon／Spec 與 Registry 治理。符文分類依「詞性／句內語意角色 → 群組主體性 → 符文語意歸屬」逐層判定；關鍵詞是證據，不是直接命中。LunaRunes 的 Current/Historical、ERA、搜尋、統計與治理保持自己的 Scope identity。
+LunaRunes 由 Master Data／Base66、Current Canon／Spec 與 Registry 治理。符文分類依「詞性／句內語意角色 → 群組主體性 → 符文語意歸屬」逐層判定；關鍵詞是證據，不是直接命中。分類輸出是依 Current 規則產生的可解釋結果，不宣稱為不可質疑的唯一正解；有接近結果、爭議或不確定性時應予揭露。
 
 ## 11. Navigation
 LOC 只有一條正式 NAV。NAV 由目前 Scope 生成；切換 Scope 後立即使用新 Scope NAV。頁內入口、架構圖與快捷選單不是第二套 NAV。
