@@ -17,3 +17,4 @@ import './nav-scope-registry-check.mjs';
 import './nav-final-checklist-check.mjs';
 import './nav-render-contract.mjs';
 import './nav-search-contract.mjs';
+import './nav-loc-no-manage-contract.mjs';
