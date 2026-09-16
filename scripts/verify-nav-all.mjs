@@ -38,3 +38,4 @@ import './nav-pr-summary-check.mjs';
 import './nav-acceptance-check.mjs';
 import './nav-final-state-check.mjs';
 import './nav-pr-ready-check.mjs';
+import './nav-scope-route-table-check.mjs';
