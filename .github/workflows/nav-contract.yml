@@ -13,5 +13,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: node scripts/verify-nav.mjs
-      - run: node scripts/nav-smoke.mjs
+      - run: node scripts/verify-nav-all.mjs
