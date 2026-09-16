@@ -1,12 +1,15 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC5_MEDIA_RECOVERY_REGISTRY",
   "authority": "LOC5",
   "status": "author_source_imported",
-  "updated_at": "2026-09-09",
-  "purpose": "Evidence-backed recovery queue for historical LOC5 media. Threads life-writing posts are searched for Suno/media links, then cross-checked against LOC3 song data and LOC5 media registry. A Suno link alone proves a song reference, not an Instagram/YouTube media asset.",
+  "updated_at": "2026-09-16",
+  "purpose": "Evidence-backed recovery queue for historical LOC5 media. Historical backup/export evidence and live/public source snapshots are reconciled without inventing URLs; canonical LOC5 media remains in LOC_MEDIA_REGISTRY.json.",
   "recovery_method": [
-    "search LOC4 Threads source text for Suno/share/media URLs",
+    "use backup/export JSON for historical completeness and asset evidence",
+    "use live/public source snapshots for current public URLs and fresh metadata",
+    "reconcile by stable platform ID first, then exact URL, then date + normalized text evidence",
+    "search LOC4 Threads source text for Suno/share/media URLs when historical text is the available evidence",
     "cross-match Suno share URL against LOC3 song/version records",
     "cross-match known IG/YouTube links against LOC3_MEDIA_LINKS and LOC_MEDIA_REGISTRY",
     "promote to LOC5 media only when an actual media URL or explicit media evidence exists",
@@ -15,7 +18,9 @@
   "source_scope": {
     "threads_owner": "LOC4",
     "current_evidence_registry": "data/json/registries/LOC4_THREADS_KM_INDEX.json",
-    "note": "The current representative tranche already contains recoverable Suno references; full 4,578-main-post corpus should be mined next for broader LOC5 recovery."
+    "source_sync_policy": "data/json/registries/LOC_SOURCE_SYNC_POLICY.json",
+    "reconciliation_script": "scripts/reconcile_live_backup_sources.py",
+    "note": "Live and backup sources coexist. Backup is the historical recovery layer; live/public snapshots supply freshness and presentation URLs. Platform source does not determine LOC ownership."
   },
   "candidates": [
     {
@@ -71,7 +76,8 @@
     "new_media_records_added": 158,
     "existing_media_records_updated": 19
   },
-  "governance_rule": "Author-provided exact Suno↔Instagram URLs may become LOC5 media evidence. Missing URLs remain missing; unresolved content verification stays under_review rather than being silently promoted.",
+  "counts_scope": "Historical author-source merge snapshot. These counts are preserved as recovery-operation evidence and must not be interpreted as the current LOC5 canonical total.",
+  "governance_rule": "Author-provided exact URLs and live-observed public URLs may become LOC5 evidence. Backup-only assets remain valid historical evidence even without a public permalink. Candidate/calculated URLs are not promoted until observed or verified; ambiguous matches remain unresolved.",
   "primary_source": {
     "name": "LOC3_LOC5_影音連結整合清單",
     "authority": "author-provided",
