@@ -1,2 +1,2 @@
-export const metadata={title:'脈絡｜月之符文',description:'月之符文脈絡。'};
-export default function Page(){return <main className="loc-next-main"><section className="loc-card"><h1>脈絡</h1><p>查看符文、群組與語意關係。</p></section></main>}
+export const metadata={title:'脈絡｜月之符文',description:'只展示月之符文自己的脈絡與時期。'};
+export default function Page(){return <main className="loc-next-main"><header className="loc-hero"><p className="loc-eyebrow">LunaRunes · Context</p><h1>月之符文脈絡</h1><p>只查看月之符文 Scope 內的符文、群組、語意關係與時期展示。</p></header><section className="loc-card"><h2>符文脈絡</h2><p>脈絡方法與其他 Scope 可以共用，但資料來源與顯示結果只屬於月之符文。時期在此展示與分析；時期設定由月之符文治理負責修改。</p></section></main>}
