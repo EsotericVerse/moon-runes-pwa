@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "status": "current-authority",
+  "effective_date": "2026-09-17",
+  "title": "LOC Current Governance",
+  "highest_principle": "LOC provides inspectable information, rules, sources, context, differences, uncertainty, and disputes. It does not decide for the user which view must be correct.",
+  "authority_chain": ["Master Data / Spec", "Current Governance", "Scope / Feature implementation", "UI / Content"],
+  "document_governance": {
+    "current_rule": "Current Governance is the single decision layer for current architecture and terminology.",
+    "history_rule": "Historical material preserves provenance and evolution but has no authority to overwrite Current.",
+    "implementation_rule": "Implementation notes, migration notes, PR summaries, TODOs and validation artifacts cannot define governance.",
+    "new_document_rule": "Do not create a new decision document when the subject belongs to an existing authority source. Update the authority source instead.",
+    "conflict_rule": "When old material conflicts with Current, preserve the old state only as history and use Current for implementation."
+  },
+  "governance_principles": [
+    "Current first; history preserved without contaminating Current.",
+    "Spec and master data outrank derived descriptions.",
+    "Govern first, then implement.",
+    "No-API explainable classification is preferred where applicable.",
+    "Same name does not imply same entity.",
+    "Containment does not imply ownership.",
+    "Compatibility does not imply belonging.",
+    "Integration does not imply incorporation.",
+    "Analysis and inference do not constitute final judgment.",
+    "Scope, provenance, ownership and authority boundaries must remain inspectable."
+  ],
+  "current_architecture": {
+    "model": "Scope Model × Feature Model → Page Composition",
+    "scopes": {
+      "loc": {"name": "LOC / 月典", "domain": "loc.lo3rwang.cc"},
+      "lunarunes": {"name": "LunaRunes / 月之符文", "domain": "lrunes.lo3rwang.cc"},
+      "author": {"name": "Author / 個人", "domain": "whoami.lo3rwang.cc"},
+      "management": {"name": "Management / 管理", "domain": "manage.lo3rwang.cc"}
+    },
+    "admin": "admin.lo3rwang.cc is a system administration UI and is not a Scope.",
+    "common_features": ["Context", "Statics", "Culture", "Governance", "Search"]
+  },
+  "legacy_loc_numbering": {
+    "status": "historical-only",
+    "rule": "LOC1–LOC8 numbering is not the Current architecture, Current Canon, Current governance model, homepage framing, or default classification basis.",
+    "allowed_use": "It may appear only when identifying historical artifacts, legacy filenames, datasets, migration provenance, or explicit historical discussion.",
+    "forbidden_use": "Do not infer current system structure from LOC1–LOC8 prefixes and do not begin a Current explanation by mapping LOC to LOC1–LOC8."
+  },
+  "lunarunes_authority": {
+    "master_data": "data/lunarunes/source/LunaRune66.xlsx",
+    "fixed_seed_count": 66,
+    "classification_order": ["part of speech / semantic role in sentence", "group subjectivity", "rune semantic assignment"],
+    "group_assignment": "A classification result has one unique group value. Close alternatives may be reported as disputes without becoming multiple assigned groups."
+  },
+  "zhengde_style_current": {
+    "principle": "Definition → axiom → inference → counterexample → calibration → application.",
+    "rules": ["Inference expands possibilities rather than manufacturing a single answer.", "Trends do not replace human choice.", "Systems must know their own boundaries.", "Imagination may open possibilities; causal consistency remains accountable to established conditions."],
+    "history_location": "Historical formation belongs to Culture / Governance history, not the personal homepage Current definition."
+  },
+  "historical_provenance": {
+    "repository_history": "Superseded Markdown documents and earlier Canon drafts remain recoverable from Git history.",
+    "rule": "Historical preservation does not require keeping obsolete decision files visible in the Current working tree."
+  }
+}
