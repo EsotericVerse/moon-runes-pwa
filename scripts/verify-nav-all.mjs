@@ -32,3 +32,4 @@ import './nav-scope-derivation-check.mjs';
 import './nav-contract-sources-check.mjs';
 import './nav-scope-map-schema-check.mjs';
 import './nav-scope-map-required-check.mjs';
+import './nav-scope-map-format-check.mjs';
