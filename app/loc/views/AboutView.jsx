@@ -24,7 +24,7 @@ const MODEL_MODULES=[
   {
     key:'media', name:'MultiMedia', zh:'多媒體', summary:'跨媒介內容',
     detail:'連結圖像、影音與其他媒體來源，觀察同一語意在不同媒介中的表達與轉譯。',
-    href:'/search?q=多媒體'
+    href:'/multimedia'
   },
   {
     key:'algorithm', name:'Algorithm', zh:'演算法', summary:'方法論與演算法集合',
