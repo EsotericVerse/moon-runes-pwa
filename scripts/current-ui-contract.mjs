@@ -1,6 +1,5 @@
 // Invoked by npm run verify:ui within the verified Next build.
-// Current UI is model-driven: verify canonical sources, composition and route contracts,
-// not duplicated literal copy in every rendered page.
+// Verify Current user-facing surfaces against their authoritative Current sources.
 import fs from 'node:fs';
 
 const sources={
@@ -25,11 +24,11 @@ const required=[
   ...['context','statics','evolution','governance','search','統計排行榜','文化','搜尋'].map(token=>[sources.features,token]),
   ...['符文圖鑑','/runes/list','抽牌','/runes/duel'].map(token=>[sources.runes,token]),
   ...['one','daily','two','three','five','ow3gs','fight','卡牌拓展桌遊'].map(token=>[sources.duel,token]),
-  ...['客觀與中立','可移植（Portable）','Copyleft'].map(token=>[sources.governance,token]),
+  ...['Current 治理原則','管理入口'].map(token=>[sources.governance,token]),
   ...['這是政德的個人首頁','data-personal-nav-setting'].map(token=>[sources.personal,token]),
   [sources.runeCanon,'「卡片月相」與「真實月相」是兩個不同欄位'],
   [sources.architectureCanon,'每個 LOC instance 的管理權獨立'],
-  ...['Scope','Feature','LunaRunes','Duel','fight','ownership','Governance'].map(token=>[sources.currentCanon,token]),
+  ...['Highest Principle','不替使用者裁定','Scope','Feature','LunaRunes','Duel','fight','ownership','Governance','Portable','Copyleft','Semantic Migration Integrity'].map(token=>[sources.currentCanon,token]),
   [sources.navCanon,'每個介面只有一條正式導覽列']
 ];
 
@@ -43,4 +42,4 @@ if(missing.length||forbidden.length){
   if(forbidden.length) console.error('Forbidden stale UI contract: '+forbidden.join(', '));
   process.exit(1);
 }
-console.log('Current model-driven UI contract verified.');
+console.log('Current UI contract verified against authoritative Current sources.');
