@@ -100,6 +100,7 @@ export default function GovernanceManagement(){
     <p className="loc-eyebrow">Governance Management</p>
     <h2>治理管理</h2>
     <p className="loc-subtitle">共享資料修改需要管理權限；公開頁面維持唯讀。</p>
+    <p>管理範圍包含 Scope 與關係、資料納入／移除審核、各 Scope 的 ERA、修正標記、統合設定，以及搜尋、統計與排行榜的差異更新。實際可寫入項目仍依目前部署的權限與資料契約開放。</p>
     {state.loading && <p>正在確認管理 session…</p>}
     {!state.loading && !state.session && <button type="button" onClick={login}>使用 Google 驗證管理權限</button>}
     {!state.loading && state.session && <>

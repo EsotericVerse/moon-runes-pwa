@@ -4,7 +4,8 @@
   window.__LOC_NAV__=true;
 
   const GROUPS=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
-  const NAV3_ALLOW=new Set(['runes:draw','runes:library']);
+  const LOCAL_MENU_ALLOW=new Set(['runes:draw','runes:library']);
+  const PERSONAL_NAV_LABEL_KEY='loc-personal-nav-first-label-v1';
   const THEME_STORAGE_KEY='loc-theme';
   const THEME_MODES=new Set(['auto','day','night']);
   const DAY_START_HOUR=6;
@@ -70,7 +71,11 @@
 
   function navItems(){
     if(fileName()==='runes.html') return RUNES_NAV1;
-    if(fileName()==='lo3rwang.html') return AUTHOR_NAV1;
+    if(fileName()==='lo3rwang.html'){
+      let label=AUTHOR_NAV1[0].label;
+      try{label=localStorage.getItem(PERSONAL_NAV_LABEL_KEY)?.trim()||label;}catch{}
+      return AUTHOR_NAV1.map((item,index)=>index===0?{...item,label}:item);
+    }
     return DEFAULT_NAV1;
   }
   function renderNav1(){
@@ -104,18 +109,18 @@
   function tier(items,label,className='loc-nav-tier'){
     const nav=document.createElement('nav');
     nav.className=className;
-    nav.dataset.tier=className==='loc-nav3'?'3':'2';
+    nav.dataset.localMenu=className==='loc-quick-menu'?'quick':'section';
     nav.setAttribute('aria-label',label);
     const inner=document.createElement('div');
-    inner.className=className==='loc-nav3'?'loc-nav3-inner':'loc-nav-tier-inner';
+    inner.className=className==='loc-quick-menu'?'loc-quick-menu-inner':'loc-nav-tier-inner';
     items.forEach(item=>inner.appendChild(item));
     nav.appendChild(inner);
     return nav;
   }
-  function nav3(key,items,label){
-    if(!NAV3_ALLOW.has(key)) return null;
-    const nav=tier(items,label,'loc-nav3');
-    nav.dataset.nav3=key;
+  function quickMenu(key,items,label){
+    if(!LOCAL_MENU_ALLOW.has(key)) return null;
+    const nav=tier(items,label,'loc-quick-menu');
+    nav.dataset.quickMenu=key;
     return nav;
   }
   function ensureAnchor(id,target){
@@ -154,8 +159,8 @@
     ],'月之符文功能'));
 
     const drawView=document.getElementById('drawView');
-    if(drawView&&!drawView.querySelector(':scope > .loc-nav3')){
-      const menu=nav3('runes:draw',[
+    if(drawView&&!drawView.querySelector(':scope > .loc-quick-menu')){
+      const menu=quickMenu('runes:draw',[
         link('單卡','runes.html?mode=single#draw'),
         link('每日','runes.html?mode=daily#daily'),
         link('雙卡','runes.html?mode=2card#draw'),
@@ -168,8 +173,8 @@
     }
 
     const libraryView=document.getElementById('libraryView');
-    if(libraryView&&!libraryView.querySelector(':scope > .loc-nav3')){
-      const menu=nav3('runes:library',GROUPS.map(group=>link(group,`runes.html?group=${encodeURIComponent(group)}#library`,{'data-rune-group-shortcut':group})),'符文群組快速選單');
+    if(libraryView&&!libraryView.querySelector(':scope > .loc-quick-menu')){
+      const menu=quickMenu('runes:library',GROUPS.map(group=>link(group,`runes.html?group=${encodeURIComponent(group)}#library`,{'data-rune-group-shortcut':group})),'符文群組快速選單');
       if(menu) libraryView.appendChild(menu);
     }
   }
@@ -209,7 +214,7 @@
     }
   }
   function syncCurrent(){
-    const nav=document.querySelector('.loc-nav-tier[data-tier="2"]');
+    const nav=document.querySelector('.loc-nav-tier[data-local-menu="section"]');
     if(!nav) return;
     resetCurrent(nav);
     const wantedHash=location.hash||DEFAULT_HASH[fileName()]||'#main';
@@ -251,6 +256,17 @@
   document.addEventListener('change',event=>{
     const select=event.target.closest('[data-loc-theme-select]');
     if(select) setThemeMode(select.value);
+  });
+  document.addEventListener('submit',event=>{
+    const form=event.target.closest('[data-personal-nav-setting]');
+    if(!form) return;
+    event.preventDefault();
+    const value=String(new FormData(form).get('first_nav_label')||'').trim();
+    if(!value) return;
+    try{localStorage.setItem(PERSONAL_NAV_LABEL_KEY,value);}catch{}
+    renderNav1();
+    const status=form.querySelector('[role="status"]');
+    if(status) status.textContent=`已將這個個人 Scope 的第一個 NAV 文字設為「${value}」。`;
   });
   applyTheme();
   window.setInterval(()=>{if(getThemeMode()==='auto') applyTheme('auto');},60000);

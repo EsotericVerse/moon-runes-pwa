@@ -2,7 +2,7 @@
 
 **Status:** Current project governance intent  
 **Version:** 0.1  
-**Updated:** 2026-09-07
+**Updated:** 2026-09-16
 
 LOC（Luna Codex／月典）and LunaRunes（月之符文）are published in a **Copyleft** spirit.
 
@@ -24,6 +24,8 @@ In return, derivatives should:
 - clearly identify modifications,
 - preserve the same sharing/copy-left principle or a compatible share-alike model,
 - not erase the upstream history from which the work was derived.
+
+Commercial derivatives require the project author's agreement under the current governance intent. Paid parsing interfaces, inference layers, consulting and managed services are permitted commercial scopes when separately authorized.
 
 ## 2. Canon is not ownership of forks
 
@@ -73,7 +75,7 @@ Rights and publication boundaries remain governed by `LOC_CONTENT_RIGHTS_POLICY.
 
 The repository currently records the author's Copyleft / share-alike intent as a governance baseline.
 
-A future repository pass may normalize this into explicit standard licenses for different asset classes (for example, a software license for code and a compatible share-alike content/data license). Until that normalization is completed, contributors should treat this file together with repository provenance and rights policies as the project's current sharing intent rather than assume third-party material is relicensed.
+No GPL, AGPL, Creative Commons or other standard license is selected by this policy. Until a separate license decision is recorded, contributors should treat this file together with repository provenance and rights policies as the project's current sharing intent rather than assume third-party material is relicensed.
 
 ## 6. Attribution
 

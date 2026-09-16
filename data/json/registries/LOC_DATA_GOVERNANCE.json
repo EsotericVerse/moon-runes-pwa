@@ -1,167 +1,53 @@
 {
-  "schema_version": "0.6",
+  "schema_version": "1.0",
   "registry": "LOC_DATA_GOVERNANCE",
-  "language_system_id": "lo3rwang",
-  "canonical_positioning": {
-    "loc": {
-      "name": "LOC / Luna Codex / 月典",
-      "zh": "語言系統模組框架",
-      "en": "Language Module Framework"
-    },
-    "lunarunes": {
-      "name": "LunaRunes / 月之符文",
-      "zh": "符號式語言模組",
-      "en": "Symbolic Language Module"
-    },
-    "loc_modules": {
-      "LOC1": "LunaRunes / 月之符文",
-      "LOC2": "Context / 脈絡",
-      "LOC3": "Music / 音樂",
-      "LOC4": "Literary / 文字創作",
-      "LOC5": "Multimedia / 多媒體",
-      "LOC6": "Algorithm / 演算法",
-      "LOC7": "Module / 演算模組",
-      "LOC8": "Evolution / 推演"
-    },
-    "rule": "Current public and governance terminology must use Language Module Framework for LOC and Symbolic Language Module for LunaRunes. Language System Model, LOC6 Methodology, and LOC7 Algorithm are superseded current-positioning terms and may remain only in explicit historical records."
+  "status": "current",
+  "updated_at": "2026-09-16",
+  "identity": {
+    "loc": "Portable Language Module Framework",
+    "lunarunes": "Independent Symbolic Language Module and reference implementation"
   },
+  "authority_model": ["scope", "authoritative_source", "current_status", "conflict_resolution"],
   "principles": {
-    "model": "Authority -> Registry -> Reference -> Consumer",
-    "ui_rule": "LOC1–8 are retained only as homepage guide labels for human explanation. They are not backend taxonomy, ownership IDs, API fields, KM categories, FAQ ownership, or engineering variable names.",
-    "misc_rule": "New or unresolved cross-domain material may enter LOC8 temporarily and should move to a clearer primary owner when responsibility becomes stable.",
-    "governance_core": "governance.html",
-    "governance_history": "governance.html",
-    "stable_framework_mutable_language": "Stable identities, schemas, responsibility domains and provenance rules govern a language layer whose meanings, relations and interpretations may evolve.",
-    "historical_integrity": "Original records are retained; later interpretations may supersede but must not silently rewrite historical evidence.",
-    "plurality": "Competing interpretations may coexist when provenance, context and lifecycle status remain explicit.",
-    "boundary_model": "Govern by domain/scope/ownership/permission boundaries rather than a single universal moral bottom-line vocabulary.",
-    "domain_rule": "Use semantic domains in implementation: runes, context, music, literary, media, governance, knowledge, evolution, global.",
-    "legacy_loc_rule": "Existing LOC1–8 fields may remain temporarily for compatibility during migration, but no new backend dependency may be introduced."
+    "objective_neutral": true,
+    "explainable": true,
+    "governance_before_implementation": true,
+    "semantic_before_keyword_match": true,
+    "single_current_classification": true,
+    "historical_records_immutable": true,
+    "cross_scope_write_requires_review": true,
+    "portable_vendor_neutral": true,
+    "conflicts_are_not_guessed": true
   },
-  "authorities": {
-    "terminology": {
-      "authority": "global",
-      "registry": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
-      "rule": "Current-facing public copy, FAQ/RAG, KM, Skills and runtime projections must prefer this registry over superseded terminology in legacy source snapshots."
-    },
-    "language_system_identity": {
-      "authority": "global",
-      "registry": "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json"
-    },
-    "rune_semantics": {
-      "authority": "runes"
-    },
-    "context_relationship_graph": {
-      "authority": "context",
-      "registry": "data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json"
-    },
-    "music_works": {
-      "authority": "music"
-    },
-    "writing_works": {
-      "authority": "literary",
-      "registry": "data/json/registries/LOC4_WRITING_REGISTRY.json"
-    },
-    "media_assets": {
-      "authority": "media"
-    },
-    "governance_interpretation": {
-      "authority": "governance",
-      "registry": "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json"
-    },
-    "knowledge_retrieval": {
-      "authority": "knowledge"
-    },
-    "temporal_evolution": {
-      "authority": "evolution",
-      "registry": "data/json/registries/LOC_ERA_REGISTRY.json"
-    }
+  "scope_governance": {
+    "mutable": true,
+    "operations": ["create", "rename", "relate", "split", "merge", "remove"],
+    "independent_instance_authority": true,
+    "adoption_grants_upstream_login": false,
+    "aggregation_changes_source_ownership": false
   },
-  "analysis_boundary": {
-    "LOC6": "Algorithm: repeatable semantic analysis, judgment, governance, Zhengde Style interpretation, classification and decision rules derived from source evidence.",
-    "LOC7": "Module: reusable computation and knowledge modules that organize text architecture, KM, retrieval, RAG, Graph RAG traversal, validation and semantic engineering.",
-    "LOC8": "Evolution: time, period, Event timeline, Trajectory and Trend projections. It may display Graph views but does not own graph relation semantics.",
-    "LOC4": "Creative/life-writing text authority plus work-level and chapter-level literary/semantic analysis.",
-    "LOC2": "Context, relationship, Scenario/Event relation and Canonical Graph semantics."
+  "search_statistics": {
+    "owned_by_scope": true,
+    "integrated_results_require_review": true,
+    "processing": ["initial_full_analysis", "skip_unchanged", "update_diff", "recompute_marked_records_only"],
+    "leaderboard": "Persist Current counts and apply deltas; do not repeat full-text scans for every display."
   },
-  "rights_boundary": {
-    "LOC6": "Defines or executes governance-related algorithms and principles for authorship, attribution, sharing, licensing, and collaboration.",
-    "LOC8": "Maintains shared rights/provenance references and identity linkage.",
-    "LOC3_LOC4_LOC5": "Attach concrete work/media rights and provenance values by reference."
+  "era": {
+    "owned_and_governed_by_scope": true,
+    "cross_scope_merge_by_default": false,
+    "historical_selection_requires_audit": true
   },
-  "updated_at": "2026-09-11",
+  "roles": ["author", "data_subject", "scope_manager", "system_administrator"],
   "governance_control_plane": {
-    "lifecycle": [
-      "proposed",
-      "under_review",
-      "active",
-      "disputed",
-      "restricted",
-      "amended",
-      "superseded",
-      "withdrawn",
-      "rejected",
-      "tombstoned"
-    ],
-    "required_audit_fields": [
-      "governance_id",
-      "object_type",
-      "object_id",
-      "action",
-      "before",
-      "after",
-      "reason",
-      "evidence_refs",
-      "submitted_at",
-      "review_status",
-      "replacement_id"
-    ],
-    "delete_strategy": "governed_tombstone_by_default",
-    "promotion_flow": [
-      "proposal",
-      "review",
-      "rights_check",
-      "evidence_check",
-      "accept_publish",
-      "active",
-      "dispute_or_change",
-      "re_review",
-      "keep_or_amend_or_supersede_or_tombstone"
-    ],
-    "rule": "A governance policy is not complete until Principle -> Policy -> Executable Control -> Evidence/Audit Trail can be demonstrated."
+    "lifecycle": ["proposed", "under_review", "active", "disputed", "restricted", "amended", "superseded", "withdrawn", "rejected", "tombstoned"],
+    "required_audit_fields": ["governance_id", "scope_id", "object_type", "object_id", "actor_role", "action", "before", "after", "reason", "evidence_refs", "submitted_at", "review_status", "replacement_id"],
+    "delete_strategy": "governed_tombstone_by_default"
   },
-  "cross_domain_rule": "A domain may reference, consume, analyze or propose changes to another domain's authoritative record, but must not overwrite that domain's canonical ownership.",
-  "self_governance_projection": {
-    "authority": "LOC8",
-    "interpretation_owner": "LOC6",
-    "structure_owner": "LOC7",
-    "loop": [
-      "historical language/events",
-      "search/graph/era",
-      "trend/style/relation analysis",
-      "contextual comparison",
-      "self-governance decision",
-      "new language/event"
-    ],
-    "authority_domain": "evolution"
+  "copyleft": {
+    "methodology_open_with_attribution": true,
+    "commercial_derivatives_require_consent": true,
+    "paid_parsing_and_inference_allowed": true,
+    "standard_license_selected": false
   },
-  "loc4_loc6_boundary": {
-    "registry": "data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json",
-    "source_owner": "LOC4",
-    "interpretation_owner": "LOC6",
-    "rule": "Raw authored text and ordinary work/chapter analysis remain LOC4. Governance/value/Zhengde-style interpretations derived from those texts are LOC6 algorithm outputs.",
-    "platform_rule": "Facebook/Threads are LOC4 life-writing sources; platform does not make them LOC6.",
-    "no_overwrite": "LOC6 references LOC4 evidence and creates separate derived records; it never changes LOC4 canonical text."
-  },
-  "backend_domain_map": {
-    "runes": "LunaRunes / rune semantics and draw records",
-    "context": "Context / relation / graph / scenario",
-    "music": "Music / songs / lyrics",
-    "literary": "Literary / authored text and works",
-    "media": "Media / image / video / cross-media assets",
-    "governance": "Governance / values / rules / Zhengde-style interpretation",
-    "knowledge": "Knowledge / KM / retrieval / reusable modules / RAG",
-    "evolution": "Evolution / time / period / trend / trajectory",
-    "global": "System-wide identity or cross-domain governance"
-  }
+  "historical_boundary": "Retired numbered architecture and numbered navigation layers may appear only in explicitly Historical records."
 }
