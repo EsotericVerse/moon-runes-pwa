@@ -79,6 +79,7 @@ async function recordsStore(mode='readonly'){
 
 async function writeLocalRecord(record,{preserveUpdatedAt=false}={}){
   if(!record?.id)throw new Error('record.id is required');
+  if(record?.type==='rune-draw')throw new Error('月之符文抽籤紀錄目前不開放網頁儲存');
   const normalized=preserveUpdatedAt?normalizeRecordForStorage(record):prepareLocRecordForWrite(record);
   const {tx,store}=await recordsStore('readwrite');
   store.put(normalized);
