@@ -1,0 +1,63 @@
+/* Shared Page Composition presentation: one source of truth for all Scope homepages. */
+.scope-home-composition,
+.scope-home-composition button,
+.scope-home-composition input,
+.scope-home-composition select,
+.scope-home-composition textarea{
+  font-family:var(--loc-font-family);
+}
+
+.scope-home-composition .loc-hero h1{
+  font-size:var(--loc-type-page-title);
+  font-weight:var(--loc-weight-page-title);
+  line-height:var(--loc-line-page-title);
+}
+
+.scope-home-composition .scope-home-section h2{
+  font-size:var(--loc-type-section-title);
+  font-weight:var(--loc-weight-section-title);
+  line-height:var(--loc-line-section-title);
+}
+
+.scope-home-composition .loc-subtitle{
+  font-size:var(--loc-type-subtitle)!important;
+  font-weight:var(--loc-weight-subtitle);
+  line-height:var(--loc-line-subtitle)!important;
+}
+
+.scope-home-composition p,
+.scope-home-composition li,
+.scope-home-composition .loc-copy{
+  font-size:var(--loc-type-body);
+  font-weight:var(--loc-weight-body);
+  line-height:var(--loc-line-body);
+}
+
+.scope-home-composition .loc-eyebrow{
+  font-size:var(--loc-type-eyebrow)!important;
+  font-weight:var(--loc-weight-eyebrow);
+}
+
+.scope-home-composition .loc-button,
+.scope-home-composition .loc-link-card,
+.loc-language-toggle{
+  font-size:var(--loc-type-ui);
+  font-weight:var(--loc-weight-ui);
+}
+
+.loc-language-toggle{
+  min-width:2.5rem;
+  min-height:2.25rem;
+  padding:.35rem .65rem;
+  border:1px solid var(--loc-line);
+  border-radius:999px;
+  background:var(--loc-panel-2);
+  color:var(--loc-text);
+  cursor:pointer;
+}
+.loc-language-toggle:hover{border-color:var(--loc-accent-border)}
+.loc-language-toggle:focus-visible{outline:2px solid var(--loc-accent-border);outline-offset:2px}
+
+/* Both translations are rendered locally; switching language only flips visibility. */
+html[lang="zh-Hant"] .loc-i18n-en{display:none!important}
+html[lang="en"] .loc-i18n-zh{display:none!important}
