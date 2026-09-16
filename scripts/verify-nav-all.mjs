@@ -19,3 +19,4 @@ import './nav-render-contract.mjs';
 import './nav-search-contract.mjs';
 import './nav-loc-no-manage-contract.mjs';
 import './nav-cross-scope-contract.mjs';
+import './nav-scope-function-contract.mjs';
