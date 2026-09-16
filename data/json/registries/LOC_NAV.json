@@ -1,24 +1,51 @@
 {
-  "schema_version": "1.6",
-  "component": "LOC_GLOBAL_NAV",
-  "items": [
-    {"id":"runes","label":"月之符文","href":"runes.html","description":""},
-    {"id":"game","label":"遊戲","href":"game.html","description":""},
-    {"id":"context","label":"脈絡","href":"context.html","description":""},
-    {"id":"governance","label":"治理","href":"governance.html","description":""},
-    {"id":"statics","label":"統計","href":"statics.html","description":""},
-    {"id":"evolution","label":"推演","href":"evolution.html","description":""}
-  ],
-  "search": {
-    "type": "text_input",
-    "action": "search.html",
-    "parameter": "q",
-    "label": "搜尋"
+  "schema_version": "2.0",
+  "registry": "LOC_CURRENT_CANON",
+  "status": "canonical",
+  "effective_date": "2026-09-17",
+  "authority": "Current Canon",
+  "authority_rule": "This is the sole current governance source for public scope, feature, page-composition, and navigation decisions. Markdown, legacy registries, generated indexes, and UI code may project it but must not redefine it.",
+  "identity": {
+    "LOC": {"label": "LOC／月典", "role": "Language Module Framework", "description": "The reusable language-system module framework."},
+    "LunaRunes": {"label": "LunaRunes／月之符文", "role": "Symbolic Language Module", "description": "LOC's symbolic language module and starting seed; it is never a usage threshold."},
+    "Author": {"label": "作者／政德", "role": "individual author scope", "description": "The author's identity, works, and public collaboration boundary."},
+    "Management": {"label": "管理", "role": "governance scope", "description": "The governance, provenance, rights, and maintenance boundary. It is not a fourth public product surface."}
   },
-  "home": {
-    "label": "回月典首頁",
-    "href": "index.html",
-    "placement": "right"
+  "scope_model": {
+    "public_surfaces": ["LOC", "LunaRunes", "Author"],
+    "governance_scope": "Management",
+    "rule": "Public surfaces share navigation and feature grammar, while their content, data, and governance ownership remain isolated by scope."
   },
-  "current_page_rule": "Current page item is not a link; it may render as inactive text or be hidden according to page layout."
+  "feature_model": {
+    "shared": ["navigation", "search", "current-page state", "responsive shell", "accessibility"],
+    "LOC": ["overview", "context", "statistics", "evolution", "governance", "search"],
+    "LunaRunes": ["introduction", "draw", "daily draw", "library", "reference"],
+    "Author": ["introduction", "identity", "works", "collaboration"],
+    "Management": ["principles", "provenance", "rights", "maintenance"]
+  },
+  "page_composition": {
+    "index.html": {"scope": "LOC", "template": "loc-overview", "feature": "overview"},
+    "context.html": {"scope": "LOC", "template": "loc-feature", "feature": "context"},
+    "game.html": {"scope": "LOC", "template": "loc-feature", "feature": "context"},
+    "statics.html": {"scope": "LOC", "template": "loc-feature", "feature": "statistics"},
+    "evolution.html": {"scope": "LOC", "template": "loc-feature", "feature": "evolution"},
+    "search.html": {"scope": "LOC", "template": "loc-feature", "feature": "search"},
+    "governance.html": {"scope": "LOC", "governance_scope": "Management", "template": "loc-governance", "feature": "governance"},
+    "runes.html": {"scope": "LunaRunes", "template": "lunarunes-overview", "feature": "introduction"},
+    "lots.html": {"scope": "LunaRunes", "template": "lunarunes-feature", "feature": "draw"},
+    "lo3rwang.html": {"scope": "Author", "template": "author-overview", "feature": "introduction"}
+  },
+  "navigation": {
+    "items": [
+      {"scope": "LOC", "label": "月典", "href": "index.html"},
+      {"scope": "LunaRunes", "label": "月之符文", "href": "runes.html"},
+      {"scope": "Author", "label": "作者", "href": "lo3rwang.html"}
+    ],
+    "search": {"action": "search.html", "parameter": "q", "label": "搜尋", "placeholder": "輸入文字"},
+    "current_page_rule": "The current scope is rendered as inactive text, never as a link.",
+    "single_nav_rule": "There is one global navigation only. In-page controls may select a view or action but must not be named or styled as a second or third navigation."
+  },
+  "legacy": {
+    "LOC1_8": {"status": "historical", "replacement": "scope_model + feature_model + page_composition", "rule": "LOC1–8 must not be used as a current page architecture, navigation taxonomy, scope owner, or Current Canon source."}
+  }
 }
