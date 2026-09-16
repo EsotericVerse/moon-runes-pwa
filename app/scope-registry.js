@@ -4,9 +4,9 @@ export const SHARED_SCOPE_FUNCTIONS = Object.freeze([
 
 export const SCOPE_REGISTRY = Object.freeze({
   loc: Object.freeze({id:'loc',zhName:'月典',enName:'Luna Codex',dataset:'loc',host:'loc.lo3rwang.cc',canonicalOrigin:'https://loc.lo3rwang.cc',pathBase:'',reserved:['月之符文','https://lrunes.lo3rwang.cc/'],role:[['作者頁面','https://whoami.lo3rwang.cc/']],homes:[['回月典首頁','https://loc.lo3rwang.cc/']]}),
-  runes: Object.freeze({id:'runes',zhName:'月之符文',enName:'LunaRunes',dataset:'runes',host:'lrunes.lo3rwang.cc',canonicalOrigin:'https://lrunes.lo3rwang.cc',pathBase:'/runes',reserved:['語彙','https://lrunes.lo3rwang.cc/'],role:[['作者頁面','https://whoami.lo3rwang.cc/']],homes:[['回月之符文首頁','https://lrunes.lo3rwang.cc/'],['回月典首頁','https://loc.lo3rwang.cc/']]}),
+  runes: Object.freeze({id:'runes',zhName:'月之符文',enName:'LunaRunes',dataset:'runes',host:'lrunes.lo3rwang.cc',canonicalOrigin:'https://lrunes.lo3rwang.cc',pathBase:'/runes',reserved:['語彙','https://lrunes.lo3rwang.cc/'],role:[['管理者首頁','https://whoami.lo3rwang.cc/']],homes:[['回月之符文首頁','https://lrunes.lo3rwang.cc/'],['回月典首頁','https://loc.lo3rwang.cc/']]}),
   author: Object.freeze({id:'author',zhName:'作者',enName:'Author',dataset:'author',host:'whoami.lo3rwang.cc',canonicalOrigin:'https://whoami.lo3rwang.cc',pathBase:'',reserved:['風格詞','https://whoami.lo3rwang.cc/'],role:[['管理者頁面','https://manage.lo3rwang.cc/']],homes:[['回作者頁面','https://whoami.lo3rwang.cc/'],['回月典首頁','https://loc.lo3rwang.cc/']]}),
-  management: Object.freeze({id:'management',zhName:'管理',enName:'Management',dataset:'management',host:'manage.lo3rwang.cc',canonicalOrigin:'https://manage.lo3rwang.cc',pathBase:'',reserved:['治理規則','https://manage.lo3rwang.cc/'],role:[],homes:[['回治理頁面','https://manage.lo3rwang.cc/'],['回月典首頁','https://loc.lo3rwang.cc/']]})
+  management: Object.freeze({id:'management',zhName:'管理',enName:'Management',dataset:'management',host:'manage.lo3rwang.cc',canonicalOrigin:'https://manage.lo3rwang.cc',pathBase:'',reserved:['治理規則','https://manage.lo3rwang.cc/'],role:[['管理者首頁','https://whoami.lo3rwang.cc/']],homes:[['回治理頁面','https://manage.lo3rwang.cc/'],['回月典首頁','https://loc.lo3rwang.cc/']]})
 });
 
 export function detectScope(pathname='/',host=''){
