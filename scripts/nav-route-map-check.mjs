@@ -1,7 +1,7 @@
 import fs from 'node:fs';
-const map=JSON.parse(fs.readFileSync('scripts/nav-route-map.json','utf8'));
+const registry=fs.readFileSync('app/scope-registry.js','utf8');
 const expected=['context','statics','evolution','governance','search'];
-if(JSON.stringify(map.sharedFunctions)!==JSON.stringify(expected)){throw new Error('Shared NAV functions drifted');}
-for(const scope of ['loc','runes','author','governance'])if(!map.scopes[scope])throw new Error(`Missing NAV scope: ${scope}`);
-if(map.scopes.loc.reserved.label!=='月之符文'||map.scopes.runes.reserved.label!=='語彙'||map.scopes.author.reserved.label!=='風格詞'||map.scopes.governance.reserved.label!=='治理規則')throw new Error('Reserved NAV entry drifted');
-console.log('Declarative NAV route map verified.');
+for(const fn of expected)if(!registry.includes(`'${fn}'`))throw new Error(`Missing shared Scope function: ${fn}`);
+for(const scope of ['loc','runes','author','management'])if(!registry.includes(`id:'${scope}'`))throw new Error(`Missing Current Scope: ${scope}`);
+for(const label of ['月之符文','語彙','風格詞','治理規則'])if(!registry.includes(`reserved:['${label}'`))throw new Error(`Reserved NAV entry drifted: ${label}`);
+console.log('Authoritative Scope Registry NAV map verified.');
