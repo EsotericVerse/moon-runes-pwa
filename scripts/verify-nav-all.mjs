@@ -29,3 +29,4 @@ import './nav-scope-isolation-contract.mjs';
 import './nav-ready-check.mjs';
 import './nav-implementation-status-check.mjs';
 import './nav-scope-derivation-check.mjs';
+import './nav-contract-sources-check.mjs';
