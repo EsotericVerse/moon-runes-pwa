@@ -14,15 +14,14 @@ export default function GlobalNav(){
   const isRunes=pathname==='/runes'||pathname.startsWith('/runes/');
 
   const links=isRunes ? <>
-    <a href="/runes#draw">抽牌</a>
-    <a href="/runes/list">符文圖鑑</a>
-    <a href="/game">遊戲</a>
-    <a href="/context">符文脈絡</a>
-    <a href="/statics">符文統計</a>
-    <a href="/evolution">符文文化</a>
-    <a href="/runes/history">抽籤紀錄</a>
-    <a href="/runes/governance">符文治理</a>
+    <a href="/runes">語彙</a>
+    <a href="/context">脈絡</a>
+    <a href="/statics">統計</a>
+    <a href="/evolution">文化</a>
+    <a href="/governance">治理</a>
     <SearchBox />
+    <a href="https://whoami.lo3rwang.cc">作者頁面</a>
+    <a className="loc-next-home" href="/runes">回月之符文首頁</a>
     <a className="loc-next-home" href="/">回月典首頁</a>
   </> : <>
     <a href="/runes">月之符文</a>
@@ -30,8 +29,8 @@ export default function GlobalNav(){
     <a href="/statics">統計</a>
     <a href="/evolution">文化</a>
     <a href="/governance">治理</a>
-    <a href="/my-style">設定</a>
     <SearchBox />
+    <a href="https://whoami.lo3rwang.cc">作者頁面</a>
     <a className="loc-next-home" href="/">回月典首頁</a>
   </>;
 
