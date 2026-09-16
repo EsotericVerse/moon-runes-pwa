@@ -3,101 +3,82 @@ export default function GovernanceView(){
     <header className="loc-hero" id="top">
       <p className="loc-eyebrow">Governance</p>
       <h1>治理</h1>
-      <p className="loc-subtitle">分類、判斷、歷史保存與語意邊界</p>
-      <p>LOC 的治理不是把規則藏在文件裡，而是直接說明系統怎麼分類、怎麼判斷、怎麼保存歷史、怎麼避免語意污染，以及哪些地方由使用者保留最後決定權。</p>
+      <p className="loc-subtitle">用可解釋的原則治理分類，而不是累積例外字典</p>
+      <p>LOC 治理要求分類方法說得清楚、可以重複使用，也可以在規則更新後重新分析原始資料。月之符文是 LOC 的參照實作：它展示如何以少量基本語意原則完成簡單分類，而不是要求其他語言或文化採用相同符文答案。</p>
     </header>
 
     <div className="loc-grid two">
       <section className="loc-card" id="principles">
-        <p className="loc-eyebrow">Principles</p><h2>基本原則</h2><p className="loc-subtitle">先確定治理邊界，再進入資料與實作</p>
-        <p className="loc-core-line">尊重 · 和平 · 包容 · 友善</p>
-        <p><strong>LOC 保持客觀與中立。</strong> 不預設宗教、政治、道德或人生價值立場，也不要求任何人接受作者的信仰、觀念或生活方式。</p>
-        <p><strong>客觀是為了保留主體性。</strong> 系統先整理可觀察的資料、脈絡與變化，讓使用者看見自己的位置，再由使用者決定什麼適合自己；適合一個人的方向，不必成為適合所有人的規則。</p>
-        <p><strong>工具，不是理念傳達系統。</strong> LOC 作為模組化語言框架，負責依資料與規則整理、比較、歸納、分析並顯示結果；即使進一步比較不同時期的軌跡與趨勢，也只呈現由已知紀錄可觀察到的未來可能，不主動批判、定義或宣告未來應該是什麼。</p>
-        <p><strong>每個人都有自己的文化定位與未來。</strong> 系統提供可查閱、可比較的結果與參考座標；如何命名、分類、理解與選擇，仍屬於使用者自己的設定與判斷。</p>
-        <p><strong>分析不等於命令。</strong> 月之符文保留符文、抽籤與籤詩的文化形式，但結果只是把不確定性整理成可理解、可比較、可選擇的可能；最後決定仍由使用者自己做。</p>
-        <p><strong>歷史保留，現行定義優先。</strong> 舊版本、事件與來源保留，但不得因為歷史存在，就把舊名或舊語意重新污染現行 Canon。</p>
-        <p><strong>Spec 優先。</strong> 高歧義字詞先界定主體與語意邊界，再進入關鍵詞、方向與延伸說明。</p>
-        <p><strong>先治理，再實作。</strong> 語意、分類與顯示規則先確定，再套進資料、Search、Graph、RAG、介面與推演。</p>
+        <p className="loc-eyebrow">LOC Governance</p><h2>治理方法</h2><p className="loc-subtitle">先建立判別原則，再讓演算法執行</p>
+        <p className="loc-core-line">基本語意 → 完整詞義 → 判別原則 → 可解釋結果</p>
+        <p><strong>關鍵字只是候選。</strong> 字面命中不能直接當成分類結果；系統必須確認完整詞／詞組中，符文的實際語意是否成立。</p>
+        <p><strong>從例外找原則。</strong> 新案例先嘗試由既有原則解決；若多個案例反覆呈現同一種語意行為，就整理成可重複使用的原則，而不是把每一筆結果加入 Exception Keywords。</p>
+        <p><strong>例外維持最小化。</strong> 只有無法由通則推出、且具有穩定完整義或明確 Scope 的內容，才保留為特殊治理義。</p>
+        <p><strong>沒有數值語意權重。</strong> 分類靠語意成立與否、完整義與組合關係判定，不靠分數競賽決定唯一答案。</p>
+        <p><strong>多個語意可以同時成立。</strong> 不為了得到唯一主符文而刪除真正存在的其他語意。</p>
       </section>
 
-      <section className="loc-card" id="temporal-oscillation">
-        <p className="loc-eyebrow">Temporal Oscillation</p><h2>軌跡與擺盪</h2><p className="loc-subtitle">脈絡經過遞迴形成軌跡，軌跡經過時間顯出擺盪</p>
-        <p><strong>過去不可竄改，現在可以重新解析。</strong> 原始紀錄與當時狀態保留；當分類規則、文化座標或治理版本改變，可以用現行規則重新分析同一份歷史資料，但不得覆寫原始來源。</p>
-        <p><strong>現在是一個持續移動的觀測位置。</strong> 同一個詞、分類或文化定位可能在不同時期上升、下降、拆分、合併、反轉或回歸。LOC 記錄不同時間點的結果，觀察變化本身，而不宣告其中某一個位置永遠正確。</p>
-        <p><strong>Oscillation 是軌跡中的可觀察變化。</strong> 遞迴分析既有脈絡，保留各時期的分類與規則版本，讓變化累積成可回查的軌跡；再由軌跡整理過去的趨勢、理解現在的位置，並看見未來可能發展的方向。</p>
-        <p className="loc-core-line">遞迴脈絡分析 → 時間軌跡 → Oscillation → 現在位置 → 未來可能</p>
-      </section>
-
-      <section className="loc-card" id="culture-positioning">
-        <p className="loc-eyebrow">Cultural Positioning</p><h2>文化定位與風格</h2><p className="loc-subtitle">同一套框架，可以使用不同的文化分類標準</p>
-        <p><strong>月之符文是參考實作，不是唯一標準。</strong> 它用一套符號、群組與關鍵詞展示 LOC 如何建立文化定位；相同方法也可以套用在一個人、一套理念、一種作品風格或其他文化分類體系。</p>
-        <p><strong>文化定位來自可治理的設定。</strong> 使用者可以建立自己的關鍵詞、群組與規則，再讓 LOC 對資料進行一致的分類與統計。系統顯示的是依該設定得到的結果，而不是把某一套文化觀點宣告成普遍真理。</p>
-        <p><strong>文化紀錄形成風格軌跡。</strong> 當同一套設定持續作用於不同時期的資料，就可以比較關鍵詞、群組與作品分布的變化，形成可回查的文化紀錄與風格軌跡。</p>
-        <p className="loc-core-line">文化設定 → 資料分類 → 統計比較 → 時期文化 → 歷史軌跡 → 現在觀察 → 未來可能</p>
+      <section className="loc-card" id="rune-algorithm">
+        <p className="loc-eyebrow">Rune Algorithm</p><h2>四種基本判別</h2><p className="loc-subtitle">LunaRunes 的簡單原則式語意分類</p>
+        <p><strong>AND｜並列：</strong>多個符文語意都實際存在，全部保留。時空 → 時 + 空；風向 → 風 + 向；明火 → 明 + 火。</p>
+        <p><strong>PLUS｜增義：</strong>原義仍成立，完整詞再增加另一個語意維度。天時 → 時 + 緣。</p>
+        <p><strong>OVERRIDE｜完整義：</strong>完整詞已形成穩定專屬義，依完整義判定，不再機械拆字。時辰 → 辰；清明 → 辰；日月當空 → 明。</p>
+        <p><strong>DEFER｜延後判別：</strong>字面候選先等待完整語意。日、月是現行代表：日蝕 → 日；月蝕 → 月；日期 → 時；日月表示歲月／一段時期 → 辰。</p>
       </section>
 
       <section className="loc-card" id="classification">
-        <p className="loc-eyebrow">Classification Governance</p><h2>分類治理</h2><p className="loc-subtitle">先看文字功能與主體，再決定群組與符文</p>
-        <p><strong>分類不是看到字就直接命中。</strong> 符文名稱、關鍵詞與反向關鍵詞都只是 evidence，不是 trigger。</p>
-        <p className="loc-core-line">詞類 → 主體性 → 群組 → 符文</p>
-        <p>第一步先確認詞彙在句內扮演什麼角色；第二步確認描述的主體；第三步才決定八個一般群組或特殊組；最後才映射個別符文。</p>
-        <p><strong>每個語意單位只有一個正式群組值。</strong> 可以保留候選與分布，但正式 `group` 只能有一個。若沒有足夠證據，就留在「特殊」，不為了提高覆蓋率強迫分類。</p>
-        <p><strong>特殊組是預設值，不是垃圾桶。</strong> 它承接尚未能穩定落入一般八組的內容，也承接需要後續消歧的案例。</p>
-        <p><strong>接近結果要標記爭議。</strong> 第一與第二候選太接近時，仍保留一個目前最合理值，同時標記 disputed、候選、證據與排除原因，留給之後校準。</p>
-      </section>
-
-      <section className="loc-card" id="keyword-governance">
-        <p className="loc-eyebrow">Keyword Governance</p><h2>關鍵詞治理</h2><p className="loc-subtitle">關鍵詞用來縮小候選，不替文字下最後定義</p>
-        <p>關鍵詞資料庫提供候選、排除與可解釋證據，複雜推演再交給 Graph、規則或外部 AI。</p>
-        <p><strong>不要把三個近義詞塞滿同一個符文。</strong> 關鍵詞應表現該字的不同語意面向，而不是重複堆同義詞。</p>
-        <p><strong>NOR 是群組內排除。</strong> 它只否決目前群組，不是全域黑名單。</p>
-        <p><strong>使用者可完全換掉分類意義。</strong> 系統提供八組結構，不規定八組意義。LunaRunes 只是符號型語言模板；群組名稱、說明、keywords 與 NOR 都可以由使用者自己定義。</p>
-        <p><strong>精確比對優先。</strong> 基礎個人分類不做 fuzzy、embedding、同義詞自動擴張或自動翻譯；需要的詞就明確加入。</p>
+        <p className="loc-eyebrow">Classification Flow</p><h2>實際分類流程</h2><p className="loc-subtitle">No API、可解釋、可重跑</p>
+        <p className="loc-core-line">文字 → 完整詞／詞組 → 候選證據 → AND / PLUS / OVERRIDE / DEFER → 符文歸屬</p>
+        <p>詞性與句內語意角色用來協助消歧；符文群組與基本定義提供語意邊界。演算法最後可以得到零枚、一枚或多枚符文，而不是先強迫文章只能落入一個群組。</p>
+        <p>若上下文不足，就保留 disputed／待判定資訊；不使用虛構分數或臨時權重製造假精確。</p>
+        <p>Context 應顯示判定結果與理由；Statistics 只統計經演算法確認的 semantic hits，不把中文字面出現次數直接當符文統計。</p>
       </section>
 
       <section className="loc-card" id="semantic-boundaries">
-        <p className="loc-eyebrow">Semantic Boundaries</p><h2>語意邊界</h2><p className="loc-subtitle">Canon 與現行 Spec 高於一般字面直覺</p>
-        <div className="loc-rule-list">
-          <p><strong>水 = Water</strong>；「流動」核心歸氣，不因出現流動就判水。</p>
-          <p><strong>氣 = Air</strong>；<strong>暗 = Shadow</strong>；<strong>空 = Space</strong>。</p>
-          <p><strong>無 = Blank / all possibilities</strong>；<strong>虛 = Void</strong>，兩者不得混用。</p>
-          <p><strong>玄 = Chaos</strong>；不可回退為 Mystery，也不能把一般混亂或失序都自動判玄。</p>
-          <p><strong>誤 = Error</strong>。</p>
-          <p><strong>辰</strong>重在時期；<strong>時</strong>重在時間；<strong>緣</strong>可承接時機／契機，三者不可混成一般「時間」語義。</p>
-        </div>
-        <p>若同義衝突仍存在，採用：<strong>直接表達該語意方向的符文，優先於透過相反符文反面間接表達。</strong></p>
+        <p className="loc-eyebrow">Semantic Boundaries</p><h2>語意邊界</h2><p className="loc-subtitle">完整語意高於字面命中</p>
+        <p><strong>時：</strong>時間本身、時間規則、尺度、期間計量；日期、幾日、幾月、多久等依實際語意歸時。</p>
+        <p><strong>辰（Phase）：</strong>時期、階段與節氣。清明、節氣、時辰、時期等依完整義歸辰。</p>
+        <p><strong>緣（Karma）：</strong>時間與事件、條件、對象交互後形成的適合時機。遲到、延誤、錯過描述相合時機未成立時，可歸緣；不是宿命式的「有緣／沒緣」。</p>
+        <p><strong>誤（Error）：</strong>資訊、理解或判斷本身的錯誤。誤解、誤判、錯誤資料歸誤；延誤不能因含「誤」字就歸誤。</p>
+        <p><strong>日／月：</strong>日固定為日蝕語意，月固定為月蝕／月蝕陰暗面語意；一般字面日、月採 DEFER。</p>
+        <p><strong>其他固定邊界：</strong>水 = Water；流動核心歸氣；氣 = Air；暗 = Shadow；空 = Space；無 = Blank；虛 = Void；玄 = Chaos，不回退 Mystery。</p>
       </section>
 
-      <section className="loc-card" id="local-first">
-        <p className="loc-eyebrow">Local-first</p><h2>本機優先與可重跑</h2><p className="loc-subtitle">基礎分類能在本機完成就不呼叫 API</p>
-        <p>固定資料、詞類、群組主體性、關鍵詞與規則先完成初步分類，再進入統計、Search、Graph 或更高階分析。</p>
-        <p>分類結果應保留 `group`、候選、證據、排除、爭議標記與規則版本，讓同一份原文在規則更新後可以重新分類，而<strong>不修改原始資料</strong>。</p>
-        <p>個人 Library、群組設定與我的風格以 local-first 為主；遠端存讀只作使用者主動啟用的 OAuth 備份，不建立會員資料庫與背景同步。</p>
+      <section className="loc-card" id="author-governance">
+        <p className="loc-eyebrow">Author Governance</p><h2>德之符文</h2><p className="loc-subtitle">個人風格治理具有明確 Scope</p>
+        <p>德（0）保留但不屬 66 符抽取池。它是作者治理指派，不是看到「德」字就自動分類。</p>
+        <p>現行作者治理保留詞：<strong>微月光、人生月台、斜教、OW3gs</strong> → 德。</p>
+        <p>Author Scope 必須成立；其他人的姓名、一般道德詞彙或無關內容不會因相同字元自動繼承德的分類。</p>
       </section>
 
-      <section className="loc-card" id="flow">
-        <p className="loc-eyebrow">System Flow</p><h2>分類到推演</h2><p className="loc-subtitle">簡單層保留證據，複雜層處理關係與可能路徑</p>
-        <p className="loc-core-line">原始文字 → 候選關鍵詞 → 群組分類 → 符文候選 → 結構化狀態 → Graph / 規則 / AI → 推演</p>
-        <p>簡單層負責把資料整理乾淨、保留證據與爭議；複雜層只在需要時處理關係、前後因果、衝突、轉折與可能路徑。這樣複雜模型不會反過來覆蓋前面的治理。</p>
+      <section className="loc-card" id="culture-positioning">
+        <p className="loc-eyebrow">Culture Scope</p><h2>文化與分類主體</h2><p className="loc-subtitle">參照實作不是普遍真理</p>
+        <p>LunaRunes 可以依自己的 Canon 對文字做 LunaRunes projection，但這個結果不是對來源文化的正誤判決。</p>
+        <p>其他語言、文化、作者或符號系統可以建立自己的基本語意、組合原則與特殊治理；不需要照搬 LunaRunes 的 66 符分類。</p>
+        <p>對自身作品的治理權，不延伸為對其他人的思想、文化或獨立符文體系的治理權。</p>
       </section>
 
-      <section className="loc-card" id="copyright">
-        <p className="loc-eyebrow">Copyright · Copyleft</p><h2>版權</h2><p className="loc-subtitle">公開核心內容，同時保留來源、作者與 Canon 關係</p>
-        <p>LOC 與 LunaRunes 採 Copyleft 思路公開核心內容。歡迎閱讀、研究、參考與依既有授權條件延伸，但來源、作者與原始系統關係應保留。</p>
-        <p>衍生版本可以不同意、修改或擴充，但不會自動成為 upstream Canon。商業顧問、系統架構、治理設計與個案實作屬另外的合作範圍。</p>
-        <a className="loc-link-card" href="https://github.com/EsotericVerse/moon-runes-pwa"><strong>Repository</strong><span>原始碼、COPYLEFT 與版本紀錄。</span></a>
+      <section className="loc-card" id="era">
+        <p className="loc-eyebrow">ERA & Culture</p><h2>時期與歷史觀察</h2><p className="loc-subtitle">先分類，再比較不同時期</p>
+        <p>Rune ERA 正式節點為 <strong>14 → 24 → 32 → 42 → 66</strong>；40 與 64 保留為 RC／轉換歷史，不另立正式 ERA。</p>
+        <p>Culture 觀察形成、延續、轉變、分化、消退、回返與擺盪。它描述歷史資料，不負責預測未來。</p>
+        <p className="loc-core-line">Corpus → Rune Algorithm → Semantic Hits → ERA → Statistics → Culture</p>
+        <p>因此規則更新後可以重新掃描同一份 corpus，比較新舊 ERA 的符文與群組差異；原始資料本身保持不變。</p>
       </section>
 
-      <section className="loc-card" id="documents">
-        <p className="loc-eyebrow">Canonical References</p><h2>必要規格</h2><p className="loc-subtitle">網站與 machine-readable JSON 是現行治理入口</p>
-        <p>治理內容以網站與 machine-readable JSON 為主，不再把一般規則拆成大量 Markdown。需要閱讀完整模型定義時，使用 Canon；需要程式判斷時，使用 Registry / JSON。</p>
-        <div className="loc-link-list">
-          <a className="loc-link-card" href="/docs/LOC_Canon_1.0.docx"><strong>LOC Canon</strong><span>現行架構、定義與治理基準。</span></a>
-          <a className="loc-link-card" href="/data/loc-governance.json"><strong>Governance Registry</strong><span>頁面、資料、責任與治理入口。</span></a>
-          <a className="loc-link-card" href="/data/loc-module-registry.json"><strong>Module Registry</strong><span>LOC1–LOC8 模組與責任邊界。</span></a>
-        </div>
+      <section className="loc-card" id="neutrality">
+        <p className="loc-eyebrow">Neutrality</p><h2>中立與個人決定權</h2><p className="loc-subtitle">分析、價值判斷與決定分開</p>
+        <p>LOC／LunaRunes 整理可觀察資料、語意、關係與歷史差異，不把分類結果變成使用者必須接受的價值結論。</p>
+        <p>內容描述與價值判斷分開治理。題材具有黑暗、暴力、爭議或其他敏感描述，不構成修改其實際語意的理由。</p>
+        <p>抽牌與解讀同樣只提供語意與情境參考；位向不建立宿命結論，最後選擇仍由使用者決定。</p>
+      </section>
+
+      <section className="loc-card" id="copyleft">
+        <p className="loc-eyebrow">Copyleft & Audit</p><h2>開放參考與衍生治理</h2><p className="loc-subtitle">開放不等於放棄作者權益</p>
+        <p>任何人都可以學習、參考並建立自己的符文或符號式語言；單純名稱相同、個別概念相似或一般性參考，不因此自動成為 LunaRunes 衍生作品。</p>
+        <p>當作品實質沿用 LunaRunes 具有辨識性的內容、資料或整體特質時，應尊重並揭示來源，依衍生治理處理。</p>
+        <p><strong>Attribution ≠ Endorsement。</strong>標示原作者或通過衍生治理 Audit，不代表原作者推薦、認可或背書；背書必須另有明確授權。</p>
       </section>
     </div>
-  </section>;
+  </section>
 }
