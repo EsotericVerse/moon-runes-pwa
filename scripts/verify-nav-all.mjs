@@ -21,3 +21,4 @@ import './nav-loc-no-manage-contract.mjs';
 import './nav-cross-scope-contract.mjs';
 import './nav-scope-function-contract.mjs';
 import './nav-terminology-contract.mjs';
+import './nav-ci-contract-check.mjs';
