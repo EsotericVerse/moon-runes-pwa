@@ -1,14 +1,17 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC1_READING_EXAMPLE_REGISTRY",
-  "authority": "LOC1",
-  "updated_at": "2026-09-12",
-  "purpose": "Curated LunaRunes divination examples across draw formats and media. This registry complements the formal OW3gs 11-card reading registry and may reference LOC5 media without duplicating media ownership.",
+  "historical_registry_id": "LOC1_READING_EXAMPLE_REGISTRY",
+  "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
+  "feature_ids": ["lunarunes_reading", "reading_examples"],
+  "updated_at": "2026-09-17",
+  "purpose": "Curated LunaRunes reading examples across draw formats and media. The historical LOC1 filename is retained as provenance/compatibility only and does not define Current ownership.",
   "governance": [
-    "LOC5 remains the canonical owner of media assets; LOC1 stores only reading-example references and rune provenance.",
+    "Media assets remain authoritative in their governed source Scope; this registry stores only reading-example references and rune provenance.",
     "Do not infer missing runes or orientations. Preserve author-provided rune order and direction exactly when available.",
     "Public/mass-divination examples are kept separate from personal OW3gs validation cases.",
-    "For multi-card examples, preserve thematic sequence and record how later cards refine, diagnose, or redirect the first card instead of treating cards as isolated sentences."
+    "For multi-card examples, preserve thematic sequence and record how later cards refine, diagnose, or redirect the first card instead of treating cards as isolated sentences.",
+    "Historical LOC1–8 identifiers are provenance only and cannot define Current Scope, Feature ownership or Canon authority."
   ],
   "records": [
     {
@@ -18,13 +21,7 @@
       "spread_type": "LunaRunes public reading",
       "status": "confirmed",
       "date": "2025-07-12",
-      "media_ref": {
-        "media_id": "MEDIA-0195",
-        "platform": "instagram",
-        "instagram_media_id": "18018479150721730",
-        "url": "https://www.instagram.com/reel/DMA9yDAzeRK/",
-        "primary_loc": "LOC5"
-      },
+      "media_ref": {"media_id": "MEDIA-0195", "platform": "instagram", "instagram_media_id": "18018479150721730", "url": "https://www.instagram.com/reel/DMA9yDAzeRK/"},
       "cards": [
         {"position": 1, "rune": "風", "direction": "正位"},
         {"position": 2, "rune": "憶", "direction": "半正位"},
@@ -32,7 +29,8 @@
         {"position": 4, "rune": "語", "direction": "正位"}
       ],
       "rune_count": 4,
-      "source_note": "Author-confirmed LOC5 mass-divination Reel. Current supplied rune detail contains four runes; no fifth rune is inferred."
+      "source_note": "Author-confirmed mass-divination Reel. Current supplied rune detail contains four runes; no fifth rune is inferred.",
+      "provenance": {"historical_loc_ids": ["LOC1", "LOC5"]}
     },
     {
       "id": "READING-EXAMPLE-002",
@@ -52,7 +50,8 @@
       "interpretation": "共鳴開始不同步時，不再繼續堆疊修改；先確認錯誤所在。",
       "decision": "抽到誤正位後停止抽牌，轉入系統驗證。",
       "validation_context": "網站與 API 除錯過程中，先觀察到系統不同步，再以實際檢查確認錯誤來源。",
-      "source_note": "Author-confirmed two-card draw and interpretation. This example records thematic sequencing rather than isolated card meanings."
+      "source_note": "Author-confirmed two-card draw and interpretation. This example records thematic sequencing rather than isolated card meanings.",
+      "provenance": {"historical_loc_ids": ["LOC1"]}
     }
   ]
 }
