@@ -96,6 +96,17 @@ For each semantic unit:
 9. Mark disputes and retain alternative candidates.
 10. Explain why the winning LunaRunes group was chosen and why nearby groups were not, without turning the result into a judgment of the source culture.
 
+## Downstream rune-level semantic operations
+
+Group classification narrows the search space; it does not replace rune-level interpretation. When analysis proceeds from a group to individual LunaRunes, use the current Canon operations rather than literal keyword matching:
+
+- **AND**: retain every rune meaning that actually remains true in the complete expression (`時空 → 時 + 空`).
+- **PLUS**: retain the original meaning and add a semantic dimension established by the complete expression (`天時 → 時 + 緣`).
+- **OVERRIDE**: use the governed complete meaning without adding internal characters as runes (`時辰 → 辰`, `清明 → 辰`).
+- **DEFER**: do not classify a specialized rune from a literal hit; wait for the complete meaning (`日期 → 時`, while `日蝕 → 日`).
+
+Derive reusable principles from recurring cases. Do not grow a large `keyword → rune` exception dictionary. If the current principles are insufficient, preserve the case as disputed or pending review instead of inventing a rune assignment.
+
 ## Group subjectivity guide
 
 These are first-pass LunaRunes group domains, not keyword lists. Always defer to current rune-level Canon when a LunaRunes boundary is unclear.

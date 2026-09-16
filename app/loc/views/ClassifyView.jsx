@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { localRecordStorage } from '../storage';
 import { useLocalStore } from '../local-store';
 import { classifyText } from '../model/style-classifier';
+import { classifyRuneSemantics } from '../model/rune-semantic-classifier';
 import { createLibraryRecord, INITIAL_STYLE_PROFILE, STYLE_STORAGE_KEY } from '../model/style-profile';
 
 export default function ClassifyView(){
@@ -13,10 +14,11 @@ export default function ClassifyView(){
   const [source,setSource]=useState('manual');
   const [message,setMessage]=useState('');
   const result=useMemo(()=>text.trim()?classifyText(text,profile):null,[text,profile]);
+  const runeResult=useMemo(()=>text.trim()?classifyRuneSemantics(text):null,[text]);
 
   async function save(){
     if(!text.trim())return;
-    const record=createLibraryRecord({title,text,source,classification:result});
+    const record=createLibraryRecord({title,text,source,classification:{...result,rune_semantics:runeResult}});
     await localRecordStorage.put(record);
     setMessage(`已存入資料庫：${record.title}`);
   }
@@ -55,9 +57,25 @@ export default function ClassifyView(){
     </section>
 
     <section className="loc-card">
+      <p className="loc-eyebrow">Rune Algorithm · 符文演算法</p>
+      <h2>完整詞義判定</h2>
+      <p className="loc-subtitle">先辨識詞義，再依 AND／PLUS／OVERRIDE／DEFER 判定；字面命中只形成待判，不直接歸符文。</p>
+      {!runeResult?<p className="loc-status">輸入文字後會立即顯示可解釋的 Canon 判定。</p>:<>
+        {runeResult.decisions.length?<div className="loc-context-list">{runeResult.decisions.map((item,index)=><article className="loc-context-item compact" key={`${item.rule_id}-${item.start}-${index}`}>
+          <div className="loc-result-meta"><span>{item.operation}</span><span>{item.runes.join(' + ')}</span></div>
+          <h3>{item.text}</h3>
+          <p>{item.reason}</p>
+          <small>Rule: {item.rule_id}</small>
+        </article>)}</div>:<p className="loc-status">沒有足夠的通則證據形成符文歸屬；保留待判，不建立逐筆例外。</p>}
+        {runeResult.deferred.length?<div className="loc-note"><strong>待完整語境判別</strong><p>{runeResult.deferred.map(item=>`${item.text}：${item.reason}`).join('；')}</p></div>:null}
+        <p className="loc-status">{runeResult.note} · Ruleset {runeResult.ruleset_version} · No API</p>
+      </>}
+    </section>
+
+    <section className="loc-card">
       <p className="loc-eyebrow">Classification Result</p>
-      <h2>分類結果</h2>
-      <p className="loc-subtitle">顯示文字命中的群組與關鍵詞，並保留預設承接結果。</p>
+      <h2>自訂群組分類</h2>
+      <p className="loc-subtitle">這是使用者自訂的群組關鍵詞功能，與上述 LunaRunes 符文演算法分開呈現。</p>
       {!result?<p className="loc-status">輸入文字後會立即顯示結果。</p>:<>
         <div className="loc-chip-list">{result.matches.map(item=><span key={item.id}>{item.name}{item.hits.length?` · ${item.hits.join('、')}`:' · fallback'}</span>)}</div>
         <p className="loc-status">{result.fallback?'沒有命中自訂群組，進入預設承接組。':'只顯示實際命中的群組與關鍵詞。'}</p>

@@ -17,7 +17,8 @@ function forbidText(path, needles) {
 for (const path of [
   'LunaRune66.xlsx', 'LunarRunesCardCut.pdf', 'pics/LOC-FrameworkPic.png',
   'pics/LOC-structure.png', 'pics/LunaRunes.jpg', 'pics/aboutme.png', 'js/runes-core.js',
-  'js/galaxy.js', 'js/writing.js', 'js/rune-graph-core.js'
+  'js/galaxy.js', 'js/writing.js', 'js/rune-graph-core.js',
+  'app/loc/model/rune-semantic-classifier.js', 'scripts/verify-rune-semantic-classifier.mjs'
 ]) requireFile(path);
 if (existsSync(resolve(root, 'lib'))) failures.push('lib/ must not be recreated; shared JavaScript belongs in js/');
 
@@ -66,7 +67,9 @@ requireText('app/runes/RuneDrawClient.jsx', ["key: 'daily'", "key: 'ow3gs'", '<d
 requireText('app/runes/home-content.js', ['?mode=single#draw', '?mode=daily#draw', '?mode=ow3gs#draw']);
 requireText('app/runes/history/HistoryClient.jsx', ['const PAGE_SIZE=20', 'filtered.slice', '抽籤紀錄分頁']);
 requireText('app/loc/model/moon-phase.js', ['day >= 1 && day <= 7', "return '新月'", "return '上弦'", "return '滿月'", "return '下弦'", "return '空亡'"]);
-requireText('docs/LOC_Canon_1.1.md', ['「卡片月相」與「真實月相」是兩個不同欄位', '29–30 日空亡']);
+requireText('docs/LOC_Canon_1.1.md', ['「卡片月相」與「真實月相」是兩個不同欄位', 'AND｜並列', 'PLUS｜增義', 'OVERRIDE｜專屬完整義', 'DEFER｜延後判別', '從例外找原則']);
+requireText('app/governance/page.jsx', ['符文演算法不是 Keyword Search', '時／辰／緣／誤', '不預測，也不建立宿命結論']);
+requireText('app/loc/model/rune-semantic-classifier.js', ["operation:'AND'", "operation:'PLUS'", "operation:'OVERRIDE'", "operation:'DEFER'", 'requires_review']);
 requireText('scripts/prepare-next-public.mjs', ['PUBLIC_PICS', "'LunarRunesCardCut.pdf'", "'LunaRunes.jpg'"]);
 requireText('scripts/verify-public-payload.mjs', ['pics/LOC-FrameworkPic.png', 'pics/LunaRunes.jpg', 'pics/LOC-structure.png', 'LunarRunesCardCut.pdf']);
 
