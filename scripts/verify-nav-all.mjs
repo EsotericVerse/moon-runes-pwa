@@ -23,3 +23,4 @@ import './nav-scope-function-contract.mjs';
 import './nav-terminology-contract.mjs';
 import './nav-ci-contract-check.mjs';
 import './nav-release-check.mjs';
+import './nav-scope-resolver-contract.mjs';
