@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {LUNARUNES_ERA_BOUNDARIES,LUNARUNES_ERAS,CULTURE_CHANGE_MODES} from '../app/loc/model/rune-era.js';
+import {classifyRuneCorpus,summarizeRuneSemantics,compareRuneEras} from '../app/loc/model/rune-statistics.js';
+assert.equal(LUNARUNES_ERA_BOUNDARIES,'14 → 24 → 32 → 42 → 66');
+assert.deepEqual(LUNARUNES_ERAS.map(x=>x.runeCount),[14,24,32,42,66]);
+assert.deepEqual(LUNARUNES_ERAS.filter(x=>x.rcCount).map(x=>x.rcCount),[40,64]);
+assert.ok(CULTURE_CHANGE_MODES.includes('擺盪'));
+const classified=classifyRuneCorpus([{era:'舊',text:'時空'},{era:'新',text:'天時'},{era:'新',text:'日月'}]);
+const summary=summarizeRuneSemantics(classified);
+assert.deepEqual(summary.find(x=>x.era==='舊').runes.map(x=>x.rune).sort(),['時','空'].sort());
+assert.deepEqual(summary.find(x=>x.era==='新').runes.map(x=>x.rune).sort(),['時','辰','緣'].sort());
+const delta=compareRuneEras(summary.find(x=>x.era==='舊'),summary.find(x=>x.era==='新'));
+assert.equal(delta.find(x=>x.rune==='緣').delta,1);
+console.log('Rune ERA/statistics verified.');
