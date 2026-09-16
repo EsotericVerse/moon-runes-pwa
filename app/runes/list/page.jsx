@@ -30,7 +30,7 @@ export default function RuneListPage() {
       </header>
 
       <nav className="loc-card" aria-label="月之符文功能入口">
-        <a href="/runes">抽牌</a> · <strong>所有符文列表</strong> · <a href="/runes/history">抽籤紀錄</a>
+        <a href="/runes#draw">抽牌</a> · <a href="/runes#library">符文圖鑑</a> · <strong>所有符文列表</strong>
       </nav>
 
       <section className="loc-card" id="rune-list">
