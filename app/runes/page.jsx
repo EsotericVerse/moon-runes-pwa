@@ -1,11 +1,12 @@
 import './rune-atlas-governance.css';
 import './runes-content.css';
 import RuneDrawClient from './RuneDrawClient';
+import RuneAtlasHome from './RuneAtlasHome';
 import { RUNES_HOME_CONTENT } from './home-content';
 
 export const metadata = {
   title: '月之符文｜LOC',
-  description: '月之符文抽牌、分類參考與基本使用方式。'
+  description: '月之符文新手說明、抽牌、符文圖鑑與基本使用方式。'
 };
 
 function HighlightGrid({ items, label }) {
@@ -31,12 +32,10 @@ function ContentSection({ data, level = 2, id }) {
       <Heading id={headingId}>{data.title}</Heading>
       {data.subtitle ? <p className="loc-subtitle">{data.subtitle}</p> : null}
     </div>
-
     <div className="runes-content-group">
       <h3>重點提示</h3>
       <HighlightGrid items={data.highlights} label={`${data.title}重點提示`} />
     </div>
-
     <div className="runes-content-group runes-description">
       <h3>文字說明</h3>
       {data.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
@@ -56,10 +55,11 @@ function RunesIntro() {
 
 export default function RunesPage() {
   return <main className="loc-next-main">
-    <RunesIntro />
-    <nav className="loc-card runes-function-nav" aria-label="月之符文功能入口">
-      <a href="#draw">抽牌</a> · <a href="/runes/list">符文圖鑑</a> · <a href="/game">遊戲</a> · <a href="/context">符文脈絡</a> · <a href="/statics">符文統計</a> · <a href="/evolution">符文文化</a> · <a href="/runes/history">抽籤紀錄</a> · <a href="/runes/governance">符文治理</a>
+    <nav className="loc-card runes-function-nav" aria-label="月之符文頁內子選單">
+      <a href="#runes-relation">新手說明</a> · <a href="#runes-modes">閱讀結構</a> · <a href="#runes-reference">語意參考</a> · <a href="#draw">抽牌</a> · <a href="#library">符文圖鑑</a> · <a href="/runes/history">抽籤紀錄</a> · <a href="/runes/governance">符文治理</a>
     </nav>
-    <RuneDrawClient/>
+    <RunesIntro />
+    <RuneDrawClient />
+    <RuneAtlasHome />
   </main>;
 }
