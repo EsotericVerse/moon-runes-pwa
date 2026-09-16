@@ -16,7 +16,7 @@ const sources={
 
 const required=[
   ...['LOC月典','語言模型框架（Language Model Framework）','/pics/LunaRunes.jpg','月典模型架構','ModelArchitectureExplorer',"name:'LunaRunes'","name:'Context'","name:'Music'","name:'Literary'","name:'MultiMedia'","name:'Algorithm'","name:'Module'","name:'Culture'",'Base66','卡片月相：無 / 真實月相：空亡'].map(token=>[sources.home,token]),
-  ...['月之符文','語彙','脈絡','統計','文化','治理','搜尋','作者頁面','管理者頁面','回月之符文首頁','回作者頁面','回治理頁面','回月典首頁','https://whoami.lo3rwang.cc','https://manage.lo3rwang.cc'].map(token=>[sources.nav,token]),
+  ...['月之符文','語彙','風格詞','治理規則','脈絡','統計','文化','治理','搜尋','作者頁面','管理者頁面','回月之符文首頁','回作者頁面','回治理頁面','回月典首頁','https://whoami.lo3rwang.cc','https://manage.lo3rwang.cc','lrunes.lo3rwang.cc','context','statics','evolution','governance','search'].map(token=>[sources.nav,token]),
   ...['href="#draw"','href="#library"'].map(token=>[sources.runes,token]),
   ...['客觀與中立','可移植（Portable）','Copyleft','/management','/governance/history'].map(token=>[sources.governance,token]),
   ...['LunaRunes Scope','Master Data／Base66'].map(token=>[sources.runeGovernance,token]),
