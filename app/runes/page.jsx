@@ -6,16 +6,13 @@ import { RUNES_HOME_CONTENT } from './home-content';
 
 export const metadata = {
   title: '月之符文｜LOC',
-  description: '月之符文新手說明、抽牌、符文圖鑑與基本使用方式。'
+  description: '月之符文說明、抽牌與符文圖鑑。'
 };
 
 function HighlightGrid({ items, label }) {
   return <div className="runes-highlight-grid" aria-label={label}>
     {items.map(item => {
-      const body = <>
-        <strong>{item.label}</strong>
-        <span>{item.text}</span>
-      </>;
+      const body = <><strong>{item.label}</strong><span>{item.text}</span></>;
       return item.href
         ? <a className="runes-highlight-bubble interactive" href={item.href} key={item.label}>{body}</a>
         : <article className="runes-highlight-bubble" key={item.label}>{body}</article>;
@@ -23,13 +20,12 @@ function HighlightGrid({ items, label }) {
   </div>;
 }
 
-function ContentSection({ data, level = 2, id }) {
-  const Heading = level === 1 ? 'h1' : 'h2';
+function ContentSection({ data, id }) {
   const headingId = `${id}-title`;
   return <section className="loc-card runes-content-section" id={id} aria-labelledby={headingId}>
     <div className="runes-content-heading">
       <p className="loc-eyebrow">{data.eyebrow}</p>
-      <Heading id={headingId}>{data.title}</Heading>
+      <h2 id={headingId}>{data.title}</h2>
       {data.subtitle ? <p className="loc-subtitle">{data.subtitle}</p> : null}
     </div>
     <div className="runes-content-group">
@@ -47,7 +43,7 @@ function ContentSection({ data, level = 2, id }) {
 function RunesIntro() {
   const { relation, modes, reference } = RUNES_HOME_CONTENT;
   return <>
-    <ContentSection data={relation} level={1} id="runes-relation" />
+    <ContentSection data={relation} id="runes-relation" />
     <ContentSection data={modes} id="runes-modes" />
     <ContentSection data={reference} id="runes-reference" />
   </>;
@@ -55,6 +51,11 @@ function RunesIntro() {
 
 export default function RunesPage() {
   return <main className="loc-next-main">
+    <header className="loc-hero runes-home-hero">
+      <p className="loc-eyebrow">LunaRunes · 月之符文</p>
+      <h1>月之符文</h1>
+      <p>符號式語言模組，也是 LOC 的語彙種子。從抽牌或符文圖鑑開始，不需要先背完所有符文。</p>
+    </header>
     <nav className="loc-card runes-function-nav" aria-label="月之符文頁內子選單">
       <a href="#draw">抽牌</a> · <a href="#library">符文圖鑑</a>
     </nav>
