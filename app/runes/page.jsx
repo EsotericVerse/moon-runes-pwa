@@ -56,7 +56,7 @@ function RunesIntro() {
 export default function RunesPage() {
   return <main className="loc-next-main">
     <nav className="loc-card runes-function-nav" aria-label="月之符文頁內子選單">
-      <a href="#runes-relation">新手說明</a> · <a href="#runes-modes">閱讀結構</a> · <a href="#runes-reference">語意參考</a> · <a href="#draw">抽牌</a> · <a href="#library">符文圖鑑</a> · <a href="/runes/history">抽籤紀錄</a> · <a href="/runes/governance">符文治理</a>
+      <a href="#draw">抽牌</a> · <a href="#library">符文圖鑑</a>
     </nav>
     <RunesIntro />
     <RuneDrawClient />
