@@ -10,3 +10,4 @@ import './nav-runes-alias-contract.mjs';
 import './nav-reserved-contract.mjs';
 import './nav-no-history-contract.mjs';
 import './nav-current-contract-check.mjs';
+import './nav-minimal-invariants-check.mjs';
