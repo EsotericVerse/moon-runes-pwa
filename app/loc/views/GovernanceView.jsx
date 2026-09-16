@@ -2,6 +2,8 @@ const PRINCIPLES = [
   ['客觀與中立（Objectivity and Neutrality）','依資料、語境與公開規則判定；分析結果與作者、管理者或使用者的價值判斷分開。'],
   ['可解釋（Explainability）','判定保留規則版本、證據、候選與排除理由；可直接說明時，不以不可追溯的結果取代。'],
   ['範圍與權威（Scope and Authority）','先確認資料範圍，再依 Master Data、Canon、Spec、Registry、來源紀錄與衍生 View 的責任順序判定。衍生資料不得覆寫上游權威。'],
+  ['同原則、不同主體','LOC 提供共同治理方法與分類框架；LunaRunes、Author 與其他 Scope 可以共用相同原則，但各自管理不同主體、資料與權威。'],
+  ['漸進式揭露（Progressive Disclosure）','使用者不需要先理解整套 LOC、所有 LunaRunes 或作者全部作品。可從有興趣的 Feature 進入，再依需要逐步展開底層結構與治理資訊。'],
   ['現行與歷史（Current and Historical）','Current 只採用目前有效定義；歷史紀錄不可改寫。採用或呈現哪些歷史資料，由相應 Scope 管理者治理並留下紀錄。'],
   ['治理先於實作','先確定名稱、語意、權威與邊界，再更新程式、介面、索引、JSON、搜尋或推演；既有程式不得反向凍結治理。'],
   ['語意優先與分類一致性','分類依詞性／句內角色、主體性與所屬語意逐層判定，不以單字命中代替語意。需要唯一值時給出一個 Current 結果；接近候選另標爭議。'],
@@ -21,8 +23,9 @@ export default function GovernanceView(){
   return <section className="loc-view">
     <header className="loc-hero" id="top">
       <p className="loc-eyebrow">LOC Governance · Current</p><h1>治理</h1>
-      <p className="loc-subtitle">LOC 全域治理總覽、跨 Scope 邊界與歷史查詢入口</p>
+      <p className="loc-subtitle">LOC 是框架與分類工具；治理原則共用，主體各自獨立</p>
       <p>LOC Governance 可總覽整個系統的 Current 原則、Scope 關係、權威邊界與歷史來源；但不取代 LunaRunes 或 Author Scope 對自身資料的治理。</p>
+      <p>不必先理解全部 LOC、全部符文或全部作者作品。使用者可以直接從有興趣的 Feature 開始，再決定是否展開更多脈絡、治理與歷史。</p>
     </header>
     <section className="loc-card" id="principles">
       <p className="loc-eyebrow">Principles</p><h2>Current 治理原則</h2>
@@ -37,7 +40,7 @@ export default function GovernanceView(){
       </section>
       <section className="loc-card" id="governance-actions">
         <p className="loc-eyebrow">Governance Space</p><h2>治理入口</h2>
-        <p>LOC 放全域與跨 Scope 的治理；符文的歸 LunaRunes；作者與政德風的歸 Author。歷史查詢集中在 Governance，並保留來源 Scope。</p>
+        <p>LOC 放全域與跨 Scope 的治理；符文的歸 LunaRunes；作者與政德風的歸 Author。三者共用治理方法，但主體、資料與 Current 權威分開。歷史查詢集中在 Governance，並保留來源 Scope。</p>
         <div className="loc-link-list">
           <a className="loc-link-card" href="/management"><strong>管理者功能</strong><span>Scope、ERA、納入審核、修正標記與授權寫入。</span></a>
           <a className="loc-link-card" href="/governance/history"><strong>歷史查詢／治理紀錄</strong><span>跨 Scope 查詢不可改寫的歷史、來源、變更與稽核紀錄。</span></a>
