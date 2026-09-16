@@ -5,7 +5,7 @@ import RuneAtlasHome from './RuneAtlasHome';
 
 export const metadata = {
   title: '月之符文｜LOC',
-  description: '月之符文說明、抽牌、符文關聯、演算法與文化入口。'
+  description: '月之符文說明、抽牌、符文關聯、關鍵詞脈絡與延伸體系入口。'
 };
 
 export default function RunesPage() {
@@ -23,20 +23,20 @@ export default function RunesPage() {
     <section className="loc-card runes-content-section" id="context">
       <div className="runes-content-heading">
         <p className="loc-eyebrow">Context · 脈絡</p>
-        <h2>符文演算法</h2>
-        <p className="loc-subtitle">符文不是只看單張，而是透過組合、位置、方向與脈絡逐步形成完整語意。</p>
+        <h2>關鍵詞與符文演算法</h2>
+        <p className="loc-subtitle">從詞開始，看關鍵詞、詞義與符文之間怎麼建立聯繫。</p>
       </div>
-      <p>單卡保留特質種子，雙卡看關係與因果，三卡以源－轉－合加入變化，五卡延伸情境，OW3gs 11 卡再整合成更完整的分析。想深入時，再查看符文脈絡與演算法細節。</p>
-      <div className="links"><a href="/context">查看符文脈絡</a><a href="/search?q=符文演算法">搜尋符文演算法</a></div>
+      <p>月之符文的脈絡重點是詞與詞之間的關係：關鍵詞如何連到符文、群組、位置、方向與其他詞，再透過單卡、雙卡、三卡、五卡與 OW3gs 等演算法組合成可追溯的語意脈絡。</p>
+      <div className="links"><a href="/context">查看符文脈絡</a><a href="/search?q=符文關鍵詞">搜尋符文關鍵詞</a><a href="/search?q=符文演算法">搜尋符文演算法</a></div>
     </section>
 
     <section className="loc-card runes-content-section" id="culture">
       <div className="runes-content-heading">
         <p className="loc-eyebrow">Culture · 文化</p>
-        <h2>符文文學與歌曲</h2>
-        <p className="loc-subtitle">同一組符文，可以成為文字、故事、歌詞與不同時期的創作種子。</p>
+        <h2>符文延伸體系</h2>
+        <p className="loc-subtitle">符文從語彙種子往外延伸，形成文學、歌曲、遊戲、影像與其他作品體系。</p>
       </div>
-      <p>月之符文除了抽牌，也會進入小說、短文、歌詞與音樂創作。想看符文怎麼變成作品，可以直接從有興趣的文學或歌曲開始，不必先理解完整系統。</p>
+      <p>文化重點不是再解釋單一符文，而是看月之符文如何被延伸成不同形式：小說、短文、歌詞、音樂、遊戲、影像與其他創作。想看哪一種，就從那個延伸體系直接進去。</p>
       <div className="links"><a href="/search?q=符文文學">看符文文學</a><a href="/search?q=符文歌曲">看符文歌曲</a><a href="/evolution">看符文文化</a></div>
     </section>
   </main>;
