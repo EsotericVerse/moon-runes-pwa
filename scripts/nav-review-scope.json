@@ -1,0 +1,1 @@
+{"include":["NAV rendering","Scope detection","route derivation","reserved entries","role/home links","search action","legacy NAV compatibility","NAV governance docs","CI regression guards"],"exclude":["feature page data implementation","draw algorithm","rune master data","non-NAV UI redesign"]}
