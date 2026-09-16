@@ -22,10 +22,10 @@ function collectText(data,terms,displayQuery,found){for(const d of data?.documen
 function collectMusic(data,terms,displayQuery,found){for(const w of data?.works||[]){const hay=`${w.title||''} ${w.summary||''} ${w.style||''} ${(w.tags||[]).join(' ')} ${w.retrieval_text||''}`;const matched=firstGovernedMatch(hay,terms);if(matched)found.push({key:w.work_id,source:'音樂',title:w.title,date:w.created_date||'',snippet:snippet(w.summary||w.retrieval_text,matched||displayQuery),href:w.versions?.[0]?.suno_url||''});if(found.length>=MAX_RAW_RESULTS)return;}}
 function collectGeneric(data,label,terms,displayQuery,found){for(const item of objectsFrom(data)){const r=genericResult(item,label,terms,displayQuery);if(r)found.push(r);if(found.length>=MAX_RAW_RESULTS)return;}}
 
-export default function SearchView(){
+export default function SearchView({fixedCollection='',scopeTitle='搜尋',scopeDescription='',hideCollectionPicker=false}){
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [query,setQuery]=useState('');
-  const [collectionId,setCollectionId]=useState('all');
+  const [collectionId,setCollectionId]=useState(fixedCollection||'all');
   const [results,setResults]=useState([]);
   const [status,setStatus]=useState('輸入文字後才會載入搜尋資料。');
   const [error,setError]=useState('');
@@ -37,98 +37,39 @@ export default function SearchView(){
 
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
-    const requested=params.get('c')||'all';
+    const requested=fixedCollection||(params.get('c')||'all');
     const q=params.get('q')||'';
     const nextCollection=getSearchCollection(requested).id;
-    setCollectionId(nextCollection);
-    setQuery(q);
-    if(q.trim()){
-      window.setTimeout(()=>document.getElementById('loc-search-form')?.requestSubmit(),0);
-    }
-  },[]);
+    setCollectionId(nextCollection);setQuery(q);
+    if(q.trim())window.setTimeout(()=>document.getElementById('loc-search-form')?.requestSubmit(),0);
+  },[fixedCollection]);
   useEffect(()=>setPage(1),[collectionId,pageSize]);
   useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
 
-  function syncUrl(nextCollection,nextQuery){
-    const url=new URL(window.location.href);
-    if(nextCollection&&nextCollection!=='all')url.searchParams.set('c',nextCollection);else url.searchParams.delete('c');
-    if(nextQuery)url.searchParams.set('q',nextQuery);else url.searchParams.delete('q');
-    window.history.replaceState(null,'',`${url.pathname}${url.search}${url.hash}`);
-  }
+  function syncUrl(nextCollection,nextQuery){const url=new URL(window.location.href);if(!fixedCollection&&nextCollection&&nextCollection!=='all')url.searchParams.set('c',nextCollection);else url.searchParams.delete('c');if(nextQuery)url.searchParams.set('q',nextQuery);else url.searchParams.delete('q');window.history.replaceState(null,'',`${url.pathname}${url.search}${url.hash}`);}
 
   async function runSearch(event){
-    event.preventDefault();
-    const q=query.trim();
-    if(!q)return;
-    const collection=getSearchCollection(collectionId);
+    event.preventDefault();const q=query.trim();if(!q)return;
+    const collection=getSearchCollection(fixedCollection||collectionId);
     const activeScope=readSearchScope(new URL(window.location.href).searchParams,collection.scopeProfile);
-    syncUrl(collection.id,q);
-    const id=++searchId.current;
-    setPage(1);setError('');setResults([]);setStatus(`搜尋「${collection.label}」資料…`);
+    syncUrl(collection.id,q);const id=++searchId.current;setPage(1);setError('');setResults([]);setStatus(`搜尋「${collection.label}」資料…`);
     try{
-      const governance=await fetchLocJson(LOC_DATA.LOC_SEARCH_GOVERNANCE);
-      if(id!==searchId.current)return;
-      const governed=applySearchGovernance(q,governance);
-      if(governed.outOfDomain){setStatus(`「${collection.label}」中的「${q}」找到 0 筆顯示結果。`);return;}
-      const searchTerms=governed.terms;
-      const routingQuery=governed.routingQuery||q;
-      const found=[];
+      const governance=await fetchLocJson(LOC_DATA.LOC_SEARCH_GOVERNANCE);if(id!==searchId.current)return;
+      const governed=applySearchGovernance(q,governance);if(governed.outOfDomain){setStatus(`「${collection.label}」中的「${q}」找到 0 筆顯示結果。`);return;}
+      const searchTerms=governed.terms;const routingQuery=governed.routingQuery||q;const found=[];
       const smallRequests=collection.smallSources.map(([path,label])=>({path,label}));
-      if(smallRequests.length){
-        const smallData=await fetchLocJsonBatch(smallRequests,{concurrency:2});
-        if(id!==searchId.current)return;
-        for(let index=0;index<smallRequests.length;index+=1){
-          collectGeneric(smallData[index],smallRequests[index].label,searchTerms,q,found);
-          if(found.length>=MAX_RAW_RESULTS)break;
-        }
-      }
-
-      async function scanDataset(datasetId,kind){
-        if(found.length>=MAX_RAW_RESULTS)return;
-        const started=performance.now();
-        const dataset=await getLocDataDataset(datasetId);
-        const sourceSegments=Array.isArray(dataset?.segments)?dataset.segments:[];
-        const partitioned=partitionSegmentsByScope(sourceSegments,activeScope);
-        const scopedSegments=[...partitioned.matched,...partitioned.unknown];
-        const segments=await rankSearchSegments(datasetId,scopedSegments,routingQuery);
-        let loadedSegments=0;
-        let loadedBytes=0;
-        let datasetHits=0;
-        for(let offset=0;offset<segments.length&&found.length<MAX_RAW_RESULTS;offset+=SEGMENT_BATCH_SIZE){
-          if(id!==searchId.current)return;
-          const chunk=segments.slice(offset,offset+SEGMENT_BATCH_SIZE);
-          const loaded=await fetchLocDataSegments(datasetId,{segmentIds:chunk.map(segment=>segment.id),maxSegments:SEGMENT_BATCH_SIZE});
-          if(id!==searchId.current)return;
-          loadedSegments+=loaded.length;
-          loadedBytes+=loaded.reduce((sum,item)=>sum+Number(item.segment?.bytes||0),0);
-          for(const item of loaded){
-            const before=found.length;
-            if(kind==='text')collectText(item.data,searchTerms,q,found);
-            else if(kind==='music')collectMusic(item.data,searchTerms,q,found);
-            const hits=found.length-before;
-            datasetHits+=hits;
-            if(hits>0)await recordSearchSegmentHits(datasetId,item.segment.id,routingQuery,hits);
-            if(found.length>=MAX_RAW_RESULTS)break;
-          }
-        }
-        recordSearchTelemetry({collection:collection.id,dataset:datasetId,segments:loadedSegments,bytes:loadedBytes,hits:datasetHits,elapsedMs:performance.now()-started});
-      }
-
-      if(collection.includeTextCorpus)await scanDataset('loc4-text-corpus','text');
-      if(collection.includeMusic)await scanDataset('loc3-lyrics-search','music');
-      if(id!==searchId.current)return;
-
-      const unique=[];const seen=new Set();for(const r of found){const k=`${r.source}|${r.title}|${r.snippet}`;if(!seen.has(k)){seen.add(k);unique.push(r);}if(unique.length>=60)break;}
-      setResults(unique);setStatus(`「${collection.label}」中的「${q}」找到 ${unique.length} 筆顯示結果。`);
+      if(smallRequests.length){const smallData=await fetchLocJsonBatch(smallRequests,{concurrency:2});if(id!==searchId.current)return;for(let index=0;index<smallRequests.length;index+=1){collectGeneric(smallData[index],smallRequests[index].label,searchTerms,q,found);if(found.length>=MAX_RAW_RESULTS)break;}}
+      async function scanDataset(datasetId,kind){if(found.length>=MAX_RAW_RESULTS)return;const started=performance.now();const dataset=await getLocDataDataset(datasetId);const sourceSegments=Array.isArray(dataset?.segments)?dataset.segments:[];const partitioned=partitionSegmentsByScope(sourceSegments,activeScope);const scopedSegments=[...partitioned.matched,...partitioned.unknown];const segments=await rankSearchSegments(datasetId,scopedSegments,routingQuery);let loadedSegments=0,loadedBytes=0,datasetHits=0;for(let offset=0;offset<segments.length&&found.length<MAX_RAW_RESULTS;offset+=SEGMENT_BATCH_SIZE){if(id!==searchId.current)return;const chunk=segments.slice(offset,offset+SEGMENT_BATCH_SIZE);const loaded=await fetchLocDataSegments(datasetId,{segmentIds:chunk.map(segment=>segment.id),maxSegments:SEGMENT_BATCH_SIZE});if(id!==searchId.current)return;loadedSegments+=loaded.length;loadedBytes+=loaded.reduce((sum,item)=>sum+Number(item.segment?.bytes||0),0);for(const item of loaded){const before=found.length;if(kind==='text')collectText(item.data,searchTerms,q,found);else if(kind==='music')collectMusic(item.data,searchTerms,q,found);const hits=found.length-before;datasetHits+=hits;if(hits>0)await recordSearchSegmentHits(datasetId,item.segment.id,routingQuery,hits);if(found.length>=MAX_RAW_RESULTS)break;}}recordSearchTelemetry({collection:collection.id,dataset:datasetId,segments:loadedSegments,bytes:loadedBytes,hits:datasetHits,elapsedMs:performance.now()-started});}
+      if(collection.includeTextCorpus)await scanDataset('loc4-text-corpus','text');if(collection.includeMusic)await scanDataset('loc3-lyrics-search','music');if(id!==searchId.current)return;
+      const unique=[];const seen=new Set();for(const r of found){const k=`${r.source}|${r.title}|${r.snippet}`;if(!seen.has(k)){seen.add(k);unique.push(r);}if(unique.length>=60)break;}setResults(unique);setStatus(`「${collection.label}」中的「${q}」找到 ${unique.length} 筆顯示結果。`);
     }catch(e){if(id===searchId.current){setError(e.message);setStatus('搜尋失敗。');}}
   }
 
-  const collection=getSearchCollection(collectionId);
-  return <section className="loc-view"><header className="loc-hero"><p className="loc-eyebrow">Search · 搜尋</p><h1>搜尋</h1><p>{collection.description} 大型資料清單（manifest）與資料分片（corpus shards）只有送出查詢後才下載。</p></header>
+  const collection=getSearchCollection(fixedCollection||collectionId);
+  return <section className="loc-view"><header className="loc-hero"><p className="loc-eyebrow">Search · 搜尋</p><h1>{scopeTitle}</h1><p>{scopeDescription||collection.description}</p></header>
     <form id="loc-search-form" className="loc-search-form" onSubmit={runSearch}>
-      <select value={collectionId} onChange={e=>{setCollectionId(e.target.value);syncUrl(e.target.value,query)}} aria-label="搜尋集合">{SEARCH_COLLECTION_ORDER.map(id=><option key={id} value={id}>{SEARCH_COLLECTIONS[id].label}</option>)}</select>
-      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="輸入關鍵字，例如：治理、月、自由" aria-label="搜尋文字"/>
-      <button className="loc-button primary" type="submit">搜尋</button>
+      {!hideCollectionPicker&&<select value={collectionId} onChange={e=>{setCollectionId(e.target.value);syncUrl(e.target.value,query)}} aria-label="搜尋集合">{SEARCH_COLLECTION_ORDER.map(id=><option key={id} value={id}>{SEARCH_COLLECTIONS[id].label}</option>)}</select>}
+      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="輸入關鍵字" aria-label={`搜尋${scopeTitle}`}/><button className="loc-button primary" type="submit">搜尋</button>
     </form>
     <p className="loc-status">{status}{results.length?` · 每頁 ${pageSize} 筆`:''}</p>{error&&<p className="loc-status error">{error}</p>}
     <div className="loc-search-results">{shownResults.map(r=><article className="loc-card" key={r.key}><div className="loc-result-meta"><span>{r.source}</span>{r.date&&<time>{r.date}</time>}</div><h2>{r.title}</h2><p>{r.snippet}</p>{r.href&&<a href={r.href} target={/^https?:/.test(r.href)?'_blank':undefined} rel={/^https?:/.test(r.href)?'noreferrer':undefined}>查看來源</a>}</article>)}</div>
