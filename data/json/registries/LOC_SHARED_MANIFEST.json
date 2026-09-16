@@ -1,340 +1,61 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "manifest": "LOC_SHARED_REGISTRIES",
-  "root": "data/shared",
+  "status": "current",
   "language_system_id": "lo3rwang",
+  "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
+  "terminology_authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
+  "architecture": "Scope Model × Feature Model → Page Composition",
+  "rule": "Registry filenames may preserve historical LOC1–8 identifiers for compatibility and provenance, but Current authority is governed by Scope and Canon. Features consume Scopes without owning them; generated/Search/RAG/UI layers are projections only.",
   "registries": [
-    {
-      "id": "language_system",
-      "path": "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
-      "authority": "LOC8",
-      "purpose": "Canonical language-system identity, IP, rights and provenance defaults.",
-      "authority_domain": "evolution"
-    },
-    {
-      "id": "era",
-      "path": "data/json/registries/LOC_ERA_REGISTRY.json",
-      "authority": "LOC8",
-      "purpose": "Canonical ERA labels, temporal state and source Event references.",
-      "authority_domain": "evolution"
-    },
-    {
-      "id": "media",
-      "path": "data/json/registries/LOC_MEDIA_REGISTRY.json",
-      "authority": "LOC5",
-      "purpose": "Canonical media assets and cross-links to works/songs.",
-      "authority_domain": "media"
-    },
-    {
-      "id": "shared_schema",
-      "path": "data/json/registries/LOC_SHARED_SCHEMA.json",
-      "authority": "LOC8",
-      "purpose": "Shared cross-LOC fields and lifecycle/provenance/rights shapes.",
-      "authority_domain": "evolution"
-    },
-    {
-      "id": "data_governance",
-      "path": "data/json/registries/LOC_DATA_GOVERNANCE.json",
-      "authority": "LOC8",
-      "purpose": "Authority and consumer rules across LOC1-8.",
-      "authority_domain": "evolution"
-    },
-    {
-      "id": "content_rights_policy",
-      "path": "data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json",
-      "authority": "LOC8",
-      "purpose": "P0 rights/privacy gates for corpus import, export, public search and publication.",
-      "authority_domain": "evolution"
-    },
-    {
-      "id": "reference_model",
-      "path": "data/json/registries/LOC_REFERENCE_MODEL.json",
-      "authority": "LOC8",
-      "purpose": "Stable ID types and shared relationship vocabulary; LOC2 owns relation/context semantics while each object keeps its canonical owner.",
-      "authority_domain": "evolution"
-    },
-    {
-      "id": "loc2_events",
-      "path": "data/json/registries/LOC2_EVENT_REGISTRY.json",
-      "authority": "LOC2",
-      "purpose": "Scenario Corpus / Event Corpus for real-life situation modeling and LOC2 Alpha events.",
-      "authority_domain": "context"
-    },
-    {
-      "id": "loc3_rune_songs",
-      "path": "data/json/registries/LOC3_RUNE_SONG_REGISTRY.json",
-      "authority": "LOC3",
-      "purpose": "Evidence-based registry for songs actually derived from real rune draws; separates confirmed provenance from candidates.",
-      "authority_domain": "music"
-    },
-    {
-      "id": "loc3_reasoning",
-      "path": "data/json/registries/LOC3_REASONING_SCHEMA.json",
-      "authority": "LOC3",
-      "purpose": "Proposition/reasoning analysis schema for rational, explanatory, boundary, governance and judgment-oriented songs.",
-      "authority_domain": "music"
-    },
-    {
-      "id": "loc4_writing",
-      "path": "data/json/registries/LOC4_WRITING_REGISTRY.json",
-      "authority": "LOC4",
-      "purpose": "Canonical writing-work catalog entry point and shared cross-LOC references.",
-      "authority_domain": "literary"
-    },
-    {
-      "id": "cross_relationships",
-      "path": "data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json",
-      "authority": "LOC2",
-      "purpose": "Canonical cross-LOC context/relationship edges consumed by Search, Graph RAG and evolution views.",
-      "authority_domain": "context"
-    },
-    {
-      "id": "loc6_era_style_evidence",
-      "path": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json",
-      "authority": "LOC6",
-      "purpose": "LOC3 metadata aggregates linked back to ERA-based Zhengde Style analysis.",
-      "authority_domain": "governance"
-    },
-    {
-      "id": "loc6_governance",
-      "path": "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json",
-      "authority": "LOC6",
-      "purpose": "Canonical governance, meaning, style-state and stage-interpretation records.",
-      "authority_domain": "governance"
-    },
-    {
-      "id": "loc6_rune_methodology",
-      "path": "data/json/registries/LOC6_RUNE_METHODOLOGY_REGISTRY.json",
-      "authority": "LOC6",
-      "purpose": "Canonical default methodology based on LunaRunes eight groups plus 德／命／玄; broadens rune algorithms beyond divination into repeatable text/source analysis.",
-      "authority_domain": "governance"
-    },
-    {
-      "id": "loc4_threads_source_index",
-      "path": "data/json/registries/LOC4_THREADS_KM_INDEX.json",
-      "authority": "LOC4",
-      "purpose": "Canonical LOC4 Threads representative source-text index. Raw authored posts are LOC4 life writing; LOC6 consumes them as governance/style evidence.",
-      "authority_domain": "literary"
-    },
-    {
-      "id": "loc6_dual_rune_relations",
-      "path": "data/json/registries/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
-      "authority": "LOC6",
-      "purpose": "Neutral two-rune semantic relation registry, separated from cause/effect draw projection.",
-      "authority_domain": "governance"
-    },
-    {
-      "id": "loc6_rune_interpretation",
-      "path": "data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
-      "authority": "LOC6",
-      "purpose": "Recorded rune-combination interpretation evidence from the seven-volume 月語者 chapter-outline corpus.",
-      "authority_domain": "governance"
-    },
-    {
-      "id": "loc7_linguistic_analysis",
-      "path": "data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json",
-      "authority": "LOC7",
-      "purpose": "Canonical grammar, syntax, Text Architecture and retrieval-analysis records.",
-      "authority_domain": "knowledge"
-    },
-    {
-      "id": "analysis_types",
-      "path": "data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json",
-      "authority": "LOC8",
-      "purpose": "Shared routing vocabulary for LOC6/LOC7 mixed analyses.",
-      "authority_domain": "evolution"
-    },
-    {
-      "id": "content_types",
-      "path": "data/json/registries/LOC_CONTENT_TYPE_REGISTRY.json",
-      "authority": "LOC8",
-      "purpose": "Shared content/asset vocabulary for routing and unified search.",
-      "authority_domain": "evolution"
-    },
-    {
-      "id": "source_types",
-      "path": "data/json/registries/LOC_SOURCE_TYPE_REGISTRY.json",
-      "authority": "LOC8",
-      "purpose": "Shared provenance/source vocabulary for source_refs across LOC1-8.",
-      "authority_domain": "evolution"
-    },
-    {
-      "id": "loc1_three_rune_narrative_evidence",
-      "path": "data/json/registries/LOC1_THREE_RUNE_NARRATIVE_EVIDENCE.json",
-      "authority": "LOC1",
-      "purpose": "LOC1 KM derivative of 月語者 chapter-level three-rune draws and narrative evidence.",
-      "authority_domain": "runes"
-    },
-    {
-      "id": "governance_trends",
-      "path": "data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json",
-      "authority": "LOC8/LOC6",
-      "purpose": "Structured governance-language trends: temporal projection by LOC8, interpretation by LOC6, structure by LOC7."
-    },
-    {
-      "id": "loc4_loc6_boundary",
-      "path": "data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json",
-      "authority": "LOC4/LOC6",
-      "purpose": "Canonical boundary: LOC4 owns authored source text and general work analysis; LOC6 owns governance/Zhengde-style/value interpretation derived from evidence."
-    }
+    {"id":"language_system","path":"data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json","feature_ids":["system_identity","provenance","rights"]},
+    {"id":"era","path":"data/json/registries/LOC_ERA_REGISTRY.json","feature_ids":["temporal_classification","era"]},
+    {"id":"media","path":"data/json/registries/LOC_MEDIA_REGISTRY.json","feature_ids":["media_catalog","cross_media_reference"]},
+    {"id":"shared_schema","path":"data/json/registries/LOC_SHARED_SCHEMA.json","feature_ids":["shared_schema"]},
+    {"id":"data_governance","path":"data/json/registries/LOC_DATA_GOVERNANCE.json","feature_ids":["governance"]},
+    {"id":"content_rights_policy","path":"data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json","feature_ids":["rights","privacy","publication_gate"]},
+    {"id":"reference_model","path":"data/json/registries/LOC_REFERENCE_MODEL.json","feature_ids":["reference_model","relationship"]},
+    {"id":"event_corpus","path":"data/json/registries/LOC2_EVENT_REGISTRY.json","feature_ids":["event_corpus","scenario_modeling"],"historical_provenance":{"loc_ids":["LOC2"]}},
+    {"id":"rune_songs","path":"data/json/registries/LOC3_RUNE_SONG_REGISTRY.json","feature_ids":["music","rune_provenance"],"historical_provenance":{"loc_ids":["LOC3"]}},
+    {"id":"reasoning_analysis","path":"data/json/registries/LOC3_REASONING_SCHEMA.json","feature_ids":["reasoning_analysis","music_analysis"],"historical_provenance":{"loc_ids":["LOC3"]}},
+    {"id":"writing","path":"data/json/registries/LOC4_WRITING_REGISTRY.json","feature_ids":["writing_catalog","text_corpus"],"historical_provenance":{"loc_ids":["LOC4"]}},
+    {"id":"cross_relationships","path":"data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json","feature_ids":["relationship","context_graph"]},
+    {"id":"era_style_evidence","path":"data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json","feature_ids":["style_analysis","era_analysis"],"historical_provenance":{"loc_ids":["LOC6"]}},
+    {"id":"governance_analysis","path":"data/json/registries/LOC6_GOVERNANCE_REGISTRY.json","feature_ids":["governance_analysis","style_analysis"],"historical_provenance":{"loc_ids":["LOC6"]}},
+    {"id":"rune_methodology","path":"data/json/registries/LOC6_RUNE_METHODOLOGY_REGISTRY.json","feature_ids":["rune_analysis","semantic_analysis"],"historical_provenance":{"loc_ids":["LOC6"]}},
+    {"id":"threads_source_index","path":"data/json/registries/LOC4_THREADS_KM_INDEX.json","feature_ids":["text_corpus","source_index"],"historical_provenance":{"loc_ids":["LOC4"]}},
+    {"id":"dual_rune_relations","path":"data/json/registries/LOC6_DUAL_RUNE_RELATION_REGISTRY.json","feature_ids":["rune_analysis","relationship"],"historical_provenance":{"loc_ids":["LOC6"]}},
+    {"id":"rune_interpretation","path":"data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json","feature_ids":["rune_analysis","interpretation_evidence"],"historical_provenance":{"loc_ids":["LOC6"]}},
+    {"id":"linguistic_analysis","path":"data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json","feature_ids":["linguistic_analysis","text_architecture","retrieval_analysis"],"historical_provenance":{"loc_ids":["LOC7"]}},
+    {"id":"analysis_types","path":"data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json","feature_ids":["analysis_routing"]},
+    {"id":"content_types","path":"data/json/registries/LOC_CONTENT_TYPE_REGISTRY.json","feature_ids":["content_routing"]},
+    {"id":"source_types","path":"data/json/registries/LOC_SOURCE_TYPE_REGISTRY.json","feature_ids":["provenance"]},
+    {"id":"three_rune_narrative_evidence","path":"data/json/registries/LOC1_THREE_RUNE_NARRATIVE_EVIDENCE.json","feature_ids":["rune_analysis","narrative_evidence"],"historical_provenance":{"loc_ids":["LOC1"]}},
+    {"id":"governance_trends","path":"data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json","feature_ids":["governance_analysis","temporal_analysis","linguistic_analysis"],"historical_provenance":{"loc_ids":["LOC6","LOC7","LOC8"]}},
+    {"id":"writing_governance_boundary","path":"data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json","feature_ids":["provenance","governance_analysis"],"historical_provenance":{"loc_ids":["LOC4","LOC6"]}},
+    {"id":"reading_examples","path":"data/json/registries/LOC1_READING_EXAMPLE_REGISTRY.json","feature_ids":["lunarunes_reading","reading_examples"],"historical_provenance":{"loc_ids":["LOC1"]}}
   ],
   "integration_status": {
-    "LOC3": {
-      "era_registry": "connected",
-      "language_system_registry": "schema-ready",
-      "media_registry": "connected",
-      "shared_result_refs": "connected",
-      "rune_song_registry": "connected; rune-system 11-rune group statistics instance-verified",
-      "reasoning_proposition_layer": "connected",
-      "cross_relationship_registry": "connected",
-      "ui": "Unified Search only; search.html?content_type=lyrics_work compatibility redirect"
-    },
-    "LOC4": {
-      "writing_registry": "connected",
-      "corpus_import": "complete_for_current_core_authored_set",
-      "cross_relationship_registry": "connected",
-      "source_corpus": "ready",
-      "fulltext_search": "connected",
-      "life_writing_sources": "Facebook + Threads raw authored text owned by LOC4; source-specific storage retained",
-      "creative_work_analysis": "complete_for_current_core_set",
-      "moon_speaker_analysis": "182-chapter baseline complete; 161 restored rune configs / 21 explicitly unrecovered",
-      "moon_speaker_search": "connected",
-      "work_analysis_search": "connected; novel title queries return structured LOC4 analysis records",
-      "threads_source_counts": "7008 deduplicated / 4578 main / 2430 replies",
-      "rune_system_group_analysis": "instance-verified on 182-chapter Moon Speaker provenance corpus"
-    },
-    "LOC5": "media-authority-established; cross-relationship-registry-connected",
-    "LOC6": {
-      "governance_registry": "connected",
-      "rune_interpretation_corpus": "connected",
-      "rune_interpretation_records": "180 usable / 182 chapter slots",
-      "analysis_types": "connected",
-      "corpus_import": "derived governance/style interpretation consumes LOC4 source corpora; raw Threads/Facebook ownership excluded",
-      "dual_rune_relation_registry": "connected",
-      "dual_rune_relation_model": "neutral pair → draw cause/effect projection → directions/context",
-      "era_style_evidence": "403 indexed LOC3 works linked by ERA",
-      "cross_media_relationship_interpretation": "connected",
-      "threads_km_search": "source-text search is LOC4; LOC6 governance/style derived records remain LOC6",
-      "threads_source_counts": "evidence source only: 7008 LOC4 records / 4578 main / 2430 replies",
-      "rune_methodology": "connected; Analysis Feature consumes the frozen Current nine rune groups (group 7 定序; group 9 系統特別 with 德／命／玄 preserved as distinct semantics)",
-      "keyword_ranking": "common foundation; total/source/period/cross views"
-    },
-    "LOC7": {
-      "linguistic_analysis_registry": "schema-ready",
-      "analysis_types": "connected",
-      "faq_v0_3": "connected",
-      "faq_rag_v0_3": "connected",
-      "cross_relationship_registry": "connected",
-      "ui": "LOC Search knowledge category; search.html?content_type=knowledge compatibility redirect"
-    },
-    "LOC8": {
-      "authority_source": "established",
-      "era_registry": "connected",
-      "shared_schema": "connected",
-      "governance_registry": "connected",
-      "reference_model": "connected",
-      "analysis_router": "connected",
-      "event_shared_refs": "connected",
-      "google_sheet_schema": "loc8-mvp-0.3",
-      "apps_script_code": "updated_in_github_redeploy_required",
-      "content_rights_gate": "connected"
-    },
-    "LOC2": {
-      "event_registry": "connected",
-      "alpha_events": "32 scenario prototypes",
-      "dual_card_scenario_grammar": "A → B causal model",
-      "direct_unified_search": "pending"
-    },
-    "LOC1": {
-      "three_rune_narrative_evidence": "180 usable / 182 chapter slots; sourced from LOC4 月語者 through LOC6 interpretation evidence"
-    }
+    "identity_and_governance":{"status":"connected","features":["system_identity","governance","rights","provenance"]},
+    "lunarunes":{"status":"connected","features":["lunarunes_reading","rune_analysis","rune_provenance","interpretation_evidence"]},
+    "context_and_relationships":{"status":"connected","features":["relationship","context_graph","event_corpus","scenario_modeling"]},
+    "music":{"status":"connected","features":["music","music_analysis","rune_provenance"]},
+    "writing":{"status":"connected","features":["writing_catalog","text_corpus","narrative_evidence"]},
+    "media":{"status":"connected","features":["media_catalog","cross_media_reference"]},
+    "analysis":{"status":"connected","features":["semantic_analysis","linguistic_analysis","style_analysis","governance_analysis","temporal_analysis"]},
+    "search_and_retrieval":{"status":"connected","features":["retrieval_analysis","km","rag","content_routing","analysis_routing"]}
   },
-  "rule": "Shared foundation is frozen at schema v0.1. Unified Search consumes shared references while each LOC retains canonical ownership; future corpus imports extend coverage without changing stable IDs.",
-  "foundation_status": {
-    "shared_identity": "complete",
-    "era_registry": "complete",
-    "shared_schema": "complete",
-    "data_governance": "complete",
-    "reference_model": "complete",
-    "content_types": "complete",
-    "source_types": "complete",
-    "analysis_types": "complete",
-    "media_registry": "complete",
-    "loc8_event_shared_refs": "complete",
-    "note": "Shared foundation is complete enough to begin corpus migration and later interface consolidation. Domain corpora may still be pending without changing the shared schema.",
-    "content_rights_policy": "complete",
-    "governance_core": "documented",
-    "governance_runtime_controls": "partial",
-    "rune_system_implementation": "instance_verified"
+  "projection_policy": {
+    "generated_data_is_authority": false,
+    "search_is_authority": false,
+    "rag_is_authority": false,
+    "ui_is_authority": false,
+    "nav_write_allowed": false,
+    "nav_note": "NAV is a Frozen Interface and may change only through an explicit user-requested NAV change."
   },
-  "integration_stage": {
-    "name": "unified-search-v0.1",
-    "status": "implemented",
-    "api": {
-      "endpoint": "/search",
-      "facets": "/search/facets",
-      "orchestrator": "card_api/unified_search.py"
-    },
-    "ui": {
-      "primary_search": "search.html",
-      "specialist_views": [
-        "lots.html#library",
-        "evolution.html"
-      ],
-      "redirected_views": [
-        "search.html?content_type=lyrics_work → search.html?content_type=lyrics_work",
-        "search.html?content_type=knowledge → search.html?content_type=knowledge"
-      ]
-    },
-    "live_coverage": {
-      "LOC1": "rune retrieval",
-      "LOC2": "Scenario/Event registry connected; direct Unified Search corpus integration pending",
-      "LOC3": "lyrics/music retrieval",
-      "LOC4": "creative works + Facebook/Threads life-writing raw text + work/chapter semantic analysis",
-      "LOC5": "179 LOC5 media records after author-source backfill; 177 Reels URLs across 175 song-version rows; multiple Reels per song preserved",
-      "LOC6": "LunaRunes-based default methodology + keyword/source ranking + governance/Zhengde-style/value/rune interpretation derived from evidence",
-      "LOC7": "FAQ/KM retrieval",
-      "LOC8": "ERA retrieval"
-    },
-    "ranking_rule": "Results are grouped by authority/content type; heterogeneous engine scores are not forced onto one global ranking scale."
+  "historical_boundary": {
+    "loc1_8": "Historical/provenance identifiers only. They may remain in filenames and explicit historical_provenance fields, but cannot define Current architecture, Scope, Feature ownership, navigation taxonomy or Canon authority.",
+    "legacy_domain_fields": "domain/related_domains may remain temporarily for compatibility but are not the Current architecture model."
   },
-  "assets": [
-    {
-      "path": "data/json/registries/LOC4_TEXT_ANALYSIS_REGISTRY.json",
-      "authority": "LOC4",
-      "purpose": "Structured semantic analysis of LOC4 creative works; core work-level analysis complete and 月語者 182-chapter baseline complete.",
-      "authority_domain": "literary"
-    },
-    {
-      "path": "data/json/registries/LOC4_MOON_SPEAKER_RUNE_RECOVERY.json",
-      "authority": "LOC4",
-      "purpose": "Recovered MoonSpeaker chapter three-rune/moon-phase evidence; missing rows are never inferred.",
-      "authority_domain": "literary"
-    }
-  ],
-  "updated_at": "2026-09-10",
-  "governance_layer": {
-    "status": "consolidated",
-    "core_document": "governance.html",
-    "history_document": "governance.html",
-    "luna_runes_design_document": "governance.html",
-    "rights_policy": "data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json",
-    "data_governance": "data/json/registries/LOC_DATA_GOVERNANCE.json",
-    "shared_schema": "data/json/registries/LOC_SHARED_SCHEMA.json",
-    "reference_model": "data/json/registries/LOC_REFERENCE_MODEL.json",
-    "principle": "Model governance is cross-domain; canonical ownership remains domain-specific.",
-    "trend_registry": "data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json"
-  },
-  "loc5_media_backfill": {
-    "status": "author-source-imported",
-    "source": "LOC3_LOC5_影音連結整合清單",
-    "song_version_rows": 178,
-    "reel_urls": 177,
-    "rows_with_preview": 175,
-    "rows_without_preview": 3,
-    "semantic_linked_rows": 162,
-    "media_registry_total": 179,
-    "multiple_reels_rule": "same song version may keep multiple Reels; different song_id versions remain separate; blanks are not guessed",
-    "updated_at": "2026-09-07"
-  }
+  "updated_at": "2026-09-17"
 }

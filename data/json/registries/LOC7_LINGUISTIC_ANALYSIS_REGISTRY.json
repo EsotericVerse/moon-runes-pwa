@@ -1,61 +1,32 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC7_LINGUISTIC_ANALYSIS_REGISTRY",
-  "authority": "LOC7",
+  "historical_registry_id": "LOC7_LINGUISTIC_ANALYSIS_REGISTRY",
+  "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
   "language_system_id": "lo3rwang",
-  "purpose": "Canonical registry for grammar, syntax, linguistic structure, semantic engineering, Text Architecture, retrieval structure, and KM/RAG analysis.",
+  "purpose": "Registry for grammar, syntax, linguistic structure, semantic engineering, Text Architecture, retrieval structure and KM/RAG analysis. The historical LOC7 filename is provenance/compatibility only.",
+  "feature_ids": ["linguistic_analysis", "text_architecture", "retrieval_analysis", "km", "rag"],
   "analysis_schema": {
-    "required": [
-      "analysis_id",
-      "system_id",
-      "primary_loc",
-      "analysis_type"
-    ],
+    "required": ["analysis_id", "system_id", "scope_id", "analysis_type"],
     "fields": {
       "analysis_id": "LA-{stable-id}",
       "system_id": "language-system reference",
-      "primary_loc": "LOC7",
-      "related_locs": [
-        "LOC6",
-        "LOC8"
-      ],
-      "era_id": "LOC8 ERA reference or null",
+      "scope_id": "governed source/data authority boundary",
+      "feature_ids": ["linguistic_analysis"],
+      "era_id": "Current ERA registry reference or null",
       "target_refs": "works/fragments/events/knowledge objects being analyzed",
-      "analysis_type": [
-        "grammar",
-        "syntax",
-        "lexicon",
-        "semantic_structure",
-        "text_architecture",
-        "retrieval",
-        "km",
-        "rag",
-        "graph_relation"
-      ],
+      "analysis_type": ["grammar", "syntax", "lexicon", "semantic_structure", "text_architecture", "retrieval", "km", "rag", "graph_relation"],
       "findings": "analysis result",
       "patterns": "identified structural patterns",
       "source_refs": "supporting sources",
-      "confidence": [
-        "recorded",
-        "reconstructed",
-        "inferred",
-        "unknown"
-      ],
+      "confidence": ["recorded", "reconstructed", "inferred", "unknown"],
       "lifecycle": "shared lifecycle object",
-      "domain": "knowledge",
-      "related_domains": [
-        "governance",
-        "evolution"
-      ]
+      "provenance": {"historical_loc_ids": ["optional historical identifiers only"]}
     }
   },
   "analyses": [],
-  "existing_knowledge_assets": [
-    "data/json/search/faq/LOC_FAQ_v0.4.json",
-    "data/json/search/faq/LOC_FAQ_RAG_v0.4.json",
-    "governance.html"
-  ],
-  "boundary_note": "LOC7 analyzes how language is structured and engineered, including KM/retrieval architecture. Meaning/value/governance interpretation belongs primarily to LOC6; event/time ownership belongs primarily to LOC8.",
-  "updated_at": "2026-09-09",
-  "authority_domain": "knowledge"
+  "existing_knowledge_assets": ["data/json/search/faq/LOC_FAQ_v0.4.json", "data/json/search/faq/LOC_FAQ_RAG_v0.4.json", "governance.html"],
+  "boundary_note": "Linguistic, retrieval and KM/RAG capabilities are reusable Features. They consume records inside a governed Scope without taking ownership of that Scope. Meaning/value/governance and temporal analysis are separate Features, not numbered-module owners.",
+  "historical_boundary": "LOC7 is retained only as a historical/provenance identifier in the filename and migration evidence; it is not Current architecture or authority.",
+  "updated_at": "2026-09-17"
 }

@@ -1,7 +1,9 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "3.0",
   "registry": "LOC_LANGUAGE_SYSTEM_REGISTRY",
-  "authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
+  "status": "current",
+  "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
+  "terminology_authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
   "systems": [
     {
       "system_id": "lo3rwang",
@@ -10,446 +12,79 @@
       "system_type": "personal_language_system",
       "owner_type": "person",
       "status": "active",
-      "rights": {
-        "ip_name": "政德風",
-        "ip_status": "personal_ip",
-        "rights_holder_id": "lo3rwang",
-        "copyright_status": "author_owned"
-      },
-      "provenance": {
-        "collaboration_status": "solo",
-        "contributors": [],
-        "shared_with": [],
-        "influences": [],
-        "source_references": [],
-        "provenance_note": "預留協作、共享、影響與來源欄位；目前系統以單一個人語言系統為基準。"
-      },
+      "rights": {"ip_name":"政德風","ip_status":"personal_ip","rights_holder_id":"lo3rwang","copyright_status":"author_owned"},
+      "provenance": {"collaboration_status":"solo","contributors":[],"shared_with":[],"influences":[],"source_references":[],"provenance_note":"預留協作、共享、影響與來源欄位；目前系統以單一個人語言系統為基準。"},
       "governance": {
-        "core_document": "governance.html",
-        "history_document": "governance.html",
-        "luna_runes_66_document": "governance.html",
-        "rights_document": "data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json",
-        "system_vs_personal": "LOC system governance defines representation, authority, boundary and lifecycle; Zhengde Style/self-governance remains a personal governance corpus and example, not a mandatory worldview.",
-        "stance": "share methods and language without requiring belief or obedience"
+        "core_document":"governance.html",
+        "history_document":"governance.html",
+        "luna_runes_66_document":"governance.html",
+        "rights_document":"data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json",
+        "system_vs_personal":"LOC system governance defines representation, authority, boundary and lifecycle; Zhengde Style/self-governance remains a personal governance corpus and example, not a mandatory worldview.",
+        "stance":"share methods and language without requiring belief or obedience"
       },
       "naming_canon": {
-        "loc": {
-          "canonical_name": "LOC",
-          "english_name": "Luna Codex",
-          "chinese_name": "月典",
-          "equivalence": "LOC = Luna Codex = 月典"
-        },
-        "runes": {
-          "canonical_name": "LunaRunes",
-          "chinese_name": "月之符文",
-          "equivalence": "LunaRunes = 月之符文",
-          "informal_aliases": [
-            "月符",
-            "Luna Runes"
-          ]
-        },
-        "rule": "Luna Codex 不得作為月之符文的英文名稱；月之符文的正式英文名稱固定為 LunaRunes。"
+        "loc":{"canonical_name":"LOC","english_name":"Luna Codex","chinese_name":"月典","framework_name_en":"Language Module Framework","framework_name_zh":"語言系統模組框架","equivalence":"LOC = Luna Codex = 月典"},
+        "runes":{"canonical_name":"LunaRunes","chinese_name":"月之符文","module_name_en":"Symbolic Language Module","module_name_zh":"符號式語言模組","equivalence":"LunaRunes = 月之符文","informal_aliases":["月符","Luna Runes"]},
+        "rule":"Luna Codex 不得作為月之符文的英文名稱；月之符文的正式英文名稱固定為 LunaRunes。"
       },
-      "rune_public_concept_map": {
-        "符文籤詩": "抽牌、籤詩與解牌",
-        "符文脈絡": "符文之間或符文與事件／作品之間的關係、情境與 Graph；月之符文沙盒是代表性互動實作",
-        "符文體系": "符文本體及其文學、歌曲、影像、沙盒與方法論分析等延伸形式；月之符文不只作抽牌，也提供分類與分析骨架。",
-        "符文演算": "符文演算包含兩條可重複規則：一是抽牌／解牌演算（卡位、方向、Grammar、月相與脈絡），二是以 frozen Current 月之符文九群組作為固定座標的文字／來源分析；第七組固定為「定序」，第九組固定為「系統特別」。",
-        "符文演化": "符文跨時間、ERA、Relation、Trajectory、Trend 的變化；所有未來性統一視為演化"
+      "current_architecture": {
+        "formula":"Scope Model × Feature Model → Page Composition",
+        "scope_rule":"Scope is the governed data/authority boundary of an instance. Scopes are mutable and instance-specific; this registry does not define a permanent universal scope list.",
+        "feature_rule":"Features are reusable capabilities that consume a Scope without taking ownership of it.",
+        "page_rule":"Pages compose a Scope with Features. Page/UI/Search/RAG projections do not create Canon authority.",
+        "nav_rule":"NAV is a Frozen Interface and may change only through an explicit user-requested NAV change."
       },
-      "lunarunes_chain": [
-        "月之符文",
-        "符文脈絡",
-        "符文體系",
-        "符文演算",
-        "符文演化"
-      ],
+      "lunarunes_feature_concepts": {
+        "符文籤詩":"抽牌、籤詩與解牌能力；屬可重用 Feature，不是 Current 架構層級。",
+        "符文脈絡":"符文之間或符文與事件／作品之間的關係、情境與 Graph 能力。",
+        "符文體系":"符文本體及其文學、歌曲、影像、沙盒與方法論分析等延伸形式；月之符文是種子，但不是使用門檻。",
+        "符文演算":"可重複規則：抽牌／解牌 Grammar，以及以 frozen Current 九群組作為座標的文字／來源分析。",
+        "符文文化":"把符文、作品、語言與治理放回時間中觀察其形成、變化與文化脈絡。"
+      },
       "fixed_constants": {
-        "loc_range": "Homepage guide only: LOC1–LOC8",
-        "lunarunes_count": 66,
-        "context_zh": "脈絡",
-        "context_typo_forbidden": "脈落",
-        "lunarunes_record_count": 67,
-        "reference_rune": "0 德（De）：作者／月語者誌銘與治理錨點；不參與抽牌、無卡面"
+        "lunarunes_count":66,
+        "lunarunes_record_count":67,
+        "context_zh":"脈絡",
+        "context_typo_forbidden":"脈落",
+        "reference_rune":"0 德（De）：作者／月語者誌銘與治理錨點；不參與抽牌、無卡面",
+        "water_comment":"Water",
+        "chaos_comment":"Chaos"
       },
-      "public_concept_map_usage": "historical_provenance_only",
-      "public_concept_map_note": "LOC1–8 may identify historical records and provenance lineage only. They do not define Current architecture, Scope, Feature ownership, navigation taxonomy or Canon authority.",
-      "backend_domains": {
-        "runes": "LunaRunes／月之符文",
-        "context": "Context／脈絡",
-        "music": "Music／音樂",
-        "literary": "Literary／文字創作",
-        "media": "MultiMedia／多媒體",
-        "governance": "Governance／治理",
-        "knowledge": "Knowledge／Algorithm／KM",
-        "evolution": "Evolution／推演",
-        "global": "System-wide"
+      "historical_provenance": {
+        "status":"historical_provenance_only",
+        "loc1_8_rule":"LOC1–8 may identify historical records and source lineage only. They do not define Current architecture, Scope, Feature ownership, navigation taxonomy or Canon authority.",
+        "legacy_domain_rule":"Older runes/context/music/literary/media/governance/knowledge/evolution domain labels may remain as historical routing metadata but are not the Current architecture model."
       },
       "model_principles": [
         "LOC1–8 僅是歷史／來源識別碼，不是 Current 架構、Scope、功能模組、導覽分類或權責。",
-        "穩定的是模型架構與治理邊界，不是語言本身：identity、schema、ownership、provenance 與治理流程可穩定，meaning、relation、context 與 interpretation 可演化。",
-        "不同資料型態保留各自 canonical ownership；跨 LOC 以 reference / consume / propose change 為原則，不直接覆寫。",
-        "LOC 對觀點保持中立，但對 domain、rights、privacy、permission、responsibility boundary 不保持中立。",
+        "Current 架構固定採 Scope Model × Feature Model → Page Composition。",
+        "穩定的是治理邊界與可追溯資料，不是把舊模組編號永久化。",
+        "Scope 保有資料與權威；Feature 可跨 Scope 重用但不取得所有權。",
         "歷史原始紀錄保留；後來的解釋可 version / supersede，但不得靜默回寫過去。",
         "不同意見與 competing interpretation 可以並存；異議本身不是錯誤。",
-        "AI 推論、semantic similarity 與衍生 View 不得自動升格為 Canon。",
-        "LOC Search / Graph / Trend 的目的之一，是讓使用者看見語言如何改變，再自行決定如何治理下一個版本。"
+        "AI 推論、semantic similarity、Generated data、Search、RAG 與 UI View 不得自動升格為 Canon。",
+        "LOC 對觀點保持中立，但對 authority、rights、privacy、permission、responsibility boundary 有明確治理。"
       ],
-      "rune_system_tags": [
-        {
-          "group_id": 1,
-          "group_name": "靈魂",
-          "category": "符文體系",
-          "tag": "符文體系｜靈魂群組"
-        },
-        {
-          "group_id": 2,
-          "group_name": "連結",
-          "category": "符文體系",
-          "tag": "符文體系｜連結群組"
-        },
-        {
-          "group_id": 3,
-          "group_name": "生命",
-          "category": "符文體系",
-          "tag": "符文體系｜生命群組"
-        },
-        {
-          "group_id": 4,
-          "group_name": "自然",
-          "category": "符文體系",
-          "tag": "符文體系｜自然群組"
-        },
-        {
-          "group_id": 5,
-          "group_name": "礦物",
-          "category": "符文體系",
-          "tag": "符文體系｜礦物群組"
-        },
-        {
-          "group_id": 6,
-          "group_name": "元素",
-          "category": "符文體系",
-          "tag": "符文體系｜元素群組"
-        },
-        {
-          "group_id": 7,
-          "group_name": "定序",
-          "category": "符文體系",
-          "tag": "符文體系｜定序群組"
-        },
-        {
-          "group_id": 8,
-          "group_name": "無序",
-          "category": "符文體系",
-          "tag": "符文體系｜無序群組"
-        },
-        {
-          "group_id": 9,
-          "group_name": "系統特別",
-          "category": "符文體系",
-          "tag": "符文體系｜系統特別群組"
-        }
+      "rune_groups": [
+        {"group_id":1,"group_name":"靈魂","runes":["靈","魂","彩","憶","界","域","鏡","核"]},
+        {"group_id":2,"group_name":"連結","runes":["向","斷","封","鍊","啟","分","悟","誤"]},
+        {"group_id":3,"group_name":"生命","runes":["生","老","病","死","心","愛","語","韻"]},
+        {"group_id":4,"group_name":"自然","runes":["樹","花","葉","草","根","種","實","枝"]},
+        {"group_id":5,"group_name":"礦物","runes":["金","玉","晶","地","石","鑽","礦","塵"]},
+        {"group_id":6,"group_name":"元素","runes":["光","暗","水","火","風","土","雷","氣"]},
+        {"group_id":7,"group_name":"定序","runes":["日","月","星","辰","明","時","空","因"]},
+        {"group_id":8,"group_name":"無序","runes":["福","禍","無","夢","幻","緣","虛","果"]},
+        {"group_id":9,"group_name":"系統特別","runes":["德","玄","命"]}
       ],
-      "rune_system_content_branches": [
-        {
-          "branch_id": "literary",
-          "category": "符文體系",
-          "content_type": "文章創作",
-          "tag": "符文體系｜文章創作",
-          "purpose": "收納已知符文文學／文章創作紀錄；現行九群組回填已完成實例驗證，可持續加入現行符文細標籤。"
-        },
-        {
-          "branch_id": "music",
-          "category": "符文體系",
-          "content_type": "音樂",
-          "tag": "符文體系｜音樂",
-          "purpose": "收納已知符文歌曲／音樂創作紀錄；實際 OW3gs 11 符九群組統計已完成實例驗證，可持續回填作品資料。"
-        }
-      ],
-      "rune_system_content_group_tags": [
-        {
-          "category": "符文體系",
-          "content_type": "文章創作",
-          "group_id": 1,
-          "group_name": "靈魂",
-          "tag": "符文體系｜文章創作｜靈魂組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "文章創作",
-          "group_id": 2,
-          "group_name": "連結",
-          "tag": "符文體系｜文章創作｜連結組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "文章創作",
-          "group_id": 3,
-          "group_name": "生命",
-          "tag": "符文體系｜文章創作｜生命組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "文章創作",
-          "group_id": 4,
-          "group_name": "自然",
-          "tag": "符文體系｜文章創作｜自然組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "文章創作",
-          "group_id": 5,
-          "group_name": "礦物",
-          "tag": "符文體系｜文章創作｜礦物組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "文章創作",
-          "group_id": 6,
-          "group_name": "元素",
-          "tag": "符文體系｜文章創作｜元素組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "文章創作",
-          "group_id": 7,
-          "group_name": "定序",
-          "tag": "符文體系｜文章創作｜定序組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "文章創作",
-          "group_id": 8,
-          "group_name": "無序",
-          "tag": "符文體系｜文章創作｜無序組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "文章創作",
-          "group_id": 9,
-          "group_name": "系統特別",
-          "tag": "符文體系｜文章創作｜系統特別組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "音樂",
-          "group_id": 1,
-          "group_name": "靈魂",
-          "tag": "符文體系｜音樂｜靈魂組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "音樂",
-          "group_id": 2,
-          "group_name": "連結",
-          "tag": "符文體系｜音樂｜連結組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "音樂",
-          "group_id": 3,
-          "group_name": "生命",
-          "tag": "符文體系｜音樂｜生命組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "音樂",
-          "group_id": 4,
-          "group_name": "自然",
-          "tag": "符文體系｜音樂｜自然組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "音樂",
-          "group_id": 5,
-          "group_name": "礦物",
-          "tag": "符文體系｜音樂｜礦物組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "音樂",
-          "group_id": 6,
-          "group_name": "元素",
-          "tag": "符文體系｜音樂｜元素組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "音樂",
-          "group_id": 7,
-          "group_name": "定序",
-          "tag": "符文體系｜音樂｜定序組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "音樂",
-          "group_id": 8,
-          "group_name": "無序",
-          "tag": "符文體系｜音樂｜無序組"
-        },
-        {
-          "category": "符文體系",
-          "content_type": "音樂",
-          "group_id": 9,
-          "group_name": "系統特別",
-          "tag": "符文體系｜音樂｜系統特別組"
-        }
-      ],
-      "rune_system_implementation_status": {
-        "status": "instance_verified",
-        "verified_at": "2026-09-10",
-        "scope": [
-          "符文文學／文章創作可由既有符文來源回填至現行九群組",
-          "符文歌曲可由實際 OW3gs 11 符來源統計至現行九群組",
-          "歷史符文名稱可透過明確 extension mapping 正規化後納入現行 Canon 分析"
-        ],
-        "evidence": {
-          "literary": "《月語者》182章符文來源已完成群組實例分析",
-          "music": "實際 OW3gs 11符案例已完成九群組 raw-count 實例統計",
-          "historical_extension": [
-            "線 → 向＋鍊",
-            "意 → 向",
-            "混沌／渾沌 → 無＋虛＋空"
-          ]
-        },
-        "note": "此狀態代表符文體系的分類／統計實作已由真實資料驗證可運作，不再列為待做。"
+      "rune_group_semantics": {
+        "靈魂":"個體特質","連結":"脈絡","生命":"生命層面","自然":"自然層面","礦物":"價值觀","元素":"風格總和","定序":"日常定律","無序":"潛意識","系統特別":"德／玄／命"
       },
-      "rune_system_confirmed_samples": {
-        "status": "active",
-        "updated_at": "2026-09-10",
-        "policy": "Only backfill works whose rune-system membership is already confirmed by provenance/author evidence; do not infer membership from text alone.",
-        "samples": [
-          {
-            "work_id": "LOC4-MOON-SPEAKER",
-            "title": "月語者",
-            "content_type": "文章創作",
-            "tag": "符文體系｜文章創作",
-            "status": "confirmed",
-            "evidence": "chapter_generation_provenance",
-            "group_data": "available"
-          },
-          {
-            "work_id": "E0285",
-            "title": "在塵裡長出的光",
-            "content_type": "音樂",
-            "tag": "符文體系｜音樂",
-            "status": "confirmed",
-            "evidence": "confirmed_rune_song_provenance",
-            "group_data": "pending_actual_11_rune_draw"
-          },
-          {
-            "work_id": "E0223",
-            "title": "日蝕之前的顯現",
-            "content_type": "音樂",
-            "tag": "符文體系｜音樂",
-            "status": "confirmed",
-            "evidence": "confirmed_rune_song_provenance",
-            "group_data": "pending_actual_11_rune_draw"
-          },
-          {
-            "work_id": "E0354",
-            "title": "界內之風",
-            "content_type": "音樂",
-            "tag": "符文體系｜音樂",
-            "status": "confirmed",
-            "evidence": "confirmed_rune_song_provenance",
-            "group_data": "pending_actual_11_rune_draw"
-          },
-          {
-            "work_id": "E0364",
-            "title": "界外誤差",
-            "content_type": "音樂",
-            "tag": "符文體系｜音樂",
-            "status": "confirmed",
-            "evidence": "confirmed_rune_song_provenance",
-            "group_data": "pending_actual_11_rune_draw"
-          }
-        ]
-      },
-      "current_identity": {
-        "loc": "LOC／月典 = Language Module Framework／語言系統模組框架",
-        "lunarunes": "LunaRunes／月之符文 = Symbolic Language Module／符號式語言模組"
-      },
-      "current_architecture": {
-        "formula": "Scope Model × Feature Model → Page Composition",
-        "authority": "LOC_DATA_GOVERNANCE + LOC_TERMINOLOGY_CANON"
-      },
-      "historical_provenance": {
-        "status": "historical_provenance_only",
-        "rule": "LOC1–8 may identify historical records and source lineage only. They do not define Current architecture, Scope, Feature ownership, navigation taxonomy or Canon authority.",
-        "public_concept_map": {
-          "LOC1": "LunaRunes／月之符文；定位為符文語彙（Token），提供基本文字語彙與語意種子",
-          "LOC2": "Context／脈絡：關係、情境、事件與 Graph；月之符文沙盒是代表性實作",
-          "LOC3": "Music／音樂：文字與語意延伸為歌曲、歌詞與聲音",
-          "LOC4": "Literary／文字創作：文章、小說、生活文字與敘事作品",
-          "LOC5": "MultiMedia／多媒體：文字、音樂、圖像與影音的跨媒介表達",
-          "LOC6": "Historical/provenance identifier：其仍有效的方法功能投影到 Current Analysis Feature，並直接消費 frozen Current 九群組；第七組為「定序」，第九組為「系統特別」。",
-          "LOC7": "Algorithm／演算法（知識庫）：把多種方法結構化、組合並形成可執行、可檢索、可關聯的演算法與知識結構",
-          "LOC8": "Evolution／推演：以時間、時期、Event、Trajectory 與 Trend 為證據，觀察既有語言、作品、方法與風格的變化與後續方向"
-        },
-        "canonical_loc_map": {
-          "LOC1": {
-            "name": "LunaRunes",
-            "zh": "月之符文",
-            "role": "符文語彙（Token）"
-          },
-          "LOC2": {
-            "name": "Context",
-            "zh": "脈絡",
-            "role": "脈絡"
-          },
-          "LOC3": {
-            "name": "Music",
-            "zh": "音樂",
-            "role": "音樂"
-          },
-          "LOC4": {
-            "name": "Literary",
-            "zh": "文字創作",
-            "role": "文字創作"
-          },
-          "LOC5": {
-            "name": "MultiMedia",
-            "zh": "多媒體",
-            "role": "多媒體"
-          },
-          "LOC6": {
-            "name": "Methodology",
-            "zh": "方法論",
-            "role": "方法論"
-          },
-          "LOC7": {
-            "name": "Algorithm",
-            "zh": "演算法（知識庫）",
-            "role": "演算法（知識庫）"
-          },
-          "LOC8": {
-            "name": "Evolution",
-            "zh": "推演",
-            "role": "推演"
-          }
-        },
-        "lunarunes_loc_mapping": {
-          "LOC1": "月之符文",
-          "LOC2": "符文脈絡",
-          "LOC3": "符文體系（較基礎結構／三卡類比）",
-          "LOC4": "符文體系（更完整結構／五卡類比）",
-          "LOC5": "符文體系（多模組整合／OW3gs 類比）",
-          "LOC6": "符文解牌方法",
-          "LOC7": "符文演算",
-          "LOC8": "符文演化"
-        },
-        "legacy_model_chain": {
-          "loc": "LOC1 符文語彙（Token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演",
-          "luna_runes": "符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算（抽牌解牌＋九群組方法論分析） → 符文演化"
-        }
+      "ow3gs": {
+        "draw_count":11,
+        "rule":"兩個因果模組綜合；11 抽為 OW3gs 特化格式。",
+        "naming_provenance":"OW3gs 名稱早於『政德』作者名，因此不加政德前綴；lo3rwang 亦避免縮寫為 LOW。"
       }
     }
   ],
-  "authority_scope": "current_identity_and_historical_provenance",
-  "canonical_priority": "LOC_DATA_GOVERNANCE_then_LOC_TERMINOLOGY_CANON",
-  "updated_at": "2026-09-17",
-  "canon_version": "2.0",
-  "canon_status": "formal",
-  "status": "current"
+  "updated_at":"2026-09-17"
 }

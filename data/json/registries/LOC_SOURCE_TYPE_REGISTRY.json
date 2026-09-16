@@ -1,95 +1,34 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC_SOURCE_TYPE_REGISTRY",
-  "authority": "LOC8",
-  "purpose": "Normalize source_refs/provenance source types across LOC1-8.",
+  "status": "current",
+  "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
+  "purpose": "Normalize provenance source types across governed Scopes and reusable Features.",
   "types": [
-    {
-      "id": "file",
-      "label": "檔案"
-    },
-    {
-      "id": "document",
-      "label": "文件"
-    },
-    {
-      "id": "spreadsheet",
-      "label": "試算表"
-    },
-    {
-      "id": "event",
-      "label": "LOC8 Event"
-    },
-    {
-      "id": "work",
-      "label": "作品"
-    },
-    {
-      "id": "media",
-      "label": "媒體資產"
-    },
-    {
-      "id": "registry",
-      "label": "共用 Registry"
-    },
-    {
-      "id": "url",
-      "label": "網址"
-    },
-    {
-      "id": "commit",
-      "label": "版本提交"
-    },
-    {
-      "id": "conversation",
-      "label": "對話紀錄"
-    },
-    {
-      "id": "external_platform",
-      "label": "外部平台"
-    },
-    {
-      "id": "live_snapshot",
-      "label": "即時公開來源快照"
-    },
-    {
-      "id": "backup_export",
-      "label": "平台備份匯出"
-    },
-    {
-      "id": "offline_archive",
-      "label": "已關站平台離線史料"
-    },
-    {
-      "id": "suno_song",
-      "label": "Suno Song"
-    },
-    {
-      "id": "suno_share",
-      "label": "Suno Share"
-    },
-    {
-      "id": "instagram",
-      "label": "Instagram"
-    },
-    {
-      "id": "threads",
-      "label": "Threads"
-    },
-    {
-      "id": "facebook",
-      "label": "Facebook"
-    },
-    {
-      "id": "youtube",
-      "label": "YouTube"
-    },
-    {
-      "id": "x",
-      "label": "X"
-    }
+    {"id": "file", "label": "檔案"},
+    {"id": "document", "label": "文件"},
+    {"id": "spreadsheet", "label": "試算表"},
+    {"id": "event", "label": "Event"},
+    {"id": "work", "label": "作品"},
+    {"id": "media", "label": "媒體資產"},
+    {"id": "registry", "label": "共用 Registry"},
+    {"id": "url", "label": "網址"},
+    {"id": "commit", "label": "版本提交"},
+    {"id": "conversation", "label": "對話紀錄"},
+    {"id": "external_platform", "label": "外部平台"},
+    {"id": "live_snapshot", "label": "即時公開來源快照"},
+    {"id": "backup_export", "label": "平台備份匯出"},
+    {"id": "offline_archive", "label": "已關站平台離線史料"},
+    {"id": "suno_song", "label": "Suno Song"},
+    {"id": "suno_share", "label": "Suno Share"},
+    {"id": "instagram", "label": "Instagram"},
+    {"id": "threads", "label": "Threads"},
+    {"id": "facebook", "label": "Facebook"},
+    {"id": "youtube", "label": "YouTube"},
+    {"id": "x", "label": "X"}
   ],
-  "rule": "source_type identifies provenance channel only; it does not determine authorship, ownership, trust, LOC ownership, or search eligibility by itself.",
+  "rule": "source_type identifies provenance channel only; it does not determine authorship, Scope ownership, Feature assignment, trust, Canon authority or search eligibility by itself.",
+  "historical_rule": "A historical LOC1–8 identifier may be retained only inside explicit provenance metadata; source_type never promotes it to Current ownership.",
   "sync_policy": "data/json/registries/LOC_SOURCE_SYNC_POLICY.json",
-  "authority_domain": "culture"
+  "updated_at": "2026-09-17"
 }
