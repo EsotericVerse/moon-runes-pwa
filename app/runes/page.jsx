@@ -13,7 +13,8 @@ export default function RunesPage() {
     <header className="loc-hero runes-home-hero">
       <p className="loc-eyebrow">LunaRunes · 月之符文</p>
       <h1>月之符文</h1>
-      <p>月之符文是符號式語言，也是 LOC 的語彙種子。你不需要先理解全部符文，可以直接抽牌，也可以從符文關聯圖開始，挑有興趣的群組再往下看。</p>
+      <p><strong>不知道怎麼開始？先抽張牌。</strong></p>
+      <p>月之符文是 LOC 的語彙種子；不用先背完所有符文，抽完有興趣再往下看。</p>
     </header>
     <RuneDrawClient />
     <RuneAtlasHome />
