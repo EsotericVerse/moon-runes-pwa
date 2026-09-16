@@ -1,3 +1,5 @@
+import { PageComposition } from '../../PageComposition';
+
 const PRINCIPLES = [
   ['客觀與中立（Objectivity and Neutrality）','依資料、語境與公開規則判定；分析結果與作者、管理者或使用者的價值判斷分開。'],
   ['可解釋（Explainability）','判定保留規則版本、證據、候選與排除理由；可直接說明時，不以不可追溯的結果取代。'],
@@ -15,39 +17,73 @@ const PRINCIPLES = [
   ['時期獨立（ERA by Scope）','ERA 屬於各自 Scope，可由該 Scope 治理修改；個人、符文、治理或組織的時期不得混成一條時間線。'],
   ['角色分離','作者、資料主體、Scope 管理者與系統管理者是不同角色；管理資料不等於取得作者身分、觀點代表權或其他 instance 的權限。'],
   ['單一導覽（Single NAV）','每個介面只有一條正式 NAV；本地入口、架構圖與快捷功能不是 NAV2 或 NAV3。導覽文字可由所屬 Scope 治理，但不得冒充全域名稱。'],
-  ['衝突不猜測','權威不足、來源矛盾或規則不能判定時，標記待治理、保留證據，不拼湊看似完整的答案。'],
-  ['Copyleft','基本方法論開放使用與研究時須保留必要來源、作者與修改標示；衍生商業使用須取得同意。解析介面與推演層可以收費；在正式選定前不自動套用 GPL、CC 等既有授權。']
+  ['衝突不猜測','權威不足、來源矛盾或規則不能判定時，標記待治理、保留證據，不拼湊看似完整的答案。']
+];
+
+const SECTIONS = [
+  {
+    id:'principles',
+    eyebrow:'Principles',
+    title:'治理原則',
+    subtitle:'所有 Scope 共用原則，但各自主體與權威仍然分開。',
+    content:<>
+      <p className="loc-core-line"><strong>鑑古知今，求同存異</strong><br/><strong>不在其位，不謀其政</strong><br/><strong>隨心所欲，而不逾己</strong></p>
+      <details>
+        <summary>查看完整 Current 治理原則</summary>
+        <div className="loc-rule-list">{PRINCIPLES.map(([title,body])=><p key={title}><strong>{title}</strong><br/>{body}</p>)}</div>
+      </details>
+    </>
+  },
+  {
+    id:'copyleft',
+    eyebrow:'Copyleft',
+    title:'法律與授權宣告',
+    subtitle:'方法可以學，來源要保留；治理權、資料權與商業權責仍須分清楚。',
+    content:<>
+      <p>LOC 以 Copyleft 為根本方向：基本方法論可供研究、理解與延伸，但必須保留必要來源、作者與修改標示；衍生商業使用與專業實作依個案另行治理。</p>
+      <p>採用 LOC 不代表取得作者身分、其他 Scope 的資料所有權、寫入權或治理權；授權與 Scope Authority 是不同層次。</p>
+    </>,
+    links:[
+      {href:'/search?q=Copyleft',label:'查看授權說明',text:'查找 Copyleft、來源標示與商業使用相關文件。'}
+    ]
+  },
+  {
+    id:'history',
+    eyebrow:'History · Provenance',
+    title:'演變與歷史',
+    subtitle:'Current 只說現在有效的定義；歷史負責留下它怎麼走到現在。',
+    content:<>
+      <p>歷史資料本身不是污染。只有歷史語意被誤升格成 Current 權威時，才形成治理污染。舊 Canon、舊分類、舊名稱與舊架構都保留作為 provenance，不反向覆寫 Current。</p>
+    </>,
+    links:[
+      {href:'/governance/history',label:'歷史查詢／治理紀錄',text:'跨 Scope 查看版本、來源、重大變更與治理紀錄。'}
+    ]
+  },
+  {
+    id:'management',
+    eyebrow:'Management',
+    title:'管理功能',
+    subtitle:'治理不是只寫原則，也要能實際管理 Scope、版本、權限與資料狀態。',
+    content:<>
+      <p>管理功能處理 Scope、ERA、納入審核、修正標記、授權寫入、資料狀態與其他治理操作。LOC 可統合查看，但資料與 Current Authority 仍由所屬 Scope 保有。</p>
+    </>,
+    links:[
+      {href:'/management',label:'管理者功能',text:'Scope、ERA、納入審核、修正標記與授權寫入。'},
+      {href:'/runes/governance',label:'符文治理',text:'LunaRunes 的 Master Data、Grammar、語意與符文歷史。'},
+      {href:'/author/governance',label:'作者治理',text:'作者身份、政德風、作品脈絡、個人 ERA 與作者歷史。'}
+    ]
+  }
 ];
 
 export default function GovernanceView(){
-  return <section className="loc-view">
-    <header className="loc-hero" id="top">
-      <p className="loc-eyebrow">LOC Governance · Current</p><h1>治理</h1>
-      <p className="loc-subtitle">LOC 是框架與分類工具；治理原則共用，主體各自獨立</p>
-      <p>LOC Governance 可總覽整個系統的 Current 原則、Scope 關係、權威邊界與歷史來源；但不取代 LunaRunes 或 Author Scope 對自身資料的治理。</p>
-      <p>不必先理解全部 LOC、全部符文或全部作者作品。使用者可以直接從有興趣的 Feature 開始，再決定是否展開更多脈絡、治理與歷史。</p>
-    </header>
-    <section className="loc-card" id="principles">
-      <p className="loc-eyebrow">Principles</p><h2>Current 治理原則</h2>
-      <div className="loc-rule-list">{PRINCIPLES.map(([title,body])=><p key={title}><strong>{title}</strong><br/>{body}</p>)}</div>
-    </section>
-    <div className="loc-grid two">
-      <section className="loc-card" id="scope-model">
-        <p className="loc-eyebrow">Scope Model</p><h2>權威與統合</h2>
-        <p className="loc-core-line">Current Canon → Scope Model × Feature Model → Page Composition</p>
-        <p>Canon 定原則與責任邊界，不指定技術實作。Scope 保有資料與權威；Feature 可跨 Scope 重用但不取得所有權；Page 只是 Scope 與 Feature 的組合投影。</p>
-        <p>LOC1–8 可保留作為功能映射、歷史紀錄與來源 lineage 的識別；它們不再定義 Current information architecture、Scope、Feature ownership、NAV taxonomy 或 Canon authority。映射本身不是污染，只有被誤升格為 Current 架構才算污染。</p>
-      </section>
-      <section className="loc-card" id="governance-actions">
-        <p className="loc-eyebrow">Governance Space</p><h2>治理入口</h2>
-        <p>LOC 放全域與跨 Scope 的治理；符文的歸 LunaRunes；作者與政德風的歸 Author。三者共用治理方法，但主體、資料與 Current 權威分開。歷史查詢集中在 Governance，並保留來源 Scope。</p>
-        <div className="loc-link-list">
-          <a className="loc-link-card" href="/management"><strong>管理者功能</strong><span>Scope、ERA、納入審核、修正標記與授權寫入。</span></a>
-          <a className="loc-link-card" href="/governance/history"><strong>歷史查詢／治理紀錄</strong><span>跨 Scope 查詢不可改寫的歷史、來源、變更與稽核紀錄。</span></a>
-          <a className="loc-link-card" href="/runes/governance"><strong>符文治理</strong><span>LunaRunes／月之符文的 Master Data、66／67、Grammar、語意與符文歷史。</span></a>
-          <a className="loc-link-card" href="/author/governance"><strong>作者治理</strong><span>作者身份、政德風、作品脈絡、個人 ERA 與作者歷史。</span></a>
-        </div>
-      </section>
-    </div>
-  </section>;
+  return <PageComposition
+    eyebrow="LOC Governance · Current"
+    title="治理"
+    subtitle="先說清楚誰能管什麼，再談系統怎麼做。"
+    intro={<>
+      <p>LOC Governance 是整個系統的治理入口：總覽 Current 原則、Scope 關係、權威邊界、授權與歷史，但不取代 LunaRunes、Author 或其他 Scope 對自身資料的治理。</p>
+      <p className="loc-core-line">Current Canon → Scope Model × Feature Model → Page Composition → UI / Search / RAG / Analysis</p>
+    </>}
+    sections={SECTIONS}
+  />;
 }
