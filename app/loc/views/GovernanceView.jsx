@@ -21,8 +21,8 @@ export default function GovernanceView(){
   return <section className="loc-view">
     <header className="loc-hero" id="top">
       <p className="loc-eyebrow">LOC Governance · Current</p><h1>治理</h1>
-      <p className="loc-subtitle">公開、可移植的 LOC 治理原則</p>
-      <p>這裡治理 LOC 的共同邊界，不是政德的文章集合，也不取代個人、LunaRunes 或其他 Scope 自己的治理。</p>
+      <p className="loc-subtitle">LOC 全域治理總覽、跨 Scope 邊界與歷史查詢入口</p>
+      <p>LOC Governance 可總覽整個系統的 Current 原則、Scope 關係、權威邊界與歷史來源；但不取代 LunaRunes 或 Author Scope 對自身資料的治理。</p>
     </header>
     <section className="loc-card" id="principles">
       <p className="loc-eyebrow">Principles</p><h2>Current 治理原則</h2>
@@ -31,17 +31,18 @@ export default function GovernanceView(){
     <div className="loc-grid two">
       <section className="loc-card" id="scope-model">
         <p className="loc-eyebrow">Scope Model</p><h2>權威與統合</h2>
-        <p className="loc-core-line">Scope → 權威來源 → Current 狀態 → 衝突處理</p>
-        <p>Canon 定原則與責任邊界，不指定技術實作。月典可統合經審核的結果，但來源 Scope 仍擁有自己的資料、ERA、搜尋、統計與排行榜。</p>
-        <p>已廢止的 LOC1–8 及 NAV2／NAV3 只可出現在明確標示的 Historical 紀錄，不得作為 Current 名稱、欄位或架構。</p>
+        <p className="loc-core-line">Current Canon → Scope Model × Feature Model → Page Composition</p>
+        <p>Canon 定原則與責任邊界，不指定技術實作。Scope 保有資料與權威；Feature 可跨 Scope 重用但不取得所有權；Page 只是 Scope 與 Feature 的組合投影。</p>
+        <p>LOC1–8 可保留作為功能映射、歷史紀錄與來源 lineage 的識別；它們不再定義 Current information architecture、Scope、Feature ownership、NAV taxonomy 或 Canon authority。映射本身不是污染，只有被誤升格為 Current 架構才算污染。</p>
       </section>
       <section className="loc-card" id="governance-actions">
-        <p className="loc-eyebrow">Governance Space</p><h2>執行治理</h2>
-        <p>原則公開唯讀；有相應權限的管理者可進入設定與審核。每次變更都應留下操作者、時間、理由、前後值、證據與狀態。</p>
+        <p className="loc-eyebrow">Governance Space</p><h2>治理入口</h2>
+        <p>LOC 放全域與跨 Scope 的治理；符文的歸 LunaRunes；作者與政德風的歸 Author。歷史查詢集中在 Governance，並保留來源 Scope。</p>
         <div className="loc-link-list">
           <a className="loc-link-card" href="/management"><strong>管理者功能</strong><span>Scope、ERA、納入審核、修正標記與授權寫入。</span></a>
-          <a className="loc-link-card" href="/governance/history"><strong>治理紀錄</strong><span>查看不可改寫的變更與稽核要求。</span></a>
-          <a className="loc-link-card" href="/runes/governance"><strong>符文治理</strong><span>LunaRunes Scope 的 Current 原則與權威。</span></a>
+          <a className="loc-link-card" href="/governance/history"><strong>歷史查詢／治理紀錄</strong><span>跨 Scope 查詢不可改寫的歷史、來源、變更與稽核紀錄。</span></a>
+          <a className="loc-link-card" href="/runes/governance"><strong>符文治理</strong><span>LunaRunes／月之符文的 Master Data、66／67、Grammar、語意與符文歷史。</span></a>
+          <a className="loc-link-card" href="/author/governance"><strong>作者治理</strong><span>作者身份、政德風、作品脈絡、個人 ERA 與作者歷史。</span></a>
         </div>
       </section>
     </div>
