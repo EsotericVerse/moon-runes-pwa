@@ -1,220 +1,73 @@
 # lunarunes-semantic-group-classifier
 
 ## Purpose
+Apply current LunaRunes semantic governance to text without external APIs. This is a principle-based semantic classifier, not literal rune/keyword counting and not a numeric-weight classifier.
 
-Classify text into exactly one LunaRunes semantic group while preserving a full nine-way distribution and explicit dispute metadata.
+LunaRunes is the built-in reference implementation of LOC governance: LOC demonstrates how a language/culture can define a small set of explainable semantic rules; other systems may define different rules.
 
-This Skill is intended as a trial layer before the classifier is promoted into shared LOC runtime modules.
-
-## Governance scope — highest priority
-
-This Skill operates **inside the LunaRunes cultural/system context**. LunaRunes Canon governs LunaRunes; it is not a universal standard for judging other cultures, language systems, author systems, or cultural frameworks.
-
-Governance is culture-scoped:
-
-1. Identify the culture/system being analyzed before applying governance rules.
-2. Use that culture/system's own established governance when it exists.
-3. Do not use LunaRunes Canon to declare another culture correct, incorrect, valid, invalid, superior, or inferior.
-4. When comparing cultures/systems, describe differences, context, provenance, history, and disputed interpretations without converting one culture's rules into another culture's authority.
-5. If the target culture/system has no established governance, analyze descriptively and preserve uncertainty; do not invent governance on its behalf.
-6. A Skill executes applicable governance rules; a Skill does not create governance authority by itself.
-
-For this classifier, the requested output is specifically a **LunaRunes semantic projection** of supplied text. Therefore the LunaRunes Canon may determine the resulting LunaRunes group classification, but that classification must not be presented as a judgment on the source culture itself.
+## Governance scope
+This Skill produces a LunaRunes semantic projection only. LunaRunes Canon governs LunaRunes; it does not judge another culture, language system, author system, or symbolic system.
 
 ## Non-negotiable constraints
+1. No external API calls.
+2. Rune characters and keywords create candidates only; literal hits are not sufficient by themselves.
+3. No numeric semantic weights.
+4. Multiple runes are allowed when multiple meanings genuinely remain.
+5. Group metadata is derived after rune resolution; do not force a unique group before semantic judgment.
+6. Do not grow a keyword-to-rune exception dictionary; generalize repeated behavior into principles.
+7. Current Canon overrides historical meanings; never rewrite Base66 from classifier output.
 
-1. **No external API calls.**
-   - Do not call external LLM APIs.
-   - Do not call embedding APIs.
-   - Do not require an API key.
-   - Analyze the supplied text directly with the current LunaRunes semantic rules and available local/project context.
+## Core semantic operations
+### AND — semantic coexistence
+時空 → 時 + 空; 風向 → 風 + 向; 明火 → 明 + 火.
 
-2. **Semantic classification, not literal rune matching.**
-   - Do not classify a segment merely because a rune character or keyword appears.
-   - Rune names, keywords and reverse keywords are evidence only.
-   - Determine what the sentence or paragraph is actually about before assigning a group.
+### PLUS — added semantic dimension
+天時 → 時 + 緣. The time meaning remains and suitable timing/conditions is added.
 
-3. **Exactly one final group.**
-   The final `group` must be one of:
-   - 靈魂
-   - 連結
-   - 生命
-   - 自然
-   - 礦物
-   - 元素
-   - 秩序
-   - 無序
-   - 特殊
+### OVERRIDE — complete/specialized meaning
+時辰 → 辰; 清明 → 辰; 日月當空 → 明. Complete governed meaning takes precedence over mechanical character splitting.
 
-4. **特殊 is the default value.**
-   - Start conservatively from `特殊`.
-   - A general group must earn classification through sufficient semantic evidence.
-   - Do not force text into one of the eight general groups just to increase coverage.
+### DEFER — defer literal candidate
+日、月 are specialized Canon meanings. 日蝕 → 日; 月蝕 → 月; 日期 → 時; 日月 meaning 歲月／一段時期 → 辰. DEFER replaces large negative/exclusion lists.
 
-5. **Distribution is required.**
-   - Estimate a relative nine-way distribution for every semantic unit.
-   - The distribution preserves uncertainty; it does not create multiple labels.
-   - Normalize the distribution to approximately 1.0.
+## Semantic boundaries
+- 時: time itself, time rules, scale, duration and measurement.
+- 辰 (Phase): periods, phases and solar terms.
+- 緣 (Karma): suitable intersection created by time plus conditions/events/people; not a bare time point and not fatalistic predestination.
+- 誤 (Error): error in information, understanding or judgment. 延誤 is not 誤 merely because the character appears.
+- 日: 日蝕 semantics; ordinary 日 is deferred.
+- 月: 月蝕／月蝕陰暗面 semantics; ordinary 月 is deferred.
+- 水 = Water; governed flow belongs to 氣.
+- 氣 = Air; 暗 = Shadow; 空 = Space; 無 = Blank; 虛 = Void; 玄 = Chaos, never Mystery.
 
-6. **Close scores create a dispute record.**
-   - If the top groups are semantically close, set `disputed: true`.
-   - Still output one current `group`; keep `特殊` when evidence is insufficient.
-   - Preserve alternative candidates and explain the conflict.
-   - Do not discard disputed samples; they are governance data for later calibration.
-
-7. **Thresholds are provisional.**
-   - Do not claim a permanent Canon threshold.
-   - Use qualitative judgment and, when useful, a temporary score-gap heuristic.
-   - Mark uncertain cases rather than pretending false precision.
-
-8. **Current LunaRunes Canon overrides historical LunaRunes meanings.**
-   Apply current semantic governance within the LunaRunes scope, including:
-   - 水 = Water, not Flow.
-   - 流動 belongs primarily to 氣, not 水.
-   - 氣 = Air.
-   - 暗 = Shadow.
-   - 空 = Space.
-   - 無 = Blank / all possibilities.
-   - 虛 = Void.
-   - 玄 = Chaos, never Mystery.
-   - 誤 = Error.
-   - 辰 focuses on period; 時 on time; 緣 may carry timing/opportunity.
-   - Do not map ordinary disorder automatically to 玄.
+## Author Governance — 德 (0)
+德 is retained outside the 66-rune draw pool and is governance-assigned, not literal-character-assigned. Current Author-managed terms: 微月光、人生月台、斜教、OW3gs → 德. Author Scope must actually be satisfied; unrelated names or ordinary uses do not inherit this classification.
 
 ## Classification method
+1. Read the complete expression and surrounding context.
+2. Identify semantic role and subject when needed for disambiguation.
+3. Collect literal/keyword matches only as candidates.
+4. Resolve complete words/phrases before individual characters.
+5. Apply AND / PLUS / OVERRIDE / DEFER.
+6. Apply current rune semantic boundaries.
+7. Apply the small set of stable Governance-retained meanings only when scope is satisfied.
+8. Return every rune whose semantics genuinely remain.
+9. If unresolved, preserve dispute/ambiguity instead of inventing a score or forced winner.
 
-For each semantic unit:
+Core rule: if the actual semantic meaning is present, classify it. If only the literal character is present but the LunaRunes meaning is absent, do not classify it. A governed complete meaning takes precedence over mechanical character splitting.
 
-1. Read the unit as a whole and identify its source culture/system when that context is available.
-2. Identify its main subject and semantic role.
-3. Distinguish literal wording, metaphor, modifier and actual semantic focus.
-4. Compare the unit with the nine LunaRunes group domains as a LunaRunes semantic projection.
-5. Use the current LunaRunes Canon, Spec, keyword relations, reverse-keyword relations and exclusion rules as evidence.
-6. Build a nine-way distribution.
-7. Apply disambiguation and exclusions.
-8. Select exactly one final group.
-9. Mark disputes and retain alternative candidates.
-10. Explain why the winning LunaRunes group was chosen and why nearby groups were not, without turning the result into a judgment of the source culture.
-
-## Group subjectivity guide
-
-These are first-pass LunaRunes group domains, not keyword lists. Always defer to current rune-level Canon when a LunaRunes boundary is unclear.
-
-- **靈魂**: inner self, spirit, memory, boundary, personal domain, reflection, core.
-- **連結**: direction and relationship operations such as connecting, maintaining, severing, separating, initiating, understanding and error in relation/context.
-- **生命**: living-process experience, body/mind state, emotion, love, language and rhythm as lived experience.
-- **自然**: growth and plant/natural-life structures such as root, seed, tree, flower, leaf, grass, fruit and branch.
-- **礦物**: material/mineral structure, geology, hardness, pressure, rarity, crystal/mineral/solid-material properties.
-- **元素**: elemental properties and actions of light, shadow, water, fire, wind, earth, thunder and air; obey rune-specific exclusions.
-- **秩序**: observable or locatable structure involving sun, moon, star, period, clarity, time, space and cause.
-- **無序**: uncertainty/non-linearity involving fortune, misfortune, blank possibility, dream, illusion, opportunity, void and result.
-- **特殊**: safe default and special layer. Do not automatically equate `特殊` with 玄 or 命.
-
-## Input
-
-Accept either:
-
-### Plain text
-
-A paragraph, article, lyric, note or other text.
-
-### JSON
-
-If JSON is supplied, identify text-bearing fields and classify their textual content. Preserve source identifiers where available.
-
-Example invocation concept:
-
-```text
-Use lunarunes-semantic-group-classifier on article.json.
-```
+## From exceptions to principles
+When a new case appears, first test AND, PLUS, OVERRIDE, DEFER, existing semantic boundaries, or a reusable new boundary. Only stable meanings that cannot be derived from general rules become retained Governance phrases. Examples and disputes are calibration data, not the primary lookup table.
 
 ## Output
+Return structured results containing text, runes, groups, semantic_hits with operation/pattern/reason/rule, candidates, deferred, disputed, ruleset_version and api_used. A semantic unit may contain zero, one or multiple runes.
 
-Return structured JSON for each semantic unit and an aggregate summary.
-
-Minimum per-unit shape:
-
-```json
-{
-  "source_id": "optional-source-id",
-  "text": "...",
-  "group": "連結",
-  "distribution": {
-    "靈魂": 0.10,
-    "連結": 0.41,
-    "生命": 0.05,
-    "自然": 0.02,
-    "礦物": 0.02,
-    "元素": 0.04,
-    "秩序": 0.29,
-    "無序": 0.03,
-    "特殊": 0.04
-  },
-  "disputed": true,
-  "candidates": [
-    {"group": "連結", "score": 0.41},
-    {"group": "秩序", "score": 0.29}
-  ],
-  "reason": "核心主體是關係脈絡，但同時具有明顯因果結構。",
-  "evidence": ["relationship semantics", "context maintenance"],
-  "exclusions": ["不是單純時間描述，因此不以秩序為主分類"],
-  "ruleset_version": "trial-0.1",
-  "api_used": false
-}
-```
-
-Aggregate summary:
-
-```json
-{
-  "analysis_mode": "lunarunes_semantic_group_classifier",
-  "api_used": false,
-  "ruleset_version": "trial-0.1",
-  "unit_count": 120,
-  "group_counts": {
-    "靈魂": 0,
-    "連結": 0,
-    "生命": 0,
-    "自然": 0,
-    "礦物": 0,
-    "元素": 0,
-    "秩序": 0,
-    "無序": 0,
-    "特殊": 0
-  },
-  "disputed_count": 0,
-  "disputed_units": []
-}
-```
-
-## Governance behavior
-
-- Apply LunaRunes governance only to the LunaRunes projection/classification produced by this Skill.
-- Never use a LunaRunes classification result to judge the correctness or legitimacy of the source culture/system.
-- When a case is ambiguous, preserve the ambiguity instead of silently forcing a result.
-- When a classification depends on a weak or provisional LunaRunes rule, say so.
-- When a new recurring dispute pattern appears, recommend reviewing the relevant culture/system governance or LunaRunes semantic rules at the correct scope rather than patching individual outputs.
-- Never rewrite Base66 meanings from classifier output alone.
-- Treat disputed LunaRunes records as future calibration material.
+Aggregate statistics count resolved semantic hits after classification. They must not count raw rune-character/keyword occurrences as equivalent semantic hits.
 
 ## Relationship to LOC
+Text → Complete semantic units → Candidate evidence → LunaRunes semantic principles → Resolved rune semantic hits → Context / Search / Statistics → ERA / Culture comparison.
 
-This Skill is a modular first-stage LunaRunes classifier:
+LOC Governance establishes the method: basic, explainable, repeatable semantic principles. LunaRunes demonstrates one concrete implementation. Statistics consumes classifier results; Culture compares those results across historical ERA boundaries. Culture is descriptive/historical and does not predict the future.
 
-```text
-Text
-  ↓
-Semantic units
-  ↓
-LunaRunes group classification
-  ↓
-Rune candidates
-  ↓
-Search / RAG / Graph / Culture
-```
-
-The primary benefit is to reduce the search space before rune-level analysis while keeping the result explainable and governable. The projection belongs to LunaRunes analysis; it does not transfer LunaRunes governance authority to the source culture.
-
-## Authoritative principle document
-
-Use the current LunaRunes governance/Canon documents as the governing specification for LunaRunes classification. If a referenced historical document conflicts with current Canon or an explicit later governance decision, current governance takes precedence.
+## Authoritative source
+Use the current LOC/LunaRunes Canon and later explicit governance decisions. Historical documents, old keyword rules, old unique-group requirements, numeric distributions, and downstream generated indexes must not override current Canon.
