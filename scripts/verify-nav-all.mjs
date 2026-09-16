@@ -40,3 +40,4 @@ import './nav-final-state-check.mjs';
 import './nav-pr-ready-check.mjs';
 import './nav-scope-route-table-check.mjs';
 import './nav-user-spec-check.mjs';
+import './nav-final-marker-check.mjs';
