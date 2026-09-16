@@ -1,7 +1,7 @@
 {
-  "schema_version": "0.3",
+  "schema_version": "2.0",
   "registry": "LOC_LANGUAGE_SYSTEM_REGISTRY",
-  "authority": "LOC",
+  "authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
   "systems": [
     {
       "system_id": "lo3rwang",
@@ -50,74 +50,12 @@
         },
         "rule": "Luna Codex 不得作為月之符文的英文名稱；月之符文的正式英文名稱固定為 LunaRunes。"
       },
-      "public_concept_map": {
-        "LOC1": "LunaRunes／月之符文；定位為符文語彙（Token），提供基本文字語彙與語意種子",
-        "LOC2": "Context／脈絡：關係、情境、事件與 Graph；月之符文沙盒是代表性實作",
-        "LOC3": "Music／音樂：文字與語意延伸為歌曲、歌詞與聲音",
-        "LOC4": "Literary／文字創作：文章、小說、生活文字與敘事作品",
-        "LOC5": "MultiMedia／多媒體：文字、音樂、圖像與影音的跨媒介表達",
-        "LOC6": "Methodology／方法論：以月之符文九群組作為預設分析座標；前八組沿用月之符文八組，第九組「人生道理」由德／命／玄構成。整理關鍵字／來源分布、文字判讀、設計與治理方法；治理是其中一種方法。",
-        "LOC7": "Algorithm／演算法（知識庫）：把多種方法結構化、組合並形成可執行、可檢索、可關聯的演算法與知識結構",
-        "LOC8": "Evolution／推演：以時間、時期、Event、Trajectory 與 Trend 為證據，觀察既有語言、作品、方法與風格的變化與後續方向"
-      },
       "rune_public_concept_map": {
         "符文籤詩": "抽牌、籤詩與解牌",
         "符文脈絡": "符文之間或符文與事件／作品之間的關係、情境與 Graph；月之符文沙盒是代表性互動實作",
         "符文體系": "符文本體及其文學、歌曲、影像、沙盒與方法論分析等延伸形式；月之符文不只作抽牌，也提供分類與分析骨架。",
         "符文演算": "符文演算包含兩條可重複規則：一是抽牌／解牌演算（卡位、方向、Grammar、月相與脈絡），二是以月之符文九群組方法論作為固定座標的文字／來源分析；第九組「人生道理」由德／命／玄構成。",
         "符文演化": "符文跨時間、ERA、Relation、Trajectory、Trend 的變化；所有未來性統一視為演化"
-      },
-      "canonical_loc_map": {
-        "LOC1": {
-          "name": "LunaRunes",
-          "zh": "月之符文",
-          "role": "符文語彙（Token）"
-        },
-        "LOC2": {
-          "name": "Context",
-          "zh": "脈絡",
-          "role": "脈絡"
-        },
-        "LOC3": {
-          "name": "Music",
-          "zh": "音樂",
-          "role": "音樂"
-        },
-        "LOC4": {
-          "name": "Literary",
-          "zh": "文字創作",
-          "role": "文字創作"
-        },
-        "LOC5": {
-          "name": "MultiMedia",
-          "zh": "多媒體",
-          "role": "多媒體"
-        },
-        "LOC6": {
-          "name": "Methodology",
-          "zh": "方法論",
-          "role": "方法論"
-        },
-        "LOC7": {
-          "name": "Algorithm",
-          "zh": "演算法（知識庫）",
-          "role": "演算法（知識庫）"
-        },
-        "LOC8": {
-          "name": "Evolution",
-          "zh": "推演",
-          "role": "推演"
-        }
-      },
-      "lunarunes_loc_mapping": {
-        "LOC1": "月之符文",
-        "LOC2": "符文脈絡",
-        "LOC3": "符文體系（較基礎結構／三卡類比）",
-        "LOC4": "符文體系（更完整結構／五卡類比）",
-        "LOC5": "符文體系（多模組整合／OW3gs 類比）",
-        "LOC6": "符文解牌方法",
-        "LOC7": "符文演算",
-        "LOC8": "符文演化"
       },
       "lunarunes_chain": [
         "月之符文",
@@ -134,11 +72,8 @@
         "lunarunes_record_count": 67,
         "reference_rune": "0 德（De）：作者／月語者誌銘與治理錨點；不參與抽牌、無卡面"
       },
-      "model_type": "language_model",
-      "model_name": "LOC Language System Model",
-      "model_definition": "LOC／月典現行定位為 Language System Model（LM）；原有 framework 成為模型的底層 architecture。歷史上 LOC 從 LunaRunes 的實際使用、作品延伸、脈絡、治理與時間資料中逐步抽象成形；結構上，LunaRunes 是 LOC 的第一個 Symbolic Language Model reference implementation，用來證明 LOC 可被實作、治理與推演。",
-      "public_concept_map_usage": "homepage_only",
-      "public_concept_map_note": "LOC1–8 are retained only for homepage explanation and visual navigation. Backend schemas, APIs, registries, KM, FAQ and engineering variables must use semantic domain names instead.",
+      "public_concept_map_usage": "historical_provenance_only",
+      "public_concept_map_note": "LOC1–8 may identify historical records and provenance lineage only. They do not define Current architecture, Scope, Feature ownership, navigation taxonomy or Canon authority.",
       "backend_domains": {
         "runes": "LunaRunes／月之符文",
         "context": "Context／脈絡",
@@ -151,7 +86,7 @@
         "global": "System-wide"
       },
       "model_principles": [
-        "LOC1–8 是同一套語言系統的責任分工，不是八套獨立產品，也不是版本或成熟度排序。",
+        "LOC1–8 僅是歷史／來源識別碼，不是 Current 架構、Scope、功能模組、導覽分類或權責。",
         "穩定的是模型架構與治理邊界，不是語言本身：identity、schema、ownership、provenance 與治理流程可穩定，meaning、relation、context 與 interpretation 可演化。",
         "不同資料型態保留各自 canonical ownership；跨 LOC 以 reference / consume / propose change 為原則，不直接覆寫。",
         "LOC 對觀點保持中立，但對 domain、rights、privacy、permission、responsibility boundary 不保持中立。",
@@ -160,36 +95,6 @@
         "AI 推論、semantic similarity 與衍生 View 不得自動升格為 Canon。",
         "LOC Search / Graph / Trend 的目的之一，是讓使用者看見語言如何改變，再自行決定如何治理下一個版本。"
       ],
-      "model_chain": {
-        "loc": "LOC1 符文語彙（Token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演",
-        "luna_runes": "符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算（抽牌解牌＋九群組方法論分析） → 符文演化"
-      },
-      "model_relation": {
-        "historical": "LunaRunes 先累積實作；LOC 再從這些實作中抽象整理出可重複使用的 Language System Model。",
-        "structural": "LOC 現行為 Language System Model（LM）；LunaRunes 是第一個成熟、可治理、可推演的 Symbolic Language Model reference implementation，用來證明 LOC 的模型可實作性。",
-        "scope": "LunaRunes 是根與成熟實例，但不是 LOC 唯一可能使用的符文／語彙系統；其他系統也可依 LOC architecture 建立自己的實作。"
-      },
-      "homepage_guide_rule": "LOC1–8 are a homepage guide map only. They may explain the model visually, but they are not canonical backend IDs or engineering ownership keys.",
-      "terminology_governance": {
-        "loc_system": "Language System Model / 語言系統模型",
-        "loc_abbreviation": "LM",
-        "loc_components": "LOC1–8 may be described as functional modules / 功能模組",
-        "framework_usage": "framework / 框架 is reserved for underlying architecture or historical terminology; it is not the current classification of LOC itself",
-        "lunarunes": "LunaRunes is the first Symbolic Language Model reference implementation of LOC"
-      },
-      "primary_positioning": {
-        "status": "frozen",
-        "effective_date": "2026-09-10",
-        "english": [
-          "LOC is a reusable language system model. LunaRunes demonstrates that the model can be implemented as a working symbolic language model.",
-          "LOC is fully open source. Commercial value comes from consulting, system architecture, governance design, and case-specific implementation."
-        ],
-        "zh_hant": [
-          "LOC 是一套可重複使用的語言系統模型。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言模型。",
-          "LOC 完全開源。它的商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。"
-        ],
-        "governance_rule": "This is the primary public and KM positioning. Later documentation may elaborate on it but must not replace or contradict it without an explicit governance revision."
-      },
       "rune_system_tags": [
         {
           "group_id": 1,
@@ -460,12 +365,91 @@
             "group_data": "pending_actual_11_rune_draw"
           }
         ]
+      },
+      "current_identity": {
+        "loc": "LOC／月典 = Language Module Framework／語言系統模組框架",
+        "lunarunes": "LunaRunes／月之符文 = Symbolic Language Module／符號式語言模組"
+      },
+      "current_architecture": {
+        "formula": "Scope Model × Feature Model → Page Composition",
+        "authority": "LOC_DATA_GOVERNANCE + LOC_TERMINOLOGY_CANON"
+      },
+      "historical_provenance": {
+        "status": "historical_provenance_only",
+        "rule": "LOC1–8 may identify historical records and source lineage only. They do not define Current architecture, Scope, Feature ownership, navigation taxonomy or Canon authority.",
+        "public_concept_map": {
+          "LOC1": "LunaRunes／月之符文；定位為符文語彙（Token），提供基本文字語彙與語意種子",
+          "LOC2": "Context／脈絡：關係、情境、事件與 Graph；月之符文沙盒是代表性實作",
+          "LOC3": "Music／音樂：文字與語意延伸為歌曲、歌詞與聲音",
+          "LOC4": "Literary／文字創作：文章、小說、生活文字與敘事作品",
+          "LOC5": "MultiMedia／多媒體：文字、音樂、圖像與影音的跨媒介表達",
+          "LOC6": "Methodology／方法論：以月之符文九群組作為預設分析座標；前八組沿用月之符文八組，第九組「人生道理」由德／命／玄構成。整理關鍵字／來源分布、文字判讀、設計與治理方法；治理是其中一種方法。",
+          "LOC7": "Algorithm／演算法（知識庫）：把多種方法結構化、組合並形成可執行、可檢索、可關聯的演算法與知識結構",
+          "LOC8": "Evolution／推演：以時間、時期、Event、Trajectory 與 Trend 為證據，觀察既有語言、作品、方法與風格的變化與後續方向"
+        },
+        "canonical_loc_map": {
+          "LOC1": {
+            "name": "LunaRunes",
+            "zh": "月之符文",
+            "role": "符文語彙（Token）"
+          },
+          "LOC2": {
+            "name": "Context",
+            "zh": "脈絡",
+            "role": "脈絡"
+          },
+          "LOC3": {
+            "name": "Music",
+            "zh": "音樂",
+            "role": "音樂"
+          },
+          "LOC4": {
+            "name": "Literary",
+            "zh": "文字創作",
+            "role": "文字創作"
+          },
+          "LOC5": {
+            "name": "MultiMedia",
+            "zh": "多媒體",
+            "role": "多媒體"
+          },
+          "LOC6": {
+            "name": "Methodology",
+            "zh": "方法論",
+            "role": "方法論"
+          },
+          "LOC7": {
+            "name": "Algorithm",
+            "zh": "演算法（知識庫）",
+            "role": "演算法（知識庫）"
+          },
+          "LOC8": {
+            "name": "Evolution",
+            "zh": "推演",
+            "role": "推演"
+          }
+        },
+        "lunarunes_loc_mapping": {
+          "LOC1": "月之符文",
+          "LOC2": "符文脈絡",
+          "LOC3": "符文體系（較基礎結構／三卡類比）",
+          "LOC4": "符文體系（更完整結構／五卡類比）",
+          "LOC5": "符文體系（多模組整合／OW3gs 類比）",
+          "LOC6": "符文解牌方法",
+          "LOC7": "符文演算",
+          "LOC8": "符文演化"
+        },
+        "legacy_model_chain": {
+          "loc": "LOC1 符文語彙（Token） → LOC2 脈絡 → LOC3–5 表達 → LOC6 方法論 → LOC7 演算法（知識庫） → LOC8 推演",
+          "luna_runes": "符文語彙（token） → 符文脈絡／Graph → 符文體系（文學／歌曲／影像／沙盒等延伸） → 符文演算（抽牌解牌＋九群組方法論分析） → 符文演化"
+        }
       }
     }
   ],
-  "authority_scope": "global_language_model",
-  "canonical_priority": "homepage_guide_only_for_LOC1_8; backend_uses_semantic_domains",
-  "updated_at": "2026-09-10",
-  "canon_version": "1.0",
-  "canon_status": "formal"
+  "authority_scope": "current_identity_and_historical_provenance",
+  "canonical_priority": "LOC_DATA_GOVERNANCE_then_LOC_TERMINOLOGY_CANON",
+  "updated_at": "2026-09-17",
+  "canon_version": "2.0",
+  "canon_status": "formal",
+  "status": "current"
 }

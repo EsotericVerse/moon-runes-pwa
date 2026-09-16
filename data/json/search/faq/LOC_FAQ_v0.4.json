@@ -8,7 +8,7 @@
     "created_at": "2026-09-06",
     "author": "Lucas Oscar Wang 政德",
     "studio": "秘藝文域（EsotericVerse Studio）",
-    "description": "LOC 現行 FAQ。LunaRunes、治理、脈絡、作品、知識與推演等概念以語意名稱檢索；LOC1–8 僅保留於首頁導覽，不作 FAQ 底層分類。",
+    "description": "LOC 現行 FAQ projection。Current 定義來自治理與術語 Canon；LOC1–8 僅作歷史／來源識別。",
     "entry_count": 90,
     "revision_from": "LOC_FAQ_v0.3.json",
     "system_invariants": {
@@ -22,9 +22,9 @@
         "66：命（Fate）"
       ],
       "special_exception_note": "65「玄」與66「命」是66符固定骨架中的特殊符文；現行一般抽牌 runtime 使用1–64。第0符「德」只作作者／系統基準，不參與抽取。",
-      "loc_range": "LOC1–LOC8 homepage guide only",
+      "loc_range": "LOC1–LOC8 historical/provenance identifiers only",
       "loc9_exists": false,
-      "model_note": "LOC1–8 only describe the public homepage guide map. FAQ/KM/Search/backend must use semantic domains and must not create new LOC-number ownership fields."
+      "model_note": "LOC1–8 are Historical/provenance identifiers only. FAQ/KM/Search/backend use Scope, Feature and semantic-domain fields and must not create LOC-number ownership."
     },
     "retrieval_guidance": {
       "embedding_fields": [
@@ -43,7 +43,7 @@
         "confirmed": "有現行文件或創作者確認直接支持",
         "derived": "由多份現行資料整理出的對外標準答案，未新增Canon規則"
       },
-      "answer_policy": "檢索系統應優先回傳已確認或可追溯的標準答案。AI可檢索、排序與整合，但不得自行改寫66符文Canon，也不得把首頁 LOC1–8 導覽重新升格為底層分類。"
+      "answer_policy": "檢索系統應優先回傳 Current Canon 的可追溯答案。AI可檢索、排序與整合，但不得自行改寫 Canon，也不得把 LOC1–8 歷史識別碼升格為 Current 架構或權責。"
     },
     "system_id": "lo3rwang",
     "shared_registries": {
@@ -61,7 +61,9 @@
     "related_domains": [
       "governance",
       "evolution"
-    ]
+    ],
+    "authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
+    "projection_status": "search_projection_without_governance_authority"
   },
   "faq": [
     {
@@ -74,14 +76,14 @@
         "LOC到底在做什麼？",
         "可以簡單介紹LOC嗎？"
       ],
-      "answer": "LOC（Luna Codex／月典）是一套分析、拆解、組織、搜尋、治理並推演語言的語言系統模型（Language System Model）。從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。LOC 固定只有 LOC1–LOC8，不存在 LOC9。",
+      "answer": "LOC（Luna Codex／月典）是 Language Module Framework／語言系統模組框架。Current 架構以 Scope Model × Feature Model → Page Composition 組合資料範圍、可重用功能與頁面；LOC1–8 僅可作歷史／來源識別。",
       "keywords": [
         "LOC",
         "Luna Codex",
         "月典",
         "個人語言系統",
         "自我治理",
-        "語言系統模型",
+        "語言系統模組框架",
         "LOC1–8",
         "不同型態的語言資料",
         "創作文字",
@@ -109,7 +111,7 @@
         "月符在LOC裡是什麼位置？",
         "為什麼說月符為種？"
       ],
-      "answer": "LOC 是整體語言系統模型；LunaRunes（月之符文）是 LOC1 的固定 66 符語彙種子與 Reference Seed System。月之符文提供語彙、四向、月相與組合語法，但使用 LOC 不必先學會全部符文。",
+      "answer": "LOC／月典是 Language Module Framework／語言系統模組框架；LunaRunes／月之符文是 Symbolic Language Module／符號式語言模組。LunaRunes 是可運作的獨立模組，但不定義 LOC 的 Current 架構。",
       "keywords": [
         "月典",
         "Luna Codex",
@@ -188,7 +190,7 @@
         "LOC和桌遊有什麼關係？",
         "LOC有哪些應用面向？"
       ],
-      "answer": "LOC本體是一套個人語言系統模型。符文抽取、遊戲情境、歌曲與歌詞、創作文字、文章／小說、多媒體影片與圖像、治理語句、知識文件，以及生命事件與時間語意，都是不同型態的語言資料。LOC1–8負責保存與處理各自資料，再由同一套框架統合、搜尋與建立關聯，而不是八個彼此獨立後再硬合併的產品。",
+      "answer": "LOC 的 Current 架構是 Scope Model × Feature Model → Page Composition。符文、遊戲情境、歌曲、文字、多媒體、治理、知識與事件資料由各 Scope 治理，再由 Features 組合到頁面；LOC1–8 不再代表 Current 功能責任區。",
       "keywords": [
         "語言系統",
         "LOC1–8",
@@ -522,7 +524,7 @@
         "八個LOC哪一個比較高階？",
         "第一次接觸LOC要從哪裡開始？"
       ],
-      "answer": "LOC1–8不是版本、等級或八個獨立產品，而是同一套語言系統固定的功能責任區。正式名稱固定為：LOC1 LunaRunes／月之符文（符文語彙 Token）、LOC2 Context／脈絡、LOC3 Music／音樂、LOC4 Literary／文字創作、LOC5 MultiMedia／多媒體、LOC6 Methodology／方法論、LOC7 Algorithm／演算法（知識庫）、LOC8 Evolution／推演。LOC 只有 1–8，不存在 LOC9。",
+      "answer": "LOC1–8 是歷史／來源識別碼，可保留在舊資料、檔名與 provenance 中；它們不是 Current architecture、Scope、module ownership、navigation taxonomy 或 Canon source。Current 頁面依 Scope Model × Feature Model → Page Composition 組成。",
       "keywords": [
         "LOC1–8",
         "框架",
@@ -2251,21 +2253,21 @@
       "id": "FAQ-091",
       "category": "LOC 基本定義",
       "intent": "為什麼 LOC 稱為 LM 而不是小型語言架構",
-      "question": "為什麼 LOC 稱為 Language System Model，而不是只稱為 framework？",
+      "question": "為什麼 LOC 稱為 Language Module Framework，而不是只稱為 framework？",
       "aliases": [
         "LOC為什麼不只是一個framework？",
         "LOC是LM還是framework？",
         "LOC的LM和一般LLM有什麼不同？"
       ],
-      "answer": "LOC 的正式定位是 Language System Model（LM）。framework 仍存在，但負責描述底層 architecture；LOC 之所以提升為 model，是因為它不只定義靜態結構，還把 corpus、Context、Graph、Grammar、Governance、Algorithm 與 Evolution 組成可重複處理與推演的語言系統。這裡的 LM 指 Language System Model，不等同於以機率式 next-token prediction 為核心的 LLM。LunaRunes 則是 LOC 的第一個 Symbolic Language Model reference implementation。",
+      "answer": "LOC／月典的現行正式身份固定為 Language Module Framework／語言系統模組框架；LunaRunes／月之符文固定為 Symbolic Language Module／符號式語言模組。Current 架構是 Scope Model × Feature Model → Page Composition。",
       "keywords": [
-        "Language System Model",
+        "Language Module Framework",
         "LM",
         "framework",
         "architecture",
-        "Symbolic Language Model",
+        "Symbolic Language Module",
         "LunaRunes",
-        "語言系統模型"
+        "語言系統模組框架"
       ],
       "related_ids": [],
       "source_refs": [
@@ -2287,13 +2289,13 @@
         "LOC怎麼商業化？",
         "LOC開源後靠什麼收費？"
       ],
-      "answer": "LOC 是一套可重複使用的語言系統模型。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言模型。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。",
+      "answer": "LOC 是一套可重複使用的語言系統模組框架。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言模組。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。",
       "keywords": [
         "LOC",
-        "Language System Model",
-        "語言系統模型",
+        "Language Module Framework",
+        "語言系統模組框架",
         "LunaRunes",
-        "Symbolic Language Model",
+        "Symbolic Language Module",
         "開源",
         "顧問服務",
         "系統架構",

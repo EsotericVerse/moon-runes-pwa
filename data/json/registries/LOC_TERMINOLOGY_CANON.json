@@ -8,7 +8,7 @@
   "current": {
     "LOC": {
       "canonical_names": ["LOC", "Luna Codex", "月典"],
-      "zh": "語言模組框架",
+      "zh": "語言系統模組框架",
       "en": "Language Module Framework"
     },
     "LunaRunes": {
@@ -21,6 +21,11 @@
       "en": "Scope",
       "rule": "Scopes are governed, mutable and instance-specific; no permanent universal list exists."
     },
+    "architecture": {
+      "en": "Scope Model × Feature Model → Page Composition",
+      "zh": "資料範圍模型 × 功能模型 → 頁面組合",
+      "rule": "Current pages are composed from a governed Scope and reusable Features. Numbered LOC identifiers do not define Current architecture, scope, feature ownership or page composition."
+    },
     "navigation": {
       "zh": "導覽列",
       "en": "NAV",
@@ -28,9 +33,11 @@
     }
   },
   "historical_only": {
-    "retired_numbered_architecture": "The former numbered LOC architecture is Historical only and forbidden in Current names, fields, navigation and responsibility identifiers.",
+    "retired_numbered_architecture": "LOC1–8 are Historical/provenance identifiers only and are forbidden as Current architecture, scope, module ownership, navigation taxonomy or Canon authority.",
     "retired_multi_nav_terms": "Former numbered navigation-layer names are Historical only."
   },
+  "authority_chain": ["LOC_DATA_GOVERNANCE", "LOC_TERMINOLOGY_CANON", "Current domain registries", "generated projections", "Search/RAG/UI consumers"],
+  "projection_rule": "Generated data is a disposable projection of Current authority and never becomes governance authority.",
   "migration_rule": "Consumers must prefer current values in this registry. Do not rewrite historical evidence; explicitly mark it Historical or superseded.",
   "display_rule": "Public Current copy uses Current terminology and the owning Scope's governed labels."
 }

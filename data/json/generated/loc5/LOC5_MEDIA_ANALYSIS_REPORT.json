@@ -1,9 +1,11 @@
 {
   "schema_version": "0.1",
-  "authority": "LOC5 generated projection",
+  "authority": null,
+  "projection_status": "generated_projection_without_governance_authority",
+  "authoritative_source": "data/json/registries/LOC_MEDIA_REGISTRY.json",
   "source": "data/json/registries/LOC_MEDIA_REGISTRY.json",
   "generator": "scripts/generate_loc5_data.py",
-  "generated_at": "2026-09-16T17:19:28+00:00",
+  "generated_at": "2026-09-16T17:38:48+00:00",
   "semantic_policy": "priority + exclusion + fallback + dispute; no numeric weights",
   "registry": "LOC5_MEDIA_ANALYSIS_REPORT",
   "summary": {
@@ -52,7 +54,7 @@
   "fallback_media_ids": [],
   "governance_notes": [
     "No semantic numeric weights or scores are generated.",
-    "Explicit LOC relations take priority over governed purpose and generic media type.",
+    "Historical LOC provenance relations are preserved as source evidence; they do not define Current architecture or ownership.",
     "Missing URL does not remove or downgrade a historical LOC5 media record.",
     "No URL is inferred, generated, or promoted by this analyzer.",
     "Multiple explicit LOC relations are preserved as dispute candidates instead of being numerically ranked."

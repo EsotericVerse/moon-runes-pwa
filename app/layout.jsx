@@ -4,7 +4,7 @@ import GlobalFooter from './GlobalFooter';
 
 export const metadata = {
   title: 'LOC 月典',
-  description: 'LOC language system model migration shell.'
+  description: 'LOC Language Module Framework application shell.'
 };
 
 export default function RootLayout({ children }) {
