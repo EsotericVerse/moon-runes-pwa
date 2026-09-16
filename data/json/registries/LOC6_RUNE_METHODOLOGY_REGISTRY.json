@@ -1,20 +1,20 @@
 {
   "schema_version": "1.1",
   "registry": "LOC6_RUNE_METHODOLOGY_REGISTRY",
-  "authority": "LOC6",
+  "authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
   "basis": {
-    "rune_authority": "LOC1 LunaRunes／月之符文",
-    "principle": "LOC6 的預設方法論直接使用月之符文八組，再把第 0 符「德」與特殊符文「命／玄」合併為第九組「人生道理」；不另外建立與符文群組平行的情緒／理性分類體系。",
+    "rune_authority": "Current LunaRunes／月之符文 frozen group definition",
+    "principle": "Current Analysis Feature 直接消費 frozen Current 月之符文九群組；第七組固定為「定序」，第九組固定為「系統特別」。LOC6 僅保留為 Historical/provenance identifier，不取得 Current ownership 或 authority。",
     "algorithm_scope": "符文演算不只包含抽牌與解牌，也包含以月之符文分類結構對文字、來源與方法進行可重複分析。"
   },
   "default_pipeline": [
     "原始文字／作品／來源資料",
     "關鍵字排行榜與來源分布作為共同統計入口",
     "依月之符文九群組方法論進行粗粒度分類",
-    "第九組「人生道理」內再區分德／命／玄三種語意",
-    "LOC6 產生方法論分析結果",
-    "關係型結果可提供 LOC2 Context 形成脈絡",
-    "時間變化與趨勢交由 LOC8 Evolution／推演"
+    "第九組「系統特別」保留德／命／玄三種不同語意",
+    "Analysis Feature 產生方法論分析結果",
+    "關係型結果投影到 Context Scope",
+    "時間變化與趨勢投影到 Evolution Feature"
   ],
   "default_axes": [
     {
@@ -127,8 +127,8 @@
     },
     {
       "order": 7,
-      "id": "order",
-      "group": "秩序組",
+      "id": "sequencing",
+      "group": "定序組",
       "runes": [
         "日",
         "月",
@@ -163,16 +163,16 @@
     },
     {
       "order": 9,
-      "id": "life_truth",
-      "group": "人生道理組",
+      "id": "system_special",
+      "group": "系統特別組",
       "basis_type": "reference_and_special_runes",
       "runes": [
         "德",
         "命",
         "玄"
       ],
-      "analysis_label": "人生道理",
-      "description": "分析文字中已形成的人生判斷、治理／爭議結構、命運感與意料之外但可理解的意外。作為第九組粗粒度方法，內部仍保留德、命、玄三種不同語意，不把三者混成同義詞。",
+      "analysis_label": "系統特別",
+      "description": "承接系統層級的參照與特殊符文。內部保留德、命、玄三種不同語意，不把三者混成同義詞，也不另造「人生道理」群組取代 frozen Current 定義。",
       "submethods": [
         {
           "rune": "德",
@@ -203,12 +203,13 @@
       "時期 × 來源排行榜"
     ]
   },
-  "boundary": {
-    "LOC1": "提供月之符文語彙、分組與符文本義。",
-    "LOC6": "把符文分類結構作為預設方法論，產生分析結果。",
-    "LOC2": "接收關係型分析結果形成 Context／Relation。",
-    "LOC7": "把方法結構化為可執行、可檢索的演算法與知識結構。",
-    "LOC8": "比較時間、時期與趨勢；演化方法與趨勢推薦歸推演。"
+  "scope_feature_projection": {
+    "rune_definition": "Current LunaRunes Canon 提供符文語彙、frozen groups 與符文本義。",
+    "analysis": "Analysis Feature 消費符文分類結構並產生分析結果。",
+    "context": "關係型分析結果投影到 Context Scope／Relation。",
+    "retrieval": "Search／RAG 可將方法結構化為可執行、可檢索的知識結構，但不得產生 Canon。",
+    "evolution": "Evolution Feature 比較時間、時期與趨勢。",
+    "historical_identifiers": "LOC1–8 僅可保留為 Historical/provenance identifiers，不表示 Current ownership 或 authority。"
   },
   "status": "current",
   "updated_at": "2026-09-09",
