@@ -1,0 +1,8 @@
+{
+  "exampleOnly": true,
+  "scope": "future-scope",
+  "host": "future.lo3rwang.cc",
+  "basePath": "/",
+  "reserved": {"label": "保留字", "href": "/"},
+  "inheritsSharedFunctions": true
+}
