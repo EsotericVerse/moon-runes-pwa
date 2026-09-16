@@ -15,3 +15,4 @@ import './nav-contract-version-check.mjs';
 import './nav-regression-summary-check.mjs';
 import './nav-scope-registry-check.mjs';
 import './nav-final-checklist-check.mjs';
+import './nav-render-contract.mjs';
