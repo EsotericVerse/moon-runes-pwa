@@ -1,15 +1,13 @@
 'use client';
 
-import { useEffect,useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { detectNavScope,getNavScopeConfig,navRoute,SHARED_NAV_FUNCTIONS } from './nav-route-map';
 
 export default function ScopeNav(){
   const pathname=usePathname()||'/';
-  const [host,setHost]=useState('');
-  useEffect(()=>setHost(window.location.hostname),[]);
+  const host=typeof window==='undefined'?'':window.location.hostname;
   const scope=detectNavScope(pathname,host);
-  const cfg=getNavScopeConfig(scope,host);
+  const cfg=getNavScopeConfig(scope);
   return <>
     <a href={cfg.reserved[1]}>{cfg.reserved[0]}</a>
     {SHARED_NAV_FUNCTIONS.map(([label,name])=><a key={name} href={navRoute(cfg,name)}>{label}</a>)}
