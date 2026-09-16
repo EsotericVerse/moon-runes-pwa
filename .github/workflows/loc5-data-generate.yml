@@ -1,0 +1,34 @@
+name: LOC5 Data Generate
+
+on:
+  push:
+    branches:
+      - feat/loc5-data-analysis
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    if: ${{ !contains(github.event.head_commit.message, '[loc5-generated]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/loc5-data-analysis
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate LOC5 projections
+        run: python scripts/generate_loc5_data.py
+      - name: Commit generated LOC5 data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/json/generated/loc5
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git commit -m "data(loc5): generate analysis projections [loc5-generated]"
+          git push origin HEAD:feat/loc5-data-analysis
