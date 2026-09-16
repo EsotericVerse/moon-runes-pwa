@@ -2,6 +2,20 @@ import { LOC_DATA } from './data';
 
 export const SEARCH_SCOPE_FIELDS=Object.freeze(['person','family','generation','era','source','corpus','language','culture']);
 
+const ZHENGDE_CULTURE_COLLECTION = Object.freeze({
+  id: '政德文化',
+  label: '政德文化',
+  description: '搜尋政德文化的文字、歌曲、治理資料與文化關鍵字；用時期、概念與作品一起理解演變。',
+  scopeProfile:Object.freeze({id:'personal',fields:Object.freeze(['person','era','source','corpus','language','culture'])}),
+  smallSources: [
+    [LOC_DATA.ZHENGDE_CULTURE_KEYWORDS, '政德文化'],
+    [LOC_DATA.LOC4_WRITING_REGISTRY, '文字創作'],
+    [LOC_DATA.LOC6_GOVERNANCE_REGISTRY, '治理']
+  ],
+  includeTextCorpus: true,
+  includeMusic: true
+});
+
 export const SEARCH_COLLECTIONS = Object.freeze({
   all: Object.freeze({
     id: 'all',
@@ -17,7 +31,8 @@ export const SEARCH_COLLECTIONS = Object.freeze({
       [LOC_DATA.LOC6_GOVERNANCE_REGISTRY, '治理'],
       [LOC_DATA.LOC_MEDIA_REGISTRY, '多媒體'],
       [LOC_DATA.LOC_KNOWLEDGE_ASSET_REGISTRY, '知識庫'],
-      [LOC_DATA.LOC_FAQ, 'FAQ']
+      [LOC_DATA.LOC_FAQ, 'FAQ'],
+      [LOC_DATA.ZHENGDE_CULTURE_KEYWORDS, '政德文化']
     ],
     includeTextCorpus: true,
     includeMusic: true
@@ -38,21 +53,11 @@ export const SEARCH_COLLECTIONS = Object.freeze({
     includeTextCorpus: false,
     includeMusic: false
   }),
-  '政德風': Object.freeze({
-    id: '政德風',
-    label: '政德風',
-    description: '以文字創作與治理資料為主的作者風格搜尋視角。',
-    scopeProfile:Object.freeze({id:'personal',fields:Object.freeze(['person','era','source','corpus','language','culture'])}),
-    smallSources: [
-      [LOC_DATA.LOC4_WRITING_REGISTRY, '文字創作'],
-      [LOC_DATA.LOC6_GOVERNANCE_REGISTRY, '治理']
-    ],
-    includeTextCorpus: true,
-    includeMusic: false
-  })
+  '政德文化': ZHENGDE_CULTURE_COLLECTION,
+  '政德風': ZHENGDE_CULTURE_COLLECTION
 });
 
-export const SEARCH_COLLECTION_ORDER = Object.freeze(['all', '月之符文', '政德風']);
+export const SEARCH_COLLECTION_ORDER = Object.freeze(['all', '月之符文', '政德文化']);
 
 export function getSearchCollection(value) {
   const key = String(value || '').trim();
