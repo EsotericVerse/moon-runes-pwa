@@ -15,6 +15,7 @@ const StyleGroupsView = dynamic(() => import('./views/StyleGroupsView'),{ssr:fal
 const ClassifyView = dynamic(() => import('./views/ClassifyView'),{ssr:false,loading});
 const LibraryView = dynamic(() => import('./views/LibraryView'),{ssr:false,loading});
 const MyStyleView = dynamic(() => import('./views/MyStyleView'),{ssr:false,loading});
+const MediaView = dynamic(() => import('./views/MediaView'),{ssr:false,loading});
 
 const VIEWS = {
   home: AboutView,
@@ -23,6 +24,7 @@ const VIEWS = {
   context: ContextView,
   classify: ClassifyView,
   library: LibraryView,
+  multimedia: MediaView,
   'my-style': MyStyleView,
   statics: StaticsView,
   evolution: EvolutionView,
