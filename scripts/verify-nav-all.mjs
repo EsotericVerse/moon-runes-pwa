@@ -25,3 +25,4 @@ import './nav-ci-contract-check.mjs';
 import './nav-release-check.mjs';
 import './nav-scope-resolver-contract.mjs';
 import './nav-no-manual-page-check.mjs';
+import './nav-scope-isolation-contract.mjs';
