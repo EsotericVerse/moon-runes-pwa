@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """Publish editable LOC authorities to compact static browser JS.
 
-RC3 runtime rule:
-    Editable source data -> static JS runtime projection.
-    Governance-locked fixed data (for example LunaRunes core) lives directly in JS
-    and is intentionally outside this publisher.
+Current runtime rule:
+    Editable governed source data -> static JS runtime projection.
+    LunaRunes core authority remains in data/json/core and is not redefined here.
 
 The publisher performs no network I/O and has no third-party requirements.
-Historical snapshots remain historical inputs; current runtime output is normalized
-against current editable authorities before publishing.
+Historical snapshots remain historical inputs; Current output is normalized against
+Current Scope/Feature authorities before publishing.
 """
 from __future__ import annotations
 
@@ -66,7 +65,7 @@ def resolve_era(date: str, eras: list[dict]) -> dict | None:
 
 
 def dump_normalized_events() -> None:
-    source = "data/json/registries/LOC8_EVENT_SNAPSHOT.json"
+    source = "data/json/registries/CONTEXT_EVENT_SNAPSHOT.json"
     era_source = "data/json/registries/LOC_ERA_REGISTRY.json"
     snapshot = read_json(source)
     eras = list(read_json(era_source).get("eras") or [])
@@ -93,10 +92,10 @@ def dump_normalized_events() -> None:
 
 
 def dump_compact_scenarios() -> None:
-    source = "data/json/registries/LOC2_EVENT_REGISTRY.json"
+    source = "data/json/registries/CONTEXT_EVENT_REGISTRY.json"
     doc = read_json(source)
     fields = ("event_id", "title", "event_group", "requirement_signature", "description")
-    records = [{key: row.get(key) for key in fields if row.get(key) is not None} for row in doc.get("records") or []]
+    records = [{key: row.get(key) for key in fields if row.get(key) is not None} for row in doc.get("records") or doc.get("events") or []]
     write_global(
         {"schema_version": "1.0", "role": "compact scenario runtime projection", "records": records},
         [source], "data/js/loc-scenario-data.js", "LOC_SCENARIO_DATA",
@@ -112,31 +111,31 @@ def top_keywords(rows: list[dict], key: str, limit: int = 5) -> list[dict]:
 
 
 def dump_compact_period_analysis() -> None:
-    loc3_source = "data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json"
-    loc6_source = "data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json"
-    loc3_doc, loc6_doc = read_json(loc3_source), read_json(loc6_source)
-    loc3 = []
-    for row in loc3_doc.get("periods") or []:
+    music_source = "data/json/registries/MUSIC_PERIOD_KEYWORD_ANALYSIS.json"
+    lo3rwang_source = "data/json/registries/LO3RWANG_PERIOD_KEYWORD_ANALYSIS.json"
+    music_doc, lo3rwang_doc = read_json(music_source), read_json(lo3rwang_source)
+    music = []
+    for row in music_doc.get("periods") or []:
         period = str(row.get("period") or "")
-        loc3.append({
+        music.append({
             "period": period,
             "canonical_period": LEGACY_PERIOD_MAP.get(period, period),
             "start_date": row.get("start_date"),
             "work_count": row.get("work_count", 0),
             "keywords": top_keywords(row.get("normalized_top_keywords") or [], "normalized_top_keywords"),
         })
-    loc6 = []
-    for row in loc6_doc.get("periods") or []:
+    lo3rwang = []
+    for row in lo3rwang_doc.get("periods") or []:
         period = str(row.get("period") or "")
-        loc6.append({
+        lo3rwang.append({
             "period": period,
             "canonical_period": LEGACY_PERIOD_MAP.get(period, period),
             "document_count": row.get("document_count", 0),
             "keywords": top_keywords(row.get("keywords") or [], "keywords"),
         })
     write_global(
-        {"schema_version": "1.0", "role": "compact period-analysis runtime projection", "loc3": loc3, "loc6": loc6},
-        [loc3_source, loc6_source], "data/js/loc-period-analysis-data.js", "LOC_PERIOD_ANALYSIS_DATA",
+        {"schema_version": "1.1", "role": "compact period-analysis runtime projection", "music": music, "lo3rwang": lo3rwang},
+        [music_source, lo3rwang_source], "data/js/loc-period-analysis-data.js", "LOC_PERIOD_ANALYSIS_DATA",
     )
 
 
@@ -146,7 +145,7 @@ def main() -> int:
         {"history": "data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json", "analysis": "data/json/registries/LUNARUNE_EVOLUTION_ANALYSIS.json"},
         "data/js/lunarune-evolution-data.js", "LUNARUNE_EVOLUTION_DATA",
     )
-    dump_global("data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json", "data/js/lunarune-daily-data.js", "LUNARUNE_DAILY_DATA")
+    dump_global("data/json/registries/LUNARUNES_DAILY_RUNE_REPO_HISTORY.json", "data/js/lunarune-daily-data.js", "LUNARUNE_DAILY_DATA")
     dump_normalized_events()
     dump_compact_scenarios()
     dump_global("data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json", "data/js/loc-relation-data.js", "LOC_RELATION_DATA")
