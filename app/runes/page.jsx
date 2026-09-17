@@ -23,16 +23,9 @@ const DEMO_REEL_LINKS = [
 
 export default function RunesPage() {
   return <main className="loc-next-main">
-    <header className="loc-hero runes-home-hero">
-      <div className="runes-home-hero-copy">
-        <p className="loc-eyebrow">LunaRunes</p>
-        <h1>月之符文</h1>
-        <p className="loc-subtitle">第一次來？不用先弄懂它是什麼。可以直接抽張牌，也可以先從旁邊的短介紹開始。</p>
-        <div className="loc-actions"><a className="loc-button" href="?mode=single">直接抽一張牌</a><a href="?mode=daily">每日符文</a></div>
-      </div>
-
-      <aside className="runes-home-media" aria-label="月之符文介紹媒體">
-        <article className="runes-home-reel">
+    <header className="loc-hero scope-home-hero">
+      <aside className="scope-home-media" aria-label="月之符文介紹媒體">
+        <div className="scope-home-media-frame">
           <iframe
             src={`https://www.instagram.com/reel/${INTRO_REEL.id}/embed/`}
             title={INTRO_REEL.title}
@@ -40,12 +33,19 @@ export default function RunesPage() {
             allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
             allowFullScreen
           />
-          <a href={`https://www.instagram.com/reel/${INTRO_REEL.id}/`} target="_blank" rel="noopener noreferrer">在 Instagram 看完整介紹 Reels</a>
-        </article>
+        </div>
+        <a className="scope-home-media-caption" href={`https://www.instagram.com/reel/${INTRO_REEL.id}/`} target="_blank" rel="noopener noreferrer">在 Instagram 看完整介紹 Reels</a>
         <div className="runes-home-demo-links">
           {DEMO_REEL_LINKS.map(reel => <a key={reel.id} href={`https://www.instagram.com/reel/${reel.id}/`} target="_blank" rel="noopener noreferrer">{reel.title}</a>)}
         </div>
       </aside>
+
+      <div className="scope-home-copy">
+        <p className="loc-eyebrow">LunaRunes</p>
+        <h1>月之符文</h1>
+        <p className="loc-subtitle">第一次來？不用先弄懂它是什麼。可以直接抽張牌，也可以先看左邊的短介紹。</p>
+        <div className="loc-actions"><a className="loc-button" href="?mode=single">直接抽一張牌</a><a href="?mode=daily">每日符文</a></div>
+      </div>
     </header>
 
     <section className="loc-card runes-quick-start" aria-labelledby="runes-quick-start-title">
