@@ -1,17 +1,16 @@
 {
-  "schema_version": "0.3",
+  "schema_version": "1.0",
   "registry": "LOC_KM_KEYWORDS",
-  "source": "search.html + governance.html + structured registries",
-  "source_version": "LOC Canon 1.0 + LOC7 KM",
-  "updated_at": "2026-09-09",
-  "purpose": "Shared keyword and alias registry for LOC7 Knowledge Management, FAQ/RAG retrieval, Unified Search, and future Knowledge Object alignment.",
+  "source": "Current governance + Scope Model × Feature Model + structured registries",
+  "source_version": "2026-09-17 Current",
+  "updated_at": "2026-09-17",
+  "purpose": "Shared retrieval vocabulary for Knowledge Management, Search, FAQ/RAG, provenance and knowledge assets without assigning Current ownership to LOC1–8.",
   "governance": {
     "authority": "Analysis",
-    "note": "Keywords are retrieval aids, not Canon definitions. Canon, Stable, Working, Proposed, Reserved and Historical states must remain distinguishable. Repository KM documentation is Markdown-first.",
-    "controlled_logic": [
-      "LOC1 真實月相判定規則",
-      "真實月相 × 卡片月相交互規則"
-    ]
+    "canon_authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
+    "note": "Keywords are retrieval aids, not Canon definitions. KM means Knowledge Management. FAQ, RAG, Search, Graph traversal and indexes are views/features/derivatives, not KM itself. LOC1–8 are historical/provenance identifiers only.",
+    "current_architecture": "Scope Model × Feature Model → Page Composition",
+    "historical_loc_policy": "LOC1–8 labels may remain as aliases for legacy retrieval and provenance but must never create Current Scope, Feature, navigation or Canon ownership."
   },
   "groups": [
     {
@@ -20,1294 +19,179 @@
       "keywords": [
         {
           "term": "LOC",
-          "aliases": [
-            "Luna Codex",
-            "月典",
-            "Personal Language System",
-            "個人語言系統"
-          ],
-          "loc_scope": [
-            "global"
-          ],
+          "aliases": ["Luna Codex", "月典", "Language Module Framework", "語言系統模組框架"],
           "status": "Canonical",
-          "domain_scope": [
-            "global"
-          ]
+          "scope": ["LOC"],
+          "feature_scope": ["context", "statics", "evolution", "governance", "search"]
         },
         {
-          "term": "月符",
-          "aliases": [
-            "LunaRunes",
-            "月之符文",
-            "符文",
-            "Rune"
-          ],
-          "loc_scope": [
-            "LOC1",
-            "LOC2",
-            "LOC7"
-          ],
+          "term": "LunaRunes",
+          "aliases": ["月之符文", "月符", "Symbolic Language Module", "符號式語言模組", "Rune"],
           "status": "Canonical",
-          "domain_scope": [
-            "runes",
-            "context",
-            "knowledge"
-          ]
+          "scope": ["LunaRunes"],
+          "feature_scope": ["context", "statics", "evolution", "governance", "search"]
+        },
+        {
+          "term": "Scope Model × Feature Model",
+          "aliases": ["Scope Model", "Feature Model", "Page Composition", "Scope × Feature"],
+          "status": "Canonical",
+          "scope": ["LOC", "LunaRunes", "Author", "Governance"],
+          "feature_scope": ["architecture"]
         },
         {
           "term": "LOC1–8",
-          "aliases": [
-            "八分發",
-            "Eight Distributions",
-            "八個框架",
-            "語言處理責任"
-          ],
-          "loc_scope": [
-            "global"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "global"
-          ]
-        },
-        {
-          "term": "語言演化",
-          "aliases": [
-            "Language Evolution",
-            "Rune-guided Language Evolution"
-          ],
-          "loc_scope": [
-            "LOC1",
-            "LOC3",
-            "LOC4",
-            "LOC5",
-            "LOC6",
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "runes",
-            "music",
-            "literary",
-            "media",
-            "governance",
-            "knowledge"
-          ]
-        },
-        {
-          "term": "數位神秘學",
-          "aliases": [
-            "Digital Mysticism"
-          ],
-          "loc_scope": [
-            "global"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "global"
-          ]
-        },
-        {
-          "term": "語意錨點",
-          "aliases": [
-            "Semantic Anchor"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "knowledge"
-          ]
+          "aliases": ["八分發", "Eight Distributions", "舊 LOC 編號"],
+          "status": "Historical",
+          "scope": ["Historical"],
+          "feature_scope": ["provenance"],
+          "note": "Historical/provenance identifiers only; not Current ownership."
         }
       ]
     },
     {
-      "id": "loc7_km",
-      "label": "LOC7 Algorithm／演算法（知識庫）",
+      "id": "knowledge_management",
+      "label": "Knowledge Management／知識管理",
       "keywords": [
         {
-          "term": "LOC7_KM",
-          "aliases": [
-            "Knowledge Management",
-            "KM",
-            "知識管理",
-            "知識建築核心"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
+          "term": "Knowledge Management",
+          "aliases": ["KM", "知識管理"],
+          "status": "Canonical",
+          "scope": ["LOC", "LunaRunes", "Author", "Governance"],
+          "feature_scope": ["knowledge"],
+          "note": "KM manages knowledge assets, authority, provenance, versions, relationships and retrievability across Scopes."
+        },
+        {
+          "term": "Knowledge Asset",
+          "aliases": ["知識資產", "Knowledge Object", "知識物件", "KO"],
           "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Knowledge Base",
-          "aliases": [
-            "知識庫",
-            "KB"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Knowledge Object",
-          "aliases": [
-            "知識物件",
-            "知識節點",
-            "KO"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Knowledge Graph",
-          "aliases": [
-            "知識圖譜",
-            "Graph"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Knowledge Relation",
-          "aliases": [
-            "Relation",
-            "關係",
-            "語意關係"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "knowledge"
-          ]
+          "scope": ["LOC", "LunaRunes", "Author", "Governance"],
+          "feature_scope": ["knowledge"]
         },
         {
           "term": "Knowledge Provenance",
-          "aliases": [
-            "來源追溯",
-            "Source Provenance",
-            "來源"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
+          "aliases": ["來源追溯", "Source Provenance", "來源"],
           "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
+          "scope": ["LOC", "LunaRunes", "Author", "Governance"],
+          "feature_scope": ["knowledge", "governance"]
         },
         {
           "term": "Knowledge Versioning",
-          "aliases": [
-            "版本治理",
-            "版本歷史",
-            "Knowledge Evolution"
-          ],
-          "loc_scope": [
-            "LOC7",
-            "LOC8"
-          ],
+          "aliases": ["版本治理", "版本歷史", "Knowledge Evolution"],
           "status": "Stable",
-          "domain_scope": [
-            "knowledge",
-            "evolution"
-          ]
+          "scope": ["LOC", "LunaRunes", "Author", "Governance"],
+          "feature_scope": ["knowledge", "evolution"]
         },
         {
-          "term": "Knowledge Neighborhood",
-          "aliases": [
-            "Neighborhood",
-            "知識鄰域",
-            "語意鄰域"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
+          "term": "Knowledge Relation",
+          "aliases": ["Relation", "關係", "語意關係", "Knowledge Graph", "知識圖譜"],
           "status": "Working",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Personal Graph",
-          "aliases": [
-            "個人圖譜",
-            "個人語言拓撲",
-            "Zhèngdé Graph"
-          ],
-          "loc_scope": [
-            "LOC7",
-            "LOC8"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "knowledge",
-            "evolution"
-          ]
-        },
-        {
-          "term": "Interpersonal Graph",
-          "aliases": [
-            "多人圖譜",
-            "語言社區"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Proposed",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Life Philosophy Topology",
-          "aliases": [
-            "生命哲學拓撲",
-            "人生觀拓撲"
-          ],
-          "loc_scope": [
-            "LOC6",
-            "LOC7",
-            "LOC8"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "governance",
-            "knowledge",
-            "evolution"
-          ]
-        },
-        {
-          "term": "README.md",
-          "aliases": [
-            "README",
-            "專案說明",
-            "系統總覽",
-            "進度總覽",
-            "repository documentation"
-          ],
-          "loc_scope": [
-            "LOC7",
-            "global"
-          ],
-          "status": "Stable",
-          "note": "README 是可檢索的系統總覽與進度視圖；屬衍生總覽，不取代 Canon 或母資料。",
-          "domain_scope": [
-            "knowledge",
-            "global"
-          ]
+          "scope": ["LOC", "LunaRunes", "Author"],
+          "feature_scope": ["context", "knowledge"]
         }
       ]
     },
     {
-      "id": "text_architecture",
-      "label": "文字建築與檢索",
+      "id": "retrieval",
+      "label": "檢索與搜尋",
       "keywords": [
         {
-          "term": "Text Architecture",
-          "aliases": [
-            "文字建築學",
-            "文字建築",
-            "立體句型"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
+          "term": "Search",
+          "aliases": ["Unified Search", "統一搜尋", "Cross-format Search", "跨格式搜尋", "語意搜尋", "Semantic Search"],
           "status": "Stable",
-          "note": "Text Architecture／文字建築是 LOC7 Algorithm／演算法（知識庫）中的結構方法／實作，不等於 LOC7 正式名稱。",
-          "domain_scope": [
-            "knowledge"
-          ]
+          "scope": ["LOC", "LunaRunes", "Author"],
+          "feature_scope": ["search"],
+          "note": "Search is a reusable Feature, not LOC7 ownership."
         },
         {
-          "term": "Semantic Chunk",
-          "aliases": [
-            "語意切塊",
-            "Chunk",
-            "FAQ Chunk"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
+          "term": "FAQ",
+          "aliases": ["問答", "FAQ View"],
           "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Semantic Search",
-          "aliases": [
-            "語意搜尋",
-            "語意檢索"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Keyword Search",
-          "aliases": [
-            "關鍵字搜尋",
-            "精確術語搜尋"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Unified Search",
-          "aliases": [
-            "跨 LOC 搜尋",
-            "統一搜尋",
-            "search.html"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
+          "scope": ["LOC"],
+          "feature_scope": ["knowledge", "search"],
+          "note": "FAQ is a maintained question/answer view and does not replace Canon or KM."
         },
         {
           "term": "RAG",
-          "aliases": [
-            "Retrieval-Augmented Generation",
-            "檢索增強生成"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
+          "aliases": ["Retrieval-Augmented Generation", "檢索增強生成", "Graph RAG", "圖譜檢索"],
           "status": "Working",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Graph RAG",
-          "aliases": [
-            "Graph Expansion",
-            "圖譜 RAG",
-            "圖譜檢索"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Proposed",
-          "domain_scope": [
-            "knowledge"
-          ]
+          "scope": ["LOC", "LunaRunes", "Author"],
+          "feature_scope": ["search", "retrieval"],
+          "note": "RAG is a retrieval derivative/technique, not KM or LOC7 ownership."
         },
         {
           "term": "Embedding",
-          "aliases": [
-            "語意向量",
-            "向量檢索"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
+          "aliases": ["語意向量", "向量檢索"],
           "status": "Working",
-          "domain_scope": [
-            "knowledge"
-          ]
+          "scope": ["LOC", "LunaRunes", "Author"],
+          "feature_scope": ["search", "retrieval"]
+        },
+        {
+          "term": "Text Architecture",
+          "aliases": ["文字建築學", "文字建築", "立體句型"],
+          "status": "Stable",
+          "scope": ["LOC", "Author"],
+          "feature_scope": ["analysis", "knowledge"],
+          "note": "Text Architecture is a method/analysis concept; historical LOC7 mapping may be retained only as provenance."
         }
       ]
     },
     {
-      "id": "governance_style",
-      "label": "治理與政德風",
+      "id": "governance_author",
+      "label": "治理與作者語言",
       "keywords": [
         {
-          "term": "德之符文",
-          "aliases": [
-            "德符文",
-            "第零符",
-            "第0符",
-            "0號符文",
-            "Rune 0",
-            "De Rune",
-            "德 De",
-            "作者符文",
-            "治理錨點"
-          ],
-          "loc_scope": [
-            "global"
-          ],
-          "status": "Canonical",
-          "primary_path": "governance.html#de-rune",
-          "secondary_path": "runes.html",
-          "note": "「治理：德之符文」是 KM 的直接說明分類。LOC1–8 只作方便分類與說明，不構成德之符文的階級歸屬。第0符是作者／月語者誌銘、66符集合起點與治理／遞迴錨點；可搜尋與關聯，但不參與抽牌、沒有卡面。",
-          "display_category": "治理：德之符文",
-          "domain_scope": [
-            "global"
-          ]
+          "term": "Governance",
+          "aliases": ["治理", "語言治理", "治理原則"],
+          "status": "Stable",
+          "scope": ["Governance", "LOC", "LunaRunes", "Author"],
+          "feature_scope": ["governance"],
+          "note": "Governance is a shared Feature/context, not LOC6 ownership."
         },
         {
           "term": "政德風",
-          "aliases": [
-            "Zhengde Style",
-            "作者語言",
-            "個人語言風格"
-          ],
-          "loc_scope": [
-            "LOC6",
-            "LOC7"
-          ],
+          "aliases": ["Zhengde Style", "作者語言", "個人語言風格"],
           "status": "Stable",
-          "domain_scope": [
-            "governance",
-            "knowledge"
-          ]
+          "scope": ["Author"],
+          "feature_scope": ["culture", "governance", "evolution"]
         },
         {
           "term": "自我治理",
-          "aliases": [
-            "Self Governance",
-            "治理自己",
-            "治理已知"
-          ],
-          "loc_scope": [
-            "LOC6",
-            "LOC7",
-            "LOC8"
-          ],
+          "aliases": ["Self Governance", "治理自己", "治理已知"],
           "status": "Stable",
-          "domain_scope": [
-            "governance",
-            "knowledge",
-            "evolution"
-          ]
-        },
-        {
-          "term": "Governance",
-          "aliases": [
-            "治理",
-            "語言治理",
-            "治理原則"
-          ],
-          "loc_scope": [
-            "LOC6"
-          ],
-          "status": "Stable",
-          "note": "Governance／治理是 LOC6 Methodology／方法論中的代表方法，不等於 LOC6 正式名稱。",
-          "domain_scope": [
-            "governance"
-          ]
+          "scope": ["Author", "Governance"],
+          "feature_scope": ["governance", "evolution"]
         },
         {
           "term": "ERA",
-          "aliases": [
-            "時期",
-            "創作時期",
-            "風格演變"
-          ],
-          "loc_scope": [
-            "LOC3",
-            "LOC4",
-            "LOC5",
-            "LOC6",
-            "LOC8"
-          ],
+          "aliases": ["時期", "創作時期", "風格演變"],
           "status": "Stable",
-          "note": "ERA 僅可保留作內部 stable ID／歷史欄位；公開中文統一使用「時期」。",
-          "domain_scope": [
-            "music",
-            "literary",
-            "media",
-            "governance",
-            "evolution"
-          ]
+          "scope": ["Author", "LunaRunes"],
+          "feature_scope": ["evolution"],
+          "note": "Public display follows each Scope's Current naming; Author ERA and LunaRunes ERA must not be merged."
         },
         {
-          "term": "自由的風",
-          "aliases": [
-            "P5.6",
-            "自由期"
-          ],
-          "loc_scope": [
-            "LOC6",
-            "LOC8"
-          ],
-          "status": "Historical",
-          "domain_scope": [
-            "governance",
-            "evolution"
-          ]
-        },
-        {
-          "term": "自我治理與未來展望期",
-          "aliases": [
-            "P5.7",
-            "治理自己",
-            "自由的月"
-          ],
-          "loc_scope": [
-            "LOC6",
-            "LOC8"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "governance",
-            "evolution"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "loc8_temporal",
-      "label": "事件與時間",
-      "keywords": [
-        {
-          "term": "Life Event",
-          "aliases": [
-            "生活事件",
-            "事件節點",
-            "Event"
-          ],
-          "loc_scope": [
-            "LOC8",
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "evolution",
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Temporal Semantics",
-          "aliases": [
-            "時間語意",
-            "時間語義",
-            "事件時間"
-          ],
-          "loc_scope": [
-            "LOC8",
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "evolution",
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Trajectory",
-          "aliases": [
-            "軌跡",
-            "人生軌跡"
-          ],
-          "loc_scope": [
-            "LOC8"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "evolution"
-          ]
-        },
-        {
-          "term": "Trend",
-          "aliases": [
-            "趨勢",
-            "演變趨勢"
-          ],
-          "loc_scope": [
-            "LOC8"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "evolution"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "media_work",
-      "label": "作品與媒體",
-      "keywords": [
-        {
-          "term": "LOC3",
-          "aliases": [
-            "Music Distribution",
-            "歌曲",
-            "歌詞",
-            "音樂作品"
-          ],
-          "loc_scope": [
-            "LOC3"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "music"
-          ]
-        },
-        {
-          "term": "LOC4",
-          "aliases": [
-            "Writing Distribution",
-            "文字創作",
-            "小說",
-            "文章"
-          ],
-          "loc_scope": [
-            "LOC4"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "literary"
-          ]
-        },
-        {
-          "term": "LOC5",
-          "aliases": [
-            "MultiMedia",
-            "多媒體",
-            "Reels",
-            "Media Link",
-            "影音",
-            "實體影片作品",
-            "宣傳影片",
-            "跨媒介表達"
-          ],
-          "loc_scope": [
-            "LOC5"
-          ],
-          "status": "Stable",
-          "note": "LOC5 正式名稱固定為 MultiMedia／多媒體。",
-          "domain_scope": [
-            "media"
-          ]
-        },
-        {
-          "term": "Web Demo Alpha",
-          "aliases": [
-            "Web Demo",
-            "網站展示",
-            "Demo"
-          ],
-          "loc_scope": [
-            "global"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "global"
-          ]
-        },
-        {
-          "term": "LOC5 實體影音作品",
-          "aliases": [
-            "LOC5影片",
-            "實際影片",
-            "影音作品",
-            "Reels作品",
-            "本地影片資產"
-          ],
-          "loc_scope": [
-            "LOC5"
-          ],
-          "status": "Stable",
-          "note": "指已實際製作完成或公開發布的影音作品，不等同於未來規劃或概念 mockup。",
-          "domain_scope": [
-            "media"
-          ]
-        },
-        {
-          "term": "LOC1×LOC5",
-          "aliases": [
-            "月之符文宣傳影片",
-            "LunaRunes promotion",
-            "月符影音",
-            "符文宣傳Reels"
-          ],
-          "loc_scope": [
-            "LOC1",
-            "LOC5"
-          ],
-          "status": "Stable",
-          "note": "月之符文內容透過 LOC5 影音形式對外呈現；目前已有兩支公開 Instagram Reels 可驗證。",
-          "domain_scope": [
-            "runes",
-            "media"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "loc1_special_rules",
-      "label": "LOC1 特殊規則",
-      "keywords": [
-        {
-          "term": "真實月相",
-          "aliases": [
-            "Real Moon Phase",
-            "現實月相",
-            "當下月相"
-          ],
-          "loc_scope": [
-            "LOC1",
-            "LOC7"
-          ],
-          "status": "Stable / Special Rule",
-          "note": "LOC1 系統內部語意規則，不等同天文瞬時月相。",
-          "domain_scope": [
-            "runes",
-            "knowledge"
-          ]
-        },
-        {
-          "term": "新月",
-          "aliases": [
-            "Day 1–7"
-          ],
-          "loc_scope": [
-            "LOC1"
-          ],
-          "status": "Stable / Special Rule",
-          "domain_scope": [
-            "runes"
-          ]
-        },
-        {
-          "term": "上弦",
-          "aliases": [
-            "Day 8–14"
-          ],
-          "loc_scope": [
-            "LOC1"
-          ],
-          "status": "Stable / Special Rule",
-          "domain_scope": [
-            "runes"
-          ]
-        },
-        {
-          "term": "滿月",
-          "aliases": [
-            "Day 15–21"
-          ],
-          "loc_scope": [
-            "LOC1"
-          ],
-          "status": "Stable / Special Rule",
-          "domain_scope": [
-            "runes"
-          ]
-        },
-        {
-          "term": "下弦",
-          "aliases": [
-            "Day 22–28"
-          ],
-          "loc_scope": [
-            "LOC1"
-          ],
-          "status": "Stable / Special Rule",
-          "domain_scope": [
-            "runes"
-          ]
-        },
-        {
-          "term": "空亡",
-          "aliases": [
-            "Day 29–30",
-            "新月前 1–2 日"
-          ],
-          "loc_scope": [
-            "LOC1"
-          ],
-          "status": "Stable / Special Rule",
-          "domain_scope": [
-            "runes"
-          ]
-        },
-        {
-          "term": "卡片月相",
-          "aliases": [
-            "Card Moon Phase",
-            "符文月相"
-          ],
-          "loc_scope": [
-            "LOC1"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "runes"
-          ]
-        },
-        {
-          "term": "月相交互",
-          "aliases": [
-            "真實月相 × 卡片月相",
-            "moon phase interaction"
-          ],
-          "loc_scope": [
-            "LOC1",
-            "LOC7"
-          ],
-          "status": "Reserved / Controlled Logic",
-          "note": "保留既有規則；LOC1 RAG 完成前不擴張或重寫。",
-          "domain_scope": [
-            "runes",
-            "knowledge"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "knowledge_status",
-      "label": "知識狀態與來源",
-      "keywords": [
-        {
-          "term": "Canonical",
-          "aliases": [
-            "Canon",
-            "正式定義"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
+          "term": "德之符文",
+          "aliases": ["德符文", "第零符", "第0符", "Rune 0", "De Rune", "治理錨點"],
           "status": "Canonical",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Stable",
-          "aliases": [
-            "穩定知識"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Working",
-          "aliases": [
-            "Working Definition",
-            "工作定義"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Proposed",
-          "aliases": [
-            "提案",
-            "待討論"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Experimental",
-          "aliases": [
-            "實驗中"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Deprecated",
-          "aliases": [
-            "已淘汰"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Historical",
-          "aliases": [
-            "歷史版本"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Primary",
-          "aliases": [
-            "原始資料",
-            "第一手來源"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Derived",
-          "aliases": [
-            "解析所得",
-            "衍生資料"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Inferred",
-          "aliases": [
-            "推論所得"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "AI Generated",
-          "aliases": [
-            "LLM 生成",
-            "AI整理"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        },
-        {
-          "term": "External",
-          "aliases": [
-            "外部資料"
-          ],
-          "loc_scope": [
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "governance_core",
-      "label": "治理核心",
-      "keywords": [
-        {
-          "term": "Boundary-based Governance",
-          "aliases": [
-            "邊界治理",
-            "框架邊界",
-            "Domain Governance",
-            "界／域治理"
-          ],
-          "loc_scope": [
-            "LOC6",
-            "LOC7",
-            "LOC8"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "governance",
-            "knowledge",
-            "evolution"
-          ]
-        },
-        {
-          "term": "Equal Standing",
-          "aliases": [
-            "身分平等",
-            "平等解釋權",
-            "身份不構成語意特權"
-          ],
-          "loc_scope": [
-            "LOC6",
-            "LOC7"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "governance",
-            "knowledge"
-          ]
-        },
-        {
-          "term": "Contextual Validity",
-          "aliases": [
-            "脈絡適用",
-            "情境有效性",
-            "版本適用"
-          ],
-          "loc_scope": [
-            "LOC6",
-            "LOC8"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "governance",
-            "evolution"
-          ]
-        },
-        {
-          "term": "Governed Evolution",
-          "aliases": [
-            "治理式演化",
-            "有邊界的演化",
-            "允許變化但不失去結構"
-          ],
-          "loc_scope": [
-            "LOC1",
-            "LOC6",
-            "LOC7",
-            "LOC8"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "runes",
-            "governance",
-            "knowledge",
-            "evolution"
-          ]
-        },
-        {
-          "term": "Self-Governance as Versioning",
-          "aliases": [
-            "自我治理版本化",
-            "版本管理不是道德審判",
-            "治理自己"
-          ],
-          "loc_scope": [
-            "LOC6",
-            "LOC8"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "governance",
-            "evolution"
-          ]
-        },
-        {
-          "term": "Historical Integrity",
-          "aliases": [
-            "歷史完整性",
-            "append-only history",
-            "原始紀錄不可回寫"
-          ],
-          "loc_scope": [
-            "LOC6",
-            "LOC7",
-            "LOC8"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "governance",
-            "knowledge",
-            "evolution"
-          ]
-        },
-        {
-          "term": "Governance Audit",
-          "aliases": [
-            "治理稽核",
-            "治理Audit",
-            "Principle Policy Control Evidence"
-          ],
-          "loc_scope": [
-            "LOC7",
-            "LOC8"
-          ],
-          "status": "Stable",
-          "domain_scope": [
-            "knowledge",
-            "evolution"
-          ]
-        },
-        {
-          "term": "Dispute Review",
-          "aliases": [
-            "異議治理",
-            "爭議審查",
-            "review/dispute"
-          ],
-          "loc_scope": [
-            "LOC6",
-            "LOC7",
-            "LOC8"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "governance",
-            "knowledge",
-            "evolution"
-          ]
-        },
-        {
-          "term": "Tombstone",
-          "aliases": [
-            "治理式刪除",
-            "刪除留痕",
-            "軟刪除歷史"
-          ],
-          "loc_scope": [
-            "LOC7",
-            "LOC8"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "knowledge",
-            "evolution"
-          ]
-        },
-        {
-          "term": "Publication Governance",
-          "aliases": [
-            "發布治理",
-            "private to public",
-            "Canon promotion"
-          ],
-          "loc_scope": [
-            "LOC7",
-            "LOC8"
-          ],
-          "status": "Working",
-          "domain_scope": [
-            "knowledge",
-            "evolution"
-          ]
+          "scope": ["LunaRunes", "Author", "Governance"],
+          "feature_scope": ["governance", "knowledge"],
+          "note": "第0符德是作者／系統基準，不參與抽牌。"
         }
       ]
     }
   ],
-  "relation_keywords": [
-    "is_a",
-    "part_of",
-    "derived_from",
-    "related_to",
-    "contrasts_with",
-    "evolves_from",
-    "influences",
-    "expressed_in",
-    "represented_by",
-    "uses",
-    "generated_by",
-    "supports",
-    "contradicts",
-    "references",
-    "belongs_to",
-    "implemented_by"
-  ],
-  "principles": [
-    "KM-01 知識必須有來源",
-    "KM-02 原始資料與推論必須分離",
-    "KM-03 Canon 與 Working Definition 必須分離",
-    "KM-04 舊版本不得直接覆蓋",
-    "KM-05 矛盾可以存在",
-    "KM-06 Graph 關係必須可以追溯",
-    "KM-07 月符可以輔助分類，但不能限制語言",
-    "KM-08 每個使用者的 Personal Graph 必須隔離",
-    "KM-09 知識可以演化，但必須留下版本歷史",
-    "KM-10 FAQ 是 View，不是 Knowledge Base 本身",
-    "KM-11 治理文件代表當前歷史位置，不構成終極真理",
-    "KM-12 原始事件與原始語句不因後期解讀而回寫",
-    "KM-13 跨域資料以 reference / consume / propose change 為原則，不覆寫其他 domain authority",
-    "KM-14 個人治理語料可以示範系統，但不自動成為所有使用者的強制人生觀"
-  ],
-  "knowledge_assets": [
-    {
-      "asset_id": "KA-README-001",
-      "path": "README.md",
-      "role": "system_overview_and_progress_view",
-      "status": "current",
-      "authority_level": "derived_overview",
-      "note": "README is part of LOC retrieval scope but does not override Canon or mother data."
-    }
-  ],
-  "canonical_role_source": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
-  "canon_version": "2.0",
-  "historical_provenance_lunarunes_mapping": {
-    "LOC1": "月之符文",
-    "LOC2": "符文脈絡",
-    "LOC3": "符文體系（較基礎結構／三卡類比）",
-    "LOC4": "符文體系（更完整結構／五卡類比）",
-    "LOC5": "符文體系（多模組整合／OW3gs 類比）",
-    "LOC6": "符文解牌方法",
-    "LOC7": "符文演算",
-    "LOC8": "符文演化"
-  },
-  "historical_provenance_lunarunes_chain": [
-    "月之符文",
-    "符文脈絡",
-    "符文體系",
-    "符文演算",
-    "符文演化"
-  ],
-  "canonical_rules": [
-    "LOC／月典的 Current 身份是 Language Module Framework／語言系統模組框架。",
-    "LunaRunes／月之符文的 Current 身份是 Symbolic Language Module／符號式語言模組。",
-    "Current 架構為 Scope Model × Feature Model → Page Composition。",
-    "LOC1–8 僅可作歷史／來源識別，不得作 Current 架構、Scope、模組權責、導覽分類或 Canon source。",
-    "「脈絡」為唯一正字；其他錯字形式不作 alias。",
-    "LunaRunes 固定 66 符；第 0 符德不屬於 66。",
-    "LunaRunes 對 LOC1–8 的舊映射只保留為 historical provenance。",
-    "FAQ/RAG/generated data 是知識投影，不是 Canon 本身。"
-  ]
+  "historical_loc_mapping": {
+    "status": "Historical",
+    "authority": "provenance_only",
+    "note": "These mappings are retained only to interpret old files, questions and identifiers. They must not be used to generate Current architecture or ownership.",
+    "LOC1": "historical LunaRunes/basic draw mapping",
+    "LOC2": "historical context/game mapping",
+    "LOC3": "historical music mapping",
+    "LOC4": "historical writing mapping",
+    "LOC5": "historical multimedia mapping",
+    "LOC6": "historical governance/method mapping",
+    "LOC7": "historical text architecture/algorithm/KM mapping",
+    "LOC8": "historical life/evolution mapping",
+    "LOC7_KM": "historical alias for KM-related material; Current term is Knowledge Management/KM"
+  }
 }
