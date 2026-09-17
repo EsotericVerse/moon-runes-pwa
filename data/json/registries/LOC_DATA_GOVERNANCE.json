@@ -1,11 +1,11 @@
 {
-  "schema_version": "1.2",
+  "schema_version": "1.3",
   "registry": "LOC_DATA_GOVERNANCE",
   "status": "current",
-  "updated_at": "2026-09-17T12:27:13+08:00",
+  "updated_at": "2026-09-17T17:00:00+08:00",
   "identity": {
-    "loc": "LOC／月典 = Language Module Framework／語言系統模組框架",
-    "lunarunes": "LunaRunes／月之符文 = Symbolic Language Module／符號式語言模組"
+    "loc": "LOC／月典 = Modular Language Framework／模組化語言框架",
+    "lunarunes": "LunaRunes／月之符文 = Symbolic Language／符號式語言"
   },
   "current_architecture": {
     "formula": "Scope Model × Feature Model → Page Composition",
