@@ -1,0 +1,38 @@
+name: Current Registry Migration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/migrate-current-registry-semantics.py"
+      - ".github/workflows/current-registry-migration.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Migrate Current registry semantics
+        run: python scripts/migrate-current-registry-semantics.py
+      - name: Validate Current semantic authority
+        run: node scripts/verify-current-semantics.mjs
+      - name: Commit migration
+        run: |
+          if git diff --quiet; then
+            echo "No registry migration changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/json/registries
+          git commit -m "Migrate Current registries from LOC1-8 ownership"
+          git push origin HEAD:main
