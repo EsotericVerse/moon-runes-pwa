@@ -7,7 +7,8 @@ const scopeCases=[
   ['/context','loc.lo3rwang.cc','loc'],
   ['/runes','loc.lo3rwang.cc','runes'],
   ['/context','lrunes.lo3rwang.cc','runes'],
-  ['/runes/context','lo3rwang.cc','lo3rwang'],
+  ['/context','lo3rwang.lo3rwang.cc','lo3rwang'],
+  ['/runes/context','lo3rwang.cc','runes'],
   ['/runes/context','admin.lo3rwang.cc','admin'],
   ['/admin/routes','loc.lo3rwang.cc','admin']
 ];
@@ -18,9 +19,11 @@ for(const [pathname,host,expected] of scopeCases){
 
 const labels={loc:'月之符文',runes:'語彙',lo3rwang:'風格詞',admin:'Admin'};
 for(const [scope,label] of Object.entries(labels)){
-  const host=scope==='runes'?'loc.lo3rwang.cc':scope==='lo3rwang'?'lo3rwang.cc':scope==='admin'?'admin.lo3rwang.cc':'loc.lo3rwang.cc';
-  const cfg=nav.getNavScopeConfig(scope,host);
+  const cfg=nav.getNavScopeConfig(scope);
   if(cfg.reserved[0]!==label)throw new Error(`NAV smoke reserved entry mismatch: ${scope}`);
 }
 
-console.log('NAV scope smoke verified.');
+if(nav.getNavScopeConfig('runes').reserved[1]!=='https://lrunes.lo3rwang.cc/')throw new Error('LunaRunes canonical domain lost NAV priority');
+if(nav.getNavScopeConfig('lo3rwang').reserved[1]!=='https://lo3rwang.lo3rwang.cc/')throw new Error('lo3rwang canonical domain drifted');
+
+console.log('NAV domain-first scope smoke verified.');
