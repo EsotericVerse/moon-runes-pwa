@@ -3,7 +3,32 @@ import { betterAuth } from 'better-auth';
 const SESSION_TTL_SECONDS = 60 * 60 * 2;
 const AUTH_PATH = '/api/auth';
 const MANAGEMENT_STATE_PATH = '/management/state';
-const BUILD = '2026-09-14-better-auth-google-v3';
+const BUILD = '2026-09-17-layered-management-v1';
+
+const ADMIN_PERMISSIONS = Object.freeze([
+  'platform:admin',
+  'platform:routes:write',
+  'platform:visibility:write',
+  'platform:projection:rebuild',
+  'scope:period:write',
+  'scope:lunarunes:write',
+  'scope:context:write'
+]);
+
+const STATE_PATH_PERMISSION = Object.freeze({
+  '/aliases': 'platform:routes:write',
+  '/eras': 'scope:period:write',
+  '/daily-runes': 'scope:lunarunes:write',
+  '/context': 'scope:context:write'
+});
+
+// Frozen Rune Canon is immutable by governance. Admin is not a bypass.
+const FROZEN_STATE_PATHS = new Set([
+  '/runes',
+  '/rune-canon',
+  '/lunarunes-core',
+  '/base66'
+]);
 
 function splitList(value = '') {
   return String(value)
@@ -134,7 +159,18 @@ async function getManagementSession(request, env) {
   const session = await auth.api.getSession({ headers: request.headers });
   const email = String(session?.user?.email || '').trim().toLowerCase();
   const authorized = Boolean(email && adminEmailSet(env).has(email));
-  return { session, authorized };
+  return {
+    session,
+    authorized,
+    actor: authorized ? {
+      role: 'admin',
+      permissions: [...ADMIN_PERMISSIONS]
+    } : null
+  };
+}
+
+function hasPermission(actor, permission) {
+  return Boolean(actor?.permissions?.includes('platform:admin') || actor?.permissions?.includes(permission));
 }
 
 function stateProxyConfig(env) {
@@ -145,8 +181,8 @@ function stateProxyConfig(env) {
 }
 
 async function proxyManagedState(request, env, url) {
-  const { session, authorized } = await getManagementSession(request, env);
-  if (!session || !authorized) {
+  const { session, authorized, actor } = await getManagementSession(request, env);
+  if (!session || !authorized || !actor) {
     return json({ ok: false, error: 'management_access_denied', build: BUILD }, { status: 401, headers: corsHeaders(request, env) });
   }
 
@@ -156,8 +192,26 @@ async function proxyManagedState(request, env, url) {
   }
 
   const suffix = url.pathname.slice(MANAGEMENT_STATE_PATH.length) || '/';
-  if (!['/eras', '/daily-runes', '/context'].includes(suffix)) {
+  if (FROZEN_STATE_PATHS.has(suffix)) {
+    return json({
+      ok: false,
+      error: 'frozen_rune_canon_read_only',
+      resource: suffix,
+      build: BUILD
+    }, { status: 403, headers: corsHeaders(request, env) });
+  }
+
+  const requiredPermission = STATE_PATH_PERMISSION[suffix];
+  if (!requiredPermission) {
     return json({ ok: false, error: 'state_path_not_allowed', build: BUILD }, { status: 404, headers: corsHeaders(request, env) });
+  }
+  if (!hasPermission(actor, requiredPermission)) {
+    return json({
+      ok: false,
+      error: 'management_permission_denied',
+      required_permission: requiredPermission,
+      build: BUILD
+    }, { status: 403, headers: corsHeaders(request, env) });
   }
 
   if (!['POST', 'PUT', 'DELETE'].includes(request.method)) {
@@ -168,6 +222,8 @@ async function proxyManagedState(request, env, url) {
   target.search = url.search;
   const headers = new Headers();
   headers.set('authorization', `Bearer ${writeToken}`);
+  headers.set('x-loc-management-role', actor.role);
+  headers.set('x-loc-management-permission', requiredPermission);
   const contentType = request.headers.get('content-type');
   if (contentType) headers.set('content-type', contentType);
 
@@ -199,17 +255,21 @@ export default {
         provider: 'google',
         session_ttl_seconds: SESSION_TTL_SECONDS,
         management_state_proxy: Boolean(stateProxy.baseURL && stateProxy.writeToken),
+        management_model: 'rbac+scope+data-state',
+        frozen_rune_canon: true,
         build: BUILD
       }, { headers: cors });
     }
 
     if (url.pathname === '/management/session') {
-      const { session, authorized } = await getManagementSession(request, env);
+      const { session, authorized, actor } = await getManagementSession(request, env);
       const allowed = authorized;
       return json({
         ok: allowed,
         authenticated: Boolean(session),
         authorized: allowed,
+        role: actor?.role || null,
+        permissions: actor?.permissions || [],
         user: allowed ? { name: session.user.name || '', email: session.user.email || '' } : null,
         session_expires_at: allowed ? session.session?.expiresAt || null : null,
         build: BUILD
