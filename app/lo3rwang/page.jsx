@@ -13,12 +13,17 @@ export default function Lo3rwangPage() {
   return (
     <main className="loc-next-main">
       <section className="loc-view">
-        <header className="loc-hero" id="top">
-          <p className="loc-eyebrow">lo3rwang</p>
-          <h1>王政德</h1>
-          <p className="loc-subtitle">Lucas Oscar Wang · lo3rwang</p>
-          <p>對我很陌生？沒關係，可以先聽首歌，再決定要不要繼續認識我。</p>
-          <p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽首歌</a></p>
+        <header className="loc-hero scope-home-hero" id="top">
+          <figure className="scope-home-media">
+            <div className="scope-home-media-frame"><img src="/pics/aboutme.png" alt="lo3rwang / Lucas Oscar Wang 政德" loading="eager" /></div>
+          </figure>
+          <div className="scope-home-copy">
+            <p className="loc-eyebrow">lo3rwang</p>
+            <h1>王政德</h1>
+            <p className="loc-subtitle">Lucas Oscar Wang · lo3rwang</p>
+            <p>對我很陌生？沒關係，可以先聽首歌，再決定要不要繼續認識我。</p>
+            <div className="loc-actions"><a className="loc-button" href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽首歌</a></div>
+          </div>
         </header>
 
         <section className="loc-card" id="governance-root">
