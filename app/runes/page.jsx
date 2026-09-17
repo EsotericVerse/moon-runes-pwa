@@ -16,9 +16,9 @@ const SINGLE_TOPICS = [
   { key: 'life', label: '生活' }
 ];
 
-const PROMO_REELS = [
-  { id: 'DMA9yDAzeRK', title: '月之符文 Reels 01' },
-  { id: 'DMA-ZxLTINw', title: '月之符文 Reels 02' }
+const INTRO_REEL = { id: 'DMA9yDAzeRK', title: '月之符文介紹 Reels' };
+const DEMO_REEL_LINKS = [
+  { id: 'DMA-ZxLTINw', title: '占卜示範 Reels' }
 ];
 
 export default function RunesPage() {
@@ -27,21 +27,25 @@ export default function RunesPage() {
       <div className="runes-home-hero-copy">
         <p className="loc-eyebrow">LunaRunes</p>
         <h1>月之符文</h1>
-        <p className="loc-subtitle">第一次來？不用先弄懂它是什麼。先看一支短影片，或直接抽張牌。</p>
+        <p className="loc-subtitle">第一次來？不用先弄懂它是什麼。可以直接抽張牌，也可以先從旁邊的短介紹開始。</p>
+        <div className="loc-actions"><a className="loc-button" href="?mode=single">直接抽一張牌</a><a href="?mode=daily">每日符文</a></div>
       </div>
 
-      <div className="runes-home-reels" aria-label="月之符文 Reels 預覽">
-        {PROMO_REELS.map(reel => <article className="runes-home-reel" key={reel.id}>
+      <aside className="runes-home-media" aria-label="月之符文介紹媒體">
+        <article className="runes-home-reel">
           <iframe
-            src={`https://www.instagram.com/reel/${reel.id}/embed/`}
-            title={reel.title}
+            src={`https://www.instagram.com/reel/${INTRO_REEL.id}/embed/`}
+            title={INTRO_REEL.title}
             loading="eager"
             allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
             allowFullScreen
           />
-          <a href={`https://www.instagram.com/reel/${reel.id}/`} target="_blank" rel="noopener noreferrer">在 Instagram 看完整 Reels</a>
-        </article>)}
-      </div>
+          <a href={`https://www.instagram.com/reel/${INTRO_REEL.id}/`} target="_blank" rel="noopener noreferrer">在 Instagram 看完整介紹 Reels</a>
+        </article>
+        <div className="runes-home-demo-links">
+          {DEMO_REEL_LINKS.map(reel => <a key={reel.id} href={`https://www.instagram.com/reel/${reel.id}/`} target="_blank" rel="noopener noreferrer">{reel.title}</a>)}
+        </div>
+      </aside>
     </header>
 
     <section className="loc-card runes-quick-start" aria-labelledby="runes-quick-start-title">
