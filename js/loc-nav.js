@@ -3,7 +3,7 @@
   if(window.__LOC_NAV__) return;
   window.__LOC_NAV__=true;
 
-  const GROUPS=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
+  const GROUPS=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','系統特別'];
   const LOCAL_MENU_ALLOW=new Set(['runes:draw','runes:library']);
   const THEME_STORAGE_KEY='loc-theme';
   const THEME_MODES=new Set(['auto','day','night']);
@@ -11,14 +11,14 @@
   const NIGHT_START_HOUR=18;
   const fileName=()=>location.pathname.split('/').pop()||'index.html';
   const baseName=path=>String(path||'').split('/').pop()||'index.html';
-  const DEFAULT_HASH=Object.freeze({'runes.html':'#draw','lo3rwang.html':'#author-intro','loc.html':'#home'});
+  const DEFAULT_HASH=Object.freeze({'runes.html':'#draw','lo3rwang.html':'#lo3rwang-intro','loc.html':'#home'});
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 
   function scope(){
     const host=location.hostname;
     const path=location.pathname;
     if(host==='lrunes.lo3rwang.cc'||path==='/runes'||path.startsWith('/runes/')||fileName()==='runes.html') return 'runes';
-    if(host==='lo3rwang.lo3rwang.cc'||fileName()==='lo3rwang.html') return 'lo3rwang';
+    if(host==='lo3rwang.cc'||fileName()==='lo3rwang.html') return 'lo3rwang';
     if(host==='manage.lo3rwang.cc'||path==='/management'||path.startsWith('/management/')) return 'governance';
     return 'loc';
   }
@@ -34,13 +34,13 @@
     if(current==='runes') return [
       {label:'語彙',href:location.hostname==='lrunes.lo3rwang.cc'?'/':'/runes'},
       {label:'脈絡',href:scopedRoute('/context')},{label:'統計',href:scopedRoute('/statics')},{label:'文化',href:scopedRoute('/evolution')},{label:'治理',href:scopedRoute('/governance')},
-      {label:'作者頁面',href:'https://lo3rwang.lo3rwang.cc'},
+      {label:'lo3rwang',href:'https://lo3rwang.cc'},
       {label:'回月之符文首頁',href:location.hostname==='lrunes.lo3rwang.cc'?'/':'/runes',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
     ];
     if(current==='lo3rwang') return [
       {label:'風格詞',href:'/'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/evolution'},{label:'治理',href:'/governance'},
       {label:'管理者頁面',href:'https://manage.lo3rwang.cc'},
-      {label:'回作者頁面',href:'/',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
+      {label:'回 lo3rwang',href:'/',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
     ];
     if(current==='governance') return [
       {label:'治理規則',href:'/'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/evolution'},{label:'治理',href:'/governance'},
@@ -49,7 +49,7 @@
     ];
     return [
       {label:'月之符文',href:'/runes'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/evolution'},{label:'治理',href:'/governance'},
-      {label:'作者頁面',href:'https://lo3rwang.lo3rwang.cc'},{label:'回月典首頁',href:'/',home:true}
+      {label:'lo3rwang',href:'https://lo3rwang.cc'},{label:'回月典首頁',href:'/',home:true}
     ];
   }
   function renderNav(){
