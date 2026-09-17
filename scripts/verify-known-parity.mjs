@@ -22,19 +22,19 @@ for (const path of [
 if (existsSync(resolve(root, 'lib'))) failures.push('lib/ must not be recreated; shared JavaScript belongs in js/');
 
 requireText('app/loc/views/AboutView.jsx', ['LOC月典','ModelArchitectureExplorer','Base66','/pics/LunaRunes.jpg']);
-requireText('app/nav-route-map.js', ['lo3rwang.cc','lrunes.lo3rwang.cc','admin.lo3rwang.cc',"return 'lo3rwang'",'月之符文','語彙','風格詞','Admin']);
+requireText('app/nav-route-map.js', ['lo3rwang.lo3rwang.cc','lrunes.lo3rwang.cc','admin.lo3rwang.cc',"return 'lo3rwang'",'月之符文','語彙','風格詞','Admin']);
 requireText('app/ScopeNav.jsx', ['SHARED_NAV_FUNCTIONS','role="search"','navRoute(cfg,\'search\')','搜尋']);
-requireText('app/GlobalFooter.jsx', ['<footer className="loc-site-footer">','https://lo3rwang.cc/','Lucas Oscar Wang 政德','mailto:sopa2306@gmail.com']);
-forbidText('app/nav-route-map.js', ['author.lo3rwang.cc','whoami.lo3rwang.cc','lo3rwang.lo3rwang.cc','manage.lo3rwang.cc']);
-forbidText('app/GlobalFooter.jsx', ['author.lo3rwang.cc','whoami.lo3rwang.cc','lo3rwang.lo3rwang.cc']);
+requireText('app/GlobalFooter.jsx', ['<footer className="loc-site-footer">','https://lo3rwang.lo3rwang.cc/','Lucas Oscar Wang 政德','mailto:sopa2306@gmail.com']);
+forbidText('app/nav-route-map.js', ['author.lo3rwang.cc','whoami.lo3rwang.cc','manage.lo3rwang.cc']);
+forbidText('app/GlobalFooter.jsx', ['author.lo3rwang.cc','whoami.lo3rwang.cc']);
 
 requireText('app/runes/page.jsx', ['<RuneDrawClient />','<RuneAtlasHome />','?mode=daily','LunaRunes','Context','Culture']);
 requireText('app/runes/RuneDrawClient.jsx', ["key: 'daily'", "key: 'ow3gs'", '<div className="runes-draw-surface">', 'realMoonPhase', '每日占卜提醒', '因 → 果', '源 → 轉 → 合', '時間主線 × 內外作用', '第 7–11 張為核心判定']);
 requireText('app/loc/model/moon-phase.js', ['day >= 1 && day <= 7', "return '新月'", "return '上弦'", "return '滿月'", "return '下弦'", "return '空亡'"]);
 
-requireText('data/json/registries/LOC_TERMINOLOGY_CANON.json', ['Language Module Framework','data/json/core/runes66groups.json','第七組固定為秩序（Order）','"scope_id": "lo3rwang"','"canonical_host": "lo3rwang.cc"']);
+requireText('data/json/registries/LOC_TERMINOLOGY_CANON.json', ['Modular Language Framework','data/json/core/runes66groups.json','第七組固定為秩序（Order）','"scope_id": "lo3rwang"','"canonical_host": "lo3rwang.lo3rwang.cc"','"base_domain": "lo3rwang.cc"']);
 requireText('data/json/registries/LOC_DATA_GOVERNANCE.json', ['Scope Model × Feature Model → Page Composition','LOC1–8 are Historical/provenance identifiers only']);
-requireText('docs/NAV_GOVERNANCE.md', ['每個介面只有一條正式導覽列','lo3rwang.cc','admin.lo3rwang.cc','功能級導覽一律使用正式階層 route']);
+requireText('docs/NAV_GOVERNANCE.md', ['每個介面只有一條正式導覽列','網域優先，目錄其次，頁面最後','lo3rwang.lo3rwang.cc','admin.lo3rwang.cc','功能級導覽一律使用正式階層 route']);
 requireText('services/cloudflare/loc-state-worker.js', ["const ROUTE_TREE_KEY = 'loc:route:registry'",'parent_id','manager_route','route_has_children']);
 requireText('app/admin/RouteRegistryManager.jsx', ['新增下層','插入上層','manager_route','platform:routes:write']);
 
