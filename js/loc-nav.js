@@ -3,7 +3,6 @@
   if(window.__LOC_NAV__) return;
   window.__LOC_NAV__=true;
 
-  const GROUPS=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
   const LOCAL_MENU_ALLOW=new Set(['runes:draw','runes:library']);
   const THEME_STORAGE_KEY='loc-theme';
   const THEME_MODES=new Set(['auto','day','night']);
@@ -77,7 +76,6 @@
   function getTierHost(){let host=document.querySelector('.loc-nav-tiers');if(host)return host;const shell=document.querySelector('.loc-global-shell');if(!shell)return null;host=document.createElement('div');host.className='loc-nav-tiers';shell.after(host);return host;}
   function buildRunes(host){
     const drawView=document.getElementById('drawView');if(drawView&&!drawView.querySelector(':scope > .loc-quick-menu')){const menu=quickMenu('runes:draw',[link('單卡','#draw'),link('每日','#draw'),link('雙卡','#draw'),link('三卡','#draw'),link('五卡','#draw'),link('11卡 OW3gs','#draw')],'抽牌快速選單');if(menu)drawView.appendChild(menu);}
-    const libraryView=document.getElementById('libraryView');if(libraryView&&!libraryView.querySelector(':scope > .loc-quick-menu')){const menu=quickMenu('runes:library',GROUPS.map(group=>link(group,`?group=${encodeURIComponent(group)}#library`,{'data-rune-group-shortcut':group})),'符文群組快速選單');if(menu)libraryView.appendChild(menu);}
   }
   function buildTiers(){const host=getTierHost();if(!host)return;host.replaceChildren();if(scope()==='runes')buildRunes(host);if(!host.childElementCount)host.remove();}
   function normalizeInternalPageLinks(root=document){root.querySelectorAll?.('a[href]').forEach(a=>{const raw=a.getAttribute('href');if(!raw||raw.startsWith('#')||/^(?:mailto:|tel:|javascript:)/i.test(raw))return;let url;try{url=new URL(raw,location.href);}catch{return;}if(url.origin!==location.origin||!/\.html$/i.test(url.pathname)||url.hash)return;const page=baseName(url.pathname);a.setAttribute('href',`${raw}${DEFAULT_HASH[page]||'#main'}`);});}

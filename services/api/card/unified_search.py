@@ -101,6 +101,7 @@ class UnifiedSearchEngine:
         self.knowledge_assets = self._load_json("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
         self.lots = self._load_repo_json("data/json/core/lots.json")
+        self.rune_groups = self._load_repo_json("data/json/core/runes66groups.json")
         self.loc8_relation_schema = self._load_json("LOC8_RELATION_SCHEMA.json")
         self.loc8_events = self._load_json("LOC8_EVENT_SNAPSHOT.json")
         self.loc8_daily_runes = self._load_json("LOC8_DAILY_RUNE_SNAPSHOT.json")
@@ -420,15 +421,13 @@ class UnifiedSearchEngine:
         if prefix not in q:
             return []
         group_defs = {
-            "靈魂組": {"靈","魂","彩","憶","界","域","鏡","核"},
-            "連結組": {"向","斷","封","鍊","啟","分","悟","誤"},
-            "生命組": {"生","老","病","死","心","愛","語","韻"},
-            "自然組": {"樹","花","葉","草","根","種","實","枝"},
-            "礦物組": {"金","玉","晶","地","石","鑽","礦","塵"},
-            "元素組": {"光","暗","水","火","風","土","雷","氣"},
-            "秩序組": {"日","月","星","辰","明","時","空","因"},
-            "無序組": {"福","禍","無","夢","幻","緣","虛","果"},
-            "特殊組": {"德","玄","命"},
+            f"{group.get('group_zh')}組": {
+                str(rune.get("zh") or "")
+                for rune in (group.get("runes") or [])
+                if rune.get("zh")
+            }
+            for group in (self.rune_groups.get("groups") or [])
+            if group.get("group_zh")
         }
         target = next((g for g in group_defs if _compact(g) in q), "")
         if not target:

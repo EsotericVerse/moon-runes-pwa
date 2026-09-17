@@ -22,7 +22,7 @@
     {"id":"cross_relationships","path":"data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json","feature_ids":["relationship","context_graph"]},
     {"id":"era_style_evidence","path":"data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json","feature_ids":["style_analysis","era_analysis"],"historical_provenance":{"loc_ids":["LOC6"]}},
     {"id":"governance_analysis","path":"data/json/registries/LOC6_GOVERNANCE_REGISTRY.json","feature_ids":["governance_analysis","style_analysis"],"historical_provenance":{"loc_ids":["LOC6"]}},
-    {"id":"rune_methodology","path":"data/json/registries/LOC6_RUNE_METHODOLOGY_REGISTRY.json","feature_ids":["rune_analysis","semantic_analysis"],"historical_provenance":{"loc_ids":["LOC6"]}},
+    {"id":"rune_context","path":"data/json/registries/RUNE_CONTEXT_REGISTRY.json","feature_ids":["rune_analysis","semantic_analysis","context_graph"]},
     {"id":"threads_source_index","path":"data/json/registries/LOC4_THREADS_KM_INDEX.json","feature_ids":["text_corpus","source_index"],"historical_provenance":{"loc_ids":["LOC4"]}},
     {"id":"dual_rune_relations","path":"data/json/registries/LOC6_DUAL_RUNE_RELATION_REGISTRY.json","feature_ids":["rune_analysis","relationship"],"historical_provenance":{"loc_ids":["LOC6"]}},
     {"id":"rune_interpretation","path":"data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json","feature_ids":["rune_analysis","interpretation_evidence"],"historical_provenance":{"loc_ids":["LOC6"]}},

@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "registry": "RUNE_CONTEXT_REGISTRY",
+  "status": "current",
+  "authority": "data/json/core/runes66groups.json",
+  "scope": "LunaRunes",
+  "feature": "符文脈絡",
+  "rule": "Rune Group ids, names, membership and rune English are consumed directly from the Core Group Spec and are never redefined here.",
+  "extension_boundary": "Descriptions, presentation metadata, graph relations and analysis results may extend the Core Group Spec, but extensions must not create or override group ids, names, membership, rune English, aliases or routes.",
+  "analysis_flow": [
+    "來源資料",
+    "直接讀取 Core Rune Group authority",
+    "產生符文脈絡與分析結果",
+    "投影至 Graph、Search、RAG 或 UI consumers"
+  ],
+  "projection_policy": {
+    "may_create_group_definitions": false,
+    "may_override_core_authority": false
+  },
+  "updated_at": "2026-09-17"
+}

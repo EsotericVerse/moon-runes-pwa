@@ -80,7 +80,7 @@
         "LOC 對觀點保持中立，但對 authority、rights、privacy、permission、responsibility boundary 有明確治理。"
       ],
       "rune_group_authority":"data/json/core/runes66groups.json",
-      "rune_group_rule":"Do not duplicate or redefine Current LunaRunes group names here. Consumers must read data/json/core/runes66groups.json. Historical aliases such as 定序 may appear only in provenance records.",
+      "rune_group_rule":"Do not duplicate or redefine Current LunaRunes group ids, names, membership or rune English here. Consumers must read data/json/core/runes66groups.json.",
       "ow3gs": {
         "draw_count":11,
         "rule":"兩個因果模組綜合；11 抽為 OW3gs 特化格式。",

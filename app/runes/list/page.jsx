@@ -4,6 +4,8 @@ import { LOC_DATA } from '../../loc/data-paths.mjs';
 
 const runeSourcePath = resolve(process.cwd(), LOC_DATA.RUNES.replace(/^\//, ''));
 const runes = JSON.parse(readFileSync(runeSourcePath, 'utf8'));
+const groupSourcePath = resolve(process.cwd(), LOC_DATA.RUNE_GROUPS.replace(/^\//, ''));
+const groupAuthority = JSON.parse(readFileSync(groupSourcePath, 'utf8'));
 
 export const metadata = {
   title: '所有符文列表｜月之符文｜LOC',
@@ -31,6 +33,11 @@ export default function RuneListPage() {
 
       <nav className="loc-card" aria-label="月之符文功能入口">
         <a href="/runes#draw">抽牌</a> · <a href="/runes#library">符文圖鑑</a> · <strong>所有符文列表</strong>
+      </nav>
+
+      <nav className="loc-card" aria-label="月之符文群組">
+        <p className="loc-eyebrow">Rune Groups</p>
+        {(groupAuthority.groups || []).map(group => <a key={group.id} href={`/runes/list/${group.id}`}>{group.group_zh}（{group.group_en}）</a>)}
       </nav>
 
       <section className="loc-card" id="rune-list">

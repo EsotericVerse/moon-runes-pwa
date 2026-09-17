@@ -40,14 +40,14 @@ for(const path of [
 ]) if(!existsSync(resolve(root,path)))failures.push(`missing module contract file: ${path}`);
 
 const runesClient=readFileSync(resolve(root,'app/runes/RunesClient.jsx'),'utf8');
-for(const token of ['LOC_DATA.RUNES','LOC_DATA.LOTS','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
+for(const token of ['LOC_DATA.RUNES','LOC_DATA.RUNE_GROUPS','LOC_DATA.LOTS','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
 
 const dataLoader=readFileSync(resolve(root,'app/loc/data.js'),'utf8');
 const localLoader=readFileSync(resolve(root,'app/loc/data-local.js'),'utf8');
 for(const token of ['getFreshLocalDataSegment','putLocalDataSegment','fetchLocJson','fetchLocJsonBatch'])if(!dataLoader.includes(token))failures.push(`LOC data loader: missing local-first contract ${token}`);
 if(!localLoader.includes('indexedDB'))failures.push('LOC data loader: IndexedDB local store contract missing');
 
-const coreBatch=/fetchLocJsonBatch\(\[LOC_DATA\.RUNES,LOC_DATA\.LOTS,LOC_DATA\.RUNE_INTERPRETATIONS\]/.test(runesClient);
+const coreBatch=/fetchLocJsonBatch\(\[LOC_DATA\.RUNES,LOC_DATA\.RUNE_GROUPS,LOC_DATA\.LOTS,LOC_DATA\.RUNE_INTERPRETATIONS\]/.test(runesClient);
 const directRunes=runesClient.includes('fetchLocJson(LOC_DATA.RUNES)');
 const directLots=runesClient.includes('fetchLocJson(LOC_DATA.LOTS)');
 if(!(coreBatch||(directRunes&&directLots)))failures.push('RunesClient: canonical RUNES/LOTS must load through the local-first Next data loader');

@@ -1,6 +1,7 @@
 export const LOC_DATA = Object.freeze({
   // Canonical / semantic core
   RUNES: '/data/json/core/runes.json',
+  RUNE_GROUPS: '/data/json/core/runes66groups.json',
   LOTS: '/data/json/core/lots.json',
   HISTORY: '/data/json/core/history.json',
   HARMONY: '/data/json/core/harmony.json',

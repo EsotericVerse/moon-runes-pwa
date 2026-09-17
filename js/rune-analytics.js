@@ -4,7 +4,6 @@
   window.__LOC_RUNE_ANALYTICS__=true;
 
   const EVOLUTION_JS='data/js/lunarune-evolution-data.js';
-  const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
   const KEYWORD_PAGE_SIZE=8;
   let keywordPage=1;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
@@ -53,12 +52,12 @@
       loadEvolution()
     ]);
     const rows=[...(Array.isArray(runeModule?.rune)?runeModule.rune.filter(Boolean):[])].sort(byNumber);
-    const groups=new Map(GROUP_ORDER.map(g=>[g,[]]));
+    const groups=new Map((runeModule.groups||[]).map(group=>[group.group_zh,[]]));
     const keywords=[];
     const ownership=[];
     for(const rune of rows){
       const name=String(rune?.符文名稱||'').trim();
-      const group=String(rune?.所屬分組||'').trim()||'特殊';
+      const group=String(rune?.所屬分組||'').trim()||'未分類';
       if(!groups.has(group)) groups.set(group,[]);
       groups.get(group).push(rune);
       for(const term of split(rune?.正向關鍵詞)) keywords.push({term,rune:name,group,polarity:'正向'});

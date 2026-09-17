@@ -16,7 +16,6 @@
     {"id":"system_special","group_zh":"系統特別","group_en":"System Special","runes":[{"id":0,"zh":"德","en":"Virtue","drawable":false},{"id":65,"zh":"玄","en":"Chaos"},{"id":66,"zh":"命","en":"Fate"}]}
   ],
   "historical_aliases": {
-    "定序": "Historical only; Current is 秩序",
     "特殊": "Historical shorthand; Current ninth group is 系統特別"
   }
 }

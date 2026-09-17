@@ -39,7 +39,7 @@ export default function StaticsView(){
     return()=>{live=false};
   },[tab,periods,runes,sources,daily]);
 
-  const groups=useMemo(()=>{const out={};for(const rune of runes||[]){const group=rune['所屬分組']||'特殊';out[group]=(out[group]||0)+1;}return Object.entries(out);},[runes]);
+  const groups=useMemo(()=>{const out={};for(const rune of runes||[]){const group=rune['所屬分組']||'未分類';out[group]=(out[group]||0)+1;}return Object.entries(out);},[runes]);
   const keywordRanks=useMemo(()=>{const count=new Map();for(const rune of runes||[])for(const term of [...split(rune['正向關鍵詞']),...split(rune['反向關鍵詞'])])count.set(term,(count.get(term)||0)+1);return [...count.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'zh-Hant'));},[runes]);
   const latestPeriod=periods?.periods?.at(-1);
   const periodKeywords=latestPeriod?.keywords||[];

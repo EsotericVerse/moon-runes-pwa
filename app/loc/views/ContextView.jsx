@@ -22,7 +22,7 @@ function buildRuneGraph(runes){
     const id=String(rune['編號']??'');
     const name=rune['符文名稱']||rune['名稱']||'';
     if(!name)continue;
-    const group=rune['所屬分組']||'特殊';
+    const group=rune['所屬分組']||'未分類';
     const keywords=[...split(rune['正向關鍵詞']),...split(rune['反向關鍵詞'])];
     nodes.push({id,name,group,keywords});
     for(const keyword of keywords){if(!keywordOwners.has(keyword))keywordOwners.set(keyword,[]);keywordOwners.get(keyword).push({id,name});}

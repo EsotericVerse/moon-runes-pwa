@@ -1,17 +1,13 @@
-const GROUPS=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
-const DEFAULT_GROUP='特殊';
-const GROUP_SET=new Set(GROUPS);
 const TYPE_ORDER=['群組','符文','關鍵詞','延伸詞','時期','文學','音樂','角色','多媒體','資料'];
 const splitTerms=value=>String(value||'').split(/[、,，;；/]/).map(x=>x.trim()).filter(Boolean);
 const nodeId=(type,label)=>`${type}:${label}`;
 const publicType=type=>({
   rune:'符文',group:'群組',term:'關鍵詞',derived:'延伸詞',music_work:'音樂',literary_work:'文學',media:'多媒體',knowledge_asset:'資料',era:'時期',character:'角色'
 }[type]||type);
-const groupRank=value=>{const index=GROUPS.indexOf(String(value||''));return index<0?GROUPS.length:index;};
 const typeRank=value=>{const index=TYPE_ORDER.indexOf(String(value||''));return index<0?TYPE_ORDER.length:index;};
 function compareNodes(a,b){
   const typeDiff=typeRank(a?.type)-typeRank(b?.type);if(typeDiff)return typeDiff;
-  const groupDiff=groupRank(a?.group||a?.label)-groupRank(b?.group||b?.label);if(groupDiff)return groupDiff;
+  const groupDiff=String(a?.group||a?.label||'').localeCompare(String(b?.group||b?.label||''),'zh-Hant');if(groupDiff)return groupDiff;
   const numberA=Number(a?.number),numberB=Number(b?.number);
   if(Number.isFinite(numberA)&&Number.isFinite(numberB)&&numberA!==numberB)return numberA-numberB;
   return String(a?.label||a?.id||'').localeCompare(String(b?.label||b?.id||''),'zh-Hant');
@@ -112,17 +108,20 @@ function addRegistryGraph(nodes,edges,registries={}){
   }
 }
 
-export function buildRuneGraph(runes,derivedEntries=[],registries={}){
+export function buildRuneGraph(runes,derivedEntries=[],registries={},groupAuthority=[]){
   const nodes=new Map(),edges=new Map();
+  const groups=(groupAuthority||[]).map(group=>group.group_zh).filter(Boolean);
+  const groupSet=new Set(groups);
+  const defaultGroup=(groupAuthority||[]).find(group=>group.id==='system_special')?.group_zh||'';
   const runeNames=new Set((runes||[]).map(row=>String(row?.符文名稱||'').trim()).filter(Boolean));
   const runeGroup=new Map();
-  GROUPS.forEach(group=>addNode(nodes,{id:nodeId('group',group),label:group,type:'群組',internal_type:'group',group}));
+  groups.forEach(group=>addNode(nodes,{id:nodeId('group',group),label:group,type:'群組',internal_type:'group',group}));
 
   for(const rune of runes||[]){
     const name=String(rune?.符文名稱||'').trim();
     if(!name||Number(rune?.編號)===0)continue;
     const rawGroup=String(rune?.所屬分組||'').trim();
-    const group=GROUP_SET.has(rawGroup)?rawGroup:DEFAULT_GROUP;
+    const group=groupSet.has(rawGroup)?rawGroup:defaultGroup;
     runeGroup.set(name,group);
     const rid=nodeId('rune',name);
     addNode(nodes,{id:rid,label:name,type:'符文',internal_type:'rune',group,number:Number(rune?.編號)||null,english:String(rune?.英文||''),definition:String(rune?.符文說明||''),polarity:String(rune?.卡片屬性||'')});
@@ -130,23 +129,23 @@ export function buildRuneGraph(runes,derivedEntries=[],registries={}){
     for(const term of splitTerms(rune?.正向關鍵詞)){const tid=nodeId('term',term);addNode(nodes,{id:tid,label:term,type:'關鍵詞',internal_type:'term',group});addEdge(edges,{source:tid,target:rid,type:'keyword_of',source_type:'keyword'});}
     for(const term of splitTerms(rune?.反向關鍵詞)){const tid=nodeId('term',term);addNode(nodes,{id:tid,label:term,type:'關鍵詞',internal_type:'term',group});addEdge(edges,{source:tid,target:rid,type:'reverse_keyword_of',source_type:'keyword'});}
     for(const rule of parseOwnershipRules(rune?.額外規則,runeNames)){
-      const sid=nodeId('term',rule.source);addNode(nodes,{id:sid,label:rule.source,type:'關鍵詞',internal_type:'term',group:DEFAULT_GROUP});
+      const sid=nodeId('term',rule.source);addNode(nodes,{id:sid,label:rule.source,type:'關鍵詞',internal_type:'term',group:defaultGroup});
       const targetId=rule.targetRune?nodeId('rune',rule.targetRune):nodeId('term',rule.target);
-      addNode(nodes,{id:targetId,label:rule.target,type:rule.targetRune?'符文':'關鍵詞',internal_type:rule.targetRune?'rune':'term',group:rule.targetRune?(runeGroup.get(rule.targetRune)||DEFAULT_GROUP):DEFAULT_GROUP});
+      addNode(nodes,{id:targetId,label:rule.target,type:rule.targetRune?'符文':'關鍵詞',internal_type:rule.targetRune?'rune':'term',group:rule.targetRune?(runeGroup.get(rule.targetRune)||defaultGroup):defaultGroup});
       addEdge(edges,{source:sid,target:targetId,type:'ownership',evidence:rule.raw,source_type:'registry'});
     }
   }
 
   for(const entry of derivedEntries||[]){
     const term=String(entry?.term||'').trim();if(!term)continue;
-    const tid=nodeId('derived',term),owner=String(entry?.resolved_rune||'').trim(),ownerGroup=owner?(runeGroup.get(owner)||DEFAULT_GROUP):DEFAULT_GROUP;
+    const tid=nodeId('derived',term),owner=String(entry?.resolved_rune||'').trim(),ownerGroup=owner?(runeGroup.get(owner)||defaultGroup):defaultGroup;
     addNode(nodes,{id:tid,label:term,type:'延伸詞',internal_type:'derived',group:ownerGroup,term_status:String(entry?.status||'special'),relation:String(entry?.relation||'derived'),resolved_rune:owner,definition:String(entry?.note||entry?.evidence||'')});
     if(owner&&runeNames.has(owner))addEdge(edges,{source:tid,target:nodeId('rune',owner),type:'resolved_to',source_type:'registry'});
-    else addEdge(edges,{source:tid,target:nodeId('group',DEFAULT_GROUP),type:'remains_special',source_type:'registry'});
+    else if(defaultGroup)addEdge(edges,{source:tid,target:nodeId('group',defaultGroup),type:'remains_special',source_type:'registry'});
   }
 
   addRegistryGraph(nodes,edges,registries);
-  return {groups:GROUPS,defaultGroup:DEFAULT_GROUP,nodes:[...nodes.values()].sort(compareNodes),edges:[...edges.values()].sort(compareEdges)};
+  return {groups,defaultGroup,nodes:[...nodes.values()].sort(compareNodes),edges:[...edges.values()].sort(compareEdges)};
 }
 
 export function searchRuneGraph(graph,query='',group=''){
