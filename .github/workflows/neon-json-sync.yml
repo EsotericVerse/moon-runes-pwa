@@ -1,0 +1,28 @@
+name: Neon JSON Sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/json/**"
+      - ".github/workflows/neon-json-sync.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-json-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import repository JSON into Neon Bronze
+        run: |
+          curl --fail-with-body --retry 3 --retry-delay 2 \
+            --request POST \
+            --header 'content-type: application/json' \
+            --data '{"source":"github-actions"}' \
+            'https://br-restless-salad-b38eyn0q-jsonimporter.compute.c-4.ap-southeast-1.aws.neon.tech/import'
