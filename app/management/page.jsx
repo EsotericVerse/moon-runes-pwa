@@ -7,7 +7,7 @@ export default function ManagementPage(){
     <header className="loc-hero" id="top">
       <p className="loc-eyebrow">Management</p>
       <h1>治理管理</h1>
-      <p className="loc-subtitle">共享資料的管理入口</p>
+      <p className="loc-subtitle">管理 Scope、時期、資料納入、修正標記與授權寫入。</p>
     </header>
     <div className="loc-grid two">
       <GovernanceManagement/>
