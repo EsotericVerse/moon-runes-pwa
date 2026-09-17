@@ -35,9 +35,9 @@ export default function ScopeThemeManager(){
 
   return <div className="loc-view">
     <section className="loc-card">
-      <p className="loc-eyebrow">Scope Theme</p>
-      <h2>{scope} 主題設定</h2>
-      <p className="loc-subtitle">Theme 與色彩屬 Scope 管理；Admin 維護 Scope 與 8 組 preset，分支管理頁不覆寫 Scope 視覺。</p>
+      <p className="loc-eyebrow">Page Manager</p>
+      <h2>{scope} 分頁主題設定</h2>
+      <p className="loc-subtitle">Theme 與色彩由分頁管理者負責；Admin 總管理者維護 Scope 與 8 組 preset，脈絡、文化等功能管理者不覆寫分頁視覺。</p>
       <div className="loc-grid two">
         <label>模式
           <select value={settings.mode} onChange={e=>patch({mode:e.target.value})}>
@@ -64,8 +64,8 @@ export default function ScopeThemeManager(){
     </section>}
 
     {settings.mode==='custom'&&<section className="loc-card">
-      <h2>Scope 自訂色彩</h2>
-      <p className="loc-subtitle">以選定 preset 為 base，只覆寫 Scope 共通視覺；內容文字本身不在此處調整。</p>
+      <h2>分頁自訂色彩</h2>
+      <p className="loc-subtitle">以選定 preset 為 base，只覆寫目前分頁共通視覺；內容文字本身不在此處調整。</p>
       <div className="loc-grid two">
         {SIMPLE_SCOPE_OVERRIDE_KEYS.map(key=><label key={key}>{LABELS[key]||key}<input value={(settings.custom||{})[key]||''} placeholder="例如 #ffffff" onChange={e=>patchCustom(key,e.target.value)}/></label>)}
       </div>
