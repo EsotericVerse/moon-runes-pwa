@@ -1,14 +1,11 @@
 {
-  "schema_version": "0.2",
-  "registry": "LOC3_KEYWORD_REGISTRY",
+  "schema_version": "0.3",
+  "registry": "MUSIC_KEYWORD_REGISTRY",
   "system_id": "lo3rwang",
-  "primary_loc": "LOC3",
-  "related_locs": [
-    "LOC7",
-    "LOC8"
-  ],
-  "status": "Working",
-  "updated_at": "2026-09-09",
+  "scope_id": "lo3rwang",
+  "feature_ids": ["music", "keyword_analysis", "evolution"],
+  "status": "working",
+  "updated_at": "2026-09-17",
   "rules": [
     "命名概念與一般語義／意象分層治理。",
     "自我治理為 canonical term；治理自己為 alias / creative-stage label。",
@@ -16,55 +13,13 @@
     "「微光意象」不再作獨立 keyword；相關語義統一歸入「希望」，避免與專有名詞「微月光」形成重複統計。"
   ],
   "keywords": [
-    {
-      "term": "微月光",
-      "keyword_type": "named_concept",
-      "aliases": [
-        "Micro Moonlight"
-      ],
-      "not_aliases": [
-        "微光",
-        "光芒",
-        "月亮月光"
-      ],
-      "status": "Canonical"
-    },
-    {
-      "term": "人生月台",
-      "keyword_type": "named_concept",
-      "aliases": [
-        "Life Platform"
-      ],
-      "status": "Canonical"
-    },
-    {
-      "term": "自我治理",
-      "keyword_type": "governance_concept",
-      "aliases": [
-        "治理自己"
-      ],
-      "status": "Canonical"
-    },
-    {
-      "term": "已讀不回",
-      "keyword_type": "cross_loc_concept",
-      "aliases": [],
-      "status": "Canonical"
-    },
-    {
-      "term": "希望",
-      "keyword_type": "semantic",
-      "aliases": [
-        "微光",
-        "微弱光線",
-        "微光／光芒意象"
-      ],
-      "status": "Stable"
-    }
+    {"term":"微月光","keyword_type":"named_concept","aliases":["Micro Moonlight"],"not_aliases":["微光","光芒","月亮月光"],"status":"Canonical"},
+    {"term":"人生月台","keyword_type":"named_concept","aliases":["Life Platform"],"status":"Canonical"},
+    {"term":"自我治理","keyword_type":"governance_concept","aliases":["治理自己"],"status":"Canonical"},
+    {"term":"已讀不回","keyword_type":"cross_scope_concept","aliases":[],"status":"Canonical"},
+    {"term":"希望","keyword_type":"semantic","aliases":["微光","微弱光線","微光／光芒意象"],"status":"Stable"}
   ],
   "domain": "music",
-  "related_domains": [
-    "knowledge",
-    "evolution"
-  ]
+  "related_features": ["analysis", "evolution", "search"],
+  "historical_provenance": ["LOC3", "LOC7", "LOC8"]
 }
