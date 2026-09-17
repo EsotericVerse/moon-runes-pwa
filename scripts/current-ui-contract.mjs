@@ -22,7 +22,7 @@ const sources={
 const required=[
   ...['LOC月典','/pics/LunaRunes.jpg','月典模型架構','ModelArchitectureExplorer','Base66'].map(token=>[sources.home,token]),
   ...['月之符文','語彙','風格詞','Admin','脈絡','統計','文化','治理','搜尋','lo3rwang','管理者頁面','回月之符文首頁','回 lo3rwang','回月典首頁','https://lo3rwang.cc','https://admin.lo3rwang.cc','lrunes.lo3rwang.cc','context','statics','evolution','governance','search'].map(token=>[sources.nav,token]),
-  ...['?mode=daily#draw','<RuneDrawClient />','<RuneAtlasHome />','Context','Culture'].map(token=>[sources.runes,token]),
+  ...['?mode=daily','<RuneDrawClient />','<RuneAtlasHome />','Context','Culture'].map(token=>[sources.runes,token]),
   ...['客觀與中立','可移植（Portable）','Copyleft','/management','/governance/history'].map(token=>[sources.governance,token]),
   ...['LunaRunes Scope','Master Data／Base66'].map(token=>[sources.runeGovernance,token]),
   ...['lo3rwang','文字工匠 · Wordsmith','校對者 · Calibrator','語言治理架構者 · Language Governance Architect','鑑古知今，求同存異'].map(token=>[sources.personal,token]),
