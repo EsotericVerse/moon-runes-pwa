@@ -17,7 +17,7 @@ export const authClient = createAuthClient({
   }
 });
 
-export async function signInManagementWithGoogle(callbackURL = '/management'){
+export async function signInManagementWithGoogle(callbackURL = '/admin'){
   if(!managementAuthConfigured()) throw new Error('尚未設定 NEXT_PUBLIC_LOC_AUTH_URL');
   const resolvedCallbackURL = typeof window !== 'undefined'
     ? new URL(callbackURL, window.location.origin).toString()
@@ -49,10 +49,16 @@ export async function getManagementSession(){
   return data?.authorized ? data : null;
 }
 
+export function managementHasPermission(session, permission){
+  if(!session?.authorized) return false;
+  const permissions = Array.isArray(session?.permissions) ? session.permissions : [];
+  return permissions.includes('platform:admin') || permissions.includes(String(permission || ''));
+}
+
 export async function managementStateWrite(path, { method='POST', body } = {}){
   if(!managementAuthConfigured()) throw new Error('尚未設定 NEXT_PUBLIC_LOC_AUTH_URL');
   const normalized = `/${String(path || '').replace(/^\/+/, '')}`;
-  if(!['/eras','/daily-runes','/context'].includes(normalized)) throw new Error('management_state_path_not_allowed');
+  if(!['/aliases','/eras','/daily-runes','/context'].includes(normalized)) throw new Error('management_state_path_not_allowed');
   const verb = String(method || 'POST').toUpperCase();
   if(!['POST','PUT','DELETE'].includes(verb)) throw new Error('management_state_method_not_allowed');
 
