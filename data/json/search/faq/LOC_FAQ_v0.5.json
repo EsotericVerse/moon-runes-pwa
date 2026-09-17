@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0",
+  "dataset": {
+    "id": "loc-faq-v0.5-current-overlay",
+    "title": "LOC FAQ v0.5 Current Overlay",
+    "language": "zh-Hant-TW",
+    "created_at": "2026-09-17",
+    "updated_at": "2026-09-17",
+    "base_dataset": "LOC_FAQ_v0.4.json",
+    "base_retrieval_dataset": "LOC_FAQ_RAG_v0.4.json",
+    "authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
+    "status": "current_projection_without_governance_authority",
+    "purpose": "Keep historical FAQ wording and provenance in v0.4 while projecting Current Scope Model × Feature Model semantics into answers, categories and retrieval text. LOC1–8 remain historical/provenance identifiers only."
+  },
+  "migration_policy": {
+    "preserve_historical_questions": true,
+    "preserve_historical_aliases": true,
+    "current_answer_authority": "LOC_TERMINOLOGY_CANON + Current governance",
+    "loc_number_policy": "LOC1–8 may remain searchable as historical/provenance wording but must not regain Current architecture, Scope, Feature ownership, navigation taxonomy or Canon authority.",
+    "km_policy": "KM means Knowledge Management. KM is not LOC7, FAQ, RAG, Search, Graph traversal or a single document."
+  },
+  "phrase_replacements": [
+    ["語言系統模型（Language System Model）", "語言系統模組框架（Language Module Framework）"],
+    ["Language System Model／語言系統模型", "Language Module Framework／語言系統模組框架"],
+    ["Language System Model", "Language Module Framework"],
+    ["語言系統模型", "語言系統模組框架"],
+    ["符號式語言模型（Symbolic Language Model）", "符號式語言模組（Symbolic Language Module）"],
+    ["Symbolic Language Model／符號式語言模型", "Symbolic Language Module／符號式語言模組"],
+    ["Symbolic Language Model", "Symbolic Language Module"],
+    ["符號式語言模型", "符號式語言模組"],
+    ["loc2-game.html", "game.html"],
+    ["statics.htm", "statics.html"]
+  ],
+  "parent_overrides": {
+    "FAQ-001": {
+      "category": "基本定位",
+      "answer": "LOC（Luna Codex／月典）是 Language Module Framework／語言系統模組框架。Current 架構以 Scope Model × Feature Model → Page Composition 組合資料範圍、可重用功能與頁面；LOC1–8 僅可作歷史／來源識別。"
+    },
+    "FAQ-002": {
+      "category": "基本定位",
+      "answer": "LOC／月典是 Language Module Framework／語言系統模組框架；LunaRunes／月之符文是 Symbolic Language Module／符號式語言模組，也是可獨立運作的 LunaRunes Scope。LunaRunes 不定義 LOC 的 Current 架構。"
+    },
+    "FAQ-005": {
+      "category": "基本定位",
+      "answer": "LOC 的 Current 架構是 Scope Model × Feature Model → Page Composition。符文、遊戲情境、歌曲、文字、多媒體、治理、知識與事件資料由各 Scope 治理，再由 Features 組合到頁面；LOC1–8 不再代表 Current 功能責任區。"
+    },
+    "FAQ-018": {
+      "category": "歷史架構／Provenance",
+      "answer": "LOC1–8 是歷史／來源識別碼，可保留在舊資料、檔名與 provenance 中；它們不是 Current architecture、Scope、Feature ownership、navigation taxonomy 或 Canon source。Current 頁面依 Scope Model × Feature Model → Page Composition 組成。"
+    },
+    "FAQ-044": {
+      "category": "歷史架構／Governance",
+      "answer": "LOC6 是歷史／provenance 識別，不再擁有 Current 功能責任。過去以 LOC6 整理的方法論、治理與政德風相關內容，現行應依實際 Scope 與 Feature 管理，例如 Governance 與 Author／lo3rwang 的風格、文化與治理資料；不得再用 LOC6 作 Current ownership。"
+    },
+    "FAQ-045": {
+      "category": "Author／政德風",
+      "answer": "政德風是 Author／lo3rwang Scope 的個人語言、文化與治理案例，不等於 LOC6。若舊資料把政德風標成 LOC6，只能視為歷史映射；Current 應依 Author Scope 與相應 Feature／Registry 呈現。"
+    },
+    "FAQ-046": {
+      "category": "Governance",
+      "answer": "舊 LOC6 文件可保留方法論、治理、政德風與相關證據的歷史 provenance，但 Current 不再以 LOC6 劃分成果。治理規則進 Governance；作者語言與文化進 Author Scope；檢索、關聯與頁面呈現由共用 Features 處理。"
+    },
+    "FAQ-047": {
+      "category": "Knowledge Management",
+      "answer": "LOC7 是歷史／provenance 識別，不是 Current 的 Algorithm、Knowledge Base 或 KM owner。Current 的知識管理使用 KM／Knowledge Management 語意，負責知識資產、來源權威、版本、關係與可追溯性；Search、FAQ／RAG、Graph traversal 等是可重用 Feature 或衍生實作，不屬於 LOC7 的 Current ownership。"
+    },
+    "FAQ-048": {
+      "category": "FAQ／RAG",
+      "answer": "Current FAQ 語意層為 v0.5：v0.4 保留完整歷史/base 題庫，v0.5 overlay 提供 Current category、answer 與 retrieval 語意。FAQ 是可維護的問答 View；RAG 是由 FAQ 或其他來源衍生的 retrieval derivative；Cross-format Search 是公開統一搜尋 Feature。這些都不等於 KM 本體，也不取代 Canon、Master Data、Registry 或原始作品。"
+    },
+    "FAQ-049": {
+      "category": "Retrieval／Graph",
+      "answer": "Graph RAG 不是任何 LOC 編號成立的必要條件。Graph／Relation 是脈絡資料與關係表達；RAG／traversal 是檢索技術。Current 架構依 Scope 與 Feature 組合它們，不再由 LOC7 或 LOC2 取得 Current ownership。"
+    },
+    "FAQ-050": {
+      "category": "Evolution／推演",
+      "answer": "LOC8 是歷史／provenance 識別。Current 的 Evolution／推演是一個可重用 Feature，用時期、Event、Timeline、Trend 與 Trajectory 分析資料如何隨時間變化；它不再由 LOC8 作為 Current module ownership。"
+    },
+    "FAQ-051": {
+      "category": "Evolution／推演",
+      "answer": "Current Evolution／推演介面已具備時期、Event Timeline、Trend、Trajectory 與相關維護流程。若舊文件稱它為 LOC8 進度，只能視為歷史映射；現行進度應以 Evolution Feature 與其 Scope composition 描述。"
+    },
+    "FAQ-052": {
+      "category": "Evolution／推演",
+      "answer": "Current 的最小推演流程是：累積具有時間位置的 Event、作品或其他紀錄，放入相應 Scope 的時期資料，再以 Timeline、Trend 與 Trajectory 分析變化。LOC8 僅保留為舊版來源識別，不再定義這個流程的 Current ownership。"
+    },
+    "FAQ-064": {
+      "category": "LunaRunes／語言演化",
+      "answer": "月之符文的特殊性在於可把符文作為語意種子，透過抽取、方向與多符文組合產生新的語意路徑，支持創作與理解未知。若舊資料稱這是 LOC1 的核心，只能視為歷史映射；Current 主體是 LunaRunes／月之符文 Scope。"
+    },
+    "FAQ-066": {
+      "category": "AI 與可選能力",
+      "answer": "LOC 與 LunaRunes 的基本能力不一定需要 AI、API Key 或付費模型。抽牌、符文資料、固定規則與部分搜尋可由本地資料與程式完成；Embedding、RAG、LLM 或 Graph traversal 是可選的進階 Feature。舊稱 LOC1／LOC7 的分工只保留 provenance。"
+    },
+    "FAQ-067": {
+      "category": "Knowledge Management",
+      "answer": "KM 固定指 Knowledge Management／知識管理。KM 不等於 LOC7、FAQ、RAG、Search 或單一 Markdown 文件；它管理各 Scope 的知識資產、來源權威、版本、關係、provenance 與可檢索性。Registry、FAQ、RAG、Search index 與 source data 是 KM 可使用或治理的承載／衍生資料，而不是 KM 本體。"
+    },
+    "FAQ-068": {
+      "category": "Knowledge Management",
+      "answer": "FAQ 是可維護的問答 View；RAG 是由 FAQ 或其他資料衍生的檢索格式；原始作品、Canon、Master Data 與 Registry 各自保留 authority。KM／Knowledge Management 管理這些知識資產的來源、版本、關係與可追溯性，但不等於 FAQ 或 RAG。FAQ、RAG、Embedding、搜尋索引與 AI 回答都是下游資料，不得反向覆寫上游來源。"
+    },
+    "FAQ-069": {
+      "category": "歷史架構／Provenance",
+      "answer": "LOC6、LOC7、LOC8 現在只作歷史／provenance 識別，不再代表 Current 分工。舊資料大致曾把方法／治理、演算法／知識庫、時間／推演分別掛在這些編號下；Current 則改由 Scope Model × Feature Model 組成，Governance、Search、Context、Evolution、KM 等各自依實際責任運作。"
+    },
+    "FAQ-070": {
+      "category": "Context／Evolution",
+      "answer": "事件本身不是語言；事件被感知、命名、描述、評價與重新理解後，才成為可分析的語言與脈絡資料。Current 可由 Context／Evolution 等 Feature 處理 Event、Interpretation、Relationship 與 Temporal Change；LOC8 僅是舊版歷史映射。"
+    },
+    "FAQ-072": {
+      "category": "Search／跨媒體",
+      "answer": "跨媒體搜尋以同一個 Search Feature 查詢歌曲、文字、多媒體、知識與其他可索引內容，再用 content_type、Scope、來源、時期等欄位區分脈絡。舊 LOC3／4／5 標記可保留 provenance，但不能作 Current 搜尋架構或 ownership。"
+    },
+    "FAQ-073": {
+      "category": "Search／Evolution",
+      "answer": "使用者可以直接以自然語言搜尋跨符文、作品、媒體、治理、知識與時期資料；Evolution／推演則處理事件、時期與時間變化。兩者是不同 Feature。舊稱 LOC8 的部分只保留歷史映射，不應再把尚未實作的自動情緒代理流程描述成既有能力。"
+    },
+    "FAQ-091": {
+      "category": "基本定位",
+      "answer": "LOC／月典的現行正式身份固定為 Language Module Framework／語言系統模組框架；LunaRunes／月之符文固定為 Symbolic Language Module／符號式語言模組。Current 架構是 Scope Model × Feature Model → Page Composition。"
+    }
+  }
+}
