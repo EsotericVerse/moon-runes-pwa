@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC_ACTOR_REGISTRY",
+  "status": "current",
+  "records": [
+    {"actor_id":"lo3rwang","display_name":"Lucas Oscar Wang 政德","actor_type":"person","roles":["platform_steward","content_author"]}
+  ],
+  "governance": ["Platform stewardship and content authorship are separate roles.","A platform steward must not be inferred as the author of content without an explicit authorship relation."]
+}
