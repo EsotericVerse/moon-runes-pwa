@@ -63,14 +63,15 @@ const SECTIONS = [
     id:'management',
     eyebrow:'Management',
     title:'管理功能',
-    subtitle:'治理不是只寫原則，也要能實際管理 Scope、版本、權限與資料狀態。',
+    subtitle:'各功能各自管理，不使用單一 Scope 管理總選單。',
     content:<>
-      <p>管理功能處理 Scope、ERA、納入審核、修正標記、授權寫入、資料狀態與其他治理操作。LOC 可統合查看，但資料與 Current Authority 仍由所屬 Scope 保有。</p>
+      <p>管理入口依功能拆開。分頁呈現、脈絡、文化與其他功能各自有自己的 manager；Admin 則是全站總管理者，不代替各功能編輯。</p>
     </>,
     links:[
-      {href:'/management',label:'管理者功能',text:'Scope、ERA、納入審核、修正標記與授權寫入。'},
-      {href:'/runes/governance',label:'符文治理',text:'LunaRunes 的 Master Data、Grammar、語意與符文歷史。'},
-      {href:'/lo3rwang/governance',label:'lo3rwang 治理',text:'個人身份、政德風、作品脈絡、個人 ERA 與歷史。'}
+      {href:'/theme/manage',label:'分頁管理者',text:'管理目前分頁的 Theme、輪調、首頁與共通呈現。'},
+      {href:'/context/manage',label:'脈絡管理者',text:'管理脈絡、Graph、Event、Relation 與相關資料。'},
+      {href:'/culture/manage',label:'文化管理者',text:'管理文化內容、分類、作品關聯與文化資料。'},
+      {href:'https://admin.lo3rwang.cc',label:'總管理者',text:'Admin 全站 Control Plane：Scope、Domain、Registry、權限與 Audit。'}
     ]
   }
 ];
