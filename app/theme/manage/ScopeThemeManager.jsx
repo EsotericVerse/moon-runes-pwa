@@ -54,14 +54,14 @@ export default function ScopeThemeManager(){
     <section className="loc-card">
       <p className="loc-eyebrow">{targetPage?'Page Theme':'Scope Theme'}</p>
       <h2>{targetPage?`${targetPage} 預設主題`:`${scope} 主題設定`}</h2>
-      <p className="loc-subtitle">{targetPage?'此設定只影響指定頁面；未設定時繼承目前 Scope。':'只修改目前 Scope；八組 preset 由 Admin 維護。'}</p>
+      <p className="loc-subtitle">{targetPage?'此設定只影響指定頁面；頁面管理者可自訂色彩，未設定時繼承目前 Scope。':'Scope 層只選預設主題或時間輪調；自訂色彩由各 Page 管理者負責。八組 preset 由 Admin 維護。'}</p>
       <div className="loc-grid two">
         <label>模式
           <select value={settings.mode} onChange={e=>patch({mode:e.target.value})}>
             {targetPage&&<option value="inherit">繼承 Scope</option>}
             <option value="fixed">固定主題</option>
             <option value="time">隨時間輪調</option>
-            <option value="custom">簡單自訂</option>
+            {targetPage&&<option value="custom">頁面自訂</option>}
           </select>
         </label>
         <label>基礎主題
@@ -81,9 +81,9 @@ export default function ScopeThemeManager(){
       </tbody></table></div>
     </section>}
 
-    {settings.mode==='custom'&&<section className="loc-card">
-      <h2>特殊組／簡單自訂</h2>
-      <p className="loc-subtitle">不是第九個固定主題；以選定 preset 為 base，只覆寫少量網站色彩。</p>
+    {targetPage&&settings.mode==='custom'&&<section className="loc-card">
+      <h2>頁面自訂色彩</h2>
+      <p className="loc-subtitle">只影響目前頁面；以選定 preset 為 base，由此頁面的管理者覆寫少量網站色彩。</p>
       <div className="loc-grid two">
         {SIMPLE_SCOPE_OVERRIDE_KEYS.map(key=><label key={key}>{LABELS[key]||key}<input value={(settings.custom||{})[key]||''} placeholder="例如 #ffffff" onChange={e=>patchCustom(key,e.target.value)}/></label>)}
       </div>
