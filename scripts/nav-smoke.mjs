@@ -1,10 +1,25 @@
 import fs from 'node:fs';
-const s=fs.readFileSync('app/nav-route-map.js','utf8');
-const assertions=[
-  ["return 'runes'","rune scope"],["return 'lo3rwang'","lo3rwang scope"],["return 'governance'","governance scope"],
-  ["host==='lrunes.lo3rwang.cc'","LunaRunes host"],["host==='lo3rwang.cc'","lo3rwang host"],["host==='manage.lo3rwang.cc'","management host"],
-  ["reserved:['月之符文','/runes']","LOC reserved entry"],["reserved:['語彙'","LunaRunes reserved entry"],["reserved:['風格詞'","lo3rwang reserved entry"],["reserved:['治理規則'","governance reserved entry"]
+
+const source=fs.readFileSync('app/nav-route-map.js','utf8');
+const nav=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+
+const scopeCases=[
+  ['/context','loc.lo3rwang.cc','loc'],
+  ['/runes','loc.lo3rwang.cc','runes'],
+  ['/context','lrunes.lo3rwang.cc','runes'],
+  ['/runes/context','lo3rwang.cc','lo3rwang'],
+  ['/runes/context','manage.lo3rwang.cc','governance']
 ];
-const missing=assertions.filter(([token])=>!s.includes(token)).map(([,label])=>label);
-if(missing.length){console.error('NAV smoke missing: '+missing.join(', '));process.exit(1)}
+for(const [pathname,host,expected] of scopeCases){
+  const actual=nav.detectNavScope(pathname,host);
+  if(actual!==expected)throw new Error(`NAV smoke scope mismatch: ${host}${pathname} => ${actual}, expected ${expected}`);
+}
+
+const labels={loc:'月之符文',runes:'語彙',lo3rwang:'風格詞',governance:'治理規則'};
+for(const [scope,label] of Object.entries(labels)){
+  const host=scope==='runes'?'loc.lo3rwang.cc':scope==='lo3rwang'?'lo3rwang.cc':scope==='governance'?'manage.lo3rwang.cc':'loc.lo3rwang.cc';
+  const cfg=nav.getNavScopeConfig(scope,host);
+  if(cfg.reserved[0]!==label)throw new Error(`NAV smoke reserved entry mismatch: ${scope}`);
+}
+
 console.log('NAV scope smoke verified.');
