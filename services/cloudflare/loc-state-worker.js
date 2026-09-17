@@ -12,7 +12,7 @@ const EVOLUTION_RUNES_KEY = 'loc:evolution:runes';
 const EVOLUTION_LANGUAGE_KEY = 'loc:evolution:language';
 const ADMIN_COOKIE = 'loc_admin';
 const ADMIN_TTL = 60 * 60 * 8;
-const BUILD = '2026-09-17-kv-governance-v4-route-tree';
+const BUILD = '2026-09-18-kv-governance-v5-route-depth';
 
 const DEFAULT_ALIASES = Object.freeze([
   { alias: 'whoami', canonical: 'lo3rwang', scope: 'lo3rwang', status: 'legacy' },
@@ -22,6 +22,7 @@ const DEFAULT_ALIASES = Object.freeze([
 const VISIBILITY_LEVELS = new Set(['private', 'internal', 'public']);
 const PROJECTION_LEVELS = new Set(['metadata', 'summary', 'full']);
 const ROUTE_STATUSES = new Set(['current', 'draft', 'legacy', 'deprecated', 'disabled']);
+const MAX_PUBLIC_ROUTE_DEPTH = 4;
 
 const json = (data, init = {}) => new Response(JSON.stringify(data), {
   ...init,
@@ -302,8 +303,12 @@ function projectRouteNodes(nodes) {
     while (current) {
       if (seen.has(current.id)) throw new Error(`route_cycle:${node.id}`);
       seen.add(current.id);
+      if (current.host !== node.host) break;
       if (current.segment) segments.unshift(current.segment);
       current = current.parent_id ? map.get(current.parent_id) : null;
+    }
+    if (segments.length > MAX_PUBLIC_ROUTE_DEPTH) {
+      throw new Error(`route_depth_exceeded:${node.id}:${segments.length}`);
     }
     return `/${segments.join('/')}`.replace(/\/{2,}/g, '/') || '/';
   };
