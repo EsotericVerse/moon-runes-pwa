@@ -71,7 +71,7 @@ export function managementHasPermission(session, permission){
 
 export async function managementStateRequest(path,{method='GET',body}={}){
   const normalized = `/${String(path || '').replace(/^\/+/, '')}`;
-  if(!['/aliases','/visibility','/projection-rebuild','/eras','/daily-runes','/context'].includes(normalized)) throw new Error('management_state_path_not_allowed');
+  if(!['/aliases','/routes','/visibility','/projection-rebuild','/eras','/daily-runes','/context'].includes(normalized)) throw new Error('management_state_path_not_allowed');
   const verb = String(method || 'GET').toUpperCase();
   if(!['GET','POST','PUT','DELETE'].includes(verb)) throw new Error('management_state_method_not_allowed');
   return managementRequest(`/state${normalized}`,{method:verb,body});
