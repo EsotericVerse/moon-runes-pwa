@@ -6,8 +6,10 @@ export const metadata={
 const groups=[
   ['核心架構',[
     ['Page Composition','Scope × Feature → Page Composition','/'],
+    ['Scope Home Composition','單一媒體槽＋共用首頁 Hero 格式','/admin/modules'],
     ['NAV / Domain Resolver','Domain 優先，目錄其次','/'],
-    ['Route / Page Registry','階層 route、manager route、page ownership','/admin/routes']
+    ['Route / Page Registry','階層 route、manager route、page ownership','/admin/routes'],
+    ['Theme Registry','8 個可編輯主題槽位＋Scope 預設主題','/admin/themes']
   ]],
   ['治理與資料',[
     ['Domain Registry','Scope domain identity 與 canonical host','/admin/domains'],
