@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import {
   getManagementSession,
   managementAuthConfigured,
+  managementHasPermission,
   managementStateWrite,
   signInManagementWithGoogle,
   signOutManagement
 } from './auth-client';
 import {
+  getKvAliases,
   getKvContext,
   getKvDailyRunes,
   getKvEras,
@@ -16,31 +18,40 @@ import {
   kvStateConfigured
 } from './kv-state';
 
-export default function GovernanceManagement(){
+const EMPTY_ALIAS={alias:'',canonical:'',scope:'global',status:'current'};
+
+export default function GovernanceManagement({initialSession=null}){
   const configured = managementAuthConfigured();
   const stateConfigured = kvStateConfigured();
-  const [state,setState] = useState({ loading: configured, session: null, error: '' });
-  const [shared,setShared] = useState({ loading:false, health:null, eras:[], daily:[], events:[], relations:[], error:'' });
+  const [state,setState] = useState({ loading: configured && !initialSession, session: initialSession, error: '' });
+  const [shared,setShared] = useState({ loading:false, health:null, aliases:[], eras:[], daily:[], events:[], relations:[], error:'' });
   const [probe,setProbe] = useState({ running:false, ok:false, message:'' });
+  const [aliasDraft,setAliasDraft]=useState(EMPTY_ALIAS);
+  const [aliasMessage,setAliasMessage]=useState('');
 
   const loadShared = async()=>{
     if(!stateConfigured) return;
     setShared(current=>({ ...current, loading:true, error:'' }));
     try{
-      const [health,eras,daily,events,relations] = await Promise.all([
+      const [health,aliases,eras,daily,events,relations] = await Promise.all([
         getKvStateHealth(),
+        getKvAliases(),
         getKvEras(),
         getKvDailyRunes(400),
         getKvContext('events'),
         getKvContext('relations')
       ]);
-      setShared({ loading:false, health, eras, daily, events, relations, error:'' });
+      setShared({ loading:false, health, aliases, eras, daily, events, relations, error:'' });
     }catch(error){
       setShared(current=>({ ...current, loading:false, error:String(error?.message || error) }));
     }
   };
 
   useEffect(()=>{
+    if(initialSession){
+      loadShared();
+      return;
+    }
     if(!configured) return;
     let alive = true;
     getManagementSession()
@@ -51,12 +62,12 @@ export default function GovernanceManagement(){
       })
       .catch(error=>{ if(alive) setState({ loading:false, session:null, error:String(error?.message || error) }); });
     return ()=>{ alive=false; };
-  },[configured]);
+  },[configured,initialSession]);
 
   const login = async()=>{
     setState(current=>({ ...current, error:'' }));
     try{
-      await signInManagementWithGoogle('/management');
+      await signInManagementWithGoogle('/admin');
     }catch(error){
       setState(current=>({ ...current, error:String(error?.message || error) }));
     }
@@ -66,9 +77,7 @@ export default function GovernanceManagement(){
     setState(current=>({ ...current, error:'' }));
     try{
       await signOutManagement();
-      setState({ loading:false, session:null, error:'' });
-      setShared({ loading:false, health:null, eras:[], daily:[], events:[], relations:[], error:'' });
-      setProbe({ running:false, ok:false, message:'' });
+      window.location.assign('/admin/login');
     }catch(error){
       setState(current=>({ ...current, error:String(error?.message || error) }));
     }
@@ -88,6 +97,34 @@ export default function GovernanceManagement(){
     }
   };
 
+  const saveAlias=async(event)=>{
+    event.preventDefault();
+    setAliasMessage('');
+    if(!managementHasPermission(state.session,'platform:routes:write')){
+      setAliasMessage('沒有 platform:routes:write 權限。');
+      return;
+    }
+    try{
+      await managementStateWrite('/aliases',{method:'POST',body:{alias_record:aliasDraft}});
+      setAliasDraft(EMPTY_ALIAS);
+      setAliasMessage('Alias 已更新。');
+      await loadShared();
+    }catch(error){
+      setAliasMessage(`Alias 更新失敗：${String(error?.message||error)}`);
+    }
+  };
+
+  const removeAlias=async(alias)=>{
+    setAliasMessage('');
+    try{
+      await managementStateWrite('/aliases',{method:'POST',body:{action:'delete',alias}});
+      setAliasMessage(`已移除 alias：${alias}`);
+      await loadShared();
+    }catch(error){
+      setAliasMessage(`Alias 移除失敗：${String(error?.message||error)}`);
+    }
+  };
+
   if(!configured){
     return <section className="loc-card" id="management">
       <p className="loc-eyebrow">Governance Management</p>
@@ -97,15 +134,38 @@ export default function GovernanceManagement(){
   }
 
   return <section className="loc-card" id="management">
-    <p className="loc-eyebrow">Governance Management</p>
-    <h2>治理管理</h2>
-    <p className="loc-subtitle">共享資料修改需要管理權限；公開頁面維持唯讀。</p>
-    <p>管理範圍包含 Scope 與關係、資料納入／移除審核、各 Scope 的 ERA、修正標記、統合設定，以及搜尋、統計與排行榜的差異更新。實際可寫入項目仍依目前部署的權限與資料契約開放。</p>
+    <p className="loc-eyebrow">Platform Admin</p>
+    <h2>平台治理管理</h2>
+    <p className="loc-subtitle">平台級設定由 Admin 管理；公開頁面維持唯讀。</p>
+    <p><strong>Frozen Rune Canon 永久唯讀。</strong>管理員也不能從此介面修改 66 符、德或其他凍結核心資料。ERA／Period 等 Scope 內低風險資料應由各自治理頁承接。</p>
     {state.loading && <p>正在確認管理 session…</p>}
     {!state.loading && !state.session && <button type="button" onClick={login}>使用 Google 驗證管理權限</button>}
     {!state.loading && state.session && <>
-      <p><strong>管理 session 有效。</strong></p>
+      <p><strong>管理 session 有效。</strong> Role：{state.session.role||'admin'}</p>
       {state.session?.session_expires_at && <p>到期時間：{String(state.session.session_expires_at)}</p>}
+
+      <hr/>
+      <h3>Route / Alias 管理</h3>
+      <p>此區屬平台級 <code>platform:routes:write</code>。例如可將舊識別 <code>whoami</code> 導向 Current canonical <code>lo3rwang</code>，不需要再改多個程式檔。</p>
+      {shared.aliases.length>0 && <ul>
+        {shared.aliases.map(item=><li key={item.alias}>
+          <code>{item.alias}</code> → <code>{item.canonical}</code>（{item.scope} / {item.status}）{' '}
+          <button type="button" onClick={()=>removeAlias(item.alias)}>移除</button>
+        </li>)}
+      </ul>}
+      <form onSubmit={saveAlias}>
+        <p><label>Alias <input required value={aliasDraft.alias} onChange={event=>setAliasDraft(current=>({...current,alias:event.target.value}))}/></label></p>
+        <p><label>Canonical <input required value={aliasDraft.canonical} onChange={event=>setAliasDraft(current=>({...current,canonical:event.target.value}))}/></label></p>
+        <p><label>Scope <input value={aliasDraft.scope} onChange={event=>setAliasDraft(current=>({...current,scope:event.target.value}))}/></label></p>
+        <p><label>Status <select value={aliasDraft.status} onChange={event=>setAliasDraft(current=>({...current,status:event.target.value}))}>
+          <option value="current">current</option>
+          <option value="legacy">legacy</option>
+          <option value="deprecated">deprecated</option>
+          <option value="historical">historical</option>
+        </select></label></p>
+        <button type="submit">儲存 Alias</button>
+      </form>
+      {aliasMessage && <p role="status">{aliasMessage}</p>}
 
       <hr/>
       <h3>共享 State 狀態</h3>
@@ -114,6 +174,7 @@ export default function GovernanceManagement(){
       {stateConfigured && !shared.loading && !shared.error && <>
         <p><strong>State Worker：</strong>{shared.health?.ok ? '正常' : '異常'}</p>
         <ul>
+          <li>Alias：{shared.aliases.length}</li>
           <li>ERA：{shared.eras.length}</li>
           <li>每日符文：{shared.daily.length}</li>
           <li>Context 事件：{shared.events.length}</li>
