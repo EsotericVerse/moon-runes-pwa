@@ -21,7 +21,7 @@ export default function SettingsHubView(){
       <h2>個人化</h2>
       <div className="loc-actions">
         <a className="loc-button" href="/style">個人風格</a>
-        <a className="loc-button" href="/evolution">ERA／時期</a>
+        <a className="loc-button" href="/evolution">時期</a>
         <a className="loc-button" href="/style-groups">群組設定</a>
         <a className="loc-button" href="/classify">分類</a>
       </div>
