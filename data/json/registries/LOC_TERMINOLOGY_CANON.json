@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.1",
+  "schema_version": "2.2",
   "registry": "LOC_TERMINOLOGY_CANON",
   "status": "current",
   "effective_date": "2026-09-17",
@@ -19,6 +19,12 @@
       "group_names": ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "系統特別"],
       "group_rule": "Current LunaRunes group names and membership must be read from data/json/core/runes66groups.json. 第七組固定為秩序（Order）；定序僅可作 Historical alias，不得出現在 Current projection。第九組 Current 名稱為系統特別。"
     },
+    "lo3rwang": {
+      "scope_id": "lo3rwang",
+      "canonical_host": "lo3rwang.cc",
+      "canonical_label": "lo3rwang",
+      "rule": "The personal Scope uses lo3rwang as its Current identifier. author and whoami are not Current Scope IDs, registry prefixes, route identities, tags or hostnames. Ordinary descriptive use of the word author is permitted only when it does not identify the Scope."
+    },
     "scope": {
       "zh": "資料範圍",
       "en": "Scope",
@@ -37,6 +43,7 @@
   },
   "historical_only": {
     "retired_numbered_architecture": "LOC1–8 are Historical/provenance identifiers only and are forbidden as Current architecture, scope, module ownership, navigation taxonomy, registry authority or Current file naming.",
+    "retired_personal_scope_identifiers": ["author", "whoami", "whoami.lo3rwang.cc", "author.lo3rwang.cc"],
     "retired_multi_nav_terms": "Former numbered navigation-layer names are Historical only.",
     "rune_group_aliases": {
       "定序": "Historical only; Current = 秩序",
