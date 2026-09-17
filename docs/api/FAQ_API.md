@@ -1,9 +1,10 @@
 # LOC FAQ API
 
-LOC FAQ／RAG 的公開 API。現行 runtime 使用 FAQ/RAG v0.4：90 題 FAQ source view 與其檢索資料。
-模組與既有 FastAPI 服務共同部署，不修改 `/divination` 的抽牌流程。
+LOC FAQ／RAG 的公開 API。現行 runtime 採 **v0.4 base + v0.5 Current overlay**：v0.4 保留完整歷史問句、aliases 與 retrieval base；`LOC_FAQ_v0.5.json` 在建立索引前套用 Current category、answer 與術語語意。
 
-FAQ 是可維護的問答 View，RAG JSON 是檢索衍生資料，不取代 Canon、母資料或原始作品；資料與權責治理統一見 `../../governance.html`。
+這個分層用來同時保留 provenance 與 Current Canon：舊 LOC1–8 問法仍可搜尋，但不得因此恢復 LOC 編號的 Current ownership。
+
+FAQ 是可維護的問答 View，RAG JSON 是檢索衍生資料；KM 固定指 Knowledge Management／知識管理。FAQ、RAG、Search 與 KM 不互相等同，也都不得取代 Canon、Master Data、Registry 或原始作品。
 
 ## `POST /faq/search`
 
@@ -16,11 +17,11 @@ FAQ 是可維護的問答 View，RAG JSON 是檢索衍生資料，不取代 Cano
 }
 ```
 
-回應包含相似度分數、FAQ／Chunk ID、問題、答案、分類與 Canon 版本。
+回應包含相似度分數、FAQ／Chunk ID、問題、Current answer、Current category 與 Canon 版本。
 
 ## `POST /faq/ask`
 
-檢索後以已確認的 FAQ 原文組合答案，並保留 `[FAQ-000-A]` 格式的依據標記。
+檢索後以已確認的 Current FAQ 答案組合回應，並保留 `[FAQ-000-A]` 格式的依據標記。
 目前採用不需外部 API 金鑰的 extractive 模式；資料不足時不自行推測。
 
 ```json
@@ -32,10 +33,16 @@ FAQ 是可維護的問答 View，RAG JSON 是檢索衍生資料，不取代 Cano
 
 ## 實作方式
 
-- 繁體中文文字正規化
-- 1–4 字元 n-gram TF-IDF
-- 問句、別名與關鍵詞混合加權
-- 服務啟動時載入一次資料與索引
-- 僅使用 Python 標準函式庫，不增加 Render 建置負擔
+1. 載入 `LOC_FAQ_RAG_v0.4.json` 作歷史／base retrieval dataset。
+2. 優先載入 `LOC_FAQ_v0.5.json` 作 Current semantic overlay；若不存在才使用舊 `LOC_FAQ_CANON_OVERRIDES.json` compatibility fallback。
+3. 套用 Current phrase replacements、category 與 answer。
+4. 重新以 Current question／aliases／keywords／answer 建立 `retrieval_text`。
+5. 使用繁體中文正規化與 1–4 字元 n-gram TF-IDF 檢索。
 
-資料來源：`../../data/json/search/faq/LOC_FAQ_RAG_v0.4.json`
+僅使用 Python 標準函式庫，不增加 Render 建置負擔。
+
+資料：
+- Base FAQ：`../../data/json/search/faq/LOC_FAQ_v0.4.json`
+- Base RAG：`../../data/json/search/faq/LOC_FAQ_RAG_v0.4.json`
+- Current overlay：`../../data/json/search/faq/LOC_FAQ_v0.5.json`
+- Compatibility fallback：`../../data/json/search/faq/LOC_FAQ_CANON_OVERRIDES.json`
