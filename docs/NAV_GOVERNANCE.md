@@ -9,7 +9,7 @@
 
 ## NAV 可變治理
 
-NAV 是 **Page Composition 的可變介面**，不是 Canon，也不是 Frozen Interface。當 Current Scope、Feature、頁面組成或正式入口改變時，可以直接調整 NAV；不需要先解除凍結，也不要求另立 NAV2／NAV3。
+NAV 是 **Page Composition 的可變介面**，不是 Canon，也不是 Frozen Interface。當 Current Scope、Feature、頁面組成或正式入口改變時，可以直接調整 NAV；不需要先解除凍結，也不要求另立第二／第三套 NAV。
 
 NAV 變更必須同時維持：
 
