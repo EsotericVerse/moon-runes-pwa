@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "manifest": "LUNARUNES_MANIFEST",
   "status": "current",
   "scope_id": "lunarunes",
@@ -7,16 +7,16 @@
   "group_authority": "data/json/core/runes66groups.json",
   "rune_authority": "data/json/core/runes.json",
   "current_group_rule": "Nine groups are read from runes66groups.json. The seventh group is 秩序 / Order. Numbered LOC identifiers do not own LunaRunes Current data.",
-  "current_registry_names": [
-    "LUNARUNES_READING_REGISTRY",
-    "LUNARUNES_READING_EXAMPLE_REGISTRY",
-    "LUNARUNES_NARRATIVE_EVIDENCE_REGISTRY",
-    "LUNARUNES_GAME_EVENT_REGISTRY",
-    "LUNARUNES_DUAL_RUNE_RELATION_REGISTRY",
-    "LUNARUNES_RUNE_INTERPRETATION_REGISTRY",
-    "LUNARUNES_RUNE_CONTEXT_REGISTRY",
-    "LUNARUNES_DAILY_RUNE_HISTORY",
-    "LUNARUNES_DAILY_RUNE_SNAPSHOT"
+  "current_registry_files": [
+    "LUNARUNES_OW3GS_READING_REGISTRY.json",
+    "LUNARUNES_READING_EXAMPLE_REGISTRY.json",
+    "LUNARUNES_THREE_RUNE_NARRATIVE_EVIDENCE.json",
+    "LUNARUNES_DUAL_RUNE_RELATION_REGISTRY.json",
+    "LUNARUNES_RUNE_INTERPRETATION_REGISTRY.json",
+    "LUNARUNES_RUNE_METHODOLOGY_REGISTRY.json",
+    "LUNARUNES_DAILY_RUNE_REPO_HISTORY.json",
+    "LUNARUNES_DAILY_RUNE_SNAPSHOT.json"
   ],
+  "shared_context_registry": "CONTEXT_EVENT_REGISTRY.json",
   "updated_at": "2026-09-17"
 }
