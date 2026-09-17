@@ -1,1 +1,92 @@
-{"migrating":true}
+{
+  "schema_version": "0.3",
+  "registry": "LOC5_MEDIA_RECOVERY_REGISTRY",
+  "authority": "LOC5",
+  "status": "author_source_imported",
+  "updated_at": "2026-09-16",
+  "purpose": "Evidence-backed recovery queue for historical LOC5 media. Historical backup/export evidence and live/public source snapshots are reconciled without inventing URLs; canonical LOC5 media remains in LOC_MEDIA_REGISTRY.json.",
+  "recovery_method": [
+    "use backup/export JSON for historical completeness and asset evidence",
+    "use live/public source snapshots for current public URLs and fresh metadata",
+    "reconcile by stable platform ID first, then exact URL, then date + normalized text evidence",
+    "search LOC4 Threads source text for Suno/share/media URLs when historical text is the available evidence",
+    "cross-match Suno share URL against LOC3 song/version records",
+    "cross-match known IG/YouTube links against LOC3_MEDIA_LINKS and LOC_MEDIA_REGISTRY",
+    "promote to LOC5 media only when an actual media URL or explicit media evidence exists",
+    "otherwise retain as candidate/evidence and do not invent a Reel/MV link"
+  ],
+  "source_scope": {
+    "threads_owner": "LOC4",
+    "current_evidence_registry": "data/json/registries/LOC4_THREADS_KM_INDEX.json",
+    "source_sync_policy": "data/json/registries/LOC_SOURCE_SYNC_POLICY.json",
+    "reconciliation_script": "scripts/reconcile_live_backup_sources.py",
+    "note": "Live and backup sources coexist. Backup is the historical recovery layer; live/public snapshots supply freshness and presentation URLs. Platform source does not determine LOC ownership."
+  },
+  "candidates": [
+    {
+      "recovery_id": "LOC5-REC-THREADS-001",
+      "threads_record_id": "THR-A-0119",
+      "date": "2026-08-29",
+      "suno_share_url": "https://suno.com/s/J9VowGrRFhPLQcY4",
+      "status": "superseded_by_author_merge_list",
+      "loc5_existing": false
+    },
+    {
+      "recovery_id": "LOC5-REC-THREADS-002",
+      "threads_record_id": "THR-A-0120",
+      "date": "2026-08-27",
+      "suno_share_url": "https://suno.com/s/F4lAXVuTwYWEZZK1",
+      "status": "matched_existing_loc5_media",
+      "loc5_existing": true,
+      "matched_title": "答案不用現在",
+      "instagram_url": "https://www.instagram.com/p/Dcir69Eorv5/"
+    },
+    {
+      "recovery_id": "LOC5-REC-THREADS-003",
+      "threads_record_id": "THR-A-0130",
+      "date": "2026-09-02",
+      "suno_share_url": "https://suno.com/s/NNiC0qVpXV1xUv1C",
+      "status": "superseded_by_author_merge_list",
+      "loc5_existing": false
+    },
+    {
+      "recovery_id": "LOC5-REC-THREADS-004",
+      "threads_record_id": "THR-A-0131",
+      "date": "2026-09-05",
+      "suno_share_url": "https://suno.com/s/NP5obwvr2YEvyPws",
+      "status": "superseded_by_author_merge_list",
+      "loc5_existing": false
+    },
+    {
+      "recovery_id": "LOC5-REC-THREADS-005",
+      "threads_record_id": "THR-A-0135",
+      "date": "2026-09-03",
+      "suno_share_url": "https://suno.com/s/MeTrhUWNydfmiBcJ",
+      "status": "superseded_by_author_merge_list",
+      "loc5_existing": false
+    }
+  ],
+  "counts": {
+    "source_song_version_rows": 178,
+    "recovered_reel_urls": 177,
+    "rows_with_preview": 175,
+    "rows_without_preview": 3,
+    "semantic_linked_rows": 162,
+    "loc5_media_total_after_merge": 179,
+    "new_media_records_added": 158,
+    "existing_media_records_updated": 19
+  },
+  "counts_scope": "Historical author-source merge snapshot. These counts are preserved as recovery-operation evidence and must not be interpreted as the current LOC5 canonical total.",
+  "governance_rule": "Author-provided exact URLs and live-observed public URLs may become LOC5 evidence. Backup-only assets remain valid historical evidence even without a public permalink. Candidate/calculated URLs are not promoted until observed or verified; ambiguous matches remain unresolved.",
+  "primary_source": {
+    "name": "LOC3_LOC5_影音連結整合清單",
+    "authority": "author-provided",
+    "song_version_rows": 178,
+    "reel_urls": 177,
+    "rows_with_preview": 175,
+    "rows_without_preview": 3,
+    "semantic_linked_rows": 162,
+    "rule": "same song multiple Reels preserved; different song_id versions kept separate; blanks never guessed"
+  },
+  "authority_domain": "media"
+}
