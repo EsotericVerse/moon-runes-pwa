@@ -49,11 +49,11 @@ const SECTIONS = [
   },
   {
     id:'history',
-    eyebrow:'History · Provenance',
+    eyebrow:'History',
     title:'演變與歷史',
     subtitle:'Current 只說現在有效的定義；歷史負責留下它怎麼走到現在。',
     content:<>
-      <p>歷史資料本身不是污染。只有歷史語意被誤升格成 Current 權威時，才形成治理污染。舊 Canon、舊分類、舊名稱與舊架構都保留作為 provenance，不反向覆寫 Current。</p>
+      <p>歷史資料本身不是污染。只有歷史語意被誤升格成 Current 權威時，才形成治理污染。舊 Canon、舊分類、舊名稱與舊架構都保留作為來源，不反向覆寫 Current。</p>
     </>,
     links:[
       {href:'/governance/history',label:'歷史查詢／治理紀錄',text:'跨 Scope 查看版本、來源、重大變更與治理紀錄。'}
@@ -77,12 +77,12 @@ const SECTIONS = [
 
 export default function GovernanceView(){
   return <PageComposition
-    eyebrow="LOC Governance · Current"
+    eyebrow="Governance"
     title="治理"
     subtitle="先說清楚誰能管什麼，再談系統怎麼做。"
     intro={<>
       <p>LOC Governance 是整個系統的治理入口：總覽 Current 原則、Scope 關係、權威邊界、授權與歷史，但不取代 LunaRunes、Author 或其他 Scope 對自身資料的治理。</p>
-      <p className="loc-core-line">Current Canon → Scope Model × Feature Model → Page Composition → UI / Search / RAG / Analysis</p>
+      <p className="loc-core-line">Current Canon → Scope Model × Feature Model → Page Composition</p>
     </>}
     sections={SECTIONS}
   />;
