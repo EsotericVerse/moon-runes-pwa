@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {DEFAULT_ROTATION_SCHEDULE,PAGE_THEME_SETTINGS_KEY,SCOPE_THEME_SETTINGS_KEY,SIMPLE_SCOPE_OVERRIDE_KEYS,THEME_REGISTRY_OVERRIDE_KEY,detectThemeScope,mergeThemeSlots,pageThemeKey,scopeThemeSettings} from '../../theme-registry';
 
-const LABELS={'--loc-bg':'首頁背景','--loc-panel':'文字框背景','--loc-text':'一般文字顏色','--loc-heading':'標題文字顏色','--loc-input-text':'輸入框文字顏色','--loc-accent':'強調色'};
+const LABELS={'--loc-bg':'首頁背景','--loc-panel':'文字框背景','--loc-heading':'標題文字顏色','--loc-accent':'強調色'};
 function readJson(key,fallback){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}}
 
 export default function ScopeThemeManager(){
