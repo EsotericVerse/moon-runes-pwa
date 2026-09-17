@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {SCOPE_THEME_SETTINGS_KEY,THEME_REGISTRY_OVERRIDE_KEY,THEME_TOKEN_KEYS,detectThemeScope,mergeThemeSlots,scopeThemeSettings,themeForHour} from './theme-registry';
+import {PAGE_THEME_SETTINGS_KEY,SCOPE_THEME_SETTINGS_KEY,THEME_REGISTRY_OVERRIDE_KEY,THEME_TOKEN_KEYS,detectThemeScope,mergeThemeSlots,pageThemeKey,scopeThemeSettings,themeForHour} from './theme-registry';
 
 function readJson(key,fallback){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}}
 function clearThemeTokens(){THEME_TOKEN_KEYS.forEach(key=>document.documentElement.style.removeProperty(key));}
@@ -23,7 +23,9 @@ export default function ThemeSelect(){
   useEffect(()=>{
     const currentScope=detectThemeScope(window.location.pathname,window.location.hostname);
     setScope(currentScope);
-    const settings=scopeThemeSettings(currentScope,readJson(SCOPE_THEME_SETTINGS_KEY,{}));
+    const scopeSettings=scopeThemeSettings(currentScope,readJson(SCOPE_THEME_SETTINGS_KEY,{}));
+    const pageSettings=readJson(PAGE_THEME_SETTINGS_KEY,{});
+    const settings={...scopeSettings,...(pageSettings[pageThemeKey(currentScope,window.location.pathname)]||{}),custom:{...(scopeSettings.custom||{}),...((pageSettings[pageThemeKey(currentScope,window.location.pathname)]||{}).custom||{})},schedule:(pageSettings[pageThemeKey(currentScope,window.location.pathname)]||{}).schedule||scopeSettings.schedule};
     const enabled=slots.filter(slot=>slot.enabled);
     const themeId=settings.mode==='time'?themeForHour(settings.schedule):settings.theme;
     const slot=enabled.find(item=>item.id===themeId)||enabled[0];
