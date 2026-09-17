@@ -29,8 +29,9 @@ export default function RuneAtlasHome() {
   if (!runes.length) return <section className="loc-card" id="library"><p className="loc-note">符文圖鑑載入中……</p></section>;
 
   if (!expanded) return <section className="loc-card" id="library">
-    <p className="loc-eyebrow">Rune Atlas · 符文關聯圖</p>
+    <p className="loc-eyebrow">Rune Atlas</p>
     <h2>所有符文</h2>
+    <p className="loc-subtitle">先看 66 符的整體關係，再從群組往單一符文深入。</p>
     <button type="button" className="runes-atlas-overview interactive" onClick={() => setExpanded(true)} aria-expanded="false">
       <img src="/assets/lunarunes/reference/loc_runes_66_overview.jpg" alt="月之符文 66 符關聯總圖" loading="lazy" decoding="async"/>
       <span>點圖查看符文群組</span>
