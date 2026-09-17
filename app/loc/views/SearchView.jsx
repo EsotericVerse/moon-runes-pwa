@@ -23,10 +23,11 @@ function collectMusic(data,terms,displayQuery,found){for(const w of data?.works|
 function collectGeneric(data,label,terms,displayQuery,found){for(const item of objectsFrom(data)){const r=genericResult(item,label,terms,displayQuery);if(r)found.push(r);if(found.length>=MAX_RAW_RESULTS)return;}}
 function matchCultureKeyword(data,q){const target=norm(q);if(!target)return null;for(const item of data?.keywords||[]){const terms=[item.name,...(item.aliases||[])];if(terms.some(term=>norm(term)===target))return item;}for(const item of data?.keywords||[]){const terms=[item.name,...(item.aliases||[])];if(terms.some(term=>norm(term).includes(target)||target.includes(norm(term))))return item;}return null;}
 
-export default function SearchView(){
+export default function SearchView({fixedCollectionId=''}){
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
+  const fixedCollection=getSearchCollection(fixedCollectionId||'all');
   const [query,setQuery]=useState('');
-  const [collectionId,setCollectionId]=useState('all');
+  const [collectionId,setCollectionId]=useState(fixedCollectionId?fixedCollection.id:'all');
   const [results,setResults]=useState([]);
   const [cultureKeyword,setCultureKeyword]=useState(null);
   const [status,setStatus]=useState('輸入文字後才會載入搜尋資料。');
@@ -40,19 +41,21 @@ export default function SearchView(){
 
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
-    const requested=params.get('c')||'all';
+    const requested=fixedCollectionId||params.get('c')||'all';
     const q=params.get('q')||'';
     const nextCollection=getSearchCollection(requested).id;
     setCollectionId(nextCollection);
     setQuery(q);
+    if(fixedCollectionId)params.set('c',nextCollection);
     if(q.trim())window.setTimeout(()=>document.getElementById('loc-search-form')?.requestSubmit(),0);
-  },[]);
+  },[fixedCollectionId]);
   useEffect(()=>setPage(1),[collectionId,pageSize]);
   useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
 
   function syncUrl(nextCollection,nextQuery){
     const url=new URL(window.location.href);
-    if(nextCollection&&nextCollection!=='all')url.searchParams.set('c',nextCollection);else url.searchParams.delete('c');
+    const governedCollection=fixedCollectionId?fixedCollection.id:nextCollection;
+    if(governedCollection&&governedCollection!=='all')url.searchParams.set('c',governedCollection);else url.searchParams.delete('c');
     if(nextQuery)url.searchParams.set('q',nextQuery);else url.searchParams.delete('q');
     window.history.replaceState(null,'',`${url.pathname}${url.search}${url.hash}`);
   }
@@ -61,7 +64,7 @@ export default function SearchView(){
     event.preventDefault();
     const q=query.trim();
     if(!q)return;
-    const collection=getSearchCollection(collectionId);
+    const collection=getSearchCollection(fixedCollectionId||collectionId);
     const activeScope=readSearchScope(new URL(window.location.href).searchParams,collection.scopeProfile);
     syncUrl(collection.id,q);
     const id=++searchId.current;
@@ -114,10 +117,10 @@ export default function SearchView(){
     }catch(e){if(id===searchId.current){setError(e.message);setStatus('搜尋失敗。');}}
   }
 
-  const collection=getSearchCollection(collectionId);
+  const collection=getSearchCollection(fixedCollectionId||collectionId);
   return <section className="loc-view"><header className="loc-hero"><p className="loc-eyebrow">Search · 搜尋</p><h1>搜尋</h1><p>{collection.description} 大型資料清單（manifest）與資料分片（corpus shards）只有送出查詢後才下載。</p></header>
     <form id="loc-search-form" className="loc-search-form" onSubmit={runSearch}>
-      <select value={collectionId} onChange={e=>{setCollectionId(e.target.value);syncUrl(e.target.value,query)}} aria-label="搜尋集合">{SEARCH_COLLECTION_ORDER.map(id=><option key={id} value={id}>{SEARCH_COLLECTIONS[id].label}</option>)}</select>
+      {fixedCollectionId?<span className="loc-chip-list"><span>{collection.label}</span></span>:<select value={collectionId} onChange={e=>{setCollectionId(e.target.value);syncUrl(e.target.value,query)}} aria-label="搜尋集合">{SEARCH_COLLECTION_ORDER.map(id=><option key={id} value={id}>{SEARCH_COLLECTIONS[id].label}</option>)}</select>}
       <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="輸入關鍵字，例如：治理、月、自由" aria-label="搜尋文字"/>
       <button className="loc-button primary" type="submit">搜尋</button>
     </form>
