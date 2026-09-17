@@ -1,61 +1,30 @@
 {
-  "schema_version": "0.3",
-  "manifest": "LOC_SHARED_REGISTRIES",
+  "schema_version": "1.0",
+  "manifest": "CURRENT_REGISTRY_INDEX",
   "status": "current",
   "language_system_id": "lo3rwang",
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
   "terminology_authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
-  "architecture": "Scope Model × Feature Model → Page Composition",
-  "rule": "Registry filenames may preserve historical LOC1–8 identifiers for compatibility and provenance, but Current authority is governed by Scope and Canon. Features consume Scopes without owning them; generated/Search/RAG/UI layers are projections only.",
-  "registries": [
-    {"id":"language_system","path":"data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json","feature_ids":["system_identity","provenance","rights"]},
-    {"id":"era","path":"data/json/registries/LOC_ERA_REGISTRY.json","feature_ids":["temporal_classification","era"]},
-    {"id":"media","path":"data/json/registries/LOC_MEDIA_REGISTRY.json","feature_ids":["media_catalog","cross_media_reference"]},
-    {"id":"shared_schema","path":"data/json/registries/LOC_SHARED_SCHEMA.json","feature_ids":["shared_schema"]},
-    {"id":"data_governance","path":"data/json/registries/LOC_DATA_GOVERNANCE.json","feature_ids":["governance"]},
-    {"id":"content_rights_policy","path":"data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json","feature_ids":["rights","privacy","publication_gate"]},
-    {"id":"reference_model","path":"data/json/registries/LOC_REFERENCE_MODEL.json","feature_ids":["reference_model","relationship"]},
-    {"id":"event_corpus","path":"data/json/registries/LOC2_EVENT_REGISTRY.json","feature_ids":["event_corpus","scenario_modeling"],"historical_provenance":{"loc_ids":["LOC2"]}},
-    {"id":"rune_songs","path":"data/json/registries/LOC3_RUNE_SONG_REGISTRY.json","feature_ids":["music","rune_provenance"],"historical_provenance":{"loc_ids":["LOC3"]}},
-    {"id":"reasoning_analysis","path":"data/json/registries/LOC3_REASONING_SCHEMA.json","feature_ids":["reasoning_analysis","music_analysis"],"historical_provenance":{"loc_ids":["LOC3"]}},
-    {"id":"writing","path":"data/json/registries/LOC4_WRITING_REGISTRY.json","feature_ids":["writing_catalog","text_corpus"],"historical_provenance":{"loc_ids":["LOC4"]}},
-    {"id":"cross_relationships","path":"data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json","feature_ids":["relationship","context_graph"]},
-    {"id":"era_style_evidence","path":"data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json","feature_ids":["style_analysis","era_analysis"],"historical_provenance":{"loc_ids":["LOC6"]}},
-    {"id":"governance_analysis","path":"data/json/registries/LOC6_GOVERNANCE_REGISTRY.json","feature_ids":["governance_analysis","style_analysis"],"historical_provenance":{"loc_ids":["LOC6"]}},
-    {"id":"rune_methodology","path":"data/json/registries/LOC6_RUNE_METHODOLOGY_REGISTRY.json","feature_ids":["rune_analysis","semantic_analysis"],"historical_provenance":{"loc_ids":["LOC6"]}},
-    {"id":"threads_source_index","path":"data/json/registries/LOC4_THREADS_KM_INDEX.json","feature_ids":["text_corpus","source_index"],"historical_provenance":{"loc_ids":["LOC4"]}},
-    {"id":"dual_rune_relations","path":"data/json/registries/LOC6_DUAL_RUNE_RELATION_REGISTRY.json","feature_ids":["rune_analysis","relationship"],"historical_provenance":{"loc_ids":["LOC6"]}},
-    {"id":"rune_interpretation","path":"data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json","feature_ids":["rune_analysis","interpretation_evidence"],"historical_provenance":{"loc_ids":["LOC6"]}},
-    {"id":"linguistic_analysis","path":"data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json","feature_ids":["linguistic_analysis","text_architecture","retrieval_analysis"],"historical_provenance":{"loc_ids":["LOC7"]}},
-    {"id":"analysis_types","path":"data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json","feature_ids":["analysis_routing"]},
-    {"id":"content_types","path":"data/json/registries/LOC_CONTENT_TYPE_REGISTRY.json","feature_ids":["content_routing"]},
-    {"id":"source_types","path":"data/json/registries/LOC_SOURCE_TYPE_REGISTRY.json","feature_ids":["provenance"]},
-    {"id":"three_rune_narrative_evidence","path":"data/json/registries/LOC1_THREE_RUNE_NARRATIVE_EVIDENCE.json","feature_ids":["rune_analysis","narrative_evidence"],"historical_provenance":{"loc_ids":["LOC1"]}},
-    {"id":"governance_trends","path":"data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json","feature_ids":["governance_analysis","temporal_analysis","linguistic_analysis"],"historical_provenance":{"loc_ids":["LOC6","LOC7","LOC8"]}},
-    {"id":"writing_governance_boundary","path":"data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json","feature_ids":["provenance","governance_analysis"],"historical_provenance":{"loc_ids":["LOC4","LOC6"]}},
-    {"id":"reading_examples","path":"data/json/registries/LOC1_READING_EXAMPLE_REGISTRY.json","feature_ids":["lunarunes_reading","reading_examples"],"historical_provenance":{"loc_ids":["LOC1"]}}
+  "architecture": "Current Canon → Scope Model × Feature Model → Page Composition",
+  "scope_manifests": [
+    "data/json/registries/LOC_MANIFEST.json",
+    "data/json/registries/LUNARUNES_MANIFEST.json",
+    "data/json/registries/LO3RWANG_MANIFEST.json"
   ],
-  "integration_status": {
-    "identity_and_governance":{"status":"connected","features":["system_identity","governance","rights","provenance"]},
-    "lunarunes":{"status":"connected","features":["lunarunes_reading","rune_analysis","rune_provenance","interpretation_evidence"]},
-    "context_and_relationships":{"status":"connected","features":["relationship","context_graph","event_corpus","scenario_modeling"]},
-    "music":{"status":"connected","features":["music","music_analysis","rune_provenance"]},
-    "writing":{"status":"connected","features":["writing_catalog","text_corpus","narrative_evidence"]},
-    "media":{"status":"connected","features":["media_catalog","cross_media_reference"]},
-    "analysis":{"status":"connected","features":["semantic_analysis","linguistic_analysis","style_analysis","governance_analysis","temporal_analysis"]},
-    "search_and_retrieval":{"status":"connected","features":["retrieval_analysis","km","rag","content_routing","analysis_routing"]}
+  "feature_manifest": "data/json/registries/FEATURE_MANIFEST.json",
+  "naming_policy": {
+    "current_numbered_loc_filenames_allowed": false,
+    "current_personal_scope_id": "lo3rwang",
+    "current_personal_host": "lo3rwang.cc",
+    "forbidden_personal_scope_ids": ["author", "whoami"],
+    "forbidden_personal_hosts": ["whoami.lo3rwang.cc", "author.lo3rwang.cc"],
+    "rule": "LOC1–8 may exist only as Historical/provenance identifiers. Current registries are named by owning Scope, Feature, or data subject. The personal Scope is lo3rwang; Author and whoami are not Current Scope identifiers."
   },
   "projection_policy": {
     "generated_data_is_authority": false,
     "search_is_authority": false,
     "rag_is_authority": false,
-    "ui_is_authority": false,
-    "nav_write_allowed": false,
-    "nav_note": "NAV is a Frozen Interface and may change only through an explicit user-requested NAV change."
-  },
-  "historical_boundary": {
-    "loc1_8": "Historical/provenance identifiers only. They may remain in filenames and explicit historical_provenance fields, but cannot define Current architecture, Scope, Feature ownership, navigation taxonomy or Canon authority.",
-    "legacy_domain_fields": "domain/related_domains may remain temporarily for compatibility but are not the Current architecture model."
+    "ui_is_authority": false
   },
   "updated_at": "2026-09-17"
 }
