@@ -21,13 +21,6 @@ const PROMO_REELS = [
   { id: 'DMA-ZxLTINw', title: '月之符文 Reels 02' }
 ];
 
-const READING_EXAMPLES = [
-  {
-    title: '你最近卡關了嗎？給你一些突破建議！',
-    url: 'https://www.instagram.com/reel/DMA9yDAzeRK/'
-  }
-];
-
 export default function RunesPage() {
   return <main className="loc-next-main">
     <header className="loc-hero runes-home-hero">
@@ -65,17 +58,6 @@ export default function RunesPage() {
       </div>
       <p className="runes-quick-start-note">沒有特別想問的？也可以直接抽每日符文。</p>
       <div className="loc-actions"><a className="loc-button" href="?mode=daily#draw">抽每日符文</a></div>
-    </section>
-
-    <section className="loc-card runes-reading-example-links" aria-labelledby="reading-example-title">
-      <div className="runes-content-heading">
-        <p className="loc-eyebrow">Example</p>
-        <h2 id="reading-example-title">想先看看實際怎麼解？</h2>
-        <p className="loc-subtitle">從一個完整範例開始，看抽牌之後怎麼把結果連成解讀。</p>
-      </div>
-      <div className="links">
-        {READING_EXAMPLES.map(example => <a key={example.url} href={example.url} target="_blank" rel="noopener noreferrer">{example.title} →</a>)}
-      </div>
     </section>
 
     <RuneDrawClient />
