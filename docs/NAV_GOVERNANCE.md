@@ -1,7 +1,7 @@
 # LOC 導覽治理原則
 
 **Status:** Current
-**Updated:** 2026-09-16
+**Updated:** 2026-09-17
 
 ## 單一 NAV
 
@@ -13,7 +13,7 @@ NAV 必須繼承目前 Scope。脈絡、統計、文化、治理與搜尋是共�
 
 - LOC Scope：月之符文｜脈絡｜統計｜文化｜治理｜搜尋｜作者頁面｜回月典首頁
 - LunaRunes Scope：語彙｜脈絡｜統計｜文化｜治理｜搜尋｜作者頁面｜回月之符文首頁｜回月典首頁
-- Author Scope：風格詞｜脈絡｜統計｜文化｜治理｜搜尋｜管理者頁面｜回作者頁面｜回月典首頁
+- lo3rwang Scope：風格詞｜脈絡｜統計｜文化｜治理｜搜尋｜管理者頁面｜回作者頁面｜回月典首頁
 - Governance Scope：治理規則｜脈絡｜統計｜文化｜治理｜搜尋｜管理者頁面｜回治理頁面｜回月典首頁
 
 搜尋包含文字輸入方塊與搜尋按鈕。
@@ -26,7 +26,7 @@ NAV 必須繼承目前 Scope。脈絡、統計、文化、治理與搜尋是共�
 
 ## 管理入口
 
-`manage.lo3rwang.cc` 是最高層統一管理功能入口。它不是一般內容 Scope。NAV 中的「管理者頁面」只出現在 Author 與 Governance Scope；LOC 與 LunaRunes NAV 不增加管理者頁面。LOC 治理頁可以在頁面內容中提供最高管理入口。
+`manage.lo3rwang.cc` 是最高層統一管理功能入口。它不是一般內容 Scope。NAV 中的「管理者頁面」只出現在 lo3rwang 與 Governance Scope；LOC 與 LunaRunes NAV 不增加管理者頁面。LOC 治理頁可以在頁面內容中提供最高管理入口。
 
 ## 本地入口
 
