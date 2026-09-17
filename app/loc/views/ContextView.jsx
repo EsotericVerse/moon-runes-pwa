@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchLocJson, LOC_DATA } from '../data';
 import { useLocalStore } from '../local-store';
 
-const TABS=[['overview','總覽'],['events','事件'],['relations','關係式'],['scenarios','情境'],['graph','符文語意圖']];
+const LOC_TABS=[['overview','總覽'],['events','事件'],['relations','關係式'],['scenarios','情境'],['graph','符文語意圖']];
+const RUNES_TABS=[['overview','總覽'],['graph','符文語意圖']];
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
@@ -31,20 +32,23 @@ function buildRuneGraph(runes){
   return {nodes,edges};
 }
 
-export default function ContextView(){
+export default function ContextView({scope='loc'}){
+  const runesScope=scope==='lunarunes';
+  const tabs=runesScope?RUNES_TABS:LOC_TABS;
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [tab,setTab]=useState('overview');
   const [events,setEvents]=useState(null);const [relations,setRelations]=useState(null);const [scenarios,setScenarios]=useState(null);const [runes,setRunes]=useState(null);
   const [error,setError]=useState('');const [eventPage,setEventPage]=useState(1);const [relationPage,setRelationPage]=useState(1);const [scenarioPage,setScenarioPage]=useState(1);const [scenarioGroup,setScenarioGroup]=useState('');const [scenarioQuery,setScenarioQuery]=useState('');const [graphQuery,setGraphQuery]=useState('');const [graphGroup,setGraphGroup]=useState('');const [graphNodePage,setGraphNodePage]=useState(1);const [graphEdgePage,setGraphEdgePage]=useState(1);
   const pageSize=LIST_PAGE_OPTIONS.includes(Number(uiSettings?.list_page_size))?Number(uiSettings.list_page_size):10;
 
+  useEffect(()=>{if(!tabs.some(([id])=>id===tab))setTab('overview')},[runesScope,tab,tabs]);
   useEffect(()=>{let live=true;const load=(path,setter)=>fetchLocJson(path).then(data=>live&&setter(data)).catch(e=>live&&setError(e.message));setError('');
-    if(tab==='events'&&!events)load(LOC_DATA.CONTEXT_EVENT_SNAPSHOT,setEvents);
-    if(tab==='relations'&&!relations)load(LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY,setRelations);
-    if(tab==='scenarios'&&!scenarios)load(LOC_DATA.CONTEXT_EVENT_REGISTRY,setScenarios);
+    if(!runesScope&&tab==='events'&&!events)load(LOC_DATA.CONTEXT_EVENT_SNAPSHOT,setEvents);
+    if(!runesScope&&tab==='relations'&&!relations)load(LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY,setRelations);
+    if(!runesScope&&tab==='scenarios'&&!scenarios)load(LOC_DATA.CONTEXT_EVENT_REGISTRY,setScenarios);
     if(tab==='graph'&&!runes)load(LOC_DATA.RUNES,setRunes);
     return()=>{live=false};
-  },[tab,events,relations,scenarios,runes]);
+  },[tab,events,relations,scenarios,runes,runesScope]);
   useEffect(()=>{setEventPage(1);setRelationPage(1);setScenarioPage(1);setGraphNodePage(1);setGraphEdgePage(1)},[pageSize]);
 
   const eventRows=useMemo(()=>[...(events?.events||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))),[events]);
@@ -66,20 +70,20 @@ export default function ContextView(){
   const shownGraphEdges=filteredEdges.slice((graphEdgePage-1)*pageSize,graphEdgePage*pageSize);
 
   return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Context</p><h1>脈絡</h1><p className="loc-subtitle">從事件、關係、情境與符文語意，看文字與概念怎麼彼此連起來。</p></header>
-    <nav className="loc-tabs" aria-label="脈絡功能">{TABS.map(([id,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}>{label}</button>)}</nav>
+    <header className="loc-hero"><p className="loc-eyebrow">{runesScope?'LunaRunes Scope · Context':'Context'}</p><h1>脈絡</h1><p className="loc-subtitle">{runesScope?'只從 LunaRunes／月之符文自身的群組、關鍵詞與語意關係建立脈絡，不混入作者或其他 Scope 的事件資料。':'從事件、關係、情境與符文語意，看文字與概念怎麼彼此連起來。'}</p></header>
+    <nav className="loc-tabs" aria-label="脈絡功能">{tabs.map(([id,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}>{label}</button>)}</nav>
     {error&&<div className="loc-status error">{error}</div>}
 
     {tab==='overview'&&<div className="loc-grid two">
-      <section className="loc-card"><p className="loc-eyebrow">Explore</p><h2>從不同角度看脈絡</h2><p>可以從事件、關係、情境或符文語意圖進入；每一種視角都保留自己的資料來源與關係。</p></section>
-      <section className="loc-card"><p className="loc-eyebrow">Authority</p><h2>保留來源與權威</h2><p>不同資料可以互相連結與比較，但不因為被放在同一個脈絡裡，就改變原本的來源與治理權。</p></section>
+      <section className="loc-card"><p className="loc-eyebrow">Explore</p><h2>{runesScope?'符文內部脈絡':'從不同角度看脈絡'}</h2><p>{runesScope?'從 66 符的群組與關鍵詞關係進入，查看同一 Scope 內的語意連結。':'可以從事件、關係、情境或符文語意圖進入；每一種視角都保留自己的資料來源與關係。'}</p></section>
+      <section className="loc-card"><p className="loc-eyebrow">Authority</p><h2>保留來源與權威</h2><p>{runesScope?'本頁只消費 LunaRunes Master Data／Current Registry；Graph 是衍生視圖，不反向改寫符文母資料。':'不同資料可以互相連結與比較，但不因為被放在同一個脈絡裡，就改變原本的來源與治理權。'}</p></section>
     </div>}
 
-    {tab==='events'&&<section className="loc-card"><p className="loc-eyebrow">Event</p><h2>事件</h2>{!events?<p>載入事件…</p>:<><div className="loc-context-list">{shownEvents.map(item=><article className="loc-context-item" key={item.id}><div className="loc-result-meta"><time>{item.date}</time><span>{item.event_type||item.status}</span></div><h3>{item.title}</h3><p>{item.description}</p>{item.state_after&&<p><strong>狀態 →</strong> {item.state_after}</p>}</article>)}</div><Pagination page={eventPage} total={eventRows.length} pageSize={pageSize} onChange={setEventPage}/></>}</section>}
+    {!runesScope&&tab==='events'&&<section className="loc-card"><p className="loc-eyebrow">Event</p><h2>事件</h2>{!events?<p>載入事件…</p>:<><div className="loc-context-list">{shownEvents.map(item=><article className="loc-context-item" key={item.id}><div className="loc-result-meta"><time>{item.date}</time><span>{item.event_type||item.status}</span></div><h3>{item.title}</h3><p>{item.description}</p>{item.state_after&&<p><strong>狀態 →</strong> {item.state_after}</p>}</article>)}</div><Pagination page={eventPage} total={eventRows.length} pageSize={pageSize} onChange={setEventPage}/></>}</section>}
 
-    {tab==='relations'&&<section className="loc-card"><p className="loc-eyebrow">Relation</p><h2>關係式</h2>{!relations?<p>載入關係…</p>:<><div className="loc-context-list">{shownRelations.map(item=><article className="loc-context-item" key={item.relationship_id}><div className="loc-result-meta"><span>類型：{item.relation_type}</span><span>證據：{item.evidence_status}</span></div><h3>{item.source?.title||item.canonical_key}</h3><p>{item.relation_summary}</p><div className="loc-chip-list">{item.targets?.map(target=><span key={`${item.relationship_id}-${target.work_ref}`}>→ {target.title||target.work_ref}</span>)}</div></article>)}</div><Pagination page={relationPage} total={relationRows.length} pageSize={pageSize} onChange={setRelationPage}/></>}</section>}
+    {!runesScope&&tab==='relations'&&<section className="loc-card"><p className="loc-eyebrow">Relation</p><h2>關係式</h2>{!relations?<p>載入關係…</p>:<><div className="loc-context-list">{shownRelations.map(item=><article className="loc-context-item" key={item.relationship_id}><div className="loc-result-meta"><span>類型：{item.relation_type}</span><span>證據：{item.evidence_status}</span></div><h3>{item.source?.title||item.canonical_key}</h3><p>{item.relation_summary}</p><div className="loc-chip-list">{item.targets?.map(target=><span key={`${item.relationship_id}-${target.work_ref}`}>→ {target.title||target.work_ref}</span>)}</div></article>)}</div><Pagination page={relationPage} total={relationRows.length} pageSize={pageSize} onChange={setRelationPage}/></>}</section>}
 
-    {tab==='scenarios'&&<section className="loc-card"><p className="loc-eyebrow">Scenario</p><h2>情境</h2>{!scenarios?<p>載入情境…</p>:<><div className="loc-filter-row"><select value={scenarioGroup} onChange={e=>{setScenarioGroup(e.target.value);setScenarioPage(1)}}><option value="">全部群組</option>{groups.map(group=><option key={group} value={group}>{group}</option>)}</select><input value={scenarioQuery} onChange={e=>{setScenarioQuery(e.target.value);setScenarioPage(1)}} placeholder="搜尋情境"/></div><div className="loc-context-list">{shownScenarios.map(item=><article className="loc-context-item" key={item.event_id}><div className="loc-result-meta"><span>群組：{item.event_group}</span><span>需求：{item.requirement_signature}</span></div><h3>{item.event_id} · {item.title}</h3><p>{item.description}</p></article>)}</div><Pagination page={scenarioPage} total={filteredScenarios.length} pageSize={pageSize} onChange={setScenarioPage}/></>}</section>}
+    {!runesScope&&tab==='scenarios'&&<section className="loc-card"><p className="loc-eyebrow">Scenario</p><h2>情境</h2>{!scenarios?<p>載入情境…</p>:<><div className="loc-filter-row"><select value={scenarioGroup} onChange={e=>{setScenarioGroup(e.target.value);setScenarioPage(1)}}><option value="">全部群組</option>{groups.map(group=><option key={group} value={group}>{group}</option>)}</select><input value={scenarioQuery} onChange={e=>{setScenarioQuery(e.target.value);setScenarioPage(1)}} placeholder="搜尋情境"/></div><div className="loc-context-list">{shownScenarios.map(item=><article className="loc-context-item" key={item.event_id}><div className="loc-result-meta"><span>群組：{item.event_group}</span><span>需求：{item.requirement_signature}</span></div><h3>{item.event_id} · {item.title}</h3><p>{item.description}</p></article>)}</div><Pagination page={scenarioPage} total={filteredScenarios.length} pageSize={pageSize} onChange={setScenarioPage}/></>}</section>}
 
     {tab==='graph'&&<section className="loc-card"><p className="loc-eyebrow">Semantic Graph</p><h2>符文語意圖</h2>{!runes?<p>載入符文資料…</p>:<><p className="loc-subtitle">從群組與關鍵詞關係，看不同符文之間如何形成語意連結。</p><div className="loc-filter-row"><select value={graphGroup} onChange={e=>setGraphGroup(e.target.value)}><option value="">全部群組</option>{runeGroups.map(group=><option key={group} value={group}>{group}</option>)}</select><input value={graphQuery} onChange={e=>setGraphQuery(e.target.value)} placeholder="搜尋符文、群組或關鍵詞"/></div><div className="loc-metrics"><div><small>符文</small><strong>{filteredNodes.length}</strong></div><div><small>關係</small><strong>{filteredEdges.length}</strong></div><div><small>每頁</small><strong>{pageSize}</strong></div></div><div className="loc-grid two"><div><h3>符文</h3><div className="loc-context-list">{shownGraphNodes.map(node=><article className="loc-context-item compact" key={node.id}><b>{node.name}</b><span>{node.group}</span><small>{node.keywords.join(' · ')}</small></article>)}</div><Pagination page={graphNodePage} total={filteredNodes.length} pageSize={pageSize} onChange={setGraphNodePage}/></div><div><h3>關係</h3><div className="loc-context-list">{shownGraphEdges.map((edge,index)=><article className="loc-context-item compact" key={`${edge.source}-${edge.target}-${edge.label}-${index}`}><b>{edge.source} ↔ {edge.target}</b><small>{edge.label}</small></article>)}</div><Pagination page={graphEdgePage} total={filteredEdges.length} pageSize={pageSize} onChange={setGraphEdgePage}/></div></div></>}</section>}
   </section>;
