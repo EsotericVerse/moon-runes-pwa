@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "id": "history_policy_current_authority",
+  "record_type": "history_policy_event",
+  "status": "historical_reference",
+  "entity_id": "loc_data_governance",
+  "occurred_at": null,
+  "recorded_at": "2026-09-17T12:04:03+08:00",
+  "summary": "History is preserved as evidence and reference. Current Authority determines present definitions and may reinterpret historical context without rewriting historical facts.",
+  "authority_rule": "History cannot define, override or become the sole authority for Current definitions.",
+  "temporal_rule": "Time is a contextual coordinate. Interpretations may oscillate as context changes, while the fact that an event occurred remains immutable.",
+  "operational_boundary": "Retired aliases, fallback mappings, authority mappings and classification rules must not be stored in Current operational registries. Historical change is recorded as an event, not as a reusable Current alias map."
+}
