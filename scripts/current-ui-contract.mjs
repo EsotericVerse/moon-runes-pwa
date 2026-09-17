@@ -10,7 +10,9 @@ const sources={
   runeGovernance:fs.readFileSync('app/runes/governance/page.jsx','utf8'),
   personal:fs.readFileSync('app/lo3rwang/page.jsx','utf8'),
   terminology:fs.readFileSync('data/json/registries/LOC_TERMINOLOGY_CANON.json','utf8'),
+  groups:fs.readFileSync('data/json/core/runes66groups.json','utf8'),
   dataGovernance:fs.readFileSync('data/json/registries/LOC_DATA_GOVERNANCE.json','utf8'),
+  pgsql:fs.readFileSync('data/json/registries/LOC_PGSQL_MIGRATION_CONTRACT.json','utf8'),
   navCanon:fs.readFileSync('docs/NAV_GOVERNANCE.md','utf8')
 };
 
@@ -23,11 +25,13 @@ const required=[
   ...['lo3rwang','文字工匠 · Wordsmith','校對者 · Calibrator','語言治理架構者 · Language Governance Architect','鑑古知今，求同存異'].map(token=>[sources.personal,token]),
   [sources.terminology,'data/json/core/runes66groups.json'],
   [sources.terminology,'第七組固定為秩序（Order）'],
-  [sources.terminology,'定序僅可作 Historical alias'],
   [sources.terminology,'"scope_id": "lo3rwang"'],
   [sources.terminology,'"canonical_host": "lo3rwang.cc"'],
+  [sources.groups,'"group_zh":"秩序"'],
   [sources.dataGovernance,'Scope Model × Feature Model → Page Composition'],
-  [sources.dataGovernance,'LOC1–8 are Historical/provenance identifiers only'],
+  [sources.dataGovernance,'UUIDv7'],
+  [sources.pgsql,'"format": "UUIDv7"'],
+  [sources.pgsql,'"persistent_mapping_required": true'],
   [sources.navCanon,'每個介面只有一條正式導覽列'],
   [sources.navCanon,'lo3rwang.cc'],
   [sources.navCanon,'manage.lo3rwang.cc']
@@ -35,8 +39,13 @@ const required=[
 
 const forbiddenHome=["name:'Methodology'","name:'Evolution'",'Governance｜治理架構層','Governance Architecture'];
 const forbiddenNav=['author.lo3rwang.cc','whoami.lo3rwang.cc','lo3rwang.lo3rwang.cc'];
+const forbiddenCurrent=[
+  [sources.terminology,'定序'],
+  [sources.groups,'定序'],
+  [sources.groups,'historical_aliases']
+];
 const missing=required.filter(([source,token])=>!source.includes(token)).map(([,token])=>token);
-const forbidden=[...forbiddenHome.filter(token=>sources.home.includes(token)),...forbiddenNav.filter(token=>sources.nav.includes(token))];
+const forbidden=[...forbiddenHome.filter(token=>sources.home.includes(token)),...forbiddenNav.filter(token=>sources.nav.includes(token)),...forbiddenCurrent.filter(([source,token])=>source.includes(token)).map(([,token])=>token)];
 if(missing.length||forbidden.length){
   if(missing.length) console.error('Missing Current UI contract: '+missing.join(', '));
   if(forbidden.length) console.error('Forbidden stale UI contract: '+forbidden.join(', '));

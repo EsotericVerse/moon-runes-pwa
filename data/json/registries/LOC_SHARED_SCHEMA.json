@@ -1,84 +1,71 @@
 {
-  "schema_version": "0.4",
+  "schema_version": "0.5",
   "schema": "LOC_SHARED_SCHEMA",
   "status": "current",
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
   "terminology_authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
-  "purpose": "Define shared identifiers, Scope/Feature composition, references, provenance, rights and lifecycle without using historical LOC1–8 identifiers as Current ownership or architecture keys.",
+  "identity_migration_authority": "data/json/registries/LOC_PGSQL_MIGRATION_CONTRACT.json",
+  "purpose": "Define portable Current entity identity, Scope/Feature composition, references, provenance, rights and temporal lifecycle for JSON today and PostgreSQL later.",
   "current_architecture": "Scope Model × Feature Model → Page Composition",
   "required_common_fields": {
+    "id": {
+      "type": "uuid",
+      "format": "UUIDv7",
+      "immutable": true,
+      "description": "Global immutable entity identity. It is generated once, persisted and never derived from array index, row number, batch order, timestamp alone, mutable names or filenames."
+    },
     "system_id": {
       "type": "string",
       "description": "Canonical language-system identifier. Current system instance: lo3rwang."
     },
     "scope_id": {
       "type": "string",
-      "description": "Governed data and authority boundary for this record. Scope identifiers are instance-specific and mutable under Current Governance; this schema does not freeze a universal scope list."
+      "description": "Governed data and authority boundary for this record."
     }
   },
   "optional_common_fields": {
+    "key": {
+      "type": ["string", "null"],
+      "description": "Human-readable business key. It is not the primary id; domain-specific uniqueness is enforced separately."
+    },
     "feature_ids": {
       "type": "array[string]",
-      "description": "Reusable capabilities that consume the record's Scope without taking ownership of it. Feature assignment does not redefine Scope authority."
+      "description": "Reusable capabilities that consume the record's Scope without taking ownership of it."
     },
     "page_composition_refs": {
       "type": "array[string]",
-      "description": "Optional UI/page projections that compose this Scope with Features. Page composition is a consumer projection, not Canon authority."
+      "description": "Optional UI/page projections; never governance authority."
     },
     "era_id": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "description": "Reference to the Current ERA registry when the record has a governed temporal classification."
+      "type": ["string", "null"],
+      "description": "Business reference to the governed ERA registry when applicable."
     },
     "work_id": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "description": "Stable cross-media work identifier when the record belongs to a work."
+      "type": ["string", "null"],
+      "description": "Governed business identifier for a work. It is separate from immutable id."
     },
     "media_id": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "description": "Stable media-asset identifier when the record references a media asset."
+      "type": ["string", "null"],
+      "description": "Governed business identifier for a media asset. It is separate from immutable id."
     },
     "source_refs": {
       "type": "array",
-      "item_shape": {
-        "source_type": "string",
-        "source_id": "string",
-        "note": "string|null"
-      },
-      "description": "References to source files, events, works, media, URLs, registries or other evidence without duplicating their canonical content."
+      "item_shape": {"source_type":"string","source_id":"string","note":"string|null"},
+      "description": "Evidence references without duplicating canonical content."
     },
     "provenance": {
       "type": "object",
       "fields": {
         "primary_author": "string|null",
-        "collaboration_status": {
-          "type": "string",
-          "enum": [
-            "solo",
-            "collaborative",
-            "shared",
-            "derivative",
-            "mixed",
-            "unknown"
-          ]
-        },
+        "collaboration_status": "string|null",
         "contributors": "array",
         "shared_with": "array",
         "influences": "array",
         "source_references": "array",
         "tools_used": "array",
-        "historical_loc_ids": "array[string]",
         "provenance_note": "string|null"
       },
-      "description": "Evidence lineage. Historical LOC1–8 identifiers may be preserved here only as provenance and never become Current ownership or architecture."
+      "description": "Evidence lineage only. Historical definitions live in historical/event records and do not become Current aliases or authority mappings."
     },
     "rights": {
       "type": "object",
@@ -95,97 +82,56 @@
     "lifecycle": {
       "type": "object",
       "fields": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "draft",
-            "proposed",
-            "under_review",
-            "current",
-            "active",
-            "released",
-            "disputed",
-            "restricted",
-            "amended",
-            "superseded",
-            "withdrawn",
-            "rejected",
-            "archived",
-            "deprecated",
-            "tombstoned"
-          ]
-        },
-        "created_at": "string|null",
-        "updated_at": "string|null"
-      }
+        "status": "string",
+        "created_at": "iso8601-tz|null",
+        "updated_at": "iso8601-tz|null",
+        "effective_at": "iso8601-tz|null"
+      },
+      "timestamp_rule": "Do not fabricate legacy timestamps. Unknown values remain null until supported by provenance."
+    },
+    "historical_event": {
+      "type": "object",
+      "fields": {
+        "event_id": "uuidv7",
+        "entity_id": "uuid",
+        "occurred_at": "iso8601-tz|null",
+        "recorded_at": "iso8601-tz",
+        "summary": "string",
+        "evidence_refs": "array"
+      },
+      "description": "History references an immutable entity id but never overrides the Current entity definition."
     },
     "content_type": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "registry": "data/json/registries/LOC_CONTENT_TYPE_REGISTRY.json",
-      "description": "Shared routing/display type describing what the record is, independent from Scope authority and Feature composition."
-    },
-    "entity_id": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "description": "Optional stable entity identifier when a record is not primarily a work/media/event."
+      "type": ["string", "null"],
+      "registry": "data/json/registries/LOC_CONTENT_TYPE_REGISTRY.json"
     },
     "governance": {
       "type": "object",
       "fields": {
-        "governance_id": "string|null",
+        "governance_id": "uuid|null",
         "review_status": "string|null",
         "reason": "string|null",
         "evidence_refs": "array",
-        "previous_version": "string|null",
-        "replacement_id": "string|null"
-      },
-      "description": "Optional shared governance envelope. Domain records may reference a separate governance-event log rather than embedding full history."
-    },
-    "domain": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "deprecated": true,
-      "replacement": "scope_id + feature_ids",
-      "description": "Legacy semantic-domain compatibility field. It may describe old routing but cannot define Current Scope, Feature ownership or Canon authority."
-    },
-    "related_domains": {
-      "type": "array[string]",
-      "deprecated": true,
-      "replacement": "feature_ids",
-      "description": "Legacy cross-domain routing compatibility only."
-    },
-    "primary_loc": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "deprecated": true,
-      "replacement": "provenance.historical_loc_ids",
-      "description": "Historical compatibility only. A LOC1–8 value here is provenance and must never be interpreted as Current ownership."
-    },
-    "related_scopes": {
-      "type": "array[string]",
-      "deprecated": true,
-      "replacement": "provenance.historical_loc_ids",
-      "description": "Historical compatibility only. Do not add to new Current records."
+        "previous_version_id": "uuid|null",
+        "replacement_id": "uuid|null"
+      }
     }
+  },
+  "database_contract": {
+    "primary_key": "id uuid PRIMARY KEY",
+    "foreign_key_rule": "Use immutable *_id UUID references.",
+    "business_key_rule": "Use separate UNIQUE constraints such as unique(scope_id,key) or unique(scope_id,work_id).",
+    "forbidden_identity_sources": ["array index","row number","batch sequence","file order","timestamp alone"],
+    "timestamp_type": "timestamptz"
   },
   "governance_rules": [
     "Current architecture is Scope Model × Feature Model → Page Composition.",
-    "LOC1–8 may appear only as explicitly Historical/provenance identifiers or compatibility evidence; they cannot define Current architecture, Scope, Feature ownership, navigation taxonomy or Canon authority.",
-    "New Current records use scope_id and feature_ids. Scope authority and Feature capability are separate concerns.",
-    "Scopes are governed, mutable and instance-specific; no permanent universal scope list is defined by this schema.",
-    "Features consume a Scope without taking ownership of it.",
+    "Every new Current entity receives one immutable UUIDv7 id; reruns reuse persisted ids.",
+    "Array index, row number, batch sequence, file order and timestamp alone are forbidden as permanent entity identity.",
+    "Natural-key collisions stop migration for explicit resolution; they are never silently overwritten or renumbered.",
+    "History is evidence/reference only. Current Authority interprets History, not the reverse.",
     "Generated data, Search, RAG and UI are projections/consumers and never create governance authority.",
-    "Original evidence and current interpretation are separate layers; later interpretation must not silently rewrite historical source records.",
     "NAV is a Frozen Interface and is outside this schema's write authority."
   ],
-  "updated_at": "2026-09-17"
+  "updated_at": "2026-09-17T12:14:00+08:00"
 }

@@ -1,9 +1,9 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "2.1",
   "name": "LunaRunes Group Classification",
   "status": "current",
   "authority_domain": "LunaRunes",
-  "rule": "This file is the Current authority for LunaRunes group names and membership. Historical aliases must not override these values.",
+  "rule": "This file is the Current authority for LunaRunes group names and membership. It contains Current values only; historical naming events are stored separately and never act as aliases.",
   "groups": [
     {"id":"soul","group_zh":"靈魂","group_en":"Soul","runes":[{"id":1,"zh":"靈","en":"Spirit"},{"id":2,"zh":"魂","en":"Soul"},{"id":3,"zh":"彩","en":"Spectrum"},{"id":4,"zh":"憶","en":"Memory"},{"id":5,"zh":"界","en":"Boundary"},{"id":6,"zh":"域","en":"Domain"},{"id":7,"zh":"鏡","en":"Mirror"},{"id":8,"zh":"核","en":"Core"}]},
     {"id":"link","group_zh":"連結","group_en":"Link","runes":[{"id":9,"zh":"向","en":"Path"},{"id":10,"zh":"斷","en":"Sever"},{"id":11,"zh":"封","en":"Seal"},{"id":12,"zh":"鍊","en":"Chain"},{"id":13,"zh":"啟","en":"Awaken"},{"id":14,"zh":"分","en":"Separation"},{"id":15,"zh":"悟","en":"Insight"},{"id":16,"zh":"誤","en":"Error"}]},
@@ -14,9 +14,5 @@
     {"id":"order","group_zh":"秩序","group_en":"Order","runes":[{"id":49,"zh":"日","en":"Sun"},{"id":50,"zh":"月","en":"Moon"},{"id":51,"zh":"星","en":"Star"},{"id":52,"zh":"辰","en":"Phase"},{"id":53,"zh":"明","en":"Clarity"},{"id":54,"zh":"時","en":"Time"},{"id":55,"zh":"空","en":"Space"},{"id":56,"zh":"因","en":"Reason"}]},
     {"id":"disorder","group_zh":"無序","group_en":"Disorder","runes":[{"id":57,"zh":"福","en":"Blessing"},{"id":58,"zh":"禍","en":"Calamity"},{"id":59,"zh":"無","en":"Blank"},{"id":60,"zh":"夢","en":"Dream"},{"id":61,"zh":"幻","en":"Illusion"},{"id":62,"zh":"緣","en":"Karma"},{"id":63,"zh":"虛","en":"Void"},{"id":64,"zh":"果","en":"Result"}]},
     {"id":"system_special","group_zh":"系統特別","group_en":"System Special","runes":[{"id":0,"zh":"德","en":"Virtue","drawable":false},{"id":65,"zh":"玄","en":"Chaos"},{"id":66,"zh":"命","en":"Fate"}]}
-  ],
-  "historical_aliases": {
-    "定序": "Historical only; Current is 秩序",
-    "特殊": "Historical shorthand; Current ninth group is 系統特別"
-  }
+  ]
 }

@@ -1,8 +1,8 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "registry": "LOC_DATA_GOVERNANCE",
   "status": "current",
-  "updated_at": "2026-09-16",
+  "updated_at": "2026-09-17T12:14:00+08:00",
   "identity": {
     "loc": "LOC／月典 = Language Module Framework／語言系統模組框架",
     "lunarunes": "LunaRunes／月之符文 = Symbolic Language Module／符號式語言模組"
@@ -14,19 +14,7 @@
     "page_composition": "A UI page composes a Scope with Features; navigation is a frozen interface and is not the Canon source.",
     "numbered_loc_boundary": "LOC1–8 are Historical/provenance identifiers only. They do not define Current architecture, scope, module ownership, navigation taxonomy or Canon authority."
   },
-  "authority_chain": [
-    "LOC_DATA_GOVERNANCE",
-    "LOC_TERMINOLOGY_CANON",
-    "Current domain registries",
-    "generated projections",
-    "Search/RAG/UI consumers"
-  ],
-  "authority_model": [
-    "scope",
-    "authoritative_source",
-    "current_status",
-    "conflict_resolution"
-  ],
+  "authority_chain": ["LOC_DATA_GOVERNANCE","LOC_TERMINOLOGY_CANON","Current domain registries","generated projections","Search/RAG/UI consumers"],
   "principles": {
     "objective_neutral": true,
     "explainable": true,
@@ -39,16 +27,31 @@
     "conflicts_are_not_guessed": true,
     "generated_data_has_governance_authority": false
   },
+  "identity_governance": {
+    "primary_id": "UUIDv7",
+    "immutable": true,
+    "generate_once": true,
+    "persist_mapping_on_backfill": true,
+    "forbidden_sources": ["array index","row number","batch ordinal","file order","timestamp alone","mutable name","slug","filename"],
+    "collision_policy": "Stop migration and require explicit resolution. Never silently overwrite, merge, renumber or choose the first duplicate.",
+    "business_key_policy": "Business identifiers remain separate and receive domain-specific UNIQUE constraints.",
+    "postgresql_target": "id uuid primary key"
+  },
+  "temporal_governance": {
+    "current_entity_fields": ["created_at","updated_at","effective_at"],
+    "history_event_fields": ["occurred_at","recorded_at"],
+    "postgresql_target": "timestamptz",
+    "unknown_time_rule": "Unknown historical times remain null; never invent timestamps."
+  },
+  "history_authority_direction": {
+    "current_interprets_history": true,
+    "history_governs_current": false,
+    "history_role": "evidence_reference_only",
+    "rule": "History preserves what happened. Current Canon determines the present interpretation and authority. Historical records may be consulted, compared and recalibrated but never become the sole Current definition."
+  },
   "scope_governance": {
     "mutable": true,
-    "operations": [
-      "create",
-      "rename",
-      "relate",
-      "split",
-      "merge",
-      "remove"
-    ],
+    "operations": ["create","rename","relate","split","merge","remove"],
     "independent_instance_authority": true,
     "adoption_grants_upstream_login": false,
     "aggregation_changes_source_ownership": false
@@ -56,53 +59,14 @@
   "search_statistics": {
     "owned_by_scope": true,
     "integrated_results_require_review": true,
-    "processing": [
-      "initial_full_analysis",
-      "skip_unchanged",
-      "update_diff",
-      "recompute_marked_records_only"
-    ],
+    "processing": ["initial_full_analysis","skip_unchanged","update_diff","recompute_marked_records_only"],
     "leaderboard": "Persist Current counts and apply deltas; do not repeat full-text scans for every display."
   },
-  "era": {
-    "owned_and_governed_by_scope": true,
-    "cross_scope_merge_by_default": false,
-    "historical_selection_requires_audit": true
-  },
-  "roles": [
-    "author",
-    "data_subject",
-    "scope_manager",
-    "system_administrator"
-  ],
+  "era": {"owned_and_governed_by_scope":true,"cross_scope_merge_by_default":false,"historical_selection_requires_audit":true},
+  "roles": ["author","data_subject","scope_manager","system_administrator"],
   "governance_control_plane": {
-    "lifecycle": [
-      "proposed",
-      "under_review",
-      "active",
-      "disputed",
-      "restricted",
-      "amended",
-      "superseded",
-      "withdrawn",
-      "rejected",
-      "tombstoned"
-    ],
-    "required_audit_fields": [
-      "governance_id",
-      "scope_id",
-      "object_type",
-      "object_id",
-      "actor_role",
-      "action",
-      "before",
-      "after",
-      "reason",
-      "evidence_refs",
-      "submitted_at",
-      "review_status",
-      "replacement_id"
-    ],
+    "lifecycle": ["proposed","under_review","active","disputed","restricted","amended","superseded","withdrawn","rejected","tombstoned"],
+    "required_audit_fields": ["governance_id","scope_id","object_type","object_id","actor_role","action","before","after","reason","evidence_refs","submitted_at","review_status","replacement_id"],
     "delete_strategy": "governed_tombstone_by_default"
   },
   "copyleft": {
@@ -111,6 +75,6 @@
     "paid_parsing_and_inference_allowed": true,
     "standard_license_selected": false
   },
-  "historical_boundary": "LOC1–8 and retired numbered navigation layers may appear only as explicitly Historical/provenance identifiers; they cannot govern Current architecture or ownership.",
+  "historical_boundary": "Historical material is preserved as evidence/provenance but cannot supply Current aliases, fallbacks, authority maps, classifications or ownership.",
   "navigation_boundary": "NAV is a Frozen Interface. It may change only through an explicit user-requested NAV change; Canon, generators and features must adapt to the existing NAV rather than rewriting it."
 }

@@ -1,35 +1,63 @@
 {
-  "schema_version": "1.0",
-  "id": "loc_pgsql_migration_contract",
+  "schema_version": "1.1",
+  "id": "01a0ad88-f870-77ad-ae4b-6a42e2be3b9a",
   "registry": "LOC_PGSQL_MIGRATION_CONTRACT",
   "status": "current",
-  "created_at": "2026-09-17T00:00:00+08:00",
-  "updated_at": "2026-09-17T00:00:00+08:00",
-  "effective_at": "2026-09-17T00:00:00+08:00",
+  "created_at": "2026-09-17T12:03:50+08:00",
+  "updated_at": "2026-09-17T12:14:00+08:00",
+  "effective_at": "2026-09-17T12:14:00+08:00",
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
-  "purpose": "Portable identity and temporal contract for future PostgreSQL migration with minimal maintenance.",
+  "purpose": "Portable identity and temporal contract for future PostgreSQL migration with minimal maintenance and collision-safe backfill.",
   "identity_contract": {
-    "id": {
+    "primary_id": {
+      "format": "UUIDv7",
       "required_for_new_current_entities": true,
       "immutable": true,
+      "globally_unique": true,
       "semantic_payload_forbidden": true,
-      "postgresql_target": "primary key",
-      "rule": "Names, labels, slugs, Scope assignments and classifications may change; id does not change."
+      "postgresql_target": "uuid primary key",
+      "generation_rule": "Generate UUIDv7 once with a standards-compliant generator and persist it. Never regenerate an existing entity id on rerun."
+    },
+    "forbidden_primary_id_sources": [
+      "array index",
+      "row number",
+      "batch ordinal",
+      "file order",
+      "auto-increment sequence as cross-system identity",
+      "timestamp alone",
+      "mutable name",
+      "slug",
+      "filename"
+    ],
+    "business_keys": {
+      "rule": "Human-readable identifiers remain separate from id and receive explicit uniqueness constraints where appropriate.",
+      "examples": [
+        "unique(scope_id, key)",
+        "unique(scope_id, work_id)",
+        "unique(scope_id, media_id)"
+      ]
     },
     "foreign_keys": {
-      "rule": "Relationships should reference stable *_id fields instead of joining by mutable names, labels or filenames.",
-      "examples": ["entity_id", "scope_id", "work_id", "media_id", "event_id"]
+      "rule": "Relationships reference immutable UUID ids through *_id fields; mutable names, labels and filenames are not relational identity."
     }
   },
+  "backfill_contract": {
+    "generate_once": true,
+    "persistent_mapping_required": true,
+    "mapping_rule": "Persist legacy natural key -> UUIDv7 before writing migrated rows. A rerun reuses that mapping instead of generating a new UUID.",
+    "collision_rule": "If a proposed natural key identifies more than one source record, stop the migration and require explicit resolution. Never silently overwrite, merge, renumber or choose the first row.",
+    "missing_key_rule": "Records without a trustworthy natural key require an explicit migration decision; array position must not be substituted.",
+    "idempotence_rule": "The same migration input plus persisted mapping must resolve to the same entity ids on every rerun."
+  },
   "current_entity_time": {
-    "created_at": "first creation time; immutable once known",
+    "created_at": "first known creation time; immutable once established",
     "updated_at": "last material Current-record update time",
     "effective_at": "time from which the Current definition is authoritative"
   },
   "historical_event_time": {
     "occurred_at": "time the historical event actually occurred, when known",
     "recorded_at": "time the event/evidence was captured by the system",
-    "entity_id": "stable reference to the entity whose history is being described"
+    "entity_id": "immutable UUID reference to the Current entity whose history is being described"
   },
   "timestamp_format": {
     "json": "ISO-8601 with timezone offset",
@@ -37,7 +65,7 @@
     "unknown_time_rule": "Use null when an exact time is unknown. Never invent a timestamp for backfill."
   },
   "authority_direction": {
-    "rule": "Current Authority interprets History; History never defines Current Authority.",
+    "rule": "Current Authority interprets History; History is evidence/reference and never defines Current Authority.",
     "history_role": "evidence_reference_only",
     "forbidden_in_current_operational_data": [
       "retired alias maps",
@@ -46,10 +74,10 @@
       "retired classification rules"
     ]
   },
-  "migration_strategy": {
-    "phase_1": "Enforce the contract for new and modified Current entities.",
-    "phase_2": "Backfill stable ids on existing Current entities without changing semantic meaning.",
-    "phase_3": "Backfill timestamps only where provenance supports them; otherwise keep null.",
-    "phase_4": "Map JSON ids to PostgreSQL PK/FK and timestamps to timestamptz."
+  "postgresql_index_policy": {
+    "primary": "PRIMARY KEY (id)",
+    "identity_type": "uuid",
+    "business_uniqueness": "Use separate UNIQUE constraints for governed natural keys.",
+    "temporal_indexes": "Add ordinary indexes to effective_at / occurred_at only when query plans require them; timestamps never become entity identity."
   }
 }
