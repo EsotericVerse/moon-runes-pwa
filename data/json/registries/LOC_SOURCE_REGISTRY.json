@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC_SOURCE_REGISTRY",
+  "status": "current",
+  "default_policy": {"visibility":"private","retention":"explicit","search_indexed":false,"statistics_included":false,"semantic_scan_included":false},
+  "source_types": ["manual","twitter","facebook","threads","suno","google_drive","external"],
+  "records": [],
+  "fields": ["source_id","scope","source_type","label","origin_uri","visibility","retention","sync_state","import_started_at","import_ended_at","search_indexed","statistics_included","semantic_scan_included","notes"],
+  "governance": ["Temporary ingestion does not imply retention, indexing, authorship, or publication.","Private sources must never project into public views unless explicitly promoted."]
+}

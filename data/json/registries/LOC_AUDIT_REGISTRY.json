@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC_AUDIT_REGISTRY",
+  "status": "current",
+  "fields": ["event_id","scope","entity_type","entity_id","action","actor_id","source","reason","before","after","occurred_at","supersedes_event_id","rollback_of_event_id"],
+  "actions": ["create","update","freeze","unfreeze","override","publish","unpublish","delete","restore","rollback","supersede"],
+  "records": [],
+  "governance": ["Audit is an Admin-level concern.","Audit records describe changes; they do not become content ownership or authorship evidence."]
+}

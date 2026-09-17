@@ -11,40 +11,42 @@
   const NIGHT_START_HOUR=18;
   const fileName=()=>location.pathname.split('/').pop()||'index.html';
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const HOSTS={loc:'loc.lo3rwang.cc',runes:'lrunes.lo3rwang.cc',lo3rwang:'lo3rwang.lo3rwang.cc',admin:'admin.lo3rwang.cc'};
 
   function scope(){
     const host=location.hostname;
     const path=location.pathname;
-    if(host==='lrunes.lo3rwang.cc'||path==='/runes'||path.startsWith('/runes/')||fileName()==='runes.html') return 'runes';
-    if(host==='lo3rwang.cc'||fileName()==='lo3rwang.html') return 'lo3rwang';
-    if(host==='admin.lo3rwang.cc'||path==='/admin'||path.startsWith('/admin/')||path==='/management'||path.startsWith('/management/')) return 'admin';
+    if(host===HOSTS.runes) return 'runes';
+    if(host===HOSTS.lo3rwang) return 'lo3rwang';
+    if(host===HOSTS.admin||path==='/admin'||path.startsWith('/admin/')||path==='/management'||path.startsWith('/management/')) return 'admin';
+    if(path==='/runes'||path.startsWith('/runes/')||fileName()==='runes.html') return 'runes';
+    if(fileName()==='lo3rwang.html') return 'lo3rwang';
     return 'loc';
   }
   function scopedRoute(route){
     const current=scope();
-    if(current==='runes') return location.hostname==='lrunes.lo3rwang.cc'?route:`/runes${route}`;
-    return route;
+    return `https://${HOSTS[current]}${route}`;
   }
   function navItems(){
     const current=scope();
     if(current==='runes') return [
-      {label:'語彙',href:location.hostname==='lrunes.lo3rwang.cc'?'/':'/runes'},
+      {label:'語彙',href:'https://lrunes.lo3rwang.cc/'},
       {label:'脈絡',href:scopedRoute('/context')},{label:'統計',href:scopedRoute('/statics')},{label:'文化',href:scopedRoute('/evolution')},{label:'治理',href:scopedRoute('/governance')},
-      {label:'lo3rwang',href:'https://lo3rwang.cc'},
-      {label:'回月之符文首頁',href:location.hostname==='lrunes.lo3rwang.cc'?'/':'/runes',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
+      {label:'lo3rwang',href:'https://lo3rwang.lo3rwang.cc'},
+      {label:'回月之符文首頁',href:'https://lrunes.lo3rwang.cc/',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
     ];
     if(current==='lo3rwang') return [
-      {label:'風格詞',href:'/'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/evolution'},{label:'治理',href:'/governance'},
+      {label:'風格詞',href:'https://lo3rwang.lo3rwang.cc/'},{label:'脈絡',href:scopedRoute('/context')},{label:'統計',href:scopedRoute('/statics')},{label:'文化',href:scopedRoute('/evolution')},{label:'治理',href:scopedRoute('/governance')},
       {label:'管理者頁面',href:'https://admin.lo3rwang.cc'},
-      {label:'回 lo3rwang',href:'/',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
+      {label:'回 lo3rwang',href:'https://lo3rwang.lo3rwang.cc/',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
     ];
     if(current==='admin') return [
-      {label:'Admin',href:'/'},{label:'Routes',href:'/routes'},
+      {label:'Admin',href:'https://admin.lo3rwang.cc/'},{label:'Routes',href:'https://admin.lo3rwang.cc/routes'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
     ];
     return [
-      {label:'月之符文',href:'/runes'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/evolution'},{label:'治理',href:'/governance'},
-      {label:'lo3rwang',href:'https://lo3rwang.cc'},{label:'回月典首頁',href:'/',home:true}
+      {label:'月之符文',href:'https://lrunes.lo3rwang.cc/'},{label:'脈絡',href:scopedRoute('/context')},{label:'統計',href:scopedRoute('/statics')},{label:'文化',href:scopedRoute('/evolution')},{label:'治理',href:scopedRoute('/governance')},
+      {label:'lo3rwang',href:'https://lo3rwang.lo3rwang.cc'},{label:'回月典首頁',href:'https://loc.lo3rwang.cc/',home:true}
     ];
   }
   function renderNav(){

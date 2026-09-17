@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC_CONTENT_REGISTRY",
+  "status": "current",
+  "records": [],
+  "fields": ["content_id","scope","content_type","title","author_actor_ids","contributor_actor_ids","source_ids","publisher_actor_id","steward_actor_id","visibility","projection_level","status","created_at","updated_at"],
+  "governance": ["Content authorship must be explicit.","Publisher, steward, author, contributor, and source are distinct relationships."]
+}

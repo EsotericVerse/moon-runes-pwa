@@ -20,6 +20,25 @@ NAV 變更必須同時維持：
 - 頁內快捷選單、返回連結與功能入口仍不是第二條 NAV。
 - 功能級導覽一律使用正式階層 route；不得用 `#hash` 承擔頁面結構、功能切換或管理入口。
 
+## 網域優先
+
+Current URL identity 固定採 **網域優先，目錄其次，頁面最後**：
+
+`Domain Scope → Directory Hierarchy → Page Composition`
+
+專屬 Scope domain 存在時，NAV、canonical、分享連結與正式功能入口一律優先使用專屬 domain；主站目錄只保留 compatibility / fallback，不得反過來成為主要識別。
+
+Current canonical hosts：
+
+- LOC：`loc.lo3rwang.cc`
+- LunaRunes：`lrunes.lo3rwang.cc`
+- lo3rwang：`lo3rwang.lo3rwang.cc`
+- Admin：`admin.lo3rwang.cc`
+
+`lo3rwang.cc` 是目前 Base Domain，不等於 lo3rwang Author Scope。未來 Base Domain 可更換，而 Scope label 與頁面樹不需重構。
+
+`author.lo3rwang.cc` 不存在於 Current 命名。平台治理者、網站維護者與內容作者必須分離，不能以 host 命名暗示整站文章皆屬單一作者。
+
 ## Scope 規則
 
 NAV 必須繼承目前 Scope。脈絡、統計、文化、治理與搜尋是共用功能名稱，但資料與結果永遠由目前 Scope 決定；不得因共用 route 名稱跨到其他 Scope。
@@ -34,11 +53,17 @@ NAV 必須繼承目前 Scope。脈絡、統計、文化、治理與搜尋是共�
 
 ## LunaRunes 雙入口
 
-`lrunes.lo3rwang.cc/{route}` 與 `loc.lo3rwang.cc/runes/{route}` 是同一 LunaRunes Scope 的兩種入口。兩者的脈絡、統計、文化、治理與搜尋必須保持同一 Scope；`loc.lo3rwang.cc/{route}` 則屬 LOC 統合 Scope。
+`lrunes.lo3rwang.cc/{route}` 與 `loc.lo3rwang.cc/runes/{route}` 可指向同一 LunaRunes Scope，但兩者不具同等 canonical 優先權。
+
+- `lrunes.lo3rwang.cc/{route}`：Current canonical / public primary。
+- `loc.lo3rwang.cc/runes/{route}`：compatibility / fallback route。
+- `loc.lo3rwang.cc/{route}`：LOC 統合 Scope。
+
+即使使用者從 `/runes/...` 入口進入，NAV 與正式跨頁連結仍應優先投影至 `lrunes.lo3rwang.cc/...`。
 
 ## lo3rwang 個人入口
 
-`lo3rwang.cc` 是 lo3rwang 個人 Scope 的 canonical host。`author`、`whoami` 與衍生子網域不得作為 Current Scope ID、NAV identity 或 hostname。Current 個人治理入口為 `/lo3rwang/governance`。
+`lo3rwang.lo3rwang.cc` 是 lo3rwang 個人 Scope 的 canonical host。`lo3rwang.cc` 僅作 Base Domain／相容入口，不再作 Author Scope canonical identity。`author`、`whoami` 與其他衍生名稱不得作為 Current Author Scope ID 或 hostname。
 
 ## Admin 最高管理入口
 

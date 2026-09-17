@@ -1,8 +1,11 @@
 import fs from 'node:fs';
 const map=JSON.parse(fs.readFileSync('scripts/nav-route-map.json','utf8'));
+if(map.priorityRule?.join('>')!=='domain>directory>page')throw new Error('NAV priority must be domain > directory > page');
 if(map.scopes.loc.host!=='loc.lo3rwang.cc')throw new Error('LOC host drifted');
 if(!map.scopes.runes.hosts.includes('lrunes.lo3rwang.cc')||!map.scopes.runes.hosts.includes('loc.lo3rwang.cc/runes'))throw new Error('LunaRunes dual entry drifted');
-if(map.scopes.lo3rwang.host!=='lo3rwang.cc')throw new Error('lo3rwang host drifted');
+if(map.scopes.runes.hosts[0]!=='lrunes.lo3rwang.cc')throw new Error('LunaRunes canonical domain lost priority');
+if(map.scopes.lo3rwang.host!=='lo3rwang.lo3rwang.cc')throw new Error('lo3rwang canonical host drifted');
+if(map.scopes.lo3rwang.host==='author.lo3rwang.cc')throw new Error('Forbidden author host returned');
 if(map.scopes.admin.host!=='admin.lo3rwang.cc')throw new Error('Admin host drifted');
 if(map.scopes.governance)throw new Error('Retired governance management scope returned');
-console.log('NAV host/Scope boundaries verified.');
+console.log('NAV domain-first host/Scope boundaries verified.');

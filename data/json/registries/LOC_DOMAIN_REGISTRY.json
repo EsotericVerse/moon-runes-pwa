@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC_DOMAIN_REGISTRY",
+  "status": "current",
+  "governance_rule": "Domain identity has priority over directory hierarchy; directory hierarchy has priority over page composition.",
+  "base_domain": "lo3rwang.cc",
+  "scopes": [
+    {"scope":"loc","domain_label":"loc","canonical_host":"loc.lo3rwang.cc","priority":1,"fallback_routes":["/"]},
+    {"scope":"runes","domain_label":"lrunes","canonical_host":"lrunes.lo3rwang.cc","priority":1,"fallback_routes":["https://loc.lo3rwang.cc/runes"]},
+    {"scope":"lo3rwang","domain_label":"lo3rwang","canonical_host":"lo3rwang.lo3rwang.cc","priority":1,"fallback_routes":["https://lo3rwang.cc"]},
+    {"scope":"admin","domain_label":"admin","canonical_host":"admin.lo3rwang.cc","priority":1,"fallback_routes":["https://loc.lo3rwang.cc/admin"]}
+  ],
+  "reserved_hosts": ["author.lo3rwang.cc"],
+  "notes": ["author.lo3rwang.cc is intentionally not used because platform governance must not imply authorship of all content."]
+}
