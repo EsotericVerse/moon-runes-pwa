@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "manifest": "FEATURE_MANIFEST",
+  "status": "current",
+  "features": {
+    "context": ["LOC_CROSS_RELATIONSHIP_REGISTRY.json", "LOC_GRAPH_SCHEMA.json"],
+    "music": ["MUSIC_REGISTRY.json", "MUSIC_KEYWORD_REGISTRY.json", "MUSIC_REASONING_SCHEMA.json"],
+    "writing": ["WRITING_REGISTRY.json", "TEXT_ANALYSIS_REGISTRY.json", "WRITING_GOVERNANCE_BOUNDARY_REGISTRY.json"],
+    "media": ["LOC_MEDIA_REGISTRY.json", "MEDIA_RECOVERY_REGISTRY.json"],
+    "analysis": ["LOC_ANALYSIS_TYPE_REGISTRY.json", "LINGUISTIC_ANALYSIS_REGISTRY.json", "LOC_GOVERNANCE_TREND_REGISTRY.json"]
+  },
+  "rule": "Feature registries describe reusable capabilities and may consume multiple Scopes. Feature names do not imply ownership of Scope data.",
+  "updated_at": "2026-09-17"
+}
