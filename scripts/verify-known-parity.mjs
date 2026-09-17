@@ -57,7 +57,7 @@ requireText('app/GlobalNav.jsx', [
 requireText('app/GlobalFooter.jsx', [
   '<footer className="loc-site-footer">',
   '<a href={isRunes?\'/runes\':\'/\'}>{isRunes?\'月之符文\':\'月典\'}</a>｜<ThemeSelect />',
-  '<a href="https://whoami.lo3rwang.cc/">Lucas Oscar Wang 政德</a>',
+  '<a href="https://lo3rwang.lo3rwang.cc/">Lucas Oscar Wang 政德</a>',
   '<a href="mailto:sopa2306@gmail.com">聯絡方式</a>'
 ]);
 
