@@ -13,9 +13,9 @@ for(const fn of map.sharedFunctions){
 }
 
 for(const [scope,cfg] of Object.entries(map.scopes)){
-  const host=cfg.host||(cfg.hosts?.[0]||'');
+  const host=cfg.testHost||cfg.host||(cfg.hosts?.[0]||'');
   const runtimeCfg=runtime.getNavScopeConfig(scope,host);
-  if(runtimeCfg.reserved[0]!==cfg.reserved.label)throw new Error(`Runtime NAV missing ${scope} reserved entry`);
+  if(runtimeCfg.reserved[0]!==cfg.reserved.label||runtimeCfg.reserved[1]!==cfg.reserved.href)throw new Error(`Runtime NAV reserved entry mismatch: ${scope}`);
   for(const item of [...(cfg.role||[]),...(cfg.homes||[])]){
     const links=[...(runtimeCfg.role||[]),...(runtimeCfg.homes||[])];
     if(!links.some(([label,href])=>label===item.label&&href===item.href))throw new Error(`Runtime NAV missing ${scope} link: ${item.label}`);
