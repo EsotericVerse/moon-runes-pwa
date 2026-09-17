@@ -33,10 +33,32 @@ export function scanGovernedKeywords(text, registry = []) {
         status: entry.status ?? 'working',
         count,
         hits,
+        authorClassification: entry.author_classification ?? null,
+        authorCategory: entry.author_category ?? null,
+        authorScopeOnly: Boolean(entry.author_scope_only),
+        semanticIntent: Array.isArray(entry.semantic_intent) ? entry.semantic_intent : []
       };
     })
     .filter((entry) => entry.count > 0)
     .sort((a, b) => b.count - a.count || a.term.localeCompare(b.term, 'zh-Hant'));
+}
+
+export function normalizeApiKeywordResult(payload = {}) {
+  const source = payload?.result ?? payload;
+  const rows = Array.isArray(source?.keywords)
+    ? source.keywords
+    : Array.isArray(source?.candidates)
+      ? source.candidates
+      : Array.isArray(source?.terms)
+        ? source.terms
+        : [];
+  return rows
+    .map((row) => typeof row === 'string' ? { term: row } : row)
+    .map((row) => ({
+      ...row,
+      term: String(row?.term ?? row?.keyword ?? row?.name ?? '').trim()
+    }))
+    .filter((row) => row.term);
 }
 
 export function compareKeywordScans(ruleResult = [], apiResult = []) {
