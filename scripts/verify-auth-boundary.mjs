@@ -4,6 +4,7 @@ const auth=fs.readFileSync('services/cloudflare/auth-worker.js','utf8');
 const state=fs.readFileSync('services/cloudflare/loc-state-worker.js','utf8');
 const client=fs.readFileSync('app/loc/auth-client.js','utf8');
 const admin=fs.readFileSync('app/admin/page.jsx','utf8');
+const routeAdmin=fs.readFileSync('app/admin/RouteRegistryManager.jsx','utf8');
 const scopePeriod=fs.readFileSync('app/loc/ScopePeriodEditor.jsx','utf8');
 const failures=[];
 
@@ -19,7 +20,7 @@ requireMatch(auth,/LOC_PERIOD_EDITOR_EMAILS/,'auth worker: Period editor allowli
 requireMatch(auth,/LOC_CONTEXT_EDITOR_EMAILS/,'auth worker: Context editor allowlist must remain server-side');
 requireMatch(auth,/LOC_SEMANTIC_EDITOR_EMAILS/,'auth worker: Semantic editor allowlist must remain server-side');
 requireMatch(auth,/auth\.api\.getSession\s*\(/,'auth worker: management session must be validated server-side');
-requireMatch(auth,/platform:routes:write/,'auth worker: route alias permission required');
+requireMatch(auth,/['\"]\/routes['\"]\s*:\s*['\"]platform:routes:write['\"]/,'auth worker: hierarchical Route Registry must require platform:routes:write');
 requireMatch(auth,/platform:visibility:write/,'auth worker: visibility permission required');
 requireMatch(auth,/platform:projection:rebuild/,'auth worker: projection rebuild permission required');
 requireMatch(auth,/scope:period:write/,'auth worker: scoped Period permission required');
@@ -28,16 +29,21 @@ requireMatch(auth,/MANAGEMENT_SEMANTIC_PATH/,'auth worker: semantic observer pro
 requireMatch(auth,/canon_write\s*:\s*false/,'auth worker: semantic API must never receive Canon write authority');
 requireMatch(auth,/MANAGEMENT_NEON_STATUS_PATH/,'auth worker: Neon governance adapter status required');
 
-for(const route of ['aliases','visibility','projection-rebuild','eras','daily-runes','context']){
+for(const route of ['aliases','routes','visibility','projection-rebuild','eras','daily-runes','context']){
   const block=new RegExp(`path === ['\"]\\/${route}['\"][\\s\\S]*?authorized\\(request, env\\)`,`m`);
   requireMatch(state,block,`state worker: \/${route} mutations must retain authorization guard`);
 }
 requireMatch(state,/visibility\s*===\s*['\"]public['\"]/,'state worker: public projection must filter private\/internal resources');
+requireMatch(state,/adminFrozen\s*\?\s*false\s*:\s*Boolean\(row\?\.statistics_included\)/,'state worker: Admin freeze must override statistics inclusion');
+requireMatch(state,/manager_route_hash_forbidden/,'state worker: manager routes must reject hash routing');
+requireMatch(state,/route_has_children/,'state worker: parent nodes must not be deleted while children remain');
 requireMatch(state,/LOC_WRITE_TOKEN/,'state worker: break-glass write credential support must remain server-side');
 
 requireMatch(client,/credentials\s*:\s*['\"]include['\"]/,'browser auth client: management requests must include HttpOnly session credentials');
 requireMatch(client,/management\/session/,'browser auth client: management session status endpoint required');
 requireMatch(client,/managementStateRequest/,'browser auth client: governed state request helper required');
+requireMatch(routeAdmin,/platform:routes:write/,'route admin: Route Registry UI must require route-write permission');
+requireMatch(routeAdmin,/insert_parent/,'route admin: inserting a parent node must be supported');
 requireMatch(scopePeriod,/scope:period:write/,'scope governance: Period editor must require scoped write permission');
 requireMatch(scopePeriod,/scope,period/,'scope governance: Period delete must preserve scope identity');
 
@@ -47,4 +53,4 @@ if(failures.length){
   console.error('[auth-boundary] violations:\n'+failures.join('\n'));
   process.exit(1);
 }
-console.log('[auth-boundary] layered RBAC, scoped governance, Frozen Canon and private projection boundaries verified');
+console.log('[auth-boundary] layered RBAC, route tree, scoped governance, Frozen Canon and private projection boundaries verified');

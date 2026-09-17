@@ -51,13 +51,13 @@ export default function RunesPage() {
         <p className="loc-subtitle">不用先學規則，挑一個方向，抽一張牌就可以開始。</p>
       </div>
       <div className="runes-topic-grid">
-        {SINGLE_TOPICS.map(topic => <a className="runes-topic-choice" key={topic.key} href={`?mode=single&topic=${topic.key}#draw`}>
+        {SINGLE_TOPICS.map(topic => <a className="runes-topic-choice" key={topic.key} href={`?mode=single&topic=${topic.key}`}>
           <strong>{topic.label}</strong>
           <span>抽一張牌</span>
         </a>)}
       </div>
       <p className="runes-quick-start-note">沒有特別想問的？也可以直接抽每日符文。</p>
-      <div className="loc-actions"><a className="loc-button" href="?mode=daily#draw">抽每日符文</a></div>
+      <div className="loc-actions"><a className="loc-button" href="?mode=daily">抽每日符文</a></div>
     </section>
 
     <RuneDrawClient />

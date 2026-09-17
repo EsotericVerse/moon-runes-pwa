@@ -5,7 +5,7 @@ const AUTH_PATH = '/api/auth';
 const MANAGEMENT_STATE_PATH = '/management/state';
 const MANAGEMENT_SEMANTIC_PATH = '/management/semantic/analyze';
 const MANAGEMENT_NEON_STATUS_PATH = '/management/neon/status';
-const BUILD = '2026-09-17-layered-management-v2';
+const BUILD = '2026-09-17-layered-management-v3-route-tree';
 
 const ADMIN_PERMISSIONS = Object.freeze([
   'platform:admin',
@@ -21,6 +21,7 @@ const ADMIN_PERMISSIONS = Object.freeze([
 
 const STATE_PATH_PERMISSION = Object.freeze({
   '/aliases': 'platform:routes:write',
+  '/routes': 'platform:routes:write',
   '/visibility': 'platform:visibility:write',
   '/projection-rebuild': 'platform:projection:rebuild',
   '/eras': 'scope:period:write',

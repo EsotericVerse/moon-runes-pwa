@@ -13,6 +13,6 @@ const runesStandalone=nav.getNavScopeConfig('runes','lrunes.lo3rwang.cc');
 if(nav.navRoute(runesStandalone,'context')!=='/context')throw new Error('Standalone LunaRunes route drifted');
 
 if(nav.detectNavScope('/runes/context','lo3rwang.cc')!=='lo3rwang')throw new Error('Canonical personal host must override conflicting path shape');
-if(nav.detectNavScope('/runes/context','manage.lo3rwang.cc')!=='governance')throw new Error('Canonical management host must override conflicting path shape');
+if(nav.detectNavScope('/runes/context','admin.lo3rwang.cc')!=='admin')throw new Error('Canonical Admin host must override conflicting path shape');
 
 console.log('NAV Scope isolation verified.');
