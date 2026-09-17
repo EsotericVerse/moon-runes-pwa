@@ -16,9 +16,9 @@ const SINGLE_TOPICS = [
   { key: 'life', label: '生活' }
 ];
 
-const PROMO_REELS = [
-  { id: 'DMA9yDAzeRK', title: '月之符文 Reels 01' },
-  { id: 'DMA-ZxLTINw', title: '月之符文 Reels 02' }
+const INTRO_REEL = { id: 'DMA9yDAzeRK', title: '月之符文介紹 Reels' };
+const DIVINATION_REEL_LINKS = [
+  { id: 'DMA-ZxLTINw', title: '占卜示範 Reels' }
 ];
 
 export default function RunesPage() {
@@ -30,17 +30,20 @@ export default function RunesPage() {
         <p className="loc-subtitle">第一次來？不用先弄懂它是什麼。先看一支短影片，或直接抽張牌。</p>
       </div>
 
-      <div className="runes-home-reels" aria-label="月之符文 Reels 預覽">
-        {PROMO_REELS.map(reel => <article className="runes-home-reel" key={reel.id}>
+      <div className="runes-home-reels" aria-label="月之符文介紹 Reels">
+        <article className="runes-home-reel">
           <iframe
-            src={`https://www.instagram.com/reel/${reel.id}/embed/`}
-            title={reel.title}
+            src={`https://www.instagram.com/reel/${INTRO_REEL.id}/embed/`}
+            title={INTRO_REEL.title}
             loading="eager"
             allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
             allowFullScreen
           />
-          <a href={`https://www.instagram.com/reel/${reel.id}/`} target="_blank" rel="noopener noreferrer">在 Instagram 看完整 Reels</a>
-        </article>)}
+          <a href={`https://www.instagram.com/reel/${INTRO_REEL.id}/`} target="_blank" rel="noopener noreferrer">在 Instagram 看完整介紹 Reels</a>
+        </article>
+      </div>
+      <div className="links" aria-label="占卜示範連結">
+        {DIVINATION_REEL_LINKS.map(reel => <a key={reel.id} href={`https://www.instagram.com/reel/${reel.id}/`} target="_blank" rel="noopener noreferrer">{reel.title}</a>)}
       </div>
     </header>
 
