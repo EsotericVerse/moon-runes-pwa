@@ -5,5 +5,21 @@
     "runes": {"hosts":["lrunes.lo3rwang.cc","loc.lo3rwang.cc/runes"],"basePath":"/runes","reserved":{"label":"語彙","href":"/runes"},"role":[{"label":"lo3rwang","href":"https://lo3rwang.cc"}],"homes":[{"label":"回月之符文首頁","href":"/runes"},{"label":"回月典首頁","href":"https://loc.lo3rwang.cc"}]},
     "lo3rwang": {"host":"lo3rwang.cc","basePath":"/","reserved":{"label":"風格詞","href":"/"},"role":[{"label":"管理者頁面","href":"https://manage.lo3rwang.cc"}],"homes":[{"label":"回 lo3rwang","href":"/"},{"label":"回月典首頁","href":"https://loc.lo3rwang.cc"}]},
     "governance": {"host":"manage.lo3rwang.cc","basePath":"/","reserved":{"label":"治理規則","href":"/"},"role":[{"label":"管理者頁面","href":"https://manage.lo3rwang.cc"}],"homes":[{"label":"回治理頁面","href":"/"},{"label":"回月典首頁","href":"https://loc.lo3rwang.cc"}]}
-  }
+  },
+  "scopeCases": [
+    {"pathname":"/context","host":"loc.lo3rwang.cc","scope":"loc"},
+    {"pathname":"/runes/context","host":"loc.lo3rwang.cc","scope":"runes"},
+    {"pathname":"/context","host":"lrunes.lo3rwang.cc","scope":"runes"},
+    {"pathname":"/runes/context","host":"lo3rwang.cc","scope":"lo3rwang"},
+    {"pathname":"/runes/context","host":"manage.lo3rwang.cc","scope":"governance"},
+    {"pathname":"/management/history","host":"loc.lo3rwang.cc","scope":"governance"}
+  ],
+  "routeCases": [
+    {"scope":"loc","host":"loc.lo3rwang.cc","feature":"context","href":"/context"},
+    {"scope":"runes","host":"loc.lo3rwang.cc","feature":"context","href":"/runes/context"},
+    {"scope":"runes","host":"lrunes.lo3rwang.cc","feature":"context","href":"/context"},
+    {"scope":"runes","host":"loc.lo3rwang.cc","feature":"search","href":"/runes/search"},
+    {"scope":"lo3rwang","host":"lo3rwang.cc","feature":"context","href":"/context"},
+    {"scope":"governance","host":"manage.lo3rwang.cc","feature":"context","href":"/context"}
+  ]
 }
