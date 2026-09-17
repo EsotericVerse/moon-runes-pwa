@@ -21,7 +21,7 @@ const sources={
 
 const required=[
   ...['LOC月典','/pics/LunaRunes.jpg','月典模型架構','ModelArchitectureExplorer','Base66'].map(token=>[sources.home,token]),
-  ...['月之符文','語彙','風格詞','Admin','脈絡','統計','文化','治理','搜尋','lo3rwang','管理者頁面','回月之符文首頁','回 lo3rwang','回月典首頁','https://lo3rwang.cc','https://admin.lo3rwang.cc','lrunes.lo3rwang.cc','context','statics','evolution','governance','search'].map(token=>[sources.nav,token]),
+  ...['月之符文','語彙','風格詞','Admin','脈絡','統計','文化','治理','搜尋','lo3rwang','管理者頁面','回月之符文首頁','回 lo3rwang','回月典首頁','https://lo3rwang.lo3rwang.cc','https://admin.lo3rwang.cc','lrunes.lo3rwang.cc','context','statics','evolution','governance','search'].map(token=>[sources.nav,token]),
   ...['?mode=daily','<RuneDrawClient />','<RuneAtlasHome />','Context','Culture'].map(token=>[sources.runes,token]),
   ...['客觀與中立','可移植（Portable）','Copyleft','/management','/governance/history'].map(token=>[sources.governance,token]),
   ...['LunaRunes Scope','Master Data／Base66'].map(token=>[sources.runeGovernance,token]),
@@ -30,7 +30,8 @@ const required=[
   [sources.terminology,'data/json/core/runes66groups.json'],
   [sources.terminology,'第七組固定為秩序（Order）'],
   [sources.terminology,'"scope_id": "lo3rwang"'],
-  [sources.terminology,'"canonical_host": "lo3rwang.cc"'],
+  [sources.terminology,'"canonical_host": "lo3rwang.lo3rwang.cc"'],
+  [sources.terminology,'"base_domain": "lo3rwang.cc"'],
   [sources.groups,'"group_zh":"秩序"'],
   [sources.dataGovernance,'Scope Model × Feature Model → Page Composition'],
   [sources.dataGovernance,'"navigation_governance"'],
@@ -42,13 +43,14 @@ const required=[
   [sources.pgsql,'"persistent_mapping_required": true'],
   [sources.navCanon,'每個介面只有一條正式導覽列'],
   [sources.navCanon,'NAV 是 **Page Composition 的可變介面**'],
-  [sources.navCanon,'lo3rwang.cc'],
+  [sources.navCanon,'網域優先，目錄其次，頁面最後'],
+  [sources.navCanon,'lo3rwang.lo3rwang.cc'],
   [sources.navCanon,'admin.lo3rwang.cc'],
   [sources.navCanon,'功能級導覽一律使用正式階層 route']
 ];
 
 const forbiddenHome=["name:'Methodology'","name:'Evolution'",'Governance｜治理架構層','Governance Architecture'];
-const forbiddenNav=['author.lo3rwang.cc','whoami.lo3rwang.cc','lo3rwang.lo3rwang.cc','manage.lo3rwang.cc'];
+const forbiddenNav=['author.lo3rwang.cc','whoami.lo3rwang.cc','manage.lo3rwang.cc'];
 const forbiddenCurrent=[
   [sources.terminology,'定序'],
   [sources.groups,'定序'],
