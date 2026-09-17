@@ -35,10 +35,8 @@ const required=[
 
 const forbiddenHome=["name:'Methodology'","name:'Evolution'",'Governance｜治理架構層','Governance Architecture'];
 const forbiddenNav=['author.lo3rwang.cc','whoami.lo3rwang.cc','lo3rwang.lo3rwang.cc'];
-const forbiddenCurrentSources=['docs/LOC_Canon_1.1.md','docs/LOC_Canon_1.2.md'];
-const self=fs.readFileSync('scripts/current-ui-contract.mjs','utf8');
 const missing=required.filter(([source,token])=>!source.includes(token)).map(([,token])=>token);
-const forbidden=[...forbiddenHome.filter(token=>sources.home.includes(token)),...forbiddenNav.filter(token=>sources.nav.includes(token)),...forbiddenCurrentSources.filter(token=>self.includes(token))];
+const forbidden=[...forbiddenHome.filter(token=>sources.home.includes(token)),...forbiddenNav.filter(token=>sources.nav.includes(token))];
 if(missing.length||forbidden.length){
   if(missing.length) console.error('Missing Current UI contract: '+missing.join(', '));
   if(forbidden.length) console.error('Forbidden stale UI contract: '+forbidden.join(', '));
