@@ -9,8 +9,8 @@ const ZHENGDE_CULTURE_COLLECTION = Object.freeze({
   scopeProfile:Object.freeze({id:'personal',fields:Object.freeze(['person','era','source','corpus','language','culture'])}),
   smallSources: [
     [LOC_DATA.ZHENGDE_CULTURE_KEYWORDS, '政德文化'],
-    [LOC_DATA.LOC4_WRITING_REGISTRY, '文字創作'],
-    [LOC_DATA.LOC6_GOVERNANCE_REGISTRY, '治理']
+    [LOC_DATA.WRITING_REGISTRY, '文字創作'],
+    [LOC_DATA.LO3RWANG_GOVERNANCE_REGISTRY, '治理']
   ],
   includeTextCorpus: true,
   includeMusic: true
@@ -26,9 +26,9 @@ export const SEARCH_COLLECTIONS = Object.freeze({
       [LOC_DATA.RUNES, '月之符文'],
       [LOC_DATA.RUNE_GRAMMAR, '符文演算法'],
       [LOC_DATA.RUNE_INTERPRETATIONS, '每日符文'],
-      [LOC_DATA.LOC2_EVENT_REGISTRY, '事件'],
-      [LOC_DATA.LOC4_WRITING_REGISTRY, '文字創作'],
-      [LOC_DATA.LOC6_GOVERNANCE_REGISTRY, '治理'],
+      [LOC_DATA.CONTEXT_EVENT_REGISTRY, '事件'],
+      [LOC_DATA.WRITING_REGISTRY, '文字創作'],
+      [LOC_DATA.LO3RWANG_GOVERNANCE_REGISTRY, '治理'],
       [LOC_DATA.LOC_MEDIA_REGISTRY, '多媒體'],
       [LOC_DATA.LOC_KNOWLEDGE_ASSET_REGISTRY, '知識庫'],
       [LOC_DATA.LOC_FAQ, 'FAQ'],
