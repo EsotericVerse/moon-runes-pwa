@@ -24,9 +24,9 @@ export default function RuneListPage() {
   return <main className="loc-next-main">
     <section className="loc-view">
       <header className="loc-hero">
-        <p className="loc-eyebrow">LunaRunes · 月之符文</p>
+        <p className="loc-eyebrow">LunaRunes</p>
         <h1>所有符文列表</h1>
-        <p>月之符文 1–66 的完整列表。資料直接取自現行核心符文資料，不另建副本。</p>
+        <p className="loc-subtitle">依編號查看月之符文 1–66 的名稱、群組、月相、說明與關鍵詞。</p>
       </header>
 
       <nav className="loc-card" aria-label="月之符文功能入口">
@@ -34,7 +34,7 @@ export default function RuneListPage() {
       </nav>
 
       <section className="loc-card" id="rune-list">
-        <p className="loc-eyebrow">66 Runes · 完整列表</p>
+        <p className="loc-eyebrow">Rune List</p>
         <h2>1–66</h2>
         <div className="loc-context-list">
           {canonicalRunes.map(card => <article className="loc-context-item" id={`rune-${card.編號}`} key={card.編號}>
