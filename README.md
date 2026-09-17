@@ -2,11 +2,11 @@
 
 LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的語言系統模組框架（Language Module Framework）。
 
-LOC 由多個可重複使用的語言系統模組組成；首頁保留一組人類可讀的 LOC1–8 導覽編號，文件與工程層則依語意 domain 與實際責任治理。
+LOC 的 Current information architecture 固定採 **Scope Model × Feature Model → Page Composition**：Scope 管理資料、權威與歷史邊界；Feature 是可跨 Scope 重用的能力；Page Composition 將兩者組合成實際頁面與入口。
 
 LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module reference implementation：以 66 枚中文單字為核心語彙，實作脈絡、Graph、Grammar、治理、搜尋與演化。月之符文用來證明 LOC 的模組方法可被實作，但不是使用 LOC 的門檻。
 
-**術語治理：LOC 整體固定稱為 Language Module Framework／語言系統模組框架；LOC1–8 是語言系統模組的功能分隔；LunaRunes 固定稱為 Symbolic Language Module／符號式語言模組。**
+**術語治理：LOC 整體固定稱為 Language Module Framework／語言系統模組框架；LunaRunes 固定稱為 Symbolic Language Module／符號式語言模組；LOC1–8 僅保留為歷史／provenance 識別，不再代表 Current Scope、Feature ownership、NAV 或 Canon authority。**
 
 ### 主要定位
 
@@ -18,8 +18,7 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module referen
 
 > 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
 
-- **現行 Canon：1.0（正式版）**
-- **Web Build：1.0-RC3**
+- **Current architecture：Scope Model × Feature Model → Page Composition**
 - **LOC GPT Skills：1.0.0**
 - **公開網站：<https://loc.lo3rwang.cc/>**
 - **作者：Lucas Oscar Wang 政德**
@@ -27,22 +26,20 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module referen
 
 ---
 
-## 目前進度｜2026-09-12
+## 目前進度｜2026-09-17
 
-目前已進入 **RC3（Data-backed Release Candidate）收斂與功能驗收階段**。RC3 的關鍵不是再增加骨架，而是主要公開功能已開始由正式資料驅動：LunaRunes Canon 現在直接支援符文脈絡、Graph、統計、排行榜與推演資料。核心骨架不再擴張，優先處理效能、資料一致性、runtime 穩定性與公開入口。
+目前重點是 **Current Scope / Feature 架構收斂、資料一致性與公開功能驗收**。LunaRunes Canon 已直接支援符文脈絡、Graph、統計與推演資料；同時 LOC、LunaRunes、Author／lo3rwang 與 Governance 依各自 Scope 保有資料與權威邊界，共用 Context、Statics、Evolution、Governance、Search 等 Features。
 
-- **LunaRunes／月之符文**：66 枚可抽取符文、籤詩與第 0 符「德」資料。
+- **LunaRunes／月之符文**：66 符固定骨架、籤詩、抽牌與第 0 符「德」基準資料。
 - **Context／脈絡**：Relation、Event、Graph 與 Semantic Playground。
 - **Music／音樂**：Suno corpus、歌曲／歌詞搜尋與時期分析。
 - **Literary／文字創作**：小說、文章、生活文字與歷史 corpus。
 - **MultiMedia／多媒體**：Reels、圖像、影音與跨媒介資產。
-- **Governance／治理**：治理原則、政德風與「治理：德之符文」。
-- **Knowledge／知識**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與分析。
+- **Governance／治理**：共同治理方法，以及各 Scope 自己的治理主體與權威。
+- **Knowledge Management／知識管理**：知識資產、authority、version、provenance、relation 與 retrievability；FAQ／RAG／Search 是 View、Feature 或衍生資料，不等於 KM 本體。
 - **Evolution／推演**：Period、Timeline、Trend、Trajectory 與時間投影。
 
-### RC3｜正式資料開始進入系統
-
-**RC3 = Data-backed release candidate。**
+### 正式資料鏈
 
 目前以 LunaRunes 作為第一套完整資料來源，主要資料鏈已實際成立：
 
@@ -58,12 +55,10 @@ LunaRunes Canon
 
 符文脈絡與符文分析核心採 **No API**：直接使用 repository 既有 `runes.json` 與現行規則，不呼叫外部 API、不重掃文章建立第二套關鍵詞，也不建立第二套 Canon。
 
-RC3 已讓 `runes.html`、`context.html`、`statics.html`、`evolution.html` 有實際資料可展示與分析；完整 RC3 說明見 [`docs/RC3.md`](docs/RC3.md)。
-
 ### Demo 前目前優先順序
 
-1. FAQ／KM 同步現行定義
-2. 核心頁面功能驗收
+1. FAQ／KM 與 Current Canon 同步
+2. LOC／LunaRunes／Author Scope 的 Page Composition 與 NAV 一致化
 3. 搜尋、Context、Evolution 的資料與 fallback 一致性
 4. 整合式新手導覽與公開文件同步
 
@@ -71,19 +66,15 @@ RC3 已讓 `runes.html`、`context.html`、`statics.html`、`evolution.html` 有
 
 | 功能 | 頁面 | 說明 |
 |---|---|---|
-| 首頁 | [index.html](https://loc.lo3rwang.cc/) | LOC 總覽與主要入口 |
-| 月之符文 | [runes.html](https://loc.lo3rwang.cc/runes.html) | LunaRunes 主頁、66 符資料、圖鑑、抽牌、判讀規則、案例與符文脈絡 Graph · No API |
-| 統計 | [statics.html](https://loc.lo3rwang.cc/statics.html) | 排行榜、符文關鍵詞排行榜、符文統計與每日符文 |
-| 脈絡 | [context.html](https://loc.lo3rwang.cc/context.html) | 符文脈絡 Graph · No API、節點、關係式與 Event |
-| 多元搜尋 | [search.html](https://loc.lo3rwang.cc/search.html) | Cross-format Search：文字、音樂、多媒體、符文、脈絡與知識 |
-| 推演 | [evolution.html](https://loc.lo3rwang.cc/evolution.html) | 時期、Timeline、Trend、Trajectory 與符文資料歷程 |
-| 治理 | [governance.html](https://loc.lo3rwang.cc/governance.html) | 政德風、治理原則與方法 |
-| Context Sandbox | [game.html](https://loc.lo3rwang.cc/game.html) | Semantic Playground |
-| 作者 | [lo3rwang.html](https://loc.lo3rwang.cc/lo3rwang.html) | Lucas Oscar Wang 政德 |
-
-新手導覽已整合進正式功能頁：
-- [LOC 新手上路](https://loc.lo3rwang.cc/#start-guide)
-- [LunaRunes 新手上路](https://loc.lo3rwang.cc/runes.html#library)
+| 首頁 | <https://loc.lo3rwang.cc/> | LOC 總覽與主要入口 |
+| 月之符文 | <https://loc.lo3rwang.cc/runes/> | LunaRunes 主頁、66 符資料、圖鑑、抽牌、判讀規則與符文脈絡 |
+| 統計 | <https://loc.lo3rwang.cc/statics/> | LOC Scope 統計；LunaRunes 使用 `/runes/statics/` 或獨立 host 對應組合 |
+| 脈絡 | <https://loc.lo3rwang.cc/context/> | LOC Scope Context；各 Scope 可組合自己的 Context Feature |
+| 搜尋 | <https://loc.lo3rwang.cc/search/> | Cross-format Search；Scope 邊界由 Search composition 控制 |
+| 推演 | <https://loc.lo3rwang.cc/evolution/> | 時期、Timeline、Trend、Trajectory 與資料歷程 |
+| 治理 | <https://loc.lo3rwang.cc/governance/> | LOC 全域治理方法與跨 Scope 歷史入口 |
+| Context Sandbox | <https://loc.lo3rwang.cc/game/> | Semantic Playground |
+| 作者 | <https://lo3rwang.cc/> | Lucas Oscar Wang 政德 / Author Scope |
 
 ---
 
@@ -101,15 +92,15 @@ LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重
 兩個 Skill 共用現行 LOC 治理原則：
 
 ```text
-Language Module Framework
+Current Canon
         ↓
-Authority / Canon
+Scope Model × Feature Model
         ↓
 Registry / Structured Data
         ↓
-Context / Graph / Grammar / Evolution
+Page Composition / Search / Analysis
         ↓
-API / Search / UI / AI Skill
+UI / API / AI Skill
 ```
 
 其中 LunaRunes 是 LOC 的 Symbolic Language Module reference implementation；Skills 則把已形成的方法與治理能力轉成 GPT／Agent 可重複使用的工作流程。
@@ -118,44 +109,24 @@ API / Search / UI / AI Skill
 - **版本：** 1.0.0
 - **發布方式：** 原始 Skill 結構與可執行 validator 採開放方式提供，bundle 作為安裝／交換用發布包。
 
-典型使用情境：
-
-```text
-Use loc-km-governance to audit this repository against the current LOC Language Module Framework.
-
-Use loc-repo-health-check to verify whether legacy projections can be removed without breaking runtime.
-```
-
 ---
 
-## LOC 1–8
+## LOC1–8｜Historical / Provenance
 
-LOC1–8 是**功能分隔與標準骨架**，不是版本、成熟度或高低排序。
+LOC1–8 **不再是 Current information architecture**。它們保留用來讀懂舊文件、舊檔名、舊資料欄位與系統形成歷史；不得因此重新取得 Scope、Feature、NAV、Registry 或 Canon ownership。
 
-| LOC | 現行定位 | 主要內容 |
+| 歷史識別 | 曾主要對應 | Current 對應方式 |
 |---|---|---|
-| LOC1 | LunaRunes 月之符文 | 66 符、籤詩、抽牌、月相、四向、OW3gs |
-| LOC2 | Context 脈絡 | 節點、關係、Event、Graph、Semantic Playground |
-| LOC3 | Music 音樂 | Suno、歌曲、歌詞與音樂語意 |
-| LOC4 | Literary 文字創作 | 小說、文章、生活文字與創作 corpus |
-| LOC5 | MultiMedia 多媒體 | 圖像、影音、Reels、系統視覺化 |
-| LOC6 | Algorithm 演算法 | 治理、判讀、比較、分類與其他可重複規則 |
-| LOC7 | Module 演算模組 | 演算法、資料、文字建築、KM、搜尋、RAG、Graph RAG 與功能封裝 |
-| LOC8 | Evolution 推演 | 時期、時間線、趨勢、軌跡與跨來源時間分析 |
+| LOC1 | LunaRunes／抽牌 | LunaRunes Scope + 抽牌／Grammar 等 Features |
+| LOC2 | Context／遊戲 | Context Feature、Semantic Playground、Game data |
+| LOC3 | Music | Music corpus / Search / Author or applicable Scope |
+| LOC4 | Literary | Writing corpus / Search / applicable Scope |
+| LOC5 | MultiMedia | Media data / Search / applicable Scope |
+| LOC6 | Governance／方法 | Governance Feature、Author governance、各 Scope governance |
+| LOC7 | Text Architecture／Algorithm／KM | Analysis、Search、KM、FAQ/RAG 等各自分離的責任 |
+| LOC8 | Life／Evolution | Evolution Feature、Event/Timeline/Trend/Trajectory |
 
-LOC 的功能關係可概括為：
-
-```text
-語彙
-  ↓
-文字創作／多元體系
-  ↓
-脈絡與關係
-  ↓
-演算法與演算模組
-  ↓
-時間中的推演
-```
+歷史資料中的 LOC 編號可以保留；**Current 判斷永遠回到 Scope Model × Feature Model → Page Composition。**
 
 ---
 
@@ -210,13 +181,15 @@ Context 負責回答：
 
 現行功能包含：
 
-- 符文脈絡 Graph · No API（由現有 LunaRunes 關鍵詞、符文、唯一群組與規則直接建立）
+- 符文脈絡 Graph · No API
 - 節點
 - 關係式
 - Event
 - Graph
-- Graph RAG
+- Graph RAG／bounded traversal
 - 沙盒遊戲
+
+Context 擁有 relation/context semantics；Search/Analysis 可消費其 Graph 做檢索與 traversal，但不取得資料 ownership。
 
 ### Evolution
 
@@ -230,7 +203,7 @@ Evolution 負責回答：
 Context Graph × Time × Period × Event × Works → Evolution
 ```
 
-現行 `evolution.html` 已提供：
+現行 Evolution Feature 提供：
 
 - 時期
 - Timeline
@@ -240,8 +213,6 @@ Context Graph × Time × Period × Event × Works → Evolution
 - 符文結構時間線
 - 符文關鍵詞趨勢
 - 符文群組軌跡
-- 時期資料由 Search → 時期設定統一管理
-- Event 新增／編輯／刪除
 
 符文演化另有 LunaRune-specific 演算法，不與一般 Evolution 趨勢計算混為一體。
 
@@ -249,8 +220,7 @@ Context Graph × Time × Period × Event × Works → Evolution
 
 ## 現行時期（Period / ERA）
 
-公開介面使用「**時期**」；內部 stable ID 可保留既有 `ERA-...`。  
-時期定義與編輯由 **Search → 時期設定** 統一管理；Context、Evolution、Graph 與各 corpus builder 只引用。
+公開介面使用「**時期**」；內部 stable ID 可保留既有 `ERA-...`。時期資料的 authority 由適用 Scope 自己治理；不同 Scope 的 ERA 不因名稱相似而自動合併。
 
 | 時期 | 日期 | 定位 |
 |---|---|---|
@@ -261,7 +231,7 @@ Context Graph × Time × Period × Event × Works → Evolution
 | P5.0 | 2024-11-18 ～ 2025-02-20 | Threads |
 | P5.1 | 2025-02-21 ～ 2025-04-27 | Suno 啟用 |
 | P6.0 | 2025-04-28 ～ 2025-10-15 | 《月語者》與月之符文開始 |
-| P6.1 | 2025-10-16 ～ 2026-01-14 | LOC啟動 |
+| P6.1 | 2025-10-16 ～ 2026-01-14 | LOC 啟動 |
 | P6.2 | 2026-01-15 ～ 2026-03-08 | 微月光與關係敘事期 |
 | P7.0 | 2026-03-09 ～ 2026-07-31 | 政德風 |
 | P7.1 | 2026-08-01 ～ 2026-08-31 | 自由的風 |
@@ -279,7 +249,7 @@ Context Graph × Time × Period × Event × Works → Evolution
 - **2026-03-09**：P7.0 政德風
 - **2026-09-01**：P7.2 自我治理，Current
 
-Facebook、PTT、Pixnet、Threads、Suno、小說與其他作品都視為不同 corpus / source；**平台本身不是 LOC 的身份，也不各自擁有獨立功能頁**。Timeline 由 Evolution 統一承接。
+Facebook、PTT、Pixnet、Threads、Suno、小說與其他作品都視為不同 corpus / source；平台本身不是 LOC 的身份，也不各自擁有獨立功能頁。Timeline 由 Evolution Feature 承接。
 
 ---
 
@@ -308,7 +278,7 @@ Facebook、PTT、Pixnet、Threads、Suno、小說與其他作品都視為不同 
 
 ## Search / Text Architecture
 
-`search.html` 是 Cross-format Search 統一入口，目標是讓使用者不必先理解 LOC 編號，就能直接輸入關鍵字、作品名稱、句子或概念。
+Search 是可跨 Scope 重用的 Feature；使用者不必先理解 LOC 編號，就能直接輸入關鍵字、作品名稱、句子或概念。
 
 可查詢的主要類型包括：
 
@@ -321,9 +291,7 @@ Facebook、PTT、Pixnet、Threads、Suno、小說與其他作品都視為不同 
 - Context / Relation
 - 時期與時間資料
 
-技術面由 `card_api/` 提供作用中的 FastAPI 與搜尋 API；資料集中於 `data/json/`，實驗性向量／語意程式保留在 `engine/`。
-
-Graph RAG 的關係資料所有權仍歸 Context；Knowledge domain 負責檢索、文字建築與演算模組。
+Graph RAG 的 relation/context authority 歸 Context；Search/Analysis 負責檢索與 traversal。KM 管理知識資產、來源、版本、關係與可追溯性，**不等於 RAG 或 Search**。
 
 ---
 
@@ -344,7 +312,7 @@ Corpus 是分析證據，不等於 Canon；Canon、原始作品、Registry、搜
 
 ## Governance / 政德風
 
-Governance／治理直接作為語意 domain 使用；政德風是重要的個人治理案例。
+Governance 是可跨 Scope 重用的治理 Feature／context；政德風則屬 Author／lo3rwang Scope 的個人語言、文化與治理案例。
 
 目前政德風進入：
 
@@ -367,10 +335,11 @@ Governance／治理直接作為語意 domain 使用；政德風是重要的個�
 | 檔案 | 用途 |
 |---|---|
 | `LunaRune66.xlsx` | LunaRunes 母資料 / Single Source of Truth |
-| `docs/LOC_Canon.docx` | LOC Canon 1.0 正式版 |
+| `docs/LOC_Canon.docx` | LOC Canon 文件 |
 | `docs/64LunaRune.docx` | 命運句語法圖鑑 |
 | `docs/LunarRunesCardCut.pdf` | 紙本符文卡輸出 |
-| `governance.html` | 系統、資料與 Repository 治理統一入口 |
+| `data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json` | Current Scope / Feature architecture 與系統治理投影 |
+| `governance` | 系統、資料與 Repository 治理入口 |
 | `COPYLEFT.md` | Copyleft 治理說明 |
 
 ---
@@ -379,59 +348,39 @@ Governance／治理直接作為語意 domain 使用；政德風是重要的個�
 
 ```text
 moon-runes-pwa/
-├── card_api/            # FastAPI / Search
+├── app/                 # Next.js Current UI / Page Composition
+├── services/            # API / optional server capabilities
 ├── data/json/           # core / registries / search / generated / archive / experimental
-├── docs/                # Canon、列印／交換與必要技術文件
+├── docs/                # Canon、交換與必要技術文件
 ├── engine/              # 語意與向量實驗
-├── js/                  # 前端邏輯
-├── css/                 # 前端樣式
 ├── tools/               # builders / importers / utilities
 ├── skills/              # LOC GPT Skills source directories
-├── 64images/            # 66 符文卡面
-├── pics/                # 系統視覺資產
-├── reels/               # 多媒體資產
-├── index.html
-├── runes.html
-├── context.html
-├── search.html
-├── evolution.html
-├── governance.html
-├── game.html
-├── lo3rwang.html
-├── tutorial01.html      # legacy compatibility redirect → index.html#start-guide
-├── tutorial02.html      # legacy compatibility redirect → runes.html#library
 ├── LunaRune66.xlsx
-├── LOC-GPT-Skills-v1.0.0-bundle.zip
-├── manifest.json
-├── service-worker.js
 ├── COPYLEFT.md
 └── README.md
 ```
 
-根目錄 HTML 只保留目前仍有明確功能或相容責任的頁面；舊的單一平台 Timeline、舊 Projection、內部 KM Upload 與重複介紹頁已移除。
+舊 HTML、舊 LOC 編號檔名與 legacy directories 若仍存在，視為 compatibility 或 provenance；不得因此反向定義 Current architecture。
 
 ---
 
 ## 技術
 
 ### Frontend
-- HTML
-- CSS
-- Vanilla JavaScript
-- PWA / Service Worker
+- Next.js / React
+- Static export
+- PWA / Service Worker where applicable
 
 ### Backend / Search
 - Python
 - FastAPI
-- Uvicorn
 - JSON registries
 - Semantic / keyword retrieval
-- RAG / Graph RAG
+- RAG / Graph traversal
 
 ### GPT / Agent Skills
 - `loc-km-governance`
 - `loc-repo-health-check`
-- Markdown Skill specification
 - Structured JSON output
 - Python validators
 - LOC framework-aware governance rules
@@ -439,13 +388,13 @@ moon-runes-pwa/
 ### Data governance
 
 ```text
-Canon / Master Data
+Current Canon / Master Data
         ↓
-Registry / Structured Data
+Scope / Registry / Structured Data
         ↓
-Search / Generated Index
+Feature / Search / Generated Projection
         ↓
-UI / API / Analysis
+Page Composition / UI / API / Analysis
 ```
 
 衍生層不得反向覆寫上游 Canon 或母資料。
