@@ -1,1 +1,1 @@
-{"required":["reserved"],"optional":["host","hosts","basePath","role","homes"],"inherited":["context","statics","evolution","governance","search"],"reserved":{"required":["label","href"]}}
+{"required":["reserved","functions"],"optional":["host","hosts","basePath","role","homes"],"inherited":["context","statics","evolution","governance","search"],"reserved":{"required":["label","href"]}}
