@@ -77,15 +77,15 @@ export default function ScopePeriodEditor({scope}){
 
   return <section className="loc-card" id={`${scope}-period-governance`}>
     <p className="loc-eyebrow">Scoped Governance</p>
-    <h2>時期／ERA 治理</h2>
-    <p>這裡只治理 <code>{scope}</code> Scope 的時期資料。平台 Admin 不需要代替各 Scope 處理日常 ERA；寫入仍由 server-side <code>scope:period:write</code> 驗權。</p>
+    <h2>時期治理</h2>
+    <p>這裡只治理 <code>{scope}</code> Scope 的時期資料。平台 Admin 不需要代替各分頁處理日常時期；寫入仍由 server-side <code>scope:period:write</code> 驗權。</p>
     {status.loading && <p>正在讀取時期資料…</p>}
     {!status.loading && <>
       {scoped.length?<ul>{scoped.map(row=><li key={`${row.scope}|${row.period}`}>
         <strong>{row.display_label||row.name||row.period}</strong> <code>{row.period}</code> {row.start_date||'—'} → {row.end_date||'Current'}
         {canWrite && <> <button type="button" onClick={()=>edit(row)}>編輯</button> <button type="button" onClick={()=>remove(row)}>移除</button></>}
-      </li>)}</ul>:<p>此 Scope 尚無已標記的 ERA 資料。</p>}
-      {unscoped.length>0 && <p><strong>Legacy 提醒：</strong>目前另有 {unscoped.length} 筆舊 ERA 尚未標記 Scope；資料移轉前不自動歸屬，避免錯分。</p>}
+      </li>)}</ul>:<p>此分頁尚無已標記的時期資料。</p>}
+      {unscoped.length>0 && <p><strong>Legacy 提醒：</strong>目前另有 {unscoped.length} 筆舊時期資料尚未標記 Scope；資料移轉前不自動歸屬，避免錯分。</p>}
       {!session && configured && <button type="button" onClick={login}>登入治理權限</button>}
       {session && !canWrite && <p>目前帳號可讀，但沒有 <code>scope:period:write</code>。</p>}
       {canWrite && <form onSubmit={save}>
@@ -95,7 +95,7 @@ export default function ScopePeriodEditor({scope}){
         <p><label>開始 <input type="date" value={draft.start_date} onChange={event=>setDraft(current=>({...current,start_date:event.target.value}))}/></label></p>
         <p><label>結束 <input type="date" value={draft.end_date} onChange={event=>setDraft(current=>({...current,end_date:event.target.value}))}/></label></p>
         <p><label>狀態 <select value={draft.status} onChange={event=>setDraft(current=>({...current,status:event.target.value}))}><option value="released">released</option><option value="current">current</option><option value="historical">historical</option><option value="draft">draft</option></select></label></p>
-        <button type="submit">儲存 {scope} ERA</button>
+        <button type="submit">儲存 {scope} 時期</button>
       </form>}
     </>}
     {status.message && <p role="status">{status.message}</p>}
