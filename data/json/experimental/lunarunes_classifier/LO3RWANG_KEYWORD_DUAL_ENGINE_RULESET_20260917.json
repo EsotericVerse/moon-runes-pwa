@@ -1,0 +1,141 @@
+{
+  "schema_version": "0.1",
+  "ruleset_id": "LO3RWANG_KEYWORD_DUAL_ENGINE_20260917",
+  "scope_id": "lo3rwang",
+  "status": "experimental",
+  "created_at": "2026-09-17",
+  "purpose": "Cross-validate author-work keyword and rune-intent analysis with a simple governed rule engine and an API semantic engine without changing current statistics copy or production ranking presentation.",
+  "analysis_scope": {
+    "include": [
+      "all available song lyrics",
+      "song outline/summary sentences",
+      "rune literature"
+    ],
+    "exclude_for_now": [
+      "general article corpus",
+      "Facebook corpus",
+      "KKCity corpus",
+      "Wretch corpus",
+      "Threads corpus outside selected author works"
+    ]
+  },
+  "unchanged_surfaces": [
+    "existing statistics page wording",
+    "existing ranking presentation copy",
+    "unrelated scopes and corpora"
+  ],
+  "classification_model": {
+    "general_categories": "1-8",
+    "author_special_category": {
+      "id": 9,
+      "rune": "德",
+      "meaning": "lo3rwang author-specific work/category ownership",
+      "scope_limited": true
+    },
+    "classification_is_unique": true,
+    "semantic_intent_may_be_multiple": true,
+    "rule": "Author classification and semantic intent are separate dimensions and must not overwrite each other."
+  },
+  "engines": {
+    "basic_rune_engine": {
+      "api_used": false,
+      "semantic_segmentation": false,
+      "method": [
+        "Compare the work or supplied text directly against current rune principles.",
+        "Allow finite oscillation only among directly plausible neighboring principles.",
+        "Choose by direct semantic focus, not by character matching.",
+        "Do not follow extended-association chains from a word to a possible consequence.",
+        "Do not infer a rune merely from a rune character occurring inside a phrase.",
+        "Recurring errors should trigger principle review rather than accumulating one-off exceptions."
+      ]
+    },
+    "api_semantic_engine": {
+      "api_used": true,
+      "role": "Independent semantic observer for keyword/theme/rune-intent candidates.",
+      "authority": "evidence_only",
+      "constraints": [
+        "Must not rewrite Base66 or Current Canon.",
+        "Must preserve lo3rwang-specific named concepts as named concepts.",
+        "Must report direct semantic evidence instead of free associative interpretation.",
+        "Output is compared with the basic engine rather than automatically replacing it."
+      ]
+    }
+  },
+  "cross_validation": {
+    "statuses": [
+      "agreement",
+      "disputed",
+      "unresolved"
+    ],
+    "agreement": "The two engines converge on the same primary rune/group intent under the same scope.",
+    "disputed": "Both have plausible but different direct-semantic candidates; retain both for governance review.",
+    "unresolved": "Evidence is insufficient for a stable result.",
+    "governance_rule": "Disputes are calibration evidence. Do not patch individual outputs unless the issue is truly a scope-limited named-concept ownership rule."
+  },
+  "author_keyword_rules": [
+    {
+      "term": "微月光",
+      "author_classification": "德",
+      "author_category": 9,
+      "semantic_intent": [
+        "光"
+      ],
+      "rule": "Author ownership is 德; the phrase is not decomposed into 月/光 for author classification. Its direct visual semantic intent can still be 光."
+    },
+    {
+      "term": "人生月台",
+      "author_classification": "德",
+      "author_category": 9,
+      "rule": "Author-named concept; do not classify by decomposing 人生 or 月台."
+    },
+    {
+      "term": "治理",
+      "author_classification": "德",
+      "author_category": 9,
+      "scope_limited": true,
+      "rule": "This ownership applies to lo3rwang author-derived governance vocabulary and is not a universal Chinese semantic rule."
+    },
+    {
+      "term": "微光",
+      "semantic_intent": [
+        "光"
+      ],
+      "rule": "Directly a form of light; do not extend to 塵、福 or 星 from secondary associations."
+    }
+  ],
+  "boundary_examples": [
+    {
+      "text": "時間",
+      "primary": "時",
+      "reason": "time itself"
+    },
+    {
+      "text": "某個時間區段／階段",
+      "primary": "辰",
+      "reason": "period or phase"
+    },
+    {
+      "text": "遲到／延誤／錯過適合時機",
+      "primary": "緣",
+      "reason": "missed timing/opportunity rather than time itself"
+    },
+    {
+      "text": "誤判／誤解",
+      "primary": "誤",
+      "reason": "error in judgment or understanding"
+    }
+  ],
+  "output_contract": {
+    "required_fields": [
+      "source_id",
+      "source_type",
+      "basic_result",
+      "api_result",
+      "validation_status",
+      "author_classification",
+      "semantic_intent",
+      "ruleset_version"
+    ],
+    "ruleset_version": "2026-09-17.1"
+  }
+}
