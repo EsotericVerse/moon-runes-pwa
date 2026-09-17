@@ -27,6 +27,11 @@ export async function getKvStateHealth(){
   return kvGet('/health');
 }
 
+export async function getKvAliases(){
+  const data=await kvGet('/aliases');
+  return Array.isArray(data?.aliases)?data.aliases:[];
+}
+
 export async function getKvDailyRunes(limit=400){
   const safeLimit=Math.max(1,Math.min(1000,Number(limit)||400));
   const data=await kvGet(`/daily-runes?limit=${safeLimit}`);
