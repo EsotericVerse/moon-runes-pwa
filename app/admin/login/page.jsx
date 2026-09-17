@@ -1,19 +1,16 @@
-import { redirect } from 'next/navigation';
 import AdminLogin from '../AdminLogin';
-import { getServerManagementSession } from '../../lib/server-management-auth';
 
-export const metadata={title:'管理驗證｜LOC 月典'};
-export const dynamic='force-dynamic';
+export const metadata={
+  title:'管理驗證｜LOC 月典',
+  robots:{index:false,follow:false}
+};
 
-export default async function AdminLoginPage(){
-  const session=await getServerManagementSession();
-  if(session) redirect('/admin');
-
+export default function AdminLoginPage(){
   return <main className="loc-view">
     <header className="loc-hero" id="top">
       <p className="loc-eyebrow">Admin Login</p>
       <h1>管理驗證</h1>
-      <p className="loc-subtitle">此頁只提供登入；治理資料與寫入功能不在未授權狀態下輸出。</p>
+      <p className="loc-subtitle">登入頁只啟動 Google 管理驗證；權限與所有資料操作由 Auth Worker 在伺服器端判定。</p>
     </header>
     <div className="loc-grid two"><AdminLogin/></div>
   </main>;
