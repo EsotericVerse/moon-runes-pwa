@@ -9,7 +9,7 @@ export function generateStaticParams(){
 export async function generateMetadata({params}){
   const {workId}=await params;
   const work=getWritingWork(decodeURIComponent(workId));
-  return work?{title:`${work.title}｜文字創作｜LOC`,description:work.summary||`${work.title}｜LOC4 文字創作`}:{title:'文字創作｜LOC'};
+  return work?{title:`${work.title}｜文字創作｜LOC`,description:work.summary||`${work.title}｜文字創作`}:{title:'文字創作｜LOC'};
 }
 
 export default async function WritingDetailPage({params}){
@@ -18,7 +18,7 @@ export default async function WritingDetailPage({params}){
   if(!work) notFound();
   const sources=publicSourceRefs(work);
   return <main className="page">
-    <header className="hero"><p>LOC4 · Writing</p><h1>{work.title}</h1><p>{work.summary||'此作品已收錄於 LOC4 Writing Registry。'}</p></header>
+    <header className="hero"><p>Writing</p><h1>{work.title}</h1><p>{work.summary||'此作品已收錄於 Writing Registry。'}</p></header>
     <section className="card"><h2>作品資料</h2><div className="loc-context-list">
       <p><strong>類型：</strong>{work.content_type||'—'}</p>
       <p><strong>日期：</strong>{work.created_date||'—'}</p>

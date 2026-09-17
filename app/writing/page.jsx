@@ -3,14 +3,14 @@ import { writingWorks, publicSourceRefs } from '../../js/writing.js';
 
 export const metadata = {
   title: '文字創作｜LOC',
-  description: 'LOC4 文字創作登錄作品的公開網頁索引。'
+  description: 'Writing Registry 文字創作登錄作品的公開網頁索引。'
 };
 
 const works = [...writingWorks].sort((a,b)=>String(b.created_date||'').localeCompare(String(a.created_date||'')));
 
 export default function WritingPage(){
   return <main className="page">
-    <header className="hero"><p>LOC4 · Writing</p><h1>文字創作</h1><p>把 LOC4 Writing Registry 整理成可瀏覽的網頁層；作品母資料與來源不因展示而改寫。</p></header>
+    <header className="hero"><p>Writing</p><h1>文字創作</h1><p>把 Writing Registry 整理成可瀏覽的網頁層；作品母資料與來源不因展示而改寫。</p></header>
     <section className="card"><h2>作品索引</h2><p>目前登錄 {works.length} 筆。網頁只展示 registry 已治理的標題、摘要、時間、標籤與公開來源，不自動公開私人社群全文。</p></section>
     <section className="loc-context-list">{works.map(work=>{
       const sources=publicSourceRefs(work);
