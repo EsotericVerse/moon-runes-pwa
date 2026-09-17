@@ -18,14 +18,14 @@
     const host=location.hostname;
     const path=location.pathname;
     if(host==='lrunes.lo3rwang.cc'||path==='/runes'||path.startsWith('/runes/')||fileName()==='runes.html') return 'runes';
-    if(host==='whoami.lo3rwang.cc'||fileName()==='lo3rwang.html') return 'author';
+    if(host==='lo3rwang.lo3rwang.cc'||fileName()==='lo3rwang.html') return 'lo3rwang';
     if(host==='manage.lo3rwang.cc'||path==='/management'||path.startsWith('/management/')) return 'governance';
     return 'loc';
   }
   function scopedRoute(route){
     const current=scope();
     if(current==='runes') return location.hostname==='lrunes.lo3rwang.cc'?route:`/runes${route}`;
-    if(current==='author') return route;
+    if(current==='lo3rwang') return route;
     if(current==='governance') return route;
     return route;
   }
@@ -34,10 +34,10 @@
     if(current==='runes') return [
       {label:'語彙',href:location.hostname==='lrunes.lo3rwang.cc'?'/':'/runes'},
       {label:'脈絡',href:scopedRoute('/context')},{label:'統計',href:scopedRoute('/statics')},{label:'文化',href:scopedRoute('/evolution')},{label:'治理',href:scopedRoute('/governance')},
-      {label:'作者頁面',href:'https://whoami.lo3rwang.cc'},
+      {label:'作者頁面',href:'https://lo3rwang.lo3rwang.cc'},
       {label:'回月之符文首頁',href:location.hostname==='lrunes.lo3rwang.cc'?'/':'/runes',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
     ];
-    if(current==='author') return [
+    if(current==='lo3rwang') return [
       {label:'風格詞',href:'/'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/evolution'},{label:'治理',href:'/governance'},
       {label:'管理者頁面',href:'https://manage.lo3rwang.cc'},
       {label:'回作者頁面',href:'/',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
@@ -49,7 +49,7 @@
     ];
     return [
       {label:'月之符文',href:'/runes'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/evolution'},{label:'治理',href:'/governance'},
-      {label:'作者頁面',href:'https://whoami.lo3rwang.cc'},{label:'回月典首頁',href:'/',home:true}
+      {label:'作者頁面',href:'https://lo3rwang.lo3rwang.cc'},{label:'回月典首頁',href:'/',home:true}
     ];
   }
   function renderNav(){
