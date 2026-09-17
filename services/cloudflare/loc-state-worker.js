@@ -346,6 +346,24 @@ async function mutateRoutes(env, body) {
     }
     return writeRoutes(env, { routes: routes.filter(node => !remove.has(node.id)) });
   }
+  if (action === 'reparent') {
+    const id = String(body?.id || body?.route?.id || '');
+    const parentId = body?.parent_id ? String(body.parent_id) : null;
+    const index = routes.findIndex(node => node.id === id);
+    if (index < 0) throw new Error('route_node_missing');
+    if (parentId && !routes.some(node => node.id === parentId)) throw new Error('route_parent_missing');
+    routes[index] = { ...routes[index], parent_id: parentId };
+    return writeRoutes(env, { routes });
+  }
+  if (action === 'set_status') {
+    const id = String(body?.id || body?.route?.id || '');
+    const status = ROUTE_STATUSES.has(String(body?.status || '')) ? String(body.status) : null;
+    if (!status) throw new Error('route_status_invalid');
+    const index = routes.findIndex(node => node.id === id);
+    if (index < 0) throw new Error('route_node_missing');
+    routes[index] = { ...routes[index], status };
+    return writeRoutes(env, { routes });
+  }
   if (action === 'insert_parent') {
     const childId = String(body?.child_id || '');
     const childIndex = routes.findIndex(node => node.id === childId);
