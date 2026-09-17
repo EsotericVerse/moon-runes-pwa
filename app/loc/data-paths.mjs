@@ -28,6 +28,7 @@ export const LOC_DATA = Object.freeze({
 
   // Search / generated delivery projections. Historical directory names remain provenance only.
   LOC_FAQ: '/data/json/search/faq/LOC_FAQ_RAG_v0.4.json',
+  LOC_FAQ_CURRENT_OVERLAY: '/data/json/search/faq/LOC_FAQ_v0.5.json',
   TEXT_CORPUS_MANIFEST: '/data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json',
   MUSIC_SEARCH_MANIFEST: '/data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json',
   RUNE_RESERVED_SNAPSHOT: '/data/json/generated/search/reserved/moon-runes.json',
