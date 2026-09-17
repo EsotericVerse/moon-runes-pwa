@@ -14,8 +14,12 @@ const files = [
   'data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json',
   'data/json/registries/LOC_SEMANTIC_FAMILY_REGISTRY.json',
   'data/json/registries/LOC_KEYWORD_GOVERNANCE.json',
-  'data/json/registries/LOC1_READING_EXAMPLE_REGISTRY.json',
-  'data/json/registries/LOC7_LINGUISTIC_ANALYSIS_REGISTRY.json',
+  'data/json/registries/LUNARUNES_READING_EXAMPLE_REGISTRY.json',
+  'data/json/registries/LUNARUNES_RUNE_METHODOLOGY_REGISTRY.json',
+  'data/json/registries/ANALYSIS_LINGUISTIC_REGISTRY.json',
+  'data/json/registries/LO3RWANG_MANIFEST.json',
+  'data/json/registries/LUNARUNES_MANIFEST.json',
+  'data/json/registries/FEATURE_MANIFEST.json',
 ];
 
 const numbered = /^LOC[1-8](?:\b|[/_-])/i;
@@ -30,10 +34,17 @@ function walk(value, keyPath, inHistorical = false) {
       if (/^(authority|owner|owner_rule|primary_loc)$/i.test(key) && numbered.test(child)) failures.push(`${next}=${JSON.stringify(child)}`);
       if (/\bLOC[1-8]\b\s+(?:owns?|remains?\s+the\s+canonical\s+owner|authority)/i.test(child)) failures.push(`${next} contains numbered Current ownership: ${JSON.stringify(child)}`);
       if (/(?:owned\s+by|belongs\s+primarily\s+to)\s+LOC[1-8]\b/i.test(child)) failures.push(`${next} contains numbered Current ownership: ${JSON.stringify(child)}`);
+      if (/data\/json\/registries\/LOC[1-8](?:[/_-])/i.test(child)) failures.push(`${next} contains retired Current registry path: ${JSON.stringify(child)}`);
     }
     walk(child, next, historical);
   }
 }
+
+const registryDir = path.join(root, 'data/json/registries');
+for (const name of fs.readdirSync(registryDir)) {
+  if (/^LOC[1-8](?:[_-])/i.test(name)) failures.push(`data/json/registries/${name}: retired numbered filename in Current registry root`);
+}
+
 for (const rel of files) {
   const full = path.join(root, rel);
   if (!fs.existsSync(full)) { failures.push(`${rel}: missing guarded Current file`); continue; }
