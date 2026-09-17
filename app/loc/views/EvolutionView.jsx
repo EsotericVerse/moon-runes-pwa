@@ -52,18 +52,18 @@ export default function EvolutionView(){
   const stages=runeHistory?.system_stages||[];const governance=runeHistory?.governance_evolution||[];const semanticCases=runeHistory?.semantic_history_cases||[];
 
   return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Culture · 文化</p><h1><span className="loc-keyword-emphasis">文化</span></h1><p>文化由風格、時期、事件、價值與語意變化沿時間累積形成；此處整合 ERA、事件、時期風格、軌跡與 LunaRunes <span className="loc-keyword-emphasis">文化</span>觀察。</p></header>
+    <header className="loc-hero"><p className="loc-eyebrow">Culture · 文化</p><h1><span className="loc-keyword-emphasis">文化</span></h1><p>文化由風格、時期、事件、價值與語意變化沿時間累積形成；此處整合時期、事件、時期風格、軌跡與 LunaRunes <span className="loc-keyword-emphasis">文化</span>觀察。</p></header>
     <nav className="loc-tabs" aria-label="文化功能">{TABS.map(([id,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}>{label}</button>)}</nav>
     {error&&<div className="loc-status error">{error}</div>}
 
     {tab==='overview'&&<>{!eras?<div className="loc-loading">載入文化時期總覽…</div>:<>
       <div className="loc-metrics"><div><small>時期總數</small><strong>{eraRows.length}</strong></div><div><small>目前時期</small><strong>{currentEra?.period||'—'}</strong></div><div><small>目前起點</small><strong>{currentEra?.start_date||'—'}</strong></div></div>
-      <section className="loc-card"><p className="loc-eyebrow">Culture ERA · 文化時期</p><h2>現行時期</h2><div className="loc-timeline">{pageRows(eraRows,pages.overview,pageSize).map(item=><article key={item.era_id||item.period}><div><b>{item.display_label||`${item.period}｜${item.name||''}`}</b><span>{item.start_date||'—'} → {item.end_date||'現在'}</span></div><p>{item.description}</p></article>)}</div><Pagination page={pages.overview} total={eraRows.length} pageSize={pageSize} onChange={value=>setPage('overview',value)}/></section>
+      <section className="loc-card"><p className="loc-eyebrow">Culture · 文化時期</p><h2>現行時期</h2><div className="loc-timeline">{pageRows(eraRows,pages.overview,pageSize).map(item=><article key={item.era_id||item.period}><div><b>{item.display_label||`${item.period}｜${item.name||''}`}</b><span>{item.start_date||'—'} → {item.end_date||'現在'}</span></div><p>{item.description}</p></article>)}</div><Pagination page={pages.overview} total={eraRows.length} pageSize={pageSize} onChange={value=>setPage('overview',value)}/></section>
       <section className="loc-card"><p className="loc-eyebrow">LunaRunes Culture · 符文文化</p><h2>符文文化資料延後載入</h2><p>66 符逐枚歷程只在時間線頁籤下載；治理案例由治理資料提供，避免文化首頁預先讀取完整 history。</p></section>
     </>}</>}
 
     {tab==='eras'&&<>{!eras?<div className="loc-loading">載入時期設定…</div>:<>
-      <section className="loc-card"><p className="loc-eyebrow">ERA Governance · 時期治理</p><h2>文化時期設定</h2><p>時期是文化形成與語意變化的時間維度。LOC 的公開時期名稱與時間邊界由 <code>LOC_ERA_REGISTRY</code> 統一治理；搜尋、脈絡、Graph 與 corpus builder 僅引用這份設定。</p>{eras?.authority?.note&&<p className="loc-note">{eras.authority.note}</p>}</section>
+      <section className="loc-card"><p className="loc-eyebrow">時期治理</p><h2>文化時期設定</h2><p>時期是文化形成與語意變化的時間維度。LOC 的公開時期名稱與時間邊界由 <code>LOC_ERA_REGISTRY</code> 統一治理；搜尋、脈絡、Graph 與 corpus builder 僅引用這份設定。</p>{eras?.authority?.note&&<p className="loc-note">{eras.authority.note}</p>}</section>
       <div className="loc-context-list">{pageRows(eraRows,pages.eras,pageSize).map(item=><article className="loc-context-item" key={item.era_id||item.period}><div className="loc-result-meta"><span>{item.period}</span><span>{item.status||'historical'}</span></div><h3>{item.display_label||item.name}</h3><p>{item.start_date||'—'} → {item.end_date||'現在'}</p><p>{item.description}</p></article>)}</div><Pagination page={pages.eras} total={eraRows.length} pageSize={pageSize} onChange={value=>setPage('eras',value)}/>
     </>}</>}
 
