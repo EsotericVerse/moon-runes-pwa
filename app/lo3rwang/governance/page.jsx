@@ -1,3 +1,5 @@
+import ScopePeriodEditor from '../../loc/ScopePeriodEditor';
+
 export const metadata={title:'lo3rwang 治理｜Lucas Oscar Wang 政德'};
 
 const GOVERNANCE_ROOT = [
@@ -11,6 +13,8 @@ export default function Lo3rwangGovernancePage(){
     <header className="loc-hero"><p className="loc-eyebrow">lo3rwang Governance</p><h1>lo3rwang 治理</h1><p className="loc-subtitle">管理個人身份、政德風、作品脈絡、個人時期與歷史；共用 LOC 原則，但保有自己的資料與權威。</p></header>
 
     <section className="loc-card" id="lo3rwang-root"><p className="loc-eyebrow">Governance Root</p><h2>24 字人生觀</h2>{GOVERNANCE_ROOT.map(([root,note])=><p key={root}><strong>{root}</strong><br/>{note}</p>)}<p>這 24 字是個人自我治理與人生觀，不要求讀者、評論者或其他使用者採用相同價值判斷。</p></section>
+
+    <ScopePeriodEditor scope="lo3rwang"/>
 
     <div className="loc-grid two">
       <section className="loc-card"><p className="loc-eyebrow">Scope</p><h2>治理範圍</h2><p className="loc-core-line">lo3rwang Identity → 政德風 → Works／Keywords → ERA／History</p><p>lo3rwang Scope 管理個人身份、保留名稱、政德風、作品索引、關鍵字、個人 ERA、公開自我描述與相關歷史。這些內容不因被 LOC 搜尋或分析而改變所有權。</p></section>
