@@ -26,6 +26,7 @@ import './nav-release-check.mjs';
 import './nav-scope-resolver-contract.mjs';
 import './nav-no-manual-page-check.mjs';
 import './nav-scope-isolation-contract.mjs';
+import './nav-runes-page-composition-contract.mjs';
 import './nav-ready-check.mjs';
 import './nav-implementation-status-check.mjs';
 import './nav-scope-derivation-check.mjs';
