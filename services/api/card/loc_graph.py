@@ -7,15 +7,17 @@ from typing import Any
 
 
 class LOCGraph:
-    """Derived graph over authoritative LOC registries.
+    """Derived graph over governed LOC Scope/Feature registries.
 
     Nodes/edges are references. This graph never replaces canonical ownership.
     Only explicit registry evidence or deterministic structural evidence is used.
+    Historical LOC1–8 lineage may remain as provenance, never as Current ownership.
     """
 
     def __init__(self, repo_root: Path, runes: list[dict[str, Any]] | None = None, loc3_searcher: Any = None):
         self.repo_root = repo_root
-        self.shared_root = repo_root / "data" / "shared"
+        self.registry_root = repo_root / "data" / "json" / "registries"
+        self.core_root = repo_root / "data" / "json" / "core"
         self.runes = runes or []
         self.loc3_searcher = loc3_searcher
         self.nodes: dict[str, dict[str, Any]] = {}
@@ -24,8 +26,8 @@ class LOCGraph:
         self._in: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self._build()
 
-    def _load(self, name: str) -> dict[str, Any]:
-        p = self.shared_root / name
+    def _load_registry(self, name: str) -> dict[str, Any]:
+        p = self.registry_root / name
         if not p.exists():
             return {}
         try:
@@ -33,7 +35,16 @@ class LOCGraph:
         except Exception:
             return {}
 
-    def _node(self, node_id: str, node_type: str, title: str, primary_loc: str, **extra: Any) -> None:
+    def _load_core(self, name: str) -> dict[str, Any]:
+        p = self.core_root / name
+        if not p.exists():
+            return {}
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+
+    def _node(self, node_id: str, node_type: str, title: str, scope_id: str, **extra: Any) -> None:
         if not node_id:
             return
         current = self.nodes.get(node_id, {})
@@ -41,7 +52,7 @@ class LOCGraph:
             "node_id": node_id,
             "node_type": node_type,
             "title": title or node_id,
-            "primary_loc": primary_loc,
+            "scope_id": scope_id,
             **extra,
         }
         self.nodes[node_id] = {**current, **{k: v for k, v in payload.items() if v not in (None, "", [])}}
@@ -69,48 +80,47 @@ class LOCGraph:
         return str(row.get("名稱") or row.get("符文名稱") or row.get("name") or "")
 
     def _build(self) -> None:
-        # LOC domain nodes
-        for i in range(1, 9):
-            nid = f"LOC{i}"
-            self._node(nid, "loc_domain", nid, nid)
+        # Current Scope nodes. Features may consume these records without owning them.
+        self._node("scope:loc", "scope", "LOC", "loc")
+        self._node("scope:lunarunes", "scope", "LunaRunes / 月之符文", "lunarunes")
+        self._node("scope:lo3rwang", "scope", "lo3rwang", "lo3rwang")
 
-        # LOC1 runes + Lots
-        lots = self._load("lots.json")
+        # LunaRunes runes + Lots.
+        lots = self._load_core("lots.json")
         lots_by_name = {x.get("名稱"): x for x in lots.get("items", [])}
         for idx, rune in enumerate(self.runes, start=1):
             num = rune.get("編號") or idx
             name = self._rune_name(rune)
             rid = f"RUNE-{num}"
-            self._node(rid, "rune", f"{num} · {name}", "LOC1", rune_name=name)
-            self._edge(rid, "LOC1", "owned_by_loc", "rune source ownership")
+            self._node(rid, "rune", f"{num} · {name}", "lunarunes", rune_name=name)
+            self._edge(rid, "scope:lunarunes", "belongs_to_scope", "LunaRunes Current authority")
             lot = lots_by_name.get(name) or {}
             for direction, domain_map in (lot.get("方向") or {}).items():
                 for domain, text in (domain_map or {}).items():
                     lid = f"LOT-{num}-{direction}-{domain}"
-                    self._node(lid, "lot", f"{name} · {direction} · {domain}", "LOC1", summary=text)
-                    self._edge(rid, lid, "has_lot", "lots.json")
+                    self._node(lid, "lot", f"{name} · {direction} · {domain}", "lunarunes", summary=text)
+                    self._edge(rid, lid, "has_lot", "data/json/core/lots.json")
 
-        # LOC2 scenario events
-        loc2 = self._load("LOC2_EVENT_REGISTRY.json")
-        for item in loc2.get("events", []):
+        # Context scenario events.
+        events = self._load_registry("CONTEXT_EVENT_REGISTRY.json")
+        for item in events.get("events", []) or events.get("records", []):
             eid_raw = item.get("event_id") or item.get("id")
             if not eid_raw:
                 continue
             eid = str(eid_raw)
-            self._node(eid, "scenario_event", item.get("title") or eid, "LOC2", summary=item.get("description"))
-            self._edge(eid, "LOC2", "owned_by_loc", "LOC2_EVENT_REGISTRY")
+            self._node(eid, "scenario_event", item.get("title") or eid, str(item.get("scope_id") or "loc"), summary=item.get("description"))
+            self._edge(eid, "scope:loc", "available_to_feature", "CONTEXT_EVENT_REGISTRY")
 
-        # LOC3 works
+        # Music works in lo3rwang Scope.
         for work in getattr(self.loc3_searcher, "works", []) or []:
             wid = str(work.get("work_id") or "")
             if not wid:
                 continue
-            self._node(wid, "music_work", work.get("title") or wid, "LOC3", era_id=work.get("era_id"), period=work.get("period"))
-            self._edge(wid, "LOC3", "owned_by_loc", "LOC3 indexed corpus")
+            self._node(wid, "music_work", work.get("title") or wid, "lo3rwang", era_id=work.get("era_id"), period=work.get("period"))
+            self._edge(wid, "scope:lo3rwang", "belongs_to_scope", "Music indexed corpus")
             era_id = work.get("era_id")
             if era_id:
-                self._edge(wid, era_id, "belongs_to_era", "LOC3 work era metadata")
-            # Only preserved explicit draw provenance may create rune edges.
+                self._edge(wid, era_id, "belongs_to_era", "Music work era metadata")
             draw_result = work.get("draw_result") or []
             if isinstance(draw_result, list):
                 for card in draw_result:
@@ -122,82 +132,85 @@ class LOCGraph:
                             self._edge(f"RUNE-{rune.get('編號') or idx}", wid, "source_of", "preserved draw_result provenance")
                             break
 
-        # LOC4 writing
-        loc4 = self._load("LOC4_WRITING_REGISTRY.json")
-        for work in loc4.get("works", []):
+        # Writing works in their governed source Scope; current personal corpus defaults to lo3rwang.
+        writing = self._load_registry("WRITING_REGISTRY.json")
+        for work in writing.get("works", []):
             wid = str(work.get("work_id") or work.get("id") or "")
             if not wid:
                 continue
-            self._node(wid, "writing_work", work.get("title") or wid, "LOC4", era_id=work.get("era_id"), summary=work.get("summary"))
-            self._edge(wid, "LOC4", "owned_by_loc", "LOC4_WRITING_REGISTRY")
+            scope_id = str(work.get("scope_id") or "lo3rwang")
+            self._node(wid, "writing_work", work.get("title") or wid, scope_id, era_id=work.get("era_id"), summary=work.get("summary"))
+            if scope_id == "lo3rwang":
+                self._edge(wid, "scope:lo3rwang", "belongs_to_scope", "WRITING_REGISTRY")
             if work.get("era_id"):
-                self._edge(wid, work.get("era_id"), "belongs_to_era", "LOC4 work era metadata")
+                self._edge(wid, work.get("era_id"), "belongs_to_era", "Writing work era metadata")
 
-        # LOC5 media
-        media = self._load("LOC_MEDIA_REGISTRY.json")
+        # Media registry; ownership comes from record Scope, not historical distribution number.
+        media = self._load_registry("LOC_MEDIA_REGISTRY.json")
         for item in media.get("items", []):
             mid = str(item.get("media_id") or item.get("id") or "")
             if not mid:
                 continue
-            self._node(mid, "media", item.get("title") or mid, "LOC5")
-            self._edge(mid, "LOC5", "owned_by_loc", "LOC_MEDIA_REGISTRY")
+            scope_id = str(item.get("scope_id") or "lo3rwang")
+            self._node(mid, "media", item.get("title") or mid, scope_id)
+            if scope_id == "lo3rwang":
+                self._edge(mid, "scope:lo3rwang", "belongs_to_scope", "LOC_MEDIA_REGISTRY")
             for key in ("linked_work_id", "work_id", "linked_song_id"):
                 target = item.get(key)
                 if target:
                     self._edge(str(target), mid, "represented_by", f"LOC_MEDIA_REGISTRY.{key}")
 
-        # LOC6 governance fragments
-        gov = self._load("LOC6_GOVERNANCE_REGISTRY.json")
+        # lo3rwang governance fragments.
+        gov = self._load_registry("LO3RWANG_GOVERNANCE_REGISTRY.json")
         for item in gov.get("fragments", []) or gov.get("records", []):
             gid = str(item.get("fragment_id") or item.get("id") or "")
             if not gid:
                 continue
-            self._node(gid, "governance_fragment", item.get("title") or item.get("text") or gid, "LOC6")
-            self._edge(gid, "LOC6", "owned_by_loc", "LOC6_GOVERNANCE_REGISTRY")
+            self._node(gid, "governance_fragment", item.get("title") or item.get("text") or gid, "lo3rwang")
+            self._edge(gid, "scope:lo3rwang", "belongs_to_scope", "LO3RWANG_GOVERNANCE_REGISTRY")
 
-        # LOC7 knowledge assets
-        knowledge = self._load("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
+        # Knowledge assets keep their explicit Scope where available.
+        knowledge = self._load_registry("LOC_KNOWLEDGE_ASSET_REGISTRY.json")
         for asset in knowledge.get("assets", []):
             aid = str(asset.get("asset_id") or "")
             if not aid:
                 continue
-            ploc = asset.get("primary_loc") or "LOC7"
+            scope_id = str(asset.get("scope_id") or "loc")
             node_type = "image" if asset.get("content_type") == "knowledge_image" else "knowledge_asset"
-            self._node(aid, node_type, asset.get("title") or aid, ploc, path=asset.get("path"), role=asset.get("role"))
-            self._edge(aid, ploc, "owned_by_loc", "LOC_KNOWLEDGE_ASSET_REGISTRY")
+            self._node(aid, node_type, asset.get("title") or aid, scope_id, path=asset.get("path"), role=asset.get("role"))
 
-        # LOC8 eras + deterministic temporal order
-        era_doc = self._load("LOC_ERA_REGISTRY.json")
+        # ERA records are governed by their own Scope.
+        era_doc = self._load_registry("LOC_ERA_REGISTRY.json")
         eras = sorted(era_doc.get("eras", []), key=lambda x: x.get("order", 999))
-        prev = None
+        prev_by_scope: dict[str, str] = {}
         for era in eras:
             eid = str(era.get("era_id") or "")
             if not eid:
                 continue
-            self._node(eid, "era", era.get("display_label") or era.get("name") or eid, "LOC8",
+            scope_id = str(era.get("scope_id") or "loc")
+            self._node(eid, "era", era.get("display_label") or era.get("name") or eid, scope_id,
                        start_date=era.get("start_date"), end_date=era.get("end_date"))
-            self._edge(eid, "LOC8", "owned_by_loc", "LOC_ERA_REGISTRY")
+            prev = prev_by_scope.get(scope_id)
             if prev:
                 self._edge(prev, eid, "temporal_before", "ERA order")
                 self._edge(eid, prev, "temporal_after", "ERA order")
-            prev = eid
+            prev_by_scope[scope_id] = eid
 
-        # Explicit cross-LOC relationships
-        rels = self._load("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
+        # Explicit cross-Scope relationships.
+        rels = self._load_registry("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
         for rel in rels.get("relationships", []):
             src = rel.get("source") or {}
             sid = str(src.get("work_ref") or src.get("id") or "")
             if sid and sid not in self.nodes:
-                self._node(sid, "music_work" if src.get("primary_loc") == "LOC3" else "knowledge_asset",
-                           src.get("title") or sid, src.get("primary_loc") or "LOC7")
+                source_scope = str(src.get("scope_id") or "lo3rwang")
+                self._node(sid, "knowledge_asset", src.get("title") or sid, source_scope)
             for target in rel.get("targets", []):
                 tid = str(target.get("work_ref") or target.get("id") or "")
                 if not tid:
                     continue
                 if tid not in self.nodes:
-                    tloc = target.get("primary_loc") or "LOC7"
-                    ttype = "writing_work" if tloc == "LOC4" else ("media" if tloc == "LOC5" else "knowledge_asset")
-                    self._node(tid, ttype, target.get("title") or tid, tloc)
+                    target_scope = str(target.get("scope_id") or "lo3rwang")
+                    self._node(tid, "knowledge_asset", target.get("title") or tid, target_scope)
                 rtype = rel.get("relation_type") or "related_to"
                 mapped = "expanded_to" if "expansion" in rtype else ("adapted_to" if "adapt" in rtype else "related_to")
                 self._edge(sid, tid, mapped, rel.get("relationship_id") or "LOC_CROSS_RELATIONSHIP_REGISTRY",
