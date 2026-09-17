@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "manifest": "LOC_MANIFEST",
+  "status": "current",
+  "scope_id": "loc",
+  "scope_label": "LOC / Luna Codex / 月典",
+  "authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
+  "registries": [
+    "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",
+    "data/json/registries/LOC_GOVERNANCE_ROOT.json",
+    "data/json/registries/LOC_DATA_GOVERNANCE.json",
+    "data/json/registries/LOC_TERMINOLOGY_CANON.json",
+    "data/json/registries/LOC_REFERENCE_MODEL.json",
+    "data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json",
+    "data/json/registries/LOC_SOURCE_TYPE_REGISTRY.json",
+    "data/json/registries/LOC_CONTENT_TYPE_REGISTRY.json",
+    "data/json/registries/LOC_ANALYSIS_TYPE_REGISTRY.json",
+    "data/json/registries/LOC_SEARCH_GOVERNANCE.json"
+  ],
+  "rule": "LOC is the framework and shared governance layer. It does not absorb LunaRunes or lo3rwang Scope authority.",
+  "updated_at": "2026-09-17"
+}
