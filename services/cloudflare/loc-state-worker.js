@@ -1,5 +1,7 @@
 const ERA_KEY = 'loc:era:registry';
 const ALIAS_KEY = 'loc:alias:registry';
+const VISIBILITY_KEY = 'loc:visibility:registry';
+const GOVERNANCE_PROJECTION_KEY = 'loc:projection:governance';
 const DAILY_PREFIX = 'loc:daily-rune:';
 const DAILY_INDEX_KEY = 'loc:daily-rune:index';
 const CONTEXT_EVENTS_KEY = 'loc:context:events';
@@ -9,12 +11,15 @@ const EVOLUTION_RUNES_KEY = 'loc:evolution:runes';
 const EVOLUTION_LANGUAGE_KEY = 'loc:evolution:language';
 const ADMIN_COOKIE = 'loc_admin';
 const ADMIN_TTL = 60 * 60 * 8;
-const BUILD = '2026-09-17-kv-governance-v2';
+const BUILD = '2026-09-17-kv-governance-v3';
 
 const DEFAULT_ALIASES = Object.freeze([
   { alias: 'whoami', canonical: 'lo3rwang', scope: 'lo3rwang', status: 'legacy' },
   { alias: 'author', canonical: 'lo3rwang', scope: 'lo3rwang', status: 'legacy' }
 ]);
+
+const VISIBILITY_LEVELS = new Set(['private', 'internal', 'public']);
+const PROJECTION_LEVELS = new Set(['metadata', 'summary', 'full']);
 
 const json = (data, init = {}) => new Response(JSON.stringify(data), {
   ...init,
@@ -27,6 +32,7 @@ const json = (data, init = {}) => new Response(JSON.stringify(data), {
 
 const normalizeEra = row => ({
   ...row,
+  scope: String(row?.scope || '').trim(),
   era_id: String(row?.era_id || (row?.period ? `ERA-${row.period}` : '')),
   period: String(row?.period || ''),
   name: String(row?.name || ''),
@@ -44,6 +50,22 @@ const normalizeAlias = row => ({
   status: String(row?.status || 'current').trim() || 'current',
   updated_at: new Date().toISOString()
 });
+
+const normalizeVisibility = row => {
+  const visibility = VISIBILITY_LEVELS.has(String(row?.visibility || '')) ? String(row.visibility) : 'private';
+  const projectionLevel = PROJECTION_LEVELS.has(String(row?.projection_level || '')) ? String(row.projection_level) : 'metadata';
+  return {
+    scope: String(row?.scope || '').trim() || 'global',
+    resource_type: String(row?.resource_type || '').trim(),
+    resource_id: String(row?.resource_id || '').trim(),
+    visibility,
+    projection_level: projectionLevel,
+    search_indexed: Boolean(row?.search_indexed),
+    statistics_included: Boolean(row?.statistics_included),
+    semantic_scan_included: Boolean(row?.semantic_scan_included),
+    updated_at: new Date().toISOString()
+  };
+};
 
 const normalizeDaily = row => ({
   ...row,
@@ -93,6 +115,14 @@ const normalizeRelation = row => ({
   evidence: String(row?.evidence || ''),
   updated_at: new Date().toISOString()
 });
+
+function eraIdentity(row = {}) {
+  return `${String(row.scope || '')}|${String(row.period || '')}`;
+}
+
+function visibilityIdentity(row = {}) {
+  return `${String(row.scope || '')}|${String(row.resource_type || '')}|${String(row.resource_id || '')}`;
+}
 
 function dailyIdentity(row = {}) {
   return [String(row.date || ''), String(row.draw_kind || 'daily_draw'), String(row.rune || ''), String(row.direction || '')].join('|');
@@ -187,8 +217,14 @@ async function readEras(env) {
 }
 
 async function writeEras(env, payload) {
-  const eras = (payload?.eras || []).map(normalizeEra).filter(x => x.period);
-  const body = { schema_version: 'kv-1', updated_at: new Date().toISOString(), eras };
+  const map = new Map();
+  for (const raw of Array.isArray(payload?.eras) ? payload.eras : []) {
+    const row = normalizeEra(raw);
+    if (!row.period) continue;
+    map.set(eraIdentity(row), row);
+  }
+  const eras = [...map.values()].sort((a, b) => String(a.start_date || '').localeCompare(String(b.start_date || '')) || String(a.period).localeCompare(String(b.period)));
+  const body = { schema_version: 'kv-2', updated_at: new Date().toISOString(), eras };
   await env.LOC_KV.put(ERA_KEY, JSON.stringify(body));
   return body;
 }
@@ -210,6 +246,59 @@ async function writeAliases(env, payload) {
   const body = { schema_version: 'kv-1', updated_at: new Date().toISOString(), aliases };
   await env.LOC_KV.put(ALIAS_KEY, JSON.stringify(body));
   return body;
+}
+
+async function readVisibility(env) {
+  const data = await env.LOC_KV.get(VISIBILITY_KEY, 'json');
+  return Array.isArray(data?.records) ? data : { schema_version: 'kv-1', updated_at: null, records: [] };
+}
+
+async function writeVisibility(env, payload) {
+  const map = new Map();
+  for (const raw of Array.isArray(payload?.records) ? payload.records : []) {
+    const row = normalizeVisibility(raw);
+    if (!row.resource_type || !row.resource_id) continue;
+    map.set(visibilityIdentity(row), row);
+  }
+  const records = [...map.values()].sort((a, b) => visibilityIdentity(a).localeCompare(visibilityIdentity(b)));
+  const body = { schema_version: 'kv-1', updated_at: new Date().toISOString(), records };
+  await env.LOC_KV.put(VISIBILITY_KEY, JSON.stringify(body));
+  return body;
+}
+
+async function rebuildGovernanceProjection(env) {
+  const [aliases, eras, visibility] = await Promise.all([readAliases(env), readEras(env), readVisibility(env)]);
+  const publicResources = visibility.records
+    .filter(row => row.visibility === 'public')
+    .map(row => ({
+      scope: row.scope,
+      resource_type: row.resource_type,
+      resource_id: row.resource_id,
+      projection_level: row.projection_level,
+      search_indexed: row.search_indexed,
+      statistics_included: row.statistics_included,
+      semantic_scan_included: row.semantic_scan_included
+    }));
+  const projection = {
+    schema_version: 'governance-projection-1',
+    built_at: new Date().toISOString(),
+    aliases: aliases.aliases.map(({ alias, canonical, scope, status }) => ({ alias, canonical, scope, status })),
+    eras: eras.eras,
+    resources: publicResources,
+    counts: {
+      aliases: aliases.aliases.length,
+      eras: eras.eras.length,
+      governed_resources: visibility.records.length,
+      public_resources: publicResources.length
+    }
+  };
+  await env.LOC_KV.put(GOVERNANCE_PROJECTION_KEY, JSON.stringify(projection));
+  return projection;
+}
+
+async function readGovernanceProjection(env) {
+  const data = await env.LOC_KV.get(GOVERNANCE_PROJECTION_KEY, 'json');
+  return data && typeof data === 'object' ? data : null;
 }
 
 async function readCollection(env, key, field) {
@@ -311,7 +400,11 @@ export default {
 
     try {
       if (path === '/admin' || path === '/admin/') return handleAdmin(request, env);
-      if (path === '/' || path === '/health') return json({ ok: true, service: 'loc-state', kv: true, build: BUILD }, { headers: cors });
+      if (path === '/' || path === '/health') {
+        const visibility = await readVisibility(env);
+        const projection = await readGovernanceProjection(env);
+        return json({ ok: true, service: 'loc-state', kv: true, visibility_records: visibility.records.length, projection_built_at: projection?.built_at || null, build: BUILD }, { headers: cors });
+      }
 
       if (path === '/aliases') {
         if (request.method === 'GET') return json({ ok: true, build: BUILD, ...(await readAliases(env)) }, { headers: cors });
@@ -336,6 +429,40 @@ export default {
         return json({ ok: false, error: 'method not allowed', build: BUILD }, { status: 405, headers: cors });
       }
 
+      if (path === '/visibility') {
+        if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized', build: BUILD }, { status: 401, headers: cors });
+        if (request.method === 'GET') return json({ ok: true, build: BUILD, ...(await readVisibility(env)) }, { headers: cors });
+        if (request.method === 'PUT') return json({ ok: true, build: BUILD, ...(await writeVisibility(env, await request.json())) }, { headers: cors });
+        if (request.method === 'POST') {
+          const body = await request.json();
+          const current = await readVisibility(env);
+          const records = [...current.records];
+          if (body.action === 'delete') {
+            const key = visibilityIdentity(body.record || body);
+            return json({ ok: true, build: BUILD, ...(await writeVisibility(env, { records: records.filter(x => visibilityIdentity(x) !== key) })) }, { headers: cors });
+          }
+          const record = normalizeVisibility(body.record || body);
+          if (!record.resource_type || !record.resource_id) return json({ ok: false, error: 'resource_type_and_id_required', build: BUILD }, { status: 400, headers: cors });
+          const key = visibilityIdentity(record);
+          const i = records.findIndex(x => visibilityIdentity(x) === key);
+          if (i >= 0) records[i] = { ...records[i], ...record }; else records.push(record);
+          return json({ ok: true, build: BUILD, ...(await writeVisibility(env, { records })) }, { headers: cors });
+        }
+        return json({ ok: false, error: 'method not allowed', build: BUILD }, { status: 405, headers: cors });
+      }
+
+      if (path === '/projection-rebuild') {
+        if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized', build: BUILD }, { status: 401, headers: cors });
+        if (request.method === 'GET') return json({ ok: true, build: BUILD, projection: await readGovernanceProjection(env) }, { headers: cors });
+        if (request.method === 'POST') return json({ ok: true, build: BUILD, projection: await rebuildGovernanceProjection(env) }, { headers: cors });
+        return json({ ok: false, error: 'method not allowed', build: BUILD }, { status: 405, headers: cors });
+      }
+
+      if (path === '/projection/governance') {
+        if (request.method !== 'GET') return json({ ok: false, error: 'method not allowed', build: BUILD }, { status: 405, headers: cors });
+        return json({ ok: true, build: BUILD, projection: await readGovernanceProjection(env) }, { headers: cors });
+      }
+
       if (path === '/eras') {
         if (request.method === 'GET') return json({ ok: true, build: BUILD, ...(await readEras(env)) }, { headers: cors });
         if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized', build: BUILD }, { status: 401, headers: cors });
@@ -344,12 +471,14 @@ export default {
           const body = await request.json();
           const existing = await readEras(env);
           const eras = [...existing.eras];
+          const scope = String(body.scope || body.era?.scope || '').trim();
+          const period = String(body.period || body.era?.period || '');
           if (body.action === 'delete') {
-            const period = String(body.period || body.era?.period || '');
-            return json({ ok: true, build: BUILD, ...(await writeEras(env, { eras: eras.filter(x => String(x.period) !== period) })) }, { headers: cors });
+            return json({ ok: true, build: BUILD, ...(await writeEras(env, { eras: eras.filter(x => !(String(x.period) === period && String(x.scope || '') === scope)) })) }, { headers: cors });
           }
           const era = normalizeEra(body.era || body);
-          const i = eras.findIndex(x => String(x.period) === era.period);
+          const key = eraIdentity(era);
+          const i = eras.findIndex(x => eraIdentity(x) === key);
           if (i >= 0) eras[i] = { ...eras[i], ...era }; else eras.push(era);
           return json({ ok: true, build: BUILD, ...(await writeEras(env, { eras })) }, { headers: cors });
         }
@@ -399,12 +528,13 @@ export default {
           if (a === 'era' || a === 'update_era' || a === 'delete_era') {
             const existing = await readEras(env);
             const eras = [...existing.eras];
-            if (a === 'delete_era') {
-              const period = String(body.era?.period || body.period || '');
-              return json({ ok: true, build: BUILD, ...(await writeEras(env, { eras: eras.filter(x => String(x.period) !== period) })) }, { headers: cors });
-            }
             const era = normalizeEra(body.era || body);
-            const i = eras.findIndex(x => String(x.period) === era.period);
+            if (a === 'delete_era') {
+              const key = eraIdentity(era);
+              return json({ ok: true, build: BUILD, ...(await writeEras(env, { eras: eras.filter(x => eraIdentity(x) !== key) })) }, { headers: cors });
+            }
+            const key = eraIdentity(era);
+            const i = eras.findIndex(x => eraIdentity(x) === key);
             if (i >= 0) eras[i] = { ...eras[i], ...era }; else eras.push(era);
             return json({ ok: true, build: BUILD, ...(await writeEras(env, { eras })) }, { headers: cors });
           }
