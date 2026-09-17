@@ -86,7 +86,7 @@ export default function AboutView(){
         <div className="home-rune-copy home-rune-copy-plain">
           <p>不知道怎麼說的話，往下抽牌就對了！</p><p>沒什麼想問的，抽個每日符文看看吧！</p><p>月之符文的特有66符文字會給你提示籤詩，指引你的可能未來，</p><p>能是祝福可能是警告，你當然擁有選擇權。</p><p>抽牌讓這符文成語意種子，成為語意起點，<br/>用你想要的方式，成長成為完整語意的成熟果實。</p><p>最後的選擇權仍然在你的手上！</p>
           <div className="home-draw-bubbles" aria-label="選擇抽牌方式"><a className="loc-bubble" href="/runes?mode=single">抽單張</a><a className="loc-bubble" href="/runes?mode=daily">抽每日指示</a><a className="loc-bubble" href="/runes?mode=2card">抽兩張</a><a className="loc-bubble" href="/runes?mode=3card">抽三張</a><a className="loc-bubble" href="/runes?mode=5card">抽五張</a><a className="loc-bubble" href="/runes?mode=ow3gs">抽11張</a></div>
-          <div className="loc-actions home-rune-links"><a className="loc-button" href="/runes">符文圖鑑</a><a className="loc-button" href="/runes#governance">解牌規則</a><a className="loc-button" href="/runes#context">符文脈絡</a></div>
+          <div className="loc-actions home-rune-links"><a className="loc-button" href="/runes/list">符文圖鑑</a><a className="loc-button" href="/runes/governance">解牌規則</a><a className="loc-button" href="/runes/context">符文脈絡</a></div>
         </div>
       </div>
     </section>

@@ -28,15 +28,14 @@ function RuneQuickCard({card}){
   const definition=card?.符文說明||'';
   const archetype=card?.人格原型||'';
   const detailId=`rune-${number}`;
-  const openDetail=event=>{
-    event.preventDefault();
+  const openDetail=()=>{
     const detail=document.getElementById(detailId);
-    if(detail){detail.open=true;detail.scrollIntoView({behavior:'smooth',block:'center'});window.history.replaceState({},'',`#${detailId}`);}
+    if(detail){detail.open=true;detail.scrollIntoView({behavior:'smooth',block:'center'});}
   };
   return <article className="runes-library-card" data-rune-id={card?.編號}>
     <img className="runes-library-thumb" src={runeImage(card)} alt={`${name}之符文卡圖`} width="72" height="72" loading="lazy" decoding="async"/>
     <div className="runes-library-card-copy">
-      <strong>{number}. <a className="runes-rune-link" href={`#${detailId}`} onClick={openDetail}>{name}之符文</a> {card?.圖騰||''} {card?.英文?`(${card.英文})`:''}</strong>
+      <strong>{number}. <button type="button" className="runes-rune-link" onClick={openDetail}>{name}之符文</button> {card?.圖騰||''} {card?.英文?`(${card.英文})`:''}</strong>
       <span>{[definition,archetype].filter(Boolean).join(' ／ ')}</span>
     </div>
     <details className="runes-rune-detail" id={detailId}>
