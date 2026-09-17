@@ -9,8 +9,8 @@ const groups=[
     ['Scope Home Composition','單一媒體槽＋共用首頁 Hero 格式','/admin/modules'],
     ['NAV / Domain Resolver','Domain 優先，目錄其次','/'],
     ['Route / Page Registry','階層 route、manager route、page ownership','/admin/routes'],
-    ['Theme Registry','8 個共用 preset；Theme / 色彩由 Scope 層管理','/admin/themes'],
-    ['Management Hierarchy','Admin → Scope 管理 → 分支管理','/admin/modules']
+    ['Theme Registry','8 個共用 preset；實際 Theme / 色彩由分頁管理者設定','/admin/themes'],
+    ['管理層級','Admin 總管理者 → 分頁管理者 → 各功能管理者','/admin/modules']
   ]],
   ['治理與資料',[
     ['Domain Registry','Scope domain identity 與 canonical host','/admin/domains'],
@@ -19,6 +19,11 @@ const groups=[
     ['Projection Registry','visibility、projection、search/statistics/semantic/ranking/trend 控制','/admin/projection'],
     ['Audit Registry','治理與修改紀錄','/admin/audit'],
     ['Governance','全域治理與 freeze/override','/governance']
+  ]],
+  ['管理功能',[
+    ['分頁管理者','主題、輪調、首頁與共通分頁呈現','/theme/manage'],
+    ['脈絡管理者','脈絡資料、Graph、Event / Relation 管理','/context/manage'],
+    ['文化管理者','文化內容與文化分類管理','/culture/manage']
   ]],
   ['語言與分析',[
     ['Search','跨 Scope / Feature 查詢','/search'],
