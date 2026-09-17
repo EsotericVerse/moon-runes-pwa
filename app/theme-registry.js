@@ -5,16 +5,20 @@ export const SCOPE_THEME_SETTINGS_KEY='loc-scope-theme-settings-v1';
 
 export const THEME_TOKEN_KEYS=['--loc-bg','--loc-panel','--loc-panel-2','--loc-text','--loc-accent','--loc-gold','--loc-body-glow','--loc-body-mid','--loc-hero-start','--loc-hero-end'];
 export const SIMPLE_SCOPE_OVERRIDE_KEYS=['--loc-bg','--loc-panel','--loc-text','--loc-accent'];
+export const GROUP_IDENTITY_COLORS={
+  '靈魂':'#6FA8DC','連結':'#6A3FA0','生命':'#E67E22','自然':'#1F4D2B',
+  '礦物':'#8A817C','元素':'#A8432E','秩序':'#9DBA3A','無序':'#0B0B0B'
+};
 
 export const DEFAULT_THEME_SLOTS=[
-  {id:'theme-1',group:'靈魂',label:'靈魂組・永夜',scheme:'dark',enabled:true,order:1,tokens:{'--loc-bg':'#050912','--loc-panel':'#0b1220','--loc-panel-2':'#111c2e','--loc-text':'#eef2ff','--loc-accent':'#889cff','--loc-gold':'#c9b6ff','--loc-body-glow':'#151d43','--loc-body-mid':'#080d18','--loc-hero-start':'rgba(21,29,67,.94)','--loc-hero-end':'rgba(5,9,18,.94)'}},
-  {id:'theme-2',group:'連結',label:'連結組・亮藍',scheme:'dark',enabled:true,order:2,tokens:{'--loc-bg':'#061525','--loc-panel':'#0a2038','--loc-panel-2':'#0e2b49','--loc-text':'#edf8ff','--loc-accent':'#42b8ff','--loc-gold':'#93dcff','--loc-body-glow':'#0e4775','--loc-body-mid':'#071a2d','--loc-hero-start':'rgba(10,66,108,.94)','--loc-hero-end':'rgba(6,21,37,.94)'}},
-  {id:'theme-3',group:'生命',label:'生命組・亮橘',scheme:'light',enabled:true,order:3,tokens:{'--loc-bg':'#fff5e8','--loc-panel':'#fffaf3','--loc-panel-2':'#ffe8ca','--loc-text':'#402414','--loc-accent':'#f47b20','--loc-gold':'#c95c14','--loc-body-glow':'#ffd7ab','--loc-body-mid':'#fff0dd','--loc-hero-start':'rgba(255,219,178,.97)','--loc-hero-end':'rgba(255,248,239,.98)'}},
-  {id:'theme-4',group:'自然',label:'自然組・綠意',scheme:'light',enabled:true,order:4,tokens:{'--loc-bg':'#edf7ef','--loc-panel':'#f8fcf8','--loc-panel-2':'#dceedd','--loc-text':'#183623','--loc-accent':'#2f8f52','--loc-gold':'#6d8a3d','--loc-body-glow':'#c9e8ce','--loc-body-mid':'#e9f5eb','--loc-hero-start':'rgba(204,235,210,.97)','--loc-hero-end':'rgba(247,252,248,.98)'}},
-  {id:'theme-5',group:'礦物',label:'礦物組・銀白',scheme:'light',enabled:true,order:5,tokens:{'--loc-bg':'#eef1f4','--loc-panel':'#fbfcfd','--loc-panel-2':'#dde2e7','--loc-text':'#26313c','--loc-accent':'#718194','--loc-gold':'#9aa3ad','--loc-body-glow':'#d8dee5','--loc-body-mid':'#edf0f3','--loc-hero-start':'rgba(221,227,233,.97)','--loc-hero-end':'rgba(251,252,253,.98)'}},
-  {id:'theme-6',group:'元素',label:'元素組・鮮紅',scheme:'dark',enabled:true,order:6,tokens:{'--loc-bg':'#190607','--loc-panel':'#2a0c0e','--loc-panel-2':'#3a1114','--loc-text':'#fff0ef','--loc-accent':'#ff4d4f','--loc-gold':'#ff9a76','--loc-body-glow':'#5b1116','--loc-body-mid':'#22090b','--loc-hero-start':'rgba(92,18,24,.95)','--loc-hero-end':'rgba(25,6,7,.95)'}},
-  {id:'theme-7',group:'秩序',label:'秩序組・永日',scheme:'light',enabled:true,order:7,tokens:{'--loc-bg':'#f5f9fd','--loc-panel':'#ffffff','--loc-panel-2':'#e6f0f8','--loc-text':'#152c3f','--loc-accent':'#2c78b8','--loc-gold':'#b18a32','--loc-body-glow':'#d7eafa','--loc-body-mid':'#f1f7fb','--loc-hero-start':'rgba(225,240,251,.98)','--loc-hero-end':'rgba(255,255,255,.98)'}},
-  {id:'theme-8',group:'無序',label:'無序組・灰暗',scheme:'dark',enabled:true,order:8,tokens:{'--loc-bg':'#111214','--loc-panel':'#1a1c1f','--loc-panel-2':'#24272b','--loc-text':'#e3e4e6','--loc-accent':'#858b93','--loc-gold':'#aaa49a','--loc-body-glow':'#2a2d31','--loc-body-mid':'#161719','--loc-hero-start':'rgba(45,48,52,.95)','--loc-hero-end':'rgba(17,18,20,.95)'}}
+  {id:'theme-1',group:'靈魂',groupColor:'#6FA8DC',label:'靈魂組・永夜',scheme:'dark',enabled:true,order:1,tokens:{'--loc-bg':'#050912','--loc-panel':'#0b1220','--loc-panel-2':'#111c2e','--loc-text':'#eef2ff','--loc-accent':'#6FA8DC','--loc-gold':'#c9b6ff','--loc-body-glow':'#151d43','--loc-body-mid':'#080d18','--loc-hero-start':'rgba(21,29,67,.94)','--loc-hero-end':'rgba(5,9,18,.94)'}},
+  {id:'theme-2',group:'連結',groupColor:'#6A3FA0',label:'連結組・亮藍',scheme:'dark',enabled:true,order:2,tokens:{'--loc-bg':'#0b1021','--loc-panel':'#171633','--loc-panel-2':'#22204a','--loc-text':'#f5efff','--loc-accent':'#6A3FA0','--loc-gold':'#9ccfff','--loc-body-glow':'#222d66','--loc-body-mid':'#101529','--loc-hero-start':'rgba(36,44,96,.94)','--loc-hero-end':'rgba(11,16,33,.94)'}},
+  {id:'theme-3',group:'生命',groupColor:'#E67E22',label:'生命組・亮橘',scheme:'light',enabled:true,order:3,tokens:{'--loc-bg':'#fff5e8','--loc-panel':'#fffaf3','--loc-panel-2':'#ffe8ca','--loc-text':'#402414','--loc-accent':'#E67E22','--loc-gold':'#c95c14','--loc-body-glow':'#ffd7ab','--loc-body-mid':'#fff0dd','--loc-hero-start':'rgba(255,219,178,.97)','--loc-hero-end':'rgba(255,248,239,.98)'}},
+  {id:'theme-4',group:'自然',groupColor:'#1F4D2B',label:'自然組・綠意',scheme:'light',enabled:true,order:4,tokens:{'--loc-bg':'#edf7ef','--loc-panel':'#f8fcf8','--loc-panel-2':'#dceedd','--loc-text':'#183623','--loc-accent':'#1F4D2B','--loc-gold':'#6d8a3d','--loc-body-glow':'#c9e8ce','--loc-body-mid':'#e9f5eb','--loc-hero-start':'rgba(204,235,210,.97)','--loc-hero-end':'rgba(247,252,248,.98)'}},
+  {id:'theme-5',group:'礦物',groupColor:'#8A817C',label:'礦物組・銀白',scheme:'light',enabled:true,order:5,tokens:{'--loc-bg':'#eef1f4','--loc-panel':'#fbfcfd','--loc-panel-2':'#dde2e7','--loc-text':'#26313c','--loc-accent':'#8A817C','--loc-gold':'#a39a94','--loc-body-glow':'#d8dee5','--loc-body-mid':'#edf0f3','--loc-hero-start':'rgba(221,227,233,.97)','--loc-hero-end':'rgba(251,252,253,.98)'}},
+  {id:'theme-6',group:'元素',groupColor:'#A8432E',label:'元素組・鮮紅',scheme:'dark',enabled:true,order:6,tokens:{'--loc-bg':'#190706','--loc-panel':'#2a0d0a','--loc-panel-2':'#3a1510','--loc-text':'#fff0ed','--loc-accent':'#A8432E','--loc-gold':'#d78869','--loc-body-glow':'#5b1810','--loc-body-mid':'#220b08','--loc-hero-start':'rgba(92,28,20,.95)','--loc-hero-end':'rgba(25,7,6,.95)'}},
+  {id:'theme-7',group:'秩序',groupColor:'#9DBA3A',label:'秩序組・永日',scheme:'light',enabled:true,order:7,tokens:{'--loc-bg':'#f7faee','--loc-panel':'#ffffff','--loc-panel-2':'#edf3d6','--loc-text':'#2b3514','--loc-accent':'#9DBA3A','--loc-gold':'#a88d2d','--loc-body-glow':'#e7efc7','--loc-body-mid':'#f5f8ed','--loc-hero-start':'rgba(237,245,209,.98)','--loc-hero-end':'rgba(255,255,255,.98)'}},
+  {id:'theme-8',group:'無序',groupColor:'#0B0B0B',label:'無序組・灰暗',scheme:'dark',enabled:true,order:8,tokens:{'--loc-bg':'#0B0B0B','--loc-panel':'#181818','--loc-panel-2':'#242424','--loc-text':'#e3e3e3','--loc-accent':'#0B0B0B','--loc-gold':'#aaa49a','--loc-body-glow':'#2a2a2a','--loc-body-mid':'#141414','--loc-hero-start':'rgba(43,43,43,.95)','--loc-hero-end':'rgba(11,11,11,.95)'}}
 ];
 
 export const DEFAULT_SCOPE_THEME={loc:'theme-7',runes:'theme-1',lo3rwang:'theme-5'};
@@ -42,7 +46,7 @@ export function detectThemeScope(pathname='/',host=''){
 
 export function scopeThemeStorageKey(scope){return `${THEME_STORAGE_KEY}:${scope}`;}
 export function mergeThemeSlots(overrides={}){
-  return DEFAULT_THEME_SLOTS.map(slot=>({...slot,...(overrides[slot.id]||{}),tokens:{...slot.tokens,...((overrides[slot.id]||{}).tokens||{})}})).sort((a,b)=>a.order-b.order);
+  return DEFAULT_THEME_SLOTS.map(slot=>({...slot,...(overrides[slot.id]||{}),groupColor:GROUP_IDENTITY_COLORS[slot.group],tokens:{...slot.tokens,...((overrides[slot.id]||{}).tokens||{}),'--loc-accent':GROUP_IDENTITY_COLORS[slot.group]}})).sort((a,b)=>a.order-b.order);
 }
 export function themeForHour(schedule=DEFAULT_ROTATION_SCHEDULE,hour=new Date().getHours()){
   const ordered=[...schedule].sort((a,b)=>a.start-b.start);
