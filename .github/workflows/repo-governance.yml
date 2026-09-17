@@ -7,6 +7,7 @@ on:
       - "engine/**"
       - "tools/**"
       - "scripts/**"
+      - "services/**"
       - "data/**"
       - "docs/**"
       - "css/**"
@@ -25,6 +26,7 @@ on:
       - "engine/**"
       - "tools/**"
       - "scripts/**"
+      - "services/**"
       - "data/**"
       - "docs/**"
       - "css/**"
@@ -51,9 +53,11 @@ jobs:
           python-version: "3.12"
       - name: Validate repository layout
         run: node scripts/verify-directory-governance.mjs
+      - name: Validate Current semantic authority
+        run: node scripts/verify-current-semantics.mjs
       - name: Validate RC4 canonical integrity
         run: node scripts/verify-rc4-integrity.mjs
       - name: Validate legacy static runtime boundary
         run: python tools/check_static_runtime.py
       - name: Compile active Python tools
-        run: python -m compileall -q engine tools
+        run: python -m compileall -q engine tools services
