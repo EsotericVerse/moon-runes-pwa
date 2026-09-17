@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "schema": "LOC_SHARED_SCHEMA",
   "status": "current",
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
@@ -131,7 +131,7 @@
     "Natural-key collisions stop migration for explicit resolution; they are never silently overwritten or renumbered.",
     "History is evidence/reference only. Current Authority interprets History, not the reverse.",
     "Generated data, Search, RAG and UI are projections/consumers and never create governance authority.",
-    "NAV is a Frozen Interface and is outside this schema's write authority."
+    "NAV is a governed mutable Page Composition interface. It may evolve with Current Scope and Feature composition while preserving one official NAV, Scope isolation, canonical identities and route consistency."
   ],
-  "updated_at": "2026-09-17T12:14:00+08:00"
+  "updated_at": "2026-09-17T12:27:13+08:00"
 }

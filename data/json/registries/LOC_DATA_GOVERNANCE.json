@@ -1,8 +1,8 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "registry": "LOC_DATA_GOVERNANCE",
   "status": "current",
-  "updated_at": "2026-09-17T12:14:00+08:00",
+  "updated_at": "2026-09-17T12:27:13+08:00",
   "identity": {
     "loc": "LOC／月典 = Language Module Framework／語言系統模組框架",
     "lunarunes": "LunaRunes／月之符文 = Symbolic Language Module／符號式語言模組"
@@ -11,7 +11,7 @@
     "formula": "Scope Model × Feature Model → Page Composition",
     "scope_model": "The governed data and authority boundary of an instance.",
     "feature_model": "Reusable capabilities that consume a Scope without taking ownership of it.",
-    "page_composition": "A UI page composes a Scope with Features; navigation is a frozen interface and is not the Canon source.",
+    "page_composition": "A UI page composes a Scope with Features; navigation is a governed mutable Page Composition interface and is not the Canon source.",
     "numbered_loc_boundary": "LOC1–8 are Historical/provenance identifiers only. They do not define Current architecture, scope, module ownership, navigation taxonomy or Canon authority."
   },
   "authority_chain": ["LOC_DATA_GOVERNANCE","LOC_TERMINOLOGY_CANON","Current domain registries","generated projections","Search/RAG/UI consumers"],
@@ -56,6 +56,14 @@
     "adoption_grants_upstream_login": false,
     "aggregation_changes_source_ownership": false
   },
+  "navigation_governance": {
+    "mutable": true,
+    "single_nav_only": true,
+    "inherits_active_scope": true,
+    "canonical_identity_required": true,
+    "route_consistency_required": true,
+    "rule": "NAV may evolve when Current Scope or Feature composition changes. NAV changes must preserve one official NAV per interface, Scope boundaries, canonical identities and synchronized route/runtime/docs/tests. NAV is not Canon authority."
+  },
   "search_statistics": {
     "owned_by_scope": true,
     "integrated_results_require_review": true,
@@ -76,5 +84,5 @@
     "standard_license_selected": false
   },
   "historical_boundary": "Historical material is preserved as evidence/provenance but cannot supply Current aliases, fallbacks, authority maps, classifications or ownership.",
-  "navigation_boundary": "NAV is a Frozen Interface. It may change only through an explicit user-requested NAV change; Canon, generators and features must adapt to the existing NAV rather than rewriting it."
+  "navigation_boundary": "NAV is a governed mutable Page Composition interface. Current Scope and Feature changes may update it directly, provided the single-NAV rule, Scope isolation, canonical identities and route consistency remain valid."
 }

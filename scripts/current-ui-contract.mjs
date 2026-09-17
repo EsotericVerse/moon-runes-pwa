@@ -12,6 +12,8 @@ const sources={
   terminology:fs.readFileSync('data/json/registries/LOC_TERMINOLOGY_CANON.json','utf8'),
   groups:fs.readFileSync('data/json/core/runes66groups.json','utf8'),
   dataGovernance:fs.readFileSync('data/json/registries/LOC_DATA_GOVERNANCE.json','utf8'),
+  sharedSchema:fs.readFileSync('data/json/registries/LOC_SHARED_SCHEMA.json','utf8'),
+  languageSystem:fs.readFileSync('data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json','utf8'),
   pgsql:fs.readFileSync('data/json/registries/LOC_PGSQL_MIGRATION_CONTRACT.json','utf8'),
   navCanon:fs.readFileSync('docs/NAV_GOVERNANCE.md','utf8')
 };
@@ -29,10 +31,15 @@ const required=[
   [sources.terminology,'"canonical_host": "lo3rwang.cc"'],
   [sources.groups,'"group_zh":"秩序"'],
   [sources.dataGovernance,'Scope Model × Feature Model → Page Composition'],
+  [sources.dataGovernance,'"navigation_governance"'],
+  [sources.dataGovernance,'"mutable": true'],
   [sources.dataGovernance,'UUIDv7'],
+  [sources.sharedSchema,'NAV is a governed mutable Page Composition interface'],
+  [sources.languageSystem,'"lo3rwang_governance": "/lo3rwang/governance"'],
   [sources.pgsql,'"format": "UUIDv7"'],
   [sources.pgsql,'"persistent_mapping_required": true'],
   [sources.navCanon,'每個介面只有一條正式導覽列'],
+  [sources.navCanon,'NAV 是 **Page Composition 的可變介面**'],
   [sources.navCanon,'lo3rwang.cc'],
   [sources.navCanon,'manage.lo3rwang.cc']
 ];
@@ -42,7 +49,13 @@ const forbiddenNav=['author.lo3rwang.cc','whoami.lo3rwang.cc','lo3rwang.lo3rwang
 const forbiddenCurrent=[
   [sources.terminology,'定序'],
   [sources.groups,'定序'],
-  [sources.groups,'historical_aliases']
+  [sources.groups,'historical_aliases'],
+  [sources.dataGovernance,'Frozen Interface'],
+  [sources.sharedSchema,'Frozen Interface'],
+  [sources.languageSystem,'Frozen Interface'],
+  [sources.languageSystem,'"author_governance"'],
+  [sources.languageSystem,'"author": ['],
+  [sources.languageSystem,'/author/governance']
 ];
 const missing=required.filter(([source,token])=>!source.includes(token)).map(([,token])=>token);
 const forbidden=[...forbiddenHome.filter(token=>sources.home.includes(token)),...forbiddenNav.filter(token=>sources.nav.includes(token)),...forbiddenCurrent.filter(([source,token])=>source.includes(token)).map(([,token])=>token)];

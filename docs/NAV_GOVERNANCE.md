@@ -1,11 +1,23 @@
 # LOC 導覽治理原則
 
-**Status:** Current
+**Status:** Current  
 **Updated:** 2026-09-17
 
 ## 單一 NAV
 
 每個介面只有一條正式導覽列（NAV）。頁內目錄、本地功能入口、返回連結、架構圖與快捷選單可以存在，但都不是另一套 NAV。Current 文件與程式只使用「NAV」這個名稱。
+
+## NAV 可變治理
+
+NAV 是 **Page Composition 的可變介面**，不是 Canon，也不是 Frozen Interface。當 Current Scope、Feature、頁面組成或正式入口改變時，可以直接調整 NAV；不需要先解除凍結，也不要求另立 NAV2／NAV3。
+
+NAV 變更必須同時維持：
+
+- 每個介面只有一條正式 NAV。
+- NAV 繼承目前 Scope，不得因共用 route 串到錯誤 Scope。
+- Current canonical identity 與 host 不得回退成 retired identity。
+- `app/nav-route-map.js`、ScopeNav、文件與 NAV contract 必須同步。
+- 頁內快捷選單、返回連結與功能入口仍不是第二條 NAV。
 
 ## Scope 規則
 
@@ -26,7 +38,7 @@ NAV 必須繼承目前 Scope。脈絡、統計、文化、治理與搜尋是共�
 
 ## lo3rwang 個人入口
 
-`lo3rwang.cc` 是 lo3rwang 個人 Scope 的 canonical host。`author`、`whoami` 與衍生子網域不得作為 Current Scope ID、NAV identity 或 hostname。
+`lo3rwang.cc` 是 lo3rwang 個人 Scope 的 canonical host。`author`、`whoami` 與衍生子網域不得作為 Current Scope ID、NAV identity 或 hostname。Current 個人治理入口為 `/lo3rwang/governance`。
 
 ## 管理入口
 
