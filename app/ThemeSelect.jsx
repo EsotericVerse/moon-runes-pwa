@@ -1,48 +1,60 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import {DEFAULT_SCOPE_THEME,SCOPE_THEME_DEFAULTS_KEY,THEME_REGISTRY_OVERRIDE_KEY,THEME_STORAGE_KEY,detectThemeScope,mergeThemeSlots} from './theme-registry';
 
-const STORAGE_KEY='loc-theme';
+function readJson(key,fallback){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}}
 
-function themeForMode(mode){
-  if(mode==='light'||mode==='dark') return mode;
-  const hour=new Date().getHours();
-  return hour>=6&&hour<18?'light':'dark';
+function clearThemeTokens(){
+  const root=document.documentElement;
+  ['--loc-accent','--loc-gold'].forEach(key=>root.style.removeProperty(key));
 }
 
-function applyTheme(mode){
-  document.documentElement.dataset.theme=themeForMode(mode);
+function applyThemeSlot(slot){
+  const root=document.documentElement;
+  clearThemeTokens();
+  root.dataset.theme=slot.scheme==='light'?'light':'dark';
+  Object.entries(slot.tokens||{}).forEach(([key,value])=>{if(value)root.style.setProperty(key,value);});
 }
 
 export default function ThemeSelect(){
-  const [mode,setMode]=useState('auto');
+  const [selected,setSelected]=useState('');
+  const [registryVersion,setRegistryVersion]=useState(0);
+  const slots=useMemo(()=>{
+    if(typeof window==='undefined')return mergeThemeSlots({});
+    return mergeThemeSlots(readJson(THEME_REGISTRY_OVERRIDE_KEY,{}));
+  },[registryVersion]);
 
   useEffect(()=>{
-    const saved=localStorage.getItem(STORAGE_KEY);
-    const initial=saved==='light'||saved==='dark'||saved==='auto'?saved:'auto';
-    setMode(initial);
-    applyTheme(initial);
+    const scope=detectThemeScope(window.location.pathname,window.location.hostname);
+    const defaults=readJson(SCOPE_THEME_DEFAULTS_KEY,DEFAULT_SCOPE_THEME);
+    const saved=localStorage.getItem(THEME_STORAGE_KEY);
+    const enabled=slots.filter(slot=>slot.enabled);
+    const initial=enabled.some(slot=>slot.id===saved)?saved:(defaults[scope]||enabled[0]?.id||'theme-2');
+    setSelected(initial);
+    const slot=enabled.find(item=>item.id===initial)||enabled[0];
+    if(slot)applyThemeSlot(slot);
+  },[slots]);
+
+  useEffect(()=>{
+    const refresh=()=>setRegistryVersion(value=>value+1);
+    window.addEventListener('loc-theme-registry-change',refresh);
+    window.addEventListener('storage',refresh);
+    return ()=>{window.removeEventListener('loc-theme-registry-change',refresh);window.removeEventListener('storage',refresh);};
   },[]);
-
-  useEffect(()=>{
-    if(mode!=='auto') return undefined;
-    const timer=window.setInterval(()=>applyTheme('auto'),60000);
-    return ()=>window.clearInterval(timer);
-  },[mode]);
 
   function handleChange(event){
     const next=event.target.value;
-    setMode(next);
-    localStorage.setItem(STORAGE_KEY,next);
-    applyTheme(next);
+    setSelected(next);
+    localStorage.setItem(THEME_STORAGE_KEY,next);
+    const slot=slots.find(item=>item.id===next);
+    if(slot)applyThemeSlot(slot);
   }
 
   return <label className="loc-theme-control">
     <span>主題</span>
-    <select value={mode} onChange={handleChange} aria-label="主題">
-      <option value="auto">隨時間</option>
-      <option value="light">永日</option>
-      <option value="dark">永夜</option>
+    <select value={selected} onChange={handleChange} aria-label="主題">
+      {slots.filter(slot=>slot.enabled).map(slot=><option value={slot.id} key={slot.id}>{slot.label}</option>)}
     </select>
   </label>;
 }
