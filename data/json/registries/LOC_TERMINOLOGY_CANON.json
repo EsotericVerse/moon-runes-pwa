@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.3",
+  "schema_version": "2.4",
   "registry": "LOC_TERMINOLOGY_CANON",
   "status": "current",
   "effective_date": "2026-09-17",
@@ -8,13 +8,13 @@
   "current": {
     "LOC": {
       "canonical_names": ["LOC","Luna Codex","月典"],
-      "zh": "語言系統模組框架",
-      "en": "Language Module Framework"
+      "zh": "模組化語言框架",
+      "en": "Modular Language Framework"
     },
     "LunaRunes": {
       "canonical_names": ["LunaRunes","月之符文"],
-      "zh": "符號式語言模組",
-      "en": "Symbolic Language Module",
+      "zh": "符號式語言",
+      "en": "Symbolic Language",
       "group_authority": "data/json/core/runes66groups.json",
       "group_names": ["靈魂","連結","生命","自然","礦物","元素","秩序","無序","系統特別"],
       "group_rule": "Current LunaRunes group names and membership are defined only by data/json/core/runes66groups.json. 第七組固定為秩序（Order）；第九組固定為系統特別。"
