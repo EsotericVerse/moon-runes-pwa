@@ -1,26 +1,43 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {DEFAULT_ROTATION_SCHEDULE,SCOPE_THEME_SETTINGS_KEY,SIMPLE_SCOPE_OVERRIDE_KEYS,THEME_REGISTRY_OVERRIDE_KEY,detectThemeScope,mergeThemeSlots,scopeThemeSettings} from '../../theme-registry';
+import {DEFAULT_ROTATION_SCHEDULE,PAGE_THEME_SETTINGS_KEY,SCOPE_THEME_SETTINGS_KEY,SIMPLE_SCOPE_OVERRIDE_KEYS,THEME_REGISTRY_OVERRIDE_KEY,detectThemeScope,mergeThemeSlots,pageThemeKey,scopeThemeSettings} from '../../theme-registry';
 
 const LABELS={'--loc-bg':'首頁背景','--loc-panel':'文字框背景','--loc-text':'文字框文字','--loc-accent':'強調色'};
 function readJson(key,fallback){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}}
 
 export default function ScopeThemeManager(){
   const [scope,setScope]=useState('loc');
+  const [targetPage,setTargetPage]=useState('');
   const [settings,setSettings]=useState(null);
   const slots=useMemo(()=>typeof window==='undefined'?mergeThemeSlots({}):mergeThemeSlots(readJson(THEME_REGISTRY_OVERRIDE_KEY,{})),[]);
 
   useEffect(()=>{
     const currentScope=detectThemeScope(window.location.pathname,window.location.hostname);
+    const page=new URLSearchParams(window.location.search).get('page')||'';
     setScope(currentScope);
-    setSettings(scopeThemeSettings(currentScope,readJson(SCOPE_THEME_SETTINGS_KEY,{})));
+    setTargetPage(page);
+    const scopeSettings=scopeThemeSettings(currentScope,readJson(SCOPE_THEME_SETTINGS_KEY,{}));
+    if(page){
+      const pageStored=readJson(PAGE_THEME_SETTINGS_KEY,{});
+      const override=pageStored[pageThemeKey(currentScope,page)];
+      setSettings(override?{...scopeSettings,...override,custom:{...(scopeSettings.custom||{}),...(override.custom||{})},schedule:override.schedule||scopeSettings.schedule}:{...scopeSettings,mode:'inherit'});
+    }else setSettings(scopeSettings);
   },[]);
 
   function save(next){
     setSettings(next);
-    const stored=readJson(SCOPE_THEME_SETTINGS_KEY,{});
-    localStorage.setItem(SCOPE_THEME_SETTINGS_KEY,JSON.stringify({...stored,[scope]:next}));
+    if(targetPage){
+      const stored=readJson(PAGE_THEME_SETTINGS_KEY,{});
+      const key=pageThemeKey(scope,targetPage);
+      if(next.mode==='inherit'){
+        const copy={...stored}; delete copy[key];
+        localStorage.setItem(PAGE_THEME_SETTINGS_KEY,JSON.stringify(copy));
+      }else localStorage.setItem(PAGE_THEME_SETTINGS_KEY,JSON.stringify({...stored,[key]:next}));
+    }else{
+      const stored=readJson(SCOPE_THEME_SETTINGS_KEY,{});
+      localStorage.setItem(SCOPE_THEME_SETTINGS_KEY,JSON.stringify({...stored,[scope]:next}));
+    }
     window.dispatchEvent(new Event('loc-scope-theme-change'));
   }
   function patch(patchValue){save({...settings,...patchValue});}
@@ -35,12 +52,13 @@ export default function ScopeThemeManager(){
 
   return <div className="loc-view">
     <section className="loc-card">
-      <p className="loc-eyebrow">Scope Theme</p>
-      <h2>{scope} 主題設定</h2>
-      <p className="loc-subtitle">只修改目前 Scope；八組 preset 由 Admin 維護。</p>
+      <p className="loc-eyebrow">{targetPage?'Page Theme':'Scope Theme'}</p>
+      <h2>{targetPage?`${targetPage} 預設主題`:`${scope} 主題設定`}</h2>
+      <p className="loc-subtitle">{targetPage?'此設定只影響指定頁面；未設定時繼承目前 Scope。':'只修改目前 Scope；八組 preset 由 Admin 維護。'}</p>
       <div className="loc-grid two">
         <label>模式
           <select value={settings.mode} onChange={e=>patch({mode:e.target.value})}>
+            {targetPage&&<option value="inherit">繼承 Scope</option>}
             <option value="fixed">固定主題</option>
             <option value="time">隨時間輪調</option>
             <option value="custom">簡單自訂</option>
