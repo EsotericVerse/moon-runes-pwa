@@ -32,10 +32,9 @@ export default function RunesPage() {
   return <main className="loc-next-main">
     <header className="loc-hero runes-home-hero">
       <div className="runes-home-hero-copy">
-        <p className="loc-eyebrow">LunaRunes · 月之符文</p>
+        <p className="loc-eyebrow">LunaRunes</p>
         <h1>月之符文</h1>
-        <p><strong>第一次來？不用先弄懂它是什麼。</strong></p>
-        <p>最簡單的開始方式：先看一支短影片，或直接抽張牌。</p>
+        <p className="loc-subtitle">第一次來？不用先弄懂它是什麼。先看一支短影片，或直接抽張牌。</p>
       </div>
 
       <div className="runes-home-reels" aria-label="月之符文 Reels 預覽">
@@ -54,9 +53,9 @@ export default function RunesPage() {
 
     <section className="loc-card runes-quick-start" aria-labelledby="runes-quick-start-title">
       <div className="runes-content-heading">
-        <p className="loc-eyebrow">Quick Start · 先抽一張</p>
+        <p className="loc-eyebrow">Quick Start</p>
         <h2 id="runes-quick-start-title">你現在最想問哪一件事？</h2>
-        <p className="loc-subtitle">不用先學規則。挑一個方向，再往下抽單卡就可以。</p>
+        <p className="loc-subtitle">不用先學規則，挑一個方向，抽一張牌就可以開始。</p>
       </div>
       <div className="runes-topic-grid">
         {SINGLE_TOPICS.map(topic => <a className="runes-topic-choice" key={topic.key} href={`?mode=single&topic=${topic.key}#draw`}>
@@ -70,9 +69,9 @@ export default function RunesPage() {
 
     <section className="loc-card runes-reading-example-links" aria-labelledby="reading-example-title">
       <div className="runes-content-heading">
-        <p className="loc-eyebrow">Example · 解牌範例</p>
+        <p className="loc-eyebrow">Example</p>
         <h2 id="reading-example-title">想先看看實際怎麼解？</h2>
-        <p className="loc-subtitle">解牌範例只提供連結，不在首頁重複嵌入影片。</p>
+        <p className="loc-subtitle">從一個完整範例開始，看抽牌之後怎麼把結果連成解讀。</p>
       </div>
       <div className="links">
         {READING_EXAMPLES.map(example => <a key={example.url} href={example.url} target="_blank" rel="noopener noreferrer">{example.title} →</a>)}
@@ -84,22 +83,22 @@ export default function RunesPage() {
 
     <section className="loc-card runes-content-section" id="context">
       <div className="runes-content-heading">
-        <p className="loc-eyebrow">Context · 脈絡</p>
+        <p className="loc-eyebrow">Context</p>
         <h2>關鍵詞與符文演算法</h2>
-        <p className="loc-subtitle">已經想多了解一點，再從這裡看符文之間怎麼連起來。</p>
+        <p className="loc-subtitle">從詞與詞的關係，看符文之間怎麼連起來。</p>
       </div>
-      <p>月之符文的脈絡重點是詞與詞之間的關係：關鍵詞如何連到符文、群組、位置、方向與其他詞，再透過單卡、雙卡、三卡、五卡與 OW3gs 等演算法組合成可追溯的語意脈絡。</p>
-      <p>符文遊戲是脈絡的進階互動形式，不屬於文化延伸體系；先理解或進入符文脈絡，再由脈絡往遊戲深入。</p>
+      <p>關鍵詞可以連到符文、群組、位置、方向與其他詞，再透過單卡、雙卡、三卡、五卡與 OW3gs 等演算法組合成可追溯的語意脈絡。</p>
+      <p>符文遊戲是脈絡的進階互動形式，不屬於文化延伸體系；先從脈絡進入，再往遊戲深入。</p>
       <div className="links"><a href="/context">查看符文脈絡</a><a href="/search?q=符文關鍵詞">搜尋符文關鍵詞</a><a href="/search?q=符文演算法">搜尋符文演算法</a></div>
     </section>
 
     <section className="loc-card runes-content-section" id="culture">
       <div className="runes-content-heading">
-        <p className="loc-eyebrow">Culture · 文化</p>
+        <p className="loc-eyebrow">Culture</p>
         <h2>符文延伸體系</h2>
-        <p className="loc-subtitle">有興趣再往外看：小說、短文、歌曲、影像與其他作品。</p>
+        <p className="loc-subtitle">看月之符文如何延伸成小說、短文、歌曲、影像與其他作品。</p>
       </div>
-      <p>文化重點不是再解釋單一符文，而是看月之符文如何被延伸成不同形式：小說、短文、歌詞、音樂、影像與其他創作。想看哪一種，就從那個延伸體系直接進去。</p>
+      <p>文化不是再解釋單一符文，而是看符文如何進入不同形式的創作。想看哪一種，就從對應的延伸體系直接進去。</p>
       <div className="links"><a href="/search?q=符文文學">看符文文學</a><a href="/search?q=符文歌曲">看符文歌曲</a><a href="/evolution">看符文文化</a></div>
     </section>
   </main>;
