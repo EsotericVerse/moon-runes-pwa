@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.3",
+  "schema_version": "0.4",
   "registry": "MUSIC_KEYWORD_REGISTRY",
   "system_id": "lo3rwang",
   "scope_id": "lo3rwang",
@@ -11,10 +11,16 @@
   "status": "working",
   "updated_at": "2026-09-17",
   "rules": [
-    "命名概念與一般語義／意象分層治理。",
-    "自我治理為 canonical term；治理自己為 alias / creative-stage label。",
-    "Named concepts are retained in period analysis even when they are not among the top generic semantic tags.",
-    "「微光意象」不再作獨立 keyword；相關語義統一歸入「希望」，避免與專有名詞「微月光」形成重複統計。"
+    "命名概念與一般語義／意向分層治理。",
+    "作者專有關鍵詞的分類 ownership 與作品語意意向分開記錄；作者分類不得反向改寫 LunaRunes 通用語義。",
+    "在 lo3rwang Scope 中，作者正式命名或治理衍生的保留詞可歸入德之符文／作者專屬第 9 類；此歸屬只適用於作者 Scope。",
+    "作者分類唯一；作品語意意向可以另外呈現多個符文擺盪結果。",
+    "基本符文語意判斷只依直接核心語義與原則擺盪，不沿延伸聯想鏈推演。",
+    "微光屬於光的表現，不因微弱、殘留或希望聯想改判為塵、福或星。",
+    "微月光作為作者專有名詞時，其作者分類為德；其一般語意意向仍可表現為光，兩者不可混為同一欄位。",
+    "人生月台作為作者專有名詞時歸作者分類德，不按人生／月台字面拆解為其他符文。",
+    "在 lo3rwang Scope 中，治理／自我治理／治理自己屬作者治理衍生概念，作者分類為德；此規則不外推為一般中文或 LunaRunes 通用語義。",
+    "Named concepts are retained in period analysis even when they are not among the top generic semantic tags."
   ],
   "keywords": [
     {
@@ -28,6 +34,12 @@
         "光芒",
         "月亮月光"
       ],
+      "author_classification": "德",
+      "author_category": 9,
+      "author_scope_only": true,
+      "semantic_intent": [
+        "光"
+      ],
       "status": "Canonical"
     },
     {
@@ -36,14 +48,23 @@
       "aliases": [
         "Life Platform"
       ],
+      "author_classification": "德",
+      "author_category": 9,
+      "author_scope_only": true,
+      "semantic_intent": [],
       "status": "Canonical"
     },
     {
       "term": "自我治理",
       "keyword_type": "governance_concept",
       "aliases": [
-        "治理自己"
+        "治理自己",
+        "治理"
       ],
+      "author_classification": "德",
+      "author_category": 9,
+      "author_scope_only": true,
+      "semantic_intent": [],
       "status": "Canonical"
     },
     {
@@ -53,13 +74,20 @@
       "status": "Canonical"
     },
     {
-      "term": "希望",
+      "term": "微光",
       "keyword_type": "semantic",
       "aliases": [
-        "微光",
-        "微弱光線",
-        "微光／光芒意象"
+        "微弱光線"
       ],
+      "semantic_intent": [
+        "光"
+      ],
+      "status": "Stable"
+    },
+    {
+      "term": "希望",
+      "keyword_type": "semantic",
+      "aliases": [],
       "status": "Stable"
     }
   ],
