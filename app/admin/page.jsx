@@ -8,6 +8,7 @@ export const metadata={
 const modules=[
   ['使用中模組','/admin/modules'],
   ['Theme Registry','/admin/themes'],
+  ['語系設定','/admin/languages'],
   ['Route / Page Registry','/admin/routes'],
   ['Domain Registry','/admin/domains'],
   ['Source Registry','/admin/sources'],
