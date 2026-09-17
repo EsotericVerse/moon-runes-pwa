@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "registry": "LOC_PROJECTION_REGISTRY",
+  "status": "current",
+  "visibility_values": ["private","internal","public"],
+  "projection_levels": ["metadata","summary","full"],
+  "pipeline_flags": ["search_indexed","statistics_included","semantic_scan_included","ranking_included","trend_included"],
+  "default_private_policy": {"projection_level":"metadata","search_indexed":false,"statistics_included":false,"semantic_scan_included":false,"ranking_included":false,"trend_included":false},
+  "rules": ["Projection policy is evaluated independently from source retention.","Public projection must never require private vault/full-text data.","Global freeze or override may disable any pipeline without deleting source data."],
+  "records": []
+}
