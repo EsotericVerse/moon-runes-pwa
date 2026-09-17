@@ -35,32 +35,32 @@ export default function ClassifyView(){
 
   return <section className="loc-view">
     <header className="loc-hero">
-      <p className="loc-eyebrow">Local Classifier</p>
+      <p className="loc-eyebrow">Classification</p>
       <h1>分類</h1>
-      <p className="loc-subtitle">依目前群組規則在本機分析文字，結果可直接存入資料庫。</p>
+      <p className="loc-subtitle">依目前的分類規則分析文字，查看群組與關鍵詞的歸屬。</p>
     </header>
 
     <section className="loc-card">
       <div className="loc-record-form">
         <label>標題<input value={title} onChange={e=>setTitle(e.target.value)} placeholder="例如：今天的筆記"/></label>
-        <label>來源<input value={source} onChange={e=>setSource(e.target.value)} placeholder="manual / notes / file"/></label>
+        <label>來源<input value={source} onChange={e=>setSource(e.target.value)} placeholder="手動輸入／筆記／檔案"/></label>
         <label className="wide">文字<textarea rows="10" value={text} onChange={e=>setText(e.target.value)} placeholder="貼上要分類的文字。"/></label>
       </div>
       <div className="loc-actions">
         <label className="loc-button">載入 TXT／MD<input className="loc-hidden-input" type="file" accept="text/plain,text/markdown,.txt,.md" onChange={loadTextFile}/></label>
-        <button className="loc-button primary" onClick={save} disabled={!text.trim()}>分類後存入資料庫</button>
+        <button className="loc-button primary" onClick={save} disabled={!text.trim()}>分類並儲存</button>
         <button className="loc-button" onClick={()=>{setTitle('');setText('');setSource('manual');setMessage('')}}>清除</button>
       </div>
       {message&&<p className="loc-status">{message}</p>}
     </section>
 
     <section className="loc-card">
-      <p className="loc-eyebrow">Classification Result</p>
+      <p className="loc-eyebrow">Result</p>
       <h2>分類結果</h2>
-      <p className="loc-subtitle">顯示文字命中的群組與關鍵詞，並保留預設承接結果。</p>
+      <p className="loc-subtitle">查看文字對應的群組、關鍵詞與目前判定。</p>
       {!result?<p className="loc-status">輸入文字後會立即顯示結果。</p>:<>
-        <div className="loc-chip-list">{result.matches.map(item=><span key={item.id}>{item.name}{item.hits.length?` · ${item.hits.join('、')}`:' · fallback'}</span>)}</div>
-        <p className="loc-status">{result.fallback?'沒有命中自訂群組，進入預設承接組。':'只顯示實際命中的群組與關鍵詞。'}</p>
+        <div className="loc-chip-list">{result.matches.map(item=><span key={item.id}>{item.name}{item.hits.length?` · ${item.hits.join('、')}`:' · 預設'}</span>)}</div>
+        <p className="loc-status">{result.fallback?'沒有命中其他群組，暫由預設群組承接。':'顯示目前實際命中的群組與關鍵詞。'}</p>
       </>}
     </section>
   </section>;
