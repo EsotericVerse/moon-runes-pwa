@@ -23,6 +23,15 @@ jobs:
           python-version: "3.12"
       - name: Migrate Current registry semantics
         run: python scripts/migrate-current-registry-semantics.py
+      - name: Remove final numbered Writing ownership phrase
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('data/json/registries/WRITING_REGISTRY.json')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('do not duplicate raw records solely to represent LOC4 ownership','do not duplicate raw records solely to represent historical distribution ownership')
+          p.write_text(s,encoding='utf-8')
+          PY
       - name: Validate Current semantic authority
         run: node scripts/verify-current-semantics.mjs
       - name: Commit migration
