@@ -1,8 +1,8 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "2.1",
   "registry": "LOC_TERMINOLOGY_CANON",
   "status": "current",
-  "effective_date": "2026-09-16",
+  "effective_date": "2026-09-17",
   "authority": "LOC_DATA_GOVERNANCE",
   "purpose": "Current terminology source. Historical records may retain superseded terms only when explicitly marked Historical.",
   "current": {
@@ -14,7 +14,10 @@
     "LunaRunes": {
       "canonical_names": ["LunaRunes", "月之符文"],
       "zh": "符號式語言模組",
-      "en": "Symbolic Language Module"
+      "en": "Symbolic Language Module",
+      "group_authority": "data/json/core/runes66groups.json",
+      "group_names": ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "系統特別"],
+      "group_rule": "Current LunaRunes group names and membership must be read from data/json/core/runes66groups.json. 第七組固定為秩序（Order）；定序僅可作 Historical alias，不得出現在 Current projection。第九組 Current 名稱為系統特別。"
     },
     "scope": {
       "zh": "資料範圍",
@@ -33,11 +36,15 @@
     }
   },
   "historical_only": {
-    "retired_numbered_architecture": "LOC1–8 are Historical/provenance identifiers only and are forbidden as Current architecture, scope, module ownership, navigation taxonomy or Canon authority.",
-    "retired_multi_nav_terms": "Former numbered navigation-layer names are Historical only."
+    "retired_numbered_architecture": "LOC1–8 are Historical/provenance identifiers only and are forbidden as Current architecture, scope, module ownership, navigation taxonomy, registry authority or Current file naming.",
+    "retired_multi_nav_terms": "Former numbered navigation-layer names are Historical only.",
+    "rune_group_aliases": {
+      "定序": "Historical only; Current = 秩序",
+      "特殊": "Historical shorthand; Current ninth group = 系統特別"
+    }
   },
-  "authority_chain": ["LOC_DATA_GOVERNANCE", "LOC_TERMINOLOGY_CANON", "Current domain registries", "generated projections", "Search/RAG/UI consumers"],
+  "authority_chain": ["LOC_DATA_GOVERNANCE", "LOC_TERMINOLOGY_CANON", "data/json/core/runes66groups.json", "Current domain registries", "generated projections", "Search/RAG/UI consumers"],
   "projection_rule": "Generated data is a disposable projection of Current authority and never becomes governance authority.",
-  "migration_rule": "Consumers must prefer current values in this registry. Do not rewrite historical evidence; explicitly mark it Historical or superseded.",
+  "migration_rule": "Consumers must prefer current values in this registry and the owning Scope authority. Do not rewrite historical evidence; explicitly mark it Historical or superseded.",
   "display_rule": "Public Current copy uses Current terminology and the owning Scope's governed labels."
 }
