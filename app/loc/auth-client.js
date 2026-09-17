@@ -54,12 +54,13 @@ export async function managementRequest(path,{method='GET',body}={}){
 
 export async function getManagementSession(){
   if(!managementAuthConfigured()) return null;
-  try{
-    return await managementRequest('/session');
-  }catch(error){
-    if(String(error?.message||'').includes('management_access_denied'))return null;
-    throw error;
-  }
+  const response=await fetch(`${authBaseUrl()}/management/session`,{
+    method:'GET',credentials:'include',headers:{accept:'application/json'},cache:'no-store'
+  });
+  if(response.status===401)return null;
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok||data?.ok===false)throw new Error(data?.error||`management_session_failed:${response.status}`);
+  return data?.authorized?data:null;
 }
 
 export function managementHasPermission(session, permission){
