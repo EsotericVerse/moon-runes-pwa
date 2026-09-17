@@ -23,3 +23,8 @@
   width:100%;
   height:auto;
 }
+
+/* Theme text overrides: page/scope themes may tune text independently from surfaces. */
+:root{--loc-heading:var(--loc-text);--loc-input-text:var(--loc-text)}
+h1,h2,h3,h4,h5,h6{color:var(--loc-heading)}
+input,select,textarea{color:var(--loc-input-text)}
