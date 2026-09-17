@@ -9,13 +9,13 @@ export const SIMPLE_SCOPE_OVERRIDE_KEYS=['--loc-bg','--loc-panel','--loc-text','
 // Frozen/group identity colors are semantic references from the card system.
 // Website palettes are derived for readability and do not have to reuse these exact dark card colors.
 export const GROUP_IDENTITY_COLORS={
-  '靈魂':'#6FA8DC','連結':'#6A3FA0','生命':'#E67E22','自然':'#1F4D2B',
+  '靈魂':'#3F3B8F','連結':'#6FA8DC','生命':'#E67E22','自然':'#1F4D2B',
   '礦物':'#8A817C','元素':'#A8432E','秩序':'#9DBA3A','無序':'#0B0B0B'
 };
 
 export const DEFAULT_THEME_SLOTS=[
-  {id:'theme-1',group:'靈魂',identityColor:'#6FA8DC',label:'靈魂組・永夜',scheme:'dark',enabled:true,order:1,tokens:{'--loc-bg':'#07111f','--loc-panel':'#0d1a2b','--loc-panel-2':'#14263d','--loc-text':'#eef5ff','--loc-accent':'#86baf0','--loc-gold':'#c8b8ff','--loc-body-glow':'#173659','--loc-body-mid':'#0a1626','--loc-hero-start':'rgba(21,48,80,.94)','--loc-hero-end':'rgba(7,17,31,.94)'}},
-  {id:'theme-2',group:'連結',identityColor:'#6A3FA0',label:'連結組・亮藍',scheme:'dark',enabled:true,order:2,tokens:{'--loc-bg':'#071726','--loc-panel':'#0c2238','--loc-panel-2':'#11304e','--loc-text':'#eef8ff','--loc-accent':'#42b8ff','--loc-gold':'#a8dfff','--loc-body-glow':'#12517f','--loc-body-mid':'#081d31','--loc-hero-start':'rgba(15,76,121,.94)','--loc-hero-end':'rgba(7,23,38,.94)'}},
+  {id:'theme-1',group:'靈魂',identityColor:'#3F3B8F',label:'靈魂組・深靛永夜',scheme:'dark',enabled:true,order:1,tokens:{'--loc-bg':'#090b20','--loc-panel':'#11142c','--loc-panel-2':'#1a1e3d','--loc-text':'#f1f0ff','--loc-accent':'#5d5bc4','--loc-gold':'#c8b8ff','--loc-body-glow':'#173659','--loc-body-mid':'#0a1626','--loc-hero-start':'rgba(21,48,80,.94)','--loc-hero-end':'rgba(7,17,31,.94)'}},
+  {id:'theme-2',group:'連結',identityColor:'#6FA8DC',label:'連結組・淺藍',scheme:'dark',enabled:true,order:2,tokens:{'--loc-bg':'#071726','--loc-panel':'#0c2238','--loc-panel-2':'#11304e','--loc-text':'#eef8ff','--loc-accent':'#42b8ff','--loc-gold':'#a8dfff','--loc-body-glow':'#12517f','--loc-body-mid':'#081d31','--loc-hero-start':'rgba(15,76,121,.94)','--loc-hero-end':'rgba(7,23,38,.94)'}},
   {id:'theme-3',group:'生命',identityColor:'#E67E22',label:'生命組・亮橘',scheme:'light',enabled:true,order:3,tokens:{'--loc-bg':'#fff5e8','--loc-panel':'#fffaf3','--loc-panel-2':'#ffe4c2','--loc-text':'#402414','--loc-accent':'#f28a2e','--loc-gold':'#c96219','--loc-body-glow':'#ffd5a6','--loc-body-mid':'#fff0dc','--loc-hero-start':'rgba(255,216,168,.97)','--loc-hero-end':'rgba(255,249,241,.98)'}},
   {id:'theme-4',group:'自然',identityColor:'#1F4D2B',label:'自然組・綠意',scheme:'light',enabled:true,order:4,tokens:{'--loc-bg':'#eef8ef','--loc-panel':'#fbfdfb','--loc-panel-2':'#dbeedc','--loc-text':'#17351f','--loc-accent':'#3f9d5c','--loc-gold':'#718a42','--loc-body-glow':'#c6e8cb','--loc-body-mid':'#eaf6ec','--loc-hero-start':'rgba(201,235,207,.97)','--loc-hero-end':'rgba(249,253,250,.98)'}},
   {id:'theme-5',group:'礦物',identityColor:'#8A817C',label:'礦物組・銀白',scheme:'light',enabled:true,order:5,tokens:{'--loc-bg':'#eef2f5','--loc-panel':'#fcfdfe','--loc-panel-2':'#dde4ea','--loc-text':'#28333d','--loc-accent':'#8594a3','--loc-gold':'#a49a92','--loc-body-glow':'#d5dde4','--loc-body-mid':'#edf1f4','--loc-hero-start':'rgba(220,227,233,.97)','--loc-hero-end':'rgba(252,253,254,.98)'}},
