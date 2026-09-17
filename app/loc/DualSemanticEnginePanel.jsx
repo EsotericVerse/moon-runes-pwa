@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import keywordRegistry from '../../data/json/registries/MUSIC_KEYWORD_REGISTRY.json';
-import { compareKeywordScans, normalizeApiKeywordResult, scanGovernedKeywords } from '../lib/keyword-scan';
+import { compareKeywordScans, normalizeApiKeywordResult, scanGovernedKeywords } from './model/keyword-scan';
 import { managementHasPermission, runSemanticObserver } from './auth-client';
 
 export default function DualSemanticEnginePanel({session}){
