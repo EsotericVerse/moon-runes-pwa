@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.4",
+  "schema_version": "0.5",
   "registry": "ANALYSIS_LINGUISTIC_REGISTRY",
   "historical_registry_id": "LOC7_LINGUISTIC_ANALYSIS_REGISTRY",
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
@@ -60,8 +60,16 @@
   "existing_knowledge_assets": [
     "data/json/search/faq/LOC_FAQ_v0.4.json",
     "data/json/search/faq/LOC_FAQ_RAG_v0.4.json",
-    "governance.html"
+    "data/json/search/faq/LOC_FAQ_v0.5.json",
+    "data/json/registries/LOC_KM_KEYWORDS.json",
+    "data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json"
   ],
+  "faq_layering": {
+    "base_source": "data/json/search/faq/LOC_FAQ_v0.4.json",
+    "base_retrieval": "data/json/search/faq/LOC_FAQ_RAG_v0.4.json",
+    "current_semantic_overlay": "data/json/search/faq/LOC_FAQ_v0.5.json",
+    "rule": "Historical questions and aliases remain searchable; Current answer/category/retrieval semantics come from the v0.5 overlay before indexing or display."
+  },
   "boundary_note": "Linguistic, retrieval and KM/RAG capabilities are reusable Features. They consume records inside a governed Scope without taking ownership of that Scope. Meaning/value/governance and temporal analysis are separate Features, not numbered-module owners.",
   "historical_boundary": "LOC7 is retained only as a Historical/provenance identifier in migration evidence; it is not Current architecture, filename identity or authority.",
   "updated_at": "2026-09-17"
