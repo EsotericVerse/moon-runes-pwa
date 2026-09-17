@@ -3,7 +3,41 @@ import { betterAuth } from 'better-auth';
 const SESSION_TTL_SECONDS = 60 * 60 * 2;
 const AUTH_PATH = '/api/auth';
 const MANAGEMENT_STATE_PATH = '/management/state';
-const BUILD = '2026-09-14-better-auth-google-v3';
+const MANAGEMENT_SEMANTIC_PATH = '/management/semantic/analyze';
+const MANAGEMENT_NEON_STATUS_PATH = '/management/neon/status';
+const BUILD = '2026-09-17-layered-management-v2';
+
+const ADMIN_PERMISSIONS = Object.freeze([
+  'platform:admin',
+  'platform:routes:write',
+  'platform:visibility:write',
+  'platform:projection:rebuild',
+  'platform:neon:read',
+  'platform:semantic:run',
+  'scope:period:write',
+  'scope:lunarunes:write',
+  'scope:context:write'
+]);
+
+const STATE_PATH_PERMISSION = Object.freeze({
+  '/aliases': 'platform:routes:write',
+  '/visibility': 'platform:visibility:write',
+  '/projection-rebuild': 'platform:projection:rebuild',
+  '/eras': 'scope:period:write',
+  '/daily-runes': 'scope:lunarunes:write',
+  '/context': 'scope:context:write'
+});
+
+// Frozen Rune Canon is immutable by governance. Admin is not a bypass.
+const FROZEN_STATE_PATHS = new Set([
+  '/runes',
+  '/rune',
+  '/canon',
+  '/rune-canon',
+  '/lunarunes-core',
+  '/runes66',
+  '/base66'
+]);
 
 function splitList(value = '') {
   return String(value)
@@ -12,8 +46,27 @@ function splitList(value = '') {
     .filter(Boolean);
 }
 
+function emailSet(value = '') {
+  return new Set(splitList(value).map(email => email.toLowerCase()));
+}
+
 function adminEmailSet(env) {
-  return new Set(splitList(env.LOC_ADMIN_EMAILS).map(email => email.toLowerCase()));
+  return emailSet(env.LOC_ADMIN_EMAILS);
+}
+
+function editorEmailSets(env) {
+  return {
+    period: emailSet(env.LOC_PERIOD_EDITOR_EMAILS),
+    context: emailSet(env.LOC_CONTEXT_EDITOR_EMAILS),
+    semantic: emailSet(env.LOC_SEMANTIC_EDITOR_EMAILS)
+  };
+}
+
+function managementEmailSet(env) {
+  const emails = new Set(adminEmailSet(env));
+  const editors = editorEmailSets(env);
+  for (const set of Object.values(editors)) for (const email of set) emails.add(email);
+  return emails;
 }
 
 function requiredEnv(env) {
@@ -54,7 +107,7 @@ function json(data, init = {}) {
 }
 
 function createAuth(env) {
-  const admins = adminEmailSet(env);
+  const allowed = managementEmailSet(env);
   const cookieDomain = String(env.AUTH_COOKIE_DOMAIN || '').trim();
 
   return betterAuth({
@@ -79,7 +132,7 @@ function createAuth(env) {
           };
         }
         const email = String(user?.email || '').trim().toLowerCase();
-        if (!email || !admins.has(email)) {
+        if (!email || !allowed.has(email)) {
           return {
             error: 'management_access_denied',
             errorDescription: 'This Google account is not authorized for LOC management.'
@@ -129,12 +182,35 @@ function withCors(response, request, env) {
   });
 }
 
+function actorForEmail(email, env) {
+  if (!email) return null;
+  if (adminEmailSet(env).has(email)) {
+    return { role: 'admin', permissions: [...ADMIN_PERMISSIONS] };
+  }
+
+  const editors = editorEmailSets(env);
+  const permissions = [];
+  if (editors.period.has(email)) permissions.push('scope:period:write');
+  if (editors.context.has(email)) permissions.push('scope:context:write');
+  if (editors.semantic.has(email)) permissions.push('platform:semantic:run');
+  if (!permissions.length) return null;
+  return { role: 'scope-editor', permissions };
+}
+
 async function getManagementSession(request, env) {
   const auth = createAuth(env);
   const session = await auth.api.getSession({ headers: request.headers });
   const email = String(session?.user?.email || '').trim().toLowerCase();
-  const authorized = Boolean(email && adminEmailSet(env).has(email));
-  return { session, authorized };
+  const actor = actorForEmail(email, env);
+  return {
+    session,
+    authorized: Boolean(session && actor),
+    actor
+  };
+}
+
+function hasPermission(actor, permission) {
+  return Boolean(actor?.permissions?.includes('platform:admin') || actor?.permissions?.includes(permission));
 }
 
 function stateProxyConfig(env) {
@@ -144,10 +220,33 @@ function stateProxyConfig(env) {
   };
 }
 
+async function requireActor(request, env, permission) {
+  const { session, authorized, actor } = await getManagementSession(request, env);
+  if (!session || !authorized || !actor) return { error: 'management_access_denied', status: 401, actor: null };
+  if (permission && !hasPermission(actor, permission)) {
+    return { error: 'management_permission_denied', status: 403, required_permission: permission, actor };
+  }
+  return { session, actor };
+}
+
 async function proxyManagedState(request, env, url) {
-  const { session, authorized } = await getManagementSession(request, env);
-  if (!session || !authorized) {
-    return json({ ok: false, error: 'management_access_denied', build: BUILD }, { status: 401, headers: corsHeaders(request, env) });
+  const suffix = url.pathname.slice(MANAGEMENT_STATE_PATH.length) || '/';
+  if (FROZEN_STATE_PATHS.has(suffix)) {
+    return json({
+      ok: false,
+      error: 'frozen_rune_canon_read_only',
+      resource: suffix,
+      build: BUILD
+    }, { status: 403, headers: corsHeaders(request, env) });
+  }
+
+  const requiredPermission = STATE_PATH_PERMISSION[suffix];
+  if (!requiredPermission) {
+    return json({ ok: false, error: 'state_path_not_allowed', build: BUILD }, { status: 404, headers: corsHeaders(request, env) });
+  }
+  const gate = await requireActor(request, env, requiredPermission);
+  if (gate.error) {
+    return json({ ok: false, error: gate.error, required_permission: gate.required_permission || requiredPermission, build: BUILD }, { status: gate.status, headers: corsHeaders(request, env) });
   }
 
   const { baseURL, writeToken } = stateProxyConfig(env);
@@ -155,12 +254,7 @@ async function proxyManagedState(request, env, url) {
     return json({ ok: false, error: 'state_proxy_not_configured', build: BUILD }, { status: 503, headers: corsHeaders(request, env) });
   }
 
-  const suffix = url.pathname.slice(MANAGEMENT_STATE_PATH.length) || '/';
-  if (!['/eras', '/daily-runes', '/context'].includes(suffix)) {
-    return json({ ok: false, error: 'state_path_not_allowed', build: BUILD }, { status: 404, headers: corsHeaders(request, env) });
-  }
-
-  if (!['POST', 'PUT', 'DELETE'].includes(request.method)) {
+  if (!['GET', 'POST', 'PUT', 'DELETE'].includes(request.method)) {
     return json({ ok: false, error: 'method_not_allowed', build: BUILD }, { status: 405, headers: corsHeaders(request, env) });
   }
 
@@ -168,16 +262,90 @@ async function proxyManagedState(request, env, url) {
   target.search = url.search;
   const headers = new Headers();
   headers.set('authorization', `Bearer ${writeToken}`);
+  headers.set('x-loc-management-role', gate.actor.role);
+  headers.set('x-loc-management-permission', requiredPermission);
   const contentType = request.headers.get('content-type');
   if (contentType) headers.set('content-type', contentType);
 
   const response = await fetch(target, {
     method: request.method,
     headers,
-    body: request.body,
+    body: ['GET', 'HEAD'].includes(request.method) ? undefined : request.body,
     redirect: 'manual'
   });
   return withCors(response, request, env);
+}
+
+async function proxySemanticAnalysis(request, env) {
+  if (request.method !== 'POST') return json({ ok: false, error: 'method_not_allowed', build: BUILD }, { status: 405, headers: corsHeaders(request, env) });
+  const gate = await requireActor(request, env, 'platform:semantic:run');
+  if (gate.error) return json({ ok: false, error: gate.error, required_permission: 'platform:semantic:run', build: BUILD }, { status: gate.status, headers: corsHeaders(request, env) });
+
+  const endpoint = String(env.LOC_SEMANTIC_API_URL || '').trim();
+  if (!endpoint) return json({ ok: false, error: 'semantic_api_not_configured', configured: false, build: BUILD }, { status: 503, headers: corsHeaders(request, env) });
+
+  const input = await request.json().catch(() => ({}));
+  const body = {
+    ...input,
+    task: input.task || 'keyword_validation',
+    canon_write: false,
+    governance_mode: 'observer_only'
+  };
+  const headers = new Headers({ accept: 'application/json', 'content-type': 'application/json' });
+  const token = String(env.LOC_SEMANTIC_API_TOKEN || '').trim();
+  if (token) headers.set('authorization', `Bearer ${token}`);
+
+  const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), redirect: 'manual' });
+  const data = await response.json().catch(() => ({}));
+  return json({
+    ok: response.ok && data?.ok !== false,
+    configured: true,
+    observer_only: true,
+    result: data,
+    build: BUILD
+  }, { status: response.ok ? 200 : response.status, headers: corsHeaders(request, env) });
+}
+
+async function neonGovernanceStatus(request, env) {
+  if (request.method !== 'GET') return json({ ok: false, error: 'method_not_allowed', build: BUILD }, { status: 405, headers: corsHeaders(request, env) });
+  const gate = await requireActor(request, env, 'platform:neon:read');
+  if (gate.error) return json({ ok: false, error: gate.error, required_permission: 'platform:neon:read', build: BUILD }, { status: gate.status, headers: corsHeaders(request, env) });
+
+  const baseURL = String(env.LOC_NEON_GOVERNANCE_URL || '').trim().replace(/\/+$/, '');
+  const projectId = String(env.LOC_NEON_PROJECT_ID || '').trim();
+  if (!baseURL) {
+    return json({
+      ok: true,
+      configured: false,
+      project_id: projectId || null,
+      migration_state: 'not_started',
+      note: 'Governance adapter is ready; data migration is intentionally deferred.',
+      build: BUILD
+    }, { headers: corsHeaders(request, env) });
+  }
+
+  const headers = new Headers({ accept: 'application/json' });
+  const token = String(env.LOC_NEON_GOVERNANCE_TOKEN || '').trim();
+  if (token) headers.set('authorization', `Bearer ${token}`);
+  let health = null;
+  let reachable = false;
+  try {
+    const response = await fetch(`${baseURL}/health`, { method: 'GET', headers, redirect: 'manual' });
+    reachable = response.ok;
+    health = await response.json().catch(() => ({ status: response.status }));
+  } catch (error) {
+    health = { error: String(error?.message || error) };
+  }
+
+  return json({
+    ok: true,
+    configured: true,
+    reachable,
+    project_id: projectId || null,
+    migration_state: 'not_started',
+    health,
+    build: BUILD
+  }, { headers: corsHeaders(request, env) });
 }
 
 export default {
@@ -199,22 +367,31 @@ export default {
         provider: 'google',
         session_ttl_seconds: SESSION_TTL_SECONDS,
         management_state_proxy: Boolean(stateProxy.baseURL && stateProxy.writeToken),
+        management_model: 'rbac+scope+data-state',
+        frozen_rune_canon: true,
+        semantic_api_configured: Boolean(String(env.LOC_SEMANTIC_API_URL || '').trim()),
+        neon_governance_configured: Boolean(String(env.LOC_NEON_GOVERNANCE_URL || '').trim()),
         build: BUILD
       }, { headers: cors });
     }
 
     if (url.pathname === '/management/session') {
-      const { session, authorized } = await getManagementSession(request, env);
+      const { session, authorized, actor } = await getManagementSession(request, env);
       const allowed = authorized;
       return json({
         ok: allowed,
         authenticated: Boolean(session),
         authorized: allowed,
+        role: actor?.role || null,
+        permissions: actor?.permissions || [],
         user: allowed ? { name: session.user.name || '', email: session.user.email || '' } : null,
         session_expires_at: allowed ? session.session?.expiresAt || null : null,
         build: BUILD
       }, { status: allowed ? 200 : 401, headers: cors });
     }
+
+    if (url.pathname === MANAGEMENT_SEMANTIC_PATH) return proxySemanticAnalysis(request, env);
+    if (url.pathname === MANAGEMENT_NEON_STATUS_PATH) return neonGovernanceStatus(request, env);
 
     if (url.pathname === MANAGEMENT_STATE_PATH || url.pathname.startsWith(`${MANAGEMENT_STATE_PATH}/`)) {
       return proxyManagedState(request, env, url);

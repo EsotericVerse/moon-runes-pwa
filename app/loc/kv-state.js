@@ -17,7 +17,7 @@ export function kvStateConfigured(){
 }
 
 async function kvGet(path){
-  const response=await fetch(endpoint(path),{headers:{Accept:'application/json'}});
+  const response=await fetch(endpoint(path),{headers:{Accept:'application/json'},cache:'no-store'});
   const data=await response.json().catch(()=>({}));
   if(!response.ok||data?.ok===false)throw new Error(data?.error||`LOC State HTTP ${response.status}`);
   return data;
@@ -25,6 +25,16 @@ async function kvGet(path){
 
 export async function getKvStateHealth(){
   return kvGet('/health');
+}
+
+export async function getKvAliases(){
+  const data=await kvGet('/aliases');
+  return Array.isArray(data?.aliases)?data.aliases:[];
+}
+
+export async function getKvGovernanceProjection(){
+  const data=await kvGet('/projection/governance');
+  return data?.projection||null;
 }
 
 export async function getKvDailyRunes(limit=400){
