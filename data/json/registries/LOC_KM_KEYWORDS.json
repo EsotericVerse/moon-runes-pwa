@@ -100,7 +100,7 @@
           "status": "Stable",
           "scope": ["LOC", "LunaRunes", "Author"],
           "feature_scope": ["search"],
-          "note": "Search is a reusable Feature, not LOC7 ownership."
+          "note": "Search is a reusable Feature across governed Scopes."
         },
         {
           "term": "FAQ",
@@ -116,7 +116,7 @@
           "status": "Working",
           "scope": ["LOC", "LunaRunes", "Author"],
           "feature_scope": ["search", "retrieval"],
-          "note": "RAG is a retrieval derivative/technique, not KM or LOC7 ownership."
+          "note": "RAG is a retrieval derivative/technique consumed by Search and analysis workflows."
         },
         {
           "term": "Embedding",
@@ -145,7 +145,7 @@
           "status": "Stable",
           "scope": ["Governance", "LOC", "LunaRunes", "Author"],
           "feature_scope": ["governance"],
-          "note": "Governance is a shared Feature/context, not LOC6 ownership."
+          "note": "Governance is a shared Feature/context across governed Scopes."
         },
         {
           "term": "政德風",
