@@ -31,7 +31,7 @@ export default function GameView() {
 
   useEffect(() => {
     let live = true;
-    fetchLocJsonBatch([LOC_DATA.RUNES, LOC_DATA.LOC2_EVENT_REGISTRY], { concurrency: 2 })
+    fetchLocJsonBatch([LOC_DATA.RUNES, LOC_DATA.CONTEXT_EVENT_REGISTRY], { concurrency: 2 })
       .then(([runes, eventRegistry]) => {
         if (!live) return;
         const cards = createCards(runes);
@@ -152,9 +152,9 @@ export default function GameView() {
 
   return <section className="loc-view loc-game">
     <header className="loc-hero">
-      <p className="loc-eyebrow">LOC2 · Semantic Playground</p>
+      <p className="loc-eyebrow">Semantic Playground</p>
       <h1>脈絡沙盒遊戲</h1>
-      <p>兩位玩家各自使用 1–64 符文牌庫回答事件；先取得並守住 16 De 的玩家勝利。符文資料直接讀取 canonical runes.json，遊戲邏輯不保存第二份符文資料。</p>
+      <p>兩位玩家各自使用符文牌庫回答事件；先取得並守住 16 De 的玩家勝利。符文資料直接讀取 Current 核心資料，遊戲邏輯不保存第二份符文資料。</p>
     </header>
     <div className="loc-actions">
       <button className="loc-button primary" onClick={start} disabled={!data}>開始新遊戲</button>
