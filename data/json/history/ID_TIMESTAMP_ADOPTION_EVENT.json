@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "id": "history_event_id_timestamp_adoption_20260917",
+  "record_type": "governance_change_event",
+  "status": "historical_reference",
+  "entity_id": "loc_pgsql_migration_contract",
+  "occurred_at": "2026-09-17T12:04:03+08:00",
+  "recorded_at": "2026-09-17T12:04:03+08:00",
+  "summary": "LOC adopted immutable id and explicit Current/history timestamp fields to reduce future PostgreSQL migration and maintenance cost.",
+  "current_entity_fields": ["id", "created_at", "updated_at", "effective_at"],
+  "historical_event_fields": ["id", "entity_id", "occurred_at", "recorded_at"]
+}
