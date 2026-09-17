@@ -1,5 +1,6 @@
 const ERA_KEY = 'loc:era:registry';
 const ALIAS_KEY = 'loc:alias:registry';
+const ROUTE_TREE_KEY = 'loc:route:registry';
 const VISIBILITY_KEY = 'loc:visibility:registry';
 const GOVERNANCE_PROJECTION_KEY = 'loc:projection:governance';
 const DAILY_PREFIX = 'loc:daily-rune:';
@@ -11,7 +12,7 @@ const EVOLUTION_RUNES_KEY = 'loc:evolution:runes';
 const EVOLUTION_LANGUAGE_KEY = 'loc:evolution:language';
 const ADMIN_COOKIE = 'loc_admin';
 const ADMIN_TTL = 60 * 60 * 8;
-const BUILD = '2026-09-17-kv-governance-v3';
+const BUILD = '2026-09-17-kv-governance-v4-route-tree';
 
 const DEFAULT_ALIASES = Object.freeze([
   { alias: 'whoami', canonical: 'lo3rwang', scope: 'lo3rwang', status: 'legacy' },
@@ -20,6 +21,7 @@ const DEFAULT_ALIASES = Object.freeze([
 
 const VISIBILITY_LEVELS = new Set(['private', 'internal', 'public']);
 const PROJECTION_LEVELS = new Set(['metadata', 'summary', 'full']);
+const ROUTE_STATUSES = new Set(['current', 'draft', 'legacy', 'deprecated', 'disabled']);
 
 const json = (data, init = {}) => new Response(JSON.stringify(data), {
   ...init,
@@ -51,18 +53,37 @@ const normalizeAlias = row => ({
   updated_at: new Date().toISOString()
 });
 
+const normalizeRouteNode = row => ({
+  id: String(row?.id || crypto.randomUUID()).trim(),
+  label: String(row?.label || '').trim(),
+  segment: String(row?.segment || '').trim().replace(/^\/+|\/+$/g, ''),
+  parent_id: row?.parent_id ? String(row.parent_id).trim() : null,
+  host: String(row?.host || 'loc.lo3rwang.cc').trim().toLowerCase(),
+  scope: String(row?.scope || 'loc').trim() || 'loc',
+  page_type: String(row?.page_type || 'page').trim() || 'page',
+  manager_route: row?.manager_route ? String(row.manager_route).trim() : null,
+  status: ROUTE_STATUSES.has(String(row?.status || '')) ? String(row.status) : 'current',
+  order: Number.isFinite(Number(row?.order)) ? Number(row.order) : 0,
+  updated_at: new Date().toISOString()
+});
+
 const normalizeVisibility = row => {
   const visibility = VISIBILITY_LEVELS.has(String(row?.visibility || '')) ? String(row.visibility) : 'private';
   const projectionLevel = PROJECTION_LEVELS.has(String(row?.projection_level || '')) ? String(row.projection_level) : 'metadata';
+  const adminFrozen = Boolean(row?.admin_frozen);
   return {
     scope: String(row?.scope || '').trim() || 'global',
     resource_type: String(row?.resource_type || '').trim(),
     resource_id: String(row?.resource_id || '').trim(),
     visibility,
     projection_level: projectionLevel,
+    admin_frozen: adminFrozen,
+    freeze_reason: adminFrozen ? String(row?.freeze_reason || '').trim() : '',
     search_indexed: Boolean(row?.search_indexed),
-    statistics_included: Boolean(row?.statistics_included),
-    semantic_scan_included: Boolean(row?.semantic_scan_included),
+    statistics_included: adminFrozen ? false : Boolean(row?.statistics_included),
+    semantic_scan_included: adminFrozen ? false : Boolean(row?.semantic_scan_included),
+    ranking_included: adminFrozen ? false : Boolean(row?.ranking_included ?? row?.statistics_included),
+    trend_included: adminFrozen ? false : Boolean(row?.trend_included ?? row?.statistics_included),
     updated_at: new Date().toISOString()
   };
 };
@@ -248,6 +269,99 @@ async function writeAliases(env, payload) {
   return body;
 }
 
+function validateRouteNodes(nodes) {
+  const map = new Map(nodes.map(node => [node.id, node]));
+  for (const node of nodes) {
+    if (!node.id) throw new Error('route_id_required');
+    if (node.segment.includes('#') || node.segment.includes('/')) throw new Error(`route_segment_invalid:${node.id}`);
+    if (node.manager_route && node.manager_route.includes('#')) throw new Error(`manager_route_hash_forbidden:${node.id}`);
+    if (node.parent_id && !map.has(node.parent_id)) throw new Error(`route_parent_missing:${node.id}`);
+    if (node.parent_id === node.id) throw new Error(`route_parent_self:${node.id}`);
+    const seen = new Set([node.id]);
+    let parent = node.parent_id ? map.get(node.parent_id) : null;
+    while (parent) {
+      if (seen.has(parent.id)) throw new Error(`route_cycle:${node.id}`);
+      seen.add(parent.id);
+      parent = parent.parent_id ? map.get(parent.parent_id) : null;
+    }
+  }
+  const siblingKeys = new Set();
+  for (const node of nodes) {
+    const key = `${node.host}|${node.parent_id || 'root'}|${node.segment}`;
+    if (siblingKeys.has(key)) throw new Error(`route_duplicate_segment:${key}`);
+    siblingKeys.add(key);
+  }
+}
+
+function projectRouteNodes(nodes) {
+  const map = new Map(nodes.map(node => [node.id, node]));
+  const pathFor = node => {
+    const segments = [];
+    let current = node;
+    const seen = new Set();
+    while (current) {
+      if (seen.has(current.id)) throw new Error(`route_cycle:${node.id}`);
+      seen.add(current.id);
+      if (current.segment) segments.unshift(current.segment);
+      current = current.parent_id ? map.get(current.parent_id) : null;
+    }
+    return `/${segments.join('/')}`.replace(/\/{2,}/g, '/') || '/';
+  };
+  return nodes
+    .map(node => ({ ...node, full_route: pathFor(node) }))
+    .sort((a, b) => a.host.localeCompare(b.host) || a.full_route.localeCompare(b.full_route) || a.order - b.order);
+}
+
+async function readRoutes(env) {
+  const data = await env.LOC_KV.get(ROUTE_TREE_KEY, 'json');
+  if (!Array.isArray(data?.routes)) return { schema_version: 'route-tree-1', updated_at: null, routes: [] };
+  const routes = data.routes.map(normalizeRouteNode);
+  validateRouteNodes(routes);
+  return { ...data, routes: projectRouteNodes(routes) };
+}
+
+async function writeRoutes(env, payload) {
+  const routes = (Array.isArray(payload?.routes) ? payload.routes : []).map(normalizeRouteNode);
+  validateRouteNodes(routes);
+  const projected = projectRouteNodes(routes);
+  const body = { schema_version: 'route-tree-1', updated_at: new Date().toISOString(), routes: projected };
+  await env.LOC_KV.put(ROUTE_TREE_KEY, JSON.stringify(body));
+  return body;
+}
+
+async function mutateRoutes(env, body) {
+  const current = await readRoutes(env);
+  const routes = current.routes.map(({ full_route, ...node }) => node);
+  const action = String(body?.action || 'upsert');
+  if (action === 'delete') {
+    const id = String(body?.id || body?.route?.id || '');
+    if (routes.some(node => node.parent_id === id) && !body?.cascade) throw new Error('route_has_children');
+    const remove = new Set([id]);
+    if (body?.cascade) {
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const node of routes) if (node.parent_id && remove.has(node.parent_id) && !remove.has(node.id)) { remove.add(node.id); changed = true; }
+      }
+    }
+    return writeRoutes(env, { routes: routes.filter(node => !remove.has(node.id)) });
+  }
+  if (action === 'insert_parent') {
+    const childId = String(body?.child_id || '');
+    const childIndex = routes.findIndex(node => node.id === childId);
+    if (childIndex < 0) throw new Error('route_child_missing');
+    const child = routes[childIndex];
+    const parent = normalizeRouteNode({ ...(body?.route || {}), parent_id: child.parent_id, host: body?.route?.host || child.host, scope: body?.route?.scope || child.scope });
+    routes.push(parent);
+    routes[childIndex] = { ...child, parent_id: parent.id };
+    return writeRoutes(env, { routes });
+  }
+  const route = normalizeRouteNode(body?.route || body);
+  const index = routes.findIndex(node => node.id === route.id);
+  if (index >= 0) routes[index] = { ...routes[index], ...route }; else routes.push(route);
+  return writeRoutes(env, { routes });
+}
+
 async function readVisibility(env) {
   const data = await env.LOC_KV.get(VISIBILITY_KEY, 'json');
   return Array.isArray(data?.records) ? data : { schema_version: 'kv-1', updated_at: null, records: [] };
@@ -275,12 +389,15 @@ async function rebuildGovernanceProjection(env) {
       resource_type: row.resource_type,
       resource_id: row.resource_id,
       projection_level: row.projection_level,
+      admin_frozen: row.admin_frozen,
       search_indexed: row.search_indexed,
       statistics_included: row.statistics_included,
-      semantic_scan_included: row.semantic_scan_included
+      semantic_scan_included: row.semantic_scan_included,
+      ranking_included: row.ranking_included,
+      trend_included: row.trend_included
     }));
   const projection = {
-    schema_version: 'governance-projection-1',
+    schema_version: 'governance-projection-2',
     built_at: new Date().toISOString(),
     aliases: aliases.aliases.map(({ alias, canonical, scope, status }) => ({ alias, canonical, scope, status })),
     eras: eras.eras,
@@ -289,7 +406,8 @@ async function rebuildGovernanceProjection(env) {
       aliases: aliases.aliases.length,
       eras: eras.eras.length,
       governed_resources: visibility.records.length,
-      public_resources: publicResources.length
+      public_resources: publicResources.length,
+      admin_frozen_resources: visibility.records.filter(row => row.admin_frozen).length
     }
   };
   await env.LOC_KV.put(GOVERNANCE_PROJECTION_KEY, JSON.stringify(projection));
@@ -402,8 +520,9 @@ export default {
       if (path === '/admin' || path === '/admin/') return handleAdmin(request, env);
       if (path === '/' || path === '/health') {
         const visibility = await readVisibility(env);
+        const routes = await readRoutes(env);
         const projection = await readGovernanceProjection(env);
-        return json({ ok: true, service: 'loc-state', kv: true, visibility_records: visibility.records.length, projection_built_at: projection?.built_at || null, build: BUILD }, { headers: cors });
+        return json({ ok: true, service: 'loc-state', kv: true, visibility_records: visibility.records.length, route_nodes: routes.routes.length, projection_built_at: projection?.built_at || null, build: BUILD }, { headers: cors });
       }
 
       if (path === '/aliases') {
@@ -426,6 +545,14 @@ export default {
           if (i >= 0) aliases[i] = { ...aliases[i], ...alias }; else aliases.push(alias);
           return json({ ok: true, build: BUILD, ...(await writeAliases(env, { aliases })) }, { headers: cors });
         }
+        return json({ ok: false, error: 'method not allowed', build: BUILD }, { status: 405, headers: cors });
+      }
+
+      if (path === '/routes') {
+        if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized', build: BUILD }, { status: 401, headers: cors });
+        if (request.method === 'GET') return json({ ok: true, build: BUILD, ...(await readRoutes(env)) }, { headers: cors });
+        if (request.method === 'PUT') return json({ ok: true, build: BUILD, ...(await writeRoutes(env, await request.json())) }, { headers: cors });
+        if (request.method === 'POST') return json({ ok: true, build: BUILD, ...(await mutateRoutes(env, await request.json())) }, { headers: cors });
         return json({ ok: false, error: 'method not allowed', build: BUILD }, { status: 405, headers: cors });
       }
 
@@ -544,7 +671,9 @@ export default {
 
       return json({ ok: false, error: 'not found', build: BUILD, path: url.pathname }, { status: 404, headers: cors });
     } catch (error) {
-      return json({ ok: false, error: String(error?.message || error), build: BUILD }, { status: 500, headers: cors });
+      const code = String(error?.message || error);
+      const status = code === 'route_has_children' ? 409 : code.startsWith('route_') || code.startsWith('manager_route_') ? 400 : 500;
+      return json({ ok: false, error: code, build: BUILD }, { status, headers: cors });
     }
   }
 };
