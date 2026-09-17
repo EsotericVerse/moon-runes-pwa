@@ -17,6 +17,9 @@ const SEGMENT_BATCH_SIZE=2;
 const norm=value=>String(value??'').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 const snippet=(text,q)=>{const raw=String(text||'').replace(/\s+/g,' ').trim();const i=norm(raw).indexOf(norm(q));const start=Math.max(0,(i<0?0:i)-70);return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;};
 function objectsFrom(value,out=[],depth=0){if(depth>4)return out;if(Array.isArray(value)){for(const item of value){if(item&&typeof item==='object'&&!Array.isArray(item))out.push(item);else objectsFrom(item,out,depth+1);}return out;}if(value&&typeof value==='object')for(const child of Object.values(value))if(Array.isArray(child))objectsFrom(child,out,depth+1);return out;}
+function replacePhrases(value,replacements){if(typeof value==='string'){let next=value;for(const pair of replacements||[]){if(Array.isArray(pair)&&pair.length===2)next=next.split(String(pair[0])).join(String(pair[1]));}return next;}if(Array.isArray(value))return value.map(item=>replacePhrases(item,replacements));if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,replacePhrases(item,replacements)]));return value;}
+function faqParentId(item){const explicit=String(item?.parent_id||'').trim();if(explicit)return explicit;const match=String(item?.id||'').match(/^FAQ-\d+/);return match?.[0]||'';}
+function applyFaqCurrentOverlay(data,overlay){const replacements=overlay?.phrase_replacements||[];const parentOverrides=overlay?.parent_overrides||{};function visit(value){if(Array.isArray(value))return value.map(visit);if(!value||typeof value!=='object')return replacePhrases(value,replacements);const next={};for(const [key,item] of Object.entries(value))next[key]=visit(item);const parentId=faqParentId(next);const patch=parentId&&parentOverrides[parentId];if(patch&&typeof patch==='object')Object.assign(next,replacePhrases(patch,replacements));if(parentId&&('retrieval_text' in next||'answer' in next)){const retrieval=[next.intent,next.question,...(next.aliases||[]),...(next.keywords||[]),next.answer].filter(Boolean).join(' ').trim();if(retrieval)next.retrieval_text=retrieval;}return next;}return visit(data);}
 function genericResult(item,source,terms,displayQuery){const hay=JSON.stringify(item);const matched=firstGovernedMatch(hay,terms);if(!matched)return null;const title=item.title||item.name||item['符文名稱']||item['名稱']||item.question||item.label||item.id||item.work_id||source;const body=item.text||item.content||item.answer||item.summary||item.description||item.retrieval_text||hay;return {key:`${source}-${title}-${body.slice(0,30)}`,source,title,date:item.date||item.created_date||item.updated_at||'',snippet:snippet(body,matched||displayQuery),href:item.url||item.href||''};}
 function collectText(data,terms,displayQuery,found){for(const d of data?.documents||[]){const hay=`${d.title||''} ${d.section||''} ${d.retrieval_text||d.text||''}`;const matched=firstGovernedMatch(hay,terms);if(matched)found.push({key:d.id,source:'文字創作',title:[d.title,d.section].filter(Boolean).join(' · '),date:d.date||'',snippet:snippet(d.text||d.retrieval_text,matched||displayQuery)});if(found.length>=MAX_RAW_RESULTS)return;}}
 function collectMusic(data,terms,displayQuery,found){for(const w of data?.works||[]){const hay=`${w.title||''} ${w.summary||''} ${w.style||''} ${(w.tags||[]).join(' ')} ${w.retrieval_text||''}`;const matched=firstGovernedMatch(hay,terms);if(matched)found.push({key:w.work_id,source:'音樂',title:w.title,date:w.created_date||'',snippet:snippet(w.summary||w.retrieval_text,matched||displayQuery),href:w.versions?.[0]?.suno_url||''});if(found.length>=MAX_RAW_RESULTS)return;}}
@@ -84,9 +87,13 @@ export default function SearchView({fixedCollectionId=''}){
       const found=[];
       const smallRequests=collection.smallSources.map(([path,label])=>({path,label}));
       if(smallRequests.length){
-        const smallData=await fetchLocJsonBatch(smallRequests,{concurrency:2});
+        const needsFaqOverlay=smallRequests.some(request=>request.label==='FAQ');
+        const [smallData,faqOverlay]=await Promise.all([
+          fetchLocJsonBatch(smallRequests,{concurrency:2}),
+          needsFaqOverlay?fetchLocJson(LOC_DATA.LOC_FAQ_CURRENT_OVERLAY):Promise.resolve(null)
+        ]);
         if(id!==searchId.current)return;
-        for(let index=0;index<smallRequests.length;index+=1){collectGeneric(smallData[index],smallRequests[index].label,searchTerms,q,found);if(found.length>=MAX_RAW_RESULTS)break;}
+        for(let index=0;index<smallRequests.length;index+=1){const request=smallRequests[index];const data=request.label==='FAQ'?applyFaqCurrentOverlay(smallData[index],faqOverlay):smallData[index];collectGeneric(data,request.label,searchTerms,q,found);if(found.length>=MAX_RAW_RESULTS)break;}
       }
 
       async function scanDataset(datasetId,kind){
