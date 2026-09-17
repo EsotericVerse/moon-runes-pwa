@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1",
+  "registry": "LO3RWANG_RUNE_KEYWORD_ANALYSIS_GOVERNANCE",
+  "scope_id": "lo3rwang",
+  "status": "current_working",
+  "updated_at": "2026-09-17",
+  "purpose": "Govern personal-work keyword and LunaRunes analysis without changing existing statistics copy or public ranking presentation.",
+  "scope": {
+    "included": [
+      "lo3rwang music",
+      "rune literature"
+    ],
+    "deferred": [
+      "general article corpus",
+      "Facebook corpus",
+      "KKCity corpus",
+      "Wretch corpus",
+      "Threads corpus unless explicitly promoted into a later scan"
+    ]
+  },
+  "statistics_governance": {
+    "existing_statistics_copy": "unchanged",
+    "existing_ranking_ui": "unchanged",
+    "song_count_definition": "Count actual song/version identities. Multiple song_ids using the same lyrics count as multiple songs.",
+    "unique_lyrics_count_definition": "Count unique full lyric texts only once. Use lyrics_hash or equivalent normalized full-text identity rather than title.",
+    "unique_lyrics_character_count_definition": "Count characters from deduplicated full lyric texts only once; do not multiply character counts when several songs share one lyric text.",
+    "full_lyrics_storage": "allowed"
+  },
+  "classification_governance": {
+    "general_groups": 8,
+    "author_special_group": 9,
+    "author_special_group_name": "德",
+    "classification_is_unique": true,
+    "semantic_intent_may_be_multiple": true,
+    "rule": "Groups 1-8 are general semantic classifications. Group 9 / 德 is lo3rwang's author-specific work classification and must not be generalized as universal LunaRunes semantics."
+  },
+  "author_owned_terms": [
+    {
+      "term": "微月光",
+      "classification": "德",
+      "semantic_intent": ["光"],
+      "notes": "Author-owned named concept. Do not split into 福、月、明 or other extended meanings. Semantic intent remains direct light semantics when that dimension is analyzed."
+    },
+    {
+      "term": "人生月台",
+      "classification": "德",
+      "notes": "Author-owned named concept. Do not decompose by characters for classification."
+    },
+    {
+      "term": "治理",
+      "classification": "德",
+      "notes": "Author-specific governance vocabulary in lo3rwang scope; does not redefine the universal semantics of other scopes."
+    },
+    {
+      "term": "自我治理",
+      "classification": "德"
+    },
+    {
+      "term": "治理自己",
+      "classification": "德"
+    }
+  ],
+  "direct_semantic_rules": [
+    "微光 belongs to 光 as a form of light.",
+    "微月光 has direct light semantic intent; extended associations such as 福、希望、塵、明 are not inferred from that phrase alone.",
+    "Do not map by character appearance alone.",
+    "Do not continue along chains of inferred consequences. Classify the direct meaning being expressed.",
+    "When a recurring misclassification appears, review and improve the governing principle instead of accumulating one-off exceptions.",
+    "Author-owned lexical classification and semantic intent are separate dimensions."
+  ],
+  "simple_semantic_engine": {
+    "name": "basic_rune_semantic_engine",
+    "semantic_segmentation_required": false,
+    "method": "Compare the work or expression directly against governed rune principles and allow limited oscillation only among genuinely adjacent direct meanings.",
+    "principles": [
+      "No long associative inference chains.",
+      "No automatic mapping from a possible consequence back to the original expression.",
+      "Use governed rune ownership and exclusions.",
+      "Prefer principle correction over exception accumulation.",
+      "Keep author classification separate from semantic intent."
+    ],
+    "boundary_examples": [
+      {
+        "expression": "時間本身",
+        "rune": "時"
+      },
+      {
+        "expression": "時間區段／階段／時期",
+        "rune": "辰"
+      },
+      {
+        "expression": "遲到／延誤／錯過適合時機",
+        "rune": "緣"
+      },
+      {
+        "expression": "誤判／誤解／理解錯誤",
+        "rune": "誤"
+      }
+    ]
+  },
+  "api_semantic_engine": {
+    "role": "Independent semantic observer for keyword/theme/rune candidates.",
+    "may_rewrite_canon": false,
+    "must_preserve_scope": true,
+    "comparison_target": "basic_rune_semantic_engine"
+  },
+  "cross_validation": {
+    "statuses": [
+      "agreement",
+      "disputed",
+      "unresolved"
+    ],
+    "rule": "Disagreement is governance evidence. It must not automatically change Canon or produce a one-off patch.",
+    "review_goal": "Reduce recurring disputes by improving principles, not by adding endless exceptions."
+  },
+  "scan_order": [
+    "music full lyrics and outline/summary",
+    "rune literature",
+    "compare basic engine with API semantic engine",
+    "review recurring disputes",
+    "revise principles if needed",
+    "rerun the same corpus for comparison"
+  ]
+}
