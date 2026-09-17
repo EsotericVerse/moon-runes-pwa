@@ -11,10 +11,25 @@ export const metadata = {
 export default function RunesPage() {
   return <main className="loc-next-main">
     <header className="loc-hero runes-home-hero">
-      <p className="loc-eyebrow">LunaRunes · 月之符文</p>
-      <h1>月之符文</h1>
-      <p><strong>不知道怎麼開始？先抽張牌。</strong></p>
-      <p>月之符文是 LOC 的語彙種子；不用先背完所有符文，抽完有興趣再往下看。</p>
+      <div className="runes-home-hero-copy">
+        <p className="loc-eyebrow">LunaRunes · 月之符文</p>
+        <h1>月之符文</h1>
+        <p><strong>不知道怎麼開始？先抽張牌。</strong></p>
+        <p>月之符文是 LOC 的語彙種子；不用先背完所有符文，抽完有興趣再往下看。</p>
+      </div>
+      <div className="runes-home-reels" aria-label="月之符文 Reels 預覽">
+        <iframe
+          src="https://www.instagram.com/reel/DMA9yDAzeRK/embed/"
+          title="月之符文宣傳影片 01"
+          loading="eager"
+          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          allowFullScreen
+        />
+        <div className="runes-home-reels-links">
+          <a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">Reels 01</a>
+          <a href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">Reels 02</a>
+        </div>
+      </div>
     </header>
 
     <RuneDrawClient />
