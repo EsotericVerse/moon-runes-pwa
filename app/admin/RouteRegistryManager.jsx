@@ -120,7 +120,7 @@ export default function RouteRegistryManager(){
       setMessage('Route 已移除。');
     }catch(error){
       const text=String(error?.message||error);
-      setMessage(text.includes('route_has_children')?'此節點仍有下層，請先移動或刪除子節點。':`刪除失敗：${text}`);
+      setMessage(text.includes('route_has_children')?'此節點仍有下層，請先移動或刪除子節點。':text.includes('route_depth_exceeded')?'此網址在同一 host 下已超過四層，請改用新的 host/subdomain、壓平路徑或重新掛載節點。':`刪除失敗：${text}`);
     }
   };
 
@@ -133,7 +133,7 @@ export default function RouteRegistryManager(){
     <section className="loc-card">
       <p className="loc-eyebrow">Admin · Routes</p>
       <h2>Page / Route Registry</h2>
-      <p>以 parent / child 管理頁面階層；完整 route 由系統計算。功能導覽不得使用 hash。</p>
+      <p>以 parent / child 管理治理樹；網址採 Domain First。單一 host 的公開 path 最多四層，換 host 後重新計算。功能導覽不得使用 hash。</p>
       <div className="links"><a href="/admin">回 Admin</a></div>
     </section>
 
