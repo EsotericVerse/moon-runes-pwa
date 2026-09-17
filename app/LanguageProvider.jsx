@@ -1,21 +1,22 @@
 'use client';
 
 import {createContext,useContext,useEffect,useMemo,useState} from 'react';
+import {DEFAULT_LOCALE,LANGUAGE_DEFAULT_KEY,LANGUAGE_USER_KEY,normalizeLocale} from './language-registry';
 
-const STORAGE_KEY='loc-language';
-const LanguageContext=createContext({locale:'zh-Hant',setLocale:()=>{},toggleLocale:()=>{}});
+const LanguageContext=createContext({locale:DEFAULT_LOCALE,setLocale:()=>{},toggleLocale:()=>{}});
 
 export function LanguageProvider({children}){
-  const [locale,setLocale]=useState('zh-Hant');
+  const [locale,setLocale]=useState(DEFAULT_LOCALE);
 
   useEffect(()=>{
-    const saved=window.localStorage.getItem(STORAGE_KEY);
-    if(saved==='en'||saved==='zh-Hant')setLocale(saved);
+    const saved=window.localStorage.getItem(LANGUAGE_USER_KEY);
+    const governedDefault=window.localStorage.getItem(LANGUAGE_DEFAULT_KEY);
+    setLocale(normalizeLocale(saved||governedDefault||DEFAULT_LOCALE));
   },[]);
 
   useEffect(()=>{
     document.documentElement.lang=locale;
-    window.localStorage.setItem(STORAGE_KEY,locale);
+    window.localStorage.setItem(LANGUAGE_USER_KEY,locale);
   },[locale]);
 
   const value=useMemo(()=>({
@@ -29,7 +30,7 @@ export function LanguageProvider({children}){
 
 export function useLanguage(){return useContext(LanguageContext)}
 
-export function localize(value,locale='zh-Hant'){
+export function localize(value,locale=DEFAULT_LOCALE){
   if(value==null)return value;
   if(typeof value==='string'||typeof value==='number')return value;
   if(typeof value==='object'&&!Array.isArray(value)){
