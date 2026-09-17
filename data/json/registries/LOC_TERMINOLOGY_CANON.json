@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.4",
+  "schema_version": "2.5",
   "registry": "LOC_TERMINOLOGY_CANON",
   "status": "current",
   "effective_date": "2026-09-17",
@@ -21,9 +21,10 @@
     },
     "lo3rwang": {
       "scope_id": "lo3rwang",
-      "canonical_host": "lo3rwang.cc",
+      "canonical_host": "lo3rwang.lo3rwang.cc",
+      "base_domain": "lo3rwang.cc",
       "canonical_label": "lo3rwang",
-      "rule": "The personal Scope uses lo3rwang as its Current identifier. author and whoami are not Current Scope IDs, registry prefixes, route identities, tags or hostnames. Ordinary descriptive use of the word author is permitted only when it does not identify the Scope."
+      "rule": "The personal Scope uses lo3rwang as its Current identifier. The Scope label and Base Domain are separate. author and whoami are not Current Scope IDs, registry prefixes, route identities, tags or hostnames. Ordinary descriptive use of the word author is permitted only when it does not identify the Scope."
     },
     "scope": {"zh":"資料範圍","en":"Scope","rule":"Scopes are governed, mutable and instance-specific; no permanent universal list exists."},
     "architecture": {
@@ -31,7 +32,7 @@
       "zh": "資料範圍模型 × 功能模型 → 頁面組合",
       "rule": "Current pages are composed from a governed Scope and reusable Features. Numbered LOC identifiers do not define Current architecture, scope, feature ownership or page composition."
     },
-    "navigation": {"zh":"導覽列","en":"NAV","rule":"Each interface has one official NAV. Local menus and page indexes are not additional NAV systems."}
+    "navigation": {"zh":"導覽列","en":"NAV","rule":"Each interface has one official NAV. Domain identity has priority over directory hierarchy; directory hierarchy has priority over Page Composition. Local menus and page indexes are not additional NAV systems."}
   },
   "historical_boundary": {
     "rule": "Past terminology is preserved only as historical event/evidence records outside this Current terminology registry. No retired term is exposed here as an alias, synonym, fallback or mapping.",
