@@ -50,20 +50,27 @@ def _apply_phrase_replacements(value: Any, replacements: list[list[str]]) -> Any
     return value
 
 
-def _load_canon_overrides(dataset_path: Path) -> dict[str, Any]:
-    override_path = dataset_path.with_name("LOC_FAQ_CANON_OVERRIDES.json")
-    if not override_path.exists():
-        return {}
-    payload = json.loads(override_path.read_text(encoding="utf-8"))
-    return payload if isinstance(payload, dict) else {}
+def _load_current_overlay(dataset_path: Path) -> dict[str, Any]:
+    """Load the Current FAQ semantic layer, keeping the older override file as fallback compatibility."""
+    candidates = (
+        dataset_path.with_name("LOC_FAQ_v0.5.json"),
+        dataset_path.with_name("LOC_FAQ_CANON_OVERRIDES.json"),
+    )
+    for overlay_path in candidates:
+        if not overlay_path.exists():
+            continue
+        payload = json.loads(overlay_path.read_text(encoding="utf-8"))
+        if isinstance(payload, dict):
+            return payload
+    return {}
 
 
-def _apply_canon_overrides(
+def _apply_current_overlay(
     chunks: list[dict[str, Any]],
-    overrides: dict[str, Any],
+    overlay: dict[str, Any],
 ) -> list[dict[str, Any]]:
-    replacements = overrides.get("phrase_replacements") or []
-    parent_overrides = overrides.get("parent_overrides") or {}
+    replacements = overlay.get("phrase_replacements") or []
+    parent_overrides = overlay.get("parent_overrides") or {}
     migrated: list[dict[str, Any]] = []
 
     for raw_chunk in chunks:
@@ -71,7 +78,7 @@ def _apply_canon_overrides(
         parent_id = str(chunk.get("parent_id") or "")
         patch = parent_overrides.get(parent_id)
         if isinstance(patch, dict):
-            chunk.update(patch)
+            chunk.update(_apply_phrase_replacements(patch, replacements))
 
         retrieval_parts = [
             str(chunk.get("intent") or ""),
@@ -108,11 +115,12 @@ class SearchResult:
 
 
 class FAQSearchEngine:
-    """Small hybrid retriever for the LOC7 FAQ dataset.
+    """Small hybrid retriever for the LOC FAQ retrieval dataset.
 
-    The dataset contains confirmed questions, aliases and keywords. Character
-    n-gram TF-IDF handles short Chinese queries while exact alias/keyword
-    matches provide deterministic boosts. No external model is required.
+    Historical wording remains searchable, while the Current FAQ overlay projects
+    Scope Model × Feature Model semantics before indexing. Character n-gram TF-IDF
+    handles short Chinese queries and exact alias/keyword matches add deterministic
+    boosts. No external model is required.
     """
 
     def __init__(self, dataset_path: Path):
@@ -121,8 +129,8 @@ class FAQSearchEngine:
         if not isinstance(chunks, list) or not chunks:
             raise ValueError("FAQ dataset must contain a non-empty chunks array")
 
-        overrides = _load_canon_overrides(dataset_path)
-        chunks = _apply_canon_overrides(chunks, overrides)
+        overlay = _load_current_overlay(dataset_path)
+        chunks = _apply_current_overlay(chunks, overlay)
 
         ids = [chunk.get("id") for chunk in chunks]
         if any(not chunk_id for chunk_id in ids) or len(ids) != len(set(ids)):
