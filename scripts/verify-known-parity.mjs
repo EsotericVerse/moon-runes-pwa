@@ -22,10 +22,10 @@ for (const path of [
 if (existsSync(resolve(root, 'lib'))) failures.push('lib/ must not be recreated; shared JavaScript belongs in js/');
 
 requireText('app/loc/views/AboutView.jsx', ['LOC月典','ModelArchitectureExplorer','Base66','/pics/LunaRunes.jpg']);
-requireText('app/nav-route-map.js', ['lo3rwang.cc','lrunes.lo3rwang.cc','manage.lo3rwang.cc',"return 'lo3rwang'",'月之符文','語彙','風格詞','治理規則']);
+requireText('app/nav-route-map.js', ['lo3rwang.cc','lrunes.lo3rwang.cc','admin.lo3rwang.cc',"return 'lo3rwang'",'月之符文','語彙','風格詞','Admin']);
 requireText('app/ScopeNav.jsx', ['SHARED_NAV_FUNCTIONS','role="search"','navRoute(cfg,\'search\')','搜尋']);
 requireText('app/GlobalFooter.jsx', ['<footer className="loc-site-footer">','https://lo3rwang.cc/','Lucas Oscar Wang 政德','mailto:sopa2306@gmail.com']);
-forbidText('app/nav-route-map.js', ['author.lo3rwang.cc','whoami.lo3rwang.cc','lo3rwang.lo3rwang.cc']);
+forbidText('app/nav-route-map.js', ['author.lo3rwang.cc','whoami.lo3rwang.cc','lo3rwang.lo3rwang.cc','manage.lo3rwang.cc']);
 forbidText('app/GlobalFooter.jsx', ['author.lo3rwang.cc','whoami.lo3rwang.cc','lo3rwang.lo3rwang.cc']);
 
 requireText('app/runes/page.jsx', ['<RuneDrawClient />','<RuneAtlasHome />','?mode=daily#draw','LunaRunes','Context','Culture']);
@@ -34,7 +34,9 @@ requireText('app/loc/model/moon-phase.js', ['day >= 1 && day <= 7', "return '新
 
 requireText('data/json/registries/LOC_TERMINOLOGY_CANON.json', ['Language Module Framework','data/json/core/runes66groups.json','第七組固定為秩序（Order）','"scope_id": "lo3rwang"','"canonical_host": "lo3rwang.cc"']);
 requireText('data/json/registries/LOC_DATA_GOVERNANCE.json', ['Scope Model × Feature Model → Page Composition','LOC1–8 are Historical/provenance identifiers only']);
-requireText('docs/NAV_GOVERNANCE.md', ['每個介面只有一條正式導覽列','lo3rwang.cc','manage.lo3rwang.cc']);
+requireText('docs/NAV_GOVERNANCE.md', ['每個介面只有一條正式導覽列','lo3rwang.cc','admin.lo3rwang.cc','功能級導覽一律使用正式階層 route']);
+requireText('services/cloudflare/loc-state-worker.js', ["const ROUTE_TREE_KEY = 'loc:route:registry'",'parent_id','manager_route','route_has_children']);
+requireText('app/admin/RouteRegistryManager.jsx', ['新增下層','插入上層','manager_route','platform:routes:write']);
 
 requireText('scripts/prepare-next-public.mjs', ['PUBLIC_PICS', "'LunarRunesCardCut.pdf'", "'LunaRunes.jpg'"]);
 requireText('scripts/verify-public-payload.mjs', ['pics/LOC-FrameworkPic.png', 'pics/LunaRunes.jpg', 'pics/LOC-structure.png', 'LunarRunesCardCut.pdf']);
