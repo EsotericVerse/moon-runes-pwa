@@ -1,10 +1,10 @@
 {
-  "schema_version": "0.3",
-  "registry": "LOC7_LINGUISTIC_ANALYSIS_REGISTRY",
+  "schema_version": "0.4",
+  "registry": "ANALYSIS_LINGUISTIC_REGISTRY",
   "historical_registry_id": "LOC7_LINGUISTIC_ANALYSIS_REGISTRY",
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
   "language_system_id": "lo3rwang",
-  "purpose": "Registry for grammar, syntax, linguistic structure, semantic engineering, Text Architecture, retrieval structure and KM/RAG analysis. The historical LOC7 filename is provenance/compatibility only.",
+  "purpose": "Registry for grammar, syntax, linguistic structure, semantic engineering, Text Architecture, retrieval structure and KM/RAG analysis. Historical LOC7 identifiers are provenance only.",
   "feature_ids": ["linguistic_analysis", "text_architecture", "retrieval_analysis", "km", "rag"],
   "analysis_schema": {
     "required": ["analysis_id", "system_id", "scope_id", "analysis_type"],
@@ -27,6 +27,6 @@
   "analyses": [],
   "existing_knowledge_assets": ["data/json/search/faq/LOC_FAQ_v0.4.json", "data/json/search/faq/LOC_FAQ_RAG_v0.4.json", "governance.html"],
   "boundary_note": "Linguistic, retrieval and KM/RAG capabilities are reusable Features. They consume records inside a governed Scope without taking ownership of that Scope. Meaning/value/governance and temporal analysis are separate Features, not numbered-module owners.",
-  "historical_boundary": "LOC7 is retained only as a historical/provenance identifier in the filename and migration evidence; it is not Current architecture or authority.",
+  "historical_boundary": "LOC7 is retained only as a Historical/provenance identifier in migration evidence; it is not Current architecture, filename identity or authority.",
   "updated_at": "2026-09-17"
 }
