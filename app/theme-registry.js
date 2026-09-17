@@ -4,8 +4,8 @@ export const SCOPE_THEME_DEFAULTS_KEY='loc-scope-theme-defaults-v1';
 export const SCOPE_THEME_SETTINGS_KEY='loc-scope-theme-settings-v1';
 export const PAGE_THEME_SETTINGS_KEY='loc-page-theme-settings-v1';
 
-export const THEME_TOKEN_KEYS=['--loc-bg','--loc-panel','--loc-panel-2','--loc-text','--loc-heading','--loc-input-text','--loc-accent','--loc-gold','--loc-body-glow','--loc-body-mid','--loc-hero-start','--loc-hero-end'];
-export const SIMPLE_SCOPE_OVERRIDE_KEYS=['--loc-bg','--loc-panel','--loc-text','--loc-heading','--loc-input-text','--loc-accent'];
+export const THEME_TOKEN_KEYS=['--loc-bg','--loc-panel','--loc-panel-2','--loc-text','--loc-heading','--loc-accent','--loc-gold','--loc-body-glow','--loc-body-mid','--loc-hero-start','--loc-hero-end'];
+export const SIMPLE_SCOPE_OVERRIDE_KEYS=['--loc-bg','--loc-panel','--loc-heading','--loc-accent'];
 
 // Frozen/group identity colors are semantic references from the card system.
 // Website palettes are derived for readability and do not have to reuse these exact dark card colors.
