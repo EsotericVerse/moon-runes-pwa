@@ -59,9 +59,9 @@ if (!Array.isArray(stages) || !stages.some(stage => Number(stage?.rune_count) ==
 if (Number(coverage.semantic_history_case_count) !== cases.length) failures.push(`evolution: coverage case count ${coverage.semantic_history_case_count} != actual ${cases.length}`);
 if (Number(coverage.governance_evolution_count) !== governance.length) failures.push(`evolution: governance count ${coverage.governance_evolution_count} != actual ${governance.length}`);
 
-const writing = json('data/json/registries/LOC4_WRITING_REGISTRY.json');
+const writing = json('data/json/registries/WRITING_REGISTRY.json');
 const works = writing?.works ?? [];
-if (!Array.isArray(works) || works.length === 0) failures.push('writing: LOC4 registry has no works');
+if (!Array.isArray(works) || works.length === 0) failures.push('writing: Current registry has no works');
 for (const work of works) {
   for (const key of ['work_id','title','content_type']) if (!String(work?.[key] ?? '').trim()) failures.push(`writing: work missing ${key}`);
 }
@@ -72,4 +72,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`RC4 integrity OK: De #0 + 66 drawable runes; lots + history + harmony + cards complete; ${cases.length} evolution cases; ${works.length} LOC4 works.`);
+console.log(`RC4 integrity OK: De #0 + 66 drawable runes; lots + history + harmony + cards complete; ${cases.length} evolution cases; ${works.length} Writing works.`);
