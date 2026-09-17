@@ -7,7 +7,7 @@ const sources={
   nav:fs.readFileSync('app/nav-route-map.js','utf8')+fs.readFileSync('app/ScopeNav.jsx','utf8'),
   runes:fs.readFileSync('app/runes/page.jsx','utf8'),
   governance:fs.readFileSync('app/loc/views/GovernanceView.jsx','utf8'),
-  runeGovernance:fs.readFileSync('app/runes/governance/page.jsx','utf8'),
+  runeGovernance:fs.readFileSync('app/runes/LunaRunesGovernanceView.jsx','utf8'),
   personal:fs.readFileSync('app/lo3rwang/page.jsx','utf8'),
   terminology:fs.readFileSync('data/json/registries/LOC_TERMINOLOGY_CANON.json','utf8'),
   groups:fs.readFileSync('data/json/core/runes66groups.json','utf8'),
