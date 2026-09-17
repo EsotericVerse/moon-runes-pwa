@@ -11,9 +11,9 @@
 
 NAV 必須繼承目前 Scope。脈絡、統計、文化、治理與搜尋是共用功能名稱，但資料與結果永遠由目前 Scope 決定；不得因共用 route 名稱跨到其他 Scope。
 
-- LOC Scope：月之符文｜脈絡｜統計｜文化｜治理｜搜尋｜作者頁面｜回月典首頁
-- LunaRunes Scope：語彙｜脈絡｜統計｜文化｜治理｜搜尋｜作者頁面｜回月之符文首頁｜回月典首頁
-- lo3rwang Scope：風格詞｜脈絡｜統計｜文化｜治理｜搜尋｜管理者頁面｜回作者頁面｜回月典首頁
+- LOC Scope：月之符文｜脈絡｜統計｜文化｜治理｜搜尋｜lo3rwang｜回月典首頁
+- LunaRunes Scope：語彙｜脈絡｜統計｜文化｜治理｜搜尋｜lo3rwang｜回月之符文首頁｜回月典首頁
+- lo3rwang Scope：風格詞｜脈絡｜統計｜文化｜治理｜搜尋｜管理者頁面｜回 lo3rwang｜回月典首頁
 - Governance Scope：治理規則｜脈絡｜統計｜文化｜治理｜搜尋｜管理者頁面｜回治理頁面｜回月典首頁
 
 搜尋包含文字輸入方塊與搜尋按鈕。
@@ -23,6 +23,10 @@ NAV 必須繼承目前 Scope。脈絡、統計、文化、治理與搜尋是共�
 ## LunaRunes 雙入口
 
 `lrunes.lo3rwang.cc/{route}` 與 `loc.lo3rwang.cc/runes/{route}` 是同一 LunaRunes Scope 的兩種入口。兩者的脈絡、統計、文化、治理與搜尋必須保持同一 Scope；`loc.lo3rwang.cc/{route}` 則屬 LOC 統合 Scope。
+
+## lo3rwang 個人入口
+
+`lo3rwang.cc` 是 lo3rwang 個人 Scope 的 canonical host。`author`、`whoami` 與衍生子網域不得作為 Current Scope ID、NAV identity 或 hostname。
 
 ## 管理入口
 
