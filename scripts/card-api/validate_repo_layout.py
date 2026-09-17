@@ -33,6 +33,7 @@ REQUIRED_PATHS = [
     ROOT / "data" / "json" / "registries" / "LOC_LANGUAGE_SYSTEM_REGISTRY.json",
     ROOT / "data" / "json" / "search" / "faq" / "LOC_FAQ_v0.4.json",
     ROOT / "data" / "json" / "search" / "faq" / "LOC_FAQ_RAG_v0.4.json",
+    ROOT / "data" / "json" / "search" / "faq" / "LOC_FAQ_v0.5.json",
     ROOT / "data" / "json" / "search" / "loc3" / "LOC3_LYRICS_SEARCH_v0.1.json",
     ROOT / "data" / "json" / "sources" / "facebook" / "manifest.json",
     ROOT / "data" / "json" / "generated" / "facebook" / "fb-semantic-summary.json",
@@ -152,7 +153,6 @@ def main() -> int:
         if path.exists():
             failures.append(f"forbidden path exists: {rel(path)}")
 
-    # statics.html is the only allowed statistics-page filename.
     for candidate in ROOT.glob("statics.htm*"):
         if candidate.is_file() and candidate.name != "statics.html":
             failures.append(f"duplicate/malformed statics page exists: {rel(candidate)}")
@@ -161,12 +161,11 @@ def main() -> int:
         if not path.exists():
             failures.append(f"required path missing: {rel(path)}")
 
-    # LunaRunes keyword ownership is unique at the exact-term level.
-    # Semantic near-synonyms remain a governance review rather than a build-time heuristic.
     validate_rune_keyword_uniqueness(failures)
 
-    # LOC1–8 are historical/provenance identifiers only.
-    # Current governance must use Scope + Feature composition and semantic domains.
+    # Current architecture authority lives in the explicit current_architecture and
+    # historical_provenance contracts. LOC1–8 must never be promoted back into
+    # Current Scope/Feature ownership.
     language_registry_path = ROOT / "data" / "json" / "registries" / "LOC_LANGUAGE_SYSTEM_REGISTRY.json"
     shared_schema_path = ROOT / "data" / "json" / "registries" / "LOC_SHARED_SCHEMA.json"
     try:
@@ -177,20 +176,15 @@ def main() -> int:
         if constants.get("lunarunes_count") != 66:
             failures.append("LunaRunes fixed count drifted from 66")
 
-        homepage_usage = system.get("public_concept_map_usage")
-        if homepage_usage != "historical_provenance_only":
+        architecture = system.get("current_architecture") or {}
+        if architecture.get("formula") != "Scope Model × Feature Model → Page Composition":
+            failures.append("Current architecture formula drifted from Scope Model × Feature Model → Page Composition")
+
+        historical = system.get("historical_provenance") or {}
+        if historical.get("status") != "historical_provenance_only":
             failures.append("LOC1-8 identifiers must remain historical/provenance-only metadata")
-
-        homepage_note = str(system.get("public_concept_map_note") or "")
-        if "provenance" not in homepage_note.lower():
-            failures.append("language-system registry must state that LOC1-8 are historical/provenance identifiers only")
-
-        backend_domains = system.get("backend_domains") or {}
-        invalid_domains = sorted(
-            {str(k) for k in backend_domains.keys() if str(k) not in SEMANTIC_DOMAINS}
-        )
-        if invalid_domains:
-            failures.append(f"invalid backend semantic domain ids in language-system registry: {invalid_domains}")
+        if "current" not in str(historical.get("loc1_8_rule") or "").lower():
+            failures.append("language-system registry must explicitly prevent LOC1-8 from defining Current architecture")
 
         shared_schema = json.loads(shared_schema_path.read_text(encoding="utf-8"))
         domain_spec = ((shared_schema.get("required_common_fields") or {}).get("domain")
@@ -219,13 +213,9 @@ def main() -> int:
             if token in content:
                 failures.append(f"stale path token {token!r}: {rp}")
 
-        # Public web surfaces must route knowledge through Search/Web views.
-        # Never expose raw Markdown files as clickable links from HTML/JS.
         if path.suffix.lower() in {".html", ".js"} and PUBLIC_MD_LINK_RE.search(content):
             failures.append(f"public .md link exposed in web surface: {rp}")
 
-        # Repository-relative JSON references are executable/data contracts.
-        # Verify the referenced file actually exists after every path migration.
         for match in JSON_PATH_RE.finditer(content):
             target = match.group("path").lstrip("/")
             if any(target.startswith(prefix) for prefix in SKIP_JSON_TARGET_PREFIXES):
@@ -248,7 +238,7 @@ def main() -> int:
     print("- no public HTML/JS links expose raw Markdown files")
     print("- LunaRunes exact keywords have unique rune ownership")
     print("- LOC1-8 remain historical/provenance identifiers only")
-    print("- backend governance uses semantic domains")
+    print("- Current architecture is Scope Model × Feature Model → Page Composition")
     return 0
 
 
