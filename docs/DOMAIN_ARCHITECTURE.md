@@ -3,12 +3,12 @@
 ## Responsibility model
 
 ```text
-lo3rwang.cc          root brand / portal
-whoami.lo3rwang.cc   author identity
-loc.lo3rwang.cc      LOC model, knowledge, governance, search, context, evolution
-lrunes.lo3rwang.cc   LunaRunes product identity and rune reference
-app.lo3rwang.cc      interactive applications and workspace
-api.lo3rwang.cc      machine-service interface
+lo3rwang.cc             root brand / portal
+lo3rwang.lo3rwang.cc    lo3rwang identity
+loc.lo3rwang.cc         LOC model, knowledge, governance, search, context, evolution
+lrunes.lo3rwang.cc      LunaRunes product identity and rune reference
+app.lo3rwang.cc         interactive applications and workspace
+api.lo3rwang.cc         machine-service interface
 ```
 
 ## Canonical domains
@@ -16,7 +16,7 @@ api.lo3rwang.cc      machine-service interface
 ### `lo3rwang.cc`
 Root brand and navigation portal. It should not duplicate full LOC or application functionality.
 
-### `whoami.lo3rwang.cc`
+### `lo3rwang.lo3rwang.cc`
 Public identity for 王政德 / Lucas Oscar Wang / lo3rwang: professional roles, selected work, author context and public links.
 
 ### `loc.lo3rwang.cc`
@@ -55,6 +55,6 @@ Domains are divided by responsibility, not by LOC1–8 numbering.
 - App = operate / interact
 - API = serve machines
 - LunaRunes = product/module identity
-- WhoAmI = author identity
+- lo3rwang = personal identity
 
 `app` and `api` may share the same repository and schemas, but must remain separate deployment responsibilities.
