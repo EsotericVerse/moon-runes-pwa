@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1",
   "registry": "LOC_SOURCE_ACTIVITY_REGISTRY",
-  "authority": "LOC8",
+  "authority": "LOC",
   "purpose": "Source-specific activity / analyzable date ranges used by trend and ranking UI. Source ranges do not replace LOC ERA boundaries.",
   "updated_at": "2026-09-09",
   "sources": [

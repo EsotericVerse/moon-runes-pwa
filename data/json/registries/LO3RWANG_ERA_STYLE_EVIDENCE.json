@@ -1,9 +1,9 @@
 {
   "schema_version": "0.1",
-  "registry": "LOC6_ERA_STYLE_EVIDENCE",
-  "authority": "LOC6",
+  "registry": "LO3RWANG_ERA_STYLE_EVIDENCE",
+  "authority": "lo3rwang",
   "updated_at": "2026-09-09",
-  "purpose": "Aggregate LOC3 work metadata back into LOC6 ERA style analysis. ERA dates/names remain owned by LOC8.",
+  "purpose": "Aggregate Music work metadata into lo3rwang ERA style analysis. ERA dates and names remain governed by the lo3rwang Scope.",
   "source_dataset": {
     "manifest": "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json",
     "work_count": 403,

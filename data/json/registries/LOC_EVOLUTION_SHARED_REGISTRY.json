@@ -41,12 +41,12 @@
       "scope": "跨時期觀察文字、作品、關鍵詞、語意重心、風格、治理與方法如何改變",
       "primary_registry": "data/json/registries/LOC_LANGUAGE_EVOLUTION_REGISTRY.json",
       "supporting_registries": [
-        "data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json",
-        "data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json",
-        "data/json/registries/LOC4_WRITING_REGISTRY.json",
-        "data/json/registries/LOC3_RUNE_SONG_REGISTRY.json",
+        "data/json/registries/MUSIC_PERIOD_KEYWORD_ANALYSIS.json",
+        "data/json/registries/LO3RWANG_PERIOD_KEYWORD_ANALYSIS.json",
+        "data/json/registries/WRITING_REGISTRY.json",
+        "data/json/registries/MUSIC_RUNE_SONG_REGISTRY.json",
         "data/json/registries/LOC_MEDIA_REGISTRY.json",
-        "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json"
+        "data/json/registries/LO3RWANG_GOVERNANCE_REGISTRY.json"
       ],
       "kv_key": "loc:evolution:language",
       "data_status": "partial_waiting_for_large_corpus"

@@ -1,8 +1,8 @@
 {
   "schema_version": "0.1",
   "registry": "LOC_CROSS_RELATIONSHIP_REGISTRY",
-  "authority": "LOC2",
-  "purpose": "Canonical cross-LOC context and relationship edges. LOC2 owns relation/context semantics; LOC7 consumes these edges for Search and Graph RAG algorithms; LOC8 consumes them for temporal/evolution views.",
+  "authority": "Context",
+  "purpose": "Canonical cross-LOC context and relationship edges. Context owns relation/context semantics; LOC7 consumes these edges for Search and Graph RAG algorithms; LOC8 consumes them for temporal/evolution views.",
   "relationship_schema": {
     "required": [
       "relationship_id",
@@ -29,7 +29,7 @@
         "已讀不回"
       ],
       "source": {
-        "primary_loc": "LOC3",
+        "primary_loc": "Context",
         "work_ref": "E0189",
         "title": "已讀不回",
         "content_type": "lyrics_work",
@@ -37,7 +37,7 @@
       },
       "targets": [
         {
-          "primary_loc": "LOC4",
+          "primary_loc": "Context",
           "work_ref": "LOC4-READ-RECEIPT",
           "title": "已讀不回",
           "content_type": "article_series",
@@ -46,7 +46,7 @@
           "domain": "literary"
         },
         {
-          "primary_loc": "LOC5",
+          "primary_loc": "Context",
           "work_ref": "LOC5-READ-RECEIPT-REELS",
           "title": "已讀不回 Reels",
           "content_type": "reel_collection",

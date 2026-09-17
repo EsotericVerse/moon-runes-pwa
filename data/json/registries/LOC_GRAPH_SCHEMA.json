@@ -1,8 +1,8 @@
 {
   "schema_version": "0.6",
   "registry": "LOC_GRAPH_SCHEMA",
-  "authority": "LOC2",
-  "purpose": "Shared node/edge contract for LOC context Graph. LOC2 owns relation/context semantics; LOC7 implements Graph RAG traversal/retrieval algorithms; LOC8 consumes graph projections for time/ERA/literary-evolution views.",
+  "authority": "Context",
+  "purpose": "Shared node/edge contract for LOC context Graph. Context owns relation/context semantics; Analysis implements Graph RAG traversal/retrieval algorithms; Evolution consumes graph projections for time/ERA/literary-evolution views.",
   "node_types": [
     "loc_domain",
     "rune",
@@ -132,7 +132,7 @@
     }
   },
   "public_access": {
-    "owner": "LOC7",
+    "owner": "Analysis",
     "consumer": "LOC8 Graph View",
     "default_response": "metadata_only",
     "bulk_export": false,

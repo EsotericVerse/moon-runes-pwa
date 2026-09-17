@@ -1,7 +1,7 @@
 {
   "schema_version": "0.6",
-  "registry": "LOC6_GOVERNANCE_REGISTRY",
-  "authority": "LOC6",
+  "registry": "LO3RWANG_GOVERNANCE_REGISTRY",
+  "authority": "lo3rwang",
   "language_system_id": "lo3rwang",
   "purpose": "Registry for LOC6 governance and Zhengde Style interpretation: values, governance principles, style-state/stage interpretation and rune interpretation. LOC6 consumes LOC4/LOC3/LOC8 evidence but does not own raw Facebook/Threads text, novels/articles, or general literary-semantic work analysis.",
   "fragment_schema": {
@@ -14,8 +14,8 @@
     "fields": {
       "fragment_id": "GF-{stable-id}",
       "system_id": "language-system reference",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC7",
         "LOC8"
       ],
@@ -53,8 +53,8 @@
     {
       "fragment_id": "GF-ZD-001",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC3",
         "LOC7",
         "LOC8"
@@ -83,8 +83,8 @@
     {
       "fragment_id": "GF-ZD-002",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC3",
         "LOC7",
         "LOC8"
@@ -113,8 +113,8 @@
     {
       "fragment_id": "GF-ZD-003",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC3",
         "LOC7",
         "LOC8"
@@ -143,8 +143,8 @@
     {
       "fragment_id": "GF-ZD-004",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC3",
         "LOC7",
         "LOC8"
@@ -173,8 +173,8 @@
     {
       "fragment_id": "GF-ZD-005",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC3",
         "LOC7",
         "LOC8"
@@ -203,8 +203,8 @@
     {
       "fragment_id": "GF-ZD-006",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC3",
         "LOC7",
         "LOC8"
@@ -233,8 +233,8 @@
     {
       "fragment_id": "GF-ZD-007",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC3",
         "LOC7",
         "LOC8"
@@ -263,8 +263,8 @@
     {
       "fragment_id": "GF-ZD-P8-001",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC3",
         "LOC7",
         "LOC8"
@@ -293,8 +293,8 @@
     {
       "fragment_id": "GF-GOV-HIST-001",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC7",
         "LOC8"
       ],
@@ -322,8 +322,8 @@
     {
       "fragment_id": "GF-GOV-HIST-002",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC7",
         "LOC8"
       ],
@@ -351,8 +351,8 @@
     {
       "fragment_id": "GF-GOV-CURRENT-001",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC1",
         "LOC7",
         "LOC8"
@@ -382,8 +382,8 @@
     {
       "fragment_id": "GF-GOV-CURRENT-002",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC6",
-      "related_locs": [
+      "primary_loc": "lo3rwang",
+      "related_scopes": [
         "LOC7",
         "LOC8"
       ],
@@ -415,10 +415,10 @@
     "licensing principles",
     "collaboration principles"
   ],
-  "boundary_note": "LOC6 owns derived meaning/governance/Zhengde-style/style-state/rune interpretation records. Raw authored text (including Facebook/Threads), creative works, and ordinary work/chapter literary-semantic analysis remain LOC4. A source statement copied into a LOC6 fragment is evidence only and must retain source_refs.",
+  "boundary_note": "lo3rwang governs personal meaning, governance and Zhengde-style records; LunaRunes governs rune interpretation records. Raw authored text (including Facebook/Threads), creative works, and ordinary work/chapter literary-semantic analysis remains governed by Writing. A source statement copied into a LOC6 fragment is evidence only and must retain source_refs.",
   "updated_at": "2026-09-09",
   "rune_interpretation_corpus": {
-    "registry": "data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json",
+    "registry": "LO3RWANG_GOVERNANCE_REGISTRY",
     "work": "月語者",
     "chapter_slots": 182,
     "usable_records": 180,
@@ -440,8 +440,8 @@
     },
     "rune_grammar_interpretation": {
       "role": "rune-pair / card-combination grammar and interpretation evidence",
-      "relation_registry": "data/json/registries/LOC6_DUAL_RUNE_RELATION_REGISTRY.json",
-      "interpretation_registry": "data/json/registries/LOC6_RUNE_INTERPRETATION_REGISTRY.json"
+      "relation_registry": "data/json/registries/LUNARUNES_DUAL_RUNE_RELATION_REGISTRY.json",
+      "interpretation_registry": "data/json/registries/LUNARUNES_RUNE_INTERPRETATION_REGISTRY.json"
     }
   },
   "stage_profile_schema": {
@@ -523,12 +523,12 @@
       "lifecycle": {
         "status": "historical"
       },
-      "loc3_evidence": {
+      "music_evidence": {
         "work_count": 0,
         "top_tags": [],
         "top_turn_methods": [],
         "top_ending_structures": [],
-        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LO3RWANG_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2025-02-21",
@@ -576,7 +576,7 @@
       "lifecycle": {
         "status": "historical"
       },
-      "loc3_evidence": {
+      "music_evidence": {
         "work_count": 50,
         "top_tags": [
           {
@@ -688,7 +688,7 @@
             "count": 1
           }
         ],
-        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LO3RWANG_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2025-10-16",
@@ -736,7 +736,7 @@
       "lifecycle": {
         "status": "historical"
       },
-      "loc3_evidence": {
+      "music_evidence": {
         "work_count": 123,
         "top_tags": [
           {
@@ -848,7 +848,7 @@
             "count": 6
           }
         ],
-        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LO3RWANG_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-01-15",
@@ -896,7 +896,7 @@
       "lifecycle": {
         "status": "historical"
       },
-      "loc3_evidence": {
+      "music_evidence": {
         "work_count": 74,
         "top_tags": [
           {
@@ -1008,7 +1008,7 @@
             "count": 1
           }
         ],
-        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LO3RWANG_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-03-09",
@@ -1056,7 +1056,7 @@
       "lifecycle": {
         "status": "historical"
       },
-      "loc3_evidence": {
+      "music_evidence": {
         "work_count": 81,
         "top_tags": [
           {
@@ -1168,7 +1168,7 @@
             "count": 2
           }
         ],
-        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LO3RWANG_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-06-10",
@@ -1216,7 +1216,7 @@
       "lifecycle": {
         "status": "historical"
       },
-      "loc3_evidence": {
+      "music_evidence": {
         "work_count": 58,
         "top_tags": [
           {
@@ -1328,7 +1328,7 @@
             "count": 2
           }
         ],
-        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LO3RWANG_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-07-01",
@@ -1377,7 +1377,7 @@
       "lifecycle": {
         "status": "historical"
       },
-      "loc3_evidence": {
+      "music_evidence": {
         "work_count": 15,
         "top_tags": [
           {
@@ -1473,7 +1473,7 @@
             "count": 4
           }
         ],
-        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LO3RWANG_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-08-01",
@@ -1523,7 +1523,7 @@
       "lifecycle": {
         "status": "current"
       },
-      "loc3_evidence": {
+      "music_evidence": {
         "work_count": 2,
         "top_tags": [
           {
@@ -1591,7 +1591,7 @@
             "count": 2
           }
         ],
-        "source_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json"
+        "source_registry": "data/json/registries/LO3RWANG_ERA_STYLE_EVIDENCE.json"
       },
       "source_active_range": {
         "start": "2026-09-01",
@@ -1600,7 +1600,7 @@
       }
     }
   ],
-  "era_style_evidence_registry": "data/json/registries/LOC6_ERA_STYLE_EVIDENCE.json",
+  "era_style_evidence_registry": "data/json/registries/LO3RWANG_ERA_STYLE_EVIDENCE.json",
   "periodization_rule": "LOC6 stage profiles inherit continuous period boundaries from LOC8 ERA registry; LOC3/Suno activity ranges are evidence windows, not the system-wide period boundary.",
   "governance_layers": {
     "system_governance": "Neutral LOC-wide principles for authority, provenance, boundaries, lifecycle, dispute and publication.",
@@ -1624,7 +1624,7 @@
     "note": "底線 remains valid historical language where recorded, but current governance prefers framework/domain boundary because boundaries can be contextual without becoming moral absolutism."
   },
   "source_evidence_policy": {
-    "boundary_registry": "data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json",
+    "boundary_registry": "data/json/registries/WRITING_GOVERNANCE_BOUNDARY_REGISTRY.json",
     "rule": "Source evidence remains owned by its source LOC. LOC6 creates separate derived records.",
     "loc4_sources": [
       "creative works",

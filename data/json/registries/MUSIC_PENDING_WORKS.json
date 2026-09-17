@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1",
-  "registry": "LOC3_PENDING_WORKS",
-  "authority": "LOC3",
+  "registry": "MUSIC_PENDING_WORKS",
+  "authority": "Music",
   "purpose": "New LOC3 works known by title and/or Suno metadata but not yet fully synchronized with lyrics/search metadata. Pending works are catalogued but excluded from searchable lyrics corpus until complete.",
   "works": [
     {

@@ -4,7 +4,10 @@
   "historical_registry_id": "LOC1_READING_EXAMPLE_REGISTRY",
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
   "scope_id": "lunarunes",
-  "feature_ids": ["lunarunes_reading", "reading_examples"],
+  "feature_ids": [
+    "lunarunes_reading",
+    "reading_examples"
+  ],
   "updated_at": "2026-09-17",
   "purpose": "Curated LunaRunes reading examples across draw formats and media. Historical LOC1 identifiers are provenance only and do not define Current ownership.",
   "governance": [
@@ -22,16 +25,42 @@
       "spread_type": "LunaRunes public reading",
       "status": "confirmed",
       "date": "2025-07-12",
-      "media_ref": {"media_id": "MEDIA-0195", "platform": "instagram", "instagram_media_id": "18018479150721730", "url": "https://www.instagram.com/reel/DMA9yDAzeRK/"},
+      "media_ref": {
+        "media_id": "MEDIA-0195",
+        "platform": "instagram",
+        "instagram_media_id": "18018479150721730",
+        "url": "https://www.instagram.com/reel/DMA9yDAzeRK/"
+      },
       "cards": [
-        {"position": 1, "rune": "風", "direction": "正位"},
-        {"position": 2, "rune": "憶", "direction": "半正位"},
-        {"position": 3, "rune": "火", "direction": "逆位"},
-        {"position": 4, "rune": "語", "direction": "正位"}
+        {
+          "position": 1,
+          "rune": "風",
+          "direction": "正位"
+        },
+        {
+          "position": 2,
+          "rune": "憶",
+          "direction": "半正位"
+        },
+        {
+          "position": 3,
+          "rune": "火",
+          "direction": "逆位"
+        },
+        {
+          "position": 4,
+          "rune": "語",
+          "direction": "正位"
+        }
       ],
       "rune_count": 4,
       "source_note": "lo3rwang-confirmed mass-divination Reel. Current supplied rune detail contains four runes; no fifth rune is inferred.",
-      "provenance": {"historical_loc_ids": ["LOC1", "LOC5"]}
+      "provenance": {
+        "historical_loc_ids": [
+          "LOC1",
+          "LOC5"
+        ]
+      }
     },
     {
       "id": "READING-EXAMPLE-002",
@@ -42,17 +71,36 @@
       "status": "confirmed",
       "date": "2026-09-12",
       "cards": [
-        {"position": 1, "rune": "韻", "direction": "半逆位", "role": "主題與狀態"},
-        {"position": 2, "rune": "誤", "direction": "正位", "role": "問題定位與行動轉折"}
+        {
+          "position": 1,
+          "rune": "韻",
+          "direction": "半逆位",
+          "role": "主題與狀態"
+        },
+        {
+          "position": 2,
+          "rune": "誤",
+          "direction": "正位",
+          "role": "問題定位與行動轉折"
+        }
       ],
       "rune_count": 2,
       "theme": "共鳴／同步",
-      "sequence": ["主題", "狀態", "問題定位", "行動"],
+      "sequence": [
+        "主題",
+        "狀態",
+        "問題定位",
+        "行動"
+      ],
       "interpretation": "共鳴開始不同步時，不再繼續堆疊修改；先確認錯誤所在。",
       "decision": "抽到誤正位後停止抽牌，轉入系統驗證。",
       "validation_context": "網站與 API 除錯過程中，先觀察到系統不同步，再以實際檢查確認錯誤來源。",
       "source_note": "lo3rwang-confirmed two-card draw and interpretation. This example records thematic sequencing rather than isolated card meanings.",
-      "provenance": {"historical_loc_ids": ["LOC1"]}
+      "provenance": {
+        "historical_loc_ids": [
+          "LOC1"
+        ]
+      }
     }
   ]
 }

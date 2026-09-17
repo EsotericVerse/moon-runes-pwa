@@ -2,12 +2,42 @@
   "schema_version": "1.6",
   "component": "LOC_GLOBAL_NAV",
   "items": [
-    {"id":"runes","label":"月之符文","href":"runes.html","description":""},
-    {"id":"game","label":"遊戲","href":"game.html","description":""},
-    {"id":"context","label":"脈絡","href":"context.html","description":""},
-    {"id":"governance","label":"治理","href":"governance.html","description":""},
-    {"id":"statics","label":"統計","href":"statics.html","description":""},
-    {"id":"evolution","label":"推演","href":"evolution.html","description":""}
+    {
+      "id": "runes",
+      "label": "月之符文",
+      "href": "runes.html",
+      "description": ""
+    },
+    {
+      "id": "game",
+      "label": "遊戲",
+      "href": "game.html",
+      "description": ""
+    },
+    {
+      "id": "context",
+      "label": "脈絡",
+      "href": "context.html",
+      "description": ""
+    },
+    {
+      "id": "governance",
+      "label": "治理",
+      "href": "governance.html",
+      "description": ""
+    },
+    {
+      "id": "statics",
+      "label": "統計",
+      "href": "statics.html",
+      "description": ""
+    },
+    {
+      "id": "evolution",
+      "label": "推演",
+      "href": "evolution.html",
+      "description": ""
+    }
   ],
   "search": {
     "type": "text_input",

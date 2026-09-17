@@ -7,21 +7,69 @@
   "purpose": "Define shared identifiers, Scope/Feature composition, references, provenance, rights and lifecycle without using historical LOC1–8 identifiers as Current ownership or architecture keys.",
   "current_architecture": "Scope Model × Feature Model → Page Composition",
   "required_common_fields": {
-    "system_id": {"type": "string", "description": "Canonical language-system identifier. Current system instance: lo3rwang."},
-    "scope_id": {"type": "string", "description": "Governed data and authority boundary for this record. Scope identifiers are instance-specific and mutable under Current Governance; this schema does not freeze a universal scope list."}
+    "system_id": {
+      "type": "string",
+      "description": "Canonical language-system identifier. Current system instance: lo3rwang."
+    },
+    "scope_id": {
+      "type": "string",
+      "description": "Governed data and authority boundary for this record. Scope identifiers are instance-specific and mutable under Current Governance; this schema does not freeze a universal scope list."
+    }
   },
   "optional_common_fields": {
-    "feature_ids": {"type": "array[string]", "description": "Reusable capabilities that consume the record's Scope without taking ownership of it. Feature assignment does not redefine Scope authority."},
-    "page_composition_refs": {"type": "array[string]", "description": "Optional UI/page projections that compose this Scope with Features. Page composition is a consumer projection, not Canon authority."},
-    "era_id": {"type": ["string", "null"], "description": "Reference to the Current ERA registry when the record has a governed temporal classification."},
-    "work_id": {"type": ["string", "null"], "description": "Stable cross-media work identifier when the record belongs to a work."},
-    "media_id": {"type": ["string", "null"], "description": "Stable media-asset identifier when the record references a media asset."},
-    "source_refs": {"type": "array", "item_shape": {"source_type": "string", "source_id": "string", "note": "string|null"}, "description": "References to source files, events, works, media, URLs, registries or other evidence without duplicating their canonical content."},
+    "feature_ids": {
+      "type": "array[string]",
+      "description": "Reusable capabilities that consume the record's Scope without taking ownership of it. Feature assignment does not redefine Scope authority."
+    },
+    "page_composition_refs": {
+      "type": "array[string]",
+      "description": "Optional UI/page projections that compose this Scope with Features. Page composition is a consumer projection, not Canon authority."
+    },
+    "era_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Reference to the Current ERA registry when the record has a governed temporal classification."
+    },
+    "work_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Stable cross-media work identifier when the record belongs to a work."
+    },
+    "media_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Stable media-asset identifier when the record references a media asset."
+    },
+    "source_refs": {
+      "type": "array",
+      "item_shape": {
+        "source_type": "string",
+        "source_id": "string",
+        "note": "string|null"
+      },
+      "description": "References to source files, events, works, media, URLs, registries or other evidence without duplicating their canonical content."
+    },
     "provenance": {
       "type": "object",
       "fields": {
         "primary_author": "string|null",
-        "collaboration_status": {"type": "string", "enum": ["solo", "collaborative", "shared", "derivative", "mixed", "unknown"]},
+        "collaboration_status": {
+          "type": "string",
+          "enum": [
+            "solo",
+            "collaborative",
+            "shared",
+            "derivative",
+            "mixed",
+            "unknown"
+          ]
+        },
         "contributors": "array",
         "shared_with": "array",
         "influences": "array",
@@ -32,15 +80,102 @@
       },
       "description": "Evidence lineage. Historical LOC1–8 identifiers may be preserved here only as provenance and never become Current ownership or architecture."
     },
-    "rights": {"type": "object", "fields": {"rights_holder_id": "string|null", "copyright_status": "string|null", "ip_name": "string|null", "ip_status": "string|null", "attribution_required": "boolean|null", "license": "string|null", "rights_note": "string|null"}},
-    "lifecycle": {"type": "object", "fields": {"status": {"type": "string", "enum": ["draft", "proposed", "under_review", "current", "active", "released", "disputed", "restricted", "amended", "superseded", "withdrawn", "rejected", "archived", "deprecated", "tombstoned"]}, "created_at": "string|null", "updated_at": "string|null"}},
-    "content_type": {"type": ["string", "null"], "registry": "data/json/registries/LOC_CONTENT_TYPE_REGISTRY.json", "description": "Shared routing/display type describing what the record is, independent from Scope authority and Feature composition."},
-    "entity_id": {"type": ["string", "null"], "description": "Optional stable entity identifier when a record is not primarily a work/media/event."},
-    "governance": {"type": "object", "fields": {"governance_id": "string|null", "review_status": "string|null", "reason": "string|null", "evidence_refs": "array", "previous_version": "string|null", "replacement_id": "string|null"}, "description": "Optional shared governance envelope. Domain records may reference a separate governance-event log rather than embedding full history."},
-    "domain": {"type": ["string", "null"], "deprecated": true, "replacement": "scope_id + feature_ids", "description": "Legacy semantic-domain compatibility field. It may describe old routing but cannot define Current Scope, Feature ownership or Canon authority."},
-    "related_domains": {"type": "array[string]", "deprecated": true, "replacement": "feature_ids", "description": "Legacy cross-domain routing compatibility only."},
-    "primary_loc": {"type": ["string", "null"], "deprecated": true, "replacement": "provenance.historical_loc_ids", "description": "Historical compatibility only. A LOC1–8 value here is provenance and must never be interpreted as Current ownership."},
-    "related_locs": {"type": "array[string]", "deprecated": true, "replacement": "provenance.historical_loc_ids", "description": "Historical compatibility only. Do not add to new Current records."}
+    "rights": {
+      "type": "object",
+      "fields": {
+        "rights_holder_id": "string|null",
+        "copyright_status": "string|null",
+        "ip_name": "string|null",
+        "ip_status": "string|null",
+        "attribution_required": "boolean|null",
+        "license": "string|null",
+        "rights_note": "string|null"
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "fields": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "proposed",
+            "under_review",
+            "current",
+            "active",
+            "released",
+            "disputed",
+            "restricted",
+            "amended",
+            "superseded",
+            "withdrawn",
+            "rejected",
+            "archived",
+            "deprecated",
+            "tombstoned"
+          ]
+        },
+        "created_at": "string|null",
+        "updated_at": "string|null"
+      }
+    },
+    "content_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "registry": "data/json/registries/LOC_CONTENT_TYPE_REGISTRY.json",
+      "description": "Shared routing/display type describing what the record is, independent from Scope authority and Feature composition."
+    },
+    "entity_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional stable entity identifier when a record is not primarily a work/media/event."
+    },
+    "governance": {
+      "type": "object",
+      "fields": {
+        "governance_id": "string|null",
+        "review_status": "string|null",
+        "reason": "string|null",
+        "evidence_refs": "array",
+        "previous_version": "string|null",
+        "replacement_id": "string|null"
+      },
+      "description": "Optional shared governance envelope. Domain records may reference a separate governance-event log rather than embedding full history."
+    },
+    "domain": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "deprecated": true,
+      "replacement": "scope_id + feature_ids",
+      "description": "Legacy semantic-domain compatibility field. It may describe old routing but cannot define Current Scope, Feature ownership or Canon authority."
+    },
+    "related_domains": {
+      "type": "array[string]",
+      "deprecated": true,
+      "replacement": "feature_ids",
+      "description": "Legacy cross-domain routing compatibility only."
+    },
+    "primary_loc": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "deprecated": true,
+      "replacement": "provenance.historical_loc_ids",
+      "description": "Historical compatibility only. A LOC1–8 value here is provenance and must never be interpreted as Current ownership."
+    },
+    "related_scopes": {
+      "type": "array[string]",
+      "deprecated": true,
+      "replacement": "provenance.historical_loc_ids",
+      "description": "Historical compatibility only. Do not add to new Current records."
+    }
   },
   "governance_rules": [
     "Current architecture is Scope Model × Feature Model → Page Composition.",

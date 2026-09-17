@@ -6,7 +6,7 @@
   "updated_at": "2026-09-09",
   "purpose": "Shared keyword and alias registry for LOC7 Knowledge Management, FAQ/RAG retrieval, Unified Search, and future Knowledge Object alignment.",
   "governance": {
-    "authority": "LOC7_KM",
+    "authority": "Analysis",
     "note": "Keywords are retrieval aids, not Canon definitions. Canon, Stable, Working, Proposed, Reserved and Historical states must remain distinguishable. Repository KM documentation is Markdown-first.",
     "controlled_logic": [
       "LOC1 真實月相判定規則",

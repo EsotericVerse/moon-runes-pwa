@@ -2,12 +2,61 @@
   "schema_version": "1.1",
   "registry": "CONTEXT_RELATION_SCHEMA",
   "description": "Graph-ready relation edge schema for the Context feature. Timeline and Trajectory are views over these relations.",
-  "required_fields": ["id","user_id","date","source_type","source_id","target_type","target_id","relation_type","direction","confidence","status"],
-  "node_types": ["state","event","era","concept","article","work","song","rune","person","system"],
-  "relation_types": ["transitions_to","evolves_from","extends","reframes","contradicts","integrates","expresses","belongs_to","influences","references","corresponds_to","causes"],
-  "direction_values": ["forward","reverse","bidirectional"],
-  "confidence_values": ["recorded","reconstructed","inferred","unknown"],
-  "status_values": ["current","released","archived"],
+  "required_fields": [
+    "id",
+    "user_id",
+    "date",
+    "source_type",
+    "source_id",
+    "target_type",
+    "target_id",
+    "relation_type",
+    "direction",
+    "confidence",
+    "status"
+  ],
+  "node_types": [
+    "state",
+    "event",
+    "era",
+    "concept",
+    "article",
+    "work",
+    "song",
+    "rune",
+    "person",
+    "system"
+  ],
+  "relation_types": [
+    "transitions_to",
+    "evolves_from",
+    "extends",
+    "reframes",
+    "contradicts",
+    "integrates",
+    "expresses",
+    "belongs_to",
+    "influences",
+    "references",
+    "corresponds_to",
+    "causes"
+  ],
+  "direction_values": [
+    "forward",
+    "reverse",
+    "bidirectional"
+  ],
+  "confidence_values": [
+    "recorded",
+    "reconstructed",
+    "inferred",
+    "unknown"
+  ],
+  "status_values": [
+    "current",
+    "released",
+    "archived"
+  ],
   "fields": {
     "id": "Stable relation ID.",
     "user_id": "Owner/user reference.",

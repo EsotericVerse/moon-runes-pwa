@@ -1,7 +1,7 @@
 {
   "schema_version": "0.2",
   "registry": "LOC_GRAPH_EVAL_CASES",
-  "authority": "LOC7",
+  "authority": "Analysis",
   "purpose": "Deterministic regression set for LOC Graph RAG. Cases assert governed graph reachability and provenance, not generative answer wording.",
   "metrics": [
     "seed_recall",

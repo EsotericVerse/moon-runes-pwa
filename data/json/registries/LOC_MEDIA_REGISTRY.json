@@ -1,15 +1,15 @@
 {
   "schema_version": "0.3",
   "registry": "LOC_MEDIA_REGISTRY",
-  "authority": "LOC5",
+  "authority": "Media",
   "language_system_id": "lo3rwang",
-  "notes": "Media assets are owned by LOC5. Author-provided LOC3↔LOC5 merge evidence is canonical for known Suno↔Instagram relations; same-song multiple Reels are separate LOC5 media records. Empty source links are never inferred. LOC3/LOC4/LOC1 reference media through stable media_id/source identifiers. 2026-09-07 conflict resolution preserves current main records and appends only workbook-backed records not already represented by URL or Instagram media ID.",
+  "notes": "Media assets are governed by the Media feature. Author-provided LOC3↔LOC5 merge evidence is canonical for known Suno↔Instagram relations; same-song multiple Reels are separate LOC5 media records. Empty source links are never inferred. LOC3/LOC4/LOC1 reference media through stable media_id/source identifiers. 2026-09-07 conflict resolution preserves current main records and appends only workbook-backed records not already represented by URL or Instagram media ID.",
   "items": [
     {
       "media_id": "MEDIA-0001",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -96,8 +96,8 @@
     {
       "media_id": "MEDIA-0002",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -184,8 +184,8 @@
     {
       "media_id": "MEDIA-0003",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -272,8 +272,8 @@
     {
       "media_id": "MEDIA-0004",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -360,8 +360,8 @@
     {
       "media_id": "MEDIA-0005",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -448,8 +448,8 @@
     {
       "media_id": "MEDIA-0006",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -536,8 +536,8 @@
     {
       "media_id": "MEDIA-0007",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -624,8 +624,8 @@
     {
       "media_id": "MEDIA-0008",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -712,8 +712,8 @@
     {
       "media_id": "MEDIA-0009",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -800,8 +800,8 @@
     {
       "media_id": "MEDIA-0010",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -888,8 +888,8 @@
     {
       "media_id": "MEDIA-0011",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -976,8 +976,8 @@
     {
       "media_id": "MEDIA-0012",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -1053,8 +1053,8 @@
     {
       "media_id": "MEDIA-0013",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -1141,8 +1141,8 @@
     {
       "media_id": "MEDIA-0014",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -1218,8 +1218,8 @@
     {
       "media_id": "MEDIA-0015",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -1306,8 +1306,8 @@
     {
       "media_id": "MEDIA-0016",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -1383,8 +1383,8 @@
     {
       "media_id": "MEDIA-0017",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -1471,8 +1471,8 @@
     {
       "media_id": "MEDIA-0018",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -1559,8 +1559,8 @@
     {
       "media_id": "MEDIA-0019",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -1647,8 +1647,8 @@
     {
       "media_id": "MEDIA-0020",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC1"
       ],
       "media_type": "instagram_reel",
@@ -1729,8 +1729,8 @@
     {
       "media_id": "MEDIA-0021",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC1"
       ],
       "media_type": "instagram_reel",
@@ -1811,8 +1811,8 @@
     {
       "media_id": "MEDIA-0022",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -1899,8 +1899,8 @@
     {
       "media_id": "MEDIA-0023",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -1987,8 +1987,8 @@
     {
       "media_id": "MEDIA-0024",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -2075,8 +2075,8 @@
     {
       "media_id": "MEDIA-0025",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -2163,8 +2163,8 @@
     {
       "media_id": "MEDIA-0026",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -2251,8 +2251,8 @@
     {
       "media_id": "MEDIA-0027",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -2339,8 +2339,8 @@
     {
       "media_id": "MEDIA-0028",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -2427,8 +2427,8 @@
     {
       "media_id": "MEDIA-0029",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -2515,8 +2515,8 @@
     {
       "media_id": "MEDIA-0030",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -2603,8 +2603,8 @@
     {
       "media_id": "MEDIA-0031",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -2691,8 +2691,8 @@
     {
       "media_id": "MEDIA-0032",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -2779,8 +2779,8 @@
     {
       "media_id": "MEDIA-0033",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -2867,8 +2867,8 @@
     {
       "media_id": "MEDIA-0034",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -2955,8 +2955,8 @@
     {
       "media_id": "MEDIA-0035",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -3043,8 +3043,8 @@
     {
       "media_id": "MEDIA-0036",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -3131,8 +3131,8 @@
     {
       "media_id": "MEDIA-0037",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -3219,8 +3219,8 @@
     {
       "media_id": "MEDIA-0038",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -3307,8 +3307,8 @@
     {
       "media_id": "MEDIA-0039",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -3395,8 +3395,8 @@
     {
       "media_id": "MEDIA-0040",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -3483,8 +3483,8 @@
     {
       "media_id": "MEDIA-0041",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -3571,8 +3571,8 @@
     {
       "media_id": "MEDIA-0042",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -3659,8 +3659,8 @@
     {
       "media_id": "MEDIA-0043",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -3747,8 +3747,8 @@
     {
       "media_id": "MEDIA-0044",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -3835,8 +3835,8 @@
     {
       "media_id": "MEDIA-0045",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -3923,8 +3923,8 @@
     {
       "media_id": "MEDIA-0046",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4011,8 +4011,8 @@
     {
       "media_id": "MEDIA-0047",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4099,8 +4099,8 @@
     {
       "media_id": "MEDIA-0048",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4187,8 +4187,8 @@
     {
       "media_id": "MEDIA-0049",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4275,8 +4275,8 @@
     {
       "media_id": "MEDIA-0050",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4363,8 +4363,8 @@
     {
       "media_id": "MEDIA-0051",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4451,8 +4451,8 @@
     {
       "media_id": "MEDIA-0052",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4539,8 +4539,8 @@
     {
       "media_id": "MEDIA-0053",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4627,8 +4627,8 @@
     {
       "media_id": "MEDIA-0054",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4715,8 +4715,8 @@
     {
       "media_id": "MEDIA-0055",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4803,8 +4803,8 @@
     {
       "media_id": "MEDIA-0056",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4891,8 +4891,8 @@
     {
       "media_id": "MEDIA-0057",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -4979,8 +4979,8 @@
     {
       "media_id": "MEDIA-0058",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -5067,8 +5067,8 @@
     {
       "media_id": "MEDIA-0059",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -5155,8 +5155,8 @@
     {
       "media_id": "MEDIA-0060",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -5243,8 +5243,8 @@
     {
       "media_id": "MEDIA-0061",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -5331,8 +5331,8 @@
     {
       "media_id": "MEDIA-0062",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -5419,8 +5419,8 @@
     {
       "media_id": "MEDIA-0063",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -5507,8 +5507,8 @@
     {
       "media_id": "MEDIA-0064",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -5595,8 +5595,8 @@
     {
       "media_id": "MEDIA-0065",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -5683,8 +5683,8 @@
     {
       "media_id": "MEDIA-0066",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -5771,8 +5771,8 @@
     {
       "media_id": "MEDIA-0067",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -5859,8 +5859,8 @@
     {
       "media_id": "MEDIA-0068",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -5947,8 +5947,8 @@
     {
       "media_id": "MEDIA-0069",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -6035,8 +6035,8 @@
     {
       "media_id": "MEDIA-0070",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -6123,8 +6123,8 @@
     {
       "media_id": "MEDIA-0071",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -6211,8 +6211,8 @@
     {
       "media_id": "MEDIA-0072",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -6299,8 +6299,8 @@
     {
       "media_id": "MEDIA-0073",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -6387,8 +6387,8 @@
     {
       "media_id": "MEDIA-0074",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -6475,8 +6475,8 @@
     {
       "media_id": "MEDIA-0075",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -6563,8 +6563,8 @@
     {
       "media_id": "MEDIA-0076",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -6651,8 +6651,8 @@
     {
       "media_id": "MEDIA-0077",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -6739,8 +6739,8 @@
     {
       "media_id": "MEDIA-0078",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -6827,8 +6827,8 @@
     {
       "media_id": "MEDIA-0079",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -6915,8 +6915,8 @@
     {
       "media_id": "MEDIA-0080",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7003,8 +7003,8 @@
     {
       "media_id": "MEDIA-0081",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7091,8 +7091,8 @@
     {
       "media_id": "MEDIA-0082",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7179,8 +7179,8 @@
     {
       "media_id": "MEDIA-0083",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7267,8 +7267,8 @@
     {
       "media_id": "MEDIA-0084",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7355,8 +7355,8 @@
     {
       "media_id": "MEDIA-0085",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7443,8 +7443,8 @@
     {
       "media_id": "MEDIA-0086",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7531,8 +7531,8 @@
     {
       "media_id": "MEDIA-0087",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7619,8 +7619,8 @@
     {
       "media_id": "MEDIA-0088",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7707,8 +7707,8 @@
     {
       "media_id": "MEDIA-0089",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7795,8 +7795,8 @@
     {
       "media_id": "MEDIA-0090",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7883,8 +7883,8 @@
     {
       "media_id": "MEDIA-0091",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -7971,8 +7971,8 @@
     {
       "media_id": "MEDIA-0092",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -8059,8 +8059,8 @@
     {
       "media_id": "MEDIA-0093",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -8147,8 +8147,8 @@
     {
       "media_id": "MEDIA-0094",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -8235,8 +8235,8 @@
     {
       "media_id": "MEDIA-0095",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -8323,8 +8323,8 @@
     {
       "media_id": "MEDIA-0096",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -8405,8 +8405,8 @@
     {
       "media_id": "MEDIA-0097",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -8493,8 +8493,8 @@
     {
       "media_id": "MEDIA-0098",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -8581,8 +8581,8 @@
     {
       "media_id": "MEDIA-0099",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -8669,8 +8669,8 @@
     {
       "media_id": "MEDIA-0100",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -8757,8 +8757,8 @@
     {
       "media_id": "MEDIA-0101",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -8845,8 +8845,8 @@
     {
       "media_id": "MEDIA-0102",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -8933,8 +8933,8 @@
     {
       "media_id": "MEDIA-0103",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9021,8 +9021,8 @@
     {
       "media_id": "MEDIA-0104",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9103,8 +9103,8 @@
     {
       "media_id": "MEDIA-0105",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9185,8 +9185,8 @@
     {
       "media_id": "MEDIA-0106",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9273,8 +9273,8 @@
     {
       "media_id": "MEDIA-0107",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9361,8 +9361,8 @@
     {
       "media_id": "MEDIA-0108",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9449,8 +9449,8 @@
     {
       "media_id": "MEDIA-0109",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9537,8 +9537,8 @@
     {
       "media_id": "MEDIA-0110",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9625,8 +9625,8 @@
     {
       "media_id": "MEDIA-0111",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9707,8 +9707,8 @@
     {
       "media_id": "MEDIA-0112",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9795,8 +9795,8 @@
     {
       "media_id": "MEDIA-0113",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9883,8 +9883,8 @@
     {
       "media_id": "MEDIA-0114",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -9965,8 +9965,8 @@
     {
       "media_id": "MEDIA-0115",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10047,8 +10047,8 @@
     {
       "media_id": "MEDIA-0116",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10129,8 +10129,8 @@
     {
       "media_id": "MEDIA-0117",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10211,8 +10211,8 @@
     {
       "media_id": "MEDIA-0118",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10299,8 +10299,8 @@
     {
       "media_id": "MEDIA-0119",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10381,8 +10381,8 @@
     {
       "media_id": "MEDIA-0120",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10469,8 +10469,8 @@
     {
       "media_id": "MEDIA-0121",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10557,8 +10557,8 @@
     {
       "media_id": "MEDIA-0122",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10645,8 +10645,8 @@
     {
       "media_id": "MEDIA-0123",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10733,8 +10733,8 @@
     {
       "media_id": "MEDIA-0124",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10821,8 +10821,8 @@
     {
       "media_id": "MEDIA-0125",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10909,8 +10909,8 @@
     {
       "media_id": "MEDIA-0126",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -10997,8 +10997,8 @@
     {
       "media_id": "MEDIA-0127",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -11085,8 +11085,8 @@
     {
       "media_id": "MEDIA-0128",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -11167,8 +11167,8 @@
     {
       "media_id": "MEDIA-0129",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -11255,8 +11255,8 @@
     {
       "media_id": "MEDIA-0130",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -11343,8 +11343,8 @@
     {
       "media_id": "MEDIA-0131",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -11431,8 +11431,8 @@
     {
       "media_id": "MEDIA-0132",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -11519,8 +11519,8 @@
     {
       "media_id": "MEDIA-0133",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -11607,8 +11607,8 @@
     {
       "media_id": "MEDIA-0134",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -11695,8 +11695,8 @@
     {
       "media_id": "MEDIA-0135",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -11783,8 +11783,8 @@
     {
       "media_id": "MEDIA-0136",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -11871,8 +11871,8 @@
     {
       "media_id": "MEDIA-0137",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -11953,8 +11953,8 @@
     {
       "media_id": "MEDIA-0138",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -12041,8 +12041,8 @@
     {
       "media_id": "MEDIA-0139",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -12129,8 +12129,8 @@
     {
       "media_id": "MEDIA-0140",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -12217,8 +12217,8 @@
     {
       "media_id": "MEDIA-0141",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -12305,8 +12305,8 @@
     {
       "media_id": "MEDIA-0142",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -12393,8 +12393,8 @@
     {
       "media_id": "MEDIA-0143",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -12481,8 +12481,8 @@
     {
       "media_id": "MEDIA-0144",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -12569,8 +12569,8 @@
     {
       "media_id": "MEDIA-0145",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -12657,8 +12657,8 @@
     {
       "media_id": "MEDIA-0146",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -12740,8 +12740,8 @@
     {
       "media_id": "MEDIA-0147",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -12828,8 +12828,8 @@
     {
       "media_id": "MEDIA-0148",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -12916,8 +12916,8 @@
     {
       "media_id": "MEDIA-0149",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13004,8 +13004,8 @@
     {
       "media_id": "MEDIA-0150",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13092,8 +13092,8 @@
     {
       "media_id": "MEDIA-0151",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13180,8 +13180,8 @@
     {
       "media_id": "MEDIA-0152",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13268,8 +13268,8 @@
     {
       "media_id": "MEDIA-0153",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13356,8 +13356,8 @@
     {
       "media_id": "MEDIA-0154",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13444,8 +13444,8 @@
     {
       "media_id": "MEDIA-0155",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13532,8 +13532,8 @@
     {
       "media_id": "MEDIA-0156",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13620,8 +13620,8 @@
     {
       "media_id": "MEDIA-0157",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13708,8 +13708,8 @@
     {
       "media_id": "MEDIA-0158",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13796,8 +13796,8 @@
     {
       "media_id": "MEDIA-0159",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13884,8 +13884,8 @@
     {
       "media_id": "MEDIA-0160",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -13972,8 +13972,8 @@
     {
       "media_id": "MEDIA-0161",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -14060,8 +14060,8 @@
     {
       "media_id": "MEDIA-0162",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -14148,8 +14148,8 @@
     {
       "media_id": "MEDIA-0163",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -14236,8 +14236,8 @@
     {
       "media_id": "MEDIA-0164",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -14324,8 +14324,8 @@
     {
       "media_id": "MEDIA-0165",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -14412,8 +14412,8 @@
     {
       "media_id": "MEDIA-0166",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -14500,8 +14500,8 @@
     {
       "media_id": "MEDIA-0167",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -14588,8 +14588,8 @@
     {
       "media_id": "MEDIA-0168",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -14676,8 +14676,8 @@
     {
       "media_id": "MEDIA-0169",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -14764,8 +14764,8 @@
     {
       "media_id": "MEDIA-0170",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -14852,8 +14852,8 @@
     {
       "media_id": "MEDIA-0171",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -14940,8 +14940,8 @@
     {
       "media_id": "MEDIA-0172",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -15028,8 +15028,8 @@
     {
       "media_id": "MEDIA-0173",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -15116,8 +15116,8 @@
     {
       "media_id": "MEDIA-0174",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -15204,8 +15204,8 @@
     {
       "media_id": "MEDIA-0175",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -15292,8 +15292,8 @@
     {
       "media_id": "MEDIA-0176",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -15380,8 +15380,8 @@
     {
       "media_id": "MEDIA-0177",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -15463,8 +15463,8 @@
     {
       "media_id": "MEDIA-0178",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -15545,8 +15545,8 @@
     {
       "media_id": "MEDIA-0179",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_preview",
@@ -15633,8 +15633,8 @@
     {
       "media_id": "MEDIA-0180",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_unresolved",
@@ -15701,8 +15701,8 @@
     {
       "media_id": "MEDIA-0181",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "instagram_reels_unresolved",
@@ -15776,8 +15776,8 @@
     {
       "media_id": "MEDIA-0183",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [],
+      "primary_loc": "Media",
+      "related_scopes": [],
       "media_type": "instagram_reel",
       "title": "對嘴特效",
       "linked_song_id": null,
@@ -15838,8 +15838,8 @@
     {
       "media_id": "MEDIA-0184",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [],
+      "primary_loc": "Media",
+      "related_scopes": [],
       "media_type": "instagram_reel",
       "title": "對嘴特效,還不錯!",
       "linked_song_id": null,
@@ -15900,8 +15900,8 @@
     {
       "media_id": "MEDIA-0185",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [],
+      "primary_loc": "Media",
+      "related_scopes": [],
       "media_type": "instagram_reel",
       "title": "這個做的很成功!!",
       "linked_song_id": null,
@@ -15962,8 +15962,8 @@
     {
       "media_id": "MEDIA-0186",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [],
+      "primary_loc": "Media",
+      "related_scopes": [],
       "media_type": "instagram_reel",
       "title": "對嘴辦, 好像很有趣跟好玩!",
       "linked_song_id": null,
@@ -16024,8 +16024,8 @@
     {
       "media_id": "MEDIA-0187",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [],
+      "primary_loc": "Media",
+      "related_scopes": [],
       "media_type": "instagram_reel",
       "title": "用meta ai畫出部分",
       "linked_song_id": null,
@@ -16086,8 +16086,8 @@
     {
       "media_id": "MEDIA-0188",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [],
+      "primary_loc": "Media",
+      "related_scopes": [],
       "media_type": "instagram_reel",
       "title": "好像很好玩",
       "linked_song_id": null,
@@ -16148,8 +16148,8 @@
     {
       "media_id": "MEDIA-0190",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [],
+      "primary_loc": "Media",
+      "related_scopes": [],
       "media_type": "instagram_reel",
       "title": "接下來要等左眉毛復原",
       "linked_song_id": null,
@@ -16210,8 +16210,8 @@
     {
       "media_id": "MEDIA-0194",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC1"
       ],
       "media_type": "instagram_reel",
@@ -16280,8 +16280,8 @@
     {
       "media_id": "MEDIA-0195",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC1"
       ],
       "media_type": "instagram_reel",
@@ -16350,8 +16350,8 @@
     {
       "media_id": "MEDIA-0196",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [],
+      "primary_loc": "Media",
+      "related_scopes": [],
       "media_type": "instagram_reel",
       "title": "董滋董滋",
       "linked_song_id": null,
@@ -16412,8 +16412,8 @@
     {
       "media_id": "MEDIA-0197",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [],
+      "primary_loc": "Media",
+      "related_scopes": [],
       "media_type": "instagram_reel",
       "title": "今天顏色說隨機換",
       "linked_song_id": null,
@@ -16474,8 +16474,8 @@
     {
       "media_id": "MEDIA-0198",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [],
+      "primary_loc": "Media",
+      "related_scopes": [],
       "media_type": "instagram_reel",
       "title": "今天混紫色",
       "linked_song_id": null,
@@ -16536,8 +16536,8 @@
     {
       "media_id": "MEDIA-0199",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [],
+      "primary_loc": "Media",
+      "related_scopes": [],
       "media_type": "instagram_reel",
       "title": "這是一個漂浮感?",
       "linked_song_id": null,
@@ -16598,8 +16598,8 @@
     {
       "media_id": "MEDIA-0201",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "youtube_music_video",
@@ -16668,8 +16668,8 @@
     {
       "media_id": "MEDIA-0202",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "youtube_music_video",
@@ -16738,8 +16738,8 @@
     {
       "media_id": "MEDIA-0203",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "youtube_music_video",
@@ -16808,8 +16808,8 @@
     {
       "media_id": "MEDIA-0204",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC3"
       ],
       "media_type": "youtube_music_video",
@@ -16878,8 +16878,8 @@
     {
       "media_id": "MEDIA-0205",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC1"
       ],
       "media_type": "instagram_post",
@@ -16946,8 +16946,8 @@
     {
       "media_id": "MEDIA-0206",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC5",
-      "related_locs": [
+      "primary_loc": "Media",
+      "related_scopes": [
         "LOC1"
       ],
       "media_type": "instagram_post",

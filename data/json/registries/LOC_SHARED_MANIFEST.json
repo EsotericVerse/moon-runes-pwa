@@ -16,8 +16,14 @@
     "current_numbered_loc_filenames_allowed": false,
     "current_personal_scope_id": "lo3rwang",
     "current_personal_host": "lo3rwang.cc",
-    "forbidden_personal_scope_ids": ["author", "whoami"],
-    "forbidden_personal_hosts": ["whoami.lo3rwang.cc", "author.lo3rwang.cc"],
+    "forbidden_personal_scope_ids": [
+      "author",
+      "whoami"
+    ],
+    "forbidden_personal_hosts": [
+      "whoami.lo3rwang.cc",
+      "author.lo3rwang.cc"
+    ],
     "rule": "LOC1–8 may exist only as Historical/provenance identifiers. Current registries are named by owning Scope, Feature, or data subject. The personal Scope is lo3rwang; Author and whoami are not Current Scope identifiers."
   },
   "projection_policy": {

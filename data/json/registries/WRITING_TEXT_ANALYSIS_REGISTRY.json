@@ -1,7 +1,7 @@
 {
   "schema_version": "0.6",
-  "registry": "LOC4_TEXT_ANALYSIS_REGISTRY",
-  "authority": "LOC4",
+  "registry": "WRITING_TEXT_ANALYSIS_REGISTRY",
+  "authority": "Writing",
   "language_system_id": "lo3rwang",
   "status": "LiteraryStructureAndProvenancePreserved_RealTextRuneSemanticsPendingRebuild",
   "updated_at": "2026-09-10",
@@ -103,8 +103,8 @@
       ],
       "confidence": "medium_high",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -194,8 +194,8 @@
       ],
       "confidence": "high",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -283,8 +283,8 @@
       ],
       "confidence": "high",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -883,7 +883,7 @@
         "specific_system_status": "confirmed",
         "basis": "chapter_generation_provenance",
         "group_status": "group_statistics_available",
-        "group_statistics_source": "LOC4_MOON_SPEAKER_RUNE_RECOVERY.json",
+        "group_statistics_source": "WRITING_MOON_SPEAKER_RUNE_RECOVERY.json",
         "note": "屬於已確認的符文體系文字創作樣本；群組統計與後續正文語意分析分開保存。"
       },
       "real_text_semantics": {
@@ -900,7 +900,7 @@
     "part_count": 7,
     "engine": "card_api/loc4_chapter_analysis.py",
     "api": "GET /analysis/loc4/moon-speaker",
-    "rune_recovery_registry": "data/json/registries/LOC4_MOON_SPEAKER_RUNE_RECOVERY.json",
+    "rune_recovery_registry": "data/json/registries/WRITING_MOON_SPEAKER_RUNE_RECOVERY.json",
     "rune_recovered_chapters": 161,
     "rune_not_recovered_chapters": 21,
     "search_status": "connected_to_unified_search",

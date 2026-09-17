@@ -13,13 +13,24 @@
     "LOC": {
       "type": "framework",
       "canonical_role": "語言系統模組框架",
-      "responsibility": ["分析拆解", "組織彙整", "搜尋", "模組化", "治理"]
+      "responsibility": [
+        "分析拆解",
+        "組織彙整",
+        "搜尋",
+        "模組化",
+        "治理"
+      ]
     },
     "LunaRunes": {
       "type": "symbolic_language_reference_implementation",
       "canonical_role": "符號式語言與可能情景具體模擬",
       "decision_authority": false,
-      "output_role": ["可能情景", "參考籤詩", "明確語意", "關鍵字"]
+      "output_role": [
+        "可能情景",
+        "參考籤詩",
+        "明確語意",
+        "關鍵字"
+      ]
     },
     "OW3gs": {
       "type": "11_card_composite_scenario_module",
@@ -27,10 +38,23 @@
       "unique_runes_per_draw": true,
       "prime_structure_note": "11 在本方法中作為完整但可內部組合的質數結構；11 不是容量，而是結構。",
       "layers": [
-        {"range": "1-6", "role": "context/cause description field"},
-        {"range": "7-11", "role": "core five-card composite field"}
+        {
+          "range": "1-6",
+          "role": "context/cause description field"
+        },
+        {
+          "range": "7-11",
+          "role": "core five-card composite field"
+        }
       ],
-      "output_pipeline": ["draw", "position_orientation", "composite_context", "semantic_keywords", "search_km", "extension_system"],
+      "output_pipeline": [
+        "draw",
+        "position_orientation",
+        "composite_context",
+        "semantic_keywords",
+        "search_km",
+        "extension_system"
+      ],
       "moon_phase_interaction": {
         "status": "reserved_optional_refinement",
         "weight": "low",
@@ -73,17 +97,61 @@
       "title": "凌晨兩點四十七分",
       "source_path": "data/json/registries/rune-literature/RLIT-20260916-凌晨兩點四十七分.json",
       "draw": [
-        [1, "鏡", "半正位"],
-        [2, "月", "逆位"],
-        [3, "果", "半逆位"],
-        [4, "花", "正位"],
-        [5, "誤", "半逆位"],
-        [6, "空", "半正位"],
-        [7, "語", "正位"],
-        [8, "心", "半正位"],
-        [9, "光", "正位"],
-        [10, "愛", "逆位"],
-        [11, "緣", "半正位"]
+        [
+          1,
+          "鏡",
+          "半正位"
+        ],
+        [
+          2,
+          "月",
+          "逆位"
+        ],
+        [
+          3,
+          "果",
+          "半逆位"
+        ],
+        [
+          4,
+          "花",
+          "正位"
+        ],
+        [
+          5,
+          "誤",
+          "半逆位"
+        ],
+        [
+          6,
+          "空",
+          "半正位"
+        ],
+        [
+          7,
+          "語",
+          "正位"
+        ],
+        [
+          8,
+          "心",
+          "半正位"
+        ],
+        [
+          9,
+          "光",
+          "正位"
+        ],
+        [
+          10,
+          "愛",
+          "逆位"
+        ],
+        [
+          11,
+          "緣",
+          "半正位"
+        ]
       ],
       "example_role": "OW3gs 11 抽 -> 綜合情景 -> 符文文學標準應用範例",
       "author_culture_relation": {
@@ -94,6 +162,25 @@
     }
   },
   "retrieval_keywords": [
-    "OW3gs", "11抽", "質數11", "11不是容量而是結構", "綜合情景", "情景模擬", "可能籤詩", "天時", "人類選擇權", "關鍵字搜尋", "符文文學", "Rune Symbolic Extension Literary", "凌晨兩點四十七分", "政德風", "德之符文", "作者文化", "Draw Layer", "Content Analysis Layer", "LOC2沒有面向", "月相交互微調"
+    "OW3gs",
+    "11抽",
+    "質數11",
+    "11不是容量而是結構",
+    "綜合情景",
+    "情景模擬",
+    "可能籤詩",
+    "天時",
+    "人類選擇權",
+    "關鍵字搜尋",
+    "符文文學",
+    "Rune Symbolic Extension Literary",
+    "凌晨兩點四十七分",
+    "政德風",
+    "德之符文",
+    "作者文化",
+    "Draw Layer",
+    "Content Analysis Layer",
+    "LOC2沒有面向",
+    "月相交互微調"
   ]
 }

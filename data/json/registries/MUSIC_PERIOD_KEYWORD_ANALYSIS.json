@@ -1,9 +1,9 @@
 {
   "schema_version": "0.4",
-  "registry": "LOC3_PERIOD_KEYWORD_ANALYSIS",
+  "registry": "MUSIC_PERIOD_KEYWORD_ANALYSIS",
   "system_id": "lo3rwang",
-  "primary_loc": "LOC3",
-  "related_locs": [
+  "primary_loc": "Music",
+  "related_scopes": [
     "LOC7",
     "LOC8"
   ],
@@ -20,7 +20,7 @@
       "data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.manual-life-platform.json"
     ],
     "period_registry": "data/json/registries/LOC_ERA_REGISTRY.json",
-    "keyword_registry": "data/json/registries/LOC3_KEYWORD_REGISTRY.json",
+    "keyword_registry": "data/json/registries/MUSIC_KEYWORD_REGISTRY.json",
     "analyzed_work_count": 403,
     "excluded_periods": [
       "P1"
@@ -39,7 +39,7 @@
       "自我治理為 canonical term；治理自己為 LOC3 alias / creative-stage label。",
       "已讀不回是跨 LOC 命名概念；在 LOC3 時期分析只以 LOC3 歌曲／歌詞證據計數。",
       "Named concepts use explicit structured evidence (era, era_name, playlist, title, tag, summary where applicable).",
-      "LOC8 owns period boundaries; LOC3 owns keyword semantics; LOC7 may index the analysis.",
+      "period boundaries are governed by the owning Scope; LOC3 owns keyword semantics; Analysis may index the analysis.",
       "「微光意象」不再作獨立語義分類；相關語義統一投影為「希望」，避免與命名概念「微月光」高度重疊。"
     ]
   },

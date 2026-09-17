@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1",
-  "registry": "LOC3_AUTHOR_ANNOTATION_REGISTRY",
-  "authority": "LOC3",
+  "registry": "LO3RWANG_MUSIC_ANNOTATION_REGISTRY",
+  "authority": "lo3rwang",
   "updated_at": "2026-09-09",
   "purpose": "Author-confirmed overrides and semantic notes for LOC3 works. These records override heuristic missing-tag flags without inventing unsupported labels.",
   "emotion_model": {
@@ -257,7 +257,7 @@
       "analysis_policy": "include",
       "discourse_mode": "narrative_scene",
       "emotion_applicability": "not_required",
-      "related_locs": [
+      "related_scopes": [
         "LOC4"
       ],
       "loc4_relation": "《月語者》開場場景／OP",

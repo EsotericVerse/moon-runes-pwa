@@ -4,21 +4,81 @@
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
   "purpose": "Shared analysis vocabulary for reusable Features operating on governed Scopes without forcing numbered-module ownership.",
   "types": [
-    {"id":"meaning","feature_id":"meaning_analysis","label":"意義解讀"},
-    {"id":"value","feature_id":"value_analysis","label":"價值判讀"},
-    {"id":"governance","feature_id":"governance_analysis","label":"治理分析"},
-    {"id":"style_state","feature_id":"style_analysis","label":"風格狀態"},
-    {"id":"stage_comparison","feature_id":"temporal_comparison","label":"階段比較"},
-    {"id":"rights_governance","feature_id":"rights_governance","label":"權利治理"},
-    {"id":"grammar","feature_id":"linguistic_analysis","label":"文法分析"},
-    {"id":"syntax","feature_id":"linguistic_analysis","label":"句法分析"},
-    {"id":"lexicon","feature_id":"linguistic_analysis","label":"詞彙分析"},
-    {"id":"semantic_structure","feature_id":"semantic_analysis","label":"語意結構"},
-    {"id":"text_architecture","feature_id":"text_architecture","label":"文字建築"},
-    {"id":"retrieval","feature_id":"retrieval_analysis","label":"檢索工程"},
-    {"id":"km","feature_id":"km","label":"Knowledge Management"},
-    {"id":"rag","feature_id":"rag","label":"RAG"},
-    {"id":"graph_relation","feature_id":"context_graph","label":"Graph Relation"}
+    {
+      "id": "meaning",
+      "feature_id": "meaning_analysis",
+      "label": "意義解讀"
+    },
+    {
+      "id": "value",
+      "feature_id": "value_analysis",
+      "label": "價值判讀"
+    },
+    {
+      "id": "governance",
+      "feature_id": "governance_analysis",
+      "label": "治理分析"
+    },
+    {
+      "id": "style_state",
+      "feature_id": "style_analysis",
+      "label": "風格狀態"
+    },
+    {
+      "id": "stage_comparison",
+      "feature_id": "temporal_comparison",
+      "label": "階段比較"
+    },
+    {
+      "id": "rights_governance",
+      "feature_id": "rights_governance",
+      "label": "權利治理"
+    },
+    {
+      "id": "grammar",
+      "feature_id": "linguistic_analysis",
+      "label": "文法分析"
+    },
+    {
+      "id": "syntax",
+      "feature_id": "linguistic_analysis",
+      "label": "句法分析"
+    },
+    {
+      "id": "lexicon",
+      "feature_id": "linguistic_analysis",
+      "label": "詞彙分析"
+    },
+    {
+      "id": "semantic_structure",
+      "feature_id": "semantic_analysis",
+      "label": "語意結構"
+    },
+    {
+      "id": "text_architecture",
+      "feature_id": "text_architecture",
+      "label": "文字建築"
+    },
+    {
+      "id": "retrieval",
+      "feature_id": "retrieval_analysis",
+      "label": "檢索工程"
+    },
+    {
+      "id": "km",
+      "feature_id": "km",
+      "label": "Knowledge Management"
+    },
+    {
+      "id": "rag",
+      "feature_id": "rag",
+      "label": "RAG"
+    },
+    {
+      "id": "graph_relation",
+      "feature_id": "context_graph",
+      "label": "Graph Relation"
+    }
   ],
   "rule": "An analysis record belongs to its governed Scope and selects one primary analysis_type plus any additional feature_ids/references. Feature selection never transfers Scope ownership. Historical LOC1–8 mappings may be preserved only as provenance.",
   "updated_at": "2026-09-17"

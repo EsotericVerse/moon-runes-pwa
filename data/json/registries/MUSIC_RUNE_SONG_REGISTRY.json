@@ -1,7 +1,7 @@
 {
   "schema_version": "0.3",
-  "registry": "LOC3_RUNE_SONG_REGISTRY",
-  "authority": "LOC3",
+  "registry": "MUSIC_RUNE_SONG_REGISTRY",
+  "authority": "Music",
   "updated_at": "2026-09-10",
   "purpose": "Identify songs actually derived from real LunaRunes draws. Rune imagery alone is insufficient.",
   "definition": "符文歌曲＝以實際 OW3gs 11 張抽牌結果為創作來源，先形成語意／解讀，再轉化成歌曲。所有符文歌曲均使用 OW3gs 11 抽。",

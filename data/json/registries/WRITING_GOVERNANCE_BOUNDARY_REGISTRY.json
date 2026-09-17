@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "registry": "LOC4_LOC6_BOUNDARY_REGISTRY",
+  "registry": "WRITING_GOVERNANCE_BOUNDARY_REGISTRY",
   "status": "current",
   "updated_at": "2026-09-09",
   "purpose": "Canonical responsibility boundary between LOC4 Writing and LOC6 Governance. The distinction is source text vs governance/style interpretation, not platform vs document.",

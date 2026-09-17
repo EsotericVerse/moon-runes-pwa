@@ -3,11 +3,37 @@
   "manifest": "FEATURE_MANIFEST",
   "status": "current",
   "features": {
-    "context": ["CONTEXT_EVENT_REGISTRY.json", "CONTEXT_EVENT_SNAPSHOT.json", "CONTEXT_RELATION_SCHEMA.json", "LOC_CROSS_RELATIONSHIP_REGISTRY.json", "LOC_GRAPH_SCHEMA.json"],
-    "music": ["MUSIC_RUNE_SONG_REGISTRY.json", "MUSIC_FACETS.json", "MUSIC_KEYWORD_REGISTRY.json", "MUSIC_PENDING_WORKS.json", "MUSIC_PERIOD_KEYWORD_ANALYSIS.json", "MUSIC_REASONING_SCHEMA.json", "MUSIC_SONG_ORIGIN_KM_20260916.json"],
-    "writing": ["WRITING_REGISTRY.json", "WRITING_TEXT_ANALYSIS_REGISTRY.json", "WRITING_GOVERNANCE_BOUNDARY_REGISTRY.json", "WRITING_MOON_SPEAKER_RUNE_RECOVERY.json"],
-    "media": ["LOC_MEDIA_REGISTRY.json", "MEDIA_RECOVERY_REGISTRY.json"],
-    "analysis": ["LOC_ANALYSIS_TYPE_REGISTRY.json", "ANALYSIS_LINGUISTIC_REGISTRY.json", "LOC_GOVERNANCE_TREND_REGISTRY.json"]
+    "context": [
+      "CONTEXT_EVENT_REGISTRY.json",
+      "CONTEXT_EVENT_SNAPSHOT.json",
+      "CONTEXT_RELATION_SCHEMA.json",
+      "LOC_CROSS_RELATIONSHIP_REGISTRY.json",
+      "LOC_GRAPH_SCHEMA.json"
+    ],
+    "music": [
+      "MUSIC_RUNE_SONG_REGISTRY.json",
+      "MUSIC_FACETS.json",
+      "MUSIC_KEYWORD_REGISTRY.json",
+      "MUSIC_PENDING_WORKS.json",
+      "MUSIC_PERIOD_KEYWORD_ANALYSIS.json",
+      "MUSIC_REASONING_SCHEMA.json",
+      "MUSIC_SONG_ORIGIN_KM_20260916.json"
+    ],
+    "writing": [
+      "WRITING_REGISTRY.json",
+      "WRITING_TEXT_ANALYSIS_REGISTRY.json",
+      "WRITING_GOVERNANCE_BOUNDARY_REGISTRY.json",
+      "WRITING_MOON_SPEAKER_RUNE_RECOVERY.json"
+    ],
+    "media": [
+      "LOC_MEDIA_REGISTRY.json",
+      "MEDIA_RECOVERY_REGISTRY.json"
+    ],
+    "analysis": [
+      "LOC_ANALYSIS_TYPE_REGISTRY.json",
+      "ANALYSIS_LINGUISTIC_REGISTRY.json",
+      "LOC_GOVERNANCE_TREND_REGISTRY.json"
+    ]
   },
   "rule": "Feature registries describe reusable capabilities and may consume multiple Scopes. Feature names do not imply ownership of Scope data. Current paths must not use retired LOC1–8 distribution identifiers.",
   "updated_at": "2026-09-17"

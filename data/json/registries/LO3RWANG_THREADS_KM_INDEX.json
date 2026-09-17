@@ -1,11 +1,11 @@
 {
   "schema_version": "0.2",
-  "registry": "LOC4_THREADS_KM_SOURCE_INDEX",
+  "registry": "LO3RWANG_THREADS_KM_INDEX",
   "status": "working",
   "source": "threads_and_replies.json",
   "source_snapshot": "2026-09-05",
-  "primary_loc": "LOC4",
-  "related_locs": [
+  "primary_loc": "lo3rwang",
+  "related_scopes": [
     "LOC6",
     "LOC7",
     "LOC8"
@@ -724,7 +724,7 @@
       "text": "站在高處別忘寒冷 落在低處也別心焦 真正值得治理的從來不是 別人眼中的那座座標 我還想往未知裡闖 保持一點孩子的狂 不為是非耗盡月光 也不為輸贏丟掉嚮往 潮來潮往 人來人往 我只守好自己的航道 愉快生活 盡力就好 還能探險—— 就是最好 https://suno.com/s/MeTrhUWNydfmiBcJ"
     }
   ],
-  "authority": "LOC4",
+  "authority": "lo3rwang",
   "storage_note": "Canonical LOC4 life-writing source index. LOC6 consumes these records only as evidence for separate governance/style interpretations.",
   "governance": "Raw post/reply text remains LOC4. Derived governance/style interpretations are separate LOC6 records.",
   "domain": "literary",

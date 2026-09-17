@@ -1,7 +1,7 @@
 {
   "schema_version": "0.7",
-  "registry": "LOC4_WRITING_REGISTRY",
-  "authority": "LOC4",
+  "registry": "WRITING_REGISTRY",
+  "authority": "Writing",
   "language_system_id": "lo3rwang",
   "purpose": "Canonical writing registry. Public-facing authored text uses the unified category「文字創作」; novel/article/essay/journal/social text remain content subtypes, while Threads/Facebook/Instagram/X(Twitter)/Vocus and other platforms remain provenance sources. Governance, knowledge and trend layers may analyze or project these texts without changing their source or writing category.",
   "work_schema": {
@@ -15,8 +15,8 @@
     "fields": {
       "work_id": "stable LOC4 work identifier",
       "system_id": "language-system reference",
-      "primary_loc": "LOC4",
-      "related_locs": "cross-LOC consumers/analyses",
+      "primary_loc": "Writing",
+      "related_scopes": "cross-LOC consumers/analyses",
       "title": "display title",
       "content_type": [
         "novel",
@@ -53,8 +53,8 @@
     {
       "work_id": "LOC4-MOON-SPEAKER",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -67,7 +67,7 @@
       "era_id": "ERA-P1",
       "period_name": "月符到月典形成期",
       "period_assignment": {
-        "authority": "LOC8",
+        "authority": "Writing",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
         "evidence": "author-confirmed Vocus publication date",
         "authority_domain": "evolution"
@@ -108,8 +108,8 @@
     {
       "work_id": "LOC4-ONE-DAY-LOVER",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -122,7 +122,7 @@
       "era_id": "ERA-P1",
       "period_name": "月符到月典形成期",
       "period_assignment": {
-        "authority": "LOC8",
+        "authority": "Writing",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
         "evidence": "author-confirmed Vocus publication date",
         "authority_domain": "evolution"
@@ -161,8 +161,8 @@
     {
       "work_id": "LOC4-READ-RECEIPT",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC3",
         "LOC5",
         "LOC6",
@@ -176,7 +176,7 @@
       "era_id": "ERA-P6",
       "period_name": "順其自然與界線整合期",
       "period_assignment": {
-        "authority": "LOC8",
+        "authority": "Writing",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
         "evidence": "author-confirmed Vocus publication date",
         "authority_domain": "evolution"
@@ -234,8 +234,8 @@
     {
       "work_id": "LOC4-BEFORE-AFTER-YOU",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -248,7 +248,7 @@
       "era_id": "ERA-P1",
       "period_name": "月符到月典形成期",
       "period_assignment": {
-        "authority": "LOC8",
+        "authority": "Writing",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
         "evidence": "author-confirmed Vocus publication date",
         "authority_domain": "evolution"
@@ -401,8 +401,8 @@
     {
       "work_id": "LOC4-MMM-RELATIONSHIP",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -415,7 +415,7 @@
       "era_id": "ERA-P1",
       "period_name": "月符到月典形成期",
       "period_assignment": {
-        "authority": "LOC8",
+        "authority": "Writing",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
         "evidence": "author-confirmed Vocus publication date",
         "authority_domain": "evolution"
@@ -461,8 +461,8 @@
     {
       "work_id": "LOC4-WRONG-PERSON",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -475,7 +475,7 @@
       "era_id": "ERA-P1",
       "period_name": "月符到月典形成期",
       "period_assignment": {
-        "authority": "LOC8",
+        "authority": "Writing",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
         "evidence": "author-confirmed Vocus publication date",
         "authority_domain": "evolution"
@@ -515,8 +515,8 @@
     {
       "work_id": "LOC4-MILK-PAPER-BOAT",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -529,7 +529,7 @@
       "era_id": "ERA-P3",
       "period_name": "微月光與關係敘事期",
       "period_assignment": {
-        "authority": "LOC8",
+        "authority": "Writing",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
         "evidence": "author-confirmed Vocus publication date",
         "authority_domain": "evolution"
@@ -574,8 +574,8 @@
     {
       "work_id": "LOC4-GRAY-RELATIONSHIP",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -588,7 +588,7 @@
       "era_id": "ERA-P2",
       "period_name": "重啟與格式形成期",
       "period_assignment": {
-        "authority": "LOC8",
+        "authority": "Writing",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
         "evidence": "author-confirmed Vocus publication date",
         "authority_domain": "evolution"
@@ -632,8 +632,8 @@
     {
       "work_id": "LOC4-PROPHET-PERSON",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -646,7 +646,7 @@
       "era_id": "ERA-P3",
       "period_name": "微月光與關係敘事期",
       "period_assignment": {
-        "authority": "LOC8",
+        "authority": "Writing",
         "rule": "map LOC4 first chapter/prologue publication date to LOC8 canonical period boundaries",
         "evidence": "author-confirmed Vocus publication date",
         "authority_domain": "evolution"
@@ -686,8 +686,8 @@
     {
       "work_id": "LOC4-PSEUDO-SINGLE",
       "system_id": "lo3rwang",
-      "primary_loc": "LOC4",
-      "related_locs": [
+      "primary_loc": "Writing",
+      "related_scopes": [
         "LOC6",
         "LOC7",
         "LOC8"
@@ -788,7 +788,7 @@
         "facebook",
         "threads"
       ],
-      "rule": "Facebook/Threads are LOC4 life writing. Preserve each source corpus once; do not duplicate raw records solely to represent LOC4 ownership."
+      "rule": "Facebook/Threads are Writing-source records in the lo3rwang Scope. Preserve each source corpus once; do not duplicate raw records solely to represent historical distribution ownership."
     }
   },
   "domain_model": {
@@ -845,11 +845,11 @@
   "analysis_status": {
     "creative_works": "core novels complete at work-level semantic analysis",
     "moon_speaker": "7-part full-text architecture complete; chapter-level deeper semantic annotations may continue",
-    "registry": "data/json/registries/LOC4_TEXT_ANALYSIS_REGISTRY.json",
+    "registry": "WRITING_REGISTRY",
     "updated_at": "2026-09-07"
   },
   "governance_boundary": {
-    "boundary_registry": "data/json/registries/LOC4_LOC6_BOUNDARY_REGISTRY.json",
+    "boundary_registry": "data/json/registries/WRITING_GOVERNANCE_BOUNDARY_REGISTRY.json",
     "owns": [
       "創作作品原文與 metadata",
       "Facebook/Threads 生活文字原文與來源 metadata",

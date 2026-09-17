@@ -27,8 +27,14 @@
   },
   "record_schema_example": {
     "pair_key": "01_02",
-    "rune_ids": [1, 2],
-    "rune_names": ["示例A", "示例B"],
+    "rune_ids": [
+      1,
+      2
+    ],
+    "rune_names": [
+      "示例A",
+      "示例B"
+    ],
     "relation_summary": "Neutral relationship only; not a draw result.",
     "relation_tags": [],
     "examples": [

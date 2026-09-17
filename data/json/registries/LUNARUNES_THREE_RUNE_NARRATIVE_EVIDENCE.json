@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1",
-  "registry": "LOC1_THREE_RUNE_NARRATIVE_EVIDENCE",
-  "authority": "LOC1_KM",
+  "registry": "LUNARUNES_THREE_RUNE_NARRATIVE_EVIDENCE",
+  "authority": "LunaRunes",
   "language_system_id": "lo3rwang",
   "status": "Working",
   "updated_at": "2026-09-09",

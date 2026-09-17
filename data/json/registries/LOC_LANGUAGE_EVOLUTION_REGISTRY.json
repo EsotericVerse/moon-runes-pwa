@@ -12,25 +12,25 @@
     {
       "type": "period_keyword_analysis",
       "domain": "music",
-      "registry": "data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json",
+      "registry": "data/json/registries/MUSIC_PERIOD_KEYWORD_ANALYSIS.json",
       "status": "available"
     },
     {
       "type": "period_keyword_analysis",
       "domain": "governance",
-      "registry": "data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json",
+      "registry": "data/json/registries/LO3RWANG_PERIOD_KEYWORD_ANALYSIS.json",
       "status": "available"
     },
     {
       "type": "writing_corpus_index",
       "domain": "literary",
-      "registry": "data/json/registries/LOC4_WRITING_REGISTRY.json",
+      "registry": "data/json/registries/WRITING_REGISTRY.json",
       "status": "available_partial"
     },
     {
       "type": "music_corpus_index",
       "domain": "music",
-      "registry": "data/json/registries/LOC3_RUNE_SONG_REGISTRY.json",
+      "registry": "data/json/registries/MUSIC_RUNE_SONG_REGISTRY.json",
       "status": "available_partial"
     },
     {
@@ -42,7 +42,7 @@
     {
       "type": "governance_history",
       "domain": "governance",
-      "registry": "data/json/registries/LOC6_GOVERNANCE_REGISTRY.json",
+      "registry": "data/json/registries/LO3RWANG_GOVERNANCE_REGISTRY.json",
       "status": "available"
     }
   ],

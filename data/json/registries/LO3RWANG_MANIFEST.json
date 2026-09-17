@@ -5,8 +5,15 @@
   "scope_id": "lo3rwang",
   "scope_label": "lo3rwang / Lucas Oscar Wang 政德",
   "canonical_host": "lo3rwang.cc",
-  "forbidden_scope_ids": ["author", "whoami"],
-  "forbidden_hosts": ["author.lo3rwang.cc", "whoami.lo3rwang.cc", "lo3rwang.lo3rwang.cc"],
+  "forbidden_scope_ids": [
+    "author",
+    "whoami"
+  ],
+  "forbidden_hosts": [
+    "author.lo3rwang.cc",
+    "whoami.lo3rwang.cc",
+    "lo3rwang.lo3rwang.cc"
+  ],
   "current_registry_files": [
     "LO3RWANG_MUSIC_ANNOTATION_REGISTRY.json",
     "LO3RWANG_ERA_STYLE_EVIDENCE.json",
