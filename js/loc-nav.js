@@ -63,7 +63,6 @@
   function syncThemeControl(){const select=document.querySelector('[data-loc-theme-select]');if(select)select.value=getThemeMode();}
   function applyTheme(mode=getThemeMode()){const safe=THEME_MODES.has(mode)?mode:'auto';const resolved=safe==='auto'?resolveAutoTheme():safe;document.documentElement.dataset.theme=safe;document.documentElement.dataset.themeResolved=resolved;document.documentElement.style.colorScheme=resolved==='day'?'light':'dark';syncThemeControl();}
   function setThemeMode(mode){if(!THEME_MODES.has(mode))return;try{localStorage.setItem(THEME_STORAGE_KEY,mode);}catch{}applyTheme(mode);}
-  function appendScript(src,key){if(document.querySelector(`script[data-${key}]`))return;const script=document.createElement('script');script.src=src;script.defer=true;script.dataset[key.replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]='true';document.body.appendChild(script);}
   function link(label,href,attrs={}){const a=document.createElement('a');a.className='loc-nav-tier-link';a.href=href;a.textContent=label;Object.entries(attrs).forEach(([key,value])=>a.setAttribute(key,value));return a;}
   function tier(items,label,className='loc-nav-tier'){const nav=document.createElement('nav');nav.className=className;nav.dataset.localMenu=className==='loc-quick-menu'?'quick':'section';nav.setAttribute('aria-label',label);const inner=document.createElement('div');inner.className=className==='loc-quick-menu'?'loc-quick-menu-inner':'loc-nav-tier-inner';items.forEach(item=>inner.appendChild(item));nav.appendChild(inner);return nav;}
   function quickMenu(key,items,label){if(!LOCAL_MENU_ALLOW.has(key))return null;const nav=tier(items,label,'loc-quick-menu');nav.dataset.quickMenu=key;return nav;}
@@ -83,11 +82,10 @@
   }
   function getTierHost(){let host=document.querySelector('.loc-nav-tiers');if(host)return host;const shell=document.querySelector('.loc-global-shell');if(!shell)return null;host=document.createElement('div');host.className='loc-nav-tiers';shell.after(host);return host;}
   function buildTiers(){const host=getTierHost();if(!host)return;host.replaceChildren();if(scope()==='runes')buildRunes(host);if(!host.childElementCount)host.remove();}
-  function loadEnhancements(){if(scope()==='runes'&&fileName()==='runes.html')appendScript('js/runes-pwa-ia.js','runes-pwa-ia');}
 
   document.addEventListener('change',event=>{const select=event.target.closest('[data-loc-theme-select]');if(select)setThemeMode(select.value);});
   applyTheme();
   window.setInterval(()=>{if(getThemeMode()==='auto')applyTheme('auto');},60000);
   window.addEventListener('storage',event=>{if(event.key===THEME_STORAGE_KEY)applyTheme();});
-  window.addEventListener('DOMContentLoaded',()=>{renderNav();syncThemeControl();buildTiers();loadEnhancements();});
+  window.addEventListener('DOMContentLoaded',()=>{renderNav();syncThemeControl();buildTiers();});
 })();
