@@ -24,7 +24,6 @@
   height:auto;
 }
 
-/* Theme text overrides: page/scope themes may tune text independently from surfaces. */
-:root{--loc-heading:var(--loc-text);--loc-input-text:var(--loc-text)}
+/* Theme title override only. Body/input text stays governed by the current page content styles. */
+:root{--loc-heading:var(--loc-text)}
 h1,h2,h3,h4,h5,h6{color:var(--loc-heading)}
-input,select,textarea{color:var(--loc-input-text)}
