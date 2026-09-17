@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {DEFAULT_SCOPE_THEME,SCOPE_THEME_DEFAULTS_KEY,THEME_REGISTRY_OVERRIDE_KEY,THEME_STORAGE_KEY,detectThemeScope,mergeThemeSlots} from './theme-registry';
+import {DEFAULT_SCOPE_THEME,SCOPE_THEME_DEFAULTS_KEY,THEME_REGISTRY_OVERRIDE_KEY,THEME_TOKEN_KEYS,detectThemeScope,mergeThemeSlots,scopeThemeStorageKey} from './theme-registry';
 
 function readJson(key,fallback){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}}
 
 function clearThemeTokens(){
   const root=document.documentElement;
-  ['--loc-accent','--loc-gold'].forEach(key=>root.style.removeProperty(key));
+  THEME_TOKEN_KEYS.forEach(key=>root.style.removeProperty(key));
 }
 
 function applyThemeSlot(slot){
@@ -19,6 +19,7 @@ function applyThemeSlot(slot){
 
 export default function ThemeSelect(){
   const [selected,setSelected]=useState('');
+  const [scope,setScope]=useState('loc');
   const [registryVersion,setRegistryVersion]=useState(0);
   const slots=useMemo(()=>{
     if(typeof window==='undefined')return mergeThemeSlots({});
@@ -26,11 +27,12 @@ export default function ThemeSelect(){
   },[registryVersion]);
 
   useEffect(()=>{
-    const scope=detectThemeScope(window.location.pathname,window.location.hostname);
+    const currentScope=detectThemeScope(window.location.pathname,window.location.hostname);
+    setScope(currentScope);
     const defaults=readJson(SCOPE_THEME_DEFAULTS_KEY,DEFAULT_SCOPE_THEME);
-    const saved=localStorage.getItem(THEME_STORAGE_KEY);
+    const saved=localStorage.getItem(scopeThemeStorageKey(currentScope));
     const enabled=slots.filter(slot=>slot.enabled);
-    const initial=enabled.some(slot=>slot.id===saved)?saved:(defaults[scope]||enabled[0]?.id||'theme-2');
+    const initial=enabled.some(slot=>slot.id===saved)?saved:(defaults[currentScope]||enabled[0]?.id||'theme-1');
     setSelected(initial);
     const slot=enabled.find(item=>item.id===initial)||enabled[0];
     if(slot)applyThemeSlot(slot);
@@ -46,7 +48,7 @@ export default function ThemeSelect(){
   function handleChange(event){
     const next=event.target.value;
     setSelected(next);
-    localStorage.setItem(THEME_STORAGE_KEY,next);
+    localStorage.setItem(scopeThemeStorageKey(scope),next);
     const slot=slots.find(item=>item.id===next);
     if(slot)applyThemeSlot(slot);
   }
