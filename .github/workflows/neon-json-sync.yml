@@ -25,4 +25,4 @@ jobs:
             --request POST \
             --header 'content-type: application/json' \
             --data '{"source":"github-actions"}' \
-            'https://br-restless-salad-b38eyn0q-jsonimporter.compute.c-4.ap-southeast-1.aws.neon.tech/import'
+            'https://br-restless-salad-b38eyn0q-jsonimporter.compute.c-4.ap-southeast-1.aws.neon.tech/'
