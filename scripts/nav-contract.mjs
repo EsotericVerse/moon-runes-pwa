@@ -8,10 +8,10 @@ const sources=[nav,legacy,canon,globals];
 const obsolete=['NAV'+'1','NAV'+'2','NAV'+'3','nav'+'1.css'];
 const stale=obsolete.filter(token=>sources.some(source=>source.includes(token)));
 if(stale.length){console.error('Forbidden obsolete NAV terminology: '+stale.join(', '));process.exit(1);}
-for(const token of ['lrunes.lo3rwang.cc','whoami.lo3rwang.cc','manage.lo3rwang.cc','月之符文','語彙','風格詞','治理規則','脈絡','統計','文化','治理','context','statics','evolution','governance','search']){
+for(const token of ['lrunes.lo3rwang.cc','lo3rwang.lo3rwang.cc','manage.lo3rwang.cc','月之符文','語彙','風格詞','治理規則','脈絡','統計','文化','治理','context','statics','evolution','governance','search']){
   if(!nav.includes(token)){console.error('Missing scoped NAV contract: '+token);process.exit(1);}
 }
-for(const token of ['LOC Scope：月之符文','LunaRunes Scope：語彙','Author Scope：風格詞','Governance Scope：治理規則','manage.lo3rwang.cc']){
+for(const token of ['LOC Scope：月之符文','LunaRunes Scope：語彙','lo3rwang Scope：風格詞','Governance Scope：治理規則','manage.lo3rwang.cc']){
   if(!canon.includes(token)){console.error('Missing NAV canon: '+token);process.exit(1);}
 }
 console.log('Scoped single NAV contract verified.');
