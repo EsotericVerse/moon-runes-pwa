@@ -142,8 +142,8 @@ export default function RouteRegistryManager(){
       {ordered.length===0&&<p>尚未建立 route registry。</p>}
       {ordered.length>0&&<ul className="loc-route-tree">{ordered.map(row=>{
         const depth=depthFor(row,routeMap);
-        return <li key={row.id} style={{marginInlineStart:`${depth*1.25}rem`}}>
-          <strong>{row.label||row.segment||'/'}</strong> <code>{row.host}{row.full_route}</code> · {row.scope} · {row.status}
+        return <li key={row.id}>
+          <span aria-hidden="true">{'— '.repeat(depth)}</span><strong>{row.label||row.segment||'/'}</strong> <code>{row.host}{row.full_route}</code> · {row.scope} · {row.status}
           {row.manager_route&&<> · <a href={row.manager_route}>管理頁</a></>}
           <div className="loc-actions">
             <button type="button" onClick={()=>edit(row)}>編輯</button>
