@@ -17,9 +17,6 @@ const SINGLE_TOPICS = [
 ];
 
 const INTRO_REEL = { id: 'DMA9yDAzeRK', title: '月之符文介紹 Reels' };
-const DEMO_REEL_LINKS = [
-  { id: 'DMA-ZxLTINw', title: '占卜示範 Reels' }
-];
 
 export default function RunesPage() {
   return <main className="loc-next-main">
@@ -35,9 +32,6 @@ export default function RunesPage() {
           />
         </div>
         <a className="scope-home-media-caption" href={`https://www.instagram.com/reel/${INTRO_REEL.id}/`} target="_blank" rel="noopener noreferrer">在 Instagram 看完整介紹 Reels</a>
-        <div className="runes-home-demo-links">
-          {DEMO_REEL_LINKS.map(reel => <a key={reel.id} href={`https://www.instagram.com/reel/${reel.id}/`} target="_blank" rel="noopener noreferrer">{reel.title}</a>)}
-        </div>
       </aside>
 
       <div className="scope-home-copy">
