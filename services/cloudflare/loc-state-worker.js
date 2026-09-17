@@ -1,4 +1,5 @@
 const ERA_KEY = 'loc:era:registry';
+const ALIAS_KEY = 'loc:alias:registry';
 const DAILY_PREFIX = 'loc:daily-rune:';
 const DAILY_INDEX_KEY = 'loc:daily-rune:index';
 const CONTEXT_EVENTS_KEY = 'loc:context:events';
@@ -8,7 +9,12 @@ const EVOLUTION_RUNES_KEY = 'loc:evolution:runes';
 const EVOLUTION_LANGUAGE_KEY = 'loc:evolution:language';
 const ADMIN_COOKIE = 'loc_admin';
 const ADMIN_TTL = 60 * 60 * 8;
-const BUILD = '2026-09-12-kv-evolution-v1';
+const BUILD = '2026-09-17-kv-governance-v2';
+
+const DEFAULT_ALIASES = Object.freeze([
+  { alias: 'whoami', canonical: 'lo3rwang', scope: 'lo3rwang', status: 'legacy' },
+  { alias: 'author', canonical: 'lo3rwang', scope: 'lo3rwang', status: 'legacy' }
+]);
 
 const json = (data, init = {}) => new Response(JSON.stringify(data), {
   ...init,
@@ -28,6 +34,14 @@ const normalizeEra = row => ({
   start_date: String(row?.start_date || ''),
   end_date: row?.end_date ? String(row.end_date) : null,
   status: String(row?.status || 'released'),
+  updated_at: new Date().toISOString()
+});
+
+const normalizeAlias = row => ({
+  alias: String(row?.alias || '').trim().toLowerCase(),
+  canonical: String(row?.canonical || '').trim().toLowerCase(),
+  scope: String(row?.scope || '').trim() || 'global',
+  status: String(row?.status || 'current').trim() || 'current',
   updated_at: new Date().toISOString()
 });
 
@@ -179,6 +193,25 @@ async function writeEras(env, payload) {
   return body;
 }
 
+async function readAliases(env) {
+  const data = await env.LOC_KV.get(ALIAS_KEY, 'json');
+  if (Array.isArray(data?.aliases)) return data;
+  return { schema_version: 'kv-1', updated_at: null, aliases: DEFAULT_ALIASES.map(normalizeAlias) };
+}
+
+async function writeAliases(env, payload) {
+  const map = new Map();
+  for (const raw of Array.isArray(payload?.aliases) ? payload.aliases : []) {
+    const row = normalizeAlias(raw);
+    if (!row.alias || !row.canonical || row.alias === row.canonical) continue;
+    map.set(row.alias, row);
+  }
+  const aliases = [...map.values()].sort((a, b) => a.alias.localeCompare(b.alias, 'en'));
+  const body = { schema_version: 'kv-1', updated_at: new Date().toISOString(), aliases };
+  await env.LOC_KV.put(ALIAS_KEY, JSON.stringify(body));
+  return body;
+}
+
 async function readCollection(env, key, field) {
   const data = await env.LOC_KV.get(key, 'json');
   return Array.isArray(data?.[field]) ? data[field] : [];
@@ -279,6 +312,29 @@ export default {
     try {
       if (path === '/admin' || path === '/admin/') return handleAdmin(request, env);
       if (path === '/' || path === '/health') return json({ ok: true, service: 'loc-state', kv: true, build: BUILD }, { headers: cors });
+
+      if (path === '/aliases') {
+        if (request.method === 'GET') return json({ ok: true, build: BUILD, ...(await readAliases(env)) }, { headers: cors });
+        if (!(await authorized(request, env))) return json({ ok: false, error: 'unauthorized', build: BUILD }, { status: 401, headers: cors });
+        if (request.method === 'PUT') return json({ ok: true, build: BUILD, ...(await writeAliases(env, await request.json())) }, { headers: cors });
+        if (request.method === 'POST') {
+          const body = await request.json();
+          const current = await readAliases(env);
+          const aliases = [...current.aliases];
+          const alias = normalizeAlias(body.alias_record || body);
+          if (body.action === 'delete') {
+            const key = String(body.alias || body.alias_record?.alias || '').trim().toLowerCase();
+            return json({ ok: true, build: BUILD, ...(await writeAliases(env, { aliases: aliases.filter(x => x.alias !== key) })) }, { headers: cors });
+          }
+          if (!alias.alias || !alias.canonical || alias.alias === alias.canonical) {
+            return json({ ok: false, error: 'alias_and_canonical_required', build: BUILD }, { status: 400, headers: cors });
+          }
+          const i = aliases.findIndex(x => x.alias === alias.alias);
+          if (i >= 0) aliases[i] = { ...aliases[i], ...alias }; else aliases.push(alias);
+          return json({ ok: true, build: BUILD, ...(await writeAliases(env, { aliases })) }, { headers: cors });
+        }
+        return json({ ok: false, error: 'method not allowed', build: BUILD }, { status: 405, headers: cors });
+      }
 
       if (path === '/eras') {
         if (request.method === 'GET') return json({ ok: true, build: BUILD, ...(await readEras(env)) }, { headers: cors });
