@@ -1,43 +1,26 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {DEFAULT_ROTATION_SCHEDULE,PAGE_THEME_SETTINGS_KEY,SCOPE_THEME_SETTINGS_KEY,SIMPLE_SCOPE_OVERRIDE_KEYS,THEME_REGISTRY_OVERRIDE_KEY,detectThemeScope,mergeThemeSlots,pageThemeKey,scopeThemeSettings} from '../../theme-registry';
+import {DEFAULT_ROTATION_SCHEDULE,SCOPE_THEME_SETTINGS_KEY,SIMPLE_SCOPE_OVERRIDE_KEYS,THEME_REGISTRY_OVERRIDE_KEY,detectThemeScope,mergeThemeSlots,scopeThemeSettings} from '../../theme-registry';
 
 const LABELS={'--loc-bg':'首頁背景','--loc-panel':'文字框背景','--loc-heading':'標題文字顏色','--loc-accent':'強調色'};
 function readJson(key,fallback){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}}
 
 export default function ScopeThemeManager(){
   const [scope,setScope]=useState('loc');
-  const [targetPage,setTargetPage]=useState('');
   const [settings,setSettings]=useState(null);
   const slots=useMemo(()=>typeof window==='undefined'?mergeThemeSlots({}):mergeThemeSlots(readJson(THEME_REGISTRY_OVERRIDE_KEY,{})),[]);
 
   useEffect(()=>{
     const currentScope=detectThemeScope(window.location.pathname,window.location.hostname);
-    const page=new URLSearchParams(window.location.search).get('page')||'';
     setScope(currentScope);
-    setTargetPage(page);
-    const scopeSettings=scopeThemeSettings(currentScope,readJson(SCOPE_THEME_SETTINGS_KEY,{}));
-    if(page){
-      const pageStored=readJson(PAGE_THEME_SETTINGS_KEY,{});
-      const override=pageStored[pageThemeKey(currentScope,page)];
-      setSettings(override?{...scopeSettings,...override,custom:{...(scopeSettings.custom||{}),...(override.custom||{})},schedule:override.schedule||scopeSettings.schedule}:{...scopeSettings,mode:'inherit'});
-    }else setSettings(scopeSettings);
+    setSettings(scopeThemeSettings(currentScope,readJson(SCOPE_THEME_SETTINGS_KEY,{})));
   },[]);
 
   function save(next){
     setSettings(next);
-    if(targetPage){
-      const stored=readJson(PAGE_THEME_SETTINGS_KEY,{});
-      const key=pageThemeKey(scope,targetPage);
-      if(next.mode==='inherit'){
-        const copy={...stored}; delete copy[key];
-        localStorage.setItem(PAGE_THEME_SETTINGS_KEY,JSON.stringify(copy));
-      }else localStorage.setItem(PAGE_THEME_SETTINGS_KEY,JSON.stringify({...stored,[key]:next}));
-    }else{
-      const stored=readJson(SCOPE_THEME_SETTINGS_KEY,{});
-      localStorage.setItem(SCOPE_THEME_SETTINGS_KEY,JSON.stringify({...stored,[scope]:next}));
-    }
+    const stored=readJson(SCOPE_THEME_SETTINGS_KEY,{});
+    localStorage.setItem(SCOPE_THEME_SETTINGS_KEY,JSON.stringify({...stored,[scope]:next}));
     window.dispatchEvent(new Event('loc-scope-theme-change'));
   }
   function patch(patchValue){save({...settings,...patchValue});}
@@ -52,16 +35,15 @@ export default function ScopeThemeManager(){
 
   return <div className="loc-view">
     <section className="loc-card">
-      <p className="loc-eyebrow">{targetPage?'Page Theme':'Scope Theme'}</p>
-      <h2>{targetPage?`${targetPage} 預設主題`:`${scope} 主題設定`}</h2>
-      <p className="loc-subtitle">{targetPage?'此設定只影響指定頁面；頁面管理者可自訂色彩，未設定時繼承目前 Scope。':'Scope 層只選預設主題或時間輪調；自訂色彩由各 Page 管理者負責。八組 preset 由 Admin 維護。'}</p>
+      <p className="loc-eyebrow">Scope Theme</p>
+      <h2>{scope} 主題設定</h2>
+      <p className="loc-subtitle">Theme 與色彩屬 Scope 管理；Admin 維護 Scope 與 8 組 preset，分支管理頁不覆寫 Scope 視覺。</p>
       <div className="loc-grid two">
         <label>模式
           <select value={settings.mode} onChange={e=>patch({mode:e.target.value})}>
-            {targetPage&&<option value="inherit">繼承 Scope</option>}
             <option value="fixed">固定主題</option>
             <option value="time">隨時間輪調</option>
-            {targetPage&&<option value="custom">頁面自訂</option>}
+            <option value="custom">簡單自訂</option>
           </select>
         </label>
         <label>基礎主題
@@ -72,7 +54,7 @@ export default function ScopeThemeManager(){
 
     {settings.mode==='time'&&<section className="loc-card">
       <h2>時間輪調</h2>
-      <p className="loc-subtitle">依本機時間切換。每個 Scope 有自己的輪調表。</p>
+      <p className="loc-subtitle">依本機時間切換；輪調表屬目前 Scope。</p>
       <div className="loc-table-wrap"><table className="loc-table"><thead><tr><th>開始小時</th><th>主題</th></tr></thead><tbody>
         {(settings.schedule||DEFAULT_ROTATION_SCHEDULE).map((row,index)=><tr key={index}>
           <td><input type="number" min="0" max="23" value={row.start} onChange={e=>patchSchedule(index,{start:Number(e.target.value)})}/></td>
@@ -81,9 +63,9 @@ export default function ScopeThemeManager(){
       </tbody></table></div>
     </section>}
 
-    {targetPage&&settings.mode==='custom'&&<section className="loc-card">
-      <h2>頁面自訂色彩</h2>
-      <p className="loc-subtitle">只影響目前頁面；以選定 preset 為 base，由此頁面的管理者覆寫少量網站色彩。</p>
+    {settings.mode==='custom'&&<section className="loc-card">
+      <h2>Scope 自訂色彩</h2>
+      <p className="loc-subtitle">以選定 preset 為 base，只覆寫 Scope 共通視覺；內容文字本身不在此處調整。</p>
       <div className="loc-grid two">
         {SIMPLE_SCOPE_OVERRIDE_KEYS.map(key=><label key={key}>{LABELS[key]||key}<input value={(settings.custom||{})[key]||''} placeholder="例如 #ffffff" onChange={e=>patchCustom(key,e.target.value)}/></label>)}
       </div>
