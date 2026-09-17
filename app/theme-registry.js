@@ -2,7 +2,6 @@ export const THEME_STORAGE_KEY='loc-theme';
 export const THEME_REGISTRY_OVERRIDE_KEY='loc-theme-registry-overrides-v1';
 export const SCOPE_THEME_DEFAULTS_KEY='loc-scope-theme-defaults-v1';
 export const SCOPE_THEME_SETTINGS_KEY='loc-scope-theme-settings-v1';
-export const PAGE_THEME_SETTINGS_KEY='loc-page-theme-settings-v1';
 
 export const THEME_TOKEN_KEYS=['--loc-bg','--loc-panel','--loc-panel-2','--loc-text','--loc-heading','--loc-accent','--loc-gold','--loc-body-glow','--loc-body-mid','--loc-hero-start','--loc-hero-end'];
 export const SIMPLE_SCOPE_OVERRIDE_KEYS=['--loc-bg','--loc-panel','--loc-heading','--loc-accent'];
@@ -59,5 +58,3 @@ export function themeForHour(schedule=DEFAULT_ROTATION_SCHEDULE,hour=new Date().
 export function scopeThemeSettings(scope,stored={}){
   return {...DEFAULT_SCOPE_THEME_SETTINGS[scope],...(stored[scope]||{}),custom:{...(DEFAULT_SCOPE_THEME_SETTINGS[scope]?.custom||{}),...((stored[scope]||{}).custom||{})},schedule:(stored[scope]||{}).schedule||DEFAULT_ROTATION_SCHEDULE};
 }
-
-export function pageThemeKey(scope,pathname='/'){return `${scope}:${pathname||'/'}`;}
