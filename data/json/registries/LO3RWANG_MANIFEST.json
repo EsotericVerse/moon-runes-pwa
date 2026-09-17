@@ -1,18 +1,20 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "manifest": "LO3RWANG_MANIFEST",
   "status": "current",
   "scope_id": "lo3rwang",
   "scope_label": "lo3rwang / Lucas Oscar Wang 政德",
   "canonical_host": "lo3rwang.cc",
   "forbidden_scope_ids": ["author", "whoami"],
-  "forbidden_hosts": ["author.lo3rwang.cc", "whoami.lo3rwang.cc"],
-  "current_registry_names": [
-    "LO3RWANG_MUSIC_ANNOTATION_REGISTRY",
-    "LO3RWANG_ERA_STYLE_EVIDENCE",
-    "LO3RWANG_GOVERNANCE_REGISTRY",
-    "LO3RWANG_CULTURE_KEYWORDS"
+  "forbidden_hosts": ["author.lo3rwang.cc", "whoami.lo3rwang.cc", "lo3rwang.lo3rwang.cc"],
+  "current_registry_files": [
+    "LO3RWANG_MUSIC_ANNOTATION_REGISTRY.json",
+    "LO3RWANG_ERA_STYLE_EVIDENCE.json",
+    "LO3RWANG_GOVERNANCE_REGISTRY.json",
+    "LO3RWANG_PERIOD_KEYWORD_ANALYSIS.json",
+    "LO3RWANG_THREADS_KM_INDEX.json",
+    "LO3RWANG_CULTURE_KEYWORDS.json"
   ],
-  "rule": "The personal Scope uses lo3rwang as its Current identifier. Author may appear only as ordinary descriptive language, not as Scope ID, registry prefix, route identity or hostname.",
+  "rule": "The personal Scope uses lo3rwang as its Current identifier. Author may appear only as ordinary descriptive language, not as Scope ID, registry prefix, route identity or hostname. whoami is Historical only.",
   "updated_at": "2026-09-17"
 }
