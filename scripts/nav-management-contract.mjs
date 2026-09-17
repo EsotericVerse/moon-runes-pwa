@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 const map=JSON.parse(fs.readFileSync('scripts/nav-route-map.json','utf8'));
-const hasManage=scope=>(map.scopes[scope].role||[]).some(x=>x.href==='https://manage.lo3rwang.cc');
-if(hasManage('loc')||hasManage('runes'))throw new Error('Management link leaked into LOC/LunaRunes NAV');
-if(!hasManage('lo3rwang')||!hasManage('governance'))throw new Error('Management link missing from lo3rwang/Governance NAV');
-console.log('NAV management visibility verified.');
+const hasAdmin=scope=>(map.scopes[scope].role||[]).some(x=>x.href==='https://admin.lo3rwang.cc');
+if(hasAdmin('loc')||hasAdmin('runes'))throw new Error('Admin link leaked into LOC/LunaRunes NAV');
+if(!hasAdmin('lo3rwang'))throw new Error('Admin link missing from lo3rwang NAV');
+if(map.scopes.admin.role?.length)throw new Error('Admin root must not link to itself as a role entry');
+console.log('NAV admin visibility verified.');
