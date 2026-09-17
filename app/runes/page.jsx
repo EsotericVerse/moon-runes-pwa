@@ -16,9 +16,16 @@ const SINGLE_TOPICS = [
   { key: 'life', label: '生活' }
 ];
 
-const REELS = [
+const PROMO_REELS = [
   { id: 'DMA9yDAzeRK', title: '月之符文 Reels 01' },
   { id: 'DMA-ZxLTINw', title: '月之符文 Reels 02' }
+];
+
+const READING_EXAMPLES = [
+  {
+    title: '你最近卡關了嗎？給你一些突破建議！',
+    url: 'https://www.instagram.com/reel/DMA9yDAzeRK/'
+  }
 ];
 
 export default function RunesPage() {
@@ -32,7 +39,7 @@ export default function RunesPage() {
       </div>
 
       <div className="runes-home-reels" aria-label="月之符文 Reels 預覽">
-        {REELS.map(reel => <article className="runes-home-reel" key={reel.id}>
+        {PROMO_REELS.map(reel => <article className="runes-home-reel" key={reel.id}>
           <iframe
             src={`https://www.instagram.com/reel/${reel.id}/embed/`}
             title={reel.title}
@@ -59,6 +66,17 @@ export default function RunesPage() {
       </div>
       <p className="runes-quick-start-note">沒有特別想問的？也可以直接抽每日符文。</p>
       <div className="loc-actions"><a className="loc-button" href="?mode=daily#draw">抽每日符文</a></div>
+    </section>
+
+    <section className="loc-card runes-reading-example-links" aria-labelledby="reading-example-title">
+      <div className="runes-content-heading">
+        <p className="loc-eyebrow">Example · 解牌範例</p>
+        <h2 id="reading-example-title">想先看看實際怎麼解？</h2>
+        <p className="loc-subtitle">解牌範例只提供連結，不在首頁重複嵌入影片。</p>
+      </div>
+      <div className="links">
+        {READING_EXAMPLES.map(example => <a key={example.url} href={example.url} target="_blank" rel="noopener noreferrer">{example.title} →</a>)}
+      </div>
     </section>
 
     <RuneDrawClient />
