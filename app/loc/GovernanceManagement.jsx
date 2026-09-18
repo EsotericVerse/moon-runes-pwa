@@ -1,17 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  getManagementSession,
-  managementAuthConfigured,
-  signInManagementWithGoogle,
-  signOutManagement
-} from './auth-client';
 import { fetchLocJsonBatch, LOC_DATA } from './data';
+import { useNeonAccount } from './use-neon-account';
 
 export default function GovernanceManagement(){
-  const configured=managementAuthConfigured();
-  const [state,setState]=useState({loading:configured,session:null,error:''});
+  const account=useNeonAccount();
   const [shared,setShared]=useState({loading:false,eras:[],daily:[],events:[],relations:[],error:''});
 
   const loadShared=async()=>{
@@ -37,52 +31,18 @@ export default function GovernanceManagement(){
   };
 
   useEffect(()=>{
-    if(!configured)return;
-    let alive=true;
-    getManagementSession()
-      .then(session=>{
-        if(!alive)return;
-        setState({loading:false,session,error:''});
-        if(session)loadShared();
-      })
-      .catch(error=>{if(alive)setState({loading:false,session:null,error:String(error?.message||error)});});
-    return()=>{alive=false;};
-  },[configured]);
-
-  const login=async()=>{
-    setState(current=>({...current,error:''}));
-    try{await signInManagementWithGoogle('/management');}
-    catch(error){setState(current=>({...current,error:String(error?.message||error)}));}
-  };
-
-  const logout=async()=>{
-    setState(current=>({...current,error:''}));
-    try{
-      await signOutManagement();
-      setState({loading:false,session:null,error:''});
-      setShared({loading:false,eras:[],daily:[],events:[],relations:[],error:''});
-    }catch(error){
-      setState(current=>({...current,error:String(error?.message||error)}));
-    }
-  };
-
-  if(!configured){
-    return <section className="loc-card" id="management">
-      <p className="loc-eyebrow">Governance Management</p>
-      <h2>治理管理</h2>
-      <p className="loc-subtitle">管理驗證尚未部署</p>
-    </section>;
-  }
+    if(account.user)loadShared();
+    else setShared({loading:false,eras:[],daily:[],events:[],relations:[],error:''});
+  },[account.user?.id]);
 
   return <section className="loc-card" id="management">
     <p className="loc-eyebrow">Governance Management</p>
     <h2>治理管理</h2>
-    <p className="loc-subtitle">共享資料讀取已統一由 Neon Current projection 提供；公開頁面維持唯讀。</p>
-    {state.loading&&<p>正在確認管理 session…</p>}
-    {!state.loading&&!state.session&&<button type="button" onClick={login}>使用 Google 驗證管理權限</button>}
-    {!state.loading&&state.session&&<>
-      <p><strong>管理 session 有效。</strong></p>
-      {state.session?.session_expires_at&&<p>到期時間：{String(state.session.session_expires_at)}</p>}
+    <p className="loc-subtitle">管理登入、個人資料與共享 Current 資料都統一使用 Neon；公開 Current projection 維持唯讀。</p>
+    {account.loading&&<p>正在確認 Neon session…</p>}
+    {!account.loading&&!account.user&&<button type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>}
+    {!account.loading&&account.user&&<>
+      <p><strong>Neon session 有效。</strong> {account.user.email||account.user.name||''}</p>
       <hr/>
       <h3>Neon 共享資料狀態</h3>
       {shared.loading&&<p>正在讀取 Neon Data API…</p>}
@@ -97,8 +57,8 @@ export default function GovernanceManagement(){
       </>}
       {shared.error&&<p role="alert">Neon 讀取失敗：{shared.error}</p>}
       <hr/>
-      <button type="button" onClick={logout}>登出管理</button>
+      <button type="button" onClick={account.signOut}>登出 Neon</button>
     </>}
-    {state.error&&<p role="alert">{state.error}</p>}
+    {account.error&&<p role="alert">{account.error}</p>}
   </section>;
 }
