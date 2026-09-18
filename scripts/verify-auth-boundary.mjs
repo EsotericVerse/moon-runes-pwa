@@ -1,32 +1,36 @@
 import fs from 'node:fs';
 
-const auth=fs.readFileSync('services/cloudflare/auth-worker.js','utf8');
-const client=fs.readFileSync('app/loc/auth-client.js','utf8');
 const data=fs.readFileSync('app/loc/data.js','utf8');
+const client=fs.readFileSync('app/loc/neon-client.js','utf8');
+const userStorage=fs.readFileSync('app/loc/neon-user-storage.js','utf8');
+const migration=fs.readFileSync('app/loc/neon-legacy-migration.js','utf8');
 const failures=[];
 
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
-const forbidMatch=(text,re,label)=>{if(re.test(text))failures.push(label);};
-
-requireMatch(auth,/SESSION_TTL_SECONDS\s*=\s*60\s*\*\s*60\s*\*\s*2/,'auth worker: management session TTL must remain 2 hours');
-requireMatch(auth,/disableSessionRefresh\s*:\s*true/,'auth worker: sliding session refresh must remain disabled');
-requireMatch(auth,/socialProviders\s*:\s*\{[\s\S]*google\s*:/,'auth worker: Google OAuth provider is required');
-requireMatch(auth,/requireEmailVerification\s*:\s*true/,'auth worker: Google email verification is required');
-requireMatch(auth,/LOC_ADMIN_EMAILS/,'auth worker: Owner/Admin allowlist must remain server-side');
-requireMatch(auth,/auth\.api\.getSession\s*\(/,'auth worker: management session must be validated server-side');
-requireMatch(auth,/authorized\s*:\s*allowed/,'auth worker: management session endpoint must return explicit authorization state');
-
-requireMatch(client,/credentials\s*:\s*['"]include['"]/,'browser auth client: management requests must include HttpOnly session credentials');
-requireMatch(client,/management\/session/,'browser auth client: management session status endpoint required');
 
 requireMatch(data,/runtime_json_documents/,'shared runtime data must use Neon Current projection');
-forbidMatch(auth,/LOC_STATE_URL|LOC_WRITE_TOKEN|management\/state/,'auth worker: retired KV state proxy must not return');
-forbidMatch(client,/managementStateWrite|management\/state/,'browser auth client: retired state writes must not return');
-if(fs.existsSync('services/cloudflare/loc-state-worker.js'))failures.push('retired KV state worker must remain removed');
-if(fs.existsSync('wrangler.toml'))failures.push('root KV Worker deployment config must remain removed');
+requireMatch(client,/@neondatabase\/neon-js/,'Neon JS client dependency is required');
+requireMatch(client,/signIn\.social/,'Neon Google OAuth sign-in is required');
+requireMatch(client,/getSession/,'Neon session lookup is required');
+requireMatch(userStorage,/user_records/,'Neon user record persistence is required');
+requireMatch(userStorage,/user_settings/,'Neon user settings persistence is required');
+requireMatch(migration,/loc-local-records/,'legacy IndexedDB migration must remain until browser migration is complete');
+
+for(const retired of [
+  'app/loc/auth-client.js',
+  'app/loc/local-db.js',
+  'app/loc/google-drive.js',
+  'app/loc/storage.js',
+  'services/cloudflare/auth-worker.js',
+  'services/cloudflare/wrangler.auth.jsonc',
+  'services/cloudflare/loc-state-worker.js',
+  'wrangler.toml'
+]){
+  if(fs.existsSync(retired))failures.push(`retired persistence/auth path must remain removed: ${retired}`);
+}
 
 if(failures.length){
   console.error('[auth-boundary] violations:\n'+failures.join('\n'));
   process.exit(1);
 }
-console.log('[auth-boundary] management auth is isolated; shared data runtime is Neon-only');
+console.log('[auth-boundary] Neon Auth + Data API + RLS application boundary verified');
