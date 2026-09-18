@@ -99,7 +99,7 @@ export default function RunesPage() {
         <p className="loc-subtitle">看月之符文如何延伸成小說、短文、歌曲、影像與其他作品。</p>
       </div>
       <p>文化不是再解釋單一符文，而是看符文如何進入不同形式的創作。想看哪一種，就從對應的延伸體系直接進去。</p>
-      <div className="links"><a href="/search?q=符文文學">看符文文學</a><a href="/search?q=符文歌曲">看符文歌曲</a><a href="/evolution">看符文文化</a></div>
+      <div className="links"><a href="/search?q=符文文學">看符文文學</a><a href="/search?q=符文歌曲">看符文歌曲</a><a href="/culture">看符文文化</a></div>
     </section>
   </main>;
 }
