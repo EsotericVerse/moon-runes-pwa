@@ -26,16 +26,16 @@ export default function EvolutionView(){
     if(tab==='overview'&&!eras)load(LOC_DATA.LOC_ERA_REGISTRY,setEras);
     if(tab==='eras'&&!eras)load(LOC_DATA.LOC_ERA_REGISTRY,setEras);
     if(tab==='timeline'){
-      if(!events)load(LOC_DATA.LOC8_EVENT_SNAPSHOT,setEvents);
+      if(!events)load(LOC_DATA.EVENT_SNAPSHOT,setEvents);
       if(!runeHistory)load(LOC_DATA.LUNARUNE_EVOLUTION_HISTORY,setRuneHistory);
       if(!coreHistory||!runes)fetchLocJsonBatch([LOC_DATA.HISTORY,LOC_DATA.RUNES],{concurrency:2}).then(([historyRows,runeRows])=>{if(live){setCoreHistory(historyRows);setRunes(runeRows);}}).catch(e=>live&&setError(e.message));
     }
     if(tab==='trend'){
-      if(!loc3||!loc6)fetchLocJsonBatch([LOC_DATA.LOC3_PERIOD_KEYWORD_ANALYSIS,LOC_DATA.LOC6_PERIOD_KEYWORD_ANALYSIS],{concurrency:2}).then(([a,b])=>{if(live){setLoc3(a);setLoc6(b);}}).catch(e=>live&&setError(e.message));
+      if(!loc3||!loc6)fetchLocJsonBatch([LOC_DATA.MUSIC_PERIOD_KEYWORD_ANALYSIS,LOC_DATA.GOVERNANCE_PERIOD_KEYWORD_ANALYSIS],{concurrency:2}).then(([a,b])=>{if(live){setLoc3(a);setLoc6(b);}}).catch(e=>live&&setError(e.message));
       if(!runeHistory)load(LOC_DATA.LUNARUNE_EVOLUTION_HISTORY,setRuneHistory);
     }
     if(tab==='trajectory'){
-      if(!loc6)load(LOC_DATA.LOC6_PERIOD_KEYWORD_ANALYSIS,setLoc6);
+      if(!loc6)load(LOC_DATA.GOVERNANCE_PERIOD_KEYWORD_ANALYSIS,setLoc6);
       if(!runeHistory)load(LOC_DATA.LUNARUNE_EVOLUTION_HISTORY,setRuneHistory);
     }
     return()=>{live=false};
