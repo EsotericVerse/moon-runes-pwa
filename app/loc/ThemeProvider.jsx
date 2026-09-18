@@ -20,8 +20,14 @@ export function ThemeProvider({children}){
     return()=>{live=false};
   },[]);
 
+  const legacyMappedMode=storedMode==='light'?'order':storedMode==='dark'?'soul':storedMode;
   const validKeys=new Set(styles.map(item=>item.style_key));
-  const mode=storedMode==='auto'||validKeys.has(storedMode)?storedMode:'auto';
+  const mode=legacyMappedMode==='auto'||validKeys.has(legacyMappedMode)?legacyMappedMode:'auto';
+
+  useEffect(()=>{
+    if(storedMode==='light')setMode('order');
+    if(storedMode==='dark')setMode('soul');
+  },[storedMode,setMode]);
   const active=mode==='auto'
     ? themeForTime(new Date(),styles)
     : (styles.find(item=>item.style_key===mode)||themeForTime(new Date(),styles));
