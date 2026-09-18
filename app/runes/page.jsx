@@ -24,7 +24,7 @@ const PROMO_REELS = [
 
 const READING_EXAMPLES = [
   {
-    title: '你最近卡關了嗎？給你一些突破建議！',
+    title: '最近卡關時的突破建議',
     url: 'https://www.instagram.com/reel/DMA9yDAzeRK/'
   }
 ];
@@ -35,7 +35,7 @@ export default function RunesPage() {
       <div className="runes-home-hero-copy">
         <p className="loc-eyebrow">LunaRunes</p>
         <h1>月之符文</h1>
-        <p className="loc-subtitle">第一次來？如果什麼都不知道，也沒關係！先看影片介紹，<a href={FAQ_LINKS.runes}>FAQ</a>，或直接<a href="/duel/one">抽張牌</a>也可以！</p>
+        <p className="loc-subtitle">第一次來，如果什麼都不知道，也沒關係！先看影片介紹，<a href={FAQ_LINKS.runes}>FAQ</a>，或直接<a href="/duel/one">抽張牌</a>也可以！</p>
       </div>
 
       <div className="runes-home-reels" aria-label="月之符文 Reels 預覽">
@@ -55,23 +55,23 @@ export default function RunesPage() {
     <section className="loc-card runes-quick-start" aria-labelledby="runes-quick-start-title">
       <div className="runes-content-heading">
         <p className="loc-eyebrow">Quick Start</p>
-        <h2 id="runes-quick-start-title">你現在最想問哪一件事？</h2>
+        <h2 id="runes-quick-start-title">你現在最想問哪一件事</h2>
         <p className="loc-subtitle">不用先學規則，挑一個方向，抽一張牌就可以開始。</p>
       </div>
       <div className="runes-topic-grid">
-        {SINGLE_TOPICS.map(topic => <a className="runes-topic-choice" key={topic.key} href={`/duel/one?topic=${topic.key}`}>
+        {SINGLE_TOPICS.map(topic => <a className="runes-topic-choice" key={topic.key} href="/duel/one">
           <strong>{topic.label}</strong>
           <span>抽一張牌</span>
         </a>)}
       </div>
-      <p className="runes-quick-start-note">沒有特別想問的？也可以直接抽每日符文。</p>
+      <p className="runes-quick-start-note">沒有特別想問的，也可以直接抽每日符文。</p>
       <div className="loc-actions"><a className="loc-button" href="/duel/daily">抽每日符文</a></div>
     </section>
 
     <section className="loc-card runes-reading-example-links" aria-labelledby="reading-example-title">
       <div className="runes-content-heading">
         <p className="loc-eyebrow">Example</p>
-        <h2 id="reading-example-title">想先看看實際怎麼解？</h2>
+        <h2 id="reading-example-title">想先看看實際怎麼解</h2>
         <p className="loc-subtitle">從一個完整範例開始，看抽牌之後怎麼把結果連成解讀。</p>
       </div>
       <div className="links">
