@@ -1,8 +1,8 @@
 {
-  "schema_version": "1.3",
+  "schema_version": "1.4",
   "registry": "LOC_DATA_GOVERNANCE",
   "status": "current",
-  "updated_at": "2026-09-17T17:00:00+08:00",
+  "updated_at": "2026-09-18T00:00:00+08:00",
   "identity": {
     "loc": "LOC／月典 = Modular Language Framework／模組化語言框架",
     "lunarunes": "LunaRunes／月之符文 = Symbolic Language／符號式語言"
@@ -12,9 +12,17 @@
     "scope_model": "The governed data and authority boundary of an instance.",
     "feature_model": "Reusable capabilities that consume a Scope without taking ownership of it.",
     "page_composition": "A UI page composes a Scope with Features; navigation is a governed mutable Page Composition interface and is not the Canon source.",
-    "numbered_loc_boundary": "LOC1–8 are Historical/provenance identifiers only. They do not define Current architecture, scope, module ownership, navigation taxonomy or Canon authority."
+    "feature_identities": {
+      "culture": "Culture／文化；文化是文字的演化。"
+    }
   },
-  "authority_chain": ["LOC_DATA_GOVERNANCE","LOC_TERMINOLOGY_CANON","Current domain registries","generated projections","Search/RAG/UI consumers"],
+  "authority_chain": [
+    "LOC_DATA_GOVERNANCE",
+    "LOC_TERMINOLOGY_CANON",
+    "Current domain registries",
+    "generated projections",
+    "Search/RAG/UI consumers"
+  ],
   "principles": {
     "objective_neutral": true,
     "explainable": true,
@@ -32,14 +40,30 @@
     "immutable": true,
     "generate_once": true,
     "persist_mapping_on_backfill": true,
-    "forbidden_sources": ["array index","row number","batch ordinal","file order","timestamp alone","mutable name","slug","filename"],
+    "forbidden_sources": [
+      "array index",
+      "row number",
+      "batch ordinal",
+      "file order",
+      "timestamp alone",
+      "mutable name",
+      "slug",
+      "filename"
+    ],
     "collision_policy": "Stop migration and require explicit resolution. Never silently overwrite, merge, renumber or choose the first duplicate.",
     "business_key_policy": "Business identifiers remain separate and receive domain-specific UNIQUE constraints.",
     "postgresql_target": "id uuid primary key"
   },
   "temporal_governance": {
-    "current_entity_fields": ["created_at","updated_at","effective_at"],
-    "history_event_fields": ["occurred_at","recorded_at"],
+    "current_entity_fields": [
+      "created_at",
+      "updated_at",
+      "effective_at"
+    ],
+    "history_event_fields": [
+      "occurred_at",
+      "recorded_at"
+    ],
     "postgresql_target": "timestamptz",
     "unknown_time_rule": "Unknown historical times remain null; never invent timestamps."
   },
@@ -51,7 +75,14 @@
   },
   "scope_governance": {
     "mutable": true,
-    "operations": ["create","rename","relate","split","merge","remove"],
+    "operations": [
+      "create",
+      "rename",
+      "relate",
+      "split",
+      "merge",
+      "remove"
+    ],
     "independent_instance_authority": true,
     "adoption_grants_upstream_login": false,
     "aggregation_changes_source_ownership": false
@@ -67,14 +98,53 @@
   "search_statistics": {
     "owned_by_scope": true,
     "integrated_results_require_review": true,
-    "processing": ["initial_full_analysis","skip_unchanged","update_diff","recompute_marked_records_only"],
+    "processing": [
+      "initial_full_analysis",
+      "skip_unchanged",
+      "update_diff",
+      "recompute_marked_records_only"
+    ],
     "leaderboard": "Persist Current counts and apply deltas; do not repeat full-text scans for every display."
   },
-  "era": {"owned_and_governed_by_scope":true,"cross_scope_merge_by_default":false,"historical_selection_requires_audit":true},
-  "roles": ["author","data_subject","scope_manager","system_administrator"],
+  "era": {
+    "owned_and_governed_by_scope": true,
+    "cross_scope_merge_by_default": false,
+    "historical_selection_requires_audit": true
+  },
+  "roles": [
+    "author",
+    "data_subject",
+    "scope_manager",
+    "system_administrator"
+  ],
   "governance_control_plane": {
-    "lifecycle": ["proposed","under_review","active","disputed","restricted","amended","superseded","withdrawn","rejected","tombstoned"],
-    "required_audit_fields": ["governance_id","scope_id","object_type","object_id","actor_role","action","before","after","reason","evidence_refs","submitted_at","review_status","replacement_id"],
+    "lifecycle": [
+      "proposed",
+      "under_review",
+      "active",
+      "disputed",
+      "restricted",
+      "amended",
+      "superseded",
+      "withdrawn",
+      "rejected",
+      "tombstoned"
+    ],
+    "required_audit_fields": [
+      "governance_id",
+      "scope_id",
+      "object_type",
+      "object_id",
+      "actor_role",
+      "action",
+      "before",
+      "after",
+      "reason",
+      "evidence_refs",
+      "submitted_at",
+      "review_status",
+      "replacement_id"
+    ],
     "delete_strategy": "governed_tombstone_by_default"
   },
   "copyleft": {
@@ -83,6 +153,6 @@
     "paid_parsing_and_inference_allowed": true,
     "standard_license_selected": false
   },
-  "historical_boundary": "Historical material is preserved as evidence/provenance but cannot supply Current aliases, fallbacks, authority maps, classifications or ownership.",
+  "historical_boundary": "Historical material may remain as source evidence, but deprecated architecture labels are never Current aliases, fallbacks, ownership, classifications or routing identities.",
   "navigation_boundary": "NAV is a governed mutable Page Composition interface. Current Scope and Feature changes may update it directly, provided the single-NAV rule, Scope isolation, canonical identities and route consistency remain valid."
 }

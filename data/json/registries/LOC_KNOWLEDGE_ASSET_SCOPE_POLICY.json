@@ -1,36 +1,27 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "registry": "LOC_KNOWLEDGE_ASSET_SCOPE_POLICY",
   "authority": "LOC",
-  "updated_at": "2026-09-17",
+  "updated_at": "2026-09-18",
   "applies_to": "data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json",
   "current_architecture": "Scope Model × Feature Model → Page Composition",
-  "purpose": "Machine-readable boundary contract for interpreting knowledge-asset scope metadata while historical LOC1–8 references remain in stable records.",
+  "purpose": "Machine-readable boundary contract for Current knowledge-asset scope metadata.",
   "rules": [
-    "LOC1–8 values in legacy related_scopes, IDs, titles, paths or notes are historical/provenance references only.",
-    "A historical LOC reference must never create Current Scope, Feature ownership, NAV taxonomy, Registry authority or Canon authority.",
-    "Current consumers must use explicit current Scope/authority metadata where present and use domain/content_type/Feature metadata for capability routing.",
-    "Consumers must not infer a new Current Scope by mechanically mapping LOC1–8 to Music, Writing, Media, Governance, Analysis or Evolution.",
-    "When a legacy related_scopes array contains LOC1–8 values, Current projections must omit those values from Scope filtering while preserving the source record unchanged for provenance.",
-    "Historical questions about LOC1–8 may still retrieve the source record, but the answer/view must identify the reference as historical rather than Current ownership."
+    "Current consumers use explicit Scope/authority metadata and domain/content_type/Feature metadata for routing.",
+    "Deprecated architecture labels never create Current Scope, Feature ownership, NAV taxonomy, Registry authority or Canon authority.",
+    "Deprecated labels found in source material are ignored by Current Scope filtering and are not projected as aliases.",
+    "Current Search, RAG, Graph and KM projections expose descriptive Scope/Feature identities only."
   ],
   "current_projection": {
-    "legacy_loc_pattern": "^LOC[1-8](?:_|$)",
-    "legacy_keys_pattern": "^(?:historical|legacy|former|superseded)",
-    "related_scopes_behavior": "filter legacy LOC1–8 values from Current Scope filtering",
-    "primary_scope_behavior": "ignore numbered LOC values as Current Scope if encountered",
-    "provenance_behavior": "retain original source record unchanged"
+    "related_scopes_behavior": "use descriptive Current Scope identities only",
+    "primary_scope_behavior": "ignore deprecated architecture labels",
+    "provenance_behavior": "source evidence may remain untouched outside Current semantic projection"
   },
   "consumer_requirements": [
     "Unified Search",
     "RAG/retrieval",
     "Graph projections",
     "KM analysis",
-    "future importers/builders"
-  ],
-  "migration_target": {
-    "preferred_field_for_legacy_numbers": "historical_loc_refs",
-    "preferred_current_field": "related_scopes",
-    "rule": "Future source-level migration may move numbered values to historical_loc_refs only when stable IDs and provenance remain unchanged."
-  }
+    "importers/builders"
+  ]
 }

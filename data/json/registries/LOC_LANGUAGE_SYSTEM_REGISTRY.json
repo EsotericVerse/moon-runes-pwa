@@ -1,5 +1,5 @@
 {
-  "schema_version": "3.4",
+  "schema_version": "3.5",
   "registry": "LOC_LANGUAGE_SYSTEM_REGISTRY",
   "status": "current",
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
@@ -103,17 +103,11 @@
         "chaos_comment": "Chaos",
         "rune_group_authority": "data/json/core/runes66groups.json"
       },
-      "historical_provenance": {
-        "status": "historical_provenance_only",
-        "loc1_8_rule": "LOC1–8 may remain only as historical identifiers and source-lineage metadata. They do not define Current information architecture, Scope boundaries, Feature ownership, navigation taxonomy, registry authority or Current file naming.",
-        "legacy_domain_rule": "Older runes/context/music/literary/media/governance/knowledge/evolution domain labels may remain as historical routing metadata but are not the Current architecture model."
-      },
       "model_principles": [
         "Current Canon 是唯一現行權威；下游 UI、Search、RAG、Generated data、舊 FAQ、舊 README 與歷史文件不得反向覆寫。",
         "LOC 是框架與分類工具；LunaRunes、lo3rwang 與其他 Scope 主體不同，但可共用相同治理原則。",
         "Current 架構固定採 Scope Model × Feature Model → Page Composition。",
         "使用者不需先理解全 LOC、全部 LunaRunes 或作者全部作品；可從有興趣的 Feature 進入，再逐步展開更多脈絡、治理與歷史。",
-        "LOC1–8 僅可保留為歷史識別與來源 lineage；不得再作 Current registry 檔名、Current ownership 或 authority。",
         "Scope 保有資料與權威；Feature 可跨 Scope 重用但不取得所有權。",
         "LOC Governance 可總覽全部並提供跨 Scope 歷史查詢；LunaRunes 的歸 LunaRunes Governance；lo3rwang 與政德風的歸 lo3rwang Governance。",
         "歷史原始紀錄保留；後來的解釋可 version / supersede，但不得靜默回寫過去。",
@@ -125,10 +119,10 @@
       "rune_group_rule": "Do not duplicate or redefine Current LunaRunes group names here. Consumers must read data/json/core/runes66groups.json. Historical naming changes belong only to provenance/event records and are not reusable Current aliases.",
       "ow3gs": {
         "draw_count": 11,
-        "rule": "兩個因果模組綜合；11 抽為 OW3gs 特化格式。",
+        "rule": "源2 + 轉2 + 合2 + 核心五卡治理／建議；1–6 建立因的描述層，7–11 為核心判定。",
         "naming_provenance": "OW3gs 名稱早於『政德』作者名，因此不加政德前綴；lo3rwang 亦避免縮寫為 LOW。"
       }
     }
   ],
-  "updated_at": "2026-09-17T12:27:13+08:00"
+  "updated_at": "2026-09-18T00:00:00+08:00"
 }

@@ -1,17 +1,60 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "registry": "LOC_FEATURE_TABLE_CONTRACT",
   "status": "current",
   "rule": "Shared fields may share naming contracts, but feature/page ownership must use separate physical tables or registries. Generic settings tables are forbidden for Current ownership.",
   "tables": [
-    {"feature":"era","table":"era_registry","owner":"evolution","shared_base":true},
-    {"feature":"source","table":"source_registry","owner":"source_management","shared_base":true},
-    {"feature":"content","table":"content_registry","owner":"content","shared_base":true},
-    {"feature":"actor","table":"actor_registry","owner":"authorship","shared_base":true},
-    {"feature":"projection","table":"projection_registry","owner":"governance","shared_base":true},
-    {"feature":"route","table":"route_registry","owner":"admin","shared_base":true},
-    {"feature":"page","table":"page_registry","owner":"admin","shared_base":true},
-    {"feature":"audit","table":"audit_log","owner":"admin","shared_base":true}
+    {
+      "feature": "era",
+      "table": "era_registry",
+      "owner": "culture",
+      "shared_base": true
+    },
+    {
+      "feature": "source",
+      "table": "source_registry",
+      "owner": "source_management",
+      "shared_base": true
+    },
+    {
+      "feature": "content",
+      "table": "content_registry",
+      "owner": "content",
+      "shared_base": true
+    },
+    {
+      "feature": "actor",
+      "table": "actor_registry",
+      "owner": "authorship",
+      "shared_base": true
+    },
+    {
+      "feature": "projection",
+      "table": "projection_registry",
+      "owner": "governance",
+      "shared_base": true
+    },
+    {
+      "feature": "route",
+      "table": "route_registry",
+      "owner": "admin",
+      "shared_base": true
+    },
+    {
+      "feature": "page",
+      "table": "page_registry",
+      "owner": "admin",
+      "shared_base": true
+    },
+    {
+      "feature": "audit",
+      "table": "audit_log",
+      "owner": "admin",
+      "shared_base": true
+    }
   ],
-  "forbidden_patterns": ["generic_settings(type, payload)","single polymorphic table used as authority for unrelated features"]
+  "forbidden_patterns": [
+    "generic_settings(type, payload)",
+    "single polymorphic table used as authority for unrelated features"
+  ]
 }

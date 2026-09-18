@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.2",
+  "schema_version": "1.3",
   "registry": "LUNARUNES_RUNE_METHODOLOGY_REGISTRY",
   "status": "current",
   "authority_domain": "LunaRunes",
@@ -8,7 +8,7 @@
   "basis": {
     "rune_authority": "data/json/core/runes.json",
     "group_authority": "data/json/core/runes66groups.json",
-    "principle": "Current Analysis Feature directly consumes the Current LunaRunes nine-group definition. Group names and membership must be read from runes66groups.json; the seventh group is 秩序 / Order and the ninth group is 系統特別 / System Special. LOC1–8 may appear only as Historical/provenance identifiers and never define Current ownership or authority.",
+    "principle": "Current Analysis Feature directly consumes the Current LunaRunes nine-group definition. Group names and membership must be read from runes66groups.json; the seventh group is 秩序 / Order and the ninth group is 系統特別 / System Special.",
     "algorithm_scope": "符文演算不只包含抽牌與解牌，也包含以月之符文分類結構對文字、來源與方法進行可重複分析。"
   },
   "default_pipeline": [
@@ -18,7 +18,7 @@
     "第九組「系統特別」保留德／玄／命三種不同語意",
     "Analysis Feature 產生方法論分析結果",
     "關係型結果投影到 Context Scope",
-    "時間變化與趨勢投影到 Evolution Feature"
+    "時間變化與趨勢投影到 Culture Feature"
   ],
   "default_axes": [
     {
@@ -212,10 +212,9 @@
     "analysis": "Analysis Feature 消費符文分類結構並產生分析結果。",
     "context": "關係型分析結果投影到 Context Scope／Relation。",
     "retrieval": "Search／RAG 可將方法結構化為可執行、可檢索的知識結構，但不得產生 Canon。",
-    "evolution": "Evolution Feature 比較時間、時期與趨勢。",
-    "historical_identifiers": "LOC1–8 僅可保留為 Historical/provenance identifiers，不表示 Current ownership 或 authority。"
+    "culture": "Culture Feature 比較時間、時期、軌跡、趨勢與文字演化。"
   },
   "group_count": 9,
   "methodology_name": "月之符文九群組方法論",
-  "updated_at": "2026-09-17"
+  "updated_at": "2026-09-18"
 }

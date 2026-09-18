@@ -1,22 +1,39 @@
 {
-  "schema_version": "2.5",
+  "schema_version": "2.6",
   "registry": "LOC_TERMINOLOGY_CANON",
   "status": "current",
-  "effective_date": "2026-09-17",
+  "effective_date": "2026-09-18",
   "authority": "LOC_DATA_GOVERNANCE",
   "purpose": "Current terminology source. Historical naming events are stored outside Current terminology and cannot act as aliases or fallback definitions.",
   "current": {
     "LOC": {
-      "canonical_names": ["LOC","Luna Codex","月典"],
+      "canonical_names": [
+        "LOC",
+        "Luna Codex",
+        "月典"
+      ],
       "zh": "模組化語言框架",
       "en": "Modular Language Framework"
     },
     "LunaRunes": {
-      "canonical_names": ["LunaRunes","月之符文"],
+      "canonical_names": [
+        "LunaRunes",
+        "月之符文"
+      ],
       "zh": "符號式語言",
       "en": "Symbolic Language",
       "group_authority": "data/json/core/runes66groups.json",
-      "group_names": ["靈魂","連結","生命","自然","礦物","元素","秩序","無序","系統特別"],
+      "group_names": [
+        "靈魂",
+        "連結",
+        "生命",
+        "自然",
+        "礦物",
+        "元素",
+        "秩序",
+        "無序",
+        "系統特別"
+      ],
       "group_rule": "Current LunaRunes group names and membership are defined only by data/json/core/runes66groups.json. 第七組固定為秩序（Order）；第九組固定為系統特別。"
     },
     "lo3rwang": {
@@ -26,19 +43,40 @@
       "canonical_label": "lo3rwang",
       "rule": "The personal Scope uses lo3rwang as its Current identifier. The Scope label and Base Domain are separate. author and whoami are not Current Scope IDs, registry prefixes, route identities, tags or hostnames. Ordinary descriptive use of the word author is permitted only when it does not identify the Scope."
     },
-    "scope": {"zh":"資料範圍","en":"Scope","rule":"Scopes are governed, mutable and instance-specific; no permanent universal list exists."},
+    "scope": {
+      "zh": "資料範圍",
+      "en": "Scope",
+      "rule": "Scopes are governed, mutable and instance-specific; no permanent universal list exists."
+    },
     "architecture": {
       "en": "Scope Model × Feature Model → Page Composition",
       "zh": "資料範圍模型 × 功能模型 → 頁面組合",
       "rule": "Current pages are composed from a governed Scope and reusable Features. Numbered LOC identifiers do not define Current architecture, scope, feature ownership or page composition."
     },
-    "navigation": {"zh":"導覽列","en":"NAV","rule":"Each interface has one official NAV. Domain identity has priority over directory hierarchy; directory hierarchy has priority over Page Composition. Local menus and page indexes are not additional NAV systems."}
+    "navigation": {
+      "zh": "導覽列",
+      "en": "NAV",
+      "rule": "Each interface has one official NAV. Domain identity has priority over directory hierarchy; directory hierarchy has priority over Page Composition. Local menus and page indexes are not additional NAV systems."
+    },
+    "culture": {
+      "zh": "文化",
+      "en": "Culture",
+      "definition": "文化是文字的演化。",
+      "rule": "Culture is the Current Feature identity for time, ERA, trajectory, trend and observed textual/cultural change. 推演只在句子實際描述推論動作時保留為動詞。"
+    }
   },
   "historical_boundary": {
     "rule": "Past terminology is preserved only as historical event/evidence records outside this Current terminology registry. No retired term is exposed here as an alias, synonym, fallback or mapping.",
     "authority_direction": "Current interprets History; History does not define Current."
   },
-  "authority_chain": ["LOC_DATA_GOVERNANCE","LOC_TERMINOLOGY_CANON","data/json/core/runes66groups.json","Current domain registries","generated projections","Search/RAG/UI consumers"],
+  "authority_chain": [
+    "LOC_DATA_GOVERNANCE",
+    "LOC_TERMINOLOGY_CANON",
+    "data/json/core/runes66groups.json",
+    "Current domain registries",
+    "generated projections",
+    "Search/RAG/UI consumers"
+  ],
   "projection_rule": "Generated data is a disposable projection of Current authority and never becomes governance authority.",
   "migration_rule": "Consumers read Current values only. Historical events may explain prior states but cannot provide operational aliases, fallbacks or authority mappings.",
   "display_rule": "Public Current copy uses Current terminology and the owning Scope's governed labels."

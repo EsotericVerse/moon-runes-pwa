@@ -1,16 +1,15 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "registry": "LOC_KM_KEYWORDS",
   "source": "Current governance + Scope Model × Feature Model + structured registries",
   "source_version": "2026-09-18 Current",
   "updated_at": "2026-09-18",
-  "purpose": "Shared retrieval vocabulary for Knowledge Management, Search, FAQ/RAG, provenance and knowledge assets without assigning Current ownership to LOC1–8.",
+  "purpose": "Shared Current retrieval vocabulary for Knowledge Management, Search, FAQ/RAG, provenance and knowledge assets.",
   "governance": {
     "authority": "Analysis",
     "canon_authority": "data/json/registries/LOC_TERMINOLOGY_CANON.json",
-    "note": "Keywords are retrieval aids, not Canon definitions. KM means Knowledge Management. FAQ, RAG, Search, Graph traversal and indexes are views/features/derivatives, not KM itself. LOC1–8 are historical/provenance identifiers only.",
-    "current_architecture": "Scope Model × Feature Model → Page Composition",
-    "historical_loc_policy": "LOC1–8 labels may remain as aliases for legacy retrieval and provenance but must never create Current Scope, Feature, navigation or Canon ownership."
+    "note": "Keywords are retrieval aids, not Canon definitions. KM means Knowledge Management. FAQ, RAG, Search, Graph traversal and indexes are views/features/derivatives, not KM itself.",
+    "current_architecture": "Scope Model × Feature Model → Page Composition"
   },
   "groups": [
     {
@@ -32,7 +31,7 @@
           "feature_scope": [
             "context",
             "statics",
-            "evolution",
+            "culture",
             "governance",
             "search"
           ]
@@ -53,7 +52,7 @@
           "feature_scope": [
             "context",
             "statics",
-            "evolution",
+            "culture",
             "governance",
             "search"
           ]
@@ -76,22 +75,6 @@
           "feature_scope": [
             "architecture"
           ]
-        },
-        {
-          "term": "LOC1–8",
-          "aliases": [
-            "八分發",
-            "Eight Distributions",
-            "舊 LOC 編號"
-          ],
-          "status": "Historical",
-          "scope": [
-            "Historical"
-          ],
-          "feature_scope": [
-            "provenance"
-          ],
-          "note": "Historical/provenance identifiers only; not Current ownership."
         }
       ]
     },
@@ -171,7 +154,7 @@
           ],
           "feature_scope": [
             "knowledge",
-            "evolution"
+            "culture"
           ]
         },
         {
@@ -288,7 +271,7 @@
           "feature_scope": [
             "analysis",
             "knowledge",
-            "evolution"
+            "culture"
           ],
           "note": "以可追溯的實際使用材料為基礎，觀察語言／文字模組如何組合與累積，據此推論形成的個人語言結構與文化風格；目前以個人尺度為邊界，結果是可修正的推論，不是本質標籤。"
         }
@@ -331,7 +314,7 @@
           "feature_scope": [
             "culture",
             "governance",
-            "evolution"
+            "culture"
           ]
         },
         {
@@ -348,7 +331,7 @@
           ],
           "feature_scope": [
             "governance",
-            "evolution"
+            "culture"
           ]
         },
         {
@@ -364,7 +347,7 @@
             "LunaRunes"
           ],
           "feature_scope": [
-            "evolution"
+            "culture"
           ],
           "note": "Public display follows each Scope's Current naming; Author ERA and LunaRunes ERA must not be merged."
         },
@@ -393,13 +376,12 @@
       ]
     },
     {
-      "id": "evolution_inference",
-      "label": "推演與軌跡",
+      "id": "culture_analysis",
+      "label": "文化與軌跡",
       "keywords": [
         {
           "term": "推演",
           "aliases": [
-            "Evolution",
             "Inference",
             "推論"
           ],
@@ -410,7 +392,7 @@
             "lo3rwang"
           ],
           "feature_scope": [
-            "evolution",
+            "culture",
             "analysis"
           ],
           "note": "在已知材料、假設與關係的約束下，推導材料尚未直接陳述的結構、結果或可能發展；不等於未來預測。"
@@ -429,7 +411,7 @@
             "lo3rwang"
           ],
           "feature_scope": [
-            "evolution",
+            "culture",
             "search"
           ],
           "note": "由來源、時間、關係與內容推導的變化路徑；應保留 provenance，不能人工改寫結果。"
@@ -450,7 +432,7 @@
           ],
           "feature_scope": [
             "knowledge",
-            "evolution",
+            "culture",
             "search",
             "governance"
           ],
@@ -458,19 +440,5 @@
         }
       ]
     }
-  ],
-  "historical_loc_mapping": {
-    "status": "Historical",
-    "authority": "provenance_only",
-    "note": "These mappings are retained only to interpret old files, questions and identifiers. They must not be used to generate Current architecture or ownership.",
-    "LOC1": "historical LunaRunes/basic draw mapping",
-    "LOC2": "historical context/game mapping",
-    "LOC3": "historical music mapping",
-    "LOC4": "historical writing mapping",
-    "LOC5": "historical multimedia mapping",
-    "LOC6": "historical governance/method mapping",
-    "LOC7": "historical text architecture/algorithm/KM mapping",
-    "LOC8": "historical life/evolution mapping",
-    "LOC7_KM": "historical alias for KM-related material; Current term is Knowledge Management/KM"
-  }
+  ]
 }
