@@ -1,12 +1,10 @@
-const CACHE_NAME = "moon-runes-pwa-v223";
+const CACHE_NAME = "moon-runes-pwa-v224";
 
 // Governance rule:
-// Service Worker cache is reserved for pages that depend on the Render backend.
+// Service Worker cache is reserved only for explicitly registered legacy backend page shells.
 // Static pages (including index.html, governance.html, CSS, JS, JSON)
 // must use normal browser/HTTP caching only so frequent content changes are visible immediately.
-const RENDER_BACKED_PAGES = new Set([
-  "/runes.html"
-]);
+const RENDER_BACKED_PAGES = new Set([]);
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
