@@ -8,6 +8,19 @@ const expectedFeatures=['context','statics','culture','governance','search'];
 
 if(JSON.stringify(Object.keys(SCOPES_V2))!==JSON.stringify(Object.keys(expectedDomains)))failures.push('scope ids mismatch');
 if(JSON.stringify(FEATURES_V2.map(item=>item.id))!==JSON.stringify(expectedFeatures))failures.push('feature registry mismatch');
+
+const scopeIds=Object.keys(SCOPES_V2);
+const domains=Object.values(SCOPES_V2).map(scope=>scope.domain);
+const featureIds=FEATURES_V2.map(item=>item.id);
+const featurePaths=FEATURES_V2.map(item=>item.path);
+if(new Set(scopeIds).size!==scopeIds.length)failures.push('duplicate Scope id');
+if(new Set(domains).size!==domains.length)failures.push('duplicate Scope domain');
+if(new Set(featureIds).size!==featureIds.length)failures.push('duplicate Feature id');
+if(new Set(featurePaths).size!==featurePaths.length)failures.push('duplicate Feature path');
+for(const domain of domains){
+  if(domain!==domain.toLowerCase())failures.push('Scope domain must be lowercase: '+domain);
+  if(domain.includes('/')||domain.includes(':'))failures.push('Scope domain must be hostname only: '+domain);
+}
 for(const [id,domain] of Object.entries(expectedDomains)){
   if(SCOPES_V2[id]?.domain!==domain)failures.push(id+' domain mismatch');
   if(resolveScopeV2(domain)!==id)failures.push(domain+' scope mismatch');
