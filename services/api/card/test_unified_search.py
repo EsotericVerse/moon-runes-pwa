@@ -68,7 +68,7 @@ class UnifiedSearchTests(unittest.TestCase):
             '{"role":"non-authoritative frontend fallback snapshot","events":[{"id":"EV-TEST","date":"2026-09-01","event_type":"transition","title":"進入自我治理","era":"P8 自我治理與未來展望期","confidence":"recorded","source":"test-event"}]}',
             encoding="utf-8",
         )
-        (root / "data" / "json" / "registries" / "LOC8_DAILY_RUNE_SNAPSHOT.json").write_text(
+        (root / "data" / "json" / "registries" / "DAILY_RUNE_SNAPSHOT.json").write_text(
             '{"role":"non-authoritative frontend fallback snapshot","daily_draws":[{"id":"DD-TEST","date":"2026-09-01","rune_id":"1","rune":"心","direction":"半正位","era_id":"ERA-P8","confidence":"recorded","source":"test-draw"}]}',
             encoding="utf-8",
         )
@@ -146,7 +146,7 @@ class UnifiedSearchTests(unittest.TestCase):
         self.assertIn("DD-TEST", node_ids)
         self.assertIn("RUNE-1", node_ids)
         self.assertIn("event_snapshot", edge_kinds)
-        self.assertIn("loc8_daily_rune_snapshot", edge_kinds)
+        self.assertIn("daily_rune_snapshot", edge_kinds)
 
     def test_search_returns_provenance_envelope(self):
         result = self.make_engine().search("自我治理", top_k=5)
