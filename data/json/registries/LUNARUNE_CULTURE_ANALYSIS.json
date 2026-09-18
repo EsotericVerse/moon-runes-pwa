@@ -1,6 +1,6 @@
 {
   "version": "1.0-rc1",
-  "title": "LunaRunes Evolution Analysis",
+  "title": "LunaRunes Culture Analysis",
   "source_history": "data/json/registries/LUNARUNE_CULTURE_HISTORY.json",
   "source_history_version": "1.4-rc4",
   "status": "complete_for_current_corpus",
