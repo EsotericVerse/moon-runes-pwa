@@ -36,9 +36,27 @@ const PROFILES=Object.freeze({
   })
 });
 
+function genericProfile(scope){
+  return Object.freeze({
+    subtitle:`${scope.label} 的治理入口：Scope 邊界、資料投影、共用 Feature 與 Page Composition。`,
+    cards:Object.freeze([
+      Object.freeze({
+        eyebrow:'Boundary',
+        title:'Scope 邊界',
+        text:'此 Scope 使用共用治理框架；名稱、資料、角色與公開投影依自身 Registry 設定，不自動繼承其他 Scope 的身份或資料所有權。'
+      }),
+      Object.freeze({
+        eyebrow:'Composition',
+        title:'Page Composition',
+        text:'共用 Feature 使用同一 renderer；Scope 差異由 Registry 與資料 projection 注入。'
+      })
+    ])
+  });
+}
+
 export default function GovernanceV2(){
-  const {scopeId}=useScopeRuntimeV2();
-  const profile=PROFILES[scopeId]||PROFILES.loc;
+  const {scopeId,scope}=useScopeRuntimeV2();
+  const profile=PROFILES[scopeId]||genericProfile(scope);
   return <FeaturePageV2 featureId="governance" subtitle={profile.subtitle}>
     {profile.cards.map(card=><ScopeCardV2 key={card.title} eyebrow={card.eyebrow} title={card.title}><p>{card.text}</p></ScopeCardV2>)}
   </FeaturePageV2>;
