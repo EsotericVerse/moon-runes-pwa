@@ -1,23 +1,19 @@
 'use client';
 
 import {useEffect,useState} from 'react';
-import {usePathname} from 'next/navigation';
 import ThemeSelect from './ThemeSelect';
-import {detectSiteScope,getSiteScope} from './site-registry';
+import {useSiteScope} from './SiteScopeProvider';
 import {getScopeContact} from './loc/scope-public-settings';
 
 export default function GlobalFooter(){
-  const pathname=usePathname()||'/';
-  const [host,setHost]=useState('');
+  const {scope,current}=useSiteScope();
   const [contact,setContact]=useState(null);
-
-  useEffect(()=>setHost(window.location.hostname),[]);
-  const scope=detectSiteScope(pathname,host);
-  const current=getSiteScope(scope);
 
   useEffect(()=>{
     let live=true;
-    getScopeContact(scope==='governance'?'admin':scope).then(value=>{if(live)setContact(value)}).catch(()=>{if(live)setContact(null)});
+    getScopeContact(scope==='governance'?'admin':scope)
+      .then(value=>{if(live)setContact(value)})
+      .catch(()=>{if(live)setContact(null)});
     return()=>{live=false};
   },[scope]);
 
