@@ -1,3 +1,4 @@
+import LocSystemQuickLinks from '../../LocSystemQuickLinks';
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -53,6 +54,7 @@ export default function CultureView(){
 
   return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">Culture · 文化</p><h1><span className="loc-keyword-emphasis">文化</span></h1><p>文化由風格、時期、事件、價值與語意變化沿時間累積形成；此處整合 ERA、事件、時期風格、軌跡與 LunaRunes <span className="loc-keyword-emphasis">文化</span>觀察。</p></header>
+    <LocSystemQuickLinks />
     <nav className="loc-tabs" aria-label="文化功能">{TABS.map(([id,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}>{label}</button>)}</nav>
     {error&&<div className="loc-status error">{error}</div>}
 
