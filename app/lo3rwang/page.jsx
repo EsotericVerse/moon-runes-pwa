@@ -34,7 +34,7 @@ export default function Lo3rwangPage() {
           <h2>三個自我稱號</h2>
           <div className="loc-grid three">
             <article><strong>文字工匠 · Wordsmith</strong><p>對應脈絡。從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與風格。</p><p><a href="/context">看脈絡</a></p></article>
-            <article><strong>校對者 · Calibrator</strong><p>對應文化。把文字放回來源、時間與歷史裡比較，觀察延續、改變、消失、矛盾與可能的污染。</p><p><a href="/evolution">看文化</a></p></article>
+            <article><strong>校對者 · Calibrator</strong><p>對應文化。把文字放回來源、時間與歷史裡比較，觀察延續、改變、消失、矛盾與可能的污染。</p><p><a href="/culture">看文化</a></p></article>
             <article><strong>語言治理架構者 · Language Governance Architect</strong><p>對應整體架構。把語彙、脈絡、文化、搜尋與治理組織成可以持續使用的語言系統。</p><p><a href="/loc">看架構</a></p></article>
           </div>
         </section>
