@@ -15,7 +15,7 @@
     {"id":"data_governance","path":"data/json/registries/LOC_DATA_GOVERNANCE.json","feature_ids":["governance"]},
     {"id":"content_rights_policy","path":"data/json/registries/LOC_CONTENT_RIGHTS_POLICY.json","feature_ids":["rights","privacy","publication_gate"]},
     {"id":"reference_model","path":"data/json/registries/LOC_REFERENCE_MODEL.json","feature_ids":["reference_model","relationship"]},
-    {"id":"event_corpus","path":"data/json/registries/LOC2_EVENT_REGISTRY.json","feature_ids":["event_corpus","scenario_modeling"],"historical_provenance":{"loc_ids":["LOC2"]}},
+    {"id":"event_corpus","path":"data/json/registries/CONTEXT_EVENT_REGISTRY.json","feature_ids":["event_corpus","scenario_modeling"],"historical_provenance":{"loc_ids":["LOC2"]}},
     {"id":"rune_songs","path":"data/json/registries/LOC3_RUNE_SONG_REGISTRY.json","feature_ids":["music","rune_provenance"],"historical_provenance":{"loc_ids":["LOC3"]}},
     {"id":"reasoning_analysis","path":"data/json/registries/LOC3_REASONING_SCHEMA.json","feature_ids":["reasoning_analysis","music_analysis"],"historical_provenance":{"loc_ids":["LOC3"]}},
     {"id":"writing","path":"data/json/registries/LOC4_WRITING_REGISTRY.json","feature_ids":["writing_catalog","text_corpus"],"historical_provenance":{"loc_ids":["LOC4"]}},
