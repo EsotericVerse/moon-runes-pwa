@@ -31,7 +31,7 @@ export default function GameView() {
 
   useEffect(() => {
     let live = true;
-    fetchLocJsonBatch([LOC_DATA.RUNES, LOC_DATA.LOC2_EVENT_REGISTRY], { concurrency: 2 })
+    fetchLocJsonBatch([LOC_DATA.RUNES, LOC_DATA.CONTEXT_EVENT_REGISTRY], { concurrency: 2 })
       .then(([runes, eventRegistry]) => {
         if (!live) return;
         const cards = createCards(runes);
