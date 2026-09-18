@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchLocDataSegments, fetchLocJson, fetchLocJsonBatch, getLocDataDataset, LOC_DATA } from '../data';
 import { useLocalStore } from '../local-store';
-import { getSearchCollection, SEARCH_COLLECTION_ORDER, SEARCH_COLLECTIONS } from '../search-collections';
+import { searchCollectionForHost } from '../search-collections';
 import { applySearchGovernance, firstGovernedMatch } from '../search-governance';
 import { recordSearchSegmentHits, rankSearchSegments, resolveReservedLanding } from '../search-routing';
-import { partitionSegmentsByScope, readSearchScope } from '../search-scope';
+import { partitionSegmentsByScope } from '../search-scope';
 import { recordSearchTelemetry } from '../search-telemetry';
 
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
@@ -26,7 +26,7 @@ function matchCultureKeyword(data,q){const target=norm(q);if(!target)return null
 export default function SearchView(){
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [query,setQuery]=useState('');
-  const [collectionId,setCollectionId]=useState('all');
+  const [host,setHost]=useState('');
   const [results,setResults]=useState([]);
   const [cultureKeyword,setCultureKeyword]=useState(null);
   const [status,setStatus]=useState('輸入文字後才會載入搜尋資料。');
@@ -38,8 +38,17 @@ export default function SearchView(){
   const shownResults=results.slice((page-1)*pageSize,page*pageSize);
   const cultureWorks=useMemo(()=>results.filter(r=>r.source!=='政德文化').slice(0,8),[results]);
 
-  useEffect(()=>{},[]);
-  useEffect(()=>setPage(1),[collectionId,pageSize]);
+  useEffect(()=>{
+    const currentHost=window.location.hostname;
+    setHost(currentHost);
+    const pending=window.sessionStorage.getItem('loc-pending-search')||'';
+    if(pending){
+      window.sessionStorage.removeItem('loc-pending-search');
+      setQuery(pending);
+      window.setTimeout(()=>document.getElementById('loc-search-form')?.requestSubmit(),0);
+    }
+  },[]);
+  useEffect(()=>setPage(1),[host,pageSize]);
   useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
 
   function syncUrl(){}
@@ -50,8 +59,8 @@ export default function SearchView(){
     if(!q)return;
     const landing=resolveReservedLanding(q,window.location.hostname);
     if(landing){window.location.assign(landing);return;}
-    const collection=getSearchCollection(collectionId);
-    const activeScope=readSearchScope(new URL(window.location.href).searchParams,collection.scopeProfile);
+    const collection=searchCollectionForHost(window.location.hostname);
+    const activeScope=collection.scopeProfile?.id==='loc'?{}:{scope:[collection.scopeProfile?.id].filter(Boolean)};
     
     const id=++searchId.current;
     setPage(1);setError('');setResults([]);setCultureKeyword(null);setStatus(`搜尋「${collection.label}」資料…`);
@@ -103,10 +112,9 @@ export default function SearchView(){
     }catch(e){if(id===searchId.current){setError(e.message);setStatus('搜尋失敗。');}}
   }
 
-  const collection=getSearchCollection(collectionId);
+  const collection=searchCollectionForHost(host);
   return <section className="loc-view"><header className="loc-hero"><p className="loc-eyebrow">Search · 搜尋</p><h1>搜尋</h1><p>{collection.description} 大型資料清單（manifest）與資料分片（corpus shards）只有送出查詢後才下載。</p></header>
     <form id="loc-search-form" className="loc-search-form" onSubmit={runSearch}>
-      <select value={collectionId} onChange={e=>{setCollectionId(e.target.value);}} aria-label="搜尋集合">{SEARCH_COLLECTION_ORDER.map(id=><option key={id} value={id}>{SEARCH_COLLECTIONS[id].label}</option>)}</select>
       <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="輸入關鍵字，例如：治理、月、自由" aria-label="搜尋文字"/>
       <button className="loc-button primary" type="submit">搜尋</button>
     </form>
