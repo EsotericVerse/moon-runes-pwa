@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {useSiteScope} from '../../SiteScopeProvider';
+import {PageFrame,PagePager,PageStatus} from '../../PageComposition';
 import {neonClient} from '../neon-client';
 
 const PAGE_SIZE=20;
@@ -33,14 +34,13 @@ export default function StaticsView(){
   const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const shown=filtered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
 
-  return <section className="loc-view">
-    <header className="loc-hero">
-      <p className="loc-eyebrow">Statistics</p>
-      <h1>統計</h1>
-      <p className="loc-subtitle">{current.label} Scope 的排行榜與統計；資料由各 Scope 自己的 Neon projection 提供。</p>
-    </header>
-    {!ready?<p className="loc-status">載入 Scope…</p>:!view?<p className="loc-status">此 Scope 尚未啟用統計 projection。</p>:null}
-    {error?<p className="loc-status error">{error}</p>:null}
+  return <PageFrame
+    eyebrow="Statistics"
+    title="統計"
+    subtitle={`${current.label} Scope 的排行榜與統計；資料由各 Scope 自己的 Neon projection 提供。`}
+  >
+    {!ready?<PageStatus>載入 Scope…</PageStatus>:!view?<PageStatus>此 Scope 尚未啟用統計 projection。</PageStatus>:null}
+    <PageStatus error>{error}</PageStatus>
     {types.length?<nav className="loc-tabs" aria-label="排行榜類型">
       {types.map(item=><button key={item} className={item===type?'active':''} onClick={()=>{setType(item);setPage(1)}}>{item}</button>)}
     </nav>:null}
@@ -54,10 +54,7 @@ export default function StaticsView(){
         </div>)}
       </div>
       {!rows.length&&!error&&ready&&view?<p>載入中…</p>:null}
-      <div className="loc-pagination">
-        <span>第 {page} / {pages} 頁 · 共 {filtered.length} 筆</span>
-        <div><button className="loc-button" disabled={page<=1} onClick={()=>setPage(p=>p-1)}>上一頁</button><button className="loc-button" disabled={page>=pages} onClick={()=>setPage(p=>p+1)}>下一頁</button></div>
-      </div>
+      <PagePager page={page} pages={pages} total={filtered.length} onPrevious={()=>setPage(p=>p-1)} onNext={()=>setPage(p=>p+1)}/>
     </section>
-  </section>;
+  </PageFrame>;
 }
