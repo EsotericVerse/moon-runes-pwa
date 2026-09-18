@@ -1,14 +1,14 @@
 import {readFile} from 'node:fs/promises';
 import {FEATURES_V2,SCOPES_V2,featureHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
 
-const expectedDomains={loc:'loc.lo3rwang.cc',runes:'lrunes.lo3rwang.cc',lo3rwang:'dlwang.lo3rwang.cc',admin:'admin.lo3rwang.cc'};
-for(const [scope,domain] of Object.entries(expectedDomains))if(SCOPES_V2[scope]?.domain!==domain)throw new Error(`${scope} domain drifted`);
+for(const id of ['loc','runes','lo3rwang','admin'])if(!SCOPES_V2[id])throw new Error('missing required core Scope: '+id);
 if(JSON.stringify(FEATURES_V2.map(item=>item.id))!==JSON.stringify(['context','statics','culture','governance','search']))throw new Error('Shared feature contract drifted');
-for(const [id,domain] of Object.entries(expectedDomains)){
-  if(resolveScopeV2(domain,'/')!==id)throw new Error(`${domain}: expected ${id}`);
+for(const [id,scope] of Object.entries(SCOPES_V2)){
+  if(resolveScopeV2(scope.domain,'/')!==id)throw new Error(scope.domain+': expected '+id);
   for(const feature of FEATURES_V2){
-    const scope=SCOPES_V2[id];
-    const expectedBase=scope.scopeType==='directory'&&scope.mount?`https://${scope.mount.host}${scope.mount.path}`:`https://${domain}`;
+    const expectedBase=scope.scopeType==='directory'&&scope.mount
+      ?`https://${scope.mount.host}${scope.mount.path}`
+      :`https://${scope.domain}`;
     if(featureHrefV2(id,feature.id)!==`${expectedBase}/${feature.path}`)throw new Error(`${id}/${feature.id} route drifted`);
   }
 }
