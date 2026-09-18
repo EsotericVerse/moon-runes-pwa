@@ -21,7 +21,6 @@
     "start": "next start",
     "verify:ui": "node scripts/current-ui-contract.mjs",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
-    "generate:legacy-scope": "node scripts/generate-legacy-scope-contract.mjs",
     "verify:scope-registry": "node scripts/verify-scope-registry.mjs"
   },
   "dependencies": {
