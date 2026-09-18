@@ -93,7 +93,7 @@
       "deterministic_structural_evidence": 0.98,
       "record_metadata": 0.95,
       "registry_structure": 0.9,
-      "loc8_event_snapshot": 0.86,
+      "event_snapshot": 0.86,
       "loc8_daily_rune_snapshot": 0.86,
       "result_metadata": 0.8,
       "semantic_inference": 0.55
