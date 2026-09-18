@@ -103,7 +103,7 @@ class UnifiedSearchEngine:
         self.lots = self._load_repo_json("data/json/core/lots.json")
         self.loc8_relation_schema = self._load_json("LOC8_RELATION_SCHEMA.json")
         self.loc8_events = self._load_json("EVENT_SNAPSHOT.json")
-        self.loc8_daily_runes = self._load_json("LOC8_DAILY_RUNE_SNAPSHOT.json")
+        self.loc8_daily_runes = self._load_json("DAILY_RUNE_SNAPSHOT.json")
         self.rune_literature = self._load_json("RUNE_LITERATURE_REGISTRY.json")
         self.rune_songs = self._load_json("LOC3_RUNE_SONG_REGISTRY.json")
         self.ow3gs_readings = self._load_json("LOC1_OW3GS_READING_REGISTRY.json")
@@ -1907,7 +1907,7 @@ class UnifiedSearchEngine:
             "record_metadata": 0.95,
             "registry_structure": 0.90,
             "event_snapshot": 0.86,
-            "loc8_daily_rune_snapshot": 0.86,
+            "daily_rune_snapshot": 0.86,
             "result_metadata": 0.80,
             "semantic_inference": 0.55,
         }
