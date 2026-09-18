@@ -83,7 +83,11 @@ export function getSearchScopeProfile(value){
 }
 
 
-export function searchCollectionForHost(host='',pathname='/'){
-  const scope=detectSiteScope(pathname,host);
+export function searchCollectionForScope(scope='loc'){
   return getSearchCollection(getSiteScope(scope).searchCollection);
+}
+
+// Legacy adapter for callers not yet moved to SiteScopeProvider.
+export function searchCollectionForHost(host='',pathname='/'){
+  return searchCollectionForScope(detectSiteScope(pathname,host));
 }
