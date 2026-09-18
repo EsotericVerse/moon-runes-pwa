@@ -320,7 +320,7 @@ export default function RuneDrawClient() {
         <section className="loc-card" data-draw-stage="lots">
           <p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2>
           <p>沿用最後一張「{draw.cards.at(-1)?.符文名稱} · {draw.directions.at(-1)}」的既有籤詩指示。</p>
-          <div className="loc-context-list">{liveGuidance ? splitDomainGuidance(liveGuidance).map((line, index) => <div className="loc-context-item" key={`${line}-${index}`}>{line}</div>) : <div className="loc-context-item">籤詩資料仍在本機載入；抽牌與關鍵詞判定不受影響。</div>}</div>
+          <div className="loc-context-list">{liveGuidance ? splitDomainGuidance(liveGuidance).map((line, index) => <div className="loc-context-item" key={`${line}-${index}`}>{line}</div>) : <div className="loc-context-item">籤詩資料目前未取得；抽牌與關鍵詞判定不受影響。</div>}</div>
         </section>
       </>}
     </section>
