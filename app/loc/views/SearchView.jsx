@@ -68,7 +68,7 @@ export default function SearchView(){
     setPage(1);setError('');setResults([]);setCultureKeyword(null);setStatus(`搜尋「${collection.label}」資料…`);
     try{
       if(collection.id==='政德文化'||collection.id==='all'){
-        const cultureData=await fetchLocJson(LOC_DATA.ZHENGDE_CULTURE_KEYWORDS);
+        const cultureData=await fetchLocJson(LOC_DATA.LO3RWANG_CULTURE_KEYWORDS);
         if(id!==searchId.current)return;
         setCultureKeyword(matchCultureKeyword(cultureData,q));
       }
@@ -122,7 +122,7 @@ export default function SearchView(){
       <button className="loc-button primary" type="submit">搜尋</button>
     </form>
     <p className="loc-status">{status}{results.length?` · 每頁 ${pageSize} 筆`:''}</p>{error&&<p className="loc-status error">{error}</p>}
-    {cultureKeyword&&<article className="loc-card" id="zhengde-keyword-summary"><div className="loc-result-meta"><span>政德文化關鍵字</span>{cultureKeyword.eras?.length&&<span>{cultureKeyword.eras.join('／')}</span>}</div><h2>{cultureKeyword.name}</h2><p>{cultureKeyword.summary}</p>{!!cultureKeyword.outline?.length&&<><h3>演化大綱</h3><p>{cultureKeyword.outline.join(' → ')}</p></>}{!!cultureKeyword.related?.length&&<p className="loc-note">相關概念：{cultureKeyword.related.join('、')}</p>}<h3>作品與資料</h3>{cultureWorks.length?<ul>{cultureWorks.map(work=><li key={`culture-work-${work.key}`}><strong>{work.title}</strong> · {work.source}</li>)}</ul>:<p className="loc-note">作品索引會顯示在下方搜尋結果。</p>}<div className="loc-actions"><a className="loc-button" href="/zhengde">回政德文化首頁</a><a className="loc-button" href={`/context?q=${encodeURIComponent(cultureKeyword.name)}`}>脈絡分析</a></div></article>}
+    {cultureKeyword&&<article className="loc-card" id="zhengde-keyword-summary"><div className="loc-result-meta"><span>政德文化關鍵字</span>{cultureKeyword.eras?.length&&<span>{cultureKeyword.eras.join('／')}</span>}</div><h2>{cultureKeyword.name}</h2><p>{cultureKeyword.summary}</p>{!!cultureKeyword.outline?.length&&<><h3>演化大綱</h3><p>{cultureKeyword.outline.join(' → ')}</p></>}{!!cultureKeyword.related?.length&&<p className="loc-note">相關概念：{cultureKeyword.related.join('、')}</p>}<h3>作品與資料</h3>{cultureWorks.length?<ul>{cultureWorks.map(work=><li key={`culture-work-${work.key}`}><strong>{work.title}</strong> · {work.source}</li>)}</ul>:<p className="loc-note">作品索引會顯示在下方搜尋結果。</p>}<div className="loc-actions"><a className="loc-button" href="https://lo3rwang.lo3rwang.cc/culture">回政德文化首頁</a><a className="loc-button" href={`/context?q=${encodeURIComponent(cultureKeyword.name)}`}>脈絡分析</a></div></article>}
     <div className="loc-search-results">{shownResults.map(r=><article className="loc-card" key={r.key}><div className="loc-result-meta"><span>{r.source}</span>{r.date&&<time>{r.date}</time>}</div><h2>{r.title}</h2><p>{r.snippet}</p>{r.href&&<a href={r.href} target={/^https?:/.test(r.href)?'_blank':undefined} rel={/^https?:/.test(r.href)?'noreferrer':undefined}>查看來源</a>}</article>)}</div>
     {!!results.length&&<div className="runes-pager"><button type="button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button><span>{page} / {pageCount}</span><button type="button" disabled={page>=pageCount} onClick={()=>setPage(value=>Math.min(pageCount,value+1))}>下一頁</button></div>}
   </section>;
