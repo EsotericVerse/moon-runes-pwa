@@ -29,8 +29,8 @@ const SYSTEM_GROUP_ROUTES=new Map([
   ['LunaRunes','/runes'],
   ['脈絡','/context'],
   ['統計','/statics'],
-  ['推演','/evolution'],
-  ['演化','/evolution'],
+  ['推演','/culture'],
+  ['演化','/culture'],
   ['治理','/governance'],
   ['設定','/my-style']
 ]);
