@@ -57,7 +57,7 @@ Returns shared content types, period/ERA registry labels and available facets fo
 - LOC5: media registry
 - LOC6: governance/政德風 registry; may cite LOC4 source text without owning it
 - LOC7: FAQ/KM and registered knowledge assets
-- LOC8: continuous period/evolution registry retrieval
+- LOC8: continuous period/culture registry retrieval
 
 Backend/runtime code remains under the legacy `card_api/` path until the service consumer audit is complete. API documentation authority is now `docs/api/`.
 
