@@ -1,3 +1,4 @@
+import {featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 import LocaleControl from '../LocaleControl';
 
 export default function SettingsView(){
@@ -20,10 +21,10 @@ export default function SettingsView(){
       <h2>風格與時期</h2>
       <p className="loc-subtitle">管理個人風格、時期、群組規則與文字分類。</p>
       <div className="loc-actions">
-        <a className="loc-button" href="/my-style">個人風格</a>
-        <a className="loc-button" href="/evolution">時期</a>
-        <a className="loc-button" href="/style-groups">群組設定</a>
-        <a className="loc-button" href="/classify">分類</a>
+        <a className="loc-button" href={scopeHrefV2('loc','my-style')}>個人風格</a>
+        <a className="loc-button" href={featureHrefV2('loc','culture')}>時期</a>
+        <a className="loc-button" href={scopeHrefV2('loc','style-groups')}>群組設定</a>
+        <a className="loc-button" href={scopeHrefV2('loc','classify')}>分類</a>
       </div>
     </section>
 
@@ -32,7 +33,7 @@ export default function SettingsView(){
       <h2>資料與匯入／匯出</h2>
       <p className="loc-subtitle">管理 Neon 個人資料與 JSON 匯入／匯出。</p>
       <div className="loc-actions">
-        <a className="loc-button primary" href="/library">開啟資料庫</a>
+        <a className="loc-button primary" href={scopeHrefV2('loc','library')}>開啟資料庫</a>
       </div>
     </section>
 
