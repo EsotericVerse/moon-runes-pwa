@@ -15,7 +15,7 @@ Current Scope domain 固定為：
 
 - LOC：`loc.lo3rwang.cc`
 - LunaRunes：`lrunes.lo3rwang.cc`
-- Author：`lo3rwang.lo3rwang.cc`
+- Author：`dlwang.lo3rwang.cc`
 - Admin：`admin.lo3rwang.cc`
 
 `context`、`statics`、`culture`、`governance` 與 `search` 是共用功能。功能名稱與版型共用，實際 domain、資料來源、搜尋集合、首頁／角色入口與其他 Scope 差異全部由目前 Scope Registry 注入。
