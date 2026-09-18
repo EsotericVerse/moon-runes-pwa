@@ -6,26 +6,20 @@ import { putLocalRecord } from '../loc/local-db';
 import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
 import { realMoonPhase } from '../loc/model/moon-phase';
+import { RUNE_DRAW_MODES, runeSpread } from './rune-grammar';
 
 const DIRECTIONS = ['正位', '半正位', '半逆位', '逆位'];
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
 const UI_SETTINGS_KEY = 'loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS = { draw_response: 'ritual' };
-const MODES = [
-  { key: 'single', count: 1, label: '單卡', positions: ['核心'] },
-  { key: 'daily', count: 1, label: '每日', positions: ['今日'] },
-  { key: '2card', count: 2, label: '雙卡', positions: ['因', '果'] },
-  { key: '3card', count: 3, label: '三卡', positions: ['源', '轉', '合'] },
-  { key: '5card', count: 5, label: '五卡', positions: ['過去', '現在', '未來', '外在', '內在'] },
-  { key: 'ow3gs', count: 11, label: '11卡 OW3gs', positions: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'] }
-];
+const MODES = RUNE_DRAW_MODES;
 const RITUAL_MESSAGES = {
   single: ['您目前使用的是「單卡占卜模式」。', '正在找尋那命運之線……', '微弱的月光，會在漆黑的夜裡，帶領你找到方向。', '抽牌完成。'],
   daily: ['您目前使用的是「單卡每日抽牌模式」。', '這是一張屬於今日節奏與提醒的指引牌。', '正在對照今日真實月相。', '今日月符已經抽取完成。'],
   '2card': ['您目前使用的是「雙卡占卜模式」。', '第一張卡牌為「因」，第二張卡牌為「果」。', '正在整理兩張牌的因果位置。', '抽牌完成。'],
   '3card': ['您目前使用的是「三卡占卜模式」。', '第一張為「源」，第二張為「轉」，第三張為「合」。', '正在整理源、轉、合的語法位置。', '抽牌完成。'],
-  '5card': ['您目前使用的是「五卡占卜模式」。', '依序觀看過去、現在、未來顯化、周圍環境與自己心境。', '正在整理時間主線與內外狀態。', '抽牌完成。'],
-  ow3gs: ['您目前使用的是「OW3gs 11卡模式」。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
+  '5card': ['您目前使用的是「五卡占卜模式」。', '先整理兩張過去成因，再看意外變化與兩張現在狀況。', '正在整合雙卡＋單卡＋雙卡的完整情境。', '抽牌完成。'],
+  ow3gs: ['您目前使用的是「OW3gs 11卡模式」。', '源2、轉2、合2先建立情境，7–11 為核心五卡治理／建議。', '正在整合前段情境與核心判定。', '十一張命運絲線已經整理完成。']
 };
 
 function randomInt(max) {
@@ -122,13 +116,15 @@ function MultiReading({ draw, mode, phase }) {
     </section>;
   }
   if (mode === '5card') {
-    const [past, present, future, external, internal] = cards;
+    const spread = runeSpread('5card');
+    const [causeA, causeB, change, stateA, stateB] = cards;
     return <section className="loc-card" data-draw-reading="5card">
       <p className="loc-eyebrow">Reading · 五卡完整解讀</p>
-      <h2>時間主線 × 內外作用</h2>
-      <p><strong>時間主線：</strong>過去的「{past.符文名稱}」{directions[0]}：{directionText(past, directions[0])}；現在的「{present.符文名稱}」{directions[1]}：{directionText(present, directions[1])}；若目前條件延續，未來顯化「{future.符文名稱}」{directions[2]}：{directionText(future, directions[2])}。</p>
-      <p><strong>內外作用：</strong>周圍環境「{external.符文名稱}」{directions[3]}：{directionText(external, directions[3])}；自己心境「{internal.符文名稱}」{directions[4]}：{directionText(internal, directions[4])}。兩者共同描述前三張時間主線的條件。</p>
-      <p><strong>閱讀原則：</strong>未來顯化描述延續目前條件後的趨勢，不作絕對結果判決。本次真實月相為{phase}。</p>
+      <h2>{spread.composition}</h2>
+      <p><strong>過去成因：</strong>「{causeA.符文名稱}」{directions[0]}：{directionText(causeA, directions[0])}；「{causeB.符文名稱}」{directions[1]}：{directionText(causeB, directions[1])}。兩張共同建立目前情境的前因。</p>
+      <p><strong>意外變化：</strong>「{change.符文名稱}」{directions[2]}：{directionText(change, directions[2])}。這張描述使原有條件發生偏轉的主要變數。</p>
+      <p><strong>現在狀況：</strong>「{stateA.符文名稱}」{directions[3]}：{directionText(stateA, directions[3])}；「{stateB.符文名稱}」{directions[4]}：{directionText(stateB, directions[4])}。兩張共同描述變化之後的當下情境。</p>
+      <p><strong>閱讀原則：</strong>{spread.reading_rule} 本次真實月相為{phase}。</p>
     </section>;
   }
   return null;
@@ -302,7 +298,7 @@ export default function RuneDrawClient() {
         <MultiReading draw={draw} mode={modeKey} phase={moonPhase}/>
 
         {modeKey === 'ow3gs' && <section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs">
-          <p className="loc-eyebrow">OW3gs · 核心判定</p><h2>第 7–11 張為核心判定</h2>
+          <p className="loc-eyebrow">OW3gs · 核心判定</p><h2>{runeSpread('ow3gs').layers[1].label}</h2>
           <div className="loc-context-list">{draw.cards.slice(6, 11).map((card, index) => <div className="loc-context-item" key={`core-${card.編號}-${index}`}><strong>第 {index + 7} 張 · {card.符文名稱} · {draw.directions[index + 6]}</strong><span>{directionText(card, draw.directions[index + 6]) || card.符文說明}</span></div>)}</div>
           <p>整體指示分數：{draw.evaluation.score.toFixed(3)} · 整體趨勢：{draw.evaluation.range.label}</p>
         </section>}

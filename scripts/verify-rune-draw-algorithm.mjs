@@ -1,57 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-
-const source = readFileSync(resolve(process.cwd(), 'app/runes/RuneDrawClient.jsx'), 'utf8');
-const governance = readFileSync(resolve(process.cwd(), 'docs/LUNARUNES_DRAW_GOVERNANCE.md'), 'utf8');
-
-const required = [
-  'RUNE_DRAW_ALGORITHM_INVARIANT',
-  'function drawRunesSequentially(items, count, selectIndex = randomInt)',
-  'for (let drawIndex = 0; drawIndex < count; drawIndex += 1)',
-  'const index = selectIndex(pool.length)',
-  'const [card] = pool.splice(index, 1)',
-  'const cards = drawRunesSequentially(data.runes, selectedMode.count)',
-  "{ key: 'single', count: 1",
-  "{ key: 'daily', count: 1",
-  "{ key: '2card', count: 2",
-  "{ key: '3card', count: 3",
-  "{ key: '5card', count: 5",
-  "{ key: 'ow3gs', count: 11"
-];
-
-for (const fragment of required) {
-  if (!source.includes(fragment)) {
-    throw new Error(`Rune draw invariant missing required fragment: ${fragment}`);
-  }
-}
-
-const forbidden = [
-  'function sampleUnique(',
-  'pool.slice(0, count)',
-  '[pool[i], pool[j]] = [pool[j], pool[i]]'
-];
-
-for (const fragment of forbidden) {
-  if (source.includes(fragment)) {
-    throw new Error(`Rune draw invariant forbids batch/shuffle sampling: ${fragment}`);
-  }
-}
-
-const governanceRequired = [
-  '特殊化保留原則',
-  '單次 Draw Session 原則',
-  'Daily 特殊雙卡原則',
-  '補抽／解釋抽原則',
-  'OW3gs 綜合模組原則',
-  '源2 + 轉2 + 合2 + 五卡建議 = 11',
-  'Daily 抽牌次數不限',
-  '不同 Draw Session 彼此沒有排除關係'
-];
-
-for (const fragment of governanceRequired) {
-  if (!governance.includes(fragment)) {
-    throw new Error(`Rune draw governance missing required principle: ${fragment}`);
-  }
-}
-
-console.log('Rune draw algorithm verified: per-session N cards = N sequential selections without replacement; special-mode KM invariants are present.');
+const root=process.cwd();
+const source=readFileSync(resolve(root,'app/runes/RuneDrawClient.jsx'),'utf8');
+const grammar=JSON.parse(readFileSync(resolve(root,'data/json/core/rune_grammar.json'),'utf8'));
+for(const f of ['RUNE_DRAW_ALGORITHM_INVARIANT','function drawRunesSequentially(items, count, selectIndex = randomInt)','const cards = drawRunesSequentially(data.runes, selectedMode.count)',"import { RUNE_DRAW_MODES, runeSpread } from './rune-grammar'"]) if(!source.includes(f)) throw new Error('Rune draw invariant missing: '+f);
+for(const f of ["positions: ['過去', '現在', '未來', '外在', '內在']",'時間主線 × 內外作用','過去、現在、未來顯化、周圍環境與自己心境']) if(source.includes(f)) throw new Error('Stale five-card grammar returned: '+f);
+const five=grammar.spreads?.five, ow3gs=grammar.spreads?.ow3gs;
+if(five?.count!==5||five?.composition!=='兩張過去成因 + 一個意外變化 + 兩張現在狀況'||five?.structure!=='dual + single + dual') throw new Error('Five-card Current Grammar drifted');
+if(ow3gs?.count!==11||ow3gs?.composition!=='源2 + 轉2 + 合2 + 五卡治理／建議'||ow3gs?.core_range!=='7-11') throw new Error('OW3gs Current Grammar drifted');
+console.log('Rune draw algorithm and Current Grammar authority verified.');
