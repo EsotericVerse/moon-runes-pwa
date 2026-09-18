@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {FEATURES_V2,SCOPES_V2,featureHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
+import {FEATURES_V2,SCOPES_V2,SCOPE_POLICY_V2,featureHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
 
 const failures=[];
 const expectedDomains={loc:'loc.lo3rwang.cc',runes:'lrunes.lo3rwang.cc',lo3rwang:'dlwang.lo3rwang.cc',admin:'admin.lo3rwang.cc'};
@@ -14,6 +14,12 @@ const domains=Object.values(SCOPES_V2).map(scope=>scope.domain);
 const featureIds=FEATURES_V2.map(item=>item.id);
 const featurePaths=FEATURES_V2.map(item=>item.path);
 if(new Set(scopeIds).size!==scopeIds.length)failures.push('duplicate Scope id');
+const scopeIdRe=new RegExp(SCOPE_POLICY_V2.scopeIdPattern);
+for(const id of scopeIds)if(!scopeIdRe.test(id))failures.push('scope id violates Current pattern: '+id);
+if(SCOPE_POLICY_V2.defaultScopeId!=='loc')failures.push('Current default Scope drifted');
+const reservedWords=SCOPE_POLICY_V2.reservedWords.map(item=>item.word);
+if(!reservedWords.includes('loc'))failures.push('Current deployment must reserve loc');
+for(const item of SCOPE_POLICY_V2.reservedWords)if(item.scope!=='deployment')failures.push('reserved word must remain deployment-scoped: '+item.word);
 if(new Set(domains).size!==domains.length)failures.push('duplicate Scope domain');
 if(new Set(featureIds).size!==featureIds.length)failures.push('duplicate Feature id');
 if(new Set(featurePaths).size!==featurePaths.length)failures.push('duplicate Feature path');
@@ -70,14 +76,14 @@ for(const retiredRoute of ['app/author','app/zhengde']){
 }
 if(!fs.existsSync(path.resolve('app/lrunes/list/page.jsx')))failures.push('LunaRunes alternate ingress missing: app/lrunes/list/page.jsx');
 for(const scope of Object.values(SCOPES_V2)){
-  if(scope.scopeType!=='directory')continue;
-  const dirName=scope.mount?.path?.split('/').filter(Boolean)[0];
-  if(!dirName){failures.push('directory Scope missing mount path: '+scope.id);continue;}
+  if(!scope.mount)continue;
+  const dirName=scope.mount.path?.split('/').filter(Boolean)[0];
+  if(!dirName){failures.push('Scope mount missing path segment: '+scope.id);continue;}
   const routeRoot=path.resolve('app',dirName);
-  if(!fs.existsSync(routeRoot))failures.push('directory Scope route shell missing: app/'+dirName);
+  if(!fs.existsSync(routeRoot))failures.push('Scope mount route shell missing: app/'+dirName);
   for(const route of ['page.jsx','context/page.jsx','statics/page.jsx','culture/page.jsx','governance/page.jsx','search/page.jsx']){
     const file=path.join(routeRoot,route);
-    if(!fs.existsSync(file))failures.push('directory Scope route shell missing: app/'+dirName+'/'+route);
+    if(!fs.existsSync(file))failures.push('Scope mount route shell missing: app/'+dirName+'/'+route);
   }
 }
 for(const [id,domain] of Object.entries(expectedDomains)){
