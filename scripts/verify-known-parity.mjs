@@ -43,15 +43,13 @@ requireText('app/loc/views/ModelArchitectureExplorer.jsx', [
   'model-module-overlay', 'LOC 八個功能模組選單', '關閉八個模組選單'
 ]);
 
-requireText('app/GlobalNav.jsx', [
-  "const isRunes=pathname==='/runes'||pathname.startsWith('/runes/');",
-  '<a href="/runes#draw">抽牌</a>', '<a href="/runes/list">符文圖鑑</a>',
-  '<a href="/game">遊戲</a>', '<a href="/context">符文脈絡</a>',
-  '<a href="/statics">符文統計</a>', '<a href="/evolution">符文文化</a>',
-  '<a href="/runes/history">抽籤紀錄</a>', '<a href="/runes">月之符文</a>',
-  '<a href="/context">脈絡</a>', '<a href="/statics">統計</a>',
-  '<a href="/evolution">文化</a>', '<a href="/my-style">設定</a>',
-  '<SearchBox />', '<a className="loc-next-home" href="/">回月典首頁</a>'
+requireText('app/nav-route-map.js', [
+  "['脈絡','context']", "['統計','statics']", "['文化','evolution']", "['治理','governance']",
+  "reserved:['月之符文','/runes']", "role:[['作者介紹','https://whoami.lo3rwang.cc']]",
+  "reserved:['簡介','/']", "role:[['管理者介紹','https://manage.lo3rwang.cc']]",
+  "homes:[['回作者簡介','/'],['回月典首頁','https://loc.lo3rwang.cc']]",
+  "reserved:['語彙',base||'/']", "role:[['管理者介紹','https://whoami.lo3rwang.cc']]",
+  "homes:[['回月之符文首頁',base||'/'],['回月典首頁','https://loc.lo3rwang.cc']]"
 ]);
 
 requireText('app/GlobalFooter.jsx', [
