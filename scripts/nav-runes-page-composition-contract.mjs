@@ -1,12 +1,18 @@
 import fs from 'node:fs';
 
-const features=['context','statics','evolution','governance','search'];
-for(const feature of features){
-  const path=`app/runes/${feature}/page.jsx`;
-  if(!fs.existsSync(path))throw new Error(`LunaRunes NAV target missing Page Composition: /runes/${feature}`);
-  const rootPath=`app/${feature}/page.jsx`;
+const routeFeatures=[
+  ['context','context'],
+  ['statics','statics'],
+  ['evolution','culture'],
+  ['governance','governance'],
+  ['search','search']
+];
+for(const [route,feature] of routeFeatures){
+  const path=`app/runes/${route}/page.jsx`;
+  if(!fs.existsSync(path))throw new Error(`LunaRunes NAV target missing Page Composition: /runes/${route}`);
+  const rootPath=`app/${route}/page.jsx`;
   const root=fs.readFileSync(rootPath,'utf8');
-  if(!root.includes('ScopedFeaturePage')||!root.includes(`feature="${feature}"`))throw new Error(`Standalone host feature must use Scope dispatcher: /${feature}`);
+  if(!root.includes('ScopedFeaturePage')||!root.includes(`feature="${feature}"`))throw new Error(`Standalone host route must dispatch Current feature: /${route} -> ${feature}`);
 }
 
 const context=fs.readFileSync('app/runes/context/page.jsx','utf8');
