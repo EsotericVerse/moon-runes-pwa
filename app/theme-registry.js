@@ -1,4 +1,4 @@
-import {SITE_SCOPES,detectSiteScope} from './site-registry';
+import {SITE_SCOPES} from './site-registry';
 
 export const THEME_REGISTRY_SETTING_KEY='theme-registry-overrides-v1';
 export const SCOPE_THEME_SETTINGS_KEY='scope-theme-settings-v2';
@@ -28,7 +28,6 @@ export const DEFAULT_SCOPE_THEME_SETTINGS=Object.freeze(
   Object.fromEntries(Object.entries(SITE_SCOPES).map(([id,scope])=>[id,scope.theme]))
 );
 
-export function detectThemeScope(pathname='/',host=''){return detectSiteScope(pathname,host);}
 export function mergeThemeSlots(overrides={}){
   return DEFAULT_THEME_SLOTS.map(slot=>({...slot,...(overrides?.[slot.id]||{}),identityColor:GROUP_IDENTITY_COLORS[slot.group],tokens:{...slot.tokens,...((overrides?.[slot.id]||{}).tokens||{})}})).sort((a,b)=>a.order-b.order);
 }

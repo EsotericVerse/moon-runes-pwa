@@ -1,22 +1,18 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {usePathname} from 'next/navigation';
-import {detectSiteScope,getSiteScope,scopeDataView} from '../../site-registry';
+import {scopeDataView} from '../../site-registry';
+import {useCurrentScope} from '../../use-current-scope';
 import {neonClient} from '../neon-client';
 
 const PAGE_SIZE=20;
 
 export default function StaticsView(){
-  const pathname=usePathname()||'/';
-  const [host,setHost]=useState('');
+  const {scope,current}=useCurrentScope();
   const [rows,setRows]=useState([]);
   const [type,setType]=useState('');
   const [page,setPage]=useState(1);
   const [error,setError]=useState('');
-  useEffect(()=>setHost(window.location.hostname),[]);
-  const scope=detectSiteScope(pathname,host);
-  const current=getSiteScope(scope);
   const view=scopeDataView(scope,'rankings');
 
   useEffect(()=>{

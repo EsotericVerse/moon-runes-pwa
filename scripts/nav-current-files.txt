@@ -1,8 +1,0 @@
-app/GlobalNav.jsx
-app/ScopeNav.jsx
-app/globals.css
-app/styles/nav.css
-js/loc-nav.js
-docs/NAV_GOVERNANCE.md
-scripts/current-ui-contract.mjs
-scripts/nav-contract.mjs

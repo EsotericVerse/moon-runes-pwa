@@ -62,8 +62,8 @@ export const SITE_SCOPES=Object.freeze({
       schedule:TIME_SCHEDULE
     })
   }),
-  governance:Object.freeze({
-    id:'governance',
+  admin:Object.freeze({
+    id:'admin',
     domain:'admin.lo3rwang.cc',
     label:'治理管理',
     searchCollection:'治理',
@@ -79,7 +79,7 @@ export function detectSiteScope(pathname='/',host=''){
   const h=String(host||'').toLowerCase();
   if(h===SITE_SCOPES.runes.domain||pathname==='/runes'||pathname.startsWith('/runes/'))return 'runes';
   if(h===SITE_SCOPES.lo3rwang.domain||pathname==='/lo3rwang'||pathname.startsWith('/lo3rwang/'))return 'lo3rwang';
-  if(h===SITE_SCOPES.governance.domain||pathname==='/management'||pathname.startsWith('/management/'))return 'governance';
+  if(h===SITE_SCOPES.admin.domain||pathname==='/management'||pathname.startsWith('/management/'))return 'admin';
   return 'loc';
 }
 
