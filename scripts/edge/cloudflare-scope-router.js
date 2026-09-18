@@ -76,6 +76,19 @@ function isAssetPath(pathname='/'){
   return /\.(?:js|mjs|css|json|txt|xml|png|jpe?g|webp|gif|svg|ico|pdf|docx|xlsx|woff2?|ttf|map)$/i.test(path);
 }
 
+function pathMatchesPattern(pathname,pattern){
+  const actual=normalizePath(pathname).split('/').filter(Boolean);
+  const expected=normalizePath(pattern).split('/').filter(Boolean);
+  if(actual.length!==expected.length)return false;
+  return expected.every((segment,index)=>segment.startsWith(':')?Boolean(actual[index]):segment===actual[index]);
+}
+
+function pathAllowed(hostPolicy,pathname){
+  if(hostPolicy.allow?.includes(pathname))return true;
+  if(hostPolicy.compatibility?.includes(pathname))return true;
+  return (hostPolicy.patterns||[]).some(pattern=>pathMatchesPattern(pathname,pattern));
+}
+
 function redirectTarget(url,redirect){
   const target=new URL(url.toString());
   target.hostname=redirect.toHost;
@@ -110,7 +123,7 @@ export default {
     }
 
     const pathname=normalizePath(url.pathname);
-    if(!hostPolicy.allow.includes(pathname)){
+    if(!pathAllowed(hostPolicy,pathname)){
       return new Response('Not Found',{status:404});
     }
 
