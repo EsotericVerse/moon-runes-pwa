@@ -83,7 +83,7 @@ for(const [id,domain] of Object.entries(expectedDomains)){
     if(resolveScopeV2(domain,pathname)!==id)failures.push(domain+' failed direct-domain Scope resolution at '+pathname);
   }
 }
-for(const [id,base] of [['runes','/runes'],['lo3rwang','/lo3rwang']]){
+for(const [id,base] of [['runes','/lrunes'],['lo3rwang','/lo3rwang']]){
   for(const suffix of ['','/','/context','/statics','/culture','/governance','/search']){
     const pathname=base+suffix;
     if(resolveScopeV2('loc.lo3rwang.cc',pathname)!==id)failures.push(id+' mount failed at '+pathname);
@@ -94,7 +94,7 @@ for(const pathname of ['/','/context','/culture','/runesish','/foo/runes','/cult
 }
 if(SCOPES_V2.runes?.scopeType!=='domain')failures.push('LunaRunes Scope must remain domain type');
 if(SCOPES_V2.runes?.aliasName!==null)failures.push('LunaRunes domain Scope must not declare aliasName');
-if(SCOPES_V2.runes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.runes?.mount?.path!=='/runes')failures.push('LunaRunes alternate mount drifted');
+if(SCOPES_V2.runes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.runes?.mount?.path!=='/lrunes')failures.push('LunaRunes alternate /lrunes mount drifted');
 if(SCOPES_V2.lo3rwang?.scopeType!=='directory')failures.push('author Scope must remain directory type');
 if(SCOPES_V2.lo3rwang?.aliasName!=='dlwang')failures.push('author aliasName must remain dlwang');
 if(SCOPES_V2.lo3rwang?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lo3rwang?.mount?.path!=='/lo3rwang')failures.push('author LOC mount drifted');
