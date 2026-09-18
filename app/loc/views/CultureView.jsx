@@ -49,7 +49,7 @@ export default function CultureView(){
   const runeRows=useMemo(()=>drawableRows(runes),[runes]);
   const completeRuneHistory=coreRows.filter(item=>String(item?.符文變化歷史||'').trim()&&String(item?.神話故事||'').trim()).length;
   const loc3Rows=periodRows(loc3);const loc6Rows=periodRows(loc6);const trajectories=loc6?.trajectories||[];
-  const stages=runeHistory?.system_stages||[];const governance=runeHistory?.governance_evolution||[];const semanticCases=runeHistory?.semantic_history_cases||[];
+  const stages=runeHistory?.system_stages||[];const governance=runeHistory?.governance_culture||[];const semanticCases=runeHistory?.semantic_history_cases||[];
 
   return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">Culture · 文化</p><h1><span className="loc-keyword-emphasis">文化</span></h1><p>文化由風格、時期、事件、價值與語意變化沿時間累積形成；此處整合 ERA、事件、時期風格、軌跡與 LunaRunes <span className="loc-keyword-emphasis">文化</span>觀察。</p></header>
