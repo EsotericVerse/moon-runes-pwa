@@ -10,8 +10,8 @@ if(JSON.stringify(Object.keys(SCOPES_V2))!==JSON.stringify(Object.keys(expectedD
 if(JSON.stringify(FEATURES_V2.map(item=>item.id))!==JSON.stringify(expectedFeatures))failures.push('feature registry mismatch');
 for(const [id,domain] of Object.entries(expectedDomains)){
   if(SCOPES_V2[id]?.domain!==domain)failures.push(id+' domain mismatch');
-  if(resolveScopeV2(domain,'/')!==id)failures.push(domain+' scope mismatch');
-  if(resolveScopeV2(domain+':443','/')!==id)failures.push(domain+' port normalization mismatch');
+  if(resolveScopeV2(domain)!==id)failures.push(domain+' scope mismatch');
+  if(resolveScopeV2(domain+':443')!==id)failures.push(domain+' port normalization mismatch');
   for(const feature of FEATURES_V2)if(featureHrefV2(id,feature.id)!==`https://${domain}/${feature.path}`)failures.push(id+'/'+feature.id+' route mismatch');
 }
 
@@ -52,8 +52,11 @@ for(const retiredRoute of ['app/author','app/zhengde']){
 }
 const lo3rwangRoute=path.resolve('app/lo3rwang');
 if(fs.existsSync(lo3rwangRoute))failures.push('retired /lo3rwang compatibility route returned; author Scope must resolve by host only');
-if(resolveScopeV2('loc.lo3rwang.cc','/lo3rwang')!=='loc')failures.push('LOC /lo3rwang must not impersonate author Scope');
-if(resolveScopeV2('lo3rwang.lo3rwang.cc','/')!=='lo3rwang')failures.push('author Scope must resolve directly from host');
+for(const [id,domain] of Object.entries(expectedDomains)){
+  for(const pathname of ['/','/context','/statics','/culture','/governance','/search','/lo3rwang','/runes','/management']){
+    if(resolveScopeV2(domain,pathname)!==id)failures.push(domain+' changed Scope because of path '+pathname);
+  }
+}
 
 const currentFiles=['app/loc/search-collections.js','app/loc/GovernanceManagement.jsx'];
 for(const file of currentFiles){
