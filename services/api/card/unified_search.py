@@ -3214,7 +3214,8 @@ class UnifiedSearchEngine:
                     result_sources.append({
                         "result_id": rid,
                         "group": group,
-                        "primary_loc": item.get("primary_loc"),
+                        "scope_id": item.get("scope_id") or (item.get("payload") or {}).get("scope_id"),
+                        "feature_ids": item.get("feature_ids") or (item.get("payload") or {}).get("feature_ids") or self._content_feature_ids(item.get("content_type")),
                         "sources": normalized_refs,
                     })
 
@@ -3335,14 +3336,14 @@ class UnifiedSearchEngine:
             "counts": {key: len(value) for key, value in groups.items()},
             "total_count": sum(len(value) for value in groups.values()),
             "coverage": {
-                "LOC1": "live",
-                "LOC2": f"scenario-event-search-live; {len(self.loc2_events.get('records', []) or [])} scenario events",
-                "LOC3": "live",
-                "LOC4": f"creative-works+life-writing-live; {self._loc4_corpus_document_count()} authored corpus segments; {self._loc4_offline_history_document_count()} closed-platform full-text articles; {len((getattr(self, 'loc4_moon_speaker_analysis', {}) or {}).get('chapters', []))} MoonSpeaker chapter analyses",
-                "LOC5": "direct-media-registry-search-live",
-                "LOC6": "governance/style-derived-search-live",
-                "LOC4_threads_indexed": self._loc4_thread_document_count(),
-                "LOC7": "live",
-                "LOC8": "era+context-graph-live",
+                "lunarunes": "live",
+                "context": f"scenario-event-search-live; {len(self.loc2_events.get('records', []) or [])} scenario events",
+                "music": "live",
+                "writing": f"creative-works+life-writing-live; {self._loc4_corpus_document_count()} authored corpus segments; {self._loc4_offline_history_document_count()} closed-platform full-text articles; {len((getattr(self, 'loc4_moon_speaker_analysis', {}) or {}).get('chapters', []))} MoonSpeaker chapter analyses",
+                "media": "direct-media-registry-search-live",
+                "governance_analysis": "governance/style-derived-search-live",
+                "threads_indexed": self._loc4_thread_document_count(),
+                "knowledge_rag": "live",
+                "temporal_analysis": "era+context-graph-live",
             },
         }
