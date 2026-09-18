@@ -70,7 +70,7 @@ const SECTIONS = [
     links:[
       {href:'/management',label:'管理者功能',text:'Scope、ERA、納入審核、修正標記與授權寫入。'},
       {href:'/runes/governance',label:'符文治理',text:'LunaRunes 的 Master Data、Grammar、語意與符文歷史。'},
-      {href:'/author/governance',label:'作者治理',text:'作者身份、政德風、作品脈絡、個人 ERA 與作者歷史。'}
+      {href:'https://lo3rwang.lo3rwang.cc/governance',label:'作者治理',text:'作者身份、政德風、作品脈絡、個人 ERA 與作者歷史。'}
     ]
   }
 ];
