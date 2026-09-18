@@ -1,5 +1,5 @@
 import {readFileSync} from 'node:fs';
-import {SCOPES_V2,scopeRoutePathsV2} from '../app/modular-v2/scope-registry.v2.js';
+import {SCOPES_V2,scopeRoutePathsV2,scopeRoutePatternsV2,scopeCompatibilityRoutesV2} from '../app/modular-v2/scope-registry.v2.js';
 import {buildScopeRoutePolicyV2} from './scope-route-policy.mjs';
 
 const failures=[];
@@ -9,6 +9,20 @@ function expectAllowed(host,path,expected=true){
   const allowed=policy.hosts?.[host]?.allow?.includes(path)===true;
   if(allowed!==expected){
     failures.push(`${host}${path}: expected allowed=${expected}, got ${allowed}`);
+  }
+}
+
+function expectPattern(host,pattern,expected=true){
+  const present=policy.hosts?.[host]?.patterns?.includes(pattern)===true;
+  if(present!==expected){
+    failures.push(`${host} pattern ${pattern}: expected=${expected}, got ${present}`);
+  }
+}
+
+function expectCompatibility(host,path,expected=true){
+  const present=policy.hosts?.[host]?.compatibility?.includes(path)===true;
+  if(present!==expected){
+    failures.push(`${host} compatibility ${path}: expected=${expected}, got ${present}`);
   }
 }
 
@@ -32,6 +46,14 @@ for(const scope of Object.values(SCOPES_V2)){
     expectAllowed(scope.domain,route,true);
   }
 
+  for(const pattern of scopeRoutePatternsV2(scope.id)){
+    expectPattern(scope.domain,pattern,true);
+  }
+
+  for(const route of scopeCompatibilityRoutesV2(scope.id)){
+    expectCompatibility(scope.domain,route,true);
+  }
+
   if(scope.scopeType==='directory'){
     if(!scope.mount){
       failures.push(scope.id+' directory Scope missing mount for edge redirect');
@@ -48,6 +70,12 @@ for(const scope of Object.values(SCOPES_V2)){
   if(scope.mount){
     for(const route of scopeRoutePathsV2(scope.id)){
       expectAllowed(scope.mount.host,mountedPath(scope.mount.path,route),true);
+    }
+    for(const pattern of scopeRoutePatternsV2(scope.id)){
+      expectPattern(scope.mount.host,mountedPath(scope.mount.path,pattern),true);
+    }
+    for(const route of scopeCompatibilityRoutesV2(scope.id)){
+      expectCompatibility(scope.mount.host,mountedPath(scope.mount.path,route),true);
     }
   }
 }
@@ -79,6 +107,15 @@ if(authorRedirect?.toHost!=='loc.lo3rwang.cc'||authorRedirect?.toBase!=='/lo3rwa
   failures.push('author alias redirect policy drifted');
 }
 
+if(!policy.hosts?.['loc.lo3rwang.cc']?.patterns?.includes('/writing/:workId')){
+  failures.push('LOC writing pattern missing from edge policy');
+}
+for(const path of ['/evolution','/management']){
+  if(!policy.hosts?.['loc.lo3rwang.cc']?.compatibility?.includes(path)){
+    failures.push('LOC compatibility route missing: '+path);
+  }
+}
+
 if(policy.hosts?.['lrunes.lo3rwang.cc']?.redirect){
   failures.push('LunaRunes canonical domain must not be treated as alias redirect');
 }
@@ -93,6 +130,10 @@ for(const token of [
   "'/data/'",
   "'/docs/'",
   'hostPolicy.allow',
+  'hostPolicy.patterns',
+  'hostPolicy.compatibility',
+  'pathAllowed',
+  'pathMatchesPattern',
   "status:404",
   'hostPolicy.redirect',
   'ORIGIN_BASE',
