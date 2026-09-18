@@ -7,7 +7,8 @@ if(JSON.stringify(FEATURES_V2.map(item=>item.id))!==JSON.stringify(['context','s
 for(const [id,domain] of Object.entries(expectedDomains)){
   if(resolveScopeV2(domain,'/')!==id)throw new Error(`${domain}: expected ${id}`);
   for(const feature of FEATURES_V2){
-    const expectedBase=id==='lo3rwang'?'https://loc.lo3rwang.cc/lo3rwang':`https://${domain}`;
+    const scope=SCOPES_V2[id];
+    const expectedBase=scope.mount?`https://${scope.mount.host}${scope.mount.path}`:`https://${domain}`;
     if(featureHrefV2(id,feature.id)!==`${expectedBase}/${feature.path}`)throw new Error(`${id}/${feature.id} route drifted`);
   }
 }
@@ -18,5 +19,6 @@ if(!globalNav.includes('ScopeNavV2'))throw new Error('GlobalNav must render Scop
 for(const token of ['FEATURES_V2','featureHrefV2','useScopeRuntimeV2'])if(!scopeNav.includes(token))throw new Error('ScopeNavV2 missing '+token);
 if(!compatNav.includes('./modular-v2/ScopeNavV2'))throw new Error('ScopeNav compatibility entry must delegate to V2');
 for(const token of ['whoami.lo3rwang.cc','manage.lo3rwang.cc','/evolution','NAV1','NAV2','NAV3'])if((globalNav+scopeNav+compatNav).includes(token))throw new Error('Forbidden obsolete NAV token: '+token);
+if(resolveScopeV2('loc.lo3rwang.cc','/runes/statics')!=='runes')throw new Error('LunaRunes mount must resolve to runes Scope');
 if(resolveScopeV2('loc.lo3rwang.cc','/lo3rwang/statics')!=='lo3rwang')throw new Error('author mount must resolve to lo3rwang Scope');
-console.log('V2 registry-driven single NAV verified with bounded author mount.');
+console.log('V2 registry-driven single NAV verified with bounded directory mounts.');
