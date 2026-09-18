@@ -35,7 +35,7 @@ export default function RunesPage() {
       <div className="runes-home-hero-copy">
         <p className="loc-eyebrow">LunaRunes</p>
         <h1>月之符文</h1>
-        <p className="loc-subtitle">第一次來？不用先弄懂它是什麼。先看一支短影片，或直接抽張牌。</p>
+        <p className="loc-subtitle">第一次來？如果什麼都不知道，也沒關係！先看影片介紹，<a href={FAQ_LINKS.runes}>FAQ</a>，或直接抽張牌也可以！</p>
       </div>
 
       <div className="runes-home-reels" aria-label="月之符文 Reels 預覽">
@@ -65,7 +65,6 @@ export default function RunesPage() {
         </a>)}
       </div>
       <p className="runes-quick-start-note">沒有特別想問的？也可以直接抽每日符文。</p>
-      <div className="loc-actions"><a className="loc-button" href={FAQ_LINKS.runes}>月之符文 FAQ</a></div>
       <div className="loc-actions"><a className="loc-button" href="/duel/daily">抽每日符文</a></div>
     </section>
 
