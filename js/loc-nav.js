@@ -33,22 +33,22 @@
     const current=scope();
     if(current==='runes') return [
       {label:'語彙',href:location.hostname==='lrunes.lo3rwang.cc'?'/':'/runes'},
-      {label:'脈絡',href:scopedRoute('/context')},{label:'統計',href:scopedRoute('/statics')},{label:'文化',href:scopedRoute('/evolution')},{label:'治理',href:scopedRoute('/governance')},
+      {label:'脈絡',href:scopedRoute('/context')},{label:'統計',href:scopedRoute('/statics')},{label:'文化',href:scopedRoute('/culture')},{label:'治理',href:scopedRoute('/governance')},
       {label:'作者頁面',href:'https://lo3rwang.lo3rwang.cc'},
       {label:'回月之符文首頁',href:location.hostname==='lrunes.lo3rwang.cc'?'/':'/runes',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
     ];
     if(current==='author') return [
-      {label:'風格詞',href:'/'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/evolution'},{label:'治理',href:'/governance'},
+      {label:'風格詞',href:'/'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/culture'},{label:'治理',href:'/governance'},
       {label:'管理者頁面',href:'https://admin.lo3rwang.cc'},
       {label:'回作者頁面',href:'/',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
     ];
     if(current==='governance') return [
-      {label:'治理規則',href:'/'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/evolution'},{label:'治理',href:'/governance'},
+      {label:'治理規則',href:'/'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/culture'},{label:'治理',href:'/governance'},
       {label:'管理者頁面',href:'https://admin.lo3rwang.cc'},
       {label:'回治理頁面',href:'/',home:true},{label:'回月典首頁',href:'https://loc.lo3rwang.cc',home:true}
     ];
     return [
-      {label:'月之符文',href:'/runes'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/evolution'},{label:'治理',href:'/governance'},
+      {label:'月之符文',href:'/runes'},{label:'脈絡',href:'/context'},{label:'統計',href:'/statics'},{label:'文化',href:'/culture'},{label:'治理',href:'/governance'},
       {label:'作者頁面',href:'https://lo3rwang.lo3rwang.cc'},{label:'回月典首頁',href:'/',home:true}
     ];
   }
