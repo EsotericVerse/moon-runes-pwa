@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useState} from 'react';
-import {fetchThemeStyles,updateThemeStyle} from './theme-registry';
+import {fetchThemeStylesV2,updateThemeStyleV2} from '../migration-bridges/theme-admin-neon.v2';
 import {useNeonAccount} from './use-neon-account';
 
 export default function ThemeAdmin(){
@@ -12,7 +12,7 @@ export default function ThemeAdmin(){
 
   const load=async()=>{
     try{
-      const next=await fetchThemeStyles();
+      const next=await fetchThemeStylesV2();
       setRows(next);
       setDrafts(Object.fromEntries(next.map(item=>[item.style_key,JSON.stringify(item.css_vars||{},null,2)])));
       setStatus('');
@@ -28,7 +28,7 @@ export default function ThemeAdmin(){
   const save=async row=>{
     try{
       const css_vars=JSON.parse(drafts[row.style_key]||'{}');
-      await updateThemeStyle(row.style_key,{css_vars});
+      await updateThemeStyleV2(row.style_key,{css_vars});
       setStatus(row.name_zh+'已更新');
       await load();
     }catch(error){setStatus(String(error?.message||error))}

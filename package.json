@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "verify:independence": "node scripts/verify-next-independence.mjs",
+    "verify:modular-v2": "node scripts/verify-modular-v2.mjs",
     "verify:modularity": "node scripts/verify-modularity.mjs",
     "verify:modules": "node scripts/verify-module-contracts.mjs",
     "verify:static": "node scripts/verify-static-entrypoints.mjs",
@@ -15,7 +16,7 @@
     "verify:auth": "node scripts/verify-auth-boundary.mjs",
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:independence && npm run verify:scope-registry && npm run verify:modularity && npm run verify:modules && npm run verify:static && npm run verify:directories && npm run verify:rc4 && npm run verify:auth && npm run verify:theme && npm run verify:rune-draw && npm run verify:semantics && npm run verify:ui",
+    "verify": "npm run verify:independence && npm run verify:modular-v2 && npm run verify:scope-registry && npm run verify:modularity && npm run verify:modules && npm run verify:static && npm run verify:directories && npm run verify:rc4 && npm run verify:auth && npm run verify:theme && npm run verify:rune-draw && npm run verify:semantics && npm run verify:ui",
     "prepare:public": "node scripts/prepare-next-public.mjs",
     "build": "npm run verify && npm run prepare:public && npm run verify:public && next build",
     "start": "next start",

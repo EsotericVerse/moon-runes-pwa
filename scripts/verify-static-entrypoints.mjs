@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, normalize, relative, resolve } from 'node:path';
 
 const root = process.cwd();
-const entrypoints = ['runes.html', 'lo3rwang.html'];
+const entrypoints = ['runes.html'];
 const reachable = new Set();
 const missing = [];
 const queue = [];

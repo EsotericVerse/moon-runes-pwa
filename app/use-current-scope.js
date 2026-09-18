@@ -1,13 +1,9 @@
 'use client';
 
-import {useEffect,useState} from 'react';
-import {usePathname} from 'next/navigation';
-import {detectSiteScope,getSiteScope} from './site-registry';
+import {getSiteScope} from './site-registry';
+import {useScopeRuntimeV2} from './modular-v2/use-scope-runtime.v2';
 
 export function useCurrentScope(){
-  const pathname=usePathname()||'/';
-  const [host,setHost]=useState('');
-  useEffect(()=>setHost(window.location.hostname),[]);
-  const scope=detectSiteScope(pathname,host);
-  return {scope,current:getSiteScope(scope),pathname,host};
+  const {scopeId,host,pathname}=useScopeRuntimeV2();
+  return {scope:scopeId,current:getSiteScope(scopeId),pathname,host};
 }
