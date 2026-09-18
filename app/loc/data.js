@@ -1,16 +1,15 @@
-import { getFreshLocalDataSegment, putLocalDataSegment } from './data-local.js';
+import { createClient } from '@neondatabase/neon-js';
 export { LOC_DATA } from './data-paths.mjs';
 
-// Runtime data policy:
-// - runes.json is the canonical rune source; never duplicate canonical rows here.
-// - lots/history/harmony are canonical companion datasets keyed by rune identity.
-// - Derived/search JSON stays split so large corpora can be loaded only when needed.
-// - Browser reads prefer fresh IndexedDB segments; network is fallback/update transport.
-// - All LOC views share this request cache and one global concurrency gate.
-// - Persistent HTTP cache keys are versioned by build-time SHA-256 metadata.
-// - Large datasets are discovered through the hierarchical data index and fetched by segment.
-const memoryCache = new Map();
-const DATA_VERSION_MANIFEST = '/loc-data-version.json';
+// Current runtime contract:
+// - Shared LOC data is read only from Neon's public api.runtime_json_documents projection.
+// - Bronze / Silver / Vault are never exposed to the browser.
+// - Vercel/GitHub Pages only serve the static application shell and routing metadata.
+// - Browser IndexedDB is not a dataset cache or runtime source.
+const NEON_AUTH_URL = process.env.NEXT_PUBLIC_NEON_AUTH_URL
+  || 'https://ep-rapid-queen-b3oyboy6.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth';
+const NEON_DATA_API_URL = process.env.NEXT_PUBLIC_NEON_DATA_API_URL
+  || 'https://ep-rapid-queen-b3oyboy6.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb/rest/v1';
 const DATA_INDEX_MANIFEST = '/loc-data-index.json';
 const DEFAULT_GLOBAL_CONCURRENCY = 2;
 const DEFAULT_MAX_BATCH_ITEMS = 24;
@@ -18,10 +17,28 @@ const DEFAULT_MAX_RESPONSE_BYTES = 128 * 1024 * 1024;
 const DEFAULT_MEMORY_CACHE_ENTRIES = 24;
 const DEFAULT_MAX_SEGMENTS = 8;
 const DEFAULT_MAX_SEGMENT_BATCH_BYTES = 192 * 1024 * 1024;
+
+const neon = createClient({
+  auth: {
+    url: NEON_AUTH_URL,
+    allowAnonymous: true
+  },
+  dataApi: {
+    url: NEON_DATA_API_URL,
+    options: { db: { schema: 'api' } }
+  }
+});
+
+const memoryCache = new Map();
 let activeRequests = 0;
-let versionManifestPromise;
 let dataIndexPromise;
 const waiters = [];
+
+function normalizeSourcePath(path) {
+  const value = String(path || '').trim().replace(/^\/+/, '');
+  if (!value) throw new Error('LOC Neon data path is required');
+  return value;
+}
 
 function acquireSlot(limit = DEFAULT_GLOBAL_CONCURRENCY) {
   if (activeRequests < limit) {
@@ -58,28 +75,9 @@ function touchMemoryCache(key) {
   memoryCache.set(key, value);
 }
 
-async function loadVersionManifest() {
-  if (!versionManifestPromise) {
-    versionManifestPromise = fetch(DATA_VERSION_MANIFEST, { cache: 'no-cache' })
-      .then(response => {
-        if (!response.ok) throw new Error(`${DATA_VERSION_MANIFEST}: HTTP ${response.status}`);
-        return response.json();
-      })
-      .catch(() => ({ schema: 0, version: null, files: {} }));
-  }
-  return versionManifestPromise;
-}
-
 async function loadDataIndex() {
   if (!dataIndexPromise) {
-    dataIndexPromise = loadVersionManifest()
-      .then(versionManifest => {
-        const version = versionManifest?.version;
-        const requestPath = version
-          ? `${DATA_INDEX_MANIFEST}?v=${encodeURIComponent(version.slice(0, 16))}`
-          : DATA_INDEX_MANIFEST;
-        return fetch(requestPath, { cache: version ? 'force-cache' : 'no-cache' });
-      })
+    dataIndexPromise = fetch(DATA_INDEX_MANIFEST, { cache: 'force-cache' })
       .then(response => {
         if (!response.ok) throw new Error(`${DATA_INDEX_MANIFEST}: HTTP ${response.status}`);
         return response.json();
@@ -88,49 +86,26 @@ async function loadDataIndex() {
   return dataIndexPromise;
 }
 
-function versionedPath(path, entry) {
-  if (!entry?.hash) return path;
-  const separator = path.includes('?') ? '&' : '?';
-  return `${path}${separator}v=${encodeURIComponent(entry.hash.slice(0, 16))}`;
-}
-
 async function fetchJsonOnce(path, { maxResponseBytes = DEFAULT_MAX_RESPONSE_BYTES } = {}) {
-  const manifest = await loadVersionManifest();
-  const entry = manifest?.files?.[path];
-  if (entry?.bytes && entry.bytes > maxResponseBytes) {
-    throw new Error(`${path}: declared size ${entry.bytes} exceeds I/O budget ${maxResponseBytes}`);
-  }
-
-  if (typeof window !== 'undefined') {
-    const local = await getFreshLocalDataSegment(path, {
-      hash: entry?.hash || '',
-      version: manifest?.version || ''
-    });
-    if (local) return local.data;
-  }
-
+  const sourcePath = normalizeSourcePath(path);
   await acquireSlot();
   try {
-    const requestPath = versionedPath(path, entry);
-    const response = await fetch(requestPath, { cache: 'force-cache' });
-    if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
+    const { data, error } = await neon
+      .from('runtime_json_documents')
+      .select('payload,blob_sha')
+      .eq('source_path', sourcePath)
+      .limit(1);
 
-    const declaredBytes = Number(response.headers.get('content-length') || 0);
-    if (declaredBytes && declaredBytes > maxResponseBytes) {
-      throw new Error(`${path}: response size ${declaredBytes} exceeds I/O budget ${maxResponseBytes}`);
+    if (error) throw new Error(`${sourcePath}: Neon Data API ${error.message || 'query failed'}`);
+    const row = Array.isArray(data) ? data[0] : null;
+    if (!row) throw new Error(`${sourcePath}: not published in Neon runtime projection`);
+
+    const payload = row.payload;
+    const approxBytes = JSON.stringify(payload).length;
+    if (approxBytes > maxResponseBytes) {
+      throw new Error(`${sourcePath}: response size ${approxBytes} exceeds I/O budget ${maxResponseBytes}`);
     }
-    const data = await response.json();
-    if (typeof window !== 'undefined') {
-      await putLocalDataSegment({
-        path,
-        dataset: '',
-        hash: entry?.hash || '',
-        bytes: entry?.bytes || declaredBytes || 0,
-        source_version: manifest?.version || '',
-        data
-      });
-    }
-    return data;
+    return payload;
   } finally {
     releaseSlot();
   }
@@ -141,18 +116,19 @@ export function fetchLocJson(path, {
   maxResponseBytes = DEFAULT_MAX_RESPONSE_BYTES,
   maxMemoryEntries = DEFAULT_MEMORY_CACHE_ENTRIES
 } = {}) {
-  if (!memory) return fetchJsonOnce(path, { maxResponseBytes });
+  const key = normalizeSourcePath(path);
+  if (!memory) return fetchJsonOnce(key, { maxResponseBytes });
 
-  if (memoryCache.has(path)) {
-    touchMemoryCache(path);
-    return memoryCache.get(path);
+  if (memoryCache.has(key)) {
+    touchMemoryCache(key);
+    return memoryCache.get(key);
   }
 
-  const request = fetchJsonOnce(path, { maxResponseBytes }).catch(error => {
-    memoryCache.delete(path);
+  const request = fetchJsonOnce(key, { maxResponseBytes }).catch(error => {
+    memoryCache.delete(key);
     throw error;
   });
-  memoryCache.set(path, request);
+  memoryCache.set(key, request);
   trimMemoryCache(maxMemoryEntries);
   return request;
 }
@@ -245,20 +221,25 @@ export async function fetchLocDataSegments(datasetId, {
 }
 
 export function clearLocJsonCache(path) {
-  if (path) memoryCache.delete(path);
+  if (path) memoryCache.delete(normalizeSourcePath(path));
   else memoryCache.clear();
 }
 
 export function refreshLocDataVersionManifest() {
-  versionManifestPromise = undefined;
-  dataIndexPromise = undefined;
-  return loadVersionManifest();
+  return Promise.resolve({ schema: 1, source: 'neon', version: null, files: {} });
 }
 
 export function refreshLocDataIndex() {
   dataIndexPromise = undefined;
   return loadDataIndex();
 }
+
+export const LOC_RUNTIME = Object.freeze({
+  provider: 'neon',
+  authUrl: NEON_AUTH_URL,
+  dataApiUrl: NEON_DATA_API_URL,
+  projection: 'api.runtime_json_documents'
+});
 
 export const LOC_IO_BUDGET = Object.freeze({
   maxBatchItems: DEFAULT_MAX_BATCH_ITEMS,
