@@ -1,18 +1,14 @@
 'use client';
 
-import useLocalStorageState from 'use-local-storage-state';
+import { useNeonSetting } from './use-neon-setting';
 
+// Compatibility hook for existing UI consumers.
+// Persistent settings are backed by Neon user_settings; there is no browser database.
 export function useLocalStore(key, initialValue) {
-  const [value, setValue, { removeItem, isPersistent }] = useLocalStorageState(key, {
-    defaultValue: initialValue,
-    storageSync: false
-  });
-
+  const state=useNeonSetting(key,initialValue);
   return {
-    value,
-    setValue,
-    reset: removeItem,
-    isPersistent
+    ...state,
+    isPersistent:Boolean(state.account?.user)
   };
 }
 
