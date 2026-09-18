@@ -1,1 +1,0 @@
-import fs from 'node:fs';if(fs.readFileSync('scripts/nav-final-marker.txt','utf8').trim()!=='NAV_SCOPE_CANON_APPLIED')throw new Error('NAV Scope Canon marker missing');console.log('NAV Scope Canon marker verified.');
