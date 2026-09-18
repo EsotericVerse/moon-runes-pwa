@@ -18,6 +18,7 @@ const TIME_SCHEDULE_V2=Object.freeze([
 export const SCOPES_V2=Object.freeze({
   loc:Object.freeze({
     id:'loc',scopeType:'domain',domain:'loc.lo3rwang.cc',aliasName:null,label:'月典',
+    localRoutes:Object.freeze([]),
     primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
     role:Object.freeze({label:'作者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
@@ -28,6 +29,7 @@ export const SCOPES_V2=Object.freeze({
   }),
   runes:Object.freeze({
     id:'runes',scopeType:'domain',domain:'lrunes.lo3rwang.cc',aliasName:null,label:'月之符文',
+    localRoutes:Object.freeze(['list','history','duel/one','duel/daily','duel/two','duel/three','duel/five','duel/ow3gs']),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     primary:Object.freeze({label:'語彙',href:'https://lrunes.lo3rwang.cc/list'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
@@ -42,6 +44,7 @@ export const SCOPES_V2=Object.freeze({
   }),
   lo3rwang:Object.freeze({
     id:'lo3rwang',scopeType:'directory',domain:'dlwang.lo3rwang.cc',aliasName:'dlwang',label:'作者簡介',
+    localRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
     primary:Object.freeze({label:'簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
@@ -64,6 +67,7 @@ export const SCOPES_V2=Object.freeze({
   }),
   admin:Object.freeze({
     id:'admin',scopeType:'domain',domain:'admin.lo3rwang.cc',aliasName:null,label:'治理管理',
+    localRoutes:Object.freeze([]),
     primary:Object.freeze({label:'管理',href:'https://admin.lo3rwang.cc/'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
