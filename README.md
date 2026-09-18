@@ -1,12 +1,12 @@
 # 🌕 LOC｜月典（Luna Codex）
 
-LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的語言系統模組框架（Language Module Framework）。
+LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的模型化語言框架（Modelized Language Framework）。
 
-LOC 由多個可重複使用的語言系統模組組成；首頁保留一組人類可讀的 LOC1–8 導覽編號，文件與工程層則依語意 domain 與實際責任治理。
+LOC 的 Current 架構固定採 **Scope Model × Feature Model → Page Composition**：Scope 管理資料與權威邊界，Feature 是可重用能力，頁面／Search／RAG／分析屬下游 projection，不建立 Canon authority。
 
 LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module reference implementation：以 66 枚中文單字為核心語彙，實作脈絡、Graph、Grammar、治理、搜尋與演化。月之符文用來證明 LOC 的模組方法可被實作，但不是使用 LOC 的門檻。
 
-**術語治理：LOC 整體固定稱為 Language Module Framework／語言系統模組框架；LOC1–8 是語言系統模組的功能分隔；LunaRunes 固定稱為 Symbolic Language Module／符號式語言模組。**
+**術語治理：LOC 固定稱為 Modelized Language Framework／模型化語言框架；LunaRunes 固定稱為 Symbolic Language／符號式語言。LOC1–8 僅保留作 Historical／provenance 識別，不得作 Current 架構、Scope、Feature ownership、NAV 或 registry authority。**
 
 ### 主要定位
 
@@ -128,34 +128,26 @@ Use loc-repo-health-check to verify whether legacy projections can be removed wi
 
 ---
 
-## LOC 1–8
+## Current Architecture
 
-LOC1–8 是**功能分隔與標準骨架**，不是版本、成熟度或高低排序。
-
-| LOC | 現行定位 | 主要內容 |
-|---|---|---|
-| LOC1 | LunaRunes 月之符文 | 66 符、籤詩、抽牌、月相、四向、OW3gs |
-| LOC2 | Context 脈絡 | 節點、關係、Event、Graph、Semantic Playground |
-| LOC3 | Music 音樂 | Suno、歌曲、歌詞與音樂語意 |
-| LOC4 | Literary 文字創作 | 小說、文章、生活文字與創作 corpus |
-| LOC5 | MultiMedia 多媒體 | 圖像、影音、Reels、系統視覺化 |
-| LOC6 | Algorithm 演算法 | 治理、判讀、比較、分類與其他可重複規則 |
-| LOC7 | Module 演算模組 | 演算法、資料、文字建築、KM、搜尋、RAG、Graph RAG 與功能封裝 |
-| LOC8 | Evolution 推演 | 時期、時間線、趨勢、軌跡與跨來源時間分析 |
-
-LOC 的功能關係可概括為：
+LOC Current 架構：
 
 ```text
-語彙
+Current Canon
   ↓
-文字創作／多元體系
+Scope Model
   ↓
-脈絡與關係
+Feature Model
   ↓
-演算法與演算模組
+Page Composition
   ↓
-時間中的推演
+UI / Search / RAG / Analysis
 ```
+
+- **Scope**：資料與治理權威邊界；依實際 instance 管理，不存在永久固定的通用清單。
+- **Feature**：可跨 Scope 重用的能力，例如搜尋、脈絡、Graph、音樂、文字、治理分析、時間分析等；Feature 不取得資料 ownership。
+- **Page Composition**：頁面把 Scope 與 Features 組合成使用介面；NAV 與 UI 是治理後的 projection，不是 Canon 來源。
+- **Historical LOC1–8**：只保留於歷史文件、provenance 或 compatibility metadata；不再作 Current 架構或責任識別。
 
 ---
 
