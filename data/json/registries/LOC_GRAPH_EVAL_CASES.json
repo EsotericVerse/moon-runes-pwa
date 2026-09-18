@@ -1,16 +1,15 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC_GRAPH_EVAL_CASES",
-  "authority": "LOC7",
-  "purpose": "Deterministic regression set for LOC Graph RAG. Cases assert governed graph reachability and provenance, not generative answer wording.",
+  "purpose": "Deterministic regression set for the Current Graph RAG projection. Cases assert governed node/ERA/Feature reachability and provenance, not generative wording or historical numbered LOC ownership.",
   "metrics": [
     "seed_recall",
     "expected_node_recall",
-    "expected_loc_recall",
+    "expected_feature_recall",
     "expected_era_recall",
     "provenance_presence",
     "forbidden_node_absence",
-    "forbidden_loc_absence",
+    "forbidden_feature_absence",
     "forbidden_era_absence"
   ],
   "cases": [
@@ -21,15 +20,9 @@
         "eras": [
           "ERA-P7.2"
         ],
-        "locs": [
-          "LOC6",
-          "LOC7",
-          "LOC8"
-        ],
-        "domains": [
-          "governance",
-          "knowledge",
-          "evolution"
+        "features": [
+          "governance_analysis",
+          "temporal_analysis"
         ]
       },
       "note": "Current self-governance concept should stay anchored in the current self-governance ERA and relevant governed domains."
@@ -44,11 +37,8 @@
         "eras": [
           "ERA-P6.1"
         ],
-        "locs": [
-          "LOC8"
-        ],
-        "domains": [
-          "evolution"
+        "features": [
+          "temporal_analysis"
         ]
       },
       "note": "Luna Codex naming-history query should recover the recorded milestone and align with the current LOC-start ERA authority."
@@ -63,13 +53,9 @@
         "eras": [
           "ERA-P6.0"
         ],
-        "locs": [
-          "LOC4",
-          "LOC8"
-        ],
-        "domains": [
-          "literary",
-          "evolution"
+        "features": [
+          "writing",
+          "temporal_analysis"
         ]
       },
       "note": "Moon Speaker milestone should connect the narrative work history to the current Moon Speaker/LunaRunes ERA authority."
@@ -81,13 +67,8 @@
         "nodes": [
           "RUNE-21"
         ],
-        "locs": [
-          "LOC1",
-          "LOC8"
-        ],
-        "domains": [
-          "runes",
-          "evolution"
+        "features": [
+          "lunarunes"
         ]
       },
       "note": "Rune query should reach the governed rune anchor for 心 and recorded temporal observations."
@@ -102,11 +83,9 @@
         "eras": [
           "ERA-P7.2"
         ],
-        "locs": [
-          "LOC8"
-        ],
-        "domains": [
-          "evolution"
+        "features": [
+          "era",
+          "temporal_analysis"
         ]
       },
       "note": "Direct current ERA query should stay on the governed temporal backbone."
@@ -130,9 +109,6 @@
       "expect": {
         "forbidden_eras": [
           "ERA-P7.2"
-        ],
-        "forbidden_locs": [
-          "LOC3"
         ]
       },
       "note": "The recorded novel milestone must not be misrouted as current self-governance-era evidence."
@@ -153,9 +129,16 @@
   ],
   "governance": [
     "Evaluation cases assert graph structure and provenance only; they do not promote semantic similarity into canonical edges.",
-    "A case may be updated only when the upstream registry/event/ERA authority changes.",
-    "Private live Google Sheet Relation rows must never be required by the public evaluation set."
+    "Feature expectations describe reusable Current capabilities and never imply ownership.",
+    "Historical LOC1–8 routing is not a valid Current evaluation dimension.",
+    "A case may be updated only when the upstream governed source/event/ERA evidence changes.",
+    "Private live relation rows must never be required by the public evaluation set."
   ],
-  "authority_domain": "knowledge",
-  "updated_at": "2026-09-09"
+  "updated_at": "2026-09-18",
+  "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
+  "feature_ids": [
+    "context_graph",
+    "rag",
+    "regression_validation"
+  ]
 }
