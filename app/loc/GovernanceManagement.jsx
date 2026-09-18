@@ -13,8 +13,8 @@ export default function GovernanceManagement(){
     try{
       const [eras,daily,events,relations]=await fetchLocJsonBatch([
         LOC_DATA.LOC_ERA_REGISTRY,
-        LOC_DATA.DAILY_RUNE_REPO_HISTORY||LOC_DATA.LOC8_DAILY_RUNE_REPO_HISTORY,
-        LOC_DATA.LOC8_EVENT_SNAPSHOT,
+        LOC_DATA.DAILY_RUNE_REPO_HISTORY,
+        LOC_DATA.EVENT_SNAPSHOT,
         LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY
       ],{concurrency:2});
       setShared({
