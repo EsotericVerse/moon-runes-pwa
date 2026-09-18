@@ -1,4 +1,3 @@
-import ThemeControl from '../../loc/ThemeControl';
 import LocaleControl from '../../loc/LocaleControl';
 
 export const metadata={title:'符文治理｜LunaRunes'};
@@ -50,11 +49,12 @@ export default function RunesGovernancePage(){
     <section className="loc-card" id="settings">
       <p className="loc-eyebrow">Settings</p>
       <h2>設定</h2>
-      <p>這裡只調整 LunaRunes Scope 的顯示與使用偏好，不影響 LOC、lo3rwang 或其他 Scope。</p>
+      <p>這裡只管理 LunaRunes Scope 的預設設定，不影響其他 Scope。使用者自己的風格切換統一放在 Footer。</p>
       <div className="loc-grid two">
         <article className="loc-card">
           <h3>Theme</h3>
-          <ThemeControl/>
+          <p>管理者決定 LunaRunes 的預設風格；使用者可在 Footer 自由切換。</p>
+          <div className="loc-actions"><a className="loc-button" href="https://admin.lo3rwang.cc/management/themes">管理預設風格</a></div>
         </article>
         <article className="loc-card">
           <h3>語系</h3>
