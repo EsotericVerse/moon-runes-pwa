@@ -3,6 +3,7 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { LOC_DATA } from '../app/loc/data-paths.mjs';
 import { buildSegmentCatalog } from './partition-catalog.mjs';
+import { buildScopeRoutePolicyV2 } from './scope-route-policy.mjs';
 
 const ROOT = process.cwd();
 const PUBLIC = path.join(ROOT, 'public');
@@ -159,6 +160,9 @@ async function buildDataIndex(versionManifest) {
 await rm(PUBLIC, { recursive: true, force: true });
 await mkdir(PUBLIC, { recursive: true });
 
+const scopeRoutePolicy = buildScopeRoutePolicyV2();
+await writeFile(path.join(PUBLIC, 'scope-route-policy.json'), `${JSON.stringify(scopeRoutePolicy, null, 2)}\n`, 'utf8');
+
 for (const rel of [
   'assets/lunarunes/cards', 'assets/lunarunes/reference', 'assets/site/diagrams', 'assets/site/icons',
   'data/html/runes-beginner.html', 'docs/LOC_Canon_1.0.docx', 'LunarRunesCardCut.pdf',
@@ -174,4 +178,4 @@ for (const rel of jsonFiles) await copyPath(rel);
 
 const versionManifest = await buildDataVersionManifest(jsonFiles);
 const dataIndex = await buildDataIndex(versionManifest);
-console.log(`Prepared Next public payload with ${jsonFiles.size} explicit JSON files; core=${versionManifest.tiers.core.files}, on-demand=${versionManifest.tiers['on-demand'].files}; datasets=${dataIndex.totals.datasets}, segments=${dataIndex.totals.segments}; data version ${versionManifest.version.slice(0, 12)}.`);
+console.log(`Prepared Next public payload with ${jsonFiles.size} explicit JSON files; core=${versionManifest.tiers.core.files}, on-demand=${versionManifest.tiers['on-demand'].files}; datasets=${dataIndex.totals.datasets}, segments=${dataIndex.totals.segments}; scope hosts=${Object.keys(scopeRoutePolicy.hosts).length}; data version ${versionManifest.version.slice(0, 12)}.`);
