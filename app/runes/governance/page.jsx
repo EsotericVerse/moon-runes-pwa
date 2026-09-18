@@ -1,5 +1,3 @@
-import {redirect} from 'next/navigation';
-
-export default function RunesGovernanceCompatibilityPage(){
-  redirect('https://lrunes.lo3rwang.cc/governance');
-}
+import LocApp from '../../loc/LocApp';
+export const metadata={title:'治理｜月之符文｜LOC'};
+export default function Page(){return <LocApp forcedView="governance"/>;}
