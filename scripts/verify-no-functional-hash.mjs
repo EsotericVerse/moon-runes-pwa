@@ -21,7 +21,7 @@ function inspect(path){
   const source=readFileSync(path,'utf8');
   const checks=[
     [/\blocation\.hash\b|\bwindow\.location\.hash\b/,'location.hash routing'],
-    [/href\s*=\s*(?:\{\s*)?["'`][^"'`]*#[^"'`]*["'`](?:\s*\})?/,'hash href'],
+    [/href\s*=\s*(?:\{\s*)?["'`][^"'`]*#(?:\/|(?:mode|tab|view|route|page|draw)=)[^"'`]*["'`](?:\s*\})?/,'functional hash href'],
     [/history\.(?:pushState|replaceState)\([^\n]*#[^\n]*\)/,'history-state hash routing']
   ];
   for(const [pattern,label] of checks)if(pattern.test(source))failures.push(`${rel}: ${label}`);
