@@ -62,3 +62,7 @@ Domains are divided by responsibility, not by LOC1–8 numbering.
 ## Routing priority
 
 網域優先，目錄其次，頁面最後。
+
+### `lo3rwang.lo3rwang.cc`
+
+Current personal homepage domain. Deployment maps this domain to the exported `/lo3rwang/` route, with `loc.lo3rwang.cc/lo3rwang/` as the path-form equivalent. The canonical source is `app/lo3rwang/page.jsx`; `app/author/*` and `lo3rwang.html` are retired and must not be restored.
