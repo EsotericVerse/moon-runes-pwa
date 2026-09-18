@@ -2,7 +2,6 @@ import { betterAuth } from 'better-auth';
 
 const SESSION_TTL_SECONDS = 60 * 60 * 2;
 const AUTH_PATH = '/api/auth';
-const MANAGEMENT_STATE_PATH = '/management/state';
 const BUILD = '2026-09-14-better-auth-google-v3';
 
 function splitList(value = '') {
@@ -137,49 +136,6 @@ async function getManagementSession(request, env) {
   return { session, authorized };
 }
 
-function stateProxyConfig(env) {
-  return {
-    baseURL: String(env.LOC_STATE_URL || '').trim().replace(/\/+$/, ''),
-    writeToken: String(env.LOC_WRITE_TOKEN || '').trim()
-  };
-}
-
-async function proxyManagedState(request, env, url) {
-  const { session, authorized } = await getManagementSession(request, env);
-  if (!session || !authorized) {
-    return json({ ok: false, error: 'management_access_denied', build: BUILD }, { status: 401, headers: corsHeaders(request, env) });
-  }
-
-  const { baseURL, writeToken } = stateProxyConfig(env);
-  if (!baseURL || !writeToken) {
-    return json({ ok: false, error: 'state_proxy_not_configured', build: BUILD }, { status: 503, headers: corsHeaders(request, env) });
-  }
-
-  const suffix = url.pathname.slice(MANAGEMENT_STATE_PATH.length) || '/';
-  if (!['/eras', '/daily-runes', '/context'].includes(suffix)) {
-    return json({ ok: false, error: 'state_path_not_allowed', build: BUILD }, { status: 404, headers: corsHeaders(request, env) });
-  }
-
-  if (!['POST', 'PUT', 'DELETE'].includes(request.method)) {
-    return json({ ok: false, error: 'method_not_allowed', build: BUILD }, { status: 405, headers: corsHeaders(request, env) });
-  }
-
-  const target = new URL(`${baseURL}${suffix}`);
-  target.search = url.search;
-  const headers = new Headers();
-  headers.set('authorization', `Bearer ${writeToken}`);
-  const contentType = request.headers.get('content-type');
-  if (contentType) headers.set('content-type', contentType);
-
-  const response = await fetch(target, {
-    method: request.method,
-    headers,
-    body: request.body,
-    redirect: 'manual'
-  });
-  return withCors(response, request, env);
-}
-
 export default {
   async fetch(request, env) {
     const cors = corsHeaders(request, env);
@@ -192,13 +148,12 @@ export default {
 
     const url = new URL(request.url);
     if (url.pathname === '/' || url.pathname === '/health') {
-      const stateProxy = stateProxyConfig(env);
       return json({
         ok: true,
         service: 'loc-auth',
         provider: 'google',
         session_ttl_seconds: SESSION_TTL_SECONDS,
-        management_state_proxy: Boolean(stateProxy.baseURL && stateProxy.writeToken),
+        data_provider: 'neon',
         build: BUILD
       }, { headers: cors });
     }
@@ -216,9 +171,6 @@ export default {
       }, { status: allowed ? 200 : 401, headers: cors });
     }
 
-    if (url.pathname === MANAGEMENT_STATE_PATH || url.pathname.startsWith(`${MANAGEMENT_STATE_PATH}/`)) {
-      return proxyManagedState(request, env, url);
-    }
 
     if (url.pathname === AUTH_PATH || url.pathname.startsWith(`${AUTH_PATH}/`)) {
       const auth = createAuth(env);
