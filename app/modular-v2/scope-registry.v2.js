@@ -18,7 +18,7 @@ export const SCOPES_V2=Object.freeze({
   loc:Object.freeze({
     id:'loc',domain:'loc.lo3rwang.cc',label:'月典',
     primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:'作者介紹',href:'https://lo3rwang.lo3rwang.cc/'}),
+    role:Object.freeze({label:'作者介紹',href:'https://dlwang.lo3rwang.cc/'}),
     homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
     searchCollection:'all',
     dataViews:Object.freeze({context:'loc_context_entries',rankings:'loc_rankings'}),
@@ -37,11 +37,11 @@ export const SCOPES_V2=Object.freeze({
     theme:Object.freeze({mode:'fixed',theme:'theme-5',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   }),
   lo3rwang:Object.freeze({
-    id:'lo3rwang',domain:'lo3rwang.lo3rwang.cc',label:'作者簡介',
-    primary:Object.freeze({label:'簡介',href:'https://lo3rwang.lo3rwang.cc/'}),
+    id:'lo3rwang',domain:'dlwang.lo3rwang.cc',label:'作者簡介',
+    primary:Object.freeze({label:'簡介',href:'https://dlwang.lo3rwang.cc/'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
-      {label:'回作者簡介',href:'https://lo3rwang.lo3rwang.cc/'},
+      {label:'回作者簡介',href:'https://dlwang.lo3rwang.cc/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'政德文化',
