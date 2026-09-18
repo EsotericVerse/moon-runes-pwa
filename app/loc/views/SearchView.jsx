@@ -48,7 +48,7 @@ export default function SearchView(){
     event.preventDefault();
     const q=query.trim();
     if(!q)return;
-    const landing=resolveReservedLanding(q);
+    const landing=resolveReservedLanding(q,window.location.hostname);
     if(landing){window.location.assign(landing);return;}
     const collection=getSearchCollection(collectionId);
     const activeScope=readSearchScope(new URL(window.location.href).searchParams,collection.scopeProfile);
