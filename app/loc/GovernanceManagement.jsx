@@ -4,87 +4,65 @@ import { useEffect, useState } from 'react';
 import {
   getManagementSession,
   managementAuthConfigured,
-  managementStateWrite,
   signInManagementWithGoogle,
   signOutManagement
 } from './auth-client';
-import {
-  getKvContext,
-  getKvDailyRunes,
-  getKvEras,
-  getKvStateHealth,
-  kvStateConfigured
-} from './kv-state';
+import { fetchLocJsonBatch, LOC_DATA } from './data';
 
 export default function GovernanceManagement(){
-  const configured = managementAuthConfigured();
-  const stateConfigured = kvStateConfigured();
-  const [state,setState] = useState({ loading: configured, session: null, error: '' });
-  const [shared,setShared] = useState({ loading:false, health:null, eras:[], daily:[], events:[], relations:[], error:'' });
-  const [probe,setProbe] = useState({ running:false, ok:false, message:'' });
+  const configured=managementAuthConfigured();
+  const [state,setState]=useState({loading:configured,session:null,error:''});
+  const [shared,setShared]=useState({loading:false,eras:[],daily:[],events:[],relations:[],error:''});
 
-  const loadShared = async()=>{
-    if(!stateConfigured) return;
-    setShared(current=>({ ...current, loading:true, error:'' }));
+  const loadShared=async()=>{
+    setShared(current=>({...current,loading:true,error:''}));
     try{
-      const [health,eras,daily,events,relations] = await Promise.all([
-        getKvStateHealth(),
-        getKvEras(),
-        getKvDailyRunes(400),
-        getKvContext('events'),
-        getKvContext('relations')
-      ]);
-      setShared({ loading:false, health, eras, daily, events, relations, error:'' });
+      const [eras,daily,events,relations]=await fetchLocJsonBatch([
+        LOC_DATA.LOC_ERA_REGISTRY,
+        LOC_DATA.DAILY_RUNE_REPO_HISTORY||LOC_DATA.LOC8_DAILY_RUNE_REPO_HISTORY,
+        LOC_DATA.LOC8_EVENT_SNAPSHOT,
+        LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY
+      ],{concurrency:2});
+      setShared({
+        loading:false,
+        eras:Array.isArray(eras)?eras:(eras?.eras||[]),
+        daily:Array.isArray(daily)?daily:(daily?.daily_draws||[]),
+        events:Array.isArray(events)?events:(events?.events||[]),
+        relations:Array.isArray(relations)?relations:(relations?.relations||[]),
+        error:''
+      });
     }catch(error){
-      setShared(current=>({ ...current, loading:false, error:String(error?.message || error) }));
+      setShared(current=>({...current,loading:false,error:String(error?.message||error)}));
     }
   };
 
   useEffect(()=>{
-    if(!configured) return;
-    let alive = true;
+    if(!configured)return;
+    let alive=true;
     getManagementSession()
       .then(session=>{
-        if(!alive) return;
-        setState({ loading:false, session, error:'' });
-        if(session) loadShared();
+        if(!alive)return;
+        setState({loading:false,session,error:''});
+        if(session)loadShared();
       })
-      .catch(error=>{ if(alive) setState({ loading:false, session:null, error:String(error?.message || error) }); });
-    return ()=>{ alive=false; };
+      .catch(error=>{if(alive)setState({loading:false,session:null,error:String(error?.message||error)});});
+    return()=>{alive=false;};
   },[configured]);
 
-  const login = async()=>{
-    setState(current=>({ ...current, error:'' }));
-    try{
-      await signInManagementWithGoogle('/management');
-    }catch(error){
-      setState(current=>({ ...current, error:String(error?.message || error) }));
-    }
+  const login=async()=>{
+    setState(current=>({...current,error:''}));
+    try{await signInManagementWithGoogle('/management');}
+    catch(error){setState(current=>({...current,error:String(error?.message||error)}));}
   };
 
-  const logout = async()=>{
-    setState(current=>({ ...current, error:'' }));
+  const logout=async()=>{
+    setState(current=>({...current,error:''}));
     try{
       await signOutManagement();
-      setState({ loading:false, session:null, error:'' });
-      setShared({ loading:false, health:null, eras:[], daily:[], events:[], relations:[], error:'' });
-      setProbe({ running:false, ok:false, message:'' });
+      setState({loading:false,session:null,error:''});
+      setShared({loading:false,eras:[],daily:[],events:[],relations:[],error:''});
     }catch(error){
-      setState(current=>({ ...current, error:String(error?.message || error) }));
-    }
-  };
-
-  const verifyWriteChain = async()=>{
-    setProbe({ running:true, ok:false, message:'' });
-    try{
-      await managementStateWrite('/context', {
-        method:'POST',
-        body:{ action:'delete_event', id:'__loc_management_probe__' }
-      });
-      setProbe({ running:false, ok:true, message:'管理寫入鏈已通過：Management → Auth Worker → State Worker。未新增或刪除實際紀錄。' });
-      await loadShared();
-    }catch(error){
-      setProbe({ running:false, ok:false, message:`寫入鏈驗證失敗：${String(error?.message || error)}` });
+      setState(current=>({...current,error:String(error?.message||error)}));
     }
   };
 
@@ -99,41 +77,28 @@ export default function GovernanceManagement(){
   return <section className="loc-card" id="management">
     <p className="loc-eyebrow">Governance Management</p>
     <h2>治理管理</h2>
-    <p className="loc-subtitle">共享資料修改需要管理權限；公開頁面維持唯讀。</p>
-    <p>管理範圍包含 Scope 與關係、資料納入／移除審核、各 Scope 的 ERA、修正標記、統合設定，以及搜尋、統計與排行榜的差異更新。實際可寫入項目仍依目前部署的權限與資料契約開放。</p>
-    {state.loading && <p>正在確認管理 session…</p>}
-    {!state.loading && !state.session && <button type="button" onClick={login}>使用 Google 驗證管理權限</button>}
-    {!state.loading && state.session && <>
+    <p className="loc-subtitle">共享資料讀取已統一由 Neon Current projection 提供；公開頁面維持唯讀。</p>
+    {state.loading&&<p>正在確認管理 session…</p>}
+    {!state.loading&&!state.session&&<button type="button" onClick={login}>使用 Google 驗證管理權限</button>}
+    {!state.loading&&state.session&&<>
       <p><strong>管理 session 有效。</strong></p>
-      {state.session?.session_expires_at && <p>到期時間：{String(state.session.session_expires_at)}</p>}
-
+      {state.session?.session_expires_at&&<p>到期時間：{String(state.session.session_expires_at)}</p>}
       <hr/>
-      <h3>共享 State 狀態</h3>
-      {!stateConfigured && <p role="alert">尚未設定 NEXT_PUBLIC_LOC_STATE_URL。</p>}
-      {stateConfigured && shared.loading && <p>正在讀取 State Worker…</p>}
-      {stateConfigured && !shared.loading && !shared.error && <>
-        <p><strong>State Worker：</strong>{shared.health?.ok ? '正常' : '異常'}</p>
+      <h3>Neon 共享資料狀態</h3>
+      {shared.loading&&<p>正在讀取 Neon Data API…</p>}
+      {!shared.loading&&!shared.error&&<>
         <ul>
           <li>ERA：{shared.eras.length}</li>
           <li>每日符文：{shared.daily.length}</li>
           <li>Context 事件：{shared.events.length}</li>
           <li>Context 關係：{shared.relations.length}</li>
         </ul>
-        <button type="button" onClick={loadShared}>重新讀取 State</button>
+        <button type="button" onClick={loadShared}>重新讀取 Neon</button>
       </>}
-      {shared.error && <p role="alert">State 讀取失敗：{shared.error}</p>}
-
-      <hr/>
-      <h3>授權寫入鏈驗證</h3>
-      <p>此驗證只對不存在的測試 ID 執行刪除請求，用來確認管理 session、Auth Worker proxy 與 State Worker 寫入授權；不新增或刪除實際紀錄。</p>
-      <button type="button" onClick={verifyWriteChain} disabled={probe.running || !stateConfigured}>
-        {probe.running ? '正在驗證…' : '驗證管理寫入鏈'}
-      </button>
-      {probe.message && <p role="status"><strong>{probe.ok ? '通過：' : ''}</strong>{probe.message}</p>}
-
+      {shared.error&&<p role="alert">Neon 讀取失敗：{shared.error}</p>}
       <hr/>
       <button type="button" onClick={logout}>登出管理</button>
     </>}
-    {state.error && <p role="alert">{state.error}</p>}
+    {state.error&&<p role="alert">{state.error}</p>}
   </section>;
 }
