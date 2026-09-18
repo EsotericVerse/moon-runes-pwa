@@ -84,7 +84,7 @@
       "title": "衍生詞主體性轉移",
       "before": "Graph 主要呈現符文、關鍵詞與群組關係。",
       "after": "另外記錄 surface composition、semantic owner、ambiguous、head ownership 與 lexicalized shift。",
-      "effect": "Graph 從對照表升級為可觀察語意依存與主體性轉移的符號式語言模組。"
+      "effect": "Graph 從對照表升級為可觀察語意依存與主體性轉移的符號式語言。"
     },
     {
       "order": 6,
