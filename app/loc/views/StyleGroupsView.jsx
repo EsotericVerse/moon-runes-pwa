@@ -85,7 +85,7 @@ export default function StyleGroupsView({embedded=false}){
 
     <section className="loc-card">
       <p className="loc-eyebrow">Exact-match test</p>
-      <h2>本機分類測試</h2>
+      <h2>即時分類測試</h2>
       <textarea className="loc-textarea" rows="4" value={testText} onChange={e=>setTestText(e.target.value)} placeholder="輸入一段文字，立即用目前群組設定比對。"/>
       {testResult&&<div className="loc-chip-list">{testResult.matches.map(item=><span key={item.id}>{item.name}{item.hits.length?` · ${item.hits.join('、')}`:' · fallback'}</span>)}</div>}
     </section>
