@@ -1,36 +1,53 @@
 # Authentication architecture
 
-Management authentication and LOC data delivery are separate concerns.
+## Current authentication
 
-## Management authentication
+The Current application uses Neon Managed Auth. The browser initializes `@neondatabase/neon-js` with the Neon HTTPS database endpoint and uses the managed Google OAuth flow.
 
-`services/cloudflare/auth-worker.js` provides the management Google OAuth/session boundary. It validates the administrator allowlist and issues a fixed two-hour secure HttpOnly session. It does not own, proxy, or mutate shared LOC state.
+The authenticated JWT is forwarded by the Neon client to the Data API, where PostgreSQL RLS controls personal records and settings.
 
-`app/loc/auth-client.js` only starts sign-in/sign-out and checks `/management/session`.
+## Data boundaries
 
-## Shared LOC data
-
-Shared/canonical LOC runtime data is delivered directly from Neon Data API through `api.runtime_json_documents`. Public runtime access is read-only. No Cloudflare KV state proxy, Vercel KV, browser database credential, or server-side Postgres credential is used by the static frontend.
-
-Public/current data flow:
+### Public/shared Current data
 
 ```text
 Static Next frontend
   -> Neon Data API
   -> api.runtime_json_documents
-  -> governed Current payload
+  -> read-only governed Current payload
 ```
 
-## Google Drive
+Public roles receive SELECT-only access to the governed runtime projection.
 
-Google Drive OAuth remains a separate, user-initiated backup path for browser-local working records. It uses `drive.appdata`; its access token is kept in browser module memory and is unrelated to shared LOC data.
+### Authenticated personal data
 
-## Credential boundaries
+```text
+Next.js client
+  -> Neon Managed Auth
+  -> authenticated JWT
+  -> Neon Data API
+  -> api.user_records / api.user_settings
+  -> RLS: auth.user_id() = owner_id
+```
 
-- Server-only management auth secrets: `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_SECRET`, `LOC_ADMIN_EMAILS`.
-- Browser-visible configuration: `NEXT_PUBLIC_LOC_AUTH_URL`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, and optional `NEXT_PUBLIC_NEON_DATA_API_URL`.
-- The Neon Data API URL is an endpoint identifier, not a database password. Access control is enforced by the Data API/Postgres role grants.
-- Shared LOC runtime must remain read-only for anonymous/public access.
-- User-owned records must not be moved to anonymous database writes; remote writes require authenticated/RLS-governed tables.
+`api.user_records` stores user-owned records such as selected draw history, Library text, and classification results. `api.user_settings` stores personal style, style groups, theme, language, and UI preferences.
 
-`npm run verify:auth` verifies the management session boundary and also prevents the retired KV state proxy/deployment path from returning.
+Anonymous users may browse/use public features but cannot CRUD personal tables.
+
+## Retired paths
+
+The Current application does not use:
+
+- Vercel KV;
+- Cloudflare KV;
+- Cloudflare management-auth/state proxy;
+- IndexedDB as durable persistence;
+- Google Drive as an application persistence provider.
+
+A temporary browser migration helper may read legacy IndexedDB/localStorage only once after successful Neon login, migrate those values into the authenticated Neon tables, and remove the old browser storage.
+
+## Credential boundary
+
+No Postgres password is exposed to the browser. The public Neon endpoint identifies the service; authentication and database permissions are enforced by Managed Auth, Data API roles, and RLS.
+
+`npm run verify:auth` guards this architecture against reintroducing retired persistence/auth paths.

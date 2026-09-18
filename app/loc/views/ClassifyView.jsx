@@ -1,13 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { localRecordStorage } from '../storage';
-import { useLocalStore } from '../local-store';
+import { putNeonRecord } from '../neon-user-storage';
+import { useNeonSetting } from '../use-neon-setting';
 import { classifyText } from '../model/style-classifier';
 import { createLibraryRecord, INITIAL_STYLE_PROFILE, STYLE_STORAGE_KEY } from '../model/style-profile';
 
 export default function ClassifyView(){
-  const {value:profile}=useLocalStore(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
+  const {value:profile,account}=useNeonSetting(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
   const [title,setTitle]=useState('');
   const [text,setText]=useState('');
   const [source,setSource]=useState('manual');
@@ -17,7 +17,8 @@ export default function ClassifyView(){
   async function save(){
     if(!text.trim())return;
     const record=createLibraryRecord({title,text,source,classification:result});
-    await localRecordStorage.put(record);
+    if(!account.user){setMessage('請先登入 Neon，再儲存分類結果。');return;}
+    await putNeonRecord(record);
     setMessage(`已存入資料庫：${record.title}`);
   }
 
@@ -48,7 +49,8 @@ export default function ClassifyView(){
       </div>
       <div className="loc-actions">
         <label className="loc-button">載入 TXT／MD<input className="loc-hidden-input" type="file" accept="text/plain,text/markdown,.txt,.md" onChange={loadTextFile}/></label>
-        <button className="loc-button primary" onClick={save} disabled={!text.trim()}>分類並儲存</button>
+{!account.user&&<button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>}
+        <button className="loc-button primary" onClick={save} disabled={!text.trim()||!account.user}>分類並儲存到 Neon</button>
         <button className="loc-button" onClick={()=>{setTitle('');setText('');setSource('manual');setMessage('')}}>清除</button>
       </div>
       {message&&<p className="loc-status">{message}</p>}

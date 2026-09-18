@@ -96,10 +96,16 @@ walk(resolve(root, 'app/loc/views'), path => {
   const rel = relative(root, path).replaceAll('\\', '/');
   const text = readFileSync(path, 'utf8');
   if (/['"`]\/data\/json\//.test(text)) failures.push(`${rel}: hardcoded /data/json path; register it in LOC_DATA`);
-  if (/from\s+['"]\.\.\/(?:local-db|google-drive|kv-state)['"]/.test(text)) {
-    failures.push(`${rel}: storage providers must be accessed through ../storage facade`);
+  if (/from\s+['"]\.\.\/(?:local-db|google-drive|kv-state|storage)['"]/.test(text)) {
+    failures.push(`${rel}: retired browser/KV storage provider import`);
   }
 });
+
+for(const retired of ['app/loc/local-db.js','app/loc/google-drive.js','app/loc/storage.js','app/loc/auth-client.js']){
+  if(existsSync(resolve(root,retired)))failures.push(`${retired}: retired persistence/auth module must remain removed`);
+}
+const neonUserStorage=readFileSync(resolve(root,'app/loc/neon-user-storage.js'),'utf8');
+if(!/user_records/.test(neonUserStorage)||!/user_settings/.test(neonUserStorage))failures.push('Neon user persistence contract missing');
 
 const dataRuntime = readFileSync(resolve(root, 'app/loc/data.js'), 'utf8');
 if (!/DEFAULT_GLOBAL_CONCURRENCY\s*=\s*2\b/.test(dataRuntime)) failures.push('app/loc/data.js: global JSON concurrency budget must remain 2');

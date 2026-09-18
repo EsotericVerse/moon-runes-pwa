@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import ThemeControl from '../ThemeControl';
-import { localRecordStorage } from '../storage';
+import { listNeonRecords } from '../neon-user-storage';
+import { useNeonSetting } from '../use-neon-setting';
 import { useLocalStore } from '../local-store';
 import { INITIAL_MY_STYLE, INITIAL_STYLE_PROFILE, LIBRARY_RECORD_TYPE, MY_STYLE_STORAGE_KEY, STYLE_STORAGE_KEY } from '../model/style-profile';
 import StyleGroupsView from './StyleGroupsView';
@@ -34,12 +35,12 @@ const AUTHOR_LINES = [
 ];
 
 export default function MyStyleView(){
-  const {value:profile}=useLocalStore(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
-  const {value:meta,setValue:setMeta}=useLocalStore(MY_STYLE_STORAGE_KEY,INITIAL_MY_STYLE);
+  const {value:profile,account}=useNeonSetting(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
+  const {value:meta,setValue:setMeta}=useNeonSetting(MY_STYLE_STORAGE_KEY,INITIAL_MY_STYLE);
   const {value:uiSettings,setValue:setUiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [records,setRecords]=useState([]);
 
-  useEffect(()=>{localRecordStorage.list(LIBRARY_RECORD_TYPE).then(setRecords)},[]);
+  useEffect(()=>{if(account.user)listNeonRecords(LIBRARY_RECORD_TYPE).then(setRecords).catch(()=>setRecords([]));else setRecords([])},[account.user?.id]);
 
   const stats=useMemo(()=>{
     const groupCounts=new Map();
@@ -68,7 +69,7 @@ export default function MyStyleView(){
     <header className="loc-hero">
       <p className="loc-eyebrow">Personal Settings · 個人設定</p>
       <h1>個人設定</h1>
-      <p>顯示、抽牌反應、列表筆數、個人風格與群組規則都集中在本機設定。設定預設只存在這台瀏覽器，不因一般操作自動連線同步。</p>
+      <p>個人風格、群組規則、分類資料與介面偏好統一同步到 Neon；登入後可跨裝置使用同一組設定。</p>
     </header>
 
     <section className="loc-card">
@@ -90,7 +91,7 @@ export default function MyStyleView(){
         <label>符文圖鑑每頁<input value="8 枚（固定）" readOnly/></label>
       </div>
       <p className="loc-note">符文圖鑑固定每頁 8 枚，不受一般列表設定影響；其他支援分頁的列表預設 10 筆，可由這裡調整。</p>
-      <div className="loc-actions"><a className="loc-button" href="/library">Database · 資料庫</a><a className="loc-button" href="/classify">分類</a><a className="loc-button" href="/governance">治理</a></div>
+      <div className="loc-actions">{!account.user&&<button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>}<a className="loc-button" href="/library">Database · 資料庫</a><a className="loc-button" href="/classify">分類</a><a className="loc-button" href="/governance">治理</a></div>
     </section>
 
     <section className="loc-card">
@@ -100,7 +101,7 @@ export default function MyStyleView(){
         <label>風格名稱<input value={meta?.name||''} onChange={e=>setMeta(current=>({...current,name:e.target.value}))}/></label>
         <label>說明<input value={meta?.description||''} onChange={e=>setMeta(current=>({...current,description:e.target.value}))}/></label>
       </div>
-      <p>{meta?.description||'由本機資料庫的分類結果統計形成。'} 不另建語意資料庫；Database 是來源，群組設定是規則。</p>
+      <p>{meta?.description||'由 Neon Library 的分類結果統計形成。'} Database 是來源，群組設定是規則。</p>
     </section>
 
     <StyleGroupsView embedded />

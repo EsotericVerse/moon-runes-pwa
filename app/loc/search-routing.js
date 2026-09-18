@@ -2,9 +2,9 @@
 
 import { getLocDataDataset } from './data';
 
-const STORAGE_KEY='loc-search-segment-routing-v1';
 const MAX_KEYS=256;
 const MAX_SEGMENTS_PER_KEY=12;
+const runtimeStore={};
 
 function tokens(value){
   const text=String(value||'').normalize('NFKC').toLocaleLowerCase('zh-Hant');
@@ -24,8 +24,6 @@ async function digest(value){
 }
 
 async function queryKeys(query){return Promise.all(tokens(query).map(digest));}
-function readStore(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch{return {}}}
-function writeStore(store){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(store))}catch{}}
 
 async function candidateSegments(datasetId,segments,keys){
   let dataset;
@@ -36,11 +34,8 @@ async function candidateSegments(datasetId,segments,keys){
   const truncated=new Set(Array.isArray(routingIndex?.truncated_keys)?routingIndex.truncated_keys:[]);
   if(keys.some(key=>truncated.has(key)))return segments;
   const ids=new Set();
-  for(const key of keys){
-    for(const id of Array.isArray(index[key])?index[key]:[])ids.add(id);
-  }
-  if(!ids.size)return segments;
-  return segments.filter(segment=>ids.has(segment.id));
+  for(const key of keys)for(const id of Array.isArray(index[key])?index[key]:[])ids.add(id);
+  return ids.size?segments.filter(segment=>ids.has(segment.id)):segments;
 }
 
 export async function rankSearchSegments(datasetId,segments,query){
@@ -48,31 +43,21 @@ export async function rankSearchSegments(datasetId,segments,query){
   const keys=await queryKeys(query);
   if(!keys.length)return segments;
   const routedSegments=await candidateSegments(datasetId,segments,keys);
-  const store=readStore();
-  const buildKeySets=new Map(
-    routedSegments.map(segment=>[segment.id,new Set(Array.isArray(segment.routing_keys)?segment.routing_keys:[])])
-  );
+  const buildKeySets=new Map(routedSegments.map(segment=>[segment.id,new Set(Array.isArray(segment.routing_keys)?segment.routing_keys:[])]));
   const buildScore=segment=>keys.reduce((sum,key)=>sum+(buildKeySets.get(segment.id)?.has(key)?1:0),0);
-  const learnedScore=segment=>keys.reduce((sum,key)=>sum+Number(store?.[datasetId]?.[key]?.[segment.id]||0),0);
-  return [...routedSegments].sort((a,b)=>
-    buildScore(b)-buildScore(a)
-    ||learnedScore(b)-learnedScore(a)
-    ||Number(a.sequence||0)-Number(b.sequence||0)
-  );
+  const learnedScore=segment=>keys.reduce((sum,key)=>sum+Number(runtimeStore?.[datasetId]?.[key]?.[segment.id]||0),0);
+  return [...routedSegments].sort((a,b)=>buildScore(b)-buildScore(a)||learnedScore(b)-learnedScore(a)||Number(a.sequence||0)-Number(b.sequence||0));
 }
 
 export async function recordSearchSegmentHits(datasetId,segmentId,query,hitCount){
   if(typeof window==='undefined'||!segmentId||hitCount<=0)return;
   const keys=await queryKeys(query);
   if(!keys.length)return;
-  const store=readStore();
-  const dataset=store[datasetId]&&typeof store[datasetId]==='object'?store[datasetId]:{};
+  const dataset=runtimeStore[datasetId]&&typeof runtimeStore[datasetId]==='object'?runtimeStore[datasetId]:{};
   for(const key of keys){
     const row=dataset[key]&&typeof dataset[key]==='object'?dataset[key]:{};
     row[segmentId]=Math.min(1000,Number(row[segmentId]||0)+hitCount);
     dataset[key]=Object.fromEntries(Object.entries(row).sort((a,b)=>b[1]-a[1]).slice(0,MAX_SEGMENTS_PER_KEY));
   }
-  const trimmed=Object.fromEntries(Object.entries(dataset).slice(-MAX_KEYS));
-  store[datasetId]=trimmed;
-  writeStore(store);
+  runtimeStore[datasetId]=Object.fromEntries(Object.entries(dataset).slice(-MAX_KEYS));
 }

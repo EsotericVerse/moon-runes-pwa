@@ -1,26 +1,21 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  backupLocalRecordsToGoogleDrive,
-  exportRecordsJson,
-  googleDriveStorage,
-  localRecordStorage,
-  mergeGoogleDriveRecordsToLocal,
-  readRecordsJsonFile
-} from '../storage';
+import { exportJson, readJsonFile } from '../file-utils';
+import { deleteNeonRecord, listNeonRecords, putNeonRecord } from '../neon-user-storage';
+import { useNeonSetting } from '../use-neon-setting';
 import { useLocalStore } from '../local-store';
 import { classifyRecords } from '../model/style-classifier';
 import { createLibraryRecord, INITIAL_STYLE_PROFILE, LIBRARY_RECORD_TYPE, STYLE_STORAGE_KEY } from '../model/style-profile';
 
-const DRIVE_FILE='loc-library.json';
+const EXPORT_FILE='loc-library.json';
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
 const byNewest=(a,b)=>String(b.updated_at||b.created_at||'').localeCompare(String(a.updated_at||a.created_at||''));
 
 export default function LibraryView(){
-  const {value:profile}=useLocalStore(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
+  const {value:profile,account}=useNeonSetting(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [records,setRecords]=useState([]);
   const [query,setQuery]=useState('');
@@ -28,14 +23,14 @@ export default function LibraryView(){
   const [message,setMessage]=useState('');
   const [progress,setProgress]=useState(null);
   const [page,setPage]=useState(1);
-  const driveReady=googleDriveStorage.configured();
   const pageSize=LIST_PAGE_OPTIONS.includes(Number(uiSettings?.list_page_size))?Number(uiSettings.list_page_size):10;
 
   async function reload(){
-    const rows=await localRecordStorage.list(LIBRARY_RECORD_TYPE);
+    if(!account.user){setRecords([]);return;}
+    const rows=await listNeonRecords(LIBRARY_RECORD_TYPE);
     setRecords(rows.sort(byNewest));
   }
-  useEffect(()=>{reload()},[]);
+  useEffect(()=>{reload().catch(error=>setMessage(`Neon 讀取失敗：${error.message}`))},[account.user?.id]);
 
   const groups=useMemo(()=>{
     const names=new Set();
@@ -55,16 +50,16 @@ export default function LibraryView(){
   useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
 
   async function remove(id){
-    await localRecordStorage.remove(id);
+    await deleteNeonRecord(id);
     await reload();
-    setMessage('已從本機 Library 刪除。');
+    setMessage('已從 Neon Library 刪除。');
   }
 
   async function reclassify(mode='all'){
     const targets=mode==='missing'?records.filter(record=>!record.classification):records;
     setProgress({processed:0,total:targets.length,percent:targets.length?0:100});
     const classified=await classifyRecords(targets,profile,{getText:item=>item.text,onProgress:setProgress});
-    for(const item of classified)await localRecordStorage.put({...item,updated_at:new Date().toISOString()});
+    for(const item of classified)await putNeonRecord({...item,updated_at:new Date().toISOString()});
     await reload();
     setMessage(`重新分類完成：${classified.length} 筆。`);
   }
@@ -78,7 +73,7 @@ export default function LibraryView(){
         ?{...raw,type:LIBRARY_RECORD_TYPE,updated_at:new Date().toISOString()}
         :createLibraryRecord({title:raw?.title,text:raw?.text??raw?.content,source:raw?.source||sourceName,classification:raw?.classification||null});
       if(!record.text)continue;
-      await localRecordStorage.put(record);count+=1;
+      await putNeonRecord(record);count+=1;
     }
     await reload();
     return count;
@@ -88,46 +83,31 @@ export default function LibraryView(){
     const file=event.target.files?.[0];
     if(!file)return;
     try{
-      const count=await storeRows(await readRecordsJsonFile(file),`import:${file.name}`);
+      const count=await storeRows(await readJsonFile(file),`import:${file.name}`);
       setMessage(`已匯入 ${count} 筆 Library 資料。`);
     }catch(error){setMessage(`匯入失敗：${error.message}`);}
     event.target.value='';
   }
 
-  async function saveDrive(){
-    try{
-      const result=await backupLocalRecordsToGoogleDrive(DRIVE_FILE,{type:LIBRARY_RECORD_TYPE,meta:{version:1}});
-      setMessage(`已備份 ${result.record_count} 筆到自己的 Google Drive。`);
-    }catch(error){setMessage(`Google Drive 備份失敗：${error.message}`)}
-  }
-  async function loadDrive(){
-    try{
-      const result=await mergeGoogleDriveRecordsToLocal(DRIVE_FILE);
-      await reload();
-      setMessage(`已從自己的 Google Drive 讀回 ${result.total} 筆。`);
-    }catch(error){setMessage(`Google Drive 讀取失敗：${error.message}`)}
-  }
 
   return <section className="loc-view">
     <header className="loc-hero">
-      <p className="loc-eyebrow">Local Library</p>
+      <p className="loc-eyebrow">Neon Library</p>
       <h1>Library</h1>
-      <p>原始文字與分類結果都存在瀏覽器 IndexedDB。修改群組規則後，可重新分類而不改寫原始文字；Google Drive 只在手動備份／讀回時使用。</p>
+      <p>原始文字與分類結果統一儲存在 Neon。修改群組規則後，可重新分類而不改寫原始文字；舊瀏覽器資料在首次登入後會自動遷移。</p>
     </header>
 
     <section className="loc-card">
       <div className="loc-actions">
-        <a className="loc-button primary" href="/classify">＋新增／分類文字</a>
-        <button className="loc-button" onClick={()=>exportRecordsJson({version:1,records},DRIVE_FILE)} disabled={!records.length}>匯出 JSON</button>
+        {!account.user&&<button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>}{account.user&&<a className="loc-button primary" href="/classify">＋新增／分類文字</a>}
+        <button className="loc-button" onClick={()=>exportJson({version:1,records},EXPORT_FILE)} disabled={!records.length}>匯出 JSON</button>
         <label className="loc-button">匯入 JSON<input className="loc-hidden-input" type="file" accept="application/json,.json" onChange={importJson}/></label>
-        <button className="loc-button" onClick={saveDrive} disabled={!driveReady||!records.length}>備份到 Google Drive</button>
-        <button className="loc-button" onClick={loadDrive} disabled={!driveReady}>從 Google Drive 讀回</button>
         <button className="loc-button" onClick={()=>reclassify('missing')} disabled={!records.length}>分類未分類資料</button>
         <button className="loc-button" onClick={()=>reclassify('all')} disabled={!records.length}>重新分類全部</button>
       </div>
       <div className="loc-metrics"><div><small>Library</small><strong>{records.length}</strong></div><div><small>目前顯示</small><strong>{filtered.length}</strong></div><div><small>已分類</small><strong>{records.filter(r=>r.classification).length}</strong></div></div>
       {progress&&<div className="loc-progress"><progress value={progress.processed} max={Math.max(progress.total,1)}/><span>{progress.processed} / {progress.total} · {progress.percent}%</span></div>}
-      <p className="loc-status">{driveReady?'Google Drive OAuth 已可用；不做背景同步。':'Google Drive OAuth 尚未設定 client ID；本機功能不受影響。'} 每頁 {pageSize} 筆。</p>
+      <p className="loc-status">{account.loading?'正在確認 Neon 帳號…':account.user?`Neon 已登入：${account.user.email||account.user.name||'使用者'}`:'尚未登入；登入後才能讀寫個人 Library。'} 每頁 {pageSize} 筆。</p>
       {message&&<p className="loc-status">{message}</p>}
     </section>
 

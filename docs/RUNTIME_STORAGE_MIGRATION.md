@@ -2,49 +2,36 @@
 
 ## Current position
 
-LOC currently runs primarily through the Next.js static/runtime path. Render and KV are not required for the present website hot path, but neither is considered retired permanently.
+LOC uses Next.js as the application layer and Neon as the Current persistence/data layer.
 
-## Primary maintenance surface
+- Shared/canonical runtime data: Neon Data API → `api.runtime_json_documents`.
+- Authenticated user records: `api.user_records`.
+- Authenticated user settings: `api.user_settings`.
+- Authentication: Neon Managed Auth.
+- Authorization: PostgreSQL RLS using `auth.user_id() = owner_id`.
 
-Next.js is the single primary application maintenance surface.
+Vercel KV and Cloudflare KV are retired. IndexedDB and Google Drive are not Current persistence providers.
 
-Daily application work should converge here: UI, routes, feature modules, Search, data loading, cache orchestration, local state, storage orchestration, dynamic loading, metadata, and PWA assembly should be implemented through the Next.js application layer whenever practical.
+## Browser role
 
-Canonical data remains independent from Next.js. Render, KV, Google Drive, or another backend remains an optional provider behind adapters / services rather than becoming a second application layer.
+The browser performs interaction, rendering, draw computation, transient React state, and bounded in-memory performance caching. Durable records or preferences are not stored as a second browser database.
 
-The maintenance target is therefore:
+A one-time compatibility migration may read old IndexedDB/localStorage data after the user signs in, write it into Neon, then remove the old browser database/settings. That migration code is transitional compatibility, not a second Current storage layer.
 
-- update canonical data once;
-- update the Next.js application layer once;
-- let shared loaders, indexes, cache engines, search logic, and storage adapters serve all relevant features;
-- do not maintain parallel UI/search/cache/data-model implementations for each backend provider.
+Search routing hints and performance telemetry may remain in process/session memory because they are disposable optimization state rather than user data or source-of-truth data.
 
-## Backend principle
+## Maintenance rule
 
-Render, KV, Google Drive, or another future backend should connect through adapter / service layers. UI, canonical records, Search, and local persistence must not become coupled to one provider.
+Do not add a second persistence authority for convenience. New durable application data must be assigned explicitly to either:
 
-## Storage roles
+1. shared/current governed Neon projections; or
+2. authenticated/RLS-governed Neon user data.
 
-Use one canonical record model with interchangeable storage adapters:
+Heavy/offline analysis may still use separate tools or services, but their output must enter the governed data pipeline before becoming Current application data.
 
-- IndexedDB: local-first browser storage for draw history, daily rune records, preferences, and offline-capable working data.
-- KV: optional lightweight remote state / synchronization backend when a remote key-value store is useful.
-- Google Drive via OAuth: user-owned remote persistence and cross-device synchronization. A typical future flow is a daily rune created or viewed on a phone, then synchronized by the authenticated user into their own Google Drive.
-- Render or another backend: optional future server-side computation, API, synchronization, or heavier service work when needed.
+## Non-goals
 
-These are storage/runtime implementations, not separate data models.
-
-## Migration rule
-
-Do not delete an integration merely because it is not active in the current Next.js runtime. Instead, distinguish between:
-
-1. durable capability that should remain possible through an adapter; and
-2. legacy provider-specific workarounds that only existed to cope with an earlier deployment constraint.
-
-Provider-specific timeout, memory, cache, or fallback logic may be simplified when the present runtime no longer needs it. General large-data safeguards such as partitioning, indexing, I/O budgets, bounded browser memory, incremental loading, and cache eviction remain valid regardless of provider.
-
-When legacy code contains application logic that can now live cleanly in Next.js, migrate that logic into shared Next.js modules and keep only the provider-specific transport or persistence implementation in the service adapter.
-
-## Design objective
-
-Next.js is the current application assembly/runtime layer, not a reason to remove future remote services. The goal is to keep the current site light while preserving a clean path to mobile, cross-device, OAuth-backed user storage, KV, and server-side services without reintroducing historical coupling or duplicate data formats.
+- Do not reintroduce KV as a fallback.
+- Do not expose Postgres credentials in the browser.
+- Do not use anonymous writes for personal data.
+- Do not treat local browser caches as source of truth.
