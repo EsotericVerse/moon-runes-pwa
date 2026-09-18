@@ -40,3 +40,7 @@ NAV 必須繼承目前 Scope。脈絡、統計、文化、治理與搜尋是共�
 ## 網域與 Feature route
 
 主要網域格式為 `(英文).lo3rwang.cc`；共用 Feature 使用 `https://(英文).lo3rwang.cc/<feature>`。例如脈絡為 `https://(英文).lo3rwang.cc/context`。網域優先，目錄其次，頁面最後。
+
+## 文化 route
+
+「文化」的 Current Feature route 固定為 `/culture`。舊 `/evolution` 僅保留相容用途，不得作為 Current NAV target 或 Current Feature identity。
