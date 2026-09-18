@@ -32,14 +32,14 @@
 
 | 區域 | 公開功能 | 受保護／管理功能 | 資料責任 |
 | --- | --- | --- | --- |
-| LunaRunes | 抽牌、每日符文、符文資料、範例 | 共享每日資料由受授權管理流程維護 | Canon/Base66 唯讀；個人紀錄 local-first |
+| LunaRunes | 抽牌、每日符文、符文資料、範例 | 共享每日資料由受授權管理流程維護 | Canon/Base66 唯讀；選擇保存的個人紀錄進入 Neon user_records |
 | Context | Graph、事件與關係 Overview / 使用 | 事件與關係共享狀態由受授權管理流程維護 | Context shared state |
 | Statistics | 排行、統計、來源狀態；首次關鍵詞解析時同步形成軌跡基礎資料 | 不放 corpus CRUD；不得手動編輯軌跡 | derived projection / trajectory derivation |
 | Culture | 時期、軌跡、文化觀察；以脈絡＋時期提供第一層進階解釋 | ERA / shared state 可由受授權管理流程維護；軌跡不可人工 CRUD | temporal/cultural projection |
 | Search | 查詢與結果 | 不放資料 CRUD | search projection |
 | Library | 典籍、作品、全文/摘要/metadata 展示 | 典籍維護由受授權管理流程處理 | corpus/library projection |
 | Governance | 各文化／系統／作者治理理念、規則與歷史的集中展示及索引 | 不以 Governance 名義承接全站 CRUD | governance discourse / references |
-| Settings | 個人設定與同步狀態 | 個人 OAuth/Drive 授權 | user-owned state |
+| Settings | 個人設定與同步狀態 | Neon Managed Auth / RLS | authenticated Neon user state |
 | Management | 不作為一般公開功能入口 | 已授權的共享資料維護與管理操作 | protected write operations |
 
 ## 資料處理鏈
@@ -86,9 +86,9 @@
 
 ## 資料層
 
-- Canon / large corpus：JSON + manifest/version + incremental sync。
-- Shared live state：KV / State API。
-- Personal data：IndexedDB local-first；Google Drive 可選備份/還原。
+- Canon / large corpus：經治理後進入 Neon Current projection；大型資料維持 manifest/shard 與按需讀取。
+- Shared Current data：Neon Data API / `api.runtime_json_documents`，公開唯讀。
+- Personal data：Neon `api.user_records` / `api.user_settings`，透過 Managed Auth + RLS 隔離。
 - Search / Statistics / Trajectory：由已確認來源產生的 projection，不是 source of truth。
 - Period / ERA：人工治理的 temporal definition；可修改，但修改只改變切分／解釋框架，不得直接覆寫自動推導的軌跡資料。
 
