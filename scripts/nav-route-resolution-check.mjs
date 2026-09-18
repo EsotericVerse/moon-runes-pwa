@@ -6,7 +6,7 @@ const names=['context','statics','culture','governance','search'];
 const cases=[
   ['loc','loc.lo3rwang.cc','https://loc.lo3rwang.cc'],
   ['runes','lrunes.lo3rwang.cc','https://lrunes.lo3rwang.cc'],
-  ['author','lo3rwang.lo3rwang.cc','https://lo3rwang.lo3rwang.cc'],
+  ['lo3rwang','lo3rwang.lo3rwang.cc','https://lo3rwang.lo3rwang.cc'],
   ['governance','admin.lo3rwang.cc','https://admin.lo3rwang.cc']
 ];
 
