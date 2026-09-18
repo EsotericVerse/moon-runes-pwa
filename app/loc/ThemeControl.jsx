@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useNeonSetting } from './use-neon-setting';
 
 function autoTheme(date=new Date()){
   const hour=date.getHours();
@@ -12,31 +13,21 @@ function applyTheme(theme){
 }
 
 export default function ThemeControl(){
-  const [theme,setTheme]=useState('system');
+  const {value:storedTheme,setValue:setTheme}=useNeonSetting('loc-theme','auto');
+  const theme=['light','dark'].includes(storedTheme)?storedTheme:'auto';
 
   useEffect(()=>{
-    const saved=window.localStorage.getItem('loc-theme');
-    const next=saved==='light'||saved==='dark'?saved:'system';
-    setTheme(next);
-    applyTheme(next);
-    if(next!=='system')return;
-    const sync=()=>applyTheme('system');
+    applyTheme(theme);
+    if(theme!=='auto')return;
+    const sync=()=>applyTheme('auto');
     const timer=window.setInterval(sync,60_000);
     document.addEventListener('visibilitychange',sync);
     return()=>{window.clearInterval(timer);document.removeEventListener('visibilitychange',sync);};
-  },[]);
-
-  function changeTheme(event){
-    const next=event.target.value;
-    setTheme(next);
-    if(next==='system')window.localStorage.removeItem('loc-theme');
-    else window.localStorage.setItem('loc-theme',next);
-    applyTheme(next);
-  }
+  },[theme]);
 
   return <label className="loc-theme-control">顯示
-    <select value={theme} onChange={changeTheme} aria-label="顯示模式">
-      <option value="system">自動（日夜）</option>
+    <select value={theme} onChange={event=>setTheme(event.target.value)} aria-label="顯示模式">
+      <option value="auto">自動（日夜）</option>
       <option value="light">白天</option>
       <option value="dark">夜晚</option>
     </select>
