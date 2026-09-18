@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import ThemeControl from '../ThemeControl';
 import { listNeonRecords } from '../neon-user-storage';
 import { useNeonSetting } from '../use-neon-setting';
 import { useLocalStore } from '../local-store';
@@ -74,8 +73,8 @@ export default function MyStyleView(){
 
     <section className="loc-card">
       <p className="loc-eyebrow">Interface · 介面</p>
-      <h2>顯示與操作</h2>
-      <ThemeControl />
+      <h2>操作設定</h2>
+      <p>Theme 切換統一放在 Footer。</p>
       <div className="loc-record-form">
         <label>抽牌反應
           <select value={drawResponse} onChange={e=>setUiSettings(current=>({...DEFAULT_UI_SETTINGS,...current,draw_response:e.target.value}))}>
