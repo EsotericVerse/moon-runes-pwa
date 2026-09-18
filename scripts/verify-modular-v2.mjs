@@ -25,7 +25,10 @@ for(const [id,domain] of Object.entries(expectedDomains)){
   if(SCOPES_V2[id]?.domain!==domain)failures.push(id+' domain mismatch');
   if(resolveScopeV2(domain)!==id)failures.push(domain+' scope mismatch');
   if(resolveScopeV2(domain+':443')!==id)failures.push(domain+' port normalization mismatch');
-  for(const feature of FEATURES_V2)if(featureHrefV2(id,feature.id)!==`https://${domain}/${feature.path}`)failures.push(id+'/'+feature.id+' route mismatch');
+  for(const feature of FEATURES_V2){
+    const expectedBase=id==='lo3rwang'?'https://loc.lo3rwang.cc/lo3rwang':`https://${domain}`;
+    if(featureHrefV2(id,feature.id)!==`${expectedBase}/${feature.path}`)failures.push(id+'/'+feature.id+' route mismatch');
+  }
 }
 
 const root=path.resolve('app/modular-v2');
@@ -64,12 +67,24 @@ for(const retiredRoute of ['app/author','app/zhengde']){
   if(fs.existsSync(path.resolve(retiredRoute)))failures.push('retired author route returned: '+retiredRoute);
 }
 const lo3rwangRoute=path.resolve('app/lo3rwang');
-if(fs.existsSync(lo3rwangRoute))failures.push('retired /lo3rwang compatibility route returned; author Scope must resolve by host only');
+if(fs.existsSync(lo3rwangRoute))failures.push('retired physical /lo3rwang route returned; Scope mount must be registry-driven');
 for(const [id,domain] of Object.entries(expectedDomains)){
-  for(const pathname of ['/','/context','/statics','/culture','/governance','/search','/lo3rwang','/runes','/management']){
-    if(resolveScopeV2(domain,pathname)!==id)failures.push(domain+' changed Scope because of path '+pathname);
+  for(const pathname of ['/','/context','/statics','/culture','/governance','/search']){
+    if(resolveScopeV2(domain,pathname)!==id)failures.push(domain+' failed direct-domain Scope resolution at '+pathname);
   }
 }
+for(const pathname of ['/lo3rwang','/lo3rwang/','/lo3rwang/context','/lo3rwang/statics','/lo3rwang/culture','/lo3rwang/governance','/lo3rwang/search']){
+  if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='lo3rwang')failures.push('author mount failed at '+pathname);
+}
+for(const pathname of ['/','/context','/culture','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
+  if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc')failures.push('bounded author mount overmatched '+pathname);
+}
+if(SCOPES_V2.lo3rwang?.alias!=='dlwang')failures.push('author alias must remain dlwang');
+if(SCOPES_V2.lo3rwang?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lo3rwang?.mount?.path!=='/lo3rwang')failures.push('author LOC mount drifted');
+const aliases=Object.values(SCOPES_V2).map(scope=>scope.alias).filter(Boolean);
+if(new Set(aliases).size!==aliases.length)failures.push('duplicate Scope alias');
+const mounts=Object.values(SCOPES_V2).filter(scope=>scope.mount).map(scope=>scope.mount.host+'|'+scope.mount.path);
+if(new Set(mounts).size!==mounts.length)failures.push('duplicate Scope mount');
 
 const currentFiles=['app/loc/search-collections.js','app/loc/GovernanceManagement.jsx'];
 for(const file of currentFiles){
@@ -80,4 +95,4 @@ const bridge=fs.readFileSync('app/migration-bridges/current-data-compat.v2.js','
 if(!/LOC[0-8]/.test(bridge))failures.push('legacy physical identifiers should be isolated in the migration bridge');
 
 if(failures.length){console.error('[modular-v2] violations:\n'+failures.join('\n'));process.exit(1);}
-console.log('[modular-v2] Current cutover verified: 4 scopes, 5 shared features, canonical author route, one scope registry, one theme registry, isolated legacy data ids');
+console.log('[modular-v2] Current cutover verified: 4 scopes, bounded alias/mount routing, 5 shared features, one scope registry, one theme registry, isolated legacy data ids');
