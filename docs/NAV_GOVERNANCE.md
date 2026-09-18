@@ -14,15 +14,15 @@
 Current Scope domain 固定為：
 
 - LOC：`loc.lo3rwang.cc`
-- LunaRunes external alias：`lrunes.lo3rwang.cc`
-- LunaRunes LOC mount：`loc.lo3rwang.cc/runes`
+- LunaRunes canonical domain：`lrunes.lo3rwang.cc`
+- LunaRunes LOC mount：`loc.lo3rwang.cc/lrunes`
 - Author external alias：`dlwang.lo3rwang.cc`
 - Author LOC mount：`loc.lo3rwang.cc/lo3rwang`
 - Admin：`admin.lo3rwang.cc`
 
 `context`、`statics`、`culture`、`governance` 與 `search` 是共用功能。功能名稱與版型共用，實際 domain、mount、資料來源、搜尋集合、首頁／角色入口與其他 Scope 差異全部由目前 Scope Registry 注入。
 
-Scope type 分為 `domain` 與 `directory`。`domain` 型的 canonical NAV／Feature URL 使用 domain；`directory` 型的 canonical NAV／Feature URL 使用明確 mount。`mount` 是一種 ingress 能力，不等於 alias，也不限於 directory Scope；因此 domain Scope 仍可同時擁有可用的 directory mount。resolver 必須同時辨識已註冊的 domain 與 mount，但產生正式連結時只服從 `scopeType`。LunaRunes 是 domain 型展示例：canonical 為 `lrunes.lo3rwang.cc`，同一 Scope 亦可由 `loc.lo3rwang.cc/runes` 進入，且 `lrunes` 不是 alias。Author 是 directory 型展示例：canonical 為 `loc.lo3rwang.cc/lo3rwang`，`dlwang.lo3rwang.cc` 才是外部 alias。
+Scope type 分為 `domain` 與 `directory`。`domain` 型的 canonical NAV／Feature URL 使用 domain；`directory` 型的 canonical NAV／Feature URL 使用明確 mount。`mount` 是一種 ingress 能力，不等於 alias，也不限於 directory Scope；因此 domain Scope 仍可同時擁有可用的 directory mount。resolver 必須同時辨識已註冊的 domain 與 mount，但產生正式連結時只服從 `scopeType`。LunaRunes 是 domain 型展示例：canonical 為 `lrunes.lo3rwang.cc`，同一 Scope 亦可由 `loc.lo3rwang.cc/lrunes` 進入，且 `lrunes` 不是 alias。Author 是 directory 型展示例：canonical 為 `loc.lo3rwang.cc/lo3rwang`，`dlwang.lo3rwang.cc` 才是外部 alias。
 
 因此修改共用 NAV renderer 或共用 CSS 時，所有 Scope 同步變更；修改單一 Scope Registry data 時，只改該 Scope 的名稱、domain、資料與必要例外。
 
