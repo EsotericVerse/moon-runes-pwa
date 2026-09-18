@@ -6,7 +6,9 @@ const failures=[];
 const expectedDomains={loc:'loc.lo3rwang.cc',runes:'lrunes.lo3rwang.cc',lo3rwang:'dlwang.lo3rwang.cc',admin:'admin.lo3rwang.cc'};
 const expectedFeatures=['context','statics','culture','governance','search'];
 
-if(JSON.stringify(Object.keys(SCOPES_V2))!==JSON.stringify(Object.keys(expectedDomains)))failures.push('scope ids mismatch');
+for(const id of Object.keys(expectedDomains)){
+  if(!SCOPES_V2[id])failures.push('missing required core Scope: '+id);
+}
 if(JSON.stringify(FEATURES_V2.map(item=>item.id))!==JSON.stringify(expectedFeatures))failures.push('feature registry mismatch');
 
 const scopeIds=Object.keys(SCOPES_V2);
@@ -187,4 +189,4 @@ if(runesCanonicalContext!=='https://lrunes.lo3rwang.cc/context')failures.push('L
 if(/lrunes\.lo3rwang\.cc\/(?:lrunes|runes)\//.test(runesCanonicalContext))failures.push('duplicated LunaRunes scope segment in canonical URL');
 
 if(failures.length){console.error('[modular-v2] violations:\n'+failures.join('\n'));process.exit(1);}
-console.log('[modular-v2] Current cutover verified: 4 scopes, bounded alias/mount routing, 5 shared features, one scope registry, one theme registry, isolated legacy data ids');
+console.log('[modular-v2] Current cutover verified: required core Scopes + extensible registry, bounded domain/mount routing, shared features, one Scope registry and isolated legacy data ids');
