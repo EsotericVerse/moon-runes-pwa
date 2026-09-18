@@ -4,7 +4,7 @@ import { join, relative, resolve } from 'node:path';
 const root=process.cwd();
 const scanRoots=['app'].map(p=>resolve(root,p));
 const forbidden=[
-  /(?:index|loc|game|context|statics|evolution|search|governance)\.html\b/g,
+  /(?:index|loc|game|context|statics|culture|search|governance)\.html\b/g,
   /css\/style\.css\b/g,
   /js\/(?:loc2-game|statics-dashboard|rune-daily-records|loc-nav)\.js\b/g
 ];
