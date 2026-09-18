@@ -6,7 +6,7 @@
 
 ## 1. Identity and purpose
 
-LOC（月典）是可公開、可移植的語言模組框架（Language Module Framework）。LunaRunes（月之符文）是具有自己 Master Data、Canon 與治理權威的符號式語言模組（Symbolic Language Module），也是參考實作；它不等於 LOC 全域。
+LOC（月典）是可公開、可移植的語言模組框架（Modelized Language Framework）。LunaRunes（月之符文）是具有自己 Master Data、Canon 與治理權威的符號式語言（Symbolic Language），也是參考實作；它不等於 LOC 全域。
 
 Canon 定義原則、權威、責任與邊界，不指定頁面框架、部署平台、主機、資料庫、快取或其他 implementation。LOC 不依賴 WordPress，也不綁定 Next.js、Vercel、Render、Supabase、KV 或任何特定供應商。
 
@@ -69,7 +69,7 @@ LunaRunes 的 Current／Historical、ERA、搜尋、統計與排行榜保持獨�
 
 ### 8.1 最小語意種子與組合式模型
 
-LunaRunes 作為符號式語言模組，不以「特立獨行」或反流行作為價值，也不以當下流行的道德判斷作為預設答案。作者方法的出發點是：**無權替其他人預先決定是非，因此系統先提供最基本的語意種子、關係與條件，保留脈絡，讓使用者依自己的情境判斷。**
+LunaRunes 作為符號式語言，不以「特立獨行」或反流行作為價值，也不以當下流行的道德判斷作為預設答案。作者方法的出發點是：**無權替其他人預先決定是非，因此系統先提供最基本的語意種子、關係與條件，保留脈絡，讓使用者依自己的情境判斷。**
 
 月之符文的核心不是把每一個特殊情況都製造成新規則，而是以有限、可辨識的基本特質作為種子，再由交互與組合描述複雜現象：
 
