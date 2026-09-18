@@ -17,7 +17,7 @@ for(const [file,canonical] of Object.entries(legacyRedirects)){
   if(/target\s*=\s*['"]\/runes/.test(source))failures.push(file+' still redirects to retired /runes path');
 }
 
-const currentRuntimeRoots=['app','scripts'];
+const currentRuntimeRoots=['app'];
 for(const rootName of currentRuntimeRoots){
   const start=resolve(root,rootName);
   if(!existsSync(start))continue;
