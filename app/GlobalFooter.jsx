@@ -3,15 +3,8 @@
 import {useEffect,useState} from 'react';
 import {usePathname} from 'next/navigation';
 import ThemeSelect from './ThemeSelect';
-import {detectNavScope} from './nav-route-map';
+import {detectSiteScope,getSiteScope} from './site-registry';
 import {getScopeContact} from './loc/scope-public-settings';
-
-const ROOTS={
-  loc:{label:'月典',href:'https://loc.lo3rwang.cc/'},
-  runes:{label:'月之符文',href:'https://lrunes.lo3rwang.cc/'},
-  lo3rwang:{label:'作者簡介',href:'https://lo3rwang.lo3rwang.cc/'},
-  governance:{label:'治理管理',href:'https://admin.lo3rwang.cc/'}
-};
 
 export default function GlobalFooter(){
   const pathname=usePathname()||'/';
@@ -19,8 +12,8 @@ export default function GlobalFooter(){
   const [contact,setContact]=useState(null);
 
   useEffect(()=>setHost(window.location.hostname),[]);
-  const scope=detectNavScope(pathname,host);
-  const root=ROOTS[scope]||ROOTS.loc;
+  const scope=detectSiteScope(pathname,host);
+  const current=getSiteScope(scope);
 
   useEffect(()=>{
     let live=true;
@@ -30,7 +23,7 @@ export default function GlobalFooter(){
 
   return <footer className="loc-site-footer">
     <div className="loc-site-footer-row loc-site-footer-row-primary">
-      <a href={root.href}>{root.label}</a>
+      <a href={`https://${current.domain}/`}>{current.label}</a>
       <span aria-hidden="true">｜</span>
       <ThemeSelect/>
     </div>
