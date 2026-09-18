@@ -26,12 +26,17 @@ class FAQSearchEngineTest(unittest.TestCase):
         self.assertIn("Language Module Framework", result.chunk["answer"])
         self.assertNotIn("Language System Model", result.chunk["answer"])
 
-    def test_loc_numbers_are_historical_provenance_only(self):
-        result = self.engine.search("LOC1至LOC8是什麼關係？", top_k=3)[0]
-        self.assertEqual(result.chunk["parent_id"], "FAQ-018")
-        self.assertIn("歷史／來源識別碼", result.chunk["answer"])
-        self.assertIn("Scope Model × Feature Model → Page Composition", result.chunk["answer"])
-        self.assertNotIn("功能責任區", result.chunk["answer"])
+    def test_deprecated_numbered_architecture_is_not_indexed(self):
+        for chunk in self.engine.chunks:
+            visible = " ".join([
+                str(chunk.get("question") or ""),
+                str(chunk.get("answer") or ""),
+                " ".join(str(x) for x in chunk.get("aliases", []) or []),
+                " ".join(str(x) for x in chunk.get("keywords", []) or []),
+            ])
+            for number in range(1, 9):
+                self.assertNotIn(f"LOC{number}", visible)
+
 
     def test_framework_positioning_question_is_current(self):
         rows = [chunk for chunk in self.engine.chunks if chunk.get("parent_id") == "FAQ-091"]

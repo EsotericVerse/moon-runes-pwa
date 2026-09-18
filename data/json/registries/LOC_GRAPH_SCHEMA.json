@@ -1,8 +1,8 @@
 {
-  "schema_version": "0.7",
+  "schema_version": "0.8",
   "registry": "LOC_GRAPH_SCHEMA",
   "authority": "Context",
-  "purpose": "Shared node/edge contract for LOC context Graph. Context owns relation/context semantics; Search/Analysis implements bounded Graph traversal and retrieval; Evolution consumes governed graph projections for time/ERA/literary-evolution views. LOC1–8 labels are historical/provenance only.",
+  "purpose": "Shared node/edge contract for LOC context Graph. Context owns relation/context semantics; Search/Analysis implements bounded Graph traversal and retrieval; Culture consumes governed graph projections for time, ERA and textual/cultural change views.",
   "current_architecture": "Scope Model × Feature Model → Page Composition",
   "node_types": [
     "loc_domain",
@@ -38,17 +38,16 @@
     "work_theme"
   ],
   "compatibility": {
-    "owned_by_loc": "Legacy edge name retained for existing data compatibility. It represents recorded source/domain provenance only and must not be interpreted as Current LOC1–8 architecture ownership.",
-    "loc_number_policy": "LOC1–8 references may remain in historical node metadata and source identifiers, but never create Current Scope, Feature or Canon authority."
+    "owned_by_loc": "Legacy edge name retained for existing data compatibility. It represents recorded source/domain provenance only and never creates Current feature ownership."
   },
   "rules": [
     "Graph nodes are references to authoritative records, not replacement copies.",
     "Canonical edges require explicit registry evidence, authoritative metadata, or deterministic structural evidence.",
     "Semantic similarity may select seed nodes but must never create a canonical edge by itself.",
     "ERA-P0 through current ERA form a deterministic temporal backbone from LOC_ERA_REGISTRY where that registry is the applicable Scope authority.",
-    "Search-time result nodes may receive transient owned_by_loc, belongs_to_era, and media/work linkage edges from their own recorded metadata; owned_by_loc is a compatibility/provenance field, not Current LOC-number ownership.",
+    "Search-time result nodes may receive transient owned_by_loc, belongs_to_era, and media/work linkage edges from their own recorded metadata; owned_by_loc is a compatibility/provenance field, not Current feature ownership.",
     "Graph traversal is bounded and feeds Search synthesis with Scope/domain paths, ERA paths, works, media and analysis nodes.",
-    "Context owns graph relation/context semantics; Search/Analysis manages traversal and retrieval algorithms; Evolution consumes governed graph projections for temporal views.",
+    "Context owns graph relation/context semantics; Search/Analysis manages traversal and retrieval algorithms; Culture consumes governed graph projections for temporal views.",
     "Repository snapshots may contribute public temporal/event observation nodes without replacing a live private authority source.",
     "Private source rows are never exposed through public Search unless they are explicitly governed into a public registry/snapshot.",
     "Search responses expose a provenance envelope summarizing source_refs and graph evidence kinds/status.",
@@ -99,10 +98,10 @@
       "deterministic_structural_evidence": 0.98,
       "record_metadata": 0.95,
       "registry_structure": 0.9,
-      "loc8_event_snapshot": 0.86,
-      "loc8_daily_rune_snapshot": 0.86,
       "result_metadata": 0.8,
-      "semantic_inference": 0.55
+      "semantic_inference": 0.55,
+      "event_snapshot": 0.86,
+      "daily_rune_snapshot": 0.86
     },
     "status_weights": {
       "canonical": 1,

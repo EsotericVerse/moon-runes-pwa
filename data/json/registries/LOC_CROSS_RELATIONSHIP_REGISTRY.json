@@ -1,11 +1,10 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "registry": "LOC_CROSS_RELATIONSHIP_REGISTRY",
   "authority": "Context",
-  "purpose": "Canonical cross-format context and relationship edges. Context owns relation/context semantics; Search/Analysis may consume these edges for retrieval and Graph traversal; Evolution may consume them for temporal views. Historical LOC-number labels remain provenance only.",
+  "purpose": "Canonical cross-format context and relationship edges. Context owns relation/context semantics; Search/Analysis may consume these edges for retrieval and Graph traversal; Culture may consume them for temporal and textual-change views.",
   "governance": {
-    "current_architecture": "Scope Model × Feature Model → Page Composition",
-    "loc_number_policy": "LOC1–8 identifiers may remain in historical relationship IDs, source labels and provenance, but do not define Current ownership or Feature responsibility."
+    "current_architecture": "Scope Model × Feature Model → Page Composition"
   },
   "relationship_schema": {
     "required": [
@@ -27,7 +26,7 @@
   },
   "relationships": [
     {
-      "relationship_id": "REL-LOC3-LOC4-READ-RECEIPT",
+      "relationship_id": "REL-READ-RECEIPT-CROSS-MEDIA",
       "canonical_key": "已讀不回",
       "aliases": [
         "已讀不回"
@@ -42,7 +41,7 @@
       "targets": [
         {
           "primary_loc": "Context",
-          "work_ref": "LOC4-READ-RECEIPT",
+          "work_ref": "WRITING-READ-RECEIPT",
           "title": "已讀不回",
           "content_type": "article_series",
           "chapter_count": 6,
@@ -51,7 +50,7 @@
         },
         {
           "primary_loc": "Context",
-          "work_ref": "LOC5-READ-RECEIPT-REELS",
+          "work_ref": "MEDIA-READ-RECEIPT-REELS",
           "title": "已讀不回 Reels",
           "content_type": "reel_collection",
           "media_status": "link_pending",
@@ -60,8 +59,8 @@
         }
       ],
       "relation_type": "song_to_article_expansion",
-      "direction": "historical_LOC3_to_LOC4_with_LOC5_media",
-      "relation_summary": "《已讀不回》先以歌曲形成核心語意，再延伸為六章文章，並有 Reels 跨媒介呈現。LOC3／LOC4／LOC5 標記只保留為此筆資料形成時的 provenance。",
+      "direction": "music_to_writing_with_media",
+      "relation_summary": "《已讀不回》先以歌曲形成核心語意，再延伸為六章文章，並有 Reels 跨媒介呈現。",
       "keywords": [
         "已讀不回",
         "等待",
@@ -74,8 +73,7 @@
       "interpretation": {
         "type": "cross_media_language_evolution",
         "label": "跨媒介語言演化案例",
-        "note": "同一語意核心由歌曲擴寫成六章文章，再透過 Reels 形成視聽表達，可用來觀察政德風跨媒介與長短文本的轉化。",
-        "historical_field_alias": "loc6_interpretation"
+        "note": "同一語意核心由歌曲擴寫成六章文章，再透過 Reels 形成視聽表達，可用來觀察政德風跨媒介與長短文本的轉化。"
       },
       "search_policy": {
         "expand_on_alias_match": true,
@@ -83,8 +81,7 @@
         "show_targets": true,
         "show_keywords": true,
         "show_relation_summary": true,
-        "show_interpretation": true,
-        "historical_show_loc6_interpretation": false
+        "show_interpretation": true
       },
       "evidence_status": "author_confirmed",
       "updated_at": "2026-09-17"

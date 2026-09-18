@@ -56,6 +56,31 @@ for (const name of names) {
   if (failures.length === before) console.log(`semantic guard ok: ${rel}`);
 }
 
+const strictCurrentFiles = [
+  'data/json/registries/LOC_DATA_GOVERNANCE.json',
+  'data/json/registries/LOC_TERMINOLOGY_CANON.json',
+  'data/json/registries/LOC_KM_KEYWORDS.json',
+  'data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json',
+  'data/json/registries/LOC_KNOWLEDGE_ASSET_SCOPE_POLICY.json',
+  'data/json/registries/LUNARUNES_RUNE_METHODOLOGY_REGISTRY.json',
+  'data/json/search/faq/LOC_FAQ_v0.5.json'
+];
+for (const rel of strictCurrentFiles) {
+  const source = fs.readFileSync(path.join(root, rel), 'utf8');
+  if (/LOC[1-8](?!\\d)/i.test(source)) failures.push(rel + ': deprecated numbered architecture leaked into strict Current source');
+}
+for (const rel of [
+  'data/json/registries/LOC_FEATURE_TABLE_CONTRACT.json',
+  'data/json/registries/LOC_KM_KEYWORDS.json',
+  'data/json/registries/LUNARUNES_RUNE_METHODOLOGY_REGISTRY.json'
+]) {
+  const source = fs.readFileSync(path.join(root, rel), 'utf8');
+  if (source.includes('Evolution Feature') || source.includes('"owner": "evolution"')) failures.push(rel + ': Evolution returned as Current Feature identity');
+}
+const grammarSource = fs.readFileSync(path.join(root, 'data/json/core/rune_grammar.json'), 'utf8');
+if (grammarSource.includes('過去 + 現在 + 未來顯化 + 周圍環境 + 自己心境')) failures.push('rune_grammar.json: stale five-card grammar returned');
+if (!grammarSource.includes('源2 + 轉2 + 合2 + 五卡治理／建議')) failures.push('rune_grammar.json: OW3gs Current composition missing');
+
 if (failures.length) {
   console.error('Current semantic contamination detected:');
   failures.forEach((failure) => console.error(`- ${failure}`));

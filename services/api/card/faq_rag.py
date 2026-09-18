@@ -71,9 +71,13 @@ def _apply_current_overlay(
 ) -> list[dict[str, Any]]:
     replacements = overlay.get("phrase_replacements") or []
     parent_overrides = overlay.get("parent_overrides") or {}
+    excluded_parent_ids = {str(value) for value in (overlay.get("excluded_parent_ids") or [])}
     migrated: list[dict[str, Any]] = []
 
     for raw_chunk in chunks:
+        parent_id = str(raw_chunk.get("parent_id") or "")
+        if parent_id in excluded_parent_ids:
+            continue
         chunk = _apply_phrase_replacements(dict(raw_chunk), replacements)
         parent_id = str(chunk.get("parent_id") or "")
         patch = parent_overrides.get(parent_id)
@@ -117,7 +121,7 @@ class SearchResult:
 class FAQSearchEngine:
     """Small hybrid retriever for the LOC FAQ retrieval dataset.
 
-    Historical wording remains searchable, while the Current FAQ overlay projects
+    The Current FAQ overlay filters deprecated architecture questions and projects
     Scope Model × Feature Model semantics before indexing. Character n-gram TF-IDF
     handles short Chinese queries and exact alias/keyword matches add deterministic
     boosts. No external model is required.
