@@ -6,7 +6,10 @@
   "identity": {
     "loc": "LOC／月典 = Modelized Language Framework／模型化語言框架",
     "lunarunes": "LunaRunes／月之符文 = Symbolic Language／符號式語言",
-    "final_frozen_rule": "This identity pair is the highest and final Current definition. Downstream registries, UI, Search, RAG, generated projections and implementation terminology must conform and cannot redefine it."
+    "final_frozen_rule": "This identity pair is the highest and final Current definition. Downstream registries, UI, Search, RAG, generated projections and implementation terminology must conform and cannot redefine it.",
+    "final_version": "latest_and_last",
+    "permanent_freeze": true,
+    "change_policy": "LOC and LunaRunes identity wording is permanently frozen. No downstream or future Current version may replace these two definitions."
   },
   "current_architecture": {
     "formula": "Scope Model × Feature Model → Page Composition",
