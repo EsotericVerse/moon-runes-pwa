@@ -1,28 +1,22 @@
 'use client';
 
-import {createContext,useContext,useEffect,useMemo,useState} from 'react';
+import {createContext,useContext,useEffect,useMemo} from 'react';
+import {useNeonSetting} from './loc/use-neon-setting';
 
 const STORAGE_KEY='loc-language';
 const LanguageContext=createContext({locale:'zh-Hant',setLocale:()=>{},toggleLocale:()=>{}});
 
 export function LanguageProvider({children}){
-  const [locale,setLocale]=useState('zh-Hant');
+  const {value:storedLocale,setValue:setStoredLocale}=useNeonSetting(STORAGE_KEY,'zh-Hant');
+  const locale=storedLocale==='en'?'en':'zh-Hant';
 
-  useEffect(()=>{
-    const saved=window.localStorage.getItem(STORAGE_KEY);
-    if(saved==='en'||saved==='zh-Hant')setLocale(saved);
-  },[]);
-
-  useEffect(()=>{
-    document.documentElement.lang=locale;
-    window.localStorage.setItem(STORAGE_KEY,locale);
-  },[locale]);
+  useEffect(()=>{document.documentElement.lang=locale},[locale]);
 
   const value=useMemo(()=>({
     locale,
-    setLocale,
-    toggleLocale:()=>setLocale(current=>current==='zh-Hant'?'en':'zh-Hant')
-  }),[locale]);
+    setLocale:next=>setStoredLocale(next==='en'?'en':'zh-Hant'),
+    toggleLocale:()=>setStoredLocale(current=>current==='zh-Hant'?'en':'zh-Hant')
+  }),[locale,setStoredLocale]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
