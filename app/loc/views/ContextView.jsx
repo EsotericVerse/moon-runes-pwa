@@ -39,9 +39,9 @@ export default function ContextView(){
   const pageSize=LIST_PAGE_OPTIONS.includes(Number(uiSettings?.list_page_size))?Number(uiSettings.list_page_size):10;
 
   useEffect(()=>{let live=true;const load=(path,setter)=>fetchLocJson(path).then(data=>live&&setter(data)).catch(e=>live&&setError(e.message));setError('');
-    if(tab==='events'&&!events)load(LOC_DATA.LOC8_EVENT_SNAPSHOT,setEvents);
+    if(tab==='events'&&!events)load(LOC_DATA.EVENT_SNAPSHOT,setEvents);
     if(tab==='relations'&&!relations)load(LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY,setRelations);
-    if(tab==='scenarios'&&!scenarios)load(LOC_DATA.LOC2_EVENT_REGISTRY,setScenarios);
+    if(tab==='scenarios'&&!scenarios)load(LOC_DATA.CONTEXT_EVENT_REGISTRY,setScenarios);
     if(tab==='graph'&&!runes)load(LOC_DATA.RUNES,setRunes);
     return()=>{live=false};
   },[tab,events,relations,scenarios,runes]);
