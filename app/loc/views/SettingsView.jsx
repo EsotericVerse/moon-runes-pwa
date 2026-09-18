@@ -12,7 +12,7 @@ export default function SettingsView(){
     <section className="loc-card">
       <p className="loc-eyebrow">Display</p>
       <h2>顯示與主題</h2>
-      <p className="loc-subtitle">調整網站的語系與白天、夜晚顯示方式。</p>
+      <p className="loc-subtitle">調整語系與全站八種風格；預設依時間輪替。靈魂沿用永夜，秩序沿用永日。</p>
       <ThemeControl />
       <LocaleControl />
     </section>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchLocJsonBatch, LOC_DATA } from './data';
 import { useNeonAccount } from './use-neon-account';
+import ThemeAdmin from './ThemeAdmin';
 
 export default function GovernanceManagement(){
   const account=useNeonAccount();
@@ -60,5 +61,8 @@ export default function GovernanceManagement(){
       <button type="button" onClick={account.signOut}>登出 Neon</button>
     </>}
     {account.error&&<p role="alert">{account.error}</p>}
+    <hr/>
+    <h3>全站風格管理</h3>
+    <ThemeAdmin/>
   </section>;
 }
