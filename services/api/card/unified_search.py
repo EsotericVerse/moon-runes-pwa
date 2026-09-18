@@ -220,6 +220,15 @@ class UnifiedSearchEngine:
         value = str(cfg.get("default_when_unspecified") or "snippet").strip()
         return value if value in {"snippet", "full", "metadata_only"} else "snippet"
 
+    def _content_feature_ids(self, content_type: Any) -> list[str]:
+        wanted = str(content_type or "").strip()
+        if not wanted:
+            return []
+        for item in (self.content_types.get("types", []) if isinstance(self.content_types, dict) else []):
+            if str(item.get("id") or "").strip() == wanted:
+                return [str(x) for x in (item.get("feature_ids") or []) if str(x).strip()]
+        return []
+
     @staticmethod
     def _query_snippet(text: Any, query: str, radius: int = 90) -> str:
         raw = re.sub(r"\s+", " ", str(text or "")).strip()
@@ -1906,25 +1915,38 @@ class UnifiedSearchEngine:
         return "low"
 
     def _canonical_graph(self) -> dict[str, Any]:
-        """Build the governed cross-LOC graph from authoritative registries.
+        """Build the governed graph projection from authoritative registries.
 
         The graph is a reference layer. It does not copy or replace canonical
         records; it only stores stable node references and evidence-backed edges.
+        Historical numbered LOC metadata never becomes a Current graph anchor.
         """
         nodes: dict[str, dict[str, Any]] = {}
         edges: dict[str, dict[str, Any]] = {}
 
-        def add_node(node_id: Any, label: Any, node_type: str, primary_loc: str = "", **extra: Any) -> None:
+        def add_node(
+            node_id: Any,
+            label: Any,
+            node_type: str,
+            scope_id: str = "",
+            feature_ids: list[str] | None = None,
+            **extra: Any,
+        ) -> None:
             nid = str(node_id or "").strip()
             if not nid:
                 return
             current = nodes.get(nid, {})
+            merged_features = list(dict.fromkeys([
+                *[str(x) for x in (current.get("feature_ids") or []) if str(x).strip()],
+                *[str(x) for x in (feature_ids or []) if str(x).strip()],
+            ]))
             nodes[nid] = {
                 **current,
                 "id": nid,
                 "label": str(label or current.get("label") or nid),
                 "node_type": node_type or current.get("node_type") or "record",
-                "primary_loc": primary_loc or current.get("primary_loc") or "",
+                **({"scope_id": scope_id} if scope_id else {}),
+                **({"feature_ids": merged_features} if merged_features else {}),
                 **{k: v for k, v in extra.items() if v not in (None, "", [], {})},
             }
 
@@ -1956,13 +1978,8 @@ class UnifiedSearchEngine:
                 **{k: v for k, v in extra.items() if v not in (None, "", [], {})},
             }
 
-        # LOC domains are stable graph anchors.
-        for n in range(1, 9):
-            loc = f"LOC{n}"
-            add_node(loc, loc, "loc_domain", loc)
-
-        # Canonical rune nodes provide a stable LOC1 anchor for LOC8 daily-rune
-        # observations and other cross-LOC references.
+        # Canonical rune nodes are direct governed records. Numbered LOC
+        # identifiers are historical provenance only and never graph anchors.
         for index, rune in enumerate(self.runes, start=1):
             number = rune.get("編號") or index
             name = rune.get("名稱") or rune.get("符文名稱") or rune.get("name") or f"Rune {number}"
@@ -1971,17 +1988,10 @@ class UnifiedSearchEngine:
                 rune_id,
                 f"{number} · {name}",
                 "rune",
-                "LOC1",
+                "lunarunes",
+                ["lunarunes"],
                 rune_number=number,
                 rune_name=name,
-            )
-            add_edge(
-                f"EDGE-{rune_id}-OWNED-LOC1",
-                rune_id,
-                "LOC1",
-                "owned_by_loc",
-                "authority_registry",
-                f"{rune_id} is governed by LOC1.",
             )
 
         # ERA is the governed temporal backbone.
@@ -1992,18 +2002,11 @@ class UnifiedSearchEngine:
                 era_id,
                 era.get("display_label") or era.get("name") or era_id,
                 "era",
-                "LOC8",
+                str(era.get("scope_id") or ""),
+                ["era", "temporal_analysis"],
                 period=era.get("period"),
                 start_date=era.get("start_date"),
                 end_date=era.get("end_date"),
-            )
-            add_edge(
-                f"EDGE-{era_id}-OWNED",
-                era_id,
-                "LOC8",
-                "owned_by_loc",
-                "authority_registry",
-                "ERA temporal authority is LOC8.",
             )
         for left, right in zip(eras, eras[1:]):
             add_edge(
@@ -2038,23 +2041,14 @@ class UnifiedSearchEngine:
                 eid,
                 event.get("title") or eid,
                 "life_event",
-                "LOC8",
+                str(event.get("scope_id") or ""),
+                ["temporal_analysis"],
                 date=event.get("date"),
                 event_type=event.get("event_type"),
                 object_type=event.get("object_type"),
                 object_id=event.get("object_id"),
                 confidence=event.get("confidence"),
                 snapshot_role=self.loc8_events.get("role"),
-            )
-            add_edge(
-                f"EDGE-{eid}-OWNED-LOC8",
-                eid,
-                "LOC8",
-                "owned_by_loc",
-                "loc8_event_snapshot",
-                "LOC8 event snapshot record.",
-                event.get("confidence") or "recorded",
-                source_ref=event.get("source"),
             )
             event_era = str(event.get("era_id") or "").strip()
             if not event_era:
@@ -2084,8 +2078,8 @@ class UnifiedSearchEngine:
                     event.get("confidence") or "recorded",
                 )
 
-        # Daily Rune is a LOC8 observation of a LOC1 rune in time. This is the
-        # smallest concrete cross-LOC temporal bridge in the current system.
+        # Daily Rune is a time-stamped observation that references a LunaRune.
+        # The relationship is direct; historical numbered routing is not needed.
         for draw in self.loc8_daily_runes.get("daily_draws", []):
             did = draw.get("id")
             if not did:
@@ -2094,21 +2088,12 @@ class UnifiedSearchEngine:
                 did,
                 f"{draw.get('date') or ''} · {draw.get('rune') or ''}{draw.get('direction') or ''}",
                 "daily_rune_draw",
-                "LOC8",
+                str(draw.get("scope_id") or ""),
+                ["lunarunes", "temporal_analysis"],
                 date=draw.get("date"),
                 draw_kind=draw.get("draw_kind"),
                 confidence=draw.get("confidence"),
                 snapshot_role=self.loc8_daily_runes.get("role"),
-            )
-            add_edge(
-                f"EDGE-{did}-OWNED-LOC8",
-                did,
-                "LOC8",
-                "owned_by_loc",
-                "loc8_daily_rune_snapshot",
-                "LOC8 daily-rune observation.",
-                draw.get("confidence") or "recorded",
-                source_ref=draw.get("source"),
             )
             rune_number = str(draw.get("rune_id") or "").strip()
             if rune_number:
@@ -2138,35 +2123,19 @@ class UnifiedSearchEngine:
             aid = asset.get("asset_id")
             if not aid:
                 continue
-            primary = asset.get("primary_loc") or "LOC7"
+            content_type = asset.get("content_type") or "knowledge_document"
             add_node(
                 aid,
                 asset.get("title") or aid,
                 "knowledge_asset",
-                primary,
-                content_type=asset.get("content_type"),
+                str(asset.get("scope_id") or ""),
+                list(asset.get("feature_ids") or self._content_feature_ids(content_type)),
+                content_type=content_type,
                 role=asset.get("role"),
             )
-            add_edge(
-                f"EDGE-{aid}-OWNED-{primary}",
-                aid,
-                primary,
-                "owned_by_loc",
-                "registry_structure",
-                f"{aid} is governed by {primary}.",
-            )
-            for related in asset.get("related_locs", []) or []:
-                if related and related != primary:
-                    add_edge(
-                        f"EDGE-{aid}-RELATED-{related}",
-                        aid,
-                        related,
-                        "related_to",
-                        "registry_structure",
-                        f"{aid} declares {related} as a related LOC.",
-                    )
 
-        # LOC3 works: work ownership and ERA placement are recorded metadata.
+        # Music works retain direct work/ERA metadata; historical LOC routing
+        # does not participate in Current graph ownership.
         for work in getattr(self.loc3_searcher, "works", []) if self.loc3_searcher else []:
             wid = work.get("work_id")
             if not wid:
@@ -2175,17 +2144,10 @@ class UnifiedSearchEngine:
                 wid,
                 work.get("title") or wid,
                 "music_work",
-                "LOC3",
+                str(work.get("scope_id") or ""),
+                list(work.get("feature_ids") or ["music"]),
                 period=work.get("period"),
                 era_id=work.get("era_id"),
-            )
-            add_edge(
-                f"EDGE-{wid}-OWNED-LOC3",
-                wid,
-                "LOC3",
-                "owned_by_loc",
-                "record_metadata",
-                f"{wid} is a LOC3 work.",
             )
             era_id = work.get("era_id")
             if era_id:
@@ -2198,7 +2160,7 @@ class UnifiedSearchEngine:
                     f"{wid} is assigned to {work.get('period') or era_id}.",
                 )
 
-        # LOC4 works: writing catalog already carries canonical work/ERA fields.
+        # Writing works keep canonical work/ERA fields without numbered ownership.
         for work in self.loc4.get("works", []):
             wid = work.get("work_id")
             if not wid:
@@ -2207,17 +2169,10 @@ class UnifiedSearchEngine:
                 wid,
                 work.get("title") or wid,
                 "writing_work",
-                "LOC4",
+                str(work.get("scope_id") or ""),
+                list(work.get("feature_ids") or ["writing"]),
                 period=work.get("period"),
                 era_id=work.get("era_id"),
-            )
-            add_edge(
-                f"EDGE-{wid}-OWNED-LOC4",
-                wid,
-                "LOC4",
-                "owned_by_loc",
-                "record_metadata",
-                f"{wid} is a LOC4 work.",
             )
             if work.get("era_id"):
                 add_edge(
@@ -2242,7 +2197,8 @@ class UnifiedSearchEngine:
                     cid,
                     character,
                     "character",
-                    "LOC4",
+                    str(work.get("scope_id") or ""),
+                    ["writing", "context_graph"],
                     work_id=wid,
                     work_title=work.get("title"),
                 )
@@ -2263,7 +2219,8 @@ class UnifiedSearchEngine:
                         sid,
                         f"{theme.get('title') or character}（{character}）",
                         "music_work",
-                        "LOC3",
+                        str(work.get("scope_id") or ""),
+                        ["music"],
                         source_url=theme_url,
                         projection_only=True,
                         source_work_id=wid,
@@ -2289,7 +2246,8 @@ class UnifiedSearchEngine:
                     sid,
                     theme.get("title") or theme.get("label") or f"{work.get('title') or wid}｜{role}",
                     "music_work",
-                    "LOC3",
+                    str(work.get("scope_id") or ""),
+                    ["music"],
                     source_url=theme_url,
                     projection_only=True,
                     source_work_id=wid,
@@ -2306,28 +2264,23 @@ class UnifiedSearchEngine:
                     source_ref="LOC4_WRITING_REGISTRY.json",
                 )
 
-        # LOC5 media: registry gives stable media IDs, period inheritance and
-        # optional linked work/song references.
+        # Media registry gives stable media IDs, period inheritance and optional
+        # linked work/song references without numbered ownership.
         for media in self.media.get("items", []):
             mid = media.get("media_id")
             if not mid:
                 continue
+            media_type = media.get("content_type") or media.get("media_type") or "video"
             add_node(
                 mid,
                 media.get("title") or mid,
                 "media",
-                "LOC5",
+                str(media.get("scope_id") or ""),
+                list(media.get("feature_ids") or self._content_feature_ids(media_type) or ["media"]),
                 period=media.get("period"),
                 era_id=media.get("era_id"),
                 platform=media.get("platform"),
-            )
-            add_edge(
-                f"EDGE-{mid}-OWNED-LOC5",
-                mid,
-                "LOC5",
-                "owned_by_loc",
-                "record_metadata",
-                f"{mid} is a LOC5 media record.",
+                content_type=media_type,
             )
             if media.get("era_id"):
                 add_edge(
@@ -2346,10 +2299,10 @@ class UnifiedSearchEngine:
                     mid,
                     "represented_by",
                     "record_metadata",
-                    "LOC5 media represents or adapts the linked work.",
+                    "Media record represents or adapts the linked work.",
                 )
 
-        # LOC6 governance fragments are first-class analysis/governance nodes.
+        # Governance fragments are first-class analysis/governance nodes.
         for fragment in self.loc6.get("fragments", []):
             fid = fragment.get("fragment_id")
             if not fid:
@@ -2359,17 +2312,10 @@ class UnifiedSearchEngine:
                 fid,
                 label,
                 "governance_fragment",
-                "LOC6",
+                str(fragment.get("scope_id") or ""),
+                list(fragment.get("feature_ids") or ["governance_analysis"]),
                 analysis_type=fragment.get("analysis_type"),
                 era_id=fragment.get("era_id"),
-            )
-            add_edge(
-                f"EDGE-{fid}-OWNED-LOC6",
-                fid,
-                "LOC6",
-                "owned_by_loc",
-                "record_metadata",
-                f"{fid} is governed by LOC6.",
             )
             if fragment.get("era_id"):
                 add_edge(
@@ -2385,21 +2331,25 @@ class UnifiedSearchEngine:
         for rel in self.relationships.get("relationships", []):
             source = rel.get("source") or {}
             source_id = source.get("work_ref") or rel.get("relationship_id")
+            source_type = source.get("content_type") or "work"
             add_node(
                 source_id,
                 source.get("title") or rel.get("canonical_key") or source_id,
-                source.get("content_type") or "work",
-                source.get("primary_loc") or "",
+                source_type,
+                str(source.get("scope_id") or ""),
+                list(source.get("feature_ids") or self._content_feature_ids(source_type)),
             )
             for target in rel.get("targets", []) or []:
                 target_id = target.get("work_ref")
                 if not target_id:
                     continue
+                target_type = target.get("content_type") or "work"
                 add_node(
                     target_id,
                     target.get("title") or target_id,
-                    target.get("content_type") or "work",
-                    target.get("primary_loc") or "",
+                    target_type,
+                    str(target.get("scope_id") or ""),
+                    list(target.get("feature_ids") or self._content_feature_ids(target_type)),
                 )
                 add_edge(
                     f"EDGE-{rel.get('relationship_id')}-{source_id}-{target_id}",
@@ -2472,26 +2422,19 @@ class UnifiedSearchEngine:
                 for alias in aliases:
                     alias_to_result_ids.setdefault(alias, set()).add(rid)
 
+                payload = item.get("payload") or {}
+                content_type = item.get("content_type") or "search_result"
+                feature_ids = list(item.get("feature_ids") or payload.get("feature_ids") or self._content_feature_ids(content_type))
+                scope_id = str(item.get("scope_id") or payload.get("scope_id") or "").strip()
                 nodes.setdefault(rid, {
                     "id": rid,
                     "label": item.get("title") or rid,
-                    "node_type": item.get("content_type") or "search_result",
-                    "primary_loc": item.get("primary_loc") or "",
+                    "node_type": content_type,
+                    **({"scope_id": scope_id} if scope_id else {}),
+                    **({"feature_ids": feature_ids} if feature_ids else {}),
                     "result_group": group,
                     "transient": True,
                 })
-
-                loc = str(item.get("primary_loc") or "").strip()
-                if loc:
-                    edges.append({
-                        "edge_id": f"SEARCH-{rid}-OWNED-{loc}",
-                        "source": rid,
-                        "target": loc,
-                        "relation_type": "owned_by_loc",
-                        "summary": f"Search result belongs to {loc}.",
-                        "evidence_kind": "result_metadata",
-                        "evidence_status": "recorded",
-                    })
 
                 era_id = str(item.get("era_id") or (item.get("payload") or {}).get("era_id") or "").strip()
                 period = str(item.get("period") or (item.get("payload") or {}).get("period") or "").strip()
@@ -2510,14 +2453,13 @@ class UnifiedSearchEngine:
                         "evidence_status": "recorded",
                     })
 
-                payload = item.get("payload") or {}
                 linked_work = str(payload.get("linked_work_id") or "").strip()
                 if linked_work:
                     edges.append({
                         "edge_id": f"SEARCH-{rid}-REPRESENTS-{linked_work}",
                         "source": rid,
                         "target": linked_work,
-                        "relation_type": "represented_by" if item.get("primary_loc") != "LOC5" else "adapted_to",
+                        "relation_type": "adapted_to" if "media" in feature_ids else "represented_by",
                         "summary": "Media/work linkage supplied by registry metadata.",
                         "evidence_kind": "result_metadata",
                         "evidence_status": "recorded",
@@ -2598,15 +2540,15 @@ class UnifiedSearchEngine:
             seed_ids.update(strong_seed_ids)
 
         adjacency: dict[str, list[dict[str, Any]]] = {}
-        directional_relations = {"owned_by_loc", "belongs_to_era"}
+        directional_relations = {"belongs_to_era"}
         for edge in edges:
             source, target = str(edge.get("source") or ""), str(edge.get("target") or "")
             if not source or not target:
                 continue
             adjacency.setdefault(source, []).append(edge)
-            # Ownership and ERA membership are structural projections, not
-            # reverse discovery channels. Treating them as bidirectional turns
-            # LOC/ERA nodes into hubs that leak unrelated records into results.
+            # ERA membership is a structural projection, not a reverse
+            # discovery channel. Treating it as bidirectional turns ERA nodes
+            # into hubs that leak unrelated records into results.
             if str(edge.get("relation_type") or "") not in directional_relations:
                 adjacency.setdefault(target, []).append(edge)
 
@@ -2679,14 +2621,16 @@ class UnifiedSearchEngine:
                 "from": {
                     "id": source.get("id"),
                     "label": source.get("label"),
-                    "primary_loc": source.get("primary_loc"),
+                    "scope_id": source.get("scope_id"),
+                    "feature_ids": source.get("feature_ids") or [],
                     "node_type": source.get("node_type"),
                 },
                 "relation": edge.get("relation_type"),
                 "to": {
                     "id": target.get("id"),
                     "label": target.get("label"),
-                    "primary_loc": target.get("primary_loc"),
+                    "scope_id": target.get("scope_id"),
+                    "feature_ids": target.get("feature_ids") or [],
                     "node_type": target.get("node_type"),
                 },
                 "summary": edge.get("summary") or "",
@@ -2705,7 +2649,8 @@ class UnifiedSearchEngine:
         connected_results = [{
             "result_id": rid,
             "title": result_by_id[rid].get("title"),
-            "primary_loc": result_by_id[rid].get("primary_loc"),
+            "scope_id": result_by_id[rid].get("scope_id") or (result_by_id[rid].get("payload") or {}).get("scope_id"),
+            "feature_ids": result_by_id[rid].get("feature_ids") or (result_by_id[rid].get("payload") or {}).get("feature_ids") or self._content_feature_ids(result_by_id[rid].get("content_type")),
             "group": result_by_id[rid].get("group"),
         } for rid in connected_result_ids]
 
@@ -2715,10 +2660,11 @@ class UnifiedSearchEngine:
             999.0,
         ))
 
-        loc_nodes = sorted({
-            str(node.get("id"))
+        feature_path = sorted({
+            str(feature)
             for node in selected_nodes
-            if node.get("node_type") == "loc_domain"
+            for feature in (node.get("feature_ids") or [])
+            if str(feature).strip()
         })
 
         return {
@@ -2749,7 +2695,7 @@ class UnifiedSearchEngine:
                 "period": node.get("period"),
                 "label": node.get("label"),
             } for node in era_nodes],
-            "loc_path": loc_nodes,
+            "feature_path": feature_path,
             "graph_registry_counts": {
                 "nodes": base.get("node_count", 0),
                 "edges": base.get("edge_count", 0),
@@ -3021,14 +2967,16 @@ class UnifiedSearchEngine:
         lead_group = candidates[0][2]
         lead = candidates[0][3]
 
-        loc_counts: dict[str, int] = {}
+        feature_counts: dict[str, int] = {}
         periods: list[str] = []
         sources: set[str] = set()
         for group, items in nonempty.items():
             for item in items:
-                loc = str(item.get("primary_loc") or "").strip()
-                if loc:
-                    loc_counts[loc] = loc_counts.get(loc, 0) + 1
+                feature_ids = item.get("feature_ids") or (item.get("payload") or {}).get("feature_ids") or self._content_feature_ids(item.get("content_type"))
+                for feature in feature_ids:
+                    key = str(feature).strip()
+                    if key:
+                        feature_counts[key] = feature_counts.get(key, 0) + 1
                 period = str(item.get("period") or (item.get("payload") or {}).get("period") or "").strip()
                 if period and period not in periods:
                     periods.append(period)
@@ -3069,7 +3017,8 @@ class UnifiedSearchEngine:
                 "result_id": rid,
                 "group": group,
                 "title": item.get("title"),
-                "primary_loc": item.get("primary_loc"),
+                "scope_id": item.get("scope_id") or (item.get("payload") or {}).get("scope_id"),
+                "feature_ids": item.get("feature_ids") or (item.get("payload") or {}).get("feature_ids") or self._content_feature_ids(item.get("content_type")),
                 "score": item.get("score"),
             })
             if len(supporting) >= 6:
@@ -3077,18 +3026,18 @@ class UnifiedSearchEngine:
 
         lead_summary = str(lead.get("summary") or "").strip()
         if not lead_summary:
-            lead_summary = f"「{query}」目前命中 {len(nonempty)} 類 LOC 資料，可從知識、作品、治理、時間與關聯證據交叉閱讀。"
+            lead_summary = f"「{query}」目前命中 {len(nonempty)} 類資料，可從知識、作品、治理、時間與關聯證據交叉閱讀。"
 
         era_path = [str(x.get("period") or x.get("label") or "") for x in graph.get("era_path", []) if x]
-        loc_path = [str(x) for x in graph.get("loc_path", []) if x]
+        feature_path = [str(x) for x in graph.get("feature_path", []) if x]
         graph_parts = []
         if era_path:
             graph_parts.append("時期：" + " → ".join(era_path))
-        if loc_path:
-            graph_parts.append("跨 LOC：" + "、".join(loc_path))
+        if feature_path:
+            graph_parts.append("功能：" + "、".join(feature_path))
         relation_paths = [
             p for p in graph.get("paths", [])
-            if p.get("relation") not in {"owned_by_loc", "belongs_to_era", "temporal_before"}
+            if p.get("relation") not in {"belongs_to_era", "temporal_before"}
         ]
         if relation_paths:
             graph_parts.append(
@@ -3105,11 +3054,11 @@ class UnifiedSearchEngine:
         period_trend = self._topic_period_trend(query, graph)
         confidence = self._synthesis_confidence(groups, graph)
 
-        loc_names = [loc for loc, _count in sorted(loc_counts.items(), key=lambda row: (-row[1], row[0]))]
+        feature_names = [feature for feature, _count in sorted(feature_counts.items(), key=lambda row: (-row[1], row[0]))]
         evidence_names = [row["label"] for row in evidence[:4]]
         introduction_parts = [
             lead_summary,
-            (f"目前資料主要跨越 {'、'.join(loc_names[:5])}。" if loc_names else ""),
+            (f"目前資料主要涉及 {'、'.join(feature_names[:5])} 功能。" if feature_names else ""),
             (f"可用證據包含 {'、'.join(evidence_names)}。" if evidence_names else ""),
         ]
         introduction = " ".join(part for part in introduction_parts if part).strip()
@@ -3119,8 +3068,8 @@ class UnifiedSearchEngine:
             findings.append("核心相關詞：" + "、".join(row["term"] for row in topic_terms[:6]))
         if period_trend.get("summary"):
             findings.append("時期變化：" + period_trend["summary"])
-        if loc_path:
-            findings.append("跨 LOC 範圍：" + "、".join(loc_path))
+        if feature_path:
+            findings.append("功能範圍：" + "、".join(feature_path))
         if relation_paths:
             findings.append(
                 "已確認關聯：" + "；".join(
