@@ -7,7 +7,7 @@ import {neonClient} from '../neon-client';
 const PAGE_SIZE=20;
 
 export default function StaticsView(){
-  const {current,dataView}=useSiteScope();
+  const {current,dataView,ready}=useSiteScope();
   const view=dataView('rankings');
   const [rows,setRows]=useState([]);
   const [type,setType]=useState('');
@@ -17,7 +17,7 @@ export default function StaticsView(){
   useEffect(()=>{
     let live=true;
     setRows([]);setError('');setPage(1);
-    if(!view)return()=>{live=false};
+    if(!ready||!view)return()=>{live=false};
     neonClient.from(view).select('*').order('rank_value',{ascending:false}).limit(1000)
       .then(({data,error})=>{
         if(!live)return;
@@ -25,7 +25,7 @@ export default function StaticsView(){
         setRows(data||[]);
       }).catch(e=>live&&setError(String(e?.message||e)));
     return()=>{live=false};
-  },[view]);
+  },[ready,view]);
 
   const types=useMemo(()=>[...new Set(rows.map(row=>row.ranking_type).filter(Boolean))],[rows]);
   useEffect(()=>{if(types.length&&!types.includes(type))setType(types[0]);},[types,type]);
@@ -39,7 +39,7 @@ export default function StaticsView(){
       <h1>統計</h1>
       <p className="loc-subtitle">{current.label} Scope 的排行榜與統計；資料由各 Scope 自己的 Neon projection 提供。</p>
     </header>
-    {!view?<p className="loc-status">此 Scope 尚未啟用統計 projection。</p>:null}
+    {!ready?<p className="loc-status">載入 Scope…</p>:!view?<p className="loc-status">此 Scope 尚未啟用統計 projection。</p>:null}
     {error?<p className="loc-status error">{error}</p>:null}
     {types.length?<nav className="loc-tabs" aria-label="排行榜類型">
       {types.map(item=><button key={item} className={item===type?'active':''} onClick={()=>{setType(item);setPage(1)}}>{item}</button>)}
@@ -53,7 +53,7 @@ export default function StaticsView(){
           <span>{row.scope_id?row.scope_id+' · ':''}{row.item_count} · {row.rank_value}</span>
         </div>)}
       </div>
-      {!rows.length&&!error?<p>載入中…</p>:null}
+      {!rows.length&&!error&&ready&&view?<p>載入中…</p>:null}
       <div className="loc-pagination">
         <span>第 {page} / {pages} 頁 · 共 {filtered.length} 筆</span>
         <div><button className="loc-button" disabled={page<=1} onClick={()=>setPage(p=>p-1)}>上一頁</button><button className="loc-button" disabled={page>=pages} onClick={()=>setPage(p=>p+1)}>下一頁</button></div>
