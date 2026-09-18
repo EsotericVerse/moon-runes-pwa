@@ -102,10 +102,16 @@ export function scopeBaseHrefV2(scopeId){
   if(scope.scopeType==='directory'&&scope.mount)return `https://${scope.mount.host}${cleanPath(scope.mount.path)}`;
   return scopeOriginV2(scopeId);
 }
+export function scopeHrefV2(scopeId,localPath=''){
+  const base=scopeBaseHrefV2(scopeId).replace(/\/$/,'');
+  const path=String(localPath||'').split('?')[0].split('#')[0].split('/').filter(Boolean).join('/');
+  const suffix=String(localPath||'').slice(String(localPath||'').search(/[?#]/)>=0?String(localPath||'').search(/[?#]/):String(localPath||'').length);
+  return path?`${base}/${path}${suffix}`:`${base}/${suffix}`;
+}
 export function featureHrefV2(scopeId,featureId){
   const feature=FEATURES_V2.find(item=>item.id===featureId);
   if(!feature)throw new Error('Unknown feature: '+featureId);
-  return `${scopeBaseHrefV2(scopeId)}/${feature.path}`;
+  return scopeHrefV2(scopeId,feature.path);
 }
 export function featureIdForPathV2(pathname='/'){
   const segment=String(pathname||'/').split('/').filter(Boolean).at(-1)||'';
