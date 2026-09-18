@@ -90,10 +90,8 @@ function matchesMount(scope,host,pathname){
 }
 export function resolveScopeV2(host='',pathname='/'){
   const h=cleanHost(host);
-  const direct=SCOPE_BY_DOMAIN_V2[h];
-  if(direct&&direct!=='loc')return direct;
   for(const [id,scope] of Object.entries(SCOPES_V2))if(matchesMount(scope,h,pathname))return id;
-  return direct||'loc';
+  return SCOPE_BY_DOMAIN_V2[h]||'loc';
 }
 export function getScopeV2(id){return SCOPES_V2[id]||SCOPES_V2.loc;}
 export function scopeOriginV2(scopeId){return `https://${getScopeV2(scopeId).domain}`;}
