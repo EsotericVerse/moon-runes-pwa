@@ -1,5 +1,7 @@
 'use client';
 
+import {featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
+
 
 export default function SettingsHubView(){
   return <section className="loc-view">
@@ -18,10 +20,10 @@ export default function SettingsHubView(){
       <p className="loc-eyebrow">Personal · 個人化</p>
       <h2>個人化</h2>
       <div className="loc-actions">
-        <a className="loc-button" href="/style">個人風格</a>
-        <a className="loc-button" href="/evolution">ERA／時期</a>
-        <a className="loc-button" href="/style-groups">群組設定</a>
-        <a className="loc-button" href="/classify">分類</a>
+        <a className="loc-button" href={scopeHrefV2('loc','style')}>個人風格</a>
+        <a className="loc-button" href={featureHrefV2('loc','culture')}>ERA／時期</a>
+        <a className="loc-button" href={scopeHrefV2('loc','style-groups')}>群組設定</a>
+        <a className="loc-button" href={scopeHrefV2('loc','classify')}>分類</a>
       </div>
     </section>
 
@@ -30,7 +32,7 @@ export default function SettingsHubView(){
       <h2>Database 與匯入／匯出</h2>
       <p>JSON 匯入／匯出與 Google Drive 手動備份／讀回放在 Database。</p>
       <div className="loc-actions">
-        <a className="loc-button primary" href="/library">Database · 資料庫</a>
+        <a className="loc-button primary" href={scopeHrefV2('loc','library')}>Database · 資料庫</a>
       </div>
     </section>
 
