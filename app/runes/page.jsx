@@ -1,106 +1,124 @@
 import { FAQ_LINKS } from '../loc/system-links';
-import './rune-atlas-governance.css';
 import './runes-content.css';
-import RuneDrawClient from './RuneDrawClient';
-import RuneAtlasHome from './RuneAtlasHome';
 
-export const metadata = {
-  title: '月之符文｜LOC',
-  description: '月之符文說明、抽牌、符文關聯、關鍵詞脈絡與延伸體系入口。'
+export const metadata={
+  title:'月之符文｜LunaRunes',
+  description:'月之符文說明、脈絡、文化與延伸體系入口。'
 };
 
-const SINGLE_TOPICS = [
-  { key: 'love', label: '愛情' },
-  { key: 'career', label: '事業' },
-  { key: 'mind', label: '心理' },
-  { key: 'health', label: '健康' },
-  { key: 'life', label: '生活' }
-];
-
-const PROMO_REELS = [
-  { id: 'DMA9yDAzeRK', title: '月之符文 Reels 01' },
-  { id: 'DMA-ZxLTINw', title: '月之符文 Reels 02' }
-];
-
-const READING_EXAMPLES = [
+const SYSTEMS=[
   {
-    title: '最近卡關時的突破建議',
-    url: 'https://www.instagram.com/reel/DMA9yDAzeRK/'
+    title:'符文圖鑑',
+    href:'https://lrunes.lo3rwang.cc/list',
+    text:'查看 66 符的名稱、分組、基本定義與卡片資料。'
+  },
+  {
+    title:'符文音樂',
+    href:'https://lrunes.lo3rwang.cc/music',
+    text:'查看由真實符文抽牌與治理資料確認的符文歌曲。'
+  },
+  {
+    title:'符文文學',
+    href:'https://lrunes.lo3rwang.cc/literary',
+    text:'查看符文與小說、章節、短文及其他文學作品的關聯。'
+  },
+  {
+    title:'符文多媒體',
+    href:'https://lrunes.lo3rwang.cc/multimedia',
+    text:'查看符文在圖像、影音、Reels 與其他跨媒介作品中的延伸。'
   }
 ];
 
-export default function RunesPage() {
+export default function RunesPage(){
   return <main className="loc-next-main"><section className="loc-view loc-home scope-home-composition runes-home">
     <header className="loc-hero runes-home-hero">
       <div className="runes-home-hero-copy">
         <p className="loc-eyebrow">LunaRunes</p>
         <h1>月之符文</h1>
-        <p className="loc-subtitle">第一次來，如果什麼都不知道，也沒關係！先看影片介紹，<a href={FAQ_LINKS.runes}>FAQ</a>，或直接<a href="/duel/one">抽張牌</a>也可以！</p>
+        <p className="loc-subtitle">月之符文是一套符號式語言，以 66 個固定符文作為語意種子，透過牌位、方向與組合形成可以被閱讀、分析與延伸的語意結構。</p>
+        <p>第一次來，如果什麼都不知道，也沒關係。先看影片介紹，再依自己的需要進入 FAQ、抽牌、脈絡或延伸體系。</p>
       </div>
-
-      <div className="runes-home-reels" aria-label="月之符文 Reels 預覽">
-        {PROMO_REELS.map(reel => <article className="runes-home-reel" key={reel.id}>
+      <div className="runes-home-reels" aria-label="月之符文介紹影片">
+        <article className="runes-home-reel">
           <iframe
-            src={`https://www.instagram.com/reel/${reel.id}/embed/`}
-            title={reel.title}
+            src="https://www.instagram.com/reel/DMA9yDAzeRK/embed/"
+            title="月之符文介紹 Reels"
             loading="eager"
             allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
             allowFullScreen
           />
-          <a href={`https://www.instagram.com/reel/${reel.id}/`} target="_blank" rel="noopener noreferrer">在 Instagram 看完整 Reels</a>
-        </article>)}
+          <a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">在 Instagram 看完整影片</a>
+        </article>
       </div>
     </header>
 
-    <section className="loc-card runes-quick-start" aria-labelledby="runes-quick-start-title">
+    <section className="loc-card home-copy-block" id="beginner">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">Quick Start</p>
-        <h2 id="runes-quick-start-title">你現在最想問哪一件事</h2>
-        <p className="loc-subtitle">不用先學規則，挑一個方向，抽一張牌就可以開始。</p>
+        <p className="loc-eyebrow">Start here</p>
+        <h2>新手上路</h2>
+        <p className="loc-subtitle">不用先把 66 個符文全部背起來，也不用先學會解牌。</p>
       </div>
-      <div className="runes-topic-grid">
-        {SINGLE_TOPICS.map(topic => <a className="runes-topic-choice" key={topic.key} href="/duel/one">
-          <strong>{topic.label}</strong>
-          <span>抽一張牌</span>
-        </a>)}
-      </div>
-      <p className="runes-quick-start-note">沒有特別想問的，也可以直接抽每日符文。</p>
-      <div className="loc-actions"><a className="loc-button" href="/duel/daily">抽每日符文</a></div>
-    </section>
-
-    <section className="loc-card runes-reading-example-links" aria-labelledby="reading-example-title">
-      <div className="home-section-heading">
-        <p className="loc-eyebrow">Example</p>
-        <h2 id="reading-example-title">想先看看實際怎麼解</h2>
-        <p className="loc-subtitle">從一個完整範例開始，看抽牌之後怎麼把結果連成解讀。</p>
-      </div>
-      <div className="links">
-        {READING_EXAMPLES.map(example => <a key={example.url} href={example.url} target="_blank" rel="noopener noreferrer">{example.title} →</a>)}
+      <div className="home-author-copy">
+        <p>如果只是想先知道月之符文怎麼使用，可以先看 <a href={FAQ_LINKS.runes}>FAQ</a>。想直接體驗，則進入獨立的<a href="/duel">抽牌頁面</a>。</p>
+        <p>首頁只負責帶你認識這套符號式語言與它能延伸到哪些內容，不在這裡塞入完整抽牌、圖鑑或資料庫。</p>
       </div>
     </section>
 
-    <RuneDrawClient />
-    <RuneAtlasHome />
-
-    <section className="loc-card runes-content-section" id="context">
+    <section className="loc-card home-copy-block" id="context">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Context</p>
-        <h2>關鍵詞與符文演算法</h2>
-        <p className="loc-subtitle">從詞與詞的關係，看符文之間怎麼連起來。</p>
+        <h2>脈絡</h2>
+        <p className="loc-subtitle">從單一符文進一步看詞、位置、方向、事件與關係如何連起來。</p>
       </div>
-      <p>關鍵詞可以連到符文、群組、位置、方向與其他詞，再透過單卡、雙卡、三卡、五卡與 OW3gs 等演算法組合成可追溯的語意脈絡。</p>
-      <p>符文遊戲是脈絡的進階互動形式，不屬於文化延伸體系；先從脈絡進入，再往遊戲深入。</p>
-      <div className="links"><a href="/context">查看符文脈絡</a><a href="/algorithm">符文演算法</a><a href="/duel/fight">脈絡對戰</a></div>
+      <div className="home-author-copy">
+        <p>月之符文不只是一張一張獨立閱讀。雙卡、三卡、五卡與 OW3gs 都有固定 Grammar，可以把符文組合成可追溯的語意脈絡。</p>
+        <p>脈絡頁負責關鍵詞、事件與關係；符文演算法則整理固定牌位與組合規則；脈絡對戰則把這些關係轉成可互動的 Semantic Playground。</p>
+      </div>
+      <div className="loc-actions">
+        <a className="loc-button" href="/context">符文脈絡</a>
+        <a className="loc-button" href="/algorithm">符文演算法</a>
+        <a className="loc-button" href="/duel/fight">脈絡對戰</a>
+      </div>
     </section>
 
-    <section className="loc-card runes-content-section" id="culture">
+    <section className="loc-card home-copy-block" id="culture">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Culture</p>
-        <h2>符文延伸體系</h2>
-        <p className="loc-subtitle">看月之符文如何延伸成小說、短文、歌曲、影像與其他作品。</p>
+        <h2>文化</h2>
+        <p className="loc-subtitle">符文進入創作、作品與時間之後，才形成可以被觀察的文化軌跡。</p>
       </div>
-      <p>文化不是再解釋單一符文，而是看符文如何進入不同形式的創作。想看哪一種，就從對應的延伸體系直接進去。</p>
-      <div className="links"><a href="/literary">看符文文學</a><a href="/music">看符文歌曲</a><a href="/culture">看符文文化</a></div>
+      <div className="home-author-copy">
+        <p>文化頁不重新定義符文，而是觀察月之符文如何進入作品、時期與事件，在不同媒介中留下可比較的語意痕跡。</p>
+        <p>需要看時期、趨勢與文字演化時，再從文化頁深入。</p>
+      </div>
+      <div className="loc-actions"><a className="loc-button" href="/culture">查看符文文化</a></div>
+    </section>
+
+    <section className="loc-card home-copy-block" id="systems">
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">Systems</p>
+        <h2>符文體系</h2>
+        <p className="loc-subtitle">首頁只保留四個主要展示入口，讓不同內容各自分流。</p>
+      </div>
+      <div className="loc-link-list">
+        {SYSTEMS.map(item=><a className="loc-link-card" href={item.href} key={item.href}>
+          <strong>{item.title}</strong>
+          <span>{item.text}</span>
+        </a>)}
+      </div>
+    </section>
+
+    <section className="loc-card home-copy-block" id="manager-note">
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">Management</p>
+        <h2>管理者的話</h2>
+        <p className="loc-subtitle">月之符文維持固定核心資料，延伸內容則可以持續增加。</p>
+      </div>
+      <div className="home-author-copy">
+        <p>66 符的 Current 定義、群組與基礎資料維持治理；圖鑑、作品、文化與脈絡各自使用自己的資料來源，不讓展示頁反過來修改核心符文。</p>
+        <p>網站首頁只提供理解與分流。完整規則、設定、授權與管理入口統一放在治理頁。</p>
+      </div>
+      <div className="loc-actions"><a className="loc-button" href="/governance">符文治理</a></div>
     </section>
   </section></main>;
 }
