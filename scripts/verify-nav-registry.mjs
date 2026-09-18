@@ -1,7 +1,7 @@
 import {readFile} from 'node:fs/promises';
 import {FEATURES_V2,SCOPES_V2,featureHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
 
-const expectedDomains={loc:'loc.lo3rwang.cc',runes:'lrunes.lo3rwang.cc',lo3rwang:'lo3rwang.lo3rwang.cc',admin:'admin.lo3rwang.cc'};
+const expectedDomains={loc:'loc.lo3rwang.cc',runes:'lrunes.lo3rwang.cc',lo3rwang:'dlwang.lo3rwang.cc',admin:'admin.lo3rwang.cc'};
 for(const [scope,domain] of Object.entries(expectedDomains))if(SCOPES_V2[scope]?.domain!==domain)throw new Error(`${scope} domain drifted`);
 if(JSON.stringify(FEATURES_V2.map(item=>item.id))!==JSON.stringify(['context','statics','culture','governance','search']))throw new Error('Shared feature contract drifted');
 for(const [id,domain] of Object.entries(expectedDomains)){
