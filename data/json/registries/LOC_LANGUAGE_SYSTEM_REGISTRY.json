@@ -107,7 +107,7 @@
       "historical_provenance": {
         "status": "historical_provenance_only",
         "loc1_8_rule": "LOC1–8 may remain only as historical identifiers and source-lineage metadata. They do not define Current information architecture, Scope boundaries, Feature ownership, navigation taxonomy, registry authority or Current file naming.",
-        "legacy_domain_rule": "Older runes/context/music/literary/media/governance/knowledge/evolution domain labels may remain as historical routing metadata but are not the Current architecture model."
+        "legacy_domain_rule": "Older runes/context/music/literary/media/governance/knowledge/culture domain labels may remain as historical routing metadata but are not the Current architecture model."
       },
       "model_principles": [
         "Current Canon 是唯一現行權威；下游 UI、Search、RAG、Generated data、舊 FAQ、舊 README 與歷史文件不得反向覆寫。",
