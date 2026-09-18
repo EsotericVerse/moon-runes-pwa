@@ -1,7 +1,7 @@
 # LOC 導覽治理原則
 
 **Status:** Current
-**Updated:** 2026-09-16
+**Updated:** 2026-09-18
 
 ## 單一 NAV
 
