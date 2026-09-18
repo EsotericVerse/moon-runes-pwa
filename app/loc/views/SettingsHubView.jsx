@@ -1,6 +1,5 @@
 'use client';
 
-import ThemeControl from '../ThemeControl';
 
 export default function SettingsHubView(){
   return <section className="loc-view">
@@ -12,8 +11,7 @@ export default function SettingsHubView(){
 
     <section className="loc-card">
       <p className="loc-eyebrow">Display · 顯示</p>
-      <h2>顯示與主題</h2>
-      <ThemeControl />
+      <h2>顯示設定</h2>
     </section>
 
     <section className="loc-card">
