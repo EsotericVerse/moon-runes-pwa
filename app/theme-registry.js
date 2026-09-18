@@ -29,9 +29,9 @@ export const DEFAULT_ROTATION_SCHEDULE=[
 
 export const DEFAULT_SCOPE_THEME_SETTINGS={
   loc:{mode:'time',theme:'theme-7',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE},
-  runes:{mode:'time',theme:'theme-5',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE},
-  lo3rwang:{mode:'time',theme:'theme-7',custom:{'--loc-bg':'#eaf5ff','--loc-panel':'#f8fcff','--loc-heading':'#20384d','--loc-accent':'#5f9fcf'},schedule:DEFAULT_ROTATION_SCHEDULE},
-  admin:{mode:'time',theme:'theme-7',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE}
+  runes:{mode:'fixed',theme:'theme-5',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE},
+  lo3rwang:{mode:'custom',theme:'theme-2',custom:{'--loc-bg':'#eaf5ff','--loc-panel':'#f8fcff','--loc-panel-2':'#dceefe','--loc-text':'#17324a','--loc-heading':'#20384d','--loc-accent':'#6FA8DC','--loc-gold':'#8fb8d8','--loc-body-glow':'#d4eafa','--loc-body-mid':'#edf7ff','--loc-hero-start':'rgba(218,239,255,.97)','--loc-hero-end':'rgba(248,252,255,.99)'},schedule:DEFAULT_ROTATION_SCHEDULE},
+  admin:{mode:'fixed',theme:'theme-7',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE}
 };
 
 export function detectThemeScope(pathname='/',host=''){
