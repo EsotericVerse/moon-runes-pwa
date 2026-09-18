@@ -68,6 +68,7 @@ export default function GovernanceManagement(){
     <p>目前先由 Current Registry 提供預設值；之後可由管理頁面改成可編輯設定。</p>
     <ul>
       <li>Scope ID 規則：<code>{SCOPE_POLICY_V2.scopeIdPattern}</code></li>
+      <li>Scope ID 例外：{SCOPE_POLICY_V2.scopeIdExceptions.map(item=><code key={item}>{item}</code>)}</li>
       <li>預設 Scope：<code>{SCOPE_POLICY_V2.defaultScopeId}</code></li>
       <li>本部署保留字：{SCOPE_POLICY_V2.reservedWords.map(item=><code key={item.word}>{item.word}</code>)}</li>
     </ul>
