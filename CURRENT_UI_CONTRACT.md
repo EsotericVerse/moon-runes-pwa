@@ -5,7 +5,7 @@ Homepage explanation: 語言模型框架（Language Model Framework）
 
 LOC has one official navigation bar. LunaRunes uses the same single-NAV rule; page-local feature links are local menus, not additional NAV layers.
 
-Homepage architecture: `LOC Model Architecture｜月典模型架構` renders exactly eight bilingual functional modules: LunaRunes、Context、Music、Literary、MultiMedia、Algorithm、Module、Culture. Methodologies are consolidated into Algorithm; Module packages algorithms with data and functions; Culture owns time, trajectory, trend and textual evolution. Governance is presented separately as governance discourse and must not be encoded as an architecture layer or as part of the eight-module diagram.
+Homepage architecture: `LOC Model Architecture｜月典模型架構` renders exactly eight bilingual functional modules: LunaRunes、Context、Music、Literary、MultiMedia、Algorithm、Module、Culture. Methodologies are consolidated into Algorithm; Module packages algorithms with data and functions; Culture owns time, trajectory, trend and textual culture. Governance is presented separately as governance discourse and must not be encoded as an architecture layer or as part of the eight-module diagram.
 
 Homepage visual placement: the Start Here second column renders `/pics/LunaRunes.jpg`; `/pics/LOC-FrameworkPic.png` is the large flow diagram inside the later model-architecture section. Activating that diagram reveals eight floating module-menu options; smaller screens place the menu below the image.
 
