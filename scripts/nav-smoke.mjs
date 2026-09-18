@@ -8,3 +8,5 @@ const assertions=[
 const missing=assertions.filter(([token])=>!s.includes(token)).map(([,label])=>label);
 if(missing.length){console.error('NAV smoke missing: '+missing.join(', '));process.exit(1)}
 console.log('NAV scope smoke verified.');
+
+if(!s.includes("pathname==='/lo3rwang'"))throw new Error('Missing /lo3rwang personal Scope detection');
