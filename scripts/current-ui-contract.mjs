@@ -18,7 +18,7 @@ const required=[
   [sources.governance,'Admin Scope'],
   [sources.terminology,'"zh": "模型化語言框架"'],[sources.terminology,'"en": "Modelized Language Framework"'],
   [sources.terminology,'"zh": "符號式語言"'],[sources.terminology,'"en": "Symbolic Language"'],
-  [sources.registry,"domain:'loc.lo3rwang.cc'"],[sources.registry,"domain:'lrunes.lo3rwang.cc'"],[sources.registry,"domain:'dlwang.lo3rwang.cc'"],[sources.registry,"domain:'admin.lo3rwang.cc'"],
+  [sources.registry,"domain:'loc.lo3rwang.cc'"],[sources.registry,"domain:'lrunes.lo3rwang.cc'"],[sources.registry,"domain:'dlwang.lo3rwang.cc'"],[sources.registry,"alias:'dlwang'"],[sources.registry,"mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'})"],[sources.registry,"domain:'admin.lo3rwang.cc'"],
   [sources.locApp,'ContextV2'],[sources.locApp,'StatisticsV2'],[sources.locApp,'CultureV2'],[sources.locApp,'GovernanceV2'],[sources.locApp,'SearchV2']
 ];
 const forbiddenCurrent=['Language Model Framework','語言模型框架','Language Module Framework','語言系統模組框架','Symbolic Language Module','符號式語言模組','whoami.lo3rwang.cc','manage.lo3rwang.cc'];
