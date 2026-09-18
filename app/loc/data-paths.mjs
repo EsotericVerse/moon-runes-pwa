@@ -22,6 +22,7 @@ export const LOC_DATA = Object.freeze({
   LOC_GRAPH_SCHEMA: '/data/json/registries/LOC_GRAPH_SCHEMA.json',
   LOC_STYLE_GROUP_REGISTRY: '/data/json/registries/LOC_STYLE_GROUP_REGISTRY.json',
   LOC_MEDIA_REGISTRY: '/data/json/registries/LOC_MEDIA_REGISTRY.json',
+  RUNE_LITERATURE_REGISTRY: '/data/json/registries/RUNE_LITERATURE_REGISTRY.json',
   LOC_KNOWLEDGE_ASSET_REGISTRY: '/data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json',
   LOC_SEARCH_GOVERNANCE: '/data/json/registries/LOC_SEARCH_GOVERNANCE.json',
   LUNARUNE_CULTURE_HISTORY: '/data/json/registries/LUNARUNE_CULTURE_HISTORY.json',
