@@ -1,33 +1,33 @@
 # LOC 導覽治理原則
 
-**Status:** Current
-**Updated:** 2026-09-16
+**Status:** Current  
+**Updated:** 2026-09-19
 
 ## 單一 NAV
 
-每個介面只有一條正式導覽列（NAV）。頁內目錄、本地功能入口、返回連結、架構圖與快捷選單可以存在，但都不是另一套 NAV。Current 文件與程式只使用「NAV」這個名稱。
+全站只有一套正式 NAV。Current 的結構、文字、domain 與共用功能入口以 `app/site-registry.js` 為單一執行權威；`app/ScopeNav.jsx` 只負責依目前 Scope 渲染，不保存第二份 route map。
 
-## Scope 規則
+頁內目錄、快捷選單、抽牌模式選單與內容卡片連結都屬 Page / Feature Composition，不是第二套 NAV。
 
-NAV 必須繼承目前 Scope。脈絡、統計、文化、治理與搜尋是共用功能名稱，但資料與結果永遠由目前 Scope 決定；不得因共用 route 名稱跨到其他 Scope。
+## Scope 與共用功能
 
-- LOC Scope：月之符文｜脈絡｜統計｜文化｜治理｜搜尋｜作者頁面｜回月典首頁
-- LunaRunes Scope：語彙｜脈絡｜統計｜文化｜治理｜搜尋｜作者頁面｜回月之符文首頁｜回月典首頁
-- Author Scope：風格詞｜脈絡｜統計｜文化｜治理｜搜尋｜管理者頁面｜回作者頁面｜回月典首頁
-- Governance Scope：治理規則｜脈絡｜統計｜文化｜治理｜搜尋｜管理者頁面｜回治理頁面｜回月典首頁
+Current Scope domain 固定為：
 
-搜尋包含文字輸入方塊與搜尋按鈕。
+- LOC：`loc.lo3rwang.cc`
+- LunaRunes：`lrunes.lo3rwang.cc`
+- Author：`lo3rwang.lo3rwang.cc`
+- Admin：`admin.lo3rwang.cc`
 
-第一個項目是該 Scope 已治理的保留入口，不得由共用 route 規則覆寫。其餘共用功能依 Scope 自動解析目的地。未來新增 Scope 時，應由 Scope 設定衍生共用功能 route，不逐頁手動複製 NAV。
+`context`、`statics`、`culture`、`governance` 與 `search` 是共用功能。功能名稱與版型共用，實際 domain、資料來源、搜尋集合、首頁／角色入口與其他 Scope 差異全部由目前 Scope Registry 注入。
 
-## LunaRunes 雙入口
+因此修改共用 NAV renderer 或共用 CSS 時，所有 Scope 同步變更；修改單一 Scope Registry data 時，只改該 Scope 的名稱、domain、資料與必要例外。
 
-`lrunes.lo3rwang.cc/{route}` 與 `loc.lo3rwang.cc/runes/{route}` 是同一 LunaRunes Scope 的兩種入口。兩者的脈絡、統計、文化、治理與搜尋必須保持同一 Scope；`loc.lo3rwang.cc/{route}` 則屬 LOC 統合 Scope。
+## Authority
 
-## 管理入口
+- Current Scope / NAV authority：`app/site-registry.js`
+- Current renderer：`app/ScopeNav.jsx`
+- 全站外殼：`app/GlobalNav.jsx`、`app/GlobalFooter.jsx`
+- Legacy static compatibility：`js/loc-nav.js`，只讀 `js/site-registry.generated.js`
+- `js/site-registry.generated.js` 是生成投影，不是治理或 Current authority
 
-`manage.lo3rwang.cc` 是最高層統一管理功能入口。它不是一般內容 Scope。NAV 中的「管理者頁面」只出現在 Author 與 Governance Scope；LOC 與 LunaRunes NAV 不增加管理者頁面。LOC 治理頁可以在頁面內容中提供最高管理入口。
-
-## 本地入口
-
-頁內功能入口與快捷選單不是 NAV。LunaRunes 首頁目前允許「抽牌｜符文圖鑑」頁內子選單；這不建立另一條正式 NAV，也不改變 Scope、資料歸屬或管理權。
+舊 route-map JSON、平行 NAV runtime、`whoami`／`manage` domain 與 `evolution` route 不得重新成為 Current。歷史差異只由 Git 保存。
