@@ -2,7 +2,7 @@
   "schema_version": "0.1",
   "registry": "LOC_CROSS_RELATIONSHIP_REGISTRY",
   "authority": "LOC2",
-  "purpose": "Canonical cross-LOC context and relationship edges. LOC2 owns relation/context semantics; LOC7 consumes these edges for Search and Graph RAG algorithms; LOC8 consumes them for temporal/evolution views.",
+  "purpose": "Canonical cross-LOC context and relationship edges. LOC2 owns relation/context semantics; LOC7 consumes these edges for Search and Graph RAG algorithms; LOC8 consumes them for temporal/culture views.",
   "relationship_schema": {
     "required": [
       "relationship_id",
