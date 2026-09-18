@@ -8,7 +8,7 @@ for(const [id,domain] of Object.entries(expectedDomains)){
   if(resolveScopeV2(domain,'/')!==id)throw new Error(`${domain}: expected ${id}`);
   for(const feature of FEATURES_V2){
     const scope=SCOPES_V2[id];
-    const expectedBase=scope.mount?`https://${scope.mount.host}${scope.mount.path}`:`https://${domain}`;
+    const expectedBase=scope.scopeType==='directory'&&scope.mount?`https://${scope.mount.host}${scope.mount.path}`:`https://${domain}`;
     if(featureHrefV2(id,feature.id)!==`${expectedBase}/${feature.path}`)throw new Error(`${id}/${feature.id} route drifted`);
   }
 }
