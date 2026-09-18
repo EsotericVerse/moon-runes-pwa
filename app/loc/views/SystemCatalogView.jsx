@@ -67,8 +67,6 @@ export default function SystemCatalogView({kind}){
   },[kind]);
 
   const items=STATIC[kind]?.items||rows;
-  const searchQuery={music:'音樂',literary:'文字創作',multimedia:'多媒體',algorithm:'演算法',module:'模組'}[kind]||'';
-
   return <main className="loc-next-main"><section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">{meta.eyebrow}</p><h1>{meta.title}</h1><p className="loc-subtitle">{meta.intro}</p></header>
     <section className="loc-card"><p className="loc-eyebrow">Style</p><h2>風格</h2><p>{meta.style}</p></section>
@@ -87,6 +85,6 @@ export default function SystemCatalogView({kind}){
         </article>;
       })}</div>
     </section>
-    <section className="loc-card"><p className="loc-eyebrow">Advanced Search</p><h2>進階搜尋</h2><p>需要跨作品、來源、時期、關鍵字或語意關係時，再進入完整搜尋。</p><div className="loc-actions"><a className="loc-button primary" href={`/search?q=${encodeURIComponent(searchQuery)}`}>開啟進階搜尋</a></div></section>
+    <section className="loc-card"><p className="loc-eyebrow">Advanced Search</p><h2>進階搜尋</h2><p>需要跨作品、來源、時期、關鍵字或語意關係時，再進入完整搜尋。</p><div className="loc-actions"><a className="loc-button primary" href="/search">開啟進階搜尋</a></div></section>
   </section></main>;
 }
