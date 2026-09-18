@@ -1876,7 +1876,6 @@ class UnifiedSearchEngine:
     @staticmethod
     def _graph_relation_weight(relation_type: str) -> float:
         weights = {
-            "owned_by_loc": 1.00,
             "belongs_to_era": 1.00,
             "temporal_before": 0.98,
             "temporal_after": 0.98,
@@ -3113,12 +3112,12 @@ class UnifiedSearchEngine:
                 "edge_count": graph.get("edge_count", 0),
                 "paths": graph.get("paths", [])[:10],
                 "era_path": graph.get("era_path", []),
-                "loc_path": graph.get("loc_path", []),
+                "feature_path": graph.get("feature_path", []),
                 "connected_results": graph.get("connected_results", [])[:10],
                 "registry_counts": graph.get("graph_registry_counts", {}),
                 "quality": graph.get("quality", {}),
             },
-            "governance_note": "綜合結果先由 Search 取回證據，再以 Canonical Graph 聚合 LOC、ERA、作品與分析節點。語意相似只負責選 seed；Graph edge 僅採 Registry、權威欄位或可確定的結構關係。",
+            "governance_note": "綜合結果先由 Search 取回證據，再以 Canonical Graph 聚合 Scope、Feature、ERA、作品與分析節點。語意相似只負責選 seed；Graph edge 僅採 Registry、權威欄位或可確定的結構關係。",
         }
 
 
