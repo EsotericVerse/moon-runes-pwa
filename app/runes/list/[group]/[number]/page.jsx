@@ -12,6 +12,7 @@ export function generateStaticParams(){
 
 export const metadata={title:'符文｜月之符文'};
 
-export default function RuneCardPage({params}){
-  return <main className="loc-next-main"><RuneCardPageClient group={params.group} number={params.number}/></main>;
+export default async function RuneCardPage({params}){
+  const {group,number}=await params;
+  return <main className="loc-next-main"><RuneCardPageClient group={group} number={number}/></main>;
 }
