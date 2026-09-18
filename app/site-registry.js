@@ -6,6 +6,7 @@ import {
   getScopeV2,
   resolveScopeV2,
   scopeDataViewV2,
+  scopeHrefV2,
   scopeOriginV2
 } from './modular-v2/scope-registry.v2';
 
@@ -27,6 +28,7 @@ export const SITE_SCOPES=Object.freeze(
 export function detectSiteScope(pathname='/',host=''){return resolveScopeV2(host,pathname);}
 export function getSiteScope(id){return SITE_SCOPES[id]||SITE_SCOPES.loc;}
 export function scopeOrigin(id){return scopeOriginV2(id);}
+export function scopeHref(id,localPath=''){return scopeHrefV2(id,localPath);}
 export function featureRoute(id,feature){return featureHrefV2(id,feature);}
 export function scopeDataView(id,key){return scopeDataViewV2(id,key);}
 export {FEATURES_V2,SCOPES_V2,getScopeV2};
