@@ -1,52 +1,22 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { LOC_DATA } from '../../loc/data-paths.mjs';
+import RuneListClient from './RuneListClient';
 
-const runeSourcePath = resolve(process.cwd(), LOC_DATA.RUNES.replace(/^\//, ''));
-const runes = JSON.parse(readFileSync(runeSourcePath, 'utf8'));
-
-export const metadata = {
-  title: '所有符文列表｜月之符文｜LOC',
-  description: '月之符文 1–66 完整列表。'
+export const metadata={
+  title:'符文圖鑑｜月之符文',
+  description:'月之符文 1–66 符文圖鑑。'
 };
 
-function runeCardImage(card) {
-  const number = String(Number(card?.編號) || 0).padStart(2, '0');
-  const name = String(card?.符文名稱 || '').replace(/之符文$/, '').trim();
-  return `/assets/lunarunes/cards/${number}_${name}.png`;
-}
-
-export default function RuneListPage() {
-  const canonicalRunes = (runes || [])
-    .filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 66)
-    .sort((a, b) => Number(a.編號) - Number(b.編號));
-
-  return <main className="loc-next-main">
-    <section className="loc-view">
-      <header className="loc-hero">
-        <p className="loc-eyebrow">LunaRunes</p>
-        <h1>所有符文列表</h1>
-        <p className="loc-subtitle">依編號查看月之符文 1–66 的名稱、群組、月相、說明與關鍵詞。</p>
-      </header>
-
-      <nav className="loc-card" aria-label="月之符文功能入口">
-        <a href="https://lrunes.lo3rwang.cc/duel/one">抽牌</a> · <a href="https://lrunes.lo3rwang.cc/">符文首頁</a> · <strong>所有符文列表</strong>
-      </nav>
-
-      <section className="loc-card" id="rune-list">
-        <p className="loc-eyebrow">Rune List</p>
-        <h2>1–66</h2>
-        <div className="loc-context-list">
-          {canonicalRunes.map(card => <article className="loc-context-item" id={`rune-${card.編號}`} key={card.編號}>
-            <img className="loc-rune-card-image" src={runeCardImage(card)} alt={`${card.符文名稱}符文卡`} />
-            <strong>{String(Number(card.編號)).padStart(2, '0')} · {card.符文名稱} · {card.英文}</strong>
-            <span>{card.所屬分組} · {card.月相} · {card.卡片屬性}</span>
-            <span>{card.符文說明}</span>
-            <span><b>正向關鍵詞：</b>{card.正向關鍵詞 || '—'}</span>
-            <span><b>反向關鍵詞：</b>{card.反向關鍵詞 || '—'}</span>
-          </article>)}
-        </div>
-      </section>
+export default function RuneListPage(){
+  return <main className="loc-next-main"><section className="loc-view scope-home-composition">
+    <header className="loc-hero">
+      <p className="loc-eyebrow">LunaRunes · List</p>
+      <h1>符文圖鑑</h1>
+      <p className="loc-subtitle">依群組與總編號查看 66 個符文。卡片網址固定使用數字，不使用英文名稱。</p>
+    </header>
+    <section className="loc-card">
+      <p>網址格式固定為 <code>/list/群組編號/符文總編號</code>，例如第一組第一號為 <code>/list/01/01</code>。</p>
     </section>
-  </main>;
+    <section className="loc-card" id="rune-list">
+      <RuneListClient/>
+    </section>
+  </section></main>;
 }
