@@ -30,7 +30,7 @@ const READING_EXAMPLES = [
 ];
 
 export default function RunesPage() {
-  return <main className="loc-next-main">
+  return <main className="loc-next-main"><section className="loc-view scope-home-composition runes-home">
     <header className="loc-hero runes-home-hero">
       <div className="runes-home-hero-copy">
         <p className="loc-eyebrow">LunaRunes</p>
@@ -53,7 +53,7 @@ export default function RunesPage() {
     </header>
 
     <section className="loc-card runes-quick-start" aria-labelledby="runes-quick-start-title">
-      <div className="runes-content-heading">
+      <div className="home-section-heading">
         <p className="loc-eyebrow">Quick Start</p>
         <h2 id="runes-quick-start-title">你現在最想問哪一件事</h2>
         <p className="loc-subtitle">不用先學規則，挑一個方向，抽一張牌就可以開始。</p>
@@ -69,7 +69,7 @@ export default function RunesPage() {
     </section>
 
     <section className="loc-card runes-reading-example-links" aria-labelledby="reading-example-title">
-      <div className="runes-content-heading">
+      <div className="home-section-heading">
         <p className="loc-eyebrow">Example</p>
         <h2 id="reading-example-title">想先看看實際怎麼解</h2>
         <p className="loc-subtitle">從一個完整範例開始，看抽牌之後怎麼把結果連成解讀。</p>
@@ -83,7 +83,7 @@ export default function RunesPage() {
     <RuneAtlasHome />
 
     <section className="loc-card runes-content-section" id="context">
-      <div className="runes-content-heading">
+      <div className="home-section-heading">
         <p className="loc-eyebrow">Context</p>
         <h2>關鍵詞與符文演算法</h2>
         <p className="loc-subtitle">從詞與詞的關係，看符文之間怎麼連起來。</p>
@@ -94,7 +94,7 @@ export default function RunesPage() {
     </section>
 
     <section className="loc-card runes-content-section" id="culture">
-      <div className="runes-content-heading">
+      <div className="home-section-heading">
         <p className="loc-eyebrow">Culture</p>
         <h2>符文延伸體系</h2>
         <p className="loc-subtitle">看月之符文如何延伸成小說、短文、歌曲、影像與其他作品。</p>
@@ -102,5 +102,5 @@ export default function RunesPage() {
       <p>文化不是再解釋單一符文，而是看符文如何進入不同形式的創作。想看哪一種，就從對應的延伸體系直接進去。</p>
       <div className="links"><a href="/literary">看符文文學</a><a href="/music">看符文歌曲</a><a href="/culture">看符文文化</a></div>
     </section>
-  </main>;
+  </section></main>;
 }
