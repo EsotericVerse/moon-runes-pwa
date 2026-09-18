@@ -29,7 +29,7 @@ export default function ThemeSelect(){
   const [scope,setScope]=useState('loc');
   const [managedDefault,setManagedDefault]=useState(null);
   const {value:registryOverrides}=useNeonSetting(THEME_REGISTRY_SETTING_KEY,{});
-  const {value:storedSettings,setValue:setStoredSettings}=useNeonSetting(SCOPE_THEME_SETTINGS_KEY,DEFAULT_SCOPE_THEME_SETTINGS);
+  const {value:storedSettings,setValue:setStoredSettings}=useNeonSetting(SCOPE_THEME_SETTINGS_KEY,{});
   const slots=useMemo(()=>mergeThemeSlots(registryOverrides||{}),[registryOverrides]);
   const settings=scopeThemeSettings(scope,storedSettings||{},managedDefault);
 
