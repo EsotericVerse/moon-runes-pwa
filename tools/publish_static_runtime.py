@@ -146,7 +146,7 @@ def main() -> int:
         {"history": "data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json", "analysis": "data/json/registries/LUNARUNE_EVOLUTION_ANALYSIS.json"},
         "data/js/lunarune-evolution-data.js", "LUNARUNE_EVOLUTION_DATA",
     )
-    dump_global("data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json", "data/js/lunarune-daily-data.js", "LUNARUNE_DAILY_DATA")
+    dump_global("data/json/registries/DAILY_RUNE_REPO_HISTORY.json", "data/js/lunarune-daily-data.js", "LUNARUNE_DAILY_DATA")
     dump_normalized_events()
     dump_compact_scenarios()
     dump_global("data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json", "data/js/loc-relation-data.js", "LOC_RELATION_DATA")
