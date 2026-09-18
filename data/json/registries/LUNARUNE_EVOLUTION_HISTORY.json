@@ -1,7 +1,7 @@
 {
-  "version": "1.4-rc4",
+  "version": "1.5-rc1",
   "title": "LunaRunes Evolution History",
-  "purpose": "把符文系統自身演化、語意治理演化與可重現實例分開呈現；不把文化時代語義漂移回寫 Base66 Canon。",
+  "purpose": "把 LunaRunes 的來源、符文系統自身演化、語意治理演化與可重現實例分開呈現；保留 provenance，不把文化時代語義漂移回寫 Base66 Canon。",
   "coverage": {
     "system_stage_count": 5,
     "governance_evolution_count": 8,
@@ -290,5 +290,30 @@
     "culture_shift_is_observable": true,
     "culture_shift_changes_base66": false,
     "note": "古今詞義與文化轉移可放入時間分析，但不由 LunaRunes Base66 本體直接處理。"
+  },
+  "origin_provenance": {
+    "status": "historical_provenance",
+    "public_detail_level": "minimal",
+    "origin_form": "認字／命令卡",
+    "audience": "某程度可視為給毛小孩使用",
+    "historical_meaning": "後來成為一種墓誌銘，用來留下她曾經存在過的紀錄。",
+    "privacy_rule": "只保留理解 LunaRunes 起源所需的最小資訊；不推測、不戲劇化、不延伸私人細節。",
+    "design_continuity": [
+      "以文字／語彙作為最小辨識單位",
+      "認字與建立語彙的用途仍可成立，包括作為兒童語文學習的簡單起點",
+      "LunaRunes 以文字與語意為主要介面，不要求先理解神秘學圖像象徵",
+      "可以占卜，但占卜只是 Symbolic Language 的一種使用方式"
+    ],
+    "historical_sequence": [
+      "認字／命令卡",
+      "擱置",
+      "重新整理與符文化",
+      "14",
+      "24",
+      "32",
+      "42",
+      "66"
+    ],
+    "note": "後續重新整理的精確日期與中間工作版本只採已確認歷史來源；不得由記憶補造。"
   }
 }
