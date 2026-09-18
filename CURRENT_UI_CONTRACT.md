@@ -1,7 +1,7 @@
 # Current UI contract
 
 Homepage title: LOC月典
-Homepage explanation: 語言模型框架（Language Model Framework）
+Homepage explanation: 語言系統模組框架（Language Module Framework）
 
 LOC has one official navigation bar. LunaRunes uses the same single-NAV rule; page-local feature links are local menus, not additional NAV layers.
 
