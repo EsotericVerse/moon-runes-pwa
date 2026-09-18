@@ -5,7 +5,7 @@ import {LanguageProvider} from './LanguageProvider';
 
 export const metadata = {
   title: 'LOC 月典',
-  description: 'LOC Language Module Framework application shell.'
+  description: 'LOC Modelized Language Framework application shell.'
 };
 
 export default function RootLayout({ children }) {
