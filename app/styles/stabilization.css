@@ -1,76 +1,3 @@
-/* Stabilize shared text-box semantics after the Next migration.
-   Body paragraphs are body text unless explicitly marked .loc-subtitle or .loc-core-line. */
-.loc-card>h1+p:not(.loc-subtitle):not(.loc-core-line),
-.loc-card>h2+p:not(.loc-subtitle):not(.loc-core-line),
-.loc-card>h3+p:not(.loc-subtitle):not(.loc-core-line),
-.loc-panel>h1+p:not(.loc-subtitle):not(.loc-core-line),
-.loc-panel>h2+p:not(.loc-subtitle):not(.loc-core-line),
-.loc-panel>h3+p:not(.loc-subtitle):not(.loc-core-line),
-.home-section-heading>h1+p:not(.loc-subtitle):not(.loc-core-line),
-.home-section-heading>h2+p:not(.loc-subtitle):not(.loc-core-line),
-.home-section-heading>h3+p:not(.loc-subtitle):not(.loc-core-line){
-  display:block;
-  margin:.45rem 0 0!important;
-  padding:0;
-  border:0;
-  color:var(--loc-text)!important;
-  font-size:var(--loc-type-body)!important;
-  font-weight:var(--loc-weight-body);
-  line-height:var(--loc-line-body)!important;
-}
-
-/* One type system for all migrated LOC pages and controls. */
-.loc-next-header,
-.loc-next-main,
-.loc-view,
-.loc-card,
-.loc-panel,
-.loc-bubble,
-.loc-button,
-.loc-status,
-.loc-table,
-.loc-next-search input,
-.loc-view input,
-.loc-view button,
-.loc-view select,
-.loc-view textarea{
-  font-family:var(--loc-font-family);
-}
-
-.loc-eyebrow{
-  font-size:var(--loc-type-eyebrow)!important;
-  font-weight:var(--loc-weight-eyebrow)!important;
-  line-height:1.45!important;
-  letter-spacing:.08em!important;
-}
-
-/* First title of every page is the largest title on that page. */
-.loc-view>.loc-hero>h1,
-.loc-view>.loc-hero>.home-title-row>h1{
-  font-size:var(--loc-type-page-title)!important;
-  font-weight:var(--loc-weight-page-title)!important;
-  line-height:var(--loc-line-page-title)!important;
-}
-
-.loc-card>h1,.loc-card>h2,.loc-card>h3,
-.loc-panel>h1,.loc-panel>h2,.loc-panel>h3,
-.home-section-heading>h1,.home-section-heading>h2,.home-section-heading>h3{
-  font-size:var(--loc-type-section-title);
-  font-weight:var(--loc-weight-section-title);
-  line-height:var(--loc-line-section-title);
-}
-
-.loc-subtitle{
-  display:block;
-  margin:.35rem 0 .7rem!important;
-  padding:0;
-  border:0;
-  color:var(--loc-accent)!important;
-  font-size:var(--loc-type-subtitle)!important;
-  font-weight:var(--loc-weight-subtitle);
-  line-height:var(--loc-line-subtitle)!important;
-}
-
 /* Homepage short title + explanation stay on one row on desktop. */
 .home-context .home-section-heading>h2,
 .home-author-words .home-section-heading>h2{
@@ -88,14 +15,6 @@
   border-left:1px solid var(--loc-line);
   border-bottom:1px solid var(--loc-line);
   vertical-align:baseline;
-}
-
-.loc-card>p:not(.loc-eyebrow):not(.loc-subtitle):not(.loc-core-line),
-.loc-panel>p:not(.loc-eyebrow):not(.loc-subtitle):not(.loc-core-line),
-.loc-hero-copy p{
-  font-size:var(--loc-type-body);
-  font-weight:var(--loc-weight-body);
-  line-height:var(--loc-line-body);
 }
 
 /* Homepage first box: text stays left; LOC visual occupies the former moon-side visual area. */
@@ -178,13 +97,6 @@
 .loc-home>.loc-hero>.loc-hero-copy>.home-intro-links>.loc-bubble{
   flex:0 0 auto;
   white-space:nowrap;
-}
-
-.loc-next-nav,
-.loc-button,
-.loc-next-search input{
-  font-size:var(--loc-type-ui);
-  font-weight:var(--loc-weight-ui);
 }
 
 .loc-next-nav-stack{width:100%}
