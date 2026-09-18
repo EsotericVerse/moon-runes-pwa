@@ -76,7 +76,7 @@ export default function SearchView({fixedCollectionId=''}){
     setPage(1);setError('');setResults([]);setCultureKeyword(null);setStatus(`搜尋「${collection.label}」資料…`);
     try{
       if(collection.id==='政德文化'||collection.id==='all'){
-        const cultureData=await fetchLocJson(LOC_DATA.ZHENGDE_CULTURE_KEYWORDS);
+        const cultureData=await fetchLocJson(LOC_DATA.LO3RWANG_CULTURE_KEYWORDS);
         if(id!==searchId.current)return;
         setCultureKeyword(matchCultureKeyword(cultureData,q));
       }
