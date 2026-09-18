@@ -80,8 +80,13 @@ requireText('app/modular-v2/scope-registry.v2.js',[
   "word:'loc'",
   "domain:'lrunes.lo3rwang.cc'",
   "mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'})",
-  "localRoutes:Object.freeze(['list','history','duel/one','duel/daily','duel/two','duel/three','duel/five','duel/ow3gs'])",
-  'export function scopeHrefV2'
+  "localRoutes:Object.freeze([",
+  "'list'",
+  "'history'",
+  "'duel/one'",
+  "'duel/ow3gs'",
+  'export function scopeHrefV2',
+  'export function isScopeRequestAllowedV2'
 ]);
 
 requireText('app/loc/model/moon-phase.js',[
