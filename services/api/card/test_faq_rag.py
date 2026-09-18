@@ -23,7 +23,7 @@ class FAQSearchEngineTest(unittest.TestCase):
     def test_current_loc_definition_uses_module_framework(self):
         result = self.engine.search("LOC是什麼？", top_k=3)[0]
         self.assertEqual(result.chunk["parent_id"], "FAQ-001")
-        self.assertIn("Language Module Framework", result.chunk["answer"])
+        self.assertIn("Modelized Language Framework", result.chunk["answer"])
         self.assertNotIn("Language System Model", result.chunk["answer"])
 
     def test_loc_numbers_are_historical_provenance_only(self):
@@ -36,7 +36,7 @@ class FAQSearchEngineTest(unittest.TestCase):
     def test_framework_positioning_question_is_current(self):
         rows = [chunk for chunk in self.engine.chunks if chunk.get("parent_id") == "FAQ-091"]
         self.assertTrue(rows)
-        self.assertIn("Language Module Framework", rows[0]["question"])
+        self.assertIn("Modelized Language Framework", rows[0]["question"])
         self.assertNotIn("Language System Model", rows[0]["question"])
 
     def test_zero_rune_is_not_drawn(self):
