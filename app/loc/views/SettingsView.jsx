@@ -32,7 +32,7 @@ export default function SettingsView(){
     <section className="loc-card">
       <p className="loc-eyebrow">Data</p>
       <h2>資料與匯入／匯出</h2>
-      <p className="loc-subtitle">管理本機資料、JSON 匯入匯出，以及手動備份與讀回。</p>
+      <p className="loc-subtitle">管理 Neon 個人資料與 JSON 匯入／匯出。</p>
       <div className="loc-actions">
         <a className="loc-button primary" href="/library">開啟資料庫</a>
       </div>
