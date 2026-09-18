@@ -3,6 +3,27 @@ import fs from 'node:fs';
 const read=p=>fs.readFileSync(p,'utf8');
 const retiredPersonalSources=['lo3rwang.html','app/author/page.jsx','app/author/governance/page.jsx'];
 const resurrected=retiredPersonalSources.filter(path=>fs.existsSync(path));
+function walkCurrentUi(dir){
+  if(!fs.existsSync(dir))return [];
+  const out=[];
+  for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
+    const full=dir+'/'+entry.name;
+    if(entry.isDirectory())out.push(...walkCurrentUi(full));
+    else if(/\.(jsx|js|mjs|tsx|ts)$/.test(entry.name))out.push(full);
+  }
+  return out;
+}
+const queryNavigation=[];
+for(const file of walkCurrentUi('app')){
+  const source=read(file);
+  const literalHref=/href\s*=\s*(?:["'][^"'<>]*\?[^"'<>]*["']|\{\s*["'][^"'<>]*\?[^"'<>]*["']\s*\}|\{\s*`[^`]*\?[^`]*`\s*\})/g;
+  const matches=source.match(literalHref)||[];
+  for(const match of matches)queryNavigation.push(file+': '+match);
+}
+if(queryNavigation.length){
+  console.error('Current navigation must use concrete routes, not query-string hrefs:\n'+queryNavigation.join('\n'));
+  process.exit(1);
+}
 if(resurrected.length){console.error('Retired personal sources must not return: '+resurrected.join(', '));process.exit(1);}
 const sources={
  home:read('app/loc/views/AboutView.jsx'),
