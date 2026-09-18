@@ -1,4 +1,4 @@
-import { LOC_SYSTEM_LINKS,LUNARUNES_LINKS } from '../system-links';
+import { FAQ_LINKS,LOC_SYSTEM_LINKS,LUNARUNES_LINKS } from '../system-links';
 import ModelArchitectureExplorer from './ModelArchitectureExplorer';
 
 const MODEL_MODULES=LOC_SYSTEM_LINKS;
@@ -16,6 +16,7 @@ export default function AboutView(){
 		<br/>月之符文(LunaRunes)是一套有自己獨特方式的符號式語言（Symbolic Language）。</p>
         <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，<br/>讓累積的資料可以繼續被理解、比較分析並得知其文化(文字演化)。</p>
       </div>
+      <div className="loc-actions"><a className="loc-button" href={FAQ_LINKS.loc}>LOC FAQ</a></div>
       <figure className="home-hero-visual">
         <img src="/pics/LOC-PicAll.png" alt="LOC 月典模型化語言框架視覺理念圖" loading="eager" />
       </figure>
