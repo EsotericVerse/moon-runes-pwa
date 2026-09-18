@@ -25,7 +25,7 @@ function applyTheme(slot,custom={}){
 }
 
 export default function ThemeSelect(){
-  const {scope}=useSiteScope();
+  const {scope,ready}=useSiteScope();
   const [managedDefault,setManagedDefault]=useState(null);
   const {value:registryOverrides}=useNeonSetting(THEME_REGISTRY_SETTING_KEY,{});
   const {value:storedSettings,setValue:setStoredSettings}=useNeonSetting(SCOPE_THEME_SETTINGS_KEY,{});
@@ -34,11 +34,13 @@ export default function ThemeSelect(){
 
   useEffect(()=>{
     let live=true;
+    if(!ready){setManagedDefault(null);return()=>{live=false};}
     getScopeThemeDefault(scope).then(value=>{if(live)setManagedDefault(value)}).catch(()=>{if(live)setManagedDefault(null)});
     return()=>{live=false};
-  },[scope]);
+  },[scope,ready]);
 
   useEffect(()=>{
+    if(!ready)return undefined;
     const enabled=slots.filter(slot=>slot.enabled);
     const id=settings.mode==='time'?themeForHour(settings.schedule):settings.theme;
     const slot=enabled.find(item=>item.id===id)||enabled[0];
@@ -51,7 +53,7 @@ export default function ThemeSelect(){
     const timer=window.setInterval(sync,60000);
     document.addEventListener('visibilitychange',sync);
     return()=>{window.clearInterval(timer);document.removeEventListener('visibilitychange',sync);};
-  },[slots,settings.mode,settings.theme,settings.custom,settings.schedule]);
+  },[ready,slots,settings.mode,settings.theme,settings.custom,settings.schedule]);
 
   const selected=settings.mode==='time'?'time':settings.mode==='custom'?'custom':settings.theme;
   function change(event){
@@ -64,6 +66,8 @@ export default function ThemeSelect(){
       return {...base,[scope]:{...now,mode:'fixed',theme:next}};
     });
   }
+
+  if(!ready)return null;
 
   return <label className="loc-theme-control">
     <span>主題</span>
