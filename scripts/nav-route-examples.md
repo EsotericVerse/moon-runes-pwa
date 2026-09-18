@@ -6,4 +6,6 @@
 - `lo3rwang.lo3rwang.cc/context` → Author/Personal Scope context.
 - `admin.lo3rwang.cc` → highest-level management entry.
 
-The same derivation applies to `statics`, `evolution`, `governance`, and `search`. These are shared functions; Scope determines the data and result.
+The same derivation applies to `statics`, `culture`, `governance`, and `search`. These are shared functions; Scope determines the data and result.
+
+`/culture` is the Current culture route. `/evolution` is compatibility-only and is not a Current NAV target.
