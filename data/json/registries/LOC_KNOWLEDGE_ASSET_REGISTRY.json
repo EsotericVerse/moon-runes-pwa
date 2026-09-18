@@ -58,7 +58,7 @@
     {
       "asset_id": "KA-PERSON-LO3RWANG-001",
       "title": "王政德（Lucas Oscar Wang / lo3rwang）",
-      "path": "lo3rwang.html",
+      "path": "app/lo3rwang/page.jsx",
       "source_type": "public_page",
       "content_type": "knowledge_document",
       "role": "official_public_identity_profile",
@@ -66,8 +66,8 @@
       "authority_level": "official_self_profile",
       "searchable": true,
       "index_priority": "highest",
-      "version": "2026-09-06",
-      "updated_at": "2026-09-06",
+      "version": "2026-09-18",
+      "updated_at": "2026-09-18",
       "keywords": [
         "lo3rwang",
         "王政德",
@@ -78,7 +78,7 @@
         "Language Systems Governance Architect",
         "Wordsmith"
       ],
-      "public_path": "lo3rwang.html",
+      "public_path": "https://lo3rwang.lo3rwang.cc/",
       "public_summary": "lo3rwang 是王政德（Lucas Oscar Wang）的公開識別名稱，主要身份為 LOC／月典創作者與系統設計者、Language Systems Governance Architect 與 Wordsmith。",
       "presentation": "public_article",
       "exposure_policy": "public_full_text",
@@ -94,7 +94,7 @@
         "repository": "EsotericVerse/moon-runes-pwa",
         "maintained_in_repo": true
       },
-      "notes": "Official public identity profile is maintained directly in lo3rwang.html; duplicate Markdown profile removed.",
+      "notes": "Official public identity profile is maintained in app/lo3rwang/page.jsx and published at https://lo3rwang.lo3rwang.cc/. Legacy lo3rwang.html and app/author routes are retired.",
       "feature_ids": [
         "km"
       ],
