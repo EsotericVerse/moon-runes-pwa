@@ -1,4 +1,5 @@
 import { LOC_DATA } from './data';
+import {getScopeV2,resolveScopeV2} from '../modular-v2/scope-registry.v2';
 
 export const SEARCH_SCOPE_FIELDS=Object.freeze(['person','family','generation','era','source','corpus','language','culture']);
 
@@ -40,7 +41,7 @@ export const SEARCH_COLLECTIONS = Object.freeze({
   '月之符文': Object.freeze({
     id: '月之符文',
     label: '月之符文',
-    description: '搜尋 LunaRunes 核心資料、抽牌語法、每日解讀與 Lots／History／Harmony companion datasets。',
+    description: '搜尋 LunaRunes 核心資料、抽牌語法、每日解讀與 companion datasets。',
     scopeProfile:Object.freeze({id:'lunarunes',fields:Object.freeze(['source','corpus','language','culture'])}),
     smallSources: [
       [LOC_DATA.RUNES, '月之符文'],
@@ -76,8 +77,8 @@ export function getSearchCollection(value) {
   const key = String(value || '').trim();
   return SEARCH_COLLECTIONS[key] || SEARCH_COLLECTIONS.all;
 }
-
-export function getSearchScopeProfile(value){
-  return getSearchCollection(value).scopeProfile;
+export function getSearchScopeProfile(value){return getSearchCollection(value).scopeProfile;}
+export function searchCollectionForHost(host='',pathname='/'){
+  const scopeId=resolveScopeV2(host,pathname);
+  return getSearchCollection(getScopeV2(scopeId).searchCollection);
 }
-

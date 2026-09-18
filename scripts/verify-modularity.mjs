@@ -35,9 +35,8 @@ walk(resolve(root, 'app'), path => {
 
 const canonicalPath = resolve(root, 'data/json/core/runes.json');
 let canonicalRunes = [];
-if (!existsSync(canonicalPath)) {
-  failures.push('data/json/core/runes.json: missing canonical rune source');
-} else {
+if (!existsSync(canonicalPath)) failures.push('data/json/core/runes.json: missing canonical rune source');
+else {
   try {
     const rows = JSON.parse(readFileSync(canonicalPath, 'utf8'));
     canonicalRunes = Array.isArray(rows) ? rows : [];
@@ -46,9 +45,7 @@ if (!existsSync(canonicalPath)) {
       const ids = new Set(rows.map(row => Number(row.編號)));
       for (let id = 1; id <= 66; id += 1) if (!ids.has(id)) failures.push(`data/json/core/runes.json: missing rune id ${id}`);
     }
-  } catch (error) {
-    failures.push(`data/json/core/runes.json: invalid JSON (${error.message})`);
-  }
+  } catch (error) { failures.push(`data/json/core/runes.json: invalid JSON (${error.message})`); }
 }
 
 const unifiedSearchPath = resolve(root, 'services/api/card/unified_search.py');
@@ -57,9 +54,7 @@ if (existsSync(unifiedSearchPath) && canonicalRunes.length) {
   const block = text.match(/group_defs\s*=\s*\{([\s\S]*?)\n\s*\}/)?.[1] || '';
   if (block) {
     const actual = new Map();
-    for (const match of block.matchAll(/"([^"]+組)"\s*:\s*\{([^}]*)\}/g)) {
-      actual.set(match[1], new Set([...match[2].matchAll(/"([^"]+)"/g)].map(item => item[1])));
-    }
+    for (const match of block.matchAll(/"([^"]+組)"\s*:\s*\{([^}]*)\}/g)) actual.set(match[1], new Set([...match[2].matchAll(/"([^"]+)"/g)].map(item => item[1])));
     const expected = new Map();
     for (const rune of canonicalRunes) {
       const group = String(rune?.所屬分組 || '').trim();
@@ -91,37 +86,26 @@ function verifyRuntimeRefs(scanRoot) {
 }
 verifyRuntimeRefs('app');
 
-walk(resolve(root, 'app/loc/views'), path => {
-  if (!/\.(?:js|jsx|mjs)$/.test(path)) return;
-  const rel = relative(root, path).replaceAll('\\', '/');
-  const text = readFileSync(path, 'utf8');
-  if (/['"`]\/data\/json\//.test(text)) failures.push(`${rel}: hardcoded /data/json path; register it in LOC_DATA`);
-  if (/from\s+['"]\.\.\/(?:local-db|google-drive|kv-state|storage)['"]/.test(text)) {
-    failures.push(`${rel}: retired browser/KV storage provider import`);
-  }
-});
-
 for(const retired of ['app/loc/local-db.js','app/loc/google-drive.js','app/loc/storage.js','app/loc/auth-client.js']){
   if(existsSync(resolve(root,retired)))failures.push(`${retired}: retired persistence/auth module must remain removed`);
 }
 const neonUserStorage=readFileSync(resolve(root,'app/loc/neon-user-storage.js'),'utf8');
 if(!/user_records/.test(neonUserStorage)||!/user_settings/.test(neonUserStorage))failures.push('Neon user persistence contract missing');
-
 const dataRuntime = readFileSync(resolve(root, 'app/loc/data.js'), 'utf8');
 if (!/DEFAULT_GLOBAL_CONCURRENCY\s*=\s*2\b/.test(dataRuntime)) failures.push('app/loc/data.js: global JSON concurrency budget must remain 2');
 
-const searchView = readFileSync(resolve(root, 'app/loc/views/SearchView.jsx'), 'utf8');
-if (/useEffect\s*\([^)]*fetchLocJson\s*\(\s*LOC_DATA\.(?:TEXT_CORPUS_MANIFEST|MUSIC_SEARCH_MANIFEST)/s.test(searchView)) failures.push('SearchView: manifests must not load eagerly on mount');
-if (!/fetchLocJsonBatch\(smallRequests,\{concurrency:2\}\)/.test(searchView)) failures.push('SearchView: small-source concurrency must remain 2');
-if (!/SEGMENT_BATCH_SIZE\s*=\s*2\b/.test(searchView)) failures.push('SearchView: corpus segment batch size must remain 2');
-if (!/fetchLocDataSegments\(datasetId,\{segmentIds:chunk\.map\(segment=>segment\.id\),maxSegments:SEGMENT_BATCH_SIZE\}\)/.test(searchView)) failures.push('SearchView: corpus data must use bounded incremental segment loading');
+const searchView = readFileSync(resolve(root, 'app/modular-v2/features/SearchV2.jsx'), 'utf8');
+if (!/SEGMENT_BATCH_SIZE\s*=\s*2\b/.test(searchView)) failures.push('SearchV2: corpus segment batch size must remain 2');
+if (!/fetchLocJsonBatch\(requests,\{concurrency:2\}\)/.test(searchView)) failures.push('SearchV2: small-source concurrency must remain 2');
+if (!/fetchLocDataSegments\(datasetId,\{segmentIds:chunk\.map\(segment=>segment\.id\),maxSegments:SEGMENT_BATCH_SIZE\}\)/.test(searchView)) failures.push('SearchV2: corpus data must use bounded incremental segment loading');
+if (/TEXT_CORPUS_MANIFEST|MUSIC_SEARCH_MANIFEST/.test(searchView)) failures.push('SearchV2: physical manifest identities must remain behind data runtime / migration bridge');
 
-const contextView = readFileSync(resolve(root, 'app/loc/views/ContextView.jsx'), 'utf8');
-if (/if\s*\(tab===['"]overview['"][^\n]*\)\s*load\(/.test(contextView)) failures.push('ContextView: overview must remain zero-data');
-
-const evolutionView = readFileSync(resolve(root, 'app/loc/views/EvolutionView.jsx'), 'utf8');
-if (/if\s*\(tab===['"]overview['"][^\n]*LUNARUNE_EVOLUTION_HISTORY/.test(evolutionView)) failures.push('EvolutionView: overview must not preload rune evolution history');
-if (!/if\s*\(tab===['"]overview['"]&&!eras\)load\(LOC_DATA\.LOC_ERA_REGISTRY,setEras\)/.test(evolutionView)) failures.push('EvolutionView: overview should load only the ERA registry');
+const contextView = readFileSync(resolve(root, 'app/modular-v2/features/ContextV2.jsx'), 'utf8');
+if (!/scopeDataViewV2\(scopeId,'context'\)/.test(contextView)) failures.push('ContextV2: context projection must derive from shared Scope registry');
+const staticsView = readFileSync(resolve(root, 'app/modular-v2/features/StatisticsV2.jsx'), 'utf8');
+if (!/scopeDataViewV2\(scopeId,'rankings'\)/.test(staticsView)) failures.push('StatisticsV2: ranking projection must derive from shared Scope registry');
+const cultureView = readFileSync(resolve(root, 'app/modular-v2/features/CultureV2.jsx'), 'utf8');
+if (!/CULTURE_PATHS_V2/.test(cultureView)) failures.push('CultureV2: physical historical dataset identifiers must remain behind migration bridge');
 
 for (const name of readdirSync(root).filter(name => name.endsWith('.html'))) {
   const path = resolve(root, name);
@@ -136,4 +120,4 @@ if (failures.length) {
   console.error('[modularity] violations:\n' + failures.join('\n'));
   process.exit(1);
 }
-console.log('[modularity] Next presentation/data/performance/storage/canonical parity boundaries verified');
+console.log('[modularity] V2 presentation/data/performance/storage/canonical parity boundaries verified');
