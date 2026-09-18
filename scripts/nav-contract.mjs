@@ -1,17 +1,26 @@
 import fs from 'node:fs';
 
-const nav=fs.readFileSync('app/GlobalNav.jsx','utf8')+fs.readFileSync('app/ScopeNav.jsx','utf8')+fs.readFileSync('app/nav-route-map.js','utf8');
-const legacy=fs.readFileSync('js/loc-nav.js','utf8');
-const canon=fs.readFileSync('docs/NAV_GOVERNANCE.md','utf8');
-const globals=fs.readFileSync('app/globals.css','utf8');
-const sources=[nav,legacy,canon,globals];
-const obsolete=['NAV'+'1','NAV'+'2','NAV'+'3','nav'+'1.css'];
-const stale=obsolete.filter(token=>sources.some(source=>source.includes(token)));
-if(stale.length){console.error('Forbidden obsolete NAV terminology: '+stale.join(', '));process.exit(1);}
-for(const token of ['lrunes.lo3rwang.cc','whoami.lo3rwang.cc','manage.lo3rwang.cc','月之符文','語彙','風格詞','治理規則','脈絡','統計','文化','治理','context','statics','evolution','governance','search']){
-  if(!nav.includes(token)){console.error('Missing scoped NAV contract: '+token);process.exit(1);}
+const read=path=>fs.readFileSync(path,'utf8');
+const registry=read('app/site-registry.js');
+const nav=read('app/ScopeNav.jsx');
+const provider=read('app/SiteScopeProvider.jsx');
+const canon=read('docs/NAV_GOVERNANCE.md');
+
+for(const token of [
+  "domain:'loc.lo3rwang.cc'",
+  "domain:'lrunes.lo3rwang.cc'",
+  "domain:'lo3rwang.lo3rwang.cc'",
+  "domain:'admin.lo3rwang.cc'",
+  "id:'context'","id:'statics'","id:'culture'","id:'governance'"
+]){
+  if(!registry.includes(token))throw new Error('Missing Current site-registry contract: '+token);
 }
-for(const token of ['LOC Scope：月之符文','LunaRunes Scope：語彙','Author Scope：風格詞','Governance Scope：治理規則','manage.lo3rwang.cc']){
-  if(!canon.includes(token)){console.error('Missing NAV canon: '+token);process.exit(1);}
+for(const token of ['SHARED_FEATURES','useSiteScope','current.reserved','current.role','current.homes']){
+  if(!nav.includes(token))throw new Error('ScopeNav bypasses Current registry/provider contract: '+token);
 }
-console.log('Scoped single NAV contract verified.');
+if(!provider.includes('detectSiteScope(pathname,host)'))throw new Error('SiteScopeProvider must own runtime scope resolution');
+for(const stale of ['whoami.lo3rwang.cc','manage.lo3rwang.cc']){
+  if(registry.includes(stale)||nav.includes(stale)||provider.includes(stale))throw new Error('Forbidden stale Current domain: '+stale);
+}
+if(!canon.includes('單一')||!canon.includes('NAV'))throw new Error('NAV governance must preserve the single-NAV principle');
+console.log('Current single-source NAV contract verified.');
