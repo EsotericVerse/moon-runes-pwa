@@ -2,8 +2,19 @@
 
 import { putNeonRecord, putNeonSetting } from './neon-user-storage';
 
-const MARKER='loc-neon-browser-migration-v1';
-const STYLE_KEYS=['loc-style-groups-v1','loc-my-style-v1'];
+const MARKER='loc-neon-browser-migration-v2';
+const SETTING_KEYS=[
+  'loc-style-groups-v1',
+  'loc-my-style-v1',
+  'loc-ui-settings-v1',
+  'loc-locale-v1',
+  'loc-language',
+  'loc-theme'
+];
+
+function parseLegacyValue(raw){
+  try{return JSON.parse(raw)}catch{return raw}
+}
 
 async function dbExists(name){
   if(typeof indexedDB==='undefined')return false;
@@ -40,12 +51,18 @@ export async function migrateLegacyBrowserDataToNeon(){
   for(const value of await readStore('keyval-store','keyval'))if(value&&typeof value==='object')rows.push(value);
   const unique=new Map(rows.filter(row=>row?.id).map(row=>[row.id,row]));
   for(const record of unique.values())await putNeonRecord(record);
-  for(const key of STYLE_KEYS){
+
+  let settings=0;
+  for(const key of SETTING_KEYS){
     const raw=localStorage.getItem(key);
-    if(!raw)continue;
-    try{await putNeonSetting(key,JSON.parse(raw));localStorage.removeItem(key);}catch{}
+    if(raw===null)continue;
+    await putNeonSetting(key,parseLegacyValue(raw));
+    localStorage.removeItem(key);
+    settings+=1;
   }
+
   await removeLegacyDatabases();
   localStorage.setItem(MARKER,'done');
-  return {migrated:true,records:unique.size};
+  localStorage.removeItem('loc-neon-browser-migration-v1');
+  return {migrated:true,records:unique.size,settings};
 }
