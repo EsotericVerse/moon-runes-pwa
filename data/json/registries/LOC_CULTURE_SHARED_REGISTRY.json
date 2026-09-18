@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "registry": "LOC_CULTURE_SHARED_REGISTRY",
-  "authority": "LOC Evolution shared data layer",
+  "authority": "LOC Culture shared data layer",
   "purpose": "提供符文演化與語言推演共同引用的時間、事件、關係與來源契約；共用資料只定義一次，不在兩條演化資料中複製。",
   "updated_at": "2026-09-12",
   "shared_authorities": {
@@ -36,7 +36,7 @@
       "kv_key": "loc:evolution:runes",
       "data_status": "active"
     },
-    "language_evolution": {
+    "language_culture": {
       "label": "語言推演",
       "scope": "跨時期觀察文字、作品、關鍵詞、語意重心、風格、治理與方法如何改變",
       "primary_registry": "data/json/registries/LOC_LANGUAGE_CULTURE_REGISTRY.json",
