@@ -42,6 +42,8 @@ for(const [id,scope] of Object.entries(SCOPES_V2)){
   if(!['domain','directory'].includes(scope.scopeType))failures.push('invalid Scope type: '+id);
   if(!scope.label)failures.push(id+' missing label');
   if(!Array.isArray(scope.localRoutes))failures.push(id+' localRoutes must be an array');
+  if(!Array.isArray(scope.routePatterns))failures.push(id+' routePatterns must be an array');
+  if(!Array.isArray(scope.compatibilityRoutes))failures.push(id+' compatibilityRoutes must be an array');
   if(!scope.primary?.href||!scope.primary?.label)failures.push(id+' missing primary navigation target');
   if(!scope.role?.href||!scope.role?.label)failures.push(id+' missing role navigation target');
   if(!Array.isArray(scope.homes))failures.push(id+' homes must be an array');
@@ -87,6 +89,15 @@ if(!fs.readFileSync('app/site-registry.js','utf8').includes("from './modular-v2/
 if(!fs.readFileSync('app/theme-registry.js','utf8').includes("from './modular-v2/theme-registry.v2'"))failures.push('compat theme registry does not derive from V2');
 
 
+
+function routeShellPath(rootDir,route,{pattern=false}={}){
+  const parts=String(route||'').split('/').filter(Boolean).map(part=>{
+    if(pattern&&part.startsWith(':'))return '['+part.slice(1)+']';
+    return part;
+  });
+  return path.join(rootDir,...parts,'page.jsx');
+}
+
 for(const scope of Object.values(SCOPES_V2)){
   const localRoutes=Array.isArray(scope.localRoutes)?scope.localRoutes:[];
   for(const localRoute of localRoutes){
@@ -106,6 +117,33 @@ for(const scope of Object.values(SCOPES_V2)){
       if(!fs.existsSync(mountFile))failures.push('Scope-local mount route missing: '+path.relative('.',mountFile));
     }
   }
+
+  const canonicalRoot=scope.scopeType==='directory'&&scope.mount
+    ? path.resolve('app',scope.mount.path.split('/').filter(Boolean)[0])
+    : path.resolve('app');
+
+  for(const pattern of scope.routePatterns||[]){
+    const file=routeShellPath(canonicalRoot,pattern,{pattern:true});
+    if(!fs.existsSync(file))failures.push('Scope route pattern shell missing: '+path.relative('.',file));
+
+    if(scope.mount){
+      const mountRoot=path.resolve('app',scope.mount.path.split('/').filter(Boolean)[0]);
+      const mountFile=routeShellPath(mountRoot,pattern,{pattern:true});
+      if(!fs.existsSync(mountFile))failures.push('Scope mount pattern shell missing: '+path.relative('.',mountFile));
+    }
+  }
+
+  for(const route of scope.compatibilityRoutes||[]){
+    const file=routeShellPath(canonicalRoot,route);
+    if(!fs.existsSync(file))failures.push('Scope compatibility route missing: '+path.relative('.',file));
+
+    if(scope.mount){
+      const mountRoot=path.resolve('app',scope.mount.path.split('/').filter(Boolean)[0]);
+      const mountFile=routeShellPath(mountRoot,route);
+      if(!fs.existsSync(mountFile))failures.push('Scope mount compatibility route missing: '+path.relative('.',mountFile));
+    }
+  }
+
 }
 
 for(const retired of ['ContextView.jsx','StaticsView.jsx','EvolutionView.jsx','GovernanceView.jsx','SearchView.jsx']){
@@ -188,6 +226,10 @@ const admissibilityCases=[
   ['loc','loc.lo3rwang.cc','/context',true],
   ['loc','loc.lo3rwang.cc','/loc',false],
   ['loc','loc.lo3rwang.cc','/runes',false],
+  ['loc','loc.lo3rwang.cc','/writing/example-work',true],
+  ['loc','loc.lo3rwang.cc','/writing/example-work/extra',false],
+  ['loc','loc.lo3rwang.cc','/evolution',true],
+  ['loc','loc.lo3rwang.cc','/management',true],
   ['lo3rwang','loc.lo3rwang.cc','/lo3rwang',true],
   ['lo3rwang','loc.lo3rwang.cc','/lo3rwang/context',true]
 ];
