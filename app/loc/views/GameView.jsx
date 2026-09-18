@@ -152,7 +152,7 @@ export default function GameView() {
 
   return <section className="loc-view loc-game">
     <header className="loc-hero">
-      <p className="loc-eyebrow">LOC2 · Semantic Playground</p>
+      <p className="loc-eyebrow">脈絡 · Semantic Playground</p>
       <h1>脈絡沙盒遊戲</h1>
       <p>兩位玩家各自使用 1–64 符文牌庫回答事件；先取得並守住 16 De 的玩家勝利。符文資料直接讀取 canonical runes.json，遊戲邏輯不保存第二份符文資料。</p>
     </header>
