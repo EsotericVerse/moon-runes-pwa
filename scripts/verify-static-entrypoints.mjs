@@ -1,105 +1,50 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { dirname, join, normalize, relative, resolve } from 'node:path';
+import {existsSync,readFileSync,readdirSync,statSync} from 'node:fs';
+import {join,relative,resolve} from 'node:path';
 
-const root = process.cwd();
-const entrypoints = ['runes.html'];
-const reachable = new Set();
-const missing = [];
-const queue = [];
-const retiredLinkViolations = [];
+const root=process.cwd();
+const failures=[];
 
-function normalizeRel(path) {
-  return normalize(path).replaceAll('\\', '/');
+const legacyRedirects={
+  'runes.html':'https://lrunes.lo3rwang.cc/'
+};
+
+for(const [file,canonical] of Object.entries(legacyRedirects)){
+  const abs=resolve(root,file);
+  if(!existsSync(abs))continue;
+  const source=readFileSync(abs,'utf8');
+  if(!source.includes(canonical))failures.push(file+' must redirect to canonical '+canonical);
+  if(source.includes('https://loc.lo3rwang.cc/runes'))failures.push(file+' still declares retired /runes canonical');
+  if(/target\s*=\s*['"]\/runes/.test(source))failures.push(file+' still redirects to retired /runes path');
 }
 
-function localPath(fromFile, specifier) {
-  const clean = String(specifier || '').split(/[?#]/, 1)[0];
-  if (!clean || /^(?:https?:|data:|mailto:|tel:|\/\/)/i.test(clean)) return null;
-  if (clean.startsWith('/')) return normalizeRel(clean.slice(1));
-
-  const rootCandidate = normalizeRel(clean);
-  if (!clean.startsWith('.') && existsSync(resolve(root, rootCandidate))) return rootCandidate;
-  return normalizeRel(join(dirname(fromFile), clean));
-}
-
-function enqueue(path, parent) {
-  const rel = normalizeRel(path);
-  if (reachable.has(rel)) return;
-  const abs = resolve(root, rel);
-  if (!existsSync(abs)) {
-    missing.push(`${parent} -> ${rel}`);
-    return;
-  }
-  reachable.add(rel);
-  if (/\.js$/i.test(rel)) queue.push(rel);
-}
-
-for (const html of entrypoints) {
-  const abs = resolve(root, html);
-  if (!existsSync(abs)) {
-    missing.push(`entrypoint missing: ${html}`);
-    continue;
-  }
-  const text = readFileSync(abs, 'utf8');
-  reachable.add(html);
-  for (const match of text.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)) {
-    const dep = localPath(html, match[1]);
-    if (dep) enqueue(dep, html);
-  }
-}
-
-while (queue.length) {
-  const file = queue.shift();
-  const text = readFileSync(resolve(root, file), 'utf8');
-  const specs = [];
-  for (const match of text.matchAll(/\b(?:import|export)\s+(?:[^'";]+?\s+from\s+)?["']([^"']+)["']/g)) specs.push(match[1]);
-  for (const match of text.matchAll(/\bimport\s*\(\s*["']([^"']+)["']\s*\)/g)) specs.push(match[1]);
-  for (const match of text.matchAll(/\bappendScript\s*\(\s*["']([^"']+)["']/g)) specs.push(match[1]);
-  for (const spec of specs) {
-    const dep = localPath(file, spec);
-    if (dep) enqueue(dep, file);
-  }
-}
-
-function scanRetiredFile(path) {
-  if (!existsSync(path) || !statSync(path).isFile()) return;
-  if (!/\.(?:html|js|jsx|mjs)$/i.test(path)) return;
-  const text = readFileSync(path, 'utf8');
-  if (/\blots\.html(?:[?#]|\b)/i.test(text)) retiredLinkViolations.push(relative(root, path));
-}
-
-function scanRetiredLinks(dir) {
-  if (!existsSync(dir) || !statSync(dir).isDirectory()) return;
-  for (const name of readdirSync(dir)) {
-    const path = join(dir, name);
-    const stat = statSync(path);
-    if (stat.isDirectory()) {
-      if (name === 'node_modules' || name === '.next' || name === 'out' || name === 'public') continue;
-      scanRetiredLinks(path);
-    } else {
-      scanRetiredFile(path);
+const currentRuntimeRoots=['app','scripts'];
+for(const rootName of currentRuntimeRoots){
+  const start=resolve(root,rootName);
+  if(!existsSync(start))continue;
+  const stack=[start];
+  while(stack.length){
+    const current=stack.pop();
+    for(const name of readdirSync(current)){
+      const path=join(current,name);
+      const stat=statSync(path);
+      if(stat.isDirectory()){
+        if(['node_modules','.next','out','public'].includes(name))continue;
+        stack.push(path);
+        continue;
+      }
+      if(!/\.(?:js|jsx|mjs)$/i.test(name))continue;
+      const rel=relative(root,path).replaceAll('\\','/');
+      if(rel==='scripts/verify-static-entrypoints.mjs')continue;
+      const source=readFileSync(path,'utf8');
+      if(/(?:href|action|location(?:\.href|\.replace)?|target)\s*[=:({ ]+\s*['"]\/runes(?:[/?#'"])/.test(source)){
+        failures.push(rel+': Current runtime contains retired /runes route');
+      }
     }
   }
 }
 
-for (const scope of ['app', 'lib', 'js']) scanRetiredLinks(resolve(root, scope));
-for (const name of readdirSync(root)) if (/\.html$/i.test(name)) scanRetiredFile(resolve(root, name));
-
-const jsDir = resolve(root, 'js');
-const allJs = existsSync(jsDir)
-  ? readdirSync(jsDir).filter(name => name.endsWith('.js')).map(name => `js/${name}`).sort()
-  : [];
-const unreachable = allJs.filter(path => !reachable.has(path));
-
-if (missing.length) {
-  console.error('[static-entrypoints] missing runtime dependencies:\n' + missing.join('\n'));
+if(failures.length){
+  console.error('[static-entrypoints] violations:\n'+failures.join('\n'));
   process.exit(1);
 }
-if (retiredLinkViolations.length) {
-  console.error('[static-entrypoints] retired lots.html links found; use runes.html:\n' + retiredLinkViolations.join('\n'));
-  process.exit(1);
-}
-
-console.log(`[static-entrypoints] verified ${entrypoints.length} active static entrypoints; ${[...reachable].filter(path => path.endsWith('.js')).length} JS files reachable`);
-console.log('[static-entrypoints] retired lots.html link guard passed');
-if (unreachable.length) console.log('[static-entrypoints] unreachable legacy JS candidates:\n' + unreachable.join('\n'));
+console.log('[static-entrypoints] no legacy static entrypoint is Current; compatibility redirects point to canonical Scope domains');
