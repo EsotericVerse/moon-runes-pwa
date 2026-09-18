@@ -34,7 +34,20 @@ export const SCOPES_V2=Object.freeze({
     domain:'loc.lo3rwang.cc',
     aliasName:null,
     label:'月典',
-    localRoutes:Object.freeze([]),
+    localRoutes:Object.freeze([
+      'game',
+      'galaxy',
+      'multimedia',
+      'my-style',
+      'style-groups',
+      'style',
+      'classify',
+      'library',
+      'writing',
+      'governance/history'
+    ]),
+    routePatterns:Object.freeze(['writing/:workId']),
+    compatibilityRoutes:Object.freeze(['evolution','management']),
     primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
     role:Object.freeze({label:'作者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
@@ -60,6 +73,8 @@ export const SCOPES_V2=Object.freeze({
       'duel/five',
       'duel/ow3gs'
     ]),
+    routePatterns:Object.freeze([]),
+    compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     primary:Object.freeze({label:'語彙',href:'https://lrunes.lo3rwang.cc/list'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
@@ -80,6 +95,8 @@ export const SCOPES_V2=Object.freeze({
     aliasName:'dlwang',
     label:'作者簡介',
     localRoutes:Object.freeze([]),
+    routePatterns:Object.freeze([]),
+    compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
     primary:Object.freeze({label:'簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
@@ -114,6 +131,8 @@ export const SCOPES_V2=Object.freeze({
     aliasName:null,
     label:'治理管理',
     localRoutes:Object.freeze([]),
+    routePatterns:Object.freeze([]),
+    compatibilityRoutes:Object.freeze([]),
     primary:Object.freeze({label:'管理',href:'https://admin.lo3rwang.cc/'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
@@ -216,8 +235,31 @@ export function scopeRoutePathsV2(scopeId){
   ]);
 }
 
+function routePatternMatches(pattern,pathname){
+  const expected=cleanPath(pattern).split('/').filter(Boolean);
+  const actual=cleanPath(pathname).split('/').filter(Boolean);
+  if(expected.length!==actual.length)return false;
+  return expected.every((segment,index)=>{
+    if(segment.startsWith(':'))return Boolean(actual[index]);
+    return segment===actual[index];
+  });
+}
+
+export function scopeRoutePatternsV2(scopeId){
+  const scope=getScopeV2(scopeId);
+  return Object.freeze([...(scope.routePatterns||[])].map(pattern=>cleanPath(pattern)));
+}
+
+export function scopeCompatibilityRoutesV2(scopeId){
+  const scope=getScopeV2(scopeId);
+  return Object.freeze([...(scope.compatibilityRoutes||[])].map(route=>cleanPath(route)));
+}
+
 export function isScopePathAllowedV2(scopeId,pathname='/'){
-  return scopeRoutePathsV2(scopeId).includes(cleanPath(pathname));
+  const clean=cleanPath(pathname);
+  if(scopeRoutePathsV2(scopeId).includes(clean))return true;
+  if(scopeCompatibilityRoutesV2(scopeId).includes(clean))return true;
+  return scopeRoutePatternsV2(scopeId).some(pattern=>routePatternMatches(pattern,clean));
 }
 
 export function stripScopeMountV2(scopeId,host='',pathname='/'){
