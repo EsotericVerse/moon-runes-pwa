@@ -19,3 +19,8 @@ export const LUNARUNES_LINKS=Object.freeze({
   five:'https://lrunes.lo3rwang.cc/duel/five',
   ow3gs:'https://lrunes.lo3rwang.cc/duel/ow3gs'
 });
+
+export const FAQ_LINKS=Object.freeze({
+  loc:'https://loc.lo3rwang.cc/faq',
+  runes:'https://lrunes.lo3rwang.cc/faq'
+});
