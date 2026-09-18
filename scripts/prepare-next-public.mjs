@@ -140,7 +140,7 @@ async function buildDataIndex(versionManifest) {
   });
   datasets['loc3-lyrics-search'] = { tier: 'on-demand', strategy: 'manifest-shards', manifest: fileMeta(versionManifest, loc3ManifestPath), routing_index: buildRoutingIndex(loc3Segments), segments: loc3Segments };
 
-  const singletonPaths = Object.values(LOC_DATA).map(normalize).filter(rel => rel.startsWith('data/json/')).filter(rel => dataTier(rel) === 'on-demand').filter(rel => !reservedSegmentPaths.has(rel)).sort();
+  const singletonPaths = [...new Set(Object.values(LOC_DATA).map(normalize).filter(rel => rel.startsWith('data/json/')).filter(rel => dataTier(rel) === 'on-demand').filter(rel => !reservedSegmentPaths.has(rel)))].sort();
   datasets['on-demand-singletons'] = { tier: 'on-demand', strategy: 'single-file-segments', segments: singletonPaths.map((rel, index) => ({ id: `single-${String(index + 1).padStart(2, '0')}`, sequence: index + 1, ...fileMeta(versionManifest, rel) })) };
 
   const totals = Object.values(datasets).reduce((acc, dataset) => {
