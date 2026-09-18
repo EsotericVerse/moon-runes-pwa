@@ -1,4 +1,5 @@
 import { LOC_DATA } from './data';
+import {detectSiteScope,getSiteScope} from '../site-registry';
 
 export const SEARCH_SCOPE_FIELDS=Object.freeze(['person','family','generation','era','source','corpus','language','culture']);
 
@@ -54,10 +55,23 @@ export const SEARCH_COLLECTIONS = Object.freeze({
     includeMusic: false
   }),
   '政德文化': ZHENGDE_CULTURE_COLLECTION,
-  '政德風': ZHENGDE_CULTURE_COLLECTION
+  '政德風': ZHENGDE_CULTURE_COLLECTION,
+  '治理': Object.freeze({
+    id:'治理',
+    label:'治理',
+    description:'搜尋管理與治理資料。',
+    scopeProfile:Object.freeze({id:'governance',fields:Object.freeze(['source','corpus','language','culture'])}),
+    smallSources:[
+      [LOC_DATA.LOC6_GOVERNANCE_REGISTRY,'治理'],
+      [LOC_DATA.LOC_SEARCH_GOVERNANCE,'搜尋治理'],
+      [LOC_DATA.LOC_KNOWLEDGE_ASSET_REGISTRY,'知識庫']
+    ],
+    includeTextCorpus:false,
+    includeMusic:false
+  })
 });
 
-export const SEARCH_COLLECTION_ORDER = Object.freeze(['all', '月之符文', '政德文化']);
+export const SEARCH_COLLECTION_ORDER = Object.freeze(['all', '月之符文', '政德文化', '治理']);
 
 export function getSearchCollection(value) {
   const key = String(value || '').trim();
@@ -66,4 +80,10 @@ export function getSearchCollection(value) {
 
 export function getSearchScopeProfile(value){
   return getSearchCollection(value).scopeProfile;
+}
+
+
+export function searchCollectionForHost(host='',pathname='/'){
+  const scope=detectSiteScope(pathname,host);
+  return getSearchCollection(getSiteScope(scope).searchCollection);
 }
