@@ -9,6 +9,6 @@ const compat=readFileSync('app/site-registry.js','utf8');
 const hook=readFileSync('app/use-current-scope.js','utf8');
 if(!compat.includes("from './modular-v2/scope-registry.v2'"))failures.push('site-registry compatibility facade must derive from V2');
 if(!hook.includes('useScopeRuntimeV2'))failures.push('compatibility Scope hook must consume V2 runtime');
-for(const domain of ['loc.lo3rwang.cc','lrunes.lo3rwang.cc','lo3rwang.lo3rwang.cc','admin.lo3rwang.cc'])if(compat.includes(domain))failures.push('compatibility registry must not duplicate domain literal '+domain);
+for(const domain of ['loc.lo3rwang.cc','lrunes.lo3rwang.cc','dlwang.lo3rwang.cc','admin.lo3rwang.cc'])if(compat.includes(domain))failures.push('compatibility registry must not duplicate domain literal '+domain);
 if(failures.length){console.error('[scope-registry] violations:\n'+failures.join('\n'));process.exit(1);}
 console.log('Single Current V2 Scope registry verified; compatibility entries are derived only.');
