@@ -1,23 +1,36 @@
 # Deployment ownership
 
-## Canonical API
+## Shared LOC data
 
-The root `wrangler.toml` deploys `services/cloudflare/loc-state-worker.js` as the `loc-state` Worker. Its configured endpoints are `api.lo3rwang.cc` and the compatibility route `loc.lo3rwang.cc/api/loc-state/*`. `LOC_KV` belongs to this service and must be retained.
+Shared/canonical LOC runtime data is served directly from the Neon production Data API.
 
-Connect this root configuration only to the `loc-state` Workers Builds project. Connecting it to a second Worker named `moon-runes-pwa` causes the CI Worker-name override to deploy the same API under another name and compete for the same routes (Cloudflare error 10020).
+- Database: `neondb`
+- Public runtime schema: `api`
+- Current projection: `api.runtime_json_documents`
+- Browser runtime: static Next export → Neon Data API
+- Public runtime access is read-only through the database role grants.
+
+Cloudflare KV is retired from LOC shared-state delivery. The repository must not contain a root `wrangler.toml` for `loc-state`, a `loc-state-worker.js`, or a browser KV state adapter. Do not restore those paths as a fallback.
+
+## Management authentication
+
+`services/cloudflare/auth-worker.js` remains an authentication/session boundary for the management UI. It does not own LOC data and must not proxy shared state. Shared data reads use Neon independently of the management auth session.
 
 ## Frontend
 
-GitHub Pages and Cloudflare Pages are separate from the retired `moon-runes-pwa` Worker. Do not disable either frontend deployment solely because its repository has the same name. Verify live domain ownership and consumers before retiring a frontend host.
+The Next application remains a static export. Cloudflare Pages/GitHub-hosted static frontend deployment does not require a Vercel server runtime, Vercel KV, or a Cloudflare KV data service.
 
-## Cleanup evidence — 2026-09-14
+## Migration status — 2026-09-18
 
-The owner reported disconnecting Git builds, disabling the public Worker URL, and deleting the duplicate `moon-runes-pwa` Worker. Before deletion, its Domains screen showed no custom domains or routes.
+The shared runtime loader, statistics, Daily Rune, Context/Culture/Search data consumers, and governance shared-state reads use the Neon Current projection. Legacy browser dataset caching and KV state adapters were removed.
 
-After deletion, live checks returned HTTP 200 for the LOC homepage, `https://api.lo3rwang.cc/health`, and the `loc-state` workers.dev health endpoint. The API health responses reported `ok: true`, `service: loc-state`, and `kv: true`. This health response is not a full data or write-path test.
-
-The compatibility URL `https://loc.lo3rwang.cc/api/loc-state/health` returned HTTP 404 from GitHub Pages; do not treat that route as verified merely because it appears in Wrangler configuration. Its pre-deletion status and current consumers remain unverified.
+User-owned local working records are a separate persistence concern. They must not be promoted to anonymous shared database writes; moving them to Neon requires an authenticated/RLS-governed design.
 
 ## PR verification
 
-Use the current PR head SHA when checking CI results. Successful Pages deployment does not by itself establish Workers deployment success. Verify that the retired Worker no longer creates new build checks on subsequent changes.
+Use the current PR head SHA when checking deployment results. Verify that:
+
+1. the static frontend build succeeds;
+2. every registered runtime source path resolves in `api.runtime_json_documents`;
+3. no shared runtime module imports IndexedDB dataset or KV state adapters;
+4. no root KV Worker deployment configuration is reintroduced.
