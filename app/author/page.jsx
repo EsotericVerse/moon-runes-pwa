@@ -26,7 +26,7 @@ export default function AuthorPage() {
           <h2>我的 24 個字</h2>
           {ROOT.map((line) => <p className="loc-core-line" key={line}>{line}</p>)}
           <p>這是我的人生觀與自我治理方式，不要求別人接受相同分類或價值判斷。</p>
-          <p><a href="/author/governance">查看作者治理與詳細說明</a></p>
+          <p><a href="https://lo3rwang.lo3rwang.cc/governance">查看作者治理與詳細說明</a></p>
         </section>
 
         <section className="loc-card" id="roles">
