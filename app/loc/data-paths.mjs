@@ -15,7 +15,7 @@ export const LOC_DATA = Object.freeze({
   GOVERNANCE_REGISTRY: '/data/json/registries/LOC6_GOVERNANCE_REGISTRY.json',
   PERIOD_KEYWORD_ANALYSIS: '/data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json',
   GOVERNANCE_PERIOD_KEYWORD_ANALYSIS: '/data/json/registries/LOC6_PERIOD_KEYWORD_ANALYSIS.json',
-  DAILY_RUNE_REPO_HISTORY: '/data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json',
+  DAILY_RUNE_REPO_HISTORY: '/data/json/registries/DAILY_RUNE_REPO_HISTORY.json',
   EVENT_SNAPSHOT: '/data/json/registries/EVENT_SNAPSHOT.json',
   LOC_CROSS_RELATIONSHIP_REGISTRY: '/data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json',
   LOC_ERA_REGISTRY: '/data/json/registries/LOC_ERA_REGISTRY.json',
