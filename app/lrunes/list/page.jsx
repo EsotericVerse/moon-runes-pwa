@@ -1,1 +1,1 @@
-export {metadata,default} from '../../runes/list/page';
+export {metadata,default} from '../../runes/RuneListPage';
