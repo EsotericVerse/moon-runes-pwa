@@ -1,3 +1,4 @@
+import {PageFrame} from '../../PageComposition';
 export const metadata={title:'作者治理｜Lucas Oscar Wang 政德'};
 
 const GOVERNANCE_ROOT = [
@@ -7,8 +8,11 @@ const GOVERNANCE_ROOT = [
 ];
 
 export default function AuthorGovernancePage(){
-  return <main className="loc-next-main"><section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Author Governance</p><h1>作者治理</h1><p className="loc-subtitle">管理作者身份、政德風、作品脈絡、個人時期與歷史；共用 LOC 原則，但保有自己的資料與權威。</p></header>
+  return <main className="loc-next-main"><PageFrame
+    eyebrow="Author Governance"
+    title="作者治理"
+    subtitle="管理作者身份、政德風、作品脈絡、個人時期與歷史；共用 LOC 原則，但保有自己的資料與權威。"
+  >
 
     <section className="loc-card" id="author-root"><p className="loc-eyebrow">Governance Root</p><h2>24 字人生觀</h2>{GOVERNANCE_ROOT.map(([root,note])=><p key={root}><strong>{root}</strong><br/>{note}</p>)}<p>這 24 字是作者的自我治理與人生觀，不要求讀者、評論者或其他使用者採用相同價值判斷。</p></section>
 
@@ -20,5 +24,5 @@ export default function AuthorGovernancePage(){
       <section className="loc-card"><p className="loc-eyebrow">History</p><h2>Current 與歷史</h2><p>作者 Current 只代表目前有效的身份、作品治理與自我描述。舊名稱、舊作品分類、舊時期與過去文字保留為歷史來源，不因新說法而被靜默改寫。</p><p><strong>月之共響者（Moon Resonator）</strong>是重要的歷史作者稱號，常見於小說與創作時期，描述作者對月、符文、聲音與文字之間「共響」關係的自我命名。它不是錯誤或應被刪除的舊資料，而是後來 <strong>Calibrator</strong> 形成的重要前身之一：從感受與共響，逐步走向比較、校準來源、時間、歷史與文化變化。</p><p>歷史資料可以被重新分析，但新的分析結果必須和原始紀錄分開，並保留分析時間、規則版本與來源。</p></section>
       <section className="loc-card"><p className="loc-eyebrow">Links</p><h2>治理與歷史入口</h2><p>本頁管理 Author Scope；跨 Scope 的歷史查詢由 LOC Governance 統合，並保留原始來源。</p><p><a href="/author">作者首頁</a></p><p><a href="/governance">LOC 全域治理總覽</a></p><p><a href="/governance/history">歷史查詢／治理紀錄</a></p><p><a href="/runes/governance">LunaRunes 符文治理</a></p></section>
     </div>
-  </section></main>;
+  </PageFrame></main>;
 }
