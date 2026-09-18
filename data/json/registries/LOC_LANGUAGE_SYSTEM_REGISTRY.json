@@ -60,7 +60,10 @@
           "group_authority": "data/json/core/runes66groups.json"
         },
         "rule": "Luna Codex 不得作為月之符文的英文名稱；月之符文的正式英文名稱固定為 LunaRunes。",
-        "final_identity_rule": "LOC／月典 = 模型化語言框架／Modelized Language Framework；LunaRunes／月之符文 = 符號式語言／Symbolic Language。此定義為最高且凍結，不再變更。"
+        "final_identity_rule": "LOC／月典 = 模型化語言框架／Modelized Language Framework；LunaRunes／月之符文 = 符號式語言／Symbolic Language。此定義為最高且凍結，不再變更。",
+        "version_label": "latest_and_last",
+        "permanent_freeze": true,
+        "change_policy": "LOC = 模型化語言框架／Modelized Language Framework；LunaRunes = 符號式語言／Symbolic Language。身份定義永久凍結，後續不得更名或改義。"
       },
       "current_architecture": {
         "formula": "Scope Model × Feature Model → Page Composition",
