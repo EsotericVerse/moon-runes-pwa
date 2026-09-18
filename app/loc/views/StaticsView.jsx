@@ -30,12 +30,12 @@ export default function StaticsView(){
     let live=true;
     const load=(path,setter)=>fetchLocJson(path).then(data=>live&&setter(data)).catch(e=>live&&setError(e.message));
     if(tab==='ranking'){
-      if(!periods)load(LOC_DATA.LOC6_PERIOD_KEYWORD_ANALYSIS,setPeriods);
+      if(!periods)load(LOC_DATA.PERIOD_KEYWORD_ANALYSIS,setPeriods);
       if(!runes)load(LOC_DATA.RUNES,setRunes);
     }
     if(tab==='runes'&&!runes)load(LOC_DATA.RUNES,setRunes);
     if(tab==='sources'&&!sources)load(LOC_DATA.SEARCH_SOURCE_STATS,setSources);
-    if(tab==='daily'&&!daily)load(LOC_DATA.LOC8_DAILY_RUNE_REPO_HISTORY,setDaily);
+    if(tab==='daily'&&!daily)load(LOC_DATA.DAILY_RUNE_REPO_HISTORY,setDaily);
     return()=>{live=false};
   },[tab,periods,runes,sources,daily]);
 
