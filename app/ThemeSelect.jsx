@@ -3,12 +3,11 @@
 import {useEffect,useMemo,useState} from 'react';
 import {useNeonSetting} from './loc/use-neon-setting';
 import {getScopeThemeDefault} from './loc/scope-public-settings';
+import {useSiteScope} from './SiteScopeProvider';
 import {
-  DEFAULT_SCOPE_THEME_SETTINGS,
   SCOPE_THEME_SETTINGS_KEY,
   THEME_REGISTRY_SETTING_KEY,
   THEME_TOKEN_KEYS,
-  detectThemeScope,
   mergeThemeSlots,
   scopeThemeSettings,
   themeForHour
@@ -26,16 +25,12 @@ function applyTheme(slot,custom={}){
 }
 
 export default function ThemeSelect(){
-  const [scope,setScope]=useState('loc');
+  const {scope}=useSiteScope();
   const [managedDefault,setManagedDefault]=useState(null);
   const {value:registryOverrides}=useNeonSetting(THEME_REGISTRY_SETTING_KEY,{});
   const {value:storedSettings,setValue:setStoredSettings}=useNeonSetting(SCOPE_THEME_SETTINGS_KEY,{});
   const slots=useMemo(()=>mergeThemeSlots(registryOverrides||{}),[registryOverrides]);
   const settings=scopeThemeSettings(scope,storedSettings||{},managedDefault);
-
-  useEffect(()=>{
-    setScope(detectThemeScope(window.location.pathname,window.location.hostname));
-  },[]);
 
   useEffect(()=>{
     let live=true;
