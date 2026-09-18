@@ -1,10 +1,10 @@
 {
   "version": "1.4-rc4",
-  "title": "LunaRunes Evolution History",
+  "title": "LunaRunes Culture History",
   "purpose": "把符文系統自身演化、語意治理演化與可重現實例分開呈現；不把文化時代語義漂移回寫 Base66 Canon。",
   "coverage": {
     "system_stage_count": 5,
-    "governance_evolution_count": 8,
+    "governance_culture_count": 8,
     "semantic_history_case_count": 22,
     "derived_lexicon_case_count": 21,
     "history_only_case_count": 1,
@@ -18,7 +18,7 @@
     {"order":4,"label":"42","rune_count":42,"kind":"system_scale","note":"中期結構擴充"},
     {"order":5,"label":"66","rune_count":66,"kind":"system_scale","note":"現行 Base66"}
   ],
-  "governance_evolution": [
+  "governance_culture": [
     {"order":1,"title":"關鍵詞由描述轉為語意錨點","before":"關鍵詞容易因相近語意持續增加。","after":"關鍵詞必須具有獨特性；避免用大量同義詞取代治理。","effect":"降低語意污染，讓 No API 判定有穩定錨點。"},
     {"order":2,"title":"詞類先於群組主體性","before":"只看字面命中容易把固定名詞或複合詞拆錯。","after":"先判詞類／句內語意角色，再判群組主體性與符文歸屬。","effect":"可處理花枝、地雷等詞彙化轉移。"},
     {"order":3,"title":"唯一群組與特殊預設","before":"不確定語意容易同時落入多組。","after":"未判定先為特殊；完成判斷後只保留唯一群組。","effect":"避免為了覆蓋率強迫分類。"},
