@@ -57,7 +57,7 @@ class UnifiedSearchTests(unittest.TestCase):
             encoding="utf-8",
         )
         (root / "data" / "json" / "registries" / "LOC_CONTENT_TYPE_REGISTRY.json").write_text(
-            '{"types":[{"id":"lyrics_work","primary_loc":"LOC3"},{"id":"scenario_event","primary_loc":"LOC2"}]}',
+            '{"types":[{"id":"lyrics_work","feature_ids":["music","text"]},{"id":"scenario_event","feature_ids":["context"]},{"id":"faq","feature_ids":["km","rag"]},{"id":"character","feature_ids":["writing","context_graph"]}]}',
             encoding="utf-8",
         )
         (root / "data" / "json" / "registries" / "LOC2_EVENT_REGISTRY.json").write_text(
@@ -150,13 +150,23 @@ class UnifiedSearchTests(unittest.TestCase):
     def test_graph_quality_weights_are_deterministic(self):
         engine = self.make_engine()
         self.assertEqual(
-            engine._graph_edge_quality("owned_by_loc", "authority_registry", "recorded"),
+            engine._graph_edge_quality("belongs_to_era", "authority_registry", "recorded"),
             1.0,
         )
         self.assertLess(
             engine._graph_edge_quality("related_to", "semantic_inference", "inferred"),
             0.30,
         )
+
+    def test_canonical_graph_has_no_numbered_loc_authority_nodes_or_edges(self):
+        graph = self.make_engine()._canonical_graph()
+        node_ids = {str(node.get("id") or "") for node in graph["nodes"]}
+        relation_types = {str(edge.get("relation_type") or "") for edge in graph["edges"]}
+        self.assertFalse(any(node_id in {f"LOC{i}" for i in range(1, 9)} for node_id in node_ids))
+        self.assertNotIn("owned_by_loc", relation_types)
+        rune = next(node for node in graph["nodes"] if node.get("id") == "RUNE-1")
+        self.assertEqual(rune.get("scope_id"), "lunarunes")
+        self.assertIn("lunarunes", rune.get("feature_ids") or [])
 
     def test_search_graph_exposes_quality_contract(self):
         result = self.make_engine().search("自我治理", top_k=5)
