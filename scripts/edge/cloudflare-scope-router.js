@@ -12,10 +12,12 @@ function normalizePath(pathname='/'){
 
 function originUrl(env,requestUrl,pathOverride=null){
   if(!env.ORIGIN_BASE)throw new Error('Missing ORIGIN_BASE');
+
   const source=new URL(requestUrl);
   const target=new URL(env.ORIGIN_BASE);
   const prefix=target.pathname.replace(/\/$/,'');
   const path=pathOverride??source.pathname;
+
   target.pathname=(prefix+path).replace(/\/+/g,'/');
   target.search=source.search;
   return target;
@@ -32,7 +34,9 @@ async function loadPolicy(env,request){
   if(cachedPolicy&&now-cachedAt<POLICY_TTL_MS)return cachedPolicy;
 
   const response=await originFetch(request,env,'/scope-route-policy.json');
-  if(!response.ok)throw new Error('Scope route policy unavailable: '+response.status);
+  if(!response.ok){
+    throw new Error('Scope route policy unavailable: '+response.status);
+  }
 
   const policy=await response.json();
   if(policy?.schema!==1||policy?.defaultPolicy!=='deny'||!policy?.hosts){
@@ -44,17 +48,32 @@ async function loadPolicy(env,request){
   return policy;
 }
 
-function isDocumentRequest(request){
-  if(!['GET','HEAD'].includes(request.method))return false;
+function isAssetPath(pathname='/'){
+  const path=normalizePath(pathname);
 
-  const destination=request.headers.get('sec-fetch-dest');
-  if(destination==='document')return true;
+  for(const prefix of [
+    '/_next/',
+    '/assets/',
+    '/pics/',
+    '/data/',
+    '/docs/'
+  ]){
+    if(path.startsWith(prefix))return true;
+  }
 
-  const mode=request.headers.get('sec-fetch-mode');
-  if(mode==='navigate')return true;
+  if([
+    '/favicon.ico',
+    '/apple-touch-icon.png',
+    '/manifest.json',
+    '/scope-route-policy.json',
+    '/LunarRunesCardCut.pdf'
+  ].includes(path)){
+    return true;
+  }
 
-  const accept=request.headers.get('accept')||'';
-  return accept.includes('text/html');
+  // .html is intentionally NOT treated as an asset. Legacy HTML page routes
+  // remain subject to explicit route governance rather than bypassing it.
+  return /\.(?:js|mjs|css|json|txt|xml|png|jpe?g|webp|gif|svg|ico|pdf|docx|xlsx|woff2?|ttf|map)$/i.test(path);
 }
 
 function redirectTarget(url,redirect){
@@ -73,15 +92,15 @@ export default {
   async fetch(request,env){
     const url=new URL(request.url);
 
-    // Static assets/data are not Scope page routes; let the origin serve them normally.
-    if(!isDocumentRequest(request)){
+    // Static assets and runtime data are not Scope pages.
+    if(isAssetPath(url.pathname)){
       return originFetch(request,env);
     }
 
     let policy;
     try{
       policy=await loadPolicy(env,request);
-    }catch(error){
+    }catch{
       return new Response('Scope routing policy unavailable',{status:503});
     }
 
@@ -96,7 +115,10 @@ export default {
     }
 
     if(hostPolicy.redirect){
-      return Response.redirect(redirectTarget(url,hostPolicy.redirect).toString(),302);
+      return Response.redirect(
+        redirectTarget(url,hostPolicy.redirect).toString(),
+        302
+      );
     }
 
     return originFetch(request,env);
