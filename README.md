@@ -38,7 +38,7 @@ LunaRunes（月之符文）是符號式語言（Symbolic Language）：以 66 �
 - **MultiMedia／多媒體**：Reels、圖像、影音與跨媒介資產。
 - **Governance／治理**：治理原則、政德風與「治理：德之符文」。
 - **Knowledge／知識**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與分析。
-- **Evolution／推演**：Period、Timeline、Trend、Trajectory 與時間投影。
+- **Culture／文化**：Period、Timeline、Trend、Trajectory 與時間投影。
 
 ### RC3｜正式資料開始進入系統
 
@@ -76,7 +76,7 @@ RC3 已讓 `runes.html`、`context.html`、`statics.html`、`evolution.html` 有
 | 統計 | [statics.html](https://loc.lo3rwang.cc/statics.html) | 排行榜、符文關鍵詞排行榜、符文統計與每日符文 |
 | 脈絡 | [context.html](https://loc.lo3rwang.cc/context.html) | 符文脈絡 Graph · No API、節點、關係式與 Event |
 | 多元搜尋 | [search.html](https://loc.lo3rwang.cc/search.html) | Cross-format Search：文字、音樂、多媒體、符文、脈絡與知識 |
-| 推演 | [evolution.html](https://loc.lo3rwang.cc/evolution.html) | 時期、Timeline、Trend、Trajectory 與符文資料歷程 |
+| 推演 | [evolution.html](https://loc.lo3rwang.cc/culture.html) | 時期、Timeline、Trend、Trajectory 與符文資料歷程 |
 | 治理 | [governance.html](https://loc.lo3rwang.cc/governance.html) | 政德風、治理原則與方法 |
 | Context Sandbox | [game.html](https://loc.lo3rwang.cc/game.html) | Semantic Playground |
 | 作者 | [lo3rwang](https://lo3rwang.lo3rwang.cc/) | Lucas Oscar Wang 政德 |
