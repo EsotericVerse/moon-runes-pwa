@@ -24,7 +24,7 @@ export const DEFAULT_THEME_SLOTS=[
   {id:'theme-8',group:'無序',identityColor:'#0B0B0B',label:'無序組・暗黑',scheme:'dark',enabled:true,order:8,tokens:{'--loc-bg':'#070809','--loc-panel':'#101113','--loc-panel-2':'#191b1e','--loc-text':'#e7e8ea','--loc-accent':'#777d84','--loc-gold':'#9c978f','--loc-body-glow':'#1d2024','--loc-body-mid':'#0c0d0f','--loc-hero-start':'rgba(25,27,30,.97)','--loc-hero-end':'rgba(7,8,9,.97)'}}
 ];
 
-export const DEFAULT_SCOPE_THEME={loc:'theme-7',runes:'theme-1',lo3rwang:'theme-5'};
+export const DEFAULT_SCOPE_THEME={loc:'theme-7',runes:'theme-5',lo3rwang:'theme-7'};
 export const DEFAULT_ROTATION_SCHEDULE=[
   {start:0,theme:'theme-1'},
   {start:6,theme:'theme-7'},
@@ -33,8 +33,8 @@ export const DEFAULT_ROTATION_SCHEDULE=[
 ];
 export const DEFAULT_SCOPE_THEME_SETTINGS={
   loc:{mode:'fixed',theme:'theme-7',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE},
-  runes:{mode:'fixed',theme:'theme-1',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE},
-  lo3rwang:{mode:'fixed',theme:'theme-5',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE}
+  runes:{mode:'fixed',theme:'theme-5',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE},
+  lo3rwang:{mode:'custom',theme:'theme-7',custom:{'--loc-bg':'#eaf5ff','--loc-panel':'#f8fcff','--loc-heading':'#20384d','--loc-accent':'#5f9fcf'},schedule:DEFAULT_ROTATION_SCHEDULE}
 };
 
 export function detectThemeScope(pathname='/',host=''){
