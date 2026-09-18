@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {FEATURES_V2,SCOPES_V2,SCOPE_POLICY_V2,featureHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
+import {FEATURES_V2,SCOPES_V2,SCOPE_POLICY_V2,featureHrefV2,scopeHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
 
 const failures=[];
 const expectedDomains={loc:'loc.lo3rwang.cc',runes:'lrunes.lo3rwang.cc',lo3rwang:'dlwang.lo3rwang.cc',admin:'admin.lo3rwang.cc'};
@@ -67,10 +67,37 @@ if(!fs.readFileSync('app/globals.css','utf8').includes('./styles/v2/scope-system
 if(!fs.readFileSync('app/site-registry.js','utf8').includes("from './modular-v2/scope-registry.v2'"))failures.push('compat registry does not derive from V2');
 if(!fs.readFileSync('app/theme-registry.js','utf8').includes("from './modular-v2/theme-registry.v2'"))failures.push('compat theme registry does not derive from V2');
 
+
+for(const scope of Object.values(SCOPES_V2)){
+  const localRoutes=Array.isArray(scope.localRoutes)?scope.localRoutes:[];
+  for(const localRoute of localRoutes){
+    const canonicalHref=scopeHrefV2(scope.id,localRoute);
+    const expectedBase=scope.scopeType==='directory'&&scope.mount?`https://${scope.mount.host}${scope.mount.path}`:`https://${scope.domain}`;
+    if(canonicalHref!==`${expectedBase}/${localRoute}`)failures.push('Scope-local canonical URL drifted: '+scope.id+'/'+localRoute);
+
+    const canonicalRoot=scope.scopeType==='directory'&&scope.mount
+      ? path.resolve('app',scope.mount.path.split('/').filter(Boolean)[0])
+      : path.resolve('app');
+    const canonicalFile=path.join(canonicalRoot,...localRoute.split('/'),'page.jsx');
+    if(!fs.existsSync(canonicalFile))failures.push('Scope-local canonical route missing: '+path.relative('.',canonicalFile));
+
+    if(scope.mount){
+      const mountRoot=path.resolve('app',scope.mount.path.split('/').filter(Boolean)[0]);
+      const mountFile=path.join(mountRoot,...localRoute.split('/'),'page.jsx');
+      if(!fs.existsSync(mountFile))failures.push('Scope-local mount route missing: '+path.relative('.',mountFile));
+    }
+  }
+}
+
 for(const retired of ['ContextView.jsx','StaticsView.jsx','EvolutionView.jsx','GovernanceView.jsx','SearchView.jsx']){
   if(fs.existsSync(path.resolve('app/loc/views',retired)))failures.push('retired shared feature returned: '+retired);
 }
 if(fs.existsSync(path.resolve('app/loc/page.jsx')))failures.push('public /loc route must not exist; app/loc is a source module directory only');
+if(fs.existsSync(path.resolve('app/runes/page.jsx')))failures.push('public /runes route must not exist; app/runes is a source module directory only');
+for(const leaked of ['context/page.jsx','statics/page.jsx','culture/page.jsx','governance/page.jsx','search/page.jsx','list/page.jsx','history/page.jsx']){
+  if(fs.existsSync(path.resolve('app/runes',leaked)))failures.push('leaked public /runes route returned: app/runes/'+leaked);
+}
+
 for(const retiredRoute of ['app/author','app/zhengde']){
   if(fs.existsSync(path.resolve(retiredRoute)))failures.push('retired author route returned: '+retiredRoute);
 }
@@ -123,7 +150,7 @@ for(const file of currentFiles){
 const bridge=fs.readFileSync('app/migration-bridges/current-data-compat.v2.js','utf8');
 if(!/LOC[0-8]/.test(bridge))failures.push('legacy physical identifiers should be isolated in the migration bridge');
 
-for(const pathname of ['/','/context','/duel/one','/list','/history']){
+for(const pathname of ['/',...FEATURES_V2.map(item=>'/'+item.path),...SCOPES_V2.runes.localRoutes.map(route=>'/'+route)]){
   if(resolveScopeV2('lrunes.lo3rwang.cc',pathname)!=='runes')failures.push('LunaRunes canonical domain failed at '+pathname);
 }
 const runesCanonicalContext=featureHrefV2('runes','context');
