@@ -102,7 +102,7 @@ class UnifiedSearchEngine:
         self.media = self._load_json("LOC_MEDIA_REGISTRY.json")
         self.lots = self._load_repo_json("data/json/core/lots.json")
         self.loc8_relation_schema = self._load_json("LOC8_RELATION_SCHEMA.json")
-        self.loc8_events = self._load_json("LOC8_EVENT_SNAPSHOT.json")
+        self.loc8_events = self._load_json("EVENT_SNAPSHOT.json")
         self.loc8_daily_runes = self._load_json("LOC8_DAILY_RUNE_SNAPSHOT.json")
         self.rune_literature = self._load_json("RUNE_LITERATURE_REGISTRY.json")
         self.rune_songs = self._load_json("LOC3_RUNE_SONG_REGISTRY.json")
@@ -1906,7 +1906,7 @@ class UnifiedSearchEngine:
             "deterministic_structural_evidence": 0.98,
             "record_metadata": 0.95,
             "registry_structure": 0.90,
-            "loc8_event_snapshot": 0.86,
+            "event_snapshot": 0.86,
             "loc8_daily_rune_snapshot": 0.86,
             "result_metadata": 0.80,
             "semantic_inference": 0.55,
@@ -3238,7 +3238,7 @@ class UnifiedSearchEngine:
             "graph_quality_bands": graph_quality_bands,
             "graph_quality": graph.get("quality", {}),
             "graph_policy": "semantic similarity selects seeds; governed edge quality controls traversal priority and minimum path score",
-            "loc8_live_relation_policy": "private Google Sheet Relation rows are not exposed by public Search; only repository-governed public snapshots/registries may enter the canonical graph",
+            "historical_relation_policy": private relation rows are not exposed by public Search; only repository-governed public snapshots/registries may enter the canonical graph",
         }
 
 
