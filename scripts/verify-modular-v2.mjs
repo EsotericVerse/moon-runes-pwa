@@ -67,6 +67,7 @@ for(const retired of ['ContextView.jsx','StaticsView.jsx','EvolutionView.jsx','G
 for(const retiredRoute of ['app/author','app/zhengde']){
   if(fs.existsSync(path.resolve(retiredRoute)))failures.push('retired author route returned: '+retiredRoute);
 }
+if(!fs.existsSync(path.resolve('app/lrunes/list/page.jsx')))failures.push('LunaRunes alternate ingress missing: app/lrunes/list/page.jsx');
 for(const scope of Object.values(SCOPES_V2)){
   if(scope.scopeType!=='directory')continue;
   const dirName=scope.mount?.path?.split('/').filter(Boolean)[0];
@@ -89,7 +90,7 @@ for(const [id,base] of [['runes','/lrunes'],['lo3rwang','/lo3rwang']]){
     if(resolveScopeV2('loc.lo3rwang.cc',pathname)!==id)failures.push(id+' mount failed at '+pathname);
   }
 }
-for(const pathname of ['/','/context','/culture','/runesish','/foo/runes','/culture/runes','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
+for(const pathname of ['/','/context','/culture','/runes','/runes/context','/runesish','/foo/runes','/culture/runes','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
   if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc')failures.push('bounded directory mount overmatched '+pathname);
 }
 if(SCOPES_V2.runes?.scopeType!=='domain')failures.push('LunaRunes Scope must remain domain type');
