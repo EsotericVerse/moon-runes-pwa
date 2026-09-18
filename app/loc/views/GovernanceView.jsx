@@ -65,13 +65,11 @@ const SECTIONS = [
     title:'管理功能',
     subtitle:'各功能各自管理，不使用單一 Scope 管理總選單。',
     content:<>
-      <p>管理入口依功能拆開。分頁呈現、脈絡、文化與其他功能各自有自己的 manager；Admin 則是全站總管理者，不代替各功能編輯。</p>
+      <p>管理權限依層級拆開，但內容不另做重複後台。OAuth 登入後，分頁管理者與相應功能管理者直接在原功能頁看到新增／編輯；Admin 總管理者則全開。治理頁只處理分頁設定、管理者分派與治理邊界。</p>
     </>,
     links:[
       {href:'/theme/manage',label:'分頁管理者',text:'管理目前分頁的 Theme、輪調、首頁與共通呈現。'},
-      {href:'/context/manage',label:'脈絡管理者',text:'管理脈絡、Graph、Event、Relation 與相關資料。'},
-      {href:'/culture/manage',label:'文化管理者',text:'管理文化內容、分類、作品關聯與文化資料。'},
-      {href:'https://admin.lo3rwang.cc',label:'總管理者',text:'Admin 全站 Control Plane：Scope、Domain、Registry、權限與 Audit。'}
+      {href:'https://admin.lo3rwang.cc',label:'總管理者',text:'Admin 全站 Control Plane：分頁、Domain、Route、Registry、權限與 Audit；所有功能編輯權全開。'}
     ]
   }
 ];
