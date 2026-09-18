@@ -16,7 +16,6 @@ export default function AboutView(){
 		<br/>月之符文(LunaRunes)是一套有自己獨特方式的符號式語言（Symbolic Language）。</p>
         <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，<br/>讓累積的資料可以繼續被理解、比較分析並得知其文化(文字演化)。</p>
       </div>
-      <div className="loc-actions"><a className="loc-button" href={FAQ_LINKS.loc}>LOC FAQ</a></div>
       <figure className="home-hero-visual">
         <img src="/pics/LOC-PicAll.png" alt="LOC 月典模型化語言框架視覺理念圖" loading="eager" />
       </figure>
@@ -31,7 +30,7 @@ export default function AboutView(){
         <div className="home-author-copy">
           <p>不用管月之符文是什麼，<a href={LUNARUNES_LINKS.one}>抽了就知道！</a>可以是問事，可以是決定當日生活主題風格的<a href={LUNARUNES_LINKS.daily}>每日符文</a>。</p>
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
-          <p>你也可以完全不抽牌，直接跳過，往下看或看上面連結的脈絡、統計、文化、治理等，<br/>或直接搜尋自己有興趣的文字與資料。</p>
+          <p>你也可以完全不抽牌，直接跳過，往下看或看上面連結的脈絡、統計、文化、治理等，<br/>或是看看 <a href={FAQ_LINKS.loc}>FAQ</a>，<br/>或直接搜尋自己有興趣的文字與資料。</p>
           <p><strong>那就開始吧！</strong></p>
         </div>
         <figure className="home-framework-figure"><img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" /></figure>
