@@ -89,7 +89,7 @@ SEMANTIC_DOMAINS = {
     "media",
     "governance",
     "knowledge",
-    "evolution",
+    "culture",
     "global",
 }
 
