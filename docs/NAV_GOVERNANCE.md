@@ -27,7 +27,5 @@ Current Scope domain 固定為：
 - Current Scope / NAV authority：`app/site-registry.js`
 - Current renderer：`app/ScopeNav.jsx`
 - 全站外殼：`app/GlobalNav.jsx`、`app/GlobalFooter.jsx`
-- Legacy static compatibility：`js/loc-nav.js`，只讀 `js/site-registry.generated.js`
-- `js/site-registry.generated.js` 是生成投影，不是治理或 Current authority
 
-舊 route-map JSON、平行 NAV runtime、`whoami`／`manage` domain 與 `evolution` route 不得重新成為 Current。歷史差異只由 Git 保存。
+舊 route-map JSON、平行 NAV runtime、legacy static CSS/HTML、`whoami`／`manage` domain 與 `evolution` route 不得重新成為 Current。歷史差異只由 Git 保存。
