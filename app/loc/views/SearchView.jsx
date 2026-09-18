@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchLocDataSegments, fetchLocJson, fetchLocJsonBatch, getLocDataDataset, LOC_DATA } from '../data';
 import { useLocalStore } from '../local-store';
-import { searchCollectionForHost } from '../search-collections';
+import { searchCollectionForScope } from '../search-collections';
+import {useSiteScope} from '../../SiteScopeProvider';
 import { applySearchGovernance, firstGovernedMatch } from '../search-governance';
 import { recordSearchSegmentHits, rankSearchSegments } from '../search-routing';
 import { recordSearchTelemetry } from '../search-telemetry';
@@ -25,7 +26,7 @@ function matchCultureKeyword(data,q){const target=norm(q);if(!target)return null
 export default function SearchView(){
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [query,setQuery]=useState('');
-  const [host,setHost]=useState('');
+  const {scope}=useSiteScope();
   const [results,setResults]=useState([]);
   const [cultureKeyword,setCultureKeyword]=useState(null);
   const [status,setStatus]=useState('輸入文字後才會載入搜尋資料。');
@@ -38,21 +39,19 @@ export default function SearchView(){
   const cultureWorks=useMemo(()=>results.filter(r=>r.source!=='政德文化').slice(0,8),[results]);
 
   useEffect(()=>{
-    const currentHost=window.location.hostname;
-    setHost(currentHost);
     const pending=window.sessionStorage.getItem('loc-pending-search')||'';
     if(pending){
       window.sessionStorage.removeItem('loc-pending-search');
       setQuery(pending);
     }
   },[]);
-  useEffect(()=>setPage(1),[host,pageSize]);
+  useEffect(()=>setPage(1),[scope,pageSize]);
   useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
 
   async function executeSearch(rawQuery){
     const q=String(rawQuery||'').trim();
     if(!q)return;
-    const collection=searchCollectionForHost(window.location.hostname,window.location.pathname);
+    const collection=searchCollectionForScope(scope);
     const id=++searchId.current;
     setPage(1);setError('');setResults([]);setCultureKeyword(null);setStatus(`搜尋「${collection.label}」資料…`);
     try{
@@ -102,15 +101,15 @@ export default function SearchView(){
   }
 
   useEffect(()=>{
-    if(host&&query.trim())executeSearch(query);
-  },[host]);
+    if(query.trim())executeSearch(query);
+  },[scope]);
 
   async function runSearch(event){
     event.preventDefault();
     await executeSearch(query);
   }
 
-  const collection=searchCollectionForHost(host,typeof window==='undefined'?'/':window.location.pathname);
+  const collection=searchCollectionForScope(scope);
   return <section className="loc-view"><header className="loc-hero"><p className="loc-eyebrow">Search · 搜尋</p><h1>搜尋</h1><p>{collection.description} 大型資料清單（manifest）與資料分片（corpus shards）只有送出查詢後才下載。</p></header>
     <form id="loc-search-form" className="loc-search-form" onSubmit={runSearch}>
       <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="輸入關鍵字，例如：治理、月、自由" aria-label="搜尋文字"/>
