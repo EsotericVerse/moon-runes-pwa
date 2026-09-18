@@ -87,6 +87,25 @@ for(const [id,scope] of Object.entries(SCOPES_V2)){
   if(!Array.isArray(scope.localRoutes)){
     failures.push(id+' localRoutes must be an array');
   }
+  if(!Array.isArray(scope.routePatterns)){
+    failures.push(id+' routePatterns must be an array');
+  }
+  if(!Array.isArray(scope.compatibilityRoutes)){
+    failures.push(id+' compatibilityRoutes must be an array');
+  }
+
+  for(const route of scope.localRoutes||[]){
+    if(!route||String(route).startsWith('/'))failures.push(id+' localRoutes must use relative route ids: '+route);
+  }
+  for(const pattern of scope.routePatterns||[]){
+    if(!pattern||String(pattern).startsWith('/'))failures.push(id+' routePatterns must use relative route ids: '+pattern);
+    for(const segment of String(pattern).split('/')){
+      if(segment.startsWith(':')&&segment.length===1)failures.push(id+' route pattern has empty parameter: '+pattern);
+    }
+  }
+  for(const route of scope.compatibilityRoutes||[]){
+    if(!route||String(route).startsWith('/'))failures.push(id+' compatibilityRoutes must use relative route ids: '+route);
+  }
 
   for(const feature of FEATURES_V2){
     const href=featureHrefV2(id,feature.id);
