@@ -27,7 +27,7 @@ HTML_RUNTIME = [
     "lots.html",
     "runes.html",
     "context.html",
-    "evolution.html",
+    "culture.html",
     "search.html",
     "game.html",
     "statics.html",
@@ -49,7 +49,7 @@ FORBIDDEN = {
     "Google Sheets runtime": re.compile(r"script\.google\.com|SHEET_API_URL", re.I),
     "legacy Render runtime": re.compile(r"moon-runes-pwa\.onrender\.com", re.I),
     "legacy state API runtime": re.compile(
-        r"api\.lo3rwang\.cc/(?:context|daily-runes|eras|evolution)",
+        r"api\.lo3rwang\.cc/(?:context|daily-runes|eras|culture)",
         re.I,
     ),
     "legacy browser data cache/state": re.compile(
