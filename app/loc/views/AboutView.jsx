@@ -56,7 +56,7 @@ export default function AboutView(){
         <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，<br/>讓累積的資料可以繼續被理解、比較分析與推演。</p>
       </div>
       <figure className="home-hero-visual">
-        <img src="/pics/LOC-PicAll.png" alt="LOC 月典語言模型框架視覺理念圖" loading="eager" />
+        <img src="/pics/LOC-PicAll.png" alt="LOC 月典模型化語言框架視覺理念圖" loading="eager" />
       </figure>
     </header>
 
@@ -104,8 +104,8 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-framework" id="framework-map">
-      <div className="home-section-heading"><p className="loc-eyebrow">LOC Model Architecture</p><h2>月典模型架構</h2><p className="loc-subtitle">八個功能模組依資料、處理與組合關係協作。</p></div>
-      <div className="home-framework-stage" aria-label="LOC 八個功能模組架構"><ModelArchitectureExplorer modules={MODEL_MODULES} /><div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間投影</span></div></div>
+      <div className="home-section-heading"><p className="loc-eyebrow">LOC Feature Composition</p><h2>月典功能視圖</h2><p className="loc-subtitle">依 Scope Model × Feature Model 組合可重用功能；此圖是介面視圖，不是 Canon 架構分層。</p></div>
+      <div className="home-framework-stage" aria-label="LOC 功能組合視圖"><ModelArchitectureExplorer modules={MODEL_MODULES} /><div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間投影</span></div></div>
     </section>
 
     <section className="loc-card home-copy-block home-skills" id="skills">
@@ -115,7 +115,7 @@ export default function AboutView(){
 
     <section className="loc-card home-author-words" id="author-words">
       <div className="home-section-heading"><p className="loc-eyebrow">About me</p><h2>作者的話</h2><p className="loc-subtitle">整理治理過去的已知，是為了把時間還給現在，對未知的未來做好準備。</p></div>
-      <div className="home-about-layout"><div className="home-author-copy"><p>月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用，採取的是不帶神秘學預設的中立態度，重在文字本身而不論道德。</p><p>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的語言模型框架；而月之符文，也在這個過程中演變成可被分析、治理與推演的符號式語言。</p><p>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構，才能進一步面對未來的各種可能。</p></div><figure className="home-about-figure"><img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" /></figure></div>
+      <div className="home-about-layout"><div className="home-author-copy"><p>月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用，採取的是不帶神秘學預設的中立態度，重在文字本身而不論道德。</p><p>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的模型化語言框架；而月之符文，也在這個過程中演變成可被分析、治理與推演的符號式語言。</p><p>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構，才能進一步面對未來的各種可能。</p></div><figure className="home-about-figure"><img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" /></figure></div>
     </section>
   </section>;
 }
