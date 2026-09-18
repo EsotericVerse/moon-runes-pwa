@@ -79,8 +79,7 @@ function initialMode(explicitMode = '') {
   const routeKey = window.location.pathname.split('/').filter(Boolean).at(-1) || '';
   const routedMode = ROUTE_MODES[routeKey];
   if (routedMode) return routedMode;
-  const value = new URLSearchParams(window.location.search).get('mode') || 'single';
-  return MODES.some(item => item.key === value) ? value : 'single';
+  return 'single';
 }
 
 function directionText(card, direction) {
