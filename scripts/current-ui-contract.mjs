@@ -6,7 +6,7 @@ const sources={
  nav:read('app/GlobalNav.jsx')+read('app/ScopeNav.jsx')+read('app/nav-route-map.js'),
  runes:read('app/runes/page.jsx'),
  governance:read('app/loc/views/GovernanceView.jsx'),
- personal:read('app/lo3rwang/page.jsx'),
+ personal:read('app/author/page.jsx'),
  admin:read('app/admin/page.jsx')+read('app/admin/RouteRegistryManager.jsx'),
  terminology:read('data/json/registries/LOC_TERMINOLOGY_CANON.json'),
  navCanon:read('docs/NAV_GOVERNANCE.md')
