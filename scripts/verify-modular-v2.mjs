@@ -119,14 +119,19 @@ for(const [id,domain] of Object.entries(expectedDomains)){
     if(resolveScopeV2(domain,pathname)!==id)failures.push(domain+' failed direct-domain Scope resolution at '+pathname);
   }
 }
-for(const [id,base] of [['runes','/lrunes'],['lo3rwang','/lo3rwang']]){
-  for(const suffix of ['','/','/context','/statics','/culture','/governance','/search']){
+for(const scope of Object.values(SCOPES_V2).filter(item=>item.mount)){
+  const base=scope.mount.path;
+  for(const suffix of ['','/',...FEATURES_V2.map(item=>'/'+item.path)]){
     const pathname=base+suffix;
-    if(resolveScopeV2('loc.lo3rwang.cc',pathname)!==id)failures.push(id+' mount failed at '+pathname);
+    if(resolveScopeV2(scope.mount.host,pathname)!==scope.id)failures.push(scope.id+' mount failed at '+pathname);
+  }
+  const hostDefault=resolveScopeV2(scope.mount.host,'/');
+  for(const pathname of [base+'ish','/foo'+base,'/culture'+base]){
+    if(resolveScopeV2(scope.mount.host,pathname)!==hostDefault)failures.push('bounded mount overmatched '+pathname);
   }
 }
-for(const pathname of ['/','/context','/culture','/runes','/runes/context','/lrunes','/lrunes/context','/runesish','/foo/runes','/culture/runes','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
-  if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc' && !pathname.startsWith('/lrunes'))failures.push('bounded directory mount overmatched '+pathname);
+for(const pathname of ['/runes','/runes/context']){
+  if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc')failures.push('retired /runes path resolved as active Scope: '+pathname);
 }
 if(SCOPES_V2.runes?.scopeType!=='domain')failures.push('LunaRunes Scope must remain domain type');
 if(SCOPES_V2.runes?.aliasName!==null)failures.push('LunaRunes domain Scope must not declare aliasName');
