@@ -18,7 +18,7 @@
     const host=location.hostname;
     const path=location.pathname;
     if(host==='lrunes.lo3rwang.cc'||path==='/runes'||path.startsWith('/runes/')||fileName()==='runes.html') return 'runes';
-    if(host==='lo3rwang.lo3rwang.cc'||fileName()==='lo3rwang.html') return 'author';
+    if(host==='lo3rwang.lo3rwang.cc') return 'author';
     if(host==='admin.lo3rwang.cc'||path==='/management'||path.startsWith('/management/')) return 'governance';
     return 'loc';
   }
