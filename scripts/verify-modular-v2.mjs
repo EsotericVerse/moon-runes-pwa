@@ -26,7 +26,8 @@ for(const [id,domain] of Object.entries(expectedDomains)){
   if(resolveScopeV2(domain)!==id)failures.push(domain+' scope mismatch');
   if(resolveScopeV2(domain+':443')!==id)failures.push(domain+' port normalization mismatch');
   for(const feature of FEATURES_V2){
-    const expectedBase=id==='lo3rwang'?'https://loc.lo3rwang.cc/lo3rwang':`https://${domain}`;
+    const scope=SCOPES_V2[id];
+    const expectedBase=scope.mount?`https://${scope.mount.host}${scope.mount.path}`:`https://${domain}`;
     if(featureHrefV2(id,feature.id)!==`${expectedBase}/${feature.path}`)failures.push(id+'/'+feature.id+' route mismatch');
   }
 }
@@ -66,23 +67,34 @@ for(const retired of ['ContextView.jsx','StaticsView.jsx','EvolutionView.jsx','G
 for(const retiredRoute of ['app/author','app/zhengde']){
   if(fs.existsSync(path.resolve(retiredRoute)))failures.push('retired author route returned: '+retiredRoute);
 }
-const lo3rwangRoute=path.resolve('app/lo3rwang');
-if(!fs.existsSync(lo3rwangRoute))failures.push('directory Scope route shell missing: app/lo3rwang');
-for(const route of ['page.jsx','context/page.jsx','statics/page.jsx','culture/page.jsx','governance/page.jsx','search/page.jsx']){
-  const file=path.join(lo3rwangRoute,route);
-  if(!fs.existsSync(file))failures.push('directory Scope route shell missing: app/lo3rwang/'+route);
+for(const scope of Object.values(SCOPES_V2)){
+  if(scope.scopeType!=='directory')continue;
+  const dirName=scope.mount?.path?.split('/').filter(Boolean)[0];
+  if(!dirName){failures.push('directory Scope missing mount path: '+scope.id);continue;}
+  const routeRoot=path.resolve('app',dirName);
+  if(!fs.existsSync(routeRoot))failures.push('directory Scope route shell missing: app/'+dirName);
+  for(const route of ['page.jsx','context/page.jsx','statics/page.jsx','culture/page.jsx','governance/page.jsx','search/page.jsx']){
+    const file=path.join(routeRoot,route);
+    if(!fs.existsSync(file))failures.push('directory Scope route shell missing: app/'+dirName+'/'+route);
+  }
 }
 for(const [id,domain] of Object.entries(expectedDomains)){
   for(const pathname of ['/','/context','/statics','/culture','/governance','/search']){
     if(resolveScopeV2(domain,pathname)!==id)failures.push(domain+' failed direct-domain Scope resolution at '+pathname);
   }
 }
-for(const pathname of ['/lo3rwang','/lo3rwang/','/lo3rwang/context','/lo3rwang/statics','/lo3rwang/culture','/lo3rwang/governance','/lo3rwang/search']){
-  if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='lo3rwang')failures.push('author mount failed at '+pathname);
+for(const [id,base] of [['runes','/runes'],['lo3rwang','/lo3rwang']]){
+  for(const suffix of ['','/','/context','/statics','/culture','/governance','/search']){
+    const pathname=base+suffix;
+    if(resolveScopeV2('loc.lo3rwang.cc',pathname)!==id)failures.push(id+' mount failed at '+pathname);
+  }
 }
-for(const pathname of ['/','/context','/culture','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
-  if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc')failures.push('bounded author mount overmatched '+pathname);
+for(const pathname of ['/','/context','/culture','/runesish','/foo/runes','/culture/runes','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
+  if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc')failures.push('bounded directory mount overmatched '+pathname);
 }
+if(SCOPES_V2.runes?.scopeType!=='directory')failures.push('LunaRunes Scope must remain directory type');
+if(SCOPES_V2.runes?.aliasName!=='lrunes')failures.push('LunaRunes aliasName must remain lrunes');
+if(SCOPES_V2.runes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.runes?.mount?.path!=='/runes')failures.push('LunaRunes LOC mount drifted');
 if(SCOPES_V2.lo3rwang?.scopeType!=='directory')failures.push('author Scope must remain directory type');
 if(SCOPES_V2.lo3rwang?.aliasName!=='dlwang')failures.push('author aliasName must remain dlwang');
 if(SCOPES_V2.lo3rwang?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lo3rwang?.mount?.path!=='/lo3rwang')failures.push('author LOC mount drifted');
