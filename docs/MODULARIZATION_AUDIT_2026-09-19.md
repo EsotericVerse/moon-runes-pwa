@@ -81,6 +81,18 @@ Current Scope ID 暫時使用 `^[A-Za-z]+$`。
 
 Current default Scope 與 reserved-word policy 已抽入 Registry；Admin 目前顯示 Current 預設值，後續可升級成可編輯設定。
 
+### 7. Edge route policy
+
+已新增 Registry-driven edge policy：
+
+- `scripts/scope-route-policy.mjs` 從 Current Registry 產生 host/path allowlist。
+- `public/scope-route-policy.json` 由 `prepare:public` 每次 build 自動生成。
+- `scripts/verify-scope-route-policy.mjs` 驗證 LunaRunes canonical/mount、保留路徑與 alias redirect。
+- `scripts/edge/cloudflare-scope-router.js` 只消費生成 policy，不保存第二份 domain/route truth。
+- document/navigation request 採 default-deny；assets/data passthrough。
+
+因此 application 與 deployment 的 route governance 已共用同一份 Registry authority。
+
 ## 目前最重要的剩餘邊界
 
 ### Static export 無法單靠 Next 根據 Host 做 route-level 404
@@ -124,7 +136,7 @@ Current repo 已能避免 source folder 自動洩漏 `/loc`、`/runes`；但 hos
 - CI registry contract
 
 ### 仍需繼續收斂
-- host-level route admissibility under static export
+- 將既有 Cloudflare route 實際切換到 Registry-driven Worker（repo 端 policy / Worker 已完成）
 - legacy static HTML / sitemap / README 中的舊 `/runes` 路徑
 - 未執行中的舊 parity 文件／script 中仍存在歷史 route 字串
 - Admin 對 default Scope / reserved words / Scope registration 的可編輯能力
