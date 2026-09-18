@@ -47,7 +47,7 @@ export default function StatisticsV2(){
     {types.length?<nav className="scope-v2-tabs" aria-label="排行榜類型">
       {types.map(item=><button type="button" key={item} aria-pressed={item===type} onClick={()=>{setType(item);setPage(1)}}>{item}</button>)}
     </nav>:null}
-    <ScopeCardV2 eyebrow={scope.label} title="排行榜">
+    <ScopeCardV2 eyebrow={scope.label} title={scope.rankingTitle||'排行榜'}>
       <div className="scope-v2-ranking">
         {shown.map((row,index)=><div key={row.ranking_key||`${row.term}-${index}`}>
           <b>{(page-1)*PAGE_SIZE+index+1}. {row.term}</b>
