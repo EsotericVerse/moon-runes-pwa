@@ -1,6 +1,8 @@
 import {
   SCOPES_V2,
-  scopeRoutePathsV2
+  scopeRoutePathsV2,
+  scopeRoutePatternsV2,
+  scopeCompatibilityRoutesV2
 } from '../app/modular-v2/scope-registry.v2.js';
 
 function joinMount(base,path){
@@ -9,9 +11,21 @@ function joinMount(base,path){
   return right ? `${left}/${right}` : left || '/';
 }
 
+function ensureHost(hosts,host){
+  if(!hosts[host])hosts[host]={allow:new Set(),patterns:new Set(),compatibility:new Set(),redirect:null};
+  return hosts[host];
+}
+
 function addAllowed(hosts,host,path){
-  if(!hosts[host])hosts[host]={allow:new Set(),redirect:null};
-  hosts[host].allow.add(path);
+  ensureHost(hosts,host).allow.add(path);
+}
+
+function addPattern(hosts,host,pattern){
+  ensureHost(hosts,host).patterns.add(pattern);
+}
+
+function addCompatibility(hosts,host,path){
+  ensureHost(hosts,host).compatibility.add(path);
 }
 
 export function buildScopeRoutePolicyV2(){
@@ -19,10 +33,14 @@ export function buildScopeRoutePolicyV2(){
 
   for(const scope of Object.values(SCOPES_V2)){
     const canonicalPaths=scopeRoutePathsV2(scope.id);
+    const patterns=scopeRoutePatternsV2(scope.id);
+    const compatibility=scopeCompatibilityRoutesV2(scope.id);
 
     // Every declared domain resolves this Scope. For domain Scopes it is canonical.
     // For directory Scopes it is an alias ingress that should redirect to the mount.
     for(const route of canonicalPaths)addAllowed(hosts,scope.domain,route);
+    for(const pattern of patterns)addPattern(hosts,scope.domain,pattern);
+    for(const route of compatibility)addCompatibility(hosts,scope.domain,route);
 
     if(scope.scopeType==='directory'&&scope.mount){
       hosts[scope.domain].redirect={
@@ -36,6 +54,12 @@ export function buildScopeRoutePolicyV2(){
         const mounted=route==='/' ? scope.mount.path : joinMount(scope.mount.path,route);
         addAllowed(hosts,scope.mount.host,mounted);
       }
+      for(const pattern of patterns){
+        addPattern(hosts,scope.mount.host,joinMount(scope.mount.path,pattern));
+      }
+      for(const route of compatibility){
+        addCompatibility(hosts,scope.mount.host,joinMount(scope.mount.path,route));
+      }
     }
   }
 
@@ -46,6 +70,8 @@ export function buildScopeRoutePolicyV2(){
         host,
         {
           allow:[...entry.allow].sort(),
+          patterns:[...entry.patterns].sort(),
+          compatibility:[...entry.compatibility].sort(),
           ...(entry.redirect?{redirect:entry.redirect}:{})
         }
       ])
