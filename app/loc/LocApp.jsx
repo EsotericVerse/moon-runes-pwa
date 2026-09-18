@@ -27,6 +27,7 @@ const VIEWS = {
   multimedia: MediaView,
   'my-style': MyStyleView,
   statics: StaticsView,
+  culture: EvolutionView,
   evolution: EvolutionView,
   search: SearchView,
   governance: GovernanceView,
