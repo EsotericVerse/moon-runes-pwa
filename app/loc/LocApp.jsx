@@ -6,6 +6,7 @@ import {resolveScopeV2} from '../modular-v2/scope-registry.v2';
 import AboutView from './views/AboutView';
 import AuthorHomeView from './views/AuthorHomeView';
 import AdminHomeView from './views/AdminHomeView';
+import GenericScopeHomeV2 from '../modular-v2/GenericScopeHomeV2';
 
 const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const RunesHomeView=dynamic(()=>import('../runes/RunesClient'),{ssr:false,loading});
@@ -52,8 +53,8 @@ export default function LocApp({forcedView=null}){
   },[forcedView]);
 
   const ActiveView=useMemo(()=>{
-    if(state.view==='home')return HOME_VIEWS[state.scope]||AboutView;
-    return VIEWS[state.view]||HOME_VIEWS[state.scope]||AboutView;
+    if(state.view==='home')return HOME_VIEWS[state.scope]||GenericScopeHomeV2;
+    return VIEWS[state.view]||HOME_VIEWS[state.scope]||GenericScopeHomeV2;
   },[state]);
 
   return <div className="loc-next-main" data-loc-scope={state.scope} data-loc-view={state.view}><ActiveView/></div>;
