@@ -68,21 +68,29 @@ export default function SystemCatalogView({kind}){
     }else if(kind==='multimedia'){
       fetchLocJson(LOC_DATA.LOC_MEDIA_REGISTRY).then(data=>{if(alive){setRows((data?.items||[]).slice(0,24));setStatus('ready');}}).catch(()=>alive&&setStatus('error'));
     }else if(kind==='music'){
-      fetchLocJson(LOC_DATA.MUSIC_SEARCH_MANIFEST).then(async manifest=>{
-        const shards=Array.isArray(manifest?.shards)?manifest.shards:[];
-        const parts=await Promise.all(shards.map(item=>{
-          const path=String(typeof item==='string'?item:item.path||'');
-          return fetchLocJson(path.startsWith('data/')?path:`data/json/search/loc3/${path}`);
-        }));
-        return parts.flatMap(part=>Array.isArray(part?.works)?part.works:[]);
-      }).then(works=>{if(alive){setRows(works);setStatus('ready');}}).catch(()=>alive&&setStatus('error'));
+      if(scope==='runes'){
+        fetchLocJson(LOC_DATA.RUNE_SONG_REGISTRY).then(data=>{
+          if(!alive)return;
+          setRows(data?.confirmed_records||[]);
+          setStatus('ready');
+        }).catch(()=>alive&&setStatus('error'));
+      }else{
+        fetchLocJson(LOC_DATA.MUSIC_SEARCH_MANIFEST).then(async manifest=>{
+          const shards=Array.isArray(manifest?.shards)?manifest.shards:[];
+          const parts=await Promise.all(shards.map(item=>{
+            const path=String(typeof item==='string'?item:item.path||'');
+            return fetchLocJson(path.startsWith('data/')?path:`data/json/search/loc3/${path}`);
+          }));
+          return parts.flatMap(part=>Array.isArray(part?.works)?part.works:[]);
+        }).then(works=>{if(alive){setRows(works);setStatus('ready');}}).catch(()=>alive&&setStatus('error'));
+      }
     }
     return()=>{alive=false};
   },[kind,scope]);
 
   const runeRows=useMemo(()=>rows.filter(item=>{
     if(kind==='literary'&&scope==='runes')return true;
-    if(kind==='music'&&scope==='runes')return item.rune_song_flag===true||Boolean(item.rune_provenance)||Boolean(item.draw_result)||Boolean(item.draw_mode);
+    if(kind==='music'&&scope==='runes')return item.status==='confirmed'||item.rune_song_flag===true;
     const text=[item.title,item.summary,item.style,item.retrieval_text,item.content_type,...(item.tags||[]),...(item.keywords||[])].filter(Boolean).join(' ').toLocaleLowerCase('zh-Hant');
     return /符文|lunarunes|rune/.test(text);
   }),[rows,kind,scope]);
