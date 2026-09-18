@@ -26,8 +26,13 @@ NAV 必須繼承目前 Scope。脈絡、統計、文化、治理與搜尋是共�
 
 ## 管理入口
 
-`manage.lo3rwang.cc` 是最高層統一管理功能入口。它不是一般內容 Scope。NAV 中的「管理者頁面」只出現在 Author 與 Governance Scope；LOC 與 LunaRunes NAV 不增加管理者頁面。LOC 治理頁可以在頁面內容中提供最高管理入口。
+`admin.lo3rwang.cc` 是最高層統一管理功能入口。它不是一般內容 Scope。NAV 中的「管理者頁面」只出現在 Author 與 Governance Scope；LOC 與 LunaRunes NAV 不增加管理者頁面。LOC 治理頁可以在頁面內容中提供最高管理入口。
 
 ## 本地入口
 
 頁內功能入口與快捷選單不是 NAV。LunaRunes 首頁目前允許「抽牌｜符文圖鑑」頁內子選單；這不建立另一條正式 NAV，也不改變 Scope、資料歸屬或管理權。
+
+
+## 路由治理優先序
+
+網域優先，目錄其次，頁面最後。
