@@ -2,27 +2,28 @@ import {existsSync,readFileSync} from 'node:fs';
 
 const failures=[];
 const read=path=>readFileSync(path,'utf8');
-const provider=read('app/loc/ThemeProvider.jsx');
-const registry=read('app/loc/theme-registry.js');
-const control=read('app/loc/ThemeControl.jsx');
+const selector=read('app/ThemeSelect.jsx');
+const registry=read('app/theme-registry.js');
+const footer=read('app/GlobalFooter.jsx');
 const layout=read('app/layout.jsx');
+const scopeSettings=read('app/loc/scope-public-settings.js');
 
-if(existsSync('app/ThemeSelect.jsx'))failures.push('duplicate ThemeSelect controller must remain removed');
-for(const token of ["'soul'","'link'","'life'","'nature'","'mineral'","'element'","'order'","'disorder'"]){
-  if(!registry.includes(token))failures.push('missing theme slot '+token);
+for(const token of ["group:'靈魂'","group:'連結'","group:'生命'","group:'自然'","group:'礦物'","group:'元素'","group:'秩序'","group:'無序'"]){
+  if(!registry.includes(token))failures.push('missing theme group '+token);
 }
-if(!registry.includes("legacy_mode:'dark'"))failures.push('Soul must preserve existing 永夜/dark style');
-if(!registry.includes("legacy_mode:'light'"))failures.push('Order must preserve existing 永日/light style');
-if(!provider.includes("useNeonSetting('loc-theme','auto')"))failures.push('default theme mode must remain auto');
-if(!provider.includes("themeForTime(new Date(),styles)"))failures.push('auto mode must rotate by time');
-if(!provider.includes("storedMode==='light'?'order'"))failures.push('legacy light must migrate to Order');
-if(!provider.includes("storedMode==='dark'?'soul'"))failures.push('legacy dark must migrate to Soul');
-if(!layout.includes('<ThemeProvider>'))failures.push('RootLayout must own the single ThemeProvider');
-if(!control.includes('隨時間輪替'))failures.push('theme control must expose time rotation');
-if(!registry.includes('/^--loc-[a-z0-9-]+$/i'))failures.push('admin CSS variables must be restricted to --loc-*');
+if(!registry.includes("loc:{mode:'time'"))failures.push('LOC must default to time rotation');
+if(!registry.includes("runes:{mode:'fixed',theme:'theme-5'"))failures.push('LunaRunes must default to fixed mineral theme');
+if(!registry.includes("lo3rwang:{mode:'custom',theme:'theme-2'"))failures.push('lo3rwang must default to custom light-blue link theme');
+if(!registry.includes("admin:{mode:'fixed'"))failures.push('admin must use a fixed default theme');
+if(!selector.includes('getScopeThemeDefault'))failures.push('ThemeSelect must read managed scope defaults');
+if(!selector.includes("detectThemeScope(window.location.pathname,window.location.hostname)"))failures.push('ThemeSelect must resolve scope by route/domain');
+if(!footer.includes('<ThemeSelect/>'))failures.push('Footer must own the user theme selector');
+if(layout.includes('<ThemeProvider>'))failures.push('obsolete global ThemeProvider must remain removed');
+if(!scopeSettings.includes("from('scope_theme_defaults')"))failures.push('scope theme defaults must come from Neon');
+if(existsSync('app/loc/ThemeProvider.jsx') && layout.includes("ThemeProvider"))failures.push('legacy ThemeProvider must not be active');
 
 if(failures.length){
   console.error('[theme-contract] violations:\n'+failures.join('\n'));
   process.exit(1);
 }
-console.log('[theme-contract] unified eight-style theme system verified');
+console.log('[theme-contract] scope-aware footer theme system verified');
