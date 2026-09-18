@@ -37,6 +37,19 @@ export const SEARCH_COLLECTIONS = Object.freeze({
     includeTextCorpus: true,
     includeMusic: true
   }),
+  '治理': Object.freeze({
+    id:'治理',
+    label:'治理',
+    description:'只搜尋治理、權威、規則、授權與管理資料。',
+    scopeProfile:Object.freeze({id:'governance',fields:Object.freeze(['source','corpus','language','culture'])}),
+    smallSources:[
+      [LOC_DATA.GOVERNANCE_REGISTRY,'治理'],
+      [LOC_DATA.LOC_SEARCH_GOVERNANCE,'搜尋治理'],
+      [LOC_DATA.LOC_KNOWLEDGE_ASSET_REGISTRY,'知識資產']
+    ],
+    includeTextCorpus:false,
+    includeMusic:false
+  }),
   '月之符文': Object.freeze({
     id: '月之符文',
     label: '月之符文',
@@ -57,7 +70,7 @@ export const SEARCH_COLLECTIONS = Object.freeze({
   '政德風': ZHENGDE_CULTURE_COLLECTION
 });
 
-export const SEARCH_COLLECTION_ORDER = Object.freeze(['all', '月之符文', '政德文化']);
+export const SEARCH_COLLECTION_ORDER = Object.freeze(['all','月之符文','政德文化','治理']);
 
 export function getSearchCollection(value) {
   const key = String(value || '').trim();
@@ -66,4 +79,12 @@ export function getSearchCollection(value) {
 
 export function getSearchScopeProfile(value){
   return getSearchCollection(value).scopeProfile;
+}
+
+export function searchCollectionForHost(host=''){
+  const h=String(host||'').toLowerCase();
+  if(h==='lrunes.lo3rwang.cc')return SEARCH_COLLECTIONS['月之符文'];
+  if(h==='lo3rwang.lo3rwang.cc')return SEARCH_COLLECTIONS['政德文化'];
+  if(h==='admin.lo3rwang.cc')return SEARCH_COLLECTIONS['治理'];
+  return SEARCH_COLLECTIONS.all;
 }
