@@ -253,3 +253,32 @@
 
 
 .loc-search-highlight{background:var(--loc-accent-surface-strong);color:var(--loc-text);font-weight:800;padding:0 .08em;border-radius:.18em}
+
+
+/* Shared Scope-home media contract: LOC, LunaRunes and lo3rwang use one typography/composition system. */
+.loc-card strong,.loc-panel strong,.loc-bubble strong,
+.home-author-copy strong,.loc-grid article strong{
+  font-weight:var(--loc-weight-section-title);
+}
+.home-hero-visual iframe{
+  display:block;
+  width:100%;
+  min-height:520px;
+  aspect-ratio:9/16;
+  border:0;
+  background:var(--loc-surface-soft);
+}
+.home-hero-visual figcaption{
+  padding:.55rem .75rem;
+  border-top:1px solid var(--loc-line);
+  color:var(--loc-muted);
+  font-size:var(--loc-type-ui);
+  font-weight:var(--loc-weight-ui);
+  line-height:1.5;
+}
+.home-hero-visual figcaption a{text-decoration:none}
+.home-hero-visual figcaption a:hover,
+.home-hero-visual figcaption a:focus-visible{text-decoration:underline}
+@media(max-width:760px){
+  .home-hero-visual iframe{min-height:0}
+}
