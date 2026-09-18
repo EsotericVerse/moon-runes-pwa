@@ -315,14 +315,7 @@ export function scopeRoutePathsV2(scopeId){
 
 export function isScopePathAllowedV2(scopeId,pathname='/'){
   const clean=cleanPath(pathname);
-  const scope=getScopeV2(scopeId);
-  const canonicalPaths=scopeRoutePathsV2(scopeId);
-  if(canonicalPaths.includes(clean))return true;
-  for(const localRoute of scope.localRoutes||[]){
-    const base='/'+String(localRoute).replace(/^\/+|\/+$/g,'');
-    if(clean===base||clean.startsWith(base+'/'))return true;
-  }
-  return false;
+  return scopeRoutePathsV2(scopeId).includes(clean);
 }
 
 export function stripScopeMountV2(scopeId,host='',pathname='/'){
