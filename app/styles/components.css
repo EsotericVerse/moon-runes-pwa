@@ -250,3 +250,6 @@
     padding-right:0;
   }
 }
+
+
+.loc-search-highlight{background:var(--loc-accent-surface-strong);color:var(--loc-text);font-weight:800;padding:0 .08em;border-radius:.18em}

@@ -16,38 +16,29 @@ const SINGLE_TOPICS = [
   { key: 'life', label: '生活' }
 ];
 
-const PROMO_REELS = [
-  { id: 'DMA9yDAzeRK', title: '月之符文 Reels 01' },
-  { id: 'DMA-ZxLTINw', title: '月之符文 Reels 02' }
-];
-
-const READING_EXAMPLES = [
-  {
-    title: '你最近卡關了嗎？給你一些突破建議！',
-    url: 'https://www.instagram.com/reel/DMA9yDAzeRK/'
-  }
-];
+const INTRO_REEL = { id: 'DMA9yDAzeRK', title: '月之符文介紹 Reels' };
 
 export default function RunesPage() {
   return <main className="loc-next-main">
-    <header className="loc-hero runes-home-hero">
-      <div className="runes-home-hero-copy">
-        <p className="loc-eyebrow">LunaRunes</p>
-        <h1>月之符文</h1>
-        <p className="loc-subtitle">第一次來？不用先弄懂它是什麼。先看一支短影片，或直接抽張牌。</p>
-      </div>
-
-      <div className="runes-home-reels" aria-label="月之符文 Reels 預覽">
-        {PROMO_REELS.map(reel => <article className="runes-home-reel" key={reel.id}>
+    <header className="loc-hero scope-home-hero">
+      <aside className="scope-home-media" aria-label="月之符文介紹媒體">
+        <div className="scope-home-media-frame">
           <iframe
-            src={`https://www.instagram.com/reel/${reel.id}/embed/`}
-            title={reel.title}
+            src={`https://www.instagram.com/reel/${INTRO_REEL.id}/embed/`}
+            title={INTRO_REEL.title}
             loading="eager"
             allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
             allowFullScreen
           />
-          <a href={`https://www.instagram.com/reel/${reel.id}/`} target="_blank" rel="noopener noreferrer">在 Instagram 看完整 Reels</a>
-        </article>)}
+        </div>
+        <a className="scope-home-media-caption" href={`https://www.instagram.com/reel/${INTRO_REEL.id}/`} target="_blank" rel="noopener noreferrer">在 Instagram 看完整介紹 Reels</a>
+      </aside>
+
+      <div className="scope-home-copy">
+        <p className="loc-eyebrow">LunaRunes</p>
+        <h1>月之符文</h1>
+        <p className="loc-subtitle">第一次來？不用先弄懂它是什麼。可以直接抽張牌，也可以先看左邊的短介紹。</p>
+        <div className="loc-actions"><a className="loc-button" href="?mode=single">直接抽一張牌</a><a href="?mode=daily">每日符文</a></div>
       </div>
     </header>
 
@@ -58,24 +49,13 @@ export default function RunesPage() {
         <p className="loc-subtitle">不用先學規則，挑一個方向，抽一張牌就可以開始。</p>
       </div>
       <div className="runes-topic-grid">
-        {SINGLE_TOPICS.map(topic => <a className="runes-topic-choice" key={topic.key} href={`?mode=single&topic=${topic.key}#draw`}>
+        {SINGLE_TOPICS.map(topic => <a className="runes-topic-choice" key={topic.key} href={`?mode=single&topic=${topic.key}`}>
           <strong>{topic.label}</strong>
           <span>抽一張牌</span>
         </a>)}
       </div>
       <p className="runes-quick-start-note">沒有特別想問的？也可以直接抽每日符文。</p>
-      <div className="loc-actions"><a className="loc-button" href="?mode=daily#draw">抽每日符文</a></div>
-    </section>
-
-    <section className="loc-card runes-reading-example-links" aria-labelledby="reading-example-title">
-      <div className="runes-content-heading">
-        <p className="loc-eyebrow">Example</p>
-        <h2 id="reading-example-title">想先看看實際怎麼解？</h2>
-        <p className="loc-subtitle">從一個完整範例開始，看抽牌之後怎麼把結果連成解讀。</p>
-      </div>
-      <div className="links">
-        {READING_EXAMPLES.map(example => <a key={example.url} href={example.url} target="_blank" rel="noopener noreferrer">{example.title} →</a>)}
-      </div>
+      <div className="loc-actions"><a className="loc-button" href="?mode=daily">抽每日符文</a></div>
     </section>
 
     <RuneDrawClient />

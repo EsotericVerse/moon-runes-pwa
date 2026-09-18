@@ -1,6 +1,6 @@
 export const metadata = {
   title: '王政德｜Lucas Oscar Wang / lo3rwang',
-  description: '王政德（Lucas Oscar Wang / lo3rwang）作者首頁：文字工匠、校對者、語言治理架構者。'
+  description: '王政德（Lucas Oscar Wang / lo3rwang）個人首頁：文字工匠、校對者、語言治理架構者。'
 };
 
 const ROOT = [
@@ -9,16 +9,35 @@ const ROOT = [
   '隨心所欲，而不逾己'
 ];
 
-export default function AuthorPage() {
+const INTRO_REEL = {
+  id: 'DdX5ki-oZY6',
+  title: '這就是我｜lo3rwang 自我介紹 Reels'
+};
+
+export default function Lo3rwangPage() {
   return (
     <main className="loc-next-main">
       <section className="loc-view">
-        <header className="loc-hero" id="top">
-          <p className="loc-eyebrow">Author</p>
-          <h1>王政德</h1>
-          <p className="loc-subtitle">Lucas Oscar Wang · lo3rwang</p>
-          <p>對我很陌生？沒關係，可以先聽首歌，再決定要不要繼續認識我。</p>
-          <p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽首歌</a></p>
+        <header className="loc-hero scope-home-hero" id="top">
+          <aside className="scope-home-media" aria-label="lo3rwang 自我介紹媒體">
+            <div className="scope-home-media-frame">
+              <iframe
+                src={`https://www.instagram.com/p/${INTRO_REEL.id}/embed/`}
+                title={INTRO_REEL.title}
+                loading="eager"
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+            <a className="scope-home-media-caption" href={`https://www.instagram.com/p/${INTRO_REEL.id}/`} target="_blank" rel="noopener noreferrer">在 Instagram 看完整自我介紹 Reels</a>
+          </aside>
+          <div className="scope-home-copy">
+            <p className="loc-eyebrow">lo3rwang</p>
+            <h1>王政德</h1>
+            <p className="loc-subtitle">Lucas Oscar Wang · lo3rwang</p>
+            <p>對我很陌生？沒關係，可以先看自我介紹，也可以先聽首歌，再決定要不要繼續認識我。</p>
+            <div className="loc-actions"><a className="loc-button" href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽首歌</a></div>
+          </div>
         </header>
 
         <section className="loc-card" id="governance-root">
@@ -26,7 +45,7 @@ export default function AuthorPage() {
           <h2>我的 24 個字</h2>
           {ROOT.map((line) => <p className="loc-core-line" key={line}>{line}</p>)}
           <p>這是我的人生觀與自我治理方式，不要求別人接受相同分類或價值判斷。</p>
-          <p><a href="/author/governance">查看作者治理與詳細說明</a></p>
+          <p><a href="/lo3rwang/governance">查看 lo3rwang 治理與詳細說明</a></p>
         </section>
 
         <section className="loc-card" id="roles">

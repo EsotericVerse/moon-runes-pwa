@@ -1,3 +1,12 @@
+.scope-home-hero{display:grid;grid-template-columns:minmax(220px,320px) minmax(0,1fr);gap:1.5rem;align-items:start}
+.scope-home-media{display:grid;gap:.6rem;min-width:0}
+.scope-home-media-frame{display:block;width:100%;overflow:hidden;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-surface-soft)}
+.scope-home-media-frame img,.scope-home-media-frame iframe{display:block;width:100%;border:0;background:var(--loc-surface-soft)}
+.scope-home-media-frame img{height:auto}
+.scope-home-media-frame iframe{aspect-ratio:9/16}
+.scope-home-media-caption{font-size:.86rem;font-weight:700;line-height:1.5}
+.scope-home-copy{display:grid;gap:.45rem;align-content:start}
+
 .loc-progress{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.7rem;align-items:center;margin:.75rem 0;color:var(--loc-muted);font-size:.82rem}
 .loc-progress progress,.loc-style-bars progress{width:100%;height:.7rem;accent-color:var(--loc-gold)}
 .loc-library-record h2{margin:.35rem 0 .55rem}
@@ -6,4 +15,4 @@
 .loc-style-bars>div{display:grid;gap:.32rem}
 .loc-style-bars>div>div{display:flex;justify-content:space-between;gap:1rem;align-items:center}
 .loc-style-bars span{color:var(--loc-muted);font-size:.82rem}
-@media(max-width:700px){.loc-progress{grid-template-columns:1fr}.loc-filter-row{grid-template-columns:1fr}.loc-record-form{grid-template-columns:1fr}.loc-record-form label.wide{grid-column:auto}}
+@media(max-width:700px){.scope-home-hero{grid-template-columns:1fr}.scope-home-media{max-width:260px}.loc-progress{grid-template-columns:1fr}.loc-filter-row{grid-template-columns:1fr}.loc-record-form{grid-template-columns:1fr}.loc-record-form label.wide{grid-column:auto}}

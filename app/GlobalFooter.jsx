@@ -9,8 +9,8 @@ export default function GlobalFooter(){
 
   return <footer className="loc-site-footer">
     <div className="loc-site-footer-row loc-site-footer-row-primary">
-      <a href={isRunes?'/runes':'/'}>{isRunes?'月之符文':'月典'}</a>｜<ThemeSelect />
+      <a href={isRunes?'https://lrunes.lo3rwang.cc/':'https://loc.lo3rwang.cc/'}>{isRunes?'月之符文':'月典'}</a>｜<ThemeSelect />
     </div>
-    <div className="loc-site-footer-row"><a href="https://whoami.lo3rwang.cc/">Lucas Oscar Wang 政德</a>｜<a href="mailto:sopa2306@gmail.com">聯絡方式</a></div>
+    <div className="loc-site-footer-row"><a href="https://lo3rwang.lo3rwang.cc/">Lucas Oscar Wang 政德</a>｜<a href="mailto:sopa2306@gmail.com">聯絡方式</a></div>
   </footer>;
 }
