@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchLocJsonBatch, LOC_DATA } from './data';
+import {ADMIN_DATA_PATHS_V2} from '../migration-bridges/current-data-compat.v2';
+import { fetchLocJsonBatch } from './data';
 import { useNeonAccount } from './use-neon-account';
 import ThemeAdmin from './ThemeAdmin';
 
@@ -13,10 +14,10 @@ export default function GovernanceManagement(){
     setShared(current=>({...current,loading:true,error:''}));
     try{
       const [eras,daily,events,relations]=await fetchLocJsonBatch([
-        LOC_DATA.LOC_ERA_REGISTRY,
-        LOC_DATA.DAILY_RUNE_REPO_HISTORY||LOC_DATA.LOC8_DAILY_RUNE_REPO_HISTORY,
-        LOC_DATA.LOC8_EVENT_SNAPSHOT,
-        LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY
+        ADMIN_DATA_PATHS_V2.eras,
+        ADMIN_DATA_PATHS_V2.dailyRunes,
+        ADMIN_DATA_PATHS_V2.contextEvents,
+        ADMIN_DATA_PATHS_V2.contextRelations
       ],{concurrency:2});
       setShared({
         loading:false,

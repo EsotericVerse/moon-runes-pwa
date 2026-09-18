@@ -44,5 +44,16 @@ if(!fs.readFileSync('app/globals.css','utf8').includes('./styles/v2/scope-system
 if(!fs.readFileSync('app/site-registry.js','utf8').includes("from './modular-v2/scope-registry.v2'"))failures.push('compat registry does not derive from V2');
 if(!fs.readFileSync('app/theme-registry.js','utf8').includes("from './modular-v2/theme-registry.v2'"))failures.push('compat theme registry does not derive from V2');
 
+for(const retired of ['ContextView.jsx','StaticsView.jsx','EvolutionView.jsx','GovernanceView.jsx','SearchView.jsx']){
+  if(fs.existsSync(path.resolve('app/loc/views',retired)))failures.push('retired shared feature returned: '+retired);
+}
+const currentFiles=['app/loc/search-collections.js','app/loc/GovernanceManagement.jsx'];
+for(const file of currentFiles){
+  const source=fs.readFileSync(file,'utf8');
+  if(/\bLOC[0-8](?:_|\b)/.test(source))failures.push(file+': legacy numbered data identity leaked into Current feature module');
+}
+const bridge=fs.readFileSync('app/migration-bridges/current-data-compat.v2.js','utf8');
+if(!/LOC[0-8]/.test(bridge))failures.push('legacy physical identifiers should be isolated in the migration bridge');
+
 if(failures.length){console.error('[modular-v2] violations:\n'+failures.join('\n'));process.exit(1);}
-console.log('[modular-v2] Current cutover verified: 4 scopes, 5 shared features, one scope registry, one theme registry, one CSS namespace');
+console.log('[modular-v2] Current cutover verified: 4 scopes, 5 shared features, one scope registry, one theme registry, isolated legacy data ids');
