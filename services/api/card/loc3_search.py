@@ -83,12 +83,16 @@ class LOC3Result:
     def as_dict(self) -> dict[str, Any]:
         work = self.work
         versions = work.get("versions", [])
-        return {
+        historical_loc_ids = []
+        for raw in [work.get("primary_loc"), *(work.get("related_locs") or [])]:
+            value = str(raw or "").strip()
+            if re.fullmatch(r"LOC[1-8]", value, re.I) and value.upper() not in historical_loc_ids:
+                historical_loc_ids.append(value.upper())
+        result = {
             "rank": self.rank,
             "score": round(self.score, 6),
             "system_id": work.get("system_id"),
-            "primary_loc": work.get("primary_loc", "LOC3"),
-            "related_locs": work.get("related_locs", []),
+            "feature_ids": list(work.get("feature_ids") or ["music", "text"]),
             "work_id": work["work_id"],
             "title": work["title"],
             "created_date": work.get("created_date"),
@@ -124,10 +128,16 @@ class LOC3Result:
             "alternate_versions": versions[1:],
             "version_count": len(versions),
         }
+        scope_id = str(work.get("scope_id") or "").strip()
+        if scope_id and not re.fullmatch(r"LOC[1-8]", scope_id, re.I):
+            result["scope_id"] = scope_id
+        if historical_loc_ids:
+            result["historical_provenance"] = {"loc_ids": historical_loc_ids}
+        return result
 
 
 class LOC3SearchEngine:
-    """Dependency-free Traditional Chinese hybrid vector search for LOC3."""
+    """Dependency-free Traditional Chinese hybrid vector search for the music corpus."""
 
     def __init__(self, dataset_path: Path):
         payload = json.loads(dataset_path.read_text(encoding="utf-8"))
@@ -141,8 +151,8 @@ class LOC3SearchEngine:
         if not isinstance(works, list) or not works:
             raise ValueError("LOC3 dataset must contain a non-empty works array")
 
-        # Media is owned by LOC5 and referenced by LOC3.
-        # Prefer the shared registry; keep the legacy LOC3 overlay as a compatibility fallback.
+        # Prefer the shared media registry; keep the historical numbered overlay
+        # only as a compatibility fallback while source data is being migrated.
         shared_media_path = registry_json("LOC_MEDIA_REGISTRY.json")
         legacy_media_path = search_json("loc3", "LOC3_MEDIA_LINKS_v0.1.json")
         if shared_media_path.exists():
