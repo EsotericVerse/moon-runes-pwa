@@ -5,6 +5,7 @@ import {ADMIN_DATA_PATHS_V2} from '../migration-bridges/current-data-compat.v2';
 import { fetchLocJsonBatch } from './data';
 import { useNeonAccount } from './use-neon-account';
 import ThemeAdmin from './ThemeAdmin';
+import {SCOPE_POLICY_V2} from '../modular-v2/scope-registry.v2';
 
 export default function GovernanceManagement(){
   const account=useNeonAccount();
@@ -62,6 +63,15 @@ export default function GovernanceManagement(){
       <button type="button" onClick={account.signOut}>登出 Neon</button>
     </>}
     {account.error&&<p role="alert">{account.error}</p>}
+    <hr/>
+    <h3>Scope 預設治理</h3>
+    <p>目前先由 Current Registry 提供預設值；之後可由管理頁面改成可編輯設定。</p>
+    <ul>
+      <li>Scope ID 規則：<code>{SCOPE_POLICY_V2.scopeIdPattern}</code></li>
+      <li>預設 Scope：<code>{SCOPE_POLICY_V2.defaultScopeId}</code></li>
+      <li>本部署保留字：{SCOPE_POLICY_V2.reservedWords.map(item=><code key={item.word}>{item.word}</code>)}</li>
+    </ul>
+    <p className="loc-subtitle">保留字只約束目前部署，不限制其他使用者、部門或其他部署使用相同名稱。</p>
     <hr/>
     <h3>全站風格管理</h3>
     <ThemeAdmin/>
