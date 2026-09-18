@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { fetchLocJsonBatch, LOC_DATA } from '../loc/data';
 import { putNeonRecord } from '../loc/neon-user-storage';
 import { useNeonAccount } from '../loc/use-neon-account';
@@ -20,6 +21,16 @@ const MODES = [
   { key: '5card', count: 5, label: '五卡', positions: ['過去', '現在', '未來', '外在', '內在'] },
   { key: 'ow3gs', count: 11, label: '11卡 OW3gs', positions: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'] }
 ];
+const MODE_PATHS = Object.freeze({
+  single: '/duel/one',
+  daily: '/duel/daily',
+  '2card': '/duel/two',
+  '3card': '/duel/three',
+  '5card': '/duel/five',
+  ow3gs: '/duel/ow3gs'
+});
+const ROUTE_MODES = Object.freeze(Object.fromEntries(Object.entries(MODE_PATHS).map(([mode, path]) => [path.split('/').filter(Boolean).at(-1), mode])));
+
 const RITUAL_MESSAGES = {
   single: ['您目前使用的是「單卡占卜模式」。', '正在找尋那命運之線……', '微弱的月光，會在漆黑的夜裡，帶領你找到方向。', '抽牌完成。'],
   daily: ['您目前使用的是「單卡每日抽牌模式」。', '這是一張屬於今日節奏與提醒的指引牌。', '正在對照今日真實月相。', '今日月符已經抽取完成。'],
@@ -68,8 +79,12 @@ function runeCardImage(card) {
   return `/assets/lunarunes/cards/${number}_${name}.png`;
 }
 
-function initialMode() {
+function initialMode(explicitMode = '') {
+  if (MODES.some(item => item.key === explicitMode)) return explicitMode;
   if (typeof window === 'undefined') return 'single';
+  const routeKey = window.location.pathname.split('/').filter(Boolean).at(-1) || '';
+  const routedMode = ROUTE_MODES[routeKey];
+  if (routedMode) return routedMode;
   const value = new URLSearchParams(window.location.search).get('mode') || 'single';
   return MODES.some(item => item.key === value) ? value : 'single';
 }
@@ -135,20 +150,24 @@ function MultiReading({ draw, mode, phase }) {
   return null;
 }
 
-export default function RuneDrawClient() {
+export default function RuneDrawClient({ initialModeKey = '' }) {
+  const router = useRouter();
   const account = useNeonAccount();
   const { value: uiSettings } = useLocalStore(UI_SETTINGS_KEY, DEFAULT_UI_SETTINGS);
   const [data, setData] = useState(null);
   const [interpretations, setInterpretations] = useState([]);
   const [error, setError] = useState('');
-  const [modeKey, setModeKey] = useState('single');
+  const [modeKey, setModeKey] = useState(() => MODES.some(item => item.key === initialModeKey) ? initialModeKey : 'single');
   const [draw, setDraw] = useState(null);
   const [ritualStep, setRitualStep] = useState(-1);
   const [recordStatus, setRecordStatus] = useState('');
   const timers = useRef([]);
 
   useEffect(() => {
-    setModeKey(initialMode());
+    setModeKey(initialMode(initialModeKey));
+  }, [initialModeKey]);
+
+  useEffect(() => {
     let live = true;
     fetchLocJsonBatch([LOC_DATA.RUNES, LOC_DATA.LOTS, LOC_DATA.RUNE_INTERPRETATIONS], { concurrency: 2 })
       .then(([runes, lots, interpretationRows]) => {
@@ -179,11 +198,7 @@ export default function RuneDrawClient() {
     setRecordStatus('');
     setModeKey(key);
     setDraw(null);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      url.searchParams.set('mode', key);
-      window.history.replaceState({}, '', `${url.pathname}${url.search}`);
-    }
+    router.replace(MODE_PATHS[key] || '/duel/one', { scroll: false });
   }
 
   function finishDraw() {
