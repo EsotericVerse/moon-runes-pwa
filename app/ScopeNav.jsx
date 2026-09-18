@@ -4,7 +4,7 @@ import {SHARED_FEATURES} from './site-registry';
 import {useSiteScope} from './SiteScopeProvider';
 
 export default function ScopeNav(){
-  const {current,route}=useSiteScope();
+  const {current,route,ready}=useSiteScope();
 
   function submitSearch(event){
     event.preventDefault();
@@ -13,6 +13,8 @@ export default function ScopeNav(){
     window.sessionStorage.setItem('loc-pending-search',value);
     window.location.assign(route('search'));
   }
+
+  if(!ready)return null;
 
   return <>
     <a href={current.reserved[1]}>{current.reserved[0]}</a>
