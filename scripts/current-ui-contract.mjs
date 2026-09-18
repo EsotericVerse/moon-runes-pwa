@@ -14,7 +14,7 @@ const required=[
   [sources.home,'模型化語言框架（Modelized Language Framework）'],
   [sources.home,'符號式語言（Symbolic Language）'],
   [sources.home,'ModelArchitectureExplorer'],
-  [sources.nav,'脈絡'],[sources.nav,'統計'],[sources.nav,'文化'],[sources.nav,'治理'],[sources.nav,'useScopeRuntimeV2'],
+  [sources.registry,"label:'脈絡'"],[sources.registry,"label:'統計'"],[sources.registry,"label:'文化'"],[sources.registry,"label:'治理'"],[sources.nav,'FEATURES_V2'],[sources.nav,'useScopeRuntimeV2'],
   [sources.governance,'Admin Scope'],
   [sources.terminology,'"zh": "模型化語言框架"'],[sources.terminology,'"en": "Modelized Language Framework"'],
   [sources.terminology,'"zh": "符號式語言"'],[sources.terminology,'"en": "Symbolic Language"'],
