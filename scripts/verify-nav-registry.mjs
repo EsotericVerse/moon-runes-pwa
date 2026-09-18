@@ -5,7 +5,7 @@ const expectedDomains={
   loc:'loc.lo3rwang.cc',
   runes:'lrunes.lo3rwang.cc',
   lo3rwang:'lo3rwang.lo3rwang.cc',
-  governance:'admin.lo3rwang.cc'
+  admin:'admin.lo3rwang.cc'
 };
 for(const [scope,domain] of Object.entries(expectedDomains)){
   if(SITE_SCOPES[scope]?.domain!==domain)throw new Error(`${scope} domain drifted: ${SITE_SCOPES[scope]?.domain}`);
@@ -20,7 +20,7 @@ const cases=[
   ['loc.lo3rwang.cc','/','loc'],
   ['lrunes.lo3rwang.cc','/','runes'],
   ['lo3rwang.lo3rwang.cc','/','lo3rwang'],
-  ['admin.lo3rwang.cc','/','governance'],
+  ['admin.lo3rwang.cc','/','admin'],
   ['loc.lo3rwang.cc','/runes','runes']
 ];
 for(const [host,path,expected] of cases){
@@ -51,8 +51,8 @@ const legacyNav=await readFile('js/loc-nav.js','utf8');
 const governance=await readFile('docs/NAV_GOVERNANCE.md','utf8');
 
 if(!globalNav.includes("import ScopeNav from './ScopeNav'")||!globalNav.includes('<ScopeNav />'))throw new Error('GlobalNav must delegate to ScopeNav');
-for(const token of ["from './site-registry'","SHARED_FEATURES","detectSiteScope","featureRoute","getSiteScope"]){
-  if(!scopeNav.includes(token))throw new Error(`ScopeNav bypasses site registry: missing ${token}`);
+for(const token of ["from './site-registry'","SHARED_FEATURES","featureRoute","useCurrentScope"]){
+  if(!scopeNav.includes(token))throw new Error(`ScopeNav bypasses shared registry/hook: missing ${token}`);
 }
 if(!scopeNav.includes("featureRoute(scope,'search')"))throw new Error('Search route must derive from current Scope');
 if(!legacyNav.includes('__LOC_SITE_REGISTRY__'))throw new Error('Legacy compatibility NAV must consume generated Scope projection');
