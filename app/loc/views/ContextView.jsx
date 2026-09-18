@@ -1,22 +1,17 @@
 'use client';
 
 import {useEffect,useState} from 'react';
-import {usePathname} from 'next/navigation';
-import {detectSiteScope,getSiteScope,scopeDataView} from '../../site-registry';
+import {useSiteScope} from '../../SiteScopeProvider';
 import {neonClient} from '../neon-client';
 
 const PAGE_SIZE=20;
 
 export default function ContextView(){
-  const pathname=usePathname()||'/';
-  const [host,setHost]=useState('');
+  const {current,dataView}=useSiteScope();
+  const view=dataView('context');
   const [rows,setRows]=useState([]);
   const [page,setPage]=useState(1);
   const [error,setError]=useState('');
-  useEffect(()=>setHost(window.location.hostname),[]);
-  const scope=detectSiteScope(pathname,host);
-  const current=getSiteScope(scope);
-  const view=scopeDataView(scope,'context');
 
   useEffect(()=>{
     let live=true;
@@ -38,7 +33,7 @@ export default function ContextView(){
     <header className="loc-hero">
       <p className="loc-eyebrow">Context</p>
       <h1>脈絡</h1>
-      <p className="loc-subtitle">{current.label} Scope 的脈絡資料；同一個功能模組依 domain 自動切換資料來源。</p>
+      <p className="loc-subtitle">{current.label} Scope 的脈絡資料；同一個功能模組依 registry 自動切換資料來源。</p>
     </header>
     {!view?<p className="loc-status">此 Scope 尚未啟用脈絡 projection。</p>:null}
     {error?<p className="loc-status error">{error}</p>:null}
