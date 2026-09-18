@@ -93,7 +93,7 @@ def dump_normalized_events() -> None:
 
 
 def dump_compact_scenarios() -> None:
-    source = "data/json/registries/LOC2_EVENT_REGISTRY.json"
+    source = "data/json/registries/CONTEXT_EVENT_REGISTRY.json"
     doc = read_json(source)
     fields = ("event_id", "title", "event_group", "requirement_signature", "description")
     records = [{key: row.get(key) for key in fields if row.get(key) is not None} for row in doc.get("records") or []]
