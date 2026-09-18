@@ -1,4 +1,5 @@
 import {readFileSync} from 'node:fs';
+import {SCOPES_V2,scopeRoutePathsV2} from '../app/modular-v2/scope-registry.v2.js';
 import {buildScopeRoutePolicyV2} from './scope-route-policy.mjs';
 
 const failures=[];
@@ -13,6 +14,44 @@ function expectAllowed(host,path,expected=true){
 
 if(policy.schema!==1)failures.push('scope route policy schema drifted');
 if(policy.defaultPolicy!=='deny')failures.push('scope route policy must default deny');
+
+function mountedPath(base,route){
+  const mount=String(base||'').replace(/\/+$/,'');
+  if(route==='/')return mount||'/';
+  return mount+'/'+String(route).replace(/^\/+/, '');
+}
+
+for(const scope of Object.values(SCOPES_V2)){
+  const domainPolicy=policy.hosts?.[scope.domain];
+  if(!domainPolicy){
+    failures.push('missing edge host policy for '+scope.domain);
+    continue;
+  }
+
+  for(const route of scopeRoutePathsV2(scope.id)){
+    expectAllowed(scope.domain,route,true);
+  }
+
+  if(scope.scopeType==='directory'){
+    if(!scope.mount){
+      failures.push(scope.id+' directory Scope missing mount for edge redirect');
+    }else{
+      const redirect=domainPolicy.redirect;
+      if(redirect?.toHost!==scope.mount.host||redirect?.toBase!==scope.mount.path){
+        failures.push(scope.id+' directory alias redirect drifted');
+      }
+    }
+  }else if(domainPolicy.redirect){
+    failures.push(scope.id+' domain Scope must not have alias redirect metadata');
+  }
+
+  if(scope.mount){
+    for(const route of scopeRoutePathsV2(scope.id)){
+      expectAllowed(scope.mount.host,mountedPath(scope.mount.path,route),true);
+    }
+  }
+}
+
 
 for(const path of ['/','/context','/statics','/culture','/governance','/search','/list','/history','/duel/one','/duel/ow3gs']){
   expectAllowed('lrunes.lo3rwang.cc',path,true);
