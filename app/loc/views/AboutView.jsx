@@ -1,47 +1,8 @@
+import { LOC_SYSTEM_LINKS,LUNARUNES_LINKS } from '../system-links';
 import ModelArchitectureExplorer from './ModelArchitectureExplorer';
 
-const MODEL_MODULES=[
-  {
-    key:'runes', name:'LunaRunes', zh:'月之符文', summary:'語彙',
-    detail:'以月之符文作為語彙種子，提供固定符文資料、組合語法與可追溯的語意入口；Base66 母資料維持唯讀。',
-    href:'/runes', depth:'deep'
-  },
-  {
-    key:'context', name:'Context', zh:'脈絡', summary:'關係圖',
-    detail:'整理事件、關係、情境與語意圖，讓文字與資料可以沿來源與關係被查找、比較與理解。',
-    href:'/context', depth:'deep'
-  },
-  {
-    key:'music', name:'Music', zh:'音樂', summary:'Suno 音樂與歌詞',
-    detail:'保存音樂作品、歌詞、曲風、時期與來源，讓聲音作品能與文字、事件及其他資料建立脈絡。',
-    href:'/search?q=音樂'
-  },
-  {
-    key:'literary', name:'Literary', zh:'文字創作', summary:'文字作品與版本',
-    detail:'整理文章、文學與其他文字創作，保留原文、版本、來源與衍生分析之間的差異。',
-    href:'/search?q=文字創作'
-  },
-  {
-    key:'media', name:'MultiMedia', zh:'多媒體', summary:'跨媒介內容',
-    detail:'連結圖像、影音與其他媒體來源，觀察同一語意在不同媒介中的表達與轉譯。',
-    href:'/multimedia'
-  },
-  {
-    key:'algorithm', name:'Algorithm', zh:'演算法', summary:'方法論與演算法集合',
-    detail:'把既有方法論整併成可重現的演算法，用於分類、比較、搜尋、關係運算與其他語言處理。',
-    href:'/search?q=演算法', depth:'deep'
-  },
-  {
-    key:'module', name:'Module', zh:'模組', summary:'演算法、資料與功能封裝',
-    detail:'將演算法與資料、KM、搜尋、RAG、Graph RAG 及功能實作組合成可重複使用的模組。',
-    href:'/search?q=模組', depth:'deep'
-  },
-  {
-    key:'culture', name:'Culture', zh:'文化', summary:'文字演化',
-    detail:'把文字與脈絡放回時期與時間線，觀察 Trajectory、Trend、Oscillation 與文化中的文字演化。',
-    href:'/culture', depth:'deep'
-  }
-];
+const MODEL_MODULES=LOC_SYSTEM_LINKS;
+
 
 export default function AboutView(){
   return <section className="loc-view loc-home">
@@ -67,7 +28,7 @@ export default function AboutView(){
       </div>
       <div className="home-rune-layout">
         <div className="home-author-copy">
-          <p>不用管月之符文是什麼，<a href= "/runes?mode=single">抽了就知道！</a>可以是問事，可以是決定當日生活主題風格的<a href="/runes?mode=daily">每日符文</a>。</p>
+          <p>不用管月之符文是什麼，<a href={LUNARUNES_LINKS.one}>抽了就知道！</a>可以是問事，可以是決定當日生活主題風格的<a href={LUNARUNES_LINKS.daily}>每日符文</a>。</p>
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
           <p>你也可以完全不抽牌，直接跳過，往下看或看上面連結的脈絡、統計、文化、治理等，<br/>或直接搜尋自己有興趣的文字與資料。</p>
           <p><strong>那就開始吧！</strong></p>
@@ -85,8 +46,8 @@ export default function AboutView(){
         </div>
         <div className="home-rune-copy home-rune-copy-plain">
           <p>不知道怎麼說的話，往下抽牌就對了！</p><p>沒什麼想問的，抽個每日符文看看吧！</p><p>月之符文的特有66符文字會給你提示籤詩，指引你的可能未來，</p><p>能是祝福可能是警告，你當然擁有選擇權。</p><p>抽牌讓這符文成語意種子，成為語意起點，<br/>用你想要的方式，成長成為完整語意的成熟果實。</p><p>最後的選擇權仍然在你的手上！</p>
-          <div className="home-draw-bubbles" aria-label="選擇抽牌方式"><a className="loc-bubble" href="/runes?mode=single">抽單張</a><a className="loc-bubble" href="/runes?mode=daily">抽每日指示</a><a className="loc-bubble" href="/runes?mode=2card">抽兩張</a><a className="loc-bubble" href="/runes?mode=3card">抽三張</a><a className="loc-bubble" href="/runes?mode=5card">抽五張</a><a className="loc-bubble" href="/runes?mode=ow3gs">抽11張</a></div>
-          <div className="loc-actions home-rune-links"><a className="loc-button" href="/runes">符文圖鑑</a><a className="loc-button" href="/runes#governance">解牌規則</a><a className="loc-button" href="/runes#context">符文脈絡</a></div>
+          <div className="home-draw-bubbles" aria-label="選擇抽牌方式"><a className="loc-bubble" href={LUNARUNES_LINKS.one}>抽單張</a><a className="loc-bubble" href={LUNARUNES_LINKS.daily}>抽每日指示</a><a className="loc-bubble" href={LUNARUNES_LINKS.two}>抽兩張</a><a className="loc-bubble" href={LUNARUNES_LINKS.three}>抽三張</a><a className="loc-bubble" href={LUNARUNES_LINKS.five}>抽五張</a><a className="loc-bubble" href={LUNARUNES_LINKS.ow3gs}>抽11張</a></div>
+          <div className="loc-actions home-rune-links"><a className="loc-button" href={LUNARUNES_LINKS.list}>符文圖鑑</a><a className="loc-button" href="https://lrunes.lo3rwang.cc/governance">解牌規則</a><a className="loc-button" href="https://lrunes.lo3rwang.cc/context">符文脈絡</a></div>
         </div>
       </div>
     </section>
