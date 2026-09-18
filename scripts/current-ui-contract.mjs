@@ -5,13 +5,14 @@ import fs from 'node:fs';
 const read=path=>fs.readFileSync(path,'utf8');
 const sources={
   home:read('app/loc/views/AboutView.jsx'),
-  nav:read('app/GlobalNav.jsx')+read('app/ScopeNav.jsx')+read('app/nav-route-map.js'),
+  nav:read('app/GlobalNav.jsx')+read('app/ScopeNav.jsx')+read('app/site-registry.js')+read('app/SiteScopeProvider.jsx'),
   runes:read('app/runes/page.jsx'),
   governance:read('app/loc/views/GovernanceView.jsx'),
   runeGovernance:read('app/runes/governance/page.jsx'),
   terminology:read('data/json/registries/LOC_TERMINOLOGY_CANON.json'),
   registry:read('app/site-registry.js'),
-  layout:read('app/layout.jsx')
+  layout:read('app/layout.jsx'),
+  provider:read('app/SiteScopeProvider.jsx')
 };
 
 const required=[
@@ -32,7 +33,9 @@ const required=[
   [sources.terminology,'"en": "Symbolic Language"'],
   [sources.registry,"domain:'lo3rwang.lo3rwang.cc'"],
   [sources.registry,"dataViews:Object.freeze({context:'runes_context_entries',rankings:'runes_rankings'})"],
-  [sources.registry,"dataViews:Object.freeze({context:'lo3rwang_context_entries',rankings:'lo3rwang_rankings'})"]
+  [sources.registry,"dataViews:Object.freeze({context:'lo3rwang_context_entries',rankings:'lo3rwang_rankings'})"],
+  [sources.layout,'<SiteScopeProvider>'],
+  [sources.provider,'detectSiteScope(pathname,host)']
 ];
 
 const forbiddenCurrent=[
