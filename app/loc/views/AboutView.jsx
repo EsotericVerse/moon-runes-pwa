@@ -48,10 +48,11 @@ export default function AboutView(){
     <header className="loc-hero">
       <div className="home-title-row">
         <h1>LOC月典</h1>
-        <p className="loc-subtitle">為語言模型框架（Language Model Framework）。<br/>把語言整理成可理解、可搜尋、可推演的結構。</p>
+        <p className="loc-subtitle">把語言整理成可理解、可搜尋、可推演的模型結構。</p>
       </div>
       <div className="loc-hero-copy">
-        <p className="loc-core-line">月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演語言的系統。<br/>月之符文(LunaRunes)是一套符號式語言，有自己獨立的說明方式。</p>
+        <p className="loc-core-line">月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演的模型化語言框架（Modelized Language Framework）。
+		<br/>月之符文(LunaRunes)是一套符號式語言（Symbolic Language），有自己獨立的說明方式。</p>
         <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，<br/>讓累積的資料可以繼續被理解、比較分析與推演。</p>
       </div>
       <figure className="home-hero-visual">
@@ -66,11 +67,10 @@ export default function AboutView(){
       </div>
       <div className="home-rune-layout">
         <div className="home-author-copy">
-          <p>不用管月之符文是什麼，抽了就知道！可以是問事，可以是決定生活主題風格的每日符文。</p>
+          <p>不用管月之符文是什麼，<a href= "/runes?mode=single">抽了就知道！</a>可以是問事，可以是決定生活主題風格的每日符文。</p>
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
           <p>你也可以完全不抽牌，直接在符文面跳過，往下看或看上面連結的脈絡、統計、文化，<br/>或直接搜尋自己有興趣的文字與資料。</p>
           <p><strong>那就開始吧！</strong></p>
-          <div className="loc-actions"><a className="loc-button primary" href="/runes?mode=single">抽一張牌</a><a className="loc-button" href="/statics">排行榜</a></div>
         </div>
         <figure className="home-framework-figure"><img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" /></figure>
       </div>
