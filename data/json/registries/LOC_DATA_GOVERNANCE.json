@@ -2,10 +2,11 @@
   "schema_version": "1.0",
   "registry": "LOC_DATA_GOVERNANCE",
   "status": "current",
-  "updated_at": "2026-09-16",
+  "updated_at": "2026-09-18",
   "identity": {
-    "loc": "LOC／月典 = Language Module Framework／語言系統模組框架",
-    "lunarunes": "LunaRunes／月之符文 = Symbolic Language Module／符號式語言模組"
+    "loc": "LOC／月典 = Modelized Language Framework／模型化語言框架",
+    "lunarunes": "LunaRunes／月之符文 = Symbolic Language／符號式語言",
+    "final_frozen_rule": "This identity pair is the highest and final Current definition. Downstream registries, UI, Search, RAG, generated projections and implementation terminology must conform and cannot redefine it."
   },
   "current_architecture": {
     "formula": "Scope Model × Feature Model → Page Composition",
@@ -21,7 +22,12 @@
     "generated projections",
     "Search/RAG/UI consumers"
   ],
-  "authority_model": ["scope", "authoritative_source", "current_status", "conflict_resolution"],
+  "authority_model": [
+    "scope",
+    "authoritative_source",
+    "current_status",
+    "conflict_resolution"
+  ],
   "principles": {
     "objective_neutral": true,
     "explainable": true,
@@ -36,7 +42,14 @@
   },
   "scope_governance": {
     "mutable": true,
-    "operations": ["create", "rename", "relate", "split", "merge", "remove"],
+    "operations": [
+      "create",
+      "rename",
+      "relate",
+      "split",
+      "merge",
+      "remove"
+    ],
     "independent_instance_authority": true,
     "adoption_grants_upstream_login": false,
     "aggregation_changes_source_ownership": false
@@ -44,7 +57,12 @@
   "search_statistics": {
     "owned_by_scope": true,
     "integrated_results_require_review": true,
-    "processing": ["initial_full_analysis", "skip_unchanged", "update_diff", "recompute_marked_records_only"],
+    "processing": [
+      "initial_full_analysis",
+      "skip_unchanged",
+      "update_diff",
+      "recompute_marked_records_only"
+    ],
     "leaderboard": "Persist Current counts and apply deltas; do not repeat full-text scans for every display."
   },
   "era": {
@@ -52,10 +70,40 @@
     "cross_scope_merge_by_default": false,
     "historical_selection_requires_audit": true
   },
-  "roles": ["author", "data_subject", "scope_manager", "system_administrator"],
+  "roles": [
+    "author",
+    "data_subject",
+    "scope_manager",
+    "system_administrator"
+  ],
   "governance_control_plane": {
-    "lifecycle": ["proposed", "under_review", "active", "disputed", "restricted", "amended", "superseded", "withdrawn", "rejected", "tombstoned"],
-    "required_audit_fields": ["governance_id", "scope_id", "object_type", "object_id", "actor_role", "action", "before", "after", "reason", "evidence_refs", "submitted_at", "review_status", "replacement_id"],
+    "lifecycle": [
+      "proposed",
+      "under_review",
+      "active",
+      "disputed",
+      "restricted",
+      "amended",
+      "superseded",
+      "withdrawn",
+      "rejected",
+      "tombstoned"
+    ],
+    "required_audit_fields": [
+      "governance_id",
+      "scope_id",
+      "object_type",
+      "object_id",
+      "actor_role",
+      "action",
+      "before",
+      "after",
+      "reason",
+      "evidence_refs",
+      "submitted_at",
+      "review_status",
+      "replacement_id"
+    ],
     "delete_strategy": "governed_tombstone_by_default"
   },
   "copyleft": {
