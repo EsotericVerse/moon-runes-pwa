@@ -1,12 +1,12 @@
 # 🌕 LOC｜月典（Luna Codex）
 
-LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的語言系統模組框架（Language Module Framework）。
+LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的模組化語言框架（Modular Language Framework）。
 
 LOC 的 Current information architecture 固定採 **Scope Model × Feature Model → Page Composition**：Scope 管理資料、權威與歷史邊界；Feature 是可跨 Scope 重用的能力；Page Composition 將兩者組合成實際頁面與入口。
 
-LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module reference implementation：以 66 枚中文單字為核心語彙，實作脈絡、Graph、Grammar、治理、搜尋與演化。月之符文用來證明 LOC 的模組方法可被實作，但不是使用 LOC 的門檻。
+LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language reference implementation：以 66 枚中文單字為核心語彙，實作脈絡、Graph、Grammar、治理、搜尋與演化。月之符文用來證明 LOC 的模組方法可被實作，但不是使用 LOC 的門檻。
 
-**術語治理：LOC 整體固定稱為 Language Module Framework／語言系統模組框架；LunaRunes 固定稱為 Symbolic Language Module／符號式語言模組；LOC1–8 僅保留為歷史／provenance 識別，不再代表 Current Scope、Feature ownership、NAV 或 Canon authority。**
+**術語治理：LOC 整體固定稱為 Modular Language Framework／模組化語言框架；LunaRunes 固定稱為 Symbolic Language／符號式語言；LOC1–8 僅保留為歷史／provenance 識別，不再代表 Current Scope、Feature ownership、NAV 或 Canon authority。**
 
 ### 主要定位
 
@@ -14,21 +14,21 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module referen
 >
 > LOC is fully open source. Commercial value comes from consulting, system architecture, governance design, and case-specific implementation.
 
-中文：LOC 是一套可重複使用的語言系統模組框架。LunaRunes（月之符文）證明了這套框架可以被實作為一個實際運作的符號式語言模組。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。
+中文：LOC 是一套可重複使用的模組化語言框架。LunaRunes（月之符文）證明了這套框架可以被實作為一個實際運作的符號式語言。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。
 
 > 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
 
 - **Current architecture：Scope Model × Feature Model → Page Composition**
 - **LOC GPT Skills：1.0.0**
 - **公開網站：<https://loc.lo3rwang.cc/>**
-- **作者：Lucas Oscar Wang 政德**
+- **作者：Lucas Oscar Wang 政德 lo3rwang**
 - **GitHub：<https://github.com/EsotericVerse/moon-runes-pwa>**
 
 ---
 
 ## 目前進度｜2026-09-17
 
-目前重點是 **Current Scope / Feature 架構收斂、資料一致性與公開功能驗收**。LunaRunes Canon 已直接支援符文脈絡、Graph、統計與推演資料；同時 LOC、LunaRunes、Author／lo3rwang 與 Governance 依各自 Scope 保有資料與權威邊界，共用 Context、Statics、Evolution、Governance、Search 等 Features。
+目前重點是 **Current Scope / Feature 架構收斂、資料一致性與公開功能驗收**。LunaRunes Canon 已直接支援符文脈絡、Graph、統計與推演資料；同時 LOC、LunaRunes、lo3rwang 與 Governance 依各自 Scope 保有資料與權威邊界，共用 Context、Statics、Evolution、Governance、Search 等 Features。
 
 - **LunaRunes／月之符文**：66 符固定骨架、籤詩、抽牌與第 0 符「德」基準資料。
 - **Context／脈絡**：Relation、Event、Graph 與 Semantic Playground。
@@ -58,7 +58,7 @@ LunaRunes Canon
 ### Demo 前目前優先順序
 
 1. FAQ／KM 與 Current Canon 同步
-2. LOC／LunaRunes／Author Scope 的 Page Composition 與 NAV 一致化
+2. LOC／LunaRunes／lo3rwang Scope 的 Page Composition 與 NAV 一致化
 3. 搜尋、Context、Evolution 的資料與 fallback 一致性
 4. 整合式新手導覽與公開文件同步
 
@@ -74,13 +74,13 @@ LunaRunes Canon
 | 推演 | <https://loc.lo3rwang.cc/evolution/> | 時期、Timeline、Trend、Trajectory 與資料歷程 |
 | 治理 | <https://loc.lo3rwang.cc/governance/> | LOC 全域治理方法與跨 Scope 歷史入口 |
 | Context Sandbox | <https://loc.lo3rwang.cc/game/> | Semantic Playground |
-| 作者 | <https://lo3rwang.cc/> | Lucas Oscar Wang 政德 / Author Scope |
+| 作者 | <https://lo3rwang.cc/> | Lucas Oscar Wang 政德 / lo3rwang Scope |
 
 ---
 
 ## LOC GPT Skills
 
-LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重複調用的 AI Skills。它們不是獨立於 LOC 的另一套理論，而是 LOC Language Module Framework 的 callable implementations。
+LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重複調用的 AI Skills。它們不是獨立於 LOC 的另一套理論，而是 LOC Modular Language Framework 的 callable implementations。
 
 ### v1.0.0
 
@@ -103,7 +103,7 @@ Page Composition / Search / Analysis
 UI / API / AI Skill
 ```
 
-其中 LunaRunes 是 LOC 的 Symbolic Language Module reference implementation；Skills 則把已形成的方法與治理能力轉成 GPT／Agent 可重複使用的工作流程。
+其中 LunaRunes 是 LOC 的 Symbolic Language reference implementation；Skills 則把已形成的方法與治理能力轉成 GPT／Agent 可重複使用的工作流程。
 
 - **公開套件：** [LOC-GPT-Skills-v1.0.0-bundle.zip](https://loc.lo3rwang.cc/LOC-GPT-Skills-v1.0.0-bundle.zip)
 - **版本：** 1.0.0
@@ -312,7 +312,7 @@ Corpus 是分析證據，不等於 Canon；Canon、原始作品、Registry、搜
 
 ## Governance / 政德風
 
-Governance 是可跨 Scope 重用的治理 Feature／context；政德風則屬 Author／lo3rwang Scope 的個人語言、文化與治理案例。
+Governance 是可跨 Scope 重用的治理 Feature／context；政德風則屬 lo3rwang Scope 的個人語言、文化與治理案例。
 
 目前政德風進入：
 
@@ -413,8 +413,8 @@ Page Composition / UI / API / Analysis
 
 ## Author
 
-**Lucas Oscar Wang 政德**  
-Language Systems Governance Architect · Wordsmith
+**Lucas Oscar Wang 政德 lo3rwang**  
+Language Governance Architect｜語言治理架構師 · Wordsmith｜文字工匠 · Calibrator｜校對者
 
 - Website: <https://lo3rwang.cc/>
 - LOC: <https://loc.lo3rwang.cc/>
