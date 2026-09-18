@@ -55,7 +55,7 @@ const required=[
  [sources.home,'把語言整理成可理解、可搜尋、可推演的模組結構。'],
  [sources.home,'模型化語言框架（Modelized Language Framework）'],
  [sources.home,'符號式語言（Symbolic Language）'],
- ...['月之符文','語彙','脈絡','統計','文化','治理','搜尋','lo3rwang','lrunes.lo3rwang.cc','lo3rwang.lo3rwang.cc','admin.lo3rwang.cc'].map(t=>[sources.nav,t]),
+ ...['月之符文','語彙','脈絡','統計','文化','治理','搜尋','作者介紹','管理者介紹','lrunes.lo3rwang.cc','lo3rwang.lo3rwang.cc','admin.lo3rwang.cc'].map(t=>[sources.nav,t]),
  [sources.terminology,'"zh": "模型化語言框架"'],
  [sources.terminology,'"en": "Modelized Language Framework"'],
  [sources.terminology,'"zh": "符號式語言"'],
