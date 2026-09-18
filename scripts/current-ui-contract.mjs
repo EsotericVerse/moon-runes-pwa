@@ -45,7 +45,11 @@ const sources={
  personal:read('app/lo3rwang/page.jsx'),
  admin:read('app/management/page.jsx')+read('app/loc/GovernanceManagement.jsx'),
  terminology:read('data/json/registries/LOC_TERMINOLOGY_CANON.json'),
- navCanon:read('docs/NAV_GOVERNANCE.md')
+ navCanon:read('docs/NAV_GOVERNANCE.md'),
+ searchView:read('app/loc/views/SearchView.jsx'),
+ searchCollections:read('app/loc/search-collections.js'),
+ scopeNav:read('app/ScopeNav.jsx'),
+ runeListRoute:read('app/runes/list/[group]/[number]/page.jsx')
 };
 const required=[
  [sources.home,'把語言整理成可理解、可搜尋、可推演的模組結構。'],
@@ -57,7 +61,15 @@ const required=[
  [sources.terminology,'"zh": "符號式語言"'],
  [sources.terminology,'"en": "Symbolic Language"'],
  [sources.navCanon,'每個介面只有一條正式導覽列'],
- [sources.navCanon,'網域優先，目錄其次，頁面最後']
+ [sources.navCanon,'網域優先，目錄其次，頁面最後'],
+ [sources.scopeNav,"window.sessionStorage.setItem('loc-pending-search',value)"],
+ [sources.searchView,'searchCollectionForHost(window.location.hostname)'],
+ [sources.searchCollections,"if(h==='lrunes.lo3rwang.cc')return SEARCH_COLLECTIONS['月之符文']"],
+ [sources.searchCollections,"if(h==='lo3rwang.lo3rwang.cc')return SEARCH_COLLECTIONS['政德文化']"],
+ [sources.searchCollections,"if(h==='admin.lo3rwang.cc')return SEARCH_COLLECTIONS['治理']"],
+ [sources.searchCollections,'return SEARCH_COLLECTIONS.all'],
+ [sources.runeListRoute,'generateStaticParams'],
+ [sources.runeListRoute,"String(group).padStart(2,'0')"]
 ];
 const forbidden=['Language Model Framework','Language Module Framework','語言系統模組框架','Symbolic Language Module','符號式語言模組','author.lo3rwang.cc','whoami.lo3rwang.cc','manage.lo3rwang.cc','/author/governance'];
 const missing=required.filter(([src,t])=>!src.includes(t)).map(([,t])=>t);
