@@ -1,3 +1,5 @@
-import LocApp from '../loc/LocApp';
-export const metadata={title:'遊戲｜LOC 月典'};
-export default function GamePage(){return <LocApp/>;}
+import { redirect } from 'next/navigation';
+
+export default function LegacyGameRedirect() {
+  redirect('/lrunes/game');
+}
