@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { LOC_DATA } from '../app/loc/data-paths.mjs';
+import { buildScopeRoutePolicyV2 } from './scope-route-policy.mjs';
 
 const root = process.cwd();
 const publicRoot = resolve(root, 'public');
@@ -214,12 +215,21 @@ if(!existsSync(scopeRoutePolicyPath)){
   failures.push('missing generated Scope route policy: scope-route-policy.json');
 }else{
   const policy=JSON.parse(readFileSync(scopeRoutePolicyPath,'utf8'));
+  const expectedPolicy=buildScopeRoutePolicyV2();
+
   if(policy?.schema!==1)failures.push('unsupported Scope route policy schema');
   if(policy?.defaultPolicy!=='deny')failures.push('Scope route policy must default deny');
-  if(!policy?.hosts?.['loc.lo3rwang.cc'])failures.push('Scope route policy missing LOC host');
-  if(!policy?.hosts?.['lrunes.lo3rwang.cc'])failures.push('Scope route policy missing LunaRunes host');
-  if(policy?.hosts?.['loc.lo3rwang.cc']?.allow?.includes('/runes'))failures.push('Scope route policy leaked retired /runes route');
-  if(policy?.hosts?.['lrunes.lo3rwang.cc']?.allow?.includes('/loc'))failures.push('Scope route policy leaked reserved /loc route into LunaRunes');
+
+  if(JSON.stringify(policy)!==JSON.stringify(expectedPolicy)){
+    failures.push('generated Scope route policy does not exactly match Current Scope Registry');
+  }
+
+  if(policy?.hosts?.['loc.lo3rwang.cc']?.allow?.includes('/runes')){
+    failures.push('Scope route policy leaked retired /runes route');
+  }
+  if(policy?.hosts?.['lrunes.lo3rwang.cc']?.allow?.includes('/loc')){
+    failures.push('Scope route policy leaked reserved /loc route into LunaRunes');
+  }
 }
 
 // User-facing governance/KM lives in routes or structured data; only the Canon doc is staged here.
