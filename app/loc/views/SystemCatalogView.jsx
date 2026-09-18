@@ -128,6 +128,6 @@ export default function SystemCatalogView({kind}){
         </article>;
       })}</div>
     </section>
-    <section className="loc-card"><p className="loc-eyebrow">Advanced Search</p><h2>進階搜尋</h2><p>需要跨作品、來源、時期、關鍵字或語意關係時，再進入完整搜尋。</p><div className="loc-actions"><a className="loc-button primary" href="/search">開啟進階搜尋</a></div></section>
+    <section className="loc-card"><p className="loc-eyebrow">Search</p><h2>查看更多</h2><p>可以到右上搜尋輸入框輸入關鍵字「{meta.title}」，就可以看到更多！</p></section>
   </section></main>;
 }
