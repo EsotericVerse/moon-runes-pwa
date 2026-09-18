@@ -1,5 +1,4 @@
 import LocSystemQuickLinks from '../../LocSystemQuickLinks';
-import ThemeControl from '../ThemeControl';
 import LocaleControl from '../LocaleControl';
 import { PageComposition } from '../../PageComposition';
 
@@ -63,9 +62,9 @@ const SECTIONS = [
       <div className="loc-grid two">
         <section className="loc-card">
           <h3>顯示與 Theme</h3>
-          <p>全站共用同一套 CSS 與 Theme Registry；此處調整目前 Scope 的顯示模式。</p>
-          <ThemeControl />
+          <p>全站共用同一套 CSS 與 Theme Registry。使用者可在 Footer 自由切換風格；此處不重複顯示 Theme selector。</p>
           <LocaleControl />
+          <div className="loc-actions"><a className="loc-button" href="https://admin.lo3rwang.cc/management/themes">管理 Scope 預設風格</a></div>
         </section>
         <section className="loc-card">
           <h3>主站管理</h3>
