@@ -1,6 +1,9 @@
 // Current-only UI contract. Historical compatibility is never a Current requirement.
 import fs from 'node:fs';
 const read=p=>fs.readFileSync(p,'utf8');
+const retiredPersonalSources=['lo3rwang.html','app/author/page.jsx','app/author/governance/page.jsx'];
+const resurrected=retiredPersonalSources.filter(path=>fs.existsSync(path));
+if(resurrected.length){console.error('Retired personal sources must not return: '+resurrected.join(', '));process.exit(1);}
 const sources={
  home:read('app/loc/views/AboutView.jsx'),
  nav:read('app/GlobalNav.jsx')+read('app/ScopeNav.jsx')+read('app/nav-route-map.js'),
