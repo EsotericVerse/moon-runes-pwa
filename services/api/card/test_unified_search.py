@@ -64,7 +64,7 @@ class UnifiedSearchTests(unittest.TestCase):
             '{"status":"working","corpus_summary":{"stage":"Alpha","semantic_role":"real_life_scenario_prototypes"},"grammar_note":{"dual_card":"A → B causal structure"},"records":[{"event_id":"E02","title":"自我懷疑","event_group":"靈魂","requirement_signature":"SL + OC","description":"你開始質疑自己的定義。","content_type":"scenario_event","primary_loc":"LOC2","related_locs":["LOC1","LOC4","LOC6","LOC7","LOC8"],"status":"working"}]}',
             encoding="utf-8",
         )
-        (root / "data" / "json" / "registries" / "LOC8_EVENT_SNAPSHOT.json").write_text(
+        (root / "data" / "json" / "registries" / "EVENT_SNAPSHOT.json").write_text(
             '{"role":"non-authoritative frontend fallback snapshot","events":[{"id":"EV-TEST","date":"2026-09-01","event_type":"transition","title":"進入自我治理","era":"P8 自我治理與未來展望期","confidence":"recorded","source":"test-event"}]}',
             encoding="utf-8",
         )
@@ -145,7 +145,7 @@ class UnifiedSearchTests(unittest.TestCase):
         self.assertIn("EV-TEST", node_ids)
         self.assertIn("DD-TEST", node_ids)
         self.assertIn("RUNE-1", node_ids)
-        self.assertIn("loc8_event_snapshot", edge_kinds)
+        self.assertIn("event_snapshot", edge_kinds)
         self.assertIn("loc8_daily_rune_snapshot", edge_kinds)
 
     def test_search_returns_provenance_envelope(self):
