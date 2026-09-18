@@ -32,7 +32,7 @@ const HOME_VIEWS={
   loc:AboutView,
   runes:RunesHomeView,
   lo3rwang:AuthorHomeView,
-  governance:AdminHomeView
+  admin:AdminHomeView
 };
 
 function routeState(){
