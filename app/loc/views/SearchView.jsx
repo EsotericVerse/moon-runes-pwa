@@ -26,7 +26,7 @@ function matchCultureKeyword(data,q){const target=norm(q);if(!target)return null
 export default function SearchView(){
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [query,setQuery]=useState('');
-  const {scope}=useSiteScope();
+  const {scope,ready}=useSiteScope();
   const [results,setResults]=useState([]);
   const [cultureKeyword,setCultureKeyword]=useState(null);
   const [status,setStatus]=useState('輸入文字後才會載入搜尋資料。');
@@ -39,12 +39,14 @@ export default function SearchView(){
   const cultureWorks=useMemo(()=>results.filter(r=>r.source!=='政德文化').slice(0,8),[results]);
 
   useEffect(()=>{
+    if(!ready)return;
     const pending=window.sessionStorage.getItem('loc-pending-search')||'';
     if(pending){
       window.sessionStorage.removeItem('loc-pending-search');
       setQuery(pending);
+      executeSearch(pending);
     }
-  },[]);
+  },[ready,scope]);
   useEffect(()=>setPage(1),[scope,pageSize]);
   useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
 
@@ -99,10 +101,6 @@ export default function SearchView(){
       setResults(unique);setStatus(`「${collection.label}」中的「${q}」找到 ${unique.length} 筆顯示結果。`);
     }catch(e){if(id===searchId.current){setError(e.message);setStatus('搜尋失敗。');}}
   }
-
-  useEffect(()=>{
-    if(query.trim())executeSearch(query);
-  },[scope]);
 
   async function runSearch(event){
     event.preventDefault();
