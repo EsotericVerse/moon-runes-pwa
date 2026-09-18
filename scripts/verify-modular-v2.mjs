@@ -52,7 +52,11 @@ for(const retiredRoute of ['app/author','app/zhengde']){
 }
 const lo3rwangRoute=path.resolve('app/lo3rwang/page.jsx');
 if(!fs.existsSync(lo3rwangRoute))failures.push('missing /lo3rwang compatibility route');
-else if(!fs.readFileSync(lo3rwangRoute,'utf8').includes('https://lo3rwang.lo3rwang.cc/'))failures.push('/lo3rwang must redirect to author domain');
+else {
+  const source=fs.readFileSync(lo3rwangRoute,'utf8');
+  if(!source.includes("../loc/LocApp")||!source.includes('<LocApp/>'))failures.push('/lo3rwang must render the author Scope through the shared runtime');
+  if(source.includes('redirect('))failures.push('/lo3rwang must not redirect; domain/path compatibility must resolve without loops');
+}
 
 const currentFiles=['app/loc/search-collections.js','app/loc/GovernanceManagement.jsx'];
 for(const file of currentFiles){
