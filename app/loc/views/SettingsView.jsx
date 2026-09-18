@@ -1,4 +1,3 @@
-import ThemeControl from '../ThemeControl';
 import LocaleControl from '../LocaleControl';
 
 export default function SettingsView(){
@@ -11,9 +10,8 @@ export default function SettingsView(){
 
     <section className="loc-card">
       <p className="loc-eyebrow">Display</p>
-      <h2>顯示與主題</h2>
-      <p className="loc-subtitle">調整語系與全站八種風格；預設依時間輪替。靈魂沿用永夜，秩序沿用永日。</p>
-      <ThemeControl />
+      <h2>顯示設定</h2>
+      <p className="loc-subtitle">Theme 切換統一放在 Footer；此處保留語系與其他使用者設定。</p>
       <LocaleControl />
     </section>
 
