@@ -35,6 +35,14 @@
       "模組化語言框架"
     ],
     [
+      "Language Module Framework",
+      "Modular Language Framework"
+    ],
+    [
+      "語言系統模組框架",
+      "模組化語言框架"
+    ],
+    [
       "符號式語言模型（Symbolic Language Model）",
       "符號式語言（Symbolic Language）"
     ],
@@ -60,9 +68,65 @@
     ]
   ],
   "parent_overrides": {
+    "FAQ-001": {
+      "category": "基本定位",
+      "answer": "LOC（Luna Codex／月典）是 Modular Language Framework／模組化語言框架。Current 架構以 Scope Model × Feature Model → Page Composition 組合資料範圍、可重用功能與頁面。"
+    },
     "FAQ-002": {
       "category": "基本定位",
-      "answer": "LOC／月典是 Modular Language Framework／模組化語言框架；LunaRunes／月之符文是 Symbolic Language／符號式語言，也是可獨立運作的 LunaRunes Scope。LunaRunes 不定義 LOC 的 Current 架構。"
+      "answer": "LOC／月典是 Modular Language Framework／模組化語言框架；LunaRunes／月之符文是 Symbolic Language／符號式語言，也是可獨立運作的 LunaRunes Scope。"
+    },
+    "FAQ-005": {
+      "category": "基本定位",
+      "answer": "LOC 是模組化語言框架；占卜、情境互動、歌曲、文字、多媒體、治理、搜尋與文化分析是不同內容或 Feature，由 Scope × Feature 組合，不互相取代。"
+    },
+    "FAQ-010": {
+      "category": "LunaRunes／抽牌",
+      "answer": "抽牌數量依問題複雜度與 Grammar 選擇：單卡看單一語意，雙卡看因果，三卡看源轉合，五卡使用雙卡＋單卡＋雙卡，OW3gs 使用 11 張綜合情景模板。"
+    },
+    "FAQ-019": {
+      "category": "Search／Retrieval",
+      "answer": "語意向量與 RAG 是可選的檢索能力，用於跨大量文字找相近內容、補足純關鍵字搜尋的限制；它們是 Search／Retrieval Feature，不是 LOC 的必要前提或權威來源。"
+    },
+    "FAQ-026": {
+      "category": "LunaRunes／OW3gs",
+      "answer": "OW3gs 是作者特化的 11 卡綜合情景模板：源2＋轉2＋合2＋核心五卡治理／建議；1–6 建立因的描述層，7–11 為核心判定。"
+    },
+    "FAQ-039": {
+      "category": "LunaRunes／創作",
+      "answer": "66 符可作為語意種子，透過單卡、雙卡、三卡、五卡或 OW3gs 組合成情景，再轉譯為人物、事件、場景、歌詞或文字作品；不是把符文字逐一塞進作品。"
+    },
+    "FAQ-040": {
+      "category": "基本使用",
+      "answer": "不需要先讀小說、背完符文或理解完整框架。可以直接從抽牌、搜尋、作品、脈絡或文化入口開始，再依需要深入。"
+    },
+    "FAQ-060": {
+      "category": "跨媒體",
+      "answer": "歌曲、文字、Reels、遊戲與其他媒介可以共享語意、脈絡與來源關係；LOC 負責讓不同格式被同一套 Scope／Feature 方法整理、搜尋與關聯，而不是把它們視為同一種作品。"
+    },
+    "FAQ-065": {
+      "category": "LunaRunes／創作",
+      "answer": "沒有靈感時可以先抽一張符文作語意種子，也可以用雙卡、三卡、五卡或 OW3gs 增加結構，再把結果轉成文字、歌曲或其他創作。"
+    },
+    "FAQ-066": {
+      "category": "AI 與可選能力",
+      "answer": "LOC 與 LunaRunes 的基本能力不一定需要 AI、API Key 或付費模型。固定規則、抽牌、資料與部分搜尋可由本地程式完成；Embedding、RAG、LLM 或 Graph traversal 是可選進階能力。"
+    },
+    "FAQ-068": {
+      "category": "Knowledge Management",
+      "answer": "原始作品、Canon、Master Data 與 Registry 各自保留 authority；FAQ 是問答 View，RAG 是檢索衍生格式，Search index 是投影。KM 管理來源、版本、關係與可追溯性，下游不得反向覆寫上游。"
+    },
+    "FAQ-070": {
+      "category": "Context／Culture",
+      "answer": "事件本身不是語言；事件被感知、命名、描述、評價與重新理解後，才成為可分析的語言與脈絡資料。Context 處理關係，Culture 把這些資料放回時間中觀察文字的演化。"
+    },
+    "FAQ-073": {
+      "category": "Search／Context",
+      "answer": "像『今天心情不好，外面又下雨』這類自然語言，可以先做語意搜尋與脈絡拆解，辨認情緒、事件、環境與時間條件，再連到相關資料；是否使用 LunaRunes 分類取決於使用情境。"
+    },
+    "FAQ-076": {
+      "category": "LunaRunes／定位",
+      "answer": "若使用『數位神秘學』這類說法，只能描述符文、抽籤與數位介面的文化形式；系統本身不假定超自然力量、神授解讀權或不可反駁的預言。"
     },
     "FAQ-091": {
       "category": "基本定位",
@@ -70,16 +134,11 @@
     }
   },
   "excluded_parent_ids": [
-    "FAQ-001",
-    "FAQ-005",
-    "FAQ-010",
     "FAQ-013",
     "FAQ-015",
     "FAQ-016",
     "FAQ-017",
     "FAQ-018",
-    "FAQ-019",
-    "FAQ-026",
     "FAQ-030",
     "FAQ-031",
     "FAQ-032",
@@ -89,8 +148,6 @@
     "FAQ-036",
     "FAQ-037",
     "FAQ-038",
-    "FAQ-039",
-    "FAQ-040",
     "FAQ-041",
     "FAQ-042",
     "FAQ-043",
@@ -104,17 +161,10 @@
     "FAQ-051",
     "FAQ-052",
     "FAQ-053",
-    "FAQ-060",
     "FAQ-064",
-    "FAQ-065",
-    "FAQ-066",
     "FAQ-067",
-    "FAQ-068",
     "FAQ-069",
-    "FAQ-070",
     "FAQ-072",
-    "FAQ-073",
-    "FAQ-076",
     "FAQ-077",
     "FAQ-089",
     "FAQ-090"

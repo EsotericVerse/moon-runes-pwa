@@ -84,6 +84,14 @@ def _apply_current_overlay(
         if isinstance(patch, dict):
             chunk.update(_apply_phrase_replacements(patch, replacements))
 
+        for field in ("aliases", "keywords"):
+            if isinstance(chunk.get(field), list):
+                chunk[field] = [item for item in chunk[field] if not re.search(r"LOC[1-8](?!\\d)", str(item), flags=re.I)]
+
+        visible_current = " ".join([str(chunk.get("intent") or ""), str(chunk.get("question") or ""), str(chunk.get("answer") or ""), " ".join(str(x) for x in chunk.get("aliases", []) or []), " ".join(str(x) for x in chunk.get("keywords", []) or [])])
+        if re.search(r"LOC[1-8](?!\\d)", visible_current, flags=re.I):
+            continue
+
         retrieval_parts = [
             str(chunk.get("intent") or ""),
             str(chunk.get("question") or ""),
