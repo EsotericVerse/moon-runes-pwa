@@ -2,11 +2,13 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, normalize, relative, resolve } from 'node:path';
 
 const root = process.cwd();
-const entrypoints = ['runes.html', 'lo3rwang.html'];
+const entrypoints = ['runes.html'];
+const forbiddenLegacyEntrypoints = ['lo3rwang.html'];
 const reachable = new Set();
 const missing = [];
 const queue = [];
 const retiredLinkViolations = [];
+const legacyEntrypointViolations = forbiddenLegacyEntrypoints.filter(name => existsSync(resolve(root, name)));
 
 function normalizeRel(path) {
   return normalize(path).replaceAll('\\', '/');
@@ -91,6 +93,10 @@ const allJs = existsSync(jsDir)
   : [];
 const unreachable = allJs.filter(path => !reachable.has(path));
 
+if (legacyEntrypointViolations.length) {
+  console.error('[static-entrypoints] retired Current entrypoints must stay removed:\n' + legacyEntrypointViolations.join('\n'));
+  process.exit(1);
+}
 if (missing.length) {
   console.error('[static-entrypoints] missing runtime dependencies:\n' + missing.join('\n'));
   process.exit(1);
@@ -101,5 +107,5 @@ if (retiredLinkViolations.length) {
 }
 
 console.log(`[static-entrypoints] verified ${entrypoints.length} active static entrypoints; ${[...reachable].filter(path => path.endsWith('.js')).length} JS files reachable`);
-console.log('[static-entrypoints] retired lots.html link guard passed');
+console.log('[static-entrypoints] retired lo3rwang.html / lots.html guards passed');
 if (unreachable.length) console.log('[static-entrypoints] unreachable legacy JS candidates:\n' + unreachable.join('\n'));
