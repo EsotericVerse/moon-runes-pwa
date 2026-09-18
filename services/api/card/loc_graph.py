@@ -90,15 +90,15 @@ class LOCGraph:
                     self._node(lid, "lot", f"{name} · {direction} · {domain}", "LOC1", summary=text)
                     self._edge(rid, lid, "has_lot", "lots.json")
 
-        # LOC2 scenario events
-        loc2 = self._load("LOC2_EVENT_REGISTRY.json")
+        # Context scenario events
+        loc2 = self._load("CONTEXT_EVENT_REGISTRY.json")
         for item in loc2.get("events", []):
             eid_raw = item.get("event_id") or item.get("id")
             if not eid_raw:
                 continue
             eid = str(eid_raw)
             self._node(eid, "scenario_event", item.get("title") or eid, "LOC2", summary=item.get("description"))
-            self._edge(eid, "LOC2", "owned_by_loc", "LOC2_EVENT_REGISTRY")
+            self._edge(eid, "LOC2", "owned_by_loc", "CONTEXT_EVENT_REGISTRY")
 
         # LOC3 works
         for work in getattr(self.loc3_searcher, "works", []) or []:
