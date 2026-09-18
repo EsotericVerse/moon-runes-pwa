@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {FEATURES_V2,SCOPES_V2,SCOPE_POLICY_V2,featureHrefV2,scopeHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
+import {FEATURES_V2,SCOPES_V2,SCOPE_POLICY_V2,featureHrefV2,scopeHrefV2,resolveScopeV2,isScopeRequestAllowedV2} from '../app/modular-v2/scope-registry.v2.js';
 
 const failures=[];
 const expectedDomains={loc:'loc.lo3rwang.cc',runes:'lrunes.lo3rwang.cc',lo3rwang:'dlwang.lo3rwang.cc',admin:'admin.lo3rwang.cc'};
@@ -159,6 +159,29 @@ if(!/LOC[0-8]/.test(bridge))failures.push('legacy physical identifiers should be
 for(const pathname of ['/',...FEATURES_V2.map(item=>'/'+item.path),...SCOPES_V2.runes.localRoutes.map(route=>'/'+route)]){
   if(resolveScopeV2('lrunes.lo3rwang.cc',pathname)!=='runes')failures.push('LunaRunes canonical domain failed at '+pathname);
 }
+const admissibilityCases=[
+  ['runes','lrunes.lo3rwang.cc','/',true],
+  ['runes','lrunes.lo3rwang.cc','/context',true],
+  ['runes','lrunes.lo3rwang.cc','/duel/one',true],
+  ['runes','loc.lo3rwang.cc','/lrunes',true],
+  ['runes','loc.lo3rwang.cc','/lrunes/context',true],
+  ['runes','loc.lo3rwang.cc','/lrunes/duel/one',true],
+  ['runes','lrunes.lo3rwang.cc','/loc',false],
+  ['runes','lrunes.lo3rwang.cc','/runes',false],
+  ['runes','lrunes.lo3rwang.cc','/lrunes',false],
+  ['runes','lrunes.lo3rwang.cc','/duel/one/foo',false],
+  ['loc','loc.lo3rwang.cc','/',true],
+  ['loc','loc.lo3rwang.cc','/context',true],
+  ['loc','loc.lo3rwang.cc','/loc',false],
+  ['loc','loc.lo3rwang.cc','/runes',false],
+  ['lo3rwang','loc.lo3rwang.cc','/lo3rwang',true],
+  ['lo3rwang','loc.lo3rwang.cc','/lo3rwang/context',true]
+];
+for(const [scopeId,host,pathname,expected] of admissibilityCases){
+  const actual=isScopeRequestAllowedV2(scopeId,host,pathname);
+  if(actual!==expected)failures.push('Scope route admissibility failed: '+scopeId+' '+host+pathname+' expected '+expected+' got '+actual);
+}
+
 const runesCanonicalContext=featureHrefV2('runes','context');
 if(runesCanonicalContext!=='https://lrunes.lo3rwang.cc/context')failures.push('LunaRunes canonical feature URL drifted');
 if(/lrunes\.lo3rwang\.cc\/(?:lrunes|runes)\//.test(runesCanonicalContext))failures.push('duplicated LunaRunes scope segment in canonical URL');
