@@ -69,7 +69,7 @@ export default function MyStyleView(){
     <header className="loc-hero">
       <p className="loc-eyebrow">Personal Settings · 個人設定</p>
       <h1>個人設定</h1>
-      <p>個人風格、群組規則與分類資料統一同步到 Neon；顯示、抽牌反應與列表筆數只屬介面偏好，保留在目前瀏覽器。</p>
+      <p>個人風格、群組規則、分類資料與介面偏好統一同步到 Neon；登入後可跨裝置使用同一組設定。</p>
     </header>
 
     <section className="loc-card">
