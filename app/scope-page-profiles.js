@@ -11,7 +11,7 @@ export const SCOPE_PAGE_PROFILES=Object.freeze({
       links:Object.freeze([
         Object.freeze({href:'https://admin.lo3rwang.cc/',label:'管理者功能',text:'Scope、ERA、納入審核、修正標記與授權寫入。'}),
         Object.freeze({href:'https://lrunes.lo3rwang.cc/governance',label:'符文治理',text:'LunaRunes 的 Master Data、Grammar、語意與符文歷史。'}),
-        Object.freeze({href:'https://lo3rwang.lo3rwang.cc/governance',label:'作者治理',text:'作者身份、政德風、作品脈絡、個人時期與作者歷史。'})
+        Object.freeze({href:'https://dlwang.lo3rwang.cc/governance',label:'作者治理',text:'作者身份、政德風、作品脈絡、個人時期與作者歷史。'})
       ])
     })
   }),
@@ -40,7 +40,7 @@ export const SCOPE_PAGE_PROFILES=Object.freeze({
       scopeTitle:'作者治理範圍',
       scopeText:'管理作者身份、保留名稱、政德風、作品索引、文化關鍵字、作者 ERA、公開自我描述與相關歷史。',
       links:Object.freeze([
-        Object.freeze({href:'https://lo3rwang.lo3rwang.cc/',label:'作者簡介',text:'返回作者 Current 首頁。'}),
+        Object.freeze({href:'https://dlwang.lo3rwang.cc/',label:'作者簡介',text:'返回作者 Current 首頁。'}),
         Object.freeze({href:'https://loc.lo3rwang.cc/governance',label:'LOC 治理',text:'查看共同治理方法與跨 Scope 原則。'})
       ])
     })
