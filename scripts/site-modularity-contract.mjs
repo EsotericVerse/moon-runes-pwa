@@ -23,4 +23,20 @@ for(const token of ['scope','current','origin','route:','dataView:']){
 for(const token of ['searchCollection','dataViews','reserved','role','homes','theme']){
   if(!registry.includes(token))throw new Error('site-registry missing modular scope field: '+token);
 }
-console.log('Full-site shared scope modularity contract verified.');
+const composedPages=[
+  'app/loc/views/ContextView.jsx',
+  'app/loc/views/StaticsView.jsx',
+  'app/loc/views/SearchView.jsx',
+  'app/loc/views/EvolutionView.jsx',
+  'app/loc/views/GovernanceView.jsx',
+  'app/runes/governance/page.jsx',
+  'app/author/governance/page.jsx',
+  'app/management/page.jsx'
+];
+for(const path of composedPages){
+  const source=read(path);
+  if(!source.includes('PageFrame')&&!source.includes('PageComposition'))throw new Error(path+' must use shared page composition');
+  if(source.includes('<header className="loc-hero"'))throw new Error(path+' must not hand-build the shared page hero');
+}
+
+console.log('Full-site shared scope and page-composition modularity contract verified.');
