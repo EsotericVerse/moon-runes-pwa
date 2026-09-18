@@ -1,3 +1,5 @@
+import {featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
+
 export const STYLE_STORAGE_KEY='loc-style-groups-v1';
 export const MY_STYLE_STORAGE_KEY='loc-my-style-v1';
 export const LIBRARY_RECORD_TYPE='library-item';
@@ -23,22 +25,23 @@ export const sortGroupNamesLongestFirst=groups=>[...(groups||[])]
   .sort((a,b)=>String(b.name).length-String(a.name).length||String(a.name).localeCompare(String(b.name),'zh-Hant'));
 
 const SYSTEM_GROUP_ROUTES=new Map([
-  ['LOC','/'],
-  ['月典','/'],
-  ['月之符文','/runes'],
-  ['LunaRunes','/runes'],
-  ['脈絡','/context'],
-  ['統計','/statics'],
-  ['推演','/evolution'],
-  ['演化','/evolution'],
-  ['治理','/governance'],
-  ['設定','/my-style']
+  ['LOC',scopeHrefV2('loc')],
+  ['月典',scopeHrefV2('loc')],
+  ['月之符文',scopeHrefV2('runes')],
+  ['LunaRunes',scopeHrefV2('runes')],
+  ['脈絡',featureHrefV2('loc','context')],
+  ['統計',featureHrefV2('loc','statics')],
+  ['文化',featureHrefV2('loc','culture')],
+  ['推演',featureHrefV2('loc','culture')],
+  ['演化',featureHrefV2('loc','culture')],
+  ['治理',featureHrefV2('loc','governance')],
+  ['設定',scopeHrefV2('loc','my-style')]
 ]);
 
 export function defaultStyleGroupLink(name){
   const term=String(name||'').trim();
   if(!term)return '';
-  return SYSTEM_GROUP_ROUTES.get(term)||`/search?q=${encodeURIComponent(term)}`;
+  return SYSTEM_GROUP_ROUTES.get(term)||`${featureHrefV2('loc','search')}?q=${encodeURIComponent(term)}`;
 }
 
 export function styleGroupLink(group){
