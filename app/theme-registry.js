@@ -1,3 +1,5 @@
+import {SITE_SCOPES} from './site-registry';
+
 export const THEME_REGISTRY_SETTING_KEY='theme-registry-overrides-v1';
 export const SCOPE_THEME_SETTINGS_KEY='scope-theme-settings-v2';
 
@@ -20,25 +22,17 @@ export const DEFAULT_THEME_SLOTS=[
   {id:'theme-8',group:'無序',identityColor:'#0B0B0B',label:'無序組',scheme:'dark',enabled:true,order:8,tokens:{'--loc-bg':'#070809','--loc-panel':'#101113','--loc-panel-2':'#191b1e','--loc-text':'#e7e8ea','--loc-accent':'#777d84','--loc-gold':'#9c978f','--loc-body-glow':'#1d2024','--loc-body-mid':'#0c0d0f','--loc-hero-start':'rgba(25,27,30,.97)','--loc-hero-end':'rgba(7,8,9,.97)'}}
 ];
 
-export const DEFAULT_ROTATION_SCHEDULE=[
-  {start:0,theme:'theme-1'},
-  {start:6,theme:'theme-7'},
-  {start:12,theme:'theme-4'},
-  {start:18,theme:'theme-8'}
-];
+export const DEFAULT_ROTATION_SCHEDULE=SITE_SCOPES.loc.theme.schedule;
 
-export const DEFAULT_SCOPE_THEME_SETTINGS={
-  loc:{mode:'time',theme:'theme-7',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE},
-  runes:{mode:'fixed',theme:'theme-5',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE},
-  lo3rwang:{mode:'custom',theme:'theme-2',custom:{'--loc-bg':'#eaf5ff','--loc-panel':'#f8fcff','--loc-panel-2':'#dceefe','--loc-text':'#17324a','--loc-heading':'#20384d','--loc-accent':'#6FA8DC','--loc-gold':'#8fb8d8','--loc-body-glow':'#d4eafa','--loc-body-mid':'#edf7ff','--loc-hero-start':'rgba(218,239,255,.97)','--loc-hero-end':'rgba(248,252,255,.99)'},schedule:DEFAULT_ROTATION_SCHEDULE},
-  admin:{mode:'fixed',theme:'theme-7',custom:{},schedule:DEFAULT_ROTATION_SCHEDULE}
-};
+export const DEFAULT_SCOPE_THEME_SETTINGS=Object.freeze(
+  Object.fromEntries(Object.entries(SITE_SCOPES).map(([id,scope])=>[id,scope.theme]))
+);
 
 export function detectThemeScope(pathname='/',host=''){
   const h=String(host||'').toLowerCase();
-  if(h==='lrunes.lo3rwang.cc'||pathname==='/runes'||pathname.startsWith('/runes/'))return 'runes';
-  if(h==='lo3rwang.lo3rwang.cc'||pathname==='/lo3rwang'||pathname.startsWith('/lo3rwang/'))return 'lo3rwang';
-  if(h==='admin.lo3rwang.cc'||pathname==='/management'||pathname.startsWith('/management/'))return 'admin';
+  if(h===SITE_SCOPES.runes.domain||pathname==='/runes'||pathname.startsWith('/runes/'))return 'runes';
+  if(h===SITE_SCOPES.lo3rwang.domain||pathname==='/lo3rwang'||pathname.startsWith('/lo3rwang/'))return 'lo3rwang';
+  if(h===SITE_SCOPES.governance.domain||pathname==='/management'||pathname.startsWith('/management/'))return 'governance';
   return 'loc';
 }
 export function mergeThemeSlots(overrides={}){
