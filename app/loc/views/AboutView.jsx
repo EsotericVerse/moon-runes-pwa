@@ -39,7 +39,7 @@ const MODEL_MODULES=[
   {
     key:'culture', name:'Culture', zh:'文化', summary:'文字演化',
     detail:'把文字與脈絡放回時期與時間線，觀察 Trajectory、Trend、Oscillation 與文化中的文字演化。',
-    href:'/evolution', depth:'deep'
+    href:'/culture', depth:'deep'
   }
 ];
 
