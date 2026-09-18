@@ -3,7 +3,7 @@ import path from 'node:path';
 import {FEATURES_V2,SCOPES_V2,featureHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
 
 const failures=[];
-const expectedDomains={loc:'loc.lo3rwang.cc',runes:'lrunes.lo3rwang.cc',lo3rwang:'lo3rwang.lo3rwang.cc',admin:'admin.lo3rwang.cc'};
+const expectedDomains={loc:'loc.lo3rwang.cc',runes:'lrunes.lo3rwang.cc',lo3rwang:'dlwang.lo3rwang.cc',admin:'admin.lo3rwang.cc'};
 const expectedFeatures=['context','statics','culture','governance','search'];
 
 if(JSON.stringify(Object.keys(SCOPES_V2))!==JSON.stringify(Object.keys(expectedDomains)))failures.push('scope ids mismatch');
