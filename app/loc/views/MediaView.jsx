@@ -23,11 +23,9 @@ function list(value) {
 function deriveGroup(item) {
   const purpose = text(item.purpose).toLowerCase();
   const type = text(item.media_type).toLowerCase();
-  const related = list(item.related_locs).map(String);
-
-  // Priority only: explicit governed relations/purpose first, then media-type fallback.
-  if (related.includes('LOC1') || purpose.includes('rune') || purpose === 'public_divination') return 'runes';
-  if (item.linked_song_id || related.includes('LOC3')) return 'music';
+  // Current classification must use semantic/purpose fields, not deprecated numbered LOC provenance.
+  if (purpose.includes('rune') || purpose === 'public_divination') return 'runes';
+  if (item.linked_song_id || purpose.includes('music') || purpose.includes('song')) return 'music';
   if (purpose === 'personal_design' || purpose.includes('visual') || type.includes('image') || type.includes('design')) return 'visual';
   return 'other';
 }
@@ -111,13 +109,13 @@ export default function MediaView() {
 
   return <section className="loc-view loc5-view">
     <header className="loc-hero loc5-hero">
-      <p className="loc-eyebrow">LOC5 · MultiMedia</p>
+      <p className="loc-eyebrow">Media · MultiMedia</p>
       <h1>多媒體</h1>
       <p className="loc-subtitle">把圖像、影音、Reels、系統視覺與其他媒體連回原始作品與脈絡。</p>
-      <p>LOC5 不把平台當資料模型。這裡直接讀取 LOC5 canonical media registry；公開網址用於展示與回到原作品，沒有網址的歷史媒體仍保留為可追溯資料。</p>
+      <p>多媒體不把平台當資料模型。這裡直接讀取 Current media registry；公開網址用於展示與回到原作品，沒有網址的歷史媒體仍保留為可追溯資料。</p>
     </header>
 
-    <section className="loc5-stats" aria-label="LOC5 多媒體統計">
+    <section className="loc5-stats" aria-label="多媒體統計">
       <article><strong>{stats.total}</strong><span>媒體紀錄</span></article>
       <article><strong>{stats.linked}</strong><span>有公開連結</span></article>
       <article><strong>{stats.missing}</strong><span>僅歷史／待補連結</span></article>
@@ -139,15 +137,15 @@ export default function MediaView() {
         <span>搜尋多媒體</span>
         <input value={query} onChange={event => setQuery(event.target.value)} placeholder="歌名、媒體 ID、類型、標記…" />
       </label>
-      <p className="loc5-rule-note">分類只使用優先規則與排除／fallback；不做細部數值權重。明確 LOC1／LOC3 關聯優先，無法判斷的媒體保留在其他多媒體。</p>
+      <p className="loc5-rule-note">分類只使用 Current 語意欄位、作品連結與排除／fallback；歷史 numbered LOC provenance 不參與 Current 分類。無法判斷的媒體保留在其他多媒體。</p>
     </section>
 
-    {status === 'loading' ? <p className="loc-status">載入 LOC5 registry…</p> : null}
-    {status === 'error' ? <p className="loc-status error">LOC5 registry 載入失敗。</p> : null}
+    {status === 'loading' ? <p className="loc-status">載入多媒體 registry…</p> : null}
+    {status === 'error' ? <p className="loc-status error">多媒體 registry 載入失敗。</p> : null}
 
     {status === 'ready' ? <>
       <div className="loc5-result-meta"><span>符合 {filtered.length} 筆</span><span>第 {safePage} / {pages} 頁</span></div>
-      <section className="loc5-grid" aria-label="LOC5 多媒體清單">
+      <section className="loc5-grid" aria-label="多媒體清單">
         {visible.map(item => {
           const semantic = item.semantic_descriptor || {};
           const tags = [...list(semantic.manual_tags), ...list(semantic.generated_tags), ...list(semantic.scene_keywords)].map(text).filter(Boolean).slice(0, 5);
@@ -168,7 +166,7 @@ export default function MediaView() {
               {text(item.purpose) ? <span>{item.purpose}</span> : null}
             </div>
             {text(semantic.visual_summary) ? <p className="loc5-summary">{semantic.visual_summary}</p> : null}
-            {item.linked_song_id ? <p className="loc5-relation"><strong>LOC3</strong> {item.linked_song_id}</p> : null}
+            {item.linked_song_id ? <p className="loc5-relation"><strong>音樂</strong> {item.linked_song_id}</p> : null}
             {item.linked_work_id ? <p className="loc5-relation"><strong>Work</strong> {item.linked_work_id}</p> : null}
             {tags.length ? <div className="loc-chip-list">{tags.map((tag, index) => <span key={`${tag}-${index}`}>{tag}</span>)}</div> : null}
             {sources.length ? <p className="loc5-source">來源：{sources.join(' · ')}</p> : null}
@@ -182,7 +180,7 @@ export default function MediaView() {
 
       {!visible.length ? <p className="loc-status">目前沒有符合這個條件的多媒體紀錄。</p> : null}
 
-      {pages > 1 ? <nav className="loc5-pagination" aria-label="LOC5 分頁">
+      {pages > 1 ? <nav className="loc5-pagination" aria-label="多媒體分頁">
         <button type="button" disabled={safePage <= 1} onClick={() => setPage(value => Math.max(1, value - 1))}>上一頁</button>
         <span>{safePage} / {pages}</span>
         <button type="button" disabled={safePage >= pages} onClick={() => setPage(value => Math.min(pages, value + 1))}>下一頁</button>
