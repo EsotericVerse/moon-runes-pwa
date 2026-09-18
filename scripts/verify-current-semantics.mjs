@@ -37,6 +37,7 @@ function walk(value, keyPath, inHistorical = false) {
       if (/^(authority|owner|owner_rule|primary_loc)$/i.test(key) && numbered.test(child)) failures.push(`${next}=${JSON.stringify(child)}`);
       if (/\bLOC[1-8]\b\s+(?:owns?|remains?\s+the\s+canonical\s+owner|authority)/i.test(child)) failures.push(`${next} contains numbered Current ownership: ${JSON.stringify(child)}`);
       if (/(?:owned\s+by|belongs\s+primarily\s+to)\s+LOC[1-8]\b/i.test(child)) failures.push(`${next} contains numbered Current ownership: ${JSON.stringify(child)}`);
+      for(const retired of RETIRED_CURRENT_TERMS) if(child.includes(retired)) failures.push(`${next} contains retired Current identity term ${JSON.stringify(retired)}`);
     }
     walk(child, next, historical);
   }
@@ -47,8 +48,6 @@ for (const rel of files) {
   let payload;
   try { payload = JSON.parse(fs.readFileSync(full, 'utf8')); } catch (error) { failures.push(`${rel}: invalid JSON (${error.message})`); continue; }
   const before = failures.length; walk(payload, rel, false);
-  const source=JSON.stringify(payload);
-  for(const retired of RETIRED_CURRENT_TERMS) if(source.includes(retired)) failures.push(`${rel}: retired Current identity term ${JSON.stringify(retired)}`);
   if(rel.endsWith('LOC_TERMINOLOGY_CANON.json')){
     if(payload?.current?.LOC?.zh!==FINAL_LOC_ZH||payload?.current?.LOC?.en!==FINAL_LOC_EN) failures.push(`${rel}: LOC final identity mismatch`);
     if(payload?.current?.LunaRunes?.zh!==FINAL_RUNES_ZH||payload?.current?.LunaRunes?.en!==FINAL_RUNES_EN) failures.push(`${rel}: LunaRunes final identity mismatch`);
