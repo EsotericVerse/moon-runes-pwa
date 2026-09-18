@@ -1,5 +1,4 @@
 import { LOC_DATA } from './data';
-import {detectSiteScope,getSiteScope} from '../site-registry';
 
 export const SEARCH_SCOPE_FIELDS=Object.freeze(['person','family','generation','era','source','corpus','language','culture']);
 
@@ -82,8 +81,3 @@ export function getSearchScopeProfile(value){
   return getSearchCollection(value).scopeProfile;
 }
 
-
-export function searchCollectionForHost(host='',pathname='/'){
-  const scope=detectSiteScope(pathname,host);
-  return getSearchCollection(getSiteScope(scope).searchCollection);
-}
