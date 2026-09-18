@@ -6,8 +6,8 @@ const names=['context','statics','evolution','governance','search'];
 const cases=[
   ['loc','loc.lo3rwang.cc','https://loc.lo3rwang.cc'],
   ['runes','lrunes.lo3rwang.cc','https://lrunes.lo3rwang.cc'],
-  ['author','whoami.lo3rwang.cc','https://whoami.lo3rwang.cc'],
-  ['governance','manage.lo3rwang.cc','https://manage.lo3rwang.cc']
+  ['author','lo3rwang.lo3rwang.cc','https://lo3rwang.lo3rwang.cc'],
+  ['governance','admin.lo3rwang.cc','https://admin.lo3rwang.cc']
 ];
 
 for(const [scope,host,origin] of cases){
