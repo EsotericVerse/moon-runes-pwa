@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchLocJsonBatch, LOC_DATA } from '../loc/data';
-import { putLocalRecord } from '../loc/local-db';
+import { putNeonRecord } from '../loc/neon-user-storage';
+import { useNeonAccount } from '../loc/use-neon-account';
 import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
 import { realMoonPhase } from '../loc/model/moon-phase';
@@ -135,6 +136,7 @@ function MultiReading({ draw, mode, phase }) {
 }
 
 export default function RuneDrawClient() {
+  const account = useNeonAccount();
   const { value: uiSettings } = useLocalStore(UI_SETTINGS_KEY, DEFAULT_UI_SETTINGS);
   const [data, setData] = useState(null);
   const [interpretations, setInterpretations] = useState([]);
@@ -195,7 +197,7 @@ export default function RuneDrawClient() {
       const evaluation = evaluateSpread(cards, directions);
       const createdAt = new Date().toISOString();
       const guidance = finalGuidance(data.lots, cards.at(-1), directions.at(-1));
-      setDraw({ id: `rune-draw:local:${modeKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, evaluation, guidance });
+      setDraw({ id: `rune-draw:${modeKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, evaluation, guidance });
       setRecordStatus('');
       setError('');
     } catch (err) {
@@ -224,6 +226,7 @@ export default function RuneDrawClient() {
 
   async function saveCurrentDraw() {
     if (!draw) return;
+    if (!account.user) { setRecordStatus('請先登入 Neon，再儲存抽牌紀錄。'); return; }
     try {
       const record = {
         id: draw.id,
@@ -245,10 +248,10 @@ export default function RuneDrawClient() {
           negative_keywords: card.反向關鍵詞 || ''
         }))
       };
-      await putLocalRecord(record);
+      await putNeonRecord(record);
       setRecordStatus(modeKey === 'daily' ? '已記錄到每日抽籤。' : '已記錄到一般抽牌。');
     } catch (err) {
-      setRecordStatus(`本機紀錄失敗：${err?.message || '未知錯誤'}`);
+      setRecordStatus(`Neon 紀錄失敗：${err?.message || '未知錯誤'}`);
     }
   }
 
@@ -257,7 +260,7 @@ export default function RuneDrawClient() {
       <header className="loc-hero" id="intro">
         <p className="loc-eyebrow">LunaRunes · 月之符文</p>
         <h1>月之符文</h1>
-        <p>月之符文以固定 66 枚核心符文提供抽牌與語意指引。抽牌、加權與籤詩指引在瀏覽器本機完成，不呼叫外部 API。</p>
+        <p>月之符文以固定 66 枚核心符文提供抽牌與語意指引。抽牌、加權與籤詩指引在瀏覽器完成；選擇性抽牌紀錄登入後儲存在 Neon。</p>
       </header>
 
       <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey}>
