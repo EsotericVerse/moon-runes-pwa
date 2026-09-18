@@ -2,21 +2,38 @@
   "schema_version": "2.1",
   "registry": "LOC_TERMINOLOGY_CANON",
   "status": "current",
-  "effective_date": "2026-09-17",
+  "effective_date": "2026-09-18",
   "authority": "LOC_DATA_GOVERNANCE",
-  "purpose": "Current terminology source. Historical records may retain superseded terms only when explicitly marked Historical.",
+  "purpose": "Final Current terminology source. Historical records may retain superseded terms only when explicitly marked Historical.",
   "current": {
     "LOC": {
-      "canonical_names": ["LOC", "Luna Codex", "月典"],
-      "zh": "語言系統模組框架",
-      "en": "Language Module Framework"
+      "canonical_names": [
+        "LOC",
+        "Luna Codex",
+        "月典"
+      ],
+      "zh": "模型化語言框架",
+      "en": "Modelized Language Framework"
     },
     "LunaRunes": {
-      "canonical_names": ["LunaRunes", "月之符文"],
-      "zh": "符號式語言模組",
-      "en": "Symbolic Language Module",
+      "canonical_names": [
+        "LunaRunes",
+        "月之符文"
+      ],
+      "zh": "符號式語言",
+      "en": "Symbolic Language",
       "group_authority": "data/json/core/runes66groups.json",
-      "group_names": ["靈魂", "連結", "生命", "自然", "礦物", "元素", "秩序", "無序", "系統特別"],
+      "group_names": [
+        "靈魂",
+        "連結",
+        "生命",
+        "自然",
+        "礦物",
+        "元素",
+        "秩序",
+        "無序",
+        "系統特別"
+      ],
       "group_rule": "Current LunaRunes group names and membership must be read from data/json/core/runes66groups.json. 第七組固定為秩序（Order）；定序僅可作 Historical alias，不得出現在 Current projection。第九組 Current 名稱為系統特別。"
     },
     "scope": {
@@ -43,8 +60,16 @@
       "特殊": "Historical shorthand; Current ninth group = 系統特別"
     }
   },
-  "authority_chain": ["LOC_DATA_GOVERNANCE", "LOC_TERMINOLOGY_CANON", "data/json/core/runes66groups.json", "Current domain registries", "generated projections", "Search/RAG/UI consumers"],
+  "authority_chain": [
+    "LOC_DATA_GOVERNANCE",
+    "LOC_TERMINOLOGY_CANON",
+    "data/json/core/runes66groups.json",
+    "Current domain registries",
+    "generated projections",
+    "Search/RAG/UI consumers"
+  ],
   "projection_rule": "Generated data is a disposable projection of Current authority and never becomes governance authority.",
   "migration_rule": "Consumers must prefer current values in this registry and the owning Scope authority. Do not rewrite historical evidence; explicitly mark it Historical or superseded.",
-  "display_rule": "Public Current copy uses Current terminology and the owning Scope's governed labels."
+  "display_rule": "Public Current copy must use only the frozen final identities: LOC = 模型化語言框架／Modelized Language Framework；LunaRunes = 符號式語言／Symbolic Language.",
+  "final_identity_rule": "Final and highest identity definition: LOC／月典 = 模型化語言框架／Modelized Language Framework；LunaRunes／月之符文 = 符號式語言／Symbolic Language. This identity is frozen and must not be renamed by downstream UI, Search, RAG, generated projections, registries, or implementation details."
 }
