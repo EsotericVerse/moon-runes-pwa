@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0-final",
   "registry": "LOC_TERMINOLOGY_CANON",
-  "status": "current",
+  "status": "final_frozen",
   "effective_date": "2026-09-18",
   "authority": "LOC_DATA_GOVERNANCE",
   "purpose": "Final Current terminology source. Historical records may retain superseded terms only when explicitly marked Historical.",
@@ -73,7 +73,9 @@
   "projection_rule": "Generated data is a disposable projection of Current authority and never becomes governance authority.",
   "migration_rule": "Consumers must prefer current values in this registry and the owning Scope authority. Do not rewrite historical evidence; explicitly mark it Historical or superseded.",
   "display_rule": "Public Current copy must use only the frozen final identities: LOC = 模型化語言框架／Modelized Language Framework；LunaRunes = 符號式語言／Symbolic Language.",
-  "final_identity_rule": "Latest and Last / Final Frozen Identity: LOC／月典 = 模型化語言框架／Modelized Language Framework；LunaRunes／月之符文 = 符號式語言／Symbolic Language. This identity pair is permanent and must not be renamed, reinterpreted as a different Current identity, or overridden by downstream UI, Search, RAG, generated projections, registries, implementation labels, or historical material.",
+  "final_identity_rule": "LATEST AND LAST VERSION. LOC／月典 = 模型化語言框架／Modelized Language Framework；LunaRunes／月之符文 = 符號式語言／Symbolic Language. This identity is permanently frozen and must not be renamed, reinterpreted, version-bumped into a different identity, or overridden by downstream UI, Search, RAG, registries, generated projections, documentation, implementation details, or future refactors.",
   "identity_version": "latest-and-last",
-  "identity_frozen": true
+  "identity_frozen": true,
+  "version_label": "latest_and_last",
+  "change_policy": "No future identity rename. Only explanatory wording, examples, implementation details, and historical annotation may evolve; the two frozen identity definitions do not."
 }
