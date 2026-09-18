@@ -95,15 +95,22 @@ class UnifiedSearchTests(unittest.TestCase):
         self.assertEqual(len(result["groups"]["media"]), 1)
         self.assertEqual(len(result["groups"]["knowledge"]), 1)
         self.assertEqual(len(result["groups"]["timeline"]), 1)
-        self.assertEqual(result["groups"]["works"][0]["primary_loc"], "LOC3")
-        self.assertEqual(result["groups"]["media"][0]["primary_loc"], "LOC5")
+        work = result["groups"]["works"][0]
+        media = result["groups"]["media"][0]
+        self.assertNotIn("primary_loc", work)
+        self.assertNotIn("related_locs", work)
+        self.assertNotIn("primary_loc", media)
+        self.assertIn("LOC3", (work.get("historical_provenance") or {}).get("loc_ids", []))
+        self.assertIn("LOC5", (media.get("historical_provenance") or {}).get("loc_ids", []))
 
     def test_loc2_scenario_events_are_searchable_without_changing_ownership(self):
         result = self.make_engine().search("自我懷疑", content_type="scenario_event", top_k=5)
         self.assertEqual(len(result["groups"]["scenarios"]), 1)
         item = result["groups"]["scenarios"][0]
         self.assertEqual(item["result_id"], "E02")
-        self.assertEqual(item["primary_loc"], "LOC2")
+        self.assertNotIn("primary_loc", item)
+        self.assertIn("context", item.get("feature_ids") or [])
+        self.assertIn("LOC2", (item.get("historical_provenance") or {}).get("loc_ids", []))
         self.assertEqual(item["content_type"], "scenario_event")
         self.assertEqual(item["payload"]["requirement_signature"], "SL + OC")
 
@@ -111,7 +118,9 @@ class UnifiedSearchTests(unittest.TestCase):
         result = self.make_engine().search("自我治理", content_type="faq")
         self.assertEqual(len(result["groups"]["knowledge"]), 1)
         self.assertEqual(len(result["groups"]["works"]), 0)
-        self.assertEqual(result["groups"]["knowledge"][0]["primary_loc"], "LOC7")
+        item = result["groups"]["knowledge"][0]
+        self.assertNotIn("primary_loc", item)
+        self.assertIn("LOC7", (item.get("historical_provenance") or {}).get("loc_ids", []))
 
 
     def test_character_query_returns_entity_theme_song_and_work(self):
