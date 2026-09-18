@@ -302,3 +302,40 @@ export function featureIdForPathV2(pathname='/'){
 export function scopeDataViewV2(scopeId,key){
   return getScopeV2(scopeId).dataViews?.[key]||null;
 }
+
+
+export function scopeRoutePathsV2(scopeId){
+  const scope=getScopeV2(scopeId);
+  return Object.freeze([
+    '/',
+    ...FEATURES_V2.map(item=>'/'+item.path),
+    ...(scope.localRoutes||[]).map(route=>'/'+String(route).replace(/^\/+/,'')) 
+  ]);
+}
+
+export function isScopePathAllowedV2(scopeId,pathname='/'){
+  const clean=cleanPath(pathname);
+  const scope=getScopeV2(scopeId);
+  const canonicalPaths=scopeRoutePathsV2(scopeId);
+  if(canonicalPaths.includes(clean))return true;
+  for(const localRoute of scope.localRoutes||[]){
+    const base='/'+String(localRoute).replace(/^\/+|\/+$/g,'');
+    if(clean===base||clean.startsWith(base+'/'))return true;
+  }
+  return false;
+}
+
+export function stripScopeMountV2(scopeId,host='',pathname='/'){
+  const scope=getScopeV2(scopeId);
+  if(!scope.mount||cleanHost(host)!==cleanHost(scope.mount.host))return cleanPath(pathname);
+  const full=cleanPath(pathname);
+  const base=cleanPath(scope.mount.path);
+  if(full===base)return '/';
+  if(full.startsWith(base+'/'))return cleanPath(full.slice(base.length));
+  return full;
+}
+
+export function isScopeRequestAllowedV2(scopeId,host='',pathname='/'){
+  const localPath=stripScopeMountV2(scopeId,host,pathname);
+  return isScopePathAllowedV2(scopeId,localPath);
+}
