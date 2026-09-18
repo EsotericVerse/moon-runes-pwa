@@ -4,17 +4,17 @@ LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋�
 
 LOC 的 Current 架構固定採 **Scope Model × Feature Model → Page Composition**：Scope 管理資料與權威邊界，Feature 是可重用能力，頁面／Search／RAG／分析屬下游 projection，不建立 Canon authority。
 
-LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language Module reference implementation：以 66 枚中文單字為核心語彙，實作脈絡、Graph、Grammar、治理、搜尋與演化。月之符文用來證明 LOC 的模組方法可被實作，但不是使用 LOC 的門檻。
+LunaRunes（月之符文）是符號式語言（Symbolic Language）：以 66 枚中文單字為核心語彙，實作脈絡、Graph、Grammar、治理、搜尋與文化觀察。月之符文是 LOC 的重要起點與實作案例，但不是使用 LOC 的門檻。
 
 **術語治理：LOC 固定稱為 Modelized Language Framework／模型化語言框架；LunaRunes 固定稱為 Symbolic Language／符號式語言。LOC1–8 僅保留作 Historical／provenance 識別，不得作 Current 架構、Scope、Feature ownership、NAV 或 registry authority。**
 
 ### 主要定位
 
-> LOC is a reusable language module framework. LunaRunes demonstrates that the framework can be implemented as a working symbolic language module.
+> LOC is a Modelized Language Framework. LunaRunes is a Symbolic Language.
 >
 > LOC is fully open source. Commercial value comes from consulting, system architecture, governance design, and case-specific implementation.
 
-中文：LOC 是一套可重複使用的語言系統模組框架。LunaRunes（月之符文）證明了這套框架可以被實作為一個實際運作的符號式語言模組。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。
+中文：LOC／月典是模型化語言框架；LunaRunes／月之符文是符號式語言。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。
 
 > 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
 
@@ -89,7 +89,7 @@ RC3 已讓 `runes.html`、`context.html`、`statics.html`、`evolution.html` 有
 
 ## LOC GPT Skills
 
-LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重複調用的 AI Skills。它們不是獨立於 LOC 的另一套理論，而是 LOC Language Module Framework 的 callable implementations。
+LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重複調用的 AI Skills。它們不是獨立於 LOC 的另一套理論，而是 LOC Modelized Language Framework 的 callable implementations。
 
 ### v1.0.0
 
@@ -101,7 +101,7 @@ LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重
 兩個 Skill 共用現行 LOC 治理原則：
 
 ```text
-Language Module Framework
+Modelized Language Framework
         ↓
 Authority / Canon
         ↓
@@ -389,7 +389,7 @@ moon-runes-pwa/
 ├── evolution.html
 ├── governance.html
 ├── game.html
-├── lo3rwang.html
+├── app/lo3rwang/       # 個人首頁與個人 Scope 頁面
 ├── tutorial01.html      # legacy compatibility redirect → index.html#start-guide
 ├── tutorial02.html      # legacy compatibility redirect → runes.html#library
 ├── LunaRune66.xlsx
