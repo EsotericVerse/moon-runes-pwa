@@ -66,7 +66,7 @@ def resolve_era(date: str, eras: list[dict]) -> dict | None:
 
 
 def dump_normalized_events() -> None:
-    source = "data/json/registries/LOC8_EVENT_SNAPSHOT.json"
+    source = "data/json/registries/EVENT_SNAPSHOT.json"
     era_source = "data/json/registries/LOC_ERA_REGISTRY.json"
     snapshot = read_json(source)
     eras = list(read_json(era_source).get("eras") or [])
