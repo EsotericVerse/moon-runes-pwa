@@ -1,9 +1,9 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "registry": "LOC_KM_KEYWORDS",
   "source": "Current governance + Scope Model × Feature Model + structured registries",
-  "source_version": "2026-09-17 Current",
-  "updated_at": "2026-09-17",
+  "source_version": "2026-09-18 Current",
+  "updated_at": "2026-09-18",
   "purpose": "Shared retrieval vocabulary for Knowledge Management, Search, FAQ/RAG, provenance and knowledge assets without assigning Current ownership to LOC1–8.",
   "governance": {
     "authority": "Analysis",
@@ -19,31 +19,78 @@
       "keywords": [
         {
           "term": "LOC",
-          "aliases": ["Luna Codex", "月典", "Language Module Framework", "語言系統模組框架"],
+          "aliases": [
+            "Luna Codex",
+            "月典",
+            "Modular Language Framework",
+            "模組化語言框架"
+          ],
           "status": "Canonical",
-          "scope": ["LOC"],
-          "feature_scope": ["context", "statics", "evolution", "governance", "search"]
+          "scope": [
+            "LOC"
+          ],
+          "feature_scope": [
+            "context",
+            "statics",
+            "evolution",
+            "governance",
+            "search"
+          ]
         },
         {
           "term": "LunaRunes",
-          "aliases": ["月之符文", "月符", "Symbolic Language Module", "符號式語言模組", "Rune"],
+          "aliases": [
+            "月之符文",
+            "月符",
+            "Symbolic Language",
+            "符號式語言",
+            "Rune"
+          ],
           "status": "Canonical",
-          "scope": ["LunaRunes"],
-          "feature_scope": ["context", "statics", "evolution", "governance", "search"]
+          "scope": [
+            "LunaRunes"
+          ],
+          "feature_scope": [
+            "context",
+            "statics",
+            "evolution",
+            "governance",
+            "search"
+          ]
         },
         {
           "term": "Scope Model × Feature Model",
-          "aliases": ["Scope Model", "Feature Model", "Page Composition", "Scope × Feature"],
+          "aliases": [
+            "Scope Model",
+            "Feature Model",
+            "Page Composition",
+            "Scope × Feature"
+          ],
           "status": "Canonical",
-          "scope": ["LOC", "LunaRunes", "Author", "Governance"],
-          "feature_scope": ["architecture"]
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang",
+            "Governance"
+          ],
+          "feature_scope": [
+            "architecture"
+          ]
         },
         {
           "term": "LOC1–8",
-          "aliases": ["八分發", "Eight Distributions", "舊 LOC 編號"],
+          "aliases": [
+            "八分發",
+            "Eight Distributions",
+            "舊 LOC 編號"
+          ],
           "status": "Historical",
-          "scope": ["Historical"],
-          "feature_scope": ["provenance"],
+          "scope": [
+            "Historical"
+          ],
+          "feature_scope": [
+            "provenance"
+          ],
           "note": "Historical/provenance identifiers only; not Current ownership."
         }
       ]
@@ -54,39 +101,98 @@
       "keywords": [
         {
           "term": "Knowledge Management",
-          "aliases": ["KM", "知識管理"],
+          "aliases": [
+            "KM",
+            "知識管理"
+          ],
           "status": "Canonical",
-          "scope": ["LOC", "LunaRunes", "Author", "Governance"],
-          "feature_scope": ["knowledge"],
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang",
+            "Governance"
+          ],
+          "feature_scope": [
+            "knowledge"
+          ],
           "note": "KM manages knowledge assets, authority, provenance, versions, relationships and retrievability across Scopes."
         },
         {
           "term": "Knowledge Asset",
-          "aliases": ["知識資產", "Knowledge Object", "知識物件", "KO"],
+          "aliases": [
+            "知識資產",
+            "Knowledge Object",
+            "知識物件",
+            "KO"
+          ],
           "status": "Stable",
-          "scope": ["LOC", "LunaRunes", "Author", "Governance"],
-          "feature_scope": ["knowledge"]
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang",
+            "Governance"
+          ],
+          "feature_scope": [
+            "knowledge"
+          ]
         },
         {
           "term": "Knowledge Provenance",
-          "aliases": ["來源追溯", "Source Provenance", "來源"],
+          "aliases": [
+            "來源追溯",
+            "Source Provenance",
+            "來源"
+          ],
           "status": "Stable",
-          "scope": ["LOC", "LunaRunes", "Author", "Governance"],
-          "feature_scope": ["knowledge", "governance"]
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang",
+            "Governance"
+          ],
+          "feature_scope": [
+            "knowledge",
+            "governance"
+          ]
         },
         {
           "term": "Knowledge Versioning",
-          "aliases": ["版本治理", "版本歷史", "Knowledge Evolution"],
+          "aliases": [
+            "版本治理",
+            "版本歷史",
+            "Knowledge Evolution"
+          ],
           "status": "Stable",
-          "scope": ["LOC", "LunaRunes", "Author", "Governance"],
-          "feature_scope": ["knowledge", "evolution"]
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang",
+            "Governance"
+          ],
+          "feature_scope": [
+            "knowledge",
+            "evolution"
+          ]
         },
         {
           "term": "Knowledge Relation",
-          "aliases": ["Relation", "關係", "語意關係", "Knowledge Graph", "知識圖譜"],
+          "aliases": [
+            "Relation",
+            "關係",
+            "語意關係",
+            "Knowledge Graph",
+            "知識圖譜"
+          ],
           "status": "Working",
-          "scope": ["LOC", "LunaRunes", "Author"],
-          "feature_scope": ["context", "knowledge"]
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang"
+          ],
+          "feature_scope": [
+            "context",
+            "knowledge"
+          ]
         }
       ]
     },
@@ -96,42 +202,95 @@
       "keywords": [
         {
           "term": "Search",
-          "aliases": ["Unified Search", "統一搜尋", "Cross-format Search", "跨格式搜尋", "語意搜尋", "Semantic Search"],
+          "aliases": [
+            "Unified Search",
+            "統一搜尋",
+            "Cross-format Search",
+            "跨格式搜尋",
+            "語意搜尋",
+            "Semantic Search"
+          ],
           "status": "Stable",
-          "scope": ["LOC", "LunaRunes", "Author"],
-          "feature_scope": ["search"],
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang"
+          ],
+          "feature_scope": [
+            "search"
+          ],
           "note": "Search is a reusable Feature across governed Scopes."
         },
         {
           "term": "FAQ",
-          "aliases": ["問答", "FAQ View"],
+          "aliases": [
+            "問答",
+            "FAQ View"
+          ],
           "status": "Stable",
-          "scope": ["LOC"],
-          "feature_scope": ["knowledge", "search"],
+          "scope": [
+            "LOC"
+          ],
+          "feature_scope": [
+            "knowledge",
+            "search"
+          ],
           "note": "FAQ is a maintained question/answer view and does not replace Canon or KM."
         },
         {
           "term": "RAG",
-          "aliases": ["Retrieval-Augmented Generation", "檢索增強生成", "Graph RAG", "圖譜檢索"],
+          "aliases": [
+            "Retrieval-Augmented Generation",
+            "檢索增強生成",
+            "Graph RAG",
+            "圖譜檢索"
+          ],
           "status": "Working",
-          "scope": ["LOC", "LunaRunes", "Author"],
-          "feature_scope": ["search", "retrieval"],
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang"
+          ],
+          "feature_scope": [
+            "search",
+            "retrieval"
+          ],
           "note": "RAG is a retrieval derivative/technique consumed by Search and analysis workflows."
         },
         {
           "term": "Embedding",
-          "aliases": ["語意向量", "向量檢索"],
+          "aliases": [
+            "語意向量",
+            "向量檢索"
+          ],
           "status": "Working",
-          "scope": ["LOC", "LunaRunes", "Author"],
-          "feature_scope": ["search", "retrieval"]
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang"
+          ],
+          "feature_scope": [
+            "search",
+            "retrieval"
+          ]
         },
         {
           "term": "Text Architecture",
-          "aliases": ["文字建築學", "文字建築", "立體句型"],
+          "aliases": [
+            "文字建築學",
+            "文字建築"
+          ],
           "status": "Stable",
-          "scope": ["LOC", "Author"],
-          "feature_scope": ["analysis", "knowledge"],
-          "note": "Text Architecture is a method/analysis concept; historical LOC7 mapping may be retained only as provenance."
+          "scope": [
+            "LOC",
+            "lo3rwang"
+          ],
+          "feature_scope": [
+            "analysis",
+            "knowledge",
+            "evolution"
+          ],
+          "note": "以可追溯的實際使用材料為基礎，觀察語言／文字模組如何組合與累積，據此推論形成的個人語言結構與文化風格；目前以個人尺度為邊界，結果是可修正的推論，不是本質標籤。"
         }
       ]
     },
@@ -141,41 +300,161 @@
       "keywords": [
         {
           "term": "Governance",
-          "aliases": ["治理", "語言治理", "治理原則"],
+          "aliases": [
+            "治理",
+            "語言治理",
+            "治理原則"
+          ],
           "status": "Stable",
-          "scope": ["Governance", "LOC", "LunaRunes", "Author"],
-          "feature_scope": ["governance"],
+          "scope": [
+            "Governance",
+            "LOC",
+            "LunaRunes",
+            "lo3rwang"
+          ],
+          "feature_scope": [
+            "governance"
+          ],
           "note": "Governance is a shared Feature/context across governed Scopes."
         },
         {
           "term": "政德風",
-          "aliases": ["Zhengde Style", "作者語言", "個人語言風格"],
+          "aliases": [
+            "Zhengde Style",
+            "作者語言",
+            "個人語言風格"
+          ],
           "status": "Stable",
-          "scope": ["Author"],
-          "feature_scope": ["culture", "governance", "evolution"]
+          "scope": [
+            "lo3rwang"
+          ],
+          "feature_scope": [
+            "culture",
+            "governance",
+            "evolution"
+          ]
         },
         {
           "term": "自我治理",
-          "aliases": ["Self Governance", "治理自己", "治理已知"],
+          "aliases": [
+            "Self Governance",
+            "治理自己",
+            "治理已知"
+          ],
           "status": "Stable",
-          "scope": ["Author", "Governance"],
-          "feature_scope": ["governance", "evolution"]
+          "scope": [
+            "lo3rwang",
+            "Governance"
+          ],
+          "feature_scope": [
+            "governance",
+            "evolution"
+          ]
         },
         {
           "term": "ERA",
-          "aliases": ["時期", "創作時期", "風格演變"],
+          "aliases": [
+            "時期",
+            "創作時期",
+            "風格演變"
+          ],
           "status": "Stable",
-          "scope": ["Author", "LunaRunes"],
-          "feature_scope": ["evolution"],
+          "scope": [
+            "lo3rwang",
+            "LunaRunes"
+          ],
+          "feature_scope": [
+            "evolution"
+          ],
           "note": "Public display follows each Scope's Current naming; Author ERA and LunaRunes ERA must not be merged."
         },
         {
           "term": "德之符文",
-          "aliases": ["德符文", "第零符", "第0符", "Rune 0", "De Rune", "治理錨點"],
+          "aliases": [
+            "德符文",
+            "第零符",
+            "第0符",
+            "Rune 0",
+            "De Rune",
+            "治理錨點"
+          ],
           "status": "Canonical",
-          "scope": ["LunaRunes", "Author", "Governance"],
-          "feature_scope": ["governance", "knowledge"],
+          "scope": [
+            "LunaRunes",
+            "lo3rwang",
+            "Governance"
+          ],
+          "feature_scope": [
+            "governance",
+            "knowledge"
+          ],
           "note": "第0符德是作者／系統基準，不參與抽牌。"
+        }
+      ]
+    },
+    {
+      "id": "evolution_inference",
+      "label": "推演與軌跡",
+      "keywords": [
+        {
+          "term": "推演",
+          "aliases": [
+            "Evolution",
+            "Inference",
+            "推論"
+          ],
+          "status": "Stable",
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang"
+          ],
+          "feature_scope": [
+            "evolution",
+            "analysis"
+          ],
+          "note": "在已知材料、假設與關係的約束下，推導材料尚未直接陳述的結構、結果或可能發展；不等於未來預測。"
+        },
+        {
+          "term": "Trajectory",
+          "aliases": [
+            "軌跡",
+            "語言軌跡",
+            "概念軌跡"
+          ],
+          "status": "Stable",
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang"
+          ],
+          "feature_scope": [
+            "evolution",
+            "search"
+          ],
+          "note": "由來源、時間、關係與內容推導的變化路徑；應保留 provenance，不能人工改寫結果。"
+        },
+        {
+          "term": "Provenance",
+          "aliases": [
+            "來源",
+            "來由",
+            "來源追溯"
+          ],
+          "status": "Stable",
+          "scope": [
+            "LOC",
+            "LunaRunes",
+            "lo3rwang",
+            "Governance"
+          ],
+          "feature_scope": [
+            "knowledge",
+            "evolution",
+            "search",
+            "governance"
+          ],
+          "note": "支撐 Current、Origin、Trajectory、Relations 與 Why 路徑的可追溯來源。"
         }
       ]
     }
