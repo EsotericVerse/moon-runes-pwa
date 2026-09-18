@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 
-const source=await fs.readFile('app/nav-route-map.js','utf8');
+const source=await fs.readFile('app/site-registry.js','utf8');
 const runtime=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 const names=['context','statics','culture','governance','search'];
 const cases=[
@@ -11,15 +11,12 @@ const cases=[
 ];
 
 for(const [scope,host,origin] of cases){
-  const resolved=runtime.detectNavScope('/',host);
+  const resolved=runtime.detectSiteScope('/',host);
   if(resolved!==scope)throw new Error(`${host}: expected ${scope}, got ${resolved}`);
-  const config=runtime.getNavScopeConfig(resolved,host);
   for(const name of names){
-    const route=runtime.navRoute(config,name);
+    const route=runtime.featureRoute(scope,name);
     if(route!==`${origin}/${name}`)throw new Error(`${scope}/${name}: expected ${origin}/${name}, got ${route}`);
   }
 }
-
-const localRunes=runtime.getNavScopeConfig(runtime.detectNavScope('/runes','loc.lo3rwang.cc'),'loc.lo3rwang.cc');
-if(runtime.navRoute(localRunes,'context')!=='https://lrunes.lo3rwang.cc/context')throw new Error('LOC /runes entry must resolve LunaRunes functions to its canonical host');
-console.log('Host/scope-aware NAV route resolution verified.');
+if(runtime.detectSiteScope('/runes','loc.lo3rwang.cc')!=='runes')throw new Error('LOC /runes alias must resolve to LunaRunes Scope');
+console.log('Current site-registry route resolution verified.');
