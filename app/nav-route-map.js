@@ -4,7 +4,7 @@ const functionRoutes=origin=>Object.fromEntries(FUNCTION_NAMES.map(name=>[name,`
 
 export function detectNavScope(pathname='/',host=''){
   if(host==='lrunes.lo3rwang.cc'||pathname==='/runes'||pathname.startsWith('/runes/'))return 'runes';
-  if(host==='lo3rwang.lo3rwang.cc')return 'author';
+  if(host==='lo3rwang.lo3rwang.cc'||pathname==='/lo3rwang'||pathname.startsWith('/lo3rwang/'))return 'author';
   if(host==='admin.lo3rwang.cc'||pathname==='/management'||pathname.startsWith('/management/'))return 'governance';
   return 'loc';
 }
