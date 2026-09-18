@@ -60,7 +60,7 @@ class UnifiedSearchTests(unittest.TestCase):
             '{"types":[{"id":"lyrics_work","feature_ids":["music","text"]},{"id":"scenario_event","feature_ids":["context"]},{"id":"faq","feature_ids":["km","rag"]},{"id":"character","feature_ids":["writing","context_graph"]}]}',
             encoding="utf-8",
         )
-        (root / "data" / "json" / "registries" / "LOC2_EVENT_REGISTRY.json").write_text(
+        (root / "data" / "json" / "registries" / "CONTEXT_EVENT_REGISTRY.json").write_text(
             '{"status":"working","corpus_summary":{"stage":"Alpha","semantic_role":"real_life_scenario_prototypes"},"grammar_note":{"dual_card":"A → B causal structure"},"records":[{"event_id":"E02","title":"自我懷疑","event_group":"靈魂","requirement_signature":"SL + OC","description":"你開始質疑自己的定義。","content_type":"scenario_event","primary_loc":"LOC2","related_locs":["LOC1","LOC4","LOC6","LOC7","LOC8"],"status":"working"}]}',
             encoding="utf-8",
         )
