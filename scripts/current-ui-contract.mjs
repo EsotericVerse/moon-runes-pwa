@@ -23,7 +23,7 @@ const required=[
  [sources.navCanon,'每個介面只有一條正式導覽列'],
  [sources.navCanon,'網域優先，目錄其次，頁面最後']
 ];
-const forbidden=['Language Model Framework','Language Module Framework','語言系統模組框架','Symbolic Language Module','符號式語言模組','author.lo3rwang.cc','lo3rwang.lo3rwang.cc','admin.lo3rwang.cc','https://lo3rwang.lo3rwang.cc/governance'];
+const forbidden=['Language Model Framework','Language Module Framework','語言系統模組框架','Symbolic Language Module','符號式語言模組','author.lo3rwang.cc','whoami.lo3rwang.cc','manage.lo3rwang.cc','/author/governance'];
 const missing=required.filter(([src,t])=>!src.includes(t)).map(([,t])=>t);
 const stale=forbidden.filter(t=>Object.values(sources).some(src=>src.includes(t)));
 if(missing.length||stale.length){if(missing.length)console.error('Missing Current UI contract: '+missing.join(', '));if(stale.length)console.error('Forbidden stale Current semantics: '+stale.join(', '));process.exit(1);}
