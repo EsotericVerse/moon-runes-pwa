@@ -1,45 +1,45 @@
 /* Shared Page Composition presentation: one source of truth for all Scope homepages. */
-.scope-home-composition,
-.scope-home-composition button,
-.scope-home-composition input,
-.scope-home-composition select,
-.scope-home-composition textarea{
+.loc-page-composition,
+.loc-page-composition button,
+.loc-page-composition input,
+.loc-page-composition select,
+.loc-page-composition textarea{
   font-family:var(--loc-font-family);
 }
 
-.scope-home-composition .loc-hero h1{
+.loc-page-composition .loc-hero h1{
   font-size:var(--loc-type-page-title);
   font-weight:var(--loc-weight-page-title);
   line-height:var(--loc-line-page-title);
 }
 
-.scope-home-composition .scope-home-section h2{
+.loc-page-composition .scope-home-section h2{
   font-size:var(--loc-type-section-title);
   font-weight:var(--loc-weight-section-title);
   line-height:var(--loc-line-section-title);
 }
 
-.scope-home-composition .loc-subtitle{
+.loc-page-composition .loc-subtitle{
   font-size:var(--loc-type-subtitle)!important;
   font-weight:var(--loc-weight-subtitle);
   line-height:var(--loc-line-subtitle)!important;
 }
 
-.scope-home-composition p,
-.scope-home-composition li,
-.scope-home-composition .loc-copy{
+.loc-page-composition p,
+.loc-page-composition li,
+.loc-page-composition .loc-copy{
   font-size:var(--loc-type-body);
   font-weight:var(--loc-weight-body);
   line-height:var(--loc-line-body);
 }
 
-.scope-home-composition .loc-eyebrow{
+.loc-page-composition .loc-eyebrow{
   font-size:var(--loc-type-eyebrow)!important;
   font-weight:var(--loc-weight-eyebrow);
 }
 
-.scope-home-composition .loc-button,
-.scope-home-composition .loc-link-card{
+.loc-page-composition .loc-button,
+.loc-page-composition .loc-link-card{
   font-size:var(--loc-type-ui);
   font-weight:var(--loc-weight-ui);
 }
