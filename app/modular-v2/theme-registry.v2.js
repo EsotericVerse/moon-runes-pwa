@@ -1,4 +1,4 @@
-import {SCOPES_V2} from './scope-registry.v2';
+import {SCOPES_V2} from './scope-registry.v2.js';
 
 export const THEME_REGISTRY_SETTING_KEY_V2='theme-registry-overrides-v1';
 export const SCOPE_THEME_SETTINGS_KEY_V2='scope-theme-settings-v2';
