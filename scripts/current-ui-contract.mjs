@@ -7,7 +7,7 @@ const sources={
  runes:read('app/runes/page.jsx'),
  governance:read('app/loc/views/GovernanceView.jsx'),
  personal:read('app/author/page.jsx'),
- admin:read('app/admin/page.jsx')+read('app/admin/RouteRegistryManager.jsx'),
+ admin:read('app/management/page.jsx')+read('app/loc/GovernanceManagement.jsx'),
  terminology:read('data/json/registries/LOC_TERMINOLOGY_CANON.json'),
  navCanon:read('docs/NAV_GOVERNANCE.md')
 };
