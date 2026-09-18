@@ -39,11 +39,12 @@ export const SCOPES_V2=Object.freeze({
     theme:Object.freeze({mode:'fixed',theme:'theme-5',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   }),
   lo3rwang:Object.freeze({
-    id:'lo3rwang',domain:'dlwang.lo3rwang.cc',label:'作者簡介',
-    primary:Object.freeze({label:'簡介',href:'https://dlwang.lo3rwang.cc/'}),
+    id:'lo3rwang',domain:'dlwang.lo3rwang.cc',alias:'dlwang',label:'作者簡介',
+    mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
+    primary:Object.freeze({label:'簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
-      {label:'回作者簡介',href:'https://dlwang.lo3rwang.cc/'},
+      {label:'回作者簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'政德文化',
@@ -78,15 +79,32 @@ function cleanHost(host=''){return String(host||'').toLowerCase().split(':')[0];
 const SCOPE_BY_DOMAIN_V2=Object.freeze(
   Object.fromEntries(Object.entries(SCOPES_V2).map(([id,scope])=>[scope.domain,id]))
 );
-export function resolveScopeV2(host=''){
-  return SCOPE_BY_DOMAIN_V2[cleanHost(host)]||'loc';
+function cleanPath(pathname='/'){
+  const value='/' + String(pathname||'/').split('?')[0].split('#')[0].split('/').filter(Boolean).join('/');
+  return value==='/'?'/':value;
+}
+function matchesMount(scope,host,pathname){
+  if(!scope.mount)return false;
+  const h=cleanHost(host),p=cleanPath(pathname),base=cleanPath(scope.mount.path);
+  return h===cleanHost(scope.mount.host)&&(p===base||p.startsWith(base+'/'));
+}
+export function resolveScopeV2(host='',pathname='/'){
+  const h=cleanHost(host);
+  const direct=SCOPE_BY_DOMAIN_V2[h];
+  if(direct&&direct!=='loc')return direct;
+  for(const [id,scope] of Object.entries(SCOPES_V2))if(matchesMount(scope,h,pathname))return id;
+  return direct||'loc';
 }
 export function getScopeV2(id){return SCOPES_V2[id]||SCOPES_V2.loc;}
 export function scopeOriginV2(scopeId){return `https://${getScopeV2(scopeId).domain}`;}
+export function scopeBaseHrefV2(scopeId){
+  const scope=getScopeV2(scopeId);
+  return scope.mount?`https://${scope.mount.host}${cleanPath(scope.mount.path)}`:scopeOriginV2(scopeId);
+}
 export function featureHrefV2(scopeId,featureId){
   const feature=FEATURES_V2.find(item=>item.id===featureId);
   if(!feature)throw new Error('Unknown feature: '+featureId);
-  return `${scopeOriginV2(scopeId)}/${feature.path}`;
+  return `${scopeBaseHrefV2(scopeId)}/${feature.path}`;
 }
 export function featureIdForPathV2(pathname='/'){
   const segment=String(pathname||'/').split('/').filter(Boolean).at(-1)||'';
