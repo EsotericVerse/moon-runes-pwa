@@ -90,8 +90,8 @@ for(const [id,base] of [['runes','/lrunes'],['lo3rwang','/lo3rwang']]){
     if(resolveScopeV2('loc.lo3rwang.cc',pathname)!==id)failures.push(id+' mount failed at '+pathname);
   }
 }
-for(const pathname of ['/','/context','/culture','/runes','/runes/context','/runesish','/foo/runes','/culture/runes','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
-  if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc')failures.push('bounded directory mount overmatched '+pathname);
+for(const pathname of ['/','/context','/culture','/runes','/runes/context','/lrunes','/lrunes/context','/runesish','/foo/runes','/culture/runes','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
+  if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc' && !pathname.startsWith('/lrunes'))failures.push('bounded directory mount overmatched '+pathname);
 }
 if(SCOPES_V2.runes?.scopeType!=='domain')failures.push('LunaRunes Scope must remain domain type');
 if(SCOPES_V2.runes?.aliasName!==null)failures.push('LunaRunes domain Scope must not declare aliasName');
@@ -118,3 +118,10 @@ if(!/LOC[0-8]/.test(bridge))failures.push('legacy physical identifiers should be
 
 if(failures.length){console.error('[modular-v2] violations:\n'+failures.join('\n'));process.exit(1);}
 console.log('[modular-v2] Current cutover verified: 4 scopes, bounded alias/mount routing, 5 shared features, one scope registry, one theme registry, isolated legacy data ids');
+
+for(const pathname of ['/runes','/runes/context','/lrunes','/lrunes/context']){
+  if(resolveScopeV2('lrunes.lo3rwang.cc',pathname)!=='runes')failures.push('LunaRunes domain Scope must remain runes at '+pathname);
+}
+for(const invalid of ['/runes/duel/one','/lrunes/duel/one']){
+  if(featureHrefV2('runes','context').includes('/runes/')||featureHrefV2('runes','context').includes('/lrunes/'))failures.push('duplicated LunaRunes scope segment in canonical URL');
+}
