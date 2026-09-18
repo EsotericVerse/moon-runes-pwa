@@ -56,11 +56,11 @@ def _text_score(query: str, parts: list[Any]) -> float:
 
 
 class UnifiedSearchEngine:
-    """Cross-LOC orchestration layer.
+    """Cross-scope Search orchestration layer.
 
-    This engine does not merge canonical data stores. It queries each authority
-    and returns a shared result envelope so one UI can display heterogeneous
-    LOC records without changing their ownership.
+    This engine does not merge canonical data stores. It queries governed sources
+    and returns a shared Current result envelope. Historical numbered LOC routing
+    may be accepted as migration input but is never emitted as Current ownership.
     """
 
     def __init__(
@@ -262,8 +262,65 @@ class UnifiedSearchEngine:
             snippet += "…"
         return snippet
 
-    def _public_display_result(self, item: dict[str, Any], query: str) -> dict[str, Any]:
+    def _normalize_current_result(self, item: dict[str, Any]) -> dict[str, Any]:
+        """Project legacy producer metadata into the Current Search contract."""
         row = dict(item)
+        payload = dict(row.get("payload") or {})
+        historical_loc_ids: list[str] = []
+
+        def collect_loc_ids(value: Any) -> None:
+            values = value if isinstance(value, list) else [value]
+            for raw in values:
+                text = str(raw or "").strip()
+                if re.fullmatch(r"LOC[1-8]", text, re.I) and text not in historical_loc_ids:
+                    historical_loc_ids.append(text.upper())
+
+        def strip_numbered_routing(value: Any) -> Any:
+            if isinstance(value, list):
+                return [strip_numbered_routing(x) for x in value]
+            if not isinstance(value, dict):
+                return value
+            clean: dict[str, Any] = {}
+            for key, child in value.items():
+                if key in {"primary_loc", "related_locs"}:
+                    collect_loc_ids(child)
+                    continue
+                if key in {"authority", "owner"} and isinstance(child, str) and re.fullmatch(r"LOC[1-8]", child.strip(), re.I):
+                    collect_loc_ids(child)
+                    continue
+                clean[key] = strip_numbered_routing(child)
+            return clean
+
+        collect_loc_ids(row.pop("primary_loc", None))
+        collect_loc_ids(row.pop("related_locs", None))
+        payload = strip_numbered_routing(payload)
+
+        content_type = str(row.get("content_type") or payload.get("content_type") or "").strip()
+        feature_ids = list(dict.fromkeys([
+            *[str(x) for x in (row.get("feature_ids") or []) if str(x).strip()],
+            *[str(x) for x in (payload.get("feature_ids") or []) if str(x).strip()],
+            *self._content_feature_ids(content_type),
+        ]))
+        if feature_ids:
+            row["feature_ids"] = feature_ids
+
+        scope_id = str(row.get("scope_id") or payload.get("scope_id") or "").strip()
+        if scope_id and not re.fullmatch(r"LOC[1-8]", scope_id, re.I):
+            row["scope_id"] = scope_id
+        else:
+            row.pop("scope_id", None)
+
+        if historical_loc_ids:
+            existing = dict(row.get("historical_provenance") or {})
+            existing_ids = [str(x) for x in (existing.get("loc_ids") or []) if str(x).strip()]
+            existing["loc_ids"] = list(dict.fromkeys([*existing_ids, *historical_loc_ids]))
+            row["historical_provenance"] = existing
+
+        row["payload"] = payload
+        return row
+
+    def _public_display_result(self, item: dict[str, Any], query: str) -> dict[str, Any]:
+        row = self._normalize_current_result(item)
         payload = dict(row.get("payload") or {})
 
         explicit = str(row.get("display_policy") or payload.get("display_policy") or "").strip()
