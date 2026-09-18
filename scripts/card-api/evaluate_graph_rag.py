@@ -27,14 +27,14 @@ def evaluate_case(engine: UnifiedSearchEngine, case: dict) -> dict:
     result = engine.search(case["query"], top_k=8)
     graph = result.get("graph") or {}
     node_ids = {str(node.get("id")) for node in graph.get("nodes", []) if node.get("id")}
-    locs = set(graph.get("loc_path") or [])
+    features = set(graph.get("feature_path") or [])
     eras = {str(row.get("era_id")) for row in graph.get("era_path", []) if row.get("era_id")}
     expected = case.get("expect") or {}
 
     checks = {}
     for field, actual in [
         ("nodes", node_ids),
-        ("locs", locs),
+        ("features", features),
         ("eras", eras),
     ]:
         wanted = set(expected.get(field) or [])
@@ -53,12 +53,12 @@ def evaluate_case(engine: UnifiedSearchEngine, case: dict) -> dict:
         "pass": not forbidden_node_found,
     }
 
-    forbidden_locs = set(expected.get("forbidden_locs") or [])
-    forbidden_loc_found = forbidden_locs & locs
-    checks["forbidden_locs"] = {
-        "expected_absent": sorted(forbidden_locs),
-        "found": sorted(forbidden_loc_found),
-        "pass": not forbidden_loc_found,
+    forbidden_features = set(expected.get("forbidden_features") or [])
+    forbidden_feature_found = forbidden_features & features
+    checks["forbidden_features"] = {
+        "expected_absent": sorted(forbidden_features),
+        "found": sorted(forbidden_feature_found),
+        "pass": not forbidden_feature_found,
     }
 
     forbidden_eras = set(expected.get("forbidden_eras") or [])
@@ -118,7 +118,7 @@ def main() -> int:
         for name, check in (row.get("checks") or {}).items():
             if name.startswith("forbidden_"):
                 precision_checks.append(bool(check.get("pass")))
-            elif name in {"nodes", "locs", "eras"}:
+            elif name in {"nodes", "features", "eras"}:
                 recall_checks.append(bool(check.get("pass")))
 
     summary = {
