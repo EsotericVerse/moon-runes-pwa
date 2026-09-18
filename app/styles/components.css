@@ -75,10 +75,10 @@
   border-bottom:1px solid var(--loc-line);
   vertical-align:baseline;
 }
-.loc-card>h1+p:not(.loc-subtitle),.loc-card>h2+p:not(.loc-subtitle),.loc-card>h3+p:not(.loc-subtitle),
-.loc-panel>h1+p:not(.loc-subtitle),.loc-panel>h2+p:not(.loc-subtitle),.loc-panel>h3+p:not(.loc-subtitle),
-.loc-home>.loc-hero>h1+p:not(.loc-subtitle),.loc-home>.loc-hero>h2+p:not(.loc-subtitle),.loc-home>.loc-hero>h3+p:not(.loc-subtitle),
-.home-section-heading>h1+p:not(.loc-subtitle),.home-section-heading>h2+p:not(.loc-subtitle),.home-section-heading>h3+p:not(.loc-subtitle){
+.loc-card>h1+p:not(.loc-subtitle):not(.loc-core-line),.loc-card>h2+p:not(.loc-subtitle):not(.loc-core-line),.loc-card>h3+p:not(.loc-subtitle):not(.loc-core-line),
+.loc-panel>h1+p:not(.loc-subtitle):not(.loc-core-line),.loc-panel>h2+p:not(.loc-subtitle):not(.loc-core-line),.loc-panel>h3+p:not(.loc-subtitle):not(.loc-core-line),
+.loc-home>.loc-hero>h1+p:not(.loc-subtitle):not(.loc-core-line),.loc-home>.loc-hero>h2+p:not(.loc-subtitle):not(.loc-core-line),.loc-home>.loc-hero>h3+p:not(.loc-subtitle):not(.loc-core-line),
+.home-section-heading>h1+p:not(.loc-subtitle):not(.loc-core-line),.home-section-heading>h2+p:not(.loc-subtitle):not(.loc-core-line),.home-section-heading>h3+p:not(.loc-subtitle):not(.loc-core-line){
   display:block;
   margin:.55rem 0!important;
   padding:0;
