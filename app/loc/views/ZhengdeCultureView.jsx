@@ -3,6 +3,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchLocJson, LOC_DATA } from '../data';
 
+const CREATIVE_LINEAGE = [
+  ['Suno 摸索期','像回到學生時代面對未知工具：先使用、先學習，不預設自己最後會成為什麼。順其自然不是放任，而是允許還不知道。'],
+  ['節奏王者','初步掌握 Suno 後，先辨認出自己的強項不是歌唱技巧本身，而是節拍、句子落點、推進與情緒節奏。'],
+  ['微月光／暗影篇章','開始把細膩情緒寫準。微月光不是強迫性的希望；暗影篇章則直接描述低潮、痛苦與陰影，因為真正經驗過，才知道微小建議應該落在哪裡。'],
+  ['浪潮系列','把情緒做成潮汐與鼓動：低潮、推進、高潮、退潮。重點不是成功那一刻，而是如何借力、如何面對成功之後，以及下一個浪來時怎麼站穩。'],
+  ['單身也很好／情緒權威','關係不再用「有沒有伴侶」證明完整；感情可以存在，也可以不成立，重點轉向尊重、自我位置與不預支期待。'],
+  ['白晝之月','微月光經過現實校正：月亮白天仍在，只是淡到幾乎看不見。日蝕對應親近者突然離去的生離死別；月蝕對應親密關係中的背叛，兩種陰暗面分開處理。'],
+  ['人生月台','人生轉換的中繼站與邊界區。允許不知道，回看過去、整理現在、做好斷捨離，等待適合的下一班車。'],
+  ['自由的風','班次已進站，開始上車找位子。像自由座：方向已經打開，但位置尚未固定，對應「無／Blank／all possibilities」的任意可能。'],
+  ['自由的月／治理自己','車子已經開了。現在不再只描述受過什麼，而是整理過去、解析經驗、確認邊界與責任，讓舊經驗不再替未來做決定。LOC 也因此像一份可供參考的時刻表。']
+];
+
 const TIMELINE = [
   ['感受與自省','從個人經驗、記憶與身體感受出發，以提問理解自己與世界。'],
   ['微月光','不否認黑暗，也不把希望寫成保證；以溫暖、渺小、可選擇的小建議，替需要的人留下一點辨認方向的亮度。'],
@@ -40,6 +52,15 @@ export default function ZhengdeCultureView(){
       <h2>{data?.current_stage?.name||'自由的月'}｜{data?.current_stage?.focus||'治理自己'}</h2>
       <p>{data?.current_stage?.summary||'自由之後，開始治理自己的選擇、邊界與航向。'}</p>
       <p><strong>政德風</strong>保留為文字與歌曲的表達風格；<strong>政德文化</strong>則是更大的時間性集合，包含風格、作品、價值觀、治理方法、意象與時期演化。</p>
+    </section>
+
+    <section className="loc-card" id="creative-lineage">
+      <p className="loc-eyebrow">Creative Lineage · 創作脈絡</p>
+      <h2>從摸索工具，到整理自己的時刻表</h2>
+      <p>這條線描述歌曲、文字與個人風格怎麼長出來；它不取代正式 ERA 日期，而是解釋每一批作品在學習、情感與治理上的位置。</p>
+      <div className="loc-list">
+        {CREATIVE_LINEAGE.map(([name,summary],index)=><article key={name} className="loc-subcard"><p className="loc-result-meta"><span>{String(index+1).padStart(2,'0')}</span></p><h3>{name}</h3><p>{summary}</p></article>)}
+      </div>
     </section>
 
     <section className="loc-card" id="culture-evolution">
