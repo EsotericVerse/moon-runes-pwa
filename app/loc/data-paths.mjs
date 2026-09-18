@@ -9,7 +9,7 @@ export const LOC_DATA = Object.freeze({
   THREE_CARD_COMBINATIONS: '/data/json/core/three_card_combinations.json',
 
   // Registries / structured domain data
-  CONTEXT_EVENT_REGISTRY: '/data/json/registries/LOC2_EVENT_REGISTRY.json',
+  CONTEXT_EVENT_REGISTRY: '/data/json/registries/CONTEXT_EVENT_REGISTRY.json',
   MUSIC_PERIOD_KEYWORD_ANALYSIS: '/data/json/registries/LOC3_PERIOD_KEYWORD_ANALYSIS.json',
   WRITING_REGISTRY: '/data/json/registries/LOC4_WRITING_REGISTRY.json',
   GOVERNANCE_REGISTRY: '/data/json/registries/LOC6_GOVERNANCE_REGISTRY.json',
