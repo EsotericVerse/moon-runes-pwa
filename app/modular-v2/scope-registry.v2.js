@@ -1,4 +1,4 @@
-// Shadow architecture. Not wired into Current runtime.
+// Current V2 Scope registry.
 export const FEATURES_V2=Object.freeze([
   Object.freeze({id:'context',label:'脈絡',path:'context'}),
   Object.freeze({id:'statics',label:'統計',path:'statics'}),
@@ -74,7 +74,7 @@ function cleanHost(host=''){return String(host||'').toLowerCase().split(':')[0];
 export function resolveScopeV2(host='',pathname='/'){
   const h=cleanHost(host);
   if(h===SCOPES_V2.runes.domain||pathname==='/runes'||pathname.startsWith('/runes/'))return 'runes';
-  if(h===SCOPES_V2.lo3rwang.domain||pathname==='/lo3rwang'||pathname.startsWith('/lo3rwang/'))return 'lo3rwang';
+  if(h===SCOPES_V2.lo3rwang.domain)return 'lo3rwang';
   if(h===SCOPES_V2.admin.domain||pathname==='/management'||pathname.startsWith('/management/'))return 'admin';
   return 'loc';
 }
