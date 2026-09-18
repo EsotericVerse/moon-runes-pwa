@@ -20,6 +20,7 @@ export function SiteScopeProvider({children}){
       current,
       host,
       pathname,
+      ready:Boolean(host),
       origin:scopeOrigin(scope),
       route:feature=>featureRoute(scope,feature),
       dataView:feature=>scopeDataView(scope,feature)
