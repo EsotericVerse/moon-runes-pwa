@@ -2,7 +2,7 @@
   "sharedFunctions": [
     "context",
     "statics",
-    "evolution",
+    "culture",
     "governance",
     "search"
   ],
@@ -13,9 +13,9 @@
       "functions": {
         "context": "https://loc.lo3rwang.cc/context",
         "statics": "https://loc.lo3rwang.cc/statics",
-        "evolution": "https://loc.lo3rwang.cc/evolution",
         "governance": "https://loc.lo3rwang.cc/governance",
-        "search": "https://loc.lo3rwang.cc/search"
+        "search": "https://loc.lo3rwang.cc/search",
+        "culture": "https://loc.lo3rwang.cc/culture"
       },
       "reserved": {
         "label": "月之符文",
@@ -43,9 +43,9 @@
       "functions": {
         "context": "https://lrunes.lo3rwang.cc/context",
         "statics": "https://lrunes.lo3rwang.cc/statics",
-        "evolution": "https://lrunes.lo3rwang.cc/evolution",
         "governance": "https://lrunes.lo3rwang.cc/governance",
-        "search": "https://lrunes.lo3rwang.cc/search"
+        "search": "https://lrunes.lo3rwang.cc/search",
+        "culture": "https://lrunes.lo3rwang.cc/culture"
       },
       "reserved": {
         "label": "語彙",
@@ -74,9 +74,9 @@
       "functions": {
         "context": "https://lo3rwang.lo3rwang.cc/context",
         "statics": "https://lo3rwang.lo3rwang.cc/statics",
-        "evolution": "https://lo3rwang.lo3rwang.cc/evolution",
         "governance": "https://lo3rwang.lo3rwang.cc/governance",
-        "search": "https://lo3rwang.lo3rwang.cc/search"
+        "search": "https://lo3rwang.lo3rwang.cc/search",
+        "culture": "https://lo3rwang.lo3rwang.cc/culture"
       },
       "reserved": {
         "label": "簡介",
@@ -105,9 +105,9 @@
       "functions": {
         "context": "https://admin.lo3rwang.cc/context",
         "statics": "https://admin.lo3rwang.cc/statics",
-        "evolution": "https://admin.lo3rwang.cc/evolution",
         "governance": "https://admin.lo3rwang.cc/governance",
-        "search": "https://admin.lo3rwang.cc/search"
+        "search": "https://admin.lo3rwang.cc/search",
+        "culture": "https://admin.lo3rwang.cc/culture"
       },
       "reserved": {
         "label": "管理",
