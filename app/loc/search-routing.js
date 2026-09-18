@@ -36,8 +36,22 @@ function landingKey(value){
 export function resolveReservedLanding(query,host=''){
   const key=landingKey(query);
   const h=String(host||'').toLowerCase();
+
   if(h==='lrunes.lo3rwang.cc'){
     const scoped=new Map([
+      ['月之符文','https://lrunes.lo3rwang.cc/'],
+      ['lunarunes','https://lrunes.lo3rwang.cc/'],
+      ['符文圖鑑','https://lrunes.lo3rwang.cc/list'],
+      ['符文演算法','https://lrunes.lo3rwang.cc/algorithm'],
+      ['符文演算','https://lrunes.lo3rwang.cc/algorithm'],
+      ['符文歌曲','https://lrunes.lo3rwang.cc/music'],
+      ['符文音樂','https://lrunes.lo3rwang.cc/music'],
+      ['符文文學','https://lrunes.lo3rwang.cc/literary'],
+      ['符文多媒體','https://lrunes.lo3rwang.cc/multimedia'],
+      ['符文脈絡','https://lrunes.lo3rwang.cc/context'],
+      ['符文文化','https://lrunes.lo3rwang.cc/culture'],
+      ['符文治理','https://lrunes.lo3rwang.cc/governance'],
+      ['脈絡對戰','https://lrunes.lo3rwang.cc/duel/fight'],
       ['音樂','https://lrunes.lo3rwang.cc/music'],
       ['文字創作','https://lrunes.lo3rwang.cc/literary'],
       ['多媒體','https://lrunes.lo3rwang.cc/multimedia'],
@@ -47,8 +61,33 @@ export function resolveReservedLanding(query,host=''){
       ['治理','https://lrunes.lo3rwang.cc/governance'],
       ['faq','https://lrunes.lo3rwang.cc/faq']
     ]);
-    if(scoped.has(key))return scoped.get(key);
+    return scoped.get(key)||'';
   }
+
+  if(h==='lo3rwang.lo3rwang.cc'){
+    const scoped=new Map([
+      ['lo3rwang','https://lo3rwang.lo3rwang.cc/'],
+      ['政德文化','https://lo3rwang.lo3rwang.cc/culture'],
+      ['簡介','https://lo3rwang.lo3rwang.cc/'],
+      ['脈絡','https://lo3rwang.lo3rwang.cc/context'],
+      ['統計','https://lo3rwang.lo3rwang.cc/statics'],
+      ['文化','https://lo3rwang.lo3rwang.cc/culture'],
+      ['治理','https://lo3rwang.lo3rwang.cc/governance']
+    ]);
+    return scoped.get(key)||'';
+  }
+
+  if(h==='admin.lo3rwang.cc'){
+    const scoped=new Map([
+      ['治理','https://admin.lo3rwang.cc/governance'],
+      ['管理','https://admin.lo3rwang.cc/'],
+      ['脈絡','https://admin.lo3rwang.cc/context'],
+      ['統計','https://admin.lo3rwang.cc/statics'],
+      ['文化','https://admin.lo3rwang.cc/culture']
+    ]);
+    return scoped.get(key)||'';
+  }
+
   return RESERVED_LANDING_ROUTES.get(key)||'';
 }
 
