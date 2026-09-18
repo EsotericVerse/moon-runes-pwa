@@ -5,6 +5,7 @@ import { fetchLocDataSegments, fetchLocJson, fetchLocJsonBatch, getLocDataDatase
 import { useLocalStore } from '../local-store';
 import { searchCollectionForScope } from '../search-collections';
 import {useSiteScope} from '../../SiteScopeProvider';
+import {PageFrame,PagePager,PageStatus} from '../../PageComposition';
 import { applySearchGovernance, firstGovernedMatch } from '../search-governance';
 import { recordSearchSegmentHits, rankSearchSegments } from '../search-routing';
 import { recordSearchTelemetry } from '../search-telemetry';
@@ -108,14 +109,25 @@ export default function SearchView(){
   }
 
   const collection=searchCollectionForScope(scope);
-  return <section className="loc-view"><header className="loc-hero"><p className="loc-eyebrow">Search · 搜尋</p><h1>搜尋</h1><p>{collection.description} 大型資料清單（manifest）與資料分片（corpus shards）只有送出查詢後才下載。</p></header>
+  return <PageFrame
+    eyebrow="Search · 搜尋"
+    title="搜尋"
+    subtitle={`${collection.description} 大型資料清單（manifest）與資料分片（corpus shards）只有送出查詢後才下載。`}
+  >
     <form id="loc-search-form" className="loc-search-form" onSubmit={runSearch}>
       <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="輸入關鍵字，例如：治理、月、自由" aria-label="搜尋文字"/>
       <button className="loc-button primary" type="submit">搜尋</button>
     </form>
-    <p className="loc-status">{status}{results.length?` · 每頁 ${pageSize} 筆`:''}</p>{error&&<p className="loc-status error">{error}</p>}
+    <PageStatus>{status}{results.length?` · 每頁 ${pageSize} 筆`:''}</PageStatus>
+    <PageStatus error>{error}</PageStatus>
     {cultureKeyword&&<article className="loc-card" id="zhengde-keyword-summary"><div className="loc-result-meta"><span>政德文化關鍵字</span>{cultureKeyword.eras?.length&&<span>{cultureKeyword.eras.join('／')}</span>}</div><h2>{cultureKeyword.name}</h2><p>{cultureKeyword.summary}</p>{!!cultureKeyword.outline?.length&&<><h3>演化大綱</h3><p>{cultureKeyword.outline.join(' → ')}</p></>}{!!cultureKeyword.related?.length&&<p className="loc-note">相關概念：{cultureKeyword.related.join('、')}</p>}<h3>作品與資料</h3>{cultureWorks.length?<ul>{cultureWorks.map(work=><li key={`culture-work-${work.key}`}><strong>{work.title}</strong> · {work.source}</li>)}</ul>:<p className="loc-note">作品索引會顯示在下方搜尋結果。</p>}<div className="loc-actions"><a className="loc-button" href="/zhengde">回政德文化首頁</a><a className="loc-button" href={`/context?q=${encodeURIComponent(cultureKeyword.name)}`}>脈絡分析</a></div></article>}
     <div className="loc-search-results">{shownResults.map(r=><article className="loc-card" key={r.key}><div className="loc-result-meta"><span>{r.source}</span>{r.date&&<time>{r.date}</time>}</div><h2>{r.title}</h2><p>{r.snippet}</p>{r.href&&<a href={r.href} target={/^https?:/.test(r.href)?'_blank':undefined} rel={/^https?:/.test(r.href)?'noreferrer':undefined}>查看來源</a>}</article>)}</div>
-    {!!results.length&&<div className="runes-pager"><button type="button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button><span>{page} / {pageCount}</span><button type="button" disabled={page>=pageCount} onClick={()=>setPage(value=>Math.min(pageCount,value+1))}>下一頁</button></div>}
-  </section>;
+    <PagePager
+      page={page}
+      pages={pageCount}
+      total={results.length}
+      onPrevious={()=>setPage(value=>Math.max(1,value-1))}
+      onNext={()=>setPage(value=>Math.min(pageCount,value+1))}
+    />
+  </PageFrame>;
 }
