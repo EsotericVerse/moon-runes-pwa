@@ -23,7 +23,7 @@ export default function SettingsView(){
       <p className="loc-subtitle">管理個人風格、時期、群組規則與文字分類。</p>
       <div className="loc-actions">
         <a className="loc-button" href="/my-style">個人風格</a>
-        <a className="loc-button" href="/evolution">時期</a>
+        <a className="loc-button" href="/culture">時期</a>
         <a className="loc-button" href="/style-groups">群組設定</a>
         <a className="loc-button" href="/classify">分類</a>
       </div>
