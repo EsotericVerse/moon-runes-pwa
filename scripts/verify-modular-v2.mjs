@@ -64,6 +64,7 @@ if(!fs.readFileSync('app/theme-registry.js','utf8').includes("from './modular-v2
 for(const retired of ['ContextView.jsx','StaticsView.jsx','EvolutionView.jsx','GovernanceView.jsx','SearchView.jsx']){
   if(fs.existsSync(path.resolve('app/loc/views',retired)))failures.push('retired shared feature returned: '+retired);
 }
+if(fs.existsSync(path.resolve('app/loc/page.jsx')))failures.push('public /loc route must not exist; app/loc is a source module directory only');
 for(const retiredRoute of ['app/author','app/zhengde']){
   if(fs.existsSync(path.resolve(retiredRoute)))failures.push('retired author route returned: '+retiredRoute);
 }
