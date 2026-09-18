@@ -3,10 +3,10 @@ import path from 'node:path';
 import {FEATURES_V2,SCOPES_V2,SCOPE_POLICY_V2,featureHrefV2,scopeHrefV2,resolveScopeV2,isScopeRequestAllowedV2} from '../app/modular-v2/scope-registry.v2.js';
 
 const failures=[];
-const expectedDomains={loc:'loc.lo3rwang.cc',runes:'lrunes.lo3rwang.cc',lo3rwang:'dlwang.lo3rwang.cc',admin:'admin.lo3rwang.cc'};
+const requiredCoreScopes=['loc','runes','lo3rwang','admin'];
 const expectedFeatures=['context','statics','culture','governance','search'];
 
-for(const id of Object.keys(expectedDomains)){
+for(const id of requiredCoreScopes){
   if(!SCOPES_V2[id])failures.push('missing required core Scope: '+id);
 }
 if(JSON.stringify(FEATURES_V2.map(item=>item.id))!==JSON.stringify(expectedFeatures))failures.push('feature registry mismatch');
@@ -30,13 +30,29 @@ for(const domain of domains){
   if(domain!==domain.toLowerCase())failures.push('Scope domain must be lowercase: '+domain);
   if(domain.includes('/')||domain.includes(':'))failures.push('Scope domain must be hostname only: '+domain);
 }
-for(const [id,domain] of Object.entries(expectedDomains)){
-  if(SCOPES_V2[id]?.domain!==domain)failures.push(id+' domain mismatch');
-  if(resolveScopeV2(domain)!==id)failures.push(domain+' scope mismatch');
-  if(resolveScopeV2(domain+':443')!==id)failures.push(domain+' port normalization mismatch');
+for(const [id,scope] of Object.entries(SCOPES_V2)){
+  const domain=scope.domain;
+  if(!domain)failures.push(id+' missing domain');
+  else{
+    if(resolveScopeV2(domain)!==id)failures.push(domain+' scope mismatch');
+    if(resolveScopeV2(domain+':443')!==id)failures.push(domain+' port normalization mismatch');
+  }
+
+  if(scope.id!==id)failures.push(id+' registry key/id mismatch');
+  if(!['domain','directory'].includes(scope.scopeType))failures.push('invalid Scope type: '+id);
+  if(!scope.label)failures.push(id+' missing label');
+  if(!Array.isArray(scope.localRoutes))failures.push(id+' localRoutes must be an array');
+  if(!scope.primary?.href||!scope.primary?.label)failures.push(id+' missing primary navigation target');
+  if(!scope.role?.href||!scope.role?.label)failures.push(id+' missing role navigation target');
+  if(!Array.isArray(scope.homes))failures.push(id+' homes must be an array');
+  if(!scope.dataViews||typeof scope.dataViews!=='object')failures.push(id+' missing dataViews');
+  if(!scope.theme)failures.push(id+' missing theme');
+  if(scope.scopeType==='directory'&&!scope.mount)failures.push('directory Scope missing mount: '+id);
+
   for(const feature of FEATURES_V2){
-    const scope=SCOPES_V2[id];
-    const expectedBase=scope.scopeType==='directory'&&scope.mount?`https://${scope.mount.host}${scope.mount.path}`:`https://${domain}`;
+    const expectedBase=scope.scopeType==='directory'&&scope.mount
+      ?`https://${scope.mount.host}${scope.mount.path}`
+      :`https://${domain}`;
     if(featureHrefV2(id,feature.id)!==`${expectedBase}/${feature.path}`)failures.push(id+'/'+feature.id+' route mismatch');
   }
 }
@@ -116,9 +132,9 @@ for(const scope of Object.values(SCOPES_V2)){
     if(!fs.existsSync(file))failures.push('Scope mount route shell missing: app/'+dirName+'/'+route);
   }
 }
-for(const [id,domain] of Object.entries(expectedDomains)){
+for(const [id,scope] of Object.entries(SCOPES_V2)){
   for(const pathname of ['/','/context','/statics','/culture','/governance','/search']){
-    if(resolveScopeV2(domain,pathname)!==id)failures.push(domain+' failed direct-domain Scope resolution at '+pathname);
+    if(resolveScopeV2(scope.domain,pathname)!==id)failures.push(scope.domain+' failed direct-domain Scope resolution at '+pathname);
   }
 }
 for(const scope of Object.values(SCOPES_V2).filter(item=>item.mount)){
@@ -141,10 +157,6 @@ if(SCOPES_V2.runes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.runes?.mount?.pat
 if(SCOPES_V2.lo3rwang?.scopeType!=='directory')failures.push('author Scope must remain directory type');
 if(SCOPES_V2.lo3rwang?.aliasName!=='dlwang')failures.push('author aliasName must remain dlwang');
 if(SCOPES_V2.lo3rwang?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lo3rwang?.mount?.path!=='/lo3rwang')failures.push('author LOC mount drifted');
-for(const scope of Object.values(SCOPES_V2)){
-  if(!['domain','directory'].includes(scope.scopeType))failures.push('invalid Scope type: '+scope.id);
-  if(scope.scopeType==='directory'&&!scope.mount)failures.push('directory Scope missing mount: '+scope.id);
-}
 const aliases=Object.values(SCOPES_V2).map(scope=>scope.aliasName).filter(Boolean);
 if(new Set(aliases).size!==aliases.length)failures.push('duplicate Scope aliasName');
 const mounts=Object.values(SCOPES_V2).filter(scope=>scope.mount).map(scope=>scope.mount.host+'|'+scope.mount.path);
