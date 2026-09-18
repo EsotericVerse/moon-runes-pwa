@@ -234,8 +234,8 @@
     },
     {
       "asset_id": "KA-LOC2-EVENT-001",
-      "title": "LOC2 Scenario Event Registry",
-      "path": "data/json/registries/LOC2_EVENT_REGISTRY.json",
+      "title": "Context Scenario Event Registry",
+      "path": "data/json/registries/CONTEXT_EVENT_REGISTRY.json",
       "source_type": "structured_registry",
       "content_type": "scenario_event",
       "role": "real_life_scenario_event_corpus",
@@ -284,7 +284,7 @@
         "maintained_in_repo": true,
         "planned_sources": [
           "docs/64LunaRune.docx",
-          "data/json/registries/LOC2_EVENT_REGISTRY.json",
+          "data/json/registries/CONTEXT_EVENT_REGISTRY.json",
           "verified observed readings"
         ]
       },
