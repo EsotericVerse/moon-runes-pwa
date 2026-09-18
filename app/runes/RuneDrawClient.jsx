@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchLocJsonBatch, LOC_DATA } from '../loc/data';
-import { putLocalRecord } from '../loc/local-db';
 import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
 import { realMoonPhase } from '../loc/model/moon-phase';
@@ -222,36 +221,6 @@ export default function RuneDrawClient() {
     timers.current.push(setTimeout(finishDraw, 4000));
   }
 
-  async function saveCurrentDraw() {
-    if (!draw) return;
-    try {
-      const record = {
-        id: draw.id,
-        type: 'rune-draw',
-        record_kind: modeKey === 'daily' ? 'daily' : 'general',
-        created_at: draw.createdAt,
-        mode: modeKey,
-        mode_label: selectedMode.label,
-        moon_phase: moonPhase,
-        score: draw.evaluation.score,
-        trend: draw.evaluation.range.label,
-        guidance: liveGuidance,
-        cards: draw.cards.map((card, index) => ({
-          number: Number(card.編號),
-          name: card.符文名稱,
-          position: selectedMode.positions[index] || `第 ${index + 1} 張`,
-          direction: draw.directions[index],
-          positive_keywords: card.正向關鍵詞 || '',
-          negative_keywords: card.反向關鍵詞 || ''
-        }))
-      };
-      await putLocalRecord(record);
-      setRecordStatus(modeKey === 'daily' ? '已記錄到每日抽籤。' : '已記錄到一般抽牌。');
-    } catch (err) {
-      setRecordStatus(`本機紀錄失敗：${err?.message || '未知錯誤'}`);
-    }
-  }
-
   return <div className="runes-draw-surface">
     <section className="loc-view">
       <header className="loc-hero" id="intro">
@@ -292,7 +261,7 @@ export default function RuneDrawClient() {
           </div>
           <div className="loc-actions runes-retry">
             <button type="button" className="loc-button" data-draw-action="retry" onClick={executeDraw}>再抽一次</button>
-            <button type="button" className="loc-button primary" onClick={saveCurrentDraw}>{modeKey === 'daily' ? '記錄到每日' : '記錄一般抽牌'}</button>
+            <span className="loc-note">抽牌結果不寫入瀏覽器；Current／每日歷史統一由 Neon 提供。</span>
           </div>
           {recordStatus && <p className="loc-status">{recordStatus}</p>}
         </section>
@@ -317,7 +286,7 @@ export default function RuneDrawClient() {
         <section className="loc-card" data-draw-stage="lots">
           <p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2>
           <p>沿用最後一張「{draw.cards.at(-1)?.符文名稱} · {draw.directions.at(-1)}」的既有籤詩指示。</p>
-          <div className="loc-context-list">{liveGuidance ? splitDomainGuidance(liveGuidance).map((line, index) => <div className="loc-context-item" key={`${line}-${index}`}>{line}</div>) : <div className="loc-context-item">籤詩資料仍在本機載入；抽牌與關鍵詞判定不受影響。</div>}</div>
+          <div className="loc-context-list">{liveGuidance ? splitDomainGuidance(liveGuidance).map((line, index) => <div className="loc-context-item" key={`${line}-${index}`}>{line}</div>) : <div className="loc-context-item">籤詩資料由 Neon 載入中；抽牌與關鍵詞判定不受影響。</div>}</div>
         </section>
       </>}
     </section>
