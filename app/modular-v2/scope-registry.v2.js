@@ -16,9 +16,9 @@ const TIME_SCHEDULE_V2=Object.freeze([
 
 export const SCOPES_V2=Object.freeze({
   loc:Object.freeze({
-    id:'loc',domain:'loc.lo3rwang.cc',label:'月典',
+    id:'loc',scopeType:'domain',domain:'loc.lo3rwang.cc',aliasName:null,label:'月典',
     primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:'作者介紹',href:'https://dlwang.lo3rwang.cc/'}),
+    role:Object.freeze({label:'作者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
     searchCollection:'all',
     dataViews:Object.freeze({context:'loc_context_entries',rankings:'loc_rankings'}),
@@ -26,7 +26,7 @@ export const SCOPES_V2=Object.freeze({
     theme:Object.freeze({mode:'time',theme:'theme-7',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   }),
   runes:Object.freeze({
-    id:'runes',domain:'lrunes.lo3rwang.cc',label:'月之符文',
+    id:'runes',scopeType:'domain',domain:'lrunes.lo3rwang.cc',aliasName:null,label:'月之符文',
     primary:Object.freeze({label:'語彙',href:'https://lrunes.lo3rwang.cc/list'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
@@ -39,7 +39,7 @@ export const SCOPES_V2=Object.freeze({
     theme:Object.freeze({mode:'fixed',theme:'theme-5',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   }),
   lo3rwang:Object.freeze({
-    id:'lo3rwang',domain:'dlwang.lo3rwang.cc',alias:'dlwang',label:'作者簡介',
+    id:'lo3rwang',scopeType:'directory',domain:'dlwang.lo3rwang.cc',aliasName:'dlwang',label:'作者簡介',
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
     primary:Object.freeze({label:'簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
@@ -61,7 +61,7 @@ export const SCOPES_V2=Object.freeze({
     })
   }),
   admin:Object.freeze({
-    id:'admin',domain:'admin.lo3rwang.cc',label:'治理管理',
+    id:'admin',scopeType:'domain',domain:'admin.lo3rwang.cc',aliasName:null,label:'治理管理',
     primary:Object.freeze({label:'管理',href:'https://admin.lo3rwang.cc/'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
