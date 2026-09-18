@@ -143,7 +143,7 @@ def dump_compact_period_analysis() -> None:
 def main() -> int:
     dump_global("data/json/registries/LOC_ERA_REGISTRY.json", "data/js/loc-era-data.js", "LOC_ERA_DATA")
     dump_combined(
-        {"history": "data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json", "analysis": "data/json/registries/LUNARUNE_EVOLUTION_ANALYSIS.json"},
+        {"history": "data/json/registries/LUNARUNE_CULTURE_HISTORY.json", "analysis": "data/json/registries/LUNARUNE_CULTURE_ANALYSIS.json"},
         "data/js/lunarune-evolution-data.js", "LUNARUNE_EVOLUTION_DATA",
     )
     dump_global("data/json/registries/DAILY_RUNE_REPO_HISTORY.json", "data/js/lunarune-daily-data.js", "LUNARUNE_DAILY_DATA")
