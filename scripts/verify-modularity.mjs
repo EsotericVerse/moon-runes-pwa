@@ -119,9 +119,9 @@ if (!/fetchLocDataSegments\(datasetId,\{segmentIds:chunk\.map\(segment=>segment\
 const contextView = readFileSync(resolve(root, 'app/loc/views/ContextView.jsx'), 'utf8');
 if (/if\s*\(tab===['"]overview['"][^\n]*\)\s*load\(/.test(contextView)) failures.push('ContextView: overview must remain zero-data');
 
-const evolutionView = readFileSync(resolve(root, 'app/loc/views/EvolutionView.jsx'), 'utf8');
-if (/if\s*\(tab===['"]overview['"][^\n]*LUNARUNE_EVOLUTION_HISTORY/.test(evolutionView)) failures.push('EvolutionView: overview must not preload rune evolution history');
-if (!/if\s*\(tab===['"]overview['"]&&!eras\)load\(LOC_DATA\.LOC_ERA_REGISTRY,setEras\)/.test(evolutionView)) failures.push('EvolutionView: overview should load only the ERA registry');
+const cultureView = readFileSync(resolve(root, 'app/loc/views/CultureView.jsx'), 'utf8');
+if (/if\s*\(tab===['"]overview['"][^\n]*LUNARUNE_CULTURE_HISTORY/.test(cultureView)) failures.push('CultureView: overview must not preload rune evolution history');
+if (!/if\s*\(tab===['"]overview['"]&&!eras\)load\(LOC_DATA\.LOC_ERA_REGISTRY,setEras\)/.test(cultureView)) failures.push('CultureView: overview should load only the ERA registry');
 
 for (const name of readdirSync(root).filter(name => name.endsWith('.html'))) {
   const path = resolve(root, name);
