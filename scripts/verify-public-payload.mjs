@@ -208,6 +208,20 @@ if (totalRuntimeJsonBytes > maxRuntimeJsonBytes) {
   failures.push(`runtime JSON budget exceeded: ${totalRuntimeJsonBytes} bytes > ${maxRuntimeJsonBytes} bytes`);
 }
 
+// Scope route policy is generated from the Current Scope Registry and staged for edge/deployment use.
+const scopeRoutePolicyPath=resolve(publicRoot,'scope-route-policy.json');
+if(!existsSync(scopeRoutePolicyPath)){
+  failures.push('missing generated Scope route policy: scope-route-policy.json');
+}else{
+  const policy=JSON.parse(readFileSync(scopeRoutePolicyPath,'utf8'));
+  if(policy?.schema!==1)failures.push('unsupported Scope route policy schema');
+  if(policy?.defaultPolicy!=='deny')failures.push('Scope route policy must default deny');
+  if(!policy?.hosts?.['loc.lo3rwang.cc'])failures.push('Scope route policy missing LOC host');
+  if(!policy?.hosts?.['lrunes.lo3rwang.cc'])failures.push('Scope route policy missing LunaRunes host');
+  if(policy?.hosts?.['loc.lo3rwang.cc']?.allow?.includes('/runes'))failures.push('Scope route policy leaked retired /runes route');
+  if(policy?.hosts?.['lrunes.lo3rwang.cc']?.allow?.includes('/loc'))failures.push('Scope route policy leaked reserved /loc route into LunaRunes');
+}
+
 // User-facing governance/KM lives in routes or structured data; only the Canon doc is staged here.
 const expectedDocs = new Set(['docs/LOC_Canon_1.0.docx']);
 const actualDocs = new Set(walkFiles(resolve(publicRoot, 'docs')));
