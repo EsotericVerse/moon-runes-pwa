@@ -6,16 +6,19 @@ import {useSiteScope} from './SiteScopeProvider';
 import {getScopeContact} from './loc/scope-public-settings';
 
 export default function GlobalFooter(){
-  const {scope,current}=useSiteScope();
+  const {scope,current,ready}=useSiteScope();
   const [contact,setContact]=useState(null);
 
   useEffect(()=>{
     let live=true;
+    if(!ready){setContact(null);return()=>{live=false};}
     getScopeContact(scope==='governance'?'admin':scope)
       .then(value=>{if(live)setContact(value)})
       .catch(()=>{if(live)setContact(null)});
     return()=>{live=false};
-  },[scope]);
+  },[scope,ready]);
+
+  if(!ready)return null;
 
   return <footer className="loc-site-footer">
     <div className="loc-site-footer-row loc-site-footer-row-primary">
