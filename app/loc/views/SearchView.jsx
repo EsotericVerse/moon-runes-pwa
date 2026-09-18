@@ -5,7 +5,7 @@ import { fetchLocDataSegments, fetchLocJson, fetchLocJsonBatch, getLocDataDatase
 import { useLocalStore } from '../local-store';
 import { getSearchCollection, SEARCH_COLLECTION_ORDER, SEARCH_COLLECTIONS } from '../search-collections';
 import { applySearchGovernance, firstGovernedMatch } from '../search-governance';
-import { recordSearchSegmentHits, rankSearchSegments } from '../search-routing';
+import { recordSearchSegmentHits, rankSearchSegments, resolveReservedLanding } from '../search-routing';
 import { partitionSegmentsByScope, readSearchScope } from '../search-scope';
 import { recordSearchTelemetry } from '../search-telemetry';
 
@@ -38,32 +38,21 @@ export default function SearchView(){
   const shownResults=results.slice((page-1)*pageSize,page*pageSize);
   const cultureWorks=useMemo(()=>results.filter(r=>r.source!=='政德文化').slice(0,8),[results]);
 
-  useEffect(()=>{
-    const params=new URLSearchParams(window.location.search);
-    const requested=params.get('c')||'all';
-    const q=params.get('q')||'';
-    const nextCollection=getSearchCollection(requested).id;
-    setCollectionId(nextCollection);
-    setQuery(q);
-    if(q.trim())window.setTimeout(()=>document.getElementById('loc-search-form')?.requestSubmit(),0);
-  },[]);
+  useEffect(()=>{},[]);
   useEffect(()=>setPage(1),[collectionId,pageSize]);
   useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
 
-  function syncUrl(nextCollection,nextQuery){
-    const url=new URL(window.location.href);
-    if(nextCollection&&nextCollection!=='all')url.searchParams.set('c',nextCollection);else url.searchParams.delete('c');
-    if(nextQuery)url.searchParams.set('q',nextQuery);else url.searchParams.delete('q');
-    window.history.replaceState(null,'',`${url.pathname}${url.search}${url.hash}`);
-  }
+  function syncUrl(){}
 
   async function runSearch(event){
     event.preventDefault();
     const q=query.trim();
     if(!q)return;
+    const landing=resolveReservedLanding(q);
+    if(landing){window.location.assign(landing);return;}
     const collection=getSearchCollection(collectionId);
     const activeScope=readSearchScope(new URL(window.location.href).searchParams,collection.scopeProfile);
-    syncUrl(collection.id,q);
+    
     const id=++searchId.current;
     setPage(1);setError('');setResults([]);setCultureKeyword(null);setStatus(`搜尋「${collection.label}」資料…`);
     try{
@@ -117,12 +106,12 @@ export default function SearchView(){
   const collection=getSearchCollection(collectionId);
   return <section className="loc-view"><header className="loc-hero"><p className="loc-eyebrow">Search · 搜尋</p><h1>搜尋</h1><p>{collection.description} 大型資料清單（manifest）與資料分片（corpus shards）只有送出查詢後才下載。</p></header>
     <form id="loc-search-form" className="loc-search-form" onSubmit={runSearch}>
-      <select value={collectionId} onChange={e=>{setCollectionId(e.target.value);syncUrl(e.target.value,query)}} aria-label="搜尋集合">{SEARCH_COLLECTION_ORDER.map(id=><option key={id} value={id}>{SEARCH_COLLECTIONS[id].label}</option>)}</select>
+      <select value={collectionId} onChange={e=>{setCollectionId(e.target.value);}} aria-label="搜尋集合">{SEARCH_COLLECTION_ORDER.map(id=><option key={id} value={id}>{SEARCH_COLLECTIONS[id].label}</option>)}</select>
       <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="輸入關鍵字，例如：治理、月、自由" aria-label="搜尋文字"/>
       <button className="loc-button primary" type="submit">搜尋</button>
     </form>
     <p className="loc-status">{status}{results.length?` · 每頁 ${pageSize} 筆`:''}</p>{error&&<p className="loc-status error">{error}</p>}
-    {cultureKeyword&&<article className="loc-card" id="zhengde-keyword-summary"><div className="loc-result-meta"><span>政德文化關鍵字</span>{cultureKeyword.eras?.length&&<span>{cultureKeyword.eras.join('／')}</span>}</div><h2>{cultureKeyword.name}</h2><p>{cultureKeyword.summary}</p>{!!cultureKeyword.outline?.length&&<><h3>演化大綱</h3><p>{cultureKeyword.outline.join(' → ')}</p></>}{!!cultureKeyword.related?.length&&<p className="loc-note">相關概念：{cultureKeyword.related.join('、')}</p>}<h3>作品與資料</h3>{cultureWorks.length?<ul>{cultureWorks.map(work=><li key={`culture-work-${work.key}`}><strong>{work.title}</strong> · {work.source}</li>)}</ul>:<p className="loc-note">作品索引會顯示在下方搜尋結果。</p>}<div className="loc-actions"><a className="loc-button" href="https://lo3rwang.lo3rwang.cc/culture">回政德文化首頁</a><a className="loc-button" href={`/context?q=${encodeURIComponent(cultureKeyword.name)}`}>脈絡分析</a></div></article>}
+    {cultureKeyword&&<article className="loc-card" id="zhengde-keyword-summary"><div className="loc-result-meta"><span>政德文化關鍵字</span>{cultureKeyword.eras?.length&&<span>{cultureKeyword.eras.join('／')}</span>}</div><h2>{cultureKeyword.name}</h2><p>{cultureKeyword.summary}</p>{!!cultureKeyword.outline?.length&&<><h3>演化大綱</h3><p>{cultureKeyword.outline.join(' → ')}</p></>}{!!cultureKeyword.related?.length&&<p className="loc-note">相關概念：{cultureKeyword.related.join('、')}</p>}<h3>作品與資料</h3>{cultureWorks.length?<ul>{cultureWorks.map(work=><li key={`culture-work-${work.key}`}><strong>{work.title}</strong> · {work.source}</li>)}</ul>:<p className="loc-note">作品索引會顯示在下方搜尋結果。</p>}<div className="loc-actions"><a className="loc-button" href="https://lo3rwang.lo3rwang.cc/culture">回政德文化首頁</a><a className="loc-button" href="https://lo3rwang.lo3rwang.cc/context">脈絡分析</a></div></article>}
     <div className="loc-search-results">{shownResults.map(r=><article className="loc-card" key={r.key}><div className="loc-result-meta"><span>{r.source}</span>{r.date&&<time>{r.date}</time>}</div><h2>{r.title}</h2><p>{r.snippet}</p>{r.href&&<a href={r.href} target={/^https?:/.test(r.href)?'_blank':undefined} rel={/^https?:/.test(r.href)?'noreferrer':undefined}>查看來源</a>}</article>)}</div>
     {!!results.length&&<div className="runes-pager"><button type="button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button><span>{page} / {pageCount}</span><button type="button" disabled={page>=pageCount} onClick={()=>setPage(value=>Math.min(pageCount,value+1))}>下一頁</button></div>}
   </section>;
