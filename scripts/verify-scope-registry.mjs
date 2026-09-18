@@ -3,15 +3,14 @@ import {SHARED_FEATURES,SITE_SCOPES} from '../app/site-registry.js';
 
 const failures=[];
 const expectedScopes=['loc','runes','lo3rwang','admin'];
-const actualScopes=Object.keys(SITE_SCOPES);
-if(JSON.stringify(actualScopes)!==JSON.stringify(expectedScopes)){
+if(JSON.stringify(Object.keys(SITE_SCOPES))!==JSON.stringify(expectedScopes)){
   failures.push('Current Scope registry must be loc/runes/lo3rwang/admin only');
 }
 if(JSON.stringify(SHARED_FEATURES.map(item=>item.id))!==JSON.stringify(['context','statics','culture','governance'])){
   failures.push('Shared feature registry drifted');
 }
 
-const retired=[
+for(const path of [
   'lo3rwang.html',
   'css/style.css',
   'css/day.css',
@@ -23,11 +22,14 @@ const retired=[
   'tools/build_public_articles.py',
   'app/nav-route-map.js',
   'scripts/nav-route-map.json'
-];
-for(const path of retired)if(existsSync(path))failures.push('Retired Current runtime returned: '+path);
+]){
+  if(existsSync(path))failures.push('Retired runtime returned: '+path);
+}
 
 const hook=readFileSync('app/use-current-scope.js','utf8');
-for(const token of ['detectSiteScope','getSiteScope'])if(!hook.includes(token))failures.push('Shared Scope hook missing '+token);
+for(const token of ['detectSiteScope','getSiteScope']){
+  if(!hook.includes(token))failures.push('Shared Scope hook missing '+token);
+}
 
 if(failures.length){
   console.error('[scope-registry] violations:\n'+failures.join('\n'));
