@@ -26,15 +26,23 @@ Current rules:
 - `app/loc/data-local.js`, `app/loc/data-sync.js`, `app/loc/kv-state.js`, `services/cloudflare/loc-state-worker.js`, and root `wrangler.toml` are retired.
 - CI must reject reintroduction of the old shared IndexedDB/KV path.
 
-## User-owned working records
+## User-owned records and settings
 
-`app/loc/local-db.js` remains a browser-local working-record store for features such as Library/Classify/MyStyle. This is not the canonical/shared LOC dataset.
+Authenticated personal persistence is now part of Neon rather than browser storage.
 
-`app/loc/storage.js` currently exposes browser-local working-record storage and user-owned Google Drive backup. These records must not be silently converted into anonymous Neon writes. A later remote-write migration requires Neon Auth/RLS and an explicit per-user data model.
+- `api.user_records` stores draw history, Library records, and classification results.
+- `api.user_settings` stores personal style, style groups, theme, language, and UI preferences.
+- Neon Managed Auth supplies the user session.
+- Row-level security restricts each authenticated user to rows where `auth.user_id() = owner_id`.
+- Anonymous/public users do not receive CRUD access to these tables.
+- Legacy IndexedDB/localStorage durable data is imported once after the first Neon login and the old browser database is then removed.
+- Search routing hints and telemetry remain session-memory performance state and are not authoritative persisted data.
+
+The former `local-db.js`, `storage.js`, Google Drive persistence adapter, and Cloudflare management-auth proxy are retired.
 
 ## Management authentication
 
-`services/cloudflare/auth-worker.js` remains only as a management authentication/session boundary. It no longer proxies writes to a state/KV worker.
+Management and personal sign-in use Neon Managed Auth. Shared Current reads remain public/read-only through the Neon Data API; user records/settings require an authenticated JWT and RLS.
 
 ## Search governance
 
@@ -58,10 +66,12 @@ Python search/analysis services, Render-era compatibility code, Apps Script, and
 10. Cloudflare KV state adapter, state Worker, and deployment configuration retired.
 11. Management authentication detached from the retired state proxy.
 12. CI contracts updated to prevent regression to the old shared-state architecture.
+13. Authenticated personal records/settings migrated to Neon `user_records` / `user_settings` with RLS.
+14. IndexedDB, Google Drive persistence, and the old Cloudflare auth proxy retired from the Current application path.
 
 ## Remaining separate work
 
-- Design authenticated/RLS-governed Neon persistence only if browser-local user working records need cross-device storage.
+- Continue validating and refining the existing authenticated/RLS-governed Neon user persistence as features expand.
 - Continue normalizing Silver/Vault/Gold domain models without making the public frontend depend on private Vault content.
 - Retire optional legacy services only after their external consumers are explicitly verified.
 
