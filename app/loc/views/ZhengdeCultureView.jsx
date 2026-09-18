@@ -5,7 +5,7 @@ import { fetchLocJson, LOC_DATA } from '../data';
 
 const TIMELINE = [
   ['感受與自省','從個人經驗、記憶與身體感受出發，以提問理解自己與世界。'],
-  ['微月光','黑暗可以被完整描述，但最後保留一點光；希望之尾開始形成。'],
+  ['微月光','不否認黑暗，也不把希望寫成保證；以溫暖、渺小、可選擇的小建議，替需要的人留下一點辨認方向的亮度。'],
   ['浪潮推進','從承受轉向移動：借力前行，不逆浪而行。'],
   ['白晝之月','看清現實，仍願相信微光；浪漫開始受到現實校正。'],
   ['人生月台','事件不再等於命運；該做的做好，等待或選擇下一班車。'],
@@ -19,7 +19,7 @@ export default function ZhengdeCultureView(){
   const [error,setError]=useState('');
 
   useEffect(()=>{
-    fetchLocJson(LOC_DATA.ZHENGDE_CULTURE_KEYWORDS)
+    fetchLocJson(LOC_DATA.LO3RWANG_CULTURE_KEYWORDS)
       .then(setData)
       .catch(err=>setError(err.message));
   },[]);
@@ -76,8 +76,9 @@ export default function ZhengdeCultureView(){
     <section className="loc-card">
       <p className="loc-eyebrow">Style · 政德風</p>
       <h2>表達風格仍保留，但不再承擔全部文化內容</h2>
-      <p>早期核心仍然存在：感性與理性交錯、畫面意象、短句節奏、自省探究、時間與身體記憶。後期則增加語意校正、邊界、版本、分類與治理句法。</p>
-      <p className="loc-core-line">意象是表層 · 語意是骨架 · 治理是現在的核心 · 希望始終保留</p>
+      <p>早期核心仍然存在：感性與理性交錯、畫面意象、短句節奏、自省探究、時間與身體記憶。後期則增加語意校正、邊界、版本、分類與治理句法。政德風的核心不在於每一篇作品最後一定要給希望，而在於先把情感與現實說準，再提供一個真的做得到的小調整。</p>
+      <p>建議可以採用，也可以不採用；不把個人答案強加給別人，不用不切實際的口號代替現實。微月光因此不是「唯一的光」，而是迷失時可供參考的一點亮度。</p>
+      <p className="loc-core-line">真實描述 · 細膩感受 · 有限建議 · 不過度承諾 · 選擇權留給自己</p>
     </section>
   </section>;
 }
