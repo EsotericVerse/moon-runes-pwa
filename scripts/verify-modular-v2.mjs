@@ -67,7 +67,11 @@ for(const retiredRoute of ['app/author','app/zhengde']){
   if(fs.existsSync(path.resolve(retiredRoute)))failures.push('retired author route returned: '+retiredRoute);
 }
 const lo3rwangRoute=path.resolve('app/lo3rwang');
-if(fs.existsSync(lo3rwangRoute))failures.push('retired physical /lo3rwang route returned; Scope mount must be registry-driven');
+if(!fs.existsSync(lo3rwangRoute))failures.push('directory Scope route shell missing: app/lo3rwang');
+for(const route of ['page.jsx','context/page.jsx','statics/page.jsx','culture/page.jsx','governance/page.jsx','search/page.jsx']){
+  const file=path.join(lo3rwangRoute,route);
+  if(!fs.existsSync(file))failures.push('directory Scope route shell missing: app/lo3rwang/'+route);
+}
 for(const [id,domain] of Object.entries(expectedDomains)){
   for(const pathname of ['/','/context','/statics','/culture','/governance','/search']){
     if(resolveScopeV2(domain,pathname)!==id)failures.push(domain+' failed direct-domain Scope resolution at '+pathname);
