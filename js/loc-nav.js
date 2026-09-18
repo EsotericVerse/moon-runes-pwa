@@ -28,7 +28,7 @@
     const path=location.pathname;
     if(host===registry.scopes.runes.domain||path==='/runes'||path.startsWith('/runes/')||fileName()==='runes.html')return 'runes';
     if(host===registry.scopes.lo3rwang.domain||path==='/lo3rwang'||path.startsWith('/lo3rwang/')||fileName()==='lo3rwang.html')return 'lo3rwang';
-    if(host===registry.scopes.governance.domain||path==='/management'||path.startsWith('/management/'))return 'governance';
+    if(host===registry.scopes.admin.domain||path==='/management'||path.startsWith('/management/'))return 'admin';
     return 'loc';
   }
 
