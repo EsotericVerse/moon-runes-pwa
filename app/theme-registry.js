@@ -1,4 +1,4 @@
-import {SITE_SCOPES} from './site-registry';
+import {SITE_SCOPES,detectSiteScope} from './site-registry';
 
 export const THEME_REGISTRY_SETTING_KEY='theme-registry-overrides-v1';
 export const SCOPE_THEME_SETTINGS_KEY='scope-theme-settings-v2';
@@ -28,13 +28,7 @@ export const DEFAULT_SCOPE_THEME_SETTINGS=Object.freeze(
   Object.fromEntries(Object.entries(SITE_SCOPES).map(([id,scope])=>[id,scope.theme]))
 );
 
-export function detectThemeScope(pathname='/',host=''){
-  const h=String(host||'').toLowerCase();
-  if(h===SITE_SCOPES.runes.domain||pathname==='/runes'||pathname.startsWith('/runes/'))return 'runes';
-  if(h===SITE_SCOPES.lo3rwang.domain||pathname==='/lo3rwang'||pathname.startsWith('/lo3rwang/'))return 'lo3rwang';
-  if(h===SITE_SCOPES.governance.domain||pathname==='/management'||pathname.startsWith('/management/'))return 'governance';
-  return 'loc';
-}
+export function detectThemeScope(pathname='/',host=''){return detectSiteScope(pathname,host);}
 export function mergeThemeSlots(overrides={}){
   return DEFAULT_THEME_SLOTS.map(slot=>({...slot,...(overrides?.[slot.id]||{}),identityColor:GROUP_IDENTITY_COLORS[slot.group],tokens:{...slot.tokens,...((overrides?.[slot.id]||{}).tokens||{})}})).sort((a,b)=>a.order-b.order);
 }

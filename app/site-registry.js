@@ -1,5 +1,5 @@
 // Single Current site/scope registry.
-// Consumers must derive domains, NAV edges, search scope and default theme from here.
+// All Current consumers must derive domains, shared features, data views and default theme from here.
 export const SHARED_FEATURES=Object.freeze([
   Object.freeze({id:'context',label:'脈絡',path:'context'}),
   Object.freeze({id:'statics',label:'統計',path:'statics'}),
@@ -20,6 +20,7 @@ export const SITE_SCOPES=Object.freeze({
     domain:'loc.lo3rwang.cc',
     label:'月典',
     searchCollection:'all',
+    dataViews:Object.freeze({context:'loc_context_entries',rankings:'loc_rankings'}),
     reserved:Object.freeze(['月之符文','https://lrunes.lo3rwang.cc/']),
     role:Object.freeze([['作者介紹','https://lo3rwang.lo3rwang.cc/']]),
     homes:Object.freeze([['回月典首頁','https://loc.lo3rwang.cc/']]),
@@ -30,6 +31,7 @@ export const SITE_SCOPES=Object.freeze({
     domain:'lrunes.lo3rwang.cc',
     label:'月之符文',
     searchCollection:'月之符文',
+    dataViews:Object.freeze({context:'runes_context_entries',rankings:'runes_rankings'}),
     reserved:Object.freeze(['語彙','https://lrunes.lo3rwang.cc/list']),
     role:Object.freeze([['管理者介紹','https://admin.lo3rwang.cc/']]),
     homes:Object.freeze([['回月之符文首頁','https://lrunes.lo3rwang.cc/'],['回月典首頁','https://loc.lo3rwang.cc/']]),
@@ -40,6 +42,7 @@ export const SITE_SCOPES=Object.freeze({
     domain:'lo3rwang.lo3rwang.cc',
     label:'作者簡介',
     searchCollection:'政德文化',
+    dataViews:Object.freeze({context:'lo3rwang_context_entries',rankings:'lo3rwang_rankings'}),
     reserved:Object.freeze(['簡介','https://lo3rwang.lo3rwang.cc/']),
     role:Object.freeze([['管理者介紹','https://admin.lo3rwang.cc/']]),
     homes:Object.freeze([['回作者簡介','https://lo3rwang.lo3rwang.cc/'],['回月典首頁','https://loc.lo3rwang.cc/']]),
@@ -64,6 +67,7 @@ export const SITE_SCOPES=Object.freeze({
     domain:'admin.lo3rwang.cc',
     label:'治理管理',
     searchCollection:'治理',
+    dataViews:Object.freeze({context:null,rankings:null}),
     reserved:Object.freeze(['管理','https://admin.lo3rwang.cc/']),
     role:Object.freeze([['管理者介紹','https://admin.lo3rwang.cc/']]),
     homes:Object.freeze([['回管理首頁','https://admin.lo3rwang.cc/'],['回月典首頁','https://loc.lo3rwang.cc/']]),
@@ -79,14 +83,7 @@ export function detectSiteScope(pathname='/',host=''){
   return 'loc';
 }
 
-export function getSiteScope(scope){
-  return SITE_SCOPES[scope]||SITE_SCOPES.loc;
-}
-
-export function scopeOrigin(scope){
-  return `https://${getSiteScope(scope).domain}`;
-}
-
-export function featureRoute(scope,feature){
-  return `${scopeOrigin(scope)}/${feature}`;
-}
+export function getSiteScope(scope){return SITE_SCOPES[scope]||SITE_SCOPES.loc;}
+export function scopeOrigin(scope){return `https://${getSiteScope(scope).domain}`;}
+export function featureRoute(scope,feature){return `${scopeOrigin(scope)}/${feature}`;}
+export function scopeDataView(scope,feature){return getSiteScope(scope).dataViews?.[feature]||null;}

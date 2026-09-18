@@ -9,7 +9,9 @@ const sources={
   runes:read('app/runes/page.jsx'),
   governance:read('app/loc/views/GovernanceView.jsx'),
   runeGovernance:read('app/runes/governance/page.jsx'),
-  terminology:read('data/json/registries/LOC_TERMINOLOGY_CANON.json')
+  terminology:read('data/json/registries/LOC_TERMINOLOGY_CANON.json'),
+  registry:read('app/site-registry.js'),
+  layout:read('app/layout.jsx')
 };
 
 const required=[
@@ -27,7 +29,10 @@ const required=[
   [sources.terminology,'"zh": "模型化語言框架"'],
   [sources.terminology,'"en": "Modelized Language Framework"'],
   [sources.terminology,'"zh": "符號式語言"'],
-  [sources.terminology,'"en": "Symbolic Language"']
+  [sources.terminology,'"en": "Symbolic Language"'],
+  [sources.registry,"domain:'lo3rwang.lo3rwang.cc'"],
+  [sources.registry,"dataViews:Object.freeze({context:'runes_context_entries',rankings:'runes_rankings'})"],
+  [sources.registry,"dataViews:Object.freeze({context:'lo3rwang_context_entries',rankings:'lo3rwang_rankings'})"]
 ];
 
 const forbiddenCurrent=[
@@ -41,6 +46,9 @@ const forbiddenCurrent=[
 
 const missing=required.filter(([source,token])=>!source.includes(token)).map(([,token])=>token);
 const stale=forbiddenCurrent.filter(token=>sources.home.includes(token));
+if(sources.nav.includes('whoami.lo3rwang.cc'))stale.push('whoami.lo3rwang.cc');
+if(sources.layout.includes('LanguageProvider'))stale.push('LanguageProvider');
+if(sources.nav.includes('loc-language-toggle'))stale.push('loc-language-toggle');
 
 if(missing.length||stale.length){
   if(missing.length)console.error('Missing Current UI contract: '+missing.join(', '));
