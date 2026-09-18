@@ -24,6 +24,18 @@ if(queryNavigation.length){
   console.error('Current navigation must use concrete routes, not query-string hrefs:\n'+queryNavigation.join('\n'));
   process.exit(1);
 }
+const contentSearchLinks=[];
+for(const file of walkCurrentUi('app')){
+  if(file==='app/ScopeNav.jsx')continue;
+  const source=read(file);
+  const searchHref=/href\s*=\s*(?:["']\/search(?:["'\/]|$)|\{\s*["']\/search(?:["'\/]|$))/g;
+  const matches=source.match(searchHref)||[];
+  for(const match of matches)contentSearchLinks.push(file+': '+match);
+}
+if(contentSearchLinks.length){
+  console.error('Content pages must point users to the top-right search box instead of linking to /search:\n'+contentSearchLinks.join('\n'));
+  process.exit(1);
+}
 if(resurrected.length){console.error('Retired personal sources must not return: '+resurrected.join(', '));process.exit(1);}
 const sources={
  home:read('app/loc/views/AboutView.jsx'),
