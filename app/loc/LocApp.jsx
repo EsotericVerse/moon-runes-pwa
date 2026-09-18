@@ -8,7 +8,7 @@ const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const GameView = dynamic(() => import('./views/GameView'),{ssr:false,loading});
 const ContextView = dynamic(() => import('./views/ContextView'),{ssr:false,loading});
 const StaticsView = dynamic(() => import('./views/StaticsView'),{ssr:false,loading});
-const EvolutionView = dynamic(() => import('./views/EvolutionView'),{ssr:false,loading});
+const CultureView = dynamic(() => import('./views/CultureView'),{ssr:false,loading});
 const SearchView = dynamic(() => import('./views/SearchView'),{ssr:false,loading});
 const GovernanceView = dynamic(() => import('./views/GovernanceView'),{ssr:false,loading});
 const StyleGroupsView = dynamic(() => import('./views/StyleGroupsView'),{ssr:false,loading});
@@ -27,7 +27,7 @@ const VIEWS = {
   multimedia: MediaView,
   'my-style': MyStyleView,
   statics: StaticsView,
-  evolution: EvolutionView,
+  culture: CultureView,
   search: SearchView,
   governance: GovernanceView,
   'style-groups': StyleGroupsView
@@ -37,7 +37,8 @@ function readView() {
   if (typeof window === 'undefined') return 'home';
   const pathname = window.location.pathname.replace(/\/$/, '') || '/';
   const route = pathname.split('/').filter(Boolean).at(-1) || 'home';
-  return VIEWS[route] ? route : 'home';
+  const currentRoute = route === 'evolution' ? 'culture' : route;
+  return VIEWS[currentRoute] ? currentRoute : 'home';
 }
 
 export default function LocApp() {

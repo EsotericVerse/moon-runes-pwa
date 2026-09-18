@@ -16,7 +16,7 @@ const search=fs.readFileSync('app/runes/search/page.jsx','utf8');
 if(!search.includes('fixedCollectionId="月之符文"'))throw new Error('LunaRunes search route must lock the LunaRunes collection');
 
 const dispatcher=fs.readFileSync('app/ScopedFeaturePage.jsx','utf8');
-for(const token of ['detectNavScope','window.location.hostname',"scope==='runes'",'LunaRunesStaticsView','LunaRunesEvolutionView','LunaRunesGovernanceView','fixedCollectionId="月之符文"']){
+for(const token of ['detectNavScope','window.location.hostname',"scope==='runes'",'LunaRunesStaticsView','LunaRunesCultureView','LunaRunesGovernanceView','fixedCollectionId="月之符文"']){
   if(!dispatcher.includes(token))throw new Error(`LunaRunes host Page Composition dispatcher missing: ${token}`);
 }
 

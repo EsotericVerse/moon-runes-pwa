@@ -14,7 +14,7 @@ function drawableRows(value){return Array.isArray(value)?value.filter(row=>{cons
 function Pagination({page,total,pageSize,onChange}){const pages=Math.max(1,Math.ceil(total/pageSize));if(total<=pageSize)return null;return <div className="loc-pagination"><span>第 {page} / {pages} 頁 · 共 {total} 筆 · 每頁 {pageSize}</span><div><button className="loc-button" disabled={page<=1} onClick={()=>onChange(page-1)}>上一頁</button><button className="loc-button" disabled={page>=pages} onClick={()=>onChange(page+1)}>下一頁</button></div></div>}
 function pageRows(rows,page,pageSize){return rows.slice((page-1)*pageSize,page*pageSize)}
 
-export default function EvolutionView(){
+export default function CultureView(){
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [tab,setTab]=useState('overview');
   const [eras,setEras]=useState(null);const [events,setEvents]=useState(null);const [loc3,setLoc3]=useState(null);const [loc6,setLoc6]=useState(null);const [runeHistory,setRuneHistory]=useState(null);const [coreHistory,setCoreHistory]=useState(null);const [runes,setRunes]=useState(null);const [error,setError]=useState('');

@@ -6,7 +6,7 @@ import {fetchLocJson,fetchLocJsonBatch,LOC_DATA} from '../loc/data';
 const PAGE_SIZE=10;
 const drawable=value=>Array.isArray(value)?value.filter(row=>{const id=Number(row?.編號);return id>=1&&id<=66}):[];
 
-export default function LunaRunesEvolutionView(){
+export default function LunaRunesCultureView(){
   const [tab,setTab]=useState('timeline');
   const [history,setHistory]=useState(null);
   const [coreHistory,setCoreHistory]=useState(null);

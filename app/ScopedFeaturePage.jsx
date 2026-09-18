@@ -6,13 +6,13 @@ import LocApp from './loc/LocApp';
 import ContextView from './loc/views/ContextView';
 import SearchView from './loc/views/SearchView';
 import LunaRunesStaticsView from './runes/LunaRunesStaticsView';
-import LunaRunesEvolutionView from './runes/LunaRunesEvolutionView';
+import LunaRunesCultureView from './runes/LunaRunesCultureView';
 import LunaRunesGovernanceView from './runes/LunaRunesGovernanceView';
 
 function LunaRunesFeature({feature}){
   if(feature==='context')return <ContextView scope="lunarunes"/>;
   if(feature==='statics')return <LunaRunesStaticsView/>;
-  if(feature==='evolution')return <LunaRunesEvolutionView/>;
+  if(feature==='culture')return <LunaRunesCultureView/>;
   if(feature==='governance')return <LunaRunesGovernanceView/>;
   if(feature==='search')return <SearchView fixedCollectionId="月之符文"/>;
   return null;
