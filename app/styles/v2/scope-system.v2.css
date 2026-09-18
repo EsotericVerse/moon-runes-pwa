@@ -3,23 +3,32 @@
   --scope-v2-max:1180px;
   --scope-v2-gap:1rem;
   --scope-v2-radius:18px;
-  --scope-v2-border:1px solid var(--loc-line);
-  --scope-v2-panel:var(--loc-surface);
-  --scope-v2-text:var(--loc-text);
-  --scope-v2-muted:var(--loc-muted);
+  --scope-v2-border:1px solid var(--loc-line,rgba(127,127,127,.24));
+  --scope-v2-panel:var(--loc-panel,#fff);
+  --scope-v2-text:var(--loc-text,#1f252b);
+  --scope-v2-muted:var(--loc-muted,#6b7280);
 }
-.scope-v2-shell{min-height:100vh;color:var(--scope-v2-text)}
-.scope-v2-global{position:sticky;top:0;z-index:40;background:var(--loc-panel-nav);border-bottom:var(--scope-v2-border)}
+.scope-v2-shell{min-height:100vh;color:var(--scope-v2-text);background:var(--loc-bg,#fff)}
+.scope-v2-global{position:sticky;top:0;z-index:40;background:var(--loc-panel,#fff);border-bottom:var(--scope-v2-border)}
 .scope-v2-nav{display:flex;align-items:center;gap:.35rem;max-width:var(--scope-v2-max);margin:0 auto;padding:.75rem 1rem;overflow-x:auto}
-.scope-v2-nav a{text-decoration:none;white-space:nowrap;padding:.45rem .65rem;border-radius:999px}
-.scope-v2-nav form{margin-left:auto}
-.scope-v2-nav input{width:10rem;min-width:0;padding:.45rem .7rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text)}
+.scope-v2-nav a,.scope-v2-nav-current{text-decoration:none;white-space:nowrap;padding:.45rem .65rem;border-radius:999px}
+.scope-v2-nav-current{font-weight:700;background:var(--loc-panel-2,#f2f4f6)}
+.scope-v2-search{margin-left:auto}
+.scope-v2-search input{width:10rem;min-width:0;padding:.45rem .7rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel,#fff);color:var(--scope-v2-text)}
 .scope-v2-main{width:min(var(--scope-v2-max),calc(100% - 2rem));margin:0 auto;padding:clamp(1.2rem,4vw,3rem) 0 4rem}
 .scope-v2-page,.scope-v2-content{display:grid;gap:var(--scope-v2-gap)}
-.scope-v2-hero,.scope-v2-card{padding:1.25rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--scope-v2-panel);box-shadow:var(--loc-shadow-card)}
-.scope-v2-hero h1{margin:.15rem 0;font-size:var(--loc-type-page-title);line-height:var(--loc-line-page-title)}
-.scope-v2-card h2{margin:.15rem 0 .7rem;font-size:var(--loc-type-section-title);line-height:var(--loc-line-section-title)}
-.scope-v2-eyebrow{margin:0;color:var(--loc-gold);font-size:var(--loc-type-eyebrow);font-weight:var(--loc-weight-eyebrow)}
-.scope-v2-subtitle{margin:.35rem 0 0;color:var(--loc-accent);font-size:var(--loc-type-subtitle);line-height:var(--loc-line-subtitle)}
-.scope-v2-card p,.scope-v2-card li{font-size:var(--loc-type-body);line-height:var(--loc-line-body)}
-@media(max-width:720px){.scope-v2-main{width:min(100% - 1rem,var(--scope-v2-max))}.scope-v2-nav{padding:.6rem .5rem}.scope-v2-nav input{width:8rem}}
+.scope-v2-hero,.scope-v2-card{padding:1.25rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--scope-v2-panel);box-shadow:var(--loc-shadow-card,0 8px 26px rgba(0,0,0,.06))}
+.scope-v2-hero h1{margin:.15rem 0;font-size:var(--loc-type-page-title,clamp(2rem,5vw,3.5rem));line-height:var(--loc-line-page-title,1.08)}
+.scope-v2-card h2{margin:.15rem 0 .7rem;font-size:var(--loc-type-section-title,1.35rem);line-height:var(--loc-line-section-title,1.2)}
+.scope-v2-eyebrow{margin:0;color:var(--loc-gold,#8a7340);font-size:var(--loc-type-eyebrow,.82rem);font-weight:var(--loc-weight-eyebrow,700)}
+.scope-v2-subtitle{margin:.35rem 0 0;color:var(--loc-accent,#4f6f8f);font-size:var(--loc-type-subtitle,1rem);line-height:var(--loc-line-subtitle,1.55)}
+.scope-v2-card p,.scope-v2-card li{font-size:var(--loc-type-body,1rem);line-height:var(--loc-line-body,1.7)}
+.scope-v2-footer{max-width:var(--scope-v2-max);margin:0 auto;padding:1.25rem 1rem 2rem;border-top:var(--scope-v2-border)}
+.scope-v2-footer-row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.scope-v2-theme-control{display:inline-flex;align-items:center;gap:.45rem}
+.scope-v2-theme-control select{padding:.35rem .55rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel,#fff);color:var(--scope-v2-text)}
+@media(max-width:720px){
+  .scope-v2-main{width:min(100% - 1rem,var(--scope-v2-max))}
+  .scope-v2-nav{padding:.6rem .5rem}
+  .scope-v2-search input{width:8rem}
+}
