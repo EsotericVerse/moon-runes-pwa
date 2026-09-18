@@ -1,15 +1,10 @@
 'use client';
 
-import {useEffect,useState} from 'react';
-import {usePathname} from 'next/navigation';
-import {SHARED_FEATURES,detectSiteScope,featureRoute,getSiteScope} from './site-registry';
+import {SHARED_FEATURES,featureRoute} from './site-registry';
+import {useCurrentScope} from './use-current-scope';
 
 export default function ScopeNav(){
-  const pathname=usePathname()||'/';
-  const [host,setHost]=useState('');
-  useEffect(()=>setHost(window.location.hostname),[]);
-  const scope=detectSiteScope(pathname,host);
-  const current=getSiteScope(scope);
+  const {scope,current}=useCurrentScope();
 
   function submitSearch(event){
     event.preventDefault();
