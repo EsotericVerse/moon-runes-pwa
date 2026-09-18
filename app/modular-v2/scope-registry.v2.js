@@ -71,12 +71,11 @@ export const SCOPES_V2=Object.freeze({
 });
 
 function cleanHost(host=''){return String(host||'').toLowerCase().split(':')[0];}
-export function resolveScopeV2(host='',pathname='/'){
-  const h=cleanHost(host);
-  if(h===SCOPES_V2.runes.domain||pathname==='/runes'||pathname.startsWith('/runes/'))return 'runes';
-  if(h===SCOPES_V2.lo3rwang.domain)return 'lo3rwang';
-  if(h===SCOPES_V2.admin.domain||pathname==='/management'||pathname.startsWith('/management/'))return 'admin';
-  return 'loc';
+const SCOPE_BY_DOMAIN_V2=Object.freeze(
+  Object.fromEntries(Object.entries(SCOPES_V2).map(([id,scope])=>[scope.domain,id]))
+);
+export function resolveScopeV2(host=''){
+  return SCOPE_BY_DOMAIN_V2[cleanHost(host)]||'loc';
 }
 export function getScopeV2(id){return SCOPES_V2[id]||SCOPES_V2.loc;}
 export function scopeOriginV2(scopeId){return `https://${getScopeV2(scopeId).domain}`;}
