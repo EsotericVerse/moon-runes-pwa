@@ -79,10 +79,15 @@ for(const pathname of ['/lo3rwang','/lo3rwang/','/lo3rwang/context','/lo3rwang/s
 for(const pathname of ['/','/context','/culture','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
   if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc')failures.push('bounded author mount overmatched '+pathname);
 }
-if(SCOPES_V2.lo3rwang?.alias!=='dlwang')failures.push('author alias must remain dlwang');
+if(SCOPES_V2.lo3rwang?.scopeType!=='directory')failures.push('author Scope must remain directory type');
+if(SCOPES_V2.lo3rwang?.aliasName!=='dlwang')failures.push('author aliasName must remain dlwang');
 if(SCOPES_V2.lo3rwang?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lo3rwang?.mount?.path!=='/lo3rwang')failures.push('author LOC mount drifted');
-const aliases=Object.values(SCOPES_V2).map(scope=>scope.alias).filter(Boolean);
-if(new Set(aliases).size!==aliases.length)failures.push('duplicate Scope alias');
+for(const scope of Object.values(SCOPES_V2)){
+  if(!['domain','directory'].includes(scope.scopeType))failures.push('invalid Scope type: '+scope.id);
+  if(scope.scopeType==='directory'&&!scope.mount)failures.push('directory Scope missing mount: '+scope.id);
+}
+const aliases=Object.values(SCOPES_V2).map(scope=>scope.aliasName).filter(Boolean);
+if(new Set(aliases).size!==aliases.length)failures.push('duplicate Scope aliasName');
 const mounts=Object.values(SCOPES_V2).filter(scope=>scope.mount).map(scope=>scope.mount.host+'|'+scope.mount.path);
 if(new Set(mounts).size!==mounts.length)failures.push('duplicate Scope mount');
 
