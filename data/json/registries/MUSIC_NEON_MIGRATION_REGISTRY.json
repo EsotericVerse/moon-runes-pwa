@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "registry": "MUSIC_NEON_MIGRATION_REGISTRY",
+  "status": "current",
+  "updated_at": "2026-09-18",
+  "scope": "lo3rwang",
+  "domain": "music",
+  "purpose": "Normalize governed music works, song versions, semantic annotations, private original text, media and public projections in Neon without changing Frozen Rune Canon.",
+  "zones": {
+    "bronze": "Imported source snapshots and lineage only.",
+    "silver": "Normalized works, song versions, semantic annotations, media and Visibility/Projection governance.",
+    "vault": "Private original text including lyrics, author source text, retrieval text and drafts.",
+    "gold": "Public projections only; Gold never reads private vault text."
+  },
+  "verified_sources": [
+    {
+      "name": "Suno_773_政德風創作時間軸與時期分析.xlsx",
+      "role": "complete_private_corpus",
+      "song_rows": 773,
+      "unique_song_ids": 773,
+      "work_groups": 532,
+      "multi_version_events": 239,
+      "missing_lyrics": 2,
+      "date_range": "2025-02-21..2026-08-29",
+      "primary_sheet": "歌曲時間軸"
+    },
+    {
+      "name": "Suno_500_公開歌詞作品主資料庫_轉折分析v0.3.1.xlsx",
+      "role": "governed_public_corpus",
+      "public_work_groups": 500,
+      "public_song_versions": 663,
+      "non_public_versions": 110
+    }
+  ],
+  "visibility_contract": {
+    "visibility": [
+      "private",
+      "internal",
+      "public"
+    ],
+    "projection_level": [
+      "metadata",
+      "summary",
+      "full"
+    ],
+    "flags": [
+      "search_indexed",
+      "statistics_included",
+      "semantic_scan_included"
+    ],
+    "rule": "source_publication_status records observed source state; application public access is decided by silver.resource_visibility."
+  },
+  "privacy_invariant": "gold.public_works and gold.public_song_versions never join vault. Full projection means the full safe projected record, never raw private lyrics or author text.",
+  "migration_order": [
+    "Apply db/migrations/20260917_music_silver_gold.sql.",
+    "Import the complete song-version corpus and work identities into Silver; write lyrics only to Vault.",
+    "Merge governed public-work annotations into Silver.",
+    "Apply public/non-public source publication evidence.",
+    "Populate resource visibility from governance rules.",
+    "Validate counts, uniqueness, missing lyrics, mixed-publication work groups and search exclusions.",
+    "Point public reads at Gold only after validation.",
+    "Rebuild embeddings after the normalized private corpus is stable."
+  ],
+  "frozen_rune_canon": "read_only_and_out_of_scope"
+}
