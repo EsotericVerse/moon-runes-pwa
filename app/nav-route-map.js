@@ -1,5 +1,5 @@
-export const SHARED_NAV_FUNCTIONS=[['脈絡','context'],['統計','statics'],['文化','evolution'],['治理','governance']];
-const FUNCTION_NAMES=['context','statics','evolution','governance','search'];
+export const SHARED_NAV_FUNCTIONS=[['脈絡','context'],['統計','statics'],['文化','culture'],['治理','governance']];
+const FUNCTION_NAMES=['context','statics','culture','governance','search'];
 const functionRoutes=origin=>Object.fromEntries(FUNCTION_NAMES.map(name=>[name,`${origin}/${name}`]));
 
 export function detectNavScope(pathname='/',host=''){
