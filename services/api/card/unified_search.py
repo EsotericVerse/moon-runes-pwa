@@ -80,7 +80,7 @@ class UnifiedSearchEngine:
         self.content_types = self._load_json("LOC_CONTENT_TYPE_REGISTRY.json")
         self.relationships = self._load_json("LOC_CROSS_RELATIONSHIP_REGISTRY.json")
         self.graph_schema = self._load_json("LOC_GRAPH_SCHEMA.json")
-        self.loc2_events = self._load_json("LOC2_EVENT_REGISTRY.json")
+        self.loc2_events = self._load_json("CONTEXT_EVENT_REGISTRY.json")
         self.loc4 = self._load_json("LOC4_WRITING_REGISTRY.json")
         self.loc4_analysis = self._load_json("LOC4_TEXT_ANALYSIS_REGISTRY.json")
         self.loc4_corpus_manifest = self._load_repo_json("data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json")
@@ -653,7 +653,7 @@ class UnifiedSearchEngine:
             "score": round(score, 6),
             "source_refs": [{
                 "source_type": "registry",
-                "source_id": "LOC2_EVENT_REGISTRY.json",
+                "source_id": "CONTEXT_EVENT_REGISTRY.json",
                 "note": row.get("status") or self.loc2_events.get("status") or "working",
             }],
             "payload": {
