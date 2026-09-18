@@ -48,25 +48,3 @@ export async function getManagementSession(){
   const data = await response.json();
   return data?.authorized ? data : null;
 }
-
-export async function managementStateWrite(path, { method='POST', body } = {}){
-  if(!managementAuthConfigured()) throw new Error('尚未設定 NEXT_PUBLIC_LOC_AUTH_URL');
-  const normalized = `/${String(path || '').replace(/^\/+/, '')}`;
-  if(!['/eras','/daily-runes','/context'].includes(normalized)) throw new Error('management_state_path_not_allowed');
-  const verb = String(method || 'POST').toUpperCase();
-  if(!['POST','PUT','DELETE'].includes(verb)) throw new Error('management_state_method_not_allowed');
-
-  const response = await fetch(`${authBaseUrl()}/management/state${normalized}`, {
-    method: verb,
-    credentials: 'include',
-    headers: {
-      accept: 'application/json',
-      'content-type': 'application/json'
-    },
-    body: body === undefined ? undefined : JSON.stringify(body),
-    cache: 'no-store'
-  });
-  const data = await response.json().catch(()=>({}));
-  if(!response.ok || data?.ok === false) throw new Error(data?.error || `management_state_failed:${response.status}`);
-  return data;
-}
