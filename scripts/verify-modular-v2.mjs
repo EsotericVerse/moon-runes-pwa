@@ -27,7 +27,7 @@ for(const [id,domain] of Object.entries(expectedDomains)){
   if(resolveScopeV2(domain+':443')!==id)failures.push(domain+' port normalization mismatch');
   for(const feature of FEATURES_V2){
     const scope=SCOPES_V2[id];
-    const expectedBase=scope.mount?`https://${scope.mount.host}${scope.mount.path}`:`https://${domain}`;
+    const expectedBase=scope.scopeType==='directory'&&scope.mount?`https://${scope.mount.host}${scope.mount.path}`:`https://${domain}`;
     if(featureHrefV2(id,feature.id)!==`${expectedBase}/${feature.path}`)failures.push(id+'/'+feature.id+' route mismatch');
   }
 }
@@ -92,7 +92,7 @@ for(const [id,base] of [['runes','/runes'],['lo3rwang','/lo3rwang']]){
 for(const pathname of ['/','/context','/culture','/runesish','/foo/runes','/culture/runes','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
   if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc')failures.push('bounded directory mount overmatched '+pathname);
 }
-if(SCOPES_V2.runes?.scopeType!=='directory')failures.push('LunaRunes Scope must remain directory type');
+if(SCOPES_V2.runes?.scopeType!=='domain')failures.push('LunaRunes Scope must remain domain type');
 if(SCOPES_V2.runes?.aliasName!=='lrunes')failures.push('LunaRunes aliasName must remain lrunes');
 if(SCOPES_V2.runes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.runes?.mount?.path!=='/runes')failures.push('LunaRunes LOC mount drifted');
 if(SCOPES_V2.lo3rwang?.scopeType!=='directory')failures.push('author Scope must remain directory type');
