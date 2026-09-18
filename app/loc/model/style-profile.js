@@ -38,7 +38,7 @@ const SYSTEM_GROUP_ROUTES=new Map([
 export function defaultStyleGroupLink(name){
   const term=String(name||'').trim();
   if(!term)return '';
-  return SYSTEM_GROUP_ROUTES.get(term)||`/search?q=${encodeURIComponent(term)}`;
+  return SYSTEM_GROUP_ROUTES.get(term)||'/search';
 }
 
 export function styleGroupLink(group){
