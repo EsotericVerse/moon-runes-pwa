@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "registry": "LOC_LANGUAGE_CULTURE_REGISTRY",
-  "track": "language_evolution",
+  "track": "language_culture",
   "label": "語言推演",
   "status": "partial_waiting_for_large_corpus",
   "purpose": "以既有 ERA 與跨來源資料觀察語言、作品、關鍵詞、風格、治理與方法在時間中的變化；大批歷史文本未完整進場前，只保存已存在且可追溯的分析來源，不補造缺失資料。",
