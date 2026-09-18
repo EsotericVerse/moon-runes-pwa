@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchLocJson, fetchLocJsonBatch, LOC_DATA } from '../data';
 import { useLocalStore } from '../local-store';
+import {PageFrame,PagePager} from '../../PageComposition';
 
 const TABS=[['overview','總覽'],['eras','時期設定'],['timeline','時間線'],['trend','時期風格'],['trajectory','軌跡']];
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
@@ -11,7 +12,7 @@ const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
 function periodRows(value){if(!value||typeof value!=='object')return [];for(const key of ['periods','period_analysis','period_keyword_analysis','results'])if(Array.isArray(value[key]))return value[key];return [];}
 function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row?.semantic_keywords||row?.top_keywords||[];}
 function drawableRows(value){return Array.isArray(value)?value.filter(row=>{const id=Number(row?.編號);return id>=1&&id<=66;}):[];}
-function Pagination({page,total,pageSize,onChange}){const pages=Math.max(1,Math.ceil(total/pageSize));if(total<=pageSize)return null;return <div className="loc-pagination"><span>第 {page} / {pages} 頁 · 共 {total} 筆 · 每頁 {pageSize}</span><div><button className="loc-button" disabled={page<=1} onClick={()=>onChange(page-1)}>上一頁</button><button className="loc-button" disabled={page>=pages} onClick={()=>onChange(page+1)}>下一頁</button></div></div>}
+function Pagination({page,total,pageSize,onChange}){const pages=Math.max(1,Math.ceil(total/pageSize));if(total<=pageSize)return null;return <PagePager page={page} pages={pages} total={total} onPrevious={()=>onChange(page-1)} onNext={()=>onChange(page+1)}/>}
 function pageRows(rows,page,pageSize){return rows.slice((page-1)*pageSize,page*pageSize)}
 
 export default function EvolutionView(){
@@ -51,8 +52,11 @@ export default function EvolutionView(){
   const loc3Rows=periodRows(loc3);const loc6Rows=periodRows(loc6);const trajectories=loc6?.trajectories||[];
   const stages=runeHistory?.system_stages||[];const governance=runeHistory?.governance_evolution||[];const semanticCases=runeHistory?.semantic_history_cases||[];
 
-  return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Culture · 文化</p><h1><span className="loc-keyword-emphasis">文化</span></h1><p>文化由風格、時期、事件、價值與語意變化沿時間累積形成；此處整合 ERA、事件、時期風格、軌跡與 LunaRunes <span className="loc-keyword-emphasis">文化</span>觀察。</p></header>
+  return <PageFrame
+    eyebrow="Culture · 文化"
+    title="文化"
+    subtitle="文化由風格、時期、事件、價值與語意變化沿時間累積形成；此處整合 ERA、事件、時期風格、軌跡與 LunaRunes 文化觀察。"
+  >
     <nav className="loc-tabs" aria-label="文化功能">{TABS.map(([id,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}>{label}</button>)}</nav>
     {error&&<div className="loc-status error">{error}</div>}
 
@@ -85,5 +89,5 @@ export default function EvolutionView(){
       <section className="loc-card"><p className="loc-eyebrow">Language Trajectory · 語言軌跡</p><h2>語彙軌跡</h2>{trajectories.length?<><div className="loc-context-list">{pageRows(trajectories,pages.trajectory,pageSize).map(item=><div className="loc-trajectory" key={item.term}><h3>{item.term}</h3><p>峰值 {item.peak_period} · {item.peak_percent}%</p><div>{item.points?.map(point=><span key={`${item.term}-${point.period}`}>{point.period}<b>{point.percent}%</b></span>)}</div></div>)}</div><Pagination page={pages.trajectory} total={trajectories.length} pageSize={pageSize} onChange={value=>setPage('trajectory',value)}/></>:<p>目前 registry 尚無 trajectory。</p>}</section>
       <section className="loc-card"><p className="loc-eyebrow">LunaRunes Trajectory · 月之符文軌跡</p><h2>14 → 24 → 32 → 42 → 66</h2><div className="loc-stage-line vertical">{stages.map(item=><div key={item.order}><strong>{item.label}</strong><span>{item.rune_count} 符</span><small>{item.note}</small></div>)}</div><p className="loc-note">符文歷史只顯示<span className="loc-keyword-emphasis">演化</span>紀錄；現行正式定義仍以 canonical runes.json 為準。第 0 符「德」保留於母資料作治理錨點，不列入 66 枚可抽符文。</p></section>
     </div>}</>}
-  </section>;
+  </PageFrame>;
 }
