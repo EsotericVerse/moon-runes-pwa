@@ -30,7 +30,7 @@ const READING_EXAMPLES = [
 ];
 
 export default function RunesPage() {
-  return <main className="loc-next-main"><section className="loc-view scope-home-composition runes-home">
+  return <main className="loc-next-main"><section className="loc-view loc-home scope-home-composition runes-home">
     <header className="loc-hero runes-home-hero">
       <div className="runes-home-hero-copy">
         <p className="loc-eyebrow">LunaRunes</p>
