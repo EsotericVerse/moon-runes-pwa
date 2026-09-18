@@ -9,7 +9,7 @@ import {getScopeContact} from './loc/scope-public-settings';
 const ROOTS={
   loc:{label:'月典',href:'https://loc.lo3rwang.cc/'},
   runes:{label:'月之符文',href:'https://lrunes.lo3rwang.cc/'},
-  lo3rwang:{label:'lo3rwang',href:'https://lo3rwang.lo3rwang.cc/'},
+  lo3rwang:{label:'作者簡介',href:'https://lo3rwang.lo3rwang.cc/'},
   governance:{label:'治理管理',href:'https://admin.lo3rwang.cc/'}
 };
 
