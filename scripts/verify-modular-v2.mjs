@@ -83,24 +83,23 @@ for(const [id,domain] of Object.entries(expectedDomains)){
     if(resolveScopeV2(domain,pathname)!==id)failures.push(domain+' failed direct-domain Scope resolution at '+pathname);
   }
 }
-for(const [id,base] of [['runes','/runes'],['lo3rwang','/lo3rwang']]){
-  for(const suffix of ['','/','/context','/statics','/culture','/governance','/search']){
-    const pathname=base+suffix;
-    if(resolveScopeV2('loc.lo3rwang.cc',pathname)!==id)failures.push(id+' mount failed at '+pathname);
-  }
+for(const suffix of ['','/','/context','/statics','/culture','/governance','/search']){
+  const pathname='/lo3rwang'+suffix;
+  if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='lo3rwang')failures.push('lo3rwang mount failed at '+pathname);
 }
-for(const pathname of ['/','/context','/culture','/runesish','/foo/runes','/culture/runes','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
+for(const pathname of ['/','/context','/culture','/runes','/runes/context','/runesish','/foo/runes','/culture/runes','/lo3rwangish','/foo/lo3rwang','/culture/lo3rwang']){
   if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc')failures.push('bounded directory mount overmatched '+pathname);
 }
 if(SCOPES_V2.runes?.scopeType!=='domain')failures.push('LunaRunes Scope must remain domain type');
-if(SCOPES_V2.runes?.aliasName!=='lrunes')failures.push('LunaRunes aliasName must remain lrunes');
-if(SCOPES_V2.runes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.runes?.mount?.path!=='/runes')failures.push('LunaRunes LOC mount drifted');
+if(SCOPES_V2.runes?.aliasName!==null)failures.push('LunaRunes domain Scope must not declare aliasName');
+if(SCOPES_V2.runes?.mount)failures.push('LunaRunes domain Scope must not declare mount');
 if(SCOPES_V2.lo3rwang?.scopeType!=='directory')failures.push('author Scope must remain directory type');
 if(SCOPES_V2.lo3rwang?.aliasName!=='dlwang')failures.push('author aliasName must remain dlwang');
 if(SCOPES_V2.lo3rwang?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lo3rwang?.mount?.path!=='/lo3rwang')failures.push('author LOC mount drifted');
 for(const scope of Object.values(SCOPES_V2)){
   if(!['domain','directory'].includes(scope.scopeType))failures.push('invalid Scope type: '+scope.id);
   if(scope.scopeType==='directory'&&!scope.mount)failures.push('directory Scope missing mount: '+scope.id);
+  if(scope.scopeType==='domain'&&scope.mount)failures.push('domain Scope must not declare mount: '+scope.id);
 }
 const aliases=Object.values(SCOPES_V2).map(scope=>scope.aliasName).filter(Boolean);
 if(new Set(aliases).size!==aliases.length)failures.push('duplicate Scope aliasName');
