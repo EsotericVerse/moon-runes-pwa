@@ -48,7 +48,7 @@ names.forEach((name, index) => {
   if (!existsSync(resolve(root, path))) failures.push(`cards: missing ${path}`);
 });
 
-const evolution = json('data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json');
+const evolution = json('data/json/registries/LUNARUNE_CULTURE_HISTORY.json');
 const cases = evolution?.semantic_history_cases ?? [];
 const governance = evolution?.governance_evolution ?? [];
 const stages = evolution?.system_stages ?? [];
