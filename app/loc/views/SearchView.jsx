@@ -17,8 +17,24 @@ const SEGMENT_BATCH_SIZE=2;
 const HISTORICAL_LOC_RE=/^LOC[1-8](?:_|$)/i;
 const norm=value=>String(value??'').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 const snippet=(text,q)=>{const raw=String(text||'').replace(/\s+/g,' ').trim();const i=norm(raw).indexOf(norm(q));const start=Math.max(0,(i<0?0:i)-70);return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;};
-const escapeRegExp=value=>String(value||'').replace(/[.*+?^${}()|[\]\\]/g,'\\const snippet=(text,q)=>{const raw=String(text||'').replace(/\s+/g,' ').trim();const i=norm(raw).indexOf(norm(q));const start=Math.max(0,(i<0?0:i)-70);return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;};');
-function HighlightText({text,term}){const raw=String(text||'');const q=String(term||'').trim();if(!q)return raw;const re=new RegExp(`(${escapeRegExp(q)})`,'giu');return raw.split(re).map((part,index)=>re.test(part)?<mark className="loc-search-highlight" key={`${index}-${part}`}>{part}</mark>:part);}
+function HighlightText({text,term}){
+  const raw=String(text||'');
+  const q=String(term||'').trim();
+  if(!q)return raw;
+  const lowerRaw=raw.toLocaleLowerCase('zh-Hant');
+  const lowerQ=q.toLocaleLowerCase('zh-Hant');
+  const parts=[];
+  let cursor=0;
+  let hit=lowerRaw.indexOf(lowerQ,cursor);
+  while(hit>=0){
+    if(hit>cursor)parts.push(raw.slice(cursor,hit));
+    parts.push(<mark className="loc-search-highlight" key={`hit-${hit}`}>{raw.slice(hit,hit+q.length)}</mark>);
+    cursor=hit+q.length;
+    hit=lowerRaw.indexOf(lowerQ,cursor);
+  }
+  if(cursor<raw.length)parts.push(raw.slice(cursor));
+  return parts.length?parts:raw;
+}
 function objectsFrom(value,out=[],depth=0){if(depth>4)return out;if(Array.isArray(value)){for(const item of value){if(item&&typeof item==='object'&&!Array.isArray(item))out.push(item);else objectsFrom(item,out,depth+1);}return out;}if(value&&typeof value==='object')for(const child of Object.values(value))if(Array.isArray(child))objectsFrom(child,out,depth+1);return out;}
 function replacePhrases(value,replacements){if(typeof value==='string'){let next=value;for(const pair of replacements||[]){if(Array.isArray(pair)&&pair.length===2)next=next.split(String(pair[0])).join(String(pair[1]));}return next;}if(Array.isArray(value))return value.map(item=>replacePhrases(item,replacements));if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,replacePhrases(item,replacements)]));return value;}
 function faqParentId(item){const explicit=String(item?.parent_id||'').trim();if(explicit)return explicit;const match=String(item?.id||'').match(/^FAQ-\d+/);return match?.[0]||'';}
