@@ -79,7 +79,7 @@ RC3 已讓 `runes.html`、`context.html`、`statics.html`、`evolution.html` 有
 | 推演 | [evolution.html](https://loc.lo3rwang.cc/evolution.html) | 時期、Timeline、Trend、Trajectory 與符文資料歷程 |
 | 治理 | [governance.html](https://loc.lo3rwang.cc/governance.html) | 政德風、治理原則與方法 |
 | Context Sandbox | [game.html](https://loc.lo3rwang.cc/game.html) | Semantic Playground |
-| 作者 | [lo3rwang.html](https://loc.lo3rwang.cc/lo3rwang.html) | Lucas Oscar Wang 政德 |
+| 作者 | [lo3rwang](https://lo3rwang.lo3rwang.cc/) | Lucas Oscar Wang 政德 |
 
 新手導覽已整合進正式功能頁：
 - [LOC 新手上路](https://loc.lo3rwang.cc/#start-guide)
