@@ -48,8 +48,14 @@ export function themeForHour(schedule=DEFAULT_ROTATION_SCHEDULE,hour=new Date().
   const ordered=[...schedule].sort((a,b)=>a.start-b.start);
   return [...ordered].reverse().find(item=>hour>=item.start)?.theme||ordered.at(-1)?.theme||'theme-1';
 }
-export function scopeThemeSettings(scope,stored={}){
-  const base=DEFAULT_SCOPE_THEME_SETTINGS[scope]||DEFAULT_SCOPE_THEME_SETTINGS.loc;
+export function scopeThemeSettings(scope,stored={},managedDefault=null){
+  const fallback=DEFAULT_SCOPE_THEME_SETTINGS[scope]||DEFAULT_SCOPE_THEME_SETTINGS.loc;
+  const base=managedDefault?{
+    ...fallback,
+    ...managedDefault,
+    custom:{...fallback.custom,...(managedDefault.custom||{})},
+    schedule:Array.isArray(managedDefault.schedule)&&managedDefault.schedule.length?managedDefault.schedule:fallback.schedule
+  }:fallback;
   const override=stored?.[scope]||{};
   return {...base,...override,custom:{...base.custom,...(override.custom||{})},schedule:override.schedule||base.schedule};
 }
