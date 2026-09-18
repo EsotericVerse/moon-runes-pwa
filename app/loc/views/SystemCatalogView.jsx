@@ -46,15 +46,15 @@ export default function SystemCatalogView({kind}){
   useEffect(()=>{
     let alive=true;
     if(kind==='literary'){
-      fetchLocJson(LOC_DATA.WRITING_REGISTRY).then(data=>alive&&setRows((data?.works||[]).slice(0,24))).catch(()=>alive&&setStatus('error')).finally(()=>alive&&setStatus('ready'));
+      fetchLocJson(LOC_DATA.WRITING_REGISTRY).then(data=>{if(alive){setRows((data?.works||[]).slice(0,24));setStatus('ready');}}).catch(()=>alive&&setStatus('error'));
     }else if(kind==='multimedia'){
-      fetchLocJson(LOC_DATA.LOC_MEDIA_REGISTRY).then(data=>alive&&setRows((data?.items||[]).slice(0,24))).catch(()=>alive&&setStatus('error')).finally(()=>alive&&setStatus('ready'));
+      fetchLocJson(LOC_DATA.LOC_MEDIA_REGISTRY).then(data=>{if(alive){setRows((data?.items||[]).slice(0,24));setStatus('ready');}}).catch(()=>alive&&setStatus('error'));
     }else if(kind==='music'){
       fetchLocJson(LOC_DATA.MUSIC_SEARCH_MANIFEST).then(manifest=>{
         const first=manifest?.shards?.[0]; if(!first)throw new Error('music manifest empty');
         const path=String(typeof first==='string'?first:first.path||'');
         return fetchLocJson(path.startsWith('data/')?path:`data/json/search/loc3/${path}`);
-      }).then(data=>alive&&setRows((data?.works||[]).slice(0,24))).catch(()=>alive&&setStatus('error')).finally(()=>alive&&setStatus('ready'));
+      }).then(data=>{if(alive){setRows((data?.works||[]).slice(0,24));setStatus('ready');}}).catch(()=>alive&&setStatus('error'));
     }
     return()=>{alive=false};
   },[kind]);
