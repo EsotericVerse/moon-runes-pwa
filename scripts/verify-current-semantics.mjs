@@ -51,7 +51,9 @@ for (const rel of files) {
   if(rel.endsWith('LOC_TERMINOLOGY_CANON.json')){
     if(payload?.current?.LOC?.zh!==FINAL_LOC_ZH||payload?.current?.LOC?.en!==FINAL_LOC_EN) failures.push(`${rel}: LOC final identity mismatch`);
     if(payload?.current?.LunaRunes?.zh!==FINAL_RUNES_ZH||payload?.current?.LunaRunes?.en!==FINAL_RUNES_EN) failures.push(`${rel}: LunaRunes final identity mismatch`);
-    if(!/final|highest|frozen/i.test(String(payload?.final_identity_rule||''))) failures.push(`${rel}: final frozen identity rule missing`);
+    if(payload?.identity_version!=='latest-and-last'||payload?.identity_frozen!==true) failures.push(`${rel}: identity version must remain latest-and-last and frozen`);
+    if(payload?.current?.LOC?.identity_frozen!==true||payload?.current?.LunaRunes?.identity_frozen!==true) failures.push(`${rel}: Current identities must remain frozen`);
+    if(!/latest and last|final frozen/i.test(String(payload?.final_identity_rule||''))) failures.push(`${rel}: final frozen identity rule missing`);
   }
   if (failures.length === before) console.log(`semantic guard ok: ${rel}`);
 }
