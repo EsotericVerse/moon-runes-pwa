@@ -214,7 +214,7 @@ The following distinctions are normative:
 
 The navigation-level feature previously labeled `推演` / Evolution is transitioning to **Culture · 文化**.
 
-The existing internal route `/evolution` may remain temporarily for compatibility. Route stability and data compatibility take precedence over cosmetic path renaming.
+The existing internal route `/culture` may remain temporarily for compatibility. Route stability and data compatibility take precedence over cosmetic path renaming.
 
 Only formal feature names, labels, Hero text, ARIA labels, and other product-specific names should be changed to Culture terminology. Ordinary prose describing future inference, historical evolution, or evolutionary trends must retain the wording required by its meaning.
 
