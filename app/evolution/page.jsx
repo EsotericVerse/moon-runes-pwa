@@ -1,3 +1,7 @@
-import LocApp from '../loc/LocApp';
+import {redirect} from 'next/navigation';
+
 export const metadata={title:'文化｜LOC 月典'};
-export default function EvolutionPage(){return <LocApp/>;}
+
+export default function EvolutionCompatibilityPage(){
+  redirect('/culture');
+}

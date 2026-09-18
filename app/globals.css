@@ -12,6 +12,7 @@
 @import "./styles/keywords.css";
 @import "./styles/nav.css";
 @import "./styles/multimedia.css";
+@import "./styles/v2/scope-system.v2.css";
 
 /* Keep the Start Here LunaRunes concept image secondary to the copy. */
 .home-beginner .home-framework-figure{

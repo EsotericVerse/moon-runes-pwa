@@ -1,38 +1,14 @@
 import {existsSync,readFileSync} from 'node:fs';
-import {SHARED_FEATURES,SITE_SCOPES} from '../app/site-registry.js';
+import {FEATURES_V2,SCOPES_V2} from '../app/modular-v2/scope-registry.v2.js';
 
 const failures=[];
-const expectedScopes=['loc','runes','lo3rwang','admin'];
-if(JSON.stringify(Object.keys(SITE_SCOPES))!==JSON.stringify(expectedScopes)){
-  failures.push('Current Scope registry must be loc/runes/lo3rwang/admin only');
-}
-if(JSON.stringify(SHARED_FEATURES.map(item=>item.id))!==JSON.stringify(['context','statics','culture','governance'])){
-  failures.push('Shared feature registry drifted');
-}
-
-for(const path of [
-  'lo3rwang.html',
-  'css/style.css',
-  'css/day.css',
-  'css/night.css',
-  'css/style-base.css',
-  'js/loc-nav.js',
-  'js/site-registry.generated.js',
-  'scripts/generate-legacy-scope-contract.mjs',
-  'tools/build_public_articles.py',
-  'app/nav-route-map.js',
-  'scripts/nav-route-map.json'
-]){
-  if(existsSync(path))failures.push('Retired runtime returned: '+path);
-}
-
+if(JSON.stringify(Object.keys(SCOPES_V2))!==JSON.stringify(['loc','runes','lo3rwang','admin']))failures.push('Current Scope registry must be loc/runes/lo3rwang/admin only');
+if(JSON.stringify(FEATURES_V2.map(item=>item.id))!==JSON.stringify(['context','statics','culture','governance','search']))failures.push('Shared feature registry drifted');
+for(const retired of ['lo3rwang.html','css/style.css','css/day.css','css/night.css','css/style-base.css','js/loc-nav.js','js/site-registry.generated.js','scripts/generate-legacy-scope-contract.mjs','tools/build_public_articles.py','app/nav-route-map.js','scripts/nav-route-map.json'])if(existsSync(retired))failures.push('Retired runtime returned: '+retired);
+const compat=readFileSync('app/site-registry.js','utf8');
 const hook=readFileSync('app/use-current-scope.js','utf8');
-for(const token of ['detectSiteScope','getSiteScope']){
-  if(!hook.includes(token))failures.push('Shared Scope hook missing '+token);
-}
-
-if(failures.length){
-  console.error('[scope-registry] violations:\n'+failures.join('\n'));
-  process.exit(1);
-}
-console.log('Single Current Scope registry verified; retired runtimes remain absent.');
+if(!compat.includes("from './modular-v2/scope-registry.v2'"))failures.push('site-registry compatibility facade must derive from V2');
+if(!hook.includes('useScopeRuntimeV2'))failures.push('compatibility Scope hook must consume V2 runtime');
+for(const domain of ['loc.lo3rwang.cc','lrunes.lo3rwang.cc','lo3rwang.lo3rwang.cc','admin.lo3rwang.cc'])if(compat.includes(domain))failures.push('compatibility registry must not duplicate domain literal '+domain);
+if(failures.length){console.error('[scope-registry] violations:\n'+failures.join('\n'));process.exit(1);}
+console.log('Single Current V2 Scope registry verified; compatibility entries are derived only.');
