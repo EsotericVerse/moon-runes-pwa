@@ -3,8 +3,8 @@ import ModelArchitectureExplorer from './ModelArchitectureExplorer';
 const MODEL_MODULES=[
   {
     key:'runes', name:'LunaRunes', zh:'月之符文', summary:'語彙',
-    detail:'以月之符文作為語彙種子，提供固定符文資料、組合語法與可追溯的語意入口；Base66 母資料維持唯讀。',
-    href:'/runes', depth:'deep'
+    detail:'月之符文作提供固定符文資料、組合語法與可追溯的語意參照',
+    href:'lrunes.lo3rwang.cc', depth:'deep'
   },
   {
     key:'context', name:'Context', zh:'脈絡', summary:'關係圖',
@@ -13,33 +13,33 @@ const MODEL_MODULES=[
   },
   {
     key:'music', name:'Music', zh:'音樂', summary:'Suno 音樂與歌詞',
-    detail:'保存音樂作品、歌詞、曲風、時期與來源，讓聲音作品能與文字、事件及其他資料建立脈絡。',
-    href:'/search?q=音樂'
+    detail:'保存Suno音樂作品、歌詞、曲風、時期與來源，讓聲音作品能與文字、事件及其他資料建立脈絡。',
+    href:'/music'
   },
   {
     key:'literary', name:'Literary', zh:'文字創作', summary:'文字作品與版本',
     detail:'整理文章、文學與其他文字創作，保留原文、版本、來源與衍生分析之間的差異。',
-    href:'/search?q=文字創作'
+    href:'/literary'
   },
   {
-    key:'media', name:'MultiMedia', zh:'多媒體', summary:'跨媒介內容',
+    key:'media', name:'Multimedia', zh:'多媒體', summary:'跨媒介內容',
     detail:'連結圖像、影音與其他媒體來源，觀察同一語意在不同媒介中的表達與轉譯。',
     href:'/multimedia'
   },
   {
     key:'algorithm', name:'Algorithm', zh:'演算法', summary:'方法論與演算法集合',
     detail:'把既有方法論整併成可重現的演算法，用於分類、比較、搜尋、關係運算與其他語言處理。',
-    href:'/search?q=演算法', depth:'deep'
+    href:'/algorithm', depth:'deep'
   },
   {
-    key:'module', name:'Module', zh:'模組', summary:'演算法、資料與功能封裝',
-    detail:'將演算法與資料、KM、搜尋、RAG、Graph RAG 及功能實作組合成可重複使用的模組。',
-    href:'/search?q=模組', depth:'deep'
+    key:'module', name:'Module', zh:'模組', summary:'獨立功能封裝',
+    detail:'將演算法與資料結合成為可重複使用的模組，像知識庫、搜尋、簡單的語意向量。',
+    href:'/module', depth:'deep'
   },
   {
     key:'culture', name:'Culture', zh:'文化', summary:'文字演化',
-    detail:'把文字與脈絡放回時期與時間線，觀察 Trajectory、Trend、Oscillation 與文化中的文字演化。',
-    href:'/evolution', depth:'deep'
+    detail:'把文字與脈絡放回時期與時間線，觀察趨勢，或是因外在造成的擺盪，並且找出文字演化的可能。',
+    href:'/culture', depth:'deep'
   }
 ];
 
@@ -51,9 +51,9 @@ export default function AboutView(){
         <p className="loc-subtitle">把語言整理成可理解、可搜尋、可推演的模組結構。</p>
       </div>
       <div className="loc-hero-copy">
-        <p className="loc-core-line">月典（LOC，Luna Codex）是一套用來分析、拆解、組織、搜尋、治理並推演語言的模型化語言框架（Modelized Language Framework）。
-		<br/>月之符文(LunaRunes)是一套符號式語言（Symbolic Language），有自己獨立的說明方式。</p>
-        <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，<br/>讓累積的資料可以繼續被理解、比較分析與推演。</p>
+        <p className="loc-core-line">月典（LOC，Luna Codex）是一套用來分析、搜尋的模型化語言框架（Modelized Language Framework）。
+		<br/>月之符文(LunaRunes)是一套有自己獨特方式的符號式語言（Symbolic Language）。</p>
+        <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，<br/>讓累積的資料可以繼續被理解、比較分析並得知其文化(文字演化)。</p>
       </div>
       <figure className="home-hero-visual">
         <img src="/pics/LOC-PicAll.png" alt="LOC 月典模型化語言框架視覺理念圖" loading="eager" />
@@ -67,9 +67,9 @@ export default function AboutView(){
       </div>
       <div className="home-rune-layout">
         <div className="home-author-copy">
-          <p>不用管月之符文是什麼，<a href= "/runes?mode=single">抽了就知道！</a>可以是問事，可以是決定生活主題風格的每日符文。</p>
+          <p>不用管月之符文是什麼，<a href= "/runes?mode=single">抽了就知道！</a>可以是問事，可以是決定當日生活主題風格的<a href="/runes?mode=daily">每日符文</a>。</p>
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
-          <p>你也可以完全不抽牌，直接在符文面跳過，往下看或看上面連結的脈絡、統計、文化，<br/>或直接搜尋自己有興趣的文字與資料。</p>
+          <p>你也可以完全不抽牌，直接跳過，往下看或看上面連結的脈絡、統計、文化、治理等，<br/>或直接搜尋自己有興趣的文字與資料。</p>
           <p><strong>那就開始吧！</strong></p>
         </div>
         <figure className="home-framework-figure"><img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" /></figure>
@@ -77,7 +77,8 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-copy-block home-rune-section">
-      <div className="home-section-heading"><p className="loc-eyebrow">LunaRunes</p><h2>月之符文籤詩系統</h2><p className="loc-subtitle">不涉及神秘學，為單純的指引籤詩，<br/>不保證一定就是註定，你擁有選擇權。</p></div>
+      <div className="home-section-heading"><p className="loc-eyebrow">LunaRunes</p><h2>月之符文籤詩系統</h2><p className="loc-subtitle">不涉及神秘學，為單純的指引籤詩
+	  <br/>不保證一定就是註定，你擁有選擇權。</p></div>
       <div className="home-rune-layout">
         <div className="home-rune-preview" aria-label="命之符文示例">
           <img src="/assets/lunarunes/cards/66_命.png" alt="命之符文" />
