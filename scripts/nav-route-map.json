@@ -1,9 +1,124 @@
 {
-  "sharedFunctions": ["context", "statics", "evolution", "governance", "search"],
   "scopes": {
-    "loc": {"host":"loc.lo3rwang.cc","basePath":"/","functions":{"context":"https://loc.lo3rwang.cc/context","statics":"https://loc.lo3rwang.cc/statics","evolution":"https://loc.lo3rwang.cc/evolution","governance":"https://loc.lo3rwang.cc/governance","search":"https://loc.lo3rwang.cc/search"},"reserved":{"label":"月之符文","href":"/runes"},"role":[{"label":"作者頁面","href":"https://whoami.lo3rwang.cc"}],"homes":[{"label":"回月典首頁","href":"/"}]},
-    "runes": {"hosts":["lrunes.lo3rwang.cc","loc.lo3rwang.cc/runes"],"basePath":"/runes","functions":{"context":"https://lrunes.lo3rwang.cc/context","statics":"https://lrunes.lo3rwang.cc/statics","evolution":"https://lrunes.lo3rwang.cc/evolution","governance":"https://lrunes.lo3rwang.cc/governance","search":"https://lrunes.lo3rwang.cc/search"},"reserved":{"label":"語彙","href":"/runes"},"role":[{"label":"作者頁面","href":"https://whoami.lo3rwang.cc"}],"homes":[{"label":"回月之符文首頁","href":"/runes"},{"label":"回月典首頁","href":"https://loc.lo3rwang.cc"}]},
-    "author": {"host":"whoami.lo3rwang.cc","basePath":"/","functions":{"context":"https://whoami.lo3rwang.cc/context","statics":"https://whoami.lo3rwang.cc/statics","evolution":"https://whoami.lo3rwang.cc/evolution","governance":"https://whoami.lo3rwang.cc/governance","search":"https://whoami.lo3rwang.cc/search"},"reserved":{"label":"風格詞","href":"/"},"role":[{"label":"管理者頁面","href":"https://manage.lo3rwang.cc"}],"homes":[{"label":"回作者頁面","href":"/"},{"label":"回月典首頁","href":"https://loc.lo3rwang.cc"}]},
-    "governance": {"host":"manage.lo3rwang.cc","basePath":"/","functions":{"context":"https://manage.lo3rwang.cc/context","statics":"https://manage.lo3rwang.cc/statics","evolution":"https://manage.lo3rwang.cc/evolution","governance":"https://manage.lo3rwang.cc/governance","search":"https://manage.lo3rwang.cc/search"},"reserved":{"label":"治理規則","href":"/"},"role":[{"label":"管理者頁面","href":"https://manage.lo3rwang.cc"}],"homes":[{"label":"回治理頁面","href":"/"},{"label":"回月典首頁","href":"https://loc.lo3rwang.cc"}]}
+    "loc": {
+      "host": "loc.lo3rwang.cc",
+      "basePath": "/",
+      "functions": {
+        "context": "https://loc.lo3rwang.cc/context",
+        "statics": "https://loc.lo3rwang.cc/statics",
+        "culture": "https://loc.lo3rwang.cc/culture",
+        "governance": "https://loc.lo3rwang.cc/governance",
+        "search": "https://loc.lo3rwang.cc/search"
+      },
+      "reserved": {
+        "label": "月之符文",
+        "href": "https://lrunes.lo3rwang.cc/"
+      },
+      "role": [
+        {
+          "label": "作者介紹",
+          "href": "https://lo3rwang.lo3rwang.cc/"
+        }
+      ],
+      "homes": [
+        {
+          "label": "回月典首頁",
+          "href": "https://loc.lo3rwang.cc/"
+        }
+      ]
+    },
+    "runes": {
+      "host": "lrunes.lo3rwang.cc",
+      "basePath": "/",
+      "functions": {
+        "context": "https://lrunes.lo3rwang.cc/context",
+        "statics": "https://lrunes.lo3rwang.cc/statics",
+        "culture": "https://lrunes.lo3rwang.cc/culture",
+        "governance": "https://lrunes.lo3rwang.cc/governance",
+        "search": "https://lrunes.lo3rwang.cc/search"
+      },
+      "reserved": {
+        "label": "語彙",
+        "href": "https://lrunes.lo3rwang.cc/list"
+      },
+      "role": [
+        {
+          "label": "管理者介紹",
+          "href": "https://admin.lo3rwang.cc/"
+        }
+      ],
+      "homes": [
+        {
+          "label": "回月之符文首頁",
+          "href": "https://lrunes.lo3rwang.cc/"
+        },
+        {
+          "label": "回月典首頁",
+          "href": "https://loc.lo3rwang.cc/"
+        }
+      ]
+    },
+    "lo3rwang": {
+      "host": "lo3rwang.lo3rwang.cc",
+      "basePath": "/",
+      "functions": {
+        "context": "https://lo3rwang.lo3rwang.cc/context",
+        "statics": "https://lo3rwang.lo3rwang.cc/statics",
+        "culture": "https://lo3rwang.lo3rwang.cc/culture",
+        "governance": "https://lo3rwang.lo3rwang.cc/governance",
+        "search": "https://lo3rwang.lo3rwang.cc/search"
+      },
+      "reserved": {
+        "label": "簡介",
+        "href": "https://lo3rwang.lo3rwang.cc/"
+      },
+      "role": [
+        {
+          "label": "管理者介紹",
+          "href": "https://admin.lo3rwang.cc/"
+        }
+      ],
+      "homes": [
+        {
+          "label": "回作者簡介",
+          "href": "https://lo3rwang.lo3rwang.cc/"
+        },
+        {
+          "label": "回月典首頁",
+          "href": "https://loc.lo3rwang.cc/"
+        }
+      ]
+    },
+    "governance": {
+      "host": "admin.lo3rwang.cc",
+      "basePath": "/",
+      "functions": {
+        "context": "https://admin.lo3rwang.cc/context",
+        "statics": "https://admin.lo3rwang.cc/statics",
+        "culture": "https://admin.lo3rwang.cc/culture",
+        "governance": "https://admin.lo3rwang.cc/governance",
+        "search": "https://admin.lo3rwang.cc/search"
+      },
+      "reserved": {
+        "label": "管理",
+        "href": "https://admin.lo3rwang.cc/"
+      },
+      "role": [
+        {
+          "label": "管理者介紹",
+          "href": "https://admin.lo3rwang.cc/"
+        }
+      ],
+      "homes": [
+        {
+          "label": "回管理首頁",
+          "href": "https://admin.lo3rwang.cc/"
+        },
+        {
+          "label": "回月典首頁",
+          "href": "https://loc.lo3rwang.cc/"
+        }
+      ]
+    }
   }
 }
