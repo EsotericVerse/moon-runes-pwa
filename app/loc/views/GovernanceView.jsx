@@ -51,7 +51,7 @@ const SECTIONS = [
       <p>採用 LOC 不代表取得作者身分、其他 Scope 的資料所有權、寫入權或治理權；授權與 Scope Authority 是不同層次。</p>
     </>,
     links:[
-      {href:'/search?q=Copyleft',label:'查看授權說明',text:'查找 Copyleft、來源標示與商業使用相關文件。'}
+      {href:'/governance#copyleft',label:'查看授權說明',text:'查看 Copyleft、來源標示與商業使用相關說明。'}
     ]
   },
   {
