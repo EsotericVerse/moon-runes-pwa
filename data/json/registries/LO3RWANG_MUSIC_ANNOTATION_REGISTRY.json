@@ -2,7 +2,7 @@
   "schema_version": "0.1",
   "registry": "LO3RWANG_MUSIC_ANNOTATION_REGISTRY",
   "authority": "lo3rwang",
-  "updated_at": "2026-09-09",
+  "updated_at": "2026-09-18",
   "purpose": "Author-confirmed overrides and semantic notes for LOC3 works. These records override heuristic missing-tag flags without inventing unsupported labels.",
   "emotion_model": {
     "rule": "Emotion is optional. Rational/expository/system-observation songs may be complete without an emotion tag.",
@@ -471,5 +471,57 @@
       "handling": "defer_keyword_analysis_until_explained"
     }
   },
-  "authority_domain": "music"
+  "authority_domain": "music",
+  "playlist_contexts": [
+    {
+      "playlist": "順其自然",
+      "role": "Suno 摸索與自由的風前段",
+      "summary": "像學生時代面對未知工具：先學、先做、不預設最後答案。重點是允許不知道，逐步找到自己的使用方式與位置。"
+    },
+    {
+      "playlist": "節奏王者",
+      "role": "初步掌握創作工具後的能力辨識",
+      "summary": "辨認自己的強項主要在節拍、推進、句子落點與情緒節奏，而不是把自己定義成以歌唱技巧為核心的歌手。"
+    },
+    {
+      "playlist": "微月光",
+      "role": "細膩情緒與平易近人建議",
+      "summary": "以真實、細膩的情感描述為基礎，提供不強迫、不過度承諾、具體而現實的小建議；不是用強烈希望覆蓋黑暗。"
+    },
+    {
+      "playlist": "微月光・暗影篇章",
+      "role": "黑暗與低潮的直接描寫",
+      "summary": "描述情緒本身，承認痛苦、失落與陰影確實存在。因為真的經驗過，才讓後續的微小建議具有重量；不是為黑暗而黑暗。"
+    },
+    {
+      "playlist": "浪潮系列",
+      "role": "節拍推進與潮汐式情緒",
+      "summary": "把低潮、推進、高潮、退潮寫成如衝浪般的節奏。重點不是成功本身，而是如何借力、如何在高潮之後繼續面對下一段。"
+    },
+    {
+      "playlist": "單身也很好",
+      "role": "情緒權威與關係自主",
+      "summary": "感情不再拿有沒有伴侶證明完整；允許喜歡、期待、交往或單身，核心是尊重、自我位置與不預支期待。"
+    },
+    {
+      "playlist": "白晝之月",
+      "role": "微月光的現實校正",
+      "summary": "白天月亮仍在，只是很淡。延伸出日蝕與月蝕兩種陰暗面：日蝕對應親近者突然離去的生離死別；月蝕對應親密關係中的背叛。"
+    },
+    {
+      "playlist": "人生月台",
+      "role": "轉換中繼站與邊界",
+      "summary": "允許不知道，讓過去與現在在邊界上交錯；先整理、以古鑑今、做好斷捨離，再等待或選擇下一班車。"
+    },
+    {
+      "playlist": "自由的風",
+      "role": "班次進站後的上車與找位子",
+      "summary": "不是單純描寫自由，而是像高鐵自由座：方向已開啟、位置尚未固定，保留任意可能；與無／Blank／all possibilities 形成文化對照。"
+    },
+    {
+      "playlist": "治理自己",
+      "role": "自由的月 Current",
+      "summary": "車子已經開了。整理過去、解析經驗、確認邊界、責任與航向，讓過去不再替未來做決定。"
+    }
+  ]
 }

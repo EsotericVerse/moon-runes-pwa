@@ -2,7 +2,7 @@
   "schema_version": "2.0",
   "definition_version": "2.0",
   "registry": "LOC_ERA_REGISTRY",
-  "updated_at": "2026-09-14",
+  "updated_at": "2026-09-18",
   "authority": {
     "loc": "Culture",
     "source_type": "Period Definition",
@@ -86,7 +86,7 @@
       "status": "released",
       "period_type": "segment",
       "definition_version": "2.0",
-      "description": "Suno 開始啟用並進入音樂創作階段；目前可確認的最早作品建立於 2025-02-21。"
+      "description": "Suno 開始啟用並進入音樂創作摸索階段；像學生時代面對未知工具，先學習與試作，不預設最後形式。此時逐步辨認節拍、推進與句子落點等個人長處。"
     },
     {
       "era_id": "ERA-P6.0",
@@ -125,7 +125,7 @@
       "status": "released",
       "period_type": "segment",
       "definition_version": "2.0",
-      "description": "微月光、關係敘事、自我認知與陪伴主題集中的階段。"
+      "description": "微月光、關係敘事、自我認知與陪伴主題集中的階段。微月光以真實細膩的情緒描述與平易近人的小建議為核心；暗影篇章直接描寫低潮與陰影，使後續的微光具有現實重量。"
     },
     {
       "era_id": "ERA-P7.0",
@@ -138,7 +138,7 @@
       "status": "released",
       "period_type": "segment",
       "definition_version": "2.0",
-      "description": "政德風正式成為主要治理與語言方法的階段，包含自我檢討、人生月台、順其自然與界線整理。"
+      "description": "政德風正式成為主要治理與語言方法的階段，包含浪潮式情緒推進、單身也很好的人際自主、白晝之月的現實校正、人生月台的轉換邊界、順其自然與界線整理。"
     },
     {
       "era_id": "ERA-P7.1",
@@ -151,7 +151,7 @@
       "status": "released",
       "period_type": "segment",
       "definition_version": "2.0",
-      "description": "脫困、起飛、自由、選擇與重新取得主動權的階段。"
+      "description": "自由的風不是抽象歌頌自由，而是人生月台後新班次進站、上車尋找位置的過程；方向已開啟但位置尚未固定，像自由座一樣保留任意可能。"
     },
     {
       "era_id": "ERA-P7.2",
@@ -164,7 +164,7 @@
       "status": "current",
       "period_type": "segment",
       "definition_version": "2.0",
-      "description": "自由之後進入治理自己、整理歷史、建立秩序並主動選擇未來方向的 Current 階段。"
+      "description": "自由的月／自我治理 Current：車子已經啟程。重點是整理歷史、解析經驗、建立秩序、確認邊界與責任，讓過去不再替未來做決定，並主動治理下一段航向。"
     }
   ],
   "legacy_period_map": {
@@ -185,5 +185,6 @@
     "scope": "LOC-wide",
     "display_term": "時期",
     "milestone_rule": "重要事件日期以 Milestone／Event 疊加，不因單一平台、作品完成、改名或命名事件自動新增時期。"
-  }
+  },
+  "creative_lineage_note": "正式 ERA 負責日期與 Current 時期；歌曲系列、播放清單與創作階段可跨 ERA，作為文化／作品脈絡使用，不反向改寫時期邊界。"
 }
