@@ -33,8 +33,23 @@ const RESERVED_LANDING_ROUTES=new Map([
 function landingKey(value){
   return String(value||'').normalize('NFKC').trim().toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,' ');
 }
-export function resolveReservedLanding(query){
-  return RESERVED_LANDING_ROUTES.get(landingKey(query))||'';
+export function resolveReservedLanding(query,host=''){
+  const key=landingKey(query);
+  const h=String(host||'').toLowerCase();
+  if(h==='lrunes.lo3rwang.cc'){
+    const scoped=new Map([
+      ['音樂','https://lrunes.lo3rwang.cc/music'],
+      ['文字創作','https://lrunes.lo3rwang.cc/literary'],
+      ['多媒體','https://lrunes.lo3rwang.cc/multimedia'],
+      ['演算法','https://lrunes.lo3rwang.cc/algorithm'],
+      ['脈絡','https://lrunes.lo3rwang.cc/context'],
+      ['文化','https://lrunes.lo3rwang.cc/culture'],
+      ['治理','https://lrunes.lo3rwang.cc/governance'],
+      ['faq','https://lrunes.lo3rwang.cc/faq']
+    ]);
+    if(scoped.has(key))return scoped.get(key);
+  }
+  return RESERVED_LANDING_ROUTES.get(key)||'';
 }
 
 function tokens(value){
