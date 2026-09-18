@@ -12,9 +12,7 @@ for(const [id,domain] of Object.entries(expectedDomains)){
   if(SCOPES_V2[id]?.domain!==domain)failures.push(id+' domain mismatch');
   if(resolveScopeV2(domain,'/')!==id)failures.push(domain+' scope mismatch');
   if(resolveScopeV2(domain+':443','/')!==id)failures.push(domain+' port normalization mismatch');
-  for(const feature of FEATURES_V2){
-    if(featureHrefV2(id,feature.id)!==`https://${domain}/${feature.path}`)failures.push(id+'/'+feature.id+' route mismatch');
-  }
+  for(const feature of FEATURES_V2)if(featureHrefV2(id,feature.id)!==`https://${domain}/${feature.path}`)failures.push(id+'/'+feature.id+' route mismatch');
 }
 
 const root=path.resolve('app/modular-v2');
@@ -44,6 +42,7 @@ for(const name of ['ContextV2','StatisticsV2','CultureV2','GovernanceV2','Search
 if(locApp.includes('EvolutionView')||locApp.includes('evolution:CultureView'))failures.push('obsolete evolution runtime still active');
 if(!fs.readFileSync('app/globals.css','utf8').includes('./styles/v2/scope-system.v2.css'))failures.push('V2 CSS not imported');
 if(!fs.readFileSync('app/site-registry.js','utf8').includes("from './modular-v2/scope-registry.v2'"))failures.push('compat registry does not derive from V2');
+if(!fs.readFileSync('app/theme-registry.js','utf8').includes("from './modular-v2/theme-registry.v2'"))failures.push('compat theme registry does not derive from V2');
 
 if(failures.length){console.error('[modular-v2] violations:\n'+failures.join('\n'));process.exit(1);}
-console.log('[modular-v2] Current cutover verified: 4 scopes, 5 shared features, one registry/runtime/CSS namespace');
+console.log('[modular-v2] Current cutover verified: 4 scopes, 5 shared features, one scope registry, one theme registry, one CSS namespace');
