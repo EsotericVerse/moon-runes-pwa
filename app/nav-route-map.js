@@ -4,7 +4,7 @@ const functionRoutes=origin=>Object.fromEntries(FUNCTION_NAMES.map(name=>[name,`
 
 export function detectNavScope(pathname='/',host=''){
   if(host==='lrunes.lo3rwang.cc'||pathname==='/runes'||pathname.startsWith('/runes/'))return 'runes';
-  if(host==='lo3rwang.lo3rwang.cc'||pathname==='/lo3rwang'||pathname.startsWith('/lo3rwang/'))return 'author';
+  if(host==='lo3rwang.lo3rwang.cc'||pathname==='/lo3rwang'||pathname.startsWith('/lo3rwang/'))return 'lo3rwang';
   if(host==='admin.lo3rwang.cc'||pathname==='/management'||pathname.startsWith('/management/'))return 'governance';
   return 'loc';
 }
@@ -19,7 +19,7 @@ export function getNavScopeConfig(scope,host=''){
       homes:[['回月之符文首頁','https://lrunes.lo3rwang.cc/'],['回月典首頁','https://loc.lo3rwang.cc/']]
     };
   }
-  if(scope==='author'){
+  if(scope==='lo3rwang'){
     return {
       base:'',
       functions:functionRoutes('https://lo3rwang.lo3rwang.cc'),
