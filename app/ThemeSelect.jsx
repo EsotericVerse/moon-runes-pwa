@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useNeonSetting } from './loc/use-neon-setting';
 
 const STORAGE_KEY='loc-theme';
 
@@ -15,31 +16,19 @@ function applyTheme(mode){
 }
 
 export default function ThemeSelect(){
-  const [mode,setMode]=useState('auto');
+  const {value:mode,setValue:setMode}=useNeonSetting(STORAGE_KEY,'auto');
+  const safeMode=['auto','light','dark'].includes(mode)?mode:'auto';
 
+  useEffect(()=>{applyTheme(safeMode)},[safeMode]);
   useEffect(()=>{
-    const saved=localStorage.getItem(STORAGE_KEY);
-    const initial=saved==='light'||saved==='dark'||saved==='auto'?saved:'auto';
-    setMode(initial);
-    applyTheme(initial);
-  },[]);
-
-  useEffect(()=>{
-    if(mode!=='auto') return undefined;
+    if(safeMode!=='auto')return undefined;
     const timer=window.setInterval(()=>applyTheme('auto'),60000);
-    return ()=>window.clearInterval(timer);
-  },[mode]);
-
-  function handleChange(event){
-    const next=event.target.value;
-    setMode(next);
-    localStorage.setItem(STORAGE_KEY,next);
-    applyTheme(next);
-  }
+    return()=>window.clearInterval(timer);
+  },[safeMode]);
 
   return <label className="loc-theme-control">
     <span>主題</span>
-    <select value={mode} onChange={handleChange} aria-label="主題">
+    <select value={safeMode} onChange={event=>setMode(event.target.value)} aria-label="主題">
       <option value="auto">隨時間</option>
       <option value="light">永日</option>
       <option value="dark">永夜</option>
