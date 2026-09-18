@@ -1,10 +1,8 @@
 {
-  "schema_version": "0.6",
+  "schema_version": "0.7",
   "registry": "LOC_GRAPH_SCHEMA",
-  "authority": "LOC2",
-  "purpose": "Shared node/edge contract for LOC context Graph. LOC2 owns relation/context semantics; LOC7 implements Graph RAG traversal/retrieval algorithms; LOC8 consumes graph projections for time/ERA/literary-evolution views.",
+  "purpose": "Shared node/edge contract for the Current context Graph projection. Graph consumes governed Scope records and reusable Features without creating ownership or authority.",
   "node_types": [
-    "loc_domain",
     "rune",
     "lot",
     "scenario_event",
@@ -19,7 +17,6 @@
     "character"
   ],
   "edge_types": [
-    "owned_by_loc",
     "has_lot",
     "belongs_to_era",
     "derived_from",
@@ -38,19 +35,21 @@
   ],
   "rules": [
     "Graph nodes are references to authoritative records, not replacement copies.",
+    "Current graph nodes may expose scope_id only when a governed source explicitly provides it; missing Scope is not guessed.",
+    "feature_ids are derived from governed content-type/record metadata and describe reusable capabilities, never ownership.",
+    "Historical LOC1–8 identifiers may remain only in provenance or compatibility source data and are never Current graph anchors.",
     "Canonical edges require explicit registry evidence, authoritative metadata, or deterministic structural evidence.",
     "Semantic similarity may select seed nodes but must never create a canonical edge by itself.",
-    "ERA-P0 through current ERA form a deterministic temporal backbone from LOC_ERA_REGISTRY.",
-    "Search-time result nodes may receive transient owned_by_loc, belongs_to_era, and media/work linkage edges from their own recorded metadata.",
-    "Graph traversal is bounded and feeds Search Synthesis with connected LOCs, ERA paths, works, media and analysis nodes.",
-    "LOC2 owns graph relation/context semantics; LOC7 manages Graph RAG traversal/retrieval algorithms; LOC8 owns ERA/time authority and consumes graph projections for literary-evolution views.",
-    "LOC8 repository snapshots may contribute public temporal/event observation nodes without replacing the live Google Sheet authority.",
-    "Private LOC8 Google Sheet Relation rows are never exposed through public Search unless they are explicitly governed into a public registry/snapshot.",
+    "ERA records form a deterministic temporal backbone from LOC_ERA_REGISTRY.",
+    "Search-time result nodes may receive transient belongs_to_era and media/work linkage edges from recorded metadata.",
+    "Graph traversal is bounded and feeds Search Synthesis with connected Features, ERA paths, works, media and analysis nodes.",
+    "Repository temporal/event snapshots may contribute public observation nodes without replacing their owning Scope authority.",
+    "Private source relations are never exposed through public Search unless explicitly governed into a public registry/snapshot.",
     "Search responses expose a provenance envelope summarizing source_refs and graph evidence kinds/status.",
     "Every traversable edge carries edge_quality and quality_band derived from relation type, evidence kind and evidence status.",
     "Traversal priority is quality-weighted and decays by hop; paths below min_traversal_score are not expanded.",
-    "owned_by_loc and belongs_to_era are directional structural projections and must not be used as reverse-discovery hubs.",
-    "Named/historical entity queries may use exclusive canonical seeds; abstract concept queries retain cross-LOC retrieval breadth.",
+    "belongs_to_era is a directional structural projection and must not be used as a reverse-discovery hub.",
+    "Named/historical entity queries may use exclusive canonical seeds; abstract concept queries retain cross-source retrieval breadth.",
     "Public Graph access is metadata-only by default; graph payload requires a bounded center or query-driven Search result."
   ],
   "search_synthesis": {
@@ -59,7 +58,7 @@
     "traversal_depth_max": 3,
     "output": [
       "era_path",
-      "loc_path",
+      "feature_path",
       "connected_results",
       "paths",
       "provenance"
@@ -76,7 +75,7 @@
       "edge.quality_band",
       "edge.traversal_score"
     ],
-    "public_relation_policy": "Only governed public relation/context snapshots are exposed. LOC2 owns relation semantics; private source rows remain private until explicitly published.",
+    "public_relation_policy": "Only governed public relation/context snapshots are exposed. Private source rows remain private until explicitly published; Graph does not create Scope ownership.",
     "quality_contract": "graph.quality + provenance.graph_quality_bands"
   },
   "quality_policy": {
@@ -113,7 +112,6 @@
       "unknown": 0.5
     },
     "relation_weights": {
-      "owned_by_loc": 1,
       "belongs_to_era": 1,
       "temporal_before": 0.98,
       "temporal_after": 0.98,
@@ -132,8 +130,6 @@
     }
   },
   "public_access": {
-    "owner": "LOC7",
-    "consumer": "LOC8 Graph View",
     "default_response": "metadata_only",
     "bulk_export": false,
     "neighborhood_requires_node_id": true,
@@ -142,9 +138,13 @@
     "rules": [
       "GET /search/graph without node_id returns counts/type metadata only and never the canonical node/edge payload.",
       "Actual graph payload is exposed only through bounded neighborhood lookup or query-driven Search Graph results.",
-      "LOC8 Graph View consumes the public bounded projection; it does not become the canonical graph authority.",
-      "Live private LOC8 Relation rows remain outside public Graph unless explicitly governed into a public registry/snapshot."
+      "Views consume the public bounded projection and do not become canonical graph authority.",
+      "Live private relation rows remain outside public Graph unless explicitly governed into a public registry/snapshot."
     ]
   },
-  "authority_domain": "context"
+  "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
+  "feature_ids": [
+    "context_graph",
+    "rag"
+  ]
 }
