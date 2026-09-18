@@ -1,4 +1,3 @@
-import ThemeControl from '../ThemeControl';
 import LocaleControl from '../LocaleControl';
 
 export default function SettingsView(){
@@ -12,8 +11,7 @@ export default function SettingsView(){
     <section className="loc-card">
       <p className="loc-eyebrow">Display</p>
       <h2>顯示與主題</h2>
-      <p className="loc-subtitle">調整網站的語系與白天、夜晚顯示方式。</p>
-      <ThemeControl />
+      <p className="loc-subtitle">Theme 切換統一放在 Footer；此處保留其他使用者顯示設定。</p>
       <LocaleControl />
     </section>
 
