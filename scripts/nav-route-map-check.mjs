@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 const map=JSON.parse(fs.readFileSync('scripts/nav-route-map.json','utf8'));
-const expected=['context','statics','evolution','governance','search'];
+const expected=['context','statics','culture','governance','search'];
 if(JSON.stringify(map.sharedFunctions)!==JSON.stringify(expected)){throw new Error('Shared NAV functions drifted');}
 for(const scope of ['loc','runes','author','governance'])if(!map.scopes[scope])throw new Error(`Missing NAV scope: ${scope}`);
 for(const [scope,cfg] of Object.entries(map.scopes)){
