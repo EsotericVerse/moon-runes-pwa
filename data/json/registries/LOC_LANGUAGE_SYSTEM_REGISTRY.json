@@ -43,15 +43,15 @@
           "canonical_name": "LOC",
           "english_name": "Luna Codex",
           "chinese_name": "月典",
-          "framework_name_en": "Language Module Framework",
-          "framework_name_zh": "語言系統模組框架",
+          "framework_name_en": "Modular Language Framework",
+          "framework_name_zh": "模組化語言框架",
           "equivalence": "LOC = Luna Codex = 月典"
         },
         "runes": {
           "canonical_name": "LunaRunes",
           "chinese_name": "月之符文",
-          "module_name_en": "Symbolic Language Module",
-          "module_name_zh": "符號式語言模組",
+          "module_name_en": "Symbolic Language",
+          "module_name_zh": "符號式語言",
           "equivalence": "LunaRunes = 月之符文",
           "informal_aliases": [
             "月符",

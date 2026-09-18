@@ -1,9 +1,9 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "registry": "LOC_EVOLUTION_SHARED_REGISTRY",
   "authority": "LOC Evolution shared data layer",
   "purpose": "提供符文演化與語言推演共同引用的時間、事件、關係與來源契約；共用資料只定義一次，不在兩條演化資料中複製。",
-  "updated_at": "2026-09-12",
+  "updated_at": "2026-09-18",
   "shared_authorities": {
     "eras": {
       "registry": "data/json/registries/LOC_ERA_REGISTRY.json",
@@ -69,5 +69,45 @@
     "missing_large_corpus_must_not_be_fabricated": true,
     "track_specific_interpretation_may_differ": true,
     "rule": "同一原始資料可被兩條演化共同引用，但符文演化與語言推演的 interpretation 分開保存。"
+  },
+  "cross_scope_projection": {
+    "label": "LOC Cross-Scope Trajectory Projection",
+    "rule": "LunaRunes 與 lo3rwang 各自保留自己的 authority、history 與 provenance；LOC 可在不轉移 ownership 的前提下，依共同時間、事件、關係、作品、概念與來源組合成跨 Scope Timeline／Trajectory。",
+    "source_scopes": [
+      "LunaRunes",
+      "lo3rwang",
+      "LOC"
+    ],
+    "projection_dimensions": [
+      "concept",
+      "keyword",
+      "date",
+      "era",
+      "event",
+      "relation",
+      "work",
+      "source",
+      "provenance",
+      "status",
+      "confidence"
+    ],
+    "ownership_rule": "合併表示不等於合併母資料；每個節點與 edge 必須保留 source_scope 與 source_ref。"
+  },
+  "search_trajectory_contract": {
+    "goal": "關鍵字搜尋不只找到文件，也能找到概念的前因後果。",
+    "result_facets": {
+      "current": "這個詞／概念目前是什麼",
+      "origin": "最早可追溯來源",
+      "trajectory": "中間狀態與變化",
+      "relations": "目前與歷史上可驗證的關係",
+      "why": "由 provenance 支持的前因後果路徑"
+    },
+    "path_model": "keyword → entity/concept → relations → dated states → provenance → contextual/causal path → source material",
+    "rules": [
+      "同詞不同義不得因字面相同自動合併。",
+      "Historical、Current、Hypothesis、Fiction 等 status 必須保留。",
+      "Why 路徑只能由已有 source/relation/provenance 組合，不得由搜尋層補造因果。",
+      "LOC 可跨 Scope 投影；LunaRunes 與 lo3rwang 的原始 authority 不因此轉移。"
+    ]
   }
 }

@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "registry": "ANALYSIS_LINGUISTIC_REGISTRY",
   "historical_registry_id": "LOC7_LINGUISTIC_ANALYSIS_REGISTRY",
   "governance_authority": "data/json/registries/LOC_DATA_GOVERNANCE.json",
@@ -72,5 +72,55 @@
   },
   "boundary_note": "Linguistic, retrieval and KM/RAG capabilities are reusable Features. They consume records inside a governed Scope without taking ownership of that Scope. Meaning/value/governance and temporal analysis are separate Features, not numbered-module owners.",
   "historical_boundary": "LOC7 is retained only as a Historical/provenance identifier in migration evidence; it is not Current architecture, filename identity or authority.",
-  "updated_at": "2026-09-17"
+  "updated_at": "2026-09-18",
+  "text_architecture": {
+    "status": "working_current",
+    "scope": "individual_scale",
+    "definition": "以可追溯的實際使用材料為基礎，觀察語言／文字模組如何組合與累積，據此推論形成的個人語言結構與文化風格。",
+    "architectural_reason": "稱為 Architecture，因為分析必須考慮實際使用狀況、材料、脈絡與時間；不能只依抽象排列建立空中樓閣。",
+    "method_chain": [
+      "actual_material",
+      "module_identification",
+      "relation_context",
+      "module_composition",
+      "accumulated_structure",
+      "traceable_inference"
+    ],
+    "inference_policy": {
+      "provenance_required": true,
+      "revisable_with_new_evidence": true,
+      "essence_judgment": false,
+      "first_impression_labeling": false,
+      "note": "結果是有來源的推論，不是對人的永久本質分類。"
+    },
+    "scale_boundary": {
+      "included": [
+        "個人文字使用",
+        "個人語言結構",
+        "個人文化風格",
+        "跨時期個人結構變化"
+      ],
+      "excluded_as_primary_scope": [
+        "社區整體文化",
+        "群聚／團體整體語言",
+        "社會尺度大文化"
+      ],
+      "note": "群體與社會尺度可由 LOC 其他 Context/Culture/Evolution 能力分析，但不要求 Text Architecture 解釋整體文化。"
+    },
+    "evolution_relation": "Text Architecture 的可追溯結構推論屬於 LOC 推演的一個具體應用。"
+  },
+  "inference_evolution": {
+    "label": "推演",
+    "definition": "在已知材料、假設與關係的約束下，推導材料尚未直接陳述的結構、結果或可能發展。",
+    "not_limited_to": [
+      "未來預測",
+      "趨勢預測",
+      "占卜"
+    ],
+    "provenance_required": true,
+    "examples": {
+      "text_architecture": "實際材料 → 模組化 → 關係／脈絡 → 組合結構 → 可追溯的推論 → 推演",
+      "hypothetical_fiction": "明確假設 → 約束／關係 → 內部一致的可能結果"
+    }
+  }
 }

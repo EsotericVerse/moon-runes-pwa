@@ -3,7 +3,7 @@
 ## Responsibility model
 
 ```text
-lo3rwang.cc             lo3rwang personal identity and public portal
+lo3rwang.lo3rwang.cc    lo3rwang personal Scope home / manager home\nlo3rwang.cc             base domain and public portal
 loc.lo3rwang.cc         LOC model, knowledge, governance, search, context, evolution
 lrunes.lo3rwang.cc      LunaRunes product identity and rune reference
 app.lo3rwang.cc         interactive applications and workspace

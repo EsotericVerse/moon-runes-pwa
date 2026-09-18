@@ -12,7 +12,7 @@
   "classification": {
     "LOC": {
       "type": "framework",
-      "canonical_role": "語言系統模組框架",
+      "canonical_role": "模組化語言框架",
       "responsibility": [
         "分析拆解",
         "組織彙整",
