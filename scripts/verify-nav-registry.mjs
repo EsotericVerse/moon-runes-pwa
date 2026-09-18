@@ -19,6 +19,6 @@ if(!globalNav.includes('ScopeNavV2'))throw new Error('GlobalNav must render Scop
 for(const token of ['FEATURES_V2','featureHrefV2','useScopeRuntimeV2'])if(!scopeNav.includes(token))throw new Error('ScopeNavV2 missing '+token);
 if(!compatNav.includes('./modular-v2/ScopeNavV2'))throw new Error('ScopeNav compatibility entry must delegate to V2');
 for(const token of ['whoami.lo3rwang.cc','manage.lo3rwang.cc','/evolution','NAV1','NAV2','NAV3'])if((globalNav+scopeNav+compatNav).includes(token))throw new Error('Forbidden obsolete NAV token: '+token);
-if(resolveScopeV2('loc.lo3rwang.cc','/runes/statics')!=='runes')throw new Error('LunaRunes mount must resolve to runes Scope');
+if(resolveScopeV2('loc.lo3rwang.cc','/lrunes/statics')!=='runes')throw new Error('LunaRunes mount must resolve to runes Scope');
 if(resolveScopeV2('loc.lo3rwang.cc','/lo3rwang/statics')!=='lo3rwang')throw new Error('author mount must resolve to lo3rwang Scope');
 console.log('V2 registry-driven single NAV verified with bounded directory mounts.');
