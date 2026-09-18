@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { fetchLocJsonBatch, LOC_DATA } from '../loc/data';
 import { putNeonRecord } from '../loc/neon-user-storage';
 import { useNeonAccount } from '../loc/use-neon-account';
 import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
 import { realMoonPhase } from '../loc/model/moon-phase';
+import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
 const DIRECTIONS = ['正位', '半正位', '半逆位', '逆位'];
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
@@ -22,12 +22,12 @@ const MODES = [
   { key: 'ow3gs', count: 11, label: '11卡 OW3gs', positions: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'] }
 ];
 const MODE_PATHS = Object.freeze({
-  single: '/duel/one',
-  daily: '/duel/daily',
-  '2card': '/duel/two',
-  '3card': '/duel/three',
-  '5card': '/duel/five',
-  ow3gs: '/duel/ow3gs'
+  single: scopeHrefV2('runes','duel/one'),
+  daily: scopeHrefV2('runes','duel/daily'),
+  '2card': scopeHrefV2('runes','duel/two'),
+  '3card': scopeHrefV2('runes','duel/three'),
+  '5card': scopeHrefV2('runes','duel/five'),
+  ow3gs: scopeHrefV2('runes','duel/ow3gs')
 });
 const ROUTE_MODES = Object.freeze(Object.fromEntries(Object.entries(MODE_PATHS).map(([mode, path]) => [path.split('/').filter(Boolean).at(-1), mode])));
 
@@ -151,7 +151,6 @@ function MultiReading({ draw, mode, phase }) {
 }
 
 export default function RuneDrawClient({ initialModeKey = '' }) {
-  const router = useRouter();
   const account = useNeonAccount();
   const { value: uiSettings } = useLocalStore(UI_SETTINGS_KEY, DEFAULT_UI_SETTINGS);
   const [data, setData] = useState(null);
@@ -198,7 +197,7 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
     setRecordStatus('');
     setModeKey(key);
     setDraw(null);
-    router.replace(MODE_PATHS[key] || '/duel/one', { scroll: false });
+    window.location.assign(MODE_PATHS[key] || MODE_PATHS.single);
   }
 
   function finishDraw() {
