@@ -1,3 +1,5 @@
+import ThemeControl from '../ThemeControl';
+import LocaleControl from '../LocaleControl';
 import { PageComposition } from '../../PageComposition';
 
 const PRINCIPLES = [
@@ -23,22 +25,26 @@ const PRINCIPLES = [
 const SECTIONS = [
   {
     id:'principles',
-    eyebrow:'Principles',
-    title:'治理原則',
-    subtitle:'所有 Scope 共用原則，但各自主體與權威仍然分開。',
+    eyebrow:'Governance',
+    title:'治理概念',
+    subtitle:'先確認 Scope、權威與責任，再決定資料怎麼被使用、呈現與修改。',
     content:<>
       <p className="loc-core-line"><strong>鑑古知今，求同存異</strong><br/><strong>不在其位，不謀其政</strong><br/><strong>隨心所欲，而不逾己</strong></p>
       <details>
         <summary>查看完整 Current 治理原則</summary>
         <div className="loc-rule-list">{PRINCIPLES.map(([title,body])=><p key={title}><strong>{title}</strong><br/>{body}</p>)}</div>
       </details>
+      <p>歷史資料必須保留，但歷史語意不得重新取得 Current authority。版本、舊名稱與形成過程屬 provenance；Current 只採目前有效定義。</p>
+      <div className="loc-actions">
+        <a className="loc-button" href="/governance/history">歷史與治理紀錄</a>
+      </div>
     </>
   },
   {
     id:'copyleft',
-    eyebrow:'Copyleft',
+    eyebrow:'Legal / Copyleft',
     title:'法律與授權宣告',
-    subtitle:'方法可以學，來源要保留；治理權、資料權與商業權責仍須分清楚。',
+    subtitle:'方法可以學，來源要保留；資料權、治理權、作者身分與商業權責分開。',
     content:<>
       <p>LOC 以 Copyleft 為根本方向：基本方法論可供研究、理解與延伸，但必須保留必要來源、作者與修改標示；衍生商業使用與專業實作依個案另行治理。</p>
       <p>採用 LOC 不代表取得作者身分、其他 Scope 的資料所有權、寫入權或治理權；授權與 Scope Authority 是不同層次。</p>
@@ -48,30 +54,34 @@ const SECTIONS = [
     ]
   },
   {
-    id:'history',
-    eyebrow:'History',
-    title:'演變與歷史',
-    subtitle:'Current 只說現在有效的定義；歷史負責留下它怎麼走到現在。',
+    id:'settings-management',
+    eyebrow:'Settings / Management',
+    title:'設定管理',
+    subtitle:'主站自己的顯示與管理選項留在治理頁；最高層系統管理才進入 admin.lo3rwang.cc。',
     content:<>
-      <p>歷史資料本身不是污染。只有歷史語意被誤升格成 Current 權威時，才形成治理污染。舊 Canon、舊分類、舊名稱與舊架構都保留作為來源，不反向覆寫 Current。</p>
-    </>,
-    links:[
-      {href:'/governance/history',label:'歷史查詢／治理紀錄',text:'跨 Scope 查看版本、來源、重大變更與治理紀錄。'}
-    ]
-  },
-  {
-    id:'management',
-    eyebrow:'Management',
-    title:'管理功能',
-    subtitle:'治理不是只寫原則，也要能實際管理 Scope、版本、權限與資料狀態。',
-    content:<>
-      <p>管理功能處理 Scope、ERA、納入審核、修正標記、授權寫入、資料狀態與其他治理操作。LOC 可統合查看，但資料與 Current Authority 仍由所屬 Scope 保有。</p>
-    </>,
-    links:[
-      {href:'/management',label:'管理者功能',text:'Scope、ERA、納入審核、修正標記與授權寫入。'},
-      {href:'/runes/governance',label:'符文治理',text:'LunaRunes 的 Master Data、Grammar、語意與符文歷史。'},
-      {href:'https://lo3rwang.lo3rwang.cc/governance',label:'作者治理',text:'作者身份、政德風、作品脈絡、個人 ERA 與作者歷史。'}
-    ]
+      <div className="loc-grid two">
+        <section className="loc-card">
+          <h3>顯示與 Theme</h3>
+          <p>全站共用同一套 CSS 與 Theme Registry；此處調整目前 Scope 的顯示模式。</p>
+          <ThemeControl />
+          <LocaleControl />
+        </section>
+        <section className="loc-card">
+          <h3>主站管理</h3>
+          <p>管理主站 Scope 的資料、時期、分類與其他 Current 設定。這些設定不取得其他 Scope 的治理權。</p>
+          <div className="loc-actions">
+            <a className="loc-button" href="/library">資料庫</a>
+            <a className="loc-button" href="/style-groups">群組設定</a>
+            <a className="loc-button" href="/classify">分類</a>
+          </div>
+        </section>
+      </div>
+      <section className="loc-card">
+        <h3>最高管理</h3>
+        <p><code>admin.lo3rwang.cc</code> 是特殊的最高管理入口；它不取代各 Scope 自己的治理頁。</p>
+        <div className="loc-actions"><a className="loc-button primary" href="https://admin.lo3rwang.cc/">開啟最高管理</a></div>
+      </section>
+    </>
   }
 ];
 
@@ -79,9 +89,9 @@ export default function GovernanceView(){
   return <PageComposition
     eyebrow="Governance"
     title="治理"
-    subtitle="先說清楚誰能管什麼，再談系統怎麼做。"
+    subtitle="治理概念、法律宣告與設定管理都回到主站治理頁；最高系統管理另由 admin.lo3rwang.cc 承接。"
     intro={<>
-      <p>LOC Governance 是整個系統的治理入口：總覽 Current 原則、Scope 關係、權威邊界、授權與歷史，但不取代 LunaRunes、Author 或其他 Scope 對自身資料的治理。</p>
+      <p>LOC Governance 是月典主站的治理入口：總覽 Current 原則、Scope 關係、權威邊界、授權與主站設定；LunaRunes、個人網頁與其他 Scope 仍治理自己的資料。</p>
       <p className="loc-core-line">Current Canon → Scope Model × Feature Model → Page Composition</p>
     </>}
     sections={SECTIONS}
