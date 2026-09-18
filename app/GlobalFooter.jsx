@@ -24,7 +24,7 @@ export default function GlobalFooter(){
 
   useEffect(()=>{
     let live=true;
-    getScopeContact(scope).then(value=>{if(live)setContact(value)}).catch(()=>{if(live)setContact(null)});
+    getScopeContact(scope==='governance'?'admin':scope).then(value=>{if(live)setContact(value)}).catch(()=>{if(live)setContact(null)});
     return()=>{live=false};
   },[scope]);
 
