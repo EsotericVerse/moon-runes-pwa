@@ -27,7 +27,7 @@ export const SCOPES_V2=Object.freeze({
   }),
   runes:Object.freeze({
     id:'runes',scopeType:'domain',domain:'lrunes.lo3rwang.cc',aliasName:null,label:'月之符文',
-    mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/runes'}),
+    mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     primary:Object.freeze({label:'語彙',href:'https://lrunes.lo3rwang.cc/list'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
