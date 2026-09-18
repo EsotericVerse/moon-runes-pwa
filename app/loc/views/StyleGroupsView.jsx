@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { fetchLocJson, LOC_DATA } from '../data';
-import { useLocalStore, removeById, updateById } from '../local-store';
+import { removeById, updateById } from '../local-store';
+import { useNeonSetting } from '../use-neon-setting';
 import { buildRuneSuggestionRegistry, classifyText } from '../model/style-classifier';
 import {
   INITIAL_STYLE_PROFILE,
@@ -16,18 +17,17 @@ import {
   parseStyleTerms,
   styleTermsText
 } from '../model/style-profile';
-import { exportRecordsJson, googleDriveStorage, readRecordsJsonFile } from '../storage';
+import { exportJson, readJsonFile } from '../file-utils';
 
-const DRIVE_FILE='loc-style-groups.json';
+const EXPORT_FILE='loc-style-groups.json';
 
 export default function StyleGroupsView({embedded=false}){
-  const {value:data,setValue:setData,reset,isPersistent}=useLocalStore(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
+  const {value:data,setValue:setData,reset,status:syncStatus,account}=useNeonSetting(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
   const [message,setMessage]=useState('');
   const [suggestions,setSuggestions]=useState([]);
   const [testText,setTestText]=useState('');
   const groups=data?.groups||[];
   const fallback=data?.fallback||INITIAL_STYLE_PROFILE.fallback;
-  const driveReady=googleDriveStorage.configured();
 
   useEffect(()=>{
     let live=true;
@@ -61,34 +61,25 @@ export default function StyleGroupsView({embedded=false}){
     setMessage(suggestions.length?'已套用月之符文八組模板與 canonical 關鍵詞建議。':'已套用月之符文八組模板；關鍵詞建議尚未載入。');
   };
   const importFile=async event=>{
-    try{setData(normalizeStyleProfile(await readRecordsJsonFile(event.target.files?.[0])));setMessage('已從本機檔案匯入設定。');}
+    try{setData(normalizeStyleProfile(await readJsonFile(event.target.files?.[0])));setMessage('已匯入並同步到 Neon。');}
     catch(error){setMessage(`匯入失敗：${error.message}`);}
     event.target.value='';
   };
-  const saveDrive=async()=>{
-    try{await googleDriveStorage.saveJson(DRIVE_FILE,data);setMessage('已存到自己的 Google Drive appDataFolder。');}
-    catch(error){setMessage(`Google Drive 儲存失敗：${error.message}`);}
-  };
-  const loadDrive=async()=>{
-    try{setData(normalizeStyleProfile(await googleDriveStorage.loadJson(DRIVE_FILE)));setMessage('已從自己的 Google Drive 讀回群組設定。');}
-    catch(error){setMessage(`Google Drive 讀取失敗：${error.message}`);}
-  };
 
   return <section className={embedded?'':'loc-view'}>
-    {!embedded&&<header className="loc-hero"><p className="loc-eyebrow">Local Style Groups</p><h1>群組設定</h1><p>8 個可自訂群組 + 第 9 預設承接組。設定以本機為主；每組最多 64 個關鍵詞、8 個 NOR，採 exact match。月之符文只提供可刪改的符號型語言模板。</p></header>}
+    {!embedded&&<header className="loc-hero"><p className="loc-eyebrow">Neon Style Groups</p><h1>群組設定</h1><p>8 個可自訂群組 + 第 9 預設承接組。登入後設定同步到 Neon；每組最多 64 個關鍵詞、8 個 NOR，採 exact match。</p></header>}
     {embedded&&<section className="loc-card"><p className="loc-eyebrow">Groups · 群組</p><h2>群組設定</h2><p>8 個可自訂群組 + 第 9 預設承接組。群組屬於個人設定的一部分；每組最多 64 個關鍵詞、8 個 NOR，採 exact match。</p></section>}
     <section className="loc-card">
       <div className="loc-actions">
+        {!account.user&&<button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>}
         <button className="loc-button primary" onClick={addGroup} disabled={groups.length>=MAX_STYLE_GROUPS}>＋新增群組</button>
         <button className="loc-button" onClick={useTemplate}>套用月之符文模板</button>
-        <button className="loc-button" onClick={()=>exportRecordsJson(data,DRIVE_FILE)}>匯出 JSON</button>
+        <button className="loc-button" onClick={()=>exportJson(data,EXPORT_FILE)}>匯出 JSON</button>
         <label className="loc-button">匯入 JSON<input className="loc-hidden-input" type="file" accept="application/json,.json" onChange={importFile}/></label>
-        <button className="loc-button" onClick={saveDrive} disabled={!driveReady}>存到 Google Drive</button>
-        <button className="loc-button" onClick={loadDrive} disabled={!driveReady}>從 Google Drive 讀取</button>
-        <button className="loc-button" onClick={()=>{reset();setMessage('已重設本機設定。')}}>重設</button>
+        <button className="loc-button" onClick={()=>{reset();setMessage('已重設 Neon 設定。')}} disabled={!account.user}>重設</button>
       </div>
       <div className="loc-metrics"><div><small>群組</small><strong>{stats.groups}/{MAX_STYLE_GROUPS}</strong></div><div><small>關鍵詞</small><strong>{stats.keywords}</strong></div><div><small>NOR</small><strong>{stats.nor}</strong></div></div>
-      <p className="loc-status">{isPersistent?'本機持久化中':'目前瀏覽器無法持久化，設定只保留於本次工作階段。'}{driveReady?' Google Drive 僅在手動存／讀時使用 OAuth。':' Google Drive OAuth 尚未設定 client ID。'}</p>
+      <p className="loc-status">{account.loading?'正在確認 Neon 帳號…':account.user?`Neon 已登入：${account.user.email||account.user.name||'使用者'}`:'尚未登入；目前修改只停留在本次畫面，登入後才會同步。'} {syncStatus}</p>
       {message&&<p className="loc-status">{message}</p>}
     </section>
 
