@@ -8,7 +8,7 @@ const ZHENGDE_CULTURE_COLLECTION = Object.freeze({
   description: '搜尋政德文化的文字、歌曲、治理資料與文化關鍵字；用時期、概念與作品一起理解演變。',
   scopeProfile:Object.freeze({id:'personal',fields:Object.freeze(['person','era','source','corpus','language','culture'])}),
   smallSources: [
-    [LOC_DATA.ZHENGDE_CULTURE_KEYWORDS, '政德文化'],
+    [LOC_DATA.LO3RWANG_CULTURE_KEYWORDS, '政德文化'],
     [LOC_DATA.WRITING_REGISTRY, '文字創作'],
     [LOC_DATA.GOVERNANCE_REGISTRY, '治理']
   ],
@@ -32,7 +32,7 @@ export const SEARCH_COLLECTIONS = Object.freeze({
       [LOC_DATA.LOC_MEDIA_REGISTRY, '多媒體'],
       [LOC_DATA.LOC_KNOWLEDGE_ASSET_REGISTRY, '知識庫'],
       [LOC_DATA.LOC_FAQ, 'FAQ'],
-      [LOC_DATA.ZHENGDE_CULTURE_KEYWORDS, '政德文化']
+      [LOC_DATA.LO3RWANG_CULTURE_KEYWORDS, '政德文化']
     ],
     includeTextCorpus: true,
     includeMusic: true
