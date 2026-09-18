@@ -47,6 +47,13 @@ if(!fs.readFileSync('app/theme-registry.js','utf8').includes("from './modular-v2
 for(const retired of ['ContextView.jsx','StaticsView.jsx','EvolutionView.jsx','GovernanceView.jsx','SearchView.jsx']){
   if(fs.existsSync(path.resolve('app/loc/views',retired)))failures.push('retired shared feature returned: '+retired);
 }
+for(const retiredRoute of ['app/author','app/zhengde']){
+  if(fs.existsSync(path.resolve(retiredRoute)))failures.push('retired author route returned: '+retiredRoute);
+}
+const lo3rwangRoute=path.resolve('app/lo3rwang/page.jsx');
+if(!fs.existsSync(lo3rwangRoute))failures.push('missing /lo3rwang compatibility route');
+else if(!fs.readFileSync(lo3rwangRoute,'utf8').includes('https://lo3rwang.lo3rwang.cc/'))failures.push('/lo3rwang must redirect to author domain');
+
 const currentFiles=['app/loc/search-collections.js','app/loc/GovernanceManagement.jsx'];
 for(const file of currentFiles){
   const source=fs.readFileSync(file,'utf8');
@@ -56,4 +63,4 @@ const bridge=fs.readFileSync('app/migration-bridges/current-data-compat.v2.js','
 if(!/LOC[0-8]/.test(bridge))failures.push('legacy physical identifiers should be isolated in the migration bridge');
 
 if(failures.length){console.error('[modular-v2] violations:\n'+failures.join('\n'));process.exit(1);}
-console.log('[modular-v2] Current cutover verified: 4 scopes, 5 shared features, one scope registry, one theme registry, isolated legacy data ids');
+console.log('[modular-v2] Current cutover verified: 4 scopes, 5 shared features, canonical author route, one scope registry, one theme registry, isolated legacy data ids');
