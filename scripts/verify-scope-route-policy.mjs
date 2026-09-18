@@ -47,14 +47,22 @@ if(policy.hosts?.['lrunes.lo3rwang.cc']?.redirect){
 const workerSource=readFileSync('scripts/edge/cloudflare-scope-router.js','utf8');
 for(const token of [
   'scope-route-policy.json',
-  'sec-fetch-dest',
-  'sec-fetch-mode',
+  'isAssetPath',
+  "'/_next/'",
+  "'/assets/'",
+  "'/pics/'",
+  "'/data/'",
+  "'/docs/'",
   'hostPolicy.allow',
   "status:404",
   'hostPolicy.redirect',
-  'ORIGIN_BASE'
+  'ORIGIN_BASE',
+  '.html is intentionally NOT treated as an asset'
 ]){
   if(!workerSource.includes(token))failures.push('Cloudflare Scope worker missing '+token);
+}
+if(workerSource.includes('sec-fetch-dest')||workerSource.includes('sec-fetch-mode')){
+  failures.push('Cloudflare Scope worker still uses old browser-header gate');
 }
 for(const domain of Object.keys(policy.hosts)){
   if(workerSource.includes(domain))failures.push('Cloudflare Scope worker must not hard-code domain '+domain);
