@@ -1,3 +1,4 @@
+import { FAQ_LINKS } from '../loc/system-links';
 import './rune-atlas-governance.css';
 import './runes-content.css';
 import RuneDrawClient from './RuneDrawClient';
@@ -64,6 +65,7 @@ export default function RunesPage() {
         </a>)}
       </div>
       <p className="runes-quick-start-note">沒有特別想問的？也可以直接抽每日符文。</p>
+      <div className="loc-actions"><a className="loc-button" href={FAQ_LINKS.runes}>月之符文 FAQ</a></div>
       <div className="loc-actions"><a className="loc-button" href="/duel/daily">抽每日符文</a></div>
     </section>
 
