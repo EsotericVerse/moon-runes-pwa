@@ -1,3 +1,4 @@
+import LocSystemQuickLinks from '../../LocSystemQuickLinks';
 import ThemeControl from '../ThemeControl';
 import LocaleControl from '../LocaleControl';
 import { PageComposition } from '../../PageComposition';
@@ -91,6 +92,7 @@ export default function GovernanceView(){
     title="治理"
     subtitle="治理概念、法律宣告與設定管理都回到主站治理頁；最高系統管理另由 admin.lo3rwang.cc 承接。"
     intro={<>
+      <LocSystemQuickLinks />
       <p>LOC Governance 是月典主站的治理入口：總覽 Current 原則、Scope 關係、權威邊界、授權與主站設定；LunaRunes、個人網頁與其他 Scope 仍治理自己的資料。</p>
       <p className="loc-core-line">Current Canon → Scope Model × Feature Model → Page Composition</p>
     </>}
