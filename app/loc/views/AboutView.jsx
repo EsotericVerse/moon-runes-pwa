@@ -1,10 +1,24 @@
 import ModelArchitectureExplorer from './ModelArchitectureExplorer';
+import {featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
+
+const RUNES_LINKS=Object.freeze({
+  home:scopeHrefV2('runes'),
+  list:scopeHrefV2('runes','list'),
+  single:scopeHrefV2('runes','duel/one'),
+  daily:scopeHrefV2('runes','duel/daily'),
+  two:scopeHrefV2('runes','duel/two'),
+  three:scopeHrefV2('runes','duel/three'),
+  five:scopeHrefV2('runes','duel/five'),
+  ow3gs:scopeHrefV2('runes','duel/ow3gs'),
+  context:featureHrefV2('runes','context'),
+  governance:featureHrefV2('runes','governance')
+});
 
 const MODEL_MODULES=[
   {
     key:'runes', name:'LunaRunes', zh:'月之符文', summary:'語彙',
     detail:'月之符文作提供固定符文資料、組合語法與可追溯的語意參照',
-    href:'lrunes.lo3rwang.cc', depth:'deep'
+    href:RUNES_LINKS.home, depth:'deep'
   },
   {
     key:'context', name:'Context', zh:'脈絡', summary:'關係圖',
@@ -67,7 +81,7 @@ export default function AboutView(){
       </div>
       <div className="home-rune-layout">
         <div className="home-author-copy">
-          <p>不用管月之符文是什麼，<a href= "/runes?mode=single">抽了就知道！</a>可以是問事，可以是決定當日生活主題風格的<a href="/runes?mode=daily">每日符文</a>。</p>
+          <p>不用管月之符文是什麼，<a href={RUNES_LINKS.single}>抽了就知道！</a>可以是問事，可以是決定當日生活主題風格的<a href={RUNES_LINKS.daily}>每日符文</a>。</p>
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
           <p>你也可以完全不抽牌，直接跳過，往下看或看上面連結的脈絡、統計、文化、治理等，
 		  <br/>或是看看<a href="/faq">FAQ</a>，
@@ -88,8 +102,8 @@ export default function AboutView(){
         </div>
         <div className="home-rune-copy home-rune-copy-plain">
           <p>不知道怎麼說的話，往下抽牌就對了！</p><p>沒什麼想問的，抽個每日符文看看吧！</p><p>月之符文的特有66符文字會給你提示籤詩，指引你的可能未來，</p><p>能是祝福可能是警告，你當然擁有選擇權。</p><p>抽牌讓這符文成語意種子，成為語意起點，<br/>用你想要的方式，成長成為完整語意的成熟果實。</p><p>最後的選擇權仍然在你的手上！</p>
-          <div className="home-draw-bubbles" aria-label="選擇抽牌方式"><a className="loc-bubble" href="/runes?mode=single">抽單張</a><a className="loc-bubble" href="/runes?mode=daily">抽每日指示</a><a className="loc-bubble" href="/runes?mode=2card">抽兩張</a><a className="loc-bubble" href="/runes?mode=3card">抽三張</a><a className="loc-bubble" href="/runes?mode=5card">抽五張</a><a className="loc-bubble" href="/runes?mode=ow3gs">抽11張</a></div>
-          <div className="loc-actions home-rune-links"><a className="loc-button" href="/runes">符文圖鑑</a><a className="loc-button" href="/runes#governance">解牌規則</a><a className="loc-button" href="/runes#context">符文脈絡</a></div>
+          <div className="home-draw-bubbles" aria-label="選擇抽牌方式"><a className="loc-bubble" href={RUNES_LINKS.single}>抽單張</a><a className="loc-bubble" href={RUNES_LINKS.daily}>抽每日指示</a><a className="loc-bubble" href={RUNES_LINKS.two}>抽兩張</a><a className="loc-bubble" href={RUNES_LINKS.three}>抽三張</a><a className="loc-bubble" href={RUNES_LINKS.five}>抽五張</a><a className="loc-bubble" href={RUNES_LINKS.ow3gs}>抽11張</a></div>
+          <div className="loc-actions home-rune-links"><a className="loc-button" href={RUNES_LINKS.list}>符文圖鑑</a><a className="loc-button" href={RUNES_LINKS.governance}>解牌規則</a><a className="loc-button" href={RUNES_LINKS.context}>符文脈絡</a></div>
         </div>
       </div>
     </section>
