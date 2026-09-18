@@ -42,14 +42,14 @@
         "LOC到底在做什麼？",
         "可以簡單介紹LOC嗎？"
       ],
-      "answer": "LOC（Luna Codex／月典）是 Language Module Framework／語言系統模組框架。Current 架構以 Scope Model × Feature Model → Page Composition 組合資料範圍、可重用功能與頁面；LOC1–8 僅可作歷史／來源識別。",
+      "answer": "LOC（Luna Codex／月典）是 Modelized Language Framework／模型化語言框架。Current 架構以 Scope Model × Feature Model → Page Composition 組合資料範圍、可重用功能與頁面；LOC1–8 僅可作歷史／來源識別。",
       "keywords": [
         "LOC",
         "Luna Codex",
         "月典",
         "個人語言系統",
         "自我治理",
-        "語言系統模組框架",
+        "模型化語言框架",
         "LOC1–8",
         "不同型態的語言資料",
         "創作文字",
@@ -60,7 +60,7 @@
         "跨LOC關聯",
         "時間結構"
       ],
-      "retrieval_text": "LOC是什麼 LOC是什麼？ 什麼是LOC？ 月典是什麼？ LOC到底在做什麼？ 可以簡單介紹LOC嗎？ LOC Luna Codex 月典 個人語言系統 自我治理 語言系統模組框架 LOC1–8 不同型態的語言資料 創作文字 歌詞 多媒體影片 資料統整 共同檢索 跨LOC關聯 時間結構 LOC（Luna Codex／月典）是 Language Module Framework／語言系統模組框架。Current 架構以 Scope Model × Feature Model → Page Composition 組合資料範圍、可重用功能與頁面；LOC1–8 僅可作歷史／來源識別。",
+      "retrieval_text": "LOC是什麼 LOC是什麼？ 什麼是LOC？ 月典是什麼？ LOC到底在做什麼？ 可以簡單介紹LOC嗎？ LOC Luna Codex 月典 個人語言系統 自我治理 模型化語言框架 LOC1–8 不同型態的語言資料 創作文字 歌詞 多媒體影片 資料統整 共同檢索 跨LOC關聯 時間結構 LOC（Luna Codex／月典）是 Modelized Language Framework／模型化語言框架。Current 架構以 Scope Model × Feature Model → Page Composition 組合資料範圍、可重用功能與頁面；LOC1–8 僅可作歷史／來源識別。",
       "related_ids": [],
       "source_refs": [
         "master-system:2026-09"
@@ -81,7 +81,7 @@
         "月符在LOC裡是什麼位置？",
         "為什麼說月符為種？"
       ],
-      "answer": "LOC／月典是 Language Module Framework／語言系統模組框架；LunaRunes／月之符文是 Symbolic Language Module／符號式語言模組。LunaRunes 是可運作的獨立模組，但不定義 LOC 的 Current 架構。",
+      "answer": "LOC／月典是 Modelized Language Framework／模型化語言框架；LunaRunes／月之符文是 Symbolic Language／符號式語言。LunaRunes 是可運作的獨立模組，但不定義 LOC 的 Current 架構。",
       "keywords": [
         "月典",
         "Luna Codex",
@@ -93,7 +93,7 @@
         "月符為種",
         "框架"
       ],
-      "retrieval_text": "月典（LOC／Luna Codex）和月之符文（LunaRunes）有什麼關係 月典（LOC／Luna Codex）和月之符文（LunaRunes）有什麼關係？ LOC和月符是同一件事嗎？ 月典和月符有什麼差別？ Luna Codex與LunaRunes有什麼差別？ 月符在LOC裡是什麼位置？ 為什麼說月符為種？ 月典 Luna Codex LOC 月符 LunaRunes 基本參照 語意種子 月符為種 框架 LOC／月典是 Language Module Framework／語言系統模組框架；LunaRunes／月之符文是 Symbolic Language Module／符號式語言模組。LunaRunes 是可運作的獨立模組，但不定義 LOC 的 Current 架構。",
+      "retrieval_text": "月典（LOC／Luna Codex）和月之符文（LunaRunes）有什麼關係 月典（LOC／Luna Codex）和月之符文（LunaRunes）有什麼關係？ LOC和月符是同一件事嗎？ 月典和月符有什麼差別？ Luna Codex與LunaRunes有什麼差別？ 月符在LOC裡是什麼位置？ 為什麼說月符為種？ 月典 Luna Codex LOC 月符 LunaRunes 基本參照 語意種子 月符為種 框架 LOC／月典是 Modelized Language Framework／模型化語言框架；LunaRunes／月之符文是 Symbolic Language／符號式語言。LunaRunes 是可運作的獨立模組，但不定義 LOC 的 Current 架構。",
       "related_ids": [],
       "source_refs": [
         "index.html",
@@ -2569,21 +2569,21 @@
       "id": "FAQ-091-A",
       "category": "LOC 基本定義",
       "intent": "為什麼 LOC 稱為 LM 而不是小型語言架構",
-      "question": "為什麼 LOC 稱為 Language Module Framework，而不是只稱為 framework？",
+      "question": "為什麼 LOC 稱為 Modelized Language Framework，而不是只稱為 framework？",
       "aliases": [
         "LOC為什麼不只是一個framework？",
         "LOC是LM還是framework？",
         "LOC的LM和一般LLM有什麼不同？"
       ],
-      "answer": "LOC／月典的現行正式身份固定為 Language Module Framework／語言系統模組框架；LunaRunes／月之符文固定為 Symbolic Language Module／符號式語言模組。Current 架構是 Scope Model × Feature Model → Page Composition。",
+      "answer": "LOC／月典的現行正式身份固定為 Modelized Language Framework／模型化語言框架；LunaRunes／月之符文固定為 Symbolic Language／符號式語言。Current 架構是 Scope Model × Feature Model → Page Composition。",
       "keywords": [
-        "Language Module Framework",
+        "Modelized Language Framework",
         "LM",
         "framework",
         "architecture",
-        "Symbolic Language Module",
+        "Symbolic Language",
         "LunaRunes",
-        "語言系統模組框架"
+        "模型化語言框架"
       ],
       "related_ids": [],
       "source_refs": [
@@ -2594,7 +2594,7 @@
       "canon_version": "1.0",
       "status": "confirmed",
       "parent_id": "FAQ-091",
-      "retrieval_text": "為什麼 LOC 稱為 LM 而不是小型語言架構 為什麼 LOC 稱為 Language Module Framework，而不是只稱為 framework？ LOC為什麼不只是一個framework？ LOC是LM還是framework？ LOC的LM和一般LLM有什麼不同？ Language Module Framework LM framework architecture Symbolic Language Module LunaRunes 語言系統模組框架 LOC／月典的現行正式身份固定為 Language Module Framework／語言系統模組框架；LunaRunes／月之符文固定為 Symbolic Language Module／符號式語言模組。Current 架構是 Scope Model × Feature Model → Page Composition。"
+      "retrieval_text": "為什麼 LOC 稱為 LM 而不是小型語言架構 為什麼 LOC 稱為 Modelized Language Framework，而不是只稱為 framework？ LOC為什麼不只是一個framework？ LOC是LM還是framework？ LOC的LM和一般LLM有什麼不同？ Modelized Language Framework LM framework architecture Symbolic Language LunaRunes 模型化語言框架 LOC／月典的現行正式身份固定為 Modelized Language Framework／模型化語言框架；LunaRunes／月之符文固定為 Symbolic Language／符號式語言。Current 架構是 Scope Model × Feature Model → Page Composition。"
     },
     {
       "id": "FAQ-092-A",
@@ -2608,20 +2608,20 @@
         "LOC怎麼商業化？",
         "LOC開源後靠什麼收費？"
       ],
-      "answer": "LOC 是一套可重複使用的語言系統模組框架。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言模組。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。",
+      "answer": "LOC 是一套可重複使用的模型化語言框架。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。",
       "keywords": [
         "LOC",
-        "Language Module Framework",
-        "語言系統模組框架",
+        "Modelized Language Framework",
+        "模型化語言框架",
         "LunaRunes",
-        "Symbolic Language Module",
+        "Symbolic Language",
         "開源",
         "顧問服務",
         "系統架構",
         "治理設計",
         "客製化實作"
       ],
-      "retrieval_text": "LOC 的主要定位與商業模式 LOC 的主要定位與商業模式是什麼？ LOC最主要的定位是什麼？ LunaRunes和LOC的關係是什麼？ LOC怎麼商業化？ LOC開源後靠什麼收費？ LOC Language Module Framework 語言系統模組框架 LunaRunes Symbolic Language Module 開源 顧問服務 系統架構 治理設計 客製化實作 LOC 是一套可重複使用的語言系統模組框架。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言模組。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。",
+      "retrieval_text": "LOC 的主要定位與商業模式 LOC 的主要定位與商業模式是什麼？ LOC最主要的定位是什麼？ LunaRunes和LOC的關係是什麼？ LOC怎麼商業化？ LOC開源後靠什麼收費？ LOC Modelized Language Framework 模型化語言框架 LunaRunes Symbolic Language 開源 顧問服務 系統架構 治理設計 客製化實作 LOC 是一套可重複使用的模型化語言框架。LunaRunes（月之符文）證明了這套模型可以被實作為一個實際運作的符號式語言。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。",
       "related_ids": [],
       "source_refs": [
         "data/json/registries/LOC_LANGUAGE_SYSTEM_REGISTRY.json",

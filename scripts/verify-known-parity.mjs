@@ -22,7 +22,7 @@ for (const path of [
 if (existsSync(resolve(root, 'lib'))) failures.push('lib/ must not be recreated; shared JavaScript belongs in js/');
 
 requireText('app/loc/views/AboutView.jsx', [
-  'LOC月典', '語言模型框架（Language Model Framework）',
+  'LOC月典', '模型化語言框架（Modelized Language Framework）',
   '<section className="loc-card home-copy-block home-beginner" id="beginner">',
   '<section className="loc-card home-copy-block home-rune-section">',
   '<div className="home-rune-preview" aria-label="命之符文示例">',

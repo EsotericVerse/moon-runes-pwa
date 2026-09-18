@@ -48,15 +48,15 @@ export default function AboutView(){
     <header className="loc-hero">
       <div className="home-title-row">
         <h1>LOC月典</h1>
-        <p className="loc-subtitle">把語言整理成可理解、可搜尋、可推演的模型結構。</p>
+        <p className="loc-subtitle">把語言整理成可理解、可搜尋、可推演的模組結構。</p>
       </div>
       <div className="loc-hero-copy">
-        <p className="loc-core-line">月典(LOC,LunaCodex)是一套用來分析、整理、搜尋與推演的模型化語言框架（Modelized Language Framework）。
+        <p className="loc-core-line">月典（LOC，Luna Codex）是一套用來分析、拆解、組織、搜尋、治理並推演語言的模型化語言框架（Modelized Language Framework）。
 		<br/>月之符文(LunaRunes)是一套符號式語言（Symbolic Language），有自己獨立的說明方式。</p>
         <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，<br/>讓累積的資料可以繼續被理解、比較分析與推演。</p>
       </div>
       <figure className="home-hero-visual">
-        <img src="/pics/LOC-PicAll.png" alt="LOC 月典語言模型框架視覺理念圖" loading="eager" />
+        <img src="/pics/LOC-PicAll.png" alt="LOC 月典模型化語言框架視覺理念圖" loading="eager" />
       </figure>
     </header>
 
@@ -115,7 +115,7 @@ export default function AboutView(){
 
     <section className="loc-card home-author-words" id="author-words">
       <div className="home-section-heading"><p className="loc-eyebrow">About me</p><h2>作者的話</h2><p className="loc-subtitle">整理治理過去的已知，是為了把時間還給現在，對未知的未來做好準備。</p></div>
-      <div className="home-about-layout"><div className="home-author-copy"><p>月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用，採取的是不帶神秘學預設的中立態度，重在文字本身而不論道德。</p><p>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的語言模型框架；而月之符文，也在這個過程中演變成可被分析、治理與推演的符號式語言。</p><p>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構，才能進一步面對未來的各種可能。</p></div><figure className="home-about-figure"><img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" /></figure></div>
+      <div className="home-about-layout"><div className="home-author-copy"><p>月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用，採取的是不帶神秘學預設的中立態度，重在文字本身而不論道德。</p><p>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的模型化語言框架；而月之符文，也在這個過程中演變成可被分析、治理與推演的符號式語言。</p><p>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構，才能進一步面對未來的各種可能。</p></div><figure className="home-about-figure"><img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" /></figure></div>
     </section>
   </section>;
 }
