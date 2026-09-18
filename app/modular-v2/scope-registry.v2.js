@@ -17,7 +17,7 @@ const TIME_SCHEDULE_V2=Object.freeze([
 export const SCOPES_V2=Object.freeze({
   loc:Object.freeze({
     id:'loc',scopeType:'domain',domain:'loc.lo3rwang.cc',aliasName:null,label:'月典',
-    primary:Object.freeze({label:'月之符文',href:'https://loc.lo3rwang.cc/runes/'}),
+    primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
     role:Object.freeze({label:'作者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
     searchCollection:'all',
@@ -26,12 +26,12 @@ export const SCOPES_V2=Object.freeze({
     theme:Object.freeze({mode:'time',theme:'theme-7',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   }),
   runes:Object.freeze({
-    id:'runes',scopeType:'directory',domain:'lrunes.lo3rwang.cc',aliasName:'lrunes',label:'月之符文',
+    id:'runes',scopeType:'domain',domain:'lrunes.lo3rwang.cc',aliasName:'lrunes',label:'月之符文',
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/runes'}),
-    primary:Object.freeze({label:'語彙',href:'https://loc.lo3rwang.cc/runes/list'}),
+    primary:Object.freeze({label:'語彙',href:'https://lrunes.lo3rwang.cc/list'}),
     role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
-      {label:'回月之符文首頁',href:'https://loc.lo3rwang.cc/runes/'},
+      {label:'回月之符文首頁',href:'https://lrunes.lo3rwang.cc/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'月之符文',
@@ -98,7 +98,8 @@ export function getScopeV2(id){return SCOPES_V2[id]||SCOPES_V2.loc;}
 export function scopeOriginV2(scopeId){return `https://${getScopeV2(scopeId).domain}`;}
 export function scopeBaseHrefV2(scopeId){
   const scope=getScopeV2(scopeId);
-  return scope.mount?`https://${scope.mount.host}${cleanPath(scope.mount.path)}`:scopeOriginV2(scopeId);
+  if(scope.scopeType==='directory'&&scope.mount)return `https://${scope.mount.host}${cleanPath(scope.mount.path)}`;
+  return scopeOriginV2(scopeId);
 }
 export function featureHrefV2(scopeId,featureId){
   const feature=FEATURES_V2.find(item=>item.id===featureId);
