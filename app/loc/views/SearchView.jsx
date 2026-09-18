@@ -6,7 +6,6 @@ import { useLocalStore } from '../local-store';
 import { searchCollectionForHost } from '../search-collections';
 import { applySearchGovernance, firstGovernedMatch } from '../search-governance';
 import { recordSearchSegmentHits, rankSearchSegments, resolveReservedLanding } from '../search-routing';
-import { partitionSegmentsByScope } from '../search-scope';
 import { recordSearchTelemetry } from '../search-telemetry';
 
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
@@ -60,7 +59,6 @@ export default function SearchView(){
     const landing=resolveReservedLanding(q,window.location.hostname);
     if(landing){window.location.assign(landing);return;}
     const collection=searchCollectionForHost(window.location.hostname);
-    const activeScope=collection.scopeProfile?.id==='loc'?{}:{scope:[collection.scopeProfile?.id].filter(Boolean)};
     
     const id=++searchId.current;
     setPage(1);setError('');setResults([]);setCultureKeyword(null);setStatus(`搜尋「${collection.label}」資料…`);
@@ -89,9 +87,7 @@ export default function SearchView(){
         const started=performance.now();
         const dataset=await getLocDataDataset(datasetId);
         const sourceSegments=Array.isArray(dataset?.segments)?dataset.segments:[];
-        const partitioned=partitionSegmentsByScope(sourceSegments,activeScope);
-        const scopedSegments=[...partitioned.matched,...partitioned.unknown];
-        const segments=await rankSearchSegments(datasetId,scopedSegments,routingQuery);
+        const segments=await rankSearchSegments(datasetId,sourceSegments,routingQuery);
         let loadedSegments=0;let loadedBytes=0;let datasetHits=0;
         for(let offset=0;offset<segments.length&&found.length<MAX_RAW_RESULTS;offset+=SEGMENT_BATCH_SIZE){
           if(id!==searchId.current)return;
