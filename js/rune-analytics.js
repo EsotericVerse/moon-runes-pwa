@@ -36,7 +36,7 @@
       const resolvedRune=/^[靈魂彩憶界域鏡核向斷封鍊啟分悟誤生老病死心愛語韻樹花葉草根種實枝金玉晶地石鑽礦塵光暗水火風土雷氣日月星辰明時空因福禍無夢幻緣虛果玄命]$/.test(target)?target:null;
       const relation=x.kind||'derived';
       const status=relation==='balanced_ambiguity'?'ambiguous':relation.includes('out_of_domain')?'special':'confirmed';
-      return {term:parts[0]||x.title,relation,resolved_rune:resolvedRune,status,note:x.note||'',source:'LUNARUNE_EVOLUTION_HISTORY'};
+      return {term:parts[0]||x.title,relation,resolved_rune:resolvedRune,status,note:x.note||'',source:'LUNARUNE_CULTURE_HISTORY'};
     });
   }
 
