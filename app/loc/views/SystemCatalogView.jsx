@@ -49,7 +49,22 @@ export default function SystemCatalogView({kind}){
   useEffect(()=>{
     let alive=true;
     if(kind==='literary'){
-      fetchLocJson(LOC_DATA.WRITING_REGISTRY).then(data=>{if(alive){setRows((data?.works||[]).slice(0,24));setStatus('ready');}}).catch(()=>alive&&setStatus('error'));
+      const source=scope==='runes'?LOC_DATA.RUNE_LITERATURE_REGISTRY:LOC_DATA.WRITING_REGISTRY;
+      fetchLocJson(source).then(data=>{
+        if(!alive)return;
+        if(scope==='runes'){
+          const seen=new Set();
+          const entries=[];
+          for(const rune of data?.runes||[])for(const entry of rune?.entries||[]){
+            const key=entry.source_ref||entry.title||entry.entry_id;
+            if(!key||seen.has(key))continue;
+            seen.add(key);
+            entries.push({...entry,work_id:key,summary:entry.relation_note||entry.text||'',tags:entry.tags||[]});
+          }
+          setRows(entries);
+        }else setRows(data?.works||[]);
+        setStatus('ready');
+      }).catch(()=>alive&&setStatus('error'));
     }else if(kind==='multimedia'){
       fetchLocJson(LOC_DATA.LOC_MEDIA_REGISTRY).then(data=>{if(alive){setRows((data?.items||[]).slice(0,24));setStatus('ready');}}).catch(()=>alive&&setStatus('error'));
     }else if(kind==='music'){
@@ -66,9 +81,11 @@ export default function SystemCatalogView({kind}){
   },[kind,scope]);
 
   const runeRows=useMemo(()=>rows.filter(item=>{
+    if(kind==='literary'&&scope==='runes')return true;
+    if(kind==='music'&&scope==='runes')return item.rune_song_flag===true||Boolean(item.rune_provenance)||Boolean(item.draw_result)||Boolean(item.draw_mode);
     const text=[item.title,item.summary,item.style,item.retrieval_text,item.content_type,...(item.tags||[]),...(item.keywords||[])].filter(Boolean).join(' ').toLocaleLowerCase('zh-Hant');
     return /符文|lunarunes|rune/.test(text);
-  }),[rows]);
+  }),[rows,kind,scope]);
   const visibleRows=scope==='runes'&&(kind==='music'||kind==='literary')?runeRows:rows;
 
   const meta=useMemo(()=>{
@@ -76,7 +93,7 @@ export default function SystemCatalogView({kind}){
     if(kind==='literary')return scope==='runes'?{eyebrow:'LunaRunes · Literary',title:'符文文學',intro:'月之符文延伸到小說、短文與其他文字創作的展示頁。作品資料直接由文字作品 registry 投影，新增符合符文關聯的作品後會自動加入。',style:'符文不是作品分類標籤而已，而是作品中的語意種子、情境來源或組合方法；完整作品仍保留自己的版本、來源與文學結構。'}:{eyebrow:'Literary',title:'文字創作',intro:'小說、文章與其他文字作品的入口。先看作品與寫作類型，再依需要進入進階搜尋與脈絡分析。',style:'重視敘事、語意層次、版本與來源；作品可與音樂、事件、符文與治理資料建立關聯。'};
     if(kind==='multimedia')return {eyebrow:'MultiMedia',title:'多媒體',intro:'圖像、影音、Reels 與其他跨媒介作品入口。先看媒體作品，再進入更細的搜尋或脈絡。',style:'同一概念可以用文字、圖像、聲音與影音表達；媒體資料保留平台、來源與作品關聯。'};
     return STATIC[kind];
-  },[kind]);
+  },[kind,scope]);
 
   const items=STATIC[kind]?.items||visibleRows;
   return <main className="loc-next-main"><section className="loc-view scope-home-composition">
