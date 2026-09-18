@@ -172,7 +172,7 @@ export default function MediaView() {
             {sources.length ? <p className="loc5-source">來源：{sources.join(' · ')}</p> : null}
             <div className="loc5-item-actions">
               {url ? <a className="loc-button primary" href={url} target="_blank" rel="noreferrer">開啟原作品</a> : <span className="loc5-no-url">尚無可驗證公開網址</span>}
-              <a className="loc-button" href={`/search?q=${encodeURIComponent(text(item.title) || item.media_id)}`}>搜尋關聯</a>
+              <a className="loc-button" href="/search">進階搜尋</a>
             </div>
           </article>;
         })}
