@@ -29,6 +29,16 @@ export default function Lo3rwangPage() {
           <p><a href="/lo3rwang/governance">查看 lo3rwang 治理與詳細說明</a></p>
         </section>
 
+        <section className="loc-card" id="zhengde-style">
+          <p className="loc-eyebrow">Zhengde Style · 政德風</p>
+          <h2>真實，比喊得很亮更重要</h2>
+          <p>政德風重視真實而細膩地描述情感與現實，不把希望寫成保證，也不要求人一定照著某個答案前進。比起好高騖遠的口號，更傾向提出平易近人、具體、在當下可能做得到的小建議；不去做也可以，選擇權仍然留給自己。</p>
+          <p><strong>微月光</strong>是這種態度最早也最具代表性的意象：它不是強烈到要求所有人跟隨的希望之光，而是一道溫暖、渺小、可以參考的光。月光不命令人往哪裡走，只是在最深的夜裡、迷失方向的時候，提供一點能辨認道路的亮度。</p>
+          <p className="loc-core-line">不求成為你心中唯一的那道光；只願你在最深的夜裡迷失方向時，這道微月光能幫你看見一條可能走得出去的路。</p>
+          <p>這個方向不保證一定正確。我的角色比較接近提供分析、經驗與建議，讓需要的人多一個可以校對自己的角度；最後怎麼走，仍由每個人自己決定。</p>
+          <p><a href="/zhengde">查看政德文化與風格演化</a></p>
+        </section>
+
         <section className="loc-card" id="roles">
           <p className="loc-eyebrow">Roles</p>
           <h2>三個自我稱號</h2>
