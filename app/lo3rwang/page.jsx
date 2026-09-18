@@ -1,5 +1,10 @@
-import {redirect} from 'next/navigation';
+import LocApp from '../loc/LocApp';
+
+export const metadata={
+  title:'作者簡介｜lo3rwang',
+  description:'Lucas Oscar Wang 政德作者 Scope 首頁。'
+};
 
 export default function Lo3rwangCompatibilityPage(){
-  redirect('https://lo3rwang.lo3rwang.cc/');
+  return <LocApp/>;
 }
