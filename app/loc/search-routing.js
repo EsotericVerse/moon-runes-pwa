@@ -6,6 +6,37 @@ const MAX_KEYS=256;
 const MAX_SEGMENTS_PER_KEY=12;
 const runtimeStore={};
 
+const RESERVED_LANDING_ROUTES=new Map([
+  ['月典','https://loc.lo3rwang.cc/'],['loc','https://loc.lo3rwang.cc/'],['luna codex','https://loc.lo3rwang.cc/'],
+  ['月之符文','https://lrunes.lo3rwang.cc/'],['lunarunes','https://lrunes.lo3rwang.cc/'],
+  ['符文演算法','https://lrunes.lo3rwang.cc/algorithm'],['符文演算','https://lrunes.lo3rwang.cc/algorithm'],
+  ['符文歌曲','https://lrunes.lo3rwang.cc/music'],['符文音樂','https://lrunes.lo3rwang.cc/music'],
+  ['符文文學','https://lrunes.lo3rwang.cc/literary'],
+  ['符文多媒體','https://lrunes.lo3rwang.cc/multimedia'],
+  ['符文脈絡','https://lrunes.lo3rwang.cc/context'],
+  ['符文文化','https://lrunes.lo3rwang.cc/culture'],
+  ['符文治理','https://lrunes.lo3rwang.cc/governance'],
+  ['脈絡對戰','https://lrunes.lo3rwang.cc/duel/fight'],
+  ['音樂','https://loc.lo3rwang.cc/music'],
+  ['文字創作','https://loc.lo3rwang.cc/literary'],
+  ['多媒體','https://loc.lo3rwang.cc/multimedia'],
+  ['演算法','https://loc.lo3rwang.cc/algorithm'],
+  ['模組','https://loc.lo3rwang.cc/module'],
+  ['脈絡','https://loc.lo3rwang.cc/context'],
+  ['統計','https://loc.lo3rwang.cc/statics'],
+  ['文化','https://loc.lo3rwang.cc/culture'],
+  ['治理','https://loc.lo3rwang.cc/governance'],
+  ['loc faq','https://loc.lo3rwang.cc/faq'],
+  ['月之符文 faq','https://lrunes.lo3rwang.cc/faq']
+]);
+
+function landingKey(value){
+  return String(value||'').normalize('NFKC').trim().toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,' ');
+}
+export function resolveReservedLanding(query){
+  return RESERVED_LANDING_ROUTES.get(landingKey(query))||'';
+}
+
 function tokens(value){
   const text=String(value||'').normalize('NFKC').toLocaleLowerCase('zh-Hant');
   const out=[];
