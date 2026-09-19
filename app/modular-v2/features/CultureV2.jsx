@@ -17,7 +17,7 @@ function itemLabel(value,index){return value?.display_label||value?.name||value?
 
 const PROFILE=Object.freeze({
   loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。',sections:['eras','events']}),
-  runes:Object.freeze({subtitle:'月之符文文化：符號式語言在時間中的語意、治理與符文歷程。',sections:['runeHistory','runes']}),
+  runes:Object.freeze({subtitle:'月之符文的文化資料。',sections:[]}),
   lo3rwang:Object.freeze({subtitle:'作者文化：時期、作品語彙、創作與治理文字在時間中的變化。',sections:['eras','authorKeywords','periods']}),
   admin:Object.freeze({subtitle:'管理 Scope 的文化頁只呈現治理變化與歷史，不取代各 Scope 的 Current Authority。',sections:['governanceHistory']})
 });
@@ -38,7 +38,6 @@ export default function CultureV2(){
     const add=(key,path)=>{keys.push(key);requests.push(path);};
     if(wanted.has('eras'))add('eras',CULTURE_PATHS_V2.eraRegistry);
     if(wanted.has('events'))add('events',CULTURE_PATHS_V2.eventSnapshot);
-    if(wanted.has('runeHistory')||wanted.has('governanceHistory'))add('runeHistory',CULTURE_PATHS_V2.runeHistory);
     if(wanted.has('runes'))add('runes',CULTURE_PATHS_V2.runes);
     if(wanted.has('authorKeywords'))add('authorKeywords',CULTURE_PATHS_V2.authorKeywords);
     if(wanted.has('periods')){add('musicPeriods',CULTURE_PATHS_V2.musicPeriods);add('writingPeriods',CULTURE_PATHS_V2.writingGovernancePeriods);}
@@ -53,9 +52,6 @@ export default function CultureV2(){
   const eventRows=useMemo(()=>[...(data.events?.events||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))),[data.events]);
   const musicRows=periodRows(data.musicPeriods);
   const writingRows=periodRows(data.writingPeriods);
-  const runeStages=data.runeHistory?.system_stages||[];
-  const runeGovernance=data.runeHistory?.governance_evolution||[];
-  const runeCases=data.runeHistory?.semantic_history_cases||[];
   const authorKeywords=data.authorKeywords?.keywords||[];
 
   return <FeaturePageV2 featureId="culture" subtitle={profile.subtitle}>
@@ -76,15 +72,6 @@ export default function CultureV2(){
         <span>{item.date||''}</span>
         {item.description?<p>{item.description}</p>:null}
       </article>)}</div>
-    </ScopeCardV2>:null}
-
-    {profile.sections.includes('runeHistory')?<ScopeCardV2 eyebrow="LunaRunes Culture" title="符文語意與治理歷程">
-      <div className="scope-v2-timeline">{runeCases.map((item,index)=><article key={item.order||index}>
-        <strong>{item.title||itemLabel(item,index)}</strong>
-        {item.after?<p>{item.after}</p>:null}
-        {item.note?<small>{item.note}</small>:null}
-      </article>)}</div>
-      {runeStages.length?<div className="scope-v2-chip-list">{runeStages.map((item,index)=><span key={item.order||index}>{item.label} · {item.rune_count} 符</span>)}</div>:null}
     </ScopeCardV2>:null}
 
     {profile.sections.includes('authorKeywords')?<ScopeCardV2 eyebrow="Culture Keywords" title="作者文化關鍵字">
