@@ -23,8 +23,7 @@ export const FEATURES_V2=Object.freeze([
 const TIME_SCHEDULE_V2=Object.freeze([
   Object.freeze({start:0,theme:'theme-1'}),
   Object.freeze({start:6,theme:'theme-7'}),
-  Object.freeze({start:12,theme:'theme-4'}),
-  Object.freeze({start:18,theme:'theme-8'})
+  Object.freeze({start:18,theme:'theme-1'})
 ]);
 
 export const SCOPES_V2=Object.freeze({
