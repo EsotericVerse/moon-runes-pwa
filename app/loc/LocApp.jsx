@@ -27,6 +27,7 @@ const VIEWS={
   library:LibraryView,multimedia:MediaView,'my-style':MyStyleView,statics:StaticsView,
   culture:CultureView,search:SearchView,governance:GovernanceView,
   manage:AdminHomeView,
+  'global-manage':AdminHomeView,
   'style-groups':StyleGroupsView
 };
 
