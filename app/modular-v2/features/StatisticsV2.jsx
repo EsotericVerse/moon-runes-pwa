@@ -14,6 +14,7 @@ export default function StatisticsV2(){
   const {scopeId,scope}=useScopeRuntimeV2();
   const view=scopeDataViewV2(scopeId,'rankings');
   const [rows,setRows]=useState([]);
+  const [dailyDraws,setDailyDraws]=useState([]);
   const [type,setType]=useState('');
   const [page,setPage]=useState(1);
   const [error,setError]=useState('');
@@ -21,7 +22,7 @@ export default function StatisticsV2(){
 
   useEffect(()=>{
     let live=true;
-    setRows([]);setType('');setPage(1);setError('');
+    setRows([]);setDailyDraws([]);setType('');setPage(1);setError('');
     if(!view)return()=>{live=false};
     setLoading(true);
     neonClient.from(view).select('*').order('rank_value',{ascending:false}).limit(1000)
@@ -49,6 +50,15 @@ export default function StatisticsV2(){
     return()=>{live=false};
   },[view]);
 
+  useEffect(()=>{
+    let live=true;
+    if(scopeId!=='runes')return()=>{live=false};
+    fetchLocJson(LOC_DATA.DAILY_RUNE_REPO_HISTORY)
+      .then(value=>{if(live)setDailyDraws(Array.isArray(value?.daily_draws)?[...value.daily_draws].reverse():[]);})
+      .catch(()=>{if(live)setDailyDraws([]);});
+    return()=>{live=false};
+  },[scopeId]);
+
   const types=useMemo(()=>[...new Set(rows.map(row=>row.ranking_type).filter(Boolean))],[rows]);
   useEffect(()=>{if(types.length&&!types.includes(type))setType(types[0]);},[types,type]);
   const filtered=useMemo(()=>rows.filter(row=>!type||row.ranking_type===type),[rows,type]);
@@ -59,6 +69,15 @@ export default function StatisticsV2(){
     {!view?<p className="scope-v2-status">此 Scope 尚未啟用統計 projection。</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {loading?<p className="scope-v2-status">載入中…</p>:null}
+    {scopeId==='runes'&&dailyDraws.length?<ScopeCardV2 eyebrow="抽籤紀錄" title="每日符文紀錄">
+      <div className="scope-v2-ranking">
+        {dailyDraws.slice(0,10).map(row=><div key={row.id||row.date}>
+          <b>{row.date} · {row.rune}</b>
+          <span>{row.direction||'—'}</span>
+        </div>)}
+      </div>
+      <p className="scope-v2-status">顯示已確認的每日抽籤紀錄；完整紀錄依日期保留。</p>
+    </ScopeCardV2>:null}
     {types.length?<nav className="scope-v2-tabs" aria-label="排行榜類型">
       {types.map(item=><button type="button" key={item} aria-pressed={item===type} onClick={()=>{setType(item);setPage(1)}}>{item}</button>)}
     </nav>:null}
