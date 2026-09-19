@@ -39,19 +39,16 @@ export default function ContextV2(){
       .catch(async error=>{
         try{
           const paths=scopeId==='loc'
-            ?[LOC_DATA.LOC_ERA_REGISTRY,LOC_DATA.LOC8_EVENT_SNAPSHOT]
+            ?['data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json']
             :[LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY];
           const values=await fetchLocJsonBatch(paths,{concurrency:2});
-          const eraValue=values[0];
-          const eventValue=scopeId==='loc'?values[1]:values[0];
-          const eras=Array.isArray(eraValue?.eras)?eraValue.eras:[];
-          const events=Array.isArray(eventValue?.events)?eventValue.events:[];
-          const relations=scopeId==='loc'?[]:(Array.isArray(eventValue)?eventValue:(eventValue?.relations||eventValue?.relationships||eventValue?.edges||[]));
-          const rows=[
-            ...eras.map((row,index)=>({...row,context_key:row.era_id||`era-${index}`,context_type:'時期',title:row.display_label||row.name||row.period||'時期',summary:row.description||row.summary||''})),
-            ...events.map((row,index)=>({...row,context_key:row.id||`event-${index}`,context_type:'事件',title:row.title||row.name||'事件',summary:row.description||row.summary||''})),
-            ...relations
-          ];
+          const trendValue=values[0];
+          const trendRows=[...(trendValue?.overall_axis||[]),...(trendValue?.concept_tracks||[])];
+          const eventValue=scopeId==='loc'?null:values[0];
+          const relations=scopeId==='loc'?trendRows:(Array.isArray(eventValue)?eventValue:(eventValue?.relations||eventValue?.relationships||eventValue?.edges||[]));
+          const rows=scopeId==='loc'
+            ?trendRows.map((row,index)=>({...row,context_key:row.label||`trend-${index}`,context_type:'趨勢',title:row.zh||row.label||'趨勢',summary:row.description||row.summary||row.evidence||''}))
+            :relations;
           if(live){setRows(rows);setError('');}
         }catch{
           if(live)setError(String(error?.message||error));
@@ -64,7 +61,7 @@ export default function ContextV2(){
   const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
   const shown=rows.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
 
-  return <FeaturePageV2 featureId="context" subtitle="展示時期、事件與關係，讓內容能看見彼此的脈絡。">
+  return <FeaturePageV2 featureId="context" subtitle="脈絡整理時期、事件與關係，讓內容可以被搜尋、比較與追蹤。">
     {!view?<p className="scope-v2-status">此 Scope 尚未啟用脈絡 projection。</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {loading?<p className="scope-v2-status">載入中…</p>:null}
