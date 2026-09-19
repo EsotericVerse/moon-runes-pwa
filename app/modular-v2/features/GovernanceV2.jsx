@@ -1,5 +1,9 @@
 'use client';
 
+import {useEffect,useState} from 'react';
+import {fetchLocJson} from '../../loc/data';
+import {CULTURE_PATHS_V2} from '../../migration-bridges/current-data-compat.v2';
+
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -58,7 +62,20 @@ function genericProfile(scope){
 export default function GovernanceV2(){
   const {scopeId,scope}=useScopeRuntimeV2();
   const profile=PROFILES[scopeId]||genericProfile(scope);
+  const [history,setHistory]=useState(null);
+  useEffect(()=>{
+    let live=true;
+    if(scopeId!=='runes'){setHistory(null);return()=>{live=false};}
+    fetchLocJson(CULTURE_PATHS_V2.runeHistory).then(value=>{if(live)setHistory(value||{});}).catch(()=>{if(live)setHistory(null);});
+    return()=>{live=false};
+  },[scopeId]);
+  const cases=history?.semantic_history_cases||[];
+  const stages=history?.system_stages||[];
   return <FeaturePageV2 featureId="governance" subtitle={profile.subtitle}>
     {profile.cards.map(card=><ScopeCardV2 key={card.title} eyebrow={card.eyebrow} title={card.title}><p>{card.text}</p>{card.links?.filter(link=>!link.globalOnly||scopeId==='loc').map(link=><p key={link.href}><a href={scopeHrefV2(scopeId,link.href)}>{link.label}</a></p>)}</ScopeCardV2>)}
+    {scopeId==='runes'?<ScopeCardV2 eyebrow="治理歷程" title="符文語意與治理歷程">
+      {cases.length?<div className="scope-v2-timeline">{cases.map((item,index)=><article key={item.order||index}><strong>{item.title||'歷程項目'}</strong>{item.after?<p>{item.after}</p>:null}{item.note?<small>{item.note}</small>:null}</article>)}</div>:<p>目前沒有可顯示的治理歷程。</p>}
+      {stages.length?<div className="scope-v2-chip-list">{stages.map((item,index)=><span key={item.order||index}>{item.label} · {item.rune_count} 符</span>)}</div>:null}
+    </ScopeCardV2>:null}
   </FeaturePageV2>;
 }
