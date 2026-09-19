@@ -65,8 +65,8 @@ export default function StatisticsV2(){
   const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const shown=filtered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
 
-  return <FeaturePageV2 featureId="statics" subtitle={`${scope.label} Scope 的排行榜與統計；資料由該 Scope 的 Neon projection 提供。`}>
-    {!view?<p className="scope-v2-status">此 Scope 尚未啟用統計 projection。</p>:null}
+  return <FeaturePageV2 featureId="statics" subtitle={scopeId==='runes'?'統計每日抽籤紀錄、符文出現情形與資料排行。':'統計資料分布、來源差異、排行與時期變化，提供可回查的觀察。'}>
+    {!view?<p className="scope-v2-status">目前尚未有可顯示的統計資料。</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {loading?<p className="scope-v2-status">載入中…</p>:null}
     {scopeId==='runes'&&dailyDraws.length?<ScopeCardV2 eyebrow="抽籤紀錄" title="每日符文紀錄">
