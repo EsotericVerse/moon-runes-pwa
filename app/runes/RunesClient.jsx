@@ -82,7 +82,7 @@ export default function RunesClient(){
       <div className="runes-home-hero-copy"><p className="loc-eyebrow">Reels · 實際示範</p><h2>先看一次月之符文怎麼使用</h2><p className="loc-subtitle">短影片示範抽牌與閱讀方式；看完可以直接回到下方抽牌。</p></div>
       <div className="runes-home-reels">
         <article className="runes-home-reel"><iframe src="https://www.instagram.com/reel/DMA9yDAzeRK/embed" title="月之符文公開占卜示範" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" /></article>
-        <article className="runes-home-reel"><iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文 Reels 示範" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" /></article>
+        <article className="runes-home-reel"><p>第二支使用示範</p><a href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">在 Instagram 查看第二支 Reels →</a></article>
       </div>
       <p className="loc-subtitle"><a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟第一支</a> · <a href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟第二支</a></p>
     </section>
