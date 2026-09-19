@@ -23,20 +23,16 @@ export const SEARCH_COLLECTIONS = Object.freeze({
     label: '全部',
     description: '跨 LOC 文字、音樂、治理、事件、知識庫與月之符文資料搜尋。',
     scopeProfile:Object.freeze({id:'loc',fields:SEARCH_SCOPE_FIELDS}),
+    // LOC 搜尋只讀月典自身資料；月之符文與作者有各自的 Scope 搜尋入口。
     smallSources: [
-      [SEARCH_PATHS_V2.runes, '月之符文'],
-      [SEARCH_PATHS_V2.runeGrammar, '符文演算法'],
-      [SEARCH_PATHS_V2.runeInterpretations, '每日符文'],
       [SEARCH_PATHS_V2.eventRegistry, '事件'],
-      [SEARCH_PATHS_V2.writingRegistry, '文字創作'],
       [SEARCH_PATHS_V2.governanceRegistry, '治理'],
       [SEARCH_PATHS_V2.mediaRegistry, '多媒體'],
       [SEARCH_PATHS_V2.knowledgeRegistry, '知識庫'],
-      [SEARCH_PATHS_V2.faq, 'FAQ'],
-      [SEARCH_PATHS_V2.authorKeywords, '政德文化']
+      [SEARCH_PATHS_V2.faq, 'FAQ']
     ],
-    includeTextCorpus: true,
-    includeMusic: true
+    includeTextCorpus: false,
+    includeMusic: false
   }),
   '月之符文': Object.freeze({
     id: '月之符文',
