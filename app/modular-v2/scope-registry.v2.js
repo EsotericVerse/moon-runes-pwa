@@ -44,7 +44,8 @@ export const SCOPES_V2=Object.freeze({
       'classify',
       'library',
       'writing',
-      'governance/history'
+      'governance/history',
+      'manage'
     ]),
     routePatterns:Object.freeze(['writing/:workId']),
     compatibilityRoutes:Object.freeze(['evolution','management']),
