@@ -10,6 +10,13 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 const PAGE_SIZE=20;
 
+function contextTitle(row,index){
+  const value=row?.title||row?.display_title||row?.label||row?.name||row?.subject||row?.period||row?.era_name||row?.context_name||row?.context_key;
+  if(value)return String(value);
+  if(row?.source||row?.source_name)return String(row.source||row.source_name);
+  return `脈絡項目 ${index+1}`;
+}
+
 export default function ContextV2(){
   const {scopeId,scope}=useScopeRuntimeV2();
   const view=scopeDataViewV2(scopeId,'context');
@@ -63,7 +70,7 @@ export default function ContextV2(){
     <div className="scope-v2-list">
       {shown.map(row=><ScopeCardV2 key={row.context_key||row.id||JSON.stringify(row)}>
         <div className="scope-v2-meta"><span>{row.scope_id||scope.id}</span>{row.context_type?<span>{row.context_type}</span>:null}</div>
-        <h2>{row.title||row.context_key||'Untitled'}</h2>
+        <h2>{contextTitle(row,(page-1)*PAGE_SIZE+shown.indexOf(row))}</h2>
         {row.summary?<p>{row.summary}</p>:null}
       </ScopeCardV2>)}
     </div>
