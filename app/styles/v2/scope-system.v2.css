@@ -21,7 +21,7 @@
 .scope-v2-hero,.scope-v2-card,.scope-v2-inline-card{padding:1.25rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--scope-v2-panel);box-shadow:var(--loc-shadow-card)}
 .scope-v2-inline-card{padding:1rem;box-shadow:none}
 .scope-v2-hero h1{margin:.15rem 0;font-size:var(--loc-type-page-title);line-height:var(--loc-line-page-title)}
-.scope-v2-card h2{margin:.15rem 0 .7rem;font-size:var(--loc-type-section-title);line-height:var(--loc-line-section-title)}
+.scope-v2-card h2{display:block;margin:.15rem 0 .7rem;color:var(--scope-v2-text);font-size:clamp(1.15rem,2vw,1.5rem);font-weight:700;line-height:1.35;letter-spacing:.01em}
 .scope-v2-eyebrow{margin:0;color:var(--loc-gold);font-size:var(--loc-type-eyebrow);font-weight:var(--loc-weight-eyebrow)}
 .scope-v2-subtitle{margin:.35rem 0 0;color:var(--loc-accent);font-size:var(--loc-type-subtitle);line-height:var(--loc-line-subtitle)}
 .scope-v2-card p,.scope-v2-card li,.scope-v2-inline-card p{font-size:var(--loc-type-body);line-height:var(--loc-line-body)}
@@ -42,6 +42,7 @@
 .scope-v2-search-form input{min-width:0;padding:.7rem .9rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text)}
 .scope-v2-timeline{display:grid;gap:.85rem}
 .scope-v2-timeline article{display:grid;gap:.25rem;padding:.8rem 0;border-bottom:var(--scope-v2-border)}
+.scope-v2-timeline article strong{display:block;color:var(--scope-v2-text);font-size:1.05rem;font-weight:700;line-height:1.4}
 .scope-v2-timeline article:last-child{border-bottom:0}
 .scope-v2-timeline span,.scope-v2-timeline small{color:var(--scope-v2-muted)}
 .scope-v2-chip-list{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.55rem}
