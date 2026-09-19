@@ -29,6 +29,7 @@ function NavTarget({href,label,current=false}){
 export default function ScopeNavV2(){
   const {scopeId,scope,host,pathname}=useScopeRuntimeV2();
   const currentFeature=featureIdForPathV2(pathname);
+  const searchHref=featureHrefV2(scopeId,'search');
 
   return <nav className="scope-v2-nav" aria-label="全站導覽">
     <NavTarget href={scope.primary.href} label={scope.primary.label} current={targetIsCurrent(scope.primary.href,host,pathname)}/>
