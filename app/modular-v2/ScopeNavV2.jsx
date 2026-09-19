@@ -1,6 +1,6 @@
 'use client';
 
-import {FEATURES_V2,featureHrefV2,featureIdForPathV2} from './scope-registry.v2';
+import {FEATURES_V2,featureHrefV2,featureIdForPathV2,isForbiddenNavTargetV2} from './scope-registry.v2';
 import {useScopeRuntimeV2} from './use-scope-runtime.v2';
 
 function normalizePath(value='/'){
@@ -14,7 +14,7 @@ function targetIsCurrent(href,host,pathname){
     return url.hostname===host.split(':')[0]&&normalizePath(url.pathname)===normalizePath(pathname);
   }catch{return false;}
 }
-function forbiddenNavTarget(href=''){
+function isForbiddenNavTargetV2(href=''){
   try{
     const url=new URL(href,typeof window!=='undefined'?window.location.origin:'http://localhost');
     return url.hostname==='admin.lo3rwang.cc'||url.pathname==='/admin'||url.pathname.startsWith('/admin/');
@@ -22,7 +22,7 @@ function forbiddenNavTarget(href=''){
 }
 
 function NavTarget({href,label,current=false}){
-  if(forbiddenNavTarget(href))return null;
+  if(isForbiddenNavTargetV2(href))return null;
   return current?<span className="scope-v2-nav-current" aria-current="page">{label}</span>:<a href={href}>{label}</a>;
 }
 
@@ -36,7 +36,7 @@ export default function ScopeNavV2(){
     {FEATURES_V2.filter(item=>item.id!=='search').map(item=>
       <NavTarget key={item.id} href={featureHrefV2(scopeId,item.id)} label={item.label} current={currentFeature===item.id}/>
     )}
-    {!forbiddenNavTarget(searchHref)&&<form action={searchHref} method="get" role="search" className="scope-v2-search">
+    {!isForbiddenNavTargetV2(searchHref)&&<form action={searchHref} method="get" role="search" className="scope-v2-search">
       <input name="q" type="search" aria-label="搜尋文字" placeholder="搜尋"/>
     </form>}
     {scope.homes.map(item=><NavTarget key={item.label} href={item.href} label={item.label} current={targetIsCurrent(item.href,host,pathname)}/>)}
