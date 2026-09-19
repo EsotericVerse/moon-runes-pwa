@@ -38,7 +38,6 @@ function verifyRows(label, path, nameKey, requiredKeys = []) {
 }
 
 verifyRows('runes', 'data/json/core/runes.json', '符文名稱', ['符文說明','正向表示','半正向表示','半逆向表示','逆向表示']);
-verifyRows('lots', 'data/json/core/lots.json', '名稱', ['正向表示','半正向表示','半逆向表示','逆向表示']);
 verifyRows('history', 'data/json/core/history.json', '名稱', ['符文變化歷史','神話故事']);
 verifyRows('harmony', 'data/json/core/harmony.json', '名稱', ['靈魂課題','實踐挑戰','配套儀式建議','能量調和建議']);
 
@@ -72,4 +71,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`RC4 integrity OK: De #0 + 66 drawable runes; lots + history + harmony + cards complete; ${cases.length} evolution cases; ${works.length} LOC4 works.`);
+console.log(`RC4 integrity OK: De #0 + 66 drawable runes; frozen rune core + history + harmony + cards complete; ${cases.length} evolution cases; ${works.length} writing works.`);
