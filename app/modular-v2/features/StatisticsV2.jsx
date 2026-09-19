@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {neonClient} from '../../loc/neon-client';
+import {listNeonRecords} from '../../loc/neon-user-storage';
 import {fetchLocJson,LOC_DATA} from '../../loc/data';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
@@ -15,6 +16,7 @@ export default function StatisticsV2(){
   const view=scopeDataViewV2(scopeId,'rankings');
   const [rows,setRows]=useState([]);
   const [dailyDraws,setDailyDraws]=useState([]);
+  const [savedDraws,setSavedDraws]=useState([]);
   const [type,setType]=useState('');
   const [page,setPage]=useState(1);
   const [error,setError]=useState('');
@@ -22,7 +24,7 @@ export default function StatisticsV2(){
 
   useEffect(()=>{
     let live=true;
-    setRows([]);setDailyDraws([]);setType('');setPage(1);setError('');
+    setRows([]);setDailyDraws([]);setSavedDraws([]);setType('');setPage(1);setError('');
     if(!view)return()=>{live=false};
     setLoading(true);
     neonClient.from(view).select('*').order('rank_value',{ascending:false}).limit(1000)
@@ -59,6 +61,13 @@ export default function StatisticsV2(){
     return()=>{live=false};
   },[scopeId]);
 
+  useEffect(()=>{
+    let live=true;
+    if(scopeId!=='runes')return()=>{live=false};
+    listNeonRecords('rune-draw').then(value=>{if(live)setSavedDraws([...value].sort((a,b)=>String(b?.created_at||'').localeCompare(String(a?.created_at||'')));}).catch(()=>{if(live)setSavedDraws([])});
+    return()=>{live=false};
+  },[scopeId]);
+
   const types=useMemo(()=>[...new Set(rows.map(row=>row.ranking_type).filter(Boolean))],[rows]);
   useEffect(()=>{if(types.length&&!types.includes(type))setType(types[0]);},[types,type]);
   const filtered=useMemo(()=>rows.filter(row=>!type||row.ranking_type===type),[rows,type]);
@@ -69,14 +78,16 @@ export default function StatisticsV2(){
     {!view?<p className="scope-v2-status">此 Scope 尚未啟用統計 projection。</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {loading?<p className="scope-v2-status">載入中…</p>:null}
-    {scopeId==='runes'&&dailyDraws.length?<ScopeCardV2 eyebrow="抽籤紀錄" title="每日符文紀錄">
+    {scopeId==='runes'&&(dailyDraws.length||savedDraws.length)?<ScopeCardV2 eyebrow="抽籤紀錄" title="符文抽籤紀錄">
       <div className="scope-v2-ranking">
-        {dailyDraws.slice(0,10).map(row=><div key={row.id||row.date}>
-          <b>{row.date} · {row.rune}</b>
-          <span>{row.direction||'—'}</span>
+        {dailyDraws.slice(0,10).map(row=><div key={`daily-${row.id||row.date}`}>
+          <b>{row.date} · {row.rune}</b><span>{row.direction||'每日'}</span>
+        </div>)}
+        {savedDraws.slice(0,20).map(row=><div key={row.id}>
+          <b>{row.mode_label||row.mode||'抽牌'} · {(row.cards||[]).map(card=>card.name).join('、')}</b><span>{row.created_at||'—'}</span>
         </div>)}
       </div>
-      <p className="scope-v2-status">顯示已確認的每日抽籤紀錄；完整紀錄依日期保留。</p>
+      <p className="scope-v2-status">每日紀錄與已儲存的抽牌紀錄都集中在這裡。</p>
     </ScopeCardV2>:null}
     {types.length?<nav className="scope-v2-tabs" aria-label="排行榜類型">
       {types.map(item=><button type="button" key={item} aria-pressed={item===type} onClick={()=>{setType(item);setPage(1)}}>{item}</button>)}
