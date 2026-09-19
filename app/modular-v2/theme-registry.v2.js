@@ -12,8 +12,8 @@ export const THEME_TOKEN_KEYS_V2=[
 ];
 
 export const GROUP_IDENTITY_COLORS_V2=Object.freeze({
-  '靈魂':'#3F3B8F','連結':'#7DB7E8','生命':'#E67E22','自然':'#4C9A5A',
-  '礦物':'#B8C0C8','元素':'#C94B3B','秩序':'#B7C96A','無序':'#6B3E2E'
+  '靈魂':'#1d2f8f','連結':'#9bd7ff','生命':'#ff8a00','自然':'#1f6b3a',
+  '礦物':'#c7cdd3','元素':'#e53935','秩序':'#ffffff','無序':'#6b3e2e'
 });
 
 const slots=[
