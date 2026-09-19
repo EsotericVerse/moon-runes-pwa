@@ -40,15 +40,18 @@ export default function ContextV2(){
         try{
           const paths=scopeId==='loc'
             ?['data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json']
-            :[LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY];
+            :scopeId==='runes'
+              ?[LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY,'data/json/registries/LOC_GOVERNANCE_TREND_REGISTRY.json']
+              :[LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY];
           const values=await fetchLocJsonBatch(paths,{concurrency:2});
-          const trendValue=values[0];
+          const trendValue=scopeId==='runes'?values[1]:values[0];
           const trendRows=[...(trendValue?.overall_axis||[]),...(trendValue?.concept_tracks||[])];
           const eventValue=scopeId==='loc'?null:values[0];
-          const relations=scopeId==='loc'?trendRows:(Array.isArray(eventValue)?eventValue:(eventValue?.relations||eventValue?.relationships||eventValue?.edges||[]));
-          const rows=scopeId==='loc'
-            ?trendRows.map((row,index)=>({...row,context_key:row.label||`trend-${index}`,context_type:'趨勢',title:row.zh||row.label||'趨勢',summary:row.description||row.summary||row.evidence||''}))
-            :relations;
+          const relations=scopeId==='loc'?[]:(Array.isArray(eventValue)?eventValue:(eventValue?.relations||eventValue?.relationships||eventValue?.edges||[]));
+          const rows=[
+            ...relations,
+            ...trendRows.map((row,index)=>({...row,context_key:row.label||`trend-${index}`,context_type:'趨勢',title:row.zh||row.label||'趨勢',summary:row.description||row.summary||row.evidence||''}))
+          ];
           if(live){setRows(rows);setError('');}
         }catch{
           if(live)setError(String(error?.message||error));
