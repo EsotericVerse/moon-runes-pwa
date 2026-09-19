@@ -16,7 +16,7 @@ function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row
 function itemLabel(value,index){return value?.display_label||value?.name||value?.title||value?.period||`項目 ${index+1}`;}
 
 const PROFILE=Object.freeze({
-  loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。',sections:['eras','events','runeHistory']}),
+  loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。',sections:['eras','events']}),
   runes:Object.freeze({subtitle:'月之符文文化：符號式語言在時間中的語意、治理與符文歷程。',sections:['runeHistory','runes']}),
   lo3rwang:Object.freeze({subtitle:'作者文化：時期、作品語彙、創作與治理文字在時間中的變化。',sections:['eras','authorKeywords','periods']}),
   admin:Object.freeze({subtitle:'管理 Scope 的文化頁只呈現治理變化與歷史，不取代各 Scope 的 Current Authority。',sections:['governanceHistory']})
@@ -47,7 +47,7 @@ export default function CultureV2(){
       .catch(e=>live&&setError(String(e?.message||e)))
       .finally(()=>live&&setLoading(false));
     return()=>{live=false};
-  },[scopeId]);
+  },[scopeId,profile.sections]);
 
   const eraRows=useMemo(()=>[...(data.eras?.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.eras]);
   const eventRows=useMemo(()=>[...(data.events?.events||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))),[data.events]);
@@ -90,7 +90,7 @@ export default function CultureV2(){
 
     {profile.sections.includes('runes')?<ScopeCardV2 eyebrow="LunaRunes 66" title="逐符歷程">
       <div className="scope-v2-list">{runeCore.map((item,index)=><article className="scope-v2-inline-card" key={item.編號||index}>
-        <strong>#{String(item.編號).padStart(2,'0')} {item.名稱}</strong>
+        <strong>符文 {String(item.編號).padStart(2,'0')} · {item.名稱}</strong>
         {item.符文變化歷史?<p>{item.符文變化歷史}</p>:null}
       </article>)}</div>
     </ScopeCardV2>:null}
