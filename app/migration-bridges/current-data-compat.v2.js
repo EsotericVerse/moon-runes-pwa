@@ -9,6 +9,8 @@ export const SEARCH_DATASETS_V2=Object.freeze({
 
 export const SEARCH_PATHS_V2=Object.freeze({
   runes:LOC_DATA.RUNES,
+  runeSongs:'data/json/registries/LOC3_RUNE_SONG_REGISTRY.json',
+  runeLiterature:'data/json/registries/RUNE_LITERATURE_REGISTRY.json',
   runeGrammar:LOC_DATA.RUNE_GRAMMAR,
   runeInterpretations:LOC_DATA.RUNE_INTERPRETATIONS,
   eventRegistry:LOC_DATA.LOC2_EVENT_REGISTRY,
@@ -32,6 +34,8 @@ export const CULTURE_PATHS_V2=Object.freeze({
   runeHistory:LOC_DATA.LUNARUNE_EVOLUTION_HISTORY,
   runeCoreHistory:LOC_DATA.HISTORY,
   runes:LOC_DATA.RUNES,
+  runeSongs:'data/json/registries/LOC3_RUNE_SONG_REGISTRY.json',
+  runeLiterature:'data/json/registries/RUNE_LITERATURE_REGISTRY.json',
   authorKeywords:LOC_DATA.ZHENGDE_CULTURE_KEYWORDS
 });
 
