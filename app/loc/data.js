@@ -55,6 +55,12 @@ function touchMemoryCache(key){
   memoryCache.set(key,value);
 }
 
+async function fetchStaticJson(path){
+  const response=await fetch('/'+sourcePath(path),{cache:'force-cache'});
+  if(!response.ok)throw new Error(`Static Current projection ${response.status}: ${sourcePath(path)}`);
+  return response.json();
+}
+
 async function fetchNeonJson(path){
   const normalized=sourcePath(path);
   const params=new URLSearchParams();
@@ -64,9 +70,12 @@ async function fetchNeonJson(path){
   await acquireSlot();
   try{
     const response=await fetch(url,{headers:{accept:'application/json'},cache:'no-store'});
-    if(!response.ok)throw new Error(`Neon Data API ${response.status}: ${normalized}`);
+    if(!response.ok){
+      if([400,401,403].includes(response.status))return fetchStaticJson(normalized);
+      throw new Error(`Neon Data API ${response.status}: ${normalized}`);
+    }
     const rows=await response.json();
-    if(!Array.isArray(rows)||rows.length===0)throw new Error(`Neon Current projection missing: ${normalized}`);
+    if(!Array.isArray(rows)||rows.length===0)return fetchStaticJson(normalized);
     return rows[0].payload;
   }finally{
     releaseSlot();
