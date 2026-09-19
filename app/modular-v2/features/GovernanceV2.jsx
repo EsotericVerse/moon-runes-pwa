@@ -73,8 +73,8 @@ export default function GovernanceV2(){
   const stages=history?.system_stages||[];
   return <FeaturePageV2 featureId="governance" subtitle={profile.subtitle}>
     {profile.cards.map(card=><ScopeCardV2 key={card.title} eyebrow={card.eyebrow} title={card.title}><p>{card.text}</p>{card.links?.filter(link=>!link.globalOnly||scopeId==='loc').map(link=><p key={link.href}><a href={scopeHrefV2(scopeId,link.href)}>{link.label}</a></p>)}</ScopeCardV2>)}
-    {scopeId==='runes'?<ScopeCardV2 eyebrow="治理歷程" title="符文語意與治理歷程">
-      {cases.length?<div className="scope-v2-timeline">{cases.map((item,index)=><article key={item.order||index}><strong>{item.title||'歷程項目'}</strong>{item.after?<p>{item.after}</p>:null}{item.note?<small>{item.note}</small>:null}</article>)}</div>:<p>目前沒有可顯示的治理歷程。</p>}
+    {scopeId==='runes'?<ScopeCardV2 eyebrow="歷史" title="符文歷史">
+      {cases.length?<div className="scope-v2-list">{cases.slice(0,6).map((item,index)=><article className="scope-v2-inline-card" key={item.order||index}><strong>{item.title||'歷史項目'}</strong>{item.after?<span>{item.after}</span>:null}</article>)}</div>:<p>目前沒有可顯示的符文歷史。</p>}
       {stages.length?<div className="scope-v2-chip-list">{stages.map((item,index)=><span key={item.order||index}>{item.label} · {item.rune_count} 符</span>)}</div>:null}
     </ScopeCardV2>:null}
   </FeaturePageV2>;
