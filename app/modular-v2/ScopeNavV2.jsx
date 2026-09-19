@@ -16,7 +16,7 @@ function targetIsCurrent(href,host,pathname){
 }
 function forbiddenNavTarget(href=''){
   try{
-    const url=new URL(href,typeof window!=='undefined'?window.location.origin:'https://loc.lo3rwang.cc');
+    const url=new URL(href,typeof window!=='undefined'?window.location.origin:'http://localhost');
     return url.hostname==='admin.lo3rwang.cc'||url.pathname==='/admin'||url.pathname.startsWith('/admin/');
   }catch{return true;}
 }
@@ -36,10 +36,9 @@ export default function ScopeNavV2(){
     {FEATURES_V2.filter(item=>item.id!=='search').map(item=>
       <NavTarget key={item.id} href={featureHrefV2(scopeId,item.id)} label={item.label} current={currentFeature===item.id}/>
     )}
-    <form action={featureHrefV2(scopeId,'search')} method="get" role="search" className="scope-v2-search">
+    {!forbiddenNavTarget(searchHref)&&<form action={searchHref} method="get" role="search" className="scope-v2-search">
       <input name="q" type="search" aria-label="搜尋文字" placeholder="搜尋"/>
-    </form>
-    <NavTarget href={scope.role.href} label={scope.role.label} current={targetIsCurrent(scope.role.href,host,pathname)}/>
+    </form>}
     {scope.homes.map(item=><NavTarget key={item.label} href={item.href} label={item.label} current={targetIsCurrent(item.href,host,pathname)}/>)}
   </nav>;
 }
