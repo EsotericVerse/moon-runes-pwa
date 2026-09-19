@@ -22,7 +22,10 @@ const LibraryView=dynamic(()=>import('./views/LibraryView'),{ssr:false,loading})
 const MyStyleView=dynamic(()=>import('./views/MyStyleView'),{ssr:false,loading});
 const MediaView=dynamic(()=>import('./views/MediaView'),{ssr:false,loading});
 
-function BlockedScopeRoute(){return <section className="loc-view"><h1>此頁面不屬於目前 Scope</h1><p>作者管理頁只在 LOC 治理區提供。</p></section>;}\n\nconst VIEWS={
+function BlockedScopeRoute(){return <section className="loc-view"><h1>此頁面不屬於目前 Scope</h1><p>作者管理頁只在 LOC 治理區提供。</p></section>;}
+function AdminRedirect(){useEffect(()=>{window.location.replace('https://admin.lo3rwang.cc/');},[]);return <section className="loc-view"><h1>前往系統掌控者頁面</h1><p>正在轉往 admin.lo3rwang.cc…</p></section>;}
+
+const VIEWS={
   game:GameView,context:ContextView,classify:ClassifyView,
   library:LibraryView,multimedia:MediaView,'my-style':MyStyleView,statics:StaticsView,
   culture:CultureView,search:SearchView,governance:GovernanceView,
@@ -36,7 +39,13 @@ const HOME_VIEWS={loc:AboutView,runes:RunesHomeView,lo3rwang:AuthorHomeView,admi
 function routeState(){
   if(typeof window==='undefined')return {scope:'loc',view:'home'};
   const pathname=window.location.pathname.replace(/\/$/,'')||'/';
-  const scope=resolveScopeV2(window.location.hostname,pathname);
+  const host=window.location.hostname.toLowerCase();
+  const scope=resolveScopeV2(host,pathname);
+  if(pathname==='/admin'||pathname.startsWith('/admin/')){
+    if(host==='loc.lo3rwang.cc')return {scope:'loc',view:'admin-redirect'};
+    if(host!=='admin.lo3rwang.cc')return {scope,view:'blocked'};
+  }
+  if(scope==='runes'&&(/^\/lo3rwang(?:\/|$)/.test(pathname)||/^\/governance\/manage(?:\/|$)/.test(pathname)))return {scope,view:'blocked'};
   const route=pathname.split('/').filter(Boolean).at(-1)||'home';
   return {scope,view:VIEWS[route]?route:'home'};
 }
@@ -55,7 +64,9 @@ export default function LocApp({forcedView=null}){
   },[forcedView]);
 
   const ActiveView=useMemo(()=>{
-    if(state.view==='blocked')return BlockedScopeRoute;\n    if(state.view==='home')return HOME_VIEWS[state.scope]||GenericScopeHomeV2;
+    if(state.view==='blocked')return BlockedScopeRoute;
+    if(state.view==='admin-redirect')return AdminRedirect;
+    if(state.view==='home')return HOME_VIEWS[state.scope]||GenericScopeHomeV2;
     return VIEWS[state.view]||HOME_VIEWS[state.scope]||GenericScopeHomeV2;
   },[state]);
 
