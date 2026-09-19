@@ -222,7 +222,7 @@ export function featureHrefV2(scopeId,featureId){
   return scopeHrefV2(scopeId,feature.path);
 }
 
-export function featureIdForPathV2(pathname='/'){
+export function isForbiddenNavTargetV2(href='') {\n  try {\n    const url=new URL(href,typeof window!=='undefined'?window.location.origin:'http://localhost');\n    const adminDomain=SCOPES_V2.admin.domain;\n    return url.hostname===adminDomain||url.pathname==='/admin'||url.pathname.startsWith('/admin/');\n  } catch { return true; }\n}\n\nexport function featureIdForPathV2(pathname='/'){
   const segment=String(pathname||'/')
     .split('/')
     .filter(Boolean)
