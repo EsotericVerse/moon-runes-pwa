@@ -15,9 +15,11 @@ function periodRows(value){
 function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row?.semantic_keywords||row?.top_keywords||[];}
 function itemLabel(value,index){return value?.display_label||value?.name||value?.title||value?.period||`項目 ${index+1}`;}
 
+const runeGovernance=[];
+
 const PROFILE=Object.freeze({
   loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。',sections:['eras','events']}),
-  runes:Object.freeze({subtitle:'月之符文的文化資料。',sections:[]}),
+  runes:Object.freeze({subtitle:'月之符文的時期與沿革資料。',sections:['eras']}),
   lo3rwang:Object.freeze({subtitle:'作者文化：時期、作品語彙、創作與治理文字在時間中的變化。',sections:['eras','authorKeywords','periods']}),
   admin:Object.freeze({subtitle:'管理 Scope 的文化頁只呈現治理變化與歷史，不取代各 Scope 的 Current Authority。',sections:['governanceHistory']})
 });
