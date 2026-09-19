@@ -45,7 +45,8 @@ export const SCOPES_V2=Object.freeze({
       'library',
       'writing',
       'governance/history',
-      'manage'
+      'governance/manage',
+      'governance/global-manage'
     ]),
     routePatterns:Object.freeze(['writing/:workId']),
     compatibilityRoutes:Object.freeze(['evolution','management']),
@@ -78,7 +79,7 @@ export const SCOPES_V2=Object.freeze({
     compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:'管理者功能',href:'https://loc.lo3rwang.cc/manage'}),
+    role:Object.freeze({label:'管理者功能',href:'https://lrunes.lo3rwang.cc/governance/manage'}),
     homes:Object.freeze([
       {label:'回月之符文首頁',href:'https://lrunes.lo3rwang.cc/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
