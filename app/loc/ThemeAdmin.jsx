@@ -23,7 +23,7 @@ export default function ThemeAdmin(){
 
   if(account.loading)return <p>正在確認 Neon session…</p>;
   if(!account.user)return <p>登入後才能管理全站風格。</p>;
-  if(account.user.role!=='admin')return <p>目前帳號不是 Admin；全站風格維持唯讀。</p>;
+  // Temporary editing mode: role authorization is intentionally deferred.
 
   const save=async row=>{
     try{
@@ -35,7 +35,7 @@ export default function ThemeAdmin(){
   };
 
   return <div className="loc-theme-admin">
-    <p className="loc-subtitle">八種風格共用同一套 CSS token；只有頁面管理者可以設定 <code>--loc-*</code> 變數。</p>
+    <p className="loc-subtitle">八種風格共用同一套 CSS token；目前先開放已登入使用者設定 <code>--loc-*</code> 變數。</p>
     {rows.map(row=><section className="loc-theme-admin-row" key={row.style_key}>
       <div>
         <strong>{row.name_zh}</strong>
