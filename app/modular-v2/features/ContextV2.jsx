@@ -33,7 +33,8 @@ export default function ContextV2(){
     neonClient.from(view).select('*').order('updated_at',{ascending:false}).limit(1000)
       .then(({data,error})=>{
         if(error)throw new Error(error.message||'Context read failed');
-        if(live)setRows(data||[]);
+        if(!Array.isArray(data)||!data.length)throw new Error('Context projection is empty');
+        if(live)setRows(data);
       })
       .catch(async error=>{
         try{
@@ -63,14 +64,13 @@ export default function ContextV2(){
   const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
   const shown=rows.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
 
-  return <FeaturePageV2 featureId="context" subtitle={`${scope.label} 的脈絡：時期、事件與關係資料依 Scope 分開展示。`}>
+  return <FeaturePageV2 featureId="context" subtitle="脈絡整理時期、事件與關係，讓內容可以被搜尋、比較與追蹤。">
     {!view?<p className="scope-v2-status">此 Scope 尚未啟用脈絡 projection。</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {loading?<p className="scope-v2-status">載入中…</p>:null}
     <div className="scope-v2-list">
-      {shown.map(row=><ScopeCardV2 key={row.context_key||row.id||JSON.stringify(row)}>
-        <div className="scope-v2-meta"><span>{row.scope_id||scope.id}</span>{row.context_type?<span>{row.context_type}</span>:null}</div>
-        <h2>{contextTitle(row,(page-1)*PAGE_SIZE+shown.indexOf(row))}</h2>
+      {shown.map((row,index)=><ScopeCardV2 key={row.context_key||row.id||JSON.stringify(row)} title={contextTitle(row,(page-1)*PAGE_SIZE+index)}>
+        <div className="scope-v2-meta">{row.context_type?<span>{row.context_type}</span>:null}</div>
         {row.summary?<p>{row.summary}</p>:null}
       </ScopeCardV2>)}
     </div>
