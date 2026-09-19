@@ -10,7 +10,6 @@ import { realMoonPhase } from '../loc/model/moon-phase';
 import { buildRuneGraph, searchRuneGraph } from '../../js/rune-graph-core.js';
 import RuneAtlas from './RuneAtlas';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
-import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
