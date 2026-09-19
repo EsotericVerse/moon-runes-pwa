@@ -23,37 +23,37 @@ const MODEL_MODULES=[
   {
     key:'context', name:'Context', zh:'脈絡', summary:'關係圖',
     detail:'整理事件、關係、情境與語意圖，讓文字與資料可以沿來源與關係被查找、比較與理解。',
-    href:featureHrefV2('loc','context'), depth:'deep'
+    href:'/context', depth:'deep'
   },
   {
     key:'music', name:'Music', zh:'音樂', summary:'Suno 音樂與歌詞',
     detail:'保存Suno音樂作品、歌詞、曲風、時期與來源，讓聲音作品能與文字、事件及其他資料建立脈絡。',
-    href:scopeHrefV2('loc','multimedia')
+    href:'/music'
   },
   {
     key:'literary', name:'Literary', zh:'文字創作', summary:'文字作品與版本',
     detail:'整理文章、文學與其他文字創作，保留原文、版本、來源與衍生分析之間的差異。',
-    href:scopeHrefV2('loc','writing')
+    href:'/literary'
   },
   {
     key:'media', name:'Multimedia', zh:'多媒體', summary:'跨媒介內容',
     detail:'連結圖像、影音與其他媒體來源，觀察同一語意在不同媒介中的表達與轉譯。',
-    href:scopeHrefV2('loc','multimedia')
+    href:'/multimedia'
   },
   {
     key:'algorithm', name:'Algorithm', zh:'演算法', summary:'方法論與演算法集合',
     detail:'把既有方法論整併成可重現的演算法，用於分類、比較、搜尋、關係運算與其他語言處理。',
-    href:scopeHrefV2('loc','classify'), depth:'deep'
+    href:'/algorithm', depth:'deep'
   },
   {
     key:'module', name:'Module', zh:'模組', summary:'獨立功能封裝',
     detail:'將演算法與資料結合成為可重複使用的模組，像知識庫、搜尋、簡單的語意向量。',
-    href:scopeHrefV2('loc','style-groups'), depth:'deep'
+    href:'/module', depth:'deep'
   },
   {
     key:'culture', name:'Culture', zh:'文化', summary:'文字演化',
     detail:'把文字與脈絡放回時期與時間線，觀察趨勢，或是因外在造成的擺盪，並且找出文字演化的可能。',
-    href:featureHrefV2('loc','culture'), depth:'deep'
+    href:'/culture', depth:'deep'
   }
 ];
 
@@ -111,12 +111,12 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-context" id="context">
       <div className="home-section-heading"><p className="loc-eyebrow">Context</p><h2>脈絡</h2><p className="loc-subtitle">關鍵詞的分析與交互的互動關係圖，才會知道種子長出根的方向。</p></div>
       <div className="home-author-copy"><p>不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再與原始內容比較，進而學習成長進步。</p><p>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p><p>可以從自然語言查詢作品、文字、知識與時間脈絡，再沿彼此的關係查看相關內容。</p><p>不感興趣也沒關係！那來看看排行榜吧！這些詞也能直接回查命中的文章、作品與紀錄。</p></div>
-      <div className="home-progress-grid" aria-label="脈絡資料與知識"><article className="home-progress-item"><strong>目前可比對資料資料統計</strong><span>總文字 2,939,214 字，內有24,509 筆資料。<br/>包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，<br/>筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。</span></article><article className="home-progress-item"><strong>系統內建 KM 至少 515 個知識單元</strong><span>目前已登記 31 個 Knowledge Assets；FAQ 單獨即有 90 條。去除檢索投影、文章投影、圖片、重複文件版本與首頁統計展示後，目前有 26 份唯一 KM 知識文件，共 385,996 字。</span></article></div><div className="loc-actions home-rune-links"><a className="loc-button" href={featureHrefV2('loc','context')}>開啟脈絡</a><a className="loc-button" href={featureHrefV2('loc','statics')}>開啟統計</a></div>
+      <div className="home-progress-grid" aria-label="脈絡資料與知識"><article className="home-progress-item"><strong>目前可比對資料資料統計</strong><span>總文字 2,939,214 字，內有24,509 筆資料。<br/>包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，<br/>筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。</span></article><article className="home-progress-item"><strong>系統內建 KM 至少 515 個知識單元</strong><span>目前已登記 31 個 Knowledge Assets；FAQ 單獨即有 90 條。去除檢索投影、文章投影、圖片、重複文件版本與首頁統計展示後，目前有 26 份唯一 KM 知識文件，共 385,996 字。</span></article></div>
     </section>
 
     <section className="loc-card home-copy-block home-culture" id="culture">
       <div className="home-section-heading"><p className="loc-eyebrow">Culture</p><h2>文化</h2><p className="loc-subtitle">文化，是文字的演化。<br/>文字留下風格，風格經過時間累積，才看得見文字風格的變化。</p></div>
-      <div className="home-author-copy"><p>LOC 把脈絡重新放回時間中，透過時期、事件、趨勢與語彙軌跡的綜合分析，觀察語言如何累積、改變的趨勢，找出延伸的未來可能性。原本的「推演」現在就是文化，軌跡資料也保留在這裡。</p><p>過去可以整理，沒有人可以知道未來，現在還在手上。不是替未來下定論，而是治理已知、觀察演化，再推演的可能性。</p><p><a href={featureHrefV2('loc','statics')}>排行榜</a>可先看全部，再依來源與時期觀察語彙變化。</p><div className="loc-actions home-rune-links"><a className="loc-button" href={featureHrefV2('loc','culture')}>文化與軌跡</a><a className="loc-button" href={featureHrefV2('loc','governance')}>治理</a></div></div>
+      <div className="home-author-copy"><p>LOC 把脈絡重新放回時間中，透過時期、事件、趨勢與語彙軌跡的綜合分析，觀察語言如何累積、改變的趨勢，找出延伸的未來可能性。</p><p>過去可以整理，沒有人可以知道未來，現在還在手上。不是替未來下定論，而是治理已知、觀察演化，再推演的可能性。</p><p><a href="/statics">排行榜</a>可先看全部，再切 Facebook、Threads、Suno，並依來源與時期觀察語彙變化。</p></div>
       <div className="home-progress-grid" aria-label="文化搜尋、治理與演化"><article className="home-progress-item"><strong>結合搜尋跟脈絡圖關聯</strong><span>可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。</span></article><article className="home-progress-item"><strong>治理、管理</strong><span>授權內容可用全文做搜尋與分析；公開結果則依內容治理決定顯示全文、片段或僅 metadata。Facebook、Threads 預設只顯示片段，歌詞不直接公開全文；系統並以治理管理文件約束資料權責、版權與公開邊界。</span></article></div>
     </section>
 
