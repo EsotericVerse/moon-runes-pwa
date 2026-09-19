@@ -39,7 +39,7 @@ export default function CultureV2(){
     if(wanted.has('eras'))add('eras',CULTURE_PATHS_V2.eraRegistry);
     if(wanted.has('events'))add('events',CULTURE_PATHS_V2.eventSnapshot);
     if(wanted.has('runeHistory')||wanted.has('governanceHistory'))add('runeHistory',CULTURE_PATHS_V2.runeHistory);
-    if(wanted.has('runes')){add('runeCoreHistory',CULTURE_PATHS_V2.runeCoreHistory);add('runes',CULTURE_PATHS_V2.runes);}
+    if(wanted.has('runes'))add('runes',CULTURE_PATHS_V2.runes);
     if(wanted.has('authorKeywords'))add('authorKeywords',CULTURE_PATHS_V2.authorKeywords);
     if(wanted.has('periods')){add('musicPeriods',CULTURE_PATHS_V2.musicPeriods);add('writingPeriods',CULTURE_PATHS_V2.writingGovernancePeriods);}
     fetchLocJsonBatch(requests,{concurrency:2})
@@ -57,7 +57,6 @@ export default function CultureV2(){
   const runeGovernance=data.runeHistory?.governance_evolution||[];
   const runeCases=data.runeHistory?.semantic_history_cases||[];
   const authorKeywords=data.authorKeywords?.keywords||[];
-  const runeCore=Array.isArray(data.runeCoreHistory)?data.runeCoreHistory.filter(row=>Number(row?.編號)>=1&&Number(row?.編號)<=66):[];
 
   return <FeaturePageV2 featureId="culture" subtitle={profile.subtitle}>
     {loading?<p className="scope-v2-status">載入文化資料…</p>:null}
@@ -86,13 +85,6 @@ export default function CultureV2(){
         {item.note?<small>{item.note}</small>:null}
       </article>)}</div>
       {runeStages.length?<div className="scope-v2-chip-list">{runeStages.map((item,index)=><span key={item.order||index}>{item.label} · {item.rune_count} 符</span>)}</div>:null}
-    </ScopeCardV2>:null}
-
-    {profile.sections.includes('runes')?<ScopeCardV2 eyebrow="LunaRunes 66" title="逐符歷程">
-      <div className="scope-v2-list">{runeCore.map((item,index)=><article className="scope-v2-inline-card" key={item.編號||index}>
-        <strong>符文 {String(item.編號).padStart(2,'0')} · {item.名稱}</strong>
-        {item.符文變化歷史?<p>{item.符文變化歷史}</p>:null}
-      </article>)}</div>
     </ScopeCardV2>:null}
 
     {profile.sections.includes('authorKeywords')?<ScopeCardV2 eyebrow="Culture Keywords" title="作者文化關鍵字">
