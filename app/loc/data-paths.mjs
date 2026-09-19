@@ -27,6 +27,8 @@ export const LOC_DATA = Object.freeze({
   LOC_SEARCH_GOVERNANCE: '/data/json/registries/LOC_SEARCH_GOVERNANCE.json',
   LUNARUNE_EVOLUTION_HISTORY: '/data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json',
   ZHENGDE_CULTURE_KEYWORDS: '/data/json/registries/ZHENGDE_CULTURE_KEYWORDS.json',
+  RUNE_SONG_REGISTRY: '/data/json/registries/LOC3_RUNE_SONG_REGISTRY.json',
+  RUNE_LITERATURE_REGISTRY: '/data/json/registries/RUNE_LITERATURE_REGISTRY.json',
 
   // Search / generated delivery projections
   LOC_FAQ: '/data/json/search/faq/LOC_FAQ_RAG_v0.4.json',
