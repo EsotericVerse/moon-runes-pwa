@@ -22,7 +22,7 @@ const LibraryView=dynamic(()=>import('./views/LibraryView'),{ssr:false,loading})
 const MyStyleView=dynamic(()=>import('./views/MyStyleView'),{ssr:false,loading});
 const MediaView=dynamic(()=>import('./views/MediaView'),{ssr:false,loading});
 
-const VIEWS={
+function BlockedScopeRoute(){return <section className="loc-view"><h1>此頁面不屬於目前 Scope</h1><p>作者管理頁只在 LOC 治理區提供。</p></section>;}\n\nconst VIEWS={
   game:GameView,context:ContextView,classify:ClassifyView,
   library:LibraryView,multimedia:MediaView,'my-style':MyStyleView,statics:StaticsView,
   culture:CultureView,search:SearchView,governance:GovernanceView,
@@ -55,7 +55,7 @@ export default function LocApp({forcedView=null}){
   },[forcedView]);
 
   const ActiveView=useMemo(()=>{
-    if(state.view==='home')return HOME_VIEWS[state.scope]||GenericScopeHomeV2;
+    if(state.view==='blocked')return BlockedScopeRoute;\n    if(state.view==='home')return HOME_VIEWS[state.scope]||GenericScopeHomeV2;
     return VIEWS[state.view]||HOME_VIEWS[state.scope]||GenericScopeHomeV2;
   },[state]);
 
