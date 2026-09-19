@@ -11,7 +11,7 @@ const PROFILES=Object.freeze({
     cards:Object.freeze([
       Object.freeze({eyebrow:'理念',title:'Current Authority',text:'Current 由現行 Canon、Scope Registry 與 Feature Model 派生；歷史資料保留來源，但不得反向覆寫 Current。'}),
       Object.freeze({eyebrow:'法律',title:'Scope 邊界與資料責任',text:'各 Scope 保有自己的名稱、資料所有權、作者身分與公開邊界；共享功能只能讀取授權 projection。'}),
-      Object.freeze({eyebrow:'管理者功能',title:'治理管理',text:'版本、權限、資料狀態與公開設定集中由管理者功能處理。',href:'manage'})
+      Object.freeze({eyebrow:'管理者功能',title:'治理管理',text:'版本、權限、資料狀態與公開設定集中由治理內的管理者首頁處理。',links:[{label:'首頁管理者',href:'governance/manage'},{label:'全域管理者',href:'governance/global-manage',globalOnly:true}]})
     ])
   }),
   runes:Object.freeze({
@@ -59,6 +59,6 @@ export default function GovernanceV2(){
   const {scopeId,scope}=useScopeRuntimeV2();
   const profile=PROFILES[scopeId]||genericProfile(scope);
   return <FeaturePageV2 featureId="governance" subtitle={profile.subtitle}>
-    {profile.cards.map(card=><ScopeCardV2 key={card.title} eyebrow={card.eyebrow} title={card.title}><p>{card.text}</p>{card.href?<p><a href={scopeHrefV2(scopeId,card.href)}>進入管理者功能</a></p>:null}</ScopeCardV2>)}
+    {profile.cards.map(card=><ScopeCardV2 key={card.title} eyebrow={card.eyebrow} title={card.title}><p>{card.text}</p>{card.links?.filter(link=>!link.globalOnly||scopeId==='loc').map(link=><p key={link.href}><a href={scopeHrefV2(scopeId,link.href)}>{link.label}</a></p>)}</ScopeCardV2>)}
   </FeaturePageV2>;
 }
