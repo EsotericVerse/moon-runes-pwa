@@ -26,6 +26,7 @@ const VIEWS={
   game:GameView,context:ContextView,classify:ClassifyView,
   library:LibraryView,multimedia:MediaView,'my-style':MyStyleView,statics:StaticsView,
   culture:CultureView,search:SearchView,governance:GovernanceView,
+  manage:AdminHomeView,
   'style-groups':StyleGroupsView
 };
 
