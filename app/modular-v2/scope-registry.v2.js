@@ -100,7 +100,7 @@ export const SCOPES_V2=Object.freeze({
     compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
     primary:Object.freeze({label:'簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
+    role:Object.freeze({label:'治理管理',href:'https://loc.lo3rwang.cc/governance/manage'}),
     homes:Object.freeze([
       {label:'回作者簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
@@ -134,10 +134,10 @@ export const SCOPES_V2=Object.freeze({
     localRoutes:Object.freeze([]),
     routePatterns:Object.freeze([]),
     compatibilityRoutes:Object.freeze([]),
-    primary:Object.freeze({label:'管理',href:'https://admin.lo3rwang.cc/'}),
-    role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
+    primary:Object.freeze({label:'治理管理',href:'https://loc.lo3rwang.cc/governance/manage'}),
+    role:Object.freeze({label:'治理管理',href:'https://loc.lo3rwang.cc/governance/manage'}),
     homes:Object.freeze([
-      {label:'回管理首頁',href:'https://admin.lo3rwang.cc/'},
+      {label:'回治理管理',href:'https://loc.lo3rwang.cc/governance/manage'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'治理',
