@@ -35,11 +35,11 @@ export default function ThemeAdmin(){
   };
 
   return <div className="loc-theme-admin">
-    <p className="loc-subtitle">八種風格共用同一套 CSS token；只允許設定 <code>--loc-*</code> 變數。靈魂沿用永夜，秩序沿用永日。</p>
+    <p className="loc-subtitle">八種風格共用同一套 CSS token；只有頁面管理者可以設定 <code>--loc-*</code> 變數。</p>
     {rows.map(row=><section className="loc-theme-admin-row" key={row.style_key}>
       <div>
         <strong>{row.name_zh}</strong>
-        <small>{row.style_key}{row.legacy_mode?' · 現有 '+(row.legacy_mode==='dark'?'永夜':'永日'):''}</small>
+        <small>{row.style_key}</small>
       </div>
       <textarea
         value={drafts[row.style_key]??'{}'}

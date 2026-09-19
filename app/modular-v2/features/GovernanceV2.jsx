@@ -3,14 +3,15 @@
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
+import {scopeHrefV2} from '../scope-registry.v2';
 
 const PROFILES=Object.freeze({
   loc:Object.freeze({
     subtitle:'LOC 的治理入口：Current Canon、Scope 邊界、Feature 共用規格與 Page Composition。',
     cards:Object.freeze([
-      Object.freeze({eyebrow:'Authority',title:'Current Authority',text:'Current 由現行 Canon、Scope Registry 與 Feature Model 派生；歷史資料保留來源，但不得反向覆寫 Current。'}),
-      Object.freeze({eyebrow:'Boundary',title:'Scope 邊界',text:'LOC 可以統合檢視各 Scope，但不取得其他 Scope 的資料所有權、作者身分或治理權。'}),
-      Object.freeze({eyebrow:'Composition',title:'Page Composition',text:'共用功能採同一 renderer 與 CSS 規格；Scope 只提供 domain、名稱、資料投影與必要例外。'})
+      Object.freeze({eyebrow:'理念',title:'Current Authority',text:'Current 由現行 Canon、Scope Registry 與 Feature Model 派生；歷史資料保留來源，但不得反向覆寫 Current。'}),
+      Object.freeze({eyebrow:'法律',title:'Scope 邊界與資料責任',text:'各 Scope 保有自己的名稱、資料所有權、作者身分與公開邊界；共享功能只能讀取授權 projection。'}),
+      Object.freeze({eyebrow:'管理者功能',title:'治理管理',text:'版本、權限、資料狀態與公開設定集中由治理內的管理者首頁處理。',links:[{label:'首頁管理者',href:'governance/manage'},{label:'全域管理者',href:'governance/global-manage',globalOnly:true}]})
     ])
   }),
   runes:Object.freeze({
@@ -58,6 +59,6 @@ export default function GovernanceV2(){
   const {scopeId,scope}=useScopeRuntimeV2();
   const profile=PROFILES[scopeId]||genericProfile(scope);
   return <FeaturePageV2 featureId="governance" subtitle={profile.subtitle}>
-    {profile.cards.map(card=><ScopeCardV2 key={card.title} eyebrow={card.eyebrow} title={card.title}><p>{card.text}</p></ScopeCardV2>)}
+    {profile.cards.map(card=><ScopeCardV2 key={card.title} eyebrow={card.eyebrow} title={card.title}><p>{card.text}</p>{card.links?.filter(link=>!link.globalOnly||scopeId==='loc').map(link=><p key={link.href}><a href={scopeHrefV2(scopeId,link.href)}>{link.label}</a></p>)}</ScopeCardV2>)}
   </FeaturePageV2>;
 }

@@ -1,9 +1,25 @@
 name: NAV Contract
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    paths:
+      - "app/GlobalNav.jsx"
+      - "app/ScopeNav.jsx"
+      - "app/modular-v2/**"
+      - "app/site-registry.js"
+      - "app/use-current-scope.js"
+      - "scripts/verify-nav-all.mjs"
+      - "scripts/verify-nav-registry.mjs"
+      - "scripts/verify-scope-registry.mjs"
+      - ".github/workflows/nav-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nav-contract-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify-nav:

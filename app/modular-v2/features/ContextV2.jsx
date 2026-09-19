@@ -2,6 +2,7 @@
 
 import {useEffect,useState} from 'react';
 import {neonClient} from '../../loc/neon-client';
+import {fetchLocJson,LOC_DATA} from '../../loc/data';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
 import {scopeDataViewV2} from '../scope-registry.v2';
@@ -24,11 +25,18 @@ export default function ContextV2(){
     setLoading(true);
     neonClient.from(view).select('*').order('updated_at',{ascending:false}).limit(1000)
       .then(({data,error})=>{
-        if(!live)return;
         if(error)throw new Error(error.message||'Context read failed');
-        setRows(data||[]);
+        if(live)setRows(data||[]);
       })
-      .catch(e=>live&&setError(String(e?.message||e)))
+      .catch(async error=>{
+        try{
+          const fallback=await fetchLocJson(LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY);
+          const rows=Array.isArray(fallback)?fallback:(fallback?.relations||fallback?.relationships||fallback?.edges||[]);
+          if(live){setRows(rows);setError('');}
+        }catch{
+          if(live)setError(String(error?.message||error));
+        }
+      })
       .finally(()=>live&&setLoading(false));
     return()=>{live=false};
   },[view]);

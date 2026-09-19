@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {neonClient} from '../../loc/neon-client';
+import {fetchLocJson,LOC_DATA} from '../../loc/data';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
 import {scopeDataViewV2} from '../scope-registry.v2';
@@ -25,11 +26,25 @@ export default function StatisticsV2(){
     setLoading(true);
     neonClient.from(view).select('*').order('rank_value',{ascending:false}).limit(1000)
       .then(({data,error})=>{
-        if(!live)return;
         if(error)throw new Error(error.message||'Ranking read failed');
-        setRows(data||[]);
+        if(live)setRows(data||[]);
       })
-      .catch(e=>live&&setError(String(e?.message||e)))
+      .catch(async error=>{
+        try{
+          const fallback=await fetchLocJson(LOC_DATA.SEARCH_SOURCE_STATS);
+          const candidates=Array.isArray(fallback)?fallback:Object.values(fallback||{}).flatMap(value=>Array.isArray(value)?value:[]);
+          const rows=candidates.map((row,index)=>({
+            ranking_key:row.ranking_key||row.key||row.source||String(index),
+            ranking_type:row.ranking_type||'資料來源',
+            term:row.term||row.name||row.source||row.label||'—',
+            item_count:row.item_count??row.count??row.total??'—',
+            rank_value:row.rank_value??row.score??row.count??row.total??0
+          }));
+          if(live){setRows(rows);setError('');}
+        }catch{
+          if(live)setError(String(error?.message||error));
+        }
+      })
       .finally(()=>live&&setLoading(false));
     return()=>{live=false};
   },[view]);

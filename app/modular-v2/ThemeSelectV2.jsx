@@ -25,10 +25,10 @@ export default function ThemeSelectV2(){
     return()=>{live=false};
   },[scopeId]);
 
-  const selected=setting.mode==='time'?'time':setting.mode==='custom'?'custom':setting.theme;
+  const selected=setting.mode==='time'?'time':setting.theme;
   const active=useMemo(()=>{
     const id=setting.mode==='time'?themeForHourV2(setting.schedule):setting.theme;
-    return {slot:getThemeSlotV2(id),custom:setting.mode==='custom'?setting.custom:{}};
+    return {slot:getThemeSlotV2(id),custom:{}};
   },[setting.mode,setting.theme,setting.custom,setting.schedule]);
 
   useEffect(()=>{
@@ -46,7 +46,6 @@ export default function ThemeSelectV2(){
       const base=current&&typeof current==='object'?current:{};
       const now=scopeThemeSettingsV2(scopeId,base,managed);
       if(value==='time')return {...base,[scopeId]:{...now,mode:'time'}};
-      if(value==='custom')return {...base,[scopeId]:{...now,mode:'custom'}};
       return {...base,[scopeId]:{...now,mode:'fixed',theme:value}};
     });
   }
@@ -56,7 +55,6 @@ export default function ThemeSelectV2(){
     <select value={selected} onChange={change} aria-label="主題">
       <option value="time">隨時間</option>
       {THEME_SLOTS_V2.filter(slot=>slot.enabled).map(slot=><option value={slot.id} key={slot.id}>{slot.label}</option>)}
-      <option value="custom">自訂</option>
     </select>
   </label>;
 }

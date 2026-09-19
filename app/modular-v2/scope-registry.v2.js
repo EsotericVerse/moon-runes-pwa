@@ -44,7 +44,9 @@ export const SCOPES_V2=Object.freeze({
       'classify',
       'library',
       'writing',
-      'governance/history'
+      'governance/history',
+      'governance/manage',
+      'governance/global-manage'
     ]),
     routePatterns:Object.freeze(['writing/:workId']),
     compatibilityRoutes:Object.freeze(['evolution','management']),
@@ -76,8 +78,8 @@ export const SCOPES_V2=Object.freeze({
     routePatterns:Object.freeze([]),
     compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
-    primary:Object.freeze({label:'語彙',href:'https://lrunes.lo3rwang.cc/list'}),
-    role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
+    primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
+    role:Object.freeze({label:'管理者功能',href:'https://lrunes.lo3rwang.cc/governance/manage'}),
     homes:Object.freeze([
       {label:'回月之符文首頁',href:'https://lrunes.lo3rwang.cc/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
@@ -178,6 +180,13 @@ export function resolveScopeV2(host='',pathname='/'){
   const h=cleanHost(host);
   for(const [id,scope] of Object.entries(SCOPES_V2)){
     if(matchesMount(scope,h,pathname))return id;
+  }
+  if(!h){
+    const path=cleanPath(pathname);
+    for(const [id,scope] of Object.entries(SCOPES_V2)){
+      const base=scope.mount?cleanPath(scope.mount.path):null;
+      if(base&&(path===base||path.startsWith(base+'/')))return id;
+    }
   }
   return SCOPE_BY_DOMAIN_V2[h]||SCOPE_POLICY_V2.defaultScopeId;
 }
