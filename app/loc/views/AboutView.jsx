@@ -38,7 +38,7 @@ const MODEL_MODULES=[
   {
     key:'media', name:'Multimedia', zh:'多媒體', summary:'跨媒介內容',
     detail:'連結圖像、影音與其他媒體來源，觀察同一語意在不同媒介中的表達與轉譯。',
-    href:'/multimedia'
+    href:scopeHrefV2('loc','multimedia')
   },
   {
     key:'algorithm', name:'Algorithm', zh:'演算法', summary:'方法論與演算法集合',
@@ -111,7 +111,7 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-context" id="context">
       <div className="home-section-heading"><p className="loc-eyebrow">Context</p><h2>脈絡</h2><p className="loc-subtitle">關鍵詞的分析與交互的互動關係圖，才會知道種子長出根的方向。</p></div>
       <div className="home-author-copy"><p>不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再與原始內容比較，進而學習成長進步。</p><p>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p><p>可以從自然語言查詢作品、文字、知識與時間脈絡，再沿彼此的關係查看相關內容。</p><p>不感興趣也沒關係！那來看看排行榜吧！這些詞也能直接回查命中的文章、作品與紀錄。</p></div>
-      <div className="home-progress-grid" aria-label="脈絡資料與知識"><article className="home-progress-item"><strong>目前可比對資料資料統計</strong><span>總文字 2,939,214 字，內有24,509 筆資料。<br/>包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，<br/>筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。</span></article><article className="home-progress-item"><strong>系統內建 KM 至少 515 個知識單元</strong><span>目前已登記 31 個 Knowledge Assets；FAQ 單獨即有 90 條。去除檢索投影、文章投影、圖片、重複文件版本與首頁統計展示後，目前有 26 份唯一 KM 知識文件，共 385,996 字。</span></article></div>
+      <div className="home-progress-grid" aria-label="脈絡資料與知識"><article className="home-progress-item"><strong>目前可比對資料資料統計</strong><span>總文字 2,939,214 字，內有24,509 筆資料。<br/>包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，<br/>筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。</span></article><article className="home-progress-item"><strong>系統內建 KM 至少 515 個知識單元</strong><span>目前已登記 31 個 Knowledge Assets；FAQ 單獨即有 90 條。去除檢索投影、文章投影、圖片、重複文件版本與首頁統計展示後，目前有 26 份唯一 KM 知識文件，共 385,996 字。</span></article></div><div className="loc-actions home-rune-links"><a className="loc-button" href={featureHrefV2('loc','context')}>開啟脈絡</a><a className="loc-button" href={featureHrefV2('loc','statics')}>開啟統計</a></div>
     </section>
 
     <section className="loc-card home-copy-block home-culture" id="culture">
