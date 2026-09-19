@@ -10,6 +10,12 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 const PAGE_SIZE=20;
 
+function contextSubtitle(scopeId){
+  if(scopeId==='runes')return '月之符文的脈絡，整理符號、語意與歷程之間的關係。';
+  if(scopeId==='lo3rwang')return '作者文字的脈絡，整理作品、時期與語意之間的關係。';
+  return '脈絡不只整理資料，也讓文字可以被搜尋、比較與追蹤變化，再回到原始內容確認關係。';
+}
+
 function contextTitle(row,index){
   const value=row?.title||row?.display_title||row?.label||row?.name||row?.subject||row?.period||row?.era_name||row?.context_name||row?.context_key;
   if(value)return String(value);
@@ -63,14 +69,13 @@ export default function ContextV2(){
   const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
   const shown=rows.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
 
-  return <FeaturePageV2 featureId="context" subtitle={`${scope.label} 的脈絡：時期、事件與關係資料依 Scope 分開展示。`}>
+  return <FeaturePageV2 featureId="context" subtitle={contextSubtitle(scopeId)}>
     {!view?<p className="scope-v2-status">此 Scope 尚未啟用脈絡 projection。</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {loading?<p className="scope-v2-status">載入中…</p>:null}
     <div className="scope-v2-list">
-      {shown.map(row=><ScopeCardV2 key={row.context_key||row.id||JSON.stringify(row)}>
-        <div className="scope-v2-meta"><span>{row.scope_id||scope.id}</span>{row.context_type?<span>{row.context_type}</span>:null}</div>
-        <h2>{contextTitle(row,(page-1)*PAGE_SIZE+shown.indexOf(row))}</h2>
+      {shown.map((row,index)=><ScopeCardV2 key={row.context_key||row.id||JSON.stringify(row)} title={contextTitle(row,(page-1)*PAGE_SIZE+index)}>
+        <div className="scope-v2-meta">{row.context_type?<span>{row.context_type}</span>:null}</div>
         {row.summary?<p>{row.summary}</p>:null}
       </ScopeCardV2>)}
     </div>
