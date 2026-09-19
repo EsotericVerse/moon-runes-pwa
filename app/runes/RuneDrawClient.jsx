@@ -6,6 +6,7 @@ import { putNeonRecord } from '../loc/neon-user-storage';
 import { useNeonAccount } from '../loc/use-neon-account';
 import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
+import { spreadRuneTrend } from '../loc/model/rune-trend';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
@@ -15,7 +16,7 @@ const UI_SETTINGS_KEY = 'loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS = { draw_response: 'ritual' };
 const MODES = [
   { key: 'single', count: 1, label: '單卡', positions: ['核心'] },
-  { key: 'daily', count: 1, label: '每日', positions: ['今日'] },
+  { key: 'daily', count: 2, label: '每日', positions: ['主牌', '補牌'] },
   { key: '2card', count: 2, label: '雙卡', positions: ['因', '果'] },
   { key: '3card', count: 3, label: '三卡', positions: ['源', '轉', '合'] },
   { key: '5card', count: 5, label: '五卡', positions: ['過去', '現在', '未來', '外在', '內在'] },
@@ -33,9 +34,9 @@ const ROUTE_MODES = Object.freeze(Object.fromEntries(Object.entries(MODE_PATHS).
 
 const RITUAL_MESSAGES = {
   single: ['您目前使用的是「單卡占卜模式」。', '正在找尋那命運之線……', '微弱的月光，會在漆黑的夜裡，帶領你找到方向。', '抽牌完成。'],
-  daily: ['您目前使用的是「單卡每日抽牌模式」。', '這是一張屬於今日節奏與提醒的指引牌。', '正在對照今日真實月相。', '今日月符已經抽取完成。'],
+  daily: ['您目前使用的是「每日抽牌模式」。', '第一張為今日主牌，第二張為補牌。', '正在對照今日真實月相並整理主牌與補牌。', '今日月符已經抽取完成。'],
   '2card': ['您目前使用的是「雙卡占卜模式」。', '第一張卡牌為「因」，第二張卡牌為「果」。', '正在整理兩張牌的因果位置。', '抽牌完成。'],
-  '3card': ['您目前使用的是「三卡占卜模式」。', '第一張為「源」，第二張為「轉」，第三張為「合」。', '正在整理源、轉、合的語法位置。', '抽牌完成。'],
+  '3card': ['您目前使用的是「三卡占卜模式」。', '第一張為「源」，第二張「轉」是變數，第三張為「合」。', '正在以源與合判讀符文趨勢，並檢視中途變數。', '抽牌完成。'],
   '5card': ['您目前使用的是「五卡占卜模式」。', '依序觀看過去、現在、未來顯化、周圍環境與自己心境。', '正在整理時間主線與內外狀態。', '抽牌完成。'],
   ow3gs: ['您目前使用的是「OW3gs 11卡模式」。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
 };
@@ -133,7 +134,8 @@ function MultiReading({ draw, mode, phase }) {
       <p className="loc-eyebrow">Reading · 完整解讀</p>
       <h2>{mode === '2card' ? '因 → 果' : '源 → 轉 → 合'}</h2>
       <p><strong>完整現況：</strong>{cards.map((card, index) => `${labels[index]}「${card.符文名稱}」${directions[index]}`).join('、')}。目前真實月相為{phase}。</p>
-      <p><strong>閱讀方式：</strong>{mode === '2card' ? '先看造成現況的「因」，再看它導向的「果」。' : '依序閱讀「源 → 轉 → 合」，先找起點，再看轉化，最後看收束。'}</p>
+      <p><strong>閱讀方式：</strong>{mode === '2card' ? '先看造成現況的「因」，再看它導向的「果」。' : '「源」是起點，「轉」是中途變數，「合」是結果；符文趨勢比較源與合，轉用來解釋結果為何偏移。'}</p>
+      {draw.runeTrend && <p><strong>符文趨勢：</strong>{draw.runeTrend.trend}　<strong>最終判定：</strong>{draw.runeTrend.judgement}{mode === '3card' ? `　變數：${cards[1].符文名稱}・${directions[1]}` : ''}</p>}
       <div className="loc-context-list">{cards.map((card, index) => <div className="loc-context-item" key={`${mode}-${card.編號}-${index}`}><strong>{labels[index]}：{card.符文名稱}・{directions[index]}</strong><span>{directionText(card, directions[index])}</span></div>)}</div>
     </section>;
   }
@@ -168,16 +170,23 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
 
   useEffect(() => {
     let live = true;
-    fetchLocJsonBatch([LOC_DATA.RUNES, LOC_DATA.LOTS, LOC_DATA.RUNE_INTERPRETATIONS], { concurrency: 2 })
-      .then(([runes, lots, interpretationRows]) => {
+    fetchLocJsonBatch([LOC_DATA.RUNES], { concurrency: 1 })
+      .then(([runes]) => {
         if (!live) return;
-        const canonicalRunes = (runes || []).filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 66);
-        if (canonicalRunes.length < 66) throw new Error(`核心符文資料只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);
-        setData({ runes: canonicalRunes, lots: Array.isArray(lots) ? lots : [] });
-        setInterpretations(Array.isArray(interpretationRows) ? interpretationRows : []);
+        const canonicalRunes = (runes || []).filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 64);
+        if (canonicalRunes.length < 64) throw new Error(`目前電腦抽牌池只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);
+        setData({ runes: canonicalRunes, lots: [] });
         setError('');
+        return Promise.allSettled([
+          fetchLocJsonBatch([LOC_DATA.LOTS], { concurrency: 1 }).then(([lots]) => {
+            if (live) setData(current => current ? {...current, lots: Array.isArray(lots) ? lots : []} : current);
+          }),
+          fetchLocJsonBatch([LOC_DATA.RUNE_INTERPRETATIONS], { concurrency: 1 }).then(([rows]) => {
+            if (live) setInterpretations(Array.isArray(rows) ? rows : []);
+          })
+        ]);
       })
-      .catch(err => live && setError(`月之符文核心資料載入失敗：${err?.message || '未知錯誤'}`));
+      .catch(err => live && setError(`月之符文基本資料載入失敗：${err?.message || '未知錯誤'}`));
     return () => {
       live = false;
       timers.current.forEach(clearTimeout);
@@ -204,14 +213,14 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
     try {
       if (!data?.runes?.length) throw new Error('符文資料尚未載入完成。');
       if (data.runes.length < selectedMode.count) throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);
-      if (modeKey === 'daily' && !interpretations.length) throw new Error('每日符文解讀資料尚未載入完成。');
       const cards = drawRunesSequentially(data.runes, selectedMode.count);
       const directionIndexes = cards.map(() => randomInt(4));
       const directions = directionIndexes.map(index => DIRECTIONS[index]);
       const evaluation = evaluateSpread(cards, directions);
+      const runeTrend = spreadRuneTrend(cards, directions, modeKey);
       const createdAt = new Date().toISOString();
       const guidance = finalGuidance(data.lots, cards.at(-1), directions.at(-1));
-      setDraw({ id: `rune-draw:${modeKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, evaluation, guidance });
+      setDraw({ id: `rune-draw:${modeKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, evaluation, runeTrend, guidance });
       setRecordStatus('');
       setError('');
     } catch (err) {
@@ -251,13 +260,15 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
         mode_label: selectedMode.label,
         moon_phase: moonPhase,
         score: draw.evaluation.score,
-        trend: draw.evaluation.range.label,
+        trend: draw.runeTrend?.trend || draw.evaluation.range.label,
+        rune_judgement: draw.runeTrend?.judgement || null,
         guidance: liveGuidance,
         cards: draw.cards.map((card, index) => ({
           number: Number(card.編號),
           name: card.符文名稱,
           position: selectedMode.positions[index] || `第 ${index + 1} 張`,
           direction: draw.directions[index],
+          card_face: card.卡片屬性 || '中平',
           positive_keywords: card.正向關鍵詞 || '',
           negative_keywords: card.反向關鍵詞 || ''
         }))
@@ -274,7 +285,7 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
       <header className="loc-hero" id="intro">
         <p className="loc-eyebrow">LunaRunes · 月之符文</p>
         <h1>月之符文</h1>
-        <p>月之符文以固定 66 枚核心符文提供抽牌與語意指引。抽牌、加權與籤詩指引在瀏覽器完成；選擇性抽牌紀錄登入後儲存在 Neon。</p>
+        <p>月之符文以固定核心資料進行抽牌；基本符文資料以唯讀 runes.json 為準，籤詩與延伸解讀由 Neon 提供。延伸文字暫時未取得時，不影響基本抽牌結果。</p>
       </header>
 
       <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey}>
@@ -315,7 +326,7 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
         </section>
 
         {modeKey === 'single' && <section className="loc-card" data-draw-reading="single"><p className="loc-eyebrow">Reading · 單卡解讀</p><h2>{draw.cards[0].符文名稱} · {draw.directions[0]}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations}/></section>}
-        {modeKey === 'daily' && <section className="loc-card" data-draw-reading="daily"><p className="loc-eyebrow">Daily · 每日指示</p><h2>{draw.cards[0].符文名稱} · {draw.directions[0]} · {moonPhase}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations} daily/></section>}
+        {modeKey === 'daily' && <section className="loc-card" data-draw-reading="daily"><p className="loc-eyebrow">Daily · 每日指示</p><h2>主牌：{draw.cards[0].符文名稱} · {draw.directions[0]} · {moonPhase}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations} daily/><div className="loc-context-list"><div className="loc-context-item"><strong>補牌：{draw.cards[1]?.符文名稱} · {draw.directions[1]}</strong><span>{draw.cards[1] ? (directionText(draw.cards[1], draw.directions[1]) || draw.cards[1].符文說明) : '—'}</span></div></div></section>}
         <MultiReading draw={draw} mode={modeKey} phase={moonPhase}/>
 
         {modeKey === 'ow3gs' && <section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs">
@@ -327,7 +338,9 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
         <section className="loc-card" data-draw-stage="guidance">
           <p className="loc-eyebrow">Semantic Guidance · 語意指示</p>
           <h2>整體趨勢：{draw.evaluation.range.label}</h2>
-          <p>指示分數：{draw.evaluation.score.toFixed(3)}。依符文詞性、卡片位向與牌位權重計算目前組合的整體語意傾向；分數不代表吉凶、好壞或結果機率。{modeKey === 'ow3gs' ? '第 7–11 張採核心權重。' : ''}</p>
+          {(modeKey === '2card' || modeKey === '3card') && draw.runeTrend
+            ? <p>符文趨勢：{draw.runeTrend.trend}。最終判定：{draw.runeTrend.judgement}。雙卡以因→果判讀；三卡以源→合判讀趨勢，「轉」只作中途變數。</p>
+            : <p>指示分數：{draw.evaluation.score.toFixed(3)}。依符文詞性、卡片位向與牌位權重計算目前組合的整體語意傾向；分數不代表吉凶、好壞或結果機率。{modeKey === 'ow3gs' ? '第 7–11 張採核心權重。' : ''}</p>}
           <div className="loc-table-wrap"><table className="loc-table"><thead><tr><th>位置</th><th>符文</th><th>詞性</th><th>位向</th><th>權重</th><th>加權值</th></tr></thead><tbody>{draw.evaluation.rows.map((row, index) => <tr key={`${row.card.編號}-${index}`}><td>{selectedMode.positions[index] || index + 1}</td><td>{row.card.符文名稱}</td><td>{row.card.卡片屬性 || '中平'}</td><td>{row.direction}</td><td>{row.weight}</td><td>{row.weighted.toFixed(2)}</td></tr>)}</tbody></table></div>
         </section>
 
