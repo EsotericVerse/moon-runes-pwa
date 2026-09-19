@@ -7,22 +7,22 @@ import {scopeHrefV2} from '../scope-registry.v2';
 
 const PROFILES=Object.freeze({
   loc:Object.freeze({
-    subtitle:'LOC 的治理入口：Current Canon、Scope 邊界、Feature 共用規格與 Page Composition。',
+    subtitle:'治理用來說明理念、法律與管理者功能，並保留資料來源與公開邊界。',
     cards:Object.freeze([
-      Object.freeze({eyebrow:'理念',title:'Current Authority',text:'Current 由現行 Canon、Scope Registry 與 Feature Model 派生；歷史資料保留來源，但不得反向覆寫 Current。'}),
-      Object.freeze({eyebrow:'法律',title:'Scope 邊界與資料責任',text:'各 Scope 保有自己的名稱、資料所有權、作者身分與公開邊界；共享功能只能讀取授權 projection。'}),
+      Object.freeze({eyebrow:'理念',title:'Current Authority',text:'現行理念以月典目前採用的規則與文字為準；歷史資料保留來源，但不取代現在的定義。'}),
+      Object.freeze({eyebrow:'法律',title:'Scope 邊界與資料責任',text:'不同範圍各自保有名稱、資料、作者身分與公開界線；資料只能回到它原本的來源。'}),
       Object.freeze({eyebrow:'管理者功能',title:'治理管理',text:'版本、權限、資料狀態與公開設定集中由治理內的管理者首頁處理。',links:[{label:'首頁管理者',href:'governance/manage'},{label:'全域管理者',href:'governance/global-manage',globalOnly:true}]})
     ])
   }),
   runes:Object.freeze({
-    subtitle:'LunaRunes Scope 治理：凍結語彙、符號式語言資料、Grammar 與歷史演變。',
+    subtitle:'月之符文的治理：固定語彙、符號式語言資料與歷史變化。',
     cards:Object.freeze([
       Object.freeze({eyebrow:'Master Data',title:'Frozen Canon',text:'公開符文資料以凍結 Canon 為 Current；歷史版本只作來源與演變紀錄，不可覆寫現行母資料。'}),
-      Object.freeze({eyebrow:'Projection',title:'Read Projection',text:'公開頁面讀取 LunaRunes 自己的 projection；共享功能不改寫其 Master Data。'})
+      Object.freeze({eyebrow:'Projection',title:'Read Projection',text:'公開頁面讀取月之符文自己的資料；共享功能不改寫正式符文定義。'})
     ])
   }),
   lo3rwang:Object.freeze({
-    subtitle:'作者 Scope 治理：作者身份、作品、文化脈絡與個人資料邊界。',
+    subtitle:'作者資料的治理：作者身分、作品、文化脈絡與個人資料界線。',
     cards:Object.freeze([
       Object.freeze({eyebrow:'Identity',title:'作者身份',text:'作者 Scope 的名稱、作品、文化與作者介紹由作者 Scope 自己治理，不等同 LOC Canon。'}),
       Object.freeze({eyebrow:'Boundary',title:'個人資料邊界',text:'共享搜尋與脈絡功能只讀授權 projection，不因命中作品而擴張到未公開資料。'})
