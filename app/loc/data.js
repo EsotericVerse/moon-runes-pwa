@@ -10,6 +10,13 @@ const DEFAULT_GLOBAL_CONCURRENCY=2;
 const DEFAULT_MAX_BATCH_ITEMS=24;
 const DEFAULT_MEMORY_CACHE_ENTRIES=24;
 const DEFAULT_MAX_SEGMENTS=8;
+const NEON_ONLY_PATHS=new Set([
+  'data/json/core/lots.json',
+  'data/json/core/rune_interpretations.json'
+]);
+const LOCAL_PRIMARY_PATHS=new Set([
+  'data/json/core/runes.json'
+]);
 let activeRequests=0;
 const waiters=[];
 
@@ -63,6 +70,7 @@ async function fetchStaticJson(path){
 
 async function fetchNeonJson(path){
   const normalized=sourcePath(path);
+  const neonOnly=NEON_ONLY_PATHS.has(normalized);
   const params=new URLSearchParams();
   params.set('select','source_path,blob_sha,payload,imported_at');
   params.set('source_path',`eq.${normalized}`);
@@ -71,11 +79,14 @@ async function fetchNeonJson(path){
   try{
     const response=await fetch(url,{headers:{accept:'application/json'},cache:'no-store'});
     if(!response.ok){
-      if([400,401,403].includes(response.status))return fetchStaticJson(normalized);
+      if(!neonOnly&&[400,401,403].includes(response.status))return fetchStaticJson(normalized);
       throw new Error(`Neon Data API ${response.status}: ${normalized}`);
     }
     const rows=await response.json();
-    if(!Array.isArray(rows)||rows.length===0)return fetchStaticJson(normalized);
+    if(!Array.isArray(rows)||rows.length===0){
+      if(neonOnly)throw new Error(`Neon runtime data missing: ${normalized}`);
+      return fetchStaticJson(normalized);
+    }
     return rows[0].payload;
   }finally{
     releaseSlot();
@@ -84,6 +95,10 @@ async function fetchNeonJson(path){
 
 export function fetchLocJson(path,{memory=true,maxMemoryEntries=DEFAULT_MEMORY_CACHE_ENTRIES}={}){
   const normalized=sourcePath(path);
+  if(LOCAL_PRIMARY_PATHS.has(normalized)){
+    return fetchStaticJson(normalized).catch(()=>fetchNeonJson(normalized));
+  }
+  if(NEON_ONLY_PATHS.has(normalized))return fetchNeonJson(normalized);
   if(!memory)return fetchNeonJson(normalized);
   if(memoryCache.has(normalized)){touchMemoryCache(normalized);return memoryCache.get(normalized);}
   const request=fetchNeonJson(normalized).catch(error=>{memoryCache.delete(normalized);throw error;});
