@@ -23,7 +23,8 @@ export const FEATURES_V2=Object.freeze([
 const TIME_SCHEDULE_V2=Object.freeze([
   Object.freeze({start:0,theme:'theme-1'}),
   Object.freeze({start:6,theme:'theme-7'}),
-  Object.freeze({start:18,theme:'theme-1'})
+  Object.freeze({start:12,theme:'theme-4'}),
+  Object.freeze({start:18,theme:'theme-8'})
 ]);
 
 export const SCOPES_V2=Object.freeze({
@@ -50,7 +51,7 @@ export const SCOPES_V2=Object.freeze({
     routePatterns:Object.freeze(['writing/:workId']),
     compatibilityRoutes:Object.freeze(['evolution','management']),
     primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:'治理管理',href:'https://loc.lo3rwang.cc/governance/manage/'}),
+    role:Object.freeze({label:'作者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
     searchCollection:'all',
     dataViews:Object.freeze({context:'loc_context_entries',rankings:'loc_rankings'}),
@@ -66,6 +67,8 @@ export const SCOPES_V2=Object.freeze({
     label:'月之符文',
     localRoutes:Object.freeze([
       'list',
+      'list/all',
+      'algorithm',
       'history',
       'duel/one',
       'duel/daily',
@@ -77,8 +80,8 @@ export const SCOPES_V2=Object.freeze({
     routePatterns:Object.freeze([]),
     compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
-    primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:'治理管理',href:'https://loc.lo3rwang.cc/lo3rwang/governance/manage/'}),
+    primary:Object.freeze({label:'語彙',href:'https://lrunes.lo3rwang.cc/list'}),
+    role:Object.freeze({label:'管理者首頁',href:'https://lrunes.lo3rwang.cc/governance/manage'}),
     homes:Object.freeze([
       {label:'回月之符文首頁',href:'https://lrunes.lo3rwang.cc/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
@@ -100,12 +103,12 @@ export const SCOPES_V2=Object.freeze({
     compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
     primary:Object.freeze({label:'簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    role:Object.freeze({label:'治理管理',href:'https://lrunes.lo3rwang.cc/governance/manage/'}),
+    role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
       {label:'回作者簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
-    searchCollection:'政德文化',
+    searchCollection:'作者創作',
     dataViews:Object.freeze({context:'lo3rwang_context_entries',rankings:'lo3rwang_rankings'}),
     rankingTitle:'作者排行榜',
     theme:Object.freeze({
@@ -134,10 +137,10 @@ export const SCOPES_V2=Object.freeze({
     localRoutes:Object.freeze([]),
     routePatterns:Object.freeze([]),
     compatibilityRoutes:Object.freeze([]),
-    primary:Object.freeze({label:'治理管理',href:'https://loc.lo3rwang.cc/governance/global-manage/'}),
-    role:Object.freeze({label:'治理管理',href:'https://loc.lo3rwang.cc/governance/global-manage/'}),
+    primary:Object.freeze({label:'管理',href:'https://admin.lo3rwang.cc/'}),
+    role:Object.freeze({label:'管理者介紹',href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
-      {label:'回治理管理',href:'https://loc.lo3rwang.cc/governance/global-manage/'},
+      {label:'回管理首頁',href:'https://admin.lo3rwang.cc/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'治理',
@@ -179,13 +182,6 @@ export function resolveScopeV2(host='',pathname='/'){
   const h=cleanHost(host);
   for(const [id,scope] of Object.entries(SCOPES_V2)){
     if(matchesMount(scope,h,pathname))return id;
-  }
-  if(!h){
-    const path=cleanPath(pathname);
-    for(const [id,scope] of Object.entries(SCOPES_V2)){
-      const base=scope.mount?cleanPath(scope.mount.path):null;
-      if(base&&(path===base||path.startsWith(base+'/')))return id;
-    }
   }
   return SCOPE_BY_DOMAIN_V2[h]||SCOPE_POLICY_V2.defaultScopeId;
 }
