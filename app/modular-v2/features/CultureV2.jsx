@@ -15,11 +15,9 @@ function periodRows(value){
 function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row?.semantic_keywords||row?.top_keywords||[];}
 function itemLabel(value,index){return value?.display_label||value?.name||value?.title||value?.period||`項目 ${index+1}`;}
 
-const runeGovernance=[];
-
 const PROFILE=Object.freeze({
   loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。',sections:['eras','events']}),
-  runes:Object.freeze({subtitle:'月之符文的時期與沿革資料。',sections:['eras']}),
+  runes:Object.freeze({subtitle:'月之符文的時期、符文歌曲與符文文學。',sections:['eras','runeSongs','runeLiterature']}),
   lo3rwang:Object.freeze({subtitle:'作者文化：時期、作品語彙、創作與治理文字在時間中的變化。',sections:['eras','authorKeywords','periods']}),
   admin:Object.freeze({subtitle:'管理 Scope 的文化頁只呈現治理變化與歷史，不取代各 Scope 的 Current Authority。',sections:['governanceHistory']})
 });
@@ -39,6 +37,8 @@ export default function CultureV2(){
     const keys=[];
     const add=(key,path)=>{keys.push(key);requests.push(path);};
     if(wanted.has('eras'))add('eras',CULTURE_PATHS_V2.eraRegistry);
+    if(wanted.has('runeSongs'))add('runeSongs',CULTURE_PATHS_V2.runeSongs);
+    if(wanted.has('runeLiterature'))add('runeLiterature',CULTURE_PATHS_V2.runeLiterature);
     if(wanted.has('events'))add('events',CULTURE_PATHS_V2.eventSnapshot);
     if(wanted.has('runes'))add('runes',CULTURE_PATHS_V2.runes);
     if(wanted.has('authorKeywords'))add('authorKeywords',CULTURE_PATHS_V2.authorKeywords);
@@ -51,6 +51,8 @@ export default function CultureV2(){
   },[scopeId,profile.sections]);
 
   const eraRows=useMemo(()=>[...(data.eras?.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.eras]);
+  const runeSongRows=useMemo(()=>[...(data.runeSongs?.confirmed_records||[]),...(data.runeSongs?.candidate_records||[])],[data.runeSongs]);
+  const runeLiteratureRows=useMemo(()=>Array.isArray(data.runeLiterature?.runes)?data.runeLiterature.runes:[],[data.runeLiterature]);
   const eventRows=useMemo(()=>[...(data.events?.events||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))),[data.events]);
   const musicRows=periodRows(data.musicPeriods);
   const writingRows=periodRows(data.writingPeriods);
@@ -66,6 +68,14 @@ export default function CultureV2(){
         <span>{item.start_date||'—'} → {item.end_date||'現在'}</span>
         {item.description?<p>{item.description}</p>:null}
       </article>)}</div>
+    </ScopeCardV2>:null}
+
+    {profile.sections.includes('runeSongs')?<ScopeCardV2 eyebrow="Rune Songs" title="符文歌曲">
+      <div className="scope-v2-list">{runeSongRows.map((item,index)=><article className="scope-v2-inline-card" key={item.record_id||item.song_id||index}><strong>{item.title||item.song_title||item.record_id||'符文歌曲'}</strong>{item.source_draw?<span>{item.source_draw}</span>:null}{item.status?<small>{item.status}</small>:null}</article>)}</div>
+    </ScopeCardV2>:null}
+
+    {profile.sections.includes('runeLiterature')?<ScopeCardV2 eyebrow="Rune Literature" title="符文文學">
+      <div className="scope-v2-list">{runeLiteratureRows.map((item,index)=><article className="scope-v2-inline-card" key={item.id||item.record_id||index}><strong>{item.title||item.name||item.rune_name||'符文文學'}</strong>{item.description||item.summary?<span>{item.description||item.summary}</span>:null}</article>)}</div>
     </ScopeCardV2>:null}
 
     {profile.sections.includes('events')?<ScopeCardV2 eyebrow="Timeline" title="時間線">
