@@ -14,13 +14,22 @@ function targetIsCurrent(href,host,pathname){
     return url.hostname===host.split(':')[0]&&normalizePath(url.pathname)===normalizePath(pathname);
   }catch{return false;}
 }
+function forbiddenNavTarget(href=''){
+  try{
+    const url=new URL(href,typeof window!=='undefined'?window.location.origin:'https://loc.lo3rwang.cc');
+    return url.hostname==='admin.lo3rwang.cc'||url.pathname==='/admin'||url.pathname.startsWith('/admin/');
+  }catch{return true;}
+}
+
 function NavTarget({href,label,current=false}){
+  if(forbiddenNavTarget(href))return null;
   return current?<span className="scope-v2-nav-current" aria-current="page">{label}</span>:<a href={href}>{label}</a>;
 }
 
 export default function ScopeNavV2(){
   const {scopeId,scope,host,pathname}=useScopeRuntimeV2();
   const currentFeature=featureIdForPathV2(pathname);
+  const searchHref=featureHrefV2(scopeId,'search');
 
   return <nav className="scope-v2-nav" aria-label="全站導覽">
     <NavTarget href={scope.primary.href} label={scope.primary.label} current={targetIsCurrent(scope.primary.href,host,pathname)}/>
