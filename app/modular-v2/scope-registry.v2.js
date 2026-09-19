@@ -67,6 +67,7 @@ export const SCOPES_V2=Object.freeze({
     label:'月之符文',
     localRoutes:Object.freeze([
       'list',
+      'list/all',
       'algorithm',
       'history',
       'duel/one',
