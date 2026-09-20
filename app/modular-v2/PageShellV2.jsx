@@ -1,4 +1,4 @@
-import {scopeHrefV2} from './scope-registry.v2';
+import {scopeHrefV2,scopeOriginV2} from './scope-registry.v2';
 
 const LOCAL_MENUS=Object.freeze({
   context:[['說明與探索','/context'],['關係圖(Graph)','/context/graph'],['節點(node)','/context/node'],['關聯(Edge)','/context/edge'],['情境(Scenarios)','/context/scenarios'],['趨勢(Trend)','/context/trend'],['每日符文統計分析(daily)','/context/dailtrunes']],
@@ -20,7 +20,9 @@ function menuFor(featureId,scopeId){
 
 export default function PageShellV2({eyebrow,title,subtitle,children,featureId=null,scopeId='loc',expandedPath=null}){
   const menu=menuFor(featureId,scopeId);
-  const menuHref=path=>scopeHrefV2(scopeId,path);
+  const menuHref=path=>scopeId==='runes'&&path==='/algorithm'
+    ? `${scopeOriginV2(scopeId)}/algorithm`
+    : scopeHrefV2(scopeId,path);
   const renderMenu=(items,level=0)=><div className={level?'scope-v2-local-menu-children':'scope-v2-local-menu-row'}>{items.map(([label,path,children])=><div className="scope-v2-local-menu-item" key={`${label}-${path}`}><a href={menuHref(path)}>{label}</a>{children?.length&&path===expandedPath?renderMenu(children,level+1):null}</div>)}</div>;
   return <main className="scope-v2-main">
     <section className="scope-v2-page">

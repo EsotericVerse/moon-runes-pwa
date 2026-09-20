@@ -9,7 +9,7 @@ import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model
 import { realMoonPhase } from '../loc/model/moon-phase';
 import { buildRuneGraph, searchRuneGraph } from '../../js/rune-graph-core.js';
 import RuneAtlas from './RuneAtlas';
-import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
+import {scopeHrefV2,scopeOriginV2} from '../modular-v2/scope-registry.v2';
 
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
@@ -17,7 +17,9 @@ const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
-const runeHref=path=>scopeHrefV2('runes',path);
+const runeHref=path=>String(path||'').replace(/^\/+/,'')==='algorithm'
+  ? `${scopeOriginV2('runes')}/algorithm`
+  : scopeHrefV2('runes',path);
 const MODES=[
   {key:'single',count:1,label:'單卡',description:'符文本義＋卡牌方向＋月相交互。',positions:['核心'],path:'duel/one'},
   {key:'daily',count:1,label:'每日',description:'以今日為時間範圍的一張符文。',positions:['今日'],path:'duel/daily'},
