@@ -7,7 +7,7 @@ import { useNeonAccount } from '../loc/use-neon-account';
 import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
 import { realMoonPhase } from '../loc/model/moon-phase';
-import {scopeOriginV2} from '../modular-v2/scope-registry.v2';
+import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
 const DIRECTIONS = ['正位', '半正位', '半逆位', '逆位'];
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
@@ -22,8 +22,8 @@ const DRAW_TYPES = [
   { key: 'ow3gs', count: 11, label: '11卡 OW3gs', positions: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'] }
 ];
 const DRAW_PATHS = Object.freeze({
-  single: `${scopeOriginV2('runes')}/duel/one`,
-  daily: `${scopeOriginV2('runes')}/duel/daily`,
+  single: scopeHrefV2('runes','duel/one'),
+  daily: scopeHrefV2('runes','duel/daily'),
   '2card': `${scopeOriginV2('runes')}/duel/two`,
   '3card': `${scopeOriginV2('runes')}/duel/three`,
   '5card': `${scopeOriginV2('runes')}/duel/five`,
@@ -36,7 +36,7 @@ const RITUAL_MESSAGES = {
   '2card': ['正在進行雙卡占卜。', '第一張卡牌為「因」，第二張卡牌為「果」。', '正在整理兩張牌的因果位置。', '抽牌完成。'],
   '3card': ['正在進行三卡占卜。', '第一張為「源」，第二張為「轉」，第三張為「合」。', '正在整理源、轉、合的語法位置。', '抽牌完成。'],
   '5card': ['正在進行五卡占卜。', '兩張過去成因、一個意外變化、兩張現在狀況。', '正在整理雙卡＋單卡＋雙卡的組合。', '抽牌完成。'],
-  ow3gs: ['正在進行 OW3gs 11 卡抽牌。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
+  ow3gs: ['正在進行 OW3gs 11 卡抽牌。', '1–6 建立事件描述層，第 7–11 張為核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
 };
 
 async function fetchCoreRunes() {
