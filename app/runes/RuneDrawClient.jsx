@@ -13,7 +13,7 @@ const DIRECTIONS = ['正位', '半正位', '半逆位', '逆位'];
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
 const UI_SETTINGS_KEY = 'loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS = { draw_response: 'ritual' };
-const MODES = [
+const DRAW_TYPES = [
   { key: 'single', count: 1, label: '單卡', positions: ['核心'] },
   { key: 'daily', count: 1, label: '每日', positions: ['今日'] },
   { key: '2card', count: 2, label: '雙卡', positions: ['因', '果'] },
@@ -21,7 +21,7 @@ const MODES = [
   { key: '5card', count: 5, label: '五卡', positions: ['過去', '現在', '未來', '外在', '內在'] },
   { key: 'ow3gs', count: 11, label: '11卡 OW3gs', positions: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'] }
 ];
-const MODE_PATHS = Object.freeze({
+const DRAW_PATHS = Object.freeze({
   single: scopeHrefV2('runes','duel/one'),
   daily: scopeHrefV2('runes','duel/daily'),
   '2card': scopeHrefV2('runes','duel/two'),
@@ -29,15 +29,14 @@ const MODE_PATHS = Object.freeze({
   '5card': scopeHrefV2('runes','duel/five'),
   ow3gs: scopeHrefV2('runes','duel/ow3gs')
 });
-const ROUTE_MODES = Object.freeze(Object.fromEntries(Object.entries(MODE_PATHS).map(([mode, path]) => [path.split('/').filter(Boolean).at(-1), mode])));
 
 const RITUAL_MESSAGES = {
-  single: ['您目前使用的是「單卡占卜模式」。', '正在找尋那命運之線……', '微弱的月光，會在漆黑的夜裡，帶領你找到方向。', '抽牌完成。'],
-  daily: ['您目前使用的是「單卡每日抽牌模式」。', '這是一張屬於今日節奏與提醒的指引牌。', '正在對照今日真實月相。', '今日月符已經抽取完成。'],
-  '2card': ['您目前使用的是「雙卡占卜模式」。', '第一張卡牌為「因」，第二張卡牌為「果」。', '正在整理兩張牌的因果位置。', '抽牌完成。'],
-  '3card': ['您目前使用的是「三卡占卜模式」。', '第一張為「源」，第二張為「轉」，第三張為「合」。', '正在整理源、轉、合的語法位置。', '抽牌完成。'],
-  '5card': ['您目前使用的是「五卡占卜模式」。', '依序觀看過去、現在、未來顯化、周圍環境與自己心境。', '正在整理時間主線與內外狀態。', '抽牌完成。'],
-  ow3gs: ['您目前使用的是「OW3gs 11卡模式」。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
+  single: ['正在進行單卡占卜。', '正在找尋那命運之線……', '微弱的月光，會在漆黑的夜裡，帶領你找到方向。', '抽牌完成。'],
+  daily: ['正在進行每日抽牌。', '這是一張屬於今日節奏與提醒的指引牌。', '正在對照今日真實月相。', '今日月符已經抽取完成。'],
+  '2card': ['正在進行雙卡占卜。', '第一張卡牌為「因」，第二張卡牌為「果」。', '正在整理兩張牌的因果位置。', '抽牌完成。'],
+  '3card': ['正在進行三卡占卜。', '第一張為「源」，第二張為「轉」，第三張為「合」。', '正在整理源、轉、合的語法位置。', '抽牌完成。'],
+  '5card': ['正在進行五卡占卜。', '依序觀看過去、現在、未來顯化、周圍環境與自己心境。', '正在整理時間主線與內外狀態。', '抽牌完成。'],
+  ow3gs: ['正在進行 OW3gs 11 卡抽牌。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
 };
 
 function randomInt(max) {
@@ -187,7 +186,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
     };
   }, []);
 
-  const selectedMode = useMemo(() => MODES.find(item => item.key === drawKey) || MODES[0], [drawKey]);
+  const selectedMode = useMemo(() => DRAW_TYPES.find(item => item.key === drawKey) || MODES[0], [drawKey]);
   const instantDraw = uiSettings?.draw_response === 'instant';
   const moonPhase = useMemo(() => realMoonPhase(), []);
   const liveGuidance = draw ? draw.guidance || '' : '';
@@ -231,12 +230,10 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   }
 
   useEffect(() => {
-    if (!initialModeKey || !data) return;
-    const fixedMode = initialMode(initialModeKey);
-    if (drawKey !== fixedMode || autoStarted.current === fixedMode) return;
-    autoStarted.current = fixedMode;
+    if (!data || autoStarted.current) return;
+    autoStarted.current = true;
     executeDraw();
-  }, [data, initialModeKey, drawKey, instantDraw]);
+  }, [data]);
 
   async function saveCurrentDraw() {
     if (!draw) return;
@@ -281,7 +278,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         <p className="loc-eyebrow">Draw · 抽籤</p>
         <h2>{selectedMode.label}抽牌</h2>
         <div className="runes-mode-nav" aria-label="抽牌模式">
-          {MODES.map(item => <a key={item.key} href={MODE_PATHS[item.key]} data-draw-mode={item.key} className={`loc-button ${drawKey === item.key ? 'primary' : ''}`}>{item.label}</a>)}
+          {DRAW_TYPES.map(item => <a key={item.key} href={DRAW_PATHS[item.key]} data-draw-mode={item.key} className={`loc-button ${drawKey === item.key ? 'primary' : ''}`}>{item.label}</a>)}
         </div>
         <div className="loc-actions runes-draw-action">
           <button type="button" className="loc-button primary" data-draw-action="execute" onClick={executeDraw} disabled={!data || ritualStep >= 0}>{ritualStep >= 0 ? '占卜中…' : '抽牌'}</button>
