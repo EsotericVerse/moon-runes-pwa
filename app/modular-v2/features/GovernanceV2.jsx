@@ -71,14 +71,13 @@ export default function GovernanceV2(){
   },[scopeId]);
   const cases=history?.semantic_history_cases||[];
   const stages=history?.system_stages||[];
-  return <FeaturePageV2 featureId="governance" subtitle="宣示原則性與法律規定。管理也在此。">
+  return <FeaturePageV2 featureId="governance" subtitle={profile.subtitle}>
     <nav className="scope-v2-local-menu" aria-label="治理功能選單">
       <a href="#governance-concepts">治理概念</a>
       <a href="#governance-law">法律與邊界</a>
       <a href="#governance-management">管理功能</a>
     </nav>
     <div id="governance-concepts">
-    {scopeId==='loc'?<ScopeCardV2 eyebrow="治理" title="治理處理如何被使用、引用、延伸與修正的原則。"><p>不要求任何人接受或使用；所有內容均可作為分析、參考與延伸思考的材料。</p></ScopeCardV2>:null}
     {profile.cards.map((card,index)=><section id={index===0?'governance-concepts':index===1?'governance-law':'governance-management'} key={card.title}><ScopeCardV2 eyebrow={card.eyebrow} title={card.title}><p>{card.text}</p>{card.links?.filter(link=>!link.globalOnly||scopeId==='loc').map(link=><p key={link.href}><a href={scopeHrefV2(scopeId,link.href)}>{link.label}</a></p>)}</ScopeCardV2></section>)}
     </div>
     {scopeId==='runes'?<ScopeCardV2 eyebrow="歷史" title="符文歷史">
