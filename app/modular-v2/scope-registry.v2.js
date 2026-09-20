@@ -67,6 +67,7 @@ export const SCOPES_V2=Object.freeze({
     localRoutes:Object.freeze([
       'list',
       'history',
+      'algorithm',
       'duel/one',
       'duel/daily',
       'duel/two',
