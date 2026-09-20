@@ -33,7 +33,7 @@ export default function ZhengdeCultureView(){
       <h1>政德文化</h1>
       <p>這裡不是單一風格說明書，而是政德的文字、歌曲、價值觀與語言治理如何隨時間形成、轉變與互相影響的文化入口。</p>
       <p className="loc-core-line">感受自己 → 理解自己 → 定義自己 → 校對現實 → 治理自己</p>
-      <div className="loc-actions"><a className="loc-button" href={featureHrefV2('lo3rwang','context')}>脈絡分析</a></div>
+      <div className="loc-actions"><a className="loc-button primary" href={`${featureHrefV2('lo3rwang','search')}?c=%E6%94%BF%E5%BE%B7%E6%96%87%E5%8C%96`}>搜尋政德文化</a><a className="loc-button" href={featureHrefV2('lo3rwang','context')}>脈絡分析</a></div>
     </header>
 
     <section className="loc-card">
@@ -66,7 +66,7 @@ export default function ZhengdeCultureView(){
       {error&&<p className="loc-status error">{error}</p>}
       <div className="loc-list">
         {keywords.map(keyword=><article className="loc-subcard" key={keyword.id}>
-          <h3><a href={`${featureHrefV2('lo3rwang','context')}?q=${encodeURIComponent(keyword.name)}`}>{keyword.name}</a></h3>
+          <h3><a href={`${featureHrefV2('lo3rwang','search')}?c=${encodeURIComponent('政德文化')}&q=${encodeURIComponent(keyword.name)}`}>{keyword.name}</a></h3>
           <p>{keyword.summary}</p>
           {!!keyword.eras?.length&&<p className="loc-note">時期：{keyword.eras.join('／')}</p>}
           {!!keyword.related?.length&&<p className="loc-note">相關：{keyword.related.join('、')}</p>}
