@@ -16,7 +16,7 @@ const UI_SETTINGS_KEY = 'loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS = { draw_response: 'ritual' };
 const MODES = [
   { key: 'single', count: 1, label: '單卡', positions: ['核心'] },
-  { key: 'daily', count: 2, label: '每日', positions: ['主牌', '補牌'] },
+  { key: 'daily', count: 1, label: '每日', positions: ['主牌', '補牌'] },
   { key: '2card', count: 2, label: '雙卡', positions: ['因', '果'] },
   { key: '3card', count: 3, label: '三卡', positions: ['源', '轉', '合'] },
   { key: '5card', count: 5, label: '五卡', positions: ['過去', '現在', '未來', '外在', '內在'] },
@@ -34,7 +34,7 @@ const ROUTE_MODES = Object.freeze(Object.fromEntries(Object.entries(MODE_PATHS).
 
 const RITUAL_MESSAGES = {
   single: ['您目前使用的是「單卡占卜模式」。', '正在找尋那命運之線……', '微弱的月光，會在漆黑的夜裡，帶領你找到方向。', '抽牌完成。'],
-  daily: ['您目前使用的是「每日抽牌模式」。', '第一張為今日主牌，第二張為補牌。', '正在對照今日真實月相並整理主牌與補牌。', '今日月符已經抽取完成。'],
+  daily: ['您目前使用的是「每日抽牌模式」。', '先抽今日主牌；需要釐清時，再由你決定是否補抽第二張。', '正在對照今日真實月相。', '今日主牌已經抽取完成。'],
   '2card': ['您目前使用的是「雙卡占卜模式」。', '第一張卡牌為「因」，第二張卡牌為「果」。', '正在整理兩張牌的因果位置。', '抽牌完成。'],
   '3card': ['您目前使用的是「三卡占卜模式」。', '第一張為「源」，第二張「轉」是變數，第三張為「合」。', '正在以源與合判讀符文趨勢，並檢視中途變數。', '抽牌完成。'],
   '5card': ['您目前使用的是「五卡占卜模式」。', '依序觀看過去、現在、未來顯化、周圍環境與自己心境。', '正在整理時間主線與內外狀態。', '抽牌完成。'],
@@ -173,8 +173,8 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
     fetchLocJsonBatch([LOC_DATA.RUNES], { concurrency: 1 })
       .then(([runes]) => {
         if (!live) return;
-        const canonicalRunes = (runes || []).filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 64);
-        if (canonicalRunes.length < 64) throw new Error(`目前電腦抽牌池只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);
+        const canonicalRunes = (runes || []).filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 66);
+        if (canonicalRunes.length < 66) throw new Error(`核心符文資料只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);
         setData({ runes: canonicalRunes, lots: [] });
         setError('');
         return Promise.allSettled([
@@ -228,6 +228,28 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
       setError(`抽牌失敗：${err?.message || '未知錯誤'}`);
     } finally {
       setRitualStep(-1);
+    }
+  }
+
+  function drawDailySupplement() {
+    if (modeKey !== 'daily' || !draw || draw.cards.length !== 1 || !data?.runes?.length) return;
+    try {
+      const used=new Set(draw.cards.map(card=>Number(card?.編號)));
+      const pool=data.runes.filter(card=>!used.has(Number(card?.編號)));
+      if(!pool.length)throw new Error('沒有可補抽的符文。');
+      const card=pool[randomInt(pool.length)];
+      const directionIndex=randomInt(4);
+      const direction=DIRECTIONS[directionIndex];
+      setDraw(current=>current?{
+        ...current,
+        cards:[...current.cards,card],
+        directionIndexes:[...current.directionIndexes,directionIndex],
+        directions:[...current.directions,direction]
+      }:current);
+      setRecordStatus('');
+      setError('');
+    } catch (err) {
+      setError(`補抽失敗：${err?.message || '未知錯誤'}`);
     }
   }
 
@@ -285,7 +307,7 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
       <header className="loc-hero" id="intro">
         <p className="loc-eyebrow">LunaRunes · 月之符文</p>
         <h1>月之符文</h1>
-        <p>月之符文以固定核心資料進行抽牌；基本符文資料以唯讀 runes.json 為準，籤詩與延伸解讀由 Neon 提供。延伸文字暫時未取得時，不影響基本抽牌結果。</p>
+        <p>月之符文以固定 66 枚核心符文進行抽牌；基本符文資料以唯讀 runes.json 為準，籤詩與延伸解讀由 Neon 提供。延伸文字暫時未取得時，不影響基本抽牌結果。</p>
       </header>
 
       <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey}>
@@ -319,6 +341,7 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
             </article>)}
           </div>
           <div className="loc-actions runes-retry">
+            {modeKey === 'daily' && draw.cards.length === 1 ? <button type="button" className="loc-button" data-draw-action="daily-supplement" onClick={drawDailySupplement}>補抽一張</button> : null}
             <button type="button" className="loc-button" data-draw-action="retry" onClick={executeDraw}>再抽一次</button>
             <button type="button" className="loc-button primary" onClick={saveCurrentDraw}>{modeKey === 'daily' ? '記錄到每日' : '記錄一般抽牌'}</button>
           </div>
@@ -326,7 +349,7 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
         </section>
 
         {modeKey === 'single' && <section className="loc-card" data-draw-reading="single"><p className="loc-eyebrow">Reading · 單卡解讀</p><h2>{draw.cards[0].符文名稱} · {draw.directions[0]}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations}/></section>}
-        {modeKey === 'daily' && <section className="loc-card" data-draw-reading="daily"><p className="loc-eyebrow">Daily · 每日指示</p><h2>主牌：{draw.cards[0].符文名稱} · {draw.directions[0]} · {moonPhase}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations} daily/><div className="loc-context-list"><div className="loc-context-item"><strong>補牌：{draw.cards[1]?.符文名稱} · {draw.directions[1]}</strong><span>{draw.cards[1] ? (directionText(draw.cards[1], draw.directions[1]) || draw.cards[1].符文說明) : '—'}</span></div></div></section>}
+        {modeKey === 'daily' && <section className="loc-card" data-draw-reading="daily"><p className="loc-eyebrow">Daily · 每日指示</p><h2>主牌：{draw.cards[0].符文名稱} · {draw.directions[0]} · {moonPhase}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations} daily/>{draw.cards[1] ? <div className="loc-context-list"><div className="loc-context-item"><strong>補牌：{draw.cards[1].符文名稱} · {draw.directions[1]}</strong><span>{directionText(draw.cards[1], draw.directions[1]) || draw.cards[1].符文說明}</span></div></div> : <p className="loc-note">主牌本身即為完整結果；需要釐清時再補抽。</p>}</section>}
         <MultiReading draw={draw} mode={modeKey} phase={moonPhase}/>
 
         {modeKey === 'ow3gs' && <section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs">
