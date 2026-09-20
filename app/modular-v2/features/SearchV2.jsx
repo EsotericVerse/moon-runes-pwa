@@ -11,6 +11,7 @@ import {recordSearchSegmentHits,rankSearchSegments} from '../../loc/search-routi
 import {recordSearchTelemetry} from '../../loc/search-telemetry';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
+import {featureHrefV2} from '../scope-registry.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
@@ -192,6 +193,7 @@ export default function SearchV2(){
       {cultureKeyword.outline?.length?<p>{cultureKeyword.outline.join(' → ')}</p>:null}
       {cultureKeyword.related?.length?<p>相關概念：{cultureKeyword.related.join('、')}</p>:null}
       {cultureWorks.length?<ul>{cultureWorks.map(work=><li key={work.key}><strong>{work.title}</strong> · {work.source}</li>)}</ul>:null}
+      <p><a href={`${featureHrefV2(scopeId,'context')}?q=${encodeURIComponent(cultureKeyword.name)}`}>脈絡分析</a></p>
     </ScopeCardV2>:null}
     <div className="scope-v2-list">
       {shownResults.map(row=><ScopeCardV2 key={row.key} eyebrow={row.source} title={row.title}>
