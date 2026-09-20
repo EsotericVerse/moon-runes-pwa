@@ -32,9 +32,9 @@ export default function AuthorHomeView({section=null}){
     },
     {
       id:'reels',
-      eyebrow:'Reels',
-      title:'公開 Reels',
-      content:<div className="loc-context-list"><article className="loc-context-item"><strong>月之符文公開占卜示範</strong><p><a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">在 Instagram 查看第一支 Reels →</a></p></article><article className="loc-context-item"><strong>月之符文使用示範</strong><p><a href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">在 Instagram 查看第二支 Reels →</a></p></article></div>
+      eyebrow:'Author Reel',
+      title:'這就是我',
+      content:<div className="loc-context-list"><article className="loc-context-item"><strong>作者自我介紹作品</strong><p>這支作品是王政德／lo3rwang 的個人自我介紹，不是月之符文宣傳內容。</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 查看〈這就是我〉 →</a></p></article></div>
     }
   ];
   const sectionCopy=SECTION_COPY[section];
