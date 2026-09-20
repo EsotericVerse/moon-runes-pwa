@@ -18,7 +18,7 @@ const DRAW_TYPES = [
   { key: 'daily', count: 1, label: '每日', positions: ['今日'] },
   { key: '2card', count: 2, label: '雙卡', positions: ['因', '果'] },
   { key: '3card', count: 3, label: '三卡', positions: ['源', '轉', '合'] },
-  { key: '5card', count: 5, label: '五卡', positions: ['過去', '現在', '未來', '外在', '內在'] },
+  { key: '5card', count: 5, label: '五卡', positions: ['過去成因 1', '過去成因 2', '意外變化', '現在狀況 1', '現在狀況 2'] },
   { key: 'ow3gs', count: 11, label: '11卡 OW3gs', positions: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'] }
 ];
 const DRAW_PATHS = Object.freeze({
@@ -35,7 +35,7 @@ const RITUAL_MESSAGES = {
   daily: ['正在進行每日抽牌。', '這是一張屬於今日節奏與提醒的指引牌。', '正在對照今日真實月相。', '今日月符已經抽取完成。'],
   '2card': ['正在進行雙卡占卜。', '第一張卡牌為「因」，第二張卡牌為「果」。', '正在整理兩張牌的因果位置。', '抽牌完成。'],
   '3card': ['正在進行三卡占卜。', '第一張為「源」，第二張為「轉」，第三張為「合」。', '正在整理源、轉、合的語法位置。', '抽牌完成。'],
-  '5card': ['正在進行五卡占卜。', '依序觀看過去、現在、未來顯化、周圍環境與自己心境。', '正在整理時間主線與內外狀態。', '抽牌完成。'],
+  '5card': ['正在進行五卡占卜。', '兩張過去成因、一個意外變化、兩張現在狀況。', '正在整理雙卡＋單卡＋雙卡的組合。', '抽牌完成。'],
   ow3gs: ['正在進行 OW3gs 11 卡抽牌。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
 };
 
@@ -157,13 +157,14 @@ function MultiReading({ draw, mode, phase }) {
     </section>;
   }
   if (mode === '5card') {
-    const [past, present, future, external, internal] = cards;
+    const [past1, past2, unexpected, current1, current2] = cards;
     return <section className="loc-card" data-draw-reading="5card">
       <p className="loc-eyebrow">Reading · 五卡完整解讀</p>
-      <h2>時間主線 × 內外作用</h2>
-      <p><strong>時間主線：</strong>過去的「{past.符文名稱}」{directions[0]}：{directionText(past, directions[0])}；現在的「{present.符文名稱}」{directions[1]}：{directionText(present, directions[1])}；若目前條件延續，未來顯化「{future.符文名稱}」{directions[2]}：{directionText(future, directions[2])}。</p>
-      <p><strong>內外作用：</strong>周圍環境「{external.符文名稱}」{directions[3]}：{directionText(external, directions[3])}；自己心境「{internal.符文名稱}」{directions[4]}：{directionText(internal, directions[4])}。兩者共同描述前三張時間主線的條件。</p>
-      <p><strong>閱讀原則：</strong>未來顯化描述延續目前條件後的趨勢，不作絕對結果判決。本次真實月相為{phase}。</p>
+      <h2>雙卡＋單卡＋雙卡</h2>
+      <p><strong>過去的成因：</strong>「{past1.符文名稱}」{directions[0]}：{directionText(past1, directions[0])}；「{past2.符文名稱}」{directions[1]}：{directionText(past2, directions[1])}。兩張牌共同描述事情形成的背景與潛因。</p>
+      <p><strong>意外變化：</strong>「{unexpected.符文名稱}」{directions[2]}：{directionText(unexpected, directions[2])}。單張只提供一個意外因素，不與雙卡拼接。</p>
+      <p><strong>現在狀況：</strong>「{current1.符文名稱}」{directions[3]}：{directionText(current1, directions[3])}；「{current2.符文名稱}」{directions[4]}：{directionText(current2, directions[4])}。兩張牌共同描述現在以後可能形成的結論。</p>
+      <p><strong>模組應用：</strong>雙卡與三卡的共同語意延伸；月相交互列於最後，只作天時關係的小幅修正，可能稍強也可能稍弱。本次真實月相為{phase}。</p>
     </section>;
   }
   return null;
@@ -367,8 +368,12 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         <MultiReading draw={draw} mode={drawKey} phase={moonPhase}/>
 
         {drawKey === 'ow3gs' && <section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs">
-          <p className="loc-eyebrow">OW3gs · 核心判定</p><h2>第 7–11 張為核心判定</h2>
+          <p className="loc-eyebrow">OW3gs · 雙模型判讀</p><h2>1–6 因的描述層 → 7–11 果的判定層</h2>
+          <p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p>
+          <p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；以雙卡與三卡綜合判斷產生問題的可能狀態。</p>
+          <p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；以五卡方式判斷建議如何行動的治理原則。</p>
           <div className="loc-context-list">{draw.cards.slice(6, 11).map((card, index) => <div className="loc-context-item" key={`core-${card.編號}-${index}`}><strong>第 {index + 7} 張 · {card.符文名稱} · {draw.directions[index + 6]}</strong><span>{directionText(card, draw.directions[index + 6]) || card.符文說明}</span></div>)}</div>
+          <p>月相交互最後才套用，只作低權重時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
         </section>}
 
         {drawKey !== 'daily' && <section className="loc-card" data-draw-stage="lots">
