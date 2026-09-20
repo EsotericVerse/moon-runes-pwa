@@ -22,7 +22,7 @@ const CONTEXT_COPY=Object.freeze({
 });
 
 function contextTitle(row,index){
-  const value=row?.title||row?.display_title||row?.label||row?.name||row?.subject||row?.period||row?.era_name||row?.context_name||row?.context_key;
+  const value=row?.title||row?.display_title||row?.label||row?.name||row?.subject||row?.context_name||row?.context_key;
   if(value)return String(value);
   if(row?.source||row?.source_name)return String(row.source||row.source_name);
   return `脈絡項目 ${index+1}`;
