@@ -73,7 +73,8 @@ export default function StatisticsV2({section=null}){
   const shown=filtered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
 
   const legacy=LEGACY_SECTIONS[section?.split('/')[0]];
-  return <FeaturePageV2 featureId="statics" expandedPath="/statics" subtitle="統計關鍵字排行榜與資料來源的分佈，來做風格的分析。">
+  const rankingPath=!section||section==='total'||section==='keyword/total'||section==='music/total'||section==='source/total'?'/statics':null;
+  return <FeaturePageV2 featureId="statics" expandedPath={rankingPath} subtitle="統計關鍵字排行榜與資料來源的分佈，來做風格的分析。">
     {legacy?<ScopeCardV2 eyebrow={legacy.eyebrow} title={legacy.title}><p>{legacy.text}</p></ScopeCardV2>:null}
     <ScopeCardV2 eyebrow="Statistics" title="跨時期關鍵字排行榜集中於此。">
       <p>統計排行榜、關鍵字、曲風與來源的分佈，作為風格分析與資料回查的入口。</p>
