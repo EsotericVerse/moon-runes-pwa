@@ -161,6 +161,7 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
   const [ritualStep, setRitualStep] = useState(-1);
   const [recordStatus, setRecordStatus] = useState('');
   const timers = useRef([]);
+  const autoStartedMode = useRef('');
 
   useEffect(() => {
     setModeKey(initialMode(initialModeKey));
@@ -237,6 +238,14 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
     [1, 2, 3].forEach(step => timers.current.push(setTimeout(() => setRitualStep(step), step * 1000)));
     timers.current.push(setTimeout(finishDraw, 4000));
   }
+
+  useEffect(() => {
+    if (!initialModeKey || !data) return;
+    const fixedMode = initialMode(initialModeKey);
+    if (modeKey !== fixedMode || autoStartedMode.current === fixedMode) return;
+    autoStartedMode.current = fixedMode;
+    executeDraw();
+  }, [data, initialModeKey, modeKey, instantDraw]);
 
   async function saveCurrentDraw() {
     if (!draw) return;
