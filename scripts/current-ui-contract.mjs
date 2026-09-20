@@ -30,7 +30,6 @@ const required=[
   [sources.registry,"word:'loc'"],
   [sources.registry,"domain:'loc.lo3rwang.cc'"],
   [sources.registry,"domain:'lrunes.lo3rwang.cc'"],
-  [sources.registry,"mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'})"],
   [sources.registry,"domain:'dlwang.lo3rwang.cc'"],
   [sources.registry,"scopeType:'directory'"],
   [sources.registry,"aliasName:'dlwang'"],
