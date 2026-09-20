@@ -44,3 +44,11 @@
   font-weight:var(--loc-weight-ui);
 }
 
+.scope-home-composition .author-home-reel iframe{
+  display:block;
+  width:100%;
+  max-width:540px;
+  aspect-ratio:9 / 16;
+  min-height:480px;
+  border:0;
+}
