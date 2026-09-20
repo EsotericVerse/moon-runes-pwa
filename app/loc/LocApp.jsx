@@ -1,5 +1,6 @@
-import dynamic from 'next/dynamic';
 'use client';
+
+import dynamic from 'next/dynamic';
 
 import {useEffect,useMemo,useState} from 'react';
 import {resolveScopeV2} from '../modular-v2/scope-registry.v2';
