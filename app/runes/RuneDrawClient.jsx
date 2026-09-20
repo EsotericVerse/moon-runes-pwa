@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { fetchLocJsonBatch, LOC_DATA } from '../loc/data';
+import { fetchLocJson, LOC_DATA } from '../loc/data';
 import { putNeonRecord } from '../loc/neon-user-storage';
 import { useNeonAccount } from '../loc/use-neon-account';
 import { useLocalStore } from '../loc/local-store';
@@ -13,7 +13,7 @@ const DIRECTIONS = ['正位', '半正位', '半逆位', '逆位'];
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
 const UI_SETTINGS_KEY = 'loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS = { draw_response: 'ritual' };
-const MODES = [
+const DRAW_TYPES = [
   { key: 'single', count: 1, label: '單卡', positions: ['核心'] },
   { key: 'daily', count: 1, label: '每日', positions: ['今日'] },
   { key: '2card', count: 2, label: '雙卡', positions: ['因', '果'] },
@@ -21,7 +21,7 @@ const MODES = [
   { key: '5card', count: 5, label: '五卡', positions: ['過去', '現在', '未來', '外在', '內在'] },
   { key: 'ow3gs', count: 11, label: '11卡 OW3gs', positions: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'] }
 ];
-const MODE_PATHS = Object.freeze({
+const DRAW_PATHS = Object.freeze({
   single: scopeHrefV2('runes','duel/one'),
   daily: scopeHrefV2('runes','duel/daily'),
   '2card': scopeHrefV2('runes','duel/two'),
@@ -29,15 +29,14 @@ const MODE_PATHS = Object.freeze({
   '5card': scopeHrefV2('runes','duel/five'),
   ow3gs: scopeHrefV2('runes','duel/ow3gs')
 });
-const ROUTE_MODES = Object.freeze(Object.fromEntries(Object.entries(MODE_PATHS).map(([mode, path]) => [path.split('/').filter(Boolean).at(-1), mode])));
 
 const RITUAL_MESSAGES = {
-  single: ['您目前使用的是「單卡占卜模式」。', '正在找尋那命運之線……', '微弱的月光，會在漆黑的夜裡，帶領你找到方向。', '抽牌完成。'],
-  daily: ['您目前使用的是「單卡每日抽牌模式」。', '這是一張屬於今日節奏與提醒的指引牌。', '正在對照今日真實月相。', '今日月符已經抽取完成。'],
-  '2card': ['您目前使用的是「雙卡占卜模式」。', '第一張卡牌為「因」，第二張卡牌為「果」。', '正在整理兩張牌的因果位置。', '抽牌完成。'],
-  '3card': ['您目前使用的是「三卡占卜模式」。', '第一張為「源」，第二張為「轉」，第三張為「合」。', '正在整理源、轉、合的語法位置。', '抽牌完成。'],
-  '5card': ['您目前使用的是「五卡占卜模式」。', '依序觀看過去、現在、未來顯化、周圍環境與自己心境。', '正在整理時間主線與內外狀態。', '抽牌完成。'],
-  ow3gs: ['您目前使用的是「OW3gs 11卡模式」。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
+  single: ['正在進行單卡占卜。', '正在找尋那命運之線……', '微弱的月光，會在漆黑的夜裡，帶領你找到方向。', '抽牌完成。'],
+  daily: ['正在進行每日抽牌。', '這是一張屬於今日節奏與提醒的指引牌。', '正在對照今日真實月相。', '今日月符已經抽取完成。'],
+  '2card': ['正在進行雙卡占卜。', '第一張卡牌為「因」，第二張卡牌為「果」。', '正在整理兩張牌的因果位置。', '抽牌完成。'],
+  '3card': ['正在進行三卡占卜。', '第一張為「源」，第二張為「轉」，第三張為「合」。', '正在整理源、轉、合的語法位置。', '抽牌完成。'],
+  '5card': ['正在進行五卡占卜。', '依序觀看過去、現在、未來顯化、周圍環境與自己心境。', '正在整理時間主線與內外狀態。', '抽牌完成。'],
+  ow3gs: ['正在進行 OW3gs 11 卡抽牌。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
 };
 
 function randomInt(max) {
@@ -77,16 +76,6 @@ function runeCardImage(card) {
   const number = String(Number(card?.編號) || 0).padStart(2, '0');
   const name = String(card?.符文名稱 || '').replace(/之符文$/, '').trim();
   return `/assets/lunarunes/cards/${number}_${name}.png`;
-}
-
-function initialMode(explicitMode = '') {
-  if (MODES.some(item => item.key === explicitMode)) return explicitMode;
-  if (typeof window === 'undefined') return 'single';
-  const routeKey = window.location.pathname.split('/').filter(Boolean).at(-1) || '';
-  const routedMode = ROUTE_MODES[routeKey];
-  if (routedMode) return routedMode;
-  const value = new URLSearchParams(window.location.search).get('mode') || 'single';
-  return MODES.some(item => item.key === value) ? value : 'single';
 }
 
 function directionText(card, direction) {
@@ -150,68 +139,70 @@ function MultiReading({ draw, mode, phase }) {
   return null;
 }
 
-export default function RuneDrawClient({ initialModeKey = '' }) {
+export default function RuneDrawClient({ drawKey = 'single' }) {
   const account = useNeonAccount();
   const { value: uiSettings } = useLocalStore(UI_SETTINGS_KEY, DEFAULT_UI_SETTINGS);
   const [data, setData] = useState(null);
   const [interpretations, setInterpretations] = useState([]);
   const [error, setError] = useState('');
-  const [modeKey, setModeKey] = useState(() => MODES.some(item => item.key === initialModeKey) ? initialModeKey : 'single');
   const [draw, setDraw] = useState(null);
   const [ritualStep, setRitualStep] = useState(-1);
   const [recordStatus, setRecordStatus] = useState('');
   const timers = useRef([]);
-
-  useEffect(() => {
-    setModeKey(initialMode(initialModeKey));
-  }, [initialModeKey]);
+  const autoStarted = useRef(false);
 
   useEffect(() => {
     let live = true;
-    fetchLocJsonBatch([LOC_DATA.RUNES, LOC_DATA.LOTS, LOC_DATA.RUNE_INTERPRETATIONS], { concurrency: 2 })
-      .then(([runes, lots, interpretationRows]) => {
+
+    // Core draw readiness depends only on runes.json. Do not block the first
+    // draw on lots or interpretation payloads.
+    fetchLocJson(LOC_DATA.RUNES)
+      .then(runes => {
         if (!live) return;
         const canonicalRunes = (runes || []).filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 66);
         if (canonicalRunes.length < 66) throw new Error(`核心符文資料只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);
-        setData({ runes: canonicalRunes, lots: Array.isArray(lots) ? lots : [] });
-        setInterpretations(Array.isArray(interpretationRows) ? interpretationRows : []);
+        setData({ runes: canonicalRunes, lots: [] });
         setError('');
+
+        fetchLocJson(LOC_DATA.LOTS)
+          .then(lots => {
+            if (!live) return;
+            setData(current => current ? { ...current, lots: Array.isArray(lots) ? lots : [] } : current);
+          })
+          .catch(() => {});
+
+        fetchLocJson(LOC_DATA.RUNE_INTERPRETATIONS)
+          .then(rows => {
+            if (!live) return;
+            setInterpretations(Array.isArray(rows) ? rows : []);
+          })
+          .catch(() => {});
       })
       .catch(err => live && setError(`月之符文核心資料載入失敗：${err?.message || '未知錯誤'}`));
+
     return () => {
       live = false;
       timers.current.forEach(clearTimeout);
     };
   }, []);
 
-  const selectedMode = useMemo(() => MODES.find(item => item.key === modeKey) || MODES[0], [modeKey]);
+  const selectedMode = useMemo(() => DRAW_TYPES.find(item => item.key === drawKey) || MODES[0], [drawKey]);
   const instantDraw = uiSettings?.draw_response === 'instant';
   const moonPhase = useMemo(() => realMoonPhase(), []);
   const liveGuidance = draw ? draw.guidance || '' : '';
-  const ritualMessages = RITUAL_MESSAGES[modeKey] || RITUAL_MESSAGES.single;
-
-  function chooseMode(key) {
-    timers.current.forEach(clearTimeout);
-    setRitualStep(-1);
-    setError('');
-    setRecordStatus('');
-    setModeKey(key);
-    setDraw(null);
-    window.location.assign(MODE_PATHS[key] || MODE_PATHS.single);
-  }
+  const ritualMessages = RITUAL_MESSAGES[drawKey] || RITUAL_MESSAGES.single;
 
   function finishDraw() {
     try {
       if (!data?.runes?.length) throw new Error('符文資料尚未載入完成。');
       if (data.runes.length < selectedMode.count) throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);
-      if (modeKey === 'daily' && !interpretations.length) throw new Error('每日符文解讀資料尚未載入完成。');
       const cards = drawRunesSequentially(data.runes, selectedMode.count);
       const directionIndexes = cards.map(() => randomInt(4));
       const directions = directionIndexes.map(index => DIRECTIONS[index]);
       const evaluation = evaluateSpread(cards, directions);
       const createdAt = new Date().toISOString();
       const guidance = finalGuidance(data.lots, cards.at(-1), directions.at(-1));
-      setDraw({ id: `rune-draw:${modeKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, evaluation, guidance });
+      setDraw({ id: `rune-draw:${drawKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, evaluation, guidance });
       setRecordStatus('');
       setError('');
     } catch (err) {
@@ -238,6 +229,12 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
     timers.current.push(setTimeout(finishDraw, 4000));
   }
 
+  useEffect(() => {
+    if (!data || autoStarted.current) return;
+    autoStarted.current = true;
+    executeDraw();
+  }, [data]);
+
   async function saveCurrentDraw() {
     if (!draw) return;
     if (!account.user) { setRecordStatus('請先登入 Neon，再儲存抽牌紀錄。'); return; }
@@ -245,9 +242,9 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
       const record = {
         id: draw.id,
         type: 'rune-draw',
-        record_kind: modeKey === 'daily' ? 'daily' : 'general',
+        record_kind: drawKey === 'daily' ? 'daily' : 'general',
         created_at: draw.createdAt,
-        mode: modeKey,
+        mode: drawKey,
         mode_label: selectedMode.label,
         moon_phase: moonPhase,
         score: draw.evaluation.score,
@@ -263,7 +260,7 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
         }))
       };
       await putNeonRecord(record);
-      setRecordStatus(modeKey === 'daily' ? '已記錄到每日抽籤。' : '已記錄到一般抽牌。');
+      setRecordStatus(drawKey === 'daily' ? '已記錄到每日抽籤。' : '已記錄到一般抽牌。');
     } catch (err) {
       setRecordStatus(`Neon 紀錄失敗：${err?.message || '未知錯誤'}`);
     }
@@ -277,25 +274,25 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
         <p>月之符文以固定 66 枚核心符文提供抽牌與語意指引。抽牌、加權與籤詩指引在瀏覽器完成；選擇性抽牌紀錄登入後儲存在 Neon。</p>
       </header>
 
-      <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey}>
+      <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={drawKey}>
         <p className="loc-eyebrow">Draw · 抽籤</p>
-        <h2>選擇抽牌方式</h2>
-        <div className="runes-mode-nav">
-          {MODES.map(item => <button key={item.key} type="button" data-draw-mode={item.key} className={`loc-button ${modeKey === item.key ? 'primary' : ''}`} onClick={() => chooseMode(item.key)}>{item.label}</button>)}
+        <h2>{selectedMode.label}抽牌</h2>
+        <div className="runes-mode-nav" aria-label="抽牌模式">
+          {DRAW_TYPES.map(item => <a key={item.key} href={DRAW_PATHS[item.key]} data-draw-mode={item.key} className={`loc-button ${drawKey === item.key ? 'primary' : ''}`}>{item.label}</a>)}
         </div>
         <div className="loc-actions runes-draw-action">
           <button type="button" className="loc-button primary" data-draw-action="execute" onClick={executeDraw} disabled={!data || ritualStep >= 0}>{ritualStep >= 0 ? '占卜中…' : '抽牌'}</button>
         </div>
-        <p className={`loc-status ${error ? 'error' : ''}`}>{error || (!data ? '載入月之符文核心資料中…' : `${selectedMode.label}：${selectedMode.positions.join(' → ')}${modeKey === 'daily' ? `／真實月相：${moonPhase}` : ''}`)}</p>
+        <p className={`loc-status ${error ? 'error' : ''}`}>{error || (!data ? '載入月之符文核心資料中…' : `${selectedMode.label}：${selectedMode.positions.join(' → ')}${drawKey === 'daily' ? `／真實月相：${moonPhase}` : ''}`)}</p>
       </section>
 
-      {ritualStep >= 0 && <section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={modeKey} aria-live="polite">
+      {ritualStep >= 0 && <section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={drawKey} aria-live="polite">
         <div className="runes-ritual-card"><img src="/assets/lunarunes/cards/65_玄.png" alt="玄之符文"/><strong>玄之符文</strong><span>Chaos</span></div>
         <div className="runes-ritual-copy"><p className="loc-eyebrow">等待片刻</p><h2>{ritualMessages[ritualStep]}</h2><p>真實月相：{moonPhase}</p></div>
       </section>}
 
       {draw && <>
-        <section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={modeKey}>
+        <section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={drawKey}>
           <div className="loc-result-meta"><span>{selectedMode.label}</span><span>真實月相：{moonPhase}</span></div>
           <div className="loc-draw-grid">
             {draw.cards.map((card, index) => <article className="loc-context-item compact loc-draw-card" data-rune-id={card.編號} data-draw-position={selectedMode.positions[index] || index + 1} key={`${card.編號}-${index}`}>
@@ -309,16 +306,16 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
           </div>
           <div className="loc-actions runes-retry">
             <button type="button" className="loc-button" data-draw-action="retry" onClick={executeDraw}>再抽一次</button>
-            <button type="button" className="loc-button primary" onClick={saveCurrentDraw}>{modeKey === 'daily' ? '記錄到每日' : '記錄一般抽牌'}</button>
+            <button type="button" className="loc-button primary" onClick={saveCurrentDraw}>{drawKey === 'daily' ? '記錄到每日' : '記錄一般抽牌'}</button>
           </div>
           {recordStatus && <p className="loc-status">{recordStatus}</p>}
         </section>
 
-        {modeKey === 'single' && <section className="loc-card" data-draw-reading="single"><p className="loc-eyebrow">Reading · 單卡解讀</p><h2>{draw.cards[0].符文名稱} · {draw.directions[0]}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations}/></section>}
-        {modeKey === 'daily' && <section className="loc-card" data-draw-reading="daily"><p className="loc-eyebrow">Daily · 每日指示</p><h2>{draw.cards[0].符文名稱} · {draw.directions[0]} · {moonPhase}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations} daily/></section>}
-        <MultiReading draw={draw} mode={modeKey} phase={moonPhase}/>
+        {drawKey === 'single' && <section className="loc-card" data-draw-reading="single"><p className="loc-eyebrow">Reading · 單卡解讀</p><h2>{draw.cards[0].符文名稱} · {draw.directions[0]}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations}/></section>}
+        {drawKey === 'daily' && <section className="loc-card" data-draw-reading="daily"><p className="loc-eyebrow">Daily · 每日指示</p><h2>{draw.cards[0].符文名稱} · {draw.directions[0]} · {moonPhase}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations} daily/></section>}
+        <MultiReading draw={draw} mode={drawKey} phase={moonPhase}/>
 
-        {modeKey === 'ow3gs' && <section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs">
+        {drawKey === 'ow3gs' && <section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs">
           <p className="loc-eyebrow">OW3gs · 核心判定</p><h2>第 7–11 張為核心判定</h2>
           <div className="loc-context-list">{draw.cards.slice(6, 11).map((card, index) => <div className="loc-context-item" key={`core-${card.編號}-${index}`}><strong>第 {index + 7} 張 · {card.符文名稱} · {draw.directions[index + 6]}</strong><span>{directionText(card, draw.directions[index + 6]) || card.符文說明}</span></div>)}</div>
           <p>整體指示分數：{draw.evaluation.score.toFixed(3)} · 整體趨勢：{draw.evaluation.range.label}</p>
@@ -327,7 +324,7 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
         <section className="loc-card" data-draw-stage="guidance">
           <p className="loc-eyebrow">Semantic Guidance · 語意指示</p>
           <h2>整體趨勢：{draw.evaluation.range.label}</h2>
-          <p>指示分數：{draw.evaluation.score.toFixed(3)}。依符文詞性、卡片位向與牌位權重計算目前組合的整體語意傾向；分數不代表吉凶、好壞或結果機率。{modeKey === 'ow3gs' ? '第 7–11 張採核心權重。' : ''}</p>
+          <p>指示分數：{draw.evaluation.score.toFixed(3)}。依符文詞性、卡片位向與牌位權重計算目前組合的整體語意傾向；分數不代表吉凶、好壞或結果機率。{drawKey === 'ow3gs' ? '第 7–11 張採核心權重。' : ''}</p>
           <div className="loc-table-wrap"><table className="loc-table"><thead><tr><th>位置</th><th>符文</th><th>詞性</th><th>位向</th><th>權重</th><th>加權值</th></tr></thead><tbody>{draw.evaluation.rows.map((row, index) => <tr key={`${row.card.編號}-${index}`}><td>{selectedMode.positions[index] || index + 1}</td><td>{row.card.符文名稱}</td><td>{row.card.卡片屬性 || '中平'}</td><td>{row.direction}</td><td>{row.weight}</td><td>{row.weighted.toFixed(2)}</td></tr>)}</tbody></table></div>
         </section>
 
