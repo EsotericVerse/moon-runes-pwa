@@ -5,5 +5,5 @@ export const metadata = {
 };
 
 export default function DuelDailyPage() {
-  return <DuelDrawPage mode="daily" />;
+  return <DuelDrawPage drawKey="daily" />;
 }
