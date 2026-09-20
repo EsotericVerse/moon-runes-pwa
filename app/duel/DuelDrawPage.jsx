@@ -2,8 +2,8 @@ import '../runes/rune-atlas-governance.css';
 import '../runes/runes-content.css';
 import RuneDrawClient from '../runes/RuneDrawClient';
 
-export default function DuelDrawPage({ mode }) {
+export default function DuelDrawPage({ drawKey }) {
   return <main className="loc-next-main">
-    <RuneDrawClient initialModeKey={mode} />
+    <RuneDrawClient drawKey={drawKey} />
   </main>;
 }
