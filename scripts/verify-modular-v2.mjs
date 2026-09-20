@@ -158,6 +158,7 @@ for(const leaked of ['context/page.jsx','statics/page.jsx','culture/page.jsx','g
 for(const retiredRoute of ['app/author','app/zhengde']){
   if(fs.existsSync(path.resolve(retiredRoute)))failures.push('retired author route returned: '+retiredRoute);
 }
+if(!fs.existsSync(path.resolve('app/lrunes/list/page.jsx')))failures.push('LunaRunes alternate ingress missing: app/lrunes/list/page.jsx');
 for(const scope of Object.values(SCOPES_V2)){
   if(!scope.mount)continue;
   const dirName=scope.mount.path?.split('/').filter(Boolean)[0];
@@ -190,6 +191,7 @@ for(const pathname of ['/runes','/runes/context']){
 }
 if(SCOPES_V2.runes?.scopeType!=='domain')failures.push('LunaRunes Scope must remain domain type');
 if(SCOPES_V2.runes?.aliasName!==null)failures.push('LunaRunes domain Scope must not declare aliasName');
+if(SCOPES_V2.runes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.runes?.mount?.path!=='/lrunes')failures.push('LunaRunes alternate /lrunes mount drifted');
 if(SCOPES_V2.lo3rwang?.scopeType!=='directory')failures.push('author Scope must remain directory type');
 if(SCOPES_V2.lo3rwang?.aliasName!=='dlwang')failures.push('author aliasName must remain dlwang');
 if(SCOPES_V2.lo3rwang?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lo3rwang?.mount?.path!=='/lo3rwang')failures.push('author LOC mount drifted');
@@ -213,9 +215,9 @@ const admissibilityCases=[
   ['runes','lrunes.lo3rwang.cc','/',true],
   ['runes','lrunes.lo3rwang.cc','/context',true],
   ['runes','lrunes.lo3rwang.cc','/duel/one',true],
-  ['runes','loc.lo3rwang.cc','/lrunes',false],
-  ['runes','loc.lo3rwang.cc','/lrunes/context',false],
-  ['runes','loc.lo3rwang.cc','/lrunes/duel/one',false],
+  ['runes','loc.lo3rwang.cc','/lrunes',true],
+  ['runes','loc.lo3rwang.cc','/lrunes/context',true],
+  ['runes','loc.lo3rwang.cc','/lrunes/duel/one',true],
   ['runes','lrunes.lo3rwang.cc','/loc',false],
   ['runes','lrunes.lo3rwang.cc','/runes',false],
   ['runes','lrunes.lo3rwang.cc','/lrunes',false],
