@@ -1,3 +1,4 @@
+import dynamic from 'next/dynamic';
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
