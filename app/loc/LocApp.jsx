@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import {useEffect,useMemo,useState} from 'react';
 import {resolveScopeV2} from '../modular-v2/scope-registry.v2';
 import AboutView from './views/AboutView';
@@ -13,11 +12,11 @@ const RunesHomeView=dynamic(()=>import('../runes/RunesClient'),{ssr:false,loadin
 const GameView=dynamic(()=>import('./views/GameView'),{ssr:false,loading});
 // Feature shells render synchronously so title, shared CSS and local link menus
 // never wait for Neon/projection data or client-only module hydration.
-const ContextView=dynamic(()=>import('../modular-v2/features/ContextV2'),{loading});
-const StaticsView=dynamic(()=>import('../modular-v2/features/StatisticsV2'),{loading});
-const CultureView=dynamic(()=>import('../modular-v2/features/CultureV2'),{loading});
-const SearchView=dynamic(()=>import('../modular-v2/features/SearchV2'),{loading});
-const GovernanceView=dynamic(()=>import('../modular-v2/features/GovernanceV2'),{loading});
+import ContextView from '../modular-v2/features/ContextV2';
+import StaticsView from '../modular-v2/features/StatisticsV2';
+import CultureView from '../modular-v2/features/CultureV2';
+import SearchView from '../modular-v2/features/SearchV2';
+import GovernanceView from '../modular-v2/features/GovernanceV2';
 const StyleGroupsView=dynamic(()=>import('./views/StyleGroupsView'),{ssr:false,loading});
 const ClassifyView=dynamic(()=>import('./views/ClassifyView'),{ssr:false,loading});
 const LibraryView=dynamic(()=>import('./views/LibraryView'),{ssr:false,loading});
