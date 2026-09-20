@@ -61,8 +61,10 @@ export default function ContextV2(){
   const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
   const shown=rows.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
 
-  return <FeaturePageV2 featureId="context" subtitle="脈絡是語彙之間的關係、Context、Scenario、Event 與 Graph；Trend 用時間單位觀察這些脈絡如何變化。">
-    <ScopeCardV2 eyebrow="Context" title="脈絡是什麼？">
+  return <FeaturePageV2 featureId="context" subtitle="人事物的分析關聯表達">
+    <ScopeCardV2 eyebrow="Context" title="關係圖探索器">
+      <p>把關係基準點與關係連結起來，查看局部脈絡跟分析趨勢。</p>
+      <p>從一個概念、作品、事件或符文出發，查看它周圍的節點與關係。</p>
       <p>脈絡整理語彙、事件、關係與時間之間的連結，讓分散的內容可以被搜尋、比較、理解與追蹤。</p>
       <p>本頁以 Graph、Event 與 Trend 為主要功能：Graph 呈現節點與關係，Event 記錄發生的事件，Trend 以年月等時間單位觀察脈絡的變化。Scenario 與互動實作則是脈絡系統的延伸。</p>
     </ScopeCardV2>
