@@ -26,6 +26,8 @@ export default function StatisticsV2({section=null}){
   const [page,setPage]=useState(1);
   const [error,setError]=useState('');
   const [loading,setLoading]=useState(false);
+  const [dailyDraft,setDailyDraft]=useState({date:'',kind:'daily_draw',rune:'',direction:'正位',note:''});
+  const [manualDaily,setManualDaily]=useState([]);
 
   useEffect(()=>{
     let live=true;
@@ -104,7 +106,15 @@ export default function StatisticsV2({section=null}){
     </ScopeCardV2>:null}
     {(!section||section==='daily')?<ScopeCardV2 eyebrow="Daily Runes" title="每日符文">
       <p>每日符文的手動紀錄與趨勢統計集中在這裡；線上即時抽牌仍由月之符文首頁處理。</p>
-      <div className="scope-v2-status">展示與紀錄入口已保留，完整寫入功能接回目前資料層後使用。</div>
+      <form className="scope-v2-editor" onSubmit={event=>{event.preventDefault();if(!dailyDraft.date||!dailyDraft.rune)return;setManualDaily(rows=>[{'...dailyDraft,id:'local-'+Date.now()},...rows]);setDailyDraft({date:'',kind:'daily_draw',rune:'',direction:'正位',note:''});}}>
+        <label>日期<input type="date" value={dailyDraft.date} onChange={event=>setDailyDraft(value=>({...value,date:event.target.value}))} required/></label>
+        <label>類型<select value={dailyDraft.kind} onChange={event=>setDailyDraft(value=>({...value,kind:event.target.value}))}><option value="daily_draw">主抽</option><option value="daily_draw_supplement">補抽</option></select></label>
+        <label>符文<input value={dailyDraft.rune} onChange={event=>setDailyDraft(value=>({...value,rune:event.target.value}))} placeholder="輸入符文" required/></label>
+        <label>方向<select value={dailyDraft.direction} onChange={event=>setDailyDraft(value=>({...value,direction:event.target.value}))}><option>正位</option><option>半正位</option><option>半逆位</option><option>逆位</option></select></label>
+        <label className="scope-v2-editor-full">備註<input value={dailyDraft.note} onChange={event=>setDailyDraft(value=>({...value,note:event.target.value}))}/></label>
+        <button type="submit">加入目前展示</button>
+      </form>
+      {manualDaily.length?<div className="scope-v2-ranking">{manualDaily.map(row=><div key={row.id}><b>{row.date} · {row.rune}</b><span>{(row.kind==='daily_draw_supplement'?'補抽':'主抽')+' · '+row.direction+(row.note?' · '+row.note:'')}</span></div>)}</div>:<div className="scope-v2-status">尚未加入本頁展示的手動紀錄。</div>}
     </ScopeCardV2>:null}
     {(!section||section==='import')?<ScopeCardV2 eyebrow="Import" title="匯入">
       <p>匯入網頁暫時保留功能位置，目前不開放直接匯入。</p>
