@@ -106,10 +106,10 @@ export default function AboutView(){
 		  <a className="loc-bubble" href={RUNES_LINKS.single}> 單卡<p>一個問題，一個語意起點。</p></a>
 		  <a className="loc-bubble" href={RUNES_LINKS.daily}>抽每日指示<p>一天一張，觀看當日提示。</p></a>
 		  <a className="loc-bubble" href={RUNES_LINKS.two}>抽兩張<p>以「因 → 果」觀看兩者關係。</p></a>
-		  <a className="loc-bubble" href={RUNES_LINKS.three}>抽三張<p>以「源 → 轉 → 合」形成語意路徑。</a>
+		  <a className="loc-bubble" href={RUNES_LINKS.three}>抽三張<p>以「源 → 轉 → 合」形成語意路徑。</p></a>
 		  <a className="loc-bubble" href={RUNES_LINKS.five}>抽五張<p>以兩個因果為基礎，加上一個變數。</p></a>
 		  <a className="loc-bubble" href={RUNES_LINKS.ow3gs}>抽11張<p>OW3gs：兩個因果模組綜合的演算法。</p></a></div>
-          <div className="loc-actions home-rune-links"><</div>
+          <div className="loc-actions home-rune-links"></div>
         </div>
       </div>
     </section>
