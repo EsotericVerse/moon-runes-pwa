@@ -82,6 +82,28 @@ async function fetchNeonJson(path){
   }
 }
 
+export async function fetchRuneRows(runeNumbers,{timeoutMs=1500}={}){
+  const numbers=[...new Set((runeNumbers||[]).map(Number).filter(Number.isInteger))];
+  if(!numbers.length)return [];
+  const params=new URLSearchParams();
+  params.set('select','rune_number,rune_name,canonical_payload,updated_at');
+  params.set('rune_number',`in.(${numbers.join(',')})`);
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    const response=await fetch(`${apiBaseUrl()}/lrunes_runes?${params.toString()}`,{
+      headers:{accept:'application/json'},
+      cache:'no-store',
+      signal:controller.signal
+    });
+    if(!response.ok)throw new Error(`Neon rune SELECT ${response.status}`);
+    const rows=await response.json();
+    return Array.isArray(rows)?rows:[];
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
 export function fetchLocJson(path,{memory=true,maxMemoryEntries=DEFAULT_MEMORY_CACHE_ENTRIES}={}){
   const normalized=sourcePath(path);
   if(!memory)return fetchNeonJson(normalized);
