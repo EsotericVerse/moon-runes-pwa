@@ -39,7 +39,6 @@ export default function ScopeNavV2(){
     {!forbiddenNavTarget(searchHref)&&<form action={searchHref} method="get" role="search" className="scope-v2-search">
       <input name="q" type="search" aria-label="搜尋文字" placeholder="搜尋"/>
     </form>}
-    {scope.profile?<NavTarget href={scope.profile.href} label={scope.profile.label} current={targetIsCurrent(scope.profile.href,host,pathname)}/>:null}
     {scope.homes.map(item=><NavTarget key={item.label} href={item.href} label={item.label} current={targetIsCurrent(item.href,host,pathname)}/>)}
   </nav>;
 }
