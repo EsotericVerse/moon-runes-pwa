@@ -101,7 +101,6 @@ export const SCOPES_V2=Object.freeze({
     primary:Object.freeze({label:'簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     role:Object.freeze({label:'管理者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([
-      {label:'回作者簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'政德文化',
