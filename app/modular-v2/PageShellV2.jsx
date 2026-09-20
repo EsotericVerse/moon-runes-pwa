@@ -1,5 +1,3 @@
-import {scopeHrefV2} from './scope-registry.v2';
-
 const LOCAL_MENUS=Object.freeze({
   context:[['說明與探索','/context'],['關係圖(Graph)','/context/graph'],['節點(node)','/context/node'],['關聯(Edge)','/context/edge'],['情境(Scenarios)','/context/scenarios'],['趨勢(Trend)','/context/trend'],['每日符文統計分析(daily)','/context/dailtrunes']],
   culture:[['時期(Perid)與時間線(Timeline)','/culture'],['軌跡(Trajectory)','/culture/trajectory'],['歷史演變(History)','/culture/history'],['衍生作品(galaxy)','/culture/galaxy']],
