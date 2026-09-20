@@ -6,5 +6,5 @@ export const metadata={
 };
 
 export default function Lo3rwangScopePage(){
-  return <LocApp/>;
+  return <LocApp forcedView="home" forcedScope="lo3rwang"/>;
 }
