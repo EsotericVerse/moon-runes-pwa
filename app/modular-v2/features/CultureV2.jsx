@@ -41,6 +41,7 @@ export default function CultureV2(){
     if(wanted.has('runes'))add('runes',CULTURE_PATHS_V2.runes);
     if(wanted.has('authorKeywords'))add('authorKeywords',CULTURE_PATHS_V2.authorKeywords);
     if(wanted.has('periods')){add('musicPeriods',CULTURE_PATHS_V2.musicPeriods);add('writingPeriods',CULTURE_PATHS_V2.writingGovernancePeriods);}
+    if(wanted.has('governanceHistory'))add('runeHistory',CULTURE_PATHS_V2.runeHistory);
     fetchLocJsonBatch(requests,{concurrency:2})
       .then(values=>{if(live)setData(Object.fromEntries(keys.map((key,index)=>[key,values[index]])));})
       .catch(e=>live&&setError(String(e?.message||e)))
@@ -53,6 +54,7 @@ export default function CultureV2(){
   const musicRows=periodRows(data.musicPeriods);
   const writingRows=periodRows(data.writingPeriods);
   const authorKeywords=data.authorKeywords?.keywords||[];
+  const runeGovernance=data.runeHistory?.governance_evolution||[];
 
   return <FeaturePageV2 featureId="culture" subtitle={profile.subtitle}>
     {loading?<p className="scope-v2-status">載入文化資料…</p>:null}
