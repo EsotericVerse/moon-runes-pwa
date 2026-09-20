@@ -1,6 +1,6 @@
 'use client';
 
-import {FEATURES_V2,featureHrefV2,featureIdForPathV2,getScopeV2} from './scope-registry.v2';
+import {FEATURES_V2,featureHrefV2,featureIdForPathV2} from './scope-registry.v2';
 import {useScopeRuntimeV2} from './use-scope-runtime.v2';
 
 function normalizePath(value='/'){
@@ -17,7 +17,7 @@ function targetIsCurrent(href,host,pathname){
 function forbiddenNavTarget(href=''){
   try{
     const url=new URL(href,typeof window!=='undefined'?window.location.origin:'http://localhost');
-    return url.hostname===getScopeV2('admin').domain||url.pathname==='/admin'||url.pathname.startsWith('/admin/');
+    return url.hostname==='admin.lo3rwang.cc'||url.pathname==='/admin'||url.pathname.startsWith('/admin/');
   }catch{return true;}
 }
 
