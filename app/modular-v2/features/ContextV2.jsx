@@ -28,7 +28,16 @@ function contextTitle(row,index){
   return `脈絡項目 ${index+1}`;
 }
 
-export default function ContextV2(){
+const LEGACY_SECTIONS=Object.freeze({
+  graph:{eyebrow:'Graph Overview',title:'總覽',text:'把節點與關係組合起來，查看局部脈絡。Graph 只負責搜尋、展開與閱讀；節點與關係式分別在各自功能中管理。'},
+  node:{eyebrow:'Context / Node',title:'節點',text:'管理 Graph 中可以被連結的基本單位。節點代表概念、時期、人物、作品、符文、事件或狀態；它本身不是關係式。'},
+  edge:{eyebrow:'Context / Relation',title:'關聯',text:'描述兩個節點之間的連結。Relation 負責 source → relation → target，以及日期、方向、摘要、證據與可信度。'},
+  scenarios:{eyebrow:'Context / Scenario',title:'情境',text:'把節點與關係放回具體情境，觀察同一組資料在不同條件下如何成立、轉化或產生不同結果。'},
+  trend:{eyebrow:'Context / Trend',title:'趨勢',text:'以年月等時間單位觀察脈絡變化，整理重複出現、關係改變與長期方向；趨勢不是絕對預測。'},
+  dailtrunes:{eyebrow:'Context / Daily Runes',title:'每日符文統計分析',text:'每日符文紀錄放回時間中，觀察重複、方向與長期變化；線上抽牌與實體牌紀錄分開處理。'}
+});
+
+export default function ContextV2({section=null}){
   const {scopeId,scope}=useScopeRuntimeV2();
   const view=scopeDataViewV2(scopeId,'context');
   const [rows,setRows]=useState([]);
@@ -72,7 +81,9 @@ export default function ContextV2(){
   const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
   const shown=rows.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
 
+  const legacy=LEGACY_SECTIONS[section]||LEGACY_SECTIONS.graph;
   return <FeaturePageV2 featureId="context" subtitle="人事物的分析關聯表達">
+    {section?<ScopeCardV2 eyebrow={legacy.eyebrow} title={legacy.title}><p>{legacy.text}</p></ScopeCardV2>:null}
     <ScopeCardV2 eyebrow={CONTEXT_COPY.eyebrow} title={CONTEXT_COPY.title}>
       {CONTEXT_COPY.paragraphs.map(text=><p key={text}>{text}</p>)}
     </ScopeCardV2>
