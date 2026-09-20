@@ -169,16 +169,33 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
 
   useEffect(() => {
     let live = true;
-    fetchLocJsonBatch([LOC_DATA.RUNES, LOC_DATA.LOTS, LOC_DATA.RUNE_INTERPRETATIONS], { concurrency: 2 })
-      .then(([runes, lots, interpretationRows]) => {
+
+    // Core draw readiness depends only on runes.json. Do not block the first
+    // draw on lots or interpretation payloads.
+    fetchLocJson(LOC_DATA.RUNES)
+      .then(runes => {
         if (!live) return;
         const canonicalRunes = (runes || []).filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 66);
         if (canonicalRunes.length < 66) throw new Error(`核心符文資料只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);
-        setData({ runes: canonicalRunes, lots: Array.isArray(lots) ? lots : [] });
-        setInterpretations(Array.isArray(interpretationRows) ? interpretationRows : []);
+        setData({ runes: canonicalRunes, lots: [] });
         setError('');
+
+        fetchLocJson(LOC_DATA.LOTS)
+          .then(lots => {
+            if (!live) return;
+            setData(current => current ? { ...current, lots: Array.isArray(lots) ? lots : [] } : current);
+          })
+          .catch(() => {});
+
+        fetchLocJson(LOC_DATA.RUNE_INTERPRETATIONS)
+          .then(rows => {
+            if (!live) return;
+            setInterpretations(Array.isArray(rows) ? rows : []);
+          })
+          .catch(() => {});
       })
       .catch(err => live && setError(`月之符文核心資料載入失敗：${err?.message || '未知錯誤'}`));
+
     return () => {
       live = false;
       timers.current.forEach(clearTimeout);
