@@ -17,8 +17,6 @@ const StaticsView=dynamic(()=>import('../modular-v2/features/StatisticsV2'),{loa
 const CultureView=dynamic(()=>import('../modular-v2/features/CultureV2'),{loading});
 const SearchView=dynamic(()=>import('../modular-v2/features/SearchV2'),{loading});
 const GovernanceView=dynamic(()=>import('../modular-v2/features/GovernanceV2'),{loading});
-// Feature shells render synchronously so title, shared CSS and local link menus
-// never wait for Neon/projection data or client-only module hydration.
 const StyleGroupsView=dynamic(()=>import('./views/StyleGroupsView'),{ssr:false,loading});
 const ClassifyView=dynamic(()=>import('./views/ClassifyView'),{ssr:false,loading});
 const LibraryView=dynamic(()=>import('./views/LibraryView'),{ssr:false,loading});
@@ -53,18 +51,19 @@ function routeState(){
   return {scope,view:VIEWS[route]?route:'home'};
 }
 
-export default function LocApp({forcedView=null,forcedSection=null}){
-  const [state,setState]=useState({scope:'loc',view:forcedView||'home',section:forcedSection});
+export default function LocApp({forcedView=null,forcedSection=null,forcedScope=null}){
+  const initialScope=forcedScope||'loc';
+  const [state,setState]=useState({scope:initialScope,view:forcedView||'home',section:forcedSection});
   useEffect(()=>{
     if(forcedView){
-      const scope=resolveScopeV2(window.location.hostname,window.location.pathname);
+      const scope=forcedScope||resolveScopeV2(window.location.hostname,window.location.pathname);
       setState({scope,view:forcedView,section:forcedSection});
       return undefined;
     }
     const sync=()=>setState(routeState());
     sync();window.addEventListener('popstate',sync);
     return()=>window.removeEventListener('popstate',sync);
-  },[forcedView,forcedSection]);
+  },[forcedView,forcedSection,forcedScope]);
 
   const ActiveView=useMemo(()=>{
     if(state.view==='blocked')return BlockedScopeRoute;
