@@ -19,7 +19,5 @@ export default function FeaturePageV2({featureId,children,subtitle=null}){
     eyebrow={profile.eyebrow}
     title={profile.title}
     subtitle={subtitle||profile.subtitle}
-    featureId={featureId}
-    scopeId={scopeId}
   >{content}</PageShellV2>;
 }
