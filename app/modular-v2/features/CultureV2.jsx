@@ -13,6 +13,22 @@ function periodRows(value){
   return [];
 }
 function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row?.semantic_keywords||row?.top_keywords||[];}
+
+const FALLBACK_ERAS=Object.freeze([
+  {era_id:'ERA-P1.0',period:'P1.0',order:1,display_label:'P1.0｜學生時代',start_date:'1980-06-23',end_date:'2003-12-15',description:'學生時代的文字與個人語言前史。'},
+  {era_id:'ERA-P2.0',period:'P2.0',order:2,display_label:'P2.0｜當兵入伍到公開網路文字之前',start_date:'2003-12-16',end_date:'2009-03-24',description:'入伍後到目前已確認最早公開網路文字之前的階段。'},
+  {era_id:'ERA-P3.0',period:'P3.0',order:3,display_label:'P3.0｜公開網路文字前期',start_date:'2009-03-25',end_date:'2017-06-22',description:'以目前已確認最早公開 Pixnet 公開文字為起點。'},
+  {era_id:'ERA-P4.0',period:'P4.0',order:4,display_label:'P4.0｜2017-06-23 起',start_date:'2017-06-23',end_date:'2024-11-17',description:'Threads 啟動前的公開文字階段。'},
+  {era_id:'ERA-P5.0',period:'P5.0',order:5,display_label:'P5.0｜Threads',start_date:'2024-11-18',end_date:'2025-02-20',description:'Threads 開始啟動後的公開文字階段。'},
+  {era_id:'ERA-P5.1',period:'P5.1',order:6,display_label:'P5.1｜Suno 啟用',start_date:'2025-02-21',end_date:'2025-04-27',description:'Suno 開始啟用並進入音樂創作階段。'},
+  {era_id:'ERA-P6.0',period:'P6.0',order:7,display_label:'P6.0｜《月語者》與月之符文開始',start_date:'2025-04-28',end_date:'2025-10-15',description:'小說開始，並進入月之符文相關內容形成的階段。'},
+  {era_id:'ERA-P6.1',period:'P6.1',order:8,display_label:'P6.1｜LOC 啟動',start_date:'2025-10-16',end_date:'2026-01-14',description:'LOC 名稱與系統格式逐步收斂、啟動的階段。'},
+  {era_id:'ERA-P6.2',period:'P6.2',order:9,display_label:'P6.2｜微月光與關係敘事期',start_date:'2026-01-15',end_date:'2026-03-08',description:'微月光、關係敘事、自我認知與陪伴主題集中的階段。'},
+  {era_id:'ERA-P7.0',period:'P7.0',order:10,display_label:'P7.0｜政德風',start_date:'2026-03-09',end_date:'2026-07-31',description:'政德風成為主要治理與語言方法的階段。'},
+  {era_id:'ERA-P7.1',period:'P7.1',order:11,display_label:'P7.1｜自由的風',start_date:'2026-08-01',end_date:'2026-08-31',description:'脫困、起飛、自由、選擇與重新取得主動權的階段。'},
+  {era_id:'ERA-P7.2',period:'P7.2',order:12,display_label:'P7.2｜自我治理',start_date:'2026-09-01',end_date:'現在',description:'自由之後進入治理自己、整理歷史、建立秩序並主動選擇未來方向。'}
+]);
+
 function itemLabel(value,index){return value?.display_label||value?.name||value?.title||value?.period||`項目 ${index+1}`;}
 
 const PROFILE=Object.freeze({
@@ -62,7 +78,7 @@ export default function CultureV2({section=null}){
     return()=>{live=false};
   },[scopeId,profile.sections]);
 
-  const eraRows=useMemo(()=>[...(data.eras?.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.eras]);
+  const eraRows=useMemo(()=>[...(data.eras?.eras?.length?data.eras.eras:FALLBACK_ERAS)].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.eras]);
   const eventRows=useMemo(()=>[...(data.events?.events||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))),[data.events]);
   const musicRows=periodRows(data.musicPeriods);
   const writingRows=periodRows(data.writingPeriods);
