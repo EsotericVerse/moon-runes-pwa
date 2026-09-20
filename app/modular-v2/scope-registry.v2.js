@@ -48,7 +48,7 @@ export const SCOPES_V2=Object.freeze({
       'governance/global-manage'
     ]),
     routePatterns:Object.freeze(['writing/:workId']),
-    compatibilityRoutes:Object.freeze(['evolution','management']),
+    compatibilityRoutes:Object.freeze(['management']),
     primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
     role:Object.freeze({label:'作者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
@@ -77,10 +77,9 @@ export const SCOPES_V2=Object.freeze({
     routePatterns:Object.freeze(['list/:group','list/:group/:rune']),
     compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
-    primary:Object.freeze({label:'語彙',href:'https://lrunes.lo3rwang.cc/list/'}),
+    primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
     role:Object.freeze({label:'管理者頁面',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([
-      {label:'回月之符文首頁',href:'https://lrunes.lo3rwang.cc/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'月之符文',
@@ -95,14 +94,13 @@ export const SCOPES_V2=Object.freeze({
     domain:'dlwang.lo3rwang.cc',
     aliasName:'dlwang',
     label:'作者簡介',
-    localRoutes:Object.freeze([]),
+    localRoutes:Object.freeze(['old']),
     routePatterns:Object.freeze([]),
     compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
     primary:Object.freeze({label:'簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     role:Object.freeze({label:'管理者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([
-      {label:'回作者簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'政德文化',

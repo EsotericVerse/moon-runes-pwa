@@ -39,16 +39,13 @@ export default function ContextV2(){
       .catch(async error=>{
         try{
           const paths=scopeId==='loc'
-            ?[LOC_DATA.LOC_ERA_REGISTRY,LOC_DATA.LOC8_EVENT_SNAPSHOT]
+            ?[LOC_DATA.LOC8_EVENT_SNAPSHOT]
             :[LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY];
           const values=await fetchLocJsonBatch(paths,{concurrency:2});
-          const eraValue=values[0];
-          const eventValue=scopeId==='loc'?values[1]:values[0];
-          const eras=Array.isArray(eraValue?.eras)?eraValue.eras:[];
+          const eventValue=values[0];
           const events=Array.isArray(eventValue?.events)?eventValue.events:[];
           const relations=scopeId==='loc'?[]:(Array.isArray(eventValue)?eventValue:(eventValue?.relations||eventValue?.relationships||eventValue?.edges||[]));
           const rows=[
-            ...eras.map((row,index)=>({...row,context_key:row.era_id||`era-${index}`,context_type:'時期',title:row.display_label||row.name||row.period||'時期',summary:row.description||row.summary||''})),
             ...events.map((row,index)=>({...row,context_key:row.id||`event-${index}`,context_type:'事件',title:row.title||row.name||'事件',summary:row.description||row.summary||''})),
             ...relations
           ];
@@ -64,7 +61,7 @@ export default function ContextV2(){
   const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
   const shown=rows.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
 
-  return <FeaturePageV2 featureId="context" subtitle="脈絡整理時期、事件與關係，讓內容可以被搜尋、比較與追蹤。">
+  return <FeaturePageV2 featureId="context" subtitle="脈絡是語彙之間的關係、Context、Scenario、Event 與 Graph；Trend 用時間單位觀察這些脈絡如何變化。">\n    <ScopeCardV2 eyebrow="Context" title="脈絡是什麼？">\n      <p>脈絡整理語彙、事件、關係與時間之間的連結，讓分散的內容可以被搜尋、比較、理解與追蹤。</p>\n      <p>本頁以 Graph、Event 與 Trend 為主要功能：Graph 呈現節點與關係，Event 記錄發生的事件，Trend 以年月等時間單位觀察脈絡的變化。Scenario 與互動實作則是脈絡系統的延伸。</p>\n    </ScopeCardV2>
     {!view?<p className="scope-v2-status">此 Scope 尚未啟用脈絡 projection。</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {loading?<p className="scope-v2-status">載入中…</p>:null}

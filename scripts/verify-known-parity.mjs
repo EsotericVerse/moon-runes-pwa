@@ -53,7 +53,7 @@ requireText('app/modular-v2/ScopeNavV2.jsx',[
   'FEATURES_V2','featureHrefV2','useScopeRuntimeV2'
 ]);
 requireText('app/modular-v2/ScopeFooterV2.jsx',[
-  'useScopeRuntimeV2','scopeOriginV2','ThemeSelectV2'
+  'useScopeRuntimeV2','ThemeSelectV2'
 ]);
 
 if(existsSync(resolve(root,'app/runes/page.jsx')))failures.push('app/runes/page.jsx must remain retired; app/runes is source-only');
