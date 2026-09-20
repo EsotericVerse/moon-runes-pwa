@@ -5,7 +5,7 @@ const LOCAL_MENUS=Object.freeze({
   statics:[['統計排行榜','/statics'],['關鍵字統計','/statics/keyword'],['來源管理','/statics/source'],['匯入','/statics/import'],['總排行榜','/statics/total'],['關鍵字','/statics/keyword/total'],['曲風','/statics/music/total'],['來源','/statics/source/total']],
   governance:[['原則理念','/governance'],['版權說明','/governance/law'],['FAQ','/governance/faq'],['管理者功能','/governance/manage']],
   runes:[['符文簡介','/'],['符文抽籤','/duel'],['符文圖鑑','/list'],['符文解牌','/algorithm'],['符文遊戲','/game']],
-  author:[['簡介跟自述','/lo3rwang'],['主要身份','/lo3rwang/style'],['工作與合作','/lo3rwang/work'],['LOC設計理念','/lo3rwang/design'],['公開創作內容','/lo3rwang/galaxy'],['其他說明','/lo3rwang/others']]
+  author:[['簡介跟自述','/lo3rwang'],['主要身份','/lo3rwang/style'],['工作與合作','/lo3rwang/work'],['LOC設計理念','/lo3rwang/design'],['公開創作內容','/lo3rwang/galaxy'],['其他說明','/lo3rwang/others'],['聯絡方式','/lo3rwang/email']]
 });
 
 function menuFor(featureId,scopeId){
