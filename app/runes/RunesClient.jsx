@@ -77,7 +77,7 @@ export default function RunesClient(){
   async function removeRecord(id){try{await deleteNeonRecord(id);setDrawRecords(current=>current.filter(item=>item.id!==id));setRecordStatus('已刪除 Neon 紀錄。');}catch(err){setRecordStatus(`刪除失敗：${err?.message||'未知錯誤'}`);}}
 
   return <main className="loc-next-main"><section className="loc-view">
-    <header className="loc-hero" id="intro"><p className="loc-eyebrow">LunaRunes</p><h1>月之符文</h1><p className="loc-subtitle">66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</p><p>可以問一件事，也可以沒有問題直接抽取；抽牌、加權與籤詩指引在瀏覽器完成；選擇性歷史紀錄登入後直接儲存於 Neon。</p><nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={RUNES_LINKS.single}>符文抽籤</a><a href={RUNES_LINKS.list}>符文圖鑑</a><a href={RUNES_LINKS.governance}>符文解牌</a><a href={scopeHrefV2('runes','game')}>符文遊戲</a></nav></header>
+    <header className="loc-hero" id="intro"><p className="loc-eyebrow">LunaRunes</p><h1>月之符文</h1><p className="loc-subtitle">66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</p><p>可以問一件事，也可以沒有問題直接抽取，</p><nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href="/">符文簡介</a><a href="/duel">符文抽籤</a><a href="/list">符文圖鑑</a><a href="/algorithm">符文解牌</a><a href="/game">符文遊戲</a></nav></header>
     <section className="loc-card runes-home-reels" aria-label="月之符文 Reels">
       <div className="runes-home-hero-copy"><p className="loc-eyebrow">Reels · 實際示範</p><h2>先看一次月之符文怎麼使用</h2><p className="loc-subtitle">短影片示範抽牌與閱讀方式；看完可以直接回到下方抽牌。</p></div>
       <div className="runes-home-reels">
