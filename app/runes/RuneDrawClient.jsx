@@ -91,7 +91,7 @@ function runeCardImage(card) {
 
 function directionText(card, direction) {
   const field = ({ '正位': '正向表示', '半正位': '半正向表示', '半逆位': '半逆向表示', '逆位': '逆向表示' })[direction];
-  return card?.[field] || '';
+  return card?.__neonPayload?.[field] || card?.符文說明 || '';
 }
 
 function phaseAdvice(interpretations, card, direction, phase) {
@@ -200,7 +200,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
           if(!current) return current;
           return {
             ...current,
-            cards: current.cards.map(card => ({ ...card, ...(byNumber.get(Number(card?.編號)) || {}) }))
+            cards: current.cards.map(card => ({ ...card, __neonPayload: byNumber.get(Number(card?.編號)) || null }))
           };
         });
       })
@@ -328,8 +328,6 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
           {recordStatus && <p className="loc-status">{recordStatus}</p>}
         </section>
 
-        {drawKey === 'single' && <section className="loc-card" data-draw-reading="single"><p className="loc-eyebrow">Reading · 單卡解讀</p><h2>{draw.cards[0].符文名稱} · {draw.directions[0]}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations}/></section>}
-        {drawKey === 'daily' && <section className="loc-card" data-draw-reading="daily"><p className="loc-eyebrow">Daily · 每日指示</p><h2>{draw.cards[0].符文名稱} · {draw.directions[0]} · {moonPhase}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations} daily/></section>}
         <MultiReading draw={draw} mode={drawKey} phase={moonPhase}/>
 
         {drawKey === 'ow3gs' && <section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs">
