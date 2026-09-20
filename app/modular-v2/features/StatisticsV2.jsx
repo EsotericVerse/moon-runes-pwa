@@ -91,6 +91,24 @@ export default function StatisticsV2({section=null}){
       </div>
       <p className="scope-v2-status">顯示已確認的每日抽籤紀錄；完整紀錄依日期保留。</p>
     </ScopeCardV2>:null}
+
+    {(!section||section==='runes')?<ScopeCardV2 eyebrow="Rune Statistics" title="符文統計">
+      <p>顯示月之符文群組與可抽符文的結構統計。符文母資料與符文演化資料獨立於個人文化時期。</p>
+      <div className="scope-v2-chip-list">
+        {['靈魂','連結','生命','自然','礦物','元素','秩序','混沌','特殊'].map(item=><span key={item}>{item}</span>)}
+      </div>
+    </ScopeCardV2>:null}
+    {(!section||section==='source')?<ScopeCardV2 eyebrow="Sources" title="來源管理">
+      <p>集中檢視搜尋資料來源、可搜尋筆數、文字量、時間範圍與目前資料狀態。</p>
+      <div className="scope-v2-status">來源資料由目前 projection 與 repository JSON fallback 提供；來源本身不改寫母資料。</div>
+    </ScopeCardV2>:null}
+    {(!section||section==='daily')?<ScopeCardV2 eyebrow="Daily Runes" title="每日符文">
+      <p>每日符文的手動紀錄與趨勢統計集中在這裡；線上即時抽牌仍由月之符文首頁處理。</p>
+      <div className="scope-v2-status">展示與紀錄入口已保留，完整寫入功能接回目前資料層後使用。</div>
+    </ScopeCardV2>:null}
+    {(!section||section==='import')?<ScopeCardV2 eyebrow="Import" title="匯入">
+      <p>匯入網頁暫時保留功能位置，目前不開放直接匯入。</p>
+    </ScopeCardV2>:null}
     {types.length?<nav className="scope-v2-tabs" aria-label="排行榜類型">
       {types.map(item=><button type="button" key={item} aria-pressed={item===type} onClick={()=>{setType(item);setPage(1)}}>{item}</button>)}
     </nav>:null}
