@@ -151,6 +151,7 @@ function MultiReading({ draw, mode, phase }) {
 }
 
 export default function RuneDrawClient({ initialModeKey = '' }) {
+  const fixedMode = MODES.some(item => item.key === initialModeKey);
   const account = useNeonAccount();
   const { value: uiSettings } = useLocalStore(UI_SETTINGS_KEY, DEFAULT_UI_SETTINGS);
   const [data, setData] = useState(null);
@@ -279,10 +280,10 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
 
       <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey}>
         <p className="loc-eyebrow">Draw · 抽籤</p>
-        <h2>選擇抽牌方式</h2>
-        <div className="runes-mode-nav">
+        <h2>{fixedMode ? selectedMode.label : '選擇抽牌方式'}</h2>
+        {!fixedMode ? <div className="runes-mode-nav">
           {MODES.map(item => <button key={item.key} type="button" data-draw-mode={item.key} className={`loc-button ${modeKey === item.key ? 'primary' : ''}`} onClick={() => chooseMode(item.key)}>{item.label}</button>)}
-        </div>
+        </div> : null}
         <div className="loc-actions runes-draw-action">
           <button type="button" className="loc-button primary" data-draw-action="execute" onClick={executeDraw} disabled={!data || ritualStep >= 0}>{ritualStep >= 0 ? '占卜中…' : '抽牌'}</button>
         </div>
