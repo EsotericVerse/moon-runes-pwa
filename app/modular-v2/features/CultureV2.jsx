@@ -16,7 +16,7 @@ function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row
 function itemLabel(value,index){return value?.display_label||value?.name||value?.title||value?.period||`項目 ${index+1}`;}
 
 const PROFILE=Object.freeze({
-  loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。',sections:['eras','events']}),
+  loc:Object.freeze({subtitle:'文化不是單一時間線，而是語言、事件、時期與治理變化累積出的軌跡。文化負責觀察變化，不取代脈絡的事件關係或治理的規則權責。',sections:['eras','events']}),
   runes:Object.freeze({subtitle:'月之符文的文化資料。',sections:[]}),
   lo3rwang:Object.freeze({subtitle:'作者文化：時期、作品語彙、創作與治理文字在時間中的變化。',sections:['eras','authorKeywords','periods']}),
   admin:Object.freeze({subtitle:'管理 Scope 的文化頁只呈現治理變化與歷史，不取代各 Scope 的 Current Authority。',sections:['governanceHistory']})
@@ -53,6 +53,7 @@ export default function CultureV2(){
   const musicRows=periodRows(data.musicPeriods);
   const writingRows=periodRows(data.writingPeriods);
   const authorKeywords=data.authorKeywords?.keywords||[];
+  const runeGovernance=data.runeGovernance?.semantic_history_cases||[];
 
   return <FeaturePageV2 featureId="culture" subtitle={profile.subtitle}>
     {loading?<p className="scope-v2-status">載入文化資料…</p>:null}
