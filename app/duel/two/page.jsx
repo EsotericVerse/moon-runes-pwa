@@ -5,5 +5,5 @@ export const metadata = {
 };
 
 export default function DuelTwoPage() {
-  return <DuelDrawPage mode="2card" />;
+  return <DuelDrawPage drawKey="2card" />;
 }
