@@ -48,7 +48,7 @@ export const SCOPES_V2=Object.freeze({
       'governance/global-manage'
     ]),
     routePatterns:Object.freeze(['writing/:workId']),
-    compatibilityRoutes:Object.freeze(['evolution','management']),
+    compatibilityRoutes:Object.freeze(['management']),
     primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
     role:Object.freeze({label:'作者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
