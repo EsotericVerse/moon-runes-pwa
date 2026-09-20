@@ -101,8 +101,11 @@ function guidancePrompt(line) {
   const soften=body => {
     const value=String(body||'').trim().replace(/[。！？]+$/,'');
     if(!value) return '';
-    if(/^(可能|也許|或許|有機會|有可能)/.test(value)) return value;
-    return `可能${value}`;
+    if(/^(可能|也許|或許|有機會|有可能|恐|恐怕)/.test(value)) return value;
+    if(/(必然|一定|必定|絕對|注定|終將|肯定|確定|定局|落定|終結|結束|消失|取消|死亡|失去|解除|恢復|重啟|成功|失敗|好轉|惡化)/.test(value)) {
+      return `可能${value}`;
+    }
+    return value;
   };
   if(!match) return soften(text);
   const [,domain,body]=match;
