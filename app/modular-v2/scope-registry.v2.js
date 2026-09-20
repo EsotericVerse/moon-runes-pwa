@@ -77,7 +77,7 @@ export const SCOPES_V2=Object.freeze({
     routePatterns:Object.freeze([]),
     compatibilityRoutes:Object.freeze([]),
     primary:Object.freeze({label:'語彙',href:'https://lrunes.lo3rwang.cc/list/'}),
-    role:Object.freeze({label:'管理者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
+    role:Object.freeze({label:'管理者頁面',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([
       {label:'回月之符文首頁',href:'https://lrunes.lo3rwang.cc/'},
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
