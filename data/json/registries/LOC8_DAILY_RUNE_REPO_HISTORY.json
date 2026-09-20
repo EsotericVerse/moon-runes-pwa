@@ -718,6 +718,17 @@
       "note": "",
       "source": "confirmed-history",
       "confidence": "recorded"
+    },
+    {
+      "id": "DD-20260922-S-玉",
+      "date": "2026-09-22",
+      "draw_kind": "daily_draw_supplement",
+      "rune_id": "34",
+      "rune": "玉",
+      "direction": "逆位",
+      "note": "",
+      "source": "confirmed-history",
+      "confidence": "recorded"
     }
   ]
 }
