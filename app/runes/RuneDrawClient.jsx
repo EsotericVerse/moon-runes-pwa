@@ -279,9 +279,9 @@ export default function RuneDrawClient({ initialModeKey = '' }) {
 
       <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey}>
         <p className="loc-eyebrow">Draw · 抽籤</p>
-        <h2>選擇抽牌方式</h2>
-        <div className="runes-mode-nav">
-          {MODES.map(item => <button key={item.key} type="button" data-draw-mode={item.key} className={`loc-button ${modeKey === item.key ? 'primary' : ''}`} onClick={() => chooseMode(item.key)}>{item.label}</button>)}
+        <h2>{selectedMode.label}抽牌</h2>
+        <div className="runes-mode-nav" aria-label="抽牌模式">
+          {MODES.map(item => <a key={item.key} href={MODE_PATHS[item.key]} data-draw-mode={item.key} className={`loc-button ${modeKey === item.key ? 'primary' : ''}`}>{item.label}</a>)}
         </div>
         <div className="loc-actions runes-draw-action">
           <button type="button" className="loc-button primary" data-draw-action="execute" onClick={executeDraw} disabled={!data || ritualStep >= 0}>{ritualStep >= 0 ? '占卜中…' : '抽牌'}</button>
