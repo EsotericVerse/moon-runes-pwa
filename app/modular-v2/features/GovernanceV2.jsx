@@ -11,10 +11,10 @@ import {scopeHrefV2} from '../scope-registry.v2';
 
 const PROFILES=Object.freeze({
   loc:Object.freeze({
-    subtitle:'LOC 的治理入口：Current Canon、Scope 邊界、Feature 共用規格與 Page Composition。',
+    subtitle:'治理是規則、權責、版本、邊界、變更依據與可稽核性的正式入口。Current Authority、Scope 邊界與資料責任在此說明。',
     cards:Object.freeze([
-      Object.freeze({eyebrow:'理念',title:'Current Authority',text:'Current 由現行 Canon、Scope Registry 與 Feature Model 派生；歷史資料保留來源，但不得反向覆寫 Current。'}),
-      Object.freeze({eyebrow:'法律',title:'Scope 邊界與資料責任',text:'各 Scope 保有自己的名稱、資料所有權、作者身分與公開邊界；共享功能只能讀取授權 projection。'}),
+      Object.freeze({eyebrow:'理念',title:'Current Authority',text:'Current 由現行 Canon、Scope Registry 與 Feature Model 派生；歷史資料保留來源，但不得反向覆寫 Current。治理頁同時保存原則、政策、執行控制與稽核證據。'}),
+      Object.freeze({eyebrow:'法律',title:'Scope 邊界與資料責任',text:'各 Scope 保有自己的名稱、資料所有權、作者身分與公開邊界；共享功能只能讀取授權 projection。脈絡、文化、搜尋與推演可以消費治理資料，但不能反向成為治理權威。'}),
       Object.freeze({eyebrow:'管理者功能',title:'治理管理',text:'版本、權限、資料狀態與公開設定集中由治理內的管理者首頁處理。',links:[{label:'首頁管理者',href:'governance/manage'},{label:'全域管理者',href:'governance/global-manage',globalOnly:true}]})
     ])
   }),
