@@ -1,7 +1,7 @@
 import {GROUPS,groupById,groupRunes,localRuneId,runeByRoute,runeImage,runeName} from './rune-directory.mjs';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
-const listHref=(path='')=>scopeHrefV2('runes',`list${path?'/'+String(path).replace(/^\\/+/, ''):''}`);
+const listHref=(path='')=>scopeHrefV2('runes',`list${path?'/'+String(path).replace(/^\/+/, ''):''}`);
 
 function RuneDetails({card}){
   if(!card)return null;
