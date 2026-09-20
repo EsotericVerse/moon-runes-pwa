@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { fetchLocJson, LOC_DATA } from '../loc/data';
+import { fetchLocJson, fetchRuneRows, LOC_DATA } from '../loc/data';
 import { putNeonRecord } from '../loc/neon-user-storage';
 import { useNeonAccount } from '../loc/use-neon-account';
 import { useLocalStore } from '../loc/local-store';
@@ -175,19 +175,6 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         setData({ runes: canonicalRunes, lots: [] });
         setError('');
 
-        fetchLocJson(LOC_DATA.LOTS)
-          .then(lots => {
-            if (!live) return;
-            setData(current => current ? { ...current, lots: Array.isArray(lots) ? lots : [] } : current);
-          })
-          .catch(() => {});
-
-        fetchLocJson(LOC_DATA.RUNE_INTERPRETATIONS)
-          .then(rows => {
-            if (!live) return;
-            setInterpretations(Array.isArray(rows) ? rows : []);
-          })
-          .catch(() => {});
       })
       .catch(err => live && setError(`月之符文核心資料載入失敗：${err?.message || '未知錯誤'}`));
 
@@ -203,6 +190,27 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   const liveGuidance = draw ? draw.guidance || '' : '';
   const ritualMessages = RITUAL_MESSAGES[drawKey] || RITUAL_MESSAGES.single;
 
+  function enrichDraw(cards) {
+    const numbers=cards.map(card => Number(card?.編號)).filter(Number.isInteger);
+
+    fetchRuneRows(numbers,{timeoutMs:1500})
+      .then(rows => {
+        const byNumber=new Map(rows.map(row => [Number(row.rune_number), row.canonical_payload || {}]));
+        setDraw(current => {
+          if(!current) return current;
+          return {
+            ...current,
+            cards: current.cards.map(card => ({ ...card, ...(byNumber.get(Number(card?.編號)) || {}) }))
+          };
+        });
+      })
+      .catch(() => {});
+
+    fetchLocJson(LOC_DATA.LOTS,{memory:true})
+      .then(lots => setData(current => current ? { ...current, lots: Array.isArray(lots) ? lots : [] } : current))
+      .catch(() => {});
+  }
+
   function finishDraw() {
     try {
       if (!data?.runes?.length) throw new Error('符文資料尚未載入完成。');
@@ -214,6 +222,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       const createdAt = new Date().toISOString();
       const guidance = finalGuidance(data.lots, cards.at(-1), directions.at(-1));
       setDraw({ id: `rune-draw:${drawKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, evaluation, guidance });
+      enrichDraw(cards);
       setRecordStatus('');
       setError('');
     } catch (err) {
@@ -225,7 +234,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   }
 
   function executeDraw() {
-    if (!data || ritualStep >= 0) return;
+    if (ritualStep >= 0) return;
     setError('');
     setRecordStatus('');
     setDraw(null);
@@ -241,10 +250,10 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   }
 
   useEffect(() => {
-    if (!data || autoStarted.current) return;
+    if (autoStarted.current) return;
     autoStarted.current = true;
     executeDraw();
-  }, [data]);
+  }, []);
 
   async function saveCurrentDraw() {
     if (!draw) return;
@@ -291,10 +300,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         <div className="runes-mode-nav" aria-label="抽牌模式">
           {DRAW_TYPES.map(item => <a key={item.key} href={DRAW_PATHS[item.key]} data-draw-mode={item.key} className={`loc-button ${drawKey === item.key ? 'primary' : ''}`}>{item.label}</a>)}
         </div>
-        <div className="loc-actions runes-draw-action">
-          <button type="button" className="loc-button primary" data-draw-action="execute" onClick={executeDraw} disabled={!data || ritualStep >= 0}>{ritualStep >= 0 ? '占卜中…' : '抽牌'}</button>
-        </div>
-        <p className={`loc-status ${error ? 'error' : ''}`}>{error || (!data ? '載入月之符文核心資料中…' : `${selectedMode.label}：${selectedMode.positions.join(' → ')}${drawKey === 'daily' ? `／真實月相：${moonPhase}` : ''}`)}</p>
+        <p className={`loc-status ${error ? 'error' : ''}`}>{error || (ritualStep >= 0 ? '抽牌倒數進行中…' : `${selectedMode.label}：${selectedMode.positions.join(' → ')}${drawKey === 'daily' ? `／真實月相：${moonPhase}` : ''}`)}</p>
       </section>
 
       {ritualStep >= 0 && <section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={drawKey} aria-live="polite">
