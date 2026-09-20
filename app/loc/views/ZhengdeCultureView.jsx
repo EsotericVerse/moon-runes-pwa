@@ -66,7 +66,7 @@ export default function ZhengdeCultureView(){
       {error&&<p className="loc-status error">{error}</p>}
       <div className="loc-list">
         {keywords.map(keyword=><article className="loc-subcard" key={keyword.id}>
-          <h3><a href={`${featureHrefV2('lo3rwang','search')}?c=${encodeURIComponent('政德文化')}&q=${encodeURIComponent(keyword.name)}`}>{keyword.name}</a></h3>
+          <h3><a href={`${featureHrefV2('lo3rwang','context')}?q=${encodeURIComponent(keyword.name)}`}>{keyword.name}</a></h3>
           <p>{keyword.summary}</p>
           {!!keyword.eras?.length&&<p className="loc-note">時期：{keyword.eras.join('／')}</p>}
           {!!keyword.related?.length&&<p className="loc-note">相關：{keyword.related.join('、')}</p>}
