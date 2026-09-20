@@ -5,5 +5,5 @@ export const metadata = {
 };
 
 export default function DuelOnePage() {
-  return <DuelDrawPage mode="single" />;
+  return <DuelDrawPage drawKey="single" />;
 }
