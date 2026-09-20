@@ -12,13 +12,13 @@ import GenericScopeHomeV2 from '../modular-v2/GenericScopeHomeV2';
 const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const RunesHomeView=dynamic(()=>import('../runes/RunesClient'),{ssr:false,loading});
 const GameView=dynamic(()=>import('./views/GameView'),{ssr:false,loading});
+const ContextView=dynamic(()=>import('../modular-v2/features/ContextV2'),{loading});
+const StaticsView=dynamic(()=>import('../modular-v2/features/StatisticsV2'),{loading});
+const CultureView=dynamic(()=>import('../modular-v2/features/CultureV2'),{loading});
+const SearchView=dynamic(()=>import('../modular-v2/features/SearchV2'),{loading});
+const GovernanceView=dynamic(()=>import('../modular-v2/features/GovernanceV2'),{loading});
 // Feature shells render synchronously so title, shared CSS and local link menus
 // never wait for Neon/projection data or client-only module hydration.
-import ContextView from '../modular-v2/features/ContextV2';
-import StaticsView from '../modular-v2/features/StatisticsV2';
-import CultureView from '../modular-v2/features/CultureV2';
-import SearchView from '../modular-v2/features/SearchV2';
-import GovernanceView from '../modular-v2/features/GovernanceV2';
 const StyleGroupsView=dynamic(()=>import('./views/StyleGroupsView'),{ssr:false,loading});
 const ClassifyView=dynamic(()=>import('./views/ClassifyView'),{ssr:false,loading});
 const LibraryView=dynamic(()=>import('./views/LibraryView'),{ssr:false,loading});
