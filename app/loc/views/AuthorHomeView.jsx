@@ -42,7 +42,7 @@ export default function AuthorHomeView({section=null}){
     eyebrow="Author"
     title="王政德"
     subtitle="Lucas Oscar Wang · lo3rwang"
-    intro={<><p>對我很陌生？沒關係，可以先聽首歌，再決定要不要繼續認識我。</p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽首歌</a></p></>}
+    intro={<><div className="loc-author-reel"><iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜王政德自我介紹" loading="eager" allowTransparency="true" frameBorder="0" scrolling="no"/></div><p>對我很陌生？沒關係，可以先看這支自我介紹，再決定要不要繼續認識我。</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟〈這就是我〉 →</a></p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽首歌</a></p></>}
     localMenu={[['簡介跟自述','/lo3rwang'],['主要身份','/lo3rwang/style'],['工作與合作','/lo3rwang/work'],['LOC設計理念','/lo3rwang/design'],['公開創作內容','/lo3rwang/galaxy'],['其他說明','/lo3rwang/others'],['聯絡方式','/lo3rwang/email']].map(([label,href])=>({label,href}))}
     sections={sectionCopy?[{id:`author-${section}`,eyebrow:section,title:sectionCopy[0],content:<p>{sectionCopy[1]}{section==='email'?<> <a href="mailto:sopa2306@gmail.com">聯絡方式 mailto:sopa2306@gmail.com</a></>:null}</p>}]:sections}
   />;
