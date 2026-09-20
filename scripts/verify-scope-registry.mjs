@@ -124,6 +124,9 @@ if(SCOPES_V2.runes?.domain!=='lrunes.lo3rwang.cc'){
 if(SCOPES_V2.runes?.aliasName!==null){
   failures.push('LunaRunes must not declare aliasName');
 }
+if(SCOPES_V2.runes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.runes?.mount?.path!=='/lrunes'){
+  failures.push('LunaRunes alternate mount drifted');
+}
 
 if(SCOPES_V2.lo3rwang?.scopeType!=='directory'){
   failures.push('Author Scope must remain directory type');
