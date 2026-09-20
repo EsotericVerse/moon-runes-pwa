@@ -94,6 +94,16 @@ function directionText(card, direction) {
   return card?.__neonPayload?.[field] || card?.符文說明 || '';
 }
 
+function guidancePrompt(line) {
+  const text=String(line||'').trim();
+  if(!text) return '';
+  const match=text.match(/^(愛情|事業|關係|健康)：\s*(.+)$/);
+  if(!match) return `可留意「${text.replace(/[。！？]+$/,'')}」這個面向。`;
+  const [,domain,body]=match;
+  return `${domain}：可留意「${body.replace(/[。！？]+$/,'')}」這個面向。`;
+}
+
+
 function phaseAdvice(interpretations, card, direction, phase) {
   const row = (interpretations || []).find(item => item?.符文名稱 === card?.符文名稱);
   return row?.卡牌方向?.find(item => item?.方向 === direction)?.現況?.find(item => item?.現在月相 === phase) || null;
@@ -352,8 +362,8 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
 
         {drawKey !== 'daily' && <section className="loc-card" data-draw-stage="lots">
           <p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2>
-          <p>沿用最後一張「{draw.cards.at(-1)?.符文名稱} · {draw.directions.at(-1)}」的既有籤詩指示。</p>
-          <div className="loc-context-list">{liveGuidance ? splitDomainGuidance(liveGuidance).map((line, index) => <div className="loc-context-item" key={`${line}-${index}`}>{line}</div>) : <div className="loc-context-item">籤詩資料目前未取得；抽牌與關鍵詞判定不受影響。</div>}</div>
+          <p>籤詩提供可思考的方向，不代替使用者判斷，也不預告固定結果。</p>
+          <div className="loc-context-list">{liveGuidance ? splitDomainGuidance(liveGuidance).map((line, index) => <div className="loc-context-item" key={`${line}-${index}`}>{guidancePrompt(line)}</div>) : null}</div>
         </section>}
       </>}
     </section>
