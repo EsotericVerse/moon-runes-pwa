@@ -51,6 +51,7 @@ export const SEARCH_COLLECTIONS = Object.freeze({
     includeMusic: false
   }),
   '政德文化': ZHENGDE_CULTURE_COLLECTION,
+  '作者創作': ZHENGDE_CULTURE_COLLECTION,
   '政德風': ZHENGDE_CULTURE_COLLECTION,
   '治理': Object.freeze({
     id:'治理',
