@@ -7,3 +7,5 @@
 .loc-style-bars>div>div{display:flex;justify-content:space-between;gap:1rem;align-items:center}
 .loc-style-bars span{color:var(--loc-muted);font-size:.82rem}
 @media(max-width:700px){.loc-progress{grid-template-columns:1fr}.loc-filter-row{grid-template-columns:1fr}.loc-record-form{grid-template-columns:1fr}.loc-record-form label.wide{grid-column:auto}}
+
+.loc-author-reel{width:min(100%,560px);margin:0 auto 1rem;aspect-ratio:1/1;overflow:hidden;border:1px solid var(--loc-line);border-radius:var(--loc-radius-card);background:var(--loc-panel)}.loc-author-reel iframe{display:block;width:100%;height:100%;border:0}
