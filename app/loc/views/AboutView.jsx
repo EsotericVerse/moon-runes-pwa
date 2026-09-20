@@ -103,6 +103,7 @@ export default function AboutView(){
         <div className="home-rune-copy home-rune-copy-plain">
           <p>不知道怎麼說的話，往下抽牌就對了！</p><p>沒什麼想問的，抽個每日符文看看吧！</p><p>月之符文的特有66符文字會給你提示籤詩，指引你的可能未來，</p><p>能是祝福可能是警告，你當然擁有選擇權。</p><p>抽牌讓這符文成語意種子，成為語意起點，<br/>用你想要的方式，成長成為完整語意的成熟果實。</p><p>最後的選擇權仍然在你的手上！</p>
           <div className="home-draw-bubbles" aria-label="選擇抽牌方式">
+<<<<<<< HEAD
 		  <a className="loc-bubble" href={RUNES_LINKS.single}> 單卡<br/><p>一個問題，一個語意起點。</p></a>
 		  <a className="loc-bubble" href={RUNES_LINKS.daily}>抽每日指示<br/><p>一天一張，觀看當日提示。</p></a>
 		  <a className="loc-bubble" href={RUNES_LINKS.two}>抽兩張<br/><p>以「因 → 果」觀看兩者關係。</p></a>
