@@ -39,6 +39,17 @@ const RITUAL_MESSAGES = {
   ow3gs: ['正在進行 OW3gs 11 卡抽牌。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
 };
 
+async function fetchCoreRunes() {
+  try {
+    const response = await fetch(LOC_DATA.RUNES, { cache: 'force-cache' });
+    if (!response.ok) throw new Error(`Local runes.json ${response.status}`);
+    return await response.json();
+  } catch (localError) {
+    return fetchLocJson(LOC_DATA.RUNES, { memory: true });
+  }
+}
+
+
 function randomInt(max) {
   if (max <= 1) return 0;
   if (globalThis.crypto?.getRandomValues) {
@@ -156,7 +167,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
 
     // Core draw readiness depends only on runes.json. Do not block the first
     // draw on lots or interpretation payloads.
-    fetchLocJson(LOC_DATA.RUNES)
+    fetchCoreRunes()
       .then(runes => {
         if (!live) return;
         const canonicalRunes = (runes || []).filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 66);
@@ -186,7 +197,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
     };
   }, []);
 
-  const selectedMode = useMemo(() => DRAW_TYPES.find(item => item.key === drawKey) || MODES[0], [drawKey]);
+  const selectedMode = useMemo(() => DRAW_TYPES.find(item => item.key === drawKey) || DRAW_TYPES[0], [drawKey]);
   const instantDraw = uiSettings?.draw_response === 'instant';
   const moonPhase = useMemo(() => realMoonPhase(), []);
   const liveGuidance = draw ? draw.guidance || '' : '';
