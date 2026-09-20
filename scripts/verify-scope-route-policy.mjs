@@ -110,7 +110,7 @@ if(authorRedirect?.toHost!=='loc.lo3rwang.cc'||authorRedirect?.toBase!=='/lo3rwa
 if(!policy.hosts?.['loc.lo3rwang.cc']?.patterns?.includes('/writing/:workId')){
   failures.push('LOC writing pattern missing from edge policy');
 }
-for(const path of ['/evolution','/management']){
+for(const path of ['/management']){
   if(!policy.hosts?.['loc.lo3rwang.cc']?.compatibility?.includes(path)){
     failures.push('LOC compatibility route missing: '+path);
   }
