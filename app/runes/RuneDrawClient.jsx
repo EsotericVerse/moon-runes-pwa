@@ -98,9 +98,15 @@ function guidancePrompt(line) {
   const text=String(line||'').trim();
   if(!text) return '';
   const match=text.match(/^(愛情|事業|關係|健康)：\s*(.+)$/);
-  if(!match) return `可留意「${text.replace(/[。！？]+$/,'')}」這個面向。`;
+  const soften=body => {
+    const value=String(body||'').trim().replace(/[。！？]+$/,'');
+    if(!value) return '';
+    if(/^(可能|也許|或許|有機會|有可能)/.test(value)) return value;
+    return `可能${value}`;
+  };
+  if(!match) return soften(text);
   const [,domain,body]=match;
-  return `${domain}：可留意「${body.replace(/[。！？]+$/,'')}」這個面向。`;
+  return `${domain}：${soften(body)}。`;
 }
 
 
@@ -362,7 +368,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
 
         {drawKey !== 'daily' && <section className="loc-card" data-draw-stage="lots">
           <p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2>
-          <p>籤詩提供可思考的方向，不代替使用者判斷，也不預告固定結果。</p>
+          <p>籤詩描述可能的發展，不代表必然結果。</p>
           <div className="loc-context-list">{liveGuidance ? splitDomainGuidance(liveGuidance).map((line, index) => <div className="loc-context-item" key={`${line}-${index}`}>{guidancePrompt(line)}</div>) : null}</div>
         </section>}
       </>}
