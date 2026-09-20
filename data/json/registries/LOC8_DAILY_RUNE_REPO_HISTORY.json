@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "role": "repo-backed daily rune history fallback",
   "source": "confirmed conversation records",
-  "updated_at": "2026-09-21",
+  "updated_at": "2026-09-22",
   "daily_draws": [
     {
       "id": "DD-20260805-P-分",
@@ -704,6 +704,17 @@
       "rune_id": "46",
       "rune": "土",
       "direction": "半逆位",
+      "note": "",
+      "source": "confirmed-history",
+      "confidence": "recorded"
+    },
+    {
+      "id": "DD-20260922-P-花",
+      "date": "2026-09-22",
+      "draw_kind": "daily_draw",
+      "rune_id": "26",
+      "rune": "花",
+      "direction": "半正位",
       "note": "",
       "source": "confirmed-history",
       "confidence": "recorded"
