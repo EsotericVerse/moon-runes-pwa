@@ -348,15 +348,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         {drawKey === 'ow3gs' && <section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs">
           <p className="loc-eyebrow">OW3gs · 核心判定</p><h2>第 7–11 張為核心判定</h2>
           <div className="loc-context-list">{draw.cards.slice(6, 11).map((card, index) => <div className="loc-context-item" key={`core-${card.編號}-${index}`}><strong>第 {index + 7} 張 · {card.符文名稱} · {draw.directions[index + 6]}</strong><span>{directionText(card, draw.directions[index + 6]) || card.符文說明}</span></div>)}</div>
-          <p>整體指示分數：{draw.evaluation.score.toFixed(3)} · 整體趨勢：{draw.evaluation.range.label}</p>
         </section>}
-
-        <section className="loc-card" data-draw-stage="guidance">
-          <p className="loc-eyebrow">Semantic Guidance · 語意指示</p>
-          <h2>整體趨勢：{draw.evaluation.range.label}</h2>
-          <p>指示分數：{draw.evaluation.score.toFixed(3)}。依符文詞性、卡片位向與牌位權重計算目前組合的整體語意傾向；分數不代表吉凶、好壞或結果機率。{drawKey === 'ow3gs' ? '第 7–11 張採核心權重。' : ''}</p>
-          <div className="loc-table-wrap"><table className="loc-table"><thead><tr><th>位置</th><th>符文</th><th>詞性</th><th>位向</th><th>權重</th><th>加權值</th></tr></thead><tbody>{draw.evaluation.rows.map((row, index) => <tr key={`${row.card.編號}-${index}`}><td>{selectedMode.positions[index] || index + 1}</td><td>{row.card.符文名稱}</td><td>{row.card.卡片屬性 || '中平'}</td><td>{row.direction}</td><td>{row.weight}</td><td>{row.weighted.toFixed(2)}</td></tr>)}</tbody></table></div>
-        </section>
 
         {drawKey !== 'daily' && <section className="loc-card" data-draw-stage="lots">
           <p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2>
