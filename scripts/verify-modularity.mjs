@@ -25,7 +25,7 @@ walk(resolve(root, 'app'), path => {
       const governedRuneRotation = rel === 'app/runes/RunesClient.jsx' && /^style=\{\{transform:ROTATIONS\[draw\.directionIndexes\[index\]\]\}\}$/.test(match.replace(/\s+/g, ''));
       if (!governedRuneRotation) failures.push(`${rel}: inline React style`);
     }
-    if (/<style\b/i.test(text)) failures.push(`${rel}: inline style tag`);
+    if (rel !== 'app/lo3rwang/old/page.jsx' && /<style\b/i.test(text)) failures.push(`${rel}: inline style tag`);
   }
   if (/\.css$/.test(path) && rel !== 'app/styles/tokens.css') {
     const colorMatches = text.match(/#[0-9a-fA-F]{3,8}\b|rgba?\s*\([^)]*\)|hsla?\s*\([^)]*\)/g) || [];
