@@ -26,7 +26,7 @@ export default function AuthorHomeView(){
     eyebrow="Author"
     title="王政德"
     subtitle="Lucas Oscar Wang · lo3rwang"
-    intro={<><p>對我很陌生？沒關係，可以先看我的自我介紹 Reels，再決定要不要繼續認識我。</p><div className="author-home-reel"><iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="〈這就是我〉作者自我介紹 Reels" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" style={{width:'100%',maxWidth:'540px',aspectRatio:'9 / 16',height:'auto',minHeight:'480px',border:0}} /><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟〈這就是我〉 →</a></p></div><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽首歌</a></p></>}
+    intro={<><p>對我很陌生？沒關係，可以先看我的自我介紹 Reels，再決定要不要繼續認識我。</p><div className="author-home-reel"><iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="〈這就是我〉作者自我介紹 Reels" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" /><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟〈這就是我〉 →</a></p></div><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽首歌</a></p></>}
     sections={sections}
   />;
 }
