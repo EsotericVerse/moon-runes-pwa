@@ -59,7 +59,13 @@ function genericProfile(scope){
   });
 }
 
-export default function GovernanceV2(){
+const LEGACY_SECTIONS=Object.freeze({
+  law:{eyebrow:'Copyright',title:'版權說明',text:'公開方法與內容保留來源、作者與授權邊界；Copyleft 內容可依規則引用與延伸，商業服務、個案分析與系統實作另依合作範圍處理。'},
+  faq:{eyebrow:'FAQ',title:'常見問題',text:'治理說明如何使用、引用、延伸與修正 LOC 與月之符文；不要求任何人接受或使用，所有內容均可作為分析、參考與延伸思考的材料。'},
+  manage:{eyebrow:'Management',title:'管理者功能',text:'版本、權限、資料狀態與公開設定集中由治理內的管理者功能處理，不改變各 Scope 的權威歸屬。'}
+});
+
+export default function GovernanceV2({section=null}){
   const {scopeId,scope}=useScopeRuntimeV2();
   const profile=PROFILES[scopeId]||genericProfile(scope);
   const [history,setHistory]=useState(null);
@@ -71,7 +77,9 @@ export default function GovernanceV2(){
   },[scopeId]);
   const cases=history?.semantic_history_cases||[];
   const stages=history?.system_stages||[];
+  const legacy=LEGACY_SECTIONS[section];
   return <FeaturePageV2 featureId="governance" subtitle="宣示原則性與法律規定。管理也在此。">
+    {legacy?<ScopeCardV2 eyebrow={legacy.eyebrow} title={legacy.title}><p>{legacy.text}</p></ScopeCardV2>:null}
     <div id="governance-concepts">
     {scopeId==='loc'?<ScopeCardV2 eyebrow="治理" title="治理處理如何被使用、引用、延伸與修正的原則。"><p>不要求任何人接受或使用；所有內容均可作為分析、參考與延伸思考的材料。</p></ScopeCardV2>:null}
     {profile.cards.map((card,index)=><section id={index===0?'governance-concepts':index===1?'governance-law':'governance-management'} key={card.title}><ScopeCardV2 eyebrow={card.eyebrow} title={card.title}><p>{card.text}</p>{card.links?.filter(link=>!link.globalOnly||scopeId==='loc').map(link=><p key={link.href}><a href={scopeHrefV2(scopeId,link.href)}>{link.label}</a></p>)}</ScopeCardV2></section>)}

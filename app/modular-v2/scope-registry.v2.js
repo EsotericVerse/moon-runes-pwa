@@ -35,6 +35,7 @@ export const SCOPES_V2=Object.freeze({
     label:'月典',
     localRoutes:Object.freeze([
       'game',
+      'algorithm',
       'galaxy',
       'multimedia',
       'my-style',

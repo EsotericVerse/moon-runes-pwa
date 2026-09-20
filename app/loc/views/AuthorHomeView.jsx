@@ -2,7 +2,16 @@ import { PageComposition } from '../../PageComposition';
 
 const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心所欲，而不逾己'];
 
-export default function AuthorHomeView(){
+const SECTION_COPY={
+  style:['主要身份','LOC／月典創作者與系統設計者、Language Governance Architect、Wordsmith、Calibrator／時空校對者。'],
+  work:['工作與合作','對外合作定位為 Language Consultant，工作方向聚焦於語言治理、語言系統設計、知識與資料架構、數位遺產管理，以及相關顧問與專案實作。'],
+  design:['LOC設計理念','把分散的文字、作品、規則、版本與歷史紀錄，整理成可搜尋、可理解、可治理、可持續維護的結構。'],
+  galaxy:['公開創作內容','公開內容包含 LOC 與月之符文、歌曲與歌詞、小說與文字作品、Reels、多媒體、政德風與語言治理分析。'],
+  others:['其他說明','lo3rwang 是王政德（Lucas Oscar Wang）的公開識別名稱；過去可以保留，錯誤可以標記，理解可以更新。'],
+  email:['聯絡方式','合作、顧問、系統設計或其他公開內容相關事項，請透過電子郵件聯絡。']
+};
+
+export default function AuthorHomeView({section=null}){
   const sections=[
     {
       id:'governance-root',
@@ -22,12 +31,13 @@ export default function AuthorHomeView(){
       </div>
     }
   ];
+  const sectionCopy=SECTION_COPY[section];
   return <PageComposition
     eyebrow="Author"
     title="王政德"
     subtitle="Lucas Oscar Wang · lo3rwang"
     intro={<><p>對我很陌生？沒關係，可以先聽首歌，再決定要不要繼續認識我。</p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽首歌</a></p></>}
     localMenu={[['簡介跟自述','/lo3rwang'],['主要身份','/lo3rwang/style'],['工作與合作','/lo3rwang/work'],['LOC設計理念','/lo3rwang/design'],['公開創作內容','/lo3rwang/galaxy'],['其他說明','/lo3rwang/others'],['聯絡方式','/lo3rwang/email']].map(([label,href])=>({label,href}))}
-    sections={sections}
+    sections={sectionCopy?[{id:`author-${section}`,eyebrow:section,title:sectionCopy[0],content:<p>{sectionCopy[1]}{section==='email'?<> <a href="mailto:sopa2306@gmail.com">聯絡方式 mailto:sopa2306@gmail.com</a></>:null}</p>}]:sections}
   />;
 }

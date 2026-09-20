@@ -22,7 +22,20 @@ const PROFILE=Object.freeze({
   admin:Object.freeze({subtitle:'管理 Scope 的文化頁只呈現治理變化與歷史，不取代各 Scope 的 Current Authority。',sections:['governanceHistory']})
 });
 
-export default function CultureV2(){
+const LEGACY_SECTIONS=Object.freeze({
+  trajectory:{eyebrow:'Trajectory',title:'軌跡',text:'沿著時期、作品與關鍵字的變化，查看文化如何累積、轉向與留下可回查的路徑。'},
+  history:{eyebrow:'History',title:'歷史演變',text:'保留歷史來源與時間順序，對照不同時期的語彙、作品、事件與治理變化；歷史資料不直接覆寫目前內容。'},
+  galaxy:{eyebrow:'Galaxy',title:'衍生作品',text:'由文化資料延伸出的作品入口，依創作文章、小說、音樂、圖片與多媒體分開瀏覽。'}
+});
+const GALAXY_SECTIONS=Object.freeze({
+  literary:['創作文章','以文章作品與文字紀錄作為文化延伸資料。'],
+  novel:['小說','以小說作品、章節與長期敘事資料作為文化延伸資料。'],
+  music:['音樂','以歌曲、歌詞、曲風、時期與來源作為文化延伸資料。'],
+  pics:['圖片','以圖片作品與視覺資料作為文化延伸資料。'],
+  multimedia:['多媒體','以 Reels、影音與其他多媒體作品作為文化延伸資料。']
+});
+
+export default function CultureV2({section=null}){
   const {scopeId}=useScopeRuntimeV2();
   const profile=PROFILE[scopeId]||PROFILE.loc;
   const [data,setData]=useState({});
@@ -56,7 +69,13 @@ export default function CultureV2(){
   const authorKeywords=data.authorKeywords?.keywords||[];
   const runeGovernance=data.runeHistory?.governance_evolution||[];
 
-  return <FeaturePageV2 featureId="culture" subtitle={profile.subtitle}>
+  const galaxySection=section?.startsWith('galaxy/')?section.split('/')[1]:null;
+  const galaxyCopy=GALAXY_SECTIONS[galaxySection];
+  const legacy=LEGACY_SECTIONS[section];
+  return <FeaturePageV2 featureId={galaxySection||section==='galaxy'?'galaxy':'culture'} subtitle={profile.subtitle}>
+    {legacy?<ScopeCardV2 eyebrow={legacy.eyebrow} title={legacy.title}><p>{legacy.text}</p></ScopeCardV2>:null}
+    {section==='galaxy'?<ScopeCardV2 eyebrow="Galaxy" title="衍生作品"><p>由文化資料延伸出的作品入口，依創作文章、小說、音樂、圖片與多媒體分開瀏覽。</p></ScopeCardV2>:null}
+    {galaxyCopy?<ScopeCardV2 eyebrow="Galaxy" title={galaxyCopy[0]}><p>{galaxyCopy[1]}</p></ScopeCardV2>:null}
     {loading?<p className="scope-v2-status">載入文化資料…</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
 

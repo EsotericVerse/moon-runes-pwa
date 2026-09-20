@@ -52,18 +52,18 @@ function routeState(){
   return {scope,view:VIEWS[route]?route:'home'};
 }
 
-export default function LocApp({forcedView=null}){
-  const [state,setState]=useState({scope:'loc',view:forcedView||'home'});
+export default function LocApp({forcedView=null,forcedSection=null}){
+  const [state,setState]=useState({scope:'loc',view:forcedView||'home',section:forcedSection});
   useEffect(()=>{
     if(forcedView){
       const scope=resolveScopeV2(window.location.hostname,window.location.pathname);
-      setState({scope,view:forcedView});
+      setState({scope,view:forcedView,section:forcedSection});
       return undefined;
     }
     const sync=()=>setState(routeState());
     sync();window.addEventListener('popstate',sync);
     return()=>window.removeEventListener('popstate',sync);
-  },[forcedView]);
+  },[forcedView,forcedSection]);
 
   const ActiveView=useMemo(()=>{
     if(state.view==='blocked')return BlockedScopeRoute;
@@ -72,5 +72,5 @@ export default function LocApp({forcedView=null}){
     return VIEWS[state.view]||HOME_VIEWS[state.scope]||GenericScopeHomeV2;
   },[state]);
 
-  return <div className="loc-next-main" data-loc-scope={state.scope} data-loc-view={state.view}><ActiveView/></div>;
+  return <div className="loc-next-main" data-loc-scope={state.scope} data-loc-view={state.view}><ActiveView section={state.section}/></div>;
 }

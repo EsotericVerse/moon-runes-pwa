@@ -10,7 +10,14 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 const PAGE_SIZE=20;
 
-export default function StatisticsV2(){
+const LEGACY_SECTIONS=Object.freeze({
+  keyword:{eyebrow:'Keyword Statistics',title:'關鍵字統計',text:'集中查看關鍵字在跨時期資料中的出現與分布，作為風格分析與資料回查入口。'},
+  source:{eyebrow:'Source Management',title:'來源管理',text:'檢視搜尋資料來源、可搜尋筆數、文字量、時間範圍與目前資料狀態。'},
+  import:{eyebrow:'Import',title:'匯入',text:'匯入網頁暫時保留功能位置；目前先維持既有資料流程，後續再接入新的資料來源。'},
+  total:{eyebrow:'Total Ranking',title:'總排行榜',text:'跨時期關鍵字排行榜集中於此，可切換文字、社群與音樂資料的統計類型。'}
+});
+
+export default function StatisticsV2({section=null}){
   const {scopeId,scope}=useScopeRuntimeV2();
   const view=scopeDataViewV2(scopeId,'rankings');
   const [rows,setRows]=useState([]);
@@ -65,7 +72,9 @@ export default function StatisticsV2(){
   const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const shown=filtered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
 
+  const legacy=LEGACY_SECTIONS[section?.split('/')[0]];
   return <FeaturePageV2 featureId="statics" subtitle="統計關鍵字排行榜與資料來源的分佈，來做風格的分析。">
+    {legacy?<ScopeCardV2 eyebrow={legacy.eyebrow} title={legacy.title}><p>{legacy.text}</p></ScopeCardV2>:null}
     <ScopeCardV2 eyebrow="Statistics" title="跨時期關鍵字排行榜集中於此。">
       <p>統計排行榜、關鍵字、曲風與來源的分佈，作為風格分析與資料回查的入口。</p>
     </ScopeCardV2>
