@@ -14,13 +14,6 @@ function targetIsCurrent(href,host,pathname){
     return url.hostname===host.split(':')[0]&&normalizePath(url.pathname)===normalizePath(pathname);
   }catch{return false;}
 }
-function isForbiddenNavTargetV2(href=''){
-  try{
-    const url=new URL(href,typeof window!=='undefined'?window.location.origin:'http://localhost');
-    return url.hostname==='admin.lo3rwang.cc'||url.pathname==='/admin'||url.pathname.startsWith('/admin/');
-  }catch{return true;}
-}
-
 function NavTarget({href,label,current=false}){
   if(isForbiddenNavTargetV2(href))return null;
   return current?<span className="scope-v2-nav-current" aria-current="page">{label}</span>:<a href={href}>{label}</a>;
