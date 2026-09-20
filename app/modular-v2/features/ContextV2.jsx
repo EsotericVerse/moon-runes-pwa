@@ -64,7 +64,11 @@ export default function ContextV2(){
           if(record?.record_kind!=='daily'&&record?.mode!=='daily')continue;
           const day=String(record?.created_at||record?.updated_at||'').slice(0,10);
           if(!day)continue;
-          grouped.set(day,{...record,day,cards:Array.isArray(record?.cards)?record.cards:[]});
+          const cards=(Array.isArray(record?.cards)?record.cards:[]).map(raw=>{
+            const canonical=runeById.get(Number(raw?.number||raw?.編號));
+            return {...raw,card_face:raw?.card_face||raw?.face||raw?.卡片屬性||canonical?.卡片屬性||'中平'};
+          });
+          grouped.set(day,{...record,day,cards});
         }
         setDailyRows([...grouped.values()].filter(row=>row.cards?.[0]).sort((a,b)=>a.day.localeCompare(b.day)));
         setDailyError('');
