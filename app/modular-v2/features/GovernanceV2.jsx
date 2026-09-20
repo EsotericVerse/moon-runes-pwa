@@ -41,6 +41,17 @@ const PROFILES=Object.freeze({
   })
 });
 
+
+const LEGACY_PRINCIPLES=Object.freeze([
+  ['尊重 · 和平 · 包容 · 友善','LOC 保持客觀與中立，不預設宗教、政治、道德或人生價值立場，也不要求使用者接受作者本人的信仰、觀念或生活方式。'],
+  ['可以使用，也可以不用','任何人都可以選擇使用、部分採用、引用、改寫、比較，或完全不用；系統特性不等於要求他人認同。'],
+  ['月之符文只是參考','符文、抽籤與籤詩保留文化與創作形式，但分析只是參考，不是命令，也不是唯一答案。'],
+  ['歷史保留，解釋可校準','LOC 不以新版本抹除舊版本，也不因歷史存在就把舊定義視為永久真理；事件、來源與版本保留，定義與解釋可依證據重新檢視。'],
+  ['Spec 優先','高歧義或容易被字面直覺帶偏的語彙，先以 Spec 明確界定描述主體，再進入關鍵詞、方向與延伸描述。'],
+  ['先判斷詞性，再判斷群組主體性','分類先辨認詞彙在文本中的實際詞性，再依 LunaRunes 群組代表的語意場域與主體性判斷，不只憑字面關鍵詞映射。'],
+  ['先治理，再實作','語意定義、分類規則與文字呈現原則先確定，再套用到資料、搜尋、分析與介面，避免暫時文字成為新的語意污染。']
+]);
+
 function genericProfile(scope){
   return Object.freeze({
     subtitle:`${scope.label} 的治理入口：Scope 邊界、資料投影、共用 Feature 與 Page Composition。`,
@@ -82,6 +93,7 @@ export default function GovernanceV2({section=null}){
     {legacy?<ScopeCardV2 eyebrow={legacy.eyebrow} title={legacy.title}><p>{legacy.text}</p></ScopeCardV2>:null}
     <div id="governance-concepts">
     {scopeId==='loc'?<ScopeCardV2 eyebrow="治理" title="治理處理如何被使用、引用、延伸與修正的原則。"><p>不要求任何人接受或使用；所有內容均可作為分析、參考與延伸思考的材料。</p></ScopeCardV2>:null}
+    {scopeId==='loc'?<ScopeCardV2 eyebrow="Governance Principles" title="治理原則完整內容"><div className="scope-v2-list">{LEGACY_PRINCIPLES.map(([title,text])=><article className="scope-v2-inline-card" key={title}><strong>{title}</strong><p>{text}</p></article>)}</div></ScopeCardV2>:null}
     {profile.cards.map((card,index)=><section id={index===0?'governance-concepts':index===1?'governance-law':'governance-management'} key={card.title}><ScopeCardV2 eyebrow={card.eyebrow} title={card.title}><p>{card.text}</p>{card.links?.filter(link=>!link.globalOnly||scopeId==='loc').map(link=><p key={link.href}><a href={scopeHrefV2(scopeId,link.href)}>{link.label}</a></p>)}</ScopeCardV2></section>)}
     </div>
     <div className="scope-v2-grid-two">
