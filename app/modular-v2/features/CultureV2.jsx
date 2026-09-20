@@ -51,10 +51,34 @@ const GALAXY_SECTIONS=Object.freeze({
   multimedia:['多媒體','以 Reels、影音與其他多媒體作品作為文化延伸資料。']
 });
 
+function CultureEditor({onAdd}){
+  const [draft,setDraft]=useState({kind:'era',title:'',date:'',endDate:'',description:''});
+  const update=(key,value)=>setDraft(current=>({...current,[key]:value}));
+  function submit(event){
+    event.preventDefault();
+    if(!draft.title.trim())return;
+    onAdd({...draft,title:draft.title.trim(),description:draft.description.trim()});
+    setDraft({kind:'era',title:'',date:'',endDate:'',description:''});
+  }
+  return <details className="scope-v2-editor">
+    <summary>所見即所得：編輯時期與時間線</summary>
+    <form className="scope-v2-editor-form" onSubmit={submit}>
+      <label>內容類型<select value={draft.kind} onChange={event=>update('kind',event.target.value)}><option value="era">時期 ERA</option><option value="event">時間線 Timeline</option></select></label>
+      <label>名稱<input value={draft.title} onChange={event=>update('title',event.target.value)} placeholder="時期或事件名稱" required/></label>
+      <label>開始／日期<input type="date" value={draft.date} onChange={event=>update('date',event.target.value)}/></label>
+      {draft.kind==='era'?<label>結束日期<input type="date" value={draft.endDate} onChange={event=>update('endDate',event.target.value)}/></label>:null}
+      <label className="scope-v2-editor-full">說明<textarea value={draft.description} onChange={event=>update('description',event.target.value)} placeholder="在這裡直接編輯展示內容"/></label>
+      <div className="scope-v2-editor-preview"><small>即時預覽</small><strong>{draft.title||'尚未命名'}</strong><span>{draft.date||'—'}{draft.kind==='era'?' → '+(draft.endDate||'現在'):''}</span><p>{draft.description||'輸入說明後會在這裡預覽。'}</p></div>
+      <button type="submit">加入目前展示</button>
+    </form>
+  </details>;
+}
 export default function CultureV2({section=null}){
   const {scopeId}=useScopeRuntimeV2();
   const profile=PROFILE[scopeId]||PROFILE.loc;
   const [data,setData]=useState({});
+  const [localEras,setLocalEras]=useState([]);
+  const [localEvents,setLocalEvents]=useState([]);
   const [error,setError]=useState('');
   const [loading,setLoading]=useState(true);
 
@@ -78,8 +102,8 @@ export default function CultureV2({section=null}){
     return()=>{live=false};
   },[scopeId,profile.sections]);
 
-  const eraRows=useMemo(()=>[...(data.eras?.eras?.length?data.eras.eras:FALLBACK_ERAS)].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.eras]);
-  const eventRows=useMemo(()=>[...(data.events?.events||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))),[data.events]);
+  const eraRows=useMemo(()=>[...(data.eras?.eras?.length?data.eras.eras:FALLBACK_ERAS),...localEras].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.eras,localEras]);
+  const eventRows=useMemo(()=>[...(data.events?.events||[]),...localEvents].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))),[data.events,localEvents]);
   const musicRows=periodRows(data.musicPeriods);
   const writingRows=periodRows(data.writingPeriods);
   const authorKeywords=data.authorKeywords?.keywords||[];
@@ -95,15 +119,18 @@ export default function CultureV2({section=null}){
     {loading?<p className="scope-v2-status">載入文化資料…</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
 
-    {(profile.sections.includes('eras')||profile.sections.includes('events'))?<ScopeCardV2 eyebrow="Culture · Timeline" title="時期與時間線">
+    {!section?<ScopeCardV2 eyebrow="Culture · Timeline" title="時期與時間線">
       <p>文化時期與事件放在同一個展示脈絡中；每個事件回到所屬時期。個人文化時期只讀 LOC 時期權威，符文系統演化另行管理，不混用。</p>
+      <CultureEditor onAdd={item=>item.kind==='era'
+        ?setLocalEras(rows=>[...rows,{...item,era_id:'local-'+Date.now(),display_label:item.title,start_date:item.date,end_date:item.endDate||'現在',order:999}])
+        :setLocalEvents(rows=>[...rows,{...item,id:'local-'+Date.now(),title:item.title,date:item.date,description:item.description}])}/>
       <div className="scope-v2-timeline">
         {eraRows.map((item,index)=><article key={item.era_id||item.period||index}>
           <strong>{itemLabel(item,index)}</strong>
           <span>{item.start_date||'—'} → {item.end_date||'現在'}</span>
           {item.description?<p>{item.description}</p>:null}
         </article>)}
-        {eventRows.slice(0,40).map((item,index)=><article key={item.id||`event-${index}`}>
+        {eventRows.slice(0,40).map((item,index)=><article key={item.id||'event-'+index}>
           <strong>{item.title||itemLabel(item,index)}</strong>
           <span>{item.date||''}</span>
           {item.description?<p>{item.description}</p>:null}
@@ -111,7 +138,7 @@ export default function CultureV2({section=null}){
       </div>
     </ScopeCardV2>:null}
 
-    {(section==='trajectory'||!section)?<ScopeCardV2 eyebrow="Trajectory" title="文化軌跡">
+    {section==='trajectory'?<ScopeCardV2 eyebrow="Trajectory" title="文化軌跡">
       <p>沿著時期、作品與關鍵字的變化，查看文化如何累積、轉向與留下可回查的路徑。</p>
       <p>軌跡是文化資料的變化展示，不把歷史資料直接覆寫成目前內容。</p>
     </ScopeCardV2>:null}
