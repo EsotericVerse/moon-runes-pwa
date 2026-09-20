@@ -74,7 +74,7 @@ export const SCOPES_V2=Object.freeze({
       'duel/five',
       'duel/ow3gs'
     ]),
-    routePatterns:Object.freeze([]),
+    routePatterns:Object.freeze(['list/:group','list/:group/:rune']),
     compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     primary:Object.freeze({label:'語彙',href:'https://lrunes.lo3rwang.cc/list/'}),
