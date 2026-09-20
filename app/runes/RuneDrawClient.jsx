@@ -348,7 +348,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
               <small>{selectedMode.positions[index] || `第 ${index + 1} 張`}</small>
               <img className={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`} src={runeCardImage(card)} alt={`${card.符文名稱}符文卡`}/>
               <b>{card.符文名稱}</b>
-              <span>{draw.directions[index]} · {card.卡片屬性 || '中平'}</span>
+              <span>{draw.directions[index]}</span>
               <small>{directionText(card, draw.directions[index]) || card.符文說明}</small>
               <div className="runes-draw-keywords"><span><strong>正向關鍵詞</strong>{card.正向關鍵詞 || '—'}</span><span><strong>反向關鍵詞</strong>{card.反向關鍵詞 || '—'}</span></div>
             </article>)}
