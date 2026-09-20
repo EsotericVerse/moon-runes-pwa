@@ -1,4 +1,7 @@
 import {GROUPS,groupById,groupRunes,localRuneId,runeByRoute,runeImage,runeName} from './rune-directory.mjs';
+import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
+
+const listHref=(path='')=>scopeHrefV2('runes',`list${path?'/'+String(path).replace(/^\\/+/, ''):''}`);
 
 function RuneDetails({card}){
   if(!card)return null;
@@ -46,7 +49,7 @@ export function RuneDirectoryRoot(){
       <p className="loc-eyebrow">Rune Groups</p>
       <h2>群組列表</h2>
       <div className="runes-group-picker">
-        {GROUPS.map(group=><a key={group.id} className="runes-group-choice" href={`/list/${group.id}/`}>
+        {GROUPS.map(group=><a key={group.id} className="runes-group-choice" href={listHref(`${group.id}/`)}>
           <img src={group.image} alt={`${group.name}組概念圖`} width="144" height="96" loading="lazy"/>
           <span className="runes-group-choice-copy">
             <strong>{group.id} · {group.name} ({group.english})</strong>
@@ -84,7 +87,7 @@ export function RuneGroupPage({groupId}){
       <div className="runes-library-grid">
         {cards.map(card=>{
           const localId=localRuneId(group.id,card);
-          return <a className="runes-library-card" key={`${group.id}-${localId}`} href={`/list/${group.id}/${localId}/`}>
+          return <a className="runes-library-card" key={`${group.id}-${localId}`} href={listHref(`${group.id}/${localId}/`)}>
             <img className="runes-library-thumb" src={runeImage(card)} alt={`${runeName(card)}之符文卡`} width="72" height="72" loading="lazy"/>
             <span className="runes-library-card-copy">
               <strong>{localId} · {runeName(card)}之符文 {card.英文? `(${card.英文})`:''}</strong>
@@ -94,7 +97,7 @@ export function RuneGroupPage({groupId}){
         })}
       </div>
     </section>
-    <nav className="loc-card"><a href="/list/">回符文圖鑑</a></nav>
+    <nav className="loc-card"><a href={listHref()}>回符文圖鑑</a></nav>
   </section></main>;
 }
 
@@ -109,6 +112,6 @@ export function RuneDetailPage({groupId,runeId}){
       <p className="loc-subtitle">{group.name}組 · {card.英文}</p>
     </header>
     <RuneDetails card={card}/>
-    <nav className="loc-card"><a href={`/list/${group.id}/`}>回{group.name}組</a> · <a href="/list/">回符文圖鑑</a></nav>
+    <nav className="loc-card"><a href={listHref(`${group.id}/`)}>回{group.name}組</a> · <a href={listHref()}>回符文圖鑑</a></nav>
   </section></main>;
 }
