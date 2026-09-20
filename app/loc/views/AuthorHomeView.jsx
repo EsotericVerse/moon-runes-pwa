@@ -3,11 +3,11 @@ import { PageComposition } from '../../PageComposition';
 const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心所欲，而不逾己'];
 
 const SECTION_COPY={
-  style:['主要身份','LOC／月典創作者與系統設計者、Language Governance Architect、Wordsmith、Calibrator／時空校對者。'],
-  work:['工作與合作','對外合作定位為 Language Consultant，工作方向聚焦於語言治理、語言系統設計、知識與資料架構、數位遺產管理，以及相關顧問與專案實作。'],
-  design:['LOC設計理念','把分散的文字、作品、規則、版本與歷史紀錄，整理成可搜尋、可理解、可治理、可持續維護的結構。'],
-  galaxy:['公開創作內容','公開內容包含 LOC 與月之符文、歌曲與歌詞、小說與文字作品、Reels、多媒體、政德風與語言治理分析。'],
-  others:['其他說明','lo3rwang 是王政德（Lucas Oscar Wang）的公開識別名稱；過去可以保留，錯誤可以標記，理解可以更新。'],
+  style:['主要身份','lo3rwang 是王政德（Lucas Oscar Wang）的公開識別名稱。主要身份為 LOC／月典創作者與系統設計者、Language Governance Architect、Wordsmith、Calibrator／時空校對者。'],
+  work:['工作與合作','主要工作不是單純的內容創作，而是處理語言、資料、脈絡與時間之間的關係；對外合作定位為 Language Consultant，工作方向包含語言治理、語言系統設計、知識與資料架構、數位遺產管理，以及顧問與專案實作。'],
+  design:['LOC設計理念','把分散的文字、作品、規則、版本與歷史紀錄，整理成可搜尋、可理解、可治理、可持續維護的結構。LOC／月典是可重複使用的模組化語言框架；月之符文是其中一套符號式語言實作。'],
+  galaxy:['公開創作內容','公開內容包含 LOC 與月之符文、歌曲與歌詞、小說與文字作品、Reels、多媒體、政德風與語言治理分析。Facebook、Threads、Instagram、Suno 等平台是作品與系統發展紀錄的來源。'],
+  others:['其他說明','過去可以保留，錯誤可以標記，理解可以更新。公開內容會依來源、時間、脈絡與資料責任整理，不把平台本身當成身份。'],
   email:['聯絡方式','合作、顧問、系統設計或其他公開內容相關事項，請透過電子郵件聯絡。']
 };
 
@@ -29,6 +29,16 @@ export default function AuthorHomeView({section=null}){
         <article><strong>校對者 · Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察延續、改變、消失、矛盾與可能的污染。</p><p><a href="/culture">看文化</a></p></article>
         <article><strong>語言治理架構者 · Language Governance Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的語言系統。</p><p><a href="/governance">看治理</a></p></article>
         </div>
+    },
+    {
+      id:'profile-content',
+      eyebrow:'Official Public Profile',
+      title:'我主要在做什麼？',
+      content:<>
+        <p>我主要處理語言、資料、脈絡與時間之間的關係，把分散的文字、作品、規則、版本與歷史紀錄，整理成可搜尋、可理解、可治理、可持續維護的結構。</p>
+        <p>LOC／月典是我自行發展的模組化語言框架；LunaRunes／月之符文是其中一套符號式語言實作。公開核心是為了讓方法可以被理解、研究與延伸，不代表專業服務、個案分析、系統設計與實作必須無償提供。</p>
+        <p>三個現行公開職稱：<strong>Language Governance Architect</strong>、<strong>Wordsmith</strong>、<strong>Calibrator／時空校對者</strong>。</p>
+      </>
     },
     {
       id:'reels',
