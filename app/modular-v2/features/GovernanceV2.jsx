@@ -84,6 +84,24 @@ export default function GovernanceV2({section=null}){
     {scopeId==='loc'?<ScopeCardV2 eyebrow="治理" title="治理處理如何被使用、引用、延伸與修正的原則。"><p>不要求任何人接受或使用；所有內容均可作為分析、參考與延伸思考的材料。</p></ScopeCardV2>:null}
     {profile.cards.map((card,index)=><section id={index===0?'governance-concepts':index===1?'governance-law':'governance-management'} key={card.title}><ScopeCardV2 eyebrow={card.eyebrow} title={card.title}><p>{card.text}</p>{card.links?.filter(link=>!link.globalOnly||scopeId==='loc').map(link=><p key={link.href}><a href={scopeHrefV2(scopeId,link.href)}>{link.label}</a></p>)}</ScopeCardV2></section>)}
     </div>
+    <div className="scope-v2-grid-two">
+      <ScopeCardV2 eyebrow="Principles" title="原則">
+        <p><strong>尊重 · 和平 · 包容 · 友善</strong></p>
+        <p>LOC 保持客觀與中立，不預設宗教、政治、道德或人生價值立場；任何人都可以選擇使用、引用、改寫、比較或不用。</p>
+        <p>歷史保留，解釋可校準；Spec 優先，先判斷詞彙本身的詞性，再判斷群組主體性。</p>
+      </ScopeCardV2>
+      <ScopeCardV2 eyebrow="Copyright · Copyleft" title="版權">
+        <p>核心內容可供閱讀、研究、參考與依授權條件延伸，但應保留 Lucas Oscar Wang 政德／lo3rwang 的作者紀錄與來源脈絡。</p>
+        <p>開放核心不等於無償勞務；顧問、架構設計、資料整理與系統實作屬於另外的合作範圍。</p>
+      </ScopeCardV2>
+      <ScopeCardV2 eyebrow="Tone · Governance" title="治理態度">
+        <p>可以參考，不必服從；可以延伸，不必成為同一套思想。使用與引用時尊重來源，遵守 Copyleft 與作者署名原則。</p>
+      </ScopeCardV2>
+      <ScopeCardV2 eyebrow="Documents" title="延伸文件">
+        <p>較完整的法律、資料、版本、語意、Repository 與系統治理內容，集中由目前 Repository 文件管理。</p>
+        <p><a href="https://github.com/EsotericVerse/moon-runes-pwa">開啟 Repository 文件入口</a></p>
+      </ScopeCardV2>
+    </div>
     {scopeId==='runes'?<ScopeCardV2 eyebrow="歷史" title="符文歷史">
       {cases.length?<div className="scope-v2-list">{cases.slice(0,6).map((item,index)=><article className="scope-v2-inline-card" key={item.order||index}><strong>{item.title||'歷史項目'}</strong>{item.after?<span>{item.after}</span>:null}</article>)}</div>:<p>目前沒有可顯示的符文歷史。</p>}
       {stages.length?<div className="scope-v2-chip-list">{stages.map((item,index)=><span key={item.order||index}>{item.label} · {item.rune_count} 符</span>)}</div>:null}
