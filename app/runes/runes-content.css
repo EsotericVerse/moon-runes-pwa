@@ -31,3 +31,9 @@
 .runes-draw-surface .runes-retry button:not([data-draw-action="retry"]){display:none!important}
 @media(max-width:900px){.runes-home-reels{grid-template-columns:1fr 1fr}.runes-topic-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.runes-highlight-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.runes-home-reels{grid-template-columns:1fr}.runes-topic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.runes-highlight-grid{grid-template-columns:1fr}.runes-content-section{gap:1rem}.runes-highlight-bubble{padding:.8rem}.runes-description p{font-size:.93rem;line-height:1.78}}
+
+/* Group themes: restore white Daylight for Order; make Mineral silver a warm yellow metal. */
+.runes-group-choice-image[data-rune-group="07"],
+.runes-group-head .runes-group-choice-image[data-rune-group="07"]{filter:grayscale(1) brightness(1.35) contrast(.9)}
+.runes-group-choice-image[data-rune-group="05"],
+.runes-group-head .runes-group-choice-image[data-rune-group="05"]{filter:sepia(.52) saturate(1.45) hue-rotate(345deg) contrast(1.22) brightness(.96)}
