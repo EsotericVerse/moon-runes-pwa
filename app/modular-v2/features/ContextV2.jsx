@@ -90,6 +90,24 @@ export default function ContextV2({section=null}){
     {!view?<p className="scope-v2-status">此 Scope 尚未啟用脈絡 projection。</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {loading?<p className="scope-v2-status">載入中…</p>:null}
+    <div className="scope-v2-grid-two">
+      <ScopeCardV2 eyebrow="Graph" title="關係圖探索">
+        <p>從概念、作品、事件或符文出發，查看周圍節點與關係。Graph 只負責搜尋、展開與閱讀。</p>
+        <p className="scope-v2-status">目前頁面先呈現既有脈絡 projection；節點與關係分開管理。</p>
+      </ScopeCardV2>
+      <ScopeCardV2 eyebrow="Node" title="節點">
+        <p>節點代表概念、時期、人物、作品、符文、事件或狀態；節點本身不是關係式。</p>
+      </ScopeCardV2>
+      <ScopeCardV2 eyebrow="Relation" title="關聯">
+        <p>Relation 描述 source → relation → target，以及日期、方向、摘要、證據與可信度。</p>
+      </ScopeCardV2>
+      <ScopeCardV2 eyebrow="Scenario · Event" title="情境與事件">
+        <p>事件放回具體情境與時間，觀察狀態如何成立、轉化或產生不同結果；Scenario 是展示與分析單位，不是固定符文配對。</p>
+      </ScopeCardV2>
+      <ScopeCardV2 eyebrow="Trend" title="趨勢">
+        <p>以年、月等時間單位觀察脈絡變化。預設分析可使用符文分類，但使用者日後可以自訂自己的關鍵字與分類。</p>
+      </ScopeCardV2>
+    </div>
     <div className="scope-v2-list">
       {shown.map((row,index)=><ScopeCardV2 key={row.context_key||row.id||JSON.stringify(row)} title={contextTitle(row,(page-1)*PAGE_SIZE+index)}>
         <div className="scope-v2-meta">{row.context_type?<span>{row.context_type}</span>:null}</div>
