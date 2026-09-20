@@ -79,20 +79,25 @@ export default function CultureV2({section=null}){
     {loading?<p className="scope-v2-status">載入文化資料…</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
 
-    {profile.sections.includes('eras')?<ScopeCardV2 eyebrow="ERA" title="時期">
-      <div className="scope-v2-timeline">{eraRows.map((item,index)=><article key={item.era_id||item.period||index}>
-        <strong>{itemLabel(item,index)}</strong>
-        <span>{item.start_date||'—'} → {item.end_date||'現在'}</span>
-        {item.description?<p>{item.description}</p>:null}
-      </article>)}</div>
+    {(profile.sections.includes('eras')||profile.sections.includes('events'))?<ScopeCardV2 eyebrow="Culture · Timeline" title="時期與時間線">
+      <p>文化時期與事件放在同一個展示脈絡中；每個事件回到所屬時期。個人文化時期只讀 LOC 時期權威，符文系統演化另行管理，不混用。</p>
+      <div className="scope-v2-timeline">
+        {eraRows.map((item,index)=><article key={item.era_id||item.period||index}>
+          <strong>{itemLabel(item,index)}</strong>
+          <span>{item.start_date||'—'} → {item.end_date||'現在'}</span>
+          {item.description?<p>{item.description}</p>:null}
+        </article>)}
+        {eventRows.slice(0,40).map((item,index)=><article key={item.id||`event-${index}`}>
+          <strong>{item.title||itemLabel(item,index)}</strong>
+          <span>{item.date||''}</span>
+          {item.description?<p>{item.description}</p>:null}
+        </article>)}
+      </div>
     </ScopeCardV2>:null}
 
-    {profile.sections.includes('events')?<ScopeCardV2 eyebrow="Timeline" title="時間線">
-      <div className="scope-v2-timeline">{eventRows.slice(0,40).map((item,index)=><article key={item.id||index}>
-        <strong>{item.title||itemLabel(item,index)}</strong>
-        <span>{item.date||''}</span>
-        {item.description?<p>{item.description}</p>:null}
-      </article>)}</div>
+    {(section==='trajectory'||!section)?<ScopeCardV2 eyebrow="Trajectory" title="文化軌跡">
+      <p>沿著時期、作品與關鍵字的變化，查看文化如何累積、轉向與留下可回查的路徑。</p>
+      <p>軌跡是文化資料的變化展示，不把歷史資料直接覆寫成目前內容。</p>
     </ScopeCardV2>:null}
 
     {profile.sections.includes('authorKeywords')?<ScopeCardV2 eyebrow="Culture Keywords" title="作者文化關鍵字">
