@@ -7,7 +7,7 @@ import { useNeonAccount } from '../loc/use-neon-account';
 import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
 import { realMoonPhase } from '../loc/model/moon-phase';
-import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
+import {scopeOriginV2} from '../modular-v2/scope-registry.v2';
 
 const DIRECTIONS = ['正位', '半正位', '半逆位', '逆位'];
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
@@ -22,12 +22,12 @@ const DRAW_TYPES = [
   { key: 'ow3gs', count: 11, label: '11卡 OW3gs', positions: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'] }
 ];
 const DRAW_PATHS = Object.freeze({
-  single: scopeHrefV2('runes','duel/one'),
-  daily: scopeHrefV2('runes','duel/daily'),
-  '2card': scopeHrefV2('runes','duel/two'),
-  '3card': scopeHrefV2('runes','duel/three'),
-  '5card': scopeHrefV2('runes','duel/five'),
-  ow3gs: scopeHrefV2('runes','duel/ow3gs')
+  single: `${scopeOriginV2('runes')}/duel/one`,
+  daily: `${scopeOriginV2('runes')}/duel/daily`,
+  '2card': `${scopeOriginV2('runes')}/duel/two`,
+  '3card': `${scopeOriginV2('runes')}/duel/three`,
+  '5card': `${scopeOriginV2('runes')}/duel/five`,
+  ow3gs: `${scopeOriginV2('runes')}/duel/ow3gs`
 });
 
 const RITUAL_MESSAGES = {

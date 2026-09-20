@@ -21,8 +21,8 @@ function menuFor(featureId,scopeId){
 
 export default function PageShellV2({eyebrow,title,subtitle,children,featureId=null,scopeId='loc',expandedPath=null}){
   const menu=menuFor(featureId,scopeId);
-  const menuHref=path=>scopeId==='runes'&&path==='/algorithm'
-    ? `${scopeOriginV2(scopeId)}/algorithm`
+  const menuHref=path=>scopeId==='runes'
+    ? `${scopeOriginV2(scopeId)}${String(path||'/').startsWith('/')?path:`/${path}`}`
     : scopeHrefV2(scopeId,path);
   const renderMenu=(items,level=0)=><div className={level?'scope-v2-local-menu-children':'scope-v2-local-menu-row'}>{items.map(([label,path,children])=><Fragment key={`${label}-${path}`}><a href={menuHref(path)}>{label}</a>{children?.length&&path===expandedPath?renderMenu(children,level+1):null}</Fragment>)}</div>;
   return <main className="scope-v2-main">
