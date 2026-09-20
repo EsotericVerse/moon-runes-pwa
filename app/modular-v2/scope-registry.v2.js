@@ -94,7 +94,7 @@ export const SCOPES_V2=Object.freeze({
     domain:'dlwang.lo3rwang.cc',
     aliasName:'dlwang',
     label:'作者簡介',
-    localRoutes:Object.freeze([]),
+    localRoutes:Object.freeze(['old']),
     routePatterns:Object.freeze([]),
     compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
