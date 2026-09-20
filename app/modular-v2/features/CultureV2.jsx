@@ -72,7 +72,7 @@ export default function CultureV2({section=null}){
   const galaxySection=section?.startsWith('galaxy/')?section.split('/')[1]:null;
   const galaxyCopy=GALAXY_SECTIONS[galaxySection];
   const legacy=LEGACY_SECTIONS[section];
-  return <FeaturePageV2 featureId="culture" expandedPath={(section==='galaxy'||galaxySection)?'/culture/galaxy':null} subtitle={profile.subtitle}>
+  return <FeaturePageV2 featureId="culture" expandedPath="/culture/galaxy" subtitle={profile.subtitle}>
     {legacy?<ScopeCardV2 eyebrow={legacy.eyebrow} title={legacy.title}><p>{legacy.text}</p></ScopeCardV2>:null}
     {section==='galaxy'?<ScopeCardV2 eyebrow="Galaxy" title="衍生作品"><p>由文化資料延伸出的作品入口，依創作文章、小說、音樂、圖片與多媒體分開瀏覽。</p></ScopeCardV2>:null}
     {galaxyCopy?<ScopeCardV2 eyebrow="Galaxy" title={galaxyCopy[0]}><p>{galaxyCopy[1]}</p></ScopeCardV2>:null}

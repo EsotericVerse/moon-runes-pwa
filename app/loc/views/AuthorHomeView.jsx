@@ -28,7 +28,13 @@ export default function AuthorHomeView({section=null}){
         <article><strong>文字工匠 · Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與風格。</p><p><a href="/context">看脈絡</a></p></article>
         <article><strong>校對者 · Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察延續、改變、消失、矛盾與可能的污染。</p><p><a href="/culture">看文化</a></p></article>
         <article><strong>語言治理架構者 · Language Governance Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的語言系統。</p><p><a href="/governance">看治理</a></p></article>
-      </div>
+        </div>
+    },
+    {
+      id:'reels',
+      eyebrow:'Reels',
+      title:'公開 Reels',
+      content:<div className="loc-context-list"><article className="loc-context-item"><strong>月之符文公開占卜示範</strong><p><a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">在 Instagram 查看第一支 Reels →</a></p></article><article className="loc-context-item"><strong>月之符文使用示範</strong><p><a href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">在 Instagram 查看第二支 Reels →</a></p></article></div>
     }
   ];
   const sectionCopy=SECTION_COPY[section];

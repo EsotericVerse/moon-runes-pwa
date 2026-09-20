@@ -1,3 +1,4 @@
+import {Fragment} from 'react';
 import {scopeHrefV2,scopeOriginV2} from './scope-registry.v2';
 
 const LOCAL_MENUS=Object.freeze({
@@ -23,7 +24,7 @@ export default function PageShellV2({eyebrow,title,subtitle,children,featureId=n
   const menuHref=path=>scopeId==='runes'&&path==='/algorithm'
     ? `${scopeOriginV2(scopeId)}/algorithm`
     : scopeHrefV2(scopeId,path);
-  const renderMenu=(items,level=0)=><div className={level?'scope-v2-local-menu-children':'scope-v2-local-menu-row'}>{items.map(([label,path,children])=><div className="scope-v2-local-menu-item" key={`${label}-${path}`}><a href={menuHref(path)}>{label}</a>{children?.length&&path===expandedPath?renderMenu(children,level+1):null}</div>)}</div>;
+  const renderMenu=(items,level=0)=><div className={level?'scope-v2-local-menu-children':'scope-v2-local-menu-row'}>{items.map(([label,path,children])=><Fragment key={`${label}-${path}`}><a href={menuHref(path)}>{label}</a>{children?.length&&path===expandedPath?renderMenu(children,level+1):null}</Fragment>)}</div>;
   return <main className="scope-v2-main">
     <section className="scope-v2-page">
       <header className="scope-v2-hero">
