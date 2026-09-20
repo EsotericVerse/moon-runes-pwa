@@ -39,16 +39,13 @@ export default function ContextV2(){
       .catch(async error=>{
         try{
           const paths=scopeId==='loc'
-            ?[LOC_DATA.LOC_ERA_REGISTRY,LOC_DATA.LOC8_EVENT_SNAPSHOT]
+            ?[LOC_DATA.LOC8_EVENT_SNAPSHOT]
             :[LOC_DATA.LOC_CROSS_RELATIONSHIP_REGISTRY];
           const values=await fetchLocJsonBatch(paths,{concurrency:2});
-          const eraValue=values[0];
-          const eventValue=scopeId==='loc'?values[1]:values[0];
-          const eras=Array.isArray(eraValue?.eras)?eraValue.eras:[];
+          const eventValue=values[0];
           const events=Array.isArray(eventValue?.events)?eventValue.events:[];
           const relations=scopeId==='loc'?[]:(Array.isArray(eventValue)?eventValue:(eventValue?.relations||eventValue?.relationships||eventValue?.edges||[]));
           const rows=[
-            ...eras.map((row,index)=>({...row,context_key:row.era_id||`era-${index}`,context_type:'時期',title:row.display_label||row.name||row.period||'時期',summary:row.description||row.summary||''})),
             ...events.map((row,index)=>({...row,context_key:row.id||`event-${index}`,context_type:'事件',title:row.title||row.name||'事件',summary:row.description||row.summary||''})),
             ...relations
           ];
