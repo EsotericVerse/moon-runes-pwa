@@ -1,3 +1,5 @@
+import {scopeHrefV2,scopeOriginV2} from './scope-registry.v2';
+
 const LOCAL_MENUS=Object.freeze({
   context:[['說明與探索','/context'],['關係圖(Graph)','/context/graph'],['節點(node)','/context/node'],['關聯(Edge)','/context/edge'],['情境(Scenarios)','/context/scenarios'],['趨勢(Trend)','/context/trend'],['每日符文統計分析(daily)','/context/dailtrunes']],
   culture:[['時期(Perid)與時間線(Timeline)','/culture'],['軌跡(Trajectory)','/culture/trajectory'],['歷史演變(History)','/culture/history'],['衍生作品(galaxy)','/culture/galaxy', [['推薦作品','/culture/galaxy'],['創作文章','/culture/galaxy/literary'],['小說','/culture/galaxy/novel'],['音樂','/culture/galaxy/music'],['圖片','/culture/galaxy/pics'],['多媒體','/culture/galaxy/multimedia']]]],
@@ -18,7 +20,10 @@ function menuFor(featureId,scopeId){
 
 export default function PageShellV2({eyebrow,title,subtitle,children,featureId=null,scopeId='loc',expandedPath=null}){
   const menu=menuFor(featureId,scopeId);
-  const renderMenu=(items,level=0)=><div className={level?'scope-v2-local-menu-children':'scope-v2-local-menu-row'}>{items.map(([label,path,children])=><div className="scope-v2-local-menu-item" key={`${label}-${path}`}><a href={path}>{label}</a>{children?.length&&path===expandedPath?renderMenu(children,level+1):null}</div>)}</div>;
+  const menuHref=path=>scopeId==='runes'
+    ? `${scopeOriginV2(scopeId)}${String(path||'/').startsWith('/')?path:`/${path}`}`
+    : scopeHrefV2(scopeId,path);
+  const renderMenu=(items,level=0)=><div className={level?'scope-v2-local-menu-children':'scope-v2-local-menu-row'}>{items.map(([label,path,children])=><div className="scope-v2-local-menu-item" key={`${label}-${path}`}><a href={menuHref(path)}>{label}</a>{children?.length&&path===expandedPath?renderMenu(children,level+1):null}</div>)}</div>;
   return <main className="scope-v2-main">
     <section className="scope-v2-page">
       <header className="scope-v2-hero">

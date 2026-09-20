@@ -9,7 +9,7 @@ import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model
 import { realMoonPhase } from '../loc/model/moon-phase';
 import { buildRuneGraph, searchRuneGraph } from '../../js/rune-graph-core.js';
 import RuneAtlas from './RuneAtlas';
-import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
+import {scopeOriginV2} from '../modular-v2/scope-registry.v2';
 
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
@@ -17,6 +17,8 @@ const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
+const RUNE_ORIGIN=scopeOriginV2('runes');
+const runeHref=path=>`${RUNE_ORIGIN}/${String(path||'').replace(/^\/+/, '')}`;
 const MODES=[
   {key:'single',count:1,label:'單卡',description:'符文本義＋卡牌方向＋月相交互。',positions:['核心'],path:'duel/one'},
   {key:'daily',count:1,label:'每日',description:'以今日為時間範圍的一張符文。',positions:['今日'],path:'duel/daily'},
@@ -77,7 +79,7 @@ export default function RunesClient(){
   async function removeRecord(id){try{await deleteNeonRecord(id);setDrawRecords(current=>current.filter(item=>item.id!==id));setRecordStatus('已刪除 Neon 紀錄。');}catch(err){setRecordStatus(`刪除失敗：${err?.message||'未知錯誤'}`);}}
 
   return <main className="loc-next-main"><section className="loc-view">
-    <header className="loc-hero" id="intro"><p className="loc-eyebrow">LunaRunes</p><h1>月之符文</h1><p className="loc-subtitle">66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</p><p>可以問一件事，也可以沒有問題直接抽取，</p><nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href="/">符文抽籤</a><a href="/list">符文圖鑑</a><a href="/algorithm">符文解牌</a><a href="/game">符文遊戲</a></nav></header>
+    <header className="loc-hero" id="intro"><p className="loc-eyebrow">LunaRunes</p><h1>月之符文</h1><p className="loc-subtitle">66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</p><p>可以問一件事，也可以沒有問題直接抽取，</p><nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={runeHref('')}>符文抽籤</a><a href={runeHref('list')}>符文圖鑑</a><a href={runeHref('algorithm')}>符文解牌</a><a href={runeHref('game')}>符文遊戲</a></nav></header>
     <section className="loc-card runes-home-reels" aria-label="月之符文 Reels">
       <div className="runes-home-hero-copy"><p className="loc-eyebrow">Reels · 實際示範</p><h2>先看一次月之符文怎麼使用</h2><p className="loc-subtitle">短影片示範抽牌與閱讀方式；看完可以直接回到下方抽牌。</p></div>
       <div className="runes-home-reels">
@@ -86,7 +88,36 @@ export default function RunesClient(){
       </div>
       <p className="loc-subtitle"><a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟第一支</a> · <a href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟第二支</a></p>
     </section>
-    <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey}><p className="loc-eyebrow">Draw · 抽籤</p><h2>占卜抽籤</h2><div className="runes-mode-nav" aria-label="選擇抽牌方式">{MODES.map(item=><a key={item.key} href={scopeHrefV2('runes',item.path)} data-draw-mode={item.key} className={`loc-button ${modeKey===item.key?'primary':''}`}><strong>{item.label}</strong><span>{item.description}</span></a>)}</div></section>
+    <section className="loc-card rune-basics">
+      <h2>基本判讀順序</h2>
+      <div className="basic-grid">
+        <div className="basic-item"><strong>先看符文本義</strong><span>先確認每張符文最基本的語意，不先被吉凶或結論帶走。</span></div>
+        <div className="basic-item"><strong>再看卡牌方向</strong><span>正位、半正位、半逆位、逆位描述同一語彙在當下狀態中的不同表現。</span></div>
+        <div className="basic-item"><strong>依卡位讀結構</strong><span>雙卡、三卡、五卡與 OW3gs 都有自己的位置責任，不能混成同一種讀法。</span></div>
+        <div className="basic-item"><strong>最後才看月相</strong><span>真實月相是低權重的時間修飾，不應推翻符文本義、方向與主要卡位。</span></div>
+      </div>
+    </section>
+    <section className="loc-card rune-basics">
+      <h2>命運句基本結構</h2>
+      <div className="reading-ref-grid">
+        <article className="reading-ref-card"><h3>單卡</h3><p>回答當下最核心的語意或狀態。</p></article>
+        <article className="reading-ref-card"><h3>雙卡</h3><p><strong>因 → 果</strong>。第一張描述造成狀況的來源，第二張描述主要結果或落點。</p></article>
+        <article className="reading-ref-card"><h3>三卡</h3><p><strong>源 → 轉 → 合</strong>。從來源、轉折到整合結果，形成一條最基本的語意鏈。</p></article>
+        <article className="reading-ref-card"><h3>五卡</h3><p><strong>過去 → 現在 → 未來顯化 → 周圍環境 → 自己心境</strong>。五個位置各自有責任，不是 2+3 拼接。</p></article>
+        <article className="reading-ref-card"><h3>OW3gs</h3><p><strong>1–6 因的描述層＋7–11 果的判定層</strong>。先讀 7–11 的核心判定，再回看 1–6 補足造成現況的背景與條件。</p></article>
+      </div>
+    </section>
+    <section className="loc-card rune-basics">
+      <h2>判讀與回測原則</h2>
+      <div className="reading-ref-grid">
+        <article className="reading-ref-card"><h3>過程不等於結果</h3><p>過程順利、互動正向或局部條件成立，不代表最後一定形成預期結果。</p></article>
+        <article className="reading-ref-card"><h3>多個結果可以並存</h3><p>成果、延遲、成本、補償與限制可以同時成立，不把複合事件壓成單一吉凶。</p></article>
+        <article className="reading-ref-card"><h3>主結果與代價分開</h3><p>是否完成、完成品質、時間、金錢、情緒與體力成本應分開判讀。</p></article>
+        <article className="reading-ref-card"><h3>不知道就保留未知</h3><p>尚未走完的時間跨度、證據不足或原始解析遺失時，不事後補造答案。</p></article>
+      </div>
+      <p className="rune-basics-note">事後回測固定保留「原始問題／原始牌序與原解析／實際發生／語法修正」的區分；不得看到結果後反向改寫原解析。</p>
+    </section>
+    <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey}><p className="loc-eyebrow">Draw · 抽籤</p><h2>占卜抽籤</h2><div className="runes-mode-nav" aria-label="選擇抽牌方式">{MODES.map(item=><a key={item.key} href={runeHref(item.path)} data-draw-mode={item.key} className={`loc-button ${modeKey===item.key?'primary':''}`}><strong>{item.label}</strong><span>{item.description}</span></a>)}</div></section>
     {ritualStep>=0&&<section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={modeKey} aria-live="polite"><div className="runes-ritual-card"><img src="/assets/lunarunes/cards/65_玄.png" alt="玄之符文"/><strong>玄之符文</strong><span>Chaos</span></div><div className="runes-ritual-copy"><p className="loc-eyebrow">等待片刻</p><h2>{ritualMessages[ritualStep]}</h2><p>真實月相：{moonPhase}</p></div></section>}
     {draw&&<><section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={modeKey}><div className="loc-result-meta"><span>{selectedMode.label}</span><span>真實月相：{moonPhase}</span></div><div className="loc-draw-grid">{draw.cards.map((card,index)=><article className="loc-context-item compact loc-draw-card" data-rune-id={card.編號} data-draw-position={selectedMode.positions[index]||index+1} key={`${card.編號}-${index}`}><small>{selectedMode.positions[index]||`第 ${index+1} 張`}</small><img className={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`} src={runeCardImage(card)} alt={`${card.符文名稱}符文卡`}/><b>{card.符文名稱}</b><span>{draw.directions[index]} · {card.卡片屬性||'中平'}</span><small>{directionText(card,draw.directions[index])||card.符文說明}</small><div className="runes-draw-keywords"><span><strong>正向關鍵詞</strong>{card.正向關鍵詞||'—'}</span><span><strong>反向關鍵詞</strong>{card.反向關鍵詞||'—'}</span></div></article>)}</div><div className="loc-actions runes-retry"><button type="button" className="loc-button" data-draw-action="retry" onClick={executeDraw}>再抽一次</button><button type="button" className="loc-button primary" onClick={saveCurrentDraw} disabled={drawSaved}>{drawSaved?'已記錄':modeKey==='daily'?'記錄到每日':'記錄一般抽牌'}</button></div>{recordStatus&&<p className="loc-status">{recordStatus}</p>}</section>
       {modeKey==='single'&&<section className="loc-card" data-draw-reading="single"><p className="loc-eyebrow">Reading · 單卡解讀</p><h2>{draw.cards[0].符文名稱} · {draw.directions[0]}</h2><SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations}/></section>}
