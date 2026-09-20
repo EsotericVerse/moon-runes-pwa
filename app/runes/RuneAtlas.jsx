@@ -45,6 +45,7 @@ function RuneQuickCard({card}){
         <span><strong>所屬分組</strong>{card?.所屬分組||'—'}</span>
         <span><strong>月相</strong>{card?.月相||'—'}</span>
         <span><strong>卡片屬性</strong>{card?.卡片屬性||'—'}</span>
+        <span><strong>History</strong>{card?.History||card?.歷史||card?.符文歷史||'—'}</span>
         <span><strong>正向關鍵詞</strong>{card?.正向關鍵詞||'—'}</span>
         <span><strong>反向關鍵詞</strong>{card?.反向關鍵詞||'—'}</span>
         {card?.額外規則&&<span><strong>額外規則</strong>{card.額外規則}</span>}
