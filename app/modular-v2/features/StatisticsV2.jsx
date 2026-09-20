@@ -106,7 +106,7 @@ export default function StatisticsV2({section=null}){
     </ScopeCardV2>:null}
     {(!section||section==='daily')?<ScopeCardV2 eyebrow="Daily Runes" title="每日符文">
       <p>每日符文的手動紀錄與趨勢統計集中在這裡；線上即時抽牌仍由月之符文首頁處理。</p>
-      <form className="scope-v2-editor" onSubmit={event=>{event.preventDefault();if(!dailyDraft.date||!dailyDraft.rune)return;setManualDaily(rows=>[{'...dailyDraft,id:'local-'+Date.now()},...rows]);setDailyDraft({date:'',kind:'daily_draw',rune:'',direction:'正位',note:''});}}>
+      <form className="scope-v2-editor" onSubmit={event=>{event.preventDefault();if(!dailyDraft.date||!dailyDraft.rune)return;setManualDaily(rows=>[{...dailyDraft,id:'local-'+Date.now()},...rows]);setDailyDraft({date:'',kind:'daily_draw',rune:'',direction:'正位',note:''});}}>
         <label>日期<input type="date" value={dailyDraft.date} onChange={event=>setDailyDraft(value=>({...value,date:event.target.value}))} required/></label>
         <label>類型<select value={dailyDraft.kind} onChange={event=>setDailyDraft(value=>({...value,kind:event.target.value}))}><option value="daily_draw">主抽</option><option value="daily_draw_supplement">補抽</option></select></label>
         <label>符文<input value={dailyDraft.rune} onChange={event=>setDailyDraft(value=>({...value,rune:event.target.value}))} placeholder="輸入符文" required/></label>
