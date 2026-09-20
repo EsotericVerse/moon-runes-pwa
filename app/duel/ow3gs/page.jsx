@@ -5,5 +5,5 @@ export const metadata = {
 };
 
 export default function DuelOw3gsPage() {
-  return <DuelDrawPage mode="ow3gs" />;
+  return <DuelDrawPage drawKey="ow3gs" />;
 }
