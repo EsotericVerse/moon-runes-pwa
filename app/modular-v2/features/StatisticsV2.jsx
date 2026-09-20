@@ -65,7 +65,10 @@ export default function StatisticsV2(){
   const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const shown=filtered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
 
-  return <FeaturePageV2 featureId="statics" subtitle={`${scope.label} Scope 的排行榜與統計；資料由該 Scope 的 Neon projection 提供。`}>
+  return <FeaturePageV2 featureId="statics" subtitle="統計關鍵字排行榜與資料來源的分佈，來做風格的分析。">
+    <ScopeCardV2 eyebrow="Statistics" title="跨時期關鍵字排行榜集中於此。">
+      <p>統計排行榜、關鍵字、曲風與來源的分佈，作為風格分析與資料回查的入口。</p>
+    </ScopeCardV2>
     {!view?<p className="scope-v2-status">此 Scope 尚未啟用統計 projection。</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {loading?<p className="scope-v2-status">載入中…</p>:null}
