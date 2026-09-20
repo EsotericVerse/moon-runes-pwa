@@ -50,7 +50,7 @@ export function RuneDirectoryRoot(){
       <h2>群組列表</h2>
       <div className="runes-group-picker">
         {GROUPS.map(group=><a key={group.id} className="runes-group-choice" href={listHref(`${group.id}/`)}>
-          <img src={group.image} alt={`${group.name}組概念圖`} width="144" height="96" loading="lazy"/>
+          <img className="runes-group-choice-image" data-rune-group={group.id} src={group.image} alt={`${group.name}組概念圖`} width="144" height="96" loading="lazy"/>
           <span className="runes-group-choice-copy">
             <strong>{group.id} · {group.name} ({group.english})</strong>
             <small>{group.description}</small>
@@ -73,7 +73,7 @@ export function RuneGroupPage({groupId}){
     </header>
     <section className="loc-card">
       <div className="runes-group-head">
-        <img src={group.image} alt={`${group.name}組概念圖`} width="160" height="120"/>
+        <img className="runes-group-choice-image" data-rune-group={group.id} src={group.image} alt={`${group.name}組概念圖`} width="160" height="120"/>
         <div>
           <h2>{group.name}組資訊</h2>
           <p>{group.description}</p>
