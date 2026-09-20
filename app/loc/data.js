@@ -12,7 +12,8 @@ const DEFAULT_MEMORY_CACHE_ENTRIES=24;
 const DEFAULT_MAX_SEGMENTS=8;
 const NEON_ONLY_PATHS=new Set([
   'data/json/core/lots.json',
-  'data/json/core/rune_interpretations.json'
+  'data/json/core/rune_interpretations.json',
+  'data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json'
 ]);
 const LOCAL_PRIMARY_PATHS=new Set([
   'data/json/core/runes.json'
