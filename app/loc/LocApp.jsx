@@ -9,7 +9,7 @@ import AdminHomeView from './views/AdminHomeView';
 import GenericScopeHomeV2 from '../modular-v2/GenericScopeHomeV2';
 
 const loading=()=> <div className="loc-loading">載入功能模組…</div>;
-const RunesHomeView=dynamic(()=>import('../runes/RunesClient'),{ssr:false,loading});
+const RunesHomeView=dynamic(()=>import('../runes/RuneHomeClient'),{ssr:false,loading});
 const GameView=dynamic(()=>import('./views/GameView'),{ssr:false,loading});
 const ContextView=dynamic(()=>import('../modular-v2/features/ContextV2'),{ssr:false,loading});
 const StaticsView=dynamic(()=>import('../modular-v2/features/StatisticsV2'),{ssr:false,loading});
