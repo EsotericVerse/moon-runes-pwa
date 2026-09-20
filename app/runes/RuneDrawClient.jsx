@@ -282,10 +282,10 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   }
 
   useEffect(() => {
-    if (autoStarted.current) return;
+    if (!data || autoStarted.current) return;
     autoStarted.current = true;
     executeDraw();
-  }, []);
+  }, [data]);
 
   async function saveCurrentDraw() {
     if (!draw) return;
