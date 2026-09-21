@@ -99,7 +99,7 @@ export const SCOPES_V2=Object.freeze({
 
   lo3rwang:Object.freeze({
     id:'lo3rwang',
-    scopeType:'directory',
+    scopeType:'private-directory',
     domain:'dlwang.lo3rwang.cc',
     aliasName:'dlwang',
     label:'作者簡介',
@@ -139,6 +139,10 @@ export const SCOPES_V2=Object.freeze({
     aliasName:null,
     label:'陰暗面',
     privateOnly:true,
+    defaultVisibility:'private',
+    localFirst:true,
+    publicStatisticsOptIn:false,
+    includeInLocTotal:false,
     ownerScope:'lo3rwang',
     linkedScope:'lo3rwang',
     localRoutes:Object.freeze([]),
