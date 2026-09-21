@@ -7,7 +7,7 @@ import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
 import {scopeDataViewV2} from '../scope-registry.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
-import {neonClient} from '../../loc/neon-client';
+import {neonClient,readNeonOrPublicFallback} from '../../loc/neon-client';
 import {fetchLocDataSegments,fetchLocJsonBatch} from '../../loc/data';
 
 const DAY_MS=24*60*60*1000;
@@ -45,7 +45,7 @@ export default function SearchV2(){
   const [status,setStatus]=useState('從統計或關鍵字入口開始搜尋。');
 
   useEffect(()=>{const q=text(searchParams?.get('q')).trim();const terms=text(searchParams?.get('terms')).trim();const value=terms||q;if(value){setQuery(value.split('|').join('、'));setSubmitted(value)}},[searchParams]);
-  useEffect(()=>{let live=true;setLoading(true);setError('');if(!view){setError('此 Scope 尚未設定搜尋用 Culture projection。');setLoading(false);return()=>{live=false};}neonClient.from(view).select('*').order('date',{ascending:true}).limit(5000).then(result=>{if(result?.error)throw new Error(result.error.message||'Search SQL projection 讀取失敗');if(live)setRows((result?.data||[]).map(normalize));}).catch(errorValue=>live&&setError(String(errorValue?.message||errorValue))).finally(()=>live&&setLoading(false));return()=>{live=false};},[view]);
+  useEffect(()=>{let live=true;setLoading(true);setError('');if(!view){setError('此 Scope 尚未設定搜尋用 Culture projection。');setLoading(false);return()=>{live=false};}readNeonOrPublicFallback(neonClient.from(view).select('*').order('date',{ascending:true}).limit(5000),'/projections/loc-culture.json').then(result=>{if(result?.error)throw new Error(result.error.message||'Search SQL projection 讀取失敗');if(live)setRows((result?.data||[]).map(normalize));}).catch(errorValue=>live&&setError(String(errorValue?.message||errorValue))).finally(()=>live&&setLoading(false));return()=>{live=false};},[view]);
 
   const matches=useMemo(()=>{const q=submitted.trim();if(!q)return [];return rows.map(row=>({...row,matchScore:score(row,q)})).filter(row=>row.matchScore>0).sort((a,b)=>b.matchScore-a.matchScore||a.date.localeCompare(b.date));},[rows,submitted]);
   useEffect(()=>{setAnchor(matches[0]||null);setSelected(null);setStatus(matches.length?'找到 '+matches.length+' 筆與「'+submitted+'」相關的內容。':'尚未找到「'+submitted+'」的時間錨點。');},[matches,submitted]);
