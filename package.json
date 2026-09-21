@@ -30,6 +30,7 @@
     "next": "16.3.5",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "@neondatabase/neon-js": "0.7.0-beta"
+    "@neondatabase/neon-js": "0.7.0-beta",
+    "vis-timeline": "8.5.4"
   }
 }
