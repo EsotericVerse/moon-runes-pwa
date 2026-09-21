@@ -3,22 +3,139 @@
 import {useEffect,useMemo,useState} from 'react';
 import {neonClient,readNeonOrPublicFallback} from '../../loc/neon-client';
 
-const PAGE_SIZE=16;
-const SCOPE_GRAPH_SEED=Object.freeze([
-  {kind:'node',id:'scope:loc',title:'LOC／月典',node_type:'scope',description:'統籌表示方法'},
-  {kind:'node',id:'scope:runes',title:'月之符文／LunaRunes',node_type:'language',description:'另一種表現語言'},
-  {kind:'node',id:'scope:lo3rwang',title:'lo3rwang／作者',node_type:'author',description:'作者作品 scope'},
-  {kind:'node',id:'scope:dlwang',title:'dlwang／陰暗面',node_type:'private-scope',description:'私密 scope；不進 LOC 主系統'},
-  {kind:'edge',id:'scope-edge:loc-runes',source_id:'scope:loc',target_id:'scope:runes',source_label:'LOC／月典',target_label:'月之符文／LunaRunes',source_type:'scope',target_type:'language',relation_type:'coordinates',title:'月典統籌月之符文'},
-  {kind:'edge',id:'scope-edge:loc-author',source_id:'scope:loc',target_id:'scope:lo3rwang',source_label:'LOC／月典',target_label:'lo3rwang／作者',source_type:'scope',target_type:'author',relation_type:'authored_by',title:'月典統籌作者作品'},
-  {kind:'edge',id:'scope-edge:runes-author',source_id:'scope:runes',target_id:'scope:lo3rwang',source_label:'月之符文／LunaRunes',target_label:'lo3rwang／作者',source_type:'language',target_type:'author',relation_type:'expressed_by',title:'符文與作者交錯'},
-  {kind:'edge',id:'scope-edge:shadow-author',source_id:'scope:dlwang',target_id:'scope:lo3rwang',source_label:'dlwang／陰暗面',target_label:'lo3rwang／作者',source_type:'private-scope',target_type:'author',relation_type:'private_shadow_of',title:'私密 scope 僅連結作者'}
-]);
+const PAGE_SIZE=24;
+const GRAPH_SEED=[
+  {kind:'node',id:'scope:loc',title:'LOC／月典',node_type:'scope'},
+  {kind:'node',id:'scope:runes',title:'月之符文／LunaRunes',node_type:'language'},
+  {kind:'node',id:'scope:lo3rwang',title:'lo3rwang／作者',node_type:'author'},
+  {kind:'edge',id:'scope:loc-runes',source_id:'scope:loc',target_id:'scope:runes',source_label:'LOC／月典',target_label:'月之符文／LunaRunes',relation_type:'coordinates'},
+  {kind:'edge',id:'scope:loc-author',source_id:'scope:loc',target_id:'scope:lo3rwang',source_label:'LOC／月典',target_label:'lo3rwang／作者',relation_type:'authored_by'},
+  {kind:'edge',id:'scope:runes-author',source_id:'scope:runes',target_id:'scope:lo3rwang',source_label:'月之符文／LunaRunes',target_label:'lo3rwang／作者',relation_type:'expressed_by'}
+];
 
-const s=v=>String(v??'');
-function graphOf(rows){const ns=new Map(),es=[];const put=(id,x)=>{if(id&&!ns.has(id))ns.set(id,{id,label:id,type:'node',...x});};for(const raw of rows){const payload=raw?.payload&&typeof raw.payload==='object'?raw.payload:{};const r={...raw,...payload};const kind=r.kind||raw?.context_type||'node';const id=r.id||raw?.context_key||'';if(kind==='node'||kind==='period'||kind==='semantic_history'){const nodeId=id||((raw?.scope_id||'loc')+':'+(raw?.context_key||r.title||'node'));put(nodeId,{label:r.title||r.name||nodeId,type:r.node_type||r.context_type||r.type||'node',note:r.description||raw?.summary,record:{...r,kind:'node',id:nodeId}});}if(kind==='edge'){const edgeId=id||raw?.context_key;const source=r.source_id,target=r.target_id;if(source&&target){put(source,{label:r.source_label||source,type:r.source_type||'node'});put(target,{label:r.target_label||target,type:r.target_type||'node'});es.push({id:edgeId,source,target,type:r.relation_type||'related',label:r.title||raw?.summary,record:{...r,kind:'edge',id:edgeId}});}}if(kind==='event'){const eventId='event:'+id;put(eventId,{label:r.title,type:'event',date:r.date,note:r.description,record:{...r,kind:'event',id}});if(r.object_id){put(r.object_id,{label:r.object_id,type:r.object_type||'object'});es.push({id:eventId,source:eventId,target:r.object_id,type:r.event_type||'event_of',label:r.title,record:{...r,kind:'edge',id:eventId}});}}}return {nodes:[...ns.values()],edges:es};}
-const glyph=t=>s(t).includes('event')?'◆':s(t).includes('work')||s(t).includes('article')||s(t).includes('song')?'◈':s(t).includes('rune')?'✦':s(t).includes('person')?'●':'○';
-function Pager({page,total,setPage}){const n=Math.max(1,Math.ceil(total/PAGE_SIZE));return total>PAGE_SIZE?<div className="scope-v2-pagination"><span>第 {page} / {n} 頁 · 共 {total} 筆</span><div><button type="button" disabled={page===1} onClick={()=>setPage(page-1)}>上一頁</button><button type="button" disabled={page===n} onClick={()=>setPage(page+1)}>下一頁</button></div></div>:null;}
-function Field({label,children,full=false}){return <label className={full?'full':''}>{label}{children}</label>;}
-function Editor({value,onChange,onSave,onDelete,onClose,saving}){if(!value)return <div className="context-empty">點擊節點或連線開啟同一個編輯器。</div>;const set=(k,v)=>onChange({...value,[k]:v});const edge=value.kind==='edge',event=value.kind==='event';return <div className="context-tool-card"><div className="context-item-head"><div><p className="scope-v2-eyebrow">LIVE EDITOR</p><h3>{value.id?'編輯':'新增'}{edge?'關係':event?'事件':'節點'}</h3></div><button type="button" className="context-btn ghost" onClick={onClose}>關閉</button></div><div className="context-form-grid"><Field label="識別名稱"><input value={value.id||''} disabled={Boolean(value.id)} onChange={e=>set('id',e.target.value)}/></Field><Field label="標題"><input value={value.title||''} onChange={e=>set('title',e.target.value)}/></Field>{edge?<><Field label="來源節點"><input value={value.source_id||''} onChange={e=>set('source_id',e.target.value)}/></Field><Field label="目標節點"><input value={value.target_id||''} onChange={e=>set('target_id',e.target.value)}/></Field><Field label="關係類型"><input value={value.relation_type||''} onChange={e=>set('relation_type',e.target.value)}/></Field><Field label="方向"><select value={value.direction||'forward'} onChange={e=>set('direction',e.target.value)}><option value="forward">source → target</option><option value="reverse">target → source</option><option value="bidirectional">雙向</option></select></Field><Field label="關係摘要" full><textarea value={value.summary||''} onChange={e=>set('summary',e.target.value)}/></Field><Field label="證據" full><input value={value.evidence||''} onChange={e=>set('evidence',e.target.value)}/></Field></>:null}{event?<><Field label="事件日期"><input type="date" value={value.date||''} onChange={e=>set('date',e.target.value)}/></Field><Field label="事件類型"><input value={value.event_type||''} onChange={e=>set('event_type',e.target.value)}/></Field><Field label="對象類型"><input value={value.object_type||''} onChange={e=>set('object_type',e.target.value)}/></Field><Field label="對象名稱"><input value={value.object_id||''} onChange={e=>set('object_id',e.target.value)}/></Field><Field label="描述" full><textarea value={value.description||''} onChange={e=>set('description',e.target.value)}/></Field><Field label="目前狀態" full><input value={value.state_after||''} onChange={e=>set('state_after',e.target.value)}/></Field></>:null}{!edge&&!event?<Field label="節點說明" full><textarea value={value.description||''} onChange={e=>set('description',e.target.value)}/></Field>:null}<Field label="狀態"><select value={value.status||'current'} onChange={e=>set('status',e.target.value)}><option>current</option><option>recorded</option><option>released</option><option>archived</option></select></Field><Field label="日期"><input type="date" value={value.date||''} onChange={e=>set('date',e.target.value)}/></Field></div><div className="context-actions"><span className="context-graph-status">唯讀展示</span></div><form className="context-graph-toolbar" onSubmit={e=>{e.preventDefault();setSubmitted(query);setPage(1)}}><label>關係圖搜尋<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="搜尋節點、事件、關係"/></label><label>Depth<select value={String(depth)} onChange={e=>setDepth(Number(e.target.value))}><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label><button type="submit" className="context-btn primary">搜尋 Graph</button></form><div className="context-graph-filter"><select value={nodeType} onChange={e=>{setNodeType(e.target.value);setPage(1)}}><option value="">全部節點類型</option>{ntypes.map(x=><option key={x}>{x}</option>)}</select><select value={edgeType} onChange={e=>setEdgeType(e.target.value)}><option value="">全部關係類型</option>{etypes.map(x=><option key={x}>{x}</option>)}</select><button type="button" className="context-btn ghost" onClick={()=>{setQuery('');setSubmitted('');setNodeType('');setEdgeType('');setPage(1)}}>清除</button></div><div className="context-graph-layout"><div className="context-graph-panel"><h3>Graph · {vn.length} nodes / {ve.length} edges</h3><svg viewBox="0 0 1000 560" role="img" aria-label="可編輯關係圖" className="context-workbench-svg"><defs><marker id="context-workbench-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="currentColor"/></marker></defs>{draw.map(e=>{const a=points.get(e.source),b=points.get(e.target);return <g key={e.id} onClick={()=>setEditor(e.record)} className="context-workbench-interactive"><line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="currentColor" strokeOpacity=".45" strokeWidth="2" markerEnd={arrows?'url(#context-workbench-arrow)':undefined}/>{labels?<text x={(a.x+b.x)/2} y={(a.y+b.y)/2-6} textAnchor="middle" fontSize="11" fill="currentColor">{e.type}</text>:null}</g>})}{pageNodes.map(n=>{const p=points.get(n.id);return <g key={n.id} onClick={()=>setEditor(n.record||{id:n.id,kind:'node',title:n.label})} className="context-workbench-interactive"><circle cx={p.x} cy={p.y} r={size} fill="var(--loc-panel-2,#f4f4f4)" stroke="currentColor" strokeWidth="2"/><text x={p.x} y={p.y+5} textAnchor="middle" fontSize="18" fill="currentColor">{glyph(n.type)}</text>{labels?<text x={p.x} y={p.y+size+17} textAnchor="middle" fontSize="12" fill="currentColor">{s(n.label).slice(0,18)}</text>:null}{ids?<text x={p.x} y={p.y+size+31} textAnchor="middle" fontSize="9" fill="currentColor">{n.id}</text>:null}</g>})}</svg><p className="context-graph-status">箭頭表示 source → target；點擊節點或連線即可編輯。{q?' 查詢：'+submitted:''}</p>{Pager({page,total:vn.length,setPage})}</div><div className="context-graph-panel"><h3>顯示與資料設定</h3><label>版面<select value={layout} onChange={e=>setLayout(e.target.value)}><option value="circle">環形</option><option value="grid">網格</option></select></label><label><input type="checkbox" checked={labels} onChange={e=>setLabels(e.target.checked)}/> 顯示關係與節點文字</label><label><input type="checkbox" checked={arrows} onChange={e=>setArrows(e.target.checked)}/> 顯示方向箭頭</label><label><input type="checkbox" checked={ids} onChange={e=>setIds(e.target.checked)}/> 顯示識別碼</label><label>節點大小<input type="range" min="16" max="42" value={size} onChange={e=>setSize(Number(e.target.value))}/></label><div className="context-item"><strong>Graph 展示</strong><p>公開唯讀資料；搜尋以節點為 seed，依 depth 擴展相鄰關係。</p></div></div></div></section><aside><div className="context-tool-card"><h3>Graph 唯讀展示</h3><p>Node、Edge、Event 目前只供公開瀏覽與搜尋。</p></div></aside>{notice?<p className="scope-v2-status">{notice}</p>:null}</div>;
+const text=value=>String(value??'');
+
+function graphOf(rows){
+  const nodes=new Map();
+  const edges=[];
+  const put=(id,patch={})=>{
+    if(!id)return;
+    const current=nodes.get(id)||{id,label:id,type:'node'};
+    nodes.set(id,{...current,...patch});
+  };
+  for(const raw of rows){
+    const payload=raw?.payload&&typeof raw.payload==='object'?raw.payload:{};
+    const value={...raw,...payload};
+    const kind=value.kind||raw?.context_type||'node';
+    const id=value.id||raw?.context_key;
+    if(kind==='node'||kind==='period'||kind==='semantic_history'){
+      const nodeId=id||((raw?.scope_id||'loc')+':'+(value.title||'node'));
+      put(nodeId,{
+        label:value.title||value.name||nodeId,
+        type:value.node_type||raw?.context_type||value.type||'node',
+        note:value.description||raw?.summary||'',
+        record:{...value,kind:'node',id:nodeId}
+      });
+    }
+    if(kind==='edge'){
+      const source=value.source_id;
+      const target=value.target_id;
+      if(!source||!target)continue;
+      put(source,{label:value.source_label||source,type:value.source_type||'node'});
+      put(target,{label:value.target_label||target,type:value.target_type||'node'});
+      edges.push({
+        id:id||('edge:'+edges.length),
+        source,
+        target,
+        type:value.relation_type||'related',
+        label:value.title||raw?.summary||'',
+        record:{...value,kind:'edge',id:id||('edge:'+edges.length)}
+      });
+    }
+  }
+  return {nodes:[...nodes.values()],edges};
+}
+
+function pointFor(index,total){
+  const angle=(index/Math.max(total,1))*Math.PI*2-Math.PI/2;
+  const radius=Math.min(300,150+Math.sqrt(total)*5);
+  return {x:600+Math.cos(angle)*radius,y:370+Math.sin(angle)*radius};
+}
+
+function Pager({page,total,onChange}){
+  const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  if(pages<=1)return null;
+  return <div className="scope-v2-pagination"><span>第 {page} / {pages} 頁 · 共 {total} 筆</span><div><button type="button" disabled={page<=1} onClick={()=>onChange(page-1)}>上一頁</button><button type="button" disabled={page>=pages} onClick={()=>onChange(page+1)}>下一頁</button></div></div>;
+}
+
+export default function ContextWorkbenchV2({view='loc_context_entries'}){
+  const [rows,setRows]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [notice,setNotice]=useState('');
+  const [query,setQuery]=useState('');
+  const [submitted,setSubmitted]=useState('');
+  const [nodeType,setNodeType]=useState('');
+  const [edgeType,setEdgeType]=useState('');
+  const [page,setPage]=useState(1);
+  const [depth,setDepth]=useState(2);
+  const [labels,setLabels]=useState(true);
+
+  useEffect(()=>{
+    let live=true;
+    setLoading(true);
+    readNeonOrPublicFallback(
+      ()=>neonClient.from(view).select('*').limit(5000),
+      '/projections/loc-context.json'
+    ).then(result=>{
+      if(!live)return;
+      const data=Array.isArray(result?.data)?result.data:[];
+      setRows(data);
+      setNotice(result?.fallback?'目前使用公開展示投影。':'已讀取 Neon 唯讀資料。');
+    }).catch(()=>live&&setRows([])).finally(()=>live&&setLoading(false));
+    return()=>{live=false};
+  },[view]);
+
+  const graph=useMemo(()=>graphOf([...GRAPH_SEED,...rows]),[rows]);
+  const nodeTypes=useMemo(()=>[...new Set(graph.nodes.map(node=>node.type).filter(Boolean))].sort(),[graph.nodes]);
+  const edgeTypes=useMemo(()=>[...new Set(graph.edges.map(edge=>edge.type).filter(Boolean))].sort(),[graph.edges]);
+
+  const filtered=useMemo(()=>{
+    const q=submitted.trim().toLowerCase();
+    const matching=new Set(graph.nodes.filter(node=>{
+      const haystack=[node.id,node.label,node.type,node.note].map(text).join(' ').toLowerCase();
+      return (!q||haystack.includes(q))&&(!nodeType||node.type===nodeType);
+    }).map(node=>node.id));
+    if(!q&&!nodeType)return graph.nodes;
+    const connected=new Set(matching);
+    for(const edge of graph.edges){
+      if(matching.has(edge.source)||matching.has(edge.target)){connected.add(edge.source);connected.add(edge.target);}
+    }
+    return graph.nodes.filter(node=>connected.has(node.id));
+  },[graph.nodes,graph.edges,submitted,nodeType]);
+
+  const visibleNodes=useMemo(()=>filtered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE),[filtered,page]);
+  const visibleIds=useMemo(()=>new Set(visibleNodes.map(node=>node.id)),[visibleNodes]);
+  const visibleEdges=useMemo(()=>graph.edges.filter(edge=>visibleIds.has(edge.source)&&visibleIds.has(edge.target)&&(!edgeType||edge.type===edgeType)).slice(0,Math.max(120,PAGE_SIZE*depth*4)),[graph.edges,visibleIds,edgeType,depth]);
+  const points=useMemo(()=>new Map(visibleNodes.map((node,index)=>[node.id,pointFor(index,visibleNodes.length)])),[visibleNodes]);
+
+  return <section className="context-workbench">
+    <div className="context-tool-card">
+      <div className="context-item-head"><div><p className="scope-v2-eyebrow">GRAPH WORKBENCH</p><h2>關係圖探索器</h2></div><span className="context-graph-status">公開唯讀</span></div>
+      <p>Node、Edge、Event 由既有脈絡資料展開；LOC、月之符文與作者作品的關係在同一張圖上展示。</p>
+      <form className="context-graph-toolbar" onSubmit={event=>{event.preventDefault();setSubmitted(query);setPage(1);}}>
+        <label>關係圖搜尋<input value={query} onChange={event=>setQuery(event.target.value)} placeholder="搜尋節點、作品、符文、關係"/></label>
+        <label>Depth<select value={String(depth)} onChange={event=>setDepth(Number(event.target.value))}><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+        <button type="submit" className="context-btn primary">搜尋 Graph</button>
+      </form>
+      <div className="context-graph-filter"><select value={nodeType} onChange={event=>{setNodeType(event.target.value);setPage(1)}}><option value="">全部節點類型</option>{nodeTypes.map(type=><option key={type}>{type}</option>)}</select><select value={edgeType} onChange={event=>setEdgeType(event.target.value)}><option value="">全部關係類型</option>{edgeTypes.map(type=><option key={type}>{type}</option>)}</select><label><input type="checkbox" checked={labels} onChange={event=>setLabels(event.target.checked)}/> 顯示文字</label><button type="button" className="context-btn ghost" onClick={()=>{setQuery('');setSubmitted('');setNodeType('');setEdgeType('');setPage(1)}}>清除</button></div>
+      {loading?<p className="scope-v2-status">載入 Graph 唯讀資料…</p>:null}
+      <div className="context-graph-summary"><strong>Graph · {graph.nodes.length} nodes / {graph.edges.length} edges</strong><span>{notice}</span>{submitted?<span>搜尋：{submitted}</span>:null}</div>
+      <svg viewBox="0 0 1200 740" role="img" aria-label="LOC 關係圖唯讀展示" className="context-workbench-svg">
+        <defs><marker id="context-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="currentColor"/></marker></defs>
+        {visibleEdges.map(edge=>{const source=points.get(edge.source);const target=points.get(edge.target);if(!source||!target)return null;return <g key={edge.id} className="context-workbench-interactive"><line x1={source.x} y1={source.y} x2={target.x} y2={target.y} stroke="currentColor" strokeOpacity=".42" strokeWidth="1.5" markerEnd="url(#context-arrow)"/>{labels?<text x={(source.x+target.x)/2} y={(source.y+target.y)/2-5} textAnchor="middle" fontSize="10" fill="currentColor">{edge.type}</text>:null}</g>})}
+        {visibleNodes.map(node=>{const point=points.get(node.id);if(!point)return null;return <g key={node.id}><circle cx={point.x} cy={point.y} r="22" fill="var(--loc-panel-2)" stroke="currentColor" strokeWidth="2"/><text x={point.x} y={point.y+5} textAnchor="middle" fontSize="16" fill="currentColor">○</text>{labels?<text x={point.x} y={point.y+40} textAnchor="middle" fontSize="11" fill="currentColor">{text(node.label).slice(0,18)}</text>:null}</g>})}
+      </svg>
+      <Pager page={page} total={filtered.length} onChange={setPage}/>
+    </div>
+  </section>;
 }
