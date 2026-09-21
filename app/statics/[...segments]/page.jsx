@@ -2,7 +2,8 @@ import LocApp from '../../loc/LocApp';
 
 export function generateStaticParams(){return [{"segments":["keyword"]},{"segments":["units"]},{"segments":["sources"]}];}
 
-export default function StaticsSubroutePage({params}){
-  const section=params?.segments?.join('/')||null;
+export default async function StaticsSubroutePage({params}){
+  const resolvedParams=await params;
+  const section=resolvedParams?.segments?.join('/')||null;
   return <LocApp forcedView="statics" forcedSection={section}/>;
 }
