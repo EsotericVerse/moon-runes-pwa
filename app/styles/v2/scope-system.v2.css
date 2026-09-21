@@ -128,3 +128,8 @@
 .search-anchor-list button:hover{border-color:var(--loc-accent)}
 .search-anchor-list span{color:var(--scope-v2-muted);font-size:.84rem}
 @media(max-width:820px){.search-anchor-layout{grid-template-columns:1fr}}
+
+.culture-river-slogan{font-size:clamp(1.05rem,2vw,1.35rem);line-height:1.8;color:var(--loc-accent);letter-spacing:.04em}
+.culture-river-filters{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.culture-river-filters label{display:flex;align-items:center;gap:.35rem;color:var(--scope-v2-muted);font-size:.82rem}
+.culture-river-filters select{padding:.45rem .6rem;border:var(--scope-v2-border);border-radius:.7rem;background:var(--loc-panel);color:var(--scope-v2-text)}

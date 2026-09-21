@@ -28,6 +28,10 @@ function normalizeRow(row,index){
     eraId:value.era_id||value.period_id||value.period||'',
     body:value.body||value.content||value.description||value.summary||'',
     source:value.source||value.source_name||value.media_type||value.content_type||'',
+    style:value.style||value.style_name||value.genre||'',
+    keywords:Array.isArray(value.keywords)?value.keywords:Array.isArray(value.tags)?value.tags:[],
+    mediaType:value.media_type||value.content_type||'',
+    textMode:value.text_mode||value.display_mode||'excerpt',
     url:value.url||value.href||''
   };
 }
@@ -68,6 +72,10 @@ export default function CultureV2({section=null}){
   const [notice,setNotice]=useState('');
   const [sourceFilter,setSourceFilter]=useState('');
   const [kindFilter,setKindFilter]=useState('');
+  const [styleFilter,setStyleFilter]=useState('');
+  const [keywordFilter,setKeywordFilter]=useState('');
+  const [workFilter,setWorkFilter]=useState('');
+  const [displayMode,setDisplayMode]=useState('excerpt');
   const [saving,setSaving]=useState(false);
 
   useEffect(()=>{
@@ -86,7 +94,9 @@ export default function CultureV2({section=null}){
 
   const eras=useMemo(()=>rows.filter(row=>row.kind==='era'),[rows]);
   const filters=useMemo(()=>[...new Set(rows.map(row=>row.source).filter(Boolean))].sort(),[rows]);
-  const visible=useMemo(()=>rows.filter(row=>(!sourceFilter||row.source===sourceFilter)&&(!kindFilter||row.kind===kindFilter)),[rows,sourceFilter,kindFilter]);
+  const styles=useMemo(()=>[...new Set(rows.map(row=>row.style).filter(Boolean))].sort(),[rows]);
+  const keywords=useMemo(()=>[...new Set(rows.flatMap(row=>row.keywords||[]).map(value=>text(value)).filter(Boolean))].sort(),[rows]);
+  const visible=useMemo(()=>rows.filter(row=>(!sourceFilter||row.source===sourceFilter)&&(!kindFilter||row.kind===kindFilter)&&(!styleFilter||row.style===styleFilter)&&(!keywordFilter||(row.keywords||[]).map(value=>text(value)).includes(keywordFilter))&&(!workFilter||(workFilter==='works'?(row.kind==='work'||row.kind==='recommendation'):workFilter==='nonworks'&&row.kind!=='work'&&row.kind!=='recommendation'))),[rows,sourceFilter,kindFilter,styleFilter,keywordFilter,workFilter]);
   const visibleIds=useMemo(()=>new Set(visible.map(row=>row.id)),[visible]);
   const dailyStats=useMemo(()=>{const grouped=new Map();for(const row of visible){const key=row.date||'未指定';const current=grouped.get(key)||{date:key,total:0,works:0,events:0,trajectories:0,sources:new Set()};current.total+=1;if(row.kind==='work'||row.kind==='recommendation')current.works+=1;if(row.kind==='event')current.events+=1;if(row.kind==='trajectory')current.trajectories+=1;if(row.source)current.sources.add(row.source);grouped.set(key,current);}return [...grouped.values()].sort((a,b)=>String(a.date).localeCompare(String(b.date)));},[visible]);
   const trajectoryRows=useMemo(()=>visible.filter(row=>row.body||row.kind==='trajectory'||row.kind==='event').sort((a,b)=>String(b.date).localeCompare(String(a.date))),[visible]);
@@ -140,8 +150,8 @@ export default function CultureV2({section=null}){
 
   return <FeaturePageV2 featureId="culture" expandedPath="/culture" subtitle="一條時間長河，讓時期、事件、軌跡與作品在同一個時間座標上呈現。">
     <ScopeCardV2 eyebrow="Culture · Time River" title="時期趨勢軌跡圖">
-      <p>以日為最小單位；時期負責切段，事件、軌跡、作品與推薦作品落在長河上。拖曳瀏覽、Ctrl＋滾輪縮放，點擊項目進入同一個編輯器。</p>
-      <div className="culture-river-toolbar"><div><button type="button" className="context-btn primary" onClick={()=>add('trajectory')}>新增軌跡</button><button type="button" className="context-btn ghost" onClick={()=>add('era')}>新增時期</button><button type="button" className="context-btn ghost" onClick={()=>add('work')}>新增作品</button></div><div><select value={kindFilter} onChange={event=>setKindFilter(event.target.value)}><option value="">全部內容</option>{['era','event','trajectory','work','recommendation'].map(kind=><option key={kind} value={kind}>{displayKind(kind)}</option>)}</select><select value={sourceFilter} onChange={event=>setSourceFilter(event.target.value)}><option value="">全部來源</option>{filters.map(source=><option key={source}>{source}</option>)}</select></div></div>
+      <p className="culture-river-slogan">以微弱的月光，照在每個時間點，我的文字上；當微光慢慢集中變亮，你也將綻放自己的光芒。</p><p>以日為最小單位；時期負責切段，事件、軌跡、作品與推薦作品落在長河上。拖曳瀏覽、Ctrl＋滾輪縮放，點擊項目進入同一個編輯器。</p>
+      <div className="culture-river-toolbar"><div><button type="button" className="context-btn primary" onClick={()=>add('trajectory')}>新增軌跡</button><button type="button" className="context-btn ghost" onClick={()=>add('era')}>新增時期</button><button type="button" className="context-btn ghost" onClick={()=>add('work')}>新增作品</button></div><div className="culture-river-filters"><label>關鍵字濾鏡<select value={keywordFilter} onChange={event=>setKeywordFilter(event.target.value)}><option value="">全部關鍵字</option>{keywords.map(value=><option key={value}>{value}</option>)}</select></label><label>風格濾鏡<select value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}><option value="">全部風格</option>{styles.map(value=><option key={value}>{value}</option>)}</select></label><label>作品濾鏡<select value={workFilter} onChange={event=>setWorkFilter(event.target.value)}><option value="">全部作品</option><option value="works">只看作品</option><option value="nonworks">排除作品</option></select></label><label>來源濾鏡<select value={sourceFilter} onChange={event=>setSourceFilter(event.target.value)}><option value="">全部來源</option>{filters.map(source=><option key={source}>{source}</option>)}</select></label><label>文字顯示<select value={displayMode} onChange={event=>setDisplayMode(event.target.value)}><option value="excerpt">摘要</option><option value="full">全文</option></select></label></div></div>
       {loading?<p className="scope-v2-status">載入 Culture SQL projection…</p>:null}
       {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
       <div ref={timelineRef} className="culture-river-timeline" aria-label="文化時間長河"/>
@@ -150,7 +160,7 @@ export default function CultureV2({section=null}){
     <div className="culture-river-summary"><span>{visible.length} 筆時間內容</span><span>{eras.length} 個時期</span><span>{filters.length} 種來源</span>{section?<span>目前 route：{section}</span>:null}</div>
     <div className="culture-river-reading">
       <section className="culture-river-reading-card"><p className="scope-v2-eyebrow">TIME UNITS</p><h3>時間統計</h3><p>統計是長河中的單位表達，不改寫軌跡文字。</p><div className="culture-river-stat-list">{dailyStats.slice(-30).map(row=><div key={row.date}><strong>{row.date}</strong><span>{row.total} 筆 · 作品 {row.works} · 事件 {row.events} · 軌跡 {row.trajectories} · 來源 {row.sources.size}</span></div>)}</div></section>
-      <section className="culture-river-reading-card"><p className="scope-v2-eyebrow">TRAJECTORY NOTES</p><h3>軌跡紀錄</h3><p>軌跡是長河中的文字表達，保留事件、作品與時期轉折。</p><div className="culture-river-note-list">{trajectoryRows.slice(0,30).map(row=><article key={row.id}><div><strong>{row.title}</strong><span>{row.date} · {displayKind(row.kind)}{row.source?' · '+row.source:''}</span></div>{row.body?<p>{row.body}</p>:null}</article>)}</div></section>
+      <section className="culture-river-reading-card"><p className="scope-v2-eyebrow">TRAJECTORY NOTES</p><h3>軌跡紀錄</h3><p>軌跡是長河中的文字表達，保留事件、作品與時期轉折。</p><div className="culture-river-note-list">{trajectoryRows.slice(0,30).map(row=><article key={row.id}><div><strong>{row.title}</strong><span>{row.date} · {displayKind(row.kind)}{row.source?' · '+row.source:''}</span></div>{row.body?<p>{displayMode==='full'?row.body:(row.body.length>180?row.body.slice(0,180)+'…':row.body)}</p>:null}</article>)}</div></section>
     </div>
     <aside>{editor?<CultureEditor value={editor} onChange={setEditor} onSave={save} onDelete={remove} onClose={()=>setEditor(null)} saving={saving}/>:<div className="culture-river-editor"><h3>時間長河編輯器</h3><p>點擊長河上的時期、事件、軌跡或作品即可編輯。推薦作品不另建頁面，直接作為長河上的一種內容。</p></div>}</aside>
     {notice?<p className="scope-v2-status">{notice}</p>:null}
