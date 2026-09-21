@@ -160,6 +160,7 @@ export default function StatisticsV2({section=null}){
   const summaryRecords=useMemo(()=>scopedCultureRows.length||sourceSummary.reduce((sum,item)=>sum+item.total,0),[scopedCultureRows,sourceSummary]);
   const summarySearchable=useMemo(()=>sourceSummary.reduce((sum,item)=>sum+item.searchable,0),[sourceSummary]);
   const summaryCharacters=useMemo(()=>scopedCultureRows.length?scopedCultureRows.reduce((sum,row)=>sum+row.characterCount,0):sourceSummary.reduce((sum,item)=>sum+item.characters,0),[scopedCultureRows,sourceSummary]);
+  const timelineData=useMemo(()=>days.length?days:sourceSummary.map(item=>({date:item.startDate||'未指定',total:item.total,works:0,events:0,trajectories:0,recommendations:0,sources:1})),[days,sourceSummary]);
   const authoredWorkCount=workManifest?.work_id?'1':0;
   const authoredChapterCount=Number(workManifest?.chapter_count||0);
   const derivedRankings=useMemo(()=>deriveKeywordRankings(scopedCultureRows),[scopedCultureRows]);
@@ -202,7 +203,7 @@ export default function StatisticsV2({section=null}){
   const removeFromGroup=(group,term)=>setKeywordGroups(current=>({...current,[group]:(current[group]||[]).filter(item=>item!==term)}));
   const batchHref=selectedTerms.length?'/search?terms='+encodeURIComponent(selectedTerms.join('|')):'/search';
   const rangeLabel=rangeMode==='year'?(yearRangeStart&&yearRangeEnd?(yearRangeStart===yearRangeEnd?yearRangeStart:yearRangeStart+'–'+yearRangeEnd):'年度'):rangeMode==='period'?(selectedPeriod||'時期'):'全部資料';
-  const chartData=mode==='units'?days.slice(-120):mode==='eras'?eras:mode==='sources'?sources:days.slice(-120);
+  const chartData=mode==='units'?timelineData.slice(-120):mode==='eras'?eras:mode==='sources'?sources:timelineData.slice(-120);
 
   return <FeaturePageV2 featureId="statics" subtitle="從時間長河計算單位、密度、來源與排行榜，回饋下一輪脈絡整理。">
     <ScopeCardV2 eyebrow="Statistics · Time River" title="時間長河統計">
@@ -220,9 +221,9 @@ export default function StatisticsV2({section=null}){
         <div className="statistics-range-summary"><strong>{rangeLabel}</strong><span>{scopedCultureRows.length||summaryRecords} 筆內容 · {days.length} 個日期 · {periods.length} 個可用時期</span></div>
       </section>
       {loading?<p className="scope-v2-status">載入展示資料…</p>:null}
-      {!loading&&dataMode==='public-fallback'?<p className="scope-v2-status" role="status">目前使用公開唯讀投影展示；Neon 尚未提供即時資料，頁面不因此中斷。</p>:null}
+      {!loading&&dataMode==='public-fallback'?<p className="scope-v2-status" role="status">目前使用公開唯讀摘要展示；Neon 的日級 Culture projection 尚未提供即時資料，時間軸先保留來源起始時間，不會留白。</p>:null}
       {error?<p className="scope-v2-status" role="status">統計讀取狀態：{error}。目前仍保留 0 筆或本地摘要展示。</p>:null}
-      <div className="statistics-range-summary statistics-data-summary" aria-label="資料摘要"><strong>來源統計</strong><span>{sourceSummary.map(item=>item.source+' '+numberFormat(item.total)+item.unit).join(' · ')||'目前 0 筆可展示資料'} · 可搜尋資料依來源顯示 · {numberFormat(summaryCharacters)} 個文字字元 · LOC4 作品 {numberFormat(authoredWorkCount)} 部／已確認章節 {numberFormat(authoredChapterCount)} 章 · bytes 僅屬檔案傳輸資訊，不列入內容數量。</span></div>
+      <div className="statistics-range-summary statistics-data-summary" aria-label="資料摘要"><strong>來源統計</strong><span>{sourceSummary.map(item=>item.source+' '+numberFormat(item.total)+item.unit).join(' · ')||'目前 0 筆可展示資料'} · 可搜尋資料依來源顯示 · {numberFormat(summaryCharacters)} 個文字字元 · LOC4 作品 {numberFormat(authoredWorkCount)} 部／已確認章節 {numberFormat(authoredChapterCount)} 章</span></div>
       {!loading&&!summaryRecords&&!summaryCharacters?<p className="scope-v2-status" role="status">目前是 0 筆可展示資料，資料來源恢復後會保留此頁結構，不會變成空白中斷。</p>:null}
       {mode!=='keywords'?<div className="statistics-chart"><ResponsiveContainer width="100%" height={340}><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/><XAxis dataKey={mode==='eras'?'era':mode==='sources'?'source':'date'} tick={{fill:'currentColor',fontSize:11}}/><YAxis allowDecimals={false} tick={{fill:'currentColor',fontSize:11}}/><Tooltip/><Bar dataKey="total" fill="var(--loc-accent)" radius={[6,6,0,0]}/>{mode==='units'?<><Bar dataKey="works" fill="var(--loc-gold)" radius={[6,6,0,0]}/><Bar dataKey="events" fill="var(--loc-muted)" radius={[6,6,0,0]}/></>:null}</BarChart></ResponsiveContainer></div>:null}
       {mode==='keywords'?<div className="statistics-ranking">
