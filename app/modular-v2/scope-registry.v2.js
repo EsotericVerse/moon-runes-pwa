@@ -125,6 +125,29 @@ export const SCOPES_V2=Object.freeze({
     })
   }),
 
+  dlwang:Object.freeze({
+    id:'dlwang',
+    scopeType:'directory',
+    domain:'dlwang.lo3rwang.cc',
+    aliasName:null,
+    label:'陰暗面',
+    privateOnly:true,
+    ownerScope:'lo3rwang',
+    linkedScope:'lo3rwang',
+    localRoutes:Object.freeze([]),
+    routePatterns:Object.freeze([]),
+    compatibilityRoutes:Object.freeze([]),
+    mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/dlwang'}),
+    primary:Object.freeze({label:'陰暗面',href:'https://loc.lo3rwang.cc/dlwang/'}),
+    role:Object.freeze({label:'私密文本統計',href:'https://loc.lo3rwang.cc/dlwang/'}),
+    homes:Object.freeze([{label:'回作者頁',href:'https://loc.lo3rwang.cc/lo3rwang/'}]),
+    searchCollection:null,
+    dataViews:Object.freeze({context:null,culture:null,rankings:null}),
+    rankingTitle:'私密文本統計',
+    theme:Object.freeze({mode:'fixed',theme:'theme-2',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
+  }),
+
+
   admin:Object.freeze({
     id:'admin',
     scopeType:'domain',
@@ -146,6 +169,14 @@ export const SCOPES_V2=Object.freeze({
     theme:Object.freeze({mode:'fixed',theme:'theme-7',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   })
 });
+
+export const SCOPE_RELATIONS_V2=Object.freeze([
+  Object.freeze({source:'loc',target:'runes',relation:'coordinates',visibility:'public',label:'月典統籌月之符文'}),
+  Object.freeze({source:'loc',target:'lo3rwang',relation:'authored_by',visibility:'public',label:'月典統籌作者作品'}),
+  Object.freeze({source:'runes',target:'lo3rwang',relation:'expressed_by',visibility:'public',label:'符文與作者交錯'}),
+  Object.freeze({source:'dlwang',target:'lo3rwang',relation:'private_shadow_of',visibility:'private',publicProjection:false,includeInLocTotal:false,label:'陰暗面僅連結作者 scope'})
+]);
+
 
 function cleanHost(host=''){
   return String(host||'').toLowerCase().split(':')[0];
