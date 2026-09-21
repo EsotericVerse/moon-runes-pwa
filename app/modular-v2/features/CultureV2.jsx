@@ -28,6 +28,10 @@ function normalizeRow(row,index){
     eraId:value.era_id||value.period_id||value.period||'',
     body:value.body||value.content||value.description||value.summary||'',
     source:value.source||value.source_name||value.media_type||value.content_type||'',
+    style:value.style||value.style_name||value.genre||'',
+    keywords:Array.isArray(value.keywords)?value.keywords:Array.isArray(value.tags)?value.tags:[],
+    mediaType:value.media_type||value.content_type||'',
+    textMode:value.text_mode||value.display_mode||'excerpt',
     url:value.url||value.href||''
   };
 }
