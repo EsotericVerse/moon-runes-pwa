@@ -168,8 +168,8 @@ export default function StatisticsV2({section=null}){
   const rankings=useMemo(()=>rankingSource.filter(row=>rankingProfile==='runes'||!rankingType||row.ranking_type===rankingType),[rankingSource,rankingProfile,rankingType]);
   const pages=Math.max(1,Math.ceil(rankings.length/PAGE_SIZE));
   const shown=rankings.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
-  const topTen=rankings.slice(0,10);
-  const visibleTop=rankings.slice(0,rankLimit);
+  const topTen=useMemo(()=>rankings.slice(0,10),[rankings]);
+  const visibleTop=useMemo(()=>rankings.slice(0,rankLimit),[rankings,rankLimit]);
   const autoTerms=useMemo(()=>topTen.map(row=>row.term||row.title||row.name).filter(Boolean),[topTen]);
   useEffect(()=>{setSelectedTerms(autoTerms);},[autoTerms]);
   const termHistory=useMemo(()=>{const map=new Map();for(const row of rankingSource){const term=row.term||row.title||row.name;if(!term)continue;const current=map.get(term)||new Set();current.add(row.ranking_type||'總榜');map.set(term,current);}return map;},[rankingSource]);
