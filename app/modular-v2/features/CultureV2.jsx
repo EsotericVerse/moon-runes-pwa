@@ -147,6 +147,10 @@ export default function CultureV2({section=null}){
       {!loading&&!visible.length?<div className="culture-river-empty">目前 SQL projection 沒有可顯示資料。</div>:null}
     </ScopeCardV2>
     <div className="culture-river-summary"><span>{visible.length} 筆時間內容</span><span>{eras.length} 個時期</span><span>{filters.length} 種來源</span>{section?<span>目前 route：{section}</span>:null}</div>
+    <div className="culture-river-reading">
+      <section className="culture-river-reading-card"><p className="scope-v2-eyebrow">TIME UNITS</p><h3>時間統計</h3><p>統計是長河中的單位表達，不改寫軌跡文字。</p><div className="culture-river-stat-list">{dailyStats.slice(-30).map(row=><div key={row.date}><strong>{row.date}</strong><span>{row.total} 筆 · 作品 {row.works} · 事件 {row.events} · 軌跡 {row.trajectories} · 來源 {row.sources.size}</span></div>)}</div></section>
+      <section className="culture-river-reading-card"><p className="scope-v2-eyebrow">TRAJECTORY NOTES</p><h3>軌跡紀錄</h3><p>軌跡是長河中的文字表達，保留事件、作品與時期轉折。</p><div className="culture-river-note-list">{trajectoryRows.slice(0,30).map(row=><article key={row.id}><div><strong>{row.title}</strong><span>{row.date} · {displayKind(row.kind)}{row.source?' · '+row.source:''}</span></div>{row.body?<p>{row.body}</p>:null}</article>)}</div></section>
+    </div>
     <aside>{editor?<CultureEditor value={editor} onChange={setEditor} onSave={save} onDelete={remove} onClose={()=>setEditor(null)} saving={saving}/>:<div className="culture-river-editor"><h3>時間長河編輯器</h3><p>點擊長河上的時期、事件、軌跡或作品即可編輯。推薦作品不另建頁面，直接作為長河上的一種內容。</p></div>}</aside>
     {notice?<p className="scope-v2-status">{notice}</p>:null}
   </FeaturePageV2>;
