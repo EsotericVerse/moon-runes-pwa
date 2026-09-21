@@ -10,7 +10,7 @@
   --loc-size-meta:var(--loc-type-eyebrow);
   --loc-line-display:var(--loc-line-page-title);
   --loc-line-heading:var(--loc-line-section-title);
-  --loc-line-body:var(--loc-line-body);
+  --loc-line-text:var(--loc-line-body);
   --loc-control-bg:var(--loc-panel);
   --loc-control-bg-active:var(--loc-panel-2);
   --loc-control-text:var(--loc-text);
