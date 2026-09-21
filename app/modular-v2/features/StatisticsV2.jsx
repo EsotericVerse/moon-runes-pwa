@@ -46,6 +46,7 @@ function groupByEra(rows){
 }
 export default function StatisticsV2({section=null}){
   const {scopeId,scope}=useScopeRuntimeV2();
+  const keywordGroupsStorageKey='loc-keyword-groups-v1:'+scopeId;
   const cultureView=scopeDataViewV2(scopeId,'culture');
   const rankingView=scopeDataViewV2(scopeId,'rankings');
   const [cultureRows,setCultureRows]=useState([]);
@@ -61,7 +62,17 @@ export default function StatisticsV2({section=null}){
   const [selectedYear,setSelectedYear]=useState('');
   const [selectedPeriod,setSelectedPeriod]=useState('');
   const [targetKeywordGroup,setTargetKeywordGroup]=useState('連結');
-  const [keywordGroups,setKeywordGroups]=useState(()=>Object.fromEntries(KEYWORD_GROUPS.map(group=>[group,[]])));
+  const [keywordGroups,setKeywordGroups]=useState(()=>{
+    const empty=Object.fromEntries(KEYWORD_GROUPS.map(group=>[group,[]]));
+    if(typeof window==='undefined')return empty;
+    try{
+      const stored=JSON.parse(window.localStorage.getItem(keywordGroupsStorageKey)||'null');
+      return stored&&typeof stored==='object'?{...empty,...stored}:empty;
+    }catch{return empty;}
+  });
+  useEffect(()=>{
+    try{window.localStorage.setItem(keywordGroupsStorageKey,JSON.stringify(keywordGroups));}catch{}
+  },[keywordGroups,keywordGroupsStorageKey]);
 
   useEffect(()=>{
     let live=true;
