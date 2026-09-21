@@ -31,6 +31,8 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "@neondatabase/neon-js": "0.7.0-beta",
+    "@tanstack/query-core": "5.103.1",
+    "@tanstack/react-query": "5.103.1",
     "vis-timeline": "8.5.4",
     "recharts": "3.10.1"
   }
