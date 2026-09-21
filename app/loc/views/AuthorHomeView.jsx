@@ -11,6 +11,14 @@ const SECTION_COPY={
   email:['聯絡方式','合作、顧問、系統設計、數位遺產管理或其他公開內容相關事項，請透過電子郵件聯絡。']
 };
 
+const AUTHOR_FUNCTIONS=Object.freeze([
+  Object.freeze({eyebrow:'Context',title:'脈絡',text:'把文字、作品、事件與來源放回關係中，從關鍵詞與事件看彼此如何連結。',href:'/context',label:'查看脈絡'}),
+  Object.freeze({eyebrow:'Statistics',title:'統計',text:'依年份、來源與時期整理筆數、關鍵詞與分布，先看整體，再回到作品。',href:'/statics',label:'查看統計'}),
+  Object.freeze({eyebrow:'Culture',title:'文化',text:'把作品放回個人時期與時間長河，觀看文字風格、作品與生命經驗如何變化。',href:'/culture',label:'查看文化'}),
+  Object.freeze({eyebrow:'Governance',title:'治理',text:'管理名稱、作品、時期、公開範圍與資料來源；作者的定義不會被系統自動升格為 LOC Canon。',href:'/governance',label:'查看治理'}),
+  Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:'/search',label:'開始搜尋'})
+]);
+
 export default function AuthorHomeView({section=null}){
   const sections=[
     {
@@ -44,6 +52,12 @@ export default function AuthorHomeView({section=null}){
         <p>目前工作方向聚焦於語言治理、語言系統設計、知識與資料架構、數位遺產管理，以及相關顧問與專案實作。</p>
         <p>Facebook、Threads、Instagram、Suno 等平台主要是作品、生活文字、音樂與系統發展紀錄的來源；內容再依 LOC 的模組與資料責任進行整理、搜尋、分析與治理，而不是把平台本身當成身份。</p>
       </>
+    },
+    {
+      id:'functions',
+      eyebrow:'Personal Scope · Functions',
+      title:'我的資料怎麼被整理',
+      content:<div className="loc-grid two">{AUTHOR_FUNCTIONS.map(item=><article key={item.title}><p className="loc-eyebrow">{item.eyebrow}</p><h3>{item.title}</h3><p>{item.text}</p><p><a href={item.href}>{item.label} →</a></p></article>)}</div>
     },
     {
       id:'work',
