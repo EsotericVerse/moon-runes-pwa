@@ -11,6 +11,14 @@ const SECTION_COPY={
   email:['聯絡方式','合作、顧問、系統設計、數位遺產管理或其他公開內容相關事項，請透過電子郵件聯絡。']
 };
 
+const AUTHOR_FUNCTIONS=Object.freeze([
+  Object.freeze({eyebrow:'Context',title:'脈絡',text:'把文字、作品、事件與來源放回關係中，從關鍵詞與事件看彼此如何連結。',href:'/context',label:'查看脈絡'}),
+  Object.freeze({eyebrow:'Statistics',title:'統計',text:'依年份、來源與時期整理筆數、關鍵詞與分布，先看整體，再回到作品。',href:'/statics',label:'查看統計'}),
+  Object.freeze({eyebrow:'Culture',title:'文化',text:'把作品放回個人時期與時間長河，觀看文字風格、作品與生命經驗如何變化。',href:'/culture',label:'查看文化'}),
+  Object.freeze({eyebrow:'Governance',title:'治理',text:'管理名稱、作品、時期、公開範圍與資料來源；作者的定義不會被系統自動升格為 LOC Canon。',href:'/governance',label:'查看治理'}),
+  Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:'/search',label:'開始搜尋'})
+]);
+
 export default function AuthorHomeView({section=null}){
   const sections=[
     {
@@ -44,6 +52,12 @@ export default function AuthorHomeView({section=null}){
         <p>目前工作方向聚焦於語言治理、語言系統設計、知識與資料架構、數位遺產管理，以及相關顧問與專案實作。</p>
         <p>Facebook、Threads、Instagram、Suno 等平台主要是作品、生活文字、音樂與系統發展紀錄的來源；內容再依 LOC 的模組與資料責任進行整理、搜尋、分析與治理，而不是把平台本身當成身份。</p>
       </>
+    },
+    {
+      id:'functions',
+      eyebrow:'Personal Scope · Functions',
+      title:'我的資料怎麼被整理',
+      content:<div className="loc-grid two">{AUTHOR_FUNCTIONS.map(item=><article key={item.title}><p className="loc-eyebrow">{item.eyebrow}</p><h3>{item.title}</h3><p>{item.text}</p><p><a href={item.href}>{item.label} →</a></p></article>)}</div>
     },
     {
       id:'work',
@@ -106,9 +120,12 @@ export default function AuthorHomeView({section=null}){
       eyebrow:'LOC · LunaRunes',
       title:'LOC／月典',
       content:<>
-        <p><strong>LOC</strong> 是一套可進化、可重複使用的<strong>模型化語言框架（Modelized Language Framework）</strong>。</p>
-        <p><strong>LunaRunes／月之符文</strong>是一套有自己獨特方式的<strong>符號式語言（Symbolic Language）</strong>。</p>
-        <p>LOC 的目的不是取代自然語言，而是把語言中的語彙、脈絡、創作、規則、模組與時間軌跡整理成可分析、可治理、可搜尋、可持續維護的文化軌跡；月之符文則是其中以符號化語彙實作的 Symbolic Language。</p>
+        <p><strong>Luna Codex，以微月光為鏡，記錄、整理、分析每個時間點的文字、作品與轉折。</strong></p>
+        <p>以微弱的月光，照在每個時間點，你的創作文字上。當微光慢慢集中變亮，你也將綻放自己的光芒。</p>
+        <p>所以是以月為典：<strong>Luna Codex，LOC／月典</strong>。藉由關係脈絡分析，找出時間長河裡的存在軌跡，組合成屬於你自己的文化風格——你的世界，自己的風格。</p>
+        <p>LOC 是一套以 Next.js 與 Neon 為基礎的工具系統，配上簡單分類的月之符文作為參考。它提供免費整理，只供參考，不作裁決：系統幫你看見自己的軌跡，但不替你決定你是誰。</p>
+        <p>那 24 個字是我的人生觀。凡人都無法做到完全客觀，因為每個人始終有自己的立場，自私也是理所當然。工具不同；工具只是冷冰冰的工具，不會叫你聽命，也不會叫你忤逆。工具可以協助整理與分析，但它的立場不等於人的立場。</p>
+        <p><strong>LOC 的核心定義：</strong>免費整理、只供參考、不裁決。由關係脈絡、時間軌跡與作品資料組合出文化風格，讓每個人看見自己的世界如何形成。</p>
       </>,
       links:[{label:'查看 LOC／月典',href:'https://loc.lo3rwang.cc/'}]
     },
@@ -136,6 +153,12 @@ export default function AuthorHomeView({section=null}){
       content:<div className="loc-context-list"><article className="loc-context-item"><p>「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p><p><a href="https://suno.com/song/a0a724c1-d35f-4ccf-9ac1-0c1c9f2d6a50" target="_blank" rel="noopener noreferrer">聽〈只是微月光〉 →</a></p><p><a href="https://www.instagram.com/p/DdiDIzDIYS3/" target="_blank" rel="noopener noreferrer">看〈只是微月光〉 Reels →</a></p></article></div>
     },
     {
+      id:'contact',
+      eyebrow:'Contact',
+      title:'聯絡方式',
+      content:<><p>合作、顧問、系統設計、數位遺產管理或其他公開內容相關事項，請透過電子郵件聯絡。</p><p><a href="mailto:sopa2306@gmail.com">sopa2306@gmail.com</a></p></>
+    },
+    {
       id:'official-links',
       eyebrow:'Official Links',
       title:'官方連結',
@@ -150,6 +173,18 @@ export default function AuthorHomeView({section=null}){
     }
   ];
 
+  const sectionGroups=Object.freeze({
+    style:Object.freeze(['roles','profile-content']),
+    work:Object.freeze(['functions','work','digital-legacy']),
+    design:Object.freeze(['governance-root','loc','open-source']),
+    galaxy:Object.freeze(['corpus','reels','micro-moonlight']),
+    others:Object.freeze(['philosophy','name-origin','calibration']),
+    email:Object.freeze(['contact','official-links'])
+  });
+  const activeSections=section&&sectionGroups[section]
+    ?sections.filter(item=>sectionGroups[section].includes(item.id))
+    :sections;
+
   const sectionCopy=SECTION_COPY[section];
   return <PageComposition
     eyebrow="Author"
@@ -157,6 +192,6 @@ export default function AuthorHomeView({section=null}){
     subtitle="Lucas Oscar Wang · lo3rwang"
     intro={<><div className="loc-author-reel"><iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜王政德自我介紹" loading="eager" allowTransparency="true" frameBorder="0" scrolling="no"/></div><p>不認識我？沒關係！先聽首歌吧。</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟〈這就是我〉 →</a></p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p></>}
     localMenu={[['簡介跟自述','/lo3rwang'],['主要身份','/lo3rwang/style'],['工作與合作','/lo3rwang/work'],['LOC設計理念','/lo3rwang/design'],['公開創作內容','/lo3rwang/galaxy'],['其他說明','/lo3rwang/others'],['聯絡方式','/lo3rwang/email']].map(([label,href])=>({label,href}))}
-    sections={sectionCopy?[{id:`author-${section}`,eyebrow:section,title:sectionCopy[0],content:<p>{sectionCopy[1]}{section==='email'?<> <a href="mailto:sopa2306@gmail.com">聯絡方式 mailto:sopa2306@gmail.com</a></>:null}</p>}]:sections}
+    sections={activeSections}
   />;
 }
