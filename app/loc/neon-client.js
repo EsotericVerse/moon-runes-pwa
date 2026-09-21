@@ -8,7 +8,7 @@ export function neonDatabaseUrl(){
   return String(process.env.NEXT_PUBLIC_NEON_DATABASE_URL||DEFAULT_NEON_DATABASE_URL).trim().replace(/\/+$/,'');
 }
 
-export const neonClient=createClient(neonDatabaseUrl());
+export const neonClient=createClient(neonDatabaseUrl(),{auth:{allowAnonymous:true}});
 
 export async function getNeonSession(){
   const {data,error}=await neonClient.auth.getSession();
