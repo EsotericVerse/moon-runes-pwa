@@ -146,8 +146,12 @@ export default function StatisticsV2({section=null}){
   const sources=useMemo(()=>{const map=new Map();for(const row of scopedCultureRows){const key=row.source||'未標記來源';map.set(key,(map.get(key)||0)+1);}return [...map.entries()].map(([source,total])=>({source,total})).sort((a,b)=>b.total-a.total);},[scopedCultureRows]);
   const derivedRankings=useMemo(()=>deriveKeywordRankings(scopedCultureRows),[scopedCultureRows]);
   const scopedRankingRows=useMemo(()=>rankingRows.filter(row=>{
-    if(rangeMode==='period'&&selectedPeriod)return row.period===selectedPeriod||row.era_id===selectedPeriod||row.period_id===selectedPeriod;
-    if(rangeMode==='year')return inYearRange(yearOf(row.date||row.start_date))||inYearRange(text(row.year));
+    const payload=row?.payload&&typeof row.payload==='object'?row.payload:{};
+    const periodId=row.period||row.era_id||row.period_id||payload.period||payload.era_id||payload.period_id||'';
+    const rowDate=row.date||row.start_date||payload.date||payload.start_date||'';
+    const rowYear=row.year||payload.year||'';
+    if(rangeMode==='period'&&selectedPeriod)return periodId===selectedPeriod;
+    if(rangeMode==='year')return inYearRange(yearOf(rowDate))||inYearRange(text(rowYear));
     return true;
   }),[rankingRows,rangeMode,yearRangeStart,yearRangeEnd,selectedPeriod]);
   const rankingTypes=useMemo(()=>[...new Set(scopedRankingRows.map(row=>row.ranking_type).filter(Boolean))],[scopedRankingRows]);
