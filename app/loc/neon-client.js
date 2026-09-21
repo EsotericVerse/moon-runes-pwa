@@ -27,9 +27,10 @@ export async function signOutNeon(){
   if(error)throw new Error(error.message||'Neon sign-out failed');
 }
 
-export async function readNeonOrPublicFallback(queryPromise,fallbackPath){
+export async function readNeonOrPublicFallback(queryInput,fallbackPath){
   let original={data:[],error:null};
   try{
+    const queryPromise=typeof queryInput==='function'?queryInput():queryInput;
     const result=await queryPromise;
     if(!result?.error)return result;
     original=result;
