@@ -26,7 +26,7 @@ async function boundedLocalImportAdapter(datasetId,segments,requests=[]){
 const text=value=>String(value??'');
 function normalize(row,index){const payload=row?.payload&&typeof row.payload==='object'?row.payload:{};const value={...row,...payload};return {...value,id:value.id||value.entry_key||value.event_id||value.work_id||'search-'+index,kind:value.kind||value.entry_type||value.culture_type||'trajectory',title:value.title||value.name||value.label||value.term||'未命名',date:text(value.date||value.start_date).slice(0,10),body:value.body||value.content||value.description||value.summary||'',source:value.source||value.source_name||value.media_type||'',eraId:value.era_id||value.period_id||value.period||'',url:value.url||value.href||''};}
 function distanceDays(a,b){return Math.round(Math.abs(new Date(a).getTime()-new Date(b).getTime())/DAY_MS);}
-function score(row,query){const q=query.toLocaleLowerCase();return (text(row.title).toLocaleLowerCase().includes(q)?8:0)+(text(row.body).toLocaleLowerCase().includes(q)?5:0)+(text(row.source).toLocaleLowerCase().includes(q)?3:0)+(text(row.eraId).toLocaleLowerCase().includes(q)?2:0);}
+function score(row,query){const terms=query.split('|').map(value=>value.trim().toLocaleLowerCase()).filter(Boolean);return Math.max(0,...terms.map(q=>(text(row.title).toLocaleLowerCase().includes(q)?8:0)+(text(row.body).toLocaleLowerCase().includes(q)?5:0)+(text(row.source).toLocaleLowerCase().includes(q)?3:0)+(text(row.eraId).toLocaleLowerCase().includes(q)?2:0)));}
 function kindLabel(kind){return ({era:'時期',event:'事件',trajectory:'軌跡',work:'作品',recommendation:'推薦作品'})[kind]||'內容';}
 
 export default function SearchV2(){
@@ -44,7 +44,7 @@ export default function SearchV2(){
   const [error,setError]=useState('');
   const [status,setStatus]=useState('從統計或關鍵字入口開始搜尋。');
 
-  useEffect(()=>{const q=text(searchParams?.get('q')).trim();if(q){setQuery(q);setSubmitted(q)}},[searchParams]);
+  useEffect(()=>{const q=text(searchParams?.get('q')).trim();const terms=text(searchParams?.get('terms')).trim();const value=terms||q;if(value){setQuery(value.split('|').join('、'));setSubmitted(value)}},[searchParams]);
   useEffect(()=>{let live=true;setLoading(true);setError('');if(!view){setError('此 Scope 尚未設定搜尋用 Culture projection。');setLoading(false);return()=>{live=false};}neonClient.from(view).select('*').order('date',{ascending:true}).limit(5000).then(result=>{if(result?.error)throw new Error(result.error.message||'Search SQL projection 讀取失敗');if(live)setRows((result?.data||[]).map(normalize));}).catch(errorValue=>live&&setError(String(errorValue?.message||errorValue))).finally(()=>live&&setLoading(false));return()=>{live=false};},[view]);
 
   const matches=useMemo(()=>{const q=submitted.trim();if(!q)return [];return rows.map(row=>({...row,matchScore:score(row,q)})).filter(row=>row.matchScore>0).sort((a,b)=>b.matchScore-a.matchScore||a.date.localeCompare(b.date));},[rows,submitted]);
