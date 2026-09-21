@@ -150,6 +150,12 @@ export default function AuthorHomeView({section=null}){
       content:<div className="loc-context-list"><article className="loc-context-item"><p>「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p><p><a href="https://suno.com/song/a0a724c1-d35f-4ccf-9ac1-0c1c9f2d6a50" target="_blank" rel="noopener noreferrer">聽〈只是微月光〉 →</a></p><p><a href="https://www.instagram.com/p/DdiDIzDIYS3/" target="_blank" rel="noopener noreferrer">看〈只是微月光〉 Reels →</a></p></article></div>
     },
     {
+      id:'contact',
+      eyebrow:'Contact',
+      title:'聯絡方式',
+      content:<><p>合作、顧問、系統設計、數位遺產管理或其他公開內容相關事項，請透過電子郵件聯絡。</p><p><a href="mailto:sopa2306@gmail.com">sopa2306@gmail.com</a></p></>
+    },
+    {
       id:'official-links',
       eyebrow:'Official Links',
       title:'官方連結',
@@ -164,6 +170,18 @@ export default function AuthorHomeView({section=null}){
     }
   ];
 
+  const sectionGroups=Object.freeze({
+    style:Object.freeze(['roles','profile-content']),
+    work:Object.freeze(['functions','work','digital-legacy']),
+    design:Object.freeze(['governance-root','loc','open-source']),
+    galaxy:Object.freeze(['corpus','reels','micro-moonlight']),
+    others:Object.freeze(['philosophy','name-origin','calibration']),
+    email:Object.freeze(['contact','official-links'])
+  });
+  const activeSections=section&&sectionGroups[section]
+    ?sections.filter(item=>sectionGroups[section].includes(item.id))
+    :sections;
+
   const sectionCopy=SECTION_COPY[section];
   return <PageComposition
     eyebrow="Author"
@@ -171,6 +189,6 @@ export default function AuthorHomeView({section=null}){
     subtitle="Lucas Oscar Wang · lo3rwang"
     intro={<><div className="loc-author-reel"><iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜王政德自我介紹" loading="eager" allowTransparency="true" frameBorder="0" scrolling="no"/></div><p>不認識我？沒關係！先聽首歌吧。</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟〈這就是我〉 →</a></p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p></>}
     localMenu={[['簡介跟自述','/lo3rwang'],['主要身份','/lo3rwang/style'],['工作與合作','/lo3rwang/work'],['LOC設計理念','/lo3rwang/design'],['公開創作內容','/lo3rwang/galaxy'],['其他說明','/lo3rwang/others'],['聯絡方式','/lo3rwang/email']].map(([label,href])=>({label,href}))}
-    sections={sectionCopy?[{id:`author-${section}`,eyebrow:section,title:sectionCopy[0],content:<p>{sectionCopy[1]}{section==='email'?<> <a href="mailto:sopa2306@gmail.com">聯絡方式 mailto:sopa2306@gmail.com</a></>:null}</p>}]:sections}
+    sections={activeSections}
   />;
 }
