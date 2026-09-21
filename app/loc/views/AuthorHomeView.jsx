@@ -50,7 +50,7 @@ export default function AuthorHomeView({section=null}){
       id:'micro-moonlight',
       eyebrow:'Song',
       title:'只是微月光',
-      content:<div className="loc-context-list"><article className="loc-context-item"><p>「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p><p><a href="https://suno.com/song/a0a724c1-d35f-4ccf-9ac1-0c1c9f2d6a50" target="_blank" rel="noopener noreferrer">聽〈只是微月光〉 →</a></p></article></div>
+      content:<div className="loc-context-list"><article className="loc-context-item"><p>「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p><p><a href="https://suno.com/song/a0a724c1-d35f-4ccf-9ac1-0c1c9f2d6a50" target="_blank" rel="noopener noreferrer">聽〈只是微月光〉 →</a></p><p><a href="https://www.instagram.com/p/DdiDIzDIYS3/" target="_blank" rel="noopener noreferrer">看〈只是微月光〉 Reels →</a></p></article></div>
     }
   ];
   const sectionCopy=SECTION_COPY[section];
