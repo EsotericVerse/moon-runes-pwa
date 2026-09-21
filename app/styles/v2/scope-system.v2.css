@@ -263,3 +263,45 @@
   .statistics-group-grid{grid-template-columns:1fr}
   .statistics-batch-controls .context-btn{width:100%}
 }
+
+
+/* Statistics ranking profiles: formal cards that inherit every active theme token. */
+.statistics-profile-panel{
+  display:grid;
+  gap:var(--scope-v2-gap);
+  padding:1rem;
+  border:var(--scope-v2-border);
+  border-radius:var(--scope-v2-radius);
+  background:var(--scope-v2-panel);
+  box-shadow:var(--loc-shadow-card);
+}
+.statistics-profile-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:.65rem;
+}
+.statistics-profile-card{
+  display:grid;
+  align-content:start;
+  gap:.35rem;
+  min-width:0;
+  min-height:5.5rem;
+  padding:.8rem;
+  border:1px solid var(--loc-control-border);
+  border-radius:var(--loc-radius-sm);
+  background:var(--loc-control-bg);
+  color:var(--loc-control-text);
+  text-align:left;
+  font:inherit;
+  cursor:pointer;
+  transition:background-color .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;
+}
+.statistics-profile-card strong{overflow-wrap:anywhere;line-height:var(--loc-line-heading)}
+.statistics-profile-card small{color:var(--loc-muted);font-size:var(--loc-size-meta);line-height:var(--loc-line-text)}
+.statistics-profile-card:hover,.statistics-profile-card:focus-visible{border-color:var(--loc-control-border-active);background:var(--loc-control-bg-active);transform:translateY(-1px)}
+.statistics-profile-card[aria-pressed="true"]{border-color:var(--loc-accent-border);background:var(--loc-accent-surface-strong);color:var(--loc-control-text)}
+.statistics-profile-card[aria-pressed="true"] small{color:var(--loc-control-text)}
+.statistics-profile-card[data-private="true"]{border-style:dashed}
+@media(max-width:980px){.statistics-profile-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.statistics-profile-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.statistics-profile-grid{grid-template-columns:1fr}}
