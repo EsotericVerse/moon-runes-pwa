@@ -28,6 +28,8 @@ function hydratePersonalStyles(value){
   });
 }
 const text=value=>String(value??'');
+const numberFormat=value=>Number(value||0).toLocaleString('zh-TW');
+const characterCount=value=>Array.from(text(value)).length;
 const yearOf=value=>text(value).slice(0,4);
 const keywordText=value=>{
   if(value&&typeof value==='object')return text(value.term||value.keyword||value.name||value.label).trim();
@@ -49,7 +51,8 @@ function deriveKeywordRankings(rows){
 function normalize(row,index){
   const payload=row?.payload&&typeof row.payload==='object'?row.payload:{};
   const value={...row,...payload};
-  return {...value,id:value.id||value.entry_key||value.ranking_key||'stat-'+index,date:text(value.date||value.start_date).slice(0,10),kind:value.kind||value.entry_type||value.culture_type||'trajectory',title:value.title||value.name||value.term||value.label||'未命名',body:value.body||value.content||value.description||value.summary||'',eraId:value.era_id||value.period_id||value.period||'',source:value.source||value.source_name||value.media_type||'',keywords:Array.isArray(value.keywords)?value.keywords:Array.isArray(value.tags)?value.tags:[],keywordGroup:value.keyword_group||value.group||value.rune_group||''};
+  const body=value.body||value.content||value.description||value.summary||'';
+  return {...value,id:value.id||value.entry_key||value.ranking_key||'stat-'+index,date:text(value.date||value.start_date).slice(0,10),kind:value.kind||value.entry_type||value.culture_type||'trajectory',title:value.title||value.name||value.term||value.label||'未命名',body,characterCount:Number(value.char_count||value.character_count||value.text_length)||characterCount(body),eraId:value.era_id||value.period_id||value.period||'',source:value.source||value.source_name||value.media_type||'',keywords:Array.isArray(value.keywords)?value.keywords:Array.isArray(value.tags)?value.tags:[],keywordGroup:value.keyword_group||value.group||value.rune_group||''};
 }
 function groupByDate(rows){
   const grouped=new Map();
@@ -75,6 +78,8 @@ export default function StatisticsV2({section=null}){
   const [page,setPage]=useState(1);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
+  const [dataMode,setDataMode]=useState('');
+  const [sourceStats,setSourceStats]=useState(null);
   const [rankLimit,setRankLimit]=useState(10);
   const [selectedTerms,setSelectedTerms]=useState([]);
   const [rangeMode,setRangeMode]=useState('year');
@@ -111,14 +116,18 @@ export default function StatisticsV2({section=null}){
 
   useEffect(()=>{
     let live=true;
-    setLoading(true);setError('');
+    setLoading(true);setError('');setDataMode('');
     Promise.all([
       cultureView?readNeonOrPublicFallback(()=>neonClient.from(cultureView).select('*').order('date',{ascending:true}).limit(5000),'/projections/loc-culture.json'):Promise.resolve({data:[],error:null}),
-      rankingView?readNeonOrPublicFallback(()=>neonClient.from(rankingView).select('*').order('rank_value',{ascending:false}).limit(1000),'/projections/loc-rankings.json'):Promise.resolve({data:[],error:null})
-    ]).then(([culture,rankings])=>{
-      if(culture?.error)throw new Error(culture.error.message||'Culture SQL projection 讀取失敗');
-      if(rankings?.error)throw new Error(rankings.error.message||'Ranking SQL projection 讀取失敗');
-      if(live){setCultureRows((culture?.data||[]).map(normalize));setRankingRows(rankings?.data||[]);}
+      rankingView?readNeonOrPublicFallback(()=>neonClient.from(rankingView).select('*').order('rank_value',{ascending:false}).limit(1000),'/projections/loc-rankings.json'):Promise.resolve({data:[],error:null}),
+      fetch('/data/json/generated/search/SEARCH_SOURCE_STATS.json',{cache:'no-store'}).then(response=>response.ok?response.json():null).catch(()=>null)
+    ]).then(([culture,rankings,summary])=>{
+      if(live){
+        setCultureRows((culture?.data||[]).map(normalize));
+        setRankingRows(rankings?.data||[]);
+        setSourceStats(summary);
+        setDataMode(culture?.fallback||rankings?.fallback?'public-fallback':'neon-read');
+      }
     }).catch(errorValue=>live&&setError(String(errorValue?.message||errorValue)))
       .finally(()=>live&&setLoading(false));
     return()=>{live=false};
@@ -143,7 +152,11 @@ export default function StatisticsV2({section=null}){
   }),[cultureRows,rangeMode,yearRangeStart,yearRangeEnd,selectedPeriod]);
   const days=useMemo(()=>groupByDate(scopedCultureRows),[scopedCultureRows]);
   const eras=useMemo(()=>groupByEra(scopedCultureRows),[scopedCultureRows]);
-  const sources=useMemo(()=>{const map=new Map();for(const row of scopedCultureRows){const key=row.source||'未標記來源';map.set(key,(map.get(key)||0)+1);}return [...map.entries()].map(([source,total])=>({source,total})).sort((a,b)=>b.total-a.total);},[scopedCultureRows]);
+  const sourceSummary=useMemo(()=>[...(Array.isArray(sourceStats?.text_sources)?sourceStats.text_sources:[]),...(Array.isArray(sourceStats?.media_sources)?sourceStats.media_sources:[])].map(item=>({source:item.source||'未標記來源',total:Number(item.records||0),searchable:Number(item.searchable_records??item.records??0),characters:Number(item.char_count||0),startDate:item.start_date||'',endDate:item.end_date||'',status:item.status||''})).filter(item=>item.total>0),[sourceStats]);
+  const sources=useMemo(()=>{if(!scopedCultureRows.length&&sourceSummary.length)return sourceSummary.map(item=>({source:item.source,total:item.total,searchable:item.searchable,characters:item.characters}));const map=new Map();for(const row of scopedCultureRows){const key=row.source||'未標記來源';map.set(key,(map.get(key)||0)+1);}return [...map.entries()].map(([source,total])=>({source,total})).sort((a,b)=>b.total-a.total);},[scopedCultureRows,sourceSummary]);
+  const summaryRecords=useMemo(()=>scopedCultureRows.length||sourceSummary.reduce((sum,item)=>sum+item.total,0),[scopedCultureRows,sourceSummary]);
+  const summarySearchable=useMemo(()=>sourceSummary.reduce((sum,item)=>sum+item.searchable,0),[sourceSummary]);
+  const summaryCharacters=useMemo(()=>scopedCultureRows.length?scopedCultureRows.reduce((sum,row)=>sum+row.characterCount,0):sourceSummary.reduce((sum,item)=>sum+item.characters,0),[scopedCultureRows,sourceSummary]);
   const derivedRankings=useMemo(()=>deriveKeywordRankings(scopedCultureRows),[scopedCultureRows]);
   const scopedRankingRows=useMemo(()=>rankingRows.filter(row=>{
     const payload=row?.payload&&typeof row.payload==='object'?row.payload:{};
@@ -202,7 +215,10 @@ export default function StatisticsV2({section=null}){
         <div className="statistics-range-summary"><strong>{rangeLabel}</strong><span>{scopedCultureRows.length} 筆內容 · {days.length} 個日期 · {periods.length} 個可用時期</span></div>
       </section>
       {loading?<p className="scope-v2-status">載入展示資料…</p>:null}
-      
+      {!loading&&dataMode==='public-fallback'?<p className="scope-v2-status" role="status">目前使用公開唯讀投影展示；Neon 尚未提供即時資料，頁面不因此中斷。</p>:null}
+      {error?<p className="scope-v2-status" role="status">統計讀取狀態：{error}。目前仍保留 0 筆或本地摘要展示。</p>:null}
+      <div className="statistics-range-summary statistics-data-summary" aria-label="資料摘要"><strong>{numberFormat(summaryRecords)} 筆紀錄</strong><span>{numberFormat(summarySearchable)} 筆可搜尋 · {numberFormat(summaryCharacters)} 個文字字元 · bytes 僅屬檔案傳輸資訊，不列入作品筆數。</span></div>
+      {!loading&&!summaryRecords&&!summaryCharacters?<p className="scope-v2-status" role="status">目前是 0 筆可展示資料，資料來源恢復後會保留此頁結構，不會變成空白中斷。</p>:null}
       {mode!=='keywords'?<div className="statistics-chart"><ResponsiveContainer width="100%" height={340}><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/><XAxis dataKey={mode==='eras'?'era':mode==='sources'?'source':'date'} tick={{fill:'currentColor',fontSize:11}}/><YAxis allowDecimals={false} tick={{fill:'currentColor',fontSize:11}}/><Tooltip/><Bar dataKey="total" fill="var(--loc-accent)" radius={[6,6,0,0]}/>{mode==='units'?<><Bar dataKey="works" fill="var(--loc-gold)" radius={[6,6,0,0]}/><Bar dataKey="events" fill="var(--loc-muted)" radius={[6,6,0,0]}/></>:null}</BarChart></ResponsiveContainer></div>:null}
       {mode==='keywords'?<div className="statistics-ranking">
         <div className="statistics-ranking-head"><div><p className="scope-v2-eyebrow">KEYWORD RANKING</p><h3>{rangeLabel}關鍵字排行榜</h3><span>十種展示視圖：八個本機個人風格、一個月之符文公開示範、一個每年分佈。</span></div></div>
