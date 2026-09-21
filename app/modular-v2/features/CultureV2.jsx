@@ -42,6 +42,11 @@ function displayKind(kind){
   return ({era:'時期',event:'事件',trajectory:'軌跡',work:'作品',recommendation:'推薦'})[kind]||'軌跡';
 }
 
+function localCultureRows(registry){
+  const works=Array.isArray(registry?.works)?registry.works:[];
+  return works.map((work,index)=>normalizeRow({id:work.work_id||'local-work-'+index,work_id:work.work_id,kind:'work',title:work.title,date:work.date||work.created_date,era_id:work.period||work.era_id,body:work.summary||'',source:'author work registry',content_type:work.content_type||'text_work'} ,index));
+}
+
 function WorkbenchEditor({value,onChange,onSave,onDelete,onClose,saving}){
   if(!value)return <div className="culture-river-empty">點擊時間長河內容，或新增一筆資料。</div>;
   const set=(key,next)=>onChange({...value,[key]:next});
@@ -98,10 +103,15 @@ export default function CultureV2({section=null}){
     let live=true;
     setLoading(true);setError('');
     if(!view){setRows([]);setLoading(false);setError('此 Scope 尚未設定 Culture SQL projection。');return()=>{live=false};}
-    readNeonOrPublicFallback(()=>neonClient.from(view).select('*').order('date',{ascending:true}).limit(3000),'/projections/loc-culture.json')
-      .then(result=>{
+    Promise.all([
+      readNeonOrPublicFallback(()=>neonClient.from(view).select('*').order('date',{ascending:true}).limit(3000),'/projections/loc-culture.json'),
+      fetch('/data/json/registries/LOC4_WRITING_REGISTRY.json',{cache:'no-store'}).then(response=>response.ok?response.json():null).catch(()=>null)
+    ])
+      .then(([result,registry])=>{
         if(result?.error)throw new Error(result.error.message||'Culture SQL projection 讀取失敗');
-        if(live)setRows((result?.data||[]).map(normalizeRow));
+        const neonRows=(result?.data||[]).map(normalizeRow);
+        const fallbackRows=neonRows.length?[]:localCultureRows(registry);
+        if(live){setRows([...neonRows,...fallbackRows]);if(!neonRows.length&&fallbackRows.length)setNotice('目前使用作品 registry 的公開唯讀展示；Neon 日級 Culture projection 尚未提供資料。');}
       })
       .catch(errorValue=>live&&setError(String(errorValue?.message||errorValue)))
       .finally(()=>live&&setLoading(false));
@@ -174,9 +184,9 @@ export default function CultureV2({section=null}){
       {canEdit?<section className="culture-river-editor-shell"><div className="context-actions"><button type="button" className="context-btn primary" onClick={()=>add('trajectory')}>新增軌跡</button><button type="button" className="context-btn ghost" onClick={()=>add('era')}>新增時期</button></div><WorkbenchEditor value={editor} onChange={setEditor} onSave={save} onDelete={remove} onClose={()=>setEditor(null)} saving={saving}/></section>:null}
       {!loading&&!visible.length?<div className="culture-river-empty">目前 SQL projection 沒有可顯示資料。</div>:null}
     </ScopeCardV2>
-    <div className="culture-river-summary"><span>{visible.length} 筆時間內容</span><span>{eras.length} 個時期</span><span>{filters.length} 種來源</span>{section?<span>目前 route：{section}</span>:null}</div>
+    <div className="culture-river-summary"><span>{visible.length} 項時間內容</span><span>{eras.length} 個時期</span><span>{filters.length} 種來源</span>{section?<span>目前 route：{section}</span>:null}</div>
     <div className="culture-river-reading">
-      <section className="culture-river-reading-card"><p className="scope-v2-eyebrow">TIME UNITS</p><h3>時間統計</h3><p>統計是長河中的單位表達，不改寫軌跡文字。</p><div className="culture-river-stat-list">{dailyStats.slice(-30).map(row=><div key={row.date}><strong>{row.date}</strong><span>{row.total} 筆 · 作品 {row.works} · 事件 {row.events} · 軌跡 {row.trajectories} · 來源 {row.sources.size}</span></div>)}</div></section>
+      <section className="culture-river-reading-card"><p className="scope-v2-eyebrow">TIME UNITS</p><h3>時間統計</h3><p>統計是長河中的單位表達，不改寫軌跡文字。</p><div className="culture-river-stat-list">{dailyStats.slice(-30).map(row=><div key={row.date}><strong>{row.date}</strong><span>{row.total} 項內容 · 作品 {row.works} 部 · 事件 {row.events} 件 · 軌跡 {row.trajectories} 則 · 來源 {row.sources.size} 種</span></div>)}</div></section>
       <section className="culture-river-reading-card"><p className="scope-v2-eyebrow">TRAJECTORY NOTES</p><h3>軌跡紀錄</h3><p>軌跡是長河中的文字表達，保留事件、作品與時期轉折。</p><div className="culture-river-note-list">{trajectoryRows.slice(0,30).map(row=><article key={row.id}><div><strong>{row.title}</strong><span>{row.date} · {displayKind(row.kind)}{row.source?' · '+row.source:''}</span></div>{row.body?<p>{displayMode==='full'?row.body:(row.body.length>180?row.body.slice(0,180)+'…':row.body)}</p>:null}</article>)}</div></section>
     </div>
     <aside><div className="culture-river-reading-card"><h3>時間長河展示</h3><p>目前為公開唯讀模式；時期、事件、軌跡與作品只供瀏覽。</p></div></aside>
