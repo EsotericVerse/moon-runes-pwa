@@ -99,10 +99,14 @@ export const SCOPES_V2=Object.freeze({
 
   lo3rwang:Object.freeze({
     id:'lo3rwang',
-    scopeType:'private-directory',
+    scopeType:'directory',
     domain:'dlwang.lo3rwang.cc',
     aliasName:'dlwang',
     label:'作者簡介',
+    privateShadowScope:'dlwang',
+    privateShadowDefaultVisibility:'private',
+    privateShadowLocalFirst:true,
+    privateShadowPublicStatisticsOptIn:false,
     localRoutes:Object.freeze(['old']),
     routePatterns:Object.freeze([]),
     compatibilityRoutes:Object.freeze([]),
@@ -131,33 +135,6 @@ export const SCOPES_V2=Object.freeze({
       schedule:TIME_SCHEDULE_V2
     })
   }),
-
-  dlwang:Object.freeze({
-    id:'dlwang',
-    scopeType:'directory',
-    domain:'dlwang.lo3rwang.cc',
-    aliasName:null,
-    label:'陰暗面',
-    privateOnly:true,
-    defaultVisibility:'private',
-    localFirst:true,
-    publicStatisticsOptIn:false,
-    includeInLocTotal:false,
-    ownerScope:'lo3rwang',
-    linkedScope:'lo3rwang',
-    localRoutes:Object.freeze([]),
-    routePatterns:Object.freeze([]),
-    compatibilityRoutes:Object.freeze([]),
-    mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/dlwang'}),
-    primary:Object.freeze({label:'陰暗面',href:'https://loc.lo3rwang.cc/dlwang/'}),
-    role:Object.freeze({label:'私密文本統計',href:'https://loc.lo3rwang.cc/dlwang/'}),
-    homes:Object.freeze([{label:'回作者頁',href:'https://loc.lo3rwang.cc/lo3rwang/'}]),
-    searchCollection:null,
-    dataViews:Object.freeze({context:null,culture:null,rankings:null}),
-    rankingTitle:'私密文本統計',
-    theme:Object.freeze({mode:'fixed',theme:'theme-2',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
-  }),
-
 
   admin:Object.freeze({
     id:'admin',
