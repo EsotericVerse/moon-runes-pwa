@@ -218,7 +218,7 @@ export default function StatisticsV2({section=null}){
           {rangeMode==='year'?<><label>起始年<select value={selectedYearStart} onChange={event=>{setSelectedYearStart(event.target.value);setPage(1)}}>{years.map(year=><option key={year}>{year}</option>)}</select></label><label>結束年<select value={selectedYearEnd} onChange={event=>{setSelectedYearEnd(event.target.value);setPage(1)}}>{years.map(year=><option key={year}>{year}</option>)}</select></label></>:null}
           {rangeMode==='period'?<label>時期<select value={selectedPeriod} onChange={event=>{setSelectedPeriod(event.target.value);setPage(1)}}>{periods.map(period=><option key={period}>{period}</option>)}</select></label>:null}
         </div>
-        <div className="statistics-range-summary"><strong>{rangeLabel}</strong><span>{scopedCultureRows.length||summaryRecords} 筆內容 · {days.length} 個日期 · {periods.length} 個可用時期</span></div>
+        <div className="statistics-range-summary"><strong>{rangeLabel}</strong><span>{scopedCultureRows.length?numberFormat(scopedCultureRows.length)+' 項時間內容':'來源明細依內容類型列出'} · {days.length} 個日期 · {periods.length} 個可用時期</span></div>
       </section>
       {loading?<p className="scope-v2-status">載入展示資料…</p>:null}
       {!loading&&dataMode==='public-fallback'?<p className="scope-v2-status" role="status">目前使用公開唯讀摘要展示；Neon 的日級 Culture projection 尚未提供即時資料，時間軸先保留來源起始時間，不會留白。</p>:null}
