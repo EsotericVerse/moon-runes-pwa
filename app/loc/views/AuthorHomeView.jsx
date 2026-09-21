@@ -120,9 +120,9 @@ export default function AuthorHomeView({section=null}){
       eyebrow:'LOC · LunaRunes',
       title:'LOC／月典',
       content:<>
-        <p><strong>LOC</strong> 是一套可進化、可重複使用的<strong>模型化語言框架（Modelized Language Framework）</strong>。</p>
-        <p><strong>LunaRunes／月之符文</strong>是一套有自己獨特方式的<strong>符號式語言（Symbolic Language）</strong>。</p>
-        <p>LOC 的目的不是取代自然語言，而是把語言中的語彙、脈絡、創作、規則、模組與時間軌跡整理成可分析、可治理、可搜尋、可持續維護的文化軌跡；月之符文則是其中以符號化語彙實作的 Symbolic Language。</p>
+        <p><strong>LOC／月典</strong>是一套<strong>模型化語言框架（Modelized Language Framework）</strong>：把語言、資料、脈絡、時間與治理放在同一個可持續整理的結構裡。</p>
+        <p>它不是單純的搜尋工具，也不是把所有內容混成同一套分類；LOC 負責統合、分析、搜尋與呈現，讓分散的文字、作品、規則、版本與時間軌跡可以互相連結，仍保留各自的來源與權威。</p>
+        <p><strong>LunaRunes／月之符文</strong>是獨立的<strong>符號式語言（Symbolic Language）</strong>；作者作品與個人文化軌跡也屬於作者自己的 Scope。LOC 可以讀取、整理與建立關聯，但不取代月之符文或作者對自身資料的治理。</p>
       </>,
       links:[{label:'查看 LOC／月典',href:'https://loc.lo3rwang.cc/'}]
     },
