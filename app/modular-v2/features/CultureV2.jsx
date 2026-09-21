@@ -166,7 +166,7 @@ export default function CultureV2({section=null}){
       <p className="culture-river-slogan">以微弱的月光，照在每個時間點，我的文字上；當微光慢慢集中變亮，你也將綻放自己的光芒。</p><p>以日為最小單位；時期負責切段，事件、軌跡、作品與推薦作品落在長河上。拖曳瀏覽、Ctrl＋滾輪縮放，點擊項目查看內容。</p>
       <div className="culture-river-toolbar"><div><span className="context-graph-status">唯讀展示</span></div><div className="culture-river-filters"><label>關鍵字濾鏡<select value={keywordFilter} onChange={event=>setKeywordFilter(event.target.value)}><option value="">全部關鍵字</option>{keywords.map(value=><option key={value}>{value}</option>)}</select></label><label>風格濾鏡<select value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}><option value="">全部風格</option>{styles.map(value=><option key={value}>{value}</option>)}</select></label><label>作品濾鏡<select value={workFilter} onChange={event=>setWorkFilter(event.target.value)}><option value="">全部作品</option><option value="works">只看作品</option><option value="nonworks">排除作品</option></select></label><label>來源濾鏡<select value={sourceFilter} onChange={event=>setSourceFilter(event.target.value)}><option value="">全部來源</option>{filters.map(source=><option key={source}>{source}</option>)}</select></label><label>文字顯示<select value={displayMode} onChange={event=>setDisplayMode(event.target.value)}><option value="excerpt">摘要</option><option value="full">全文</option></select></label></div></div>
       {loading?<p className="scope-v2-status">載入 Culture SQL projection…</p>:null}
-      {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
+      
       <div ref={timelineRef} className="culture-river-timeline" aria-label="文化時間長河"/>
       {!loading&&!visible.length?<div className="culture-river-empty">目前 SQL projection 沒有可顯示資料。</div>:null}
     </ScopeCardV2>
