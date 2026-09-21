@@ -39,11 +39,11 @@ export async function readNeonOrPublicFallback(queryInput,fallbackPath){
   }
   try{
     const response=await fetch(fallbackPath,{cache:'no-store'});
-    if(!response.ok)return original;
+    if(!response.ok)return {data:[],error:null,fallback:true,unavailable:true};
     const payload=await response.json();
     const rows=Array.isArray(payload)?payload:(Array.isArray(payload?.rows)?payload.rows:[]);
     return {data:rows,error:null,fallback:true};
   }catch{
-    return original;
+    return {data:[],error:null,fallback:true,unavailable:true};
   }
 }
