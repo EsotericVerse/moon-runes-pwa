@@ -183,7 +183,7 @@
 }
 .context-workbench-svg text{font-family:var(--loc-font-body);fill:var(--loc-graph-label)}
 .context-workbench-svg circle{fill:var(--loc-graph-node);stroke:var(--loc-accent);stroke-width:2}
-.context-workbench-svg line{stroke:var(--loc-graph-edge)}
+.context-workbench-svg line{stroke:var(--loc-text)}
 .context-workbench-svg path{fill:var(--loc-graph-edge)}
 .context-workbench-interactive{cursor:pointer}
 .context-graph-status{margin:.65rem 0 0;color:var(--scope-v2-muted);font-size:var(--loc-size-meta);line-height:var(--loc-line-text)}
