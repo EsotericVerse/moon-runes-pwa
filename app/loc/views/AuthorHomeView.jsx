@@ -173,7 +173,8 @@ export default function AuthorHomeView({section=null}){
   });
   const activeSections=section&&sectionGroups[section]
     ?sections.filter(item=>sectionGroups[section].includes(item.id))
-    :sections;\n  return <PageComposition
+    :sections;
+  return <PageComposition
     eyebrow="Author"
     title="王政德"
     subtitle="Lucas Oscar Wang · lo3rwang"
