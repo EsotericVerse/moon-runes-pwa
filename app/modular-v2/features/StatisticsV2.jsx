@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {neonClient} from '../../loc/neon-client';
+import {neonClient,readNeonOrPublicFallback} from '../../loc/neon-client';
 import {Bar,BarChart,CartesianGrid,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
@@ -43,8 +43,8 @@ export default function StatisticsV2({section=null}){
     let live=true;
     setLoading(true);setError('');
     Promise.all([
-      cultureView?neonClient.from(cultureView).select('*').order('date',{ascending:true}).limit(5000):Promise.resolve({data:[],error:null}),
-      rankingView?neonClient.from(rankingView).select('*').order('rank_value',{ascending:false}).limit(1000):Promise.resolve({data:[],error:null})
+      cultureView?readNeonOrPublicFallback(neonClient.from(cultureView).select('*').order('date',{ascending:true}).limit(5000),'/projections/loc-culture.json'):Promise.resolve({data:[],error:null}),
+      rankingView?readNeonOrPublicFallback(neonClient.from(rankingView).select('*').order('rank_value',{ascending:false}).limit(1000),'/projections/loc-rankings.json'):Promise.resolve({data:[],error:null})
     ]).then(([culture,rankings])=>{
       if(culture?.error)throw new Error(culture.error.message||'Culture SQL projection 讀取失敗');
       if(rankings?.error)throw new Error(rankings.error.message||'Ranking SQL projection 讀取失敗');
