@@ -9,6 +9,7 @@ import {scopeDataViewV2} from '../scope-registry.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {CULTURE_PATHS_V2} from '../../migration-bridges/current-data-compat.v2';
 import {neonClient,readNeonOrPublicFallback} from '../../loc/neon-client';
+import {useNeonAccount} from '../../loc/use-neon-account';
 
 const DAY_MS=24*60*60*1000;
 const today=()=>new Date().toISOString().slice(0,10);
@@ -63,6 +64,8 @@ function WorkbenchEditor({value,onChange,onSave,onDelete,onClose,saving}){
 
 export default function CultureV2({section=null}){
   const {scopeId}=useScopeRuntimeV2();
+  const account=useNeonAccount();
+  const canEdit=Boolean(account.canManage);
   const searchParams=useSearchParams();
   const view=scopeDataViewV2(scopeId,'culture');
   const draftKind=searchParams.get('draftKind');
@@ -85,11 +88,11 @@ export default function CultureV2({section=null}){
   const [saving,setSaving]=useState(false);
 
   useEffect(()=>{
-    if(draftKind==='era'&&draftDate){
+    if(canEdit&&draftKind==='era'&&draftDate){
       setEditor({id:'',kind:'era',title:draftTitle||'候選時期',date:draftDate,endDate:draftDate,eraId:draftEraId,body:'由時間定錨搜尋提出的候選時期；請由使用者確認後儲存。',source:'time-anchor-suggestion',url:''});
       setNotice('已開啟候選時期，請確認後再儲存。');
     }
-  },[draftKind,draftDate,draftTitle,draftEraId]);
+  },[canEdit,draftKind,draftDate,draftTitle,draftEraId]);
 
   useEffect(()=>{
     let live=true;
@@ -132,10 +135,10 @@ export default function CultureV2({section=null}){
     const itemData=new DataSet(items);
     const groupData=new DataSet(groups);
     const timeline=new Timeline(timelineRef.current,itemData,groupData,{stack:true,zoomable:true,moveable:true,orientation:'top',verticalScroll:true,zoomKey:'ctrlKey',maxHeight:'620px',minHeight:'360px',showCurrentTime:true});
-    timeline.on('select',event=>{const id=event.items?.[0];if(id)setEditor(rows.find(row=>row.id===id)||null);});
+    timeline.on('select',event=>{const id=event.items?.[0];if(id&&canEdit)setEditor(rows.find(row=>row.id===id)||null);});
     timelineInstance.current=timeline;
     return()=>{timeline.destroy();timelineInstance.current=null};
-  },[items,groups,rows]);
+  },[items,groups,rows,canEdit]);
 
   function add(kind='trajectory'){setEditor({id:'',kind,title:'',date:today(),endDate:'',eraId:eras[eras.length-1]?.id||'',body:'',source:'',url:''});}
   async function save(){
@@ -164,10 +167,11 @@ export default function CultureV2({section=null}){
   return <FeaturePageV2 featureId="culture" expandedPath="/culture" subtitle="一條時間長河，讓時期、事件、軌跡與作品在同一個時間座標上呈現。">
     <ScopeCardV2 eyebrow="Culture · Time River" title="時期趨勢軌跡圖">
       <p className="culture-river-slogan">以微弱的月光，照在每個時間點，我的文字上；當微光慢慢集中變亮，你也將綻放自己的光芒。</p><p>以日為最小單位；時期負責切段，事件、軌跡、作品與推薦作品落在長河上。拖曳瀏覽、Ctrl＋滾輪縮放，點擊項目查看內容。</p>
-      <div className="culture-river-toolbar"><div><span className="context-graph-status">唯讀展示</span></div><div className="culture-river-filters"><label>關鍵字濾鏡<select value={keywordFilter} onChange={event=>setKeywordFilter(event.target.value)}><option value="">全部關鍵字</option>{keywords.map(value=><option key={value}>{value}</option>)}</select></label><label>風格濾鏡<select value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}><option value="">全部風格</option>{styles.map(value=><option key={value}>{value}</option>)}</select></label><label>作品濾鏡<select value={workFilter} onChange={event=>setWorkFilter(event.target.value)}><option value="">全部作品</option><option value="works">只看作品</option><option value="nonworks">排除作品</option></select></label><label>來源濾鏡<select value={sourceFilter} onChange={event=>setSourceFilter(event.target.value)}><option value="">全部來源</option>{filters.map(source=><option key={source}>{source}</option>)}</select></label><label>文字顯示<select value={displayMode} onChange={event=>setDisplayMode(event.target.value)}><option value="excerpt">摘要</option><option value="full">全文</option></select></label></div></div>
+      <div className="culture-river-toolbar"><div><span className="context-graph-status">{canEdit?'管理者編輯模式':'公開唯讀展示'}</span>{!canEdit?<button type="button" className="context-btn ghost" onClick={account.signIn}>登入後管理</button>:null}</div><div className="culture-river-filters"><label>關鍵字濾鏡<select value={keywordFilter} onChange={event=>setKeywordFilter(event.target.value)}><option value="">全部關鍵字</option>{keywords.map(value=><option key={value}>{value}</option>)}</select></label><label>風格濾鏡<select value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}><option value="">全部風格</option>{styles.map(value=><option key={value}>{value}</option>)}</select></label><label>作品濾鏡<select value={workFilter} onChange={event=>setWorkFilter(event.target.value)}><option value="">全部作品</option><option value="works">只看作品</option><option value="nonworks">排除作品</option></select></label><label>來源濾鏡<select value={sourceFilter} onChange={event=>setSourceFilter(event.target.value)}><option value="">全部來源</option>{filters.map(source=><option key={source}>{source}</option>)}</select></label><label>文字顯示<select value={displayMode} onChange={event=>setDisplayMode(event.target.value)}><option value="excerpt">摘要</option><option value="full">全文</option></select></label></div></div>
       {loading?<p className="scope-v2-status">載入 Culture SQL projection…</p>:null}
       
       <div ref={timelineRef} className="culture-river-timeline" aria-label="文化時間長河"/>
+      {canEdit?<section className="culture-river-editor-shell"><div className="context-actions"><button type="button" className="context-btn primary" onClick={()=>add('trajectory')}>新增軌跡</button><button type="button" className="context-btn ghost" onClick={()=>add('era')}>新增時期</button></div><WorkbenchEditor value={editor} onChange={setEditor} onSave={save} onDelete={remove} onClose={()=>setEditor(null)} saving={saving}/></section>:null}
       {!loading&&!visible.length?<div className="culture-river-empty">目前 SQL projection 沒有可顯示資料。</div>:null}
     </ScopeCardV2>
     <div className="culture-river-summary"><span>{visible.length} 筆時間內容</span><span>{eras.length} 個時期</span><span>{filters.length} 種來源</span>{section?<span>目前 route：{section}</span>:null}</div>
