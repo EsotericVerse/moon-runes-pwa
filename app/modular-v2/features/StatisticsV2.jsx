@@ -78,7 +78,7 @@ export default function StatisticsV2({section=null}){
     return()=>{live=false};
   },[cultureView,rankingView]);
 
-  const years=useMemo(()=>[...new Set(cultureRows.map(row=>yearOf(row.date)).filter(year=>/^\\d{4}$/.test(year)))].sort().reverse(),[cultureRows]);
+  const years=useMemo(()=>[...new Set(cultureRows.map(row=>yearOf(row.date)).filter(year=>/^\d{4}$/.test(year)))].sort().reverse(),[cultureRows]);
   const periods=useMemo(()=>[...new Set(cultureRows.map(row=>row.eraId).filter(Boolean))].sort(),[cultureRows]);
   useEffect(()=>{if(!selectedYear&&years.length)setSelectedYear(years[0]);},[years,selectedYear]);
   useEffect(()=>{if(!selectedPeriod&&periods.length)setSelectedPeriod(periods[0]);},[periods,selectedPeriod]);
