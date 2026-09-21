@@ -2,15 +2,6 @@ import { PageComposition } from '../../PageComposition';
 
 const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心所欲，而不逾己'];
 
-const SECTION_COPY={
-  style:['主要身份','lo3rwang 是王政德（Lucas Oscar Wang）的公開識別名稱。主要身份為 LOC／月典創作者與系統設計者、Language Governance Architect、Wordsmith、Calibrator／時空校對者，以及文字、音樂與多媒體創作者。EsotericVerse Studio／秘藝文域則承接相關創作與系統實作。'],
-  work:['工作與合作','對外合作以 Language Consultant 為主要定位，可依個案以顧問、專案或系統實作方式合作，處理命名與正名、語意治理、資料分類、知識架構、RAG、搜尋與解析、版本治理、文本關係、長期演化、語意污染與資料責任問題。目標不是把每個個案套進 LOC，而是先理解對方原本的語言與資料，再建立適合自己的結構。'],
-  design:['LOC設計理念','LOC／月典是一套可進化、可重複使用的模型化語言框架（Modelized Language Framework）；LunaRunes／月之符文是一套符號式語言（Symbolic Language）。LOC 不取代自然語言，而是整理語彙、脈絡、創作、規則、模組與時間軌跡，使其可分析、可治理、可搜尋與持續維護。'],
-  galaxy:['公開創作內容','公開內容包含 LOC 與月之符文、歌曲與歌詞、小說與文字作品、Reels、多媒體、政德風與語言治理分析。Facebook、Threads、Instagram、Suno 等平台是作品、生活文字、音樂與系統發展紀錄的來源；平台本身不是身份。'],
-  others:['其他說明','過去可以保留，錯誤可以標記，理解可以更新。歷史無法被重寫，但可以重新定位。公開方法不等於無償勞務；顧問判斷、架構設計、資料整理、系統實作、個案研究與持續治理都具有專業價值。'],
-  email:['聯絡方式','合作、顧問、系統設計、數位遺產管理或其他公開內容相關事項，請透過電子郵件聯絡。']
-};
-
 const AUTHOR_FUNCTIONS=Object.freeze([
   Object.freeze({eyebrow:'Context',title:'脈絡',text:'把文字、作品、事件與來源放回關係中，從關鍵詞與事件看彼此如何連結。',href:'/context',label:'查看脈絡'}),
   Object.freeze({eyebrow:'Statistics',title:'統計',text:'依年份、來源與時期整理筆數、關鍵詞與分布，先看整體，再回到作品。',href:'/statics',label:'查看統計'}),
@@ -47,8 +38,7 @@ export default function AuthorHomeView({section=null}){
       eyebrow:'Official Public Profile',
       title:'我主要在做什麼？',
       content:<>
-        <p><strong>lo3rwang</strong> 是王政德（Lucas Oscar Wang）的公開識別名稱。主要身份為 LOC／月典創作者與系統設計者、Language Governance Architect、Wordsmith、Calibrator／時空校對者。對外合作定位為 <strong>Language Consultant</strong>。</p>
-        <p>我主要處理<strong>語言、資料、脈絡與時間</strong>之間的關係：把分散的文字、作品、規則、版本與歷史紀錄，整理成可搜尋、可理解、可治理、可持續維護的結構。</p>
+        <p>我的工作重心不是單純的內容創作，而是處理<strong>語言、資料、脈絡與時間</strong>之間的關係：把分散的文字、作品、規則、版本與歷史紀錄，整理成可搜尋、可理解、可治理、可持續維護的結構。</p>
         <p>目前工作方向聚焦於語言治理、語言系統設計、知識與資料架構、數位遺產管理，以及相關顧問與專案實作。</p>
         <p>Facebook、Threads、Instagram、Suno 等平台主要是作品、生活文字、音樂與系統發展紀錄的來源；內容再依 LOC 的模組與資料責任進行整理、搜尋、分析與治理，而不是把平台本身當成身份。</p>
       </>
@@ -183,10 +173,7 @@ export default function AuthorHomeView({section=null}){
   });
   const activeSections=section&&sectionGroups[section]
     ?sections.filter(item=>sectionGroups[section].includes(item.id))
-    :sections;
-
-  const sectionCopy=SECTION_COPY[section];
-  return <PageComposition
+    :sections;\n  return <PageComposition
     eyebrow="Author"
     title="王政德"
     subtitle="Lucas Oscar Wang · lo3rwang"
