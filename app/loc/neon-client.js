@@ -2,7 +2,7 @@
 
 import { createClient } from '@neondatabase/neon-js';
 
-const DEFAULT_NEON_DATABASE_URL='https://ep-rapid-queen-b3oyboy6.c-4.ap-southeast-1.aws.neon.tech/neondb';
+const DEFAULT_NEON_DATABASE_URL='https://ep-rapid-queen-b3oyboy6.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb';
 
 export function neonDatabaseUrl(){
   return String(process.env.NEXT_PUBLIC_NEON_DATABASE_URL||DEFAULT_NEON_DATABASE_URL).trim().replace(/\/+$/,'');
