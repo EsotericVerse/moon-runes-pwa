@@ -11,9 +11,9 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 const PAGE_SIZE=20;
 const KEYWORD_GROUPS=Object.freeze(['靈魂','連結','生命','自然','礦物','元素','秩序','無序']);
 const PERSONAL_STYLE_DEFAULTS=Object.freeze([
-  {id:'personal-1',label:'德',terms:[],locked:true,privateOnly:false,sourceScope:'lo3rwang'},
-  {id:'personal-2',label:'黑暗領主／darklord',terms:[],locked:true,privateOnly:true,sourceScope:'darklord',source:'twitter_private',includeInLocTotal:false,publicDetail:false},
-  ...Array.from({length:6},(_,index)=>({id:'personal-'+(index+3),label:'個人風格 '+(index+3),terms:[],locked:false,privateOnly:false,sourceScope:'lo3rwang'}))
+  {id:'personal-1',label:'德',terms:[],locked:true,privateOnly:true,localOnly:true,publicProjection:false,includeInLocTotal:false,publicDetail:false,sourceScope:'lo3rwang'},
+  {id:'personal-2',label:'黑暗領主／darklord',terms:[],locked:true,privateOnly:true,localOnly:true,publicProjection:false,sourceScope:'darklord',source:'twitter_private',includeInLocTotal:false,publicDetail:false},
+  ...Array.from({length:6},(_,index)=>({id:'personal-'+(index+3),label:'個人風格 '+(index+3),terms:[],locked:false,privateOnly:true,localOnly:true,publicProjection:false,includeInLocTotal:false,publicDetail:false,sourceScope:'lo3rwang'}))
 ]);
 const RANKING_PROFILES=Object.freeze([
   ...PERSONAL_STYLE_DEFAULTS.map(style=>({id:style.id,label:style.label,description:style.id==='personal-1'?'第一個個人風格':style.privateOnly?'私密文本統計，不進 LOC 總數':style.locked?'個人化私密來源':'可自行命名與整理',privateOnly:Boolean(style.privateOnly)})),
@@ -160,6 +160,8 @@ export default function StatisticsV2({section=null}){
   const rankingSource=useMemo(()=>{
     if(rankingProfile==='runes')return scopedRankingRows.filter(row=>!rankingType||row.ranking_type===rankingType);
     if(rankingProfile==='annual')return derivedRankings.length?derivedRankings:scopedRankingRows;
+    if(activePersonalStyle?.sourceScope==='darklord')return [];
+    if(activePersonalStyle?.localOnly)return personalRankings;
     if(activePersonalStyle?.privateOnly)return [];
     return personalRankings;
   },[rankingProfile,scopedRankingRows,rankingType,derivedRankings,personalRankings]);
@@ -199,8 +201,8 @@ export default function StatisticsV2({section=null}){
       {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
       {mode!=='keywords'?<div className="statistics-chart"><ResponsiveContainer width="100%" height={340}><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/><XAxis dataKey={mode==='eras'?'era':mode==='sources'?'source':'date'} tick={{fill:'currentColor',fontSize:11}}/><YAxis allowDecimals={false} tick={{fill:'currentColor',fontSize:11}}/><Tooltip/><Bar dataKey="total" fill="var(--loc-accent)" radius={[6,6,0,0]}/>{mode==='units'?<><Bar dataKey="works" fill="var(--loc-gold)" radius={[6,6,0,0]}/><Bar dataKey="events" fill="var(--loc-muted)" radius={[6,6,0,0]}/></>:null}</BarChart></ResponsiveContainer></div>:null}
       {mode==='keywords'?<div className="statistics-ranking">
-        <div className="statistics-ranking-head"><div><p className="scope-v2-eyebrow">KEYWORD RANKING</p><h3>{rangeLabel}關鍵字排行榜</h3><span>十種展示視圖：八個個人風格、一個月之符文特殊分類、一個每年分佈。</span></div></div>
-        <div className="statistics-profile-panel"><div className="statistics-section-heading"><div><p className="scope-v2-eyebrow">TEN RANKING VIEWS</p><h3>選擇分析視圖</h3></div><span>第一個個人風格固定以「政德」為名稱，其餘可自行命名。</span></div><div className="statistics-profile-grid">{rankingProfiles.map(profile=><button type="button" key={profile.id} className="statistics-profile-card" data-profile={profile.id} data-private={profile.privateOnly?'true':'false'} aria-pressed={rankingProfile===profile.id} onClick={()=>{setRankingProfile(profile.id);setPage(1)}}><strong>{profile.label}</strong><small>{profile.description}</small></button>)}</div>{rankingProfile==='runes'&&rankingTypes.length?<div className="scope-v2-tabs" aria-label="符文排行榜類型">{rankingTypes.map(item=><button type="button" key={item} aria-pressed={rankingType===item} onClick={()=>{setRankingType(item);setPage(1)}}>{item}</button>)}</div>:null}</div>
+        <div className="statistics-ranking-head"><div><p className="scope-v2-eyebrow">KEYWORD RANKING</p><h3>{rangeLabel}關鍵字排行榜</h3><span>十種展示視圖：八個本機個人風格、一個月之符文公開示範、一個每年分佈。</span></div></div>
+        <div className="statistics-profile-panel"><div className="statistics-section-heading"><div><p className="scope-v2-eyebrow">TEN RANKING VIEWS</p><h3>選擇分析視圖</h3></div><span>個人風格群組預設只存本機、不進 LOC 總數；只有月之符文示範視圖預設公開。</span></div><div className="statistics-profile-grid">{rankingProfiles.map(profile=><button type="button" key={profile.id} className="statistics-profile-card" data-profile={profile.id} data-private={profile.privateOnly?'true':'false'} aria-pressed={rankingProfile===profile.id} onClick={()=>{setRankingProfile(profile.id);setPage(1)}}><strong>{profile.label}</strong><small>{profile.description}</small></button>)}</div>{rankingProfile==='runes'&&rankingTypes.length?<div className="scope-v2-tabs" aria-label="符文排行榜類型">{rankingTypes.map(item=><button type="button" key={item} aria-pressed={rankingType===item} onClick={()=>{setRankingType(item);setPage(1)}}>{item}</button>)}</div>:null}</div>
         <div className="statistics-top-ten">
           <div className="statistics-top-ten-heading"><div><p className="scope-v2-eyebrow">TOP 10 · AUTO INCLUDED</p><h3>批次整理候選</h3></div><span>{selectedTerms.length} 個關鍵詞已加入</span></div>
           <div className="scope-v2-ranking">{visibleTop.map((row,index)=>{const term=row.term||row.title||row.name||'—';const repeated=termHistory.get(term)?.size||1;return <div className="statistics-ranking-row" key={'top-'+(row.ranking_key||term||index)}><label><input type="checkbox" checked={selectedTerms.includes(term)} onChange={()=>setSelectedTerms(current=>current.includes(term)?current.filter(value=>value!==term):[...current,term])}/><b>{index+1}. {term}</b></label><span>{row.item_count??'—'} 筆 · {repeated>1?'跨 '+repeated+' 個排名':'單一排名'} · <a href={'/search?q='+encodeURIComponent(term)}>查看分佈</a></span></div>})}</div>
