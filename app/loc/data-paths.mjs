@@ -19,18 +19,21 @@ export const LOC_DATA = Object.freeze({
   LOC8_DAILY_RUNE_REPO_HISTORY: '/data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json',
   LOC8_EVENT_SNAPSHOT: '/data/json/registries/LOC8_EVENT_SNAPSHOT.json',
   LOC_CROSS_RELATIONSHIP_REGISTRY: '/data/json/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json',
-  LOC_ERA_REGISTRY: '/data/json/registries/LOC_ERA_REGISTRY.json',
+  LO3RWANG_ERA: '/data/json/registries/lo3rwang_era.json',
   LOC_GRAPH_SCHEMA: '/data/json/registries/LOC_GRAPH_SCHEMA.json',
   LOC_STYLE_GROUP_REGISTRY: '/data/json/registries/LOC_STYLE_GROUP_REGISTRY.json',
   LOC_MEDIA_REGISTRY: '/data/json/registries/LOC_MEDIA_REGISTRY.json',
   LOC_KNOWLEDGE_ASSET_REGISTRY: '/data/json/registries/LOC_KNOWLEDGE_ASSET_REGISTRY.json',
   LOC_SEARCH_GOVERNANCE: '/data/json/registries/LOC_SEARCH_GOVERNANCE.json',
-  LUNARUNE_EVOLUTION_HISTORY: '/data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json',
+  LRUNES_ERA: '/data/json/registries/lrunes_era.json',
   ZHENGDE_CULTURE_KEYWORDS: '/data/json/registries/ZHENGDE_CULTURE_KEYWORDS.json',
 
   // Search / generated delivery projections
   LOC_FAQ: '/data/json/search/faq/LOC_FAQ_RAG_v0.4.json',
   TEXT_CORPUS_MANIFEST: '/data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json',
+  OFFLINE_HISTORY_MANIFEST: '/data/json/generated/loc4/offline_history/LOC4_OFFLINE_HISTORY_MANIFEST.json',
+  THREADS_BROWSER_MANIFEST: '/data/json/generated/loc4/threads/LOC4_THREADS_BROWSER_MANIFEST.json',
+  FACEBOOK_MANIFEST: '/data/json/sources/facebook/manifest.json',
   MUSIC_SEARCH_MANIFEST: '/data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json',
   RUNE_RESERVED_SNAPSHOT: '/data/json/generated/search/reserved/moon-runes.json',
   SEARCH_SOURCE_STATS: '/data/json/generated/search/SEARCH_SOURCE_STATS.json'

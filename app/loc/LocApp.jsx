@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-
 import {useEffect,useMemo,useState} from 'react';
 import {resolveScopeV2} from '../modular-v2/scope-registry.v2';
 import AboutView from './views/AboutView';
@@ -12,6 +11,8 @@ import GenericScopeHomeV2 from '../modular-v2/GenericScopeHomeV2';
 const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const RunesHomeView=dynamic(()=>import('../runes/RunesClient'),{ssr:false,loading});
 const GameView=dynamic(()=>import('./views/GameView'),{ssr:false,loading});
+// Feature shells render synchronously so title, shared CSS and local link menus
+// never wait for Neon/projection data or client-only module hydration.
 const ContextView=dynamic(()=>import('../modular-v2/features/ContextV2'),{loading});
 const StaticsView=dynamic(()=>import('../modular-v2/features/StatisticsV2'),{loading});
 const CultureView=dynamic(()=>import('../modular-v2/features/CultureV2'),{loading});
@@ -51,19 +52,18 @@ function routeState(){
   return {scope,view:VIEWS[route]?route:'home'};
 }
 
-export default function LocApp({forcedView=null,forcedSection=null,forcedScope=null}){
-  const initialScope=forcedScope||'loc';
-  const [state,setState]=useState({scope:initialScope,view:forcedView||'home',section:forcedSection});
+export default function LocApp({forcedView=null,forcedSection=null}){
+  const [state,setState]=useState({scope:'loc',view:forcedView||'home',section:forcedSection});
   useEffect(()=>{
     if(forcedView){
-      const scope=forcedScope||resolveScopeV2(window.location.hostname,window.location.pathname);
+      const scope=resolveScopeV2(window.location.hostname,window.location.pathname);
       setState({scope,view:forcedView,section:forcedSection});
       return undefined;
     }
     const sync=()=>setState(routeState());
     sync();window.addEventListener('popstate',sync);
     return()=>window.removeEventListener('popstate',sync);
-  },[forcedView,forcedSection,forcedScope]);
+  },[forcedView,forcedSection]);
 
   const ActiveView=useMemo(()=>{
     if(state.view==='blocked')return BlockedScopeRoute;

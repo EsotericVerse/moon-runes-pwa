@@ -61,6 +61,12 @@ async function fetchStaticJson(path){
   return response.json();
 }
 
+// Approved static exceptions only: Scope ERA files and runes.json.
+// These are read-only local projections and must not be routed through Neon.
+export function fetchLocStaticJson(path){
+  return fetchStaticJson(path);
+}
+
 async function fetchNeonJson(path){
   const normalized=sourcePath(path);
   const params=new URLSearchParams();
@@ -137,14 +143,14 @@ function segmentRecord(path,index,extra={}){
   return {id:path,path,sequence:index+1,bytes:Number(extra.bytes||0),scope:extra.scope||{},routing_keys:extra.routing_keys||[]};
 }
 
-export async function getLocDataDataset(datasetId){
+export async function getLocDataDataset(datasetId,{memory=true}={}){
   if(datasetId==='loc4-text-corpus'){
-    const manifest=await fetchLocJson(LOC_DATA.TEXT_CORPUS_MANIFEST);
+    const manifest=await fetchLocJson(LOC_DATA.TEXT_CORPUS_MANIFEST,{memory});
     const shards=Array.isArray(manifest?.shards)?manifest.shards:[];
     return {id:datasetId,tier:'on-demand',strategy:'manifest-shards',segments:shards.map((item,index)=>segmentRecord(item.path,index,item))};
   }
   if(datasetId==='loc3-lyrics-search'){
-    const manifest=await fetchLocJson(LOC_DATA.MUSIC_SEARCH_MANIFEST);
+    const manifest=await fetchLocJson(LOC_DATA.MUSIC_SEARCH_MANIFEST,{memory});
     const shards=Array.isArray(manifest?.shards)?manifest.shards:[];
     return {id:datasetId,tier:'on-demand',strategy:'manifest-shards',segments:shards.map((item,index)=>{
       const path=String(typeof item==='string'?item:item?.path||'');
@@ -152,11 +158,28 @@ export async function getLocDataDataset(datasetId){
       return segmentRecord(fullPath,index,typeof item==='object'?item:{});
     })};
   }
+  const manifestPaths={
+    'loc4-offline-history':LOC_DATA.OFFLINE_HISTORY_MANIFEST,
+    'threads-main-posts':LOC_DATA.THREADS_BROWSER_MANIFEST,
+    'facebook-posts':LOC_DATA.FACEBOOK_MANIFEST
+  };
+  if(manifestPaths[datasetId]){
+    const manifest=await fetchLocJson(manifestPaths[datasetId],{memory});
+    const shards=Array.isArray(manifest?.shards)?manifest.shards:[];
+    return {id:datasetId,tier:'on-demand',strategy:'manifest-shards',segments:shards.map((item,index)=>{
+      const raw=typeof item==='string'?item:item?.path||item?.name||'';
+      const normalized=String(raw).replace(/^\/+/, '');
+      const path=datasetId==='facebook-posts'&&!normalized.includes('/')
+        ?`data/json/sources/facebook/${normalized}`
+        :normalized;
+      return segmentRecord(path,index,typeof item==='object'?item:{});
+    })};
+  }
   throw new Error(`Unknown LOC data dataset: ${datasetId}`);
 }
 
 export async function fetchLocDataSegments(datasetId,{segmentIds,fromSequence,toSequence,maxSegments=DEFAULT_MAX_SEGMENTS,memory=true}={}){
-  const dataset=await getLocDataDataset(datasetId);
+  const dataset=await getLocDataDataset(datasetId,{memory});
   let segments=Array.isArray(dataset?.segments)?dataset.segments:[];
   if(Array.isArray(segmentIds)&&segmentIds.length){const wanted=new Set(segmentIds);segments=segments.filter(segment=>wanted.has(segment.id));}
   if(Number.isFinite(Number(fromSequence)))segments=segments.filter(segment=>Number(segment.sequence)>=Number(fromSequence));

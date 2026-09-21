@@ -95,13 +95,38 @@ const dataRuntime = readFileSync(resolve(root, 'app/loc/data.js'), 'utf8');
 if (!/DEFAULT_GLOBAL_CONCURRENCY\s*=\s*2\b/.test(dataRuntime)) failures.push('app/loc/data.js: global JSON concurrency budget must remain 2');
 
 const searchView = readFileSync(resolve(root, 'app/modular-v2/features/SearchV2.jsx'), 'utf8');
-if (!/SEGMENT_BATCH_SIZE\s*=\s*2\b/.test(searchView)) failures.push('SearchV2: corpus segment batch size must remain 2');
-if (!/fetchLocJsonBatch\(requests,\{concurrency:2\}\)/.test(searchView)) failures.push('SearchV2: small-source concurrency must remain 2');
-if (!/fetchLocDataSegments\(datasetId,\{segmentIds:chunk\.map\(segment=>segment\.id\),maxSegments:SEGMENT_BATCH_SIZE\}\)/.test(searchView)) failures.push('SearchV2: corpus data must use bounded incremental segment loading');
-if (/TEXT_CORPUS_MANIFEST|MUSIC_SEARCH_MANIFEST/.test(searchView)) failures.push('SearchV2: physical manifest identities must remain behind data runtime / migration bridge');
+if (!/selectNeonSearchRows\(collection\.id\)/.test(searchView)) failures.push('SearchV2: search must use direct Neon SELECT');
+if (/fetchLocJson|fetchLocDataSegments|getLocDataDataset|runtime_json_documents|manifest|shard|search-routing|search-telemetry/.test(searchView)) failures.push('SearchV2: JSON, manifest, shard, routing, telemetry and runtime projection paths must not be used');
+const neonSearch = readFileSync(resolve(root, 'app/loc/neon-search.js'), 'utf8');
+if (!/\.select\('\*',\{count:'exact'\}\)\.range\(/.test(neonSearch)) failures.push('Neon Search: direct paged SELECT contract missing');
+if (!/neonClient\.schema\(schema\)\.from\(table\)/.test(neonSearch)) failures.push('Neon Search: schema-qualified tables must use the schema API');
+
+const scopeGovernance = readFileSync(resolve(root, 'app/loc/neon-scope-governance.js'), 'utf8');
+if (!/rpc\('decide_scope_relation_request'/.test(scopeGovernance)) failures.push('Scope governance: approval must use the atomic Neon RPC');
+if (!/requested_by:requestedBy/.test(scopeGovernance)) failures.push('Scope governance: relation requests must record the requester');
+const scopeManagement = readFileSync(resolve(root, 'app/modular-v2/ScopeManagementV2.jsx'), 'utf8');
+if (!/useNeonAccount/.test(scopeManagement)||!/account\.canManage/.test(scopeManagement)) failures.push('Scope management: session and manager role gate missing');
+const routeParamFiles = [
+  'app/context/[section]/page.jsx',
+  'app/culture/[section]/page.jsx',
+  'app/culture/galaxy/[section]/page.jsx',
+  'app/governance/[section]/page.jsx',
+  'app/lo3rwang/[section]/page.jsx',
+  'app/statics/[section]/page.jsx',
+  'app/statics/[section]/[kind]/page.jsx'
+];
+for (const routeFile of routeParamFiles) {
+  const routeSource = readFileSync(resolve(root, routeFile), 'utf8');
+  if (!/export default async function/.test(routeSource)||!/await params/.test(routeSource)) failures.push(`${routeFile}: dynamic params must be awaited`);
+}
 
 const contextView = readFileSync(resolve(root, 'app/modular-v2/features/ContextV2.jsx'), 'utf8');
 if (!/scopeDataViewV2\(scopeId,'context'\)/.test(contextView)) failures.push('ContextV2: context projection must derive from shared Scope registry');
+const scopeProjection = readFileSync(resolve(root, 'app/loc/neon-scope-projections.js'), 'utf8');
+if (!/scopeDataViewV2\(scopeId,projection\)/.test(scopeProjection)) failures.push('Scope projections must use the shared Scope registry');
+if (!/selectScopeProjectionRows\(scopeId,'context'\)/.test(contextView)) failures.push('ContextV2: context reads must use shared Scope projection loader');
+const statisticsView = readFileSync(resolve(root, 'app/modular-v2/features/StatisticsV2.jsx'), 'utf8');
+if (!/selectScopeRankingPage\(scopeId/.test(statisticsView)) failures.push('StatisticsV2: ranking reads must use Neon SQL pagination loader');
 const staticsView = readFileSync(resolve(root, 'app/modular-v2/features/StatisticsV2.jsx'), 'utf8');
 if (!/scopeDataViewV2\(scopeId,'rankings'\)/.test(staticsView)) failures.push('StatisticsV2: ranking projection must derive from shared Scope registry');
 const cultureView = readFileSync(resolve(root, 'app/modular-v2/features/CultureV2.jsx'), 'utf8');

@@ -1,186 +1,156 @@
 'use client';
 
-import {useEffect,useMemo,useRef,useState} from 'react';
-import {useSearchParams} from 'next/navigation';
-import {DataSet,Timeline} from 'vis-timeline/standalone';
+import {useEffect,useMemo,useState} from 'react';
+import {CULTURE_PATHS_V2} from '../../migration-bridges/current-data-compat.v2';
+import {fetchLocJson,fetchLocStaticJson} from '../../loc/data';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
-import {scopeDataViewV2} from '../scope-registry.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
-import {CULTURE_PATHS_V2} from '../../migration-bridges/current-data-compat.v2';
-import {neonClient} from '../../loc/neon-client';
-import {useNeonAccount} from '../../loc/use-neon-account';
 
-const DAY_MS=24*60*60*1000;
-const today=()=>new Date().toISOString().slice(0,10);
-const text=value=>String(value??'');
-const dateValue=value=>text(value||today()).slice(0,10);
-
-function normalizeRow(row,index){
-  const payload=row?.payload&&typeof row.payload==='object'?row.payload:{};
-  const value={...row,...payload};
-  const kind=value.kind||value.entry_type||value.culture_type||'trajectory';
-  return {
-    ...value,
-    id:value.id||value.entry_key||value.event_id||value.work_id||'culture-'+index,
-    kind,
-    title:value.title||value.name||value.label||value.work_title||'未命名內容',
-    date:dateValue(value.date||value.start_date||value.created_at),
-    endDate:value.end_date||value.endDate||value.date||value.start_date||'',
-    eraId:value.era_id||value.period_id||value.period||'',
-    body:value.body||value.content||value.description||value.summary||'',
-    source:value.source||value.source_name||value.media_type||value.content_type||'',
-    style:value.style||value.style_name||value.genre||'',
-    keywords:Array.isArray(value.keywords)?value.keywords:Array.isArray(value.tags)?value.tags:[],
-    mediaType:value.media_type||value.content_type||'',
-    textMode:value.text_mode||value.display_mode||'excerpt',
-    url:value.url||value.href||''
-  };
+function periodRows(value){
+  if(!value||typeof value!=='object')return [];
+  for(const key of ['periods','period_analysis','period_keyword_analysis','results'])if(Array.isArray(value[key]))return value[key];
+  return [];
 }
+function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row?.semantic_keywords||row?.top_keywords||[];}
+function itemLabel(value,index){return value?.display_label||value?.name||value?.title||value?.period||`項目 ${index+1}`;}
 
-function displayKind(kind){
-  return ({era:'時期',event:'事件',trajectory:'軌跡',work:'作品',recommendation:'推薦'})[kind]||'軌跡';
-}
+const PROFILE=Object.freeze({
+  loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。作者文化時期與符文系統時期分軌展示，再以交會事件互相對照。',sections:['eras','events','runeEvolution']}),
+  runes:Object.freeze({subtitle:'月之符文的時期、系統演化與語意治理時間長河。',sections:['eras','runeEvolution']}),
+  lo3rwang:Object.freeze({subtitle:'作者文化：時期、作品語彙、創作與治理文字在時間中的變化。',sections:['eras','authorKeywords','periods']}),
+  admin:Object.freeze({subtitle:'管理 Scope 的文化頁只呈現治理變化與歷史，不取代各 Scope 的 Current Authority。',sections:['governanceHistory']})
+});
 
-
-function WorkbenchEditor({value,onChange,onSave,onDelete,onClose,saving}){
-  if(!value)return <div className="culture-river-empty">點擊時間長河內容，或新增一筆資料。</div>;
-  const set=(key,next)=>onChange({...value,[key]:next});
-  const isEra=value.kind==='era';
-  return <div className="culture-river-editor">
-    <div className="context-item-head"><div><p className="scope-v2-eyebrow">TIME RIVER EDITOR</p><h3>{value.id?'編輯':'新增'}{displayKind(value.kind)}</h3></div><button type="button" className="context-btn ghost" onClick={onClose}>關閉</button></div>
-    <div className="culture-river-form">
-      <label>類型<select value={value.kind||'trajectory'} onChange={event=>set('kind',event.target.value)}><option value="era">時期</option><option value="event">事件</option><option value="trajectory">軌跡</option><option value="work">作品</option><option value="recommendation">推薦作品</option></select></label>
-      <label>日期<input type="date" value={value.date||''} onChange={event=>set('date',event.target.value)}/></label>
-      {isEra?<label>結束日期<input type="date" value={value.endDate||''} onChange={event=>set('endDate',event.target.value)}/></label>:null}
-      <label>時期識別<input value={value.eraId||''} onChange={event=>set('eraId',event.target.value)} placeholder="例如 ERA-P7.2"/></label>
-      <label className="culture-river-full">標題<input value={value.title||''} onChange={event=>set('title',event.target.value)}/></label>
-      <label className="culture-river-full">軌跡／作品內容<textarea value={value.body||''} onChange={event=>set('body',event.target.value)} /></label>
-      <label>來源<input value={value.source||''} onChange={event=>set('source',event.target.value)} placeholder="Threads／Suno／文章／事件"/></label>
-      <label>連結<input value={value.url||''} onChange={event=>set('url',event.target.value)} placeholder="https://…"/></label>
-    </div>
-    <div className="context-actions"><button type="button" className="context-btn primary" disabled={saving} onClick={onSave}>{saving?'儲存中…':'儲存到 Neon'}</button><button type="button" className="context-btn ghost" onClick={onClose}>取消</button>{value.id?<button type="button" className="context-btn ghost" onClick={onDelete}>刪除</button>:null}</div>
-  </div>;
-}
+const LEGACY_SECTIONS=Object.freeze({
+  trajectory:{eyebrow:'Trajectory',title:'軌跡',text:'沿著時期、作品與關鍵字的變化，查看文化如何累積、轉向與留下可回查的路徑。'},
+  history:{eyebrow:'History',title:'歷史演變',text:'保留歷史來源與時間順序，對照不同時期的語彙、作品、事件與治理變化；歷史資料不直接覆寫目前內容。'},
+  galaxy:{eyebrow:'Galaxy',title:'衍生作品',text:'由文化資料延伸出的作品入口，依創作文章、小說、音樂、圖片與多媒體分開瀏覽。'}
+});
+const GALAXY_SECTIONS=Object.freeze({
+  literary:['創作文章','以文章作品與文字紀錄作為文化延伸資料。'],
+  novel:['小說','以小說作品、章節與長期敘事資料作為文化延伸資料。'],
+  music:['音樂','以歌曲、歌詞、曲風、時期與來源作為文化延伸資料。'],
+  pics:['圖片','以圖片作品與視覺資料作為文化延伸資料。'],
+  multimedia:['多媒體','以 Reels、影音與其他多媒體作品作為文化延伸資料。']
+});
 
 export default function CultureV2({section=null}){
   const {scopeId}=useScopeRuntimeV2();
-  const account=useNeonAccount();
-  const canEdit=Boolean(account.canManage);
-  const searchParams=useSearchParams();
-  const view=scopeDataViewV2(scopeId,'culture');
-  const draftKind=searchParams.get('draftKind');
-  const draftDate=searchParams.get('draftDate')||'';
-  const draftTitle=searchParams.get('draftTitle')||'';
-  const draftEraId=searchParams.get('draftEraId')||'';
-  const timelineRef=useRef(null);
-  const timelineInstance=useRef(null);
-  const [rows,setRows]=useState([]);
-  const [editor,setEditor]=useState(null);
-  const [loading,setLoading]=useState(true);
+  const profile=PROFILE[scopeId]||PROFILE.loc;
+  const [data,setData]=useState({});
   const [error,setError]=useState('');
-  const [notice,setNotice]=useState('');
-  const [sourceFilter,setSourceFilter]=useState('');
-  const [kindFilter,setKindFilter]=useState('');
-  const [styleFilter,setStyleFilter]=useState('');
-  const [keywordFilter,setKeywordFilter]=useState('');
-  const [workFilter,setWorkFilter]=useState('');
-  const [displayMode,setDisplayMode]=useState('excerpt');
-  const [saving,setSaving]=useState(false);
-
-  useEffect(()=>{
-    if(canEdit&&draftKind==='era'&&draftDate){
-      setEditor({id:'',kind:'era',title:draftTitle||'候選時期',date:draftDate,endDate:draftDate,eraId:draftEraId,body:'由時間定錨搜尋提出的候選時期；請由使用者確認後儲存。',source:'time-anchor-suggestion',url:''});
-      setNotice('已開啟候選時期，請確認後再儲存。');
-    }
-  },[canEdit,draftKind,draftDate,draftTitle,draftEraId]);
+  const [loading,setLoading]=useState(true);
 
   useEffect(()=>{
     let live=true;
-    setLoading(true);setError('');
-    if(!view){setRows([]);setLoading(false);setError('此 Scope 尚未設定 Culture SQL projection。');return()=>{live=false};}
-    neonClient.from(view).select('*').order('date',{ascending:true}).limit(3000)
-      .then(result=>{
-        if(result?.error)throw new Error(result.error.message||'Culture SQL projection 讀取失敗');
-        if(live)setRows((result?.data||[]).map(normalizeRow));
-      })
-      .catch(errorValue=>live&&setError(String(errorValue?.message||errorValue)))
+    setLoading(true);setError('');setData({});
+    const wanted=new Set(profile.sections);
+    const requests=[];
+    const keys=[];
+    const add=(key,path,loader=fetchLocJson)=>{keys.push(key);requests.push({path,loader});};
+    if(wanted.has('eras')){
+      if(scopeId==='loc'){
+        add('authorEras',CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
+        add('runeEras',CULTURE_PATHS_V2.eraByScope.runes,fetchLocStaticJson);
+      }else add('eras',CULTURE_PATHS_V2.eraByScope[scopeId]||CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
+    }
+    if(wanted.has('runes'))add('runes',CULTURE_PATHS_V2.runes,fetchLocStaticJson);
+    if(wanted.has('authorKeywords'))add('authorKeywords',CULTURE_PATHS_V2.authorKeywords);
+    if(wanted.has('periods')){add('musicPeriods',CULTURE_PATHS_V2.musicPeriods);add('writingPeriods',CULTURE_PATHS_V2.writingGovernancePeriods);}
+    if(wanted.has('governanceHistory')||wanted.has('runeEvolution'))add('runeHistory',CULTURE_PATHS_V2.runeHistory,fetchLocStaticJson);
+    Promise.all(requests.map(request=>request.loader(request.path)))
+      .then(values=>{if(live)setData(Object.fromEntries(keys.map((key,index)=>[key,values[index]])));})
+      .catch(e=>live&&setError(String(e?.message||e)))
       .finally(()=>live&&setLoading(false));
     return()=>{live=false};
-  },[view]);
+  },[scopeId,profile.sections]);
 
-  const eras=useMemo(()=>rows.filter(row=>row.kind==='era'),[rows]);
-  const filters=useMemo(()=>[...new Set(rows.map(row=>row.source).filter(Boolean))].sort(),[rows]);
-  const styles=useMemo(()=>[...new Set(rows.map(row=>row.style).filter(Boolean))].sort(),[rows]);
-  const keywords=useMemo(()=>[...new Set(rows.flatMap(row=>row.keywords||[]).map(value=>text(value)).filter(Boolean))].sort(),[rows]);
-  const visible=useMemo(()=>rows.filter(row=>(!sourceFilter||row.source===sourceFilter)&&(!kindFilter||row.kind===kindFilter)&&(!styleFilter||row.style===styleFilter)&&(!keywordFilter||(row.keywords||[]).map(value=>text(value)).includes(keywordFilter))&&(!workFilter||(workFilter==='works'?(row.kind==='work'||row.kind==='recommendation'):workFilter==='nonworks'&&row.kind!=='work'&&row.kind!=='recommendation'))),[rows,sourceFilter,kindFilter,styleFilter,keywordFilter,workFilter]);
-  const visibleIds=useMemo(()=>new Set(visible.map(row=>row.id)),[visible]);
-  const dailyStats=useMemo(()=>{const grouped=new Map();for(const row of visible){const key=row.date||'未指定';const current=grouped.get(key)||{date:key,total:0,works:0,events:0,trajectories:0,sources:new Set()};current.total+=1;if(row.kind==='work'||row.kind==='recommendation')current.works+=1;if(row.kind==='event')current.events+=1;if(row.kind==='trajectory')current.trajectories+=1;if(row.source)current.sources.add(row.source);grouped.set(key,current);}return [...grouped.values()].sort((a,b)=>String(a.date).localeCompare(String(b.date)));},[visible]);
-  const trajectoryRows=useMemo(()=>visible.filter(row=>row.body||row.kind==='trajectory'||row.kind==='event').sort((a,b)=>String(b.date).localeCompare(String(a.date))),[visible]);
+  const eraRows=useMemo(()=>[...(data.eras?.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.eras]);
+  const authorEraRows=useMemo(()=>[...(data.authorEras?.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.authorEras]);
+  const runeEraRows=useMemo(()=>[...(data.runeEras?.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.runeEras]);
+  const musicRows=periodRows(data.musicPeriods);
+  const writingRows=periodRows(data.writingPeriods);
+  const authorKeywords=data.authorKeywords?.keywords||[];
+  const runeGovernance=data.runeHistory?.governance_evolution||[];
+  const runeVersions=useMemo(()=>[...(data.runeHistory?.rc_version_sequence||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.runeHistory]);
+  const runeChanges=useMemo(()=>[...(data.runeHistory?.rc_change_events||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.runeHistory]);
+  const runePeriods=useMemo(()=>[...(data.runeHistory?.rune_periods||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.runeHistory]);
 
-  const items=useMemo(()=>visible.map(row=>{
-    const start=dateValue(row.date);
-    const end=row.kind==='era'&&row.endDate&&row.endDate!==start?dateValue(row.endDate):new Date(new Date(start).getTime()+DAY_MS).toISOString().slice(0,10);
-    return {id:row.id,content:row.title,start,end,type:row.kind==='era'?'range':'box',group:row.eraId||'unassigned',className:'culture-river-item culture-river-'+row.kind};
-  }),[visible]);
 
-  const groups=useMemo(()=>{
-    const byId=new Map();
-    eras.forEach(row=>byId.set(row.id,{id:row.id,content:row.title,className:'culture-river-era-group'}));
-    visible.forEach(row=>{const id=row.eraId||'unassigned';if(!byId.has(id))byId.set(id,{id,content:id==='unassigned'?'未分期':id,className:'culture-river-era-group'});});
-    return [...byId.values()];
-  },[eras,visible]);
+  const galaxySection=section?.startsWith('galaxy/')?section.split('/')[1]:null;
+  const galaxyCopy=GALAXY_SECTIONS[galaxySection];
+  const legacy=LEGACY_SECTIONS[section];
+  return <FeaturePageV2 featureId="culture" expandedPath="/culture/galaxy" subtitle={profile.subtitle}>
+    {legacy?<ScopeCardV2 eyebrow={legacy.eyebrow} title={legacy.title}><p>{legacy.text}</p></ScopeCardV2>:null}
+    {section==='galaxy'?<ScopeCardV2 eyebrow="Galaxy" title="衍生作品"><p>由文化資料延伸出的作品入口，依創作文章、小說、音樂、圖片與多媒體分開瀏覽。</p></ScopeCardV2>:null}
+    {galaxyCopy?<ScopeCardV2 eyebrow="Galaxy" title={galaxyCopy[0]}><p>{galaxyCopy[1]}</p></ScopeCardV2>:null}
+    {loading?<p className="scope-v2-status">載入文化資料…</p>:null}
+    {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
 
-  useEffect(()=>{
-    if(!timelineRef.current||!items.length)return;
-    const itemData=new DataSet(items);
-    const groupData=new DataSet(groups);
-    const timeline=new Timeline(timelineRef.current,itemData,groupData,{stack:true,zoomable:true,moveable:true,orientation:'top',verticalScroll:true,zoomKey:'ctrlKey',maxHeight:'620px',minHeight:'360px',showCurrentTime:true});
-    timeline.on('select',event=>{const id=event.items?.[0];if(id&&canEdit)setEditor(rows.find(row=>row.id===id)||null);});
-    timelineInstance.current=timeline;
-    return()=>{timeline.destroy();timelineInstance.current=null};
-  },[items,groups,rows,canEdit]);
+    {profile.sections.includes('eras')?<ScopeCardV2 eyebrow="Culture · 時期" title={scopeId==='loc'?'作者文化時期':'時期'}>
+      <div className="scope-v2-timeline">{(scopeId==='loc'?authorEraRows:eraRows).map((item,index)=><article key={item.era_id||item.period||index}>
+        <strong>{itemLabel(item,index)}</strong>
+        <span>{item.start_date||'—'} → {item.end_date||'現在'}</span>
+        {item.description?<p>{item.description}</p>:null}
+      </article>)}</div>
+    </ScopeCardV2>:null}
 
-  function add(kind='trajectory'){setEditor({id:'',kind,title:'',date:today(),endDate:'',eraId:eras[eras.length-1]?.id||'',body:'',source:'',url:''});}
-  async function save(){
-    if(!editor)return;
-    const value=normalizeRow({...editor,id:editor.id||'culture-'+Date.now()});
-    setRows(current=>{const index=current.findIndex(row=>row.id===value.id);if(index<0)return [...current,value];const next=[...current];next[index]=value;return next});
-    setEditor(value);setSaving(true);
-    try{
-      const result=await neonClient.from(view).upsert({scope_id:scopeId,entry_key:value.id,entry_type:value.kind,title:value.title,start_date:value.date,end_date:value.endDate||value.date,era_id:value.eraId||null,payload:value,updated_at:new Date().toISOString()});
-      if(result?.error)throw new Error(result.error.message||'Culture Neon 寫入失敗');
-      setNotice('已儲存到 Culture SQL projection');
-    }catch(errorValue){setNotice('畫面已更新，但 SQL 寫入失敗：'+String(errorValue?.message||errorValue))}
-    finally{setSaving(false)}
-  }
-  async function remove(){
-    if(!editor?.id)return;
-    setRows(current=>current.filter(row=>row.id!==editor.id));
-    try{
-      const result=await neonClient.from(view).delete().eq('entry_key',editor.id);
-      if(result?.error)throw new Error(result.error.message||'Culture SQL 刪除失敗');
-      setNotice('已刪除');
-    }catch(errorValue){setNotice('畫面已移除，但 SQL 刪除失敗：'+String(errorValue?.message||errorValue))}
-    setEditor(null);
-  }
+    {profile.sections.includes('runeEvolution')?<>
+      <ScopeCardV2 eyebrow="LunaRunes · 下軌" title="符文系統時期">
+        <p>符文時期與作者文化時期分開計算，透過日期與交會事件相容對照；14 張是前置原型，正式版本從 P1.0 的 24 張開始，後續依 P2.0、P2.5、P3.0、P3.2、P4.0、P4.1、P4.2 展開。</p>
+        {runeEraRows.length?<div className="scope-v2-timeline">{runeEraRows.map((item,index)=><article key={item.era_id||item.period||index}>
+          <strong>{item.display_label||item.name||item.period}</strong>
+          <span>{item.start_date||'—'} → {item.end_date||'現在'}</span>
+          {item.description?<p>{item.description}</p>:null}
+        </article>)}</div>:null}
+        <div className="scope-v2-timeline">{runeVersions.map((item,index)=><article key={`${item.version}-${item.milestone||index}`}>
+          <strong>{item.version} · {item.rune_count} 張</strong>
+          <span>{item.milestone||'—'} · {item.status==='rc'?'RC':'正式版本'}</span>
+          {item.title?<p>{item.title}</p>:null}
+        </article>)}</div>
+      </ScopeCardV2>
+      {runePeriods.length?<ScopeCardV2 eyebrow="Rune Membership" title="各時期的符文集合">
+        <div className="scope-v2-timeline">{runePeriods.map((item,index)=><article key={item.period_id||index}>
+          <strong>{item.version} · {item.rune_count} 張</strong>
+          <span>{item.active_from||'—'} → {item.active_until||'現在'} · {item.status==='rc'?'RC':'正式時期'} · 小集合相容於大集合</span>
+          <div className="scope-v2-chip-list">{(item.members||[]).map(name=><span key={name}>{name}</span>)}</div>
+        </article>)}</div>
+      </ScopeCardV2>:null}
+      <ScopeCardV2 eyebrow="RC Changes" title="每次版本變更了什麼">
+        <div className="scope-v2-timeline">{runeChanges.map((item,index)=><article key={`${item.order}-${item.date}-${index}`}>
+          <strong>{item.date} · {item.from} → {item.to}</strong>
+          <span>{item.change||'版本變更'}</span>
+          {item.meaning?<p>{item.meaning}</p>:null}
+        </article>)}</div>
+      </ScopeCardV2>
+    </>:null}
 
-  return <FeaturePageV2 featureId="culture" expandedPath="/culture" subtitle="一條時間長河，讓時期、事件、軌跡與作品在同一個時間座標上呈現。">
-    <ScopeCardV2 eyebrow="Culture · Time River" title="時期趨勢軌跡圖">
-      <p className="culture-river-slogan">以微弱的月光，照在每個時間點，我的文字上；當微光慢慢集中變亮，你也將綻放自己的光芒。</p><p>以日為最小單位；時期負責切段，事件、軌跡、作品與推薦作品落在長河上。拖曳瀏覽、Ctrl＋滾輪縮放，點擊項目查看內容。</p>
-      <div className="culture-river-toolbar"><div><span className="context-graph-status">{canEdit?'管理者編輯模式':'公開唯讀展示'}</span>{!canEdit?<button type="button" className="context-btn ghost" onClick={account.signIn}>登入後管理</button>:null}</div><div className="culture-river-filters"><label>關鍵字濾鏡<select value={keywordFilter} onChange={event=>setKeywordFilter(event.target.value)}><option value="">全部關鍵字</option>{keywords.map(value=><option key={value}>{value}</option>)}</select></label><label>風格濾鏡<select value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}><option value="">全部風格</option>{styles.map(value=><option key={value}>{value}</option>)}</select></label><label>作品濾鏡<select value={workFilter} onChange={event=>setWorkFilter(event.target.value)}><option value="">全部作品</option><option value="works">只看作品</option><option value="nonworks">排除作品</option></select></label><label>來源濾鏡<select value={sourceFilter} onChange={event=>setSourceFilter(event.target.value)}><option value="">全部來源</option>{filters.map(source=><option key={source}>{source}</option>)}</select></label><label>文字顯示<select value={displayMode} onChange={event=>setDisplayMode(event.target.value)}><option value="excerpt">摘要</option><option value="full">全文</option></select></label></div></div>
-      {loading?<p className="scope-v2-status">載入 Culture SQL projection…</p>:null}
-      
-      <div ref={timelineRef} className="culture-river-timeline" aria-label="文化時間長河"/>
-      {canEdit?<section className="culture-river-editor-shell"><div className="context-actions"><button type="button" className="context-btn primary" onClick={()=>add('trajectory')}>新增軌跡</button><button type="button" className="context-btn ghost" onClick={()=>add('era')}>新增時期</button></div><WorkbenchEditor value={editor} onChange={setEditor} onSave={save} onDelete={remove} onClose={()=>setEditor(null)} saving={saving}/></section>:null}
-      {!loading&&!visible.length?<div className="culture-river-empty">目前 SQL projection 沒有可顯示資料。</div>:null}
-    </ScopeCardV2>
-    <div className="culture-river-summary"><span>{visible.length} 項時間內容</span><span>{eras.length} 個時期</span><span>{filters.length} 種來源</span>{section?<span>目前 route：{section}</span>:null}</div>
-    <div className="culture-river-reading">
-      <section className="culture-river-reading-card"><p className="scope-v2-eyebrow">TIME UNITS</p><h3>時間統計</h3><p>統計是長河中的單位表達，不改寫軌跡文字。</p><div className="culture-river-stat-list">{dailyStats.slice(-30).map(row=><div key={row.date}><strong>{row.date}</strong><span>{row.total} 項內容 · 作品 {row.works} 部 · 事件 {row.events} 件 · 軌跡 {row.trajectories} 則 · 來源 {row.sources.size} 種</span></div>)}</div></section>
-      <section className="culture-river-reading-card"><p className="scope-v2-eyebrow">TRAJECTORY NOTES</p><h3>軌跡紀錄</h3><p>軌跡是長河中的文字表達，保留事件、作品與時期轉折。</p><div className="culture-river-note-list">{trajectoryRows.slice(0,30).map(row=><article key={row.id}><div><strong>{row.title}</strong><span>{row.date} · {displayKind(row.kind)}{row.source?' · '+row.source:''}</span></div>{row.body?<p>{displayMode==='full'?row.body:(row.body.length>180?row.body.slice(0,180)+'…':row.body)}</p>:null}</article>)}</div></section>
-    </div>
-    <aside><div className="culture-river-reading-card"><h3>時間長河展示</h3><p>目前為公開唯讀模式；時期、事件、軌跡與作品只供瀏覽。</p></div></aside>
-    {notice?<p className="scope-v2-status">{notice}</p>:null}
+    {profile.sections.includes('authorKeywords')?<ScopeCardV2 eyebrow="Culture Keywords" title="作者文化關鍵字">
+      <div className="scope-v2-chip-list">{authorKeywords.map((item,index)=><span key={item.name||index}>{item.name}</span>)}</div>
+    </ScopeCardV2>:null}
+
+    {profile.sections.includes('periods')?<div className="scope-v2-grid-two">
+      <ScopeCardV2 eyebrow="Music" title="音樂時期風格">
+        <div className="scope-v2-timeline">{musicRows.map((row,index)=><article key={row.period||index}>
+          <strong>{row.period||row.canonical_period||`切片 ${index+1}`}</strong>
+          <div className="scope-v2-chip-list">{keywordsOf(row).slice(0,10).map((item,i)=><span key={item.term||item.keyword||i}>{item.term||item.keyword}</span>)}</div>
+        </article>)}</div>
+      </ScopeCardV2>
+      <ScopeCardV2 eyebrow="Writing / Governance" title="文字與治理時期風格">
+        <div className="scope-v2-timeline">{writingRows.map((row,index)=><article key={row.period||index}>
+          <strong>{row.period||row.canonical_period||`切片 ${index+1}`}</strong>
+          <div className="scope-v2-chip-list">{keywordsOf(row).slice(0,10).map((item,i)=><span key={item.term||item.keyword||i}>{item.term||item.keyword}</span>)}</div>
+        </article>)}</div>
+      </ScopeCardV2>
+    </div>:null}
+
+    {profile.sections.includes('governanceHistory')?<ScopeCardV2 eyebrow="Governance History" title="治理變化">
+      <div className="scope-v2-timeline">{runeGovernance.map((item,index)=><article key={item.order||index}>
+        <strong>{item.title||itemLabel(item,index)}</strong>
+        {item.after?<p>{item.after}</p>:null}
+        {item.effect?<small>{item.effect}</small>:null}
+      </article>)}</div>
+    </ScopeCardV2>:null}
   </FeaturePageV2>;
 }

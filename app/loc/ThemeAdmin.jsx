@@ -19,11 +19,14 @@ export default function ThemeAdmin(){
     }catch(error){setStatus(String(error?.message||error))}
   };
 
-  useEffect(()=>{load()},[]);
+  useEffect(()=>{
+    if(!account.loading&&!account.permissionLoading&&account.user&&account.canManage)load();
+  },[account.loading,account.permissionLoading,account.user?.id,account.canManage]);
 
   if(account.loading)return <p>正在確認 Neon session…</p>;
   if(!account.user)return <p>登入後才能管理全站風格。</p>;
-  // Temporary editing mode: role authorization is intentionally deferred.
+  if(account.permissionLoading)return <p>正在確認 Neon 管理權限…</p>;
+  if(!account.canManage)return <p>此 Neon 身份沒有 Scope manager 或 page manager 權限。</p>;
 
   const save=async row=>{
     try{

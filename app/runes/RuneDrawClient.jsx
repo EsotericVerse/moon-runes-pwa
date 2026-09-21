@@ -7,7 +7,7 @@ import { useNeonAccount } from '../loc/use-neon-account';
 import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
 import { realMoonPhase } from '../loc/model/moon-phase';
-import {scopeHrefV2,scopeOriginV2} from '../modular-v2/scope-registry.v2';
+import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
 const DIRECTIONS = ['正位', '半正位', '半逆位', '逆位'];
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
@@ -24,10 +24,10 @@ const DRAW_TYPES = [
 const DRAW_PATHS = Object.freeze({
   single: scopeHrefV2('runes','duel/one'),
   daily: scopeHrefV2('runes','duel/daily'),
-  '2card': `${scopeOriginV2('runes')}/duel/two`,
-  '3card': `${scopeOriginV2('runes')}/duel/three`,
-  '5card': `${scopeOriginV2('runes')}/duel/five`,
-  ow3gs: `${scopeOriginV2('runes')}/duel/ow3gs`
+  '2card': scopeHrefV2('runes','duel/two'),
+  '3card': scopeHrefV2('runes','duel/three'),
+  '5card': scopeHrefV2('runes','duel/five'),
+  ow3gs: scopeHrefV2('runes','duel/ow3gs')
 });
 
 const RITUAL_MESSAGES = {
@@ -36,7 +36,7 @@ const RITUAL_MESSAGES = {
   '2card': ['正在進行雙卡占卜。', '第一張卡牌為「因」，第二張卡牌為「果」。', '正在整理兩張牌的因果位置。', '抽牌完成。'],
   '3card': ['正在進行三卡占卜。', '第一張為「源」，第二張為「轉」，第三張為「合」。', '正在整理源、轉、合的語法位置。', '抽牌完成。'],
   '5card': ['正在進行五卡占卜。', '兩張過去成因、一個意外變化、兩張現在狀況。', '正在整理雙卡＋單卡＋雙卡的組合。', '抽牌完成。'],
-  ow3gs: ['正在進行 OW3gs 11 卡抽牌。', '1–6 建立事件描述層，第 7–11 張為核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
+  ow3gs: ['正在進行 OW3gs 11 卡抽牌。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
 };
 
 async function fetchCoreRunes() {
@@ -368,7 +368,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         <MultiReading draw={draw} mode={drawKey} phase={moonPhase}/>
 
         {drawKey === 'ow3gs' && <section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs">
-          <p className="loc-eyebrow">OW3gs · 雙模型判讀</p><h2>1–6 因的描述層 → 7–11 果的判定層</h2>
+          <p className="loc-eyebrow">OW3gs · 雙模型判讀</p><h2>1–6 因的描述層 → 7–11 果的判定層</h2><p>第 7–11 張為核心判定。</p>
           <p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p>
           <p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；以雙卡與三卡綜合判斷產生問題的可能狀態。</p>
           <p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；以五卡方式判斷建議如何行動的治理原則。</p>
