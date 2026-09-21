@@ -3,8 +3,8 @@ import {scopeHrefV2,scopeOriginV2} from './scope-registry.v2';
 
 const LOCAL_MENUS=Object.freeze({
   context:[['關係圖探索器','/context'],['關鍵詞界定','/context/keywords']],
-  culture:[['時間長河','/culture'],['時期與軌跡','/culture/trajectory'],['歷史紀錄','/culture/history'],['作品展示','/culture/galaxy', [['推薦作品','/culture/galaxy'],['創作文章','/culture/galaxy/literary'],['小說','/culture/galaxy/novel'],['音樂','/culture/galaxy/music'],['圖片','/culture/galaxy/pics'],['多媒體','/culture/galaxy/multimedia']]]],
-  galaxy:[['推薦作品','/culture/galaxy'],['創作文章','/culture/galaxy/literary'],['小說','/culture/galaxy/novel'],['音樂','/culture/galaxy/music'],['圖片','/culture/galaxy/pics'],['多媒體','/culture/galaxy/multimedia']],
+  culture:[['時間長河','/culture'],['時期與軌跡','/culture/trajectory'],['歷史紀錄','/culture/history'],['作品展示','/culture/galaxy']],
+  galaxy:[['作品展示','/culture/galaxy']],
   statics:[['排行榜','/statics/keyword'],['時間單位','/statics/units'],['來源密度','/statics/sources']],
   governance:[['原則理念','/governance'],['版權說明','/governance/law'],['FAQ','/governance/faq'],['管理者功能','/governance/manage']],
   runes:[['符文抽籤','/'],['符文圖鑑','/list'],['符文解牌','/algorithm'],['符文遊戲','/game']],
