@@ -87,6 +87,8 @@ export default function CultureV2({section=null}){
   const filters=useMemo(()=>[...new Set(rows.map(row=>row.source).filter(Boolean))].sort(),[rows]);
   const visible=useMemo(()=>rows.filter(row=>(!sourceFilter||row.source===sourceFilter)&&(!kindFilter||row.kind===kindFilter)),[rows,sourceFilter,kindFilter]);
   const visibleIds=useMemo(()=>new Set(visible.map(row=>row.id)),[visible]);
+  const dailyStats=useMemo(()=>{const grouped=new Map();for(const row of visible){const key=row.date||'未指定';const current=grouped.get(key)||{date:key,total:0,works:0,events:0,trajectories:0,sources:new Set()};current.total+=1;if(row.kind==='work'||row.kind==='recommendation')current.works+=1;if(row.kind==='event')current.events+=1;if(row.kind==='trajectory')current.trajectories+=1;if(row.source)current.sources.add(row.source);grouped.set(key,current);}return [...grouped.values()].sort((a,b)=>String(a.date).localeCompare(String(b.date)));},[visible]);
+  const trajectoryRows=useMemo(()=>visible.filter(row=>row.body||row.kind==='trajectory'||row.kind==='event').sort((a,b)=>String(b.date).localeCompare(String(a.date))),[visible]);
 
   const items=useMemo(()=>visible.map(row=>{
     const start=dateValue(row.date);
