@@ -10,12 +10,23 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 const PAGE_SIZE=20;
 const KEYWORD_GROUPS=Object.freeze(['靈魂','連結','生命','自然','礦物','元素','秩序','無序']);
-const PERSONAL_STYLE_DEFAULTS=Object.freeze(Array.from({length:8},(_,index)=>({id:'personal-'+(index+1),label:index===0?'政德':'個人風格 '+(index+1),terms:[]})));
-const RANKING_PROFILES=Object.freeze([
-  ...PERSONAL_STYLE_DEFAULTS.map(style=>({id:style.id,label:style.label,description:style.id==='personal-1'?'第一個個人風格':'可自行命名與整理'})),
-  {id:'runes',label:'月之符文',description:'預設特殊分類'},
-  {id:'annual',label:'每年分佈',description:'依年份統計'}
+const PERSONAL_STYLE_DEFAULTS=Object.freeze([
+  {id:'personal-1',label:'德',terms:[],locked:true,privateOnly:false,sourceScope:'lo3rwang'},
+  {id:'personal-2',label:'黑暗領主／darklord',terms:[],locked:true,privateOnly:true,sourceScope:'darklord',source:'twitter_private',includeInLocTotal:false,publicDetail:false},
+  ...Array.from({length:6},(_,index)=>({id:'personal-'+(index+3),label:'個人風格 '+(index+3),terms:[],locked:false,privateOnly:false,sourceScope:'lo3rwang'}))
 ]);
+const RANKING_PROFILES=Object.freeze([
+  ...PERSONAL_STYLE_DEFAULTS.map(style=>({id:style.id,label:style.label,description:style.id==='personal-1'?'第一個個人風格':style.privateOnly?'私密文本統計，不進 LOC 總數':style.locked?'個人化私密來源':'可自行命名與整理',privateOnly:Boolean(style.privateOnly)})),
+  {id:'runes',label:'月之符文',description:'預設特殊分類',privateOnly:false},
+  {id:'annual',label:'每年分佈',description:'依年份統計',privateOnly:false}
+]);
+function hydratePersonalStyles(value){
+  const saved=Array.isArray(value)?value:[];
+  return PERSONAL_STYLE_DEFAULTS.map(def=>{
+    const item=saved.find(style=>style.id===def.id)||{};
+    return {...def,...item,label:def.locked?def.label:(item.label||def.label),terms:Array.isArray(item.terms)?item.terms:[]};
+  });
+}
 const text=value=>String(value??'');
 const yearOf=value=>text(value).slice(0,4);
 const keywordText=value=>{
@@ -87,7 +98,7 @@ export default function StatisticsV2({section=null}){
     if(typeof window==='undefined')return PERSONAL_STYLE_DEFAULTS;
     try{
       const stored=JSON.parse(window.localStorage.getItem(personalStylesStorageKey)||'null');
-      return Array.isArray(stored)&&stored.length===8?stored:PERSONAL_STYLE_DEFAULTS;
+      return hydratePersonalStyles(stored);
     }catch{return PERSONAL_STYLE_DEFAULTS;}
   });
   useEffect(()=>{
@@ -157,7 +168,7 @@ export default function StatisticsV2({section=null}){
   const termHistory=useMemo(()=>{const map=new Map();for(const row of rankingSource){const term=row.term||row.title||row.name;if(!term)continue;const current=map.get(term)||new Set();current.add(row.ranking_type||'總榜');map.set(term,current);}return map;},[rankingSource]);
   const addSelectedToGroup=()=>setKeywordGroups(current=>({...current,[targetKeywordGroup]:[...new Set([...(current[targetKeywordGroup]||[]),...selectedTerms])]}));
   const addSelectedToPersonalStyle=()=>setPersonalStyles(current=>current.map(style=>style.id===targetPersonalStyle?{...style,terms:[...new Set([...(style.terms||[]),...selectedTerms])]}:style));
-  const renamePersonalStyle=(id,label)=>setPersonalStyles(current=>current.map(style=>style.id===id?{...style,label:label||'未命名風格'}:style));
+  const renamePersonalStyle=(id,label)=>setPersonalStyles(current=>current.map(style=>style.id===id&&!style.locked?{...style,label:label||'未命名風格'}:style));
   const removeFromPersonalStyle=(id,term)=>setPersonalStyles(current=>current.map(style=>style.id===id?{...style,terms:(style.terms||[]).filter(item=>item!==term)}:style));
   const removeFromGroup=(group,term)=>setKeywordGroups(current=>({...current,[group]:(current[group]||[]).filter(item=>item!==term)}));
   const batchHref=selectedTerms.length?'/search?terms='+encodeURIComponent(selectedTerms.join('|')):'/search';
@@ -190,7 +201,7 @@ export default function StatisticsV2({section=null}){
           <div className="scope-v2-ranking">{visibleTop.map((row,index)=>{const term=row.term||row.title||row.name||'—';const repeated=termHistory.get(term)?.size||1;return <div className="statistics-ranking-row" key={'top-'+(row.ranking_key||term||index)}><label><input type="checkbox" checked={selectedTerms.includes(term)} onChange={()=>setSelectedTerms(current=>current.includes(term)?current.filter(value=>value!==term):[...current,term])}/><b>{index+1}. {term}</b></label><span>{row.item_count??'—'} 筆 · {repeated>1?'跨 '+repeated+' 個排名':'單一排名'} · <a href={'/search?q='+encodeURIComponent(term)}>查看分佈</a></span></div>})}</div>
           <div className="statistics-batch-controls"><label>排行榜展示筆數<input type="number" min="1" max="200" value={rankLimit} onChange={event=>setRankLimit(Math.min(200,Math.max(1,Number(event.target.value)||1)))} /></label><label>加入個人風格<select value={targetPersonalStyle} onChange={event=>setTargetPersonalStyle(event.target.value)}>{personalStyles.map(style=><option key={style.id} value={style.id}>{style.label}</option>)}</select></label><button type="button" className="context-btn primary" onClick={addSelectedToPersonalStyle}>批次加入個人風格</button><label>加入符文分類<select value={targetKeywordGroup} onChange={event=>setTargetKeywordGroup(event.target.value)}>{KEYWORD_GROUPS.map(group=><option key={group}>{group}</option>)}</select></label><button type="button" className="context-btn ghost" onClick={addSelectedToGroup}>加入符文分類</button><a className="context-btn ghost" href={batchHref}>批次查看時間分佈</a><small>展示筆數可調整 1–200；前 10 名自動加入批次清單。調整先存在本機，OAuth 後才同步 Neon。</small></div>
         </div>
-        <div className="statistics-keyword-groups"><div className="statistics-section-heading"><p className="scope-v2-eyebrow">EIGHT PERSONAL STYLES</p><h3>個人設定風格</h3><span>八個風格由使用者自行命名與整理；第一個預設名稱是「政德」。</span></div><div className="statistics-group-grid">{personalStyles.map(style=><section className="statistics-group-card" data-group={style.id} key={style.id}><div><input className="statistics-style-name" value={style.label} onChange={event=>renamePersonalStyle(style.id,event.target.value)} aria-label={style.label+'名稱'}/><span>{style.terms?.length||0} 個</span></div><div className="statistics-group-terms">{(style.terms||[]).map(term=><button type="button" key={term} onClick={()=>removeFromPersonalStyle(style.id,term)}>{term}<span aria-hidden="true">×</span></button>)}</div>{!(style.terms||[]).length?<small>尚未加入關鍵詞</small>:null}</section>)}</div></div>
+        <div className="statistics-keyword-groups"><div className="statistics-section-heading"><p className="scope-v2-eyebrow">EIGHT PERSONAL STYLES</p><h3>個人設定風格</h3><span>八個風格由使用者自行命名與整理；第一個預設名稱是「政德」。</span></div><div className="statistics-group-grid">{personalStyles.map(style=><section className="statistics-group-card" data-group={style.id} key={style.id}><div><input className="statistics-style-name" value={style.label} disabled={style.locked} onChange={event=>renamePersonalStyle(style.id,event.target.value)} aria-label={style.label+'名稱'}/><span>{style.terms?.length||0} 個</span></div><div className="statistics-group-terms">{(style.terms||[]).map(term=><button type="button" key={term} onClick={()=>removeFromPersonalStyle(style.id,term)}>{term}<span aria-hidden="true">×</span></button>)}</div>{!(style.terms||[]).length?<small>尚未加入關鍵詞</small>:null}</section>)}</div></div>
         <div className="statistics-keyword-groups statistics-rune-groups"><div className="statistics-section-heading"><p className="scope-v2-eyebrow">SPECIAL DEFAULT · LUNARUNES</p><h3>月之符文分類</h3><span>這是預設特殊分類，不等同於八個個人風格。</span></div><div className="statistics-group-grid">{KEYWORD_GROUPS.map(group=><section className="statistics-group-card" data-group={group} key={group}><div><strong>{group}</strong><span>{keywordGroups[group]?.length||0} 個</span></div><div className="statistics-group-terms">{(keywordGroups[group]||[]).map(term=><button type="button" key={term} onClick={()=>removeFromGroup(group,term)}>{term}<span aria-hidden="true">×</span></button>)}</div>{!(keywordGroups[group]||[]).length?<small>尚未加入關鍵詞</small>:null}</section>)}</div></div>
         <div className="scope-v2-ranking statistics-full-ranking">{shown.map((row,index)=><div key={row.ranking_key||row.term||index}><b>{(page-1)*PAGE_SIZE+index+1}. {row.term||row.title||row.name||'—'}</b><span>{row.item_count??'—'} · {row.rank_value??'—'} · <a href={'/search?q='+encodeURIComponent(row.term||row.title||row.name||'')}>查時間分佈</a></span></div>)}</div>{!loading&&!shown.length?<p>目前沒有可顯示的排行榜資料。</p>:null}{rankings.length?<div className="scope-v2-pagination"><span>第 {page} / {pages} 頁 · 共 {rankings.length} 筆</span><div><button type="button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button><button type="button" disabled={page>=pages} onClick={()=>setPage(value=>Math.min(pages,value+1))}>下一頁</button></div></div>:null}</div>:null}
     </ScopeCardV2>
