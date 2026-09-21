@@ -6,6 +6,7 @@ import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
 import {scopeDataViewV2} from '../scope-registry.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
+import {CULTURE_PATHS_V2} from '../../migration-bridges/current-data-compat.v2';
 import {neonClient} from '../../loc/neon-client';
 
 const DAY_MS=24*60*60*1000;
