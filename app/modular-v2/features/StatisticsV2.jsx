@@ -31,7 +31,7 @@ export default function StatisticsV2({section=null}){
   const rankingView=scopeDataViewV2(scopeId,'rankings');
   const [cultureRows,setCultureRows]=useState([]);
   const [rankingRows,setRankingRows]=useState([]);
-  const [mode,setMode]=useState(section==='keyword'?'keywords':'units');
+  const [mode,setMode]=useState(section==='keyword'?'keywords':section==='eras'?'eras':section==='sources'?'sources':'units');
   const [rankingType,setRankingType]=useState('');
   const [page,setPage]=useState(1);
   const [loading,setLoading]=useState(true);
