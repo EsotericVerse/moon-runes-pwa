@@ -45,6 +45,12 @@ export default function AuthorHomeView({section=null}){
       eyebrow:'Author Reel',
       title:'這就是我',
       content:<div className="loc-context-list"><article className="loc-context-item"><strong>作者自我介紹作品</strong><p>這支作品是王政德／lo3rwang 的個人自我介紹，不是月之符文宣傳內容。</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 查看〈這就是我〉 →</a></p></article></div>
+    },
+    {
+      id:'micro-moonlight',
+      eyebrow:'Song',
+      title:'只是微月光',
+      content:<div className="loc-context-list"><article className="loc-context-item"><p>「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p><p><a href="https://suno.com/song/a0a724c1-d35f-4ccf-9ac1-0c1c9f2d6a50" target="_blank" rel="noopener noreferrer">聽〈只是微月光〉 →</a></p></article></div>
     }
   ];
   const sectionCopy=SECTION_COPY[section];
