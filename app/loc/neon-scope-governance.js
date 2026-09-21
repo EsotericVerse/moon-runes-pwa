@@ -53,7 +53,7 @@ export async function revokeScopeAccessGrant({userId,scopeId,accessLevel,caseId}
   return Array.isArray(data)?data:[];
 }
 
-export async function requestScopeRelation(input,{rows=[]}={}){
+export async function requestScopeRelation(input,{rows=[],requestedBy=null}={}){
   const validation=validateScopeTreeMove(rows,input);
   if(!validation.ok){
     const error=new Error(`Scope relation rejected: ${validation.reason}`);
@@ -66,26 +66,24 @@ export async function requestScopeRelation(input,{rows=[]}={}){
     child_scope_id:String(input.child||input.child_id||input.scope_id).trim(),
     relation_type:String(input.relation_type||'parent_child'),
     status:'pending',
-    reason:input.reason||null
+    reason:input.reason||null,
+    requested_by:requestedBy?String(requestedBy).trim():null
   };
   const {data,error}=await neonClient.from(SCOPE_GOVERNANCE_TABLES.requests).insert(payload).select('*').limit(1);
   if(error)throw failure(error,'Scope relation request failed');
   return data?.[0]||payload;
 }
 
-export async function decideScopeRelationRequest(requestId,status,reviewNote=''){
+export async function decideScopeRelationRequest(requestId,status,reviewNote='',reviewedBy=null){
   if(!['approved','rejected','revoked'].includes(status))throw new Error('Invalid Scope relation decision');
-  const {data,error}=await neonClient.from(SCOPE_GOVERNANCE_TABLES.requests)
-    .update({status,review_note:reviewNote||null,reviewed_at:new Date().toISOString()})
-    .eq('id',requestId).select('*').limit(1);
+  const {data,error}=await neonClient.rpc('decide_scope_relation_request',{
+    p_request_id:requestId,
+    p_status:status,
+    p_review_note:reviewNote||null,
+    p_reviewed_by:reviewedBy?String(reviewedBy).trim():null
+  });
   if(error)throw failure(error,'Scope relation decision failed');
-  const request=data?.[0]||null;
-  if(status==='approved'&&request){
-    const relation={parent_scope_id:request.parent_scope_id,child_scope_id:request.child_scope_id,relation_type:request.relation_type||'parent_child',created_by:request.reviewed_by||null};
-    const applied=await neonClient.from(SCOPE_GOVERNANCE_TABLES.relations).upsert(relation).select('*').limit(1);
-    if(applied.error)throw failure(applied.error,'Approved Scope relation apply failed');
-  }
-  return request;
+  return Array.isArray(data)?data[0]||null:data||null;
 }
 
 export function scopeRelationsToNodes(rows=[]){

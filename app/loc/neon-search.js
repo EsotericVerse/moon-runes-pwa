@@ -10,15 +10,37 @@ const TABLES=Object.freeze({
   治理:Object.freeze([['loc_context_entries','治理脈絡']])
 });
 
+const SEARCH_PAGE_SIZE=500;
+
+function relationForTable(identifier){
+  const value=String(identifier||'');
+  const separator=value.indexOf('.');
+  if(separator<1)return neonClient.from(value);
+  const schema=value.slice(0,separator);const table=value.slice(separator+1);
+  return neonClient.schema(schema).from(table);
+}
+
+async function selectAllNeonRows(table,source){
+  const rows=[];let offset=0;let total=null;
+  while(total===null||offset<total){
+    const result=await relationForTable(table).select('*',{count:'exact'}).range(offset,offset+SEARCH_PAGE_SIZE-1);
+    if(result.error)throw new Error(result.error.message||'query failed');
+    const page=Array.isArray(result.data)?result.data:[];
+    rows.push(...page.map(row=>({row,source})));
+    total=Number.isFinite(Number(result.count))?Number(result.count):offset+page.length;
+    if(page.length<SEARCH_PAGE_SIZE)break;
+    offset+=page.length;
+  }
+  return rows;
+}
+
 export async function selectNeonSearchRows(collectionId){
   const tables=TABLES[collectionId]||TABLES.all;
   const settled=await Promise.all(tables.map(async([table,source])=>{
     try{
-      const result=await neonClient.from(table).select('*').limit(5000);
-      if(result.error)throw new Error(result.error.message||'query failed');
       return {
         table,
-        rows:(Array.isArray(result.data)?result.data:[]).map(row=>({row,source})),
+        rows:await selectAllNeonRows(table,source),
         error:null
       };
     }catch(error){

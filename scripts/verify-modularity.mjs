@@ -98,7 +98,27 @@ const searchView = readFileSync(resolve(root, 'app/modular-v2/features/SearchV2.
 if (!/selectNeonSearchRows\(collection\.id\)/.test(searchView)) failures.push('SearchV2: search must use direct Neon SELECT');
 if (/fetchLocJson|fetchLocDataSegments|getLocDataDataset|runtime_json_documents|manifest|shard|search-routing|search-telemetry/.test(searchView)) failures.push('SearchV2: JSON, manifest, shard, routing, telemetry and runtime projection paths must not be used');
 const neonSearch = readFileSync(resolve(root, 'app/loc/neon-search.js'), 'utf8');
-if (!/neonClient\.from\(table\)\.select\('\*'\)/.test(neonSearch)) failures.push('Neon Search: direct SELECT contract missing');
+if (!/\.select\('\*',\{count:'exact'\}\)\.range\(/.test(neonSearch)) failures.push('Neon Search: direct paged SELECT contract missing');
+if (!/neonClient\.schema\(schema\)\.from\(table\)/.test(neonSearch)) failures.push('Neon Search: schema-qualified tables must use the schema API');
+
+const scopeGovernance = readFileSync(resolve(root, 'app/loc/neon-scope-governance.js'), 'utf8');
+if (!/rpc\('decide_scope_relation_request'/.test(scopeGovernance)) failures.push('Scope governance: approval must use the atomic Neon RPC');
+if (!/requested_by:requestedBy/.test(scopeGovernance)) failures.push('Scope governance: relation requests must record the requester');
+const scopeManagement = readFileSync(resolve(root, 'app/modular-v2/ScopeManagementV2.jsx'), 'utf8');
+if (!/useNeonAccount/.test(scopeManagement)||!/account\.canManage/.test(scopeManagement)) failures.push('Scope management: session and manager role gate missing');
+const routeParamFiles = [
+  'app/context/[section]/page.jsx',
+  'app/culture/[section]/page.jsx',
+  'app/culture/galaxy/[section]/page.jsx',
+  'app/governance/[section]/page.jsx',
+  'app/lo3rwang/[section]/page.jsx',
+  'app/statics/[section]/page.jsx',
+  'app/statics/[section]/[kind]/page.jsx'
+];
+for (const routeFile of routeParamFiles) {
+  const routeSource = readFileSync(resolve(root, routeFile), 'utf8');
+  if (!/export default async function/.test(routeSource)||!/await params/.test(routeSource)) failures.push(`${routeFile}: dynamic params must be awaited`);
+}
 
 const contextView = readFileSync(resolve(root, 'app/modular-v2/features/ContextV2.jsx'), 'utf8');
 if (!/scopeDataViewV2\(scopeId,'context'\)/.test(contextView)) failures.push('ContextV2: context projection must derive from shared Scope registry');
