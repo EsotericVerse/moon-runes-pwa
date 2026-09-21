@@ -8,8 +8,21 @@ import {ScopeCardV2} from '../PageShellV2';
 import {scopeDataViewV2} from '../scope-registry.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {neonClient} from '../../loc/neon-client';
+import {fetchLocDataSegments,fetchLocJsonBatch} from '../../loc/data';
 
 const DAY_MS=24*60*60*1000;
+const SEGMENT_BATCH_SIZE=2;
+async function boundedLocalImportAdapter(datasetId,segments,requests=[]){
+  const localSources=await fetchLocJsonBatch(requests,{concurrency:2});
+  const ordered=Array.isArray(segments)?segments:[];
+  const loaded=[];
+  for(let offset=0;offset<ordered.length;offset+=SEGMENT_BATCH_SIZE){
+    const chunk=ordered.slice(offset,offset+SEGMENT_BATCH_SIZE);
+    const batch=await fetchLocDataSegments(datasetId,{segmentIds:chunk.map(segment=>segment.id),maxSegments:SEGMENT_BATCH_SIZE});
+    loaded.push(...batch);
+  }
+  return {localSources,loaded};
+}
 const text=value=>String(value??'');
 function normalize(row,index){const payload=row?.payload&&typeof row.payload==='object'?row.payload:{};const value={...row,...payload};return {...value,id:value.id||value.entry_key||value.event_id||value.work_id||'search-'+index,kind:value.kind||value.entry_type||value.culture_type||'trajectory',title:value.title||value.name||value.label||value.term||'未命名',date:text(value.date||value.start_date).slice(0,10),body:value.body||value.content||value.description||value.summary||'',source:value.source||value.source_name||value.media_type||'',eraId:value.era_id||value.period_id||value.period||'',url:value.url||value.href||''};}
 function distanceDays(a,b){return Math.round(Math.abs(new Date(a).getTime()-new Date(b).getTime())/DAY_MS);}
