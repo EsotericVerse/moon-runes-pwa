@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {neonClient,readNeonOrPublicFallback} from '../../loc/neon-client';
+import {neonClient} from '../../loc/neon-client';
 import {Bar,BarChart,CartesianGrid,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
@@ -78,9 +78,6 @@ export default function StatisticsV2({section=null}){
   const [page,setPage]=useState(1);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
-  const [dataMode,setDataMode]=useState('');
-  const [sourceStats,setSourceStats]=useState(null);
-  const [workManifest,setWorkManifest]=useState(null);
   const [rankLimit,setRankLimit]=useState(10);
   const [selectedTerms,setSelectedTerms]=useState([]);
   const [rangeMode,setRangeMode]=useState('year');
@@ -117,20 +114,14 @@ export default function StatisticsV2({section=null}){
 
   useEffect(()=>{
     let live=true;
-    setLoading(true);setError('');setDataMode('');
+    setLoading(true);setError('');
     Promise.all([
-      cultureView?readNeonOrPublicFallback(()=>neonClient.from(cultureView).select('*').order('date',{ascending:true}).limit(5000),'/projections/loc-culture.json'):Promise.resolve({data:[],error:null}),
-      rankingView?readNeonOrPublicFallback(()=>neonClient.from(rankingView).select('*').order('rank_value',{ascending:false}).limit(1000),'/projections/loc-rankings.json'):Promise.resolve({data:[],error:null}),
-      fetch('/data/json/generated/search/SEARCH_SOURCE_STATS.json',{cache:'no-store'}).then(response=>response.ok?response.json():null).catch(()=>null),
-      fetch('/data/json/registries/LOC4_TEXT_ANALYSIS_REGISTRY.json',{cache:'no-store'}).then(response=>response.ok?response.json():null).catch(()=>null)
-    ]).then(([culture,rankings,summary,manifest])=>{
-      if(live){
-        setCultureRows((culture?.data||[]).map(normalize));
-        setRankingRows(rankings?.data||[]);
-        setSourceStats(summary);
-        setWorkManifest(manifest);
-        setDataMode(culture?.fallback||rankings?.fallback?'public-fallback':'neon-read');
-      }
+      cultureView?neonClient.from(cultureView).select('*').order('date',{ascending:true}).limit(5000):Promise.resolve({data:[],error:null}),
+      rankingView?neonClient.from(rankingView).select('*').order('rank_value',{ascending:false}).limit(1000):Promise.resolve({data:[],error:null})
+    ]).then(([culture,rankings])=>{
+      const failures=[culture?.error,rankings?.error].filter(Boolean);
+      if(failures.length)throw new Error(failures.map(item=>item.message||String(item)).join('；'));
+      if(live){setCultureRows((culture?.data||[]).map(normalize));setRankingRows(rankings?.data||[]);}
     }).catch(errorValue=>live&&setError(String(errorValue?.message||errorValue)))
       .finally(()=>live&&setLoading(false));
     return()=>{live=false};
@@ -155,14 +146,10 @@ export default function StatisticsV2({section=null}){
   }),[cultureRows,rangeMode,yearRangeStart,yearRangeEnd,selectedPeriod]);
   const days=useMemo(()=>groupByDate(scopedCultureRows),[scopedCultureRows]);
   const eras=useMemo(()=>groupByEra(scopedCultureRows),[scopedCultureRows]);
-  const sourceSummary=useMemo(()=>[...(Array.isArray(sourceStats?.text_sources)?sourceStats.text_sources:[]),...(Array.isArray(sourceStats?.media_sources)?sourceStats.media_sources:[])].map(item=>{const isLyrics=item.source_type==='lyrics'||item.source_category==='音樂'||item.content_counts?.lyrics!=null;const isWork=item.source_type==='work'||item.source_category==='作品';return {source:item.source||'未標記來源',total:Number(item.records||0),unit:isLyrics?'首':isWork?'部':'筆',searchable:Number(item.searchable_records??item.records??0),characters:Number(item.char_count||0),startDate:item.start_date||'',endDate:item.end_date||'',status:item.status||''};}).filter(item=>item.total>0),[sourceStats]);
-  const sources=useMemo(()=>{if(!scopedCultureRows.length&&sourceSummary.length)return sourceSummary.map(item=>({source:item.source,total:item.total,searchable:item.searchable,characters:item.characters}));const map=new Map();for(const row of scopedCultureRows){const key=row.source||'未標記來源';map.set(key,(map.get(key)||0)+1);}return [...map.entries()].map(([source,total])=>({source,total})).sort((a,b)=>b.total-a.total);},[scopedCultureRows,sourceSummary]);
-  const summaryRecords=useMemo(()=>scopedCultureRows.length||sourceSummary.reduce((sum,item)=>sum+item.total,0),[scopedCultureRows,sourceSummary]);
-  const summarySearchable=useMemo(()=>sourceSummary.reduce((sum,item)=>sum+item.searchable,0),[sourceSummary]);
-  const summaryCharacters=useMemo(()=>scopedCultureRows.length?scopedCultureRows.reduce((sum,row)=>sum+row.characterCount,0):sourceSummary.reduce((sum,item)=>sum+item.characters,0),[scopedCultureRows,sourceSummary]);
-  const timelineData=useMemo(()=>days.length?days:sourceSummary.map(item=>({date:item.startDate||'未指定',total:item.total,works:0,events:0,trajectories:0,recommendations:0,sources:1})),[days,sourceSummary]);
-  const authoredWorkCount=workManifest?.work_id?'1':0;
-  const authoredChapterCount=Number(workManifest?.chapter_count||0);
+  const sources=useMemo(()=>{const map=new Map();for(const row of scopedCultureRows){const key=row.source||'未標記來源';map.set(key,(map.get(key)||0)+1);}return [...map.entries()].map(([source,total])=>({source,total})).sort((a,b)=>b.total-a.total);},[scopedCultureRows]);
+  const summaryRecords=scopedCultureRows.length;
+  const summarySearchable=scopedCultureRows.length;
+  const summaryCharacters=useMemo(()=>scopedCultureRows.reduce((sum,row)=>sum+row.characterCount,0),[scopedCultureRows]);
   const derivedRankings=useMemo(()=>deriveKeywordRankings(scopedCultureRows),[scopedCultureRows]);
   const scopedRankingRows=useMemo(()=>rankingRows.filter(row=>{
     const payload=row?.payload&&typeof row.payload==='object'?row.payload:{};
@@ -218,12 +205,12 @@ export default function StatisticsV2({section=null}){
           {rangeMode==='year'?<><label>起始年<select value={selectedYearStart} onChange={event=>{setSelectedYearStart(event.target.value);setPage(1)}}>{years.map(year=><option key={year}>{year}</option>)}</select></label><label>結束年<select value={selectedYearEnd} onChange={event=>{setSelectedYearEnd(event.target.value);setPage(1)}}>{years.map(year=><option key={year}>{year}</option>)}</select></label></>:null}
           {rangeMode==='period'?<label>時期<select value={selectedPeriod} onChange={event=>{setSelectedPeriod(event.target.value);setPage(1)}}>{periods.map(period=><option key={period}>{period}</option>)}</select></label>:null}
         </div>
-        <div className="statistics-range-summary"><strong>{rangeLabel}</strong><span>{scopedCultureRows.length?numberFormat(scopedCultureRows.length)+' 項時間內容':'來源明細依內容類型列出'} · {days.length} 個日期 · {periods.length} 個可用時期</span></div>
+        <div className="statistics-range-summary"><strong>{rangeLabel}</strong><span>{scopedCultureRows.length?numberFormat(scopedCultureRows.length)+' 項時間內容':'目前 Neon projection 為 0 項'} · {days.length} 個日期 · {periods.length} 個可用時期</span></div>
       </section>
       {loading?<p className="scope-v2-status">載入展示資料…</p>:null}
-      {!loading&&dataMode==='public-fallback'?<p className="scope-v2-status" role="status">目前使用公開唯讀摘要展示；Neon 的日級 Culture projection 尚未提供即時資料，時間軸先保留來源起始時間，不會留白。</p>:null}
+      
       {error?<p className="scope-v2-status" role="status">統計讀取狀態：{error}。目前仍保留 0 筆或本地摘要展示。</p>:null}
-      <div className="statistics-range-summary statistics-data-summary" aria-label="資料摘要"><strong>來源統計</strong><span>{sourceSummary.map(item=>item.source+' '+numberFormat(item.total)+item.unit).join(' · ')||'目前 0 筆可展示資料'} · 可搜尋資料依來源顯示 · {numberFormat(summaryCharacters)} 個文字字元 · LOC4 作品 {numberFormat(authoredWorkCount)} 部／已確認章節 {numberFormat(authoredChapterCount)} 章</span></div>
+      <div className="statistics-range-summary statistics-data-summary" aria-label="資料摘要"><strong>{numberFormat(summaryRecords)} 項 Neon 資料</strong><span>{numberFormat(summarySearchable)} 項可讀取 · {numberFormat(summaryCharacters)} 個文字字元</span></div>
       {!loading&&!summaryRecords&&!summaryCharacters?<p className="scope-v2-status" role="status">目前是 0 筆可展示資料，資料來源恢復後會保留此頁結構，不會變成空白中斷。</p>:null}
       {mode!=='keywords'?<div className="statistics-chart"><ResponsiveContainer width="100%" height={340}><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/><XAxis dataKey={mode==='eras'?'era':mode==='sources'?'source':'date'} tick={{fill:'currentColor',fontSize:11}}/><YAxis allowDecimals={false} tick={{fill:'currentColor',fontSize:11}}/><Tooltip/><Bar dataKey="total" fill="var(--loc-accent)" radius={[6,6,0,0]}/>{mode==='units'?<><Bar dataKey="works" fill="var(--loc-gold)" radius={[6,6,0,0]}/><Bar dataKey="events" fill="var(--loc-muted)" radius={[6,6,0,0]}/></>:null}</BarChart></ResponsiveContainer></div>:null}
       {mode==='keywords'?<div className="statistics-ranking">
