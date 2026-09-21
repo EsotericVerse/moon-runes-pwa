@@ -40,17 +40,18 @@ export default function GovernanceManagement(){
   };
 
   useEffect(()=>{
-    if(account.user)loadShared();
+    if(!account.loading&&!account.permissionLoading&&account.user&&account.canManage)loadShared();
     else setShared({loading:false,eras:[],daily:[],events:[],relations:[],error:''});
-  },[account.user?.id,scopeId]);
+  },[account.loading,account.permissionLoading,account.user?.id,account.canManage,scopeId]);
 
   return <section className="loc-card" id="management">
     <p className="loc-eyebrow">Governance Management</p>
     <h2>治理管理</h2>
     <p className="loc-subtitle">目前 Scope：{scope.label}（{scopeId}）。管理 session 與資料讀寫都必須遵守 Scope 邊界；公開 Current projection 維持唯讀。</p>
-    {account.loading&&<p>正在確認 Neon session…</p>}
+    {(account.loading||account.permissionLoading)&&<p>正在確認 Neon session 與管理權限…</p>}
     {!account.loading&&!account.user&&<button type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>}
-    {!account.loading&&account.user&&<>
+    {!account.loading&&!account.permissionLoading&&account.user&&!account.canManage&&<p>此 Neon 身份沒有 Scope manager 或 page manager 權限。</p>}
+    {!account.loading&&!account.permissionLoading&&account.user&&account.canManage&&<>
       <p><strong>Neon session 有效。</strong> {account.user.email||account.user.name||''}</p>
       <hr/>
       <h3>Neon 共享資料狀態</h3>
@@ -81,6 +82,6 @@ export default function GovernanceManagement(){
     <p className="loc-subtitle">保留字只約束目前部署，不限制其他使用者、部門或其他部署使用相同名稱。</p>
     <hr/>
     <h3>全站風格管理</h3>
-    <ThemeAdmin/>
+    {account.user&&account.canManage?<ThemeAdmin/>:<p>需要 Scope manager 或 page manager 權限。</p>}
   </section>;
 }
