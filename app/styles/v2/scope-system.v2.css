@@ -179,7 +179,7 @@
 .context-workbench-svg{
   width:100%;height:auto;min-height:320px;display:block;
   border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);
-  background:var(--loc-panel-2);color:var(--loc-graph-edge);
+  background:var(--loc-panel-2);color:var(--loc-text);
 }
 .context-workbench-svg text{font-family:var(--loc-font-body);fill:var(--loc-graph-label)}
 .context-workbench-svg circle{fill:var(--loc-graph-node);stroke:var(--loc-accent);stroke-width:2}
