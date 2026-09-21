@@ -8,6 +8,7 @@
   --loc-size-heading:var(--loc-type-section-title);
   --loc-size-body:var(--loc-type-body);
   --loc-size-meta:var(--loc-type-eyebrow);
+  --loc-size-ui:var(--loc-type-ui);
   --loc-line-display:var(--loc-line-page-title);
   --loc-line-heading:var(--loc-line-section-title);
   --loc-line-text:var(--loc-line-body);
