@@ -8,7 +8,7 @@ import {ScopeCardV2} from '../PageShellV2';
 import {scopeDataViewV2} from '../scope-registry.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {CULTURE_PATHS_V2} from '../../migration-bridges/current-data-compat.v2';
-import {neonClient,readNeonOrPublicFallback} from '../../loc/neon-client';
+import {neonClient} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 
 const DAY_MS=24*60*60*1000;
@@ -42,10 +42,6 @@ function displayKind(kind){
   return ({era:'時期',event:'事件',trajectory:'軌跡',work:'作品',recommendation:'推薦'})[kind]||'軌跡';
 }
 
-function localCultureRows(registry){
-  const works=Array.isArray(registry?.works)?registry.works:[];
-  return works.map((work,index)=>normalizeRow({id:work.work_id||'local-work-'+index,work_id:work.work_id,kind:'work',title:work.title,date:work.date||work.created_date,era_id:work.period||work.era_id,body:work.summary||'',source:'author work registry',content_type:work.content_type||'text_work'} ,index));
-}
 
 function WorkbenchEditor({value,onChange,onSave,onDelete,onClose,saving}){
   if(!value)return <div className="culture-river-empty">點擊時間長河內容，或新增一筆資料。</div>;
@@ -103,15 +99,10 @@ export default function CultureV2({section=null}){
     let live=true;
     setLoading(true);setError('');
     if(!view){setRows([]);setLoading(false);setError('此 Scope 尚未設定 Culture SQL projection。');return()=>{live=false};}
-    Promise.all([
-      readNeonOrPublicFallback(()=>neonClient.from(view).select('*').order('date',{ascending:true}).limit(3000),'/projections/loc-culture.json'),
-      fetch('/data/json/registries/LOC4_WRITING_REGISTRY.json',{cache:'no-store'}).then(response=>response.ok?response.json():null).catch(()=>null)
-    ])
-      .then(([result,registry])=>{
+    neonClient.from(view).select('*').order('date',{ascending:true}).limit(3000)
+      .then(result=>{
         if(result?.error)throw new Error(result.error.message||'Culture SQL projection 讀取失敗');
-        const neonRows=(result?.data||[]).map(normalizeRow);
-        const fallbackRows=neonRows.length?[]:localCultureRows(registry);
-        if(live){setRows([...neonRows,...fallbackRows]);if(!neonRows.length&&fallbackRows.length)setNotice('目前使用作品 registry 的公開唯讀展示；Neon 日級 Culture projection 尚未提供資料。');}
+        if(live)setRows((result?.data||[]).map(normalizeRow));
       })
       .catch(errorValue=>live&&setError(String(errorValue?.message||errorValue)))
       .finally(()=>live&&setLoading(false));
