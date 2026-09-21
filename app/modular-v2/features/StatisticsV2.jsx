@@ -59,7 +59,8 @@ export default function StatisticsV2({section=null}){
   const [rankLimit,setRankLimit]=useState(10);
   const [selectedTerms,setSelectedTerms]=useState([]);
   const [rangeMode,setRangeMode]=useState('year');
-  const [selectedYear,setSelectedYear]=useState('');
+  const [selectedYearStart,setSelectedYearStart]=useState('');
+  const [selectedYearEnd,setSelectedYearEnd]=useState('');
   const [selectedPeriod,setSelectedPeriod]=useState('');
   const [targetKeywordGroup,setTargetKeywordGroup]=useState('連結');
   const [keywordGroups,setKeywordGroups]=useState(()=>{
@@ -91,22 +92,30 @@ export default function StatisticsV2({section=null}){
 
   const years=useMemo(()=>[...new Set(cultureRows.map(row=>yearOf(row.date)).filter(year=>/^\d{4}$/.test(year)))].sort().reverse(),[cultureRows]);
   const periods=useMemo(()=>[...new Set(cultureRows.map(row=>row.eraId).filter(Boolean))].sort(),[cultureRows]);
-  useEffect(()=>{if(!selectedYear&&years.length)setSelectedYear(years[0]);},[years,selectedYear]);
+  useEffect(()=>{
+    if(years.length){
+      setSelectedYearStart(current=>current&&years.includes(current)?current:years[0]);
+      setSelectedYearEnd(current=>current&&years.includes(current)?current:years[0]);
+    }
+  },[years]);
   useEffect(()=>{if(!selectedPeriod&&periods.length)setSelectedPeriod(periods[0]);},[periods,selectedPeriod]);
+  const yearRangeStart=selectedYearStart&&selectedYearEnd?([selectedYearStart,selectedYearEnd].sort()[0]):selectedYearStart||selectedYearEnd||'';
+  const yearRangeEnd=selectedYearStart&&selectedYearEnd?([selectedYearStart,selectedYearEnd].sort().at(-1)):selectedYearEnd||selectedYearStart||'';
+  const inYearRange=year=>!yearRangeStart||!yearRangeEnd||(year>=yearRangeStart&&year<=yearRangeEnd);
   const scopedCultureRows=useMemo(()=>cultureRows.filter(row=>{
-    if(rangeMode==='year')return !selectedYear||yearOf(row.date)===selectedYear;
+    if(rangeMode==='year')return inYearRange(yearOf(row.date));
     if(rangeMode==='period')return !selectedPeriod||row.eraId===selectedPeriod;
     return true;
-  }),[cultureRows,rangeMode,selectedYear,selectedPeriod]);
+  }),[cultureRows,rangeMode,yearRangeStart,yearRangeEnd,selectedPeriod]);
   const days=useMemo(()=>groupByDate(scopedCultureRows),[scopedCultureRows]);
   const eras=useMemo(()=>groupByEra(scopedCultureRows),[scopedCultureRows]);
   const sources=useMemo(()=>{const map=new Map();for(const row of scopedCultureRows){const key=row.source||'未標記來源';map.set(key,(map.get(key)||0)+1);}return [...map.entries()].map(([source,total])=>({source,total})).sort((a,b)=>b.total-a.total);},[scopedCultureRows]);
   const derivedRankings=useMemo(()=>deriveKeywordRankings(scopedCultureRows),[scopedCultureRows]);
   const scopedRankingRows=useMemo(()=>rankingRows.filter(row=>{
     if(rangeMode==='period'&&selectedPeriod)return row.period===selectedPeriod||row.era_id===selectedPeriod||row.period_id===selectedPeriod;
-    if(rangeMode==='year'&&selectedYear)return yearOf(row.date||row.start_date)===selectedYear||row.year===selectedYear;
+    if(rangeMode==='year')return inYearRange(yearOf(row.date||row.start_date))||inYearRange(text(row.year));
     return true;
-  }),[rankingRows,rangeMode,selectedYear,selectedPeriod]);
+  }),[rankingRows,rangeMode,yearRangeStart,yearRangeEnd,selectedPeriod]);
   const rankingSource=derivedRankings.length?derivedRankings:scopedRankingRows;
   const rankingTypes=useMemo(()=>[...new Set(rankingSource.map(row=>row.ranking_type).filter(Boolean))],[rankingSource]);
   useEffect(()=>{if(rankingTypes.length&&!rankingTypes.includes(rankingType))setRankingType(rankingTypes[0]);},[rankingTypes,rankingType]);
@@ -121,7 +130,7 @@ export default function StatisticsV2({section=null}){
   const addSelectedToGroup=()=>setKeywordGroups(current=>({...current,[targetKeywordGroup]:[...new Set([...(current[targetKeywordGroup]||[]),...selectedTerms])]}));
   const removeFromGroup=(group,term)=>setKeywordGroups(current=>({...current,[group]:(current[group]||[]).filter(item=>item!==term)}));
   const batchHref=selectedTerms.length?'/search?terms='+encodeURIComponent(selectedTerms.join('|')):'/search';
-  const rangeLabel=rangeMode==='year'?(selectedYear||'年度'):rangeMode==='period'?(selectedPeriod||'時期'):'全部資料';
+  const rangeLabel=rangeMode==='year'?(yearRangeStart&&yearRangeEnd?(yearRangeStart===yearRangeEnd?yearRangeStart:yearRangeStart+'–'+yearRangeEnd):'年度'):rangeMode==='period'?(selectedPeriod||'時期'):'全部資料';
   const chartData=mode==='units'?days.slice(-120):mode==='eras'?eras:mode==='sources'?sources:days.slice(-120);
 
   return <FeaturePageV2 featureId="statics" subtitle="從時間長河計算單位、密度、來源與排行榜，回饋下一輪脈絡整理。">
@@ -134,7 +143,7 @@ export default function StatisticsV2({section=null}){
         <div className="statistics-range-heading"><p className="scope-v2-eyebrow">TIME WINDOW</p><h3>統計時間範圍</h3><span>基本單位是年，也可切換到已建立的時期。</span></div>
         <div className="statistics-range-controls">
           <label>統計基準<select value={rangeMode} onChange={event=>{setRangeMode(event.target.value);setPage(1)}}><option value="year">逐年統計</option><option value="period">時期區間</option><option value="all">全部資料</option></select></label>
-          {rangeMode==='year'?<label>年份<select value={selectedYear} onChange={event=>{setSelectedYear(event.target.value);setPage(1)}}>{years.map(year=><option key={year}>{year}</option>)}</select></label>:null}
+          {rangeMode==='year'?<><label>起始年<select value={selectedYearStart} onChange={event=>{setSelectedYearStart(event.target.value);setPage(1)}}>{years.map(year=><option key={year}>{year}</option>)}</select></label><label>結束年<select value={selectedYearEnd} onChange={event=>{setSelectedYearEnd(event.target.value);setPage(1)}}>{years.map(year=><option key={year}>{year}</option>)}</select></label></>:null}
           {rangeMode==='period'?<label>時期<select value={selectedPeriod} onChange={event=>{setSelectedPeriod(event.target.value);setPage(1)}}>{periods.map(period=><option key={period}>{period}</option>)}</select></label>:null}
         </div>
         <div className="statistics-range-summary"><strong>{rangeLabel}</strong><span>{scopedCultureRows.length} 筆內容 · {days.length} 個日期 · {periods.length} 個可用時期</span></div>
@@ -147,7 +156,7 @@ export default function StatisticsV2({section=null}){
         <div className="statistics-top-ten">
           <div className="statistics-top-ten-heading"><div><p className="scope-v2-eyebrow">TOP 10 · AUTO INCLUDED</p><h3>批次整理候選</h3></div><span>{selectedTerms.length} 個關鍵詞已加入</span></div>
           <div className="scope-v2-ranking">{visibleTop.map((row,index)=>{const term=row.term||row.title||row.name||'—';const repeated=termHistory.get(term)?.size||1;return <div className="statistics-ranking-row" key={'top-'+(row.ranking_key||term||index)}><label><input type="checkbox" checked={selectedTerms.includes(term)} onChange={()=>setSelectedTerms(current=>current.includes(term)?current.filter(value=>value!==term):[...current,term])}/><b>{index+1}. {term}</b></label><span>{row.item_count??'—'} 筆 · {repeated>1?'跨 '+repeated+' 個排名':'單一排名'} · <a href={'/search?q='+encodeURIComponent(term)}>查看分佈</a></span></div>})}</div>
-          <div className="statistics-batch-controls"><label>加入風格關鍵詞群組<select value={targetKeywordGroup} onChange={event=>setTargetKeywordGroup(event.target.value)}>{KEYWORD_GROUPS.map(group=><option key={group}>{group}</option>)}</select></label><button type="button" className="context-btn primary" onClick={addSelectedToGroup}>批次加入群組</button><a className="context-btn ghost" href={batchHref}>批次查看時間分佈</a></div>
+          <div className="statistics-batch-controls"><label>排行榜展示筆數<input type="number" min="1" max="200" value={rankLimit} onChange={event=>setRankLimit(Math.min(200,Math.max(1,Number(event.target.value)||1)))} /></label><label>加入風格關鍵詞群組<select value={targetKeywordGroup} onChange={event=>setTargetKeywordGroup(event.target.value)}>{KEYWORD_GROUPS.map(group=><option key={group}>{group}</option>)}</select></label><button type="button" className="context-btn primary" onClick={addSelectedToGroup}>批次加入群組</button><a className="context-btn ghost" href={batchHref}>批次查看時間分佈</a><small>展示筆數可調整 1–200；前 10 名仍自動加入批次清單。</small></div>
         </div>
         <div className="statistics-keyword-groups"><div className="statistics-section-heading"><p className="scope-v2-eyebrow">EIGHT STYLE GROUPS</p><h3>風格關鍵詞群組</h3><span>每個群組可由使用者自行整理；目前只存在本頁草稿，不會未經 OAuth 寫入 Neon。</span></div><div className="statistics-group-grid">{KEYWORD_GROUPS.map(group=><section className="statistics-group-card" data-group={group} key={group}><div><strong>{group}</strong><span>{keywordGroups[group]?.length||0} 個</span></div><div className="statistics-group-terms">{(keywordGroups[group]||[]).map(term=><button type="button" key={term} onClick={()=>removeFromGroup(group,term)}>{term}<span aria-hidden="true">×</span></button>)}</div>{!(keywordGroups[group]||[]).length?<small>尚未加入關鍵詞</small>:null}</section>)}</div></div>
         <div className="scope-v2-ranking statistics-full-ranking">{shown.map((row,index)=><div key={row.ranking_key||row.term||index}><b>{(page-1)*PAGE_SIZE+index+1}. {row.term||row.title||row.name||'—'}</b><span>{row.item_count??'—'} · {row.rank_value??'—'} · <a href={'/search?q='+encodeURIComponent(row.term||row.title||row.name||'')}>查時間分佈</a></span></div>)}</div>{!loading&&!shown.length?<p>目前沒有可顯示的排行榜資料。</p>:null}{rankings.length?<div className="scope-v2-pagination"><span>第 {page} / {pages} 頁 · 共 {rankings.length} 筆</span><div><button type="button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button><button type="button" disabled={page>=pages} onClick={()=>setPage(value=>Math.min(pages,value+1))}>下一頁</button></div></div>:null}</div>:null}
