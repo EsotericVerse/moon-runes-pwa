@@ -166,6 +166,14 @@ export const SCOPE_RELATIONS_V2=Object.freeze([
 ]);
 
 
+export const SCOPE_KEYWORD_MODEL_V2=Object.freeze({
+  loc:Object.freeze({owner:'loc',groups:8,mode:'aggregate',sourceScopes:Object.freeze(['runes','lo3rwang']),publicProjection:'approved-only'}),
+  runes:Object.freeze({owner:'runes',groups:8,mode:'canonical-plus-reviewed-augmentation',sourceScopes:Object.freeze(['runes']),augmentationFrom:Object.freeze(['lo3rwang']),publicProjection:'canonical-and-approved-only'}),
+  lo3rwang:Object.freeze({owner:'lo3rwang',groups:8,mode:'personal-local',sourceScopes:Object.freeze(['lo3rwang']),publicProjection:'opt-in'}),
+  dlwang:Object.freeze({owner:'dlwang',groups:8,mode:'private-local',sourceScopes:Object.freeze(['dlwang']),publicProjection:'disabled-by-default',includeInLocTotal:false})
+});
+
+
 function cleanHost(host=''){
   return String(host||'').toLowerCase().split(':')[0];
 }
