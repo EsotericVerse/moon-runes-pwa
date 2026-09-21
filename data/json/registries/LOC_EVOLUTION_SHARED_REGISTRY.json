@@ -6,7 +6,7 @@
   "updated_at": "2026-09-12",
   "shared_authorities": {
     "eras": {
-      "registry": "data/json/registries/LOC_ERA_REGISTRY.json",
+      "registry": "data/json/registries/lo3rwang_era.json",
       "kv_key": "loc:era:registry",
       "ownership": "Search / Period Definition",
       "rule": "符文演化與語言推演只引用 ERA，不各自重建時期。"
@@ -26,7 +26,7 @@
     "rune_evolution": {
       "label": "符文演化",
       "scope": "LunaRunes 本體、規模、語意拆分、治理規則、衍生詞主體性與關係演化",
-      "primary_registry": "data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json",
+      "primary_registry": "data/json/registries/LRUNES_ERA.json",
       "supporting_registries": [
         "data/json/core/runes.json",
         "data/json/core/runes66groups.json",

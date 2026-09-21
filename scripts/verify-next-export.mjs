@@ -6,7 +6,7 @@ const required=[
   'out/loc/index.html',
   'out/data/json/generated/search/SEARCH_SOURCE_STATS.json',
   'out/data/json/registries/LOC_GRAPH_SCHEMA.json',
-  'out/data/json/registries/LOC_ERA_REGISTRY.json',
+  'out/data/json/registries/lo3rwang_era.json',
   'out/data/json/registries/LOC8_DAILY_RUNE_REPO_HISTORY.json',
   'out/data/json/generated/loc4/corpus/LOC4_TEXT_CORPUS_MANIFEST.json',
   'out/data/json/search/loc3/LOC3_LYRICS_SEARCH_v0.1.json'

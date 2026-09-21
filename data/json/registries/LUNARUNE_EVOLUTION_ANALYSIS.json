@@ -1,7 +1,7 @@
 {
   "version": "1.0-rc1",
   "title": "LunaRunes Evolution Analysis",
-  "source_history": "data/json/registries/LUNARUNE_EVOLUTION_HISTORY.json",
+  "source_history": "data/json/registries/lrunes_era.json",
   "source_history_version": "1.4-rc4",
   "status": "complete_for_current_corpus",
   "purpose": "把既有符文變化史轉成可被 Evolution 與後續 LOC8 推演直接消費的分析層；只描述現有證據，不補造不存在的日期或歷史事件。",

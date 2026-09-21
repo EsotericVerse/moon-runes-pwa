@@ -107,7 +107,7 @@ async function buildDataIndex(versionManifest) {
   const segmentCatalog = await buildSegmentCatalog(ROOT, {
     loc4ShardEntries,
     loc3ShardEntries,
-    eraRegistryPath: normalize(LOC_DATA.LOC_ERA_REGISTRY),
+    eraRegistryPath: normalize(LOC_DATA.LO3RWANG_ERA),
     loc3ManifestPath
   });
   const reservedSegmentPaths = new Set([

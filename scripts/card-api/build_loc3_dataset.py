@@ -38,7 +38,7 @@ def load_loc3_author_annotations() -> dict[str, dict[str, Any]]:
 
 
 def load_era_registry() -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]], dict[str, Any] | None]:
-    path = shared_registry_path("LOC_ERA_REGISTRY.json")
+    path = shared_registry_path("lo3rwang_era.json")
     if not path.exists():
         return [], {}, None
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -393,7 +393,7 @@ def build(source: Path) -> dict[str, Any]:
             "version_count": sum(len(item["versions"]) for item in output_works),
             "system_id": SYSTEM_ID,
             "primary_loc": PRIMARY_LOC,
-            "era_registry": "data/json/registries/LOC_ERA_REGISTRY.json",
+            "era_registry": "data/json/registries/lo3rwang_era.json",
             "active_era": active_era,
         },
         "works": output_works,
