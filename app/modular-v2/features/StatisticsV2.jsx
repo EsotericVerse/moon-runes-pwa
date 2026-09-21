@@ -104,6 +104,10 @@ export default function StatisticsV2({section=null}){
   useEffect(()=>{
     try{window.localStorage.setItem(personalStylesStorageKey,JSON.stringify(personalStyles));}catch{}
   },[personalStyles,personalStylesStorageKey]);
+  const rankingProfiles=useMemo(()=>[
+    ...personalStyles.map(style=>({id:style.id,label:style.label,description:style.privateOnly?'私密文本統計，不進 LOC 總數':style.id==='personal-1'?'第一個個人風格':'可自行命名與整理',privateOnly:Boolean(style.privateOnly)})),
+    ...RANKING_PROFILES.filter(profile=>profile.id==='runes'||profile.id==='annual')
+  ],[personalStyles]);
 
   useEffect(()=>{
     let live=true;
@@ -156,6 +160,7 @@ export default function StatisticsV2({section=null}){
   const rankingSource=useMemo(()=>{
     if(rankingProfile==='runes')return scopedRankingRows.filter(row=>!rankingType||row.ranking_type===rankingType);
     if(rankingProfile==='annual')return derivedRankings.length?derivedRankings:scopedRankingRows;
+    if(activePersonalStyle?.privateOnly)return [];
     return personalRankings;
   },[rankingProfile,scopedRankingRows,rankingType,derivedRankings,personalRankings]);
   const rankings=useMemo(()=>rankingSource.filter(row=>rankingProfile==='runes'||!rankingType||row.ranking_type===rankingType),[rankingSource,rankingProfile,rankingType]);
@@ -195,7 +200,7 @@ export default function StatisticsV2({section=null}){
       {mode!=='keywords'?<div className="statistics-chart"><ResponsiveContainer width="100%" height={340}><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/><XAxis dataKey={mode==='eras'?'era':mode==='sources'?'source':'date'} tick={{fill:'currentColor',fontSize:11}}/><YAxis allowDecimals={false} tick={{fill:'currentColor',fontSize:11}}/><Tooltip/><Bar dataKey="total" fill="var(--loc-accent)" radius={[6,6,0,0]}/>{mode==='units'?<><Bar dataKey="works" fill="var(--loc-gold)" radius={[6,6,0,0]}/><Bar dataKey="events" fill="var(--loc-muted)" radius={[6,6,0,0]}/></>:null}</BarChart></ResponsiveContainer></div>:null}
       {mode==='keywords'?<div className="statistics-ranking">
         <div className="statistics-ranking-head"><div><p className="scope-v2-eyebrow">KEYWORD RANKING</p><h3>{rangeLabel}關鍵字排行榜</h3><span>十種展示視圖：八個個人風格、一個月之符文特殊分類、一個每年分佈。</span></div></div>
-        <div className="statistics-profile-panel"><div className="statistics-section-heading"><div><p className="scope-v2-eyebrow">TEN RANKING VIEWS</p><h3>選擇分析視圖</h3></div><span>第一個個人風格固定以「政德」為名稱，其餘可自行命名。</span></div><div className="statistics-profile-grid">{RANKING_PROFILES.map(profile=><button type="button" key={profile.id} className="statistics-profile-card" data-profile={profile.id} aria-pressed={rankingProfile===profile.id} onClick={()=>{setRankingProfile(profile.id);setPage(1)}}><strong>{profile.label}</strong><small>{profile.description}</small></button>)}</div>{rankingProfile==='runes'&&rankingTypes.length?<div className="scope-v2-tabs" aria-label="符文排行榜類型">{rankingTypes.map(item=><button type="button" key={item} aria-pressed={rankingType===item} onClick={()=>{setRankingType(item);setPage(1)}}>{item}</button>)}</div>:null}</div>
+        <div className="statistics-profile-panel"><div className="statistics-section-heading"><div><p className="scope-v2-eyebrow">TEN RANKING VIEWS</p><h3>選擇分析視圖</h3></div><span>第一個個人風格固定以「政德」為名稱，其餘可自行命名。</span></div><div className="statistics-profile-grid">{rankingProfiles.map(profile=><button type="button" key={profile.id} className="statistics-profile-card" data-profile={profile.id} data-private={profile.privateOnly?'true':'false'} aria-pressed={rankingProfile===profile.id} onClick={()=>{setRankingProfile(profile.id);setPage(1)}}><strong>{profile.label}</strong><small>{profile.description}</small></button>)}</div>{rankingProfile==='runes'&&rankingTypes.length?<div className="scope-v2-tabs" aria-label="符文排行榜類型">{rankingTypes.map(item=><button type="button" key={item} aria-pressed={rankingType===item} onClick={()=>{setRankingType(item);setPage(1)}}>{item}</button>)}</div>:null}</div>
         <div className="statistics-top-ten">
           <div className="statistics-top-ten-heading"><div><p className="scope-v2-eyebrow">TOP 10 · AUTO INCLUDED</p><h3>批次整理候選</h3></div><span>{selectedTerms.length} 個關鍵詞已加入</span></div>
           <div className="scope-v2-ranking">{visibleTop.map((row,index)=>{const term=row.term||row.title||row.name||'—';const repeated=termHistory.get(term)?.size||1;return <div className="statistics-ranking-row" key={'top-'+(row.ranking_key||term||index)}><label><input type="checkbox" checked={selectedTerms.includes(term)} onChange={()=>setSelectedTerms(current=>current.includes(term)?current.filter(value=>value!==term):[...current,term])}/><b>{index+1}. {term}</b></label><span>{row.item_count??'—'} 筆 · {repeated>1?'跨 '+repeated+' 個排名':'單一排名'} · <a href={'/search?q='+encodeURIComponent(term)}>查看分佈</a></span></div>})}</div>
