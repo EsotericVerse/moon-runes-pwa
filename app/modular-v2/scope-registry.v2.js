@@ -12,6 +12,13 @@ export const SCOPE_POLICY_V2=Object.freeze({
   ])
 });
 
+export const ACCESS_LEVELS_V2=Object.freeze([
+  Object.freeze({id:'system_admin',label:'最高管理者',privateRead:true,crossScope:true}),
+  Object.freeze({id:'scope_manager',label:'Scope 管理者',privateRead:false,crossScope:false}),
+  Object.freeze({id:'page_manager',label:'Scope 頁面管理者',privateRead:false,crossScope:false}),
+  Object.freeze({id:'privacy_dispute_handler',label:'隱私／爭議待處置者',privateRead:'assigned-case-only',crossScope:false})
+]);
+
 export const FEATURES_V2=Object.freeze([
   Object.freeze({id:'context',label:'脈絡',path:'context'}),
   Object.freeze({id:'statics',label:'統計',path:'statics'}),
@@ -96,6 +103,14 @@ export const SCOPES_V2=Object.freeze({
     domain:'dlwang.lo3rwang.cc',
     aliasName:'dlwang',
     label:'作者簡介',
+    privateShadowScope:'dlwang',
+    privateShadowDefaultVisibility:'private',
+    privateShadowLocalFirst:true,
+    privateShadowPublicStatisticsOptIn:false,
+    privateShadowPath:'/lo3rwang/dlwang',
+    privateShadowPublicLink:false,
+    privateShadowAccess:'authenticated-owner-or-system-admin',
+    privateShadowNotInNav:true,
     localRoutes:Object.freeze(['old']),
     routePatterns:Object.freeze([]),
     compatibilityRoutes:Object.freeze([]),
@@ -146,6 +161,22 @@ export const SCOPES_V2=Object.freeze({
     theme:Object.freeze({mode:'fixed',theme:'theme-7',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   })
 });
+
+export const SCOPE_RELATIONS_V2=Object.freeze([
+  Object.freeze({source:'loc',target:'runes',relation:'coordinates',visibility:'public',label:'月典統籌月之符文'}),
+  Object.freeze({source:'loc',target:'lo3rwang',relation:'authored_by',visibility:'public',label:'月典統籌作者作品'}),
+  Object.freeze({source:'runes',target:'lo3rwang',relation:'expressed_by',visibility:'public',label:'符文與作者交錯'}),
+  Object.freeze({source:'dlwang',target:'lo3rwang',relation:'private_shadow_of',visibility:'private',publicProjection:false,includeInLocTotal:false,label:'陰暗面僅連結作者 scope'})
+]);
+
+
+export const SCOPE_KEYWORD_MODEL_V2=Object.freeze({
+  loc:Object.freeze({owner:'loc',groups:8,mode:'aggregate',sourceScopes:Object.freeze(['runes','lo3rwang']),publicProjection:'approved-only'}),
+  runes:Object.freeze({owner:'runes',groups:8,mode:'canonical-plus-reviewed-augmentation',sourceScopes:Object.freeze(['runes']),augmentationFrom:Object.freeze(['lo3rwang']),publicProjection:'canonical-and-approved-only'}),
+  lo3rwang:Object.freeze({owner:'lo3rwang',groups:8,mode:'personal-local',sourceScopes:Object.freeze(['lo3rwang']),publicProjection:'opt-in'}),
+  dlwang:Object.freeze({owner:'dlwang',groups:8,mode:'private-local',sourceScopes:Object.freeze(['dlwang']),publicProjection:'disabled-by-default',includeInLocTotal:false})
+});
+
 
 function cleanHost(host=''){
   return String(host||'').toLowerCase().split(':')[0];

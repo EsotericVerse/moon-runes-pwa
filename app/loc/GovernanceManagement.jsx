@@ -44,7 +44,7 @@ export default function GovernanceManagement(){
     <p className="loc-subtitle">管理登入、個人資料與共享 Current 資料都統一使用 Neon；公開 Current projection 維持唯讀。</p>
     {account.loading&&<p>正在確認 Neon session…</p>}
     {!account.loading&&!account.user&&<button type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>}
-    {!account.loading&&account.user&&<>
+    {!account.loading&&account.user&&account.canManage&&<>
       <p><strong>Neon session 有效。</strong> {account.user.email||account.user.name||''}</p>
       <hr/>
       <h3>Neon 共享資料狀態</h3>
@@ -62,6 +62,7 @@ export default function GovernanceManagement(){
       <hr/>
       <button type="button" onClick={account.signOut}>登出 Neon</button>
     </>}
+    {!account.loading&&account.user&&!account.canManage&&<p className="loc-subtitle">此 OAuth 身份目前只有公開唯讀資格。</p>}
     {account.error&&<p role="alert">{account.error}</p>}
     <hr/>
     <h3>Scope 預設治理</h3>

@@ -2,13 +2,13 @@
 
 import { createClient } from '@neondatabase/neon-js';
 
-const DEFAULT_NEON_DATABASE_URL='https://ep-rapid-queen-b3oyboy6.c-4.ap-southeast-1.aws.neon.tech/neondb';
+const DEFAULT_NEON_DATABASE_URL='https://ep-rapid-queen-b3oyboy6.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb';
 
 export function neonDatabaseUrl(){
   return String(process.env.NEXT_PUBLIC_NEON_DATABASE_URL||DEFAULT_NEON_DATABASE_URL).trim().replace(/\/+$/,'');
 }
 
-export const neonClient=createClient(neonDatabaseUrl());
+export const neonClient=createClient(neonDatabaseUrl(),{auth:{allowAnonymous:true}});
 
 export async function getNeonSession(){
   const {data,error}=await neonClient.auth.getSession();
@@ -27,9 +27,10 @@ export async function signOutNeon(){
   if(error)throw new Error(error.message||'Neon sign-out failed');
 }
 
-export async function readNeonOrPublicFallback(queryPromise,fallbackPath){
+export async function readNeonOrPublicFallback(queryInput,fallbackPath){
   let original={data:[],error:null};
   try{
+    const queryPromise=typeof queryInput==='function'?queryInput():queryInput;
     const result=await queryPromise;
     if(!result?.error)return result;
     original=result;
@@ -38,11 +39,11 @@ export async function readNeonOrPublicFallback(queryPromise,fallbackPath){
   }
   try{
     const response=await fetch(fallbackPath,{cache:'no-store'});
-    if(!response.ok)return original;
+    if(!response.ok)return {data:[],error:null,fallback:true,unavailable:true};
     const payload=await response.json();
     const rows=Array.isArray(payload)?payload:(Array.isArray(payload?.rows)?payload.rows:[]);
     return {data:rows,error:null,fallback:true};
   }catch{
-    return original;
+    return {data:[],error:null,fallback:true,unavailable:true};
   }
 }
