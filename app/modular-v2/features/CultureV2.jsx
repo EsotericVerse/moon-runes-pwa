@@ -95,7 +95,7 @@ export default function CultureV2({section=null}){
     let live=true;
     setLoading(true);setError('');
     if(!view){setRows([]);setLoading(false);setError('此 Scope 尚未設定 Culture SQL projection。');return()=>{live=false};}
-    readNeonOrPublicFallback(neonClient.from(view).select('*').order('date',{ascending:true}).limit(3000),'/projections/loc-culture.json')
+    readNeonOrPublicFallback(()=>neonClient.from(view).select('*').order('date',{ascending:true}).limit(3000),'/projections/loc-culture.json')
       .then(result=>{
         if(result?.error)throw new Error(result.error.message||'Culture SQL projection 讀取失敗');
         if(live)setRows((result?.data||[]).map(normalizeRow));
