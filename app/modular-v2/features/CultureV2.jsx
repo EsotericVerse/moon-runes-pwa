@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {useSearchParams} from 'next/navigation';
 import {DataSet,Timeline} from 'vis-timeline/standalone';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
@@ -62,7 +63,12 @@ function WorkbenchEditor({value,onChange,onSave,onDelete,onClose,saving}){
 
 export default function CultureV2({section=null}){
   const {scopeId}=useScopeRuntimeV2();
+  const searchParams=useSearchParams();
   const view=scopeDataViewV2(scopeId,'culture');
+  const draftKind=searchParams.get('draftKind');
+  const draftDate=searchParams.get('draftDate')||'';
+  const draftTitle=searchParams.get('draftTitle')||'';
+  const draftEraId=searchParams.get('draftEraId')||'';
   const timelineRef=useRef(null);
   const timelineInstance=useRef(null);
   const [rows,setRows]=useState([]);
@@ -77,6 +83,13 @@ export default function CultureV2({section=null}){
   const [workFilter,setWorkFilter]=useState('');
   const [displayMode,setDisplayMode]=useState('excerpt');
   const [saving,setSaving]=useState(false);
+
+  useEffect(()=>{
+    if(draftKind==='era'&&draftDate){
+      setEditor({id:'',kind:'era',title:draftTitle||'候選時期',date:draftDate,endDate:draftDate,eraId:draftEraId,body:'由時間定錨搜尋提出的候選時期；請由使用者確認後儲存。',source:'time-anchor-suggestion',url:''});
+      setNotice('已開啟候選時期，請確認後再儲存。');
+    }
+  },[draftKind,draftDate,draftTitle,draftEraId]);
 
   useEffect(()=>{
     let live=true;
