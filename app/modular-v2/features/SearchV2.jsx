@@ -59,7 +59,7 @@ export default function SearchV2(){
     <ScopeCardV2 eyebrow="Search · Time Anchor" title="時空定錨搜尋">
       <form className="scope-v2-search-form" onSubmit={run}><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="輸入統計看到的關鍵字、概念或時期" aria-label="時間定錨搜尋"/><button type="submit">找到時間錨點</button></form>
       <div className="search-anchor-controls"><label>前後時間窗<select value={windowDays} onChange={event=>setWindowDays(Number(event.target.value))}><option value="30">前後 30 日</option><option value="90">前後 90 日</option><option value="365">前後 1 年</option><option value="1825">前後 5 年</option></select></label><span>{loading?'載入 SQL projection…':error||status}</span></div>
-      {anchor?<div className="search-anchor-card"><p className="scope-v2-eyebrow">TIME ANCHOR</p><h3>{anchor.date} · {anchor.title}</h3><p>{anchor.body||'命中內容沒有附帶文字摘要。'}</p><span>{kindLabel(anchor.kind)} · {anchor.source||'未標記來源'} · {anchor.eraId||'未分期'}</span></div>:null}
+      {anchor?<div className="search-anchor-card"><p className="scope-v2-eyebrow">TIME ANCHOR</p><h3>{anchor.date} · {anchor.title}</h3><p>{anchor.body||'命中內容沒有附帶文字摘要。'}</p><span>{kindLabel(anchor.kind)} · {anchor.source||'未標記來源'} · {anchor.eraId||'未分期'}</span><p><a className="context-btn ghost" href={'/culture?draftKind=era&draftDate='+encodeURIComponent(anchor.date)+'&draftTitle='+encodeURIComponent('候選時期：'+anchor.title)+'&draftEraId='+encodeURIComponent(anchor.eraId||'')}>建立時期候選（手動確認）</a></p><small>系統只預填候選，不會自動建立或改動既有版號。</small></div>:null}
       <div ref={timelineRef} className="search-anchor-timeline" aria-label="搜尋時間錨點附近內容"/>
       {!anchor&&!loading?<div className="culture-river-empty">請從統計頁點選關鍵字，或直接輸入概念；搜尋會先找時間點，再展開附近資料。</div>:null}
     </ScopeCardV2>
