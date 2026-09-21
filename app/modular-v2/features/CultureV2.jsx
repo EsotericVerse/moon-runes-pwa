@@ -8,7 +8,7 @@ import {ScopeCardV2} from '../PageShellV2';
 import {scopeDataViewV2} from '../scope-registry.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {CULTURE_PATHS_V2} from '../../migration-bridges/current-data-compat.v2';
-import {neonClient} from '../../loc/neon-client';
+import {neonClient,readNeonOrPublicFallback} from '../../loc/neon-client';
 
 const DAY_MS=24*60*60*1000;
 const today=()=>new Date().toISOString().slice(0,10);
@@ -95,7 +95,7 @@ export default function CultureV2({section=null}){
     let live=true;
     setLoading(true);setError('');
     if(!view){setRows([]);setLoading(false);setError('此 Scope 尚未設定 Culture SQL projection。');return()=>{live=false};}
-    neonClient.from(view).select('*').order('date',{ascending:true}).limit(3000)
+    readNeonOrPublicFallback(neonClient.from(view).select('*').order('date',{ascending:true}).limit(3000),'/projections/loc-culture.json')
       .then(result=>{
         if(result?.error)throw new Error(result.error.message||'Culture SQL projection 讀取失敗');
         if(live)setRows((result?.data||[]).map(normalizeRow));
