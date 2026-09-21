@@ -12,6 +12,13 @@ export const SCOPE_POLICY_V2=Object.freeze({
   ])
 });
 
+export const ACCESS_LEVELS_V2=Object.freeze([
+  Object.freeze({id:'system_admin',label:'最高管理者',privateRead:true,crossScope:true}),
+  Object.freeze({id:'scope_manager',label:'Scope 管理者',privateRead:false,crossScope:false}),
+  Object.freeze({id:'page_manager',label:'Scope 頁面管理者',privateRead:false,crossScope:false}),
+  Object.freeze({id:'privacy_dispute_handler',label:'隱私／爭議待處置者',privateRead:'assigned-case-only',crossScope:false})
+]);
+
 export const FEATURES_V2=Object.freeze([
   Object.freeze({id:'context',label:'脈絡',path:'context'}),
   Object.freeze({id:'statics',label:'統計',path:'statics'}),
