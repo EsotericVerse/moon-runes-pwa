@@ -198,7 +198,7 @@ export default function StatisticsV2({section=null}){
         <div className="statistics-range-summary"><strong>{rangeLabel}</strong><span>{scopedCultureRows.length} 筆內容 · {days.length} 個日期 · {periods.length} 個可用時期</span></div>
       </section>
       {loading?<p className="scope-v2-status">載入展示資料…</p>:null}
-      {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
+      
       {mode!=='keywords'?<div className="statistics-chart"><ResponsiveContainer width="100%" height={340}><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/><XAxis dataKey={mode==='eras'?'era':mode==='sources'?'source':'date'} tick={{fill:'currentColor',fontSize:11}}/><YAxis allowDecimals={false} tick={{fill:'currentColor',fontSize:11}}/><Tooltip/><Bar dataKey="total" fill="var(--loc-accent)" radius={[6,6,0,0]}/>{mode==='units'?<><Bar dataKey="works" fill="var(--loc-gold)" radius={[6,6,0,0]}/><Bar dataKey="events" fill="var(--loc-muted)" radius={[6,6,0,0]}/></>:null}</BarChart></ResponsiveContainer></div>:null}
       {mode==='keywords'?<div className="statistics-ranking">
         <div className="statistics-ranking-head"><div><p className="scope-v2-eyebrow">KEYWORD RANKING</p><h3>{rangeLabel}關鍵字排行榜</h3><span>十種展示視圖：八個本機個人風格、一個月之符文公開示範、一個每年分佈。</span></div></div>
