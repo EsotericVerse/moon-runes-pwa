@@ -120,9 +120,12 @@ export default function AuthorHomeView({section=null}){
       eyebrow:'LOC · LunaRunes',
       title:'LOC／月典',
       content:<>
-        <p><strong>LOC／月典</strong>是一套<strong>模型化語言框架（Modelized Language Framework）</strong>：把語言、資料、脈絡、時間與治理放在同一個可持續整理的結構裡。</p>
-        <p>它不是單純的搜尋工具，也不是把所有內容混成同一套分類；LOC 負責統合、分析、搜尋與呈現，讓分散的文字、作品、規則、版本與時間軌跡可以互相連結，仍保留各自的來源與權威。</p>
-        <p><strong>LunaRunes／月之符文</strong>是獨立的<strong>符號式語言（Symbolic Language）</strong>；作者作品與個人文化軌跡也屬於作者自己的 Scope。LOC 可以讀取、整理與建立關聯，但不取代月之符文或作者對自身資料的治理。</p>
+        <p><strong>Luna Codex，以微月光為鏡，記錄、整理、分析每個時間點的文字、作品與轉折。</strong></p>
+        <p>以微弱的月光，照在每個時間點，你的創作文字上。當微光慢慢集中變亮，你也將綻放自己的光芒。</p>
+        <p>所以是以月為典：<strong>Luna Codex，LOC／月典</strong>。藉由關係脈絡分析，找出時間長河裡的存在軌跡，組合成屬於你自己的文化風格——你的世界，自己的風格。</p>
+        <p>LOC 是一套以 Next.js 與 Neon 為基礎的工具系統，配上簡單分類的月之符文作為參考。它提供免費整理，只供參考，不作裁決：系統幫你看見自己的軌跡，但不替你決定你是誰。</p>
+        <p>那 24 個字是我的人生觀。凡人都無法做到完全客觀，因為每個人始終有自己的立場，自私也是理所當然。工具不同；工具只是冷冰冰的工具，不會叫你聽命，也不會叫你忤逆。工具可以協助整理與分析，但它的立場不等於人的立場。</p>
+        <p><strong>LOC 的核心定義：</strong>免費整理、只供參考、不裁決。由關係脈絡、時間軌跡與作品資料組合出文化風格，讓每個人看見自己的世界如何形成。</p>
       </>,
       links:[{label:'查看 LOC／月典',href:'https://loc.lo3rwang.cc/'}]
     },
