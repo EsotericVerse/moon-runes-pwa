@@ -5,7 +5,7 @@ import {getNeonSession,neonClient,signInNeonWithGoogle,signOutNeon} from './neon
 import {migrateLegacyBrowserDataToNeon} from './neon-legacy-migration';
 import {createScopeAuthorizer} from './scope-authorization';
 
-export const NEON_SCOPE_MANAGER_LEVELS=Object.freeze(['scope_manager','page_manager']);
+export const NEON_SCOPE_MANAGER_LEVELS=Object.freeze(['scope_manager']);
 
 async function readManagementGrants(user){
   if(!user?.id)return [];
@@ -32,7 +32,7 @@ export function useNeonAccount(){
       setState(current=>({...current,loading:false,user,permissionLoading:true,error:''}));
       const grants=await readManagementGrants(user);
       const authorizer=await createScopeAuthorizer(user.id,grants);
-      const canManage=grants.some(grant=>NEON_SCOPE_MANAGER_LEVELS.includes(grant.access_level));
+      const canManage=grants.some(grant=>NEON_SCOPE_MANAGER_LEVELS.includes(grant.access_level)||grant.access_level==='global_admin');
       setState({loading:false,user,grants,authorizer,canManage,permissionLoading:false,error:''});
       await migrateLegacyBrowserDataToNeon().catch(()=>{});
       return user;
@@ -55,5 +55,9 @@ export function useNeonAccount(){
     if(!state.authorizer||!scopeId||!pageId)return false;
     try{return Boolean(await state.authorizer.canManagePage(scopeId,pageId))}catch{return false}
   },[state.authorizer]);
-  return {...state,refresh,signIn,signOut,canManageScope,canManagePage};
+  const canManageGlobal=useCallback(async()=>{
+    if(!state.authorizer)return false;
+    try{return Boolean(await state.authorizer.canManageGlobal())}catch{return false}
+  },[state.authorizer]);
+  return {...state,refresh,signIn,signOut,canManageScope,canManagePage,canManageGlobal};
 }
