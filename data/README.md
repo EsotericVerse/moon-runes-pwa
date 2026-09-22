@@ -1,6 +1,6 @@
 # Data Directory
 
-Repository data is organized by **role and lifecycle**, not only by LOC number.
+The data directory stores frozen source workbooks, provenance records and migration evidence. It is not a website runtime data store.
 
 ~~~text
 data/
@@ -9,29 +9,17 @@ data/
 │     └─ LunaRune66.xlsx
 ├─ source/
 │  └─ all.xlsx
-└─ json/
-   ├─ core/
-   ├─ registries/
-   ├─ sources/
-   ├─ search/
-   ├─ generated/
-   ├─ archive/
-   ├─ experimental/
-   └─ inbox/
+└─ records/
+   └─ rune-readings/
 ~~~
 
-Repository and data governance are maintained in [`governance.html`](../governance.html).
+The website reads canonical content from Neon through Next server routes. Do not add data/json, runtime JSON snapshots, copied projections, or local JSON caches.
 
 Rules:
 
-- `lunarunes/source/`: LunaRunes mother/source workbooks; source authority is preserved here rather than at repository root.
-- `source/`: retained source workbooks or imported source assets awaiting narrower domain classification; `all.xlsx` is preserved here until its authority/supersession status is explicitly resolved.
-- `core/`: stable runtime projection; never overrides mother source.
-- `registries/`: current structured authority/reference layer.
-- `sources/`: governed primary/imported corpora with provenance.
-- `search/`: retrieval datasets grouped by domain.
-- `generated/`: reproducible derived outputs.
-- `archive/`: historical versions excluded from current runtime.
-- `experimental/`: research-only datasets.
-- `inbox/`: newly imported JSON awaiting governance; not an authority source.
-- configuration JSON remains with its owning component.
+- lunarunes/source/: frozen LunaRunes mother/source workbooks.
+- source/: retained source workbooks awaiting narrower governance.
+- records/: explicit repository records and audit notes, not website canonical content.
+- Neon silver tables are the canonical runtime content layer.
+- Neon link tables store scope membership and statistics/search inclusion by ID; they do not copy content.
+- Package/tool configuration files remain with their owning component when a tool requires them.
