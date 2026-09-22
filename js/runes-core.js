@@ -10,7 +10,7 @@ const GROUP_DEFS = [
   {id:'special',group_zh:'特殊',group_en:'Special',from:65,to:66,description:'收納超出 1–64 基本八組之外的特殊符文，包含玄、命，以及作為誌銘的德。',trait:'系統特殊定位',style_module:'系統特殊',possible_tone:['混沌','命運','誌銘','系統基準'],style:['system','special']}
 ];
 
-export const groups = GROUP_DEFS.map(({from,to,...group}) => ({
+export const groups = GROUP_DEFS.map(group => ({
   ...group,
   runes:group.id==='special'?[{id:0,zh:'德',en:'Virtue'}]:[]
 }));
@@ -51,7 +51,7 @@ export async function loadCanonicalRunes(){
   for(const row of runeRows)rune[Number(row.編號)]=toRuntimeRow(row);
   for(const group of groups){
     if(group.id==='special')group.runes=runeRows.filter(row=>[0,65,66].includes(Number(row?.編號))).map(row=>({id:Number(row.編號),zh:row.符文名稱,en:row.英文}));
-    else group.runes=runeRows.filter(row=>Number(row?.編號)>=(Number(group.id)-1)*8+1&&Number(row?.編號)<=Number(group.id)*8).map(row=>({id:Number(row.編號),zh:row.符文名稱,en:row.英文}));
+    else group.runes=runeRows.filter(row=>Number(row?.編號)>=group.from&&Number(row?.編號)<=group.to).map(row=>({id:Number(row.編號),zh:row.符文名稱,en:row.英文}));
   }
   return runeRows;
 }
