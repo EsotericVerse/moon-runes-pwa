@@ -14,7 +14,7 @@ Registry 已分離：
 - optional `mount`
 - optional `aliasName`
 - display `label`
-- search/data projection
+- search/data canonical query
 - theme
 - Scope-local routes
 
@@ -91,7 +91,7 @@ Registry 已分離：
 - optional `mount`
 - optional `aliasName`
 - display `label`
-- search/data projection
+- search/data canonical query
 - theme
 - Scope-local routes
 
