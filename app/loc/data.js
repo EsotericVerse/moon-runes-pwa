@@ -129,7 +129,7 @@ export async function fetchLocDataSegments(datasetId,{segmentIds,fromSequence,to
   if(Array.isArray(segmentIds)&&segmentIds.length){const wanted=new Set(segmentIds);segments=segments.filter(segment=>wanted.has(segment.id));}
   if(Number.isFinite(Number(fromSequence)))segments=segments.filter(segment=>Number(segment.sequence)>=Number(fromSequence));
   if(Number.isFinite(Number(toSequence)))segments=segments.filter(segment=>Number(segment.sequence)<=Number(toSequence));
-  segments=[...segments].sort((a,b)=>Number(a.sequence||0)-Number(b.sequence||0);
+  segments=[...segments].sort((a,b)=>Number(a.sequence||0)-Number(b.sequence||0));
   if(segments.length>maxSegments)throw new Error(`LOC dataset ${datasetId} selected ${segments.length} segments; budget allows ${maxSegments}`);
   const data=await fetchLocJsonBatch(segments.map(segment=>segment.path),{maxItems:maxSegments,memory});
   return segments.map((segment,index)=>({segment,data:data[index]}));
