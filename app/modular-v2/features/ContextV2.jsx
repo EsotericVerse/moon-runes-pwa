@@ -2,7 +2,7 @@
 
 import {useEffect,useState} from 'react';
 import {selectNeonRows} from '../../loc/neon-repository';
-import {fetchLocStaticJson,LOC_DATA} from '../../loc/data';
+
 import {selectScopeProjectionRows} from '../../loc/neon-scope-projections';
 import {buildRuneGraph} from '../../../js/rune-graph-core.js';
 import FeaturePageV2 from '../FeaturePageV2';
@@ -142,20 +142,15 @@ function locContextRows(values,musicSegments){
 
 async function basicScopeContextRows(scopeId){
   if(scopeId==='runes'){
-    const [runes,history]=await Promise.all([
-      fetchLocStaticJson(LOC_DATA.RUNES),
-      fetchLocStaticJson(LOC_DATA.LRUNES_ERA)
-    ]);
-    const graph=buildRuneGraph(
-      (runes||[]).filter(row=>Number(row?.編號)>=1&&Number(row?.編號)<=66),
-      derivedFromEvolution(history),{}
-    );
-    return [...runeEvolutionRows(history),...runeGraphRows(graph)];
+    const {rows}=await selectNeonRows('silver.lrunes_runes',{columns:'rune_number,rune_name,canonical_payload',limit:100});
+    const runes=rows.map(row=>({編號:Number(row.rune_number),名稱:row.rune_name,...(row.canonical_payload&&typeof row.canonical_payload==='object'?row.canonical_payload:{})}));
+    const graph=buildRuneGraph(runes.filter(row=>row.編號>=1&&row.編號<=66),[],{});
+    return runeGraphRows(graph);
   }
   if(scopeId==='lo3rwang'){
     const [works,songs]=await Promise.all([
-      selectNeonRows('gold.public_works',{limit:1000}),
-      selectNeonRows('gold.public_song_versions',{limit:1000})
+      selectNeonRows('silver.works',{filters:[{column:'scope',operator:'eq',value:'lo3rwang'}],limit:5000}),
+      selectNeonRows('silver.song_versions',{limit:5000})
     ]);
     return [
       ...works.rows.map((row,index)=>({context_key:row.work_id||`work-${index}`,context_type:'作品',title:row.title||row.work_id||'作品',summary:row.summary||row.ai_summary||'',period:row.period_code||row.era_code||row.era_name||'',source:row.content_origin||row.scope||'作者作品'})),
