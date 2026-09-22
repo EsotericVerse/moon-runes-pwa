@@ -1,26 +1,7 @@
 # Experimental Engine
 
-`engine/` contains research scripts only. Production runtime lives in `card_api/`.
+engine/ contains research scripts only. It is not a website runtime and must not carry a second copy of Canon data.
 
-## Data contract
+The Next application reads canonical rune data from Neon through app/api/loc/data/route.js. Experimental code may consume exported query results supplied by an explicit research workflow, but it must not recreate data/json, runtime snapshots, or projection files.
 
-Experimental scripts must not keep full authoritative rune copies inside `engine/`.
-
-They read:
-
-- `data/json/core/runes.json`
-- `data/json/core/rune_interpretations.json`
-
-Experimental-only annotations and generated JSON are stored under:
-
-- `data/json/experimental/engine/`
-
-The duplicate `engine/runes_all_data.json` and the zero-byte `engine/runes64_alldata.json` were removed during repository normalization.
-
-## Current scripts
-
-- `g.py`: build semantic vectors/meta from core interpretations and experimental extended annotations.
-- `g-1.py`: build experimental training records.
-- `g-2.py`: experimental LoRA training script.
-
-Experimental outputs do not become Canon or runtime data merely because they exist.
+Experimental outputs remain analysis artifacts until they are explicitly governed and imported into the appropriate Neon canonical/link tables.
