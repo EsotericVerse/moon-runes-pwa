@@ -1,5 +1,7 @@
+'use client';
+
 import {z} from 'zod';
-import {getNeonSession} from './neon-client';
+import {selectNeonRows} from './neon-repository';
 
 const RankingRowSchema=z.object({
   ranking_type:z.string(),
@@ -15,23 +17,31 @@ const RankingResponseSchema=z.object({
   pageSize:z.coerce.number().int().positive(),
   types:z.array(z.string())
 });
+const RANKING_VIEWS=Object.freeze({
+  loc:'api.loc_rankings',
+  runes:'api.runes_rankings',
+  lo3rwang:'api.lo3rwang_rankings'
+});
 
 export async function selectScopeRankingPage(scopeId,{page=1,pageSize=20,rankingType=''}={}){
-  const params=new URLSearchParams({
-    scopeId:String(scopeId||''),
-    page:String(page),
-    pageSize:String(pageSize),
-    rankingType:String(rankingType||'')
-  });
-  const auth=await getNeonSession();
-  const token=auth?.session?.access_token||auth?.session?.accessToken||'';
-  const response=await fetch(`/api/statistics/rankings?${params}`,{
-    cache:'no-store',
-    headers:{accept:'application/json',...(token?{authorization:`Bearer ${token}`}:{})}
-  });
-  const payload=await response.json().catch(()=>null);
-  if(!response.ok)throw new Error(payload?.error||`統計讀取失敗（${response.status}）`);
-  return RankingResponseSchema.parse(payload);
+  const table=RANKING_VIEWS[String(scopeId||'')];
+  if(!table)throw new Error('Scope 無效');
+  const safePage=Math.max(1,Number(page)||1);
+  const safeSize=Math.max(1,Math.min(100,Number(pageSize)||20));
+  const start=(safePage-1)*safeSize;
+  const filters=rankingType?[{column:'ranking_type',operator:'eq',value:String(rankingType)}]:[];
+  const [{rows,count},{rows:typeRows}]=await Promise.all([
+    selectNeonRows(table,{
+      columns:'ranking_type,term,item_count,rank_value,ranking_key',
+      filters,
+      orders:[{column:'item_count',ascending:false},{column:'term',ascending:true}],
+      range:[start,start+safeSize-1],
+      count:'exact'
+    }),
+    selectNeonRows(table,{columns:'ranking_type',limit:5000})
+  ]);
+  const types=[...new Set(typeRows.map(row=>String(row.ranking_type||'')).filter(Boolean))].sort();
+  return RankingResponseSchema.parse({rows,count:count??rows.length,page:safePage,pageSize:safeSize,types});
 }
 
 export async function selectScopeRankingTypes(scopeId){
