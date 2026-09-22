@@ -14,7 +14,6 @@ const PUBLIC_PICS = [
   '09_specia.jpg', 'LOC-FrameworkPic.png', 'LOC-PicAll.png',
   'LOC-structure.png', 'LunaRunes.jpg', 'aboutme.png'
 ];
-const PUBLIC_PROJECTIONS = ['loc-context.json', 'loc-culture.json', 'loc-rankings.json'];
 
 const normalize = value => String(value || '').replace(/^\/+/, '').replaceAll('\\', '/');
 const dataTier = rel => normalize(rel).startsWith('data/json/core/') ? 'core' : 'on-demand';
@@ -158,18 +157,8 @@ async function buildDataIndex(versionManifest) {
   return index;
 }
 
-const publicProjectionPayloads = await Promise.all(PUBLIC_PROJECTIONS.map(async name => ({
-  name,
-  content: await readFile(path.join(PUBLIC, 'projections', name), 'utf8')
-})));
-
 await rm(PUBLIC, { recursive: true, force: true });
 await mkdir(PUBLIC, { recursive: true });
-for (const { name, content } of publicProjectionPayloads) {
-  const target = path.join(PUBLIC, 'projections', name);
-  await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, content, 'utf8');
-}
 
 const scopeRoutePolicy = buildScopeRoutePolicyV2();
 await writeFile(path.join(PUBLIC, 'scope-route-policy.json'), `${JSON.stringify(scopeRoutePolicy, null, 2)}\n`, 'utf8');
