@@ -1,6 +1,6 @@
 'use client';
 
-import {neonClient} from './neon-client';
+import {selectNeonRows} from './neon-repository';
 
 const TABLES=Object.freeze({
   all:Object.freeze([['loc_context_entries','LOC 脈絡'],['gold.public_works','公開作品'],['gold.public_song_versions','公開歌曲版本']]),
@@ -12,24 +12,14 @@ const TABLES=Object.freeze({
 
 const SEARCH_PAGE_SIZE=500;
 
-function relationForTable(identifier){
-  const value=String(identifier||'');
-  const separator=value.indexOf('.');
-  if(separator<1)return neonClient.from(value);
-  const schema=value.slice(0,separator);const table=value.slice(separator+1);
-  return neonClient.schema(schema).from(table);
-}
-
 async function selectAllNeonRows(table,source){
   const rows=[];let offset=0;let total=null;
   while(total===null||offset<total){
-    const result=await relationForTable(table).select('*',{count:'exact'}).range(offset,offset+SEARCH_PAGE_SIZE-1);
-    if(result.error)throw new Error(result.error.message||'query failed');
-    const page=Array.isArray(result.data)?result.data:[];
-    rows.push(...page.map(row=>({row,source})));
-    total=Number.isFinite(Number(result.count))?Number(result.count):offset+page.length;
-    if(page.length<SEARCH_PAGE_SIZE)break;
-    offset+=page.length;
+    const result=await selectNeonRows(table,{columns:'*',count:'exact',range:[offset,offset+SEARCH_PAGE_SIZE-1]});
+    rows.push(...result.rows.map(row=>({row,source})));
+    total=Number.isFinite(Number(result.count))?Number(result.count):offset+result.rows.length;
+    if(result.rows.length<SEARCH_PAGE_SIZE)break;
+    offset+=result.rows.length;
   }
   return rows;
 }
