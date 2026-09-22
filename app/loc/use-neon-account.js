@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { getNeonSession, neonClient, signInNeonWithGoogle, signOutNeon } from './neon-client';
-import { migrateLegacyBrowserDataToNeon } from './neon-legacy-migration';
+import {useCallback,useEffect,useState} from 'react';
+import {getNeonSession,neonClient,signInNeonWithGoogle,signOutNeon} from './neon-client';
+import {migrateLegacyBrowserDataToNeon} from './neon-legacy-migration';
+import {createScopeAuthorizer} from './scope-authorization';
 
-export const NEON_SCOPE_MANAGER_LEVELS = Object.freeze(['scope_manager','page_manager']);
+export const NEON_SCOPE_MANAGER_LEVELS=Object.freeze(['scope_manager','page_manager']);
 
 async function readManagementGrants(user){
   if(!user?.id)return [];
@@ -12,33 +13,47 @@ async function readManagementGrants(user){
     .select('scope_id,access_level,case_id')
     .eq('user_id',String(user.id))
     .limit(100);
-  if(error)throw new Error(error.message||'Neon management permission failed');
+  if(error)throw new Error(error.message||'Neon 管理權限查詢失敗');
   return Array.isArray(data)?data:[];
 }
 
+const emptyState={loading:true,user:null,grants:[],authorizer:null,canManage:false,permissionLoading:true,error:''};
+
 export function useNeonAccount(){
-  const [state,setState]=useState({loading:true,user:null,grants:[],canManage:false,permissionLoading:true,error:''});
+  const [state,setState]=useState(emptyState);
   const refresh=useCallback(async()=>{
     try{
       const session=await getNeonSession();
       const user=session?.user||null;
       if(!user){
-        setState({loading:false,user:null,grants:[],canManage:false,permissionLoading:false,error:''});
+        setState({...emptyState,loading:false,permissionLoading:false});
         return null;
       }
       setState(current=>({...current,loading:false,user,permissionLoading:true,error:''}));
       const grants=await readManagementGrants(user);
-      const canManage=grants.some(grant=>NEON_SCOPE_MANAGER_LEVELS.includes(String(grant.access_level||'')));
-      setState(current=>({...current,loading:false,user,grants,canManage,permissionLoading:false,error:''}));
-      if(user)await migrateLegacyBrowserDataToNeon().catch(()=>{});
+      const authorizer=await createScopeAuthorizer(user.id,grants);
+      const canManage=grants.some(grant=>NEON_SCOPE_MANAGER_LEVELS.includes(grant.access_level));
+      setState({loading:false,user,grants,authorizer,canManage,permissionLoading:false,error:''});
+      await migrateLegacyBrowserDataToNeon().catch(()=>{});
       return user;
     }catch(error){
-      setState(current=>({...current,loading:false,grants:[],canManage:false,permissionLoading:false,error:String(error?.message||error)}));
+      setState(current=>({...current,loading:false,grants:[],authorizer:null,canManage:false,permissionLoading:false,error:String(error?.message||error)}));
       return null;
     }
   },[]);
   useEffect(()=>{refresh()},[refresh]);
   const signIn=useCallback(()=>signInNeonWithGoogle(typeof window!=='undefined'?window.location.href:'/'),[]);
-  const signOut=useCallback(async()=>{await signOutNeon();setState({loading:false,user:null,grants:[],canManage:false,permissionLoading:false,error:''});},[]);
-  return {...state,refresh,signIn,signOut};
+  const signOut=useCallback(async()=>{
+    await signOutNeon();
+    setState({...emptyState,loading:false,permissionLoading:false});
+  },[]);
+  const canManageScope=useCallback(async(scopeId)=>{
+    if(!state.authorizer||!scopeId)return false;
+    try{return Boolean(await state.authorizer.canManageScope(scopeId))}catch{return false}
+  },[state.authorizer]);
+  const canManagePage=useCallback(async(scopeId,pageId)=>{
+    if(!state.authorizer||!scopeId||!pageId)return false;
+    try{return Boolean(await state.authorizer.canManagePage(scopeId,pageId))}catch{return false}
+  },[state.authorizer]);
+  return {...state,refresh,signIn,signOut,canManageScope,canManagePage};
 }
