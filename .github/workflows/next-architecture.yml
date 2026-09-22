@@ -8,20 +8,18 @@ on:
       - "js/**"
       - "*.html"
       - "scripts/**"
-      - "data/json/core/runes.json"
       - "package.json"
       - "next.config.mjs"
       - ".github/workflows/next-architecture.yml"
   push:
     branches:
-      - "refactor/static-pwa-cleanup"
+      - "main"
     paths:
       - "app/**"
       - "lib/**"
       - "js/**"
       - "*.html"
       - "scripts/**"
-      - "data/json/core/runes.json"
       - "package.json"
       - "next.config.mjs"
       - ".github/workflows/next-architecture.yml"
@@ -37,5 +35,5 @@ jobs:
           node-version: "22"
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Verify modularity and build static export
+      - name: Verify modularity and build Next server
         run: npm run build
