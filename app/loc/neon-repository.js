@@ -4,13 +4,10 @@ import {z} from 'zod';
 import {neonClient} from './neon-client';
 
 const TableSchema=z.enum([
-  'gold.public_works','gold.public_song_versions',
   'api.user_records','api.user_settings','api.scope_contacts','api.scope_theme_defaults',
   'api.scope_access_grants','api.scope_relations','api.scope_relation_requests','api.site_theme_styles',
-  'api.loc_context_entries','api.runes_context_entries','api.lo3rwang_context_entries',
   'api.lo3rwang_period_context_entries','api.loc_rankings','api.runes_rankings',
   'api.lo3rwang_rankings','api.lrunes_runes','api.lrunes_evolution_history','api.lrunes_harmony','api.lrunes_algorithm',
-  'api.loc_works','api.runes_works','api.lo3rwang_works',
   'silver.works','silver.song_versions','silver.knowledge_assets','silver.content_relations','silver.work_scope_affiliations',
   'silver.runes_context_entries','silver.lo3rwang_context_entries',
   'silver.lo3rwang_period_context_entries','silver.runes_rankings',
