@@ -13,7 +13,7 @@ app/        Next.js routes and UI
 js/         JavaScript runtime modules and shared browser/runtime logic
 assets/     governed domain/site assets
 pics/       frozen approved source diagrams still used by the site
-data/       canonical, companion, registry, source and generated datasets
+data/       frozen source workbooks, records and non-runtime provenance
 docs/       governance, architecture, API documentation and governed document copies
 services/   API/edge/deployment services
 scripts/    repository/build/migration scripts
@@ -40,7 +40,7 @@ A governed mirror or runtime derivative does **not** authorize deletion, replace
 
 ### LunaRunes
 
-`LunaRune66.xlsx` is the frozen mother workbook. Runtime JSON under `data/json/` is derived/maintained runtime data and must not silently replace the mother workbook.
+`LunaRune66.xlsx` is the frozen mother workbook. Website runtime reads Neon canonical tables; repository workbooks and records remain provenance/source material and must not silently replace the mother workbook.
 
 A governed workbook copy may also exist under:
 
@@ -130,9 +130,9 @@ Build success, route existence, modularity, or independence from legacy runtime 
 ## Next.js performance and modularity rules
 
 - Route responsibility must remain explicit.
-- Feature JavaScript, CSS and JSON should load only for the feature that consumes them.
+- Feature JavaScript, CSS and canonical data clients should load only for the feature that consumes them.
 - Data paths must be registered centrally before use.
-- Static export remains preferred for public LOC pages unless a server feature is required.
+- Server routes are preferred whenever a feature reads protected or canonical Neon data.
 - Performance optimization must preserve intentional small/large asset variants rather than replacing all uses with the largest file.
 - Legacy source pages remain parity evidence until their approved content and behavior have been accounted for.
 
