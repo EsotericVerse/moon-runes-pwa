@@ -1,14 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { exportJson, readJsonFile } from '../file-utils';
 import { deleteNeonRecord, listNeonRecords, putNeonRecord } from '../neon-user-storage';
 import { useNeonSetting } from '../use-neon-setting';
 import { useLocalStore } from '../local-store';
 import { classifyRecords } from '../model/style-classifier';
 import { createLibraryRecord, INITIAL_STYLE_PROFILE, LIBRARY_RECORD_TYPE, STYLE_STORAGE_KEY } from '../model/style-profile';
 
-const EXPORT_FILE='loc-library.json';
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
@@ -64,30 +62,6 @@ export default function LibraryView(){
     setMessage(`重新分類完成：${classified.length} 筆。`);
   }
 
-  async function storeRows(data,sourceName='import'){
-    const rows=Array.isArray(data)?data:Array.isArray(data?.records)?data.records:[];
-    if(!rows.length)throw new Error('找不到 records 陣列');
-    let count=0;
-    for(const raw of rows){
-      const record=raw?.type===LIBRARY_RECORD_TYPE&&raw?.id
-        ?{...raw,type:LIBRARY_RECORD_TYPE,updated_at:new Date().toISOString()}
-        :createLibraryRecord({title:raw?.title,text:raw?.text??raw?.content,source:raw?.source||sourceName,classification:raw?.classification||null});
-      if(!record.text)continue;
-      await putNeonRecord(record);count+=1;
-    }
-    await reload();
-    return count;
-  }
-
-  async function importJson(event){
-    const file=event.target.files?.[0];
-    if(!file)return;
-    try{
-      const count=await storeRows(await readJsonFile(file),`import:${file.name}`);
-      setMessage(`已匯入 ${count} 筆 Library 資料。`);
-    }catch(error){setMessage(`匯入失敗：${error.message}`);}
-    event.target.value='';
-  }
 
 
   return <section className="loc-view">
@@ -100,8 +74,6 @@ export default function LibraryView(){
     <section className="loc-card">
       <div className="loc-actions">
         {!account.user&&<button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>}{account.user&&<a className="loc-button primary" href="/classify">＋新增／分類文字</a>}
-        <button className="loc-button" onClick={()=>exportJson({version:1,records},EXPORT_FILE)} disabled={!records.length}>匯出 JSON</button>
-        <label className="loc-button">匯入 JSON<input className="loc-hidden-input" type="file" accept="application/json,.json" onChange={importJson}/></label>
         <button className="loc-button" onClick={()=>reclassify('missing')} disabled={!records.length}>分類未分類資料</button>
         <button className="loc-button" onClick={()=>reclassify('all')} disabled={!records.length}>重新分類全部</button>
       </div>
