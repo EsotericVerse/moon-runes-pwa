@@ -84,8 +84,46 @@ export async function GET(request){
     }else if(path==='context/cross-relations'){
       payload=await db`select * from silver.content_relations order by updated_at desc nulls last`;
     }else if(path==='culture/zhengde-keywords'){
-      payload={keywords:[]};
-    }else if(['canonical/lots','canonical/rune-interpretations','canonical/rune-grammar','canonical/three-card-combinations','context/loc2-events','culture/loc3-period-keywords','literary/loc4-writing','governance/loc6','culture/period-keywords','culture/loc6-period-keywords','context/graph-schema','governance/style-groups','media/registry','knowledge/assets','knowledge/search-governance','knowledge/search-stats'].includes(path)){
+      const rows=await db`select keyword,count(*)::int as count
+        from (
+          select unnest(
+            coalesce(s.theme_tags,ARRAY[]::text[])||
+            coalesce(s.emotion_tags,ARRAY[]::text[])||
+            coalesce(s.imagery_tags,ARRAY[]::text[])||
+            coalesce(s.context_tags,ARRAY[]::text[])||
+            coalesce(s.genre_tags,ARRAY[]::text[])
+          ) as keyword
+          from silver.work_semantics s
+          join silver.works w on w.work_id=s.work_id
+          where w.scope='lo3rwang'
+        ) keywords
+        where keyword is not null and keyword<>''
+        group by keyword order by count desc,keyword`;
+      payload={keywords:rows.map(row=>({name:row.keyword,count:Number(row.count)||0}))};
+    }else if(path==='literary/loc4-writing'){
+      const rows=await db`select w.work_id,w.scope,w.work_type,w.title,w.created_date,w.period_code,w.era_code,w.era_name,
+        w.content_origin,w.source_status,w.source_ref,s.ai_summary,s.theme_tags,s.emotion_tags,s.imagery_tags,s.context_tags,s.genre_tags,
+        coalesce((
+          select jsonb_agg(jsonb_build_object('title',v.title,'url',v.suno_url,'source_type','song','role',v.version_label)
+            order by v.is_representative desc nulls last,v.version_label,v.song_id)
+          from silver.song_versions v where v.work_id=w.work_id and v.suno_url is not null
+        ),'[]'::jsonb) as source_refs
+        from silver.works w
+        left join silver.work_semantics s on s.work_id=w.work_id
+        where w.scope='lo3rwang'
+        order by w.created_date desc nulls last,w.work_id`;
+      payload={works:rows.map(row=>({
+        ...row,
+        summary:row.ai_summary||'',
+        period:row.period_code||row.era_code||'',
+        period_name:row.era_name||row.period_code||'',
+        tags:[...new Set([row.theme_tags,row.emotion_tags,row.imagery_tags,row.context_tags,row.genre_tags].filter(Array.isArray).flat().filter(Boolean))],
+        source_refs:Array.isArray(row.source_refs)?row.source_refs:[]
+      }))};
+    }else if(path==='knowledge/assets'){
+      payload={assets:await db`select asset_id,owner_scope,title,body,asset_type,source_ref,rights_ref,lifecycle,metadata,updated_at
+        from silver.knowledge_assets order by updated_at desc nulls last,asset_id`};
+    }else if(['canonical/lots','canonical/rune-interpretations','canonical/rune-grammar','canonical/three-card-combinations','context/loc2-events','culture/loc3-period-keywords','governance/loc6','culture/period-keywords','culture/loc6-period-keywords','context/graph-schema','governance/style-groups','media/registry','knowledge/search-governance','knowledge/search-stats'].includes(path)){
       payload=[];
     }else if(path.startsWith('dataset/')){
       payload={shards:[]};
