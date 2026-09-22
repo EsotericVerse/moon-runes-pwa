@@ -51,9 +51,7 @@ jobs:
           python-version: "3.12"
       - name: Validate repository layout
         run: node scripts/verify-directory-governance.mjs
-      - name: Validate RC4 canonical integrity
-        run: node scripts/verify-rc4-integrity.mjs
-      - name: Validate legacy static runtime boundary
-        run: python tools/check_static_runtime.py
+      - name: Validate Neon canonical module boundary
+        run: node scripts/verify-modularity.mjs
       - name: Compile active Python tools
         run: python -m compileall -q engine tools
