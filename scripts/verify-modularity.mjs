@@ -22,7 +22,7 @@ walk(resolve(root,'app'),path=>{
   if(/fetchStaticJson|runtime_json_documents|fetch\(['"]\/data\/json\//.test(text)){
     failures.push(`${rel}: runtime JSON/static fallback is forbidden`);
   }
-  if(/neon-scope-projections|selectScopeProjectionRows|selectScopeRankingPage/.test(text)&&rel!=='app/loc/neon-ranking-client.js'){
+  if(/neon-scope-projections|selectScopeProjectionRows/.test(text)){
     failures.push(`${rel}: retired projection loader reference`);
   }
 });
