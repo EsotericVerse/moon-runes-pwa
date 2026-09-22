@@ -4,7 +4,6 @@ const sources={
   home:read('app/loc/views/AboutView.jsx'),
   nav:read('app/GlobalNav.jsx')+read('app/modular-v2/ScopeNavV2.jsx'),
   governance:read('app/modular-v2/features/GovernanceV2.jsx'),
-  terminology:read('data/json/registries/LOC_TERMINOLOGY_CANON.json'),
   registry:read('app/modular-v2/scope-registry.v2.js'),
   layout:read('app/layout.jsx'),
   locApp:read('app/loc/LocApp.jsx')
@@ -21,20 +20,11 @@ const required=[
   [sources.nav,'FEATURES_V2'],
   [sources.nav,'useScopeRuntimeV2'],
   [sources.governance,'Admin Scope'],
-  [sources.terminology,'"zh": "模型化語言框架"'],
-  [sources.terminology,'"en": "Modelized Language Framework"'],
-  [sources.terminology,'"zh": "符號式語言"'],
-  [sources.terminology,'"en": "Symbolic Language"'],
   [sources.registry,"scopeIdPattern:'^[A-Za-z]+$'"],
   [sources.registry,"defaultScopeId:'loc'"],
-  [sources.registry,"word:'loc'"],
   [sources.registry,"domain:'loc.lo3rwang.cc'"],
   [sources.registry,"domain:'lrunes.lo3rwang.cc'"],
-  [sources.registry,"mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'})"],
   [sources.registry,"domain:'dlwang.lo3rwang.cc'"],
-  [sources.registry,"scopeType:'directory'"],
-  [sources.registry,"aliasName:'dlwang'"],
-  [sources.registry,"mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'})"],
   [sources.registry,"domain:'admin.lo3rwang.cc'"],
   [sources.locApp,'ContextV2'],
   [sources.locApp,'StatisticsV2'],
@@ -46,10 +36,11 @@ const forbiddenCurrent=[
   'Language Model Framework','語言模型框架',
   'Language Module Framework','語言系統模組框架',
   'Symbolic Language Module','符號式語言模組',
-  'whoami.lo3rwang.cc','manage.lo3rwang.cc'
+  'whoami.lo3rwang.cc','manage.lo3rwang.cc',
+  'Projection','projection'
 ];
 const missing=required.filter(([source,token])=>!source.includes(token)).map(([,token])=>token);
-const currentSources=Object.values(sources).join('\n');
+const currentSources=Object.values(sources).join('\\n');
 const stale=forbiddenCurrent.filter(token=>currentSources.includes(token));
 if(sources.layout.includes('LanguageProvider'))stale.push('LanguageProvider');
 if(sources.nav.includes('loc-language-toggle'))stale.push('loc-language-toggle');
