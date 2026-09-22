@@ -9,7 +9,7 @@
 
 本文件定義 LOC 的固定名稱、核心結構、功能責任、語意邊界、資料層級與治理原則。Canon 不記錄會隨時間變動的資料量、作品數、FAQ 題數、平台筆數、實作完成度或其他狀態統計。
 
-固定內容不得由 README、FAQ、RAG、KM、UI、Search、Registry 或舊文件反向改寫。若未來確需調整固定名稱、結構常數、語意責任或治理原則，必須先進行 Canon 版本變更，再同步下游投影。
+固定內容不得由 README、FAQ、RAG、KM、UI、Search、Registry 或舊文件反向改寫。若未來確需調整固定名稱、結構常數、語意責任或治理原則，必須先進行 Canon 版本變更，再同步下游 Neon canonical route。
 
 ## 2. LOC 核心定義
 
@@ -128,13 +128,13 @@ Culture 是歷史與文化觀察，不具有預測責任。其觀察至少包含
 
 ## 11. JSON 與資料層
 
-核心 JSON 是 runtime 的正式資料投影；母資料仍是最高來源。JSON 不得在沒有治理依據的情況下自行改寫 Canon。母資料維持唯讀治理，任何 runtime、Search、Statistics 或 UI 投影不得反向污染母資料。
+Neon silver tables 是 runtime 的正式來源；母資料仍是最高來源。網站只透過受控 server route 讀取與寫入 link／權限資料，不複製內容，也不得反向污染母資料。
 
 | 資料層級 | 責任 |
 |---|---|
 | Canon / Mother Source | 固定名稱、結構常數、語意邊界與治理原則。 |
 | Registry / Canonical tables | 結構化現況、關係、來源與可變資料；Neon silver tables 是正式 runtime 來源。 |
-| Search / Generated Index | 搜尋與查詢所需的索引／投影，不反向升格 Canon。 |
+| Search / Runtime query | 搜尋與查詢由 Neon canonical tables 即時聚合，不反向升格 Canon。 |
 | API / UI / Analysis | 呈現、執行與分析層，不取代資料來源。 |
 
 ## 12. 治理中立與 Copyleft
