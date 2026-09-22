@@ -68,7 +68,7 @@ function Pager({page,total,onChange}){
   return <div className="scope-v2-pagination"><span>第 {page} / {pages} 頁 · 共 {total} 筆</span><div><button type="button" disabled={page<=1} onClick={()=>onChange(page-1)}>上一頁</button><button type="button" disabled={page>=pages} onClick={()=>onChange(page+1)}>下一頁</button></div></div>;
 }
 
-export default function ContextWorkbenchV2({view='loc_context_entries'}){
+const TABLE_ALIASES=Object.freeze({\n  canonical_context:'silver.lo3rwang_context_entries',\n  canonical_runes_context:'silver.runes_context_entries',\n  canonical_author_context:'silver.lo3rwang_context_entries'\n});\n\nexport default function ContextWorkbenchV2({view='canonical_context'}){
   const [rows,setRows]=useState([]);
   const [loading,setLoading]=useState(true);
   const [notice,setNotice]=useState('');
@@ -83,7 +83,7 @@ export default function ContextWorkbenchV2({view='loc_context_entries'}){
   useEffect(()=>{
     let live=true;
     setLoading(true);
-    const table=view.includes('.')?view:`api.${view}`;
+    const table=TABLE_ALIASES[view]||view;
     selectNeonRows(table,{columns:'*',limit:5000}).then(({rows})=>{
       if(!live)return;
       setRows(rows);
