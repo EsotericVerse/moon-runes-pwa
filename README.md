@@ -38,7 +38,7 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language reference impl
 - **MultiMedia／多媒體**：Reels、圖像、影音與跨媒介資產。
 - **Governance／治理**：治理原則、政德風與「治理：德之符文」。
 - **Knowledge／知識**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與分析。
-- **Evolution／推演**：Period、Timeline、Trend、Trajectory 與時間投影。
+- **Evolution／推演**：Period、Timeline、Trend、Trajectory 與時間演變。
 
 ### RC3｜正式資料開始進入系統
 
@@ -56,7 +56,7 @@ LunaRunes Canon
 → 歷程／時間線／趨勢／軌跡
 ```
 
-符文脈絡與符文分析核心採 **No API**：直接使用 repository 既有 `runes.json` 與現行規則，不呼叫外部 API、不重掃文章建立第二套關鍵詞，也不建立第二套 Canon。
+符文脈絡與符文分析核心採 **No API**：直接由 Next server 查詢 Neon silver.lrunes_runes 與現行規則，不呼叫外部 API、不建立第二套 Canon。
 
 RC3 已讓 `runes.html`、`context.html`、`statics.html`、`evolution.html` 有實際資料可展示與分析；完整 RC3 說明見 [`docs/RC3.md`](docs/RC3.md)。
 
