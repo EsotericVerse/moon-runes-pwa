@@ -2,7 +2,7 @@
 
 ## Current governing model
 
-Next.js is the primary application surface. The deployed frontend remains a static export. Shared/canonical LOC runtime data is provided by Neon; provider-specific storage must not grow into a parallel application layer.
+Next.js is the primary application surface. The deployed frontend runs through the Next server on OpenNext/Cloudflare. Shared/canonical LOC runtime data is provided by Neon; provider-specific storage must not grow into a parallel application layer.
 
 ## Shared data — Current
 
@@ -11,16 +11,16 @@ Next.js is the primary application surface. The deployed frontend remains a stat
 ```text
 Next.js feature
   -> fetchLocJson / fetchLocJsonBatch / fetchLocDataSegments
-  -> Neon Data API
-  -> api.runtime_json_documents
+  -> Next server route
+  -> direct Neon canonical tables
 ```
 
 Current rules:
 
-- Shared/canonical runtime reads use Neon Data API only.
-- Statistics and Daily Rune use the same Neon Current projection.
-- Context, Culture, Search, LunaRunes data, registries, and governed generated projections use the same loader.
-- Large text/music corpora remain manifest/shard based and are loaded on demand, but the shards themselves are fetched from Neon.
+- Shared/canonical runtime reads use explicit Neon server routes only.
+- Statistics and Daily Rune use direct Neon SQL against canonical tables.
+- Context, Culture, Search, LunaRunes data, and registries use shared route/client modules over canonical tables.
+- Large text/music sources are loaded on demand from their canonical Neon relations; no local JSON shard is a runtime source.
 - Browser IndexedDB is not a cache/source for shared datasets.
 - Cloudflare KV and Vercel KV are not shared LOC state providers.
 - `app/loc/data-local.js`, `app/loc/data-sync.js`, `app/loc/kv-state.js`, `services/cloudflare/loc-state-worker.js`, and root `wrangler.toml` are retired.
@@ -46,7 +46,7 @@ Management and personal sign-in use Neon Managed Auth. Shared Current reads rema
 
 ## Search governance
 
-`data/json/registries/LOC_SEARCH_GOVERNANCE.json` remains the provider-neutral semantic query authority. Next.js Search loads it through Neon along with the other Current projections. Search concurrency, bounded segment batches, scope partitioning, routing, and telemetry remain application concerns rather than storage-provider behavior.
+Search uses the shared Neon table allowlist and schema-qualified canonical SELECTs; query policy stays in the application module and no local JSON registry is loaded.
 
 ## Optional/offline services
 
@@ -56,11 +56,11 @@ Python search/analysis services, Render-era compatibility code, Apps Script, and
 
 1. Neon Bronze/Silver/Vault/Gold foundation established.
 2. Neon Data API enabled for the production branch.
-3. `api.runtime_json_documents` established as the public read-only Current JSON projection.
-4. Every registered `LOC_DATA` runtime path verified present in the projection.
-5. Text corpus and music search shards verified present.
-6. Shared Next.js data loader changed from static JSON + IndexedDB cache to Neon Data API.
-7. Statistics and Daily Rune switched to the Neon-backed loader.
+3. Explicit Next server routes established for canonical rune, context, culture, search, writing, and statistics reads.
+4. Every active runtime path now resolves to an explicit Neon canonical table or an explicit unmapped response.
+5. Search, Culture, Context and Statistics use shared modules and controlled error responses.
+6. Shared Next.js data loader changed from static JSON + IndexedDB cache to the Neon canonical route.
+7. Statistics and Daily Rune switched to direct Neon-backed reads.
 8. Governance shared-state reads switched to Neon.
 9. Browser shared-dataset IndexedDB cache/sync adapters removed.
 10. Cloudflare KV state adapter, state Worker, and deployment configuration retired.
