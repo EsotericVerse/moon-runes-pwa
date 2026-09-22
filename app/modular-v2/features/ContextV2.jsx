@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useState} from 'react';
-import {neonClient} from '../../loc/neon-client';
+import {selectNeonRows} from '../../loc/neon-repository';
 import {fetchLocStaticJson,LOC_DATA} from '../../loc/data';
 import {selectScopeProjectionRows} from '../../loc/neon-scope-projections';
 import {buildRuneGraph} from '../../../js/rune-graph-core.js';
@@ -154,13 +154,12 @@ async function basicScopeContextRows(scopeId){
   }
   if(scopeId==='lo3rwang'){
     const [works,songs]=await Promise.all([
-      neonClient.from('gold.public_works').select('*').limit(1000),
-      neonClient.from('gold.public_song_versions').select('*').limit(1000)
+      selectNeonRows('gold.public_works',{limit:1000}),
+      selectNeonRows('gold.public_song_versions',{limit:1000})
     ]);
-    if(works.error)throw new Error(works.error.message||'Public works read failed');
     return [
-      ...(Array.isArray(works.data)?works.data:[]).map((row,index)=>({context_key:row.work_id||`work-${index}`,context_type:'作品',title:row.title||row.work_id||'作品',summary:row.summary||row.ai_summary||'',period:row.period_code||row.era_code||row.era_name||'',source:row.content_origin||row.scope||'作者作品'})),
-      ...(Array.isArray(songs.data)?songs.data:[]).map((row,index)=>({context_key:row.song_id||`song-${index}`,context_type:'音樂作品',title:row.title||row.song_id||'歌曲',summary:row.playlist||row.style_prompt||'',period:'',source:'音樂'}))
+      ...works.rows.map((row,index)=>({context_key:row.work_id||`work-${index}`,context_type:'作品',title:row.title||row.work_id||'作品',summary:row.summary||row.ai_summary||'',period:row.period_code||row.era_code||row.era_name||'',source:row.content_origin||row.scope||'作者作品'})),
+      ...songs.rows.map((row,index)=>({context_key:row.song_id||`song-${index}`,context_type:'音樂作品',title:row.title||row.song_id||'歌曲',summary:row.playlist||row.style_prompt||'',period:'',source:'音樂'}))
     ];
   }
   return [];
