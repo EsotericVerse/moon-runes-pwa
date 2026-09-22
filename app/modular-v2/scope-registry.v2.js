@@ -53,7 +53,7 @@ export const SCOPES_V2=Object.freeze({
     role:Object.freeze({label:'作者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
     searchCollection:'all',
-    dataViews:Object.freeze({context:'loc_context_entries',rankings:'loc_rankings'}),
+    dataViews:Object.freeze({context:'canonical_context',rankings:'canonical_rankings'}),
     rankingTitle:'總排行榜',
     theme:Object.freeze({mode:'time',theme:'theme-7',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   }),
@@ -85,7 +85,7 @@ export const SCOPES_V2=Object.freeze({
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'月之符文',
-    dataViews:Object.freeze({context:'runes_context_entries',rankings:'runes_rankings'}),
+    dataViews:Object.freeze({context:'canonical_runes_context',rankings:'canonical_runes_rankings'}),
     rankingTitle:'月之符文排行榜',
     theme:Object.freeze({mode:'fixed',theme:'theme-5',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   }),
@@ -106,7 +106,7 @@ export const SCOPES_V2=Object.freeze({
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'政德文化',
-    dataViews:Object.freeze({context:'lo3rwang_context_entries',rankings:'lo3rwang_rankings'}),
+    dataViews:Object.freeze({context:'canonical_author_context',rankings:'canonical_author_rankings'}),
     rankingTitle:'作者排行榜',
     theme:Object.freeze({
       mode:'custom',
