@@ -55,14 +55,62 @@ async function readRuneHistory(db){
                 order by sequence_no nulls last,history_id`;
 }
 
+async function readWorks(db){
+  return db`select w.work_id,w.work_type,w.period_code,w.era_code,w.era_name,
+                    s.theme_tags,s.emotion_tags,s.imagery_tags,s.context_tags,s.genre_tags
+               from silver.works w
+               left join silver.work_semantics s on s.work_id=w.work_id
+              where w.scope='lo3rwang'
+              order by w.created_date nulls last,w.work_id`;
+}
+
+function flattenTags(row){
+  return [row.theme_tags,row.emotion_tags,row.imagery_tags,row.context_tags,row.genre_tags]
+    .filter(Array.isArray)
+    .flat()
+    .map(value=>String(value||'').trim())
+    .filter(Boolean);
+}
+
+function buildWorkPeriods(rows,acceptedTypes){
+  const buckets=new Map();
+  for(const row of rows||[]){
+    if(acceptedTypes.size&&!acceptedTypes.has(row.work_type))continue;
+    const period=row.period_code||row.era_code||row.era_name||'未分類';
+    const key=`${row.work_type||'work'}:${period}`;
+    const bucket=buckets.get(key)||{period,work_type:row.work_type||'work',work_count:0,keywords:new Map(),workIds:new Set()};
+    if(!bucket.workIds.has(row.work_id)){
+      bucket.workIds.add(row.work_id);
+      bucket.work_count+=1;
+    }
+    for(const keyword of flattenTags(row))bucket.keywords.set(keyword,(bucket.keywords.get(keyword)||0)+1);
+    buckets.set(key,bucket);
+  }
+  return {periods:[...buckets.values()].sort((a,b)=>String(a.period).localeCompare(String(b.period))).map(bucket=>({
+    period:bucket.period,
+    work_type:bucket.work_type,
+    work_count:bucket.work_count,
+    keywords:[...bucket.keywords.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([keyword,count])=>({keyword,count}))
+  }))};
+}
+
+function buildAuthorKeywords(rows){
+  const counts=new Map();
+  for(const row of rows||[])for(const keyword of flattenTags(row))counts.set(keyword,(counts.get(keyword)||0)+1);
+  return {keywords:[...counts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([name,count])=>({name,count}))};
+}
+
 export async function GET(request){
   const parsed=QuerySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
   if(!parsed.success)return NextResponse.json({error:'查詢參數無效',code:'INVALID_QUERY'},{status:400});
   const {scopeId}=parsed.data;
   try{
     const {db}=neonServerRequest(request);
-    const periods=await readPeriods(db);
-    const historyRows=scopeId==='loc'||scopeId==='runes'?await readRuneHistory(db):[];
+    const [periods,historyRows,workRows]=await Promise.all([
+      readPeriods(db),
+      scopeId==='loc'||scopeId==='runes'?readRuneHistory(db):Promise.resolve([]),
+      scopeId==='lo3rwang'||scopeId==='loc'?readWorks(db):Promise.resolve([])
+    ]);
     const eras=periodRows(periods);
     const runeHistory=mergeHistory(historyRows);
     const runeEras=(Array.isArray(runeHistory.eras)?runeHistory.eras:[])
@@ -75,9 +123,9 @@ export async function GET(request){
       runeEras:{eras:runeEras},
       runeHistory,
       periods:periods.map(row=>({...row,payload:row.payload||{}})),
-      authorKeywords:{keywords:[]},
-      musicPeriods:{periods:[]},
-      writingPeriods:{periods:[]}
+      authorKeywords:buildAuthorKeywords(workRows),
+      musicPeriods:buildWorkPeriods(workRows,new Set(['music'])),
+      writingPeriods:buildWorkPeriods(workRows,new Set(['writing','novel','literary','text']))
     };
     return NextResponse.json(payload,{headers:{'Cache-Control':'no-store, max-age=0'}});
   }catch(error){
