@@ -51,7 +51,7 @@ export async function loadCanonicalRunes(){
   for(const row of runeRows)rune[Number(row.編號)]=toRuntimeRow(row);
   for(const group of groups){
     if(group.id==='special')group.runes=runeRows.filter(row=>[0,65,66].includes(Number(row?.編號))).map(row=>({id:Number(row.編號),zh:row.符文名稱,en:row.英文}));
-    else group.runes=runeRows.filter(row=>Number(row?.編號)>=group.from&&Number(row?.編號)<=group.to).map(row=>({id:Number(row.編號),zh:row.符文名稱,en:row.英文}));
+    else group.runes=runeRows.filter(row=>Number(row?.編號)>=(Number(group.id)-1)*8+1&&Number(row?.編號)<=Number(group.id)*8).map(row=>({id:Number(row.編號),zh:row.符文名稱,en:row.英文}));
   }
   return runeRows;
 }
