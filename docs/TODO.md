@@ -6,7 +6,7 @@
 - [x] Culture 頁正式名稱與 ERA authority 收斂。
 - [x] 符文圖鑑固定 canonical 群組順序與 01–66 編號順序。
 - [x] Rune Graph 節點與關係固定排序。
-- [x] 抽牌核心改為 Next.js 直接讀本地 canonical `runes.json`，不等待 Render。
+- [x] 抽牌核心改為 Next.js 直接讀 Neon canonical rune rows，不等待舊服務。
 - [x] `lots.json` 與 Graph 名冊延後載入，不阻塞抽牌與關鍵詞。
 - [x] 個人設定集中到 `/my-style`；群組設定內嵌於個人設定頁。
 - [x] 抽牌等待預設 4 秒，可在個人設定切換為即時反應（0 秒）。
