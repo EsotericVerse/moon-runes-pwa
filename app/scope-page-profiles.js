@@ -22,7 +22,7 @@ export const SCOPE_PAGE_PROFILES=Object.freeze({
       title:'符文治理',
       subtitle:'只治理 LunaRunes／月之符文 Scope；共用 LOC 原則，但主體與權威獨立。',
       intro:'66 符身分、位置、Grammar、語意與符文歷史由 LunaRunes Scope 管理；抽牌、Graph、搜尋、統計與說明都是消費者。',
-      authority:'LunaRunes Scope → Master Data／Base66 → Current Canon／Spec → Registry → Projection',
+      authority:'LunaRunes Scope → Master Data／Base66 → Current Canon／Spec → Registry → Canonical tables',
       scopeTitle:'LunaRunes 治理範圍',
       scopeText:'管理 66 符母資料、符文語意、Grammar、抽牌規則、LunaRunes ERA 與符文歷史；衍生結果不得反向覆寫 Master Data。',
       links:Object.freeze([
