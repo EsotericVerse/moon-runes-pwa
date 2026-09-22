@@ -54,41 +54,43 @@ export async function GET(request){
   try{
     const {db}=neonServerRequest(request);
     let payload=[];
-    if(path.endsWith('/core/runes.json')||path.endsWith('/generated/search/reserved/moon-runes.json')){
+    if(path==='canonical/runes'){
       const rows=await db`select rune_number,rune_name,group_name,english_name,canonical_payload
                               from silver.lrunes_runes
                              order by rune_number`;
       payload=runeRows(rows);
-    }else if(path.endsWith('/core/harmony.json')){
+    }else if(path==='canonical/harmony'){
       payload=await db`select rune_number,rune_name,soul_question,practice_challenge,ritual_advice,harmony_advice,source_payload
                            from silver.lrunes_harmony order by rune_number`;
-    }else if(path.endsWith('/core/history.json')||path.endsWith('LOC8_DAILY_RUNE_REPO_HISTORY.json')||path.endsWith('LOC8_EVENT_SNAPSHOT.json')){
+    }else if(path==='canonical/history'||path==='evolution/daily-rune-history'||path==='context/loc8-events'){
       payload=mergeHistory(await db`select history_id,history_kind,sequence_no,title,body,source_payload
                                      from silver.lrunes_evolution_history
                                     order by sequence_no nulls last,history_id`);
-    }else if(path.endsWith('/registries/lrunes_era.json')){
+    }else if(path==='culture/lrunes-periods'){
       const rows=await db`select context_key,context_type,title,summary,payload
                               from silver.lo3rwang_period_context_entries
                              where context_type='period'
                              order by coalesce((payload->>'order')::int,0),context_key`;
       payload={eras:periodRows(rows)};
-    }else if(path.endsWith('/registries/lo3rwang_era.json')){
+    }else if(path==='culture/lo3rwang-periods'){
       const rows=await db`select context_key,context_type,title,summary,payload
                               from silver.lo3rwang_period_context_entries
                              where context_type='period'
                              order by coalesce((payload->>'order')::int,0),context_key`;
       payload={eras:periodRows(rows)};
-    }else if(path.endsWith('/registries/LOC_FAQ_RAG_v0.4.json')){
+    }else if(path==='knowledge/faq'){
       payload=await db`select faq_id,category,intent,question,aliases,answer,keywords,related_ids,source_refs,canon_version,status
                            from silver.faq_entries order by faq_id`;
-    }else if(path.endsWith('/registries/LOC_CROSS_RELATIONSHIP_REGISTRY.json')){
+    }else if(path==='context/cross-relations'){
       payload=await db`select * from silver.content_relations order by updated_at desc nulls last`;
-    }else if(path.endsWith('/registries/ZHENGDE_CULTURE_KEYWORDS.json')){
+    }else if(path==='culture/zhengde-keywords'){
       payload={keywords:[]};
-    }else if(path.endsWith('/core/lots.json')||path.endsWith('/core/rune_interpretations.json')||path.endsWith('/core/rune_grammar.json')||path.endsWith('/core/three_card_combinations.json')||path.endsWith('/registries/LOC2_EVENT_REGISTRY.json')){
+    }else if(['canonical/lots','canonical/rune-interpretations','canonical/rune-grammar','canonical/three-card-combinations','context/loc2-events','culture/loc3-period-keywords','literary/loc4-writing','governance/loc6','culture/period-keywords','culture/loc6-period-keywords','context/graph-schema','governance/style-groups','media/registry','knowledge/assets','knowledge/search-governance','knowledge/search-stats'].includes(path)){
       payload=[];
+    }else if(path.startsWith('dataset/')){
+      payload={shards:[]};
     }else{
-      return NextResponse.json({error:'此資料路徑尚未對應 Neon canonical table',code:'NEON_SOURCE_UNMAPPED',path},{status:404});
+      return NextResponse.json({error:'此 Neon semantic data key 尚未對應 canonical table',code:'NEON_SOURCE_UNMAPPED',path},{status:404});
     }
     return NextResponse.json(payload,{headers:{'Cache-Control':'no-store, max-age=0'}});
   }catch(error){
