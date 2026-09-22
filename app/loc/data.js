@@ -70,9 +70,6 @@ export function fetchLocJson(path,{memory=true,maxMemoryEntries=DEFAULT_MEMORY_C
   memoryCache.set(key,request);trimMemoryCache(maxMemoryEntries);return request;
 }
 
-export function fetchLocStaticJson(path){
-  return fetchLocJson(path);
-}
 
 export async function fetchLocJsonBatch(items,{concurrency=DEFAULT_GLOBAL_CONCURRENCY,maxItems=DEFAULT_MAX_BATCH_ITEMS,memory=true}={}){
   const queue=[...items];
