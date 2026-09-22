@@ -29,6 +29,18 @@ jobs:
         run: npm run build
       - name: Adapt Next output for Workers
         run: npx opennextjs-cloudflare build
+      - name: Configure Neon database secret
+        env:
+          NEON_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$NEON_DATABASE_URL" ]; then
+            echo "::error::DATABASE_URL GitHub secret is required for Neon-backed server routes."
+            exit 1
+          fi
+          printf '%s' "$NEON_DATABASE_URL" | npx wrangler secret put DATABASE_URL --config wrangler.toml
+
       - name: Deploy Worker
         uses: cloudflare/wrangler-action@v4
         with:
