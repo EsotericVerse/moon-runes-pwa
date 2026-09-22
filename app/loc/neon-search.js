@@ -3,11 +3,34 @@
 import {selectNeonRows} from './neon-repository';
 
 const TABLES=Object.freeze({
-  all:Object.freeze([['loc_context_entries','LOC 脈絡'],['gold.public_works','公開作品'],['gold.public_song_versions','公開歌曲版本']]),
-  '月之符文':Object.freeze([['runes_context_entries','月之符文脈絡'],['lrunes_runes','月之符文']]),
-  '政德文化':Object.freeze([['lo3rwang_context_entries','政德文化脈絡'],['gold.public_works','公開作品'],['gold.public_song_versions','公開歌曲版本']]),
-  '政德風':Object.freeze([['lo3rwang_context_entries','政德文化脈絡'],['gold.public_works','公開作品'],['gold.public_song_versions','公開歌曲版本']]),
-  治理:Object.freeze([['loc_context_entries','治理脈絡']])
+  all:Object.freeze([
+    ['silver.lo3rwang_context_entries','作者脈絡'],
+    ['silver.runes_context_entries','符文脈絡'],
+    ['silver.lo3rwang_works','作者作品'],
+    ['silver.runes_works','符文作品'],
+    ['silver.song_versions','歌曲版本']
+  ]),
+  '月之符文':Object.freeze([
+    ['silver.runes_context_entries','月之符文脈絡'],
+    ['silver.lrunes_runes','月之符文'],
+    ['silver.runes_works','符文作品']
+  ]),
+  '政德文化':Object.freeze([
+    ['silver.lo3rwang_context_entries','政德文化脈絡'],
+    ['silver.lo3rwang_period_context_entries','作者時期'],
+    ['silver.lo3rwang_works','作者作品'],
+    ['silver.song_versions','歌曲版本']
+  ]),
+  '政德風':Object.freeze([
+    ['silver.lo3rwang_context_entries','政德文化脈絡'],
+    ['silver.lo3rwang_period_context_entries','作者時期'],
+    ['silver.lo3rwang_works','作者作品'],
+    ['silver.song_versions','歌曲版本']
+  ]),
+  治理:Object.freeze([
+    ['silver.lo3rwang_context_entries','治理脈絡'],
+    ['silver.knowledge_assets','治理知識資產']
+  ])
 });
 
 const SEARCH_PAGE_SIZE=500;
