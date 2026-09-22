@@ -55,7 +55,21 @@ export async function selectWritingWorks(){
 export async function selectWritingWork(workId){
   const id=String(workId||'').trim();
   if(!id)return null;
-  const rows=await database()`select ${WORK_COLUMNS}
+  const rows=await database()`select w.work_id,w.scope,w.work_type,w.title,w.created_date,w.period_code,w.era_code,w.era_name,
+    w.content_origin,w.source_status,w.source_ref,
+    s.ai_summary,s.theme_tags,s.emotion_tags,s.imagery_tags,s.context_tags,s.genre_tags,
+    coalesce((
+      select jsonb_agg(
+        jsonb_build_object(
+          'title',v.title,
+          'url',v.suno_url,
+          'source_type','song',
+          'role',v.version_label
+        ) order by v.is_representative desc nulls last,v.version_label,v.song_id
+      )
+      from silver.song_versions v
+      where v.work_id=w.work_id and v.suno_url is not null
+    ),'[]'::jsonb) as source_refs
     from silver.works w
     left join silver.work_semantics s on s.work_id=w.work_id
     where w.scope='lo3rwang' and w.work_id=${id}
