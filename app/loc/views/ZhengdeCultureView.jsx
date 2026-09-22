@@ -4,17 +4,6 @@ import {featureHrefV2} from '../../modular-v2/scope-registry.v2';
 import { useEffect, useMemo, useState } from 'react';
 import { fetchLocJson, LOC_DATA } from '../data';
 
-const TIMELINE = [
-  ['感受與自省','從個人經驗、記憶與身體感受出發，以提問理解自己與世界。'],
-  ['微月光','黑暗可以被完整描述，但最後保留一點光；希望之尾開始形成。'],
-  ['浪潮推進','從承受轉向移動：借力前行，不逆浪而行。'],
-  ['白晝之月','看清現實，仍願相信微光；浪漫開始受到現實校正。'],
-  ['人生月台','事件不再等於命運；該做的做好，等待或選擇下一班車。'],
-  ['順其自然','不預設結果，不預支期待；允許可能性存在，但不把願望當成事實。'],
-  ['自由的風','從離開限制走向取得行動權，開始主動選擇自己的方向。'],
-  ['自由的月','自由之後進入自我治理：整理、邊界、取捨、責任、收尾與航向。']
-];
-
 export default function ZhengdeCultureView(){
   const [data,setData]=useState(null);
   const [error,setError]=useState('');
@@ -26,6 +15,7 @@ export default function ZhengdeCultureView(){
   },[]);
 
   const keywords=useMemo(()=>Array.isArray(data?.keywords)?data.keywords:[],[data]);
+  const timeline=useMemo(()=>Array.isArray(data?.timeline)?[...data.timeline].sort((a,b)=>Number(a.order||0)-Number(b.order||0)):[],[data]);
 
   return <section className="loc-view">
     <header className="loc-hero">
@@ -47,7 +37,7 @@ export default function ZhengdeCultureView(){
       <p className="loc-eyebrow">Evolution · 文化變化</p>
       <h2>從微光到治理自己</h2>
       <div className="loc-list">
-        {TIMELINE.map(([name,summary],index)=><article key={name} className="loc-subcard"><p className="loc-result-meta"><span>{String(index+1).padStart(2,'0')}</span></p><h3>{name}</h3><p>{summary}</p></article>)}
+        {timeline.length?timeline.map((item,index)=><article key={item.id||item.name||index} className="loc-subcard"><p className="loc-result-meta"><span>{String(index+1).padStart(2,'0')}</span></p><h3>{item.name||item.title}</h3><p>{item.summary||item.description}</p></article>):<p className="loc-status">目前沒有可顯示的文化時間線。</p>}
       </div>
     </section>
 

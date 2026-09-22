@@ -27,30 +27,12 @@ const DIRECTION_FIELDS = {
 let runeHintMap = new Map();
 let lotsMap = new Map();
 
-async function loadLots() {
-  try {
-    const response = await fetch("data/json/core/lots.json");
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
-    const items = Array.isArray(payload?.items) ? payload.items : [];
-    lotsMap = new Map(items.map(item => [Number(item.編號), item]));
-  } catch (error) {
-    console.warn("LunaRunes Lots JSON unavailable; hiding Lots summary.", error);
-    lotsMap = new Map();
-  }
+async function loadLots(){
+  lotsMap=new Map();
 }
 
-async function loadRuneHints() {
-  try {
-    const response = await fetch("data/json/core/runes.json", { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
-    const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
-    runeHintMap = new Map(items.map(item => [Number(item.編號), item]));
-  } catch (error) {
-    console.warn("LunaRunes rune hint JSON unavailable; using canonical runtime fallback.", error);
-    runeHintMap = new Map();
-  }
+async function loadRuneHints(){
+  runeHintMap=new Map();
 }
 
 const MODE_CONFIG = {

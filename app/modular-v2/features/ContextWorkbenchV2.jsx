@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {neonClient,readNeonOrPublicFallback} from '../../loc/neon-client';
+import {neonClient} from '../../loc/neon-client';
 
 const PAGE_SIZE=24;
 const GRAPH_SEED=[
@@ -83,10 +83,7 @@ export default function ContextWorkbenchV2({view='loc_context_entries'}){
   useEffect(()=>{
     let live=true;
     setLoading(true);
-    readNeonOrPublicFallback(
-      ()=>neonClient.from(view).select('*').limit(5000),
-      '/projections/loc-context.json'
-    ).then(result=>{
+    neonClient.from(view).select('*').range(0,4999).then(result=>{
       if(!live)return;
       const data=Array.isArray(result?.data)?result.data:[];
       setRows(data);

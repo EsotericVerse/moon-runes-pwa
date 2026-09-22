@@ -39,14 +39,8 @@ const RITUAL_MESSAGES = {
   ow3gs: ['正在進行 OW3gs 11 卡抽牌。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
 };
 
-async function fetchCoreRunes() {
-  try {
-    const response = await fetch(LOC_DATA.RUNES, { cache: 'force-cache' });
-    if (!response.ok) throw new Error(`Local runes.json ${response.status}`);
-    return await response.json();
-  } catch (localError) {
-    return fetchLocJson(LOC_DATA.RUNES, { memory: true });
-  }
+async function fetchCoreRunes(){
+  return fetchLocJson(LOC_DATA.RUNES,{memory:true});
 }
 
 
@@ -185,7 +179,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   useEffect(() => {
     let live = true;
 
-    // Core draw readiness depends only on runes.json. Do not block the first
+    // Core draw readiness depends only on the Neon rune projection. Do not block the first
     // draw on lots or interpretation payloads.
     fetchCoreRunes()
       .then(runes => {

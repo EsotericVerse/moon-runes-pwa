@@ -2,7 +2,7 @@
 
 import {useEffect,useState} from 'react';
 import {neonClient} from '../../loc/neon-client';
-import {fetchLocStaticJson,LOC_DATA} from '../../loc/data';
+import {fetchLocJson,LOC_DATA} from '../../loc/data';
 import {selectScopeProjectionRows} from '../../loc/neon-scope-projections';
 import {buildRuneGraph} from '../../../js/rune-graph-core.js';
 import FeaturePageV2 from '../FeaturePageV2';
@@ -143,8 +143,8 @@ function locContextRows(values,musicSegments){
 async function basicScopeContextRows(scopeId){
   if(scopeId==='runes'){
     const [runes,history]=await Promise.all([
-      fetchLocStaticJson(LOC_DATA.RUNES),
-      fetchLocStaticJson(LOC_DATA.LRUNES_ERA)
+      fetchLocJson(LOC_DATA.RUNES),
+      fetchLocJson(LOC_DATA.LRUNES_ERA)
     ]);
     const graph=buildRuneGraph(
       (runes||[]).filter(row=>Number(row?.編號)>=1&&Number(row?.編號)<=66),
@@ -191,8 +191,8 @@ export default function ContextV2({section=null}){
     if(scopeId==='runes'){
       Promise.all([
         selectScopeProjectionRows(scopeId,'context'),
-        fetchLocStaticJson(LOC_DATA.RUNES),
-        fetchLocStaticJson(LOC_DATA.LRUNES_ERA)
+        fetchLocJson(LOC_DATA.RUNES),
+        fetchLocJson(LOC_DATA.LRUNES_ERA)
       ]).then(([contextRows,runes,evolution])=>{
         if(!live)return;
         const graph=buildRuneGraph(
@@ -212,9 +212,9 @@ export default function ContextV2({section=null}){
     if(scopeId==='loc'){
       Promise.all([
         selectScopeProjectionRows(scopeId,'context'),
-        fetchLocStaticJson(LOC_DATA.RUNES),
-        fetchLocStaticJson(LOC_DATA.LRUNES_ERA),
-        fetchLocStaticJson(LOC_DATA.LO3RWANG_ERA)
+        fetchLocJson(LOC_DATA.RUNES),
+        fetchLocJson(LOC_DATA.LRUNES_ERA),
+        fetchLocJson(LOC_DATA.LO3RWANG_ERA)
       ]).then(([baseRows,runeCore,runeHistory,authorEra])=>{
         if(!live)return;
         const runeGraph=buildRuneGraph(

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import {CULTURE_PATHS_V2} from '../migration-bridges/current-data-compat.v2';
-import {fetchLocStaticJson} from './data';
+import {fetchLocJson} from './data';
 import {selectScopeProjectionRows} from './neon-scope-projections';
 import { useNeonAccount } from './use-neon-account';
 import ThemeAdmin from './ThemeAdmin';

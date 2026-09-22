@@ -1,11 +1,5 @@
-import canonicalRows from '../data/json/core/runes.json';
-
-// Canonical source policy:
-// - data/json/core/runes.json is the highest-level runtime source.
-// - This module only derives runtime shape/group metadata from that source.
-// - Do not duplicate rune rows into generated JS files.
-
-const GROUP_DEFS = [
+// Runtime rune rows are served by Neon. This module keeps only stable group metadata for legacy imports.
+const GROUP_DEFS=[
   {id:'soul',group_zh:'靈魂',group_en:'Soul',from:1,to:8,description:'從個體之靈延伸至群體之魂，描繪意識、記憶與存在邊界的層次。',trait:'意識與存在層次',style_module:'個體與群體',possible_tone:['意識','記憶','邊界','內在'],style:['spirit','existence']},
   {id:'link',group_zh:'連結',group_en:'Link',from:9,to:16,description:'描繪人、事、物之間的方向、連結與分離，以及理解、啟發與誤解的變化。',trait:'關係與連結變化',style_module:'關係脈絡',possible_tone:['方向','關係','連結','分離','理解'],style:['relation','context']},
   {id:'life',group_zh:'生命',group_en:'Life',from:17,to:24,description:'涵蓋生老病死與心愛語韻，描繪生命歷程、身心狀態與情感表達。',trait:'生命歷程',style_module:'生命狀態',possible_tone:['生老病死','身心','情感','表達'],style:['life','somatic']},
@@ -16,40 +10,6 @@ const GROUP_DEFS = [
   {id:'disorder',group_zh:'無序',group_en:'Disorder',from:57,to:64,description:'涵蓋福禍、無夢幻緣、虛果，描繪規律之外的不確定、變化、可能與結果。',trait:'非規律與潛意識',style_module:'未定、潛意識變化',possible_tone:['潛意識','未定','意外','夢幻','機緣','結果'],style:['disorder','subconscious']},
   {id:'special',group_zh:'特殊',group_en:'Special',from:65,to:66,description:'收納超出 1–64 基本八組之外的特殊符文，包含玄、命，以及作為誌銘的德。',trait:'系統特殊定位',style_module:'系統特殊',possible_tone:['混沌','命運','誌銘','系統基準'],style:['system','special']}
 ];
-
-export const groups = GROUP_DEFS.map(({from,to,...group}) => ({
-  ...group,
-  runes:[
-    ...canonicalRows.filter(r => Number(r.編號) >= from && Number(r.編號) <= to).map(r => ({id:Number(r.編號),zh:r.符文名稱,en:r.英文})),
-    ...(group.id === 'special' ? [{id:0,zh:'德',en:'Virtue'}] : [])
-  ]
-}));
-
-const groupByZh = new Map(groups.map(group => [group.group_zh, group]));
-
-function toRuntimeRow(row) {
-  const id = Number(row.編號);
-  const name = row.符文名稱;
-  const groupMeta = groupByZh.get(row.所屬分組) || null;
-  const positiveKeywords = row.正向關鍵詞 ?? '';
-  const reverseKeywords = row.反向關鍵詞 ?? '';
-  return {
-    ...row,
-    分組英文: groupMeta?.group_en ?? '',
-    分組說明: groupMeta?.description ?? '',
-    群組特質: groupMeta?.trait ?? '',
-    風格模組: groupMeta?.style_module ?? '',
-    可能語氣: groupMeta?.possible_tone ?? [],
-    group_style: groupMeta?.style ?? [],
-    group_meta: groupMeta,
-    關鍵詞: positiveKeywords,
-    反向關鍵字: reverseKeywords,
-    圖檔名稱: id > 0 && name ? `${String(id).padStart(2, '0')}_${name}.png` : null,
-    drawable: id >= 1 && id <= 66
-  };
-}
-
-export const rune = [null];
-for (const row of canonicalRows) rune[Number(row.編號)] = toRuntimeRow(row);
-
-export const runeRows = canonicalRows;
+export const groups=GROUP_DEFS.map(({from,to,...group})=>({...group,runes:[]}));
+export const rune=[null];
+export const runeRows=[];

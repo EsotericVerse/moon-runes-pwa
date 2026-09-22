@@ -18,13 +18,15 @@
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
     "verify": "npm run verify:independence && npm run verify:modular-v2 && npm run verify:scope-registry && npm run verify:edge-policy && npm run verify:route-ownership && npm run verify:modularity && npm run verify:modules && npm run verify:static && npm run verify:directories && npm run verify:rc4 && npm run verify:parity && npm run verify:auth && npm run verify:theme && npm run verify:rune-draw && npm run verify:semantics && npm run verify:ui",
     "prepare:public": "node scripts/prepare-next-public.mjs",
-    "build": "npm run verify && npm run prepare:public && npm run verify:public && next build",
+    "build": "npm run verify && npm run clean:next-export && npm run prepare:public && npm run verify:public && next build && npm run verify:next-export",
     "start": "next start",
     "verify:ui": "node scripts/current-ui-contract.mjs",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:scope-registry": "node scripts/verify-scope-registry.mjs",
     "verify:edge-policy": "node scripts/verify-scope-route-policy.mjs",
-    "verify:route-ownership": "node scripts/verify-route-ownership.mjs"
+    "verify:route-ownership": "node scripts/verify-route-ownership.mjs",
+    "clean:next-export": "node scripts/clean-next-export.mjs",
+    "verify:next-export": "node scripts/verify-next-export.mjs"
   },
   "dependencies": {
     "@neondatabase/neon-js": "0.7.0-beta",

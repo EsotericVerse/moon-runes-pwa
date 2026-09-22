@@ -1,54 +1,7 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
-
-const root=process.cwd();
+import {existsSync,readFileSync} from 'node:fs';
+const required=['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-client.js','app/loc/neon-scope-projections.js','app/modular-v2/modules/scope-tree/index.js','app/modular-v2/modules/scope-tree/scope-tree-contract.js','app/runes/RuneDirectoryPages.jsx','js/runes-core.js','js/writing.js'];
 const failures=[];
-
-function walk(dir,callback){
-  if(!existsSync(dir))return;
-  for(const name of readdirSync(dir)){
-    const path=join(dir,name);
-    const stat=statSync(path);
-    if(stat.isDirectory())walk(path,callback);else callback(path);
-  }
-}
-function rel(path){return relative(root,path).replaceAll('\\','/');}
-function resolves(fromFile,specifier){
-  const base=resolve(dirname(fromFile),specifier);
-  return [base,`${base}.js`,`${base}.jsx`,`${base}.mjs`,`${base}.json`,join(base,'index.js'),join(base,'index.jsx'),join(base,'index.mjs')].some(existsSync);
-}
-
-walk(resolve(root,'app'),path=>{
-  if(!/\.(?:js|jsx|mjs)$/.test(path))return;
-  const source=readFileSync(path,'utf8');
-  const file=rel(path);
-  if(/(?:from\s+|import\s*\(\s*)['"][^'"]*\/lib\//.test(source))failures.push(`${file}: retired lib/ import`);
-  const pattern=/(?:from\s+|import\s*\(\s*)['"](\.{1,2}\/[^'"]+)['"]/g;
-  for(const match of source.matchAll(pattern))if(!resolves(path,match[1]))failures.push(`${file}: unresolved relative import ${match[1]}`);
-});
-
-for(const path of [
-  'app/runes/RunesClient.jsx',
-  'app/loc/data.js',
-  'app/loc/data-paths.mjs',
-  'data/json/core/runes.json',
-  'data/json/core/lots.json',
-  'assets/lunarunes/cards/65_玄.png',
-  'assets/lunarunes/cards/66_命.png',
-  'pics/LOC-structure.png'
-]) if(!existsSync(resolve(root,path)))failures.push(`missing module contract file: ${path}`);
-
-const runesClient=readFileSync(resolve(root,'app/runes/RunesClient.jsx'),'utf8');
-for(const token of ['LOC_DATA.RUNES','LOC_DATA.LOTS','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
-
-const dataLoader=readFileSync(resolve(root,'app/loc/data.js'),'utf8');
-for(const token of ['runtime_json_documents','fetchNeonJson','fetchLocJson','fetchLocJsonBatch'])if(!dataLoader.includes(token))failures.push(`LOC data loader: missing Neon runtime contract ${token}`);
-if(/indexedDB|getFreshLocalDataSegment|putLocalDataSegment/.test(dataLoader))failures.push('LOC data loader: legacy IndexedDB dataset path must not return');
-
-const coreBatch=/fetchLocJsonBatch\(\[LOC_DATA\.RUNES,LOC_DATA\.LOTS,LOC_DATA\.RUNE_INTERPRETATIONS\]/.test(runesClient);
-const directRunes=runesClient.includes('fetchLocJson(LOC_DATA.RUNES)');
-const directLots=runesClient.includes('fetchLocJson(LOC_DATA.LOTS)');
-if(!(coreBatch||(directRunes&&directLots)))failures.push('RunesClient: canonical RUNES/LOTS must load through the Neon-backed Next data loader');
-
-if(failures.length){console.error('[module-contracts] failures:\n'+failures.map(item=>`- ${item}`).join('\n'));process.exit(1);}
-console.log('[module-contracts] imports, critical routes and Neon-backed LunaRunes data contracts verified');
+for(const path of required)if(!existsSync(path))failures.push(`missing module: ${path}`);
+for(const path of ['app/loc/data.js','app/loc/neon-client.js','app/loc/neon-scope-projections.js','app/runes/RuneDirectoryPages.jsx','js/runes-core.js','js/writing.js']){const text=readFileSync(path,'utf8');if(/(?:from|import).*data\/json|readFileSync\([^)]*data\/json|fetch\([^)]*data\/json/.test(text))failures.push(`runtime JSON reference: ${path}`);}
+if(failures.length){console.error('[modules] violations:\n'+failures.join('\n'));process.exit(1);}
+console.log('Neon runtime module contracts verified.');

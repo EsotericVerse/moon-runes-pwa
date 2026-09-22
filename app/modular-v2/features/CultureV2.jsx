@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {CULTURE_PATHS_V2} from '../../migration-bridges/current-data-compat.v2';
-import {fetchLocJson,fetchLocStaticJson} from '../../loc/data';
+import {fetchLocJson} from '../../loc/data';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -16,9 +16,9 @@ function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row
 function itemLabel(value,index){return value?.display_label||value?.name||value?.title||value?.period||`項目 ${index+1}`;}
 
 const PROFILE=Object.freeze({
-  loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。作者文化時期與符文系統時期分軌展示，再以交會事件互相對照。',sections:['eras','events','runeEvolution']}),
+  loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。作者文化時期與符文系統時期分軌展示，再以交會事件互相對照。',sections:['eras','events','cultureTimeline','runeEvolution']}),
   runes:Object.freeze({subtitle:'月之符文的時期、系統演化與語意治理時間長河。',sections:['eras','runeEvolution']}),
-  lo3rwang:Object.freeze({subtitle:'作者文化：時期、作品語彙、創作與治理文字在時間中的變化。',sections:['eras','authorKeywords','periods']}),
+  lo3rwang:Object.freeze({subtitle:'作者文化：時期、作品語彙、創作與治理文字在時間中的變化。',sections:['eras','cultureTimeline','authorKeywords','periods']}),
   admin:Object.freeze({subtitle:'管理 Scope 的文化頁只呈現治理變化與歷史，不取代各 Scope 的 Current Authority。',sections:['governanceHistory']})
 });
 
@@ -51,14 +51,15 @@ export default function CultureV2({section=null}){
     const add=(key,path,loader=fetchLocJson)=>{keys.push(key);requests.push({path,loader});};
     if(wanted.has('eras')){
       if(scopeId==='loc'){
-        add('authorEras',CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
-        add('runeEras',CULTURE_PATHS_V2.eraByScope.runes,fetchLocStaticJson);
-      }else add('eras',CULTURE_PATHS_V2.eraByScope[scopeId]||CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
+        add('authorEras',CULTURE_PATHS_V2.eraByScope.lo3rwang);
+        add('runeEras',CULTURE_PATHS_V2.eraByScope.runes);
+      }else add('eras',CULTURE_PATHS_V2.eraByScope[scopeId]||CULTURE_PATHS_V2.eraByScope.lo3rwang);
     }
-    if(wanted.has('runes'))add('runes',CULTURE_PATHS_V2.runes,fetchLocStaticJson);
+    if(wanted.has('runes'))add('runes',CULTURE_PATHS_V2.runes);
     if(wanted.has('authorKeywords'))add('authorKeywords',CULTURE_PATHS_V2.authorKeywords);
+    if(wanted.has('cultureTimeline'))add('cultureTimeline',CULTURE_PATHS_V2.authorKeywords);
     if(wanted.has('periods')){add('musicPeriods',CULTURE_PATHS_V2.musicPeriods);add('writingPeriods',CULTURE_PATHS_V2.writingGovernancePeriods);}
-    if(wanted.has('governanceHistory')||wanted.has('runeEvolution'))add('runeHistory',CULTURE_PATHS_V2.runeHistory,fetchLocStaticJson);
+    if(wanted.has('governanceHistory')||wanted.has('runeEvolution'))add('runeHistory',CULTURE_PATHS_V2.runeHistory);
     Promise.all(requests.map(request=>request.loader(request.path)))
       .then(values=>{if(live)setData(Object.fromEntries(keys.map((key,index)=>[key,values[index]])));})
       .catch(e=>live&&setError(String(e?.message||e)))
@@ -72,6 +73,7 @@ export default function CultureV2({section=null}){
   const musicRows=periodRows(data.musicPeriods);
   const writingRows=periodRows(data.writingPeriods);
   const authorKeywords=data.authorKeywords?.keywords||[];
+  const cultureTimeline=useMemo(()=>[...(data.cultureTimeline?.timeline||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.cultureTimeline]);
   const runeGovernance=data.runeHistory?.governance_evolution||[];
   const runeVersions=useMemo(()=>[...(data.runeHistory?.rc_version_sequence||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.runeHistory]);
   const runeChanges=useMemo(()=>[...(data.runeHistory?.rc_change_events||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.runeHistory]);
@@ -94,6 +96,13 @@ export default function CultureV2({section=null}){
         <span>{item.start_date||'—'} → {item.end_date||'現在'}</span>
         {item.description?<p>{item.description}</p>:null}
       </article>)}</div>
+    </ScopeCardV2>:null}
+
+    {profile.sections.includes('cultureTimeline')?<ScopeCardV2 eyebrow="Timeline · 文化演化" title="文化時間線">
+      {cultureTimeline.length?<div className="scope-v2-timeline">{cultureTimeline.map((item,index)=><article key={item.id||item.name||index}>
+        <strong>{item.name||item.title||`階段 ${index+1}`}</strong>
+        {item.summary||item.description?<p>{item.summary||item.description}</p>:null}
+      </article>)}</div>:<p>目前沒有可顯示的文化時間線。</p>}
     </ScopeCardV2>:null}
 
     {profile.sections.includes('runeEvolution')?<>
