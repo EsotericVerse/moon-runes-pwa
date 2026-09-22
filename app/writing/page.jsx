@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import {selectWritingWorks,publicSourceRefs} from '../../js/writing.js';
 
-export const dynamic='force-dynamic';
-export const revalidate=0;
+export const dynamic='force-static';
 export const metadata={
   title:'文字創作｜LOC',
   description:'LOC4 文字創作登錄作品的公開網頁索引。'
