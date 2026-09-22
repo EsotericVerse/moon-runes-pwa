@@ -3,6 +3,7 @@
 import {useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {CULTURE_PATHS_V2} from '../../migration-bridges/current-data-compat.v2';
+import {selectScopeCulturePeriods} from '../../loc/neon-culture-periods';
 import {fetchLocJson,fetchLocStaticJson} from '../../loc/data';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
@@ -49,9 +50,10 @@ export default function CultureV2({section=null}){
       const add=(key,path,loader=fetchLocJson)=>{keys.push(key);requests.push({path,loader});};
       if(wanted.has('eras')){
         if(scopeId==='loc'){
-          add('authorEras',CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
+          add('authorEras','lo3rwang',selectScopeCulturePeriods);
           add('runeEras',CULTURE_PATHS_V2.eraByScope.runes,fetchLocStaticJson);
-        }else add('eras',CULTURE_PATHS_V2.eraByScope[scopeId]||CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
+        }else if(scopeId==='lo3rwang')add('eras','lo3rwang',selectScopeCulturePeriods);
+        else add('eras',CULTURE_PATHS_V2.eraByScope[scopeId]||CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
       }
       if(wanted.has('runes'))add('runes',CULTURE_PATHS_V2.runes,fetchLocStaticJson);
       if(wanted.has('authorKeywords'))add('authorKeywords',CULTURE_PATHS_V2.authorKeywords);
