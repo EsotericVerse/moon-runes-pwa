@@ -35,17 +35,39 @@ export async function GET(request){
           left join silver.work_scope_affiliations scope_affiliation
             on scope_affiliation.work_id=wr.work_id
            and scope_affiliation.scope_id=${scopeId}
+          left join silver.resource_visibility owner_visibility
+            on owner_visibility.resource_type='work'
+           and owner_visibility.resource_id=wr.work_id
+           and owner_visibility.scope=wr.owner_scope
+          left join silver.resource_visibility scope_visibility
+            on scope_visibility.resource_type='work'
+           and scope_visibility.resource_id=wr.work_id
+           and scope_visibility.scope=${scopeId}
          where (
            ${scopeId}='loc'
            and (
-             (wr.owner_scope='loc' and coalesce(owner_affiliation.statistics_included,true))
-             or scope_affiliation.statistics_included is true
+             (
+               wr.owner_scope='loc'
+               and coalesce(owner_affiliation.statistics_included,true)
+               and coalesce(owner_visibility.statistics_included,true)
+             )
+             or (
+               scope_affiliation.statistics_included is true
+               and coalesce(scope_visibility.statistics_included,true)
+             )
            )
          ) or (
            ${scopeId}<>'loc'
            and (
-             (wr.owner_scope=${scopeId} and coalesce(owner_affiliation.statistics_included,true))
-             or scope_affiliation.statistics_included is true
+             (
+               wr.owner_scope=${scopeId}
+               and coalesce(owner_affiliation.statistics_included,true)
+               and coalesce(owner_visibility.statistics_included,true)
+             )
+             or (
+               scope_affiliation.statistics_included is true
+               and coalesce(scope_visibility.statistics_included,true)
+             )
            )
          )
       ),
