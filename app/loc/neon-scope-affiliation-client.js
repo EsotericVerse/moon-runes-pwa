@@ -1,6 +1,7 @@
 'use client';
 
 import {z} from 'zod';
+import {upsertNeonRows} from './neon-repository';
 
 const BodySchema=z.object({
   workId:z.string().trim().min(1).max(80),
@@ -13,17 +14,26 @@ const BodySchema=z.object({
   overrideAction:z.enum(['include','exclude','review','replace_relation']).nullable().default(null)
 });
 
-export async function upsertScopeWorkAffiliation(value,accessToken){
+export async function upsertScopeWorkAffiliation(value){
   const body=BodySchema.parse(value);
-  const response=await fetch('/api/scope/affiliations',{
-    method:'POST',
-    headers:{
-      'content-type':'application/json',
-      ...(accessToken?{authorization:`Bearer ${accessToken}`}:{})
-    },
-    body:JSON.stringify(body)
+  const overrideAction=body.overrideAction||(body.statisticsIncluded?'include':'exclude');
+  const [row]=await upsertNeonRows('silver.work_scope_affiliations',[{
+    work_id:body.workId,
+    scope_id:body.scopeId,
+    relation_type:body.relationType,
+    affiliation_source:'manual',
+    rule_key:null,
+    display_label:body.displayLabel,
+    search_included:body.searchIncluded,
+    statistics_included:body.statisticsIncluded,
+    manual_override:true,
+    override_action:overrideAction,
+    note:body.note,
+    updated_at:new Date().toISOString()
+  }],{
+    conflict:'work_id,scope_id',
+    returning:'work_id,scope_id,relation_type,search_included,statistics_included,manual_override,override_action,display_label,note,updated_at'
   });
-  const payload=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(payload?.error||`Scope 連結寫入失敗（${response.status}）`);
-  return payload.row;
+  if(!row)throw new Error('找不到可連結的 canonical work_id，或目前帳號沒有寫入權限');
+  return row;
 }
