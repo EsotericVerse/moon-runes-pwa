@@ -1,10 +1,3 @@
-import canonicalRows from '../data/json/core/runes.json';
-
-// Canonical source policy:
-// - data/json/core/runes.json is the highest-level runtime source.
-// - This module only derives runtime shape/group metadata from that source.
-// - Do not duplicate rune rows into generated JS files.
-
 const GROUP_DEFS = [
   {id:'soul',group_zh:'靈魂',group_en:'Soul',from:1,to:8,description:'從個體之靈延伸至群體之魂，描繪意識、記憶與存在邊界的層次。',trait:'意識與存在層次',style_module:'個體與群體',possible_tone:['意識','記憶','邊界','內在'],style:['spirit','existence']},
   {id:'link',group_zh:'連結',group_en:'Link',from:9,to:16,description:'描繪人、事、物之間的方向、連結與分離，以及理解、啟發與誤解的變化。',trait:'關係與連結變化',style_module:'關係脈絡',possible_tone:['方向','關係','連結','分離','理解'],style:['relation','context']},
@@ -19,10 +12,7 @@ const GROUP_DEFS = [
 
 export const groups = GROUP_DEFS.map(({from,to,...group}) => ({
   ...group,
-  runes:[
-    ...canonicalRows.filter(r => Number(r.編號) >= from && Number(r.編號) <= to).map(r => ({id:Number(r.編號),zh:r.符文名稱,en:r.英文})),
-    ...(group.id === 'special' ? [{id:0,zh:'德',en:'Virtue'}] : [])
-  ]
+  runes:group.id==='special'?[{id:0,zh:'德',en:'Virtue'}]:[]
 }));
 
 const groupByZh = new Map(groups.map(group => [group.group_zh, group]));
@@ -50,6 +40,18 @@ function toRuntimeRow(row) {
 }
 
 export const rune = [null];
-for (const row of canonicalRows) rune[Number(row.編號)] = toRuntimeRow(row);
+export const runeRows = [];
 
-export const runeRows = canonicalRows;
+export async function loadCanonicalRunes(){
+  const response=await fetch('/api/loc/data?path=canonical%2Frunes',{cache:'no-store'});
+  const rows=await response.json().catch(()=>[]);
+  if(!response.ok||!Array.isArray(rows))throw new Error(rows?.error||'Neon canonical rune read failed');
+  runeRows.splice(0,runeRows.length,...rows);
+  for(let index=1;index<rune.length;index+=1)delete rune[index];
+  for(const row of runeRows)rune[Number(row.編號)]=toRuntimeRow(row);
+  for(const group of groups){
+    if(group.id==='special')group.runes=runeRows.filter(row=>[0,65,66].includes(Number(row?.編號))).map(row=>({id:Number(row.編號),zh:row.符文名稱,en:row.英文}));
+    else group.runes=runeRows.filter(row=>Number(row?.編號)>=group.from&&Number(row?.編號)<=group.to).map(row=>({id:Number(row.編號),zh:row.符文名稱,en:row.英文}));
+  }
+  return runeRows;
+}
