@@ -53,5 +53,7 @@ jobs:
         run: node scripts/verify-directory-governance.mjs
       - name: Validate Neon canonical module boundary
         run: node scripts/verify-modularity.mjs
+      - name: Validate Scope Registry Neon view names
+        run: node scripts/verify-scope-registry.mjs
       - name: Compile active Python tools
         run: python -m compileall -q engine tools

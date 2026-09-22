@@ -78,5 +78,5 @@ export async function selectWritingWork(workId){
 }
 
 export function publicSourceRefs(work){
-  return (work?.source_refs||[]).filter(ref=>typeof ref?.url==='string'&&/^https?:\\/\\//i.test(ref.url));
+  return (work?.source_refs||[]).filter(ref=>typeof ref?.url==='string'&&/^https?:\/\//i.test(ref.url));
 }

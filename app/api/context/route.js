@@ -1,5 +1,5 @@
 import {NextResponse} from 'next/server';
-import {neonServerRequest} from '../../../loc/neon-server';
+import {neonServerRequest} from '../../loc/neon-server';
 
 export const dynamic='force-dynamic';
 export const revalidate=0;
@@ -11,7 +11,7 @@ export async function GET(request){
     const {db}=neonServerRequest(request);
     let rows=[];
     if(scopeId==='runes'){
-      rows=await db\`
+      rows=await db`
         select context_key,context_type,title,summary,payload
           from silver.runes_context_entries
         union all
@@ -22,9 +22,9 @@ export async function GET(request){
         select 'evolution:'||history_id,history_kind,title,null,body
           from silver.lrunes_evolution_history
          order by context_key
-      \`;
+      `;
     }else if(scopeId==='lo3rwang'){
-      rows=await db\`
+      rows=await db`
         select context_key,context_type,title,summary,payload
           from silver.lo3rwang_context_entries
         union all
@@ -39,9 +39,9 @@ export async function GET(request){
                jsonb_build_object('work_id',work_id,'playlist',playlist)
           from silver.song_versions
          order by context_key
-      \`;
+      `;
     }else{
-      rows=await db\`
+      rows=await db`
         select context_key,context_type,title,summary,payload
           from silver.lo3rwang_context_entries
         union all
@@ -58,7 +58,7 @@ export async function GET(request){
         select 'evolution:'||history_id,history_kind,title,null,body
           from silver.lrunes_evolution_history
          order by context_key
-      \`;
+      `;
     }
     return NextResponse.json({rows},{headers:{'Cache-Control':'no-store, max-age=0'}});
   }catch(error){

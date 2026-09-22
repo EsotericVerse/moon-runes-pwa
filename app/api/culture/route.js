@@ -1,5 +1,5 @@
 import {NextResponse} from 'next/server';
-import {neonServerRequest} from '../../../loc/neon-server';
+import {neonServerRequest} from '../../loc/neon-server';
 import {z} from 'zod';
 
 export const dynamic='force-dynamic';

@@ -10,9 +10,23 @@ import {
 const failures=[];
 const requiredCoreScopes=['loc','runes','lo3rwang','admin'];
 const requiredFeatures=['context','statics','culture','governance','search'];
+const expectedScopeViews={
+  loc:{context:'api.loc_context_entries',rankings:'api.loc_rankings'},
+  runes:{context:'api.runes_context_entries',rankings:'api.runes_rankings'},
+  lo3rwang:{context:'api.lo3rwang_context_entries',rankings:'api.lo3rwang_rankings'},
+  admin:{context:null,rankings:null}
+};
 
 for(const id of requiredCoreScopes){
   if(!SCOPES_V2[id])failures.push('Current registry missing required core Scope: '+id);
+}
+
+for(const [id,views] of Object.entries(expectedScopeViews)){
+  for(const key of ['context','rankings']){
+    if(SCOPES_V2[id]?.dataViews?.[key]!==views[key]){
+      failures.push(id+' '+key+' data view must match the current Neon API view: '+views[key]);
+    }
+  }
 }
 
 if(JSON.stringify(FEATURES_V2.map(item=>item.id))!==JSON.stringify(requiredFeatures)){

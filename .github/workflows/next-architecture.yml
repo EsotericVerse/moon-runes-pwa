@@ -11,18 +11,6 @@ on:
       - "package.json"
       - "next.config.mjs"
       - ".github/workflows/next-architecture.yml"
-  push:
-    branches:
-      - "main"
-    paths:
-      - "app/**"
-      - "lib/**"
-      - "js/**"
-      - "*.html"
-      - "scripts/**"
-      - "package.json"
-      - "next.config.mjs"
-      - ".github/workflows/next-architecture.yml"
   workflow_dispatch:
 
 jobs:
@@ -33,7 +21,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Verify modularity and build Next server
         run: npm run build

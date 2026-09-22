@@ -4,6 +4,25 @@ on:
   push:
     branches:
       - "main"
+    paths:
+      - "app/**"
+      - "lib/**"
+      - "components/**"
+      - "services/**"
+      - "engine/**"
+      - "js/**"
+      - "css/**"
+      - "assets/**"
+      - "pics/**"
+      - "public/**"
+      - "service-worker.js"
+      - "*.html"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.mjs"
+      - "open-next.config.ts"
+      - "wrangler.toml"
+      - ".github/workflows/deploy-worker.yml"
   workflow_dispatch:
 
 permissions:
@@ -24,7 +43,7 @@ jobs:
           node-version: "22"
           cache: npm
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Build Next server
         run: npm run build
       - name: Adapt Next output for Workers
