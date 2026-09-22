@@ -118,7 +118,7 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-context" id="context">
       <div className="home-section-heading"><p className="loc-eyebrow">Context</p><h2>脈絡</h2><p className="loc-subtitle">關鍵詞的分析與交互的互動關係圖，才會知道種子長出根的方向。</p></div>
       <div className="home-author-copy"><p>不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再與原始內容比較，進而學習成長進步。</p><p>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p><p>可以從自然語言查詢作品、文字、知識與時間脈絡，再沿彼此的關係查看相關內容。</p><p>不感興趣也沒關係！那來看看排行榜吧！這些詞也能直接回查命中的文章、作品與紀錄。</p></div>
-      <div className="home-progress-grid" aria-label="脈絡資料與知識"><article className="home-progress-item"><strong>目前可比對資料資料統計</strong><span>總文字 2,939,214 字，內有24,509 筆資料。<br/>包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，<br/>筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。</span></article><article className="home-progress-item"><strong>系統內建 KM 至少 515 個知識單元</strong><span>目前已登記 31 個 Knowledge Assets；FAQ 單獨即有 90 條。去除檢索投影、文章投影、圖片、重複文件版本與首頁統計展示後，目前有 26 份唯一 KM 知識文件，共 385,996 字。</span></article></div>
+      <div className="home-progress-grid" aria-label="脈絡資料與知識"><article className="home-progress-item"><strong>目前可比對資料資料統計</strong><span>總文字 2,939,214 字，內有24,509 筆資料。<br/>包含 2,356,594 字文章正文、400 首歌詞共 196,624 字，<br/>筆數與各來源、內容類型及日期分項統一放在多元搜尋的「資料來源」頁面。</span></article><article className="home-progress-item"><strong>系統內建 KM 至少 515 個知識單元</strong><span>目前已登記 31 個 Knowledge Assets；FAQ 單獨即有 90 條。首頁不複製 KM 或統計資料；目前可見的知識與來源數量由 Neon canonical 查詢即時呈現在搜尋與治理頁。</span></article></div>
     </section>
 
     <section className="loc-card home-copy-block home-culture" id="culture">
@@ -129,7 +129,7 @@ export default function AboutView(){
 
     <section className="loc-card home-framework" id="framework-map">
       <div className="home-section-heading"><p className="loc-eyebrow">LOC Model Architecture</p><h2>月典模型架構</h2><p className="loc-subtitle">八個功能模組依資料、處理與組合關係協作。</p></div>
-      <div className="home-framework-stage" aria-label="LOC 八個功能模組架構"><ModelArchitectureExplorer modules={MODEL_MODULES} /><div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間投影</span></div></div>
+      <div className="home-framework-stage" aria-label="LOC 八個功能模組架構"><ModelArchitectureExplorer modules={MODEL_MODULES} /><div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間演變</span></div></div>
     </section>
 
     <section className="loc-card home-copy-block home-skills" id="skills">
