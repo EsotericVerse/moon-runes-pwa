@@ -21,7 +21,7 @@ const PROFILES=Object.freeze({
     subtitle:'LunaRunes Scope 治理：凍結語彙、符號式語言資料、Grammar 與歷史演變。',
     cards:Object.freeze([
       Object.freeze({eyebrow:'Master Data',title:'Frozen Canon',text:'公開符文資料以凍結 Canon 為 Current；歷史版本只作來源與演變紀錄，不可覆寫現行母資料。'}),
-      Object.freeze({eyebrow:'Projection',title:'Read Projection',text:'公開頁面讀取 LunaRunes 自己的 canonical data；共享功能不改寫其 Master Data。'})
+      Object.freeze({eyebrow:'Canonical Data',title:'Read-only Canonical',text:'公開頁面直接讀取 LunaRunes 自己的 canonical tables；共享功能不改寫其 Master Data。'})
     ])
   }),
   lo3rwang:Object.freeze({
@@ -42,12 +42,12 @@ const PROFILES=Object.freeze({
 
 function genericProfile(scope){
   return Object.freeze({
-    subtitle:`${scope.label} 的治理入口：Scope 邊界、資料投影、共用 Feature 與 Page Composition。`,
+    subtitle:`${scope.label} 的治理入口：Scope 邊界、資料邊界、共用 Feature 與 Page Composition。`,
     cards:Object.freeze([
       Object.freeze({
         eyebrow:'Boundary',
         title:'Scope 邊界',
-        text:'此 Scope 使用共用治理框架；名稱、資料、角色與公開投影依自身 Registry 設定，不自動繼承其他 Scope 的身份或資料所有權。'
+        text:'此 Scope 使用共用治理框架；名稱、資料、角色與公開設定依自身 Registry 設定，不自動繼承其他 Scope 的身份或資料所有權。'
       }),
       Object.freeze({
         eyebrow:'Composition',
