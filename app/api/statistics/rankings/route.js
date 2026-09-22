@@ -11,10 +11,6 @@ const QuerySchema=z.object({
   pageSize:z.coerce.number().int().min(1).max(100).default(20),
   rankingType:z.string().trim().max(80).default('')
 });
-const TAG_DIMENSIONS=Object.freeze([
-  ['主題','theme_tags'],['情緒','emotion_tags'],['意象','imagery_tags'],
-  ['脈絡','context_tags'],['曲風','genre_tags']
-]);
 
 export async function GET(request){
   const parsed=QuerySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
@@ -31,15 +27,27 @@ export async function GET(request){
     if(!hasReadScope)return NextResponse.json({error:'目前帳號沒有此 Scope 的統計權限',code:'SCOPE_FORBIDDEN'},{status:403});
     const result=await db`
       with scope_work as (
-        select wr.work_id
+        select distinct wr.work_id
           from silver.work_registry wr
-         where wr.owner_scope=${scopeId}
-        union
-        select affiliation.work_id
-          from silver.work_scope_affiliations affiliation
-          join silver.work_registry wr using(work_id)
-         where affiliation.scope_id=${scopeId}
-           and (${scopeId} <> 'loc' or affiliation.statistics_included is true)
+          left join silver.work_scope_affiliations owner_affiliation
+            on owner_affiliation.work_id=wr.work_id
+           and owner_affiliation.scope_id=wr.owner_scope
+          left join silver.work_scope_affiliations scope_affiliation
+            on scope_affiliation.work_id=wr.work_id
+           and scope_affiliation.scope_id=${scopeId}
+         where (
+           ${scopeId}='loc'
+           and (
+             (wr.owner_scope='loc' and coalesce(owner_affiliation.statistics_included,true))
+             or scope_affiliation.statistics_included is true
+           )
+         ) or (
+           ${scopeId}<>'loc'
+           and (
+             (wr.owner_scope=${scopeId} and coalesce(owner_affiliation.statistics_included,true))
+             or scope_affiliation.statistics_included is true
+           )
+         )
       ),
       tag_rows as (
         select sw.work_id,'主題'::text as ranking_type,tag.term
