@@ -4,13 +4,14 @@ Deployable machine/edge services belong here.
 
 Current layout:
 
-```text
+~~~text
 services/
   api/
-    card/
     loc8/
   cloudflare/
-```
+~~~
+
+The website runtime is the Next.js OpenNext server. The former card API was retired because it depended on local JSON datasets.
 
 Repository/build/migration helpers belong under `scripts/`. API documentation belongs under `docs/api/`.
 
