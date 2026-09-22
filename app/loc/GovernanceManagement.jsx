@@ -20,7 +20,7 @@ export default function GovernanceManagement(){
     try{
       const eraPath=CULTURE_PATHS_V2.eraByScope[scopeId];
       const [eraValue,contextRows]=await Promise.all([
-        eraPath?fetchLocStaticJson(eraPath):Promise.resolve({}),
+        eraPath?fetchLocJson(eraPath):Promise.resolve({}),
         scope?.dataViews?.context?selectScopeProjectionRows(scopeId,'context'):Promise.resolve([])
       ]);
       const eras=eraValue?.eras||[];
