@@ -40,13 +40,7 @@ const RITUAL_MESSAGES = {
 };
 
 async function fetchCoreRunes() {
-  try {
-    const response = await fetch(LOC_DATA.RUNES, { cache: 'force-cache' });
-    if (!response.ok) throw new Error(`Local runes.json ${response.status}`);
-    return await response.json();
-  } catch (localError) {
-    return fetchLocJson(LOC_DATA.RUNES, { memory: true });
-  }
+  return fetchLocJson(LOC_DATA.RUNES, { memory: true });
 }
 
 
@@ -185,7 +179,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   useEffect(() => {
     let live = true;
 
-    // Core draw readiness depends only on runes.json. Do not block the first
+    // Core draw readiness depends only on Neon canonical runes. Do not block the first
     // draw on lots or interpretation payloads.
     fetchCoreRunes()
       .then(runes => {
