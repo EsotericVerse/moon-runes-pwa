@@ -1,6 +1,7 @@
 'use client';
 
-import { neonClient, getNeonSession } from './neon-client';
+import {getNeonSession} from './neon-client';
+import {selectNeonRows,insertNeonRows,updateNeonRows,deleteNeonRows} from './neon-repository';
 
 async function requireUser(){
   const session=await getNeonSession();
@@ -29,66 +30,53 @@ function inflateRecord(row){
 
 export async function listNeonRecords(type=''){
   await requireUser();
-  let query=neonClient.from('user_records').select('*').order('updated_at',{ascending:false});
-  if(type)query=query.eq('record_type',type);
-  const {data,error}=await query;
-  if(error)throw new Error(error.message||'Neon records read failed');
-  return (data||[]).map(inflateRecord);
+  const {rows}=await selectNeonRows('api.user_records',{orders:[{column:'updated_at',ascending:false}],filters:type?[{column:'record_type',operator:'eq',value:type}]:[],limit:5000});
+  return rows.map(inflateRecord);
 }
 
 export async function getNeonRecord(id){
   await requireUser();
-  const {data,error}=await neonClient.from('user_records').select('*').eq('id',id).limit(1);
-  if(error)throw new Error(error.message||'Neon record read failed');
-  return data?.[0]?inflateRecord(data[0]):null;
+  const {rows}=await selectNeonRows('api.user_records',{filters:[{column:'id',operator:'eq',value:id}],limit:1});
+  return rows[0]?inflateRecord(rows[0]):null;
 }
 
 export async function putNeonRecord(record){
   await requireUser();
   const row=normalizeRecordRow(record);
   if(!row.id)throw new Error('record.id is required');
-  const {data:updated,error:updateError}=await neonClient.from('user_records').update(row).eq('id',row.id).select('*');
-  if(updateError)throw new Error(updateError.message||'Neon record update failed');
-  if(updated?.length)return inflateRecord(updated[0]);
-  const {data,error}=await neonClient.from('user_records').insert(row).select('*');
-  if(error)throw new Error(error.message||'Neon record insert failed');
-  return data?.[0]?inflateRecord(data[0]):record;
+  const updated=await updateNeonRows('api.user_records',row,{filters:[{column:'id',operator:'eq',value:row.id}]});
+  if(updated.length)return inflateRecord(updated[0]);
+  const inserted=await insertNeonRows('api.user_records',[row]);
+  return inserted[0]?inflateRecord(inserted[0]):record;
 }
 
 export async function deleteNeonRecord(id){
   await requireUser();
-  const {error}=await neonClient.from('user_records').delete().eq('id',id);
-  if(error)throw new Error(error.message||'Neon record delete failed');
+  await deleteNeonRows('api.user_records',{filters:[{column:'id',operator:'eq',value:id}],returning:null});
 }
 
 export async function clearNeonRecords(type=''){
   await requireUser();
-  let query=neonClient.from('user_records').delete();
-  if(type)query=query.eq('record_type',type);else query=query.neq('id','');
-  const {error}=await query;
-  if(error)throw new Error(error.message||'Neon records clear failed');
+  const filters=type?[{column:'record_type',operator:'eq',value:type}]:[{column:'id',operator:'neq',value:''}];
+  await deleteNeonRows('api.user_records',{filters,returning:null});
 }
 
 export async function getNeonSetting(key){
   await requireUser();
-  const {data,error}=await neonClient.from('user_settings').select('setting_key,payload,updated_at').eq('setting_key',key).limit(1);
-  if(error)throw new Error(error.message||'Neon setting read failed');
-  return data?.[0]?.payload??null;
+  const {rows}=await selectNeonRows('api.user_settings',{columns:'setting_key,payload,updated_at',filters:[{column:'setting_key',operator:'eq',value:key}],limit:1});
+  return rows[0]?.payload??null;
 }
 
 export async function putNeonSetting(key,payload){
   await requireUser();
   const updated_at=new Date().toISOString();
-  const {data:updated,error:updateError}=await neonClient.from('user_settings').update({payload,updated_at}).eq('setting_key',key).select('setting_key');
-  if(updateError)throw new Error(updateError.message||'Neon setting update failed');
-  if(updated?.length)return payload;
-  const {error}=await neonClient.from('user_settings').insert({setting_key:key,payload,updated_at});
-  if(error)throw new Error(error.message||'Neon setting insert failed');
+  const updated=await updateNeonRows('api.user_settings',{payload,updated_at},{filters:[{column:'setting_key',operator:'eq',value:key}],returning:'setting_key'});
+  if(updated.length)return payload;
+  await insertNeonRows('api.user_settings',[{setting_key:key,payload,updated_at}],{returning:'setting_key'});
   return payload;
 }
 
 export async function deleteNeonSetting(key){
   await requireUser();
-  const {error}=await neonClient.from('user_settings').delete().eq('setting_key',key);
-  if(error)throw new Error(error.message||'Neon setting delete failed');
+  await deleteNeonRows('api.user_settings',{filters:[{column:'setting_key',operator:'eq',value:key}],returning:null});
 }
