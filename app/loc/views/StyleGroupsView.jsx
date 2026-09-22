@@ -17,9 +17,6 @@ import {
   parseStyleTerms,
   styleTermsText
 } from '../model/style-profile';
-import { exportJson, readJsonFile } from '../file-utils';
-
-const EXPORT_FILE='loc-style-groups.json';
 
 export default function StyleGroupsView({embedded=false}){
   const {value:data,setValue:setData,reset,status:syncStatus,account}=useNeonSetting(STYLE_STORAGE_KEY,INITIAL_STYLE_PROFILE);
@@ -60,11 +57,6 @@ export default function StyleGroupsView({embedded=false}){
     })}));
     setMessage(suggestions.length?'已套用月之符文八組模板與 canonical 關鍵詞建議。':'已套用月之符文八組模板；關鍵詞建議尚未載入。');
   };
-  const importFile=async event=>{
-    try{setData(normalizeStyleProfile(await readJsonFile(event.target.files?.[0])));setMessage('已匯入並同步到 Neon。');}
-    catch(error){setMessage(`匯入失敗：${error.message}`);}
-    event.target.value='';
-  };
 
   return <section className={embedded?'':'loc-view'}>
     {!embedded&&<header className="loc-hero"><p className="loc-eyebrow">Neon Style Groups</p><h1>群組設定</h1><p>8 個可自訂群組 + 第 9 預設承接組。登入後設定同步到 Neon；每組最多 64 個關鍵詞、8 個 NOR，採 exact match。</p></header>}
@@ -74,8 +66,6 @@ export default function StyleGroupsView({embedded=false}){
         {!account.user&&<button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>}
         <button className="loc-button primary" onClick={addGroup} disabled={groups.length>=MAX_STYLE_GROUPS}>＋新增群組</button>
         <button className="loc-button" onClick={useTemplate}>套用月之符文模板</button>
-        <button className="loc-button" onClick={()=>exportJson(data,EXPORT_FILE)}>匯出 JSON</button>
-        <label className="loc-button">匯入 JSON<input className="loc-hidden-input" type="file" accept="application/json,.json" onChange={importFile}/></label>
         <button className="loc-button" onClick={()=>{reset();setMessage('已重設 Neon 設定。')}} disabled={!account.user}>重設</button>
       </div>
       <div className="loc-metrics"><div><small>群組</small><strong>{stats.groups}/{MAX_STYLE_GROUPS}</strong></div><div><small>關鍵詞</small><strong>{stats.keywords}</strong></div><div><small>NOR</small><strong>{stats.nor}</strong></div></div>
