@@ -1,6 +1,0 @@
-fastapi
-uvicorn
-zhdate
-pydantic
-requests
-mangum
