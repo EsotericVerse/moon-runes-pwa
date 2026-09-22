@@ -1,23 +1,11 @@
 import { rune, loadCanonicalRunes } from "./runes-core.js";
 
-let direction = {};
-let allData = [];
-
 let canonicalReady = false;
 
 async function ensureLocalData(mode) {
-  if (mode === "5card") return;
   if (!canonicalReady) {
     await loadCanonicalRunes();
     canonicalReady = true;
-  }
-  if (!Object.keys(direction).length) {
-    const mod = await import("./direction64.js");
-    direction = mod.direction || {};
-  }
-  if ((mode === "single" || mode === "daily") && !allData.length) {
-    const mod = await import("./rune_all_data_all.js");
-    allData = mod.allData || [];
   }
 }
 
@@ -38,10 +26,10 @@ async function loadLots() {
     const response = await fetch("/api/loc/data?path=canonical%2Flots");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
-    const items = Array.isArray(payload?.items) ? payload.items : [];
+    const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.items) ? payload.items : []);
     lotsMap = new Map(items.map(item => [Number(item.編號), item]));
   } catch (error) {
-    console.warn("LunaRunes Lots JSON unavailable; hiding Lots summary.", error);
+    console.warn("LunaRunes canonical lots unavailable; hiding Lots summary.", error);
     lotsMap = new Map();
   }
 }
@@ -54,7 +42,7 @@ async function loadRuneHints() {
     const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
     runeHintMap = new Map(items.map(item => [Number(item.編號), item]));
   } catch (error) {
-    console.warn("LunaRunes rune hint JSON unavailable; using canonical runtime fallback.", error);
+    console.warn("LunaRunes canonical rune hints unavailable; using loaded canonical rows.", error);
     runeHintMap = new Map();
   }
 }
@@ -129,14 +117,12 @@ function drawCards(count) {
 }
 
 function getDirectionText(card) {
-  const item = direction[card.id];
-  return item?.[DIRECTION_FIELDS[card.direction]] || card.rune?.[DIRECTION_FIELDS[card.direction]] || "目前沒有對應方向說明。";
+  const item = runeHintMap.get(card.id) || card.rune || {};
+  return item[DIRECTION_FIELDS[card.direction]] || "目前沒有對應方向說明。";
 }
 
-function getPhaseInfo(card, realPhase) {
-  const data = allData.find(item => item.符文名稱 === card.rune.符文名稱);
-  const directionData = data?.卡牌方向?.find(item => item.方向 === card.direction);
-  return directionData?.現況?.find(item => item.現在月相 === realPhase) || null;
+function getPhaseInfo() {
+  return null;
 }
 
 function getLotsHtml(card) {
@@ -448,28 +434,6 @@ async function runRitual(mode) {
   document.body.dataset.drawing = "false";
 }
 
-async function requestRenderFive(cards) {
-  const payload = {
-    mode: "5",
-    rune1_id: cards[0].id, rune1_dir: cards[0].directionIndex + 1,
-    rune2_id: cards[1].id, rune2_dir: cards[1].directionIndex + 1,
-    rune3_id: cards[2].id, rune3_dir: cards[2].directionIndex + 1,
-    rune4_id: cards[3].id, rune4_dir: cards[3].directionIndex + 1,
-    rune5_id: cards[4].id, rune5_dir: cards[4].directionIndex + 1,
-    debug: false
-  };
-  const response = await fetch("https://moon-runes-pwa.onrender.com/divination", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify(payload)
-  });
-  const data = await response.json();
-  if (!response.ok || !data?.success) {
-    throw new Error(data?.detail || "五卡解牌服務暫時無法使用");
-  }
-  return data.data || {};
-}
-
 async function renderResult(mode, config, realPhase) {
   const cards = drawCards(config.count);
   if (cards.length !== config.count) throw new Error("可抽取符文資料不足，請重新整理後再試。");
@@ -490,27 +454,12 @@ async function renderResult(mode, config, realPhase) {
   const fiveCardSchema = document.getElementById("five-card-schema");
   if (fiveCardSchema) fiveCardSchema.hidden = config.count !== 5;
 
-  if (mode === "5card") {
-    reading.innerHTML = '<div class="reading-lead"><strong>五卡解牌</strong>正在由 Render 進行五個位置的整合判讀…</div>';
-    try {
-      const remote = await requestRenderFive(cards);
-      reading.innerHTML = `
-        <div class="reading-lead"><strong>完整現況</strong>${remote["完整現況"] || "—"}</div>
-        <p><strong>牌面解說：</strong>${remote["牌面解說"] || "—"}</p>
-        <p><strong>占卜結論：</strong>${remote["占卜結論"] || "—"}</p>
-      `;
-    } catch (error) {
-      reading.innerHTML = `<div class="reading-lead"><strong>五卡解牌暫時無法完成</strong>${error.message}</div>`;
-    }
-  } else {
-    reading.innerHTML = config.count === 1
+  reading.innerHTML = mode === "5card"
+    ? buildMultiReading(cards, config.labels, realPhase)
+    : config.count === 1
       ? buildSingleReading(cards[0], realPhase, mode === "daily")
       : buildMultiReading(cards, config.labels, realPhase);
-  }
 
-  const modeNote = document.getElementById("mode-note");
-  if (modeNote) modeNote.textContent = config.note;
-  const ritualView = document.getElementById("ritual-view");
   const resultView = document.getElementById("result-view");
   if (ritualView) ritualView.hidden = true;
   if (resultView) resultView.hidden = false;
@@ -537,9 +486,7 @@ async function executeDraw(mode, config, realPhase) {
 
   panel.scrollIntoView({behavior:"smooth", block:"start"});
 
-  const dataTasks = [];
-  if (mode !== "5card") dataTasks.push(ensureLocalData(mode));
-  if (mode !== "5card") dataTasks.push(loadRuneHints());
+  const dataTasks = [ensureLocalData(mode), loadRuneHints()];
   if (mode === "single" || mode === "daily") dataTasks.push(loadLots());
 
   await Promise.all([
