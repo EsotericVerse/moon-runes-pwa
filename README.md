@@ -96,7 +96,7 @@ LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重
 | Skill | 用途 |
 |---|---|
 | `loc-km-governance` | 檢查 Canon、KM、FAQ、Registry、Base66、術語一致性、資料權威與舊版污染 |
-| `loc-repo-health-check` | 檢查 Repository 結構、路徑、runtime projection、API／Search、legacy dependency、部署與效能風險 |
+| `loc-repo-health-check` | 檢查 Repository 結構、路徑、canonical Neon query、API／Search、legacy dependency、部署與效能風險 |
 
 兩個 Skill 共用現行 LOC 治理原則：
 
@@ -123,7 +123,7 @@ API / Search / UI / AI Skill
 ```text
 Use loc-km-governance to audit this repository against the current LOC Modelized Language Framework.
 
-Use loc-repo-health-check to verify whether legacy projections can be removed without breaking runtime.
+Use loc-repo-health-check to verify whether legacy materialized views can be removed without breaking runtime.
 ```
 
 ---
@@ -177,7 +177,7 @@ LOC 的功能關係可概括為：
 
 1–64 每個八符組內，新月、上弦、滿月、下弦各出現兩次。
 
-`LunaRune66.xlsx` 是符文母資料與最高優先來源；JSON、JavaScript、搜尋索引與畫面內容均屬衍生資料。
+`LunaRune66.xlsx` 是符文母資料與最高優先來源；網站 runtime 直接讀 Neon canonical tables，repository 檔案只作來源與 provenance。
 
 ---
 
@@ -210,7 +210,7 @@ Context 負責回答：
 
 現行功能包含：
 
-- 符文脈絡 Graph · No API（由現有 LunaRunes 關鍵詞、符文、唯一群組與規則直接建立）
+- 符文脈絡 Graph · No API（由 Neon canonical rune rows、唯一群組與規則在 request time 建立）
 - 節點
 - 關係式
 - Event
@@ -230,7 +230,7 @@ Evolution 負責回答：
 Context Graph × Time × Period × Event × Works → Evolution
 ```
 
-現行 `evolution.html` 已提供：
+現行 Next Evolution route 已提供：
 
 - 時期
 - Timeline
@@ -321,7 +321,7 @@ Facebook、PTT、Pixnet、Threads、Suno、小說與其他作品都視為不同 
 - Context / Relation
 - 時期與時間資料
 
-技術面由 `card_api/` 提供作用中的 FastAPI 與搜尋 API；資料集中於 `data/json/`，實驗性向量／語意程式保留在 `engine/`。
+技術面由 Next.js server routes 與 Neon canonical tables 提供作用中的網站資料與搜尋；engine/ 僅保留研究工具，不是網站 runtime。
 
 Graph RAG 的關係資料所有權仍歸 Context；Knowledge domain 負責檢索、文字建築與演算模組。
 
@@ -380,7 +380,7 @@ Governance／治理直接作為語意 domain 使用；政德風是重要的個�
 ```text
 moon-runes-pwa/
 ├── card_api/            # FastAPI / Search
-├── data/json/           # core / registries / search / generated / archive / experimental
+├── data/                # frozen source workbooks and provenance records
 ├── docs/                # Canon、列印／交換與必要技術文件
 ├── engine/              # 語意與向量實驗
 ├── js/                  # 前端邏輯
@@ -408,7 +408,7 @@ moon-runes-pwa/
 └── README.md
 ```
 
-根目錄 HTML 只保留目前仍有明確功能或相容責任的頁面；舊的單一平台 Timeline、舊 Projection、內部 KM Upload 與重複介紹頁已移除。
+根目錄 HTML 只保留目前仍有明確功能或相容責任的頁面；舊的單一平台 Timeline、舊靜態資料層、內部 KM Upload 與重複介紹頁已移除。
 
 ---
 
