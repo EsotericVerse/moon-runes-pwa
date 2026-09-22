@@ -5,7 +5,7 @@ import {z} from 'zod';
 const RowSchema=z.object({}).passthrough();
 const CultureSchema=z.object({
   scopeId:z.enum(['loc','runes','lo3rwang']),
-  eras:z.array(RowSchema).default([]),
+  eras:z.object({eras:z.array(RowSchema).default([])}).default({eras:[]}),
   authorEras:z.object({eras:z.array(RowSchema).default([])}).optional(),
   runeEras:z.object({eras:z.array(RowSchema).default([])}).default({eras:[]}),
   runeHistory:z.record(z.string(),z.unknown()).default({}),
