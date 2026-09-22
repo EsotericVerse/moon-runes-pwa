@@ -1,10 +1,16 @@
-import { rune } from "./runes.js";
+import { rune, loadCanonicalRunes } from "./runes-core.js";
 
 let direction = {};
 let allData = [];
 
+let canonicalReady = false;
+
 async function ensureLocalData(mode) {
   if (mode === "5card") return;
+  if (!canonicalReady) {
+    await loadCanonicalRunes();
+    canonicalReady = true;
+  }
   if (!Object.keys(direction).length) {
     const mod = await import("./direction64.js");
     direction = mod.direction || {};
@@ -29,7 +35,7 @@ let lotsMap = new Map();
 
 async function loadLots() {
   try {
-    const response = await fetch("data/json/core/lots.json");
+    const response = await fetch("/api/loc/data?path=canonical%2Flots");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     const items = Array.isArray(payload?.items) ? payload.items : [];
@@ -42,7 +48,7 @@ async function loadLots() {
 
 async function loadRuneHints() {
   try {
-    const response = await fetch("data/json/core/runes.json", { cache: "no-store" });
+    const response = await fetch("/api/loc/data?path=canonical%2Frunes", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
