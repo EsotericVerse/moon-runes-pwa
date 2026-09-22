@@ -1,4 +1,5 @@
 import { rune, loadCanonicalRunes } from "./runes-core.js";
+import {fetchLocJson} from "../app/loc/data.js";
 
 let canonicalReady = false;
 
@@ -23,9 +24,7 @@ let lotsMap = new Map();
 
 async function loadLots() {
   try {
-    const response = await fetch("/api/loc/data?path=canonical%2Flots");
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
+    const payload = await fetchLocJson("canonical/lots", {memory:true});
     const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.items) ? payload.items : []);
     lotsMap = new Map(items.map(item => [Number(item.編號), item]));
   } catch (error) {
@@ -36,9 +35,7 @@ async function loadLots() {
 
 async function loadRuneHints() {
   try {
-    const response = await fetch("/api/loc/data?path=canonical%2Frunes", { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
+    const payload = await fetchLocJson("canonical/runes", {memory:true});
     const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.runes) ? payload.runes : []);
     runeHintMap = new Map(items.map(item => [Number(item.編號), item]));
   } catch (error) {
