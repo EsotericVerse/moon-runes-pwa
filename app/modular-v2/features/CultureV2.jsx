@@ -2,9 +2,7 @@
 
 import {useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
-import {CULTURE_PATHS_V2} from '../../migration-bridges/current-data-compat.v2';
-import {selectScopeCulturePeriods} from '../../loc/neon-culture-periods';
-import {fetchLocJson,fetchLocStaticJson} from '../../loc/data';
+import {selectScopeCultureData} from '../../loc/neon-culture-client';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
@@ -43,25 +41,7 @@ export default function CultureV2({section=null}){
   const profile=PROFILE[scopeId]||PROFILE.loc;
   const cultureQuery=useQuery({
     queryKey:['culture-data-v2',scopeId,profile.sections],
-    queryFn:async()=>{
-      const wanted=new Set(profile.sections);
-      const requests=[];
-      const keys=[];
-      const add=(key,path,loader=fetchLocJson)=>{keys.push(key);requests.push({path,loader});};
-      if(wanted.has('eras')){
-        if(scopeId==='loc'){
-          add('authorEras','lo3rwang',selectScopeCulturePeriods);
-          add('runeEras',CULTURE_PATHS_V2.eraByScope.runes,fetchLocStaticJson);
-        }else if(scopeId==='lo3rwang')add('eras','lo3rwang',selectScopeCulturePeriods);
-        else add('eras',CULTURE_PATHS_V2.eraByScope[scopeId]||CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
-      }
-      if(wanted.has('runes'))add('runes',CULTURE_PATHS_V2.runes,fetchLocStaticJson);
-      if(wanted.has('authorKeywords'))add('authorKeywords',CULTURE_PATHS_V2.authorKeywords);
-      if(wanted.has('periods')){add('musicPeriods',CULTURE_PATHS_V2.musicPeriods);add('writingPeriods',CULTURE_PATHS_V2.writingGovernancePeriods);}
-      if(wanted.has('governanceHistory')||wanted.has('runeEvolution'))add('runeHistory',CULTURE_PATHS_V2.runeHistory,fetchLocStaticJson);
-      const values=await Promise.all(requests.map(request=>request.loader(request.path)));
-      return Object.fromEntries(keys.map((key,index)=>[key,values[index]]));
-    },
+    queryFn:async()=>selectScopeCultureData(scopeId),
     staleTime:5*60_000
   });
   const data=cultureQuery.data||{};
