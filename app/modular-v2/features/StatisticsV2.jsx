@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {Bar,BarChart,CartesianGrid,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
-import {selectScopeRankingPage,selectScopeRankingTypes} from '../../loc/neon-scope-projections';
+import {selectScopeRankingPage} from '../../loc/neon-ranking-client';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
 import {scopeDataViewV2} from '../scope-registry.v2';
@@ -14,37 +14,31 @@ const EMPTY_TYPES=Object.freeze([]);
 
 const LEGACY_SECTIONS=Object.freeze({
   keyword:{eyebrow:'Keyword Statistics',title:'關鍵字統計',text:'集中查看關鍵字在跨時期資料中的出現與分布，作為風格分析與資料回查入口。'},
-  source:{eyebrow:'Source Management',title:'來源管理',text:'檢視目前 Scope 的 Neon 統計 projection 與資料狀態。'},
+  source:{eyebrow:'Source Management',title:'來源管理',text:'檢視目前 Scope 的 Neon 統計 Neon 來源與資料狀態。'},
   import:{eyebrow:'Import',title:'匯入',text:'匯入網頁暫時保留功能位置；目前先維持既有資料流程，後續再接入新的資料來源。'},
   total:{eyebrow:'Total Ranking',title:'總排行榜',text:'跨時期關鍵字排行榜集中於此，可切換文字、社群與音樂資料的統計類型。'}
 });
 
 export default function StatisticsV2({section=null}){
   const {scopeId,scope}=useScopeRuntimeV2();
-  const view=scopeDataViewV2(scopeId,'rankings');
+  const rankingsEnabled=Boolean(scopeDataViewV2(scopeId,'rankings'));
   const [type,setType]=useState('');
   const [page,setPage]=useState(1);
 
   useEffect(()=>{
     setType('');
     setPage(1);
-  },[scopeId,view]);
+  },[scopeId,rankingsEnabled]);
 
   const rankingQuery=useQuery({
     queryKey:['scope-ranking-page',scopeId,page,type],
     queryFn:()=>selectScopeRankingPage(scopeId,{page,pageSize:PAGE_SIZE,rankingType:type}),
-    enabled:Boolean(view),
+    enabled:rankingsEnabled,
     staleTime:30_000
-  });
-  const typesQuery=useQuery({
-    queryKey:['scope-ranking-types',scopeId],
-    queryFn:()=>selectScopeRankingTypes(scopeId),
-    enabled:Boolean(view),
-    staleTime:5*60_000
   });
   const rows=rankingQuery.data?.rows||[];
   const total=rankingQuery.data?.count||0;
-  const types=typesQuery.data||EMPTY_TYPES;
+  const types=rankingQuery.data?.types||EMPTY_TYPES;
   useEffect(()=>{
     if(types.length&&!types.includes(type)){
       setType(types[0]);
@@ -58,14 +52,14 @@ export default function StatisticsV2({section=null}){
   const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
   const legacy=LEGACY_SECTIONS[section?.split('/')[0]];
   const rankingPath=!section||section==='total'||section==='keyword/total'||section==='music/total'||section==='source/total'?'/statics':null;
-  const error=rankingQuery.error?.message||typesQuery.error?.message||'';
-  const loading=rankingQuery.isPending||typesQuery.isPending;
-  return <FeaturePageV2 featureId="statics" expandedPath={rankingPath} subtitle="直接讀取各 Scope 的 Neon 統計 projection，呈現關鍵字排行榜與資料分佈。">
+  const error=rankingQuery.error?.message||'';
+  const loading=rankingQuery.isPending;
+  return <FeaturePageV2 featureId="statics" expandedPath={rankingPath} subtitle="由 Next server 即時查詢 Neon canonical tables，依連結 ID 與統計納入設定彙總。">
     {legacy?<ScopeCardV2 eyebrow={legacy.eyebrow} title={legacy.title}><p>{legacy.text}</p></ScopeCardV2>:null}
     <ScopeCardV2 eyebrow="Statistics" title="跨時期關鍵字排行榜集中於此。">
       <p>統計排行榜、關鍵字、曲風與來源的分佈，作為風格分析與資料回查的入口。</p>
     </ScopeCardV2>
-    {!view?<p className="scope-v2-status">此 Scope 尚未啟用統計 projection。</p>:null}
+    {!rankingsEnabled?<p className="scope-v2-status">此 Scope 尚未啟用統計功能。</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {loading?<p className="scope-v2-status">載入中…</p>:null}
     {types.length?<nav className="scope-v2-tabs" aria-label="排行榜類型">
