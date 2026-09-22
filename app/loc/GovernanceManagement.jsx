@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {CULTURE_PATHS_V2} from '../migration-bridges/current-data-compat.v2';
-import {fetchLocStaticJson} from './data';
-import {selectScopeProjectionRows} from './neon-scope-projections';
+import {selectScopeContextRows} from './neon-context-client';
 import { useNeonAccount } from './use-neon-account';
 import ThemeAdmin from './ThemeAdmin';
 import {SCOPE_POLICY_V2,getScopeV2} from '../modular-v2/scope-registry.v2';
@@ -18,12 +16,8 @@ export default function GovernanceManagement(){
   const loadShared=async()=>{
     setShared(current=>({...current,loading:true,error:''}));
     try{
-      const eraPath=CULTURE_PATHS_V2.eraByScope[scopeId];
-      const [eraValue,contextRows]=await Promise.all([
-        eraPath?fetchLocStaticJson(eraPath):Promise.resolve({}),
-        scope?.dataViews?.context?selectScopeProjectionRows(scopeId,'context'):Promise.resolve([])
-      ]);
-      const eras=eraValue?.eras||[];
+      const contextRows=scope?.dataViews?.context?await selectScopeContextRows(scopeId):[];
+      const eras=contextRows.filter(row=>['時期','period','era'].includes(String(row.context_type||'').toLowerCase()));
       const events=contextRows.filter(row=>['事件','情境事件'].includes(row.context_type));
       const relations=contextRows.filter(row=>['關聯','跨資料關聯','符文關聯'].includes(row.context_type)||row.source&&row.target);
       setShared({
@@ -47,7 +41,7 @@ export default function GovernanceManagement(){
   return <section className="loc-card" id="management">
     <p className="loc-eyebrow">Governance Management</p>
     <h2>治理管理</h2>
-    <p className="loc-subtitle">目前 Scope：{scope.label}（{scopeId}）。管理 session 與資料讀寫都必須遵守 Scope 邊界；公開 Current projection 維持唯讀。</p>
+    <p className="loc-subtitle">目前 Scope：{scope.label}（{scopeId}）。管理 session 與資料讀寫都必須遵守 Scope 邊界；公開 Current canonical data 維持唯讀。</p>
     {(account.loading||account.permissionLoading)&&<p>正在確認 Neon session 與管理權限…</p>}
     {!account.loading&&!account.user&&<button type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>}
     {!account.loading&&!account.permissionLoading&&account.user&&!account.canManage&&<p>此 Neon 身份沒有 Scope manager 或 page manager 權限。</p>}
