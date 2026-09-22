@@ -1,9 +1,4 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { LOC_DATA } from '../loc/data-paths.mjs';
-
-const sourcePath=resolve(process.cwd(),LOC_DATA.RUNES.replace(/^\//,''));
-export const RUNES=JSON.parse(readFileSync(sourcePath,'utf8'));
+export const RUNES=Object.freeze([]);
 
 export const GROUPS=Object.freeze([
   {id:'01',name:'靈魂',english:'Soul',image:'/pics/01.soul.jpg',description:'聚焦精神本源、記憶、內外界線、自我映照與核心。'},
@@ -23,16 +18,7 @@ export function runeImage(card){
   return `/assets/lunarunes/cards/${number}_${runeName(card)}.png`;
 }
 export function groupById(id){return GROUPS.find(item=>item.id===String(id).padStart(2,'0'))||null;}
-export function groupRunes(groupId){
-  const group=groupById(groupId);
-  if(!group)return [];
-  if(group.id==='09'){
-    const order=new Map([[0,0],[65,1],[66,2]]);
-    return RUNES.filter(row=>[0,65,66].includes(Number(row?.編號))).sort((a,b)=>order.get(Number(a.編號))-order.get(Number(b.編號)));
-  }
-  const start=(Number(group.id)-1)*8+1;
-  return RUNES.filter(row=>Number(row?.編號)>=start&&Number(row?.編號)<=start+7).sort((a,b)=>Number(a.編號)-Number(b.編號));
-}
+export function groupRunes(){return [];}
 export function localRuneId(groupId,card){
   if(String(groupId).padStart(2,'0')==='09'){
     const map={0:'00',65:'01',66:'02'};
@@ -41,8 +27,11 @@ export function localRuneId(groupId,card){
   const start=(Number(groupId)-1)*8+1;
   return String(Number(card?.編號)-start+1).padStart(2,'0');
 }
-export function runeByRoute(groupId,runeId){
-  return groupRunes(groupId).find(card=>localRuneId(groupId,card)===String(runeId).padStart(2,'0'))||null;
-}
+export function runeByRoute(){return null;}
 export function groupParams(){return GROUPS.map(group=>({group:group.id}));}
-export function runeParams(){return GROUPS.flatMap(group=>groupRunes(group.id).map(card=>({group:group.id,rune:localRuneId(group.id,card)})));}
+export function runeParams(){
+  return GROUPS.flatMap(group=>{
+    if(group.id==='09')return ['00','01','02'].map(rune=>({group:group.id,rune}));
+    return Array.from({length:8},(_,index)=>({group:group.id,rune:String(index+1).padStart(2,'0')}));
+  });
+}
