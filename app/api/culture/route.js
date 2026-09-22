@@ -42,12 +42,11 @@ function mergeHistory(rows){
   return result;
 }
 
-async function readPeriods(db,scopeId){
-  const table=scopeId==='lo3rwang'?'silver.lo3rwang_period_context_entries':'silver.lo3rwang_period_context_entries';
+async function readPeriods(db){
   return db`select context_key,context_type,title,summary,payload
-                from ${db.unsafe(table)}
-               where context_type='period'
-               order by coalesce((payload->>'order')::int,0),context_key`;
+                 from silver.lo3rwang_period_context_entries
+                where context_type='period'
+                order by coalesce((payload->>'order')::int,0),context_key`;
 }
 
 async function readRuneHistory(db){
@@ -62,7 +61,7 @@ export async function GET(request){
   const {scopeId}=parsed.data;
   try{
     const {db}=neonServerRequest(request);
-    const periods=await readPeriods(db,scopeId);
+    const periods=await readPeriods(db);
     const historyRows=scopeId==='loc'||scopeId==='runes'?await readRuneHistory(db):[];
     const eras=periodRows(periods);
     const runeHistory=mergeHistory(historyRows);
