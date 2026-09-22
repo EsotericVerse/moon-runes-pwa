@@ -12,7 +12,7 @@ const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const RunesHomeView=dynamic(()=>import('../runes/RunesClient'),{ssr:false,loading});
 const GameView=dynamic(()=>import('./views/GameView'),{ssr:false,loading});
 // Feature shells render synchronously so title, shared CSS and local link menus
-// never wait for Neon/projection data or client-only module hydration.
+// never wait for Neon canonical data or client-only module hydration.
 const ContextView=dynamic(()=>import('../modular-v2/features/ContextV2'),{loading});
 const StaticsView=dynamic(()=>import('../modular-v2/features/StatisticsV2'),{loading});
 const CultureView=dynamic(()=>import('../modular-v2/features/CultureV2'),{loading});
