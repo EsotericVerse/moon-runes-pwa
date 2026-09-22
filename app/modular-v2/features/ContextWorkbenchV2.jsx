@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {neonClient,readNeonOrPublicFallback} from '../../loc/neon-client';
+import {neonClient} from '../../loc/neon-client';
 
 const PAGE_SIZE=24;
 const GRAPH_SEED=[
@@ -83,15 +83,16 @@ export default function ContextWorkbenchV2({view='loc_context_entries'}){
   useEffect(()=>{
     let live=true;
     setLoading(true);
-    readNeonOrPublicFallback(
-      ()=>neonClient.from(view).select('*').limit(5000),
-      '/projections/loc-context.json'
-    ).then(result=>{
+    neonClient.from(view).select('*').limit(5000).then(({data,error})=>{
+      if(error)throw new Error(error.message||'Neon context read failed');
       if(!live)return;
-      const data=Array.isArray(result?.data)?result.data:[];
-      setRows(data);
-      setNotice(result?.fallback?'目前使用公開展示投影。':'已讀取 Neon 唯讀資料。');
-    }).catch(()=>live&&setRows([])).finally(()=>live&&setLoading(false));
+      setRows(Array.isArray(data)?data:[]);
+      setNotice('已直接讀取 Neon。');
+    }).catch(error=>{
+      if(!live)return;
+      setRows([]);
+      setNotice(`Neon 讀取失敗：${error?.message||String(error)}`);
+    }).finally(()=>live&&setLoading(false));
     return()=>{live=false};
   },[view]);
 
