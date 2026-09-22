@@ -1,7 +1,8 @@
 'use client';
 
 import {useCallback,useEffect,useState} from 'react';
-import {getNeonSession,neonClient,signInNeonWithGoogle,signOutNeon} from './neon-client';
+import {getNeonSession,signInNeonWithGoogle,signOutNeon} from './neon-client';
+import {selectNeonRows} from './neon-repository';
 import {migrateLegacyBrowserDataToNeon} from './neon-legacy-migration';
 import {createScopeAuthorizer} from './scope-authorization';
 
@@ -9,12 +10,8 @@ export const NEON_SCOPE_MANAGER_LEVELS=Object.freeze(['scope_manager']);
 
 async function readManagementGrants(user){
   if(!user?.id)return [];
-  const {data,error}=await neonClient.from('scope_access_grants')
-    .select('scope_id,access_level,case_id')
-    .eq('user_id',String(user.id))
-    .limit(100);
-  if(error)throw new Error(error.message||'Neon 管理權限查詢失敗');
-  return Array.isArray(data)?data:[];
+  const {rows}=await selectNeonRows('api.scope_access_grants',{columns:'scope_id,access_level,case_id',filters:[{column:'user_id',operator:'eq',value:String(user.id)}],limit:100});
+  return rows;
 }
 
 const emptyState={loading:true,user:null,grants:[],authorizer:null,canManage:false,permissionLoading:true,error:''};
