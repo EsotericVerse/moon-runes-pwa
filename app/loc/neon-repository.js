@@ -18,6 +18,10 @@ const TableSchema=z.enum([
   'silver.lo3rwang_works','silver.runes_works',
   'vault.work_texts','vault.song_version_texts'
 ]);
+const WritableTableSchema=z.enum([
+  'api.user_records','api.user_settings','api.scope_access_grants','api.scope_relations',
+  'api.scope_relation_requests','api.site_theme_styles','silver.work_scope_affiliations'
+]);
 const RowSchema=z.record(z.string(),z.unknown());
 const FilterSchema=z.object({
   column:z.string().regex(/^[a-z][a-z0-9_]*$/),
@@ -37,6 +41,12 @@ export class NeonRepositoryError extends Error{
     this.code=code;
     this.table=table;
   }
+}
+
+function writableRelation(table){
+  const parsed=WritableTableSchema.safeParse(table);
+  if(!parsed.success)throw new NeonRepositoryError('Canonical content tables are read-only; write a scope/resource link instead of copying content',{table:String(table),code:'NEON_CONTENT_WRITE_BLOCKED'});
+  return relation(parsed.data);
 }
 
 function relation(table){
@@ -88,7 +98,7 @@ export async function selectNeonRows(table,{
 
 export async function insertNeonRows(table,records,{returning='*'}={}){
   const rows=z.array(RowSchema).min(1).parse(Array.isArray(records)?records:[records]);
-  const result=await relation(table).insert(rows).select(returning);
+  const result=await writableRelation(table).insert(rows).select(returning);
   throwQueryError(result.error,table,'INSERT');
   return parseRows(result.data,table);
 }
@@ -96,7 +106,7 @@ export async function insertNeonRows(table,records,{returning='*'}={}){
 export async function upsertNeonRows(table,records,{conflict,returning='*'}={}){
   const rows=z.array(RowSchema).min(1).parse(Array.isArray(records)?records:[records]);
   const options=conflict?{onConflict:z.string().min(1).parse(conflict)}:undefined;
-  const result=await relation(table).upsert(rows,options).select(returning);
+  const result=await writableRelation(table).upsert(rows,options).select(returning);
   throwQueryError(result.error,table,'UPSERT');
   return parseRows(result.data,table);
 }
@@ -104,7 +114,7 @@ export async function upsertNeonRows(table,records,{conflict,returning='*'}={}){
 export async function updateNeonRows(table,values,{filters,returning='*'}={}){
   if(!Array.isArray(filters)||filters.length===0)throw new TypeError('Neon UPDATE requires at least one filter');
   const patch=RowSchema.parse(values);
-  let query=applyFilters(relation(table).update(patch),filters);
+  let query=applyFilters(writableRelation(table).update(patch),filters);
   if(returning)query=query.select(returning);
   const result=await query;
   throwQueryError(result.error,table,'UPDATE');
@@ -113,7 +123,7 @@ export async function updateNeonRows(table,values,{filters,returning='*'}={}){
 
 export async function deleteNeonRows(table,{filters,returning='*'}={}){
   if(!Array.isArray(filters)||filters.length===0)throw new TypeError('Neon DELETE requires at least one filter');
-  let query=applyFilters(relation(table).delete(),filters);
+  let query=applyFilters(writableRelation(table).delete(),filters);
   if(returning)query=query.select(returning);
   const result=await query;
   throwQueryError(result.error,table,'DELETE');
