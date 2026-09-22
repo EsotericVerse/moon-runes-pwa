@@ -1,10 +1,12 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useMemo} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import {CULTURE_PATHS_V2} from '../../migration-bridges/current-data-compat.v2';
 import {fetchLocJson,fetchLocStaticJson} from '../../loc/data';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
+import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 function periodRows(value){
@@ -38,33 +40,32 @@ const GALAXY_SECTIONS=Object.freeze({
 export default function CultureV2({section=null}){
   const {scopeId}=useScopeRuntimeV2();
   const profile=PROFILE[scopeId]||PROFILE.loc;
-  const [data,setData]=useState({});
-  const [error,setError]=useState('');
-  const [loading,setLoading]=useState(true);
+  const cultureQuery=useQuery({
+    queryKey:['culture-data-v2',scopeId,profile.sections],
+    queryFn:async()=>{
+      const wanted=new Set(profile.sections);
+      const requests=[];
+      const keys=[];
+      const add=(key,path,loader=fetchLocJson)=>{keys.push(key);requests.push({path,loader});};
+      if(wanted.has('eras')){
+        if(scopeId==='loc'){
+          add('authorEras',CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
+          add('runeEras',CULTURE_PATHS_V2.eraByScope.runes,fetchLocStaticJson);
+        }else add('eras',CULTURE_PATHS_V2.eraByScope[scopeId]||CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
+      }
+      if(wanted.has('runes'))add('runes',CULTURE_PATHS_V2.runes,fetchLocStaticJson);
+      if(wanted.has('authorKeywords'))add('authorKeywords',CULTURE_PATHS_V2.authorKeywords);
+      if(wanted.has('periods')){add('musicPeriods',CULTURE_PATHS_V2.musicPeriods);add('writingPeriods',CULTURE_PATHS_V2.writingGovernancePeriods);}
+      if(wanted.has('governanceHistory')||wanted.has('runeEvolution'))add('runeHistory',CULTURE_PATHS_V2.runeHistory,fetchLocStaticJson);
+      const values=await Promise.all(requests.map(request=>request.loader(request.path)));
+      return Object.fromEntries(keys.map((key,index)=>[key,values[index]]));
+    },
+    staleTime:5*60_000
+  });
+  const data=cultureQuery.data||{};
+  const loading=cultureQuery.isPending;
+  const error=cultureQuery.error?.message||'';
 
-  useEffect(()=>{
-    let live=true;
-    setLoading(true);setError('');setData({});
-    const wanted=new Set(profile.sections);
-    const requests=[];
-    const keys=[];
-    const add=(key,path,loader=fetchLocJson)=>{keys.push(key);requests.push({path,loader});};
-    if(wanted.has('eras')){
-      if(scopeId==='loc'){
-        add('authorEras',CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
-        add('runeEras',CULTURE_PATHS_V2.eraByScope.runes,fetchLocStaticJson);
-      }else add('eras',CULTURE_PATHS_V2.eraByScope[scopeId]||CULTURE_PATHS_V2.eraByScope.lo3rwang,fetchLocStaticJson);
-    }
-    if(wanted.has('runes'))add('runes',CULTURE_PATHS_V2.runes,fetchLocStaticJson);
-    if(wanted.has('authorKeywords'))add('authorKeywords',CULTURE_PATHS_V2.authorKeywords);
-    if(wanted.has('periods')){add('musicPeriods',CULTURE_PATHS_V2.musicPeriods);add('writingPeriods',CULTURE_PATHS_V2.writingGovernancePeriods);}
-    if(wanted.has('governanceHistory')||wanted.has('runeEvolution'))add('runeHistory',CULTURE_PATHS_V2.runeHistory,fetchLocStaticJson);
-    Promise.all(requests.map(request=>request.loader(request.path)))
-      .then(values=>{if(live)setData(Object.fromEntries(keys.map((key,index)=>[key,values[index]])));})
-      .catch(e=>live&&setError(String(e?.message||e)))
-      .finally(()=>live&&setLoading(false));
-    return()=>{live=false};
-  },[scopeId,profile.sections]);
 
   const eraRows=useMemo(()=>[...(data.eras?.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.eras]);
   const authorEraRows=useMemo(()=>[...(data.authorEras?.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.authorEras]);
@@ -89,21 +90,13 @@ export default function CultureV2({section=null}){
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
 
     {profile.sections.includes('eras')?<ScopeCardV2 eyebrow="Culture · 時期" title={scopeId==='loc'?'作者文化時期':'時期'}>
-      <div className="scope-v2-timeline">{(scopeId==='loc'?authorEraRows:eraRows).map((item,index)=><article key={item.era_id||item.period||index}>
-        <strong>{itemLabel(item,index)}</strong>
-        <span>{item.start_date||'—'} → {item.end_date||'現在'}</span>
-        {item.description?<p>{item.description}</p>:null}
-      </article>)}</div>
+      <CultureTimelineV2 items={scopeId==='loc'?authorEraRows:eraRows} labelOf={itemLabel} />
     </ScopeCardV2>:null}
 
     {profile.sections.includes('runeEvolution')?<>
       <ScopeCardV2 eyebrow="LunaRunes · 下軌" title="符文系統時期">
         <p>符文時期與作者文化時期分開計算，透過日期與交會事件相容對照；14 張是前置原型，正式版本從 P1.0 的 24 張開始，後續依 P2.0、P2.5、P3.0、P3.2、P4.0、P4.1、P4.2 展開。</p>
-        {runeEraRows.length?<div className="scope-v2-timeline">{runeEraRows.map((item,index)=><article key={item.era_id||item.period||index}>
-          <strong>{item.display_label||item.name||item.period}</strong>
-          <span>{item.start_date||'—'} → {item.end_date||'現在'}</span>
-          {item.description?<p>{item.description}</p>:null}
-        </article>)}</div>:null}
+        {runeEraRows.length?<CultureTimelineV2 items={runeEraRows} />:null}
         <div className="scope-v2-timeline">{runeVersions.map((item,index)=><article key={`${item.version}-${item.milestone||index}`}>
           <strong>{item.version} · {item.rune_count} 張</strong>
           <span>{item.milestone||'—'} · {item.status==='rc'?'RC':'正式版本'}</span>
