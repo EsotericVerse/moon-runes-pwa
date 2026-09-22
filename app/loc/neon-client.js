@@ -27,23 +27,3 @@ export async function signOutNeon(){
   if(error)throw new Error(error.message||'Neon sign-out failed');
 }
 
-export async function readNeonOrPublicFallback(queryInput,fallbackPath){
-  let original={data:[],error:null};
-  try{
-    const queryPromise=typeof queryInput==='function'?queryInput():queryInput;
-    const result=await queryPromise;
-    if(!result?.error)return result;
-    original=result;
-  }catch(error){
-    original={data:[],error:{message:error?.message||String(error)}};
-  }
-  try{
-    const response=await fetch(fallbackPath,{cache:'no-store'});
-    if(!response.ok)return {data:[],error:null,fallback:true,unavailable:true};
-    const payload=await response.json();
-    const rows=Array.isArray(payload)?payload:(Array.isArray(payload?.rows)?payload.rows:[]);
-    return {data:rows,error:null,fallback:true};
-  }catch{
-    return {data:[],error:null,fallback:true,unavailable:true};
-  }
-}
