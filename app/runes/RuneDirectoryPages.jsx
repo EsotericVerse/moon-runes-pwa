@@ -1,7 +1,33 @@
-import {GROUPS,groupById,groupRunes,localRuneId,runeByRoute,runeImage,runeName} from './rune-directory.mjs';
+'use client';
+
+import {useEffect,useMemo,useState} from 'react';
+import {fetchLocJson,LOC_DATA} from '../loc/data';
+import {GROUPS,groupById,localRuneId,runeImage,runeName} from './rune-directory.mjs';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
 const listHref=(path='')=>scopeHrefV2('runes',`list${path?'/'+String(path).replace(/^\/+/, ''):''}`);
+
+function useNeonRunes(){
+  const [runes,setRunes]=useState([]);
+  const [error,setError]=useState('');
+  useEffect(()=>{
+    let live=true;
+    fetchLocJson(LOC_DATA.RUNES,{memory:true}).then(rows=>{
+      if(!live)return;
+      setRunes((Array.isArray(rows)?rows:[]).filter(row=>Number(row?.編號)>=0&&Number(row?.編號)<=66));
+    }).catch(reason=>{if(live)setError(reason?.message||'Neon canonical 讀取失敗');});
+    return()=>{live=false};
+  },[]);
+  return {runes,error};
+}
+
+function rowsForGroup(runes,groupId){
+  const id=String(groupId).padStart(2,'0');
+  if(id==='09')return runes.filter(row=>[0,65,66].includes(Number(row?.編號))).sort((a,b)=>Number(a.編號)-Number(b.編號));
+  const start=(Number(id)-1)*8+1;
+  return runes.filter(row=>Number(row?.編號)>=start&&Number(row?.編號)<=start+7).sort((a,b)=>Number(a.編號)-Number(b.編號));
+}
+
 
 function RuneDetails({card}){
   if(!card)return null;
@@ -63,8 +89,9 @@ export function RuneDirectoryRoot(){
 
 export function RuneGroupPage({groupId}){
   const group=groupById(groupId);
+  const {runes,error}=useNeonRunes();
+  const cards=useMemo(()=>rowsForGroup(runes,groupId),[runes,groupId]);
   if(!group)return null;
-  const cards=groupRunes(group.id);
   return <main className="loc-next-main"><section className="loc-view">
     <header className="loc-hero">
       <p className="loc-eyebrow">Rune Group · {group.id}</p>
@@ -72,6 +99,8 @@ export function RuneGroupPage({groupId}){
       <p className="loc-subtitle">{group.description}</p>
     </header>
     <section className="loc-card">
+      {error?<p className="loc-error" role="alert">符文讀取失敗：{error}</p>:null}
+      {!error&&!cards.length?<p className="loc-note">正在從 Neon 讀取符文…</p>:null}
       <div className="runes-group-head">
         <img className="runes-group-choice-image" data-rune-group={group.id} src={group.image} alt={`${group.name}組概念圖`} width="160" height="120"/>
         <div>
@@ -103,8 +132,10 @@ export function RuneGroupPage({groupId}){
 
 export function RuneDetailPage({groupId,runeId}){
   const group=groupById(groupId);
-  const card=runeByRoute(groupId,runeId);
-  if(!group||!card)return null;
+  const {runes,error}=useNeonRunes();
+  const card=useMemo(()=>rowsForGroup(runes,groupId).find(item=>localRuneId(groupId,item)===String(runeId).padStart(2,'0'))||null,[runes,groupId,runeId]);
+  if(!group)return null;
+  if(!card)return <main className="loc-next-main"><section className="loc-view"><p className="loc-error" role="alert">{error||'正在從 Neon 讀取符文…'}</p></section></main>;
   return <main className="loc-next-main"><section className="loc-view">
     <header className="loc-hero">
       <p className="loc-eyebrow">Rune · {group.id}/{String(runeId).padStart(2,'0')}</p>
