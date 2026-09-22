@@ -68,8 +68,8 @@ export async function GET(request){
                                     order by sequence_no nulls last,history_id`);
     }else if(path==='culture/lrunes-periods'){
       const rows=await db`select context_key,context_type,title,summary,payload
-                              from silver.lo3rwang_period_context_entries
-                             where context_type='period'
+                              from silver.runes_context_entries
+                             where lower(context_type) in ('period','era')
                              order by coalesce((payload->>'order')::int,0),context_key`;
       payload={eras:periodRows(rows)};
     }else if(path==='culture/lo3rwang-periods'){
