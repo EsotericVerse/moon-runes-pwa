@@ -3,7 +3,7 @@
 import {useEffect,useState} from 'react';
 import {selectNeonRows} from '../../loc/neon-repository';
 
-import {selectScopeProjectionRows} from '../../loc/neon-scope-projections';
+import {selectScopeContextRows} from '../../loc/neon-context-client';
 import {buildRuneGraph} from '../../../js/rune-graph-core.js';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
@@ -182,68 +182,9 @@ export default function ContextV2({section=null}){
     setRows([]);setPage(1);setError('');
     if(!view)return()=>{live=false};
     setLoading(true);
-    if(scopeId==='runes'){
-      Promise.all([
-        selectScopeProjectionRows(scopeId,'context'),
-        fetchLocStaticJson(LOC_DATA.RUNES),
-        fetchLocStaticJson(LOC_DATA.LRUNES_ERA)
-      ]).then(([contextRows,runes,evolution])=>{
-        if(!live)return;
-        const graph=buildRuneGraph(
-          (runes||[]).filter(row=>Number(row?.編號)>=1&&Number(row?.編號)<=66),
-          derivedFromEvolution(evolution),{}
-        );
-        setRows([
-          ...contextRows,
-          ...runeEvolutionRows(evolution),
-          ...runeGraphRows(graph)
-        ]);
-        setError('');
-      }).catch(error=>live&&setError(String(error?.message||error)))
-        .finally(()=>live&&setLoading(false));
-      return()=>{live=false};
-    }
-    if(scopeId==='loc'){
-      Promise.all([
-        selectScopeProjectionRows(scopeId,'context'),
-        fetchLocStaticJson(LOC_DATA.RUNES),
-        fetchLocStaticJson(LOC_DATA.LRUNES_ERA),
-        fetchLocStaticJson(LOC_DATA.LO3RWANG_ERA)
-      ]).then(([baseRows,runeCore,runeHistory,authorEra])=>{
-        if(!live)return;
-        const runeGraph=buildRuneGraph(
-          (runeCore||[]).filter(row=>Number(row?.編號)>=1&&Number(row?.編號)<=66),
-          derivedFromEvolution(runeHistory),{}
-        );
-        const graphRows=runeGraphRows(runeGraph);
-        const evolutionRows=runeEvolutionRows(runeHistory);
-        const eraRows=(authorEra?.eras||[]).map((item,index)=>({
-          context_key:item.era_id||`author-era-${index}`,
-          context_type:'時期',
-          title:item.display_label||item.name||item.period,
-          summary:item.description||'',
-          period:item.period||''
-        }));
-        const allRows=[...baseRows,...eraRows,...evolutionRows,...graphRows];
-        setRows([...allRows,...locStructureRows([...baseRows,...eraRows,...evolutionRows],runeGraph,runeHistory)]);
-        setError('');
-      }).catch(error=>live&&setError(String(error?.message||error)))
-        .finally(()=>live&&setLoading(false));
-      return()=>{live=false};
-    }
-    selectScopeProjectionRows(scopeId,'context')
-      .then(rows=>{
-        if(!rows.length)throw new Error('Context projection is empty');
-        if(live)setRows(rows);
-      })
-      .catch(async error=>{
-        try{
-          const rows=await basicScopeContextRows(scopeId);
-          if(live){setRows(rows);setError('');}
-        }catch{
-          if(live)setError(String(error?.message||error));
-        }
-      })
+    selectScopeContextRows(scopeId)
+      .then(value=>{if(live){setRows(value);setError('');}})
+      .catch(error=>live&&setError(String(error?.message||error)))
       .finally(()=>live&&setLoading(false));
     return()=>{live=false};
   },[view,scopeId]);
@@ -257,7 +198,7 @@ export default function ContextV2({section=null}){
     <ScopeCardV2 eyebrow={CONTEXT_COPY.eyebrow} title={CONTEXT_COPY.title}>
       {CONTEXT_COPY.paragraphs.map(text=><p key={text}>{text}</p>)}
     </ScopeCardV2>
-    {!view?<p className="scope-v2-status">此 Scope 尚未啟用脈絡 projection。</p>:null}
+    {!view?<p className="scope-v2-status">此 Scope 尚未啟用脈絡功能。</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {loading?<p className="scope-v2-status">載入中…</p>:null}
     <div className="scope-v2-list">
