@@ -101,9 +101,9 @@ The `Event` sheet now includes four shared cross-LOC reference columns:
 - `related_locs`: other LOC domains that consume or interpret the event.
 - `era_id`: stable ERA reference such as `ERA-P8`.
 
-These fields follow `data/json/registries/LOC_SHARED_SCHEMA.json` and should remain references rather than duplicated canonical definitions.
+These fields follow the shared Neon scope/link schema and should remain references rather than duplicated canonical definitions.
 
-The current shared-registry foundation is tracked in `data/json/registries/LOC_SHARED_MANIFEST.json`.
+The current shared-registry foundation is tracked in Neon canonical/link tables.
 
 
 ## Frontend endpoint policy
