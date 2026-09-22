@@ -1,9 +1,13 @@
 import Link from 'next/link';
 import {notFound} from 'next/navigation';
-import {selectWritingWork,publicSourceRefs} from '../../../js/writing.js';
+import {selectWritingWork,selectWritingWorks,publicSourceRefs} from '../../../js/writing.js';
 
-export const dynamic='force-dynamic';
-export const revalidate=0;
+export const dynamic='force-static';
+
+export async function generateStaticParams(){
+  const works=await selectWritingWorks();
+  return works.map(work=>({workId:String(work.work_id)}));
+}
 
 export async function generateMetadata({params}){
   const {workId}=await params;
