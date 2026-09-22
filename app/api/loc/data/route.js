@@ -59,6 +59,13 @@ export async function GET(request){
                               from silver.lrunes_runes
                              order by rune_number`;
       payload=runeRows(rows);
+    }else if(path==='canonical/lots'||path==='canonical/rune-interpretations'){
+      const rows=await db`select rune_number,rune_name,group_name,english_name,canonical_payload
+                              from silver.lrunes_runes order by rune_number`;
+      payload=runeRows(rows);
+    }else if(path==='canonical/rune-grammar'){
+      payload=await db`select algorithm_id,name,definition,input_contract,output_contract,source_ref,lifecycle,updated_at
+                              from silver.lrunes_algorithm order by algorithm_id`;
     }else if(path==='canonical/harmony'){
       payload=await db`select rune_number,rune_name,soul_question,practice_challenge,ritual_advice,harmony_advice,source_payload
                            from silver.lrunes_harmony order by rune_number`;
@@ -123,7 +130,7 @@ export async function GET(request){
     }else if(path==='knowledge/assets'){
       payload={assets:await db`select asset_id,owner_scope,title,body,asset_type,source_ref,rights_ref,lifecycle,metadata,updated_at
         from silver.knowledge_assets order by updated_at desc nulls last,asset_id`};
-    }else if(['canonical/lots','canonical/rune-interpretations','canonical/rune-grammar','canonical/three-card-combinations','context/loc2-events','culture/loc3-period-keywords','governance/loc6','culture/period-keywords','culture/loc6-period-keywords','context/graph-schema','governance/style-groups','media/registry','knowledge/search-governance','knowledge/search-stats'].includes(path)){
+    }else if(['canonical/three-card-combinations','context/loc2-events','culture/loc3-period-keywords','governance/loc6','culture/period-keywords','culture/loc6-period-keywords','context/graph-schema','governance/style-groups','media/registry','knowledge/search-governance','knowledge/search-stats'].includes(path)){
       payload=[];
     }else if(path.startsWith('dataset/')){
       payload={shards:[]};
