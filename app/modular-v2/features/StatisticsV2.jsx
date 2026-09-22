@@ -14,7 +14,7 @@ const EMPTY_TYPES=Object.freeze([]);
 
 const LEGACY_SECTIONS=Object.freeze({
   keyword:{eyebrow:'Keyword Statistics',title:'關鍵字統計',text:'集中查看關鍵字在跨時期資料中的出現與分布，作為風格分析與資料回查入口。'},
-  source:{eyebrow:'Source Management',title:'來源管理',text:'檢視目前 Scope 的 Neon 統計 Neon 來源與資料狀態。'},
+  source:{eyebrow:'Source Management',title:'來源管理',text:'檢視目前 Scope 的 Neon 來源與資料狀態。'},
   import:{eyebrow:'Import',title:'匯入',text:'匯入網頁暫時保留功能位置；目前先維持既有資料流程，後續再接入新的資料來源。'},
   total:{eyebrow:'Total Ranking',title:'總排行榜',text:'跨時期關鍵字排行榜集中於此，可切換文字、社群與音樂資料的統計類型。'}
 });
