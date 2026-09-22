@@ -36,6 +36,7 @@
     "react-dom": "19.3.0",
     "recharts": "3.10.1",
     "vis-timeline": "8.5.4",
-    "zod": "4.6.0"
+    "zod": "4.6.0",
+    "casbin": "5.51.1"
   }
 }
