@@ -46,7 +46,7 @@
 - [x] 個人設定由 localStorage 遷移至 Neon `user_settings`；舊瀏覽器資料僅保留一次性登入後遷移流程。
 - [ ] 設定 I/O Budget：限制單次查詢最多讀取 shard 數、單次 transaction 筆數、單次 JSON parse 體積與背景 index rebuild 工作量；重量工作必須可分批、可中止、可續跑。
 - [ ] 建立 memory hot-cache：canonical rune data、manifest、search metadata、常用 registry 在同一 App session 內不得反覆讀磁碟／反覆 JSON parse；超大資料不得常駐 RAM。
-- [ ] 建立 projection/index version/hash：資料版本未變時不重建索引；只重建變更 partition / shard / source。
+- [ ] 建立 Neon canonical query index version/hash：資料版本未變時不重算；只重算變更 scope／source link，不複製內容。
 - [ ] PWA runtime cache 分級：core 小資料可優先快取；大型 corpus / graph / media metadata 只在實際使用時 cache，不做整包 precache。
 - [ ] 為大型 runtime/cache working set 設容量與淘汰策略（LRU / last-access / version cleanup）；cache policy 必須能依 Light / Heavy 模式不同。
 - [ ] Search、Scenario、Library 等輸入搜尋加入 debounce / deferred update；禁止每個 key stroke 對大型資料做完整 `.filter().includes()` 掃描。
