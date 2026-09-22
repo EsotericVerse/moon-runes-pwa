@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {neonClient} from '../../loc/neon-client';
+import {selectNeonRows} from '../../loc/neon-repository';
 
 const PAGE_SIZE=24;
 const GRAPH_SEED=[
@@ -83,10 +83,10 @@ export default function ContextWorkbenchV2({view='loc_context_entries'}){
   useEffect(()=>{
     let live=true;
     setLoading(true);
-    neonClient.from(view).select('*').limit(5000).then(({data,error})=>{
-      if(error)throw new Error(error.message||'Neon context read failed');
+    const table=view.includes('.')?view:`api.${view}`;
+    selectNeonRows(table,{columns:'*',limit:5000}).then(({rows})=>{
       if(!live)return;
-      setRows(Array.isArray(data)?data:[]);
+      setRows(rows);
       setNotice('已直接讀取 Neon。');
     }).catch(error=>{
       if(!live)return;
