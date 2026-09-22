@@ -1,10 +1,6 @@
 export { LOC_DATA } from './data-paths.mjs';
 import { LOC_DATA } from './data-paths.mjs';
 
-// Shared LOC runtime data is served directly from Neon Data API.
-// The endpoint is public by design; api.runtime_json_documents grants SELECT only
-// to anonymous/authenticated roles. Database credentials never enter the browser.
-const DEFAULT_NEON_DATA_API_URL='https://ep-rapid-queen-b3oyboy6.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb/rest/v1';
 const memoryCache=new Map();
 const DEFAULT_GLOBAL_CONCURRENCY=2;
 const DEFAULT_MAX_BATCH_ITEMS=24;
@@ -12,10 +8,6 @@ const DEFAULT_MEMORY_CACHE_ENTRIES=24;
 const DEFAULT_MAX_SEGMENTS=8;
 let activeRequests=0;
 const waiters=[];
-
-function apiBaseUrl(){
-  return String(process.env.NEXT_PUBLIC_NEON_DATA_API_URL||DEFAULT_NEON_DATA_API_URL).trim().replace(/\/+$/,'');
-}
 
 function sourcePath(path){
   const normalized=String(path||'').trim().replace(/^\/+/, '');
@@ -55,69 +47,39 @@ function touchMemoryCache(key){
   memoryCache.set(key,value);
 }
 
-async function fetchStaticJson(path){
-  const response=await fetch('/'+sourcePath(path),{cache:'force-cache'});
-  if(!response.ok)throw new Error(`Static Current projection ${response.status}: ${sourcePath(path)}`);
-  return response.json();
-}
-
-// Approved static exceptions only: Scope ERA files and runes.json.
-// These are read-only local projections and must not be routed through Neon.
-export function fetchLocStaticJson(path){
-  return fetchStaticJson(path);
-}
-
-async function fetchNeonJson(path){
+async function fetchCanonical(path){
   const normalized=sourcePath(path);
-  const params=new URLSearchParams();
-  params.set('select','source_path,blob_sha,payload,imported_at');
-  params.set('source_path',`eq.${normalized}`);
-  const url=`${apiBaseUrl()}/runtime_json_documents?${params.toString()}`;
   await acquireSlot();
   try{
-    const response=await fetch(url,{headers:{accept:'application/json'},cache:'no-store'});
-    if(!response.ok){
-      if([400,401,403].includes(response.status))return fetchStaticJson(normalized);
-      throw new Error(`Neon Data API ${response.status}: ${normalized}`);
-    }
-    const rows=await response.json();
-    if(!Array.isArray(rows)||rows.length===0)return fetchStaticJson(normalized);
-    return rows[0].payload;
+    const response=await fetch(`/api/loc/data?path=${encodeURIComponent(normalized)}`,{cache:'no-store'});
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(payload?.error||`Neon canonical data ${response.status}: ${normalized}`);
+    return payload;
   }finally{
     releaseSlot();
   }
 }
 
-export async function fetchRuneRows(runeNumbers,{timeoutMs=1500}={}){
-  const numbers=[...new Set((runeNumbers||[]).map(Number).filter(Number.isInteger))];
-  if(!numbers.length)return [];
-  const params=new URLSearchParams();
-  params.set('select','rune_number,rune_name,canonical_payload,updated_at');
-  params.set('rune_number',`in.(${numbers.join(',')})`);
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),timeoutMs);
-  try{
-    const response=await fetch(`${apiBaseUrl()}/lrunes_runes?${params.toString()}`,{
-      headers:{accept:'application/json'},
-      cache:'no-store',
-      signal:controller.signal
-    });
-    if(!response.ok)throw new Error(`Neon rune SELECT ${response.status}`);
-    const rows=await response.json();
-    return Array.isArray(rows)?rows:[];
-  }finally{
-    clearTimeout(timer);
-  }
-}
+// Compatibility name only: this is no longer a static-file reader.
+export function fetchLocStaticJson(path){return fetchLocJson(path);}
 
 export function fetchLocJson(path,{memory=true,maxMemoryEntries=DEFAULT_MEMORY_CACHE_ENTRIES}={}){
   const normalized=sourcePath(path);
-  if(!memory)return fetchNeonJson(normalized);
+  if(!memory)return fetchCanonical(normalized);
   if(memoryCache.has(normalized)){touchMemoryCache(normalized);return memoryCache.get(normalized);}
-  const request=fetchNeonJson(normalized).catch(error=>{memoryCache.delete(normalized);throw error;});
+  const request=fetchCanonical(normalized).catch(error=>{memoryCache.delete(normalized);throw error;});
   memoryCache.set(normalized,request);
   trimMemoryCache(maxMemoryEntries);
   return request;
+}
+
+export async function fetchRuneRows(runeNumbers){
+  const wanted=new Set((runeNumbers||[]).map(Number).filter(Number.isInteger));
+  if(!wanted.size)return [];
+  const rows=await fetchLocJson(LOC_DATA.RUNES,{memory:true});
+  return (Array.isArray(rows)?rows:[])
+    .filter(row=>wanted.has(Number(row?.編號)))
+    .map(row=>({rune_number:Number(row.編號),canonical_payload:row}));
 }
 
 export async function fetchLocJsonBatch(items,{concurrency=DEFAULT_GLOBAL_CONCURRENCY,maxItems=DEFAULT_MAX_BATCH_ITEMS,memory=true}={}){
@@ -144,38 +106,21 @@ function segmentRecord(path,index,extra={}){
 }
 
 export async function getLocDataDataset(datasetId,{memory=true}={}){
-  if(datasetId==='loc4-text-corpus'){
-    const manifest=await fetchLocJson(LOC_DATA.TEXT_CORPUS_MANIFEST,{memory});
-    const shards=Array.isArray(manifest?.shards)?manifest.shards:[];
-    return {id:datasetId,tier:'on-demand',strategy:'manifest-shards',segments:shards.map((item,index)=>segmentRecord(item.path,index,item))};
-  }
-  if(datasetId==='loc3-lyrics-search'){
-    const manifest=await fetchLocJson(LOC_DATA.MUSIC_SEARCH_MANIFEST,{memory});
-    const shards=Array.isArray(manifest?.shards)?manifest.shards:[];
-    return {id:datasetId,tier:'on-demand',strategy:'manifest-shards',segments:shards.map((item,index)=>{
-      const path=String(typeof item==='string'?item:item?.path||'');
-      const fullPath=path.startsWith('data/')?path:`data/json/search/loc3/${path}`;
-      return segmentRecord(fullPath,index,typeof item==='object'?item:{});
-    })};
-  }
   const manifestPaths={
+    'loc4-text-corpus':LOC_DATA.TEXT_CORPUS_MANIFEST,
+    'loc3-lyrics-search':LOC_DATA.MUSIC_SEARCH_MANIFEST,
     'loc4-offline-history':LOC_DATA.OFFLINE_HISTORY_MANIFEST,
     'threads-main-posts':LOC_DATA.THREADS_BROWSER_MANIFEST,
     'facebook-posts':LOC_DATA.FACEBOOK_MANIFEST
   };
-  if(manifestPaths[datasetId]){
-    const manifest=await fetchLocJson(manifestPaths[datasetId],{memory});
-    const shards=Array.isArray(manifest?.shards)?manifest.shards:[];
-    return {id:datasetId,tier:'on-demand',strategy:'manifest-shards',segments:shards.map((item,index)=>{
-      const raw=typeof item==='string'?item:item?.path||item?.name||'';
-      const normalized=String(raw).replace(/^\/+/, '');
-      const path=datasetId==='facebook-posts'&&!normalized.includes('/')
-        ?`data/json/sources/facebook/${normalized}`
-        :normalized;
-      return segmentRecord(path,index,typeof item==='object'?item:{});
-    })};
-  }
-  throw new Error(`Unknown LOC data dataset: ${datasetId}`);
+  const path=manifestPaths[datasetId];
+  if(!path)throw new Error(`Unknown LOC data dataset: ${datasetId}`);
+  const manifest=await fetchLocJson(path,{memory});
+  const shards=Array.isArray(manifest?.shards)?manifest.shards:[];
+  return {id:datasetId,tier:'on-demand',strategy:'neon-canonical',segments:shards.map((item,index)=>{
+    const raw=typeof item==='string'?item:item?.path||item?.name||'';
+    return segmentRecord(String(raw),index,typeof item==='object'?item:{});
+  })};
 }
 
 export async function fetchLocDataSegments(datasetId,{segmentIds,fromSequence,toSequence,maxSegments=DEFAULT_MAX_SEGMENTS,memory=true}={}){
@@ -184,7 +129,7 @@ export async function fetchLocDataSegments(datasetId,{segmentIds,fromSequence,to
   if(Array.isArray(segmentIds)&&segmentIds.length){const wanted=new Set(segmentIds);segments=segments.filter(segment=>wanted.has(segment.id));}
   if(Number.isFinite(Number(fromSequence)))segments=segments.filter(segment=>Number(segment.sequence)>=Number(fromSequence));
   if(Number.isFinite(Number(toSequence)))segments=segments.filter(segment=>Number(segment.sequence)<=Number(toSequence));
-  segments=[...segments].sort((a,b)=>Number(a.sequence||0)-Number(b.sequence||0));
+  segments=[...segments].sort((a,b)=>Number(a.sequence||0)-Number(b.sequence||0);
   if(segments.length>maxSegments)throw new Error(`LOC dataset ${datasetId} selected ${segments.length} segments; budget allows ${maxSegments}`);
   const data=await fetchLocJsonBatch(segments.map(segment=>segment.path),{maxItems:maxSegments,memory});
   return segments.map((segment,index)=>({segment,data:data[index]}));
@@ -197,12 +142,12 @@ export function clearLocJsonCache(path){
 
 export function refreshLocDataVersionManifest(){
   clearLocJsonCache();
-  return Promise.resolve({provider:'neon-data-api'});
+  return Promise.resolve({provider:'neon-canonical-api'});
 }
 
 export function refreshLocDataIndex(){
   clearLocJsonCache();
-  return Promise.resolve({provider:'neon-data-api'});
+  return Promise.resolve({provider:'neon-canonical-api'});
 }
 
 export const LOC_IO_BUDGET=Object.freeze({
