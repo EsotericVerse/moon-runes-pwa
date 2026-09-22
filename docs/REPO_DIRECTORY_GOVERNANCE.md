@@ -80,7 +80,6 @@ Current canonical structure:
 ```text
 services/
   api/
-    card/
     loc8/
   cloudflare/
 ```
