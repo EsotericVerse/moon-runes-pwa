@@ -1,3 +1,5 @@
+import {fetchLocJson} from '../app/loc/data.js';
+
 const GROUP_DEFS = [
   {id:'soul',group_zh:'靈魂',group_en:'Soul',from:1,to:8,description:'從個體之靈延伸至群體之魂，描繪意識、記憶與存在邊界的層次。',trait:'意識與存在層次',style_module:'個體與群體',possible_tone:['意識','記憶','邊界','內在'],style:['spirit','existence']},
   {id:'link',group_zh:'連結',group_en:'Link',from:9,to:16,description:'描繪人、事、物之間的方向、連結與分離，以及理解、啟發與誤解的變化。',trait:'關係與連結變化',style_module:'關係脈絡',possible_tone:['方向','關係','連結','分離','理解'],style:['relation','context']},
@@ -43,9 +45,8 @@ export const rune = [null];
 export const runeRows = [];
 
 export async function loadCanonicalRunes(){
-  const response=await fetch('/api/loc/data?path=canonical%2Frunes',{cache:'no-store'});
-  const rows=await response.json().catch(()=>[]);
-  if(!response.ok||!Array.isArray(rows))throw new Error(rows?.error||'Neon canonical rune read failed');
+  const rows=await fetchLocJson('canonical/runes',{memory:true});
+  if(!Array.isArray(rows))throw new Error('Neon canonical rune read failed');
   runeRows.splice(0,runeRows.length,...rows);
   for(let index=1;index<rune.length;index+=1)delete rune[index];
   for(const row of runeRows)rune[Number(row.編號)]=toRuntimeRow(row);
