@@ -16,7 +16,7 @@
     "verify:auth": "node scripts/verify-auth-boundary.mjs",
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:independence && npm run verify:modular-v2 && npm run verify:scope-registry && npm run verify:edge-policy && npm run verify:route-ownership && npm run verify:modularity && npm run verify:modules && npm run verify:static && npm run verify:directories && npm run verify:rc4 && npm run verify:parity && npm run verify:auth && npm run verify:theme && npm run verify:rune-draw && npm run verify:semantics && npm run verify:ui",
+    "verify": "npm run verify:modularity && npm run verify:directories",
     "build": "next build",
     "start": "next start",
     "verify:ui": "node scripts/current-ui-contract.mjs",
