@@ -3,6 +3,7 @@ import {resolve} from 'node:path';
 const root=process.cwd();
 const publicRoot=resolve(root,'public');
 const failures=[];
+const expectedPublicAssets=['pics/LOC-FrameworkPic.png','pics/LunaRunes.jpg','pics/LOC-structure.png','LunarRunesCardCut.pdf'];
 function walk(dir,out=[]){if(!existsSync(dir))return out;for(const name of readdirSync(dir)){const path=resolve(dir,name);const stat=statSync(path);if(stat.isDirectory())walk(path,out);else out.push(path);}return out;}
 if(existsSync(resolve(root,'data/json')))failures.push('runtime data/json directory must be removed');
 for(const file of walk(publicRoot)){const rel=file.slice(publicRoot.length+1).replaceAll('\\','/');if(rel.startsWith('data/json/')||rel==='loc-data-index.json'||rel==='loc-data-version.json')failures.push(`stale runtime payload: public/${rel}`);}
