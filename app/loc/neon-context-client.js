@@ -1,4 +1,7 @@
+'use client';
+
 import {z} from 'zod';
+import {selectNeonRows} from './neon-repository';
 
 const ContextRowSchema=z.object({
   context_key:z.string(),
@@ -7,14 +10,20 @@ const ContextRowSchema=z.object({
   summary:z.string().nullable().optional(),
   payload:z.unknown().nullable().optional()
 });
-const ContextResponseSchema=z.object({rows:z.array(ContextRowSchema)});
+const ContextResponseSchema=z.array(ContextRowSchema);
+const CONTEXT_VIEWS=Object.freeze({
+  loc:'api.loc_context_entries',
+  runes:'api.runes_context_entries',
+  lo3rwang:'api.lo3rwang_context_entries'
+});
 
 export async function selectScopeContextRows(scopeId){
-  const response=await fetch(`/api/context?scopeId=${encodeURIComponent(String(scopeId||''))}`,{
-    cache:'no-store',
-    headers:{accept:'application/json'}
+  const table=CONTEXT_VIEWS[String(scopeId||'')];
+  if(!table)throw new Error('Scope 無效');
+  const {rows}=await selectNeonRows(table,{
+    columns:'context_key,context_type,title,summary,payload',
+    orders:[{column:'context_key',ascending:true}],
+    limit:5000
   });
-  const payload=await response.json().catch(()=>null);
-  if(!response.ok)throw new Error(payload?.error||`脈絡讀取失敗（${response.status}）`);
-  return ContextResponseSchema.parse(payload).rows;
+  return ContextResponseSchema.parse(rows);
 }
