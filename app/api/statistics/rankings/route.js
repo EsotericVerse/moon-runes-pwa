@@ -1,5 +1,5 @@
 import {NextResponse} from 'next/server';
-import {neon} from '@neondatabase/serverless';
+import {neonServerRequest,readNeonUserId,readScopeAuthorizer} from '../../../loc/neon-server';
 import {z} from 'zod';
 
 export const dynamic='force-dynamic';
@@ -20,11 +20,15 @@ export async function GET(request){
   const parsed=QuerySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
   if(!parsed.success)return NextResponse.json({error:'查詢參數無效',code:'INVALID_QUERY'},{status:400});
   const {scopeId,page,pageSize,rankingType}=parsed.data;
-  const databaseUrl=process.env.DATABASE_URL;
-  if(!databaseUrl)return NextResponse.json({error:'Neon server connection is not configured',code:'NEON_NOT_CONFIGURED'},{status:503});
-
   try{
-    const db=neon(databaseUrl);
+    const {db,authenticated}=neonServerRequest(request);
+    if(!authenticated)return NextResponse.json({error:'需要登入 Neon 才能讀取統計',code:'AUTH_REQUIRED'},{status:401});
+    const userId=await readNeonUserId(db);
+    if(!userId)return NextResponse.json({error:'Neon session 無效',code:'AUTH_INVALID'},{status:401});
+    const authorizer=await readScopeAuthorizer(db,userId);
+    const grants=authorizer.grants||[];
+    const hasReadScope=grants.some(grant=>grant.scope_id===scopeId||grant.access_level==='global_admin');
+    if(!hasReadScope)return NextResponse.json({error:'目前帳號沒有此 Scope 的統計權限',code:'SCOPE_FORBIDDEN'},{status:403});
     const result=await db`
       with scope_work as (
         select wr.work_id
