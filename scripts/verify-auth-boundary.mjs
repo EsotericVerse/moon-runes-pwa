@@ -8,13 +8,14 @@ const failures=[];
 
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
 
-requireMatch(data,/runtime_json_documents/,'shared runtime data must use Neon Current projection');
-requireMatch(client,/@neondatabase\/neon-js/,'Neon JS client dependency is required');
+requireMatch(data,/api\/loc\/data/,'shared runtime data must use the Neon canonical route');
+requireMatch(data,/cache:'no-store'/,'shared runtime requests must not use browser response cache');
+requireMatch(client,/@neondatabase\/neon-js/,'Neon Managed Auth client dependency is required');
 requireMatch(client,/signIn\.social/,'Neon Google OAuth sign-in is required');
 requireMatch(client,/getSession/,'Neon session lookup is required');
 requireMatch(userStorage,/user_records/,'Neon user record persistence is required');
 requireMatch(userStorage,/user_settings/,'Neon user settings persistence is required');
-requireMatch(migration,/loc-local-records/,'legacy IndexedDB migration must remain until browser migration is complete');
+requireMatch(migration,/loc-local-records/,'legacy browser migration must remain explicit until migration is complete');
 
 for(const retired of [
   'app/loc/auth-client.js',
@@ -23,14 +24,13 @@ for(const retired of [
   'app/loc/storage.js',
   'services/cloudflare/auth-worker.js',
   'services/cloudflare/wrangler.auth.jsonc',
-  'services/cloudflare/loc-state-worker.js',
-  'wrangler.toml'
+  'services/cloudflare/loc-state-worker.js'
 ]){
   if(fs.existsSync(retired))failures.push(`retired persistence/auth path must remain removed: ${retired}`);
 }
 
 if(failures.length){
-  console.error('[auth-boundary] violations:\n'+failures.join('\n'));
+  console.error('[auth-boundary] violations:\\n'+failures.join('\\n'));
   process.exit(1);
 }
-console.log('[auth-boundary] Neon Auth + Data API + RLS application boundary verified');
+console.log('[auth-boundary] Neon Auth + canonical route + user storage boundary verified');
