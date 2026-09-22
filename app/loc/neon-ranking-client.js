@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {getNeonSession} from './neon-client';
 
 const RankingRowSchema=z.object({
   ranking_type:z.string(),
@@ -22,7 +23,12 @@ export async function selectScopeRankingPage(scopeId,{page=1,pageSize=20,ranking
     pageSize:String(pageSize),
     rankingType:String(rankingType||'')
   });
-  const response=await fetch(`/api/statistics/rankings?${params}`,{cache:'no-store',headers:{accept:'application/json'}});
+  const auth=await getNeonSession();
+  const token=auth?.session?.access_token||auth?.session?.accessToken||'';
+  const response=await fetch(`/api/statistics/rankings?${params}`,{
+    cache:'no-store',
+    headers:{accept:'application/json',...(token?{authorization:`Bearer ${token}`}:{})}
+  });
   const payload=await response.json().catch(()=>null);
   if(!response.ok)throw new Error(payload?.error||`統計讀取失敗（${response.status}）`);
   return RankingResponseSchema.parse(payload);
