@@ -8,8 +8,7 @@ const TableSchema=z.enum([
   'api.scope_access_grants','api.scope_relations','api.scope_relation_requests','api.site_theme_styles',
   'silver.works','silver.song_versions','silver.knowledge_assets','silver.content_relations','silver.work_scope_affiliations',
   'silver.runes_context_entries','silver.lo3rwang_context_entries',
-  'silver.lo3rwang_period_context_entries','silver.runes_rankings',
-  'silver.lo3rwang_rankings','silver.lrunes_runes','silver.lrunes_evolution_history','silver.lrunes_harmony','silver.lrunes_algorithm',
+  'silver.lo3rwang_period_context_entries','silver.lrunes_runes','silver.lrunes_evolution_history','silver.lrunes_harmony','silver.lrunes_algorithm',
   'silver.lo3rwang_works','silver.runes_works',
   'vault.work_texts','vault.song_version_texts'
 ]);
