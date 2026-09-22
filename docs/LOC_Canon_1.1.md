@@ -133,7 +133,7 @@ Culture 是歷史與文化觀察，不具有預測責任。其觀察至少包含
 | 資料層級 | 責任 |
 |---|---|
 | Canon / Mother Source | 固定名稱、結構常數、語意邊界與治理原則。 |
-| Registry / Core Projection | 結構化現況、關係、來源與可變資料；core JSON 是正式 runtime 投影。 |
+| Registry / Canonical tables | 結構化現況、關係、來源與可變資料；Neon silver tables 是正式 runtime 來源。 |
 | Search / Generated Index | 搜尋與查詢所需的索引／投影，不反向升格 Canon。 |
 | API / UI / Analysis | 呈現、執行與分析層，不取代資料來源。 |
 
