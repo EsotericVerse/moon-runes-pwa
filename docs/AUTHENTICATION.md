@@ -12,12 +12,12 @@ The authenticated JWT is forwarded by the Neon client to the Data API, where Pos
 
 ```text
 Static Next frontend
-  -> Neon Data API
-  -> api.runtime_json_documents
-  -> read-only governed Current payload
+  -> Next server route
+  -> Neon silver/vault canonical tables
+  -> read-only response assembled per request
 ```
 
-Public roles receive SELECT-only access to the governed runtime projection.
+Public roles receive read-only access to the canonical tables allowed for that route; no runtime JSON document or copied projection is used.
 
 ### Authenticated personal data
 
