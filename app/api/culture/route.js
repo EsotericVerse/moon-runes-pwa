@@ -70,7 +70,7 @@ export async function GET(request){
       .filter((row,index,array)=>row&&array.findIndex(item=>JSON.stringify(item)===JSON.stringify(row))===index);
     const payload={
       scopeId,
-      eras:{eras},
+      eras:{eras:scopeId==='runes'?runeEras:eras},
       authorEras:scopeId==='loc'||scopeId==='lo3rwang'?{eras}:undefined,
       runeEras:{eras:runeEras},
       runeHistory,
