@@ -10,8 +10,8 @@
 - OAuth 是受保護寫入能力的授權條件之一；未授權使用者維持唯讀。
 - Settings 只處理個人 UI、偏好與個人同步，不管理共享 Canon / corpus。
 - 每個文化有自己的治理。LOC 記錄並比較各自的語言、脈絡、規則、歷史與來源，不以 LunaRunes Canon 判定其他文化的對錯或優劣。
-- **最高原則：所有可分析內容在第一次完成關鍵詞解析時，必須同步建立其 Search / Statistics / Culture 所需的第一層衍生資料，包括軌跡；不得要求之後再以人工方式補做同一批基礎分析。**
-- **時期（Period / ERA）屬人工治理資料，可補充、增減、修訂；軌跡（Trajectory）屬系統依內容、關鍵詞、時間與作品關係自動推導的衍生資料，可重新計算與更新，但不可由人工直接編輯或刪除。**
+- **最高原則：所有可分析內容在第一次完成關鍵詞解析時，必須同步建立其 Search / Statistics / Culture 所需的第一層request-time derived data，包括軌跡；不得要求之後再以人工方式補做同一批基礎分析。**
+- **時期（Period / ERA）屬人工治理資料，可補充、增減、修訂；軌跡（Trajectory）屬系統依內容、關鍵詞、時間與作品關係自動推導的request-time derived data，可重新計算與更新，但不可由人工直接編輯或刪除。**
 - **最高原則：任何新的系統論點、治理原則、語法規則或模組定義，必須附至少一個可重現、可對照、可檢查的實例，才允許升級為正式更新。只有抽象論述而沒有實例者，維持假說／草案狀態，不得直接寫成 Canon。**
 
 ## 月之符文的特質化模板定位
@@ -34,10 +34,10 @@
 | --- | --- | --- | --- |
 | LunaRunes | 抽牌、每日符文、符文資料、範例 | 共享每日資料由受授權管理流程維護 | Canon/Base66 唯讀；選擇保存的個人紀錄進入 Neon user_records |
 | Context | Graph、事件與關係 Overview / 使用 | 事件與關係共享狀態由受授權管理流程維護 | Context shared state |
-| Statistics | 排行、統計、來源狀態；首次關鍵詞解析時同步形成軌跡基礎資料 | 不放 corpus CRUD；不得手動編輯軌跡 | derived projection / trajectory derivation |
-| Culture | 時期、軌跡、文化觀察；以脈絡＋時期提供第一層進階解釋 | ERA / shared state 可由受授權管理流程維護；軌跡不可人工 CRUD | temporal/cultural projection |
-| Search | 查詢與結果 | 不放資料 CRUD | search projection |
-| Library | 典籍、作品、全文/摘要/metadata 展示 | 典籍維護由受授權管理流程處理 | corpus/library projection |
+| Statistics | 排行、統計、來源狀態；首次關鍵詞解析時同步形成軌跡基礎資料 | 不放 corpus CRUD；不得手動編輯軌跡 | derived direct canonical query / trajectory derivation |
+| Culture | 時期、軌跡、文化觀察；以脈絡＋時期提供第一層進階解釋 | ERA / shared state 可由受授權管理流程維護；軌跡不可人工 CRUD | temporal/cultural direct canonical query |
+| Search | 查詢與結果 | 不放資料 CRUD | search direct canonical query |
+| Library | 典籍、作品、全文/摘要/metadata 展示 | 典籍維護由受授權管理流程處理 | corpus/library direct canonical query |
 | Governance | 各文化／系統／作者治理理念、規則與歷史的集中展示及索引 | 不以 Governance 名義承接全站 CRUD | governance discourse / references |
 | Settings | 個人設定與同步狀態 | Neon Managed Auth / RLS | authenticated Neon user state |
 | Management | 不作為一般公開功能入口 | 已授權的共享資料維護與管理操作 | protected write operations |
@@ -46,23 +46,23 @@
 
 共享資料若需要匯入、驗證、分類、掃描、索引與發布，這些是資料處理與管理流程，不代表它們屬於 Governance：
 
-`Source → Validate → Content Level → Provenance / Version → Keyword Scan → Search / Statistics / Trajectory Projection → Culture Projection → Publish`
+`Source → Validate → Content Level → Provenance / Version → Keyword Scan → Search / Statistics / Trajectory direct canonical query → Culture direct canonical query → Publish`
 
 ### 第一次關鍵詞解析原則
 
 第一次對內容進行正式關鍵詞解析時，必須在同一分析版本內一次完成可由該次分析直接推導的第一層資料，包括：
 
 - 關鍵詞與其基礎統計。
-- Search projection。
-- Statistics projection。
-- 依時間、關鍵詞、作品／衍生關係可推導的 Trajectory projection。
+- Search direct canonical query。
+- Statistics direct canonical query。
+- 依時間、關鍵詞、作品／衍生關係可推導的 Trajectory direct canonical query。
 - Culture 所需的第一層脈絡資料；Culture 只做中立、描述性、可驗證的初步解釋，不替作品建立不可驗證的深層意義。
 
 不得將「軌跡」設計成人工逐筆補登欄位。當來源、關鍵詞、時間或作品關係變更時，系統應重新推導相關軌跡。
 
 ### 時期與軌跡的治理邊界
 
-- **時期（Period / ERA）**：由人定義的文化／時間切分，可新增、補充、合併、拆分、修訂或刪除；變更後觸發相關 Culture / Statistics projection 重算。
+- **時期（Period / ERA）**：由人定義的文化／時間切分，可新增、補充、合併、拆分、修訂或刪除；變更後觸發相關 Culture / Statistics direct canonical query 重算。
 - **軌跡（Trajectory）**：由系統根據已確認資料自動發現的時間序列／主題變化／作品關係結果，不是作者手寫敘事。
 - 軌跡可以因資料新增、定義更新、關鍵詞重算而產生新版本，但**不可人工直接改寫內容，不可人工刪除特定不喜歡的軌跡結果**。
 - 若軌跡有錯，修正其來源資料、分類規則、關鍵詞或演算法後重新計算；不得直接修飾輸出結果。
@@ -71,12 +71,12 @@
 ### Content Level
 
 - `full`：保存完整原文，可做全文搜尋與段落級分析。
-- `summary`：只有摘要或 retrieval projection，不得宣稱全文已分析。
+- `summary`：只有摘要或 retrieval direct canonical query，不得宣稱全文已分析。
 - `metadata`：只有來源、日期、識別資訊等。
 
 ### 更新與例外防治
 
-- 關鍵字掃描完成即形成同一版本的 Search / Statistics / Trajectory projection，不再要求第二次人工「更新排行榜」或「建立軌跡」。
+- 關鍵字掃描完成即形成同一版本的 Search / Statistics / Trajectory direct canonical query，不再要求第二次人工「更新排行榜」或「建立軌跡」。
 - 任何新論點若無至少一個實例，不得直接升級為正式 Canon／共享規則；先留在 hypothesis / draft，待實例完成再審核。
 - `summary → full` 是合法升級。
 - `full → summary` 不得自動覆蓋，必須阻擋並列入例外。
@@ -86,15 +86,15 @@
 
 ## 資料層
 
-- Canon / large corpus：經治理後進入 Neon Current projection；大型資料維持 manifest/shard 與按需讀取。
+- Canon / large corpus：經治理後進入 Neon Current direct canonical query；大型資料維持 manifest/shard 與按需讀取。
 - Shared Current data：Neon Data API / `api.runtime_json_documents`，公開唯讀。
 - Personal data：Neon `api.user_records` / `api.user_settings`，透過 Managed Auth + RLS 隔離。
-- Search / Statistics / Trajectory：由已確認來源產生的 projection，不是 source of truth。
+- Search / Statistics / Trajectory：由已確認來源產生的 direct canonical query，不是 source of truth。
 - Period / ERA：人工治理的 temporal definition；可修改，但修改只改變切分／解釋框架，不得直接覆寫自動推導的軌跡資料。
 
 ## 權限
 
-公開使用者可 Read / Use / Observe。共享資料的 Create / Update / Delete / Publish / Rescan 只允許受授權管理者執行。敏感的內部路徑、repo 檔名與管理資訊不投影到公開 Search。
+公開使用者可 Read / Use / Observe。共享資料的 Create / Update / Delete / Publish / Rescan 只允許受授權管理者執行。敏感的內部路徑、repo 檔名與管理資訊不即時查詢結果到公開 Search。
 
 對 Trajectory 的管理操作僅允許 `Recompute / Rebuild / Version / Publish`；不提供人工 `Edit / Delete trajectory content`。
 
