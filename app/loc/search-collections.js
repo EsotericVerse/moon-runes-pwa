@@ -5,7 +5,7 @@ export const SEARCH_SCOPE_FIELDS=Object.freeze(['person','family','generation','
 const ZHENGDE_CULTURE_COLLECTION = Object.freeze({
   id: '政德文化',
   label: '政德文化',
-  description: '搜尋政德文化的文字、歌曲、治理資料與文化關鍵字；用時期、概念與作品一起理解演變。',
+  description: '搜尋政德文化的文字、歌曲、時期與作品關鍵詞。',
   scopeProfile:Object.freeze({id:'personal',fields:Object.freeze(['person','era','source','corpus','language','culture'])}),
 });
 
@@ -13,14 +13,14 @@ export const SEARCH_COLLECTIONS = Object.freeze({
   all: Object.freeze({
     id: 'all',
     label: '全部',
-    description: '跨 LOC 文字、音樂、治理、事件、知識庫與月之符文資料搜尋。',
+    description: '跨 LOC 文字、音樂、治理、FAQ 與月之符文資料搜尋。',
     scopeProfile:Object.freeze({id:'loc',fields:SEARCH_SCOPE_FIELDS}),
     // LOC 搜尋只讀月典自身資料；月之符文與作者有各自的 Scope 搜尋入口。
   }),
   '月之符文': Object.freeze({
     id: '月之符文',
     label: '月之符文',
-    description: '搜尋 LunaRunes 核心資料、抽牌語法、每日解讀與 companion datasets。',
+    description: '搜尋 LunaRunes 核心資料、抽牌語法與相關文字。',
     scopeProfile:Object.freeze({id:'lunarunes',fields:Object.freeze(['source','corpus','language','culture'])}),
   }),
   '政德文化': ZHENGDE_CULTURE_COLLECTION,
