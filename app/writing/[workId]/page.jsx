@@ -4,10 +4,22 @@ import {selectWritingWork,selectWritingWorks,publicSourceRefs} from '../../../js
 
 export const dynamic='force-static';
 
+// Static Pages builds must not fail site-wide when Neon is temporarily
+// unavailable. In that case export one explicit fallback detail route; the
+// actual works remain sourced from Neon whenever the build-time read succeeds.
+const NEON_UNAVAILABLE_WORK_ID='__neon_unavailable__';
+
 export async function generateStaticParams(){
-  const works=await selectWritingWorks();
-  return works.map(work=>({workId:String(work.work_id)}));
+  try{
+    const works=await selectWritingWorks();
+    const params=works.map(work=>({workId:String(work.work_id)}));
+    return params.length?params:[{workId:NEON_UNAVAILABLE_WORK_ID}];
+  }catch{
+    return [{workId:NEON_UNAVAILABLE_WORK_ID}];
+  }
 }
+
+export const dynamicParams=false;
 
 export async function generateMetadata({params}){
   const {workId}=await params;
@@ -21,7 +33,13 @@ export default async function WritingDetailPage({params}){
   const {workId}=await params;
   let work=null;
   try{work=await selectWritingWork(decodeURIComponent(workId));}catch{}
-  if(!work)notFound();
+  if(!work){
+    if(String(workId)!==NEON_UNAVAILABLE_WORK_ID)notFound();
+    return <main className="page">
+      <header className="hero"><p>LOC · Writing</p><h1>文字作品</h1><p>作品資料由 Neon 提供。</p></header>
+      <section className="card"><p>目前無法在靜態建置時取得 Neon 作品資料，請返回文字作品索引。</p><Link href="/writing/">← 回文字作品索引</Link></section>
+    </main>;
+  }
   const sources=publicSourceRefs(work);
   return <main className="page">
     <header className="hero"><p>LOC4 · Writing</p><h1>{work.title||work.work_id}</h1><p>{work.summary||'此作品已收錄於 Neon canonical works。'}</p></header>
