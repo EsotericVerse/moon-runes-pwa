@@ -6,6 +6,7 @@ import {useQuery} from '@tanstack/react-query';
 import {selectScopeContextData} from '../../loc/neon-context-client';
 import {readFeatureNavigation} from '../feature-navigation.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
+import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
 import ContextGraphV2 from '../modules/context-graph/ContextGraphV2';
 import ContextWorkbenchV2 from './ContextWorkbenchV2';
 
@@ -23,6 +24,7 @@ export default function ContextV2(){
 
   return <section className='loc-view'>
     <h1>脈絡</h1>
+    <p className='loc-subtitle'>{scopeFeatureSubtitleV2(scopeId,'context')}</p>
     {query.isPending?<p className='scope-v2-status'>載入 Graph…</p>:null}
     {query.error?<p className='scope-v2-status scope-v2-error'>{query.error.message}</p>:null}
     {scopeId==='loc'?<ContextWorkbenchV2 scopeId={scopeId} focusIdentity={navigation.identity}/>:null}
