@@ -64,7 +64,7 @@ export default function SearchV2(){
 
   useEffect(()=>{
     const value=String(searchParams?.get('q')||'').trim();
-    if(value)setQuery(value);
+    if(value){setQuery(value);executeSearch(value);}
   },[searchParams]);
   useEffect(()=>setPage(1),[scopeId,pageSize]);
   useEffect(()=>{if(page>pageCount)setPage(pageCount)},[page,pageCount]);
