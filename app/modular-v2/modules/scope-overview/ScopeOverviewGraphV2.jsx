@@ -1,10 +1,10 @@
 'use client';
 
 const POSITIONS=Object.freeze([
-  {x:600,y:120,textY:70},
-  {x:940,y:360,textY:330},
-  {x:600,y:600,textY:660},
-  {x:260,y:360,textY:330}
+  {x:840,y:190,textY:145},
+  {x:910,y:500,textY:545},
+  {x:360,y:500,textY:545},
+  {x:290,y:190,textY:145}
 ]);
 
 export default function ScopeOverviewGraphV2({centerTitle='',centerSummary='',nodes=[]}){
