@@ -105,3 +105,35 @@ export async function searchNeonRows(collectionId,query,{limit=MAX_INDEX_RESULTS
   const ids=source.index.search(normalized,{limit:safeLimit,offset:safeOffset});
   return {...source,rows:ids.map(id=>source.rows[Number(id)]).filter(Boolean)};
 }
+
+
+export async function findLastSearchPage(collectionId,query,{pageSize=10,firstPageReserved=0}={}){
+  const source=await selectNeonSearchRows(collectionId);
+  const normalized=normalizeSearchText(query);
+  if(!normalized)return 1;
+  const size=Math.max(1,Number(pageSize)||10);
+  const reserved=Math.max(0,Math.min(size,Number(firstPageReserved)||0));
+  const dataCapacityOnFirstPage=Math.max(0,size-reserved);
+
+  function hasResultAt(dataOffset){
+    return source.index.search(normalized,{limit:1,offset:Math.max(0,dataOffset)}).length>0;
+  }
+
+  if(!hasResultAt(dataCapacityOnFirstPage))return 1;
+
+  let lowPage=2;
+  let highPage=2;
+  while(hasResultAt(dataCapacityOnFirstPage+(highPage-2)*size)){
+    lowPage=highPage;
+    highPage*=2;
+  }
+
+  while(lowPage+1<highPage){
+    const mid=Math.floor((lowPage+highPage)/2);
+    const offset=dataCapacityOnFirstPage+(mid-2)*size;
+    if(hasResultAt(offset))lowPage=mid;
+    else highPage=mid;
+  }
+
+  return lowPage;
+}
