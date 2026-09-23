@@ -19,7 +19,7 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language reference impl
 > 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
 
 - **現行 Canon：1.0（正式版）**
-- **Web Build：1.0-RC3**
+- **Web Build：1.0-RC6**
 - **LOC GPT Skills：1.0.0**
 - **公開網站：<https://loc.lo3rwang.cc/>**
 - **作者：Lucas Oscar Wang 政德**
@@ -27,9 +27,9 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language reference impl
 
 ---
 
-## 目前進度｜2026-09-12
+## 目前進度｜2026-09-23
 
-目前已進入 **RC3（Data-backed Release Candidate）收斂與功能驗收階段**。RC3 的關鍵不是再增加骨架，而是主要公開功能已開始由正式資料驅動：LunaRunes Canon 現在直接支援符文脈絡、Graph、統計、排行榜與推演資料。核心骨架不再擴張，優先處理效能、資料一致性、runtime 穩定性與公開入口。
+目前進入 **RC6（Current Architecture Baseline）**。RC6 固定 Context＝Graph、Culture＝Time River、Statistics＝純圖表、Search＝Scope-aware keyword/full-text retrieval；Current runtime 以 Neon 為 SSOT，並以 Scope 邊界、錨點式時間長河與 metric snapshots 作為現行基線。完整定義見 [`docs/RC6.md`](docs/RC6.md)。
 
 - **LunaRunes／月之符文**：66 枚可抽取符文、籤詩與第 0 符「德」資料。
 - **Context／脈絡**：Relation、Event、Graph 與 Semantic Playground。
@@ -40,9 +40,9 @@ LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language reference impl
 - **Knowledge／知識**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與分析。
 - **Evolution／推演**：Period、Timeline、Trend、Trajectory 與時間演變。
 
-### RC3｜正式資料開始進入系統
+### RC6｜Current Architecture Baseline
 
-**RC3 = Data-backed release candidate。**
+**RC6 = Current Architecture Baseline。**
 
 目前以 LunaRunes 作為第一套完整資料來源，主要資料鏈已實際成立：
 
@@ -58,7 +58,7 @@ LunaRunes Canon
 
 符文脈絡與符文分析核心採 **No API**：由 Next.js runtime client 直接查詢 Neon canonical tables 與現行規則，不呼叫外部 API、不建立第二套 Canon。
 
-RC3 已讓 `runes.html`、`context.html`、`statics.html`、`evolution.html` 有實際資料可展示與分析；完整 RC3 說明見 [`docs/RC3.md`](docs/RC3.md)。
+RC6 已完成 Current 模組收斂、Period 錨點 Time River、Statistics 多圖表與 Neon metric snapshot 接線；完整 RC6 說明見 [`docs/RC6.md`](docs/RC6.md)。舊 RC 文件僅作歷史背景，不覆蓋 RC6 Current 定義。
 
 ### Demo 前目前優先順序
 
