@@ -8,8 +8,7 @@ const CONTEXT_TABLES=Object.freeze({
   authorPeriods:'silver.lo3rwang_period_context_entries',
   works:'silver.works',
   songs:'silver.song_versions',
-  runeMaster:'silver.lrunes_runes',
-  runeHistory:'silver.lrunes_evolution_history'
+  runeMaster:'silver.lrunes_runes'
 });
 
 function normalizeGraph(rows){
@@ -33,15 +32,13 @@ async function readScopeRows(scopeId){
     return rows;
   }
   if(scopeId==='runes'){
-    const [context,runes,history]=await Promise.all([
+    const [context,runes]=await Promise.all([
       selectNeonRows(CONTEXT_TABLES.runes,{columns:'context_key,context_type,title,summary,payload,updated_at',limit:5000}),
-      selectNeonRows(CONTEXT_TABLES.runeMaster,{columns:'rune_number,rune_name,canonical_payload',orders:[{column:'rune_number',ascending:true}],limit:100}),
-      selectNeonRows(CONTEXT_TABLES.runeHistory,{columns:'history_id,history_kind,sequence_no,title,body,source_payload',orders:[{column:'sequence_no',ascending:true,nullsFirst:false}],limit:5000})
+      selectNeonRows(CONTEXT_TABLES.runeMaster,{columns:'rune_number,rune_name,canonical_payload',orders:[{column:'rune_number',ascending:true}],limit:100})
     ]);
     return sortRows([
       ...context,
-      ...runes.map(row=>({context_key:`rune:${row.rune_number}`,context_type:'符文',title:row.rune_name,summary:'',payload:row.canonical_payload||{}})),
-      ...history.map(row=>({context_key:`evolution:${row.history_id}`,context_type:row.history_kind,title:row.title||row.history_id,summary:'',payload:row.body||{}}))
+      ...runes.map(row=>({context_key:`rune:${row.rune_number}`,context_type:'符文',title:row.rune_name,summary:'',payload:row.canonical_payload||{}}))
     ]);
   }
   if(scopeId==='lo3rwang'){
