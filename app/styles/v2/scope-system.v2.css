@@ -70,3 +70,7 @@
   .scope-v2-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
   .scope-v2-search-form{grid-template-columns:1fr}
 }
+
+.scope-v2-result-links{display:flex;gap:.55rem;flex-wrap:wrap;}
+.scope-v2-result-links a{padding:.3rem .55rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel-2);font-size:.85rem;text-decoration:none;}
+.scope-period-timeline .vis-item.scope-period-timeline-focus{background:var(--loc-accent);border-color:var(--loc-accent);color:var(--loc-panel);font-weight:700;}
