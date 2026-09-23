@@ -179,7 +179,7 @@ export default function AuthorHomeView({section=null}){
     eyebrow="Author"
     title="Lucas Oscar Wang 政德"
     subtitle="lo3rwang"
-    intro={<><div className="loc-author-reel"><iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜王政德自我介紹" loading="eager" allowTransparency="true" frameBorder="0" scrolling="no"/></div><p>不認識我？沒關係！先聽首歌吧。</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟〈這就是我〉 →</a></p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p></>}
+    intro={<><div className="loc-author-reel"><iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜王政德自我介紹" loading="eager" allowTransparency="true" frameBorder="0" scrolling="no"/></div><p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽一首我創作的歌吧！</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟〈這就是我〉 →</a></p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p></>}
     localMenu={[['簡介跟自述','/lo3rwang'],['主要身份','/lo3rwang/style'],['工作與合作','/lo3rwang/work'],['LOC設計理念','/lo3rwang/design'],['公開創作內容','/lo3rwang/galaxy'],['其他說明','/lo3rwang/others'],['聯絡方式','/lo3rwang/email']].map(([label,href])=>({label,href}))}
     sections={activeSections}
   />;
