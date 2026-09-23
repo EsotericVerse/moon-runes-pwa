@@ -17,7 +17,7 @@ function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row
 function itemLabel(value,index){return value?.display_label||value?.name||value?.title||value?.period||`項目 ${index+1}`;}
 
 const PROFILE=Object.freeze({
-  loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。作者文化時期與符文系統時期分軌展示，再以交會事件互相對照。',sections:['eras','events','runeEvolution']}),
+  loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。作者文化時期與符文系統時期分軌展示，再以交會事件互相對照。',sections:['eras']}),
   runes:Object.freeze({subtitle:'月之符文的時期、系統演化與語意治理時間長河。',sections:['eras','runeEvolution']}),
   lo3rwang:Object.freeze({subtitle:'作者文化：時期、作品語彙、創作與治理文字在時間中的變化。',sections:['eras','authorKeywords','periods']}),
   admin:Object.freeze({subtitle:'管理 Scope 的文化頁只呈現治理變化與歷史，不取代各 Scope 的 Current Authority。',sections:['governanceHistory']})
