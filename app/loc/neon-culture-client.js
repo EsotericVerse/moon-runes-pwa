@@ -18,8 +18,8 @@ function periodRows(rows){
     name:row.payload?.name||row.title||row.context_key,
     title:row.title||row.context_key,
     description:row.summary||'',
-    start_date:row.payload?.start_date||null,
-    end_date:row.payload?.end_date||null,
+    start_date:row.start_date||row.payload?.start_date||row.date||null,
+    end_date:row.end_date||row.payload?.end_date||null,
     order:Number(row.payload?.order||0),
     status:row.payload?.status||''
   })).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
@@ -73,7 +73,7 @@ export async function selectScopeCultureData(scopeId){
   const periodContext=periods.rows||[];
   const historyValue=mergeHistory(history.rows||[]);
   const runeEras=[...(Array.isArray(historyValue.eras)?historyValue.eras:[]),...(Array.isArray(historyValue.rune_periods)?historyValue.rune_periods:[])].filter((row,index,array)=>row&&array.findIndex(item=>JSON.stringify(item)===JSON.stringify(row))===index);
-  const eraSource=id==='loc'?cultureRowsRaw.filter(row=>row.entry_type==='era'||row.entry_type==='period'):periodContext;
+  const eraSource=id==='loc'?cultureRowsRaw.filter(row=>['era','period','trajectory','evolution'].includes(row.entry_type)):periodContext;
   const workRows=(works.rows||[]).map(row=>({...row,...((semantics.rows||[]).find(item=>item.work_id===row.work_id)||{})}));
   const eras=periodRows(eraSource);
   return ScopeCultureResponseSchema.parse({scopeId:id,eras:{eras:id==='runes'?runeEras:eras},authorEras:id==='loc'||id==='lo3rwang'?{eras}:undefined,runeEras:{eras:runeEras},runeHistory:historyValue,periods:eraSource,events:cultureRows(cultureRowsRaw,'event'),trajectories:cultureRows(cultureRowsRaw,'trajectory'),works:cultureRows(cultureRowsRaw,'work'),authorKeywords:buildAuthorKeywords(workRows),musicPeriods:buildWorkPeriods(workRows,new Set(['music'])),writingPeriods:buildWorkPeriods(workRows,new Set(['writing','novel','literary','text']))});
