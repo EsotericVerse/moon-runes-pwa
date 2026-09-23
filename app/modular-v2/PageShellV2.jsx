@@ -4,7 +4,6 @@ import {scopeHrefV2,scopeOriginV2} from './scope-registry.v2';
 const LOCAL_MENUS=Object.freeze({
   context:[['關係圖 Graph','/context']],
   culture:[['時間長河','/culture']],
-  galaxy:[['推薦作品','/culture/galaxy'],['創作文章','/culture/galaxy/literary'],['小說','/culture/galaxy/novel'],['音樂','/culture/galaxy/music'],['圖片','/culture/galaxy/pics'],['多媒體','/culture/galaxy/multimedia']],
   statics:[['統計','/statics']],
   governance:[['原則理念','/governance'],['版權說明','/governance/law'],['FAQ','/governance/faq'],['管理者功能','/governance/manage']],
   runes:[['符文抽籤','/'],['符文圖鑑','/list'],['符文解牌','/algorithm'],['符文遊戲','/game']],
@@ -13,7 +12,6 @@ const LOCAL_MENUS=Object.freeze({
 
 function menuFor(featureId,scopeId){
   if(featureId==='context'||featureId==='culture'||featureId==='statics'||featureId==='governance')return LOCAL_MENUS[featureId];
-  if(featureId==='galaxy')return LOCAL_MENUS.galaxy;
   if(scopeId==='runes'&&featureId==='home')return LOCAL_MENUS.runes;
   if(scopeId==='lo3rwang'&&featureId==='home')return LOCAL_MENUS.author;
   return null;
