@@ -74,12 +74,10 @@ async function fetchCanonical(path){
     }
     if(normalized==='canonical/rune-grammar')return (await selectNeonRows('silver.lrunes_algorithm',{limit:5000})).rows;
     if(normalized==='canonical/harmony')return (await selectNeonRows('silver.lrunes_harmony',{limit:5000})).rows;
-    if(normalized==='canonical/history'||normalized==='evolution/daily-rune-history'||normalized==='context/loc8-events')return {records:[]};
     if(normalized==='culture/lrunes-periods')return {eras:periodRows((await selectNeonRows('silver.runes_context_entries',{filters:[{column:'context_type',operator:'in',value:['period','era']}],limit:5000})).rows)};
     if(normalized==='culture/lo3rwang-periods')return {eras:periodRows((await selectNeonRows('silver.lo3rwang_period_context_entries',{filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000})).rows)};
     if(normalized==='knowledge/faq')return (await selectNeonRows('silver.faq_entries',{limit:5000})).rows;
     if(normalized==='context/cross-relations')return (await selectNeonRows('silver.content_relations',{limit:5000})).rows;
-    if(normalized==='knowledge/assets')return {assets:(await selectNeonRows('silver.knowledge_assets',{limit:5000})).rows};
     if(normalized==='culture/zhengde-keywords'){
       const [workResult,semanticResult]=await Promise.all([
         selectNeonRows('silver.works',{columns:'work_id',filters:[{column:'scope',operator:'eq',value:'lo3rwang'}],limit:5000}),
