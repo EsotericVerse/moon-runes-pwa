@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {selectNeonRows} from '../../loc/neon-repository';
+import {selectScopeContextData} from '../../loc/neon-context-client';
 
 const PAGE_SIZE=24;
 const GRAPH_SEED=[
@@ -68,7 +68,7 @@ function Pager({page,total,onChange}){
   return <div className="scope-v2-pagination"><span>第 {page} / {pages} 頁 · 共 {total} 筆</span><div><button type="button" disabled={page<=1} onClick={()=>onChange(page-1)}>上一頁</button><button type="button" disabled={page>=pages} onClick={()=>onChange(page+1)}>下一頁</button></div></div>;
 }
 
-const TABLE_ALIASES=Object.freeze({\n  canonical_context:'silver.lo3rwang_context_entries',\n  canonical_runes_context:'silver.runes_context_entries',\n  canonical_author_context:'silver.lo3rwang_context_entries'\n});\n\nexport default function ContextWorkbenchV2({view='canonical_context'}){
+export default function ContextWorkbenchV2({scopeId='loc'}){
   const [rows,setRows]=useState([]);
   const [loading,setLoading]=useState(true);
   const [notice,setNotice]=useState('');
@@ -83,8 +83,7 @@ const TABLE_ALIASES=Object.freeze({\n  canonical_context:'silver.lo3rwang_contex
   useEffect(()=>{
     let live=true;
     setLoading(true);
-    const table=TABLE_ALIASES[view]||view;
-    selectNeonRows(table,{columns:'*',limit:5000}).then(({rows})=>{
+    selectScopeContextData(scopeId).then(({rows})=>{
       if(!live)return;
       setRows(rows);
       setNotice('已直接讀取 Neon。');
@@ -94,7 +93,7 @@ const TABLE_ALIASES=Object.freeze({\n  canonical_context:'silver.lo3rwang_contex
       setNotice(`Neon 讀取失敗：${error?.message||String(error)}`);
     }).finally(()=>live&&setLoading(false));
     return()=>{live=false};
-  },[view]);
+  },[scopeId]);
 
   const graph=useMemo(()=>graphOf([...GRAPH_SEED,...rows]),[rows]);
   const nodeTypes=useMemo(()=>[...new Set(graph.nodes.map(node=>node.type).filter(Boolean))].sort(),[graph.nodes]);
