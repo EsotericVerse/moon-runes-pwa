@@ -6,7 +6,6 @@ export const LOC_RECORD_TYPES=Object.freeze({
   DRAW:'draw',
   CONTEXT_EVENT:'context-event',
   CONTEXT_RELATION:'context-relation',
-  EVOLUTION:'evolution'
 });
 
 function generatedId(prefix='record'){
