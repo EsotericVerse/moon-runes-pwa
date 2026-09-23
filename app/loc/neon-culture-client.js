@@ -10,17 +10,24 @@ const CULTURE_TABLES=Object.freeze({
 });
 
 function periodRows(rows){
-  return (rows||[]).map(row=>({
-    era_id:row.payload?.era_id||row.context_key,
-    period:row.payload?.period||row.context_key||'',
-    name:row.payload?.name||row.title||row.context_key,
+  return (rows||[]).map(row=>{
+    const payload=row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
+    return ({
+    ...payload,
+    era_id:payload.era_id||row.context_key,
+    period:payload.period||row.context_key||'',
+    name:payload.name||row.title||row.context_key,
     title:row.title||row.context_key,
     description:row.summary||'',
-    start_date:row.start_date||row.payload?.start_date||row.date||null,
-    end_date:row.end_date||row.payload?.end_date||null,
-    order:Number(row.payload?.order||0),
-    status:row.payload?.status||''
-  })).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
+    start_date:row.start_date||payload.start_date||row.date||null,
+    end_date:row.end_date||payload.end_date||null,
+    order:Number(payload.order||0),
+    status:payload.status||'',
+    anchor_type:payload.anchor_type||payload.anchor?.type||null,
+    anchor_role:payload.anchor_role||payload.anchor?.role||null,
+    is_primary_anchor:Boolean(payload.is_primary_anchor??payload.primary_anchor??payload.anchor?.primary??false),
+    is_rc_zone:Boolean(payload.is_rc_zone??payload.rc_zone??payload.anchor?.rc_zone??false)
+  });}).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
 }
 
 function mergeHistory(rows){

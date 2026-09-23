@@ -1,4 +1,5 @@
 import { PageComposition } from '../../PageComposition';
+import HomeMetricsV2 from './HomeMetricsV2';
 
 const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心所欲，而不逾己'];
 
@@ -123,12 +124,12 @@ export default function AuthorHomeView({section=null}){
       id:'corpus',
       eyebrow:'Corpus',
       title:'目前資料規模',
-      content:<ul>
-        <li><strong>Facebook Corpus：</strong>2011-04-15 ～ 2026-09-03，累積 22,493 筆歷史紀錄，其中 17,656 筆具可搜尋文字。</li>
-        <li><strong>Threads Corpus：</strong>2024-11-18 ～ 2026-09-06，累積 4,578 筆主貼文、2,430 筆 Reply，共 7,008 筆可分析公開文字紀錄。</li>
-        <li><strong>Suno Corpus：</strong>歌曲與歌詞持續納入整理，保留作品日期、時期、主題與跨作品關聯資料；流動統計不作固定規則。</li>
-        <li><strong>創作作品：</strong>核心小說與文章全文 corpus 已接入搜尋；《月語者》共 7 篇、182 章，作品級與章級 baseline 解析均已完成。</li>
-      </ul>
+      content:<><HomeMetricsV2 scopeId="lo3rwang"/><ul>
+        <li><strong>Facebook Corpus：</strong>歷史紀錄與可搜尋文字由 Neon 快照即時計算。</li>
+        <li><strong>Threads Corpus：</strong>主貼文與 Reply 由 Neon 快照即時計算。</li>
+        <li><strong>Suno Corpus：</strong>歌曲與歌詞持續納入整理，保留作品日期、時期、主題與跨作品關聯資料。</li>
+        <li><strong>創作作品：</strong>核心小說與文章全文 corpus 已接入搜尋，作品級與章級資料由正式資料表提供。</li>
+      </ul></>
     },
     {
       id:'reels',

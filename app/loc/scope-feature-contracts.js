@@ -49,7 +49,9 @@ export const ScopeRankingResponseSchema=z.object({
     term:z.string(),
     item_count:z.coerce.number(),
     rank_value:z.coerce.number(),
-    ranking_key:z.string()
+    ranking_key:z.string(),
+    source_updated_at:z.string().nullable().optional(),
+    calculated_at:z.string().nullable().optional()
   }).passthrough()),
   count:z.coerce.number().int().nonnegative(),
   page:z.coerce.number().int().positive(),
