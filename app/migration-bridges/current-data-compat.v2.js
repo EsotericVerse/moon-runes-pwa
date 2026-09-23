@@ -7,8 +7,8 @@ export const CULTURE_PATHS_V2=Object.freeze({
     lo3rwang:LOC_DATA.LO3RWANG_ERA,
     runes:LOC_DATA.LRUNES_ERA
   }),
-  musicPeriods:LOC_DATA.LOC3_PERIOD_KEYWORD_ANALYSIS,
-  writingGovernancePeriods:LOC_DATA.LOC6_PERIOD_KEYWORD_ANALYSIS,
+  musicPeriods:LOC_DATA.MUSIC_PERIOD_KEYWORD_ANALYSIS,
+  writingGovernancePeriods:LOC_DATA.GOVERNANCE_PERIOD_KEYWORD_ANALYSIS,
   runeHistory:LOC_DATA.LRUNES_ERA,
   runeCoreHistory:LOC_DATA.HISTORY,
   runes:LOC_DATA.RUNES,
