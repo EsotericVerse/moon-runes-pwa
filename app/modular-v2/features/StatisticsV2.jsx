@@ -21,7 +21,7 @@ const LEGACY_SECTIONS=Object.freeze({
 
 export default function StatisticsV2({section=null}){
   const {scopeId,scope}=useScopeRuntimeV2();
-  const rankingsEnabled=Boolean(scopeDataViewV2(scopeId,'rankings'));
+  const rankingsEnabled=true;
   const [type,setType]=useState('');
   const [page,setPage]=useState(1);
 
