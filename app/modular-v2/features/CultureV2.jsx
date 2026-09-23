@@ -16,7 +16,8 @@ export default function CultureV2(){
     return [...(data.authorEras?.eras?.length?data.authorEras.eras:data.eras?.eras||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
   },[query.data]);
   return <section className="loc-view">
+    {query.isPending?<p className="scope-v2-status">載入時間長河…</p>:null}
     {query.error?<p className="scope-v2-status scope-v2-error">{query.error.message}</p>:null}
-    <CultureTimelineV2 items={rows} labelOf={labelOf}/>
+    {!query.isPending&&!query.error?<CultureTimelineV2 items={rows} labelOf={labelOf}/>:null}
   </section>;
 }
