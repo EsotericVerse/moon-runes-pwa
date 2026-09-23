@@ -65,7 +65,7 @@ export async function selectScopeCultureData(scopeId){
   const [culture,periods,history,works,semantics]=await Promise.all([
     id==='loc'?selectNeonRows(CULTURE_TABLES.loc,{columns:'scope_id,entry_key,entry_type,title,date,start_date,end_date,era_id,source,style,keywords,body,url,payload,is_derived,manual_override,source_ref',filters:[{column:'scope_id',operator:'eq',value:'loc'}],limit:5000}):Promise.resolve({rows:[]}),
     id==='lo3rwang'?selectNeonRows(CULTURE_TABLES.periods,{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000}):Promise.resolve({rows:[]}),
-    id==='loc'||id==='runes'?selectNeonRows(CULTURE_TABLES.history,{columns:'history_id,history_kind,sequence_no,title,body,source_payload',limit:5000}):Promise.resolve({rows:[]}),
+    id==='runes'?selectNeonRows(CULTURE_TABLES.history,{columns:'history_id,history_kind,sequence_no,title,body,source_payload',limit:5000}):Promise.resolve({rows:[]}),
     id==='loc'||id==='lo3rwang'?selectNeonRows(CULTURE_TABLES.works,{columns:'work_id,work_type,period_code,era_code,era_name,title,created_date',filters:[{column:'scope',operator:'eq',value:'lo3rwang'}],limit:5000}):Promise.resolve({rows:[]}),
     id==='loc'||id==='lo3rwang'?selectNeonRows(CULTURE_TABLES.semantics,{columns:'work_id,theme_tags,emotion_tags,imagery_tags,context_tags,genre_tags',limit:5000}):Promise.resolve({rows:[]})
   ]);
