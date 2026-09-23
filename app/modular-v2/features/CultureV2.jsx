@@ -72,7 +72,7 @@ export default function CultureV2({section=null}){
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
 
     {profile.sections.includes('eras')?<ScopeCardV2 eyebrow="Culture · 時期" title={scopeId==='loc'?'作者文化時期':'時期'}>
-      <CultureTimelineV2 items={scopeId==='loc'?authorEraRows:eraRows} labelOf={itemLabel} />
+      <CultureTimelineV2 items={scopeId==='loc'?(authorEraRows.length?authorEraRows:eraRows):eraRows} labelOf={itemLabel} />
     </ScopeCardV2>:null}
 
     {profile.sections.includes('runeEvolution')?<>
