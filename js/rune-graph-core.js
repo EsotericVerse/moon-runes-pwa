@@ -81,21 +81,21 @@ function addRegistryGraph(nodes,edges,registries={}){
     if(work.era_id){
       const eid=nodeId('時期',String(work.era_id));
       addNode(nodes,{id:eid,label:work.period_name||work.era_id,type:'時期',internal_type:'era',source_type:'registry'});
-      addRegistryEdge(edges,{source:wid,target:eid,type:'belongs_to_era'},'LOC4_WRITING_REGISTRY','deterministic','record_metadata');
+      addRegistryEdge(edges,{source:wid,target:eid,type:'belongs_to_era'},'WRITING_REGISTRY','deterministic','record_metadata');
     }
     for(const item of work.music_map?.work_level||[]){
       const mid=nodeId('音樂',String(item.title||item.url));
       addNode(nodes,{id:mid,label:item.title||item.label||'音樂作品',type:'音樂',internal_type:'music_work',definition:item.label||item.role||'',source_type:'registry'});
-      addRegistryEdge(edges,{source:mid,target:wid,type:'work_theme'},'LOC4_WRITING_REGISTRY','recorded','record_metadata');
+      addRegistryEdge(edges,{source:mid,target:wid,type:'work_theme'},'WRITING_REGISTRY','recorded','record_metadata');
     }
     for(const item of work.music_map?.character_themes||[]){
       const cid=nodeId('角色',String(item.character));
       const mid=nodeId('音樂',String(item.title||item.url));
       addNode(nodes,{id:cid,label:item.character,type:'角色',internal_type:'character',source_type:'registry'});
       addNode(nodes,{id:mid,label:item.title||'角色歌曲',type:'音樂',internal_type:'music_work',definition:item.role||'',source_type:'registry'});
-      addRegistryEdge(edges,{source:cid,target:wid,type:'appears_in'},'LOC4_WRITING_REGISTRY','recorded','record_metadata');
-      addRegistryEdge(edges,{source:mid,target:cid,type:'character_theme'},'LOC4_WRITING_REGISTRY','recorded','record_metadata');
-      addRegistryEdge(edges,{source:mid,target:wid,type:'work_theme'},'LOC4_WRITING_REGISTRY','recorded','record_metadata');
+      addRegistryEdge(edges,{source:cid,target:wid,type:'appears_in'},'WRITING_REGISTRY','recorded','record_metadata');
+      addRegistryEdge(edges,{source:mid,target:cid,type:'character_theme'},'WRITING_REGISTRY','recorded','record_metadata');
+      addRegistryEdge(edges,{source:mid,target:wid,type:'work_theme'},'WRITING_REGISTRY','recorded','record_metadata');
     }
   }
 
