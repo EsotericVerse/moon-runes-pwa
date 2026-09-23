@@ -176,7 +176,7 @@ export default function AuthorHomeView({section=null}){
   if(!section)return <PageComposition
     eyebrow="Author"
     title="Lucas Oscar Wang 政德"
-    subtitle="lo3rwang"
+    subtitle="語言架構建築師"
     intro={<><div className="loc-author-reel"><iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allowTransparency="true" frameBorder="0" scrolling="no"/></div><p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽一首我創作的歌吧！</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟〈這就是我〉 →</a></p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p></>}
     sections={[{
       id:'overview-graph',
