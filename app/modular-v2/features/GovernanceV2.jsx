@@ -67,7 +67,6 @@ export default function GovernanceV2({section=null}){
       <p className="loc-eyebrow">Governance</p>
       <h1>治理</h1>
       <p className="loc-subtitle">{scopeFeatureSubtitleV2(scopeId,'governance')}</p>
-      {scopeId==='lo3rwang'?<p className="loc-core-line">鑑古知今，求同存異<br/>不在其位，不謀其政<br/>隨心所欲，而不逾己</p>:null}
     </header>
 
     <div className="loc-grid two">
@@ -106,6 +105,11 @@ export default function GovernanceV2({section=null}){
         <p>Neon 是正式資料來源。頁面不以 JSON 作為 Current 正式資料來源，也不建立另一套平行資料權威。</p>
         <p>作品可由章節組成篇，再由篇組成書；時期統計依實際章節／文字日期切片，作品集合本身仍保持完整。</p>
       </section>
+
+      {scopeId==='lo3rwang'?<section className="loc-card">
+        <p className="loc-eyebrow">Personal Governance</p><h2>個人治理根本</h2>
+        <p className="loc-core-line">鑑古知今，求同存異<br/>不在其位，不謀其政<br/>隨心所欲，而不逾己</p>
+      </section>:null}
     </div>
   </section>;
 }
