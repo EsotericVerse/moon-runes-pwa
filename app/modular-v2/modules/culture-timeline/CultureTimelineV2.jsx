@@ -38,8 +38,9 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
         zoomMin:1000*60*60*24*14,
         zoomMax:1000*60*60*24*365*50,
         selectable:true,
+        moveable:true,
         showCurrentTime:false,
-        stack:false,
+        stack:true,
         margin:{item:{horizontal:8,vertical:12}}
       });
       setReady(true);
