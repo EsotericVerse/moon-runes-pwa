@@ -1,6 +1,7 @@
 'use client';
 
 import {useMemo,useState} from 'react';
+import {scopeHrefV2} from '../scope-registry.v2';
 
 const ROOT_NODES=Object.freeze([
   {id:'loc',label:'LOC',x:600,y:155},
@@ -44,36 +45,43 @@ function nodeBox(node){
   return {width,height:44,x:node.x-width/2,y:node.y-22};
 }
 
-export default function ContextWorkbenchV2(){
+export default function ContextWorkbenchV2({scopeId='loc'}){
   const [open,setOpen]=useState(null);
 
   const graph=useMemo(()=>{
-    const nodes=[...ROOT_NODES];
-    const edges=[...ROOT_EDGES];
+    if(scopeId==='loc')return {nodes:[...ROOT_NODES],edges:[...ROOT_EDGES]};
 
-    if(open==='lo3rwang'){
+    if(scopeId==='lo3rwang'){
+      const center={id:'lo3rwang',label:'lo3rwang',x:600,y:170};
       const children=branchLayout('lo3rwang',AUTHOR_BRANCH);
-      nodes.push(...children);
-      edges.push(...children.map(node=>({id:`lo3rwang-${node.id}`,source:'lo3rwang',target:node.id})));
+      return {nodes:[center,...children],edges:children.map(node=>({id:`lo3rwang-${node.id}`,source:'lo3rwang',target:node.id}))};
     }
 
-    if(open==='runes'){
+    if(scopeId==='runes'){
+      const center={id:'runes',label:'月之符文',x:600,y:170};
       const children=branchLayout('runes',RUNE_BRANCH);
-      nodes.push(...children);
-      edges.push(...children.map(node=>({id:`runes-${node.id}`,source:'runes',target:node.id})));
+      return {nodes:[center,...children],edges:children.map(node=>({id:`runes-${node.id}`,source:'runes',target:node.id}))};
     }
 
-    return {nodes,edges};
-  },[open]);
+    return {nodes:[...ROOT_NODES],edges:[...ROOT_EDGES]};
+  },[scopeId,open]);
 
   const byId=useMemo(()=>new Map(graph.nodes.map(node=>[node.id,node])),[graph.nodes]);
 
   function activate(id){
-    if(id==='runes'||id==='lo3rwang')setOpen(current=>current===id?null:id);
+    if(scopeId==='loc'&&id==='runes'){
+      window.location.href=scopeHrefV2('runes','context');
+      return;
+    }
+    if(scopeId==='loc'&&id==='lo3rwang'){
+      window.location.href=scopeHrefV2('lo3rwang','context');
+      return;
+    }
+    setOpen(id);
   }
 
   return <section className="loc-view context-workbench">
-    <svg viewBox="0 0 1200 760" role="img" aria-label="LOC 脈絡三合一關係圖" className="context-workbench-svg">
+    <svg viewBox="0 0 1200 760" role="img" aria-label="Scope 脈絡關係圖" className="context-workbench-svg">
       <defs>
         <marker id="context-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
           <path d="M0,0 L9,4.5 L0,9 z" fill="currentColor"/>
@@ -89,8 +97,7 @@ export default function ContextWorkbenchV2(){
 
       {graph.nodes.map(node=>{
         const box=nodeBox(node);
-        const clickable=node.id==='runes'||node.id==='lo3rwang';
-        const active=open===node.id;
+        const clickable=scopeId==='loc'&&(node.id==='runes'||node.id==='lo3rwang');
         return <g key={node.id}
           role={clickable?'button':undefined}
           tabIndex={clickable?0:undefined}
@@ -98,7 +105,7 @@ export default function ContextWorkbenchV2(){
           onKeyDown={event=>{if(clickable&&(event.key==='Enter'||event.key===' ')){event.preventDefault();activate(node.id);}}}
           style={clickable?{cursor:'pointer'}:undefined}>
           <rect x={box.x} y={box.y} width={box.width} height={box.height} rx="12"
-            fill={active?'var(--loc-panel)':'var(--loc-panel-2)'} stroke="currentColor" strokeWidth={active?2.4:1.5}/>
+            fill="var(--loc-panel-2)" stroke="currentColor" strokeWidth="1.5"/>
           <text x={node.x} y={node.y+5} textAnchor="middle" fontSize="14" fontWeight={node.id==='loc'?700:600} fill="currentColor">
             {node.label}
           </text>
