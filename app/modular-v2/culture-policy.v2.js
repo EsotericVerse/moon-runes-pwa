@@ -5,7 +5,16 @@ export const PERIOD_BOUNDARY_POLICY=Object.freeze({
   maxAnchorsBefore:4,
   maxAnchorsAfter:4,
   beforeOpenState:'unknown_before',
-  afterOpenState:'through_now'
+  afterOpenState:'through_now',
+  anchorPurpose:'boundary_pause'
+});
+
+export const TIME_RIVER_POLICY=Object.freeze({
+  defaultWhenPeriodsExist:'current',
+  fallbackWhenNoPeriod:'all',
+  overviewDetail:'summary_only',
+  periodDetail:'structured_display',
+  grouping:'scope_configurable'
 });
 
 export function cultureDefaultPeriod(periods=[]){
