@@ -1,6 +1,7 @@
 'use client';
 
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
+import {useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {
   Area,AreaChart,Bar,BarChart,CartesianGrid,Cell,Line,LineChart,
@@ -8,17 +9,21 @@ import {
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
 import {selectScopeRankingPage} from '../../loc/neon-ranking-client';
+import {readFeatureNavigation} from '../feature-navigation.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 
 export default function StatisticsV2(){
   const {scopeId}=useScopeRuntimeV2();
-  const [rankingType,setRankingType]=useState('');
+  const searchParams=useSearchParams();
+  const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
+  const [rankingType,setRankingType]=useState(navigation.rankingType||'');
+  useEffect(()=>setRankingType(navigation.rankingType||''),[navigation.rankingType]);
 
   const query=useQuery({
-    queryKey:['statistics-chart',scopeId,rankingType],
-    queryFn:()=>selectScopeRankingPage(scopeId,{page:1,pageSize:100,rankingType}),
+    queryKey:['statistics-chart',scopeId,rankingType,navigation.q,navigation.identity,navigation.source,navigation.period,navigation.anchor,navigation.from,navigation.to],
+    queryFn:()=>selectScopeRankingPage(scopeId,{page:1,pageSize:100,rankingType,navigation}),
     staleTime:30_000
   });
 
