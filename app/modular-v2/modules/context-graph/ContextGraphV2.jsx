@@ -39,10 +39,9 @@ export default function ContextGraphV2({nodes=[],edges=[]}){
       network=new Network(containerRef.current,normalized,{
         autoResize:true,
         interaction:{hover:true,navigationButtons:true,keyboard:true},
-        nodes:{shape:'dot',size:18,borderWidth:1,font:{size:14}},
+        nodes:{shape:'box',borderWidth:1,margin:{top:10,right:14,bottom:10,left:14},font:{size:14,align:'center'}},
         edges:{arrows:{to:{enabled:true,scaleFactor:0.55}},font:{align:'middle',size:11},smooth:{type:'dynamic'}},
         physics:{stabilization:{enabled:true,iterations:120},barnesHut:{gravitationalConstant:-5000,springLength:145}},
-        groups:{context:{shape:'dot'}}
       });
     }).catch(reason=>{if(!cancelled)setError(reason?.message||'關係圖套件載入失敗');});
     return()=>{cancelled=true;network?.destroy();};
