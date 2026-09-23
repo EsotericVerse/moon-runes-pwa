@@ -75,7 +75,6 @@ export default function CultureV2({section=null}){
       <CultureTimelineV2 items={scopeId==='loc'?authorEraRows:eraRows} labelOf={itemLabel} />
     </ScopeCardV2>:null}
 
-
     {profile.sections.includes('runeEvolution')?<>
       <ScopeCardV2 eyebrow="LunaRunes · 下軌" title="符文系統時期">
         <p>符文時期與作者文化時期分開計算，透過日期與交會事件相容對照；14 張是前置原型，正式版本從 P1.0 的 24 張開始，後續依 P2.0、P2.5、P3.0、P3.2、P4.0、P4.1、P4.2 展開。</p>
