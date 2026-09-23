@@ -63,7 +63,7 @@ export default function GovernanceV2({section=null}){
     <header className="loc-hero" id="top">
       <p className="loc-eyebrow">Governance</p>
       <h1>治理</h1>
-      <p className="loc-subtitle">把權責、資料與顯示方式分清楚。</p>
+      <p className="loc-subtitle">權責立場與法律層面表述。管理功能。</p>
       <p className="loc-core-line">鑑古知今，求同存異<br/>不在其位，不謀其政<br/>隨心所欲，而不逾己</p>
     </header>
 
