@@ -1,7 +1,16 @@
 import { PageComposition } from '../../PageComposition';
 import HomeMetricsV2 from './HomeMetricsV2';
+import ScopeOverviewGraphV2 from '../../modular-v2/modules/scope-overview/ScopeOverviewGraphV2';
+import {featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 
 const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心所欲，而不逾己'];
+
+const AUTHOR_OVERVIEW_NODES=Object.freeze([
+  Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith',summary:'符文的設計理念與我的用詞堅持。',href:featureHrefV2('lo3rwang','context')}),
+  Object.freeze({id:'calibrator',title:'校對者｜Calibrator',summary:'現實工作狀況跟展望。',href:scopeHrefV2('lo3rwang','work')}),
+  Object.freeze({id:'governance-architect',title:'語言治理架構者',summary:'我的語言治理理念。',href:featureHrefV2('lo3rwang','governance')}),
+  Object.freeze({id:'self',title:'自我介紹跟人生觀',summary:'比較輕鬆的自介，以及我的人生觀。',href:scopeHrefV2('lo3rwang','others')})
+]);
 
 const AUTHOR_FUNCTIONS=Object.freeze([
   Object.freeze({eyebrow:'Context',title:'脈絡',text:'把文字、作品、事件與來源放回關係中，從關鍵詞與事件看彼此如何連結。',href:'/context',label:'查看脈絡'}),
@@ -163,6 +172,23 @@ export default function AuthorHomeView({section=null}){
       </div>
     }
   ];
+
+  if(!section)return <PageComposition
+    eyebrow="Author"
+    title="Lucas Oscar Wang 政德"
+    subtitle="lo3rwang"
+    intro={<><div className="loc-author-reel"><iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allowTransparency="true" frameBorder="0" scrolling="no"/></div><p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽一首我創作的歌吧！</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟〈這就是我〉 →</a></p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p></>}
+    sections={[{
+      id:'overview-graph',
+      eyebrow:'Overview',
+      title:'認識我',
+      content:<ScopeOverviewGraphV2
+        centerTitle="Lucas Oscar Wang 政德"
+        centerSummary="語言治理架構者。架構這一切的建築師。"
+        nodes={AUTHOR_OVERVIEW_NODES}
+      />
+    }]}
+  />;
 
   const sectionGroups=Object.freeze({
     style:Object.freeze(['roles','profile-content']),
