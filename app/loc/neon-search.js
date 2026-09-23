@@ -10,6 +10,7 @@ const TABLES=Object.freeze({
     ['silver.works','作者作品'],
     ['silver.lrunes_runes','月之符文'],
     ['silver.song_versions','歌曲版本'],
+    ['silver.faq_entries','FAQ'],
     ['vault.work_texts','作品全文']
   ]),
   '月之符文':Object.freeze([
@@ -33,7 +34,7 @@ const TABLES=Object.freeze({
   ]),
   治理:Object.freeze([
     ['silver.lo3rwang_context_entries','治理脈絡'],
-    ['silver.knowledge_assets','治理知識資產']
+    ['silver.faq_entries','FAQ']
   ])
 });
 
