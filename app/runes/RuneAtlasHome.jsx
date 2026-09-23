@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { fetchLocJson, LOC_DATA } from '../loc/data';
+import { fetchNeonData, LOC_DATA } from '../loc/data';
 import RuneAtlas from './RuneAtlas';
 
 export default function RuneAtlasHome() {
@@ -12,7 +12,7 @@ export default function RuneAtlasHome() {
 
   useEffect(() => {
     let live = true;
-    fetchLocJson(LOC_DATA.RUNES)
+    fetchNeonData(LOC_DATA.RUNES)
       .then(rows => {
         if (!live) return;
         const canonical = (Array.isArray(rows) ? rows : []).filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 66);

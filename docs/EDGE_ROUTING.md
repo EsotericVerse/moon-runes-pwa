@@ -1,4 +1,9 @@
-# Scope Edge Routing
+# Scope Edge Routing (historical Worker design)
+
+> The current deployment is a Next.js static export on GitHub Pages. No
+> Cloudflare Worker performs document routing in the current path. The policy
+> and Worker notes below are retained as historical migration evidence and are
+> not a deployment requirement.
 
 ## Authority
 
@@ -73,7 +78,7 @@ https://loc.lo3rwang.cc/lo3rwang
 
 The external author alias domain may redirect to the registered directory mount according to generated policy.
 
-## Cloudflare Worker configuration
+## Cloudflare Worker configuration (superseded)
 
 The Worker requires one environment variable:
 

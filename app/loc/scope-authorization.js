@@ -3,7 +3,9 @@ import {z} from 'zod';
 
 const ScopeGrantSchema=z.object({
   scope_id:z.string().trim().min(1),
-  access_level:z.enum(['global_admin','scope_manager','page_manager','privacy_dispute_handler']),
+  // Neon currently constrains this table to these three access levels.
+  // Global administration is represented by scope_manager on Scope `admin`.
+  access_level:z.enum(['scope_manager','page_manager','privacy_dispute_handler']),
   case_id:z.string().trim().min(1)
 });
 
@@ -26,9 +28,7 @@ export async function createScopeAuthorizer(userId,rawGrants){
   const grants=validateScopeGrants(rawGrants);
   const enforcer=await newEnforcer(newModelFromString(MODEL));
   for(const grant of grants){
-    if(grant.access_level==='global_admin'){
-      await enforcer.addPolicy(subject,'*','*','*');
-    }else if(grant.access_level==='scope_manager'){
+    if(grant.access_level==='scope_manager'){
       await enforcer.addPolicy(subject,grant.scope_id,'*','manage');
     }else if(grant.access_level==='page_manager'){
       await enforcer.addPolicy(subject,grant.scope_id,`case:${grant.case_id}`,'manage');

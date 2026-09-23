@@ -4,7 +4,7 @@
 
 LOC uses Next.js as the application layer and Neon as the Current persistence/data layer.
 
-- Shared/canonical runtime data: Next server routes → direct Neon silver/vault canonical tables.
+- Shared/canonical runtime data: Next.js static-export clients → direct Neon silver/vault canonical tables.
 - Authenticated user records: `api.user_records`.
 - Authenticated user settings: `api.user_settings`.
 - Authentication: Neon Managed Auth.

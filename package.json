@@ -10,7 +10,6 @@
     "verify:modules": "node scripts/verify-module-contracts.mjs",
     "verify:static": "node scripts/verify-static-entrypoints.mjs",
     "verify:directories": "node scripts/verify-directory-governance.mjs",
-    "verify:rc4": "node scripts/verify-rc4-integrity.mjs",
     "verify:parity": "node scripts/verify-known-parity.mjs",
     "verify:auth": "node scripts/verify-auth-boundary.mjs",
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
@@ -21,27 +20,24 @@
     "verify:ui": "node scripts/current-ui-contract.mjs",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:scope-registry": "node scripts/verify-scope-registry.mjs",
+    "verify:packages": "node scripts/verify-package-interoperability.mjs",
     "verify:edge-policy": "node scripts/verify-scope-route-policy.mjs",
     "verify:route-ownership": "node scripts/verify-route-ownership.mjs",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
+    "postbuild": "node scripts/copy-static-assets.mjs"
   },
   "dependencies": {
     "@neondatabase/neon-js": "0.7.0-beta",
-    "@tanstack/query-core": "5.103.1",
+    "@neondatabase/serverless": "1.1.0",
     "@tanstack/react-query": "5.103.1",
+    "casbin": "5.51.1",
+    "flexsearch": "^0.8.212",
     "next": "16.3.5",
     "react": "19.3.0",
     "react-arborist": "3.16.0",
     "react-dom": "19.3.0",
     "recharts": "3.10.1",
+    "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
-    "zod": "4.6.0",
-    "casbin": "5.51.1",
-    "@neondatabase/serverless": "1.1.0"
-  },
-  "devDependencies": {
-    "@opennextjs/cloudflare": "1.20.1",
-    "wrangler": "4.86.0"
+    "zod": "4.6.0"
   }
 }

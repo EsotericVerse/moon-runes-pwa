@@ -38,4 +38,4 @@ FAQ 是可維護的問答 View，RAG JSON 是檢索衍生資料，不取代 Cano
 - 服務啟動時載入一次資料與索引
 - 僅使用 Python 標準函式庫，不增加 Render 建置負擔
 
-資料來源：Neon silver.faq_entries；Next server route /api/loc/data?path=knowledge/faq
+資料來源：Neon silver.faq_entries；由 `app/loc/data.js` 與 Neon client 直接讀取。

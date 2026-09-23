@@ -28,30 +28,47 @@ walk(resolve(root,'app'),path=>{
 });
 
 for(const required of [
-  'app/api/loc/data/route.js',
-  'app/api/context/route.js',
-  'app/api/culture/route.js',
-  'app/api/statistics/rankings/route.js',
-  'app/api/scope/affiliations/route.js',
   'app/loc/neon-repository.js',
   'app/loc/neon-server.js',
-  'app/loc/scope-authorization.js'
+  'app/loc/scope-authorization.js',
+  'app/loc/neon-context-client.js',
+  'app/loc/neon-ranking-client.js',
+  'app/loc/neon-culture-client.js',
+  'app/loc/neon-media-links.js',
+  'app/loc/neon-search.js',
+  'app/loc/neon-system-guide.js'
 ]){
   if(!existsSync(resolve(root,required)))failures.push(`${required}: required Neon/module boundary missing`);
 }
 
 const dataRuntime=readFileSync(resolve(root,'app/loc/data.js'),'utf8');
-if(!/api\/loc\/data/.test(dataRuntime))failures.push('app/loc/data.js: shared Neon canonical route missing');
-if(/fetchStaticJson|runtime_json_documents|force-cache/.test(dataRuntime))failures.push('app/loc/data.js: JSON/static fallback remains');
+if(!/selectNeonRows/.test(dataRuntime))failures.push('app/loc/data.js: direct Neon table loader missing');
+if(/fetchStaticJson|runtime_json_documents|force-cache|\/api\//.test(dataRuntime))failures.push('app/loc/data.js: API/JSON/static fallback remains');
 
 const contextView=readFileSync(resolve(root,'app/modular-v2/features/ContextV2.jsx'),'utf8');
-if(!/selectScopeContextRows\(scopeId\)/.test(contextView))failures.push('ContextV2: shared Neon context client missing');
+if(!/selectScopeContextData\(scopeId\)/.test(contextView))failures.push('ContextV2: shared Neon context client missing');
 
 const statisticsView=readFileSync(resolve(root,'app/modular-v2/features/StatisticsV2.jsx'),'utf8');
 if(!/selectScopeRankingPage\(scopeId/.test(statisticsView))failures.push('StatisticsV2: shared Neon SQL pagination missing');
 
 const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.jsx'),'utf8');
 if(!/selectScopeCultureData\(scopeId\)/.test(cultureView))failures.push('CultureV2: shared Neon culture client missing');
+
+const searchClient=readFileSync(resolve(root,'app/loc/neon-search.js'),'utf8');
+const searchView=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8');
+if(!/from ['"]flexsearch['"]/.test(searchClient)||!/new Index\(/.test(searchClient))failures.push('Search: FlexSearch index is missing');
+if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: FlexSearch-backed Neon search client missing');
+
+const systemGuide=readFileSync(resolve(root,'app/loc/neon-system-guide.js'),'utf8');
+for(const table of ['silver.system_table_catalog','silver.system_data_principles','silver.loc_scope_registry','silver.loc_shortcut_routes','silver.loc_home_shortcuts']){
+  if(!systemGuide.includes(table))failures.push(`System guide: formal Neon table missing: ${table}`);
+}
+if(/json_doc|runtime_json_documents|data\/json/.test(systemGuide))failures.push('System guide: retired JSON documentation source remains');
+
+const mediaView=readFileSync(resolve(root,'app/loc/views/MediaView.jsx'),'utf8');
+const mediaLinks=readFileSync(resolve(root,'app/loc/neon-media-links.js'),'utf8');
+if(!/selectMediaLinks/.test(mediaView)||!/selectNeonRows/.test(mediaLinks))failures.push('Media links: direct Neon link-only loader missing');
+if(/LOC_MEDIA_REGISTRY|data\/json|fetch\(/.test(mediaView))failures.push('Media links: retired registry/JSON fetch remains');
 
 const scopeManagement=readFileSync(resolve(root,'app/modular-v2/ScopeManagementV2.jsx'),'utf8');
 if(!/useNeonAccount/.test(scopeManagement)||!/account\.canManage/.test(scopeManagement))failures.push('Scope management: manager role gate missing');

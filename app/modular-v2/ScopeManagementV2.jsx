@@ -70,7 +70,7 @@ export default function ScopeManagementV2(){
     {account.error?<p role="alert">Neon 權限讀取失敗，已拒絕管理操作：{account.error}</p>:null}
     {account.loading||account.permissionLoading?<p className="scope-v2-status">正在確認 Neon session 與 Scope 管理權限…</p>:null}
     {!account.loading&&!account.permissionLoading&&!account.user?<section className="scope-v2-card"><h2>需要登入</h2><p>請先登入，再由 Neon 確認 Scope 權限。</p><button type="button" onClick={account.signIn}>使用 Google 登入 Neon</button></section>:null}
-    {!account.loading&&!account.permissionLoading&&account.user&&!account.canManage?<section className="scope-v2-card"><h2>沒有 Scope 管理權限</h2><p>登入本身不會取得管理權限；需由 Neon 授予 scope_manager 或 global_admin。</p><button type="button" onClick={account.signOut}>登出 Neon</button></section>:null}
+    {!account.loading&&!account.permissionLoading&&account.user&&!account.canManage?<section className="scope-v2-card"><h2>沒有 Scope 管理權限</h2><p>登入本身不會取得管理權限；需由 Neon 授予 scope_manager。</p><button type="button" onClick={account.signOut}>登出 Neon</button></section>:null}
     {account.user&&account.canManage?<>
       {loading?<p className="scope-v2-status">正在從 Neon 載入 Scope 關係、申請與授權…</p>:null}
       {!loading&&!managementQuery.error&&relations.length===0&&requests.length===0&&permissions.length===0?<p className="scope-v2-status">Neon 中目前沒有可供此身份讀取的 Scope 資料。</p>:null}

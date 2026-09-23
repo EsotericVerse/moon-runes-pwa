@@ -56,7 +56,7 @@ LunaRunes Canon
 → 歷程／時間線／趨勢／軌跡
 ```
 
-符文脈絡與符文分析核心採 **No API**：直接由 Next server 查詢 Neon silver.lrunes_runes 與現行規則，不呼叫外部 API、不建立第二套 Canon。
+符文脈絡與符文分析核心採 **No API**：由 Next.js runtime client 直接查詢 Neon canonical tables 與現行規則，不呼叫外部 API、不建立第二套 Canon。
 
 RC3 已讓 `runes.html`、`context.html`、`statics.html`、`evolution.html` 有實際資料可展示與分析；完整 RC3 說明見 [`docs/RC3.md`](docs/RC3.md)。
 
@@ -321,7 +321,7 @@ Facebook、PTT、Pixnet、Threads、Suno、小說與其他作品都視為不同 
 - Context / Relation
 - 時期與時間資料
 
-技術面由 Next.js server routes 與 Neon canonical tables 提供作用中的網站資料與搜尋；engine/ 僅保留研究工具，不是網站 runtime。
+技術面由 Next.js static export 的 runtime clients 與 Neon canonical tables 提供作用中的網站資料與搜尋；engine/ 僅保留研究工具，不是網站 runtime。
 
 Graph RAG 的關係資料所有權仍歸 Context；Knowledge domain 負責檢索、文字建築與演算模組。
 
