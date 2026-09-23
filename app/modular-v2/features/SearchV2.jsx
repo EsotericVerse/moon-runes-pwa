@@ -90,8 +90,10 @@ export default function SearchV2(){
       const pageRows=converted.slice(0,currentCapacity);
       const displayRows=nextPage===1?[...scopeHits.slice(0,firstPageReserved),...pageRows]:pageRows;
       const availableCount=converted.length+(nextPage===1?firstPageReserved:0);
-      const pageCountInWindow=Math.max(1,Math.min(PAGE_WINDOW,Math.ceil(availableCount/pageSize)));
-      const pages=Array.from({length:pageCountInWindow},(_,index)=>nextPage+index);
+      const windowStart=nextPage===1?2:nextPage;
+      const availableFuturePages=Math.max(0,Math.ceil(availableCount/pageSize)-(nextPage===1?1:0));
+      const pageCountInWindow=Math.min(PAGE_WINDOW,availableFuturePages);
+      const pages=Array.from({length:pageCountInWindow},(_,index)=>windowStart+index);
       const more=search.rows.length>windowCapacity;
 
       setPage(nextPage);
@@ -135,11 +137,11 @@ export default function SearchV2(){
     </div>
     {results.length?<div className="scope-v2-pagination">
       <div>
-        <button type="button" disabled={page<=1} onClick={()=>go(page-1)} aria-label="上一頁">&lt;</button>
+        {page>1?<button type="button" onClick={()=>go(1)}>第一頁</button>:null}
         {visiblePages.map(value=><button type="button" key={value} aria-pressed={value===page} onClick={()=>go(value)}>{value}</button>)}
-        {hasMore?<button type="button" onClick={()=>go(page+visiblePages.length)} aria-label="下一組第一頁">…</button>:null}
-        <button type="button" disabled={!hasMore&&visiblePages.length<=1} onClick={()=>go(page+1)} aria-label="下一頁">&gt;</button>
-        {hasMore?<button type="button" onClick={goLast} aria-label="最後一頁">&gt;&gt;</button>:null}
+        {hasMore?<button type="button" onClick={()=>go((visiblePages.at(-1)||page)+1)} aria-label="下一組第一頁">…</button>:null}
+        {hasMore?<button type="button" onClick={()=>go(page+1)}>下一頁</button>:null}
+        {hasMore?<button type="button" onClick={goLast}>最後一頁</button>:null}
       </div>
     </div>:null}
   </FeaturePageV2>;
