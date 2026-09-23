@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
-import {findLastSearchPage,searchNeonRows} from '../../loc/neon-search';
+import {searchNeonRows} from '../../loc/neon-search';
 import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
@@ -10,7 +10,6 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
 import {buildSearchNavigation,featureNavigationLinks} from '../feature-navigation.v2';
 
-const PAGE_WINDOW=4;
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 const SCOPE_SEARCH_ENTRIES=Object.freeze([
   {id:'runes',title:'LunaRunes／月之符文',terms:['lunarunes','月之符文','符文'],href:scopeHrefV2('runes','context')},
@@ -51,55 +50,44 @@ export default function SearchV2(){
   const [results,setResults]=useState([]);
   const [status,setStatus]=useState('輸入文字後才會載入搜尋資料。');
   const [error,setError]=useState('');
-  const [page,setPage]=useState(1);
-  const [visiblePages,setVisiblePages]=useState([1]);
   const [hasMore,setHasMore]=useState(false);
+  const [loadingMore,setLoadingMore]=useState(false);
   const searchId=useRef(0);
+  const offsetRef=useRef(0);
+  const sentinelRef=useRef(null);
+  const loadingRef=useRef(false);
   const pageSize=scopeId==='runes'?8:10;
   const collection=useMemo(()=>getSearchCollection(scope.searchCollection),[scope.searchCollection]);
 
-  useEffect(()=>{
-    const value=String(searchParams?.get('q')||'').trim();
-    if(value){setQuery(value);executeSearch(value,1);}
-  },[searchParams]);
-  useEffect(()=>{if(query.trim())executeSearch(query,1);},[scopeId]);
-
-  async function executeSearch(rawQuery,targetPage=1){
+  async function executeSearch(rawQuery){
     const q=String(rawQuery||'').trim();
     if(!q)return;
-    const nextPage=Math.max(1,Number(targetPage)||1);
     const id=++searchId.current;
-    setError('');setStatus(`搜尋「${collection.label}」資料…`);
+    loadingRef.current=true;
+    offsetRef.current=0;
+    setError('');
+    setHasMore(false);
+    setLoadingMore(false);
+    setResults([]);
+    setStatus(`搜尋「${collection.label}」資料…`);
     try{
-      const scopeHits=scopeResults(q);
-      const firstPageReserved=Math.min(scopeHits.length,pageSize);
-      const dataOffset=Math.max(0,(nextPage-1)*pageSize-firstPageReserved);
-      const firstPageCapacity=Math.max(0,pageSize-firstPageReserved);
-      const windowCapacity=(nextPage===1?firstPageCapacity:pageSize)+(PAGE_WINDOW-1)*pageSize;
-      const search=await searchNeonRows(collection.id,q,{limit:windowCapacity+1,offset:dataOffset});
+      const scopeHits=scopeResults(q).slice(0,pageSize);
+      const capacity=Math.max(0,pageSize-scopeHits.length);
+      const search=capacity
+        ? await searchNeonRows(collection.id,q,{limit:capacity+1,offset:0})
+        : {rows:[],failures:[]};
       if(id!==searchId.current)return;
 
-      const converted=[];const seen=new Set();
-      for(const {row,source} of search.rows){
+      const consumed=search.rows.slice(0,capacity);
+      offsetRef.current=consumed.length;
+      const converted=[];const seen=new Set(scopeHits.map(item=>item.key));
+      for(const {row,source} of consumed){
         const result=toResult(row,source,q,collection.id,scopeId);
         if(!result||seen.has(result.key))continue;
         seen.add(result.key);converted.push(result);
       }
-
-      const currentCapacity=nextPage===1?firstPageCapacity:pageSize;
-      const pageRows=converted.slice(0,currentCapacity);
-      const displayRows=nextPage===1?[...scopeHits.slice(0,firstPageReserved),...pageRows]:pageRows;
-      const availableCount=converted.length+(nextPage===1?firstPageReserved:0);
-      const windowStart=nextPage===1?2:nextPage;
-      const availableFuturePages=Math.max(0,Math.ceil(availableCount/pageSize)-(nextPage===1?1:0));
-      const pageCountInWindow=Math.min(PAGE_WINDOW,availableFuturePages);
-      const pages=Array.from({length:pageCountInWindow},(_,index)=>windowStart+index);
-      const more=search.rows.length>windowCapacity;
-
-      setPage(nextPage);
-      setResults(displayRows);
-      setVisiblePages(pages);
-      setHasMore(more);
+      setResults([...scopeHits,...converted]);
+      setHasMore(search.rows.length>capacity);
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
       setStatus(`「${collection.label}」搜尋「${q}」。${partial}`);
     }catch(exception){
@@ -108,17 +96,62 @@ export default function SearchV2(){
       const connectionError=/fetch|network|connect|timeout|failed|offline|503|502|504/i.test(message);
       setError(connectionError?'Neon 搜尋服務暫時無法連線，請稍後再試。':message||'Neon 搜尋服務暫時無法使用。');
       setStatus('搜尋失敗。');
+    }finally{
+      if(id===searchId.current)loadingRef.current=false;
     }
   }
 
-  async function runSearch(event){event.preventDefault();await executeSearch(query,1)}
-  function go(target){executeSearch(query,Math.max(1,target));}
-  async function goLast(){
-    const scopeHits=scopeResults(query);
-    const firstPageReserved=Math.min(scopeHits.length,pageSize);
-    const lastPage=await findLastSearchPage(collection.id,query,{pageSize,firstPageReserved});
-    await executeSearch(query,lastPage);
+  async function loadMore(){
+    const q=query.trim();
+    if(!q||!hasMore||loadingRef.current)return;
+    const id=searchId.current;
+    loadingRef.current=true;
+    setLoadingMore(true);
+    try{
+      const search=await searchNeonRows(collection.id,q,{limit:pageSize+1,offset:offsetRef.current});
+      if(id!==searchId.current)return;
+      const consumed=search.rows.slice(0,pageSize);
+      offsetRef.current+=consumed.length;
+      setResults(current=>{
+        const seen=new Set(current.map(item=>item.key));
+        const appended=[];
+        for(const {row,source} of consumed){
+          const result=toResult(row,source,q,collection.id,scopeId);
+          if(!result||seen.has(result.key))continue;
+          seen.add(result.key);appended.push(result);
+        }
+        return [...current,...appended];
+      });
+      setHasMore(search.rows.length>pageSize);
+    }catch(exception){
+      if(id!==searchId.current)return;
+      setError(String(exception?.message||exception||'載入下一批搜尋結果失敗。'));
+      setHasMore(false);
+    }finally{
+      if(id===searchId.current){
+        loadingRef.current=false;
+        setLoadingMore(false);
+      }
+    }
   }
+
+  useEffect(()=>{
+    const value=String(searchParams?.get('q')||'').trim();
+    if(value){setQuery(value);executeSearch(value);}
+  },[searchParams]);
+  useEffect(()=>{if(query.trim())executeSearch(query);},[scopeId]);
+
+  useEffect(()=>{
+    const node=sentinelRef.current;
+    if(!node||!hasMore)return;
+    const observer=new IntersectionObserver(entries=>{
+      if(entries.some(entry=>entry.isIntersecting))loadMore();
+    },{root:null,rootMargin:'160px 0px',threshold:0.01});
+    observer.observe(node);
+    return ()=>observer.disconnect();
+  },[hasMore,query,scopeId,pageSize,results.length]);
+
+  async function runSearch(event){event.preventDefault();await executeSearch(query)}
 
   return <FeaturePageV2 featureId="search" subtitle={collection.description}>
     <form className="scope-v2-search-form" onSubmit={runSearch}>
@@ -135,14 +168,8 @@ export default function SearchV2(){
         {row.destinations?.length?<p className="scope-v2-result-links">{row.destinations.map(destination=><a key={destination.id} href={destination.href}>{destination.label}</a>)}</p>:null}
       </ScopeCardV2>)}
     </div>
-    {results.length?<div className="scope-v2-pagination">
-      <div>
-        {page>1?<button type="button" onClick={()=>go(1)}>第一頁</button>:null}
-        {visiblePages.map(value=><button type="button" key={value} aria-pressed={value===page} onClick={()=>go(value)}>{value}</button>)}
-        {hasMore?<button type="button" onClick={()=>go((visiblePages.at(-1)||page)+1)} aria-label="下一組第一頁">…</button>:null}
-        {hasMore?<button type="button" onClick={()=>go(page+1)}>下一頁</button>:null}
-        {hasMore?<button type="button" onClick={goLast}>最後一頁</button>:null}
-      </div>
+    {hasMore?<div ref={sentinelRef} className="scope-v2-load-sentinel" aria-live="polite">
+      &lt; {loadingMore?'載入中…':'…'} &gt;
     </div>:null}
   </FeaturePageV2>;
 }
