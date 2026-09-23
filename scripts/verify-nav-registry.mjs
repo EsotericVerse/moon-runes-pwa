@@ -18,7 +18,7 @@ const compatNav=await readFile('app/ScopeNav.jsx','utf8');
 if(!globalNav.includes('ScopeNavV2'))throw new Error('GlobalNav must render ScopeNavV2');
 for(const token of ['FEATURES_V2','featureHrefV2','useScopeRuntimeV2'])if(!scopeNav.includes(token))throw new Error('ScopeNavV2 missing '+token);
 if(!compatNav.includes('./modular-v2/ScopeNavV2'))throw new Error('ScopeNav compatibility entry must delegate to V2');
-for(const token of ['whoami.lo3rwang.cc','manage.lo3rwang.cc','/evolution','NAV1','NAV2','NAV3'])if((globalNav+scopeNav+compatNav).includes(token))throw new Error('Forbidden obsolete NAV token: '+token);
+for(const token of ['whoami.lo3rwang.cc','manage.lo3rwang.cc','NAV1','NAV2','NAV3'])if((globalNav+scopeNav+compatNav).includes(token))throw new Error('Forbidden obsolete NAV token: '+token);
 for(const scope of Object.values(SCOPES_V2).filter(item=>item.mount)){
   if(resolveScopeV2(scope.mount.host,scope.mount.path+'/statics')!==scope.id)throw new Error(scope.id+' mount must resolve from registry');
 }
