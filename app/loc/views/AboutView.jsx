@@ -88,8 +88,7 @@ export default function AboutView(){
           <p>當然可以不用管月之符文是什麼，<a href={RUNES_LINKS.single}>抽了就知道！</a></p>
 		  <p>可以是問事，可以是決定當日生活主題風格的<a href={RUNES_LINKS.daily}>每日符文</a>。</p>
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
-          <p>你也可以完全不抽牌，直接跳過，</P>
-		  <P>或來看<a href="/context">脈絡關係圖</a>、<a href="/statics">統計資料</a>、<a href="/culture">文化的時間長河</a>等，
+          <p>你也可以完全不抽牌，直接跳過，或來看<a href="/context">脈絡關係圖</a>、<a href="/statics">統計資料</a>、<a href="/culture">文化的時間長河</a>等，
 		  <br/>或是看看<a href="/faq">FAQ</a>，
 		  <br/>或直接搜尋自己有興趣的文字與資料。</p>
           <p><strong>那就開始吧！</strong></p>
