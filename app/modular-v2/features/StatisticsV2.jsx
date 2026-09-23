@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import {selectScopeRankingPage} from '../../loc/neon-ranking-client';
 import {readFeatureNavigation} from '../feature-navigation.v2';
+import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
@@ -41,6 +42,7 @@ export default function StatisticsV2(){
 
   return <section className="loc-view">
     <h1>統計</h1>
+    <p className='loc-subtitle'>{scopeFeatureSubtitleV2(scopeId,'statics')}</p>
 
     {types.length>1?<select
       className="scope-v2-select"

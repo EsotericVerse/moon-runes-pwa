@@ -5,6 +5,7 @@ import {useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {selectScopeCultureData} from '../../loc/neon-culture-client';
 import {readFeatureNavigation} from '../feature-navigation.v2';
+import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
@@ -22,6 +23,7 @@ export default function CultureV2(){
 
   return <section className='loc-view'>
     <h1>文化</h1>
+    <p className='loc-subtitle'>{scopeFeatureSubtitleV2(scopeId,'culture')}</p>
     {query.isPending?<p className='scope-v2-status'>載入時間長河…</p>:null}
     {query.error?<p className='scope-v2-status scope-v2-error'>{query.error.message}</p>:null}
     {!query.isPending&&!query.error?<CultureTimelineV2 items={rows} labelOf={labelOf} focus={navigation}/>:null}
