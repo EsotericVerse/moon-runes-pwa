@@ -2,10 +2,10 @@ import {Fragment} from 'react';
 import {scopeHrefV2,scopeOriginV2} from './scope-registry.v2';
 
 const LOCAL_MENUS=Object.freeze({
-  context:[['說明與探索','/context'],['關係圖(Graph)','/context/graph'],['節點(node)','/context/node'],['關聯(Edge)','/context/edge'],['情境(Scenarios)','/context/scenarios'],['趨勢(Trend)','/context/trend'],['每日符文統計分析(daily)','/context/dailtrunes']],
-  culture:[['時期(Perid)與時間線(Timeline)','/culture'],['軌跡(Trajectory)','/culture/trajectory'],['歷史演變(History)','/culture/history'],['衍生作品(galaxy)','/culture/galaxy', [['推薦作品','/culture/galaxy'],['創作文章','/culture/galaxy/literary'],['小說','/culture/galaxy/novel'],['音樂','/culture/galaxy/music'],['圖片','/culture/galaxy/pics'],['多媒體','/culture/galaxy/multimedia']]]],
+  context:[['關係圖 Graph','/context']],
+  culture:[['時間長河','/culture']],
   galaxy:[['推薦作品','/culture/galaxy'],['創作文章','/culture/galaxy/literary'],['小說','/culture/galaxy/novel'],['音樂','/culture/galaxy/music'],['圖片','/culture/galaxy/pics'],['多媒體','/culture/galaxy/multimedia']],
-  statics:[['統計排行榜','/statics', [['總排行榜','/statics/total'],['關鍵字','/statics/keyword/total'],['曲風','/statics/music/total'],['來源','/statics/source/total']]],['關鍵字統計','/statics/keyword'],['來源管理','/statics/source'],['匯入','/statics/import']],
+  statics:[['統計','/statics']],
   governance:[['原則理念','/governance'],['版權說明','/governance/law'],['FAQ','/governance/faq'],['管理者功能','/governance/manage']],
   runes:[['符文抽籤','/'],['符文圖鑑','/list'],['符文解牌','/algorithm'],['符文遊戲','/game']],
   author:[['簡介跟自述','/lo3rwang'],['主要身份','/lo3rwang/style'],['工作與合作','/lo3rwang/work'],['LOC設計理念','/lo3rwang/design'],['公開創作內容','/lo3rwang/galaxy'],['其他說明','/lo3rwang/others'],['聯絡方式','/lo3rwang/email']]
