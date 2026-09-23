@@ -1,17 +1,33 @@
 'use client';
 
-import {useMemo,useState} from 'react';
+import {useMemo} from 'react';
 import {scopeHrefV2} from '../scope-registry.v2';
 
 const ROOT_NODES=Object.freeze([
-  {id:'loc',label:'LOC',x:600,y:155},
-  {id:'runes',label:'月之符文',x:350,y:500},
-  {id:'lo3rwang',label:'lo3rwang',x:850,y:500}
-]);
-
-const ROOT_EDGES=Object.freeze([
-  {id:'loc-runes',source:'loc',target:'runes'},
-  {id:'loc-lo3rwang',source:'loc',target:'lo3rwang'}
+  {
+    id:'loc',
+    title:'月典（LOC／LunaCodex）',
+    position:'模型化語言框架。',
+    description:'以月為鑑，照亮你的文字。',
+    angle:-90,
+    href:''
+  },
+  {
+    id:'runes',
+    title:'月之符文（LunaRunes）',
+    position:'符號式語言，籤詩系統。',
+    description:'當你迷惘時，給你建議方向。',
+    angle:30,
+    href:scopeHrefV2('runes')
+  },
+  {
+    id:'lo3rwang',
+    title:'Lucas Oscar Wang 政德（lo3rwang）',
+    position:'語言治理架構者。',
+    description:'架構這一切的建築師。',
+    angle:150,
+    href:scopeHrefV2('lo3rwang')
+  }
 ]);
 
 const AUTHOR_BRANCH=Object.freeze([
@@ -33,80 +49,104 @@ const RUNE_BRANCH=Object.freeze([
   {id:'rune-derived',label:'衍生作品'}
 ]);
 
-function branchLayout(parent,children){
-  const startX=150;
-  const endX=1050;
-  const gap=children.length>1?(endX-startX)/(children.length-1):0;
-  return children.map((node,index)=>({...node,x:startX+gap*index,y:665,parent}));
+function circlePoint(angle,radius=250,centerX=600,centerY=375){
+  const rad=angle*Math.PI/180;
+  return {x:centerX+Math.cos(rad)*radius,y:centerY+Math.sin(rad)*radius};
 }
 
-function nodeBox(node){
-  const width=Math.max(110,Math.min(230,String(node.label).length*16+38));
-  return {width,height:44,x:node.x-width/2,y:node.y-22};
+function branchLayout(children){
+  const count=Math.max(children.length,1);
+  return children.map((node,index)=>{
+    const point=circlePoint(-90+(360/count)*index,245);
+    return {...node,...point};
+  });
+}
+
+function textAnchorFor(x){
+  if(x<500)return 'end';
+  if(x>700)return 'start';
+  return 'middle';
+}
+
+function textXFor(x){
+  if(x<500)return x-24;
+  if(x>700)return x+24;
+  return x;
 }
 
 export default function ContextWorkbenchV2({scopeId='loc'}){
-  const [open,setOpen]=useState(null);
-
   const graph=useMemo(()=>{
-    if(scopeId==='loc')return {nodes:[...ROOT_NODES],edges:[...ROOT_EDGES]};
+    if(scopeId==='loc'){
+      return {nodes:ROOT_NODES.map(node=>({...node,...circlePoint(node.angle)})),ring:true};
+    }
 
     if(scopeId==='lo3rwang'){
-      const center={id:'lo3rwang',label:'lo3rwang',x:600,y:170};
-      const children=branchLayout('lo3rwang',AUTHOR_BRANCH);
-      return {nodes:[center,...children],edges:children.map(node=>({id:`lo3rwang-${node.id}`,source:'lo3rwang',target:node.id}))};
+      return {
+        nodes:[
+          {id:'lo3rwang',label:'lo3rwang',...circlePoint(-90,0)},
+          ...branchLayout(AUTHOR_BRANCH)
+        ],
+        ring:true
+      };
     }
 
     if(scopeId==='runes'){
-      const center={id:'runes',label:'月之符文',x:600,y:170};
-      const children=branchLayout('runes',RUNE_BRANCH);
-      return {nodes:[center,...children],edges:children.map(node=>({id:`runes-${node.id}`,source:'runes',target:node.id}))};
+      return {
+        nodes:[
+          {id:'runes',label:'月之符文',...circlePoint(-90,0)},
+          ...branchLayout(RUNE_BRANCH)
+        ],
+        ring:true
+      };
     }
 
-    return {nodes:[...ROOT_NODES],edges:[...ROOT_EDGES]};
-  },[scopeId,open]);
+    return {nodes:ROOT_NODES.map(node=>({...node,...circlePoint(node.angle)})),ring:true};
+  },[scopeId]);
 
-  const byId=useMemo(()=>new Map(graph.nodes.map(node=>[node.id,node])),[graph.nodes]);
+  function activate(node){
+    if(!node?.href)return;
+    window.location.href=node.href;
+  }
 
-  function activate(id){
-    if(scopeId==='loc'&&id==='runes'){
-      window.location.href=scopeHrefV2('runes','context');
-      return;
-    }
-    if(scopeId==='loc'&&id==='lo3rwang'){
-      window.location.href=scopeHrefV2('lo3rwang','context');
-      return;
-    }
-    setOpen(id);
+  if(scopeId==='loc'){
+    return <section className="loc-view context-workbench">
+      <svg viewBox="0 0 1200 760" role="img" aria-label="LOC Scope 導引圖" className="context-workbench-svg">
+        <circle cx="600" cy="375" r="250" fill="none" stroke="currentColor" strokeOpacity=".18" strokeWidth="2"/>
+        {graph.nodes.map(node=>{
+          const clickable=Boolean(node.href);
+          const anchor=textAnchorFor(node.x);
+          const tx=textXFor(node.x);
+          const titleY=node.y+(node.y<200?42:node.y>540?-64:-18);
+          return <g key={node.id}
+            role={clickable?'link':undefined}
+            tabIndex={clickable?0:undefined}
+            onClick={()=>clickable&&activate(node)}
+            onKeyDown={event=>{if(clickable&&(event.key==='Enter'||event.key===' ')){event.preventDefault();activate(node);}}}
+            style={clickable?{cursor:'pointer'}:undefined}>
+            <circle cx={node.x} cy={node.y} r={clickable?16:13}
+              fill={clickable?'var(--loc-accent)':'var(--loc-panel-2)'}
+              stroke="currentColor" strokeWidth="2"/>
+            <text x={tx} y={titleY} textAnchor={anchor} fill="currentColor">
+              <tspan x={tx} dy="0" fontSize="15" fontWeight="700">{node.title}</tspan>
+              <tspan x={tx} dy="24" fontSize="13" fontWeight="600">{node.position}</tspan>
+              <tspan x={tx} dy="21" fontSize="13">{node.description}</tspan>
+            </text>
+          </g>;
+        })}
+      </svg>
+    </section>;
   }
 
   return <section className="loc-view context-workbench">
     <svg viewBox="0 0 1200 760" role="img" aria-label="Scope 脈絡關係圖" className="context-workbench-svg">
-      <defs>
-        <marker id="context-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-          <path d="M0,0 L9,4.5 L0,9 z" fill="currentColor"/>
-        </marker>
-      </defs>
-
-      {graph.edges.map(edge=>{
-        const source=byId.get(edge.source),target=byId.get(edge.target);
-        if(!source||!target)return null;
-        return <line key={edge.id} x1={source.x} y1={source.y} x2={target.x} y2={target.y}
-          stroke="currentColor" strokeOpacity=".5" strokeWidth="1.8" markerEnd="url(#context-arrow)"/>;
-      })}
-
-      {graph.nodes.map(node=>{
-        const box=nodeBox(node);
-        const clickable=scopeId==='loc'&&(node.id==='runes'||node.id==='lo3rwang');
-        return <g key={node.id}
-          role={clickable?'button':undefined}
-          tabIndex={clickable?0:undefined}
-          onClick={()=>clickable&&activate(node.id)}
-          onKeyDown={event=>{if(clickable&&(event.key==='Enter'||event.key===' ')){event.preventDefault();activate(node.id);}}}
-          style={clickable?{cursor:'pointer'}:undefined}>
-          <rect x={box.x} y={box.y} width={box.width} height={box.height} rx="12"
-            fill="var(--loc-panel-2)" stroke="currentColor" strokeWidth="1.5"/>
-          <text x={node.x} y={node.y+5} textAnchor="middle" fontSize="14" fontWeight={node.id==='loc'?700:600} fill="currentColor">
+      <circle cx="600" cy="375" r="245" fill="none" stroke="currentColor" strokeOpacity=".18" strokeWidth="2"/>
+      {graph.nodes.map((node,index)=>{
+        const isCenter=index===0;
+        return <g key={node.id}>
+          <circle cx={node.x} cy={node.y} r={isCenter?20:13}
+            fill={isCenter?'var(--loc-panel-2)':'var(--loc-accent)'}
+            stroke="currentColor" strokeWidth="2"/>
+          <text x={node.x} y={node.y+(isCenter?42:34)} textAnchor="middle" fontSize="14" fontWeight={isCenter?700:600} fill="currentColor">
             {node.label}
           </text>
         </g>;
