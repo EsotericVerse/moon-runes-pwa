@@ -2,6 +2,8 @@
 
 import {useQuery} from '@tanstack/react-query';
 import {fetchNeonData} from '../../loc/data';
+import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
+import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
 
 function faqQuestion(row,index){
   return row?.question||row?.title||row?.prompt||row?.faq_question||`問題 ${index+1}`;
@@ -56,6 +58,7 @@ function CopyrightView(){
 }
 
 export default function GovernanceV2({section=null}){
+  const {scopeId}=useScopeRuntimeV2();
   if(section==='faq')return <FaqView/>;
   if(section==='law')return <CopyrightView/>;
 
@@ -63,8 +66,8 @@ export default function GovernanceV2({section=null}){
     <header className="loc-hero" id="top">
       <p className="loc-eyebrow">Governance</p>
       <h1>治理</h1>
-      <p className="loc-subtitle">權責立場與法律層面表述。管理功能。</p>
-      <p className="loc-core-line">鑑古知今，求同存異<br/>不在其位，不謀其政<br/>隨心所欲，而不逾己</p>
+      <p className="loc-subtitle">{scopeFeatureSubtitleV2(scopeId,'governance')}</p>
+      {scopeId==='lo3rwang'?<p className="loc-core-line">鑑古知今，求同存異<br/>不在其位，不謀其政<br/>隨心所欲，而不逾己</p>:null}
     </header>
 
     <div className="loc-grid two">
