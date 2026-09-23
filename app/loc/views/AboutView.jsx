@@ -65,7 +65,8 @@ export default function AboutView(){
         <p className="loc-subtitle">把語言整理成可理解、可搜尋、可推演的模組結構。</p>
       </div>
       <div className="loc-hero-copy">
-        <p className="loc-core-line">以微月光為鑑，即為月典(LOC,Luna Codex)，並用於分析整理，在時間長河內，文字發光的作品。</p>
+        <p className="loc-core-line">以微月光為鑑，即為月典(LOC,Luna Codex)，</p>
+		<p>並用於分析整理，在時間長河內，文字發光的作品。</p>
         <p>當微光慢慢集中變亮，你也將綻放屬於自己的光芒。</p>
       </div>
       <figure className="home-hero-visual">
@@ -80,14 +81,15 @@ export default function AboutView(){
       </div>
       <div className="home-rune-layout">
         <div className="home-author-copy">
-		<p>月典（LOC，Luna Codex）是一套用來分析、搜尋的模型化語言框架（Modelized Language Framework）。</p>
+		<p>月典，是一套用來分析、搜尋的模型化語言框架（Modelized Language Framework）。</p>
 		<p>月之符文(LunaRunes)是一套有自己獨特方式的符號式語言（Symbolic Language）。</p>
         <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，<br/>讓累積的資料可以繼續被理解、比較分析並得知在時間長河內的變化幅度。</p>
 		<br/>
           <p>當然可以不用管月之符文是什麼，<a href={RUNES_LINKS.single}>抽了就知道！</a></p>
 		  <p>可以是問事，可以是決定當日生活主題風格的<a href={RUNES_LINKS.daily}>每日符文</a>。</p>
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
-          <p>你也可以完全不抽牌，直接跳過，或來看<a href="/context">脈絡關係圖</a>、<a href="/statics">統計資料</a>、<a href="/culture">文化的時間長河</a>等，
+          <p>你也可以完全不抽牌，直接跳過，</P>
+		  <P>或來看<a href="/context">脈絡關係圖</a>、<a href="/statics">統計資料</a>、<a href="/culture">文化的時間長河</a>等，
 		  <br/>或是看看<a href="/faq">FAQ</a>，
 		  <br/>或直接搜尋自己有興趣的文字與資料。</p>
           <p><strong>那就開始吧！</strong></p>
