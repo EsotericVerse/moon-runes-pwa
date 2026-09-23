@@ -81,3 +81,10 @@
 .scope-v2-stat-controls label>span{color:var(--scope-v2-muted);font-size:.82rem}
 .scope-v2-select{padding:.55rem .75rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text)}
 .scope-v2-ranking-chart{padding:1rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--scope-v2-panel)}
+
+.scope-v2-culture-period-select{display:grid;gap:.35rem;width:max-content;max-width:100%;margin:0 0 1rem}
+.scope-v2-culture-period-select>span{color:var(--scope-v2-muted);font-size:.82rem}
+.scope-v2-culture-period-description{margin:.25rem 0 1rem;color:var(--scope-v2-muted)}
+.scope-period-timeline-empty{display:grid;gap:.65rem}
+.scope-period-timeline-empty-line{height:72px;min-height:72px;position:relative;border:var(--scope-v2-border);border-radius:12px;background:var(--loc-panel)}
+.scope-period-timeline-empty-line::after{content:'';position:absolute;left:1rem;right:1rem;top:50%;border-top:1px solid currentColor;opacity:.28}
