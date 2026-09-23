@@ -160,7 +160,7 @@ export default function AuthorHomeView({section=null}){
         <article className="loc-context-item"><p><a href="https://www.instagram.com/lo3rwang/" target="_blank" rel="noopener noreferrer">Instagram</a></p></article>
         <article className="loc-context-item"><p><a href="https://www.threads.com/@lo3rwang" target="_blank" rel="noopener noreferrer">Threads</a></p></article>
       </div>
-    }
+    },
     {
       id:'lunarunes-reels',
       eyebrow:'Reels',
