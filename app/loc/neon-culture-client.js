@@ -6,7 +6,6 @@ import {selectNeonRows} from './neon-repository';
 const CULTURE_TABLES=Object.freeze({
   loc:'api.loc_culture_entries',
   periods:'silver.lo3rwang_period_context_entries',
-  history:'silver.lrunes_evolution_history',
   works:'silver.works'
 });
 
@@ -45,15 +44,15 @@ function cultureRows(rows,type){
 export async function selectScopeCultureData(scopeId){
   const id=String(scopeId||'');
   if(!['loc','runes','lo3rwang'].includes(id))throw new Error('Scope 無效');
-  const [culture,periods,history]=await Promise.all([
+  const [culture,periods,runePeriods]=await Promise.all([
     id==='loc'?selectNeonRows(CULTURE_TABLES.loc,{columns:'scope_id,entry_key,entry_type,title,date,start_date,end_date,era_id,source,style,keywords,body,url,payload,is_derived,manual_override,source_ref',filters:[{column:'scope_id',operator:'eq',value:'loc'}],limit:5000}):Promise.resolve({rows:[]}),
     id==='lo3rwang'?selectNeonRows(CULTURE_TABLES.periods,{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000}):Promise.resolve({rows:[]}),
-    id==='runes'?selectNeonRows(CULTURE_TABLES.history,{columns:'history_id,history_kind,sequence_no,title,body,source_payload',limit:5000}):Promise.resolve({rows:[]})
+    id==='runes'?selectNeonRows('silver.runes_context_entries',{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'in',value:['period','era']}],limit:5000}):Promise.resolve({rows:[]})
   ]);
   const cultureRowsRaw=culture.rows||[];
   const periodContext=periods.rows||[];
-  const historyValue=mergeHistory(history.rows||[]);
-  const runeEras=[...(Array.isArray(historyValue.eras)?historyValue.eras:[]),...(Array.isArray(historyValue.rune_periods)?historyValue.rune_periods:[])].filter((row,index,array)=>row&&array.findIndex(item=>JSON.stringify(item)===JSON.stringify(row))===index);
+  const historyValue={records:[]};
+  const runeEras=periodRows(runePeriods.rows||[]);
   const eraSource=id==='loc'?cultureRowsRaw.filter(row=>['era','period'].includes(row.entry_type)):periodContext;
   const eras=periodRows(eraSource);
   return ScopeCultureResponseSchema.parse({scopeId:id,eras:{eras:id==='runes'?runeEras:eras},authorEras:id==='loc'||id==='lo3rwang'?{eras}:undefined,runeEras:{eras:runeEras},runeHistory:historyValue,periods:eraSource,events:cultureRows(cultureRowsRaw,'event'),trajectories:cultureRows(cultureRowsRaw,'trajectory'),works:cultureRows(cultureRowsRaw,'work'),authorKeywords:{keywords:[]},musicPeriods:{periods:[]},writingPeriods:{periods:[]}});
