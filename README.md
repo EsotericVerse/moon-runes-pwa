@@ -1,471 +1,215 @@
 # 🌕 LOC｜月典（Luna Codex）
 
-LOC（月典／Luna Codex）是一套用來**分析、拆解、組織、搜尋、治理並推演語言**的模型化語言框架（Modelized Language Framework）。
+LOC（月典／Luna Codex）是一套**模型化語言框架（Modelized Language Framework）**，用來整理語言、資料、脈絡、作品與時間之間的關係。
 
-LOC 由多個可重複使用的語言系統模組組成；首頁保留一組人類可讀的 LOC1–8 導覽編號，文件與工程層則依語意 domain 與實際責任治理。
+LunaRunes（月之符文）是 LOC 的第一套 **Symbolic Language／符號式語言**實作；lo3rwang 則是作者個人資料與創作 Scope。
 
-LunaRunes（月之符文）是 LOC 的第一個 Symbolic Language reference implementation：以 66 枚中文單字為核心語彙，實作脈絡、Graph、Grammar、治理、搜尋與演化。月之符文用來證明 LOC 的模組方法可被實作，但不是使用 LOC 的門檻。
-
-**術語治理：LOC 整體固定稱為 Modelized Language Framework／模型化語言框架；LOC1–8 是語言系統模組的功能分隔；LunaRunes 固定稱為 Symbolic Language／符號式語言。**
-
-### 主要定位
-
-> LOC is a reusable language module framework. LunaRunes demonstrates that the framework can be implemented as a working symbolic language module.
->
-> LOC is fully open source. Commercial value comes from consulting, system architecture, governance design, and case-specific implementation.
-
-中文：LOC 是一套可重複使用的模型化語言框架。LunaRunes（月之符文）證明了這套框架可以被實作為一個實際運作的符號式語言。LOC 完全開源；商業價值來自顧問服務、系統架構、治理設計，以及依個別案例進行的客製化實作。
-
-> 從語彙開始，延伸出文字創作與多元體系；它們在脈絡中彼此連結，透過演算法整合，並在時間中持續推演。
-
-- **現行 Canon：1.0（正式版）**
+- **現行 Canon：1.0**
 - **Web Build：1.0-RC6**
-- **LOC GPT Skills：1.0.0**
+- **RC6 基線日期：2026-09-23**
 - **公開網站：<https://loc.lo3rwang.cc/>**
-- **作者：Lucas Oscar Wang 政德**
-- **GitHub：<https://github.com/EsotericVerse/moon-runes-pwa>**
+- **LunaRunes：<https://lrunes.lo3rwang.cc/>**
+- **作者：Lucas Oscar Wang 政德 / lo3rwang**
+
+完整 RC6 工程基線見 [`docs/RC6.md`](docs/RC6.md)。
 
 ---
 
-## 目前進度｜2026-09-23
+## Current Architecture
 
-目前進入 **RC6（Current Architecture Baseline）**。RC6 固定 Context＝Graph、Culture＝Time River、Statistics＝純圖表、Search＝Scope-aware keyword/full-text retrieval；Current runtime 以 Neon 為 SSOT，並以 Scope 邊界、錨點式時間長河與 metric snapshots 作為現行基線。完整定義見 [`docs/RC6.md`](docs/RC6.md)。
+RC6 固定四個主要公開功能：
 
-- **LunaRunes／月之符文**：66 枚可抽取符文、籤詩與第 0 符「德」資料。
-- **Context／脈絡**：Relation、Event、Graph 與 Semantic Playground。
-- **Music／音樂**：Suno corpus、歌曲／歌詞搜尋與時期分析。
-- **Literary／文字創作**：小說、文章、生活文字與歷史 corpus。
-- **MultiMedia／多媒體**：Reels、圖像、影音與跨媒介資產。
-- **Governance／治理**：治理原則、政德風與「治理：德之符文」。
-- **Knowledge／知識**：KM、FAQ／RAG、Cross-format Search、Graph RAG 與分析。
-- **Evolution／推演**：Period、Timeline、Trend、Trajectory 與時間演變。
-
-### RC6｜Current Architecture Baseline
-
-**RC6 = Current Architecture Baseline。**
-
-目前以 LunaRunes 作為第一套完整資料來源，主要資料鏈已實際成立：
-
-```text
-LunaRunes Canon
-→ 正向／反向關鍵詞
-→ 符文
-→ 唯一群組
-→ Graph
-→ 統計／排行榜
-→ 歷程／時間線／趨勢／軌跡
-```
-
-符文脈絡與符文分析核心採 **No API**：由 Next.js runtime client 直接查詢 Neon canonical tables 與現行規則，不呼叫外部 API、不建立第二套 Canon。
-
-RC6 已完成 Current 模組收斂、Period 錨點 Time River、Statistics 多圖表與 Neon metric snapshot 接線；完整 RC6 說明見 [`docs/RC6.md`](docs/RC6.md)。舊 RC 文件僅作歷史背景，不覆蓋 RC6 Current 定義。
-
-### Demo 前目前優先順序
-
-1. FAQ／KM 同步現行定義
-2. 核心頁面功能驗收
-3. 搜尋、Context、Evolution 的資料與 fallback 一致性
-4. 整合式新手導覽與公開文件同步
-
-## Demo 入口
-
-| 功能 | 頁面 | 說明 |
-|---|---|---|
-| 首頁 | [index.html](https://loc.lo3rwang.cc/) | LOC 總覽與主要入口 |
-| 月之符文 | [LunaRunes](https://lrunes.lo3rwang.cc/) | LunaRunes 主頁、66 符資料、圖鑑、抽牌、判讀規則、案例與符文脈絡 Graph · No API |
-| 統計 | [statics.html](https://loc.lo3rwang.cc/statics.html) | 排行榜、符文關鍵詞排行榜、符文統計與每日符文 |
-| 脈絡 | [context.html](https://loc.lo3rwang.cc/context.html) | 符文脈絡 Graph · No API、節點、關係式與 Event |
-| 多元搜尋 | [search.html](https://loc.lo3rwang.cc/search.html) | Cross-format Search：文字、音樂、多媒體、符文、脈絡與知識 |
-| 推演 | [evolution.html](https://loc.lo3rwang.cc/evolution.html) | 時期、Timeline、Trend、Trajectory 與符文資料歷程 |
-| 治理 | [governance.html](https://loc.lo3rwang.cc/governance.html) | 政德風、治理原則與方法 |
-| Context Sandbox | [game.html](https://loc.lo3rwang.cc/game.html) | Semantic Playground |
-| 作者 | [lo3rwang.html](https://loc.lo3rwang.cc/lo3rwang.html) | Lucas Oscar Wang 政德 |
-
-新手導覽已整合進正式功能頁：
-- [LOC 新手上路](https://loc.lo3rwang.cc/#start-guide)
-- [LunaRunes 新手上路](https://lrunes.lo3rwang.cc/#library)
-
----
-
-## LOC GPT Skills
-
-LOC GPT Skills 將 LOC 的語言治理與 Repository 治理方法封裝成可重複調用的 AI Skills。它們不是獨立於 LOC 的另一套理論，而是 LOC Modelized Language Framework 的 callable implementations。
-
-### v1.0.0
-
-| Skill | 用途 |
+| 功能 | Current 責任 |
 |---|---|
-| `loc-km-governance` | 檢查 Canon、KM、FAQ、Registry、Base66、術語一致性、資料權威與舊版污染 |
-| `loc-repo-health-check` | 檢查 Repository 結構、路徑、canonical Neon query、API／Search、legacy dependency、部署與效能風險 |
+| **Context／脈絡** | Graph only |
+| **Culture／文化** | Time River only |
+| **Statistics／統計** | 圖表呈現，不自動分析、不下定義 |
+| **Search／搜尋** | Scope-aware keyword / full-text retrieval |
 
-兩個 Skill 共用現行 LOC 治理原則：
+另外保留 Governance、Semantic Playground，以及 LunaRunes 自身的抽牌／圖鑑／解牌功能。
 
-```text
-Modelized Language Framework
-        ↓
-Authority / Canon
-        ↓
-Registry / Structured Data
-        ↓
-Context / Graph / Grammar / Evolution
-        ↓
-API / Search / UI / AI Skill
-```
-
-其中 LunaRunes 是 LOC 的 Symbolic Language reference implementation；Skills 則把已形成的方法與治理能力轉成 GPT／Agent 可重複使用的工作流程。
-
-- **公開套件：** [LOC-GPT-Skills-v1.0.0-bundle.zip](https://loc.lo3rwang.cc/LOC-GPT-Skills-v1.0.0-bundle.zip)
-- **版本：** 1.0.0
-- **發布方式：** 原始 Skill 結構與可執行 validator 採開放方式提供，bundle 作為安裝／交換用發布包。
-
-典型使用情境：
-
-```text
-Use loc-km-governance to audit this repository against the current LOC Modelized Language Framework.
-
-Use loc-repo-health-check to verify whether legacy materialized views can be removed without breaking runtime.
-```
+Current 不再使用 LOC1–8 作為 runtime 架構、fallback、alias 或 registry key。
 
 ---
 
-## LOC 1–8
+## Scope Model
 
-LOC1–8 是**功能分隔與標準骨架**，不是版本、成熟度或高低排序。
+Current 有三個主要 Scope：LOC、LunaRunes、lo3rwang。
 
-| LOC | 現行定位 | 主要內容 |
-|---|---|---|
-| LOC1 | LunaRunes 月之符文 | 66 符、籤詩、抽牌、月相、四向、OW3gs |
-| LOC2 | Context 脈絡 | 節點、關係、Event、Graph、Semantic Playground |
-| LOC3 | Music 音樂 | Suno、歌曲、歌詞與音樂語意 |
-| LOC4 | Literary 文字創作 | 小說、文章、生活文字與創作 corpus |
-| LOC5 | MultiMedia 多媒體 | 圖像、影音、Reels、系統視覺化 |
-| LOC6 | Algorithm 演算法 | 治理、判讀、比較、分類與其他可重複規則 |
-| LOC7 | Module 演算模組 | 演算法、資料、文字建築、KM、搜尋、RAG、Graph RAG 與功能封裝 |
-| LOC8 | Evolution 推演 | 時期、時間線、趨勢、軌跡與跨來源時間分析 |
+每個 Scope 的資料權威彼此獨立。跨 Scope 可以讀取、引用、連結與導航，但不因此取得對方的治理權。
 
-LOC 的功能關係可概括為：
+LOC Culture 不建立第三套獨立個人時期，而是聚合 LunaRunes 與 lo3rwang 的 Current 狀態並導向各自的 Time River。
 
-```text
-語彙
-  ↓
-文字創作／多元體系
-  ↓
-脈絡與關係
-  ↓
-演算法與演算模組
-  ↓
-時間中的推演
-```
+---
+
+## Governance Root
+
+> 鑑古知今，求同存異  
+> 不在其位，不謀其政  
+> 隨心所欲，而不逾己
+
+這 24 字是現行 Governance Root。
+
+---
+
+## Neon = Current SSOT
+
+Current runtime 以 **Neon Postgres** 為 Single Source of Truth。
+
+- 不以 JSON 作 Current 內容來源。
+- 不建立 JSON fallback。
+- 不讓舊靜態檔案反向覆寫 Neon。
+- Scope 資料分層治理。
+- 歷史資料可以保留，但不得污染 Current Canon。
+
+正式導引表：
+
+- `silver.system_table_catalog`
+- `silver.system_data_principles`
+- `silver.loc_scope_registry`
+- `silver.loc_shortcut_routes`
+- `silver.loc_home_shortcuts`
+
+---
+
+## Culture｜Time River
+
+Culture 只顯示 **Time River**。RC6 採用「錨點所見即所得」：
+
+- 主要錨點由使用者明確設定。
+- RC 區可作為細部版本／轉折區域。
+- Time River 直接依實際日期與錨點呈現。
+- 不自動重切、不隱藏分頁、不做隱性推論。
+
+可用欄位包括 `anchor_type`、`anchor_role`、`is_primary_anchor`、`is_rc_zone`。
+
+---
+
+## Statistics｜Charts only
+
+Statistics 以 Recharts 顯示多種圖表，只呈現資料，不替使用者下結論，也不自動定義文字或文化意義。
+
+RC6 新增：
+
+- `silver.metric_snapshots`
+- `silver.save_metric_snapshot(...)`
+- [`docs/sql/metric-snapshots.sql`](docs/sql/metric-snapshots.sql)
+
+網站讀取已計算好的 snapshot，不在瀏覽器重新掃描整個 corpus。Snapshot 以 `source_updated_at` 判斷來源是否變更。
+
+---
+
+## Context｜Graph only
+
+Context 只負責關係圖。
+
+- 每個 Scope 顯示自己的 Graph。
+- 跨 Scope 節點可以導向另一個 Scope。
+- 不在本 Scope 內展開、接管或重新定義其他 Scope 的 Graph。
+
+LOC Context 目前只保留必要的 Scope 關係，例如 LOC → LunaRunes、LOC → lo3rwang。
+
+---
+
+## Search
+
+Search 目前以 Scope-aware keyword / full-text retrieval 為主。
+
+- Scope 命中優先。
+- 不以舊 JSON 作資料來源。
+- 不使用 retired LOC 編號作 Current 搜尋分類。
+- 特別入口可直接導頁，不必繞成一般搜尋結果。
 
 ---
 
 ## LunaRunes｜月之符文
 
-月之符文固定為 **66 符**。
+月之符文固定為：1–64 八組核心符文、65 玄（Chaos）、66 命（Fate）；第 0 符「德」為作者自用，不參與抽牌。
 
-- 1–64：八組核心符文
-- 65：玄（Chaos）
-- 66：命（Fate）
-- 第 0 符「德」是作者基準符，不列入抽牌
+八組：靈魂、連結、生命、自然、礦物、元素、秩序、無序。
 
-每張核心符文具有固定月相與四向語意：
+四方向：正位、半正位、半逆位、逆位。
 
-- 正位
-- 半正位
-- 半逆位
-- 逆位
+抽牌模式：單卡、雙卡（因→果）、三卡（源→轉→合）、五卡（雙卡＋單卡＋雙卡）、OW3gs（1–6 因的描述層、7–11 果的判定層）。
 
-1–64 每個八符組內，新月、上弦、滿月、下弦各出現兩次。
-
-`LunaRune66.xlsx` 是符文母資料與最高優先來源；網站 runtime 直接讀 Neon canonical tables，repository 檔案只作來源與 provenance。
+LunaRunes 是符號式語言與參考實作，不是 LOC 本身的同義詞。
 
 ---
 
-## 抽牌與 OW3gs
+## lo3rwang
 
-現行抽牌模式：
+lo3rwang 是 **Lucas Oscar Wang 政德**的公開識別名稱。
 
-- 單卡
-- 雙卡
-- 三卡
-- 五卡
-- OW3gs 十一張
+主要公開職能：
 
-OW3gs 的結構：
+- Language Governance Architect｜語言治理架構師
+- Wordsmith｜文字工匠
+- Calibrator｜校對者
 
-- **1–6：因的描述層**
-- **7–11：果的判定層**
-
-雙卡、三卡、五卡與 OW3gs 均有各自語法與判讀結構；符文本體、抽牌順序、四向、月相與問題脈絡分層處理。
+對外合作定位為 **Language Consultant**。
 
 ---
 
-## Context 與 Evolution
+## Current Routes
 
-### Context
+- LOC：<https://loc.lo3rwang.cc/>
+- LunaRunes：<https://lrunes.lo3rwang.cc/>
+- 作者：<https://loc.lo3rwang.cc/lo3rwang>
+- Context：<https://loc.lo3rwang.cc/context>
+- Culture：<https://loc.lo3rwang.cc/culture>
+- Statistics：<https://loc.lo3rwang.cc/statics>
+- Search：<https://loc.lo3rwang.cc/search>
+- Governance：<https://loc.lo3rwang.cc/governance>
+- Semantic Playground：<https://loc.lo3rwang.cc/game>
 
-Context 負責回答：
+---
 
-> A 跟 B 怎麼連？
+## Technology
 
-現行功能包含：
+Frontend：Next.js 16、React 19、React Query、Recharts、vis-network、vis-timeline。
 
-- 符文脈絡 Graph · No API（由 Neon canonical rune rows、唯一群組與規則在 request time 建立）
-- 節點
-- 關係式
-- Event
-- Graph
-- Graph RAG
-- 沙盒遊戲
-
-### Evolution
-
-Evolution 負責回答：
-
-> 這些關係如何隨時間一起改變？
-
-概念上：
+Data / Governance：Neon Postgres、Zod、Casbin、FlexSearch。
 
 ```text
-Context Graph × Time × Period × Event × Works → Evolution
+Neon SSOT
+   ↓
+Scope authority
+   ↓
+Shared feature modules
+   ↓
+Page Composition
+   ↓
+UI / Search / Graph / Statistics
 ```
 
-現行 Next Evolution route 已提供：
+---
 
-- 時期
-- Timeline
-- Trend
-- Trajectory
-- 符文資料歷程 · No API
-- 符文結構時間線
-- 符文關鍵詞趨勢
-- 符文群組軌跡
-- 時期資料由 Search → 時期設定統一管理
-- Event 新增／編輯／刪除
+## RC6
 
-符文演化另有 LunaRune-specific 演算法，不與一般 Evolution 趨勢計算混為一體。
+RC6 是 Current 架構基線，不是單純功能版本。它固定 Scope 邊界、Neon SSOT、Context＝Graph、Culture＝Time River、Statistics＝Charts only、Search＝Scope-aware retrieval、Period 明確錨點／RC 區，以及 metric snapshots。
+
+完整內容見 [`docs/RC6.md`](docs/RC6.md)。
 
 ---
 
-## 現行時期（Period / ERA）
+## Historical Material
 
-公開介面使用「**時期**」；內部 stable ID 可保留既有 `ERA-...`。  
-時期定義與編輯由 **Search → 時期設定** 統一管理；Context、Evolution、Graph 與各 corpus builder 只引用。
-
-| 時期 | 日期 | 定位 |
-|---|---|---|
-| P1.0 | 1980-06-23 ～ 2003-12-15 | 學生時代 |
-| P2.0 | 2003-12-16 ～ 2009-03-24 | 當兵入伍到公開網路文字之前 |
-| P3.0 | 2009-03-25 ～ 2017-06-22 | 公開網路文字前期 |
-| P4.0 | 2017-06-23 ～ 2024-11-17 | 2017-06-23 起 |
-| P5.0 | 2024-11-18 ～ 2025-02-20 | Threads |
-| P5.1 | 2025-02-21 ～ 2025-04-27 | Suno 啟用 |
-| P6.0 | 2025-04-28 ～ 2025-10-15 | 《月語者》與月之符文開始 |
-| P6.1 | 2025-10-16 ～ 2026-01-14 | LOC啟動 |
-| P6.2 | 2026-01-15 ～ 2026-03-08 | 微月光與關係敘事期 |
-| P7.0 | 2026-03-09 ～ 2026-07-31 | 政德風 |
-| P7.1 | 2026-08-01 ～ 2026-08-31 | 自由的風 |
-| P7.2 | 2026-09-01 ～ 現在 | 自我治理 |
-
-重要歷史切點：
-
-- **2003-12-16**：入伍，明確人生轉折
-- **2009-03-25**：目前已確認最早 Pixnet 公開網路文字
-- **2010-02-10 11:34:28**：PTT `sopa1980` 註冊
-- **2012-01-30**：〈老鼠〉，第一篇正式發表小說
-- **2017-06-23**：切入 P4.0
-- **2024-11-18**：Threads 開始，P5.0
-- **2025-04-28**：《月語者》開始寫作，同時作為月之符文相關內容的 P6.0 起點
-- **2026-03-09**：P7.0 政德風
-- **2026-09-01**：P7.2 自我治理，Current
-
-Facebook、PTT、Pixnet、Threads、Suno、小說與其他作品都視為不同 corpus / source；**平台本身不是 LOC 的身份，也不各自擁有獨立功能頁**。Timeline 由 Evolution 統一承接。
+舊 RC 文件、舊 LOC1–8、Evolution、KM、舊 JSON registries、舊 HTML 架構與舊資料路徑可以作為歷史證據保留，但不代表 Current runtime，也不得作為 fallback 重新導入。
 
 ---
 
-## 早期文字與小說
+## License
 
-目前已確認的早期公開文字起點為 Pixnet：
+本專案以 Copyleft 精神發布。原創程式、資料結構、月之符文與 LOC 內容鼓勵研究、使用、修改與衍生，同時應保留作者、來源、修改歷史與相容的共享原則。
 
-- **2009-03-25 10:15｜〈同情心？〉**
-
-小說／創作歷史則另行治理，不把後來的潤稿版日期覆蓋首次發表日期。
-
-已確認案例：
-
-| 早期名稱 | 最早可確認日期 | 現行／潤稿版名稱 |
-|---|---|---|
-| [創作] 生日情人 | 2011-04-08 | 一日情人 |
-| [創作] 我的兩個男朋友 | 2011-06-13 | 男男男關係 |
-| [創作] 老鼠 | 2012-01-30 | 老鼠 |
-| 假性單身 | 2015-03-25 | 假性單身 |
-| 在你之前在你之後 | 2016-06-23 | 在你之前，在你之後 |
-| 浮木 | 2021-03-12 | 錯的人 |
-
-其中〈老鼠〉是第一篇正式發表小說。這些作品屬於早期一般文字創作 corpus，**不是符文文學**。後期版本是在既有故事脈絡上進行潤稿、擴寫、改名與正式發行。
-
----
-
-## Search / Text Architecture
-
-`search.html` 是 Cross-format Search 統一入口，目標是讓使用者不必先理解 LOC 編號，就能直接輸入關鍵字、作品名稱、句子或概念。
-
-可查詢的主要類型包括：
-
-- 月之符文
-- 音樂／歌詞
-- 文字作品
-- 多媒體
-- Governance／政德風
-- Knowledge / KM
-- Context / Relation
-- 時期與時間資料
-
-技術面由 Next.js static export 的 runtime clients 與 Neon canonical tables 提供作用中的網站資料與搜尋；engine/ 僅保留研究工具，不是網站 runtime。
-
-Graph RAG 的關係資料所有權仍歸 Context；Knowledge domain 負責檢索、文字建築與演算模組。
-
----
-
-## 主要 corpus
-
-目前 LOC 已累積多種長期語言與創作資料來源：
-
-- Threads：4,578 筆主貼文 + 2,430 筆 Reply
-- Suno：773 首歌曲
-- Pixnet：66 篇文章
-- PTT：`sopa1980` 公開發表紀錄
-- Facebook：兩個帳號，資料持續匯出／整理
-- 小說與文章：保留首次發表、原始版本、潤稿版與正式版關係
-
-Corpus 是分析證據，不等於 Canon；Canon、原始作品、Registry、搜尋索引與 UI 各自分層治理。
-
----
-
-## Governance / 政德風
-
-Governance／治理直接作為語意 domain 使用；政德風是重要的個人治理案例。
-
-目前政德風進入：
-
-**政德風 6.1｜改名後・自我治理期**
-
-版本節點以真實人生重大日期與文字演化為依據；版本變化不覆蓋歷史原文。
-
-治理原則包括：
-
-- 原始資料保留原文
-- 後設解讀與原始文本分開
-- stable ID 優先維持
-- 衍生資料不得反向覆寫母資料
-- 允許修正，但保留來源與歷史
-
----
-
-## 核心資料與文件
-
-| 檔案 | 用途 |
-|---|---|
-| `LunaRune66.xlsx` | LunaRunes 母資料 / Single Source of Truth |
-| `docs/LOC_Canon.docx` | LOC Canon 1.0 正式版 |
-| `docs/64LunaRune.docx` | 命運句語法圖鑑 |
-| `docs/LunarRunesCardCut.pdf` | 紙本符文卡輸出 |
-| `governance.html` | 系統、資料與 Repository 治理統一入口 |
-| `COPYLEFT.md` | Copyleft 治理說明 |
-
----
-
-## Repository 結構
-
-```text
-moon-runes-pwa/
-├── card_api/            # FastAPI / Search
-├── data/                # frozen source workbooks and provenance records
-├── docs/                # Canon、列印／交換與必要技術文件
-├── engine/              # 語意與向量實驗
-├── js/                  # 前端邏輯
-├── css/                 # 前端樣式
-├── tools/               # builders / importers / utilities
-├── skills/              # LOC GPT Skills source directories
-├── 64images/            # 66 符文卡面
-├── pics/                # 系統視覺資產
-├── reels/               # 多媒體資產
-├── index.html
-├── runes.html
-├── context.html
-├── search.html
-├── evolution.html
-├── governance.html
-├── game.html
-├── lo3rwang.html
-├── tutorial01.html      # legacy compatibility redirect → index.html#start-guide
-├── tutorial02.html      # legacy compatibility redirect → runes.html#library
-├── LunaRune66.xlsx
-├── LOC-GPT-Skills-v1.0.0-bundle.zip
-├── manifest.json
-├── service-worker.js
-├── COPYLEFT.md
-└── README.md
-```
-
-根目錄 HTML 只保留目前仍有明確功能或相容責任的頁面；舊的單一平台 Timeline、舊靜態資料層、內部 KM Upload 與重複介紹頁已移除。
-
----
-
-## 技術
-
-### Frontend
-- HTML
-- CSS
-- Vanilla JavaScript
-- PWA / Service Worker
-
-### Backend / Search
-- Python
-- FastAPI
-- Uvicorn
-- JSON registries
-- Semantic / keyword retrieval
-- RAG / Graph RAG
-
-### GPT / Agent Skills
-- `loc-km-governance`
-- `loc-repo-health-check`
-- Markdown Skill specification
-- Structured JSON output
-- Python validators
-- LOC framework-aware governance rules
-
-### Data governance
-
-```text
-Canon / Master Data
-        ↓
-Registry / Structured Data
-        ↓
-Search / Generated Index
-        ↓
-UI / API / Analysis
-```
-
-衍生層不得反向覆寫上游 Canon 或母資料。
-
----
-
-## 授權
-
-本專案以 **Copyleft** 精神發布。原創程式、資料結構、月之符文與 LOC 內容鼓勵研究、使用、修改與衍生，同時保留作者、來源、修改歷史與相容的共享原則。
-
-完整說明見 [COPYLEFT.md](./COPYLEFT.md)。
-
-第三方資料、私人 corpus、外部平台內容與另有授權限制的資產，不因本 repository 的 Copyleft 說明而自動重新授權。
+完整說明見 [`COPYLEFT.md`](COPYLEFT.md)。
 
 ---
 
 ## Author
 
 **Lucas Oscar Wang 政德**  
-Language Systems Governance Architect · Wordsmith
+Language Governance Architect · Wordsmith · Calibrator
 
 - Website: <https://lo3rwang.cc/>
 - LOC: <https://loc.lo3rwang.cc/>
