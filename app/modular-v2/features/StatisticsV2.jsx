@@ -15,7 +15,8 @@ export default function StatisticsV2(){
   const selected=selectedTerm?rows.filter(row=>row.term===selectedTerm):[];
 
   return <section className="loc-view">
-    <h1>統計</h1>\n    <p className="scope-v2-status">目前顯示此 Scope 的前 10 名統計。</p>
+    <h1>統計</h1>
+    <p className="scope-v2-status">目前顯示此 Scope 的前 10 名統計。</p>
     {query.error?<p className="scope-v2-status scope-v2-error">{query.error.message}</p>:null}
     {chartRows.length?<div className="scope-v2-ranking-chart">
       <ResponsiveContainer width="100%" height={Math.max(320,chartRows.length*36)}>
