@@ -1,4 +1,4 @@
-import {fetchLocJson} from '../app/loc/data.js';
+import {fetchNeonData} from '../app/loc/data.js';
 
 const GROUP_DEFS = [
   {id:'soul',group_zh:'靈魂',group_en:'Soul',from:1,to:8,description:'從個體之靈延伸至群體之魂，描繪意識、記憶與存在邊界的層次。',trait:'意識與存在層次',style_module:'個體與群體',possible_tone:['意識','記憶','邊界','內在'],style:['spirit','existence']},
@@ -45,7 +45,7 @@ export const rune = [null];
 export const runeRows = [];
 
 export async function loadCanonicalRunes(){
-  const rows=await fetchLocJson('canonical/runes',{memory:true});
+  const rows=await fetchNeonData('canonical/runes',{memory:true});
   if(!Array.isArray(rows))throw new Error('Neon canonical rune read failed');
   runeRows.splice(0,runeRows.length,...rows);
   for(let index=1;index<rune.length;index+=1)delete rune[index];

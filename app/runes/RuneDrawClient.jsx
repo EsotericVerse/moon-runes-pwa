@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { fetchLocJson, fetchRuneRows, LOC_DATA } from '../loc/data';
+import { fetchNeonData, fetchRuneRows, LOC_DATA } from '../loc/data';
 import { putNeonRecord } from '../loc/neon-user-storage';
 import { useNeonAccount } from '../loc/use-neon-account';
 import { useLocalStore } from '../loc/local-store';
@@ -40,7 +40,7 @@ const RITUAL_MESSAGES = {
 };
 
 async function fetchCoreRunes() {
-  return fetchLocJson(LOC_DATA.RUNES, { memory: true });
+  return fetchNeonData(LOC_DATA.RUNES, { memory: true });
 }
 
 
@@ -221,7 +221,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       .catch(() => {});
 
     if(drawKey !== 'daily'){
-      fetchLocJson(LOC_DATA.LOTS,{memory:true})
+      fetchNeonData(LOC_DATA.LOTS,{memory:true})
         .then(lots => {
           const rows=Array.isArray(lots)?lots:[];
           setData(current => current ? { ...current, lots: rows } : current);
@@ -232,7 +232,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
     }
 
     if(drawKey === 'daily'){
-      fetchLocJson(LOC_DATA.RUNE_INTERPRETATIONS,{memory:true})
+      fetchNeonData(LOC_DATA.RUNE_INTERPRETATIONS,{memory:true})
         .then(rows => setInterpretations(Array.isArray(rows)?rows:[]))
         .catch(() => {});
     }

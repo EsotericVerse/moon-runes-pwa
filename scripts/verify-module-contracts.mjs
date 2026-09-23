@@ -31,9 +31,9 @@ for(const path of [
   'app/runes/RunesClient.jsx',
   'app/loc/data.js',
   'app/loc/data-paths.mjs',
-  'app/api/loc/data/route.js',
-  'app/api/context/route.js',
-  'app/api/statistics/rankings/route.js',
+  'app/loc/neon-context-client.js',
+  'app/loc/neon-culture-client.js',
+  'app/loc/neon-ranking-client.js',
   'app/loc/neon-repository.js',
   'assets/lunarunes/cards/65_玄.png',
   'assets/lunarunes/cards/66_命.png',
@@ -44,15 +44,23 @@ const runesClient=readFileSync(resolve(root,'app/runes/RunesClient.jsx'),'utf8')
 for(const token of ['LOC_DATA.RUNES','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
 
 const dataLoader=readFileSync(resolve(root,'app/loc/data.js'),'utf8');
-for(const token of ['api/loc/data','fetchLocJson','fetchLocJsonBatch',"cache:'no-store'"])if(!dataLoader.includes(token))failures.push(`LOC data loader: missing Neon canonical contract ${token}`);
+for(const token of ['selectNeonRows','fetchNeonData','fetchNeonDataBatch'])if(!dataLoader.includes(token))failures.push(`LOC data loader: missing direct Neon canonical contract ${token}`);
 if(/indexedDB|getFreshLocalDataSegment|putLocalDataSegment|runtime_json_documents/.test(dataLoader))failures.push('LOC data loader: legacy local or projection path must not return');
+if(/fetchLocJson|fetchLocDataSegments|manifestPaths|shards:\[\]/.test(dataLoader))failures.push('LOC data loader: retired JSON manifest/shard path must not return');
 
-if(!/silver\.lrunes_runes/.test(readFileSync(resolve(root,'app/api/loc/data/route.js'),'utf8')))failures.push('canonical route: rune table missing');
-if(!/silver\.work_scope_affiliations/.test(readFileSync(resolve(root,'app/api/statistics/rankings/route.js'),'utf8')))failures.push('statistics route: scope link table missing');
 if(!/z\.enum/.test(readFileSync(resolve(root,'app/loc/neon-repository.js'),'utf8')))failures.push('Neon repository: Zod allowlist missing');
+for(const [client,contract] of [
+  ['app/loc/neon-context-client.js','ScopeContextResponseSchema'],
+  ['app/loc/neon-culture-client.js','ScopeCultureResponseSchema'],
+  ['app/loc/neon-ranking-client.js','ScopeRankingResponseSchema']
+])if(!readFileSync(resolve(root,client),'utf8').includes(`${contract}.parse`))failures.push(`${client}: shared Zod feature contract not enforced`);
 
-const coreBatch=/fetchLocJsonBatch\(\[LOC_DATA\.RUNES,LOC_DATA\.LOTS,LOC_DATA\.RUNE_INTERPRETATIONS\]/.test(runesClient);
-const directRunes=runesClient.includes('fetchLocJson(LOC_DATA.RUNES)');
+const searchClient=readFileSync(resolve(root,'app/loc/neon-search.js'),'utf8');
+if(!/from ['"]flexsearch['"]/.test(searchClient)||!/new Index\(/.test(searchClient))failures.push('Search client: FlexSearch index missing');
+if(!/searchNeonRows\(/.test(readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8')))failures.push('Search view: FlexSearch-backed search contract missing');
+
+const coreBatch=/fetchNeonDataBatch\(\[LOC_DATA\.RUNES,LOC_DATA\.LOTS,LOC_DATA\.RUNE_INTERPRETATIONS\]/.test(runesClient);
+const directRunes=runesClient.includes('fetchNeonData(LOC_DATA.RUNES)');
 if(!(coreBatch||directRunes))failures.push('RunesClient: canonical RUNES must load through the Neon-backed data loader');
 
 if(failures.length){console.error('[module-contracts] failures:\\n'+failures.map(item=>`- ${item}`).join('\\n'));process.exit(1);}

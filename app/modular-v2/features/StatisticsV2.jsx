@@ -54,7 +54,7 @@ export default function StatisticsV2({section=null}){
   const rankingPath=!section||section==='total'||section==='keyword/total'||section==='music/total'||section==='source/total'?'/statics':null;
   const error=rankingQuery.error?.message||'';
   const loading=rankingQuery.isPending;
-  return <FeaturePageV2 featureId="statics" expandedPath={rankingPath} subtitle="由 Next server 即時查詢 Neon canonical tables，依連結 ID 與統計納入設定彙總。">
+  return <FeaturePageV2 featureId="statics" expandedPath={rankingPath} subtitle="由 Neon client 即時查詢 canonical tables，依連結 ID 與統計納入設定彙總。">
     {legacy?<ScopeCardV2 eyebrow={legacy.eyebrow} title={legacy.title}><p>{legacy.text}</p></ScopeCardV2>:null}
     <ScopeCardV2 eyebrow="Statistics" title="跨時期關鍵字排行榜集中於此。">
       <p>統計排行榜、關鍵字、曲風與來源的分佈，作為風格分析與資料回查的入口。</p>

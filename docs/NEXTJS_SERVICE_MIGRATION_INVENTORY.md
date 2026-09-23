@@ -2,7 +2,7 @@
 
 ## Current governing model
 
-Next.js is the primary application surface. The deployed frontend runs through the Next server on OpenNext/Cloudflare. Shared/canonical LOC runtime data is provided by Neon; provider-specific storage must not grow into a parallel application layer.
+Next.js is the primary application surface. The deployed frontend is a static export on GitHub Pages. Shared/canonical LOC runtime data is provided by Neon; provider-specific storage must not grow into a parallel application layer.
 
 ## Shared data — Current
 
@@ -10,16 +10,16 @@ Next.js is the primary application surface. The deployed frontend runs through t
 
 ```text
 Next.js feature
-  -> fetchLocJson / fetchLocJsonBatch / fetchLocDataSegments
-  -> Next server route
+  -> fetchNeonData / fetchNeonDataBatch
+  -> shared Neon client/module
   -> direct Neon canonical tables
 ```
 
 Current rules:
 
-- Shared/canonical runtime reads use explicit Neon server routes only.
+- Shared/canonical runtime reads use explicit Neon client/module contracts only.
 - Statistics and Daily Rune use direct Neon SQL against canonical tables.
-- Context, Culture, Search, LunaRunes data, and registries use shared route/client modules over canonical tables.
+- Context, Culture, Search, LunaRunes data, and registries use shared Neon client modules over canonical tables.
 - Large text/music sources are loaded on demand from their canonical Neon relations; no local JSON shard is a runtime source.
 - Browser IndexedDB is not a cache/source for shared datasets.
 - Cloudflare KV and Vercel KV are not shared LOC state providers.
@@ -56,10 +56,10 @@ Python search/analysis services, Render-era compatibility code, Apps Script, and
 
 1. Neon Bronze/Silver/Vault/Gold foundation established.
 2. Neon Data API enabled for the production branch.
-3. Explicit Next server routes established for canonical rune, context, culture, search, writing, and statistics reads.
+3. Explicit Next client/module contracts established for canonical rune, context, culture, search, writing, and statistics reads.
 4. Every active runtime path now resolves to an explicit Neon canonical table or an explicit unmapped response.
 5. Search, Culture, Context and Statistics use shared modules and controlled error responses.
-6. Shared Next.js data loader changed from static JSON + IndexedDB cache to the Neon canonical route.
+6. Shared Next.js data loader changed from static JSON + IndexedDB cache to direct Neon canonical reads.
 7. Statistics and Daily Rune switched to direct Neon-backed reads.
 8. Governance shared-state reads switched to Neon.
 9. Browser shared-dataset IndexedDB cache/sync adapters removed.

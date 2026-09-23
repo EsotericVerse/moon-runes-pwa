@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {fetchLocJson,LOC_DATA} from '../loc/data';
+import {fetchNeonData,LOC_DATA} from '../loc/data';
 import {GROUPS,groupById,localRuneId,runeImage,runeName} from './rune-directory.mjs';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
@@ -12,7 +12,7 @@ function useNeonRunes(){
   const [error,setError]=useState('');
   useEffect(()=>{
     let live=true;
-    fetchLocJson(LOC_DATA.RUNES,{memory:true}).then(rows=>{
+    fetchNeonData(LOC_DATA.RUNES,{memory:true}).then(rows=>{
       if(!live)return;
       setRunes((Array.isArray(rows)?rows:[]).filter(row=>Number(row?.編號)>=0&&Number(row?.編號)<=66));
     }).catch(reason=>{if(live)setError(reason?.message||'Neon canonical 讀取失敗');});

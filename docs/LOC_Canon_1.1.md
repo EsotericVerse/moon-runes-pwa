@@ -128,7 +128,7 @@ Culture 是歷史與文化觀察，不具有預測責任。其觀察至少包含
 
 ## 11. JSON 與資料層
 
-Neon silver tables 是 runtime 的正式來源；母資料仍是最高來源。網站只透過受控 server route 讀取與寫入 link／權限資料，不複製內容，也不得反向污染母資料。
+Neon silver tables 是 runtime 的正式來源；母資料仍是最高來源。網站只透過受控 direct Neon client 讀取與寫入 link／權限資料，不複製內容，也不得反向污染母資料。
 
 | 資料層級 | 責任 |
 |---|---|

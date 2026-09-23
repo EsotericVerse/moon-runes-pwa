@@ -2,7 +2,7 @@
 
 import {featureHrefV2} from '../../modular-v2/scope-registry.v2';
 import { useEffect, useMemo, useState } from 'react';
-import { fetchLocJson, LOC_DATA } from '../data';
+import { fetchNeonData, LOC_DATA } from '../data';
 
 const TIMELINE = [
   ['感受與自省','從個人經驗、記憶與身體感受出發，以提問理解自己與世界。'],
@@ -20,7 +20,7 @@ export default function ZhengdeCultureView(){
   const [error,setError]=useState('');
 
   useEffect(()=>{
-    fetchLocJson(LOC_DATA.ZHENGDE_CULTURE_KEYWORDS)
+    fetchNeonData(LOC_DATA.ZHENGDE_CULTURE_KEYWORDS)
       .then(setData)
       .catch(err=>setError(err.message));
   },[]);

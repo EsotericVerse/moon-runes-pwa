@@ -87,7 +87,7 @@
 ## 資料層
 
 - Canon / large corpus：經治理後進入 Neon Current direct canonical query；大型資料維持 manifest/shard 與按需讀取。
-- Shared Current data：Next server routes / Neon canonical tables，公開唯讀。
+- Shared Current data：Next.js static-export runtime clients / Neon canonical tables，公開唯讀。
 - Personal data：Neon `api.user_records` / `api.user_settings`，透過 Managed Auth + RLS 隔離。
 - Search / Statistics / Trajectory：由已確認來源產生的 direct canonical query，不是 source of truth。
 - Period / ERA：人工治理的 temporal definition；可修改，但修改只改變切分／解釋框架，不得直接覆寫自動推導的軌跡資料。

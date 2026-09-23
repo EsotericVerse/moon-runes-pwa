@@ -20,18 +20,12 @@ export const LOC_DATA=Object.freeze({
   LO3RWANG_ERA:'culture/lo3rwang-periods',
   LOC_GRAPH_SCHEMA:'context/graph-schema',
   LOC_STYLE_GROUP_REGISTRY:'governance/style-groups',
-  LOC_MEDIA_REGISTRY:'media/registry',
   LOC_KNOWLEDGE_ASSET_REGISTRY:'knowledge/assets',
   LOC_SEARCH_GOVERNANCE:'knowledge/search-governance',
   LRUNES_ERA:'culture/lrunes-periods',
   ZHENGDE_CULTURE_KEYWORDS:'culture/zhengde-keywords',
 
   LOC_FAQ:'knowledge/faq',
-  TEXT_CORPUS_MANIFEST:'dataset/loc4-text-corpus',
-  OFFLINE_HISTORY_MANIFEST:'dataset/loc4-offline-history',
-  THREADS_BROWSER_MANIFEST:'dataset/threads-main-posts',
-  FACEBOOK_MANIFEST:'dataset/facebook-posts',
-  MUSIC_SEARCH_MANIFEST:'dataset/loc3-lyrics-search',
   RUNE_RESERVED_SNAPSHOT:'canonical/runes',
   SEARCH_SOURCE_STATS:'knowledge/search-stats'
 });

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { fetchLocJson, LOC_DATA } from '../data';
+import { fetchNeonData, LOC_DATA } from '../data';
 import { removeById, updateById } from '../local-store';
 import { useNeonSetting } from '../use-neon-setting';
 import { buildRuneSuggestionRegistry, classifyText } from '../model/style-classifier';
@@ -28,7 +28,7 @@ export default function StyleGroupsView({embedded=false}){
 
   useEffect(()=>{
     let live=true;
-    fetchLocJson(LOC_DATA.RUNES)
+    fetchNeonData(LOC_DATA.RUNES)
       .then(runes=>live&&setSuggestions(buildRuneSuggestionRegistry(runes)))
       .catch(()=>live&&setSuggestions([]));
     return()=>{live=false};

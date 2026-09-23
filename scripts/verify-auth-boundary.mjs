@@ -8,10 +8,10 @@ const failures=[];
 
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
 
-requireMatch(data,/api\/loc\/data/,'shared runtime data must use the Neon canonical route');
-requireMatch(data,/cache:'no-store'/,'shared runtime requests must not use browser response cache');
+requireMatch(data,/selectNeonRows/,'shared runtime data must use direct Neon table reads');
+requireMatch(data,/memoryCache/,'shared runtime data must use bounded in-memory caching');
 requireMatch(client,/@neondatabase\/neon-js/,'Neon Managed Auth client dependency is required');
-requireMatch(client,/signIn\.social/,'Neon Google OAuth sign-in is required');
+requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required');
 requireMatch(client,/getSession/,'Neon session lookup is required');
 requireMatch(userStorage,/user_records/,'Neon user record persistence is required');
 requireMatch(userStorage,/user_settings/,'Neon user settings persistence is required');
@@ -33,4 +33,4 @@ if(failures.length){
   console.error('[auth-boundary] violations:\\n'+failures.join('\\n'));
   process.exit(1);
 }
-console.log('[auth-boundary] Neon Auth + canonical route + user storage boundary verified');
+console.log('[auth-boundary] Neon Auth + direct table reads + user storage boundary verified');

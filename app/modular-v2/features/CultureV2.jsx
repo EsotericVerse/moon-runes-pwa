@@ -15,9 +15,13 @@ function periodRows(value){
 }
 function keywordsOf(row){return row?.normalized_top_keywords||row?.keywords||row?.semantic_keywords||row?.top_keywords||[];}
 function itemLabel(value,index){return value?.display_label||value?.name||value?.title||value?.period||`項目 ${index+1}`;}
+function itemDescription(item){
+  const value=item?.description||item?.summary||item?.body?.description||item?.body?.summary||item?.body?.text||'';
+  return typeof value==='string'?value:'';
+}
 
 const PROFILE=Object.freeze({
-  loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。作者文化時期與符文系統時期分軌展示，再以交會事件互相對照。',sections:['eras','events','runeEvolution']}),
+  loc:Object.freeze({subtitle:'文化以時間累積的語言、事件、時期與治理變化為核心。作者文化時期與符文系統時期分軌展示，再以交會事件互相對照。',sections:['eras','events','trajectories','runeEvolution']}),
   runes:Object.freeze({subtitle:'月之符文的時期、系統演化與語意治理時間長河。',sections:['eras','runeEvolution']}),
   lo3rwang:Object.freeze({subtitle:'作者文化：時期、作品語彙、創作與治理文字在時間中的變化。',sections:['eras','authorKeywords','periods']}),
   admin:Object.freeze({subtitle:'管理 Scope 的文化頁只呈現治理變化與歷史，不取代各 Scope 的 Current Authority。',sections:['governanceHistory']})
@@ -55,6 +59,8 @@ export default function CultureV2({section=null}){
   const musicRows=periodRows(data.musicPeriods);
   const writingRows=periodRows(data.writingPeriods);
   const authorKeywords=data.authorKeywords?.keywords||[];
+  const cultureEvents=data.events||[];
+  const trajectories=data.trajectories||[];
   const runeGovernance=data.runeHistory?.governance_evolution||[];
   const runeVersions=useMemo(()=>[...(data.runeHistory?.rc_version_sequence||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.runeHistory]);
   const runeChanges=useMemo(()=>[...(data.runeHistory?.rc_change_events||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0)),[data.runeHistory]);
@@ -73,6 +79,21 @@ export default function CultureV2({section=null}){
 
     {profile.sections.includes('eras')?<ScopeCardV2 eyebrow="Culture · 時期" title={scopeId==='loc'?'作者文化時期':'時期'}>
       <CultureTimelineV2 items={scopeId==='loc'?authorEraRows:eraRows} labelOf={itemLabel} />
+    </ScopeCardV2>:null}
+
+    {profile.sections.includes('events')?<ScopeCardV2 eyebrow="Culture · Events" title="交會事件">
+      {cultureEvents.length?<div className="scope-v2-timeline">{cultureEvents.map((item,index)=><article key={item.entry_id||item.event_id||item.id||index}>
+        <strong>{item.date||item.start_date||'日期未設定'} · {itemLabel(item,index)}</strong>
+        {itemDescription(item)?<p>{itemDescription(item)}</p>:null}
+      </article>)}</div>:<p className="scope-v2-status">Neon 文化事件資料尚未接入此頁。</p>}
+    </ScopeCardV2>:null}
+
+    {profile.sections.includes('trajectories')?<ScopeCardV2 eyebrow="Culture · Trajectory" title="文化軌跡">
+      {trajectories.length?<div className="scope-v2-timeline">{trajectories.map((item,index)=><article key={item.entry_id||item.trajectory_id||item.id||index}>
+        <strong>{item.date||item.start_date||'日期未設定'} · {itemLabel(item,index)}</strong>
+        {itemDescription(item)?<p>{itemDescription(item)}</p>:null}
+        {item.source?<small>{item.source}</small>:null}
+      </article>)}</div>:<p className="scope-v2-status">Neon 時期軌跡資料尚未接入此頁。</p>}
     </ScopeCardV2>:null}
 
     {profile.sections.includes('runeEvolution')?<>

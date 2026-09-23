@@ -1,4 +1,5 @@
 @import "vis-timeline/styles/vis-timeline-graph2d.min.css";
+@import "vis-network/styles/vis-network.min.css";
 @import "./styles/tokens.css";
 @import "./styles/theme-contract.css";
 @import "./styles/components.css";

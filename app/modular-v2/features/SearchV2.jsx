@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useLocalStore} from '../../loc/local-store';
-import {selectNeonSearchRows} from '../../loc/neon-search';
+import {searchNeonRows} from '../../loc/neon-search';
 import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
@@ -58,8 +58,9 @@ export default function SearchV2(){
     const id=++searchId.current;
     setPage(1);setError('');setResults([]);setStatus(`搜尋「${collection.label}」資料…`);
     try{
-      // Every submit performs a fresh Neon SELECT. No JSON loader or cache is used.
-      const search=await selectNeonSearchRows(collection.id);
+      // The index is built from Neon rows and expires after a short interval;
+      // no JSON loader or static search corpus is used.
+      const search=await searchNeonRows(collection.id,q,{limit:MAX_RESULTS*3});
       if(id!==searchId.current)return;
       const unique=[];const seen=new Set();
       for(const {row,source} of search.rows){

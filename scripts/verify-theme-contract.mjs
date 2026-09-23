@@ -32,10 +32,10 @@ if(compatRegistry.includes('DEFAULT_THEME_SLOTS=[')||compatRegistry.includes("'é
 if(!compatSelector.includes('./modular-v2/ThemeSelectV2'))failures.push('ThemeSelect compatibility entry must delegate to V2');
 if(!compatFooter.includes('./modular-v2/ScopeFooterV2'))failures.push('GlobalFooter compatibility entry must delegate to V2');
 if(!themeAdmin.includes('../migration-bridges/theme-admin-neon.v2'))failures.push('ThemeAdmin must use isolated Neon bridge');
-if(!adminBridge.includes("from('site_theme_styles')"))failures.push('theme admin bridge must preserve Neon site_theme_styles storage');
+if(!adminBridge.includes("'api.site_theme_styles'"))failures.push('theme admin bridge must preserve Neon site_theme_styles storage');
 if(!adminBridge.includes('THEME_SLOTS_V2'))failures.push('theme admin fallback must derive from V2 theme slots');
 if(layout.includes('<ThemeProvider>'))failures.push('obsolete global ThemeProvider must remain removed');
-if(!scopeSettings.includes("from('scope_theme_defaults')"))failures.push('scope theme defaults must come from Neon');
+if(!scopeSettings.includes("api.scope_theme_defaults"))failures.push('scope theme defaults must come from Neon');
 for(const retired of ['app/loc/ThemeProvider.jsx','app/loc/ThemeControl.jsx','app/loc/theme-registry.js'])if(existsSync(retired))failures.push(retired+' must remain retired');
 if(!registry.includes("SCOPE_THEME_SETTINGS_KEY_V2='scope-theme-settings-v2'"))failures.push('Current theme settings key drifted');
 

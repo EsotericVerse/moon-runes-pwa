@@ -11,7 +11,7 @@ services/
   cloudflare/
 ~~~
 
-The website runtime is the Next.js OpenNext server. The former card API was retired because it depended on local JSON datasets.
+The website runtime is the Next.js static export deployed through GitHub Pages. The former OpenNext/Worker and card API paths were retired because they depended on server-side or local JSON delivery.
 
 Repository/build/migration helpers belong under `scripts/`. API documentation belongs under `docs/api/`.
 

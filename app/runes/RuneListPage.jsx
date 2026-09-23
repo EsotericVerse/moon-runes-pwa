@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {fetchLocJson,LOC_DATA} from '../loc/data';
+import {fetchNeonData,LOC_DATA} from '../loc/data';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
 const RUNES_HOME=scopeHrefV2('runes');
@@ -22,7 +22,7 @@ export default function RuneListPage(){
   const [error,setError]=useState('');
   useEffect(()=>{
     let live=true;
-    fetchLocJson(LOC_DATA.RUNES,{memory:true})
+    fetchNeonData(LOC_DATA.RUNES,{memory:true})
       .then(rows=>{
         if(!live)return;
         setRunes((Array.isArray(rows)?rows:[]).filter(row=>Number(row?.編號)>=1&&Number(row?.編號)<=66));
