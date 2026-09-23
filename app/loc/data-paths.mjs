@@ -17,7 +17,6 @@ export const LOC_DATA=Object.freeze({
   LO3RWANG_ERA:'culture/lo3rwang-periods',
   LOC_GRAPH_SCHEMA:'context/graph-schema',
   LOC_STYLE_GROUP_REGISTRY:'governance/style-groups',
-  LOC_KNOWLEDGE_ASSET_REGISTRY:'knowledge/assets',
   LOC_SEARCH_GOVERNANCE:'knowledge/search-governance',
   LRUNES_ERA:'culture/lrunes-periods',
   ZHENGDE_CULTURE_KEYWORDS:'culture/zhengde-keywords',
