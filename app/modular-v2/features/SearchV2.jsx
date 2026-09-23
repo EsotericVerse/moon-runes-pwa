@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
-import {searchNeonRows} from '../../loc/neon-search';
+import {findLastSearchPage,searchNeonRows} from '../../loc/neon-search';
 import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
@@ -111,6 +111,12 @@ export default function SearchV2(){
 
   async function runSearch(event){event.preventDefault();await executeSearch(query,1)}
   function go(target){executeSearch(query,Math.max(1,target));}
+  async function goLast(){
+    const scopeHits=scopeResults(query);
+    const firstPageReserved=Math.min(scopeHits.length,pageSize);
+    const lastPage=await findLastSearchPage(collection.id,query,{pageSize,firstPageReserved});
+    await executeSearch(query,lastPage);
+  }
 
   return <FeaturePageV2 featureId="search" subtitle={collection.description}>
     <form className="scope-v2-search-form" onSubmit={runSearch}>
@@ -131,9 +137,9 @@ export default function SearchV2(){
       <div>
         <button type="button" disabled={page<=1} onClick={()=>go(page-1)} aria-label="上一頁">&lt;</button>
         {visiblePages.map(value=><button type="button" key={value} aria-pressed={value===page} onClick={()=>go(value)}>{value}</button>)}
-        {hasMore?<span aria-hidden="true">…</span>:null}
+        {hasMore?<button type="button" onClick={()=>go(page+visiblePages.length)} aria-label="下一組第一頁">…</button>:null}
         <button type="button" disabled={!hasMore&&visiblePages.length<=1} onClick={()=>go(page+1)} aria-label="下一頁">&gt;</button>
-        {hasMore?<button type="button" onClick={()=>go(page+PAGE_WINDOW)} aria-label="往後四頁">&gt;&gt;</button>:null}
+        {hasMore?<button type="button" onClick={goLast} aria-label="最後一頁">&gt;&gt;</button>:null}
       </div>
     </div>:null}
   </FeaturePageV2>;
