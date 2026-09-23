@@ -1,1 +1,117 @@
-import {z} from 'zod';\nimport {featureHrefV2,scopeDataViewV2} from './scope-registry.v2';\n\nconst NAVIGATION_FIELDS=Object.freeze([\n  'q','identity','source','period','anchor','from','to','rankingType'\n]);\n\nconst NavigationValue=z.string().trim().min(1).max(240);\n\nexport const FeatureNavigationSchema=z.object({\n  q:NavigationValue.optional(),\n  identity:NavigationValue.optional(),\n  source:NavigationValue.optional(),\n  period:NavigationValue.optional(),\n  anchor:NavigationValue.optional(),\n  from:NavigationValue.optional(),\n  to:NavigationValue.optional(),\n  rankingType:NavigationValue.optional()\n}).strict();\n\nfunction valueOf(...values){\n  for(const value of values){\n    if(value===undefined||value===null)continue;\n    const text=String(value).trim();\n    if(text)return text.slice(0,240);\n  }\n  return undefined;\n}\n\nfunction payloadOf(row){\n  return row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};\n}\n\nexport function readFeatureNavigation(searchParams){\n  const raw={};\n  for(const key of NAVIGATION_FIELDS){\n    const value=searchParams?.get?.(key);\n    if(value)raw[key]=value;\n  }\n  const parsed=FeatureNavigationSchema.safeParse(raw);\n  return parsed.success?parsed.data:{};\n}\n\nexport function featureNavigationQuery(navigation={}){\n  const params=new URLSearchParams();\n  const parsed=FeatureNavigationSchema.safeParse(navigation);\n  if(!parsed.success)return '';\n  for(const key of NAVIGATION_FIELDS){\n    const value=parsed.data[key];\n    if(value)params.set(key,value);\n  }\n  return params.toString();\n}\n\nexport function featureNavigationHref(scopeId,featureId,navigation={}){\n  const base=featureHrefV2(scopeId,featureId);\n  const query=featureNavigationQuery(navigation);\n  return query?base+'?'+query:base;\n}\n\nexport function resolveSearchScope(collectionId,source,row,currentScopeId='loc'){\n  const explicit=valueOf(row?.scope_id,row?.scope);\n  if(explicit==='runes'||explicit==='lunarunes')return 'runes';\n  if(explicit==='lo3rwang'||explicit==='author'||explicit==='personal')return 'lo3rwang';\n  if(collectionId==='月之符文')return 'runes';\n  if(collectionId==='政德文化'||collectionId==='政德風')return 'lo3rwang';\n  const label=String(source||'')+' '+String(row?.context_type||'')+' '+String(row?.work_type||'');\n  if(/符文|rune|lunarunes/i.test(label))return 'runes';\n  if(/作者|歌曲|作品|時期|全文|文化|author|song|work/i.test(label))return 'lo3rwang';\n  return currentScopeId;\n}\n\nexport function buildSearchNavigation(collectionId,source,row,query,currentScopeId='loc'){\n  const payload=payloadOf(row);\n  const targetScope=resolveSearchScope(collectionId,source,row,currentScopeId);\n  return {\n    targetScope,\n    state:{\n      q:valueOf(query),\n      identity:valueOf(\n        row?.work_id,row?.song_id,\n        row?.rune_number!==undefined?'rune:'+row.rune_number:undefined,\n        row?.context_key,row?.entry_key,row?.workId,row?.id,\n        payload.id,payload.identity\n      ),\n      source:valueOf(row?.source,row?.source_name,source),\n      period:valueOf(\n        row?.period_code,row?.era_code,row?.period,row?.era_id,\n        payload.period_code,payload.era_code,payload.period,payload.era_id\n      ),\n      anchor:valueOf(\n        row?.anchor_id,row?.anchor_role,row?.anchor_type,\n        payload.anchor_id,payload.anchor_role,payload.anchor_type,\n        payload.anchor?.id,payload.anchor?.role,payload.anchor?.type\n      ),\n      from:valueOf(row?.start_date,row?.active_from,row?.date,payload.start_date),\n      to:valueOf(row?.end_date,row?.active_until,payload.end_date)\n    }\n  };\n}\n\nfunction hasTemporalCondition(state){\n  return Boolean(state.period||state.anchor||state.from||state.to);\n}\n\nexport function featureNavigationLinks({targetScope,state}){\n  const links=[\n    {id:'context',label:'脈絡 Graph',href:featureNavigationHref(targetScope,'context',state)}\n  ];\n  if(hasTemporalCondition(state)){\n    links.push({id:'culture',label:'文化 Time River',href:featureNavigationHref(targetScope,'culture',state)});\n  }\n  if(scopeDataViewV2(targetScope,'rankings')){\n    links.push({id:'statics',label:'統計 Charts',href:featureNavigationHref(targetScope,'statics',state)});\n  }\n  return links;\n}\n
+import {z} from 'zod';
+import {featureHrefV2,scopeDataViewV2} from './scope-registry.v2';
+
+const NAVIGATION_FIELDS=Object.freeze([
+  'q','identity','source','period','anchor','from','to','rankingType'
+]);
+
+const NavigationValue=z.string().trim().min(1).max(240);
+
+export const FeatureNavigationSchema=z.object({
+  q:NavigationValue.optional(),
+  identity:NavigationValue.optional(),
+  source:NavigationValue.optional(),
+  period:NavigationValue.optional(),
+  anchor:NavigationValue.optional(),
+  from:NavigationValue.optional(),
+  to:NavigationValue.optional(),
+  rankingType:NavigationValue.optional()
+}).strict();
+
+function valueOf(...values){
+  for(const value of values){
+    if(value===undefined||value===null)continue;
+    const text=String(value).trim();
+    if(text)return text.slice(0,240);
+  }
+  return undefined;
+}
+
+function payloadOf(row){
+  return row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
+}
+
+export function readFeatureNavigation(searchParams){
+  const raw={};
+  for(const key of NAVIGATION_FIELDS){
+    const value=searchParams?.get?.(key);
+    if(value)raw[key]=value;
+  }
+  const parsed=FeatureNavigationSchema.safeParse(raw);
+  return parsed.success?parsed.data:{};
+}
+
+export function featureNavigationQuery(navigation={}){
+  const params=new URLSearchParams();
+  const parsed=FeatureNavigationSchema.safeParse(navigation);
+  if(!parsed.success)return '';
+  for(const key of NAVIGATION_FIELDS){
+    const value=parsed.data[key];
+    if(value)params.set(key,value);
+  }
+  return params.toString();
+}
+
+export function featureNavigationHref(scopeId,featureId,navigation={}){
+  const base=featureHrefV2(scopeId,featureId);
+  const query=featureNavigationQuery(navigation);
+  return query?base+'?'+query:base;
+}
+
+export function resolveSearchScope(collectionId,source,row,currentScopeId='loc'){
+  const explicit=valueOf(row?.scope_id,row?.scope);
+  if(explicit==='runes'||explicit==='lunarunes')return 'runes';
+  if(explicit==='lo3rwang'||explicit==='author'||explicit==='personal')return 'lo3rwang';
+  if(collectionId==='月之符文')return 'runes';
+  if(collectionId==='政德文化'||collectionId==='政德風')return 'lo3rwang';
+  const label=String(source||'')+' '+String(row?.context_type||'')+' '+String(row?.work_type||'');
+  if(/符文|rune|lunarunes/i.test(label))return 'runes';
+  if(/作者|歌曲|作品|時期|全文|文化|author|song|work/i.test(label))return 'lo3rwang';
+  return currentScopeId;
+}
+
+export function buildSearchNavigation(collectionId,source,row,query,currentScopeId='loc'){
+  const payload=payloadOf(row);
+  const targetScope=resolveSearchScope(collectionId,source,row,currentScopeId);
+  return {
+    targetScope,
+    state:{
+      q:valueOf(query),
+      identity:valueOf(
+        row?.work_id,row?.song_id,
+        row?.rune_number!==undefined?'rune:'+row.rune_number:undefined,
+        row?.context_key,row?.entry_key,row?.workId,row?.id,
+        payload.id,payload.identity
+      ),
+      source:valueOf(row?.source,row?.source_name,source),
+      period:valueOf(
+        row?.period_code,row?.era_code,row?.period,row?.era_id,
+        payload.period_code,payload.era_code,payload.period,payload.era_id
+      ),
+      anchor:valueOf(
+        row?.anchor_id,row?.anchor_role,row?.anchor_type,
+        payload.anchor_id,payload.anchor_role,payload.anchor_type,
+        payload.anchor?.id,payload.anchor?.role,payload.anchor?.type
+      ),
+      from:valueOf(row?.start_date,row?.active_from,row?.date,payload.start_date),
+      to:valueOf(row?.end_date,row?.active_until,payload.end_date)
+    }
+  };
+}
+
+function hasTemporalCondition(state){
+  return Boolean(state.period||state.anchor||state.from||state.to);
+}
+
+export function featureNavigationLinks({targetScope,state}){
+  const links=[
+    {id:'context',label:'脈絡 Graph',href:featureNavigationHref(targetScope,'context',state)}
+  ];
+  if(hasTemporalCondition(state)){
+    links.push({id:'culture',label:'文化 Time River',href:featureNavigationHref(targetScope,'culture',state)});
+  }
+  if(scopeDataViewV2(targetScope,'rankings')){
+    links.push({id:'statics',label:'統計 Charts',href:featureNavigationHref(targetScope,'statics',state)});
+  }
+  return links;
+}
