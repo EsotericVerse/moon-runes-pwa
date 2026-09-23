@@ -96,10 +96,12 @@ export async function selectNeonSearchRows(collectionId){
   return indexPromise;
 }
 
-export async function searchNeonRows(collectionId,query,{limit=MAX_INDEX_RESULTS}={}){
+export async function searchNeonRows(collectionId,query,{limit=MAX_INDEX_RESULTS,offset=0}={}){
   const source=await selectNeonSearchRows(collectionId);
   const normalized=normalizeSearchText(query);
   if(!normalized)return {...source,rows:[]};
-  const ids=source.index.search(normalized,{limit:Math.max(1,Math.min(MAX_INDEX_RESULTS,Number(limit)||MAX_INDEX_RESULTS))});
+  const safeLimit=Math.max(1,Math.min(MAX_INDEX_RESULTS,Number(limit)||MAX_INDEX_RESULTS));
+  const safeOffset=Math.max(0,Number(offset)||0);
+  const ids=source.index.search(normalized,{limit:safeLimit,offset:safeOffset});
   return {...source,rows:ids.map(id=>source.rows[Number(id)]).filter(Boolean)};
 }
