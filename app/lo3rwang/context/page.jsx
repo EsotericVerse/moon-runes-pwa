@@ -1,3 +1,3 @@
 import LocApp from '../../loc/LocApp';
 export const metadata={title:'脈絡｜政德｜LOC 月典'};
-export default function Page(){return <LocApp forcedView="context"/>;}
+export default function Page(){return <LocApp forcedView="context" forcedScope="lo3rwang"/>;}
