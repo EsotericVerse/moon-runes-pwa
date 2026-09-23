@@ -28,7 +28,7 @@ function graphOf(rows){
     const value={...raw,...payload};
     const kind=value.kind||raw?.context_type||'node';
     const id=value.id||raw?.context_key;
-    if(kind==='node'||kind==='period'||kind==='semantic_history'){
+    if(kind==='node'){
       const nodeId=id||((raw?.scope_id||'loc')+':'+(value.title||'node'));
       put(nodeId,{
         label:value.title||value.name||nodeId,
