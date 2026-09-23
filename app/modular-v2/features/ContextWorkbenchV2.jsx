@@ -121,7 +121,6 @@ export default function ContextWorkbenchV2({scopeId='loc'}){
   return <section className="context-workbench">
     <div className="context-tool-card">
       <div className="context-item-head"><div><p className="scope-v2-eyebrow">GRAPH WORKBENCH</p><h2>關係圖探索器</h2></div><span className="context-graph-status">公開唯讀</span></div>
-      <p>Node、Edge、Event 由既有脈絡資料展開；LOC、月之符文與作者作品的關係在同一張圖上展示。</p>
       <form className="context-graph-toolbar" onSubmit={event=>{event.preventDefault();setSubmitted(query);setPage(1);}}>
         <label>關係圖搜尋<input value={query} onChange={event=>setQuery(event.target.value)} placeholder="搜尋節點、作品、符文、關係"/></label>
         <label>Depth<select value={String(depth)} onChange={event=>setDepth(Number(event.target.value))}><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
