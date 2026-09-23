@@ -8,12 +8,24 @@ import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
 import {ScopeCardV2} from '../PageShellV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
+import {scopeHrefV2} from '../scope-registry.v2';
 
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
 const MAX_RESULTS=60;
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
+const SCOPE_SEARCH_ENTRIES=Object.freeze([
+  {id:'runes',title:'LunaRunes／月之符文',terms:['lunarunes','月之符文','符文'],href:scopeHrefV2('runes','context')},
+  {id:'lo3rwang',title:'lo3rwang',terms:['lo3rwang','王政德','政德'],href:scopeHrefV2('lo3rwang','context')}
+]);
+function scopeResults(q){
+  const nq=norm(q);
+  if(!nq)return [];
+  return SCOPE_SEARCH_ENTRIES
+    .filter(item=>item.terms.some(term=>norm(term).includes(nq)||nq.includes(norm(term))))
+    .map(item=>({key:`scope-${item.id}`,source:'Scope',title:item.title,date:'',snippet:'進入此 Scope 的脈絡頁。',href:item.href}));
+}
 
 function rowText(row){return Object.values(row||{}).map(value=>typeof value==='string'?value:JSON.stringify(value||'')).join(' ')}
 function snippet(text,q){
@@ -62,7 +74,7 @@ export default function SearchV2(){
       // no JSON loader or static search corpus is used.
       const search=await searchNeonRows(collection.id,q,{limit:MAX_RESULTS*3});
       if(id!==searchId.current)return;
-      const unique=[];const seen=new Set();
+      const unique=scopeResults(q);const seen=new Set(unique.map(item=>item.key));
       for(const {row,source} of search.rows){
         const result=toResult(row,source,q);
         if(!result||seen.has(result.key))continue;
