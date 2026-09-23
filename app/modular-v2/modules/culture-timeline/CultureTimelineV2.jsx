@@ -54,8 +54,5 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
   return <div className="scope-period-timeline-wrap">
     {!ready?<p className="scope-v2-status">載入時間軸…</p>:null}
     <div ref={containerRef} className="scope-period-timeline" role="region" aria-label="時期時間軸" />
-    <ol className="scope-period-timeline-list">
-      {rows.map(row=><li key={row.id}><strong>{row.content}</strong><span>{row.start}{row.end?` → ${row.end}`:''}</span>{row.title?<small>{row.title}</small>:null}</li>)}
-    </ol>
   </div>;
 }
