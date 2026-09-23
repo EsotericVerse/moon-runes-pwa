@@ -88,3 +88,10 @@
 .scope-period-timeline-empty{display:grid;gap:.65rem}
 .scope-period-timeline-empty-line{height:72px;min-height:72px;position:relative;border:var(--scope-v2-border);border-radius:12px;background:var(--loc-panel)}
 .scope-period-timeline-empty-line::after{content:'';position:absolute;left:1rem;right:1rem;top:50%;border-top:1px solid currentColor;opacity:.28}
+
+.scope-overview-graph-wrap{width:100%;overflow:hidden}
+.scope-overview-graph{display:block;width:100%;height:auto;min-height:320px}
+@media(max-width:720px){
+  .scope-overview-graph{min-width:720px;transform-origin:top left}
+  .scope-overview-graph-wrap{overflow-x:auto}
+}
