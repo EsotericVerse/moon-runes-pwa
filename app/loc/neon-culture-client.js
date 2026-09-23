@@ -7,8 +7,7 @@ const CULTURE_TABLES=Object.freeze({
   loc:'api.loc_culture_entries',
   periods:'silver.lo3rwang_period_context_entries',
   history:'silver.lrunes_evolution_history',
-  works:'silver.works',
-  semantics:'silver.work_semantics'
+  works:'silver.works'
 });
 
 function periodRows(rows){
@@ -43,38 +42,19 @@ function cultureRows(rows,type){
   return (rows||[]).filter(row=>row.entry_type===type).map(row=>({entry_id:row.entry_key,event_id:row.entry_key,trajectory_id:row.entry_key,title:row.title,date:row.date,start_date:row.start_date,end_date:row.end_date,era_id:row.era_id,source:row.source,style:row.style,keywords:row.keywords||[],body:row.body,description:row.body||row.payload?.description||row.payload?.summary||'',url:row.url,source_ref:row.source_ref,...(row.payload&&typeof row.payload==='object'?row.payload:{})}));
 }
 
-function flattenTags(row){return [row.theme_tags,row.emotion_tags,row.imagery_tags,row.context_tags,row.genre_tags].filter(Array.isArray).flat().map(value=>String(value||'').trim()).filter(Boolean);}
-function buildWorkPeriods(rows,accepted){
-  const buckets=new Map();
-  for(const row of rows||[]){
-    if(accepted.size&&!accepted.has(row.work_type))continue;
-    const period=row.period_code||row.era_code||row.era_name||'未分類';
-    const key=`${row.work_type||'work'}:${period}`;
-    const bucket=buckets.get(key)||{period,work_type:row.work_type||'work',work_count:0,keywords:new Map(),workIds:new Set()};
-    if(!bucket.workIds.has(row.work_id)){bucket.workIds.add(row.work_id);bucket.work_count+=1;}
-    for(const keyword of flattenTags(row))bucket.keywords.set(keyword,(bucket.keywords.get(keyword)||0)+1);
-    buckets.set(key,bucket);
-  }
-  return {periods:[...buckets.values()].sort((a,b)=>String(a.period).localeCompare(String(b.period))).map(bucket=>({period:bucket.period,work_type:bucket.work_type,work_count:bucket.work_count,keywords:[...bucket.keywords.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([keyword,count])=>({keyword,count}))}))};
-}
-function buildAuthorKeywords(rows){const counts=new Map();for(const row of rows||[])for(const keyword of flattenTags(row))counts.set(keyword,(counts.get(keyword)||0)+1);return {keywords:[...counts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([name,count])=>({name,count}))};}
-
 export async function selectScopeCultureData(scopeId){
   const id=String(scopeId||'');
   if(!['loc','runes','lo3rwang'].includes(id))throw new Error('Scope 無效');
-  const [culture,periods,history,works,semantics]=await Promise.all([
+  const [culture,periods,history]=await Promise.all([
     id==='loc'?selectNeonRows(CULTURE_TABLES.loc,{columns:'scope_id,entry_key,entry_type,title,date,start_date,end_date,era_id,source,style,keywords,body,url,payload,is_derived,manual_override,source_ref',filters:[{column:'scope_id',operator:'eq',value:'loc'}],limit:5000}):Promise.resolve({rows:[]}),
     id==='lo3rwang'?selectNeonRows(CULTURE_TABLES.periods,{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000}):Promise.resolve({rows:[]}),
-    id==='runes'?selectNeonRows(CULTURE_TABLES.history,{columns:'history_id,history_kind,sequence_no,title,body,source_payload',limit:5000}):Promise.resolve({rows:[]}),
-    id==='loc'||id==='lo3rwang'?selectNeonRows(CULTURE_TABLES.works,{columns:'work_id,work_type,period_code,era_code,era_name,title,created_date',filters:[{column:'scope',operator:'eq',value:'lo3rwang'}],limit:5000}):Promise.resolve({rows:[]}),
-    id==='loc'||id==='lo3rwang'?selectNeonRows(CULTURE_TABLES.semantics,{columns:'work_id,theme_tags,emotion_tags,imagery_tags,context_tags,genre_tags',limit:5000}):Promise.resolve({rows:[]})
+    id==='runes'?selectNeonRows(CULTURE_TABLES.history,{columns:'history_id,history_kind,sequence_no,title,body,source_payload',limit:5000}):Promise.resolve({rows:[]})
   ]);
   const cultureRowsRaw=culture.rows||[];
   const periodContext=periods.rows||[];
   const historyValue=mergeHistory(history.rows||[]);
   const runeEras=[...(Array.isArray(historyValue.eras)?historyValue.eras:[]),...(Array.isArray(historyValue.rune_periods)?historyValue.rune_periods:[])].filter((row,index,array)=>row&&array.findIndex(item=>JSON.stringify(item)===JSON.stringify(row))===index);
   const eraSource=id==='loc'?cultureRowsRaw.filter(row=>['era','period','trajectory','evolution'].includes(row.entry_type)):periodContext;
-  const workRows=(works.rows||[]).map(row=>({...row,...((semantics.rows||[]).find(item=>item.work_id===row.work_id)||{})}));
   const eras=periodRows(eraSource);
-  return ScopeCultureResponseSchema.parse({scopeId:id,eras:{eras:id==='runes'?runeEras:eras},authorEras:id==='loc'||id==='lo3rwang'?{eras}:undefined,runeEras:{eras:runeEras},runeHistory:historyValue,periods:eraSource,events:cultureRows(cultureRowsRaw,'event'),trajectories:cultureRows(cultureRowsRaw,'trajectory'),works:cultureRows(cultureRowsRaw,'work'),authorKeywords:buildAuthorKeywords(workRows),musicPeriods:buildWorkPeriods(workRows,new Set(['music'])),writingPeriods:buildWorkPeriods(workRows,new Set(['writing','novel','literary','text']))});
+  return ScopeCultureResponseSchema.parse({scopeId:id,eras:{eras:id==='runes'?runeEras:eras},authorEras:id==='loc'||id==='lo3rwang'?{eras}:undefined,runeEras:{eras:runeEras},runeHistory:historyValue,periods:eraSource,events:cultureRows(cultureRowsRaw,'event'),trajectories:cultureRows(cultureRowsRaw,'trajectory'),works:cultureRows(cultureRowsRaw,'work'),authorKeywords:{keywords:[]},musicPeriods:{periods:[]},writingPeriods:{periods:[]}});
 }
