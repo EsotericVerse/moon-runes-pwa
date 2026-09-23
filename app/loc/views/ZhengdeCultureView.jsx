@@ -43,8 +43,8 @@ export default function ZhengdeCultureView(){
       <p><strong>政德風</strong>保留為文字與歌曲的表達風格；<strong>政德文化</strong>則是更大的時間性集合，包含風格、作品、價值觀、治理方法、意象與時期演化。</p>
     </section>
 
-    <section className="loc-card" id="culture-evolution">
-      <p className="loc-eyebrow">Evolution · 文化變化</p>
+    <section className="loc-card" id="culture-galaxy">
+      <p className="loc-eyebrow">Galaxy · 衍生體系</p>
       <h2>從微光到治理自己</h2>
       <div className="loc-list">
         {TIMELINE.map(([name,summary],index)=><article key={name} className="loc-subcard"><p className="loc-result-meta"><span>{String(index+1).padStart(2,'0')}</span></p><h3>{name}</h3><p>{summary}</p></article>)}
