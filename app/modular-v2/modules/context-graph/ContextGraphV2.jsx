@@ -2,17 +2,23 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 
-export default function ContextGraphV2({nodes=[],edges=[]}){
+export default function ContextGraphV2({nodes=[],edges=[],focusIdentity=''}){
   const containerRef=useRef(null);
   const [error,setError]=useState('');
   const normalized=useMemo(()=>{
-    const safeNodes=(Array.isArray(nodes)?nodes:[]).map(node=>({
-      ...node,
-      id:node.node_id,
-      label:node.label||node.node_id,
-      title:node.description||node.node_type||'',
-      group:node.scope_id||node.node_type||'context'
-    }));
+    const focus=String(focusIdentity||'');
+    const safeNodes=(Array.isArray(nodes)?nodes:[]).map(node=>{
+      const id=String(node.node_id||'');
+      const focused=Boolean(focus&&(id===focus||String(node.label||'')===focus));
+      return {
+        ...node,
+        id,
+        label:node.label||id,
+        title:node.description||node.node_type||'',
+        group:node.scope_id||node.node_type||'context',
+        ...(focused?{color:{background:'var(--loc-accent)',border:'var(--loc-accent)',highlight:{background:'var(--loc-accent)',border:'var(--loc-accent)'}}}: {})
+      };
+    });
     const validIds=new Set(safeNodes.map(node=>node.id));
     const safeEdges=(Array.isArray(edges)?edges:[]).flatMap(edge=>{
       const from=edge.source_node_id,to=edge.target_node_id;
@@ -27,7 +33,7 @@ export default function ContextGraphV2({nodes=[],edges=[]}){
       }];
     });
     return {nodes:safeNodes,edges:safeEdges};
-  },[nodes,edges]);
+  },[nodes,edges,focusIdentity]);
 
   useEffect(()=>{
     let cancelled=false;
@@ -48,9 +54,9 @@ export default function ContextGraphV2({nodes=[],edges=[]}){
   },[normalized]);
 
   if(!normalized.nodes.length||!normalized.edges.length)return null;
-  return <div className="scope-context-graph-shell">
-    {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
-    <div ref={containerRef} className="scope-context-graph" role="img" aria-label={`脈絡關係圖，${normalized.nodes.length} 個節點、${normalized.edges.length} 條關係`} />
-    <p className="scope-v2-status">{normalized.nodes.length} 個節點 · {normalized.edges.length} 條關係</p>
+  return <div className='scope-context-graph-shell'>
+    {error?<p className='scope-v2-status scope-v2-error'>{error}</p>:null}
+    <div ref={containerRef} className='scope-context-graph' role='img' aria-label={'脈絡關係圖，'+normalized.nodes.length+' 個節點、'+normalized.edges.length+' 條關係'} />
+    <p className='scope-v2-status'>{normalized.nodes.length} 個節點 · {normalized.edges.length} 條關係</p>
   </div>;
 }
