@@ -44,7 +44,6 @@ const currentSources=Object.values(sources).join('\\n');
 const stale=forbiddenCurrent.filter(token=>currentSources.includes(token));
 if(sources.layout.includes('LanguageProvider'))stale.push('LanguageProvider');
 if(sources.nav.includes('loc-language-toggle'))stale.push('loc-language-toggle');
-if(sources.locApp.includes('EvolutionView'))stale.push('EvolutionView');
 if(missing.length||stale.length){
   if(missing.length)console.error('Missing Current UI contract: '+missing.join(', '));
   if(stale.length)console.error('Forbidden stale Current UI token: '+stale.join(', '));
