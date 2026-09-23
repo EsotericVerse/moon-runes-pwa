@@ -25,7 +25,7 @@ function timelineRows(items,labelOf,focus){
   });
 }
 
-export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={}}){
+export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period'}){
   const containerRef=useRef(null);
   const [ready,setReady]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
@@ -57,10 +57,10 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
     return()=>{cancelled=true;if(instance)instance.destroy();};
   },[rows]);
 
-  if(!rows.length)return <p>目前沒有帶有有效日期的時期資料。</p>;
+  if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>
     {!ready?<p className='scope-v2-status'>載入時間長河…</p>:null}
-    <div ref={containerRef} className='scope-period-timeline' role='region' aria-label='時期時間長河' />
+    <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期時間長河':'時期時間長河'} />
   </div>;
 }
