@@ -8,7 +8,8 @@ import {featureHrefV2} from '../../modular-v2/scope-registry.v2';
 const AUTHOR_OVERVIEW_NODES=Object.freeze([
   Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith｜脈絡',summary:'符文的設計理念與我的用詞堅持。',href:featureHrefV2('lo3rwang','context')}),
   Object.freeze({id:'calibrator',title:'校對者｜Calibrator｜文化',summary:'回到來源與時間，校對文字軌跡。',href:featureHrefV2('lo3rwang','culture')}),
-  Object.freeze({id:'governance-architect',title:'語言治理架構師｜Language Governance ｜Architect｜治理',summary:'我的語言治理理念。',href:featureHrefV2('lo3rwang','governance')}),
+  Object.freeze({id:'governance-architect',title:'語言治理架構師｜Language Governance ｜Architect｜治理',summary:'我的語言治理理念。',
+   href:featureHrefV2('lo3rwang','governance')}),
   Object.freeze({id:'self',title:'自我介紹與人生觀',summary:[
     '自介：Lucas Oscar Wang 政德，叫我Oscar就好。六年級末段班，巨蟹座。',
     '人生觀：鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。',
@@ -24,23 +25,12 @@ const AUTHOR_FUNCTIONS=Object.freeze([
   Object.freeze({eyebrow:'Context',title:'脈絡',text:'把文字、作品、事件與來源放回關係中，從關鍵詞與事件看彼此如何連結。',href:'/context/',label:'查看脈絡'}),
   Object.freeze({eyebrow:'Statistics',title:'統計',text:'依年份、來源與時期整理筆數、關鍵詞與分布，先看整體，再回到作品。',href:'/statics/',label:'查看統計'}),
   Object.freeze({eyebrow:'Culture',title:'文化',text:'把作品放回個人時期與時間長河，觀看文字風格、作品與生命經驗如何變化。',href:'/culture/',label:'查看文化'}),
-  Object.freeze({eyebrow:'Governance',title:'治理',text:'管理名稱、作品、時期、公開範圍與資料來源；作者的定義不會被系統自動升格為 LOC Canon。',href:'/governance/',label:'查看治理'}),
+  Object.freeze({eyebrow:'Governance',title:'治理',text:'管理功能跟政策表達。',href:'/governance/',label:'查看治理'}),
   Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:'/search/',label:'開始搜尋'})
 ]);
 
 export default function AuthorHomeView({section=null}){
   const sections=[
-    {
-      id:'governance-root',
-      eyebrow:'Governance Root',
-      title:'目前的人生觀',
-      content:<>
-        {ROOT.map(line=><p className="loc-core-line" key={line}>{line}</p>)}
-        <p>這 24 個字是我的 Governance Root，也是自我治理的根本；它用來約束我自己，不要求別人接受相同分類或價值判斷。</p>
-        <p><strong>補充自述：</strong>「凡利於我者，皆利於我。」這句保留為個人觀點補充，不併入固定的 24 字 Governance Root。</p>
-      </>,
-      links:[{label:'查看作者治理',href:'/governance/'}]
-    },
     {
       id:'roles',
       eyebrow:'Roles',
@@ -79,9 +69,9 @@ export default function AuthorHomeView({section=null}){
     {
       id:'digital-legacy',
       eyebrow:'Digital Legacy · Governance',
-      title:'數位遺產管理',
+      title:'數位資產管理',
       content:<>
-        <p>另一個長期發展方向是數位遺產管理：協助個人、創作者或組織整理長期累積的文字、照片、影音、作品、帳號資料、版本與歷史紀錄，使其從散落檔案轉成可搜尋、可理解、可追溯來源並能長期維護的數位資產。</p>
+        <p>另一個長期發展方向是數位資產管理：協助個人、創作者或組織整理長期累積的文字、照片、影音、作品、帳號資料、版本與歷史紀錄，使其從散落檔案轉成可搜尋、可理解、可追溯來源並能長期維護的數位資產。</p>
         <p>這不只是備份，而包含沿革整理、時間校準、身份與名稱治理、資料關聯、權限與來源紀錄，以及未來如何被繼承、研究或再次使用。</p>
       </>
     },
@@ -136,23 +126,6 @@ export default function AuthorHomeView({section=null}){
         <p><strong>LOC 的核心定義：</strong>免費整理、只供參考、不裁決。由關係脈絡、時間軌跡與作品資料組合出文化風格，讓每個人看見自己的世界如何形成。</p>
       </>,
       links:[{label:'查看 LOC／月典',href:'https://loc.lo3rwang.cc/'}]
-    },
-    {
-      id:'corpus',
-      eyebrow:'Corpus',
-      title:'目前資料規模',
-      content:<><HomeMetricsV2 scopeId="lo3rwang"/><ul>
-        <li><strong>Facebook Corpus：</strong>歷史紀錄與可搜尋文字由 Neon 快照即時計算。</li>
-        <li><strong>Threads Corpus：</strong>主貼文與 Reply 由 Neon 快照即時計算。</li>
-        <li><strong>Suno Corpus：</strong>歌曲與歌詞持續納入整理，保留作品日期、時期、主題與跨作品關聯資料。</li>
-        <li><strong>創作作品：</strong>核心小說與文章全文 corpus 已接入搜尋，作品級與章級資料由正式資料表提供。</li>
-      </ul></>
-    },
-    {
-      id:'micro-moonlight',
-      eyebrow:'Song',
-      title:'只是微月光',
-      content:<div className="loc-context-list"><article className="loc-context-item"><p>「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p><p><a href="https://suno.com/song/a0a724c1-d35f-4ccf-9ac1-0c1c9f2d6a50" target="_blank" rel="noopener noreferrer">聽〈只是微月光〉 →</a></p><p><a href="https://www.instagram.com/p/DdiDIzDIYS3/" target="_blank" rel="noopener noreferrer">看〈只是微月光〉 Reels →</a></p></article></div>
     },
     {
       id:'contact',
