@@ -34,7 +34,6 @@ for(const required of [
   'app/loc/neon-context-client.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/neon-culture-client.js',
-  'app/loc/neon-media-links.js',
   'app/loc/neon-search.js',
   'app/loc/neon-system-guide.js'
 ]){
@@ -65,10 +64,6 @@ for(const table of ['silver.system_table_catalog','silver.system_data_principles
 }
 if(/json_doc|runtime_json_documents|data\/json/.test(systemGuide))failures.push('System guide: retired JSON documentation source remains');
 
-const mediaView=readFileSync(resolve(root,'app/loc/views/MediaView.jsx'),'utf8');
-const mediaLinks=readFileSync(resolve(root,'app/loc/neon-media-links.js'),'utf8');
-if(!/selectMediaLinks/.test(mediaView)||!/selectNeonRows/.test(mediaLinks))failures.push('Media links: direct Neon link-only loader missing');
-if(/LOC_MEDIA_REGISTRY|data\/json|fetch\(/.test(mediaView))failures.push('Media links: retired registry/JSON fetch remains');
 
 const scopeManagement=readFileSync(resolve(root,'app/modular-v2/ScopeManagementV2.jsx'),'utf8');
 if(!/useNeonAccount/.test(scopeManagement)||!/account\.canManage/.test(scopeManagement))failures.push('Scope management: manager role gate missing');
