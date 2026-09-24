@@ -38,3 +38,21 @@ export async function selectDailyRuneDraws({offset=0,limit=DAILY_RUNE_PAGE_SIZE}
   });
   return attachRuneNames(draws.rows);
 }
+
+export async function selectDailyRuneMonth({year,month}={}){
+  const safeYear=Math.max(2000,Math.min(9999,Math.floor(Number(year)||2026)));
+  const safeMonth=Math.max(1,Math.min(12,Math.floor(Number(month)||8)));
+  const start=`${safeYear}-${String(safeMonth).padStart(2,'0')}-01`;
+  const nextDate=new Date(Date.UTC(safeYear,safeMonth,1));
+  const end=`${nextDate.getUTCFullYear()}-${String(nextDate.getUTCMonth()+1).padStart(2,'0')}-01`;
+  const draws=await selectNeonRows('silver.lrunes_daily_draws',{
+    columns:'record_date,draw_kind,rune_number,direction',
+    filters:[
+      {column:'record_date',operator:'gte',value:start},
+      {column:'record_date',operator:'lt',value:end}
+    ],
+    orders:[{column:'record_date',ascending:true},{column:'draw_kind',ascending:true}],
+    limit:62
+  });
+  return attachRuneNames(draws.rows);
+}

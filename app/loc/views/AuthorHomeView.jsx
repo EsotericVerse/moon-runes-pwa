@@ -9,7 +9,7 @@ const AUTHOR_OVERVIEW_NODES=Object.freeze([
   Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith｜脈絡',summary:'符文的設計理念與我的用詞堅持。',href:featureHrefV2('lo3rwang','context')}),
   Object.freeze({id:'calibrator',title:'校對者｜Calibrator｜文化',summary:'回到來源與時間，校對文字軌跡。',href:featureHrefV2('lo3rwang','culture')}),
   Object.freeze({id:'governance-architect',title:'語言治理架構師｜Language Governance ｜Architect｜治理',summary:'我的語言治理理念。',href:featureHrefV2('lo3rwang','governance')}),
-  Object.freeze({id:'self',title:'自我介紹與人生觀',summary:'
+  Object.freeze({id:'self',title:'自我介紹與人生觀',summary:`
   自介：Lucas Oscar Wang 政德，叫我Oscar就好。六年級末段班，巨蟹座。
   人生觀：鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。
   擅長能力：事物的歸納整理跟系統化。擅長把一件可能很難的原理講到很簡單。
@@ -17,7 +17,7 @@ const AUTHOR_OVERVIEW_NODES=Object.freeze([
   興趣：寫作閱讀、音樂創作、符文占卜籤詩、到處看看。
   聯絡方式：頁面最左下角有聯絡信箱。
   秘藝文域(EsotericVerse)，籌備中。
-  '})
+  `})
 ]);
 
 const AUTHOR_FUNCTIONS=Object.freeze([
