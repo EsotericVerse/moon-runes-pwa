@@ -80,6 +80,7 @@
 .scope-v2-stat-controls label{display:grid;gap:.35rem;min-width:10rem}
 .scope-v2-stat-controls label>span{color:var(--scope-v2-muted);font-size:.82rem}
 .scope-v2-select{padding:.55rem .75rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text)}
+.scope-v2-search-input{min-width:0;padding:.55rem .75rem;border:var(--scope-v2-border);border-radius:12px;background:var(--loc-panel);color:var(--scope-v2-text);font:inherit}
 .scope-v2-ranking-chart{padding:1rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--scope-v2-panel)}
 
 .scope-v2-culture-period-select{display:grid;gap:.35rem;width:max-content;max-width:100%;margin:0 0 1rem}

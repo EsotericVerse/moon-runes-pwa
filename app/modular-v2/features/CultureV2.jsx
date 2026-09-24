@@ -2,14 +2,14 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
-import {useQuery} from '@tanstack/react-query';
-import {selectAuthorPeriodWorks,selectScopeCultureData} from '../../loc/neon-culture-client';
+import {useInfiniteQuery,useQuery} from '@tanstack/react-query';
+import {selectAuthorPeriodWorkCounts,selectAuthorPeriodWorks,selectScopeCultureData} from '../../loc/neon-culture-client';
 import {readFeatureNavigation} from '../feature-navigation.v2';
 import {CULTURE_OVERVIEW_LABEL,cultureDefaultPeriod,isCultureOverview} from '../culture-policy.v2';
-import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {groupWorksByWeekAndSource} from '../modules/culture-timeline/culture-timeline-model.mjs';
+import CultureTimelineEditor from './CultureTimelineEditor';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 
@@ -46,8 +46,9 @@ export default function CultureV2(){
   const query=useQuery({queryKey:['culture-timeline',scopeId],queryFn:()=>selectScopeCultureData(scopeId),staleTime:5*60_000});
   const rows=useMemo(()=>rowsOf(query.data),[query.data]);
   const [selectedPeriod,setSelectedPeriod]=useState(CULTURE_OVERVIEW_LABEL);
-  const [selectedWorkGroup,setSelectedWorkGroup]=useState('');
-  const [visibleWorkCount,setVisibleWorkCount]=useState(10);
+  const [viewMode,setViewMode]=useState('periods');
+  const [selectedEntryId,setSelectedEntryId]=useState('');
+  const [groupVisibleCounts,setGroupVisibleCounts]=useState({});
 
   useEffect(()=>{
     if(!rows.length){setSelectedPeriod(CULTURE_OVERVIEW_LABEL);return;}
@@ -67,38 +68,65 @@ export default function CultureV2(){
     return byScope;
   },[scopeId,rows]);
   const currentAuthorPeriod=scopeId==='loc'?currentRows.find(item=>item.scope_id==='lo3rwang')||null:null;
-  const showDetailTimeline=(scopeId==='lo3rwang'&&Boolean(selected))||(scopeId==='loc'&&Boolean(currentAuthorPeriod));
-  const visibleRows=scopeId==='loc'?currentRows:scopeId==='runes'?[...(overview?rows:(selected?[selected]:[])),...(query.data?.runeHistory?.records||[])]:overview?rows:(selected?[selected]:[]);
-  const activePeriod=scopeId==='loc'?currentAuthorPeriod:selected;
-  const periodWorksQuery=useQuery({
+  const authorPeriods=rows.filter(item=>item.scope_id==='lo3rwang');
+  const activePeriod=scopeId==='loc'?authorPeriods.find(item=>periodKey(item)===selectedPeriod)||currentAuthorPeriod:selected;
+  const periodWorksQuery=useInfiniteQuery({
     queryKey:['culture-period-works',scopeId,activePeriod?.period,activePeriod?.start_date,activePeriod?.end_date],
-    queryFn:()=>selectAuthorPeriodWorks({startDate:activePeriod?.start_date,endDate:activePeriod?.end_date,limit:1000}),
-    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&Boolean(activePeriod?.start_date),
+    queryFn:({pageParam=0})=>selectAuthorPeriodWorks({startDate:activePeriod?.start_date,endDate:activePeriod?.end_date,limit:100,pageOffset:pageParam}),
+    initialPageParam:0,
+    getNextPageParam:lastPage=>lastPage.hasMore?lastPage.nextOffset:undefined,
+    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&viewMode==='works'&&Boolean(activePeriod?.start_date),
     staleTime:5*60_000
   });
+  const periodWorkCountsQuery=useQuery({
+    queryKey:['culture-period-work-counts',activePeriod?.period,activePeriod?.start_date,activePeriod?.end_date],
+    queryFn:()=>selectAuthorPeriodWorkCounts({startDate:activePeriod?.start_date,endDate:activePeriod?.end_date}),
+    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&viewMode==='works'&&Boolean(activePeriod?.start_date),
+    staleTime:5*60_000
+  });
+  const loadedWorks=useMemo(()=>periodWorksQuery.data?.pages.flatMap(page=>page.rows)||[],[periodWorksQuery.data]);
   const timelineWorks=useMemo(
-    ()=>scopeId==='loc'?uniqueInterleavedWorks(periodWorksQuery.data):periodWorksQuery.data||[],
-    [scopeId,periodWorksQuery.data]
+    ()=>scopeId==='loc'?uniqueInterleavedWorks(loadedWorks):loadedWorks,
+    [scopeId,loadedWorks]
   );
   const detailTimeline=useMemo(()=>{
-    if(!activePeriod||((scopeId!=='lo3rwang'||!selected)&&scopeId!=='loc'))return [];
-    const start=String(activePeriod.start_date||'');
-    const end=String(activePeriod.end_date||'9999-12-31');
-    const workGroups=groupWorksByWeekAndSource(timelineWorks);
-    if(scopeId==='loc')return workGroups;
-    const inRange=item=>{
-      const itemStart=String(item?.start_date||item?.date||'');
-      const itemEnd=String(item?.end_date||itemStart||'');
-      return itemStart&&itemEnd>=start&&itemStart<=end;
-    };
-    return [
-      ...(query.data?.events||[]).filter(inRange),
-      ...(query.data?.trajectories||[]).filter(inRange),
-      ...workGroups
-    ];
-  },[scopeId,selected,activePeriod,query.data,timelineWorks]);
-  const selectedWorksGroup=useMemo(()=>detailTimeline.find(item=>item.id===selectedWorkGroup)||null,[detailTimeline,selectedWorkGroup]);
-  const visibleGroupWorks=useMemo(()=>selectedWorksGroup?.works?.slice(0,visibleWorkCount)||[],[selectedWorksGroup,visibleWorkCount]);
+    if(viewMode!=='works'||!activePeriod||((scopeId!=='lo3rwang'||!selected)&&scopeId!=='loc'))return [];
+    const counts=new Map((periodWorkCountsQuery.data||[]).map(row=>[
+      `${row.source}:${String(row.week_start).slice(0,10)}`,
+      Number(row.work_count)||0
+    ]));
+    return groupWorksByWeekAndSource(timelineWorks).map(group=>{
+      const hasCount=counts.has(group.id);
+      const count=hasCount?counts.get(group.id):null;
+      return {...group,work_count:count??0,display_label:hasCount?`${group.source} ${count} 篇`:group.source};
+    });
+  },[viewMode,scopeId,selected,activePeriod,timelineWorks,periodWorkCountsQuery.data]);
+  useEffect(()=>{
+    if(viewMode!=='works'||!periodWorksQuery.hasNextPage||periodWorksQuery.isFetchingNextPage)return;
+    const sentinel=document.querySelector('[data-culture-work-sentinel]');
+    if(!sentinel)return;
+    const observer=new IntersectionObserver(entries=>{
+      if(entries.some(entry=>entry.isIntersecting))periodWorksQuery.fetchNextPage();
+    },{rootMargin:'240px'});
+    observer.observe(sentinel);
+    return()=>observer.disconnect();
+  },[viewMode,periodWorksQuery.hasNextPage,periodWorksQuery.isFetchingNextPage,periodWorksQuery.fetchNextPage,detailTimeline.length]);
+  useEffect(()=>{
+    if(viewMode!=='works')return;
+    const sentinels=[...document.querySelectorAll('[data-culture-group-key]')];
+    if(!sentinels.length)return;
+    const observer=new IntersectionObserver(entries=>{
+      for(const entry of entries){
+        if(!entry.isIntersecting)continue;
+        const groupId=entry.target.getAttribute('data-culture-group-key');
+        if(groupId)setGroupVisibleCounts(current=>({...current,[groupId]:(current[groupId]||10)+10}));
+      }
+    },{rootMargin:'120px'});
+    sentinels.forEach(sentinel=>observer.observe(sentinel));
+    return()=>observer.disconnect();
+  },[viewMode,detailTimeline]);
+  useEffect(()=>{setGroupVisibleCounts({})},[scopeId,selectedPeriod,viewMode]);
+  const periodViewItems=(query.data?.timelineItems||[]).filter(item=>scopeId==='loc'||item.scope_id===scopeId);
 
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
@@ -108,41 +136,39 @@ export default function CultureV2(){
       {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
       {!query.isPending&&!query.error&&!rows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
       {!query.isPending&&!query.error&&rows.length?<>
-        {scopeId!=='loc'?<label className='scope-v2-culture-period-select'>
-          <span>時期</span>
-          <select className='scope-v2-select' value={selectedPeriod} onChange={event=>setSelectedPeriod(event.target.value)}>
-            <option value={CULTURE_OVERVIEW_LABEL}>{CULTURE_OVERVIEW_LABEL}</option>
-            {rows.map((item,index)=><option key={periodKey(item)||index} value={periodKey(item)}>{labelOf(item,index)}</option>)}
+        <label className='scope-v2-culture-period-select'>
+          <span>檢視</span>
+          <select className='scope-v2-select' value={viewMode} onChange={event=>setViewMode(event.target.value)}>
+            <option value='periods'>時期表示</option>
+            <option value='works' disabled={scopeId==='runes'}>時期內的作品列表</option>
           </select>
-        </label>:null}
-        {selected?.description?<p className='scope-v2-culture-period-description'>{selected.description}</p>:null}
-        <CultureTimelineV2 items={visibleRows} labelOf={labelOf} focus={navigation} mode={overview?'overview':'period'} />
-        {showDetailTimeline?<>
-          <h2>文字軌跡</h2>
+        </label>
+        {viewMode==='periods'?<>
+          <CultureTimelineV2 items={periodViewItems} labelOf={item=>item.display_label||item.title} focus={navigation} mode='period' onSelect={item=>setSelectedEntryId(item?.entry_id||'')} />
+          <CultureTimelineEditor scopeId={scopeId} selectedEntryId={selectedEntryId}/>
+        </>:<>
+          <label className='scope-v2-culture-period-select'>
+            <span>時期</span>
+            <select className='scope-v2-select' value={periodKey(activePeriod)||''} onChange={event=>setSelectedPeriod(event.target.value)}>
+              {authorPeriods.map((item,index)=><option key={periodKey(item)||index} value={periodKey(item)}>{labelOf(item,index)}</option>)}
+            </select>
+          </label>
           {periodWorksQuery.isPending?<p className='scope-v2-status'>載入時期文字作品…</p>:null}
           {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
+          {periodWorkCountsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorkCountsQuery.error)}</p>:null}
           {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!detailTimeline.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-          {detailTimeline.length?<CultureTimelineV2
-            items={detailTimeline}
-            labelOf={(item)=>item?.display_label||item?.title||item?.name||item?.work_id||'文字紀錄'}
-            focus={navigation}
-            mode='period'
-            onSelect={row=>{
-              setSelectedWorkGroup(row?.id||'');
-              setVisibleWorkCount(10);
-            }}
-          />:null}
-          {selectedWorksGroup?<section className='scope-v2-card'>
-            <h3>{selectedWorksGroup.display_label}</h3>
-            <p>{selectedWorksGroup.week_start.slice(0,10)} – {selectedWorksGroup.week_end.slice(0,10)}</p>
-            {visibleGroupWorks.map((work,index)=><article className='scope-v2-inline-card' key={work.galaxy_id||work.work_id||`${work.created_at}-${index}`}>
+          {detailTimeline.map(group=><section className='scope-v2-card' key={group.id}>
+            <h3>{group.display_label}</h3>
+            <p>{group.week_start.slice(0,10)} – {group.week_end.slice(0,10)}</p>
+            {group.works.slice(0,groupVisibleCounts[group.id]||10).map((work,index)=><article className='scope-v2-inline-card' key={work.galaxy_id||work.work_id||`${work.created_at}-${index}`}>
               <strong>{work.title||work.work_id||'文字紀錄'}</strong>
               <span>{work.created_at||''}</span>
               {work.url||work.source_ref?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
             </article>)}
-            {visibleWorkCount<selectedWorksGroup.works.length?<button type='button' onClick={()=>setVisibleWorkCount(count=>count+10)}>載入更多</button>:null}
-          </section>:null}
-        </>:null}
+            {group.works.length>(groupVisibleCounts[group.id]||10)?<div className='scope-v2-load-sentinel' data-culture-group-key={group.id}/>:null}
+          </section>)}
+          {periodWorksQuery.hasNextPage?<div className='scope-v2-load-sentinel' data-culture-work-sentinel>{periodWorksQuery.isFetchingNextPage?'讀取中…':''}</div>:null}
+        </>}
       </>:null}
     </section>
 

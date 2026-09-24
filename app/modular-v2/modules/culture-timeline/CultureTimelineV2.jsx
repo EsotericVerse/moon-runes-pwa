@@ -18,7 +18,7 @@ function timelineRows(items,labelOf,focus){
     const group=item?.group_label||item?.scope_id||'';
     const density=densityStyleForCount(item?.work_count);
     return [{
-      id:String(item?.era_id||item?.period_id||item?.version||item?.id||item?.entry_id||index),
+      id:String(item?.id||item?.entry_id||item?.era_id||item?.period_id||item?.version||index),
       content:labelOf(item,index),
       title:[item?.description,item?.milestone,item?.anchor_role,item?.anchor_type,item?.is_primary_anchor?'主要錨點':'',item?.is_rc_zone?'RC 區':''].filter(Boolean).join(' · '),
       start,

@@ -1,7 +1,7 @@
 'use client';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
-import {selectNeonRows} from './neon-repository';
+import {callNeonRpc,selectNeonRows} from './neon-repository';
 
 const TIMELINE_COLUMNS='scope_id,entry_key,entry_type,title,summary,start_date,end_date,era_id,period,entry_name,order_no,status,anchor_id,start_anchor_id,end_anchor_id,before_id,after_id,date_status,entry_scope,visibility,event_id,year_value,rune_count,source_id,source,note';
 
@@ -46,6 +46,33 @@ function runeTimelineRows(rows){
   };
 }
 
+function timelineItems(rows){
+  const all=Array.isArray(rows)?rows:[];
+  const anchors=new Map(all.filter(row=>row.entry_type==='anchor').map(row=>[
+    `${row.scope_id}:${row.anchor_id}`,
+    row
+  ]));
+  return all.filter(row=>['anchor','event','period','style'].includes(row.entry_type)).map(row=>{
+    const before=anchors.get(`${row.scope_id}:${row.before_id}`);
+    const after=anchors.get(`${row.scope_id}:${row.after_id}`);
+    const startAnchor=anchors.get(`${row.scope_id}:${row.start_anchor_id}`);
+    const endAnchor=anchors.get(`${row.scope_id}:${row.end_anchor_id}`);
+    const start=row.start_date||startAnchor?.start_date||before?.start_date||after?.start_date||null;
+    const end=row.end_date||endAnchor?.start_date||null;
+    const kindLabel={anchor:'定錨點',event:'事件',period:'時期',style:'風格'}[row.entry_type];
+    return {
+      ...row,
+      id:`${row.scope_id}:${row.entry_key}`,
+      entry_id:`${row.scope_id}:${row.entry_key}`,
+      start_date:start,
+      end_date:end,
+      date:start,
+      display_label:row.entry_type==='style'?(row.entry_name||row.title):row.title,
+      group_label:`${row.scope_id} · ${kindLabel}`
+    };
+  }).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
+}
+
 export async function selectScopeCultureData(scopeId){
   const id=String(scopeId||'');
   if(!['loc','runes','lo3rwang'].includes(id))throw new Error('Scope 無效');
@@ -54,7 +81,7 @@ export async function selectScopeCultureData(scopeId){
     columns:TIMELINE_COLUMNS,
     filters:[
       {column:'scope_id',operator:'in',value:scopes},
-      {column:'entry_type',operator:'in',value:['period','period_legacy','event','anchor']}
+      {column:'entry_type',operator:'in',value:['period','period_legacy','event','anchor','style']}
     ],
     orders:[{column:'start_date',ascending:true}],
     limit:5000
@@ -95,6 +122,7 @@ export async function selectScopeCultureData(scopeId){
     runeEras:{eras:runeTimeline.eras},
     runeHistory:{records:runeTimeline.history},
     periods:eraSource,
+    timelineItems:timelineItems(scopeContext),
     events:contextEvents,
     trajectories:contextAnchors,
     works:[],
@@ -104,23 +132,20 @@ export async function selectScopeCultureData(scopeId){
   });
 }
 
-export async function selectAuthorPeriodWorks({startDate,endDate,limit=200}={}){
-  if(!startDate)return [];
+export async function selectAuthorPeriodWorks({startDate,endDate,limit=100,pageOffset=0}={}){
+  if(!startDate)return {rows:[],hasMore:false,nextOffset:null};
   const filters=[{column:'created_at',operator:'gte',value:startDate}];
   if(endDate)filters.push({column:'created_at',operator:'lte',value:endDate+'T23:59:59.999Z'});
-  const rows=[];
   const pageSize=Math.max(1,Math.min(1000,Math.floor(Number(limit)||1000)));
-  for(let offset=0;;offset+=pageSize){
-    const result=await selectNeonRows('api.lo3rwang_galaxy',{
-      columns:'galaxy_id,category,content_type,source_platform,source_role,title,content,content_hash,created_at,source_ref,source_id,work_id',
-      filters,
-      orders:[{column:'created_at',ascending:false}],
-      range:[offset,offset+pageSize-1]
-    });
-    rows.push(...result.rows);
-    if(result.rows.length<pageSize)break;
-  }
-  return rows.map(row=>({
+  const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
+  const result=await selectNeonRows('api.lo3rwang_galaxy',{
+    columns:'galaxy_id,category,content_type,source_platform,source_role,title,content,content_hash,created_at,source_ref,source_id,work_id',
+    filters,
+    orders:[{column:'created_at',ascending:false}],
+    range:[offset,offset+pageSize-1]
+  });
+  return {
+    rows:result.rows.map(row=>({
     ...row,
     start_date:row.created_at,
     date:row.created_at,
@@ -129,5 +154,19 @@ export async function selectAuthorPeriodWorks({startDate,endDate,limit=200}={}){
     description:String(row.content||'').trim().slice(0,400),
     group_label:row.content_type||row.category||row.source_role||'作品',
     scope_id:'lo3rwang'
-  }));
+    })),
+    hasMore:result.rows.length===pageSize,
+    nextOffset:result.rows.length===pageSize?offset+pageSize:null
+  };
 }
+
+export async function selectAuthorPeriodWorkCounts({startDate,endDate}={}){
+  if(!startDate)return [];
+  const rows=await callNeonRpc('loc_culture_weekly_source_counts',{
+    p_start_date:dateTextForQuery(startDate),
+    p_end_date:endDate?dateTextForQuery(endDate):null
+  });
+  return Array.isArray(rows)?rows:[];
+}
+
+function dateTextForQuery(value){return String(value||'').slice(0,10)}
