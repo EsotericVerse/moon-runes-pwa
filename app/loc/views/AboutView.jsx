@@ -60,6 +60,7 @@ const MODEL_MODULES=[
 export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero">
+      <p className="loc-eyebrow">LOC (Modelized Language Framework)</p>
       <div className="home-title-row">
         <h1>LOC月典</h1>
         <p className="loc-subtitle">把語言整理成可理解、可搜尋、可推演的模組結構。</p>
