@@ -1,4 +1,4 @@
-import AuthorHomeView from '../../../loc/views/AuthorHomeView';
+import AuthorHomeView from '../../loc/views/AuthorHomeView';
 
 export const metadata={title:'工作與服務｜政德｜LOC 月典'};
 
