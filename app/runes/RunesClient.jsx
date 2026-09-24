@@ -78,15 +78,19 @@ export default function RunesClient(){
   async function removeRecord(id){try{await deleteNeonRecord(id);setDrawRecords(current=>current.filter(item=>item.id!==id));setRecordStatus('已刪除 Neon 紀錄。');}catch(err){setRecordStatus(`刪除失敗：${err?.message||'未知錯誤'}`);}}
 
   return <main className="loc-next-main"><section className="loc-view">
-    <header className="loc-hero" id="intro"><p className="loc-eyebrow">LunaRunes</p><h1>月之符文</h1><p className="loc-subtitle">以月的角度紀錄。</p><p>66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</p><p>可以問一件事，也可以沒有問題直接抽取，</p><nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={runeHref('')}>符文抽籤</a><a href={runeHref('list')}>符文圖鑑</a><a href={runeHref('algorithm')}>符文解牌</a><a href={runeHref('game')}>符文遊戲</a></nav></header>
-    <section className="loc-card runes-home-reels" aria-label="月之符文 Reels">
-      <div className="runes-home-hero-copy"><p className="loc-eyebrow">Reels · 實際示範</p><h2>先看一次月之符文怎麼使用</h2><p className="loc-subtitle">短影片示範抽牌與閱讀方式；看完可以直接回到下方抽牌。</p></div>
-      <div className="runes-home-reels">
-        <article className="runes-home-reel"><iframe src="https://www.instagram.com/reel/DMA9yDAzeRK/embed" title="月之符文公開占卜示範" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" /></article>
-        <article className="runes-home-reel"><p>第二支使用示範</p><a href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">在 Instagram 查看第二支 Reels →</a></article>
+    <header className="loc-hero scope-home-hero-with-visual" id="intro">
+      <div className="scope-home-hero-copy">
+        <p className="loc-eyebrow">LunaRunes</p>
+        <h1>月之符文</h1>
+        <p className="loc-subtitle">以月的角度紀錄。</p>
+        <p>66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</p>
+        <p>可以問一件事，也可以沒有問題直接抽取，</p>
+        <nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={runeHref('')}>符文抽籤</a><a href={runeHref('list')}>符文圖鑑</a><a href={runeHref('algorithm')}>符文解牌</a><a href={runeHref('game')}>符文遊戲</a></nav>
       </div>
-      <p className="loc-subtitle"><a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟第一支</a> · <a href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟第二支</a></p>
-    </section>
+      <figure className="home-hero-visual scope-home-hero-visual">
+        <iframe src="https://www.instagram.com/reel/DMA9yDAzeRK/embed" title="月之符文公開占卜示範" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
+      </figure>
+    </header>
     <section className="loc-card rune-basics">
       <h2>基本判讀順序</h2>
       <div className="basic-grid">
@@ -115,6 +119,7 @@ export default function RunesClient(){
         <article className="reading-ref-card"><h3>不知道就保留未知</h3><p>尚未走完的時間跨度、證據不足或原始解析遺失時，不事後補造答案。</p></article>
       </div>
       <p className="rune-basics-note">事後回測固定保留「原始問題／原始牌序與原解析／實際發生／語法修正」的區分；不得看到結果後反向改寫原解析。</p>
+      <p className="rune-basics-note"><a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">看占卜範例 Reels →</a> · <a href="https://www.instagram.com/p/DdiDIzDIYS3/" target="_blank" rel="noopener noreferrer">看〈只是微月光〉 Reels →</a></p>
     </section>
     <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey} data-draw-action="execute"><p className="loc-eyebrow">Draw · 抽籤</p><h2>占卜抽籤</h2><div className="runes-mode-nav" aria-label="選擇抽牌方式">{MODES.map(item=><a key={item.key} href={runeHref(item.path)} data-draw-mode={item.key} className={`loc-button ${modeKey===item.key?'primary':''}`}><strong>{item.label}</strong><span>{item.description}</span></a>)}</div></section>
     {ritualStep>=0&&<section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={modeKey} aria-live="polite"><div className="runes-ritual-card"><img src="/assets/lunarunes/cards/65_玄.png" alt="玄之符文"/><strong>玄之符文</strong><span>Chaos</span></div><div className="runes-ritual-copy"><p className="loc-eyebrow">等待片刻</p><h2>{ritualMessages[ritualStep]}</h2><p>真實月相：{moonPhase}</p></div></section>}
