@@ -40,7 +40,7 @@ function FaqView(){
         <p>{faqAnswer(row)}</p>
       </article>)}
     </div>
-  </FeaturePageV2>;
+  </section>;
 }
 
 function CopyrightView(){
@@ -91,5 +91,5 @@ export default function GovernanceV2({section=null}){
         <p className="loc-core-line">鑑古知今，求同存異<br/>不在其位，不謀其政<br/>隨心所欲，而不逾己</p>
       </section>:null}
     </div>
-  </section>;
+  </FeaturePageV2>;
 }
