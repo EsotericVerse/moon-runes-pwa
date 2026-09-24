@@ -9,8 +9,7 @@ export const SCOPE_PAGE_PROFILES=Object.freeze({
       scopeTitle:'LOC 治理範圍',
       scopeText:'管理共同治理原則、Scope 邊界、Feature 契約、Current／Historical 分界與跨 Scope 規則。',
       links:Object.freeze([
-        Object.freeze({href:'https://loc.lo3rwang.cc/governance/manage',label:'首頁管理者',text:'管理月典首頁的 Scope、ERA、納入審核、修正標記與授權寫入。'}),
-        Object.freeze({href:'https://loc.lo3rwang.cc/governance/global-manage',label:'全域管理者',text:'管理全站 Scope、權限、公開設定與治理政策。'}),
+        Object.freeze({href:'https://admin.lo3rwang.cc/',label:'治理管理',text:'管理 Scope、權限、公開設定與授權寫入。'}),
         Object.freeze({href:'https://lrunes.lo3rwang.cc/governance',label:'符文治理',text:'LunaRunes 的 Master Data、Grammar、語意與符文歷史。'}),
         Object.freeze({href:'https://dlwang.lo3rwang.cc/governance',label:'作者治理',text:'作者身份、政德風、作品脈絡、個人時期與作者歷史。'})
       ])
