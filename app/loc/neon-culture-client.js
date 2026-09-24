@@ -57,7 +57,7 @@ export async function selectScopeCultureData(scopeId){
       selectNeonRows('api.runes_context_entries',{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'eq',value:'anchor'}],limit:5000})
     ]);
 
-    const authorPeriods=periodRows((author.rows||[]).filter(row=>row.context_type==='period'));
+    const authorPeriods=periodRows((author.rows||[]).filter(row=>row.context_type==='period')).map(row=>({...row,scope_id:'lo3rwang',group_label:'lo3rwang 時期'}));
     const runeHistory=(runes.rows||[]).map(row=>{
       const payload=row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
       return {
