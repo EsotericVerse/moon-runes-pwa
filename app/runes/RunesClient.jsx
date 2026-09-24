@@ -119,7 +119,14 @@ export default function RunesClient(){
         <article className="reading-ref-card"><h3>不知道就保留未知</h3><p>尚未走完的時間跨度、證據不足或原始解析遺失時，不事後補造答案。</p></article>
       </div>
       <p className="rune-basics-note">事後回測固定保留「原始問題／原始牌序與原解析／實際發生／語法修正」的區分；不得看到結果後反向改寫原解析。</p>
-      <p className="rune-basics-note"><a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">看占卜範例 Reels →</a> · <a href="https://www.instagram.com/p/DdiDIzDIYS3/" target="_blank" rel="noopener noreferrer">看〈只是微月光〉 Reels →</a></p>
+    </section>
+    <section className="loc-card rune-basics" aria-label="月之符文占卜範例">
+      <p className="loc-eyebrow">Reels · Examples</p>
+      <h2>占卜範例</h2>
+      <div className="loc-context-list">
+        <article className="loc-context-item"><p><a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">占卜範例 Reels →</a></p></article>
+        <article className="loc-context-item"><p><a href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">月之符文說明 Reels →</a></p></article>
+      </div>
     </section>
     <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey} data-draw-action="execute"><p className="loc-eyebrow">Draw · 抽籤</p><h2>占卜抽籤</h2><div className="runes-mode-nav" aria-label="選擇抽牌方式">{MODES.map(item=><a key={item.key} href={runeHref(item.path)} data-draw-mode={item.key} className={`loc-button ${modeKey===item.key?'primary':''}`}><strong>{item.label}</strong><span>{item.description}</span></a>)}</div></section>
     {ritualStep>=0&&<section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={modeKey} aria-live="polite"><div className="runes-ritual-card"><img src="/assets/lunarunes/cards/65_玄.png" alt="玄之符文"/><strong>玄之符文</strong><span>Chaos</span></div><div className="runes-ritual-copy"><p className="loc-eyebrow">等待片刻</p><h2>{ritualMessages[ritualStep]}</h2><p>真實月相：{moonPhase}</p></div></section>}
