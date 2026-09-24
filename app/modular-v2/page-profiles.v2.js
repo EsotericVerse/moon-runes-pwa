@@ -3,7 +3,7 @@ export const PAGE_PROFILES_V2=Object.freeze({
   statics:Object.freeze({eyebrow:'Statics',title:'統計',subtitle:'統計關鍵字排行榜與資料來源的分佈，來做風格的分析。',description:'風格跟時期的設定，以及關鍵字排行榜集中於此。'}),
   culture:Object.freeze({eyebrow:'Cuture',title:'文化',subtitle:'透過以時間作為分類標準，來找尋各項時期的變化趨勢。',description:'文字留下風格，風格經過時間累積，才看得見文字風格的變化。'}),
   governance:Object.freeze({eyebrow:'Governance',title:'治理',subtitle:'宣示原則性與法律規定。管理也在此。'}),
-  search:Object.freeze({eyebrow:'Search',title:'搜尋',subtitle:'從關鍵詞找到資料，再回到原本的 Scope 與關係位置。'})
+  search:Object.freeze({eyebrow:'Cross-format Search',title:'多元搜尋',subtitle:'跨文字、音樂、多媒體、符文、脈絡與知識搜尋。'})
 });
 
 const SCOPE_FEATURE_SUBTITLES=Object.freeze({
