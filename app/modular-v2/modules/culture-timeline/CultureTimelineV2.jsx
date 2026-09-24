@@ -77,7 +77,7 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
     {chartError?<p className='scope-v2-status'>圖表載入失敗，以下改用清單顯示。</p>:null}
     <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期時間長河':'時期時間長河'} />
     {chartError?<ol className='scope-v2-list'>
-      {fallbackRows.map(row=><li key={row.id}><strong>{row.content}</strong>{row.group?<span> · {groupLabel(row.group)}</span>}<span> · {new Date(row.start).toLocaleDateString('zh-Hant')}</span>{row.title?<p>{row.title}</p>:null}</li>)}
+      {fallbackRows.map(row=><li key={row.id}><strong>{row.content}</strong>{row.group?<span> · {groupLabel(row.group)}</span>:null}<span> · {new Date(row.start).toLocaleDateString('zh-Hant')}</span>{row.title?<p>{row.title}</p>:null}</li>)}
     </ol>:null}
   </div>;
 }
