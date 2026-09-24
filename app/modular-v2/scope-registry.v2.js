@@ -84,7 +84,7 @@ export const SCOPES_V2=Object.freeze({
     domain:'dlwang.lo3rwang.cc',
     aliasName:'dlwang',
     label:'作者簡介',
-    localRoutes:Object.freeze(['old','work','other']),
+    localRoutes:Object.freeze(['old']),
     routePatterns:Object.freeze([]),
     compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
@@ -201,7 +201,8 @@ export function scopeHrefV2(scopeId,localPath=''){
   const routePart=marker>=0?raw.slice(0,marker):raw;
   const suffix=marker>=0?raw.slice(marker):'';
   const path=routePart.split('/').filter(Boolean).join('/');
-  return path?`${base}/${path}${suffix}`:`${base}/${suffix}`;
+  const pathname=path?`/${path}/`:'/';
+  return `${base}${pathname}${suffix}`;
 }
 
 export function featureHrefV2(scopeId,featureId){
