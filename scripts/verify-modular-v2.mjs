@@ -227,8 +227,6 @@ const admissibilityCases=[
   ['loc','loc.lo3rwang.cc','/context',true],
   ['loc','loc.lo3rwang.cc','/loc',false],
   ['loc','loc.lo3rwang.cc','/runes',false],
-  ['loc','loc.lo3rwang.cc','/writing/example-work',true],
-  ['loc','loc.lo3rwang.cc','/writing/example-work/extra',false],
   ['loc','loc.lo3rwang.cc','/management',true],
   ['lo3rwang','loc.lo3rwang.cc','/lo3rwang',true],
   ['lo3rwang','loc.lo3rwang.cc','/lo3rwang/context',true]
