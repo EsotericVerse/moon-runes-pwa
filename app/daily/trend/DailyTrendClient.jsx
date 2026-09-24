@@ -34,8 +34,9 @@ export default function DailyTrendClient(){
   useEffect(()=>{reload();},[]);
 
   const analysis=useMemo(()=>{
+    if(!draws.length)return {days:[],topRunes:[],recent:0,maximum:1,latest:''};
     const latest=draws.map(item=>dayKey(item.record_date)).filter(Boolean).sort().at(-1);
-    const anchor=latest?new Date(`${latest}T12:00:00`):new Date();
+    const anchor=new Date(`${latest}T12:00:00`);
     const days=Array.from({length:DAYS},(_,index)=>{
       const date=new Date(anchor);date.setDate(anchor.getDate()-(DAYS-1-index));
       const key=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
