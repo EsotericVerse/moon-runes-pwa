@@ -33,7 +33,7 @@ function releaseSlot(){
 
 function runeRows(rows){return (rows||[]).map(row=>({
   編號:row.rune_number,符文名稱:row.rune_name,所屬分組:row.group_name,英文:row.english_name,
-  正位:row.lots_positive,逆位:row.lots_negative,半正位:row.lots_half_positive,半逆位:row.lots_half_negative,
+  lots_positive:row.lots_positive,lots_negative:row.lots_negative,lots_half_positive:row.lots_half_positive,lots_half_negative:row.lots_half_negative,
   神話故事:row.myth_story,符文演化歷史:row.rune_evolution_history,
   source_ref:row.source_ref,updated_at:row.updated_at
 }));}
