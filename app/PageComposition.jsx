@@ -14,16 +14,20 @@ export function PageComposition({eyebrow,title,subtitle,intro,heroVisual=null,se
     {heroVisual?<header className="loc-hero scope-home-hero-with-visual" id="top">
       <div className="scope-home-hero-copy">
         {eyebrow?<p className="loc-eyebrow"><LocalizedText value={eyebrow}/></p>:null}
-        <h1><LocalizedText value={title}/></h1>
-        {subtitle?<p className="loc-subtitle"><LocalizedText value={subtitle}/></p>:null}
+        <div className="home-title-row">
+          <h1><LocalizedText value={title}/></h1>
+          {subtitle?<p className="loc-subtitle"><LocalizedText value={subtitle}/></p>:null}
+        </div>
         {intro}
         {localMenu.length?<nav className="scope-v2-local-menu" aria-label="頁面小功能選單">{localMenu.map(item=><a href={item.href} key={item.href}>{item.label}</a>)}</nav>:null}
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">{heroVisual}</figure>
     </header>:<header className="loc-hero" id="top">
       {eyebrow?<p className="loc-eyebrow"><LocalizedText value={eyebrow}/></p>:null}
-      <h1><LocalizedText value={title}/></h1>
-      {subtitle?<p className="loc-subtitle"><LocalizedText value={subtitle}/></p>:null}
+      <div className="home-title-row">
+        <h1><LocalizedText value={title}/></h1>
+        {subtitle?<p className="loc-subtitle"><LocalizedText value={subtitle}/></p>:null}
+      </div>
       {intro}
       {localMenu.length?<nav className="scope-v2-local-menu" aria-label="頁面小功能選單">{localMenu.map(item=><a href={item.href} key={item.href}>{item.label}</a>)}</nav>:null}
     </header>}
