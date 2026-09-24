@@ -30,14 +30,23 @@ export default function ScopeOverviewGraphV2({centerTitle='',centerSummary='',no
       {visible.map((node,index)=>{
         const p=POSITIONS[index];
         const selected=node.id===selectedNode;
+        const href=String(node.href||'');
         const titleParts=String(node.title||'').split('｜');
         const firstLineY=p.y-((titleParts.length-1)*9);
-        return <g key={node.id} role="button" tabIndex={0} aria-pressed={selected}
-          aria-label={node.title+'。點擊顯示說明。'}
-          onClick={()=>setSelectedNode(selected?null:node.id)}
+        return <g key={node.id} role={href?'link':'button'} tabIndex={0}
+          aria-pressed={href?undefined:selected}
+          aria-label={href?node.title+'；前往相關頁面。':node.title+'。點擊顯示說明。'}
+          onClick={()=>{
+            if(href)window.location.href=href;
+            else setSelectedNode(selected?null:node.id);
+          }}
           onKeyDown={event=>{
-            if(event.key==='Enter'||event.key===' '){event.preventDefault();setSelectedNode(selected?null:node.id);}
-            if(event.key==='Escape')setSelectedNode(null);
+            if(event.key==='Enter'||event.key===' '){
+              event.preventDefault();
+              if(href)window.location.href=href;
+              else setSelectedNode(selected?null:node.id);
+            }
+            if(event.key==='Escape'&&!href)setSelectedNode(null);
           }}
           style={{cursor:'pointer'}}>
           <circle cx={p.x} cy={p.y} r="74" fill="var(--loc-accent)" fillOpacity=".16" stroke="currentColor" strokeWidth={selected?4:2}/>
