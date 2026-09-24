@@ -27,7 +27,7 @@ const clampRound=(count,round)=>(count===2?TWO_PLAYER_ROUNDS:MULTI_PLAYER_ROUNDS
 
 export default function GameView(){
   const[data,setData]=useState(null),[loadError,setLoadError]=useState(''),[state,setState]=useState(null),[playerCount,setPlayerCount]=useState(2),[homeView,setHomeView]=useState('play');
-  useEffect(()=>{let live=true;fetchNeonDataBatch([LOC_DATA.RUNES,LOC_DATA.LOC2_EVENT_REGISTRY],{concurrency:2}).then(([r,e])=>{if(live)setData({cards:createCards(r),events:createEvents(e)});}).catch(e=>live&&setLoadError(e.message));return()=>{live=false};},[]);
+  useEffect(()=>{let live=true;fetchNeonDataBatch([LOC_DATA.RUNES,LOC_DATA.GAME_EVENTS],{concurrency:2}).then(([r,e])=>{if(live)setData({cards:createCards(r),events:createEvents(e)});}).catch(e=>live&&setLoadError(e.message));return()=>{live=false};},[]);
   const event=state?.eventDeck[state.eventIndex%state.eventDeck.length];
   const allOpened=state?.players.every(p=>!p.opening);
   const phaseLabel=state?.phase==='event'?'Event':state?.phase?.includes('battle')?'Battle':'Resonance';
