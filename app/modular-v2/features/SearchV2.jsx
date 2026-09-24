@@ -40,6 +40,7 @@ export default function SearchV2(){
   const [loadingMore,setLoadingMore]=useState(false);
   const searchId=useRef(0);
   const offsetRef=useRef(0);
+  const matchedRowsRef=useRef([]);
   const sentinelRef=useRef(null);
   const loadingRef=useRef(false);
   const pageSize=scopeId==='runes'?8:10;
@@ -51,16 +52,18 @@ export default function SearchV2(){
     const id=++searchId.current;
     loadingRef.current=true;
     offsetRef.current=0;
+    matchedRowsRef.current=[];
     setError('');
     setHasMore(false);
     setLoadingMore(false);
     setResults([]);
     setStatus(`搜尋「${collection.label}」資料…`);
     try{
-      const search=await searchNeonRows(collection.id,q,{limit:pageSize+1,offset:0});
+      const search=await searchNeonRows(collection.id,q,{limit:5000,offset:0});
       if(id!==searchId.current)return;
 
-      const consumed=search.rows.slice(0,pageSize);
+      matchedRowsRef.current=search.rows;
+      const consumed=matchedRowsRef.current.slice(0,pageSize);
       offsetRef.current=consumed.length;
       const converted=[];const seen=new Set();
       for(const {row,source} of consumed){
@@ -69,7 +72,7 @@ export default function SearchV2(){
         seen.add(result.key);converted.push(result);
       }
       setResults(converted);
-      setHasMore(search.rows.length>pageSize);
+      setHasMore(matchedRowsRef.current.length>pageSize);
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
       setStatus(`「${collection.label}」搜尋「${q}」。${partial}`);
     }catch(exception){
@@ -81,38 +84,26 @@ export default function SearchV2(){
     }
   }
 
-  async function loadMore(){
+  function loadMore(){
     const q=query.trim();
     if(!q||!hasMore||loadingRef.current)return;
-    const id=searchId.current;
     loadingRef.current=true;
     setLoadingMore(true);
-    try{
-      const search=await searchNeonRows(collection.id,q,{limit:pageSize+1,offset:offsetRef.current});
-      if(id!==searchId.current)return;
-      const consumed=search.rows.slice(0,pageSize);
-      offsetRef.current+=consumed.length;
-      setResults(current=>{
-        const seen=new Set(current.map(item=>item.key));
-        const appended=[];
-        for(const {row,source} of consumed){
-          const result=toResult(row,source,q,collection.id,scopeId);
-          if(!result||seen.has(result.key))continue;
-          seen.add(result.key);appended.push(result);
-        }
-        return [...current,...appended];
-      });
-      setHasMore(search.rows.length>pageSize);
-    }catch(exception){
-      if(id!==searchId.current)return;
-      setError(String(exception?.message||exception||'載入下一批搜尋結果失敗。'));
-      setHasMore(false);
-    }finally{
-      if(id===searchId.current){
-        loadingRef.current=false;
-        setLoadingMore(false);
+    const consumed=matchedRowsRef.current.slice(offsetRef.current,offsetRef.current+pageSize);
+    offsetRef.current+=consumed.length;
+    setResults(current=>{
+      const seen=new Set(current.map(item=>item.key));
+      const appended=[];
+      for(const {row,source} of consumed){
+        const result=toResult(row,source,q,collection.id,scopeId);
+        if(!result||seen.has(result.key))continue;
+        seen.add(result.key);appended.push(result);
       }
-    }
+      return [...current,...appended];
+    });
+    setHasMore(matchedRowsRef.current.length>offsetRef.current);
+    loadingRef.current=false;
+    setLoadingMore(false);
   }
 
   useEffect(()=>{
