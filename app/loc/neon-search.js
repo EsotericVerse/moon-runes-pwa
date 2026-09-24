@@ -5,60 +5,45 @@ import {selectNeonRows} from './neon-repository';
 
 const TABLES=Object.freeze({
   all:Object.freeze([
-    ['silver.lo3rwang_context_entries','作者脈絡'],
-    ['silver.runes_context_entries','符文脈絡'],
-    ['api.lo3rwang_galaxy','作者正文'],
-    ['silver.lrunes_runes','月之符文'],
-    ['silver.faq_entries','FAQ'],
-    ['silver.suno_songs','音樂作品']
+    ['silver.lo3rwang_context_entries','作者脈絡',['context_key','context_type','title','summary']],
+    ['silver.runes_context_entries','符文脈絡',['context_key','context_type','title','summary']],
+    ['api.lo3rwang_galaxy','作者正文',['scope_id','category','content_type','source_role','title','content','created_at','source_ref','in_reply_to_username','source_place','work_id']],
+    ['silver.lrunes_runes','月之符文',['rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history']],
+    ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path']],
+    ['silver.suno_songs','音樂作品',['song_id','title','author_outline','author_source','other_text','created_date','playlist','style_prompt','publication_status']]
   ]),
   '月之符文':Object.freeze([
-    ['silver.runes_context_entries','月之符文脈絡'],
-    ['silver.lrunes_runes','月之符文']
+    ['silver.runes_context_entries','月之符文脈絡',['context_key','context_type','title','summary']],
+    ['silver.lrunes_runes','月之符文',['rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history']]
   ]),
   lo3rwang:Object.freeze([
-    ['api.lo3rwang_galaxy','作者正文']
+    ['api.lo3rwang_galaxy','作者正文',['scope_id','category','content_type','source_role','title','content','created_at','source_ref','in_reply_to_username','source_place','work_id']]
   ]),
   治理:Object.freeze([
-    ['silver.lo3rwang_context_entries','治理脈絡'],
-    ['silver.faq_entries','FAQ']
+    ['silver.lo3rwang_context_entries','治理脈絡',['context_key','context_type','title','summary']],
+    ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path']]
   ])
 });
 
 const SEARCH_PAGE_SIZE=500;
-const SEARCH_INDEX_CACHE=new Map();
-const SEARCH_TABLE_CACHE=new Map();
 const MAX_INDEX_RESULTS=5000;
-const SEARCH_INDEX_TTL_MS=60_000;
 const SCOPE_SEARCH_ROWS=Object.freeze([
   Object.freeze({scope_id:'runes',title:'LunaRunes／月之符文',search_terms:'lunarunes 月之符文 符文',summary:'進入此 Scope 的脈絡頁。',source:'Scope'}),
   Object.freeze({scope_id:'lo3rwang',title:'lo3rwang',search_terms:'lo3rwang 王政德 政德',summary:'進入此 Scope 的脈絡頁。',source:'Scope'})
 ]);
 
 function normalizeSearchText(value){
-  return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
+  return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\\s\\u3000]+/g,'');
 }
 
 function rowSearchText(row){
-  return normalizeSearchText(Object.values(row||{}).map(value=>typeof value==='string'?value:JSON.stringify(value??'')).join(' '));
+  return normalizeSearchText(Object.values(row||{}).filter(value=>typeof value==='string').join(' '));
 }
 
-async function selectCachedNeonRows(table,source){
-  const cached=SEARCH_TABLE_CACHE.get(table);
-  if(cached&&cached.expiresAt>Date.now())return cached.promise;
-  if(cached)SEARCH_TABLE_CACHE.delete(table);
-  const promise=selectAllNeonRows(table,source).catch(error=>{
-    if(SEARCH_TABLE_CACHE.get(table)?.promise===promise)SEARCH_TABLE_CACHE.delete(table);
-    throw error;
-  });
-  SEARCH_TABLE_CACHE.set(table,{promise,expiresAt:Date.now()+SEARCH_INDEX_TTL_MS});
-  return promise;
-}
-
-async function selectAllNeonRows(table,source){
+async function selectAllNeonRows(table,source,columns){
   const rows=[];let offset=0;let total=null;
   while(total===null||offset<total){
-    const result=await selectNeonRows(table,{columns:'*',count:'exact',range:[offset,offset+SEARCH_PAGE_SIZE-1]});
+    const result=await selectNeonRows(table,{columns:columns.join(','),count:'exact',range:[offset,offset+SEARCH_PAGE_SIZE-1]});
     rows.push(...result.rows.map(row=>({row,source})));
     total=Number.isFinite(Number(result.count))?Number(result.count):offset+result.rows.length;
     if(result.rows.length<SEARCH_PAGE_SIZE)break;
@@ -69,35 +54,20 @@ async function selectAllNeonRows(table,source){
 
 export async function selectNeonSearchRows(collectionId){
   const tables=TABLES[collectionId]||TABLES.all;
-  const cacheKey=String(collectionId||'all');
-  const cached=SEARCH_INDEX_CACHE.get(cacheKey);
-  if(cached&&cached.expiresAt>Date.now())return cached.promise;
-  if(cached)SEARCH_INDEX_CACHE.delete(cacheKey);
-  let indexPromise;
-  if(!indexPromise){
-    indexPromise=(async()=>{
-      const settled=await Promise.all(tables.map(async([table,source])=>{
-        try{
-          return {table,rows:await selectCachedNeonRows(table,source),error:null};
-        }catch(error){
-          return {table,rows:[],error:new Error(`Neon Search SELECT ${table}: ${error?.message||'query failed'}`)};
-        }
-      }));
-      const rows=[...SCOPE_SEARCH_ROWS.map(row=>({row,source:'Scope'})),...settled.flatMap(item=>item.rows)];
-      const failures=settled.filter(item=>item.error).map(item=>item.error);
-      const successfulTables=settled.length-failures.length;
-      if(!successfulTables)throw new AggregateError(failures,'Neon 搜尋資料表全部無法查詢');
-      const index=new Index({tokenize:'full'});
-      rows.forEach(({row},id)=>index.add(id,rowSearchText(row)));
-      return {index,rows,failures};
-    })().catch(error=>{
-      const current=SEARCH_INDEX_CACHE.get(cacheKey);
-      if(current?.promise===indexPromise)SEARCH_INDEX_CACHE.delete(cacheKey);
-      throw error;
-    });
-    SEARCH_INDEX_CACHE.set(cacheKey,{promise:indexPromise,expiresAt:Date.now()+SEARCH_INDEX_TTL_MS});
-  }
-  return indexPromise;
+  const settled=await Promise.all(tables.map(async([table,source,columns])=>{
+    try{
+      return {table,rows:await selectAllNeonRows(table,source,columns),error:null};
+    }catch(error){
+      return {table,rows:[],error:new Error(`Neon Search SELECT ${table}: ${error?.message||'query failed'}`)};
+    }
+  }));
+  const rows=[...SCOPE_SEARCH_ROWS.map(row=>({row,source:'Scope'})),...settled.flatMap(item=>item.rows)];
+  const failures=settled.filter(item=>item.error).map(item=>item.error);
+  const successfulTables=settled.length-failures.length;
+  if(!successfulTables)throw new AggregateError(failures,'Neon 搜尋資料表全部無法查詢');
+  const index=new Index({tokenize:'full'});
+  rows.forEach(({row},id)=>index.add(id,rowSearchText(row)));
+  return {index,rows,failures};
 }
 
 export async function searchNeonRows(collectionId,query,{limit=MAX_INDEX_RESULTS,offset=0}={}){
