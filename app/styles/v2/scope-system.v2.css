@@ -95,3 +95,46 @@
   .scope-overview-graph{min-width:720px;transform-origin:top left}
   .scope-overview-graph-wrap{overflow-x:auto}
 }
+
+
+/* Shared feature heading contract: eyebrow, title + right-side subtitle, description below. */
+.scope-v2-hero>.home-title-row{
+  display:grid!important;
+  grid-template-columns:max-content minmax(0,1fr)!important;
+  column-gap:1.5rem!important;
+  align-items:end!important;
+  width:100%;
+  margin:.12rem 0 .72rem!important;
+}
+.scope-v2-hero>.home-title-row>h1{
+  grid-column:1!important;
+  margin:0!important;
+  padding:0 .8rem .6rem 0!important;
+  border-bottom:1px solid var(--loc-line)!important;
+}
+.scope-v2-hero>.home-title-row>.scope-v2-subtitle{
+  grid-column:2!important;
+  align-self:end!important;
+  justify-self:start!important;
+  margin:0!important;
+  padding:0 0 .6rem .8rem!important;
+  border-left:1px solid var(--loc-line)!important;
+  border-bottom:1px solid var(--loc-line)!important;
+}
+.scope-v2-hero-description{
+  display:block;
+  margin-top:.2rem;
+}
+@media(max-width:680px){
+  .scope-v2-hero>.home-title-row{
+    grid-template-columns:1fr!important;
+    align-items:start!important;
+  }
+  .scope-v2-hero>.home-title-row>h1,
+  .scope-v2-hero>.home-title-row>.scope-v2-subtitle{
+    grid-column:1!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    border-left:0!important;
+  }
+}
