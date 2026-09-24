@@ -65,8 +65,16 @@ export default function GovernanceV2({section=null}){
 
   return <FeaturePageV2
     featureId="governance"
-    description={<><p>治理處理如何被使用、引用、延伸與修正。的原則。</p><p>不要求任何人接受或使用；所有內容均可作為分析、參考與延伸思考的材料。</p></>}
+    description={<><p>說明 LOC 的治理原則、Scope 邊界、權限與資料責任。</p><p>所有內容供參考與延伸；是否使用、如何理解與採取行動，由使用者自行決定。</p></>}
   >
+    <section className="loc-card" id="governance-principles">
+      <p className="loc-eyebrow">Principles</p>
+      <h2>基本原則</h2>
+      <p className="loc-core-line">尊重 · 和平 · 包容 · 友善</p>
+      <p><strong>LOC 保持客觀與中立。</strong>不預設宗教、政治、道德或人生價值立場，也不要求任何人接受作者的信仰、觀念或生活方式。</p>
+      <p>任何人都可以選擇使用、引用、改寫、比較或不用。系統提供整理與分析，不替使用者裁決。</p>
+      <p>歷史保留，解釋可校準；Spec 優先，先判斷詞彙本身的詞性，再判斷群組主體性。</p>
+    </section>
     <div className="loc-grid two">
       <section className="loc-card">
         <p className="loc-eyebrow">Scope</p><h2>Scope 分治</h2>
