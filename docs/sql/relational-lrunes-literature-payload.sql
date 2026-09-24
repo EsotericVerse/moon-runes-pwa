@@ -127,6 +127,5 @@ UPDATE silver.lrunes_literature l SET
   recovery_note=l.source_payload->'recovery_evidence'->>'note',
   analysis_summary=l.source_payload->>'analysis_summary',
   source_tags=ARRAY(SELECT jsonb_array_elements_text(COALESCE(l.source_payload->'tags','[]'::jsonb)));
-UPDATE silver.lrunes_literature l SET tags=source_tags;
 ALTER TABLE silver.lrunes_literature DROP COLUMN source_payload;
 COMMIT;
