@@ -2,13 +2,6 @@ import {getScopeV2,resolveScopeV2} from '../modular-v2/scope-registry.v2';
 
 export const SEARCH_SCOPE_FIELDS=Object.freeze(['person','family','generation','era','source','corpus','language','culture']);
 
-const ZHENGDE_CULTURE_COLLECTION = Object.freeze({
-  id: '政德文化',
-  label: '政德文化',
-  description: '搜尋政德文化的文字、歌曲、時期與作品關鍵詞。',
-  scopeProfile:Object.freeze({id:'personal',fields:Object.freeze(['person','era','source','corpus','language','culture'])}),
-});
-
 export const SEARCH_COLLECTIONS = Object.freeze({
   all: Object.freeze({
     id: 'all',
@@ -23,8 +16,12 @@ export const SEARCH_COLLECTIONS = Object.freeze({
     description: '搜尋 LunaRunes 核心資料、抽牌語法與相關文字。',
     scopeProfile:Object.freeze({id:'lunarunes',fields:Object.freeze(['source','corpus','language','culture'])}),
   }),
-  '政德文化': ZHENGDE_CULTURE_COLLECTION,
-  '政德風': ZHENGDE_CULTURE_COLLECTION,
+  lo3rwang: Object.freeze({
+    id:'lo3rwang',
+    label:'lo3rwang',
+    description:'搜尋作者正文。',
+    scopeProfile:Object.freeze({id:'personal',fields:Object.freeze(['person','era','source','corpus','language','culture'])}),
+  }),
   '治理': Object.freeze({
     id:'治理',
     label:'治理',
@@ -33,7 +30,7 @@ export const SEARCH_COLLECTIONS = Object.freeze({
   })
 });
 
-export const SEARCH_COLLECTION_ORDER = Object.freeze(['all', '月之符文', '政德文化', '治理']);
+export const SEARCH_COLLECTION_ORDER = Object.freeze(['all', '月之符文', 'lo3rwang', '治理']);
 export function getSearchCollection(value) {
   const key = String(value || '').trim();
   return SEARCH_COLLECTIONS[key] || SEARCH_COLLECTIONS.all;
