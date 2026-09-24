@@ -105,7 +105,7 @@ export const SCOPES_V2=Object.freeze({
     homes:Object.freeze([
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
-    searchCollection:'政德文化',
+    searchCollection:'lo3rwang',
     dataViews:Object.freeze({context:'api.lo3rwang_context_entries',rankings:'api.lo3rwang_rankings'}),
     rankingTitle:'作者排行榜',
     theme:Object.freeze({
