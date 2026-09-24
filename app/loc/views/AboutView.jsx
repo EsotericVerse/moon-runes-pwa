@@ -67,8 +67,8 @@ export default function AboutView(){
           <p className="loc-subtitle">把語言整理成可理解、可搜尋、可推演的模組結構。</p>
         </div>
         <div className="loc-hero-copy">
-          <p className="loc-core-line">以微月光為鑑，即為月典(LOC,Luna Codex)，</p>
-		  <p>並用於分析整理，在時間長河內，文字發光的作品。</p>
+          <p>以微月光為鑑，即為月典(LOC,Luna Codex)，</p>
+		  <p>用於分析整理，顯示在時間長河內，文字發光的作品。</p>
           <p>當微光慢慢集中變亮，你也將綻放屬於自己的光芒。</p>
         </div>
       </div>
@@ -84,10 +84,8 @@ export default function AboutView(){
       </div>
       <div className="home-rune-layout">
         <div className="home-author-copy">
-		<p>月典，是一套用來分析、搜尋的模型化語言框架（Modelized Language Framework）。</p>
-		<p>月之符文(LunaRunes)是一套有自己獨特方式的符號式語言（Symbolic Language）。</p>
-        <p>月典以月之符文開始，把文字、作品、脈絡與時間串起來判斷分析，</p>
-		<p>讓累積的資料可以繼續被理解、比較分析並得知在時間長河內的變化幅度。</p>
+		<p>月典，是一套用來分析的模型化語言框架（Modelized Language Framework）。始於月之符文。</p>
+		<p>月之符文(LunaRunes)是一套有獨特方式的符號式語言（Symbolic Language）。與月典相輔相成。</p>
 		<br/>
           <p>當然可以不用管月之符文是什麼，<a href={RUNES_LINKS.single}>抽了就知道！</a></p>
 		  <p>可以是問事，可以是決定當日生活主題風格的<a href={RUNES_LINKS.daily}>每日符文</a>。</p>
@@ -119,19 +117,18 @@ export default function AboutView(){
             <a className="loc-bubble" href={RUNES_LINKS.five}>抽五張<p>以兩個因果為基礎，加上一個變數。</p></a>
             <a className="loc-bubble" href={RUNES_LINKS.ow3gs}>抽11張<p>OW3gs：兩個因果模組綜合的演算法。</p></a>
           </div>
-          <div className="loc-actions home-rune-links"></div>
         </div>
       </div>
     </section>
 
     <section className="loc-card home-framework" id="framework-map">
-      <div className="home-section-heading"><p className="loc-eyebrow">LOC Model Architecture</p><h2>月典模型架構</h2><p className="loc-subtitle">八個功能模組依資料、處理與組合關係協作。</p></div>
+      <div className="home-section-heading"><p className="loc-eyebrow">LOC Model Architecture</p><h2>LOC模型架構</h2><p className="loc-subtitle">LOC八個功能架構依資料、處理與組合關係協作。</p></div>
       <div className="home-framework-stage" aria-label="LOC 八個功能模組架構"><ModelArchitectureExplorer modules={MODEL_MODULES} /><div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間演變</span></div></div>
     </section>
 
     <section className="loc-card home-copy-block home-skills" id="skills">
       <div className="home-section-heading"><p className="loc-eyebrow">LOC GPT Skills</p><h2>Skills</h2><p className="loc-subtitle">把月典延伸可以重複使用的工作流程。<br/>把語言治理與治理資料儲存庫，封裝成可直接調用的 AI Skills。</p></div>
-      <div className="home-author-copy"><p><strong>loc-km-governance</strong>：檢查 Canon、KM、FAQ、Registry、Base66、術語一致性、資料權威與舊版污染。</p><p><strong>loc-repo-health-check</strong>：檢查儲存庫結構、路徑、API／搜尋、部署與效能風險等。</p><p>Skills 不是另一套理論，而是把 LOC 已形成的治理管理理念跟方法，轉成GPT可以重複執行的工作流程。</p><div className="loc-actions"><a className="loc-button primary" href="/LOC-GPT-Skills-v1.0.0-bundle.zip">下載 LOC GPT Skills v1.0.0</a></div></div>
+      <div className="home-author-copy"><p><strong>loc-km-governance</strong>：檢查 Canon、KM、FAQ、Registry、Base66、術語一致性、資料權威。</p><p><strong>loc-repo-health-check</strong>：檢查儲存庫結構、路徑、API／搜尋、部署與效能風險等。</p><p>Skills 不是另一套理論，而是把 LOC 已形成的治理管理理念跟方法，轉成GPT可以重複執行的工作流程。</p><div className="loc-actions"><a className="loc-button primary" href="/LOC-GPT-Skills-v1.0.0-bundle.zip">下載 LOC GPT Skills v1.0.0</a></div></div>
 
     </section>
 
