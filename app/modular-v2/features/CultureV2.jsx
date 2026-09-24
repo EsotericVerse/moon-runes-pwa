@@ -91,31 +91,35 @@ export default function CultureV2(){
         <article className='home-progress-item'><strong>治理、管理</strong><span>授權內容可用全文做搜尋與分析；公開結果則依內容治理決定顯示全文、片段或僅 metadata。Facebook、Threads 預設只顯示片段，歌詞不直接公開全文；系統並以治理管理文件約束資料權責、版權與公開邊界。</span></article>
       </div>
     </section>:null}
-    {query.isPending?<p className='scope-v2-status'>載入時間長河…</p>:null}
-    {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
-    {!query.isPending&&!query.error&&!rows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-    {!query.isPending&&!query.error&&rows.length?<>
-      {scopeId!=='loc'?<label className='scope-v2-culture-period-select'>
-        <span>時期</span>
-        <select className='scope-v2-select' value={selectedPeriod} onChange={event=>setSelectedPeriod(event.target.value)}>
-          <option value={CULTURE_OVERVIEW_LABEL}>{CULTURE_OVERVIEW_LABEL}</option>
-          {rows.map((item,index)=><option key={periodKey(item)||index} value={periodKey(item)}>{labelOf(item,index)}</option>)}
-        </select>
-      </label>:null}
-      {selected?.description?<p className='scope-v2-culture-period-description'>{selected.description}</p>:null}
-      <CultureTimelineV2 items={visibleRows} labelOf={labelOf} focus={navigation} mode={overview?'overview':'period'} />
-      {scopeId==='lo3rwang'&&selected?<>
-        <h2>文字軌跡</h2>
-        {periodWorksQuery.isPending?<p className='scope-v2-status'>載入時期文字作品…</p>:null}
-        {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
-        {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!detailTimeline.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-        {detailTimeline.length?<CultureTimelineV2
-          items={detailTimeline}
-          labelOf={(item)=>item?.title||item?.name||item?.work_id||'文字紀錄'}
-          focus={navigation}
-          mode='period'
-        />:null}
+    <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
+      <p className='loc-eyebrow'>Time River</p>
+      <h2>時間長河</h2>
+      {query.isPending?<p className='scope-v2-status'>載入時間長河…</p>:null}
+      {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
+      {!query.isPending&&!query.error&&!rows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+      {!query.isPending&&!query.error&&rows.length?<>
+        {scopeId!=='loc'?<label className='scope-v2-culture-period-select'>
+          <span>時期</span>
+          <select className='scope-v2-select' value={selectedPeriod} onChange={event=>setSelectedPeriod(event.target.value)}>
+            <option value={CULTURE_OVERVIEW_LABEL}>{CULTURE_OVERVIEW_LABEL}</option>
+            {rows.map((item,index)=><option key={periodKey(item)||index} value={periodKey(item)}>{labelOf(item,index)}</option>)}
+          </select>
+        </label>:null}
+        {selected?.description?<p className='scope-v2-culture-period-description'>{selected.description}</p>:null}
+        <CultureTimelineV2 items={visibleRows} labelOf={labelOf} focus={navigation} mode={overview?'overview':'period'} />
+        {scopeId==='lo3rwang'&&selected?<>
+          <h2>文字軌跡</h2>
+          {periodWorksQuery.isPending?<p className='scope-v2-status'>載入時期文字作品…</p>:null}
+          {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
+          {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!detailTimeline.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+          {detailTimeline.length?<CultureTimelineV2
+            items={detailTimeline}
+            labelOf={(item)=>item?.title||item?.name||item?.work_id||'文字紀錄'}
+            focus={navigation}
+            mode='period'
+          />:null}
+        </>:null}
       </>:null}
-    </>:null}
+    </section>
   </section>;
 }
