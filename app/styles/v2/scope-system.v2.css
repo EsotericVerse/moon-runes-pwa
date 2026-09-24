@@ -138,3 +138,11 @@
     border-left:0!important;
   }
 }
+
+/* Culture timeline: use the active LOC theme colors instead of vis-timeline defaults. */
+.scope-period-timeline .vis-timeline{border-color:var(--loc-line);background:var(--loc-panel);color:var(--loc-text)}
+.scope-period-timeline .vis-panel{border-color:var(--loc-line)}
+.scope-period-timeline .vis-time-axis .vis-text,.scope-period-timeline .vis-labelset .vis-label,.scope-period-timeline .vis-group,.scope-period-timeline .vis-item{color:var(--loc-text)}
+.scope-period-timeline .vis-time-axis .vis-grid.vis-minor{border-color:var(--loc-line-soft)}
+.scope-period-timeline .vis-time-axis .vis-grid.vis-major{border-color:var(--loc-line)}
+.scope-period-timeline .vis-item:not(.scope-period-timeline-focus){background:var(--loc-panel-2);border-color:var(--loc-accent-border)}
