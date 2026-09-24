@@ -1,6 +1,5 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectNeonRows} from './neon-repository';
-import {selectMetricSnapshots} from './neon-metric-snapshots';
 
 const RANKING_TABLES=Object.freeze({
   loc:'api.loc_rankings',
@@ -25,14 +24,7 @@ export async function selectScopeRankingPage(scopeId,{page=1,pageSize=20,ranking
   const id=String(scopeId||'');
   const table=RANKING_TABLES[id];
   if(!table)throw new Error('Scope 無效');
-  let snapshotRows=[];
-  try{snapshotRows=await selectMetricSnapshots(id,{metricType:'ranking'});}catch(_error){
-    // RC6 remains compatible with existing ranking relations until the Neon
-    // snapshot relation is present on every environment.
-  }
-  const {rows}=snapshotRows.length
-    ? {rows:snapshotRows.map(row=>({...row,ranking_type:row.ranking_type||row.metric_key,rank_value:row.metric_value}))}
-    : await selectNeonRows(table,{columns:id==='loc'?'scope_id,ranking_key,ranking_type,term,rank_value,item_count':'ranking_key,ranking_type,term,rank_value,item_count',limit:5000});
+  const {rows}=await selectNeonRows(table,{columns:id==='loc'?'scope_id,ranking_key,ranking_type,term,rank_value,item_count':'ranking_key,ranking_type,term,rank_value,item_count',limit:5000});
   // api.loc_rankings is the aggregate LOC adapter: keep every projected row,
   // including rows carrying an explicit `loc` scope_id.
   const sourceRows=rows;
