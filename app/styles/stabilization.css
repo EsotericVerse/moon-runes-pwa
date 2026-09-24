@@ -210,6 +210,10 @@
   border:0;
   background:var(--loc-bg);
 }
+.scope-home-hero-media-stack{
+  display:grid;
+  gap:1rem;
+}
 
 .loc-next-nav,
 .loc-button,
