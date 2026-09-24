@@ -13,8 +13,8 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 function labelOf(item,index){return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);}
 function rowsOf(data){
-  const authorRows=Array.isArray(data?.authorEras?.eras)?data.authorEras.eras:[];
-  const runeRows=Array.isArray(data?.runeEras?.eras)?data.runeEras.eras:[];
+  const authorRows=Array.isArray(data?.authorEras?.eras)?data.authorEras.eras.map(item=>({...item,scope_id:item?.scope_id||'lo3rwang'})):[];
+  const runeRows=Array.isArray(data?.runeEras?.eras)?data.runeEras.eras.map(item=>({...item,scope_id:item?.scope_id||'runes'})):[];
   const rows=authorRows.length&&runeRows.length?[...authorRows,...runeRows]:
     (authorRows.length?authorRows:(runeRows.length?runeRows:(data?.eras?.eras||[])));
   return rows.sort((a,b)=>{
@@ -43,7 +43,15 @@ export default function CultureV2(){
 
   const overview=isCultureOverview(selectedPeriod);
   const selected=overview?null:rows.find(item=>periodKey(item)===String(selectedPeriod))||null;
-  const visibleRows=overview?rows:(selected?[selected]:[]);
+  const currentRows=useMemo(()=>{
+    if(scopeId!=='loc')return [];
+    const byScope=['lo3rwang','runes'].map(id=>{
+      const scoped=rows.filter(item=>String(item?.scope_id||'')===id);
+      return scoped.find(item=>String(item?.status||'').toLowerCase()==='current')||scoped.at(-1)||null;
+    }).filter(Boolean);
+    return byScope;
+  },[scopeId,rows]);
+  const visibleRows=scopeId==='loc'?currentRows:(overview?rows:(selected?[selected]:[]));
   const periodWorksQuery=useQuery({
     queryKey:['culture-period-works',scopeId,selected?.start_date,selected?.end_date],
     queryFn:()=>selectAuthorPeriodWorks({startDate:selected?.start_date,endDate:selected?.end_date,limit:200}),
