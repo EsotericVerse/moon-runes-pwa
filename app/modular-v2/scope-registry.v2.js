@@ -60,7 +60,9 @@ export const SCOPES_V2=Object.freeze({
       'duel/two',
       'duel/three',
       'duel/five',
-      'duel/ow3gs'
+      'duel/ow3gs',
+      'daily/log',
+      'daily/trend'
     ]),
     routePatterns:Object.freeze(['list/:group','list/:group/:rune']),
     compatibilityRoutes:Object.freeze([]),
