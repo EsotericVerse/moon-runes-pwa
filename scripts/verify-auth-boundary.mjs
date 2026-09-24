@@ -9,7 +9,7 @@ const failures=[];
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
 
 requireMatch(data,/selectNeonRows/,'shared runtime data must use direct Neon table reads');
-requireMatch(data,/memoryCache/,'shared runtime data must use bounded in-memory caching');
+if(/memoryCache|DEFAULT_MEMORY_CACHE_ENTRIES/.test(data))failures.push('shared runtime data must not retain a process-memory data cache');
 requireMatch(client,/@neondatabase\/neon-js/,'Neon Managed Auth client dependency is required');
 requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required');
 requireMatch(client,/getSession/,'Neon session lookup is required');
