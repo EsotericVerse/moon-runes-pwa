@@ -88,7 +88,7 @@ export default function RunesClient(){
         <nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={runeHref('')}>符文抽籤</a><a href={runeHref('list')}>符文圖鑑</a><a href={runeHref('algorithm')}>符文解牌</a><a href={runeHref('game')}>符文遊戲</a></nav>
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">
-        <iframe src="https://www.instagram.com/reel/DMA9yDAzeRK/embed" title="月之符文公開占卜示範" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
+        <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
       </figure>
     </header>
     <section className="loc-card rune-basics">
