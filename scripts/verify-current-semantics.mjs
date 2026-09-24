@@ -24,5 +24,12 @@ const loader=read(files.canonicalLoader);
 for(const token of ['selectNeonRows','silver.lrunes_runes'])if(!loader.includes(token))failures.push(`canonical Neon loader: missing ${token}`);
 for(const path of Object.values(files))if(/data\/json|runtime_json_documents/.test(read(path)))failures.push(`${path}: retired JSON identifier remains`);
 
+const search=read(files.search);
+for(const token of ['columns:columns.join(\',\')','filter(value=>typeof value===\'string\')'])if(!search.includes(token))failures.push(`search: missing scalar-only projection ${token}`);
+for(const path of [files.search,files.searchView,files.canonicalLoader]){
+  const source=read(path);
+  if(/columns:\s*['"]\*['"]|JSON\.stringify|canonical_payload|SEARCH_(?:INDEX|TABLE)_CACHE|memoryCache/.test(source))failures.push(`${path}: forbidden JSON read or retained cache remains`);
+}
+
 if(failures.length){console.error('Current semantic authority guard failed:\\n'+failures.map(item=>`- ${item}`).join('\\n'));process.exit(1);}
 console.log('Current semantic authority guard passed for the Neon canonical runtime.');
