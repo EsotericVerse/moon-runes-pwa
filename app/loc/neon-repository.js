@@ -7,20 +7,18 @@ const TableSchema=z.enum([
   'api.user_records','api.user_settings','api.scope_contacts','api.scope_theme_defaults',
   'api.scope_access_grants','api.scope_relations','api.scope_relation_requests','api.site_theme_styles',
   'api.loc_context_entries','api.loc_rankings','api.loc_culture_entries',
-  'api.runes_context_entries','api.runes_rankings','api.lo3rwang_context_entries','api.lo3rwang_rankings','api.lo3rwang_works','api.lo3rwang_galaxy',
-  'silver.works','silver.song_versions','silver.content_relations','silver.work_scope_affiliations',
+  'api.runes_context_entries','api.runes_rankings','api.lo3rwang_context_entries','api.lo3rwang_rankings','api.lo3rwang_galaxy',
+  'silver.content_relations',
   'silver.runes_context_entries','silver.lo3rwang_context_entries',
   'silver.lo3rwang_period_context_entries','silver.lrunes_runes','silver.lrunes_harmony','silver.lrunes_algorithm',
-  'silver.work_semantics',
   'silver.metric_snapshots',
   'silver.faq_entries',
   'silver.system_table_catalog','silver.system_data_principles',
   'silver.loc_scope_registry','silver.loc_shortcut_routes','silver.loc_home_shortcuts',
-  'vault.work_texts','vault.song_version_texts'
 ]);
 const WritableTableSchema=z.enum([
   'api.user_records','api.user_settings','api.scope_access_grants','api.scope_relations',
-  'api.scope_relation_requests','api.site_theme_styles','silver.work_scope_affiliations'
+  'api.scope_relation_requests','api.site_theme_styles'
 ]);
 const RowSchema=z.record(z.string(),z.unknown());
 const FilterSchema=z.object({
