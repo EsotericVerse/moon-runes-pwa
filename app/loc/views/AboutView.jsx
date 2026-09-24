@@ -93,8 +93,8 @@ export default function AboutView(){
 		  <p>可以是問事，可以是決定當日生活主題風格的<a href={RUNES_LINKS.daily}>每日符文</a>。</p>
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
           <p>你也可以完全不抽牌，直接跳過，</p>
-		  <p>或來看<a href="/context">脈絡關係圖</a>、<a href="/statics">統計資料</a>、<a href="/culture">文化的時間長河</a>等，</p>
-		  <p>或是看看<a href="/faq">FAQ</a>，或直接搜尋自己有興趣的文字與資料。</p>
+		  <p>或來看<a href="/context/">脈絡關係圖</a>、<a href="/statics/">統計資料</a>、<a href="/culture/">文化的時間長河</a>等，</p>
+		  <p>或是看看<a href="/faq/">FAQ</a>，或直接搜尋自己有興趣的文字與資料。</p>
           <p><strong>那就開始吧！</strong></p>
         </div>
         <figure className="home-framework-figure"><img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" /></figure>
