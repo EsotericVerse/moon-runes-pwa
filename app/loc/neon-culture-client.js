@@ -5,8 +5,7 @@ import {selectNeonRows} from './neon-repository';
 
 const CULTURE_TABLES=Object.freeze({
   loc:'api.loc_culture_entries',
-  periods:'silver.lo3rwang_period_context_entries',
-  works:'silver.works'
+  periods:'api.lo3rwang_context_entries'
 });
 
 function periodRows(rows){
@@ -54,10 +53,21 @@ export async function selectScopeCultureData(scopeId){
   const [culture,periods,runePeriods]=await Promise.all([
     id==='loc'?selectNeonRows(CULTURE_TABLES.loc,{columns:'scope_id,entry_key,entry_type,title,date,start_date,end_date,era_id,source,style,keywords,body,url,payload,is_derived,manual_override,source_ref',filters:[{column:'scope_id',operator:'eq',value:'loc'}],limit:5000}):Promise.resolve({rows:[]}),
     id==='lo3rwang'?selectNeonRows(CULTURE_TABLES.periods,{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000}):Promise.resolve({rows:[]}),
-    id==='runes'?selectNeonRows('silver.runes_context_entries',{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'in',value:['period','era']}],limit:5000}):Promise.resolve({rows:[]})
+    id==='runes'?selectNeonRows('api.runes_context_entries',{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'in',value:['period','era']}],limit:5000}):Promise.resolve({rows:[]})
   ]);
   const cultureRowsRaw=culture.rows||[];
-  const periodContext=periods.rows||[];
+  const PERSONAL_CULTURE_START='2026-01-30';
+  const periodContext=(periods.rows||[]).flatMap(row=>{
+    if(id!=='lo3rwang')return [row];
+    const payload=row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
+    const end=payload.end_date||row.end_date||null;
+    if(end&&String(end)<PERSONAL_CULTURE_START)return [];
+    const start=payload.start_date||row.start_date||null;
+    if(start&&String(start)<PERSONAL_CULTURE_START){
+      return [{...row,payload:{...payload,start_date:PERSONAL_CULTURE_START}}];
+    }
+    return [row];
+  });
   const historyValue={records:[]};
   const runeEras=periodRows(runePeriods.rows||[]);
   const eraSource=id==='loc'?cultureRowsRaw.filter(row=>['era','period'].includes(row.entry_type)):periodContext;
