@@ -40,7 +40,7 @@ function FaqView(){
         <p>{faqAnswer(row)}</p>
       </article>)}
     </div>
-  </FeaturePageV2>;
+  </section>;
 }
 
 function CopyrightView(){
