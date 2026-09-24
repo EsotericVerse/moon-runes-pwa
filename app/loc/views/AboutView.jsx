@@ -84,10 +84,10 @@ export default function AboutView(){
       </div>
       <div className="home-rune-layout">
         <div className="home-author-copy">
-		<p>月典，是一套用來分析的模型化語言框架（Modelized Language Framework）。始於月之符文。</p>
-		<p>月之符文(LunaRunes)是一套有獨特方式的符號式語言（Symbolic Language）。與月典相輔相成。</p>
+		<p>月典，是一套用來分析的模型化語言框架。始於月之符文。</p>
+		<p>月之符文(LunaRunes)是個具有獨特方式的符號型語言。與月典相輔相成。</p>
 		<br/>
-          <p>當然可以不用管月之符文是什麼，<a href={RUNES_LINKS.single}>抽了就知道！</a></p>
+          <p>太複雜了！當然可以不用管月之符文是什麼，<a href={RUNES_LINKS.single}>抽了就知道！</a></p>
 		  <p>可以是問事，可以是決定當日生活主題風格的<a href={RUNES_LINKS.daily}>每日符文</a>。</p>
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
           <p>你也可以完全不抽牌，直接跳過，</p>
@@ -100,7 +100,7 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-copy-block home-rune-section">
-      <div className="home-section-heading"><p className="loc-eyebrow">LunaRunes</p><h2>月之符文籤詩系統</h2><p className="loc-subtitle">不涉及神秘學，為單純的指引籤詩
+      <div className="home-section-heading"><p className="loc-eyebrow">LunaRunes(Symbolic Language)</p><h2>月之符文籤詩系統</h2><p className="loc-subtitle">不涉及神秘學，為單純的指引籤詩
 	  <br/>不保證一定就是註定，你擁有選擇權。</p></div>
       <div className="home-rune-layout">
         <div className="home-rune-preview" aria-label="命之符文示例">
