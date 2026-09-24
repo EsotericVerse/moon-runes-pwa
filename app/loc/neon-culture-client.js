@@ -135,9 +135,9 @@ export async function selectAuthorPeriodWorks({startDate,endDate,limit=200}={}){
   const filters=[{column:'created_at',operator:'gte',value:startDate}];
   if(endDate)filters.push({column:'created_at',operator:'lte',value:endDate+'T23:59:59.999Z'});
   const {rows}=await selectNeonRows('api.lo3rwang_galaxy',{
-    columns:'galaxy_id,category,content_type,source_platform,source_role,title,created_at,source_ref,source_id,work_id',
+    columns:'galaxy_id,category,content_type,source_platform,source_role,title,content,created_at,source_ref,source_id,work_id',
     filters,
-    orders:[{column:'created_at',ascending:true}],
+    orders:[{column:'created_at',ascending:false}],
     limit
   });
   return rows.map(row=>({
@@ -145,7 +145,9 @@ export async function selectAuthorPeriodWorks({startDate,endDate,limit=200}={}){
     start_date:row.created_at,
     date:row.created_at,
     entry_id:row.galaxy_id,
-    title:row.title||row.source_platform||row.galaxy_id,
+    title:row.title||String(row.content||'').trim().slice(0,72)||row.source_platform||row.galaxy_id,
+    description:String(row.content||'').trim().slice(0,400),
+    group_label:row.content_type||row.category||row.source_role||'作品',
     scope_id:'lo3rwang'
   }));
 }

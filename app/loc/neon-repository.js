@@ -12,7 +12,7 @@ const TableSchema=z.enum([
   'silver.runes_context_entries','silver.lo3rwang_context_entries',
   'silver.lo3rwang_period_context_entries','silver.lrunes_runes','silver.lrunes_harmony','silver.lrunes_algorithm',
   'silver.metric_snapshots',
-  'silver.faq_entries',
+  'silver.faq_entries','silver.suno_songs',
   'silver.system_table_catalog','silver.system_data_principles',
   'silver.loc_scope_registry','silver.loc_shortcut_routes','silver.loc_home_shortcuts',
 ]);

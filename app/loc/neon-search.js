@@ -9,7 +9,8 @@ const TABLES=Object.freeze({
     ['silver.runes_context_entries','符文脈絡'],
     ['api.lo3rwang_galaxy','作者正文'],
     ['silver.lrunes_runes','月之符文'],
-    ['silver.faq_entries','FAQ']
+    ['silver.faq_entries','FAQ'],
+    ['silver.suno_songs','音樂作品']
   ]),
   '月之符文':Object.freeze([
     ['silver.runes_context_entries','月之符文脈絡'],
@@ -26,7 +27,8 @@ const TABLES=Object.freeze({
 
 const SEARCH_PAGE_SIZE=500;
 const SEARCH_INDEX_CACHE=new Map();
-const MAX_INDEX_RESULTS=180;
+const SEARCH_TABLE_CACHE=new Map();
+const MAX_INDEX_RESULTS=5000;
 const SEARCH_INDEX_TTL_MS=60_000;
 
 function normalizeSearchText(value){
@@ -35,6 +37,18 @@ function normalizeSearchText(value){
 
 function rowSearchText(row){
   return normalizeSearchText(Object.values(row||{}).map(value=>typeof value==='string'?value:JSON.stringify(value??'')).join(' '));
+}
+
+async function selectCachedNeonRows(table,source){
+  const cached=SEARCH_TABLE_CACHE.get(table);
+  if(cached&&cached.expiresAt>Date.now())return cached.promise;
+  if(cached)SEARCH_TABLE_CACHE.delete(table);
+  const promise=selectAllNeonRows(table,source).catch(error=>{
+    if(SEARCH_TABLE_CACHE.get(table)?.promise===promise)SEARCH_TABLE_CACHE.delete(table);
+    throw error;
+  });
+  SEARCH_TABLE_CACHE.set(table,{promise,expiresAt:Date.now()+SEARCH_INDEX_TTL_MS});
+  return promise;
 }
 
 async function selectAllNeonRows(table,source){
@@ -60,7 +74,7 @@ export async function selectNeonSearchRows(collectionId){
     indexPromise=(async()=>{
       const settled=await Promise.all(tables.map(async([table,source])=>{
         try{
-          return {table,rows:await selectAllNeonRows(table,source),error:null};
+          return {table,rows:await selectCachedNeonRows(table,source),error:null};
         }catch(error){
           return {table,rows:[],error:new Error(`Neon Search SELECT ${table}: ${error?.message||'query failed'}`)};
         }
@@ -71,7 +85,7 @@ export async function selectNeonSearchRows(collectionId){
       if(!successfulTables)throw new AggregateError(failures,'Neon 搜尋資料表全部無法查詢');
       const index=new Index({tokenize:'full'});
       rows.forEach(({row},id)=>index.add(id,rowSearchText(row)));
-      return {index,rows,failures};
+      return {index,rows,failures,indexedCount:rows.length};
     })().catch(error=>{
       const current=SEARCH_INDEX_CACHE.get(cacheKey);
       if(current?.promise===indexPromise)SEARCH_INDEX_CACHE.delete(cacheKey);

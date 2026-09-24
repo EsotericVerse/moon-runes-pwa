@@ -90,7 +90,7 @@ export default function SearchV2(){
       setResults([...scopeHits,...converted]);
       setHasMore(search.rows.length>capacity);
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
-      setStatus(`「${collection.label}」搜尋「${q}」。${partial}`);
+      setStatus(`「${collection.label}」搜尋「${q}」。FlexSearch 已索引 ${Number(search.indexedCount||0).toLocaleString()} 筆資料。${partial}`);
     }catch(exception){
       if(id!==searchId.current)return;
       setError(featureDataErrorMessage(exception));

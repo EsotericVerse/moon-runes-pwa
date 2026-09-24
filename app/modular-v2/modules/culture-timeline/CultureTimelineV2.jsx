@@ -14,36 +14,43 @@ function timelineRows(items,labelOf,focus){
       item?.anchor_id,item?.anchor_role,item?.anchor_type
     ].filter(Boolean).map(String);
     const focused=focusTerms.some(term=>candidateValues.includes(term));
+    const group=item?.group_label||item?.scope_id||'';
     return [{
-      id:String(item?.era_id||item?.period_id||item?.version||item?.id||index),
+      id:String(item?.era_id||item?.period_id||item?.version||item?.id||item?.entry_id||index),
       content:labelOf(item,index),
       title:[item?.description,item?.milestone,item?.anchor_role,item?.anchor_type,item?.is_primary_anchor?'主要錨點':'',item?.is_rc_zone?'RC 區':''].filter(Boolean).join(' · '),
       start,
-      ...(item?.scope_id?{group:String(item.scope_id)}:{}),
+      ...(group?{group:String(group)}:{}),
       ...(validEnd?{end:validEnd,type:'range'}:{type:'point'}),
       ...(focused?{className:'scope-period-timeline-focus'}:{})
     }];
   });
 }
 
+function groupLabel(id){
+  if(id==='lo3rwang')return 'lo3rwang 時期';
+  if(id==='runes')return 'LunaRunes 沿革';
+  return id;
+}
+
 export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period'}){
   const containerRef=useRef(null);
   const [ready,setReady]=useState(false);
+  const [chartError,setChartError]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
+  const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))).slice(0,50),[rows]);
 
   useEffect(()=>{
     let cancelled=false;
     let instance=null;
+    setChartError(false);
     if(!containerRef.current||!rows.length){setReady(false);return()=>{cancelled=true};}
     setReady(false);
     import('vis-timeline/standalone').then(({DataSet,Timeline})=>{
       if(cancelled||!containerRef.current)return;
       const data=new DataSet(rows);
       const groupIds=[...new Set(rows.map(row=>row.group).filter(Boolean))];
-      const groups=groupIds.length>1?new DataSet(groupIds.map(id=>({
-        id,
-        content:id==='lo3rwang'?'lo3rwang 時期':id==='runes'?'LunaRunes 沿革':id
-      }))):null;
+      const groups=groupIds.length>1?new DataSet(groupIds.map(id=>({id,content:groupLabel(id)}))):null;
       instance=new Timeline(containerRef.current,data,groups,{
         autoResize:true,
         height:'260px',
@@ -59,14 +66,18 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
       });
       instance.fit({animation:{duration:180,easingFunction:'easeInOutQuad'}});
       setReady(true);
-    }).catch(()=>setReady(false));
+    }).catch(()=>{if(!cancelled){setReady(false);setChartError(true)}});
     return()=>{cancelled=true;if(instance)instance.destroy();};
   },[rows]);
 
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>
-    {!ready?<p className='scope-v2-status'>載入時間長河…</p>:null}
+    {!ready&&!chartError?<p className='scope-v2-status'>載入時間長河…</p>:null}
+    {chartError?<p className='scope-v2-status'>圖表載入失敗，以下改用清單顯示。</p>:null}
     <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期時間長河':'時期時間長河'} />
+    {chartError?<ol className='scope-v2-list'>
+      {fallbackRows.map(row=><li key={row.id}><strong>{row.content}</strong>{row.group?<span> · {groupLabel(row.group)}</span>}<span> · {new Date(row.start).toLocaleDateString('zh-Hant')}</span>{row.title?<p>{row.title}</p>:null}</li>)}
+    </ol>:null}
   </div>;
 }
