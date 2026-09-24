@@ -313,3 +313,38 @@
     margin-top:1rem!important;
   }
 }
+
+
+/* Shared feature-page heading: Chinese title left, short explanation right. */
+.scope-v2-hero>.home-title-row{
+  display:grid;
+  grid-template-columns:max-content minmax(0,1fr);
+  column-gap:1.5rem;
+  align-items:end;
+  width:100%;
+  margin:.12rem 0 .72rem;
+}
+.scope-v2-hero>.home-title-row>h1{
+  margin:0!important;
+  padding:0 .8rem .6rem 0!important;
+  border-bottom:1px solid var(--loc-line)!important;
+}
+.scope-v2-hero>.home-title-row>.loc-subtitle{
+  justify-self:start;
+  margin:0!important;
+  padding:0 0 .6rem .8rem!important;
+  border-left:1px solid var(--loc-line)!important;
+  border-bottom:1px solid var(--loc-line)!important;
+}
+@media(max-width:680px){
+  .scope-v2-hero>.home-title-row{
+    grid-template-columns:1fr;
+    align-items:start;
+  }
+  .scope-v2-hero>.home-title-row>h1,
+  .scope-v2-hero>.home-title-row>.loc-subtitle{
+    padding-left:0!important;
+    padding-right:0!important;
+    border-left:0!important;
+  }
+}
