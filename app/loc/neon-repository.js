@@ -7,7 +7,7 @@ const TableSchema=z.enum([
   'api.user_records','api.user_settings','api.scope_contacts','api.scope_theme_defaults',
   'api.scope_access_grants','api.scope_relations','api.scope_relation_requests','api.site_theme_styles',
   'api.loc_context_entries','api.loc_rankings','api.loc_culture_entries',
-  'api.runes_context_entries','api.runes_rankings','api.lo3rwang_context_entries','api.lo3rwang_rankings',
+  'api.runes_context_entries','api.runes_rankings','api.lo3rwang_context_entries','api.lo3rwang_rankings','api.lo3rwang_works',
   'silver.works','silver.song_versions','silver.content_relations','silver.work_scope_affiliations',
   'silver.runes_context_entries','silver.lo3rwang_context_entries',
   'silver.lo3rwang_period_context_entries','silver.lrunes_runes','silver.lrunes_harmony','silver.lrunes_algorithm',
