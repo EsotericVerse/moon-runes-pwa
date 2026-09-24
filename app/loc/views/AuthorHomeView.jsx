@@ -141,12 +141,6 @@ export default function AuthorHomeView({section=null}){
       </ul></>
     },
     {
-      id:'reels',
-      eyebrow:'Author Reel',
-      title:'這就是我',
-      content:<div className="loc-context-list"><article className="loc-context-item"><strong>不認識我？沒關係！先聽首歌吧！</strong><p>這支作品是王政德／lo3rwang 的個人自我介紹，不是月之符文宣傳內容。</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 查看〈這就是我〉 →</a></p></article></div>
-    },
-    {
       id:'micro-moonlight',
       eyebrow:'Song',
       title:'只是微月光',
@@ -177,7 +171,8 @@ export default function AuthorHomeView({section=null}){
     eyebrow="Author"
     title="Lucas Oscar Wang 政德"
     subtitle="語言架構建築師"
-    intro={<><div className="loc-author-reel"><iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allowTransparency="true" frameBorder="0" scrolling="no"/></div><p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽一首我創作的歌吧！</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟〈這就是我〉 →</a></p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p></>}
+    intro={<><p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽一首我創作的歌吧！</p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p></>}
+    heroVisual={<iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>}
     sections={[{
       id:'overview-graph',
       eyebrow:'Overview',
@@ -194,7 +189,7 @@ export default function AuthorHomeView({section=null}){
     style:Object.freeze(['roles','profile-content']),
     work:Object.freeze(['functions','work','digital-legacy']),
     design:Object.freeze(['governance-root','loc','open-source']),
-    galaxy:Object.freeze(['corpus','reels','micro-moonlight']),
+    galaxy:Object.freeze(['corpus','micro-moonlight']),
     others:Object.freeze(['philosophy','name-origin','calibration']),
     email:Object.freeze(['contact','official-links'])
   });
@@ -205,7 +200,7 @@ export default function AuthorHomeView({section=null}){
     eyebrow="Author"
     title="Lucas Oscar Wang 政德"
     subtitle="lo3rwang"
-    intro={<><div className="loc-author-reel"><iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜王政德自我介紹" loading="eager" allowTransparency="true" frameBorder="0" scrolling="no"/></div><p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽一首我創作的歌吧！</p><p><a href="https://www.instagram.com/p/DdX5ki-oZY6/" target="_blank" rel="noopener noreferrer">在 Instagram 開啟〈這就是我〉 →</a></p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p></>}
+    intro={<><p>Hello！ 你好！你可以叫我Oscar。</p></>}
     sections={activeSections}
   />;
 }
