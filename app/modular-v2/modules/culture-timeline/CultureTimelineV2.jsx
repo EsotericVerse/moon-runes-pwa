@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {densityStyleForCount} from './culture-timeline-model.mjs';
 
 function timelineRows(items,labelOf,focus){
   const focusTerms=[focus?.identity,focus?.period,focus?.anchor].filter(Boolean).map(String);
@@ -15,6 +16,7 @@ function timelineRows(items,labelOf,focus){
     ].filter(Boolean).map(String);
     const focused=focusTerms.some(term=>candidateValues.includes(term));
     const group=item?.group_label||item?.scope_id||'';
+    const density=densityStyleForCount(item?.work_count);
     return [{
       id:String(item?.era_id||item?.period_id||item?.version||item?.id||item?.entry_id||index),
       content:labelOf(item,index),
@@ -22,7 +24,8 @@ function timelineRows(items,labelOf,focus){
       start,
       ...(group?{group:String(group)}:{}),
       ...(validEnd?{end:validEnd,type:'range'}:{type:'point'}),
-      ...(focused?{className:'scope-period-timeline-focus'}:{})
+      ...(focused?{className:'scope-period-timeline-focus'}:{}),
+      ...(density?{style:`background-color:var(--loc-panel);border-color:var(--loc-accent);color:var(--loc-text);filter:brightness(${density.brightness});box-shadow:0 0 ${density.blur} color-mix(in srgb,var(--loc-accent) ${Math.round(density.glow*100)}%,transparent);`}:{})
     }];
   });
 }
@@ -33,12 +36,15 @@ function groupLabel(id){
   return id;
 }
 
-export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period'}){
+export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null}){
   const containerRef=useRef(null);
+  const onSelectRef=useRef(onSelect);
   const [ready,setReady]=useState(false);
   const [chartError,setChartError]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
   const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))).slice(0,50),[rows]);
+
+  useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
 
   useEffect(()=>{
     let cancelled=false;
@@ -63,6 +69,10 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
         showCurrentTime:false,
         stack:true,
         margin:{item:{horizontal:8,vertical:12}}
+      });
+      instance.on('select',({items:selectedItems=[]})=>{
+        const selectedId=selectedItems[0];
+        onSelectRef.current?.(rows.find(row=>row.id===selectedId)||null);
       });
       instance.fit({animation:{duration:180,easingFunction:'easeInOutQuad'}});
       setReady(true);

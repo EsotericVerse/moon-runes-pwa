@@ -10,6 +10,7 @@ const TableSchema=z.enum([
   'api.runes_context_entries','api.runes_rankings','api.lo3rwang_context_entries','api.lo3rwang_rankings','api.lo3rwang_galaxy',
   'silver.content_relations',
   'silver.runes_context_entries','silver.lo3rwang_context_entries',
+  'silver.lrunes_daily_draws',
   'silver.lo3rwang_period_context_entries','silver.lrunes_runes','silver.lrunes_harmony','silver.lrunes_algorithm',
   'silver.metric_snapshots',
   'silver.faq_entries','silver.suno_songs',

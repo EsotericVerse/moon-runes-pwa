@@ -29,6 +29,32 @@ function periodRows(rows){
   });}).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
 }
 
+function runeTimelineRows(rows){
+  const anchors=(rows||[]).map(row=>{
+    const payload=row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
+    return {
+      ...payload,
+      id:row.context_key,
+      entry_id:row.context_key,
+      era_id:row.context_key,
+      period:row.title||row.context_key,
+      name:row.title||row.context_key,
+      title:row.title||row.context_key,
+      description:row.summary||'',
+      date:payload.date||null,
+      start_date:payload.date||null,
+      end_date:null,
+      scope_id:'runes',
+      status:payload.status||''
+    };
+  }).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
+  const current=anchors.find(row=>String(row.status).toLowerCase()==='current'||Number(row.rune_count)===66);
+  return {
+    eras:current?[{...current,period:'符文66',name:'符文66',title:'符文66',status:'current'}]:[],
+    history:anchors.filter(row=>row!==current).map(row=>({...row,status:'history'}))
+  };
+}
+
 function mergeHistory(rows){
   const result={records:(rows||[]).map(row=>({history_id:row.history_id,history_kind:row.history_kind,sequence_no:row.sequence_no,title:row.title,body:row.body||{},source_payload:row.source_payload||{}}))};
   for(const row of rows||[]){
@@ -58,29 +84,14 @@ export async function selectScopeCultureData(scopeId){
     ]);
 
     const authorPeriods=periodRows((author.rows||[]).filter(row=>row.context_type==='period')).map(row=>({...row,scope_id:'lo3rwang',group_label:'lo3rwang 時期'}));
-    const runeHistory=(runes.rows||[]).map(row=>{
-      const payload=row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
-      return {
-        ...payload,
-        era_id:row.context_key,
-        period:row.context_key,
-        name:row.title,
-        title:row.title,
-        description:row.summary||'',
-        start_date:payload.date||null,
-        end_date:null,
-        order:0,
-        status:'history',
-        scope_id:'runes'
-      };
-    }).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
+    const runeTimeline=runeTimelineRows(runes.rows);
 
     return ScopeCultureResponseSchema.parse({
       scopeId:id,
       eras:{eras:authorPeriods},
       authorEras:{eras:authorPeriods},
-      runeEras:{eras:runeHistory},
-      runeHistory:{records:[]},
+      runeEras:{eras:runeTimeline.eras},
+      runeHistory:{records:runeTimeline.history},
       periods:authorPeriods,
       events:[],
       trajectories:[],
@@ -100,22 +111,7 @@ export async function selectScopeCultureData(scopeId){
   const scopeContext=periods.rows||[];
   const periodContext=scopeContext.filter(row=>row.context_type==='period');
   const historyValue={records:[]};
-  const runeEras=(runePeriods.rows||[]).map(row=>{
-    const payload=row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
-    return {
-      ...payload,
-      era_id:row.context_key,
-      period:row.context_key,
-      name:row.title,
-      title:row.title,
-      description:row.summary||'',
-      start_date:payload.date||null,
-      end_date:null,
-      order:0,
-      status:'history',
-      scope_id:'runes'
-    };
-  }).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
+  const runeTimeline=runeTimelineRows(runePeriods.rows);
   const eraSource=periodContext;
   const eras=periodRows(eraSource);
   const contextEvents=id==='lo3rwang'?scopeContext.filter(row=>row.context_type==='event').map(row=>({
@@ -127,19 +123,25 @@ export async function selectScopeCultureData(scopeId){
     start_date:row.payload?.date||null,date:row.payload?.date||null,
     ...(row.payload&&typeof row.payload==='object'?row.payload:{})
   })):[];
-  return ScopeCultureResponseSchema.parse({scopeId:id,eras:{eras:id==='runes'?runeEras:eras},authorEras:id==='lo3rwang'?{eras}:undefined,runeEras:{eras:runeEras},runeHistory:historyValue,periods:eraSource,events:contextEvents,trajectories:contextAnchors,works:[],authorKeywords:{keywords:[]},musicPeriods:{periods:[]},writingPeriods:{periods:[]}});
+  return ScopeCultureResponseSchema.parse({scopeId:id,eras:{eras:id==='runes'?runeTimeline.eras:eras},authorEras:id==='lo3rwang'?{eras}:undefined,runeEras:{eras:runeTimeline.eras},runeHistory:{records:runeTimeline.history},periods:eraSource,events:contextEvents,trajectories:contextAnchors,works:[],authorKeywords:{keywords:[]},musicPeriods:{periods:[]},writingPeriods:{periods:[]}});
 }
 
 export async function selectAuthorPeriodWorks({startDate,endDate,limit=200}={}){
   if(!startDate)return [];
   const filters=[{column:'created_at',operator:'gte',value:startDate}];
   if(endDate)filters.push({column:'created_at',operator:'lte',value:endDate+'T23:59:59.999Z'});
-  const {rows}=await selectNeonRows('api.lo3rwang_galaxy',{
-    columns:'galaxy_id,category,content_type,source_platform,source_role,title,content,created_at,source_ref,source_id,work_id',
-    filters,
-    orders:[{column:'created_at',ascending:false}],
-    limit
-  });
+  const rows=[];
+  const pageSize=Math.max(1,Math.min(1000,Math.floor(Number(limit)||1000)));
+  for(let offset=0;;offset+=pageSize){
+    const result=await selectNeonRows('api.lo3rwang_galaxy',{
+      columns:'galaxy_id,category,content_type,source_platform,source_role,title,content,created_at,source_ref,source_id,work_id',
+      filters,
+      orders:[{column:'created_at',ascending:false}],
+      range:[offset,offset+pageSize-1]
+    });
+    rows.push(...result.rows);
+    if(result.rows.length<pageSize)break;
+  }
   return rows.map(row=>({
     ...row,
     start_date:row.created_at,

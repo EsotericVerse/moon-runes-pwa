@@ -9,6 +9,7 @@ import {CULTURE_OVERVIEW_LABEL,cultureDefaultPeriod,isCultureOverview} from '../
 import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
+import {groupWorksByWeekAndSource} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 
@@ -34,6 +35,8 @@ export default function CultureV2(){
   const query=useQuery({queryKey:['culture-timeline',scopeId],queryFn:()=>selectScopeCultureData(scopeId),staleTime:5*60_000});
   const rows=useMemo(()=>rowsOf(query.data),[query.data]);
   const [selectedPeriod,setSelectedPeriod]=useState(CULTURE_OVERVIEW_LABEL);
+  const [selectedWorkGroup,setSelectedWorkGroup]=useState('');
+  const [visibleWorkCount,setVisibleWorkCount]=useState(10);
 
   useEffect(()=>{
     if(!rows.length){setSelectedPeriod(CULTURE_OVERVIEW_LABEL);return;}
@@ -52,10 +55,10 @@ export default function CultureV2(){
     }).filter(Boolean);
     return byScope;
   },[scopeId,rows]);
-  const visibleRows=scopeId==='loc'?currentRows:(overview?rows:(selected?[selected]:[]));
+  const visibleRows=scopeId==='loc'?currentRows:scopeId==='runes'?[...(overview?rows:(selected?[selected]:[])),...(query.data?.runeHistory?.records||[])]:overview?rows:(selected?[selected]:[]);
   const periodWorksQuery=useQuery({
     queryKey:['culture-period-works',scopeId,selected?.start_date,selected?.end_date],
-    queryFn:()=>selectAuthorPeriodWorks({startDate:selected?.start_date,endDate:selected?.end_date,limit:200}),
+    queryFn:()=>selectAuthorPeriodWorks({startDate:selected?.start_date,endDate:selected?.end_date,limit:1000}),
     enabled:scopeId==='lo3rwang'&&Boolean(selected?.start_date),
     staleTime:5*60_000
   });
@@ -71,9 +74,11 @@ export default function CultureV2(){
     return [
       ...(query.data?.events||[]).filter(inRange),
       ...(query.data?.trajectories||[]).filter(inRange),
-      ...(periodWorksQuery.data||[])
+      ...groupWorksByWeekAndSource(periodWorksQuery.data||[])
     ];
   },[scopeId,selected,query.data,periodWorksQuery.data]);
+  const selectedWorksGroup=useMemo(()=>detailTimeline.find(item=>item.id===selectedWorkGroup)||null,[detailTimeline,selectedWorkGroup]);
+  const visibleGroupWorks=useMemo(()=>selectedWorksGroup?.works?.slice(0,visibleWorkCount)||[],[selectedWorksGroup,visibleWorkCount]);
 
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
@@ -99,10 +104,24 @@ export default function CultureV2(){
           {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!detailTimeline.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
           {detailTimeline.length?<CultureTimelineV2
             items={detailTimeline}
-            labelOf={(item)=>item?.title||item?.name||item?.work_id||'文字紀錄'}
+            labelOf={(item)=>item?.display_label||item?.title||item?.name||item?.work_id||'文字紀錄'}
             focus={navigation}
             mode='period'
+            onSelect={row=>{
+              setSelectedWorkGroup(row?.id||'');
+              setVisibleWorkCount(10);
+            }}
           />:null}
+          {selectedWorksGroup?<section className='scope-v2-card'>
+            <h3>{selectedWorksGroup.display_label}</h3>
+            <p>{selectedWorksGroup.week_start.slice(0,10)} – {selectedWorksGroup.week_end.slice(0,10)}</p>
+            {visibleGroupWorks.map((work,index)=><article className='scope-v2-inline-card' key={work.galaxy_id||work.work_id||`${work.created_at}-${index}`}>
+              <strong>{work.title||work.work_id||'文字紀錄'}</strong>
+              <span>{work.created_at||''}</span>
+              {work.url||work.source_ref?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
+            </article>)}
+            {visibleWorkCount<selectedWorksGroup.works.length?<button type='button' onClick={()=>setVisibleWorkCount(count=>count+10)}>載入更多</button>:null}
+          </section>:null}
         </>:null}
       </>:null}
     </section>
