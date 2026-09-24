@@ -130,12 +130,8 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-culture" id="culture">
       <div className="home-section-heading"><p className="loc-eyebrow">Culture</p><h2>文化</h2><p className="loc-subtitle">文化，是文字的演化。<br/>文字留下風格，風格經過時間累積，才看得見文字風格的變化。</p></div>
-      <div className="home-author-copy"><p>LOC 把脈絡重新放回時間中，讓不同 Scope 的時期與事件放在同一條時間軸上比較；時間重疊只表示交會，不直接推定因果。</p><p>過去可以整理，沒有人可以知道未來，現在還在手上。不是替未來下定論，而是治理已知、觀察演化，再推演的可能性。</p><p><a href="/statics">排行榜</a>可先看全部，再依來源、時期與 Scope 觀察語彙變化。</p></div>
-      <div className="home-progress-grid" aria-label="文化交互概況">
-        <article className="home-progress-item"><strong>lo3rwang 時期</strong><span>P1～P6 形成個人文字時間軸；可進入 <a href="/lo3rwang/culture">個人文化</a> 查看完整 Time River。</span></article>
-        <article className="home-progress-item"><strong>LunaRunes 沿革</strong><span>2025-04-28 概念開始，經 24、42，至 2025-06-28 形成 66 符文；可進入 <a href="/lrunes/culture">符文文化</a> 查看沿革。</span></article>
-        <article className="home-progress-item"><strong>交互</strong><span>個人文字時期與月之符文沿革在共同時間軸上交會；LOC 首頁保留這個交互視角，但不把時間重疊直接解讀成影響或因果。</span></article>
-      </div>
+      <div className="home-author-copy"><p>LOC 把脈絡重新放回時間中，透過時期、事件、趨勢與語彙軌跡的綜合分析，觀察語言如何累積、改變的趨勢，找出延伸的未來可能性。</p><p>過去可以整理，沒有人可以知道未來，現在還在手上。不是替未來下定論，而是治理已知、觀察演化，再推演的可能性。</p><p><a href="/statics">排行榜</a>可先看全部，再切 Facebook、Threads、Suno，並依來源與時期觀察語彙變化。</p></div>
+      <div className="home-progress-grid" aria-label="文化搜尋、治理與演化"><article className="home-progress-item"><strong>結合搜尋跟脈絡圖關聯</strong><span>可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。</span></article><article className="home-progress-item"><strong>治理、管理</strong><span>授權內容可用全文做搜尋與分析；公開結果則依內容治理決定顯示全文、片段或僅 metadata。Facebook、Threads 預設只顯示片段，歌詞不直接公開全文；系統並以治理管理文件約束資料權責、版權與公開邊界。</span></article></div>
     </section>
 
     <section className="loc-card home-framework" id="framework-map">
