@@ -62,7 +62,6 @@ function mergeHistory(rows){
   return result;
 }
 function periodRows(rows){return (rows||[]).map(row=>({era_id:row.payload?.era_id||row.context_key,period:row.payload?.period||row.context_key||'',name:row.payload?.name||row.title||row.context_key,title:row.title||row.context_key,description:row.summary||'',start_date:row.payload?.start_date||null,end_date:row.payload?.end_date||null,order:Number(row.payload?.order||0),status:row.payload?.status||''})).sort((a,b)=>a.order-b.order);}
-function tags(row){return [row.theme_tags,row.emotion_tags,row.imagery_tags,row.context_tags,row.genre_tags].filter(Array.isArray).flat().filter(Boolean);}
 
 async function fetchCanonical(path){
   const normalized=sourcePath(path);
@@ -77,25 +76,7 @@ async function fetchCanonical(path){
     if(normalized==='culture/lrunes-periods')return {eras:periodRows((await selectNeonRows('silver.runes_context_entries',{filters:[{column:'context_type',operator:'in',value:['period','era']}],limit:5000})).rows)};
     if(normalized==='culture/lo3rwang-periods')return {eras:periodRows((await selectNeonRows('silver.lo3rwang_period_context_entries',{filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000})).rows)};
     if(normalized==='knowledge/faq')return (await selectNeonRows('silver.faq_entries',{limit:5000})).rows;
-    if(normalized==='context/cross-relations')return (await selectNeonRows('silver.content_relations',{limit:5000})).rows;
-    if(normalized==='culture/zhengde-keywords'){
-      const [workResult,semanticResult]=await Promise.all([
-        selectNeonRows('silver.works',{columns:'work_id',filters:[{column:'scope',operator:'eq',value:'lo3rwang'}],limit:5000}),
-        selectNeonRows('silver.work_semantics',{columns:'work_id,theme_tags,emotion_tags,imagery_tags,context_tags,genre_tags',limit:5000})
-      ]);
-      const ids=new Set(workResult.rows.map(row=>row.work_id));const counts=new Map();
-      for(const row of semanticResult.rows.filter(item=>ids.has(item.work_id)))for(const tag of tags(row))counts.set(tag,(counts.get(tag)||0)+1);
-      return {keywords:[...counts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([name,count])=>({name,count}))};
-    }
-    if(normalized==='literary/loc4-writing'){
-      const [works,semantics,songs]=await Promise.all([
-        selectNeonRows('silver.works',{filters:[{column:'scope',operator:'eq',value:'lo3rwang'}],limit:5000}),
-        selectNeonRows('silver.work_semantics',{limit:5000}),
-        selectNeonRows('silver.song_versions',{columns:'song_id,work_id,title,suno_url,version_label,is_representative',limit:5000})
-      ]);
-      const byWork=new Map(semantics.rows.map(row=>[row.work_id,row]));
-      return {works:works.rows.map(row=>{const semantic=byWork.get(row.work_id)||{};const source_refs=songs.rows.filter(song=>song.work_id===row.work_id&&song.suno_url).map(song=>({title:song.title,url:song.suno_url,source_type:'song',role:song.version_label}));return {...row,...semantic,summary:semantic.ai_summary||'',period:row.period_code||row.era_code||'',period_name:row.era_name||row.period_code||'',tags:[...new Set(tags(semantic))],source_refs};})};
-    }
+    if(normalized==='context/content-relations')return (await selectNeonRows('silver.content_relations',{limit:5000})).rows;
     throw new Error(`Neon canonical data path is not mapped: ${normalized}`);
   }finally{releaseSlot();}
 }
