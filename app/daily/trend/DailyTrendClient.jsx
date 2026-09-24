@@ -72,7 +72,7 @@ export default function DailyTrendClient(){
       <h1>每日符文分析趨勢</h1>
       <p>合併 RC3 已確認的歷史紀錄與登入帳戶的 Neon 每日抽牌，觀察截至最新紀錄的 14 日變化與符文分布。</p>
     </header>
-    {!account.user?<section className="loc-card"><p>可先查看 RC3 歷史趨勢；登入後會合併自己的 Neon 紀錄。</p><button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button></section>:<>
+    {!account.user?<section className="loc-card"><p>可先查看公開的 RC3 歷史趨勢；登入後會合併自己的 Neon 紀錄。</p><button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button></section>:null}
       <div className="loc-grid two">
         <Card label="每日歷史紀錄" value={analysis.total} detail={'RC3 歷史 '+DAILY_HISTORY_ARCHIVE.daily_draws.length+' 筆 + 帳戶新增紀錄'}/>
         <Card label="近 14 日抽牌" value={analysis.recent} detail={analysis.latest?'截至 '+analysis.latest:'尚無紀錄日期'}/>
@@ -92,7 +92,10 @@ export default function DailyTrendClient(){
         <h2>常見符文與方向</h2>
         {!analysis.topRunes.length?<p>目前還沒有每日抽牌資料可供分析。</p>:<ol>{analysis.topRunes.map(([label,count])=><li key={label}>{label}：{count} 次</li>)}</ol>}
       </section>
-      <div className="loc-actions"><button className="loc-button" type="button" disabled={loading} onClick={reload}>重新整理</button><a href="/daily/log/">查看每日符文紀錄</a></div>
-    </>}
+      <div className="loc-actions">
+        {account.user?<button className="loc-button" type="button" onClick={account.signOut}>登出 Neon</button>:null}
+        <button className="loc-button" type="button" disabled={loading} onClick={reload}>重新整理</button>
+        <a href="/daily/log/">查看每日符文紀錄</a>
+      </div>
   </section>;
 }
