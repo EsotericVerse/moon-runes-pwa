@@ -2,12 +2,10 @@
 
 import {selectNeonRows} from './neon-repository';
 
-// One Neon relation holds both chart rows and homepage counters.  The writer
-// keeps the last source watermark and only recalculates a metric when its
-// source_updated_at is newer than the stored snapshot.  The public runtime is
-// read-only: it never recomputes or writes a snapshot while rendering.
+// The public runtime reads only scalar snapshot columns. Metric identity is
+// scope + type + key; no JSON dimensions are stored or queried.
 export const METRIC_SNAPSHOT_TABLE='silver.metric_snapshots';
-const SNAPSHOT_COLUMNS='scope_id,metric_key,metric_type,ranking_key,term,metric_value,item_count,unit,source_updated_at,calculated_at,dimensions';
+const SNAPSHOT_COLUMNS='scope_id,metric_key,metric_type,ranking_key,term,metric_value,item_count,unit,source_updated_at,calculated_at';
 
 function scopeFilter(scopeId){
   return scopeId? [{column:'scope_id',operator:'eq',value:String(scopeId)}]:[];
