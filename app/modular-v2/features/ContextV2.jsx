@@ -37,10 +37,14 @@ export default function ContextV2(){
         <p>不感興趣也沒關係！那來看看排行榜吧！這些詞也能直接回查命中的文章、作品與紀錄。</p>
       </div>
     </section>:null}
-    {query.isPending?<p className='scope-v2-status'>載入 Graph…</p>:null}
-    {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
-    {scopeId==='loc'?<ContextWorkbenchV2 scopeId={scopeId} rows={query.data?.rows||[]} focusIdentity={navigation.identity}/>:null}
-    {scopeId!=='loc'&&!query.isPending&&!hasGraph?<ContextWorkbenchV2 scopeId={scopeId} rows={query.data?.rows||[]} focusIdentity={navigation.identity}/>:null}
-    {scopeId!=='loc'&&hasGraph?<ContextGraphV2 nodes={graph.nodes} edges={graph.edges} focusIdentity={navigation.identity}/>:null}
+    <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
+      <p className='loc-eyebrow'>Graph</p>
+      <h2>關係圖</h2>
+      {query.isPending?<p className='scope-v2-status'>載入 Graph…</p>:null}
+      {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
+      {scopeId==='loc'?<ContextWorkbenchV2 scopeId={scopeId} rows={query.data?.rows||[]} focusIdentity={navigation.identity}/>:null}
+      {scopeId!=='loc'&&!query.isPending&&!hasGraph?<ContextWorkbenchV2 scopeId={scopeId} rows={query.data?.rows||[]} focusIdentity={navigation.identity}/>:null}
+      {scopeId!=='loc'&&hasGraph?<ContextGraphV2 nodes={graph.nodes} edges={graph.edges} focusIdentity={navigation.identity}/>:null}
+    </section>
   </section>;
 }
