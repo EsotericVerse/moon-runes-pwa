@@ -145,7 +145,7 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-skills" id="skills">
       <div className="home-section-heading"><p className="loc-eyebrow">LOC GPT Skills</p><h2>Skills</h2><p className="loc-subtitle">把月典延伸可以重複使用的工作流程。<br/>把語言治理與治理資料儲存庫，封裝成可直接調用的 AI Skills。</p></div>
-      <div className="home-author-copy"><p>LOC 的工具與工作流程依現行 Scope、Neon、Graph、Time River、搜尋與權限架構運作。</p><p>舊版知識管理資料不作為 Current 的正式資料來源。</p></div>
+
     </section>
 
     <section className="loc-card home-author-words" id="author-words">
