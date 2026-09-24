@@ -9,6 +9,7 @@ import {ScopeCardV2} from '../PageShellV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
 import {buildSearchNavigation,featureNavigationLinks} from '../feature-navigation.v2';
+import {featureDataErrorMessage} from '../feature-data-state.v2';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 const SCOPE_SEARCH_ENTRIES=Object.freeze([
@@ -92,9 +93,7 @@ export default function SearchV2(){
       setStatus(`「${collection.label}」搜尋「${q}」。${partial}`);
     }catch(exception){
       if(id!==searchId.current)return;
-      const message=String(exception?.message||exception||'');
-      const connectionError=/fetch|network|connect|timeout|failed|offline|503|502|504/i.test(message);
-      setError(connectionError?'Neon 搜尋服務暫時無法連線，請稍後再試。':message||'Neon 搜尋服務暫時無法使用。');
+      setError(featureDataErrorMessage(exception));
       setStatus('搜尋失敗。');
     }finally{
       if(id===searchId.current)loadingRef.current=false;
