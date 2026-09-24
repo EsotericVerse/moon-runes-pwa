@@ -13,8 +13,16 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 function labelOf(item,index){return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);}
 function rowsOf(data){
-  const rows=[...(data?.authorEras?.eras?.length?data.authorEras.eras:data?.eras?.eras||[])];
-  return rows.sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+  const authorRows=Array.isArray(data?.authorEras?.eras)?data.authorEras.eras:[];
+  const runeRows=Array.isArray(data?.runeEras?.eras)?data.runeEras.eras:[];
+  const rows=authorRows.length&&runeRows.length?[...authorRows,...runeRows]:
+    (authorRows.length?authorRows:(runeRows.length?runeRows:(data?.eras?.eras||[])));
+  return rows.sort((a,b)=>{
+    const ad=String(a?.start_date||a?.date||'');
+    const bd=String(b?.start_date||b?.date||'');
+    if(ad&&bd&&ad!==bd)return ad.localeCompare(bd);
+    return Number(a.order||0)-Number(b.order||0);
+  });
 }
 function periodKey(item){return String(item?.period||item?.era_id||'');}
 
