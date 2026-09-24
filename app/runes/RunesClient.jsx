@@ -81,11 +81,13 @@ export default function RunesClient(){
     <header className="loc-hero scope-home-hero-with-visual" id="intro">
       <div className="scope-home-hero-copy">
         <p className="loc-eyebrow">LunaRunes</p>
-        <h1>月之符文</h1>
-        <p className="loc-subtitle">以月的角度紀錄。</p>
+        <div className="home-title-row">
+          <h1>月之符文</h1>
+          <p className="loc-subtitle">以月的角度紀錄。</p>
+        </div>
         <p>66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</p>
-        <p>可以問一件事，也可以沒有問題直接抽取，</p>
-        <nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={runeHref('')}>符文抽籤</a><a href={runeHref('list')}>符文圖鑑</a><a href={runeHref('algorithm')}>符文解牌</a><a href={runeHref('game')}>符文遊戲</a></nav>
+        <p>可以問一件事，也可以沒有問題直接抽取。</p>
+        <nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={runeHref('')}>符文抽籤</a><a href={runeHref('list')}>符文圖鑑</a><a href={runeHref('algorithm')}>符文解牌</a><a href={runeHref('game')}>符文遊戲</a><a href={runeHref('daily/log')}>每日符文</a><a href={runeHref('daily/trend')}>每日符文分析</a></nav>
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">
         <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
@@ -119,14 +121,7 @@ export default function RunesClient(){
         <article className="reading-ref-card"><h3>不知道就保留未知</h3><p>尚未走完的時間跨度、證據不足或原始解析遺失時，不事後補造答案。</p></article>
       </div>
     </section>
-    <section className="loc-card rune-basics" aria-label="月之符文占卜範例">
-      <p className="loc-eyebrow">Reels · Examples</p>
-      <h2>占卜範例</h2>
-      <div className="loc-context-list">
-        <article className="loc-context-item"><p><a href="https://www.instagram.com/reel/DMA9yDAzeRK/" target="_blank" rel="noopener noreferrer">占卜範例 Reels →</a></p></article>
-        <article className="loc-context-item"><p><a href="https://www.instagram.com/reel/DMA-ZxLTINw/" target="_blank" rel="noopener noreferrer">月之符文說明 Reels →</a></p></article>
-      </div>
-    </section>
+
     <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey} data-draw-action="execute"><p className="loc-eyebrow">Draw · 抽籤</p><h2>占卜抽籤</h2><div className="runes-mode-nav" aria-label="選擇抽牌方式">{MODES.map(item=><a key={item.key} href={runeHref(item.path)} data-draw-mode={item.key} className={`loc-button ${modeKey===item.key?'primary':''}`}><strong>{item.label}</strong><span>{item.description}</span></a>)}</div></section>
     {ritualStep>=0&&<section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={modeKey} aria-live="polite"><div className="runes-ritual-card"><img src="/assets/lunarunes/cards/65_玄.png" alt="玄之符文"/><strong>玄之符文</strong><span>Chaos</span></div><div className="runes-ritual-copy"><p className="loc-eyebrow">等待片刻</p><h2>{ritualMessages[ritualStep]}</h2><p>真實月相：{moonPhase}</p></div></section>}
     {draw&&<><section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={modeKey}><div className="loc-result-meta"><span>{selectedMode.label}</span><span>真實月相：{moonPhase}</span></div><div className="loc-draw-grid">{draw.cards.map((card,index)=><article className="loc-context-item compact loc-draw-card" data-rune-id={card.編號} data-draw-position={selectedMode.positions[index]||index+1} key={`${card.編號}-${index}`}><small>{selectedMode.positions[index]||`第 ${index+1} 張`}</small><img className={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`} src={runeCardImage(card)} alt={`${card.符文名稱}符文卡`}/><b>{card.符文名稱}</b><small>{card.英文||'—'}</small><span>所屬群組：{card.所屬分組||'—'}</span><span>{draw.directions[index]} · 卡片月相：{card.月相||'—'}</span><small>{directionText(card,draw.directions[index])||card.符文說明}</small><div className="runes-draw-keywords"><span><strong>正向關鍵詞</strong>{card.正向關鍵詞||'—'}</span><span><strong>反向關鍵詞</strong>{card.反向關鍵詞||'—'}</span></div></article>)}</div><div className="loc-actions runes-retry"><button type="button" className="loc-button" data-draw-action="retry" onClick={executeDraw}>再抽一次</button><button type="button" className="loc-button primary" onClick={saveCurrentDraw} disabled={drawSaved}>{drawSaved?'已記錄':modeKey==='daily'?'記錄到每日':'記錄一般抽牌'}</button></div>{recordStatus&&<p className="loc-status">{recordStatus}</p>}</section>
