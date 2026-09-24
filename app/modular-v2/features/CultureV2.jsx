@@ -7,6 +7,7 @@ import {selectScopeCultureData} from '../../loc/neon-culture-client';
 import {readFeatureNavigation} from '../feature-navigation.v2';
 import {CULTURE_OVERVIEW_LABEL,cultureDefaultPeriod,isCultureOverview} from '../culture-policy.v2';
 import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
+import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
@@ -40,8 +41,9 @@ export default function CultureV2(){
     <h1>文化</h1>
     <p className='loc-subtitle'>{scopeFeatureSubtitleV2(scopeId,'culture')}</p>
     {query.isPending?<p className='scope-v2-status'>載入時間長河…</p>:null}
-    {query.error?<p className='scope-v2-status scope-v2-error'>{query.error.message}</p>:null}
-    {!query.isPending&&!query.error?<>
+    {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
+    {!query.isPending&&!query.error&&!rows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+    {!query.isPending&&!query.error&&rows.length?<>
       <label className='scope-v2-culture-period-select'>
         <span>時期</span>
         <select className='scope-v2-select' value={selectedPeriod} onChange={event=>setSelectedPeriod(event.target.value)}>
