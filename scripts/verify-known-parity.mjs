@@ -82,7 +82,6 @@ requireText('app/modular-v2/scope-registry.v2.js',[
   "mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'})",
   "localRoutes:Object.freeze([",
   "'list'",
-  "'history'",
   "'duel/one'",
   "'duel/ow3gs'",
   'export function scopeHrefV2',
