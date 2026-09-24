@@ -172,10 +172,7 @@ export default function AuthorHomeView({section=null}){
     title="Lucas Oscar Wang 政德"
     subtitle="語言架構建築師"
     intro={<><p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽一首我創作的歌吧！</p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p></>}
-    heroVisual={<div className="scope-home-hero-media-stack">
-      <iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>
-      <iframe src="https://www.instagram.com/p/DdiDIzDIYS3/embed" title="只是微月光｜Lucas Oscar Wang 政德" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>
-    </div>}
+    heroVisual={<iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>}
     sections={[{
       id:'overview-graph',
       eyebrow:'Overview',
@@ -185,6 +182,11 @@ export default function AuthorHomeView({section=null}){
         centerSummary="語言治理架構者。架構這一切的建築師。"
         nodes={AUTHOR_OVERVIEW_NODES}
       />
+    },{
+      id:'micro-moonlight',
+      eyebrow:'Song',
+      title:'只是微月光',
+      content:<div className="loc-context-list"><article className="loc-context-item"><p>「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p><p><a href="https://suno.com/song/a0a724c1-d35f-4ccf-9ac1-0c1c9f2d6a50" target="_blank" rel="noopener noreferrer">聽〈只是微月光〉 →</a></p><p><a href="https://www.instagram.com/p/DdiDIzDIYS3/" target="_blank" rel="noopener noreferrer">看〈只是微月光〉 Reels →</a></p></article></div>
     }]}
   />;
 
