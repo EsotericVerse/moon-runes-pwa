@@ -58,7 +58,6 @@ function addRegistryEdge(edges,edge,registry,evidenceStatus='recorded',evidenceK
   addEdge(edges,{...edge,source_type:'registry',registry:'名冊',registry_key:registry,evidence_kind:evidenceKind,evidence_status:evidenceStatus});
 }
 function addRegistryGraph(nodes,edges,registries={}){
-  const writing=registries.writing||{};
   const eras=registries.eras||{};
   const relationships=registries.relationships||{};
 
@@ -72,31 +71,6 @@ function addRegistryGraph(nodes,edges,registries={}){
     const current=nodeId('時期',String(orderedEras[i].era_id||orderedEras[i].period||orderedEras[i].name));
     addRegistryEdge(edges,{source:prev,target:current,type:'temporal_before'},'LOC_ERA_REGISTRY','deterministic','deterministic_structural_evidence');
     addRegistryEdge(edges,{source:current,target:prev,type:'temporal_after'},'LOC_ERA_REGISTRY','deterministic','deterministic_structural_evidence');
-  }
-
-  for(const work of writing.works||[]){
-    const wid=registryNodeId(work);if(!wid)continue;
-    const workType=registryNodeType(work);
-    addNode(nodes,{id:wid,label:work.title||work.work_id,type:publicType(workType),internal_type:workType,definition:work.summary||'',content_type:work.content_type||'',period:work.period||'',source_type:'registry'});
-    if(work.era_id){
-      const eid=nodeId('時期',String(work.era_id));
-      addNode(nodes,{id:eid,label:work.period_name||work.era_id,type:'時期',internal_type:'era',source_type:'registry'});
-      addRegistryEdge(edges,{source:wid,target:eid,type:'belongs_to_era'},'WRITING_REGISTRY','deterministic','record_metadata');
-    }
-    for(const item of work.music_map?.work_level||[]){
-      const mid=nodeId('音樂',String(item.title||item.url));
-      addNode(nodes,{id:mid,label:item.title||item.label||'音樂作品',type:'音樂',internal_type:'music_work',definition:item.label||item.role||'',source_type:'registry'});
-      addRegistryEdge(edges,{source:mid,target:wid,type:'work_theme'},'WRITING_REGISTRY','recorded','record_metadata');
-    }
-    for(const item of work.music_map?.character_themes||[]){
-      const cid=nodeId('角色',String(item.character));
-      const mid=nodeId('音樂',String(item.title||item.url));
-      addNode(nodes,{id:cid,label:item.character,type:'角色',internal_type:'character',source_type:'registry'});
-      addNode(nodes,{id:mid,label:item.title||'角色歌曲',type:'音樂',internal_type:'music_work',definition:item.role||'',source_type:'registry'});
-      addRegistryEdge(edges,{source:cid,target:wid,type:'appears_in'},'WRITING_REGISTRY','recorded','record_metadata');
-      addRegistryEdge(edges,{source:mid,target:cid,type:'character_theme'},'WRITING_REGISTRY','recorded','record_metadata');
-      addRegistryEdge(edges,{source:mid,target:wid,type:'work_theme'},'WRITING_REGISTRY','recorded','record_metadata');
-    }
   }
 
   for(const relation of relationships.relationships||[]){
