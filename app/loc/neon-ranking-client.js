@@ -4,8 +4,8 @@ import {selectMetricSnapshots} from './neon-metric-snapshots';
 
 const RANKING_TABLES=Object.freeze({
   loc:'api.loc_rankings',
-  runes:'silver.runes_rankings',
-  lo3rwang:'silver.lo3rwang_rankings'
+  runes:'api.runes_rankings',
+  lo3rwang:'api.lo3rwang_rankings'
 });
 
 function matchesNavigation(row,navigation={}){
