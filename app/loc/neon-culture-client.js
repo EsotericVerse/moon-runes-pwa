@@ -93,11 +93,12 @@ export async function selectScopeCultureData(scopeId){
 
   const [culture,periods,runePeriods]=await Promise.all([
     Promise.resolve({rows:[]}),
-    id==='lo3rwang'?selectNeonRows(CULTURE_TABLES.periods,{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000}):Promise.resolve({rows:[]}),
+    id==='lo3rwang'?selectNeonRows(CULTURE_TABLES.periods,{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'in',value:['period','event','anchor']}],limit:5000}):Promise.resolve({rows:[]}),
     id==='runes'?selectNeonRows('api.runes_context_entries',{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'eq',value:'anchor'}],limit:5000}):Promise.resolve({rows:[]})
   ]);
   const cultureRowsRaw=culture.rows||[];
-  const periodContext=periods.rows||[];
+  const scopeContext=periods.rows||[];
+  const periodContext=scopeContext.filter(row=>row.context_type==='period');
   const historyValue={records:[]};
   const runeEras=(runePeriods.rows||[]).map(row=>{
     const payload=row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
@@ -117,5 +118,34 @@ export async function selectScopeCultureData(scopeId){
   }).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
   const eraSource=periodContext;
   const eras=periodRows(eraSource);
-  return ScopeCultureResponseSchema.parse({scopeId:id,eras:{eras:id==='runes'?runeEras:eras},authorEras:id==='lo3rwang'?{eras}:undefined,runeEras:{eras:runeEras},runeHistory:historyValue,periods:eraSource,events:cultureRows(cultureRowsRaw,'event'),trajectories:cultureRows(cultureRowsRaw,'trajectory'),works:cultureRows(cultureRowsRaw,'work'),authorKeywords:{keywords:[]},musicPeriods:{periods:[]},writingPeriods:{periods:[]}});
+  const contextEvents=id==='lo3rwang'?scopeContext.filter(row=>row.context_type==='event').map(row=>({
+    entry_id:row.context_key,event_id:row.context_key,title:row.title,description:row.summary||'',
+    ...(row.payload&&typeof row.payload==='object'?row.payload:{})
+  })):[];
+  const contextAnchors=id==='lo3rwang'?scopeContext.filter(row=>row.context_type==='anchor').map(row=>({
+    entry_id:row.context_key,trajectory_id:row.context_key,title:row.title,description:row.summary||'',
+    start_date:row.payload?.date||null,date:row.payload?.date||null,
+    ...(row.payload&&typeof row.payload==='object'?row.payload:{})
+  })):[];
+  return ScopeCultureResponseSchema.parse({scopeId:id,eras:{eras:id==='runes'?runeEras:eras},authorEras:id==='lo3rwang'?{eras}:undefined,runeEras:{eras:runeEras},runeHistory:historyValue,periods:eraSource,events:contextEvents,trajectories:contextAnchors,works:[],authorKeywords:{keywords:[]},musicPeriods:{periods:[]},writingPeriods:{periods:[]}});
+}
+
+export async function selectAuthorPeriodWorks({startDate,endDate,limit=200}={}){
+  if(!startDate)return [];
+  const filters=[{column:'created_date',operator:'gte',value:startDate}];
+  if(endDate)filters.push({column:'created_date',operator:'lte',value:endDate});
+  const {rows}=await selectNeonRows('api.lo3rwang_works',{
+    columns:'work_id,work_type,title,created_date,content_origin,source_ref',
+    filters,
+    orders:[{column:'created_date',ascending:true}],
+    limit
+  });
+  return rows.map(row=>({
+    ...row,
+    start_date:row.created_date,
+    date:row.created_date,
+    entry_id:row.work_id,
+    title:row.title||row.work_id,
+    scope_id:'lo3rwang'
+  }));
 }
