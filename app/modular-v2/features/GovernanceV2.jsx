@@ -4,6 +4,7 @@ import {useQuery} from '@tanstack/react-query';
 import {fetchNeonData} from '../../loc/data';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
+import FeaturePageV2 from '../FeaturePageV2';
 
 function faqQuestion(row,index){
   return row?.question||row?.title||row?.prompt||row?.faq_question||`問題 ${index+1}`;
@@ -39,7 +40,7 @@ function FaqView(){
         <p>{faqAnswer(row)}</p>
       </article>)}
     </div>
-  </section>;
+  </FeaturePageV2>;
 }
 
 function CopyrightView(){
@@ -62,13 +63,10 @@ export default function GovernanceV2({section=null}){
   if(section==='faq')return <FaqView/>;
   if(section==='law')return <CopyrightView/>;
 
-  return <section className="loc-view">
-    <header className="loc-hero" id="top">
-      <p className="loc-eyebrow">Governance</p>
-      <h1>治理</h1>
-      <p className="loc-subtitle">{scopeFeatureSubtitleV2(scopeId,'governance')}</p>
-    </header>
-
+  return <FeaturePageV2
+    featureId="governance"
+    description={<><p>治理處理如何被使用、引用、延伸與修正。的原則。</p><p>不要求任何人接受或使用；所有內容均可作為分析、參考與延伸思考的材料。</p></>}
+  >
     <div className="loc-grid two">
       <section className="loc-card">
         <p className="loc-eyebrow">Scope</p><h2>Scope 分治</h2>
