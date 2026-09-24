@@ -172,7 +172,10 @@ export default function AuthorHomeView({section=null}){
     title="Lucas Oscar Wang 政德"
     subtitle="語言架構建築師"
     intro={<><p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽一首我創作的歌吧！</p><p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p></>}
-    heroVisual={<iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>}
+    heroVisual={<div className="scope-home-hero-media-stack">
+      <iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>
+      <iframe src="https://www.instagram.com/p/DdiDIzDIYS3/embed" title="只是微月光｜Lucas Oscar Wang 政德" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>
+    </div>}
     sections={[{
       id:'overview-graph',
       eyebrow:'Overview',
