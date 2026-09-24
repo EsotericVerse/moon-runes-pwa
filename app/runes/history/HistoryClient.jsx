@@ -52,9 +52,9 @@ export default function HistoryClient({defaultKind='all'}){
 
   return <section className="loc-view">
     <header className="loc-hero">
-      <p className="loc-eyebrow">Neon History · 抽籤紀錄</p>
-      <h1>抽籤紀錄</h1>
-      <p>歷史日誌包含 RC3 已確認的每日符文紀錄；登入後會合併顯示帳戶自己的 Neon 抽牌紀錄。Neon 私人紀錄仍由 RLS 隔離。</p>
+      <p className="loc-eyebrow">每日抽籤紀錄</p>
+      <h1>每日符文抽籤紀錄</h1>
+      <p>每日抽籤紀錄。藉由此來查趨勢。</p>
     </header>
     <section className="loc-card">
       {!account.user&&<div className="loc-actions"><span>目前先顯示 RC3 歷史紀錄。</span><button className="loc-button primary" type="button" onClick={account.signIn}>登入載入自己的 Neon 紀錄</button></div>}
