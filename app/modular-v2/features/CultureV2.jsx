@@ -38,7 +38,7 @@ export default function CultureV2(){
     if(!rows.length){setSelectedPeriod(CULTURE_OVERVIEW_LABEL);return;}
     const requested=String(navigation.period||'');
     if(requested&&rows.some(item=>periodKey(item)===requested)){setSelectedPeriod(requested);return;}
-    setSelectedPeriod(scopeId==='lo3rwang'?CULTURE_OVERVIEW_LABEL:cultureDefaultPeriod(rows));
+    setSelectedPeriod(scopeId==='loc'||scopeId==='lo3rwang'?CULTURE_OVERVIEW_LABEL:cultureDefaultPeriod(rows));
   },[rows,navigation.period,scopeId]);
 
   const overview=isCultureOverview(selectedPeriod);
@@ -52,13 +52,13 @@ export default function CultureV2(){
     {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
     {!query.isPending&&!query.error&&!rows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
     {!query.isPending&&!query.error&&rows.length?<>
-      <label className='scope-v2-culture-period-select'>
+      {scopeId!=='loc'?<label className='scope-v2-culture-period-select'>
         <span>時期</span>
         <select className='scope-v2-select' value={selectedPeriod} onChange={event=>setSelectedPeriod(event.target.value)}>
           <option value={CULTURE_OVERVIEW_LABEL}>{CULTURE_OVERVIEW_LABEL}</option>
           {rows.map((item,index)=><option key={periodKey(item)||index} value={periodKey(item)}>{labelOf(item,index)}</option>)}
         </select>
-      </label>
+      </label>:null}
       {selected?.description?<p className='scope-v2-culture-period-description'>{selected.description}</p>:null}
       <CultureTimelineV2 items={visibleRows} labelOf={labelOf} focus={navigation} mode={overview?'overview':'period'} />
     </>:null}
