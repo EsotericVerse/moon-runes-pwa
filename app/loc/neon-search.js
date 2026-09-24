@@ -96,7 +96,41 @@ export async function selectNeonSearchRows(collectionId){
   return indexPromise;
 }
 
+async function searchGalaxyRows(query,{limit=MAX_INDEX_RESULTS,offset=0}={}){
+  const q=String(query||'').trim();
+  if(!q)return {rows:[],failures:[]};
+  const safeLimit=Math.max(1,Math.min(MAX_INDEX_RESULTS,Number(limit)||MAX_INDEX_RESULTS));
+  const safeOffset=Math.max(0,Number(offset)||0);
+  const fetchSize=safeOffset+safeLimit+1;
+  const columns='galaxy_id,category,content_type,source_platform,source_role,title,content,created_at,source_ref,source_id,work_id';
+  const pattern='%'+q+'%';
+  const [contentResult,titleResult]=await Promise.all([
+    selectNeonRows('api.lo3rwang_galaxy',{columns,filters:[
+      {column:'searchable',operator:'eq',value:true},
+      {column:'content',operator:'ilike',value:pattern}
+    ],orders:[{column:'created_at',ascending:false}],limit:fetchSize}),
+    selectNeonRows('api.lo3rwang_galaxy',{columns,filters:[
+      {column:'searchable',operator:'eq',value:true},
+      {column:'title',operator:'ilike',value:pattern}
+    ],orders:[{column:'created_at',ascending:false}],limit:fetchSize})
+  ]);
+  const merged=[];const seen=new Set();
+  for(const row of [...titleResult.rows,...contentResult.rows]){
+    const key=String(row.galaxy_id||'');
+    if(!key||seen.has(key))continue;
+    seen.add(key);merged.push(row);
+  }
+  merged.sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
+  return {
+    rows:merged.slice(safeOffset,safeOffset+safeLimit).map(row=>({row,source:'lo3rwang Galaxy'})),
+    failures:[],
+    direct:true,
+    hasMore:merged.length>safeOffset+safeLimit
+  };
+}
+
 export async function searchNeonRows(collectionId,query,{limit=MAX_INDEX_RESULTS,offset=0}={}){
+  if(collectionId==='政德文化'||collectionId==='政德風')return searchGalaxyRows(query,{limit,offset});
   const source=await selectNeonSearchRows(collectionId);
   const normalized=normalizeSearchText(query);
   if(!normalized)return {...source,rows:[]};
