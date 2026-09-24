@@ -50,27 +50,72 @@ function cultureRows(rows,type){
 export async function selectScopeCultureData(scopeId){
   const id=String(scopeId||'');
   if(!['loc','runes','lo3rwang'].includes(id))throw new Error('Scope 無效');
+
+  if(id==='loc'){
+    const [author,runes]=await Promise.all([
+      selectNeonRows('api.lo3rwang_context_entries',{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'in',value:['period','event','anchor']}],limit:5000}),
+      selectNeonRows('api.runes_context_entries',{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'eq',value:'anchor'}],limit:5000})
+    ]);
+
+    const authorPeriods=periodRows((author.rows||[]).filter(row=>row.context_type==='period'));
+    const runeHistory=(runes.rows||[]).map(row=>{
+      const payload=row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
+      return {
+        ...payload,
+        era_id:row.context_key,
+        period:row.context_key,
+        name:row.title,
+        title:row.title,
+        description:row.summary||'',
+        start_date:payload.date||null,
+        end_date:null,
+        order:0,
+        status:'history',
+        scope_id:'runes'
+      };
+    }).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
+
+    return ScopeCultureResponseSchema.parse({
+      scopeId:id,
+      eras:{eras:authorPeriods},
+      authorEras:{eras:authorPeriods},
+      runeEras:{eras:runeHistory},
+      runeHistory:{records:[]},
+      periods:authorPeriods,
+      events:[],
+      trajectories:[],
+      works:[],
+      authorKeywords:{keywords:[]},
+      musicPeriods:{periods:[]},
+      writingPeriods:{periods:[]}
+    });
+  }
+
   const [culture,periods,runePeriods]=await Promise.all([
-    id==='loc'?selectNeonRows(CULTURE_TABLES.loc,{columns:'scope_id,entry_key,entry_type,title,date,start_date,end_date,era_id,source,style,keywords,body,url,payload,is_derived,manual_override,source_ref',filters:[{column:'scope_id',operator:'eq',value:'loc'}],limit:5000}):Promise.resolve({rows:[]}),
+    Promise.resolve({rows:[]}),
     id==='lo3rwang'?selectNeonRows(CULTURE_TABLES.periods,{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000}):Promise.resolve({rows:[]}),
-    id==='runes'?selectNeonRows('api.runes_context_entries',{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'in',value:['period','era']}],limit:5000}):Promise.resolve({rows:[]})
+    id==='runes'?selectNeonRows('api.runes_context_entries',{columns:'context_key,context_type,title,summary,payload',filters:[{column:'context_type',operator:'eq',value:'anchor'}],limit:5000}):Promise.resolve({rows:[]})
   ]);
   const cultureRowsRaw=culture.rows||[];
-  const PERSONAL_CULTURE_START='2026-01-30';
-  const periodContext=(periods.rows||[]).flatMap(row=>{
-    if(id!=='lo3rwang')return [row];
-    const payload=row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
-    const end=payload.end_date||row.end_date||null;
-    if(end&&String(end)<PERSONAL_CULTURE_START)return [];
-    const start=payload.start_date||row.start_date||null;
-    if(start&&String(start)<PERSONAL_CULTURE_START){
-      return [{...row,payload:{...payload,start_date:PERSONAL_CULTURE_START}}];
-    }
-    return [row];
-  });
+  const periodContext=periods.rows||[];
   const historyValue={records:[]};
-  const runeEras=periodRows(runePeriods.rows||[]);
-  const eraSource=id==='loc'?cultureRowsRaw.filter(row=>['era','period'].includes(row.entry_type)):periodContext;
+  const runeEras=(runePeriods.rows||[]).map(row=>{
+    const payload=row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
+    return {
+      ...payload,
+      era_id:row.context_key,
+      period:row.context_key,
+      name:row.title,
+      title:row.title,
+      description:row.summary||'',
+      start_date:payload.date||null,
+      end_date:null,
+      order:0,
+      status:'history',
+      scope_id:'runes'
+    };
+  }).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
+  const eraSource=periodContext;
   const eras=periodRows(eraSource);
-  return ScopeCultureResponseSchema.parse({scopeId:id,eras:{eras:id==='runes'?runeEras:eras},authorEras:id==='loc'||id==='lo3rwang'?{eras}:undefined,runeEras:{eras:runeEras},runeHistory:historyValue,periods:eraSource,events:cultureRows(cultureRowsRaw,'event'),trajectories:cultureRows(cultureRowsRaw,'trajectory'),works:cultureRows(cultureRowsRaw,'work'),authorKeywords:{keywords:[]},musicPeriods:{periods:[]},writingPeriods:{periods:[]}});
+  return ScopeCultureResponseSchema.parse({scopeId:id,eras:{eras:id==='runes'?runeEras:eras},authorEras:id==='lo3rwang'?{eras}:undefined,runeEras:{eras:runeEras},runeHistory:historyValue,periods:eraSource,events:cultureRows(cultureRowsRaw,'event'),trajectories:cultureRows(cultureRowsRaw,'trajectory'),works:cultureRows(cultureRowsRaw,'work'),authorKeywords:{keywords:[]},musicPeriods:{periods:[]},writingPeriods:{periods:[]}});
 }
