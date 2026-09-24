@@ -41,6 +41,7 @@ export default function SearchV2(){
   const searchId=useRef(0);
   const offsetRef=useRef(0);
   const matchedRowsRef=useRef([]);
+  const matchedQueryRef=useRef('');
   const sentinelRef=useRef(null);
   const loadingRef=useRef(false);
   const pageSize=scopeId==='runes'?8:10;
@@ -53,6 +54,7 @@ export default function SearchV2(){
     loadingRef.current=true;
     offsetRef.current=0;
     matchedRowsRef.current=[];
+    matchedQueryRef.current='';
     setError('');
     setHasMore(false);
     setLoadingMore(false);
@@ -63,6 +65,7 @@ export default function SearchV2(){
       if(id!==searchId.current)return;
 
       matchedRowsRef.current=search.rows;
+      matchedQueryRef.current=q;
       const consumed=matchedRowsRef.current.slice(0,pageSize);
       offsetRef.current=consumed.length;
       const converted=[];const seen=new Set();
@@ -85,25 +88,31 @@ export default function SearchV2(){
   }
 
   function loadMore(){
-    const q=query.trim();
+    const q=matchedQueryRef.current;
     if(!q||!hasMore||loadingRef.current)return;
     loadingRef.current=true;
     setLoadingMore(true);
-    const consumed=matchedRowsRef.current.slice(offsetRef.current,offsetRef.current+pageSize);
-    offsetRef.current+=consumed.length;
-    setResults(current=>{
-      const seen=new Set(current.map(item=>item.key));
-      const appended=[];
-      for(const {row,source} of consumed){
-        const result=toResult(row,source,q,collection.id,scopeId);
-        if(!result||seen.has(result.key))continue;
-        seen.add(result.key);appended.push(result);
-      }
-      return [...current,...appended];
-    });
-    setHasMore(matchedRowsRef.current.length>offsetRef.current);
-    loadingRef.current=false;
-    setLoadingMore(false);
+    try{
+      const consumed=matchedRowsRef.current.slice(offsetRef.current,offsetRef.current+pageSize);
+      offsetRef.current+=consumed.length;
+      setResults(current=>{
+        const seen=new Set(current.map(item=>item.key));
+        const appended=[];
+        for(const {row,source} of consumed){
+          const result=toResult(row,source,q,collection.id,scopeId);
+          if(!result||seen.has(result.key))continue;
+          seen.add(result.key);appended.push(result);
+        }
+        return [...current,...appended];
+      });
+      setHasMore(matchedRowsRef.current.length>offsetRef.current);
+    }catch(exception){
+      setError(String(exception?.message||exception||'載入下一批搜尋結果失敗。'));
+      setHasMore(false);
+    }finally{
+      loadingRef.current=false;
+      setLoadingMore(false);
+    }
   }
 
   useEffect(()=>{
