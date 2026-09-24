@@ -19,6 +19,7 @@ function timelineRows(items,labelOf,focus){
       content:labelOf(item,index),
       title:[item?.description,item?.milestone,item?.anchor_role,item?.anchor_type,item?.is_primary_anchor?'主要錨點':'',item?.is_rc_zone?'RC 區':''].filter(Boolean).join(' · '),
       start,
+      ...(item?.scope_id?{group:String(item.scope_id)}:{}),
       ...(validEnd?{end:validEnd,type:'range'}:{type:'point'}),
       ...(focused?{className:'scope-period-timeline-focus'}:{})
     }];
@@ -38,7 +39,12 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
     import('vis-timeline/standalone').then(({DataSet,Timeline})=>{
       if(cancelled||!containerRef.current)return;
       const data=new DataSet(rows);
-      instance=new Timeline(containerRef.current,data,{
+      const groupIds=[...new Set(rows.map(row=>row.group).filter(Boolean))];
+      const groups=groupIds.length>1?new DataSet(groupIds.map(id=>({
+        id,
+        content:id==='lo3rwang'?'lo3rwang 時期':id==='runes'?'LunaRunes 沿革':id
+      }))):null;
+      instance=new Timeline(containerRef.current,data,groups,{
         autoResize:true,
         height:'260px',
         horizontalScroll:true,
