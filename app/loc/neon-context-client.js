@@ -7,7 +7,11 @@ const CONTEXT_TABLES=Object.freeze({
   lo3rwang:'api.lo3rwang_context_entries'
 });
 
-const CONTEXT_COLUMNS='context_key,context_type,title,summary,kind,node_type,entry_scope,description,context_date,date_status,anchor_id,before_id,after_id,order_no,rune_count,rune_number,literature_id,work_id,status,milestone,style_prompt,ranking_types,era_id,period,entry_name,start_date,end_date,start_anchor_id,end_anchor_id,date_value,visibility,event_id,year_value,updated_at';
+const CONTEXT_COLUMNS_BY_SCOPE=Object.freeze({
+  loc:'scope_id,context_key,context_type,title,summary,kind,node_type,entry_scope,description,context_date,date_status,anchor_id,before_id,after_id,order_no,rune_count,rune_number,literature_id,work_id,status,milestone,style_prompt,ranking_types,era_id,period,entry_name,start_date,end_date,start_anchor_id,end_anchor_id,date_value,visibility,event_id,year_value,updated_at',
+  runes:'context_key,context_type,title,summary,kind,node_type,entry_scope,description,context_date,date_status,anchor_id,before_id,after_id,order_no,rune_count,rune_number,literature_id,work_id,status,milestone,style_prompt,ranking_types,updated_at',
+  lo3rwang:'context_key,context_type,title,summary,era_id,period,entry_name,start_date,end_date,order_no,status,anchor_id,start_anchor_id,end_anchor_id,date_value,date_status,entry_scope,visibility,event_id,year_value,updated_at'
+});
 
 function normalizeGraph(rows){
   const nodes=[];const edges=[];
@@ -35,9 +39,10 @@ function normalizeGraph(rows){
 
 async function readScopeRows(scopeId){
   const table=CONTEXT_TABLES[scopeId];
-  if(!table)throw new Error('Scope 無效');
+  const columns=CONTEXT_COLUMNS_BY_SCOPE[scopeId];
+  if(!table||!columns)throw new Error('Scope 無效');
   const {rows}=await selectNeonRows(table,{
-    columns:CONTEXT_COLUMNS,
+    columns,
     orders:[{column:'context_key',ascending:true}],
     limit:5000
   });
