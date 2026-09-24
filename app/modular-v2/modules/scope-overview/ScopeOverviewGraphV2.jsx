@@ -55,10 +55,11 @@ export default function ScopeOverviewGraphV2({centerTitle='',centerSummary='',no
           </text>
         </g>;
       })}
-    </svg>
     {activeNode&&<text x={POSITIONS[visible.findIndex(node=>node.id===activeNode.id)].x<600?POSITIONS[visible.findIndex(node=>node.id===activeNode.id)].x-96:POSITIONS[visible.findIndex(node=>node.id===activeNode.id)].x+96}
       y={POSITIONS[visible.findIndex(node=>node.id===activeNode.id)].y+5}
       textAnchor={POSITIONS[visible.findIndex(node=>node.id===activeNode.id)].x<600?'end':'start'}
       fill="currentColor" fontSize="14" role="status" aria-live="polite" pointerEvents="none">{activeNode.summary}</text>}
+    </svg>
+
   </div>;
 }
