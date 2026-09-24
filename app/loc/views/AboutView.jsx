@@ -124,7 +124,7 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-context" id="context">
       <div className="home-section-heading"><p className="loc-eyebrow">Context</p><h2>脈絡</h2><p className="loc-subtitle">關鍵詞的分析與交互的互動關係圖，才會知道種子長出根的方向。</p></div>
-      <div className="home-author-copy"><p>不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再與原始內容比較，進而學習成長進步。</p><p>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p><p>可以以關鍵詞查詢作品、文字與時間資料，再沿彼此的關係查看相關內容。</p><p>不感興趣也沒關係！那來看看排行榜吧！這些詞也能直接回查命中的文章、作品與紀錄。</p></div>
+      <div className="home-author-copy"><p>不只整理資料，而是讓文字可以被搜尋、比較、追蹤變化，再與原始內容比較，進而學習成長進步。</p><p>藉由分析關聯性，找出情境、事件與互動關係圖，形成可觀察、可互動的脈絡。</p><p>可以從自然語言查詢作品、文字、知識與時間脈絡，再沿彼此的關係查看相關內容。</p><p>不感興趣也沒關係！那來看看排行榜吧！這些詞也能直接回查命中的文章、作品與紀錄。</p></div>
       <HomeMetricsV2 />
     </section>
 
