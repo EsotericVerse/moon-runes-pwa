@@ -13,6 +13,7 @@ import {readFeatureNavigation} from '../feature-navigation.v2';
 import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
+import FeaturePageV2 from '../FeaturePageV2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=Object.freeze([
@@ -100,17 +101,7 @@ export default function StatisticsV2(){
     [rows]
   );
 
-  return <section className="loc-view">
-    <h1>統計</h1>
-    <p className="loc-subtitle">{scopeFeatureSubtitleV2(scopeId,'statics')}</p>
-
-    {scopeId==='loc'?<section className="loc-card">
-      <p className="loc-eyebrow">Statistics</p>
-      <h2>統計</h2>
-      <p>跨時期關鍵字排行榜集中於此。</p>
-      <p>統計排行榜、關鍵字、曲風與來源的分佈，作為風格分析與資料回查的入口。</p>
-    </section>:null}
-
+  return <FeaturePageV2 featureId="statics">
     <section className="loc-card scope-v2-feature-card">
       <p className="loc-eyebrow">Charts</p>
       <h2>統計圖表</h2>
@@ -150,5 +141,6 @@ export default function StatisticsV2(){
       </div>:null}
   
     </section>
-  </section>;
+
+  </FeaturePageV2>;
 }
