@@ -1,4 +1,5 @@
 import GovernanceManagement from '../GovernanceManagement';
+import ScopeManagementV2 from '../../modular-v2/ScopeManagementV2';
 import { PageComposition } from '../../PageComposition';
 
 export default function AdminHomeView(){
@@ -11,6 +12,11 @@ export default function AdminHomeView(){
       eyebrow:'Governance Management',
       title:'管理功能',
       content:<div className="loc-grid two"><GovernanceManagement/></div>
+    },{
+      id:'scope-tree',
+      eyebrow:'Scope Tree · Relations',
+      title:'Scope 階層與權限',
+      content:<ScopeManagementV2/>
     }]}
   />;
 }

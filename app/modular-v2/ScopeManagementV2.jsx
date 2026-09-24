@@ -63,7 +63,7 @@ export default function ScopeManagementV2(){
     try{await decisionMutation.mutateAsync({item,status})}
     catch(error){setPermissionError(String(error?.message||error))}
   }
-  return <main className="scope-v2-page">
+  return <section className="scope-v2-page">
     <header className="scope-v2-hero"><p className="scope-v2-eyebrow">Scope Administration</p><h1>Scope 管理</h1><p>Scope 關係與授權資料由 Neon 提供；操作前以 Casbin 檢查精確 Scope 權限，Neon RLS／核准 RPC 再作資料存取檢查。</p></header>
     {error?<p role="alert" className="scope-v2-status scope-v2-error">{error}</p>:null}
     {managementQuery.error?<p role="alert">Neon Scope 資料讀取失敗：{managementQuery.error.message}</p>:null}
@@ -79,5 +79,5 @@ export default function ScopeManagementV2(){
       <section className="scope-v2-card"><p className="scope-v2-eyebrow">Permissions</p><h2>Scope 權限</h2>{permissions.length?<div className="scope-v2-list">{permissions.map(item=><div className="scope-v2-inline-card" key={`${item.scope_id}-${item.user_id}-${item.access_level}-${item.case_id}`}><strong>{getScopeV2(item.scope_id).label||item.scope_id}</strong><span>{item.user_id} · {item.access_level} · case {item.case_id}</span></div>)}</div>:<p>目前沒有可供此身份讀取的授權資料。</p>}</section>
       <button type="button" onClick={account.signOut}>登出 Neon</button>
     </>:null}
-  </main>;
+  </section>;
 }
