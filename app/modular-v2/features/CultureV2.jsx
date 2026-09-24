@@ -77,6 +77,20 @@ export default function CultureV2(){
   return <section className='loc-view'>
     <h1>文化</h1>
     <p className='loc-subtitle'>{scopeFeatureSubtitleV2(scopeId,'culture')}</p>
+    {scopeId==='loc'?<section className='loc-card'>
+      <p className='loc-eyebrow'>Culture</p>
+      <h2>文化</h2>
+      <p>文化，是文字的演化。文字留下風格，風格經過時間累積，才看得見文字風格的變化。</p>
+      <div className='home-author-copy'>
+        <p>LOC 把脈絡重新放回時間中，透過時期、事件、趨勢與語彙軌跡的綜合分析，觀察語言如何累積、改變的趨勢，找出延伸的未來可能性。</p>
+        <p>過去可以整理，沒有人可以知道未來，現在還在手上。不是替未來下定論，而是治理已知、觀察演化，再推演的可能性。</p>
+        <p><a href='/statics'>排行榜</a>可先看全部，再切 Facebook、Threads、Suno，並依來源與時期觀察語彙變化。</p>
+      </div>
+      <div className='home-progress-grid' aria-label='文化搜尋、治理與演化'>
+        <article className='home-progress-item'><strong>結合搜尋跟脈絡圖關聯</strong><span>可以從自然語言查詢作品、文字、知識與時間脈絡，再沿已治理的關係查看相關內容；排行中的詞也能直接回查命中的文章、作品與紀錄。</span></article>
+        <article className='home-progress-item'><strong>治理、管理</strong><span>授權內容可用全文做搜尋與分析；公開結果則依內容治理決定顯示全文、片段或僅 metadata。Facebook、Threads 預設只顯示片段，歌詞不直接公開全文；系統並以治理管理文件約束資料權責、版權與公開邊界。</span></article>
+      </div>
+    </section>:null}
     {query.isPending?<p className='scope-v2-status'>載入時間長河…</p>:null}
     {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
     {!query.isPending&&!query.error&&!rows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
