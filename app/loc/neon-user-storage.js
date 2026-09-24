@@ -18,6 +18,7 @@ function normalizeRecordRow(record={}){
     record_kind:String(record.record_kind||'').trim()||null,
     source:String(record.source||'').trim()||null,
     record_date:date,
+    scope_id:String(record.scope_id||'').trim()||null,
     payload:record,
     created_at:created,
     updated_at:new Date().toISOString()
@@ -25,7 +26,7 @@ function normalizeRecordRow(record={}){
 }
 
 function inflateRecord(row){
-  return {...(row?.payload||{}),id:row.id,type:row.record_type,record_kind:row.record_kind||row?.payload?.record_kind,source:row.source||row?.payload?.source,created_at:row?.payload?.created_at||row.created_at,updated_at:row.updated_at};
+  return {...(row?.payload||{}),id:row.id,type:row.record_type,record_kind:row.record_kind||row?.payload?.record_kind,source:row.source||row?.payload?.source,scope_id:row.scope_id||row?.payload?.scope_id,created_at:row?.payload?.created_at||row.created_at,updated_at:row.updated_at};
 }
 
 export async function listNeonRecords(type=''){
