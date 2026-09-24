@@ -132,20 +132,20 @@ export async function selectScopeCultureData(scopeId){
 
 export async function selectAuthorPeriodWorks({startDate,endDate,limit=200}={}){
   if(!startDate)return [];
-  const filters=[{column:'created_date',operator:'gte',value:startDate}];
-  if(endDate)filters.push({column:'created_date',operator:'lte',value:endDate});
-  const {rows}=await selectNeonRows('api.lo3rwang_works',{
-    columns:'work_id,work_type,title,created_date,content_origin,source_ref',
+  const filters=[{column:'created_at',operator:'gte',value:startDate}];
+  if(endDate)filters.push({column:'created_at',operator:'lte',value:endDate+'T23:59:59.999Z'});
+  const {rows}=await selectNeonRows('api.lo3rwang_galaxy',{
+    columns:'galaxy_id,category,content_type,source_platform,source_role,title,created_at,source_ref,source_id,work_id',
     filters,
-    orders:[{column:'created_date',ascending:true}],
+    orders:[{column:'created_at',ascending:true}],
     limit
   });
   return rows.map(row=>({
     ...row,
-    start_date:row.created_date,
-    date:row.created_date,
-    entry_id:row.work_id,
-    title:row.title||row.work_id,
+    start_date:row.created_at,
+    date:row.created_at,
+    entry_id:row.galaxy_id,
+    title:row.title||row.source_platform||row.galaxy_id,
     scope_id:'lo3rwang'
   }));
 }
