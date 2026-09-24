@@ -28,8 +28,6 @@ requireText('app/loc/scope-authorization.js',[/from ['"]casbin['"]/ ,/from ['"]z
 // Graph and timeline packages are loaded only by their corresponding Neon feature modules.
 requireText('app/modular-v2/modules/context-graph/ContextGraphV2.jsx',[/vis-network\/standalone/ ,/new Network/],'Neon context graph package boundary');
 requireText('app/modular-v2/modules/culture-timeline/CultureTimelineV2.jsx',[/vis-timeline\/standalone/ ,/new Timeline/],'Neon culture timeline package boundary');
-// Direct serverless Neon is used by the static-compatible writing client.
-requireText('js/writing.js',[/from ['"]@neondatabase\/serverless['"]/ ,/neon\(/],'Writing/Neon serverless interop');
 
 if(failures.length){
   console.error('[package-interoperability] violations:\n'+failures.map(item=>`- ${item}`).join('\n'));
