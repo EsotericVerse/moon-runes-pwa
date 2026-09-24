@@ -28,8 +28,8 @@ export default function ContextV2(){
     <p className='loc-subtitle'>{scopeFeatureSubtitleV2(scopeId,'context')}</p>
     {query.isPending?<p className='scope-v2-status'>載入 Graph…</p>:null}
     {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
-    {scopeId==='loc'?<ContextWorkbenchV2 scopeId={scopeId} focusIdentity={navigation.identity}/>:null}
-    {scopeId!=='loc'&&!query.isPending&&!hasGraph?<ContextWorkbenchV2 scopeId={scopeId} focusIdentity={navigation.identity}/>:null}
+    {scopeId==='loc'?<ContextWorkbenchV2 scopeId={scopeId} rows={query.data?.rows||[]} focusIdentity={navigation.identity}/>:null}
+    {scopeId!=='loc'&&!query.isPending&&!hasGraph?<ContextWorkbenchV2 scopeId={scopeId} rows={query.data?.rows||[]} focusIdentity={navigation.identity}/>:null}
     {scopeId!=='loc'&&hasGraph?<ContextGraphV2 nodes={graph.nodes} edges={graph.edges} focusIdentity={navigation.identity}/>:null}
   </section>;
 }
