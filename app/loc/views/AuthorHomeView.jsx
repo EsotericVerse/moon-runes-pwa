@@ -7,9 +7,9 @@ import {featureHrefV2} from '../../modular-v2/scope-registry.v2';
 
 const AUTHOR_OVERVIEW_NODES=Object.freeze([
   Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith',summary:'符文的設計理念與我的用詞堅持。',href:featureHrefV2('lo3rwang','context')}),
-  Object.freeze({id:'calibrator',title:'校對者｜Calibrator',summary:'把文字放回來源、時間與歷史裡比較，觀察文化軌跡的延續、改變與矛盾。'}),
+  Object.freeze({id:'calibrator',title:'校對者｜Calibrator',summary:'回到來源與時間，校對文字軌跡。'}),
   Object.freeze({id:'governance-architect',title:'語言治理架構者',summary:'我的語言治理理念。',href:featureHrefV2('lo3rwang','governance')}),
-  Object.freeze({id:'self',title:'自我介紹與人生觀',summary:'從姓名由來、思想取向與時空定錨論，認識我如何理解自己與記錄生命經驗。'})
+  Object.freeze({id:'self',title:'自我介紹與人生觀',summary:'從姓名、思想與時空定錨論認識我。'})
 ]);
 
 const AUTHOR_FUNCTIONS=Object.freeze([

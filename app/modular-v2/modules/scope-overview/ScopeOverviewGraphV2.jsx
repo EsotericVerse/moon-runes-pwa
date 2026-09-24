@@ -38,13 +38,13 @@ export default function ScopeOverviewGraphV2({centerTitle='',centerSummary='',no
           aria-label={href?node.title+'；前往相關頁面。':node.title+'。點擊顯示說明。'}
           onClick={()=>{
             if(href)window.location.href=href;
-            else setSelectedNode(selected?null:node.id);
+            else setSelectedNode(node.id);
           }}
           onKeyDown={event=>{
             if(event.key==='Enter'||event.key===' '){
               event.preventDefault();
               if(href)window.location.href=href;
-              else setSelectedNode(selected?null:node.id);
+              else setSelectedNode(node.id);
             }
             if(event.key==='Escape'&&!href)setSelectedNode(null);
           }}
@@ -56,11 +56,9 @@ export default function ScopeOverviewGraphV2({centerTitle='',centerSummary='',no
         </g>;
       })}
     </svg>
-    <div role="region" aria-live="polite" aria-label={activeNode?activeNode.title+'說明':'Graph 節點說明'}
-      style={{margin:'0 auto',maxWidth:'48rem',minHeight:'3.25rem',padding:'1rem 1.25rem',border:'1px solid currentColor',borderRadius:'1rem',background:'var(--loc-panel-2)'}}>
-      {activeNode
-        ? <><strong>{activeNode.title}</strong><p style={{margin:'0.5rem 0 0'}}>{activeNode.summary}</p></>
-        : <p style={{margin:0}}>點選圓形節點，顯示文字。</p>}
-    </div>
+    {activeNode&&<text x={POSITIONS[visible.findIndex(node=>node.id===activeNode.id)].x<600?POSITIONS[visible.findIndex(node=>node.id===activeNode.id)].x-96:POSITIONS[visible.findIndex(node=>node.id===activeNode.id)].x+96}
+      y={POSITIONS[visible.findIndex(node=>node.id===activeNode.id)].y+5}
+      textAnchor={POSITIONS[visible.findIndex(node=>node.id===activeNode.id)].x<600?'end':'start'}
+      fill="currentColor" fontSize="14" role="status" aria-live="polite" pointerEvents="none">{activeNode.summary}</text>}
   </div>;
 }
