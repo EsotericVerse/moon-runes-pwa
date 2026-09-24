@@ -1,15 +1,13 @@
 import { PageComposition } from '../../PageComposition';
 import HomeMetricsV2 from './HomeMetricsV2';
 import ScopeOverviewGraphV2 from '../../modular-v2/modules/scope-overview/ScopeOverviewGraphV2';
-import {featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
-
 const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心所欲，而不逾己'];
 
 const AUTHOR_OVERVIEW_NODES=Object.freeze([
-  Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith',summary:'符文的設計理念與我的用詞堅持。',href:featureHrefV2('lo3rwang','context')}),
-  Object.freeze({id:'calibrator',title:'校對者｜Calibrator',summary:'現實工作狀況跟展望。',href:scopeHrefV2('lo3rwang','work')}),
-  Object.freeze({id:'governance-architect',title:'語言治理架構者',summary:'我的語言治理理念。',href:featureHrefV2('lo3rwang','governance')}),
-  Object.freeze({id:'self',title:'自我介紹跟人生觀',summary:'比較輕鬆的自介，以及我的人生觀。',href:scopeHrefV2('lo3rwang','others')})
+  Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith',summary:'符文的設計理念與我的用詞堅持。'}),
+  Object.freeze({id:'calibrator',title:'校對者｜Calibrator',summary:'把文字放回來源、時間與歷史裡比較，觀察文化軌跡的延續、改變與矛盾。'}),
+  Object.freeze({id:'governance-architect',title:'語言治理架構者',summary:'我的語言治理理念。'}),
+  Object.freeze({id:'self',title:'自我介紹與人生觀',summary:'從姓名由來、思想取向與時空定錨論，認識我如何理解自己與記錄生命經驗。'})
 ]);
 
 const AUTHOR_FUNCTIONS=Object.freeze([

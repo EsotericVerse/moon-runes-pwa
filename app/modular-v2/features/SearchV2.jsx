@@ -12,7 +12,7 @@ import {buildSearchNavigation,featureNavigationLinks} from '../feature-navigatio
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
-function rowText(row){return Object.values(row||{}).map(value=>typeof value==='string'?value:JSON.stringify(value||'')).join(' ')}
+function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
 function snippet(text,q){
   const raw=String(text||'').replace(/\s+/g,' ').trim();
   const index=norm(raw).indexOf(norm(q));

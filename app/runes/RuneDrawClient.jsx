@@ -227,7 +227,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
 
     fetchRuneRows(numbers,{timeoutMs:1500})
       .then(rows => {
-        const byNumber=new Map(rows.map(row => [Number(row.rune_number), row.canonical_payload || {}]));
+        const byNumber=new Map(rows.map(row => [Number(row.rune_number), row.rune_data || {}]));
         setDraw(current => {
           if(!current) return current;
           return {

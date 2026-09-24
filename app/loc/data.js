@@ -2,10 +2,8 @@ export { LOC_DATA } from './data-paths.mjs';
 import { LOC_DATA } from './data-paths.mjs';
 import {selectNeonRows} from './neon-repository';
 
-const memoryCache=new Map();
 const DEFAULT_GLOBAL_CONCURRENCY=2;
 const DEFAULT_MAX_BATCH_ITEMS=24;
-const DEFAULT_MEMORY_CACHE_ENTRIES=24;
 let activeRequests=0;
 const waiters=[];
 
@@ -33,62 +31,34 @@ function releaseSlot(){
   }
 }
 
-function trimMemoryCache(maxEntries=DEFAULT_MEMORY_CACHE_ENTRIES){
-  while(memoryCache.size>maxEntries){
-    const oldestKey=memoryCache.keys().next().value;
-    memoryCache.delete(oldestKey);
-  }
-}
-
-function touchMemoryCache(key){
-  if(!memoryCache.has(key))return;
-  const value=memoryCache.get(key);
-  memoryCache.delete(key);
-  memoryCache.set(key,value);
-}
-
-function runeRows(rows){return (rows||[]).map(row=>({編號:row.rune_number,符文名稱:row.rune_name,所屬分組:row.group_name,英文:row.english_name,...(row.canonical_payload&&typeof row.canonical_payload==='object'?row.canonical_payload:{})}));}
-function mergeHistory(rows){
-  const result={records:(rows||[]).map(row=>({...row,body:row.body||{},source_payload:row.source_payload||{}}))};
-  for(const row of rows||[]){
-    const body=row?.body;
-    if(!body||typeof body!=='object'||Array.isArray(body))continue;
-    for(const [key,value] of Object.entries(body)){
-      if(Array.isArray(value))result[key]=[...(Array.isArray(result[key])?result[key]:[]),...value];
-      else if(value&&typeof value==='object'&&!Array.isArray(value))result[key]={...(result[key]&&typeof result[key]==='object'?result[key]:{}),...value};
-      else if(result[key]===undefined)result[key]=value;
-    }
-  }
-  return result;
-}
-function periodRows(rows){return (rows||[]).map(row=>({era_id:row.payload?.era_id||row.context_key,period:row.payload?.period||row.context_key||'',name:row.payload?.name||row.title||row.context_key,title:row.title||row.context_key,description:row.summary||'',start_date:row.payload?.start_date||null,end_date:row.payload?.end_date||null,order:Number(row.payload?.order||0),status:row.payload?.status||''})).sort((a,b)=>a.order-b.order);}
+function runeRows(rows){return (rows||[]).map(row=>({
+  編號:row.rune_number,符文名稱:row.rune_name,所屬分組:row.group_name,英文:row.english_name,
+  正位:row.lots_positive,逆位:row.lots_negative,半正位:row.lots_half_positive,半逆位:row.lots_half_negative,
+  神話故事:row.myth_story,符文演化歷史:row.rune_evolution_history,
+  source_ref:row.source_ref,updated_at:row.updated_at
+}));}
+function periodRows(rows){return (rows||[]).map(row=>({era_id:row.context_key,period:row.context_key||'',name:row.title||row.context_key,title:row.title||row.context_key,description:row.summary||'',order:0,status:''}));}
 
 async function fetchCanonical(path){
   const normalized=sourcePath(path);
   await acquireSlot();
   try{
     if(normalized==='canonical/runes'||normalized==='canonical/lots'||normalized==='canonical/rune-interpretations'){
-      const {rows}=await selectNeonRows('silver.lrunes_runes',{columns:'rune_number,rune_name,group_name,english_name,canonical_payload',orders:[{column:'rune_number',ascending:true}],limit:100});
+      const {rows}=await selectNeonRows('silver.lrunes_runes',{columns:'rune_number,rune_name,group_name,english_name,lots_positive,lots_negative,lots_half_positive,lots_half_negative,myth_story,rune_evolution_history,source_ref,updated_at',orders:[{column:'rune_number',ascending:true}],limit:100});
       return runeRows(rows);
     }
-    if(normalized==='canonical/rune-grammar')return (await selectNeonRows('silver.lrunes_algorithm',{limit:5000})).rows;
-    if(normalized==='canonical/harmony')return (await selectNeonRows('silver.lrunes_harmony',{limit:5000})).rows;
-    if(normalized==='culture/lrunes-periods')return {eras:periodRows((await selectNeonRows('silver.runes_context_entries',{filters:[{column:'context_type',operator:'in',value:['period','era']}],limit:5000})).rows)};
-    if(normalized==='culture/lo3rwang-periods')return {eras:periodRows((await selectNeonRows('silver.lo3rwang_period_context_entries',{filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000})).rows)};
-    if(normalized==='knowledge/faq')return (await selectNeonRows('silver.faq_entries',{limit:5000})).rows;
-    if(normalized==='context/content-relations')return (await selectNeonRows('silver.content_relations',{limit:5000})).rows;
+    if(normalized==='canonical/rune-grammar')return (await selectNeonRows('silver.lrunes_algorithm',{columns:'algorithm_id,name,definition,source_ref,lifecycle,updated_at',limit:5000})).rows;
+    if(normalized==='canonical/harmony')return (await selectNeonRows('silver.lrunes_harmony',{columns:'rune_number,rune_name,soul_question,practice_challenge,ritual_advice,harmony_advice,updated_at',limit:5000})).rows;
+    if(normalized==='culture/lrunes-periods')return {eras:periodRows((await selectNeonRows('silver.runes_context_entries',{columns:'context_key,context_type,title,summary,updated_at',filters:[{column:'context_type',operator:'in',value:['period','era']}],limit:5000})).rows)};
+    if(normalized==='culture/lo3rwang-periods')return {eras:periodRows((await selectNeonRows('silver.lo3rwang_period_context_entries',{columns:'context_key,context_type,title,summary,updated_at',filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000})).rows)};
+    if(normalized==='knowledge/faq')return (await selectNeonRows('silver.faq_entries',{columns:'faq_id,category,intent,question,answer,canon_version,status,source_path,source_blob_sha,updated_at',limit:5000})).rows;
+    if(normalized==='context/content-relations')return (await selectNeonRows('silver.content_relations',{columns:'relation_id,from_kind,from_id,relation_type,to_kind,to_id,source_ref',limit:5000})).rows;
     throw new Error(`Neon canonical data path is not mapped: ${normalized}`);
   }finally{releaseSlot();}
 }
 
-export function fetchNeonData(path,{memory=true,maxMemoryEntries=DEFAULT_MEMORY_CACHE_ENTRIES}={}){
-  const normalized=sourcePath(path);
-  if(!memory)return fetchCanonical(normalized);
-  if(memoryCache.has(normalized)){touchMemoryCache(normalized);return memoryCache.get(normalized);}
-  const request=fetchCanonical(normalized).catch(error=>{memoryCache.delete(normalized);throw error;});
-  memoryCache.set(normalized,request);
-  trimMemoryCache(maxMemoryEntries);
-  return request;
+export function fetchNeonData(path){
+  return fetchCanonical(sourcePath(path));
 }
 
 export async function fetchRuneRows(runeNumbers){
@@ -97,7 +67,7 @@ export async function fetchRuneRows(runeNumbers){
   const rows=await fetchNeonData(LOC_DATA.RUNES,{memory:true});
   return (Array.isArray(rows)?rows:[])
     .filter(row=>wanted.has(Number(row?.編號)))
-    .map(row=>({rune_number:Number(row.編號),canonical_payload:row}));
+    .map(row=>({rune_number:Number(row.編號),rune_data:row}));
 }
 
 export async function fetchNeonDataBatch(items,{concurrency=DEFAULT_GLOBAL_CONCURRENCY,maxItems=DEFAULT_MAX_BATCH_ITEMS,memory=true}={}){
@@ -119,9 +89,8 @@ export async function fetchNeonDataBatch(items,{concurrency=DEFAULT_GLOBAL_CONCU
   return results;
 }
 
-export function clearNeonDataCache(path){
-  if(path)memoryCache.delete(sourcePath(path));
-  else memoryCache.clear();
+export function clearNeonDataCache(){
+  return;
 }
 
 export function refreshLocDataVersionManifest(){
@@ -137,5 +106,5 @@ export function refreshLocDataIndex(){
 export const LOC_IO_BUDGET=Object.freeze({
   maxBatchItems:DEFAULT_MAX_BATCH_ITEMS,
   maxConcurrentRequests:DEFAULT_GLOBAL_CONCURRENCY,
-  maxMemoryEntries:DEFAULT_MEMORY_CACHE_ENTRIES
+  maxMemoryEntries:0
 });
