@@ -1,5 +1,7 @@
 'use client';
 
+import {useState} from 'react';
+
 const POSITIONS=Object.freeze([
   {x:600,y:125},
   {x:855,y:360},
@@ -52,6 +54,7 @@ function renderLines(lines,{x,y,anchor='middle',fontSize=15,defaultWeight=400,li
 }
 
 export default function ScopeOverviewGraphV2({centerTitle='',centerSummary='',nodes=[]}){
+  const [openIntroId,setOpenIntroId]=useState(null);
   const visible=(Array.isArray(nodes)?nodes:[]).slice(0,4);
 
   return <div className="scope-overview-graph-wrap">
@@ -72,23 +75,40 @@ export default function ScopeOverviewGraphV2({centerTitle='',centerSummary='',no
         const href=String(node.href||'');
         const titleMarkup=parseSvgText(node.title);
         const titleLines=wrapSvgLines(titleMarkup.lines,10);
-        const summaryLines=href?[]:wrapSvgLines(parseSvgText(node.summary).lines,16);
-        const summaryX=p.x<600?p.x-96:p.x+96;
-        const summaryAnchor=p.x<600?'end':'start';
-        const summaryY=p.y-((summaryLines.length-1)*9)+5;
+        const summaryLines=wrapSvgLines(parseSvgText(node.summary).lines,16);
+        const isIntroOpen=openIntroId===node.id;
+        const introOnLeft=p.x<600;
+        const introX=introOnLeft?10:950;
+        const introWidth=240;
+        const introTextX=introOnLeft?introX+introWidth-12:introX+12;
+        const introAnchor=introOnLeft?'end':'start';
+        const introHeight=isIntroOpen?46+summaryLines.length*18:38;
+        const introY=p.y-introHeight/2;
         const label=plainText(titleMarkup.lines);
         const description=plainText(parseSvgText(node.summary).lines);
-        return <g key={node.id} role={href?'link':'group'} tabIndex={href?0:undefined}
-          aria-label={href?label+'；前往相關頁面。':label+'：'+description}
-          onClick={href?()=>{window.location.href=href;}:undefined}
-          onKeyDown={href?event=>{
-            if(event.key==='Enter'){event.preventDefault();window.location.href=href;}
-          }:undefined}
-          style={href?{cursor:'pointer'}:undefined}>
+        const activate=()=>{
+          if(href)window.location.href=href;
+          else setOpenIntroId(current=>current===node.id?null:node.id);
+        };
+        return <g key={node.id} role={href?'link':'button'} tabIndex={0}
+          aria-label={href?label+'；前往相關頁面。':label+'簡介'}
+          aria-expanded={href?undefined:isIntroOpen}
+          onClick={activate}
+          onKeyDown={event=>{
+            if(event.key==='Enter'||(!href&&event.key===' ')){
+              event.preventDefault();
+              activate();
+            }
+          }}
+          style={{cursor:'pointer'}}>
           <circle cx={p.x} cy={p.y} r="74" fill="var(--loc-accent)" fillOpacity=".16" stroke="currentColor" strokeWidth="2"/>
           {renderLines(titleLines,{x:p.x,y:p.y,fontSize:15,defaultWeight:titleMarkup.hasStrong?400:700,lineHeight:18})}
           {!href&&<g aria-hidden="true">
-            {renderLines(summaryLines,{x:summaryX,y:summaryY,anchor:summaryAnchor,fontSize:14,lineHeight:18})}
+            <rect x={introX} y={introY} width={introWidth} height={introHeight} rx="15"
+              fill="var(--loc-panel-2)" stroke="currentColor" strokeOpacity=".62" strokeWidth="1.5"/>
+            <text x={introTextX} y={isIntroOpen?introY+23:p.y+5} textAnchor={introAnchor}
+              fill="currentColor" fontSize="14" fontWeight="700">{isIntroOpen?'簡介　收起':'簡介　＋'}</text>
+            {isIntroOpen&&renderLines(summaryLines,{x:introTextX,y:p.y+18,anchor:introAnchor,fontSize:14,lineHeight:18})}
           </g>}
         </g>;
       })}
