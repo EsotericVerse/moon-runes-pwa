@@ -2,7 +2,6 @@
 
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {selectDailyRuneMonth} from '../../loc/neon-daily-runes';
-import {realMoonPhase} from '../../loc/model/moon-phase';
 
 const FIRST_MONTH=2026*12+7;
 const WEEKDAYS=['日','一','二','三','四','五','六'];
@@ -26,9 +25,9 @@ export default function DailyLogClient(){
     try{
       const result=await selectDailyRuneMonth({year,month});
       setRows(result);
-      setSelectedDate(current=>current.startsWith(`${year}-${String(month).padStart(2,'0')}-`)
+      setSelectedDate(current=>result.some(row=>String(row.record_date).slice(0,10)===current)
         ?current
-        :String(result[0]?.record_date||dateKey(year,month,1)).slice(0,10));
+        :String(result[0]?.record_date||'').slice(0,10));
     }catch(reason){
       setRows([]);
       setSelectedDate('');
@@ -76,15 +75,13 @@ export default function DailyLogClient(){
           const entries=byDate.get(key)||[];
           const main=entries.some(row=>row.draw_kind==='main');
           const supplement=entries.some(row=>row.draw_kind==='supplement');
-          const moonPhase=realMoonPhase(new Date(Date.UTC(year,month-1,day,12)));
           const selected=selectedDate===key;
           return <button
             role="gridcell"
             key={key}
             type="button"
             aria-pressed={selected}
-            aria-label={`${formatDate(key)}，真實月相：${moonPhase}${main?'，主抽':''}${supplement?'，補抽':''}`}
-            title={`真實月相：${moonPhase}`}
+            aria-label={`${formatDate(key)}${main?'，主抽':''}${supplement?'，補抽':''}`}
             onClick={()=>setSelectedDate(key)}
             style={{minHeight:72,padding:'6px 3px',borderRadius:8,border:selected?'2px solid currentColor':'1px solid currentColor',background:selected?'var(--loc-focus,rgba(128,128,128,.16))':'transparent',color:'inherit',opacity:entries.length?1:.68,cursor:'pointer'}}
           >
@@ -102,16 +99,10 @@ export default function DailyLogClient(){
     {!loading&&!error&&!rows.length?<article className="loc-card">目前沒有每日符文紀錄。</article>:null}
     {selectedDate&&selectedRows.length?<section className="loc-context-list" aria-live="polite">
       <h2>{formatDate(selectedDate)}</h2>
-      <p>真實月相：{realMoonPhase(new Date(`${selectedDate}T12:00:00Z`))}</p>
       {selectedRows.map(row=><article className="loc-card" key={`${row.record_date}-${row.draw_kind}`}>
         <div className="loc-result-meta"><span>{row.draw_kind==='supplement'?'補抽':'主抽'}</span><span>{formatDate(row.record_date)}</span></div>
         <h3>{row.rune_name}・{row.direction}</h3>
       </article>)}
-    </section>:null}
-    {selectedDate&&!selectedRows.length&&!loading&&!error?<section className="loc-card" aria-live="polite">
-      <h2>{formatDate(selectedDate)}</h2>
-      <p>真實月相：{realMoonPhase(new Date(`${selectedDate}T12:00:00Z`))}</p>
-      <p>當日沒有每日符文紀錄。</p>
     </section>:null}
   </section>;
 }
