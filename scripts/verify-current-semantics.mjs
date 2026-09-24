@@ -4,7 +4,9 @@ const files={
   identity:'app/loc/views/AboutView.jsx',
   registry:'app/modular-v2/scope-registry.v2.js',
   guidance:'app/loc/model/semantic-guidance.js',
-  canonicalLoader:'app/loc/data.js'
+  canonicalLoader:'app/loc/data.js',
+  search:'app/loc/neon-search.js',
+  searchView:'app/modular-v2/features/SearchV2.jsx'
 };
 const failures=[];
 const read=path=>fs.readFileSync(path,'utf8');
