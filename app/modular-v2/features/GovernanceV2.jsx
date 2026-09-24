@@ -75,24 +75,6 @@ export default function GovernanceV2({section=null}){
       </section>
 
       <section className="loc-card">
-        <p className="loc-eyebrow">Graph</p><h2>關係圖</h2>
-        <p>Graph 用來顯示各種已建立的關係。固定原點、一次只看必要的一層，不遞迴載入整棵關係樹。</p>
-        <p>搜尋命中後只補 Graph 的上下一層定位；跨 Scope 節點則直接進入對方 Scope 的脈絡。</p>
-      </section>
-
-      <section className="loc-card">
-        <p className="loc-eyebrow">Time River</p><h2>時間長河</h2>
-        <p>時間長河只用於文化與統計。以 Current 為起點，需要時才往前查看歷史時期，再由前一期返回後一期。</p>
-        <p>沒有留下文字的時間不推定文字風格；本人可以另外補上回憶註解，但註解與當時原始文字分開保存。</p>
-      </section>
-
-      <section className="loc-card">
-        <p className="loc-eyebrow">Keywords</p><h2>關鍵詞與分類</h2>
-        <p>簡單語言分析以明確關鍵詞對應、群組分類與可觀察數字為基礎，不以模糊語意自動替文字下定義。</p>
-        <p>LunaRunes 是預設群組分類方式，不是強制標準；使用者可以設定自己的群組與關鍵詞。</p>
-      </section>
-
-      <section className="loc-card">
         <p className="loc-eyebrow">Authorization</p><h2>權限</h2>
         <p>Casbin 負責授權與存取控制。Graph、搜尋與其他功能只能顯示已被允許讀取的節點、關係與資料。</p>
         <p>User 與 Privileges 等不同權限視圖各有自己的 Graph 原點，不混成同一張圖。</p>
