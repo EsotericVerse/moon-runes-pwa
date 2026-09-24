@@ -7,26 +7,27 @@ const CONTEXT_TABLES=Object.freeze({
   lo3rwang:'api.lo3rwang_context_entries'
 });
 
+const CONTEXT_COLUMNS='context_key,context_type,title,summary,kind,node_type,entry_scope,description,context_date,date_status,anchor_id,before_id,after_id,order_no,rune_count,rune_number,literature_id,work_id,status,milestone,style_prompt,ranking_types,era_id,period,entry_name,start_date,end_date,start_anchor_id,end_anchor_id,date_value,visibility,event_id,year_value,updated_at';
+
 function normalizeGraph(rows){
   const nodes=[];const edges=[];
   for(const row of rows||[]){
-    const payload=row?.payload&&typeof row.payload==='object'?row.payload:{};
-    const kind=payload.kind||row.context_type;
+    const kind=row.kind||row.context_type;
     if(kind==='node')nodes.push({
-      node_id:String(payload.id||row.context_key),
-      label:payload.title||row.title||row.context_key,
-      node_type:payload.node_type||'context',
-      scope_id:row.scope_id||payload.scope_id||'',
-      description:payload.description||row.summary||''
+      node_id:String(row.context_key||''),
+      label:row.title||row.context_key,
+      node_type:row.node_type||'context',
+      scope_id:row.scope_id||row.entry_scope||'',
+      description:row.description||row.summary||''
     });
     if(kind==='edge')edges.push({
-      edge_id:String(payload.id||row.context_key),
-      source_node_id:String(payload.source_id||''),
-      target_node_id:String(payload.target_id||''),
-      relation_type:String(payload.relation_type||'related'),
-      relation_label:payload.title||row.title||'',
+      edge_id:String(row.context_key||''),
+      source_node_id:String(row.before_id||''),
+      target_node_id:String(row.after_id||''),
+      relation_type:'related',
+      relation_label:row.title||'',
       description:row.summary||'',
-      evidence:payload.evidence||''
+      evidence:row.description||''
     });
   }
   return {nodes,edges};
@@ -36,7 +37,7 @@ async function readScopeRows(scopeId){
   const table=CONTEXT_TABLES[scopeId];
   if(!table)throw new Error('Scope 無效');
   const {rows}=await selectNeonRows(table,{
-    columns:'context_key,context_type,title,summary,payload,updated_at',
+    columns:CONTEXT_COLUMNS,
     orders:[{column:'context_key',ascending:true}],
     limit:5000
   });
