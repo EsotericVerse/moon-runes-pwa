@@ -49,7 +49,7 @@ export default function SearchV2(){
   const searchParams=useSearchParams();
   const [query,setQuery]=useState('');
   const [results,setResults]=useState([]);
-  const [status,setStatus]=useState('輸入文字後才會載入搜尋資料。');
+  const [status,setStatus]=useState('輸入一個詞、一句話或一個情境，開始搜尋。');
   const [error,setError]=useState('');
   const [hasMore,setHasMore]=useState(false);
   const [loadingMore,setLoadingMore]=useState(false);
@@ -152,9 +152,14 @@ export default function SearchV2(){
 
   async function runSearch(event){event.preventDefault();await executeSearch(query)}
 
-  return <FeaturePageV2 featureId="search" subtitle={collection.description}>
+  return <FeaturePageV2
+    featureId="search"
+    subtitle="跨文字、音樂、多媒體、符文、脈絡與知識搜尋。"
+    description={<p>輸入一個詞、一句話或一個情境，從文字、音樂、圖片、影音、符文與文件中找出相關內容。</p>}
+  >
     <form className="scope-v2-search-form" onSubmit={runSearch}>
-      <input value={query} onChange={event=>setQuery(event.target.value)} placeholder="輸入關鍵字，例如：治理、月、自由" aria-label="搜尋文字"/>
+      <label htmlFor="scope-search-query">你想找什麼？</label>
+      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder="輸入關鍵字、作品名稱、句子或概念" aria-label="你想找什麼？"/>
       <button type="submit">搜尋</button>
     </form>
     <p className="scope-v2-status">{status}</p>
