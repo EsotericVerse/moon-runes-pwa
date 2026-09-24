@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
-import {selectScopeCultureData} from '../../loc/neon-culture-client';
+import {selectAuthorPeriodWorks,selectScopeCultureData} from '../../loc/neon-culture-client';
 import {readFeatureNavigation} from '../feature-navigation.v2';
 import {CULTURE_OVERVIEW_LABEL,cultureDefaultPeriod,isCultureOverview} from '../culture-policy.v2';
 import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
@@ -44,6 +44,27 @@ export default function CultureV2(){
   const overview=isCultureOverview(selectedPeriod);
   const selected=overview?null:rows.find(item=>periodKey(item)===String(selectedPeriod))||null;
   const visibleRows=overview?rows:(selected?[selected]:[]);
+  const periodWorksQuery=useQuery({
+    queryKey:['culture-period-works',scopeId,selected?.start_date,selected?.end_date],
+    queryFn:()=>selectAuthorPeriodWorks({startDate:selected?.start_date,endDate:selected?.end_date,limit:200}),
+    enabled:scopeId==='lo3rwang'&&Boolean(selected?.start_date),
+    staleTime:5*60_000
+  });
+  const detailTimeline=useMemo(()=>{
+    if(scopeId!=='lo3rwang'||!selected)return [];
+    const start=String(selected.start_date||'');
+    const end=String(selected.end_date||'9999-12-31');
+    const inRange=item=>{
+      const itemStart=String(item?.start_date||item?.date||'');
+      const itemEnd=String(item?.end_date||itemStart||'');
+      return itemStart&&itemEnd>=start&&itemStart<=end;
+    };
+    return [
+      ...(query.data?.events||[]).filter(inRange),
+      ...(query.data?.trajectories||[]).filter(inRange),
+      ...(periodWorksQuery.data||[])
+    ];
+  },[scopeId,selected,query.data,periodWorksQuery.data]);
 
   return <section className='loc-view'>
     <h1>文化</h1>
@@ -61,6 +82,18 @@ export default function CultureV2(){
       </label>:null}
       {selected?.description?<p className='scope-v2-culture-period-description'>{selected.description}</p>:null}
       <CultureTimelineV2 items={visibleRows} labelOf={labelOf} focus={navigation} mode={overview?'overview':'period'} />
+      {scopeId==='lo3rwang'&&selected?<>
+        <h2>文字軌跡</h2>
+        {periodWorksQuery.isPending?<p className='scope-v2-status'>載入時期文字作品…</p>:null}
+        {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
+        {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!detailTimeline.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+        {detailTimeline.length?<CultureTimelineV2
+          items={detailTimeline}
+          labelOf={(item)=>item?.title||item?.name||item?.work_id||'文字紀錄'}
+          focus={navigation}
+          mode='period'
+        />:null}
+      </>:null}
     </>:null}
   </section>;
 }
