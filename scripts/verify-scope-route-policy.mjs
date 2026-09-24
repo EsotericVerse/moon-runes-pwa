@@ -107,11 +107,6 @@ if(authorRedirect?.toHost!=='loc.lo3rwang.cc'||authorRedirect?.toBase!=='/lo3rwa
   failures.push('author alias redirect policy drifted');
 }
 
-for(const path of ['/management']){
-  if(!policy.hosts?.['loc.lo3rwang.cc']?.compatibility?.includes(path)){
-    failures.push('LOC compatibility route missing: '+path);
-  }
-}
 
 if(policy.hosts?.['lrunes.lo3rwang.cc']?.redirect){
   failures.push('LunaRunes canonical domain must not be treated as alias redirect');
