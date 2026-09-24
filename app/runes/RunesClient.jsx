@@ -118,7 +118,6 @@ export default function RunesClient(){
         <article className="reading-ref-card"><h3>主結果與代價分開</h3><p>是否完成、完成品質、時間、金錢、情緒與體力成本應分開判讀。</p></article>
         <article className="reading-ref-card"><h3>不知道就保留未知</h3><p>尚未走完的時間跨度、證據不足或原始解析遺失時，不事後補造答案。</p></article>
       </div>
-      <p className="rune-basics-note">事後回測固定保留「原始問題／原始牌序與原解析／實際發生／語法修正」的區分；不得看到結果後反向改寫原解析。</p>
     </section>
     <section className="loc-card rune-basics" aria-label="月之符文占卜範例">
       <p className="loc-eyebrow">Reels · Examples</p>
