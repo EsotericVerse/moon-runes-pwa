@@ -6,7 +6,7 @@ import {neonClient} from './neon-client';
 const TableSchema=z.enum([
   'api.user_records','api.user_settings','api.scope_contacts','api.scope_theme_defaults',
   'api.scope_access_grants','api.scope_relations','api.scope_relation_requests','api.site_theme_styles',
-  'api.loc_context_entries','api.loc_rankings','api.loc_culture_entries',
+  'api.loc_context_entries','api.loc_rankings','api.loc_timeline_entries',
   'api.runes_context_entries','api.runes_rankings','api.lo3rwang_context_entries','api.lo3rwang_rankings','api.lo3rwang_galaxy',
   'silver.content_relations',
   'silver.runes_context_entries','silver.lo3rwang_context_entries',

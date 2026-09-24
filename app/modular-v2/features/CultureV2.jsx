@@ -27,6 +27,17 @@ function rowsOf(data){
   });
 }
 function periodKey(item){return String(item?.period||item?.era_id||'');}
+function uniqueInterleavedWorks(rows){
+  const seen=new Set();
+  return (Array.isArray(rows)?rows:[]).filter(work=>{
+    const content=String(work?.content||'').replace(/\s+/g,' ').trim();
+    const key=String(work?.content_hash||'').trim()||content;
+    if(!key)return true;
+    if(seen.has(key))return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 export default function CultureV2(){
   const {scopeId}=useScopeRuntimeV2();
@@ -55,17 +66,26 @@ export default function CultureV2(){
     }).filter(Boolean);
     return byScope;
   },[scopeId,rows]);
+  const currentAuthorPeriod=scopeId==='loc'?currentRows.find(item=>item.scope_id==='lo3rwang')||null:null;
+  const showDetailTimeline=(scopeId==='lo3rwang'&&Boolean(selected))||(scopeId==='loc'&&Boolean(currentAuthorPeriod));
   const visibleRows=scopeId==='loc'?currentRows:scopeId==='runes'?[...(overview?rows:(selected?[selected]:[])),...(query.data?.runeHistory?.records||[])]:overview?rows:(selected?[selected]:[]);
+  const activePeriod=scopeId==='loc'?currentAuthorPeriod:selected;
   const periodWorksQuery=useQuery({
-    queryKey:['culture-period-works',scopeId,selected?.start_date,selected?.end_date],
-    queryFn:()=>selectAuthorPeriodWorks({startDate:selected?.start_date,endDate:selected?.end_date,limit:1000}),
-    enabled:scopeId==='lo3rwang'&&Boolean(selected?.start_date),
+    queryKey:['culture-period-works',scopeId,activePeriod?.period,activePeriod?.start_date,activePeriod?.end_date],
+    queryFn:()=>selectAuthorPeriodWorks({startDate:activePeriod?.start_date,endDate:activePeriod?.end_date,limit:1000}),
+    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&Boolean(activePeriod?.start_date),
     staleTime:5*60_000
   });
+  const timelineWorks=useMemo(
+    ()=>scopeId==='loc'?uniqueInterleavedWorks(periodWorksQuery.data):periodWorksQuery.data||[],
+    [scopeId,periodWorksQuery.data]
+  );
   const detailTimeline=useMemo(()=>{
-    if(scopeId!=='lo3rwang'||!selected)return [];
-    const start=String(selected.start_date||'');
-    const end=String(selected.end_date||'9999-12-31');
+    if(!activePeriod||((scopeId!=='lo3rwang'||!selected)&&scopeId!=='loc'))return [];
+    const start=String(activePeriod.start_date||'');
+    const end=String(activePeriod.end_date||'9999-12-31');
+    const workGroups=groupWorksByWeekAndSource(timelineWorks);
+    if(scopeId==='loc')return workGroups;
     const inRange=item=>{
       const itemStart=String(item?.start_date||item?.date||'');
       const itemEnd=String(item?.end_date||itemStart||'');
@@ -74,9 +94,9 @@ export default function CultureV2(){
     return [
       ...(query.data?.events||[]).filter(inRange),
       ...(query.data?.trajectories||[]).filter(inRange),
-      ...groupWorksByWeekAndSource(periodWorksQuery.data||[])
+      ...workGroups
     ];
-  },[scopeId,selected,query.data,periodWorksQuery.data]);
+  },[scopeId,selected,activePeriod,query.data,timelineWorks]);
   const selectedWorksGroup=useMemo(()=>detailTimeline.find(item=>item.id===selectedWorkGroup)||null,[detailTimeline,selectedWorkGroup]);
   const visibleGroupWorks=useMemo(()=>selectedWorksGroup?.works?.slice(0,visibleWorkCount)||[],[selectedWorksGroup,visibleWorkCount]);
 
@@ -97,7 +117,7 @@ export default function CultureV2(){
         </label>:null}
         {selected?.description?<p className='scope-v2-culture-period-description'>{selected.description}</p>:null}
         <CultureTimelineV2 items={visibleRows} labelOf={labelOf} focus={navigation} mode={overview?'overview':'period'} />
-        {scopeId==='lo3rwang'&&selected?<>
+        {showDetailTimeline?<>
           <h2>文字軌跡</h2>
           {periodWorksQuery.isPending?<p className='scope-v2-status'>載入時期文字作品…</p>:null}
           {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
