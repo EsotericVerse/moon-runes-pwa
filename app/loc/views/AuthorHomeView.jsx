@@ -13,11 +13,11 @@ const AUTHOR_OVERVIEW_NODES=Object.freeze([
 ]);
 
 const AUTHOR_FUNCTIONS=Object.freeze([
-  Object.freeze({eyebrow:'Context',title:'脈絡',text:'把文字、作品、事件與來源放回關係中，從關鍵詞與事件看彼此如何連結。',href:'/context',label:'查看脈絡'}),
-  Object.freeze({eyebrow:'Statistics',title:'統計',text:'依年份、來源與時期整理筆數、關鍵詞與分布，先看整體，再回到作品。',href:'/statics',label:'查看統計'}),
-  Object.freeze({eyebrow:'Culture',title:'文化',text:'把作品放回個人時期與時間長河，觀看文字風格、作品與生命經驗如何變化。',href:'/culture',label:'查看文化'}),
-  Object.freeze({eyebrow:'Governance',title:'治理',text:'管理名稱、作品、時期、公開範圍與資料來源；作者的定義不會被系統自動升格為 LOC Canon。',href:'/governance',label:'查看治理'}),
-  Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:'/search',label:'開始搜尋'})
+  Object.freeze({eyebrow:'Context',title:'脈絡',text:'把文字、作品、事件與來源放回關係中，從關鍵詞與事件看彼此如何連結。',href:'/context/',label:'查看脈絡'}),
+  Object.freeze({eyebrow:'Statistics',title:'統計',text:'依年份、來源與時期整理筆數、關鍵詞與分布，先看整體，再回到作品。',href:'/statics/',label:'查看統計'}),
+  Object.freeze({eyebrow:'Culture',title:'文化',text:'把作品放回個人時期與時間長河，觀看文字風格、作品與生命經驗如何變化。',href:'/culture/',label:'查看文化'}),
+  Object.freeze({eyebrow:'Governance',title:'治理',text:'管理名稱、作品、時期、公開範圍與資料來源；作者的定義不會被系統自動升格為 LOC Canon。',href:'/governance/',label:'查看治理'}),
+  Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:'/search/',label:'開始搜尋'})
 ]);
 
 export default function AuthorHomeView({section=null}){
@@ -31,16 +31,16 @@ export default function AuthorHomeView({section=null}){
         <p>這 24 個字是我的 Governance Root，也是自我治理的根本；它用來約束我自己，不要求別人接受相同分類或價值判斷。</p>
         <p><strong>補充自述：</strong>「凡利於我者，皆利於我。」這句保留為個人觀點補充，不併入固定的 24 字 Governance Root。</p>
       </>,
-      links:[{label:'查看作者治理',href:'/governance'}]
+      links:[{label:'查看作者治理',href:'/governance/'}]
     },
     {
       id:'roles',
       eyebrow:'Roles',
       title:'三位一體',
       content:<div className="loc-grid three">
-        <article><strong>文字工匠 · Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/context">看脈絡</a></p></article>
-        <article><strong>校對者 · Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href="/culture">看文化</a></p></article>
-        <article><strong>語言治理架構者 · Language Governance Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/governance">看治理</a></p></article>
+        <article><strong>文字工匠 · Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/context/">看脈絡</a></p></article>
+        <article><strong>校對者 · Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href="/culture/">看文化</a></p></article>
+        <article><strong>語言治理架構者 · Language Governance Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/governance/">看治理</a></p></article>
         </div>
     },
     {
