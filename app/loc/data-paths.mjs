@@ -1,27 +1,9 @@
 export const LOC_DATA=Object.freeze({
   RUNES:'canonical/runes',
   LOTS:'canonical/lots',
-  HISTORY:'canonical/history',
-  HARMONY:'canonical/harmony',
-  RUNE_GRAMMAR:'canonical/rune-grammar',
   RUNE_INTERPRETATIONS:'canonical/rune-interpretations',
-  THREE_CARD_COMBINATIONS:'canonical/three-card-combinations',
-
-  LOC2_EVENT_REGISTRY:'context/loc2-events',
-  MUSIC_PERIOD_KEYWORD_ANALYSIS:'culture/loc3-period-keywords',
-  WRITING_REGISTRY:'literary/loc4-writing',
-  GOVERNANCE_REGISTRY:'governance/loc6',
-  PERIOD_KEYWORD_ANALYSIS:'culture/period-keywords',
-  GOVERNANCE_PERIOD_KEYWORD_ANALYSIS:'culture/loc6-period-keywords',
-  LOC_CROSS_RELATIONSHIP_REGISTRY:'context/cross-relations',
-  LO3RWANG_ERA:'culture/lo3rwang-periods',
-  LOC_GRAPH_SCHEMA:'context/graph-schema',
-  LOC_STYLE_GROUP_REGISTRY:'governance/style-groups',
-  LOC_SEARCH_GOVERNANCE:'knowledge/search-governance',
-  LRUNES_ERA:'culture/lrunes-periods',
-  ZHENGDE_CULTURE_KEYWORDS:'culture/zhengde-keywords',
-
-  LOC_FAQ:'knowledge/faq',
-  RUNE_RESERVED_SNAPSHOT:'canonical/runes',
-  SEARCH_SOURCE_STATS:'knowledge/search-stats'
+  GAME_EVENTS:'game/events',
+  CONTENT_RELATIONS:'context/content-relations',
+  LO3RWANG_PERIODS:'culture/lo3rwang-periods',
+  LRUNES_PERIODS:'culture/lrunes-periods'
 });
