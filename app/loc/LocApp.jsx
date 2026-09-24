@@ -18,20 +18,13 @@ const StaticsView=dynamic(()=>import('../modular-v2/features/StatisticsV2'),{loa
 const CultureView=dynamic(()=>import('../modular-v2/features/CultureV2'),{loading});
 const SearchView=dynamic(()=>import('../modular-v2/features/SearchV2'),{loading});
 const GovernanceView=dynamic(()=>import('../modular-v2/features/GovernanceV2'),{loading});
-const StyleGroupsView=dynamic(()=>import('./views/StyleGroupsView'),{ssr:false,loading});
-const ClassifyView=dynamic(()=>import('./views/ClassifyView'),{ssr:false,loading});
-const LibraryView=dynamic(()=>import('./views/LibraryView'),{ssr:false,loading});
-const MyStyleView=dynamic(()=>import('./views/MyStyleView'),{ssr:false,loading});
-const MediaView=dynamic(()=>import('./views/MediaView'),{ssr:false,loading});
 
 function BlockedScopeRoute(){return <section className="loc-view"><h1>此頁面不屬於目前 Scope</h1><p>管理功能只在 admin Scope 提供。</p></section>;}
 function AdminRedirect(){useEffect(()=>{window.location.replace('https://admin.lo3rwang.cc/');},[]);return <section className="loc-view"><h1>前往系統掌控者頁面</h1><p>正在轉往 admin.lo3rwang.cc…</p></section>;}
 
 const VIEWS={
-  game:GameView,context:ContextView,classify:ClassifyView,
-  library:LibraryView,multimedia:MediaView,'my-style':MyStyleView,statics:StaticsView,
-  culture:CultureView,search:SearchView,governance:GovernanceView,
-  'style-groups':StyleGroupsView
+  game:GameView,context:ContextView,statics:StaticsView,
+  culture:CultureView,search:SearchView,governance:GovernanceView
 };
 
 const HOME_VIEWS={loc:AboutView,runes:RunesHomeView,lo3rwang:AuthorHomeView,admin:AdminHomeView};
