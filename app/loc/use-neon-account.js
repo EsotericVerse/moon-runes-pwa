@@ -3,7 +3,6 @@
 import {useCallback,useEffect,useState} from 'react';
 import {getNeonSession,signInNeonWithGoogle,signOutNeon} from './neon-client';
 import {selectNeonRows} from './neon-repository';
-import {migrateLegacyBrowserDataToNeon} from './neon-legacy-migration';
 import {createScopeAuthorizer} from './scope-authorization';
 
 export const NEON_SCOPE_MANAGER_LEVELS=Object.freeze(['scope_manager']);
@@ -31,7 +30,6 @@ export function useNeonAccount(){
       const authorizer=await createScopeAuthorizer(user.id,grants);
       const canManage=grants.some(grant=>NEON_SCOPE_MANAGER_LEVELS.includes(grant.access_level));
       setState({loading:false,user,grants,authorizer,canManage,permissionLoading:false,error:''});
-      await migrateLegacyBrowserDataToNeon().catch(()=>{});
       return user;
     }catch(error){
       setState(current=>({...current,loading:false,grants:[],authorizer:null,canManage:false,permissionLoading:false,error:String(error?.message||error)}));
