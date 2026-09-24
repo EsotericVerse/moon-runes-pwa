@@ -81,14 +81,14 @@ for(const scope of Object.values(SCOPES_V2)){
 }
 
 
-for(const path of ['/','/context','/statics','/culture','/governance','/search','/list','/history','/duel/one','/duel/ow3gs']){
+for(const path of ['/','/context','/statics','/culture','/governance','/search','/list','/history','/duel/one','/duel/ow3gs','/daily/log','/daily/trend']){
   expectAllowed('lrunes.lo3rwang.cc',path,true);
 }
 for(const path of ['/loc','/runes','/lrunes','/lrunes/context','/duel/one/foo']){
   expectAllowed('lrunes.lo3rwang.cc',path,false);
 }
 
-for(const path of ['/','/context','/statics','/culture','/governance','/search','/lrunes','/lrunes/context','/lrunes/list','/lrunes/duel/one','/lo3rwang','/lo3rwang/context']){
+for(const path of ['/','/context','/statics','/culture','/governance','/search','/lrunes','/lrunes/context','/lrunes/list','/lrunes/duel/one','/lo3rwang','/lo3rwang/context','/lo3rwang/work','/lo3rwang/other']){
   expectAllowed('loc.lo3rwang.cc',path,true);
 }
 for(const path of ['/loc','/runes','/list','/history','/duel/one']){
