@@ -7,10 +7,10 @@ import { useNeonAccount } from '../../loc/use-neon-account';
 const PAGE_SIZE=20;
 const newest=(a,b)=>String(b?.created_at||'').localeCompare(String(a?.created_at||''));
 
-export default function HistoryClient(){
+export default function HistoryClient({defaultKind='all'}){
   const account=useNeonAccount();
   const [records,setRecords]=useState([]);
-  const [kind,setKind]=useState('all');
+  const [kind,setKind]=useState(defaultKind);
   const [page,setPage]=useState(1);
   const [status,setStatus]=useState('');
 
