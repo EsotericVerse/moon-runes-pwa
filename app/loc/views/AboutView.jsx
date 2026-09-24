@@ -59,18 +59,20 @@ const MODEL_MODULES=[
 
 export default function AboutView(){
   return <section className="loc-view loc-home">
-    <header className="loc-hero">
-      <p className="loc-eyebrow">LOC (Modelized Language Framework)</p>
-      <div className="home-title-row">
-        <h1>LOC月典</h1>
-        <p className="loc-subtitle">把語言整理成可理解、可搜尋、可推演的模組結構。</p>
+    <header className="loc-hero scope-home-hero-with-visual">
+      <div className="scope-home-hero-copy">
+        <p className="loc-eyebrow">LOC (Modelized Language Framework)</p>
+        <div className="home-title-row">
+          <h1>LOC月典</h1>
+          <p className="loc-subtitle">把語言整理成可理解、可搜尋、可推演的模組結構。</p>
+        </div>
+        <div className="loc-hero-copy">
+          <p className="loc-core-line">以微月光為鑑，即為月典(LOC,Luna Codex)，</p>
+		  <p>並用於分析整理，在時間長河內，文字發光的作品。</p>
+          <p>當微光慢慢集中變亮，你也將綻放屬於自己的光芒。</p>
+        </div>
       </div>
-      <div className="loc-hero-copy">
-        <p className="loc-core-line">以微月光為鑑，即為月典(LOC,Luna Codex)，</p>
-		<p>並用於分析整理，在時間長河內，文字發光的作品。</p>
-        <p>當微光慢慢集中變亮，你也將綻放屬於自己的光芒。</p>
-      </div>
-      <figure className="home-hero-visual">
+      <figure className="home-hero-visual scope-home-hero-visual">
         <img src="/pics/LOC-PicAll.png" alt="LOC 月典模型化語言框架視覺理念圖" loading="eager" />
       </figure>
     </header>
