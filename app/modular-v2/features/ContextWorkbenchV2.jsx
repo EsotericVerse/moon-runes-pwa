@@ -30,12 +30,6 @@ const ROOT_NODES=Object.freeze([
   }
 ]);
 
-const AUTHOR_BRANCH=Object.freeze([
-  {id:'author-novel',label:'個人小說'},
-  {id:'author-lyrics',label:'歌詞'},
-  {id:'author-mood',label:'個人心情文文字體系'}
-]);
-
 const RUNE_BRANCH=Object.freeze([
   {id:'rune-soul',label:'靈魂'},
   {id:'rune-link',label:'連結'},
@@ -74,17 +68,21 @@ function textXFor(x){
   return x;
 }
 
-export default function ContextWorkbenchV2({scopeId='loc'}){
+export default function ContextWorkbenchV2({scopeId='loc',rows=[]}){
   const graph=useMemo(()=>{
     if(scopeId==='loc'){
       return {nodes:ROOT_NODES.map(node=>({...node,...circlePoint(node.angle)})),ring:true};
     }
 
     if(scopeId==='lo3rwang'){
+      const periods=(Array.isArray(rows)?rows:[])
+        .filter(row=>row?.context_type==='period')
+        .sort((a,b)=>Number(a?.payload?.order||0)-Number(b?.payload?.order||0))
+        .map(row=>({id:String(row.context_key),label:String(row.title||row.context_key)}));
       return {
         nodes:[
-          {id:'lo3rwang',label:'lo3rwang',...circlePoint(-90,0)},
-          ...branchLayout(AUTHOR_BRANCH)
+          {id:'lo3rwang-periods',label:'我的時期',...circlePoint(-90,0)},
+          ...branchLayout(periods)
         ],
         ring:true
       };
@@ -93,7 +91,7 @@ export default function ContextWorkbenchV2({scopeId='loc'}){
     if(scopeId==='runes'){
       return {
         nodes:[
-          {id:'runes',label:'月之符文',...circlePoint(-90,0)},
+          {id:'runes-66',label:'符文 66',...circlePoint(-90,0)},
           ...branchLayout(RUNE_BRANCH)
         ],
         ring:true
@@ -101,7 +99,7 @@ export default function ContextWorkbenchV2({scopeId='loc'}){
     }
 
     return {nodes:ROOT_NODES.map(node=>({...node,...circlePoint(node.angle)})),ring:true};
-  },[scopeId]);
+  },[scopeId,rows]);
 
   function activate(node){
     if(!node?.href)return;
