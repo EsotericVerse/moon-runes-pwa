@@ -6,9 +6,9 @@ const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心�
 import {featureHrefV2} from '../../modular-v2/scope-registry.v2';
 
 const AUTHOR_OVERVIEW_NODES=Object.freeze([
-  Object.freeze({id:'wordsmith',title:'<strong>文字工匠</strong>｜Wordsmith',summary:'符文的設計理念與我的用詞堅持。',href:featureHrefV2('lo3rwang','context')}),
-  Object.freeze({id:'calibrator',title:'<strong>校對者</strong>｜Calibrator',summary:'回到來源與時間，校對文字軌跡。'}),
-  Object.freeze({id:'governance-architect',title:'<strong>語言治理架構者</strong><br />Language Governance Architect',summary:'我的語言治理理念。',href:featureHrefV2('lo3rwang','governance')}),
+  Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith',summary:'符文的設計理念與我的用詞堅持。',href:featureHrefV2('lo3rwang','context')}),
+  Object.freeze({id:'calibrator',title:'校對者｜Calibrator',summary:'回到來源與時間，校對文字軌跡。'}),
+  Object.freeze({id:'governance-architect',title:'語言治理架構者｜Language Governance Architect',summary:'我的語言治理理念。',href:featureHrefV2('lo3rwang','governance')}),
   Object.freeze({id:'self',title:'自我介紹與人生觀',summary:'從姓名、思想與時空定錨論認識我。<br />所以開始吧！'})
 ]);
 
