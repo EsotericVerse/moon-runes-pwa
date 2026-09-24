@@ -19,7 +19,7 @@ const forbidText=(path,needles)=>{
 for(const path of [
   'LunaRune66.xlsx','LunarRunesCardCut.pdf','pics/LOC-FrameworkPic.png',
   'pics/LOC-structure.png','pics/LunaRunes.jpg','pics/aboutme.png',
-  'js/runes-core.js','js/galaxy.js','js/writing.js','js/rune-graph-core.js'
+  'js/runes-core.js','js/galaxy.js','js/rune-graph-core.js'
 ])requireFile(path);
 
 if(existsSync(resolve(root,'lib')))failures.push('lib/ must not be recreated; shared JavaScript belongs in js/');
