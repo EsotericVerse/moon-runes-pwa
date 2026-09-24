@@ -111,39 +111,44 @@ export default function StatisticsV2(){
       <p>統計排行榜、關鍵字、曲風與來源的分佈，作為風格分析與資料回查的入口。</p>
     </section>:null}
 
-    <div className="scope-v2-stat-controls">
-      {types.length>1?<label>
-        <span>統計類型</span>
-        <select
-          className="scope-v2-select"
-          value={rankingType}
-          onChange={event=>setRankingType(event.target.value)}
-          aria-label="統計類型"
-        >
-          <option value="">全部</option>
-          {types.map(type=><option key={type} value={type}>{type}</option>)}
-        </select>
-      </label>:null}
-
-      <label>
-        <span>圖形</span>
-        <select
-          className="scope-v2-select"
-          value={chartType}
-          onChange={event=>setChartType(event.target.value)}
-          aria-label="圖形類型"
-        >
-          {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
-        </select>
-      </label>
-    </div>
-
-    {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
-
-    {!query.isPending&&!query.error&&!chartRows.length?<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>:null}
-
-    {chartRows.length?<div className="scope-v2-ranking-chart" aria-label={CHART_TYPES.find(([value])=>value===chartType)?.[1]||'統計圖'}>
-      <RankingChart type={chartType} rows={chartRows}/>
-    </div>:null}
+    <section className="loc-card scope-v2-feature-card">
+      <p className="loc-eyebrow">Charts</p>
+      <h2>統計圖表</h2>
+      <div className="scope-v2-stat-controls">
+        {types.length>1?<label>
+          <span>統計類型</span>
+          <select
+            className="scope-v2-select"
+            value={rankingType}
+            onChange={event=>setRankingType(event.target.value)}
+            aria-label="統計類型"
+          >
+            <option value="">全部</option>
+            {types.map(type=><option key={type} value={type}>{type}</option>)}
+          </select>
+        </label>:null}
+  
+        <label>
+          <span>圖形</span>
+          <select
+            className="scope-v2-select"
+            value={chartType}
+            onChange={event=>setChartType(event.target.value)}
+            aria-label="圖形類型"
+          >
+            {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+          </select>
+        </label>
+      </div>
+  
+      {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
+  
+      {!query.isPending&&!query.error&&!chartRows.length?<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>:null}
+  
+      {chartRows.length?<div className="scope-v2-ranking-chart" aria-label={CHART_TYPES.find(([value])=>value===chartType)?.[1]||'統計圖'}>
+        <RankingChart type={chartType} rows={chartRows}/>
+      </div>:null}
+  
+    </section>
   </section>;
 }
