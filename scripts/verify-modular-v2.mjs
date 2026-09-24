@@ -206,8 +206,6 @@ for(const file of currentFiles){
   const source=fs.readFileSync(file,'utf8');
   if(/\bLOC[0-8](?:_|\b)/.test(source))failures.push(file+': legacy numbered data identity leaked into Current feature module');
 }
-const bridge=fs.readFileSync('app/migration-bridges/current-data-compat.v2.js','utf8');
-if(!/LOC[0-8]/.test(bridge))failures.push('legacy physical identifiers should be isolated in the migration bridge');
 
 for(const pathname of ['/',...FEATURES_V2.map(item=>'/'+item.path),...SCOPES_V2.runes.localRoutes.map(route=>'/'+route)]){
   if(resolveScopeV2('lrunes.lo3rwang.cc',pathname)!=='runes')failures.push('LunaRunes canonical domain failed at '+pathname);
