@@ -30,6 +30,10 @@ const SEARCH_INDEX_CACHE=new Map();
 const SEARCH_TABLE_CACHE=new Map();
 const MAX_INDEX_RESULTS=5000;
 const SEARCH_INDEX_TTL_MS=60_000;
+const SCOPE_SEARCH_ROWS=Object.freeze([
+  Object.freeze({scope_id:'runes',title:'LunaRunes／月之符文',search_terms:'lunarunes 月之符文 符文',summary:'進入此 Scope 的脈絡頁。',source:'Scope'}),
+  Object.freeze({scope_id:'lo3rwang',title:'lo3rwang',search_terms:'lo3rwang 王政德 政德',summary:'進入此 Scope 的脈絡頁。',source:'Scope'})
+]);
 
 function normalizeSearchText(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
@@ -79,13 +83,13 @@ export async function selectNeonSearchRows(collectionId){
           return {table,rows:[],error:new Error(`Neon Search SELECT ${table}: ${error?.message||'query failed'}`)};
         }
       }));
-      const rows=settled.flatMap(item=>item.rows);
+      const rows=[...SCOPE_SEARCH_ROWS.map(row=>({row,source:'Scope'})),...settled.flatMap(item=>item.rows)];
       const failures=settled.filter(item=>item.error).map(item=>item.error);
       const successfulTables=settled.length-failures.length;
       if(!successfulTables)throw new AggregateError(failures,'Neon 搜尋資料表全部無法查詢');
       const index=new Index({tokenize:'full'});
       rows.forEach(({row},id)=>index.add(id,rowSearchText(row)));
-      return {index,rows,failures,indexedCount:rows.length};
+      return {index,rows,failures};
     })().catch(error=>{
       const current=SEARCH_INDEX_CACHE.get(cacheKey);
       if(current?.promise===indexPromise)SEARCH_INDEX_CACHE.delete(cacheKey);

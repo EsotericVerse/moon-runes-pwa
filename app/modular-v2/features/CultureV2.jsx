@@ -39,7 +39,7 @@ export default function CultureV2(){
     if(!rows.length){setSelectedPeriod(CULTURE_OVERVIEW_LABEL);return;}
     const requested=String(navigation.period||'');
     if(requested&&rows.some(item=>periodKey(item)===requested)){setSelectedPeriod(requested);return;}
-    setSelectedPeriod(scopeId==='loc'||scopeId==='lo3rwang'?CULTURE_OVERVIEW_LABEL:cultureDefaultPeriod(rows));
+    setSelectedPeriod(scopeId==='loc'?CULTURE_OVERVIEW_LABEL:cultureDefaultPeriod(rows));
   },[rows,navigation.period,scopeId]);
 
   const overview=isCultureOverview(selectedPeriod);

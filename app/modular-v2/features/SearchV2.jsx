@@ -12,22 +12,6 @@ import {buildSearchNavigation,featureNavigationLinks} from '../feature-navigatio
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
-const SCOPE_SEARCH_ENTRIES=Object.freeze([
-  {id:'runes',title:'LunaRunes／月之符文',terms:['lunarunes','月之符文','符文'],href:scopeHrefV2('runes','context')},
-  {id:'lo3rwang',title:'lo3rwang',terms:['lo3rwang','王政德','政德'],href:scopeHrefV2('lo3rwang','context')}
-]);
-
-function scopeResults(q){
-  const nq=norm(q);
-  if(!nq)return [];
-  return SCOPE_SEARCH_ENTRIES
-    .filter(item=>item.terms.some(term=>norm(term).includes(nq)||nq.includes(norm(term))))
-    .map(item=>({
-      key:`scope-${item.id}`,source:'Scope',title:item.title,date:'',snippet:'進入此 Scope 的脈絡頁。',href:item.href,
-      destinations:featureNavigationLinks({targetScope:item.id,state:{q}})
-    }));
-}
-
 function rowText(row){return Object.values(row||{}).map(value=>typeof value==='string'?value:JSON.stringify(value||'')).join(' ')}
 function snippet(text,q){
   const raw=String(text||'').replace(/\s+/g,' ').trim();
@@ -41,7 +25,8 @@ function toResult(row,source,q,collectionId,scopeId){
   const title=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.work_id||row.song_id||row.id||source;
   const body=row.summary||row.content||row.description||row.interpretation||row.ai_summary||row.retrieval_text||row.text||text;
   const navigation=buildSearchNavigation(collectionId,source,row,q,scopeId);
-  return {key:`${source}-${title}-${String(body).slice(0,40)}`,source,title:String(title),date:row.date||row.created_date||row.created_at||row.updated_at||'',snippet:snippet(body,q),href:row.url||row.href||row.suno_url||'',destinations:featureNavigationLinks(navigation)};
+  if(row.scope_id)navigation.targetScope=row.scope_id;
+  return {key:`${source}-${title}-${String(body).slice(0,40)}`,source,title:String(title),date:row.date||row.created_date||row.created_at||row.updated_at||'',snippet:snippet(body,q),href:row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'context'):''),destinations:featureNavigationLinks(navigation)};
 }
 
 export default function SearchV2(){
@@ -72,25 +57,21 @@ export default function SearchV2(){
     setResults([]);
     setStatus(`搜尋「${collection.label}」資料…`);
     try{
-      const scopeHits=scopeResults(q).slice(0,pageSize);
-      const capacity=Math.max(0,pageSize-scopeHits.length);
-      const search=capacity
-        ? await searchNeonRows(collection.id,q,{limit:capacity+1,offset:0})
-        : {rows:[],failures:[]};
+      const search=await searchNeonRows(collection.id,q,{limit:pageSize+1,offset:0});
       if(id!==searchId.current)return;
 
-      const consumed=search.rows.slice(0,capacity);
+      const consumed=search.rows.slice(0,pageSize);
       offsetRef.current=consumed.length;
-      const converted=[];const seen=new Set(scopeHits.map(item=>item.key));
+      const converted=[];const seen=new Set();
       for(const {row,source} of consumed){
         const result=toResult(row,source,q,collection.id,scopeId);
         if(!result||seen.has(result.key))continue;
         seen.add(result.key);converted.push(result);
       }
-      setResults([...scopeHits,...converted]);
-      setHasMore(search.rows.length>capacity);
+      setResults(converted);
+      setHasMore(search.rows.length>pageSize);
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
-      setStatus(`「${collection.label}」搜尋「${q}」。FlexSearch 已索引 ${Number(search.indexedCount||0).toLocaleString()} 筆資料。${partial}`);
+      setStatus(`「${collection.label}」搜尋「${q}」。${partial}`);
     }catch(exception){
       if(id!==searchId.current)return;
       setError(featureDataErrorMessage(exception));
