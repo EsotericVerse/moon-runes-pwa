@@ -11,6 +11,7 @@ import {
 import {selectScopeRankingPage} from '../../loc/neon-ranking-client';
 import {readFeatureNavigation} from '../feature-navigation.v2';
 import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
+import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
@@ -130,7 +131,9 @@ export default function StatisticsV2(){
       </label>
     </div>
 
-    {query.error?<p className="scope-v2-status scope-v2-error">{query.error.message}</p>:null}
+    {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
+
+    {!query.isPending&&!query.error&&!chartRows.length?<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>:null}
 
     {chartRows.length?<div className="scope-v2-ranking-chart" aria-label={CHART_TYPES.find(([value])=>value===chartType)?.[1]||'統計圖'}>
       <RankingChart type={chartType} rows={chartRows}/>
