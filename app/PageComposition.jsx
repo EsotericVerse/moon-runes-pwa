@@ -9,15 +9,24 @@ export function CompositionLinks({items=[]}){
   </div>;
 }
 
-export function PageComposition({eyebrow,title,subtitle,intro,sections=[],localMenu=[]}){
+export function PageComposition({eyebrow,title,subtitle,intro,heroVisual=null,sections=[],localMenu=[]}){
   return <section className="loc-view scope-home-composition">
-    <header className="loc-hero" id="top">
+    {heroVisual?<header className="loc-hero scope-home-hero-with-visual" id="top">
+      <div className="scope-home-hero-copy">
+        {eyebrow?<p className="loc-eyebrow"><LocalizedText value={eyebrow}/></p>:null}
+        <h1><LocalizedText value={title}/></h1>
+        {subtitle?<p className="loc-subtitle"><LocalizedText value={subtitle}/></p>:null}
+        {intro}
+        {localMenu.length?<nav className="scope-v2-local-menu" aria-label="頁面小功能選單">{localMenu.map(item=><a href={item.href} key={item.href}>{item.label}</a>)}</nav>:null}
+      </div>
+      <figure className="home-hero-visual scope-home-hero-visual">{heroVisual}</figure>
+    </header>:<header className="loc-hero" id="top">
       {eyebrow?<p className="loc-eyebrow"><LocalizedText value={eyebrow}/></p>:null}
       <h1><LocalizedText value={title}/></h1>
       {subtitle?<p className="loc-subtitle"><LocalizedText value={subtitle}/></p>:null}
       {intro}
       {localMenu.length?<nav className="scope-v2-local-menu" aria-label="頁面小功能選單">{localMenu.map(item=><a href={item.href} key={item.href}>{item.label}</a>)}</nav>:null}
-    </header>
+    </header>}
 
     {sections.map((section,index)=><section className="loc-card scope-home-section" id={section.id} key={section.id} data-composition-slot={index+1}>
       {section.eyebrow?<p className="loc-eyebrow"><LocalizedText value={section.eyebrow}/></p>:null}
