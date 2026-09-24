@@ -104,6 +104,13 @@ export default function StatisticsV2(){
     <h1>統計</h1>
     <p className="loc-subtitle">{scopeFeatureSubtitleV2(scopeId,'statics')}</p>
 
+    {scopeId==='loc'?<section className="loc-card">
+      <p className="loc-eyebrow">Statistics</p>
+      <h2>統計</h2>
+      <p>跨時期關鍵字排行榜集中於此。</p>
+      <p>統計排行榜、關鍵字、曲風與來源的分佈，作為風格分析與資料回查的入口。</p>
+    </section>:null}
+
     <div className="scope-v2-stat-controls">
       {types.length>1?<label>
         <span>統計類型</span>
