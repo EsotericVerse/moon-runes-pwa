@@ -17,7 +17,8 @@ const TABLES=Object.freeze({
     ['silver.lrunes_runes','月之符文',['rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history']]
   ]),
   lo3rwang:Object.freeze([
-    ['api.lo3rwang_galaxy','作者正文',['scope_id','category','content_type','source_role','title','content','created_at','source_ref','in_reply_to_username','source_place','work_id']]
+    ['api.lo3rwang_galaxy','作者正文',['scope_id','category','content_type','source_role','title','content','created_at','source_ref','in_reply_to_username','source_place','work_id']],
+    ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','keywords','created_at','created_date','playlist','style_prompt','publication_status','play_count','like_count','view_count','is_representative']]
   ]),
   治理:Object.freeze([
     ['silver.lo3rwang_context_entries','治理脈絡',['context_key','context_type','title','summary']],
