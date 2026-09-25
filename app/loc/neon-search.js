@@ -7,10 +7,10 @@ const TABLES=Object.freeze({
   all:Object.freeze([
     ['silver.lo3rwang_context_entries','作者脈絡',['context_key','context_type','title','summary']],
     ['silver.runes_context_entries','符文脈絡',['context_key','context_type','title','summary']],
-    ['api.lo3rwang_galaxy','作者正文',['scope_id','category','content_type','source_role','title','content','created_at','source_ref','in_reply_to_username','source_place','work_id']],
+    ['api.lo3rwang_galaxy','作者正文',['scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','in_reply_to_username','source_place','work_id']],
     ['silver.lrunes_runes','月之符文',['rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history']],
     ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path']],
-    ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','keywords','created_at','created_date','playlist','style_prompt','publication_status','play_count','like_count','view_count','is_representative']]
+    ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','created_at','created_date','playlist','style_prompt','publication_status','play_count','like_count','view_count','is_representative']]
   ]),
   '月之符文':Object.freeze([
     ['silver.runes_context_entries','月之符文脈絡',['context_key','context_type','title','summary']],
