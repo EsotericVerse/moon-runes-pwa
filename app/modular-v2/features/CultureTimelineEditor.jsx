@@ -104,7 +104,7 @@ function rowForForm(scopeId,draft,anchors){
   return payload;
 }
 
-export default function CultureTimelineEditor({scopeId='loc',selectedEntryId=''}){
+export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',riverCommand=null,onCapabilityChange=null}){
   const account=useNeonAccount();
   const queryClient=useQueryClient();
   const candidateScopes=scopeId==='loc'?['lo3rwang','runes']:[scopeId];
@@ -117,6 +117,10 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId=''}
   const [styleName,setStyleName]=useState('');
   const [styleWords,setStyleWords]=useState('');
   const [editing,setEditing]=useState(false);
+
+  useEffect(()=>{
+    onCapabilityChange?.(allowedScopes.includes('lo3rwang'));
+  },[allowedScopes,dataScope,onCapabilityChange]);
 
   useEffect(()=>{
     let active=true;
@@ -198,6 +202,17 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId=''}
     setDraft({...BLANK,entry_type:type});
     setMessage('');
   };
+
+  useEffect(()=>{
+    const commandScope=riverCommand?.scopeId||dataScope;
+    if(!riverCommand?.nonce||!allowedScopes.includes(commandScope))return;
+    setEditing(true);
+    setDataScope(commandScope);
+    setSelectedKey('');
+    setDraft({...BLANK,entry_type:riverCommand.type||'anchor',...(riverCommand.values||{})});
+    setMessage('已從 3D 河道帶入位置；確認名稱與前後定錨點後儲存。');
+  },[riverCommand?.nonce,riverCommand?.scopeId,allowedScopes]);
+
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
   const save=async event=>{
     event.preventDefault();

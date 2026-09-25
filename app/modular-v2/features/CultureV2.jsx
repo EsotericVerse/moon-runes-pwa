@@ -7,6 +7,7 @@ import {selectAuthorPeriodWorkSources,selectAuthorPeriodWorks,selectScopeCulture
 import {readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
+import CultureVolumeGraph3D from '../modules/culture-timeline/CultureVolumeGraph3D';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import CultureTimelineEditor from './CultureTimelineEditor';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -77,6 +78,10 @@ export default function CultureV2(){
   const [selectedEntryId,setSelectedEntryId]=useState('');
   const [selectedWorkSource,setSelectedWorkSource]=useState('');
   const [workPage,setWorkPage]=useState(0);
+  const [activeWorkPeriod,setActiveWorkPeriod]=useState(null);
+  const [cultureView,setCultureView]=useState('river');
+  const [canEditRiver,setCanEditRiver]=useState(false);
+  const [riverCommand,setRiverCommand]=useState(null);
 
   const currentRows=useMemo(()=>{
     const scopes=scopeId==='loc'?['lo3rwang','runes']:[scopeId].filter(Boolean);
@@ -87,33 +92,50 @@ export default function CultureV2(){
   const currentByScope=useMemo(()=>new Map(currentRows.map(item=>[String(item.scope_id||''),item])),[currentRows]);
   const currentAuthorPeriod=currentByScope.get('lo3rwang')||null;
 
+  const selectedWorkPeriod=activeWorkPeriod||currentAuthorPeriod;
+  const allAuthorPeriods=useMemo(()=>[...(query.data?.authorEras?.eras||[])].filter(item=>item?.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))),[query.data]);
+  const visibleAuthorPeriods=currentAuthorPeriod
+    ?[allAuthorPeriods.find(item=>item.start_date===currentAuthorPeriod.start_date)||currentAuthorPeriod]
+    :allAuthorPeriods;
+  const periodVolumesQuery=useQuery({
+    queryKey:['culture-period-source-volumes',scopeId,visibleAuthorPeriods.map(item=>[item.period,item.start_date,item.end_date])],
+    queryFn:async()=>Promise.all(visibleAuthorPeriods.map(async(period,index)=>({
+      period:{...period,scope_id:'lo3rwang'},
+      sources:await selectAuthorPeriodWorkSources({startDate:period.start_date,endDate:period.end_date}),
+      periodIndex:index
+    }))),
+    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&cultureView==='volume3d'&&visibleAuthorPeriods.length>0,
+    staleTime:5*60_000
+  });
+
   const workSourcesQuery=useQuery({
-    queryKey:['culture-current-period-work-sources',scopeId,currentAuthorPeriod?.period,currentAuthorPeriod?.start_date,currentAuthorPeriod?.end_date],
+    queryKey:['culture-period-work-sources',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
     queryFn:()=>selectAuthorPeriodWorkSources({
-      startDate:currentAuthorPeriod?.start_date,
-      endDate:currentAuthorPeriod?.end_date
+      startDate:selectedWorkPeriod?.start_date,
+      endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&Boolean(currentAuthorPeriod?.start_date),
+    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&Boolean(selectedWorkPeriod?.start_date),
     staleTime:5*60_000
   });
   const selectedSourceCount=workSourcesQuery.data?.find(item=>item.source_platform===selectedWorkSource)?.item_count||0;
   const workPageCount=Math.max(1,Math.ceil(selectedSourceCount/CULTURE_WORK_PAGE_SIZE));
   const periodWorksQuery=useQuery({
-    queryKey:['culture-current-period-works',scopeId,currentAuthorPeriod?.period,currentAuthorPeriod?.start_date,currentAuthorPeriod?.end_date,selectedWorkSource,workPage],
+    queryKey:['culture-period-works',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,selectedWorkSource,workPage],
     queryFn:()=>selectAuthorPeriodWorks({
-      startDate:currentAuthorPeriod?.start_date,
-      endDate:currentAuthorPeriod?.end_date,
+      startDate:selectedWorkPeriod?.start_date,
+      endDate:selectedWorkPeriod?.end_date,
       sourcePlatform:selectedWorkSource,
       limit:CULTURE_WORK_PAGE_SIZE,
       pageOffset:workPage*CULTURE_WORK_PAGE_SIZE
     }),
-    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&Boolean(currentAuthorPeriod?.start_date&&selectedWorkSource),
+    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&Boolean(selectedWorkPeriod?.start_date&&selectedWorkSource),
     staleTime:5*60_000
   });
 
   useEffect(()=>{
     setSelectedWorkSource('');
     setWorkPage(0);
+    setActiveWorkPeriod(null);
   },[scopeId,currentAuthorPeriod?.period,currentAuthorPeriod?.start_date,currentAuthorPeriod?.end_date]);
 
   const timelineItems=useMemo(()=>{
@@ -129,18 +151,35 @@ export default function CultureV2(){
       {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
       {!query.isPending&&!query.error&&!timelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
       {!query.isPending&&!query.error&&timelineItems.length?<>
-        <CultureTimelineV2
-          items={timelineItems}
-          labelOf={item=>item.display_label||item.title}
-          focus={navigation}
-          mode={currentRows.length?'current':'overview'}
-          onSelect={item=>setSelectedEntryId(item?.entry_id||'')}
-        />
-        <CultureTimelineEditor scopeId={scopeId} selectedEntryId={selectedEntryId}/>
+        {(scopeId==='lo3rwang'||scopeId==='loc')?<div className='scope-v2-tabs scope-v2-culture-view-toggle' role='group' aria-label='時間長河顯示方式'>
+          <button type='button' aria-pressed={cultureView==='river'} onClick={()=>setCultureView('river')}>時間長河</button>
+          <button type='button' aria-pressed={cultureView==='volume3d'} onClick={()=>setCultureView('volume3d')}>3D 時期與作品量</button>
+        </div>:null}
+        {cultureView==='volume3d'&&(scopeId==='lo3rwang'||scopeId==='loc')
+          ?<CultureVolumeGraph3D
+            periods={periodVolumesQuery.data||[]}
+            timelineItems={timelineItems}
+            loading={periodVolumesQuery.isFetching}
+            error={periodVolumesQuery.error?featureDataErrorMessage(periodVolumesQuery.error):''}
+            canEdit={canEditRiver}
+            onSelectWorkPoint={point=>{
+              if(point?.period){setActiveWorkPeriod(point.period);setSelectedWorkSource(point.source_platform||'');setWorkPage(0);}
+            }}
+            onSelectTimelineEntry={item=>setSelectedEntryId(item?.entry_id||'')}
+            onCommand={command=>setRiverCommand({...command,nonce:Date.now()})}
+          />
+          :<CultureTimelineV2
+            items={timelineItems}
+            labelOf={item=>item.display_label||item.title}
+            focus={navigation}
+            mode={currentRows.length?'current':'overview'}
+            onSelect={item=>setSelectedEntryId(item?.entry_id||'')}
+          />}
+        <CultureTimelineEditor scopeId={scopeId} selectedEntryId={selectedEntryId} riverCommand={riverCommand} onCapabilityChange={setCanEditRiver}/>
 
         {currentAuthorPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
           <p className='loc-eyebrow'>Current</p>
-          <h3>{labelOf(currentAuthorPeriod,0)}｜Current 時期作品</h3>
+          <h3>{labelOf(selectedWorkPeriod,0)}｜{(selectedWorkPeriod?.start_date===currentAuthorPeriod?.start_date&&selectedWorkPeriod?.period===currentAuthorPeriod?.period)?'Current 時期作品':'所選時期作品'}</h3>
           <p>先依來源查看作品數量；選擇來源後再載入該來源作品，每頁 {CULTURE_WORK_PAGE_SIZE} 篇。</p>
           {workSourcesQuery.isPending?<p className='scope-v2-status'>載入來源統計…</p>:null}
           {workSourcesQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(workSourcesQuery.error)}</p>:null}
