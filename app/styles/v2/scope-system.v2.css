@@ -206,3 +206,4 @@
   .scope-v2-culture-3d-work-river{max-height:260px}
   .scope-v2-culture-3d-works-canvas{height:360px;min-height:300px}
 }
+.scope-v2-culture-work-meta-description{margin:.1rem 0;color:var(--scope-v2-muted);white-space:pre-wrap;overflow-wrap:anywhere}

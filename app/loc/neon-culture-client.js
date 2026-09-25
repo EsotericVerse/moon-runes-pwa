@@ -158,6 +158,26 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourcePlatform,
     orders:[{column:'created_at',ascending:false}],
     range:[offset,offset+pageSize-1]
   });
+  const workIds=result.rows.map(row=>String(row.galaxy_id||'')).filter(Boolean);
+  const mediaMetadataRows=workIds.length
+    ?(await selectNeonRows('silver.lo3rwang_galaxy_media',{
+      columns:'media_link,meta_tags',
+      filters:[
+        {column:'scope_id',operator:'eq',value:'lo3rwang'},
+        {column:'media_link',operator:'in',value:workIds}
+      ],
+      limit:1000
+    })).rows
+    :[];
+  const mediaMetadataByWork=new Map();
+  for(const mediaRow of mediaMetadataRows){
+    const description=decodeCultureText(mediaRow.meta_tags||'').trim();
+    const workId=String(mediaRow.media_link||'');
+    if(!description||!workId)continue;
+    const values=mediaMetadataByWork.get(workId)||[];
+    if(!values.includes(description))values.push(description);
+    mediaMetadataByWork.set(workId,values);
+  }
   return {
     rows:result.rows.map(row=>{
       const content=decodeCultureText(row.content||'');
@@ -169,6 +189,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourcePlatform,
         entry_id:row.galaxy_id,
         title:decodeCultureText(row.title||'').trim()||content.trim().slice(0,72)||row.source_platform||row.galaxy_id,
         description:content.trim().slice(0,400),
+        media_metadata_text:(mediaMetadataByWork.get(String(row.galaxy_id||''))||[]).join(' · '),
         group_label:row.source_platform||'未標示來源',
         scope_id:'lo3rwang'
       };

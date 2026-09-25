@@ -219,6 +219,7 @@ export default function CultureV2(){
               {(periodWorksQuery.data?.rows||[]).map((work,index)=><article className='scope-v2-inline-card' key={work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
                 <div className='scope-v2-culture-work-heading'><strong>{work.title||work.work_id||'文字紀錄'}</strong><time>{work.display_date||formatCultureDateTime(work.created_at)}</time></div>
                 {work.description?<p>{work.description}</p>:null}
+                {work.media_metadata_text?<p className='scope-v2-culture-work-meta-description'><strong>多媒體描述：</strong>{work.media_metadata_text}</p>:null}
                 {work.meta_tags?<span className='scope-v2-meta'>{work.meta_tags}</span>:null}
                 {work.url||work.source_ref?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
               </article>)}

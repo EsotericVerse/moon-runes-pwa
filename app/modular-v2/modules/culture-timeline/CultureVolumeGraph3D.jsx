@@ -255,6 +255,7 @@ export default function CultureVolumeGraph3D({
             <time>{work.display_date||displayDate(work.created_at)}</time>
             <strong>{work.title||work.work_id||'文字紀錄'}</strong>
             {work.description?<p>{work.description}</p>:null}
+            {work.media_metadata_text?<p className='scope-v2-culture-work-meta-description'><strong>多媒體描述：</strong>{work.media_metadata_text}</p>:null}
             {work.meta_tags?<span>{work.meta_tags}</span>:null}
             {work.url||work.source_ref?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
           </article>)}
