@@ -1,5 +1,5 @@
 import {ScopeContextResponseSchema} from './scope-feature-contracts';
-import {selectNeonRows} from './neon-repository';
+import {callNeonRpc,selectNeonRows} from './neon-repository';
 
 const CONTEXT_TABLES=Object.freeze({
   loc:'api.loc_context_entries',
