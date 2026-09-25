@@ -13,7 +13,66 @@ const CONTEXT_COLUMNS_BY_SCOPE=Object.freeze({
   lo3rwang:'context_key,context_type,title,summary,era_id,period,entry_name,start_date,end_date,order_no,status,anchor_id,start_anchor_id,end_anchor_id,date_value,date_status,entry_scope,visibility,event_id,year_value,updated_at'
 });
 
-function normalizeGraph(rows){
+function temporalNodeDescription(row){
+  const summary=String(row?.summary||'').trim();
+  if(summary)return summary;
+  if(row?.context_type==='anchor'){
+    const date=String(row?.date_value||'').trim();
+    if(date)return '定錨日期：'+date;
+    if(row?.year_value)return '定錨年份：'+String(row.year_value);
+  }
+  const start=String(row?.start_date||'').slice(0,10);
+  const end=String(row?.end_date||'').slice(0,10);
+  if(start)return end?start+' 至 '+end:start+' 起';
+  return '';
+}
+
+function normalizeAuthorGraph(rows){
+  const entries=Array.isArray(rows)?rows:[];
+  const anchors=new Map(entries
+    .filter(row=>row?.context_type==='anchor'&&row?.anchor_id)
+    .map(row=>[String(row.anchor_id),row]));
+  const nodeRows=new Map();
+  const edges=[];
+
+  for(const row of entries){
+    if(!['period','event'].includes(row?.context_type))continue;
+    const sourceId=String(row?.context_key||'');
+    if(!sourceId)continue;
+    const relations=[
+      ['start_anchor_id','開始於','starts-at'],
+      ['end_anchor_id','結束於','ends-at']
+    ];
+    for(const [field,label,suffix] of relations){
+      const anchor=anchors.get(String(row?.[field]||''));
+      if(!anchor)continue;
+      const targetId=String(anchor.context_key||'');
+      if(!targetId)continue;
+      nodeRows.set(sourceId,row);
+      nodeRows.set(targetId,anchor);
+      edges.push({
+        edge_id:sourceId+':'+suffix,
+        source_node_id:sourceId,
+        target_node_id:targetId,
+        relation_type:'temporal_anchor',
+        relation_label:label,
+        description:String(row.title||sourceId)+' '+label+' '+String(anchor.title||targetId)
+      });
+    }
+  }
+
+  const nodes=[...nodeRows.entries()].map(([id,row])=>({
+    node_id:id,
+    label:String(row.title||row.entry_name||id),
+    node_type:String(row.context_type||'context'),
+    scope_id:'lo3rwang',
+    description:temporalNodeDescription(row)
+  }));
+  return {nodes,edges};
+}
+
+function normalizeGraph(rows,scopeId){
+  if(scopeId==='lo3rwang')return normalizeAuthorGraph(rows);
   const nodes=[];const edges=[];
   for(const row of rows||[]){
     const kind=row.kind||row.context_type;
@@ -51,7 +110,7 @@ async function readScopeRows(scopeId){
 
 export async function selectScopeContextData(scopeId){
   const rows=await readScopeRows(String(scopeId||''));
-  const graph=normalizeGraph(rows);
+  const graph=normalizeGraph(rows,String(scopeId||''));
   return ScopeContextResponseSchema.parse({rows,...graph,trends:[]});
 }
 
