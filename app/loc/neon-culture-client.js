@@ -1,7 +1,7 @@
 'use client';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
-import {callNeonRpc,selectNeonRows} from './neon-repository';
+import {selectNeonRows} from './neon-repository';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 
 const TIMELINE_COLUMNS='scope_id,entry_key,entry_type,title,summary,start_date,end_date,era_id,period,entry_name,order_no,status,anchor_id,start_anchor_id,end_anchor_id,before_id,after_id,date_status,entry_scope,visibility,event_id,year_value,rune_count,source_id,source,note';
@@ -40,7 +40,7 @@ function runeTimelineRows(rows){
     status:row.status||'',
     rune_count:Number(row.rune_count||0)
   })).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
-  const current=anchors.find(row=>String(row.status).toLowerCase()==='current'||Number(row.rune_count)===66);
+  const current=anchors.find(row=>String(row.status).trim().toLowerCase()==='current');
   return {
     eras:current?[{...current,period:'符文66',name:'符文66',title:'符文66',status:'current'}]:[],
     history:anchors.filter(row=>row!==current).map(row=>({...row,status:'history'}))
@@ -53,14 +53,14 @@ function timelineItems(rows){
     `${row.scope_id}:${row.anchor_id}`,
     row
   ]));
-  return all.filter(row=>['anchor','event','period','style'].includes(row.entry_type)).map(row=>{
+  return all.filter(row=>['anchor','event','period','period_legacy','style'].includes(row.entry_type)).map(row=>{
     const before=anchors.get(`${row.scope_id}:${row.before_id}`);
     const after=anchors.get(`${row.scope_id}:${row.after_id}`);
     const startAnchor=anchors.get(`${row.scope_id}:${row.start_anchor_id}`);
     const endAnchor=anchors.get(`${row.scope_id}:${row.end_anchor_id}`);
     const start=row.start_date||startAnchor?.start_date||before?.start_date||after?.start_date||null;
     const end=row.end_date||endAnchor?.start_date||null;
-    const kindLabel={anchor:'定錨點',event:'事件',period:'時期',style:'風格'}[row.entry_type];
+    const kindLabel={anchor:'定錨點',event:'事件',period:'時期',period_legacy:'歷史時期',style:'風格'}[row.entry_type];
     return {
       ...row,
       id:`${row.scope_id}:${row.entry_key}`,
@@ -165,13 +165,3 @@ export async function selectAuthorPeriodWorks({startDate,endDate,limit=100,pageO
   };
 }
 
-export async function selectAuthorPeriodWorkCounts({startDate,endDate}={}){
-  if(!startDate)return [];
-  const rows=await callNeonRpc('loc_culture_weekly_source_counts',{
-    p_start_date:dateTextForQuery(startDate),
-    p_end_date:endDate?dateTextForQuery(endDate):null
-  });
-  return Array.isArray(rows)?rows:[];
-}
-
-function dateTextForQuery(value){return String(value||'').slice(0,10)}
