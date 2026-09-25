@@ -140,7 +140,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,limit=100,pageO
   const pageSize=Math.max(1,Math.min(1000,Math.floor(Number(limit)||1000)));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const result=await selectNeonRows('api.lo3rwang_galaxy',{
-    columns:'galaxy_id,category,content_type,source_platform,source_role,title,content,content_hash,created_at,source_ref,source_id,work_id',
+    columns:'galaxy_id,category,content_type,source_platform,source_role,title,content,meta_tags,content_hash,created_at,source_ref,source_id,work_id',
     filters,
     orders:[{column:'created_at',ascending:false}],
     range:[offset,offset+pageSize-1]
