@@ -85,14 +85,14 @@ export default function StatisticsV2(){
 
   const query=useQuery({
     queryKey:['statistics-chart',scopeId,rankingType,navigation.q,navigation.identity,navigation.source,navigation.period,navigation.anchor,navigation.from,navigation.to],
-    queryFn:()=>selectScopeRankingPage(scopeId,{page:1,pageSize:100,rankingType,navigation}),
+    queryFn:()=>selectScopeRankingPage(scopeId,{page:1,pageSize:10,rankingType,navigation}),
     staleTime:30_000
   });
 
   const rows=query.data?.rows||[];
   const types=query.data?.types||[];
   const chartRows=useMemo(
-    ()=>rows.slice(0,10).map((row,index)=>({
+    ()=>rows.map((row,index)=>({
       ...row,
       order:index+1,
       value:Number(row.rank_value??row.item_count??0)||0,
