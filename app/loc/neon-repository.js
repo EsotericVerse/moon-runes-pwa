@@ -4,7 +4,7 @@ import {z} from 'zod';
 import {neonClient} from './neon-client';
 
 const TableSchema=z.enum([
-  'api.user_records','api.user_settings','api.scope_contacts','api.scope_theme_defaults',
+  'api.user_records','api.user_settings','api.scope_contacts',
   'api.scope_access_grants','api.scope_relations','api.scope_relation_requests','api.site_theme_styles',
   'api.loc_context_entries','api.loc_rankings','api.loc_timeline_entries',
   'api.runes_context_entries','api.runes_rankings','api.lo3rwang_context_entries','api.lo3rwang_rankings','api.lo3rwang_galaxy',
@@ -21,7 +21,7 @@ const TableSchema=z.enum([
 const WritableTableSchema=z.enum([
   'api.user_records','api.user_settings','api.scope_access_grants','api.scope_relations',
   'api.scope_relation_requests','api.site_theme_styles',
-  'silver.loc_timeline_entries','silver.loc_style_tag_keywords'
+  'silver.loc_timeline_entries','silver.loc_style_tag_keywords','silver.loc_scope_registry'
 ]);
 const RowSchema=z.record(z.string(),z.unknown());
 const FilterSchema=z.object({

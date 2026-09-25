@@ -1,60 +1,44 @@
 'use client';
-
 import {useEffect,useMemo,useState} from 'react';
-import {getScopeThemeDefault} from '../loc/scope-public-settings';
-import {useNeonSetting} from '../loc/use-neon-setting';
+import {databaseScopeId,getScopeThemeDefault,updateScopeThemeDefault} from '../loc/scope-public-settings';
+import {fetchThemeStylesV2} from '../migration-bridges/theme-admin-neon.v2';
+import {useNeonAccount} from '../loc/use-neon-account';
 import {useScopeRuntimeV2} from './use-scope-runtime.v2';
-import {
-  SCOPE_THEME_SETTINGS_KEY_V2,
-  THEME_SLOTS_V2,
-  applyThemeV2,
-  getThemeSlotV2,
-  scopeThemeSettingsV2,
-  themeForHourV2
-} from './theme-registry.v2';
-
+import {applyThemeV2,getThemeSlotV2,THEME_SLOTS_V2} from './theme-registry.v2';
 export default function ThemeSelectV2(){
-  const {scopeId}=useScopeRuntimeV2();
-  const [managed,setManaged]=useState(null);
-  const {value:storedSettings,setValue:setStoredSettings}=useNeonSetting(SCOPE_THEME_SETTINGS_KEY_V2,{});
-  const setting=scopeThemeSettingsV2(scopeId,storedSettings||{},managed);
-
+  const {scopeId}=useScopeRuntimeV2(),account=useNeonAccount();
+  const [themeId,setThemeId]=useState('theme-7'),[styles,setStyles]=useState([]),[canEdit,setCanEdit]=useState(false),[status,setStatus]=useState('');
+  const databaseId=databaseScopeId(scopeId);
   useEffect(()=>{
     let live=true;
-    getScopeThemeDefault(scopeId).then(value=>live&&setManaged(value)).catch(()=>live&&setManaged(null));
+    Promise.all([getScopeThemeDefault(scopeId),fetchThemeStylesV2()]).then(([value,rows])=>{
+      if(!live)return;
+      if(value?.default_theme_id)setThemeId(value.default_theme_id);
+      setStyles(Array.isArray(rows)?rows:[]);
+    }).catch(()=>{if(live)setStyles([])});
     return()=>{live=false};
   },[scopeId]);
-
-  const selected=setting.mode==='time'?'time':setting.theme;
-  const active=useMemo(()=>{
-    const id=setting.mode==='time'?themeForHourV2(setting.schedule):setting.theme;
-    return {slot:getThemeSlotV2(id),custom:{}};
-  },[setting.mode,setting.theme,setting.custom,setting.schedule]);
-
   useEffect(()=>{
-    applyThemeV2(active.slot,active.custom);
-    if(setting.mode!=='time')return undefined;
-    const sync=()=>applyThemeV2(getThemeSlotV2(themeForHourV2(setting.schedule)));
-    const timer=window.setInterval(sync,60000);
-    document.addEventListener('visibilitychange',sync);
-    return()=>{window.clearInterval(timer);document.removeEventListener('visibilitychange',sync);};
-  },[active,setting.mode,setting.schedule]);
-
-  function change(event){
-    const value=event.target.value;
-    setStoredSettings(current=>{
-      const base=current&&typeof current==='object'?current:{};
-      const now=scopeThemeSettingsV2(scopeId,base,managed);
-      if(value==='time')return {...base,[scopeId]:{...now,mode:'time'}};
-      return {...base,[scopeId]:{...now,mode:'fixed',theme:value}};
-    });
-  }
-
+    let live=true;
+    if(!account.user||account.permissionLoading){setCanEdit(false);return()=>{live=false};}
+    account.canManageScope(databaseId).then(value=>{if(live)setCanEdit(Boolean(value))}).catch(()=>{if(live)setCanEdit(false)});
+    return()=>{live=false};
+  },[account.user?.id,account.permissionLoading,databaseId,account.canManageScope]);
+  const slot=useMemo(()=>getThemeSlotV2(themeId,styles),[themeId,styles]);
+  useEffect(()=>{applyThemeV2(slot)},[slot]);
+  const change=async event=>{
+    if(!canEdit)return;
+    try{
+      const row=await updateScopeThemeDefault(scopeId,event.target.value);
+      setThemeId(row.default_theme_id);setStatus('Scope 預設主題已更新');
+    }catch(error){setStatus(String(error?.message||error))}
+  };
   return <label className="scope-v2-theme-control">
     <span>主題</span>
-    <select value={selected} onChange={change} aria-label="主題">
-      <option value="time">隨時間</option>
-      {THEME_SLOTS_V2.filter(slot=>slot.enabled).map(slot=><option value={slot.id} key={slot.id}>{slot.label}</option>)}
+    <select value={themeId} onChange={change} disabled={!canEdit} aria-label="Scope 預設主題">
+      {THEME_SLOTS_V2.map(item=><option value={item.id} key={item.id}>{styles.find(row=>'theme-'+row.rotation_order===item.id)?.name_zh||item.label}</option>)}
     </select>
+    {!canEdit&&<small>需具備此 Scope 的管理權限才能變更預設主題</small>}
+    {status&&<small role="status">{status}</small>}
   </label>;
 }

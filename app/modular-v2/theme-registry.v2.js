@@ -1,8 +1,3 @@
-import {SCOPES_V2} from './scope-registry.v2.js';
-
-export const THEME_REGISTRY_SETTING_KEY_V2='theme-registry-overrides-v1';
-export const SCOPE_THEME_SETTINGS_KEY_V2='scope-theme-settings-v2';
-
 export const THEME_TOKEN_KEYS_V2=[
   '--loc-bg','--loc-panel','--loc-panel-2','--loc-panel-strong','--loc-panel-nav','--loc-panel-tab','--loc-rune-bg','--loc-rune-selected-bg',
   '--loc-line','--loc-line-soft','--loc-line-softer','--loc-line-faint','--loc-text','--loc-muted','--loc-heading','--loc-accent','--loc-gold','--loc-danger',
@@ -30,50 +25,21 @@ const slots=[
 export const THEME_SLOTS_V2=Object.freeze(slots.map((slot,index)=>Object.freeze({
   ...slot,
   identityColor:GROUP_IDENTITY_COLORS_V2[slot.group],
-  enabled:true,
   order:index+1,
   tokens:Object.freeze(slot.tokens)
 })));
 
-export const DEFAULT_ROTATION_SCHEDULE_V2=SCOPES_V2.loc.theme.schedule;
-export const DEFAULT_SCOPE_THEME_SETTINGS_V2=Object.freeze(
-  Object.fromEntries(Object.entries(SCOPES_V2).map(([id,scope])=>[id,scope.theme]))
-);
-
-export function mergeThemeSlotsV2(overrides={}){
-  return THEME_SLOTS_V2.map(slot=>({
-    ...slot,
-    ...(overrides?.[slot.id]||{}),
-    identityColor:GROUP_IDENTITY_COLORS_V2[slot.group],
-    tokens:{...slot.tokens,...((overrides?.[slot.id]||{}).tokens||{})}
-  })).sort((a,b)=>a.order-b.order);
+export function getThemeSlotV2(id,styleRows=[]){
+  const slot=THEME_SLOTS_V2.find(item=>item.id===id)||THEME_SLOTS_V2.find(item=>item.id==='theme-7');
+  const row=(Array.isArray(styleRows)?styleRows:[]).find(item=>'theme-'+item.rotation_order===slot.id);
+  if(!row)return slot;
+  return {...slot,label:row.name_zh||slot.label,group:row.name_zh||slot.group,tokens:{...slot.tokens,'--loc-bg':row.background_color||slot.tokens['--loc-bg'],'--loc-panel':row.panel_background_color||slot.tokens['--loc-panel'],'--loc-text':row.text_color||slot.tokens['--loc-text']}};
 }
 
-export function themeForHourV2(schedule=DEFAULT_ROTATION_SCHEDULE_V2,hour=new Date().getHours()){
-  const ordered=[...(schedule||[])].sort((a,b)=>a.start-b.start);
-  return [...ordered].reverse().find(item=>hour>=item.start)?.theme||ordered.at(-1)?.theme||'theme-7';
-}
-
-export function getThemeSlotV2(id,overrides={}){
-  return mergeThemeSlotsV2(overrides).find(slot=>slot.id===id)||THEME_SLOTS_V2.find(slot=>slot.id==='theme-7');
-}
-
-export function scopeThemeSettingsV2(scopeId,stored={},managedDefault=null){
-  const fallback=DEFAULT_SCOPE_THEME_SETTINGS_V2[scopeId]||DEFAULT_SCOPE_THEME_SETTINGS_V2.loc;
-  const base=managedDefault?{
-    ...fallback,
-    ...managedDefault,
-    custom:{...fallback.custom,...(managedDefault.custom||{})},
-    schedule:Array.isArray(managedDefault.schedule)&&managedDefault.schedule.length?managedDefault.schedule:fallback.schedule
-  }:fallback;
-  const override=stored?.[scopeId]||{};
-  return {...base,...override,custom:{...base.custom,...(override.custom||{})},schedule:override.schedule||base.schedule};
-}
-
-export function applyThemeV2(slot,custom={}){
+export function applyThemeV2(slot){
   if(typeof document==='undefined'||!slot)return;
   const root=document.documentElement;
   THEME_TOKEN_KEYS_V2.forEach(key=>root.style.removeProperty(key));
   root.dataset.theme=slot.scheme;
-  Object.entries({...slot.tokens,...custom}).forEach(([key,value])=>{if(value)root.style.setProperty(key,value);});
+  Object.entries(slot.tokens).forEach(([key,value])=>{if(value)root.style.setProperty(key,value);});
 }

@@ -20,12 +20,6 @@ export const FEATURES_V2=Object.freeze([
   Object.freeze({id:'search',label:'搜尋',path:'search'})
 ]);
 
-const TIME_SCHEDULE_V2=Object.freeze([
-  Object.freeze({start:0,theme:'theme-1'}),
-  Object.freeze({start:6,theme:'theme-7'}),
-  Object.freeze({start:18,theme:'theme-1'})
-]);
-
 export const SCOPES_V2=Object.freeze({
   loc:Object.freeze({
     id:'loc',
@@ -42,7 +36,6 @@ export const SCOPES_V2=Object.freeze({
     searchCollection:'all',
     dataViews:Object.freeze({context:'api.loc_context_entries',rankings:'api.loc_rankings'}),
     rankingTitle:'總排行榜',
-    theme:Object.freeze({mode:'time',theme:'theme-7',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   }),
 
   runes:Object.freeze({
@@ -75,7 +68,6 @@ export const SCOPES_V2=Object.freeze({
     searchCollection:'月之符文',
     dataViews:Object.freeze({context:'api.runes_context_entries',rankings:'api.runes_rankings'}),
     rankingTitle:'月之符文排行榜',
-    theme:Object.freeze({mode:'fixed',theme:'theme-5',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   }),
 
   lo3rwang:Object.freeze({
@@ -95,22 +87,7 @@ export const SCOPES_V2=Object.freeze({
     ]),
     searchCollection:'lo3rwang',
     dataViews:Object.freeze({context:'api.lo3rwang_context_entries',rankings:'api.lo3rwang_rankings'}),
-    rankingTitle:'作者排行榜',
-    theme:Object.freeze({
-      mode:'custom',
-      theme:'theme-2',
-      custom:Object.freeze({
-        '--loc-bg':'#eaf5ff',
-        '--loc-panel':'#f8fcff',
-        '--loc-panel-2':'#dceefe',
-        '--loc-accent':'#6FA8DC',
-        '--loc-body-glow':'#d4eafa',
-        '--loc-body-mid':'#edf7ff',
-        '--loc-hero-start':'rgba(218,239,255,.97)',
-        '--loc-hero-end':'rgba(248,252,255,.99)'
-      }),
-      schedule:TIME_SCHEDULE_V2
-    })
+    rankingTitle:'作者排行榜'
   }),
 
   admin:Object.freeze({
@@ -131,7 +108,6 @@ export const SCOPES_V2=Object.freeze({
     searchCollection:'治理',
     dataViews:Object.freeze({context:null,rankings:null}),
     rankingTitle:'排行榜',
-    theme:Object.freeze({mode:'fixed',theme:'theme-7',custom:Object.freeze({}),schedule:TIME_SCHEDULE_V2})
   })
 });
 
