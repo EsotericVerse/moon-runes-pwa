@@ -133,7 +133,7 @@ export async function deleteNeonRows(table,{filters,returning='*'}={}){
   return parseRows(result.data,table);
 }
 
-const RpcSchema=z.enum(['decide_scope_relation_request','loc_culture_weekly_source_counts','update_lrune_keywords','lo3rwang_period_work_source_counts']);
+const RpcSchema=z.enum(['decide_scope_relation_request','loc_culture_weekly_source_counts','update_lrune_keywords','lo3rwang_period_work_source_counts','lo3rwang_period_media_count','lo3rwang_period_media_metadata_page']);
 export async function callNeonRpc(name,args){
   const rpc=RpcSchema.parse(name);
   const result=await neonClient.rpc(rpc,z.record(z.string(),z.unknown()).parse(args||{}));

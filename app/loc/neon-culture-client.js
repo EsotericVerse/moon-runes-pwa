@@ -4,6 +4,8 @@ import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {callNeonRpc,selectNeonRows} from './neon-repository';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 
+const MEDIA_METADATA_CATEGORY_KEY='media_metadata';
+
 const TIMELINE_COLUMNS='scope_id,entry_key,entry_type,title,summary,start_date,end_date,era_id,period,entry_name,order_no,status,anchor_id,start_anchor_id,end_anchor_id,before_id,after_id,date_status,entry_scope,visibility,event_id,year_value,rune_count,source_id,source,note';
 
 function periodRows(rows){
@@ -135,49 +137,91 @@ export async function selectScopeCultureData(scopeId){
 
 export async function selectAuthorPeriodWorkSources({startDate,endDate=null}={}){
   if(!startDate)return [];
-  const result=await callNeonRpc('lo3rwang_period_work_source_counts',{
+  const args={
     p_start_date:String(startDate).slice(0,10),
     p_end_date:endDate?String(endDate).slice(0,10):null
+  };
+  const [workResult,mediaCountResult]=await Promise.all([
+    callNeonRpc('lo3rwang_period_work_source_counts',args),
+    callNeonRpc('lo3rwang_period_media_count',args)
+  ]);
+  const groups=(Array.isArray(workResult)?workResult:[]).map(row=>{
+    const source=String(row.source_platform||'未標示來源');
+    return {
+      category_key:`source:${source}`,
+      category_type:'work',
+      source_platform:source,
+      display_label:source,
+      item_count:Number(row.item_count)||0
+    };
   });
-  return (Array.isArray(result)?result:[]).map(row=>({
-    source_platform:String(row.source_platform||'未標示來源'),
-    item_count:Number(row.item_count)||0
-  }));
+  const mediaCount=Number(mediaCountResult)||0;
+  if(mediaCount>0)groups.push({
+    category_key:MEDIA_METADATA_CATEGORY_KEY,
+    category_type:'media',
+    source_platform:'多媒體',
+    display_label:'多媒體',
+    item_count:mediaCount
+  });
+  return groups;
 }
 
-export async function selectAuthorPeriodWorks({startDate,endDate,sourcePlatform,limit=100,pageOffset=0}={}){
+function mediaMetadataDescription(row){
+  const fields=[
+    ['標題',row.title],
+    ['類型',row.media_type],
+    ['平台',row.source_platform],
+    ['補充描述',row.meta_tags]
+  ];
+  return fields.map(([label,value])=>{
+    const text=decodeCultureText(value||'').trim();
+    return text?`${label}：${text}`:'';
+  }).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
+}
+
+export async function selectAuthorPeriodWorks({
+  startDate,endDate,sourcePlatform,categoryType='work',limit=20,pageOffset=0
+}={}){
   if(!startDate)return {rows:[],hasMore:false,nextOffset:null};
+  const pageSize=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
+  const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
+  if(categoryType==='media'){
+    const result=await callNeonRpc('lo3rwang_period_media_metadata_page',{
+      p_start_date:String(startDate).slice(0,10),
+      p_end_date:endDate?String(endDate).slice(0,10):null,
+      p_limit:pageSize,
+      p_offset:offset
+    });
+    const rows=Array.isArray(result)?result:[];
+    return {
+      rows:rows.map(row=>({
+        ...row,
+        media_id:row.media_id,
+        entry_id:row.media_id,
+        entry_type:'media_metadata',
+        created_at:row.media_date||null,
+        start_date:row.media_date||null,
+        date:row.media_date||null,
+        display_date:formatCultureDateTime(row.media_date),
+        title:'多媒體項目',
+        description:'',
+        media_metadata_text:mediaMetadataDescription(row),
+        group_label:'多媒體',
+        scope_id:'lo3rwang'
+      })),
+      hasMore:rows.length===pageSize,
+      nextOffset:rows.length===pageSize?offset+pageSize:null
+    };
+  }
   const filters=[{column:'created_at',operator:'gte',value:`${String(startDate).slice(0,10)}T00:00:00+08:00`}];
   if(endDate)filters.push({column:'created_at',operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   if(sourcePlatform)filters.push({column:'source_platform',operator:'eq',value:String(sourcePlatform)});
-  const pageSize=Math.max(1,Math.min(1000,Math.floor(Number(limit)||1000)));
-  const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const result=await selectNeonRows('api.lo3rwang_galaxy',{
     columns:'galaxy_id,category,content_type,source_platform,source_role,title,content,meta_tags,content_hash,created_at,source_ref,source_id,work_id',
     filters,
     orders:[{column:'created_at',ascending:false}],
     range:[offset,offset+pageSize-1]
   });
-  const workIds=result.rows.map(row=>String(row.galaxy_id||'')).filter(Boolean);
-  const mediaMetadataRows=workIds.length
-    ?(await selectNeonRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_link,meta_tags',
-      filters:[
-        {column:'scope_id',operator:'eq',value:'lo3rwang'},
-        {column:'media_link',operator:'in',value:workIds}
-      ],
-      limit:1000
-    })).rows
-    :[];
-  const mediaMetadataByWork=new Map();
-  for(const mediaRow of mediaMetadataRows){
-    const description=decodeCultureText(mediaRow.meta_tags||'').trim();
-    const workId=String(mediaRow.media_link||'');
-    if(!description||!workId)continue;
-    const values=mediaMetadataByWork.get(workId)||[];
-    if(!values.includes(description))values.push(description);
-    mediaMetadataByWork.set(workId,values);
-  }
   return {
     rows:result.rows.map(row=>{
       const content=decodeCultureText(row.content||'');
@@ -189,7 +233,6 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourcePlatform,
         entry_id:row.galaxy_id,
         title:decodeCultureText(row.title||'').trim()||content.trim().slice(0,72)||row.source_platform||row.galaxy_id,
         description:content.trim().slice(0,400),
-        media_metadata_text:(mediaMetadataByWork.get(String(row.galaxy_id||''))||[]).join(' · '),
         group_label:row.source_platform||'未標示來源',
         scope_id:'lo3rwang'
       };
@@ -198,4 +241,3 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourcePlatform,
     nextOffset:result.rows.length===pageSize?offset+pageSize:null
   };
 }
-

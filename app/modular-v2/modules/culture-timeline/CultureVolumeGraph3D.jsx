@@ -16,7 +16,7 @@ function dateInput(value){
 
 export default function CultureVolumeGraph3D({
   periods=[],timelineItems=[],categories=[],selectedCategory='',works=[],workPage=0,workPageCount=1,
-  loading=false,categoryLoading=false,categoryError='',workLoading=false,workError='',error='',canEdit=false,
+  selectedCategoryType='',loading=false,categoryLoading=false,categoryError='',workLoading=false,workError='',error='',canEdit=false,
   onSelectCategory=()=>{},onPageChange=()=>{},onSelectWorkPoint=()=>{},onSelectTimelineEntry=()=>{},onCommand=()=>{}
 }){
   const containerRef=useRef(null);
@@ -27,7 +27,9 @@ export default function CultureVolumeGraph3D({
   const [anchorPair,setAnchorPair]=useState([]);
   const [message,setMessage]=useState('');
 
-  const sourceNames=useMemo(()=>[...new Set(periods.flatMap(group=>(group.sources||[]).map(source=>source.source_platform)))].sort((a,b)=>a.localeCompare(b)),[periods]);
+  const sourceNames=useMemo(()=>[...new Set(periods.flatMap(group=>(group.sources||[]).map(source=>source.display_label||source.source_platform)))].sort((a,b)=>a.localeCompare(b)),[periods]);
+  const selectedCategoryInfo=useMemo(()=>categories.find(row=>row.category_key===selectedCategory)||null,[categories,selectedCategory]);
+  const selectedCategoryLabel=selectedCategoryInfo?.display_label||selectedCategoryInfo?.source_platform||selectedCategory;
   const authorAnchors=useMemo(()=>timelineItems
     .filter(row=>row.scope_id==='lo3rwang'&&row.entry_type==='anchor'&&row.anchor_id&&row.start_date)
     .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))),[timelineItems]);
@@ -39,10 +41,11 @@ export default function CultureVolumeGraph3D({
       works.forEach((work,index)=>{
         const time=Date.parse(work.created_at||work.start_date||'');
         if(!Number.isFinite(time))return;
-        const id='listed-work:'+String(work.galaxy_id||work.work_id||work.source_id||index);
+        const id='listed-work:'+String(work.media_id||work.galaxy_id||work.work_id||work.source_id||index);
+        const itemLabel=work.entry_type==='media_metadata'?'多媒體項目':(work.title||work.work_id||'未命名作品');
         data.push({
           id,x:time,y:0,z:index+1,style:16,
-          title:escapeHtml(displayDate(work.created_at||work.start_date)+' · '+(work.title||'文字紀錄')+' · 第 '+(index+1)+' 項')
+          title:escapeHtml(displayDate(work.created_at||work.start_date)+' · '+itemLabel+' · 第 '+(index+1)+' 項')
         });
         actions.set(id,{kind:'work-item',work});
       });
@@ -55,14 +58,17 @@ export default function CultureVolumeGraph3D({
       if(!period?.start_date)continue;
       const time=Date.parse(period.start_date);
       for(const source of periodEntry.sources||[]){
-        const sourceIndex=sourceNames.indexOf(source.source_platform);
-        const id='work:'+String(period.period||period.start_date)+':'+source.source_platform;
+        const categoryLabel=source.display_label||source.source_platform;
+        const categoryKey=source.category_key||source.source_platform;
+        const sourceIndex=sourceNames.indexOf(categoryLabel);
+        const id='work:'+String(period.period||period.start_date)+':'+categoryKey;
+        const countLabel=source.category_type==='media'?'筆多媒體':'項作品';
         data.push({
           id,x:time,y:sourceIndex+1,z:Math.max(1,source.item_count),
           style:Math.max(1,source.item_count),
-          title:escapeHtml((period.display_label||period.title||period.period||'時期')+' · '+source.source_platform+' · '+source.item_count.toLocaleString()+' 項')
+          title:escapeHtml((period.display_label||period.title||period.period||'時期')+' · '+categoryLabel+' · '+source.item_count.toLocaleString()+' '+countLabel)
         });
-        actions.set(id,{kind:'work',period,source_platform:source.source_platform,item_count:source.item_count});
+        actions.set(id,{kind:'work',period,category_key:categoryKey,category_type:source.category_type,source_platform:source.source_platform,item_count:source.item_count});
       }
       const periodId='period:'+String(period.entry_key||period.period||time);
       data.push({id:periodId,x:time,y:0,z:0.5,style:18,title:escapeHtml((period.display_label||period.title||period.period||'時期')+' · 時期起點')});
@@ -109,7 +115,7 @@ export default function CultureVolumeGraph3D({
         yMax:dimension==='works'?1:Math.max(3,...graphPoints.map(point=>point.y)),
         zMin:0,tooltip:true,verticalRatio:0.8,
         xValueLabel:value=>displayDate(value),
-        yValueLabel:value=>dimension==='works'?'作品':value===0?'時期／定錨點':value<0?'事件／風格':(sourceNames[Math.round(value)-1]||''),
+        yValueLabel:value=>dimension==='works'?(selectedCategoryType==='media'?'多媒體項目':'作品'):value===0?'時期／定錨點':value<0?'事件／風格':(sourceNames[Math.round(value)-1]||''),
         zValueLabel:value=>dimension==='works'?'第 '+Number(value).toLocaleString()+' 項':Number(value).toLocaleString()
       });
       graph.on('click',point=>{
@@ -147,7 +153,7 @@ export default function CultureVolumeGraph3D({
         }
         if(action.kind==='work'){
           onSelectWorkPoint(action);
-          onSelectCategory(action.source_platform);
+          onSelectCategory(action.category_key||action.source_platform);
           setDimension('works');
         }else if(action.kind==='entry')onSelectTimelineEntry(action.row);
         else if(action.kind==='period')onSelectTimelineEntry(action.period);
@@ -164,7 +170,7 @@ export default function CultureVolumeGraph3D({
       }
       if(containerRef.current)containerRef.current.innerHTML='';
     };
-  },[graphPoints,loading,workLoading,dimension,canEdit,tool,anchorPair,onCommand,onSelectWorkPoint,onSelectCategory,onSelectTimelineEntry,sourceNames]);
+  },[graphPoints,loading,workLoading,dimension,canEdit,tool,anchorPair,onCommand,onSelectWorkPoint,onSelectCategory,onSelectTimelineEntry,sourceNames,selectedCategoryType]);
 
   const startDrag=(event,anchor)=>event.dataTransfer.setData('text/plain',anchor.anchor_id);
   const dropEvent=(event,target)=>{
@@ -201,21 +207,25 @@ export default function CultureVolumeGraph3D({
 
   return <section className='scope-v2-card scope-v2-culture-3d'>
     <header className='scope-v2-culture-3d-heading'>
-      <div><h3>{dimension==='works'?'作品時間河道':'時期 × 來源 × 作品量'}</h3><p>{dimension==='works'?'依作品日期顯示目前分類的分頁作品；這條河道只呈現作品。':'拖曳旋轉，滾輪縮放；先選作品分類，或在時期河道選取定錨點、事件、時期與風格。'}</p></div>
+      <div><h3>{dimension==='works'?(selectedCategoryType==='media'?'多媒體時間河道':'作品時間河道'):'時期 × 來源 × 項目量'}</h3><p>{dimension==='works'?(selectedCategoryType==='media'?'依日期逐筆顯示多媒體 metadata；每筆紀錄各自保留。':'依日期顯示目前分類的分頁作品。'):'拖曳旋轉，滾輪縮放；先選作品或多媒體分類，或在時期河道選取定錨點、事件、時期與風格。'}</p></div>
       <span>3D</span>
     </header>
     {dimension==='categories'?<>
-      <section className='scope-v2-culture-3d-categories' aria-label='作品分類'>
-        <h4>作品分類</h4>
-        {categoryLoading?<p className='scope-v2-status'>載入作品分類…</p>:null}
+      <section className='scope-v2-culture-3d-categories' aria-label='作品與多媒體分類'>
+        <h4>作品與多媒體分類</h4>
+        {categoryLoading?<p className='scope-v2-status'>載入作品與多媒體分類…</p>:null}
         {categoryError?<p className='scope-v2-status scope-v2-error'>{categoryError}</p>:null}
-        {!categoryLoading&&!categoryError&&!categories.length?<p className='scope-v2-status'>目前沒有作品分類。</p>:null}
+        {!categoryLoading&&!categoryError&&!categories.length?<p className='scope-v2-status'>目前沒有作品或多媒體項目。</p>:null}
         {categories.length?<div className='scope-v2-culture-3d-category-list'>
-          {categories.map(category=><button key={category.source_platform} type='button'
-            aria-pressed={selectedCategory===category.source_platform}
-            onClick={()=>{onSelectCategory(category.source_platform);setDimension('works');setTool('view');setMessage('')}}>
-            <strong>{category.source_platform}</strong><span>{Number(category.item_count||0).toLocaleString()} 項作品</span>
-          </button>)}
+          {categories.map(category=>{
+            const categoryKey=category.category_key||category.source_platform;
+            const isMedia=category.category_type==='media';
+            return <button key={categoryKey} type='button'
+              aria-pressed={selectedCategory===categoryKey}
+              onClick={()=>{onSelectCategory(categoryKey);setDimension('works');setTool('view');setMessage('')}}>
+              <strong>{category.display_label||category.source_platform}</strong><span>{Number(category.item_count||0).toLocaleString()} {isMedia?'筆多媒體':'項作品'}</span>
+            </button>;
+          })}
         </div>:null}
       </section>
       {canEdit?<div className='scope-v2-tabs scope-v2-culture-3d-tools' aria-label='時期河道編輯工具'>
@@ -243,25 +253,28 @@ export default function CultureVolumeGraph3D({
     </>:<>
       <div className='scope-v2-culture-3d-drilldown'>
         <div className='scope-v2-culture-3d-drilldown-heading'>
-          <div><strong>{selectedCategory||'作品分類'}</strong><span>{(Number(categories.find(row=>row.source_platform===selectedCategory)?.item_count)||0).toLocaleString()} 項</span></div>
-          <button type='button' className='scope-v2-pagination-button' onClick={returnToCategories}>返回作品分類</button>
+          <div><strong>{selectedCategoryLabel||'作品或多媒體分類'}</strong><span>{(Number(selectedCategoryInfo?.item_count)||0).toLocaleString()} {selectedCategoryType==='media'?'筆多媒體':'項作品'}</span></div>
+          <button type='button' className='scope-v2-pagination-button' onClick={returnToCategories}>返回分類</button>
         </div>
-        {workLoading?<p className='scope-v2-status'>載入作品第 {workPage+1} 頁…</p>:null}
+        {workLoading?<p className='scope-v2-status'>載入{selectedCategoryType==='media'?'多媒體':'作品'}第 {workPage+1} 頁…</p>:null}
         {workError?<p className='scope-v2-status scope-v2-error'>{workError}</p>:null}
         {graphError?<p className='scope-v2-status'>{graphError}</p>:null}
-        <div ref={containerRef} className='scope-v2-culture-3d-canvas scope-v2-culture-3d-works-canvas' role='img' aria-label={selectedCategory+'作品日期河道'}/>
-        <div className='scope-v2-culture-3d-work-river' aria-label={selectedCategory+'作品列表時間河道'}>
-          {works.map((work,index)=><article className='scope-v2-culture-3d-work' key={work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
-            <time>{work.display_date||displayDate(work.created_at)}</time>
-            <strong>{work.title||work.work_id||'文字紀錄'}</strong>
-            {work.description?<p>{work.description}</p>:null}
-            {work.media_metadata_text?<p className='scope-v2-culture-work-meta-description'><strong>多媒體描述：</strong>{work.media_metadata_text}</p>:null}
-            {work.meta_tags?<span>{work.meta_tags}</span>:null}
-            {work.url||work.source_ref?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
-          </article>)}
+        <div ref={containerRef} className='scope-v2-culture-3d-canvas scope-v2-culture-3d-works-canvas' role='img' aria-label={selectedCategoryLabel+(selectedCategoryType==='media'?'多媒體':'作品')+'日期河道'}/>
+        <div className='scope-v2-culture-3d-work-river' aria-label={selectedCategoryLabel+(selectedCategoryType==='media'?'多媒體':'作品')+'列表時間河道'}>
+          {works.map((work,index)=>{
+            const isMedia=work.entry_type==='media_metadata';
+            return <article className='scope-v2-culture-3d-work' key={work.media_id||work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
+              <time>{work.display_date||displayDate(work.created_at)}</time>
+              <strong>{isMedia?'多媒體項目':work.title||work.work_id||'未命名作品'}</strong>
+              {work.description?<p>{work.description}</p>:null}
+              {isMedia?<p className='scope-v2-culture-work-meta-description'><strong>metadata：</strong>{work.media_metadata_text}</p>:null}
+              {!isMedia&&work.meta_tags?<span>{work.meta_tags}</span>:null}
+              {!isMedia&&(work.url||work.source_ref)?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
+            </article>;
+          })}
         </div>
-        {!workLoading&&!workError&&!works.length?<p className='scope-v2-status'>這個分類目前沒有作品。</p>:null}
-        <nav className='scope-v2-culture-3d-pages' aria-label='作品河道分頁'>
+        {!workLoading&&!workError&&!works.length?<p className='scope-v2-status'>{selectedCategoryType==='media'?'這個時期目前沒有多媒體項目。':'這個分類目前沒有作品。'}</p>:null}
+        <nav className='scope-v2-culture-3d-pages' aria-label={selectedCategoryType==='media'?'多媒體分頁':'作品河道分頁'}>
           <button type='button' disabled={workPage<=0||workLoading} onClick={()=>onPageChange(Math.max(0,workPage-1))}>上一頁</button>
           <span>第 {workPage+1} / {Math.max(1,workPageCount)} 頁</span>
           <button type='button' disabled={workPage+1>=workPageCount||workLoading} onClick={()=>onPageChange(Math.min(workPageCount-1,workPage+1))}>下一頁</button>
