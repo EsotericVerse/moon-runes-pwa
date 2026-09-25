@@ -2,6 +2,7 @@
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {callNeonRpc,selectNeonRows} from './neon-repository';
+import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 
 const TIMELINE_COLUMNS='scope_id,entry_key,entry_type,title,summary,start_date,end_date,era_id,period,entry_name,order_no,status,anchor_id,start_anchor_id,end_anchor_id,before_id,after_id,date_status,entry_scope,visibility,event_id,year_value,rune_count,source_id,source,note';
 
@@ -134,8 +135,8 @@ export async function selectScopeCultureData(scopeId){
 
 export async function selectAuthorPeriodWorks({startDate,endDate,limit=100,pageOffset=0}={}){
   if(!startDate)return {rows:[],hasMore:false,nextOffset:null};
-  const filters=[{column:'created_at',operator:'gte',value:startDate}];
-  if(endDate)filters.push({column:'created_at',operator:'lte',value:endDate+'T23:59:59.999Z'});
+  const filters=[{column:'created_at',operator:'gte',value:`${String(startDate).slice(0,10)}T00:00:00+08:00`}];
+  if(endDate)filters.push({column:'created_at',operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   const pageSize=Math.max(1,Math.min(1000,Math.floor(Number(limit)||1000)));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const result=await selectNeonRows('api.lo3rwang_galaxy',{
@@ -145,16 +146,20 @@ export async function selectAuthorPeriodWorks({startDate,endDate,limit=100,pageO
     range:[offset,offset+pageSize-1]
   });
   return {
-    rows:result.rows.map(row=>({
-    ...row,
-    start_date:row.created_at,
-    date:row.created_at,
-    entry_id:row.galaxy_id,
-    title:row.title||String(row.content||'').trim().slice(0,72)||row.source_platform||row.galaxy_id,
-    description:String(row.content||'').trim().slice(0,400),
-    group_label:row.content_type||row.category||row.source_role||'作品',
-    scope_id:'lo3rwang'
-    })),
+    rows:result.rows.map(row=>{
+      const content=decodeCultureText(row.content||'');
+      return {
+        ...row,
+        start_date:row.created_at,
+        date:row.created_at,
+        display_date:formatCultureDateTime(row.created_at),
+        entry_id:row.galaxy_id,
+        title:decodeCultureText(row.title||'').trim()||content.trim().slice(0,72)||row.source_platform||row.galaxy_id,
+        description:content.trim().slice(0,400),
+        group_label:row.source_platform||'未標示來源',
+        scope_id:'lo3rwang'
+      };
+    }),
     hasMore:result.rows.length===pageSize,
     nextOffset:result.rows.length===pageSize?offset+pageSize:null
   };

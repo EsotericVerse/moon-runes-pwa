@@ -8,7 +8,7 @@ import {readFeatureNavigation} from '../feature-navigation.v2';
 import {CULTURE_OVERVIEW_LABEL,cultureDefaultPeriod,isCultureOverview} from '../culture-policy.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
-import {groupWorksByWeekAndSource} from '../modules/culture-timeline/culture-timeline-model.mjs';
+import {formatCultureDateTime,groupWorksByWeekAndSource} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import CultureTimelineEditor from './CultureTimelineEditor';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
@@ -162,7 +162,7 @@ export default function CultureV2(){
             <p>{group.week_start.slice(0,10)} – {group.week_end.slice(0,10)}</p>
             {group.works.slice(0,groupVisibleCounts[group.id]||20).map((work,index)=><article className='scope-v2-inline-card' key={work.galaxy_id||work.work_id||`${work.created_at}-${index}`}>
               <strong>{work.title||work.work_id||'文字紀錄'}</strong>
-              <span>{work.created_at||''}</span>
+              <span>{work.display_date||formatCultureDateTime(work.created_at)}</span>
               {work.url||work.source_ref?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
             </article>)}
             {group.works.length>(groupVisibleCounts[group.id]||20)?<div className='scope-v2-load-sentinel' data-culture-group-key={group.id}/>:null}

@@ -92,13 +92,13 @@ stable
 security invoker
 set search_path to 'api','public'
 as $$
-  select date_trunc('week',works.created_at)::date as week_start,
-         (date_trunc('week',works.created_at)+interval '7 days')::date as week_end,
+  select date_trunc('week',works.created_at at time zone 'Asia/Taipei')::date as week_start,
+         (date_trunc('week',works.created_at at time zone 'Asia/Taipei')+interval '7 days')::date as week_end,
          coalesce(nullif(btrim(works.source_platform),''),'未標示來源') as source,
          count(*) as work_count
   from api.lo3rwang_galaxy works
-  where works.created_at>=p_start_date::timestamptz
-    and (p_end_date is null or works.created_at<(p_end_date+1)::timestamptz)
+  where works.created_at>=(p_start_date::timestamp at time zone 'Asia/Taipei')
+    and (p_end_date is null or works.created_at<((p_end_date+1)::timestamp at time zone 'Asia/Taipei'))
   group by 1,2,3
   order by 1 desc,3
 $$;

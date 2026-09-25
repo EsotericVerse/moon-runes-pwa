@@ -23,10 +23,32 @@ export function densityStyleForCount(value){
 function utcWeekStart(value){
   const date=new Date(value);
   if(Number.isNaN(date.getTime()))return null;
-  date.setUTCHours(0,0,0,0);
-  const weekday=(date.getUTCDay()+6)%7;
-  date.setUTCDate(date.getUTCDate()-weekday);
-  return date;
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+  const values=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+  const localDate=new Date(Date.UTC(Number(values.year),Number(values.month)-1,Number(values.day)));
+  const weekday=(localDate.getUTCDay()+6)%7;
+  localDate.setUTCDate(localDate.getUTCDate()-weekday);
+  return localDate;
+}
+
+export function formatCultureDateTime(value){
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return String(value||'');
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(date);
+  const values=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+  return `${values.year}-${values.month}-${values.day} ${values.hour}:${values.minute}`;
+}
+
+export function decodeCultureText(value){
+  const text=String(value||'');
+  if(!/[\u0080-\u00ff]/u.test(text))return text;
+  const codepoints=Array.from(text,char=>char.codePointAt(0));
+  if(codepoints.some(point=>point>255))return text;
+  try{
+    return new TextDecoder('utf-8',{fatal:true}).decode(new Uint8Array(codepoints));
+  }catch{
+    return text;
+  }
 }
 
 export function groupWorksByWeekAndSource(rows=[]){
@@ -36,11 +58,12 @@ export function groupWorksByWeekAndSource(rows=[]){
     const start=utcWeekStart(timestamp);
     if(!start)continue;
     const source=String(work?.source_platform||'').trim()||'未標示來源';
-    const startDate=start.toISOString();
-    const id=`${source}:${startDate.slice(0,10)}`;
+    const startDate=start.toISOString().slice(0,10);
+    const id=`${source}:${startDate}`;
     if(!groups.has(id)){
       const end=new Date(start);end.setUTCDate(end.getUTCDate()+7);
-      groups.set(id,{id,source,group_label:source,week_start:startDate,week_end:end.toISOString(),start_date:startDate,end_date:end.toISOString(),work_count:0,works:[]});
+      const endDate=end.toISOString().slice(0,10);
+      groups.set(id,{id,source,group_label:source,week_start:startDate,week_end:endDate,start_date:startDate,end_date:endDate,work_count:0,works:[]});
     }
     const group=groups.get(id);
     group.work_count+=1;
