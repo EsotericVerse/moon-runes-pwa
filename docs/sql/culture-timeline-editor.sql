@@ -94,7 +94,7 @@ set search_path to 'api','public'
 as $$
   select date_trunc('week',works.created_at)::date as week_start,
          (date_trunc('week',works.created_at)+interval '7 days')::date as week_end,
-         coalesce(nullif(works.source_platform,''),nullif(works.source_role,''),nullif(works.content_type,''),nullif(works.category,''),'作品') as source,
+         coalesce(nullif(btrim(works.source_platform),''),'未標示來源') as source,
          count(*) as work_count
   from api.lo3rwang_galaxy works
   where works.created_at>=p_start_date::timestamptz

@@ -119,7 +119,7 @@ export default function CultureV2(){
       for(const entry of entries){
         if(!entry.isIntersecting)continue;
         const groupId=entry.target.getAttribute('data-culture-group-key');
-        if(groupId)setGroupVisibleCounts(current=>({...current,[groupId]:(current[groupId]||10)+10}));
+        if(groupId)setGroupVisibleCounts(current=>({...current,[groupId]:(current[groupId]||20)+20}));
       }
     },{rootMargin:'120px'});
     sentinels.forEach(sentinel=>observer.observe(sentinel));
@@ -160,12 +160,12 @@ export default function CultureV2(){
           {detailTimeline.map(group=><section className='scope-v2-card' key={group.id}>
             <h3>{group.display_label}</h3>
             <p>{group.week_start.slice(0,10)} – {group.week_end.slice(0,10)}</p>
-            {group.works.slice(0,groupVisibleCounts[group.id]||10).map((work,index)=><article className='scope-v2-inline-card' key={work.galaxy_id||work.work_id||`${work.created_at}-${index}`}>
+            {group.works.slice(0,groupVisibleCounts[group.id]||20).map((work,index)=><article className='scope-v2-inline-card' key={work.galaxy_id||work.work_id||`${work.created_at}-${index}`}>
               <strong>{work.title||work.work_id||'文字紀錄'}</strong>
               <span>{work.created_at||''}</span>
               {work.url||work.source_ref?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
             </article>)}
-            {group.works.length>(groupVisibleCounts[group.id]||10)?<div className='scope-v2-load-sentinel' data-culture-group-key={group.id}/>:null}
+            {group.works.length>(groupVisibleCounts[group.id]||20)?<div className='scope-v2-load-sentinel' data-culture-group-key={group.id}/>:null}
           </section>)}
           {periodWorksQuery.hasNextPage?<div className='scope-v2-load-sentinel' data-culture-work-sentinel>{periodWorksQuery.isFetchingNextPage?'讀取中…':''}</div>:null}
         </>}

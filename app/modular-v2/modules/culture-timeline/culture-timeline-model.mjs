@@ -35,7 +35,7 @@ export function groupWorksByWeekAndSource(rows=[]){
     const timestamp=work?.created_at||work?.start_date||work?.date;
     const start=utcWeekStart(timestamp);
     if(!start)continue;
-    const source=String(work?.source_platform||work?.source||work?.source_role||work?.content_type||work?.category||'作品').trim()||'作品';
+    const source=String(work?.source_platform||'').trim()||'未標示來源';
     const startDate=start.toISOString();
     const id=`${source}:${startDate.slice(0,10)}`;
     if(!groups.has(id)){
