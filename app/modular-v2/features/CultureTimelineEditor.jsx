@@ -336,6 +336,6 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId=''}
         <label><span>關鍵字（每行一個）</span><textarea className="scope-v2-search-input" rows={6} value={styleWords} onChange={event=>setStyleWords(event.target.value)}/></label>
         <div className="scope-v2-tabs"><button type="submit" disabled={busy}>{busy?'儲存中…':'儲存風格關鍵字'}</button></div>
       </form>
-    </details:null}>
+    </details>:null}
   </section>;
 }
