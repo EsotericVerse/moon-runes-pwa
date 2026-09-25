@@ -163,6 +163,7 @@ export default function CultureV2(){
             {group.works.slice(0,groupVisibleCounts[group.id]||20).map((work,index)=><article className='scope-v2-inline-card' key={work.galaxy_id||work.work_id||`${work.created_at}-${index}`}>
               <strong>{work.title||work.work_id||'文字紀錄'}</strong>
               <span>{work.display_date||formatCultureDateTime(work.created_at)}</span>
+              {work.meta_tags?<span className='scope-v2-meta'>{work.meta_tags}</span>:null}
               {work.url||work.source_ref?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
             </article>)}
             {group.works.length>(groupVisibleCounts[group.id]||20)?<div className='scope-v2-load-sentinel' data-culture-group-key={group.id}/>:null}
