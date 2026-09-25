@@ -1,8 +1,10 @@
 'use client';
 
-import {useQuery} from '@tanstack/react-query';
-import {fetchNeonData} from '../../loc/data';
+import {selectNeonRows} from '../../loc/neon-repository';
+import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
+
+const FAQ_PAGE_SIZE=10;
 
 function faqQuestion(row,index){
   return row?.question||row?.title||row?.prompt||row?.faq_question||`問題 ${index+1}`;
@@ -15,12 +17,20 @@ function faqCategory(row){
 }
 
 function FaqView(){
-  const query=useQuery({
-    queryKey:['governance-faq'],
-    queryFn:()=>fetchNeonData('knowledge/faq',{memory:true}),
-    staleTime:5*60_000
+  const page=useOffsetPagination({
+    key:'governance-faq',
+    pageSize:FAQ_PAGE_SIZE,
+    loadPage:async(offset,limit)=>{
+      const result=await selectNeonRows('silver.faq_entries',{
+        columns:'faq_id,category,question,answer',
+        orders:[{column:'category',ascending:true},{column:'faq_id',ascending:true}],
+        offset,
+        limit
+      });
+      return {rows:result.rows,hasMore:result.rows.length===limit};
+    }
   });
-  const rows=Array.isArray(query.data)?query.data:[];
+  const {rows,loading,error,hasMore}=page;
 
   return <section className="loc-view">
     <header className="loc-hero">
@@ -28,9 +38,9 @@ function FaqView(){
       <h1>常見問題</h1>
       <p className="loc-subtitle">FAQ 直接讀取 Neon 正式資料。</p>
     </header>
-    {query.isPending?<p className="scope-v2-status">載入 FAQ…</p>:null}
-    {query.error?<p className="scope-v2-status scope-v2-error">{query.error.message}</p>:null}
-    {!query.isPending&&!query.error&&!rows.length?<p>目前沒有 FAQ 資料。</p>:null}
+    {loading&&!rows.length?<p className="scope-v2-status">載入 FAQ…</p>:null}
+    {error?<p className="scope-v2-status scope-v2-error">{error.message}</p>:null}
+    {!loading&&!error&&!rows.length?<p>目前沒有 FAQ 資料。</p>:null}
     <div className="loc-grid two">
       {rows.map((row,index)=><article className="loc-card" key={row?.faq_id||row?.id||row?.faq_key||index}>
         <p className="loc-eyebrow">{faqCategory(row)}</p>
@@ -38,6 +48,9 @@ function FaqView(){
         <p>{faqAnswer(row)}</p>
       </article>)}
     </div>
+    {hasMore?<div className="scope-v2-load-sentinel" aria-live="polite">
+      &lt; {loading?'載入中…':'…'} &gt;
+    </div>:null}
   </section>;
 }
 

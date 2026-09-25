@@ -15,10 +15,6 @@ data/
 
 The website reads canonical content from Neon through the Next.js static-export runtime clients. Do not add data/json, runtime JSON snapshots, copied projections, or local JSON caches.
 
-## Formal Neon guide tables
-
-Table purpose is read from `silver.system_table_catalog`; overall data principles are read from `silver.system_data_principles`. Scope and navigation guidance are read from `silver.loc_scope_registry`, `silver.loc_shortcut_routes`, and `silver.loc_home_shortcuts`. These Neon tables replace JSON documentation and route manifests.
-
 Rules:
 
 - lunarunes/source/: frozen LunaRunes mother/source workbooks.

@@ -1,10 +1,16 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectNeonRows} from './neon-repository';
 
-const RANKING_TABLES=Object.freeze({
+const RANKING_VIEWS=Object.freeze({
   loc:'api.loc_rankings',
   runes:'api.runes_rankings',
   lo3rwang:'api.lo3rwang_rankings'
+});
+
+const RANKING_TYPES=Object.freeze({
+  loc:Object.freeze(['group','keyword','period_source']),
+  runes:Object.freeze(['group','keyword']),
+  lo3rwang:Object.freeze(['period_source'])
 });
 
 const RANKING_COLUMNS=Object.freeze({
@@ -23,6 +29,7 @@ function containsFilter(filters,column,value){
 function navigationFilters(scopeId,navigation={}){
   const filters=[];
   if(scopeId==='loc'||scopeId==='runes')containsFilter(filters,'source',navigation.source);
+  if(scopeId==='lo3rwang')containsFilter(filters,'term',navigation.source);
   if(scopeId==='loc'||scopeId==='lo3rwang')containsFilter(filters,'period',navigation.period);
   return filters;
 }
@@ -38,47 +45,42 @@ function normalizeRows(rows){
   }));
 }
 
-export async function selectScopeRankingPage(scopeId,{page=1,pageSize=20,rankingType='',navigation={}}={}){
+export async function selectScopeRankingPage(scopeId,{offset=0,limit=20,rankingType='',navigation={}}={}){
   const id=String(scopeId||'');
-  const table=RANKING_TABLES[id];
+  const table=RANKING_VIEWS[id];
   const columns=RANKING_COLUMNS[id];
   if(!table||!columns)throw new Error('Scope 無效');
 
   const filters=navigationFilters(id,navigation);
-  const size=Math.max(1,Math.min(100,Math.floor(Number(pageSize)||20)));
-  const currentPage=Math.max(1,Math.floor(Number(page)||1));
-  const offset=(currentPage-1)*size;
+  const size=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
+  const start=Math.max(0,Math.floor(Number(offset)||0));
   const pageFilters=rankingType
     ?[...filters,{column:'ranking_type',operator:'eq',value:rankingType}]
     :filters;
 
-  const [{rows,count},typeResult]=await Promise.all([
-    selectNeonRows(table,{
-      columns,
-      filters:pageFilters,
-      orders:[
-        {column:'rank_value',ascending:false},
-        {column:'item_count',ascending:false},
-        {column:'term',ascending:true}
-      ],
-      range:[offset,offset+size-1],
-      count:'exact'
-    }),
-    selectNeonRows(table,{columns:'ranking_type',filters,limit:5000})
-  ]);
-
+  const {rows}=await selectNeonRows(table,{
+    columns,
+    filters:pageFilters,
+    orders:[
+      {column:'rank_value',ascending:false},
+      {column:'item_count',ascending:false},
+      {column:'term',ascending:true}
+    ],
+    offset:start,
+    limit:size
+  });
   const rowsForResponse=normalizeRows(rows);
-  const types=[...new Set(typeResult.rows.map(row=>String(row.ranking_type||'')).filter(Boolean))].sort();
   return ScopeRankingResponseSchema.parse({
     rows:rowsForResponse,
-    count:count??0,
-    page:currentPage,
-    pageSize:size,
-    types
+    offset:start,
+    limit:size,
+    hasMore:rowsForResponse.length===size,
+    types:RANKING_TYPES[id]
   });
 }
 
 export async function selectScopeRankingTypes(scopeId){
-  const result=await selectScopeRankingPage(scopeId,{page:1,pageSize:1});
-  return result.types;
+  const types=RANKING_TYPES[String(scopeId||'')];
+  if(!types)throw new Error('Scope 無效');
+  return [...types];
 }

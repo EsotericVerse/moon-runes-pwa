@@ -62,14 +62,6 @@ Current runtime 以 **Neon Postgres** 為 Single Source of Truth。
 - Scope 資料分層治理。
 - 歷史資料可以保留，但不得污染 Current Canon。
 
-正式導引表：
-
-- `silver.system_table_catalog`
-- `silver.system_data_principles`
-- `silver.loc_scope_registry`
-- `silver.loc_shortcut_routes`
-- `silver.loc_home_shortcuts`
-
 ---
 
 ## Culture｜Time River
@@ -88,14 +80,6 @@ Culture 只顯示 **Time River**。RC6 採用「錨點所見即所得」：
 ## Statistics｜Charts only
 
 Statistics 以 Recharts 顯示多種圖表，只呈現資料，不替使用者下結論，也不自動定義文字或文化意義。
-
-RC6 新增：
-
-- `silver.metric_snapshots`
-- `silver.save_metric_snapshot(...)`
-- [`docs/sql/metric-snapshots.sql`](docs/sql/metric-snapshots.sql)
-
-網站讀取已計算好的 snapshot，不在瀏覽器重新掃描整個 corpus。Snapshot 以 `source_updated_at` 判斷來源是否變更。
 
 ---
 

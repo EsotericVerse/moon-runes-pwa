@@ -53,8 +53,8 @@ export const ScopeRankingResponseSchema=z.object({
     source_updated_at:z.string().nullable().optional(),
     calculated_at:z.string().nullable().optional()
   }).passthrough()),
-  count:z.coerce.number().int().nonnegative(),
-  page:z.coerce.number().int().positive(),
-  pageSize:z.coerce.number().int().positive(),
+  offset:z.coerce.number().int().nonnegative(),
+  limit:z.coerce.number().int().positive(),
+  hasMore:z.boolean(),
   types:z.array(z.string())
 }).passthrough();

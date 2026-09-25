@@ -29,7 +29,9 @@ END $$;
 
 DROP VIEW IF EXISTS api.loc_rankings;
 DROP VIEW IF EXISTS api.runes_rankings;
-DROP TABLE silver.runes_rankings;
+DROP VIEW IF EXISTS api.lo3rwang_rankings;
+DROP TABLE IF EXISTS silver.runes_rankings;
+DROP TABLE IF EXISTS silver.lo3rwang_rankings;
 
 CREATE VIEW api.runes_rankings AS
 WITH keyword_counts AS (
@@ -65,6 +67,53 @@ SELECT 'group:' || term AS ranking_key,
        'silver.lrunes_style'::text AS source
 FROM group_counts;
 
+CREATE VIEW api.lo3rwang_rankings AS
+WITH period_ranges AS (
+  SELECT period,
+         start_date::date AS start_date,
+         CASE WHEN end_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN end_date::date END AS end_date
+  FROM silver.lo3rwang_period_context_entries
+  WHERE context_type='period'
+    AND start_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+), source_items AS (
+  SELECT source_platform,
+         (created_at AT TIME ZONE 'Asia/Taipei')::date AS work_date,
+         updated_at
+  FROM silver.lo3rwang_galaxy
+  WHERE scope_id='lo3rwang' AND created_at IS NOT NULL
+  UNION ALL
+  SELECT source_platform,
+         COALESCE((created_at AT TIME ZONE 'Asia/Taipei')::date,created_date) AS work_date,
+         updated_at
+  FROM silver.lo3rwang_galaxy_media
+  WHERE scope_id='lo3rwang'
+), grouped AS (
+  SELECT p.period,
+         w.source_platform AS term,
+         count(*)::bigint AS item_count,
+         max(w.updated_at) AS updated_at
+  FROM period_ranges p
+  JOIN source_items w
+    ON w.work_date>=p.start_date
+   AND w.work_date<=COALESCE(p.end_date,current_date)
+  WHERE nullif(btrim(w.source_platform),'') IS NOT NULL
+  GROUP BY p.period,w.source_platform
+), ranked AS (
+  SELECT grouped.*,
+         sum(item_count) OVER (PARTITION BY period) AS period_count
+  FROM grouped
+)
+SELECT 'period-source:'||period||':'||term AS ranking_key,
+       'period_source'::text AS ranking_type,
+       term,
+       item_count::numeric AS rank_value,
+       item_count,
+       updated_at,
+       period,
+       item_count AS hit_count,
+       round(100.0*item_count/nullif(period_count,0),2) AS percent
+FROM ranked;
+
 CREATE VIEW api.loc_rankings AS
 SELECT 'runes'::text AS scope_id,
        ranking_key, ranking_type, term, rank_value, item_count, updated_at,
@@ -74,8 +123,8 @@ UNION ALL
 SELECT 'lo3rwang'::text AS scope_id,
        ranking_key, ranking_type, term, rank_value, item_count, updated_at,
        period, hit_count, percent, NULL::text AS source
-FROM silver.lo3rwang_rankings;
+FROM api.lo3rwang_rankings;
 
-GRANT SELECT ON api.runes_rankings, api.loc_rankings TO anonymous, authenticated;
+GRANT SELECT ON api.runes_rankings, api.lo3rwang_rankings, api.loc_rankings TO anonymous, authenticated;
 
 COMMIT;

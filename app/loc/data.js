@@ -51,7 +51,6 @@ async function fetchCanonical(path){
     if(normalized==='canonical/harmony')return (await selectNeonRows('silver.lrunes_harmony',{columns:'rune_number,rune_name,soul_question,practice_challenge,ritual_advice,harmony_advice,updated_at',limit:5000})).rows;
     if(normalized==='culture/lrunes-periods')return {eras:periodRows((await selectNeonRows('silver.runes_context_entries',{columns:'context_key,context_type,title,summary,updated_at',filters:[{column:'context_type',operator:'in',value:['period','era']}],limit:5000})).rows)};
     if(normalized==='culture/lo3rwang-periods')return {eras:periodRows((await selectNeonRows('silver.lo3rwang_period_context_entries',{columns:'context_key,context_type,title,summary,updated_at',filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000})).rows)};
-    if(normalized==='knowledge/faq')return (await selectNeonRows('silver.faq_entries',{columns:'faq_id,category,intent,question,answer,canon_version,status,source_path,source_blob_sha,updated_at',limit:5000})).rows;
     if(normalized==='context/content-relations')return (await selectNeonRows('silver.content_relations',{columns:'relation_id,from_kind,from_id,relation_type,to_kind,to_id,source_ref',limit:5000})).rows;
     throw new Error(`Neon canonical data path is not mapped: ${normalized}`);
   }finally{releaseSlot();}

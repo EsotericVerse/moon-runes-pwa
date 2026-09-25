@@ -34,8 +34,7 @@ for(const required of [
   'app/loc/neon-context-client.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/neon-culture-client.js',
-  'app/loc/neon-search.js',
-  'app/loc/neon-system-guide.js'
+  'app/loc/neon-search.js'
 ]){
   if(!existsSync(resolve(root,required)))failures.push(`${required}: required Neon/module boundary missing`);
 }
@@ -57,13 +56,6 @@ const searchClient=readFileSync(resolve(root,'app/loc/neon-search.js'),'utf8');
 const searchView=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8');
 if(!/from ['"]flexsearch['"]/.test(searchClient)||!/new Index\(/.test(searchClient))failures.push('Search: FlexSearch index is missing');
 if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: FlexSearch-backed Neon search client missing');
-
-const systemGuide=readFileSync(resolve(root,'app/loc/neon-system-guide.js'),'utf8');
-for(const table of ['silver.system_table_catalog','silver.system_data_principles','silver.loc_scope_registry','silver.loc_shortcut_routes','silver.loc_home_shortcuts']){
-  if(!systemGuide.includes(table))failures.push(`System guide: formal Neon table missing: ${table}`);
-}
-if(/json_doc|runtime_json_documents|data\/json/.test(systemGuide))failures.push('System guide: retired JSON documentation source remains');
-
 
 const scopeManagement=readFileSync(resolve(root,'app/modular-v2/ScopeManagementV2.jsx'),'utf8');
 if(!/useNeonAccount/.test(scopeManagement)||!/account\.canManage/.test(scopeManagement))failures.push('Scope management: manager role gate missing');

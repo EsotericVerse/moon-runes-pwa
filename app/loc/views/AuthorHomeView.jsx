@@ -1,5 +1,4 @@
 import { PageComposition } from '../../PageComposition';
-import HomeMetricsV2 from './HomeMetricsV2';
 import ScopeOverviewGraphV2 from '../../modular-v2/modules/scope-overview/ScopeOverviewGraphV2';
 const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心所欲，而不逾己'];
 

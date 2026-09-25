@@ -2,15 +2,14 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
-import {useQuery} from '@tanstack/react-query';
 import {
   Area,AreaChart,Bar,BarChart,CartesianGrid,Cell,Line,LineChart,
   Pie,PieChart,PolarAngleAxis,PolarGrid,PolarRadiusAxis,Radar,RadarChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
 import {selectScopeRankingPage} from '../../loc/neon-ranking-client';
+import {useOffsetPagination} from '../use-offset-pagination.v2';
 import {readFeatureNavigation} from '../feature-navigation.v2';
-import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
@@ -23,6 +22,7 @@ const CHART_TYPES=Object.freeze([
   ['pie','圓餅圖'],
   ['radar','雷達圖']
 ]);
+const RANKING_PAGE_SIZE=20;
 
 function RankingChart({type,rows}){
   if(type==='line')return <ResponsiveContainer width="100%" height={360}>
@@ -82,23 +82,23 @@ export default function StatisticsV2(){
   const [rankingType,setRankingType]=useState(navigation.rankingType||'');
   const [chartType,setChartType]=useState('bar');
   useEffect(()=>setRankingType(navigation.rankingType||''),[navigation.rankingType]);
-
-  const query=useQuery({
-    queryKey:['statistics-chart',scopeId,rankingType,navigation.q,navigation.identity,navigation.source,navigation.period,navigation.anchor,navigation.from,navigation.to],
-    queryFn:()=>selectScopeRankingPage(scopeId,{page:1,pageSize:10,rankingType,navigation}),
-    staleTime:30_000
+  const paginationKey=[scopeId,rankingType,navigation.q,navigation.identity,navigation.source,navigation.period,navigation.anchor,navigation.from,navigation.to].join('|');
+  const page=useOffsetPagination({
+    key:paginationKey,
+    pageSize:RANKING_PAGE_SIZE,
+    loadPage:(offset,limit)=>selectScopeRankingPage(scopeId,{offset,limit,rankingType,navigation})
   });
-
-  const rows=query.data?.rows||[];
-  const types=query.data?.types||[];
+  const {rows,loading,error,hasMore}=page;
+  const types=scopeId==='loc'?['group','keyword','period_source']:scopeId==='runes'?['group','keyword']:['period_source'];
+  const chartSource=rows.slice(0,10);
   const chartRows=useMemo(
-    ()=>rows.map((row,index)=>({
+    ()=>chartSource.map((row,index)=>({
       ...row,
       order:index+1,
       value:Number(row.rank_value??row.item_count??0)||0,
       count:Number(row.item_count??0)||0
     })),
-    [rows]
+    [chartSource]
   );
 
   return <FeaturePageV2 featureId="statics">
@@ -132,14 +132,22 @@ export default function StatisticsV2(){
         </label>
       </div>
   
-      {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
+      {error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(error)}</p>:null}
   
-      {!query.isPending&&!query.error&&!chartRows.length?<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>:null}
+      {!loading&&!error&&!chartRows.length?<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>:null}
   
       {chartRows.length?<div className="scope-v2-ranking-chart" aria-label={CHART_TYPES.find(([value])=>value===chartType)?.[1]||'統計圖'}>
         <RankingChart type={chartType} rows={chartRows}/>
       </div>:null}
-  
+      {rows.length?<div className="scope-v2-ranking" aria-label="排行榜">
+        {rows.map((row,index)=><div key={row.ranking_key||`${row.term}-${index}`}>
+          <strong>{index+1}. {row.term}</strong>
+          <span>{Number(row.item_count||0).toLocaleString()}</span>
+        </div>)}
+      </div>:null}
+      {hasMore?<div className="scope-v2-load-sentinel" aria-live="polite">
+        &lt; {loading?'載入中…':'…'} &gt;
+      </div>:null}
     </section>
 
   </FeaturePageV2>;

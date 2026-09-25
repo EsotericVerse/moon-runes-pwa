@@ -26,7 +26,8 @@ function toResult(row,source,q,collectionId,scopeId){
   const body=row.summary||row.content||row.meta_tags||row.description||row.interpretation||row.ai_summary||row.retrieval_text||row.text||text;
   const navigation=buildSearchNavigation(collectionId,source,row,q,scopeId);
   if(row.scope_id)navigation.targetScope=row.scope_id;
-  return {key:`${source}-${title}-${String(body).slice(0,40)}`,source,title:String(title),date:row.date||row.created_date||row.created_at||row.updated_at||'',snippet:snippet(body,q),href:row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'context'):''),destinations:featureNavigationLinks(navigation)};
+  const identity=row.media_id||row.galaxy_id||row.work_id||row.song_id||row.rune_id||row.id;
+  return {key:identity?`${source}-${identity}`:`${source}-${title}-${String(body).slice(0,40)}`,source,title:String(title),date:row.date||row.created_date||row.created_at||row.updated_at||'',snippet:snippet(body,q),href:row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'context'):''),destinations:featureNavigationLinks(navigation)};
 }
 
 export default function SearchV2(){

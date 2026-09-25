@@ -34,21 +34,6 @@ Neon Postgres is the Current single source of truth for runtime content and stru
 
 Current runtime must not use content JSON as a fallback, alias, registry key, or alternate authority.
 
-The RC6 statistics snapshot contract is stored in:
-
-- `silver.metric_snapshots`
-- `silver.save_metric_snapshot(...)`
-
-The schema migration is defined in:
-
-- `docs/sql/metric-snapshots.sql`
-
-The public runtime reads snapshots only. It does not recalculate or write aggregate metrics during page rendering.
-
-Snapshot updates are watermark-based: a refresh writes only when the incoming `source_updated_at` is newer than the stored snapshot.
-
-At RC6 baseline creation, the relation and function are installed in production and verified; initial snapshot rows may still be populated by the refresh process.
-
 ## Culture / Period anchors
 
 Culture uses a WYSIWYG Time River.
@@ -66,13 +51,9 @@ Major anchors are explicit. RC zones may represent finer transition/version regi
 
 ## Statistics
 
-Statistics uses the existing ranking and metric data for visualization.
+Statistics runs its aggregates against the current Neon source tables and requests each page with `LIMIT` and `OFFSET`. It does not store ranking snapshots.
 
 RC6 uses Recharts for chart rendering and supports multiple chart forms without attaching interpretive prose or automatic judgments.
-
-When snapshot rows are available, ranking reads prefer `silver.metric_snapshots`. Existing ranking relations remain a compatibility fallback until snapshots are populated for every environment.
-
-Homepage counters also read snapshot values rather than hard-coded corpus totals.
 
 ## Current terminology
 

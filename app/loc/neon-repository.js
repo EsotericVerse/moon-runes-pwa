@@ -13,10 +13,8 @@ const TableSchema=z.enum([
   'silver.lrunes_daily_draws',
   'silver.loc_timeline_entries','silver.loc_style_tag_keywords',
   'silver.lo3rwang_period_context_entries','silver.lrunes_runes','silver.lrunes_harmony','silver.lrunes_algorithm',
-  'silver.metric_snapshots',
   'silver.faq_entries','silver.lo3rwang_galaxy_media',
-  'silver.system_table_catalog','silver.system_data_principles',
-  'silver.loc_scope_registry','silver.loc_shortcut_routes','silver.loc_home_shortcuts',
+  'silver.loc_scope_registry',
 ]);
 const WritableTableSchema=z.enum([
   'api.user_records','api.user_settings','api.scope_access_grants','api.scope_relations',
@@ -82,7 +80,7 @@ function throwQueryError(error,table,operation){
 }
 
 export async function selectNeonRows(table,{
-  columns='*',filters=[],orders=[],limit=1000,range=null,count=null
+  columns='*',filters=[],orders=[],limit=1000,offset=0,range=null,count=null
 }={}){
   let query=relation(table).select(columns,count?{count}:undefined);
   query=applyFilters(query,filters);
@@ -91,7 +89,11 @@ export async function selectNeonRows(table,{
     query=query.order(item.column,{ascending:item.ascending??true,nullsFirst:item.nullsFirst});
   }
   if(Array.isArray(range)&&range.length===2)query=query.range(range[0],range[1]);
-  else if(Number.isFinite(limit))query=query.limit(Math.max(0,Math.min(5000,Math.floor(limit))));
+  else if(Number.isFinite(limit)){
+    const size=Math.max(0,Math.min(5000,Math.floor(limit)));
+    const start=Math.max(0,Math.floor(Number(offset)||0));
+    query=size?query.range(start,start+size-1):query.limit(0);
+  }
   const result=await query;
   throwQueryError(result.error,table,'SELECT');
   return {rows:parseRows(result.data,table),count:result.count??null};
