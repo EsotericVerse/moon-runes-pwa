@@ -69,7 +69,7 @@ export default function CultureV2(){
   },[scopeId,rows]);
   const currentAuthorPeriod=scopeId==='loc'?currentRows.find(item=>item.scope_id==='lo3rwang')||null:null;
   const authorPeriods=rows.filter(item=>item.scope_id==='lo3rwang');
-  const activePeriod=scopeId==='loc'?authorPeriods.find(item=>periodKey(item)===selectedPeriod)||currentAuthorPeriod:selected;
+  const activePeriod=scopeId==='loc'?currentAuthorPeriod:selected;
   const periodWorksQuery=useInfiniteQuery({
     queryKey:['culture-period-works',scopeId,activePeriod?.period,activePeriod?.start_date,activePeriod?.end_date],
     queryFn:({pageParam=0})=>selectAuthorPeriodWorks({startDate:activePeriod?.start_date,endDate:activePeriod?.end_date,limit:100,pageOffset:pageParam}),
@@ -150,7 +150,7 @@ export default function CultureV2(){
           <label className='scope-v2-culture-period-select'>
             <span>時期</span>
             <select className='scope-v2-select' value={periodKey(activePeriod)||''} onChange={event=>setSelectedPeriod(event.target.value)}>
-              {authorPeriods.map((item,index)=><option key={periodKey(item)||index} value={periodKey(item)}>{labelOf(item,index)}</option>)}
+              {(scopeId==='loc'?[currentAuthorPeriod].filter(Boolean):authorPeriods).map((item,index)=><option key={periodKey(item)||index} value={periodKey(item)}>{labelOf(item,index)}</option>)}
             </select>
           </label>
           {periodWorksQuery.isPending?<p className='scope-v2-status'>載入時期文字作品…</p>:null}
