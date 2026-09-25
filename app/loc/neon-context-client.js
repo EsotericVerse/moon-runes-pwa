@@ -35,52 +35,68 @@ function temporalNodeDescription(row){
   return '';
 }
 
-function normalizeAuthorGraph(rows){
+function normalizeAuthorGraph(rows,styleRows=[]){
   const entries=Array.isArray(rows)?rows:[];
-  const anchors=new Map(entries
-    .filter(row=>authorRowType(row)==='anchor'&&row?.anchor_id)
+  const anchors=new Map(entries.filter(row=>authorRowType(row)==='anchor'&&row?.anchor_id)
     .map(row=>[String(row.anchor_id),row]));
   const nodeRows=new Map();
   const edges=[];
-
   for(const row of entries){
     if(!['period','event','style'].includes(authorRowType(row)))continue;
     const sourceId=authorRowId(row);
     if(!sourceId)continue;
-    const relations=[
-      ['start_anchor_id','開始於','starts-at'],
-      ['end_anchor_id','結束於','ends-at']
-    ];
-    for(const [field,label,suffix] of relations){
+    for(const [field,label,suffix] of [['start_anchor_id','開始於','starts-at'],['end_anchor_id','結束於','ends-at']]){
       const anchor=anchors.get(String(row?.[field]||''));
-      if(!anchor)continue;
-      const targetId=authorRowId(anchor);
+      const targetId=anchor?authorRowId(anchor):'';
       if(!targetId)continue;
-      nodeRows.set(sourceId,row);
-      nodeRows.set(targetId,anchor);
-      edges.push({
-        edge_id:sourceId+':'+suffix,
-        source_node_id:sourceId,
-        target_node_id:targetId,
-        relation_type:'temporal_anchor',
-        relation_label:label,
-        description:String(row.title||sourceId)+' '+label+' '+String(anchor.title||targetId)
-      });
+      nodeRows.set(sourceId,row);nodeRows.set(targetId,anchor);
+      edges.push({edge_id:sourceId+':'+suffix,source_node_id:sourceId,target_node_id:targetId,
+        relation_type:'temporal_anchor',relation_label:label,
+        description:String(row.title||sourceId)+' '+label+' '+String(anchor.title||targetId)});
     }
   }
-
-  const nodes=[...nodeRows.entries()].map(([id,row])=>({
-    node_id:id,
-    label:String(row.title||row.entry_name||id),
-    node_type:authorRowType(row)||'context',
-    scope_id:'lo3rwang',
-    description:temporalNodeDescription(row)
+  const styles=Array.isArray(styleRows)?styleRows:[];
+  const styleNos=[...new Set(styles.map(row=>Number(row.style_no)).filter(n=>n>0))].sort((a,b)=>a-b);
+  if(styleNos.length){
+    const rootId='lo3rwang:custom-runes';
+    const customNodes=[{node_id:rootId,label:'個人自訂符文',node_type:'style_root',scope_id:'lo3rwang',
+      description:'作者自行定義的代表名稱、基本原則與關鍵詞。'}];
+    for(const styleNo of styleNos){
+      const parent=styles.find(row=>Number(row.style_no)===styleNo&&row.node_type==='style');
+      if(!parent)continue;
+      const styleId='lo3rwang:style:'+styleNo;
+      const name=String(parent.representative_name||'').trim()||('第 '+styleNo+' 種風格');
+      customNodes.push({node_id:styleId,label:name,node_type:'style',scope_id:'lo3rwang',
+        description:String(parent.basic_principle||'').trim()||('風格編號 '+styleNo)});
+      edges.push({edge_id:styleId+':root',source_node_id:rootId,target_node_id:styleId,
+        relation_type:'custom_rune',relation_label:'代表風格',description:name});
+      for(const [group,label] of [['macro','大風格關鍵詞'],['style','風格關鍵詞']]){
+        const groupId=styleId+':'+group;
+        customNodes.push({node_id:groupId,label,node_type:'keyword_group',scope_id:'lo3rwang',
+          description:label+'，由作者自行維護。'});
+        edges.push({edge_id:groupId+':parent',source_node_id:styleId,target_node_id:groupId,
+          relation_type:'keyword_group',relation_label:'展開',description:label});
+        for(const word of styles.filter(row=>Number(row.style_no)===styleNo&&row.node_type==='keyword'&&row.keyword_group===group)){
+          const keyword=String(word.keyword||'').trim();if(!keyword)continue;
+          const keywordId=groupId+':'+encodeURIComponent(keyword);
+          customNodes.push({node_id:keywordId,label:keyword,node_type:'keyword',scope_id:'lo3rwang',
+            description:label+'｜'+name});
+          edges.push({edge_id:keywordId+':parent',source_node_id:groupId,target_node_id:keywordId,
+            relation_type:'keyword',relation_label:'意涵',description:keyword});
+        }
+      }
+    }
+    for(const node of customNodes)nodeRows.set(node.node_id,{__normalized:node});
+  }
+  const nodes=[...nodeRows.entries()].map(([id,row])=>row.__normalized||({
+    node_id:id,label:String(row.title||row.entry_name||id),node_type:authorRowType(row)||'context',
+    scope_id:'lo3rwang',description:temporalNodeDescription(row)
   }));
   return {nodes,edges};
 }
 
-function normalizeGraph(rows,scopeId){
-  if(scopeId==='lo3rwang')return normalizeAuthorGraph(rows);
+function normalizeGraph(rows,scopeId,styleRows=[]){
+  if(scopeId==='lo3rwang')return normalizeAuthorGraph(rows,styleRows);
   const nodes=[];const edges=[];
   for(const row of rows||[]){
     const kind=row.kind||row.context_type;
@@ -122,8 +138,17 @@ async function readScopeRows(scopeId){
 }
 
 export async function selectScopeContextData(scopeId){
-  const rows=await readScopeRows(String(scopeId||''));
-  const graph=normalizeGraph(rows,String(scopeId||''));
+  const id=String(scopeId||'');
+  const rows=await readScopeRows(id);
+  let styleRows=[];
+  if(id==='lo3rwang'){
+    const result=await selectNeonRows('silver.lo3rwang_style',{
+      columns:'style_no,node_type,representative_name,basic_principle,keyword_group,keyword,order_no',
+      orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}],limit:5000
+    });
+    styleRows=result.rows;
+  }
+  const graph=normalizeGraph(rows,id,styleRows);
   return ScopeContextResponseSchema.parse({rows,...graph,trends:[]});
 }
 

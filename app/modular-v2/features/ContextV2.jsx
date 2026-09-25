@@ -10,6 +10,7 @@ import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContextGraphV2 from '../modules/context-graph/ContextGraphV2';
 import ContextWorkbenchV2 from './ContextWorkbenchV2';
+import ContextStyleManager from './ContextStyleManager';
 import FeaturePageV2 from '../FeaturePageV2';
 
 export default function ContextV2(){
@@ -33,6 +34,7 @@ export default function ContextV2(){
       {scopeId==='loc'?<ContextWorkbenchV2 scopeId={scopeId} rows={query.data?.rows||[]} focusIdentity={navigation.identity}/>:null}
       {scopeId!=='loc'&&!query.isPending&&!hasGraph?<ContextWorkbenchV2 scopeId={scopeId} rows={query.data?.rows||[]} focusIdentity={navigation.identity}/>:null}
       {scopeId!=='loc'&&hasGraph?<ContextGraphV2 nodes={graph.nodes} edges={graph.edges} focusIdentity={navigation.identity}/>:null}
+      {scopeId==='lo3rwang'?<ContextStyleManager scopeId={scopeId}/>:null}
     </section>
 
   </FeaturePageV2>;

@@ -140,18 +140,27 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId=''}
     queryKey:['culture-edit-data',dataScope],
     enabled:allowedScopes.includes(dataScope),
     queryFn:async()=>{
-      const [{rows},{rows:keywords}]=await Promise.all([
+      const [{rows},keywordResult]=await Promise.all([
         selectNeonRows('api.loc_timeline_entries',{
           columns:'scope_id,entry_key,entry_type,title,summary,start_date,end_date,period,entry_name,order_no,status,anchor_id,start_anchor_id,end_anchor_id,before_id,after_id,date_status,visibility,event_id,note',
           filters:[{column:'scope_id',operator:'eq',value:dataScope},{column:'entry_type',operator:'in',value:['anchor','event','period','style']}],
           orders:[{column:'start_date',ascending:true},{column:'order_no',ascending:true}],limit:1000
         }),
-        selectNeonRows('silver.loc_style_tag_keywords',{
-          columns:'scope_id,style_tag,keyword,order_no',
-          filters:[{column:'scope_id',operator:'eq',value:dataScope}],
-          orders:[{column:'order_no',ascending:true},{column:'keyword',ascending:true}],limit:2000
-        })
+        dataScope==='lo3rwang'
+          ?selectNeonRows('silver.lo3rwang_style',{
+            columns:'style_no,node_type,representative_name,keyword_group,keyword,order_no',
+            orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}],limit:2000
+          })
+          :selectNeonRows('silver.loc_style_tag_keywords',{
+            columns:'scope_id,style_tag,keyword,order_no',
+            filters:[{column:'scope_id',operator:'eq',value:dataScope}],
+            orders:[{column:'order_no',ascending:true},{column:'keyword',ascending:true}],limit:2000
+          })
       ]);
+      const keywords=dataScope==='lo3rwang'
+        ?keywordResult.rows.filter(row=>row.node_type==='style'&&String(row.representative_name||'').trim())
+          .map(row=>({style_tag:row.representative_name,keyword:'',order_no:row.order_no}))
+        :keywordResult.rows;
       return {rows,keywords};
     },
     staleTime:20_000
@@ -319,7 +328,7 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId=''}
       {message?<p className="scope-v2-status" role="status">{message}</p>:null}
       <div className="scope-v2-tabs"><button type="submit" disabled={busy}>{busy?'儲存中…':'儲存'}</button>{selectedKey&&draft.entry_type==='anchor'?<button type="button" disabled={busy} onClick={removeAnchor}>刪除定錨點</button>:null}</div>
     </form>
-    <details>
+    {dataScope!=='lo3rwang'?    <details>
       <summary>風格關鍵字</summary>
       <form onSubmit={saveStyleWords}>
         <label><span>風格標籤</span><input className="scope-v2-search-input" value={styleName} onChange={event=>setStyleName(event.target.value)} list={`style-tags-${dataScope}`}/></label>
@@ -327,6 +336,6 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId=''}
         <label><span>關鍵字（每行一個）</span><textarea className="scope-v2-search-input" rows={6} value={styleWords} onChange={event=>setStyleWords(event.target.value)}/></label>
         <div className="scope-v2-tabs"><button type="submit" disabled={busy}>{busy?'儲存中…':'儲存風格關鍵字'}</button></div>
       </form>
-    </details>
+    </details:null}>
   </section>;
 }
