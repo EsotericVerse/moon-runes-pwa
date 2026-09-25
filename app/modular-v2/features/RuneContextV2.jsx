@@ -76,7 +76,7 @@ export default function RuneContextV2({runes=[]}){
         <button type="button" className="loc-button" onClick={()=>setGroupId(null)}>← 九大群組</button>
         <span>{activeGroup.name} · {activeGroup.english}</span>
       </nav>
-      <p className="scope-v2-culture-period-description">{activeGroup.description}</p>
+      <p className="scope-v2-culture-period-description">{activeGroup.description} 此群組用於關鍵詞分類判定，群組內符文的現有關鍵詞提供分類依據。</p>
       <div className="loc-rune-context-grid" aria-label={activeGroup.name+'群組符文'}>
         {groupRunes.map(rune=><button type="button" className="loc-rune-context-tile" key={rune.rune_number} onClick={()=>setRuneNumber(Number(rune.rune_number))}>
           <span>符文 {String(rune.rune_number).padStart(2,'0')}</span>
@@ -89,7 +89,7 @@ export default function RuneContextV2({runes=[]}){
   }
 
   return <div className="loc-rune-context">
-    <p className="scope-v2-culture-period-description">先選擇符文群組，再查看群組內的符文。</p>
+    <p className="scope-v2-culture-period-description">以現有符文關鍵詞與所屬群組進行簡單分類判定，作為語意引擎的基礎。點入符文可查看其關鍵詞與大原則。</p>
     <div className="loc-rune-context-grid loc-rune-context-groups">
       {GROUPS.map(group=>{
         const count=runes.filter(rune=>String(rune.group_name||'').trim()===group.name).length;
