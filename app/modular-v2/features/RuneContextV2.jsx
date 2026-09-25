@@ -19,7 +19,7 @@ export default function RuneContextV2({runes=[]}){
   const [positive,setPositive]=useState('');
   const [negative,setNegative]=useState('');
   const queryClient=useQueryClient();
-  const selected=useMemo(()=>runes.find(item=>Number(item.rune_number)===Number(runeNumber))||null,[runes,runeNumber]);
+  const selected=useMemo(()=>runeNumber===null?null:(runes.find(item=>Number(item.rune_number)===Number(runeNumber))||null),[runes,runeNumber]);
   const activeGroup=GROUPS.find(group=>group.id===groupId)||null;
   const groupRunes=useMemo(()=>activeGroup?runes.filter(rune=>String(rune.group_name||'').trim()===activeGroup.name):[],[runes,activeGroup]);
   const save=useMutation({
