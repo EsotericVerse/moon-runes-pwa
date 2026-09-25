@@ -44,7 +44,7 @@ export default function RuneContextV2({runes=[],readOnly=false}){
   const [positive,setPositive]=useState('');
   const [negative,setNegative]=useState('');
   const [keywordRules,setKeywordRules]=useState('');
-  const [ruleError,setRuleError]=useState('');
+  const [editorError,setEditorError]=useState('');
   const queryClient=useQueryClient();
   const selected=useMemo(()=>runeNumber===null?null:(runes.find(item=>Number(item.rune_number)===Number(runeNumber))||null),[runes,runeNumber]);
   const selectedKeywordFields=useMemo(()=>readRuneKeywordFields(selected),[selected?.positive_keywords,selected?.negative_keywords]);
@@ -73,7 +73,7 @@ export default function RuneContextV2({runes=[],readOnly=false}){
     setPositive(fields.positive);
     setNegative(fields.negative);
     setKeywordRules(fields.rules);
-    setRuleError('');
+    setEditorError('');
     setEditing(false);
     save.reset();
   },[selected?.rune_number]);
@@ -90,27 +90,30 @@ export default function RuneContextV2({runes=[],readOnly=false}){
         <section aria-labelledby="rune-keywords-title">
           <div className="loc-rune-context-section-heading">
             <h4 id="rune-keywords-title">Current 關鍵詞</h4>
-            {!editing&&!readOnly?<button type="button" className="loc-button" onClick={()=>{setPositive(selectedKeywordFields.positive);setNegative(selectedKeywordFields.negative);setKeywordRules(selectedKeywordFields.rules);setRuleError('');save.reset();setEditing(true);}}>編輯關鍵詞與規則</button>:null}
+            {!editing&&!readOnly?<button type="button" className="loc-button" onClick={()=>{setPositive(selectedKeywordFields.positive);setNegative(selectedKeywordFields.negative);setKeywordRules(selectedKeywordFields.rules);setEditorError('');save.reset();setEditing(true);}}>編輯關鍵詞與規則</button>:null}
           </div>
           {editing?<div className="loc-rune-keyword-editor">
-            <label>正向關鍵詞<textarea rows="3" value={positive} onChange={event=>setPositive(event.target.value)} placeholder="以頓號或換行分隔"/></label>
-            <label>反向關鍵詞<textarea rows="3" value={negative} onChange={event=>setNegative(event.target.value)} placeholder="以頓號或換行分隔"/></label>
-            <label>規則（每個符文的關鍵詞最底層）<textarea rows="3" value={keywordRules} onChange={event=>{setKeywordRules(event.target.value);setRuleError('');}} placeholder="AND日\nNOR月" aria-describedby="rune-keyword-rules-help"/></label>
+            <label>正向關鍵詞<textarea rows="3" value={positive} onChange={event=>{setPositive(event.target.value);setEditorError('');}} placeholder="以頓號或換行分隔"/></label>
+            <label>反向關鍵詞<textarea rows="3" value={negative} onChange={event=>{setNegative(event.target.value);setEditorError('');}} placeholder="以頓號或換行分隔"/></label>
+            <label>規則（每個符文的關鍵詞最底層）<textarea rows="3" value={keywordRules} onChange={event=>{setKeywordRules(event.target.value);setEditorError('');}} placeholder="AND日\nNOR月" aria-describedby="rune-keyword-rules-help"/></label>
             <p id="rune-keyword-rules-help" className="scope-v2-meta">只接受 AND關鍵詞、NOR關鍵詞；AND 項目都要命中，NOR 項目命中任一個就排除。</p>
             <div className="loc-rune-keyword-actions">
               <button type="button" className="loc-button" disabled={save.isPending} onClick={()=>{
                 const parsed=parseRuneKeywordRules(keywordRules);
-                if(parsed.invalid.length){setRuleError(`規則格式錯誤：${parsed.invalid.join('、')}。請使用 AND關鍵詞 或 NOR關鍵詞。`);return;}
+                if(parsed.invalid.length){setEditorError(`規則格式錯誤：${parsed.invalid.join('、')}。請使用 AND關鍵詞 或 NOR關鍵詞。`);return;}
                 const rules=parsed.rules;
+                const positiveKeywords=keywordFieldWithRules(positive,rules,'AND');
+                const negativeKeywords=keywordFieldWithRules(negative,rules,'NOR');
+                if(positiveKeywords.length>3000||negativeKeywords.length>3000){setEditorError('單一欄位最多 3000 字，請減少關鍵詞或規則。');return;}
                 save.mutate({
                   runeNumber:selected.rune_number,
-                  positiveKeywords:keywordFieldWithRules(positive,rules,'AND'),
-                  negativeKeywords:keywordFieldWithRules(negative,rules,'NOR')
+                  positiveKeywords,
+                  negativeKeywords
                 });
               }}>{save.isPending?'儲存中…':'儲存關鍵詞與規則'}</button>
-              <button type="button" className="loc-button" disabled={save.isPending} onClick={()=>{setEditing(false);setPositive(selectedKeywordFields.positive);setNegative(selectedKeywordFields.negative);setKeywordRules(selectedKeywordFields.rules);setRuleError('');save.reset();}}>取消</button>
+              <button type="button" className="loc-button" disabled={save.isPending} onClick={()=>{setEditing(false);setPositive(selectedKeywordFields.positive);setNegative(selectedKeywordFields.negative);setKeywordRules(selectedKeywordFields.rules);setEditorError('');save.reset();}}>取消</button>
             </div>
-            {ruleError?<p className="scope-v2-status scope-v2-error" role="alert">{ruleError}</p>:null}
+            {editorError?<p className="scope-v2-status scope-v2-error" role="alert">{editorError}</p>:null}
             {save.isError?<p className="scope-v2-status scope-v2-error" role="alert">{save.error?.message||'關鍵詞儲存失敗'}</p>:null}
           </div>:<div className="loc-rune-keyword-groups">
             <div><strong>正向</strong><div className="scope-v2-chip-list">{keywordList(selectedKeywordFields.positive).map((word,index)=><span key={index}>{word}</span>)}</div></div>
