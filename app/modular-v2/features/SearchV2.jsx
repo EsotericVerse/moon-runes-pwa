@@ -23,7 +23,7 @@ function toResult(row,source,q,collectionId,scopeId){
   const text=rowText(row);
   if(!norm(text).includes(norm(q)))return null;
   const title=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.work_id||row.song_id||row.id||source;
-  const body=row.summary||row.content||row.keywords||row.description||row.interpretation||row.ai_summary||row.retrieval_text||row.text||text;
+  const body=row.summary||row.content||row.meta_tags||row.description||row.interpretation||row.ai_summary||row.retrieval_text||row.text||text;
   const navigation=buildSearchNavigation(collectionId,source,row,q,scopeId);
   if(row.scope_id)navigation.targetScope=row.scope_id;
   return {key:`${source}-${title}-${String(body).slice(0,40)}`,source,title:String(title),date:row.date||row.created_date||row.created_at||row.updated_at||'',snippet:snippet(body,q),href:row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'context'):''),destinations:featureNavigationLinks(navigation)};
