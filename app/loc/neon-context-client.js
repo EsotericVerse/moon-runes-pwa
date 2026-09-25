@@ -155,3 +155,33 @@ export async function selectScopeContextData(scopeId){
 export async function selectScopeContextRows(scopeId){
   return (await selectScopeContextData(scopeId)).rows;
 }
+
+
+export async function selectRuneContextCatalog(){
+  const [runeResult,styleResult]=await Promise.all([
+    selectNeonRows('silver.lrunes_runes',{
+      columns:'rune_number,rune_name,group_name,english_name,rune_description',
+      filters:[{column:'rune_number',operator:'gte',value:0},{column:'rune_number',operator:'lte',value:66}],
+      orders:[{column:'rune_number',ascending:true}],limit:67
+    }),
+    selectNeonRows('silver.lrunes_style',{
+      columns:'rune_number,positive_keywords,negative_keywords',
+      filters:[{column:'rune_number',operator:'gte',value:0},{column:'rune_number',operator:'lte',value:66}],
+      orders:[{column:'rune_number',ascending:true}],limit:67
+    })
+  ]);
+  const keywords=new Map(styleResult.rows.map(row=>[Number(row.rune_number),row]));
+  return {runes:runeResult.rows.map(row=>({
+    ...row,...(keywords.get(Number(row.rune_number))||{})
+  }))};
+}
+
+export async function updateRuneKeywords({runeNumber,positiveKeywords,negativeKeywords}){
+  const number=Number(runeNumber);
+  if(!Number.isInteger(number)||number<0||number>66)throw new TypeError('符文編號無效');
+  return callNeonRpc('update_lrune_keywords',{
+    p_rune_number:number,
+    p_positive_keywords:String(positiveKeywords||'').trim(),
+    p_negative_keywords:String(negativeKeywords||'').trim()
+  });
+}

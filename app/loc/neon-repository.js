@@ -14,7 +14,7 @@ const TableSchema=z.enum([
   'silver.loc_timeline_entries','silver.loc_style_tag_keywords','silver.lo3rwang_style',
   'silver.lo3rwang_period_context_entries','silver.lrunes_runes','silver.lrunes_harmony','silver.lrunes_algorithm',
   'silver.faq_entries','silver.lo3rwang_galaxy_media',
-  'silver.loc_scope_registry',
+  'silver.loc_scope_registry','silver.lrunes_style',
 ]);
 const WritableTableSchema=z.enum([
   'api.user_records','api.user_settings','api.scope_access_grants','api.scope_relations',
@@ -133,7 +133,7 @@ export async function deleteNeonRows(table,{filters,returning='*'}={}){
   return parseRows(result.data,table);
 }
 
-const RpcSchema=z.enum(['decide_scope_relation_request','loc_culture_weekly_source_counts']);
+const RpcSchema=z.enum(['decide_scope_relation_request','loc_culture_weekly_source_counts','update_lrune_keywords']);
 export async function callNeonRpc(name,args){
   const rpc=RpcSchema.parse(name);
   const result=await neonClient.rpc(rpc,z.record(z.string(),z.unknown()).parse(args||{}));

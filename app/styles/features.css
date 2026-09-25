@@ -30,3 +30,27 @@
 .loc-stage-line{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.55rem}.loc-stage-line>div{display:grid;gap:.18rem;padding:.7rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-surface-soft)}.loc-stage-line strong{font-size:1.3rem;color:var(--loc-gold)}.loc-stage-line span,.loc-stage-line small{color:var(--loc-muted)}.loc-stage-line.vertical{grid-template-columns:1fr}
 .loc-hidden-input{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important}
 .loc-style-group.fallback{border-style:dashed}.loc-draw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:.65rem}
+
+
+/* LunaRunes context catalog: group to rune to principle and editable keywords. */
+.loc-rune-context{display:grid;gap:1rem}
+.loc-rune-context-crumbs{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.loc-rune-context-crumbs>span{color:var(--loc-muted)}
+.loc-rune-context-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:.75rem}
+.loc-rune-context-tile{display:grid;gap:.35rem;min-height:112px;padding:1rem;text-align:left;border:1px solid var(--loc-line);border-radius:var(--loc-radius);background:var(--loc-panel-2);color:var(--loc-text);cursor:pointer}
+.loc-rune-context-tile:hover{border-color:var(--loc-accent-border);transform:translateY(-1px)}
+.loc-rune-context-tile>span,.loc-rune-context-tile>small{color:var(--loc-muted);font-size:.82rem}
+.loc-rune-context-tile>strong{font-size:1.12rem}
+.loc-rune-context-tile>p{margin:.15rem 0 0;color:var(--loc-muted);font-size:.88rem}
+.loc-rune-context-detail{display:grid;gap:.8rem}
+.loc-rune-context-detail h3,.loc-rune-context-detail h4{margin:.1rem 0}
+.loc-rune-context-detail>section{display:grid;gap:.5rem}
+.loc-rune-context-section-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.loc-rune-keyword-groups{display:grid;gap:.8rem}
+.loc-rune-keyword-groups>div{display:grid;gap:.2rem}
+.loc-rune-keyword-editor{display:grid;gap:.75rem}
+.loc-rune-keyword-editor label{display:grid;gap:.35rem;color:var(--loc-muted)}
+.loc-rune-keyword-editor textarea{width:100%;padding:.7rem .8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel);color:var(--loc-text);font:inherit;resize:vertical}
+.loc-rune-keyword-actions{display:flex;gap:.55rem;flex-wrap:wrap}
+.loc-rune-principle{padding:.9rem;border-left:3px solid var(--loc-accent);background:var(--loc-surface-soft)}
+.loc-rune-principle p:last-child{margin-bottom:0}
