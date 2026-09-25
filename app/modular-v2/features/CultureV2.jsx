@@ -92,8 +92,14 @@ export default function CultureV2(){
   const currentByScope=useMemo(()=>new Map(currentRows.map(item=>[String(item.scope_id||''),item])),[currentRows]);
   const currentAuthorPeriod=currentByScope.get('lo3rwang')||null;
 
-  const selectedWorkPeriod=activeWorkPeriod||currentAuthorPeriod;
   const allAuthorPeriods=useMemo(()=>[...(query.data?.authorEras?.eras||[])].filter(item=>item?.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))),[query.data]);
+  const allPeriodsRange=allAuthorPeriods.length?{
+    period:'全部時期',title:'全部時期',display_label:'全部時期',
+    start_date:allAuthorPeriods[0].start_date,
+    end_date:allAuthorPeriods[allAuthorPeriods.length-1].end_date||null,
+    scope_id:'lo3rwang'
+  }:null;
+  const selectedWorkPeriod=activeWorkPeriod||currentAuthorPeriod||allPeriodsRange;
   const visibleAuthorPeriods=currentAuthorPeriod
     ?[allAuthorPeriods.find(item=>item.start_date===currentAuthorPeriod.start_date)||currentAuthorPeriod]
     :allAuthorPeriods;
@@ -159,9 +165,20 @@ export default function CultureV2(){
           ?<CultureVolumeGraph3D
             periods={periodVolumesQuery.data||[]}
             timelineItems={timelineItems}
+            categories={workSourcesQuery.data||[]}
+            selectedCategory={selectedWorkSource}
+            categoryLoading={workSourcesQuery.isFetching}
+            categoryError={workSourcesQuery.error?featureDataErrorMessage(workSourcesQuery.error):''}
+            works={periodWorksQuery.data?.rows||[]}
+            workPage={workPage}
+            workPageCount={workPageCount}
+            workLoading={periodWorksQuery.isFetching}
+            workError={periodWorksQuery.error?featureDataErrorMessage(periodWorksQuery.error):''}
             loading={periodVolumesQuery.isFetching}
             error={periodVolumesQuery.error?featureDataErrorMessage(periodVolumesQuery.error):''}
             canEdit={canEditRiver}
+            onSelectCategory={source=>{setSelectedWorkSource(source);setWorkPage(0);}}
+            onPageChange={setWorkPage}
             onSelectWorkPoint={point=>{
               if(point?.period){setActiveWorkPeriod(point.period);setSelectedWorkSource(point.source_platform||'');setWorkPage(0);}
             }}
@@ -177,9 +194,9 @@ export default function CultureV2(){
           />}
         <CultureTimelineEditor scopeId={scopeId} selectedEntryId={selectedEntryId} riverCommand={riverCommand} onCapabilityChange={setCanEditRiver}/>
 
-        {currentAuthorPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
+        {currentAuthorPeriod&&cultureView!=='volume3d'?<section className='scope-v2-card scope-v2-culture-current-works'>
           <p className='loc-eyebrow'>Current</p>
-          <h3>{labelOf(selectedWorkPeriod,0)}｜{(selectedWorkPeriod?.start_date===currentAuthorPeriod?.start_date&&selectedWorkPeriod?.period===currentAuthorPeriod?.period)?'Current 時期作品':'所選時期作品'}</h3>
+          <h3>{labelOf(selectedWorkPeriod,0)}｜{currentAuthorPeriod?(selectedWorkPeriod?.start_date===currentAuthorPeriod?.start_date&&selectedWorkPeriod?.period===currentAuthorPeriod?.period?'Current 時期作品':'所選時期作品'):'全部時期作品'}</h3>
           <p>先依來源查看作品數量；選擇來源後再載入該來源作品，每頁 {CULTURE_WORK_PAGE_SIZE} 篇。</p>
           {workSourcesQuery.isPending?<p className='scope-v2-status'>載入來源統計…</p>:null}
           {workSourcesQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(workSourcesQuery.error)}</p>:null}
