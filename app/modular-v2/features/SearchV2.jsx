@@ -23,7 +23,7 @@ function toResult(row,source,q,collectionId,scopeId){
   const text=rowText(row);
   if(!norm(text).includes(norm(q)))return null;
   const title=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.work_id||row.song_id||row.id||source;
-  const body=row.summary||row.content||row.description||row.interpretation||row.ai_summary||row.retrieval_text||row.text||text;
+  const body=row.summary||row.content||row.keywords||row.description||row.interpretation||row.ai_summary||row.retrieval_text||row.text||text;
   const navigation=buildSearchNavigation(collectionId,source,row,q,scopeId);
   if(row.scope_id)navigation.targetScope=row.scope_id;
   return {key:`${source}-${title}-${String(body).slice(0,40)}`,source,title:String(title),date:row.date||row.created_date||row.created_at||row.updated_at||'',snippet:snippet(body,q),href:row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'context'):''),destinations:featureNavigationLinks(navigation)};
@@ -34,7 +34,7 @@ export default function SearchV2(){
   const searchParams=useSearchParams();
   const [query,setQuery]=useState('');
   const [results,setResults]=useState([]);
-  const [status,setStatus]=useState('輸入一個詞、一句話或一個情境，開始搜尋。');
+  const [status,setStatus]=useState('輸入關鍵字開始搜尋。');
   const [error,setError]=useState('');
   const [hasMore,setHasMore]=useState(false);
   const [loadingMore,setLoadingMore]=useState(false);
@@ -136,11 +136,11 @@ export default function SearchV2(){
   return <FeaturePageV2
     featureId="search"
     subtitle="跨文字、音樂、多媒體、符文、脈絡與知識搜尋。"
-    description={<p>輸入一個詞、一句話或一個情境，從文字、音樂、圖片、影音、符文與文件中找出相關內容。</p>}
+    description={<p>輸入關鍵字，從文字、音樂、圖片、影音、符文與文件中找出相關內容。</p>}
   >
     <form className="scope-v2-search-form" onSubmit={runSearch}>
       <label htmlFor="scope-search-query">你想找什麼？</label>
-      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder="輸入關鍵字、作品名稱、句子或概念" aria-label="你想找什麼？"/>
+      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder="輸入關鍵字、作品名稱或文字" aria-label="你想找什麼？"/>
       <button type="submit">搜尋</button>
     </form>
     <p className="scope-v2-status">{status}</p>
