@@ -14,7 +14,7 @@ const TableSchema=z.enum([
   'silver.loc_timeline_entries','silver.loc_style_tag_keywords',
   'silver.lo3rwang_period_context_entries','silver.lrunes_runes','silver.lrunes_harmony','silver.lrunes_algorithm',
   'silver.metric_snapshots',
-  'silver.faq_entries','silver.suno_songs',
+  'silver.faq_entries','silver.lo3rwang_galaxy_media',
   'silver.system_table_catalog','silver.system_data_principles',
   'silver.loc_scope_registry','silver.loc_shortcut_routes','silver.loc_home_shortcuts',
 ]);
