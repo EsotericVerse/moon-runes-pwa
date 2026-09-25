@@ -50,6 +50,7 @@
 .loc-rune-keyword-groups>div{display:grid;gap:.2rem}
 .loc-rune-keyword-editor{display:grid;gap:.75rem}
 .loc-rune-keyword-editor label{display:grid;gap:.35rem;color:var(--loc-muted)}
+.loc-rune-keyword-editor>p{margin:0}
 .loc-rune-keyword-editor textarea{width:100%;padding:.7rem .8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel);color:var(--loc-text);font:inherit;resize:vertical}
 .loc-rune-keyword-actions{display:flex;gap:.55rem;flex-wrap:wrap}
 .loc-rune-principle{padding:.9rem;border-left:3px solid var(--loc-accent);background:var(--loc-surface-soft)}

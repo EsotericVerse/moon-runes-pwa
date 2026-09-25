@@ -13,6 +13,7 @@
     "verify:parity": "node scripts/verify-known-parity.mjs",
     "verify:auth": "node scripts/verify-auth-boundary.mjs",
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
+    "verify:rune-keyword-rules": "node scripts/verify-rune-keyword-rules.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
     "verify": "npm run verify:modularity && npm run verify:directories",
     "build": "next build",
