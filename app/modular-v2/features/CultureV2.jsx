@@ -2,8 +2,8 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
-import {useInfiniteQuery,useQuery} from '@tanstack/react-query';
-import {selectAuthorPeriodWorks,selectScopeCultureData} from '../../loc/neon-culture-client';
+import {useQuery} from '@tanstack/react-query';
+import {selectAuthorPeriodWorkSources,selectAuthorPeriodWorks,selectScopeCultureData} from '../../loc/neon-culture-client';
 import {readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
@@ -12,7 +12,7 @@ import CultureTimelineEditor from './CultureTimelineEditor';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 
-const CULTURE_WORK_PAGE_SIZE=50;
+const CULTURE_WORK_PAGE_SIZE=20;
 
 function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);
@@ -75,6 +75,8 @@ export default function CultureV2(){
   const query=useQuery({queryKey:['culture-timeline',scopeId],queryFn:()=>selectScopeCultureData(scopeId),staleTime:5*60_000});
   const rows=useMemo(()=>rowsOf(query.data),[query.data]);
   const [selectedEntryId,setSelectedEntryId]=useState('');
+  const [selectedWorkSource,setSelectedWorkSource]=useState('');
+  const [workPage,setWorkPage]=useState(0);
 
   const currentRows=useMemo(()=>{
     const scopes=scopeId==='loc'?['lo3rwang','runes']:[scopeId].filter(Boolean);
@@ -85,35 +87,34 @@ export default function CultureV2(){
   const currentByScope=useMemo(()=>new Map(currentRows.map(item=>[String(item.scope_id||''),item])),[currentRows]);
   const currentAuthorPeriod=currentByScope.get('lo3rwang')||null;
 
-  const periodWorksQuery=useInfiniteQuery({
-    queryKey:['culture-current-period-works',scopeId,currentAuthorPeriod?.period,currentAuthorPeriod?.start_date,currentAuthorPeriod?.end_date],
-    queryFn:({pageParam=0})=>selectAuthorPeriodWorks({
+  const workSourcesQuery=useQuery({
+    queryKey:['culture-current-period-work-sources',scopeId,currentAuthorPeriod?.period,currentAuthorPeriod?.start_date,currentAuthorPeriod?.end_date],
+    queryFn:()=>selectAuthorPeriodWorkSources({
       startDate:currentAuthorPeriod?.start_date,
-      endDate:currentAuthorPeriod?.end_date,
-      limit:CULTURE_WORK_PAGE_SIZE,
-      pageOffset:pageParam
+      endDate:currentAuthorPeriod?.end_date
     }),
-    initialPageParam:0,
-    getNextPageParam:lastPage=>lastPage.hasMore?lastPage.nextOffset:undefined,
     enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&Boolean(currentAuthorPeriod?.start_date),
     staleTime:5*60_000
   });
-  const loadedWorks=useMemo(()=>periodWorksQuery.data?.pages.flatMap(page=>page.rows)||[],[periodWorksQuery.data]);
-  const currentWorks=useMemo(
-    ()=>scopeId==='loc'?uniqueInterleavedWorks(loadedWorks):loadedWorks,
-    [scopeId,loadedWorks]
-  );
+  const selectedSourceCount=workSourcesQuery.data?.find(item=>item.source_platform===selectedWorkSource)?.item_count||0;
+  const workPageCount=Math.max(1,Math.ceil(selectedSourceCount/CULTURE_WORK_PAGE_SIZE));
+  const periodWorksQuery=useQuery({
+    queryKey:['culture-current-period-works',scopeId,currentAuthorPeriod?.period,currentAuthorPeriod?.start_date,currentAuthorPeriod?.end_date,selectedWorkSource,workPage],
+    queryFn:()=>selectAuthorPeriodWorks({
+      startDate:currentAuthorPeriod?.start_date,
+      endDate:currentAuthorPeriod?.end_date,
+      sourcePlatform:selectedWorkSource,
+      limit:CULTURE_WORK_PAGE_SIZE,
+      pageOffset:workPage*CULTURE_WORK_PAGE_SIZE
+    }),
+    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&Boolean(currentAuthorPeriod?.start_date&&selectedWorkSource),
+    staleTime:5*60_000
+  });
 
   useEffect(()=>{
-    if(!currentAuthorPeriod||!periodWorksQuery.hasNextPage||periodWorksQuery.isFetchingNextPage)return;
-    const sentinel=document.querySelector('[data-culture-work-sentinel]');
-    if(!sentinel)return;
-    const observer=new IntersectionObserver(entries=>{
-      if(entries.some(entry=>entry.isIntersecting))periodWorksQuery.fetchNextPage();
-    },{rootMargin:'240px'});
-    observer.observe(sentinel);
-    return()=>observer.disconnect();
-  },[currentAuthorPeriod,periodWorksQuery.hasNextPage,periodWorksQuery.isFetchingNextPage,periodWorksQuery.fetchNextPage,currentWorks.length]);
+    setSelectedWorkSource('');
+    setWorkPage(0);
+  },[scopeId,currentAuthorPeriod?.period,currentAuthorPeriod?.start_date,currentAuthorPeriod?.end_date]);
 
   const timelineItems=useMemo(()=>{
     const items=(query.data?.timelineItems||[]).filter(item=>scopeId==='loc'||item.scope_id===scopeId);
@@ -140,17 +141,39 @@ export default function CultureV2(){
         {currentAuthorPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
           <p className='loc-eyebrow'>Current</p>
           <h3>{labelOf(currentAuthorPeriod,0)}｜Current 時期作品</h3>
-          <p>按時間排列，每次載入 {CULTURE_WORK_PAGE_SIZE} 篇；往下捲動再讀取下一批。</p>
-          {periodWorksQuery.isPending?<p className='scope-v2-status'>載入 Current 時期作品…</p>:null}
-          {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
-          {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!currentWorks.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-          {currentWorks.map((work,index)=><article className='scope-v2-inline-card' key={work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
-            <strong>{work.title||work.work_id||'文字紀錄'}</strong>
-            <span>{work.display_date||formatCultureDateTime(work.created_at)}</span>
-            {work.meta_tags?<span className='scope-v2-meta'>{work.meta_tags}</span>:null}
-            {work.url||work.source_ref?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
-          </article>)}
-          {periodWorksQuery.hasNextPage?<div className='scope-v2-load-sentinel' data-culture-work-sentinel>{periodWorksQuery.isFetchingNextPage?'讀取中…':''}</div>:null}
+          <p>先依來源查看作品數量；選擇來源後再載入該來源作品，每頁 {CULTURE_WORK_PAGE_SIZE} 篇。</p>
+          {workSourcesQuery.isPending?<p className='scope-v2-status'>載入來源統計…</p>:null}
+          {workSourcesQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(workSourcesQuery.error)}</p>:null}
+          {!workSourcesQuery.isPending&&!workSourcesQuery.error&&!workSourcesQuery.data?.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+          {workSourcesQuery.data?.length?<div className='scope-v2-culture-source-groups' aria-label='依來源分組的作品數量'>
+            {workSourcesQuery.data.map(group=><button type='button' key={group.source_platform}
+              className='scope-v2-culture-source-button'
+              aria-pressed={selectedWorkSource===group.source_platform}
+              onClick={()=>{setSelectedWorkSource(selectedWorkSource===group.source_platform?'':group.source_platform);setWorkPage(0);}}>
+              <strong>{group.source_platform}</strong><span>{group.item_count.toLocaleString()} 項</span>
+            </button>)}
+          </div>:null}
+          {selectedWorkSource?<section className='scope-v2-culture-source-detail' aria-label={selectedWorkSource+'作品'}>
+            <header><h4>{selectedWorkSource} · {selectedSourceCount.toLocaleString()} 項</h4>
+              <button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedWorkSource('')}>收合列表</button>
+            </header>
+            {periodWorksQuery.isPending?<p className='scope-v2-status'>載入作品第 {workPage+1} 頁…</p>:null}
+            {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
+            <div className='scope-v2-culture-source-work-scroll'>
+              {(periodWorksQuery.data?.rows||[]).map((work,index)=><article className='scope-v2-inline-card' key={work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
+                <div className='scope-v2-culture-work-heading'><strong>{work.title||work.work_id||'文字紀錄'}</strong><time>{work.display_date||formatCultureDateTime(work.created_at)}</time></div>
+                {work.description?<p>{work.description}</p>:null}
+                {work.meta_tags?<span className='scope-v2-meta'>{work.meta_tags}</span>:null}
+                {work.url||work.source_ref?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
+              </article>)}
+            </div>
+            {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!(periodWorksQuery.data?.rows||[]).length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+            <nav className='scope-v2-culture-source-pages' aria-label='作品分頁'>
+              <button type='button' className='scope-v2-pagination-button' disabled={workPage<=0||periodWorksQuery.isPending} onClick={()=>setWorkPage(page=>Math.max(0,page-1))}>上一頁</button>
+              <span>第 {workPage+1} / {workPageCount} 頁</span>
+              <button type='button' className='scope-v2-pagination-button' disabled={workPage+1>=workPageCount||periodWorksQuery.isPending} onClick={()=>setWorkPage(page=>Math.min(workPageCount-1,page+1))}>下一頁</button>
+            </nav>
+          </section>:null}
         </section>:null}
       </>:null}
     </section>

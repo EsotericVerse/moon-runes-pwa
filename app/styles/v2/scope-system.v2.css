@@ -147,3 +147,20 @@
 .scope-period-timeline .vis-time-axis .vis-grid.vis-minor{border-color:var(--loc-line-soft)}
 .scope-period-timeline .vis-time-axis .vis-grid.vis-major{border-color:var(--loc-line)}
 .scope-period-timeline .vis-item:not(.scope-period-timeline-focus){background:var(--loc-panel-2);border-color:var(--loc-accent-border)}
+
+
+/* Source groups and paginated work details stay in their own bounded panel. */
+.scope-v2-culture-source-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:.6rem;margin:.75rem 0}
+.scope-v2-culture-source-button{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.7rem .85rem;border:var(--scope-v2-border);border-radius:14px;background:var(--loc-panel-2);color:var(--scope-v2-text);text-align:left;cursor:pointer}
+.scope-v2-culture-source-button:hover,.scope-v2-culture-source-button[aria-pressed="true"]{border-color:var(--loc-accent-border);background:var(--loc-gold-surface)}
+.scope-v2-culture-source-button span{color:var(--scope-v2-muted);white-space:nowrap}
+.scope-v2-culture-source-detail{display:grid;gap:.65rem;min-height:16rem;margin-top:.8rem;padding:.8rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--loc-surface-soft)}
+.scope-v2-culture-source-detail>header,.scope-v2-culture-work-heading,.scope-v2-culture-source-pages{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+.scope-v2-culture-source-detail h4{margin:0}
+.scope-v2-pagination-button{padding:.45rem .8rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text);cursor:pointer}
+.scope-v2-pagination-button:disabled{opacity:.45;cursor:not-allowed}
+.scope-v2-culture-source-work-scroll{display:grid;gap:.55rem;max-height:420px;overflow:auto;overscroll-behavior:contain;padding-right:.25rem}
+.scope-v2-culture-source-work-scroll article{display:grid;gap:.35rem}
+.scope-v2-culture-work-heading time{color:var(--scope-v2-muted);font-size:.82rem}
+.scope-v2-culture-source-pages{justify-content:center;margin-top:auto;padding-top:.5rem;border-top:var(--scope-v2-border)}
+.scope-v2-culture-source-pages span{min-width:7rem;color:var(--scope-v2-muted);text-align:center}

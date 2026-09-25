@@ -1,7 +1,7 @@
 'use client';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
-import {selectNeonRows} from './neon-repository';
+import {callNeonRpc,selectNeonRows} from './neon-repository';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 
 const TIMELINE_COLUMNS='scope_id,entry_key,entry_type,title,summary,start_date,end_date,era_id,period,entry_name,order_no,status,anchor_id,start_anchor_id,end_anchor_id,before_id,after_id,date_status,entry_scope,visibility,event_id,year_value,rune_count,source_id,source,note';
@@ -133,10 +133,23 @@ export async function selectScopeCultureData(scopeId){
   });
 }
 
-export async function selectAuthorPeriodWorks({startDate,endDate,limit=100,pageOffset=0}={}){
+export async function selectAuthorPeriodWorkSources({startDate,endDate=null}={}){
+  if(!startDate)return [];
+  const result=await callNeonRpc('lo3rwang_period_work_source_counts',{
+    p_start_date:String(startDate).slice(0,10),
+    p_end_date:endDate?String(endDate).slice(0,10):null
+  });
+  return (Array.isArray(result)?result:[]).map(row=>({
+    source_platform:String(row.source_platform||'未標示來源'),
+    item_count:Number(row.item_count)||0
+  }));
+}
+
+export async function selectAuthorPeriodWorks({startDate,endDate,sourcePlatform,limit=100,pageOffset=0}={}){
   if(!startDate)return {rows:[],hasMore:false,nextOffset:null};
   const filters=[{column:'created_at',operator:'gte',value:`${String(startDate).slice(0,10)}T00:00:00+08:00`}];
   if(endDate)filters.push({column:'created_at',operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
+  if(sourcePlatform)filters.push({column:'source_platform',operator:'eq',value:String(sourcePlatform)});
   const pageSize=Math.max(1,Math.min(1000,Math.floor(Number(limit)||1000)));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const result=await selectNeonRows('api.lo3rwang_galaxy',{
