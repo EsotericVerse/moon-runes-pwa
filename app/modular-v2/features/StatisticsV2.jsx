@@ -9,9 +9,10 @@ import {
 } from 'recharts';
 import {selectScopeRankingPage} from '../../loc/neon-ranking-client';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
-import {readFeatureNavigation} from '../feature-navigation.v2';
+import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
+import KeywordSettingsV2 from './KeywordSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
@@ -23,6 +24,11 @@ const CHART_TYPES=Object.freeze([
   ['radar','雷達圖']
 ]);
 const RANKING_PAGE_SIZE=20;
+const STATISTICS_TABS=Object.freeze([
+  ['ranking','排行榜'],
+  ['keywords','關鍵詞設定'],
+  ['charts','統計圖']
+]);
 
 function RankingChart({type,rows}){
   if(type==='line')return <ResponsiveContainer width="100%" height={360}>
@@ -76,9 +82,10 @@ function RankingChart({type,rows}){
 }
 
 export default function StatisticsV2(){
-  const {scopeId}=useScopeRuntimeV2();
+  const {scopeId,scope}=useScopeRuntimeV2();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
+  const statTab=navigation.statTab||'ranking';
   const [rankingType,setRankingType]=useState(navigation.rankingType||'');
   const [chartType,setChartType]=useState('bar');
   useEffect(()=>setRankingType(navigation.rankingType||''),[navigation.rankingType]);
@@ -86,6 +93,7 @@ export default function StatisticsV2(){
   const page=useOffsetPagination({
     key:paginationKey,
     pageSize:RANKING_PAGE_SIZE,
+    enabled:statTab!=='keywords',
     loadPage:(offset,limit)=>selectScopeRankingPage(scopeId,{offset,limit,rankingType,navigation})
   });
   const {rows,loading,error,hasMore}=page;
@@ -103,52 +111,83 @@ export default function StatisticsV2(){
 
   return <FeaturePageV2 featureId="statics">
     <section className="loc-card scope-v2-feature-card">
-      <p className="loc-eyebrow">Charts</p>
-      <h2>統計圖表</h2>
-      <div className="scope-v2-stat-controls">
-        {types.length>1?<label>
-          <span>統計類型</span>
-          <select
-            className="scope-v2-select"
-            value={rankingType}
-            onChange={event=>setRankingType(event.target.value)}
-            aria-label="統計類型"
-          >
-            <option value="">全部</option>
-            {types.map(type=><option key={type} value={type}>{type}</option>)}
-          </select>
-        </label>:null}
-  
-        <label>
-          <span>圖形</span>
-          <select
-            className="scope-v2-select"
-            value={chartType}
-            onChange={event=>setChartType(event.target.value)}
-            aria-label="圖形類型"
-          >
-            {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
-          </select>
-        </label>
-      </div>
-  
-      {error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(error)}</p>:null}
-  
-      {!loading&&!error&&!chartRows.length?<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>:null}
-  
-      {chartRows.length?<div className="scope-v2-ranking-chart" aria-label={CHART_TYPES.find(([value])=>value===chartType)?.[1]||'統計圖'}>
-        <RankingChart type={chartType} rows={chartRows}/>
-      </div>:null}
-      {rows.length?<div className="scope-v2-ranking" aria-label="排行榜">
-        {rows.map((row,index)=><div key={row.ranking_key||`${row.term}-${index}`}>
-          <strong>{index+1}. {row.term}</strong>
-          <span>{Number(row.item_count||0).toLocaleString()}</span>
-        </div>)}
-      </div>:null}
-      {hasMore?<div className="scope-v2-load-sentinel" aria-live="polite">
-        &lt; {loading?'載入中…':'…'} &gt;
-      </div>:null}
-    </section>
+      <p className="loc-eyebrow">Statistics</p>
+      <h2>統計功能</h2>
+      <nav className="scope-v2-tabs scope-v2-stat-tabs" aria-label="統計功能">
+        {STATISTICS_TABS.map(([key,label])=><a
+          key={key}
+          href={featureNavigationHref(scopeId,'statics',{...navigation,statTab:key})}
+          aria-current={statTab===key?'page':undefined}
+        >{label}</a>)}
+      </nav>
 
+      {statTab==='ranking'?<section aria-labelledby="statistics-ranking-title">
+        <h3 id="statistics-ranking-title">排行榜</h3>
+        <div className="scope-v2-stat-controls">
+          {types.length>1?<label>
+            <span>排行榜類型</span>
+            <select
+              className="scope-v2-select"
+              value={rankingType}
+              onChange={event=>setRankingType(event.target.value)}
+              aria-label="排行榜類型"
+            >
+              <option value="">全部</option>
+              {types.map(type=><option key={type} value={type}>{type}</option>)}
+            </select>
+          </label>:null}
+        </div>
+        {error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(error)}</p>:null}
+        {!loading&&!error&&!rows.length?<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>:null}
+        {rows.length?<div className="scope-v2-ranking" aria-label="排行榜">
+          {rows.map((row,index)=><div key={row.ranking_key||row.term||index}>
+            <strong>{index+1}. {row.term}</strong>
+            <span>{Number(row.item_count||0).toLocaleString()}</span>
+          </div>)}
+        </div>:null}
+        {hasMore?<div className="scope-v2-load-sentinel" aria-live="polite">
+          &lt; {loading?'載入中…':'…'} &gt;
+        </div>:null}
+      </section>:null}
+
+      {statTab==='keywords'?<section aria-labelledby="statistics-keywords-title">
+        <h3 id="statistics-keywords-title">關鍵詞設定</h3>
+        <KeywordSettingsV2 scopeId={scopeId} databaseScopeId={scope.databaseScopeId||scopeId}/>
+      </section>:null}
+
+      {statTab==='charts'?<section aria-labelledby="statistics-charts-title">
+        <h3 id="statistics-charts-title">各項統計圖</h3>
+        <div className="scope-v2-stat-controls">
+          {types.length>1?<label>
+            <span>統計類型</span>
+            <select
+              className="scope-v2-select"
+              value={rankingType}
+              onChange={event=>setRankingType(event.target.value)}
+              aria-label="統計類型"
+            >
+              <option value="">全部</option>
+              {types.map(type=><option key={type} value={type}>{type}</option>)}
+            </select>
+          </label>:null}
+          <label>
+            <span>圖形</span>
+            <select
+              className="scope-v2-select"
+              value={chartType}
+              onChange={event=>setChartType(event.target.value)}
+              aria-label="圖形類型"
+            >
+              {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+            </select>
+          </label>
+        </div>
+        {error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(error)}</p>:null}
+        {!loading&&!error&&!chartRows.length?<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>:null}
+        {chartRows.length?<div className="scope-v2-ranking-chart" aria-label={CHART_TYPES.find(([value])=>value===chartType)?.[1]||'統計圖'}>
+          <RankingChart type={chartType} rows={chartRows}/>
+        </div>:null}
+      </section>:null}
+    </section>
   </FeaturePageV2>;
 }

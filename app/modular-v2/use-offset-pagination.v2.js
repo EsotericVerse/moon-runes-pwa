@@ -2,7 +2,7 @@
 
 import {useCallback,useEffect,useRef,useState} from 'react';
 
-export function useOffsetPagination({key,pageSize,loadPage}){
+export function useOffsetPagination({key,pageSize,loadPage,enabled=true}){
   const [rows,setRows]=useState([]);
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState(null);
@@ -15,7 +15,7 @@ export function useOffsetPagination({key,pageSize,loadPage}){
   loadPageRef.current=loadPage;
 
   const loadNext=useCallback(async()=>{
-    if(busyRef.current||!hasMoreRef.current)return;
+    if(!enabled||busyRef.current||!hasMoreRef.current)return;
     busyRef.current=true;
     setLoading(true);
     setError(null);
@@ -37,7 +37,7 @@ export function useOffsetPagination({key,pageSize,loadPage}){
         setLoading(false);
       }
     }
-  },[pageSize]);
+  },[enabled,pageSize]);
 
   useEffect(()=>{
     const requestId=++requestIdRef.current;
@@ -47,6 +47,12 @@ export function useOffsetPagination({key,pageSize,loadPage}){
     setRows([]);
     setHasMore(true);
     setError(null);
+    if(!enabled){
+      setLoading(false);
+      return ()=>{
+        if(requestId===requestIdRef.current)requestIdRef.current+=1;
+      };
+    }
     busyRef.current=true;
     setLoading(true);
     Promise.resolve().then(()=>loadPageRef.current(0,pageSize)).then(page=>{
@@ -67,7 +73,7 @@ export function useOffsetPagination({key,pageSize,loadPage}){
     return ()=>{
       if(requestId===requestIdRef.current)requestIdRef.current+=1;
     };
-  },[key,pageSize]);
+  },[enabled,key,pageSize]);
 
   useEffect(()=>{
     const loadAtPageEnd=()=>{

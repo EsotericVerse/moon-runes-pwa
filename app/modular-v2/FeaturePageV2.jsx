@@ -15,7 +15,7 @@ export default function FeaturePageV2({featureId,children,subtitle=null,descript
     searchCollection:scope.searchCollection
   };
   const content=typeof children==='function'?children(featureContext):children;
-  const showAuthorHomeLink=scopeId==='lo3rwang'&&(featureId==='context'||featureId==='governance');
+  const showAuthorHomeLink=scopeId==='lo3rwang'&&(featureId==='statics'||featureId==='governance');
   const pageContent=<>
     {showAuthorHomeLink&&<nav aria-label="作者首頁導覽" style={{marginBottom:'1rem'}}>
       <a href="/lo3rwang/" style={{display:'inline-flex',alignItems:'center',gap:'.35rem',padding:'.55rem .85rem',border:'1px solid currentColor',borderRadius:'999px',fontWeight:700,textDecoration:'none'}}>

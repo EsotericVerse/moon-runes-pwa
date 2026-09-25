@@ -36,9 +36,10 @@
     "react-arborist": "3.16.0",
     "react-dom": "19.3.0",
     "recharts": "3.10.1",
+    "vis-data": "^8.0.5",
+    "vis-graph3d": "7.0.3",
     "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
-    "zod": "4.6.0",
-    "vis-graph3d": "7.0.3"
+    "zod": "4.6.0"
   }
 }

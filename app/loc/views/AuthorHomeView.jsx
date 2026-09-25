@@ -1,11 +1,12 @@
 import { PageComposition } from '../../PageComposition';
-import ScopeOverviewGraphV2 from '../../modular-v2/modules/scope-overview/ScopeOverviewGraphV2';
+import ScopeOverviewNetwork from '../../modular-v2/modules/scope-overview/ScopeOverviewNetwork';
 const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心所欲，而不逾己'];
 
 import {featureHrefV2} from '../../modular-v2/scope-registry.v2';
+import {featureNavigationHref} from '../../modular-v2/feature-navigation.v2';
 
 const AUTHOR_OVERVIEW_NODES=Object.freeze([
-  Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith｜脈絡',summary:'符文的設計理念與我的用詞堅持。',href:featureHrefV2('lo3rwang','context')}),
+  Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith｜關鍵詞設定',summary:'符文的設計理念與我的用詞堅持。',href:featureNavigationHref('lo3rwang','statics',{statTab:'keywords'})}),
   Object.freeze({id:'calibrator',title:'校對者｜Calibrator｜文化',summary:'回到來源與時間，校對文字軌跡。',href:featureHrefV2('lo3rwang','culture')}),
   Object.freeze({id:'governance-architect',title:'語言治理架構師｜Language Governance ｜Architect｜治理',summary:'我的語言治理理念。',
    href:featureHrefV2('lo3rwang','governance')}),
@@ -21,9 +22,8 @@ const AUTHOR_OVERVIEW_NODES=Object.freeze([
 ]);
 
 const AUTHOR_FUNCTIONS=Object.freeze([
-  Object.freeze({eyebrow:'Context',title:'脈絡',text:'把文字、作品、事件與來源放回關係中，從關鍵詞與事件看彼此如何連結。',href:'/context/',label:'查看脈絡'}),
-  Object.freeze({eyebrow:'Statistics',title:'統計',text:'依年份、來源與時期整理筆數、關鍵詞與分布，先看整體，再回到作品。',href:'/statics/',label:'查看統計'}),
   Object.freeze({eyebrow:'Culture',title:'文化',text:'把作品放回個人時期與時間長河，觀看文字風格、作品與生命經驗如何變化。',href:'/culture/',label:'查看文化'}),
+  Object.freeze({eyebrow:'Statistics',title:'統計',text:'查看排行榜、關鍵詞設定與各項統計圖。',href:'/statics/',label:'查看統計'}),
   Object.freeze({eyebrow:'Governance',title:'治理',text:'管理功能跟政策表達。',href:'/governance/',label:'查看治理'}),
   Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:'/search/',label:'開始搜尋'})
 ]);
@@ -35,7 +35,7 @@ export default function AuthorHomeView({section=null}){
       eyebrow:'Roles',
       title:'三位一體',
       content:<div className="loc-grid three">
-        <article><strong>文字工匠 · Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/context/">看脈絡</a></p></article>
+        <article><strong>文字工匠 · Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/statics/?statTab=keywords">看關鍵詞設定</a></p></article>
         <article><strong>校對者 · Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href="/culture/">看文化</a></p></article>
         <article><strong>語言治理架構者 · Language Governance Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/governance/">看治理</a></p></article>
         </div>
@@ -160,7 +160,7 @@ export default function AuthorHomeView({section=null}){
       id:'overview-graph',
       eyebrow:'Overview',
       title:'認識我',
-      content:<ScopeOverviewGraphV2
+      content:<ScopeOverviewNetwork
         centerTitle="Lucas Oscar Wang 政德"
         centerSummary="語言治理架構者。架構這一切的建築師。"
         nodes={AUTHOR_OVERVIEW_NODES}

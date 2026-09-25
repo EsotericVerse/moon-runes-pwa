@@ -1,3 +1,3 @@
-import LocApp from '../../loc/LocApp';
-export const metadata={title:'脈絡｜月之符文｜LOC'};
-export default function Page(){return <LocApp forcedView="context"/>;}
+import {redirect} from 'next/navigation';
+export const metadata={title:'關鍵詞設定｜統計｜月之符文'};
+export default function Page(){redirect('/lrunes/statics?statTab=keywords');}

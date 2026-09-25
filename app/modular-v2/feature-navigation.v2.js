@@ -2,10 +2,11 @@ import {z} from 'zod';
 import {featureHrefV2,scopeDataViewV2} from './scope-registry.v2';
 
 const NAVIGATION_FIELDS=Object.freeze([
-  'q','identity','source','period','anchor','from','to','rankingType'
+  'q','identity','source','period','anchor','from','to','rankingType','statTab'
 ]);
 
 const NavigationValue=z.string().trim().min(1).max(240);
+const StatisticsTab=z.enum(['ranking','keywords','charts']);
 
 export const FeatureNavigationSchema=z.object({
   q:NavigationValue.optional(),
@@ -15,7 +16,8 @@ export const FeatureNavigationSchema=z.object({
   anchor:NavigationValue.optional(),
   from:NavigationValue.optional(),
   to:NavigationValue.optional(),
-  rankingType:NavigationValue.optional()
+  rankingType:NavigationValue.optional(),
+  statTab:StatisticsTab.optional()
 }).strict();
 
 function valueOf(...values){
@@ -104,14 +106,13 @@ function hasTemporalCondition(state){
 }
 
 export function featureNavigationLinks({targetScope,state}){
-  const links=[
-    {id:'context',label:'脈絡 Graph',href:featureNavigationHref(targetScope,'context',state)}
-  ];
+  const links=[];
   if(hasTemporalCondition(state)){
     links.push({id:'culture',label:'文化 Time River',href:featureNavigationHref(targetScope,'culture',state)});
   }
   if(scopeDataViewV2(targetScope,'rankings')){
-    links.push({id:'statics',label:'統計 Charts',href:featureNavigationHref(targetScope,'statics',state)});
+    links.push({id:'statics-ranking',label:'統計排行榜',href:featureNavigationHref(targetScope,'statics',{...state,statTab:'ranking'})});
   }
+  links.push({id:'statics-charts',label:'統計圖',href:featureNavigationHref(targetScope,'statics',{...state,statTab:'charts'})});
   return links;
 }
