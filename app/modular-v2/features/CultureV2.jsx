@@ -240,8 +240,8 @@ export default function CultureV2(){
             {periodWorksQuery.isPending?<p className='scope-v2-status'>載入{selectedWorkGroup?.category_type==='media'?'多媒體':'作品'}第 {workPage+1} 頁…</p>:null}
             {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
             <div className='scope-v2-culture-source-work-scroll'>
-              {(periodWorksQuery.data?.rows||[]).map((work,index)=><article className='scope-v2-inline-card' key={work.media_id||work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
-                <div className='scope-v2-culture-work-heading'><strong>{work.title||work.work_id||'未命名作品'}</strong><time>{work.display_date||formatCultureDateTime(work.created_at)}</time></div>
+              {(periodWorksQuery.data?.rows||[]).map((work,index)=><article className='scope-v2-inline-card' key={work.media_id||work.galaxy_id||work.source_id||String(work.created_at)+'-'+index}>
+                <div className='scope-v2-culture-work-heading'><strong>{work.title||work.galaxy_id||work.media_id||'未命名作品'}</strong><time>{work.display_date||formatCultureDateTime(work.created_at)}</time></div>
                 {externalSourceHref(work)?<a href={externalSourceHref(work)} target='_blank' rel='noreferrer'>查看來源</a>:null}
               </article>)}
             </div>
