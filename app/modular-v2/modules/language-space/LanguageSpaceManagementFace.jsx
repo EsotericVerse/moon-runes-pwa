@@ -21,9 +21,8 @@ export default function LanguageSpaceManagementFace(){
   const [tool,setTool]=useState('time');
   const databaseScopeId=scope?.databaseScopeId||scopeId;
 
-  if(account.loading||account.permissionLoading)return <p className="scope-v2-status">正在確認管理權限…</p>;
-  if(!account.user)return <section className="scope-v2-inline-card"><h3>管理</h3><p>登入後才能進入管理面。</p><button type="button" onClick={account.signIn}>登入</button></section>;
-  if(!account.canManage)return <section className="scope-v2-inline-card"><h3>管理</h3><p>目前帳號沒有這個區域的管理權限。</p></section>;
+  if(account.loading||account.permissionLoading)return null;
+  if(!account.canManage)return null;
 
   return <section className="language-space-management" aria-label="管理面">
     <div className="scope-v2-tabs" role="group" aria-label="管理項目">
