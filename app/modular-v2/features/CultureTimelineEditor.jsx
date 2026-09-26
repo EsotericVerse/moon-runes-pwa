@@ -4,6 +4,7 @@ import {useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {deleteNeonRows,insertNeonRows,selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
 
 const EDITABLE_TYPES=Object.freeze([
   ['anchor','定錨點'],['period','時期'],['event','事件']
@@ -184,7 +185,7 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
     <h2>時期設定</h2>
     <p>定錨點只能在這裡新增；時間長河只負責顯示。時期與事件共用前／後兩個定錨點，0 代表該方向不存在。</p>
     {query.error?<p className="scope-v2-status scope-v2-error">{query.error.message}</p>:null}
-    {query.isPending?<p className="scope-v2-status">讀取中…</p>:null}
+    {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     <div className="scope-v2-tabs">
       {EDITABLE_TYPES.map(([type,label])=><button key={type} type="button" onClick={()=>beginAdd(type)}>新增{label}</button>)}
     </div>
