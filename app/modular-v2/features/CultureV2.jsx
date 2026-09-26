@@ -57,6 +57,10 @@ function timelineFromCurrent(items,currentByScope){
     :item
   );
 }
+function externalSourceHref(work){
+  const value=String(work?.url||work?.media_link||work?.source_ref||'').trim();
+  return /^https?:\/\//i.test(value)?value:'';
+}
 function uniqueInterleavedWorks(rows){
   const seen=new Set();
   return (Array.isArray(rows)?rows:[]).filter(work=>{
@@ -238,7 +242,7 @@ export default function CultureV2(){
             <div className='scope-v2-culture-source-work-scroll'>
               {(periodWorksQuery.data?.rows||[]).map((work,index)=><article className='scope-v2-inline-card' key={work.media_id||work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
                 <div className='scope-v2-culture-work-heading'><strong>{work.title||work.work_id||'未命名作品'}</strong><time>{work.display_date||formatCultureDateTime(work.created_at)}</time></div>
-                {(work.url||work.media_link||work.source_ref)?<a href={work.url||work.media_link||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
+                {externalSourceHref(work)?<a href={externalSourceHref(work)} target='_blank' rel='noreferrer'>查看來源</a>:null}
               </article>)}
             </div>
             {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!(periodWorksQuery.data?.rows||[]).length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
