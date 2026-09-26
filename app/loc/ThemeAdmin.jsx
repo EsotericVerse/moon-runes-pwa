@@ -18,8 +18,8 @@ export default function ThemeAdmin(){
     if(!account.user||account.permissionLoading){setAllowed(false);return()=>{active=false};}
     account.canManageGlobal().then(value=>{if(active)setAllowed(Boolean(value))}).catch(()=>{if(active)setAllowed(false)});
     return()=>{active=false};
-  },[account.user?.id,account.permissionLoading,account.canManageGlobal]);
-  useEffect(()=>{if(!account.loading&&!account.permissionLoading&&account.user&&allowed)load();},[account.loading,account.permissionLoading,account.user?.id,allowed]);
+  },[account.user?.email,account.permissionLoading,account.canManageGlobal]);
+  useEffect(()=>{if(!account.loading&&!account.permissionLoading&&account.user&&allowed)load();},[account.loading,account.permissionLoading,account.user?.email,allowed]);
   if(account.loading||account.permissionLoading)return <p>正在確認 Neon 全域管理權限…</p>;
   if(!account.user)return <p>登入後才能管理全站風格。</p>;
   if(!allowed)return <p>此 Neon 身份沒有 admin 權限。</p>;
