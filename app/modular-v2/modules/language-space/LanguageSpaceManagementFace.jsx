@@ -22,7 +22,7 @@ export default function LanguageSpaceManagementFace(){
   const databaseScopeId=scope?.databaseScopeId||scopeId;
 
   if(account.loading||account.permissionLoading)return null;
-  if(!account.canManage)return null;
+  if(!account.canManageScopeSync(databaseScopeId))return null;
 
   return <section className="language-space-management" aria-label="管理面">
     <div className="scope-v2-tabs" role="group" aria-label="管理項目">
