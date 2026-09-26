@@ -21,12 +21,12 @@ export const RUNES_HOME_CONTENT = {
     title: '從一張牌到 OW3gs',
     subtitle: '一張牌就是一次 Random Event；多卡模式是在位置結構中組合多次事件。',
     highlights: [
-      { label: '單卡', text: '符文本義＋卡牌方向＋月相交互。', href: scopeHrefV2('runes','duel/one') },
-      { label: '每日', text: '以今日為時間範圍的一張符文。', href: scopeHrefV2('runes','duel/daily') },
-      { label: '雙卡', text: '因 → 果。', href: scopeHrefV2('runes','duel/two') },
-      { label: '三卡', text: '源 → 轉 → 合。', href: scopeHrefV2('runes','duel/three') },
-      { label: '五卡', text: '兩張過去成因＋一個意外變化＋兩張現在狀況。', href: scopeHrefV2('runes','duel/five') },
-      { label: '11 卡 OW3gs', text: '1–6 因的描述層＋7–11 果的判定層。', href: scopeHrefV2('runes','duel/ow3gs') }
+      { label: '單卡', text: '符文本義＋卡牌方向＋月相交互。', href: scopeHrefV2('lunarunes','duel/one') },
+      { label: '每日', text: '以今日為時間範圍的一張符文。', href: scopeHrefV2('lunarunes','duel/daily') },
+      { label: '雙卡', text: '因 → 果。', href: scopeHrefV2('lunarunes','duel/two') },
+      { label: '三卡', text: '源 → 轉 → 合。', href: scopeHrefV2('lunarunes','duel/three') },
+      { label: '五卡', text: '兩張過去成因＋一個意外變化＋兩張現在狀況。', href: scopeHrefV2('lunarunes','duel/five') },
+      { label: '11 卡 OW3gs', text: '1–6 因的描述層＋7–11 果的判定層。', href: scopeHrefV2('lunarunes','duel/ow3gs') }
     ],
     paragraphs: [
       '閱讀順序固定為：詞彙層 → 卡片位置層 → 治理層 → 時間修飾層。月相與時間提供低權重修飾，不覆寫符文本義。',

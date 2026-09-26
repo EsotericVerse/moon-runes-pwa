@@ -1,6 +1,6 @@
-import '../runes/rune-atlas-governance.css';
-import '../runes/runes-content.css';
-import RuneDrawClient from '../runes/RuneDrawClient';
+import '../lunarunes/rune-atlas-governance.css';
+import '../lunarunes/runes-content.css';
+import RuneDrawClient from '../lunarunes/RuneDrawClient';
 
 export default function DuelDrawPage({ drawKey }) {
   return <main className="loc-next-main">

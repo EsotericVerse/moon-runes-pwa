@@ -17,7 +17,7 @@ const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
-const runeHref=path=>`${scopeOriginV2('runes')}/${String(path||'').replace(/^\/+/, '')}`;
+const runeHref=path=>`${scopeOriginV2('lunarunes')}/${String(path||'').replace(/^\/+/, '')}`;
 const MODES=[
   {key:'single',count:1,label:'單卡',description:'符文本義＋卡牌方向＋月相交互。',positions:['核心'],path:'duel/one'},
   {key:'daily',count:1,label:'每日',description:'以今日為時間範圍的一張符文。',positions:['今日'],path:'duel/daily'},
@@ -85,9 +85,9 @@ export default function RunesClient(){
           <h1>月之符文</h1>
           <p className="loc-subtitle">以月的角度紀錄。</p>
         </div>
-        <p>66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互 × 符文演算法</p>
+        <p>66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互</p>
         <p>可以問一件事，也可以沒有問題直接抽取。</p>
-        <nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={runeHref('')}>符文抽籤</a><a href={runeHref('list')}>符文圖鑑</a><a href={runeHref('algorithm')}>符文解牌</a><a href={runeHref('game')}>符文遊戲</a><a href={runeHref('daily/log')}>每日符文</a><a href={runeHref('daily/trend')}>每日符文分析</a></nav>
+        <nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={runeHref('')}>符文抽籤</a><a href={runeHref('list')}>符文圖鑑</a><a href={runeHref('game')}>符文遊戲</a><a href={runeHref('daily/log')}>每日符文</a><a href={runeHref('daily/trend')}>每日符文分析</a></nav>
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">
         <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />

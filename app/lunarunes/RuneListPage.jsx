@@ -4,7 +4,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {fetchNeonData,LOC_DATA} from '../loc/data';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
-const RUNES_HOME=scopeHrefV2('runes');
+const RUNES_HOME=scopeHrefV2('lunarunes');
 
 function runeCardImage(card){
   const number=String(Number(card?.編號)||0).padStart(2,'0');

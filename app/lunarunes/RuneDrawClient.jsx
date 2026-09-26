@@ -22,12 +22,12 @@ const DRAW_TYPES = [
   { key: 'ow3gs', count: 11, label: '11卡 OW3gs', positions: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'] }
 ];
 const DRAW_PATHS = Object.freeze({
-  single: scopeHrefV2('runes','duel/one'),
-  daily: scopeHrefV2('runes','duel/daily'),
-  '2card': scopeHrefV2('runes','duel/two'),
-  '3card': scopeHrefV2('runes','duel/three'),
-  '5card': scopeHrefV2('runes','duel/five'),
-  ow3gs: scopeHrefV2('runes','duel/ow3gs')
+  single: scopeHrefV2('lunarunes','duel/one'),
+  daily: scopeHrefV2('lunarunes','duel/daily'),
+  '2card': scopeHrefV2('lunarunes','duel/two'),
+  '3card': scopeHrefV2('lunarunes','duel/three'),
+  '5card': scopeHrefV2('lunarunes','duel/five'),
+  ow3gs: scopeHrefV2('lunarunes','duel/ow3gs')
 });
 
 const RITUAL_MESSAGES = {

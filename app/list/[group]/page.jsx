@@ -1,5 +1,5 @@
-import {RuneGroupPage} from '../../runes/RuneDirectoryPages';
-import {groupParams} from '../../runes/rune-directory.mjs';
+import {RuneGroupPage} from '../../lunarunes/RuneDirectoryPages';
+import {groupParams} from '../../lunarunes/rune-directory.mjs';
 
 export function generateStaticParams(){return groupParams();}
 
