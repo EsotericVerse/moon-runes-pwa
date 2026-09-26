@@ -26,7 +26,7 @@ export function useNeonAccount(){
       setState({
         loading:false,
         user,
-        grants:canManage?[{email,privileges:['admin']}]:[],
+        grants:canManage?[{user_id:'lo3rwang',email,privileges:['admin']}]:[],
         privileges:canManage?['admin']:[],
         authorizer:null,
         canManage,
