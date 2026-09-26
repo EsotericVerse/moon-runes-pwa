@@ -172,7 +172,7 @@ export default function ScopeManagementV2(){
         <button type="button" onClick={refresh} disabled={dataQuery.isFetching}>重新整理</button>
       </div>
 
-      {dataQuery.isPending?<p className="scope-v2-status">正在載入…</p>:null}
+      {dataQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {dataQuery.error?<p role="alert" className="scope-v2-error">{dataQuery.error.message}</p>:null}
       {graphError?<p role="alert" className="scope-v2-error">關係圖無法顯示：{graphError}</p>:null}
       <div ref={canvasRef} className="scope-graph-canvas" role="img" aria-label={`Group / Scope 關係圖，共 ${points.length} 個節點`}/>
