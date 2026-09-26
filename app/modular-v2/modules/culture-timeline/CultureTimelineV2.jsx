@@ -1,26 +1,44 @@
 'use client';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
-import {densityStyleForCount,formatCultureDateTime} from './culture-timeline-model.mjs';
+import {densityStyleForCount,densityStyleForRatio,formatCultureDateTime} from './culture-timeline-model.mjs';
 
 function timelineRows(items,labelOf,focus){
+  const source=Array.isArray(items)?items:[];
   const focusTerms=[focus?.identity,focus?.period,focus?.anchor].filter(Boolean).map(String);
-  return (Array.isArray(items)?items:[]).flatMap((item,index)=>{
-    const start=item?.start_date||item?.active_from||item?.date;
+  const knownTimes=source.flatMap(item=>[
+    item?.start_date,item?.active_from,item?.date,item?.end_date,item?.active_until
+  ]).map(value=>Date.parse(value||'')).filter(Number.isFinite);
+  const today=Date.parse(new Date().toISOString().slice(0,10));
+  const domainStart=knownTimes.length?Math.min(...knownTimes):today;
+  const domainEnd=Math.max(today,...knownTimes);
+  return source.flatMap((item,index)=>{
+    const rawStart=item?.start_date||item?.active_from||item?.date;
+    const rawEnd=item?.end_date||item?.active_until;
+    const openStart=Boolean(item?.open_start);
+    const openEnd=Boolean(item?.open_end);
+    const parsedStart=Date.parse(rawStart||'');
+    const parsedEnd=Date.parse(rawEnd||'');
+    const start=Number.isFinite(parsedStart)?rawStart:(openStart&&Number.isFinite(parsedEnd)?new Date(domainStart).toISOString().slice(0,10):null);
     if(!start||Number.isNaN(Date.parse(start)))return [];
-    const end=item?.end_date||item?.active_until;
-    const validEnd=end&&Date.parse(end)>Date.parse(start)?end:null;
+    let end=Number.isFinite(parsedEnd)&&parsedEnd>Date.parse(start)?rawEnd:null;
+    if(!end&&openEnd&&domainEnd>Date.parse(start))end=new Date(domainEnd).toISOString().slice(0,10);
     const candidateValues=[
       item?.era_id,item?.period_id,item?.version,item?.id,item?.period,item?.name,item?.title,
       item?.anchor_id,item?.anchor_role,item?.anchor_type
     ].filter(Boolean).map(String);
     const focused=focusTerms.some(term=>candidateValues.includes(term));
     const group=item?.group_label||item?.scope_id||'';
-    const density=densityStyleForCount(item?.work_count);
+    const density=Number(item?.density_ratio)>0?densityStyleForRatio(item.density_ratio):densityStyleForCount(item?.work_count);
     return [{
       id:String(item?.id||item?.entry_id||item?.era_id||item?.period_id||item?.version||index),
       content:labelOf(item,index),
-      title:[item?.description,item?.milestone,item?.anchor_role,item?.anchor_type,item?.is_primary_anchor?'主要錨點':'',item?.is_rc_zone?'RC 區':''].filter(Boolean).join(' · '),
+      title:[
+        item?.description,item?.milestone,item?.anchor_role,item?.anchor_type,
+        openStart?'A 之前／open start':'',openEnd?'A 之後／open end':'',
+        item?.date_status==='year_only'?'僅年份':'',
+        item?.is_primary_anchor?'主要錨點':'',item?.is_rc_zone?'RC 區':''
+      ].filter(Boolean).join(' · '),
       start,
       scopeId:String(item?.scope_id||''),
       entryType:String(item?.entry_type||''),
@@ -28,8 +46,9 @@ function timelineRows(items,labelOf,focus){
       runeCount:Number(item?.rune_count||0),
       workCount:Number(item?.work_count||0),
       status:String(item?.status||''),
+      openStart,openEnd,
       ...(group?{group:String(group)}:{}),
-      ...(validEnd?{end:validEnd,type:'range'}:{type:'point'}),
+      ...(end?{end,type:'range'}:{type:'point'}),
       ...(focused?{className:'scope-period-timeline-focus'}:{}),
       ...(density?{style:'background-color:var(--loc-panel);border-color:var(--loc-accent);color:var(--loc-text);filter:brightness('+density.brightness+');box-shadow:0 0 '+density.blur+' color-mix(in srgb,var(--loc-accent) '+Math.round(density.glow*100)+'%,transparent);'}:{})
     }];
@@ -56,7 +75,7 @@ function riverPath(startX,endX,yAt,steps=48){
   return points.join(' ');
 }
 
-function CurrentCultureRivers({rows,canAddAnchor=false,onAddAnchor=null}){
+function CurrentCultureRivers({rows}){
   const personal=[...rows].filter(row=>row.scopeId==='lo3rwang').sort((a,b)=>Date.parse(a.start)-Date.parse(b.start)||(a.entryType==='period'?-1:0));
   const runes=[...rows].filter(row=>row.scopeId==='lunarunes').sort((a,b)=>Date.parse(a.start)-Date.parse(b.start));
   const personalStart=personal.find(row=>row.entryType==='period'&&row.status.trim().toLowerCase()==='current')||personal.find(row=>row.status.trim().toLowerCase()==='current');
@@ -102,17 +121,6 @@ function CurrentCultureRivers({rows,canAddAnchor=false,onAddAnchor=null}){
   const lastDate=dateLabel(Math.max(...validTimes));
   const personalTitle=personalStart.content||'Current 個人時期';
   const runeTitle=runeStart.content||'符文66';
-  const chooseDate=event=>{
-    if(!canAddAnchor||!onAddAnchor)return;
-    const svg=event.currentTarget.ownerSVGElement;
-    if(!svg)return;
-    const rect=svg.getBoundingClientRect();
-    const x=(event.clientX-rect.left)*1200/Math.max(1,rect.width);
-    const clamped=Math.max(left,Math.min(right,x));
-    const time=domainStart+(clamped-left)/(right-left)*(domainEnd-domainStart);
-    onAddAnchor(new Date(time).toISOString().slice(0,10));
-  };
-
   return <section className='scope-v2-current-rivers'>
     <div className='scope-v2-current-rivers-canvas' style={{overflowX:'auto',margin:'1rem 0 1.25rem'}}>
       <svg viewBox='0 0 1200 640' role='img' aria-label='Current 個人時期與符文66交會時間河道' style={{display:'block',width:'100%',minWidth:'900px',height:'640px'}}>
@@ -126,7 +134,6 @@ function CurrentCultureRivers({rows,canAddAnchor=false,onAddAnchor=null}){
         <path d={authorPath} fill='none' stroke={authorColor} strokeWidth='13' strokeLinecap='round' strokeLinejoin='round' style={{filter:authorRiverFilter}}/>
         <path d={runePath} fill='none' stroke={runeColor} strokeWidth='13' strokeLinecap='round' strokeLinejoin='round'/>
         <path d={authorPath} fill='none' stroke='var(--loc-panel,#fff)' strokeWidth='2' strokeLinecap='round' opacity='.7'/>
-        {canAddAnchor?<path d={authorPath} fill='none' stroke='transparent' strokeWidth='38' strokeLinecap='round' pointerEvents='stroke' style={{cursor:'crosshair'}} onClick={chooseDate}><title>點擊日期新增定錨點</title></path>:null}
         <path d={runePath} fill='none' stroke='var(--loc-panel,#fff)' strokeWidth='2' strokeLinecap='round' opacity='.7'/>
         <circle cx={personalX} cy={centerY} r='21' fill='none' stroke='var(--loc-text,#111)' strokeWidth='3'/>
         <circle cx={personalX} cy={centerY} r='5' fill='var(--loc-accent,#2878c9)'/>
@@ -156,10 +163,9 @@ function CurrentCultureRivers({rows,canAddAnchor=false,onAddAnchor=null}){
   </section>;
 }
 
-export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,canAddAnchor=false,onAddAnchor=null}){
+export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null}){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
-  const onAddAnchorRef=useRef(onAddAnchor);
   const [ready,setReady]=useState(false);
   const [chartError,setChartError]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
@@ -168,7 +174,6 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
   const timelineHeight=mode==='overview'?Math.max(640,Math.min(1400,440+rows.length*18)):640;
 
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
-  useEffect(()=>{onAddAnchorRef.current=onAddAnchor},[onAddAnchor]);
 
   useEffect(()=>{
     let cancelled=false;
@@ -198,17 +203,13 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
         const selectedId=selectedItems[0];
         onSelectRef.current?.(rows.find(row=>row.id===selectedId)||null);
       });
-      instance.on('click',properties=>{
-        if(!canAddAnchor||!properties?.time||!['background','axis'].includes(String(properties.what||'')))return;
-        onAddAnchorRef.current?.(new Date(properties.time).toISOString().slice(0,10));
-      });
       instance.fit({animation:{duration:180,easingFunction:'easeInOutQuad'}});
       setReady(true);
     }).catch(()=>{if(!cancelled){setReady(false);setChartError(true)}});
     return()=>{cancelled=true;if(instance)instance.destroy();};
-  },[rows,timelineHeight,canAddAnchor]);
+  },[rows,timelineHeight]);
 
-  if(currentConfluence)return <CurrentCultureRivers rows={rows} canAddAnchor={canAddAnchor} onAddAnchor={onAddAnchor}/>;
+  if(currentConfluence)return <CurrentCultureRivers rows={rows}/>;
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>
