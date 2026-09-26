@@ -14,15 +14,7 @@ import {buildSearchNavigation,featureNavigationLinks} from '../feature-navigatio
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
-const THEME_RELATION_TYPES=new Set(['theme_song','op','character_theme']);
-const RELATION_TYPE_OPTIONS=Object.freeze([
-  ['theme_song','主題曲'],
-  ['op','片頭曲／OP'],
-  ['character_theme','角色主題曲（公開仍只顯示主題曲）'],
-  ['related_work','相關作品'],
-  ['proposal_song','求婚歌'],
-  ['feature_song','特色曲']
-]);
+const THEME_RELATION_TYPE='theme_song';
 function canonicalWorkIdentity(row){
   const raw=String(row?.work_id||row?.media_link||'').replace(/^work:/,'').trim();
   if(!raw)return {workId:'',title:''};
@@ -39,7 +31,7 @@ function removeStyleTag(value,tag){
   const tags=String(value||'').split(',').map(item=>item.trim()).filter(Boolean).filter(item=>item!==tag);
   return tags.join(', ')||'風格未知';
 }
-function publicRelationLabel(type){return THEME_RELATION_TYPES.has(String(type||''))?'主題曲':'相關作品'}
+function literatureHref(workId){return '/lo3rwang/literature?work='+encodeURIComponent(String(workId||''))}
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
 function snippet(text,q){
   const raw=String(text||'').replace(/\s+/g,' ').trim();
@@ -68,7 +60,9 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map(),relati
   const editableField=resourceType==='galaxy'?'content':resourceType==='galaxy_media'?'meta_tags':'';
   const work=canonicalWorkIdentity(row);
   const relatedRelations=work.workId?(relationsMap.get(work.workId)||[]):[];
-  return {key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),source,title:String(title),date:row.date||row.created_date||row.created_at||row.updated_at||'',snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||''),scopeId:scope,resourceType,resourceId,settingsKey,settings,editableTable,editableIdColumn,editableField,relationWorkId:work.workId,relationTitle:work.title||String(title),relatedRelations,href:row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'context'):''),destinations:featureNavigationLinks(navigation)};
+  const isThemeSource=row.media_type==='song'||row.content_type==='lyrics'||row.category==='music';
+  const isLiteratureTarget=work.workId.startsWith('lo3rwang-literature:');
+  return {key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),source,title:String(title),date:row.date||row.created_date||row.created_at||row.updated_at||'',snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||''),scopeId:scope,resourceType,resourceId,settingsKey,settings,editableTable,editableIdColumn,editableField,relationWorkId:work.workId,relationTitle:work.title||String(title),relatedRelations,isThemeSource,isLiteratureTarget,href:row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'context'):''),destinations:featureNavigationLinks(navigation)};
 }
 
 export default function SearchV2(){
@@ -95,8 +89,6 @@ export default function SearchV2(){
   const visibilityRef=useRef(new Map());
   const relationsRef=useRef(new Map());
   const [relationSource,setRelationSource]=useState(null);
-  const [relationType,setRelationType]=useState('theme_song');
-  const [relationNote,setRelationNote]=useState('');
   const [relationRows,setRelationRows]=useState([]);
   const [relationBusy,setRelationBusy]=useState(false);
   const [relationError,setRelationError]=useState('');
@@ -247,7 +239,7 @@ export default function SearchV2(){
     }catch(exception){setRelationError(String(exception?.message||exception||'讀取關聯失敗。'))}
   }
   async function chooseRelationSource(result){
-    setRelationSource(result);setRelationType('theme_song');setRelationNote('');setRelationError('');
+    setRelationSource(result);setRelationError('');
     await refreshRelations(result);
   }
   async function syncThemeTag(workId,add){
@@ -270,19 +262,19 @@ export default function SearchV2(){
         scope_id:'lo3rwang',
         from_work_id:relationSource.relationWorkId,
         to_work_id:target.relationWorkId,
-        relation_type:relationType,
+        relation_type:THEME_RELATION_TYPE,
         from_source_table:relationSource.editableTable||'search',
         from_source_id:relationSource.resourceId||relationSource.relationWorkId,
         to_source_table:'work',
         to_source_id:target.relationWorkId,
         confirmation_state:'confirmed',
         display_label:target.relationTitle,
-        note:String(relationNote||'').trim()||null,
+        note:null,
         created_by:String(account.user?.id||'')
       };
       await insertNeonRows('silver.lo3rwang_work_relations',relation);
-      if(THEME_RELATION_TYPES.has(relationType))await syncThemeTag(relationSource.relationWorkId,true);
-      const publicRelation={relation_id:relation.relation_id,from_work_id:relation.from_work_id,to_work_id:relation.to_work_id,relation_type:THEME_RELATION_TYPES.has(relationType)?'theme_song':relationType,display_label:relation.display_label,created_at:new Date().toISOString()};
+      await syncThemeTag(relationSource.relationWorkId,true);
+      const publicRelation={relation_id:relation.relation_id,from_work_id:relation.from_work_id,to_work_id:relation.to_work_id,relation_type:THEME_RELATION_TYPE,display_label:relation.display_label,created_at:new Date().toISOString()};
       const nextMap=new Map(relationsRef.current);
       const list=[...(nextMap.get(relation.from_work_id)||[]),publicRelation];
       nextMap.set(relation.from_work_id,list);relationsRef.current=nextMap;
@@ -299,14 +291,12 @@ export default function SearchV2(){
       const nextPublic=(relationsRef.current.get(relationSource.relationWorkId)||[]).filter(item=>item.relation_id!==relation.relation_id);
       const nextMap=new Map(relationsRef.current);nextMap.set(relationSource.relationWorkId,nextPublic);relationsRef.current=nextMap;
       setResults(current=>current.map(item=>item.relationWorkId===relationSource.relationWorkId?{...item,relatedRelations:nextPublic}:item));
-      if(THEME_RELATION_TYPES.has(String(relation.relation_type||''))){
-        const {rows}=await selectNeonRows('silver.lo3rwang_work_relations',{
-          columns:'relation_id,relation_type',
-          filters:[{column:'scope_id',operator:'eq',value:'lo3rwang'},{column:'from_work_id',operator:'eq',value:relationSource.relationWorkId}],
-          limit:100
-        });
-        if(!rows.some(item=>THEME_RELATION_TYPES.has(String(item.relation_type||''))))await syncThemeTag(relationSource.relationWorkId,false);
-      }
+      const {rows}=await selectNeonRows('silver.lo3rwang_work_relations',{
+        columns:'relation_id,relation_type',
+        filters:[{column:'scope_id',operator:'eq',value:'lo3rwang'},{column:'from_work_id',operator:'eq',value:relationSource.relationWorkId},{column:'relation_type',operator:'eq',value:THEME_RELATION_TYPE}],
+        limit:100
+      });
+      if(!rows.length)await syncThemeTag(relationSource.relationWorkId,false);
       await refreshRelations(relationSource);
     }catch(exception){setRelationError(String(exception?.message||exception||'刪除關聯失敗。'))}
     finally{setRelationBusy(false)}
@@ -324,19 +314,15 @@ export default function SearchV2(){
       <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder="輸入關鍵字、作品名稱或文字" aria-label="你想找什麼？"/>
       <button type="submit">搜尋</button>
     </form>
-    {relationSource?<section className="scope-v2-card scope-v2-relation-editor" aria-label="作品關聯編輯">
-      <p><strong>關聯起點：</strong>{relationSource.title}</p>
-      <p className="scope-v2-meta">作品 ID：{relationSource.relationWorkId}</p>
-      <label>關聯類型<select className="scope-v2-select" value={relationType} onChange={event=>setRelationType(event.target.value)}>
-        {RELATION_TYPE_OPTIONS.map(([value,label])=><option key={value} value={value}>{label}</option>)}
-      </select></label>
-      <label>內部備註（不公開）<input value={relationNote} onChange={event=>setRelationNote(event.target.value)} placeholder="例如角色名稱；公開頁不顯示"/></label>
+    {relationSource?<section className="scope-v2-card scope-v2-relation-editor" aria-label="主題曲關聯編輯">
+      <p><strong>主題曲：</strong>{relationSource.title}</p>
+      <p className="scope-v2-meta">請從搜尋結果選擇要連結的整部小說作品。</p>
       {relationRows.length?<div className="scope-v2-list">{relationRows.map(item=><p key={item.relation_id}>
-        {RELATION_TYPE_OPTIONS.find(([value])=>value===item.relation_type)?.[1]||item.relation_type} → {item.display_label||item.to_work_id}
+        主題曲｜<a href={literatureHref(item.to_work_id)}>《{item.display_label||'作品'}》</a>
         <button type="button" disabled={relationBusy} onClick={()=>removeRelation(item)}>刪除關聯</button>
       </p>)}</div>:null}
       {relationError?<p role="alert" className="scope-v2-error">{relationError}</p>:null}
-      <button type="button" onClick={()=>{setRelationSource(null);setRelationRows([]);setRelationError('');setRelationNote('')}}>結束關聯編輯</button>
+      <button type="button" onClick={()=>{setRelationSource(null);setRelationRows([]);setRelationError('')}}>結束主題曲設定</button>
     </section>:null}
     <p className="scope-v2-status">{status}</p>
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
@@ -351,11 +337,11 @@ export default function SearchV2(){
           <p>{settings.projection_level==='full'?row.bodyText:row.snippet}</p>
           {settings.show_link!==false&&row.href?<p><a href={row.href} target={/^https?:/.test(row.href)?'_blank':undefined} rel={/^https?:/.test(row.href)?'noreferrer':undefined}>查看連結</a></p>:null}
           {row.destinations?.length?<p className="scope-v2-result-links">{row.destinations.map(destination=><a key={destination.id} href={destination.href}>{destination.label}</a>)}</p>:null}
-          {row.relatedRelations?.length?<p className="scope-v2-result-links">{row.relatedRelations.map(relation=><a key={relation.relation_id} href={scopeHrefV2('lo3rwang','search')+'?q='+encodeURIComponent(relation.display_label||relation.to_work_id)}>{publicRelationLabel(relation.relation_type)}：{relation.display_label||'相關作品'}</a>)}</p>:null}
+          {row.relatedRelations?.length?<p className="scope-v2-result-links">{row.relatedRelations.map(relation=><a key={relation.relation_id} href={literatureHref(relation.to_work_id)}>主題曲｜《{relation.display_label||'作品'}》</a>)}</p>:null}
           {editable?<p>
             <button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?'編輯中':'編輯'}</button>
-            {row.relationWorkId?<button type="button" onClick={()=>chooseRelationSource(row)}>設定作品關聯</button>:null}
-            {relationSource?.relationWorkId&&row.relationWorkId&&relationSource.relationWorkId!==row.relationWorkId?<button type="button" disabled={relationBusy} onClick={()=>createRelation(row)}>連到《{row.relationTitle}》整部作品</button>:null}
+            {row.relationWorkId&&row.isThemeSource?<button type="button" onClick={()=>chooseRelationSource(row)}>設定主題曲</button>:null}
+            {relationSource?.relationWorkId&&row.isLiteratureTarget&&relationSource.relationWorkId!==row.relationWorkId?<button type="button" disabled={relationBusy} onClick={()=>createRelation(row)}>設為《{row.relationTitle}》主題曲</button>:null}
           </p>:null}
           {draft?<div className="scope-v2-editor" aria-label="搜尋結果編輯器">
             <label>標題<input value={draft.title} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
