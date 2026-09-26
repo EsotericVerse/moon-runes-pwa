@@ -64,7 +64,7 @@ export default function AboutView(){
         <p className="loc-eyebrow">LOC (Language Architecture Framework)</p>
         <div className="home-title-row">
           <h1>LOC月典</h1>
-          <p className="loc-subtitle">以 3D 語言空間與時間維度，整理、搜尋並呈現語言建築。</p>
+          <p className="loc-subtitle">以多面向語言結構與時間維度，整理、搜尋並呈現語言建築。</p>
         </div>
         <div className="loc-hero-copy">
           <p>以微月光為鑑，即為月典(LOC,Luna Codex)，</p>
