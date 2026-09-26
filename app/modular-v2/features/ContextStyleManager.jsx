@@ -47,7 +47,7 @@ export default function ContextStyleManager({scopeId='lo3rwang'}){
       if(active){setCanEditStyle(false);setCanEditKeywords(false);}
     });
     return()=>{active=false};
-  },[account.user?.id,account.permissionLoading,account.canManageGlobal,account.canManageScope,scopeId]);
+  },[account.user?.email,account.permissionLoading,account.canManageGlobal,account.canManageScope,scopeId]);
 
   const stylesQuery=useQuery({
     queryKey:['lo3rwang-custom-runes',scopeId],
