@@ -4,15 +4,15 @@ import {selectNeonRows} from './neon-repository';
 
 export async function selectScopeCulturePeriods(scopeId){
   if(scopeId!=='lo3rwang')return {eras:[]};
-  const {rows}=await selectNeonRows('api.lo3rwang_context_entries',{
-    columns:'context_key,context_type,title,summary,era_id,period,entry_name,start_date,end_date,order_no,status',
-    filters:[{column:'context_type',operator:'eq',value:'period'}],
-    orders:[{column:'order_no',ascending:true},{column:'context_key',ascending:true}],
+  const {rows}=await selectNeonRows('silver.lo3rwang_style_time',{
+    columns:'entry_key,entry_type,title,summary,era_id,period,entry_name,start_date,end_date,order_no,status',
+    filters:[{column:'entry_type',operator:'eq',value:'period'}],
+    orders:[{column:'order_no',ascending:true},{column:'entry_key',ascending:true}],
     limit:1000
   });
   const eras=(Array.isArray(rows)?rows:[]).map(row=>({
-    era_id:row.era_id||row.context_key,
-    period:row.period||row.context_key,
+    era_id:row.era_id||row.entry_key,
+    period:row.period||row.entry_key,
     name:row.entry_name||row.title,
     title:row.title,
     description:row.summary||'',
