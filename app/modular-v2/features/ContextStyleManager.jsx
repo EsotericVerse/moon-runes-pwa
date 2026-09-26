@@ -68,34 +68,9 @@ export default function ContextStyleManager({scopeId='lo3rwang'}){
     },
     staleTime:30_000
   });
-  const rankingQuery=useQuery({
-    queryKey:['lo3rwang-custom-rune-rankings'],
-    enabled:scopeId==='lo3rwang',
-    queryFn:async()=>{
-      const {rows}=await selectNeonRows('api.lo3rwang_style_rankings',{
-        columns:'style_no,style_tag,keyword,keyword_group,item_count,rank_value,order_no',
-        orders:[{column:'style_no',ascending:true},{column:'keyword_group',ascending:true},{column:'rank_value',ascending:true}],
-        limit:5000
-      });
-      return rows;
-    },
-    staleTime:60_000
-  });
   const groups=useMemo(()=>groupRows(stylesQuery.data?.styles||[],stylesQuery.data?.keywords||[]),[stylesQuery.data]);
-  const rankings=rankingQuery.data||[];
-  const rankingsByGroup=useMemo(()=>{
-    const map=new Map();
-    for(const row of rankings){
-      const key=String(row.style_no)+'|'+String(row.keyword_group||'');
-      if(!map.has(key))map.set(key,[]);
-      map.get(key).push(row);
-    }
-    return map;
-  },[rankings]);
-
   const refresh=async()=>{
     await queryClient.invalidateQueries({queryKey:['lo3rwang-custom-runes']});
-    await queryClient.invalidateQueries({queryKey:['lo3rwang-custom-rune-rankings']});
     await queryClient.invalidateQueries({queryKey:['context-graph','lo3rwang']});
   };
   const run=async action=>{
@@ -184,11 +159,10 @@ export default function ContextStyleManager({scopeId='lo3rwang'}){
   const canEdit=canEditStyle||canEditKeywords;
   return <section className="loc-card scope-v2-feature-card">
     <p className="loc-eyebrow">個人自訂符文</p>
-    <h2>八種代表風格與關鍵詞排行建議</h2>
-    <p>每個代表名稱是一個個人風格節點，包含基本原則與關鍵詞群組。排行依作者自己的作品與 meta tag 即時計算，只提供參考，不會自動新增或修改詞庫。</p>
+    <h2>八種代表風格與關鍵詞</h2>
+    <p>每個代表名稱是一個個人風格節點，包含基本原則與關鍵詞群組。</p>
     {stylesQuery.isPending?<p className="scope-v2-status">讀取個人風格…</p>:null}
     {stylesQuery.error?<p className="scope-v2-status scope-v2-error">{stylesQuery.error.message}</p>:null}
-    {rankingQuery.error?<p className="scope-v2-status scope-v2-error">關鍵詞排行讀取失敗：{rankingQuery.error.message}</p>:null}
     {!stylesQuery.isPending&&!stylesQuery.error&&!groups.length?<p className="scope-v2-status">目前沒有個人風格分類。</p>:null}
     {!stylesQuery.isPending&&!stylesQuery.error&&groups.length?<KeywordGraph3DV2
       groups={groups}
@@ -203,14 +177,9 @@ export default function ContextStyleManager({scopeId='lo3rwang'}){
       {group.basic_principle?<p>{group.basic_principle}</p>:null}
       {KEYWORD_GROUPS.map(([kind,label])=>{
         const words=group.keywords.filter(row=>row.keyword_group===kind);
-        const ranked=rankingsByGroup.get(String(group.style_no)+'|'+kind)||[];
         return <div key={kind}>
           <h4>{label}</h4>
-          {!words.length?<p className="scope-v2-status">尚未設定。</p>:<ul>{words.map(row=>{
-            const match=ranked.find(item=>item.keyword===row.keyword);
-            return <li key={row.keyword}>{row.keyword}{match?<small> · 命中 {match.item_count} 筆</small>:null}</li>;
-          })}</ul>}
-          {ranked.length?<details><summary>排行建議</summary><ol>{ranked.map(item=><li key={item.keyword}>{item.keyword}｜命中 {item.item_count} 筆</li>)}</ol></details>:null}
+          {!words.length?<p className="scope-v2-status">尚未設定。</p>:<ul>{words.map(row=><li key={row.keyword}>{row.keyword}</li>)}</ul>}
         </div>;
       })}
     </article>)}
