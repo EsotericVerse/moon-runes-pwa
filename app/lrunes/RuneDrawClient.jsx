@@ -214,7 +214,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       live = false;
       timers.current.forEach(clearTimeout);
     };
-  }, [drawKey, account.user?.id]);
+  }, [drawKey, account.user?.email]);
 
   const selectedMode = useMemo(() => DRAW_TYPES.find(item => item.key === drawKey) || DRAW_TYPES[0], [drawKey]);
   const instantDraw = uiSettings?.draw_response === 'instant';
