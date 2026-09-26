@@ -4,7 +4,7 @@ import {useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {featureDataErrorMessage} from '../feature-data-state.v2';
+import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 
 async function selectAllRows(table,{columns,filters=[]}){
   const rows=[];let offset=0;
@@ -105,7 +105,7 @@ export default function SourceSettingsV2({scopeId='loc'}){
   return <section className="scope-v2-inline-card">
     <h3>作品來源設定</h3>
     <p>統一管理 Galaxy 與 Galaxy Media 的 來源名稱是匯入時自訂的唯一字串；需要合併時可直接批次改名，排行榜、統計圖與 Time River 會直接依來源名稱分組。</p>
-    {query.isPending?<p className="scope-v2-status">讀取作品來源…</p>:null}
+    {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     {message?<p className="scope-v2-status">{message}</p>:null}
     <div className="scope-v2-context-list">
