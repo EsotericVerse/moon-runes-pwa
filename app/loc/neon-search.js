@@ -7,7 +7,7 @@ const LRUNES_SOURCES=Object.freeze([
   ['silver.lrunes','月之符文',['record_id','rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history','rune_description'],'lrunes',[{column:'record_type',operator:'eq',value:'rune'}]],
   ['silver.lrunes','符文關鍵詞',['record_id','rune_number','keyword_group','keyword'],'lrunes',[{column:'record_type',operator:'eq',value:'keyword'},{column:'active',operator:'eq',value:true}]],
   ['silver.lrunes','符文規則',['record_id','title','rule_text','before_text','after_text','note'],'lrunes',[{column:'record_type',operator:'eq',value:'rule'},{column:'active',operator:'eq',value:true}]],
-  ['silver.lrunes','符文演化',['record_id','title','start_date','rune_count','status'],'lrunes',[{column:'record_type',operator:'eq',value:'evolution'}]],
+  ['silver.manage','符文時期',['record_id','record_type','scope_id','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility'],'lrunes',[{column:'scope_id',operator:'eq',value:'lrunes'},{column:'record_type',operator:'in',value:['anchor','period','event']}]],
   ['silver.lrunes','符文文字',['record_id','galaxy_id','scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','source_id'],'lrunes',[{column:'record_type',operator:'eq',value:'galaxy'}]]
 ]);
 
