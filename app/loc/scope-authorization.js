@@ -35,12 +35,9 @@ export function canRoleManageScope(role,scopeId){
 export function createScopeAuthorizer(user){
   const email=normalizeAuthEmail(user?.email);
   const role=email?normalizeAuthRole(user?.role):'';
-  const privileges=role?[role]:[];
-
   return Object.freeze({
     email,
     role,
-    privileges:Object.freeze(privileges),
     canManageGlobal:async()=>canRoleManageGlobal(role),
     canManageScope:async scopeId=>canRoleManageScope(role,scopeId),
     canManageGlobalSync:()=>canRoleManageGlobal(role),
