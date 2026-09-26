@@ -22,7 +22,7 @@ export default function ThemeAdmin(){
   useEffect(()=>{if(!account.loading&&!account.permissionLoading&&account.user&&allowed)load();},[account.loading,account.permissionLoading,account.user?.id,allowed]);
   if(account.loading||account.permissionLoading)return <p>正在確認 Neon 全域管理權限…</p>;
   if(!account.user)return <p>登入後才能管理全站風格。</p>;
-  if(!allowed)return <p>此 Neon 身份沒有 global_admin 權限；Scope 管理權限不會授權全站設定。</p>;
+  if(!allowed)return <p>此 Neon 身份沒有 admin 權限。</p>;
   const change=(styleKey,field,value)=>setDrafts(current=>({...current,[styleKey]:{...current[styleKey],[field]:value}}));
   const save=async row=>{
     try{
