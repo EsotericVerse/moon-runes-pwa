@@ -1,6 +1,7 @@
 export { LOC_DATA } from './data-paths.mjs';
 import { LOC_DATA } from './data-paths.mjs';
 import {selectNeonRows} from './neon-repository';
+import {selectScopeTimeRows} from './scope-time';
 
 const DEFAULT_GLOBAL_CONCURRENCY=2;
 const DEFAULT_MAX_BATCH_ITEMS=24;
@@ -156,12 +157,7 @@ async function fetchCanonical(path){
       }))};
     }
     if(normalized==='culture/lo3rwang-periods'){
-      return {eras:periodRows((await selectNeonRows('silver.lo3rwang_style_time',{
-        columns:'entry_key,entry_type,title,summary,period,entry_name,order_no,status,updated_at',
-        filters:[{column:'entry_type',operator:'eq',value:'period'}],
-        orders:[{column:'start_date',ascending:true}],
-        limit:5000
-      })).rows)};
+      return {eras:periodRows((await selectScopeTimeRows('lo3rwang')).filter(row=>row.entry_type==='period'))};
     }
     throw new Error(`Neon canonical data path is not mapped: ${normalized}`);
   }finally{releaseSlot();}
