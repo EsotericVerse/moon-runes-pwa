@@ -9,7 +9,6 @@ import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-sta
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import CultureVolumeGraph3D from '../modules/culture-timeline/CultureVolumeGraph3D';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
-import CultureTimelineEditor from './CultureTimelineEditor';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 
@@ -79,14 +78,10 @@ export default function CultureV2(){
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   const query=useQuery({queryKey:['culture-timeline',scopeId],queryFn:()=>selectScopeCultureData(scopeId),staleTime:5*60_000});
   const rows=useMemo(()=>rowsOf(query.data),[query.data]);
-  const [selectedEntryId,setSelectedEntryId]=useState('');
   const [selectedWorkSource,setSelectedWorkSource]=useState('');
   const [workPage,setWorkPage]=useState(0);
   const [activeWorkPeriod,setActiveWorkPeriod]=useState(null);
   const [cultureView,setCultureView]=useState('river');
-  const [canEditRiver,setCanEditRiver]=useState(false);
-  const [anchorPickMode,setAnchorPickMode]=useState(false);
-  const [riverCommand,setRiverCommand]=useState(null);
 
   const currentRows=useMemo(()=>{
     const scopes=scopeId==='loc'?['lo3rwang','lunarunes']:[scopeId].filter(Boolean);
@@ -175,9 +170,8 @@ export default function CultureV2(){
       {!query.isPending&&!query.error&&!timelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
       {!query.isPending&&!query.error&&timelineItems.length?<>
         {(scopeId==='lo3rwang'||scopeId==='loc')?<div className='scope-v2-tabs scope-v2-culture-view-toggle' role='group' aria-label='時間長河顯示方式'>
-          <button type='button' aria-pressed={cultureView==='river'} onClick={()=>{setCultureView('river');setAnchorPickMode(false)}}>時間長河</button>
-          <button type='button' aria-pressed={cultureView==='volume3d'} onClick={()=>{setCultureView('volume3d');setAnchorPickMode(false)}}>3D 時期與作品量</button>
-          {canEditRiver&&cultureView==='river'?<button type='button' aria-pressed={anchorPickMode} onClick={()=>setAnchorPickMode(value=>!value)}>{anchorPickMode?'取消新增定錨點':'新增定錨點'}</button>:null}
+          <button type='button' aria-pressed={cultureView==='river'} onClick={()=>setCultureView('river')}>時間長河</button>
+          <button type='button' aria-pressed={cultureView==='volume3d'} onClick={()=>setCultureView('volume3d')}>3D 時期與作品量</button>
         </div>:null}
         {cultureView==='volume3d'&&(scopeId==='lo3rwang'||scopeId==='loc')
           ?<CultureVolumeGraph3D
@@ -195,28 +189,18 @@ export default function CultureV2(){
             workError={periodWorksQuery.error?featureDataErrorMessage(periodWorksQuery.error):''}
             loading={periodVolumesQuery.isFetching}
             error={periodVolumesQuery.error?featureDataErrorMessage(periodVolumesQuery.error):''}
-            canEdit={canEditRiver}
             onSelectCategory={source=>{setSelectedWorkSource(source);setWorkPage(0);}}
             onPageChange={setWorkPage}
             onSelectWorkPoint={point=>{
               if(point?.period){setActiveWorkPeriod(point.period);setSelectedWorkSource(point.category_key||'');setWorkPage(0);}
             }}
-            onSelectTimelineEntry={item=>setSelectedEntryId(item?.entry_id||'')}
-            onCommand={command=>setRiverCommand({...command,nonce:Date.now()})}
           />
           :<CultureTimelineV2
             items={timelineItems}
             labelOf={item=>item.display_label||item.title}
             focus={navigation}
             mode={currentRows.length?'current':'overview'}
-            onSelect={item=>setSelectedEntryId(item?.entry_id||'')}
-            canAddAnchor={anchorPickMode}
-            onAddAnchor={date=>{
-              setRiverCommand({scopeId:'lo3rwang',type:'anchor',values:{start_date:date},nonce:Date.now()});
-              setAnchorPickMode(false);
-            }}
           />}
-        <CultureTimelineEditor scopeId={scopeId} selectedEntryId={selectedEntryId} riverCommand={riverCommand} onCapabilityChange={setCanEditRiver}/>
 
         {currentAuthorPeriod&&cultureView!=='volume3d'?<section className='scope-v2-card scope-v2-culture-current-works'>
           <p className='loc-eyebrow'>Current</p>
