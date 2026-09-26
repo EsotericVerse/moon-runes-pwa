@@ -4,9 +4,6 @@ import {z} from 'zod';
 import {neonClient} from './neon-client';
 
 const TableSchema=z.enum([
-  'api.user_records','api.user_settings','api.site_theme_styles',
-  'api.loc_context_entries','api.loc_rankings','api.loc_timeline_entries',
-  'api.runes_context_entries','api.runes_rankings','api.lo3rwang_context_entries','api.lo3rwang_rankings','api.lo3rwang_galaxy','api.lo3rwang_style_rankings',
   'silver.manage','silver.resource_visibility',
   'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords','silver.lo3rwang_style_time',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
@@ -15,7 +12,6 @@ const TableSchema=z.enum([
   'silver.faq_entries',
 ]);
 const WritableTableSchema=z.enum([
-  'api.user_records','api.user_settings','api.site_theme_styles',
   'silver.manage','silver.resource_visibility',
   'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords','silver.lo3rwang_style_time',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
@@ -133,10 +129,3 @@ export async function deleteNeonRows(table,{filters,returning='*'}={}){
   return parseRows(result.data,table);
 }
 
-const RpcSchema=z.enum(['loc_culture_weekly_source_counts','update_lrune_keywords','lo3rwang_period_work_source_counts','lo3rwang_period_media_count','lo3rwang_period_media_metadata_page']);
-export async function callNeonRpc(name,args){
-  const rpc=RpcSchema.parse(name);
-  const result=await neonClient.rpc(rpc,z.record(z.string(),z.unknown()).parse(args||{}));
-  throwQueryError(result.error,`rpc:${rpc}`,'RPC');
-  return result.data;
-}
