@@ -5,10 +5,7 @@ import {selectNeonRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 
-const MEDIA_METADATA_CATEGORY_KEY='media_metadata';
-const SOURCE_LABELS={threads:'Threads',facebook:'Facebook',suno:'Suno',pixnet:'Pixnet',ptt:'PTT',kkcity:'KKCity',wretch:'Wretch',vocus:'Vocus',instagram:'Instagram',youtube:'YouTube'};
-
-function sourceLabel(value){const source=String(value||'').trim();return SOURCE_LABELS[source.toLowerCase()]||source;}
+function sourceLabel(value){return String(value||'').trim();}
 function runtimeScopeId(scopeId){return String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');}
 function dataScopeId(scopeId){return runtimeScopeId(scopeId)==='lunarunes'?'lrunes':runtimeScopeId(scopeId);}
 function periodRows(rows){
@@ -90,51 +87,63 @@ export async function selectScopeCultureData(scopeId){
 export async function selectAuthorPeriodWorkSources({startDate,endDate=null}={}){
   if(!startDate)return [];
   const filters=dateFilters(startDate,endDate);
-  const [workRows,mediaCountResult]=await Promise.all([
-    selectAllRows('silver.lo3rwang_galaxy',{columns:'source_platform',filters}),
-    selectNeonRows('silver.lo3rwang_galaxy_media',{columns:'media_id',filters,count:'exact',limit:1})
+  const [workRows,mediaRows]=await Promise.all([
+    selectAllRows('silver.lo3rwang_galaxy',{columns:'source_name',filters}),
+    selectAllRows('silver.lo3rwang_galaxy_media',{columns:'source_name',filters})
   ]);
   const counts=new Map();
-  for(const row of workRows){
-    const source=String(row.source_platform||'未標示來源');
-    counts.set(source,(counts.get(source)||0)+1);
-  }
-  const groups=[...counts.entries()].map(([source,item_count])=>({category_key:`source:${source}`,category_type:'work',source_platform:source,display_label:sourceLabel(source),item_count}))
-    .sort((a,b)=>b.item_count-a.item_count||a.display_label.localeCompare(b.display_label));
-  const mediaCount=Number(mediaCountResult.count)||0;
-  if(mediaCount>0)groups.push({category_key:MEDIA_METADATA_CATEGORY_KEY,category_type:'media',source_platform:'多媒體',display_label:'多媒體',item_count:mediaCount});
-  return groups;
+  const add=(row,kind)=>{
+    const source=sourceLabel(row.source_name);
+    if(!source)return;
+    const current=counts.get(source)||{item_count:0,work_count:0,media_count:0};
+    current.item_count+=1;
+    if(kind==='media')current.media_count+=1;
+    else current.work_count+=1;
+    counts.set(source,current);
+  };
+  for(const row of workRows)add(row,'work');
+  for(const row of mediaRows)add(row,'media');
+  return [...counts.entries()].map(([source,count])=>({
+    category_key:`source:${source}`,
+    category_type:'source',
+    source_name:source,
+    display_label:source,
+    ...count
+  })).sort((a,b)=>b.item_count-a.item_count||a.display_label.localeCompare(b.display_label));
 }
 
 function mediaMetadataDescription(row){
-  const fields=[['標題',row.title],['類型',row.media_type],['平台',row.source_platform],['曲風分類',row.style_tags],['補充描述',row.meta_tags]];
+  const fields=[['標題',row.title],['類型',row.media_type],['來源',row.source_name],['曲風分類',row.style_tags],['補充描述',row.meta_tags]];
   return fields.map(([label,value])=>{const text=decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
-export async function selectAuthorPeriodWorks({startDate,endDate,sourcePlatform,categoryType='work',limit=20,pageOffset=0}={}){
-  if(!startDate)return {rows:[],hasMore:false,nextOffset:null};
+export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,categoryType='source',limit=20,pageOffset=0}={}){
+  if(!startDate||!sourceName)return {rows:[],hasMore:false,nextOffset:null};
   const pageSize=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
-  const filters=dateFilters(startDate,endDate);
-  if(categoryType==='media'){
-    const result=await selectNeonRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,source_platform,source_native_id,media_type,title,url,media_link,meta_tags,style_tags,created_at',
-      filters,orders:[{column:'created_at',ascending:false}],range:[offset,offset+pageSize-1]
-    });
-    return {rows:result.rows.map(row=>({...row,entry_id:row.media_id,entry_type:'media_metadata',start_date:row.created_at,date:row.created_at,
-      display_date:formatCultureDateTime(row.created_at),title:decodeCultureText(row.title||'').trim()||'多媒體項目',description:'',
-      media_metadata_text:mediaMetadataDescription(row),group_label:'多媒體',scope_id:'lo3rwang'})),
-      hasMore:result.rows.length===pageSize,nextOffset:result.rows.length===pageSize?offset+pageSize:null};
-  }
-  if(sourcePlatform)filters.push({column:'source_platform',operator:'eq',value:String(sourcePlatform)});
-  const result=await selectNeonRows('silver.lo3rwang_galaxy',{
-    columns:'galaxy_id,category,content_type,source_platform,source_role,title,content,meta_tags,content_hash,created_at,source_ref,url,source_id,target_id,ref_id',
-    filters,orders:[{column:'created_at',ascending:false}],range:[offset,offset+pageSize-1]
-  });
-  return {rows:result.rows.map(row=>{
+  const filters=[...dateFilters(startDate,endDate),{column:'source_name',operator:'eq',value:String(sourceName)}];
+  const fetchSize=offset+pageSize+1;
+  const [workResult,mediaResult]=await Promise.all([
+    selectNeonRows('silver.lo3rwang_galaxy',{
+      columns:'galaxy_id,category,content_type,source_name,source_type,source_role,title,content,meta_tags,content_hash,created_at,source_ref,url,source_id,target_id,ref_id',
+      filters,orders:[{column:'created_at',ascending:false}],range:[0,fetchSize-1]
+    }),
+    selectNeonRows('silver.lo3rwang_galaxy_media',{
+      columns:'media_id,source_name,source_type,source_native_id,media_type,title,url,media_link,meta_tags,style_tags,created_at',
+      filters,orders:[{column:'created_at',ascending:false}],range:[0,fetchSize-1]
+    })
+  ]);
+  const workRows=workResult.rows.map(row=>{
     const content=decodeCultureText(row.content||'');
-    return {...row,start_date:row.created_at,date:row.created_at,display_date:formatCultureDateTime(row.created_at),entry_id:row.galaxy_id,
-      title:decodeCultureText(row.title||'').trim()||content.trim().slice(0,72)||row.source_platform||row.galaxy_id,
-      description:content.trim().slice(0,400),group_label:sourceLabel(row.source_platform)||'未標示來源',scope_id:'lo3rwang'};
-  }),hasMore:result.rows.length===pageSize,nextOffset:result.rows.length===pageSize?offset+pageSize:null};
+    return {...row,start_date:row.created_at,date:row.created_at,display_date:formatCultureDateTime(row.created_at),entry_id:row.galaxy_id,entry_type:'work',
+      title:decodeCultureText(row.title||'').trim()||content.trim().slice(0,72)||row.source_name||row.galaxy_id,
+      description:content.trim().slice(0,400),group_label:sourceLabel(row.source_name),scope_id:'lo3rwang'};
+  });
+  const mediaRows=mediaResult.rows.map(row=>({...row,entry_id:row.media_id,entry_type:'media_metadata',start_date:row.created_at,date:row.created_at,
+    display_date:formatCultureDateTime(row.created_at),title:decodeCultureText(row.title||'').trim()||'多媒體項目',description:'',
+    media_metadata_text:mediaMetadataDescription(row),group_label:sourceLabel(row.source_name),scope_id:'lo3rwang'}));
+  const merged=[...workRows,...mediaRows].sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
+  const rows=merged.slice(offset,offset+pageSize);
+  const hasMore=merged.length>offset+pageSize||workResult.rows.length===fetchSize||mediaResult.rows.length===fetchSize;
+  return {rows,hasMore,nextOffset:hasMore?offset+pageSize:null};
 }
