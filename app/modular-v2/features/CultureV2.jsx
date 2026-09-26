@@ -7,11 +7,12 @@ import {selectAuthorPeriodWorkSources,selectAuthorPeriodWorks,selectScopeCulture
 import {readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
-import CultureVolumeGraph3D from '../modules/culture-timeline/CultureVolumeGraph3D';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import CultureTimelineEditor from './CultureTimelineEditor';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
+import LanguageSpaceWorkspace from '../modules/language-space/LanguageSpaceWorkspace';
+import {languageItem,mergeLanguageItems,periodContentItems,timelineItems as toLanguageTimelineItems} from '../modules/language-space/language-space-model';
 
 const CULTURE_WORK_PAGE_SIZE=20;
 
@@ -100,19 +101,7 @@ export default function CultureV2(){
     scope_id:'lo3rwang'
   }:null;
   const selectedWorkPeriod=activeWorkPeriod||currentAuthorPeriod||allPeriodsRange;
-  const visibleAuthorPeriods=currentAuthorPeriod
-    ?[allAuthorPeriods.find(item=>item.start_date===currentAuthorPeriod.start_date)||currentAuthorPeriod]
-    :allAuthorPeriods;
-  const periodVolumesQuery=useQuery({
-    queryKey:['culture-period-source-volumes',scopeId,visibleAuthorPeriods.map(item=>[item.period,item.start_date,item.end_date])],
-    queryFn:async()=>Promise.all(visibleAuthorPeriods.map(async(period,index)=>({
-      period:{...period,scope_id:'lo3rwang'},
-      sources:await selectAuthorPeriodWorkSources({startDate:period.start_date,endDate:period.end_date}),
-      periodIndex:index
-    }))),
-    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&cultureView==='volume3d'&&visibleAuthorPeriods.length>0,
-    staleTime:5*60_000
-  });
+
 
   const workSourcesQuery=useQuery({
     queryKey:['culture-period-work-sources',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
@@ -151,6 +140,18 @@ export default function CultureV2(){
     return currentRows.length?timelineFromCurrent(items,currentByScope):items;
   },[query.data,currentRows,currentByScope,scopeId]);
 
+  const languageSpaceItems=useMemo(()=>mergeLanguageItems(
+    toLanguageTimelineItems(timelineItems),
+    (workSourcesQuery.data||[]).map((group,index)=>languageItem({
+      id:'category:'+String(group.category_key||index),
+      label:group.display_label||group.source_platform,
+      kind:group.category_type==='media'?'media':'text',
+      source:group.source_platform,
+      value:group.item_count
+    },group.category_type==='media'?'media':'text',index)),
+    periodContentItems(periodWorksQuery.data?.rows||[])
+  ),[timelineItems,workSourcesQuery.data,periodWorksQuery.data]);
+
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
       <p className='loc-eyebrow'>Time River</p>
@@ -161,34 +162,14 @@ export default function CultureV2(){
       {!query.isPending&&!query.error&&timelineItems.length?<>
         {(scopeId==='lo3rwang'||scopeId==='loc')?<div className='scope-v2-tabs scope-v2-culture-view-toggle' role='group' aria-label='時間長河顯示方式'>
           <button type='button' aria-pressed={cultureView==='river'} onClick={()=>setCultureView('river')}>時間長河</button>
-          <button type='button' aria-pressed={cultureView==='volume3d'} onClick={()=>setCultureView('volume3d')}>3D 時期與作品量</button>
+          <button type='button' aria-pressed={cultureView==='volume3d'} onClick={()=>setCultureView('volume3d')}>立體語言空間</button>
         </div>:null}
         {cultureView==='volume3d'&&(scopeId==='lo3rwang'||scopeId==='loc')
-          ?<CultureVolumeGraph3D
-            periods={periodVolumesQuery.data||[]}
-            timelineItems={timelineItems}
-            categories={workSourcesQuery.data||[]}
-            selectedCategory={selectedWorkSource}
-            selectedCategoryType={selectedWorkGroup?.category_type||''}
-            categoryLoading={workSourcesQuery.isFetching}
-            categoryError={workSourcesQuery.error?featureDataErrorMessage(workSourcesQuery.error):''}
-            works={periodWorksQuery.data?.rows||[]}
-            workPage={workPage}
-            workPageCount={workPageCount}
-            workLoading={periodWorksQuery.isFetching}
-            workError={periodWorksQuery.error?featureDataErrorMessage(periodWorksQuery.error):''}
-            loading={periodVolumesQuery.isFetching}
-            error={periodVolumesQuery.error?featureDataErrorMessage(periodVolumesQuery.error):''}
-            canEdit={canEditRiver}
-            onSelectCategory={source=>{setSelectedWorkSource(source);setWorkPage(0);}}
-            onPageChange={setWorkPage}
-            onSelectWorkPoint={point=>{
-              if(point?.period){setActiveWorkPeriod(point.period);setSelectedWorkSource(point.category_key||'');setWorkPage(0);}
-            }}
-            onSelectTimelineEntry={item=>setSelectedEntryId(item?.entry_id||'')}
-            onCommand={command=>setRiverCommand({...command,nonce:Date.now()})}
-          />
-          :<CultureTimelineV2
+          ?<LanguageSpaceWorkspace
+            items={languageSpaceItems}
+            title="時間、文字與多媒體的立體語言空間"
+            onSelect={item=>{if(item.kind==='time')setSelectedEntryId(item.id.replace(/^lo3rwang:|^runes:/,''));}}
+          />          :<CultureTimelineV2
             items={timelineItems}
             labelOf={item=>item.display_label||item.title}
             focus={navigation}
