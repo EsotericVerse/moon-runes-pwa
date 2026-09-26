@@ -36,7 +36,12 @@ function snippet(text,q){
   return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;
 }
 function resultKey(scope,type,id){return String(scope)+':'+String(type)+':'+String(id)}
-function canManageScopeFromGrants(scopeId,grants=[]){return grants.some(row=>Array.isArray(row.privileges)&&(row.privileges.includes('admin')||row.privileges.includes('scope:'+scopeId)))}
+function hasPrivilege(privileges,scopeId,pageId=''){
+  const values=Array.isArray(privileges)?privileges:[];
+  if(values.includes('blacklist'))return false;
+  if(values.includes('admin')||values.includes('scope:'+scopeId))return true;
+  return Boolean(pageId&&values.includes('page:'+scopeId+':'+pageId));
+}
 function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map(),relationsMap=new Map()){
   const text=rowText(row);
   if(!norm(text).includes(norm(q)))return null;
@@ -138,8 +143,8 @@ export default function SearchV2(){
       for(const {row,source} of consumed){
         const result=toResult(row,source,q,collection.id,scopeId,visibilityMap,relationMap);
         if(!result||seen.has(result.key))continue;
-        if(result.display==='hidden'&&!canManageScopeFromGrants(result.scopeId,account.grants))continue;
-        if(result.settings&&result.settings.visibility!=='public'&&!canManageScopeFromGrants(result.scopeId,account.grants))continue;
+        if(result.display==='hidden'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
+        if(result.settings&&result.settings.visibility!=='public'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
         seen.add(result.key);converted.push(result);
       }
       setResults(converted);
@@ -169,8 +174,8 @@ export default function SearchV2(){
         for(const {row,source} of consumed){
           const result=toResult(row,source,q,collection.id,scopeId,visibilityRef.current,relationsRef.current);
           if(!result||seen.has(result.key))continue;
-          if(result.display==='hidden'&&!canManageScopeFromGrants(result.scopeId,account.grants))continue;
-          if(result.settings&&result.settings.visibility!=='public'&&!canManageScopeFromGrants(result.scopeId,account.grants))continue;
+          if(result.display==='hidden'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
+          if(result.settings&&result.settings.visibility!=='public'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
           seen.add(result.key);appended.push(result);
         }
         return [...current,...appended];
@@ -205,9 +210,8 @@ export default function SearchV2(){
     setEditingKey(result.key);setEditError('');
     setEditDraft({title:result.title,body:result.bodyText,styleTags:result.styleTags||'',includeStatistics:result.settings?.statistics_included??true,fullText:result.settings?.projection_level==='full',hidden:result.settings?.visibility==='private',showLink:result.settings?.show_link??true,showSource:result.settings?.show_source??true});
     setEditAudit([]);
-    const logScope=canManageScopeFromGrants('admin',account.grants)?'admin':result.scopeId;
     try{
-      const {rows}=await selectNeonRows('silver.loc_scope',{columns:'actor_id,actor_name,actor_email,changed_at,field_name,old_value,new_value',filters:[{column:'record_type',operator:'eq',value:'content_audit'},{column:'scope_id',operator:'eq',value:logScope},{column:'resource_type',operator:'eq',value:result.resourceType},{column:'resource_id',operator:'eq',value:result.resourceId}],orders:[{column:'changed_at',ascending:false}],limit:10});
+      const {rows}=await selectNeonRows('silver.manage',{columns:'actor_id,actor_name,actor_email,changed_at,field_name,old_value,new_value',filters:[{column:'record_type',operator:'eq',value:'content_audit'},{column:'scope_id',operator:'eq',value:result.scopeId},{column:'resource_type',operator:'eq',value:result.resourceType},{column:'resource_id',operator:'eq',value:result.resourceId}],orders:[{column:'changed_at',ascending:false}],limit:10});
       setEditAudit(rows);
     }catch{}
   }
@@ -215,13 +219,19 @@ export default function SearchV2(){
     if(!editDraft||!result.editableTable||!result.editableField)return;
     setEditBusy(true);setEditError('');
     try{
+      const contentPage=result.resourceType==='galaxy_media'?'media':'statics';
+      if(!hasPrivilege(account.privileges,result.scopeId,contentPage))throw new Error('沒有修改此內容的權限。');
       const contentPatch={title:editDraft.title,[result.editableField]:editDraft.body};
       if(result.resourceType==='galaxy_media')contentPatch.style_tags=String(editDraft.styleTags||'').trim()||'風格未知';
       await updateNeonRows(result.editableTable,contentPatch,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.resourceId},{column:'scope_id',operator:'eq',value:result.scopeId}]});
-      const record={scope:result.scopeId,resource_type:result.resourceType,resource_id:result.resourceId,visibility:editDraft.hidden?'private':'public',projection_level:editDraft.fullText?'full':'summary',statistics_included:editDraft.includeStatistics,show_link:editDraft.showLink,show_source:editDraft.showSource};
-      await upsertNeonRows('silver.resource_visibility',record,{conflict:'scope,resource_type,resource_id'});
-      visibilityRef.current.set(result.settingsKey,record);
-      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,bodyText:editDraft.body,styleTags:result.resourceType==='galaxy_media'?(String(editDraft.styleTags||'').trim()||'風格未知'):item.styleTags,snippet:snippet(editDraft.body,matchedQueryRef.current),settings:record}));
+      let settings=result.settings||null;
+      if(hasPrivilege(account.privileges,result.scopeId,'statics')){
+        const record={scope:result.scopeId,resource_type:result.resourceType,resource_id:result.resourceId,visibility:editDraft.hidden?'private':'public',projection_level:editDraft.fullText?'full':'summary',statistics_included:editDraft.includeStatistics,show_link:editDraft.showLink,show_source:editDraft.showSource};
+        await upsertNeonRows('silver.resource_visibility',record,{conflict:'scope,resource_type,resource_id'});
+        visibilityRef.current.set(result.settingsKey,record);
+        settings=record;
+      }
+      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,bodyText:editDraft.body,styleTags:result.resourceType==='galaxy_media'?(String(editDraft.styleTags||'').trim()||'風格未知'):item.styleTags,snippet:snippet(editDraft.body,matchedQueryRef.current),settings}));
       setEditingKey('');setEditDraft(null);
     }catch(exception){setEditError(String(exception?.message||exception||'儲存失敗。'))}
     finally{setEditBusy(false)}
@@ -329,7 +339,10 @@ export default function SearchV2(){
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     <div className="scope-v2-list">
       {results.map(row=>{
-        const editable=Boolean(row.editableTable&&row.editableField&&canManageScopeFromGrants(row.scopeId,account.grants));
+        const contentPage=row.resourceType==='galaxy_media'?'media':'statics';
+        const editable=Boolean(row.editableTable&&row.editableField&&hasPrivilege(account.privileges,row.scopeId,contentPage));
+        const canSearchSettings=hasPrivilege(account.privileges,row.scopeId,'statics');
+        const canManageMedia=hasPrivilege(account.privileges,row.scopeId,'media');
         const settings=row.settings||{};
         const draft=editingKey===row.key?editDraft:null;
         return <ScopeCardV2 key={row.key} eyebrow={settings.show_source===false?'':row.source} title={row.title}>
@@ -339,22 +352,22 @@ export default function SearchV2(){
           {settings.show_link!==false&&row.href?<p><a href={row.href} target={row.isScopeCard?undefined:(/^https?:/.test(row.href)?'_blank':undefined)} rel={row.isScopeCard?undefined:(/^https?:/.test(row.href)?'noreferrer':undefined)}>{row.isScopeCard?'進入 Scope':'查看連結'}</a></p>:null}
           {row.destinations?.length?<p className="scope-v2-result-links">{row.destinations.map(destination=><a key={destination.id} href={destination.href}>{destination.label}</a>)}</p>:null}
           {row.relatedRelations?.length?<p className="scope-v2-result-links">{row.relatedRelations.map(relation=><a key={relation.relation_id} href={literatureHref(relation.to_work_id)}>主題曲｜《{relation.display_label||'作品'}》</a>)}</p>:null}
-          {editable?<p>
-            <button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?'編輯中':'編輯'}</button>
-            {row.relationWorkId&&row.isThemeSource?<button type="button" onClick={()=>chooseRelationSource(row)}>設定主題曲</button>:null}
-            {relationSource?.relationWorkId&&row.isLiteratureTarget&&relationSource.relationWorkId!==row.relationWorkId?<button type="button" disabled={relationBusy} onClick={()=>createRelation(row)}>設為《{row.relationTitle}》主題曲</button>:null}
+          {editable||canManageMedia?<p>
+            {editable?<button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?'編輯中':'編輯'}</button>:null}
+            {canManageMedia&&row.relationWorkId&&row.isThemeSource?<button type="button" onClick={()=>chooseRelationSource(row)}>設定主題曲</button>:null}
+            {canManageMedia&&relationSource?.relationWorkId&&row.isLiteratureTarget&&relationSource.relationWorkId!==row.relationWorkId?<button type="button" disabled={relationBusy} onClick={()=>createRelation(row)}>設為《{row.relationTitle}》主題曲</button>:null}
           </p>:null}
           {draft?<div className="scope-v2-editor" aria-label="搜尋結果編輯器">
             <label>標題<input value={draft.title} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
             <label>全文<textarea rows={10} value={draft.body} onChange={event=>setEditDraft(current=>({...current,body:event.target.value}))}/></label>
             {row.resourceType==='galaxy_media'?<label>媒體曲風分類<input value={draft.styleTags||''} onChange={event=>setEditDraft(current=>({...current,styleTags:event.target.value}))} placeholder="例如 Mandopop, 男聲, 希望向, 主題曲"/></label>:null}
-            <div className="scope-v2-editor-options">
+            {canSearchSettings?<div className="scope-v2-editor-options">
               <label><input type="checkbox" checked={draft.includeStatistics} onChange={event=>setEditDraft(current=>({...current,includeStatistics:event.target.checked}))}/>列入統計</label>
               <label><input type="checkbox" checked={draft.fullText} onChange={event=>setEditDraft(current=>({...current,fullText:event.target.checked}))}/>全文顯示（未勾選時顯示節錄）</label>
               <label><input type="checkbox" checked={draft.hidden} onChange={event=>setEditDraft(current=>({...current,hidden:event.target.checked}))}/>隱藏搜尋結果</label>
               <label><input type="checkbox" checked={draft.showLink} onChange={event=>setEditDraft(current=>({...current,showLink:event.target.checked}))}/>顯示連結</label>
               <label><input type="checkbox" checked={draft.showSource} onChange={event=>setEditDraft(current=>({...current,showSource:event.target.checked}))}/>顯示來源</label>
-            </div>
+            </div>:null}
             {editAudit.length?<details><summary>近期修改紀錄</summary><ol>{editAudit.map((entry,index)=><li key={String(entry.changed_at)+entry.field_name+index}>
               <p>{entry.field_name}｜操作者 {entry.actor_name||entry.actor_email||entry.actor_id}（{entry.actor_id}）｜{new Date(entry.changed_at).toLocaleString('zh-TW')}</p>
               <details><summary>查看前後內容</summary><p>修改前：{entry.old_value??'（空）'}</p><p>修改後：{entry.new_value??'（空）'}</p></details>
