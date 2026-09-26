@@ -2,7 +2,6 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useMutation,useQuery,useQueryClient} from '@tanstack/react-query';
-import {FEATURES_V2} from './scope-registry.v2';
 import {useNeonAccount} from '../loc/use-neon-account';
 import {createScope,deleteScope,updateScope,selectScopes,selectScopeRelations,selectScopeRelationRequests,selectScopePermissions,upsertScopeAccessGrant,revokeScopeAccessGrant,decideScopeRelationRequest} from '../loc/neon-scope-governance';
 
