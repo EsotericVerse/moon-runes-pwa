@@ -4,6 +4,7 @@ import {selectNeonRows} from '../../loc/neon-repository';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
+import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 
 const FAQ_PAGE_SIZE=10;
 function faqQuestion(row,index){
@@ -99,9 +100,11 @@ function LawPanel(){
 
 function ManagementLogin(){
   const account=useNeonAccount();
+  const {scopeId}=useScopeRuntimeV2();
+  const canManage=account.canManageScopeSync(scopeId);
   if(account.loading||account.permissionLoading)return <p className="scope-v2-status">確認登入狀態…</p>;
   if(!account.user)return <p><button type="button" onClick={account.signIn}>登入</button></p>;
-  if(!account.canManage)return <div className="scope-v2-status">
+  if(!canManage)return <div className="scope-v2-status">
     <p>此帳號沒有管理權限。</p>
     <button type="button" onClick={account.signOut}>登出</button>
   </div>;
