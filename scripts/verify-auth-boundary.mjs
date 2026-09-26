@@ -5,6 +5,7 @@ const client=fs.readFileSync('app/loc/neon-client.js','utf8');
 const userStorage=fs.readFileSync('app/loc/neon-user-storage.js','utf8');
 const scopeManagement=fs.readFileSync('app/modular-v2/ScopeManagementV2.jsx','utf8');
 const scopeRepository=fs.readFileSync('app/loc/neon-scope-governance.js','utf8');
+const scopeAuthorization=fs.readFileSync('app/loc/scope-authorization.js','utf8');
 const failures=[];
 
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
@@ -16,9 +17,16 @@ requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required');
 requireMatch(client,/getSession/,'Neon session lookup is required');
 requireMatch(userStorage,/user_records/,'Neon user record persistence is required');
 requireMatch(userStorage,/user_settings/,'Neon user settings persistence is required');
+
 requireMatch(scopeManagement,/account\.canManageGlobal\(\)/,'Scope create, edit and delete must be gated by admin');
-requireMatch(scopeRepository,/SCOPE_GOVERNANCE_TABLE='silver\.loc_scope'/,'Scope governance must use the consolidated table');
-requireMatch(scopeRepository,/callNeonRpc\('grant_scope_access'/,'page grants must go through the authorized RPC');
+requireMatch(scopeRepository,/MANAGE_TABLE='silver\.manage'/,'Scope governance must use silver.manage');
+requireMatch(scopeRepository,/record_type:'permission'/,'website permissions must be stored in silver.manage permission rows');
+requireMatch(scopeAuthorization,/privileges\.includes\('admin'\)/,'admin must grant the top management level');
+requireMatch(scopeAuthorization,/privileges\.includes\(scope\)/,'Scope privilege must grant the whole Scope');
+requireMatch(scopeAuthorization,/\`\$\{scope\}_\$\{page\}\`/,'page privilege must use scope_page naming');
+if(/['"`]scope:|['"`]page:/.test(scopeAuthorization+scopeRepository+scopeManagement)){
+  failures.push('retired scope:/page: privilege syntax must remain removed');
+}
 
 for(const retired of [
   'app/loc/neon-legacy-migration.js',
@@ -34,7 +42,7 @@ for(const retired of [
 }
 
 if(failures.length){
-  console.error('[auth-boundary] violations:\\n'+failures.join('\\n'));
+  console.error('[auth-boundary] violations:\n'+failures.join('\n'));
   process.exit(1);
 }
-console.log('[auth-boundary] Neon Auth + direct table reads + user storage boundary verified');
+console.log('[auth-boundary] Neon Auth + silver.manage downward-compatible privilege model verified');
