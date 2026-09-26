@@ -175,7 +175,6 @@ export default function ScopeManagementV2(){
     </header>
 
     {account.loading||account.permissionLoading||!permissionChecked?<p className="scope-v2-status">正在確認管理權限…</p>:null}
-    {!account.loading&&!account.user?<section className="scope-v2-card"><h2>需要登入</h2><button type="button" onClick={account.signIn}>登入</button></section>:null}
     {account.user&&permissionChecked&&!isAdmin?<section className="scope-v2-card"><h2>需要 admin 權限</h2></section>:null}
     {account.error?<p role="alert" className="scope-v2-error">{account.error}</p>:null}
 
@@ -234,7 +233,6 @@ export default function ScopeManagementV2(){
         </li>)}</ul>:<p>目前沒有網站權限紀錄。</p>}
       </div>
 
-      <button type="button" onClick={account.signOut}>登出</button>
     </section>:null}
   </section>;
 }
