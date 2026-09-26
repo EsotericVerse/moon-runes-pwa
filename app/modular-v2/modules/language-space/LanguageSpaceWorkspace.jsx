@@ -65,12 +65,13 @@ function SpaceScene({items,selected,onSelect}){
   </>;
 }
 
-export default function LanguageSpaceWorkspace({items=[],title='立體語言空間',initialQuery='',onSelect=()=>{}}){
+export default function LanguageSpaceWorkspace({items=[],title='立體語言空間',initialQuery='',onSelect=()=>{},management=null,initialFace='space'}){
   const [query,setQuery]=useState(initialQuery);
   const [start,setStart]=useState('');
   const [end,setEnd]=useState('');
   const [kinds,setKinds]=useState(['text','media','time','keyword']);
   const [selected,setSelected]=useState('');
+  const [managementOpen,setManagementOpen]=useState(initialFace==='manage');
   const visible=useMemo(()=>filterLanguageItems(items,{query,start,end,kinds}),[items,query,start,end,kinds]);
   useEffect(()=>{
     if(selected&&!visible.some(item=>item.id===selected))setSelected('');
@@ -101,12 +102,16 @@ export default function LanguageSpaceWorkspace({items=[],title='立體語言空�
           {TYPE_LABELS[kind]} {Number(counts[kind]||0).toLocaleString()}
         </label>)}
       </section>
+      {management?<section className="language-space-face" aria-label="管理">
+        <strong>管理</strong>
+        <button type="button" aria-pressed={managementOpen} onClick={()=>setManagementOpen(value=>!value)}>{managementOpen?'返回立體檢視':'進入管理面'}</button>
+      </section>:null}
     </div>
-    <div className="language-space-canvas">
+    {managementOpen&&management?<div className="language-space-management-panel">{management}</div>:<div className="language-space-canvas">
       <Canvas camera={{position:[0,7,11],fov:48}} dpr={[1,1.6]}>
         <SpaceScene items={visible} selected={selected} onSelect={choose}/>
       </Canvas>
-    </div>
+    </div>}
     <div className="language-space-legend" aria-label="立體空間說明">
       <span>左側：文字</span><span>中央：時間／關鍵詞</span><span>右側：多媒體</span>
     </div>
@@ -120,8 +125,8 @@ export default function LanguageSpaceWorkspace({items=[],title='立體語言空�
     </article>:null}
     <style jsx>{`
       .language-space-workspace{display:grid;gap:1rem}.language-space-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}.language-space-heading h3{margin:0}.language-space-heading p{margin:.35rem 0 0}.language-space-heading>span{font-weight:700}
-      .language-space-faces{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}.language-space-face{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;padding:.8rem;border:1px solid currentColor;border-radius:14px}.language-space-face input[type="text"],.language-space-face input:not([type]){min-width:0}.language-space-face:first-child input{flex:1;min-width:12rem}
-      .language-space-canvas{height:520px;border:1px solid currentColor;border-radius:16px;overflow:hidden}.language-space-canvas :global(canvas){width:100%!important;height:100%!important;touch-action:none}.language-space-legend{display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap;font-size:.9rem;opacity:.8}.language-space-detail{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;padding:.8rem 0}.language-space-detail p{flex-basis:100%;margin:0}.language-space-detail a{margin-left:auto}
+      .language-space-faces{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem}.language-space-face{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;padding:.8rem;border:1px solid currentColor;border-radius:14px}.language-space-face input[type="text"],.language-space-face input:not([type]){min-width:0}.language-space-face:first-child input{flex:1;min-width:12rem}
+      .language-space-management-panel{padding:.25rem 0}.language-space-canvas{height:520px;border:1px solid currentColor;border-radius:16px;overflow:hidden}.language-space-canvas :global(canvas){width:100%!important;height:100%!important;touch-action:none}.language-space-legend{display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap;font-size:.9rem;opacity:.8}.language-space-detail{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;padding:.8rem 0}.language-space-detail p{flex-basis:100%;margin:0}.language-space-detail a{margin-left:auto}
       @media(max-width:780px){.language-space-faces{grid-template-columns:1fr}.language-space-canvas{height:420px}.language-space-detail a{margin-left:0}}
     `}</style>
   </section>;
