@@ -204,7 +204,7 @@ export async function selectAuthorPeriodWorks({
         start_date:row.media_date||null,
         date:row.media_date||null,
         display_date:formatCultureDateTime(row.media_date),
-        title:'多媒體項目',
+        title:decodeCultureText(row.title||'').trim()||'多媒體項目',
         description:'',
         media_metadata_text:mediaMetadataDescription(row),
         group_label:'多媒體',
