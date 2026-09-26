@@ -5,7 +5,7 @@ import {useMutation,useQueryClient} from '@tanstack/react-query';
 import {GROUPS} from '../../lrunes/rune-directory.mjs';
 import {updateRuneKeywords} from '../../loc/neon-context-client';
 import {parseRuneKeywordRules,splitRuneKeywordEntries} from '../../loc/model/rune-keyword-rules';
-import KeywordGraph3DV2 from '../modules/keyword-graph/KeywordGraph3DV2';
+import KeywordGraph2DV2 from '../modules/keyword-graph/KeywordGraph2DV2';
 
 function keywordList(value){
   return String(value||'').split(/[、,，\n\r]+/).map(item=>item.trim()).filter(Boolean);
@@ -81,7 +81,7 @@ export default function RuneContextV2({runes=[],readOnly=false}){
   if(selected){
     return <div className="loc-rune-context">
       <nav className="loc-rune-context-crumbs" aria-label="符文位置">
-        <button type="button" className="loc-button" onClick={()=>{setRuneNumber(null);setGroupId(readOnly?null:groupId);setEditing(false);}}>← {readOnly?'關鍵詞 3D 圖':activeGroup?.name||'群組'}</button>
+        <button type="button" className="loc-button" onClick={()=>{setRuneNumber(null);setGroupId(readOnly?null:groupId);setEditing(false);}}>← {readOnly?'關鍵詞圓形圖':activeGroup?.name||'群組'}</button>
         <span>{selected.group_name} · 符文 {selected.rune_number}</span>
       </nav>
       <article className="scope-v2-inline-card loc-rune-context-detail">
@@ -150,12 +150,12 @@ export default function RuneContextV2({runes=[],readOnly=false}){
 
   return <div className="loc-rune-context">
     <p className="scope-v2-culture-period-description">點入符文可查看關鍵詞、大原則，以及該符文最底層的 AND／NOR 關鍵詞規則。</p>
-    <KeywordGraph3DV2
+    <KeywordGraph2DV2
       groups={graphGroups}
       keywordGroups={RUNE_KEYWORD_GROUPS}
       entityLabel="符文"
-      title="符文關鍵詞 3D 圖"
-      description="橫軸是符文，縱軸分成符文、正向／反向關鍵詞與最底層規則；深度表示項目序位。拖曳旋轉，點選節點可開啟該符文。"
+      title="符文關鍵詞圓形圖"
+      description="符文排列在內圈，正向、反向與最底層 AND／NOR 規則向外展開。可拖曳、縮放，點選任一節點可開啟對應符文。"
       onSelect={selectGraphItem}
     />
     <div className="loc-rune-context-grid loc-rune-context-groups">
