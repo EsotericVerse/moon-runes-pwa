@@ -26,15 +26,18 @@ export default function ThemeSelectV2(){
   const slot=useMemo(()=>getThemeSlotV2(themeId,styles),[themeId,styles]);
   useEffect(()=>{applyThemeV2(slot)},[slot]);
   const change=async event=>{
+    const nextThemeId=event.target.value;
+    setThemeId(nextThemeId);
+    setStatus('');
     if(!canEdit)return;
     try{
-      const row=await updateScopeThemeDefault(scopeId,event.target.value);
+      const row=await updateScopeThemeDefault(scopeId,nextThemeId);
       setThemeId(row.default_theme_id);setStatus('Scope 預設主題已更新');
     }catch(error){setStatus(String(error?.message||error))}
   };
   return <label className="scope-v2-theme-control">
     <span>主題</span>
-    <select value={themeId} onChange={change} disabled={!canEdit} aria-label="Scope 預設主題">
+    <select value={themeId} onChange={change} aria-label="主題">
       {THEME_SLOTS_V2.map(item=><option value={item.id} key={item.id}>{styles.find(row=>'theme-'+row.rotation_order===item.id)?.name_zh||item.label}</option>)}
     </select>
     {status&&<small role="status">{status}</small>}
