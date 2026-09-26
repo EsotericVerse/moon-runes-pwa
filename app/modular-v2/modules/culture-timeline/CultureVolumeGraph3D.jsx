@@ -119,18 +119,18 @@ export default function CultureVolumeGraph3D({
         zValueLabel:value=>dimension==='works'?'第 '+Number(value).toLocaleString()+' 項':Number(value).toLocaleString()
       });
       graph.on('click',point=>{
-        if(!point?.id)return;
-        const action=pointActionsRef.current.get(String(point.id));
-        if(!action)return;
         if(dimension==='works')return;
+        const action=point?.id?pointActionsRef.current.get(String(point.id)):null;
         if(canEdit&&tool==='anchor'){
-          const date=action.kind==='period'?action.period.start_date:dateInput(point.x);
+          const x=Number(point?.x);
+          const date=action?.kind==='period'?action.period.start_date:(Number.isFinite(x)?dateInput(x):'');
           if(!date)return;
           onCommand({scopeId:'lo3rwang',type:'anchor',values:{start_date:date}});
-          setMessage('已在河道所選日期新增定錨點草稿。');
+          setMessage('已在時間長河所選日期新增定錨點草稿。');
           setTool('view');
           return;
         }
+        if(!action)return;
         if(canEdit&&['event','period','style'].includes(tool)){
           if(action.kind!=='entry'||action.row.entry_type!=='anchor'||!action.row.anchor_id)return;
           const next=[...anchorPair,action.row].slice(-2);
@@ -230,7 +230,7 @@ export default function CultureVolumeGraph3D({
       </section>
       {canEdit?<div className='scope-v2-tabs scope-v2-culture-3d-tools' aria-label='時期河道編輯工具'>
         <button type='button' aria-pressed={tool==='view'} onClick={()=>{setTool('view');setAnchorPair([]);setMessage('')}}>瀏覽／旋轉</button>
-        <button type='button' aria-pressed={tool==='anchor'} onClick={()=>{setTool('anchor');setAnchorPair([]);setMessage('點擊時期或作品量資料點，在該日期新增定錨點。')}}>在時期河道新增定錨點</button>
+        <button type='button' aria-pressed={tool==='anchor'} onClick={()=>{setTool('anchor');setAnchorPair([]);setMessage('直接點擊時間長河上的日期位置，建立該日期的定錨點草稿。')}}>在時期河道新增定錨點</button>
         <button type='button' aria-pressed={tool==='event'} onClick={()=>{setTool('event');setAnchorPair([]);setMessage('點兩個定錨點，或將下方一個定錨點拖到另一個。')}}>建立事件</button>
         <button type='button' aria-pressed={tool==='period'} onClick={()=>{setTool('period');setAnchorPair([]);setMessage('依序點選時期河道上的前後定錨點。')}}>設定時期前後</button>
         <button type='button' aria-pressed={tool==='style'} onClick={()=>{setTool('style');setAnchorPair([]);setMessage('依序點選時期河道上的風格起點與終點。')}}>設定風格區間</button>
