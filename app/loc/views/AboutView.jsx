@@ -2,16 +2,16 @@ import ModelArchitectureExplorer from './ModelArchitectureExplorer';
 import {featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 
 const RUNES_LINKS=Object.freeze({
-  home:scopeHrefV2('lunarunes'),
-  list:scopeHrefV2('lunarunes','list'),
-  single:scopeHrefV2('lunarunes','duel/one'),
-  daily:scopeHrefV2('lunarunes','duel/daily'),
-  two:scopeHrefV2('lunarunes','duel/two'),
-  three:scopeHrefV2('lunarunes','duel/three'),
-  five:scopeHrefV2('lunarunes','duel/five'),
-  ow3gs:scopeHrefV2('lunarunes','duel/ow3gs'),
-  statics:featureHrefV2('lunarunes','statics'),
-  governance:featureHrefV2('lunarunes','governance')
+  home:scopeHrefV2('lrunes'),
+  list:scopeHrefV2('lrunes','list'),
+  single:scopeHrefV2('lrunes','duel/one'),
+  daily:scopeHrefV2('lrunes','duel/daily'),
+  two:scopeHrefV2('lrunes','duel/two'),
+  three:scopeHrefV2('lrunes','duel/three'),
+  five:scopeHrefV2('lrunes','duel/five'),
+  ow3gs:scopeHrefV2('lrunes','duel/ow3gs'),
+  statics:featureHrefV2('lrunes','statics'),
+  governance:featureHrefV2('lrunes','governance')
 });
 
 const MODEL_MODULES=[
