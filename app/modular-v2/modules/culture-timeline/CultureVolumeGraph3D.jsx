@@ -30,9 +30,9 @@ export default function CultureVolumeGraph3D({
   const [anchorPair,setAnchorPair]=useState([]);
   const [message,setMessage]=useState('');
 
-  const sourceNames=useMemo(()=>[...new Set(periods.flatMap(group=>(group.sources||[]).map(source=>source.display_label||source.source_platform)))].sort((a,b)=>a.localeCompare(b)),[periods]);
+  const sourceNames=useMemo(()=>[...new Set(periods.flatMap(group=>(group.sources||[]).map(source=>source.display_label||source.source_name)))].sort((a,b)=>a.localeCompare(b)),[periods]);
   const selectedCategoryInfo=useMemo(()=>categories.find(row=>row.category_key===selectedCategory)||null,[categories,selectedCategory]);
-  const selectedCategoryLabel=selectedCategoryInfo?.display_label||selectedCategoryInfo?.source_platform||selectedCategory;
+  const selectedCategoryLabel=selectedCategoryInfo?.display_label||selectedCategoryInfo?.source_name||selectedCategory;
   const authorAnchors=useMemo(()=>timelineItems
     .filter(row=>row.scope_id==='lo3rwang'&&row.entry_type==='anchor'&&row.anchor_id&&row.start_date)
     .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))),[timelineItems]);
@@ -46,8 +46,8 @@ export default function CultureVolumeGraph3D({
       const time=Date.parse(period.start_date);
       if(!Number.isFinite(time))continue;
       for(const source of periodEntry.sources||[]){
-        const categoryLabel=source.display_label||source.source_platform;
-        const categoryKey=source.category_key||source.source_platform;
+        const categoryLabel=source.display_label||source.source_name;
+        const categoryKey=source.category_key||source.source_name;
         const sourceIndex=sourceNames.indexOf(categoryLabel);
         const id='work:'+String(period.period||period.start_date)+':'+categoryKey;
         const count=Number(source.item_count)||0;
@@ -56,7 +56,7 @@ export default function CultureVolumeGraph3D({
           id,x:time,y:sourceIndex+1,z:count,style:Math.max(1,count),
           title:escapeHtml((period.display_label||period.title||period.period||'時期')+' · '+categoryLabel+' · '+count.toLocaleString()+' '+countLabel)
         });
-        actions.set(id,{kind:'work',period,category_key:categoryKey,category_type:source.category_type,source_platform:source.source_platform,item_count:count});
+        actions.set(id,{kind:'work',period,category_key:categoryKey,category_type:source.category_type,source_name:source.source_name,item_count:count});
       }
       const periodId='period:'+String(period.entry_key||period.period||time);
       data.push({id:periodId,x:time,y:0,z:0,style:18,title:escapeHtml((period.display_label||period.title||period.period||'時期')+' · 時期起點')});
@@ -151,7 +151,7 @@ export default function CultureVolumeGraph3D({
         }
         if(action.kind==='work'){
           onSelectWorkPoint(action);
-          onSelectCategory(action.category_key||action.source_platform);
+          onSelectCategory(action.category_key||action.source_name);
         }else if(action.kind==='entry')onSelectTimelineEntry(action.row);
         else if(action.kind==='period')onSelectTimelineEntry(action.period);
       });
@@ -204,12 +204,12 @@ export default function CultureVolumeGraph3D({
       {!categoryLoading&&!categoryError&&!categories.length?<p className='scope-v2-status'>目前沒有作品或多媒體項目。</p>:null}
       {categories.length?<div className='scope-v2-culture-3d-category-list'>
         {categories.map(category=>{
-          const categoryKey=category.category_key||category.source_platform;
+          const categoryKey=category.category_key||category.source_name;
           const isMedia=category.category_type==='media';
           return <button key={categoryKey} type='button'
             aria-pressed={selectedCategory===categoryKey}
             onClick={()=>{onSelectCategory(selectedCategory===categoryKey?'':categoryKey);setTool('view');setMessage('')}}>
-            <strong>{category.display_label||category.source_platform}</strong><span>{Number(category.item_count||0).toLocaleString()} {isMedia?'筆多媒體':'項作品'}</span>
+            <strong>{category.display_label||category.source_name}</strong><span>{Number(category.item_count||0).toLocaleString()} {isMedia?'筆多媒體':'項作品'}</span>
           </button>;
         })}
       </div>:null}
