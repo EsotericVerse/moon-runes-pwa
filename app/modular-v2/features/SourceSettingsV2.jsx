@@ -21,22 +21,22 @@ async function readSources(scopeId){
   const rows=[];
   if(scopeId==='loc'||scopeId==='lo3rwang'){
     const [text,media]=await Promise.all([
-      selectAllRows('silver.lo3rwang_galaxy',{columns:'source_platform'}),
-      selectAllRows('silver.lo3rwang_galaxy_media',{columns:'source_platform'})
+      selectAllRows('silver.lo3rwang_galaxy',{columns:'source_name'}),
+      selectAllRows('silver.lo3rwang_galaxy_media',{columns:'source_name'})
     ]);
     rows.push(...text.map(row=>({...row,data_scope:'lo3rwang',kind:'galaxy'})));
     rows.push(...media.map(row=>({...row,data_scope:'lo3rwang',kind:'galaxy_media'})));
   }
   if(scopeId==='loc'||scopeId==='lunarunes'){
     const runeRows=await selectAllRows('silver.lrunes',{
-      columns:'record_type,source_platform',
+      columns:'record_type,source_name',
       filters:[{column:'record_type',operator:'in',value:['galaxy','galaxy_media']}]
     });
     rows.push(...runeRows.map(row=>({...row,data_scope:'lrunes',kind:row.record_type})));
   }
   const map=new Map();
   for(const row of rows){
-    const source=String(row.source_platform||'').trim();
+    const source=String(row.source_name||'').trim();
     if(!source)continue;
     const current=map.get(source)||{source,count:0,scopes:new Set(),kinds:new Set()};
     current.count+=1;
@@ -56,14 +56,14 @@ async function renameSource(scopeId,from,to){
 
   if(scopeId==='loc'||scopeId==='lo3rwang'){
     await Promise.all([
-      updateNeonRows('silver.lo3rwang_galaxy',{source_platform:target},{filters:[{column:'source_platform',operator:'eq',value:from}],returning:null}),
-      updateNeonRows('silver.lo3rwang_galaxy_media',{source_platform:target},{filters:[{column:'source_platform',operator:'eq',value:from}],returning:null})
+      updateNeonRows('silver.lo3rwang_galaxy',{source_name:target},{filters:[{column:'source_name',operator:'eq',value:from}],returning:null}),
+      updateNeonRows('silver.lo3rwang_galaxy_media',{source_name:target},{filters:[{column:'source_name',operator:'eq',value:from}],returning:null})
     ]);
   }
   if(scopeId==='loc'||scopeId==='lunarunes'){
-    await updateNeonRows('silver.lrunes',{source_platform:target},{filters:[
+    await updateNeonRows('silver.lrunes',{source_name:target},{filters:[
       {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
-      {column:'source_platform',operator:'eq',value:from}
+      {column:'source_name',operator:'eq',value:from}
     ],returning:null});
   }
 }
@@ -104,7 +104,7 @@ export default function SourceSettingsV2({scopeId='loc'}){
 
   return <section className="scope-v2-inline-card">
     <h3>作品來源設定</h3>
-    <p>統一管理 Galaxy 與 Galaxy Media 的 <code>source_platform</code>；排行榜與統計圖共用這份來源資料。</p>
+    <p>統一管理 Galaxy 與 Galaxy Media 的 來源名稱是匯入時自訂的唯一字串；需要合併時可直接批次改名，排行榜、統計圖與 Time River 會直接依來源名稱分組。</p>
     {query.isPending?<p className="scope-v2-status">讀取作品來源…</p>:null}
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     {message?<p className="scope-v2-status">{message}</p>:null}
