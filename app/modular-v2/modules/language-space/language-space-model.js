@@ -1,13 +1,5 @@
 export const LANGUAGE_ITEM_KINDS=Object.freeze({TEXT:'text',MEDIA:'media',TIME:'time',KEYWORD:'keyword'});
-export const LANGUAGE_SPACE_FACES=Object.freeze([
-  Object.freeze({id:'time',label:'時表示',kinds:Object.freeze(['time','text','media'])}),
-  Object.freeze({id:'space',label:'空表示',kinds:Object.freeze(['text','keyword'])}),
-  Object.freeze({id:'extension',label:'延伸',kinds:Object.freeze(['media'])}),
-  Object.freeze({id:'manage',label:'管理',kinds:Object.freeze([])})
-]);
-export function languageSpaceFace(id='space'){
-  return LANGUAGE_SPACE_FACES.find(face=>face.id===id)||LANGUAGE_SPACE_FACES[1];
-}
+export {LANGUAGE_4D_FACES as LANGUAGE_SPACE_FACES,language4DFace as languageSpaceFace} from './language-4d-core';
 
 export function languageItem(raw={},fallbackKind='text',index=0){
   const kind=String(raw.kind||fallbackKind);
