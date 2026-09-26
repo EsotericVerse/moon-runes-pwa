@@ -21,9 +21,9 @@ const MODEL_MODULES=[
     href:RUNES_LINKS.home, depth:'deep'
   },
   {
-    key:'statics', name:'Statistics', zh:'統計', summary:'排行榜、關鍵詞與關係圖',
-    detail:'統合排行榜、關鍵詞設定、統計圖與關係圖，讓文字與多媒體資料在同一統計空間中被查看。',
-    href:'/statics', depth:'deep'
+    key:'context', name:'Context', zh:'脈絡', summary:'關係圖',
+    detail:'整理事件、作品、來源與既有關係，讓文字與資料可以沿來源與關係被查找、比較與理解。',
+    href:'/context', depth:'deep'
   },
   {
     key:'music', name:'Music', zh:'音樂', summary:'Suno 音樂與歌詞',
@@ -39,6 +39,11 @@ const MODEL_MODULES=[
     key:'media', name:'Multimedia', zh:'多媒體', summary:'多媒體內容',
     detail:'連結圖像、影音與其他媒體來源，觀察同一語意在不同媒介中的表達與轉譯。',
     href:'/multimedia'
+  },
+  {
+    key:'algorithm', name:'Algorithm', zh:'演算法', summary:'方法論與演算法集合',
+    detail:'把既有方法論整併成可重現的演算法，用於分類、比較、搜尋、關係運算與其他語言處理。',
+    href:'/algorithm', depth:'deep'
   },
   {
     key:'module', name:'Module', zh:'模組', summary:'獨立功能封裝',
