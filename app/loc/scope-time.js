@@ -12,6 +12,12 @@ function addDays(value,amount){
   date.setUTCDate(date.getUTCDate()+amount);
   return date.toISOString().slice(0,10);
 }
+function anchorDate(row){
+  const exact=dateText(row?.time_date);
+  if(exact)return exact;
+  const year=Number(row?.year_value);
+  return String(row?.date_status||'')==='year_only'&&Number.isInteger(year)&&year>0?`${year}-01-01`:null;
+}
 export function splitAnchorPair(value){
   const [before='0',after='0']=String(value||'0,0').split(',',2).map(item=>String(item||'0').trim()||'0');
   return {before,after};
@@ -21,19 +27,20 @@ export function normalizeScopeTimeRows(rows){
   const anchors=new Map(source
     .filter(row=>row.record_type==='anchor'&&row.resource_id)
     .map(row=>[String(row.resource_id),row]));
-  return source.map(row=>{
+  return source.flatMap(row=>{
     const type=String(row.record_type||'');
     const id=String(row.resource_id||row.record_id||'');
     const pair=splitAnchorPair(row.anchor_pair);
+    if(type!=='anchor'&&pair.before==='0'&&pair.after==='0')return [];
     const before=pair.before==='0'?null:anchors.get(pair.before);
     const after=pair.after==='0'?null:anchors.get(pair.after);
     const startAnchorId=pair.before==='0'?null:pair.before;
     const endAnchorId=pair.after==='0'?null:pair.after;
-    const anchorDate=type==='anchor'?dateText(row.time_date):null;
-    const startDate=type==='anchor'?anchorDate:dateText(before?.time_date);
-    const endBoundary=type==='anchor'?null:dateText(after?.time_date);
+    const pointDate=type==='anchor'?anchorDate(row):null;
+    const startDate=type==='anchor'?pointDate:anchorDate(before);
+    const endBoundary=type==='anchor'?null:anchorDate(after);
     const endDate=type==='period'&&endBoundary?addDays(endBoundary,-1):endBoundary;
-    return {
+    return [{
       ...row,
       entry_key:type+':'+id,
       entry_type:type,
@@ -49,12 +56,14 @@ export function normalizeScopeTimeRows(rows){
       before_id:type==='event'?startAnchorId:null,
       after_id:type==='event'?endAnchorId:null,
       event_id:type==='event'?id:null,
+      open_start:type!=='anchor'&&pair.before==='0'&&pair.after!=='0',
+      open_end:type!=='anchor'&&pair.before!=='0'&&pair.after==='0',
       start_date:startDate,
       end_date:endDate
-    };
+    }];
   }).sort((a,b)=>{
-    const ad=String(a.start_date||'9999-12-31');
-    const bd=String(b.start_date||'9999-12-31');
+    const ad=String(a.start_date||a.end_date||'9999-12-31');
+    const bd=String(b.start_date||b.end_date||'9999-12-31');
     return ad.localeCompare(bd)||Number(a.order_no||0)-Number(b.order_no||0)||String(a.entry_key).localeCompare(String(b.entry_key));
   });
 }
