@@ -31,7 +31,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
   useEffect(()=>{
     let active=true;
     if(account.permissionLoading||!account.user){setCanEdit(false);return()=>{active=false};}
-    Promise.all([account.canManageGlobal(),account.canManageScope(databaseScopeId),account.canManagePage(databaseScopeId,'statics')])
+    Promise.all([account.canManageGlobal(),account.canManageScope(databaseScopeId),account.canManagePage(databaseScopeId,'media')])
       .then(values=>{if(active)setCanEdit(values.some(Boolean))})
       .catch(()=>{if(active)setCanEdit(false)});
     return()=>{active=false};
