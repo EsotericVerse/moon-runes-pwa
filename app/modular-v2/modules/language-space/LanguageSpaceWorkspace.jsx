@@ -4,15 +4,9 @@ import {Canvas,useFrame,useThree} from '@react-three/fiber';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {filterLanguageItems} from './language-space-model';
+import {LANGUAGE_4D_FACES,LANGUAGE_4D_STATE_KEY,language4DFace,language4DState,projectLanguage4D} from './language-4d-core';
 
-const FACES=Object.freeze([
-  ['time','時間長河'],
-  ['space','空間分析'],
-  ['extension','延伸'],
-  ['manage','管理']
-]);
 const TYPE_LABELS={text:'文字',media:'多媒體',time:'時間',keyword:'關鍵詞'};
-const STATE_KEY='loc:language-space:shared-state';
 
 function Controls(){
   const {camera,gl}=useThree();
@@ -31,48 +25,6 @@ function Controls(){
   return null;
 }
 
-function hash(value){
-  let h=2166136261;
-  for(const ch of String(value||'')){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}
-  return Math.abs(h>>>0);
-}
-function dateExtent(items){
-  const values=items.map(item=>Date.parse(item.date||'')).filter(Number.isFinite);
-  if(!values.length)return [0,1];
-  const min=Math.min(...values),max=Math.max(...values);
-  return min===max?[min,min+86400000]:[min,max];
-}
-function scale(value,min,max,a=-4.8,b=4.8){
-  if(!Number.isFinite(value))return 0;
-  return a+(value-min)*(b-a)/(max-min||1);
-}
-function coordinates(items,face){
-  const [minDate,maxDate]=dateExtent(items);
-  const maxValue=Math.max(1,...items.map(item=>Number(item.value)||1));
-  return new Map(items.map((item,index)=>{
-    const t=Date.parse(item.date||'');
-    const value=Math.max(1,Number(item.value)||1);
-    if(face==='time'){
-      const x=Number.isFinite(t)?scale(t,minDate,maxDate):(index%11-5)*.7;
-      const y=item.kind==='time'?0:item.kind==='media'?2:item.kind==='keyword'?-2:-1;
-      const z=Math.log2(value+1)/Math.log2(maxValue+1)*3.2;
-      return [x,y,z];
-    }
-    if(face==='extension'){
-      const x=Number.isFinite(t)?scale(t,minDate,maxDate):(index%9-4)*1.05;
-      const y=((hash(item.source)%9)-4)*.55;
-      const z=Math.log2(value+1)/Math.log2(maxValue+1)*3.4;
-      return [x,y,z];
-    }
-    const key=hash(item.tags||item.source||item.label);
-    const angle=(key%360)*Math.PI/180;
-    const radius=1.6+((key>>8)%360)/100;
-    const y=item.kind==='keyword'?1.6:item.kind==='media'?.8:-.8;
-    const z=Math.log2(value+1)/Math.log2(maxValue+1)*3;
-    return [Math.cos(angle)*radius,y+z*.22,Math.sin(angle)*radius];
-  }));
-}
-
 function Edge({a,b}){
   const ref=useRef(null);
   const length=Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2]);
@@ -88,7 +40,7 @@ function Edge({a,b}){
 }
 
 function Scene({items,face,selected,onSelect}){
-  const points=useMemo(()=>coordinates(items,face),[items,face]);
+  const points=useMemo(()=>projectLanguage4D(items,face),[items,face]);
   const edges=useMemo(()=>{
     const out=[];const seen=new Set();
     for(const item of items)for(const target of item.relations||[]){
@@ -128,7 +80,7 @@ export default function LanguageSpaceWorkspace({
 }){
   const restored=useMemo(()=>{
     if(typeof window==='undefined')return null;
-    try{return JSON.parse(sessionStorage.getItem(STATE_KEY)||'null')}catch{return null}
+    try{return language4DState(JSON.parse(sessionStorage.getItem(LANGUAGE_4D_STATE_KEY)||'null')||{})}catch{return null}
   },[]);
   const [face,setFace]=useState(initialFace||restored?.face||'space');
   const [query,setQuery]=useState(searchQuery||initialQuery||restored?.query||'');
@@ -139,11 +91,11 @@ export default function LanguageSpaceWorkspace({
   useEffect(()=>{if(searchQuery||initialQuery)setQuery(searchQuery||initialQuery)},[searchQuery,initialQuery]);
   useEffect(()=>{
     if(typeof window==='undefined')return;
-    try{sessionStorage.setItem(STATE_KEY,JSON.stringify({face,query,start,end,selected}))}catch{}
+    try{sessionStorage.setItem(LANGUAGE_4D_STATE_KEY,JSON.stringify(language4DState({face,query,start,end,selected})))}catch{}
   },[face,query,start,end,selected]);
   useEffect(()=>{if(face==='manage'&&!management)setFace('space')},[face,management]);
 
-  const faceKinds=face==='extension'?['media']:face==='time'?['time','text','media']:['text','keyword','media'];
+  const faceKinds=language4DFace(face).kinds;
   const visible=useMemo(()=>filterLanguageItems(items,{
     query:face==='space'?query:'',
     start,
@@ -173,7 +125,7 @@ export default function LanguageSpaceWorkspace({
     <header className="language-space-heading">
       <div><h3>{title}</h3></div>
       <div className="language-space-face-switch" role="group" aria-label="立體功能面">
-        {FACES.map(([id,label])=>{
+        {LANGUAGE_4D_FACES.map(({id,label})=>{
           if(id==='manage'&&!management)return null;
           return <button key={id} type="button" aria-pressed={face===id} onClick={()=>setFace(id)}>{label}</button>;
         })}
