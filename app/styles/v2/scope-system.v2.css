@@ -238,3 +238,31 @@
 .scope-graph-grants ul{padding-left:1.25rem}
 .scope-graph-grants li{margin:.5rem 0}
 @media(max-width:600px){.scope-graph-canvas{min-height:440px}.scope-graph-form{grid-template-columns:1fr}}
+
+
+/* Statistics uses one architectural frame with two independent data faces:
+   text on the front, multimedia metadata on the rotated face. */
+.scope-v2-stat-domain-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.85rem}
+.scope-v2-stat-domain-heading>div{min-width:0;flex:1 1 28rem}
+.scope-v2-stat-domain-heading h2{margin:.15rem 0 .4rem}
+.scope-v2-stat-domain-heading p{margin:0;color:var(--scope-v2-muted)}
+.scope-v2-stat-flip-button{flex:0 0 auto;padding:.55rem .9rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel-2);color:var(--scope-v2-text);cursor:pointer;transition:transform .22s ease,border-color .22s ease}
+.scope-v2-stat-flip-button:hover{transform:rotateY(12deg);border-color:var(--loc-accent-border)}
+.scope-v2-stat-flip{perspective:1400px;min-width:0}
+.scope-v2-stat-face{transform-style:preserve-3d;transform-origin:center center;transition:transform .55s cubic-bezier(.2,.72,.2,1),opacity .25s ease}
+.scope-v2-stat-flip.is-text .scope-v2-stat-face{transform:rotateY(0deg)}
+.scope-v2-stat-flip.is-media .scope-v2-stat-face{animation:scope-v2-stat-turn .58s cubic-bezier(.2,.72,.2,1)}
+@keyframes scope-v2-stat-turn{
+  0%{transform:rotateY(0deg);opacity:.7}
+  49%{transform:rotateY(86deg);opacity:.2}
+  51%{transform:rotateY(-86deg);opacity:.2}
+  100%{transform:rotateY(0deg);opacity:1}
+}
+@media(prefers-reduced-motion:reduce){
+  .scope-v2-stat-face,.scope-v2-stat-flip-button{transition:none}
+  .scope-v2-stat-flip.is-media .scope-v2-stat-face{animation:none}
+}
+@media(max-width:720px){
+  .scope-v2-stat-domain-heading{display:grid}
+  .scope-v2-stat-flip-button{justify-self:start}
+}
