@@ -8,8 +8,8 @@ import {
   selectManagedNodes,selectPermissions,updateManagedNode,upsertPermission
 } from '../loc/neon-scope-governance';
 
-const EMPTY_NODE={record_type:'scope',node_id:'',parent_group_id:'loc',active:true,display_order:10};
-const EMPTY_PERMISSION={userId:'',email:'',privileges:'page:lo3rwang:statics'};
+const EMPTY_NODE={record_type:'scope',node_id:'',parent_group_id:'',active:true,display_order:10};
+const EMPTY_PERMISSION={userId:'',email:'',privileges:''};
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
 const privilegeLines=value=>[...new Set(String(value||'').split(/[\n,]+/).map(item=>item.trim()).filter(Boolean))];
 
@@ -187,7 +187,7 @@ export default function ScopeManagementV2(){
       {draft?<div className="scope-graph-inspector">
         <h2>{selected?.kind==='new'?'新增節點':`編輯 ${draft.node_id}`}</h2>
         <form onSubmit={saveNode} className="scope-graph-form">
-          <label>類型<select value={draft.record_type} disabled={selected?.kind!=='new'} onChange={event=>setDraft(row=>({...row,record_type:event.target.value,parent_group_id:event.target.value==='scope'?(row.parent_group_id||'loc'):row.parent_group_id}))}>
+          <label>類型<select value={draft.record_type} disabled={selected?.kind!=='new'} onChange={event=>setDraft(row=>({...row,record_type:event.target.value,parent_group_id:event.target.value==='scope'?(row.parent_group_id||''):row.parent_group_id}))}>
             <option value="group">Group</option><option value="scope">Scope</option>
           </select></label>
           <label>{draft.record_type==='group'?'Group ID':'Scope ID'}<input required pattern="[A-Za-z][A-Za-z0-9_.-]{0,62}" value={draft.node_id} disabled={selected?.kind!=='new'} onChange={event=>setDraft(row=>({...row,node_id:event.target.value}))}/></label>
@@ -211,7 +211,7 @@ export default function ScopeManagementV2(){
           <label>user_id<input required value={permissionDraft.userId} onChange={event=>setPermissionDraft(row=>({...row,userId:event.target.value}))}/></label>
           <label>email<input required type="email" value={permissionDraft.email} onChange={event=>setPermissionDraft(row=>({...row,email:event.target.value}))}/></label>
           <label>privileges（每行一項）<textarea rows={5} required value={permissionDraft.privileges} onChange={event=>setPermissionDraft(row=>({...row,privileges:event.target.value}))}/></label>
-          <p className="scope-v2-meta">可用：admin、blacklist、scope:&lt;scope&gt;、page:&lt;scope&gt;:culture、page:&lt;scope&gt;:statics、page:&lt;scope&gt;:media；blacklist 優先拒絕其他管理權限</p>
+          <p className="scope-v2-meta">可用：admin、&lt;scope_id&gt;、&lt;scope_id&gt;_&lt;page&gt;。權限向下相容：admin 不需再列 Scope；已有 Scope 權限時，不需再列該 Scope 的頁面。</p>
           <button type="submit" disabled={mutate.isPending}>儲存權限</button>
         </form>
         {data.permissions.length?<ul>{data.permissions.map(row=><li key={row.record_id}>
