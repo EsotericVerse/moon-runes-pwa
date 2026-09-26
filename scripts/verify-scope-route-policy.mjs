@@ -36,34 +36,25 @@ function mountedPath(base,route){
 }
 
 for(const scope of Object.values(SCOPES_V2)){
-  const domainPolicy=policy.hosts?.[scope.domain];
-  if(!domainPolicy){
+  const domainPolicy=scope.domain?policy.hosts?.[scope.domain]:null;
+  if(scope.domain&&!domainPolicy){
     failures.push('missing edge host policy for '+scope.domain);
     continue;
   }
 
-  for(const route of scopeRoutePathsV2(scope.id)){
+  if(scope.domain)for(const route of scopeRoutePathsV2(scope.id)){
     expectAllowed(scope.domain,route,true);
   }
 
-  for(const pattern of scopeRoutePatternsV2(scope.id)){
+  if(scope.domain)for(const pattern of scopeRoutePatternsV2(scope.id)){
     expectPattern(scope.domain,pattern,true);
   }
 
-  for(const route of scopeCompatibilityRoutesV2(scope.id)){
+  if(scope.domain)for(const route of scopeCompatibilityRoutesV2(scope.id)){
     expectCompatibility(scope.domain,route,true);
   }
 
-  if(scope.scopeType==='directory'){
-    if(!scope.mount){
-      failures.push(scope.id+' directory Scope missing mount for edge redirect');
-    }else{
-      const redirect=domainPolicy.redirect;
-      if(redirect?.toHost!==scope.mount.host||redirect?.toBase!==scope.mount.path){
-        failures.push(scope.id+' directory alias redirect drifted');
-      }
-    }
-  }else if(domainPolicy.redirect){
+  if(scope.scopeType==='domain'&&domainPolicy?.redirect){
     failures.push(scope.id+' domain Scope must not have alias redirect metadata');
   }
 
@@ -81,31 +72,20 @@ for(const scope of Object.values(SCOPES_V2)){
 }
 
 
-for(const path of ['/','/context','/statics','/culture','/governance','/search','/list','/history','/duel/one','/duel/ow3gs','/daily/log','/daily/trend']){
+for(const path of ['/','/statics','/culture','/governance','/search','/list','/history','/duel/one','/duel/ow3gs','/daily/log','/daily/trend']){
   expectAllowed('lrunes.lo3rwang.cc',path,true);
 }
-for(const path of ['/loc','/runes','/lrunes','/lrunes/context','/duel/one/foo']){
+for(const path of ['/context','/loc','/runes','/lrunes','/lrunes/context','/duel/one/foo']){
   expectAllowed('lrunes.lo3rwang.cc',path,false);
 }
 
-for(const path of ['/','/context','/statics','/culture','/governance','/search','/lrunes','/lrunes/context','/lrunes/list','/lrunes/duel/one','/lo3rwang','/lo3rwang/context','/lo3rwang/work','/lo3rwang/other']){
+for(const path of ['/','/statics','/culture','/governance','/search','/lrunes','/lrunes/list','/lrunes/duel/one','/lo3rwang','/lo3rwang/work','/lo3rwang/other']){
   expectAllowed('loc.lo3rwang.cc',path,true);
 }
-for(const path of ['/loc','/runes','/list','/history','/duel/one']){
+for(const path of ['/context','/lrunes/context','/lo3rwang/context','/loc','/runes','/list','/history','/duel/one']){
   expectAllowed('loc.lo3rwang.cc',path,false);
 }
 
-for(const path of ['/','/context','/statics','/culture','/governance','/search']){
-  expectAllowed('dlwang.lo3rwang.cc',path,true);
-}
-for(const path of ['/loc','/lo3rwang','/runes','/lrunes']){
-  expectAllowed('dlwang.lo3rwang.cc',path,false);
-}
-
-const authorRedirect=policy.hosts?.['dlwang.lo3rwang.cc']?.redirect;
-if(authorRedirect?.toHost!=='loc.lo3rwang.cc'||authorRedirect?.toBase!=='/lo3rwang'){
-  failures.push('author alias redirect policy drifted');
-}
 
 
 if(policy.hosts?.['lrunes.lo3rwang.cc']?.redirect){

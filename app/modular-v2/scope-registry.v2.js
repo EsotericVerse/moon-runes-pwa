@@ -13,7 +13,6 @@ export const SCOPE_POLICY_V2=Object.freeze({
 });
 
 export const FEATURES_V2=Object.freeze([
-  Object.freeze({id:'context',label:'脈絡',path:'context'}),
   Object.freeze({id:'statics',label:'統計',path:'statics'}),
   Object.freeze({id:'culture',label:'文化',path:'culture'}),
   Object.freeze({id:'governance',label:'治理',path:'governance'}),

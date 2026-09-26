@@ -3,16 +3,16 @@ import ScopeArchitecture3D from './ScopeArchitecture3D';
 import {featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 
 const RUNES_LINKS=Object.freeze({
-  home:scopeHrefV2('runes'),
-  list:scopeHrefV2('runes','list'),
-  single:scopeHrefV2('runes','duel/one'),
-  daily:scopeHrefV2('runes','duel/daily'),
-  two:scopeHrefV2('runes','duel/two'),
-  three:scopeHrefV2('runes','duel/three'),
-  five:scopeHrefV2('runes','duel/five'),
-  ow3gs:scopeHrefV2('runes','duel/ow3gs'),
-  context:featureHrefV2('runes','context'),
-  governance:featureHrefV2('runes','governance')
+  home:scopeHrefV2('lunarunes'),
+  list:scopeHrefV2('lunarunes','list'),
+  single:scopeHrefV2('lunarunes','duel/one'),
+  daily:scopeHrefV2('lunarunes','duel/daily'),
+  two:scopeHrefV2('lunarunes','duel/two'),
+  three:scopeHrefV2('lunarunes','duel/three'),
+  five:scopeHrefV2('lunarunes','duel/five'),
+  ow3gs:scopeHrefV2('lunarunes','duel/ow3gs'),
+  statics:featureHrefV2('lunarunes','statics'),
+  governance:featureHrefV2('lunarunes','governance')
 });
 
 const MODEL_MODULES=[
@@ -22,9 +22,9 @@ const MODEL_MODULES=[
     href:RUNES_LINKS.home, depth:'deep'
   },
   {
-    key:'context', name:'Context', zh:'脈絡', summary:'關係圖',
-    detail:'整理事件、作品、來源與既有關係，讓文字與資料可以沿來源與關係被查找、比較與理解。',
-    href:'/context', depth:'deep'
+    key:'statics', name:'Statistics', zh:'統計', summary:'排行榜、關鍵詞與關係圖',
+    detail:'統合排行榜、關鍵詞設定、統計圖與關係圖，讓文字與多媒體資料在同一統計空間中被查看。',
+    href:'/statics', depth:'deep'
   },
   {
     key:'music', name:'Music', zh:'音樂', summary:'Suno 音樂與歌詞',
@@ -40,11 +40,6 @@ const MODEL_MODULES=[
     key:'media', name:'Multimedia', zh:'多媒體', summary:'多媒體內容',
     detail:'連結圖像、影音與其他媒體來源，觀察同一語意在不同媒介中的表達與轉譯。',
     href:'/multimedia'
-  },
-  {
-    key:'algorithm', name:'Algorithm', zh:'演算法', summary:'方法論與演算法集合',
-    detail:'把既有方法論整併成可重現的演算法，用於分類、比較、搜尋、關係運算與其他語言處理。',
-    href:'/algorithm', depth:'deep'
   },
   {
     key:'module', name:'Module', zh:'模組', summary:'獨立功能封裝',
@@ -92,7 +87,7 @@ export default function AboutView(){
 		  <p>可以是問事，可以是決定當日生活主題風格的<a href={RUNES_LINKS.daily}>每日符文</a>。</p>
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
           <p>你也可以完全不抽牌，直接跳過，</p>
-		  <p>或來看<a href="/context/">脈絡關係圖</a>、<a href="/statics/">統計資料</a>、<a href="/culture/">文化的時間長河</a>等，</p>
+		  <p>或來看<a href="/statics/">統計資料與脈絡關係圖</a>、<a href="/culture/">文化的時間長河</a>等，</p>
 		  <p>或是看看<a href="/faq/">FAQ</a>，或直接搜尋自己有興趣的文字與資料。</p>
           <p><strong>那就開始吧！</strong></p>
         </div>

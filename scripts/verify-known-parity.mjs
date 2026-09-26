@@ -29,9 +29,9 @@ requireText('app/loc/views/AboutView.jsx',[
   '模型化語言框架（Modelized Language Framework）',
   '符號式語言（Symbolic Language）',
   'ModelArchitectureExplorer',
-  "scopeHrefV2('runes','duel/one')",
-  "scopeHrefV2('runes','duel/daily')",
-  "featureHrefV2('runes','context')",
+  "scopeHrefV2('lunarunes','duel/one')",
+  "scopeHrefV2('lunarunes','duel/daily')",
+  "featureHrefV2('lunarunes','statics')",
   '<img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" />'
 ]);
 forbidText('app/loc/views/AboutView.jsx',[
@@ -56,7 +56,7 @@ requireText('app/modular-v2/ScopeFooterV2.jsx',[
   'useScopeRuntimeV2','ThemeSelectV2'
 ]);
 
-if(existsSync(resolve(root,'app/lrunes/page.jsx')))failures.push('app/lrunes/page.jsx must remain retired; app/runes is source-only');
+if(!existsSync(resolve(root,'app/lrunes/page.jsx')))failures.push('app/lrunes/page.jsx is the LunaRunes route root and must exist');
 for(const path of [
   'app/lrunes/RuneDrawClient.jsx',
   'app/lrunes/RunesClient.jsx',
@@ -66,8 +66,8 @@ for(const path of [
 ])requireFile(path);
 
 requireText('app/lrunes/RuneDrawClient.jsx',[
-  "scopeHrefV2('runes','duel/one')",
-  "scopeHrefV2('runes','duel/daily')",
+  "scopeHrefV2('lunarunes','duel/one')",
+  "scopeHrefV2('lunarunes','duel/daily')",
   "key: 'ow3gs'",
   '第 7–11 張為核心判定'
 ]);

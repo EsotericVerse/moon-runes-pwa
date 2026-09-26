@@ -13,7 +13,6 @@ const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{ssr:false,loadi
 const GameView=dynamic(()=>import('./views/GameView'),{ssr:false,loading});
 // Feature shells render synchronously so title, shared CSS and local link menus
 // never wait for Neon canonical data or client-only module hydration.
-const ContextView=dynamic(()=>import('../modular-v2/features/ContextV2'),{loading});
 const StaticsView=dynamic(()=>import('../modular-v2/features/StatisticsV2'),{loading});
 const CultureView=dynamic(()=>import('../modular-v2/features/CultureV2'),{loading});
 const SearchView=dynamic(()=>import('../modular-v2/features/SearchV2'),{loading});
@@ -23,7 +22,7 @@ function BlockedScopeRoute(){return <section className="loc-view"><h1>此頁面�
 function AdminRedirect(){useEffect(()=>{window.location.replace('https://admin.lo3rwang.cc/');},[]);return <section className="loc-view"><h1>前往系統掌控者頁面</h1><p>正在轉往 admin.lo3rwang.cc…</p></section>;}
 
 const VIEWS={
-  game:GameView,context:ContextView,statics:StaticsView,
+  game:GameView,statics:StaticsView,
   culture:CultureView,search:SearchView,governance:GovernanceView
 };
 

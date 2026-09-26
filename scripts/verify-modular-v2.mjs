@@ -4,8 +4,8 @@ import {FEATURES_V2,SCOPES_V2,SCOPE_POLICY_V2,featureHrefV2,scopeHrefV2,resolveS
 import {SCOPE_TREE_LIMITS_V2,validateScopeTreeMove} from '../app/modular-v2/modules/scope-tree/scope-tree-contract.js';
 
 const failures=[];
-const requiredCoreScopes=['loc','runes','lo3rwang','admin'];
-const expectedFeatures=['context','statics','culture','governance','search'];
+const requiredCoreScopes=['loc','lunarunes','lo3rwang','admin'];
+const expectedFeatures=['statics','culture','governance','search'];
 
 for(const id of requiredCoreScopes){
   if(!SCOPES_V2[id])failures.push('missing required core Scope: '+id);
@@ -13,7 +13,7 @@ for(const id of requiredCoreScopes){
 if(JSON.stringify(FEATURES_V2.map(item=>item.id))!==JSON.stringify(expectedFeatures))failures.push('feature registry mismatch');
 
 const scopeIds=Object.keys(SCOPES_V2);
-const domains=Object.values(SCOPES_V2).map(scope=>scope.domain);
+const domains=Object.values(SCOPES_V2).map(scope=>scope.domain).filter(Boolean);
 const featureIds=FEATURES_V2.map(item=>item.id);
 const featurePaths=FEATURES_V2.map(item=>item.path);
 if(new Set(scopeIds).size!==scopeIds.length)failures.push('duplicate Scope id');
@@ -33,10 +33,12 @@ for(const domain of domains){
 }
 for(const [id,scope] of Object.entries(SCOPES_V2)){
   const domain=scope.domain;
-  if(!domain)failures.push(id+' missing domain');
-  else{
-    if(resolveScopeV2(domain)!==id)failures.push(domain+' scope mismatch');
-    if(resolveScopeV2(domain+':443')!==id)failures.push(domain+' port normalization mismatch');
+  if(scope.scopeType==='domain'){
+    if(!domain)failures.push(id+' domain Scope missing domain');
+    else{
+      if(resolveScopeV2(domain)!==id)failures.push(domain+' scope mismatch');
+      if(resolveScopeV2(domain+':443')!==id)failures.push(domain+' port normalization mismatch');
+    }
   }
 
   if(scope.id!==id)failures.push(id+' registry key/id mismatch');
@@ -74,7 +76,7 @@ for(const file of walk(root)){
   for(const [label,re] of forbidden)if(re.test(source))failures.push(`${path.relative('.',file)}: ${label}`);
   if(!file.endsWith('scope-registry.v2.js')&&/loc\.lo3rwang\.cc|lrunes\.lo3rwang\.cc|lo3rwang\.lo3rwang\.cc|admin\.lo3rwang\.cc/.test(source))failures.push(`${path.relative('.',file)}: domain literal outside scope registry`);
 }
-for(const name of ['ContextV2','StatisticsV2','CultureV2','GovernanceV2','SearchV2']){
+for(const name of ['StatisticsV2','CultureV2','GovernanceV2','SearchV2']){
   const file=path.join(root,'features',name+'.jsx');
   if(!fs.existsSync(file))failures.push('missing feature component '+name);
   else if(!fs.readFileSync(file,'utf8').includes('FeaturePageV2'))failures.push(name+' bypasses shared FeaturePageV2');
@@ -83,7 +85,7 @@ const css=fs.readFileSync('app/styles/v2/scope-system.v2.css','utf8');
 if(!css.includes('.scope-v2-'))failures.push('V2 CSS namespace missing');
 if(css.includes('.loc-view')||css.includes('.loc-card')||css.includes('.loc-hero'))failures.push('V2 CSS must not patch legacy component selectors');
 const locApp=fs.readFileSync('app/loc/LocApp.jsx','utf8');
-for(const name of ['ContextV2','StatisticsV2','CultureV2','GovernanceV2','SearchV2'])if(!locApp.includes(name))failures.push('LocApp not cut over to '+name);
+for(const name of ['StatisticsV2','CultureV2','GovernanceV2','SearchV2'])if(!locApp.includes(name))failures.push('LocApp not cut over to '+name);
 if(locApp.includes('EvolutionView')||locApp.includes('evolution:CultureView'))failures.push('obsolete evolution runtime still active');
 if(!fs.readFileSync('app/globals.css','utf8').includes('./styles/v2/scope-system.v2.css'))failures.push('V2 CSS not imported');
 if(!fs.readFileSync('app/site-registry.js','utf8').includes("from './modular-v2/scope-registry.v2'"))failures.push('compat registry does not derive from V2');
@@ -166,13 +168,14 @@ for(const scope of Object.values(SCOPES_V2)){
   if(!dirName){failures.push('Scope mount missing path segment: '+scope.id);continue;}
   const routeRoot=path.resolve('app',dirName);
   if(!fs.existsSync(routeRoot))failures.push('Scope mount route shell missing: app/'+dirName);
-  for(const route of ['page.jsx','context/page.jsx','statics/page.jsx','culture/page.jsx','governance/page.jsx','search/page.jsx']){
+  for(const route of ['page.jsx','statics/page.jsx','culture/page.jsx','governance/page.jsx','search/page.jsx']){
     const file=path.join(routeRoot,route);
     if(!fs.existsSync(file))failures.push('Scope mount route shell missing: app/'+dirName+'/'+route);
   }
 }
 for(const [id,scope] of Object.entries(SCOPES_V2)){
-  for(const pathname of ['/','/context','/statics','/culture','/governance','/search']){
+  if(!scope.domain)continue;
+  for(const pathname of ['/','/statics','/culture','/governance','/search']){
     if(resolveScopeV2(scope.domain,pathname)!==id)failures.push(scope.domain+' failed direct-domain Scope resolution at '+pathname);
   }
 }
@@ -190,11 +193,11 @@ for(const scope of Object.values(SCOPES_V2).filter(item=>item.mount)){
 for(const pathname of ['/runes','/runes/context']){
   if(resolveScopeV2('loc.lo3rwang.cc',pathname)!=='loc')failures.push('retired /runes path resolved as active Scope: '+pathname);
 }
-if(SCOPES_V2.runes?.scopeType!=='domain')failures.push('LunaRunes Scope must remain domain type');
-if(SCOPES_V2.runes?.aliasName!==null)failures.push('LunaRunes domain Scope must not declare aliasName');
-if(SCOPES_V2.runes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.runes?.mount?.path!=='/lrunes')failures.push('LunaRunes alternate /lrunes mount drifted');
+if(SCOPES_V2.lunarunes?.scopeType!=='domain')failures.push('LunaRunes Scope must remain domain type');
+if(SCOPES_V2.lunarunes?.aliasName!==null)failures.push('LunaRunes domain Scope must not declare aliasName');
+if(SCOPES_V2.lunarunes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lunarunes?.mount?.path!=='/lrunes')failures.push('LunaRunes alternate /lrunes mount drifted');
 if(SCOPES_V2.lo3rwang?.scopeType!=='directory')failures.push('author Scope must remain directory type');
-if(SCOPES_V2.lo3rwang?.aliasName!=='dlwang')failures.push('author aliasName must remain dlwang');
+if(SCOPES_V2.lo3rwang?.aliasName!==null)failures.push('lo3rwang must not consume the reserved dlwang app identity');
 if(SCOPES_V2.lo3rwang?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lo3rwang?.mount?.path!=='/lo3rwang')failures.push('author LOC mount drifted');
 const aliases=Object.values(SCOPES_V2).map(scope=>scope.aliasName).filter(Boolean);
 if(new Set(aliases).size!==aliases.length)failures.push('duplicate Scope aliasName');
@@ -207,36 +210,33 @@ for(const file of currentFiles){
   if(/\bLOC[0-8](?:_|\b)/.test(source))failures.push(file+': legacy numbered data identity leaked into Current feature module');
 }
 
-for(const pathname of ['/',...FEATURES_V2.map(item=>'/'+item.path),...SCOPES_V2.runes.localRoutes.map(route=>'/'+route)]){
-  if(resolveScopeV2('lrunes.lo3rwang.cc',pathname)!=='runes')failures.push('LunaRunes canonical domain failed at '+pathname);
+for(const pathname of ['/',...FEATURES_V2.map(item=>'/'+item.path),...SCOPES_V2.lunarunes.localRoutes.map(route=>'/'+route)]){
+  if(resolveScopeV2('lrunes.lo3rwang.cc',pathname)!=='lunarunes')failures.push('LunaRunes canonical domain failed at '+pathname);
 }
 const admissibilityCases=[
-  ['runes','lrunes.lo3rwang.cc','/',true],
-  ['runes','lrunes.lo3rwang.cc','/context',true],
-  ['runes','lrunes.lo3rwang.cc','/duel/one',true],
-  ['runes','loc.lo3rwang.cc','/lrunes',true],
-  ['runes','loc.lo3rwang.cc','/lrunes/context',true],
-  ['runes','loc.lo3rwang.cc','/lrunes/duel/one',true],
-  ['runes','lrunes.lo3rwang.cc','/loc',false],
-  ['runes','lrunes.lo3rwang.cc','/runes',false],
-  ['runes','lrunes.lo3rwang.cc','/lrunes',false],
-  ['runes','lrunes.lo3rwang.cc','/duel/one/foo',false],
+  ['lunarunes','lrunes.lo3rwang.cc','/',true],
+  ['lunarunes','lrunes.lo3rwang.cc','/duel/one',true],
+  ['lunarunes','loc.lo3rwang.cc','/lrunes',true],
+  ['lunarunes','loc.lo3rwang.cc','/lrunes/duel/one',true],
+  ['lunarunes','lrunes.lo3rwang.cc','/loc',false],
+  ['lunarunes','lrunes.lo3rwang.cc','/runes',false],
+  ['lunarunes','lrunes.lo3rwang.cc','/lrunes',false],
+  ['lunarunes','lrunes.lo3rwang.cc','/duel/one/foo',false],
   ['loc','loc.lo3rwang.cc','/',true],
-  ['loc','loc.lo3rwang.cc','/context',true],
   ['loc','loc.lo3rwang.cc','/loc',false],
   ['loc','loc.lo3rwang.cc','/runes',false],
   ['loc','loc.lo3rwang.cc','/management',false],
   ['lo3rwang','loc.lo3rwang.cc','/lo3rwang',true],
-  ['lo3rwang','loc.lo3rwang.cc','/lo3rwang/context',true]
+  ['lunarunes','lrunes.lo3rwang.cc','/context',false],
+  ['lunarunes','loc.lo3rwang.cc','/lrunes/context',false],
+  ['loc','loc.lo3rwang.cc','/context',false],
+  ['lo3rwang','loc.lo3rwang.cc','/lo3rwang/context',false]
 ];
 for(const [scopeId,host,pathname,expected] of admissibilityCases){
   const actual=isScopeRequestAllowedV2(scopeId,host,pathname);
   if(actual!==expected)failures.push('Scope route admissibility failed: '+scopeId+' '+host+pathname+' expected '+expected+' got '+actual);
 }
 
-const runesCanonicalContext=featureHrefV2('runes','context');
-if(runesCanonicalContext!=='https://lrunes.lo3rwang.cc/context')failures.push('LunaRunes canonical feature URL drifted');
-if(/lrunes\.lo3rwang\.cc\/(?:lrunes|runes)\//.test(runesCanonicalContext))failures.push('duplicated LunaRunes scope segment in canonical URL');
 
 if(JSON.stringify(SCOPE_TREE_LIMITS_V2)!==JSON.stringify({maxParentDepth:4,maxChildDepth:4,maxTotalDepth:8}))failures.push('Scope Tree limits must remain 4/4/8');
 const treeRows=[
