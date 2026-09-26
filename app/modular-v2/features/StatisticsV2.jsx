@@ -13,7 +13,6 @@ import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-sta
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import KeywordSettingsV2 from './KeywordSettingsV2';
 import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
-import DailyRuneStatisticsV2 from './DailyRuneStatisticsV2';
 import FeaturePageV2 from '../FeaturePageV2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
@@ -208,10 +207,7 @@ function SimpleStatistics({scopeId,scope,navigation}){
     </div>
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     <RankingList rows={query.data||[]} limit={10}/><RankingChart type={chartType} rows={query.data||[]} height={380}/>
-    {scopeId==='lunarunes'?<>
-      <KeywordSettingsV2 scopeId={scopeId} databaseScopeId={scope.databaseScopeId||scopeId}/>
-      <DailyRuneStatisticsV2/>
-    </>:null}
+    {scopeId==='lunarunes'?<KeywordSettingsV2 scopeId={scopeId} databaseScopeId={scope.databaseScopeId||scopeId}/>:null}
   </section>;
 }
 
