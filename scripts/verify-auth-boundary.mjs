@@ -20,6 +20,7 @@ requireMatch(client,/getSession/,'Neon session lookup is required');
 requireMatch(account,/OWNER_EMAIL/,'management must use the owner email gate');
 requireMatch(account,/String\(user\?\.id\|\|''\)/,'management identity metadata must come from Neon Auth user.id');
 requireMatch(account,/canManage=isOwner\(user\)/,'management access must follow the owner email gate');
+if(/canManagePage/.test(account))failures.push('page-level management API must remain retired');
 requireMatch(userStorage,/user_records/,'Neon user record persistence is required');
 requireMatch(userStorage,/user_settings/,'Neon user settings persistence is required');
 
