@@ -26,6 +26,13 @@ function periodRows(rows){
   })).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
 }
 
+function runtimeScopeId(scopeId){
+  return String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');
+}
+function dataScopeId(scopeId){
+  return runtimeScopeId(scopeId)==='lunarunes'?'lrunes':runtimeScopeId(scopeId);
+}
+
 function runeTimelineRows(rows){
   const anchors=(rows||[]).map(row=>({
     id:row.entry_key||row.context_key,
@@ -38,7 +45,7 @@ function runeTimelineRows(rows){
     date:row.start_date||row.context_date||null,
     start_date:row.start_date||row.context_date||null,
     end_date:null,
-    scope_id:'lrunes',
+    scope_id:'lunarunes',
     status:row.status||'',
     rune_count:Number(row.rune_count||0)
   })).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
@@ -63,10 +70,12 @@ function timelineItems(rows){
     const start=row.start_date||startAnchor?.start_date||before?.start_date||after?.start_date||null;
     const end=row.end_date||endAnchor?.start_date||null;
     const kindLabel={anchor:'定錨點',event:'事件',period:'時期',period_style:'時期風格'}[row.entry_type];
+    const scopeId=runtimeScopeId(row.scope_id);
     return {
       ...row,
-      id:`${row.scope_id}:${row.entry_key}`,
-      entry_id:`${row.scope_id}:${row.entry_key}`,
+      scope_id:scopeId,
+      id:`${scopeId}:${row.entry_key}`,
+      entry_id:`${scopeId}:${row.entry_key}`,
       start_date:start,
       end_date:end,
       date:start,
@@ -77,9 +86,10 @@ function timelineItems(rows){
 }
 
 export async function selectScopeCultureData(scopeId){
-  const id=String(scopeId||'');
-  if(!['loc','lrunes','lo3rwang'].includes(id))throw new Error('Scope 無效');
-  const scopes=id==='loc'?['lo3rwang','lrunes']:[id];
+  const id=runtimeScopeId(scopeId);
+  const dataId=dataScopeId(scopeId);
+  if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('Scope 無效');
+  const scopes=dataId==='loc'?['lo3rwang','lrunes']:[dataId];
   const {rows}=await selectNeonRows('api.loc_timeline_entries',{
     columns:TIMELINE_COLUMNS,
     filters:[
@@ -95,7 +105,7 @@ export async function selectScopeCultureData(scopeId){
   const eraSource=authorContext.filter(row=>row.entry_type==='period');
   const runeTimeline=runeTimelineRows(runeContext);
   const eras=periodRows(eraSource);
-  const contextEvents=id==='lo3rwang'?authorContext.filter(row=>row.entry_type==='event').map(row=>({
+  const contextEvents=dataId==='lo3rwang'?authorContext.filter(row=>row.entry_type==='event').map(row=>({
     entry_id:row.event_id||row.entry_key,
     event_id:row.event_id||row.entry_key,
     title:row.title,
@@ -106,7 +116,7 @@ export async function selectScopeCultureData(scopeId){
     status:row.status||'',
     visibility:row.visibility||'public'
   })): [];
-  const contextAnchors=id==='lo3rwang'?authorContext.filter(row=>row.entry_type==='anchor').map(row=>({
+  const contextAnchors=dataId==='lo3rwang'?authorContext.filter(row=>row.entry_type==='anchor').map(row=>({
     entry_id:row.entry_key,
     trajectory_id:row.entry_key,
     title:row.title,
@@ -120,8 +130,8 @@ export async function selectScopeCultureData(scopeId){
   const authorPeriods=periodRows(eraSource).map(row=>({...row,scope_id:'lo3rwang',group_label:'lo3rwang 時期'}));
   return ScopeCultureResponseSchema.parse({
     scopeId:id,
-    eras:{eras:id==='lrunes'?runeTimeline.eras:(id==='loc'?authorPeriods:eras)},
-    authorEras:id==='lo3rwang'||id==='loc'?{eras:id==='loc'?authorPeriods:eras}:undefined,
+    eras:{eras:dataId==='lrunes'?runeTimeline.eras:(dataId==='loc'?authorPeriods:eras)},
+    authorEras:dataId==='lo3rwang'||dataId==='loc'?{eras:dataId==='loc'?authorPeriods:eras}:undefined,
     runeEras:{eras:runeTimeline.eras},
     runeHistory:{records:runeTimeline.history},
     periods:eraSource,
